@@ -7,7 +7,7 @@
 #define InvalidDefaultWhileParsing(Parser, ErrorMessage) \
     default: { OutputParsingError(Parser, PeekTokenPointer(Parser), ErrorMessage); Assert(False); } break;
 
-#define DEBUG_PRINT (1)
+#define DEBUG_PRINT (0)
 
 #if DEBUG_PRINT
 #include <bonsai_stdlib/headers/debug_print.h>
@@ -3576,14 +3576,31 @@ ParseTransformations(c_parse_result* Scope)
 function counted_string
 Execute(meta_func* Func, datatype ArgDatatype, metaprogramming_info* MetaInfo, memory_arena* Memory);
 
+struct replacement_pattern
+{
+  counted_string Match;
+  datatype Data;
+};
+
+function replacement_pattern
+ReplacementPattern(counted_string Match, datatype Data)
+{
+  replacement_pattern Result = {
+    .Match = Match,
+    .Data = Data
+  };
+
+  return Result;
+}
+
 // TODO(Jesse id: 222, tags: immediate, parsing, metaprogramming) : Re-add [[nodiscard]] here
 function counted_string
-Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPattern, datatype ArgDatatype, metaprogramming_info* MetaInfo, memory_arena* Memory)
+Execute(counted_string FuncName, c_parse_result Scope, replacement_pattern Replace, metaprogramming_info* MetaInfo, memory_arena* Memory)
 {
   program_datatypes* Datatypes = &MetaInfo->Datatypes;
   meta_func_stream* FunctionDefs = &MetaInfo->FunctionDefs;
 
-  Assert(ArgDatatype.Type != type_datatype_noop);
+  Assert(Replace.Data.Type != type_datatype_noop);
 
   Rewind(&Scope.Tokens);
 
@@ -3595,12 +3612,12 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
     if ( BodyToken.Type == CTokenType_String )
     {
       c_parse_result StringParse = TokenizeString(BodyToken.Value, Scope.Filename, Memory, True);
-      counted_string Code = Execute(FuncName, StringParse, ArgMatchPattern, ArgDatatype, MetaInfo, Memory);
+      counted_string Code = Execute(FuncName, StringParse, Replace, MetaInfo, Memory);
       AppendAndEscapeInteriorOfDoubleQuotedString(&OutputBuilder, Code);
     }
     else if ( BodyToken.Type == CTokenType_OpenParen )
     {
-      if ( OptionalToken(&Scope, CToken(ArgMatchPattern)) )
+      if ( OptionalToken(&Scope, CToken(Replace.Match)) )
       {
         RequireToken(&Scope, CTokenType_Dot);
         meta_arg_operator Operator = MetaArgOperator( RequireToken(&Scope, CTokenType_Identifier).Value);
@@ -3616,9 +3633,9 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
           {
             RequireToken(&Scope, CTokenType_Question);
             c_parse_result StructScope = GetBodyTextForNextScope(&Scope);
-            if (ArgDatatype.Type == type_struct_def)
+            if (Replace.Data.Type == type_struct_def)
             {
-              counted_string Code = Execute(FuncName, StructScope, ArgMatchPattern, ArgDatatype, MetaInfo, Memory);
+              counted_string Code = Execute(FuncName, StructScope, Replace, MetaInfo, Memory);
               Append(&OutputBuilder, Code);
             }
           } break;
@@ -3627,19 +3644,19 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
           {
             RequireToken(&Scope, CTokenType_Question);
             c_parse_result EnumScope = GetBodyTextForNextScope(&Scope);
-            if (ArgDatatype.Type == type_enum_def)
+            if (Replace.Data.Type == type_enum_def)
             {
-              counted_string Code = Execute(FuncName, EnumScope, ArgMatchPattern, ArgDatatype, MetaInfo, Memory);
+              counted_string Code = Execute(FuncName, EnumScope, Replace, MetaInfo, Memory);
               Append(&OutputBuilder, Code);
             }
           } break;
 
           case value:
           {
-            if (ArgDatatype.Type == type_enum_member)
+            if (Replace.Data.Type == type_enum_member)
             {
               meta_transform_op Transformations = ParseTransformations(&Scope);
-              counted_string Name = Transform(Transformations, ArgDatatype.enum_member->Value, Memory);
+              counted_string Name = Transform(Transformations, Replace.Data.enum_member->Value, Memory);
               Append(&OutputBuilder, Name);
             }
             else
@@ -3650,10 +3667,10 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
 
           case type:
           {
-            if (ArgDatatype.Type == type_struct_def)
+            if (Replace.Data.Type == type_struct_def)
             {
               meta_transform_op Transformations = ParseTransformations(&Scope);
-              counted_string Name = Transform(Transformations, ArgDatatype.struct_def->Type, Memory);
+              counted_string Name = Transform(Transformations, Replace.Data.struct_def->Type, Memory);
               Append(&OutputBuilder, Name);
             }
             else
@@ -3664,11 +3681,11 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
 
           case name:
           {
-            switch (ArgDatatype.Type)
+            switch (Replace.Data.Type)
             {
               case type_struct_member:
               {
-                counted_string MemberName = GetNameForStructMember(ArgDatatype.struct_member);
+                counted_string MemberName = GetNameForStructMember(Replace.Data.struct_member);
                 meta_transform_op Transformations = ParseTransformations(&Scope);
                 counted_string Name = Transform(Transformations, MemberName, Memory);
                 Append(&OutputBuilder, Name);
@@ -3677,21 +3694,21 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
               case type_enum_member:
               {
                 meta_transform_op Transformations = ParseTransformations(&Scope);
-                counted_string Name = Transform(Transformations, ArgDatatype.enum_member->Name, Memory);
+                counted_string Name = Transform(Transformations, Replace.Data.enum_member->Name, Memory);
                 Append(&OutputBuilder, Name);
               } break;
 
               case type_enum_def:
               {
                 meta_transform_op Transformations = ParseTransformations(&Scope);
-                counted_string Name = Transform(Transformations, ArgDatatype.enum_def->Name, Memory);
+                counted_string Name = Transform(Transformations, Replace.Data.enum_def->Name, Memory);
                 Append(&OutputBuilder, Name);
               } break;
 
               case type_struct_def:
               {
                 meta_transform_op Transformations = ParseTransformations(&Scope);
-                counted_string Name = Transform(Transformations, ArgDatatype.struct_def->Type, Memory);
+                counted_string Name = Transform(Transformations, Replace.Data.struct_def->Type, Memory);
                 Append(&OutputBuilder, Name);
               } break;
 
@@ -3717,9 +3734,9 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
 
             c_parse_result MapMemberScope = GetBodyTextForNextScope(&Scope);
 
-            if (ArgDatatype.Type == type_struct_def)
+            if (Replace.Data.Type == type_struct_def)
             {
-              ITERATE_OVER(&ArgDatatype.struct_def->Members)
+              ITERATE_OVER(&Replace.Data.struct_def->Members)
               {
                 struct_member* Member = GET_ELEMENT(Iter);
 
@@ -3744,7 +3761,7 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
                     }
                     else
                     {
-                      counted_string StructFieldOutput = Execute(FuncName, MapMemberScope, MatchPattern, Datatype(Member), MetaInfo, Memory);
+                      counted_string StructFieldOutput = Execute(FuncName, MapMemberScope, ReplacementPattern(MatchPattern, Datatype(Member)), MetaInfo, Memory);
                       Append(&OutputBuilder, StructFieldOutput);
                     }
 
@@ -3764,14 +3781,14 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
                         {
                           if (ContainingConstraint.Count && HasMemberOfType(Struct, ContainingConstraint))
                           {
-                            counted_string StructFieldOutput = Execute(FuncName, MapMemberScope, MatchPattern, Datatype(Struct), MetaInfo, Memory);
+                            counted_string StructFieldOutput = Execute(FuncName, MapMemberScope, ReplacementPattern(MatchPattern, Datatype(Struct)), MetaInfo, Memory);
                             Append(&OutputBuilder, StructFieldOutput);
                           }
                         }
                         else
                         {
                           counted_string Name = UnionMember->variable.Type;
-                          counted_string ParentStructName = ArgDatatype.struct_def->Type;
+                          counted_string ParentStructName = Replace.Data.struct_def->Type;
                           Warn("Couldn't find struct type '%.*s' in union parent '%.*s'.", (u32)Name.Count, Name.Start, (u32)ParentStructName.Count, ParentStructName.Start);
                         }
 
@@ -3789,7 +3806,7 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
             }
             else
             {
-              Error("Called map_members on a datatype that wasn't a struct - %.*s", (u32)ArgDatatype.enum_def->Name.Count, ArgDatatype.enum_def->Name.Start);
+              Error("Called map_members on a datatype that wasn't a struct - %.*s", (u32)Replace.Data.enum_def->Name.Count, Replace.Data.enum_def->Name.Start);
             }
 
           } break;
@@ -3801,12 +3818,12 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
             RequireToken(&Scope, CTokenType_CloseParen);
             c_parse_result NextScope = GetBodyTextForNextScope(&Scope);
 
-            if (ArgDatatype.Type == type_enum_def)
+            if (Replace.Data.Type == type_enum_def)
             {
-              ITERATE_OVER(&ArgDatatype.enum_def->Members)
+              ITERATE_OVER(&Replace.Data.enum_def->Members)
               {
                 enum_member* EnumMember = GET_ELEMENT(Iter);
-                counted_string EnumFieldOutput = Execute(FuncName, NextScope, EnumValueMatch, Datatype(EnumMember), MetaInfo, Memory);
+                counted_string EnumFieldOutput = Execute(FuncName, NextScope, ReplacementPattern(EnumValueMatch, Datatype(EnumMember)), MetaInfo, Memory);
                 Append(&OutputBuilder, EnumFieldOutput);
                 continue;
               }
@@ -3814,7 +3831,7 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
             }
             else
             {
-              Error("Called map_values on a datatype that wasn't an enum - %.*s", (u32)ArgDatatype.struct_def->Type.Count, ArgDatatype.struct_def->Type.Start);
+              Error("Called map_values on a datatype that wasn't an enum - %.*s", (u32)Replace.Data.struct_def->Type.Count, Replace.Data.struct_def->Type.Start);
             }
 
           } break;
@@ -3830,13 +3847,13 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
           RequireToken(&Scope, CToken(NestedFunc->Name));
 
           RequireToken(&Scope, CTokenType_OpenParen);
-          RequireToken(&Scope, CToken(ArgMatchPattern));
+          RequireToken(&Scope, CToken(Replace.Match));
           RequireToken(&Scope, CTokenType_CloseParen);
           RequireToken(&Scope, CTokenType_CloseParen);
 
           if (!StringsMatch(NestedFunc->Name, FuncName))
           {
-            counted_string NestedCode = Execute(NestedFunc, ArgDatatype, MetaInfo, Memory);
+            counted_string NestedCode = Execute(NestedFunc, Replace.Data, MetaInfo, Memory);
             Append(&OutputBuilder, NestedCode);
           }
           else
@@ -3865,7 +3882,7 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
 function counted_string
 Execute(meta_func* Func, datatype ArgDatatype, metaprogramming_info* MetaInfo, memory_arena* Memory)
 {
-  counted_string Result = Execute(Func->Name, Func->Body, Func->ArgName, ArgDatatype, MetaInfo, Memory);
+  counted_string Result = Execute(Func->Name, Func->Body, ReplacementPattern(Func->ArgName, ArgDatatype), MetaInfo, Memory);
   return Result;
 }
 
@@ -4441,13 +4458,14 @@ Traverse(ast_node* InputNode)
     } break;
   }
 
+#if 0
   switch (InputNode->Type)
   {
     meta(
       func (ast_node AstNodeDef)
       {
         (
-          AstNodeDef.map_members(Member).containing(ast_node as Children)
+          AstNodeDef.map_members(Member).containing(ast_node)
           {
             if (InputNode->(Member.name).(Children))
             {
@@ -4459,11 +4477,12 @@ Traverse(ast_node* InputNode)
     )
 #include <metaprogramming/output/anonymous_function_ast_node_95fd7Rdl.h>
   }
+#endif
 
 }
 
 function void
-DebugDumpFunctionCalls(program_datatypes *Datatypes, memory_arena *Memory)
+DebugDumpFunctionCalls(program_datatypes *Datatypes)
 {
   ITERATE_OVER(&Datatypes->Functions)
   {
@@ -4516,7 +4535,7 @@ main(s32 ArgCount, const char** ArgStrings)
 
     ParseFunctionBodiesIntoAsts(&MetaInfo.Datatypes, Memory);
 
-    DebugDumpFunctionCalls(&MetaInfo.Datatypes, Memory);
+    DebugDumpFunctionCalls(&MetaInfo.Datatypes);
 
 
     for (u32 ParserIndex = 0;

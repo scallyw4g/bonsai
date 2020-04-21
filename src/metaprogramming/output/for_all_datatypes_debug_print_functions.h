@@ -3094,37 +3094,6 @@
       }
     }
 
-    function void DebugPrint( replacement_pattern S, u32 Depth)
-    {
-      DebugPrint("replacement_pattern\n", Depth);
-      
-          DebugPrint("Match = ", Depth);
-          DebugPrint(S.Match, Depth+1);
-          DebugPrint("\n");
-
-          DebugPrint("Replace = ", Depth);
-          DebugPrint(S.Replace, Depth+1);
-          DebugPrint("\n");
-
-    }
-
-    function void DebugPrint(replacement_pattern* S, u32 Depth)
-    {
-      if (S)
-      {
-        DebugPrint("replacement_pattern\n", Depth);
-        
-            DebugPrint("Match = ", Depth);
-            DebugPrint(S->Match, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("Replace = ", Depth);
-            DebugPrint(S->Replace, Depth+1);
-            DebugPrint("\n");
-
-      }
-    }
-
     function void DebugPrint( metaprogramming_info S, u32 Depth)
     {
       DebugPrint("metaprogramming_info\n", Depth);
@@ -8078,6 +8047,37 @@
 
             DebugPrint("Path = ", Depth);
             DebugPrint(S->Path, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( replacement_pattern S, u32 Depth)
+    {
+      DebugPrint("replacement_pattern\n", Depth);
+      
+          DebugPrint("Match = ", Depth);
+          DebugPrint(S.Match, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Data = ", Depth);
+          DebugPrint(S.Data, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(replacement_pattern* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("replacement_pattern\n", Depth);
+        
+            DebugPrint("Match = ", Depth);
+            DebugPrint(S->Match, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Data = ", Depth);
+            DebugPrint(S->Data, Depth+1);
             DebugPrint("\n");
 
       }

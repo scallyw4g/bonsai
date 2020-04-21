@@ -218,9 +218,6 @@
       function void DebugPrint( body_text_constraints* S, u32 Depth = 0);
       function void DebugPrint( body_text_constraints  S, u32 Depth = 0);
 
-      function void DebugPrint( replacement_pattern* S, u32 Depth = 0);
-      function void DebugPrint( replacement_pattern  S, u32 Depth = 0);
-
       function void DebugPrint( metaprogramming_info* S, u32 Depth = 0);
       function void DebugPrint( metaprogramming_info  S, u32 Depth = 0);
 
@@ -538,6 +535,9 @@
 
       function void DebugPrint( native_file* S, u32 Depth = 0);
       function void DebugPrint( native_file  S, u32 Depth = 0);
+
+      function void DebugPrint( replacement_pattern* S, u32 Depth = 0);
+      function void DebugPrint( replacement_pattern  S, u32 Depth = 0);
 
       function void DebugPrint( plane_computation* S, u32 Depth = 0);
       function void DebugPrint( plane_computation  S, u32 Depth = 0);

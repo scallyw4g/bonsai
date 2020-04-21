@@ -758,12 +758,6 @@ struct body_text_constraints
   counted_string ValueName;
 };
 
-struct replacement_pattern
-{
-  counted_string Match;
-  counted_string Replace;
-};
-
 struct metaprogramming_info
 {
   meta_func_stream FunctionDefs;
