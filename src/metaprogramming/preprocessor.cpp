@@ -3581,6 +3581,8 @@ struct replacement_pattern
   counted_string Match;
   datatype Data;
 };
+meta(generate_stream(replacement_pattern))
+#include <metaprogramming/output/generate_stream_replacement_pattern.h>
 
 function replacement_pattern
 ReplacementPattern(counted_string Match, datatype Data)
