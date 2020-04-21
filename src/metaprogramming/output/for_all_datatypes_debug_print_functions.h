@@ -2810,6 +2810,10 @@
     {
       DebugPrint("ast_node_initializer_list\n", Depth);
       
+          DebugPrint("Thing = ", Depth);
+          DebugPrint(S.Thing, Depth+1);
+          DebugPrint("\n");
+
     }
 
     function void DebugPrint(ast_node_initializer_list* S, u32 Depth)
@@ -2818,6 +2822,10 @@
       {
         DebugPrint("ast_node_initializer_list\n", Depth);
         
+            DebugPrint("Thing = ", Depth);
+            DebugPrint(S->Thing, Depth+1);
+            DebugPrint("\n");
+
       }
     }
 

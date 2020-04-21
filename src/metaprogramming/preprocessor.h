@@ -670,6 +670,7 @@ struct ast_node_address_of
 struct ast_node_initializer_list
 {
   // TODO(Jesse id: 251): Implement this..
+  u32 Thing;
 };
 
 struct ast_node_ignored
@@ -706,7 +707,7 @@ AllocateAstNode(ast_node_type T, ast_node **Result, memory_arena* Memory)
   return *Result;
 }
 
-#define AllocateAndCastTo(T, NodeDest, Memory) (&AllocateAstNode(type_##T, &NodeDest, Memory)->T)
+#define AllocateAndCastTo(T, NodeDest, Memory) (&AllocateAstNode(type_##T, NodeDest, Memory)->T)
 
 struct arguments
 {
