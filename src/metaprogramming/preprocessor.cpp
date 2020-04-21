@@ -7,7 +7,7 @@
 #define InvalidDefaultWhileParsing(Parser, ErrorMessage) \
     default: { OutputParsingError(Parser, PeekTokenPointer(Parser), ErrorMessage); Assert(False); } break;
 
-#define DEBUG_PRINT (0)
+#define DEBUG_PRINT (1)
 
 #if DEBUG_PRINT
 #include <bonsai_stdlib/headers/debug_print.h>
@@ -4482,9 +4482,11 @@ ParseFunctionBodiesIntoAsts(program_datatypes *Datatypes, memory_arena *Memory)
 function void
 Traverse(ast_node* InputNode)
 {
-  if (InputNode)
+  ast_node* Current = InputNode;
+
+  while (Current)
   {
-    switch (InputNode->Type)
+    switch (Current->Type)
     {
       case type_ast_node_noop:
       {
@@ -4497,7 +4499,7 @@ Traverse(ast_node* InputNode)
 
       case type_ast_node_function_call:
       {
-        ast_node_function_call *Node = SafeCast(ast_node_function_call, InputNode);
+        ast_node_function_call *Node = SafeCast(ast_node_function_call, Current);
         DebugPrint(Node);
       } break;
 
@@ -4530,10 +4532,10 @@ Traverse(ast_node* InputNode)
       } break;
     }
 
-    switch (InputNode->Type)
-    {
-      meta(
-        func (ast_node AstNodeDef)
+    meta(
+      func (ast_node AstNodeDef)
+      {
+        switch (Current->Type)
         {
           (
             AstNodeDef.map_members(Member).containing(ast_node as ChildNodes)
@@ -4543,18 +4545,20 @@ Traverse(ast_node* InputNode)
                 (
                  ChildNodes.map_members(ChildMember)
                  {
-                   Traverse(InputNode->(Member.name).(ChildMember.name));
+                   Traverse(Current->(Member.name).(ChildMember.name));
                  }
                 )
               } break;
             }
           )
-        }
-      )
-#include <metaprogramming/output/anonymous_function_ast_node_VKvlNNnr.h>
 
-      default: {} break;
-    }
+          default: {} break;
+        }
+      }
+    )
+#include <metaprogramming/output/anonymous_function_ast_node_FXU79quh.h>
+
+    Current = (ast_node*)Current->Next;
   }
 
   return;
@@ -4566,11 +4570,8 @@ DebugDumpFunctionCalls(program_datatypes *Datatypes)
   ITERATE_OVER(&Datatypes->Functions)
   {
     function_def *Func = GET_ELEMENT(Iter);
-
     variable_stream Locals = {};
     Traverse(Func->Ast);
-
-    break;
   }
 }
 
@@ -4673,9 +4674,6 @@ main(s32 ArgCount, const char** ArgStrings)
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
   }
-
-  Quaternion Q(4,5,6,8);
-  DebugPrint(Q);
 
   s32 Result = Success ? SUCCESS_EXIT_CODE : FAILURE_EXIT_CODE ;
   return Result;
