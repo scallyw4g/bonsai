@@ -1834,23 +1834,22 @@ ConcatTokensUntilNewline(c_parse_result* Parser, memory_arena* Memory)
   return Result;
 }
 
-function b32
-HasMemberOfType(struct_def* Struct, counted_string MemberType)
+function struct_member_stream
+MembersOfType(struct_def* Struct, counted_string MemberType, memory_arena *Memory)
 {
-  b32 Result = False;
+  struct_member_stream Result = {};
   if (MemberType.Start)
   {
-    for (struct_member_iterator Iter = Iterator(&Struct->Members);
-        IsValid(&Iter) && !Result;
-        Advance(&Iter))
+    ITERATE_OVER(&Struct->Members)
     {
-      switch (Iter.At->Element.Type)
+      struct_member *Member = GET_ELEMENT(Iter);
+      switch (Member->Type)
       {
         case type_variable:
         {
-          if (StringsMatch(Iter.At->Element.variable.Type, MemberType))
+          if (StringsMatch(Member->variable.Type, MemberType))
           {
-            Result = True;
+            Push(&Result, *Member, Memory);
           }
         } break;
 
@@ -3750,11 +3749,18 @@ Execute(counted_string FuncName, c_parse_result Scope, meta_func_arg_stream* Rep
               RequireToken(&Scope, CTokenType_CloseParen);
 
               counted_string ContainingConstraint = {};
+              counted_string ChildName = {};
               if ( OptionalToken(&Scope, CTokenType_Dot) )
               {
                 RequireToken(&Scope, CToken(CSz("containing")));
                 RequireToken(&Scope, CTokenType_OpenParen);
                 ContainingConstraint = RequireToken(&Scope, CTokenType_Identifier).Value;
+
+                if ( OptionalToken(&Scope, CToken(CSz("as"))) )
+                {
+                  ChildName = RequireToken(&Scope, CTokenType_Identifier).Value;
+                }
+
                 RequireToken(&Scope, CTokenType_CloseParen);
               }
 
@@ -3778,7 +3784,6 @@ Execute(counted_string FuncName, c_parse_result Scope, meta_func_arg_stream* Rep
                     } break;
 
                     case type_variable:
-
                     {
                       if ( ContainingConstraint.Count &&
                            !StringsMatch(Member->variable.Type, ContainingConstraint) )
@@ -3807,10 +3812,19 @@ Execute(counted_string FuncName, c_parse_result Scope, meta_func_arg_stream* Rep
                           struct_def* Struct = GetStructByType(&Datatypes->Structs, UnionMember->variable.Type);
                           if (Struct)
                           {
-                            if (ContainingConstraint.Count && HasMemberOfType(Struct, ContainingConstraint))
+                            struct_member_stream ContainedMembers = MembersOfType(Struct, ContainingConstraint, Memory);
+                            if (ContainedMembers.FirstChunk)
                             {
                               meta_func_arg_stream NewArgs = CopyStream(ReplacePatterns, Memory);
                               Push(&NewArgs, ReplacementPattern(MatchPattern, Datatype(Struct)), Memory);
+                              if (ChildName.Count) {
+                                struct_def SyntheticStruct = {
+                                  .Type = CSz("synthetically_created_struct"),
+                                  .DefinedInFile = Struct->DefinedInFile,
+                                  .Members = ContainedMembers,
+                                };
+                                Push(&NewArgs, ReplacementPattern(ChildName, Datatype(&SyntheticStruct)), Memory);
+                              }
                               counted_string StructFieldOutput = Execute(FuncName, MapMemberScope, &NewArgs, MetaInfo, Memory);
                               Append(&OutputBuilder, StructFieldOutput);
                             }
@@ -4468,73 +4482,82 @@ ParseFunctionBodiesIntoAsts(program_datatypes *Datatypes, memory_arena *Memory)
 function void
 Traverse(ast_node* InputNode)
 {
-  switch (InputNode->Type)
+  if (InputNode)
   {
-    case type_ast_node_noop:
+    switch (InputNode->Type)
     {
-      InvalidCodePath();
-    } break;
-
-    case type_ast_node_var:
-    {
-    } break;
-
-    case type_ast_node_function_call:
-    {
-      ast_node_function_call *Node = SafeCast(ast_node_function_call, InputNode);
-      DebugPrint(Node);
-    } break;
-
-    case type_ast_node_scope:
-    {
-    } break;
-
-    case type_ast_node_assignment:
-    {
-    } break;
-
-    case type_ast_node_address_of:
-    {
-    } break;
-
-    case type_ast_node_initializer_list:
-    {
-    } break;
-
-    case type_ast_node_ignored:
-    {
-    } break;
-
-    case type_ast_node_preprocessor_directive:
-    {
-    } break;
-
-    case type_ast_node_datatype:
-    {
-    } break;
-  }
-
-#if 0
-  switch (InputNode->Type)
-  {
-    meta(
-      func (ast_node AstNodeDef)
+      case type_ast_node_noop:
       {
-        (
-          AstNodeDef.map_members(Member).containing(ast_node)
-          {
-            if (InputNode->(Member.name).(Children))
-            {
-              Traverse(InputNode->(Member.name).(Children));
-            }
-          }
-        )
-      }
-    )
-#include <metaprogramming/output/anonymous_function_ast_node_95fd7Rdl.h>
-  }
-#endif
+        InvalidCodePath();
+      } break;
 
+      case type_ast_node_var:
+      {
+      } break;
+
+      case type_ast_node_function_call:
+      {
+        ast_node_function_call *Node = SafeCast(ast_node_function_call, InputNode);
+        DebugPrint(Node);
+      } break;
+
+      case type_ast_node_scope:
+      {
+      } break;
+
+      case type_ast_node_assignment:
+      {
+      } break;
+
+      case type_ast_node_address_of:
+      {
+      } break;
+
+      case type_ast_node_initializer_list:
+      {
+      } break;
+
+      case type_ast_node_ignored:
+      {
+      } break;
+
+      case type_ast_node_preprocessor_directive:
+      {
+      } break;
+
+      case type_ast_node_datatype:
+      {
+      } break;
+    }
+
+    switch (InputNode->Type)
+    {
+      meta(
+        func (ast_node AstNodeDef)
+        {
+          (
+            AstNodeDef.map_members(Member).containing(ast_node as ChildNodes)
+            {
+              case type_(Member.type):
+              {
+                (
+                 ChildNodes.map_members(ChildMember)
+                 {
+                   Traverse(InputNode->(Member.name).(ChildMember.name));
+                 }
+                )
+              } break;
+            }
+          )
+        }
+      )
+#include <metaprogramming/output/anonymous_function_ast_node_VKvlNNnr.h>
+
+      default: {} break;
+    }
+  }
+
+  return;
 }
 
 function void
