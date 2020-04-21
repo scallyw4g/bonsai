@@ -152,6 +152,9 @@
       function void DebugPrint( datatype* S, u32 Depth = 0);
       function void DebugPrint( datatype  S, u32 Depth = 0);
 
+      function void DebugPrint( replacement_pattern* S, u32 Depth = 0);
+      function void DebugPrint( replacement_pattern  S, u32 Depth = 0);
+
       function void DebugPrint( c_token* S, u32 Depth = 0);
       function void DebugPrint( c_token  S, u32 Depth = 0);
 
@@ -536,9 +539,6 @@
       function void DebugPrint( native_file* S, u32 Depth = 0);
       function void DebugPrint( native_file  S, u32 Depth = 0);
 
-      function void DebugPrint( replacement_pattern* S, u32 Depth = 0);
-      function void DebugPrint( replacement_pattern  S, u32 Depth = 0);
-
       function void DebugPrint( plane_computation* S, u32 Depth = 0);
       function void DebugPrint( plane_computation  S, u32 Depth = 0);
 
@@ -616,6 +616,15 @@
 
       function void DebugPrint( enum_def_iterator* S, u32 Depth = 0);
       function void DebugPrint( enum_def_iterator  S, u32 Depth = 0);
+
+      function void DebugPrint( replacement_pattern_stream_chunk* S, u32 Depth = 0);
+      function void DebugPrint( replacement_pattern_stream_chunk  S, u32 Depth = 0);
+
+      function void DebugPrint( replacement_pattern_stream* S, u32 Depth = 0);
+      function void DebugPrint( replacement_pattern_stream  S, u32 Depth = 0);
+
+      function void DebugPrint( replacement_pattern_iterator* S, u32 Depth = 0);
+      function void DebugPrint( replacement_pattern_iterator  S, u32 Depth = 0);
 
       function void DebugPrint( c_token_cursor* S, u32 Depth = 0);
       function void DebugPrint( c_token_cursor  S, u32 Depth = 0);

@@ -2348,6 +2348,37 @@
       }
     }
 
+    function void DebugPrint( replacement_pattern S, u32 Depth)
+    {
+      DebugPrint("replacement_pattern\n", Depth);
+      
+          DebugPrint("Match = ", Depth);
+          DebugPrint(S.Match, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Data = ", Depth);
+          DebugPrint(S.Data, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(replacement_pattern* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("replacement_pattern\n", Depth);
+        
+            DebugPrint("Match = ", Depth);
+            DebugPrint(S->Match, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Data = ", Depth);
+            DebugPrint(S->Data, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
     function void DebugPrint( c_token S, u32 Depth)
     {
       DebugPrint("c_token\n", Depth);
@@ -8052,37 +8083,6 @@
       }
     }
 
-    function void DebugPrint( replacement_pattern S, u32 Depth)
-    {
-      DebugPrint("replacement_pattern\n", Depth);
-      
-          DebugPrint("Match = ", Depth);
-          DebugPrint(S.Match, Depth+1);
-          DebugPrint("\n");
-
-          DebugPrint("Data = ", Depth);
-          DebugPrint(S.Data, Depth+1);
-          DebugPrint("\n");
-
-    }
-
-    function void DebugPrint(replacement_pattern* S, u32 Depth)
-    {
-      if (S)
-      {
-        DebugPrint("replacement_pattern\n", Depth);
-        
-            DebugPrint("Match = ", Depth);
-            DebugPrint(S->Match, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("Data = ", Depth);
-            DebugPrint(S->Data, Depth+1);
-            DebugPrint("\n");
-
-      }
-    }
-
     function void DebugPrint( plane_computation S, u32 Depth)
     {
       DebugPrint("plane_computation\n", Depth);
@@ -9005,6 +9005,99 @@
       if (S)
       {
         DebugPrint("enum_def_iterator\n", Depth);
+        
+            DebugPrint("Stream = ", Depth);
+            DebugPrint(S->Stream, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("At = ", Depth);
+            DebugPrint(S->At, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( replacement_pattern_stream_chunk S, u32 Depth)
+    {
+      DebugPrint("replacement_pattern_stream_chunk\n", Depth);
+      
+          DebugPrint("Element = ", Depth);
+          DebugPrint(S.Element, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Next = ", Depth);
+          DebugPrint(S.Next, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(replacement_pattern_stream_chunk* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("replacement_pattern_stream_chunk\n", Depth);
+        
+            DebugPrint("Element = ", Depth);
+            DebugPrint(S->Element, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Next = ", Depth);
+            DebugPrint(S->Next, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( replacement_pattern_stream S, u32 Depth)
+    {
+      DebugPrint("replacement_pattern_stream\n", Depth);
+      
+          DebugPrint("FirstChunk = ", Depth);
+          DebugPrint(S.FirstChunk, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("LastChunk = ", Depth);
+          DebugPrint(S.LastChunk, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(replacement_pattern_stream* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("replacement_pattern_stream\n", Depth);
+        
+            DebugPrint("FirstChunk = ", Depth);
+            DebugPrint(S->FirstChunk, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("LastChunk = ", Depth);
+            DebugPrint(S->LastChunk, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( replacement_pattern_iterator S, u32 Depth)
+    {
+      DebugPrint("replacement_pattern_iterator\n", Depth);
+      
+          DebugPrint("Stream = ", Depth);
+          DebugPrint(S.Stream, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("At = ", Depth);
+          DebugPrint(S.At, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(replacement_pattern_iterator* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("replacement_pattern_iterator\n", Depth);
         
             DebugPrint("Stream = ", Depth);
             DebugPrint(S->Stream, Depth+1);

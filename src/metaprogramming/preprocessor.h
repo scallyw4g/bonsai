@@ -546,6 +546,14 @@ Datatype(enum_def* E)
   return Result;
 }
 
+struct replacement_pattern
+{
+  counted_string Match;
+  datatype Data;
+};
+meta(generate_stream(replacement_pattern))
+#include <metaprogramming/output/generate_stream_replacement_pattern.h>
+
 
 
 
