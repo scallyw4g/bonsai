@@ -2348,9 +2348,9 @@
       }
     }
 
-    function void DebugPrint( replacement_pattern S, u32 Depth)
+    function void DebugPrint( meta_func_arg S, u32 Depth)
     {
-      DebugPrint("replacement_pattern\n", Depth);
+      DebugPrint("meta_func_arg\n", Depth);
       
           DebugPrint("Match = ", Depth);
           DebugPrint(S.Match, Depth+1);
@@ -2362,11 +2362,11 @@
 
     }
 
-    function void DebugPrint(replacement_pattern* S, u32 Depth)
+    function void DebugPrint(meta_func_arg* S, u32 Depth)
     {
       if (S)
       {
-        DebugPrint("replacement_pattern\n", Depth);
+        DebugPrint("meta_func_arg\n", Depth);
         
             DebugPrint("Match = ", Depth);
             DebugPrint(S->Match, Depth+1);
@@ -9017,9 +9017,9 @@
       }
     }
 
-    function void DebugPrint( replacement_pattern_stream_chunk S, u32 Depth)
+    function void DebugPrint( meta_func_arg_stream_chunk S, u32 Depth)
     {
-      DebugPrint("replacement_pattern_stream_chunk\n", Depth);
+      DebugPrint("meta_func_arg_stream_chunk\n", Depth);
       
           DebugPrint("Element = ", Depth);
           DebugPrint(S.Element, Depth+1);
@@ -9031,11 +9031,11 @@
 
     }
 
-    function void DebugPrint(replacement_pattern_stream_chunk* S, u32 Depth)
+    function void DebugPrint(meta_func_arg_stream_chunk* S, u32 Depth)
     {
       if (S)
       {
-        DebugPrint("replacement_pattern_stream_chunk\n", Depth);
+        DebugPrint("meta_func_arg_stream_chunk\n", Depth);
         
             DebugPrint("Element = ", Depth);
             DebugPrint(S->Element, Depth+1);
@@ -9048,9 +9048,9 @@
       }
     }
 
-    function void DebugPrint( replacement_pattern_stream S, u32 Depth)
+    function void DebugPrint( meta_func_arg_stream S, u32 Depth)
     {
-      DebugPrint("replacement_pattern_stream\n", Depth);
+      DebugPrint("meta_func_arg_stream\n", Depth);
       
           DebugPrint("FirstChunk = ", Depth);
           DebugPrint(S.FirstChunk, Depth+1);
@@ -9062,11 +9062,11 @@
 
     }
 
-    function void DebugPrint(replacement_pattern_stream* S, u32 Depth)
+    function void DebugPrint(meta_func_arg_stream* S, u32 Depth)
     {
       if (S)
       {
-        DebugPrint("replacement_pattern_stream\n", Depth);
+        DebugPrint("meta_func_arg_stream\n", Depth);
         
             DebugPrint("FirstChunk = ", Depth);
             DebugPrint(S->FirstChunk, Depth+1);
@@ -9079,9 +9079,9 @@
       }
     }
 
-    function void DebugPrint( replacement_pattern_iterator S, u32 Depth)
+    function void DebugPrint( meta_func_arg_iterator S, u32 Depth)
     {
-      DebugPrint("replacement_pattern_iterator\n", Depth);
+      DebugPrint("meta_func_arg_iterator\n", Depth);
       
           DebugPrint("Stream = ", Depth);
           DebugPrint(S.Stream, Depth+1);
@@ -9093,11 +9093,11 @@
 
     }
 
-    function void DebugPrint(replacement_pattern_iterator* S, u32 Depth)
+    function void DebugPrint(meta_func_arg_iterator* S, u32 Depth)
     {
       if (S)
       {
-        DebugPrint("replacement_pattern_iterator\n", Depth);
+        DebugPrint("meta_func_arg_iterator\n", Depth);
         
             DebugPrint("Stream = ", Depth);
             DebugPrint(S->Stream, Depth+1);

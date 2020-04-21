@@ -3259,13 +3259,13 @@ BootstrapDebugSystem(b32 OpenDebugWindow)
   return True;
 }
 
-function replacement_pattern*
-StreamContains(replacement_pattern_stream* Stream, counted_string Match)
+function meta_func_arg*
+StreamContains(meta_func_arg_stream* Stream, counted_string Match)
 {
-  replacement_pattern* Result = {};
+  meta_func_arg* Result = {};
   ITERATE_OVER(Stream)
   {
-    replacement_pattern* Current = GET_ELEMENT(Iter);
+    meta_func_arg* Current = GET_ELEMENT(Iter);
     if (StringsMatch(Current->Match, Match))
     {
       Result = Current;
@@ -3590,10 +3590,10 @@ ParseTransformations(c_parse_result* Scope)
   return Result;
 }
 
-function replacement_pattern
+function meta_func_arg
 ReplacementPattern(counted_string Match, datatype Data)
 {
-  replacement_pattern Result = {
+  meta_func_arg Result = {
     .Match = Match,
     .Data = Data
   };
@@ -3601,24 +3601,24 @@ ReplacementPattern(counted_string Match, datatype Data)
   return Result;
 }
 
-function replacement_pattern_stream
-CopyStream(replacement_pattern_stream* Stream, memory_arena* Memory)
+function meta_func_arg_stream
+CopyStream(meta_func_arg_stream* Stream, memory_arena* Memory)
 {
-  replacement_pattern_stream Result = {};
+  meta_func_arg_stream Result = {};
   ITERATE_OVER(Stream)
   {
-    replacement_pattern* Element = GET_ELEMENT(Iter);
+    meta_func_arg* Element = GET_ELEMENT(Iter);
     Push(&Result, *Element, Memory);
   }
   return Result;
 }
 
 function counted_string
-Execute(meta_func* Func, replacement_pattern_stream *Args, metaprogramming_info* MetaInfo, memory_arena* Memory);
+Execute(meta_func* Func, meta_func_arg_stream *Args, metaprogramming_info* MetaInfo, memory_arena* Memory);
 
 // TODO(Jesse id: 222, tags: immediate, parsing, metaprogramming) : Re-add [[nodiscard]] here
 function counted_string
-Execute(counted_string FuncName, c_parse_result Scope, replacement_pattern_stream* ReplacePatterns, metaprogramming_info* MetaInfo, memory_arena* Memory)
+Execute(counted_string FuncName, c_parse_result Scope, meta_func_arg_stream* ReplacePatterns, metaprogramming_info* MetaInfo, memory_arena* Memory)
 {
   program_datatypes* Datatypes = &MetaInfo->Datatypes;
   meta_func_stream* FunctionDefs = &MetaInfo->FunctionDefs;
@@ -3641,7 +3641,7 @@ Execute(counted_string FuncName, c_parse_result Scope, replacement_pattern_strea
       b32 ExecutedChildFunc = False;
       ITERATE_OVER_AS(Replace, ReplacePatterns)
       {
-        replacement_pattern* Replace = GET_ELEMENT(ReplaceIter);
+        meta_func_arg* Replace = GET_ELEMENT(ReplaceIter);
         if ( OptionalToken(&Scope, CToken(Replace->Match)) )
         {
           ExecutedChildFunc = True;
@@ -3787,7 +3787,7 @@ Execute(counted_string FuncName, c_parse_result Scope, replacement_pattern_strea
                       }
                       else
                       {
-                        replacement_pattern_stream NewArgs = CopyStream(ReplacePatterns, Memory);
+                        meta_func_arg_stream NewArgs = CopyStream(ReplacePatterns, Memory);
                         Push(&NewArgs, ReplacementPattern(MatchPattern, Datatype(Member)), Memory);
                         counted_string StructFieldOutput = Execute(FuncName, MapMemberScope, &NewArgs, MetaInfo, Memory);
                         Append(&OutputBuilder, StructFieldOutput);
@@ -3809,7 +3809,7 @@ Execute(counted_string FuncName, c_parse_result Scope, replacement_pattern_strea
                           {
                             if (ContainingConstraint.Count && HasMemberOfType(Struct, ContainingConstraint))
                             {
-                              replacement_pattern_stream NewArgs = CopyStream(ReplacePatterns, Memory);
+                              meta_func_arg_stream NewArgs = CopyStream(ReplacePatterns, Memory);
                               Push(&NewArgs, ReplacementPattern(MatchPattern, Datatype(Struct)), Memory);
                               counted_string StructFieldOutput = Execute(FuncName, MapMemberScope, &NewArgs, MetaInfo, Memory);
                               Append(&OutputBuilder, StructFieldOutput);
@@ -3853,7 +3853,7 @@ Execute(counted_string FuncName, c_parse_result Scope, replacement_pattern_strea
                 ITERATE_OVER(&Replace->Data.enum_def->Members)
                 {
                   enum_member* EnumMember = GET_ELEMENT(Iter);
-                  replacement_pattern_stream NewArgs = CopyStream(ReplacePatterns, Memory);
+                  meta_func_arg_stream NewArgs = CopyStream(ReplacePatterns, Memory);
                   Push(&NewArgs, ReplacementPattern(EnumValueMatch, Datatype(EnumMember)), Memory);
                   counted_string EnumFieldOutput = Execute(FuncName, NextScope, &NewArgs, MetaInfo, Memory);
                   Append(&OutputBuilder, EnumFieldOutput);
@@ -3881,7 +3881,7 @@ Execute(counted_string FuncName, c_parse_result Scope, replacement_pattern_strea
         RequireToken(&Scope, CTokenType_OpenParen);
 
         counted_string ArgName = RequireToken(&Scope, CTokenType_Identifier).Value;
-        replacement_pattern* Arg = StreamContains(ReplacePatterns, ArgName);
+        meta_func_arg* Arg = StreamContains(ReplacePatterns, ArgName);
 
         if (Arg)
         {
@@ -3890,7 +3890,7 @@ Execute(counted_string FuncName, c_parse_result Scope, replacement_pattern_strea
 
           if (!StringsMatch(NestedFunc->Name, FuncName))
           {
-            replacement_pattern_stream NewArgs = {};
+            meta_func_arg_stream NewArgs = {};
             Push(&NewArgs, ReplacementPattern(NestedFunc->ArgName, Arg->Data), Memory);
             counted_string NestedCode = Execute(NestedFunc, &NewArgs, MetaInfo, Memory);
             Append(&OutputBuilder, NestedCode);
@@ -3927,7 +3927,7 @@ Execute(counted_string FuncName, c_parse_result Scope, replacement_pattern_strea
 }
 
 function counted_string
-Execute(meta_func* Func, replacement_pattern_stream *Args, metaprogramming_info* MetaInfo, memory_arena* Memory)
+Execute(meta_func* Func, meta_func_arg_stream *Args, metaprogramming_info* MetaInfo, memory_arena* Memory)
 {
   counted_string Result = Execute(Func->Name, Func->Body, Args, MetaInfo, Memory);
   return Result;
@@ -4188,7 +4188,7 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
                 };
 
                 datatype Arg = GetDatatypeByName(&MetaInfo->Datatypes, ArgType);
-                replacement_pattern_stream Args = {};
+                meta_func_arg_stream Args = {};
                 Push(&Args, ReplacementPattern(ArgName, Arg), Memory);
                 counted_string Code = Execute(&Func, &Args, MetaInfo, Memory);
 
@@ -4268,7 +4268,7 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
                 struct_def* Struct = &Iter.At->Element;
                 if (!StreamContains(&Excludes, Struct->Type))
                 {
-                  replacement_pattern_stream Args = {};
+                  meta_func_arg_stream Args = {};
                   Push(&Args, ReplacementPattern(StructFunc.ArgName, Datatype(Struct)), Memory);
                   counted_string Code = Execute(&StructFunc, &Args, MetaInfo, Memory);
                   Append(&OutputBuilder, Code);
@@ -4282,7 +4282,7 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
                 enum_def* Enum = &Iter.At->Element;
                 if (!StreamContains(&Excludes, Enum->Name))
                 {
-                  replacement_pattern_stream Args = {};
+                  meta_func_arg_stream Args = {};
                   Push(&Args, ReplacementPattern(EnumFunc.ArgName, Datatype(Enum)), Memory);
                   counted_string Code = Execute(&EnumFunc, &Args, MetaInfo, Memory);
                   Append(&OutputBuilder, Code);
@@ -4341,7 +4341,7 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
 
                 /* Info("Calling function : %.*s(%.*s)", (u32)Func->Name.Count, Func->Name.Start, (u32)DatatypeName.Count, DatatypeName.Start); */
                 datatype Arg = GetDatatypeByName(&MetaInfo->Datatypes, DatatypeName);
-                replacement_pattern_stream Args = {};
+                meta_func_arg_stream Args = {};
                 Push(&Args, ReplacementPattern(Func->ArgName, Arg), Memory);
                 counted_string Code = Execute(Func, &Args, MetaInfo, Memory);
 
