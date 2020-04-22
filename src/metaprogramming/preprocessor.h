@@ -949,3 +949,25 @@ FinalizeStringFromParser(string_from_parser* Builder, c_parse_result* Parser)
   return Result;
 }
 
+function c_token_type
+CloseTokenFor(c_token_type T)
+{
+  c_token_type Result = {};
+
+  switch (T)
+  {
+    case CTokenType_OpenParen:
+      Result = CTokenType_CloseParen; break;
+
+    case CTokenType_OpenBrace:
+      Result = CTokenType_CloseBrace; break;
+
+    case CTokenType_OpenBracket:
+      Result = CTokenType_CloseBracket; break;
+
+    InvalidDefaultCase;
+  }
+
+  return Result;
+}
+
