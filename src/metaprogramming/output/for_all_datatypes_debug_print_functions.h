@@ -2262,9 +2262,9 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
-    function void DebugPrint( ast_node_ignored S, u32 Depth)
+    function void DebugPrint( ast_node_symbol S, u32 Depth)
     {
-      DebugPrint("ast_node_ignored {\n", Depth);
+      DebugPrint("ast_node_symbol {\n", Depth);
       
           DebugPrint("c_token Token {\n", Depth+2);
           DebugPrint(S.Token, Depth+4);
@@ -2272,8 +2272,21 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("ast_node Children {\n", Depth+2);
-          DebugPrint(S.Children, Depth+4);
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( ast_node_symbol *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( ast_node_ignored S, u32 Depth)
+    {
+      DebugPrint("ast_node_ignored {\n", Depth);
+      
+          DebugPrint("c_token Token {\n", Depth+2);
+          DebugPrint(S.Token, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
@@ -2355,6 +2368,12 @@
 
           DebugPrint("variable_stream Args {\n", Depth+2);
           DebugPrint(S.Args, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("ast_node_variable_def_stream Locals {\n", Depth+2);
+          DebugPrint(S.Locals, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
@@ -9910,6 +9929,12 @@
             case type_ast_node_ignored:
             {
               DebugPrint("type_ast_node_ignored ", Depth);
+              DebugPrint("");
+            } break;
+
+            case type_ast_node_symbol:
+            {
+              DebugPrint("type_ast_node_symbol ", Depth);
               DebugPrint("");
             } break;
 

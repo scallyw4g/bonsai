@@ -23,13 +23,6 @@
 
               } break;
 
-              case type_ast_node_ignored:
-              {
-                
-                   Traverse(Current->ast_node_ignored.Children);
-
-              } break;
-
               case type_ast_node_preprocessor_directive:
               {
                 

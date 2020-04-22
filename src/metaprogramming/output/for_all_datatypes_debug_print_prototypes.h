@@ -200,6 +200,9 @@
       function void DebugPrint( ast_node_initializer_list* S, u32 Depth = 0);
       function void DebugPrint( ast_node_initializer_list  S, u32 Depth = 0);
 
+      function void DebugPrint( ast_node_symbol* S, u32 Depth = 0);
+      function void DebugPrint( ast_node_symbol  S, u32 Depth = 0);
+
       function void DebugPrint( ast_node_ignored* S, u32 Depth = 0);
       function void DebugPrint( ast_node_ignored  S, u32 Depth = 0);
 

@@ -643,6 +643,8 @@ struct person
 meta(generate_stream(person))
 #include <metaprogramming/output/generate_stream_person.h>
 
+#define SafeCast(T, Ptr) (&(Ptr)->T); Assert((Ptr)->Type == type_##T)
+
 struct ast_node;
 struct function_def;
 
@@ -692,10 +694,14 @@ struct ast_node_initializer_list
   u32 Thing;
 };
 
+struct ast_node_symbol
+{
+  c_token Token;
+};
+
 struct ast_node_ignored
 {
   c_token Token;
-  ast_node *Children;
 };
 
 meta(
@@ -708,6 +714,7 @@ meta(
     ast_node_address_of
     ast_node_initializer_list
     ast_node_ignored
+    ast_node_symbol
     ast_node_preprocessor_directive
     ast_node_variable_def
   },
@@ -751,6 +758,7 @@ struct function_def
 {
   variable Prototype;
   variable_stream Args;
+  ast_node_variable_def_stream Locals;
 
   c_parse_result Body;
   ast_node* Ast;

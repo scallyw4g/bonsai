@@ -8,6 +8,7 @@ enum ast_node_type
   type_ast_node_address_of,
   type_ast_node_initializer_list,
   type_ast_node_ignored,
+  type_ast_node_symbol,
   type_ast_node_preprocessor_directive,
   type_ast_node_variable_def,
 };
@@ -26,6 +27,7 @@ struct ast_node
     ast_node_address_of ast_node_address_of;
     ast_node_initializer_list ast_node_initializer_list;
     ast_node_ignored ast_node_ignored;
+    ast_node_symbol ast_node_symbol;
     ast_node_preprocessor_directive ast_node_preprocessor_directive;
     ast_node_variable_def ast_node_variable_def;
   };
