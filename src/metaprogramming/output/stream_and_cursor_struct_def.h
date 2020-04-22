@@ -27,14 +27,12 @@
       struct_def_stream_chunk* Next;
     };
 
-
     
     struct struct_def_stream
     {
       struct_def_stream_chunk* FirstChunk;
       struct_def_stream_chunk* LastChunk;
     };
-
 
 
     
@@ -66,7 +64,6 @@
     {
       Iter->At = Iter->At->Next;
     }
-
 
 
     

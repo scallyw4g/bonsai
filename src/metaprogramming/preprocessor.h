@@ -167,11 +167,8 @@ meta(
   func generate_stream(Type)
   {
     (generate_stream_chunk_struct(Type))
-
     (generate_stream_struct(Type))
-
     (generate_stream_iterator(Type))
-
     (generate_stream_push(Type))
   }
 )
@@ -657,7 +654,6 @@ struct ast_node_access
 struct ast_node_function_call
 {
   function_def *Prototype;
-  // TODO(Jesse id: 242): Stream of variable instances (arguemnts) with values?
 };
 
 struct ast_node_variable_def
@@ -720,6 +716,9 @@ meta(
   }
 )
 #include <metaprogramming/output/d_union_ast_node.h>
+
+meta(generate_stream(ast_node))
+#include <metaprogramming/output/generate_stream_ast_node.h>
 
 function ast_node*
 AllocateAstNode(ast_node_type T, ast_node **Result, memory_arena* Memory)

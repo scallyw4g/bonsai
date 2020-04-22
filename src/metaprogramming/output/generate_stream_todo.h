@@ -6,14 +6,12 @@
       todo_stream_chunk* Next;
     };
 
-
     
     struct todo_stream
     {
       todo_stream_chunk* FirstChunk;
       todo_stream_chunk* LastChunk;
     };
-
 
 
     
@@ -45,7 +43,6 @@
     {
       Iter->At = Iter->At->Next;
     }
-
 
 
     

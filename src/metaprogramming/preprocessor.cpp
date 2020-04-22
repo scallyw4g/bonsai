@@ -1091,7 +1091,7 @@ GenerateStructDef(d_union_decl* dUnion, memory_arena* Memory)
     Result =
       Concat(Result,
         FormatCountedString(Memory, CSz("  %S %S;\n"),
-          Member->variable.Type,
+          Member->variable.Type.Name,
           Member->variable.Name),
       Memory);
   }
@@ -1252,7 +1252,7 @@ ParseDiscriminatedUnion(c_parse_result* Parser, program_datatypes* Datatypes, co
         .Type = type_variable,
         .variable = {
           .Type.Name = RequireToken(Parser, CTokenType_Identifier).Value,
-          .Name = RequireToken(Parser, CTokenType_Identifier).Value
+          .Name      = RequireToken(Parser, CTokenType_Identifier).Value,
         }
       };
       Push(&dUnion.CommonMembers, Decl, Memory);
@@ -2719,7 +2719,6 @@ ParseFunctionCall(c_parse_result *Parser, counted_string FunctionName, memory_ar
 
   ast_node_variable_def_stream FunctionArgs = {};
 
-#if 1
   RequireToken(Parser, CTokenType_OpenParen);
 
   b32 Done = PeekToken(Parser).Type == CTokenType_CloseParen;
@@ -2735,9 +2734,6 @@ ParseFunctionCall(c_parse_result *Parser, counted_string FunctionName, memory_ar
       RequireToken(Parser, CTokenType_Comma);
     }
   }
-#else
-  EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
-#endif
 
   return Result;
 }
@@ -3897,16 +3893,55 @@ Execute(counted_string FuncName, c_parse_result Scope, meta_func_arg_stream* Rep
 
             case type:
             {
-              if (Replace->Data.Type == type_struct_def)
+              meta_transform_op Transformations = ParseTransformations(&Scope);
+              counted_string TypeName = {};
+              switch (Replace->Data.Type)
               {
-                meta_transform_op Transformations = ParseTransformations(&Scope);
-                counted_string Name = Transform(Transformations, Replace->Data.struct_def->Type, Memory);
-                Append(&OutputBuilder, Name);
+                case type_datatype_noop: { InvalidCodePath(); } break;
+
+                case  type_struct_def:
+                {
+                  TypeName = Replace->Data.struct_def->Type;
+                } break;
+
+                case type_enum_def:
+                {
+                  TypeName = Replace->Data.enum_def->Name;
+                } break;
+
+                case type_enum_member:
+                {
+                  TypeName = Replace->Data.enum_member->Name;
+                } break;
+
+                case type_struct_member:
+                {
+                  switch (Replace->Data.struct_member->Type)
+                  {
+                    case type_struct_member_noop: { InvalidCodePath(); } break;
+
+                    case type_variable:
+                    {
+                      TypeName = Replace->Data.struct_member->variable.Type.Name;
+                    } break;
+
+                    case type_struct_member_function:
+                    {
+                      TypeName = CSz("(function)");
+                    } break;
+
+                    case type_struct_member_anonymous:
+                    {
+                      TypeName = CSz("(anonymous struct/union)");
+                    } break;
+                  }
+
+                } break;
+
               }
-              else
-              {
-                Error("Called .type on non-struct type.");
-              }
+
+              counted_string Name = Transform(Transformations, TypeName, Memory);
+              Append(&OutputBuilder, Name);
             } break;
 
             case name:
@@ -4701,7 +4736,7 @@ Traverse(ast_node* InputNode)
       case type_ast_node_function_call:
       {
         ast_node_function_call *Node = SafeCast(ast_node_function_call, Current);
-        /* DebugPrint(Node); */
+        DebugPrint(Node);
 #if 0
         if (!Node->Prototype)
         {
@@ -4709,7 +4744,7 @@ Traverse(ast_node* InputNode)
           DebugPrint(Node);
         }
 #endif
-      } break;
+      } return;
 
       case type_ast_node_scope:
       {

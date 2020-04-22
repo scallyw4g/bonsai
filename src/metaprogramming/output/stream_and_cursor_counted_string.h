@@ -27,14 +27,12 @@
       counted_string_stream_chunk* Next;
     };
 
-
     
     struct counted_string_stream
     {
       counted_string_stream_chunk* FirstChunk;
       counted_string_stream_chunk* LastChunk;
     };
-
 
 
     
@@ -66,7 +64,6 @@
     {
       Iter->At = Iter->At->Next;
     }
-
 
 
     

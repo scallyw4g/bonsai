@@ -1,82 +1,79 @@
 function void
 DebugPrint(r64 E, u32 Depth = 0)
 {
-  printf("%*f", Depth, E);
+  printf("%*s%f", Depth, "", E);
 }
 
 function void
 DebugPrint(s64 E, u32 Depth = 0)
 {
-  printf("%*ld", Depth, E);
+  printf("%*s%ld", Depth, "", E);
 }
 
 function void
 DebugPrint(u64 E, u32 Depth = 0)
 {
-  printf("%*lu", Depth, E);
+  printf("%*s%lu", Depth, "", E);
 }
 
 function void
 DebugPrint(r32 E, u32 Depth = 0)
 {
-  printf("%*.2f", Depth, E);
+  printf("%*s%.2f", Depth, "", E);
 }
 
 function void
 DebugPrint(s32 E, u32 Depth = 0)
 {
-  printf("%*d", Depth, E);
+  printf("%*s%d", Depth, "", E);
 }
 
 function void
 DebugPrint(u32 E, u32 Depth = 0)
 {
-  printf("%*u", Depth, E);
+  printf("%*s%u", Depth, "", E);
 }
 
 function void
 DebugPrint(volatile void* E, u32 Depth = 0)
 {
-  printf("%*p", Depth, E);
+  printf("%*s%p", Depth, "", E);
 }
 
 function void
 DebugPrint(void* E, u32 Depth = 0)
 {
-  printf("%*p", Depth, E);
+  printf("%*s%p", Depth, "", E);
 }
 
 function void
 DebugPrint(__m128 E, u32 Depth = 0)
 {
-  Depth += 1;
-  printf("%f %f %f %f", E[0], E[1], E[2], E[3]);
+  printf("%*s%f %f %f %f", Depth, "", E[0], E[1], E[2], E[3]);
 }
 
 function void
 DebugPrint(counted_string E, u32 Depth = 0)
 {
-  printf("%*.*s", Depth, (u32)E.Count, E.Start);
+  printf("%*s%.*s", Depth, "", (u32)E.Count, E.Start);
 }
 
 function void
 DebugPrint(const char* E, u32 Depth = 0)
 {
-  u32 SLen = (u32)Length(E);
-  u32 Pad = SLen + Depth;
-  printf("%*s", Pad, E);
+  printf("%*s%s", Depth, "", E);
 }
 
 function void
 DebugPrint(native_mutex E, u32 Depth = 0)
 {
-  printf("(mutex) : (%u) ? %u", *(u32*)&E, Depth);
+  printf("%*smutex(%u)", Depth, "", *(u32*)&E);
 }
 
 function void
 DebugPrint(semaphore E, u32 Depth = 0)
 {
-  printf("(semaphore) : (%u) ? %u", *(u32*)&E, Depth);
+  printf("%*ssemaphore(%u)", Depth, "", *(u32*)&E);
 }
 
 meta(
@@ -93,7 +90,7 @@ meta(
 meta( named_list(unprintable_datatypes) { counted_string })
 
 // TODO(Jesse id: 185, tags: bug, high_priority): these should be printable!
-meta( named_list(buggy_datatypes) { thread_startup_params network_connection debug_state perlin_noise })
+meta( named_list(buggy_datatypes) { debug_timed_function thread_startup_params network_connection debug_state perlin_noise })
 
 meta(
   for_datatypes(all)
@@ -119,39 +116,31 @@ meta(
   {
     function void DebugPrint( (StructDef.name) S, u32 Depth)
     {
-      DebugPrint("(StructDef.name)\n", Depth);
+      DebugPrint("(StructDef.name) {\n", Depth);
       (
         StructDef.map_members (Member)
         {
-          DebugPrint("(Member.name) = ", Depth);
-          DebugPrint(S.(Member.name), Depth+1);
+          DebugPrint("(Member.type) (Member.name) {\n", Depth+2);
+          DebugPrint(S.(Member.name), Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
           DebugPrint("\n");
         }
       )
+      DebugPrint("}\n", Depth);
     }
 
-    function void DebugPrint((StructDef.name)* S, u32 Depth)
+    function void DebugPrint( (StructDef.name) *S, u32 Depth)
     {
-      if (S)
-      {
-        DebugPrint("(StructDef.name)\n", Depth);
-        (
-          StructDef.map_members (Member)
-          {
-            DebugPrint("(Member.name) = ", Depth);
-            DebugPrint(S->(Member.name), Depth+1);
-            DebugPrint("\n");
-          }
-        )
-      }
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
     }
   }
 
   func (EnumDef)
   {
-    function void DebugPrint((EnumDef.name) EnumValue, u32 Depth)
+    function void DebugPrint( (EnumDef.name) EnumValue, u32 Depth)
     {
-      DebugPrint("(EnumDef.name)\n", Depth);
       switch (EnumValue)
       {
         (
@@ -159,7 +148,7 @@ meta(
           {
             case (ValueDef.name):
             {
-              DebugPrint("(ValueDef.name)");
+              DebugPrint("(ValueDef.name) ", Depth);
               DebugPrint("(ValueDef.value)");
             } break;
           }

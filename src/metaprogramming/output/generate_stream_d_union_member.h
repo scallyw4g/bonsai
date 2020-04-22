@@ -6,14 +6,12 @@
       d_union_member_stream_chunk* Next;
     };
 
-
     
     struct d_union_member_stream
     {
       d_union_member_stream_chunk* FirstChunk;
       d_union_member_stream_chunk* LastChunk;
     };
-
 
 
     
@@ -45,7 +43,6 @@
     {
       Iter->At = Iter->At->Next;
     }
-
 
 
     

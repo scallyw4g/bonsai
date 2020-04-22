@@ -347,7 +347,7 @@ function RunEntireBuild {
 
 DumpSourceFilesAndQuit=0
 
-CheckoutMetaOutput=1
+CheckoutMetaOutput=0
 
 FirstPreprocessor=1
 BuildPreprocessor=1

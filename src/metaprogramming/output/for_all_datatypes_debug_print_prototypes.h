@@ -41,9 +41,6 @@
       function void DebugPrint( debug_draw_call* S, u32 Depth = 0);
       function void DebugPrint( debug_draw_call  S, u32 Depth = 0);
 
-      function void DebugPrint( debug_timed_function* S, u32 Depth = 0);
-      function void DebugPrint( debug_timed_function  S, u32 Depth = 0);
-
       function void DebugPrint( window_layout* S, u32 Depth = 0);
       function void DebugPrint( window_layout  S, u32 Depth = 0);
 
@@ -682,6 +679,15 @@
 
       function void DebugPrint( ast_node* S, u32 Depth = 0);
       function void DebugPrint( ast_node  S, u32 Depth = 0);
+
+      function void DebugPrint( ast_node_stream_chunk* S, u32 Depth = 0);
+      function void DebugPrint( ast_node_stream_chunk  S, u32 Depth = 0);
+
+      function void DebugPrint( ast_node_stream* S, u32 Depth = 0);
+      function void DebugPrint( ast_node_stream  S, u32 Depth = 0);
+
+      function void DebugPrint( ast_node_iterator* S, u32 Depth = 0);
+      function void DebugPrint( ast_node_iterator  S, u32 Depth = 0);
 
       function void DebugPrint( function_def_stream_chunk* S, u32 Depth = 0);
       function void DebugPrint( function_def_stream_chunk  S, u32 Depth = 0);

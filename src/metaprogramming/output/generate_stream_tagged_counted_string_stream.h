@@ -6,14 +6,12 @@
       tagged_counted_string_stream_stream_chunk* Next;
     };
 
-
     
     struct tagged_counted_string_stream_stream
     {
       tagged_counted_string_stream_stream_chunk* FirstChunk;
       tagged_counted_string_stream_stream_chunk* LastChunk;
     };
-
 
 
     
@@ -45,7 +43,6 @@
     {
       Iter->At = Iter->At->Next;
     }
-
 
 
     

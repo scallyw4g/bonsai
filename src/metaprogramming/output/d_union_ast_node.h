@@ -15,7 +15,7 @@ enum ast_node_type
 struct ast_node
 {
   ast_node_type Type;
-  Next umm;
+  umm Next;
 
   union
   {

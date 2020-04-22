@@ -6,14 +6,12 @@
       ast_node_variable_def_stream_chunk* Next;
     };
 
-
     
     struct ast_node_variable_def_stream
     {
       ast_node_variable_def_stream_chunk* FirstChunk;
       ast_node_variable_def_stream_chunk* LastChunk;
     };
-
 
 
     
@@ -45,7 +43,6 @@
     {
       Iter->At = Iter->At->Next;
     }
-
 
 
     

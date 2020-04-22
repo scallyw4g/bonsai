@@ -6,14 +6,12 @@
       tag_stream_chunk* Next;
     };
 
-
     
     struct tag_stream
     {
       tag_stream_chunk* FirstChunk;
       tag_stream_chunk* LastChunk;
     };
-
 
 
     
@@ -45,7 +43,6 @@
     {
       Iter->At = Iter->At->Next;
     }
-
 
 
     

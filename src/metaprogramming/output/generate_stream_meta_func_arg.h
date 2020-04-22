@@ -6,14 +6,12 @@
       meta_func_arg_stream_chunk* Next;
     };
 
-
     
     struct meta_func_arg_stream
     {
       meta_func_arg_stream_chunk* FirstChunk;
       meta_func_arg_stream_chunk* LastChunk;
     };
-
 
 
     
@@ -45,7 +43,6 @@
     {
       Iter->At = Iter->At->Next;
     }
-
 
 
     

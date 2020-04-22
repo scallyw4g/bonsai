@@ -6,14 +6,12 @@
       person_stream_chunk* Next;
     };
 
-
     
     struct person_stream
     {
       person_stream_chunk* FirstChunk;
       person_stream_chunk* LastChunk;
     };
-
 
 
     
@@ -45,7 +43,6 @@
     {
       Iter->At = Iter->At->Next;
     }
-
 
 
     

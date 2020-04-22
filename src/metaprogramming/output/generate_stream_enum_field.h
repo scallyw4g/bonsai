@@ -6,14 +6,12 @@
       enum_member_stream_chunk* Next;
     };
 
-
     
     struct enum_member_stream
     {
       enum_member_stream_chunk* FirstChunk;
       enum_member_stream_chunk* LastChunk;
     };
-
 
 
     
@@ -45,7 +43,6 @@
     {
       Iter->At = Iter->At->Next;
     }
-
 
 
     

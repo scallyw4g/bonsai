@@ -6,14 +6,12 @@
       variable_stream_chunk* Next;
     };
 
-
     
     struct variable_stream
     {
       variable_stream_chunk* FirstChunk;
       variable_stream_chunk* LastChunk;
     };
-
 
 
     
@@ -45,7 +43,6 @@
     {
       Iter->At = Iter->At->Next;
     }
-
 
 
     
