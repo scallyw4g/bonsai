@@ -137,6 +137,9 @@
       function void DebugPrint( struct_member_anonymous* S, u32 Depth = 0);
       function void DebugPrint( struct_member_anonymous  S, u32 Depth = 0);
 
+      function void DebugPrint( type_spec* S, u32 Depth = 0);
+      function void DebugPrint( type_spec  S, u32 Depth = 0);
+
       function void DebugPrint( variable* S, u32 Depth = 0);
       function void DebugPrint( variable  S, u32 Depth = 0);
 
@@ -175,6 +178,9 @@
 
       function void DebugPrint( person* S, u32 Depth = 0);
       function void DebugPrint( person  S, u32 Depth = 0);
+
+      function void DebugPrint( ast_node_access* S, u32 Depth = 0);
+      function void DebugPrint( ast_node_access  S, u32 Depth = 0);
 
       function void DebugPrint( ast_node_function_call* S, u32 Depth = 0);
       function void DebugPrint( ast_node_function_call  S, u32 Depth = 0);

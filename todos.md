@@ -1,11 +1,10 @@
 # Jesse
   ## untagged
     - #154 This is pretty shitty because whenever we copy one of these structs this field has to be manually zeroed out ..
-    - #217 Disallow namespaces
+    - #217 Disallow namespaces?
     - #197 Have some way of coalescing this to our internal types?
     - #198 Do we ignore this?
     - #207 Emit domain-specific warning here?
-    - #220 Disallow namespaces
     - #212 Should we check that the function was defined using the 'function' or 'exported_function' keywords and emit a warning otherwise?
     - #235 Does this belong here?
     - #240 Do we want to store this value?
@@ -14,8 +13,8 @@
     - #243 AST Node type for these keywords
     - #244 AST Node type for return value
     - #245 Change to variable_def or variable_decl
-    - #250 Get arg types if we care?
     - #251 Implement this..
+    - #252 These are mutually exclusive .. merge them?
 
   ## immediate
     - #83 d_union-ify this
@@ -91,7 +90,6 @@
     - #99 Generate this?  Need a compiler feature to generate stuff from primitive types.
     - #100 Do we actually want this in here?
     - #192 This is a function call or macro .. make sure it's actually constant.
-    - #221 This is a function constructor, let's be done.
     - #200 Floating-point values should be parsed out in TokenizeAnsiStream()!!
     - #205 To do this properly, we need to parse out and expand macro definitions here.
     - #210 This is a function-macro call .. I think always..?
@@ -325,7 +323,6 @@
     - #213 There is a degenerate case here, what if the file ends without a newline? While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
     - #214 There is a degenerate case here, what if the file ends with a malformed comment? While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
     - #192 This is a function call or macro .. make sure it's actually constant.
-    - #221 This is a function constructor, let's be done.
     - #200 Floating-point values should be parsed out in TokenizeAnsiStream()!!
     - #189 Parse out function names?
     - #222 Re-add [[nodiscard]] here
@@ -348,9 +345,6 @@
   ## needs_tests
     - #213 There is a degenerate case here, what if the file ends without a newline? While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
     - #214 There is a degenerate case here, what if the file ends with a malformed comment? While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
-
-  ## hack
-    - #221 This is a function constructor, let's be done.
 
   ## todos
     - #225 Rewrite with string_from_parser

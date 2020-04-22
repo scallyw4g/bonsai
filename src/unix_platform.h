@@ -141,12 +141,12 @@ typedef XID GLXWindow;
 typedef XID GLXPbuffer;
 
 exported_function XVisualInfo* glXChooseVisual( Display *dpy, s32 screen, s32 *attribList );
-exported_function GLXFBConfig *glXChooseFBConfig( Display *dpy, s32 screen, const s32 *attribList, s32 *nitems );
+exported_function GLXFBConfig* glXChooseFBConfig( Display *dpy, s32 screen, const s32 *attribList, s32 *nitems );
 exported_function void (*glXGetProcAddress(const u8 *procname))( void );
 exported_function Bool glXMakeCurrent( Display *dpy, GLXDrawable drawable, GLXContext ctx);
 exported_function void glXSwapBuffers( Display *dpy, GLXDrawable drawable );
 
-typedef GLXContext ( *PFNGLXCREATECONTEXTATTRIBSARBPROC) (Display *dpy, GLXFBConfig config, GLXContext share_context, Bool direct, const s32 *attrib_list);
+typedef GLXContext (*PFNGLXCREATECONTEXTATTRIBSARBPROC) (Display *dpy, GLXFBConfig config, GLXContext share_context, Bool direct, const s32 *attrib_list);
 
 typedef void ( *PFNGLXSWAPINTERVALEXTPROC) (Display *dpy, GLXDrawable drawable, s32 s32);
 typedef PFNGLXSWAPINTERVALEXTPROC PFNSWAPINTERVALPROC;

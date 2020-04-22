@@ -2033,14 +2033,10 @@
       }
     }
 
-    function void DebugPrint( variable S, u32 Depth)
+    function void DebugPrint( type_spec S, u32 Depth)
     {
-      DebugPrint("variable\n", Depth);
+      DebugPrint("type_spec\n", Depth);
       
-          DebugPrint("Type = ", Depth);
-          DebugPrint(S.Type, Depth+1);
-          DebugPrint("\n");
-
           DebugPrint("Name = ", Depth);
           DebugPrint(S.Name, Depth+1);
           DebugPrint("\n");
@@ -2065,56 +2061,159 @@
           DebugPrint(S.Const, Depth+1);
           DebugPrint("\n");
 
-          DebugPrint("IsVariadic = ", Depth);
-          DebugPrint(S.IsVariadic, Depth+1);
+          DebugPrint("ThreadLocal = ", Depth);
+          DebugPrint(S.ThreadLocal, Depth+1);
           DebugPrint("\n");
 
           DebugPrint("IsMetaTemplateVar = ", Depth);
           DebugPrint(S.IsMetaTemplateVar, Depth+1);
           DebugPrint("\n");
 
-          DebugPrint("IsStatic = ", Depth);
-          DebugPrint(S.IsStatic, Depth+1);
-          DebugPrint("\n");
-
-          DebugPrint("Inline = ", Depth);
-          DebugPrint(S.Inline, Depth+1);
-          DebugPrint("\n");
-
-          DebugPrint("IsTemplateFunction = ", Depth);
-          DebugPrint(S.IsTemplateFunction, Depth+1);
-          DebugPrint("\n");
-
-          DebugPrint("IsConstructor = ", Depth);
-          DebugPrint(S.IsConstructor, Depth+1);
-          DebugPrint("\n");
-
-          DebugPrint("ThreadLocal = ", Depth);
-          DebugPrint(S.ThreadLocal, Depth+1);
-          DebugPrint("\n");
-
           DebugPrint("IsFunction = ", Depth);
           DebugPrint(S.IsFunction, Depth+1);
-          DebugPrint("\n");
-
-          DebugPrint("IsExported = ", Depth);
-          DebugPrint(S.IsExported, Depth+1);
           DebugPrint("\n");
 
           DebugPrint("IsOperator = ", Depth);
           DebugPrint(S.IsOperator, Depth+1);
           DebugPrint("\n");
 
-          DebugPrint("FnPointerDef = ", Depth);
-          DebugPrint(S.FnPointerDef, Depth+1);
+          DebugPrint("IsConstructor = ", Depth);
+          DebugPrint(S.IsConstructor, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Inline = ", Depth);
+          DebugPrint(S.Inline, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("IsStatic = ", Depth);
+          DebugPrint(S.IsStatic, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("IsExported = ", Depth);
+          DebugPrint(S.IsExported, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("IsTemplateFunction = ", Depth);
+          DebugPrint(S.IsTemplateFunction, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("TemplateSource = ", Depth);
+          DebugPrint(S.TemplateSource, Depth+1);
           DebugPrint("\n");
 
           DebugPrint("Namespace = ", Depth);
           DebugPrint(S.Namespace, Depth+1);
           DebugPrint("\n");
 
-          DebugPrint("TemplateSource = ", Depth);
-          DebugPrint(S.TemplateSource, Depth+1);
+          DebugPrint("SourceText = ", Depth);
+          DebugPrint(S.SourceText, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(type_spec* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("type_spec\n", Depth);
+        
+            DebugPrint("Name = ", Depth);
+            DebugPrint(S->Name, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("IndirectionLevel = ", Depth);
+            DebugPrint(S->IndirectionLevel, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("ReferenceLevel = ", Depth);
+            DebugPrint(S->ReferenceLevel, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Unsigned = ", Depth);
+            DebugPrint(S->Unsigned, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Volatile = ", Depth);
+            DebugPrint(S->Volatile, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Const = ", Depth);
+            DebugPrint(S->Const, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("ThreadLocal = ", Depth);
+            DebugPrint(S->ThreadLocal, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("IsMetaTemplateVar = ", Depth);
+            DebugPrint(S->IsMetaTemplateVar, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("IsFunction = ", Depth);
+            DebugPrint(S->IsFunction, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("IsOperator = ", Depth);
+            DebugPrint(S->IsOperator, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("IsConstructor = ", Depth);
+            DebugPrint(S->IsConstructor, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Inline = ", Depth);
+            DebugPrint(S->Inline, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("IsStatic = ", Depth);
+            DebugPrint(S->IsStatic, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("IsExported = ", Depth);
+            DebugPrint(S->IsExported, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("IsTemplateFunction = ", Depth);
+            DebugPrint(S->IsTemplateFunction, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("TemplateSource = ", Depth);
+            DebugPrint(S->TemplateSource, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Namespace = ", Depth);
+            DebugPrint(S->Namespace, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("SourceText = ", Depth);
+            DebugPrint(S->SourceText, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( variable S, u32 Depth)
+    {
+      DebugPrint("variable\n", Depth);
+      
+          DebugPrint("Type = ", Depth);
+          DebugPrint(S.Type, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Name = ", Depth);
+          DebugPrint(S.Name, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("IsVariadic = ", Depth);
+          DebugPrint(S.IsVariadic, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Namespace = ", Depth);
+          DebugPrint(S.Namespace, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("FnPointerDef = ", Depth);
+          DebugPrint(S.FnPointerDef, Depth+1);
           DebugPrint("\n");
 
           DebugPrint("StaticBufferSize = ", Depth);
@@ -2141,76 +2240,16 @@
             DebugPrint(S->Name, Depth+1);
             DebugPrint("\n");
 
-            DebugPrint("IndirectionLevel = ", Depth);
-            DebugPrint(S->IndirectionLevel, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("ReferenceLevel = ", Depth);
-            DebugPrint(S->ReferenceLevel, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("Unsigned = ", Depth);
-            DebugPrint(S->Unsigned, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("Volatile = ", Depth);
-            DebugPrint(S->Volatile, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("Const = ", Depth);
-            DebugPrint(S->Const, Depth+1);
-            DebugPrint("\n");
-
             DebugPrint("IsVariadic = ", Depth);
             DebugPrint(S->IsVariadic, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("IsMetaTemplateVar = ", Depth);
-            DebugPrint(S->IsMetaTemplateVar, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("IsStatic = ", Depth);
-            DebugPrint(S->IsStatic, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("Inline = ", Depth);
-            DebugPrint(S->Inline, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("IsTemplateFunction = ", Depth);
-            DebugPrint(S->IsTemplateFunction, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("IsConstructor = ", Depth);
-            DebugPrint(S->IsConstructor, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("ThreadLocal = ", Depth);
-            DebugPrint(S->ThreadLocal, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("IsFunction = ", Depth);
-            DebugPrint(S->IsFunction, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("IsExported = ", Depth);
-            DebugPrint(S->IsExported, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("IsOperator = ", Depth);
-            DebugPrint(S->IsOperator, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("FnPointerDef = ", Depth);
-            DebugPrint(S->FnPointerDef, Depth+1);
             DebugPrint("\n");
 
             DebugPrint("Namespace = ", Depth);
             DebugPrint(S->Namespace, Depth+1);
             DebugPrint("\n");
 
-            DebugPrint("TemplateSource = ", Depth);
-            DebugPrint(S->TemplateSource, Depth+1);
+            DebugPrint("FnPointerDef = ", Depth);
+            DebugPrint(S->FnPointerDef, Depth+1);
             DebugPrint("\n");
 
             DebugPrint("StaticBufferSize = ", Depth);
@@ -2647,6 +2686,29 @@
 
             DebugPrint("Tags = ", Depth);
             DebugPrint(S->Tags, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( ast_node_access S, u32 Depth)
+    {
+      DebugPrint("ast_node_access\n", Depth);
+      
+          DebugPrint("AccessedName = ", Depth);
+          DebugPrint(S.AccessedName, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(ast_node_access* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("ast_node_access\n", Depth);
+        
+            DebugPrint("AccessedName = ", Depth);
+            DebugPrint(S->AccessedName, Depth+1);
             DebugPrint("\n");
 
       }
@@ -9630,8 +9692,8 @@
           DebugPrint(S.Type, Depth+1);
           DebugPrint("\n");
 
-          DebugPrint("Next = ", Depth);
-          DebugPrint(S.Next, Depth+1);
+          DebugPrint("umm = ", Depth);
+          DebugPrint(S.umm, Depth+1);
           DebugPrint("\n");
 
     }
@@ -9646,8 +9708,8 @@
             DebugPrint(S->Type, Depth+1);
             DebugPrint("\n");
 
-            DebugPrint("Next = ", Depth);
-            DebugPrint(S->Next, Depth+1);
+            DebugPrint("umm = ", Depth);
+            DebugPrint(S->umm, Depth+1);
             DebugPrint("\n");
 
       }
@@ -11903,6 +11965,12 @@
             case type_ast_node_noop:
             {
               DebugPrint("type_ast_node_noop");
+              DebugPrint("");
+            } break;
+
+            case type_ast_node_access:
+            {
+              DebugPrint("type_ast_node_access");
               DebugPrint("");
             } break;
 

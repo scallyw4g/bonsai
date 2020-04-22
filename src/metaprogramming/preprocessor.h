@@ -400,9 +400,8 @@ struct struct_member_anonymous
   struct_def Body;
 };
 
-struct variable // TODO(Jesse id: 245): Change to variable_def or variable_decl
+struct type_spec
 {
-  counted_string Type;
   counted_string Name;
 
   u32 IndirectionLevel;
@@ -412,20 +411,35 @@ struct variable // TODO(Jesse id: 245): Change to variable_def or variable_decl
   b32 Unsigned;
   b32 Volatile;
   b32 Const;
-  b32 IsVariadic;
-  b32 IsMetaTemplateVar;
-  b32 IsStatic;
-  b32 Inline;
-  b32 IsTemplateFunction;
-  b32 IsConstructor;
   b32 ThreadLocal;
+
+  b32 IsMetaTemplateVar;
+
   b32 IsFunction;
-  b32 IsExported;
   b32 IsOperator;
+  b32 IsConstructor;
+  b32 Inline;
+
+  b32 IsStatic; // TODO(Jesse id: 252): These are mutually exclusive .. merge them?
+  b32 IsExported;
+
+  b32 IsTemplateFunction;        // Ick..
+  counted_string TemplateSource; // Ick..
+  counted_string Namespace;      // Ick..
+
+  counted_string SourceText;
+};
+
+struct variable // TODO(Jesse id: 245): Change to variable_def or variable_decl
+{
+  type_spec Type;
+  counted_string Name;
+
+  b32 IsVariadic;
+
+  counted_string Namespace; // Ick..
 
   counted_string FnPointerDef;
-  counted_string Namespace;
-  counted_string TemplateSource;
   counted_string StaticBufferSize;
   counted_string SourceText;
 };
@@ -635,6 +649,11 @@ meta(generate_stream(person))
 struct ast_node;
 struct function_def;
 
+struct ast_node_access
+{
+  counted_string AccessedName;
+};
+
 struct ast_node_function_call
 {
   function_def *Prototype;
@@ -684,16 +703,18 @@ struct ast_node_ignored
 };
 
 meta(
-  d_union ast_node {
-                     ast_node_function_call
-                     ast_node_scope
-                     ast_node_assignment
-                     ast_node_address_of
-                     ast_node_initializer_list
-                     ast_node_ignored
-                     ast_node_preprocessor_directive
-                     ast_node_variable_def
-                   },
+  d_union ast_node
+  {
+    ast_node_access
+    ast_node_function_call
+    ast_node_scope
+    ast_node_assignment
+    ast_node_address_of
+    ast_node_initializer_list
+    ast_node_ignored
+    ast_node_preprocessor_directive
+    ast_node_variable_def
+  },
   {
     umm Next // TODO(Jesse): This needs to support pointers!
   }

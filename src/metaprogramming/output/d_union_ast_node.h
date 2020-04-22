@@ -1,6 +1,7 @@
 enum ast_node_type
 {
   type_ast_node_noop,
+  type_ast_node_access,
   type_ast_node_function_call,
   type_ast_node_scope,
   type_ast_node_assignment,
@@ -14,10 +15,11 @@ enum ast_node_type
 struct ast_node
 {
   ast_node_type Type;
-  umm Next;
+  Next umm;
 
   union
   {
+    ast_node_access ast_node_access;
     ast_node_function_call ast_node_function_call;
     ast_node_scope ast_node_scope;
     ast_node_assignment ast_node_assignment;
