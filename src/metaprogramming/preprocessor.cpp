@@ -1013,7 +1013,14 @@ RequireToken(c_parse_result* Parser, c_token ExpectedToken)
     }
     else
     {
-      OutputParsingError(Parser, Parser->Tokens.End, ExpectedToken, CS("Stream ended unexpectedly"));
+      if (Parser->Tokens.At-1 >= Parser->Tokens.Start)
+      {
+        OutputParsingError(Parser, Parser->Tokens.At-1, ExpectedToken, FormatCountedString(TranArena, CSz("Stream ended unexpectedly in file : %S"), Parser->Filename));
+      }
+      else
+      {
+        OutputParsingError(Parser, Parser->Tokens.At, ExpectedToken, FormatCountedString(TranArena, CSz("Stream ended unexpectedly in file : %S"), Parser->Filename));
+      }
     }
 
     Parser->Valid = False;
@@ -1460,9 +1467,12 @@ EatBetween(c_parse_result* Parser, c_token_type Open, c_token_type Close)
 {
   string_from_parser Builder = StartStringFromParser(Parser);
 
+  c_token *StartToken = PeekTokenPointer(Parser);
+
   u32 Depth = 0;
   RequireToken(Parser, Open);
 
+  b32 Success = False;
   while (Parser->Valid && Remaining(&Parser->Tokens))
   {
     c_token T = PopToken(Parser);
@@ -1474,9 +1484,19 @@ EatBetween(c_parse_result* Parser, c_token_type Open, c_token_type Close)
 
     if (T.Type == Close)
     {
-      if (Depth == 0) break;
+      if (Depth == 0)
+      {
+        Success = True;
+        break;
+      }
       --Depth;
     }
+  }
+
+  if (!Success)
+  {
+    OutputParsingError(Parser, StartToken, FormatCountedString(TranArena, CSz("Unable to find closing token %S"), ToString(Close)));
+    Parser->Valid = False;
   }
 
   counted_string Result = FinalizeStringFromParser(&Builder, Parser);
@@ -2314,6 +2334,7 @@ ParseTypeSpecifier(c_parse_result *Parser)
 
       } break;
 
+      case CTokenType_Comma:
       case CTokenType_Semicolon:
       case CTokenType_CloseParen:
       {
@@ -2724,10 +2745,9 @@ function ast_node*
 ParseFunctionArgument(c_parse_result *Parser, memory_arena *Memory, function_def_stream *FunctionPrototypes, ast_node_variable_def_stream *Locals);
 
 function void
-ReduceToTypeSpec(ast_node* InputNode, ast_node_variable_def_stream *Locals, type_spec *Result)
+ReduceToTypeSpec(ast_node* InputNode, ast_node_variable_def_stream *Locals, type_spec *ResultType)
 {
   *Locals;
-  *Result;
 
   ast_node* Current = InputNode;
 
@@ -2739,17 +2759,45 @@ ReduceToTypeSpec(ast_node* InputNode, ast_node_variable_def_stream *Locals, type
 
       case type_ast_node_symbol:
       {
-        ast_node_symbol *Node = SafeCast(ast_node_symbol, Current);
-        Assert(Node->Token.Type == CTokenType_Identifier);
-        ast_node_variable_def *Definition = GetByTypeName(Node->Token.Value, Locals);
+        ast_node_symbol *Symbol = SafeCast(ast_node_symbol, Current);
+        Assert(Symbol->Token.Type == CTokenType_Identifier);
+        ast_node_variable_def *LocalVarDecl = GetByTypeName(Symbol->Token.Value, Locals);
+
+        if (ResultType->Name.Count)
+        {
+          if (LocalVarDecl)
+          {
+            if (StringsMatch(ResultType->Name, LocalVarDecl->Decl.Type.Name))
+            {
+            }
+            else
+            {
+              Error("Type mismatch");
+              RuntimeBreak();
+            }
+          }
+          else
+          {
+            Error("Unable to find local variable decl");
+          }
+        }
+        else
+        {
+          if (LocalVarDecl)
+          {
+            ResultType->Name = LocalVarDecl->Decl.Type.Name;
+          }
+          else
+          {
+            Error("Unable to find local variable decl");
+          }
+        }
+
       } break;
 
       case type_ast_node_function_call:
       {
         ast_node_function_call *Node = SafeCast(ast_node_function_call, Current);
-#if 0
-        DebugPrint(Node);
-#endif
       } return;
 
       case type_ast_node_scope:
@@ -3046,6 +3094,13 @@ ParseConstantAst(c_parse_result *Parser, memory_arena *Memory, program_datatypes
   return Result;
 }
 
+function b32
+IsATypeIdentifier(counted_string TypeName, program_datatypes *Datatypes)
+{
+  b32 Result = GetDatatypeByName(Datatypes, TypeName).Type != type_datatype_noop;
+  return Result;
+}
+
 function ast_node*
 ParseAst(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Datatypes, ast_node_variable_def_stream *Locals)
 {
@@ -3080,21 +3135,55 @@ ParseAst(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Dataty
         }
         else
         {
-          counted_string Identifier = RequireToken(Parser, CTokenType_Identifier).Value;
+
+          c_token SymbolToken = RequireToken(Parser, CTokenType_Identifier);
           if ( PeekToken(Parser).Type == CTokenType_LT )
           {
-            // Has template args.. do we care?  Probably not
-            EatBetween(Parser, CTokenType_LT, CTokenType_GT);
+            b32 ValidTemplateList = True;
+            u32 Lookahead = 0;
+            while (++Lookahead) // Intentionally starts at 1
+            {
+              c_token TemplateParamListTestT = PeekToken(Parser, Lookahead);
+              if (TemplateParamListTestT.Type == CTokenType_Identifier)
+              {
+                if (IsATypeIdentifier(TemplateParamListTestT.Value, Datatypes))
+                {
+                }
+                else
+                {
+                  ValidTemplateList = False;
+                  break;
+                }
+              }
+              else if (TemplateParamListTestT.Type == CTokenType_Comma)
+              {
+              }
+              else if (TemplateParamListTestT.Type == CTokenType_GT)
+              {
+                break;
+              }
+              else
+              {
+                ValidTemplateList = False;
+                break;
+              }
+            }
+
+            if (ValidTemplateList)
+            {
+              EatBetween(Parser, CTokenType_LT, CTokenType_GT);
+            }
+
           }
 
           if ( PeekToken(Parser).Type  == CTokenType_OpenParen )
           {
-            *Current = ParseFunctionCall(Parser, Identifier, Memory, &Datatypes->Functions, Locals);
+            *Current = ParseFunctionCall(Parser, SymbolToken.Value, Memory, &Datatypes->Functions, Locals);
           }
           else
           {
             ast_node_symbol *Node = AllocateAndCastTo(ast_node_symbol, Current, Memory);
-            Node->Token = CToken(Identifier);
+            Node->Token = SymbolToken;
           }
         }
       } break;

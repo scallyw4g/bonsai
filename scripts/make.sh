@@ -304,7 +304,7 @@ function RunEntireBuild {
 
   if [ $DumpSourceFilesAndQuit == 1 ]; then
     SetSourceFiles
-    echo $SOURCE_FILES
+    echo "gdb --args bin/preprocessor_dev" $SOURCE_FILES
     exit 1
   fi
 
@@ -347,9 +347,9 @@ function RunEntireBuild {
 
 DumpSourceFilesAndQuit=0
 
-CheckoutMetaOutput=0
+CheckoutMetaOutput=1
 
-FirstPreprocessor=0
+FirstPreprocessor=1
 BuildPreprocessor=1
 SecondPreprocessor=1
 
