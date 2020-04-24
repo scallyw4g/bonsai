@@ -112,8 +112,6 @@
 
             case CTokenType_Return: { Result = CSz("CTokenType_Return"); } break;
 
-            case CTokenType_This: { Result = CSz("CTokenType_This"); } break;
-
             case CTokenType_LeftShift: { Result = CSz("CTokenType_LeftShift"); } break;
 
             case CTokenType_RightShift: { Result = CSz("CTokenType_RightShift"); } break;

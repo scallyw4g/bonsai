@@ -2098,12 +2098,18 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
-    function void DebugPrint( ast_node_access S, u32 Depth)
+    function void DebugPrint( ast_node_expression S, u32 Depth)
     {
-      DebugPrint("ast_node_access {\n", Depth);
+      DebugPrint("ast_node_expression {\n", Depth);
       
-          DebugPrint("counted_string AccessedName {\n", Depth+2);
-          DebugPrint(S.AccessedName, Depth+4);
+          DebugPrint("ast_node Value {\n", Depth+2);
+          DebugPrint(S.Value, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("ast_node Next {\n", Depth+2);
+          DebugPrint(S.Next, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
@@ -2111,7 +2117,38 @@
       DebugPrint("}\n", Depth);
     }
 
-    function void DebugPrint( ast_node_access *S, u32 Depth)
+    function void DebugPrint( ast_node_expression *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( ast_node_statement S, u32 Depth)
+    {
+      DebugPrint("ast_node_statement {\n", Depth);
+      
+          DebugPrint("ast_node_expression LHS {\n", Depth+2);
+          DebugPrint(S.LHS, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("ast_node_expression RHS {\n", Depth+2);
+          DebugPrint(S.RHS, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("ast_node_statement Next {\n", Depth+2);
+          DebugPrint(S.Next, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( ast_node_statement *S, u32 Depth)
     {
       if (S) { DebugPrint(*S, Depth); }
       else { DebugPrint("ptr(0)", Depth); }
@@ -2123,6 +2160,12 @@
       
           DebugPrint("function_def Prototype {\n", Depth+2);
           DebugPrint(S.Prototype, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("ast_node_expression Args {\n", Depth+2);
+          DebugPrint(S.Args, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
@@ -2167,31 +2210,12 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
-    function void DebugPrint( ast_node_preprocessor_directive S, u32 Depth)
-    {
-      DebugPrint("ast_node_preprocessor_directive {\n", Depth);
-      
-          DebugPrint("ast_node Children {\n", Depth+2);
-          DebugPrint(S.Children, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-      DebugPrint("}\n", Depth);
-    }
-
-    function void DebugPrint( ast_node_preprocessor_directive *S, u32 Depth)
-    {
-      if (S) { DebugPrint(*S, Depth); }
-      else { DebugPrint("ptr(0)", Depth); }
-    }
-
     function void DebugPrint( ast_node_scope S, u32 Depth)
     {
       DebugPrint("ast_node_scope {\n", Depth);
       
-          DebugPrint("ast_node Children {\n", Depth+2);
-          DebugPrint(S.Children, Depth+4);
+          DebugPrint("ast_node_statement FirstStatement {\n", Depth+2);
+          DebugPrint(S.FirstStatement, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
@@ -2205,12 +2229,12 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
-    function void DebugPrint( ast_node_assignment S, u32 Depth)
+    function void DebugPrint( ast_node_parenthesized S, u32 Depth)
     {
-      DebugPrint("ast_node_assignment {\n", Depth);
+      DebugPrint("ast_node_parenthesized {\n", Depth);
       
-          DebugPrint("ast_node RHS {\n", Depth+2);
-          DebugPrint(S.RHS, Depth+4);
+          DebugPrint("ast_node_expression Expr {\n", Depth+2);
+          DebugPrint(S.Expr, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
@@ -2218,26 +2242,7 @@
       DebugPrint("}\n", Depth);
     }
 
-    function void DebugPrint( ast_node_assignment *S, u32 Depth)
-    {
-      if (S) { DebugPrint(*S, Depth); }
-      else { DebugPrint("ptr(0)", Depth); }
-    }
-
-    function void DebugPrint( ast_node_address_of S, u32 Depth)
-    {
-      DebugPrint("ast_node_address_of {\n", Depth);
-      
-          DebugPrint("ast_node Operand {\n", Depth+2);
-          DebugPrint(S.Operand, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-      DebugPrint("}\n", Depth);
-    }
-
-    function void DebugPrint( ast_node_address_of *S, u32 Depth)
+    function void DebugPrint( ast_node_parenthesized *S, u32 Depth)
     {
       if (S) { DebugPrint(*S, Depth); }
       else { DebugPrint("ptr(0)", Depth); }
@@ -2247,8 +2252,8 @@
     {
       DebugPrint("ast_node_initializer_list {\n", Depth);
       
-          DebugPrint("u32 Thing {\n", Depth+2);
-          DebugPrint(S.Thing, Depth+4);
+          DebugPrint("u32 Ignored {\n", Depth+2);
+          DebugPrint(S.Ignored, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
@@ -2262,12 +2267,62 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
+    function void DebugPrint( ast_node_operator S, u32 Depth)
+    {
+      DebugPrint("ast_node_operator {\n", Depth);
+      
+          DebugPrint("ast_node_expression Operand {\n", Depth+2);
+          DebugPrint(S.Operand, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("c_token Token {\n", Depth+2);
+          DebugPrint(S.Token, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( ast_node_operator *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( ast_node_literal S, u32 Depth)
+    {
+      DebugPrint("ast_node_literal {\n", Depth);
+      
+          DebugPrint("c_token Token {\n", Depth+2);
+          DebugPrint(S.Token, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( ast_node_literal *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
     function void DebugPrint( ast_node_symbol S, u32 Depth)
     {
       DebugPrint("ast_node_symbol {\n", Depth);
       
           DebugPrint("c_token Token {\n", Depth+2);
           DebugPrint(S.Token, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("ast_node Access {\n", Depth+2);
+          DebugPrint(S.Access, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
@@ -2295,6 +2350,50 @@
     }
 
     function void DebugPrint( ast_node_ignored *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( ast_node_return S, u32 Depth)
+    {
+      DebugPrint("ast_node_return {\n", Depth);
+      
+          DebugPrint("ast_node_expression Value {\n", Depth+2);
+          DebugPrint(S.Value, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( ast_node_return *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( ast_node_predicated S, u32 Depth)
+    {
+      DebugPrint("ast_node_predicated {\n", Depth);
+      
+          DebugPrint("c_token Token {\n", Depth+2);
+          DebugPrint(S.Token, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("ast_node_expression Predicate {\n", Depth+2);
+          DebugPrint(S.Predicate, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( ast_node_predicated *S, u32 Depth)
     {
       if (S) { DebugPrint(*S, Depth); }
       else { DebugPrint("ptr(0)", Depth); }
@@ -2384,7 +2483,7 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("ast_node Ast {\n", Depth+2);
+          DebugPrint("ast_node_statement Ast {\n", Depth+2);
           DebugPrint(S.Ast, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
@@ -7664,12 +7763,6 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("umm Next {\n", Depth+2);
-          DebugPrint(S.Next, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
       DebugPrint("}\n", Depth);
     }
 
@@ -8804,12 +8897,6 @@
               DebugPrint("");
             } break;
 
-            case CTokenType_This:
-            {
-              DebugPrint("CTokenType_This ", Depth);
-              DebugPrint("");
-            } break;
-
             case CTokenType_LeftShift:
             {
               DebugPrint("CTokenType_LeftShift ", Depth);
@@ -9890,9 +9977,27 @@
               DebugPrint("");
             } break;
 
-            case type_ast_node_access:
+            case type_ast_node_literal:
             {
-              DebugPrint("type_ast_node_access ", Depth);
+              DebugPrint("type_ast_node_literal ", Depth);
+              DebugPrint("");
+            } break;
+
+            case type_ast_node_expression:
+            {
+              DebugPrint("type_ast_node_expression ", Depth);
+              DebugPrint("");
+            } break;
+
+            case type_ast_node_parenthesized:
+            {
+              DebugPrint("type_ast_node_parenthesized ", Depth);
+              DebugPrint("");
+            } break;
+
+            case type_ast_node_operator:
+            {
+              DebugPrint("type_ast_node_operator ", Depth);
               DebugPrint("");
             } break;
 
@@ -9902,21 +10007,15 @@
               DebugPrint("");
             } break;
 
+            case type_ast_node_return:
+            {
+              DebugPrint("type_ast_node_return ", Depth);
+              DebugPrint("");
+            } break;
+
             case type_ast_node_scope:
             {
               DebugPrint("type_ast_node_scope ", Depth);
-              DebugPrint("");
-            } break;
-
-            case type_ast_node_assignment:
-            {
-              DebugPrint("type_ast_node_assignment ", Depth);
-              DebugPrint("");
-            } break;
-
-            case type_ast_node_address_of:
-            {
-              DebugPrint("type_ast_node_address_of ", Depth);
               DebugPrint("");
             } break;
 
@@ -9935,12 +10034,6 @@
             case type_ast_node_symbol:
             {
               DebugPrint("type_ast_node_symbol ", Depth);
-              DebugPrint("");
-            } break;
-
-            case type_ast_node_preprocessor_directive:
-            {
-              DebugPrint("type_ast_node_preprocessor_directive ", Depth);
               DebugPrint("");
             } break;
 

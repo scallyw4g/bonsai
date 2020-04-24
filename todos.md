@@ -9,10 +9,7 @@
     - #235 Does this belong here?
     - #240 Do we want to store this value?
     - #241 Does this belong here?
-    - #243 AST Node type for these keywords
-    - #244 AST Node type for return value
     - #245 Change to variable_def or variable_decl
-    - #251 Implement this..
     - #252 These are mutually exclusive .. merge them?
 
   ## immediate

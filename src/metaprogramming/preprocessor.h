@@ -322,7 +322,6 @@ enum c_token_type
   CTokenType_While,
   CTokenType_Continue,
   CTokenType_Return,
-  CTokenType_This,
 
   CTokenType_LeftShift,
   CTokenType_RightShift,
@@ -648,14 +647,23 @@ meta(generate_stream(person))
 struct ast_node;
 struct function_def;
 
-struct ast_node_access
+struct ast_node_expression
 {
-  counted_string AccessedName;
+  ast_node *Value;
+  ast_node *Next;
+};
+
+struct ast_node_statement
+{
+  ast_node_expression *LHS;
+  ast_node_expression *RHS;
+  ast_node_statement *Next;
 };
 
 struct ast_node_function_call
 {
   function_def *Prototype;
+  ast_node_expression *Args;
 };
 
 struct ast_node_variable_def
@@ -667,36 +675,36 @@ struct ast_node_variable_def
 meta(generate_stream(ast_node_variable_def))
 #include <metaprogramming/output/generate_stream_ast_node_variable_def.h>
 
-struct ast_node_preprocessor_directive
-{
-  ast_node *Children;
-};
-
 struct ast_node_scope
 {
-  ast_node *Children;
+  ast_node_statement *FirstStatement;
 };
 
-struct ast_node_assignment
+struct ast_node_parenthesized
 {
-  // ast_node *LHS;
-  ast_node *RHS;
-};
-
-struct ast_node_address_of
-{
-  ast_node *Operand;
+  ast_node_expression *Expr;
 };
 
 struct ast_node_initializer_list
 {
-  // TODO(Jesse id: 251): Implement this..
-  u32 Thing;
+  u32 Ignored;
+};
+
+struct ast_node_operator
+{
+  ast_node_expression *Operand;
+  c_token Token;
+};
+
+struct ast_node_literal
+{
+  c_token Token;
 };
 
 struct ast_node_symbol
 {
   c_token Token;
+  ast_node* Access;
 };
 
 struct ast_node_ignored
@@ -704,22 +712,31 @@ struct ast_node_ignored
   c_token Token;
 };
 
+struct ast_node_return
+{
+  ast_node_expression *Value;
+};
+
+struct ast_node_predicated
+{
+  c_token Token;
+  ast_node_expression *Predicate;
+};
+
 meta(
   d_union ast_node
   {
-    ast_node_access
+    ast_node_literal
+    ast_node_expression
+    ast_node_parenthesized
+    ast_node_operator
     ast_node_function_call
+    ast_node_return
     ast_node_scope
-    ast_node_assignment
-    ast_node_address_of
     ast_node_initializer_list
     ast_node_ignored
     ast_node_symbol
-    ast_node_preprocessor_directive
     ast_node_variable_def
-  },
-  {
-    umm Next // TODO(Jesse): This needs to support pointers!
   }
 )
 #include <metaprogramming/output/d_union_ast_node.h>
@@ -730,7 +747,7 @@ meta(generate_stream(ast_node))
 function ast_node*
 AllocateAstNode(ast_node_type T, ast_node **Result, memory_arena* Memory)
 {
-  Assert(Result && !*Result); // We got a valid pointer, and it hasn't been allocated yet.
+  Assert(Result && !(*Result)); // We got a valid pointer, and it hasn't been allocated yet.
 
   *Result = AllocateProtection(ast_node, Memory, 1, False);
   (*Result)->Type = T;
@@ -738,7 +755,7 @@ AllocateAstNode(ast_node_type T, ast_node **Result, memory_arena* Memory)
   return *Result;
 }
 
-#define AllocateAndCastTo(T, NodeDest, Memory) (&AllocateAstNode(type_##T, NodeDest, Memory)->T)
+#define AllocateAndCastTo(T, NodeDest, Memory) (&AllocateAstNode(type_##T, (NodeDest), (Memory))->T)
 
 struct arguments
 {
@@ -761,7 +778,7 @@ struct function_def
   ast_node_variable_def_stream Locals;
 
   c_parse_result Body;
-  ast_node* Ast;
+  ast_node_statement* Ast;
 };
 meta(generate_stream(function_def))
 #include <metaprogramming/output/generate_stream_function_def.h>

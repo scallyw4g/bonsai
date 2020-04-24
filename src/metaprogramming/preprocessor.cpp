@@ -724,11 +724,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes = Fa
           PushT.Type = CTokenType_Continue;
         }
 
-        if ( StringsMatch(PushT.Value, CSz("this")) )
-        {
-          PushT.Type = CTokenType_This;
-        }
-
         if ( StringsMatch(PushT.Value, CSz("return")) )
         {
           PushT.Type = CTokenType_Return;
@@ -1554,6 +1549,16 @@ EatFunctionDecl(c_parse_result* Parser)
 }
 
 function void
+TrimUntilNewline(c_parse_result* Parser)
+{
+  Assert(Parser->Tokens.At == Parser->Tokens.Start);
+
+  while (OptionalTokenRaw(Parser, CTokenType_Space));
+  OptionalTokenRaw(Parser, CTokenType_Newline);
+  Parser->Tokens.Start = Parser->Tokens.At;
+}
+
+function void
 TrimFirstToken(c_parse_result* Parser, c_token_type TokenType)
 {
   Assert(Parser->Tokens.At == Parser->Tokens.Start);
@@ -1614,6 +1619,7 @@ GetBodyTextForNextScope(c_parse_result* Parser)
   BodyText.Tokens.End = Parser->Tokens.At;
 
   TrimFirstToken(&BodyText, CTokenType_OpenBrace);
+  /* TrimUntilNewline(&BodyText, CTokenType_OpenBrace); */
   TrimLastToken(&BodyText, CTokenType_CloseBrace);
   TrimTrailingWhitespace(&BodyText);
   Rewind(&BodyText.Tokens);
@@ -2721,7 +2727,7 @@ GetByName(counted_string Name, variable_stream* Stream)
 }
 
 function ast_node*
-ParseAst(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Datatypes, ast_node_variable_def_stream *Locals);
+ParseExpression(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Datatypes, ast_node_variable_def_stream *Locals);
 
 function ast_node*
 ParseSymbol(c_parse_result *Parser, memory_arena *Memory)
@@ -2744,6 +2750,7 @@ ParseIgnoredNode(c_parse_result *Parser, memory_arena *Memory)
 function ast_node*
 ParseFunctionArgument(c_parse_result *Parser, memory_arena *Memory, function_def_stream *FunctionPrototypes, ast_node_variable_def_stream *Locals);
 
+#if 0
 function void
 ReduceToTypeSpec(ast_node* InputNode, ast_node_variable_def_stream *Locals, type_spec *ResultType)
 {
@@ -2804,182 +2811,15 @@ ReduceToTypeSpec(ast_node* InputNode, ast_node_variable_def_stream *Locals, type
       {
       } break;
 
-      case type_ast_node_access:
-      {
-      } break;
-
-      case type_ast_node_address_of:
-      {
-      } break;
-
       case type_ast_node_ignored:
       {
       } break;
     }
-
-    Current = (ast_node*)Current->Next;
   }
 
   return;
 }
-
-function ast_node*
-ParseFunctionCall(c_parse_result *Parser, counted_string FunctionName, memory_arena* Memory, function_def_stream *FunctionPrototypes, ast_node_variable_def_stream *Locals)
-{
-  *Locals; // Shush compiler
-
-  ast_node *Result = {};
-  ast_node_function_call *Node = AllocateAndCastTo(ast_node_function_call, &Result, Memory);
-
-  Node->Prototype = GetByPrototypeName(FunctionName, FunctionPrototypes);
-
-  type_spec FunctionArgs = {};
-
-  RequireToken(Parser, CTokenType_OpenParen);
-
-  b32 Done = PeekToken(Parser).Type == CTokenType_CloseParen;
-  while (!Done)
-  {
-    ast_node *ArgAst = ParseFunctionArgument(Parser, Memory, FunctionPrototypes, Locals);
-
-    type_spec ArgType = {};
-    ReduceToTypeSpec(ArgAst, Locals, &ArgType);
-
-    if (OptionalToken(Parser, CTokenType_CloseParen))
-    {
-      Done = True;
-    }
-    else
-    {
-      RequireToken(Parser, CTokenType_Comma);
-    }
-  }
-
-  return Result;
-}
-
-function ast_node*
-ParseFunctionArgument(c_parse_result *Parser, memory_arena *Memory, function_def_stream *FunctionPrototypes, ast_node_variable_def_stream *Locals)
-{
-  ast_node *Result = {};
-
-  ast_node **Current = &Result;
-  b32 Done = False;
-  while ( !Done && Remaining(&Parser->Tokens) )
-  {
-    const c_token T = PeekToken(Parser);
-
-    Current = *Current ? (ast_node**)&(*Current)->Next : Current;
-
-    switch (T.Type)
-    {
-      case CTokenType_Identifier:
-      {
-        if ( PeekToken(Parser, 1).Type == CTokenType_OpenParen )
-        {
-          counted_string FunctionName = RequireToken(Parser, CTokenType_Identifier).Value;
-          *Current = ParseFunctionCall(Parser, FunctionName, Memory, FunctionPrototypes, Locals);
-        }
-        else
-        {
-          *Current = ParseSymbol(Parser, Memory);
-        }
-      } break;
-
-
-      case CTokenType_Ampersand:
-      {
-        RequireToken(Parser, T.Type);
-        ast_node_address_of* Node = AllocateAndCastTo(ast_node_address_of, Current, Memory);
-        Node->Operand = ParseFunctionArgument(Parser, Memory, FunctionPrototypes, Locals);
-      } break;
-
-
-      case CTokenType_OpenParen:
-      {
-        RequireToken(Parser, T.Type);
-        ast_node_scope* Node = AllocateAndCastTo(ast_node_scope, Current, Memory);
-        Node->Children = ParseFunctionArgument(Parser, Memory, FunctionPrototypes, Locals);
-        RequireToken(Parser, CloseTokenFor(T.Type));
-      } break;
-
-      case CTokenType_OpenBracket:
-      {
-        RequireToken(Parser, T.Type);
-        ast_node_scope* Node = AllocateAndCastTo(ast_node_scope, Current, Memory);
-        Node->Children = ParseFunctionArgument(Parser, Memory, FunctionPrototypes, Locals);
-        RequireToken(Parser, CloseTokenFor(T.Type));
-      } break;
-
-      case CTokenType_Hash:
-      {
-        RequireToken(Parser, T.Type);
-        ast_node_preprocessor_directive *Node = AllocateAndCastTo(ast_node_preprocessor_directive, Current, Memory);
-        EatUntil(Parser, CTokenType_Newline);
-      } break;
-
-      case CTokenType_Arrow:
-      case CTokenType_Dot:
-      {
-        RequireToken(Parser, T.Type);
-        ast_node_access* Node = AllocateAndCastTo(ast_node_access, Current, Memory);
-        Node->AccessedName = RequireToken(Parser, CTokenType_Identifier).Value;
-      } break;
-
-      case CTokenType_Char:
-      case CTokenType_Bang:
-      case CTokenType_LeftShift:
-      case CTokenType_RightShift:
-      case CTokenType_LessEqual:
-      case CTokenType_GreaterEqual:
-      case CTokenType_AreEqual:
-      case CTokenType_NotEqual:
-      case CTokenType_PlusEquals:
-      case CTokenType_MinusEquals:
-      case CTokenType_TimesEquals:
-      case CTokenType_DivEquals:
-      case CTokenType_ModEquals:
-      case CTokenType_AndEquals:
-      case CTokenType_OrEquals:
-      case CTokenType_XorEquals:
-      case CTokenType_Increment:
-      case CTokenType_Decrement:
-      case CTokenType_LogicalAnd:
-      case CTokenType_LogicalOr:
-      case CTokenType_Percent:
-      case CTokenType_Pipe:
-      case CTokenType_Plus:
-      case CTokenType_Minus:
-      case CTokenType_FSlash:
-      case CTokenType_Question:
-      case CTokenType_Colon:
-      case CTokenType_Star:
-      case CTokenType_String:
-      case CTokenType_Tilde:
-      case CTokenType_Hat:
-      case CTokenType_LT:
-      case CTokenType_GT:
-      case CTokenType_This:
-      {
-        *Current = ParseIgnoredNode(Parser, Memory);
-      } break;
-
-      case CTokenType_CloseBracket:
-      case CTokenType_CloseParen:
-      case CTokenType_Comma:
-      {
-        Done = True;
-      } break;
-
-      InvalidDefaultWhileParsing(Parser, CSz("Invalid token while parsing AST."));
-    }
-
-    EatWhitespaceAndComments(Parser);
-    continue;
-  }
-
-  return Result;
-}
+#endif
 
 function ast_node*
 ParseInitializerList(c_parse_result *Parser, memory_arena *Memory)
@@ -2993,149 +2833,97 @@ ParseInitializerList(c_parse_result *Parser, memory_arena *Memory)
   return Result;
 }
 
-function ast_node*
-ParseConstantAst(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Datatypes, ast_node_variable_def_stream *Locals)
-{
-  ast_node *Result = {};
-
-  b32 Done = False;
-  ast_node **Current = &Result;
-  while ( !Done && Remaining(&Parser->Tokens) )
-  {
-    const c_token T = PeekToken(Parser);
-
-    Current = *Current ? (ast_node**)&(*Current)->Next : Current;
-
-    switch (T.Type)
-    {
-      case CTokenType_Identifier:
-      {
-        if ( PeekToken(Parser, 1).Type == CTokenType_OpenParen )
-        {
-          counted_string FunctionName = RequireToken(Parser, CTokenType_Identifier).Value;
-          *Current = ParseFunctionCall(Parser, FunctionName, Memory, &Datatypes->Functions, Locals);
-        }
-        else
-        {
-          *Current = ParseSymbol(Parser, Memory);
-        }
-      } break;
-
-      case CTokenType_OpenBracket:
-      case CTokenType_OpenParen:
-      {
-        RequireToken(Parser, T.Type);
-        ast_node_scope* Node = AllocateAndCastTo(ast_node_scope, Current, Memory);
-        Node->Children = ParseConstantAst(Parser, Memory, Datatypes, Locals);
-      } break;
-
-      case CTokenType_Hash:
-      {
-        RequireToken(Parser, T.Type);
-        ast_node_preprocessor_directive *Node = AllocateAndCastTo(ast_node_preprocessor_directive, Current, Memory);
-        EatUntil(Parser, CTokenType_Newline);
-      } break;
-
-      case CTokenType_Arrow:
-      case CTokenType_Dot:
-      {
-        RequireToken(Parser, T.Type);
-        ast_node_access* Node = AllocateAndCastTo(ast_node_access, Current, Memory);
-        Node->AccessedName = RequireToken(Parser, CTokenType_Identifier).Value;
-      } break;
-
-      case CTokenType_Ampersand:
-      case CTokenType_Char:
-      case CTokenType_Bang:
-      case CTokenType_LeftShift:
-      case CTokenType_RightShift:
-      case CTokenType_LessEqual:
-      case CTokenType_GreaterEqual:
-      case CTokenType_AreEqual:
-      case CTokenType_NotEqual:
-      case CTokenType_Increment:
-      case CTokenType_Decrement:
-      case CTokenType_LogicalAnd:
-      case CTokenType_LogicalOr:
-      case CTokenType_Percent:
-      case CTokenType_Pipe:
-      case CTokenType_Plus:
-      case CTokenType_Minus:
-      case CTokenType_FSlash:
-      case CTokenType_Star:
-      case CTokenType_Tilde:
-      case CTokenType_Hat:
-      case CTokenType_LT:
-      case CTokenType_GT:
-      case CTokenType_This:
-      {
-        *Current = ParseIgnoredNode(Parser, Memory);
-      } break;
-
-      case CTokenType_CloseBracket:
-      case CTokenType_CloseParen:
-      {
-        RequireToken(Parser, T.Type);
-      } break;
-
-      // Invalid tokens in a constant expression
-      case CTokenType_Colon:
-      {
-        Done = True;
-      } break;
-
-      InvalidDefaultWhileParsing(Parser, CSz("Invalid token while parsing constant AST."));
-    }
-
-    EatWhitespaceAndComments(Parser);
-    continue;
-  }
-
-  return Result;
-}
-
 function b32
-IsATypeIdentifier(counted_string TypeName, program_datatypes *Datatypes)
+IsTypeIdentifier(counted_string TypeName, program_datatypes *Datatypes)
 {
   b32 Result = GetDatatypeByName(Datatypes, TypeName).Type != type_datatype_noop;
   return Result;
 }
 
 function ast_node*
-ParseAst(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Datatypes, ast_node_variable_def_stream *Locals)
-{
-  ast_node *Result = {};
+ParseFunctionCall(c_parse_result *Parser, counted_string FunctionName, memory_arena* Memory, program_datatypes *Datatypes);
 
-  ast_node **Current = &Result;
+#if 0
+function ast_node_expression*
+ParseStatement(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Datatypes)
+{
+      case CTokenType_Equals:
+      {
+        RequireToken(Parser, T.Type);
+        Node->RHS = ParseExpression(Parser, Memory, Datatypes);
+      } break;
+
+      case CTokenType_Case:
+      {
+        ast_node_predicated *Node = SafeConvert(ast_node_predicated, Result);
+        Node->Token = RequireToken(Parser, T.Type);
+        Node->Predicate = ParseExpression(Parser, Memory);
+      } break;
+
+      case CTokenType_Default:
+      {
+        ast_node_predicated *Node = SafeConvert(ast_node_predicated, Result);
+        Node->Token = RequireToken(Parser, T.Type);
+        RequireToken(Parser, CTokenType_Colon);
+      } break;
+
+      case CTokenType_If:
+      case CTokenType_For:
+      case CTokenType_While:
+      case CTokenType_Switch:
+      {
+        RequireToken(Parser, T.Type);
+        EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen); // Store predicate condition?
+        ast_node_scope* Node = SafeConvert(ast_node_scope, Result);
+        Node->FirstStatement = ParseStatement(Parser, Memory, Datatypes);
+      } break;
+
+      // What do we do with these?
+      case CTokenType_Else:
+      case CTokenType_Break:
+      case CTokenType_Continue:
+      {
+      } break;
+
+      case CTokenType_Semicolon:
+      {
+        Done = True;
+      } break;
+
+}
+#endif
+
+// #define SafeConvert(T, Node) Node->T; Assert(Node->Type == type_##T); Node->Type = type_##T
+
+function ast_node_statement*
+ParseScope(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Datatypes)
+{
+  ++Parser; ++Memory; ++Datatypes;
+  NotImplemented;
+  return 0;
+}
+
+function ast_node_expression*
+ParseExpression(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Datatypes)
+{
+  ast_node_expression *Result = Allocate(ast_node_expression, Memory, 1);
+
   while ( Remaining(&Parser->Tokens) )
   {
     const c_token T = PeekToken(Parser);
-
-    Current = *Current ? (ast_node**)&(*Current)->Next : Current;
 
     switch (T.Type)
     {
       case CTokenType_Identifier:
       {
-        datatype MatchedDatatype = GetDatatypeByName(Datatypes, T.Value);
-        if (MatchedDatatype.Type)
-        {
-          variable Decl = ParseDeclaration(Parser);
-          ast_node_variable_def *Node = AllocateAndCastTo(ast_node_variable_def, Current, Memory);
-          Node->Type = MatchedDatatype;
-          Node->Decl = Decl;
-
-          Push(Locals, *Node, Memory);
-        }
-        else if ( StringsMatch(T.Value, CSz("meta")) ||
-                  StringsMatch(T.Value, CSz("_meta")) )
+        if ( StringsMatch(T.Value, CSz("meta")) ||
+             StringsMatch(T.Value, CSz("_meta")) )
         {
           RequireToken(Parser, CTokenType_Identifier);
           EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
         }
         else
         {
-
           c_token SymbolToken = RequireToken(Parser, CTokenType_Identifier);
           if ( PeekToken(Parser).Type == CTokenType_LT )
           {
@@ -3146,10 +2934,7 @@ ParseAst(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Dataty
               c_token TemplateParamListTestT = PeekToken(Parser, Lookahead);
               if (TemplateParamListTestT.Type == CTokenType_Identifier)
               {
-                if (IsATypeIdentifier(TemplateParamListTestT.Value, Datatypes))
-                {
-                }
-                else
+                if (!IsTypeIdentifier(TemplateParamListTestT.Value, Datatypes))
                 {
                   ValidTemplateList = False;
                   break;
@@ -3173,109 +2958,50 @@ ParseAst(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Dataty
             {
               EatBetween(Parser, CTokenType_LT, CTokenType_GT);
             }
-
           }
 
           if ( PeekToken(Parser).Type  == CTokenType_OpenParen )
           {
-            *Current = ParseFunctionCall(Parser, SymbolToken.Value, Memory, &Datatypes->Functions, Locals);
+            Result->Value = ParseFunctionCall(Parser, SymbolToken.Value, Memory, Datatypes);
           }
           else
           {
-            ast_node_symbol *Node = AllocateAndCastTo(ast_node_symbol, Current, Memory);
+            ast_node_symbol *Node = AllocateAndCastTo(ast_node_symbol, &Result->Value, Memory);
             Node->Token = SymbolToken;
           }
         }
       } break;
 
-      case CTokenType_Arrow:
-      case CTokenType_Dot:
-      {
-        RequireToken(Parser, T.Type);
-        ast_node_access* Node = AllocateAndCastTo(ast_node_access, Current, Memory);
-        Node->AccessedName = RequireToken(Parser, CTokenType_Identifier).Value;
-      } break;
-
-      case CTokenType_Equals:
-      {
-        RequireToken(Parser, T.Type);
-        ast_node_assignment* Node = AllocateAndCastTo(ast_node_assignment, Current, Memory);
-        /* Node->LHS = *Current; */
-
-        if (PeekToken(Parser).Type == CTokenType_OpenBrace)
-        {
-          Node->RHS = ParseInitializerList(Parser, Memory);
-        }
-        else
-        {
-          Node->RHS = ParseAst(Parser, Memory, Datatypes, Locals);
-        }
-      } break;
-
-      case CTokenType_Ampersand:
-      {
-        RequireToken(Parser, T.Type);
-        ast_node_address_of* Node = AllocateAndCastTo(ast_node_address_of, Current, Memory);
-        Node->Operand = ParseAst(Parser, Memory, Datatypes, Locals);
-      } break;
-
-
-      case CTokenType_OpenParen:
-      case CTokenType_OpenBracket:
       case CTokenType_OpenBrace:
       {
-        RequireToken(Parser, T.Type);
-        ast_node_scope* Node = AllocateAndCastTo(ast_node_scope, Current, Memory);
-        Node->Children = ParseAst(Parser, Memory, Datatypes, Locals);
+        ast_node_scope* Node = AllocateAndCastTo(ast_node_scope, &Result->Value, Memory);
+        Node->FirstStatement = ParseScope(Parser, Memory, Datatypes);
       } break;
 
-      case CTokenType_If:
-      case CTokenType_For:
-      case CTokenType_While:
-      case CTokenType_Switch:
+      case CTokenType_OpenParen:
       {
-        // TODO(Jesse id: 243): AST Node type for these keywords
         RequireToken(Parser, T.Type);
-        EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
-
-        ast_node_scope* Node = AllocateAndCastTo(ast_node_scope, Current, Memory);
-        Node->Children = ParseAst(Parser, Memory, Datatypes, Locals);
+        ast_node_parenthesized *Node = AllocateAndCastTo(ast_node_parenthesized, &Result->Value, Memory);
+        Node->Expr = ParseExpression(Parser, Memory, Datatypes);
       } break;
 
       case CTokenType_Return:
       {
-        // TODO(Jesse id: 244): AST Node type for return value
-        *Current = ParseIgnoredNode(Parser, Memory);
-      } break;
-
-      case CTokenType_Case:
-      {
-        *Current = ParseIgnoredNode(Parser, Memory);
-        Current = (ast_node**)&(*Current)->Next;
-        *Current = ParseConstantAst(Parser, Memory, Datatypes, Locals);
-        RequireToken(Parser, CTokenType_Colon);
-      } break;
-
-      case CTokenType_Default:
-      {
-        RequireToken(Parser, T.Type);
-        ast_node_ignored *Node = AllocateAndCastTo(ast_node_ignored, Current, Memory);
-        Node->Token = T;
-        RequireToken(Parser, CTokenType_Colon);
+        ast_node_return *Node = AllocateAndCastTo(ast_node_return, &Result->Value, Memory);
+        Node->Value = ParseExpression(Parser, Memory, Datatypes);
       } break;
 
       case CTokenType_Hash:
       {
-        RequireToken(Parser, T.Type);
-        ast_node_preprocessor_directive *Node = AllocateAndCastTo(ast_node_preprocessor_directive, Current, Memory);
         EatUntil(Parser, CTokenType_Newline);
       } break;
 
-      case CTokenType_Char:
-      case CTokenType_Else:
+      case CTokenType_Ampersand:
+      case CTokenType_Tilde:
+      case CTokenType_Hat:
+      case CTokenType_LT:
+      case CTokenType_GT:
       case CTokenType_Bang:
-      case CTokenType_Continue:
-      case CTokenType_Break:
       case CTokenType_LeftShift:
       case CTokenType_RightShift:
       case CTokenType_LessEqual:
@@ -3303,20 +3029,25 @@ ParseAst(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Dataty
       case CTokenType_Colon:
       case CTokenType_Comma:
       case CTokenType_Star:
-      case CTokenType_String:
-      case CTokenType_Tilde:
-      case CTokenType_Hat:
-      case CTokenType_LT:
-      case CTokenType_GT:
-      case CTokenType_This:
+      case CTokenType_OpenBracket:
+      case CTokenType_Arrow:
+      case CTokenType_Dot:
       {
-        *Current = ParseIgnoredNode(Parser, Memory);
+        ast_node_operator* Node = AllocateAndCastTo(ast_node_operator, &Result->Value, Memory);
+        Node->Token = RequireToken(Parser, T.Type);
+        Node->Operand = ParseExpression(Parser, Memory, Datatypes);
       } break;
 
-      case CTokenType_CloseParen:
+      case CTokenType_Char:
+      case CTokenType_String:
+      {
+        ast_node_literal *Node = AllocateAndCastTo(ast_node_literal, &Result->Value, Memory);
+        Node->Token = RequireToken(Parser, T.Type);
+      } break;
+
       case CTokenType_CloseBracket:
+      case CTokenType_CloseParen:
       case CTokenType_CloseBrace:
-      case CTokenType_Semicolon:
       {
         RequireToken(Parser, T.Type);
       } break;
@@ -3328,6 +3059,16 @@ ParseAst(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Dataty
     continue;
   }
 
+  return Result;
+}
+
+function ast_node*
+ParseFunctionCall(c_parse_result *Parser, counted_string FunctionName, memory_arena* Memory, program_datatypes *Datatypes)
+{
+  ast_node *Result = {};
+  ast_node_function_call *Node = AllocateAndCastTo(ast_node_function_call, &Result, Memory);
+  Node->Prototype = GetByPrototypeName(FunctionName, &Datatypes->Functions);
+  Node->Args = ParseExpression(Parser, Memory, Datatypes);
   return Result;
 }
 
@@ -4878,11 +4619,12 @@ ParseFunctionBodiesIntoAsts(program_datatypes *Datatypes, memory_arena *Memory)
   ITERATE_OVER(&Datatypes->Functions)
   {
     function_def *Func = GET_ELEMENT(Iter);
-    Func->Ast = ParseAst(&Func->Body, Memory, Datatypes, &Func->Locals);
+    Func->Ast = ParseScope(&Func->Body, Memory, Datatypes);
     Assert(Func->Ast);
   }
 }
 
+#if 0
 function void
 Traverse(ast_node* InputNode)
 {
@@ -4909,19 +4651,19 @@ Traverse(ast_node* InputNode)
 #endif
       } return;
 
+      case type_ast_node_expression:
+      {
+      } break;
+
+      case type_ast_node_expression:
+      {
+      } break;
+
+      case type_ast_node_literal:
+      {
+      } break;
+
       case type_ast_node_scope:
-      {
-      } break;
-
-      case type_ast_node_access:
-      {
-      } break;
-
-      case type_ast_node_assignment:
-      {
-      } break;
-
-      case type_ast_node_address_of:
       {
       } break;
 
@@ -4930,10 +4672,6 @@ Traverse(ast_node* InputNode)
       } break;
 
       case type_ast_node_ignored:
-      {
-      } break;
-
-      case type_ast_node_preprocessor_directive:
       {
       } break;
 
@@ -4973,6 +4711,7 @@ Traverse(ast_node* InputNode)
 
   return;
 }
+#endif
 
 function void
 DebugDumpFunctionCalls(program_datatypes *Datatypes)
@@ -4980,7 +4719,7 @@ DebugDumpFunctionCalls(program_datatypes *Datatypes)
   ITERATE_OVER(&Datatypes->Functions)
   {
     function_def *Func = GET_ELEMENT(Iter);
-    Traverse(Func->Ast);
+    /* Traverse(Func->Ast); */
   }
 }
 
@@ -5024,7 +4763,7 @@ main(s32 ArgCount, const char** ArgStrings)
 
     ParseFunctionBodiesIntoAsts(&MetaInfo.Datatypes, Memory);
 
-    DebugDumpFunctionCalls(&MetaInfo.Datatypes);
+    /* DebugDumpFunctionCalls(&MetaInfo.Datatypes); */
 
 
     for (u32 ParserIndex = 0;

@@ -2,31 +2,19 @@
         switch (Current->Type)
         {
           
-              case type_ast_node_scope:
+              case type_ast_node_expression:
               {
                 
-                   Traverse(Current->ast_node_scope.Children);
+                   Traverse(Current->ast_node_expression.Value);
+
+                   Traverse(Current->ast_node_expression.Next);
 
               } break;
 
-              case type_ast_node_assignment:
+              case type_ast_node_symbol:
               {
                 
-                   Traverse(Current->ast_node_assignment.RHS);
-
-              } break;
-
-              case type_ast_node_address_of:
-              {
-                
-                   Traverse(Current->ast_node_address_of.Operand);
-
-              } break;
-
-              case type_ast_node_preprocessor_directive:
-              {
-                
-                   Traverse(Current->ast_node_preprocessor_directive.Children);
+                   Traverse(Current->ast_node_symbol.Access);
 
               } break;
 
