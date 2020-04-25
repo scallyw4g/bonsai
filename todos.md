@@ -4,7 +4,6 @@
     - #217 Disallow namespaces?
     - #197 Have some way of coalescing this to our internal types?
     - #198 Do we ignore this?
-    - #207 Emit domain-specific warning here?
     - #212 Should we check that the function was defined using the 'function' or 'exported_function' keywords and emit a warning otherwise?
     - #235 Does this belong here?
     - #240 Do we want to store this value?

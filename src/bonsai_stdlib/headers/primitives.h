@@ -12,29 +12,42 @@
 #define InvalidDefaultCase default: {Error("InvalidDefaultCase"); Assert(False);} break
 
 // 8 Bit types
-typedef uint8_t  u8;
-typedef int8_t   s8;
+typedef char           s8;
+typedef unsigned char  u8;
 
 // 16 Bit types
-typedef uint16_t u16;
-typedef int16_t  s16;
+typedef short          s16;
+typedef unsigned short u16;
 
 // 32 Bit types
-typedef int32_t  s32;
-typedef uint32_t u32;
-typedef u32      b32;
-typedef float    real32;
-typedef real32   r32;
+typedef int          s32;
+typedef unsigned int u32;
+typedef float        r32;
+typedef u32          b32;
+
 typedef r32      radians;
 typedef r32      degrees;
 
 // 64 Bit types
-typedef int64_t  s64;
-typedef uint64_t u64;
-typedef u64      umm;
-typedef double   r64;
+typedef long int          s64;
+typedef unsigned long int u64;
+typedef double            r64;
+typedef u64               umm;
 
-#if 1
+CAssert(sizeof(s64) == 8);
+CAssert(sizeof(u64) == 8);
+CAssert(sizeof(r64) == 8);
+CAssert(sizeof(umm) == 8);
+
+CAssert(sizeof(s32) == 4);
+CAssert(sizeof(u32) == 4);
+CAssert(sizeof(r32) == 4);
+
+CAssert(sizeof(s16) == 2);
+CAssert(sizeof(u16) == 2);
+
+CAssert(sizeof(s8) == 1);
+CAssert(sizeof(u8) == 1);
 
 #define s8_MAX  ((s8) 0x7f)
 #define s16_MAX ((s16)0x7fff)
@@ -54,24 +67,6 @@ typedef double   r64;
 #define f32_MAX (1E+37f)
 #define f32_MIN (1E-37f)
 
-#else
-
-#define s8_MAX  (INT8_MAX)
-#define s16_MAX (INT16_MAX)
-#define s32_MAX (INT32_MAX)
-#define s64_MAX (INT64_MAX)
-
-#define s8_MIN  (INT8_MIN)
-#define s16_MIN (INT16_MIN)
-#define s32_MIN (INT32_MIN)
-#define s64_MIN (INT64_MIN)
-
-#define u8_MAX  (UINT8_MAX)
-#define u16_MAX (UINT16_MAX)
-#define u32_MAX (UINT32_MAX)
-#define u64_MAX (UINT64_MAX)
-
-#endif
 
 CAssert(s8_MAX  == INT8_MAX);
 CAssert(s16_MAX == INT16_MAX);

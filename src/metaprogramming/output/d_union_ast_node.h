@@ -12,6 +12,7 @@ enum ast_node_type
   type_ast_node_ignored,
   type_ast_node_symbol,
   type_ast_node_variable_def,
+  type_ast_node_type_specifier,
 };
 
 struct ast_node
@@ -31,6 +32,7 @@ struct ast_node
     ast_node_ignored ast_node_ignored;
     ast_node_symbol ast_node_symbol;
     ast_node_variable_def ast_node_variable_def;
+    ast_node_type_specifier ast_node_type_specifier;
   };
 };
 

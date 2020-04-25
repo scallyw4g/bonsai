@@ -500,6 +500,19 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes = Fa
         Advance(&Code);
       } break;
 
+      case CTokenType_Dot:
+      {
+        if (PeekToken(&Code, 1).Type == CTokenType_Dot &&
+            PeekToken(&Code, 2).Type == CTokenType_Dot)
+        {
+          Advance(&Code);
+          Advance(&Code);
+          PushT.Type = CTokenType_Ellipsis;
+          PushT.Value = CS(Code.At, 3);
+        }
+        Advance(&Code);
+      } break;
+
       case CTokenType_Bang:
       {
         if (PeekToken(&Code, 1).Type == CTokenType_Equals)
@@ -727,6 +740,76 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes = Fa
         if ( StringsMatch(PushT.Value, CSz("return")) )
         {
           PushT.Type = CTokenType_Return;
+        }
+
+        if ( StringsMatch(PushT.Value, CSz("thread_local")) )
+        {
+          PushT.Type = CTokenType_ThreadLocal;
+        }
+
+        if ( StringsMatch(PushT.Value, CSz("const")) )
+        {
+          PushT.Type = CTokenType_Const;
+        }
+
+        if ( StringsMatch(PushT.Value, CSz("static")) )
+        {
+          PushT.Type = CTokenType_Static;
+        }
+
+        if ( StringsMatch(PushT.Value, CSz("volatile")) )
+        {
+          PushT.Type = CTokenType_Volatile;
+        }
+
+        if ( StringsMatch(PushT.Value, CSz("void")) )
+        {
+          PushT.Type = CTokenType_Void;
+        }
+
+        if ( StringsMatch(PushT.Value, CSz("auto")) )
+        {
+          PushT.Type = CTokenType_Auto;
+        }
+
+        if ( StringsMatch(PushT.Value, CSz("unsigned")) )
+        {
+          PushT.Type = CTokenType_Unsigned;
+        }
+
+        if ( StringsMatch(PushT.Value, CSz("struct")) )
+        {
+          PushT.Type = CTokenType_Struct;
+        }
+
+        if ( StringsMatch(PushT.Value, CSz("typedef")) )
+        {
+          PushT.Type = CTokenType_Typedef;
+        }
+
+        if ( StringsMatch(PushT.Value, CSz("meta")) )
+        {
+          PushT.Type = CTokenType_Meta;
+        }
+
+        if ( StringsMatch(PushT.Value, CSz("union")) )
+        {
+          PushT.Type = CTokenType_Union;
+        }
+
+        if ( StringsMatch(PushT.Value, CSz("using")) )
+        {
+          PushT.Type = CTokenType_Using;
+        }
+
+        if ( StringsMatch(PushT.Value, CSz("enum")) )
+        {
+          PushT.Type = CTokenType_Enum;
+        }
+
+        if ( StringsMatch(PushT.Value, CSz("goto")) )
+        {
+          PushT.Type = CTokenType_Goto;
         }
 
       } break;
@@ -1627,15 +1710,6 @@ GetBodyTextForNextScope(c_parse_result* Parser)
   return BodyText;
 }
 
-function b32
-IsCxxDefinitionKeyword(counted_string Value)
-{
-  b32 Result = StringsMatch(Value, CSz("volatile")) ||
-               StringsMatch(Value, CSz("struct")) ||
-               StringsMatch(Value, CSz("const"));
-  return Result;
-}
-
 function struct_def
 ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes);
 
@@ -1671,36 +1745,41 @@ ParseStructMember(c_parse_result* Parser, counted_string StructName, memory_aren
       Result.struct_member_function.Type = type_struct_member_function_destructor;
     } break;
 
+    case CTokenType_Union:
+    {
+      RequireToken(Parser, CTokenType_Union);
+      Result.Type = type_struct_member_anonymous;
+      Result.struct_member_anonymous.Body = ParseStructBody(Parser, CS("anonymous_union"), Memory, Datatypes);
+      RequireToken(Parser, CTokenType_Semicolon);
+      Unnamed = True;
+    } break;
+
+    case CTokenType_Struct:
+    {
+      RequireToken(Parser, CTokenType_Struct);
+      Result.Type = type_struct_member_anonymous;
+      Result.struct_member_anonymous.Body = ParseStructBody(Parser, CS("anonymous_struct"), Memory, Datatypes);
+      RequireToken(Parser, CTokenType_Semicolon);
+      Unnamed = True;
+    } break;
+
+    case CTokenType_Const:
+    case CTokenType_Static:
+    case CTokenType_Volatile:
+    case CTokenType_Void:
+    case CTokenType_Auto:
+    case CTokenType_Unsigned:
     case CTokenType_Identifier:
     {
-      b32 Done = False;
       u32 DefKeywordsEncountered = 0;
       c_token NextToken = PeekToken(Parser);
-      if (StringsMatch(NextToken.Value, CS("union")))
-      {
-        RequireToken(Parser, CToken(CS("union")));
-        Result.Type = type_struct_member_anonymous;
-        Result.struct_member_anonymous.Body = ParseStructBody(Parser, CS("anonymous_union"), Memory, Datatypes);
-        RequireToken(Parser, CTokenType_Semicolon);
-        Done = True;
-        Unnamed = True;
-      }
-      else if ( StringsMatch(NextToken.Value, StructName) &&
-                PeekToken(Parser, 1).Type == CTokenType_OpenParen)
+      if ( StringsMatch(NextToken.Value, StructName) &&
+           PeekToken(Parser, 1).Type == CTokenType_OpenParen)
       {
         RequireToken(Parser, CToken(StructName));
         EatFunctionDecl(Parser);
         Result.Type = type_struct_member_function;
         Result.struct_member_function.Type = type_struct_member_function_constructor;
-      }
-      else if (StringsMatch(NextToken.Value, CS("struct")))
-      {
-        RequireToken(Parser, CToken(CS("struct")));
-        Result.Type = type_struct_member_anonymous;
-        Result.struct_member_anonymous.Body = ParseStructBody(Parser, CS("anonymous_struct"), Memory, Datatypes);
-        RequireToken(Parser, CTokenType_Semicolon);
-        Done = True;
-        Unnamed = True;
       }
       else
       {
@@ -2168,6 +2247,161 @@ IsTypeQualifier(c_token T)
   return Result;
 }
 
+function void
+ParseIndirectionAndReferenceLevels(c_parse_result* Parser, type_spec_2 *Result)
+{
+  b32 Done = False;
+  while (!Done)
+  {
+    c_token T = PeekToken(Parser);
+
+    switch (T.Type)
+    {
+      case CTokenType_Ampersand:
+      {
+        RequireToken(Parser, CTokenType_Ampersand);
+        ++Result->ReferenceLevel;
+      } break;
+
+      case CTokenType_Star:
+      {
+        RequireToken(Parser, CTokenType_Star);
+        ++Result->IndirectionLevel;
+      } break;
+
+      case CTokenType_Identifier:
+      {
+        Done = True;
+      } break;
+
+      InvalidDefaultWhileParsing(Parser, CSz("Invalid token while parsing indirection and reference levels."));
+    }
+  }
+
+  return;
+}
+
+function type_spec_2
+ParseTypeSpecifier2(c_parse_result *Parser)
+{
+  type_spec_2 Result = {};
+
+  string_from_parser Builder = StartStringFromParser(Parser);
+
+  b32 Done = False;
+  while (!Done)
+  {
+    c_token NextToken = PeekToken(Parser);
+
+    switch (NextToken.Type)
+    {
+      case CTokenType_At:
+      {
+        RequireToken(Parser, CTokenType_At);
+        Result.IsMetaTemplateVar = True;
+      } break;
+
+      case CTokenType_OpenParen:
+      {
+        if (PeekToken(Parser, 1).Type == CTokenType_Star)
+        {
+          // Function pointer
+          EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+          EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+          Result.IsFunctionPointer = True;
+          break;
+        }
+        else
+        {
+          OutputParsingError(Parser, CSz("Invalid token while parsing type specifier."));
+        }
+
+        Done = True;
+      } break;
+
+      case CTokenType_Colon:
+      {
+        Assert(!Result.Namespace.Count);
+        RequireToken(Parser, CTokenType_Colon);
+        RequireToken(Parser, CTokenType_Colon);
+        Result.Namespace = Result.Name;
+        Result.Name.Count = 0;
+      } break;
+
+      case CTokenType_ThreadLocal:
+      {
+        RequireToken(Parser, CTokenType_ThreadLocal);
+        Result.ThreadLocal = True;
+      } break;
+
+      case CTokenType_Const:
+      {
+        RequireToken(Parser, CTokenType_Const);
+        Result.Const = True;
+      } break;
+
+      case CTokenType_Static:
+      {
+        RequireToken(Parser, CTokenType_Static);
+        Result.Static = True;
+      } break;
+
+      case CTokenType_Volatile:
+      {
+        RequireToken(Parser, CTokenType_Volatile);
+        Result.Volatile = True;
+      } break;
+
+      case CTokenType_Void:
+      {
+        RequireToken(Parser, CTokenType_Void);
+        Result.Void = True;
+      } break;
+
+      case CTokenType_Auto:
+      {
+        RequireToken(Parser, CTokenType_Auto);
+        Result.Auto = True;
+      } break;
+
+      case CTokenType_Unsigned:
+      {
+        RequireToken(Parser, CTokenType_Unsigned);
+        Result.Unsigned = True;
+      } break;
+
+      case CTokenType_Struct:
+      {
+        RequireToken(Parser, CTokenType_Struct);
+        Result.Struct = True;
+      } break;
+
+      case CTokenType_Identifier:
+      {
+        if (Result.Name.Count)
+        {
+          Done = True;
+        }
+        else
+        {
+          Result.Name = RequireToken(Parser, CTokenType_Identifier).Value; // TODO(Jesse id: 232, tags: metaprogramming, function_parsing): Should this be the name if it's a constructor?
+          ParseIndirectionAndReferenceLevels(Parser, &Result);
+        }
+
+      } break;
+
+      InvalidDefaultWhileParsing(Parser, CSz("Invalid token encountered while parsing a type specifier"));
+    }
+
+    EatWhitespaceAndComments(Parser);
+    continue;
+  }
+
+  Result.SourceText = FinalizeStringFromParser(&Builder, Parser);
+
+  return Result;
+}
+
 function type_spec
 ParseTypeSpecifier(c_parse_result *Parser)
 {
@@ -2231,6 +2465,52 @@ ParseTypeSpecifier(c_parse_result *Parser)
         ++Result.IndirectionLevel;
       } break;
 
+      case CTokenType_Const:
+      {
+        RequireToken(Parser, CTokenType_Const);
+        Result.Const = True;
+      } break;
+
+      case CTokenType_Static:
+      {
+        RequireToken(Parser, CTokenType_Static);
+        Result.IsStatic = True;
+      } break;
+
+      case CTokenType_Volatile:
+      {
+        RequireToken(Parser, CTokenType_Volatile);
+        Result.Volatile = True;
+      } break;
+
+      case CTokenType_Unsigned:
+      {
+        RequireToken(Parser, CTokenType_Unsigned);
+        Result.Unsigned = True;
+      } break;
+
+      case CTokenType_Struct:
+      {
+        // TODO(Jesse id: 198): Do we ignore this?
+        RequireToken(Parser, CTokenType_Struct);
+      } break;
+
+      case CTokenType_ThreadLocal:
+      {
+        RequireToken(Parser, CTokenType_ThreadLocal);
+        Result.ThreadLocal = True;
+      } break;
+
+      case CTokenType_Void:
+      {
+        RequireToken(Parser, CTokenType_Void);
+      } break;
+
+      case CTokenType_Auto:
+      {
+        RequireToken(Parser, CTokenType_Auto);
+      } break;
+
       case CTokenType_Identifier:
       {
         if (StringsMatch(NextToken.Value, CS("unsigned")))
@@ -2246,27 +2526,6 @@ ParseTypeSpecifier(c_parse_result *Parser)
           RequireToken(Parser, CTokenType_Identifier);
           Result.Name = ParseOperator(Parser);
           Done = true;
-        }
-        else if (StringsMatch(NextToken.Value, CSz("volatile")) )
-        {
-          Result.Volatile = True;
-          RequireToken(Parser, CTokenType_Identifier);
-        }
-        else if (StringsMatch(NextToken.Value, CSz("struct")) )
-        {
-          // TODO(Jesse id: 198): Do we ignore this?
-          RequireToken(Parser, CTokenType_Identifier);
-        }
-        else if (StringsMatch(NextToken.Value, CSz("static")) )
-        {
-          // TODO(Jesse id: 207): Emit domain-specific warning here?
-          Result.IsStatic = True;
-          RequireToken(Parser, CTokenType_Identifier);
-        }
-        else if (StringsMatch(NextToken.Value, CSz("thread_local")) )
-        {
-          Result.ThreadLocal = True;
-          RequireToken(Parser, CTokenType_Identifier);
         }
         else if (StringsMatch(NextToken.Value, CSz("APIENTRY")) )
         {
@@ -2308,11 +2567,6 @@ ParseTypeSpecifier(c_parse_result *Parser)
         {
           // TODO(Jesse id: 204 tags: id_205): See #205
           Result.IsStatic = True;
-          RequireToken(Parser, CTokenType_Identifier);
-        }
-        else if (StringsMatch(NextToken.Value, CSz("const")) )
-        {
-          Result.Const = true;
           RequireToken(Parser, CTokenType_Identifier);
         }
         else if (StringsMatch(NextToken.Value, CSz("template")) )
@@ -2554,10 +2808,8 @@ ParseFunctionDefArgs(c_parse_result* Parser, memory_arena* Memory, function_def*
       Done = True;
     }
 
-    if (OptionalToken(Parser, CTokenType_Dot))
+    if (OptionalToken(Parser, CTokenType_Ellipsis))
     {
-      RequireToken(Parser, CTokenType_Dot);
-      RequireToken(Parser, CTokenType_Dot);
       Result->Prototype.IsVariadic = True;
       Done = True;
     }
@@ -2610,32 +2862,35 @@ EatStructDef(c_parse_result* Parser)
 function void
 ParseDatatypeDef(c_parse_result* Parser, program_datatypes* Datatypes, memory_arena* Memory)
 {
-  counted_string DatatypeIdentifier = RequireToken(Parser, CTokenType_Identifier).Value;
+  c_token TypeSpecifier = PopToken(Parser);
 
-  if (StringsMatch(DatatypeIdentifier, CSz("enum")))
+  switch(TypeSpecifier.Type)
   {
-    enum_def Enum = ParseEnum(Parser, Memory);
-    Push(&Datatypes->Enums, Enum, Memory);
-  }
-  else if (StringsMatch(DatatypeIdentifier, CSz("struct")))
-  {
-    counted_string StructName = RequireToken(Parser, CTokenType_Identifier).Value;
-    if ( PeekToken(Parser).Type == CTokenType_OpenBrace )
+    case CTokenType_Enum:
     {
-      struct_def S = ParseStructBody(Parser, StructName, Memory, Datatypes);
+      enum_def Enum = ParseEnum(Parser, Memory);
+      Push(&Datatypes->Enums, Enum, Memory);
+    } break;
+
+    case CTokenType_Struct:
+    {
+      counted_string StructName = RequireToken(Parser, CTokenType_Identifier).Value;
+      if ( PeekToken(Parser).Type == CTokenType_OpenBrace )
+      {
+        struct_def S = ParseStructBody(Parser, StructName, Memory, Datatypes);
+        Push(&Datatypes->Structs, S, Memory);
+      }
+    } break;
+
+    case CTokenType_Union:
+    {
+      counted_string UnionName = RequireToken(Parser, CTokenType_Identifier).Value;
+      struct_def S = ParseStructBody(Parser, UnionName, Memory, Datatypes);
+      S.IsUnion = True;
       Push(&Datatypes->Structs, S, Memory);
-    }
-  }
-  else if (StringsMatch(DatatypeIdentifier, CSz("union")))
-  {
-    counted_string UnionName = RequireToken(Parser, CTokenType_Identifier).Value;
-    struct_def S = ParseStructBody(Parser, UnionName, Memory, Datatypes);
-    S.IsUnion = True;
-    Push(&Datatypes->Structs, S, Memory);
-  }
-  else
-  {
-    OutputParsingError(Parser, CSz("Tried parsing a datatypes that wasn't a struct, enum or union!"));
+    } break;
+
+    InvalidDefaultWhileParsing(Parser, CSz("Tried parsing a datatypes that wasn't a struct, enum or union!"));
   }
 
   RequireToken(Parser, CTokenType_Semicolon);
@@ -2644,9 +2899,9 @@ ParseDatatypeDef(c_parse_result* Parser, program_datatypes* Datatypes, memory_ar
 function void
 ParseTypedef(c_parse_result* Parser, program_datatypes* Datatypes, memory_arena* Memory)
 {
-  RequireToken(Parser, CToken(CSz("typedef")));
+  RequireToken(Parser, CTokenType_Typedef);
 
-  if ( OptionalToken(Parser, CToken(CSz("struct"))) )
+  if ( OptionalToken(Parser, CTokenType_Struct) )
   {
     if (PeekToken(Parser).Type == CTokenType_OpenBrace)
     {
@@ -2726,8 +2981,8 @@ GetByName(counted_string Name, variable_stream* Stream)
   return Result;
 }
 
-function ast_node*
-ParseExpression(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Datatypes, ast_node_variable_def_stream *Locals);
+function ast_node_expression*
+ParseExpression(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Datatypes);
 
 function ast_node*
 ParseSymbol(c_parse_result *Parser, memory_arena *Memory)
@@ -2748,14 +3003,12 @@ ParseIgnoredNode(c_parse_result *Parser, memory_arena *Memory)
 }
 
 function ast_node*
-ParseFunctionArgument(c_parse_result *Parser, memory_arena *Memory, function_def_stream *FunctionPrototypes, ast_node_variable_def_stream *Locals);
+ParseFunctionArgument(c_parse_result *Parser, memory_arena *Memory, function_def_stream *FunctionPrototypes);
 
 #if 0
 function void
 ReduceToTypeSpec(ast_node* InputNode, ast_node_variable_def_stream *Locals, type_spec *ResultType)
 {
-  *Locals;
-
   ast_node* Current = InputNode;
 
   while (Current)
@@ -2840,42 +3093,65 @@ IsTypeIdentifier(counted_string TypeName, program_datatypes *Datatypes)
   return Result;
 }
 
-function ast_node*
-ParseFunctionCall(c_parse_result *Parser, counted_string FunctionName, memory_arena* Memory, program_datatypes *Datatypes);
+function statement_list*
+ParseAllStatements(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Datatypes);
 
-#if 0
-function ast_node_expression*
-ParseStatement(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Datatypes)
+function statement_list*
+ParseScope(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Datatypes)
 {
+  RequireToken(Parser, CTokenType_OpenBrace);
+  statement_list *Result = ParseAllStatements(Parser, Memory, Datatypes);
+  return Result;
+}
+
+function statement_list*
+ParseSingleStatement(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Datatypes)
+{
+  statement_list *Result = AllocateProtection(statement_list, Memory, 1, False);
+
+  b32 Done = False;
+  while (!Done && Remaining(Parser))
+  {
+    const c_token T = PeekToken(Parser);
+    switch (T.Type)
+    {
+      case CTokenType_Ampersand:
+      case CTokenType_Identifier:
+      {
+        Assert(!Result->LHS);
+        Result->LHS = ParseExpression(Parser, Memory, Datatypes);
+      } break;
+
       case CTokenType_Equals:
       {
         RequireToken(Parser, T.Type);
-        Node->RHS = ParseExpression(Parser, Memory, Datatypes);
+        Result->RHS = ParseSingleStatement(Parser, Memory, Datatypes);
+        Done = True;
       } break;
 
-      case CTokenType_Case:
-      {
-        ast_node_predicated *Node = SafeConvert(ast_node_predicated, Result);
-        Node->Token = RequireToken(Parser, T.Type);
-        Node->Predicate = ParseExpression(Parser, Memory);
-      } break;
-
-      case CTokenType_Default:
-      {
-        ast_node_predicated *Node = SafeConvert(ast_node_predicated, Result);
-        Node->Token = RequireToken(Parser, T.Type);
-        RequireToken(Parser, CTokenType_Colon);
-      } break;
-
-      case CTokenType_If:
       case CTokenType_For:
+      case CTokenType_If:
       case CTokenType_While:
       case CTokenType_Switch:
       {
         RequireToken(Parser, T.Type);
-        EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen); // Store predicate condition?
-        ast_node_scope* Node = SafeConvert(ast_node_scope, Result);
-        Node->FirstStatement = ParseStatement(Parser, Memory, Datatypes);
+        Result->LHS = ParseExpression(Parser, Memory, Datatypes);
+        Result->RHS = ParseScope(Parser, Memory, Datatypes);
+      } break;
+
+      case CTokenType_Case:
+      {
+        RequireToken(Parser, CTokenType_Case);
+        Result->LHS = ParseExpression(Parser, Memory, Datatypes);
+        RequireToken(Parser, CTokenType_Colon);
+        Result->RHS = ParseScope(Parser, Memory, Datatypes);
+      } break;
+
+      case CTokenType_Default:
+      {
+        RequireToken(Parser, CTokenType_Default);
+        RequireToken(Parser, CTokenType_Colon);
+        Result->RHS = ParseScope(Parser, Memory, Datatypes);
       } break;
 
       // What do we do with these?
@@ -2883,180 +3159,281 @@ ParseStatement(c_parse_result *Parser, memory_arena *Memory, program_datatypes *
       case CTokenType_Break:
       case CTokenType_Continue:
       {
+        RequireToken(Parser, T.Type);
+        Result->RHS = ParseScope(Parser, Memory, Datatypes);
+      } break;
+
+      case CTokenType_Return:
+      {
+        RequireToken(Parser, T.Type);
+        Result->LHS = ParseExpression(Parser, Memory, Datatypes);
+      } break;
+
+      case CTokenType_OpenBrace:
+      {
+        Result->RHS = ParseScope(Parser, Memory, Datatypes);
+        Done = True;
+      } break;
+
+      case CTokenType_CloseBrace:
+      {
+        RequireToken(Parser, T.Type);
+        Done = True;
       } break;
 
       case CTokenType_Semicolon:
       {
+        RequireToken(Parser, T.Type);
         Done = True;
       } break;
 
+      InvalidDefaultWhileParsing(Parser, CSz("Invalid token encountered while parsing statement."));
+    }
+  }
+
+  Assert(!Result->Next);
+  return Result;
 }
-#endif
+
+function statement_list*
+ParseAllStatements(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Datatypes)
+{
+  statement_list *Result = 0;
+
+  statement_list **Current = &Result;
+  while ( Remaining(&Parser->Tokens) )
+  {
+    Assert(!(*Current));
+    *Current = ParseSingleStatement(Parser, Memory, Datatypes);
+    Current = &(*Current)->Next;
+    Assert(!(*Current));
+    EatWhitespaceAndComments(Parser);
+    continue;
+  }
+
+  return Result;
+}
 
 // #define SafeConvert(T, Node) Node->T; Assert(Node->Type == type_##T); Node->Type = type_##T
 
-function ast_node_statement*
-ParseScope(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Datatypes)
+function ast_node*
+ParseFunctionCall(c_parse_result *Parser, counted_string FunctionName, memory_arena* Memory, program_datatypes *Datatypes);
+
+
+function b32
+TokenIsOperator(c_token_type T)
 {
-  ++Parser; ++Memory; ++Datatypes;
-  NotImplemented;
-  return 0;
+  b32 Result = False;
+  switch (T)
+  {
+    case CTokenType_Ampersand:
+    case CTokenType_Tilde:
+    case CTokenType_Hat:
+    case CTokenType_LT:
+    case CTokenType_GT:
+    case CTokenType_Bang:
+    case CTokenType_LeftShift:
+    case CTokenType_RightShift:
+    case CTokenType_LessEqual:
+    case CTokenType_GreaterEqual:
+    case CTokenType_AreEqual:
+    case CTokenType_NotEqual:
+    case CTokenType_PlusEquals:
+    case CTokenType_MinusEquals:
+    case CTokenType_TimesEquals:
+    case CTokenType_DivEquals:
+    case CTokenType_ModEquals:
+    case CTokenType_AndEquals:
+    case CTokenType_OrEquals:
+    case CTokenType_XorEquals:
+    case CTokenType_Increment:
+    case CTokenType_Decrement:
+    case CTokenType_LogicalAnd:
+    case CTokenType_LogicalOr:
+    case CTokenType_Percent:
+    case CTokenType_Pipe:
+    case CTokenType_Plus:
+    case CTokenType_Minus:
+    case CTokenType_FSlash:
+    case CTokenType_Question:
+    case CTokenType_Colon:
+    case CTokenType_Comma:
+    case CTokenType_Star:
+    case CTokenType_OpenBracket:
+    case CTokenType_Arrow:
+    case CTokenType_Dot:
+    {
+      Result = True;
+    } break;
+
+    default: {} break;
+  }
+
+  return Result;
 }
 
 function ast_node_expression*
 ParseExpression(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Datatypes)
 {
-  ast_node_expression *Result = Allocate(ast_node_expression, Memory, 1);
+  ast_node_expression *Result = AllocateProtection(ast_node_expression, Memory, 1, False);
 
-  while ( Remaining(&Parser->Tokens) )
+  const c_token T = PeekToken(Parser);
+  switch (T.Type)
   {
-    const c_token T = PeekToken(Parser);
-
-    switch (T.Type)
+    case CTokenType_Meta:
     {
-      case CTokenType_Identifier:
-      {
-        if ( StringsMatch(T.Value, CSz("meta")) ||
-             StringsMatch(T.Value, CSz("_meta")) )
-        {
-          RequireToken(Parser, CTokenType_Identifier);
-          EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
-        }
-        else
-        {
-          c_token SymbolToken = RequireToken(Parser, CTokenType_Identifier);
-          if ( PeekToken(Parser).Type == CTokenType_LT )
-          {
-            b32 ValidTemplateList = True;
-            u32 Lookahead = 0;
-            while (++Lookahead) // Intentionally starts at 1
-            {
-              c_token TemplateParamListTestT = PeekToken(Parser, Lookahead);
-              if (TemplateParamListTestT.Type == CTokenType_Identifier)
-              {
-                if (!IsTypeIdentifier(TemplateParamListTestT.Value, Datatypes))
-                {
-                  ValidTemplateList = False;
-                  break;
-                }
-              }
-              else if (TemplateParamListTestT.Type == CTokenType_Comma)
-              {
-              }
-              else if (TemplateParamListTestT.Type == CTokenType_GT)
-              {
-                break;
-              }
-              else
-              {
-                ValidTemplateList = False;
-                break;
-              }
-            }
+      RequireToken(Parser, CTokenType_Meta);
+      EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+    } break;
 
-            if (ValidTemplateList)
+    case CTokenType_Identifier:
+    {
+      if ( PeekToken(Parser, 1).Type == CTokenType_LT )
+      {
+        b32 ValidTemplateList = True;
+        u32 Lookahead = 1;
+        while (++Lookahead) // Intentionally starts at 2
+        {
+          c_token TemplateParamListTestT = PeekToken(Parser, Lookahead);
+          if (TemplateParamListTestT.Type == CTokenType_Identifier)
+          {
+            if (!IsTypeIdentifier(TemplateParamListTestT.Value, Datatypes))
             {
-              EatBetween(Parser, CTokenType_LT, CTokenType_GT);
+              ValidTemplateList = False;
+              break;
             }
           }
-
-          if ( PeekToken(Parser).Type  == CTokenType_OpenParen )
+          else if (TemplateParamListTestT.Type == CTokenType_Comma)
           {
-            Result->Value = ParseFunctionCall(Parser, SymbolToken.Value, Memory, Datatypes);
+          }
+          else if (TemplateParamListTestT.Type == CTokenType_GT)
+          {
+            break;
           }
           else
           {
-            ast_node_symbol *Node = AllocateAndCastTo(ast_node_symbol, &Result->Value, Memory);
-            Node->Token = SymbolToken;
+            ValidTemplateList = False;
+            break;
           }
         }
-      } break;
 
-      case CTokenType_OpenBrace:
+        if (ValidTemplateList)
+        {
+          EatBetween(Parser, CTokenType_LT, CTokenType_GT);
+        }
+      }
+
+      if ( PeekToken(Parser, 1).Type  == CTokenType_OpenParen )
       {
-        ast_node_scope* Node = AllocateAndCastTo(ast_node_scope, &Result->Value, Memory);
-        Node->FirstStatement = ParseScope(Parser, Memory, Datatypes);
-      } break;
-
-      case CTokenType_OpenParen:
+        c_token SymbolToken = RequireToken(Parser, CTokenType_Identifier);
+        Result->Value = ParseFunctionCall(Parser, SymbolToken.Value, Memory, Datatypes);
+      }
+      else
       {
-        RequireToken(Parser, T.Type);
-        ast_node_parenthesized *Node = AllocateAndCastTo(ast_node_parenthesized, &Result->Value, Memory);
-        Node->Expr = ParseExpression(Parser, Memory, Datatypes);
-      } break;
+        datatype TestDatatype = GetDatatypeByName(Datatypes, T.Value);
+        if (TestDatatype.Type == type_datatype_noop)
+        {
+          ast_node_symbol *Node = AllocateAndCastTo(ast_node_symbol, &Result->Value, Memory);
+          Node->Token = RequireToken(Parser, CTokenType_Identifier);
+        }
+        else
+        {
+          ast_node_type_specifier *Node = AllocateAndCastTo(ast_node_type_specifier, &Result->Value, Memory);
+          Node->Datatype = TestDatatype;
+          Node->TypeSpec = ParseTypeSpecifier2(Parser);
+          Node->Name = RequireToken(Parser, CTokenType_Identifier).Value;
+        }
+      }
+    } break;
 
-      case CTokenType_Return:
-      {
-        ast_node_return *Node = AllocateAndCastTo(ast_node_return, &Result->Value, Memory);
-        Node->Value = ParseExpression(Parser, Memory, Datatypes);
-      } break;
+    case CTokenType_Const:
+    case CTokenType_Static:
+    case CTokenType_Volatile:
+    case CTokenType_Void:
+    case CTokenType_Auto:
+    case CTokenType_Unsigned:
+    {
+      ast_node_type_specifier *Node = AllocateAndCastTo(ast_node_type_specifier, &Result->Value, Memory);
+      Node->TypeSpec = ParseTypeSpecifier2(Parser);
+      Node->Datatype = GetDatatypeByName(Datatypes, Node->TypeSpec.Name);
+    } break;
 
-      case CTokenType_Hash:
-      {
-        EatUntil(Parser, CTokenType_Newline);
-      } break;
+    case CTokenType_OpenParen:
+    {
+      RequireToken(Parser, T.Type);
+      ast_node_parenthesized *Node = AllocateAndCastTo(ast_node_parenthesized, &Result->Value, Memory);
+      Node->Expr = ParseExpression(Parser, Memory, Datatypes);
+      RequireToken(Parser, CTokenType_CloseParen);
+    } break;
 
-      case CTokenType_Ampersand:
-      case CTokenType_Tilde:
-      case CTokenType_Hat:
-      case CTokenType_LT:
-      case CTokenType_GT:
-      case CTokenType_Bang:
-      case CTokenType_LeftShift:
-      case CTokenType_RightShift:
-      case CTokenType_LessEqual:
-      case CTokenType_GreaterEqual:
-      case CTokenType_AreEqual:
-      case CTokenType_NotEqual:
-      case CTokenType_PlusEquals:
-      case CTokenType_MinusEquals:
-      case CTokenType_TimesEquals:
-      case CTokenType_DivEquals:
-      case CTokenType_ModEquals:
-      case CTokenType_AndEquals:
-      case CTokenType_OrEquals:
-      case CTokenType_XorEquals:
-      case CTokenType_Increment:
-      case CTokenType_Decrement:
-      case CTokenType_LogicalAnd:
-      case CTokenType_LogicalOr:
-      case CTokenType_Percent:
-      case CTokenType_Pipe:
-      case CTokenType_Plus:
-      case CTokenType_Minus:
-      case CTokenType_FSlash:
-      case CTokenType_Question:
-      case CTokenType_Colon:
-      case CTokenType_Comma:
-      case CTokenType_Star:
-      case CTokenType_OpenBracket:
-      case CTokenType_Arrow:
-      case CTokenType_Dot:
-      {
-        ast_node_operator* Node = AllocateAndCastTo(ast_node_operator, &Result->Value, Memory);
-        Node->Token = RequireToken(Parser, T.Type);
-        Node->Operand = ParseExpression(Parser, Memory, Datatypes);
-      } break;
+    case CTokenType_Semicolon:
+    case CTokenType_CloseBracket:
+    case CTokenType_CloseParen:
+    {
+    } break;
 
-      case CTokenType_Char:
-      case CTokenType_String:
-      {
-        ast_node_literal *Node = AllocateAndCastTo(ast_node_literal, &Result->Value, Memory);
-        Node->Token = RequireToken(Parser, T.Type);
-      } break;
+    case CTokenType_Hash:
+    {
+      EatUntil(Parser, CTokenType_Newline);
+    } break;
 
-      case CTokenType_CloseBracket:
-      case CTokenType_CloseParen:
-      case CTokenType_CloseBrace:
-      {
-        RequireToken(Parser, T.Type);
-      } break;
+    case CTokenType_Ampersand:
+    case CTokenType_Tilde:
+    case CTokenType_Hat:
+    case CTokenType_LT:
+    case CTokenType_GT:
+    case CTokenType_Bang:
+    case CTokenType_LeftShift:
+    case CTokenType_RightShift:
+    case CTokenType_LessEqual:
+    case CTokenType_GreaterEqual:
+    case CTokenType_AreEqual:
+    case CTokenType_NotEqual:
+    case CTokenType_PlusEquals:
+    case CTokenType_MinusEquals:
+    case CTokenType_TimesEquals:
+    case CTokenType_DivEquals:
+    case CTokenType_ModEquals:
+    case CTokenType_AndEquals:
+    case CTokenType_OrEquals:
+    case CTokenType_XorEquals:
+    case CTokenType_Increment:
+    case CTokenType_Decrement:
+    case CTokenType_LogicalAnd:
+    case CTokenType_LogicalOr:
+    case CTokenType_Percent:
+    case CTokenType_Pipe:
+    case CTokenType_Plus:
+    case CTokenType_Minus:
+    case CTokenType_FSlash:
+    case CTokenType_Question:
+    case CTokenType_Colon:
+    case CTokenType_Comma:
+    case CTokenType_Star:
+    case CTokenType_OpenBracket:
+    case CTokenType_Arrow:
+    case CTokenType_Dot:
+    {
+      ast_node_operator* Node = AllocateAndCastTo(ast_node_operator, &Result->Value, Memory);
+      Node->Token = RequireToken(Parser, T.Type);
+      Node->Operand = ParseExpression(Parser, Memory, Datatypes);
+      if (T.Type == CTokenType_OpenBracket)
+        { RequireToken(Parser, CTokenType_CloseBracket); }
+    } break;
 
-      InvalidDefaultWhileParsing(Parser, CSz("Invalid token while parsing AST."));
-    }
+    case CTokenType_Char:
+    case CTokenType_String:
+    {
+      ast_node_literal *Node = AllocateAndCastTo(ast_node_literal, &Result->Value, Memory);
+      Node->Token = RequireToken(Parser, T.Type);
+    } break;
 
-    EatWhitespaceAndComments(Parser);
-    continue;
+    InvalidDefaultWhileParsing(Parser, CSz("Invalid token while parsing expression."));
+  }
+
+  if (TokenIsOperator(PeekToken(Parser).Type))
+  {
+    Result->Next = ParseExpression(Parser, Memory, Datatypes);
   }
 
   return Result;
@@ -3129,6 +3506,12 @@ ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_aren
 
     switch(T.Type)
     {
+      case CTokenType_Meta:
+      {
+        RequireToken(Parser, CTokenType_Meta);
+        EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+      } break;
+
       case CTokenType_Hash:
       {
         RequireToken(Parser, CTokenType_Hash);
@@ -3140,41 +3523,51 @@ ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_aren
         RequireToken(Parser, CTokenType_Semicolon);
       } break;
 
-      case CTokenType_Identifier:
-
+      case CTokenType_Struct:
+      case CTokenType_Enum:
+      case CTokenType_Union:
       {
-        if ( StringsMatch(T.Value, CSz("struct")) ||
-             StringsMatch(T.Value, CSz("union"))  ||
-             StringsMatch(T.Value, CSz("enum")) )
+        ParseDatatypeDef(Parser, Datatypes, Memory);
+      } break;
+
+      case CTokenType_Typedef:
+      {
+        ParseTypedef(Parser, Datatypes, Memory);
+      } break;
+
+      case CTokenType_Using:
+      {
+        EatUntil(Parser, CTokenType_Semicolon);
+      } break;
+
+      case CTokenType_Const:
+      case CTokenType_Static:
+      case CTokenType_Volatile:
+      case CTokenType_Void:
+      case CTokenType_Auto:
+      case CTokenType_Unsigned:
+      {
+        // Global variable decl
+        variable Decl = ParseDeclaration(Parser);
+        counted_string Value = ParseDeclarationValue(Parser, &Decl, Datatypes, Memory);
+      } break;
+
+      case CTokenType_Identifier:
+      {
+        // TODO(Jesse id: 205, tags: metaprogramming, completeness): To do this properly, we need to parse out and expand macro definitions here.
+        if (PeekToken(Parser, 1).Type == CTokenType_OpenParen)
         {
-          ParseDatatypeDef(Parser, Datatypes, Memory);
-        }
-        else if ( StringsMatch(T.Value, CSz("typedef")) )
-        {
-          ParseTypedef(Parser, Datatypes, Memory);
-        }
-        else if ( StringsMatch(T.Value, CSz("using")) )
-        {
-          EatUntil(Parser, CTokenType_Semicolon);
+          // TODO(Jesse id: 210, tags: id_205, metaprogramming, completeness): This is a function-macro call .. I think always..?
+          RequireToken(Parser, CTokenType_Identifier);
+          EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+          OptionalToken(Parser, CTokenType_Semicolon);
         }
         else
         {
-          // TODO(Jesse id: 205, tags: metaprogramming, completeness): To do this properly, we need to parse out and expand macro definitions here.
-          if (PeekToken(Parser, 1).Type == CTokenType_OpenParen)
-          {
-            // TODO(Jesse id: 210, tags: id_205, metaprogramming, completeness): This is a function-macro call .. I think always..?
-            RequireToken(Parser, CTokenType_Identifier);
-            EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
-            OptionalToken(Parser, CTokenType_Semicolon);
-          }
-          else
-          {
-            // Global variable decl
-            variable Decl = ParseDeclaration(Parser);
-            counted_string Value = ParseDeclarationValue(Parser, &Decl, Datatypes, Memory);
-          }
+          // Global variable decl
+          variable Decl = ParseDeclaration(Parser);
+          counted_string Value = ParseDeclarationValue(Parser, &Decl, Datatypes, Memory);
         }
-
       } break;
 
       InvalidDefaultWhileParsing(Parser, CSz("Invalid token encountered while parsing."));
@@ -4619,7 +5012,7 @@ ParseFunctionBodiesIntoAsts(program_datatypes *Datatypes, memory_arena *Memory)
   ITERATE_OVER(&Datatypes->Functions)
   {
     function_def *Func = GET_ELEMENT(Iter);
-    Func->Ast = ParseScope(&Func->Body, Memory, Datatypes);
+    Func->Ast = ParseAllStatements(&Func->Body, Memory, Datatypes);
     Assert(Func->Ast);
   }
 }

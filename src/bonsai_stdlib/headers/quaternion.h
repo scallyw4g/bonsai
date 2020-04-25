@@ -54,7 +54,6 @@ GetTheta(v3 P1, v3 P2)
   r32 cosTheta = ClampBilateral(DotP1P2 / (LP1*LP2));
   r32 Theta = (r32)ArcCos( cosTheta );
 
-  Assert(Theta >= -1.0f && Theta <= 1.0f);
   return Theta;
 }
 

@@ -176,14 +176,20 @@
       function void DebugPrint( person* S, u32 Depth = 0);
       function void DebugPrint( person  S, u32 Depth = 0);
 
+      function void DebugPrint( type_spec_2* S, u32 Depth = 0);
+      function void DebugPrint( type_spec_2  S, u32 Depth = 0);
+
       function void DebugPrint( ast_node_expression* S, u32 Depth = 0);
       function void DebugPrint( ast_node_expression  S, u32 Depth = 0);
 
-      function void DebugPrint( ast_node_statement* S, u32 Depth = 0);
-      function void DebugPrint( ast_node_statement  S, u32 Depth = 0);
+      function void DebugPrint( statement_list* S, u32 Depth = 0);
+      function void DebugPrint( statement_list  S, u32 Depth = 0);
 
       function void DebugPrint( ast_node_function_call* S, u32 Depth = 0);
       function void DebugPrint( ast_node_function_call  S, u32 Depth = 0);
+
+      function void DebugPrint( ast_node_type_specifier* S, u32 Depth = 0);
+      function void DebugPrint( ast_node_type_specifier  S, u32 Depth = 0);
 
       function void DebugPrint( ast_node_variable_def* S, u32 Depth = 0);
       function void DebugPrint( ast_node_variable_def  S, u32 Depth = 0);

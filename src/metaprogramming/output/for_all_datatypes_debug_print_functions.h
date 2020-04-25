@@ -2098,6 +2098,109 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
+    function void DebugPrint( type_spec_2 S, u32 Depth)
+    {
+      DebugPrint("type_spec_2 {\n", Depth);
+      
+          DebugPrint("counted_string Namespace {\n", Depth+2);
+          DebugPrint(S.Namespace, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("counted_string Name {\n", Depth+2);
+          DebugPrint(S.Name, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("counted_string SourceText {\n", Depth+2);
+          DebugPrint(S.SourceText, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("u32 ReferenceLevel {\n", Depth+2);
+          DebugPrint(S.ReferenceLevel, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("u32 IndirectionLevel {\n", Depth+2);
+          DebugPrint(S.IndirectionLevel, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("b32 IsMetaTemplateVar {\n", Depth+2);
+          DebugPrint(S.IsMetaTemplateVar, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("b32 ThreadLocal {\n", Depth+2);
+          DebugPrint(S.ThreadLocal, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("b32 Const {\n", Depth+2);
+          DebugPrint(S.Const, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("b32 Static {\n", Depth+2);
+          DebugPrint(S.Static, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("b32 Volatile {\n", Depth+2);
+          DebugPrint(S.Volatile, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("b32 Void {\n", Depth+2);
+          DebugPrint(S.Void, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("b32 Auto {\n", Depth+2);
+          DebugPrint(S.Auto, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("b32 Unsigned {\n", Depth+2);
+          DebugPrint(S.Unsigned, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("b32 Struct {\n", Depth+2);
+          DebugPrint(S.Struct, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("b32 IsFunctionPointer {\n", Depth+2);
+          DebugPrint(S.IsFunctionPointer, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( type_spec_2 *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
     function void DebugPrint( ast_node_expression S, u32 Depth)
     {
       DebugPrint("ast_node_expression {\n", Depth);
@@ -2108,7 +2211,7 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("ast_node Next {\n", Depth+2);
+          DebugPrint("ast_node_expression Next {\n", Depth+2);
           DebugPrint(S.Next, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
@@ -2123,9 +2226,9 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
-    function void DebugPrint( ast_node_statement S, u32 Depth)
+    function void DebugPrint( statement_list S, u32 Depth)
     {
-      DebugPrint("ast_node_statement {\n", Depth);
+      DebugPrint("statement_list {\n", Depth);
       
           DebugPrint("ast_node_expression LHS {\n", Depth+2);
           DebugPrint(S.LHS, Depth+4);
@@ -2133,13 +2236,13 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("ast_node_expression RHS {\n", Depth+2);
+          DebugPrint("statement_list RHS {\n", Depth+2);
           DebugPrint(S.RHS, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("ast_node_statement Next {\n", Depth+2);
+          DebugPrint("statement_list Next {\n", Depth+2);
           DebugPrint(S.Next, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
@@ -2148,7 +2251,7 @@
       DebugPrint("}\n", Depth);
     }
 
-    function void DebugPrint( ast_node_statement *S, u32 Depth)
+    function void DebugPrint( statement_list *S, u32 Depth)
     {
       if (S) { DebugPrint(*S, Depth); }
       else { DebugPrint("ptr(0)", Depth); }
@@ -2174,6 +2277,37 @@
     }
 
     function void DebugPrint( ast_node_function_call *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( ast_node_type_specifier S, u32 Depth)
+    {
+      DebugPrint("ast_node_type_specifier {\n", Depth);
+      
+          DebugPrint("datatype Datatype {\n", Depth+2);
+          DebugPrint(S.Datatype, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("type_spec_2 TypeSpec {\n", Depth+2);
+          DebugPrint(S.TypeSpec, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("counted_string Name {\n", Depth+2);
+          DebugPrint(S.Name, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( ast_node_type_specifier *S, u32 Depth)
     {
       if (S) { DebugPrint(*S, Depth); }
       else { DebugPrint("ptr(0)", Depth); }
@@ -2214,7 +2348,7 @@
     {
       DebugPrint("ast_node_scope {\n", Depth);
       
-          DebugPrint("ast_node_statement FirstStatement {\n", Depth+2);
+          DebugPrint("statement_list FirstStatement {\n", Depth+2);
           DebugPrint(S.FirstStatement, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
@@ -2317,12 +2451,6 @@
       
           DebugPrint("c_token Token {\n", Depth+2);
           DebugPrint(S.Token, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-          DebugPrint("ast_node Access {\n", Depth+2);
-          DebugPrint(S.Access, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
@@ -2483,7 +2611,7 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("ast_node_statement Ast {\n", Depth+2);
+          DebugPrint("statement_list Ast {\n", Depth+2);
           DebugPrint(S.Ast, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
@@ -8837,6 +8965,96 @@
               DebugPrint("");
             } break;
 
+            case CTokenType_Meta:
+            {
+              DebugPrint("CTokenType_Meta ", Depth);
+              DebugPrint("");
+            } break;
+
+            case CTokenType_Struct:
+            {
+              DebugPrint("CTokenType_Struct ", Depth);
+              DebugPrint("");
+            } break;
+
+            case CTokenType_Enum:
+            {
+              DebugPrint("CTokenType_Enum ", Depth);
+              DebugPrint("");
+            } break;
+
+            case CTokenType_Union:
+            {
+              DebugPrint("CTokenType_Union ", Depth);
+              DebugPrint("");
+            } break;
+
+            case CTokenType_Typedef:
+            {
+              DebugPrint("CTokenType_Typedef ", Depth);
+              DebugPrint("");
+            } break;
+
+            case CTokenType_Using:
+            {
+              DebugPrint("CTokenType_Using ", Depth);
+              DebugPrint("");
+            } break;
+
+            case CTokenType_ThreadLocal:
+            {
+              DebugPrint("CTokenType_ThreadLocal ", Depth);
+              DebugPrint("");
+            } break;
+
+            case CTokenType_Const:
+            {
+              DebugPrint("CTokenType_Const ", Depth);
+              DebugPrint("");
+            } break;
+
+            case CTokenType_Static:
+            {
+              DebugPrint("CTokenType_Static ", Depth);
+              DebugPrint("");
+            } break;
+
+            case CTokenType_Volatile:
+            {
+              DebugPrint("CTokenType_Volatile ", Depth);
+              DebugPrint("");
+            } break;
+
+            case CTokenType_Void:
+            {
+              DebugPrint("CTokenType_Void ", Depth);
+              DebugPrint("");
+            } break;
+
+            case CTokenType_Auto:
+            {
+              DebugPrint("CTokenType_Auto ", Depth);
+              DebugPrint("");
+            } break;
+
+            case CTokenType_Unsigned:
+            {
+              DebugPrint("CTokenType_Unsigned ", Depth);
+              DebugPrint("");
+            } break;
+
+            case CTokenType_Goto:
+            {
+              DebugPrint("CTokenType_Goto ", Depth);
+              DebugPrint("");
+            } break;
+
+            case CTokenType_Ellipsis:
+            {
+              DebugPrint("CTokenType_Ellipsis ", Depth);
+              DebugPrint("");
+            } break;
+
             case CTokenType_If:
             {
               DebugPrint("CTokenType_If ", Depth);
@@ -10040,6 +10258,12 @@
             case type_ast_node_variable_def:
             {
               DebugPrint("type_ast_node_variable_def ", Depth);
+              DebugPrint("");
+            } break;
+
+            case type_ast_node_type_specifier:
+            {
+              DebugPrint("type_ast_node_type_specifier ", Depth);
               DebugPrint("");
             } break;
 

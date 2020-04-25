@@ -312,6 +312,26 @@ enum c_token_type
   CTokenType_Char,
   CTokenType_EscapedNewline,
 
+  CTokenType_Meta,
+
+  CTokenType_Struct,
+  CTokenType_Enum,
+  CTokenType_Union,
+  CTokenType_Typedef,
+
+  CTokenType_Using,
+
+  CTokenType_ThreadLocal,
+  CTokenType_Const,
+  CTokenType_Static,
+  CTokenType_Volatile,
+  CTokenType_Void,
+  CTokenType_Auto,
+  CTokenType_Unsigned,
+
+  CTokenType_Goto,
+  CTokenType_Ellipsis,
+
   CTokenType_If,
   CTokenType_Else,
   CTokenType_Break,
@@ -644,26 +664,56 @@ meta(generate_stream(person))
 
 #define SafeCast(T, Ptr) (&(Ptr)->T); Assert((Ptr)->Type == type_##T)
 
+struct type_spec_2
+{
+  counted_string Namespace;
+  counted_string Name;
+
+  counted_string SourceText;
+
+  u32 ReferenceLevel;
+  u32 IndirectionLevel;
+
+  b32 IsMetaTemplateVar;
+
+  b32 ThreadLocal;
+  b32 Const;
+  b32 Static;
+  b32 Volatile;
+  b32 Void;
+  b32 Auto;
+  b32 Unsigned;
+  b32 Struct;
+  b32 IsFunctionPointer;
+};
+
 struct ast_node;
 struct function_def;
 
 struct ast_node_expression
 {
   ast_node *Value;
-  ast_node *Next;
+  ast_node_expression *Next;
 };
 
-struct ast_node_statement
+struct statement_list
 {
   ast_node_expression *LHS;
-  ast_node_expression *RHS;
-  ast_node_statement *Next;
+  statement_list *RHS;
+  statement_list *Next;
 };
 
 struct ast_node_function_call
 {
   function_def *Prototype;
   ast_node_expression *Args;
+};
+
+struct ast_node_type_specifier
+{
+  datatype Datatype;
+  type_spec_2 TypeSpec;
+  counted_string Name;
 };
 
 struct ast_node_variable_def
@@ -677,7 +727,7 @@ meta(generate_stream(ast_node_variable_def))
 
 struct ast_node_scope
 {
-  ast_node_statement *FirstStatement;
+  statement_list *FirstStatement;
 };
 
 struct ast_node_parenthesized
@@ -704,7 +754,6 @@ struct ast_node_literal
 struct ast_node_symbol
 {
   c_token Token;
-  ast_node* Access;
 };
 
 struct ast_node_ignored
@@ -737,6 +786,7 @@ meta(
     ast_node_ignored
     ast_node_symbol
     ast_node_variable_def
+    ast_node_type_specifier
   }
 )
 #include <metaprogramming/output/d_union_ast_node.h>
@@ -778,7 +828,7 @@ struct function_def
   ast_node_variable_def_stream Locals;
 
   c_parse_result Body;
-  ast_node_statement* Ast;
+  statement_list* Ast;
 };
 meta(generate_stream(function_def))
 #include <metaprogramming/output/generate_stream_function_def.h>

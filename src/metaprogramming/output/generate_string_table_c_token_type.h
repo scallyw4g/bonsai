@@ -92,6 +92,36 @@
 
             case CTokenType_EscapedNewline: { Result = CSz("CTokenType_EscapedNewline"); } break;
 
+            case CTokenType_Meta: { Result = CSz("CTokenType_Meta"); } break;
+
+            case CTokenType_Struct: { Result = CSz("CTokenType_Struct"); } break;
+
+            case CTokenType_Enum: { Result = CSz("CTokenType_Enum"); } break;
+
+            case CTokenType_Union: { Result = CSz("CTokenType_Union"); } break;
+
+            case CTokenType_Typedef: { Result = CSz("CTokenType_Typedef"); } break;
+
+            case CTokenType_Using: { Result = CSz("CTokenType_Using"); } break;
+
+            case CTokenType_ThreadLocal: { Result = CSz("CTokenType_ThreadLocal"); } break;
+
+            case CTokenType_Const: { Result = CSz("CTokenType_Const"); } break;
+
+            case CTokenType_Static: { Result = CSz("CTokenType_Static"); } break;
+
+            case CTokenType_Volatile: { Result = CSz("CTokenType_Volatile"); } break;
+
+            case CTokenType_Void: { Result = CSz("CTokenType_Void"); } break;
+
+            case CTokenType_Auto: { Result = CSz("CTokenType_Auto"); } break;
+
+            case CTokenType_Unsigned: { Result = CSz("CTokenType_Unsigned"); } break;
+
+            case CTokenType_Goto: { Result = CSz("CTokenType_Goto"); } break;
+
+            case CTokenType_Ellipsis: { Result = CSz("CTokenType_Ellipsis"); } break;
+
             case CTokenType_If: { Result = CSz("CTokenType_If"); } break;
 
             case CTokenType_Else: { Result = CSz("CTokenType_Else"); } break;
