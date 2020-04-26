@@ -1,6 +1,6 @@
 
 function void
-Log(const char* fmt...)
+Log(const char* fmt ...)
 {
   va_list args;
   va_start(args, fmt);

@@ -122,9 +122,9 @@ typedef struct {
   s32 screen;
   s32 depth;
   s32 c_class;
-  unsigned long red_mask;
-  unsigned long green_mask;
-  unsigned long blue_mask;
+  u64 red_mask;
+  u64 green_mask;
+  u64 blue_mask;
   s32 colormap_size;
   s32 bits_per_rgb;
 } XVisualInfo;
@@ -183,9 +183,7 @@ WakeThread( semaphore *Semaphore )
 inline u64
 GetCycleCount()
 {
-  unsigned hi, lo;
-  __asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
-  u64 Result = ( (u64)lo)|( ((u64)hi)<<32 );
+  u64 Result = __rdtsc();
   return Result;
 }
 

@@ -5,17 +5,25 @@
     - #197 Have some way of coalescing this to our internal types?
     - #198 Do we ignore this?
     - #212 Should we check that the function was defined using the 'function' or 'exported_function' keywords and emit a warning otherwise?
-    - #235 Does this belong here?
     - #240 Do we want to store this value?
-    - #241 Does this belong here?
     - #245 Change to variable_def or variable_decl
     - #252 These are mutually exclusive .. merge them?
+    - #253 This leaks the allocation .. do we care?
+    - #254 Remove this
+    - #255 Remove this
+    - #260 Currently ignoring the second half of a ternary .. we should probably not do this
+    - #261 #if this out on prouction released builds.
+    - #262 These should probably be in their own type_ast_node_cast .. ?
+    - #263 In the case of identifiers, should we check that it's actually a datatype here?
 
   ## immediate
     - #83 d_union-ify this
     - #222 Re-add [[nodiscard]] here
     - #238 Change name to BitwiseAnd
     - #239 Change name to BitwiseOr
+    - #256 How do we handle this?
+    - #257 How do we handle this?
+    - #259 Make ParseStructBody take the stack
 
   ## high_priority
     - #101 Profile and check collision rate of this!
@@ -189,7 +197,7 @@
     - #137 This _should_ be able to be glTexImage3D, but the driver is throwing an error .. why?!
     - #142 Is there a better way of making that adjustment?
     - #143 This could probably be made better by writing to a statically allocated buffer ..?
-    - #151 Not getting vsync on my arch laptop...
+    - #151 Not getting vsync on my arch laptop.
 
   ## improvement
     - #95 This is LCG RNG - do we want a better one?
@@ -290,7 +298,7 @@
     - #150 Should this be done elsewhere?
 
   ## platform_linux
-    - #151 Not getting vsync on my arch laptop...
+    - #151 Not getting vsync on my arch laptop.
 
   ## gross
     - #52 Gross..
@@ -349,13 +357,6 @@
 
   ## easy
     - #225 Rewrite with string_from_parser
-
-  ## type_resolution
-    - #228 We should keep track of these!  Specifically, it's a struct alias
-    - #229 see #228 Generic type alias
-
-  ## id_229
-    - #228 We should keep track of these!  Specifically, it's a struct alias
 
   ## function_parsing
     - #231 Does this make sense to put this into the type?

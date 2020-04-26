@@ -1,4 +1,38 @@
 meta(
+  func dunion_debug_print(DUnionType)
+  {
+    function void
+    DebugPrint( (DUnionType.type) UnionStruct, u32 Depth = 0)
+    {
+      switch(UnionStruct.Type)
+      {
+        (
+          DUnionType.map_members (M)
+          {
+            (
+              M.is_anonymous?
+              {
+                (
+                  M.map_values (UnionMember)
+                  {
+                    case type_(UnionMember.type):
+                    {
+                      DebugPrint(UnionStruct.(UnionMember.type), Depth+4);
+                    }
+                  }
+                )
+              }
+            )
+          }
+        )
+
+        InvalidDefaultCase;
+      }
+    }
+  }
+)
+
+meta(
   func generate_cursor(Type)
   {
     struct (Type.name)_cursor
@@ -308,8 +342,8 @@ enum c_token_type
   CTokenType_CommentMultiLineEnd,
 
   CTokenType_Identifier,
-  CTokenType_String,
-  CTokenType_Char,
+  CTokenType_StringLiteral,
+  CTokenType_CharLiteral,
   CTokenType_EscapedNewline,
 
   CTokenType_Meta,
@@ -325,9 +359,18 @@ enum c_token_type
   CTokenType_Const,
   CTokenType_Static,
   CTokenType_Volatile,
-  CTokenType_Void,
-  CTokenType_Auto,
+  CTokenType_Long,
   CTokenType_Unsigned,
+  CTokenType_Signed,
+
+  CTokenType_Bool,
+  CTokenType_M128,
+  CTokenType_Auto,
+  CTokenType_Void,
+  CTokenType_Double,
+  CTokenType_Float,
+  CTokenType_Char,
+  CTokenType_Int,
 
   CTokenType_Goto,
   CTokenType_Ellipsis,
@@ -446,6 +489,32 @@ struct type_spec
   counted_string SourceText;
 };
 
+struct type_spec_2
+{
+  counted_string Namespace;
+  counted_string Name;
+
+  counted_string SourceText;
+
+  u32 ReferenceLevel;
+  u32 IndirectionLevel;
+
+  b32 IsMetaTemplateVar;
+
+  b32 ThreadLocal;
+  b32 Const;
+  b32 Static;
+  b32 Volatile;
+  b32 Unsigned;
+  b32 Signed;
+  b32 Long;
+  b32 Struct;
+  b32 Enum;
+
+  b32 IsFunctionPointer;
+  counted_string FunctionPointerTypeName;
+};
+
 struct variable // TODO(Jesse id: 245): Change to variable_def or variable_decl
 {
   type_spec Type;
@@ -477,10 +546,11 @@ meta(generate_cursor(struct_member))
 meta( generate_stream_chunk_struct(struct_member) )
 #include <metaprogramming/output/generate_stream_chunk_struct_c_decl.h>
 
+struct ast_node_expression;
 struct enum_member
 {
   counted_string Name;
-  counted_string Value;
+  ast_node_expression *Value;
 };
 meta(generate_stream(enum_member))
 #include <metaprogramming/output/generate_stream_enum_field.h>
@@ -502,6 +572,13 @@ struct enum_def
 meta(stream_and_cursor(enum_def))
 #include <metaprogramming/output/stream_and_cursor_enum_def.h>
 
+struct type_def
+{
+  type_spec_2 Type;
+  counted_string Alias;
+};
+meta(generate_stream(type_def))
+#include <metaprogramming/output/generate_stream_type_def.h>
 
 
 enum datatype_type
@@ -513,6 +590,8 @@ enum datatype_type
 
   type_enum_def,
   type_enum_member,
+
+  type_type_def,
 };
 
 /* TODO(Jesse, id: 188, tags: cleanup) This should have the name property,
@@ -529,6 +608,8 @@ struct datatype
 
     enum_def       *enum_def;
     enum_member    *enum_member;
+
+    type_def       *type_def;
   };
 };
 
@@ -540,7 +621,6 @@ Datatype(struct_member* M)
     .Type = type_struct_member,
     .struct_member = M,
   };
-
   return Result;
 }
 
@@ -562,7 +642,16 @@ Datatype(struct_def* S)
     .Type = type_struct_def,
     .struct_def = S,
   };
+  return Result;
+}
 
+function datatype
+Datatype(type_def* E)
+{
+  datatype Result = {
+    .Type = type_type_def,
+    .type_def = E,
+  };
   return Result;
 }
 
@@ -623,6 +712,21 @@ struct c_parse_result
 meta(generate_cursor(c_parse_result))
 #include <metaprogramming/output/generate_cursor_c_parse_result.h>
 
+enum macro_type
+{
+  type_macro_keyword,
+  type_macro_function,
+};
+
+struct macro_def
+{
+  macro_type Type;
+  counted_string Name;
+  c_parse_result Parser;
+};
+meta(generate_stream(macro_def))
+#include <metaprogramming/output/generate_stream_macro_def.h>
+
 
 
 
@@ -664,29 +768,6 @@ meta(generate_stream(person))
 
 #define SafeCast(T, Ptr) (&(Ptr)->T); Assert((Ptr)->Type == type_##T)
 
-struct type_spec_2
-{
-  counted_string Namespace;
-  counted_string Name;
-
-  counted_string SourceText;
-
-  u32 ReferenceLevel;
-  u32 IndirectionLevel;
-
-  b32 IsMetaTemplateVar;
-
-  b32 ThreadLocal;
-  b32 Const;
-  b32 Static;
-  b32 Volatile;
-  b32 Void;
-  b32 Auto;
-  b32 Unsigned;
-  b32 Struct;
-  b32 IsFunctionPointer;
-};
-
 struct ast_node;
 struct function_def;
 
@@ -695,6 +776,8 @@ struct ast_node_expression
   ast_node *Value;
   ast_node_expression *Next;
 };
+meta(generate_stream(ast_node_expression))
+#include <metaprogramming/output/generate_stream_ast_node_expression.h>
 
 struct statement_list
 {
@@ -705,15 +788,16 @@ struct statement_list
 
 struct ast_node_function_call
 {
+  counted_string Name;
   function_def *Prototype;
-  ast_node_expression *Args;
+  ast_node_expression_stream Args;
 };
 
 struct ast_node_type_specifier
 {
   datatype Datatype;
   type_spec_2 TypeSpec;
-  counted_string Name;
+  ast_node_expression *Name;
 };
 
 struct ast_node_variable_def
@@ -733,6 +817,10 @@ struct ast_node_scope
 struct ast_node_parenthesized
 {
   ast_node_expression *Expr;
+
+  // TODO(Jesse id: 262): These should probably be in their own type_ast_node_cast .. ?
+  b32 IsCast;
+  ast_node_expression *CastValue;
 };
 
 struct ast_node_initializer_list
@@ -838,6 +926,8 @@ struct program_datatypes
   struct_def_stream   Structs;
   enum_def_stream     Enums;
   function_def_stream Functions;
+  type_def_stream     Typedefs;
+  macro_def_stream    Macros;
 };
 
 struct for_enum_constraints
@@ -1044,4 +1134,60 @@ CloseTokenFor(c_token_type T)
 
   return Result;
 }
+
+#define MAX_PARSER_STACK_DEPTH (32)
+struct parser_stack
+{
+  u32 Depth;
+  c_parse_result Parsers[MAX_PARSER_STACK_DEPTH];
+};
+
+function c_parse_result*
+Peek(parser_stack *Stack)
+{
+  c_parse_result *Result = {};
+  if (Stack->Depth > 0)
+  {
+    Result = Stack->Parsers + (Stack->Depth-1);
+  }
+  else
+  {
+    Error("Tried peeking an empty parser stack!");
+  }
+  return Result;
+}
+
+function c_parse_result*
+PushStack(parser_stack *Stack, c_parse_result Parser)
+{
+  if (Stack->Depth == MAX_PARSER_STACK_DEPTH)
+  {
+    Error("Max parser stack depth exceeded.");
+  }
+  else
+  {
+    Stack->Parsers[Stack->Depth] = Parser;
+    ++Stack->Depth;
+  }
+
+  c_parse_result *Result = Peek(Stack);
+  return Result;
+}
+
+function c_parse_result*
+PopStack(parser_stack *Stack)
+{
+  c_parse_result *Result = {};
+  if (Stack->Depth > 0)
+  {
+    --Stack->Depth;
+    Result = Stack->Parsers + (Stack->Depth-1);
+  }
+  else
+  {
+    Error("Tried popping an empty parser stack!");
+  }
+  return Result;
+}
+
 

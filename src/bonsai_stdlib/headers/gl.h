@@ -267,14 +267,14 @@ exported_function GLboolean glUnmapBuffer (GLenum target);
 exported_function void glDrawBuffers (GLsizei n, const GLenum *bufs);
 
 function void
-DumpGlErrorEnum(u32 Error)
+DumpGlErrorEnum(u32 ErrorNumber)
 {
-  if ( Error != 0 )
+  if ( ErrorNumber != 0 )
   {
-    Error("%d", Error);
+    Error("%d", ErrorNumber);
   }
 
-  switch (Error)
+  switch (ErrorNumber)
   {
     case GL_INVALID_ENUM:
     {

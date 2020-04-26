@@ -475,7 +475,7 @@ PushSize(memory_arena *Arena, umm SizeIn, umm Alignment, b32 MemProtect)
 
     Result = Arena->At + EndToNextPage;
     u8* LastPage = Result + AlignCorrectedSizeIn;
-    Assert( (u64)LastPage % PageSize == 0)
+    Assert( (u64)LastPage % PageSize == 0);
 
     Memprotect((void*)LastPage, PageSize, PROT_NONE);
   }
@@ -486,7 +486,7 @@ PushSize(memory_arena *Arena, umm SizeIn, umm Alignment, b32 MemProtect)
   {
     umm At = (umm)Arena->At;
     umm NextPageOffset = PageSize - (At % PageSize);
-    Assert( (At+NextPageOffset) % PageSize == 0)
+    Assert( (At+NextPageOffset) % PageSize == 0);
 
     u8* NextPage = Arena->At + NextPageOffset;
     Assert( (umm)NextPage % PageSize == 0);

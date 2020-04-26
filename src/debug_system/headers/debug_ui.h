@@ -333,6 +333,7 @@ struct find_command_result
 function r32
 GetZ(z_depth zDepth, window_layout* Window)
 {
+  u32 fourtytwo = (40 + 2);
   // @shadow_epsilon
   r32 Result = DEBUG_FONT_SHADOW_EPSILON;
 

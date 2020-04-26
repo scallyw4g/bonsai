@@ -5,7 +5,7 @@
 #define Ensure(condition) Assert((condition))
 
 #define Assert(condition) \
-  if (!(condition)) { Debug(RED_TERMINAL " ! Assertion Failed" WHITE_TERMINAL " - '%s' during %s \n%s:%u:0:Assertion Failed" Newline, #condition, __FUNCTION__, __FILE__, __LINE__); RuntimeBreak(); }
+  do { if (!(condition)) { Debug(RED_TERMINAL " ! Assertion Failed" WHITE_TERMINAL " - '%s' during %s \n%s:%u:0:Assertion Failed" Newline, #condition, __FUNCTION__, __FILE__, __LINE__); RuntimeBreak(); } } while (false)
 
 #define InvalidCodePath() Error("Invalid Code Path - Panic!"); Assert(False)
 

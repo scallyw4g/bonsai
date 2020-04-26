@@ -54,7 +54,12 @@
 #include <bonsai_stdlib/headers/line.h>
 #include <bonsai_stdlib/headers/quaternion.h>
 #include <bonsai_stdlib/headers/string_builder.h>
+
 #include <bonsai_stdlib/headers/stream.h>
+
+meta(generate_cursor(v3))
+#include <metaprogramming/output/generate_cursor_v3.h>
+
 #include <bonsai_stdlib/headers/matrix.h>
 #include <bonsai_stdlib/headers/mutex.h>
 #include <bonsai_stdlib/headers/rect.h>

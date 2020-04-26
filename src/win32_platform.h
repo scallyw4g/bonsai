@@ -22,7 +22,7 @@
 #define YELLOW_TERMINAL ""
 #define WHITE_TERMINAL ""
 
-#define GlDebugMessage(...)  PrintConsole(" * Gl Debug Message - ");             \
+#define GlDebugMessage(...)  PrintConsole(" * Gl Debug Message - "); \
                              VariadicOutputDebugString(__VA_ARGS__); \
                              PrintConsole("\n")
 
@@ -34,12 +34,12 @@
                    PrintConsole("\n")
 
 #define Error(...) PrintConsole(" ! Error - ");            \
-                   VariadicOutputDebugString(__VA_ARGS__);   \
+                   VariadicOutputDebugString(__VA_ARGS__); \
                    PrintConsole("\n")
 
-#define Warn(...) PrintConsole(" * Warn - ");            \
-                  VariadicOutputDebugString(__VA_ARGS__); \
-                  PrintConsole("\n")
+#define Warn(...)  PrintConsole(" * Warn - ");             \
+                   VariadicOutputDebugString(__VA_ARGS__); \
+                   PrintConsole("\n")
 
 #define RuntimeBreak() __debugbreak()
 
@@ -52,8 +52,8 @@
 // Win32 crazyness that works
 global_variable HANDLE Stdout = GetStdHandle(STD_OUTPUT_HANDLE);
 #define PrintConsole(Message)                        \
-  OutputDebugString(Message);                        \
-  WriteFile(Stdout, Message, strlen(Message), 0, 0);
+        OutputDebugString(Message);                  \
+        WriteFile(Stdout, Message, strlen(Message), 0, 0);
 
 #define PLATFORM_OFFSET (sizeof(void*))
 

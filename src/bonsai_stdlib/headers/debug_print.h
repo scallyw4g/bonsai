@@ -92,9 +92,13 @@ meta( named_list(unprintable_datatypes) { counted_string })
 // TODO(Jesse id: 185, tags: bug, high_priority): these should be printable!
 meta( named_list(buggy_datatypes) { debug_timed_function thread_startup_params network_connection debug_state perlin_noise })
 
+meta( named_list(d_unions) { ast_node } )
+
+function void DebugPrint( ast_node *UnionStruct, u32 Depth = 0);
+function void DebugPrint( ast_node UnionStruct, u32 Depth = 0);
 meta(
   for_datatypes(all)
-    .exclude(unprintable_datatypes buggy_datatypes external_datatypes)
+    .exclude(unprintable_datatypes buggy_datatypes external_datatypes d_unions)
 
     func (StructDef)
     {
@@ -110,13 +114,17 @@ meta(
 #include <metaprogramming/output/for_all_datatypes_debug_print_prototypes.h>
 
 meta(
-  for_datatypes(all).exclude(unprintable_datatypes buggy_datatypes external_datatypes)
+  for_datatypes(all).exclude(unprintable_datatypes buggy_datatypes external_datatypes d_unions)
 
   func (StructDef)
   {
     function void DebugPrint( (StructDef.name) S, u32 Depth)
     {
-      DebugPrint("(StructDef.name) {\n", Depth);
+      if (Depth == 0)
+      {
+        DebugPrint("(StructDef.name) {\n", Depth);
+      }
+
       (
         StructDef.map_members (Member)
         {
@@ -149,7 +157,6 @@ meta(
             case (ValueDef.name):
             {
               DebugPrint("(ValueDef.name) ", Depth);
-              DebugPrint("(ValueDef.value)");
             } break;
           }
         )
@@ -159,4 +166,8 @@ meta(
 
 )
 #include <metaprogramming/output/for_all_datatypes_debug_print_functions.h>
+
+
+/* meta(dunion_debug_print(ast_node)) */
+#include <debug_print_ast_node.h>
 

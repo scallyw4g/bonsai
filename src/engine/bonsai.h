@@ -553,6 +553,9 @@ Unspawned(entity *Entity)
 }
 
 #if 0
+typedef umm packed_voxel;
+typedef umm unpacked_voxel;
+
 inline u8
 GetVoxelColor(packed_voxel *V)
 {

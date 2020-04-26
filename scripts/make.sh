@@ -284,7 +284,15 @@ function SetSourceFiles
 {
   rm -Rf $META_OUT
   mkdir $META_OUT
-  SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" -and -not -path "src/tests/fixtures/*" ) $(find src -type f -name "*.cpp" -and -not -path "src/tests/fixtures/*" )"
+  SOURCE_FILES="$(find src -type f -name "*.h"                                \
+    -and -not -wholename "src/net/network.h"                                  \
+    -and -not -wholename "src/net/network.h"                                  \
+    -and -not -wholename "src/bonsai_stdlib/headers/stream.h"                 \
+    -and -not -wholename "src/bonsai_stdlib/headers/perlin.h"                 \
+    -and -not -wholename "src/bonsai_stdlib/cpp/stream.cpp"                   \
+    -and -not -wholename "src/metaprogramming/defines.h"                      \
+    -and -not -path "src/tests/fixtures/*" ) $(find src -type f -name "*.cpp" \
+    -and -not -path "src/tests/fixtures/*" )"
 }
 
 function RunPreprocessor
@@ -349,11 +357,11 @@ DumpSourceFilesAndQuit=0
 
 CheckoutMetaOutput=1
 
-FirstPreprocessor=1
+FirstPreprocessor=0
 BuildPreprocessor=1
 SecondPreprocessor=0
 
-BuildAllProjects=1
+BuildAllProjects=0
 RunTests=0
 FinalPreprocessor=0
 

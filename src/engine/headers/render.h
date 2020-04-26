@@ -228,21 +228,21 @@ Perspective(radians FOV, v2 WindowDim, r32 NearClip, r32 FarClip)
 {
 
 #if 0
-  https://gist.github.com/gyng/8921328
-
-  Projection
-
-    a 0 0 0
-    0 b 0 0
-    0 0 c d
-    0 0 e 0
-
-  Inv. Projection
-
-    1/a   0   0        0
-      0 1/b   0        0
-      0   0   0      1/e
-      0   0 1/d -c/(d*e)
+// https://gist.github.com/gyng/8921328
+//
+// Projection
+//
+//   a 0 0 0
+//   0 b 0 0
+//   0 0 c d
+//   0 0 e 0
+//
+// Inv. Projection
+//
+//   1/a   0   0        0
+//     0 1/b   0        0
+//     0   0   0      1/e
+//     0   0 1/d -c/(d*e)
 #endif
 
   r32 FocalLength = (r32)tan(FOV / 2.0f);

@@ -8,6 +8,10 @@
         
             case CTokenType_Unknown: { Result = CSz("CTokenType_Unknown"); } break;
 
+            case CTokenType_Bool: { Result = CSz("CTokenType_Bool"); } break;
+
+            case CTokenType_M128: { Result = CSz("CTokenType_M128"); } break;
+
             case CTokenType_OpenBracket: { Result = CSz("CTokenType_OpenBracket"); } break;
 
             case CTokenType_CloseBracket: { Result = CSz("CTokenType_CloseBracket"); } break;
@@ -86,9 +90,9 @@
 
             case CTokenType_Identifier: { Result = CSz("CTokenType_Identifier"); } break;
 
-            case CTokenType_String: { Result = CSz("CTokenType_String"); } break;
+            case CTokenType_StringLiteral: { Result = CSz("CTokenType_StringLiteral"); } break;
 
-            case CTokenType_Char: { Result = CSz("CTokenType_Char"); } break;
+            case CTokenType_CharLiteral: { Result = CSz("CTokenType_CharLiteral"); } break;
 
             case CTokenType_EscapedNewline: { Result = CSz("CTokenType_EscapedNewline"); } break;
 
@@ -112,11 +116,23 @@
 
             case CTokenType_Volatile: { Result = CSz("CTokenType_Volatile"); } break;
 
-            case CTokenType_Void: { Result = CSz("CTokenType_Void"); } break;
+            case CTokenType_Long: { Result = CSz("CTokenType_Long"); } break;
+
+            case CTokenType_Unsigned: { Result = CSz("CTokenType_Unsigned"); } break;
+
+            case CTokenType_Signed: { Result = CSz("CTokenType_Signed"); } break;
 
             case CTokenType_Auto: { Result = CSz("CTokenType_Auto"); } break;
 
-            case CTokenType_Unsigned: { Result = CSz("CTokenType_Unsigned"); } break;
+            case CTokenType_Void: { Result = CSz("CTokenType_Void"); } break;
+
+            case CTokenType_Double: { Result = CSz("CTokenType_Double"); } break;
+
+            case CTokenType_Float: { Result = CSz("CTokenType_Float"); } break;
+
+            case CTokenType_Char: { Result = CSz("CTokenType_Char"); } break;
+
+            case CTokenType_Int: { Result = CSz("CTokenType_Int"); } break;
 
             case CTokenType_Goto: { Result = CSz("CTokenType_Goto"); } break;
 
