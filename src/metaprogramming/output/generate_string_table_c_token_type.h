@@ -84,13 +84,21 @@
 
             case CTokenType_CommentMultiLineEnd: { Result = CSz("CTokenType_CommentMultiLineEnd"); } break;
 
+            case CTokenType_EscapedNewline: { Result = CSz("CTokenType_EscapedNewline"); } break;
+
             case CTokenType_Identifier: { Result = CSz("CTokenType_Identifier"); } break;
 
             case CTokenType_StringLiteral: { Result = CSz("CTokenType_StringLiteral"); } break;
 
             case CTokenType_CharLiteral: { Result = CSz("CTokenType_CharLiteral"); } break;
 
-            case CTokenType_EscapedNewline: { Result = CSz("CTokenType_EscapedNewline"); } break;
+            case CTokenType_IntLiteral: { Result = CSz("CTokenType_IntLiteral"); } break;
+
+            case CTokenType_DoubleLiteral: { Result = CSz("CTokenType_DoubleLiteral"); } break;
+
+            case CTokenType_FloatLiteral: { Result = CSz("CTokenType_FloatLiteral"); } break;
+
+            case CTokenType_LongDoubleLiteral: { Result = CSz("CTokenType_LongDoubleLiteral"); } break;
 
             case CTokenType_Meta: { Result = CSz("CTokenType_Meta"); } break;
 

@@ -341,10 +341,15 @@ enum c_token_type
   CTokenType_CommentMultiLineStart,
   CTokenType_CommentMultiLineEnd,
 
+  CTokenType_EscapedNewline,
+
   CTokenType_Identifier,
   CTokenType_StringLiteral,
   CTokenType_CharLiteral,
-  CTokenType_EscapedNewline,
+  CTokenType_IntLiteral,
+  CTokenType_DoubleLiteral,
+  CTokenType_FloatLiteral,
+  CTokenType_LongDoubleLiteral,
 
   CTokenType_Meta,
 
@@ -682,7 +687,13 @@ meta(generate_stream(meta_func_arg))
 struct c_token
 {
   c_token_type Type;
-  counted_string Value;
+
+  union
+  {
+    counted_string Value;
+    r32 FloatValue;
+    r64 DoubleValue;
+  };
 };
 meta(generate_cursor(c_token))
 #include <metaprogramming/output/generate_cursor_c_token.h>

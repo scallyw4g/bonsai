@@ -564,9 +564,16 @@ TestCommentSituation(memory_arena* Memory)
 function void
 TestAst(memory_arena *Memory)
 {
-  parser Parser_ = TokenizeFile(CS(TEST_FIXTURES_PATH "/comments.cpp"), Memory);
-  parser *Parser = &Parser_;
+  parser Parser = TokenizeFile(CS(TEST_FIXTURES_PATH "/preprocessor/should_parse.cpp"), Memory);
 
+  parser_stack Stack = {};
+  PushStack(&Stack, Parser);
+
+  program_datatypes Datatypes = {};
+
+  ParseDatatypes(&Stack, &Datatypes, Memory);
+
+  ParseFunctionBodiesIntoAsts(&Datatypes, Memory);
 }
 
 s32

@@ -2251,12 +2251,6 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("counted_string Value {\n", Depth+2);
-          DebugPrint(S.Value, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
       DebugPrint("}\n", Depth);
     }
 
@@ -10117,6 +10111,11 @@
               DebugPrint("CTokenType_CommentMultiLineEnd ", Depth);
             } break;
 
+            case CTokenType_EscapedNewline:
+            {
+              DebugPrint("CTokenType_EscapedNewline ", Depth);
+            } break;
+
             case CTokenType_Identifier:
             {
               DebugPrint("CTokenType_Identifier ", Depth);
@@ -10132,9 +10131,24 @@
               DebugPrint("CTokenType_CharLiteral ", Depth);
             } break;
 
-            case CTokenType_EscapedNewline:
+            case CTokenType_IntLiteral:
             {
-              DebugPrint("CTokenType_EscapedNewline ", Depth);
+              DebugPrint("CTokenType_IntLiteral ", Depth);
+            } break;
+
+            case CTokenType_DoubleLiteral:
+            {
+              DebugPrint("CTokenType_DoubleLiteral ", Depth);
+            } break;
+
+            case CTokenType_FloatLiteral:
+            {
+              DebugPrint("CTokenType_FloatLiteral ", Depth);
+            } break;
+
+            case CTokenType_LongDoubleLiteral:
+            {
+              DebugPrint("CTokenType_LongDoubleLiteral ", Depth);
             } break;
 
             case CTokenType_Meta:

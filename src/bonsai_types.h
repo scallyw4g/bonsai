@@ -18,7 +18,7 @@
 } while (false)
 
 #define ToggleBitfieldValue(Dest, Value) \
-      (Dest) = (Dest) & (Value) ?  ((u32)(Dest) & ~(u32)(Value)) : ((u32)(Dest) | (u32)(Value));
+      (Dest) = (Dest) & (Value) ?  ((u32)(Dest) & ~(u32)(Value)) : ((u32)(Dest) | (u32)(Value))
 
 #include <stdint.h>
 #include <cmath>

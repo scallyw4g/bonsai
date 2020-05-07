@@ -367,6 +367,29 @@ OptionalToken(parser* Parser, c_token_type Type)
 }
 
 function counted_string
+PopNumeric(ansi_stream* SourceFileStream)
+{
+  counted_string Result = {
+    .Start = SourceFileStream->At
+  };
+
+  while (Remaining(SourceFileStream))
+  {
+    if (IsNumeric(*SourceFileStream->At))
+    {
+      ++SourceFileStream->At;
+    }
+    else
+    {
+      break;
+    }
+  }
+
+  Result.Count = (umm)SourceFileStream->At - (umm)Result.Start;
+  return Result;
+}
+
+function counted_string
 PopIdentifier(ansi_stream* SourceFileStream)
 {
   counted_string Result = {
@@ -703,177 +726,198 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes = Fa
         PushT.Type = CTokenType_Identifier;
         PushT.Value = PopIdentifier(&Code);
 
-        if ( StringsMatch(PushT.Value, CSz("if")) )
+        if (IsNumeric(PushT.Value))
+        {
+          PushT.Type = CTokenType_IntLiteral;
+
+
+          if (PeekToken(&Code).Type == CTokenType_Dot)
+          {
+            Advance(&Code);
+            counted_string Fractional = PopNumeric(&Code);
+            Assert(Fractional.Count);  // Is this actually a valid assertion?  Like .. is 3.e4 a valid way to express 3000, or does it have to be 3.0e4
+
+            char Suffix = *Code.At;
+            switch (Suffix)
+            {
+              case 'f':
+              case 'F':
+              {
+                PushT.Type = CTokenType_FloatLiteral;
+                Advance(&Code);
+              } break;
+
+              case 'l':
+              case 'L':
+              {
+                // Apparently `double` and `long double` are the same storage size (8 bytes), at least in MSVC:
+                // https://docs.microsoft.com/en-us/cpp/c-language/storage-of-basic-types?view=vs-2019
+                PushT.Type = CTokenType_LongDoubleLiteral;
+                Advance(&Code);
+              } break;
+
+              case 'e':
+              case 'E':
+              {
+                Advance(&Code);
+
+                char Negation = *Code.At;
+                if (Negation == '-')
+                {
+                  Advance(&Code);
+                }
+
+                counted_string Exponent = PopNumeric(&Code);
+                Assert(Exponent.Count);
+
+
+
+              } break;
+
+              default:
+              {
+                PushT.Type = CTokenType_DoubleLiteral;
+              } break;
+            }
+          }
+        }
+        else if ( StringsMatch(PushT.Value, CSz("if")) )
         {
           PushT.Type = CTokenType_If;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("else")) )
+        else if ( StringsMatch(PushT.Value, CSz("else")) )
         {
           PushT.Type = CTokenType_Else;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("break")) )
+        else if ( StringsMatch(PushT.Value, CSz("break")) )
         {
           PushT.Type = CTokenType_Break;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("switch")) )
+        else if ( StringsMatch(PushT.Value, CSz("switch")) )
         {
           PushT.Type = CTokenType_Switch;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("case")) )
+        else if ( StringsMatch(PushT.Value, CSz("case")) )
         {
           PushT.Type = CTokenType_Case;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("default")) )
+        else if ( StringsMatch(PushT.Value, CSz("default")) )
         {
           PushT.Type = CTokenType_Default;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("for")) )
+        else if ( StringsMatch(PushT.Value, CSz("for")) )
         {
           PushT.Type = CTokenType_For;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("while")) )
+        else if ( StringsMatch(PushT.Value, CSz("while")) )
         {
           PushT.Type = CTokenType_While;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("continue")) )
+        else if ( StringsMatch(PushT.Value, CSz("continue")) )
         {
           PushT.Type = CTokenType_Continue;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("return")) )
+        else if ( StringsMatch(PushT.Value, CSz("return")) )
         {
           PushT.Type = CTokenType_Return;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("thread_local")) )
+        else if ( StringsMatch(PushT.Value, CSz("thread_local")) )
         {
           PushT.Type = CTokenType_ThreadLocal;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("const")) )
+        else if ( StringsMatch(PushT.Value, CSz("const")) )
         {
           PushT.Type = CTokenType_Const;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("static")) )
+        else if ( StringsMatch(PushT.Value, CSz("static")) )
         {
           PushT.Type = CTokenType_Static;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("__volatile__")) )
+        else if ( StringsMatch(PushT.Value, CSz("__volatile__")) )
         {
           PushT.Type = CTokenType_Volatile;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("volatile")) )
+        else if ( StringsMatch(PushT.Value, CSz("volatile")) )
         {
           PushT.Type = CTokenType_Volatile;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("void")) )
+        else if ( StringsMatch(PushT.Value, CSz("void")) )
         {
           PushT.Type = CTokenType_Void;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("long")) )
+        else if ( StringsMatch(PushT.Value, CSz("long")) )
         {
           PushT.Type = CTokenType_Long;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("float")) )
+        else if ( StringsMatch(PushT.Value, CSz("float")) )
         {
           PushT.Type = CTokenType_Float;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("char")) )
+        else if ( StringsMatch(PushT.Value, CSz("char")) )
         {
           PushT.Type = CTokenType_Char;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("double")) )
+        else if ( StringsMatch(PushT.Value, CSz("double")) )
         {
           PushT.Type = CTokenType_Double;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("int")) )
+        else if ( StringsMatch(PushT.Value, CSz("int")) )
         {
           PushT.Type = CTokenType_Int;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("bool")) )
+        else if ( StringsMatch(PushT.Value, CSz("bool")) )
         {
           PushT.Type = CTokenType_Bool;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("__m128")) )
+        else if ( StringsMatch(PushT.Value, CSz("__m128")) )
         {
           PushT.Type = CTokenType_M128;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("auto")) )
+        else if ( StringsMatch(PushT.Value, CSz("auto")) )
         {
           PushT.Type = CTokenType_Auto;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("signed")) )
+        else if ( StringsMatch(PushT.Value, CSz("signed")) )
         {
           PushT.Type = CTokenType_Signed;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("unsigned")) )
+        else if ( StringsMatch(PushT.Value, CSz("unsigned")) )
         {
           PushT.Type = CTokenType_Unsigned;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("struct")) )
+        else if ( StringsMatch(PushT.Value, CSz("struct")) )
         {
           PushT.Type = CTokenType_Struct;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("typedef")) )
+        else if ( StringsMatch(PushT.Value, CSz("typedef")) )
         {
           PushT.Type = CTokenType_Typedef;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("__asm__")) )
+        else if ( StringsMatch(PushT.Value, CSz("__asm__")) )
         {
           PushT.Type = CTokenType_Asm;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("asm")) )
+        else if ( StringsMatch(PushT.Value, CSz("asm")) )
         {
           PushT.Type = CTokenType_Asm;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("meta")) )
+        else if ( StringsMatch(PushT.Value, CSz("meta")) )
         {
           PushT.Type = CTokenType_Meta;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("union")) )
+        else if ( StringsMatch(PushT.Value, CSz("union")) )
         {
           PushT.Type = CTokenType_Union;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("using")) )
+        else if ( StringsMatch(PushT.Value, CSz("using")) )
         {
           PushT.Type = CTokenType_Using;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("enum")) )
+        else if ( StringsMatch(PushT.Value, CSz("enum")) )
         {
           PushT.Type = CTokenType_Enum;
         }
-
-        if ( StringsMatch(PushT.Value, CSz("goto")) )
+        else if ( StringsMatch(PushT.Value, CSz("goto")) )
         {
           PushT.Type = CTokenType_Goto;
         }
@@ -1238,6 +1282,25 @@ PeekToken(parser_stack *Stack, u32 TokenLookahead = 0, u32 StackLookahead = 0)
         Result = PeekToken(Stack, 0, StackLookahead+1);
       }
     }
+  }
+
+  return Result;
+}
+
+function b32
+OptionalToken(parser_stack *Stack, c_token Token)
+{
+  b32 Result = {};
+
+  parser *Parser = Peek(Stack);
+  if (TokensRemain(Parser))
+  {
+    Result = OptionalToken(Parser, Token);
+  }
+  else
+  {
+    PopStack(Stack);
+    Result = OptionalToken(Stack, Token);
   }
 
   return Result;
@@ -4033,46 +4096,46 @@ ParseDeclarationValue(parser* Parser, variable* Decl, program_datatypes* Datatyp
 function void
 ParseDatatypes(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* Memory)
 {
-  parser *Parser = Peek(Stack);
-  while (Remaining(&Parser->Tokens))
+  while (Remaining(Peek(Stack)))
   {
-    c_token T = PeekToken(Parser);
+    c_token T = PeekToken(Stack);
 
     switch(T.Type)
     {
       case CTokenType_Meta:
       {
-        RequireToken(Parser, CTokenType_Meta);
-        EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+        RequireToken(Stack, CTokenType_Meta);
+        EatBetween(Peek(Stack), CTokenType_OpenParen, CTokenType_CloseParen);
       } break;
 
       case CTokenType_Hash:
       {
-        RequireToken(Parser, CTokenType_Hash);
+        RequireToken(Stack, CTokenType_Hash);
 
-        if ( OptionalToken(Parser, CToken(CSz("define"))) )
+        if ( OptionalToken(Stack, CToken(CSz("define"))) )
 
         {
           macro_def Macro = {
             .Parser = {
               .Valid = True,
-              .Filename = Parser->Filename,
-              .LineNumber = Parser->LineNumber,
+              .Filename = Peek(Stack)->Filename,
+              .LineNumber = Peek(Stack)->LineNumber,
             }
           };
 
-          Macro.Name = RequireToken(Parser, CTokenType_Identifier).Value;
+          Macro.Name = RequireToken(Stack, CTokenType_Identifier).Value;
 
-          if (PeekTokenRaw(Parser).Type == CTokenType_OpenParen)
+          if (PeekTokenRaw(Peek(Stack)).Type == CTokenType_OpenParen)
           {
             Macro.Type = type_macro_function;
-            EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+            EatBetween(Peek(Stack), CTokenType_OpenParen, CTokenType_CloseParen);
           }
           else
           {
             Macro.Type = type_macro_keyword;
           }
 
+          parser *Parser = Peek(Stack);
           Macro.Parser.Tokens.Start = Parser->Tokens.At;
           Macro.Parser.Tokens.At = Parser->Tokens.At;
           EatUntil(Parser, CTokenType_Newline);
@@ -4082,13 +4145,13 @@ ParseDatatypes(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* 
         }
         else
         {
-          EatUntil(Parser, CTokenType_Newline);
+          EatUntil(Peek(Stack), CTokenType_Newline);
         }
       } break;
 
       case CTokenType_Semicolon:
       {
-        RequireToken(Parser, CTokenType_Semicolon);
+        RequireToken(Stack, CTokenType_Semicolon);
       } break;
 
       case CTokenType_Struct:
@@ -4105,7 +4168,7 @@ ParseDatatypes(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* 
 
       case CTokenType_Using:
       {
-        EatUntil(Parser, CTokenType_Semicolon);
+        EatUntil(Peek(Stack), CTokenType_Semicolon);
       } break;
 
 
@@ -4126,36 +4189,34 @@ ParseDatatypes(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* 
       case CTokenType_Signed:
       {
         // Global variable decl
-        variable Decl = ParseDeclaration(Parser);
-        counted_string Value = ParseDeclarationValue(Parser, &Decl, Datatypes, Memory);
+        variable Decl = ParseDeclaration(Peek(Stack));
+        counted_string Value = ParseDeclarationValue(Peek(Stack), &Decl, Datatypes, Memory);
       } break;
 
       case CTokenType_Identifier:
       {
-        // TODO(Jesse id: 205, tags: metaprogramming, completeness): To do this properly, we need to parse out and expand macro definitions here.
-        if (PeekToken(Parser, 1).Type == CTokenType_OpenParen)
+        if (PeekToken(Stack, 1).Type == CTokenType_OpenParen)
         {
           // TODO(Jesse id: 210, tags: id_205, metaprogramming, completeness): This is a function-macro call .. I think always..?
-          RequireToken(Parser, CTokenType_Identifier);
-          EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
-          OptionalToken(Parser, CTokenType_Semicolon);
+          RequireToken(Stack, CTokenType_Identifier);
+          EatBetween(Peek(Stack), CTokenType_OpenParen, CTokenType_CloseParen);
+          OptionalToken(Stack, CTokenType_Semicolon);
         }
         else
         {
           // Global variable decl
-          variable Decl = ParseDeclaration(Parser);
-          counted_string Value = ParseDeclarationValue(Parser, &Decl, Datatypes, Memory);
+          variable Decl = ParseDeclaration(Peek(Stack));
+          counted_string Value = ParseDeclarationValue(Peek(Stack), &Decl, Datatypes, Memory);
         }
       } break;
 
-      InvalidDefaultWhileParsing(Parser, CSz("Invalid token encountered while parsing."));
+      InvalidDefaultWhileParsing(Peek(Stack), CSz("Invalid token encountered while parsing."));
     }
 
-    EatWhitespaceAndComments(Parser);
+    EatWhitespaceAndComments(Peek(Stack));
     continue;
   }
 
-  Rewind(Parser);
   return;
 }
 
@@ -5628,10 +5689,6 @@ WriteTodosToFile(person_stream* People, memory_arena* Memory)
   return;
 }
 
-#ifndef EXCLUDE_PREPROCESSOR_MAIN
-#define SUCCESS_EXIT_CODE 0
-#define FAILURE_EXIT_CODE 1
-
 function void
 ParseDatatypes(parser_cursor Files_in, program_datatypes* Datatypes, memory_arena* Memory)
 {
@@ -5761,6 +5818,10 @@ Traverse(ast_node* InputNode)
   return;
 }
 #endif
+
+#ifndef EXCLUDE_PREPROCESSOR_MAIN
+#define SUCCESS_EXIT_CODE 0
+#define FAILURE_EXIT_CODE 1
 
 s32
 main(s32 ArgCount, const char** ArgStrings)

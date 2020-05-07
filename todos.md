@@ -101,7 +101,6 @@
     - #100 Do we actually want this in here?
     - #192 This is a function call or macro .. make sure it's actually constant.
     - #200 Floating-point values should be parsed out in TokenizeAnsiStream()!!
-    - #205 To do this properly, we need to parse out and expand macro definitions here.
     - #210 This is a function-macro call .. I think always..?
     - #226 Should we handle this differently?
     - #189 Parse out function names?
@@ -174,7 +173,6 @@
   ## completeness
     - #84 This only gets used when computing the shadow map, so I'm not even sure if it works ATM
     - #192 This is a function call or macro .. make sure it's actually constant.
-    - #205 To do this properly, we need to parse out and expand macro definitions here.
     - #210 This is a function-macro call .. I think always..?
     - #140 Can we support these?
 
