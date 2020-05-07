@@ -5,8 +5,8 @@
 function void
 TestBasicTokenizationAndParsing(memory_arena* Memory)
 {
-  c_parse_result Parser_ = TokenizeFile(CS(TEST_FIXTURES_PATH "/preprocessor_basic.cpp"), Memory);
-  c_parse_result* Parser = &Parser_;
+  parser Parser_ = TokenizeFile(CS(TEST_FIXTURES_PATH "/preprocessor_basic.cpp"), Memory);
+  parser* Parser = &Parser_;
 
   {
     c_token T = PopTokenRaw(Parser);
@@ -105,7 +105,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CS("void")));
+    TestThat(T.Type == CTokenType_Void);
   }
   {
     c_token T = PopToken(Parser);
@@ -145,7 +145,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_String, CS("\"thing\\n\"")));
+    TestThat(T == CToken(CTokenType_StringLiteral, CS("\"thing\\n\"")));
   }
   {
     c_token T = PopToken(Parser);
@@ -157,7 +157,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CS("int")));
+    TestThat(T.Type == CTokenType_Int);
   }
   {
     c_token T = PopToken(Parser);
@@ -202,7 +202,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CS("void")));
+    TestThat(T.Type == CTokenType_Void);
   }
   {
     c_token T = PopToken(Parser);
@@ -322,7 +322,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_String, CS("\"\\n\"")));
+    TestThat(T == CToken(CTokenType_StringLiteral, CS("\"\\n\"")));
   }
   {
     c_token T = PopToken(Parser);
@@ -348,8 +348,8 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
 function void
 TestPeekAndPopTokens(memory_arena* Memory)
 {
-  c_parse_result Parser_ = TokenizeFile(CS(TEST_FIXTURES_PATH "/preprocessor_peek_pop.cpp"), Memory);
-  c_parse_result* Parser = &Parser_;
+  parser Parser_ = TokenizeFile(CS(TEST_FIXTURES_PATH "/preprocessor_peek_pop.cpp"), Memory);
+  parser* Parser = &Parser_;
 
   {
     c_token T = PeekToken(Parser, 0);
@@ -358,7 +358,7 @@ TestPeekAndPopTokens(memory_arena* Memory)
 
   {
     c_token T = PeekToken(Parser, 1);
-    TestThat(T == CToken(CS("void")));
+    TestThat(T.Type == CTokenType_Void);
   }
   {
     c_token T = PeekToken(Parser, 2);
@@ -379,7 +379,7 @@ TestPeekAndPopTokens(memory_arena* Memory)
   }
   {
     c_token T = PeekToken(Parser, 0);
-    TestThat(T == CToken(CS("void")));
+    TestThat(T.Type == CTokenType_Void);
   }
   {
     c_token T = PeekToken(Parser, 1);
@@ -395,7 +395,7 @@ TestPeekAndPopTokens(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CS("void")));
+    TestThat(T.Type == CTokenType_Void);
   }
   {
     c_token T = PopToken(Parser);
@@ -497,11 +497,14 @@ TestPeekAndPopTokens(memory_arena* Memory)
 function void
 TestStructParsing(memory_arena* Memory)
 {
-  c_parse_result Parser_ = TokenizeFile(CS(TEST_FIXTURES_PATH "/preprocessor_datatypes.cpp"), Memory);
-  c_parse_result* Parser = &Parser_;
+  parser Parser_ = TokenizeFile(CS(TEST_FIXTURES_PATH "/preprocessor_datatypes.cpp"), Memory);
+  parser* Parser = &Parser_;
+
+  parser_stack Stack = {};
+  PushStack(&Stack, *Parser);
 
   program_datatypes Datatypes = {};
-  ParseDatatypes(Parser, &Datatypes, Memory);
+  ParseDatatypes(&Stack, &Datatypes, Memory);
 
   return;
 }
@@ -509,8 +512,8 @@ TestStructParsing(memory_arena* Memory)
 function void
 TestCommentSituation(memory_arena* Memory)
 {
-  c_parse_result Parser_ = TokenizeFile(CS(TEST_FIXTURES_PATH "/comments.cpp"), Memory);
-  c_parse_result* Parser = &Parser_;
+  parser Parser_ = TokenizeFile(CS(TEST_FIXTURES_PATH "/comments.cpp"), Memory);
+  parser* Parser = &Parser_;
 
   {
     c_token T = PeekToken(Parser);
@@ -525,7 +528,7 @@ TestCommentSituation(memory_arena* Memory)
 
   {
     c_token T = PeekToken(Parser);
-    TestThat(T == CToken(CSz("void")));
+    TestThat(T.Type == CTokenType_Void);
   }
 
   {
@@ -535,7 +538,7 @@ TestCommentSituation(memory_arena* Memory)
 
   {
     c_token T = PeekToken(Parser);
-    TestThat(T == CToken(CSz("void")));
+    TestThat(T.Type == CTokenType_Void);
   }
 
 
@@ -543,7 +546,7 @@ TestCommentSituation(memory_arena* Memory)
 
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CSz("void")));
+    TestThat(T.Type == CTokenType_Void);
   }
 
 
@@ -557,6 +560,14 @@ TestCommentSituation(memory_arena* Memory)
   return;
 }
 
+
+function void
+TestAst(memory_arena *Memory)
+{
+  parser Parser_ = TokenizeFile(CS(TEST_FIXTURES_PATH "/comments.cpp"), Memory);
+  parser *Parser = &Parser_;
+
+}
 
 s32
 main()
@@ -572,6 +583,8 @@ main()
   TestStructParsing(Memory);
 
   TestCommentSituation(Memory);
+
+  TestAst(Memory);
 
   TestSuiteEnd();
   exit(TestsFailed);

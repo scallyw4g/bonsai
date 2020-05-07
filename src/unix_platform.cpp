@@ -186,7 +186,7 @@ CreateSemaphore(void)
 typedef void* (*thread_main_callback_type)(void*);
 
 typedef pthread_t thread_handle; // TODO(Jesse id: 265): Unnecessary .. I just added it as a hack get parsing to work
-typedef pthread_attrs_t thread_attributes; // TODO(Jesse id: 266): Unnecessary .. I just added it as a hack get parsing to work
+typedef pthread_attr_t thread_attributes; // TODO(Jesse id: 266): Unnecessary .. I just added it as a hack get parsing to work
 
 thread_id
 CreateThread( thread_main_callback_type ThreadMain, thread_startup_params *Params)

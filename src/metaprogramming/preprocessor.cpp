@@ -1,3 +1,5 @@
+#define DEBUG_PRINT (0)
+
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
 #define PLATFORM_GL_IMPLEMENTATIONS 1
 #define DESTRUCTOR_PARSING_TODO 0
@@ -7,7 +9,6 @@
 #define InvalidDefaultWhileParsing(Parser, ErrorMessage) \
     default: { OutputParsingError((Parser), PeekTokenPointer((Parser)), ErrorMessage); Assert(False); } break;
 
-#define DEBUG_PRINT (1)
 
 #if DEBUG_PRINT
 #include <bonsai_stdlib/headers/debug_print.h>

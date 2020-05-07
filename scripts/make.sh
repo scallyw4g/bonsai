@@ -366,8 +366,8 @@ FirstPreprocessor=0
 BuildPreprocessor=1
 SecondPreprocessor=1
 
-BuildAllProjects=0
-RunTests=0
+BuildAllProjects=1
+RunTests=1
 FinalPreprocessor=0
 
 time RunEntireBuild
