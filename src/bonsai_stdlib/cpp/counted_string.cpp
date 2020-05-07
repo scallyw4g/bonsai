@@ -142,7 +142,7 @@ FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
 {
   TIMED_FUNCTION();
 
-  va_list Args;
+  bonsai_va_list Args;
   va_start(Args, FS);
 
   umm FinalBufferStartingSize = FS.Count;

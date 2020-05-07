@@ -200,6 +200,9 @@
       function void DebugPrint( ast_node_variable_def* S, u32 Depth = 0);
       function void DebugPrint( ast_node_variable_def  S, u32 Depth = 0);
 
+      function void DebugPrint( ast_node_access* S, u32 Depth = 0);
+      function void DebugPrint( ast_node_access  S, u32 Depth = 0);
+
       function void DebugPrint( ast_node_scope* S, u32 Depth = 0);
       function void DebugPrint( ast_node_scope  S, u32 Depth = 0);
 
@@ -434,6 +437,18 @@
       function void DebugPrint( thread_local_state* S, u32 Depth = 0);
       function void DebugPrint( thread_local_state  S, u32 Depth = 0);
 
+      function void DebugPrint( u32_stream* S, u32 Depth = 0);
+      function void DebugPrint( u32_stream  S, u32 Depth = 0);
+
+      function void DebugPrint( u8_stream* S, u32 Depth = 0);
+      function void DebugPrint( u8_stream  S, u32 Depth = 0);
+
+      function void DebugPrint( ansi_stream* S, u32 Depth = 0);
+      function void DebugPrint( ansi_stream  S, u32 Depth = 0);
+
+      function void DebugPrint( r32_stream* S, u32 Depth = 0);
+      function void DebugPrint( r32_stream  S, u32 Depth = 0);
+
       function void DebugPrint( rect2* S, u32 Depth = 0);
       function void DebugPrint( rect2  S, u32 Depth = 0);
 
@@ -535,6 +550,9 @@
 
       function void DebugPrint( native_file* S, u32 Depth = 0);
       function void DebugPrint( native_file  S, u32 Depth = 0);
+
+      function void DebugPrint( mesh_metadata* S, u32 Depth = 0);
+      function void DebugPrint( mesh_metadata  S, u32 Depth = 0);
 
       function void DebugPrint( plane_computation* S, u32 Depth = 0);
       function void DebugPrint( plane_computation  S, u32 Depth = 0);

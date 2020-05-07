@@ -10,7 +10,7 @@
     function struct_def_cursor
     StructDefCursor(umm ElementCount, memory_arena* Memory)
     {
-      struct_def* Start = (struct_def*)PushStruct(Memory, sizeof( struct_def ), 1, 1);
+      struct_def* Start = (struct_def*)PushStruct(Memory, sizeof( struct_def ), 1, 0);
       struct_def_cursor Result = {
         .Start = Start,
         .End = Start+ElementCount,
@@ -70,7 +70,7 @@
     function void
     Push(struct_def_stream* Stream, struct_def Element, memory_arena* Memory)
     {
-      struct_def_stream_chunk* NextChunk = (struct_def_stream_chunk*)PushStruct(Memory, sizeof( struct_def_stream_chunk ), 1, 1);
+      struct_def_stream_chunk* NextChunk = (struct_def_stream_chunk*)PushStruct(Memory, sizeof( struct_def_stream_chunk ), 1, 0);
       NextChunk->Element = Element;
 
       if (!Stream->FirstChunk)

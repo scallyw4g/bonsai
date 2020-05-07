@@ -83,8 +83,8 @@ Inverse(r32 m[16], r32 invOut[16])
 {
   TIMED_FUNCTION();
 
-  r64 inv[16], det;
-  s32 i;
+  r64 inv[16];
+  r64 det;
 
   inv[0] = m[5]  * m[10] * m[15] -
            m[5]  * m[11] * m[14] -
@@ -206,7 +206,7 @@ Inverse(r32 m[16], r32 invOut[16])
             m[8] * m[1] * m[6] -
             m[8] * m[2] * m[5];
 
-  for (i = 0; i < 16; i++)
+  for (s32 i = 0; i < 16; i++)
       invOut[i] = (r32)(inv[i] * det);
 
   return True;

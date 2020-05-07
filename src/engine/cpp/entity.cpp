@@ -71,7 +71,7 @@ GetCollision( world *World, canonical_position TestP, v3 CollisionDim, chunk_dim
          */
         if (chunk && NotSet(chunk->Data->flags, Chunk_Initialized) )
         {
-          chunk->Data->flags = (chunk->Data->flags, Chunk_Queued);
+          chunk->Data->flags = (chunk->Data->flags | Chunk_Queued); // ???
           InitializeVoxels(chunk);
         }
 #endif

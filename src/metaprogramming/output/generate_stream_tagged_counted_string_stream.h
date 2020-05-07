@@ -49,7 +49,7 @@
     function void
     Push(tagged_counted_string_stream_stream* Stream, tagged_counted_string_stream Element, memory_arena* Memory)
     {
-      tagged_counted_string_stream_stream_chunk* NextChunk = (tagged_counted_string_stream_stream_chunk*)PushStruct(Memory, sizeof( tagged_counted_string_stream_stream_chunk ), 1, 1);
+      tagged_counted_string_stream_stream_chunk* NextChunk = (tagged_counted_string_stream_stream_chunk*)PushStruct(Memory, sizeof( tagged_counted_string_stream_stream_chunk ), 1, 0);
       NextChunk->Element = Element;
 
       if (!Stream->FirstChunk)

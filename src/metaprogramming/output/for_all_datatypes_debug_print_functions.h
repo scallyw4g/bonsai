@@ -2686,6 +2686,35 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
+    function void DebugPrint( ast_node_access S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("ast_node_access {\n", Depth);
+      }
+
+      
+          DebugPrint("c_token AccessType {\n", Depth+2);
+          DebugPrint(S.AccessType, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("ast_node_expression Symbol {\n", Depth+2);
+          DebugPrint(S.Symbol, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( ast_node_access *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
     function void DebugPrint( ast_node_scope S, u32 Depth)
     {
       if (Depth == 0)
@@ -5794,6 +5823,152 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
+    function void DebugPrint( u32_stream S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("u32_stream {\n", Depth);
+      }
+
+      
+          DebugPrint("u32 Start {\n", Depth+2);
+          DebugPrint(S.Start, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("u32 At {\n", Depth+2);
+          DebugPrint(S.At, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("u32 End {\n", Depth+2);
+          DebugPrint(S.End, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( u32_stream *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( u8_stream S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("u8_stream {\n", Depth);
+      }
+
+      
+          DebugPrint("u8 Start {\n", Depth+2);
+          DebugPrint(S.Start, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("u8 At {\n", Depth+2);
+          DebugPrint(S.At, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("u8 End {\n", Depth+2);
+          DebugPrint(S.End, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( u8_stream *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( ansi_stream S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("ansi_stream {\n", Depth);
+      }
+
+      
+          DebugPrint("char Start {\n", Depth+2);
+          DebugPrint(S.Start, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("char At {\n", Depth+2);
+          DebugPrint(S.At, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("char End {\n", Depth+2);
+          DebugPrint(S.End, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("counted_string Filename {\n", Depth+2);
+          DebugPrint(S.Filename, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( ansi_stream *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( r32_stream S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("r32_stream {\n", Depth);
+      }
+
+      
+          DebugPrint("r32 Start {\n", Depth+2);
+          DebugPrint(S.Start, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("r32 At {\n", Depth+2);
+          DebugPrint(S.At, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("r32 End {\n", Depth+2);
+          DebugPrint(S.End, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( r32_stream *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
     function void DebugPrint( rect2 S, u32 Depth)
     {
       if (Depth == 0)
@@ -7182,6 +7357,47 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
+    function void DebugPrint( mesh_metadata S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("mesh_metadata {\n", Depth);
+      }
+
+      
+          DebugPrint("u32 VertCount {\n", Depth+2);
+          DebugPrint(S.VertCount, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("u32 NormalCount {\n", Depth+2);
+          DebugPrint(S.NormalCount, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("u32 UVCount {\n", Depth+2);
+          DebugPrint(S.UVCount, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("u32 FaceCount {\n", Depth+2);
+          DebugPrint(S.FaceCount, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( mesh_metadata *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
     function void DebugPrint( plane_computation S, u32 Depth)
     {
       if (Depth == 0)
@@ -7375,6 +7591,12 @@
       
           DebugPrint("v2i Dim {\n", Depth+2);
           DebugPrint(S.Dim, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("u32_stream Pixels {\n", Depth+2);
+          DebugPrint(S.Pixels, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
@@ -9699,16 +9921,7 @@
     {
       switch (EnumValue)
       {
-            case CTokenType_Bool:
-            {
-              DebugPrint("CTokenType_Bool", Depth);
-            } break;
-
-            case CTokenType_M128:
-            {
-              DebugPrint("CTokenType_M128", Depth);
-            } break;
-
+        
             case CTokenType_Unknown:
             {
               DebugPrint("CTokenType_Unknown ", Depth);
@@ -9989,6 +10202,16 @@
               DebugPrint("CTokenType_Signed ", Depth);
             } break;
 
+            case CTokenType_Bool:
+            {
+              DebugPrint("CTokenType_Bool ", Depth);
+            } break;
+
+            case CTokenType_M128:
+            {
+              DebugPrint("CTokenType_M128 ", Depth);
+            } break;
+
             case CTokenType_Auto:
             {
               DebugPrint("CTokenType_Auto ", Depth);
@@ -10017,6 +10240,11 @@
             case CTokenType_Int:
             {
               DebugPrint("CTokenType_Int ", Depth);
+            } break;
+
+            case CTokenType_Asm:
+            {
+              DebugPrint("CTokenType_Asm ", Depth);
             } break;
 
             case CTokenType_Goto:
@@ -10220,6 +10448,11 @@
       switch (EnumValue)
       {
         
+            case type_macro_noop:
+            {
+              DebugPrint("type_macro_noop ", Depth);
+            } break;
+
             case type_macro_keyword:
             {
               DebugPrint("type_macro_keyword ", Depth);
@@ -10940,6 +11173,11 @@
             case type_ast_node_noop:
             {
               DebugPrint("type_ast_node_noop ", Depth);
+            } break;
+
+            case type_ast_node_access:
+            {
+              DebugPrint("type_ast_node_access ", Depth);
             } break;
 
             case type_ast_node_literal:

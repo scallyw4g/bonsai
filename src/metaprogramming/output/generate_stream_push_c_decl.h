@@ -2,7 +2,7 @@
     function void
     Push(struct_member_stream* Stream, struct_member Element, memory_arena* Memory)
     {
-      struct_member_stream_chunk* NextChunk = (struct_member_stream_chunk*)PushStruct(Memory, sizeof( struct_member_stream_chunk ), 1, 1);
+      struct_member_stream_chunk* NextChunk = (struct_member_stream_chunk*)PushStruct(Memory, sizeof( struct_member_stream_chunk ), 1, 0);
       NextChunk->Element = Element;
 
       if (!Stream->FirstChunk)

@@ -41,7 +41,7 @@ LoadShaders(counted_string VertShaderPath, counted_string FragFilePath, memory_a
   counted_string ComputedVertPath = FormatCountedString( Memory, CSz("%S/%S"), CSz(SHADER_PATH), VertShaderPath);
   counted_string ComputedFragPath = FormatCountedString( Memory, CSz("%S/%S"), CSz(SHADER_PATH), FragFilePath);
 
-  ansi_stream HeaderCode       = ReadEntireFileIntoAnsiStream(CSz(SHADER_PATH SHADER_HEADER), Memory);
+  ansi_stream HeaderCode       = ReadEntireFileIntoAnsiStream(CSz(SHADER_PATH "/header.glsl"), Memory);
   ansi_stream VertexShaderCode = ReadEntireFileIntoAnsiStream(ComputedVertPath, Memory);
   ansi_stream FragShaderCode   = ReadEntireFileIntoAnsiStream(ComputedFragPath, Memory);
 

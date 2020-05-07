@@ -10,7 +10,7 @@
     function enum_def_cursor
     EnumDefCursor(umm ElementCount, memory_arena* Memory)
     {
-      enum_def* Start = (enum_def*)PushStruct(Memory, sizeof( enum_def ), 1, 1);
+      enum_def* Start = (enum_def*)PushStruct(Memory, sizeof( enum_def ), 1, 0);
       enum_def_cursor Result = {
         .Start = Start,
         .End = Start+ElementCount,
@@ -70,7 +70,7 @@
     function void
     Push(enum_def_stream* Stream, enum_def Element, memory_arena* Memory)
     {
-      enum_def_stream_chunk* NextChunk = (enum_def_stream_chunk*)PushStruct(Memory, sizeof( enum_def_stream_chunk ), 1, 1);
+      enum_def_stream_chunk* NextChunk = (enum_def_stream_chunk*)PushStruct(Memory, sizeof( enum_def_stream_chunk ), 1, 0);
       NextChunk->Element = Element;
 
       if (!Stream->FirstChunk)

@@ -49,7 +49,7 @@
     function void
     Push(function_def_stream* Stream, function_def Element, memory_arena* Memory)
     {
-      function_def_stream_chunk* NextChunk = (function_def_stream_chunk*)PushStruct(Memory, sizeof( function_def_stream_chunk ), 1, 1);
+      function_def_stream_chunk* NextChunk = (function_def_stream_chunk*)PushStruct(Memory, sizeof( function_def_stream_chunk ), 1, 0);
       NextChunk->Element = Element;
 
       if (!Stream->FirstChunk)

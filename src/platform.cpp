@@ -11,11 +11,14 @@ global_variable bonsai_worker_thread_callback BONSAI_API_WORKER_THREAD_CALLBACK_
 
 
 #include <sys/stat.h>
+
+typedef struct stat bonsai_stat;
+
 function b32
 LibIsNew(const char *LibPath, s64 *LastLibTime)
 {
   b32 Result = False;
-  struct stat StatStruct;
+  bonsai_stat StatStruct;
 
   if (stat(LibPath, &StatStruct) == 0)
   {

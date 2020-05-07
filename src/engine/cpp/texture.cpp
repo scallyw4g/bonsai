@@ -144,15 +144,20 @@ MakeTexture_RGBA(v2i Dim, u32* Data, memory_arena *Mem, u32 MaxTextureSlices = 1
   }
   else
   {
-    /* TODO(Jesse, id: 137, tags: robustness, open_question): This _should_ be
-     * able to be glTexImage3D, but the driver is throwing an error .. why?!
+    /*
      */
+
 #if 0
     glTexImage3D(GL_TEXTURE_3D, MaxTextureSlices, InternalFormat,
         Texture->Dim.x, Texture->Dim.y, MaxTextureSlices,
         0, TextureFormat, ElementType,
         0);
 #else
+
+    /* TODO(Jesse, id: 137, tags: robustness, open_question): This _should_ be
+     * able to be glTexImage3D, but the driver is throwing an error .. why?!
+     */
+
     s32 Mips = (s32)MaxTextureSlices;
     glTexStorage3D(GL_TEXTURE_3D, Mips, InternalFormat,
                    DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM, (s32)MaxTextureSlices);

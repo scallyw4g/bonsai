@@ -16,7 +16,6 @@
 
 #define MODELS_PATH "models"
 #define SHADER_PATH "shaders"
-#define SHADER_HEADER "/header.glsl"
 
 #define SCREEN_RATIO (1)
 #define SCR_WIDTH (3840/SCREEN_RATIO)

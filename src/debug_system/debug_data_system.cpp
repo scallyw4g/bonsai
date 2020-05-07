@@ -762,8 +762,8 @@ InitDebugMemoryAllocationSystem(debug_state *State)
   State->ThreadStates = (debug_thread_state*)PushStruct(BoostrapArena, Size, CACHE_LINE_SIZE);
 
 #if BONSAI_INTERNAL
-  /*
-   * The WriteIndex member gets read from multiple threads, and on x86_64 reads
+
+  /* The WriteIndex member gets read from multiple threads, and on x86_64 reads
    * are atomic that don't span a cache-line boundary.  This ensures we never
    * hit that case.
    */

@@ -1,6 +1,7 @@
 enum ast_node_type
 {
   type_ast_node_noop,
+  type_ast_node_access,
   type_ast_node_literal,
   type_ast_node_expression,
   type_ast_node_parenthesized,
@@ -21,6 +22,7 @@ struct ast_node
 
   union
   {
+    ast_node_access ast_node_access;
     ast_node_literal ast_node_literal;
     ast_node_expression ast_node_expression;
     ast_node_parenthesized ast_node_parenthesized;

@@ -54,9 +54,8 @@ GetHeaderType(FILE* File, int* byteCounter)
 inline void
 ReadVoxChunk(FILE *File)
 {
-  int ID, Version = s32_MAX;
-
-  ID = ReadInt(File);
+  s32 Version = s32_MAX;
+  s32 ID = ReadInt(File);
   Assert( ID == ID_VOX );
 
   Version = ReadInt(File);
@@ -181,8 +180,12 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
           s32 ActualVoxelCount = 0;
 
           // TODO(Jesse, id: 123, tags: potential_bug, vox_loader, set_to_f32_min): Should these 0s be set to s32_MIN??
-          s32 maxX = 0, maxY = 0, maxZ = 0;
-          s32 minX = s32_MAX, minY = s32_MAX, minZ = s32_MAX;
+          s32 maxX = 0;
+          s32 maxY = 0;
+          s32 maxZ = 0;
+          s32 minX = s32_MAX;
+          s32 minY = s32_MAX;
+          s32 minZ = s32_MAX;
 
           boundary_voxel *LocalVoxelCache = (boundary_voxel *)calloc((umm)ReportedVoxelCount, sizeof(boundary_voxel) );
           for( s32 VoxelCacheIndex = 0;

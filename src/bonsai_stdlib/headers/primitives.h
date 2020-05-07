@@ -1,5 +1,5 @@
 #define PI64 (3.1415926535897932384626433832795028841971693993)
-#define PI32 (float(PI64))
+#define PI32 ((float)PI64)
 
 #define local_persist static
 #define global_variable static

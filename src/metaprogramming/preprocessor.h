@@ -45,7 +45,7 @@ meta(
     function (Type.name)_cursor
     (Type.name.to_capital_case)Cursor(umm ElementCount, memory_arena* Memory)
     {
-      (Type.name)* Start = ((Type.name)*)PushStruct(Memory, sizeof( (Type.name) ), 1, 1);
+      (Type.name)* Start = ((Type.name)*)PushStruct(Memory, sizeof( (Type.name) ), 1, 0);
       (Type.name)_cursor Result = {
         .Start = Start,
         .End = Start+ElementCount,
@@ -114,7 +114,7 @@ meta(
     function void
     Push((Type.name)_stream* Stream, (Type.name) Element, memory_arena* Memory)
     {
-      (Type.name)_stream_chunk* NextChunk = ((Type.name)_stream_chunk*)PushStruct(Memory, sizeof( (Type.name)_stream_chunk ), 1, 1);
+      (Type.name)_stream_chunk* NextChunk = ((Type.name)_stream_chunk*)PushStruct(Memory, sizeof( (Type.name)_stream_chunk ), 1, 0);
       NextChunk->Element = Element;
 
       if (!Stream->FirstChunk)
@@ -372,6 +372,7 @@ enum c_token_type
   CTokenType_Char,
   CTokenType_Int,
 
+  CTokenType_Asm,
   CTokenType_Goto,
   CTokenType_Ellipsis,
 
@@ -714,6 +715,8 @@ meta(generate_cursor(c_parse_result))
 
 enum macro_type
 {
+  type_macro_noop,
+
   type_macro_keyword,
   type_macro_function,
 };
@@ -809,6 +812,12 @@ struct ast_node_variable_def
 meta(generate_stream(ast_node_variable_def))
 #include <metaprogramming/output/generate_stream_ast_node_variable_def.h>
 
+struct ast_node_access
+{
+  c_token AccessType; // Arrow or Dot
+  ast_node_expression *Symbol;
+};
+
 struct ast_node_scope
 {
   statement_list *FirstStatement;
@@ -863,6 +872,7 @@ struct ast_node_predicated
 meta(
   d_union ast_node
   {
+    ast_node_access
     ast_node_literal
     ast_node_expression
     ast_node_parenthesized
@@ -1143,12 +1153,12 @@ struct parser_stack
 };
 
 function c_parse_result*
-Peek(parser_stack *Stack)
+Peek(parser_stack *Stack, u32 StackLookahead = 0)
 {
   c_parse_result *Result = {};
-  if (Stack->Depth > 0)
+  if (Stack->Depth > StackLookahead)
   {
-    Result = Stack->Parsers + (Stack->Depth-1);
+    Result = Stack->Parsers + (Stack->Depth-StackLookahead-1);
   }
   else
   {

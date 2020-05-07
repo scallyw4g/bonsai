@@ -9,7 +9,7 @@
     function struct_member_cursor
     StructMemberCursor(umm ElementCount, memory_arena* Memory)
     {
-      struct_member* Start = (struct_member*)PushStruct(Memory, sizeof( struct_member ), 1, 1);
+      struct_member* Start = (struct_member*)PushStruct(Memory, sizeof( struct_member ), 1, 0);
       struct_member_cursor Result = {
         .Start = Start,
         .End = Start+ElementCount,

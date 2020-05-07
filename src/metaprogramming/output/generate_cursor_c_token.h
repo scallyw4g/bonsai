@@ -9,7 +9,7 @@
     function c_token_cursor
     CTokenCursor(umm ElementCount, memory_arena* Memory)
     {
-      c_token* Start = (c_token*)PushStruct(Memory, sizeof( c_token ), 1, 1);
+      c_token* Start = (c_token*)PushStruct(Memory, sizeof( c_token ), 1, 0);
       c_token_cursor Result = {
         .Start = Start,
         .End = Start+ElementCount,

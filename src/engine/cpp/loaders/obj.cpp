@@ -1,3 +1,11 @@
+struct mesh_metadata
+{
+  u32 VertCount;
+  u32 NormalCount;
+  u32 UVCount;
+  u32 FaceCount;
+};
+
 mesh_metadata
 GetObjMetadata(ansi_stream Cursor, memory_arena *Memory)
 {

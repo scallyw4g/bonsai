@@ -185,14 +185,16 @@ CreateSemaphore(void)
 // TODO(Jesse id: 230, tags: parsing, metaprogramming, high_priority): ParseVariable should work with function pointer types
 typedef void* (*thread_main_callback_type)(void*);
 
+typedef pthread_t thread_handle; // TODO(Jesse id: 265): Unnecessary .. I just added it as a hack get parsing to work
+typedef pthread_attrs_t thread_attributes; // TODO(Jesse id: 266): Unnecessary .. I just added it as a hack get parsing to work
+
 thread_id
 CreateThread( thread_main_callback_type ThreadMain, thread_startup_params *Params)
 {
-  pthread_t Thread;
-
-  pthread_attr_t Attribs;
+  thread_attributes Attribs;
   pthread_attr_init(&Attribs);
 
+  thread_handle Thread;
   Params->Self.ID = pthread_create(&Thread, &Attribs, ThreadMain, Params);
 
   return Params->Self.ID;
@@ -281,6 +283,10 @@ HandleGlDebugMessage(GLenum Source, GLenum Type, GLuint Id, GLenum Severity,
   return;
 }
 
+// TODO(Jesse id: 267): Unnecessary .. I just added these as a hack get parsing to work
+typedef Colormap x_colormap;
+typedef XSetWindowAttributes x_set_window_attribs;
+
 b32
 OpenAndInitializeWindow( os *Os, platform *Plat, s32 DebugFlags)
 {
@@ -303,16 +309,16 @@ OpenAndInitializeWindow( os *Os, platform *Plat, s32 DebugFlags)
 
   Assert(VisualInfo->screen == Screen);
 
-  Colormap ColorInfo = XCreateColormap(Os->Display, RootWindow, VisualInfo->visual, AllocNone);
-
-  XSetWindowAttributes WindowAttribs;
-  WindowAttribs.colormap = ColorInfo;
-  WindowAttribs.event_mask = WindowEventMasks;
+  x_colormap ColorInfo = XCreateColormap(Os->Display, RootWindow, VisualInfo->visual, AllocNone);
 
   Plat->WindowWidth = SCR_WIDTH;
   Plat->WindowHeight = SCR_HEIGHT;
 
   Assert(Plat->WindowWidth && Plat->WindowHeight);
+
+  x_set_window_attribs WindowAttribs;
+  WindowAttribs.colormap = ColorInfo;
+  WindowAttribs.event_mask = WindowEventMasks;
 
   window xWindow = XCreateWindow( Os->Display, RootWindow,
                                   0, 0,
@@ -402,12 +408,15 @@ Terminate(os *Os)
   return;
 }
 
+// TODO(Jesse id: 268): Unnecessary .. I just added these as a hack get parsing to work
+typedef XEvent x_event;
+
 b32
 ProcessOsMessages(os *Os, platform *Plat)
 {
   TIMED_FUNCTION();
 
-  XEvent Event;
+  x_event Event;
   b32 EventFound = (b32)XCheckWindowEvent( Os->Display, Os->Window, WindowEventMasks, &Event);
 
   if (EventFound)
@@ -486,8 +495,8 @@ ProcessOsMessages(os *Os, platform *Plat)
         switch (KeySym)
         {
 
-          BindKeyupToInput(XK_w     , W)
-          BindKeyupToInput(XK_s     , S)
+          BindKeyupToInput(XK_w     , W);
+          BindKeyupToInput(XK_s     , S);
           BindKeyupToInput(XK_a     , A);
           BindKeyupToInput(XK_d     , D);
           BindKeyupToInput(XK_q     , Q);
@@ -520,8 +529,8 @@ ProcessOsMessages(os *Os, platform *Plat)
         switch (KeySym)
         {
 
-          BindKeydownToInput(XK_w     , W)
-          BindKeydownToInput(XK_s     , S)
+          BindKeydownToInput(XK_w     , W);
+          BindKeydownToInput(XK_s     , S);
           BindKeydownToInput(XK_a     , A);
           BindKeydownToInput(XK_d     , D);
           BindKeydownToInput(XK_q     , Q);
@@ -578,10 +587,13 @@ IsFilesystemRoot(char *Filepath)
   return Result;
 }
 
+// TODO(Jesse id: 269): Unnecessary .. I just added these as a hack get parsing to work
+typedef timespec bonsai_timespec;
+
 inline r64
 GetHighPrecisionClock()
 {
-  timespec Time;
+  bonsai_timespec Time;
   clock_gettime(CLOCK_MONOTONIC, &Time);
 
   r64 SecondsAsMs = (r64)Time.tv_sec*1000.0;
@@ -660,10 +672,13 @@ ConnectToServer(network_connection *Connection)
   return;
 }
 
+// TODO(Jesse id: 270): Unnecessary .. I just added these as a hack get parsing to work
+typedef sched_param bonsai_sched_param;
+
 inline void
 PlatformSetThreadPriority(s32 Priority)
 {
-  sched_param Param = {};
+  bonsai_sched_param Param = {};
   Param.sched_priority = Priority;
   int Error = sched_setscheduler(0, SCHED_FIFO, &Param);
   if (Error)
@@ -690,10 +705,14 @@ PlatformSetThreadPriority(s32 Priority)
 
 // It seemed to me doing this actually made performance _worse_
 #if 0
+
+// TODO(Jesse id: 271): Unnecessary .. I just added these as a hack get parsing to work
+typedef cpu_set_t bonsai_cpu_set_t;
+
 inline void
 PlatformSetMainThreadPriority()
 {
-  cpu_set_t Cpu;
+  bonsai_cpu_set_t Cpu;
   CPU_ZERO(&Cpu);
   CPU_SET(0, &Cpu);
 
@@ -710,7 +729,7 @@ PlatformSetMainThreadPriority()
 inline void
 PlatformSetWorkerThreadPriority()
 {
-  cpu_set_t Cpu;
+  bonsai_cpu_set_t Cpu;
   CPU_ZERO(&Cpu);
   CPU_SET(1, &Cpu);
 

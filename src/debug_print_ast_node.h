@@ -11,6 +11,12 @@ DebugPrint( ast_node UnionStruct, u32 Depth)
 {
   switch(UnionStruct.Type)
   {
+    case type_ast_node_access:
+    {
+      DebugPrint(CSz("type_ast_node_access {\n"), Depth);
+      DebugPrint(UnionStruct.ast_node_access, Depth+4);
+      DebugPrint(CSz("}\n"), Depth);
+    } break;
 
     case type_ast_node_literal:
     {
@@ -96,7 +102,10 @@ DebugPrint( ast_node UnionStruct, u32 Depth)
       DebugPrint(CSz("}\n"), Depth);
     } break;
 
-    InvalidDefaultCase;
+    case type_ast_node_noop:
+    {
+      InvalidCodePath();
+    } break;
   }
 }
 

@@ -1,8 +1,12 @@
 
+// TODO(Jesse id: 265): Unnecessary .. I just added these as a hack get parsing to work
+typedef va_list bonsai_va_list;
+
+
 function void
 Log(const char* fmt ...)
 {
-  va_list args;
+  bonsai_va_list args;
   va_start(args, fmt);
   vprintf(fmt, args);
   va_end(args);
@@ -12,12 +16,12 @@ Log(const char* fmt ...)
   Print_P( Var, #Var )
 
 void
-PrintBinary( unsigned int input )
+PrintBinary( unsigned int Input )
 {
   Log("High bit --> ");
   for (int i = (sizeof(int)*8)-1; i >= 0; --i)
   {
-    if ( ((input >> i) & 1) == 1 )
+    if ( ((Input >> i) & 1) == 1 )
       Log("1");
     else
       Log("0");

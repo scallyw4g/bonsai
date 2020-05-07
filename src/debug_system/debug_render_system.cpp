@@ -815,6 +815,8 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
 
     if (Group->MouseP->y > AbsoluteTitleBounds.y )
     {
+    /*
+     */
       Window->MaxClip.y = Max(TitleBounds.y, TestMaxClip.y);
     }
     else
@@ -1941,49 +1943,49 @@ BufferScopeTreeEntry(debug_ui_render_group *Group, debug_profile_scope *Scope,
   return;
 }
 
-#if 0
-function scope_stats
-GetStatsFor( debug_profile_scope *Target, debug_profile_scope *Root)
-{
-  scope_stats Result = {};
+/* #if 1 */
+/* function scope_stats */
+/* GetStatsFor( debug_profile_scope *Target, debug_profile_scope *Root) */
+/* { */
+/*   scope_stats Result = {}; */
 
-  debug_profile_scope *Current = Root;
-  if (Target->Parent) Current = Target->Parent->Child; // Selects first sibling
+/*   debug_profile_scope *Current = Root; */
+/*   if (Target->Parent) Current = Target->Parent->Child; // Selects first sibling */
 
-  while (Current)
-  {
-    if (Current == Target) // Find Ourselves
-    {
-      if (Result.Calls == 0) // We're first
-      {
-        Result.IsFirst = True;
-      }
-      else
-      {
-        break;
-      }
-    }
+/*   while (Current) */
+/*   { */
+/*     if (Current == Target) // Find Ourselves */
+/*     { */
+/*       if (Result.Calls == 0) // We're first */
+/*       { */
+/*         Result.IsFirst = True; */
+/*       } */
+/*       else */
+/*       { */
+/*         break; */
+/*       } */
+/*     } */
 
-    // These are compile-time string constants, so we can compare pointers to
-    // find equality
-    if (Current->Name == Target->Name)
-    {
-      ++Result.Calls;
-      Result.CumulativeCycles += Current->CycleCount;
+/*     // These are compile-time string constants, so we can compare pointers to */
+/*     // find equality */
+/*     if (Current->Name == Target->Name) */
+/*     { */
+/*       ++Result.Calls; */
+/*       Result.CumulativeCycles += Current->CycleCount; */
 
-      if (!Result.MinScope || Current->CycleCount < Result.MinScope->CycleCount)
-        Result.MinScope = Current;
+/*       if (!Result.MinScope || Current->CycleCount < Result.MinScope->CycleCount) */
+/*         Result.MinScope = Current; */
 
-      if (!Result.MaxScope || Current->CycleCount > Result.MaxScope->CycleCount)
-        Result.MaxScope = Current;
-    }
+/*       if (!Result.MaxScope || Current->CycleCount > Result.MaxScope->CycleCount) */
+/*         Result.MaxScope = Current; */
+/*     } */
 
-    Current = Current->Sibling;
-  }
+/*     Current = Current->Sibling; */
+/*   } */
 
-  return Result;
-}
-#endif
+/*   return Result; */
+/* } */
+/* #endif */
 
 function void
 PushCycleBar(debug_ui_render_group* Group, cycle_range* Range, cycle_range* Frame, r32 TotalGraphWidth, u32 Depth, ui_style *Style)
@@ -2153,8 +2155,8 @@ CollateAllFunctionCalls(debug_profile_scope* Current)
 
   called_function* Prev = 0;
   for ( u32 FunctionIndex = 0;
-      FunctionIndex < MAX_RECORDED_FUNCTION_CALLS;
-      ++FunctionIndex)
+        FunctionIndex < MAX_RECORDED_FUNCTION_CALLS;
+        ++FunctionIndex)
   {
     called_function* Func = ProgramFunctionCalls + FunctionIndex;
 

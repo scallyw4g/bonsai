@@ -284,15 +284,20 @@ function SetSourceFiles
 {
   rm -Rf $META_OUT
   mkdir $META_OUT
-  SOURCE_FILES="$(find src -type f -name "*.h"                                \
-    -and -not -wholename "src/net/network.h"                                  \
-    -and -not -wholename "src/net/network.h"                                  \
-    -and -not -wholename "src/bonsai_stdlib/headers/stream.h"                 \
-    -and -not -wholename "src/bonsai_stdlib/headers/perlin.h"                 \
-    -and -not -wholename "src/bonsai_stdlib/cpp/stream.cpp"                   \
-    -and -not -wholename "src/metaprogramming/defines.h"                      \
-    -and -not -path "src/tests/fixtures/*" ) $(find src -type f -name "*.cpp" \
-    -and -not -path "src/tests/fixtures/*" )"
+  SOURCE_FILES="                                                \
+    $(find src -type f -name "*.h"                              \
+    -and -not -wholename "src/net/network.h"                    \
+    -and -not -wholename "src/bonsai_stdlib/headers/stream.h"   \
+    -and -not -wholename "src/bonsai_stdlib/headers/perlin.h"   \
+    -and -not -wholename "src/metaprogramming/defines.h"        \
+    -and -not -path      "src/tests/*" )                        \
+                                                                \
+    $(find src -type f -name "*.cpp"                            \
+    -and -not -wholename "src/bonsai_stdlib/cpp/stream.cpp"     \
+    -and -not -wholename "src/net/server.cpp"                   \
+    -and -not -wholename "src/win32_platform.cpp"               \
+    -and -not -path "src/tests/*" )                             \
+  "
 }
 
 function RunPreprocessor
@@ -355,7 +360,7 @@ function RunEntireBuild {
 
 DumpSourceFilesAndQuit=0
 
-CheckoutMetaOutput=1
+CheckoutMetaOutput=0
 
 FirstPreprocessor=0
 BuildPreprocessor=1

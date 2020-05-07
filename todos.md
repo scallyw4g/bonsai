@@ -15,6 +15,14 @@
     - #261 #if this out on prouction released builds.
     - #262 These should probably be in their own type_ast_node_cast .. ?
     - #263 In the case of identifiers, should we check that it's actually a datatype here?
+    - #264 Once we have proper macro expansion, this can be expanded and concatenated to the string as well.
+    - #265 Unnecessary .. I just added these as a hack get parsing to work
+    - #266 Unnecessary .. I just added it as a hack get parsing to work
+    - #267 Unnecessary .. I just added these as a hack get parsing to work
+    - #268 Unnecessary .. I just added these as a hack get parsing to work
+    - #269 Unnecessary .. I just added these as a hack get parsing to work
+    - #270 Unnecessary .. I just added these as a hack get parsing to work
+    - #271 Unnecessary .. I just added these as a hack get parsing to work
 
   ## immediate
     - #83 d_union-ify this
@@ -76,7 +84,6 @@
     - #109 Reset this in here?
     - #113 Remove these?
     - #144 This actually has nothing to do with the platform
-    - #146 Make this return a counted string and everything that depends on it _NOT_ rely on the fact it's currently null terminated
     - #238 Change name to BitwiseAnd
     - #239 Change name to BitwiseOr
 
@@ -116,8 +123,6 @@
     - #105 Test this actually gets respected!!
     - #109 Reset this in here?
     - #192 This is a function call or macro .. make sure it's actually constant.
-    - #115 Does this work all the time on x64?
-    - #116 Prove this is unnecessary
     - #121 Need a way of dynamically allocating more of these on demand if this unlink fails!
     - #122 Actually read all the data!
     - #124 Load models in multiple chunks instead of one monolithic one. The storage for chunks must be as large as the largest chunk we will EVER load, which should definately not be decided at compile time.
@@ -128,7 +133,6 @@
     - #137 This _should_ be able to be glTexImage3D, but the driver is throwing an error .. why?!
     - #139 Is this necessary to avoid some pointer aliasing bug?
     - #143 This could probably be made better by writing to a statically allocated buffer ..?
-    - #146 Make this return a counted string and everything that depends on it _NOT_ rely on the fact it's currently null terminated
 
   ## font
     - #77 Axe this!
@@ -229,10 +233,8 @@
     - #112 This is copy-pasted from the callgraph tests .. should we be able to call this from anywhere?  It's also in the platform layer
 
   ## tests
-    - #115 Does this work all the time on x64?
 
   ## memory
-    - #116 Prove this is unnecessary
 
   ## transient_memory
     - #117 Transient arena for this instead of stack allocation ?
@@ -294,7 +296,6 @@
 
   ## platform
     - #144 This actually has nothing to do with the platform
-    - #145 Make this use platform agnostic functions!
     - #150 Should this be done elsewhere?
 
   ## platform_linux
@@ -364,4 +365,7 @@
 
   ## id_104
     - #105 Test this actually gets respected!!
+
+  ## memory_leak
+    - #264 This should use a string builder
 

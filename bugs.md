@@ -1,3 +1,17 @@
+# April 30 2020 - 2:00 - closed - EatEntireLine when cursor is not where I thought
+* stream-state
+* parsing
+This is the second time I've had this bug, which I recognized right away this
+time, however the first it took me quite a while to find.  The problem arises
+when calling Eat(Line|Until|Between) when the At pointer of the parser is in an
+unexpected place.  This happens primarily when doing lookahead, validating the
+input text, then deciding that it's fine to ignore it.  At this point it's a
+good idea to require the input text that's been validated, then the cursor is
+in a known-good configuration.  It's difficult to imagine how to prevent this
+sort of error.  One solution might be to remember on the parser if the last
+operation was a Peek(), and warn in debug mode when calling one of the above
+functions in that case.. ?  If I hit this bug again I'll do something about it.
+
 # Feb 13 2020 - 0:40 - closed - Issue with calling RequireToken in too many places
 * stream-state
 * parsing

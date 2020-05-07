@@ -106,7 +106,7 @@ DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh,
     };
 
     BufferVerts(world, gBuffer, SG, Camera,
-        6
+        6,
         localVertexData,
         sizeof(localVertexData),
         localNormalData,

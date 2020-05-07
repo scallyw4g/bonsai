@@ -1,33 +1,3 @@
-struct u32_stream
-{
-  u32* Start;
-  u32* At;
-  u32* End;
-};
-
-struct u8_stream
-{
-  u8* Start;
-  u8* At;
-  u8* End;
-};
-
-struct ansi_stream
-{
-  const char* Start;
-  const char* At;
-  const char* End;
-
-  counted_string Filename;
-};
-
-struct r32_stream
-{
-  r32* Start;
-  r32* At;
-  r32* End;
-};
-
 template <typename element_t, typename stream_t>inline void
 Push(element_t Element, stream_t *Array)
 {
@@ -69,14 +39,6 @@ Rewind(stream_t* Stream)
 {
   Stream->At = Stream->Start;
 }
-
-struct mesh_metadata
-{
-  u32 VertCount;
-  u32 NormalCount;
-  u32 UVCount;
-  u32 FaceCount;
-};
 
 ansi_stream
 AnsiStream(counted_string* String, counted_string Filename = {})
