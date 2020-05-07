@@ -167,8 +167,8 @@
       function void DebugPrint( d_union_decl* S, u32 Depth = 0);
       function void DebugPrint( d_union_decl  S, u32 Depth = 0);
 
-      function void DebugPrint( c_parse_result* S, u32 Depth = 0);
-      function void DebugPrint( c_parse_result  S, u32 Depth = 0);
+      function void DebugPrint( parser* S, u32 Depth = 0);
+      function void DebugPrint( parser  S, u32 Depth = 0);
 
       function void DebugPrint( macro_def* S, u32 Depth = 0);
       function void DebugPrint( macro_def  S, u32 Depth = 0);
@@ -653,8 +653,8 @@
       function void DebugPrint( c_token_cursor* S, u32 Depth = 0);
       function void DebugPrint( c_token_cursor  S, u32 Depth = 0);
 
-      function void DebugPrint( c_parse_result_cursor* S, u32 Depth = 0);
-      function void DebugPrint( c_parse_result_cursor  S, u32 Depth = 0);
+      function void DebugPrint( parser_cursor* S, u32 Depth = 0);
+      function void DebugPrint( parser_cursor  S, u32 Depth = 0);
 
       function void DebugPrint( macro_def_stream_chunk* S, u32 Depth = 0);
       function void DebugPrint( macro_def_stream_chunk  S, u32 Depth = 0);

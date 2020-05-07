@@ -2307,11 +2307,11 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
-    function void DebugPrint( c_parse_result S, u32 Depth)
+    function void DebugPrint( parser S, u32 Depth)
     {
       if (Depth == 0)
       {
-        DebugPrint("c_parse_result {\n", Depth);
+        DebugPrint("parser {\n", Depth);
       }
 
       
@@ -2348,7 +2348,7 @@
       DebugPrint("}\n", Depth);
     }
 
-    function void DebugPrint( c_parse_result *S, u32 Depth)
+    function void DebugPrint( parser *S, u32 Depth)
     {
       if (S) { DebugPrint(*S, Depth); }
       else { DebugPrint("ptr(0)", Depth); }
@@ -2374,7 +2374,7 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("c_parse_result Parser {\n", Depth+2);
+          DebugPrint("parser Parser {\n", Depth+2);
           DebugPrint(S.Parser, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
@@ -2409,7 +2409,7 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("c_parse_result Body {\n", Depth+2);
+          DebugPrint("parser Body {\n", Depth+2);
           DebugPrint(S.Body, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
@@ -3036,7 +3036,7 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("c_parse_result Body {\n", Depth+2);
+          DebugPrint("parser Body {\n", Depth+2);
           DebugPrint(S.Body, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
@@ -3269,7 +3269,7 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("c_parse_result Parsers {\n", Depth+2);
+          DebugPrint("parser Parsers {\n", Depth+2);
           DebugPrint(S.Parsers, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
@@ -8457,27 +8457,27 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
-    function void DebugPrint( c_parse_result_cursor S, u32 Depth)
+    function void DebugPrint( parser_cursor S, u32 Depth)
     {
       if (Depth == 0)
       {
-        DebugPrint("c_parse_result_cursor {\n", Depth);
+        DebugPrint("parser_cursor {\n", Depth);
       }
 
       
-          DebugPrint("c_parse_result Start {\n", Depth+2);
+          DebugPrint("parser Start {\n", Depth+2);
           DebugPrint(S.Start, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("c_parse_result End {\n", Depth+2);
+          DebugPrint("parser End {\n", Depth+2);
           DebugPrint(S.End, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("c_parse_result At {\n", Depth+2);
+          DebugPrint("parser At {\n", Depth+2);
           DebugPrint(S.At, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
@@ -8486,7 +8486,7 @@
       DebugPrint("}\n", Depth);
     }
 
-    function void DebugPrint( c_parse_result_cursor *S, u32 Depth)
+    function void DebugPrint( parser_cursor *S, u32 Depth)
     {
       if (S) { DebugPrint(*S, Depth); }
       else { DebugPrint("ptr(0)", Depth); }

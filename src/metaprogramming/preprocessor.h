@@ -697,7 +697,7 @@ struct d_union_decl
   counted_string CustomEnumType;
 };
 
-struct c_parse_result
+struct parser
 {
   b32 Valid;
   c_token_cursor Tokens;
@@ -710,8 +710,8 @@ struct c_parse_result
   counted_string Filename;
   u32 LineNumber;
 };
-meta(generate_cursor(c_parse_result))
-#include <metaprogramming/output/generate_cursor_c_parse_result.h>
+meta(generate_cursor(parser))
+#include <metaprogramming/output/generate_cursor_parser.h>
 
 enum macro_type
 {
@@ -725,7 +725,7 @@ struct macro_def
 {
   macro_type Type;
   counted_string Name;
-  c_parse_result Parser;
+  parser Parser;
 };
 meta(generate_stream(macro_def))
 #include <metaprogramming/output/generate_stream_macro_def.h>
@@ -738,7 +738,7 @@ struct meta_func
 {
   counted_string Name;
   counted_string ArgName;
-  c_parse_result Body;
+  parser Body;
 };
 meta(generate_stream(meta_func))
 #include <metaprogramming/output/generate_stream_meta_func.h>
@@ -925,7 +925,7 @@ struct function_def
   variable_stream Args;
   ast_node_variable_def_stream Locals;
 
-  c_parse_result Body;
+  parser Body;
   statement_list* Ast;
 };
 meta(generate_stream(function_def))
@@ -1107,7 +1107,7 @@ meta(generate_stream_push(struct_member))
 #include <metaprogramming/output/generate_stream_push_c_decl.h>
 
 function string_from_parser
-StartStringFromParser(c_parse_result* Parser)
+StartStringFromParser(parser* Parser)
 {
   string_from_parser Result = {
     .Start = Parser->Tokens.At->Value.Start
@@ -1116,7 +1116,7 @@ StartStringFromParser(c_parse_result* Parser)
 }
 
 function counted_string
-FinalizeStringFromParser(string_from_parser* Builder, c_parse_result* Parser)
+FinalizeStringFromParser(string_from_parser* Builder, parser* Parser)
 {
   umm Count = (umm)(Parser->Tokens.At->Value.Start - Builder->Start);
   counted_string Result = { .Start = Builder->Start, .Count = Count };
@@ -1149,13 +1149,13 @@ CloseTokenFor(c_token_type T)
 struct parser_stack
 {
   u32 Depth;
-  c_parse_result Parsers[MAX_PARSER_STACK_DEPTH];
+  parser Parsers[MAX_PARSER_STACK_DEPTH];
 };
 
-function c_parse_result*
+function parser*
 Peek(parser_stack *Stack, u32 StackLookahead = 0)
 {
-  c_parse_result *Result = {};
+  parser *Result = {};
   if (Stack->Depth > StackLookahead)
   {
     Result = Stack->Parsers + (Stack->Depth-StackLookahead-1);
@@ -1167,8 +1167,8 @@ Peek(parser_stack *Stack, u32 StackLookahead = 0)
   return Result;
 }
 
-function c_parse_result*
-PushStack(parser_stack *Stack, c_parse_result Parser)
+function parser*
+PushStack(parser_stack *Stack, parser Parser)
 {
   if (Stack->Depth == MAX_PARSER_STACK_DEPTH)
   {
@@ -1180,14 +1180,14 @@ PushStack(parser_stack *Stack, c_parse_result Parser)
     ++Stack->Depth;
   }
 
-  c_parse_result *Result = Peek(Stack);
+  parser *Result = Peek(Stack);
   return Result;
 }
 
-function c_parse_result*
+function parser*
 PopStack(parser_stack *Stack)
 {
-  c_parse_result *Result = {};
+  parser *Result = {};
   if (Stack->Depth > 0)
   {
     --Stack->Depth;

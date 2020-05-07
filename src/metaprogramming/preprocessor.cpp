@@ -25,7 +25,7 @@ _Pragma("clang diagnostic pop") // unused-macros
 #endif
 
 function void
-Rewind(c_parse_result* Parser)
+Rewind(parser* Parser)
 {
   Rewind(&Parser->OutputTokens);
   Rewind(&Parser->Tokens);
@@ -58,7 +58,7 @@ IsComment(c_token T)
 }
 
 function umm
-Remaining(c_parse_result* Parser)
+Remaining(parser* Parser)
 {
   umm Result = Remaining(&Parser->Tokens);
   return Result;
@@ -80,7 +80,7 @@ Advance(c_token_cursor* Tokens, u32 Lookahead = 0)
 }
 
 function void
-AdvanceParser(c_parse_result* Parser)
+AdvanceParser(parser* Parser)
 {
   if (Remaining(&Parser->Tokens))
   {
@@ -103,7 +103,7 @@ AdvanceParser(c_parse_result* Parser)
 }
 
 function void
-AdvanceTo(c_parse_result* Parser, c_token* T)
+AdvanceTo(parser* Parser, c_token* T)
 {
   if (T >= Parser->Tokens.At)
   {
@@ -126,7 +126,7 @@ AdvanceTo(c_parse_result* Parser, c_token* T)
 }
 
 function c_token*
-PeekTokenRawPointer(c_parse_result* Parser, u32 Lookahead = 0)
+PeekTokenRawPointer(parser* Parser, u32 Lookahead = 0)
 {
   c_token* Result = {};
   if (Remaining(&Parser->Tokens, Lookahead))
@@ -145,7 +145,7 @@ PeekTokenRawPointer(c_parse_result* Parser, u32 Lookahead = 0)
 }
 
 function c_token
-PeekTokenRaw(c_parse_result* Parser, u32 Lookahead = 0)
+PeekTokenRaw(parser* Parser, u32 Lookahead = 0)
 {
   c_token* Pointer = PeekTokenRawPointer(Parser, Lookahead);
   c_token Result = {};
@@ -154,7 +154,7 @@ PeekTokenRaw(c_parse_result* Parser, u32 Lookahead = 0)
 }
 
 function u32
-OffsetOfNext(c_parse_result* Parser, u32 Offset,  c_token_type Close)
+OffsetOfNext(parser* Parser, u32 Offset,  c_token_type Close)
 {
   c_token* Next = PeekTokenRawPointer(Parser, Offset);
 
@@ -168,7 +168,7 @@ OffsetOfNext(c_parse_result* Parser, u32 Offset,  c_token_type Close)
 }
 
 function c_token*
-PeekTokenPointer(c_parse_result* Parser, u32 Lookahead = 0)
+PeekTokenPointer(parser* Parser, u32 Lookahead = 0)
 {
   u32 TokenHits = 0;
   u32 LocalLookahead = 0;
@@ -214,7 +214,7 @@ PeekTokenPointer(c_parse_result* Parser, u32 Lookahead = 0)
 }
 
 function c_token
-PeekToken(c_parse_result* Parser, u32 Lookahead = 0)
+PeekToken(parser* Parser, u32 Lookahead = 0)
 {
   c_token* Pointer = PeekTokenPointer(Parser, Lookahead);
   c_token Result = {};
@@ -223,7 +223,7 @@ PeekToken(c_parse_result* Parser, u32 Lookahead = 0)
 }
 
 function c_token
-PopTokenRaw(c_parse_result* Parser)
+PopTokenRaw(parser* Parser)
 {
   c_token Result = PeekTokenRaw(Parser);
   if (Remaining(&Parser->Tokens))
@@ -242,14 +242,14 @@ PopTokenRaw(c_parse_result* Parser)
 }
 
 function b32
-TokensRemain(c_parse_result *Parser, u32 Count = 0)
+TokensRemain(parser *Parser, u32 Count = 0)
 {
   b32 Result = PeekTokenPointer(Parser, Count) != 0;
   return Result;
 }
 
 function counted_string
-EatUntil(c_parse_result* Parser, c_token_type Close)
+EatUntil(parser* Parser, c_token_type Close)
 {
   string_from_parser Builder = StartStringFromParser(Parser);
   while (Remaining(&Parser->Tokens))
@@ -264,7 +264,7 @@ EatUntil(c_parse_result* Parser, c_token_type Close)
 }
 
 function counted_string
-EatComment(c_parse_result* Parser, c_token_type CommentT)
+EatComment(parser* Parser, c_token_type CommentT)
 {
   string_from_parser Builder = StartStringFromParser(Parser);
 
@@ -291,14 +291,14 @@ EatComment(c_parse_result* Parser, c_token_type CommentT)
 }
 
 function counted_string
-EatComment(c_parse_result* Parser)
+EatComment(parser* Parser)
 {
   counted_string Result = EatComment(Parser, PeekTokenRaw(Parser).Type);
   return Result;
 }
 
 function void
-EatWhitespaceAndComments(c_parse_result* Parser)
+EatWhitespaceAndComments(parser* Parser)
 {
   c_token* T = PeekTokenPointer(Parser);
   if (!T) T = Parser->Tokens.End;
@@ -306,7 +306,7 @@ EatWhitespaceAndComments(c_parse_result* Parser)
 }
 
 function void
-EatWhitespace(c_parse_result* Parser)
+EatWhitespace(parser* Parser)
 {
   while (Remaining(&Parser->Tokens) &&
          IsWhitespace(PeekTokenRaw(Parser).Type))
@@ -318,7 +318,7 @@ EatWhitespace(c_parse_result* Parser)
 }
 
 function c_token
-PopToken(c_parse_result* Parser)
+PopToken(parser* Parser)
 {
   c_token Result = {};
 
@@ -342,7 +342,7 @@ PopToken(c_parse_result* Parser)
 }
 
 function b32
-OptionalTokenRaw(c_parse_result* Parser, c_token_type Type)
+OptionalTokenRaw(parser* Parser, c_token_type Type)
 {
   b32 Result = (PeekTokenRaw(Parser).Type == Type);
   if (Result) { PopTokenRaw(Parser); }
@@ -350,7 +350,7 @@ OptionalTokenRaw(c_parse_result* Parser, c_token_type Type)
 }
 
 function b32
-OptionalToken(c_parse_result* Parser, c_token T)
+OptionalToken(parser* Parser, c_token T)
 {
   b32 Result = (PeekToken(Parser) == T);
   if (Result) { PopToken(Parser); }
@@ -358,7 +358,7 @@ OptionalToken(c_parse_result* Parser, c_token T)
 }
 
 function b32
-OptionalToken(c_parse_result* Parser, c_token_type Type)
+OptionalToken(parser* Parser, c_token_type Type)
 {
   b32 Result = (PeekToken(Parser).Type == Type);
   if (Result) { PopToken(Parser); }
@@ -389,10 +389,10 @@ PopIdentifier(ansi_stream* SourceFileStream)
   return Result;
 }
 
-function c_parse_result
+function parser
 TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes = False)
 {
-  c_parse_result Result = {
+  parser Result = {
     .Filename = Code.Filename
   };
 
@@ -907,23 +907,23 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes = Fa
   return Result;
 }
 
-function c_parse_result
+function parser
 TokenizeString(counted_string Code, counted_string Filename, memory_arena* Memory, b32 IgnoreQuotes = False)
 {
-  c_parse_result Result = TokenizeAnsiStream(AnsiStream(Code, Filename), Memory, IgnoreQuotes);
+  parser Result = TokenizeAnsiStream(AnsiStream(Code, Filename), Memory, IgnoreQuotes);
   return Result;
 }
 
-function c_parse_result
+function parser
 TokenizeFile(counted_string Filename, memory_arena* Memory, b32 IgnoreQuotes = False)
 {
   ansi_stream SourceFileStream = AnsiStreamFromFile(Filename, Memory);
-  c_parse_result Result = TokenizeAnsiStream(SourceFileStream, Memory, IgnoreQuotes);
+  parser Result = TokenizeAnsiStream(SourceFileStream, Memory, IgnoreQuotes);
   return Result;
 }
 
 function void
-TruncateAtNextLineEnd(c_parse_result* Parser, u32 Count)
+TruncateAtNextLineEnd(parser* Parser, u32 Count)
 {
   c_token* StartingAt = Parser->Tokens.At;
 
@@ -944,7 +944,7 @@ TruncateAtNextLineEnd(c_parse_result* Parser, u32 Count)
 }
 
 function void
-RewindUntil(c_parse_result* Parser, c_token_type Type)
+RewindUntil(parser* Parser, c_token_type Type)
 {
   while (Parser->Tokens.At >= Parser->Tokens.Start)
   {
@@ -961,7 +961,7 @@ RewindUntil(c_parse_result* Parser, c_token_type Type)
 }
 
 function void
-TruncateAtPreviousLineStart(c_parse_result* Parser, u32 Count )
+TruncateAtPreviousLineStart(parser* Parser, u32 Count )
 {
   c_token* StartingAt = Parser->Tokens.At;
 
@@ -984,9 +984,9 @@ TruncateAtPreviousLineStart(c_parse_result* Parser, u32 Count )
 }
 
 function void
-Dump(c_parse_result* Parser, u32 LinesToDump = u32_MAX)
+Dump(parser* Parser, u32 LinesToDump = u32_MAX)
 {
-  c_parse_result LocalParser = *Parser;
+  parser LocalParser = *Parser;
   LocalParser.OutputTokens = {};
 
   Rewind(&LocalParser.Tokens);
@@ -1003,7 +1003,7 @@ Dump(c_parse_result* Parser, u32 LinesToDump = u32_MAX)
 }
 
 function void
-OutputErrorHelperLine(c_parse_result* Parser, c_token* ErrorToken, c_token Expected, counted_string ErrorString, u32 LineNumber)
+OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, counted_string ErrorString, u32 LineNumber)
 {
   Rewind(&Parser->Tokens);
 
@@ -1099,7 +1099,7 @@ OutputErrorHelperLine(c_parse_result* Parser, c_token* ErrorToken, c_token Expec
 }
 
 function void
-OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_string ErrorString)
+OutputParsingError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_string ErrorString)
 {
   Assert(ErrorToken);
 
@@ -1110,13 +1110,13 @@ OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, c_token Expected
   /* u32 ColumnNumber = 0; */
   /* Log("%.*s:%u:%u: Error\n", Parser->Filename.Count, Parser->Filename.Start, Parser->LineNumber, ColumnNumber); */
 
-  c_parse_result LocalParser = *Parser;
+  parser LocalParser = *Parser;
   LocalParser.OutputTokens = {};
   LocalParser.Tokens.At = ErrorToken;
 
-  c_parse_result LeadingLines  = LocalParser;
-  c_parse_result ErrorLine     = LocalParser;
-  c_parse_result TrailingLines = LocalParser;
+  parser LeadingLines  = LocalParser;
+  parser ErrorLine     = LocalParser;
+  parser TrailingLines = LocalParser;
 
   {
     RewindUntil(&LeadingLines, CTokenType_Newline);
@@ -1157,21 +1157,21 @@ OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, c_token Expected
 }
 
 function void
-OutputParsingError(c_parse_result* Parser, counted_string ErrorString)
+OutputParsingError(parser* Parser, counted_string ErrorString)
 {
   OutputParsingError(Parser, Parser->Tokens.At, CToken(CTokenType_Unknown), ErrorString);
   return;
 }
 
 function void
-OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, counted_string ErrorString)
+OutputParsingError(parser* Parser, c_token* ErrorToken, counted_string ErrorString)
 {
   OutputParsingError(Parser, ErrorToken, CToken(CTokenType_Unknown), ErrorString);
   return;
 }
 
 function c_token
-RequireToken(c_parse_result* Parser, c_token ExpectedToken)
+RequireToken(parser* Parser, c_token ExpectedToken)
 {
   c_token* PeekedToken = PeekTokenPointer(Parser);
 
@@ -1208,7 +1208,7 @@ RequireToken(c_parse_result* Parser, c_token ExpectedToken)
 }
 
 function c_token
-RequireToken(c_parse_result* Parser, c_token_type ExpectedType)
+RequireToken(parser* Parser, c_token_type ExpectedType)
 {
   c_token Result = RequireToken(Parser, CToken(ExpectedType));
   return Result;
@@ -1219,7 +1219,7 @@ PeekToken(parser_stack *Stack, u32 TokenLookahead = 0, u32 StackLookahead = 0)
 {
   c_token Result = {};
 
-  c_parse_result *Parser = Peek(Stack, StackLookahead);
+  parser *Parser = Peek(Stack, StackLookahead);
   if (Parser)
   {
     if (TokensRemain(Parser, TokenLookahead))
@@ -1247,7 +1247,7 @@ OptionalToken(parser_stack *Stack, c_token_type Type)
 {
   b32 Result = {};
 
-  c_parse_result *Parser = Peek(Stack);
+  parser *Parser = Peek(Stack);
   if (TokensRemain(Parser))
   {
     Result = OptionalToken(Parser, Type);
@@ -1266,7 +1266,7 @@ PopToken(parser_stack *Stack)
 {
   c_token Result = {};
 
-  c_parse_result *Parser = Peek(Stack);
+  parser *Parser = Peek(Stack);
   if (TokensRemain(Parser))
   {
     Result = PopToken(Parser);
@@ -1285,7 +1285,7 @@ RequireToken(parser_stack *Stack, c_token_type Type)
 {
   c_token Result = {};
 
-  c_parse_result *Parser = Peek(Stack);
+  parser *Parser = Peek(Stack);
   if (TokensRemain(Parser))
   {
     Result = RequireToken(Parser, Type);
@@ -1475,7 +1475,7 @@ GetDatatypeByName(program_datatypes* Datatypes, counted_string Name)
 }
 
 d_union_decl
-ParseDiscriminatedUnion(c_parse_result* Parser, program_datatypes* Datatypes, counted_string Name, memory_arena* Memory)
+ParseDiscriminatedUnion(parser* Parser, program_datatypes* Datatypes, counted_string Name, memory_arena* Memory)
 {
   TIMED_FUNCTION();
 
@@ -1752,7 +1752,7 @@ DumpStringStreamToConsole(counted_string_stream* Stream)
 }
 
 function counted_string
-EatBetween(c_parse_result* Parser, c_token_type Open, c_token_type Close)
+EatBetween(parser* Parser, c_token_type Open, c_token_type Close)
 {
   string_from_parser Builder = StartStringFromParser(Parser);
 
@@ -1793,14 +1793,14 @@ EatBetween(c_parse_result* Parser, c_token_type Open, c_token_type Close)
 }
 
 function void
-EatNextScope(c_parse_result* Parser)
+EatNextScope(parser* Parser)
 {
   EatBetween(Parser, CTokenType_OpenBrace, CTokenType_CloseBrace);
   return;
 }
 
 function void
-EatUnionDef(c_parse_result* Parser)
+EatUnionDef(parser* Parser)
 {
   EatNextScope(Parser);
   OptionalToken(Parser, CTokenType_Semicolon);
@@ -1819,14 +1819,14 @@ StructDef(counted_string Type, counted_string Sourcefile)
 }
 
 function b32
-EatStar(c_parse_result* Parser)
+EatStar(parser* Parser)
 {
   b32 Result = OptionalToken(Parser, CTokenType_Star);
   return Result;
 }
 
 function void
-EatFunctionDecl(c_parse_result* Parser)
+EatFunctionDecl(parser* Parser)
 {
   EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
 
@@ -1843,7 +1843,7 @@ EatFunctionDecl(c_parse_result* Parser)
 }
 
 function void
-TrimUntilNewline(c_parse_result* Parser)
+TrimUntilNewline(parser* Parser)
 {
   Assert(Parser->Tokens.At == Parser->Tokens.Start);
 
@@ -1853,7 +1853,7 @@ TrimUntilNewline(c_parse_result* Parser)
 }
 
 function void
-TrimFirstToken(c_parse_result* Parser, c_token_type TokenType)
+TrimFirstToken(parser* Parser, c_token_type TokenType)
 {
   Assert(Parser->Tokens.At == Parser->Tokens.Start);
   RequireToken(Parser, TokenType);
@@ -1861,7 +1861,7 @@ TrimFirstToken(c_parse_result* Parser, c_token_type TokenType)
 }
 
 function void
-TrimLastToken(c_parse_result* Parser, c_token_type TokenType)
+TrimLastToken(parser* Parser, c_token_type TokenType)
 {
   c_token* CurrentToken = Parser->Tokens.End-1;
 
@@ -1879,7 +1879,7 @@ TrimLastToken(c_parse_result* Parser, c_token_type TokenType)
 }
 
 function void
-TrimTrailingWhitespace(c_parse_result* Parser)
+TrimTrailingWhitespace(parser* Parser)
 {
   c_token* CurrentToken = Parser->Tokens.End-1;
 
@@ -1902,10 +1902,10 @@ TrimTrailingWhitespace(c_parse_result* Parser)
   }
 }
 
-function c_parse_result
-GetBodyTextForNextScope(c_parse_result* Parser)
+function parser
+GetBodyTextForNextScope(parser* Parser)
 {
-  c_parse_result BodyText = *Parser;
+  parser BodyText = *Parser;
   BodyText.OutputTokens = {};
 
   BodyText.Tokens.Start = BodyText.Tokens.At;
@@ -1922,22 +1922,22 @@ GetBodyTextForNextScope(c_parse_result* Parser)
 }
 
 function struct_def
-ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes);
+ParseStructBody(parser* Parser, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes);
 
 function variable
-ParseDeclaration(c_parse_result* Parser);
+ParseDeclaration(parser* Parser);
 
 function counted_string
-ParseVariableAssignment(c_parse_result* Parser);
+ParseVariableAssignment(parser* Parser);
 
 function void
-ParseFunctionDefArgs(c_parse_result* Parser, memory_arena* Memory, function_def* Result);
+ParseFunctionDefArgs(parser* Parser, memory_arena* Memory, function_def* Result);
 
 function counted_string
-ParseDeclarationValue(c_parse_result* Parser, variable* Decl, program_datatypes* Datatypes, memory_arena* Memory);
+ParseDeclarationValue(parser* Parser, variable* Decl, program_datatypes* Datatypes, memory_arena* Memory);
 
 function struct_member
-ParseStructMember(c_parse_result* Parser, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes)
+ParseStructMember(parser* Parser, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes)
 {
   TIMED_FUNCTION();
   struct_member Result = {};
@@ -2140,7 +2140,7 @@ PrintCDecl(struct_member* Decl, struct_def_stream* ProgramStructs)
 #endif
 
 function counted_string
-ConcatTokensUntil(c_parse_result* Parser, c_token_type Close, memory_arena* Memory)
+ConcatTokensUntil(parser* Parser, c_token_type Close, memory_arena* Memory)
 {
   // TODO(Jesse  id: 225, tags: todos, easy): Rewrite with string_from_parser
   string_builder Builder = {};
@@ -2153,7 +2153,7 @@ ConcatTokensUntil(c_parse_result* Parser, c_token_type Close, memory_arena* Memo
 }
 
 function counted_string
-ConcatTokensUntilNewline(c_parse_result* Parser, memory_arena* Memory)
+ConcatTokensUntilNewline(parser* Parser, memory_arena* Memory)
 {
   counted_string Result = ConcatTokensUntil(Parser, CTokenType_Newline, Memory);
   return Result;
@@ -2187,7 +2187,7 @@ MembersOfType(struct_def* Struct, counted_string MemberType, memory_arena *Memor
 }
 
 function struct_def
-ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes)
+ParseStructBody(parser* Parser, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes)
 {
   TIMED_FUNCTION();
   struct_def Result = StructDef(StructName, Parser->Filename);
@@ -2218,7 +2218,7 @@ ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena*
 }
 
 function void
-ParseError(c_parse_result* Parser, counted_string ErrorMessage)
+ParseError(parser* Parser, counted_string ErrorMessage)
 {
   Parser->Valid = False;
   OutputParsingError(Parser, ErrorMessage);
@@ -2227,7 +2227,7 @@ ParseError(c_parse_result* Parser, counted_string ErrorMessage)
 }
 
 function counted_string
-ParseIntegerConstant(c_parse_result* Parser)
+ParseIntegerConstant(parser* Parser)
 {
   c_token T = PeekToken(Parser);
 
@@ -2317,7 +2317,7 @@ NextTokenIsOperator(parser_stack* Stack)
 }
 
 function b32
-NextTokenIsOperator(c_parse_result* Parser)
+NextTokenIsOperator(parser* Parser)
 {
   c_token T = PeekToken(Parser);
   b32 Result = TokenIsOperator(T.Type);
@@ -2325,7 +2325,7 @@ NextTokenIsOperator(c_parse_result* Parser)
 }
 
 function counted_string
-ParseOperator(c_parse_result* Parser)
+ParseOperator(parser* Parser)
 {
   string_from_parser Builder = StartStringFromParser(Parser);
 
@@ -2383,7 +2383,7 @@ ParseOperator(c_parse_result* Parser)
 }
 
 function counted_string
-ParseConstantExpression(c_parse_result* Parser)
+ParseConstantExpression(parser* Parser)
 {
   string_from_parser Builder = StartStringFromParser(Parser);
 
@@ -2654,7 +2654,7 @@ ParseTypeSpecifier2(parser_stack *Stack)
 }
 
 function type_spec
-ParseTypeSpecifier(c_parse_result *Parser)
+ParseTypeSpecifier(parser *Parser)
 {
   type_spec Result = {};
 
@@ -2868,7 +2868,7 @@ ParseTypeSpecifier(c_parse_result *Parser)
 }
 
 function variable
-ParseDeclaration(c_parse_result *Parser)
+ParseDeclaration(parser *Parser)
 {
   variable Result = {
     .Type = ParseTypeSpecifier(Parser),
@@ -2968,7 +2968,7 @@ ParseDeclaration(c_parse_result *Parser)
 }
 
 function void
-OptionalPrefixOperator(c_parse_result *Parser)
+OptionalPrefixOperator(parser *Parser)
 {
   c_token T = PeekToken(Parser);
   if ( T.Type == CTokenType_Increment ||
@@ -2982,7 +2982,7 @@ OptionalPrefixOperator(c_parse_result *Parser)
 }
 
 function void
-OptionalPostfixOperator(c_parse_result *Parser)
+OptionalPostfixOperator(parser *Parser)
 {
   c_token T = PeekToken(Parser);
   if ( T.Type == CTokenType_Increment ||
@@ -2993,7 +2993,7 @@ OptionalPostfixOperator(c_parse_result *Parser)
 }
 
 function counted_string
-ParseVariableAssignment(c_parse_result* Parser)
+ParseVariableAssignment(parser* Parser)
 {
   RequireToken(Parser, CTokenType_Equals);
 
@@ -3028,7 +3028,7 @@ ParseVariableAssignment(c_parse_result* Parser)
 }
 
 function void
-ParseFunctionDefArgs(c_parse_result* Parser, memory_arena* Memory, function_def* Result)
+ParseFunctionDefArgs(parser* Parser, memory_arena* Memory, function_def* Result)
 {
   b32 Done = False;
 
@@ -3078,7 +3078,7 @@ ParseFunctionDefArgs(c_parse_result* Parser, memory_arena* Memory, function_def*
 
 #if 0
 function function_def
-ParseFunctionDef(c_parse_result* Parser, memory_arena* Memory = 0)
+ParseFunctionDef(parser* Parser, memory_arena* Memory = 0)
 {
   function_def Func = {};
 
@@ -3104,7 +3104,7 @@ ParseFunctionDef(c_parse_result* Parser, memory_arena* Memory = 0)
 #endif
 
 function void
-EatStructDef(c_parse_result* Parser)
+EatStructDef(parser* Parser)
 {
   RequireToken(Parser, CTokenType_Identifier);
   if ( !OptionalToken(Parser, CTokenType_Semicolon) )
@@ -3118,7 +3118,7 @@ EatStructDef(c_parse_result* Parser)
 function void
 ParseDatatypeDef(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* Memory)
 {
-  c_parse_result *Parser = Peek(Stack);
+  parser *Parser = Peek(Stack);
   c_token TypeSpecifier = PopToken(Parser);
 
   switch(TypeSpecifier.Type)
@@ -3274,7 +3274,7 @@ GetByName(counted_string Name, variable_stream* Stream)
 }
 
 function ast_node*
-ParseSymbol(c_parse_result *Parser, memory_arena *Memory)
+ParseSymbol(parser *Parser, memory_arena *Memory)
 {
   ast_node *Result = {};
   ast_node_symbol *Node = AllocateAndCastTo(ast_node_symbol, &Result, Memory);
@@ -3283,7 +3283,7 @@ ParseSymbol(c_parse_result *Parser, memory_arena *Memory)
 }
 
 function ast_node*
-ParseIgnoredNode(c_parse_result *Parser, memory_arena *Memory)
+ParseIgnoredNode(parser *Parser, memory_arena *Memory)
 {
   ast_node *Result = {};
   ast_node_ignored *Node = AllocateAndCastTo(ast_node_ignored, &Result, Memory);
@@ -3292,7 +3292,7 @@ ParseIgnoredNode(c_parse_result *Parser, memory_arena *Memory)
 }
 
 function ast_node*
-ParseFunctionArgument(c_parse_result *Parser, memory_arena *Memory, function_def_stream *FunctionPrototypes);
+ParseFunctionArgument(parser *Parser, memory_arena *Memory, function_def_stream *FunctionPrototypes);
 
 #if 0
 function void
@@ -3364,7 +3364,7 @@ ReduceToTypeSpec(ast_node* InputNode, ast_node_variable_def_stream *Locals, type
 #endif
 
 function ast_node*
-ParseInitializerList(c_parse_result *Parser, memory_arena *Memory)
+ParseInitializerList(parser *Parser, memory_arena *Memory)
 {
   ast_node* Result = {};
 
@@ -3615,7 +3615,7 @@ ParseAllStatements(parser_stack *Stack, memory_arena *Memory, program_datatypes 
 
   statement_list **Current = &Result;
 
-  c_parse_result *Parser = Peek(Stack); // TODO(Jesse id: 254): Remove this
+  parser *Parser = Peek(Stack); // TODO(Jesse id: 254): Remove this
   while ( Remaining(&Parser->Tokens) )
   {
     Parser = Peek(Stack); // TODO(Jesse id: 255): Remove this
@@ -3989,7 +3989,7 @@ ParseFunctionCall(parser_stack *Stack, counted_string FunctionName, memory_arena
 }
 
 function counted_string
-ParseDeclarationValue(c_parse_result* Parser, variable* Decl, program_datatypes* Datatypes, memory_arena* Memory)
+ParseDeclarationValue(parser* Parser, variable* Decl, program_datatypes* Datatypes, memory_arena* Memory)
 {
   string_from_parser Builder = StartStringFromParser(Parser);
 
@@ -4032,7 +4032,7 @@ ParseDeclarationValue(c_parse_result* Parser, variable* Decl, program_datatypes*
 function void
 ParseDatatypes(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* Memory)
 {
-  c_parse_result *Parser = Peek(Stack);
+  parser *Parser = Peek(Stack);
   while (Remaining(&Parser->Tokens))
   {
     c_token T = PeekToken(Parser);
@@ -4158,11 +4158,11 @@ ParseDatatypes(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* 
   return;
 }
 
-function c_parse_result_cursor
+function parser_cursor
 AllocateTokenizedFiles(u32 Count, memory_arena* Memory)
 {
-  c_parse_result* Start = Allocate(c_parse_result, Memory, Count);
-  c_parse_result_cursor Result = {
+  parser* Start = Allocate(parser, Memory, Count);
+  parser_cursor Result = {
     .Start = Start,
     .At = Start,
     .End = Start + Count,
@@ -4171,18 +4171,18 @@ AllocateTokenizedFiles(u32 Count, memory_arena* Memory)
   return Result;
 }
 
-function c_parse_result_cursor
+function parser_cursor
 TokenizeAllFiles(counted_string_cursor* Filenames, memory_arena* Memory)
 {
   TIMED_FUNCTION();
   Assert(Filenames->At == Filenames->Start);
 
-  c_parse_result_cursor Result = AllocateTokenizedFiles((u32)Count(Filenames), Memory);
+  parser_cursor Result = AllocateTokenizedFiles((u32)Count(Filenames), Memory);
   while ( Filenames->At < Filenames->End )
   {
     counted_string CurrentFile = *Filenames->At;
 
-    c_parse_result Parser = TokenizeFile(CurrentFile, Memory);
+    parser Parser = TokenizeFile(CurrentFile, Memory);
     if (Parser.Valid)
     {
       Rewind(&Parser);
@@ -4203,10 +4203,10 @@ TokenizeAllFiles(counted_string_cursor* Filenames, memory_arena* Memory)
 }
 
 function void
-DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_list_info* TodoInfo, memory_arena* Memory);
+DoMetaprogramming(parser* Parser, metaprogramming_info* MetaInfo, todo_list_info* TodoInfo, memory_arena* Memory);
 
 function void
-DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisParser, counted_string NewFilename, metaprogramming_info* MetaInfo, todo_list_info* TodoInfo, memory_arena* Memory, b32 IsInlineCode = False)
+DoWorkToOutputThisStuff(parser* Parser, counted_string OutputForThisParser, counted_string NewFilename, metaprogramming_info* MetaInfo, todo_list_info* TodoInfo, memory_arena* Memory, b32 IsInlineCode = False)
 {
   TIMED_FUNCTION();
 
@@ -4269,7 +4269,7 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
   }
 
 
-  c_parse_result OutputParse = TokenizeString(OutputForThisParser, OutputPath, Memory);
+  parser OutputParse = TokenizeString(OutputForThisParser, OutputPath, Memory);
 
   if (!IsInlineCode)
   {
@@ -4512,8 +4512,8 @@ ParseAllTodosFromFile(counted_string Filename, memory_arena* Memory)
 {
   person_stream People = {};
 
-  c_parse_result Parser_ = TokenizeFile(Filename, Memory, True);
-  c_parse_result* Parser = &Parser_;
+  parser Parser_ = TokenizeFile(Filename, Memory, True);
+  parser* Parser = &Parser_;
 
   while (Remaining(&Parser->Tokens))
   {
@@ -4650,7 +4650,7 @@ AppendAndEscapeInteriorOfDoubleQuotedString(string_builder* Builder, counted_str
 }
 
 function meta_transform_op
-ParseTransformations(c_parse_result* Scope)
+ParseTransformations(parser* Scope)
 {
   meta_transform_op Result = {};
 
@@ -4698,7 +4698,7 @@ Execute(meta_func* Func, meta_func_arg_stream *Args, metaprogramming_info* MetaI
 
 // TODO(Jesse id: 222, tags: immediate, parsing, metaprogramming) : Re-add [[nodiscard]] here
 function counted_string
-Execute(counted_string FuncName, c_parse_result Scope, meta_func_arg_stream* ReplacePatterns, metaprogramming_info* MetaInfo, memory_arena* Memory)
+Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatterns, metaprogramming_info* MetaInfo, memory_arena* Memory)
 {
   program_datatypes* Datatypes = &MetaInfo->Datatypes;
   meta_func_stream* FunctionDefs = &MetaInfo->FunctionDefs;
@@ -4712,7 +4712,7 @@ Execute(counted_string FuncName, c_parse_result Scope, meta_func_arg_stream* Rep
 
     if ( BodyToken.Type == CTokenType_StringLiteral )
     {
-      c_parse_result StringParse = TokenizeString(BodyToken.Value, Scope.Filename, Memory, True);
+      parser StringParse = TokenizeString(BodyToken.Value, Scope.Filename, Memory, True);
       counted_string Code = Execute(FuncName, StringParse, ReplacePatterns, MetaInfo, Memory);
       AppendAndEscapeInteriorOfDoubleQuotedString(&OutputBuilder, Code);
     }
@@ -4738,7 +4738,7 @@ Execute(counted_string FuncName, c_parse_result Scope, meta_func_arg_stream* Rep
             case is_struct:
             {
               RequireToken(&Scope, CTokenType_Question);
-              c_parse_result StructScope = GetBodyTextForNextScope(&Scope);
+              parser StructScope = GetBodyTextForNextScope(&Scope);
               if (Replace->Data.Type == type_struct_def)
               {
                 counted_string Code = Execute(FuncName, StructScope, ReplacePatterns, MetaInfo, Memory);
@@ -4749,7 +4749,7 @@ Execute(counted_string FuncName, c_parse_result Scope, meta_func_arg_stream* Rep
             case is_enum:
             {
               RequireToken(&Scope, CTokenType_Question);
-              c_parse_result EnumScope = GetBodyTextForNextScope(&Scope);
+              parser EnumScope = GetBodyTextForNextScope(&Scope);
               switch (Replace->Data.Type)
               {
                 case type_enum_member:
@@ -4947,7 +4947,7 @@ Execute(counted_string FuncName, c_parse_result Scope, meta_func_arg_stream* Rep
                 RequireToken(&Scope, CTokenType_CloseParen);
               }
 
-              c_parse_result MapMemberScope = GetBodyTextForNextScope(&Scope);
+              parser MapMemberScope = GetBodyTextForNextScope(&Scope);
 
               if (Replace->Data.Type == type_struct_def)
               {
@@ -5043,7 +5043,7 @@ Execute(counted_string FuncName, c_parse_result Scope, meta_func_arg_stream* Rep
               RequireToken(&Scope, CTokenType_OpenParen);
               counted_string EnumValueMatch  = RequireToken(&Scope, CTokenType_Identifier).Value;
               RequireToken(&Scope, CTokenType_CloseParen);
-              c_parse_result NextScope = GetBodyTextForNextScope(&Scope);
+              parser NextScope = GetBodyTextForNextScope(&Scope);
 
               if (Replace->Data.Type == type_enum_def)
               {
@@ -5149,7 +5149,7 @@ IsMetaprogrammingOutput(counted_string Filename, counted_string OutputDirectory)
 }
 
 function counted_string_stream
-ParseDatatypeList(c_parse_result* Parser, program_datatypes* Datatypes, tagged_counted_string_stream_stream* NameLists, memory_arena* Memory)
+ParseDatatypeList(parser* Parser, program_datatypes* Datatypes, tagged_counted_string_stream_stream* NameLists, memory_arena* Memory)
 {
   counted_string_stream Result = {};
   while (PeekToken(Parser).Type == CTokenType_Identifier)
@@ -5180,12 +5180,12 @@ ParseDatatypeList(c_parse_result* Parser, program_datatypes* Datatypes, tagged_c
 }
 
 function meta_func
-ParseMetaFunctionDef(c_parse_result* Parser, counted_string FuncName)
+ParseMetaFunctionDef(parser* Parser, counted_string FuncName)
 {
   RequireToken(Parser, CTokenType_OpenParen);
   counted_string ArgName = RequireToken(Parser, CTokenType_Identifier).Value;
   RequireToken(Parser, CTokenType_CloseParen);
-  c_parse_result Body = GetBodyTextForNextScope(Parser);
+  parser Body = GetBodyTextForNextScope(Parser);
 
   meta_func Func = {
     .Name = FuncName,
@@ -5197,14 +5197,14 @@ ParseMetaFunctionDef(c_parse_result* Parser, counted_string FuncName)
 }
 
 function void
-RemoveAllMetaprogrammingOutput(c_parse_result_cursor* ParsedFiles, arguments* Args)
+RemoveAllMetaprogrammingOutput(parser_cursor* ParsedFiles, arguments* Args)
 {
 
   for (u32 ParserIndex = 0;
       ParserIndex < Count(ParsedFiles);
       ++ParserIndex)
   {
-    c_parse_result* Parser = ParsedFiles->Start+ParserIndex;
+    parser* Parser = ParsedFiles->Start+ParserIndex;
     if (IsMetaprogrammingOutput(Parser->Filename, Args->Outpath))
     {
       Info("Removing %.*s", (u32)Parser->Filename.Count, Parser->Filename.Start);
@@ -5216,7 +5216,7 @@ RemoveAllMetaprogrammingOutput(c_parse_result_cursor* ParsedFiles, arguments* Ar
 }
 
 function counted_string
-ParseMultiLineTodoValue(c_parse_result* Parser, memory_arena* Memory)
+ParseMultiLineTodoValue(parser* Parser, memory_arena* Memory)
 {
   string_builder Builder = {};
 
@@ -5248,7 +5248,7 @@ ParseMultiLineTodoValue(c_parse_result* Parser, memory_arena* Memory)
 }
 
 function void
-DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_list_info* TodoInfo, memory_arena* Memory)
+DoMetaprogramming(parser* Parser, metaprogramming_info* MetaInfo, todo_list_info* TodoInfo, memory_arena* Memory)
 {
   program_datatypes* Datatypes = &MetaInfo->Datatypes;
   meta_func_stream* FunctionDefs = &MetaInfo->FunctionDefs;
@@ -5375,7 +5375,7 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
                 RequireToken(Parser, CTokenType_CloseParen);
 
 
-                c_parse_result Body = GetBodyTextForNextScope(Parser);
+                parser Body = GetBodyTextForNextScope(Parser);
 
                 meta_func Func = {
                   .Name = CSz("anonymous_function"),
@@ -5632,15 +5632,15 @@ WriteTodosToFile(person_stream* People, memory_arena* Memory)
 #define FAILURE_EXIT_CODE 1
 
 function void
-ParseDatatypes(c_parse_result_cursor Files_in, program_datatypes* Datatypes, memory_arena* Memory)
+ParseDatatypes(parser_cursor Files_in, program_datatypes* Datatypes, memory_arena* Memory)
 {
-  c_parse_result_cursor* Files = &Files_in;
+  parser_cursor* Files = &Files_in;
 
   for (u32 ParserIndex = 0;
       ParserIndex < (u32)Count(Files);
       ++ParserIndex)
   {
-    c_parse_result* Parser = Files->Start+ParserIndex;
+    parser* Parser = Files->Start+ParserIndex;
 
     parser_stack Stack = {};
     PushStack(&Stack, *Parser);
@@ -5787,7 +5787,7 @@ main(s32 ArgCount, const char** ArgStrings)
     Assert(Args.Files.Start == Args.Files.At);
     Assert(Args.DoDebugWindow == ShouldOpenDebugWindow);
 
-    c_parse_result_cursor ParsedFiles = TokenizeAllFiles(&Args.Files, Memory);
+    parser_cursor ParsedFiles = TokenizeAllFiles(&Args.Files, Memory);
 
     metaprogramming_info MetaInfo = {};
 
@@ -5803,7 +5803,7 @@ main(s32 ArgCount, const char** ArgStrings)
         ParserIndex < Count(&ParsedFiles);
         ++ParserIndex)
     {
-      c_parse_result* Parser = ParsedFiles.Start+ParserIndex;
+      parser* Parser = ParsedFiles.Start+ParserIndex;
       Assert(Parser->Valid);
 
       if (IsMetaprogrammingOutput(Parser->Filename, Args.Outpath))
