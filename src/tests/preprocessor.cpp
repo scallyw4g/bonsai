@@ -468,6 +468,77 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
 
   //
+  // Hex constant tests
+  //
+
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_IntLiteral);
+    TestThat(T.UnsignedValue == 1);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_IntLiteral);
+    TestThat(T.UnsignedValue == 1);
+  }
+
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_IntLiteral);
+    TestThat(T.UnsignedValue == 0xa);
+  }
+
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_IntLiteral);
+    TestThat(T.UnsignedValue == 0x7f);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_IntLiteral);
+    TestThat(T.UnsignedValue == 0xff);
+  }
+
+
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_IntLiteral);
+    TestThat(T.UnsignedValue == 0xffff);
+  }
+
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_IntLiteral);
+    TestThat(T.UnsignedValue == 0xffFFff);
+  }
+
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_IntLiteral);
+    TestThat(T.UnsignedValue == 0xffFFffFF);
+  }
+
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_IntLiteral);
+    TestThat(T.UnsignedValue == 0xffFFffFFffFFffFF);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_IntLiteral);
+    TestThat(T.UnsignedValue == 0x123456789abcdef1);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_IntLiteral);
+    TestThat(T.UnsignedValue == 0x7fffffffffffffff);
+  }
+
+
+
+
+
+  //
   // Float/Double Tests
   //
 

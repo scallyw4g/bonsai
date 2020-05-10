@@ -448,16 +448,51 @@ ToFractional(counted_string S)
 function u64
 BinaryStringToU64(counted_string Bin)
 {
+  NotImplemented;
+
   // TODO(Jesse id: 273): Implement me
   u64 Result = Bin.Count;
   return Result;
 }
 
 function u64
-HexStringToU64(counted_string Hex)
+HexToU64(char C)
 {
-  // TODO(Jesse id: 274): Implement me
-  u64 Result = Hex.Count;
+  u64 Result = 0;
+
+  if (C >= '0' && C <= '9')
+  {
+    Result = ToU64(C);
+  }
+  else if (C >= 'a' && C <= 'f')
+  {
+    Result = (u64)(10 + C - 'a');
+  }
+  else if (C >= 'A' && C <= 'F')
+  {
+    Result = (u64)(10 + C - 'A');
+  }
+  else
+  {
+    InvalidCodePath();
+  }
+
+  Assert(Result < 16);
+  return Result;
+}
+
+function u64
+HexStringToU64(counted_string S)
+{
+  u64 Result = 0;
+  for (u64 CharIndex = 0;
+      CharIndex < S.Count;
+      ++CharIndex)
+  {
+    u64 Digit = HexToU64(S.Start[CharIndex]);
+    Result |= Digit << ((S.Count - CharIndex - 1L) * 4);
+  }
+
   return Result;
 }
 
@@ -526,6 +561,34 @@ ParseExponentAndSuffixes(ansi_stream *Code, r64 OriginalValue)
   return Result;
 }
 
+function void
+ParseIntegerSuffixes(ansi_stream *Code)
+{
+  b32 Done = False;
+  while (!Done)
+  {
+    char Suffix = *Code->At;
+    switch (Suffix)
+    {
+      // For now, we just eat suffixes
+      // TODO(Jesse id: 278): Disallow invalid suffixes lul/LUL .. LUU .. ULLLL etc..
+      // Maybe use a state machine / transition table
+      case 'u':
+      case 'U':
+      case 'l':
+      case 'L':
+      {
+        Advance(Code);
+      } break;
+
+      default:
+      {
+        Done = True;
+      } break;
+    }
+  }
+}
+
 function c_token
 ParseNumericToken(ansi_stream *Code)
 {
@@ -547,6 +610,7 @@ ParseNumericToken(ansi_stream *Code)
   {
     Advance(Code);
     Result.UnsignedValue = HexStringToU64(PopHex(Code));
+    ParseIntegerSuffixes(Code);
   }
   else if (IntegralPortion == 0 && *Code->At == 'b')
   {
@@ -571,28 +635,7 @@ ParseNumericToken(ansi_stream *Code)
     // Int literal
     //
 
-    b32 Done = False;
-    while (!Done)
-    {
-      char Suffix = *Code->At;
-      switch (Suffix)
-      {
-        // For now, we just eat suffixes
-        case 'u':
-        case 'U':
-        case 'l':
-        case 'L':
-        {
-          Advance(Code);
-        } break;
-
-        default:
-        {
-          Done = True;
-        } break;
-      }
-    }
-
+    ParseIntegerSuffixes(Code);
   }
 
   Result.Value.Start = Start;

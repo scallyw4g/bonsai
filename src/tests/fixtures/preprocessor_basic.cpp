@@ -40,6 +40,27 @@ WriteStructTo(d_union_decl* dUnion, native_file* OutFile, memory_arena* Memory)
 42ul
 42ull
 
+//
+// Hex Constant tests
+//
+
+0x1
+0x0000000000000001
+
+0xa
+
+0x7f
+0xff
+
+0xffff
+0xffFFff
+0xffFFffFF
+
+0xffFFffFFffFFffFF
+
+0x123456789abcdef1
+0x7fffffffffffffff
+
 
 //
 // Float/Double tests
