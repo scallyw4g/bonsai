@@ -364,7 +364,7 @@ CheckoutMetaOutput=0
 
 FirstPreprocessor=1
 BuildPreprocessor=1
-SecondPreprocessor=0
+SecondPreprocessor=1
 
 BuildAllProjects=1
 RunTests=1

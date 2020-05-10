@@ -56,8 +56,16 @@ WriteStructTo(d_union_decl* dUnion, native_file* OutFile, memory_arena* Memory)
 .42
 
 
+
+
+
+
+
+
+
+
 //
-// Positive Exponent tests
+// Positive Exponent tests (double)
 //
 
 42e1
@@ -73,8 +81,22 @@ WriteStructTo(d_union_decl* dUnion, native_file* OutFile, memory_arena* Memory)
 .42e1
 .42e2
 
+42e+1
+42e+2
+
+42.e+1
+42.e+2
+
+42.0e+1
+42.0e+2
+
+.42e+0
+.42e+1
+.42e+2
+
+
 //
-// Negative Exponent tests
+// Negative Exponent tests (double)
 //
 
 42e-1
@@ -90,7 +112,7 @@ WriteStructTo(d_union_decl* dUnion, native_file* OutFile, memory_arena* Memory)
 .42e-2
 
 //
-// Positive Exponent tests
+// Positive Exponent tests (double)
 //
 
 42E1
@@ -106,8 +128,22 @@ WriteStructTo(d_union_decl* dUnion, native_file* OutFile, memory_arena* Memory)
 .42E1
 .42E2
 
+42E+1
+42E+2
+
+42.E+1
+42.E+2
+
+42.0E+1
+42.0E+2
+
+.42E+0
+.42E+1
+.42E+2
+
+
 //
-// Negative Exponent tests
+// Negative Exponent tests (double)
 //
 
 42E-1
@@ -121,3 +157,104 @@ WriteStructTo(d_union_decl* dUnion, native_file* OutFile, memory_arena* Memory)
 
 .42E-1
 .42E-2
+
+
+
+
+
+
+
+
+//
+// Positive Exponent tests (float)
+//
+
+42e1f
+42e2f
+
+42.e1f
+42.e2f
+
+42.0e1f
+42.0e2f
+
+.42e0f
+.42e1f
+.42e2f
+
+42e+1f
+42e+2f
+
+42.e+1f
+42.e+2f
+
+42.0e+1f
+42.0e+2f
+
+.42e+0f
+.42e+1f
+.42e+2f
+
+
+//
+// Negative Exponent tests (float)
+//
+
+42e-1f
+42e-2f
+
+42.e-1f
+42.e-2f
+
+42.0e-1f
+42.0e-2f
+
+.42e-1f
+.42e-2f
+
+//
+// Positive Exponent tests (float)
+//
+
+42E1f
+42E2f
+
+42.E1f
+42.E2f
+
+42.0E1f
+42.0E2f
+
+.42E0f
+.42E1f
+.42E2f
+
+42E+1f
+42E+2f
+
+42.E+1f
+42.E+2f
+
+42.0E+1f
+42.0E+2f
+
+.42E+0f
+.42E+1f
+.42E+2f
+
+
+//
+// Negative Exponent tests (float)
+//
+
+42E-1f
+42E-2f
+
+42.E-1f
+42.E-2f
+
+42.0E-1f
+42.0E-2f
+
+.42E-1f
+.42E-2f

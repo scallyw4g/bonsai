@@ -35,7 +35,6 @@
     - #239 Change name to BitwiseOr
     - #256 How do we handle this?
     - #257 How do we handle this?
-    - #259 Make ParseStructBody take the stack
 
   ## high_priority
     - #101 Profile and check collision rate of this!

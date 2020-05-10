@@ -461,10 +461,12 @@ HexStringToU64(counted_string Hex)
   return Result;
 }
 
-function r64
-DealWithExponent(ansi_stream *Code, r64 OriginalValue)
+function c_token
+ParseExponentAndSuffixes(ansi_stream *Code, r64 OriginalValue)
 {
-  r64 Result = OriginalValue;
+  c_token Result = {};
+
+  r64 FinalValue = OriginalValue;
 
   if ( Remaining(Code) &&
        (*Code->At == 'e' || *Code->At == 'E') )
@@ -473,22 +475,54 @@ DealWithExponent(ansi_stream *Code, r64 OriginalValue)
 
     s32 Exponent = 1;
 
-    char Negation = *Code->At;
-    if (Negation == '-')
+    char ExpSign = *Code->At;
+    if (ExpSign == '-')
     {
       Advance(Code);
       Exponent = -1;
     }
+    else if (ExpSign == '+')
+    {
+      Advance(Code);
+      Exponent = 1;
+    }
 
     Exponent = Exponent * SafeTruncateToS32(ToU64(PopNumeric(Code)));
 
-    Result = Exp(Result, Exponent);
+    FinalValue = Exp(FinalValue, Exponent);
   }
   else
   {
     Error("Bad parser state while parsing exponential part of floating point literal.");
   }
 
+
+  char Suffix = *Code->At;
+  switch (Suffix)
+  {
+    case 'f':
+    case 'F':
+    {
+      Result.Type = CTokenType_FloatLiteral;
+      Advance(Code);
+    } break;
+
+    case 'l':
+    case 'L':
+    {
+      // Apparently `double` and `long double` are the same storage size (8 bytes), at least in MSVC:
+      // https://docs.microsoft.com/en-us/cpp/c-language/storage-of-basic-types?view=vs-2019
+      Result.Type = CTokenType_DoubleLiteral;
+      Advance(Code);
+    } break;
+
+    default:
+    {
+      Result.Type = CTokenType_DoubleLiteral;
+    } break;
+  }
+
+  Result.FloatValue = FinalValue;
   return Result;
 }
 
@@ -521,54 +555,15 @@ ParseNumericToken(ansi_stream *Code)
   }
   else if ( *Code->At == '.' )
   {
-    //
     // Float literal
-    //
-
     Advance(Code);
     r64 Fractional = ToFractional(PopNumeric(Code));
-    r64 FinalValue = (r64)IntegralPortion + Fractional; 
-
-    if (*Code->At == 'e' || *Code->At == 'E')
-    {
-      FinalValue = DealWithExponent(Code,  FinalValue);
-    }
-
-    char Suffix = *Code->At;
-    switch (Suffix)
-    {
-      case 'f':
-      case 'F':
-      {
-        Result.Type = CTokenType_FloatLiteral;
-        Advance(Code);
-      } break;
-
-      case 'l':
-      case 'L':
-      {
-        // Apparently `double` and `long double` are the same storage size (8 bytes), at least in MSVC:
-        // https://docs.microsoft.com/en-us/cpp/c-language/storage-of-basic-types?view=vs-2019
-        Result.Type = CTokenType_DoubleLiteral;
-        Advance(Code);
-      } break;
-
-      default:
-      {
-        Result.Type = CTokenType_DoubleLiteral;
-      } break;
-    }
-
-    Result.FloatValue = FinalValue;
+    Result = ParseExponentAndSuffixes(Code, (r64)IntegralPortion + Fractional);
   }
   else if ( *Code->At == 'e' || *Code->At == 'E'  )
   {
-    //
     // Float literal
-    //
-
-    Result.FloatValue = DealWithExponent(Code, (r64)IntegralPortion);
-    Result.Type = CTokenType_DoubleLiteral;
+    Result = ParseExponentAndSuffixes(Code, (r64)IntegralPortion);
   }
   else
   {
@@ -2140,21 +2135,20 @@ GetBodyTextForNextScope(parser* Parser)
 }
 
 function struct_def
-ParseStructBody(parser* Parser, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes);
+ParseStructBody(parser_stack *Stack, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes);
 
 function variable
 ParseDeclaration(parser* Parser);
 
-function void
-ParseFunctionDefArgs(parser* Parser, memory_arena* Memory, function_def* Result);
-
 function counted_string
-ParseDeclarationValue(parser* Parser, variable* Decl, program_datatypes* Datatypes, memory_arena* Memory);
+ParseDeclarationValue(parser_stack* Stack, variable* Decl, program_datatypes* Datatypes, memory_arena* Memory);
 
 function struct_member
-ParseStructMember(parser* Parser, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes)
+ParseStructMember(parser_stack* Stack, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes)
 {
   TIMED_FUNCTION();
+  parser *Parser = Peek(Stack);
+
   struct_member Result = {};
 
   c_token FirstToken = PeekToken(Parser);
@@ -2175,7 +2169,7 @@ ParseStructMember(parser* Parser, counted_string StructName, memory_arena* Memor
     {
       RequireToken(Parser, CTokenType_Union);
       Result.Type = type_struct_member_anonymous;
-      Result.struct_member_anonymous.Body = ParseStructBody(Parser, CS("anonymous_union"), Memory, Datatypes);
+      Result.struct_member_anonymous.Body = ParseStructBody(Stack, CS("anonymous_union"), Memory, Datatypes);
       RequireToken(Parser, CTokenType_Semicolon);
       Unnamed = True;
     } break;
@@ -2184,7 +2178,7 @@ ParseStructMember(parser* Parser, counted_string StructName, memory_arena* Memor
     {
       RequireToken(Parser, CTokenType_Struct);
       Result.Type = type_struct_member_anonymous;
-      Result.struct_member_anonymous.Body = ParseStructBody(Parser, CS("anonymous_struct"), Memory, Datatypes);
+      Result.struct_member_anonymous.Body = ParseStructBody(Stack, CS("anonymous_struct"), Memory, Datatypes);
       RequireToken(Parser, CTokenType_Semicolon);
       Unnamed = True;
     } break;
@@ -2219,7 +2213,7 @@ ParseStructMember(parser* Parser, counted_string StructName, memory_arena* Memor
       else
       {
         variable Decl = ParseDeclaration(Parser);
-        counted_string Value = ParseDeclarationValue(Parser, &Decl, Datatypes, Memory);
+        counted_string Value = ParseDeclarationValue(Stack, &Decl, Datatypes, Memory);
 
         if (Decl.Type.IsFunction)
         {
@@ -2402,9 +2396,10 @@ MembersOfType(struct_def* Struct, counted_string MemberType, memory_arena *Memor
 }
 
 function struct_def
-ParseStructBody(parser* Parser, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes)
+ParseStructBody(parser_stack* Stack, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes)
 {
   TIMED_FUNCTION();
+  parser *Parser = Peek(Stack);
   struct_def Result = StructDef(StructName, Parser->Filename);
 
   RequireToken(Parser, CTokenType_OpenBrace);
@@ -2420,7 +2415,7 @@ ParseStructBody(parser* Parser, counted_string StructName, memory_arena* Memory,
     }
     else
     {
-      struct_member Declaration = ParseStructMember(Parser, Result.Type, Memory, Datatypes);
+      struct_member Declaration = ParseStructMember(Stack, Result.Type, Memory, Datatypes);
       Push(&Result.Members, Declaration, Memory);
     }
 
@@ -3212,55 +3207,6 @@ OptionalPostfixOperator(parser *Parser)
 }
 
 function void
-ParseFunctionDefArgs(parser* Parser, memory_arena* Memory, function_def* Result)
-{
-  b32 Done = False;
-
-  if (PeekToken(Parser) == CToken(CTokenType_CloseParen))
-  {
-    Done = True;
-  }
-
-  if ( PeekToken(Parser).Type == CTokenType_Void &&
-       PeekToken(Parser, 1) == CToken(CTokenType_CloseParen) )
-  {
-    RequireToken(Parser, CTokenType_Void);
-    Done = True;
-  }
-
-  while ( !Done && Remaining(&Parser->Tokens) )
-  {
-    variable Arg = ParseDeclaration(Parser);
-    if (Memory)
-    {
-      Push(&Result->Args, Arg, Memory);
-    }
-
-    if ( PeekToken(Parser).Type == CTokenType_Equals )
-    {
-      EatUntil(Parser, CTokenType_Semicolon);
-    }
-
-    if (!OptionalToken(Parser, CTokenType_Comma))
-    {
-      Done = True;
-    }
-
-    if (OptionalToken(Parser, CTokenType_Ellipsis))
-    {
-      Result->Prototype.IsVariadic = True;
-      Done = True;
-    }
-
-    continue;
-  }
-
-  RequireToken(Parser, CTokenType_CloseParen);
-
-  return;
-}
-
-function void
 EatStructDef(parser* Parser)
 {
   RequireToken(Parser, CTokenType_Identifier);
@@ -3291,7 +3237,7 @@ ParseDatatypeDef(parser_stack *Stack, program_datatypes* Datatypes, memory_arena
       counted_string StructName = RequireToken(Parser, CTokenType_Identifier).Value;
       if ( PeekToken(Parser).Type == CTokenType_OpenBrace )
       {
-        struct_def S = ParseStructBody(Parser, StructName, Memory, Datatypes);
+        struct_def S = ParseStructBody(Stack, StructName, Memory, Datatypes);
         Push(&Datatypes->Structs, S, Memory);
       }
     } break;
@@ -3299,7 +3245,7 @@ ParseDatatypeDef(parser_stack *Stack, program_datatypes* Datatypes, memory_arena
     case CTokenType_Union:
     {
       counted_string UnionName = RequireToken(Parser, CTokenType_Identifier).Value;
-      struct_def S = ParseStructBody(Parser, UnionName, Memory, Datatypes);
+      struct_def S = ParseStructBody(Stack, UnionName, Memory, Datatypes);
       S.IsUnion = True;
       Push(&Datatypes->Structs, S, Memory);
     } break;
@@ -3343,8 +3289,7 @@ ParseTypedef(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* Me
   {
     if (PeekToken(Stack).Type == CTokenType_OpenBrace)
     {
-      // TODO(Jesse, id: 259, tags: immediate): Make ParseStructBody take the stack
-      struct_def S = ParseStructBody(Peek(Stack), CS(""), Memory, Datatypes);
+      struct_def S = ParseStructBody(Stack, CS(""), Memory, Datatypes);
       S.Type = RequireToken(Stack, CTokenType_Identifier).Value;
       RequireToken(Stack, CTokenType_Semicolon);
       Push(&Datatypes->Structs, S, Memory);
@@ -4161,8 +4106,10 @@ ParseFunctionCall(parser_stack *Stack, counted_string FunctionName, memory_arena
 }
 
 function counted_string
-ParseDeclarationValue(parser* Parser, variable* Decl, program_datatypes* Datatypes, memory_arena* Memory)
+ParseDeclarationValue(parser_stack *Stack, variable* Decl, program_datatypes* Datatypes, memory_arena* Memory)
 {
+  parser *Parser = Peek(Stack);
+
   string_from_parser Builder = StartStringFromParser(Parser);
 
   b32 EatSemicolon = False;
@@ -4174,7 +4121,42 @@ ParseDeclarationValue(parser* Parser, variable* Decl, program_datatypes* Datatyp
   {
     // TODO(Jesse id: 212): Should we check that the function was defined using the 'function' or 'exported_function' keywords and emit a warning otherwise?
     function_def Func = { .Prototype = *Decl };
-    ParseFunctionDefArgs(Parser, Memory, &Func);
+
+    // Function definition args
+    b32 DoneParsingArguments = PeekToken(Parser) == CToken(CTokenType_CloseParen);
+
+    if ( PeekToken(Parser).Type == CTokenType_Void &&
+         PeekToken(Parser, 1).Type == CTokenType_CloseParen )
+    {
+      RequireToken(Parser, CTokenType_Void);
+      DoneParsingArguments = True;
+    }
+
+    while ( !DoneParsingArguments && Remaining(&Parser->Tokens) )
+    {
+      variable Arg = ParseDeclaration(Parser);
+      if ( PeekToken(Parser).Type == CTokenType_Equals )
+      {
+        RequireToken(Parser, CTokenType_Equals);
+        Arg.Value = ParseExpression(Stack, Memory, Datatypes);
+      }
+      Push(&Func.Args, Arg, Memory);
+
+      if (!OptionalToken(Parser, CTokenType_Comma))
+      {
+        DoneParsingArguments = True;
+      }
+
+      if (OptionalToken(Parser, CTokenType_Ellipsis))
+      {
+        Func.Prototype.IsVariadic = True;
+        DoneParsingArguments = True;
+      }
+
+      continue;
+    }
+    RequireToken(Parser, CTokenType_CloseParen); // Ending paren for arguments
+
     if (PeekToken(Parser).Type == CTokenType_OpenBrace)
     {
       // Function declaration : void FunctionNmae( arg A1, arg, A2) { .. function_body .. }
@@ -4297,7 +4279,7 @@ ParseDatatypes(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* 
       {
         // Global variable decl
         variable Decl = ParseDeclaration(Peek(Stack));
-        counted_string Value = ParseDeclarationValue(Peek(Stack), &Decl, Datatypes, Memory);
+        counted_string Value = ParseDeclarationValue(Stack, &Decl, Datatypes, Memory);
       } break;
 
       case CTokenType_Identifier:
@@ -4313,7 +4295,7 @@ ParseDatatypes(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* 
         {
           // Global variable decl
           variable Decl = ParseDeclaration(Peek(Stack));
-          counted_string Value = ParseDeclarationValue(Peek(Stack), &Decl, Datatypes, Memory);
+          counted_string Value = ParseDeclarationValue(Stack, &Decl, Datatypes, Memory);
         }
       } break;
 
@@ -5454,18 +5436,15 @@ DoMetaprogramming(parser* Parser, metaprogramming_info* MetaInfo, todo_list_info
             if (OptionalToken(Parser, CToken(CSz("id"))))
             {
               RequireToken(Parser, CTokenType_Colon);
-              IdValue = RequireToken(Parser, CTokenType_Identifier).Value;
+              IdValue = RequireToken(Parser, CTokenType_IntLiteral).Value;
             }
             else
             {
-              if (!IdValue.Count)
-              {
-                GeneratedNewId = True;
-                IdValue = CS(++LargestIdFoundInFile);
-                Push(CToken(CS(" id: ")), &Parser->OutputTokens);
-                Push(CToken(IdValue), &Parser->OutputTokens);
-              }
-
+              Assert(!IdValue.Count);
+              GeneratedNewId = True;
+              IdValue = CS(++LargestIdFoundInFile);
+              Push(CToken(CS(" id: ")), &Parser->OutputTokens);
+              Push(CToken(IdValue), &Parser->OutputTokens);
             }
 
             OptionalToken(Parser, CTokenType_Comma);

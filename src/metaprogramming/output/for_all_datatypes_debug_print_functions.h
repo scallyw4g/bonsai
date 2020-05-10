@@ -2054,6 +2054,12 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
+          DebugPrint("ast_node_expression Value {\n", Depth+2);
+          DebugPrint(S.Value, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
       DebugPrint("}\n", Depth);
     }
 

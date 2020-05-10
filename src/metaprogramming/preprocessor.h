@@ -521,6 +521,7 @@ struct type_spec_2
   counted_string FunctionPointerTypeName;
 };
 
+struct ast_node_expression;
 struct variable // TODO(Jesse id: 245): Change to variable_def or variable_decl
 {
   type_spec Type;
@@ -533,6 +534,8 @@ struct variable // TODO(Jesse id: 245): Change to variable_def or variable_decl
   counted_string FnPointerDef;
   counted_string StaticBufferSize;
   counted_string SourceText;
+
+  ast_node_expression *Value;
 };
 meta(generate_stream(variable))
 #include <metaprogramming/output/generate_stream_variable.h>
@@ -552,7 +555,6 @@ meta(generate_cursor(struct_member))
 meta( generate_stream_chunk_struct(struct_member) )
 #include <metaprogramming/output/generate_stream_chunk_struct_c_decl.h>
 
-struct ast_node_expression;
 struct enum_member
 {
   counted_string Name;
@@ -1001,24 +1003,8 @@ enum output_mode
 inline void
 PrintToken(c_token Token)
 {
-  switch (Token.Type)
-  {
-    case CTokenType_IntLiteral:
-    {
-      Log("%u", Token.UnsignedValue);
-    } break;
-
-    case CTokenType_DoubleLiteral:
-    case CTokenType_FloatLiteral:
-    {
-      Log("%f", Token.FloatValue);
-    } break;
-
-    default:
-    {
-      Log("%.*s", Token.Value.Count, Token.Value.Start);
-    } break;
-  }
+  Assert(Token.Value.Start && Token.Value.Count);
+  Log("%.*s", Token.Value.Count, Token.Value.Start);
 }
 
 b32

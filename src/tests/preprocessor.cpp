@@ -3,61 +3,66 @@
 #include <tests/test_utils.cpp>
 
 function void
-ExponentTests(parser *Parser)
+PositiveExponentTests(parser *Parser, c_token_type FloatingPointTokenType)
 {
-  //
-  // Positive Exponent tests
-  //
-
   {
     c_token T = PopToken(Parser);
-    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.Type == FloatingPointTokenType);
     TestThat(T.FloatValue == 42.0);
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.Type == FloatingPointTokenType);
     TestThat(T.FloatValue == 42.0 * 42.0);
   }
 
   {
     c_token T = PopToken(Parser);
-    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.Type == FloatingPointTokenType);
     TestThat(T.FloatValue == 42.0);
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.Type == FloatingPointTokenType);
     TestThat(T.FloatValue == 42.0 * 42.0);
   }
 
   {
     c_token T = PopToken(Parser);
-    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.Type == FloatingPointTokenType);
     TestThat(T.FloatValue == 42.0);
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.Type == FloatingPointTokenType);
     TestThat(T.FloatValue == 42.0 * 42.0);
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.Type == FloatingPointTokenType);
     TestThat(T.FloatValue == 1.0);
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.Type == FloatingPointTokenType);
     TestThat(T.FloatValue == 0.42);
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.Type == FloatingPointTokenType);
     TestThat(T.FloatValue == 0.42 * 0.42);
   }
 
+  return;
+}
 
+function void
+ExponentTests(parser *Parser, c_token_type FloatingPointTokenType)
+{
+
+  PositiveExponentTests(Parser, FloatingPointTokenType); // Implicit positive exponent
+
+  PositiveExponentTests(Parser, FloatingPointTokenType); // Expllicit positive exponent
 
   //
   // Negative Exponent tests
@@ -65,46 +70,46 @@ ExponentTests(parser *Parser)
 
   {
     c_token T = PopToken(Parser);
-    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.Type == FloatingPointTokenType);
     TestThat(T.FloatValue == 1.0/42.0);
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.Type == FloatingPointTokenType);
     TestThat(T.FloatValue == (1.0/42.0)/42.0);
   }
 
   {
     c_token T = PopToken(Parser);
-    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.Type == FloatingPointTokenType);
     TestThat(T.FloatValue == 1.0/42.0);
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.Type == FloatingPointTokenType);
     TestThat(T.FloatValue == (1.0/42.0)/42.0);
   }
 
 
   {
     c_token T = PopToken(Parser);
-    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.Type == FloatingPointTokenType);
     TestThat(T.FloatValue == 1.0/42.0);
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.Type == FloatingPointTokenType);
     TestThat(T.FloatValue == (1.0/42.0)/42.0);
   }
 
   {
     c_token T = PopToken(Parser);
-    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.Type == FloatingPointTokenType);
     TestThat(T.FloatValue == 1.0/0.42);
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.Type == FloatingPointTokenType);
     TestThat(T.FloatValue == (1.0/0.42)/0.42);
   }
 
@@ -509,16 +514,16 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
 
 
-  ExponentTests(Parser); // with lowercase 'e'
+  ExponentTests(Parser, CTokenType_DoubleLiteral); // double, with lowercase 'e'
 
-  ExponentTests(Parser); // with uppercase 'E'
+  ExponentTests(Parser, CTokenType_DoubleLiteral); // double, with uppercase 'E'
+
+  ExponentTests(Parser, CTokenType_FloatLiteral); // float, with lowercase 'e'
+
+  ExponentTests(Parser, CTokenType_FloatLiteral); // float, with uppercase 'E'
 
 
-  {
-    c_token T = PopTokenRaw(Parser);
-    TestThat(T.Type == CTokenType_Newline);
-  }
-
+  EatWhitespaceAndComments(Parser);
 
   TestThat(Remaining(&Parser->Tokens) == 0);
 }
