@@ -274,10 +274,18 @@ VaporizeArena(memory_arena *Arena)
   PlatformDeallocateArena(Arena);
 }
 
+inline s32
+SafeTruncateToS32(umm Size)
+{
+  Assert(Size <= s32_MAX);
+  s32 Result = (s32)Size;
+  return Result;
+}
+
 inline u32
 SafeTruncateToU32(umm Size)
 {
-  Assert(Size <= 0xFFFFFFFF);
+  Assert(Size <= u32_MAX);
   u32 Result = (u32)Size;
   return Result;
 }

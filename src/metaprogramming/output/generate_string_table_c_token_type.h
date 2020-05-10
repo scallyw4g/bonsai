@@ -98,8 +98,6 @@
 
             case CTokenType_FloatLiteral: { Result = CSz("CTokenType_FloatLiteral"); } break;
 
-            case CTokenType_LongDoubleLiteral: { Result = CSz("CTokenType_LongDoubleLiteral"); } break;
-
             case CTokenType_Meta: { Result = CSz("CTokenType_Meta"); } break;
 
             case CTokenType_Struct: { Result = CSz("CTokenType_Struct"); } break;

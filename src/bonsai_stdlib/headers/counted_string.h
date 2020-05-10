@@ -339,6 +339,15 @@ IsAlpha(char C)
 }
 
 function b32
+IsHex(char C)
+{
+  b32 Result = ( (C >= '0' && C <= '9') ||
+                 (C >= 'a' && C <= 'f') ||
+                 (C >= 'A' && C <= 'F') );
+  return Result;
+}
+
+function b32
 IsNumeric(char C)
 {
   b32 Result = (C >= '0' && C <= '9');
@@ -352,23 +361,54 @@ IsAlphaNumeric(char C)
   return Result;
 }
 
-function u32
-ToU32(char C)
+function u64
+ToU64(char C)
 {
   Assert(IsNumeric(C));
-  u32 Result = (u32)C - (u32)'0';
+  u64 Result = (u64)C - (u64)'0';
   return Result;
 }
 
 function u32
-Exp(u32 Base, u32 Exponent)
+ToU32(char C)
 {
-  u32 Result = 1;
-  for (u32 Ignored = 0;
-      Ignored < Exponent;
-      ++Ignored)
+  u32 Result = SafeTruncateToU32(ToU64(C));
+  return Result;
+}
+
+function r64
+Exp(r64 Base, s32 Exponent)
+{
+  s32 IterationDirection = Exponent > 0 ? 1 : -1;
+
+  r64 Result = 1;
+
+  for (s32 Iterator = 0;
+      Iterator != Exponent;
+      Iterator += IterationDirection)
   {
-    Result *= Base;
+    IterationDirection == 1 ?
+      Result *= Base :
+      Result /= Base;
+  }
+
+  return Result;
+}
+
+function u64
+Exp(u64 Base, s32 Exponent)
+{
+  s32 IterationDirection = Exponent > 0 ? 1 : -1;
+
+  u64 Result = 1;
+
+  for (s32 Iterator = 0;
+      Iterator != Exponent;
+      Iterator += IterationDirection)
+  {
+    IterationDirection == 1 ?
+      Result *= Base :
+      Result /= Base;
   }
 
   return Result;
@@ -388,18 +428,32 @@ IsNumeric(counted_string S)
   return Result;
 }
 
-function u32
-ToU32(counted_string S)
+function u64
+ToU64(counted_string S)
 {
-  u32 Result = 0;
-  for (u32 CharIndex = 0;
+  u64 Result = 0;
+  for (u64 CharIndex = 0;
       CharIndex < S.Count;
       ++CharIndex)
   {
-    u32 Digit = ToU32(S.Start[CharIndex]);
-    Result += (Digit * Exp(10, ((u32)S.Count - CharIndex - 1)));
+    u64 Digit = ToU64(S.Start[CharIndex]);
+    Result += (Digit * Exp(10UL, SafeTruncateToS32(S.Count - CharIndex - 1L) ));
   }
 
+  return Result;
+}
+
+function s32
+ToS32(counted_string S)
+{
+  s32 Result = SafeTruncateToS32(ToU64(S));
+  return Result;
+}
+
+function u32
+ToU32(counted_string S)
+{
+  u32 Result = SafeTruncateToU32(ToU64(S));
   return Result;
 }
 

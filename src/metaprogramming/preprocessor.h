@@ -344,12 +344,12 @@ enum c_token_type
   CTokenType_EscapedNewline,
 
   CTokenType_Identifier,
+
   CTokenType_StringLiteral,
   CTokenType_CharLiteral,
   CTokenType_IntLiteral,
   CTokenType_DoubleLiteral,
   CTokenType_FloatLiteral,
-  CTokenType_LongDoubleLiteral,
 
   CTokenType_Meta,
 
@@ -687,12 +687,14 @@ meta(generate_stream(meta_func_arg))
 struct c_token
 {
   c_token_type Type;
+  counted_string Value;
 
+  // These are only valid for their correspoinding literal types
   union
   {
-    counted_string Value;
-    r32 FloatValue;
-    r64 DoubleValue;
+    /* s64 SignedValue; */ // TODO(Jesse id: 272): Fold `-` sign into this value at tokenization time?
+    u64 UnsignedValue;
+    r64 FloatValue;
   };
 };
 meta(generate_cursor(c_token))
@@ -999,7 +1001,24 @@ enum output_mode
 inline void
 PrintToken(c_token Token)
 {
-  Log("%.*s", Token.Value.Count, Token.Value.Start);
+  switch (Token.Type)
+  {
+    case CTokenType_IntLiteral:
+    {
+      Log("%u", Token.UnsignedValue);
+    } break;
+
+    case CTokenType_DoubleLiteral:
+    case CTokenType_FloatLiteral:
+    {
+      Log("%f", Token.FloatValue);
+    } break;
+
+    default:
+    {
+      Log("%.*s", Token.Value.Count, Token.Value.Start);
+    } break;
+  }
 }
 
 b32

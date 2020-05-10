@@ -2251,6 +2251,12 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
+          DebugPrint("counted_string Value {\n", Depth+2);
+          DebugPrint(S.Value, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
       DebugPrint("}\n", Depth);
     }
 
@@ -10144,11 +10150,6 @@
             case CTokenType_FloatLiteral:
             {
               DebugPrint("CTokenType_FloatLiteral ", Depth);
-            } break;
-
-            case CTokenType_LongDoubleLiteral:
-            {
-              DebugPrint("CTokenType_LongDoubleLiteral ", Depth);
             } break;
 
             case CTokenType_Meta:

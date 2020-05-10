@@ -446,7 +446,7 @@ function s32
 StringToInt(counted_string String)
 {
   const char* Temp = GetNullTerminated(String, TranArena);
-  s32 Result = atoi(Temp);
+  s32 Result = atoi(Temp); // TODO(Jesse id: 275): Rewrite this in terms of `ToU32(counted_string S)`
   return Result;
 }
 

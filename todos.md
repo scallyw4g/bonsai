@@ -23,6 +23,10 @@
     - #269 Unnecessary .. I just added these as a hack get parsing to work
     - #270 Unnecessary .. I just added these as a hack get parsing to work
     - #271 Unnecessary .. I just added these as a hack get parsing to work
+    - #272 Fold `-` sign into this value at tokenization time?
+    - #273 Implement me
+    - #274 Implement me
+    - #275 Rewrite this in terms of `ToU32(counted_string S)`
 
   ## immediate
     - #83 d_union-ify this
@@ -100,7 +104,6 @@
     - #99 Generate this?  Need a compiler feature to generate stuff from primitive types.
     - #100 Do we actually want this in here?
     - #192 This is a function call or macro .. make sure it's actually constant.
-    - #200 Floating-point values should be parsed out in TokenizeAnsiStream()!!
     - #210 This is a function-macro call .. I think always..?
     - #226 Should we handle this differently?
     - #189 Parse out function names?
@@ -321,7 +324,6 @@
     - #213 There is a degenerate case here, what if the file ends without a newline? While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
     - #214 There is a degenerate case here, what if the file ends with a malformed comment? While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
     - #192 This is a function call or macro .. make sure it's actually constant.
-    - #200 Floating-point values should be parsed out in TokenizeAnsiStream()!!
     - #189 Parse out function names?
     - #222 Re-add [[nodiscard]] here
     - #230 ParseVariable should work with function pointer types

@@ -3,6 +3,116 @@
 #include <tests/test_utils.cpp>
 
 function void
+ExponentTests(parser *Parser)
+{
+  //
+  // Positive Exponent tests
+  //
+
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.FloatValue == 42.0);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.FloatValue == 42.0 * 42.0);
+  }
+
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.FloatValue == 42.0);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.FloatValue == 42.0 * 42.0);
+  }
+
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.FloatValue == 42.0);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.FloatValue == 42.0 * 42.0);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.FloatValue == 1.0);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.FloatValue == 0.42);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.FloatValue == 0.42 * 0.42);
+  }
+
+
+
+  //
+  // Negative Exponent tests
+  //
+
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.FloatValue == 1.0/42.0);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.FloatValue == (1.0/42.0)/42.0);
+  }
+
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.FloatValue == 1.0/42.0);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.FloatValue == (1.0/42.0)/42.0);
+  }
+
+
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.FloatValue == 1.0/42.0);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.FloatValue == (1.0/42.0)/42.0);
+  }
+
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.FloatValue == 1.0/0.42);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.FloatValue == (1.0/0.42)/0.42);
+  }
+
+
+  return;
+}
+
+function void
 TestBasicTokenizationAndParsing(memory_arena* Memory)
 {
   parser Parser_ = TokenizeFile(CS(TEST_FIXTURES_PATH "/preprocessor_basic.cpp"), Memory);
@@ -169,7 +279,8 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CS("3")));
+    TestThat(T.Type == CTokenType_IntLiteral);
+    TestThat(T.UnsignedValue == 3);
   }
   {
     c_token T = PopToken(Parser);
@@ -177,7 +288,8 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CS("3")));
+    TestThat(T.Type == CTokenType_IntLiteral);
+    TestThat(T.UnsignedValue == 3);
   }
   {
     c_token T = PopToken(Parser);
@@ -337,10 +449,76 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
     TestThat(T.Type == CTokenType_CloseBrace);
   }
 
+  //
+  // Integral contant tests
+  //
+
+  for (u32 Count = 0;
+      Count < 15;
+      ++Count)
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_IntLiteral);
+    TestThat(T.UnsignedValue == 42);
+  }
+
+  //
+  // Float/Double Tests
+  //
+
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_FloatLiteral);
+    TestThat(T.FloatValue == 42.0);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_FloatLiteral);
+    TestThat(T.FloatValue == 42.0);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_FloatLiteral);
+    TestThat(T.FloatValue == 42.42);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_FloatLiteral);
+    TestThat(T.FloatValue == .42);
+  }
+
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.FloatValue == 42.0);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.FloatValue == 42.0);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.FloatValue == 42.42);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_DoubleLiteral);
+    TestThat(T.FloatValue == .42);
+  }
+
+
+  ExponentTests(Parser); // with lowercase 'e'
+
+  ExponentTests(Parser); // with uppercase 'E'
+
+
   {
     c_token T = PopTokenRaw(Parser);
     TestThat(T.Type == CTokenType_Newline);
   }
+
 
   TestThat(Remaining(&Parser->Tokens) == 0);
 }
@@ -560,7 +738,6 @@ TestCommentSituation(memory_arena* Memory)
   return;
 }
 
-
 function void
 TestAst(memory_arena *Memory)
 {
@@ -574,6 +751,11 @@ TestAst(memory_arena *Memory)
   ParseDatatypes(&Stack, &Datatypes, Memory);
 
   ParseFunctionBodiesIntoAsts(&Datatypes, Memory);
+}
+
+function void
+TestNumericConstantParsing()
+{
 }
 
 s32

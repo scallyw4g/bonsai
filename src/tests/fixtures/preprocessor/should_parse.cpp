@@ -1,11 +1,9 @@
 #include <bonsai_types.h>
 
-#define Value 1
-
 function void
 TestFunc()
 {
-  bool whatever = Value;
+  bool whatever = true;
 
   if (whatever)
   {
@@ -15,11 +13,11 @@ TestFunc()
 #define foo
   }
 
-  if (Value)
+  if (whatever)
   {
     // Confusingly, this does parse
 #define bar
   }
 
-  u32 Thing = Value + 3;
+  int Thing = 3 + 3;
 }
