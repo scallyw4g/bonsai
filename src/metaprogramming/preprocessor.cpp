@@ -448,10 +448,16 @@ ToFractional(counted_string S)
 function u64
 BinaryStringToU64(counted_string Bin)
 {
-  NotImplemented;
+  u64 Result = 0;
+  for (u64 CharIndex = 0;
+      CharIndex < Bin.Count;
+      ++CharIndex)
+  {
+    u64 Digit = (u64)(Bin.Start[CharIndex] - '0');
+    Assert(Digit < 2);
+    Result |= Digit << ((Bin.Count - CharIndex - 1L));
+  }
 
-  // TODO(Jesse id: 273): Implement me
-  u64 Result = Bin.Count;
   return Result;
 }
 

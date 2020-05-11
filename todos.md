@@ -24,7 +24,6 @@
     - #270 Unnecessary .. I just added these as a hack get parsing to work
     - #271 Unnecessary .. I just added these as a hack get parsing to work
     - #272 Fold `-` sign into this value at tokenization time?
-    - #273 Implement me
     - #275 Rewrite this in terms of `ToU32(counted_string S)`
     - #278 Disallow invalid suffixes lul/LUL .. LUU .. ULLLL etc..
 

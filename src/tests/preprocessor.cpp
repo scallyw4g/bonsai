@@ -536,6 +536,54 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
 
 
 
+  //
+  // Binary constant tests
+  //
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_IntLiteral);
+    TestThat(T.UnsignedValue == 0b1);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_IntLiteral);
+    TestThat(T.UnsignedValue == 0b01);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_IntLiteral);
+    TestThat(T.UnsignedValue == 0b101);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_IntLiteral);
+    TestThat(T.UnsignedValue == 0b111);
+  }
+
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_IntLiteral);
+    TestThat(T.UnsignedValue == 0b011111111111111111111111111111111111111);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_IntLiteral);
+    TestThat(T.UnsignedValue == 0b11011111111111111111111111111111111111111);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_IntLiteral);
+    TestThat(T.UnsignedValue == 0b1000000000000000000000000000000000000000000000000000000000000000);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_IntLiteral);
+    TestThat(T.UnsignedValue == 0b0000000000000000000000000000000000000000000000000000000000000001);
+    TestThat(T.UnsignedValue == 1);
+  }
+
+
+
 
 
   //
