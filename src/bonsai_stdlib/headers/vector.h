@@ -1109,6 +1109,7 @@ union f32_reg {
 inline v3
 operator*(v3 A, v3 B)
 {
+
 #if SIMD_OPERATORS
   __m128 Vec1 = _mm_set_ps(0, A.z, A.y, A.x);
   __m128 Vec2 = _mm_set_ps(0, B.z, B.y, B.x);
@@ -1138,7 +1139,8 @@ operator*(v3 A, v3 B)
   Result.z = A.z * B.z;
 
   return Result;
-#endif 
+#endif
+
 }
 
 inline v3

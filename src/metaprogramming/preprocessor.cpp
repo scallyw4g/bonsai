@@ -532,35 +532,33 @@ ParseExponentAndSuffixes(ansi_stream *Code, r64 OriginalValue)
 
     FinalValue = Exp(FinalValue, Exponent);
   }
-  else
+
+  if (Remaining(Code))
   {
-    Error("Bad parser state while parsing exponential part of floating point literal.");
-  }
-
-
-  char Suffix = *Code->At;
-  switch (Suffix)
-  {
-    case 'f':
-    case 'F':
+    char Suffix = *Code->At;
+    switch (Suffix)
     {
-      Result.Type = CTokenType_FloatLiteral;
-      Advance(Code);
-    } break;
+      case 'f':
+      case 'F':
+      {
+        Result.Type = CTokenType_FloatLiteral;
+        Advance(Code);
+      } break;
 
-    case 'l':
-    case 'L':
-    {
-      // Apparently `double` and `long double` are the same storage size (8 bytes), at least in MSVC:
-      // https://docs.microsoft.com/en-us/cpp/c-language/storage-of-basic-types?view=vs-2019
-      Result.Type = CTokenType_DoubleLiteral;
-      Advance(Code);
-    } break;
+      case 'l':
+      case 'L':
+      {
+        // Apparently `double` and `long double` are the same storage size (8 bytes), at least in MSVC:
+        // https://docs.microsoft.com/en-us/cpp/c-language/storage-of-basic-types?view=vs-2019
+        Result.Type = CTokenType_DoubleLiteral;
+        Advance(Code);
+      } break;
 
-    default:
-    {
-      Result.Type = CTokenType_DoubleLiteral;
-    } break;
+      default:
+      {
+        Result.Type = CTokenType_DoubleLiteral;
+      } break;
+    }
   }
 
   Result.FloatValue = FinalValue;
