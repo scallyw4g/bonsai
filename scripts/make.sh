@@ -290,6 +290,7 @@ function SetSourceFiles
     -and -not -wholename "src/bonsai_stdlib/headers/stream.h"   \
     -and -not -wholename "src/bonsai_stdlib/headers/perlin.h"   \
     -and -not -wholename "src/metaprogramming/defines.h"        \
+    -and -not -wholename "src/win32_platform.h"                 \
     -and -not -path      "src/tests/*" )                        \
                                                                 \
     $(find src -type f -name "*.cpp"                            \

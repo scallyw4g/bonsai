@@ -522,6 +522,15 @@ struct type_spec_2
 };
 
 struct ast_node_expression;
+struct variable_decl
+{
+  type_spec_2 Type;
+  counted_string Name;
+  ast_node_expression *Value;
+};
+meta(generate_stream(variable_decl))
+#include <metaprogramming/output/generate_stream_variable_decl.h>
+
 struct variable // TODO(Jesse id: 245): Change to variable_def or variable_decl
 {
   type_spec Type;

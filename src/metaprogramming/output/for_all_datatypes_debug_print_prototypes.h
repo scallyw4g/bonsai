@@ -140,6 +140,9 @@
       function void DebugPrint( type_spec_2* S, u32 Depth = 0);
       function void DebugPrint( type_spec_2  S, u32 Depth = 0);
 
+      function void DebugPrint( variable_decl* S, u32 Depth = 0);
+      function void DebugPrint( variable_decl  S, u32 Depth = 0);
+
       function void DebugPrint( variable* S, u32 Depth = 0);
       function void DebugPrint( variable  S, u32 Depth = 0);
 
@@ -551,6 +554,9 @@
       function void DebugPrint( native_file* S, u32 Depth = 0);
       function void DebugPrint( native_file  S, u32 Depth = 0);
 
+      function void DebugPrint( function_def_2* S, u32 Depth = 0);
+      function void DebugPrint( function_def_2  S, u32 Depth = 0);
+
       function void DebugPrint( mesh_metadata* S, u32 Depth = 0);
       function void DebugPrint( mesh_metadata  S, u32 Depth = 0);
 
@@ -583,6 +589,15 @@
 
       function void DebugPrint( struct_def_iterator* S, u32 Depth = 0);
       function void DebugPrint( struct_def_iterator  S, u32 Depth = 0);
+
+      function void DebugPrint( variable_decl_stream_chunk* S, u32 Depth = 0);
+      function void DebugPrint( variable_decl_stream_chunk  S, u32 Depth = 0);
+
+      function void DebugPrint( variable_decl_stream* S, u32 Depth = 0);
+      function void DebugPrint( variable_decl_stream  S, u32 Depth = 0);
+
+      function void DebugPrint( variable_decl_iterator* S, u32 Depth = 0);
+      function void DebugPrint( variable_decl_iterator  S, u32 Depth = 0);
 
       function void DebugPrint( variable_stream_chunk* S, u32 Depth = 0);
       function void DebugPrint( variable_stream_chunk  S, u32 Depth = 0);

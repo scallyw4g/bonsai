@@ -2004,6 +2004,41 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
+    function void DebugPrint( variable_decl S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("variable_decl {\n", Depth);
+      }
+
+      
+          DebugPrint("type_spec_2 Type {\n", Depth+2);
+          DebugPrint(S.Type, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("counted_string Name {\n", Depth+2);
+          DebugPrint(S.Name, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("ast_node_expression Value {\n", Depth+2);
+          DebugPrint(S.Value, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( variable_decl *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
     function void DebugPrint( variable S, u32 Depth)
     {
       if (Depth == 0)
@@ -7363,6 +7398,59 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
+    function void DebugPrint( function_def_2 S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("function_def_2 {\n", Depth);
+      }
+
+      
+          DebugPrint("counted_string Name {\n", Depth+2);
+          DebugPrint(S.Name, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("type_spec_2 ReturnType {\n", Depth+2);
+          DebugPrint(S.ReturnType, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("variable_decl_stream Args {\n", Depth+2);
+          DebugPrint(S.Args, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("b32 IsVariadic {\n", Depth+2);
+          DebugPrint(S.IsVariadic, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("parser Body {\n", Depth+2);
+          DebugPrint(S.Body, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("statement_list Ast {\n", Depth+2);
+          DebugPrint(S.Ast, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( function_def_2 *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
     function void DebugPrint( mesh_metadata S, u32 Depth)
     {
       if (Depth == 0)
@@ -7779,6 +7867,93 @@
     }
 
     function void DebugPrint( struct_def_iterator *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( variable_decl_stream_chunk S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("variable_decl_stream_chunk {\n", Depth);
+      }
+
+      
+          DebugPrint("variable_decl Element {\n", Depth+2);
+          DebugPrint(S.Element, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("variable_decl_stream_chunk Next {\n", Depth+2);
+          DebugPrint(S.Next, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( variable_decl_stream_chunk *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( variable_decl_stream S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("variable_decl_stream {\n", Depth);
+      }
+
+      
+          DebugPrint("variable_decl_stream_chunk FirstChunk {\n", Depth+2);
+          DebugPrint(S.FirstChunk, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("variable_decl_stream_chunk LastChunk {\n", Depth+2);
+          DebugPrint(S.LastChunk, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( variable_decl_stream *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( variable_decl_iterator S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("variable_decl_iterator {\n", Depth);
+      }
+
+      
+          DebugPrint("variable_decl_stream Stream {\n", Depth+2);
+          DebugPrint(S.Stream, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("variable_decl_stream_chunk At {\n", Depth+2);
+          DebugPrint(S.At, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( variable_decl_iterator *S, u32 Depth)
     {
       if (S) { DebugPrint(*S, Depth); }
       else { DebugPrint("ptr(0)", Depth); }

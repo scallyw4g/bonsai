@@ -4151,6 +4151,83 @@ ParseFunctionCall(parser_stack *Stack, counted_string FunctionName, memory_arena
  
   return Result;
 }
+struct function_def_2
+{
+  counted_string Name;
+  type_spec_2 ReturnType;
+
+  variable_decl_stream Args;
+  // ast_node_variable_def_stream Locals;
+
+  b32 IsVariadic;
+
+  parser Body;
+  statement_list* Ast;
+};
+
+function variable_decl
+ParseVariableDecl(parser_stack *Stack, memory_arena *Memory, program_datatypes *Datatypes)
+{
+  variable_decl Result = {
+    .Type = ParseTypeSpecifier2(Stack),
+    .Name = RequireToken(Stack, CTokenType_Identifier).Value,
+    .Value = OptionalToken(Stack, CTokenType_Equals) ? ParseExpression(Stack, Memory, Datatypes) : 0,
+  };
+
+  return Result;
+}
+
+function function_def_2
+ParseFunctionDecl(parser_stack *Stack, type_spec_2 *ReturnType, counted_string *Name, program_datatypes* Datatypes, memory_arena* Memory)
+{
+  function_def_2 Result = {
+    .ReturnType = *ReturnType,
+    .Name = *Name,
+  };
+
+  // Function definition args
+  b32 DoneParsingArguments = PeekToken(Stack) == CToken(CTokenType_CloseParen);
+
+  if ( PeekToken(Stack).Type == CTokenType_Void &&
+       PeekToken(Stack, 1).Type == CTokenType_CloseParen )
+  {
+    RequireToken(Stack, CTokenType_Void);
+    DoneParsingArguments = True;
+  }
+
+  while ( !DoneParsingArguments && TokensRemain(Stack) )
+  {
+    variable_decl Arg = ParseVariableDecl(Stack, Memory, Datatypes);
+    Push(&Result.Args, Arg, Memory);
+
+    if (!OptionalToken(Stack, CTokenType_Comma))
+    {
+      DoneParsingArguments = True;
+    }
+
+    if (OptionalToken(Stack, CTokenType_Ellipsis))
+    {
+      Result.IsVariadic = True;
+      DoneParsingArguments = True;
+    }
+
+    continue;
+  }
+  RequireToken(Stack, CTokenType_CloseParen); // Ending paren for arguments
+
+  if (PeekToken(Stack).Type == CTokenType_OpenBrace)
+  {
+    // void FunctionName( arg A1, arg, A2) { .. body text .. }
+    Result.Body = GetBodyTextForNextScope(Peek(Stack));
+  }
+  else
+  {
+    // void FunctionName( arg A1, arg, A2);
+    RequireToken(Stack, CTokenType_Semicolon);
+  }
+
+  return Result;
+}
 
 function counted_string
 ParseDeclarationValue(parser_stack *Stack, variable* Decl, program_datatypes* Datatypes, memory_arena* Memory)
@@ -4206,7 +4283,7 @@ ParseDeclarationValue(parser_stack *Stack, variable* Decl, program_datatypes* Da
 
     if (PeekToken(Parser).Type == CTokenType_OpenBrace)
     {
-      // Function declaration : void FunctionNmae( arg A1, arg, A2) { .. function_body .. }
+      // Function declaration : void FunctionNmae( arg A1, arg, A2) { .. body text .. }
       Func.Body = GetBodyTextForNextScope(Parser);
       Push(&Datatypes->Functions, Func, Memory);
     }
@@ -4232,7 +4309,7 @@ ParseDeclarationValue(parser_stack *Stack, variable* Decl, program_datatypes* Da
 function void
 ParseDatatypes(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* Memory)
 {
-  while (Remaining(Peek(Stack)))
+  while (TokensRemain(Stack))
   {
     c_token T = PeekToken(Stack);
 
@@ -4307,7 +4384,6 @@ ParseDatatypes(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* 
         EatUntil(Peek(Stack), CTokenType_Semicolon);
       } break;
 
-
       case CTokenType_ThreadLocal:
       case CTokenType_Const:
       case CTokenType_Static:
@@ -4323,15 +4399,10 @@ ParseDatatypes(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* 
       case CTokenType_Int:
       case CTokenType_Unsigned:
       case CTokenType_Signed:
-      {
-        // Global variable decl
-        variable Decl = ParseDeclaration(Peek(Stack));
-        counted_string Value = ParseDeclarationValue(Stack, &Decl, Datatypes, Memory);
-      } break;
-
       case CTokenType_Identifier:
       {
-        if (PeekToken(Stack, 1).Type == CTokenType_OpenParen)
+        if ( T.Type == CTokenType_Identifier &&
+             PeekToken(Stack, 1).Type == CTokenType_OpenParen)
         {
           // TODO(Jesse id: 210, tags: id_205, metaprogramming, completeness): This is a function-macro call .. I think always..?
           RequireToken(Stack, CTokenType_Identifier);
@@ -4341,12 +4412,30 @@ ParseDatatypes(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* 
         else
         {
           // Global variable decl
-          variable Decl = ParseDeclaration(Peek(Stack));
-          counted_string Value = ParseDeclarationValue(Stack, &Decl, Datatypes, Memory);
+          type_spec_2 DeclType = ParseTypeSpecifier2(Stack);
+          counted_string DeclName = RequireToken(Stack, CTokenType_Identifier).Value;
+
+          if ( OptionalToken(Stack, CTokenType_Equals) )
+          {
+            EatUntil(Peek(Stack), CTokenType_Semicolon);
+          }
+          else if ( OptionalToken(Stack, CTokenType_OpenParen) )
+          {
+            function_def_2 Func = ParseFunctionDecl(Stack, &DeclType, &DeclName, Datatypes, Memory);
+            if ( Func.Body.Tokens.Start )
+            {
+              // Push(&Datatypes->Functions, Func, Memory);
+            }
+          }
+          else if ( OptionalToken( Stack, CTokenType_OpenBracket) )
+          {
+            ast_node_expression *StaticBufferSize = ParseExpression(Stack, Memory, Datatypes);
+            RequireToken(Stack, CTokenType_CloseBracket);
+          }
         }
       } break;
 
-      InvalidDefaultWhileParsing(Peek(Stack), CSz("Invalid token encountered while parsing."));
+      InvalidDefaultWhileParsing(Peek(Stack), CSz("Invalid token encountered while parsing a datatype."));
     }
 
     EatWhitespaceAndComments(Peek(Stack));
