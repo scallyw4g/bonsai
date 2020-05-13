@@ -194,6 +194,9 @@
       function void DebugPrint( statement_list* S, u32 Depth = 0);
       function void DebugPrint( statement_list  S, u32 Depth = 0);
 
+      function void DebugPrint( function_def_2* S, u32 Depth = 0);
+      function void DebugPrint( function_def_2  S, u32 Depth = 0);
+
       function void DebugPrint( ast_node_function_call* S, u32 Depth = 0);
       function void DebugPrint( ast_node_function_call  S, u32 Depth = 0);
 
@@ -554,9 +557,6 @@
       function void DebugPrint( native_file* S, u32 Depth = 0);
       function void DebugPrint( native_file  S, u32 Depth = 0);
 
-      function void DebugPrint( function_def_2* S, u32 Depth = 0);
-      function void DebugPrint( function_def_2  S, u32 Depth = 0);
-
       function void DebugPrint( mesh_metadata* S, u32 Depth = 0);
       function void DebugPrint( mesh_metadata  S, u32 Depth = 0);
 
@@ -725,6 +725,15 @@
       function void DebugPrint( ast_node_expression_iterator* S, u32 Depth = 0);
       function void DebugPrint( ast_node_expression_iterator  S, u32 Depth = 0);
 
+      function void DebugPrint( function_def_2_stream_chunk* S, u32 Depth = 0);
+      function void DebugPrint( function_def_2_stream_chunk  S, u32 Depth = 0);
+
+      function void DebugPrint( function_def_2_stream* S, u32 Depth = 0);
+      function void DebugPrint( function_def_2_stream  S, u32 Depth = 0);
+
+      function void DebugPrint( function_def_2_iterator* S, u32 Depth = 0);
+      function void DebugPrint( function_def_2_iterator  S, u32 Depth = 0);
+
       function void DebugPrint( ast_node_variable_def_stream_chunk* S, u32 Depth = 0);
       function void DebugPrint( ast_node_variable_def_stream_chunk  S, u32 Depth = 0);
 
@@ -807,6 +816,8 @@
       function void DebugPrint(meta_transform_op EnumValue, u32 Depth = 0);
 
       function void DebugPrint(c_token_type EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(external_linkage_type EnumValue, u32 Depth = 0);
 
       function void DebugPrint(datatype_type EnumValue, u32 Depth = 0);
 

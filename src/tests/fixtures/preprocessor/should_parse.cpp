@@ -1,6 +1,6 @@
 #include <bonsai_types.h>
 
-function void
+void
 TestFunc()
 {
   bool whatever = true;

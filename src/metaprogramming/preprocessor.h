@@ -377,6 +377,12 @@ enum c_token_type
   CTokenType_Char,
   CTokenType_Int,
 
+  CTokenType_Inline,
+  CTokenType_TemplateKeyword,
+  CTokenType_OperatorKeyword,
+
+  CTokenType_Extern,
+
   CTokenType_Asm,
   CTokenType_Goto,
   CTokenType_Ellipsis,
@@ -495,6 +501,13 @@ struct type_spec
   counted_string SourceText;
 };
 
+enum external_linkage_type
+{
+  linkage_noop,
+  linkage_extern,
+  linkage_extern_c,
+};
+
 struct type_spec_2
 {
   counted_string Namespace;
@@ -517,20 +530,25 @@ struct type_spec_2
   b32 Struct;
   b32 Enum;
 
+  b32 Inline;
   b32 IsFunctionPointer;
   counted_string FunctionPointerTypeName;
+
+  external_linkage_type Linkage;
 };
 
-struct ast_node_expression;
+struct ast_node;
 struct variable_decl
 {
   type_spec_2 Type;
   counted_string Name;
-  ast_node_expression *Value;
+  ast_node *StaticBufferSize;
+  ast_node *Value;
 };
 meta(generate_stream(variable_decl))
 #include <metaprogramming/output/generate_stream_variable_decl.h>
 
+struct ast_node_expression;
 struct variable // TODO(Jesse id: 245): Change to variable_def or variable_decl
 {
   type_spec Type;
@@ -795,7 +813,6 @@ meta(generate_stream(person))
 
 #define SafeCast(T, Ptr) (&(Ptr)->T); Assert((Ptr)->Type == type_##T)
 
-struct ast_node;
 struct function_def;
 
 struct ast_node_expression
@@ -813,10 +830,27 @@ struct statement_list
   statement_list *Next;
 };
 
+struct function_def_2
+{
+  counted_string Name;
+  type_spec_2 ReturnType;
+
+  variable_decl_stream Args;
+  // ast_node_variable_def_stream Locals;
+
+  b32 IsVariadic;
+
+  parser Body;
+  statement_list* Ast;
+};
+
+meta(generate_stream(function_def_2))
+#include <metaprogramming/output/generate_stream_function_def_2.h>
+
 struct ast_node_function_call
 {
   counted_string Name;
-  function_def *Prototype;
+  function_def_2 *Prototype;
   ast_node_expression_stream Args;
 };
 
@@ -957,11 +991,11 @@ meta(generate_stream(function_def))
 
 struct program_datatypes
 {
-  struct_def_stream   Structs;
-  enum_def_stream     Enums;
-  function_def_stream Functions;
-  type_def_stream     Typedefs;
-  macro_def_stream    Macros;
+  struct_def_stream     Structs;
+  enum_def_stream       Enums;
+  function_def_2_stream Functions;
+  type_def_stream       Typedefs;
+  macro_def_stream      Macros;
 };
 
 struct for_enum_constraints

@@ -1983,6 +1983,12 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
+          DebugPrint("b32 Inline {\n", Depth+2);
+          DebugPrint(S.Inline, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
           DebugPrint("b32 IsFunctionPointer {\n", Depth+2);
           DebugPrint(S.IsFunctionPointer, Depth+4);
           DebugPrint("\n");
@@ -1991,6 +1997,12 @@
 
           DebugPrint("counted_string FunctionPointerTypeName {\n", Depth+2);
           DebugPrint(S.FunctionPointerTypeName, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("external_linkage_type Linkage {\n", Depth+2);
+          DebugPrint(S.Linkage, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
@@ -2024,7 +2036,13 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("ast_node_expression Value {\n", Depth+2);
+          DebugPrint("ast_node StaticBufferSize {\n", Depth+2);
+          DebugPrint(S.StaticBufferSize, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("ast_node Value {\n", Depth+2);
           DebugPrint(S.Value, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
@@ -2622,6 +2640,59 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
+    function void DebugPrint( function_def_2 S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("function_def_2 {\n", Depth);
+      }
+
+      
+          DebugPrint("counted_string Name {\n", Depth+2);
+          DebugPrint(S.Name, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("type_spec_2 ReturnType {\n", Depth+2);
+          DebugPrint(S.ReturnType, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("variable_decl_stream Args {\n", Depth+2);
+          DebugPrint(S.Args, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("b32 IsVariadic {\n", Depth+2);
+          DebugPrint(S.IsVariadic, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("parser Body {\n", Depth+2);
+          DebugPrint(S.Body, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("statement_list Ast {\n", Depth+2);
+          DebugPrint(S.Ast, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( function_def_2 *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
     function void DebugPrint( ast_node_function_call S, u32 Depth)
     {
       if (Depth == 0)
@@ -2636,7 +2707,7 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("function_def Prototype {\n", Depth+2);
+          DebugPrint("function_def_2 Prototype {\n", Depth+2);
           DebugPrint(S.Prototype, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
@@ -3118,7 +3189,7 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("function_def_stream Functions {\n", Depth+2);
+          DebugPrint("function_def_2_stream Functions {\n", Depth+2);
           DebugPrint(S.Functions, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
@@ -7398,59 +7469,6 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
-    function void DebugPrint( function_def_2 S, u32 Depth)
-    {
-      if (Depth == 0)
-      {
-        DebugPrint("function_def_2 {\n", Depth);
-      }
-
-      
-          DebugPrint("counted_string Name {\n", Depth+2);
-          DebugPrint(S.Name, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-          DebugPrint("type_spec_2 ReturnType {\n", Depth+2);
-          DebugPrint(S.ReturnType, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-          DebugPrint("variable_decl_stream Args {\n", Depth+2);
-          DebugPrint(S.Args, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-          DebugPrint("b32 IsVariadic {\n", Depth+2);
-          DebugPrint(S.IsVariadic, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-          DebugPrint("parser Body {\n", Depth+2);
-          DebugPrint(S.Body, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-          DebugPrint("statement_list Ast {\n", Depth+2);
-          DebugPrint(S.Ast, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-      DebugPrint("}\n", Depth);
-    }
-
-    function void DebugPrint( function_def_2 *S, u32 Depth)
-    {
-      if (S) { DebugPrint(*S, Depth); }
-      else { DebugPrint("ptr(0)", Depth); }
-    }
-
     function void DebugPrint( mesh_metadata S, u32 Depth)
     {
       if (Depth == 0)
@@ -9195,6 +9213,93 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
+    function void DebugPrint( function_def_2_stream_chunk S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("function_def_2_stream_chunk {\n", Depth);
+      }
+
+      
+          DebugPrint("function_def_2 Element {\n", Depth+2);
+          DebugPrint(S.Element, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("function_def_2_stream_chunk Next {\n", Depth+2);
+          DebugPrint(S.Next, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( function_def_2_stream_chunk *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( function_def_2_stream S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("function_def_2_stream {\n", Depth);
+      }
+
+      
+          DebugPrint("function_def_2_stream_chunk FirstChunk {\n", Depth+2);
+          DebugPrint(S.FirstChunk, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("function_def_2_stream_chunk LastChunk {\n", Depth+2);
+          DebugPrint(S.LastChunk, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( function_def_2_stream *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( function_def_2_iterator S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("function_def_2_iterator {\n", Depth);
+      }
+
+      
+          DebugPrint("function_def_2_stream Stream {\n", Depth+2);
+          DebugPrint(S.Stream, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("function_def_2_stream_chunk At {\n", Depth+2);
+          DebugPrint(S.At, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( function_def_2_iterator *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
     function void DebugPrint( ast_node_variable_def_stream_chunk S, u32 Depth)
     {
       if (Depth == 0)
@@ -10438,6 +10543,26 @@
               DebugPrint("CTokenType_Int ", Depth);
             } break;
 
+            case CTokenType_Inline:
+            {
+              DebugPrint("CTokenType_Inline ", Depth);
+            } break;
+
+            case CTokenType_TemplateKeyword:
+            {
+              DebugPrint("CTokenType_TemplateKeyword ", Depth);
+            } break;
+
+            case CTokenType_OperatorKeyword:
+            {
+              DebugPrint("CTokenType_OperatorKeyword ", Depth);
+            } break;
+
+            case CTokenType_Extern:
+            {
+              DebugPrint("CTokenType_Extern ", Depth);
+            } break;
+
             case CTokenType_Asm:
             {
               DebugPrint("CTokenType_Asm ", Depth);
@@ -10596,6 +10721,29 @@
             case CTokenType_Arrow:
             {
               DebugPrint("CTokenType_Arrow ", Depth);
+            } break;
+
+      }
+    }
+
+    function void DebugPrint( external_linkage_type EnumValue, u32 Depth)
+    {
+      switch (EnumValue)
+      {
+        
+            case linkage_noop:
+            {
+              DebugPrint("linkage_noop ", Depth);
+            } break;
+
+            case linkage_extern:
+            {
+              DebugPrint("linkage_extern ", Depth);
+            } break;
+
+            case linkage_extern_c:
+            {
+              DebugPrint("linkage_extern_c ", Depth);
             } break;
 
       }

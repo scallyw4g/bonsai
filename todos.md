@@ -26,6 +26,8 @@
     - #272 Fold `-` sign into this value at tokenization time?
     - #275 Rewrite this in terms of `ToU32(counted_string S)`
     - #278 Disallow invalid suffixes lul/LUL .. LUU .. ULLLL etc..
+    - #282 Should we parse out the function def explicitly here?
+    - #283 Should we care about ignoring template sources? Similar to #282
 
   ## immediate
     - #83 d_union-ify this
@@ -34,6 +36,7 @@
     - #239 Change name to BitwiseOr
     - #256 How do we handle this?
     - #257 How do we handle this?
+    - #279 Macro function call .. Eventually ResolveMacro should deal with this.
 
   ## high_priority
     - #101 Profile and check collision rate of this!
@@ -102,7 +105,6 @@
     - #99 Generate this?  Need a compiler feature to generate stuff from primitive types.
     - #100 Do we actually want this in here?
     - #192 This is a function call or macro .. make sure it's actually constant.
-    - #210 This is a function-macro call .. I think always..?
     - #226 Should we handle this differently?
     - #189 Parse out function names?
     - #222 Re-add [[nodiscard]] here
@@ -113,6 +115,11 @@
     - #232 Should this be the name if it's a constructor?
     - #236 Metaprogram a free_mesh_stream!
     - #237 Metaprogram this!!
+    - #284 This, and PeekToken(parser_stack* ...), are exact duplicates of each other .. We could add a feature to DRY these two out ..
+    - #286 These functions are exact duplicates.. should they be metaprogrammed?
+    - #287 
+    - #288 
+    - #289 
 
   ## robustness
     - #78 How should we actually set this?
@@ -174,7 +181,6 @@
   ## completeness
     - #84 This only gets used when computing the shadow map, so I'm not even sure if it works ATM
     - #192 This is a function call or macro .. make sure it's actually constant.
-    - #210 This is a function-macro call .. I think always..?
     - #140 Can we support these?
 
   ## engine
@@ -338,7 +344,6 @@
     - #208 See #205
     - #203 See #205
     - #204 See #205
-    - #210 This is a function-macro call .. I think always..?
 
   ## needs_tests
     - #213 There is a degenerate case here, what if the file ends without a newline? While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
@@ -362,4 +367,13 @@
 
   ## memory_leak
     - #264 This should use a string builder
+
+  ## id_284
+    - #285 
+    - #286 These functions are exact duplicates.. should they be metaprogrammed?
+
+  ## id_286
+    - #287 
+    - #288 
+    - #289 
 

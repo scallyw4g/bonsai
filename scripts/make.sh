@@ -284,20 +284,22 @@ function SetSourceFiles
 {
   rm -Rf $META_OUT
   mkdir $META_OUT
-  SOURCE_FILES="                                                \
-    $(find src -type f -name "*.h"                              \
-    -and -not -wholename "src/net/network.h"                    \
-    -and -not -wholename "src/bonsai_stdlib/headers/stream.h"   \
-    -and -not -wholename "src/bonsai_stdlib/headers/perlin.h"   \
-    -and -not -wholename "src/metaprogramming/defines.h"        \
-    -and -not -wholename "src/win32_platform.h"                 \
-    -and -not -path      "src/tests/*" )                        \
-                                                                \
-    $(find src -type f -name "*.cpp"                            \
-    -and -not -wholename "src/bonsai_stdlib/cpp/stream.cpp"     \
-    -and -not -wholename "src/net/server.cpp"                   \
-    -and -not -wholename "src/win32_platform.cpp"               \
-    -and -not -path "src/tests/*" )                             \
+  SOURCE_FILES="                                                   \
+    src/bonsai_stdlib/headers/primitives.h                         \
+    $(find src -type f -name "*.h"                                 \
+    -and -not -wholename "src/net/network.h"                       \
+    -and -not -wholename "src/bonsai_stdlib/headers/stream.h"      \
+    -and -not -wholename "src/bonsai_stdlib/headers/perlin.h"      \
+    -and -not -wholename "src/bonsai_stdlib/headers/primitives.h"  \
+    -and -not -wholename "src/metaprogramming/defines.h"           \
+    -and -not -wholename "src/win32_platform.h"                    \
+    -and -not -path      "src/tests/*" )                           \
+                                                                   \
+    $(find src -type f -name "*.cpp"                               \
+    -and -not -wholename "src/bonsai_stdlib/cpp/stream.cpp"        \
+    -and -not -wholename "src/net/server.cpp"                      \
+    -and -not -wholename "src/win32_platform.cpp"                  \
+    -and -not -path "src/tests/*" )                                \
   "
 }
 

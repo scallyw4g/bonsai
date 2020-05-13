@@ -1,4 +1,3 @@
-
 function void
 DebugPrint( ast_node *S, u32 Depth)
 {
@@ -108,4 +107,3 @@ DebugPrint( ast_node UnionStruct, u32 Depth)
     } break;
   }
 }
-

@@ -85,7 +85,7 @@
 
 #define THREAD_MAIN_RETURN void*
 
-#define exported_function extern "C" __attribute__((visibility("default")))
+#define exported_function extern "C"
 
 #define ReadBarrier  asm volatile("" ::: "memory"); _mm_lfence()
 #define WriteBarrier asm volatile("" ::: "memory"); _mm_sfence()
