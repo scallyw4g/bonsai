@@ -559,6 +559,34 @@ struct variable_decl
 meta(generate_stream(variable_decl))
 #include <metaprogramming/output/generate_stream_variable_decl.h>
 
+enum function_type
+{
+  function_type_noop,
+  function_type_constructor,
+  function_type_destructor,
+  function_type_operator,
+  function_type_normal,
+};
+
+struct statement_list;
+struct function_decl
+{
+  function_type Type;
+
+  counted_string Name;
+  type_spec ReturnType;
+
+  variable_decl_stream Args;
+
+  b32 IsVariadic;
+
+  parser Body;
+  statement_list* Ast;
+};
+
+meta(generate_stream(function_decl))
+#include <metaprogramming/output/generate_stream_function_decl.h>
+
 /* TODO(Jesse, id: 290, tags: metaprogramming, improvement): generating this with:
  * meta( d_union declaration { function_decl variable_decl })
  * results in a name collision with the struct_member union tag.
@@ -569,8 +597,6 @@ meta(generate_stream(variable_decl))
  * possible, but maybe once the preprocessor generates the switch statements
  * for us it won't matter if they're overly verbose.
  */
-#if 0
-// :parse_function_or_variable:
 enum declaration_type
 {
   type_declaration_noop,
@@ -582,48 +608,20 @@ struct declaration
 {
   declaration_type Type;
 
-  union 
+  union
   {
     function_decl function_decl;
     variable_decl variable_decl;
   };
 };
-#endif
 
 struct ast_node_expression;
-enum function_type
-{
-  function_type_noop,
-  function_type_constructor,
-  function_type_destructor,
-  function_type_operator,
-  function_type_normal,
-};
-
 struct statement_list
 {
   ast_node_expression *LHS;
   statement_list *RHS;
   statement_list *Next;
 };
-
-struct function_decl
-{
-  function_type Type;
-
-  counted_string Name;
-  type_spec ReturnType;
-
-  variable_decl_stream Args;
-  // ast_node_variable_def_stream Locals;
-
-  b32 IsVariadic;
-
-  parser Body;
-  statement_list* Ast;
-};
-meta(generate_stream(function_decl))
-#include <metaprogramming/output/generate_stream_function_decl.h>
 
 
 meta(

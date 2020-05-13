@@ -2008,64 +2008,6 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
-    function void DebugPrint( declaration S, u32 Depth)
-    {
-      if (Depth == 0)
-      {
-        DebugPrint("declaration {\n", Depth);
-      }
-
-      
-          DebugPrint("declaration_type Type {\n", Depth+2);
-          DebugPrint(S.Type, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-      DebugPrint("}\n", Depth);
-    }
-
-    function void DebugPrint( declaration *S, u32 Depth)
-    {
-      if (S) { DebugPrint(*S, Depth); }
-      else { DebugPrint("ptr(0)", Depth); }
-    }
-
-    function void DebugPrint( statement_list S, u32 Depth)
-    {
-      if (Depth == 0)
-      {
-        DebugPrint("statement_list {\n", Depth);
-      }
-
-      
-          DebugPrint("ast_node_expression LHS {\n", Depth+2);
-          DebugPrint(S.LHS, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-          DebugPrint("statement_list RHS {\n", Depth+2);
-          DebugPrint(S.RHS, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-          DebugPrint("statement_list Next {\n", Depth+2);
-          DebugPrint(S.Next, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-      DebugPrint("}\n", Depth);
-    }
-
-    function void DebugPrint( statement_list *S, u32 Depth)
-    {
-      if (S) { DebugPrint(*S, Depth); }
-      else { DebugPrint("ptr(0)", Depth); }
-    }
-
     function void DebugPrint( function_decl S, u32 Depth)
     {
       if (Depth == 0)
@@ -2120,6 +2062,64 @@
     }
 
     function void DebugPrint( function_decl *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( declaration S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("declaration {\n", Depth);
+      }
+
+      
+          DebugPrint("declaration_type Type {\n", Depth+2);
+          DebugPrint(S.Type, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( declaration *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( statement_list S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("statement_list {\n", Depth);
+      }
+
+      
+          DebugPrint("ast_node_expression LHS {\n", Depth+2);
+          DebugPrint(S.LHS, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("statement_list RHS {\n", Depth+2);
+          DebugPrint(S.RHS, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("statement_list Next {\n", Depth+2);
+          DebugPrint(S.Next, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( statement_list *S, u32 Depth)
     {
       if (S) { DebugPrint(*S, Depth); }
       else { DebugPrint("ptr(0)", Depth); }
@@ -10338,29 +10338,6 @@
       }
     }
 
-    function void DebugPrint( declaration_type EnumValue, u32 Depth)
-    {
-      switch (EnumValue)
-      {
-        
-            case type_declaration_noop:
-            {
-              DebugPrint("type_declaration_noop ", Depth);
-            } break;
-
-            case type_declaration_function_decl:
-            {
-              DebugPrint("type_declaration_function_decl ", Depth);
-            } break;
-
-            case type_declaration_variable_decl:
-            {
-              DebugPrint("type_declaration_variable_decl ", Depth);
-            } break;
-
-      }
-    }
-
     function void DebugPrint( function_type EnumValue, u32 Depth)
     {
       switch (EnumValue)
@@ -10389,6 +10366,29 @@
             case function_type_normal:
             {
               DebugPrint("function_type_normal ", Depth);
+            } break;
+
+      }
+    }
+
+    function void DebugPrint( declaration_type EnumValue, u32 Depth)
+    {
+      switch (EnumValue)
+      {
+        
+            case type_declaration_noop:
+            {
+              DebugPrint("type_declaration_noop ", Depth);
+            } break;
+
+            case type_declaration_function_decl:
+            {
+              DebugPrint("type_declaration_function_decl ", Depth);
+            } break;
+
+            case type_declaration_variable_decl:
+            {
+              DebugPrint("type_declaration_variable_decl ", Depth);
             } break;
 
       }

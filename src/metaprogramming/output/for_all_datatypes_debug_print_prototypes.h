@@ -146,14 +146,14 @@
       function void DebugPrint( variable_decl* S, u32 Depth = 0);
       function void DebugPrint( variable_decl  S, u32 Depth = 0);
 
+      function void DebugPrint( function_decl* S, u32 Depth = 0);
+      function void DebugPrint( function_decl  S, u32 Depth = 0);
+
       function void DebugPrint( declaration* S, u32 Depth = 0);
       function void DebugPrint( declaration  S, u32 Depth = 0);
 
       function void DebugPrint( statement_list* S, u32 Depth = 0);
       function void DebugPrint( statement_list  S, u32 Depth = 0);
-
-      function void DebugPrint( function_decl* S, u32 Depth = 0);
-      function void DebugPrint( function_decl  S, u32 Depth = 0);
 
       function void DebugPrint( enum_member* S, u32 Depth = 0);
       function void DebugPrint( enum_member  S, u32 Depth = 0);
@@ -792,9 +792,9 @@
 
       function void DebugPrint(external_linkage_type EnumValue, u32 Depth = 0);
 
-      function void DebugPrint(declaration_type EnumValue, u32 Depth = 0);
-
       function void DebugPrint(function_type EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(declaration_type EnumValue, u32 Depth = 0);
 
       function void DebugPrint(datatype_type EnumValue, u32 Depth = 0);
 

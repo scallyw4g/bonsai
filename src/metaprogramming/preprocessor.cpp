@@ -2690,6 +2690,56 @@ ParseAndPushFunctionPrototype(parser_stack *Stack, type_spec *ReturnType, counte
 function struct_def
 ParseStructBody(parser_stack *Stack, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes);
 
+function declaration
+ParseFunctionOrVariableDecl(parser_stack *Stack, program_datatypes *Datatypes, memory_arena *Memory)
+{
+  declaration Result = {};
+
+  type_spec DeclType = ParseTypeSpecifier(Stack);
+  if (DeclType.IsFunctionPointer)
+  {
+    RequireToken(Stack, CTokenType_Semicolon);
+  }
+  else
+  {
+    if ( OptionalToken(Stack, CTokenType_OperatorKeyword) )
+    {
+      counted_string OperatorName = RequireOperatorToken(Peek(Stack));
+      if ( OptionalToken(Stack, CTokenType_OpenParen) )
+      {
+        Result.Type = type_declaration_function_decl;
+        Result.function_decl = ParseAndPushFunctionPrototype(Stack, &DeclType, &OperatorName, function_type_operator, Datatypes, Memory);
+      }
+    }
+    else
+    {
+      counted_string DeclName = RequireToken(Stack, CTokenType_Identifier).Value;
+
+      if ( OptionalToken(Stack, CTokenType_OpenParen) )
+      {
+        Result.Type = type_declaration_function_decl;
+        Result.function_decl = ParseAndPushFunctionPrototype(Stack, &DeclType, &DeclName, function_type_normal, Datatypes, Memory);
+      }
+      else
+      {
+        if ( OptionalToken( Stack, CTokenType_OpenBracket) )
+        {
+          ast_node_expression *StaticBufferSize = ParseExpression(Stack, Memory, Datatypes);
+          RequireToken(Stack, CTokenType_CloseBracket);
+        }
+
+        if ( OptionalToken(Stack, CTokenType_Equals) )
+        {
+          // Initialized value
+          EatUntil(Peek(Stack), CTokenType_Semicolon);
+        }
+      }
+    }
+  }
+
+  return Result;
+}
+
 function struct_member
 ParseStructMember(parser_stack* Stack, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes)
 {
@@ -2767,65 +2817,27 @@ ParseStructMember(parser_stack* Stack, counted_string StructName, memory_arena* 
       }
       else
       {
-
-        // :code_in_this_other_place:
-        type_spec DeclType = ParseTypeSpecifier(Stack);
-        if (DeclType.IsFunctionPointer)
+        declaration Decl = ParseFunctionOrVariableDecl(Stack, Datatypes, Memory);
+        switch (Decl.Type)
         {
-          RequireToken(Stack, CTokenType_Semicolon);
-        }
-        else
-        {
-          if ( OptionalToken(Stack, CTokenType_OperatorKeyword) )
+          case type_declaration_variable_decl:
           {
-            counted_string OperatorName = RequireOperatorToken(Peek(Stack));
-            if ( OptionalToken(Stack, CTokenType_OpenParen) )
-            {
-              Result.Type = type_function_decl;
-              Result.function_decl = ParseAndPushFunctionPrototype(Stack, &DeclType, &OperatorName, function_type_normal, Datatypes, Memory);
-            }
-          }
-          else
+            Result.Type = type_variable_decl;
+            Result.variable_decl = Decl.variable_decl;
+            RequireToken(Stack, CTokenType_Semicolon);
+          } break;
+
+          case type_declaration_function_decl:
           {
-            counted_string DeclName = RequireToken(Stack, CTokenType_Identifier).Value;
+            Result.Type = type_function_decl;
+            Result.function_decl = Decl.function_decl;
+          } break;
 
-            if ( OptionalToken(Stack, CTokenType_OpenParen) )
-            {
-              Result.Type = type_function_decl;
-              Result.function_decl = ParseAndPushFunctionPrototype(Stack, &DeclType, &DeclName, function_type_normal, Datatypes, Memory);
-            }
-            else
-            {
-              if ( OptionalToken( Stack, CTokenType_OpenBracket) )
-              {
-                ast_node_expression *StaticBufferSize = ParseExpression(Stack, Memory, Datatypes);
-                RequireToken(Stack, CTokenType_CloseBracket);
-              }
-
-              if ( OptionalToken(Stack, CTokenType_Equals) )
-              {
-                // Initialized value
-                EatUntil(Peek(Stack), CTokenType_Semicolon);
-              }
-            }
-          }
+          case type_declaration_noop:
+          {
+            InvalidCodePath();
+          } break;
         }
-
-#if 0
-        variable_decl Decl = ParseVariableDecl(Stack, Memory, Datatypes);
-        if (OptionalToken(Parser, CTokenType_OpenParen))
-        {
-          Result.Type = type_function_decl;
-          Result.function_decl = ParseAndPushFunctionPrototype(Stack, &Decl.Type, &Decl.Name, function_type_normal, Datatypes, Memory);
-        }
-        else
-        {
-          Result.Type = type_variable_decl;
-          Result.variable_decl = Decl;
-          RequireToken(Stack, CTokenType_Semicolon);
-        }
-#endif
-
       }
 
     } break;
@@ -3971,13 +3983,6 @@ ParseFunctionCall(parser_stack *Stack, counted_string FunctionName, memory_arena
   return Result;
 }
 
-
-// :parse_function_or_variable:
-/* function declaration */
-/* ParseFunctionOrVariableDecl() */
-/* { */
-/* } */
-
 function void
 ParseDatatypes(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* Memory)
 {
@@ -4101,46 +4106,9 @@ ParseDatatypes(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* 
           }
         }
 
-        // :code_in_this_other_place:
-        type_spec DeclType = ParseTypeSpecifier(Stack);
-        if (DeclType.IsFunctionPointer)
-        {
-          RequireToken(Stack, CTokenType_Semicolon);
-        }
-        else
-        {
-          if ( OptionalToken(Stack, CTokenType_OperatorKeyword) )
-          {
-            counted_string OperatorName = RequireOperatorToken(Peek(Stack));
-            if ( OptionalToken(Stack, CTokenType_OpenParen) )
-            {
-              ParseAndPushFunctionPrototype(Stack, &DeclType, &OperatorName, function_type_normal, Datatypes, Memory);
-            }
-          }
-          else
-          {
-            counted_string DeclName = RequireToken(Stack, CTokenType_Identifier).Value;
-
-            if ( OptionalToken(Stack, CTokenType_OpenParen) )
-            {
-              ParseAndPushFunctionPrototype(Stack, &DeclType, &DeclName, function_type_normal, Datatypes, Memory);
-            }
-            else
-            {
-              if ( OptionalToken( Stack, CTokenType_OpenBracket) )
-              {
-                ast_node_expression *StaticBufferSize = ParseExpression(Stack, Memory, Datatypes);
-                RequireToken(Stack, CTokenType_CloseBracket);
-              }
-
-              if ( OptionalToken(Stack, CTokenType_Equals) )
-              {
-                // Initialized value
-                EatUntil(Peek(Stack), CTokenType_Semicolon);
-              }
-            }
-          }
-        }
+        // We ignore the result of this .. because we're just looking to push
+        // functions and push them onto the program_datatypes stream
+        ParseFunctionOrVariableDecl(Stack, Datatypes, Memory);
 
       } break;
 
