@@ -10,6 +10,13 @@ DebugPrint( ast_node UnionStruct, u32 Depth)
 {
   switch(UnionStruct.Type)
   {
+    case type_ast_node_statement:
+    {
+      DebugPrint(CSz("type_ast_node_statement {\n"), Depth);
+      DebugPrint(UnionStruct.ast_node_statement, Depth+4);
+      DebugPrint(CSz("}\n"), Depth);
+    } break;
+
     case type_ast_node_access:
     {
       DebugPrint(CSz("type_ast_node_access {\n"), Depth);
@@ -59,24 +66,10 @@ DebugPrint( ast_node UnionStruct, u32 Depth)
       DebugPrint(CSz("}\n"), Depth);
     } break;
 
-    case type_ast_node_scope:
-    {
-      DebugPrint(CSz("type_ast_node_scope {\n"), Depth);
-      DebugPrint(UnionStruct.ast_node_scope, Depth+4);
-      DebugPrint(CSz("}\n"), Depth);
-    } break;
-
     case type_ast_node_initializer_list:
     {
       DebugPrint(CSz("type_ast_node_initializer_list {\n"), Depth);
       DebugPrint(UnionStruct.ast_node_initializer_list, Depth+4);
-      DebugPrint(CSz("}\n"), Depth);
-    } break;
-
-    case type_ast_node_ignored:
-    {
-      DebugPrint(CSz("type_ast_node_ignored {\n"), Depth);
-      DebugPrint(UnionStruct.ast_node_ignored, Depth+4);
       DebugPrint(CSz("}\n"), Depth);
     } break;
 

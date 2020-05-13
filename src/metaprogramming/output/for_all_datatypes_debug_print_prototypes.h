@@ -152,9 +152,6 @@
       function void DebugPrint( declaration* S, u32 Depth = 0);
       function void DebugPrint( declaration  S, u32 Depth = 0);
 
-      function void DebugPrint( statement_list* S, u32 Depth = 0);
-      function void DebugPrint( statement_list  S, u32 Depth = 0);
-
       function void DebugPrint( enum_member* S, u32 Depth = 0);
       function void DebugPrint( enum_member  S, u32 Depth = 0);
 
@@ -194,6 +191,9 @@
       function void DebugPrint( ast_node_expression* S, u32 Depth = 0);
       function void DebugPrint( ast_node_expression  S, u32 Depth = 0);
 
+      function void DebugPrint( ast_node_statement* S, u32 Depth = 0);
+      function void DebugPrint( ast_node_statement  S, u32 Depth = 0);
+
       function void DebugPrint( ast_node_function_call* S, u32 Depth = 0);
       function void DebugPrint( ast_node_function_call  S, u32 Depth = 0);
 
@@ -205,9 +205,6 @@
 
       function void DebugPrint( ast_node_access* S, u32 Depth = 0);
       function void DebugPrint( ast_node_access  S, u32 Depth = 0);
-
-      function void DebugPrint( ast_node_scope* S, u32 Depth = 0);
-      function void DebugPrint( ast_node_scope  S, u32 Depth = 0);
 
       function void DebugPrint( ast_node_parenthesized* S, u32 Depth = 0);
       function void DebugPrint( ast_node_parenthesized  S, u32 Depth = 0);
@@ -223,9 +220,6 @@
 
       function void DebugPrint( ast_node_symbol* S, u32 Depth = 0);
       function void DebugPrint( ast_node_symbol  S, u32 Depth = 0);
-
-      function void DebugPrint( ast_node_ignored* S, u32 Depth = 0);
-      function void DebugPrint( ast_node_ignored  S, u32 Depth = 0);
 
       function void DebugPrint( ast_node_return* S, u32 Depth = 0);
       function void DebugPrint( ast_node_return  S, u32 Depth = 0);

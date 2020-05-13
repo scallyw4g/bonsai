@@ -568,7 +568,7 @@ enum function_type
   function_type_normal,
 };
 
-struct statement_list;
+struct ast_node_statement;
 struct function_decl
 {
   function_type Type;
@@ -581,13 +581,13 @@ struct function_decl
   b32 IsVariadic;
 
   parser Body;
-  statement_list* Ast;
+  ast_node_statement *Ast;
 };
 
 meta(generate_stream(function_decl))
 #include <metaprogramming/output/generate_stream_function_decl.h>
 
-/* TODO(Jesse, id: 290, tags: metaprogramming, improvement): generating this with:
+/* TODO(Jesse, id: 290, tags: metaprogramming, improvement): generating this:
  * meta( d_union declaration { function_decl variable_decl })
  * results in a name collision with the struct_member union tag.
  *
@@ -615,14 +615,6 @@ struct declaration
   };
 };
 
-struct ast_node_expression;
-struct statement_list
-{
-  ast_node_expression *LHS;
-  statement_list *RHS;
-  statement_list *Next;
-};
-
 
 meta(
   d_union struct_member
@@ -640,6 +632,7 @@ meta(generate_cursor(struct_member))
 meta( generate_stream_chunk_struct(struct_member) )
 #include <metaprogramming/output/generate_stream_chunk_struct_c_decl.h>
 
+struct ast_node_expression;
 struct enum_member
 {
   counted_string Name;
@@ -841,7 +834,7 @@ struct person
 meta(generate_stream(person))
 #include <metaprogramming/output/generate_stream_person.h>
 
-#define SafeCast(T, Ptr) (&(Ptr)->T); Assert((Ptr)->Type == type_##T)
+#define SafeAccess(T, Ptr) (&(Ptr)->T); Assert((Ptr)->Type == type_##T)
 
 struct ast_node_expression
 {
@@ -850,6 +843,13 @@ struct ast_node_expression
 };
 meta(generate_stream(ast_node_expression))
 #include <metaprogramming/output/generate_stream_ast_node_expression.h>
+
+struct ast_node_statement
+{
+  ast_node_expression *LHS;
+  ast_node_statement *RHS;
+  ast_node_statement *Next;
+};
 
 struct ast_node_function_call
 {
@@ -878,11 +878,6 @@ struct ast_node_access
 {
   c_token AccessType; // Arrow or Dot
   ast_node_expression *Symbol;
-};
-
-struct ast_node_scope
-{
-  statement_list *FirstStatement;
 };
 
 struct ast_node_parenthesized
@@ -915,11 +910,6 @@ struct ast_node_symbol
   c_token Token;
 };
 
-struct ast_node_ignored
-{
-  c_token Token;
-};
-
 struct ast_node_return
 {
   ast_node_expression *Value;
@@ -934,6 +924,7 @@ struct ast_node_predicated
 meta(
   d_union ast_node
   {
+    ast_node_statement
     ast_node_access
     ast_node_literal
     ast_node_expression
@@ -941,9 +932,7 @@ meta(
     ast_node_operator
     ast_node_function_call
     ast_node_return
-    ast_node_scope
     ast_node_initializer_list
-    ast_node_ignored
     ast_node_symbol
     ast_node_variable_def
     ast_node_type_specifier
@@ -1205,10 +1194,7 @@ Peek(parser_stack *Stack, u32 StackLookahead = 0)
   {
     Result = Stack->Parsers + (Stack->Depth-StackLookahead-1);
   }
-  else
-  {
-    Error("Tried peeking an empty parser stack!");
-  }
+
   return Result;
 }
 

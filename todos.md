@@ -1,9 +1,6 @@
 # Jesse
   ## untagged
     - #154 This is pretty shitty because whenever we copy one of these structs this field has to be manually zeroed out ..
-    - #253 This leaks the allocation .. do we care?
-    - #254 Remove this
-    - #255 Remove this
     - #260 Currently ignoring the second half of a ternary .. we should probably not do this
     - #261 #if this out on prouction released builds.
     - #262 These should probably be in their own type_ast_node_cast .. ?
@@ -27,8 +24,6 @@
     - #222 Re-add [[nodiscard]] here
     - #238 Change name to BitwiseAnd
     - #239 Change name to BitwiseOr
-    - #256 How do we handle this?
-    - #257 How do we handle this?
     - #279 Macro function call .. Eventually ResolveMacro should deal with this.
 
   ## high_priority
@@ -109,7 +104,7 @@
     - #287 
     - #288 
     - #289 
-    - #290 generating this with: meta( d_union declaration { function_decl variable_decl }) results in a name collision with the struct_member union tag. * Should we have some way of overriding the tag name it generates?  Or potentially modify the way we generate type tags such that name collisions won't happen.  I'd prefer an override to keep the tag names as concise as possible, but maybe once the preprocessor generates the switch statements for us it won't matter if they're overly verbose.
+    - #290 generating this: meta( d_union declaration { function_decl variable_decl }) results in a name collision with the struct_member union tag. * Should we have some way of overriding the tag name it generates?  Or potentially modify the way we generate type tags such that name collisions won't happen.  I'd prefer an override to keep the tag names as concise as possible, but maybe once the preprocessor generates the switch statements for us it won't matter if they're overly verbose.
 
   ## robustness
     - #78 How should we actually set this?
@@ -201,7 +196,7 @@
   ## improvement
     - #95 This is LCG RNG - do we want a better one?
     - #102 Write actual/working fModf!
-    - #290 generating this with: meta( d_union declaration { function_decl variable_decl }) results in a name collision with the struct_member union tag. * Should we have some way of overriding the tag name it generates?  Or potentially modify the way we generate type tags such that name collisions won't happen.  I'd prefer an override to keep the tag names as concise as possible, but maybe once the preprocessor generates the switch statements for us it won't matter if they're overly verbose.
+    - #290 generating this: meta( d_union declaration { function_decl variable_decl }) results in a name collision with the struct_member union tag. * Should we have some way of overriding the tag name it generates?  Or potentially modify the way we generate type tags such that name collisions won't happen.  I'd prefer an override to keep the tag names as concise as possible, but maybe once the preprocessor generates the switch statements for us it won't matter if they're overly verbose.
 
   ## api_improvement
     - #98 Make allocating these on the stack work!
@@ -353,4 +348,9 @@
     - #287 
     - #288 
     - #289 
+
+  ## big
+    - #291 Preprocessor functions
+    - #292 Include graph traversal
+    - #293 Constant expression evaluation for #if statements
 

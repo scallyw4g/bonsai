@@ -24,7 +24,19 @@ _Pragma("clang diagnostic ignored \"-Wunused-macros\"")
 _Pragma("clang diagnostic pop") // unused-macros
 #endif
 
+
+
+// TODO(Jesse id: 293, tags: big): Constant expression evaluation for #if statements
+// TODO(Jesse id: 291, tags: big): Preprocessor functions
+// TODO(Jesse id: 292, tags: big): Include graph traversal
+
+
+
+
 function c_token PopTokenRaw(parser* Parser);
+
+
+
 
 function void
 Rewind(parser* Parser)
@@ -2416,10 +2428,7 @@ ParseReferencesIndirectionAndPossibleFunctionPointerness(parser_stack *Stack, ty
         Result->FunctionPointerTypeName = RequireToken(Stack, CTokenType_Identifier).Value;
         if (PeekToken(Stack).Type == CTokenType_OpenParen)
            { EatBetween(Peek(Stack), CTokenType_OpenParen, CTokenType_CloseParen); }
-
         RequireToken(Stack, CTokenType_CloseParen);
-
-        // TODO(Jesse, id: 256, tags: immediate): How do we handle this?
         EatBetween(Peek(Stack), CTokenType_OpenParen, CTokenType_CloseParen);
         Result->IsFunctionPointer = True;
         Done = True;
@@ -2579,7 +2588,6 @@ ParseTypeSpecifier(parser_stack *Stack)
       InvalidDefaultWhileParsing(Stack, CSz("Invalid token encountered while parsing a type specifier"));
     }
 
-      // TODO(Jesse, id: 257, tags: immediate): How do we handle this?
     EatWhitespaceAndComments(Peek(Stack));
     continue;
   }
@@ -2722,16 +2730,26 @@ ParseFunctionOrVariableDecl(parser_stack *Stack, program_datatypes *Datatypes, m
       }
       else
       {
+        Result.Type = type_declaration_variable_decl;
+        Result.variable_decl.Type = DeclType;
+        Result.variable_decl.Name = DeclName;
+
         if ( OptionalToken( Stack, CTokenType_OpenBracket) )
         {
-          ast_node_expression *StaticBufferSize = ParseExpression(Stack, Memory, Datatypes);
+          ParseExpression(Stack, Memory, Datatypes, &Result.variable_decl.StaticBufferSize );
           RequireToken(Stack, CTokenType_CloseBracket);
         }
 
         if ( OptionalToken(Stack, CTokenType_Equals) )
         {
-          // Initialized value
-          EatUntil(Peek(Stack), CTokenType_Semicolon);
+          if (PeekToken(Stack).Type == CTokenType_OpenBrace)
+          {
+            Result.variable_decl.Value = ParseInitializerList(Stack, Memory);
+          }
+          else
+          {
+            ParseExpression(Stack, Memory, Datatypes, &Result.variable_decl.Value);
+          }
         }
       }
     }
@@ -3260,15 +3278,6 @@ ParseSymbol(parser *Parser, memory_arena *Memory)
 }
 
 function ast_node*
-ParseIgnoredNode(parser *Parser, memory_arena *Memory)
-{
-  ast_node *Result = {};
-  ast_node_ignored *Node = AllocateAndCastTo(ast_node_ignored, &Result, Memory);
-  Node->Token = PopToken(Parser);
-  return Result;
-}
-
-function ast_node*
 ParseFunctionArgument(parser *Parser, memory_arena *Memory, function_decl_stream *FunctionPrototypes);
 
 #if 0
@@ -3347,14 +3356,14 @@ IsTypeIdentifier(counted_string TypeName, program_datatypes *Datatypes)
   return Result;
 }
 
-function statement_list*
+function ast_node_statement*
 ParseAllStatements(parser_stack *Stack, memory_arena *Memory, program_datatypes *Datatypes);
 
-function statement_list*
+function ast_node_statement*
 ParseScope(parser_stack *Stack, memory_arena *Memory, program_datatypes *Datatypes)
 {
   RequireToken(Stack, CTokenType_OpenBrace);
-  statement_list *Result = ParseAllStatements(Stack, Memory, Datatypes);
+  ast_node_statement *Result = ParseAllStatements(Stack, Memory, Datatypes);
   return Result;
 }
 
@@ -3387,7 +3396,7 @@ ResolveMacro(counted_string IdentifierName, macro_def_stream *Macros, parser_sta
 }
 
 function void
-ParseSingleStatement(parser_stack *Stack, memory_arena *Memory, program_datatypes *Datatypes, statement_list *Result)
+ParseSingleStatement(parser_stack *Stack, memory_arena *Memory, program_datatypes *Datatypes, ast_node_statement *Result)
 {
   b32 Done = False;
   while (!Done && TokensRemain(Stack))
@@ -3432,7 +3441,7 @@ ParseSingleStatement(parser_stack *Stack, memory_arena *Memory, program_datatype
         else
         {
           Assert(!Result->RHS);
-          Result->RHS = AllocateProtection(statement_list, Memory, 1, False);
+          Result->RHS = AllocateProtection(ast_node_statement, Memory, 1, False);
           ParseSingleStatement(Stack, Memory, Datatypes, Result->RHS);
         }
         Done = True;
@@ -3443,7 +3452,7 @@ ParseSingleStatement(parser_stack *Stack, memory_arena *Memory, program_datatype
         RequireToken(Stack, T.Type);
 #if 0
         RequireToken(Stack, CTokenType_OpenParen);
-        Result->Next = AllocateProtection(statement_list, Memory, 1, False);
+        Result->Next = AllocateProtection(ast_node_statement, Memory, 1, False);
         ParseSingleStatement(Stack, Memory, Datatypes, Result->Next);
         ParseExpression(Stack, Memory, Datatypes);
         RequireToken(Stack, CTokenType_Semicolon);
@@ -3579,41 +3588,31 @@ ParseSingleStatement(parser_stack *Stack, memory_arena *Memory, program_datatype
 
 }
 
-function statement_list*
+function ast_node_statement*
 ParseSingleStatement(parser_stack *Stack, memory_arena *Memory, program_datatypes *Datatypes)
 {
-  statement_list *Result = AllocateProtection(statement_list, Memory, 1, False);
+  ast_node_statement *Result = AllocateProtection(ast_node_statement, Memory, 1, False);
   ParseSingleStatement(Stack, Memory, Datatypes, Result);
   return Result;
 }
 
-function statement_list*
+function ast_node_statement*
 ParseAllStatements(parser_stack *Stack, memory_arena *Memory, program_datatypes *Datatypes)
 {
-  statement_list *Result = 0;
+  ast_node_statement *Result = 0;
 
-  statement_list **Current = &Result;
+  ast_node_statement **Current = &Result;
 
-  parser *Parser = Peek(Stack); // TODO(Jesse id: 254): Remove this
-  while ( Remaining(&Parser->Tokens) )
+  while ( TokensRemain(Stack) )
   {
-    Parser = Peek(Stack); // TODO(Jesse id: 255): Remove this
+    Assert(*Current == 0);
 
-    Assert(!(*Current));
     *Current = ParseSingleStatement(Stack, Memory, Datatypes);
-    while (*Current)
-    {
-      Current = &(*Current)->Next;
-    }
-    Assert(!(*Current));
-    EatWhitespaceAndComments(Parser);
-    continue;
+    while (*Current) { Current = &(*Current)->Next; } // Walk to the end of the statement chain.
   }
 
   return Result;
 }
-
-// #define SafeConvert(T, Node) Node->T; Assert(Node->Type == type_##T); Node->Type = type_##T
 
 function ast_node*
 ParseFunctionCall(parser_stack *Stack, counted_string FunctionName, memory_arena* Memory, program_datatypes *Datatypes);
@@ -3649,12 +3648,6 @@ ParseSymbol(parser_stack *Stack, memory_arena *Memory, program_datatypes *Dataty
   {
 
     c_token MacroNameToken = RequireToken(Stack, CTokenType_Identifier);
-
-    /* if ( StringsMatch(MacroNameToken.Value, CSz("BONSAI_API_WORKER_THREAD_CALLBACK_NAME")) ) */
-    /* { */
-    /*   RuntimeBreak(); */
-    /* } */
-
 
     switch (Macro->Type)
     {
@@ -3960,15 +3953,16 @@ ParseFunctionCall(parser_stack *Stack, counted_string FunctionName, memory_arena
   ast_node *Result = {};
   ast_node_function_call *Node = AllocateAndCastTo(ast_node_function_call, &Result, Memory);
   Node->Name = FunctionName;
-  Node->Prototype = GetByName(FunctionName, &Datatypes->Functions);
+  Node->Prototype = GetByName(Node->Name, &Datatypes->Functions);
 
   RequireToken(Stack, CTokenType_OpenParen);
 
   b32 Done = False;
   while (!Done)
   {
-    ast_node_expression *Arg = ParseExpression(Stack, Memory, Datatypes);
-    Push(&Node->Args, *Arg, Memory); // TODO(Jesse id: 253): This leaks the allocation .. do we care?
+    ast_node_expression Arg = {};
+    ParseExpression(Stack, Memory, Datatypes, &Arg);
+    Push(&Node->Args, Arg, Memory);
 
     if(OptionalToken(Stack, CTokenType_Comma))
     {
@@ -3979,6 +3973,7 @@ ParseFunctionCall(parser_stack *Stack, counted_string FunctionName, memory_arena
       Done = True;
     }
   }
+
 
   return Result;
 }
@@ -4003,7 +3998,6 @@ ParseDatatypes(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* 
         RequireToken(Stack, CTokenType_Hash);
 
         if ( OptionalToken(Stack, CToken(CSz("define"))) )
-
         {
           macro_def Macro = {
             .Parser = {
@@ -4979,7 +4973,9 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
                           {
                             counted_string Name = UnionMember->variable_decl.Type.Name;
                             counted_string ParentStructName = Replace->Data.struct_def->Type;
-                            Warn("Couldn't find struct type '%.*s' in union parent '%.*s'.", (u32)Name.Count, Name.Start, (u32)ParentStructName.Count, ParentStructName.Start);
+                            Warn("Couldn't find struct type '%.*s' in union parent '%.*s'.",
+                                (u32)Name.Count, Name.Start,
+                                (u32)ParentStructName.Count, ParentStructName.Start);
                           }
 
                         }
@@ -5605,6 +5601,108 @@ ParseDatatypes(parser_cursor Files_in, program_datatypes* Datatypes, memory_aren
   return;
 }
 
+function void WalkAst(ast_node* Ast);
+function void WalkAst(ast_node_statement* Ast);
+
+function void
+WalkAst(ast_node_expression* Ast)
+{
+  if (Ast)
+  {
+    WalkAst(Ast->Value);
+    WalkAst(Ast->Next);
+  }
+}
+
+function void
+WalkAst(ast_node_statement* Ast)
+{
+  if (Ast)
+  {
+    WalkAst(Ast->LHS);
+    WalkAst(Ast->RHS);
+    WalkAst(Ast->Next);
+  }
+}
+
+function void
+WalkAst(ast_node* Ast)
+{
+  if (Ast)
+  {
+    switch(Ast->Type)
+    {
+      case type_ast_node_function_call:
+      {
+        auto Child = SafeAccess(ast_node_function_call, Ast);
+      } break;
+
+      case type_ast_node_statement:
+      {
+        auto Child = SafeAccess(ast_node_statement, Ast);
+        WalkAst(Child);
+      } break;
+
+      case type_ast_node_variable_def:
+      {
+        auto Child = SafeAccess(ast_node_variable_def, Ast);
+        WalkAst(Child->Value);
+      } break;
+
+      case type_ast_node_access:
+      {
+        auto Child = SafeAccess(ast_node_access, Ast);
+        WalkAst(Child->Symbol);
+      } break;
+
+      case type_ast_node_expression:
+      {
+        auto Child = SafeAccess(ast_node_expression, Ast);
+        WalkAst(Child);
+      } break;
+
+      case type_ast_node_parenthesized:
+      {
+        auto Child = SafeAccess(ast_node_parenthesized, Ast);
+        WalkAst(Child->Expr);
+        if (Child->IsCast)
+        {
+          Assert(Child->CastValue);
+          WalkAst(Child->CastValue);
+        }
+        else
+        {
+          Assert(!Child->CastValue);
+        }
+      } break;
+
+      case type_ast_node_operator:
+      {
+        auto Child = SafeAccess(ast_node_operator, Ast);
+        WalkAst(Child->Operand);
+      } break;
+
+      case type_ast_node_return:
+      {
+        auto Child = SafeAccess(ast_node_return, Ast);
+        WalkAst(Child->Value);
+      } break;
+
+      case type_ast_node_initializer_list:
+      case type_ast_node_symbol:
+      case type_ast_node_type_specifier:
+      case type_ast_node_literal:
+      {
+      } break;
+
+      case type_ast_node_noop:
+      {
+        InvalidCodePath();
+      } break;
+    }
+  }
+}
+
 function void
 ParseFunctionBodiesIntoAsts(program_datatypes *Datatypes, memory_arena *Memory)
 {
@@ -5616,97 +5714,10 @@ ParseFunctionBodiesIntoAsts(program_datatypes *Datatypes, memory_arena *Memory)
     PushStack(&Stack, Func->Body);
 
     Func->Ast = ParseAllStatements(&Stack, Memory, Datatypes);
+
+    WalkAst(Func->Ast);
   }
 }
-
-#if 0
-function void
-Traverse(ast_node* InputNode)
-{
-  ast_node* Current = InputNode;
-
-  while (Current)
-  {
-    switch (Current->Type)
-    {
-      case type_ast_node_noop:
-      {
-        InvalidCodePath();
-      } break;
-
-      case type_ast_node_symbol:
-      {
-      } break;
-
-      case type_ast_node_function_call:
-      {
-        ast_node_function_call *Node = SafeCast(ast_node_function_call, Current);
-#if 0
-        DebugPrint(Node);
-#endif
-      } return;
-
-      case type_ast_node_expression:
-      {
-      } break;
-
-      case type_ast_node_expression:
-      {
-      } break;
-
-      case type_ast_node_literal:
-      {
-      } break;
-
-      case type_ast_node_scope:
-      {
-      } break;
-
-      case type_ast_node_initializer_list:
-      {
-      } break;
-
-      case type_ast_node_ignored:
-      {
-      } break;
-
-      case type_ast_node_variable_def:
-      {
-      } break;
-    }
-
-    meta(
-      func (ast_node AstNodeDef)
-      {
-        switch (Current->Type)
-        {
-          (
-            AstNodeDef.map_members(Member).containing(ast_node as ChildNodes)
-            {
-              case type_(Member.type):
-              {
-                (
-                 ChildNodes.map_members(ChildMember)
-                 {
-                   Traverse(Current->(Member.name).(ChildMember.name));
-                 }
-                )
-              } break;
-            }
-          )
-
-          default: {} break;
-        }
-      }
-    )
-#include <metaprogramming/output/anonymous_function_ast_node_FXU79quh.h>
-
-    Current = (ast_node*)Current->Next;
-  }
-
-  return;
-}
-#endif
 
 #ifndef EXCLUDE_PREPROCESSOR_MAIN
 #define SUCCESS_EXIT_CODE 0
