@@ -1,13 +1,6 @@
 # Jesse
   ## untagged
     - #154 This is pretty shitty because whenever we copy one of these structs this field has to be manually zeroed out ..
-    - #217 Disallow namespaces?
-    - #197 Have some way of coalescing this to our internal types?
-    - #198 Do we ignore this?
-    - #212 Should we check that the function was defined using the 'function' or 'exported_function' keywords and emit a warning otherwise?
-    - #240 Do we want to store this value?
-    - #245 Change to variable_def or variable_decl
-    - #252 These are mutually exclusive .. merge them?
     - #253 This leaks the allocation .. do we care?
     - #254 Remove this
     - #255 Remove this
@@ -98,7 +91,6 @@
 
   ## metaprogramming
     - #191 This can be generated, but it requires lazily evaluating functions once their dependant types have been generated.  Not sure if this is a good idea or not, but we could do it. * meta( generate_stream_struct(struct_member) ) * Currently the invariant of being able to remove and re-generate all meta output in a single run of the metaprogramming system is broken by this.
-    - #194 Use bitflags
     - #193 Metaprogram this.  I've had bugs multiple times because of it.
     - #83 d_union-ify this
     - #91 Jettison this .. Can it be metaprogrammed?
@@ -106,13 +98,10 @@
     - #100 Do we actually want this in here?
     - #192 This is a function call or macro .. make sure it's actually constant.
     - #226 Should we handle this differently?
-    - #189 Parse out function names?
     - #222 Re-add [[nodiscard]] here
     - #121 Need a way of dynamically allocating more of these on demand if this unlink fails!
     - #230 ParseVariable should work with function pointer types
     - #160 Generate this!
-    - #231 Does this make sense to put this into the type?
-    - #232 Should this be the name if it's a constructor?
     - #236 Metaprogram a free_mesh_stream!
     - #237 Metaprogram this!!
     - #284 This, and PeekToken(parser_stack* ...), are exact duplicates of each other .. We could add a feature to DRY these two out ..
@@ -120,6 +109,7 @@
     - #287 
     - #288 
     - #289 
+    - #290 generating this with: meta( d_union declaration { function_decl variable_decl }) results in a name collision with the struct_member union tag. * Should we have some way of overriding the tag name it generates?  Or potentially modify the way we generate type tags such that name collisions won't happen.  I'd prefer an override to keep the tag names as concise as possible, but maybe once the preprocessor generates the switch statements for us it won't matter if they're overly verbose.
 
   ## robustness
     - #78 How should we actually set this?
@@ -211,6 +201,7 @@
   ## improvement
     - #95 This is LCG RNG - do we want a better one?
     - #102 Write actual/working fModf!
+    - #290 generating this with: meta( d_union declaration { function_decl variable_decl }) results in a name collision with the struct_member union tag. * Should we have some way of overriding the tag name it generates?  Or potentially modify the way we generate type tags such that name collisions won't happen.  I'd prefer an override to keep the tag names as concise as possible, but maybe once the preprocessor generates the switch statements for us it won't matter if they're overly verbose.
 
   ## api_improvement
     - #98 Make allocating these on the stack work!
@@ -324,11 +315,9 @@
     - #110 Should we do something special when interacting with this thing instead of Ignored-ing it?
 
   ## parsing
-    - #194 Use bitflags
     - #213 There is a degenerate case here, what if the file ends without a newline? While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
     - #214 There is a degenerate case here, what if the file ends with a malformed comment? While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
     - #192 This is a function call or macro .. make sure it's actually constant.
-    - #189 Parse out function names?
     - #222 Re-add [[nodiscard]] here
     - #230 ParseVariable should work with function pointer types
 
@@ -336,14 +325,6 @@
     - #185 these should be printable!
     - #213 There is a degenerate case here, what if the file ends without a newline? While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
     - #214 There is a degenerate case here, what if the file ends with a malformed comment? While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
-
-  ## id_205
-    - #218 See #205
-    - #227 See #205
-    - #219 See #205
-    - #208 See #205
-    - #203 See #205
-    - #204 See #205
 
   ## needs_tests
     - #213 There is a degenerate case here, what if the file ends without a newline? While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
@@ -357,10 +338,6 @@
 
   ## easy
     - #225 Rewrite with string_from_parser
-
-  ## function_parsing
-    - #231 Does this make sense to put this into the type?
-    - #232 Should this be the name if it's a constructor?
 
   ## id_104
     - #105 Test this actually gets respected!!

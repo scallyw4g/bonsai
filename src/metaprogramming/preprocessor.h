@@ -249,6 +249,11 @@ meta(
 )
 
 
+
+
+
+
+
 enum d_union_flags
 {
   d_union_flag_none,
@@ -292,6 +297,7 @@ enum meta_transform_op
 };
 meta(generate_value_table(meta_transform_op))
 #include <metaprogramming/output/generate_value_table_meta_transform_op.h>
+
 
 
 
@@ -426,6 +432,41 @@ enum c_token_type
 meta(generate_string_table(c_token_type))
 #include <metaprogramming/output/generate_string_table_c_token_type.h>
 
+struct c_token
+{
+  c_token_type Type;
+  counted_string Value;
+
+  // These are only valid for their correspoinding literal types
+  union
+  {
+    /* s64 SignedValue; */ // TODO(Jesse id: 272): Fold `-` sign into this value at tokenization time?
+    u64 UnsignedValue;
+    r64 FloatValue;
+  };
+};
+meta(generate_cursor(c_token))
+#include <metaprogramming/output/generate_cursor_c_token.h>
+
+struct parser
+{
+  b32 Valid;
+  c_token_cursor Tokens;
+
+  /* TODO(Jesse id: 154) This is pretty shitty because whenever we copy one of
+   * these structs this field has to be manually zeroed out ..
+   */
+  c_token_cursor OutputTokens;
+
+  counted_string Filename;
+  u32 LineNumber;
+};
+meta(generate_cursor(parser))
+#include <metaprogramming/output/generate_cursor_parser.h>
+
+
+
+
 meta(
   d_union struct_member_function
   {
@@ -471,36 +512,6 @@ struct struct_member_anonymous
   struct_def Body;
 };
 
-struct type_spec
-{
-  counted_string Name;
-
-  u32 IndirectionLevel;
-  u32 ReferenceLevel;
-
-  // TODO(Jesse id: 194, tags: metaprogramming, parsing): Use bitflags
-  b32 Unsigned;
-  b32 Volatile;
-  b32 Const;
-  b32 ThreadLocal;
-
-  b32 IsMetaTemplateVar;
-
-  b32 IsFunction;
-  b32 IsOperator;
-  b32 IsConstructor;
-  b32 Inline;
-
-  b32 IsStatic; // TODO(Jesse id: 252): These are mutually exclusive .. merge them?
-  b32 IsExported;
-
-  b32 IsTemplateFunction;        // Ick..
-  counted_string TemplateSource; // Ick..
-  counted_string Namespace;      // Ick..
-
-  counted_string SourceText;
-};
-
 enum external_linkage_type
 {
   linkage_noop,
@@ -508,7 +519,7 @@ enum external_linkage_type
   linkage_extern_c,
 };
 
-struct type_spec_2
+struct type_spec
 {
   counted_string Namespace;
   counted_string Name;
@@ -540,7 +551,7 @@ struct type_spec_2
 struct ast_node;
 struct variable_decl
 {
-  type_spec_2 Type;
+  type_spec Type;
   counted_string Name;
   ast_node *StaticBufferSize;
   ast_node *Value;
@@ -548,34 +559,83 @@ struct variable_decl
 meta(generate_stream(variable_decl))
 #include <metaprogramming/output/generate_stream_variable_decl.h>
 
-struct ast_node_expression;
-struct variable // TODO(Jesse id: 245): Change to variable_def or variable_decl
+/* TODO(Jesse, id: 290, tags: metaprogramming, improvement): generating this with:
+ * meta( d_union declaration { function_decl variable_decl })
+ * results in a name collision with the struct_member union tag.
+ *
+ * Should we have some way of overriding the tag name it generates?  Or
+ * potentially modify the way we generate type tags such that name collisions
+ * won't happen.  I'd prefer an override to keep the tag names as concise as
+ * possible, but maybe once the preprocessor generates the switch statements
+ * for us it won't matter if they're overly verbose.
+ */
+#if 0
+// :parse_function_or_variable:
+enum declaration_type
 {
-  type_spec Type;
+  type_declaration_noop,
+  type_declaration_function_decl,
+  type_declaration_variable_decl,
+};
+
+struct declaration
+{
+  declaration_type Type;
+
+  union 
+  {
+    function_decl function_decl;
+    variable_decl variable_decl;
+  };
+};
+#endif
+
+struct ast_node_expression;
+enum function_type
+{
+  function_type_noop,
+  function_type_constructor,
+  function_type_destructor,
+  function_type_operator,
+  function_type_normal,
+};
+
+struct statement_list
+{
+  ast_node_expression *LHS;
+  statement_list *RHS;
+  statement_list *Next;
+};
+
+struct function_decl
+{
+  function_type Type;
+
   counted_string Name;
+  type_spec ReturnType;
+
+  variable_decl_stream Args;
+  // ast_node_variable_def_stream Locals;
 
   b32 IsVariadic;
 
-  counted_string Namespace; // Ick..
-
-  counted_string FnPointerDef;
-  counted_string StaticBufferSize;
-  counted_string SourceText;
-
-  ast_node_expression *Value;
+  parser Body;
+  statement_list* Ast;
 };
-meta(generate_stream(variable))
-#include <metaprogramming/output/generate_stream_variable.h>
+meta(generate_stream(function_decl))
+#include <metaprogramming/output/generate_stream_function_decl.h>
+
 
 meta(
   d_union struct_member
   {
-    variable
-    struct_member_function
+    variable_decl
+    function_decl
     struct_member_anonymous
   }
 )
 #include <metaprogramming/output/d_union_c_decl.h>
+
 meta(generate_cursor(struct_member))
 #include <metaprogramming/output/generate_cursor_c_decl.h>
 
@@ -609,7 +669,7 @@ meta(stream_and_cursor(enum_def))
 
 struct type_def
 {
-  type_spec_2 Type;
+  type_spec Type;
   counted_string Alias;
 };
 meta(generate_stream(type_def))
@@ -713,21 +773,9 @@ meta(generate_stream(meta_func_arg))
 
 
 
-struct c_token
-{
-  c_token_type Type;
-  counted_string Value;
 
-  // These are only valid for their correspoinding literal types
-  union
-  {
-    /* s64 SignedValue; */ // TODO(Jesse id: 272): Fold `-` sign into this value at tokenization time?
-    u64 UnsignedValue;
-    r64 FloatValue;
-  };
-};
-meta(generate_cursor(c_token))
-#include <metaprogramming/output/generate_cursor_c_token.h>
+
+
 
 struct d_union_decl
 {
@@ -738,22 +786,6 @@ struct d_union_decl
 
   counted_string CustomEnumType;
 };
-
-struct parser
-{
-  b32 Valid;
-  c_token_cursor Tokens;
-
-  /* TODO(Jesse id: 154) This is pretty shitty because whenever we copy one of
-   * these structs this field has to be manually zeroed out ..
-   */
-  c_token_cursor OutputTokens;
-
-  counted_string Filename;
-  u32 LineNumber;
-};
-meta(generate_cursor(parser))
-#include <metaprogramming/output/generate_cursor_parser.h>
 
 enum macro_type
 {
@@ -813,8 +845,6 @@ meta(generate_stream(person))
 
 #define SafeCast(T, Ptr) (&(Ptr)->T); Assert((Ptr)->Type == type_##T)
 
-struct function_def;
-
 struct ast_node_expression
 {
   ast_node *Value;
@@ -823,48 +853,24 @@ struct ast_node_expression
 meta(generate_stream(ast_node_expression))
 #include <metaprogramming/output/generate_stream_ast_node_expression.h>
 
-struct statement_list
-{
-  ast_node_expression *LHS;
-  statement_list *RHS;
-  statement_list *Next;
-};
-
-struct function_def_2
-{
-  counted_string Name;
-  type_spec_2 ReturnType;
-
-  variable_decl_stream Args;
-  // ast_node_variable_def_stream Locals;
-
-  b32 IsVariadic;
-
-  parser Body;
-  statement_list* Ast;
-};
-
-meta(generate_stream(function_def_2))
-#include <metaprogramming/output/generate_stream_function_def_2.h>
-
 struct ast_node_function_call
 {
   counted_string Name;
-  function_def_2 *Prototype;
+  function_decl *Prototype;
   ast_node_expression_stream Args;
 };
 
 struct ast_node_type_specifier
 {
   datatype Datatype;
-  type_spec_2 TypeSpec;
+  type_spec TypeSpec;
   ast_node_expression *Name;
 };
 
 struct ast_node_variable_def
 {
   datatype Type;
-  variable Decl;
+  variable_decl Decl;
   ast_node *Value;
 };
 meta(generate_stream(ast_node_variable_def))
@@ -971,31 +977,13 @@ struct arguments
   b32 DoDebugWindow;
 };
 
-struct scope
-{
-  variable_stream Decls;
-  scope* Parent;
-};
-
-struct function_def
-{
-  variable Prototype;
-  variable_stream Args;
-  ast_node_variable_def_stream Locals;
-
-  parser Body;
-  statement_list* Ast;
-};
-meta(generate_stream(function_def))
-#include <metaprogramming/output/generate_stream_function_def.h>
-
 struct program_datatypes
 {
-  struct_def_stream     Structs;
-  enum_def_stream       Enums;
-  function_def_2_stream Functions;
-  type_def_stream       Typedefs;
-  macro_def_stream      Macros;
+  struct_def_stream      Structs;
+  enum_def_stream        Enums;
+  function_decl_stream Functions;
+  type_def_stream        Typedefs;
+  macro_def_stream       Macros;
 };
 
 struct for_enum_constraints

@@ -125,6 +125,12 @@
       function void DebugPrint( debug_text_render_group* S, u32 Depth = 0);
       function void DebugPrint( debug_text_render_group  S, u32 Depth = 0);
 
+      function void DebugPrint( c_token* S, u32 Depth = 0);
+      function void DebugPrint( c_token  S, u32 Depth = 0);
+
+      function void DebugPrint( parser* S, u32 Depth = 0);
+      function void DebugPrint( parser  S, u32 Depth = 0);
+
       function void DebugPrint( struct_member_stream* S, u32 Depth = 0);
       function void DebugPrint( struct_member_stream  S, u32 Depth = 0);
 
@@ -137,14 +143,17 @@
       function void DebugPrint( type_spec* S, u32 Depth = 0);
       function void DebugPrint( type_spec  S, u32 Depth = 0);
 
-      function void DebugPrint( type_spec_2* S, u32 Depth = 0);
-      function void DebugPrint( type_spec_2  S, u32 Depth = 0);
-
       function void DebugPrint( variable_decl* S, u32 Depth = 0);
       function void DebugPrint( variable_decl  S, u32 Depth = 0);
 
-      function void DebugPrint( variable* S, u32 Depth = 0);
-      function void DebugPrint( variable  S, u32 Depth = 0);
+      function void DebugPrint( declaration* S, u32 Depth = 0);
+      function void DebugPrint( declaration  S, u32 Depth = 0);
+
+      function void DebugPrint( statement_list* S, u32 Depth = 0);
+      function void DebugPrint( statement_list  S, u32 Depth = 0);
+
+      function void DebugPrint( function_decl* S, u32 Depth = 0);
+      function void DebugPrint( function_decl  S, u32 Depth = 0);
 
       function void DebugPrint( enum_member* S, u32 Depth = 0);
       function void DebugPrint( enum_member  S, u32 Depth = 0);
@@ -164,14 +173,8 @@
       function void DebugPrint( meta_func_arg* S, u32 Depth = 0);
       function void DebugPrint( meta_func_arg  S, u32 Depth = 0);
 
-      function void DebugPrint( c_token* S, u32 Depth = 0);
-      function void DebugPrint( c_token  S, u32 Depth = 0);
-
       function void DebugPrint( d_union_decl* S, u32 Depth = 0);
       function void DebugPrint( d_union_decl  S, u32 Depth = 0);
-
-      function void DebugPrint( parser* S, u32 Depth = 0);
-      function void DebugPrint( parser  S, u32 Depth = 0);
 
       function void DebugPrint( macro_def* S, u32 Depth = 0);
       function void DebugPrint( macro_def  S, u32 Depth = 0);
@@ -190,12 +193,6 @@
 
       function void DebugPrint( ast_node_expression* S, u32 Depth = 0);
       function void DebugPrint( ast_node_expression  S, u32 Depth = 0);
-
-      function void DebugPrint( statement_list* S, u32 Depth = 0);
-      function void DebugPrint( statement_list  S, u32 Depth = 0);
-
-      function void DebugPrint( function_def_2* S, u32 Depth = 0);
-      function void DebugPrint( function_def_2  S, u32 Depth = 0);
 
       function void DebugPrint( ast_node_function_call* S, u32 Depth = 0);
       function void DebugPrint( ast_node_function_call  S, u32 Depth = 0);
@@ -238,12 +235,6 @@
 
       function void DebugPrint( arguments* S, u32 Depth = 0);
       function void DebugPrint( arguments  S, u32 Depth = 0);
-
-      function void DebugPrint( scope* S, u32 Depth = 0);
-      function void DebugPrint( scope  S, u32 Depth = 0);
-
-      function void DebugPrint( function_def* S, u32 Depth = 0);
-      function void DebugPrint( function_def  S, u32 Depth = 0);
 
       function void DebugPrint( program_datatypes* S, u32 Depth = 0);
       function void DebugPrint( program_datatypes  S, u32 Depth = 0);
@@ -575,6 +566,12 @@
       function void DebugPrint( ui_render_command* S, u32 Depth = 0);
       function void DebugPrint( ui_render_command  S, u32 Depth = 0);
 
+      function void DebugPrint( c_token_cursor* S, u32 Depth = 0);
+      function void DebugPrint( c_token_cursor  S, u32 Depth = 0);
+
+      function void DebugPrint( parser_cursor* S, u32 Depth = 0);
+      function void DebugPrint( parser_cursor  S, u32 Depth = 0);
+
       function void DebugPrint( struct_member_function* S, u32 Depth = 0);
       function void DebugPrint( struct_member_function  S, u32 Depth = 0);
 
@@ -599,14 +596,14 @@
       function void DebugPrint( variable_decl_iterator* S, u32 Depth = 0);
       function void DebugPrint( variable_decl_iterator  S, u32 Depth = 0);
 
-      function void DebugPrint( variable_stream_chunk* S, u32 Depth = 0);
-      function void DebugPrint( variable_stream_chunk  S, u32 Depth = 0);
+      function void DebugPrint( function_decl_stream_chunk* S, u32 Depth = 0);
+      function void DebugPrint( function_decl_stream_chunk  S, u32 Depth = 0);
 
-      function void DebugPrint( variable_stream* S, u32 Depth = 0);
-      function void DebugPrint( variable_stream  S, u32 Depth = 0);
+      function void DebugPrint( function_decl_stream* S, u32 Depth = 0);
+      function void DebugPrint( function_decl_stream  S, u32 Depth = 0);
 
-      function void DebugPrint( variable_iterator* S, u32 Depth = 0);
-      function void DebugPrint( variable_iterator  S, u32 Depth = 0);
+      function void DebugPrint( function_decl_iterator* S, u32 Depth = 0);
+      function void DebugPrint( function_decl_iterator  S, u32 Depth = 0);
 
       function void DebugPrint( struct_member* S, u32 Depth = 0);
       function void DebugPrint( struct_member  S, u32 Depth = 0);
@@ -665,12 +662,6 @@
       function void DebugPrint( meta_func_arg_iterator* S, u32 Depth = 0);
       function void DebugPrint( meta_func_arg_iterator  S, u32 Depth = 0);
 
-      function void DebugPrint( c_token_cursor* S, u32 Depth = 0);
-      function void DebugPrint( c_token_cursor  S, u32 Depth = 0);
-
-      function void DebugPrint( parser_cursor* S, u32 Depth = 0);
-      function void DebugPrint( parser_cursor  S, u32 Depth = 0);
-
       function void DebugPrint( macro_def_stream_chunk* S, u32 Depth = 0);
       function void DebugPrint( macro_def_stream_chunk  S, u32 Depth = 0);
 
@@ -725,15 +716,6 @@
       function void DebugPrint( ast_node_expression_iterator* S, u32 Depth = 0);
       function void DebugPrint( ast_node_expression_iterator  S, u32 Depth = 0);
 
-      function void DebugPrint( function_def_2_stream_chunk* S, u32 Depth = 0);
-      function void DebugPrint( function_def_2_stream_chunk  S, u32 Depth = 0);
-
-      function void DebugPrint( function_def_2_stream* S, u32 Depth = 0);
-      function void DebugPrint( function_def_2_stream  S, u32 Depth = 0);
-
-      function void DebugPrint( function_def_2_iterator* S, u32 Depth = 0);
-      function void DebugPrint( function_def_2_iterator  S, u32 Depth = 0);
-
       function void DebugPrint( ast_node_variable_def_stream_chunk* S, u32 Depth = 0);
       function void DebugPrint( ast_node_variable_def_stream_chunk  S, u32 Depth = 0);
 
@@ -751,15 +733,6 @@
 
       function void DebugPrint( ast_node_iterator* S, u32 Depth = 0);
       function void DebugPrint( ast_node_iterator  S, u32 Depth = 0);
-
-      function void DebugPrint( function_def_stream_chunk* S, u32 Depth = 0);
-      function void DebugPrint( function_def_stream_chunk  S, u32 Depth = 0);
-
-      function void DebugPrint( function_def_stream* S, u32 Depth = 0);
-      function void DebugPrint( function_def_stream  S, u32 Depth = 0);
-
-      function void DebugPrint( function_def_iterator* S, u32 Depth = 0);
-      function void DebugPrint( function_def_iterator  S, u32 Depth = 0);
 
       function void DebugPrint( struct_member_iterator* S, u32 Depth = 0);
       function void DebugPrint( struct_member_iterator  S, u32 Depth = 0);
@@ -818,6 +791,10 @@
       function void DebugPrint(c_token_type EnumValue, u32 Depth = 0);
 
       function void DebugPrint(external_linkage_type EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(declaration_type EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(function_type EnumValue, u32 Depth = 0);
 
       function void DebugPrint(datatype_type EnumValue, u32 Depth = 0);
 
