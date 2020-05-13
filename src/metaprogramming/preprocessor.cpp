@@ -383,7 +383,6 @@ OutputParsingError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, c
 
   Log("----\n");
 
-  Assert(False);
   return;
 }
 
@@ -3667,9 +3666,11 @@ ParseScope(parser_stack *Stack, memory_arena *Memory, program_datatypes *Datatyp
   return Result;
 }
 
-function void
+function b32
 ResolveMacro(counted_string IdentifierName, macro_def_stream *Macros, parser_stack *Stack)
 {
+  b32 MacroSubstitutionOccured = False;
+
   macro_def *Macro = GetByName(Macros, IdentifierName);
   if (Macro)
   {
@@ -3677,6 +3678,7 @@ ResolveMacro(counted_string IdentifierName, macro_def_stream *Macros, parser_sta
     {
       case type_macro_keyword:
       {
+        MacroSubstitutionOccured = True;
         RequireToken(Stack, CTokenType_Identifier);
         PushStack(Stack, Macro->Parser);
       } break;
@@ -3689,7 +3691,7 @@ ResolveMacro(counted_string IdentifierName, macro_def_stream *Macros, parser_sta
     }
   }
 
-  return;
+  return MacroSubstitutionOccured;
 }
 
 function void
@@ -3710,7 +3712,10 @@ ParseSingleStatement(parser_stack *Stack, memory_arena *Memory, program_datatype
 
       case CTokenType_Identifier:
       {
-        ResolveMacro(T.Value, &Datatypes->Macros, Stack);
+        if (ResolveMacro(T.Value, &Datatypes->Macros, Stack))
+        {
+          break;
+        }
 
         if (Result->LHS)
         {
@@ -4529,6 +4534,7 @@ ParseDatatypes(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* 
         counted_string TemplateSource = EatBetween(Peek(Stack), CTokenType_LT, CTokenType_GT);
       } break;
 
+      case CTokenType_Extern:
       case CTokenType_Inline:
       case CTokenType_ThreadLocal:
       case CTokenType_Const:
@@ -4555,12 +4561,14 @@ ParseDatatypes(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* 
             RequireToken(Stack, CTokenType_Identifier);
             EatBetween(Peek(Stack), CTokenType_OpenParen, CTokenType_CloseParen);
             OptionalToken(Stack, CTokenType_Semicolon);
-            break;
+            break; 
           }
           else
           {
-            // May or may not be a macro token, so try and do macro resolution
-            ResolveMacro(T.Value, &Datatypes->Macros, Stack);
+            if (ResolveMacro(T.Value, &Datatypes->Macros, Stack))
+            {
+              break;
+            }
           }
         }
 
@@ -6118,8 +6126,8 @@ ParseFunctionBodiesIntoAsts(program_datatypes *Datatypes, memory_arena *Memory)
     }
 #endif
 
-    /* Func->Ast = ParseAllStatements(&Stack, Memory, Datatypes); */
-    /* Assert(Func->Ast); */
+    Func->Ast = ParseAllStatements(&Stack, Memory, Datatypes);
+    Assert(Func->Ast);
   }
 }
 
