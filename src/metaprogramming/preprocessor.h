@@ -512,7 +512,7 @@ struct struct_member_anonymous
   struct_def Body;
 };
 
-enum external_linkage_type
+enum linkage_type
 {
   linkage_noop,
   linkage_extern,
@@ -521,9 +521,9 @@ enum external_linkage_type
 
 struct type_spec
 {
-  counted_string Namespace;
-  counted_string Name;
+  c_token Token;
 
+  counted_string Namespace;
   counted_string SourceText;
 
   u32 ReferenceLevel;
@@ -535,9 +535,12 @@ struct type_spec
   b32 Const;
   b32 Static;
   b32 Volatile;
+
   b32 Unsigned;
   b32 Signed;
+
   b32 Long;
+
   b32 Struct;
   b32 Enum;
 
@@ -545,7 +548,7 @@ struct type_spec
   b32 IsFunctionPointer;
   counted_string FunctionPointerTypeName;
 
-  external_linkage_type Linkage;
+  linkage_type Linkage;
 };
 
 struct ast_node;
@@ -667,6 +670,13 @@ meta(generate_stream(type_def))
 #include <metaprogramming/output/generate_stream_type_def.h>
 
 
+struct primitive_def
+{
+  type_spec Type;
+};
+meta(generate_stream(primitive_def))
+#include <metaprogramming/output/generate_stream_primitive_def.h>
+
 enum datatype_type
 {
   type_datatype_noop,
@@ -678,10 +688,15 @@ enum datatype_type
   type_enum_member,
 
   type_type_def,
+
+  type_primitive_def,
 };
 
 /* TODO(Jesse, id: 188, tags: cleanup) This should have the name property,
- * instead of having the struct and enum defs have seperate names
+ * instead of having the struct and enum defs have seperate names.
+ *
+ * Actually .. it's unclear if this is true or not anymore since we've added
+ * a bunch more stuff to the union.
  */
 struct datatype
 {
@@ -946,7 +961,7 @@ meta(generate_stream(ast_node))
 function ast_node*
 AllocateAstNode(ast_node_type T, ast_node **Result, memory_arena* Memory)
 {
-  Assert(Result && !(*Result)); // We got a valid pointer, and it hasn't been allocated yet.
+  Assert(Result && (*Result == 0)); // We got a valid pointer, and it hasn't been allocated yet.
 
   *Result = AllocateProtection(ast_node, Memory, 1, False);
   (*Result)->Type = T;
@@ -966,11 +981,12 @@ struct arguments
 
 struct program_datatypes
 {
-  struct_def_stream      Structs;
-  enum_def_stream        Enums;
-  function_decl_stream Functions;
-  type_def_stream        Typedefs;
-  macro_def_stream       Macros;
+  struct_def_stream     Structs;
+  enum_def_stream       Enums;
+  function_decl_stream  Functions;
+  type_def_stream       Typedefs;
+  macro_def_stream      Macros;
+  primitive_def_stream  Primitives;
 };
 
 struct for_enum_constraints

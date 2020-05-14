@@ -27,7 +27,7 @@ _Pragma("clang diagnostic pop") // unused-macros
 
 
 // TODO(Jesse id: 293, tags: big): Constant expression evaluation for #if statements
-// TODO(Jesse id: 291, tags: big): Preprocessor functions
+// TODO(Jesse id: 291, tags: big): Macro functions
 // TODO(Jesse id: 292, tags: big): Include graph traversal
 
 
@@ -1853,7 +1853,7 @@ GenerateStructDef(d_union_decl* dUnion, memory_arena* Memory)
     Result =
       Concat(Result,
         FormatCountedString(Memory, CSz("  %S %S;\n"),
-          Member->variable_decl.Type.Name,
+          Member->variable_decl.Type.Token.Value,
           Member->variable_decl.Name),
       Memory);
   }
@@ -1939,6 +1939,7 @@ GetDatatypeByName(program_datatypes* Datatypes, counted_string Name)
 {
   TIMED_FUNCTION();
 
+  // TODO(Jesse id: 295, tags: speed): This could be optimized significantly by shuffling the logic around, not to mention using hashtables.
   struct_def *S = GetStructByType(&Datatypes->Structs, Name);
   enum_def   *E = GetEnumByType(&Datatypes->Enums, Name);
   type_def   *T = GetTypedefByAlias(&Datatypes->Typedefs, Name);
@@ -2037,8 +2038,8 @@ ParseDiscriminatedUnion(parser* Parser, program_datatypes* Datatypes, counted_st
       struct_member Decl = {
         .Type = type_variable_decl,
         .variable_decl = {
-          .Type.Name = RequireToken(Parser, CTokenType_Identifier).Value,
-          .Name      = RequireToken(Parser, CTokenType_Identifier).Value,
+          .Type.Token = RequireToken(Parser, CTokenType_Identifier),
+          .Name       = RequireToken(Parser, CTokenType_Identifier).Value,
         }
       };
       Push(&dUnion.CommonMembers, Decl, Memory);
@@ -2493,8 +2494,8 @@ ParseTypeSpecifier(parser_stack *Stack)
         Assert(!Result.Namespace.Count);
         RequireToken(Stack, CTokenType_Colon);
         RequireToken(Stack, CTokenType_Colon);
-        Result.Namespace = Result.Name;
-        Result.Name.Count = 0;
+        Result.Namespace = Result.Token.Value;
+        Result.Token = {};
       } break;
 
       case CTokenType_ThreadLocal:
@@ -2580,7 +2581,7 @@ ParseTypeSpecifier(parser_stack *Stack)
       case CTokenType_Auto:
       case CTokenType_Identifier: // TODO(Jesse id: 263): In the case of identifiers, should we check that it's actually a datatype here?
       {
-        Result.Name = RequireToken(Stack, T.Type).Value;
+        Result.Token = RequireToken(Stack, T.Type);
         ParseReferencesIndirectionAndPossibleFunctionPointerness(Stack, &Result);
         Done = True;
       } break;
@@ -2900,7 +2901,7 @@ MembersOfType(struct_def* Struct, counted_string MemberType, memory_arena *Memor
       {
         case type_variable_decl:
         {
-          if (StringsMatch(Member->variable_decl.Type.Name, MemberType))
+          if (StringsMatch(Member->variable_decl.Type.Token.Value, MemberType))
           {
             Push(&Result, *Member, Memory);
           }
@@ -3269,85 +3270,7 @@ GetByName(macro_def_stream* Stream, counted_string Name)
 }
 
 function ast_node*
-ParseSymbol(parser *Parser, memory_arena *Memory)
-{
-  ast_node *Result = {};
-  ast_node_symbol *Node = AllocateAndCastTo(ast_node_symbol, &Result, Memory);
-  Node->Token = RequireToken(Parser, CTokenType_Identifier);
-  return Result;
-}
-
-function ast_node*
 ParseFunctionArgument(parser *Parser, memory_arena *Memory, function_decl_stream *FunctionPrototypes);
-
-#if 0
-function void
-ReduceToTypeSpec(ast_node* InputNode, ast_node_variable_def_stream *Locals, type_spec *ResultType)
-{
-  ast_node* Current = InputNode;
-
-  while (Current)
-  {
-    switch (Current->Type)
-    {
-      InvalidDefaultCase;
-
-      case type_ast_node_symbol:
-      {
-        ast_node_symbol *Symbol = SafeCast(ast_node_symbol, Current);
-        Assert(Symbol->Token.Type == CTokenType_Identifier);
-        ast_node_variable_def *LocalVarDecl = GetByTypeName(Symbol->Token.Value, Locals);
-
-        if (ResultType->Name.Count)
-        {
-          if (LocalVarDecl)
-          {
-            if (StringsMatch(ResultType->Name, LocalVarDecl->Decl.Type.Name))
-            {
-            }
-            else
-            {
-              Error("Type mismatch");
-              RuntimeBreak();
-            }
-          }
-          else
-          {
-            Error("Unable to find local variable decl");
-          }
-        }
-        else
-        {
-          if (LocalVarDecl)
-          {
-            ResultType->Name = LocalVarDecl->Decl.Type.Name;
-          }
-          else
-          {
-            Error("Unable to find local variable decl");
-          }
-        }
-
-      } break;
-
-      case type_ast_node_function_call:
-      {
-        ast_node_function_call *Node = SafeCast(ast_node_function_call, Current);
-      } return;
-
-      case type_ast_node_scope:
-      {
-      } break;
-
-      case type_ast_node_ignored:
-      {
-      } break;
-    }
-  }
-
-  return;
-}
-#endif
 
 function b32
 IsTypeIdentifier(counted_string TypeName, program_datatypes *Datatypes)
@@ -3617,22 +3540,95 @@ ParseAllStatements(parser_stack *Stack, memory_arena *Memory, program_datatypes 
 function ast_node*
 ParseFunctionCall(parser_stack *Stack, counted_string FunctionName, memory_arena* Memory, program_datatypes *Datatypes);
 
-function ast_node_type_specifier*
+function void
 ParseTypeSpecifierNode(parser_stack *Stack, memory_arena *Memory, ast_node_expression *Result, program_datatypes *Datatypes, datatype *Data = 0)
 {
-  Assert(Result && !Result->Value);
   ast_node_type_specifier *Node = AllocateAndCastTo(ast_node_type_specifier, &Result->Value, Memory);
 
-  Node->Datatype = Data ? *Data :
-                          GetDatatypeByName(Datatypes, Node->TypeSpec.Name);
-
   Node->TypeSpec = ParseTypeSpecifier(Stack);
-  if (PeekToken(Stack).Type == CTokenType_Identifier) // Macro functions and casts can contain type specifiers that don't have a named value
+
+  if (Data)
   {
-    Node->Name = ParseExpression(Stack, Memory, Datatypes);
+    Node->Datatype = *Data;
+    Assert(Node->Datatype.Type != type_datatype_noop);
+  }
+  else
+  {
+    if (Node->TypeSpec.Token.Type == CTokenType_Identifier)
+    {
+      Node->Datatype = GetDatatypeByName(Datatypes, Node->TypeSpec.Token.Value);
+      Assert(Node->Datatype.Type != type_datatype_noop);
+    }
+    else
+    {
+      //
+      // Primitive type .. whadda we do?
+      //
+
+      /* primitive_def TempDatatype = GetPrimitiveType(&Datatypes->Primitives, Node->TypeSpec); */
+    }
   }
 
-  return Node;
+  Node->Name = ParseExpression(Stack, Memory, Datatypes);
+
+  if (Node->Name->Value)
+  {
+    switch (Node->Name->Value->Type)
+    {
+      case type_ast_node_function_call: // Constructor function
+      case type_ast_node_symbol:        // Regular variable definition
+      {
+      } break;
+
+      // This case should go away once we can check what local varaibles are defined for the scope we're parsing
+      case type_ast_node_access:
+      {
+        Error("BUG during ParseTypeSpecifierNode");
+      } break;
+
+      InvalidDefaultWhileParsing(Stack, CSz("Invalid syntax following type-specifier."));
+    }
+  }
+  else
+  {
+    // Cast or macro function call
+  }
+}
+
+function void
+TryAndEatTemplateParameterList(parser_stack *Stack, program_datatypes *Datatypes)
+{
+  b32 ValidTemplateList = True;
+  u32 Lookahead = 1;
+  while (++Lookahead) // Intentionally starts at 2
+  {
+    c_token TemplateParamListTestT = PeekToken(Stack, Lookahead);
+    if (TemplateParamListTestT.Type == CTokenType_Identifier)
+    {
+      if (!IsTypeIdentifier(TemplateParamListTestT.Value, Datatypes))
+      {
+        ValidTemplateList = False;
+        break;
+      }
+    }
+    else if (TemplateParamListTestT.Type == CTokenType_Comma)
+    {
+    }
+    else if (TemplateParamListTestT.Type == CTokenType_GT)
+    {
+      break;
+    }
+    else
+    {
+      ValidTemplateList = False;
+      break;
+    }
+  }
+
+  if (ValidTemplateList)
+  {
+    EatBetween(Peek(Stack), CTokenType_LT, CTokenType_GT);
+  }
 }
 
 function b32
@@ -3646,9 +3642,7 @@ ParseSymbol(parser_stack *Stack, memory_arena *Memory, program_datatypes *Dataty
   macro_def *Macro = GetByName(&Datatypes->Macros, T.Value);
   if (Macro)
   {
-
     c_token MacroNameToken = RequireToken(Stack, CTokenType_Identifier);
-
     switch (Macro->Type)
     {
       case type_macro_keyword:
@@ -3659,9 +3653,9 @@ ParseSymbol(parser_stack *Stack, memory_arena *Memory, program_datatypes *Dataty
 
       case type_macro_function:
       {
-        Assert(!Result->Value);
         if (PeekToken(Stack).Type == CTokenType_OpenParen)
         {
+          Assert(Result->Value == 0);
           Result->Value = ParseFunctionCall(Stack, MacroNameToken.Value, Memory, Datatypes);
         }
         else
@@ -3679,37 +3673,7 @@ ParseSymbol(parser_stack *Stack, memory_arena *Memory, program_datatypes *Dataty
 
   if ( PeekToken(Stack, 1).Type == CTokenType_LT )
   {
-    b32 ValidTemplateList = True;
-    u32 Lookahead = 1;
-    while (++Lookahead) // Intentionally starts at 2
-    {
-      c_token TemplateParamListTestT = PeekToken(Stack, Lookahead);
-      if (TemplateParamListTestT.Type == CTokenType_Identifier)
-      {
-        if (!IsTypeIdentifier(TemplateParamListTestT.Value, Datatypes))
-        {
-          ValidTemplateList = False;
-          break;
-        }
-      }
-      else if (TemplateParamListTestT.Type == CTokenType_Comma)
-      {
-      }
-      else if (TemplateParamListTestT.Type == CTokenType_GT)
-      {
-        break;
-      }
-      else
-      {
-        ValidTemplateList = False;
-        break;
-      }
-    }
-
-    if (ValidTemplateList)
-    {
-      EatBetween(Peek(Stack), CTokenType_LT, CTokenType_GT);
-    }
+    TryAndEatTemplateParameterList(Stack, Datatypes);
   }
 
   if ( PeekToken(Stack, 1).Type  == CTokenType_OpenParen )
@@ -3721,13 +3685,8 @@ ParseSymbol(parser_stack *Stack, memory_arena *Memory, program_datatypes *Dataty
   else
   {
     datatype TestDatatype = GetDatatypeByName(Datatypes, T.Value);
-    if (SymbolIsNeverTypeSpecifier || TestDatatype.Type == type_datatype_noop)
+    if ( SymbolIsNeverTypeSpecifier || TestDatatype.Type == type_datatype_noop )
     {
-      if (Result->Value)
-      {
-        DebugPrint(Result);
-        Assert(False);
-      }
       ast_node_symbol *Node = AllocateAndCastTo(ast_node_symbol, &Result->Value, Memory);
       Node->Token = RequireToken(Stack, CTokenType_Identifier);
     }
@@ -3801,7 +3760,6 @@ ParseExpression(parser_stack *Stack, memory_arena *Memory, program_datatypes *Da
       case CTokenType_OpenParen:
       {
         RequireToken(Stack, T.Type);
-        Assert(!Result->Value);
         ast_node_parenthesized *Node = AllocateAndCastTo(ast_node_parenthesized, &Result->Value, Memory);
         Node->Expr = ParseExpression(Stack, Memory, Datatypes);
         RequireToken(Stack, CTokenType_CloseParen);
@@ -3946,6 +3904,77 @@ ParseExpression(parser_stack *Stack, memory_arena *Memory, program_datatypes *Da
   ParseExpression(Stack, Memory, Datatypes, Node);
 }
 
+
+#if 0
+function type_spec
+ReduceToTypeSpec(ast_node* InputNode, ast_node_variable_def_stream *Locals)
+{
+  type_spec Result = {};
+
+  ast_node* Current = InputNode;
+
+  while (Current)
+  {
+    switch (Current->Type)
+    {
+      InvalidDefaultCase;
+
+      case type_ast_node_symbol:
+      {
+        ast_node_symbol *Symbol = SafeCast(ast_node_symbol, Current);
+        Assert(Symbol->Token.Type == CTokenType_Identifier);
+        ast_node_variable_def *LocalVarDecl = GetByTypeName(Symbol->Token.Value, Locals);
+
+        if (ResultType->Name.Count)
+        {
+          if (LocalVarDecl)
+          {
+            if (StringsMatch(ResultType->Name, LocalVarDecl->Decl.Type.Name))
+            {
+            }
+            else
+            {
+              Error("Type mismatch");
+              RuntimeBreak();
+            }
+          }
+          else
+          {
+            Error("Unable to find local variable decl");
+          }
+        }
+        else
+        {
+          if (LocalVarDecl)
+          {
+            ResultType->Name = LocalVarDecl->Decl.Type.Name;
+          }
+          else
+          {
+            Error("Unable to find local variable decl");
+          }
+        }
+
+      } break;
+
+      case type_ast_node_function_call:
+      {
+        ast_node_function_call *Node = SafeCast(ast_node_function_call, Current);
+      } return;
+
+      case type_ast_node_scope:
+      {
+      } break;
+
+      case type_ast_node_ignored:
+      {
+      } break;
+    }
+  }
+
+  return Result;
+}
+#endif
 
 function ast_node*
 ParseFunctionCall(parser_stack *Stack, counted_string FunctionName, memory_arena* Memory, program_datatypes *Datatypes)
@@ -4722,7 +4751,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
                   {
                     case type_variable_decl:
                     {
-                      enum_def *E = GetEnumByType(&Datatypes->Enums, Replace->Data.struct_member->variable_decl.Type.Name);
+                      enum_def *E = GetEnumByType(&Datatypes->Enums, Replace->Data.struct_member->variable_decl.Type.Token.Value);
                       if (E)
                       {
                         meta_func_arg_stream NewArgs = CopyStream(ReplacePatterns, Memory);
@@ -4748,6 +4777,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
                   }
                 } break;
 
+                case type_primitive_def:
                 case type_struct_def:
                 {
                 } break;
@@ -4799,7 +4829,14 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
                   NotImplemented;
                 } break;
 
-                case  type_struct_def:
+                case type_primitive_def:
+                {
+                  NotImplemented;
+                  // Does this actually work?
+                  // TypeName = Replace->Data.primitive_def->Type.SourceText;
+                } break;
+
+                case type_struct_def:
                 {
                   TypeName = Replace->Data.struct_def->Type;
                 } break;
@@ -4822,7 +4859,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
 
                     case type_variable_decl:
                     {
-                      TypeName = Replace->Data.struct_member->variable_decl.Type.Name;
+                      TypeName = Replace->Data.struct_member->variable_decl.Type.Token.Value;
                     } break;
 
                     case type_function_decl:
@@ -4926,7 +4963,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
                     case type_variable_decl:
                     {
                       if ( ContainingConstraint.Count &&
-                           !StringsMatch(Member->variable_decl.Type.Name, ContainingConstraint) )
+                           !StringsMatch(Member->variable_decl.Type.Token.Value, ContainingConstraint) )
                       {
                         // Containing constraint failed
                       }
@@ -4949,7 +4986,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
                         struct_member* UnionMember = GET_ELEMENT(UnionMemberIter);
                         if (UnionMember->Type == type_variable_decl)
                         {
-                          struct_def* Struct = GetStructByType(&Datatypes->Structs, UnionMember->variable_decl.Type.Name);
+                          struct_def* Struct = GetStructByType(&Datatypes->Structs, UnionMember->variable_decl.Type.Token.Value);
                           if (Struct)
                           {
                             struct_member_stream ContainedMembers = MembersOfType(Struct, ContainingConstraint, Memory);
@@ -4971,7 +5008,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
                           }
                           else
                           {
-                            counted_string Name = UnionMember->variable_decl.Type.Name;
+                            counted_string Name = UnionMember->variable_decl.Type.Token.Value;
                             counted_string ParentStructName = Replace->Data.struct_def->Type;
                             Warn("Couldn't find struct type '%.*s' in union parent '%.*s'.",
                                 (u32)Name.Count, Name.Start,
@@ -5719,6 +5756,43 @@ ParseFunctionBodiesIntoAsts(program_datatypes *Datatypes, memory_arena *Memory)
   }
 }
 
+#if 0
+function void
+RegisterPrimitiveDatatypes(program_datatypes *Datatypes, memory_arena *Memory)
+{
+  primitive_def P = {};
+
+  type_spec *Type = &P.Type;
+
+  //
+  // Integral Types
+  //
+
+#if 0
+  Type->Name = CSz("short"); Type->SourceText = CSz("short");
+  Push(&Datatypes->Primitives, P, Memory); Type->Signed = true;
+
+  Type->SourceText = CSz("short int");
+  Push(&Datatypes->Primitives, P, Memory);
+
+  Type->SourceText = CSz("signed short int");
+  Push(&Datatypes->Primitives, P, Memory);
+
+  Type->SourceText = CSz("signed short int");
+  Push(&Datatypes->Primitives, P, Memory);
+
+
+  Type->Token.Value = CSz("float"); Type->SourceText = CSz("float");
+  Push(&Datatypes->Primitives, P, Memory);
+
+  Type->Name = CSz("double"); Type->SourceText = CSz("double");
+  Push(&Datatypes->Primitives, P, Memory);
+#endif
+
+
+}
+#endif
+
 #ifndef EXCLUDE_PREPROCESSOR_MAIN
 #define SUCCESS_EXIT_CODE 0
 #define FAILURE_EXIT_CODE 1
@@ -5758,6 +5832,8 @@ main(s32 ArgCount, const char** ArgStrings)
     };
 
     RemoveAllMetaprogrammingOutput(&ParsedFiles, &Args);
+
+    /* RegisterPrimitiveDatatypes(&MetaInfo.Datatypes, Memory); */
 
     ParseDatatypes(ParsedFiles, &MetaInfo.Datatypes, Memory);
 

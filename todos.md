@@ -59,10 +59,11 @@
     - #132 Pretty sure we can do some XOR trickery or something here to avoid this branch, which could be a large perf win
     - #136 Why are these allocated on the heap?  Seems unnecessary..
     - #139 Is this necessary to avoid some pointer aliasing bug?
+    - #295 This could be optimized significantly by shuffling the logic around, not to mention using hashtables.
 
   ## cleanup
     - #77 Axe this!
-    - #188 This should have the name property, instead of having the struct and enum defs have seperate names
+    - #188 This should have the name property, instead of having the struct and enum defs have seperate names. * Actually .. it's unclear if this is true or not anymore since we've added a bunch more stuff to the union.
     - #88 Perlin.h depends on this .. rewrite it.
     - #89 Perlin.h depends on this .. rewrite it.
     - #90 Redistribute this
@@ -350,7 +351,7 @@
     - #289 
 
   ## big
-    - #291 Preprocessor functions
+    - #291 Macro functions
     - #292 Include graph traversal
     - #293 Constant expression evaluation for #if statements
 

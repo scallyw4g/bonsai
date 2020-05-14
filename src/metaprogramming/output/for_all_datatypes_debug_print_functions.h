@@ -1844,14 +1844,14 @@
       }
 
       
-          DebugPrint("counted_string Namespace {\n", Depth+2);
-          DebugPrint(S.Namespace, Depth+4);
+          DebugPrint("c_token Token {\n", Depth+2);
+          DebugPrint(S.Token, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("counted_string Name {\n", Depth+2);
-          DebugPrint(S.Name, Depth+4);
+          DebugPrint("counted_string Namespace {\n", Depth+2);
+          DebugPrint(S.Namespace, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
@@ -1934,6 +1934,12 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
+          DebugPrint("b32 SizeInBytes {\n", Depth+2);
+          DebugPrint(S.SizeInBytes, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
           DebugPrint("b32 Inline {\n", Depth+2);
           DebugPrint(S.Inline, Depth+4);
           DebugPrint("\n");
@@ -1952,7 +1958,7 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("external_linkage_type Linkage {\n", Depth+2);
+          DebugPrint("linkage_type Linkage {\n", Depth+2);
           DebugPrint(S.Linkage, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
@@ -2207,6 +2213,29 @@
     }
 
     function void DebugPrint( type_def *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( primitive_def S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("primitive_def {\n", Depth);
+      }
+
+      
+          DebugPrint("type_spec Type {\n", Depth+2);
+          DebugPrint(S.Type, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( primitive_def *S, u32 Depth)
     {
       if (S) { DebugPrint(*S, Depth); }
       else { DebugPrint("ptr(0)", Depth); }
@@ -2920,6 +2949,12 @@
 
           DebugPrint("macro_def_stream Macros {\n", Depth+2);
           DebugPrint(S.Macros, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("primitive_def_stream Primitives {\n", Depth+2);
+          DebugPrint(S.Primitives, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
@@ -8321,6 +8356,93 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
+    function void DebugPrint( primitive_def_stream_chunk S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("primitive_def_stream_chunk {\n", Depth);
+      }
+
+      
+          DebugPrint("primitive_def Element {\n", Depth+2);
+          DebugPrint(S.Element, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("primitive_def_stream_chunk Next {\n", Depth+2);
+          DebugPrint(S.Next, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( primitive_def_stream_chunk *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( primitive_def_stream S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("primitive_def_stream {\n", Depth);
+      }
+
+      
+          DebugPrint("primitive_def_stream_chunk FirstChunk {\n", Depth+2);
+          DebugPrint(S.FirstChunk, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("primitive_def_stream_chunk LastChunk {\n", Depth+2);
+          DebugPrint(S.LastChunk, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( primitive_def_stream *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( primitive_def_iterator S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("primitive_def_iterator {\n", Depth);
+      }
+
+      
+          DebugPrint("primitive_def_stream Stream {\n", Depth+2);
+          DebugPrint(S.Stream, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("primitive_def_stream_chunk At {\n", Depth+2);
+          DebugPrint(S.At, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( primitive_def_iterator *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
     function void DebugPrint( meta_func_arg_stream_chunk S, u32 Depth)
     {
       if (Depth == 0)
@@ -10269,7 +10391,7 @@
       }
     }
 
-    function void DebugPrint( external_linkage_type EnumValue, u32 Depth)
+    function void DebugPrint( linkage_type EnumValue, u32 Depth)
     {
       switch (EnumValue)
       {
@@ -10381,6 +10503,11 @@
             case type_type_def:
             {
               DebugPrint("type_type_def ", Depth);
+            } break;
+
+            case type_primitive_def:
+            {
+              DebugPrint("type_primitive_def ", Depth);
             } break;
 
       }

@@ -164,6 +164,9 @@
       function void DebugPrint( type_def* S, u32 Depth = 0);
       function void DebugPrint( type_def  S, u32 Depth = 0);
 
+      function void DebugPrint( primitive_def* S, u32 Depth = 0);
+      function void DebugPrint( primitive_def  S, u32 Depth = 0);
+
       function void DebugPrint( datatype* S, u32 Depth = 0);
       function void DebugPrint( datatype  S, u32 Depth = 0);
 
@@ -647,6 +650,15 @@
       function void DebugPrint( type_def_iterator* S, u32 Depth = 0);
       function void DebugPrint( type_def_iterator  S, u32 Depth = 0);
 
+      function void DebugPrint( primitive_def_stream_chunk* S, u32 Depth = 0);
+      function void DebugPrint( primitive_def_stream_chunk  S, u32 Depth = 0);
+
+      function void DebugPrint( primitive_def_stream* S, u32 Depth = 0);
+      function void DebugPrint( primitive_def_stream  S, u32 Depth = 0);
+
+      function void DebugPrint( primitive_def_iterator* S, u32 Depth = 0);
+      function void DebugPrint( primitive_def_iterator  S, u32 Depth = 0);
+
       function void DebugPrint( meta_func_arg_stream_chunk* S, u32 Depth = 0);
       function void DebugPrint( meta_func_arg_stream_chunk  S, u32 Depth = 0);
 
@@ -784,7 +796,7 @@
 
       function void DebugPrint(c_token_type EnumValue, u32 Depth = 0);
 
-      function void DebugPrint(external_linkage_type EnumValue, u32 Depth = 0);
+      function void DebugPrint(linkage_type EnumValue, u32 Depth = 0);
 
       function void DebugPrint(function_type EnumValue, u32 Depth = 0);
 
