@@ -4,7 +4,6 @@
     - #260 Currently ignoring the second half of a ternary .. we should probably not do this
     - #261 #if this out on prouction released builds.
     - #262 These should probably be in their own type_ast_node_cast .. ?
-    - #263 In the case of identifiers, should we check that it's actually a datatype here?
     - #264 Once we have proper macro expansion, this can be expanded and concatenated to the string as well.
     - #265 Unnecessary .. I just added these as a hack get parsing to work
     - #266 Unnecessary .. I just added it as a hack get parsing to work

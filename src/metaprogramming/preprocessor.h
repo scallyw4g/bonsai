@@ -382,6 +382,7 @@ enum c_token_type
   CTokenType_Float,
   CTokenType_Char,
   CTokenType_Int,
+  CTokenType_Short,
 
   CTokenType_Inline,
   CTokenType_TemplateKeyword,
@@ -512,6 +513,48 @@ struct struct_member_anonymous
   struct_def Body;
 };
 
+enum datatype_type
+{
+  type_datatype_noop,
+
+  type_struct_def,
+  type_struct_member,
+
+  type_enum_def,
+  type_enum_member,
+
+  type_type_def,
+
+  type_primitive_def,
+};
+
+struct struct_member;
+struct struct_def;
+struct enum_def;
+struct enum_member;
+struct type_def;
+/* TODO(Jesse, id: 188, tags: cleanup) This should have the name property,
+ * instead of having the struct and enum defs have seperate names.
+ *
+ * Actually .. it's unclear if this is true or not anymore since we've added
+ * a bunch more stuff to the union.
+ */
+struct datatype
+{
+  datatype_type Type;
+
+  union
+  {
+    struct_def     *struct_def;
+    struct_member  *struct_member;
+
+    enum_def       *enum_def;
+    enum_member    *enum_member;
+
+    type_def       *type_def;
+  };
+};
+
 enum linkage_type
 {
   linkage_noop,
@@ -522,6 +565,8 @@ enum linkage_type
 struct type_spec
 {
   c_token Token;
+
+  datatype Datatype;
 
   counted_string Namespace;
   counted_string SourceText;
@@ -676,43 +721,6 @@ struct primitive_def
 };
 meta(generate_stream(primitive_def))
 #include <metaprogramming/output/generate_stream_primitive_def.h>
-
-enum datatype_type
-{
-  type_datatype_noop,
-
-  type_struct_def,
-  type_struct_member,
-
-  type_enum_def,
-  type_enum_member,
-
-  type_type_def,
-
-  type_primitive_def,
-};
-
-/* TODO(Jesse, id: 188, tags: cleanup) This should have the name property,
- * instead of having the struct and enum defs have seperate names.
- *
- * Actually .. it's unclear if this is true or not anymore since we've added
- * a bunch more stuff to the union.
- */
-struct datatype
-{
-  datatype_type Type;
-
-  union
-  {
-    struct_def     *struct_def;
-    struct_member  *struct_member;
-
-    enum_def       *enum_def;
-    enum_member    *enum_member;
-
-    type_def       *type_def;
-  };
-};
 
 
 function datatype

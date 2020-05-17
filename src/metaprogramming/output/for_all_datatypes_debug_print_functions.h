@@ -1836,6 +1836,29 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
+    function void DebugPrint( datatype S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("datatype {\n", Depth);
+      }
+
+      
+          DebugPrint("datatype_type Type {\n", Depth+2);
+          DebugPrint(S.Type, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( datatype *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
     function void DebugPrint( type_spec S, u32 Depth)
     {
       if (Depth == 0)
@@ -1846,6 +1869,12 @@
       
           DebugPrint("c_token Token {\n", Depth+2);
           DebugPrint(S.Token, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("datatype Datatype {\n", Depth+2);
+          DebugPrint(S.Datatype, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
@@ -1930,12 +1959,6 @@
 
           DebugPrint("b32 Enum {\n", Depth+2);
           DebugPrint(S.Enum, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-          DebugPrint("b32 SizeInBytes {\n", Depth+2);
-          DebugPrint(S.SizeInBytes, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
@@ -2236,29 +2259,6 @@
     }
 
     function void DebugPrint( primitive_def *S, u32 Depth)
-    {
-      if (S) { DebugPrint(*S, Depth); }
-      else { DebugPrint("ptr(0)", Depth); }
-    }
-
-    function void DebugPrint( datatype S, u32 Depth)
-    {
-      if (Depth == 0)
-      {
-        DebugPrint("datatype {\n", Depth);
-      }
-
-      
-          DebugPrint("datatype_type Type {\n", Depth+2);
-          DebugPrint(S.Type, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-      DebugPrint("}\n", Depth);
-    }
-
-    function void DebugPrint( datatype *S, u32 Depth)
     {
       if (S) { DebugPrint(*S, Depth); }
       else { DebugPrint("ptr(0)", Depth); }
@@ -10208,6 +10208,11 @@
               DebugPrint("CTokenType_Int ", Depth);
             } break;
 
+            case CTokenType_Short:
+            {
+              DebugPrint("CTokenType_Short ", Depth);
+            } break;
+
             case CTokenType_Inline:
             {
               DebugPrint("CTokenType_Inline ", Depth);
@@ -10391,6 +10396,49 @@
       }
     }
 
+    function void DebugPrint( datatype_type EnumValue, u32 Depth)
+    {
+      switch (EnumValue)
+      {
+        
+            case type_datatype_noop:
+            {
+              DebugPrint("type_datatype_noop ", Depth);
+            } break;
+
+            case type_struct_def:
+            {
+              DebugPrint("type_struct_def ", Depth);
+            } break;
+
+            case type_struct_member:
+            {
+              DebugPrint("type_struct_member ", Depth);
+            } break;
+
+            case type_enum_def:
+            {
+              DebugPrint("type_enum_def ", Depth);
+            } break;
+
+            case type_enum_member:
+            {
+              DebugPrint("type_enum_member ", Depth);
+            } break;
+
+            case type_type_def:
+            {
+              DebugPrint("type_type_def ", Depth);
+            } break;
+
+            case type_primitive_def:
+            {
+              DebugPrint("type_primitive_def ", Depth);
+            } break;
+
+      }
+    }
+
     function void DebugPrint( linkage_type EnumValue, u32 Depth)
     {
       switch (EnumValue)
@@ -10465,49 +10513,6 @@
             case type_declaration_variable_decl:
             {
               DebugPrint("type_declaration_variable_decl ", Depth);
-            } break;
-
-      }
-    }
-
-    function void DebugPrint( datatype_type EnumValue, u32 Depth)
-    {
-      switch (EnumValue)
-      {
-        
-            case type_datatype_noop:
-            {
-              DebugPrint("type_datatype_noop ", Depth);
-            } break;
-
-            case type_struct_def:
-            {
-              DebugPrint("type_struct_def ", Depth);
-            } break;
-
-            case type_struct_member:
-            {
-              DebugPrint("type_struct_member ", Depth);
-            } break;
-
-            case type_enum_def:
-            {
-              DebugPrint("type_enum_def ", Depth);
-            } break;
-
-            case type_enum_member:
-            {
-              DebugPrint("type_enum_member ", Depth);
-            } break;
-
-            case type_type_def:
-            {
-              DebugPrint("type_type_def ", Depth);
-            } break;
-
-            case type_primitive_def:
-            {
-              DebugPrint("type_primitive_def ", Depth);
             } break;
 
       }

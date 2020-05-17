@@ -140,6 +140,9 @@
       function void DebugPrint( struct_member_anonymous* S, u32 Depth = 0);
       function void DebugPrint( struct_member_anonymous  S, u32 Depth = 0);
 
+      function void DebugPrint( datatype* S, u32 Depth = 0);
+      function void DebugPrint( datatype  S, u32 Depth = 0);
+
       function void DebugPrint( type_spec* S, u32 Depth = 0);
       function void DebugPrint( type_spec  S, u32 Depth = 0);
 
@@ -166,9 +169,6 @@
 
       function void DebugPrint( primitive_def* S, u32 Depth = 0);
       function void DebugPrint( primitive_def  S, u32 Depth = 0);
-
-      function void DebugPrint( datatype* S, u32 Depth = 0);
-      function void DebugPrint( datatype  S, u32 Depth = 0);
 
       function void DebugPrint( meta_func_arg* S, u32 Depth = 0);
       function void DebugPrint( meta_func_arg  S, u32 Depth = 0);
@@ -796,13 +796,13 @@
 
       function void DebugPrint(c_token_type EnumValue, u32 Depth = 0);
 
+      function void DebugPrint(datatype_type EnumValue, u32 Depth = 0);
+
       function void DebugPrint(linkage_type EnumValue, u32 Depth = 0);
 
       function void DebugPrint(function_type EnumValue, u32 Depth = 0);
 
       function void DebugPrint(declaration_type EnumValue, u32 Depth = 0);
-
-      function void DebugPrint(datatype_type EnumValue, u32 Depth = 0);
 
       function void DebugPrint(macro_type EnumValue, u32 Depth = 0);
 

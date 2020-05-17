@@ -140,6 +140,8 @@
 
             case CTokenType_Int: { Result = CSz("CTokenType_Int"); } break;
 
+            case CTokenType_Short: { Result = CSz("CTokenType_Short"); } break;
+
             case CTokenType_Inline: { Result = CSz("CTokenType_Inline"); } break;
 
             case CTokenType_TemplateKeyword: { Result = CSz("CTokenType_TemplateKeyword"); } break;

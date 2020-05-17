@@ -1672,6 +1672,10 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes = Fa
           {
             PushT.Type = CTokenType_Double;
           }
+          else if ( StringsMatch(PushT.Value, CSz("short")) )
+          {
+            PushT.Type = CTokenType_Short;
+          }
           else if ( StringsMatch(PushT.Value, CSz("int")) )
           {
             PushT.Type = CTokenType_Int;
@@ -2472,7 +2476,7 @@ ParseReferencesIndirectionAndPossibleFunctionPointerness(parser_stack *Stack, ty
 }
 
 function type_spec
-ParseTypeSpecifier(parser_stack *Stack)
+ParseTypeSpecifier(parser_stack *Stack, program_datatypes *Datatypes)
 {
   type_spec Result = {};
 
@@ -2575,13 +2579,23 @@ ParseTypeSpecifier(parser_stack *Stack)
       case CTokenType_Float:
       case CTokenType_Char:
       case CTokenType_Int:
+      case CTokenType_Short:
       case CTokenType_Void:
       case CTokenType_M128:
       case CTokenType_Bool:
       case CTokenType_Auto:
-      case CTokenType_Identifier: // TODO(Jesse id: 263): In the case of identifiers, should we check that it's actually a datatype here?
+      case CTokenType_Identifier:
       {
         Result.Token = RequireToken(Stack, T.Type);
+
+#if 0 // TODO(Jesse, tags: immediate): When we properly traverse include graphs, this assert should not fail.
+        if (T.Type == CTokenType_Identifier)
+        {
+          Result.Datatype = GetDatatypeByName(Datatypes, T.Value);
+          Assert(Result.Datatype.Type != type_datatype_noop);
+        }
+#endif
+
         ParseReferencesIndirectionAndPossibleFunctionPointerness(Stack, &Result);
         Done = True;
       } break;
@@ -2618,7 +2632,7 @@ function variable_decl
 ParseVariableDecl(parser_stack *Stack, memory_arena *Memory, program_datatypes *Datatypes)
 {
   variable_decl Result = {
-    .Type = ParseTypeSpecifier(Stack),
+    .Type = ParseTypeSpecifier(Stack, Datatypes),
     .Name = RequireToken(Stack, CTokenType_Identifier).Value,
   };
 
@@ -2704,7 +2718,7 @@ ParseFunctionOrVariableDecl(parser_stack *Stack, program_datatypes *Datatypes, m
 {
   declaration Result = {};
 
-  type_spec DeclType = ParseTypeSpecifier(Stack);
+  type_spec DeclType = ParseTypeSpecifier(Stack, Datatypes);
   if (DeclType.IsFunctionPointer)
   {
     RequireToken(Stack, CTokenType_Semicolon);
@@ -2735,7 +2749,7 @@ ParseFunctionOrVariableDecl(parser_stack *Stack, program_datatypes *Datatypes, m
         Result.variable_decl.Type = DeclType;
         Result.variable_decl.Name = DeclName;
 
-        if ( OptionalToken( Stack, CTokenType_OpenBracket) )
+        if ( OptionalToken(Stack, CTokenType_OpenBracket) )
         {
           ParseExpression(Stack, Memory, Datatypes, &Result.variable_decl.StaticBufferSize );
           RequireToken(Stack, CTokenType_CloseBracket);
@@ -2819,6 +2833,7 @@ ParseStructMember(parser_stack* Stack, counted_string StructName, memory_arena* 
     case CTokenType_Float:
     case CTokenType_Char:
     case CTokenType_Int:
+    case CTokenType_Short:
     case CTokenType_Unsigned:
     case CTokenType_Signed:
     case CTokenType_Identifier:
@@ -3168,9 +3183,9 @@ ParseDatatypeDef(parser_stack *Stack, program_datatypes* Datatypes, memory_arena
 }
 
 function void
-ParseAndPushTypedef(parser_stack *Stack, type_def_stream* Typedefs, memory_arena* Memory)
+ParseAndPushTypedef(parser_stack *Stack, program_datatypes *Datatypes, memory_arena* Memory)
 {
-  type_spec Type = ParseTypeSpecifier(Stack);
+  type_spec Type = ParseTypeSpecifier(Stack, Datatypes);
   counted_string  Alias = {};
 
   if (Type.IsFunctionPointer)
@@ -3188,7 +3203,7 @@ ParseAndPushTypedef(parser_stack *Stack, type_def_stream* Typedefs, memory_arena
     .Alias = Alias,
   };
 
-  Push(Typedefs, Typedef, Memory);
+  Push(&Datatypes->Typedefs, Typedef, Memory);
 }
 
 function void
@@ -3207,12 +3222,12 @@ ParseTypedef(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* Me
     }
     else
     {
-      ParseAndPushTypedef(Stack, &Datatypes->Typedefs, Memory);
+      ParseAndPushTypedef(Stack, Datatypes, Memory);
     }
   }
   else
   {
-    ParseAndPushTypedef(Stack, &Datatypes->Typedefs, Memory);
+    ParseAndPushTypedef(Stack, Datatypes, Memory);
   }
 
   return;
@@ -3441,6 +3456,7 @@ ParseSingleStatement(parser_stack *Stack, memory_arena *Memory, program_datatype
       case CTokenType_Float:
       case CTokenType_Char:
       case CTokenType_Int:
+      case CTokenType_Short:
       case CTokenType_Unsigned:
       case CTokenType_Signed:
 
@@ -3545,7 +3561,7 @@ ParseTypeSpecifierNode(parser_stack *Stack, memory_arena *Memory, ast_node_expre
 {
   ast_node_type_specifier *Node = AllocateAndCastTo(ast_node_type_specifier, &Result->Value, Memory);
 
-  Node->TypeSpec = ParseTypeSpecifier(Stack);
+  Node->TypeSpec = ParseTypeSpecifier(Stack, Datatypes);
 
   if (Data)
   {
@@ -3751,6 +3767,7 @@ ParseExpression(parser_stack *Stack, memory_arena *Memory, program_datatypes *Da
       case CTokenType_Float:
       case CTokenType_Char:
       case CTokenType_Int:
+      case CTokenType_Short:
       case CTokenType_Unsigned:
       case CTokenType_Signed:
       {
@@ -4106,6 +4123,7 @@ ParseDatatypes(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* 
       case CTokenType_Float:
       case CTokenType_Char:
       case CTokenType_Int:
+      case CTokenType_Short:
       case CTokenType_Unsigned:
       case CTokenType_Signed:
       case CTokenType_Identifier:
