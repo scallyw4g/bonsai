@@ -10393,6 +10393,66 @@
               DebugPrint("CTokenType_Arrow ", Depth);
             } break;
 
+            case CT_PreprocessorPaste:
+            {
+              DebugPrint("CT_PreprocessorPaste ", Depth);
+            } break;
+
+            case CT_PreprocessorInclude:
+            {
+              DebugPrint("CT_PreprocessorInclude ", Depth);
+            } break;
+
+            case CT_PreprocessorIf:
+            {
+              DebugPrint("CT_PreprocessorIf ", Depth);
+            } break;
+
+            case CT_PreprocessorElse:
+            {
+              DebugPrint("CT_PreprocessorElse ", Depth);
+            } break;
+
+            case CT_PreprocessorElif:
+            {
+              DebugPrint("CT_PreprocessorElif ", Depth);
+            } break;
+
+            case CT_PreprocessorEndif:
+            {
+              DebugPrint("CT_PreprocessorEndif ", Depth);
+            } break;
+
+            case CT_PreprocessorIfDefined:
+            {
+              DebugPrint("CT_PreprocessorIfDefined ", Depth);
+            } break;
+
+            case CT_PreprocessorIfNotDefined:
+            {
+              DebugPrint("CT_PreprocessorIfNotDefined ", Depth);
+            } break;
+
+            case CT_PreprocessorDefine:
+            {
+              DebugPrint("CT_PreprocessorDefine ", Depth);
+            } break;
+
+            case CT_PreprocessorUndef:
+            {
+              DebugPrint("CT_PreprocessorUndef ", Depth);
+            } break;
+
+            case CT_PreprocessorPragma:
+            {
+              DebugPrint("CT_PreprocessorPragma ", Depth);
+            } break;
+
+            case CT_PreprocessorError:
+            {
+              DebugPrint("CT_PreprocessorError ", Depth);
+            } break;
+
       }
     }
 

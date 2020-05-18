@@ -343,7 +343,8 @@ enum c_token_type
   CTokenType_CarrigeReturn = '\r',
   CTokenType_EOF           = EOF,
 
-  CTokenType_CommentSingleLine = 256, // Presumably, we'll never need to parse anything that's not ascii, so start the non-ascii tokens at 256
+
+  CTokenType_CommentSingleLine     = 256, // Presumably, we'll never need to parse anything that's not ascii, so start the non-ascii tokens at 256
   CTokenType_CommentMultiLineStart,
   CTokenType_CommentMultiLineEnd,
 
@@ -389,9 +390,9 @@ enum c_token_type
   CTokenType_OperatorKeyword,
 
   CTokenType_Extern,
-
   CTokenType_Asm,
   CTokenType_Goto,
+
   CTokenType_Ellipsis,
 
   CTokenType_If,
@@ -424,11 +425,25 @@ enum c_token_type
 
   CTokenType_Increment,
   CTokenType_Decrement,
-
   CTokenType_LogicalAnd,
   CTokenType_LogicalOr,
 
   CTokenType_Arrow,
+
+  CT_PreprocessorPaste,
+
+  CT_PreprocessorInclude,
+  CT_PreprocessorIf,
+  CT_PreprocessorElse,
+  CT_PreprocessorElif,
+  CT_PreprocessorEndif,
+  CT_PreprocessorIfDefined,
+  CT_PreprocessorIfNotDefined,
+  CT_PreprocessorDefine,
+  CT_PreprocessorUndef,
+  CT_PreprocessorPragma,
+  CT_PreprocessorError,
+
 };
 meta(generate_string_table(c_token_type))
 #include <metaprogramming/output/generate_string_table_c_token_type.h>

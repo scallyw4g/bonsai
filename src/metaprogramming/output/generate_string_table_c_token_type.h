@@ -214,6 +214,30 @@
 
             case CTokenType_Arrow: { Result = CSz("CTokenType_Arrow"); } break;
 
+            case CT_PreprocessorPaste: { Result = CSz("CT_PreprocessorPaste"); } break;
+
+            case CT_PreprocessorInclude: { Result = CSz("CT_PreprocessorInclude"); } break;
+
+            case CT_PreprocessorIf: { Result = CSz("CT_PreprocessorIf"); } break;
+
+            case CT_PreprocessorElse: { Result = CSz("CT_PreprocessorElse"); } break;
+
+            case CT_PreprocessorElif: { Result = CSz("CT_PreprocessorElif"); } break;
+
+            case CT_PreprocessorEndif: { Result = CSz("CT_PreprocessorEndif"); } break;
+
+            case CT_PreprocessorIfDefined: { Result = CSz("CT_PreprocessorIfDefined"); } break;
+
+            case CT_PreprocessorIfNotDefined: { Result = CSz("CT_PreprocessorIfNotDefined"); } break;
+
+            case CT_PreprocessorDefine: { Result = CSz("CT_PreprocessorDefine"); } break;
+
+            case CT_PreprocessorUndef: { Result = CSz("CT_PreprocessorUndef"); } break;
+
+            case CT_PreprocessorPragma: { Result = CSz("CT_PreprocessorPragma"); } break;
+
+            case CT_PreprocessorError: { Result = CSz("CT_PreprocessorError"); } break;
+
       }
       return Result;
     }

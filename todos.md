@@ -3,7 +3,6 @@
     - #154 This is pretty shitty because whenever we copy one of these structs this field has to be manually zeroed out ..
     - #260 Currently ignoring the second half of a ternary .. we should probably not do this
     - #261 #if this out on prouction released builds.
-    - #262 These should probably be in their own type_ast_node_cast .. ?
     - #264 Once we have proper macro expansion, this can be expanded and concatenated to the string as well.
     - #265 Unnecessary .. I just added these as a hack get parsing to work
     - #266 Unnecessary .. I just added it as a hack get parsing to work
@@ -17,6 +16,8 @@
     - #278 Disallow invalid suffixes lul/LUL .. LUU .. ULLLL etc..
     - #282 Should we parse out the function def explicitly here?
     - #283 Should we care about ignoring template sources? Similar to #282
+    - #299 This could be improved by not taking the StructName, and
+    - #262 These should probably be in their own type_ast_node_cast .. ?
 
   ## immediate
     - #83 d_union-ify this
@@ -24,6 +25,8 @@
     - #238 Change name to BitwiseAnd
     - #239 Change name to BitwiseOr
     - #279 Macro function call .. Eventually ResolveMacro should deal with this.
+    - #296 When we properly traverse include graphs, this assert should not fail.
+    - #300 Remove this
 
   ## high_priority
     - #101 Profile and check collision rate of this!
@@ -79,6 +82,7 @@
     - #144 This actually has nothing to do with the platform
     - #238 Change name to BitwiseAnd
     - #239 Change name to BitwiseOr
+    - #300 Remove this
 
   ## rng
     - #82 257 seemed to produce slightly worse results, but the source literature seemed to indicate using a constant close to the total number of discrete characters you'll encounter is advisable.  I believe this to be somewhat higher than 53, but it would be worth testing on real-world data (source files).
@@ -86,7 +90,6 @@
 
   ## metaprogramming
     - #191 This can be generated, but it requires lazily evaluating functions once their dependant types have been generated.  Not sure if this is a good idea or not, but we could do it. * meta( generate_stream_struct(struct_member) ) * Currently the invariant of being able to remove and re-generate all meta output in a single run of the metaprogramming system is broken by this.
-    - #193 Metaprogram this.  I've had bugs multiple times because of it.
     - #83 d_union-ify this
     - #91 Jettison this .. Can it be metaprogrammed?
     - #99 Generate this?  Need a compiler feature to generate stuff from primitive types.
@@ -105,6 +108,7 @@
     - #288 
     - #289 
     - #290 generating this: meta( d_union declaration { function_decl variable_decl }) results in a name collision with the struct_member union tag. * Should we have some way of overriding the tag name it generates?  Or potentially modify the way we generate type tags such that name collisions won't happen.  I'd prefer an override to keep the tag names as concise as possible, but maybe once the preprocessor generates the switch statements for us it won't matter if they're overly verbose.
+    - #193 Metaprogram this.  I've had bugs multiple times because of it.
 
   ## robustness
     - #78 How should we actually set this?

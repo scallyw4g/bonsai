@@ -130,6 +130,7 @@ ToCapitalCase(counted_string Source, memory_arena* Memory)
 
   return Result;
 }
+
 // This is to silence the warnings when passing counted_strings to this function
 #define FormatCountedString(Memory, Fmt, ...)             \
   _Pragma("clang diagnostic push")                        \

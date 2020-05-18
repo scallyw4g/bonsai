@@ -282,22 +282,30 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
       }
 
       counted_string TokenTypeName = ToString(ErrorToken->Type);
-      Log(" --> Unexpected token : %.*s", TokenTypeName.Count, TokenTypeName.Start );
+      Log(" --> %.*s", TokenTypeName.Count, TokenTypeName.Start );
 
       if (ErrorToken->Value.Count)
       {
         Log("(%.*s)" , ErrorToken->Value.Count, ErrorToken->Value.Start);
       }
 
-      counted_string ExpectedTypeName = ToString(Expected.Type);
-      Log(". Expected: %.*s", ExpectedTypeName.Count, ExpectedTypeName.Start);
-
-      if (Expected.Value.Count)
+      if (Expected.Type)
       {
-        Log("(%.*s)" , Expected.Value.Count, Expected.Value.Start);
+        counted_string ExpectedTypeName = ToString(Expected.Type);
+        Log(" Expecting : %.*s", ExpectedTypeName.Count, ExpectedTypeName.Start);
+
+        if (Expected.Value.Count)
+        {
+          Log("(%.*s)" , Expected.Value.Count, Expected.Value.Start);
+        }
+      }
+      else
+      {
+        Assert(!Expected.Value.Count);
       }
 
-      Log("\n");
+
+      Log(" %.*s\n", ErrorString.Count, ErrorString.Start);
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < ColumnCount + ErrorToken->Value.Count;
@@ -306,7 +314,7 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
         Log(" ");
       }
 
-      Log("     %.*s:%u:%u: %.*s\n", Parser->Filename.Count, Parser->Filename.Start, LineNumber, ColumnCount, ErrorString.Count, ErrorString.Start);
+      Log("     %.*s:%u:%u\n\n", Parser->Filename.Count, Parser->Filename.Start, LineNumber, ColumnCount);
 
       break;
     }
@@ -1581,6 +1589,84 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes = Fa
         Advance(&Code);
       } break;
 
+      case CTokenType_Hash:
+      {
+        Advance(&Code);
+
+        if (PeekToken(&Code).Type == CTokenType_Hash)
+        {
+          Advance(&Code);
+          PushT.Type = CT_PreprocessorPaste;
+          PushT.Value.Count = 2;
+        }
+        else
+        {
+          counted_string TempValue = PopIdentifier(&Code);
+
+          if ( StringsMatch(TempValue, CSz("if")) )
+          {
+            PushT.Type = CT_PreprocessorIf;
+            PushT.Value.Count += TempValue.Count;
+          }
+          else if ( StringsMatch(TempValue, CSz("else")) )
+          {
+            PushT.Type = CT_PreprocessorElse;
+            PushT.Value.Count += TempValue.Count;
+          }
+          else if ( StringsMatch(TempValue, CSz("elif")) )
+          {
+            PushT.Type = CT_PreprocessorElif;
+            PushT.Value.Count += TempValue.Count;
+          }
+          else if ( StringsMatch(TempValue, CSz("endif")) )
+          {
+            PushT.Type = CT_PreprocessorEndif;;
+            PushT.Value.Count += TempValue.Count;
+          }
+          else if ( StringsMatch(TempValue, CSz("ifndef")) )
+          {
+            PushT.Type = CT_PreprocessorIfNotDefined;
+            PushT.Value.Count += TempValue.Count;
+          }
+          else if ( StringsMatch(TempValue, CSz("ifdef")) )
+          {
+            PushT.Type = CT_PreprocessorIfDefined;
+            PushT.Value.Count += TempValue.Count;
+          }
+          else if ( StringsMatch(TempValue, CSz("define")) )
+          {
+            PushT.Type = CT_PreprocessorDefine;
+            PushT.Value.Count += TempValue.Count;
+          }
+          else if ( StringsMatch(TempValue, CSz("undef")) )
+          {
+            PushT.Type = CT_PreprocessorUndef;
+            PushT.Value.Count += TempValue.Count;
+          }
+          else if ( StringsMatch(TempValue, CSz("include")) )
+          {
+            PushT.Type = CT_PreprocessorInclude;
+            PushT.Value.Count += TempValue.Count;
+          }
+          else if ( StringsMatch(TempValue, CSz("error")) )
+          {
+            PushT.Type = CT_PreprocessorError;
+            PushT.Value.Count += TempValue.Count;
+          }
+          else if ( StringsMatch(TempValue, CSz("pragma")) )
+          {
+            PushT.Type = CT_PreprocessorPragma;
+            PushT.Value.Count += TempValue.Count;
+          }
+          else
+          {
+            // The temp value wasn't a preprocessor directive .. roll it back
+            Code.At -= TempValue.Count;
+          }
+        }
+
+      } break;
+
       case CTokenType_Unknown:
       {
         if (IsNumeric(*Code.At))
@@ -2588,13 +2674,13 @@ ParseTypeSpecifier(parser_stack *Stack, program_datatypes *Datatypes)
       {
         Result.Token = RequireToken(Stack, T.Type);
 
-#if 0 // TODO(Jesse, tags: immediate): When we properly traverse include graphs, this assert should not fail.
         if (T.Type == CTokenType_Identifier)
         {
           Result.Datatype = GetDatatypeByName(Datatypes, T.Value);
+#if 0 // TODO(Jesse, id: 296, tags: immediate): When we properly traverse include graphs, this assert should not fail.
           Assert(Result.Datatype.Type != type_datatype_noop);
-        }
 #endif
+        }
 
         ParseReferencesIndirectionAndPossibleFunctionPointerness(Stack, &Result);
         Done = True;
@@ -2777,109 +2863,133 @@ function struct_member
 ParseStructMember(parser_stack* Stack, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes)
 {
   TIMED_FUNCTION();
-  parser *Parser = Peek(Stack);
-
   struct_member Result = {};
 
-  c_token T = PeekToken(Parser);
-  switch(T.Type)
-  {
-    case CTokenType_Tilde:
+  b32 Continue = False;
+  do {
+    Continue = False;
+
+    c_token T = PeekToken(Stack);
+    switch(T.Type)
     {
-      RequireToken(Parser, CTokenType_Tilde);
-
-      if (StringsMatch(StructName, PeekToken(Stack).Value) &&
-           PeekToken(Stack, 1).Type == CTokenType_OpenParen)
+      case CT_PreprocessorDefine:
+      case CT_PreprocessorIfDefined:
+      case CT_PreprocessorIfNotDefined:
+      case CT_PreprocessorInclude:
+      case CT_PreprocessorIf:
+      case CT_PreprocessorElse:
+      case CT_PreprocessorElif:
+      case CT_PreprocessorEndif:
+      case CT_PreprocessorUndef:
+      case CT_PreprocessorPragma:
+      case CT_PreprocessorError:
       {
-        RequireToken(Stack, CTokenType_Identifier);
-        RequireToken(Stack, CTokenType_OpenParen);
+        Continue = True;;
+        RequireToken(Stack, T.Type);
+        EatUntil(Peek(Stack), CTokenType_Newline);
+      } break;
 
-        Result.Type = type_function_decl;
-        type_spec ReturnType = {};
-        Result.function_decl = ParseAndPushFunctionPrototype(Stack, &ReturnType, &StructName, function_type_destructor, Datatypes, Memory);
-      }
-      else
+      case CTokenType_Tilde:
       {
-        OutputParsingError(Stack, PeekTokenPointer(Stack), CSz("Destructor name must match the struct name."));
-      }
-    } break;
+        RequireToken(Stack, CTokenType_Tilde);
 
-    case CTokenType_Union:
-    {
-      RequireToken(Parser, CTokenType_Union);
-      Result.Type = type_struct_member_anonymous;
-      Result.struct_member_anonymous.Body = ParseStructBody(Stack, CS("anonymous_union"), Memory, Datatypes);
-      RequireToken(Parser, CTokenType_Semicolon);
-    } break;
-
-    case CTokenType_Struct:
-    {
-      RequireToken(Parser, CTokenType_Struct);
-      Result.Type = type_struct_member_anonymous;
-      Result.struct_member_anonymous.Body = ParseStructBody(Stack, CS("anonymous_struct"), Memory, Datatypes);
-      RequireToken(Parser, CTokenType_Semicolon);
-    } break;
-
-    case CTokenType_ThreadLocal:
-    case CTokenType_Const:
-    case CTokenType_Static:
-    case CTokenType_Volatile:
-    case CTokenType_Void:
-    case CTokenType_Long:
-    case CTokenType_M128:
-    case CTokenType_Bool:
-    case CTokenType_Auto:
-    case CTokenType_Double:
-    case CTokenType_Float:
-    case CTokenType_Char:
-    case CTokenType_Int:
-    case CTokenType_Short:
-    case CTokenType_Unsigned:
-    case CTokenType_Signed:
-    case CTokenType_Identifier:
-    {
-      u32 DefKeywordsEncountered = 0;
-      if ( StringsMatch(StructName, T.Value) && PeekToken(Parser, 1).Type == CTokenType_OpenParen)
-      {
-        // Constructor function
-        RequireToken(Stack, CTokenType_Identifier);
-        RequireToken(Stack, CTokenType_OpenParen);
-
-        Result.Type = type_function_decl;
-        type_spec ReturnType = {};
-        Result.function_decl = ParseAndPushFunctionPrototype(Stack, &ReturnType, &StructName, function_type_constructor, Datatypes, Memory);
-      }
-      else
-      {
-        declaration Decl = ParseFunctionOrVariableDecl(Stack, Datatypes, Memory);
-        switch (Decl.Type)
+        if (StringsMatch(StructName, PeekToken(Stack).Value) &&
+             PeekToken(Stack, 1).Type == CTokenType_OpenParen)
         {
-          case type_declaration_variable_decl:
-          {
-            Result.Type = type_variable_decl;
-            Result.variable_decl = Decl.variable_decl;
-            RequireToken(Stack, CTokenType_Semicolon);
-          } break;
+          RequireToken(Stack, CTokenType_Identifier);
+          RequireToken(Stack, CTokenType_OpenParen);
 
-          case type_declaration_function_decl:
-          {
-            Result.Type = type_function_decl;
-            Result.function_decl = Decl.function_decl;
-          } break;
-
-          case type_declaration_noop:
-          {
-            InvalidCodePath();
-          } break;
+          Result.Type = type_function_decl;
+          type_spec ReturnType = {};
+          Result.function_decl = ParseAndPushFunctionPrototype(Stack, &ReturnType, &StructName, function_type_destructor, Datatypes, Memory);
         }
-      }
+        else
+        {
+          OutputParsingError(Stack, PeekTokenPointer(Stack), CSz("Destructor name must match the struct name."));
+        }
+      } break;
 
-    } break;
+      case CTokenType_Union:
+      {
+        RequireToken(Stack, CTokenType_Union);
+        Result.Type = type_struct_member_anonymous;
+        Result.struct_member_anonymous.Body = ParseStructBody(Stack, CS("anonymous_union"), Memory, Datatypes);
+        RequireToken(Stack, CTokenType_Semicolon);
+      } break;
 
-    InvalidDefaultWhileParsing(Stack, CS("While parsing struct member."));
-  }
+      case CTokenType_Struct:
+      {
+        RequireToken(Stack, CTokenType_Struct);
+        Result.Type = type_struct_member_anonymous;
+        Result.struct_member_anonymous.Body = ParseStructBody(Stack, CS("anonymous_struct"), Memory, Datatypes);
+        RequireToken(Stack, CTokenType_Semicolon);
+      } break;
 
-  Assert(Result.Type != type_struct_member_noop);
+      case CTokenType_ThreadLocal:
+      case CTokenType_Const:
+      case CTokenType_Static:
+      case CTokenType_Volatile:
+      case CTokenType_Void:
+      case CTokenType_Long:
+      case CTokenType_M128:
+      case CTokenType_Bool:
+      case CTokenType_Auto:
+      case CTokenType_Double:
+      case CTokenType_Float:
+      case CTokenType_Char:
+      case CTokenType_Int:
+      case CTokenType_Short:
+      case CTokenType_Unsigned:
+      case CTokenType_Signed:
+      case CTokenType_Identifier:
+      {
+        u32 DefKeywordsEncountered = 0;
+        if ( StringsMatch(StructName, T.Value) && PeekToken(Stack, 1).Type == CTokenType_OpenParen)
+        {
+          // Constructor function
+          RequireToken(Stack, CTokenType_Identifier);
+          RequireToken(Stack, CTokenType_OpenParen);
+
+          Result.Type = type_function_decl;
+          type_spec ReturnType = {};
+          Result.function_decl = ParseAndPushFunctionPrototype(Stack, &ReturnType, &StructName, function_type_constructor, Datatypes, Memory);
+        }
+        else
+        {
+          declaration Decl = ParseFunctionOrVariableDecl(Stack, Datatypes, Memory);
+          switch (Decl.Type)
+          {
+            case type_declaration_variable_decl:
+            {
+              Result.Type = type_variable_decl;
+              Result.variable_decl = Decl.variable_decl;
+              RequireToken(Stack, CTokenType_Semicolon);
+            } break;
+
+            case type_declaration_function_decl:
+            {
+              Result.Type = type_function_decl;
+              Result.function_decl = Decl.function_decl;
+            } break;
+
+            case type_declaration_noop:
+            {
+              InvalidCodePath();
+            } break;
+          }
+        }
+
+      } break;
+
+      case CTokenType_CloseBrace:
+      {
+        // Done parsing struct members
+      } break;;
+
+      InvalidDefaultWhileParsing(Stack, CS("While parsing struct member."));
+    }
+  } while (Continue);
+
   return Result;
 }
 
@@ -2930,31 +3040,37 @@ MembersOfType(struct_def* Struct, counted_string MemberType, memory_arena *Memor
   return Result;
 }
 
+// TODO(Jesse id: 299): This could be improved by not taking the StructName, and
+// filling it out internally.  It would have to check where the struct name is
+//
+// ie. at the start 'struct foo { ... };'
+//
+// or at the end 'typedef struct { ... } foo;
+//
+// This would clean up the calling code quite a bit and get rid of a
+// bunch of redundant RequireTokens on Semicolons.
+
 function struct_def
 ParseStructBody(parser_stack* Stack, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes)
 {
   TIMED_FUNCTION();
-  parser *Parser = Peek(Stack);
+  parser *Parser = Peek(Stack); // TODO(Jesse id: 300, tags: immediate, cleanup): Remove this
   struct_def Result = StructDef(StructName, Parser->Filename);
 
   RequireToken(Parser, CTokenType_OpenBrace);
 
-  c_token NextToken = PeekToken(Parser);
-
-  while (Remaining(&Parser->Tokens) && NextToken.Type != CTokenType_CloseBrace)
+  struct_member Declaration = {};
+  for (;;)
   {
-    if (NextToken.Type == CTokenType_Hash)
+    Declaration = ParseStructMember(Stack, Result.Type, Memory, Datatypes);
+    if (Declaration.Type == type_struct_member_noop)
     {
-      RequireToken(Parser, CTokenType_Hash);
-      EatUntil(Parser, CTokenType_Newline);
+      break;
     }
     else
     {
-      struct_member Declaration = ParseStructMember(Stack, Result.Type, Memory, Datatypes);
       Push(&Result.Members, Declaration, Memory);
     }
-
-    NextToken = PeekToken(Parser);
   }
 
   RequireToken(Parser, CTokenType_CloseBrace);
@@ -3502,7 +3618,17 @@ ParseSingleStatement(parser_stack *Stack, memory_arena *Memory, program_datatype
         RequireToken(Stack, CTokenType_Identifier);
       } break;
 
-      case CTokenType_Hash:
+      case CT_PreprocessorDefine:
+      case CT_PreprocessorInclude:
+      case CT_PreprocessorIf:
+      case CT_PreprocessorElse:
+      case CT_PreprocessorElif:
+      case CT_PreprocessorEndif:
+      case CT_PreprocessorUndef:
+      case CT_PreprocessorPragma:
+      case CT_PreprocessorIfDefined:
+      case CT_PreprocessorIfNotDefined:
+      case CT_PreprocessorError:
       {
         RequireToken(Stack, T.Type);
         EatUntil(Peek(Stack), CTokenType_Newline);
@@ -3789,12 +3915,6 @@ ParseExpression(parser_stack *Stack, memory_arena *Memory, program_datatypes *Da
 
       } break;
 
-      case CTokenType_Hash:
-      {
-        RequireToken(Stack, T.Type);
-        EatUntil( Peek(Stack), CTokenType_Newline);
-      } break;
-
       case CTokenType_Ampersand:
       case CTokenType_Tilde:
       case CTokenType_Hat:
@@ -4039,44 +4159,51 @@ ParseDatatypes(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* 
         EatBetween(Peek(Stack), CTokenType_OpenParen, CTokenType_CloseParen);
       } break;
 
-      case CTokenType_Hash:
+      case CT_PreprocessorInclude:
+      case CT_PreprocessorIf:
+      case CT_PreprocessorElse:
+      case CT_PreprocessorElif:
+      case CT_PreprocessorEndif:
+      case CT_PreprocessorUndef:
+      case CT_PreprocessorPragma:
+      case CT_PreprocessorIfDefined:
+      case CT_PreprocessorIfNotDefined:
+      case CT_PreprocessorError:
       {
-        RequireToken(Stack, CTokenType_Hash);
+        RequireToken(Stack, T.Type);
+        EatUntil(Peek(Stack), CTokenType_Newline);
+      } break;
 
-        if ( OptionalToken(Stack, CToken(CSz("define"))) )
+      case CT_PreprocessorDefine:
+      {
+        RequireToken(Stack, T.Type);
+        macro_def Macro = {
+          .Parser = {
+            .Valid = True,
+            .Filename = Peek(Stack)->Filename,
+            .LineNumber = Peek(Stack)->LineNumber,
+          }
+        };
+
+        Macro.Name = RequireToken(Stack, CTokenType_Identifier).Value;
+
+        if (PeekTokenRaw(Peek(Stack)).Type == CTokenType_OpenParen)
         {
-          macro_def Macro = {
-            .Parser = {
-              .Valid = True,
-              .Filename = Peek(Stack)->Filename,
-              .LineNumber = Peek(Stack)->LineNumber,
-            }
-          };
-
-          Macro.Name = RequireToken(Stack, CTokenType_Identifier).Value;
-
-          if (PeekTokenRaw(Peek(Stack)).Type == CTokenType_OpenParen)
-          {
-            Macro.Type = type_macro_function;
-            EatBetween(Peek(Stack), CTokenType_OpenParen, CTokenType_CloseParen);
-          }
-          else
-          {
-            Macro.Type = type_macro_keyword;
-          }
-
-          parser *Parser = Peek(Stack);
-          Macro.Parser.Tokens.Start = Parser->Tokens.At;
-          Macro.Parser.Tokens.At = Parser->Tokens.At;
-          EatUntil(Parser, CTokenType_Newline);
-          Macro.Parser.Tokens.End = Parser->Tokens.At;
-
-          Push(&Datatypes->Macros, Macro, Memory);
+          Macro.Type = type_macro_function;
+          EatBetween(Peek(Stack), CTokenType_OpenParen, CTokenType_CloseParen);
         }
         else
         {
-          EatUntil(Peek(Stack), CTokenType_Newline);
+          Macro.Type = type_macro_keyword;
         }
+
+        parser *Parser = Peek(Stack);
+        Macro.Parser.Tokens.Start = Parser->Tokens.At;
+        Macro.Parser.Tokens.At = Parser->Tokens.At;
+        EatUntil(Parser, CTokenType_Newline);
+        Macro.Parser.Tokens.End = Parser->Tokens.At;
+
+        Push(&Datatypes->Macros, Macro, Memory);
       } break;
 
       case CTokenType_Semicolon:
@@ -4224,12 +4351,10 @@ DoWorkToOutputThisStuff(parser* Parser, counted_string OutputForThisParser, coun
   counted_string OutputPath = {};
 
   // TODO(Jesse id: 182, tags: high_priority) This should respect Args.Outpath passed in!
-  if (PeekTokenRaw(Parser).Type == CTokenType_Newline &&
-      PeekTokenRaw(Parser, 1).Type == CTokenType_Hash &&
-      PeekTokenRaw(Parser, 2) == CToken(CS("include")))
+  if ( PeekTokenRaw(Parser).Type == CTokenType_Newline &&
+       PeekTokenRaw(Parser, 1).Type == CT_PreprocessorInclude )
   {
-    RequireToken(Parser, CToken(CTokenType_Hash));
-    RequireToken(Parser, CToken(CS("include")));
+    RequireToken(Parser, CToken(CT_PreprocessorInclude));
     RequireToken(Parser, CTokenType_LT);
     RequireToken(Parser, CToken(CS("metaprogramming")));
     RequireToken(Parser, CTokenType_FSlash);
@@ -4526,9 +4651,8 @@ ParseAllTodosFromFile(counted_string Filename, memory_arena* Memory)
     counted_string PersonName = RequireToken(Parser, CTokenType_Identifier).Value;
 
     person* Person = GetExistingOrCreate(&People, PersonName, Memory);
-    while (OptionalToken(Parser, CTokenType_Hash))
+    while (OptionalToken(Parser, CT_PreprocessorPaste))
     {
-      RequireToken(Parser, CTokenType_Hash);
       counted_string TagName = RequireToken(Parser, CTokenType_Identifier).Value;
 
       tag* Tag = GetExistingOrCreate(&Person->Tags, TagName, Memory);
@@ -5210,6 +5334,7 @@ ParseMetaFunctionDef(parser* Parser, counted_string FuncName)
   return Func;
 }
 
+#if 0
 function void
 RemoveAllMetaprogrammingOutput(parser_cursor* ParsedFiles, arguments* Args)
 {
@@ -5228,6 +5353,7 @@ RemoveAllMetaprogrammingOutput(parser_cursor* ParsedFiles, arguments* Args)
   }
 
 }
+#endif
 
 function counted_string
 ParseMultiLineTodoValue(parser* Parser, memory_arena* Memory)
@@ -5841,7 +5967,7 @@ main(s32 ArgCount, const char** ArgStrings)
     Assert(Args.Files.Start == Args.Files.At);
     Assert(Args.DoDebugWindow == ShouldOpenDebugWindow);
 
-    parser_cursor ParsedFiles = TokenizeAllFiles(&Args.Files, Memory);
+    parser_cursor EntryPointParsers = TokenizeAllFiles(&Args.Files, Memory);
 
     metaprogramming_info MetaInfo = {};
 
@@ -5849,17 +5975,17 @@ main(s32 ArgCount, const char** ArgStrings)
       .People = ParseAllTodosFromFile(CSz("todos.md"), Memory),
     };
 
-    RemoveAllMetaprogrammingOutput(&ParsedFiles, &Args);
+    /* RemoveAllMetaprogrammingOutput(&EntryPointParsers, &Args); */
 
     /* RegisterPrimitiveDatatypes(&MetaInfo.Datatypes, Memory); */
 
-    ParseDatatypes(ParsedFiles, &MetaInfo.Datatypes, Memory);
+    ParseDatatypes(EntryPointParsers, &MetaInfo.Datatypes, Memory);
 
     for (u32 ParserIndex = 0;
-        ParserIndex < Count(&ParsedFiles);
+        ParserIndex < Count(&EntryPointParsers);
         ++ParserIndex)
     {
-      parser* Parser = ParsedFiles.Start+ParserIndex;
+      parser* Parser = EntryPointParsers.Start+ParserIndex;
       Assert(Parser->Valid);
 
       if (IsMetaprogrammingOutput(Parser->Filename, Args.Outpath))
