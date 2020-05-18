@@ -1221,13 +1221,13 @@ struct parser_stack
 
 struct parse_context
 {
-  parser_stack Stack;
-  program_datatypes Datatypes;
-  memory_arena *Memory;
-
-  parser_cursor *AllParsers;
+  parser_stack       Stack;
+  program_datatypes  Datatypes;
+  parser_cursor      AllParsers;
 
   meta_func_stream MetaFunctions;
+
+  memory_arena *Memory;
 };
 
 function parser*

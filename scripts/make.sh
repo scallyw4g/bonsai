@@ -46,7 +46,7 @@ OUTPUT_DIRECTORY="$BIN"
 
   # -fsanitize=address
 
-# Note(Jesse): Using c++17 so I can mark functions with [[nodiscard]]
+# Note(Jesse): Using -std=c++17 so I can mark functions with [[nodiscard]]
 
 COMMON_COMPILER_OPTIONS="
   -I/usr/src/linux-headers-4.15.0-88/include/

@@ -2,7 +2,7 @@
   ## untagged
     - #154 This is pretty shitty because whenever we copy one of these structs this field has to be manually zeroed out ..
     - #260 Currently ignoring the second half of a ternary .. we should probably not do this
-    - #261 #if this out on prouction released builds.
+    - #261 #if this out on public builds
     - #264 Once we have proper macro expansion, this can be expanded and concatenated to the string as well.
     - #265 Unnecessary .. I just added these as a hack get parsing to work
     - #266 Unnecessary .. I just added it as a hack get parsing to work
@@ -109,6 +109,7 @@
     - #289 
     - #290 generating this: meta( d_union declaration { function_decl variable_decl }) results in a name collision with the struct_member union tag. * Should we have some way of overriding the tag name it generates?  Or potentially modify the way we generate type tags such that name collisions won't happen.  I'd prefer an override to keep the tag names as concise as possible, but maybe once the preprocessor generates the switch statements for us it won't matter if they're overly verbose.
     - #193 Metaprogram this.  I've had bugs multiple times because of it.
+    - #301 These functions are super repetitive, generate them!
 
   ## robustness
     - #78 How should we actually set this?
@@ -357,4 +358,7 @@
     - #291 Macro functions
     - #292 Include graph traversal
     - #293 Constant expression evaluation for #if statements
+
+  ## id_301
+    - #302 
 

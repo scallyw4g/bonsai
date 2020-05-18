@@ -404,6 +404,7 @@ OutputParsingError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, c
 
   Log("----\n");
 
+  Assert(False);
   return;
 }
 
@@ -428,6 +429,14 @@ OutputParsingError(parser_stack* Stack, c_token* ErrorToken, counted_string Erro
   return;
 }
 
+function c_token* PeekTokenPointer(parser_stack *Stack, u32 TokenLookahead = 0, u32 StackLookahead = 0);
+
+function void
+OutputParsingError(parser_stack* Stack, counted_string ErrorString)
+{
+  OutputParsingError(Stack, PeekTokenPointer(Stack),  ErrorString);
+  return;
+}
 
 
 /*****************************                 *******************************/
@@ -449,7 +458,7 @@ PeekTokenRawPointer(parser* Parser, u32 Lookahead = 0)
     Warn("Tried to peek a token on an empty stream");
   }
 
-  // TODO(Jesse id: 261): #if this out on prouction released builds.
+  // TODO(Jesse id: 261): #if this out on public builds
   if (Result && Result->Type == CTokenType_Identifier) { Assert(Result->Value.Start); Assert(Result->Value.Count);  }
 
   return Result;
@@ -774,7 +783,7 @@ RequireOperatorToken(parser* Parser)
 /* TODO(Jesse, id: 284, tags: metaprogramming): This, and PeekToken(parser_stack* ...), are exact duplicates of each other
  * .. We could add a feature to DRY these two out .. */
 function c_token*
-PeekTokenPointer(parser_stack *Stack, u32 TokenLookahead = 0, u32 StackLookahead = 0)
+PeekTokenPointer(parser_stack *Stack, u32 TokenLookahead, u32 StackLookahead)
 {
   c_token *Result = {};
 
@@ -1982,6 +1991,8 @@ GetTypedefByAlias(type_def_stream* Typedefs, counted_string Alias)
   return Result;
 }
 
+
+// TODO(Jesse id: 301, tags: metaprogramming):  These functions are super repetitive, generate them!
 function enum_def*
 GetEnumByType(enum_def_stream* ProgramEnums, counted_string EnumType)
 {
@@ -2797,7 +2808,7 @@ ParseAndPushFunctionPrototype(parser_stack *Stack, type_spec *ReturnType, counte
 }
 
 function struct_def
-ParseStructBody(parser_stack *Stack, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes);
+ParseStructBody(parse_context *Ctx, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes);
 
 function declaration
 ParseFunctionOrVariableDecl(parser_stack *Stack, program_datatypes *Datatypes, memory_arena *Memory)
@@ -2859,9 +2870,35 @@ ParseFunctionOrVariableDecl(parser_stack *Stack, program_datatypes *Datatypes, m
   return Result;
 }
 
-function void
-ResolveInclude(parser_stack *Stack)
+// TODO(Jesse id: 302, tags: id_301)
+function parser*
+GetByFilename(parser_cursor* Cursor, counted_string Filename)
 {
+  TIMED_FUNCTION();
+
+  parser* Result = 0;
+  for (u32 ParserIndex = 0;
+      ParserIndex < (u32)Count(Cursor);
+      ++ParserIndex)
+  {
+    parser *Parser = Cursor->Start + ParserIndex;
+    if (StringsMatch(Parser->Filename, Filename))
+    {
+      Result = Parser;
+      break;
+    }
+  }
+
+  return Result;
+}
+
+function void
+ResolveInclude(parse_context *Ctx)
+{
+  parser_stack *Stack = &Ctx->Stack;
+
+  c_token *ErrorToken = PeekTokenPointer(Stack);
+
   RequireToken(Stack, CT_PreprocessorInclude);
 
   counted_string IncludePath = {};
@@ -2883,13 +2920,24 @@ ResolveInclude(parser_stack *Stack)
     }
   }
 
-  // PushStack(Stack, IncludeParser);
+
+  parser *IncludeParser = GetByFilename(&Ctx->AllParsers, IncludePath);
+  if (IncludeParser)
+  {
+    /* PushStack(&Ctx->Stack, *IncludeParser); */
+  }
+  else
+  {
+    /* OutputParsingError(Stack, ErrorToken, FormatCountedString(TranArena, CSz("Unable to find parser for : %S"), IncludePath )); */
+  }
 }
 
 function struct_member
-ParseStructMember(parser_stack* Stack, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes)
+ParseStructMember(parse_context *Ctx, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes)
 {
   TIMED_FUNCTION();
+  parser_stack* Stack = &Ctx->Stack;
+
   struct_member Result = {};
 
   b32 Continue = False;
@@ -2902,7 +2950,7 @@ ParseStructMember(parser_stack* Stack, counted_string StructName, memory_arena* 
       case CT_PreprocessorInclude:
       {
         Continue = True;
-        ResolveInclude(Stack);
+        ResolveInclude(Ctx);
       } break;
 
       case CT_PreprocessorDefine:
@@ -2945,7 +2993,7 @@ ParseStructMember(parser_stack* Stack, counted_string StructName, memory_arena* 
       {
         RequireToken(Stack, CTokenType_Union);
         Result.Type = type_struct_member_anonymous;
-        Result.struct_member_anonymous.Body = ParseStructBody(Stack, CS("anonymous_union"), Memory, Datatypes);
+        Result.struct_member_anonymous.Body = ParseStructBody(Ctx, CS("anonymous_union"), Memory, Datatypes);
         RequireToken(Stack, CTokenType_Semicolon);
       } break;
 
@@ -2953,7 +3001,7 @@ ParseStructMember(parser_stack* Stack, counted_string StructName, memory_arena* 
       {
         RequireToken(Stack, CTokenType_Struct);
         Result.Type = type_struct_member_anonymous;
-        Result.struct_member_anonymous.Body = ParseStructBody(Stack, CS("anonymous_struct"), Memory, Datatypes);
+        Result.struct_member_anonymous.Body = ParseStructBody(Ctx, CS("anonymous_struct"), Memory, Datatypes);
         RequireToken(Stack, CTokenType_Semicolon);
       } break;
 
@@ -3083,9 +3131,10 @@ MembersOfType(struct_def* Struct, counted_string MemberType, memory_arena *Memor
 // bunch of redundant RequireTokens on Semicolons.
 
 function struct_def
-ParseStructBody(parser_stack* Stack, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes)
+ParseStructBody(parse_context *Ctx, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes)
 {
   TIMED_FUNCTION();
+  parser_stack* Stack = &Ctx->Stack;
   parser *Parser = Peek(Stack); // TODO(Jesse id: 300, tags: immediate, cleanup): Remove this
   struct_def Result = StructDef(StructName, Parser->Filename);
 
@@ -3094,7 +3143,7 @@ ParseStructBody(parser_stack* Stack, counted_string StructName, memory_arena* Me
   struct_member Declaration = {};
   for (;;)
   {
-    Declaration = ParseStructMember(Stack, Result.Type, Memory, Datatypes);
+    Declaration = ParseStructMember(Ctx, Result.Type, Memory, Datatypes);
     if (Declaration.Type == type_struct_member_noop)
     {
       break;
@@ -3293,8 +3342,9 @@ EatStructDef(parser* Parser)
 }
 
 function void
-ParseDatatypeDef(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* Memory)
+ParseDatatypeDef(parse_context *Ctx, program_datatypes* Datatypes, memory_arena* Memory)
 {
+  parser_stack *Stack = &Ctx->Stack;
   parser *Parser = Peek(Stack);
   c_token TypeSpecifier = PopToken(Parser);
 
@@ -3311,7 +3361,7 @@ ParseDatatypeDef(parser_stack *Stack, program_datatypes* Datatypes, memory_arena
       counted_string StructName = RequireToken(Parser, CTokenType_Identifier).Value;
       if ( PeekToken(Parser).Type == CTokenType_OpenBrace )
       {
-        struct_def S = ParseStructBody(Stack, StructName, Memory, Datatypes);
+        struct_def S = ParseStructBody(Ctx, StructName, Memory, Datatypes);
         Push(&Datatypes->Structs, S, Memory);
       }
     } break;
@@ -3319,7 +3369,7 @@ ParseDatatypeDef(parser_stack *Stack, program_datatypes* Datatypes, memory_arena
     case CTokenType_Union:
     {
       counted_string UnionName = RequireToken(Parser, CTokenType_Identifier).Value;
-      struct_def S = ParseStructBody(Stack, UnionName, Memory, Datatypes);
+      struct_def S = ParseStructBody(Ctx, UnionName, Memory, Datatypes);
       S.IsUnion = True;
       Push(&Datatypes->Structs, S, Memory);
     } break;
@@ -3355,15 +3405,16 @@ ParseAndPushTypedef(parser_stack *Stack, program_datatypes *Datatypes, memory_ar
 }
 
 function void
-ParseTypedef(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* Memory)
+ParseTypedef(parse_context *Ctx, program_datatypes* Datatypes, memory_arena* Memory)
 {
+  parser_stack *Stack = &Ctx->Stack;
   RequireToken(Stack, CTokenType_Typedef);
 
   if ( OptionalToken(Stack, CTokenType_Struct) )
   {
     if (PeekToken(Stack).Type == CTokenType_OpenBrace)
     {
-      struct_def S = ParseStructBody(Stack, CS(""), Memory, Datatypes);
+      struct_def S = ParseStructBody(Ctx, CS(""), Memory, Datatypes);
       S.Type = RequireToken(Stack, CTokenType_Identifier).Value;
       RequireToken(Stack, CTokenType_Semicolon);
       Push(&Datatypes->Structs, S, Memory);
@@ -3443,13 +3494,13 @@ IsTypeIdentifier(counted_string TypeName, program_datatypes *Datatypes)
 }
 
 function ast_node_statement*
-ParseAllStatements(parser_stack *Stack, memory_arena *Memory, program_datatypes *Datatypes);
+ParseAllStatements(parse_context *Ctx, memory_arena *Memory, program_datatypes *Datatypes);
 
 function ast_node_statement*
-ParseScope(parser_stack *Stack, memory_arena *Memory, program_datatypes *Datatypes)
+ParseScope(parse_context *Ctx, memory_arena *Memory, program_datatypes *Datatypes)
 {
-  RequireToken(Stack, CTokenType_OpenBrace);
-  ast_node_statement *Result = ParseAllStatements(Stack, Memory, Datatypes);
+  RequireToken(&Ctx->Stack, CTokenType_OpenBrace);
+  ast_node_statement *Result = ParseAllStatements(Ctx, Memory, Datatypes);
   return Result;
 }
 
@@ -3482,8 +3533,10 @@ ResolveMacro(counted_string IdentifierName, macro_def_stream *Macros, parser_sta
 }
 
 function void
-ParseSingleStatement(parser_stack *Stack, memory_arena *Memory, program_datatypes *Datatypes, ast_node_statement *Result)
+ParseSingleStatement(parse_context *Ctx, memory_arena *Memory, program_datatypes *Datatypes, ast_node_statement *Result)
 {
+  parser_stack *Stack = &Ctx->Stack;
+
   b32 Done = False;
   while (!Done && TokensRemain(Stack))
   {
@@ -3492,7 +3545,7 @@ ParseSingleStatement(parser_stack *Stack, memory_arena *Memory, program_datatype
     {
       case CT_PreprocessorInclude:
       {
-        ResolveInclude(Stack);
+        ResolveInclude(Ctx);
       } break;
 
       case CT_PreprocessorDefine:
@@ -3548,7 +3601,7 @@ ParseSingleStatement(parser_stack *Stack, memory_arena *Memory, program_datatype
         {
           Assert(!Result->RHS);
           Result->RHS = AllocateProtection(ast_node_statement, Memory, 1, False);
-          ParseSingleStatement(Stack, Memory, Datatypes, Result->RHS);
+          ParseSingleStatement(Ctx, Memory, Datatypes, Result->RHS);
         }
         Done = True;
       } break;
@@ -3608,7 +3661,7 @@ ParseSingleStatement(parser_stack *Stack, memory_arena *Memory, program_datatype
 
       case CTokenType_OpenBrace:
       {
-        Result->RHS = ParseScope(Stack, Memory, Datatypes);
+        Result->RHS = ParseScope(Ctx, Memory, Datatypes);
         Done = True;
       } break;
 
@@ -3690,25 +3743,25 @@ ParseSingleStatement(parser_stack *Stack, memory_arena *Memory, program_datatype
 }
 
 function ast_node_statement*
-ParseSingleStatement(parser_stack *Stack, memory_arena *Memory, program_datatypes *Datatypes)
+ParseSingleStatement(parse_context *Ctx, memory_arena *Memory, program_datatypes *Datatypes)
 {
   ast_node_statement *Result = AllocateProtection(ast_node_statement, Memory, 1, False);
-  ParseSingleStatement(Stack, Memory, Datatypes, Result);
+  ParseSingleStatement(Ctx, Memory, Datatypes, Result);
   return Result;
 }
 
 function ast_node_statement*
-ParseAllStatements(parser_stack *Stack, memory_arena *Memory, program_datatypes *Datatypes)
+ParseAllStatements(parse_context *Ctx, memory_arena *Memory, program_datatypes *Datatypes)
 {
   ast_node_statement *Result = 0;
 
   ast_node_statement **Current = &Result;
 
-  while ( TokensRemain(Stack) )
+  while ( TokensRemain(&Ctx->Stack) )
   {
     Assert(*Current == 0);
 
-    *Current = ParseSingleStatement(Stack, Memory, Datatypes);
+    *Current = ParseSingleStatement(Ctx, Memory, Datatypes);
     while (*Current) { Current = &(*Current)->Next; } // Walk to the end of the statement chain.
   }
 
@@ -4077,7 +4130,6 @@ ParseExpression(parser_stack *Stack, memory_arena *Memory, program_datatypes *Da
   ParseExpression(Stack, Memory, Datatypes, Node);
 }
 
-
 #if 0
 function type_spec
 ReduceToTypeSpec(ast_node* InputNode, ast_node_variable_def_stream *Locals)
@@ -4181,11 +4233,11 @@ ParseFunctionCall(parser_stack *Stack, counted_string FunctionName, memory_arena
 }
 
 function void
-ParseDatatypes(parse_context *Context)
+ParseDatatypes(parse_context *Ctx)
 {
-  parser_stack *Stack = &Context->Stack;
-  program_datatypes* Datatypes = &Context->Datatypes;
-  memory_arena* Memory = Context->Memory;
+  parser_stack *Stack = &Ctx->Stack;
+  program_datatypes* Datatypes = &Ctx->Datatypes;
+  memory_arena* Memory = Ctx->Memory;
 
   while (TokensRemain(Stack))
   {
@@ -4195,7 +4247,7 @@ ParseDatatypes(parse_context *Context)
     {
       case CT_PreprocessorInclude:
       {
-        ResolveInclude(Stack);
+        ResolveInclude(Ctx);
       } break;
 
       case CT_PreprocessorIf:
@@ -4259,12 +4311,12 @@ ParseDatatypes(parse_context *Context)
       case CTokenType_Enum:
       case CTokenType_Union:
       {
-        ParseDatatypeDef(Stack, Datatypes, Memory);
+        ParseDatatypeDef(Ctx, Datatypes, Memory);
       } break;
 
       case CTokenType_Typedef:
       {
-        ParseTypedef(Stack, Datatypes, Memory);
+        ParseTypedef(Ctx, Datatypes, Memory);
       } break;
 
       case CTokenType_Using:
@@ -5908,22 +5960,6 @@ WalkAst(ast_node* Ast)
   }
 }
 
-function void
-ParseFunctionBodiesIntoAsts(program_datatypes *Datatypes, memory_arena *Memory)
-{
-  ITERATE_OVER(&Datatypes->Functions)
-  {
-    function_decl *Func = GET_ELEMENT(Iter);
-
-    parser_stack Stack = {};
-    PushStack(&Stack, Func->Body);
-
-    Func->Ast = ParseAllStatements(&Stack, Memory, Datatypes);
-
-    WalkAst(Func->Ast);
-  }
-}
-
 #if 0
 function void
 RegisterPrimitiveDatatypes(program_datatypes *Datatypes, memory_arena *Memory)
@@ -5991,57 +6027,65 @@ main(s32 ArgCount, const char** ArgStrings)
     Assert(Args.Files.Start == Args.Files.At);
     Assert(Args.DoDebugWindow == ShouldOpenDebugWindow);
 
-    parser_cursor EntryPointParsers = TokenizeAllFiles(&Args.Files, Memory);
-
     todo_list_info TodoInfo = {
       .People = ParseAllTodosFromFile(CSz("todos.md"), Memory),
     };
 
-    /* RemoveAllMetaprogrammingOutput(&EntryPointParsers, &Args); */
+    parse_context Ctx = {
+      .Memory = Memory,
+      .AllParsers = TokenizeAllFiles(&Args.Files, Memory),
+    };
+
+    /* RemoveAllMetaprogrammingOutput(&Ctx.AllParsers, &Args); */
 
     /* RegisterPrimitiveDatatypes(&Ctx.Datatypes, Memory); */
 
-    parse_context Ctx = {
-      .Memory = Memory,
-      .AllParsers = &EntryPointParsers,
-    };
-
-    for (u32 ParserIndex = 0;
-        ParserIndex < Count(&EntryPointParsers);
-        ++ParserIndex)
+    for ( u32 ParserIndex = 0;
+          ParserIndex < Count(&Ctx.AllParsers);
+          ++ParserIndex)
     {
-      parser* Parser = EntryPointParsers.Start+ParserIndex;
+      parser* Parser = Ctx.AllParsers.Start+ParserIndex;
       Assert(Parser->Valid);
 
       PushStack(&Ctx.Stack, *Parser);
       ParseDatatypes(&Ctx);
+
+      Ctx.Stack.Depth = 0;
     }
 
     for (u32 ParserIndex = 0;
-        ParserIndex < Count(&EntryPointParsers);
+        ParserIndex < Count(&Ctx.AllParsers);
         ++ParserIndex)
     {
-      parser* Parser = EntryPointParsers.Start+ParserIndex;
+      parser* Parser = Ctx.AllParsers.Start+ParserIndex;
       Assert(Parser->Valid);
 
       if (IsMetaprogrammingOutput(Parser->Filename, Args.Outpath))
       {
         Info("Skipping %.*s", (u32)Parser->Filename.Count, Parser->Filename.Start);
-        continue;
       }
-
-      DoMetaprogramming(Parser, &Ctx, &TodoInfo, Memory);
-
-      if (Parser->Valid)
+      else
       {
-        TruncateToCurrentSize(&Parser->OutputTokens);
-        Output(Parser->OutputTokens, Parser->Filename, Memory);
-      }
+        DoMetaprogramming(Parser, &Ctx, &TodoInfo, Memory);
 
-      continue;
+        if (Parser->Valid)
+        {
+          TruncateToCurrentSize(&Parser->OutputTokens);
+          Output(Parser->OutputTokens, Parser->Filename, Memory);
+        }
+      }
     }
 
-    ParseFunctionBodiesIntoAsts(&Ctx.Datatypes, Memory);
+    ITERATE_OVER(&Ctx.Datatypes.Functions)
+    {
+      function_decl *Func = GET_ELEMENT(Iter);
+
+      PushStack(&Ctx.Stack, Func->Body);
+      Func->Ast = ParseAllStatements(&Ctx, Ctx.Memory, &Ctx.Datatypes);
+      WalkAst(Func->Ast);
+
+      Ctx.Stack.Depth = 0;
+    }
 
     WriteTodosToFile(&TodoInfo.People, Memory);
   }

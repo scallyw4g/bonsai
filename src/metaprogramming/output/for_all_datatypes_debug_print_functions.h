@@ -3139,12 +3139,6 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("memory_arena Memory {\n", Depth+2);
-          DebugPrint(S.Memory, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
           DebugPrint("parser_cursor AllParsers {\n", Depth+2);
           DebugPrint(S.AllParsers, Depth+4);
           DebugPrint("\n");
@@ -3153,6 +3147,12 @@
 
           DebugPrint("meta_func_stream MetaFunctions {\n", Depth+2);
           DebugPrint(S.MetaFunctions, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("memory_arena Memory {\n", Depth+2);
+          DebugPrint(S.Memory, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
