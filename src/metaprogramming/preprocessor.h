@@ -1029,12 +1029,6 @@ struct body_text_constraints
   counted_string ValueName;
 };
 
-struct metaprogramming_info
-{
-  meta_func_stream FunctionDefs;
-  program_datatypes Datatypes;
-};
-
 struct todo_list_info
 {
   person_stream People;
@@ -1218,11 +1212,22 @@ CloseTokenFor(c_token_type T)
   return Result;
 }
 
-#define MAX_PARSER_STACK_DEPTH (32)
+#define MAX_PARSER_STACK_DEPTH (256)
 struct parser_stack
 {
   u32 Depth;
   parser Parsers[MAX_PARSER_STACK_DEPTH];
+};
+
+struct parse_context
+{
+  parser_stack Stack;
+  program_datatypes Datatypes;
+  memory_arena *Memory;
+
+  parser_cursor *AllParsers;
+
+  meta_func_stream MetaFunctions;
 };
 
 function parser*
@@ -1243,6 +1248,7 @@ PushStack(parser_stack *Stack, parser Parser)
   if (Stack->Depth == MAX_PARSER_STACK_DEPTH)
   {
     Error("Max parser stack depth exceeded.");
+    Assert(False);
   }
   else
   {

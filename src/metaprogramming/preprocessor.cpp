@@ -2859,6 +2859,33 @@ ParseFunctionOrVariableDecl(parser_stack *Stack, program_datatypes *Datatypes, m
   return Result;
 }
 
+function void
+ResolveInclude(parser_stack *Stack)
+{
+  RequireToken(Stack, CT_PreprocessorInclude);
+
+  counted_string IncludePath = {};
+  if (PeekToken(Stack).Type == CTokenType_StringLiteral)
+  {
+    IncludePath = RequireToken(Stack, CTokenType_StringLiteral).Value;
+  }
+  else
+  {
+    RequireToken(Stack, CTokenType_LT);
+    IncludePath = EatUntil(Peek(Stack), CTokenType_GT);
+    if (IncludePath.Count)
+    {
+      --IncludePath.Count; // Trim the ending '>' symbol
+    }
+    else
+    {
+      OutputParsingError(Peek(Stack), CSz("Include path must be specified."));
+    }
+  }
+
+  // PushStack(Stack, IncludeParser);
+}
+
 function struct_member
 ParseStructMember(parser_stack* Stack, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes)
 {
@@ -2872,10 +2899,15 @@ ParseStructMember(parser_stack* Stack, counted_string StructName, memory_arena* 
     c_token T = PeekToken(Stack);
     switch(T.Type)
     {
+      case CT_PreprocessorInclude:
+      {
+        Continue = True;
+        ResolveInclude(Stack);
+      } break;
+
       case CT_PreprocessorDefine:
       case CT_PreprocessorIfDefined:
       case CT_PreprocessorIfNotDefined:
-      case CT_PreprocessorInclude:
       case CT_PreprocessorIf:
       case CT_PreprocessorElse:
       case CT_PreprocessorElif:
@@ -2884,7 +2916,7 @@ ParseStructMember(parser_stack* Stack, counted_string StructName, memory_arena* 
       case CT_PreprocessorPragma:
       case CT_PreprocessorError:
       {
-        Continue = True;;
+        Continue = True;
         RequireToken(Stack, T.Type);
         EatUntil(Peek(Stack), CTokenType_Newline);
       } break;
@@ -3458,6 +3490,26 @@ ParseSingleStatement(parser_stack *Stack, memory_arena *Memory, program_datatype
     const c_token T = PeekToken(Stack);
     switch (T.Type)
     {
+      case CT_PreprocessorInclude:
+      {
+        ResolveInclude(Stack);
+      } break;
+
+      case CT_PreprocessorDefine:
+      case CT_PreprocessorIf:
+      case CT_PreprocessorElse:
+      case CT_PreprocessorElif:
+      case CT_PreprocessorEndif:
+      case CT_PreprocessorUndef:
+      case CT_PreprocessorPragma:
+      case CT_PreprocessorIfDefined:
+      case CT_PreprocessorIfNotDefined:
+      case CT_PreprocessorError:
+      {
+        RequireToken(Stack, T.Type);
+        EatUntil(Peek(Stack), CTokenType_Newline);
+      } break;
+
       case CTokenType_IntLiteral:
       case CTokenType_DoubleLiteral:
       case CTokenType_FloatLiteral:
@@ -3616,22 +3668,6 @@ ParseSingleStatement(parser_stack *Stack, memory_arena *Memory, program_datatype
       {
         RequireToken(Stack, T.Type);
         RequireToken(Stack, CTokenType_Identifier);
-      } break;
-
-      case CT_PreprocessorDefine:
-      case CT_PreprocessorInclude:
-      case CT_PreprocessorIf:
-      case CT_PreprocessorElse:
-      case CT_PreprocessorElif:
-      case CT_PreprocessorEndif:
-      case CT_PreprocessorUndef:
-      case CT_PreprocessorPragma:
-      case CT_PreprocessorIfDefined:
-      case CT_PreprocessorIfNotDefined:
-      case CT_PreprocessorError:
-      {
-        RequireToken(Stack, T.Type);
-        EatUntil(Peek(Stack), CTokenType_Newline);
       } break;
 
       case CTokenType_Meta:
@@ -4145,21 +4181,23 @@ ParseFunctionCall(parser_stack *Stack, counted_string FunctionName, memory_arena
 }
 
 function void
-ParseDatatypes(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* Memory)
+ParseDatatypes(parse_context *Context)
 {
+  parser_stack *Stack = &Context->Stack;
+  program_datatypes* Datatypes = &Context->Datatypes;
+  memory_arena* Memory = Context->Memory;
+
   while (TokensRemain(Stack))
   {
     c_token T = PeekToken(Stack);
 
     switch(T.Type)
     {
-      case CTokenType_Meta:
+      case CT_PreprocessorInclude:
       {
-        RequireToken(Stack, CTokenType_Meta);
-        EatBetween(Peek(Stack), CTokenType_OpenParen, CTokenType_CloseParen);
+        ResolveInclude(Stack);
       } break;
 
-      case CT_PreprocessorInclude:
       case CT_PreprocessorIf:
       case CT_PreprocessorElse:
       case CT_PreprocessorElif:
@@ -4172,6 +4210,12 @@ ParseDatatypes(parser_stack *Stack, program_datatypes* Datatypes, memory_arena* 
       {
         RequireToken(Stack, T.Type);
         EatUntil(Peek(Stack), CTokenType_Newline);
+      } break;
+
+      case CTokenType_Meta:
+      {
+        RequireToken(Stack, CTokenType_Meta);
+        EatBetween(Peek(Stack), CTokenType_OpenParen, CTokenType_CloseParen);
       } break;
 
       case CT_PreprocessorDefine:
@@ -4335,16 +4379,16 @@ TokenizeAllFiles(counted_string_cursor* Filenames, memory_arena* Memory)
 }
 
 function void
-DoMetaprogramming(parser* Parser, metaprogramming_info* MetaInfo, todo_list_info* TodoInfo, memory_arena* Memory);
+DoMetaprogramming(parser* Parser, parse_context* Ctx, todo_list_info* TodoInfo, memory_arena* Memory);
 
 function void
-DoWorkToOutputThisStuff(parser* Parser, counted_string OutputForThisParser, counted_string NewFilename, metaprogramming_info* MetaInfo, todo_list_info* TodoInfo, memory_arena* Memory, b32 IsInlineCode = False)
+FlushOutputToDisk(parse_context *Ctx, parser* Parser, counted_string OutputForThisParser, counted_string NewFilename, todo_list_info* TodoInfo, memory_arena* Memory, b32 IsInlineCode = False)
 {
   TIMED_FUNCTION();
 
   if (!Parser->Valid)
   {
-    Error("Bad parser state");
+    OutputParsingError(Parser, CSz("Bad parser state."));
     return;
   }
 
@@ -4403,9 +4447,8 @@ DoWorkToOutputThisStuff(parser* Parser, counted_string OutputForThisParser, coun
 
   if (!IsInlineCode)
   {
-    parser_stack Stack = {};
-    PushStack(&Stack, OutputParse);
-    ParseDatatypes(&Stack, &MetaInfo->Datatypes, Memory);
+    PushStack(&Ctx->Stack, OutputParse);
+    ParseDatatypes(Ctx);
   }
   else
   {
@@ -4413,7 +4456,7 @@ DoWorkToOutputThisStuff(parser* Parser, counted_string OutputForThisParser, coun
     Warn("Not parsing inlined code for %.*s", (u32)OutputPath.Count, OutputPath.Start);
   }
 
-  DoMetaprogramming(&OutputParse, MetaInfo, TodoInfo, Memory);
+  DoMetaprogramming(&OutputParse, Ctx, TodoInfo, Memory);
 
   return;
 }
@@ -4446,7 +4489,7 @@ BootstrapDebugSystem(b32 OpenDebugWindow)
     InitializeOpenGlExtensions(&Os);
 
     b32 ShadingLanguageIsRecentEnough = CheckShadingLanguageVersion();
-    if (!ShadingLanguageIsRecentEnough) {  return False; }
+    if (!ShadingLanguageIsRecentEnough) { return False; }
   }
 
   debug_init_debug_system_proc InitDebugSystem = (debug_init_debug_system_proc)GetProcFromLib(DebugLib, "InitDebugSystem");
@@ -4822,14 +4865,14 @@ CopyStream(meta_func_arg_stream* Stream, memory_arena* Memory)
 }
 
 function counted_string
-Execute(meta_func* Func, meta_func_arg_stream *Args, metaprogramming_info* MetaInfo, memory_arena* Memory);
+Execute(meta_func* Func, meta_func_arg_stream *Args, parse_context* Ctx, memory_arena* Memory);
 
 // TODO(Jesse id: 222, tags: immediate, parsing, metaprogramming) : Re-add [[nodiscard]] here
 function counted_string
-Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatterns, metaprogramming_info* MetaInfo, memory_arena* Memory)
+Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatterns, parse_context* Ctx, memory_arena* Memory)
 {
-  program_datatypes* Datatypes = &MetaInfo->Datatypes;
-  meta_func_stream* FunctionDefs = &MetaInfo->FunctionDefs;
+  program_datatypes* Datatypes = &Ctx->Datatypes;
+  meta_func_stream* FunctionDefs = &Ctx->MetaFunctions;
 
   Rewind(&Scope.Tokens);
 
@@ -4841,7 +4884,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
     if ( BodyToken.Type == CTokenType_StringLiteral )
     {
       parser StringParse = TokenizeString(BodyToken.Value, Scope.Filename, Memory, True);
-      counted_string Code = Execute(FuncName, StringParse, ReplacePatterns, MetaInfo, Memory);
+      counted_string Code = Execute(FuncName, StringParse, ReplacePatterns, Ctx, Memory);
       AppendAndEscapeInteriorOfDoubleQuotedString(&OutputBuilder, Code);
     }
     else if ( BodyToken.Type == CTokenType_OpenParen )
@@ -4869,7 +4912,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
               parser StructScope = GetBodyTextForNextScope(&Scope);
               if (Replace->Data.Type == type_struct_def)
               {
-                counted_string Code = Execute(FuncName, StructScope, ReplacePatterns, MetaInfo, Memory);
+                counted_string Code = Execute(FuncName, StructScope, ReplacePatterns, Ctx, Memory);
                 Append(&OutputBuilder, Code);
               }
             } break;
@@ -4883,7 +4926,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
                 case type_enum_member:
                 case type_enum_def:
                 {
-                  counted_string Code = Execute(FuncName, EnumScope, ReplacePatterns, MetaInfo, Memory);
+                  counted_string Code = Execute(FuncName, EnumScope, ReplacePatterns, Ctx, Memory);
                   Append(&OutputBuilder, Code);
                 } break;
 
@@ -4906,7 +4949,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
                           }
                         }
 
-                        counted_string Code = Execute(FuncName, EnumScope, &NewArgs, MetaInfo, Memory);
+                        counted_string Code = Execute(FuncName, EnumScope, &NewArgs, Ctx, Memory);
                         Append(&OutputBuilder, Code);
                       }
                     } break;
@@ -5113,7 +5156,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
                       {
                         meta_func_arg_stream NewArgs = CopyStream(ReplacePatterns, Memory);
                         Push(&NewArgs, ReplacementPattern(MatchPattern, Datatype(Member)), Memory);
-                        counted_string StructFieldOutput = Execute(FuncName, MapMemberScope, &NewArgs, MetaInfo, Memory);
+                        counted_string StructFieldOutput = Execute(FuncName, MapMemberScope, &NewArgs, Ctx, Memory);
                         Append(&OutputBuilder, StructFieldOutput);
                       }
 
@@ -5144,7 +5187,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
                                 };
                                 Push(&NewArgs, ReplacementPattern(ChildName, Datatype(&SyntheticStruct)), Memory);
                               }
-                              counted_string StructFieldOutput = Execute(FuncName, MapMemberScope, &NewArgs, MetaInfo, Memory);
+                              counted_string StructFieldOutput = Execute(FuncName, MapMemberScope, &NewArgs, Ctx, Memory);
                               Append(&OutputBuilder, StructFieldOutput);
                             }
                           }
@@ -5190,7 +5233,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
                   enum_member* EnumMember = GET_ELEMENT(Iter);
                   meta_func_arg_stream NewArgs = CopyStream(ReplacePatterns, Memory);
                   Push(&NewArgs, ReplacementPattern(EnumValueMatch, Datatype(EnumMember)), Memory);
-                  counted_string EnumFieldOutput = Execute(FuncName, NextScope, &NewArgs, MetaInfo, Memory);
+                  counted_string EnumFieldOutput = Execute(FuncName, NextScope, &NewArgs, Ctx, Memory);
                   Append(&OutputBuilder, EnumFieldOutput);
                   continue;
                 }
@@ -5227,7 +5270,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
           {
             meta_func_arg_stream NewArgs = {};
             Push(&NewArgs, ReplacementPattern(NestedFunc->ArgName, Arg->Data), Memory);
-            counted_string NestedCode = Execute(NestedFunc, &NewArgs, MetaInfo, Memory);
+            counted_string NestedCode = Execute(NestedFunc, &NewArgs, Ctx, Memory);
             Append(&OutputBuilder, NestedCode);
           }
           else
@@ -5262,9 +5305,9 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
 }
 
 function counted_string
-Execute(meta_func* Func, meta_func_arg_stream *Args, metaprogramming_info* MetaInfo, memory_arena* Memory)
+Execute(meta_func* Func, meta_func_arg_stream *Args, parse_context* Ctx, memory_arena* Memory)
 {
-  counted_string Result = Execute(Func->Name, Func->Body, Args, MetaInfo, Memory);
+  counted_string Result = Execute(Func->Name, Func->Body, Args, Ctx, Memory);
   return Result;
 }
 
@@ -5388,10 +5431,10 @@ ParseMultiLineTodoValue(parser* Parser, memory_arena* Memory)
 }
 
 function void
-DoMetaprogramming(parser* Parser, metaprogramming_info* MetaInfo, todo_list_info* TodoInfo, memory_arena* Memory)
+DoMetaprogramming(parser* Parser, parse_context* Ctx, todo_list_info* TodoInfo, memory_arena* Memory)
 {
-  program_datatypes* Datatypes = &MetaInfo->Datatypes;
-  meta_func_stream* FunctionDefs = &MetaInfo->FunctionDefs;
+  program_datatypes* Datatypes = &Ctx->Datatypes;
+  meta_func_stream* FunctionDefs = &Ctx->MetaFunctions;
 
   person_stream* People = &TodoInfo->People;
   tagged_counted_string_stream_stream* NameLists = &TodoInfo->NameLists;
@@ -5520,16 +5563,16 @@ DoMetaprogramming(parser* Parser, metaprogramming_info* MetaInfo, todo_list_info
                   .Body = Body,
                 };
 
-                datatype Arg = GetDatatypeByName(&MetaInfo->Datatypes, ArgType);
+                datatype Arg = GetDatatypeByName(&Ctx->Datatypes, ArgType);
                 meta_func_arg_stream Args = {};
                 Push(&Args, ReplacementPattern(ArgName, Arg), Memory);
-                counted_string Code = Execute(&Func, &Args, MetaInfo, Memory);
+                counted_string Code = Execute(&Func, &Args, Ctx, Memory);
 
                 RequireToken(Parser, CTokenType_CloseParen);
                 if (Code.Count)
                 {
                   counted_string OutfileName = GenerateOutfileNameFor(Func.Name, ArgType, Memory, GetRandomString(8, Hash(&Code), Memory));
-                  DoWorkToOutputThisStuff(Parser, Code, OutfileName, MetaInfo, TodoInfo, Memory, True);
+                  FlushOutputToDisk(Ctx, Parser, Code, OutfileName, TodoInfo, Memory, True);
                 }
                 else
                 {
@@ -5603,7 +5646,7 @@ DoMetaprogramming(parser* Parser, metaprogramming_info* MetaInfo, todo_list_info
                 {
                   meta_func_arg_stream Args = {};
                   Push(&Args, ReplacementPattern(StructFunc.ArgName, Datatype(Struct)), Memory);
-                  counted_string Code = Execute(&StructFunc, &Args, MetaInfo, Memory);
+                  counted_string Code = Execute(&StructFunc, &Args, Ctx, Memory);
                   Append(&OutputBuilder, Code);
                 }
               }
@@ -5617,7 +5660,7 @@ DoMetaprogramming(parser* Parser, metaprogramming_info* MetaInfo, todo_list_info
                 {
                   meta_func_arg_stream Args = {};
                   Push(&Args, ReplacementPattern(EnumFunc.ArgName, Datatype(Enum)), Memory);
-                  counted_string Code = Execute(&EnumFunc, &Args, MetaInfo, Memory);
+                  counted_string Code = Execute(&EnumFunc, &Args, Ctx, Memory);
                   Append(&OutputBuilder, Code);
                 }
               }
@@ -5626,8 +5669,7 @@ DoMetaprogramming(parser* Parser, metaprogramming_info* MetaInfo, todo_list_info
               counted_string Code = Finalize(&OutputBuilder, Memory);
               counted_string OutfileName = GenerateOutfileNameFor(ToString(Directive), CSz("debug_print"), Memory);
 
-              DoWorkToOutputThisStuff(Parser, Code, OutfileName, MetaInfo, TodoInfo, Memory);
-
+              FlushOutputToDisk(Ctx, Parser, Code, OutfileName, TodoInfo, Memory);
             } break;
 
             case d_union:
@@ -5653,7 +5695,7 @@ DoMetaprogramming(parser* Parser, metaprogramming_info* MetaInfo, todo_list_info
                 counted_string Code = Finalize(&CodeBuilder, Memory);
 
                 RequireToken(Parser, CTokenType_CloseParen);
-                DoWorkToOutputThisStuff(Parser, Code, OutfileName, MetaInfo, TodoInfo, Memory);
+                FlushOutputToDisk(Ctx, Parser, Code, OutfileName, TodoInfo, Memory);
 
               }
               else
@@ -5673,15 +5715,15 @@ DoMetaprogramming(parser* Parser, metaprogramming_info* MetaInfo, todo_list_info
                 RequireToken(Parser, CTokenType_CloseParen);
 
                 /* Info("Calling function : %.*s(%.*s)", (u32)Func->Name.Count, Func->Name.Start, (u32)DatatypeName.Count, DatatypeName.Start); */
-                datatype Arg = GetDatatypeByName(&MetaInfo->Datatypes, DatatypeName);
+                datatype Arg = GetDatatypeByName(&Ctx->Datatypes, DatatypeName);
                 meta_func_arg_stream Args = {};
                 Push(&Args, ReplacementPattern(Func->ArgName, Arg), Memory);
-                counted_string Code = Execute(Func, &Args, MetaInfo, Memory);
+                counted_string Code = Execute(Func, &Args, Ctx, Memory);
 
                 if (Code.Count)
                 {
                   counted_string OutfileName = GenerateOutfileNameFor(Func->Name, DatatypeName, Memory);
-                  DoWorkToOutputThisStuff(Parser, Code, OutfileName, MetaInfo, TodoInfo, Memory);
+                  FlushOutputToDisk(Ctx, Parser, Code, OutfileName, TodoInfo, Memory);
                 }
                 else
                 {
@@ -5760,24 +5802,6 @@ WriteTodosToFile(person_stream* People, memory_arena* Memory)
 
   Rename(TempFile, CSz("todos.md"));
   CloseFile(&TempFile);
-
-  return;
-}
-
-function void
-ParseDatatypes(parser_cursor Files_in, program_datatypes* Datatypes, memory_arena* Memory)
-{
-  parser_cursor* Files = &Files_in;
-
-  for (u32 ParserIndex = 0;
-      ParserIndex < (u32)Count(Files);
-      ++ParserIndex)
-  {
-    parser_stack Stack = {};
-    parser* Parser = Files->Start+ParserIndex;
-    PushStack(&Stack, *Parser);
-    ParseDatatypes(&Stack, Datatypes, Memory);
-  }
 
   return;
 }
@@ -5969,17 +5993,29 @@ main(s32 ArgCount, const char** ArgStrings)
 
     parser_cursor EntryPointParsers = TokenizeAllFiles(&Args.Files, Memory);
 
-    metaprogramming_info MetaInfo = {};
-
     todo_list_info TodoInfo = {
       .People = ParseAllTodosFromFile(CSz("todos.md"), Memory),
     };
 
     /* RemoveAllMetaprogrammingOutput(&EntryPointParsers, &Args); */
 
-    /* RegisterPrimitiveDatatypes(&MetaInfo.Datatypes, Memory); */
+    /* RegisterPrimitiveDatatypes(&Ctx.Datatypes, Memory); */
 
-    ParseDatatypes(EntryPointParsers, &MetaInfo.Datatypes, Memory);
+    parse_context Ctx = {
+      .Memory = Memory,
+      .AllParsers = &EntryPointParsers,
+    };
+
+    for (u32 ParserIndex = 0;
+        ParserIndex < Count(&EntryPointParsers);
+        ++ParserIndex)
+    {
+      parser* Parser = EntryPointParsers.Start+ParserIndex;
+      Assert(Parser->Valid);
+
+      PushStack(&Ctx.Stack, *Parser);
+      ParseDatatypes(&Ctx);
+    }
 
     for (u32 ParserIndex = 0;
         ParserIndex < Count(&EntryPointParsers);
@@ -5994,7 +6030,7 @@ main(s32 ArgCount, const char** ArgStrings)
         continue;
       }
 
-      DoMetaprogramming(Parser, &MetaInfo, &TodoInfo, Memory);
+      DoMetaprogramming(Parser, &Ctx, &TodoInfo, Memory);
 
       if (Parser->Valid)
       {
@@ -6005,7 +6041,7 @@ main(s32 ArgCount, const char** ArgStrings)
       continue;
     }
 
-    ParseFunctionBodiesIntoAsts(&MetaInfo.Datatypes, Memory);
+    ParseFunctionBodiesIntoAsts(&Ctx.Datatypes, Memory);
 
     WriteTodosToFile(&TodoInfo.People, Memory);
   }

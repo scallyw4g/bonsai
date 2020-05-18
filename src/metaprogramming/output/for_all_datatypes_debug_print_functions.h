@@ -3038,35 +3038,6 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
-    function void DebugPrint( metaprogramming_info S, u32 Depth)
-    {
-      if (Depth == 0)
-      {
-        DebugPrint("metaprogramming_info {\n", Depth);
-      }
-
-      
-          DebugPrint("meta_func_stream FunctionDefs {\n", Depth+2);
-          DebugPrint(S.FunctionDefs, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-          DebugPrint("program_datatypes Datatypes {\n", Depth+2);
-          DebugPrint(S.Datatypes, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-      DebugPrint("}\n", Depth);
-    }
-
-    function void DebugPrint( metaprogramming_info *S, u32 Depth)
-    {
-      if (S) { DebugPrint(*S, Depth); }
-      else { DebugPrint("ptr(0)", Depth); }
-    }
-
     function void DebugPrint( todo_list_info S, u32 Depth)
     {
       if (Depth == 0)
@@ -3143,6 +3114,53 @@
     }
 
     function void DebugPrint( parser_stack *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( parse_context S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("parse_context {\n", Depth);
+      }
+
+      
+          DebugPrint("parser_stack Stack {\n", Depth+2);
+          DebugPrint(S.Stack, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("program_datatypes Datatypes {\n", Depth+2);
+          DebugPrint(S.Datatypes, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("memory_arena Memory {\n", Depth+2);
+          DebugPrint(S.Memory, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("parser_cursor AllParsers {\n", Depth+2);
+          DebugPrint(S.AllParsers, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("meta_func_stream MetaFunctions {\n", Depth+2);
+          DebugPrint(S.MetaFunctions, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( parse_context *S, u32 Depth)
     {
       if (S) { DebugPrint(*S, Depth); }
       else { DebugPrint("ptr(0)", Depth); }

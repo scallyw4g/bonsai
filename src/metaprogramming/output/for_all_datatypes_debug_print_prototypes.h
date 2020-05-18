@@ -242,9 +242,6 @@
       function void DebugPrint( body_text_constraints* S, u32 Depth = 0);
       function void DebugPrint( body_text_constraints  S, u32 Depth = 0);
 
-      function void DebugPrint( metaprogramming_info* S, u32 Depth = 0);
-      function void DebugPrint( metaprogramming_info  S, u32 Depth = 0);
-
       function void DebugPrint( todo_list_info* S, u32 Depth = 0);
       function void DebugPrint( todo_list_info  S, u32 Depth = 0);
 
@@ -253,6 +250,9 @@
 
       function void DebugPrint( parser_stack* S, u32 Depth = 0);
       function void DebugPrint( parser_stack  S, u32 Depth = 0);
+
+      function void DebugPrint( parse_context* S, u32 Depth = 0);
+      function void DebugPrint( parse_context  S, u32 Depth = 0);
 
       function void DebugPrint( plane* S, u32 Depth = 0);
       function void DebugPrint( plane  S, u32 Depth = 0);
