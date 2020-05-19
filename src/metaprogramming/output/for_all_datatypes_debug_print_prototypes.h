@@ -569,6 +569,15 @@
       function void DebugPrint( parser_cursor* S, u32 Depth = 0);
       function void DebugPrint( parser_cursor  S, u32 Depth = 0);
 
+      function void DebugPrint( parser_stream_chunk* S, u32 Depth = 0);
+      function void DebugPrint( parser_stream_chunk  S, u32 Depth = 0);
+
+      function void DebugPrint( parser_stream* S, u32 Depth = 0);
+      function void DebugPrint( parser_stream  S, u32 Depth = 0);
+
+      function void DebugPrint( parser_iterator* S, u32 Depth = 0);
+      function void DebugPrint( parser_iterator  S, u32 Depth = 0);
+
       function void DebugPrint( struct_member_function* S, u32 Depth = 0);
       function void DebugPrint( struct_member_function  S, u32 Depth = 0);
 

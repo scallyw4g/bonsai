@@ -36,6 +36,8 @@
 
             case CTokenType_Space: { Result = CSz("CTokenType_Space"); } break;
 
+            case CTokenType_Tab: { Result = CSz("CTokenType_Tab"); } break;
+
             case CTokenType_Star: { Result = CSz("CTokenType_Star"); } break;
 
             case CTokenType_Ampersand: { Result = CSz("CTokenType_Ampersand"); } break;
@@ -214,6 +216,8 @@
 
             case CTokenType_Arrow: { Result = CSz("CTokenType_Arrow"); } break;
 
+            case CT_MacroLiteral: { Result = CSz("CT_MacroLiteral"); } break;
+
             case CT_PreprocessorPaste: { Result = CSz("CT_PreprocessorPaste"); } break;
 
             case CT_PreprocessorInclude: { Result = CSz("CT_PreprocessorInclude"); } break;
@@ -237,6 +241,8 @@
             case CT_PreprocessorPragma: { Result = CSz("CT_PreprocessorPragma"); } break;
 
             case CT_PreprocessorError: { Result = CSz("CT_PreprocessorError"); } break;
+
+            case CT_PreprocessorWarning: { Result = CSz("CT_PreprocessorWarning"); } break;
 
       }
       return Result;

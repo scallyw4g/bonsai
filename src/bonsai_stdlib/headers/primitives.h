@@ -71,6 +71,8 @@ CAssert(sizeof(u8) == 1);
 #define f32_MIN (1E-37f)
 
 
+#if 0
+// #include <stdint.h>
 CAssert(s8_MAX  == INT8_MAX);
 CAssert(s16_MAX == INT16_MAX);
 CAssert(s32_MAX == INT32_MAX);
@@ -85,6 +87,7 @@ CAssert(u8_MAX  == UINT8_MAX);
 CAssert(u16_MAX == UINT16_MAX);
 CAssert(u32_MAX == UINT32_MAX);
 CAssert(u64_MAX == UINT64_MAX);
+#endif
 
 #define CSz(NullTerminatedCString) \
   CS(NullTerminatedCString, sizeof(NullTerminatedCString)-1)

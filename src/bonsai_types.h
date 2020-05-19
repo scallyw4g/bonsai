@@ -20,12 +20,9 @@
 #define ToggleBitfieldValue(Dest, Value) \
       (Dest) = (Dest) & (Value) ?  ((u32)(Dest) & ~(u32)(Value)) : ((u32)(Dest) | (u32)(Value))
 
-#include <stdint.h>
-#include <cmath>
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten.h>
-#endif
+// #ifdef __EMSCRIPTEN__
+// #include <emscripten.h>
+// #endif
 
 #include <metaprogramming/defines.h>
 

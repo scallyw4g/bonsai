@@ -321,6 +321,7 @@ enum c_token_type
   CTokenType_At            = '@',
   CTokenType_Dollar        = '$',
   CTokenType_Space         = ' ',
+  CTokenType_Tab           = '\t',
   CTokenType_Star          = '*',
   CTokenType_Ampersand     = '&', // TODO(Jesse id: 238, tags: immediate, cleanup): Change name to BitwiseAnd
   CTokenType_SingleQuote   = '\'',
@@ -430,6 +431,8 @@ enum c_token_type
 
   CTokenType_Arrow,
 
+  CT_MacroLiteral,
+
   CT_PreprocessorPaste,
 
   CT_PreprocessorInclude,
@@ -443,22 +446,24 @@ enum c_token_type
   CT_PreprocessorUndef,
   CT_PreprocessorPragma,
   CT_PreprocessorError,
+  CT_PreprocessorWarning,
 
 };
 meta(generate_string_table(c_token_type))
 #include <metaprogramming/output/generate_string_table_c_token_type.h>
 
+struct macro_def;
 struct c_token
 {
   c_token_type Type;
   counted_string Value;
 
-  // These are only valid for their correspoinding literal types
-  union
+  union // These are only valid for their correspoinding literal types
   {
     /* s64 SignedValue; */ // TODO(Jesse id: 272): Fold `-` sign into this value at tokenization time?
     u64 UnsignedValue;
     r64 FloatValue;
+    macro_def *Macro;
   };
 };
 meta(generate_cursor(c_token))
@@ -480,6 +485,8 @@ struct parser
 meta(generate_cursor(parser))
 #include <metaprogramming/output/generate_cursor_parser.h>
 
+meta(generate_stream(parser))
+#include <metaprogramming/output/generate_stream_parser.h>
 
 
 
@@ -600,6 +607,8 @@ struct type_spec
   b32 Signed;
 
   b32 Long;
+  b32 LongLong;
+  b32 Short;
 
   b32 Struct;
   b32 Enum;
@@ -999,6 +1008,8 @@ struct arguments
   counted_string Outpath;
   counted_string_cursor Files;
 
+  counted_string_cursor IncludePaths;
+
   b32 DoDebugWindow;
 };
 
@@ -1133,6 +1144,7 @@ PeekToken(ansi_stream* Stream, u32 Lookahead = 0)
       case CTokenType_At:
       case CTokenType_Dollar:
       case CTokenType_Space:
+      case CTokenType_Tab:
       case CTokenType_Star:
       case CTokenType_Ampersand:
       case CTokenType_SingleQuote:
@@ -1221,9 +1233,10 @@ struct parser_stack
 
 struct parse_context
 {
-  parser_stack       Stack;
-  program_datatypes  Datatypes;
-  parser_cursor      AllParsers;
+  parser_stack           Stack;
+  program_datatypes      Datatypes;
+  parser_stream          AllParsers;
+  counted_string_cursor *IncludePaths;
 
   meta_func_stream MetaFunctions;
 

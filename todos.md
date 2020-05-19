@@ -18,6 +18,7 @@
     - #283 Should we care about ignoring template sources? Similar to #282
     - #299 This could be improved by not taking the StructName, and
     - #262 These should probably be in their own type_ast_node_cast .. ?
+    - #304 only do this work once
 
   ## immediate
     - #83 d_union-ify this

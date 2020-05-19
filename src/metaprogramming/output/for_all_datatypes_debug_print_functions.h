@@ -1951,6 +1951,18 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
+          DebugPrint("b32 LongLong {\n", Depth+2);
+          DebugPrint(S.LongLong, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("b32 Short {\n", Depth+2);
+          DebugPrint(S.Short, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
           DebugPrint("b32 Struct {\n", Depth+2);
           DebugPrint(S.Struct, Depth+4);
           DebugPrint("\n");
@@ -2900,6 +2912,12 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
+          DebugPrint("counted_string_cursor IncludePaths {\n", Depth+2);
+          DebugPrint(S.IncludePaths, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
           DebugPrint("b32 DoDebugWindow {\n", Depth+2);
           DebugPrint(S.DoDebugWindow, Depth+4);
           DebugPrint("\n");
@@ -3139,8 +3157,14 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("parser_cursor AllParsers {\n", Depth+2);
+          DebugPrint("parser_stream AllParsers {\n", Depth+2);
           DebugPrint(S.AllParsers, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("counted_string_cursor IncludePaths {\n", Depth+2);
+          DebugPrint(S.IncludePaths, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
@@ -7585,6 +7609,93 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
+    function void DebugPrint( parser_stream_chunk S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("parser_stream_chunk {\n", Depth);
+      }
+
+      
+          DebugPrint("parser Element {\n", Depth+2);
+          DebugPrint(S.Element, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("parser_stream_chunk Next {\n", Depth+2);
+          DebugPrint(S.Next, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( parser_stream_chunk *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( parser_stream S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("parser_stream {\n", Depth);
+      }
+
+      
+          DebugPrint("parser_stream_chunk FirstChunk {\n", Depth+2);
+          DebugPrint(S.FirstChunk, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("parser_stream_chunk LastChunk {\n", Depth+2);
+          DebugPrint(S.LastChunk, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( parser_stream *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( parser_iterator S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("parser_iterator {\n", Depth);
+      }
+
+      
+          DebugPrint("parser_stream Stream {\n", Depth+2);
+          DebugPrint(S.Stream, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("parser_stream_chunk At {\n", Depth+2);
+          DebugPrint(S.At, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( parser_iterator *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
     function void DebugPrint( struct_member_function S, u32 Depth)
     {
       if (Depth == 0)
@@ -9966,6 +10077,11 @@
               DebugPrint("CTokenType_Space ", Depth);
             } break;
 
+            case CTokenType_Tab:
+            {
+              DebugPrint("CTokenType_Tab ", Depth);
+            } break;
+
             case CTokenType_Star:
             {
               DebugPrint("CTokenType_Star ", Depth);
@@ -10411,6 +10527,11 @@
               DebugPrint("CTokenType_Arrow ", Depth);
             } break;
 
+            case CT_MacroLiteral:
+            {
+              DebugPrint("CT_MacroLiteral ", Depth);
+            } break;
+
             case CT_PreprocessorPaste:
             {
               DebugPrint("CT_PreprocessorPaste ", Depth);
@@ -10469,6 +10590,11 @@
             case CT_PreprocessorError:
             {
               DebugPrint("CT_PreprocessorError ", Depth);
+            } break;
+
+            case CT_PreprocessorWarning:
+            {
+              DebugPrint("CT_PreprocessorWarning ", Depth);
             } break;
 
       }

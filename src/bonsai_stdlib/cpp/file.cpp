@@ -134,7 +134,7 @@ FileExists(const char* Path)
 {
   b32 Result = False;
 
-  native_file File = OpenFile(Path);
+  native_file File = OpenFile(Path, "r");
   if (File.Handle)
   {
     Result = True;
