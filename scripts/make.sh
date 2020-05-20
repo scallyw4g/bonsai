@@ -78,6 +78,7 @@ COMMON_COMPILER_OPTIONS="
 
   -Wno-unused-value
   -Wno-unused-variable
+  -Wno-unused-parameter
 "
 
 COMMON_LINKER_OPTIONS="-lpthread -lX11 -ldl -lGL"

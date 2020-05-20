@@ -33,6 +33,34 @@ meta(
 )
 
 meta(
+  func buffer(Type)
+  {
+    struct (Type.name)_buffer
+    {
+      (Type.name)* Start;
+      umm Count;
+    };
+
+    function (Type.name)_buffer
+    (Type.name.to_capital_case)Buffer(umm ElementCount, memory_arena* Memory)
+    {
+      (Type.name)_buffer Result = {};
+
+      if (ElementCount)
+      {
+        Result.Start = Allocate( (Type.name), Memory, ElementCount );
+        Result.Count = ElementCount;
+      }
+      else
+      {
+        Warn("Attempted to allocate (Type.name)_buffer of 0 length.");
+      }
+
+      return Result;
+    }
+  }
+)
+meta(
   func generate_cursor(Type)
   {
     struct (Type.name)_cursor
@@ -431,6 +459,11 @@ enum c_token_type
 
   CTokenType_Arrow,
 
+  CT_Pragma,
+
+  CT_ScopeResolutionOperator,
+  CT_NameQualifier,
+
   CT_MacroLiteral,
 
   CT_PreprocessorPaste,
@@ -464,6 +497,7 @@ struct c_token
     u64 UnsignedValue;
     r64 FloatValue;
     macro_def *Macro;
+    c_token *QualifierName;
   };
 };
 meta(generate_cursor(c_token))
@@ -535,6 +569,15 @@ struct struct_member_anonymous
   struct_def Body;
 };
 
+// Note(Jesse): These are just placeholder names such that we can do correct
+// type resolution when we see STL containers.
+struct stl_container_def
+{
+  counted_string Name;
+};
+meta(generate_stream(stl_container_def))
+#include <metaprogramming/output/generate_stream_stl_container_def.h>
+
 enum datatype_type
 {
   type_datatype_noop,
@@ -548,6 +591,8 @@ enum datatype_type
   type_type_def,
 
   type_primitive_def,
+
+  type_stl_container_def,
 };
 
 struct struct_member;
@@ -567,13 +612,15 @@ struct datatype
 
   union
   {
-    struct_def     *struct_def;
-    struct_member  *struct_member;
+    struct_def         *struct_def;
+    struct_member      *struct_member;
 
-    enum_def       *enum_def;
-    enum_member    *enum_member;
+    enum_def           *enum_def;
+    enum_member        *enum_member;
 
-    type_def       *type_def;
+    type_def           *type_def;
+
+    stl_container_def  *stl_container_def;
   };
 };
 
@@ -590,13 +637,12 @@ struct type_spec
 
   datatype Datatype;
 
-  counted_string Namespace;
-  counted_string SourceText;
-
   u32 ReferenceLevel;
   u32 IndirectionLevel;
 
   b32 IsMetaTemplateVar;
+
+  b32 HasTemplateArguments;
 
   b32 ThreadLocal;
   b32 Const;
@@ -618,6 +664,9 @@ struct type_spec
   counted_string FunctionPointerTypeName;
 
   linkage_type Linkage;
+
+  counted_string TemplateSource;
+  counted_string SourceText;
 };
 
 struct ast_node;
@@ -789,6 +838,16 @@ Datatype(type_def* E)
 }
 
 function datatype
+Datatype(stl_container_def* E)
+{
+  datatype Result = {
+    .Type = type_stl_container_def,
+    .stl_container_def = E,
+  };
+  return Result;
+}
+
+function datatype
 Datatype(enum_def* E)
 {
   datatype Result = {
@@ -838,6 +897,9 @@ struct macro_def
   macro_type Type;
   counted_string Name;
   parser Parser;
+
+  counted_string_buffer ArgNames;
+  b32 Variadic;
 };
 meta(generate_stream(macro_def))
 #include <metaprogramming/output/generate_stream_macro_def.h>
@@ -1015,12 +1077,13 @@ struct arguments
 
 struct program_datatypes
 {
-  struct_def_stream     Structs;
-  enum_def_stream       Enums;
-  function_decl_stream  Functions;
-  type_def_stream       Typedefs;
-  macro_def_stream      Macros;
-  primitive_def_stream  Primitives;
+  struct_def_stream        Structs;
+  enum_def_stream          Enums;
+  function_decl_stream     Functions;
+  type_def_stream          Typedefs;
+  macro_def_stream         Macros;
+  primitive_def_stream     Primitives;
+  stl_container_def_stream StlContainers;
 };
 
 struct for_enum_constraints
@@ -1224,11 +1287,21 @@ CloseTokenFor(c_token_type T)
   return Result;
 }
 
-#define MAX_PARSER_STACK_DEPTH (256)
+enum parser_push_type
+{
+  parser_push_type_noop,
+
+  parser_push_type_root,
+  parser_push_type_include,
+  parser_push_type_macro,
+};
+
+#define MAX_PARSER_STACK_DEPTH (128)
 struct parser_stack
 {
   u32 Depth;
   parser Parsers[MAX_PARSER_STACK_DEPTH];
+  parser_push_type PushTypes[MAX_PARSER_STACK_DEPTH];
 };
 
 struct parse_context
@@ -1256,17 +1329,25 @@ Peek(parser_stack *Stack, u32 StackLookahead = 0)
 }
 
 function parser*
-PushStack(parser_stack *Stack, parser Parser)
+PushStack(parser_stack *Stack, parser Parser, parser_push_type Type)
 {
-  if (Stack->Depth == MAX_PARSER_STACK_DEPTH)
+  if (Type == parser_push_type_root && Stack->Depth > 0)
   {
-    Error("Max parser stack depth exceeded.");
-    Assert(False);
+    Error("Tried to push a root parser onto stack with a depth > 0 !");
   }
   else
   {
-    Stack->Parsers[Stack->Depth] = Parser;
-    ++Stack->Depth;
+    if (Stack->Depth == MAX_PARSER_STACK_DEPTH)
+    {
+      Error("Max parser stack depth exceeded.");
+      Assert(False);
+    }
+    else
+    {
+      Stack->Parsers[Stack->Depth] = Parser;
+      Stack->PushTypes[Stack->Depth] = Type;
+      ++Stack->Depth;
+    }
   }
 
   parser *Result = Peek(Stack);

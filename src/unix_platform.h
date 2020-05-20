@@ -55,7 +55,7 @@
 #define WHITE_TERMINAL "\x1b[37m"
 
 #define Info(...)                                                  \
-  LogToConsole(CSz(BLUE_TERMINAL "   Info" WHITE_TERMINAL " - ")); \
+  LogToConsole(CSz(BLUE_TERMINAL "   Info   " WHITE_TERMINAL " - ")); \
   printf(__VA_ARGS__);                                             \
   LogToConsole(CSz("\n"))
 
@@ -64,13 +64,18 @@
   LogToConsole(CSz("\n"))
 
 #define Error(...)                                                 \
-  LogToConsole(CSz(RED_TERMINAL " ! Error" WHITE_TERMINAL " - ")); \
+  LogToConsole(CSz(RED_TERMINAL " ! Error  " WHITE_TERMINAL " - ")); \
   printf(__VA_ARGS__);                                             \
   LogToConsole(CSz("\n"))
 
 #define Warn(...)                                                    \
-  LogToConsole(CSz(YELLOW_TERMINAL " * Warn" WHITE_TERMINAL " - ")); \
+  LogToConsole(CSz(YELLOW_TERMINAL " * Warning" WHITE_TERMINAL " - ")); \
   printf(__VA_ARGS__);                                               \
+  LogToConsole(CSz("\n"))
+
+#define Success(...)                                                 \
+  LogToConsole(CSz(GREEN_TERMINAL " ✓ Success" WHITE_TERMINAL " - ")); \
+  printf(__VA_ARGS__);                                             \
   LogToConsole(CSz("\n"))
 
 #define OpenGlDebugMessage(...)                                                      \

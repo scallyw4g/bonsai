@@ -1,9 +1,11 @@
-template <typename element_t, typename stream_t>inline void
+
+template <typename element_t, typename stream_t>inline element_t *
 Push(element_t Element, stream_t *Array)
 {
+  element_t *Result = Array->At;
   Assert( Array->At < Array->End );
   *Array->At++ = Element;
-  return;
+  return Result;
 }
 
 template <typename element_t, typename stream_t> inline element_t

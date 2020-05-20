@@ -140,6 +140,9 @@
       function void DebugPrint( struct_member_anonymous* S, u32 Depth = 0);
       function void DebugPrint( struct_member_anonymous  S, u32 Depth = 0);
 
+      function void DebugPrint( stl_container_def* S, u32 Depth = 0);
+      function void DebugPrint( stl_container_def  S, u32 Depth = 0);
+
       function void DebugPrint( datatype* S, u32 Depth = 0);
       function void DebugPrint( datatype  S, u32 Depth = 0);
 
@@ -593,6 +596,15 @@
       function void DebugPrint( struct_def_iterator* S, u32 Depth = 0);
       function void DebugPrint( struct_def_iterator  S, u32 Depth = 0);
 
+      function void DebugPrint( stl_container_def_stream_chunk* S, u32 Depth = 0);
+      function void DebugPrint( stl_container_def_stream_chunk  S, u32 Depth = 0);
+
+      function void DebugPrint( stl_container_def_stream* S, u32 Depth = 0);
+      function void DebugPrint( stl_container_def_stream  S, u32 Depth = 0);
+
+      function void DebugPrint( stl_container_def_iterator* S, u32 Depth = 0);
+      function void DebugPrint( stl_container_def_iterator  S, u32 Depth = 0);
+
       function void DebugPrint( variable_decl_stream_chunk* S, u32 Depth = 0);
       function void DebugPrint( variable_decl_stream_chunk  S, u32 Depth = 0);
 
@@ -816,6 +828,8 @@
       function void DebugPrint(macro_type EnumValue, u32 Depth = 0);
 
       function void DebugPrint(output_mode EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(parser_push_type EnumValue, u32 Depth = 0);
 
       function void DebugPrint(xml_token_type EnumValue, u32 Depth = 0);
 

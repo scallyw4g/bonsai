@@ -216,6 +216,12 @@
 
             case CTokenType_Arrow: { Result = CSz("CTokenType_Arrow"); } break;
 
+            case CT_Pragma: { Result = CSz("CT_Pragma"); } break;
+
+            case CT_ScopeResolutionOperator: { Result = CSz("CT_ScopeResolutionOperator"); } break;
+
+            case CT_NameQualifier: { Result = CSz("CT_NameQualifier"); } break;
+
             case CT_MacroLiteral: { Result = CSz("CT_MacroLiteral"); } break;
 
             case CT_PreprocessorPaste: { Result = CSz("CT_PreprocessorPaste"); } break;

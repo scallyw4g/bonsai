@@ -1,9 +1,15 @@
 # Jesse
   ## untagged
+    - #272 Fold `-` sign into this value at tokenization time?
     - #154 This is pretty shitty because whenever we copy one of these structs this field has to be manually zeroed out ..
+    - #262 These should probably be in their own type_ast_node_cast .. ?
+    - #278 Disallow invalid suffixes lul/LUL .. LUU .. ULLLL etc..
+    - #282 Should we parse out the function def explicitly here?
+    - #304 only do this work once
+    - #299 This could be improved by not taking the StructName, and
     - #260 Currently ignoring the second half of a ternary .. we should probably not do this
-    - #261 #if this out on public builds
     - #264 Once we have proper macro expansion, this can be expanded and concatenated to the string as well.
+    - #316 These paths are exactly the same .. they should probably use the same API ..?
     - #265 Unnecessary .. I just added these as a hack get parsing to work
     - #266 Unnecessary .. I just added it as a hack get parsing to work
     - #267 Unnecessary .. I just added these as a hack get parsing to work
@@ -11,23 +17,17 @@
     - #269 Unnecessary .. I just added these as a hack get parsing to work
     - #270 Unnecessary .. I just added these as a hack get parsing to work
     - #271 Unnecessary .. I just added these as a hack get parsing to work
-    - #272 Fold `-` sign into this value at tokenization time?
     - #275 Rewrite this in terms of `ToU32(counted_string S)`
-    - #278 Disallow invalid suffixes lul/LUL .. LUU .. ULLLL etc..
-    - #282 Should we parse out the function def explicitly here?
-    - #283 Should we care about ignoring template sources? Similar to #282
-    - #299 This could be improved by not taking the StructName, and
-    - #262 These should probably be in their own type_ast_node_cast .. ?
-    - #304 only do this work once
+    - #320 This should go away soon .. ResolveMacro should deal with it.
+    - #340 We should only traverse files that were passed to us on the CLI
 
   ## immediate
-    - #83 d_union-ify this
-    - #222 Re-add [[nodiscard]] here
     - #238 Change name to BitwiseAnd
     - #239 Change name to BitwiseOr
-    - #279 Macro function call .. Eventually ResolveMacro should deal with this.
+    - #83 d_union-ify this
     - #296 When we properly traverse include graphs, this assert should not fail.
     - #300 Remove this
+    - #222 Re-add [[nodiscard]] here
 
   ## high_priority
     - #101 Profile and check collision rate of this!
@@ -55,6 +55,7 @@
     - #101 Profile and check collision rate of this!
     - #106 Pass this in!
     - #107 Can we compute this with MouseP to avoid a frame of input delay?
+    - #295 This could be optimized significantly by shuffling the logic around, not to mention using hashtables.
     - #120 Allocate lights such that this swizzle is unneeded
     - #127 Pretty sure we don't have to set the faces anymore??
     - #128 Do culling on these as well?
@@ -62,16 +63,17 @@
     - #132 Pretty sure we can do some XOR trickery or something here to avoid this branch, which could be a large perf win
     - #136 Why are these allocated on the heap?  Seems unnecessary..
     - #139 Is this necessary to avoid some pointer aliasing bug?
-    - #295 This could be optimized significantly by shuffling the logic around, not to mention using hashtables.
 
   ## cleanup
+    - #94 Make this non-const?
     - #77 Axe this!
+    - #238 Change name to BitwiseAnd
+    - #239 Change name to BitwiseOr
     - #188 This should have the name property, instead of having the struct and enum defs have seperate names. * Actually .. it's unclear if this is true or not anymore since we've added a bunch more stuff to the union.
     - #88 Perlin.h depends on this .. rewrite it.
     - #89 Perlin.h depends on this .. rewrite it.
     - #90 Redistribute this
     - #91 Jettison this .. Can it be metaprogrammed?
-    - #94 Make this non-const?
     - #103 Replace this expression everywhere!!!  This might be done.
     - #104 Test this actually gets respected!!
     - #105 Test this actually gets respected!!
@@ -79,11 +81,9 @@
     - #107 Can we compute this with MouseP to avoid a frame of input delay?
     - #108 Do we have to pass the style to both of these functions, and is that a good idea?
     - #109 Reset this in here?
+    - #300 Remove this
     - #113 Remove these?
     - #144 This actually has nothing to do with the platform
-    - #238 Change name to BitwiseAnd
-    - #239 Change name to BitwiseOr
-    - #300 Remove this
 
   ## rng
     - #82 257 seemed to produce slightly worse results, but the source literature seemed to indicate using a constant close to the total number of discrete characters you'll encounter is advisable.  I believe this to be somewhat higher than 53, but it would be worth testing on real-world data (source files).
@@ -91,26 +91,25 @@
 
   ## metaprogramming
     - #191 This can be generated, but it requires lazily evaluating functions once their dependant types have been generated.  Not sure if this is a good idea or not, but we could do it. * meta( generate_stream_struct(struct_member) ) * Currently the invariant of being able to remove and re-generate all meta output in a single run of the metaprogramming system is broken by this.
+    - #290 generating this: meta( d_union declaration { function_decl variable_decl }) results in a name collision with the struct_member union tag. * Should we have some way of overriding the tag name it generates?  Or potentially modify the way we generate type tags such that name collisions won't happen.  I'd prefer an override to keep the tag names as concise as possible, but maybe once the preprocessor generates the switch statements for us it won't matter if they're overly verbose.
+    - #193 Metaprogram this.  I've had bugs multiple times because of it.
     - #83 d_union-ify this
     - #91 Jettison this .. Can it be metaprogrammed?
     - #99 Generate this?  Need a compiler feature to generate stuff from primitive types.
     - #100 Do we actually want this in here?
-    - #192 This is a function call or macro .. make sure it's actually constant.
-    - #226 Should we handle this differently?
-    - #222 Re-add [[nodiscard]] here
-    - #121 Need a way of dynamically allocating more of these on demand if this unlink fails!
-    - #230 ParseVariable should work with function pointer types
-    - #160 Generate this!
-    - #236 Metaprogram a free_mesh_stream!
-    - #237 Metaprogram this!!
     - #284 This, and PeekToken(parser_stack* ...), are exact duplicates of each other .. We could add a feature to DRY these two out ..
     - #286 These functions are exact duplicates.. should they be metaprogrammed?
     - #287 
     - #288 
     - #289 
-    - #290 generating this: meta( d_union declaration { function_decl variable_decl }) results in a name collision with the struct_member union tag. * Should we have some way of overriding the tag name it generates?  Or potentially modify the way we generate type tags such that name collisions won't happen.  I'd prefer an override to keep the tag names as concise as possible, but maybe once the preprocessor generates the switch statements for us it won't matter if they're overly verbose.
-    - #193 Metaprogram this.  I've had bugs multiple times because of it.
     - #301 These functions are super repetitive, generate them!
+    - #226 Should we handle this differently?
+    - #222 Re-add [[nodiscard]] here
+    - #121 Need a way of dynamically allocating more of these on demand if this unlink fails!
+    - #236 Metaprogram a free_mesh_stream!
+    - #237 Metaprogram this!!
+    - #230 ParseVariable should work with function pointer types
+    - #160 Generate this!
 
   ## robustness
     - #78 How should we actually set this?
@@ -120,7 +119,6 @@
     - #104 Test this actually gets respected!!
     - #105 Test this actually gets respected!!
     - #109 Reset this in here?
-    - #192 This is a function call or macro .. make sure it's actually constant.
     - #121 Need a way of dynamically allocating more of these on demand if this unlink fails!
     - #122 Actually read all the data!
     - #124 Load models in multiple chunks instead of one monolithic one. The storage for chunks must be as large as the largest chunk we will EVER load, which should definately not be decided at compile time.
@@ -150,9 +148,9 @@
     - #80 This could be factored out of here if xml_tag::Properties thing was a xml_token_stream* - which would require a two-pass parser most likely.  ie. Tokenizer and AST builder
 
   ## back_burner
+    - #161 Reinstate this!
     - #80 This could be factored out of here if xml_tag::Properties thing was a xml_token_stream* - which would require a two-pass parser most likely.  ie. Tokenizer and AST builder
     - #117 Transient arena for this instead of stack allocation ?
-    - #161 Reinstate this!
 
   ## string_hash
     - #81 Theres' a null terminated string-hash function that should be replaced by this one most likely
@@ -171,7 +169,6 @@
 
   ## completeness
     - #84 This only gets used when computing the shadow map, so I'm not even sure if it works ATM
-    - #192 This is a function call or macro .. make sure it's actually constant.
     - #140 Can we support these?
 
   ## engine
@@ -200,9 +197,9 @@
     - #151 Not getting vsync on my arch laptop.
 
   ## improvement
+    - #290 generating this: meta( d_union declaration { function_decl variable_decl }) results in a name collision with the struct_member union tag. * Should we have some way of overriding the tag name it generates?  Or potentially modify the way we generate type tags such that name collisions won't happen.  I'd prefer an override to keep the tag names as concise as possible, but maybe once the preprocessor generates the switch statements for us it won't matter if they're overly verbose.
     - #95 This is LCG RNG - do we want a better one?
     - #102 Write actual/working fModf!
-    - #290 generating this: meta( d_union declaration { function_decl variable_decl }) results in a name collision with the struct_member union tag. * Should we have some way of overriding the tag name it generates?  Or potentially modify the way we generate type tags such that name collisions won't happen.  I'd prefer an override to keep the tag names as concise as possible, but maybe once the preprocessor generates the switch statements for us it won't matter if they're overly verbose.
 
   ## api_improvement
     - #98 Make allocating these on the stack work!
@@ -318,7 +315,6 @@
   ## parsing
     - #213 There is a degenerate case here, what if the file ends without a newline? While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
     - #214 There is a degenerate case here, what if the file ends with a malformed comment? While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
-    - #192 This is a function call or macro .. make sure it's actually constant.
     - #222 Re-add [[nodiscard]] here
     - #230 ParseVariable should work with function pointer types
 
@@ -356,10 +352,17 @@
     - #289 
 
   ## big
+    - #293 Constant expression evaluation for #if statements
     - #291 Macro functions
     - #292 Include graph traversal
-    - #293 Constant expression evaluation for #if statements
 
   ## id_301
     - #302 
+
+  ## id_320
+    - #319 Type-checking failed.
+    - #321 Once this path goes away, the assertion with the label associated with this todo id should be put back in.
+
+  ## id_321
+    - #323 
 

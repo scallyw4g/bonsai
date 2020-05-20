@@ -173,4 +173,3 @@ global_variable memory_arena* TranArena = &_TranArena;
 #include <bonsai_asset_loaders.cpp>
 
 #include <metaprogramming/preprocessor.h>
-

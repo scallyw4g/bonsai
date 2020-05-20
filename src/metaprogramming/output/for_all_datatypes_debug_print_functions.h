@@ -1836,6 +1836,29 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
+    function void DebugPrint( stl_container_def S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("stl_container_def {\n", Depth);
+      }
+
+      
+          DebugPrint("counted_string Name {\n", Depth+2);
+          DebugPrint(S.Name, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( stl_container_def *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
     function void DebugPrint( datatype S, u32 Depth)
     {
       if (Depth == 0)
@@ -1879,18 +1902,6 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("counted_string Namespace {\n", Depth+2);
-          DebugPrint(S.Namespace, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-          DebugPrint("counted_string SourceText {\n", Depth+2);
-          DebugPrint(S.SourceText, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
           DebugPrint("u32 ReferenceLevel {\n", Depth+2);
           DebugPrint(S.ReferenceLevel, Depth+4);
           DebugPrint("\n");
@@ -1905,6 +1916,12 @@
 
           DebugPrint("b32 IsMetaTemplateVar {\n", Depth+2);
           DebugPrint(S.IsMetaTemplateVar, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("b32 HasTemplateArguments {\n", Depth+2);
+          DebugPrint(S.HasTemplateArguments, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
@@ -1995,6 +2012,18 @@
 
           DebugPrint("linkage_type Linkage {\n", Depth+2);
           DebugPrint(S.Linkage, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("counted_string TemplateSource {\n", Depth+2);
+          DebugPrint(S.TemplateSource, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("counted_string SourceText {\n", Depth+2);
+          DebugPrint(S.SourceText, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
@@ -2368,6 +2397,18 @@
 
           DebugPrint("parser Parser {\n", Depth+2);
           DebugPrint(S.Parser, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("counted_string_buffer ArgNames {\n", Depth+2);
+          DebugPrint(S.ArgNames, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("b32 Variadic {\n", Depth+2);
+          DebugPrint(S.Variadic, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
@@ -2977,6 +3018,12 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
+          DebugPrint("stl_container_def_stream StlContainers {\n", Depth+2);
+          DebugPrint(S.StlContainers, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
       DebugPrint("}\n", Depth);
     }
 
@@ -3124,6 +3171,12 @@
 
           DebugPrint("parser Parsers {\n", Depth+2);
           DebugPrint(S.Parsers, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("parser_push_type PushTypes {\n", Depth+2);
+          DebugPrint(S.PushTypes, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
@@ -7841,6 +7894,93 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
+    function void DebugPrint( stl_container_def_stream_chunk S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("stl_container_def_stream_chunk {\n", Depth);
+      }
+
+      
+          DebugPrint("stl_container_def Element {\n", Depth+2);
+          DebugPrint(S.Element, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("stl_container_def_stream_chunk Next {\n", Depth+2);
+          DebugPrint(S.Next, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( stl_container_def_stream_chunk *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( stl_container_def_stream S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("stl_container_def_stream {\n", Depth);
+      }
+
+      
+          DebugPrint("stl_container_def_stream_chunk FirstChunk {\n", Depth+2);
+          DebugPrint(S.FirstChunk, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("stl_container_def_stream_chunk LastChunk {\n", Depth+2);
+          DebugPrint(S.LastChunk, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( stl_container_def_stream *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( stl_container_def_iterator S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("stl_container_def_iterator {\n", Depth);
+      }
+
+      
+          DebugPrint("stl_container_def_stream Stream {\n", Depth+2);
+          DebugPrint(S.Stream, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("stl_container_def_stream_chunk At {\n", Depth+2);
+          DebugPrint(S.At, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( stl_container_def_iterator *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
     function void DebugPrint( variable_decl_stream_chunk S, u32 Depth)
     {
       if (Depth == 0)
@@ -10527,6 +10667,21 @@
               DebugPrint("CTokenType_Arrow ", Depth);
             } break;
 
+            case CT_Pragma:
+            {
+              DebugPrint("CT_Pragma ", Depth);
+            } break;
+
+            case CT_ScopeResolutionOperator:
+            {
+              DebugPrint("CT_ScopeResolutionOperator ", Depth);
+            } break;
+
+            case CT_NameQualifier:
+            {
+              DebugPrint("CT_NameQualifier ", Depth);
+            } break;
+
             case CT_MacroLiteral:
             {
               DebugPrint("CT_MacroLiteral ", Depth);
@@ -10638,6 +10793,11 @@
             case type_primitive_def:
             {
               DebugPrint("type_primitive_def ", Depth);
+            } break;
+
+            case type_stl_container_def:
+            {
+              DebugPrint("type_stl_container_def ", Depth);
             } break;
 
       }
@@ -10758,6 +10918,34 @@
             case Output_Unsafe:
             {
               DebugPrint("Output_Unsafe ", Depth);
+            } break;
+
+      }
+    }
+
+    function void DebugPrint( parser_push_type EnumValue, u32 Depth)
+    {
+      switch (EnumValue)
+      {
+        
+            case parser_push_type_noop:
+            {
+              DebugPrint("parser_push_type_noop ", Depth);
+            } break;
+
+            case parser_push_type_root:
+            {
+              DebugPrint("parser_push_type_root ", Depth);
+            } break;
+
+            case parser_push_type_include:
+            {
+              DebugPrint("parser_push_type_include ", Depth);
+            } break;
+
+            case parser_push_type_macro:
+            {
+              DebugPrint("parser_push_type_macro ", Depth);
             } break;
 
       }
