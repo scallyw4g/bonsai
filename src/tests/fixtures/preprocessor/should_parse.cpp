@@ -1,3 +1,23 @@
+
+#define __QWORD unsigned long long
+#define __STD_TYPE typedef
+#define __DEV_T_TYPE __QWORD
+#define __FSID_T_TYPE struct { int __val[2]; }
+
+__STD_TYPE __FSID_T_TYPE __fsid_t;
+__STD_TYPE __DEV_T_TYPE __dev_t;
+
+
+
+#define __THING int
+#define __INDIRECT_THING_TYPE_NAME __alias_for_int
+#define __THING_TYPE_NAME __INDIRECT_THING_TYPE_NAME
+
+__STD_TYPE __THING __THING_TYPE_NAME;
+
+
+
+
 #define EXTERN_BLOCK extern "C" {
 #define EXTERN_BLOCK_END }
 
@@ -21,14 +41,6 @@ _Pragma("whatever");
 
 __pragma(msvc_style(thing));
 
-#define __QWORD unsigned long long
-
-#define __STD_TYPE typedef
-#define __DEV_T_TYPE __QWORD
-#define __FSID_T_TYPE struct { int __val[2]; }
-
-__STD_TYPE __DEV_T_TYPE __dev_t;
-__STD_TYPE __FSID_T_TYPE __fsid_t;
 
 #define function static
 

@@ -18,8 +18,8 @@
     - #270 Unnecessary .. I just added these as a hack get parsing to work
     - #271 Unnecessary .. I just added these as a hack get parsing to work
     - #275 Rewrite this in terms of `ToU32(counted_string S)`
-    - #320 This should go away soon .. ResolveMacro should deal with it.
     - #340 We should only traverse files that were passed to us on the CLI
+    - #341 This is an exact duplicate of RequireToken and verrrry similar to PopTokenRaw .. should we do something to reduce this duplication?
 
   ## immediate
     - #238 Change name to BitwiseAnd
@@ -97,11 +97,6 @@
     - #91 Jettison this .. Can it be metaprogrammed?
     - #99 Generate this?  Need a compiler feature to generate stuff from primitive types.
     - #100 Do we actually want this in here?
-    - #284 This, and PeekToken(parser_stack* ...), are exact duplicates of each other .. We could add a feature to DRY these two out ..
-    - #286 These functions are exact duplicates.. should they be metaprogrammed?
-    - #287 
-    - #288 
-    - #289 
     - #301 These functions are super repetitive, generate them!
     - #226 Should we handle this differently?
     - #222 Re-add [[nodiscard]] here
@@ -341,15 +336,6 @@
 
   ## memory_leak
     - #264 This should use a string builder
-
-  ## id_284
-    - #285 
-    - #286 These functions are exact duplicates.. should they be metaprogrammed?
-
-  ## id_286
-    - #287 
-    - #288 
-    - #289 
 
   ## big
     - #293 Constant expression evaluation for #if statements

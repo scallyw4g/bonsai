@@ -70,4 +70,19 @@
       return;
     }
 
+    function void
+    ConcatStreams( parser_stream *S1, parser_stream *S2)
+    {
+      if (S1->LastChunk)
+      {
+        S1->LastChunk->Next = S2->FirstChunk;
+        S1->LastChunk = S2->LastChunk;
+      }
+      else
+      {
+        *S1 = *S2;
+      }
+    }
+
+
 

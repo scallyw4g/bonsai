@@ -91,5 +91,20 @@
       return;
     }
 
+    function void
+    ConcatStreams( counted_string_stream *S1, counted_string_stream *S2)
+    {
+      if (S1->LastChunk)
+      {
+        S1->LastChunk->Next = S2->FirstChunk;
+        S1->LastChunk = S2->LastChunk;
+      }
+      else
+      {
+        *S1 = *S2;
+      }
+    }
+
+
 
 

@@ -607,8 +607,6 @@ PeekToken(parser* Parser, u32 Lookahead = 0)
   return Result;
 }
 
-function c_token PopTokenRaw(parser* Parser);
-
 function c_token
 PopTokenRaw(parser* Parser)
 {
@@ -864,14 +862,28 @@ RequireOperatorToken(parser* Parser)
 }
 
 
-/************************* Stack token control *******************************/
+/************************   Stack token control  *****************************/
 
 
+function c_token*       PeekTokenRawPointer(parser_stack* Stack, u32 TokenLookahead = 0, u32 StackLookahead = 0);
+function c_token        PeekTokenRaw(parser_stack* Stack, u32 Lookahead = 0);
+function u32            OffsetOfNext(parser_stack* Stack, u32 Offset, c_token_type Close);
+function c_token*       PeekTokenPointer(parser_stack *Stack, u32 TokenLookahead, u32 StackLookahead);
+function c_token        PeekToken(parser_stack* Stack, u32 Lookahead = 0);
+function c_token        PopTokenRaw(parser_stack* Stack);
+function b32            TokensRemain(parser_stack *Stack);
+function c_token        PopToken(parser_stack* Stack);
+function b32            OptionalTokenRaw(parser_stack* Stack, c_token_type Type);
+function b32            OptionalToken(parser_stack* Stack, c_token T);
+function b32            OptionalToken(parser_stack* Stack, c_token_type Type);
+function c_token        RequireToken(parser_stack* Stack, c_token ExpectedToken);
+function c_token        RequireToken(parser_stack* Stack, c_token_type ExpectedType);
+function b32            TokenIsOperator(c_token_type T);
+function b32            NextTokenIsOperator(parser_stack* Stack);
+function counted_string RequireOperatorToken(parser_stack* Stack);
 
-/* TODO(Jesse, id: 284, tags: metaprogramming): This, and PeekToken(parser_stack* ...), are exact duplicates of each other
- * .. We could add a feature to DRY these two out .. */
 function c_token*
-PeekTokenPointer(parser_stack *Stack, u32 TokenLookahead, u32 StackLookahead)
+PeekTokenRawPointer(parser_stack *Stack, u32 TokenLookahead, u32 StackLookahead)
 {
   c_token *Result = {};
 
@@ -886,116 +898,84 @@ PeekTokenPointer(parser_stack *Stack, u32 TokenLookahead, u32 StackLookahead)
     {
       if (TokenLookahead)
       {
-        Result = PeekTokenPointer(Stack, TokenLookahead-1, StackLookahead+1);
+        Result = PeekTokenRawPointer(Stack, TokenLookahead-1, StackLookahead+1);
       }
       else
       {
-        Result = PeekTokenPointer(Stack, 0, StackLookahead+1);
+        Result = PeekTokenRawPointer(Stack, 0, StackLookahead+1);
       }
     }
   }
 
-  return Result;
-}
-
-// TODO(Jesse, id: 285, tags: id_284)
-function c_token
-PeekToken(parser_stack *Stack, u32 TokenLookahead = 0, u32 StackLookahead = 0)
-{
-  c_token Result = {};
-
-  parser *Parser = Peek(Stack, StackLookahead);
-  if (Parser)
+  if (Result->Type == CT_MacroLiteral)
   {
-    if (TokensRemain(Parser, TokenLookahead))
+    RequireToken(Stack, CT_MacroLiteral);
+
+    macro_def *Macro = Result->Macro;
+    switch (Macro->Type)
     {
-      Result = PeekToken(Parser, TokenLookahead);
-    }
-    else
-    {
-      if (TokenLookahead)
+      case type_macro_keyword:
       {
-        Result = PeekToken(Stack, TokenLookahead-1, StackLookahead+1);
-      }
-      else
+        Rewind(&Macro->Parser);
+        PushStack(Stack, Macro->Parser, parser_push_type_macro);
+      } break;
+
+      case type_macro_function:
       {
-        Result = PeekToken(Stack, 0, StackLookahead+1);
-      }
+      } break;
+
+      case type_macro_noop: { InvalidCodePath(); } break;
     }
+
+    Result = PeekTokenRawPointer(Stack);
   }
 
+  return Result;
+}
+
+function c_token*
+PeekTokenPointer(parser_stack *Stack, u32 TokenLookahead, u32 StackLookahead)
+{
+  c_token *Result = PeekTokenRawPointer(Stack, TokenLookahead);
+  while (Result && IsWhitespace(Result->Type)) { Result = PeekTokenRawPointer(Stack, TokenLookahead++); }
   return Result;
 }
 
 function c_token
-PeekTokenRaw(parser_stack *Stack, u32 TokenLookahead = 0, u32 StackLookahead = 0)
+PeekToken(parser_stack *Stack, u32 TokenLookahead)
 {
+  c_token *pToken = PeekTokenPointer(Stack, TokenLookahead);
   c_token Result = {};
-
-  parser *Parser = Peek(Stack, StackLookahead);
-  if (Parser)
-  {
-    if (TokensRemain(Parser, TokenLookahead))
-    {
-      Result = PeekTokenRaw(Parser, TokenLookahead);
-    }
-    else
-    {
-      if (TokenLookahead)
-      {
-        Result = PeekTokenRaw(Stack, TokenLookahead-1, StackLookahead+1);
-      }
-      else
-      {
-        Result = PeekToken(Stack, 0, StackLookahead+1);
-      }
-    }
-  }
-
+  if (pToken) Result = *pToken;
   return Result;
 }
 
-// TODO(Jesse, id: 286, tags: id_284, metaprogramming): These functions are exact duplicates.. should they be metaprogrammed?
+function c_token
+PeekTokenRaw(parser_stack *Stack, u32 TokenLookahead)
+{
+  c_token *pToken = PeekTokenRawPointer(Stack, TokenLookahead);
+  c_token Result = {};
+  if (pToken) Result = *pToken;
+  return Result;
+}
+
 function b32
 OptionalToken(parser_stack *Stack, c_token Token)
 {
-  b32 Result = {};
-
-  parser *Parser = Peek(Stack);
-  if (TokensRemain(Parser))
-  {
-    Result = OptionalToken(Parser, Token);
-  }
-  else
-  {
-    PopStack(Stack);
-    Result = OptionalToken(Stack, Token);
-  }
-
+  b32 Result = PeekToken(Stack) == Token;
+  if (Result) { RequireToken(Stack, Token); }
   return Result;
 }
 
-// TODO(Jesse, id: 287, tags: id_286, metaprogramming)
 function b32
 OptionalToken(parser_stack *Stack, c_token_type Type)
 {
-  b32 Result = {};
-
-  parser *Parser = Peek(Stack);
-  if (TokensRemain(Parser))
-  {
-    Result = OptionalToken(Parser, Type);
-  }
-  else
-  {
-    PopStack(Stack);
-    Result = OptionalToken(Stack, Type);
-  }
-
+  b32 Result = PeekToken(Stack).Type == Type;
+  if (Result) { RequireToken(Stack, Type); }
   return Result;
 }
 
-// TODO(Jesse, id: 288, tags: id_286, metaprogramming)
+// TODO(Jesse id: 341): This is an exact duplicate of RequireToken and verrrry similar to PopTokenRaw .. should we do something to reduce this duplication?
 function c_token
 PopToken(parser_stack *Stack)
 {
@@ -1015,7 +995,25 @@ PopToken(parser_stack *Stack)
   return Result;
 }
 
-// TODO(Jesse, id: 289, tags: id_286, metaprogramming)
+function c_token
+PopTokenRaw(parser_stack *Stack)
+{
+  c_token Result = {};
+
+  parser *Parser = Peek(Stack);
+  if (PeekTokenRawPointer(Parser))
+  {
+    Result = PopTokenRaw(Parser);
+  }
+  else
+  {
+    PopStack(Stack);
+    Result = PopTokenRaw(Stack);
+  }
+
+  return Result;
+}
+
 function c_token
 RequireToken(parser_stack *Stack, c_token T)
 {
@@ -1061,25 +1059,6 @@ function c_token
 RequireToken(parse_context *Ctx, c_token_type Type)
 {
   c_token Result = RequireToken(&Ctx->Stack, Type);
-  return Result;
-}
-
-function c_token
-PopTokenRaw(parser_stack *Stack)
-{
-  c_token Result = {};
-
-  parser *Parser = Peek(Stack);
-  if (PeekTokenRawPointer(Parser))
-  {
-    Result = PopTokenRaw(Parser);
-  }
-  else
-  {
-    PopStack(Stack);
-    Result = PopTokenRaw(Stack);
-  }
-
   return Result;
 }
 
@@ -1854,7 +1833,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, mac
 
       case CTokenType_Hash:
       {
-
         if (PeekToken(&Code, 1).Type == CTokenType_Hash)
         {
           Advance(&Code);
@@ -1866,97 +1844,100 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, mac
         {
           const char* HashCharacter = Code.At;
           Advance(&Code);
-          const char* FirstAfterHash = Code.At;
-
-          LineNumber += EatSpacesTabsAndEscapedNewlines(&Code);
-
-          counted_string TempValue = PopIdentifier(&Code);
-
-          if ( StringsMatch(TempValue, CSz("define")) )
+          if (ProgramMacros)
           {
-            const char* FirstAfterDefineKeyword = Code.At;
+            const char* FirstAfterHash = Code.At;
 
             LineNumber += EatSpacesTabsAndEscapedNewlines(&Code);
 
-            PushT.Type = CT_PreprocessorDefine;
-            PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
+            counted_string TempValue = PopIdentifier(&Code);
 
-            macro_def Macro = {
-              .Name = PopIdentifier(&Code),
-              .Parser = {
-                .Valid = 1,
-                .Tokens = {
-                  .Start = Result.Tokens.At,
-                  .At    = Result.Tokens.At,
-                },
-                .Filename = Code.Filename,
-                .LineNumber = LineNumber,
-              }
-            };
+            if ( StringsMatch(TempValue, CSz("define")) )
+            {
+              const char* FirstAfterDefineKeyword = Code.At;
 
-            Code.At = FirstAfterDefineKeyword;
+              LineNumber += EatSpacesTabsAndEscapedNewlines(&Code);
 
-            Push(&MacrosThatNeedToBeParsedOut, Macro, Memory);
-          }
-          else if ( StringsMatch(TempValue, CSz("if")) )
-          {
-            PushT.Type = CT_PreprocessorIf;
-            PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
-          }
-          else if ( StringsMatch(TempValue, CSz("else")) )
-          {
-            PushT.Type = CT_PreprocessorElse;
-            PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
-          }
-          else if ( StringsMatch(TempValue, CSz("elif")) )
-          {
-            PushT.Type = CT_PreprocessorElif;
-            PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
-          }
-          else if ( StringsMatch(TempValue, CSz("endif")) )
-          {
-            PushT.Type = CT_PreprocessorEndif;;
-            PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
-          }
-          else if ( StringsMatch(TempValue, CSz("ifndef")) )
-          {
-            PushT.Type = CT_PreprocessorIfNotDefined;
-            PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
-          }
-          else if ( StringsMatch(TempValue, CSz("ifdef")) )
-          {
-            PushT.Type = CT_PreprocessorIfDefined;
-            PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
-          }
-          else if ( StringsMatch(TempValue, CSz("undef")) )
-          {
-            PushT.Type = CT_PreprocessorUndef;
-            PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
-          }
-          else if ( StringsMatch(TempValue, CSz("include")) )
-          {
-            PushT.Type = CT_PreprocessorInclude;
-            PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
-          }
-          else if ( StringsMatch(TempValue, CSz("error")) )
-          {
-            PushT.Type = CT_PreprocessorError;
-            PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
-          }
-          else if ( StringsMatch(TempValue, CSz("warning")) )
-          {
-            PushT.Type = CT_PreprocessorWarning;
-            PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
-          }
-          else if ( StringsMatch(TempValue, CSz("pragma")) )
-          {
-            PushT.Type = CT_PreprocessorPragma;
-            PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
-          }
-          else
-          {
-            // The token is just a regular hash .. roll back our parsing to the start.
-            Code.At = FirstAfterHash;
+              PushT.Type = CT_PreprocessorDefine;
+              PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
+
+              macro_def Macro = {
+                .Name = PopIdentifier(&Code),
+                .Parser = {
+                  .Valid = 1,
+                  .Tokens = {
+                    .Start = Result.Tokens.At,
+                    .At    = Result.Tokens.At,
+                  },
+                  .Filename = Code.Filename,
+                  .LineNumber = LineNumber,
+                }
+              };
+
+              Code.At = FirstAfterDefineKeyword;
+
+              Push(&MacrosThatNeedToBeParsedOut, Macro, Memory);
+            }
+            else if ( StringsMatch(TempValue, CSz("if")) )
+            {
+              PushT.Type = CT_PreprocessorIf;
+              PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
+            }
+            else if ( StringsMatch(TempValue, CSz("else")) )
+            {
+              PushT.Type = CT_PreprocessorElse;
+              PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
+            }
+            else if ( StringsMatch(TempValue, CSz("elif")) )
+            {
+              PushT.Type = CT_PreprocessorElif;
+              PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
+            }
+            else if ( StringsMatch(TempValue, CSz("endif")) )
+            {
+              PushT.Type = CT_PreprocessorEndif;;
+              PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
+            }
+            else if ( StringsMatch(TempValue, CSz("ifndef")) )
+            {
+              PushT.Type = CT_PreprocessorIfNotDefined;
+              PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
+            }
+            else if ( StringsMatch(TempValue, CSz("ifdef")) )
+            {
+              PushT.Type = CT_PreprocessorIfDefined;
+              PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
+            }
+            else if ( StringsMatch(TempValue, CSz("undef")) )
+            {
+              PushT.Type = CT_PreprocessorUndef;
+              PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
+            }
+            else if ( StringsMatch(TempValue, CSz("include")) )
+            {
+              PushT.Type = CT_PreprocessorInclude;
+              PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
+            }
+            else if ( StringsMatch(TempValue, CSz("error")) )
+            {
+              PushT.Type = CT_PreprocessorError;
+              PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
+            }
+            else if ( StringsMatch(TempValue, CSz("warning")) )
+            {
+              PushT.Type = CT_PreprocessorWarning;
+              PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
+            }
+            else if ( StringsMatch(TempValue, CSz("pragma")) )
+            {
+              PushT.Type = CT_PreprocessorPragma;
+              PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
+            }
+            else
+            {
+              // The token is just a regular hash .. roll back our parsing to the start.
+              Code.At = FirstAfterHash;
+            }
           }
         }
 
@@ -2143,6 +2124,22 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, mac
           }
           else
           {
+            if (ProgramMacros)
+            {
+              macro_def *Macro1 = GetByName(ProgramMacros, PushT.Value);
+              macro_def *Macro2 = GetByName(&MacrosThatNeedToBeParsedOut, PushT.Value);
+              if (Macro1)
+              {
+                PushT.Type = CT_MacroLiteral;
+                PushT.Macro = Macro1;
+              }
+              else if (Macro2)
+              {
+                PushT.Type = CT_MacroLiteral;
+                PushT.Macro = Macro2;
+              }
+            }
+
             if (LastTokenPushed && LastTokenPushed->Type == CT_ScopeResolutionOperator)
             {
               PushT.QualifierName = LastTokenPushed->QualifierName;
@@ -2165,85 +2162,88 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, mac
   Rewind(&Result);
   Result.Valid = True;
 
-  ITERATE_OVER(&MacrosThatNeedToBeParsedOut)
+  if (ProgramMacros)
   {
-    macro_def *Macro = GET_ELEMENT(Iter);
-
-    if (StringsMatch(Macro->Name, CSz("meta")))
+    ITERATE_OVER(&MacrosThatNeedToBeParsedOut)
     {
-      continue;
-    }
+      macro_def *Macro = GET_ELEMENT(Iter);
 
-    Macro->Parser.Tokens.End = Result.Tokens.End;
-
-    parser *MacroParser = &Macro->Parser;
-
-    RequireToken(MacroParser, CT_PreprocessorDefine);
-    RequireToken(MacroParser, CToken(Macro->Name));
-
-    if (OptionalTokenRaw(MacroParser, CTokenType_OpenParen))
-    {
-      Macro->Type = type_macro_function;
-
-      if (OptionalToken(MacroParser, CTokenType_CloseParen))
+      if (StringsMatch(Macro->Name, CSz("meta")))
       {
-        // No arguments
+        continue;
+      }
+
+      Macro->Parser.Tokens.End = Result.Tokens.End;
+
+      parser *MacroParser = &Macro->Parser;
+
+      RequireToken(MacroParser, CT_PreprocessorDefine);
+      RequireToken(MacroParser, CToken(CT_MacroLiteral, Macro->Name));
+
+      if (OptionalTokenRaw(MacroParser, CTokenType_OpenParen))
+      {
+        Macro->Type = type_macro_function;
+
+        if (OptionalToken(MacroParser, CTokenType_CloseParen))
+        {
+          // No arguments
+        }
+        else
+        {
+          u32 ArgCount = 1 + CountTokensBeforeNext(MacroParser, CTokenType_Comma, CTokenType_CloseParen);
+          Macro->ArgNames = CountedStringBuffer(ArgCount, Memory);
+
+          for ( u32 ArgIndex = 0;
+                ArgIndex < ArgCount-1;
+                ++ArgIndex)
+          {
+            counted_string ArgName = RequireToken(MacroParser, CTokenType_Identifier).Value;
+            Macro->ArgNames.Start[ArgIndex] = ArgName;
+            RequireToken(MacroParser, CTokenType_Comma);
+          }
+
+          if (PeekToken(MacroParser).Type == CTokenType_Identifier)
+          {
+            counted_string ArgName = RequireToken(MacroParser, CTokenType_Identifier).Value;
+            Macro->ArgNames.Start[Macro->ArgNames.Count-1];
+          }
+
+          if (OptionalToken(MacroParser, CTokenType_Ellipsis))
+          {
+            Macro->Variadic = True;
+          }
+
+          RequireToken(MacroParser, CTokenType_CloseParen);
+        }
       }
       else
       {
-        u32 ArgCount = 1 + CountTokensBeforeNext(MacroParser, CTokenType_Comma, CTokenType_CloseParen);
-        Macro->ArgNames = CountedStringBuffer(ArgCount, Memory);
-
-        for ( u32 ArgIndex = 0;
-              ArgIndex < ArgCount-1;
-              ++ArgIndex)
-        {
-          counted_string ArgName = RequireToken(MacroParser, CTokenType_Identifier).Value;
-          Macro->ArgNames.Start[ArgIndex] = ArgName;
-          RequireToken(MacroParser, CTokenType_Comma);
-        }
-
-        if (PeekToken(MacroParser).Type == CTokenType_Identifier)
-        {
-          counted_string ArgName = RequireToken(MacroParser, CTokenType_Identifier).Value;
-          Macro->ArgNames.Start[Macro->ArgNames.Count-1];
-        }
-
-        if (OptionalToken(MacroParser, CTokenType_Ellipsis))
-        {
-          Macro->Variadic = True;
-        }
-
-        RequireToken(MacroParser, CTokenType_CloseParen);
+        Macro->Type = type_macro_keyword;
       }
-    }
-    else
-    {
-      Macro->Type = type_macro_keyword;
-    }
 
-    MacroParser->Tokens.Start = MacroParser->Tokens.At;
+      MacroParser->Tokens.Start = MacroParser->Tokens.At;
 
-    b32 Done = False;
-    while (!Done && TokensRemain(MacroParser))
-    {
-      switch (PeekTokenRaw(MacroParser).Type)
+      b32 Done = False;
+      while (!Done && TokensRemain(MacroParser))
       {
-        case CTokenType_Newline:
+        switch (PeekTokenRaw(MacroParser).Type)
         {
-          Done = True;
-        } break;
+          case CTokenType_Newline:
+          {
+            Done = True;
+          } break;
 
-        default: { PopTokenRaw(MacroParser); } break;
+          default: { PopTokenRaw(MacroParser); } break;
+        }
       }
+
+      TruncateToCurrentSize(&MacroParser->Tokens);
+
+      Assert(MacroParser->Tokens.End);
+      Assert(MacroParser->Tokens.End);
     }
 
-    TruncateToCurrentSize(&MacroParser->Tokens);
-
-    Assert(MacroParser->Tokens.End);
-    Assert(MacroParser->Tokens.End);
-
-    Push(ProgramMacros, *Macro, Memory);
+    ConcatStreams(ProgramMacros, &MacrosThatNeedToBeParsedOut);
   }
 
   return Result;
@@ -2936,34 +2936,6 @@ GetBodyTextForNextScope(parser* Parser)
   return BodyText;
 }
 
-function b32
-ResolveMacro(counted_string IdentifierName, macro_def_stream *Macros, parser_stack *Stack)
-{
-  b32 MacroSubstitutionOccured = False;
-
-  macro_def *Macro = GetByName(Macros, IdentifierName);
-  if (Macro)
-  {
-    switch (Macro->Type)
-    {
-      case type_macro_keyword:
-      {
-        MacroSubstitutionOccured = True;
-        RequireToken(Stack, CTokenType_Identifier);
-        PushStack(Stack, Macro->Parser, parser_push_type_macro);
-      } break;
-
-      case type_macro_function:
-      {
-      } break;
-
-      case type_macro_noop: { InvalidCodePath(); } break;
-    }
-  }
-
-  return MacroSubstitutionOccured;
-}
-
 function void
 ParseReferencesIndirectionAndPossibleFunctionPointerness(parser_stack *Stack, type_spec *Result)
 {
@@ -3237,14 +3209,7 @@ ParseTypeSpecifier(parse_context *Ctx)
       {
         if (T.Type == CTokenType_Identifier)
         {
-          program_datatypes *Datatypes = &Ctx->Datatypes;
-          if (ResolveMacro(T.Value, &Datatypes->Macros, Stack)) { break; }
-
-          // TODO(Jesse id: 320): This should go away soon .. ResolveMacro should deal with it.
-          macro_def *Macro = GetByName(&Datatypes->Macros, T.Value);
-          if (Macro && Macro->Type == type_macro_function) { Done = True; break; }
-
-          Result.Datatype = GetDatatypeByName(Datatypes, T.Value);
+          Result.Datatype = GetDatatypeByName(&Ctx->Datatypes, T.Value);
           // TODO(Jesse, id: 296, tags: immediate): When we properly traverse include graphs, this assert should not fail.
           // Assert(Result.Datatype.Type != type_datatype_noop);
         }
@@ -4091,8 +4056,6 @@ ParseSingleStatement(parse_context *Ctx, ast_node_statement *Result)
 
       case CTokenType_Identifier:
       {
-        if (ResolveMacro(T.Value, &Ctx->Datatypes.Macros, Stack)) { break; }
-
         if (Result->LHS)
         {
           DebugPrint(Result->LHS);
@@ -4813,8 +4776,6 @@ ParseDatatypes(parse_context *Ctx)
       case CTokenType_Signed:
       case CTokenType_Identifier:
       {
-        if (T.Type == CTokenType_Identifier && ResolveMacro(T.Value, &Datatypes->Macros, Stack)) { break; }
-
         // We ignore the result of this .. because we're just looking to push
         // functions and push them onto the program_datatypes stream
         ParseFunctionOrVariableDecl(Ctx);

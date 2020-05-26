@@ -162,6 +162,20 @@ meta(
 
       return;
     }
+
+    function void
+    ConcatStreams( (Type.name)_stream *S1, (Type.name)_stream *S2)
+    {
+      if (S1->LastChunk)
+      {
+        S1->LastChunk->Next = S2->FirstChunk;
+        S1->LastChunk = S2->LastChunk;
+      }
+      else
+      {
+        *S1 = *S2;
+      }
+    }
   }
 )
 
@@ -232,6 +246,7 @@ meta(
     (generate_stream_struct(Type))
     (generate_stream_iterator(Type))
     (generate_stream_push(Type))
+
   }
 )
 
@@ -1361,7 +1376,7 @@ PopStack(parser_stack *Stack)
   if (Stack->Depth > 0)
   {
     --Stack->Depth;
-    Result = Stack->Parsers + (Stack->Depth-1);
+    Result = Stack->Parsers + Stack->Depth;
   }
   else
   {
