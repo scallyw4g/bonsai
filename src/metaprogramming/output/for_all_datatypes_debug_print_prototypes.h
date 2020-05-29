@@ -569,6 +569,12 @@
       function void DebugPrint( c_token_cursor* S, u32 Depth = 0);
       function void DebugPrint( c_token_cursor  S, u32 Depth = 0);
 
+      function void DebugPrint( c_token_buffer* S, u32 Depth = 0);
+      function void DebugPrint( c_token_buffer  S, u32 Depth = 0);
+
+      function void DebugPrint( c_token_buffer_buffer* S, u32 Depth = 0);
+      function void DebugPrint( c_token_buffer_buffer  S, u32 Depth = 0);
+
       function void DebugPrint( parser_cursor* S, u32 Depth = 0);
       function void DebugPrint( parser_cursor  S, u32 Depth = 0);
 

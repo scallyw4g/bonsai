@@ -33,9 +33,44 @@ _Pragma("clang diagnostic pop") // unused-macros
 
 
 
-function c_token* PeekTokenPointer(parser* Parser, u32 Lookahead = 0);
-function c_token* PeekTokenPointer(parser_stack *Stack, u32 TokenLookahead = 0, u32 StackLookahead = 0);
+function c_token *      PeekTokenRawPointer(parser *Stack, u32 TokenLookahead = 0);
+function c_token        PeekTokenRaw(parser *Stack, u32 Lookahead = 0);
+function u32            OffsetOfNext(parser *Stack, u32 Offset, c_token_type Close);
+function c_token *      PeekTokenPointer(parser *Stack, u32 TokenLookahead = 0);
+function c_token        PeekToken(parser *Stack, u32 Lookahead = 0);
+function c_token        PopTokenRaw(parser *Stack);
+function b32            TokensRemain(parser *Stack, u32 TokenLookahead = 0);
+function c_token        PopToken(parser *Stack);
+function b32            OptionalTokenRaw(parser *Stack, c_token_type Type);
+function b32            OptionalToken(parser *Stack, c_token T);
+function b32            OptionalToken(parser *Stack, c_token_type Type);
+function c_token        RequireToken(parser *Stack, c_token ExpectedToken);
+function c_token        RequireToken(parser *Stack, c_token_type ExpectedType);
+function b32            TokenIsOperator(c_token_type T);
+function b32            NextTokenIsOperator(parser *Stack);
+function counted_string RequireOperatorToken(parser *Stack);
 
+function c_token *      PeekTokenRawPointer(parser_stack *Stack, u32 TokenLookahead = 0, u32 StackLookahead = 0);
+function c_token        PeekTokenRaw(parser_stack *Stack, u32 Lookahead = 0);
+function u32            OffsetOfNext(parser_stack *Stack, u32 Offset, c_token_type Close);
+function c_token *      PeekTokenPointer(parser_stack *Stack, u32 TokenLookahead = 0, u32 StackLookahead = 0);
+function c_token        PeekToken(parser_stack *Stack, u32 Lookahead = 0);
+function c_token        PopTokenRaw(parser_stack *Stack);
+function b32            TokensRemain(parser_stack *Stack);
+function c_token        PopToken(parser_stack *Stack);
+function b32            OptionalTokenRaw(parser_stack *Stack, c_token_type Type);
+function b32            OptionalToken(parser_stack *Stack, c_token T);
+function b32            OptionalToken(parser_stack *Stack, c_token_type Type);
+function c_token        RequireToken(parser_stack *Stack, c_token ExpectedToken);
+function c_token        RequireToken(parser_stack *Stack, c_token_type ExpectedType);
+function b32            TokenIsOperator(c_token_type T);
+function b32            NextTokenIsOperator(parser_stack *Stack);
+function counted_string RequireOperatorToken(parser_stack *Stack);
+
+
+
+function void TrimLastToken(parser* Parser, c_token_type TokenType);
+function counted_string EatBetween(parser* Parser, c_token_type Open, c_token_type Close);
 
 
 
@@ -162,8 +197,50 @@ RewindUntil(parser* Parser, c_token_type Type)
 
 function c_token PopTokenRaw(parser* Parser);
 
+function void
+EatUntilExcluding(parser* Parser, c_token_type Close, c_token_buffer *Result)
+{
+  Result->Start = Parser->Tokens.At;
+
+  while (Remaining(&Parser->Tokens))
+  {
+    if(PeekTokenRaw(Parser).Type == Close)
+    {
+      break;
+    }
+    else
+    {
+      PopTokenRaw(Parser);
+    }
+  }
+  Result->Count = (umm)(Parser->Tokens.At - Result->Start);
+
+  if (Remaining(&Parser->Tokens)) { RequireToken(Parser, Close); }
+}
+
 function counted_string
-EatUntil(parser* Parser, c_token_type Close)
+EatUntilExcluding(parser* Parser, c_token_type Close)
+{
+  string_from_parser Builder = StartStringFromParser(Parser);
+  while (Remaining(&Parser->Tokens))
+  {
+    if(PeekTokenRaw(Parser).Type == Close)
+    {
+      break;
+    }
+    else
+    {
+      PopTokenRaw(Parser);
+    }
+  }
+  counted_string Result = FinalizeStringFromParser(&Builder);
+
+  if (Remaining(&Parser->Tokens)) { RequireToken(Parser, Close); }
+  return Result;
+}
+
+function counted_string
+EatUntilIncluding(parser* Parser, c_token_type Close)
 {
   string_from_parser Builder = StartStringFromParser(Parser);
   while (Remaining(&Parser->Tokens))
@@ -173,7 +250,7 @@ EatUntil(parser* Parser, c_token_type Close)
       break;
     }
   }
-  counted_string Result = FinalizeStringFromParser(&Builder, Parser);
+  counted_string Result = FinalizeStringFromParser(&Builder);
   return Result;
 }
 
@@ -428,7 +505,7 @@ OutputParsingError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, c
   }
 
   {
-    EatUntil(&TrailingLines, CTokenType_Newline);
+    EatUntilIncluding(&TrailingLines, CTokenType_Newline);
     TrailingLines.Tokens.Start = TrailingLines.Tokens.At;
     TruncateAtNextLineEnd(&TrailingLines, LinesOfContext);
     DebugDumpParser(&TrailingLines);
@@ -495,7 +572,7 @@ OutputParsingError(parser_stack* Stack, counted_string ErrorString)
   ( (Result).Type == CTokenType_Identifier && StringsMatch(CSz("break_here"), (Result).Value) )
 
 function c_token*
-PeekTokenRawPointer(parser* Parser, u32 Lookahead = 0)
+PeekTokenRawPointer(parser* Parser, u32 Lookahead)
 {
   c_token* Result = {};
   if (Remaining(&Parser->Tokens, Lookahead))
@@ -515,7 +592,7 @@ PeekTokenRawPointer(parser* Parser, u32 Lookahead = 0)
 }
 
 function c_token
-PeekTokenRaw(parser* Parser, u32 Lookahead = 0)
+PeekTokenRaw(parser* Parser, u32 Lookahead)
 {
   c_token* Pointer = PeekTokenRawPointer(Parser, Lookahead);
   c_token Result = {};
@@ -599,7 +676,7 @@ PeekTokenPointer(parser* Parser, u32 Lookahead)
 }
 
 function c_token
-PeekToken(parser* Parser, u32 Lookahead = 0)
+PeekToken(parser* Parser, u32 Lookahead)
 {
   c_token* Pointer = PeekTokenPointer(Parser, Lookahead);
   c_token Result = {};
@@ -631,7 +708,7 @@ PopTokenRaw(parser* Parser)
 }
 
 function b32
-TokensRemain(parser *Parser, u32 Count = 0)
+TokensRemain(parser *Parser, u32 Count)
 {
   b32 Result = PeekTokenPointer(Parser, Count) != 0;
   return Result;
@@ -857,30 +934,88 @@ RequireOperatorToken(parser* Parser)
     default: { OutputParsingError(Parser, CSz("Expected operator.")); } break;
   }
 
-  counted_string Result = FinalizeStringFromParser(&Builder, Parser);
+  counted_string Result = FinalizeStringFromParser(&Builder);
   return Result;
 }
+
 
 
 /************************   Stack token control  *****************************/
 
 
-function c_token*       PeekTokenRawPointer(parser_stack* Stack, u32 TokenLookahead = 0, u32 StackLookahead = 0);
-function c_token        PeekTokenRaw(parser_stack* Stack, u32 Lookahead = 0);
-function u32            OffsetOfNext(parser_stack* Stack, u32 Offset, c_token_type Close);
-function c_token*       PeekTokenPointer(parser_stack *Stack, u32 TokenLookahead, u32 StackLookahead);
-function c_token        PeekToken(parser_stack* Stack, u32 Lookahead = 0);
-function c_token        PopTokenRaw(parser_stack* Stack);
-function b32            TokensRemain(parser_stack *Stack);
-function c_token        PopToken(parser_stack* Stack);
-function b32            OptionalTokenRaw(parser_stack* Stack, c_token_type Type);
-function b32            OptionalToken(parser_stack* Stack, c_token T);
-function b32            OptionalToken(parser_stack* Stack, c_token_type Type);
-function c_token        RequireToken(parser_stack* Stack, c_token ExpectedToken);
-function c_token        RequireToken(parser_stack* Stack, c_token_type ExpectedType);
-function b32            TokenIsOperator(c_token_type T);
-function b32            NextTokenIsOperator(parser_stack* Stack);
-function counted_string RequireOperatorToken(parser_stack* Stack);
+
+function void
+CopyBufferIntoCursor(c_token_buffer *Src, c_token_cursor *Dest)
+{
+  for ( u32 TokenIndex = 0;
+        TokenIndex < Src->Count;
+        ++TokenIndex)
+  {
+    Push(Src->Start[TokenIndex], Dest);
+  }
+}
+
+function parser
+ExpandMacro(parser_stack *Stack, macro_def *Macro)
+{
+  Assert(Macro->Type == type_macro_function);
+
+  parser Result = AllocateParser(Macro->Parser.Filename, (u32)Kilobytes(1), 0, TranArena);
+
+  c_token *Start = PeekTokenPointer(Stack);
+  parser ArgParser_ =
+  {
+    .Valid = 1,
+    .Tokens = { .Start = Start, .At = Start, .End = Start, },
+  };
+  parser *ArgParser = &ArgParser_;
+
+  // TODO(Jesse id: 343): This is busted on invalid program input.
+  EatBetween(Peek(Stack), CTokenType_OpenParen, CTokenType_CloseParen);
+  ArgParser_.Tokens.End = Peek(Stack)->Tokens.At;
+
+  RequireToken(ArgParser, CTokenType_OpenParen);
+  TrimLastToken(ArgParser, CTokenType_CloseParen);
+
+  c_token_buffer_buffer ArgValues = CTokenBufferBuffer(Macro->ArgNames.Count, TranArena);
+
+  for ( u32 ArgIndex = 0;
+        ArgIndex < ArgValues.Count;
+        ++ArgIndex)
+  {
+
+     EatUntilExcluding(ArgParser, CTokenType_Comma, ArgValues.Start+ArgIndex);
+  }
+
+  Assert(Remaining(ArgParser) == 0);
+
+  parser *MacroParser = &Macro->Parser;
+  Rewind(MacroParser);
+  while (Remaining(MacroParser))
+  {
+    c_token T = PopTokenRaw(MacroParser);
+    if (T.Type == CTokenType_Identifier)
+    {
+      u32 ArgIndex = (u32)IndexOf(&Macro->ArgNames, T.Value);
+      if (ArgIndex < Macro->ArgNames.Count)
+      {
+        CopyBufferIntoCursor(ArgValues.Start + ArgIndex, &Result.Tokens);
+      }
+      else
+      {
+        Push(T, &Result.Tokens);
+      }
+    }
+    else
+    {
+      Push(T, &Result.Tokens);
+    }
+  }
+  Assert(Remaining(MacroParser) == 0);
+  Rewind(MacroParser);
+
+  return Result;
+}
 
 function c_token*
 PeekTokenRawPointer(parser_stack *Stack, u32 TokenLookahead, u32 StackLookahead)
@@ -909,7 +1044,7 @@ PeekTokenRawPointer(parser_stack *Stack, u32 TokenLookahead, u32 StackLookahead)
 
   if (Result->Type == CT_MacroLiteral)
   {
-    RequireToken(Stack, CT_MacroLiteral);
+    RequireToken(Stack, CT_MacroLiteral); // Name
 
     macro_def *Macro = Result->Macro;
     switch (Macro->Type)
@@ -922,6 +1057,8 @@ PeekTokenRawPointer(parser_stack *Stack, u32 TokenLookahead, u32 StackLookahead)
 
       case type_macro_function:
       {
+        parser Expanded = ExpandMacro(Stack, Macro);
+        PushStack(Stack, Expanded, parser_push_type_macro);
       } break;
 
       case type_macro_noop: { InvalidCodePath(); } break;
@@ -1077,12 +1214,12 @@ EatComment(parser* Parser, c_token_type CommentT)
   {
     case CTokenType_CommentSingleLine:
     {
-      EatUntil(Parser, CTokenType_Newline);
+      EatUntilIncluding(Parser, CTokenType_Newline);
     } break;
 
     case CTokenType_CommentMultiLineStart:
     {
-      EatUntil(Parser, CTokenType_CommentMultiLineEnd);
+      EatUntilIncluding(Parser, CTokenType_CommentMultiLineEnd);
     } break;
 
     default:
@@ -1091,7 +1228,7 @@ EatComment(parser* Parser, c_token_type CommentT)
     } break;
   }
 
-  counted_string Result = FinalizeStringFromParser(&Builder, Parser);
+  counted_string Result = FinalizeStringFromParser(&Builder);
   return Result;
 }
 
@@ -1455,9 +1592,6 @@ GetByName(macro_def_stream* Stream, counted_string Name)
   return Result;
 }
 
-function counted_string
-EatBetween(parser* Parser, c_token_type Open, c_token_type Close);
-
 function u32
 CountTokensBeforeNext(parser *Parser, c_token_type T1, c_token_type T2)
 {
@@ -1490,29 +1624,13 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, mac
 {
   u32 LineNumber = 0;
 
-  parser Result = {
-    .Filename = Code.Filename
-  };
+  parser Result = AllocateParser(Code.Filename, (u32)Megabytes(1), (u32)Megabytes(1), Memory);
 
   macro_def_stream MacrosThatNeedToBeParsedOut = {};
 
   if (!Code.Start)
   {
     Error("Input AnsiStream for %.*s is null.", (s32)Code.Filename.Count, Code.Filename.Start);
-    return Result;
-  }
-
-  Result.Tokens = AllocateTokenBuffer(Memory, (u32)Megabytes(1));
-  if (!Result.Tokens.Start)
-  {
-    Error("Allocating Token Buffer");
-    return Result;
-  }
-
-  Result.OutputTokens = AllocateTokenBuffer(Memory, (u32)Megabytes(1));
-  if (!Result.OutputTokens.Start)
-  {
-    Error("Allocating OutputTokens Buffer");
     return Result;
   }
 
@@ -1842,10 +1960,10 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, mac
         }
         else
         {
-          const char* HashCharacter = Code.At;
-          Advance(&Code);
           if (ProgramMacros)
           {
+            const char* HashCharacter = Code.At;
+            Advance(&Code);
             const char* FirstAfterHash = Code.At;
 
             LineNumber += EatSpacesTabsAndEscapedNewlines(&Code);
@@ -1876,7 +1994,11 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, mac
 
               Code.At = FirstAfterDefineKeyword;
 
-              Push(&MacrosThatNeedToBeParsedOut, Macro, Memory);
+              if ( !ParsingSingleLineComment &&
+                   !ParsingMultiLineComment   )
+              {
+                Push(&MacrosThatNeedToBeParsedOut, Macro, Memory);
+              }
             }
             else if ( StringsMatch(TempValue, CSz("if")) )
             {
@@ -1938,6 +2060,10 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, mac
               // The token is just a regular hash .. roll back our parsing to the start.
               Code.At = FirstAfterHash;
             }
+          }
+          else
+          {
+            Advance(&Code);
           }
         }
 
@@ -2183,7 +2309,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, mac
       if (OptionalTokenRaw(MacroParser, CTokenType_OpenParen))
       {
         Macro->Type = type_macro_function;
-
         if (OptionalToken(MacroParser, CTokenType_CloseParen))
         {
           // No arguments
@@ -2205,7 +2330,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, mac
           if (PeekToken(MacroParser).Type == CTokenType_Identifier)
           {
             counted_string ArgName = RequireToken(MacroParser, CTokenType_Identifier).Value;
-            Macro->ArgNames.Start[Macro->ArgNames.Count-1];
+            Macro->ArgNames.Start[Macro->ArgNames.Count-1] = ArgName;
           }
 
           if (OptionalToken(MacroParser, CTokenType_Ellipsis))
@@ -2811,23 +2936,8 @@ EatBetween(parser* Parser, c_token_type Open, c_token_type Close)
     Parser->Valid = False;
   }
 
-  counted_string Result = FinalizeStringFromParser(&Builder, Parser);
+  counted_string Result = FinalizeStringFromParser(&Builder);
   return Result;
-}
-
-function void
-EatNextScope(parser* Parser)
-{
-  EatBetween(Parser, CTokenType_OpenBrace, CTokenType_CloseBrace);
-  return;
-}
-
-function void
-EatUnionDef(parser* Parser)
-{
-  EatNextScope(Parser);
-  OptionalToken(Parser, CTokenType_Semicolon);
-  return;
 }
 
 function struct_def
@@ -2883,8 +2993,7 @@ TrimLastToken(parser* Parser, c_token_type TokenType)
   {
     if (CurrentToken->Type == TokenType)
     {
-      Parser->Tokens.End = CurrentToken-1;
-      Parser->Tokens.At = Parser->Tokens.End;
+      Parser->Tokens.End = CurrentToken;
       break;
     }
 
@@ -2924,7 +3033,7 @@ GetBodyTextForNextScope(parser* Parser)
   BodyText.OutputTokens = {};
 
   BodyText.Tokens.Start = BodyText.Tokens.At;
-  EatNextScope(Parser);
+  EatBetween(Parser, CTokenType_OpenBrace, CTokenType_CloseBrace);
   BodyText.Tokens.End = Parser->Tokens.At;
 
   TrimFirstToken(&BodyText, CTokenType_OpenBrace);
@@ -3245,7 +3354,7 @@ ParseInitializerList(parser_stack *Stack, memory_arena *Memory)
 
   ast_node_initializer_list *Node = AllocateAndCastTo(ast_node_initializer_list, &Result, Memory);
 
-  EatNextScope(Peek(Stack));
+  EatBetween(Peek(Stack), CTokenType_OpenBrace, CTokenType_CloseBrace);
 
   return Result;
 }
@@ -3462,7 +3571,7 @@ ResolveInclude(parse_context *Ctx)
   else
   {
     RequireToken(Stack, CTokenType_LT);
-    PartialPath = EatUntil(Peek(Stack), CTokenType_GT);
+    PartialPath = EatUntilIncluding(Peek(Stack), CTokenType_GT);
     if (PartialPath.Count)
     {
       --PartialPath.Count; // Trim the ending '>' symbol
@@ -3558,7 +3667,7 @@ ParseStructMember(parse_context *Ctx, counted_string StructName)
       {
         Continue = True;
         RequireToken(Stack, T.Type);
-        EatUntil(Peek(Stack), CTokenType_Newline);
+        EatUntilIncluding(Peek(Stack), CTokenType_Newline);
       } break;
 
       case CTokenType_Tilde:
@@ -3872,18 +3981,6 @@ OptionalPostfixOperator(parser *Parser)
 }
 
 function void
-EatStructDef(parser* Parser)
-{
-  RequireToken(Parser, CTokenType_Identifier);
-  if ( !OptionalToken(Parser, CTokenType_Semicolon) )
-  {
-    EatNextScope(Parser);
-  }
-
-  RequireToken(Parser, CTokenType_Semicolon);
-}
-
-function void
 ParseDatatypeDef(parse_context *Ctx)
 {
   parser_stack *Stack = &Ctx->Stack;
@@ -4044,7 +4141,7 @@ ParseSingleStatement(parse_context *Ctx, ast_node_statement *Result)
       case CT_PreprocessorWarning:
       {
         RequireToken(Stack, T.Type);
-        EatUntil(Peek(Stack), CTokenType_Newline);
+        EatUntilIncluding(Peek(Stack), CTokenType_Newline);
       } break;
 
       case CTokenType_IntLiteral:
@@ -4074,7 +4171,7 @@ ParseSingleStatement(parse_context *Ctx, ast_node_statement *Result)
         if (PeekToken(Stack).Type == CTokenType_OpenBrace)
         {
           // Initializer List
-          EatNextScope(Peek(Stack));
+          EatBetween(Peek(Stack), CTokenType_OpenBrace, CTokenType_CloseBrace);
         }
         else
         {
@@ -4724,7 +4821,7 @@ ParseDatatypes(parse_context *Ctx)
       case CT_PreprocessorWarning:
       {
         RequireToken(Stack, T.Type);
-        EatUntil(Peek(Stack), CTokenType_Newline);
+        EatUntilIncluding(Peek(Stack), CTokenType_Newline);
       } break;
 
       case CTokenType_Meta:
@@ -4752,7 +4849,7 @@ ParseDatatypes(parse_context *Ctx)
 
       case CTokenType_Using:
       {
-        EatUntil(Peek(Stack), CTokenType_Semicolon);
+        EatUntilIncluding(Peek(Stack), CTokenType_Semicolon);
       } break;
 
       case CTokenType_TemplateKeyword:
@@ -5948,7 +6045,7 @@ GoGoGadgetMetaprogramming(parse_context* Ctx, todo_list_info* TodoInfo)
             OptionalToken(Stack, CTokenType_Colon);
 
             counted_string TodoValue = T.Type == CTokenType_CommentSingleLine ?
-              Trim(EatUntil(Peek(Stack), CTokenType_Newline)) :
+              Trim(EatUntilIncluding(Peek(Stack), CTokenType_Newline)) :
               ParseMultiLineTodoValue(Peek(Stack), Memory);
 
             person* Person = GetExistingOrCreate(People, PersonName, Memory);

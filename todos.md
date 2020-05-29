@@ -3,6 +3,8 @@
     - #272 Fold `-` sign into this value at tokenization time?
     - #154 This is pretty shitty because whenever we copy one of these structs this field has to be manually zeroed out ..
     - #262 These should probably be in their own type_ast_node_cast .. ?
+    - #343 This is busted on invalid program input.
+    - #341 This is an exact duplicate of RequireToken and verrrry similar to PopTokenRaw .. should we do something to reduce this duplication?
     - #278 Disallow invalid suffixes lul/LUL .. LUU .. ULLLL etc..
     - #282 Should we parse out the function def explicitly here?
     - #304 only do this work once
@@ -10,6 +12,7 @@
     - #260 Currently ignoring the second half of a ternary .. we should probably not do this
     - #264 Once we have proper macro expansion, this can be expanded and concatenated to the string as well.
     - #316 These paths are exactly the same .. they should probably use the same API ..?
+    - #340 We should only traverse files that were passed to us on the CLI
     - #265 Unnecessary .. I just added these as a hack get parsing to work
     - #266 Unnecessary .. I just added it as a hack get parsing to work
     - #267 Unnecessary .. I just added these as a hack get parsing to work
@@ -18,8 +21,6 @@
     - #270 Unnecessary .. I just added these as a hack get parsing to work
     - #271 Unnecessary .. I just added these as a hack get parsing to work
     - #275 Rewrite this in terms of `ToU32(counted_string S)`
-    - #340 We should only traverse files that were passed to us on the CLI
-    - #341 This is an exact duplicate of RequireToken and verrrry similar to PopTokenRaw .. should we do something to reduce this duplication?
 
   ## immediate
     - #238 Change name to BitwiseAnd
@@ -346,8 +347,8 @@
     - #302 
 
   ## id_320
-    - #319 Type-checking failed.
     - #321 Once this path goes away, the assertion with the label associated with this todo id should be put back in.
+    - #319 Type-checking failed.
 
   ## id_321
     - #323 

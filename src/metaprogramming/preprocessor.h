@@ -60,6 +60,31 @@ meta(
     }
   }
 )
+
+meta(
+  func index_of(Type)
+  {
+    function umm
+    IndexOf((Type.name)_buffer *Buf, (Type.name) Element)
+    {
+      umm Result = Buf->Count;
+
+      for (u32 ElementIndex = 0;
+          ElementIndex < Buf->Count;
+          ++ElementIndex)
+      {
+        if (AreEqual(Buf->Start[ElementIndex], Element))
+        {
+          Result = ElementIndex;
+          break;
+        }
+      }
+
+      return Result;
+    }
+  }
+)
+
 meta(
   func generate_cursor(Type)
   {
@@ -517,6 +542,12 @@ struct c_token
 };
 meta(generate_cursor(c_token))
 #include <metaprogramming/output/generate_cursor_c_token.h>
+
+meta(buffer(c_token))
+#include <metaprogramming/output/buffer_c_token.h>
+
+meta(buffer(c_token_buffer))
+#include <metaprogramming/output/buffer_c_token_buffer.h>
 
 struct parser
 {
@@ -1128,6 +1159,7 @@ struct todo_list_info
 
 struct string_from_parser
 {
+  parser *Parser;
   const char* Start;
 };
 
@@ -1143,8 +1175,11 @@ enum output_mode
 inline void
 PrintToken(c_token Token)
 {
-  Assert(Token.Value.Start && Token.Value.Count);
-  Log("%.*s", Token.Value.Count, Token.Value.Start);
+  if (Token.Type)
+  {
+    Assert(Token.Value.Start && Token.Value.Count);
+    Log("%.*s", Token.Value.Count, Token.Value.Start);
+  }
 }
 
 b32
@@ -1193,6 +1228,33 @@ AllocateTokenBuffer(memory_arena* Memory, u32 Count)
   Result.Start = Allocate(c_token, Memory, Count);
   Result.At = Result.Start;
   Result.End = Result.Start + Count;
+
+  return Result;
+}
+
+function parser
+AllocateParser(counted_string Filename, u32 TokenCount, u32 OutputBufferTokenCount, memory_arena *Memory)
+{
+  parser Result = {
+    .Filename = Filename
+  };
+
+  Result.Tokens = AllocateTokenBuffer(Memory, TokenCount);
+  if (!Result.Tokens.Start)
+  {
+    Error("Allocating Token Buffer");
+    return Result;
+  }
+
+  if (OutputBufferTokenCount)
+  {
+    Result.OutputTokens = AllocateTokenBuffer(Memory, OutputBufferTokenCount);
+    if (!Result.OutputTokens.Start)
+    {
+      Error("Allocating OutputTokens Buffer");
+      return Result;
+    }
+  }
 
   return Result;
 }
@@ -1267,15 +1329,16 @@ function string_from_parser
 StartStringFromParser(parser* Parser)
 {
   string_from_parser Result = {
+    .Parser = Parser,
     .Start = Parser->Tokens.At->Value.Start
   };
   return Result;
 }
 
 function counted_string
-FinalizeStringFromParser(string_from_parser* Builder, parser* Parser)
+FinalizeStringFromParser(string_from_parser* Builder)
 {
-  umm Count = (umm)(Parser->Tokens.At->Value.Start - Builder->Start);
+  umm Count = (umm)(Builder->Parser->Tokens.At->Value.Start - Builder->Start);
   counted_string Result = { .Start = Builder->Start, .Count = Count };
   return Result;
 }

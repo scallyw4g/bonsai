@@ -194,6 +194,7 @@ AtElements(T *Sizable)
   return Result;
 }
 
+#if 0
 template <typename T> b32
 AreEqual(T First, T Second)
 {
@@ -212,6 +213,7 @@ AreEqual(T First, T Second)
 
   return Result;
 }
+#endif
 
 struct push_metadata
 {

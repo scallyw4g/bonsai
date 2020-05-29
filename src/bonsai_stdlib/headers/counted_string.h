@@ -190,6 +190,13 @@ StringsMatch(counted_string S1, counted_string S2)
 }
 
 inline b32
+AreEqual(counted_string S1, counted_string S2)
+{
+  b32 Result = StringsMatch(&S1, &S2);
+  return Result;
+}
+
+inline b32
 Contains(counted_string S1, counted_string S2)
 {
   b32 Result = False;

@@ -1,6 +1,10 @@
 meta(buffer(counted_string))
 #include <metaprogramming/output/buffer_counted_string.h>
 
+meta(index_of(counted_string))
+#include <metaprogramming/output/index_of_counted_string.h>
+
+
 counted_string
 CountedString(umm Count, memory_arena* Memory)
 {

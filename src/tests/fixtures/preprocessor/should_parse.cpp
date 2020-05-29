@@ -64,9 +64,9 @@ u32 SizeOfInt = sizeof(int);
 
 
 
-#define MacroFunction(P1, P2) Param
-MacroFunction(u32 AnUnsignedInt = 42;)
-MacroFunction(u32 AnotherUnsignedInt = sizeof(u32);)
+#define MacroFunction(P1, P2) P1 P2
+MacroFunction(u32 AnUnsignedInt = 42;, Whatever)
+MacroFunction(u32 AnotherUnsignedInt = sizeof(u32);, Trevor)
 
 #define VariadicMacroFunction1(P1, P2, ...) P1 P2 __VA_ARGS__
 

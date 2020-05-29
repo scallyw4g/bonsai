@@ -3140,6 +3140,12 @@
       }
 
       
+          DebugPrint("parser Parser {\n", Depth+2);
+          DebugPrint(S.Parser, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
           DebugPrint("char Start {\n", Depth+2);
           DebugPrint(S.Start, Depth+4);
           DebugPrint("\n");
@@ -7622,6 +7628,64 @@
     }
 
     function void DebugPrint( c_token_cursor *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( c_token_buffer S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("c_token_buffer {\n", Depth);
+      }
+
+      
+          DebugPrint("c_token Start {\n", Depth+2);
+          DebugPrint(S.Start, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("umm Count {\n", Depth+2);
+          DebugPrint(S.Count, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( c_token_buffer *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( c_token_buffer_buffer S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("c_token_buffer_buffer {\n", Depth);
+      }
+
+      
+          DebugPrint("c_token_buffer Start {\n", Depth+2);
+          DebugPrint(S.Start, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("umm Count {\n", Depth+2);
+          DebugPrint(S.Count, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( c_token_buffer_buffer *S, u32 Depth)
     {
       if (S) { DebugPrint(*S, Depth); }
       else { DebugPrint("ptr(0)", Depth); }
