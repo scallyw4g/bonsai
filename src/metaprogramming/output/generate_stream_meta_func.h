@@ -46,7 +46,7 @@
 
 
     
-    function void
+    function meta_func *
     Push(meta_func_stream* Stream, meta_func Element, memory_arena* Memory)
     {
       meta_func_stream_chunk* NextChunk = (meta_func_stream_chunk*)PushStruct(Memory, sizeof( meta_func_stream_chunk ), 1, 0);
@@ -67,7 +67,8 @@
       Assert(NextChunk->Next == 0);
       Assert(Stream->LastChunk->Next == 0);
 
-      return;
+      meta_func *Result = &NextChunk->Element;
+      return Result;
     }
 
     function void
@@ -75,11 +76,33 @@
     {
       if (S1->LastChunk)
       {
-        S1->LastChunk->Next = S2->FirstChunk;
-        S1->LastChunk = S2->LastChunk;
+        Assert(S1->FirstChunk);
+
+        if (S2->FirstChunk)
+        {
+          Assert(S2->LastChunk);
+          S1->LastChunk->Next = S2->FirstChunk;
+          S1->LastChunk = S2->LastChunk;
+        }
+        else
+        {
+          Assert(!S2->LastChunk);
+        }
       }
       else
       {
+        Assert(!S1->FirstChunk);
+        Assert(!S1->LastChunk);
+
+        if(S2->FirstChunk)
+        {
+          Assert(S2->LastChunk);
+        }
+        else
+        {
+          Assert(!S2->LastChunk);
+        }
+
         *S1 = *S2;
       }
     }

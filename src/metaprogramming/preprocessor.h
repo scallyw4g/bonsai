@@ -164,7 +164,7 @@ meta(
 meta(
   func generate_stream_push(Type)
   {
-    function void
+    function (Type.name) *
     Push((Type.name)_stream* Stream, (Type.name) Element, memory_arena* Memory)
     {
       (Type.name)_stream_chunk* NextChunk = ((Type.name)_stream_chunk*)PushStruct(Memory, sizeof( (Type.name)_stream_chunk ), 1, 0);
@@ -185,7 +185,8 @@ meta(
       Assert(NextChunk->Next == 0);
       Assert(Stream->LastChunk->Next == 0);
 
-      return;
+      (Type.name) *Result = &NextChunk->Element;
+      return Result;
     }
 
     function void
@@ -193,11 +194,33 @@ meta(
     {
       if (S1->LastChunk)
       {
-        S1->LastChunk->Next = S2->FirstChunk;
-        S1->LastChunk = S2->LastChunk;
+        Assert(S1->FirstChunk);
+
+        if (S2->FirstChunk)
+        {
+          Assert(S2->LastChunk);
+          S1->LastChunk->Next = S2->FirstChunk;
+          S1->LastChunk = S2->LastChunk;
+        }
+        else
+        {
+          Assert(!S2->LastChunk);
+        }
       }
       else
       {
+        Assert(!S1->FirstChunk);
+        Assert(!S1->LastChunk);
+
+        if(S2->FirstChunk)
+        {
+          Assert(S2->LastChunk);
+        }
+        else
+        {
+          Assert(!S2->LastChunk);
+        }
+
         *S1 = *S2;
       }
     }
@@ -548,6 +571,9 @@ meta(buffer(c_token))
 
 meta(buffer(c_token_buffer))
 #include <metaprogramming/output/buffer_c_token_buffer.h>
+
+meta(generate_stream(c_token_buffer))
+#include <metaprogramming/output/generate_stream_c_token_buffer.h>
 
 struct parser
 {

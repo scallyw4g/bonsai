@@ -1,4 +1,7 @@
 
+#define VariadicMacroFunction3(...) __VA_ARGS__
+VariadicMacroFunction3(A, B, C, D);
+
 #define __QWORD unsigned long long
 #define __STD_TYPE typedef
 #define __DEV_T_TYPE __QWORD
@@ -71,6 +74,7 @@ MacroFunction(u32 AnotherUnsignedInt = sizeof(u32);, Trevor)
 #define VariadicMacroFunction1(P1, P2, ...) P1 P2 __VA_ARGS__
 
 #define VariadicMacroFunction2(P1, P2 ...) P1 P2 __VA_ARGS__
+
 
 #if 0
 #define CheekyDisappearingFunction(...)

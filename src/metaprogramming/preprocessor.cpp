@@ -69,6 +69,7 @@ function counted_string RequireOperatorToken(parser_stack *Stack);
 
 
 
+function void TrimFirstToken(parser* Parser, c_token_type TokenType);
 function void TrimLastToken(parser* Parser, c_token_type TokenType);
 function counted_string EatBetween(parser* Parser, c_token_type Open, c_token_type Close);
 
@@ -586,6 +587,7 @@ PeekTokenRawPointer(parser* Parser, u32 Lookahead)
 
 #if BONSAI_INTERNAL
   if (Result && Result->Type == CTokenType_Identifier) { Assert(Result->Value.Start); Assert(Result->Value.Count);  }
+  if (Result) { Assert(Result->Type); }
 #endif
 
   return Result;
@@ -974,7 +976,7 @@ ExpandMacro(parser_stack *Stack, macro_def *Macro)
   EatBetween(Peek(Stack), CTokenType_OpenParen, CTokenType_CloseParen);
   ArgParser_.Tokens.End = Peek(Stack)->Tokens.At;
 
-  RequireToken(ArgParser, CTokenType_OpenParen);
+  TrimFirstToken(ArgParser, CTokenType_OpenParen);
   TrimLastToken(ArgParser, CTokenType_CloseParen);
 
   c_token_buffer_buffer ArgValues = CTokenBufferBuffer(Macro->ArgNames.Count, TranArena);
@@ -983,8 +985,22 @@ ExpandMacro(parser_stack *Stack, macro_def *Macro)
         ArgIndex < ArgValues.Count;
         ++ArgIndex)
   {
+    EatUntilExcluding(ArgParser, CTokenType_Comma, ArgValues.Start+ArgIndex);
+  }
 
-     EatUntilExcluding(ArgParser, CTokenType_Comma, ArgValues.Start+ArgIndex);
+  c_token_buffer_stream VarArgs = {};
+  if (Macro->Variadic)
+  {
+    while (Remaining(ArgParser))
+    {
+      // TODO(Jesse id: 344): This API is pretty obtuse and could use some work..
+      c_token_buffer *Arg = Push(&VarArgs, {}, TranArena);
+      EatUntilExcluding(ArgParser, CTokenType_Comma, Arg);
+      if (OptionalToken(ArgParser, CTokenType_CloseParen))
+      {
+        break;
+      }
+    }
   }
 
   Assert(Remaining(ArgParser) == 0);
@@ -1014,6 +1030,8 @@ ExpandMacro(parser_stack *Stack, macro_def *Macro)
   Assert(Remaining(MacroParser) == 0);
   Rewind(MacroParser);
 
+
+  TruncateToCurrentSize(&Result.Tokens);
   return Result;
 }
 
@@ -1042,7 +1060,7 @@ PeekTokenRawPointer(parser_stack *Stack, u32 TokenLookahead, u32 StackLookahead)
     }
   }
 
-  if (Result->Type == CT_MacroLiteral)
+  if (Result && Result->Type == CT_MacroLiteral)
   {
     RequireToken(Stack, CT_MacroLiteral); // Name
 
@@ -1066,6 +1084,10 @@ PeekTokenRawPointer(parser_stack *Stack, u32 TokenLookahead, u32 StackLookahead)
 
     Result = PeekTokenRawPointer(Stack);
   }
+
+#if BONSAI_INTERNAL
+  if (Result) { Assert(Result->Type); }
+#endif
 
   return Result;
 }
@@ -2250,19 +2272,24 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, mac
           }
           else
           {
-            if (ProgramMacros)
+
+            if ( !ParsingSingleLineComment &&
+                 !ParsingMultiLineComment   )
             {
-              macro_def *Macro1 = GetByName(ProgramMacros, PushT.Value);
-              macro_def *Macro2 = GetByName(&MacrosThatNeedToBeParsedOut, PushT.Value);
-              if (Macro1)
+              if (ProgramMacros)
               {
-                PushT.Type = CT_MacroLiteral;
-                PushT.Macro = Macro1;
-              }
-              else if (Macro2)
-              {
-                PushT.Type = CT_MacroLiteral;
-                PushT.Macro = Macro2;
+                macro_def *Macro1 = GetByName(ProgramMacros, PushT.Value);
+                macro_def *Macro2 = GetByName(&MacrosThatNeedToBeParsedOut, PushT.Value);
+                if (Macro1)
+                {
+                  PushT.Type = CT_MacroLiteral;
+                  PushT.Macro = Macro1;
+                }
+                else if (Macro2)
+                {
+                  PushT.Type = CT_MacroLiteral;
+                  PushT.Macro = Macro2;
+                }
               }
             }
 
@@ -6183,6 +6210,7 @@ GoGoGadgetMetaprogramming(parse_context* Ctx, todo_list_info* TodoInfo)
                 Advance(&Iter))
             {
               struct_def* Struct = &Iter.At->Element;
+
               if (!StreamContains(&Excludes, Struct->Type))
               {
                 meta_func_arg_stream Args = {};
@@ -6620,7 +6648,6 @@ main(s32 ArgCountInit, const char** ArgStrings)
     ITERATE_OVER(&Ctx.AllParsers)
     {
       parser* Parser = GET_ELEMENT(Iter);
-
       Assert(Parser->Valid);
 
       PushStack(&Ctx.Stack, *Parser, parser_push_type_root);
@@ -6666,6 +6693,7 @@ main(s32 ArgCountInit, const char** ArgStrings)
       Ctx.Stack.Depth = 0;
     }
 
+#if 0
     ITERATE_OVER(&Ctx.Datatypes.Functions)
     {
       function_decl *Func = GET_ELEMENT(Iter);
@@ -6681,6 +6709,7 @@ main(s32 ArgCountInit, const char** ArgStrings)
 
       Ctx.Stack.Depth = 0;
     }
+#endif
 
     WriteTodosToFile(&TodoInfo.People, Memory);
   }

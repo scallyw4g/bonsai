@@ -21,6 +21,7 @@
     - #270 Unnecessary .. I just added these as a hack get parsing to work
     - #271 Unnecessary .. I just added these as a hack get parsing to work
     - #275 Rewrite this in terms of `ToU32(counted_string S)`
+    - #344 This API is pretty obtuse and could use some work..
 
   ## immediate
     - #238 Change name to BitwiseAnd
