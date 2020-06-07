@@ -194,26 +194,19 @@ AtElements(T *Sizable)
   return Result;
 }
 
-#if 0
-template <typename T> b32
-AreEqual(T First, T Second)
+function b32
+MemoryIsEqual(u8 *First, u8 *Second, umm Size)
 {
   b32 Result = True;
-  umm TypeSize = sizeof(T);
-
-  u8* FirstPtr = (u8*)&First;
-  u8* SecondPtr = (u8*)&Second;
-
   for (umm Index = 0;
-      Index < TypeSize;
+      Index < Size;
       ++Index)
   {
-    Result = Result && ( FirstPtr[Index] == SecondPtr[Index]);
+    Result &= (First[Index] == Second[Index]);
   }
 
   return Result;
 }
-#endif
 
 struct push_metadata
 {

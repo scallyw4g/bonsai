@@ -370,7 +370,7 @@ FirstPreprocessor=1
 BuildPreprocessor=1
 SecondPreprocessor=0
 
-BuildAllProjects=0
+BuildAllProjects=1
 RunTests=0
 FinalPreprocessor=0
 

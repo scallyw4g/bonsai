@@ -494,9 +494,9 @@ MultipleAllocations()
       memory_arena_stats MemStats2 = GetMemoryArenaStats(&Arena);
       memory_arena_stats MemStats3 = GetMemoryArenaStats(&Arena);
 
-      TestThat( AreEqual(MemStats1,  MemStats2) );
-      TestThat( AreEqual(MemStats1,  MemStats3) );
-      TestThat( AreEqual(MemStats2,  MemStats3) );
+      TestThat( AreEqual(&MemStats1,  &MemStats2) );
+      TestThat( AreEqual(&MemStats1,  &MemStats3) );
+      TestThat( AreEqual(&MemStats2,  &MemStats3) );
     }
 
   }

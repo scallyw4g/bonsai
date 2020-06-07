@@ -6,7 +6,7 @@
 #include <bonsai_types.h>
 
 #define InvalidDefaultWhileParsing(StackOrParser, ErrorMessage) \
-    default: { OutputParsingError(StackOrParser, PeekTokenPointer(StackOrParser), ErrorMessage); Assert(False); } break;
+    default: { ParseError(StackOrParser, PeekTokenPointer(StackOrParser), ErrorMessage); Assert(False); } break;
 
 
 #if DEBUG_PRINT
@@ -33,36 +33,42 @@ _Pragma("clang diagnostic pop") // unused-macros
 
 
 
-function c_token *      PeekTokenRawPointer(parser *Stack, u32 TokenLookahead = 0);
-function c_token        PeekTokenRaw(parser *Stack, u32 Lookahead = 0);
-function u32            OffsetOfNext(parser *Stack, u32 Offset, c_token_type Close);
-function c_token *      PeekTokenPointer(parser *Stack, u32 TokenLookahead = 0);
-function c_token        PeekToken(parser *Stack, u32 Lookahead = 0);
-function c_token        PopTokenRaw(parser *Stack);
-function b32            TokensRemain(parser *Stack, u32 TokenLookahead = 0);
-function c_token        PopToken(parser *Stack);
-function b32            OptionalTokenRaw(parser *Stack, c_token_type Type);
-function b32            OptionalToken(parser *Stack, c_token T);
-function b32            OptionalToken(parser *Stack, c_token_type Type);
-function c_token        RequireToken(parser *Stack, c_token ExpectedToken);
-function c_token        RequireToken(parser *Stack, c_token_type ExpectedType);
+function c_token *      PeekTokenRawPointer(parser *Parser, u32 TokenLookahead = 0);
+function c_token        PeekTokenRaw(parser *Parser, u32 Lookahead = 0);
+function u32            OffsetOfNext(parser *Parser, u32 Offset, c_token_type Close);
+function c_token *      PeekTokenPointer(parser *Parser, u32 TokenLookahead = 0);
+function c_token        PeekToken(parser *Parser, u32 Lookahead = 0);
+function c_token        PopTokenRaw(parser *Parser);
+function b32            TokensRemain(parser *Parser, u32 TokenLookahead = 0);
+function b32            RawTokensRemain(parser *Parser, u32 TokenLookahead = 0);
+function c_token        PopToken(parser *Parser);
+function b32            OptionalTokenRaw(parser *Parser, c_token_type Type);
+function b32            OptionalToken(parser *Parser, c_token T);
+function b32            OptionalToken(parser *Parser, c_token_type Type);
+function c_token        RequireToken(parser *Parser, c_token ExpectedToken);
+function c_token        RequireToken(parser *Parser, c_token_type ExpectedType);
+function c_token        RequireTokenRaw(parser *Parser, c_token Expected);
+function c_token        RequireTokenRaw(parser *Parser, c_token_type ExpectedType);
 function b32            TokenIsOperator(c_token_type T);
-function b32            NextTokenIsOperator(parser *Stack);
-function counted_string RequireOperatorToken(parser *Stack);
+function b32            NextTokenIsOperator(parser *Parser);
+function counted_string RequireOperatorToken(parser *Parser);
 
-function c_token *      PeekTokenRawPointer(parser_stack *Stack, u32 TokenLookahead = 0, u32 StackLookahead = 0);
+function c_token *      PeekTokenRawPointer(parser_stack *Stack, u32 *TokenLookahead = 0, u32 *StackLookahead = 0);
 function c_token        PeekTokenRaw(parser_stack *Stack, u32 Lookahead = 0);
 function u32            OffsetOfNext(parser_stack *Stack, u32 Offset, c_token_type Close);
 function c_token *      PeekTokenPointer(parser_stack *Stack, u32 TokenLookahead = 0, u32 StackLookahead = 0);
 function c_token        PeekToken(parser_stack *Stack, u32 Lookahead = 0);
 function c_token        PopTokenRaw(parser_stack *Stack);
 function b32            TokensRemain(parser_stack *Stack);
+function b32            RawTokensRemain(parser_stack *Stack);
 function c_token        PopToken(parser_stack *Stack);
 function b32            OptionalTokenRaw(parser_stack *Stack, c_token_type Type);
 function b32            OptionalToken(parser_stack *Stack, c_token T);
 function b32            OptionalToken(parser_stack *Stack, c_token_type Type);
 function c_token        RequireToken(parser_stack *Stack, c_token ExpectedToken);
 function c_token        RequireToken(parser_stack *Stack, c_token_type ExpectedType);
+function c_token        RequireTokenRaw(parser_stack *Stack, c_token Expected);
+function c_token        RequireTokenRaw(parser_stack *Stack, c_token_type ExpectedType);
 function b32            TokenIsOperator(c_token_type T);
 function b32            NextTokenIsOperator(parser_stack *Stack);
 function counted_string RequireOperatorToken(parser_stack *Stack);
@@ -72,6 +78,8 @@ function counted_string RequireOperatorToken(parser_stack *Stack);
 function void TrimFirstToken(parser* Parser, c_token_type TokenType);
 function void TrimLastToken(parser* Parser, c_token_type TokenType);
 function counted_string EatBetween(parser* Parser, c_token_type Open, c_token_type Close);
+
+function void EatUntil(parser_stack *Stack, c_token_type Close, c_token *StartToken);
 
 
 
@@ -107,6 +115,13 @@ function b32
 IsComment(c_token T)
 {
   b32 Result = (T.Type == CTokenType_CommentSingleLine) || (T.Type == CTokenType_CommentMultiLineStart);
+  return Result;
+}
+
+function umm
+Remaining(parser_stack* Stack)
+{
+  b32 Result = Stack->Depth > 0 && Remaining(&Stack->Parsers[0].Tokens);
   return Result;
 }
 
@@ -458,7 +473,7 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
 }
 
 function void
-OutputParsingError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_string ErrorString)
+ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_string ErrorString)
 {
   Parser->Valid = False;
 
@@ -518,23 +533,23 @@ OutputParsingError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, c
 }
 
 function void
-OutputParsingError(parser* Parser, counted_string ErrorString)
+ParseError(parser* Parser, counted_string ErrorString)
 {
-  OutputParsingError(Parser, Parser->Tokens.At, CToken(CTokenType_Unknown), ErrorString);
+  ParseError(Parser, Parser->Tokens.At, CToken(CTokenType_Unknown), ErrorString);
   return;
 }
 
 function void
-OutputParsingError(parser* Parser, c_token* ErrorToken, counted_string ErrorString)
+ParseError(parser* Parser, c_token* ErrorToken, counted_string ErrorString)
 {
-  OutputParsingError(Parser, ErrorToken, CToken(CTokenType_Unknown), ErrorString);
+  ParseError(Parser, ErrorToken, CToken(CTokenType_Unknown), ErrorString);
   return;
 }
 
 function void
-OutputParsingError(parser_stack* Stack, c_token* ErrorToken, counted_string ErrorString)
+ParseError(parser_stack* Stack, c_token* ErrorToken, counted_string ErrorString)
 {
-  OutputParsingError(Peek(Stack), ErrorToken, CToken(CTokenType_Unknown), ErrorString);
+  ParseError(Peek(Stack), ErrorToken, CToken(CTokenType_Unknown), ErrorString);
 
   // Stack->Parsers[Stack->Depth] is invalid, so subtract 1
   // then skip the first valid one, because we've printed a custom error already
@@ -549,16 +564,16 @@ OutputParsingError(parser_stack* Stack, c_token* ErrorToken, counted_string Erro
         CSz("<-- Expanded From") :
         CSz("<-- Include Location");
 
-    OutputParsingError(P, P->Tokens.At-1, EString);
+    ParseError(P, P->Tokens.At-1, EString);
   }
 
   return;
 }
 
 function void
-OutputParsingError(parser_stack* Stack, counted_string ErrorString)
+ParseError(parser_stack* Stack, counted_string ErrorString)
 {
-  OutputParsingError(Stack, PeekTokenPointer(Stack),  ErrorString);
+  ParseError(Stack, PeekTokenPointer(Stack),  ErrorString);
   return;
 }
 
@@ -603,6 +618,20 @@ PeekTokenRaw(parser* Parser, u32 Lookahead)
 }
 
 function u32
+OffsetOfNext(parser_stack *Stack, u32 Offset, c_token_type Close)
+{
+  c_token* Next = PeekTokenRawPointer(Stack, &Offset);
+
+  while (Next && Next->Type != Close)
+  {
+    ++Offset;
+    Next = PeekTokenRawPointer(Stack, &Offset);
+  }
+
+  return Offset;
+}
+
+function u32
 OffsetOfNext(parser* Parser, u32 Offset, c_token_type Close)
 {
   c_token* Next = PeekTokenRawPointer(Parser, Offset);
@@ -626,6 +655,7 @@ PeekTokenPointer(parser* Parser, u32 Lookahead)
   while (Remaining(&Parser->Tokens, LocalLookahead))
   {
     Result = PeekTokenRawPointer(Parser, LocalLookahead);
+
     if ( Result->Type == CTokenType_CommentSingleLine)
     {
       /* TODO(Jesse, id: 213, tags: bug, parsing, needs_tests): There is a degenerate case here, what if the file ends without a newline?
@@ -710,6 +740,13 @@ PopTokenRaw(parser* Parser)
 }
 
 function b32
+RawTokensRemain(parser *Parser, u32 Count)
+{
+  b32 Result = PeekTokenRawPointer(Parser, Count) != 0;
+  return Result;
+}
+
+function b32
 TokensRemain(parser *Parser, u32 Count)
 {
   b32 Result = PeekTokenPointer(Parser, Count) != 0;
@@ -783,22 +820,23 @@ RequireToken(parser* Parser, c_token ExpectedToken)
   c_token Result = {};
   if (PeekedToken) Result = *PeekedToken;
 
+  // TODO(Jesse, id: 348, tags: immediate, id_347) : This should go into an AreEqual function I think..
   if ( Result.Type != ExpectedToken.Type ||
        (ExpectedToken.Value.Count > 0 && !StringsMatch(ExpectedToken.Value, Result.Value) ))
   {
     if (PeekedToken)
     {
-      OutputParsingError(Parser, PeekedToken, ExpectedToken, CS("Require Token Failed"));
+      ParseError(Parser, PeekedToken, ExpectedToken, CS("Require Token Failed"));
     }
     else
     {
       if (Parser->Tokens.At-1 >= Parser->Tokens.Start)
       {
-        OutputParsingError(Parser, Parser->Tokens.At-1, ExpectedToken, FormatCountedString(TranArena, CSz("Stream ended unexpectedly in file : %S"), Parser->Filename));
+        ParseError(Parser, Parser->Tokens.At-1, ExpectedToken, FormatCountedString(TranArena, CSz("Stream ended unexpectedly in file : %S"), Parser->Filename));
       }
       else
       {
-        OutputParsingError(Parser, Parser->Tokens.At, ExpectedToken, FormatCountedString(TranArena, CSz("Stream ended unexpectedly in file : %S"), Parser->Filename));
+        ParseError(Parser, Parser->Tokens.At, ExpectedToken, FormatCountedString(TranArena, CSz("Stream ended unexpectedly in file : %S"), Parser->Filename));
       }
     }
 
@@ -821,6 +859,37 @@ function c_token
 RequireToken(parser* Parser, c_token_type ExpectedType)
 {
   c_token Result = RequireToken(Parser, CToken(ExpectedType));
+  return Result;
+}
+
+function c_token
+RequireTokenRaw(parser *Parser, c_token Expected )
+{
+  c_token Result = PeekTokenRaw(Parser);
+  if (Result == Expected)  // TODO(Jesse id: 349, tags: id_347) : Change to a function call
+  {
+    PopTokenRaw(Parser);
+  }
+  else
+  {
+    Result = {}; 
+  }
+  return Result;
+}
+
+function c_token
+RequireTokenRaw(parser *Parser, c_token_type Expected )
+{
+  c_token Result = PeekTokenRaw(Parser);
+  if (Result.Type == Expected)
+  {
+    PopTokenRaw(Parser);
+  }
+  else
+  {
+    Result = {}; 
+  }
+
   return Result;
 }
 
@@ -933,7 +1002,7 @@ RequireOperatorToken(parser* Parser)
       RequireToken(Parser, CTokenType_CloseBracket);
     } break;
 
-    default: { OutputParsingError(Parser, CSz("Expected operator.")); } break;
+    default: { ParseError(Parser, CSz("Expected operator.")); } break;
   }
 
   counted_string Result = FinalizeStringFromParser(&Builder);
@@ -1036,19 +1105,23 @@ ExpandMacro(parser_stack *Stack, macro_def *Macro)
 }
 
 function c_token*
-PeekTokenRawPointer(parser_stack *Stack, u32 TokenLookahead, u32 StackLookahead)
+PeekTokenRawPointer(parser_stack *Stack, u32 *TokenLookahead, u32 *StackLookahead)
 {
   c_token *Result = {};
 
   parser *Parser = Peek(Stack, StackLookahead);
   if (Parser)
   {
-    if (TokensRemain(Parser, TokenLookahead))
+    if (Remaining(&Parser->Tokens, TokenLookahead))
     {
-      Result = PeekTokenPointer(Parser, TokenLookahead);
+      Result = PeekTokenRawPointer(Parser, TokenLookahead);
     }
     else
     {
+#if 0
+      u32 NextTokenLookahead = TokenLookahead ? TokenLookahead-1 : 0 ;
+      Result = PeekTokenRawPointer(Stack, TokenLookahead-1, StackLookahead+1);
+#else
       if (TokenLookahead)
       {
         Result = PeekTokenRawPointer(Stack, TokenLookahead-1, StackLookahead+1);
@@ -1057,6 +1130,7 @@ PeekTokenRawPointer(parser_stack *Stack, u32 TokenLookahead, u32 StackLookahead)
       {
         Result = PeekTokenRawPointer(Stack, 0, StackLookahead+1);
       }
+#endif
     }
   }
 
@@ -1095,8 +1169,44 @@ PeekTokenRawPointer(parser_stack *Stack, u32 TokenLookahead, u32 StackLookahead)
 function c_token*
 PeekTokenPointer(parser_stack *Stack, u32 TokenLookahead, u32 StackLookahead)
 {
-  c_token *Result = PeekTokenRawPointer(Stack, TokenLookahead);
-  while (Result && IsWhitespace(Result->Type)) { Result = PeekTokenRawPointer(Stack, TokenLookahead++); }
+  c_token *Result = {};
+
+  b32 Done = False;
+  while (Remaining(Stack) && !Done)
+  {
+    Result = PeekTokenRawPointer(Stack, TokenLookahead);
+
+    switch (Result->Type)
+    {
+      case CTokenType_CommentMultiLineStart:
+      {
+        TokenLookahead = OffsetOfNext(Stack, TokenLookahead, CTokenType_CommentMultiLineEnd);
+        // TODO(Jesse, id: 361, tags: bug, robustness): This will crash if we pass a file than ends with an un-terminated multi-line comment
+        Assert(PeekTokenRawPointer(Stack, TokenLookahead)->Type == CTokenType_CommentMultiLineEnd);
+        ++TokenLookahead;
+      } break;
+
+      case CTokenType_CommentSingleLine:
+      {
+        TokenLookahead = OffsetOfNext(Stack, TokenLookahead, CTokenType_Newline);
+      } break;
+
+      case CTokenType_Space:
+      case CTokenType_Tab:
+      case CTokenType_Newline:
+      case CTokenType_EscapedNewline:
+      {
+        ++TokenLookahead;
+      } break;
+
+      default:
+      {
+        Done = True;
+        break;
+      }
+    }
+  }
+
   return Result;
 }
 
@@ -1199,10 +1309,50 @@ RequireToken(parser_stack *Stack, c_token_type Type)
   return Result;
 }
 
+function c_token
+RequireTokenRaw(parser_stack *Stack, c_token Expected )
+{
+  c_token Result = PeekTokenRaw(Stack);
+  if (Result == Expected)  // TODO(Jesse id: 354,  tags: id_347) : Change to a function call
+  {
+    PopTokenRaw(Stack);
+  }
+  else
+  {
+    Result = {}; 
+  }
+  return Result;
+}
+
+function c_token
+RequireTokenRaw(parser_stack *Stack, c_token_type Expected )
+{
+  c_token Result = PeekTokenRaw(Stack);
+  if (Result.Type == Expected)
+  {
+    PopTokenRaw(Stack);
+  }
+  else
+  {
+    Result = {}; 
+  }
+
+  return Result;
+}
+
+// TODO(Jesse id: 359): Is this the most efficient way of making this check?
+function b32
+RawTokensRemain(parser_stack *Stack)
+{
+  b32 Result = PeekTokenRawPointer(Stack) != 0;
+  return Result;
+}
+
+// TODO(Jesse id: 360): Is this the most efficient way of making this check?
 function b32
 TokensRemain(parser_stack *Stack)
 {
-  b32 Result = PeekToken(Stack).Type != CTokenType_Unknown;
+  b32 Result = PeekTokenPointer(Stack) != 0;
   return Result;
 }
 
@@ -1914,6 +2064,23 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, mac
         {
           PushT.Type = CTokenType_CharLiteral;
           PushT.Value = PopQuotedCharLiteral(&Code, True);
+
+          if(PushT.Value.Count > 2)
+          {
+            Assert(PushT.Value.Start[0] == '\'');
+            Assert(PushT.Value.Start[PushT.Value.Count-1] == '\'');
+
+            for ( u32 CharIndex = 1;
+                  CharIndex < PushT.Value.Count-1;
+                  ++CharIndex )
+            {
+              PushT.UnsignedValue += (umm)PushT.Value.Start[CharIndex];
+            }
+          }
+          else
+          {
+            Error("Quoted char literal with length %u .. ???", (u32)PushT.Value.Count);
+          }
         }
       } break;
 
@@ -2405,6 +2572,14 @@ function parser
 TokenizeAnsiStream(parse_context *Ctx, ansi_stream Code)
 {
   parser Result = TokenizeAnsiStream(Code, Ctx->Memory, False, &Ctx->Datatypes.Macros);
+  return Result;
+}
+
+function parser
+ParserForFile(counted_string Filename, memory_arena* Memory)
+{
+  ansi_stream SourceFileStream = AnsiStreamFromFile(Filename, Memory);
+  parser Result = TokenizeAnsiStream(SourceFileStream, Memory, False, 0);
   return Result;
 }
 
@@ -2926,6 +3101,63 @@ DumpStringStreamToConsole(counted_string_stream* Stream)
   }
 }
 
+function void
+EatUntil(parser_stack *Stack, c_token_type Close, c_token *StartToken)
+{
+  u32 Depth = 0;
+  b32 Success = False;
+  while ( Remaining(Stack) )
+  {
+    c_token T = PopToken(Stack);
+
+    if (T.Type == Close)
+    {
+      Success = True;
+      break;
+    }
+  }
+
+  if (!Success)
+  {
+    ParseError(Stack, StartToken, FormatCountedString(TranArena, CSz("Unable to find closing token %S"), ToString(Close)));
+  }
+
+  return;
+}
+
+function void
+EatUntil_TrackingDepth(parser_stack *Stack, c_token_type Open, c_token_type Close, c_token *StartToken)
+{
+  u32 Depth = 0;
+  b32 Success = False;
+  while ( Remaining(Stack) )
+  {
+    c_token T = PopToken(Stack);
+
+    if (T.Type == Open)
+    {
+      ++Depth;
+    }
+
+    if (T.Type == Close)
+    {
+      if (Depth == 0)
+      {
+        Success = True;
+        break;
+      }
+      --Depth;
+    }
+  }
+
+  if (!Success)
+  {
+    ParseError(Stack, StartToken, FormatCountedString(TranArena, CSz("Unable to find closing token %S"), ToString(Close)));
+  }
+
+  return;
+}
+
 function counted_string
 EatBetween(parser* Parser, c_token_type Open, c_token_type Close)
 {
@@ -2959,7 +3191,7 @@ EatBetween(parser* Parser, c_token_type Open, c_token_type Close)
 
   if (!Success)
   {
-    OutputParsingError(Parser, StartToken, FormatCountedString(TranArena, CSz("Unable to find closing token %S"), ToString(Close)));
+    ParseError(Parser, StartToken, FormatCountedString(TranArena, CSz("Unable to find closing token %S"), ToString(Close)));
     Parser->Valid = False;
   }
 
@@ -3605,7 +3837,7 @@ ResolveInclude(parse_context *Ctx)
     }
     else
     {
-      OutputParsingError(Peek(Stack), CSz("Include path must be specified."));
+      ParseError(Peek(Stack), CSz("Include path must be specified."));
     }
   }
 
@@ -3659,6 +3891,257 @@ ResolveInclude(parse_context *Ctx)
   }
 }
 
+#define TEST__ 'a'
+
+#if TEST__
+  
+#endif
+
+function u64
+ApplyOperator(parser_stack *Stack, u64 LHS, c_token_type OperatorType, u64 RHS)
+{
+  u64 Result = 0;
+  switch (OperatorType)
+  {
+    // TODO(Jesse id: 345): How do we differentiate between arithmetic/logical shifts here?
+    case CTokenType_LeftShift:
+    {
+      if (RHS < 64)
+      {
+        Result = LHS << RHS;
+      }
+      else
+      {
+        ParseError(Stack, CSz("Attempted to left-shift by more than 64 bits!"));
+      }
+    } break;
+
+    // TODO(Jesse id: 346, tags: id_345)
+    case CTokenType_RightShift:
+    {
+      Result = LHS >> RHS;
+    } break;
+
+    case CTokenType_LessEqual:
+    {
+      Result = LHS <= RHS;
+    } break;
+
+    case CTokenType_GreaterEqual:
+    {
+      Result = LHS >= RHS;
+    } break;
+
+    case CTokenType_AreEqual:
+    {
+      Result = LHS == RHS;
+    } break;
+
+    case CTokenType_NotEqual:
+    {
+      Result = LHS != RHS;
+    } break;
+
+    case CTokenType_PlusEquals:
+    {
+      Result = LHS + RHS;
+    } break;
+
+    case CTokenType_MinusEquals:
+    {
+      Result = LHS - RHS;
+    } break;
+
+    case CTokenType_TimesEquals:
+    {
+      Result = LHS * RHS;
+    } break;
+
+    case CTokenType_DivEquals:
+    {
+      Result = LHS / RHS;
+    } break;
+
+    case CTokenType_ModEquals:
+    {
+      Result = LHS % RHS;
+    } break;
+
+    case CTokenType_AndEquals:
+    {
+      Result = LHS && RHS;
+    } break;
+
+    case CTokenType_OrEquals:
+    {
+      Result = LHS || RHS;
+    } break;
+
+    case CTokenType_XorEquals:
+    {
+      Result = LHS ^ RHS;
+    } break;
+
+    case CTokenType_Increment:
+    {
+      Assert(RHS == 0);
+      Result = LHS+1;
+    } break;
+
+    case CTokenType_Decrement:
+    {
+      Assert(RHS == 0);
+      Result = LHS - 1;
+    } break;
+
+    case CTokenType_LogicalAnd:
+    {
+      Result = LHS && RHS;
+    } break;
+
+    case CTokenType_LogicalOr:
+    {
+      Result = LHS || RHS;
+    } break;
+
+    InvalidDefaultWhileParsing(Stack, CSz("Invalid operator type passed to ApplyOperator."));
+  }
+
+
+  return Result;
+}
+
+function b32
+IsOfHigherPrecedenceThan(c_token_type O1, c_token_type O2)
+{
+  NotImplemented;
+  return False;
+}
+
+function u64
+ResolveMacroConstantExpression(parser_stack *Stack)
+{
+  u64 Result = 0;
+
+  b32 Done = False;
+  c_token_type OperatorToApply = {};
+
+  while ( !Done && TokensRemain(Stack) )
+  {
+    c_token T = PeekTokenRaw(Stack);
+    switch (T.Type)
+    {
+      case CTokenType_CharLiteral:
+      case CTokenType_IntLiteral:
+      {
+        if (OperatorToApply)
+        {
+          c_token_type NextTokenType = PeekToken(Stack).Type;
+          b32 NextIsOperator = TokenIsOperator(NextTokenType);
+          if ( NextIsOperator && IsOfHigherPrecedenceThan(OperatorToApply, NextTokenType) )
+          {
+            u64 NextValue = ResolveMacroConstantExpression(Stack);
+            Result = ApplyOperator(Stack, Result, OperatorToApply, NextValue);
+          }
+          else
+          {
+            Result = ApplyOperator(Stack, Result, OperatorToApply, T.UnsignedValue);
+          }
+        }
+        else
+        {
+          RequireTokenRaw(Stack, T.Type);
+          Result = T.UnsignedValue;
+        }
+      } break;
+
+      case CTokenType_OpenParen:
+      {
+        RequireTokenRaw(Stack, T.Type);
+        Result += ResolveMacroConstantExpression(Stack);
+      } break;
+
+      case CTokenType_CloseParen:
+      case CTokenType_Newline:
+      {
+        RequireTokenRaw(Stack, T.Type);
+        Done = True;
+      } break;
+
+      case CTokenType_Space:
+      case CTokenType_Tab:
+      {
+        RequireTokenRaw(Stack, T.Type);
+      } break;
+
+
+      case CTokenType_LeftShift:
+      case CTokenType_RightShift:
+      case CTokenType_LessEqual:
+      case CTokenType_GreaterEqual:
+      case CTokenType_AreEqual:
+      case CTokenType_NotEqual:
+      case CTokenType_PlusEquals:
+      case CTokenType_MinusEquals:
+      case CTokenType_TimesEquals:
+      case CTokenType_DivEquals:
+      case CTokenType_ModEquals:
+      case CTokenType_AndEquals:
+      case CTokenType_OrEquals:
+      case CTokenType_XorEquals:
+      case CTokenType_Increment:
+      case CTokenType_Decrement:
+      case CTokenType_LogicalAnd:
+      case CTokenType_LogicalOr:
+      {
+        RequireTokenRaw(Stack, T.Type);
+        OperatorToApply = T.Type;
+      } break;
+
+      InvalidDefaultWhileParsing(Stack, CSz("Now, that's some crap during ResolveMacroConstantExpression"));
+    }
+  }
+
+  return Result;
+}
+
+function void
+EatIf0Block(parser_stack *Stack)
+{
+  c_token *StartToken = PeekTokenPointer(Stack);
+
+  u32 Depth = 0;
+  b32 Success = False;
+  while ( RawTokensRemain(Stack) )
+  {
+    c_token T = PopToken(Stack);
+
+    if (T.Type == CT_PreprocessorIf)
+    {
+      ++Depth;
+    }
+
+    if ( T.Type == CT_PreprocessorElse || 
+         T.Type == CT_PreprocessorElif || 
+         T.Type == CT_PreprocessorEndif  )
+    {
+      if (Depth == 0)
+      {
+        Success = True;
+        break;
+      }
+      --Depth;
+    }
+  }
+
+  if (!Success)
+  {
+    ParseError(Stack, StartToken, FormatCountedString(TranArena, CSz("Unable to find closing token for "), ToString(CT_PreprocessorIf)));
+  }
+
+  return;
+}
+
 function struct_member
 ParseStructMember(parse_context *Ctx, counted_string StructName)
 {
@@ -3680,12 +4163,21 @@ ParseStructMember(parse_context *Ctx, counted_string StructName)
         ResolveInclude(Ctx);
       } break;
 
+
+      case CT_PreprocessorIf:
+      case CT_PreprocessorElif:
+      {
+        RequireToken(Ctx, T.Type);
+        if (ResolveMacroConstantExpression(Stack) == 0)
+        {
+          EatIf0Block(Stack);
+        }
+      } break;
+
       case CT_PreprocessorDefine:
       case CT_PreprocessorIfDefined:
       case CT_PreprocessorIfNotDefined:
-      case CT_PreprocessorIf:
       case CT_PreprocessorElse:
-      case CT_PreprocessorElif:
       case CT_PreprocessorEndif:
       case CT_PreprocessorUndef:
       case CT_PreprocessorPragma:
@@ -3713,7 +4205,7 @@ ParseStructMember(parse_context *Ctx, counted_string StructName)
         }
         else
         {
-          OutputParsingError(Stack, PeekTokenPointer(Stack), CSz("Destructor name must match the struct name."));
+          ParseError(Stack, PeekTokenPointer(Stack), CSz("Destructor name must match the struct name."));
         }
       } break;
 
@@ -3863,10 +4355,9 @@ ParseStructBody(parse_context *Ctx, counted_string StructName)
 {
   TIMED_FUNCTION();
   parser_stack* Stack = &Ctx->Stack;
-  parser *Parser = Peek(Stack); // TODO(Jesse id: 300, tags: immediate, cleanup): Remove this
-  struct_def Result = StructDef(StructName, Parser->Filename);
+  struct_def Result = StructDef(StructName, Peek(Stack)->Filename);
 
-  RequireToken(Parser, CTokenType_OpenBrace);
+  RequireToken(Stack, CTokenType_OpenBrace);
 
   struct_member Declaration = {};
   for (;;)
@@ -3882,7 +4373,7 @@ ParseStructBody(parse_context *Ctx, counted_string StructName)
     }
   }
 
-  RequireToken(Parser, CTokenType_CloseBrace);
+  RequireToken(Stack, CTokenType_CloseBrace);
 
   return Result;
 }
@@ -3908,7 +4399,7 @@ ParseIntegerConstant(parser* Parser)
   }
   else
   {
-    OutputParsingError(Parser, CSz("Expected integer constant expression."));
+    ParseError(Parser, CSz("Expected integer constant expression."));
   }
 
   counted_string Result = {
@@ -4155,10 +4646,18 @@ ParseSingleStatement(parse_context *Ctx, ast_node_statement *Result)
         ResolveInclude(Ctx);
       } break;
 
-      case CT_PreprocessorDefine:
       case CT_PreprocessorIf:
-      case CT_PreprocessorElse:
       case CT_PreprocessorElif:
+      {
+        RequireToken(Ctx, T.Type);
+        if (ResolveMacroConstantExpression(Stack) == 0)
+        {
+          EatIf0Block(Stack);
+        }
+      } break;
+
+      case CT_PreprocessorDefine:
+      case CT_PreprocessorElse:
       case CT_PreprocessorEndif:
       case CT_PreprocessorUndef:
       case CT_PreprocessorPragma:
@@ -4303,7 +4802,7 @@ ParseSingleStatement(parse_context *Ctx, ast_node_statement *Result)
         if (Result->LHS)
         {
           DebugPrint(Result);
-          OutputParsingError(Peek(Stack), CSz(""));
+          ParseError(Peek(Stack), CSz(""));
           RuntimeBreak();
         }
 
@@ -4835,10 +5334,18 @@ ParseDatatypes(parse_context *Ctx)
         ResolveInclude(Ctx);
       } break;
 
-      case CT_PreprocessorDefine:
       case CT_PreprocessorIf:
-      case CT_PreprocessorElse:
       case CT_PreprocessorElif:
+      {
+        RequireToken(Ctx, T.Type);
+        if (ResolveMacroConstantExpression(Stack) == 0)
+        {
+          EatIf0Block(Stack);
+        }
+      } break;
+
+      case CT_PreprocessorDefine:
+      case CT_PreprocessorElse:
       case CT_PreprocessorEndif:
       case CT_PreprocessorUndef:
       case CT_PreprocessorPragma:
@@ -4941,7 +5448,7 @@ FlushOutputToDisk(parse_context *Ctx, counted_string OutputForThisParser, counte
 
   if (!Parser->Valid)
   {
-    OutputParsingError(Parser, CSz("Bad parser state."));
+    ParseError(Parser, CSz("Bad parser state."));
     return;
   }
 
@@ -5459,7 +5966,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
           {
             case meta_arg_operator_noop:
             {
-              OutputParsingError(&Scope, CSz("Invalid operator encountered."));
+              ParseError(&Scope, CSz("Invalid operator encountered."));
             } break;
 
             case is_struct:
@@ -5842,7 +6349,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
         }
         else
         {
-          OutputParsingError(&Scope, CSz("Unable to resolve function argument."));
+          ParseError(&Scope, CSz("Unable to resolve function argument."));
         }
 
       }
@@ -6698,10 +7205,7 @@ main(s32 ArgCountInit, const char** ArgStrings)
     {
       function_decl *Func = GET_ELEMENT(Iter);
 
-      if (Func->ReturnType.TemplateSource.Count)
-      {
-        continue;
-      }
+      if (Func->ReturnType.TemplateSource.Count) { continue; }
 
       PushStack(&Ctx.Stack, Func->Body, parser_push_type_root);
       Func->Ast = ParseAllStatements(&Ctx);

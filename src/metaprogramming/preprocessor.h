@@ -62,30 +62,6 @@ meta(
 )
 
 meta(
-  func index_of(Type)
-  {
-    function umm
-    IndexOf((Type.name)_buffer *Buf, (Type.name) Element)
-    {
-      umm Result = Buf->Count;
-
-      for (u32 ElementIndex = 0;
-          ElementIndex < Buf->Count;
-          ++ElementIndex)
-      {
-        if (AreEqual(Buf->Start[ElementIndex], Element))
-        {
-          Result = ElementIndex;
-          break;
-        }
-      }
-
-      return Result;
-    }
-  }
-)
-
-meta(
   func generate_cursor(Type)
   {
     struct (Type.name)_cursor
@@ -1208,6 +1184,7 @@ PrintToken(c_token Token)
   }
 }
 
+// TODO(Jesse, id: 347, tags:immediate) : Nuke this
 b32
 operator==(c_token T1, c_token T2)
 {

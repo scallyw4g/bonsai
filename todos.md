@@ -6,7 +6,6 @@
     - #343 This is busted on invalid program input.
     - #341 This is an exact duplicate of RequireToken and verrrry similar to PopTokenRaw .. should we do something to reduce this duplication?
     - #278 Disallow invalid suffixes lul/LUL .. LUU .. ULLLL etc..
-    - #282 Should we parse out the function def explicitly here?
     - #304 only do this work once
     - #299 This could be improved by not taking the StructName, and
     - #260 Currently ignoring the second half of a ternary .. we should probably not do this
@@ -22,14 +21,19 @@
     - #271 Unnecessary .. I just added these as a hack get parsing to work
     - #275 Rewrite this in terms of `ToU32(counted_string S)`
     - #344 This API is pretty obtuse and could use some work..
+    - #345 How do we differentiate between arithmetic/logical shifts here?
+    - #282 Should we parse out the function def explicitly here?
+    - #359 Is this the most efficient way of making this check?
+    - #360 Is this the most efficient way of making this check?
 
   ## immediate
     - #238 Change name to BitwiseAnd
     - #239 Change name to BitwiseOr
     - #83 d_union-ify this
-    - #296 When we properly traverse include graphs, this assert should not fail.
-    - #300 Remove this
     - #222 Re-add [[nodiscard]] here
+    - #296 When we properly traverse include graphs, this assert should not fail.
+    - #347 Nuke this
+    - #348 This should go into an AreEqual function I think..
 
   ## high_priority
     - #101 Profile and check collision rate of this!
@@ -57,7 +61,6 @@
     - #101 Profile and check collision rate of this!
     - #106 Pass this in!
     - #107 Can we compute this with MouseP to avoid a frame of input delay?
-    - #295 This could be optimized significantly by shuffling the logic around, not to mention using hashtables.
     - #120 Allocate lights such that this swizzle is unneeded
     - #127 Pretty sure we don't have to set the faces anymore??
     - #128 Do culling on these as well?
@@ -65,6 +68,7 @@
     - #132 Pretty sure we can do some XOR trickery or something here to avoid this branch, which could be a large perf win
     - #136 Why are these allocated on the heap?  Seems unnecessary..
     - #139 Is this necessary to avoid some pointer aliasing bug?
+    - #295 This could be optimized significantly by shuffling the logic around, not to mention using hashtables.
 
   ## cleanup
     - #94 Make this non-const?
@@ -83,7 +87,6 @@
     - #107 Can we compute this with MouseP to avoid a frame of input delay?
     - #108 Do we have to pass the style to both of these functions, and is that a good idea?
     - #109 Reset this in here?
-    - #300 Remove this
     - #113 Remove these?
     - #144 This actually has nothing to do with the platform
 
@@ -99,7 +102,6 @@
     - #91 Jettison this .. Can it be metaprogrammed?
     - #99 Generate this?  Need a compiler feature to generate stuff from primitive types.
     - #100 Do we actually want this in here?
-    - #301 These functions are super repetitive, generate them!
     - #226 Should we handle this differently?
     - #222 Re-add [[nodiscard]] here
     - #121 Need a way of dynamically allocating more of these on demand if this unlink fails!
@@ -107,6 +109,7 @@
     - #237 Metaprogram this!!
     - #230 ParseVariable should work with function pointer types
     - #160 Generate this!
+    - #301 These functions are super repetitive, generate them!
 
   ## robustness
     - #78 How should we actually set this?
@@ -126,6 +129,7 @@
     - #137 This _should_ be able to be glTexImage3D, but the driver is throwing an error .. why?!
     - #139 Is this necessary to avoid some pointer aliasing bug?
     - #143 This could probably be made better by writing to a statically allocated buffer ..?
+    - #361 This will crash if we pass a file than ends with an un-terminated multi-line comment
 
   ## font
     - #77 Axe this!
@@ -319,6 +323,7 @@
     - #185 these should be printable!
     - #213 There is a degenerate case here, what if the file ends without a newline? While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
     - #214 There is a degenerate case here, what if the file ends with a malformed comment? While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
+    - #361 This will crash if we pass a file than ends with an un-terminated multi-line comment
 
   ## needs_tests
     - #213 There is a degenerate case here, what if the file ends without a newline? While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
@@ -353,4 +358,12 @@
 
   ## id_321
     - #323 
+
+  ## id_345
+    - #346 
+
+  ## id_347
+    - #348 This should go into an AreEqual function I think..
+    - #349 Change to a function call
+    - #354 Change to a function call
 

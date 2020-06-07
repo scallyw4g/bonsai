@@ -108,3 +108,41 @@ CS(const char *S, umm Count)
   return Result;
 }
 
+
+
+meta(
+  func index_of(Type)
+  {
+    function umm
+    IndexOf((Type.name)_buffer *Buf, (Type.name) Element)
+    {
+      umm Result = Buf->Count;
+
+      for (u32 ElementIndex = 0;
+          ElementIndex < Buf->Count;
+          ++ElementIndex)
+      {
+        if (AreEqual(Buf->Start[ElementIndex], Element))
+        {
+          Result = ElementIndex;
+          break;
+        }
+      }
+
+      return Result;
+    }
+  }
+)
+
+meta(
+  func are_equal(Type)
+  {
+    function b32
+    AreEqual((Type.name) *Thing1, (Type.name) *Thing2)
+    {
+      b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( (Type.name) ) );
+      return Result;
+    }
+  }
+)
+

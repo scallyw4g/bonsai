@@ -62,7 +62,7 @@ ExponentTests(parser *Parser, c_token_type FloatingPointTokenType)
 
   PositiveExponentTests(Parser, FloatingPointTokenType); // Implicit positive exponent
 
-  PositiveExponentTests(Parser, FloatingPointTokenType); // Expllicit positive exponent
+  PositiveExponentTests(Parser, FloatingPointTokenType); // Explicit positive exponent
 
   //
   // Negative Exponent tests
@@ -120,7 +120,7 @@ ExponentTests(parser *Parser, c_token_type FloatingPointTokenType)
 function void
 TestBasicTokenizationAndParsing(memory_arena* Memory)
 {
-  parser Parser_ = TokenizeFile(CS(TEST_FIXTURES_PATH "/preprocessor_basic.cpp"), Memory);
+  parser Parser_ = ParserForFile(CS(TEST_FIXTURES_PATH "/preprocessor_basic.cpp"), Memory);
   parser* Parser = &Parser_;
 
   {
@@ -650,7 +650,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
 function void
 TestPeekAndPopTokens(memory_arena* Memory)
 {
-  parser Parser_ = TokenizeFile(CS(TEST_FIXTURES_PATH "/preprocessor_peek_pop.cpp"), Memory);
+  parser Parser_ = ParserForFile(CS(TEST_FIXTURES_PATH "/preprocessor_peek_pop.cpp"), Memory);
   parser* Parser = &Parser_;
 
   {
@@ -799,14 +799,14 @@ TestPeekAndPopTokens(memory_arena* Memory)
 function void
 TestStructParsing(memory_arena* Memory)
 {
-  parser Parser_ = TokenizeFile(CS(TEST_FIXTURES_PATH "/preprocessor_datatypes.cpp"), Memory);
-  parser* Parser = &Parser_;
+  parser Parser = ParserForFile(CS(TEST_FIXTURES_PATH "/preprocessor_datatypes.cpp"), Memory);
 
-  parser_stack Stack = {};
-  PushStack(&Stack, *Parser);
+  parse_context Ctx = {
+    .Memory = Memory
+  };
 
-  program_datatypes Datatypes = {};
-  ParseDatatypes(&Stack, &Datatypes, Memory);
+  PushStack(&Ctx.Stack, Parser, parser_push_type_root);
+  ParseDatatypes(&Ctx);
 
   return;
 }
@@ -814,7 +814,7 @@ TestStructParsing(memory_arena* Memory)
 function void
 TestCommentSituation(memory_arena* Memory)
 {
-  parser Parser_ = TokenizeFile(CS(TEST_FIXTURES_PATH "/comments.cpp"), Memory);
+  parser Parser_ = ParserForFile(CS(TEST_FIXTURES_PATH "/comments.cpp"), Memory);
   parser* Parser = &Parser_;
 
   {
@@ -865,21 +865,35 @@ TestCommentSituation(memory_arena* Memory)
 function void
 TestAst(memory_arena *Memory)
 {
-  parser Parser = TokenizeFile(CS(TEST_FIXTURES_PATH "/preprocessor/should_parse.cpp"), Memory);
+  parse_context Ctx = {
+    .Memory = Memory
+  };
 
-  parser_stack Stack = {};
-  PushStack(&Stack, Parser);
+  parser Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/should_parse.cpp"));
 
-  program_datatypes Datatypes = {};
+  PushStack(&Ctx.Stack, Parser, parser_push_type_root);
+  ParseDatatypes(&Ctx);
 
-  ParseDatatypes(&Stack, &Datatypes, Memory);
+  ITERATE_OVER(&Ctx.Datatypes.Functions)
+  {
+    function_decl *Func = GET_ELEMENT(Iter);
 
-  ParseFunctionBodiesIntoAsts(&Datatypes, Memory);
+    if (Func->ReturnType.TemplateSource.Count) { continue; }
+
+    PushStack(&Ctx.Stack, Func->Body, parser_push_type_root);
+    Func->Ast = ParseAllStatements(&Ctx);
+    WalkAst(Func->Ast);
+
+    Ctx.Stack.Depth = 0;
+  }
+
 }
 
 function void
-TestNumericConstantParsing()
+TestPreprocessorTokenizationStuff(memory_arena *Memory)
 {
+  parser Parser = ParserForFile(CS(TEST_FIXTURES_PATH "/preprocessor/defines_and_preprocessor_directives.cpp"), Memory);
+
 }
 
 s32
@@ -898,6 +912,8 @@ main()
   TestCommentSituation(Memory);
 
   TestAst(Memory);
+
+  TestPreprocessorTokenizationStuff(Memory);
 
   TestSuiteEnd();
   exit(TestsFailed);

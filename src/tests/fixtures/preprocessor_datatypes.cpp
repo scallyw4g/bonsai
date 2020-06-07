@@ -4,6 +4,14 @@ struct thing1
   // this should work
 };
 
+struct thing3
+{
+  // this should work
+  counted_string StringThing;
+};
+
+// A random comment
+
 struct thing2
 {
   counted_string StringThing;
@@ -12,11 +20,11 @@ struct thing2
    * also work */
 };
 
-struct thing3
-{
-  // this should work
-  counted_string StringThing;
-};
+/* Another
+ *
+ * random comment */
+
+// With yet another comment
 
 struct thing4
 {
@@ -25,4 +33,3 @@ struct thing4
    * also work */
   counted_string StringThing;
 };
-
