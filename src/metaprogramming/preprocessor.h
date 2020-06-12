@@ -1377,78 +1377,13 @@ enum parser_push_type
   parser_push_type_macro,
 };
 
-#define MAX_PARSER_STACK_DEPTH (128)
-struct parser_stack
-{
-  u32 Depth;
-  parser Parsers[MAX_PARSER_STACK_DEPTH];
-  parser_push_type PushTypes[MAX_PARSER_STACK_DEPTH];
-};
-
 struct parse_context
 {
-  parser_stack           Stack;
+  parser                 CurrentParser;
+
   program_datatypes      Datatypes;
   parser_stream          AllParsers;
   counted_string_cursor *IncludePaths;
-
-  meta_func_stream MetaFunctions;
-
-  memory_arena *Memory;
+  meta_func_stream       MetaFunctions;
+  memory_arena          *Memory;
 };
-
-function parser*
-Peek(parser_stack *Stack, u32 StackLookahead = 0)
-{
-  parser *Result = {};
-  if (Stack->Depth > StackLookahead)
-  {
-    Result = Stack->Parsers + (Stack->Depth-StackLookahead-1);
-  }
-
-  return Result;
-}
-
-function parser*
-PushStack(parser_stack *Stack, parser Parser, parser_push_type Type)
-{
-  if (Type == parser_push_type_root && Stack->Depth > 0)
-  {
-    Error("Tried to push a root parser onto stack with a depth > 0 !");
-  }
-  else
-  {
-    if (Stack->Depth == MAX_PARSER_STACK_DEPTH)
-    {
-      Error("Max parser stack depth exceeded.");
-      Assert(False);
-    }
-    else
-    {
-      Stack->Parsers[Stack->Depth] = Parser;
-      Stack->PushTypes[Stack->Depth] = Type;
-      ++Stack->Depth;
-    }
-  }
-
-  parser *Result = Peek(Stack);
-  return Result;
-}
-
-function parser*
-PopStack(parser_stack *Stack)
-{
-  parser *Result = {};
-  if (Stack->Depth > 0)
-  {
-    --Stack->Depth;
-    Result = Stack->Parsers + Stack->Depth;
-  }
-  else
-  {
-    Error("Tried popping an empty parser stack!");
-  }
-  return Result;
-}
-
-

@@ -799,13 +799,11 @@ TestPeekAndPopTokens(memory_arena* Memory)
 function void
 TestStructParsing(memory_arena* Memory)
 {
-  parser Parser = ParserForFile(CS(TEST_FIXTURES_PATH "/preprocessor_datatypes.cpp"), Memory);
-
   parse_context Ctx = {
-    .Memory = Memory
+    .CurrentParser = ParserForFile(CS(TEST_FIXTURES_PATH "/preprocessor_datatypes.cpp"), Memory),
+    .Memory = Memory,
   };
 
-  PushStack(&Ctx.Stack, Parser, parser_push_type_root);
   ParseDatatypes(&Ctx);
 
   return;
@@ -866,12 +864,10 @@ function void
 TestAst(memory_arena *Memory)
 {
   parse_context Ctx = {
-    .Memory = Memory
+    .CurrentParser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/should_parse.cpp")),
+    .Memory = Memory,
   };
 
-  parser Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/should_parse.cpp"));
-
-  PushStack(&Ctx.Stack, Parser, parser_push_type_root);
   ParseDatatypes(&Ctx);
 
   ITERATE_OVER(&Ctx.Datatypes.Functions)
@@ -880,11 +876,8 @@ TestAst(memory_arena *Memory)
 
     if (Func->ReturnType.TemplateSource.Count) { continue; }
 
-    PushStack(&Ctx.Stack, Func->Body, parser_push_type_root);
     Func->Ast = ParseAllStatements(&Ctx);
     WalkAst(Func->Ast);
-
-    Ctx.Stack.Depth = 0;
   }
 
 }

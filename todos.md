@@ -3,8 +3,7 @@
     - #272 Fold `-` sign into this value at tokenization time?
     - #154 This is pretty shitty because whenever we copy one of these structs this field has to be manually zeroed out ..
     - #262 These should probably be in their own type_ast_node_cast .. ?
-    - #343 This is busted on invalid program input.
-    - #341 This is an exact duplicate of RequireToken and verrrry similar to PopTokenRaw .. should we do something to reduce this duplication?
+    - #343 I think this is busted on invalid program input.
     - #278 Disallow invalid suffixes lul/LUL .. LUU .. ULLLL etc..
     - #304 only do this work once
     - #299 This could be improved by not taking the StructName, and
@@ -23,8 +22,6 @@
     - #344 This API is pretty obtuse and could use some work..
     - #345 How do we differentiate between arithmetic/logical shifts here?
     - #282 Should we parse out the function def explicitly here?
-    - #359 Is this the most efficient way of making this check?
-    - #360 Is this the most efficient way of making this check?
 
   ## immediate
     - #238 Change name to BitwiseAnd
@@ -129,7 +126,6 @@
     - #137 This _should_ be able to be glTexImage3D, but the driver is throwing an error .. why?!
     - #139 Is this necessary to avoid some pointer aliasing bug?
     - #143 This could probably be made better by writing to a statically allocated buffer ..?
-    - #361 This will crash if we pass a file than ends with an un-terminated multi-line comment
 
   ## font
     - #77 Axe this!
@@ -323,7 +319,6 @@
     - #185 these should be printable!
     - #213 There is a degenerate case here, what if the file ends without a newline? While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
     - #214 There is a degenerate case here, what if the file ends with a malformed comment? While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
-    - #361 This will crash if we pass a file than ends with an un-terminated multi-line comment
 
   ## needs_tests
     - #213 There is a degenerate case here, what if the file ends without a newline? While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
@@ -365,5 +360,4 @@
   ## id_347
     - #348 This should go into an AreEqual function I think..
     - #349 Change to a function call
-    - #354 Change to a function call
 

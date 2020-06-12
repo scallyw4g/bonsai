@@ -3161,41 +3161,6 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
-    function void DebugPrint( parser_stack S, u32 Depth)
-    {
-      if (Depth == 0)
-      {
-        DebugPrint("parser_stack {\n", Depth);
-      }
-
-      
-          DebugPrint("u32 Depth {\n", Depth+2);
-          DebugPrint(S.Depth, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-          DebugPrint("parser Parsers {\n", Depth+2);
-          DebugPrint(S.Parsers, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-          DebugPrint("parser_push_type PushTypes {\n", Depth+2);
-          DebugPrint(S.PushTypes, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-      DebugPrint("}\n", Depth);
-    }
-
-    function void DebugPrint( parser_stack *S, u32 Depth)
-    {
-      if (S) { DebugPrint(*S, Depth); }
-      else { DebugPrint("ptr(0)", Depth); }
-    }
-
     function void DebugPrint( parse_context S, u32 Depth)
     {
       if (Depth == 0)
@@ -3204,8 +3169,8 @@
       }
 
       
-          DebugPrint("parser_stack Stack {\n", Depth+2);
-          DebugPrint(S.Stack, Depth+4);
+          DebugPrint("parser CurrentParser {\n", Depth+2);
+          DebugPrint(S.CurrentParser, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");

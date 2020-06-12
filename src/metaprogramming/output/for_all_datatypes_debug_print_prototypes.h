@@ -251,9 +251,6 @@
       function void DebugPrint( string_from_parser* S, u32 Depth = 0);
       function void DebugPrint( string_from_parser  S, u32 Depth = 0);
 
-      function void DebugPrint( parser_stack* S, u32 Depth = 0);
-      function void DebugPrint( parser_stack  S, u32 Depth = 0);
-
       function void DebugPrint( parse_context* S, u32 Depth = 0);
       function void DebugPrint( parse_context  S, u32 Depth = 0);
 
