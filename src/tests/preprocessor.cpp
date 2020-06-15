@@ -864,9 +864,10 @@ function void
 TestAst(memory_arena *Memory)
 {
   parse_context Ctx = {
-    .CurrentParser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/should_parse.cpp")),
     .Memory = Memory,
   };
+
+  Ctx.CurrentParser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/should_parse.cpp"));
 
   ParseDatatypes(&Ctx);
 

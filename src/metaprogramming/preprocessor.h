@@ -563,6 +563,8 @@ struct parser
 
   counted_string Filename;
   u32 LineNumber;
+
+  parser *Next;
 };
 meta(generate_cursor(parser))
 #include <metaprogramming/output/generate_cursor_parser.h>
@@ -1231,6 +1233,33 @@ AllocateTokenBuffer(memory_arena* Memory, u32 Count)
   Result.Start = Allocate(c_token, Memory, Count);
   Result.At = Result.Start;
   Result.End = Result.Start + Count;
+
+  return Result;
+}
+
+function parser*
+AllocateParserPtr(counted_string Filename, u32 TokenCount, u32 OutputBufferTokenCount, memory_arena *Memory)
+{
+  parser *Result = Allocate(parser, Memory, 1);
+
+  Result->Filename = Filename;
+
+  Result->Tokens = AllocateTokenBuffer(Memory, TokenCount);
+  if (!Result->Tokens.Start)
+  {
+    Error("Allocating Token Buffer");
+    return Result;
+  }
+
+  if (OutputBufferTokenCount)
+  {
+    Result->OutputTokens = AllocateTokenBuffer(Memory, OutputBufferTokenCount);
+    if (!Result->OutputTokens.Start)
+    {
+      Error("Allocating OutputTokens Buffer");
+      return Result;
+    }
+  }
 
   return Result;
 }
