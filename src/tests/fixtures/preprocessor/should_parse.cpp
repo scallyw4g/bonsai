@@ -1,3 +1,4 @@
+#include <src/tests/fixtures/preprocessor/other_file_that_should_parse.cpp>
 
 #define VariadicMacroFunction3(...) __VA_ARGS__
 VariadicMacroFunction3(A, B, C, D);

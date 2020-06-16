@@ -565,6 +565,7 @@ struct parser
   u32 LineNumber;
 
   parser *Next;
+  parser *Prev;
 };
 meta(generate_cursor(parser))
 #include <metaprogramming/output/generate_cursor_parser.h>

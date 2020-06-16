@@ -57,6 +57,8 @@ function void TrimFirstToken(parser* Parser, c_token_type TokenType);
 function void TrimLastToken(parser* Parser, c_token_type TokenType);
 function counted_string EatBetween(parser* Parser, c_token_type Open, c_token_type Close);
 
+function parser * ResolveInclude(parse_context *Ctx, parser *Parser);
+
 
 
 
@@ -136,7 +138,33 @@ AdvanceParser(parser* Parser)
   }
   else
   {
-    Warn("Attempted to advance parser past end of stream on file : %.*s", (u32)Parser->Filename.Count, Parser->Filename.Start);
+    if (Parser->Next)
+    {
+      parser *ThisParserPrevPtr = Parser->Prev;
+      parser *ThisParserPtr = Parser;
+      parser ThisParser = *Parser;
+
+      parser *NextParserPtr = Parser->Next;
+      parser NextParser = *Parser->Next;
+
+      *ThisParserPtr = NextParser;
+      *NextParserPtr = ThisParser;
+
+      ThisParserPtr->Prev = NextParserPtr;
+      NextParserPtr->Next = ThisParserPtr;
+
+      Assert(Parser->Next == NextParser.Next);
+      Assert(Parser->Prev == NextParserPtr);
+
+      Assert(NextParser.Next == ThisParserPtr);
+      Assert(NextParser.Prev == ThisParserPrevPtr);
+
+      AdvanceParser(Parser);
+    }
+    else
+    {
+      Warn("Attempted to advance a parser past its last chunk!");
+    }
   }
 }
 
@@ -199,8 +227,6 @@ EatUntilExcluding(parser* Parser, c_token_type Close, c_token_buffer *Result)
     }
   }
   Result->Count = (umm)(Parser->Tokens.At - Result->Start);
-
-  if (Remaining(&Parser->Tokens)) { RequireToken(Parser, Close); }
 }
 
 function counted_string
@@ -219,8 +245,6 @@ EatUntilExcluding(parser* Parser, c_token_type Close)
     }
   }
   counted_string Result = FinalizeStringFromParser(&Builder);
-
-  if (Remaining(&Parser->Tokens)) { RequireToken(Parser, Close); }
   return Result;
 }
 
@@ -964,6 +988,8 @@ ExpandMacro(parser *Parser, macro_def *Macro, memory_arena *Memory)
 {
   parser *Result = {};
 
+  RequireToken(Parser, CT_MacroLiteral);
+
   switch (Macro->Type)
   {
     case type_macro_keyword:
@@ -1475,88 +1501,13 @@ CountTokensBeforeNext(parser *Parser, c_token_type T1, c_token_type T2)
   return Result;
 }
 
-function parser *
-ResolveInclude(parser *Parser)
-{
-  NotImplemented;
 
-  parser *Result = {};
-#if 0
-  c_token *ErrorToken = PeekTokenPointer(Parser);
 
-  RequireToken(Parser, CT_PreprocessorInclude);
 
-  counted_string PartialPath = {};
-  if (PeekToken(Parser).Type == CTokenType_StringLiteral)
-  {
-    PartialPath = RequireToken(Parser, CTokenType_StringLiteral).Value;
-    Error("Relative includes NOT SUPPORTED (%.*s)", (u32)PartialPath.Count, PartialPath.Start);
-  }
-  else
-  {
-    RequireToken(Parser, CTokenType_LT);
-    PartialPath = EatUntilExcluding(Parser, CTokenType_GT);
-    if (PartialPath.Count == 0)
-    {
-      ParseError(Parser, CSz("Include path must be specified."));
-    }
-    else
-    {
-      RequireToken(Parser, CTokenType_GT);
-    }
-  }
 
-  counted_string_cursor *IncludePaths = Ctx->IncludePaths;
-  for ( u32 PrefixIndex = 0;
-        PrefixIndex < Count(IncludePaths);
-        ++PrefixIndex )
-  {
-    counted_string PrefixPath = IncludePaths->Start[PrefixIndex];
-    counted_string FullPath = Concat(PrefixPath, PartialPath, TranArena);
 
-    Info("Searching cached parsed files for (%.*s)", (u32)FullPath.Count, FullPath.Start);
 
-    Result = GetByFilename(&Ctx->AllParsers, FullPath);
-    if (Result)
-    {
-      Success("Found cached parser for (%.*s)", (u32)FullPath.Count, FullPath.Start);
-      break;
-    }
-  }
 
-  if (!Result)
-  {
-    Info("File not yet parsed (%.*s).", (u32)PartialPath.Count, PartialPath.Start);
-    b32 FoundFreshParse = False;
-    for ( u32 PrefixIndex = 0;
-          PrefixIndex < Count(IncludePaths);
-          ++PrefixIndex )
-    {
-      counted_string PrefixPath = IncludePaths->Start[PrefixIndex];
-      counted_string FullPath = Concat(PrefixPath, PartialPath, TranArena); // TODO(Jesse id: 304): only do this work once
-
-      if (FileExists(FullPath))
-      {
-        Success("Found included file at (%.*s)", (u32)FullPath.Count, FullPath.Start);
-        FoundFreshParse = True;
-
-        Result = ParserForFile(Ctx, FullPath);
-        Assert(Result);
-
-        Push(&Ctx->AllParsers, Result, Ctx->Memory);
-        break;
-      }
-    }
-
-    if (!FoundFreshParse)
-    {
-      Warn("__BUG__ Unable to find parser for : %.*s", (u32)PartialPath.Count, PartialPath.Start );
-    }
-  }
-
-#endif
-  return Result;
-}
 
 function void
 SplitAndInsertParserInto(parser *ParserToSplit, parser *ParserToInsert, memory_arena *Memory)
@@ -1580,7 +1531,7 @@ SplitAndInsertParserInto(parser *ParserToSplit, parser *ParserToInsert, memory_a
 }
 
 function parser
-TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, macro_def_stream *ProgramMacros)
+TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, parse_context *Ctx)
 {
   u32 LineNumber = 0;
 
@@ -1937,7 +1888,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, mac
         }
         else
         {
-          if (ProgramMacros)
+          if (Ctx)
           {
             const char* HashCharacter = Code.At;
             Advance(&Code);
@@ -2231,9 +2182,9 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, mac
             if ( !ParsingSingleLineComment &&
                  !ParsingMultiLineComment   )
             {
-              if (ProgramMacros)
+              if (Ctx)
               {
-                macro_def *Macro1 = GetByName(ProgramMacros, PushT.Value);
+                macro_def *Macro1 = GetByName(&Ctx->Datatypes.Macros, PushT.Value);
                 macro_def *Macro2 = GetByName(&MacrosThatNeedToBeParsedOut, PushT.Value);
 
                 if (Macro1)
@@ -2271,7 +2222,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, mac
   Rewind(&Result);
   Result.Valid = True;
 
-  if (ProgramMacros)
+  if (Ctx)
   {
     ITERATE_OVER(&MacrosThatNeedToBeParsedOut)
     {
@@ -2346,7 +2297,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, mac
       Assert(MacroParser->Tokens.End);
     }
 
-    ConcatStreams(ProgramMacros, &MacrosThatNeedToBeParsedOut);
+    ConcatStreams(&Ctx->Datatypes.Macros, &MacrosThatNeedToBeParsedOut);
   }
 
 
@@ -2361,10 +2312,23 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, mac
     {
       case CT_PreprocessorInclude:
       {
-        // parser *IncludeParser = ResolveInclude(Current);
-        // SplitAndInsertParserInto(Current, IncludeParser, Memory);
-        RequireToken(Current, T->Type);
-        EatBetween(Current, CTokenType_LT, CTokenType_GT);
+
+        c_token *Start = Current->Tokens.At;
+        parser *IncludeParser = ResolveInclude(Ctx, Current);
+        c_token *End = Current->Tokens.At;
+
+        if (IncludeParser)
+        {
+          SplitAndInsertParserInto(Current, IncludeParser, Memory);
+          Current->Tokens.At = Start-1;
+          Current->Tokens.End = Start-1;
+        }
+        else
+        {
+          ParseError(Current, Start, CSz("Unable to resolve include."));
+          return Result;
+        }
+
       } break;
 
       case CT_PreprocessorDefine:
@@ -2376,8 +2340,14 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, mac
       case CT_MacroLiteral:
       {
         Assert(T->Macro);
-        RequireToken(Current, T->Type);
+
+        c_token *Start = Current->Tokens.At;
         parser *Expanded = ExpandMacro(Current, T->Macro, Memory);
+        c_token *End = Current->Tokens.At;
+
+        Current->Tokens.At = Start-1;
+        Current->Tokens.End = Start-1;
+
         SplitAndInsertParserInto(Current, Expanded, Memory);
       } break;
 
@@ -2395,7 +2365,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, mac
 function parser
 TokenizeAnsiStream(parse_context *Ctx, ansi_stream Code)
 {
-  parser Result = TokenizeAnsiStream(Code, Ctx->Memory, False, &Ctx->Datatypes.Macros);
+  parser Result = TokenizeAnsiStream(Code, Ctx->Memory, False, Ctx);
   return Result;
 }
 
@@ -2414,6 +2384,129 @@ ParserForFile(parse_context *Ctx, counted_string Filename)
   parser Result = TokenizeAnsiStream(Ctx, SourceFileStream);
   return Result;
 }
+
+
+
+
+
+// TODO(Jesse id: 302, tags: id_301)
+function parser*
+GetByFilename(parser_stream* Stream, counted_string Filename)
+{
+  TIMED_FUNCTION();
+
+  parser* Result = 0;
+  ITERATE_OVER(Stream)
+  {
+    parser *Parser = GET_ELEMENT(Iter);
+    if (StringsMatch(Parser->Filename, Filename))
+    {
+      Result = Parser;
+      break;
+    }
+  }
+
+  return Result;
+}
+
+function parser *
+ResolveInclude(parse_context *Ctx, parser *Parser)
+{
+  parser *Result = {};
+
+  c_token *ErrorToken = PeekTokenPointer(Parser);
+
+  RequireToken(Parser, CT_PreprocessorInclude);
+
+  counted_string PartialPath = {};
+  if (PeekToken(Parser).Type == CTokenType_StringLiteral)
+  {
+    PartialPath = RequireToken(Parser, CTokenType_StringLiteral).Value;
+    Error("Relative includes NOT SUPPORTED (%.*s)", (u32)PartialPath.Count, PartialPath.Start);
+  }
+  else
+  {
+    RequireToken(Parser, CTokenType_LT);
+    PartialPath = EatUntilExcluding(Parser, CTokenType_GT);
+    if (PartialPath.Count == 0)
+    {
+      ParseError(Parser, CSz("Include path must be specified."));
+    }
+    else
+    {
+      RequireToken(Parser, CTokenType_GT);
+    }
+  }
+
+  counted_string_cursor *IncludePaths = Ctx->IncludePaths;
+  if (IncludePaths)
+  {
+    for ( u32 PrefixIndex = 0;
+          PrefixIndex < Count(IncludePaths);
+          ++PrefixIndex )
+    {
+      counted_string PrefixPath = IncludePaths->Start[PrefixIndex];
+      counted_string FullPath = Concat(PrefixPath, PartialPath, TranArena);
+
+      Info("Searching cached parsed files for (%.*s)", (u32)FullPath.Count, FullPath.Start);
+
+      parser *Got = GetByFilename(&Ctx->AllParsers, FullPath);
+      if (Got)
+      {
+        Result = Allocate(parser, Ctx->Memory, 1);
+        *Result = *Got;
+        Success("Found cached parser for (%.*s)", (u32)FullPath.Count, FullPath.Start);
+        break;
+      }
+    }
+
+    if (!Result)
+    {
+      Info("File not yet parsed (%.*s).", (u32)PartialPath.Count, PartialPath.Start);
+      b32 FoundFreshParse = False;
+      for ( u32 PrefixIndex = 0;
+            PrefixIndex < Count(IncludePaths);
+            ++PrefixIndex )
+      {
+        counted_string PrefixPath = IncludePaths->Start[PrefixIndex];
+        counted_string FullPath = Concat(PrefixPath, PartialPath, TranArena); // TODO(Jesse id: 304): only do this work once
+
+        if (FileExists(FullPath))
+        {
+          Success("Found included file at (%.*s)", (u32)FullPath.Count, FullPath.Start);
+          FoundFreshParse = True;
+          parser FreshParse = ParserForFile(Ctx, FullPath);
+          Result = Push(&Ctx->AllParsers, FreshParse, Ctx->Memory);
+          break;
+        }
+      }
+
+    }
+  }
+
+  if (!Result)
+  {
+    if (FileExists(PartialPath))
+    {
+      Success("Found included file at (%.*s)", (u32)PartialPath.Count, PartialPath.Start);
+      parser FreshParse = ParserForFile(Ctx, PartialPath);
+      Result = Push(&Ctx->AllParsers, FreshParse, Ctx->Memory);
+    }
+  }
+
+  if (!Result)
+  {
+    Warn("__BUG__ Unable to resolve include for : %.*s", (u32)PartialPath.Count, PartialPath.Start );
+  }
+
+  return Result;
+}
+
+
+
+
+
+
 
 d_union_member
 DUnionMember(counted_string Name, counted_string Type, d_union_flags Flags)
@@ -3586,26 +3679,6 @@ ParseFunctionOrVariableDecl(parse_context *Ctx)
 
   // TODO(Jesse id: 323, tags: id_321)
   // Assert(Result.Type);
-  return Result;
-}
-
-// TODO(Jesse id: 302, tags: id_301)
-function parser*
-GetByFilename(parser_stream* Stream, counted_string Filename)
-{
-  TIMED_FUNCTION();
-
-  parser* Result = 0;
-  ITERATE_OVER(Stream)
-  {
-    parser *Parser = GET_ELEMENT(Iter);
-    if (StringsMatch(Parser->Filename, Filename))
-    {
-      Result = Parser;
-      break;
-    }
-  }
-
   return Result;
 }
 
@@ -5650,7 +5723,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
 
     if ( BodyToken.Type == CTokenType_StringLiteral )
     {
-      parser StringParse = TokenizeAnsiStream(AnsiStream(BodyToken.Value, Scope.Filename), Memory, True, &Ctx->Datatypes.Macros);
+      parser StringParse = TokenizeAnsiStream(AnsiStream(BodyToken.Value, Scope.Filename), Memory, True, Ctx);
 
       counted_string Code = Execute(FuncName, StringParse, ReplacePatterns, Ctx, Memory);
       AppendAndEscapeInteriorOfDoubleQuotedString(&OutputBuilder, Code);

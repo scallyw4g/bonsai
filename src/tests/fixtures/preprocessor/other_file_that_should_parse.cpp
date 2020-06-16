@@ -1,0 +1,1 @@
+int nothing = 42;

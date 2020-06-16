@@ -1740,6 +1740,12 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
+          DebugPrint("parser Prev {\n", Depth+2);
+          DebugPrint(S.Prev, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
       DebugPrint("}\n", Depth);
     }
 
