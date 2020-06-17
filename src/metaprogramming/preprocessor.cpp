@@ -39,6 +39,7 @@ function u32            OffsetOfNext(parser *Parser, u32 Offset, c_token_type Cl
 function c_token *      PeekTokenPointer(parser *Parser, u32 TokenLookahead = 0);
 function c_token        PeekToken(parser *Parser, u32 Lookahead = 0);
 function c_token        PopTokenRaw(parser *Parser);
+function c_token *      PopTokenRawPointer(parser *Parser);
 function b32            TokensRemain(parser *Parser, u32 TokenLookahead = 0);
 function b32            RawTokensRemain(parser *Parser, u32 TokenLookahead = 0);
 function c_token        PopToken(parser *Parser);
@@ -68,6 +69,11 @@ Rewind(parser* Parser)
   Rewind(&Parser->OutputTokens);
   Rewind(&Parser->Tokens);
   Parser->LineNumber = 1;
+
+  if (Parser->Next)
+  {
+    Rewind(Parser->Next);
+  }
 }
 
 function b32
@@ -123,71 +129,51 @@ AdvanceParser(parser* Parser)
 {
   if (Remaining(&Parser->Tokens))
   {
-    if (Parser->Tokens.At[0].Type == CTokenType_Newline ||
-        Parser->Tokens.At[0].Type == CTokenType_EscapedNewline )
+    c_token *T = Parser->Tokens.At;
+    if (T->Type == CTokenType_Newline ||
+        T->Type == CTokenType_EscapedNewline )
     {
       ++Parser->LineNumber;
     }
 
     if (Remaining(&Parser->OutputTokens))
     {
-      Push(*Parser->Tokens.At, &Parser->OutputTokens);
+      Push(*T, &Parser->OutputTokens);
     }
 
     ++Parser->Tokens.At;
   }
-  else
+  else if (Parser->Next)
   {
+    Assert( Parser->Next->Tokens.At == Parser->Next->Tokens.Start);
+
+    *Parser = *Parser->Next;
     if (Parser->Next)
     {
-      parser *ThisParserPrevPtr = Parser->Prev;
-      parser *ThisParserPtr = Parser;
-      parser ThisParser = *Parser;
-
-      parser *NextParserPtr = Parser->Next;
-      parser NextParser = *Parser->Next;
-
-      *ThisParserPtr = NextParser;
-      *NextParserPtr = ThisParser;
-
-      ThisParserPtr->Prev = NextParserPtr;
-      NextParserPtr->Next = ThisParserPtr;
-
-      Assert(Parser->Next == NextParser.Next);
-      Assert(Parser->Prev == NextParserPtr);
-
-      Assert(NextParser.Next == ThisParserPtr);
-      Assert(NextParser.Prev == ThisParserPrevPtr);
-
-      AdvanceParser(Parser);
-    }
-    else
-    {
-      Warn("Attempted to advance a parser past its last chunk!");
+      Assert(Parser->Next != Parser);
+      Assert(Parser->Next->Next != Parser);
+      Assert(Parser->Next->Next != Parser->Next);
     }
   }
+  else
+  {
+    // Attempted to advance parser past its last chunk
+  }
+
+  return;
 }
 
 function void
 AdvanceTo(parser* Parser, c_token* T)
 {
-  if (T >= Parser->Tokens.At)
+  while (Parser->Tokens.At != T)
   {
-    if (T <= Parser->Tokens.End)
-    {
-      while (Parser->Tokens.At != T)
-      {
-        AdvanceParser(Parser);
-      }
-    }
-    else
-    {
-      Warn("Called AdvanceTo with a token that was past the Parser->Tokens.End pointer on file : %.*s", (u32)Parser->Filename.Count, Parser->Filename.Start);
-    }
+    AdvanceParser(Parser);
   }
-  else
+
+  if (Parser->Tokens.At != T)
   {
-    Warn("Called AdvanceTo with a token that was behind the Parser->Tokens.At pointer on file : %.*s", (u32)Parser->Filename.Count, Parser->Filename.Start);
+    Error("Unable to find supplied token pointer on parser chain during AdvanceTo!");
   }
 }
 
@@ -273,30 +259,24 @@ EatUntilIncluding(parser* Parser, c_token_type Close)
 
 
 function void
-DebugDumpParser(parser* Parser, u32 LinesToDump = u32_MAX)
+DumpEntireParser(parser* Parser, u32 LinesToDump = u32_MAX)
 {
   parser LocalParser = *Parser;
   LocalParser.OutputTokens = {};
-
   Rewind(&LocalParser.Tokens);
-  c_token T = {};
-  while(Remaining(&LocalParser.Tokens) && LinesToDump > 0)
+
+  c_token *T = PopTokenRawPointer(&LocalParser);
+  while(T && LinesToDump > 0)
   {
-    T = PopTokenRaw(&LocalParser);
     PrintToken(T);
 
-    if (T.Type == CTokenType_Newline)
+    if (T->Type == CTokenType_Newline)
     {
       --LinesToDump;
     }
+
+    T = PopTokenRawPointer(&LocalParser);
   }
-
-
-  if (T.Type != CTokenType_Newline)
-  {
-    Log("\n");
-  }
-
 }
 
 function void
@@ -468,13 +448,11 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
 function void
 ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_string ErrorString)
 {
-  Parser->Valid = False;
-
   Assert(ErrorToken);
 
   u32 LinesOfContext = 4;
 
-  Log("----\n");
+  Log("------------------------------------------------------------------------------------\n");
 
   parser LocalParser = *Parser;
   LocalParser.OutputTokens = {};
@@ -484,41 +462,32 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
   parser ErrorLine     = LocalParser;
   parser TrailingLines = LocalParser;
 
+  RewindUntil(&LeadingLines, CTokenType_Newline);
+  LeadingLines.Tokens.End = LeadingLines.Tokens.At;
+  TruncateAtPreviousLineStart(&LeadingLines, LinesOfContext);
+  DumpEntireParser(&LeadingLines);
+
+  TruncateAtPreviousLineStart(&ErrorLine, 0);
+  TruncateAtNextLineEnd(&ErrorLine, 0);
+  DumpEntireParser(&ErrorLine);
+  if (ErrorToken >= ErrorLine.Tokens.Start &&
+      ErrorToken < ErrorLine.Tokens.End)
   {
-    RewindUntil(&LeadingLines, CTokenType_Newline);
-    LeadingLines.Tokens.End = LeadingLines.Tokens.At;
-    TruncateAtPreviousLineStart(&LeadingLines, LinesOfContext);
-    DebugDumpParser(&LeadingLines);
+    OutputErrorHelperLine(&ErrorLine, ErrorToken, ExpectedToken, ErrorString, LocalParser.LineNumber);
+  }
+  else
+  {
+    Error("Determining where the error occured");
+    Log("Error was : %.*s\n", ErrorString.Count, ErrorString.Start);
   }
 
-  {
-    TruncateAtPreviousLineStart(&ErrorLine, 0);
-    TruncateAtNextLineEnd(&ErrorLine, 0);
-    DebugDumpParser(&ErrorLine);
+  EatUntilIncluding(&TrailingLines, CTokenType_Newline);
+  TrailingLines.Tokens.Start = TrailingLines.Tokens.At;
+  TruncateAtNextLineEnd(&TrailingLines, LinesOfContext);
+  DumpEntireParser(&TrailingLines);
 
-    if (ErrorToken >= ErrorLine.Tokens.Start &&
-        ErrorToken < ErrorLine.Tokens.End)
-    {
-      OutputErrorHelperLine(&ErrorLine, ErrorToken, ExpectedToken, ErrorString, LocalParser.LineNumber);
-    }
-    else
-    {
-      Error("Determining where the error occured");
-      Log("%s:%u:0\n", __FILE__, __LINE__);
-      Log("Error was : %.*s\n", ErrorString.Count, ErrorString.Start);
-    }
-
-  }
-
-  {
-    EatUntilIncluding(&TrailingLines, CTokenType_Newline);
-    TrailingLines.Tokens.Start = TrailingLines.Tokens.At;
-    TruncateAtNextLineEnd(&TrailingLines, LinesOfContext);
-    DebugDumpParser(&TrailingLines);
-  }
-
-  Log("----\n");
-
+  Log("------------------------------------------------------------------------------------\n");
+  Parser->Valid = False;
   return;
 }
 
@@ -552,7 +521,7 @@ PeekTokenRawPointer(parser* Parser, u32 Lookahead)
 {
   c_token* Result = {};
   u32 TokensRemaining = (u32)Remaining(&Parser->Tokens);
-  if (TokensRemaining >= Lookahead)
+  if (TokensRemaining > Lookahead)
   {
     Result = Parser->Tokens.At+Lookahead;
   }
@@ -560,7 +529,8 @@ PeekTokenRawPointer(parser* Parser, u32 Lookahead)
   {
     if (Parser->Next)
     {
-      PeekTokenRawPointer(Parser->Next, Lookahead - TokensRemaining);
+      Assert( Parser->Next->Tokens.At == Parser->Next->Tokens.Start);
+      Result = PeekTokenRawPointer(Parser->Next, Lookahead - TokensRemaining);
     }
   }
 
@@ -600,11 +570,9 @@ PeekTokenPointer(parser* Parser, u32 Lookahead)
   u32 TokenHits = 0;
   u32 LocalLookahead = 0;
 
-  c_token* Result = 0;
-  while (Remaining(&Parser->Tokens, LocalLookahead))
+  c_token* Result = PeekTokenRawPointer(Parser, LocalLookahead);
+  while (Result)
   {
-    Result = PeekTokenRawPointer(Parser, LocalLookahead);
-
     if ( Result->Type == CTokenType_CommentSingleLine)
     {
       /* TODO(Jesse, id: 213, tags: bug, parsing, needs_tests): There is a degenerate case here, what if the file ends without a newline?
@@ -635,6 +603,7 @@ PeekTokenPointer(parser* Parser, u32 Lookahead)
     }
 
     ++LocalLookahead;
+    Result = PeekTokenRawPointer(Parser, LocalLookahead);
   }
 
   if (Result && (IsWhitespace(*Result) || IsComment(*Result))) { Result = 0; } // Fires if the stream ends with whitespace/comment
@@ -665,14 +634,35 @@ PeekToken(parser* Parser, u32 Lookahead)
   return Result;
 }
 
+function c_token *
+PopTokenRawPointer(parser* Parser)
+{
+  c_token *Result = PeekTokenRawPointer(Parser);
+  if (Result)
+  {
+    AdvanceTo(Parser, Result);
+    AdvanceParser(Parser);
+  }
+
+  if (Result && DEBUG_CHECK_FOR_BREAK_HERE(*Result))
+  {
+    RuntimeBreak();
+    AdvanceParser(Parser);
+    Result = PopTokenRawPointer(Parser);
+  }
+
+#if BONSAI_INTERNAL
+  if (Result) { Assert(!StringsMatch(Result->Value, CSz("break_here"))); }
+#endif
+
+  return Result;
+}
+
 function c_token
 PopTokenRaw(parser* Parser)
 {
   c_token Result = PeekTokenRaw(Parser);
-  if (Remaining(&Parser->Tokens))
-  {
-    AdvanceParser(Parser);
-  }
+  AdvanceParser(Parser);
 
   if (DEBUG_CHECK_FOR_BREAK_HERE(Result))
   {
@@ -710,12 +700,8 @@ PopToken(parser* Parser)
   c_token* Peek = PeekTokenPointer(Parser);
   if (Peek)
   {
-    if (Remaining(&Parser->Tokens))
-    {
-      AdvanceTo(Parser, Peek);
-      AdvanceParser(Parser);
-    }
-
+    AdvanceTo(Parser, Peek);
+    AdvanceParser(Parser);
     Result = *Peek;
   }
   else
@@ -779,6 +765,7 @@ RequireToken(parser* Parser, c_token ExpectedToken)
     }
     else
     {
+      Assert(!Parser->Next);
       if (Parser->Tokens.At-1 >= Parser->Tokens.Start)
       {
         ParseError(Parser, Parser->Tokens.At-1, ExpectedToken, FormatCountedString(TranArena, CSz("Stream ended unexpectedly in file : %S"), Parser->Filename));
@@ -1139,6 +1126,42 @@ EatWhitespace(parser* Parser)
   }
 
   return;
+}
+
+function void
+TrimLeadingWhitespace(parser* Parser)
+{
+  c_token *T = PeekTokenRawPointer(Parser);
+  while (T && IsWhitespace(T->Type))
+  {
+    PopTokenRawPointer(Parser);
+    T = PeekTokenRawPointer(Parser);
+  }
+}
+
+function void
+TrimTrailingWhitespace(parser* Parser)
+{
+  c_token* CurrentToken = Parser->Tokens.End-1;
+
+  while (CurrentToken > Parser->Tokens.Start)
+  {
+    if ( CurrentToken->Type == CTokenType_Space ||
+         CurrentToken->Type == CTokenType_Tab )
+    {
+      Parser->Tokens.End = CurrentToken;
+      if (Parser->Tokens.At > CurrentToken)
+      {
+        Parser->Tokens.At = CurrentToken;
+      }
+    }
+    else
+    {
+      break;
+    }
+
+    --CurrentToken;
+  }
 }
 
 
@@ -1509,25 +1532,40 @@ CountTokensBeforeNext(parser *Parser, c_token_type T1, c_token_type T2)
 
 
 
-function void
-SplitAndInsertParserInto(parser *ParserToSplit, parser *ParserToInsert, memory_arena *Memory)
+function parser *
+SplitAndInsertParserInto(parser *ParserToSplit, c_token* SplitPoint, parser *ParserToInsert, c_token* SecondHalfStart, memory_arena *Memory)
 {
+  Assert(SplitPoint >= ParserToSplit->Tokens.Start);
+  Assert(SplitPoint < ParserToSplit->Tokens.End);
+
+  Assert(SecondHalfStart >= ParserToSplit->Tokens.Start);
+  Assert(SecondHalfStart < ParserToSplit->Tokens.End);
+
   Rewind(ParserToInsert);
 
   parser *SecondHalfOfSplit = Allocate(parser, Memory, 1);
 
   *SecondHalfOfSplit = *ParserToSplit;
 
-  TruncateToCurrentSize(&ParserToSplit->Tokens);
+  ParserToSplit->Tokens.At = SplitPoint;
+  ParserToSplit->Tokens.End = SplitPoint;
 
-  SecondHalfOfSplit->Tokens.Start = SecondHalfOfSplit->Tokens.At;
+  Assert(ParserToSplit->Tokens.At == ParserToSplit->Tokens.End);
+  Assert(ParserToSplit->Tokens.At == SplitPoint);
+  Assert(ParserToSplit->Tokens.End == SplitPoint);
+
+  SecondHalfOfSplit->Tokens.Start = SecondHalfStart;
+  SecondHalfOfSplit->Tokens.At = SecondHalfStart;
 
   ParserToSplit->Next = ParserToInsert;
   ParserToInsert->Next = SecondHalfOfSplit;
 
-  Assert(Remaining(&ParserToSplit->Tokens) == 0);
   Assert(ParserToInsert->Tokens.At    == ParserToInsert->Tokens.Start);
   Assert(SecondHalfOfSplit->Tokens.At == SecondHalfOfSplit->Tokens.Start);
+
+  Rewind(ParserToSplit);
+
+  return SecondHalfOfSplit;
 }
 
 function parser
@@ -2234,6 +2272,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
       RequireToken(MacroParser, CT_PreprocessorDefine);
       RequireToken(MacroParser, CToken(CT_MacroLiteral, Macro->Name));
+      TrimLeadingWhitespace(MacroParser);
 
       if (OptionalTokenRaw(MacroParser, CTokenType_OpenParen))
       {
@@ -2295,6 +2334,8 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
       Assert(MacroParser->Tokens.End);
       Assert(MacroParser->Tokens.End);
+
+      Rewind(&Macro->Parser);
     }
 
     ConcatStreams(&Ctx->Datatypes.Macros, &MacrosThatNeedToBeParsedOut);
@@ -2312,20 +2353,15 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
     {
       case CT_PreprocessorInclude:
       {
-
-        c_token *Start = Current->Tokens.At;
         parser *IncludeParser = ResolveInclude(Ctx, Current);
-        c_token *End = Current->Tokens.At;
 
         if (IncludeParser)
         {
-          SplitAndInsertParserInto(Current, IncludeParser, Memory);
-          Current->Tokens.At = Start-1;
-          Current->Tokens.End = Start-1;
+          Current = SplitAndInsertParserInto(Current, T, IncludeParser, Current->Tokens.At, Memory);
         }
         else
         {
-          ParseError(Current, Start, CSz("Unable to resolve include."));
+          ParseError(Current, T, CSz("Unable to resolve include."));
           return Result;
         }
 
@@ -2341,14 +2377,8 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       {
         Assert(T->Macro);
 
-        c_token *Start = Current->Tokens.At;
         parser *Expanded = ExpandMacro(Current, T->Macro, Memory);
-        c_token *End = Current->Tokens.At;
-
-        Current->Tokens.At = Start-1;
-        Current->Tokens.End = Start-1;
-
-        SplitAndInsertParserInto(Current, Expanded, Memory);
+        Current = SplitAndInsertParserInto(Current, T, Expanded, Current->Tokens.At, Memory);
       } break;
 
       default:
@@ -3146,31 +3176,6 @@ TrimLastToken(parser* Parser, c_token_type TokenType)
     if (CurrentToken->Type == TokenType)
     {
       Parser->Tokens.End = CurrentToken;
-      break;
-    }
-
-    --CurrentToken;
-  }
-}
-
-function void
-TrimTrailingWhitespace(parser* Parser)
-{
-  c_token* CurrentToken = Parser->Tokens.End-1;
-
-  while (CurrentToken > Parser->Tokens.Start)
-  {
-    if ( CurrentToken->Type == CTokenType_Space ||
-         CurrentToken->Type == CTokenType_Tab )
-    {
-      Parser->Tokens.End = CurrentToken;
-      if (Parser->Tokens.At > CurrentToken)
-      {
-        Parser->Tokens.At = CurrentToken;
-      }
-    }
-    else
-    {
       break;
     }
 

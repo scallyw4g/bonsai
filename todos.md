@@ -338,6 +338,8 @@
 
   ## memory_leak
     - #264 This should use a string builder
+    - #350 
+    - #351 
 
   ## big
     - #293 Constant expression evaluation for #if statements

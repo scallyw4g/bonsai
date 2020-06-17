@@ -884,10 +884,48 @@ TestAst(memory_arena *Memory)
 }
 
 function void
-TestPreprocessorTokenizationStuff(memory_arena *Memory)
+TestMacrosAndIncludes(memory_arena *Memory)
 {
-  parser Parser = ParserForFile(CS(TEST_FIXTURES_PATH "/preprocessor/defines_and_preprocessor_directives.cpp"), Memory);
+  parse_context Ctx = {
+    .Memory = Memory,
+  };
 
+  parser Parser_ = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/macro_and_include_test.cpp"));
+  parser *Parser = &Parser_;
+
+  parser Copy = Parser_;
+
+  DumpEntireParser(Parser);
+
+  TestThat(Parser->Next);
+  TestThat(Parser->Next->Next);
+  TestThat(Parser->Next->Next);
+
+  RequireToken(Parser, CTokenType_Int);
+  RequireToken(Parser, CToken(CSz("ding")));
+  RequireToken(Parser, CTokenType_Equals);
+  RequireToken(Parser, CToken(42u));
+  RequireToken(Parser, CTokenType_Semicolon);
+
+  RequireToken(Parser, CTokenType_Int);
+  RequireToken(Parser, CToken(CSz("thing")));
+  RequireToken(Parser, CTokenType_Equals);
+  RequireToken(Parser, CToken(1337u));
+  RequireToken(Parser, CTokenType_Semicolon);
+
+  RequireToken(Parser, CT_PreprocessorDefine);
+  RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroKeyword")));
+  RequireToken(Parser, CToken(CS("this_is_a_variable_name")));
+
+  RequireToken(Parser, CTokenType_Int);
+  RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
+  RequireToken(Parser, CTokenType_Equals);
+  RequireToken(Parser, CToken(42u));
+  RequireToken(Parser, CTokenType_Semicolon);
+
+  TestThat( TokensRemain(Parser) == False );
+
+  return;
 }
 
 s32
@@ -905,9 +943,9 @@ main()
 
   TestCommentSituation(Memory);
 
-  TestAst(Memory);
+  /* TestAst(Memory); */
 
-  TestPreprocessorTokenizationStuff(Memory);
+  TestMacrosAndIncludes(Memory);
 
   TestSuiteEnd();
   exit(TestsFailed);

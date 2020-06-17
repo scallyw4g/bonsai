@@ -565,7 +565,6 @@ struct parser
   u32 LineNumber;
 
   parser *Next;
-  parser *Prev;
 };
 meta(generate_cursor(parser))
 #include <metaprogramming/output/generate_cursor_parser.h>
@@ -1178,6 +1177,16 @@ enum output_mode
 
 
 inline void
+PrintToken(c_token *Token)
+{
+  if (Token && Token->Type)
+  {
+    Assert(Token->Value.Start && Token->Value.Count);
+    Log("%.*s", Token->Value.Count, Token->Value.Start);
+  }
+}
+
+inline void
 PrintToken(c_token Token)
 {
   if (Token.Type)
@@ -1203,6 +1212,28 @@ b32
 operator!=(c_token T1, c_token T2)
 {
   b32 Result = !(T1==T2);
+  return Result;
+}
+
+inline c_token
+CToken(r32 FloatValue)
+{
+  c_token Result = {
+    .Type = CTokenType_Float,
+    .Value = FormatCountedString(TranArena, CSz("%f"), FloatValue), // TODO(Jesse id: 350, tags: memory_leak)
+    .FloatValue = FloatValue
+  };
+  return Result;
+}
+
+inline c_token
+CToken(u32 UnsignedValue)
+{
+  c_token Result = {
+    .Type = CTokenType_IntLiteral,
+    .Value = FormatCountedString(TranArena, CSz("%u"), UnsignedValue), // TODO(Jesse id: 351, tags: memory_leak)
+    .UnsignedValue = UnsignedValue,
+  };
   return Result;
 }
 
