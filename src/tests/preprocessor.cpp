@@ -923,6 +923,12 @@ TestMacrosAndIncludes(memory_arena *Memory)
   RequireToken(Parser, CToken(42u));
   RequireToken(Parser, CTokenType_Semicolon);
 
+  RequireToken(Parser, CTokenType_Int);
+  RequireToken(Parser, CToken(CSz("defined_in_macro")));
+  RequireToken(Parser, CTokenType_Equals);
+  RequireToken(Parser, CToken(42u));
+  RequireToken(Parser, CTokenType_Semicolon);
+
   TestThat( TokensRemain(Parser) == False );
 
   return;
