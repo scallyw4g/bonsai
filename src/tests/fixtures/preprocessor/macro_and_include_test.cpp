@@ -11,11 +11,22 @@ int MacroKeyword = 42;
 
 #define MacroFunction3(a, b, c, d) a b c d
 
+#define MacroFunction4(a, ...) a
+
+#define MacroFunction5(a, b, ...) a b __VA_ARGS__
+
+#define MacroFunction6(...) __VA_ARGS__
+
+
+// MacroFunction
+
 
 MacroFunction(int this_is_a_variable_name = 42);
 
 MacroFunction(int MacroKeyword = 42);
 
+
+// MacroFunction2
 
 
 MacroFunction2(42);
@@ -25,4 +36,40 @@ MacroFunction(MacroFunction2(42));
 MacroFunction(MacroFunction(MacroFunction2(42)));
 
 
+// MacroFunction3
+
+
 MacroFunction3(int, this_is_a_variable_name, =, 42);
+
+MacroFunction3(int, MacroKeyword, =, 42);
+
+MacroFunction3(MacroFunction2(42), , , );
+
+
+// MacroFunction4
+
+
+MacroFunction4(int this_is_a_variable_name = 42, , , );
+
+MacroFunction4(int this_is_a_variable_name = 42, other, crap here, should just disappear, including MacroKeyword, MacroFunction2(666));
+
+
+// MacroFunction5
+
+
+MacroFunction5(int, this_is_a_variable_name, =, 42);
+
+
+// MacroFunction6
+
+
+MacroFunction6(int, this_is_a_variable_name, =, 42);
+
+MacroFunction6(int, MacroKeyword, =, 42);
+
+MacroFunction6(MacroFunction(int MacroKeyword = 42));
+
+MacroFunction6(MacroFunction2(42));
+
+
+

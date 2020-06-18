@@ -60,7 +60,7 @@ function void TrimLeadingWhitespace(parser* Parser);
 function counted_string EatBetween(parser* Parser, c_token_type Open, c_token_type Close);
 
 function parser * ResolveInclude(parse_context *Ctx, parser *Parser);
-
+function parser * ExpandMacro(parser *Parser, macro_def *Macro, memory_arena *Memory);
 
 
 
@@ -968,6 +968,21 @@ RequireOperatorToken(parser* Parser)
 
 
 
+function parser
+ParserFromBuffer(c_token_buffer *TokenBuf, umm AtOffset = 0)
+{
+  Assert(AtOffset < TokenBuf->Count);
+  parser Result = {
+    .Tokens = {
+      .Start = TokenBuf->Start,
+      .At = TokenBuf->Start + AtOffset,
+      .End = TokenBuf->Start + TokenBuf->Count,
+    }
+  };
+
+  return Result;
+}
+
 function void
 CopyCursorIntoCursor(c_token_cursor *Src, c_token_cursor *Dest)
 {
@@ -987,7 +1002,28 @@ CopyCursorIntoCursor(c_token_cursor *Src, c_token_cursor *Dest)
   }
 }
 
-#if 0 // Unused
+function void
+CopyMacroArgIntoCursor(c_token_buffer *Src, c_token_cursor *Dest, memory_arena *Memory)
+{
+  parser TempParser = ParserFromBuffer(Src);
+  while ( Remaining(&TempParser) )
+  {
+    c_token ArgT = PeekTokenRaw(&TempParser);
+    if (ArgT.Type == CT_MacroLiteral)
+    {
+      parser *Expanded = ExpandMacro(&TempParser, ArgT.Macro, Memory);
+      CopyCursorIntoCursor(&Expanded->Tokens, Dest);
+    }
+    else
+    {
+      PopTokenRaw(&TempParser);
+      Push(ArgT, Dest);
+    }
+  }
+}
+
+
+
 function void
 CopyBufferIntoCursor(c_token_buffer *Src, c_token_cursor *Dest)
 {
@@ -1004,22 +1040,6 @@ CopyBufferIntoCursor(c_token_buffer *Src, c_token_cursor *Dest)
   {
     Error("Dest c_token_cursor was too full to hold entire source buffer!" );
   }
-}
-#endif
-
-function parser
-ParserFromBuffer(c_token_buffer *TokenBuf, umm AtIndex)
-{
-  Assert(AtIndex < TokenBuf->Count);
-  parser Result = {
-    .Tokens = {
-      .Start = TokenBuf->Start,
-      .At = TokenBuf->Start + AtIndex,
-      .End = TokenBuf->Start + TokenBuf->Count,
-    }
-  };
-
-  return Result;
 }
 
 function parser*
@@ -1058,14 +1078,17 @@ ExpandMacro(parser *Parser, macro_def *Macro, memory_arena *Memory)
       TrimFirstToken(ArgParser, CTokenType_OpenParen);
       TrimLastToken(ArgParser, CTokenType_CloseParen);
 
-      c_token_buffer_buffer ArgValues = CTokenBufferBuffer(Macro->ArgNames.Count, Memory);
-
-      for ( u32 ArgIndex = 0;
-            ArgIndex < ArgValues.Count;
-            ++ArgIndex)
+      c_token_buffer_buffer ArgValues = {};
+      if (Macro->NamedArguments.Count)
       {
-        EatUntilExcluding(ArgParser, CTokenType_Comma, ArgValues.Start+ArgIndex);
-        OptionalToken(ArgParser,CTokenType_Comma);
+        ArgValues = CTokenBufferBuffer(Macro->NamedArguments.Count, Memory);
+        for ( u32 ArgIndex = 0;
+              ArgIndex < ArgValues.Count;
+              ++ArgIndex)
+        {
+          EatUntilExcluding(ArgParser, CTokenType_Comma, ArgValues.Start+ArgIndex);
+          OptionalToken(ArgParser,CTokenType_Comma);
+        }
       }
 
       c_token_buffer_stream VarArgs = {};
@@ -1076,7 +1099,7 @@ ExpandMacro(parser *Parser, macro_def *Macro, memory_arena *Memory)
           // TODO(Jesse id: 344): This API is pretty obtuse and could use some work..
           c_token_buffer *Arg = Push(&VarArgs, {}, Memory);
           EatUntilExcluding(ArgParser, CTokenType_Comma, Arg);
-          if (OptionalToken(ArgParser, CTokenType_CloseParen))
+          if (!OptionalToken(ArgParser,CTokenType_Comma))
           {
             break;
           }
@@ -1094,28 +1117,24 @@ ExpandMacro(parser *Parser, macro_def *Macro, memory_arena *Memory)
         c_token T = PeekTokenRaw(MacroBody);
         switch (T.Type)
         {
+          case CT_Preprocessor__VA_ARGS__:
+          {
+            RequireToken(MacroBody, T);
+            ITERATE_OVER(&VarArgs)
+            {
+              c_token_buffer* Arg = GET_ELEMENT(Iter);
+              CopyMacroArgIntoCursor(Arg, &Result->Tokens, Memory);
+            }
+          } break;
+
           case CTokenType_Identifier:
           {
             RequireToken(MacroBody, T);
-            u32 ArgIndex = (u32)IndexOf(&Macro->ArgNames, T.Value);
-            if (ArgIndex < Macro->ArgNames.Count)
+            u32 ArgIndex = (u32)IndexOf(&Macro->NamedArguments, T.Value);
+            if (ArgIndex < Macro->NamedArguments.Count)
             {
               c_token_buffer *ArgBuffer = ArgValues.Start + ArgIndex;
-              parser TempParser = ParserFromBuffer(ArgBuffer, 0);
-              while ( Remaining(&TempParser) )
-              {
-                c_token ArgT = PeekTokenRaw(&TempParser);
-                if (ArgT.Type == CT_MacroLiteral)
-                {
-                  parser *Expanded = ExpandMacro(&TempParser, ArgT.Macro, Memory);
-                  CopyCursorIntoCursor(&Expanded->Tokens, &Result->Tokens);
-                }
-                else
-                {
-                  PopTokenRaw(&TempParser);
-                  Push(ArgT, &Result->Tokens);
-                }
-              }
+              CopyMacroArgIntoCursor(ArgBuffer, &Result->Tokens, Memory);
             }
             else
             {
@@ -2294,6 +2313,10 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
           {
             PushT.Type = CTokenType_Extern;
           }
+          else if ( StringsMatch(PushT.Value, CSz("__VA_ARGS__")) )
+          {
+            PushT.Type = CT_Preprocessor__VA_ARGS__;
+          }
           else
           {
 
@@ -2353,8 +2376,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       RequireToken(MacroBody, CT_PreprocessorDefine);
       RequireToken(MacroBody, CToken(CT_MacroLiteral, Macro->Name));
 
-      TrimLeadingWhitespace(MacroBody);
-
       if (OptionalTokenRaw(MacroBody, CTokenType_OpenParen))
       {
         Macro->Type = type_macro_function;
@@ -2365,26 +2386,27 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
         else
         {
           u32 ArgCount = 1 + CountTokensBeforeNext(MacroBody, CTokenType_Comma, CTokenType_CloseParen);
-          Macro->ArgNames = CountedStringBuffer(ArgCount, Memory);
+          Macro->NamedArguments = CountedStringBuffer(ArgCount, Memory);
 
           for ( u32 ArgIndex = 0;
                 ArgIndex < ArgCount-1;
                 ++ArgIndex)
           {
             counted_string ArgName = RequireToken(MacroBody, CTokenType_Identifier).Value;
-            Macro->ArgNames.Start[ArgIndex] = ArgName;
+            Macro->NamedArguments.Start[ArgIndex] = ArgName;
             RequireToken(MacroBody, CTokenType_Comma);
           }
 
           if (PeekToken(MacroBody).Type == CTokenType_Identifier)
           {
             counted_string ArgName = RequireToken(MacroBody, CTokenType_Identifier).Value;
-            Macro->ArgNames.Start[Macro->ArgNames.Count-1] = ArgName;
+            Macro->NamedArguments.Start[Macro->NamedArguments.Count-1] = ArgName;
           }
 
           if (OptionalToken(MacroBody, CTokenType_Ellipsis))
           {
             Macro->Variadic = True;
+            Macro->NamedArguments.Count -= 1;
           }
 
           RequireToken(MacroBody, CTokenType_CloseParen);
@@ -2392,6 +2414,8 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       }
       else
       {
+        // TrimLeadingWhitespace(MacroBody);
+
         Macro->Type = type_macro_keyword;
       }
 

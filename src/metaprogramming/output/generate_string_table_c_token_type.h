@@ -250,6 +250,8 @@
 
             case CT_PreprocessorWarning: { Result = CSz("CT_PreprocessorWarning"); } break;
 
+            case CT_Preprocessor__VA_ARGS__: { Result = CSz("CT_Preprocessor__VA_ARGS__"); } break;
+
       }
       return Result;
     }

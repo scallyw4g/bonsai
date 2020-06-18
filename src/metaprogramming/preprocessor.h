@@ -519,6 +519,7 @@ enum c_token_type
   CT_PreprocessorPragma,
   CT_PreprocessorError,
   CT_PreprocessorWarning,
+  CT_Preprocessor__VA_ARGS__,
 
 };
 meta(generate_string_table(c_token_type))
@@ -948,7 +949,7 @@ struct macro_def
   counted_string Name;
   parser Body;
 
-  counted_string_buffer ArgNames;
+  counted_string_buffer NamedArguments;
   b32 Variadic;
 };
 meta(generate_stream(macro_def))

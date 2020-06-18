@@ -2407,8 +2407,8 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("counted_string_buffer ArgNames {\n", Depth+2);
-          DebugPrint(S.ArgNames, Depth+4);
+          DebugPrint("counted_string_buffer NamedArguments {\n", Depth+2);
+          DebugPrint(S.NamedArguments, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
@@ -10872,6 +10872,11 @@
             case CT_PreprocessorWarning:
             {
               DebugPrint("CT_PreprocessorWarning ", Depth);
+            } break;
+
+            case CT_Preprocessor__VA_ARGS__:
+            {
+              DebugPrint("CT_Preprocessor__VA_ARGS__ ", Depth);
             } break;
 
       }
