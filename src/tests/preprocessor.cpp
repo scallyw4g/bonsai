@@ -923,11 +923,87 @@ TestMacrosAndIncludes(memory_arena *Memory)
   RequireToken(Parser, CToken(42u));
   RequireToken(Parser, CTokenType_Semicolon);
 
+  RequireToken(Parser, CT_PreprocessorDefine);
+  RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroFunction")));
+  RequireToken(Parser, CToken(CTokenType_OpenParen));
+  RequireToken(Parser, CToken(CS("a")));
+  RequireToken(Parser, CToken(CTokenType_CloseParen));
+  RequireToken(Parser, CToken(CS("a")));
+
+  RequireToken(Parser, CT_PreprocessorDefine);
+  RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroFunction2")));
+  RequireToken(Parser, CToken(CTokenType_OpenParen));
+  RequireToken(Parser, CToken(CS("a")));
+  RequireToken(Parser, CToken(CTokenType_CloseParen));
   RequireToken(Parser, CTokenType_Int);
-  RequireToken(Parser, CToken(CSz("defined_in_macro")));
+  RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroKeyword")));
+  RequireToken(Parser, CTokenType_Equals);
+  RequireToken(Parser, CToken(CS("a")));
+
+  RequireToken(Parser, CT_PreprocessorDefine);
+  RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroFunction3")));
+  RequireToken(Parser, CToken(CTokenType_OpenParen));
+  RequireToken(Parser, CToken(CS("a")));
+  RequireToken(Parser, CToken(CTokenType_Comma));
+  RequireToken(Parser, CToken(CS("b")));
+  RequireToken(Parser, CToken(CTokenType_Comma));
+  RequireToken(Parser, CToken(CS("c")));
+  RequireToken(Parser, CToken(CTokenType_Comma));
+  RequireToken(Parser, CToken(CS("d")));
+  RequireToken(Parser, CToken(CTokenType_CloseParen));
+  RequireToken(Parser, CToken(CS("a")));
+  RequireToken(Parser, CToken(CS("b")));
+  RequireToken(Parser, CToken(CS("c")));
+  RequireToken(Parser, CToken(CS("d")));
+
+
+  // MacroFunction
+
+
+  RequireToken(Parser, CTokenType_Int);
+  RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
   RequireToken(Parser, CTokenType_Equals);
   RequireToken(Parser, CToken(42u));
   RequireToken(Parser, CTokenType_Semicolon);
+
+  RequireToken(Parser, CTokenType_Int);
+  RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
+  RequireToken(Parser, CTokenType_Equals);
+  RequireToken(Parser, CToken(42u));
+  RequireToken(Parser, CTokenType_Semicolon);
+
+
+  // MacroFunction2
+
+
+  RequireToken(Parser, CTokenType_Int);
+  RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
+  RequireToken(Parser, CTokenType_Equals);
+  RequireToken(Parser, CToken(42u));
+  RequireToken(Parser, CTokenType_Semicolon);
+
+  RequireToken(Parser, CTokenType_Int);
+  RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
+  RequireToken(Parser, CTokenType_Equals);
+  RequireToken(Parser, CToken(42u));
+  RequireToken(Parser, CTokenType_Semicolon);
+
+  RequireToken(Parser, CTokenType_Int);
+  RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
+  RequireToken(Parser, CTokenType_Equals);
+  RequireToken(Parser, CToken(42u));
+  RequireToken(Parser, CTokenType_Semicolon);
+
+
+  // MacroFunction3
+ 
+
+  RequireToken(Parser, CTokenType_Int);
+  RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
+  RequireToken(Parser, CTokenType_Equals);
+  RequireToken(Parser, CToken(42u));
+  RequireToken(Parser, CTokenType_Semicolon);
+
 
   TestThat( TokensRemain(Parser) == False );
 

@@ -56,6 +56,7 @@ function counted_string RequireOperatorToken(parser *Parser);
 
 function void TrimFirstToken(parser* Parser, c_token_type TokenType);
 function void TrimLastToken(parser* Parser, c_token_type TokenType);
+function void TrimLeadingWhitespace(parser* Parser);
 function counted_string EatBetween(parser* Parser, c_token_type Open, c_token_type Close);
 
 function parser * ResolveInclude(parse_context *Ctx, parser *Parser);
@@ -74,6 +75,16 @@ Rewind(parser* Parser)
   {
     Rewind(Parser->Next);
   }
+}
+
+function b32
+IsNewline(c_token_type Type)
+{
+  b32 Result = Type == CTokenType_Newline        ||
+               Type == CTokenType_EscapedNewline ||
+               Type == CTokenType_CarrigeReturn;
+
+  return Result;
 }
 
 function b32
@@ -326,6 +337,11 @@ TruncateAtPreviousLineStart(parser* Parser, u32 Count )
 function void
 OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, counted_string ErrorString, u32 LineNumber)
 {
+  if ( ! IsNewline(Parser->Tokens.At->Type) )
+  {
+    Log("\n");
+  }
+
   Rewind(&Parser->Tokens);
 
   u32 SpaceCount = 0;
@@ -953,6 +969,26 @@ RequireOperatorToken(parser* Parser)
 
 
 function void
+CopyCursorIntoCursor(c_token_cursor *Src, c_token_cursor *Dest)
+{
+  u32 SrcElements = (u32)TotalElements(Src);
+  if ( SrcElements <= Remaining(Dest) )
+  {
+    for ( u32 TokenIndex = 0;
+          TokenIndex < SrcElements;
+          ++TokenIndex)
+    {
+      Push(Src->Start[TokenIndex], Dest);
+    }
+  }
+  else
+  {
+    Error("Dest c_token_cursor was too full to hold entire source buffer!" );
+  }
+}
+
+#if 0 // Unused
+function void
 CopyBufferIntoCursor(c_token_buffer *Src, c_token_cursor *Dest)
 {
   if ( Src->Count <= Remaining(Dest) )
@@ -969,27 +1005,43 @@ CopyBufferIntoCursor(c_token_buffer *Src, c_token_cursor *Dest)
     Error("Dest c_token_cursor was too full to hold entire source buffer!" );
   }
 }
+#endif
+
+function parser
+ParserFromBuffer(c_token_buffer *TokenBuf, umm AtIndex)
+{
+  Assert(AtIndex < TokenBuf->Count);
+  parser Result = {
+    .Tokens = {
+      .Start = TokenBuf->Start,
+      .At = TokenBuf->Start + AtIndex,
+      .End = TokenBuf->Start + TokenBuf->Count,
+    }
+  };
+
+  return Result;
+}
 
 function parser*
 ExpandMacro(parser *Parser, macro_def *Macro, memory_arena *Memory)
 {
   parser *Result = {};
 
-  RequireToken(Parser, CT_MacroLiteral);
+  RequireToken(Parser, CToken(CT_MacroLiteral, Macro->Name));
 
   switch (Macro->Type)
   {
     case type_macro_keyword:
     {
       Result = Allocate(parser, Memory, 1);
-      *Result = Macro->Parser;
+      *Result = Macro->Body;
       Assert(Result->Next == 0);
       Assert(Result->Tokens.At == Result->Tokens.Start);
     } break;
 
     case type_macro_function:
     {
-      Result = AllocateParserPtr(Macro->Parser.Filename, (u32)Kilobytes(1), 0, Memory);
+      Result = AllocateParserPtr(Macro->Body.Filename, (u32)Kilobytes(1), 0, Memory);
 
       c_token *Start = PeekTokenPointer(Parser);
       parser ArgParser_ =
@@ -1013,6 +1065,7 @@ ExpandMacro(parser *Parser, macro_def *Macro, memory_arena *Memory)
             ++ArgIndex)
       {
         EatUntilExcluding(ArgParser, CTokenType_Comma, ArgValues.Start+ArgIndex);
+        OptionalToken(ArgParser,CTokenType_Comma);
       }
 
       c_token_buffer_stream VarArgs = {};
@@ -1032,31 +1085,59 @@ ExpandMacro(parser *Parser, macro_def *Macro, memory_arena *Memory)
 
       Assert(Remaining(ArgParser) == 0);
 
-      parser *MacroParser = &Macro->Parser;
-      Rewind(MacroParser);
-      while (Remaining(MacroParser))
+      parser MacroBody_ = Macro->Body;
+      parser *MacroBody = &MacroBody_;
+      TrimLeadingWhitespace(MacroBody);
+      Rewind(MacroBody);
+      while (Remaining(MacroBody))
       {
-        c_token T = PopTokenRaw(MacroParser);
-        if (T.Type == CTokenType_Identifier)
+        c_token T = PeekTokenRaw(MacroBody);
+        switch (T.Type)
         {
-          u32 ArgIndex = (u32)IndexOf(&Macro->ArgNames, T.Value);
-          if (ArgIndex < Macro->ArgNames.Count)
+          case CTokenType_Identifier:
           {
-            CopyBufferIntoCursor(ArgValues.Start + ArgIndex, &Result->Tokens);
-          }
-          else
-          {
-            Push(T, &Result->Tokens);
-          }
-        }
-        else
-        {
-          Push(T, &Result->Tokens);
-        }
-      }
-      Assert(Remaining(MacroParser) == 0);
-      Rewind(MacroParser);
+            RequireToken(MacroBody, T);
+            u32 ArgIndex = (u32)IndexOf(&Macro->ArgNames, T.Value);
+            if (ArgIndex < Macro->ArgNames.Count)
+            {
+              c_token_buffer *ArgBuffer = ArgValues.Start + ArgIndex;
+              parser TempParser = ParserFromBuffer(ArgBuffer, 0);
+              while ( Remaining(&TempParser) )
+              {
+                c_token ArgT = PeekTokenRaw(&TempParser);
+                if (ArgT.Type == CT_MacroLiteral)
+                {
+                  parser *Expanded = ExpandMacro(&TempParser, ArgT.Macro, Memory);
+                  CopyCursorIntoCursor(&Expanded->Tokens, &Result->Tokens);
+                }
+                else
+                {
+                  PopTokenRaw(&TempParser);
+                  Push(ArgT, &Result->Tokens);
+                }
+              }
+            }
+            else
+            {
+              Push(T, &Result->Tokens);
+            }
+          } break;
 
+          case CT_MacroLiteral:
+          {
+            parser *Expanded = ExpandMacro(MacroBody, T.Macro, Memory);
+            CopyCursorIntoCursor(&Expanded->Tokens, &Result->Tokens);
+          } break;
+
+          default:
+          {
+            PopTokenRaw(MacroBody);
+            Push(T, &Result->Tokens);
+          } break;
+        }
+
+      }
+      Assert(Remaining(MacroBody) == 0);
 
       TruncateToCurrentSize(&Result->Tokens);
     } break;
@@ -1489,7 +1570,7 @@ GetByName(macro_def_stream* Stream, counted_string Name)
     if (StringsMatch(Current->Name, Name))
     {
       Result = Current;
-      Rewind(&Result->Parser);
+      Rewind(&Result->Body);
       break;
     }
   }
@@ -1947,8 +2028,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
               macro_def Macro = {
                 .Name = PopIdentifier(&Code),
-                .Parser = {
-                  .Valid = 1,
+                .Body = {
                   .Tokens = {
                     .Start = Result.Tokens.At,
                     .At    = Result.Tokens.At,
@@ -2267,46 +2347,47 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       macro_def *Macro = GET_ELEMENT(Iter);
       if (StringsMatch(Macro->Name, CSz("meta"))) { continue; }
 
-      parser *MacroParser = &Macro->Parser;
-      MacroParser->Tokens.End = Result.Tokens.End;
+      parser *MacroBody = &Macro->Body;
+      MacroBody->Tokens.End = Result.Tokens.End;
 
-      RequireToken(MacroParser, CT_PreprocessorDefine);
-      RequireToken(MacroParser, CToken(CT_MacroLiteral, Macro->Name));
-      TrimLeadingWhitespace(MacroParser);
+      RequireToken(MacroBody, CT_PreprocessorDefine);
+      RequireToken(MacroBody, CToken(CT_MacroLiteral, Macro->Name));
 
-      if (OptionalTokenRaw(MacroParser, CTokenType_OpenParen))
+      TrimLeadingWhitespace(MacroBody);
+
+      if (OptionalTokenRaw(MacroBody, CTokenType_OpenParen))
       {
         Macro->Type = type_macro_function;
-        if (OptionalToken(MacroParser, CTokenType_CloseParen))
+        if (OptionalToken(MacroBody, CTokenType_CloseParen))
         {
           // No arguments
         }
         else
         {
-          u32 ArgCount = 1 + CountTokensBeforeNext(MacroParser, CTokenType_Comma, CTokenType_CloseParen);
+          u32 ArgCount = 1 + CountTokensBeforeNext(MacroBody, CTokenType_Comma, CTokenType_CloseParen);
           Macro->ArgNames = CountedStringBuffer(ArgCount, Memory);
 
           for ( u32 ArgIndex = 0;
                 ArgIndex < ArgCount-1;
                 ++ArgIndex)
           {
-            counted_string ArgName = RequireToken(MacroParser, CTokenType_Identifier).Value;
+            counted_string ArgName = RequireToken(MacroBody, CTokenType_Identifier).Value;
             Macro->ArgNames.Start[ArgIndex] = ArgName;
-            RequireToken(MacroParser, CTokenType_Comma);
+            RequireToken(MacroBody, CTokenType_Comma);
           }
 
-          if (PeekToken(MacroParser).Type == CTokenType_Identifier)
+          if (PeekToken(MacroBody).Type == CTokenType_Identifier)
           {
-            counted_string ArgName = RequireToken(MacroParser, CTokenType_Identifier).Value;
+            counted_string ArgName = RequireToken(MacroBody, CTokenType_Identifier).Value;
             Macro->ArgNames.Start[Macro->ArgNames.Count-1] = ArgName;
           }
 
-          if (OptionalToken(MacroParser, CTokenType_Ellipsis))
+          if (OptionalToken(MacroBody, CTokenType_Ellipsis))
           {
             Macro->Variadic = True;
           }
 
-          RequireToken(MacroParser, CTokenType_CloseParen);
+          RequireToken(MacroBody, CTokenType_CloseParen);
         }
       }
       else
@@ -2314,28 +2395,28 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
         Macro->Type = type_macro_keyword;
       }
 
-      MacroParser->Tokens.Start = MacroParser->Tokens.At;
+      MacroBody->Tokens.Start = MacroBody->Tokens.At;
 
       b32 Done = False;
-      while (!Done && TokensRemain(MacroParser))
+      while (!Done && TokensRemain(MacroBody))
       {
-        switch (PeekTokenRaw(MacroParser).Type)
+        switch (PeekTokenRaw(MacroBody).Type)
         {
           case CTokenType_Newline:
           {
             Done = True;
           } break;
 
-          default: { PopTokenRaw(MacroParser); } break;
+          default: { PopTokenRaw(MacroBody); } break;
         }
       }
 
-      TruncateToCurrentSize(&MacroParser->Tokens);
+      TruncateToCurrentSize(&MacroBody->Tokens);
 
-      Assert(MacroParser->Tokens.End);
-      Assert(MacroParser->Tokens.End);
+      Assert(MacroBody->Tokens.End);
+      Assert(MacroBody->Tokens.End);
 
-      Rewind(&Macro->Parser);
+      Rewind(&Macro->Body);
     }
 
     ConcatStreams(&Ctx->Datatypes.Macros, &MacrosThatNeedToBeParsedOut);

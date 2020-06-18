@@ -553,7 +553,7 @@ meta(generate_stream(c_token_buffer))
 
 struct parser
 {
-  b32 Valid;
+  b32 Valid = 1;
   c_token_cursor Tokens;
 
   /* TODO(Jesse id: 154) This is pretty shitty because whenever we copy one of
@@ -946,7 +946,7 @@ struct macro_def
 {
   macro_type Type;
   counted_string Name;
-  parser Parser;
+  parser Body;
 
   counted_string_buffer ArgNames;
   b32 Variadic;

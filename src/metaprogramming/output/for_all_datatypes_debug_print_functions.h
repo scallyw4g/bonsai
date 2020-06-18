@@ -2401,8 +2401,8 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("parser Parser {\n", Depth+2);
-          DebugPrint(S.Parser, Depth+4);
+          DebugPrint("parser Body {\n", Depth+2);
+          DebugPrint(S.Body, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");

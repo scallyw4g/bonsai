@@ -5,6 +5,24 @@ int ding = 42;
 #define MacroKeyword    this_is_a_variable_name
 int MacroKeyword = 42;
 
-#define MacroFuncion(a) (a)
+#define MacroFunction(a) a
 
-MacroFunction(int defined_in_macro = 42);
+#define MacroFunction2(a) int MacroKeyword = a
+
+#define MacroFunction3(a, b, c, d) a b c d
+
+
+MacroFunction(int this_is_a_variable_name = 42);
+
+MacroFunction(int MacroKeyword = 42);
+
+
+
+MacroFunction2(42);
+
+MacroFunction(MacroFunction2(42));
+
+MacroFunction(MacroFunction(MacroFunction2(42)));
+
+
+MacroFunction3(int, this_is_a_variable_name, =, 42);
