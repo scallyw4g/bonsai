@@ -26,7 +26,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   UiGroup->MouseP                = &Plat->MouseP;
   UiGroup->MouseDP               = &Plat->MouseDP;
 
-  if ( ! (Plat->Input.LMB.Pressed || Plat->Input.RMB.Pressed))
+  if ( ! (Plat->Input.LMB.Pressed || Plat->Input.RMB.Pressed) )
   {
     UiGroup->PressedInteractionId = 0;
   }
@@ -95,8 +95,8 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   {
     v4 Padding = V4(25);
     ui_style Style =  UiStyleFromLightestColor(V3(1));
-    PushTableStart(UiGroup);
 
+    PushTableStart(UiGroup);
     if (Button(UiGroup, CS("PickedChunks"), (umm)"PickedChunks", &Style, Padding))
     {
       ToggleBitfieldValue(DebugState->UIType, DebugUIType_PickedChunks);
@@ -131,7 +131,6 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     {
       ToggleBitfieldValue(DebugState->UIType, DebugUIType_DrawCalls);
     }
-
     PushTableEnd(UiGroup);
 
 

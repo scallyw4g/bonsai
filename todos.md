@@ -19,9 +19,9 @@
     - #270 Unnecessary .. I just added these as a hack get parsing to work
     - #271 Unnecessary .. I just added these as a hack get parsing to work
     - #275 Rewrite this in terms of `ToU32(counted_string S)`
-    - #344 This API is pretty obtuse and could use some work..
     - #345 How do we differentiate between arithmetic/logical shifts here?
     - #282 Should we parse out the function def explicitly here?
+    - #363 A bunch of this crap can get taken out of here..  I added it
 
   ## immediate
     - #238 Change name to BitwiseAnd

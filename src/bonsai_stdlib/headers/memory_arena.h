@@ -96,11 +96,11 @@ struct memory_arena
 #define DEBUG_REGISTER_THREAD(ThreadIndex) do { if (GetDebugState) { GetDebugState()->RegisterThread(ThreadIndex); } } while (false)
 
 
-void            PlatformUnprotectArena(memory_arena *Arena);
-void            PlatformDeallocateArena(memory_arena *Arena);
-u8*             PlatformAllocateSize(umm AllocationSize);
-u8*             PlatformProtectPage(u8* Mem);
-u64             PlatformGetPageSize();
+void PlatformUnprotectArena(memory_arena *Arena);
+void PlatformDeallocateArena(memory_arena *Arena);
+u8*  PlatformAllocateSize(umm AllocationSize);
+u8*  PlatformProtectPage(u8* Mem);
+u64  PlatformGetPageSize();
 
 b32
 OnPageBoundary(memory_arena *Arena, umm PageSize)
@@ -202,7 +202,7 @@ MemoryIsEqual(u8 *First, u8 *Second, umm Size)
       Index < Size;
       ++Index)
   {
-    Result &= (First[Index] == Second[Index]);
+    Result = Result && ( First[Index] == Second[Index]);
   }
 
   return Result;
@@ -437,8 +437,8 @@ PushSize(memory_arena *Arena, umm SizeIn, umm Alignment, b32 MemProtect)
   }
 
   umm RequestedSize = AlignCorrectedSizeIn;
-  Assert(Arena->At <= Arena->End);
-  Assert(Remaining(Arena) <= TotalSize(Arena)); // Sanity Check
+  Assert(Arena->At <= Arena->End);              // Sanity checks
+  Assert(Remaining(Arena) <= TotalSize(Arena));
 
 #if MEMPROTECT
   u64 PageSize = PlatformGetPageSize();
@@ -455,7 +455,7 @@ PushSize(memory_arena *Arena, umm SizeIn, umm Alignment, b32 MemProtect)
 
   umm RemainingInArena = Remaining(Arena);
   b32 ArenaIsFull = RequestedSize > RemainingInArena;
-  if (ArenaIsFull) // Reallocate the arena
+  if (ArenaIsFull)
   {
     ReallocateArena(Arena, RequestedSize, MemProtect);
   }

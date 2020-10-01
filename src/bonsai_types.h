@@ -1,3 +1,5 @@
+#define BONSAI_INTERNAL (1)
+
 #define CACHE_LINE_SIZE (64)
 
 #define ITERATE_OVER_AS(prefix, value_ptr)                   \

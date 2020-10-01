@@ -3,7 +3,9 @@ int ding = 42;
 #include <src/tests/fixtures/preprocessor/include_test.cpp>
 
 #define MacroKeyword    this_is_a_variable_name
+#define IndirectMacroKeyword MacroKeyword
 int MacroKeyword = 42;
+int IndirectMacroKeyword = 42;
 
 #define MacroFunction(a) a
 
@@ -17,6 +19,8 @@ int MacroKeyword = 42;
 
 #define MacroFunction6(...) __VA_ARGS__
 
+#define MacroFunction7(a, b) a b
+
 
 // MacroFunction
 
@@ -24,6 +28,8 @@ int MacroKeyword = 42;
 MacroFunction(int this_is_a_variable_name = 42);
 
 MacroFunction(int MacroKeyword = 42);
+
+MacroFunction(SomeRegularFunctionCall(42));
 
 
 // MacroFunction2
@@ -53,7 +59,6 @@ MacroFunction4(int this_is_a_variable_name = 42, , , );
 
 MacroFunction4(int this_is_a_variable_name = 42, other, crap here, should just disappear, including MacroKeyword, MacroFunction2(666));
 
-
 // MacroFunction5
 
 
@@ -70,6 +75,39 @@ MacroFunction6(int, MacroKeyword, =, 42);
 MacroFunction6(MacroFunction(int MacroKeyword = 42));
 
 MacroFunction6(MacroFunction2(42));
+
+
+// MacroFunction7
+
+
+MacroFunction7(SomeRegularFunctionCall(4, 2);, SomeRegularFunctionCall(42));
+
+#define ZEEROW (1-1)
+
+#if 0
+this should be ignored
+#endif
+
+#if ZEEROW
+this should be ignored
+#endif
+
+#if 0 > 1
+this should be ignored
+#endif
+
+#if 100 == 101
+this should be ignored
+#endif
+
+#if (1 * 0)
+this should be ignored
+#endif
+
+#if (2 < 1)
+this should be ignored
+#endif
+
 
 
 

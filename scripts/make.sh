@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# COMMON_OPTIMIZATION_OPTIONS="-O2"
+COMMON_OPTIMIZATION_OPTIONS="-O2"
 
 RED="\x1b[31m"
 BLUE="\x1b[34m"
@@ -136,7 +136,6 @@ function BuildPreprocessor {
     $COMMON_OPTIMIZATION_OPTIONS \
     $COMMON_COMPILER_OPTIONS     \
     $COMMON_LINKER_OPTIONS       \
-    -D BONSAI_INTERNAL=1         \
     -I"$SRC"                     \
     -o "$output_basename""_dev"  \
     $executable
@@ -170,7 +169,6 @@ function BuildWithClang {
       $COMMON_OPTIMIZATION_OPTIONS \
       $COMMON_COMPILER_OPTIONS     \
       $COMMON_LINKER_OPTIONS       \
-      -D BONSAI_INTERNAL=1         \
       -I"$SRC"                     \
       -o "$output_basename"        \
       $executable && echo -e "$Success $executable" &
@@ -184,7 +182,6 @@ function BuildWithClang {
     clang++                      \
       $COMMON_COMPILER_OPTIONS   \
       $COMMON_LINKER_OPTIONS     \
-      -D BONSAI_INTERNAL=1       \
       -I"$SRC"                   \
       -o "$output_basename"      \
       $executable && echo -e "$Success $executable" &
@@ -199,7 +196,6 @@ function BuildWithClang {
       $COMMON_OPTIMIZATION_OPTIONS \
       $COMMON_COMPILER_OPTIONS     \
       $COMMON_LINKER_OPTIONS       \
-      -D BONSAI_INTERNAL=1         \
       -I"$SRC"                     \
       -I"$SRC/debug_system"        \
       -o "$output_basename"        \
@@ -215,7 +211,6 @@ function BuildWithClang {
     $COMMON_COMPILER_OPTIONS       \
     $SHARED_LIBRARY_FLAGS          \
     $COMMON_LINKER_OPTIONS         \
-    -D BONSAI_INTERNAL=1           \
     -I"$SRC"                       \
     -I"$SRC/debug_system"          \
     -o "$BIN/lib_debug_system.so"  \
@@ -231,7 +226,6 @@ function BuildWithClang {
       $COMMON_OPTIMIZATION_OPTIONS                              \
       $COMMON_COMPILER_OPTIONS                                  \
       $COMMON_LINKER_OPTIONS                                    \
-      -D BONSAI_INTERNAL=1                                      \
       -I"$SRC"                                                  \
       -I"$executable"                                           \
       -o "$output_basename"                                     \
@@ -259,7 +253,6 @@ function BuildWithEmcc {
   [ $? -ne 0 ] && echo -e "Please install emcc" && exit 1
 
   emcc src/font/ttf.cpp              \
-    -D BONSAI_INTERNAL=1             \
     -I src                           \
     -I /usr/include                  \
     -I /usr/include/x86_64-linux-gnu \

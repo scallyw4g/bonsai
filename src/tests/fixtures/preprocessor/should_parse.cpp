@@ -69,55 +69,58 @@ u32 SizeOfInt = sizeof(int);
 
 
 #define MacroFunction(P1, P2) P1 P2
-MacroFunction(u32 AnUnsignedInt = 42;, Whatever)
-MacroFunction(u32 AnotherUnsignedInt = sizeof(u32);, Trevor)
+MacroFunction(u32 AnUnsignedInt = 42;, )
+MacroFunction(u32 AnotherUnsignedInt = sizeof(u32);, )
 
 #define VariadicMacroFunction1(P1, P2, ...) P1 P2 __VA_ARGS__
-
 #define VariadicMacroFunction2(P1, P2 ...) P1 P2 __VA_ARGS__
 
 
+
 #if 0
-#define CheekyDisappearingFunction(...)
+// #define CheekyDisappearingFunction(...)
+
 #else
+
 function u32
 CheekyDisappearingFunction()
 {
   return 42;
 }
 
-function u32
-CallTheCheekyFunction()
-{
-  u32 CheekyResult = CheekyDisappearingFunction();
-  return CheekyResult;
-}
+/* function u32 */
+/* CallTheCheekyFunction() */
+/* { */
+/*   u32 CheekyResult = CheekyDisappearingFunction(); */
+/*   return CheekyResult; */
+/* } */
+
 #endif
 
-#if 1
-#define AnotherCheekyDisappearingFunction(...)
-#else
-function u32
-AnotherCheekyDisappearingFunction()
-{
-  return 42;
-}
+/* #if 1 */
+/* #define AnotherCheekyDisappearingFunction(...) */
+/* #else */
+/* function u32 */
+/* AnotherCheekyDisappearingFunction() */
+/* { */
+/*   return 42; */
+/* } */
 
-function u32
-CallTheAnotherCheekyFunction()
-{
-  u32 AnotherCheekyResult = AnotherCheekyDisappearingFunction();
-  return AnotherCheekyResult;
-}
-#endif
+/* function u32 */
+/* CallTheAnotherCheekyFunction() */
+/* { */
+/*   u32 AnotherCheekyResult = AnotherCheekyDisappearingFunction(); */
+/*   return AnotherCheekyResult; */
+/* } */
+/* #endif */
 
 
-function void
-CallBothCheeks()
-{
-  CheekyDisappearingFunction();
-  AnotherCheekyDisappearingFunction();
-}
+/* function void */
+/* CallBothCheeks() */
+/* { */
+/*   CheekyDisappearingFunction(); */
+/*   AnotherCheekyDisappearingFunction(); */
+/* } */
 
 
 

@@ -917,6 +917,16 @@ TestMacrosAndIncludes(memory_arena *Memory)
   RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroKeyword")));
   RequireToken(Parser, CToken(CS("this_is_a_variable_name")));
 
+  RequireToken(Parser, CT_PreprocessorDefine);
+  RequireToken(Parser, CToken(CT_MacroLiteral, CS("IndirectMacroKeyword")));
+  RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroKeyword")));
+
+  RequireToken(Parser, CTokenType_Int);
+  RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
+  RequireToken(Parser, CTokenType_Equals);
+  RequireToken(Parser, CToken(42u));
+  RequireToken(Parser, CTokenType_Semicolon);
+
   RequireToken(Parser, CTokenType_Int);
   RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
   RequireToken(Parser, CTokenType_Equals);
@@ -987,6 +997,17 @@ TestMacrosAndIncludes(memory_arena *Memory)
   RequireToken(Parser, CToken(CT_Preprocessor__VA_ARGS__));
 
 
+  RequireToken(Parser, CT_PreprocessorDefine);
+  RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroFunction7")));
+  RequireToken(Parser, CToken(CTokenType_OpenParen));
+  RequireToken(Parser, CToken(CS("a")));
+  RequireToken(Parser, CToken(CTokenType_Comma));
+  RequireToken(Parser, CToken(CS("b")));
+  RequireToken(Parser, CToken(CTokenType_CloseParen));
+  RequireToken(Parser, CToken(CS("a")));
+  RequireToken(Parser, CToken(CS("b")));
+
+
   // MacroFunction
 
 
@@ -1000,6 +1021,12 @@ TestMacrosAndIncludes(memory_arena *Memory)
   RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
   RequireToken(Parser, CTokenType_Equals);
   RequireToken(Parser, CToken(42u));
+  RequireToken(Parser, CTokenType_Semicolon);
+
+  RequireToken(Parser, CToken(CSz("SomeRegularFunctionCall")));
+  RequireToken(Parser, CTokenType_OpenParen);
+  RequireToken(Parser, CToken(42u));
+  RequireToken(Parser, CTokenType_CloseParen);
   RequireToken(Parser, CTokenType_Semicolon);
 
 
@@ -1062,7 +1089,7 @@ TestMacrosAndIncludes(memory_arena *Memory)
   RequireToken(Parser, CToken(42u));
   RequireToken(Parser, CTokenType_Semicolon);
 
-
+ 
   // MacroFunction5
 
 
@@ -1101,8 +1128,55 @@ TestMacrosAndIncludes(memory_arena *Memory)
   RequireToken(Parser, CTokenType_Semicolon);
 
 
+  // MacroFunction7
 
 
+  RequireToken(Parser, CToken(CSz("SomeRegularFunctionCall")));
+  RequireToken(Parser, CTokenType_OpenParen);
+  RequireToken(Parser, CToken(4u));
+  RequireToken(Parser, CTokenType_Comma);
+  RequireToken(Parser, CToken(2u));
+  RequireToken(Parser, CTokenType_CloseParen);
+  RequireToken(Parser, CTokenType_Semicolon);
+
+
+  RequireToken(Parser, CToken(CSz("SomeRegularFunctionCall")));
+  RequireToken(Parser, CTokenType_OpenParen);
+  RequireToken(Parser, CToken(42u));
+  RequireToken(Parser, CTokenType_CloseParen);
+  RequireToken(Parser, CTokenType_Semicolon);
+
+  RequireToken(Parser, CT_PreprocessorDefine);
+  RequireToken(Parser, CT_MacroLiteral);
+  RequireToken(Parser, CTokenType_OpenParen);
+  RequireToken(Parser, CToken(1u));
+  RequireToken(Parser, CTokenType_Minus);
+  RequireToken(Parser, CToken(1u));
+  RequireToken(Parser, CTokenType_CloseParen);
+
+  RequireToken(Parser, CT_PreprocessorIf);
+  TestThat(ResolveMacroConstantExpression(Parser) == 0);
+  EatIf0Block(Parser);
+
+  RequireToken(Parser, CT_PreprocessorIf);
+  TestThat(ResolveMacroConstantExpression(Parser) == 0);
+  EatIf0Block(Parser);
+
+  RequireToken(Parser, CT_PreprocessorIf);
+  TestThat(ResolveMacroConstantExpression(Parser) == 0);
+  EatIf0Block(Parser);
+
+  RequireToken(Parser, CT_PreprocessorIf);
+  TestThat(ResolveMacroConstantExpression(Parser) == 0);
+  EatIf0Block(Parser);
+
+  RequireToken(Parser, CT_PreprocessorIf);
+  TestThat(ResolveMacroConstantExpression(Parser) == 0);
+  EatIf0Block(Parser);
+
+  RequireToken(Parser, CT_PreprocessorIf);
+  TestThat(ResolveMacroConstantExpression(Parser) == 0);
+  EatIf0Block(Parser);
 
 
   TestThat( TokensRemain(Parser) == False );
@@ -1125,9 +1199,9 @@ main()
 
   TestCommentSituation(Memory);
 
-  /* TestAst(Memory); */
-
   TestMacrosAndIncludes(Memory);
+
+  TestAst(Memory);
 
   TestSuiteEnd();
   exit(TestsFailed);

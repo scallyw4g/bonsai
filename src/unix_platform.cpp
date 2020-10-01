@@ -129,15 +129,15 @@ PlatformAllocateSize(umm AllocationSize)
   if (Bytes == MAP_FAILED)
   {
     Bytes = 0;
-    s32 Error = errno;
-    if (Error == ENOMEM)
+    s32 E = errno;
+    if (E == ENOMEM)
     {
       Error("Out of memory, or exhausted virtual page table.");
       Assert(False);
     }
     else
     {
-      Error("Unknown error allocating pages: %d", Error);
+      Error("Unknown error allocating pages: %d", E);
       Assert(False);
     }
   }
@@ -207,8 +207,8 @@ CreateThread( thread_main_callback_type ThreadMain, thread_startup_params *Param
 void
 CloseLibrary(shared_lib Lib)
 {
-  s32 Error = dlclose(Lib);
-  if (Error != 0)
+  s32 E = dlclose(Lib);
+  if (E != 0)
   {
     Error("Closing Shared Library");
   }
@@ -680,8 +680,8 @@ PlatformSetThreadPriority(s32 Priority)
 {
   bonsai_sched_param Param = {};
   Param.sched_priority = Priority;
-  int Error = sched_setscheduler(0, SCHED_FIFO, &Param);
-  if (Error)
+  s32 E = sched_setscheduler(0, SCHED_FIFO, &Param);
+  if (E)
   {
     Error("Setting Scheduler for main thread");
 

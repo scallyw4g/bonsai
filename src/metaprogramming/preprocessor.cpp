@@ -31,7 +31,12 @@ _Pragma("clang diagnostic pop") // unused-macros
 // TODO(Jesse id: 292, tags: big): Include graph traversal
 
 
+/* #define TestMacro(a, b) a b */
 
+/* TestMacro( */
+/*     void Thing( TestMacro(int a1, int a2), );, */
+/*     void Thing2( TestMacro(int a1, int a2) ); */
+/* ) */
 
 function c_token *      PeekTokenRawPointer(parser *Parser, u32 TokenLookahead = 0);
 function c_token        PeekTokenRaw(parser *Parser, u32 Lookahead = 0);
@@ -61,6 +66,8 @@ function counted_string EatBetween(parser* Parser, c_token_type Open, c_token_ty
 
 function parser * ResolveInclude(parse_context *Ctx, parser *Parser);
 function parser * ExpandMacro(parser *Parser, macro_def *Macro, memory_arena *Memory);
+
+void DumpTokens(parser *Parser);
 
 
 
@@ -208,22 +215,36 @@ RewindUntil(parser* Parser, c_token_type Type)
 function c_token PopTokenRaw(parser* Parser);
 
 function void
-EatUntilExcluding(parser* Parser, c_token_type Close, c_token_buffer *Result)
+ParseMacroArgument(parser* Parser, c_token_buffer *Result)
 {
   Result->Start = Parser->Tokens.At;
 
-  while (Remaining(&Parser->Tokens))
+  u32 Depth = 0;
+  b32 Done = False;
+  while (!Done && Remaining(&Parser->Tokens))
   {
-    if(PeekTokenRaw(Parser).Type == Close)
+    c_token T = PeekTokenRaw(Parser);
+    if (Depth == 0 && T.Type == CTokenType_Comma)
     {
-      break;
+      Done = True;
     }
-    else
+    else if (Depth > 0 && T.Type == CTokenType_CloseParen)
     {
-      PopTokenRaw(Parser);
+      --Depth;
     }
+    else if (T.Type == CTokenType_OpenParen)
+    {
+      ++Depth;
+    }
+
+    if (!Done) PopTokenRaw(Parser);
   }
+
   Result->Count = (umm)(Parser->Tokens.At - Result->Start);
+
+  if (Remaining(&Parser->Tokens)) RequireToken(Parser, CTokenType_Comma);
+
+  return;
 }
 
 function counted_string
@@ -268,6 +289,20 @@ EatUntilIncluding(parser* Parser, c_token_type Close)
 /*****************************                ********************************/
 
 
+void
+DumpTokens(parser *Parser)
+{
+  u32 TokenCount = (u32)TotalElements(&Parser->Tokens);
+
+  for ( u32 TokenIndex = 0;
+        TokenIndex  < TokenCount;
+        ++TokenIndex)
+  {
+    PrintToken(Parser->Tokens.Start[TokenIndex]);
+  }
+
+  return;
+}
 
 function void
 DumpEntireParser(parser* Parser, u32 LinesToDump = u32_MAX)
@@ -337,7 +372,9 @@ TruncateAtPreviousLineStart(parser* Parser, u32 Count )
 function void
 OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, counted_string ErrorString, u32 LineNumber)
 {
-  if ( ! IsNewline(Parser->Tokens.At->Type) )
+  if (!TotalElements(&Parser->Tokens)) return;
+
+  if ( ! IsNewline(Parser->Tokens.End[-1].Type) )
   {
     Log("\n");
   }
@@ -346,6 +383,10 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
 
   u32 SpaceCount = 0;
   u32 TabCount = 0;
+
+  b32 DoPipes = ErrorToken->Value.Count > 3;
+  u32 ErrorIdentifierLength = DoPipes ? (u32)ErrorToken->Value.Count-2 : (u32)ErrorToken->Value.Count;
+
   while (Remaining(&Parser->Tokens))
   {
 
@@ -365,9 +406,6 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
         Log(" ");
       }
 
-      b32 DoPipes = ErrorToken->Value.Count > 3;
-      u32 ErrorIdentifierLength = DoPipes ? (u32)ErrorToken->Value.Count-2 : (u32)ErrorToken->Value.Count;
-
       if (DoPipes)
       {
         Log("|");
@@ -377,7 +415,14 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
           ColumnIndex < ErrorIdentifierLength;
           ++ColumnIndex)
       {
-        Log("^");
+        if (DoPipes)
+        {
+          Log("~");
+        }
+        else
+        {
+          Log("^");
+        }
       }
 
       if (DoPipes)
@@ -385,8 +430,77 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
         Log("|");
       }
 
+      Log("\n");
+
+      break;
+    }
+
+    if (Parser->Tokens.At->Type == CTokenType_Newline)
+    {
+      SpaceCount = 0;
+      TabCount = 0;
+    }
+    else if (Parser->Tokens.At->Type == CTokenType_EscapedNewline)
+    {
+      SpaceCount = 0;
+      TabCount = 0;
+    }
+    else if (Parser->Tokens.At->Type == CTokenType_Tab)
+    {
+      ++TabCount;
+    }
+    else if (Parser->Tokens.At->Value.Count)
+    {
+      SpaceCount += Parser->Tokens.At->Value.Count;
+    }
+    else
+    {
+      ++SpaceCount;
+    }
+
+    ++Parser->Tokens.At;
+  }
+
+  while (Remaining(&Parser->Tokens))
+  {
+
+    if (Parser->Tokens.At == ErrorToken)
+    {
+      for (u32 ColumnIndex = 0;
+          ColumnIndex < TabCount;
+          ++ColumnIndex)
+      {
+        Log("\t");
+      }
+
+      for (u32 ColumnIndex = 0;
+          ColumnIndex < SpaceCount;
+          ++ColumnIndex)
+      {
+        Log(" ");
+      }
+
+      if (DoPipes)
+      {
+        Log("  ");
+      }
+
+      for (u32 ColumnIndex = 0;
+          ColumnIndex < ErrorIdentifierLength;
+          ++ColumnIndex)
+      {
+        if (ColumnIndex == ErrorIdentifierLength-1)
+        {
+          Log("|");
+        }
+        else
+        {
+          Log(" ");
+        }
+      }
+
       counted_string TokenTypeName = ToString(ErrorToken->Type);
-      Log(" --> %.*s", TokenTypeName.Count, TokenTypeName.Start );
+      Log("---> %.*s", TokenTypeName.Count, TokenTypeName.Start );
 
       if (ErrorToken->Value.Count)
       {
@@ -824,7 +938,7 @@ RequireTokenRaw(parser *Parser, c_token Expected )
   }
   else
   {
-    Result = {}; 
+    Result = {};
   }
   return Result;
 }
@@ -839,7 +953,7 @@ RequireTokenRaw(parser *Parser, c_token_type Expected )
   }
   else
   {
-    Result = {}; 
+    Result = {};
   }
 
   return Result;
@@ -987,7 +1101,8 @@ function void
 CopyCursorIntoCursor(c_token_cursor *Src, c_token_cursor *Dest)
 {
   u32 SrcElements = (u32)TotalElements(Src);
-  if ( SrcElements <= Remaining(Dest) )
+  u32 DestElements = (u32)Remaining(Dest);
+  if ( SrcElements <= DestElements )
   {
     for ( u32 TokenIndex = 0;
           TokenIndex < SrcElements;
@@ -1045,7 +1160,7 @@ CopyBufferIntoCursor(c_token_buffer *Src, c_token_cursor *Dest)
 function parser*
 ExpandMacro(parser *Parser, macro_def *Macro, memory_arena *Memory)
 {
-  parser *Result = {};
+  parser *Result = AllocateParserPtr(Macro->Body.Filename, (u32)Kilobytes(1), 0, Memory);
 
   RequireToken(Parser, CToken(CT_MacroLiteral, Macro->Name));
 
@@ -1053,30 +1168,43 @@ ExpandMacro(parser *Parser, macro_def *Macro, memory_arena *Memory)
   {
     case type_macro_keyword:
     {
-      Result = Allocate(parser, Memory, 1);
-      *Result = Macro->Body;
-      Assert(Result->Next == 0);
-      Assert(Result->Tokens.At == Result->Tokens.Start);
+      parser BodyParser_ = Macro->Body;
+      parser *BodyParser = &BodyParser_;
+      while (Remaining(&BodyParser->Tokens))
+      {
+        c_token *T = PeekTokenRawPointer(BodyParser);
+        if (T->Type == CT_MacroLiteral)
+        {
+          parser *Expanded = ExpandMacro(BodyParser, T->Macro, Memory);
+          CopyCursorIntoCursor(&Expanded->Tokens, &Result->Tokens);
+        }
+        else
+        {
+          PopTokenRaw(BodyParser);
+          Push(*T, &Result->Tokens);
+        }
+
+      }
+
     } break;
 
     case type_macro_function:
     {
-      Result = AllocateParserPtr(Macro->Body.Filename, (u32)Kilobytes(1), 0, Memory);
 
       c_token *Start = PeekTokenPointer(Parser);
-      parser ArgParser_ =
+      parser InstanceArgs_ =
       {
         .Valid = 1,
         .Tokens = { .Start = Start, .At = Start, .End = Start, },
       };
-      parser *ArgParser = &ArgParser_;
+      parser *InstanceArgs = &InstanceArgs_;
 
       // TODO(Jesse id: 343): I think this is busted on invalid program input.
       EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
-      ArgParser_.Tokens.End = Parser->Tokens.At;
+      InstanceArgs->Tokens.End = Parser->Tokens.At;
 
-      TrimFirstToken(ArgParser, CTokenType_OpenParen);
-      TrimLastToken(ArgParser, CTokenType_CloseParen);
+      TrimFirstToken(InstanceArgs, CTokenType_OpenParen);
+      TrimLastToken(InstanceArgs, CTokenType_CloseParen);
 
       c_token_buffer_buffer ArgValues = {};
       if (Macro->NamedArguments.Count)
@@ -1086,27 +1214,21 @@ ExpandMacro(parser *Parser, macro_def *Macro, memory_arena *Memory)
               ArgIndex < ArgValues.Count;
               ++ArgIndex)
         {
-          EatUntilExcluding(ArgParser, CTokenType_Comma, ArgValues.Start+ArgIndex);
-          OptionalToken(ArgParser,CTokenType_Comma);
+          ParseMacroArgument(InstanceArgs, ArgValues.Start+ArgIndex);
         }
       }
 
       c_token_buffer_stream VarArgs = {};
       if (Macro->Variadic)
       {
-        while (Remaining(ArgParser))
+        while (Remaining(InstanceArgs))
         {
-          // TODO(Jesse id: 344): This API is pretty obtuse and could use some work..
           c_token_buffer *Arg = Push(&VarArgs, {}, Memory);
-          EatUntilExcluding(ArgParser, CTokenType_Comma, Arg);
-          if (!OptionalToken(ArgParser,CTokenType_Comma))
-          {
-            break;
-          }
+          ParseMacroArgument(InstanceArgs, Arg);
         }
       }
 
-      Assert(Remaining(ArgParser) == 0);
+      Assert(Remaining(InstanceArgs) == 0);
 
       parser MacroBody_ = Macro->Body;
       parser *MacroBody = &MacroBody_;
@@ -1158,12 +1280,12 @@ ExpandMacro(parser *Parser, macro_def *Macro, memory_arena *Memory)
       }
       Assert(Remaining(MacroBody) == 0);
 
-      TruncateToCurrentSize(&Result->Tokens);
     } break;
 
     InvalidDefaultWhileParsing(Parser, CSz("Error expanding macro!"));
   }
 
+  TruncateToCurrentSize(&Result->Tokens);
   return Result;
 }
 
@@ -1635,13 +1757,15 @@ CountTokensBeforeNext(parser *Parser, c_token_type T1, c_token_type T2)
 function parser *
 SplitAndInsertParserInto(parser *ParserToSplit, c_token* SplitPoint, parser *ParserToInsert, c_token* SecondHalfStart, memory_arena *Memory)
 {
+  // TODO(Jesse id: 363): A bunch of this crap can get taken out of here..  I added it
+  // during development to aid in debugging.
+
   Assert(SplitPoint >= ParserToSplit->Tokens.Start);
   Assert(SplitPoint < ParserToSplit->Tokens.End);
 
   Assert(SecondHalfStart >= ParserToSplit->Tokens.Start);
   Assert(SecondHalfStart < ParserToSplit->Tokens.End);
 
-  Rewind(ParserToInsert);
 
   parser *SecondHalfOfSplit = Allocate(parser, Memory, 1);
 
@@ -1657,10 +1781,18 @@ SplitAndInsertParserInto(parser *ParserToSplit, c_token* SplitPoint, parser *Par
   SecondHalfOfSplit->Tokens.Start = SecondHalfStart;
   SecondHalfOfSplit->Tokens.At = SecondHalfStart;
 
-  ParserToSplit->Next = ParserToInsert;
-  ParserToInsert->Next = SecondHalfOfSplit;
+  if (ParserToInsert)
+  {
+    Rewind(ParserToInsert);
+    ParserToSplit->Next = ParserToInsert;
+    ParserToInsert->Next = SecondHalfOfSplit;
+    Assert(ParserToInsert->Tokens.At    == ParserToInsert->Tokens.Start);
+  }
+  else
+  {
+    ParserToSplit->Next = SecondHalfOfSplit;
+  }
 
-  Assert(ParserToInsert->Tokens.At    == ParserToInsert->Tokens.Start);
   Assert(SecondHalfOfSplit->Tokens.At == SecondHalfOfSplit->Tokens.Start);
 
   Rewind(ParserToSplit);
@@ -2451,6 +2583,8 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
   // Go through and do macro/include expansion as necessary
   parser *Current = &Result;
+  c_token *LastT = 0;
+
   while (TokensRemain(Current))
   {
     c_token *T = PeekTokenPointer(Current);
@@ -2459,15 +2593,11 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       case CT_PreprocessorInclude:
       {
         parser *IncludeParser = ResolveInclude(Ctx, Current);
+        Current = SplitAndInsertParserInto(Current, T, IncludeParser, Current->Tokens.At, Memory);
 
-        if (IncludeParser)
-        {
-          Current = SplitAndInsertParserInto(Current, T, IncludeParser, Current->Tokens.At, Memory);
-        }
-        else
+        if (!IncludeParser)
         {
           ParseError(Current, T, CSz("Unable to resolve include."));
-          return Result;
         }
 
       } break;
@@ -3180,6 +3310,7 @@ EatUntil_TrackingDepth(parser *Parser, c_token_type Open, c_token_type Close, c_
 
   if (!Success)
   {
+    RuntimeBreak();
     ParseError(Parser, StartToken, FormatCountedString(TranArena, CSz("Unable to find closing token %S"), ToString(Close)));
   }
 
@@ -3197,7 +3328,7 @@ EatBetween(parser* Parser, c_token_type Open, c_token_type Close)
   RequireToken(Parser, Open);
 
   b32 Success = False;
-  while (Parser->Valid && Remaining(&Parser->Tokens))
+  while (Remaining(&Parser->Tokens))
   {
     c_token T = PopToken(Parser);
 
@@ -3219,6 +3350,7 @@ EatBetween(parser* Parser, c_token_type Open, c_token_type Close)
 
   if (!Success)
   {
+    RuntimeBreak();
     ParseError(Parser, StartToken, FormatCountedString(TranArena, CSz("Unable to find closing token %S"), ToString(Close)));
     Parser->Valid = False;
   }
@@ -3276,7 +3408,7 @@ TrimLastToken(parser* Parser, c_token_type TokenType)
 {
   c_token* CurrentToken = Parser->Tokens.End-1;
 
-  while (CurrentToken > Parser->Tokens.Start)
+  while (CurrentToken >= Parser->Tokens.Start)
   {
     if (CurrentToken->Type == TokenType)
     {
@@ -3804,6 +3936,36 @@ ApplyOperator(parser *Parser, u64 LHS, c_token_type OperatorType, u64 RHS)
   u64 Result = 0;
   switch (OperatorType)
   {
+    case CTokenType_LT:
+    {
+      Result = LHS < RHS;
+    } break;
+
+    case CTokenType_GT:
+    {
+      Result = LHS > RHS;
+    } break;
+
+    case CTokenType_Plus:
+    {
+      Result = LHS + RHS;
+    } break;
+
+    case CTokenType_Minus:
+    {
+      Result = LHS - RHS;
+    } break;
+
+    case CTokenType_Star:
+    {
+      Result = LHS * RHS;
+    } break;
+
+    case CTokenType_FSlash:
+    {
+      Result = LHS / RHS;
+    } break;
+
     // TODO(Jesse id: 345): How do we differentiate between arithmetic/logical shifts here?
     case CTokenType_LeftShift:
     {
@@ -3951,9 +4113,10 @@ ResolveMacroConstantExpression(parser *Parser)
         }
         else
         {
-          RequireTokenRaw(Parser, T.Type);
           Result = T.UnsignedValue;
         }
+
+        RequireTokenRaw(Parser, T.Type);
       } break;
 
       case CTokenType_OpenParen:
@@ -3976,6 +4139,12 @@ ResolveMacroConstantExpression(parser *Parser)
       } break;
 
 
+      case CTokenType_Plus:
+      case CTokenType_Minus:
+      case CTokenType_Star:
+      case CTokenType_FSlash:
+      case CTokenType_LT:
+      case CTokenType_GT:
       case CTokenType_LeftShift:
       case CTokenType_RightShift:
       case CTokenType_LessEqual:
@@ -4015,15 +4184,15 @@ EatIf0Block(parser *Parser)
   b32 Success = False;
   while ( RawTokensRemain(Parser) )
   {
-    c_token T = PopToken(Parser);
+    c_token T = PopTokenRaw(Parser);
 
     if (T.Type == CT_PreprocessorIf)
     {
       ++Depth;
     }
 
-    if ( T.Type == CT_PreprocessorElse || 
-         T.Type == CT_PreprocessorElif || 
+    if ( T.Type == CT_PreprocessorElse ||
+         T.Type == CT_PreprocessorElif ||
          T.Type == CT_PreprocessorEndif  )
     {
       if (Depth == 0)
@@ -4037,6 +4206,7 @@ EatIf0Block(parser *Parser)
 
   if (!Success)
   {
+    RuntimeBreak();
     ParseError(Parser, StartToken, FormatCountedString(TranArena, CSz("Unable to find closing token for "), ToString(CT_PreprocessorIf)));
   }
 
