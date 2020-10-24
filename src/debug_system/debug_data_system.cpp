@@ -545,6 +545,14 @@ DoDebugFrameRecord(debug_recording_state *State, hotkeys *Hotkeys)
 #endif
 
 inline memory_arena *
+ThreadsafeDebugMemoryAllocator_debug_profile_scope_only()
+{
+  debug_state *State = GetDebugState();
+  memory_arena *Arena = State->ThreadStates[ThreadLocal_ThreadIndex].MemoryFor_debug_profile_scope;
+  return Arena;
+}
+
+inline memory_arena *
 ThreadsafeDebugMemoryAllocator()
 {
   debug_state *State = GetDebugState();
@@ -575,7 +583,7 @@ GetProfileScope()
   }
   else
   {
-    Result = AllocateProtection(debug_profile_scope, ThreadsafeDebugMemoryAllocator(), 1, False);
+    Result = AllocateProtection(debug_profile_scope, ThreadsafeDebugMemoryAllocator_debug_profile_scope_only(), 1, False);
   }
 
   Assert(Result);
@@ -788,6 +796,10 @@ InitDebugMemoryAllocationSystem(debug_state *State)
     memory_arena *DebugThreadArena = AllocateArena();
     ThreadState->Memory = DebugThreadArena;
     DEBUG_REGISTER_ARENA(DebugThreadArena);
+
+    memory_arena *DebugThreadArenaFor_debug_profile_scope = AllocateArena();
+    ThreadState->MemoryFor_debug_profile_scope = DebugThreadArenaFor_debug_profile_scope;
+    DEBUG_REGISTER_ARENA(DebugThreadArenaFor_debug_profile_scope);
 
     ThreadState->MetaTable = (push_metadata*)PushStruct(ThreadsafeDebugMemoryAllocator(), MetaTableSize, CACHE_LINE_SIZE);
     ThreadState->MutexOps = AllocateAligned(mutex_op_array, DebugThreadArena, DEBUG_FRAMES_TRACKED, CACHE_LINE_SIZE);

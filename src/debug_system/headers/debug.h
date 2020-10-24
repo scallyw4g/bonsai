@@ -98,6 +98,7 @@ struct debug_scope_tree
 struct debug_thread_state
 {
   memory_arena *Memory;
+  memory_arena *MemoryFor_debug_profile_scope; // Specifically for allocationg debug_profile_scope structs
   push_metadata *MetaTable;
 
   debug_scope_tree *ScopeTrees;
@@ -107,7 +108,7 @@ struct debug_thread_state
 
   volatile u32 WriteIndex; // Note(Jesse): This must not straddle a cache line on x86 because multiple threads read from the main threads copy of this
 
-  u8 Pad[20];
+  u8 Pad[12];
 };
 CAssert(sizeof(debug_thread_state) == CACHE_LINE_SIZE);
 

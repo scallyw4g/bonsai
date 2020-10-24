@@ -1,3 +1,16 @@
+# Oct 24 2020 - 1:30 - closed - Calling Reallocate after a TimedFunction causes reallocation to fail
+* allocation
+* memory
+* reallocate
+When initializing the debug system I was using the same arena for everything,
+including allocating debug_profile_scope structs.  The bug I hit was when an
+allocation was made on the thread-local arena, then passed to a timed function,
+then re-allocated, the reallocation would fail.  This would actually only
+happen if we allocated a new debug_profile_scope struct, which was during
+initialization, so we did.  Anyhow, adding an arena specifically for
+debug_profile_scope structs resolved the issue, and sees like a prudent
+strategy to get good memory packing anyway.
+
 # April 30 2020 - 2:00 - closed - EatEntireLine when cursor is not where I thought
 * stream-state
 * parsing
