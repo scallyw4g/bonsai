@@ -1,6 +1,6 @@
 #! /bin/bash
 
-COMMON_OPTIMIZATION_OPTIONS="-O2"
+# COMMON_OPTIMIZATION_OPTIONS="-O2"
 
 RED="\x1b[31m"
 BLUE="\x1b[34m"
@@ -86,6 +86,7 @@ SHARED_LIBRARY_FLAGS="-shared -fPIC"
 
 EXAMPLES_TO_BUILD="
   $EXAMPLES/world_gen
+  $EXAMPLES/building
 "
 
   # $EXAMPLES/animation_test

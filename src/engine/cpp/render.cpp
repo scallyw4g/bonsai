@@ -940,12 +940,13 @@ BufferWorldChunk(untextured_3d_geometry_buffer *Dest, world_chunk *Chunk, graphi
   chunk_data *ChunkData = Chunk->Data;
   if (ChunkData->Flags == Chunk_MeshComplete && Chunk->Mesh->At)
   {
-    /* QueueChunkMeshForCopy(Queue, Chunk->Mesh, Dest, Chunk, Graphics->Camera); */
+    QueueChunkMeshForCopy(Queue, Chunk->Mesh, Dest, Chunk, Graphics->Camera, WorldChunkDim);
 
-    if (Chunk->LodMesh_Complete && Chunk->LodMesh->At)
-    {
-      QueueChunkMeshForCopy(Queue, Chunk->LodMesh, Dest, Chunk, Graphics->Camera, WorldChunkDim);
-    }
+    /* if (Chunk->LodMesh_Complete && Chunk->LodMesh->At) */
+    /* { */
+    /*   QueueChunkMeshForCopy(Queue, Chunk->LodMesh, Dest, Chunk, Graphics->Camera, WorldChunkDim); */
+    /* } */
+
   }
   else if (IsSet(ChunkData, Chunk_Queued))
   {

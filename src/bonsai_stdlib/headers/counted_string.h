@@ -484,29 +484,42 @@ EmbeddedU32(char_cursor* FormatCursor)
   return Result;
 }
 
+function b32
+Reallocate(char_cursor *Dest, umm Increment)
+{
+  b32 Result = False;
+  umm CurrentSize = TotalSize(Dest);
+  if (Reallocate((u8*)Dest->Start, Dest->Memory, CurrentSize, CurrentSize+Increment))
+  {
+    Dest->End += Increment;
+    Result = True;
+  }
+
+  return Result;
+}
+
 function void
-CopyToDest(char_cursor* Dest, char C)
+CopyToDest(char_cursor *Dest, char C)
 {
   b32 DoCopy = True;
   if (!Remaining(Dest))
   {
     if (Dest->Memory)
     {
-      umm CurrentSize = TotalSize(Dest);
       umm Increment = 32;
-      if (Reallocate((u8*)Dest->Start, Dest->Memory, CurrentSize, CurrentSize+Increment))
+      if (Reallocate(Dest, Increment))
       {
-        Dest->End += Increment;
+        // Everyone's happy
       }
       else
       {
-        Error("Reallocation Failed");
+        // Reallocate already prints out an error for this case, no need to bother the user twice.
         DoCopy = False;
       }
     }
     else
     {
-      Error("No memory pointer!");
+      Error("Unable to reallocate char_cursor; no memory pointer!");
       DoCopy = False;
     }
   }

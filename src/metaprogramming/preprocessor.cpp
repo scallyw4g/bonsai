@@ -1767,7 +1767,7 @@ SplitAndInsertParserInto(parser *ParserToSplit, c_token* SplitPoint, parser *Par
   Assert(SecondHalfStart < ParserToSplit->Tokens.End);
 
 
-  parser *SecondHalfOfSplit = Allocate(parser, Memory, 1);
+  parser *SecondHalfOfSplit = AllocateProtection(parser, Memory, 1, False);
 
   *SecondHalfOfSplit = *ParserToSplit;
 

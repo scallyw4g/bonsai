@@ -1,4 +1,4 @@
-#define DEFAULT_GAME_LIB "./bin/world_gen_loadable.so"
+#define DEFAULT_GAME_LIB "./bin/building_loadable.so"
 
 #define PLATFORM_THREADING_IMPLEMENTATIONS 1
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1

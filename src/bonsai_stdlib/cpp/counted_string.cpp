@@ -139,7 +139,7 @@ ToCapitalCase(counted_string Source, memory_arena* Memory)
 }
 
 function counted_string
-FormatCountedString_Internal(char_cursor* DestCursor, counted_string FS, va_list Args)
+FormatCountedString_(char_cursor* DestCursor, counted_string FS, va_list Args)
 {
   TIMED_FUNCTION();
 
@@ -336,20 +336,32 @@ FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
   umm FinalBufferStartingSize = FS.Count;
   char* FinalBuffer = AllocateProtection(char, Memory, FinalBufferStartingSize, False);
 
-  char_cursor DestCursor_ = {
+  char_cursor DestCursor = {
     .Start = FinalBuffer,
     .At    = FinalBuffer,
     .End   = FinalBuffer + FinalBufferStartingSize,
     .Memory = Memory
   };
 
-  char_cursor* DestCursor = &DestCursor_;
-
   va_list Args;
   va_start(Args, FS);
-  counted_string Result = FormatCountedString_Internal(DestCursor, FS, Args);
+  counted_string Result = FormatCountedString_(&DestCursor, FS, Args);
   va_end(Args);
 
+  return Result;
+}
+
+function counted_string
+FormatCountedString_(char* Buffer, umm BufferSize, counted_string FS, va_list Args)
+{
+  TIMED_FUNCTION();
+
+  char_cursor DestCursor = {
+    .Start = Buffer,
+    .At    = Buffer,
+    .End   = Buffer + BufferSize,
+  };
+  counted_string Result = FormatCountedString_(&DestCursor, FS, Args);
   return Result;
 }
 

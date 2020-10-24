@@ -378,6 +378,12 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
+          DebugPrint("memory_arena MemoryFor_debug_profile_scope {\n", Depth+2);
+          DebugPrint(S.MemoryFor_debug_profile_scope, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
           DebugPrint("push_metadata MetaTable {\n", Depth+2);
           DebugPrint(S.MetaTable, Depth+4);
           DebugPrint("\n");
@@ -5857,6 +5863,12 @@
 
           DebugPrint("counted_string Filename {\n", Depth+2);
           DebugPrint(S.Filename, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("text_encoding Encoding {\n", Depth+2);
+          DebugPrint(S.Encoding, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
@@ -11498,6 +11510,74 @@
             case ModelIndex_Count:
             {
               DebugPrint("ModelIndex_Count ", Depth);
+            } break;
+
+      }
+    }
+
+    function void DebugPrint( text_encoding EnumValue, u32 Depth)
+    {
+      switch (EnumValue)
+      {
+        
+            case TextEncoding_ASCII:
+            {
+              DebugPrint("TextEncoding_ASCII ", Depth);
+            } break;
+
+            case TextEncoding_UTF8:
+            {
+              DebugPrint("TextEncoding_UTF8 ", Depth);
+            } break;
+
+            case TextEncoding_UTF16LE:
+            {
+              DebugPrint("TextEncoding_UTF16LE ", Depth);
+            } break;
+
+            case TextEncoding_UTF16BE:
+            {
+              DebugPrint("TextEncoding_UTF16BE ", Depth);
+            } break;
+
+            case TextEncoding_UTF32LE:
+            {
+              DebugPrint("TextEncoding_UTF32LE ", Depth);
+            } break;
+
+            case TextEncoding_UTF32BE:
+            {
+              DebugPrint("TextEncoding_UTF32BE ", Depth);
+            } break;
+
+            case TextEncoding_UTF7:
+            {
+              DebugPrint("TextEncoding_UTF7 ", Depth);
+            } break;
+
+            case TextEncoding_UTF1:
+            {
+              DebugPrint("TextEncoding_UTF1 ", Depth);
+            } break;
+
+            case TextEncoding_EBCDIC:
+            {
+              DebugPrint("TextEncoding_EBCDIC ", Depth);
+            } break;
+
+            case TextEncoding_CSCU:
+            {
+              DebugPrint("TextEncoding_CSCU ", Depth);
+            } break;
+
+            case TextEncoding_BOCU:
+            {
+              DebugPrint("TextEncoding_BOCU ", Depth);
+            } break;
+
+            case TextEncoding_GB18030:
+            {
+              DebugPrint("TextEncoding_GB18030 ", Depth);
             } break;
 
       }

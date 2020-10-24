@@ -101,6 +101,7 @@ AnsiStreamFromFile(const char* SourceFile, memory_arena *Memory)
   u8_stream Binary = U8_StreamFromFile(SourceFile, Memory);
   ansi_stream Result = AnsiStream(&Binary);
   Result.Filename = CS(SourceFile);
+
   return Result;
 }
 
@@ -146,7 +147,7 @@ ReadUntilTerminatorList(ansi_stream *Cursor, const char *TerminatorList, memory_
 
   counted_string String = ReadUntilTerminatorList(Cursor, TerminatorList);
 
-  char *Result = Allocate(char, Arena, String.Count + 1);
+  char *Result = AllocateProtection(char, Arena, String.Count + 1, False);
   MemCopy((u8*)String.Start, (u8*)Result, String.Count);
 
   return Result;

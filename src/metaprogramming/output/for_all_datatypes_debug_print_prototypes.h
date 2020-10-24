@@ -863,6 +863,8 @@
 
       function void DebugPrint(model_index EnumValue, u32 Depth = 0);
 
+      function void DebugPrint(text_encoding EnumValue, u32 Depth = 0);
+
       function void DebugPrint(heap_allocation_type EnumValue, u32 Depth = 0);
 
       function void DebugPrint(mutex_op EnumValue, u32 Depth = 0);

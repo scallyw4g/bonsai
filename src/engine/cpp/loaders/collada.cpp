@@ -142,63 +142,66 @@ LoadCollada(memory_arena *Memory, heap_allocator *Heap, const char * FilePath)
   xml_token_stream XmlTokens = TokenizeXmlStream(&AnsiXml, Memory);
   model Result = {};
 
-  counted_string VisualSceneElementSelector = CS("library_visual_scenes node:type=NODE instance_geometry");
-  xml_tag_stream SceneElements = GetAllMatchingTags(&XmlTokens, &VisualSceneElementSelector, Memory);
-
-  u32 SceneObjects = (u32)TotalElements(&SceneElements);
-
-  // NOTE(Jesse): At the moment we only support loading one meshed object per
-  // .dae file but in the future we could support more!
-  Assert(SceneObjects <= 1);
-
-  for ( u32 ObjectIndex = 0;
-       ObjectIndex < SceneObjects;
-       ++ObjectIndex )
+  if (XmlTokens.Start)
   {
-    xml_tag* Tag = SceneElements.Start[ObjectIndex];
-    counted_string* GeometryName = GetPropertyValue(Tag, CS("name"));
-    counted_string* GeometryId = GetPropertyValue(Tag, CS("url"));
+    counted_string VisualSceneElementSelector = CS("library_visual_scenes node:type=NODE instance_geometry");
+    xml_tag_stream SceneElements = GetAllMatchingTags(&XmlTokens, &VisualSceneElementSelector, Memory);
 
-    Assert(GeometryName && GeometryId);
+    u32 SceneObjects = (u32)TotalElements(&SceneElements);
 
-    loaded_collada_mesh ColladaMesh = LoadMeshData(&XmlTokens, GeometryId, TranArena, Heap);
-    Result.Mesh = ColladaMesh.Mesh;
-    Result.Dim = Voxel_Position(ColladaMesh.Dim);
+    // NOTE(Jesse): At the moment we only support loading one meshed object per
+    // .dae file but in the future we could support more!
+    Assert(SceneObjects <= 1);
 
-    xml_tag* xKeyframeTimeTag = 0;
-    xml_tag* yKeyframeTimeTag = 0;
-    xml_tag* zKeyframeTimeTag = 0;
+    for ( u32 ObjectIndex = 0;
+         ObjectIndex < SceneObjects;
+         ++ObjectIndex )
+    {
+      xml_tag* Tag = SceneElements.Start[ObjectIndex];
+      counted_string* GeometryName = GetPropertyValue(Tag, CS("name"));
+      counted_string* GeometryId = GetPropertyValue(Tag, CS("url"));
 
-    xml_tag* xKeyframePositionsTag = ParseKeyframesForAxis(&XmlTokens, 'X', &xKeyframeTimeTag, GeometryName);
-    xml_tag* yKeyframePositionsTag = ParseKeyframesForAxis(&XmlTokens, 'Y', &yKeyframeTimeTag, GeometryName);
-    xml_tag* zKeyframePositionsTag = ParseKeyframesForAxis(&XmlTokens, 'Z', &zKeyframeTimeTag, GeometryName);
+      Assert(GeometryName && GeometryId);
 
-    u32 xKeyframeCount = StringToUInt(GetPropertyValue(xKeyframeTimeTag, CS("count")));
-    u32 yKeyframeCount = StringToUInt(GetPropertyValue(yKeyframeTimeTag, CS("count")));
-    u32 zKeyframeCount = StringToUInt(GetPropertyValue(zKeyframeTimeTag, CS("count")));
+      loaded_collada_mesh ColladaMesh = LoadMeshData(&XmlTokens, GeometryId, TranArena, Heap);
+      Result.Mesh = ColladaMesh.Mesh;
+      Result.Dim = Voxel_Position(ColladaMesh.Dim);
 
-    Assert( xKeyframeCount == StringToUInt(GetPropertyValue(xKeyframePositionsTag, CS("count"))) );
-    Assert( yKeyframeCount == StringToUInt(GetPropertyValue(yKeyframePositionsTag, CS("count"))) );
-    Assert( zKeyframeCount == StringToUInt(GetPropertyValue(zKeyframePositionsTag, CS("count"))) );
+      xml_tag* xKeyframeTimeTag = 0;
+      xml_tag* yKeyframeTimeTag = 0;
+      xml_tag* zKeyframeTimeTag = 0;
 
-    r32_stream xKeyframeTimes = ParseFloatArray(xKeyframeCount, AnsiStream(xKeyframeTimeTag->Value), Memory);
-    r32_stream yKeyframeTimes = ParseFloatArray(yKeyframeCount, AnsiStream(yKeyframeTimeTag->Value), Memory);
-    r32_stream zKeyframeTimes = ParseFloatArray(zKeyframeCount, AnsiStream(zKeyframeTimeTag->Value), Memory);
+      xml_tag* xKeyframePositionsTag = ParseKeyframesForAxis(&XmlTokens, 'X', &xKeyframeTimeTag, GeometryName);
+      xml_tag* yKeyframePositionsTag = ParseKeyframesForAxis(&XmlTokens, 'Y', &yKeyframeTimeTag, GeometryName);
+      xml_tag* zKeyframePositionsTag = ParseKeyframesForAxis(&XmlTokens, 'Z', &zKeyframeTimeTag, GeometryName);
 
-    r32_stream xKeyframePositions = ParseFloatArray(xKeyframeCount, AnsiStream(xKeyframePositionsTag->Value), Memory);
-    r32_stream yKeyframePositions = ParseFloatArray(yKeyframeCount, AnsiStream(yKeyframePositionsTag->Value), Memory);
-    r32_stream zKeyframePositions = ParseFloatArray(zKeyframeCount, AnsiStream(zKeyframePositionsTag->Value), Memory);
+      u32 xKeyframeCount = StringToUInt(GetPropertyValue(xKeyframeTimeTag, CS("count")));
+      u32 yKeyframeCount = StringToUInt(GetPropertyValue(yKeyframeTimeTag, CS("count")));
+      u32 zKeyframeCount = StringToUInt(GetPropertyValue(zKeyframeTimeTag, CS("count")));
 
-    animation Animation = AllocateAnimation(V3i((s32)xKeyframeCount, (s32)yKeyframeCount, (s32)zKeyframeCount), Memory);
+      Assert( xKeyframeCount == StringToUInt(GetPropertyValue(xKeyframePositionsTag, CS("count"))) );
+      Assert( yKeyframeCount == StringToUInt(GetPropertyValue(yKeyframePositionsTag, CS("count"))) );
+      Assert( zKeyframeCount == StringToUInt(GetPropertyValue(zKeyframePositionsTag, CS("count"))) );
+
+      r32_stream xKeyframeTimes = ParseFloatArray(xKeyframeCount, AnsiStream(xKeyframeTimeTag->Value), Memory);
+      r32_stream yKeyframeTimes = ParseFloatArray(yKeyframeCount, AnsiStream(yKeyframeTimeTag->Value), Memory);
+      r32_stream zKeyframeTimes = ParseFloatArray(zKeyframeCount, AnsiStream(zKeyframeTimeTag->Value), Memory);
+
+      r32_stream xKeyframePositions = ParseFloatArray(xKeyframeCount, AnsiStream(xKeyframePositionsTag->Value), Memory);
+      r32_stream yKeyframePositions = ParseFloatArray(yKeyframeCount, AnsiStream(yKeyframePositionsTag->Value), Memory);
+      r32_stream zKeyframePositions = ParseFloatArray(zKeyframeCount, AnsiStream(zKeyframePositionsTag->Value), Memory);
+
+      animation Animation = AllocateAnimation(V3i((s32)xKeyframeCount, (s32)yKeyframeCount, (s32)zKeyframeCount), Memory);
 
 
-    r32 xMaxKeyframeTime = CopyKeyframeData(Animation.xKeyframes, &xKeyframePositions, &xKeyframeTimes);
-    r32 yMaxKeyframeTime = CopyKeyframeData(Animation.yKeyframes, &yKeyframePositions, &yKeyframeTimes);
-    r32 zMaxKeyframeTime = CopyKeyframeData(Animation.zKeyframes, &zKeyframePositions, &zKeyframeTimes);
+      r32 xMaxKeyframeTime = CopyKeyframeData(Animation.xKeyframes, &xKeyframePositions, &xKeyframeTimes);
+      r32 yMaxKeyframeTime = CopyKeyframeData(Animation.yKeyframes, &yKeyframePositions, &yKeyframeTimes);
+      r32 zMaxKeyframeTime = CopyKeyframeData(Animation.zKeyframes, &zKeyframePositions, &zKeyframeTimes);
 
 
-    Animation.tEnd = Max(Max(xMaxKeyframeTime, yMaxKeyframeTime), zMaxKeyframeTime);
-    Result.Animation = Animation;
+      Animation.tEnd = Max(Max(xMaxKeyframeTime, yMaxKeyframeTime), zMaxKeyframeTime);
+      Result.Animation = Animation;
+    }
   }
 
   return Result;

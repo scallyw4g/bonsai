@@ -895,7 +895,7 @@ TestMacrosAndIncludes(memory_arena *Memory)
 
   parser Copy = Parser_;
 
-  DumpEntireParser(Parser);
+  /* DumpEntireParser(Parser); */
 
   TestThat(Parser->Next);
   TestThat(Parser->Next->Next);

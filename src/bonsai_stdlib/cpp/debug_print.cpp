@@ -2,14 +2,22 @@
 // TODO(Jesse id: 265): Unnecessary .. I just added these as a hack get parsing to work
 typedef va_list bonsai_va_list;
 
+function counted_string FormatCountedString_(char* Buffer, umm BufferSize, counted_string FS, va_list Args);
 
 function void
-Log(const char* fmt ...)
+Log(const char* Fmt, ...)
 {
-  bonsai_va_list args;
-  va_start(args, fmt);
-  vprintf(fmt, args);
-  va_end(args);
+  const umm BufferSize = 4096;
+  char Buffer[4096];
+
+  counted_string FS = CS(Fmt);
+
+  va_list Args;
+  va_start(Args, Fmt);
+  counted_string S = FormatCountedString_(Buffer, BufferSize, FS, Args);
+  va_end(Args);
+
+  LogToConsole(S);
 }
 
 #define Print(Var) \

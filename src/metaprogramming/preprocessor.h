@@ -1263,7 +1263,7 @@ c_token_cursor
 AllocateTokenBuffer(memory_arena* Memory, u32 Count)
 {
   c_token_cursor Result = {};
-  Result.Start = Allocate(c_token, Memory, Count);
+  Result.Start = AllocateProtection(c_token, Memory, Count, False);
   Result.At = Result.Start;
   Result.End = Result.Start + Count;
 
@@ -1273,7 +1273,7 @@ AllocateTokenBuffer(memory_arena* Memory, u32 Count)
 function parser*
 AllocateParserPtr(counted_string Filename, u32 TokenCount, u32 OutputBufferTokenCount, memory_arena *Memory)
 {
-  parser *Result = Allocate(parser, Memory, 1);
+  parser *Result = AllocateProtection(parser, Memory, 1, False);
 
   Result->Filename = Filename;
 
