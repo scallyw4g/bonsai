@@ -391,29 +391,30 @@ GetMemoryArenaStats(memory_arena *ArenaIn)
 #define TIMED_BLOCK(BlockName) { debug_timed_function BlockTimer(BlockName)
 #define END_BLOCK(BlockName) }
 
-#define DEBUG_VALUE(Pointer) GetDebugState()->DebugValue(Pointer, #Pointer)
+#define DEBUG_VALUE(Pointer) if (GetDebugState) {GetDebugState()->DebugValue(Pointer, #Pointer);}
 
 #define DEBUG_FRAME_RECORD(...) DoDebugFrameRecord(__VA_ARGS__)
-#define DEBUG_FRAME_END(Plat, ServerState) GetDebugState()->FrameEnd(Plat, ServerState)
-#define DEBUG_FRAME_BEGIN(Hotkeys) GetDebugState()->FrameBegin(Hotkeys)
+#define DEBUG_FRAME_END(Plat, ServerState) if (GetDebugState) {GetDebugState()->FrameEnd(Plat, ServerState);}
+#define DEBUG_FRAME_BEGIN(Hotkeys) if (GetDebugState) {GetDebugState()->FrameBegin(Hotkeys);}
 
 void DebugTimedMutexWaiting(mutex *Mut);
 void DebugTimedMutexAquired(mutex *Mut);
 void DebugTimedMutexReleased(mutex *Mut);
-#define TIMED_MUTEX_WAITING(Mut)  GetDebugState()->MutexWait(Mut)
-#define TIMED_MUTEX_AQUIRED(Mut)  GetDebugState()->MutexAquired(Mut)
-#define TIMED_MUTEX_RELEASED(Mut) GetDebugState()->MutexReleased(Mut)
+#define TIMED_MUTEX_WAITING(Mut)  if (GetDebugState) {GetDebugState()->MutexWait(Mut);}
+#define TIMED_MUTEX_AQUIRED(Mut)  if (GetDebugState) {GetDebugState()->MutexAquired(Mut);}
+#define TIMED_MUTEX_RELEASED(Mut) if (GetDebugState) {GetDebugState()->MutexReleased(Mut);}
 
-#define WORKER_THREAD_ADVANCE_DEBUG_SYSTEM() GetDebugState()->WorkerThreadAdvanceDebugSystem()
-#define MAIN_THREAD_ADVANCE_DEBUG_SYSTEM() GetDebugState()->MainThreadAdvanceDebugSystem()
+// NOTE(Jesse): Cannot be protected with an if (GetDebugState) block because the return value is used
+#define MAIN_THREAD_ADVANCE_DEBUG_SYSTEM() GetDebugState()->MainThreadAdvanceDebugSystem();
+#define WORKER_THREAD_ADVANCE_DEBUG_SYSTEM() if (GetDebugState) {GetDebugState()->WorkerThreadAdvanceDebugSystem();}
 
-#define DEBUG_CLEAR_META_RECORDS_FOR(Arena) GetDebugState()->ClearMetaRecordsFor(Arena)
-#define DEBUG_TRACK_DRAW_CALL(CallingFunction, VertCount) GetDebugState()->TrackDrawCall(CallingFunction, VertCount)
+#define DEBUG_CLEAR_META_RECORDS_FOR(Arena) if (GetDebugState) {GetDebugState()->ClearMetaRecordsFor(Arena);}
+#define DEBUG_TRACK_DRAW_CALL(CallingFunction, VertCount) if (GetDebugState) {GetDebugState()->TrackDrawCall(CallingFunction, VertCount);}
 
-#define DEBUG_REGISTER_VIEW_PROJECTION_MATRIX(ViewProjPtr) GetDebugState()->ViewProjection = ViewProjPtr;
+#define DEBUG_REGISTER_VIEW_PROJECTION_MATRIX(ViewProjPtr) if (GetDebugState) {GetDebugState()->ViewProjection = ViewProjPtr;;}
 
-#define DEBUG_COMPUTE_PICK_RAY(Plat, ViewProjPtr) GetDebugState()->ComputePickRay(Plat, ViewProjPtr)
-#define DEBUG_PICK_CHUNK(Chunk, ChunkAABB) GetDebugState()->PickChunk(Chunk, ChunkAABB)
+#define DEBUG_COMPUTE_PICK_RAY(Plat, ViewProjPtr) if (GetDebugState) {GetDebugState()->ComputePickRay(Plat, ViewProjPtr);}
+#define DEBUG_PICK_CHUNK(Chunk, ChunkAABB) if (GetDebugState) {GetDebugState()->PickChunk(Chunk, ChunkAABB);}
 
 #else
 

@@ -48,8 +48,7 @@
 
 #define Newline "\r\n"
 
-// In Cygwin printing to the console with printf doesn't work, so we wrap some
-// Win32 crazyness that works
+// TODO(Jesse): Replace with our internal code to print to console?
 global_variable HANDLE Stdout = GetStdHandle(STD_OUTPUT_HANDLE);
 #define PrintConsole(Message)                        \
         OutputDebugString(Message);                  \

@@ -1019,7 +1019,7 @@ main()
           CopyBitmapOffset(&GlyphBitmap, &TextureAtlasBitmap, V2i(UV*V2(TextureAtlasBitmap.Dim)) );
 #else
           char Name[128] = {};
-          snprintf(Name, 128, "Glyph_%d.bmp", CharCode);
+          FormatCountedString_(Name, 128, "Glyph_%d.bmp", CharCode);
           WriteBitmapToDisk(&GlyphBitmap, Name);
 #endif
         }
