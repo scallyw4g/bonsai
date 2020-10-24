@@ -8,8 +8,8 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory)
 {
   model *Result = Allocate(model, GameState->Memory, ModelIndex_Count);
 
-  /* Result[ModelIndex_Player] = LoadObj(Memory, &GameState->Heap, "models/one_thousand_museum.obj"); */
-  Result[ModelIndex_Player] = LoadCollada(Memory, &GameState->Heap, "models/one_thousand_museum.dae");
+  Result[ModelIndex_Player] = LoadObj(Memory, &GameState->Heap, "models/one_thousand_museum.obj");
+  /* Result[ModelIndex_Player] = LoadCollada(Memory, &GameState->Heap, "models/one_thousand_museum.dae"); */
   return Result;
 }
 

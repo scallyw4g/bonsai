@@ -1,3 +1,4 @@
+
 meta(buffer(counted_string))
 #include <metaprogramming/output/buffer_counted_string.h>
 
@@ -351,6 +352,39 @@ FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
   return Result;
 }
 
+// TODO(Jesse, id: 364, tags: speed): This should probably go away and make sure we always just use counted strings
+function counted_string
+FormatCountedString_(char* Buffer, umm BufferSize, const char *FS, va_list Args)
+{
+  TIMED_FUNCTION();
+
+  char_cursor DestCursor = {
+    .Start = Buffer,
+    .At    = Buffer,
+    .End   = Buffer + BufferSize,
+  };
+  counted_string Result = FormatCountedString_(&DestCursor, CS(FS), Args);
+  return Result;
+}
+
+// TODO(Jesse, id: 365, tags: speed): This should probably go away and make sure we always just use counted strings
+function counted_string
+FormatCountedString_(char* Buffer, umm BufferSize, const char *FS, ...)
+{
+  TIMED_FUNCTION();
+
+  char_cursor DestCursor = {
+    .Start = Buffer,
+    .At    = Buffer,
+    .End   = Buffer + BufferSize,
+  };
+  va_list Args;
+  va_start(Args, FS);
+  counted_string Result = FormatCountedString_(&DestCursor, CS(FS), Args);
+  va_end(Args);
+  return Result;
+}
+
 function counted_string
 FormatCountedString_(char* Buffer, umm BufferSize, counted_string FS, va_list Args)
 {
@@ -362,6 +396,23 @@ FormatCountedString_(char* Buffer, umm BufferSize, counted_string FS, va_list Ar
     .End   = Buffer + BufferSize,
   };
   counted_string Result = FormatCountedString_(&DestCursor, FS, Args);
+  return Result;
+}
+
+function counted_string
+FormatCountedString_(char* Buffer, umm BufferSize, counted_string FS, ...)
+{
+  TIMED_FUNCTION();
+
+  char_cursor DestCursor = {
+    .Start = Buffer,
+    .At    = Buffer,
+    .End   = Buffer + BufferSize,
+  };
+  va_list Args;
+  va_start(Args, FS);
+  counted_string Result = FormatCountedString_(&DestCursor, FS, Args);
+  va_end(Args);
   return Result;
 }
 

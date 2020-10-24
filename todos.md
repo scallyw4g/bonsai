@@ -66,6 +66,8 @@
     - #136 Why are these allocated on the heap?  Seems unnecessary..
     - #139 Is this necessary to avoid some pointer aliasing bug?
     - #295 This could be optimized significantly by shuffling the logic around, not to mention using hashtables.
+    - #364 This should probably go away and make sure we always just use counted strings
+    - #365 This should probably go away and make sure we always just use counted strings
 
   ## cleanup
     - #94 Make this non-const?

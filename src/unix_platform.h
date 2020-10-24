@@ -54,34 +54,32 @@
 #define YELLOW_TERMINAL "\x1b[33m"
 #define WHITE_TERMINAL "\x1b[37m"
 
-#define Info(...)                                                  \
+global_variable const umm TempDebugOutputBufferSize = 4096;
+global_variable char TempDebugOutputBuffer__[TempDebugOutputBufferSize];
+
+#define Debug(...)                                                                                     \
+  LogToConsole(FormatCountedString_(TempDebugOutputBuffer__, TempDebugOutputBufferSize, __VA_ARGS__)); \
+  LogToConsole(CSz("\n"))
+
+#define Info(...)                                                     \
   LogToConsole(CSz(BLUE_TERMINAL "   Info   " WHITE_TERMINAL " - ")); \
-  printf(__VA_ARGS__);                                             \
-  LogToConsole(CSz("\n"))
+  Debug(__VA_ARGS__);                                                 \
 
-#define Debug(...)     \
-  printf(__VA_ARGS__); \
-  LogToConsole(CSz("\n"))
-
-#define Error(...)                                                 \
+#define Error(...)                                                   \
   LogToConsole(CSz(RED_TERMINAL " ! Error  " WHITE_TERMINAL " - ")); \
-  printf(__VA_ARGS__);                                             \
-  LogToConsole(CSz("\n"))
+  Debug(__VA_ARGS__);                                                \
 
-#define Warn(...)                                                    \
+#define Warn(...)                                                       \
   LogToConsole(CSz(YELLOW_TERMINAL " * Warning" WHITE_TERMINAL " - ")); \
-  printf(__VA_ARGS__);                                               \
-  LogToConsole(CSz("\n"))
+  Debug(__VA_ARGS__);                                                   \
 
-#define Success(...)                                                 \
+#define Success(...)                                                   \
   LogToConsole(CSz(GREEN_TERMINAL " ✓ Success" WHITE_TERMINAL " - ")); \
-  printf(__VA_ARGS__);                                             \
-  LogToConsole(CSz("\n"))
+  Debug(__VA_ARGS__);                                                  \
 
 #define OpenGlDebugMessage(...)                                                      \
   LogToConsole(CSz(YELLOW_TERMINAL " * OpenGl Debug Message" WHITE_TERMINAL " - ")); \
-  printf(__VA_ARGS__);                                                               \
-  LogToConsole(CSz("\n"))
+  Debug(__VA_ARGS__);                                                                \
 
 #define RuntimeBreak() raise(SIGTRAP)
 #define TriggeredRuntimeBreak() if (GetDebugState) { GetDebugState()->TriggerRuntimeBreak ? RuntimeBreak() : 0 ; }

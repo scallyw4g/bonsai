@@ -99,6 +99,8 @@ struct counted_string
 };
 CAssert(sizeof(counted_string) == 16);
 
+function counted_string FormatCountedString_(char* Dest, umm DestSize, const char *FS, ...);
+
 counted_string
 CS(const char *S, umm Count)
 {

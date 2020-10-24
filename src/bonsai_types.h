@@ -28,7 +28,6 @@
 
 #include <metaprogramming/defines.h>
 
-
 //
 // Stdlib Headers
 //
@@ -47,8 +46,8 @@
 #include <bonsai_stdlib/headers/memory_arena.h>
 #include <bonsai_stdlib/headers/platform_struct.h>
 #include <bonsai_stdlib/headers/heap_allocator.h>
-#include <bonsai_stdlib/headers/gl.h>
 #include <bonsai_stdlib/headers/counted_string.h>
+#include <bonsai_stdlib/headers/gl.h>
 #include <bonsai_stdlib/headers/random.h>
 #include <bonsai_stdlib/headers/line.h>
 #include <bonsai_stdlib/headers/quaternion.h>

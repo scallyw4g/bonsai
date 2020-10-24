@@ -1,79 +1,79 @@
 function void
 DebugPrint(r64 E, u32 Depth = 0)
 {
-  printf("%*s%f", Depth, "", E);
+  Log("%*s%f", Depth, "", E);
 }
 
 function void
 DebugPrint(s64 E, u32 Depth = 0)
 {
-  printf("%*s%ld", Depth, "", E);
+  Log("%*s%ld", Depth, "", E);
 }
 
 function void
 DebugPrint(u64 E, u32 Depth = 0)
 {
-  printf("%*s%lu", Depth, "", E);
+  Log("%*s%lu", Depth, "", E);
 }
 
 function void
 DebugPrint(r32 E, u32 Depth = 0)
 {
-  printf("%*s%.2f", Depth, "", E);
+  Log("%*s%.2f", Depth, "", E);
 }
 
 function void
 DebugPrint(s32 E, u32 Depth = 0)
 {
-  printf("%*s%d", Depth, "", E);
+  Log("%*s%d", Depth, "", E);
 }
 
 function void
 DebugPrint(u32 E, u32 Depth = 0)
 {
-  printf("%*s%u", Depth, "", E);
+  Log("%*s%u", Depth, "", E);
 }
 
 function void
 DebugPrint(volatile void* E, u32 Depth = 0)
 {
-  printf("%*s%p", Depth, "", E);
+  Log("%*s%p", Depth, "", E);
 }
 
 function void
 DebugPrint(void* E, u32 Depth = 0)
 {
-  printf("%*s%p", Depth, "", E);
+  Log("%*s%p", Depth, "", E);
 }
 
 function void
 DebugPrint(__m128 E, u32 Depth = 0)
 {
-  printf("%*s%f %f %f %f", Depth, "", E[0], E[1], E[2], E[3]);
+  Log("%*s%f %f %f %f", Depth, "", E[0], E[1], E[2], E[3]);
 }
 
 function void
 DebugPrint(counted_string E, u32 Depth = 0)
 {
-  printf("%*s%.*s", Depth, "", (u32)E.Count, E.Start);
+  Log("%*s%S", Depth, "", E);
 }
 
 function void
 DebugPrint(const char* E, u32 Depth = 0)
 {
-  printf("%*s%s", Depth, "", E);
+  Log("%*s%s", Depth, "", E);
 }
 
 function void
 DebugPrint(native_mutex E, u32 Depth = 0)
 {
-  printf("%*smutex(%u)", Depth, "", *(u32*)&E);
+  Log("%*smutex(%u)", Depth, "", *(u32*)&E);
 }
 
 function void
 DebugPrint(semaphore E, u32 Depth = 0)
 {
-  printf("%*ssemaphore(%u)", Depth, "", *(u32*)&E);
+  Log("%*ssemaphore(%u)", Depth, "", *(u32*)&E);
 }
 
 meta(

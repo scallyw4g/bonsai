@@ -1,4 +1,3 @@
-
 meta(stream_and_cursor(counted_string))
 #include <metaprogramming/output/stream_and_cursor_counted_string.h>
 

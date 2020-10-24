@@ -328,11 +328,11 @@ DumpGlErrorEnum(u32 ErrorNumber)
 function b32
 CheckShadingLanguageVersion()
 {
-  char *OpenGlVersion = (char*)glGetString ( GL_VERSION );
-  r32 ShadingLanguageVersion = (r32)atof((char*)glGetString ( GL_SHADING_LANGUAGE_VERSION ));
+  char *OpenGlVersion = (char*)glGetString(GL_VERSION);
+  r32 ShadingLanguageVersion = (r32)atof((char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
 
-  Info("OpenGl Verison : %s", OpenGlVersion );
-  Info("Shading Language Verison : %f", ShadingLanguageVersion );
+  Info("OpenGl Ver. (%s)", OpenGlVersion );
+  Info("GLSL   Ver. (%f)", ShadingLanguageVersion );
 
   r32 RequiredShadingLanguageVersion = 3.3f;
   if (ShadingLanguageVersion < RequiredShadingLanguageVersion)
