@@ -138,30 +138,10 @@ ToCapitalCase(counted_string Source, memory_arena* Memory)
   return Result;
 }
 
-// This is to silence the warnings when passing counted_strings to this function
-#define FormatCountedString(Memory, Fmt, ...)             \
-  _Pragma("clang diagnostic push")                        \
-  _Pragma("clang diagnostic ignored \"-Wclass-varargs\"") \
-  FormatCountedString_(Memory, Fmt, __VA_ARGS__)          \
-  _Pragma("clang diagnostic pop")
-
 function counted_string
-FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
+FormatCountedString_Internal(char_cursor* DestCursor, counted_string FS, va_list Args)
 {
   TIMED_FUNCTION();
-
-  bonsai_va_list Args;
-  va_start(Args, FS);
-
-  umm FinalBufferStartingSize = FS.Count;
-  char* FinalBuffer = AllocateProtection(char, Memory, FinalBufferStartingSize, False);
-
-  char_cursor DestCursor_ = {
-    .Start = FinalBuffer,
-    .At    = FinalBuffer,
-    .End   = FinalBuffer + FinalBufferStartingSize,
-    .Memory = Memory
-  };
 
   char_cursor FormatCursor_ = {
     .Start = (char*)FS.Start,
@@ -169,9 +149,7 @@ FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
     .End   = (char*)FS.Start + FS.Count
   };
 
-
   char_cursor* FormatCursor = &FormatCursor_;
-  char_cursor* DestCursor = &DestCursor_;
 
   while (Remaining(FormatCursor))
   {
@@ -338,10 +316,40 @@ FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
     }
   }
 
-  va_end(Args);
-
   umm DestElementsWritten = AtElements(DestCursor);
   counted_string Result = CS((const char*)DestCursor->Start, DestElementsWritten);
+  return Result;
+}
+
+// This is to silence the warnings when passing counted_strings to this function
+#define FormatCountedString(Memory, Fmt, ...)             \
+  _Pragma("clang diagnostic push")                        \
+  _Pragma("clang diagnostic ignored \"-Wclass-varargs\"") \
+  FormatCountedString_(Memory, Fmt, __VA_ARGS__)          \
+  _Pragma("clang diagnostic pop")
+
+function counted_string
+FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
+{
+  TIMED_FUNCTION();
+
+  umm FinalBufferStartingSize = FS.Count;
+  char* FinalBuffer = AllocateProtection(char, Memory, FinalBufferStartingSize, False);
+
+  char_cursor DestCursor_ = {
+    .Start = FinalBuffer,
+    .At    = FinalBuffer,
+    .End   = FinalBuffer + FinalBufferStartingSize,
+    .Memory = Memory
+  };
+
+  char_cursor* DestCursor = &DestCursor_;
+
+  va_list Args;
+  va_start(Args, FS);
+  counted_string Result = FormatCountedString_Internal(DestCursor, FS, Args);
+  va_end(Args);
+
   return Result;
 }
 
