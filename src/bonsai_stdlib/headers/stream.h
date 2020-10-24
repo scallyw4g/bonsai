@@ -85,6 +85,169 @@ AnsiStream(u8_stream *Input)
   Result.At    = (const char*)Input->At;
   Result.End   = (const char*)Input->End;
 
+  if (Input->Start)
+  {
+    switch(*Input->Start)
+    {
+      case 239:
+      {
+        if (Count(Input) >= 3 &&
+            Input->Start[1] == 187 &&
+            Input->Start[2] == 191)
+        {
+          Assert(Count(&Result) == Count(Input));
+          Result.At = Result.Start + 3;
+          Result.Encoding = TextEncoding_UTF8;
+        }
+      } break;
+
+      case 254:
+      {
+        if (Count(Input) >= 2 &&
+            Input->Start[1] == 255)
+        {
+          Assert(Count(&Result) == Count(Input));
+          Result.At = Result.Start + 2;
+          Result.Encoding = TextEncoding_UTF16BE;
+        }
+      } break;
+
+      case 255:
+      {
+        if (Count(Input) >= 4 &&
+            Input->Start[1] == 254 &&
+            Input->Start[2] == 0 &&
+            Input->Start[3] == 0)
+        {
+          Assert(Count(&Result) == Count(Input));
+          Result.At = Result.Start + 4;
+          Result.Encoding = TextEncoding_UTF32LE;
+        }
+        else if (Count(Input) >= 2 &&
+                 Input->Start[1] == 254)
+        {
+          Assert(Count(&Result) == Count(Input));
+          Result.At = Result.Start + 2;
+          Result.Encoding = TextEncoding_UTF16LE;
+        }
+
+      } break;
+
+      case 0:
+      {
+        if (Count(Input) >= 4 &&
+            Input->Start[1] == 0 &&
+            Input->Start[2] == 254 &&
+            Input->Start[3] == 255)
+        {
+          Assert(Count(&Result) == Count(Input));
+          Result.At = Result.Start + 4;
+          Result.Encoding = TextEncoding_UTF32BE;
+        }
+      } break;
+
+      case 43:
+      {
+        if (Count(Input) >= 3 &&
+            Input->Start[1] == 47 &&
+            Input->Start[2] == 118)
+            // TODO(Jesse, tags: robustness, text_encoding): Apparently the
+            // next character (Input->Start[3]) is either ascii '8', '9', ':' or
+            // ';' .. according to Wikipedia.  I'm putting an InvalidCodePath
+            // in here so if we ever run into one of these in the wild we get a
+            // chance to investigate fo-realz
+            //
+            // https://en.wikipedia.org/wiki/Byte_order_mark
+        {
+          InvalidCodePath();
+
+          Assert(Count(&Result) == Count(Input));
+          Result.At = Result.Start + 4;
+          Result.Encoding = TextEncoding_UTF7;
+        }
+      } break;
+
+      case 247:
+      {
+        if (Count(Input) >= 3 &&
+            Input->Start[1] == 47 &&
+            Input->Start[2] == 118)
+        {
+          Assert(Count(&Result) == Count(Input));
+          Result.At = Result.Start + 3;
+          Result.Encoding = TextEncoding_UTF1;
+        }
+      } break;
+
+      case 221:
+      {
+        if (Count(Input) >= 4 &&
+            Input->Start[1] == 115 &&
+            Input->Start[2] == 102 &&
+            Input->Start[3] == 115)
+        {
+          Assert(Count(&Result) == Count(Input));
+          Result.At = Result.Start + 4;
+          Result.Encoding = TextEncoding_EBCDIC;
+        }
+      } break;
+
+      case 14:
+      {
+        if (Count(Input) >= 3 &&
+            Input->Start[1] == 254 &&
+            Input->Start[2] == 255)
+        {
+          Assert(Count(&Result) == Count(Input));
+          Result.At = Result.Start + 3;
+          Result.Encoding = TextEncoding_CSCU;
+        }
+      } break;
+
+      case 251:
+      {
+        if (Count(Input) >= 3 &&
+            Input->Start[1] == 238 &&
+            Input->Start[2] == 40)
+        {
+          Assert(Count(&Result) == Count(Input));
+          Result.At = Result.Start + 3;
+          Result.Encoding = TextEncoding_BOCU;
+        }
+      } break;
+
+      case 123:
+      {
+        if (Count(Input) >= 3 &&
+            Input->Start[1] == 49 &&
+            Input->Start[2] == 149 &&
+            Input->Start[3] == 51)
+        {
+          Assert(Count(&Result) == Count(Input));
+          Result.At = Result.Start + 3;
+          Result.Encoding = TextEncoding_GB18030;
+        }
+      } break;
+
+      default:
+      {
+        // Didn't get a BOM .. guess it's ascii, which is the default encoding
+      } break;
+    }
+  }
+
+
+  if (Result.Encoding == TextEncoding_UTF8 ||
+      Result.Encoding == TextEncoding_ASCII)
+  {
+    // Fine, we expect these
+  }
+  else
+  {
+    /* Warn("Got a weird encoding (%S) for file (%S)", ToString(Result.Encoding), Result.Filename); */
+  }
+
+
   return Result;
 }
 
