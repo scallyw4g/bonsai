@@ -221,6 +221,27 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->Player = GetFreeEntity(GameState->EntityTable);
   SpawnPlayer(GameState->Models, GameState->Player, Canonical_Position(Voxel_Position(0), WorldCenter), &GameState->Entropy);
 
+  {
+    entity * Building = GetFreeEntity(GameState->EntityTable); 
+    SpawnEntity(
+      Building,
+      GameState->Models + ModelIndex_Player,
+      EntityType_Static,
+      0, 0, V3(0)
+    );
+  }
+
+  {
+    entity * Building = GetFreeEntity(GameState->EntityTable); 
+    canonical_position P = Canonical_Position(1);
+    SpawnEntity(
+      Building,
+      GameState->Models + ModelIndex_Player,
+      EntityType_Static,
+      0, &P, V3(0)
+    );
+  }
+
   return GameState;
 }
 

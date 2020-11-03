@@ -11421,6 +11421,11 @@
               DebugPrint("EntityType_ParticleSystem ", Depth);
             } break;
 
+            case EntityType_Static:
+            {
+              DebugPrint("EntityType_Static ", Depth);
+            } break;
+
       }
     }
 

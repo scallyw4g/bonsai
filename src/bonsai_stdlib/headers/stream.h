@@ -390,7 +390,7 @@ ReadUntilTerminatorList(counted_string* String, const char* TerminatorList)
 void
 EatWhitespace(ansi_stream *Cursor)
 {
-  EatAllCharacters(Cursor, "\n ");
+  EatAllCharacters(Cursor, "\r\n ");
   return;
 }
 

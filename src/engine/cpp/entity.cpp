@@ -280,7 +280,8 @@ SpawnEntity(
 
   Entity->Type = Type;
 
-  Entity->Physics = *Physics;
+  if (Physics)
+    Entity->Physics = *Physics;
 
   if (InitialP)
     Entity->P = *InitialP;
@@ -1053,6 +1054,10 @@ SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension Vis
 
     switch (Entity->Type)
     {
+      case EntityType_Static:
+      {
+      } break;
+
       case EntityType_Enemy:
       {
         NotImplemented;
