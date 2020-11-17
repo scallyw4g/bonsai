@@ -155,7 +155,7 @@ XmlIntToken(counted_string Name, counted_string Value)
 // Shamelessly ripped from https://cp-algorithms.com/string/string-hashing.html
 
 /* TODO(Jesse, id: 81, tags: string_hash): Theres' a null terminated
- * string-hash function that should be replaced by this one most likely
+ * string-hash bonsai_function that should be replaced by this one most likely
  */
 inline umm
 Hash(counted_string* String)

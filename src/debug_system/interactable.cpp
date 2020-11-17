@@ -1,27 +1,27 @@
 
 
-function b32
+bonsai_function b32
 Hover(debug_ui_render_group* Group, interactable_handle *Interaction)
 {
   b32 Result = Group->HoverInteractionId == Interaction->Id;
   return Result;
 }
 
-function b32
+bonsai_function b32
 Clicked(debug_ui_render_group* Group, interactable_handle *Interaction)
 {
   b32 Result = Group->ClickedInteractionId == Interaction->Id;
   return Result;
 }
 
-function b32
+bonsai_function b32
 Pressed(debug_ui_render_group* Group, interactable_handle *Interaction)
 {
   b32 Result = Group->PressedInteractionId == Interaction->Id;
   return Result;
 }
 
-function b32
+bonsai_function b32
 Hover(debug_ui_render_group* Group, interactable *Interaction)
 {
   v2 MouseP = *Group->MouseP;
@@ -37,7 +37,7 @@ Hover(debug_ui_render_group* Group, interactable *Interaction)
   return Result;
 }
 
-function b32
+bonsai_function b32
 Clicked(debug_ui_render_group* Group, interactable *Interaction)
 {
   b32 MouseButtonClicked = Group->Input->LMB.Clicked || Group->Input->RMB.Clicked;
@@ -53,14 +53,14 @@ Clicked(debug_ui_render_group* Group, interactable *Interaction)
   return Result;
 }
 
-function b32
+bonsai_function b32
 Clicked(debug_ui_render_group* Group, interactable Interaction)
 {
   b32 Result = Clicked(Group, &Interaction);
   return Result;
 }
 
-function b32
+bonsai_function b32
 Pressed(debug_ui_render_group* Group, interactable *Interaction)
 {
   umm CurrentInteraction = Group->PressedInteractionId;

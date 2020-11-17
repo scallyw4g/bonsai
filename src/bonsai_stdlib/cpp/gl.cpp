@@ -1,4 +1,4 @@
-function void
+bonsai_function void
 InitializeOpenGlExtensions(os* Os)
 {
   Info("Initializing OpenGL Extensions");

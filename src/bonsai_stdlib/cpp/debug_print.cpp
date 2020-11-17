@@ -2,9 +2,9 @@
 // TODO(Jesse id: 265): Unnecessary .. I just added these as a hack get parsing to work
 typedef va_list bonsai_va_list;
 
-function counted_string FormatCountedString_(char* Buffer, umm BufferSize, counted_string FS, va_list Args);
+bonsai_function counted_string FormatCountedString_(char* Buffer, umm BufferSize, counted_string FS, va_list Args);
 
-function void
+bonsai_function void
 Log(const char* Fmt, ...)
 {
   const umm BufferSize = 4096;

@@ -182,7 +182,7 @@ CreateSemaphore(void)
   return Result;
 }
 
-// TODO(Jesse id: 230, tags: parsing, metaprogramming, high_priority): ParseVariable should work with function pointer types
+// TODO(Jesse id: 230, tags: parsing, metaprogramming, high_priority): ParseVariable should work with bonsai_function pointer types
 typedef void* (*thread_main_callback_type)(void*);
 
 typedef pthread_t thread_handle; // TODO(Jesse id: 265): Unnecessary .. I just added it as a hack get parsing to work

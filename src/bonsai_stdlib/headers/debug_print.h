@@ -1,76 +1,76 @@
-function void
+bonsai_function void
 DebugPrint(r64 E, u32 Depth = 0)
 {
   Log("%*s%f", Depth, "", E);
 }
 
-function void
+bonsai_function void
 DebugPrint(s64 E, u32 Depth = 0)
 {
   Log("%*s%ld", Depth, "", E);
 }
 
-function void
+bonsai_function void
 DebugPrint(u64 E, u32 Depth = 0)
 {
   Log("%*s%lu", Depth, "", E);
 }
 
-function void
+bonsai_function void
 DebugPrint(r32 E, u32 Depth = 0)
 {
   Log("%*s%.2f", Depth, "", E);
 }
 
-function void
+bonsai_function void
 DebugPrint(s32 E, u32 Depth = 0)
 {
   Log("%*s%d", Depth, "", E);
 }
 
-function void
+bonsai_function void
 DebugPrint(u32 E, u32 Depth = 0)
 {
   Log("%*s%u", Depth, "", E);
 }
 
-function void
+bonsai_function void
 DebugPrint(volatile void* E, u32 Depth = 0)
 {
   Log("%*s%p", Depth, "", E);
 }
 
-function void
+bonsai_function void
 DebugPrint(void* E, u32 Depth = 0)
 {
   Log("%*s%p", Depth, "", E);
 }
 
-function void
+bonsai_function void
 DebugPrint(__m128 E, u32 Depth = 0)
 {
   Log("%*s%f %f %f %f", Depth, "", E[0], E[1], E[2], E[3]);
 }
 
-function void
+bonsai_function void
 DebugPrint(counted_string E, u32 Depth = 0)
 {
   Log("%*s%S", Depth, "", E);
 }
 
-function void
+bonsai_function void
 DebugPrint(const char* E, u32 Depth = 0)
 {
   Log("%*s%s", Depth, "", E);
 }
 
-function void
+bonsai_function void
 DebugPrint(native_mutex E, u32 Depth = 0)
 {
   Log("%*smutex(%u)", Depth, "", *(u32*)&E);
 }
 
-function void
+bonsai_function void
 DebugPrint(semaphore E, u32 Depth = 0)
 {
   Log("%*ssemaphore(%u)", Depth, "", *(u32*)&E);
@@ -94,21 +94,21 @@ meta( named_list(buggy_datatypes) { debug_timed_function thread_startup_params n
 
 meta( named_list(d_unions) { ast_node } )
 
-function void DebugPrint( ast_node *UnionStruct, u32 Depth = 0);
-function void DebugPrint( ast_node UnionStruct, u32 Depth = 0);
+bonsai_function void DebugPrint( ast_node *UnionStruct, u32 Depth = 0);
+bonsai_function void DebugPrint( ast_node UnionStruct, u32 Depth = 0);
 meta(
   for_datatypes(all)
     .exclude(unprintable_datatypes buggy_datatypes external_datatypes d_unions)
 
     func (StructDef)
     {
-      function void DebugPrint( (StructDef.name)* S, u32 Depth = 0);
-      function void DebugPrint( (StructDef.name)  S, u32 Depth = 0);
+      bonsai_function void DebugPrint( (StructDef.name)* S, u32 Depth = 0);
+      bonsai_function void DebugPrint( (StructDef.name)  S, u32 Depth = 0);
     }
 
     func (EnumDef)
     {
-      function void DebugPrint((EnumDef.name) EnumValue, u32 Depth = 0);
+      bonsai_function void DebugPrint((EnumDef.name) EnumValue, u32 Depth = 0);
     }
 )
 #include <metaprogramming/output/for_all_datatypes_debug_print_prototypes.h>
@@ -118,7 +118,7 @@ meta(
 
   func (StructDef)
   {
-    function void DebugPrint( (StructDef.name) S, u32 Depth)
+    bonsai_function void DebugPrint( (StructDef.name) S, u32 Depth)
     {
       if (Depth == 0)
       {
@@ -138,7 +138,7 @@ meta(
       DebugPrint("}\n", Depth);
     }
 
-    function void DebugPrint( (StructDef.name) *S, u32 Depth)
+    bonsai_function void DebugPrint( (StructDef.name) *S, u32 Depth)
     {
       if (S) { DebugPrint(*S, Depth); }
       else { DebugPrint("ptr(0)", Depth); }
@@ -147,7 +147,7 @@ meta(
 
   func (EnumDef)
   {
-    function void DebugPrint( (EnumDef.name) EnumValue, u32 Depth)
+    bonsai_function void DebugPrint( (EnumDef.name) EnumValue, u32 Depth)
     {
       switch (EnumValue)
       {

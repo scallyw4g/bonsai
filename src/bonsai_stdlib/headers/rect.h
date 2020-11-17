@@ -5,7 +5,7 @@ struct rect2
   v2 Max;
 };
 
-function rect2
+bonsai_function rect2
 InvertedInfinityRectangle()
 {
   rect2 Result = {
@@ -15,28 +15,28 @@ InvertedInfinityRectangle()
   return Result;
 }
 
-function rect2
+bonsai_function rect2
 RectMinMax(v2 Min, v2 Max)
 {
   rect2 Result = { .Min = Min, .Max = Max };
   return Result;
 }
 
-function rect2
+bonsai_function rect2
 RectMinDim(v2 Min, v2 Dim)
 {
   rect2 Result = {Min, Min+Dim};
   return Result;
 }
 
-function v2
+bonsai_function v2
 BottomLeft(rect2 Rect)
 {
   v2 Result = V2(Rect.Min.x, Rect.Max.y);
   return Result;
 }
 
-function v2
+bonsai_function v2
 TopRight(rect2 Rect)
 {
   v2 Result = V2(Rect.Max.x, Rect.Min.y);
@@ -75,7 +75,7 @@ Intersect(aabb *First, aabb *Second)
   return Result;
 }
 
-function aabb
+bonsai_function aabb
 MinMaxAABB(v3 Min, v3 Max)
 {
   v3 Radius = (Max - Min)/2.0f;
@@ -84,7 +84,7 @@ MinMaxAABB(v3 Min, v3 Max)
   return Result;
 }
 
-function rect2
+bonsai_function rect2
 operator-(rect2 R1, rect2 R2)
 {
   rect2 Result = {
@@ -94,7 +94,7 @@ operator-(rect2 R1, rect2 R2)
   return Result;
 }
 
-function aabb
+bonsai_function aabb
 operator+(aabb AABB, v3 V)
 {
   aabb Result = AABB;
@@ -102,7 +102,7 @@ operator+(aabb AABB, v3 V)
   return Result;
 }
 
-function v3
+bonsai_function v3
 HalfDim( v3 P1 )
 {
   v3 Result = P1 / 2;
@@ -116,7 +116,7 @@ struct ray
 };
 
 // TODO(Jesse, id: 92, tags: speed, aabb): This could be optimized significantly
-function b32
+bonsai_function b32
 Intersect(aabb AABB, ray Ray)
 {
   v3 min = AABB.Center - AABB.Radius;;
@@ -173,21 +173,21 @@ Intersect(aabb AABB, ray Ray)
   return true;
 }
 
-function b32
+bonsai_function b32
 IsInsideRect(rect2 Rect, v2 P)
 {
   b32 Result = (P >= Rect.Min && P < Rect.Max);
   return Result;
 }
 
-function v3
+bonsai_function v3
 GetMin(aabb Rect)
 {
   v3 Result = Rect.Center - Rect.Radius;
   return Result;
 }
 
-function v3
+bonsai_function v3
 GetMax(aabb Rect)
 {
   v3 Result = Rect.Center + Rect.Radius;

@@ -3,7 +3,7 @@ struct debug_state;
 struct game_state;
 typedef debug_state* (*get_debug_state_proc)();
 
-function get_debug_state_proc GetDebugState;
+bonsai_function get_debug_state_proc GetDebugState;
 
 #define DEFAULT_DEBUG_LIB "./bin/lib_debug_system.so"
 

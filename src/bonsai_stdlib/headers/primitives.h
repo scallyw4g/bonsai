@@ -4,7 +4,7 @@
 #define local_persist     static
 #define global_variable   static
 #define debug_global      static
-#define function          static
+#define bonsai_function          static
 #define exported_function extern "C"
 
 
@@ -99,7 +99,7 @@ struct counted_string
 };
 CAssert(sizeof(counted_string) == 16);
 
-function counted_string FormatCountedString_(char* Dest, umm DestSize, const char *FS, ...);
+bonsai_function counted_string FormatCountedString_(char* Dest, umm DestSize, const char *FS, ...);
 
 counted_string
 CS(const char *S, umm Count)
@@ -115,7 +115,7 @@ CS(const char *S, umm Count)
 meta(
   func index_of(Type)
   {
-    function umm
+    bonsai_function umm
     IndexOf((Type.name)_buffer *Buf, (Type.name) Element)
     {
       umm Result = Buf->Count;
@@ -139,7 +139,7 @@ meta(
 meta(
   func are_equal(Type)
   {
-    function b32
+    bonsai_function b32
     AreEqual((Type.name) *Thing1, (Type.name) *Thing2)
     {
       b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( (Type.name) ) );

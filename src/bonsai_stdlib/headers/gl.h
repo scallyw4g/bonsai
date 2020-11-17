@@ -266,7 +266,7 @@ exported_function GLboolean glUnmapBuffer (GLenum target);
 
 exported_function void glDrawBuffers (GLsizei n, const GLenum *bufs);
 
-function void
+bonsai_function void
 DumpGlErrorEnum(u32 ErrorNumber)
 {
   if ( ErrorNumber != 0 )
@@ -325,7 +325,7 @@ DumpGlErrorEnum(u32 ErrorNumber)
   return;
 }
 
-function b32
+bonsai_function b32
 CheckShadingLanguageVersion()
 {
   char *OpenGlVersion = (char*)glGetString(GL_VERSION);

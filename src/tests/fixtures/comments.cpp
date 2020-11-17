@@ -3,7 +3,7 @@
  *
  * multi line comment's "work" */
 
-function
+bonsai_function
 void
 
 /*

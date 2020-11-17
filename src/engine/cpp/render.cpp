@@ -553,7 +553,7 @@ RayTraceCollision(chunk_data *Chunk, chunk_dimension Dim, v3 StartingP, v3 Ray, 
   return Voxel_Position(Result);
 }
 
-function edge*
+bonsai_function edge*
 Edge(voxel_position P0, voxel_position P1, memory_arena* Memory)
 {
   edge* Result = Allocate(edge, Memory, 1);
@@ -565,7 +565,7 @@ Edge(voxel_position P0, voxel_position P1, memory_arena* Memory)
 }
 
 #if 0
-function void
+bonsai_function void
 Triangulate(untextured_3d_geometry_buffer* Dest, world_chunk* Chunk, chunk_dimension ChunkDim, memory_arena* TempMem)
 {
   TIMED_FUNCTION();

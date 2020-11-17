@@ -1,6 +1,6 @@
 
 
-function m_nxn*
+bonsai_function m_nxn*
 Allocate_NxN_Matrix(u32 Width, u32 Height, memory_arena* Memory)
 {
   u32 N = Width*Height;
@@ -10,21 +10,21 @@ Allocate_NxN_Matrix(u32 Width, u32 Height, memory_arena* Memory)
   return Result;
 }
 
-function m_nxn*
+bonsai_function m_nxn*
 Allocate_Nx3_Matrix(u32 N, memory_arena* Memory)
 {
   m_nxn* Result = Allocate_NxN_Matrix(N, 3, Memory);
   return Result;
 }
 
-function m_nxn*
+bonsai_function m_nxn*
 Allocate_3xN_Matrix(u32 N, memory_arena* Memory)
 {
   m_nxn* Result = Allocate_NxN_Matrix(3, N, Memory);
   return Result;
 }
 
-function m_nxn*
+bonsai_function m_nxn*
 Transpose(m_nxn* Source, memory_arena* Memory)
 {
   m_nxn* Result = Allocate_Nx3_Matrix(Source->End, Memory);
@@ -44,7 +44,7 @@ Transpose(m_nxn* Source, memory_arena* Memory)
   return Result;
 }
 
-function m_nxn*
+bonsai_function m_nxn*
 Multiply(m_nxn A, m_nxn B, memory_arena* Memory)
 {
   u32 Width = Max(A.Columns, B.Columns);

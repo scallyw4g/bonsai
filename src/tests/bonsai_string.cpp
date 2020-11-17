@@ -314,7 +314,7 @@ TestSplit()
   return;
 }
 
-function void
+bonsai_function void
 TestTrim()
 {
 
@@ -339,7 +339,7 @@ TestTrim()
   }
 }
 
-function void
+bonsai_function void
 TestToCapitalCase(memory_arena* Memory)
 {
   {

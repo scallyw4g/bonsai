@@ -1,7 +1,7 @@
 meta(
   func dunion_debug_print(DUnionType)
   {
-    function void
+    bonsai_function void
     DebugPrint( (DUnionType.type) UnionStruct, u32 Depth = 0)
     {
       switch(UnionStruct.Type)
@@ -41,7 +41,7 @@ meta(
       umm Count;
     };
 
-    function (Type.name)_buffer
+    bonsai_function (Type.name)_buffer
     (Type.name.to_capital_case)Buffer(umm ElementCount, memory_arena* Memory)
     {
       (Type.name)_buffer Result = {};
@@ -71,7 +71,7 @@ meta(
       (Type.name)* At;
     };
 
-    function (Type.name)_cursor
+    bonsai_function (Type.name)_cursor
     (Type.name.to_capital_case)Cursor(umm ElementCount, memory_arena* Memory)
     {
       (Type.name)* Start = ((Type.name)*)PushStruct(Memory, sizeof( (Type.name) ), 1, 0);
@@ -88,7 +88,7 @@ meta(
 meta(
   func generate_string_table(EnumType)
   {
-    function counted_string
+    bonsai_function counted_string
     ToString( (EnumType.name) Type)
     {
       counted_string Result = {};
@@ -109,7 +109,7 @@ meta(
 meta(
   func generate_value_table(EnumType)
   {
-    function (EnumType.name)
+    bonsai_function (EnumType.name)
     (EnumType.name.to_capital_case)(counted_string S)
     {
       (EnumType.name) Result = {};
@@ -140,7 +140,7 @@ meta(
 meta(
   func generate_stream_push(Type)
   {
-    function (Type.name) *
+    bonsai_function (Type.name) *
     Push((Type.name)_stream* Stream, (Type.name) Element, memory_arena* Memory)
     {
       (Type.name)_stream_chunk* NextChunk = ((Type.name)_stream_chunk*)PushStruct(Memory, sizeof( (Type.name)_stream_chunk ), 1, 0);
@@ -165,7 +165,7 @@ meta(
       return Result;
     }
 
-    function void
+    bonsai_function void
     ConcatStreams( (Type.name)_stream *S1, (Type.name)_stream *S2)
     {
       if (S1->LastChunk)
@@ -224,7 +224,7 @@ meta(
       (Type.name)_stream_chunk* At;
     };
 
-    function (Type.name)_iterator
+    bonsai_function (Type.name)_iterator
     Iterator((Type.name)_stream* Stream)
     {
       (Type.name)_iterator Iterator = {
@@ -234,14 +234,14 @@ meta(
       return Iterator;
     }
 
-    function b32
+    bonsai_function b32
     IsValid((Type.name)_iterator* Iter)
     {
       b32 Result = Iter->At != 0;
       return Result;
     }
 
-    function void
+    bonsai_function void
     Advance((Type.name)_iterator* Iter)
     {
       Iter->At = Iter->At->Next;
@@ -254,7 +254,7 @@ meta(
   func generate_stream_getters(InputTypeDef)
   {
     InputTypeDef.map_members (Member) {
-      function InputTypeDef.type
+      bonsai_function InputTypeDef.type
       GetBy(Member.name)( (Member.Type) Needle, (InputTypeDef.type)_stream *Haystack)
       {
         // TODO : Implement matching!
@@ -847,7 +847,7 @@ meta(generate_stream(primitive_def))
 #include <metaprogramming/output/generate_stream_primitive_def.h>
 
 
-function datatype
+bonsai_function datatype
 Datatype(struct_member* M)
 {
   datatype Result = {
@@ -857,7 +857,7 @@ Datatype(struct_member* M)
   return Result;
 }
 
-function datatype
+bonsai_function datatype
 Datatype(enum_member* E)
 {
   datatype Result = {
@@ -868,7 +868,7 @@ Datatype(enum_member* E)
 }
 
 
-function datatype
+bonsai_function datatype
 Datatype(struct_def* S)
 {
   datatype Result = {
@@ -878,7 +878,7 @@ Datatype(struct_def* S)
   return Result;
 }
 
-function datatype
+bonsai_function datatype
 Datatype(type_def* E)
 {
   datatype Result = {
@@ -888,7 +888,7 @@ Datatype(type_def* E)
   return Result;
 }
 
-function datatype
+bonsai_function datatype
 Datatype(stl_container_def* E)
 {
   datatype Result = {
@@ -898,7 +898,7 @@ Datatype(stl_container_def* E)
   return Result;
 }
 
-function datatype
+bonsai_function datatype
 Datatype(enum_def* E)
 {
   datatype Result = {
@@ -1103,7 +1103,7 @@ meta(
 meta(generate_stream(ast_node))
 #include <metaprogramming/output/generate_stream_ast_node.h>
 
-function ast_node*
+bonsai_function ast_node*
 AllocateAstNode(ast_node_type T, ast_node **Result, memory_arena* Memory)
 {
   Assert(Result && (*Result == 0)); // We got a valid pointer, and it hasn't been allocated yet.
@@ -1270,7 +1270,7 @@ AllocateTokenBuffer(memory_arena* Memory, u32 Count)
   return Result;
 }
 
-function parser*
+bonsai_function parser*
 AllocateParserPtr(counted_string Filename, u32 TokenCount, u32 OutputBufferTokenCount, memory_arena *Memory)
 {
   parser *Result = AllocateProtection(parser, Memory, 1, False);
@@ -1297,7 +1297,7 @@ AllocateParserPtr(counted_string Filename, u32 TokenCount, u32 OutputBufferToken
   return Result;
 }
 
-function parser
+bonsai_function parser
 AllocateParser(counted_string Filename, u32 TokenCount, u32 OutputBufferTokenCount, memory_arena *Memory)
 {
   parser Result = {
@@ -1390,7 +1390,7 @@ meta(generate_stream_iterator(struct_member))
 meta(generate_stream_push(struct_member))
 #include <metaprogramming/output/generate_stream_push_c_decl.h>
 
-function string_from_parser
+bonsai_function string_from_parser
 StartStringFromParser(parser* Parser)
 {
   string_from_parser Result = {
@@ -1400,7 +1400,7 @@ StartStringFromParser(parser* Parser)
   return Result;
 }
 
-function counted_string
+bonsai_function counted_string
 FinalizeStringFromParser(string_from_parser* Builder)
 {
   umm Count = (umm)(Builder->Parser->Tokens.At->Value.Start - Builder->Start);
@@ -1408,7 +1408,7 @@ FinalizeStringFromParser(string_from_parser* Builder)
   return Result;
 }
 
-function c_token_type
+bonsai_function c_token_type
 CloseTokenFor(c_token_type T)
 {
   c_token_type Result = {};

@@ -19,7 +19,7 @@ struct button_interaction_result
   b32 Hover;
 };
 
-function interactable
+bonsai_function interactable
 Interactable(v2 MinP, v2 MaxP, umm ID, window_layout *Window)
 {
   interactable Result = {};
@@ -31,7 +31,7 @@ Interactable(v2 MinP, v2 MaxP, umm ID, window_layout *Window)
   return Result;
 }
 
-function interactable
+bonsai_function interactable
 Interactable(rect2 Rect, umm ID, window_layout *Window)
 {
   interactable Result = Interactable(Rect.Min, Rect.Max, ID, Window);
@@ -40,7 +40,7 @@ Interactable(rect2 Rect, umm ID, window_layout *Window)
 
 v2 GetAbsoluteAt(layout* Layout);
 
-function interactable
+bonsai_function interactable
 StartInteractable(layout* Layout, umm ID, window_layout *Window)
 {
   v2 StartingAt = GetAbsoluteAt(Layout);
@@ -48,21 +48,21 @@ StartInteractable(layout* Layout, umm ID, window_layout *Window)
   return Result;
 }
 
-function rect2
+bonsai_function rect2
 Rect2(s32 Flood)
 {
   rect2 Result = RectMinMax(V2(Flood), V2(Flood));
   return Result;
 }
 
-function rect2
+bonsai_function rect2
 Rect2(interactable Interaction)
 {
   rect2 Result = RectMinMax(Interaction.MinP, Interaction.MaxP);
   return Result;
 }
 
-function rect2
+bonsai_function rect2
 Rect2(interactable *Interaction)
 {
   rect2 Result = Rect2(*Interaction);

@@ -46,7 +46,7 @@ _Pragma("whatever");
 __pragma(msvc_style(thing));
 
 
-#define function static
+#define bonsai_function static
 
 // Buggy comma operator cases
 // int x, y;
@@ -82,13 +82,13 @@ MacroFunction(u32 AnotherUnsignedInt = sizeof(u32);, )
 
 #else
 
-function u32
+bonsai_function u32
 CheekyDisappearingFunction()
 {
   return 42;
 }
 
-/* function u32 */
+/* bonsai_function u32 */
 /* CallTheCheekyFunction() */
 /* { */
 /*   u32 CheekyResult = CheekyDisappearingFunction(); */
@@ -100,13 +100,13 @@ CheekyDisappearingFunction()
 /* #if 1 */
 /* #define AnotherCheekyDisappearingFunction(...) */
 /* #else */
-/* function u32 */
+/* bonsai_function u32 */
 /* AnotherCheekyDisappearingFunction() */
 /* { */
 /*   return 42; */
 /* } */
 
-/* function u32 */
+/* bonsai_function u32 */
 /* CallTheAnotherCheekyFunction() */
 /* { */
 /*   u32 AnotherCheekyResult = AnotherCheekyDisappearingFunction(); */
@@ -115,7 +115,7 @@ CheekyDisappearingFunction()
 /* #endif */
 
 
-/* function void */
+/* bonsai_function void */
 /* CallBothCheeks() */
 /* { */
 /*   CheekyDisappearingFunction(); */
@@ -133,7 +133,7 @@ struct thing
 };
 
 
-thing::thing() // Constructor function
+thing::thing() // Constructor bonsai_function
 {
   std::vector<int> IntVectorInAFunction;
 }
@@ -145,13 +145,13 @@ thing::thing<int>()
 }
 
 int
-thing::DoTheThing(unsigned int Count) // Member function
+thing::DoTheThing(unsigned int Count) // Member bonsai_function
 {
   int Result = (int)Count;
   return Result;
 }
 
-function thing
+bonsai_function thing
 TestFunc0()
 {
   thing Result = {};

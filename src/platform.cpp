@@ -14,7 +14,7 @@ global_variable bonsai_worker_thread_callback BONSAI_API_WORKER_THREAD_CALLBACK_
 
 typedef struct stat bonsai_stat;
 
-function b32
+bonsai_function b32
 LibIsNew(const char *LibPath, s64 *LastLibTime)
 {
   b32 Result = False;
@@ -36,7 +36,7 @@ LibIsNew(const char *LibPath, s64 *LastLibTime)
   return Result;
 }
 
-function thread_local_state
+bonsai_function thread_local_state
 DefaultThreadLocalState()
 {
   thread_local_state Thread = {};
@@ -55,7 +55,7 @@ DefaultThreadLocalState()
   return Thread;
 }
 
-function void
+bonsai_function void
 DrainQueue(work_queue* Queue, thread_local_state* Thread)
 {
   for (;;)
@@ -80,7 +80,7 @@ DrainQueue(work_queue* Queue, thread_local_state* Thread)
   }
 }
 
-function THREAD_MAIN_RETURN
+bonsai_function THREAD_MAIN_RETURN
 ThreadMain(void *Input)
 {
   thread_startup_params *ThreadParams = (thread_startup_params *)Input;
@@ -135,7 +135,7 @@ ThreadMain(void *Input)
   }
 }
 
-function b32
+bonsai_function b32
 StrMatch(char *Str1, char *Str2)
 {
   char *Haystack = Str1;
@@ -151,7 +151,7 @@ StrMatch(char *Str1, char *Str2)
   return Result;
 }
 
-function b32
+bonsai_function b32
 StrStr(char *Str1, char *Str2)
 {
   b32 Result = StrMatch(Str1, Str2);
@@ -164,7 +164,7 @@ StrStr(char *Str1, char *Str2)
   return Result;
 }
 
-function void
+bonsai_function void
 PlatformLaunchWorkerThreads(platform *Plat, bonsai_worker_thread_init_callback WorkerThreadInit, game_state* GameState)
 {
   u32 WorkerThreadCount = GetWorkerThreadCount();
@@ -186,7 +186,7 @@ PlatformLaunchWorkerThreads(platform *Plat, bonsai_worker_thread_init_callback W
   return;
 }
 
-function void
+bonsai_function void
 InitQueue(work_queue* Queue, memory_arena* Memory, semaphore* Semaphore)
 {
   Queue->EnqueueIndex = 0;
@@ -198,7 +198,7 @@ InitQueue(work_queue* Queue, memory_arena* Memory, semaphore* Semaphore)
   return;
 }
 
-function void
+bonsai_function void
 PlatformInit(platform *Plat, memory_arena *Memory)
 {
   Plat->Memory = Memory;
@@ -221,7 +221,7 @@ PlatformInit(platform *Plat, memory_arena *Memory)
 /*
  *  Poor mans vsync
  */
-function void
+bonsai_function void
 WaitForFrameTime(r64 FrameStartMs, float FPS)
 {
   TIMED_FUNCTION();
@@ -237,7 +237,7 @@ WaitForFrameTime(r64 FrameStartMs, float FPS)
 }
 #endif
 
-function b32
+bonsai_function b32
 SearchForProjectRoot(void)
 {
   b32 Result = False;
@@ -262,7 +262,7 @@ SearchForProjectRoot(void)
   return Result;
 }
 
-function void
+bonsai_function void
 ClearClickedFlags(input *Input)
 {
   TIMED_FUNCTION();
@@ -282,7 +282,7 @@ meta(
   return;
 }
 
-function void
+bonsai_function void
 BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
 {
 
@@ -326,7 +326,7 @@ BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
   return;
 }
 
-function server_state*
+bonsai_function server_state*
 ServerInit(memory_arena* Memory)
 {
   server_state* ServerState = Allocate(server_state, Memory, 1);
@@ -461,7 +461,7 @@ main()
     // so when the debug lib gets refreshed it has to be passed to the game
     // code somehow.
     //
-    // Possibly allow the game code to export the function pointer it uses for
+    // Possibly allow the game code to export the bonsai_function pointer it uses for
     // GetDebugState, then we can just overwrite it from here..?  Or have the
     // game code store a pointer to the actual debug_state that we can
     // overwrite.  That kinda seems like a step backwards though.

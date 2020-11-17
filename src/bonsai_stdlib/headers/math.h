@@ -44,7 +44,7 @@ Cos(r32 Theta)
   return Result;
 }
 
-function u8
+bonsai_function u8
 SafeTruncateU8(s32 N)
 {
   Assert(N < 256);

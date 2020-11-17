@@ -2,7 +2,7 @@
 #include <metaprogramming/preprocessor.cpp>
 #include <tests/test_utils.cpp>
 
-function void
+bonsai_function void
 PositiveExponentTests(parser *Parser, c_token_type FloatingPointTokenType)
 {
   {
@@ -56,7 +56,7 @@ PositiveExponentTests(parser *Parser, c_token_type FloatingPointTokenType)
   return;
 }
 
-function void
+bonsai_function void
 ExponentTests(parser *Parser, c_token_type FloatingPointTokenType)
 {
 
@@ -117,7 +117,7 @@ ExponentTests(parser *Parser, c_token_type FloatingPointTokenType)
   return;
 }
 
-function void
+bonsai_function void
 TestBasicTokenizationAndParsing(memory_arena* Memory)
 {
   parser Parser_ = ParserForFile(CS(TEST_FIXTURES_PATH "/preprocessor_basic.cpp"), Memory);
@@ -216,7 +216,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
 
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CS("function")));
+    TestThat(T == CToken(CS("bonsai_function")));
   }
   {
     c_token T = PopToken(Parser);
@@ -315,7 +315,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
 
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CS("function")));
+    TestThat(T == CToken(CS("bonsai_function")));
   }
   {
     c_token T = PopToken(Parser);
@@ -647,7 +647,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   TestThat(Remaining(&Parser->Tokens) == 0);
 }
 
-function void
+bonsai_function void
 TestPeekAndPopTokens(memory_arena* Memory)
 {
   parser Parser_ = ParserForFile(CS(TEST_FIXTURES_PATH "/preprocessor_peek_pop.cpp"), Memory);
@@ -655,7 +655,7 @@ TestPeekAndPopTokens(memory_arena* Memory)
 
   {
     c_token T = PeekToken(Parser, 0);
-    TestThat(T == CToken(CS("function")));
+    TestThat(T == CToken(CS("bonsai_function")));
   }
 
   {
@@ -677,7 +677,7 @@ TestPeekAndPopTokens(memory_arena* Memory)
 
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CS("function")));
+    TestThat(T == CToken(CS("bonsai_function")));
   }
   {
     c_token T = PeekToken(Parser, 0);
@@ -796,7 +796,7 @@ TestPeekAndPopTokens(memory_arena* Memory)
   return;
 }
 
-function void
+bonsai_function void
 TestStructParsing(memory_arena* Memory)
 {
   parse_context Ctx = {
@@ -809,7 +809,7 @@ TestStructParsing(memory_arena* Memory)
   return;
 }
 
-function void
+bonsai_function void
 TestCommentSituation(memory_arena* Memory)
 {
   parser Parser_ = ParserForFile(CS(TEST_FIXTURES_PATH "/comments.cpp"), Memory);
@@ -817,12 +817,12 @@ TestCommentSituation(memory_arena* Memory)
 
   {
     c_token T = PeekToken(Parser);
-    TestThat(T == CToken(CSz("function")));
+    TestThat(T == CToken(CSz("bonsai_function")));
   }
 
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CSz("function")));
+    TestThat(T == CToken(CSz("bonsai_function")));
   }
 
 
@@ -860,7 +860,7 @@ TestCommentSituation(memory_arena* Memory)
   return;
 }
 
-function void
+bonsai_function void
 TestAst(memory_arena *Memory)
 {
   parse_context Ctx = {
@@ -883,7 +883,7 @@ TestAst(memory_arena *Memory)
 
 }
 
-function void
+bonsai_function void
 TestMacrosAndIncludes(memory_arena *Memory)
 {
   parse_context Ctx = {

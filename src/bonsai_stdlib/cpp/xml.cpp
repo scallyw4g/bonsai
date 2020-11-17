@@ -1,5 +1,5 @@
 // TODO(Jesse id: 160, tags: metaprogramming, hashtable): Generate this!
-function xml_hashtable
+bonsai_function xml_hashtable
 AllocateHashtable(umm Count, memory_arena* Memory)
 {
   xml_hashtable Result = {};

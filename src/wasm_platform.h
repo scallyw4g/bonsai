@@ -173,7 +173,7 @@ typedef GLXContext gl_context;
 typedef pthread_mutex_t native_mutex;
 typedef Window window;
 
-function void
+bonsai_function void
 LogToConsole(counted_string Output);
 
 inline void

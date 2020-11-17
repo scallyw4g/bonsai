@@ -1,5 +1,5 @@
 
-function boundary_voxels*
+bonsai_function boundary_voxels*
 AllocateBoundaryVoxels(u32 Count, memory_arena* Memory)
 {
   boundary_voxels* Result =  Allocate(boundary_voxels, Memory, 1);
@@ -15,7 +15,7 @@ AllocateBoundaryVoxels(u32 Count, memory_arena* Memory)
   return Result;
 }
 
-function current_triangles*
+bonsai_function current_triangles*
 AllocateCurrentTriangles(u32 Count, memory_arena* Memory)
 {
   current_triangles* Result = AllocateAlignedProtection(current_triangles, Memory, 1, CACHE_LINE_SIZE, False);
@@ -25,7 +25,7 @@ AllocateCurrentTriangles(u32 Count, memory_arena* Memory)
   return Result;
 }
 
-function triangle*
+bonsai_function triangle*
 Triangle(voxel_position* P0, voxel_position* P1, voxel_position* P2, memory_arena* Memory)
 {
   triangle* Result = AllocateProtection(triangle, Memory, 1, False);
@@ -42,7 +42,7 @@ Triangle(voxel_position* P0, voxel_position* P1, voxel_position* P2, memory_aren
 }
 
 
-function void
+bonsai_function void
 SeedTriangulation(current_triangles* CurrentTriangles, memory_arena* Memory, chunk_dimension WorldChunkDim)
 {
   //  1    2
@@ -114,7 +114,7 @@ BufferTriangle(untextured_3d_geometry_buffer *Mesh, v3 *Verts, v3 Normal, u32 Co
 }
 
 #if 0
-function void
+bonsai_function void
 TriangulateUntilIndex(untextured_3d_geometry_buffer* Dest, current_triangles* CurrentTriangles, memory_arena* TempMem, u32 MaxIndex)
 {
   Assert(MaxIndex < CurrentTriangles->SurfacePoints->End);
@@ -154,7 +154,7 @@ TriangulateUntilIndex(untextured_3d_geometry_buffer* Dest, current_triangles* Cu
   return;
 }
 
-function void
+bonsai_function void
 Triangulate(untextured_3d_geometry_buffer* Dest, current_triangles* CurrentTriangles, memory_arena* TempMem)
 {
   if (CurrentTriangles->SurfacePoints->End >= 3)
@@ -182,7 +182,7 @@ Triangulate(untextured_3d_geometry_buffer* Dest, current_triangles* CurrentTrian
   return;
 }
 
-function void
+bonsai_function void
 TriangulateSingle(untextured_3d_geometry_buffer* Dest, current_triangles* CurrentTriangles, voxel_position* Point, triangle* Closest, memory_arena* TempMem)
 {
   SplitFace(CurrentTriangles, Closest, Point, TempMem);

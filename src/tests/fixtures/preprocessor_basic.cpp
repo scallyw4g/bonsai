@@ -1,7 +1,7 @@
 // single line comment's "work"
 /* multi line comment's "work" */
 
-function void
+bonsai_function void
 FunctionName()
 {
   counted_string S = CS("thing\n");
@@ -9,7 +9,7 @@ FunctionName()
   return;
 }
 
-function void
+bonsai_function void
 WriteStructTo(d_union_decl* dUnion, native_file* OutFile, memory_arena* Memory)
 {
   counted_string UnionName = dUnion->Name;

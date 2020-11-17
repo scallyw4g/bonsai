@@ -4,7 +4,7 @@
 #include <tests/test_utils.cpp>
 
 
-function void
+bonsai_function void
 TestTable(debug_ui_render_group* Group)
 {
   PushTableStart(Group);

@@ -1,11 +1,11 @@
-function void
+bonsai_function void
 DebugPrint( ast_node *S, u32 Depth)
 {
   if (S) { DebugPrint(*S, Depth); }
   else { DebugPrint("ptr(0)", Depth); }
 }
 
-function void
+bonsai_function void
 DebugPrint( ast_node UnionStruct, u32 Depth)
 {
   switch(UnionStruct.Type)

@@ -120,7 +120,7 @@ struct ui_style
 };
 
 
-function ui_style UiStyleFromLightestColor(v3 Color);
+bonsai_function ui_style UiStyleFromLightestColor(v3 Color);
 debug_global ui_style DefaultUiStyle = UiStyleFromLightestColor(V3(1));
 
 struct layout
@@ -330,7 +330,7 @@ struct find_command_result
 // @shadow_epsilon
 #define DEBUG_FONT_SHADOW_EPSILON (0.0000001f)
 
-function r32
+bonsai_function r32
 GetZ(z_depth zDepth, window_layout* Window)
 {
   u32 fourtytwo = (40 + 2);
@@ -365,7 +365,7 @@ GetZ(z_depth zDepth, window_layout* Window)
   return Result;
 }
 
-function ui_style
+bonsai_function ui_style
 StandardStyling(v3 StartingColor, v3 HoverMultiplier = V3(1.3f), v3 ClickMultiplier = V3(1.2f))
 {
   ui_style Result = {};
@@ -376,7 +376,7 @@ StandardStyling(v3 StartingColor, v3 HoverMultiplier = V3(1.3f), v3 ClickMultipl
   return Result;
 }
 
-function ui_style
+bonsai_function ui_style
 UiStyleFromLightestColor(v3 Color)
 {
   ui_style Style  = {
@@ -394,7 +394,7 @@ UiStyleFromLightestColor(v3 Color)
   return Style;
 }
 
-function window_layout
+bonsai_function window_layout
 WindowLayout(const char* Title, v2 Basis, v2 MaxClip = V2(1800, 800))
 {
   local_persist u32 NextWindowStackIndex = 0;
@@ -450,7 +450,7 @@ GetBounds(window_layout* Window)
   return Result;
 }
 
-function rect2
+bonsai_function rect2
 GetWindowBounds(window_layout *Window)
 {
   v2 TopLeft = Window->Basis;
