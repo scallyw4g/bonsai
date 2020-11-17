@@ -1,4 +1,13 @@
 
+      function void DebugPrint( XVisualInfo* S, u32 Depth = 0);
+      function void DebugPrint( XVisualInfo  S, u32 Depth = 0);
+
+      function void DebugPrint( os* S, u32 Depth = 0);
+      function void DebugPrint( os  S, u32 Depth = 0);
+
+      function void DebugPrint( native_file* S, u32 Depth = 0);
+      function void DebugPrint( native_file  S, u32 Depth = 0);
+
       function void DebugPrint( cycle_range* S, u32 Depth = 0);
       function void DebugPrint( cycle_range  S, u32 Depth = 0);
 

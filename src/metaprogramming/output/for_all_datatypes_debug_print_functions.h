@@ -1,4 +1,151 @@
 
+    function void DebugPrint( XVisualInfo S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("XVisualInfo {\n", Depth);
+      }
+
+      
+          DebugPrint("Visual visual {\n", Depth+2);
+          DebugPrint(S.visual, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("VisualID visualid {\n", Depth+2);
+          DebugPrint(S.visualid, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("s32 screen {\n", Depth+2);
+          DebugPrint(S.screen, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("s32 depth {\n", Depth+2);
+          DebugPrint(S.depth, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("s32 c_class {\n", Depth+2);
+          DebugPrint(S.c_class, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("u64 red_mask {\n", Depth+2);
+          DebugPrint(S.red_mask, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("u64 green_mask {\n", Depth+2);
+          DebugPrint(S.green_mask, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("u64 blue_mask {\n", Depth+2);
+          DebugPrint(S.blue_mask, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("s32 colormap_size {\n", Depth+2);
+          DebugPrint(S.colormap_size, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("s32 bits_per_rgb {\n", Depth+2);
+          DebugPrint(S.bits_per_rgb, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( XVisualInfo *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( os S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("os {\n", Depth);
+      }
+
+      
+          DebugPrint("window Window {\n", Depth+2);
+          DebugPrint(S.Window, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("display Display {\n", Depth+2);
+          DebugPrint(S.Display, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("gl_context GlContext {\n", Depth+2);
+          DebugPrint(S.GlContext, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("b32 ContinueRunning {\n", Depth+2);
+          DebugPrint(S.ContinueRunning, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( os *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
+    function void DebugPrint( native_file S, u32 Depth)
+    {
+      if (Depth == 0)
+      {
+        DebugPrint("native_file {\n", Depth);
+      }
+
+      
+          DebugPrint("FILE Handle {\n", Depth+2);
+          DebugPrint(S.Handle, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+          DebugPrint("counted_string Path {\n", Depth+2);
+          DebugPrint(S.Path, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+      DebugPrint("}\n", Depth);
+    }
+
+    function void DebugPrint( native_file *S, u32 Depth)
+    {
+      if (S) { DebugPrint(*S, Depth); }
+      else { DebugPrint("ptr(0)", Depth); }
+    }
+
     function void DebugPrint( cycle_range S, u32 Depth)
     {
       if (Depth == 0)

@@ -641,12 +641,12 @@ main()
   }
 
   {
-    TestThat(Exp(10UL, 0) == 1);
-    TestThat(Exp(10UL, 1) == 10);
-    TestThat(Exp(10UL, 2) == 100);
+    TestThat(Exp(10ULL, 0) == 1);
+    TestThat(Exp(10ULL, 1) == 10);
+    TestThat(Exp(10ULL, 2) == 100);
 
-    TestThat(Exp(2ul, 2) == 4);
-    TestThat(Exp(2ul, 3) == 8);
+    TestThat(Exp(2ull, 2) == 4);
+    TestThat(Exp(2ull, 3) == 8);
   }
 
   {

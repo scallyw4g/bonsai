@@ -443,7 +443,7 @@ ToU64(counted_string S)
       ++CharIndex)
   {
     u64 Digit = ToU64(S.Start[CharIndex]);
-    Result += (Digit * Exp(10UL, SafeTruncateToS32(S.Count - CharIndex - 1L) ));
+    Result += (Digit * Exp(10ULL, SafeTruncateToS32(S.Count - CharIndex - 1L) ));
   }
 
   return Result;

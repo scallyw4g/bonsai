@@ -32,10 +32,10 @@ typedef r32      radians;
 typedef r32      degrees;
 
 // 64 Bit types
-typedef long int          s64;
-typedef unsigned long int u64;
-typedef double            r64;
-typedef u64               umm;
+typedef long long int           s64;
+typedef unsigned long long int  u64;
+typedef double                  r64;
+typedef u64                     umm;
 
 CAssert(sizeof(s64) == 8);
 CAssert(sizeof(u64) == 8);
@@ -105,7 +105,7 @@ counted_string
 CS(const char *S, umm Count)
 {
   counted_string Result = {
-    .Start = S, .Count = Count
+    .Count = Count, .Start = S
   };
   return Result;
 }

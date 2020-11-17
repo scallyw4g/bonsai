@@ -1,5 +1,7 @@
 #! /bin/bash
 
+EMCC=0
+
 COMMON_OPTIMIZATION_OPTIONS="-O2"
 
 RED="\x1b[31m"
@@ -253,17 +255,27 @@ function BuildWithEmcc {
   which emcc > /dev/null
   [ $? -ne 0 ] && echo -e "Please install emcc" && exit 1
 
-  emcc src/font/ttf.cpp              \
-    -I src                           \
-    -I /usr/include                  \
-    -I /usr/include/x86_64-linux-gnu \
-    -o bin/emscripten/ttf.html
+  emcc src/font/ttf.cpp               \
+    -march=x86_64                     \
+    -I src                            \
+    -o bin/wasm/ttf.html
+
+  # emcc test.c               \
+  #   -march=x86_64                     \
+  #   -I src                            \
+  #   -o wasm/test.html
+
 }
 
 
 if [ ! -d "$BIN" ]; then
   mkdir "$BIN"
 fi
+
+if [ ! -d "$BIN/wasm" ]; then
+  mkdir "$BIN/wasm"
+fi
+
 
 if [ ! -d "$BIN_TEST" ]; then
   mkdir "$BIN_TEST"
@@ -312,6 +324,8 @@ function RunPreprocessor
 }
 
 function RunEntireBuild {
+
+      # BuildWithEmcc
 
   if [ $DumpSourceFilesAndQuit == 1 ]; then
     SetSourceFiles
