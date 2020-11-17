@@ -18,69 +18,111 @@ AllocateAnimation(v3i KeyframeCount, memory_arena* Memory)
 loaded_collada_mesh
 LoadMeshData(xml_token_stream* XmlTokens, counted_string* GeometryId, memory_arena* TempMemory, heap_allocator* Heap)
 {
-  counted_string PositionsSelector   = FormatCountedString(TempMemory, CSz("geometry%.*s float_array%.*s-positions-array"), GeometryId->Count, GeometryId->Start, GeometryId->Count, GeometryId->Start);
-  counted_string NormalsSelector     = FormatCountedString(TempMemory, CSz("geometry%.*s float_array%.*s-normals-array"), GeometryId->Count, GeometryId->Start, GeometryId->Count, GeometryId->Start);
-  counted_string VertexCountSelector = FormatCountedString(TempMemory, CSz("geometry%.*s polylist vcount"), GeometryId->Count, GeometryId->Start);
-  counted_string VertIndicesSelector = FormatCountedString(TempMemory, CSz("geometry%.*s polylist p"), GeometryId->Count, GeometryId->Start);
-  counted_string PolylistSelector    = FormatCountedString(TempMemory, CSz("geometry%.*s polylist"), GeometryId->Count, GeometryId->Start);
-
-  ansi_stream Triangles         = AnsiStream(GetFirstMatchingTag(XmlTokens, &VertexCountSelector)->Value);
-  ansi_stream VertIndices       = AnsiStream(GetFirstMatchingTag(XmlTokens, &VertIndicesSelector)->Value);
-
-  xml_tag* Polylist             = GetFirstMatchingTag(XmlTokens, &PolylistSelector);
-  u32 TotalTriangleCount        = StringToUInt(GetPropertyValue(Polylist, CS("count")));
-
-  xml_tag* PositionTag          = GetFirstMatchingTag(XmlTokens, &PositionsSelector);
-  xml_tag* NormalTag            = GetFirstMatchingTag(XmlTokens, &NormalsSelector);
-  counted_string PositionString = PositionTag->Value;
-  counted_string NormalString   = NormalTag->Value;
-  u32 PositionCount             = StringToUInt(GetPropertyValue(PositionTag, CS("count")));
-  u32 NormalCount               = StringToUInt(GetPropertyValue(NormalTag, CS("count")));
-
-  v3_cursor Positions           = ParseV3Array(PositionCount, AnsiStream(PositionString), TempMemory);
-  v3_cursor Normals             = ParseV3Array(NormalCount, AnsiStream(NormalString), TempMemory);
+  loaded_collada_mesh Result = {};
 
 
-  untextured_3d_geometry_buffer Mesh = {};
-  AllocateMesh(&Mesh, TotalTriangleCount*3, Heap);
+  counted_string PositionsSelector = FormatCountedString(TempMemory, CSz("geometry%.*s float_array%.*s-positions-array"), GeometryId->Count, GeometryId->Start, GeometryId->Count, GeometryId->Start);
+  xml_tag* PositionTag             = GetFirstMatchingTag(XmlTokens, &PositionsSelector);
+  counted_string PositionString    = PositionTag->Value;
+  u32 PositionCount                = StringToUInt(GetPropertyValue(PositionTag, CS("count")));
+  v3_cursor Positions              = ParseV3Array(PositionCount, AnsiStream(PositionString), TempMemory);
 
-  // TODO(Jesse, id: 126, tags: collada_loader, robustness, set_to_f32_min) Should the MaxP be initialized to f32_MIN?
-  v3 MaxP = V3(0);
-  v3 MinP = V3(f32_MAX);
+  counted_string NormalsSelector = FormatCountedString(TempMemory, CSz("geometry%.*s float_array%.*s-normals-array"), GeometryId->Count, GeometryId->Start, GeometryId->Count, GeometryId->Start);
+  xml_tag* NormalTag             = GetFirstMatchingTag(XmlTokens, &NormalsSelector);
+  counted_string NormalString    = NormalTag->Value;
+  u32 NormalCount                = StringToUInt(GetPropertyValue(NormalTag, CS("count")));
+  v3_cursor Normals              = ParseV3Array(NormalCount, AnsiStream(NormalString), TempMemory);
 
-  for (u32 TriangleIndex = 0;
-      TriangleIndex < TotalTriangleCount;
-      ++TriangleIndex)
+  counted_string IndecesSelector = FormatCountedString(TempMemory, CSz("geometry%.*s polylist p"), GeometryId->Count, GeometryId->Start);
+  ansi_stream Indices            = AnsiStream(GetFirstMatchingTag(XmlTokens, &IndecesSelector)->Value);
+
+
+  counted_string PolylistSelector = FormatCountedString(TempMemory, CSz("geometry%.*s polylist"), GeometryId->Count, GeometryId->Start);
+  xml_tag* Polylist               = GetFirstMatchingTag(XmlTokens, &PolylistSelector);
+
+  if (Polylist)
   {
-    counted_string CurrentTriangle = PopWordCounted(&Triangles);
-    Assert(StringsMatch(CurrentTriangle, CS("3")));
+    u32 TotalTriangleCount = StringToUInt(GetPropertyValue(Polylist, CS("count")));
 
-    for (u32 VertIndex = 0;
-        VertIndex < 3;
-        ++VertIndex)
+    counted_string VertexCountSelector = FormatCountedString(TempMemory, CSz("geometry%.*s polylist vcount"), GeometryId->Count, GeometryId->Start);
+    ansi_stream Triangles              = AnsiStream(GetFirstMatchingTag(XmlTokens, &VertexCountSelector)->Value);
+
+    untextured_3d_geometry_buffer Mesh = {};
+    AllocateMesh(&Mesh, TotalTriangleCount*3, Heap);
+
+    v3 MaxP = V3(f32_MIN);
+    v3 MinP = V3(f32_MAX);
+
+    for (u32 TriangleIndex = 0;
+        TriangleIndex < TotalTriangleCount;
+        ++TriangleIndex)
     {
-      Assert(Mesh.At < Mesh.End);
+      counted_string CurrentTriangle = PopWordCounted(&Triangles);
+      Assert(StringsMatch(CurrentTriangle, CS("3")));
 
-      u32 PositionIndex = (u32)StringToInt(PopWordCounted(&VertIndices));
-      u32 NormalIndex = (u32)StringToInt(PopWordCounted(&VertIndices));
-      Assert(PositionIndex < TotalElements(&Positions));
-      Assert(NormalIndex < TotalElements(&Normals));
+      for (u32 VertIndex = 0;
+          VertIndex < 3;
+          ++VertIndex)
+      {
+        Assert(Mesh.At < Mesh.End);
 
-      v3 P = Positions.Start[PositionIndex];
-      Mesh.Verts[Mesh.At] = P;
-      MaxP = Max(P, MaxP);
-      MinP = Min(P, MinP);
+        u32 PositionIndex = (u32)StringToInt(PopWordCounted(&Indices));
+        u32 NormalIndex = (u32)StringToInt(PopWordCounted(&Indices));
+        Assert(PositionIndex < TotalElements(&Positions));
+        Assert(NormalIndex < TotalElements(&Normals));
 
-      Mesh.Normals[Mesh.At] = Normalize(Normals.Start[NormalIndex]);
+        v3 P = Positions.Start[PositionIndex];
+        Mesh.Verts[Mesh.At] = P;
+        MaxP = Max(P, MaxP);
+        MinP = Min(P, MinP);
 
-      Mesh.At++;
+        Mesh.Normals[Mesh.At] = Normalize(Normals.Start[NormalIndex]);
+
+        Mesh.At++;
+      }
     }
+
+    Result.Mesh = Mesh;
+    Result.Dim = MaxP - MinP;
+  }
+  else
+  {
+#if 1
+    NotImplemented;
+#else
+    counted_string TrianglesSelector = FormatCountedString(TempMemory, CSz("geometry%S triangles"), GeometryId);
+    xml_tag* TrianglesTag = GetFirstMatchingTag(XmlTokens, &TrianglesSelector);
+
+    for (u32 TriangleIndex = 0;
+        TriangleIndex < TotalTriangleCount;
+        ++TriangleIndex)
+    {
+      for (u32 VertIndex = 0;
+          VertIndex < 3;
+          ++VertIndex)
+      {
+        Assert(Mesh.At < Mesh.End);
+
+        u32 PositionIndex = (u32)StringToInt(PopWordCounted(&Indices));
+        u32 NormalIndex = (u32)StringToInt(PopWordCounted(&Indices));
+        Assert(PositionIndex < TotalElements(&Positions));
+        Assert(NormalIndex < TotalElements(&Normals));
+
+        v3 P = Positions.Start[PositionIndex];
+        Mesh.Verts[Mesh.At] = P;
+        MaxP = Max(P, MaxP);
+        MinP = Min(P, MinP);
+
+        Mesh.Normals[Mesh.At] = Normalize(Normals.Start[NormalIndex]);
+
+        Mesh.At++;
+      }
+    }
+#endif
+
   }
 
-  loaded_collada_mesh Result = {};
-  Result.Mesh = Mesh;
-  Result.Dim = MaxP - MinP;
-
+  Assert(Result.Mesh.At == Result.Mesh.End);
   return Result;
 }
 

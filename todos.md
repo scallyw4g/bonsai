@@ -122,7 +122,6 @@
     - #122 Actually read all the data!
     - #124 Load models in multiple chunks instead of one monolithic one. The storage for chunks must be as large as the largest chunk we will EVER load, which should definately not be decided at compile time.
     - #125 Are we really done?
-    - #126 Should the MaxP be initialized to f32_MIN?
     - #128 Do culling on these as well?
     - #135 Query max gpu textures?
     - #137 This _should_ be able to be glTexImage3D, but the driver is throwing an error .. why?!
@@ -248,10 +247,6 @@
 
   ## set_to_f32_min
     - #123 Should these 0s be set to s32_MIN??
-    - #126 Should the MaxP be initialized to f32_MIN?
-
-  ## collada_loader
-    - #126 Should the MaxP be initialized to f32_MIN?
 
   ## dead_code
     - #127 Pretty sure we don't have to set the faces anymore??

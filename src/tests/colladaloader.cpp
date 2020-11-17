@@ -443,7 +443,7 @@ main()
   heap_allocator Heap = InitHeap(Gigabytes(1));
   LoadCollada(Memory, &Heap, TEST_FIXTURES_PATH "/blender_cube.dae");
 
-  LoadCollada(Memory, &Heap, "models/one_thousand_museum.dae");
+  /* LoadCollada(Memory, &Heap, "models/one_thousand_museum.dae"); */
 
   TestSuiteEnd();
   exit(TestsFailed);
