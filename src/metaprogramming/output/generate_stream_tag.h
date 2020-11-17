@@ -21,7 +21,7 @@
       tag_stream_chunk* At;
     };
 
-    function tag_iterator
+    bonsai_function tag_iterator
     Iterator(tag_stream* Stream)
     {
       tag_iterator Iterator = {
@@ -31,14 +31,14 @@
       return Iterator;
     }
 
-    function b32
+    bonsai_function b32
     IsValid(tag_iterator* Iter)
     {
       b32 Result = Iter->At != 0;
       return Result;
     }
 
-    function void
+    bonsai_function void
     Advance(tag_iterator* Iter)
     {
       Iter->At = Iter->At->Next;
@@ -46,7 +46,7 @@
 
 
     
-    function tag *
+    bonsai_function tag *
     Push(tag_stream* Stream, tag Element, memory_arena* Memory)
     {
       tag_stream_chunk* NextChunk = (tag_stream_chunk*)PushStruct(Memory, sizeof( tag_stream_chunk ), 1, 0);
@@ -71,7 +71,7 @@
       return Result;
     }
 
-    function void
+    bonsai_function void
     ConcatStreams( tag_stream *S1, tag_stream *S2)
     {
       if (S1->LastChunk)

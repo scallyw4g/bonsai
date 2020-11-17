@@ -4,12 +4,12 @@
 #define local_persist     static
 #define global_variable   static
 #define debug_global      static
-#define bonsai_function          static
+#define bonsai_function   static
 #define exported_function extern "C"
 
 
-/* #define True  ((bool)1) */
-/* #define False ((bool)0) */
+#define True  (1)
+#define False (0)
 
 #define ArrayCount(a) (sizeof(a)/sizeof(a[0]))
 #define InvalidDefaultCase default: {Error("InvalidDefaultCase"); Assert(False);} break

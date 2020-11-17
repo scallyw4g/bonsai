@@ -6,7 +6,7 @@
       v3* At;
     };
 
-    function v3_cursor
+    bonsai_function v3_cursor
     V3Cursor(umm ElementCount, memory_arena* Memory)
     {
       v3* Start = (v3*)PushStruct(Memory, sizeof( v3 ), 1, 0);

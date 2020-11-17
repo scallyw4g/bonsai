@@ -1,5 +1,5 @@
 
-    function umm
+    bonsai_function umm
     IndexOf(counted_string_buffer *Buf, counted_string Element)
     {
       umm Result = Buf->Count;

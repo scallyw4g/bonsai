@@ -1,6 +1,6 @@
 #! /bin/bash
 
-EMCC=0
+EMCC=1
 
 COMMON_OPTIMIZATION_OPTIONS="-O2"
 
@@ -156,7 +156,7 @@ function BuildPreprocessor {
   echo -e ""
 }
 
-function BuildWithClang {
+function BuildAllClang {
   which clang++ > /dev/null
   [ $? -ne 0 ] && echo -e "Please install clang++" && exit 1
 
@@ -251,19 +251,36 @@ function BuildWithClang {
   echo -e ""
 }
 
-function BuildWithEmcc {
+function BuildAllEMCC {
   which emcc > /dev/null
   [ $? -ne 0 ] && echo -e "Please install emcc" && exit 1
 
-  emcc src/font/ttf.cpp               \
-    -march=x86_64                     \
-    -I src                            \
-    -o bin/wasm/ttf.html
-
-  # emcc test.c               \
-  #   -march=x86_64                     \
-  #   -I src                            \
-  #   -o wasm/test.html
+  emcc                                     \
+    -s WASM=1                              \
+    -s USE_WEBGL2=1                        \
+    -s FULL_ES3=1                          \
+    -s ALLOW_MEMORY_GROWTH=1               \
+    -s ASSERTIONS=1                        \
+    -s DEMANGLE_SUPPORT=1                  \
+    -std=c++17                             \
+    -Wno-reorder-init-list                 \
+    -ferror-limit=2000                     \
+    -O2                                    \
+    -g4                                    \
+    --source-map-base /                    \
+    --emrun                                \
+    -D__SSE__=1                            \
+    -DEMCC=1                               \
+    -DWASM=1                               \
+    -I src                                 \
+    -I src/datatypes                       \
+    -I src/emscripten                      \
+    -I examples/ssao_test/engine_constants \
+    -I examples/ssao_test                  \
+    --embed-file shaders                   \
+    --embed-file models                    \
+    src/tests/m4.cpp                       \
+    -o bin/wasm/platform.html
 
 }
 
@@ -325,8 +342,6 @@ function RunPreprocessor
 
 function RunEntireBuild {
 
-      # BuildWithEmcc
-
   if [ $DumpSourceFilesAndQuit == 1 ]; then
     SetSourceFiles
     echo "gdb --args bin/preprocessor_dev" $SOURCE_FILES
@@ -354,9 +369,9 @@ function RunEntireBuild {
 
   if [ $BuildAllProjects == 1 ]; then
     if [ "$EMCC" == "1" ]; then
-      BuildWithEmcc
+      BuildAllEMCC
     else
-      BuildWithClang
+      BuildAllClang
     fi
   fi
 
@@ -374,8 +389,8 @@ DumpSourceFilesAndQuit=0
 
 CheckoutMetaOutput=0
 
-FirstPreprocessor=1
-BuildPreprocessor=1
+FirstPreprocessor=0
+BuildPreprocessor=0
 SecondPreprocessor=0
 
 BuildAllProjects=1

@@ -1,5 +1,5 @@
 
-    function counted_string
+    bonsai_function counted_string
     ToString( text_encoding Type)
     {
       counted_string Result = {};

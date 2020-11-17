@@ -48,7 +48,7 @@
 
 #define BONSAI_FUNCTION_NAME __func__
 
-#define RED_TERMINAL "\x1b[31m"
+#define RED_TERMINAL ""
 #define BLUE_TERMINAL "\x1b[34m"
 #define GREEN_TERMINAL "\x1b[32m"
 #define YELLOW_TERMINAL "\x1b[33m"

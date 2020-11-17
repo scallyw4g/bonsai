@@ -141,7 +141,11 @@ struct chunk_data
   chunk_flag Flags;
   voxel *Voxels;
 
+#if EMCC
+  u8 Pad[56];
+#else
   u8 Pad[52];
+#endif
 };
 CAssert(sizeof(chunk_data) == CACHE_LINE_SIZE);
 #pragma pack(pop)

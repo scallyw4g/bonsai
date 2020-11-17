@@ -21,7 +21,7 @@
       stl_container_def_stream_chunk* At;
     };
 
-    function stl_container_def_iterator
+    bonsai_function stl_container_def_iterator
     Iterator(stl_container_def_stream* Stream)
     {
       stl_container_def_iterator Iterator = {
@@ -31,14 +31,14 @@
       return Iterator;
     }
 
-    function b32
+    bonsai_function b32
     IsValid(stl_container_def_iterator* Iter)
     {
       b32 Result = Iter->At != 0;
       return Result;
     }
 
-    function void
+    bonsai_function void
     Advance(stl_container_def_iterator* Iter)
     {
       Iter->At = Iter->At->Next;
@@ -46,7 +46,7 @@
 
 
     
-    function stl_container_def *
+    bonsai_function stl_container_def *
     Push(stl_container_def_stream* Stream, stl_container_def Element, memory_arena* Memory)
     {
       stl_container_def_stream_chunk* NextChunk = (stl_container_def_stream_chunk*)PushStruct(Memory, sizeof( stl_container_def_stream_chunk ), 1, 0);
@@ -71,7 +71,7 @@
       return Result;
     }
 
-    function void
+    bonsai_function void
     ConcatStreams( stl_container_def_stream *S1, stl_container_def_stream *S2)
     {
       if (S1->LastChunk)

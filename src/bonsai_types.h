@@ -22,10 +22,6 @@
 #define ToggleBitfieldValue(Dest, Value) \
       (Dest) = (Dest) & (Value) ?  ((u32)(Dest) & ~(u32)(Value)) : ((u32)(Dest) | (u32)(Value))
 
-// #ifdef __EMSCRIPTEN__
-// #include <emscripten.h>
-// #endif
-
 #include <metaprogramming/defines.h>
 
 //
@@ -35,6 +31,7 @@
 
 #include <bonsai_stdlib/headers/assert.h>
 #include <bonsai_stdlib/headers/primitives.h>
+#include <bonsai_stdlib/headers/console_macros.h>
 #include <bonsai_stdlib/headers/platform.h>
 #include <bonsai_stdlib/headers/math.h>
 #include <bonsai_stdlib/headers/vector.h>
@@ -148,7 +145,10 @@ meta(generate_cursor(v3))
 
 
 #include <engine/api.h>
+
+#if !EMCC
 #include <net/network.h>
+#endif
 
 global_variable memory_arena _TranArena;
 global_variable memory_arena* TranArena = &_TranArena;

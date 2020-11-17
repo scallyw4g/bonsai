@@ -1,5 +1,5 @@
 
-    function counted_string
+    bonsai_function counted_string
     ToString( c_token_type Type)
     {
       counted_string Result = {};

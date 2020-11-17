@@ -21,7 +21,7 @@
       todo_stream_chunk* At;
     };
 
-    function todo_iterator
+    bonsai_function todo_iterator
     Iterator(todo_stream* Stream)
     {
       todo_iterator Iterator = {
@@ -31,14 +31,14 @@
       return Iterator;
     }
 
-    function b32
+    bonsai_function b32
     IsValid(todo_iterator* Iter)
     {
       b32 Result = Iter->At != 0;
       return Result;
     }
 
-    function void
+    bonsai_function void
     Advance(todo_iterator* Iter)
     {
       Iter->At = Iter->At->Next;
@@ -46,7 +46,7 @@
 
 
     
-    function todo *
+    bonsai_function todo *
     Push(todo_stream* Stream, todo Element, memory_arena* Memory)
     {
       todo_stream_chunk* NextChunk = (todo_stream_chunk*)PushStruct(Memory, sizeof( todo_stream_chunk ), 1, 0);
@@ -71,7 +71,7 @@
       return Result;
     }
 
-    function void
+    bonsai_function void
     ConcatStreams( todo_stream *S1, todo_stream *S2)
     {
       if (S1->LastChunk)

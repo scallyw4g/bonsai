@@ -1,6 +1,6 @@
 
     
-    function counted_string
+    bonsai_function counted_string
     ToString( metaprogramming_directive Type)
     {
       counted_string Result = {};
@@ -26,7 +26,7 @@
     }
 
     
-    function metaprogramming_directive
+    bonsai_function metaprogramming_directive
     MetaprogrammingDirective(counted_string S)
     {
       metaprogramming_directive Result = {};

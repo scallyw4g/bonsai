@@ -6,7 +6,7 @@
       parser* At;
     };
 
-    function parser_cursor
+    bonsai_function parser_cursor
     ParserCursor(umm ElementCount, memory_arena* Memory)
     {
       parser* Start = (parser*)PushStruct(Memory, sizeof( parser ), 1, 0);

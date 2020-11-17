@@ -21,7 +21,7 @@
       enum_member_stream_chunk* At;
     };
 
-    function enum_member_iterator
+    bonsai_function enum_member_iterator
     Iterator(enum_member_stream* Stream)
     {
       enum_member_iterator Iterator = {
@@ -31,14 +31,14 @@
       return Iterator;
     }
 
-    function b32
+    bonsai_function b32
     IsValid(enum_member_iterator* Iter)
     {
       b32 Result = Iter->At != 0;
       return Result;
     }
 
-    function void
+    bonsai_function void
     Advance(enum_member_iterator* Iter)
     {
       Iter->At = Iter->At->Next;
@@ -46,7 +46,7 @@
 
 
     
-    function enum_member *
+    bonsai_function enum_member *
     Push(enum_member_stream* Stream, enum_member Element, memory_arena* Memory)
     {
       enum_member_stream_chunk* NextChunk = (enum_member_stream_chunk*)PushStruct(Memory, sizeof( enum_member_stream_chunk ), 1, 0);
@@ -71,7 +71,7 @@
       return Result;
     }
 
-    function void
+    bonsai_function void
     ConcatStreams( enum_member_stream *S1, enum_member_stream *S2)
     {
       if (S1->LastChunk)

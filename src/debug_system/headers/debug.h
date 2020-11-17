@@ -108,7 +108,11 @@ struct debug_thread_state
 
   volatile u32 WriteIndex; // Note(Jesse): This must not straddle a cache line on x86 because multiple threads read from the main threads copy of this
 
+#if EMCC
+  u8 Pad[36];
+#else
   u8 Pad[12];
+#endif
 };
 CAssert(sizeof(debug_thread_state) == CACHE_LINE_SIZE);
 

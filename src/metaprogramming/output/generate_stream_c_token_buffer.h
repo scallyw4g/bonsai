@@ -21,7 +21,7 @@
       c_token_buffer_stream_chunk* At;
     };
 
-    function c_token_buffer_iterator
+    bonsai_function c_token_buffer_iterator
     Iterator(c_token_buffer_stream* Stream)
     {
       c_token_buffer_iterator Iterator = {
@@ -31,14 +31,14 @@
       return Iterator;
     }
 
-    function b32
+    bonsai_function b32
     IsValid(c_token_buffer_iterator* Iter)
     {
       b32 Result = Iter->At != 0;
       return Result;
     }
 
-    function void
+    bonsai_function void
     Advance(c_token_buffer_iterator* Iter)
     {
       Iter->At = Iter->At->Next;
@@ -46,7 +46,7 @@
 
 
     
-    function c_token_buffer *
+    bonsai_function c_token_buffer *
     Push(c_token_buffer_stream* Stream, c_token_buffer Element, memory_arena* Memory)
     {
       c_token_buffer_stream_chunk* NextChunk = (c_token_buffer_stream_chunk*)PushStruct(Memory, sizeof( c_token_buffer_stream_chunk ), 1, 0);
@@ -71,7 +71,7 @@
       return Result;
     }
 
-    function void
+    bonsai_function void
     ConcatStreams( c_token_buffer_stream *S1, c_token_buffer_stream *S2)
     {
       if (S1->LastChunk)

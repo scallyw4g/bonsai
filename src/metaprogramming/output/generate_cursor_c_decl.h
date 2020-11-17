@@ -6,7 +6,7 @@
       struct_member* At;
     };
 
-    function struct_member_cursor
+    bonsai_function struct_member_cursor
     StructMemberCursor(umm ElementCount, memory_arena* Memory)
     {
       struct_member* Start = (struct_member*)PushStruct(Memory, sizeof( struct_member ), 1, 0);

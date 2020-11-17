@@ -1,10 +1,15 @@
 inline void
-PrintSemValue( semaphore *Semaphore )
+PrintSemValue(semaphore *Semaphore)
 {
   s32 SemValue;
-  s32 E = sem_getvalue(Semaphore, &SemValue);
-  Assert(E==0);
-  Print(SemValue);
+  if (sem_getvalue(Semaphore, &SemValue) == 0)
+  {
+    Print(SemValue);
+  }
+  else
+  {
+    Warn("sem_getvalue() failed.");
+  }
   return;
 }
 

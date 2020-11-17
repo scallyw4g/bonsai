@@ -1,5 +1,5 @@
 
-    function meta_transform_op
+    bonsai_function meta_transform_op
     MetaTransformOp(counted_string S)
     {
       meta_transform_op Result = {};

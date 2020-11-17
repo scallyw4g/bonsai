@@ -7,7 +7,7 @@
       counted_string* At;
     };
 
-    function counted_string_cursor
+    bonsai_function counted_string_cursor
     CountedStringCursor(umm ElementCount, memory_arena* Memory)
     {
       counted_string* Start = (counted_string*)PushStruct(Memory, sizeof( counted_string ), 1, 0);
@@ -42,7 +42,7 @@
       counted_string_stream_chunk* At;
     };
 
-    function counted_string_iterator
+    bonsai_function counted_string_iterator
     Iterator(counted_string_stream* Stream)
     {
       counted_string_iterator Iterator = {
@@ -52,14 +52,14 @@
       return Iterator;
     }
 
-    function b32
+    bonsai_function b32
     IsValid(counted_string_iterator* Iter)
     {
       b32 Result = Iter->At != 0;
       return Result;
     }
 
-    function void
+    bonsai_function void
     Advance(counted_string_iterator* Iter)
     {
       Iter->At = Iter->At->Next;
@@ -67,7 +67,7 @@
 
 
     
-    function counted_string *
+    bonsai_function counted_string *
     Push(counted_string_stream* Stream, counted_string Element, memory_arena* Memory)
     {
       counted_string_stream_chunk* NextChunk = (counted_string_stream_chunk*)PushStruct(Memory, sizeof( counted_string_stream_chunk ), 1, 0);
@@ -92,7 +92,7 @@
       return Result;
     }
 
-    function void
+    bonsai_function void
     ConcatStreams( counted_string_stream *S1, counted_string_stream *S2)
     {
       if (S1->LastChunk)

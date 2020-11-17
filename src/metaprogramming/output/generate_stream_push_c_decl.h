@@ -1,5 +1,5 @@
 
-    function struct_member *
+    bonsai_function struct_member *
     Push(struct_member_stream* Stream, struct_member Element, memory_arena* Memory)
     {
       struct_member_stream_chunk* NextChunk = (struct_member_stream_chunk*)PushStruct(Memory, sizeof( struct_member_stream_chunk ), 1, 0);
@@ -24,7 +24,7 @@
       return Result;
     }
 
-    function void
+    bonsai_function void
     ConcatStreams( struct_member_stream *S1, struct_member_stream *S2)
     {
       if (S1->LastChunk)

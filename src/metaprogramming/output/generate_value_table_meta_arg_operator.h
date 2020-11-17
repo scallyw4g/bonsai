@@ -1,5 +1,5 @@
 
-    function meta_arg_operator
+    bonsai_function meta_arg_operator
     MetaArgOperator(counted_string S)
     {
       meta_arg_operator Result = {};

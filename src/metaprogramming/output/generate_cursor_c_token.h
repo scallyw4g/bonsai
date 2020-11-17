@@ -6,7 +6,7 @@
       c_token* At;
     };
 
-    function c_token_cursor
+    bonsai_function c_token_cursor
     CTokenCursor(umm ElementCount, memory_arena* Memory)
     {
       c_token* Start = (c_token*)PushStruct(Memory, sizeof( c_token ), 1, 0);
