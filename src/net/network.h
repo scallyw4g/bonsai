@@ -50,6 +50,37 @@ struct socket_t
   }
 };
 
+enum connection_state
+{
+  ConnectionState_Disconnected,
+  ConnectionState_AwaitingHandshake,
+  ConnectionState_Connected
+};
+
+enum socket_op_result
+{
+  SocketOpResult_Noop,
+  SocketOpResult_CompletedRW,
+  SocketOpResult_Fail
+};
+
+enum socket_op
+{
+  SocketOp_Null,
+  SocketOp_Read,
+  SocketOp_Write,
+  SocketOp_Count
+};
+
+struct network_connection
+{
+  client_state *Client;
+
+  sockaddr_in Address;
+  socket_t Socket;
+  connection_state State;
+};
+
 inline socket_t
 CreateSocket(socket_type Type)
 {
@@ -76,44 +107,15 @@ CreateAddress(const char* IP)
   return Address;
 }
 
-enum connection_state
+network_connection
+CreateNetworkConnection(socket_type Type, const char* IP)
 {
-  ConnectionState_Disconnected,
-  ConnectionState_AwaitingHandshake,
-  ConnectionState_Connected
-};
-
-struct network_connection
-{
-  client_state *Client;
-
-  sockaddr_in Address;
-  socket_t Socket;
-  connection_state State;
-
-  network_connection(socket_type Type, const char* IP)
-  {
-    Clear(this);
-    this->Socket = CreateSocket(Type);
-    this->Address = CreateAddress(IP);
-  }
-
-};
-
-enum socket_op_result
-{
-  SocketOpResult_Noop,
-  SocketOpResult_CompletedRW,
-  SocketOpResult_Fail
-};
-
-enum socket_op
-{
-  SocketOp_Null,
-  SocketOp_Read,
-  SocketOp_Write,
-  SocketOp_Count
-};
+  network_connection Result = {
+    .Socket = CreateSocket(Type),
+    .Address = CreateAddress(IP),
+  };
+  return Result;
+}
 
 inline b32
 IsDisconnected(network_connection *Conn)

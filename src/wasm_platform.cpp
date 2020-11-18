@@ -1,3 +1,13 @@
+void
+ReadBytes(u8* Dest, u64 BytesToRead, FILE *Src)
+{
+  Assert(BytesToRead);
+  u64 BytesRead = fread(Dest, 1, BytesToRead, Src);
+  Assert(BytesRead != 0);
+  return;
+}
+
+
 inline void
 PrintSemValue(semaphore *Semaphore)
 {
@@ -378,20 +388,23 @@ OpenAndInitializeWindow( os *Os, platform *Plat)
   // Context configurations
   EmscriptenWebGLContextAttributes attr;
   emscripten_webgl_init_context_attributes(&attr);
-  attr.alpha =
-  attr.stencil =
-  attr.preserveDrawingBuffer =
-  attr.preferLowPowerToHighPerformance =
-  attr.failIfMajorPerformanceCaveat = 0;
 
-  attr.enableExtensionsByDefault = 1;
-  attr.premultipliedAlpha = 0;
-  attr.antialias = 1;
   attr.depth = 1;
+  attr.alpha = 0;
+  attr.stencil = 0;
+  attr.antialias = 0;
+  attr.premultipliedAlpha = 0;
+  attr.preserveDrawingBuffer = 0;
+  attr.powerPreference = EM_WEBGL_POWER_PREFERENCE_HIGH_PERFORMANCE;
+  attr.failIfMajorPerformanceCaveat = 1;
 
-  // Looks like on my machine we get 2.0 at maximum (FF 59.0)
   attr.majorVersion = 2;
   attr.minorVersion = 0;
+
+  attr.enableExtensionsByDefault = 1;
+  attr.explicitSwapControl = 1;
+  attr.proxyContextToMainThread = EMSCRIPTEN_WEBGL_CONTEXT_PROXY_DISALLOW;
+  attr.renderViaOffscreenBackBuffer = 1;
 
   EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(0, &attr);
   emscripten_webgl_make_context_current(ctx);

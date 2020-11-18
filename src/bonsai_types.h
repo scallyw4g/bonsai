@@ -31,8 +31,8 @@
 
 #include <bonsai_stdlib/headers/assert.h>
 #include <bonsai_stdlib/headers/primitives.h>
-#include <bonsai_stdlib/headers/console_macros.h>
 #include <bonsai_stdlib/headers/platform.h>
+#include <bonsai_stdlib/headers/console_macros.h>
 #include <bonsai_stdlib/headers/math.h>
 #include <bonsai_stdlib/headers/vector.h>
 #include <random>                                   // TODO(Jesse, id: 88, tags: perlin, cleanup): Perlin.h depends on this .. rewrite it.
@@ -146,9 +146,7 @@ meta(generate_cursor(v3))
 
 #include <engine/api.h>
 
-#if !EMCC
 #include <net/network.h>
-#endif
 
 global_variable memory_arena _TranArena;
 global_variable memory_arena* TranArena = &_TranArena;

@@ -24,7 +24,6 @@
 #define XK_LATIN1 1
 #define XK_MISCELLANY 1
 #include <X11/keysymdef.h>
-
 // X11 defines this to 0, which is really annoying
 #ifdef Success
 #undef Success
@@ -48,38 +47,11 @@
 
 #define BONSAI_FUNCTION_NAME __func__
 
-#define RED_TERMINAL ""
+#define RED_TERMINAL "\x1b[31m"
 #define BLUE_TERMINAL "\x1b[34m"
 #define GREEN_TERMINAL "\x1b[32m"
 #define YELLOW_TERMINAL "\x1b[33m"
 #define WHITE_TERMINAL "\x1b[37m"
-
-global_variable const umm TempDebugOutputBufferSize = 4096;
-global_variable char TempDebugOutputBuffer__[TempDebugOutputBufferSize];
-
-#define Debug(...)                                                                                     \
-  LogToConsole(FormatCountedString_(TempDebugOutputBuffer__, TempDebugOutputBufferSize, __VA_ARGS__)); \
-  LogToConsole(CSz("\n"))
-
-#define Info(...)                                                     \
-  LogToConsole(CSz(BLUE_TERMINAL "   Info   " WHITE_TERMINAL " - ")); \
-  Debug(__VA_ARGS__);                                                 \
-
-#define Error(...)                                                   \
-  LogToConsole(CSz(RED_TERMINAL " ! Error  " WHITE_TERMINAL " - ")); \
-  Debug(__VA_ARGS__);                                                \
-
-#define Warn(...)                                                       \
-  LogToConsole(CSz(YELLOW_TERMINAL " * Warning" WHITE_TERMINAL " - ")); \
-  Debug(__VA_ARGS__);                                                   \
-
-#define Success(...)                                                   \
-  LogToConsole(CSz(GREEN_TERMINAL " ✓ Success" WHITE_TERMINAL " - ")); \
-  Debug(__VA_ARGS__);                                                  \
-
-#define OpenGlDebugMessage(...)                                                      \
-  LogToConsole(CSz(YELLOW_TERMINAL " * OpenGl Debug Message" WHITE_TERMINAL " - ")); \
-  Debug(__VA_ARGS__);                                                                \
 
 #define RuntimeBreak() raise(SIGTRAP)
 #define TriggeredRuntimeBreak() if (GetDebugState) { GetDebugState()->TriggerRuntimeBreak ? RuntimeBreak() : 0 ; }
@@ -267,15 +239,6 @@ AtomicCompareExchange( volatile u32 *Source, u32 Exchange, u32 Comparator )
 {
   bool Result = __sync_bool_compare_and_swap ( Source, Comparator, Exchange );
   return Result;
-}
-
-void
-ReadBytes(u8* Dest, u64 BytesToRead, FILE *Src)
-{
-  Assert(BytesToRead);
-  u64 BytesRead = fread(Dest, 1, BytesToRead, Src);
-  Assert(BytesRead != 0);
-  return;
 }
 
 struct os

@@ -1,6 +1,6 @@
 #if _WIN32
 #include <win32_platform.cpp>
-#elif LINUX
+#elif BONSAI_LINUX
 #include <unix_platform.cpp>
 
 #elif EMCC

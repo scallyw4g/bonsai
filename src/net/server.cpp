@@ -80,7 +80,7 @@ main(int ArgCount, char **Arguments)
     IpAddress = Arguments[1];
   }
 
-  network_connection IncomingConnections = { Socket_NonBlocking, IpAddress };
+  network_connection IncomingConnections = CreateNetworkConnection(Socket_NonBlocking, IpAddress);
 
   s32 BindResult =
     bind(IncomingConnections.Socket.Id,
@@ -97,8 +97,8 @@ main(int ArgCount, char **Arguments)
 
   Debug("Listening on %s", IpAddress);
 
-  network_connection ClientConnections[MAX_CLIENTS] = { {Socket_NonBlocking, "Ignored"},
-                                                        {Socket_NonBlocking, "Ignored"} };
+  network_connection ClientConnections[MAX_CLIENTS] = { CreateNetworkConnection(Socket_NonBlocking, "Ignored"),
+                                                        CreateNetworkConnection(Socket_NonBlocking, "Ignored") };
 
   client_to_server_message InputMessage = {};
   server_to_client_message ServerState = {};

@@ -113,6 +113,10 @@ InitializeOpenGlExtensions(os* Os)
   PFNSWAPINTERVALPROC glSwapInterval = (PFNSWAPINTERVALPROC)bonsaiGlGetProcAddress("wglSwapIntervalEXT");
   Assert( glSwapInterval );
   glSwapInterval(VsyncFrames);
+#elif EMCC
+
+  NotImplemented;
+
 #else
 #error "Unknown Platform"
 #endif

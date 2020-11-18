@@ -1,6 +1,6 @@
 #! /bin/bash
 
-EMCC=1
+EMCC=0
 
 COMMON_OPTIMIZATION_OPTIONS="-O2"
 
@@ -52,6 +52,7 @@ OUTPUT_DIRECTORY="$BIN"
 
 COMMON_COMPILER_OPTIONS="
   -I/usr/src/linux-headers-4.15.0-88/include/
+  -DBONSAI_LINUX=1
 
   -std=c++17
   -ferror-limit=2000
@@ -255,32 +256,33 @@ function BuildAllEMCC {
   which emcc > /dev/null
   [ $? -ne 0 ] && echo -e "Please install emcc" && exit 1
 
-  emcc                                     \
-    -s WASM=1                              \
-    -s USE_WEBGL2=1                        \
-    -s FULL_ES3=1                          \
-    -s ALLOW_MEMORY_GROWTH=1               \
-    -s ASSERTIONS=1                        \
-    -s DEMANGLE_SUPPORT=1                  \
-    -std=c++17                             \
-    -Wno-reorder-init-list                 \
-    -ferror-limit=2000                     \
-    -O2                                    \
-    -g4                                    \
-    --source-map-base /                    \
-    --emrun                                \
-    -D__SSE__=1                            \
-    -DEMCC=1                               \
-    -DWASM=1                               \
-    -I src                                 \
-    -I src/datatypes                       \
-    -I src/emscripten                      \
-    -I examples/ssao_test/engine_constants \
-    -I examples/ssao_test                  \
-    --embed-file shaders                   \
-    --embed-file models                    \
-    src/tests/m4.cpp                       \
+  emcc                              \
+    -s WASM=1                       \
+    -s LLD_REPORT_UNDEFINED         \
+    -s FULL_ES3=1                   \
+    -s ALLOW_MEMORY_GROWTH=1        \
+    -s ASSERTIONS=1                 \
+    -s DEMANGLE_SUPPORT=1           \
+    -std=c++17                      \
+    -Wno-c99-designator             \
+    -Wno-reorder-init-list          \
+    -ferror-limit=2000              \
+    -O2                             \
+    -g4                             \
+    --source-map-base /             \
+    --emrun                         \
+    -msse                           \
+    -msimd128                       \
+    -DEMCC=1                        \
+    -DWASM=1                        \
+    -I src                          \
+    -I src/debug_system             \
+    -I examples                     \
+    src/tests/ui_command_buffer.cpp \
     -o bin/wasm/platform.html
+
+    # --embed-file shaders     \
+    # --embed-file models      \
 
 }
 

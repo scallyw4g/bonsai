@@ -19,6 +19,9 @@
 
 #if BONSAI_INTERNAL
 #define NotImplemented Error("Implement Me!"); Assert(False)
+struct fake { int thing; };
+#define Crash() (((fake*)0)->thing = 3)
 #else
 #define NotImplemented Implement Meeeeee!!!
+#define Crash() Implement this!
 #endif

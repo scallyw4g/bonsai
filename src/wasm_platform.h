@@ -18,6 +18,8 @@
 
 #include <stdio.h>
 
+#include <arpa/inet.h>  // inet_addr
+#include <sys/socket.h>
 
 
 
@@ -38,14 +40,7 @@
 
 #define exported_function extern "C"
 
-#define ReadBarrier  asm volatile("" ::: "memory"); _mm_lfence()
-#define WriteBarrier asm volatile("" ::: "memory"); _mm_sfence()
-#define FullBarrier  asm volatile("" ::: "memory"); _mm_sfence(); _mm_lfence()
-
-//
-// glX Business
-//
-#define bonsaiGlGetProcAddress(procName) glXGetProcAddress((GLubyte*)procName)
+#define FullBarrier  asm volatile("" ::: "memory"); _mm_sfence();
 
 #define GlobalCwdBufferLength 2048
 
@@ -71,7 +66,6 @@ WakeThread( semaphore *Semaphore )
 inline u64
 GetCycleCount()
 {
-  NotImplemented;
   u64 Result = 0;
   return Result;
 }
@@ -79,7 +73,7 @@ GetCycleCount()
 void
 PlatformDebugStacktrace()
 {
-  NotImplemented;
+  Crash();
   /* void *StackSymbols[32]; */
   /* s32 SymbolCount = backtrace(StackSymbols, 32); */
   /* backtrace_symbols_fd(StackSymbols, SymbolCount, STDERR_FILENO); */
@@ -156,19 +150,11 @@ AtomicCompareExchange( volatile u32 *Source, u32 Exchange, u32 Comparator )
   return Result;
 }
 
-void
-ReadBytes(u8* Dest, u64 BytesToRead, FILE *Src)
-{
-  Assert(BytesToRead);
-  u64 BytesRead = fread(Dest, 1, BytesToRead, Src);
-  Assert(BytesRead != 0);
-  return;
-}
-
 typedef umm gl_context;
 struct os
 {
   gl_context GlContext;
+  b32 Window;
   b32 ContinueRunning = True;
 };
 

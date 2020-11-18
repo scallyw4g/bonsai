@@ -113,6 +113,8 @@
 
 #define GL_ARRAY_BUFFER                   0x8892
 #define GL_WRITE_ONLY                     0x88B9
+#define GL_MAP_READ_BIT                   0x0001
+#define GL_MAP_WRITE_BIT                  0x0002
 #define GL_STATIC_DRAW                    0x88E4
 
 #define GL_CULL_FACE                      0x0B44
@@ -262,6 +264,7 @@ exported_function void glDeleteBuffers (GLsizei n, const GLuint *buffers);
 exported_function void glGenBuffers (GLsizei n, GLuint *buffers);
 exported_function void glBufferData (GLenum target, GLsizeiptr size, const void *data, GLenum usage);
 exported_function void* glMapBuffer (GLenum target, GLenum access);
+exported_function void* glMapBufferRange (GLenum target, GLintptr offset, GLsizeiptr length,  GLenum access);
 exported_function GLboolean glUnmapBuffer (GLenum target);
 
 exported_function void glDrawBuffers (GLsizei n, const GLenum *bufs);

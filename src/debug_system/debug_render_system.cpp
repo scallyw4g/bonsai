@@ -3006,6 +3006,7 @@ DebugDrawNetworkHud(debug_ui_render_group *Group, network_connection *Network, s
 {
   local_persist window_layout NetworkWindow = WindowLayout("Network", V2(0));
 
+#if (!EMCC)
   if (!ServerState) return;
 
   PushWindowStart(Group, &NetworkWindow);
@@ -3047,6 +3048,7 @@ DebugDrawNetworkHud(debug_ui_render_group *Group, network_connection *Network, s
   }
   PushTableEnd(Group);
   PushWindowEnd(Group, &NetworkWindow);
+#endif
 
   return;
 }

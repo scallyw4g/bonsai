@@ -34,20 +34,24 @@ void
 MapGpuElementBuffer(gpu_mapped_element_buffer *GpuMap)
 {
   TIMED_FUNCTION();
+  u32 ElementCount = GpuMap->Buffer.End;
+
+  u32 v3Size = sizeof(v3)*ElementCount;
+  u32 v4Size = sizeof(v4)*ElementCount;
 
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, GpuMap->VertexHandle);
-  GpuMap->Buffer.Verts = (v3*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+  GpuMap->Buffer.Verts = (v3*)glMapBufferRange(GL_ARRAY_BUFFER, 0, v3Size, GL_MAP_WRITE_BIT);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
   glEnableVertexAttribArray(1);
   glBindBuffer(GL_ARRAY_BUFFER, GpuMap->NormalHandle);
-  GpuMap->Buffer.Normals = (v3*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+  GpuMap->Buffer.Normals = (v3*)glMapBufferRange(GL_ARRAY_BUFFER, 0, v3Size, GL_MAP_WRITE_BIT);
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
   glEnableVertexAttribArray(2);
   glBindBuffer(GL_ARRAY_BUFFER, GpuMap->ColorHandle);
-  GpuMap->Buffer.Colors = (v4*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+  GpuMap->Buffer.Colors = (v4*)glMapBufferRange(GL_ARRAY_BUFFER, 0, v4Size, GL_MAP_WRITE_BIT);
   glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
   if (!GpuMap->Buffer.Verts) { Error("Allocating gpu_mapped_element_buffer::Verts"); }
@@ -79,6 +83,5 @@ AllocateGpuElementBuffer(gpu_mapped_element_buffer *GpuMap, u32 ElementCount)
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
   GpuMap->Buffer.End = ElementCount;
-
 }
 

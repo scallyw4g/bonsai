@@ -10,10 +10,6 @@ enum struct_member_function_type
 struct struct_member_function
 {
   struct_member_function_type Type;
-
-  union
-  {
-  };
 };
 
 
