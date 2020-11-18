@@ -392,14 +392,14 @@ main()
 
   PlatformInit(&Plat, PlatMemory);
 
-#if !EMCC ///////////////////////////////////// EMCC SHOULD COMPILE AND RUN CORRECTLY UP TO HERE
-
 #if BONSAI_INTERNAL
   // debug_recording_state *Debug_RecordingState = Allocate(debug_recording_state, GameMemory, 1);
   // AllocateAndInitializeArena(&Debug_RecordingState->RecordedMainMemory, Gigabytes(3));
 #endif
 
   hotkeys Hotkeys = {};
+
+#if !EMCC ///////////////////////////////////// EMCC SHOULD COMPILE AND RUN CORRECTLY UP TO HERE
 
   LibIsNew(DEFAULT_GAME_LIB, &LastGameLibTime);  // Hack to initialize the LastGameLibTime static
 

@@ -83,7 +83,14 @@ u32
 GetWorkerThreadCount()
 {
   u32 LogicalCoreCount = GetLogicalCoreCount();
-  u32 ThreadCount = LogicalCoreCount - 1 - DEBUG_THREAD_COUNT_BIAS; // -1 because we already have a main thread
+  u32 Bias = 1 + DEBUG_THREAD_COUNT_BIAS; // +1 because we already have a main thread
+
+  if (Bias >= LogicalCoreCount)
+  {
+    Bias = LogicalCoreCount - 1;
+  }
+
+  u32 ThreadCount = LogicalCoreCount - Bias;
   return ThreadCount;
 }
 
