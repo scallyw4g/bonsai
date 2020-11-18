@@ -7,3 +7,7 @@
 #else
 #error "Unknown Platform!"
 #endif
+
+#if (BONSAI_LINUX || EMCC)
+#include <posix_platform.h>
+#endif

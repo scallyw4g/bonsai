@@ -205,7 +205,7 @@ PlatformInit(platform *Plat, memory_arena *Memory)
 
   u32 LogicalCoreCount = GetLogicalCoreCount();
   u32 WorkerThreadCount = GetWorkerThreadCount();
-  Info("Detected %d Logical cores, creating %d threads", LogicalCoreCount, WorkerThreadCount);
+  Info("Detected %u Logical cores, creating %u threads", LogicalCoreCount, WorkerThreadCount);
 
   Plat->QueueSemaphore = CreateSemaphore();
 
@@ -345,35 +345,42 @@ main()
 {
   Info("Initializing Bonsai");
 
+#if !EMCC
   if (!SearchForProjectRoot()) { Error("Couldn't find root dir, exiting."); return False; }
   Info("Found Bonsai Root : %s", GetCwd() );
+#endif
 
   platform Plat = {};
   os Os = {};
 
-#if BONSAI_INTERNAL
+#if !EMCC && BONSAI_INTERNAL
   s32 DebugFlags = GLX_CONTEXT_DEBUG_BIT_ARB;
 #else
   s32 DebugFlags = 0;
 #endif
 
+#if !EMCC
   // @bootstrap-debug-system
   shared_lib DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
   if (!DebugLib) { Error("Loading DebugLib :( "); return False; }
 
   GetDebugState = (get_debug_state_proc)GetProcFromLib(DebugLib, "GetDebugState_Internal");
+#endif
 
   b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat, DebugFlags);
   if (!WindowSuccess) { Error("Initializing Window :( "); return False; }
 
-  Assert(Os.Window);
+  Assert(Os.GlContext);
 
   AssertNoGlErrors;
 
   InitializeOpenGlExtensions(&Os);
+  AssertNoGlErrors;
 
+#if !EMCC
   b32 ShadingLanguageIsRecentEnough = CheckShadingLanguageVersion();
   if (!ShadingLanguageIsRecentEnough) {  return False; }
+#endif
 
   AssertNoGlErrors;
 
@@ -385,9 +392,11 @@ main()
 
   PlatformInit(&Plat, PlatMemory);
 
+#if !EMCC ///////////////////////////////////// EMCC SHOULD COMPILE AND RUN CORRECTLY UP TO HERE
+
 #if BONSAI_INTERNAL
-  /* debug_recording_state *Debug_RecordingState = Allocate(debug_recording_state, GameMemory, 1); */
-  /* AllocateAndInitializeArena(&Debug_RecordingState->RecordedMainMemory, Gigabytes(3)); */
+  // debug_recording_state *Debug_RecordingState = Allocate(debug_recording_state, GameMemory, 1);
+  // AllocateAndInitializeArena(&Debug_RecordingState->RecordedMainMemory, Gigabytes(3));
 #endif
 
   hotkeys Hotkeys = {};
@@ -411,10 +420,10 @@ main()
   game_state* GameState = GameInit(&Plat, GameMemory, GetDebugState);
   if (!GameState) { Error("Initializing Game State :( "); return False; }
 
+  PlatformLaunchWorkerThreads(&Plat, WorkerThreadInitCallback, GameState);
+
   server_state* ServerState = ServerInit(GameMemory);
   Assert(ServerState);
-
-  PlatformLaunchWorkerThreads(&Plat, WorkerThreadInitCallback, GameState);
 
   /*
    *  Main Game loop
@@ -442,6 +451,7 @@ main()
 
     BindHotkeysToInput(&Hotkeys, &Plat.Input);
 
+#if !EMCC
     if ( LibIsNew(DEFAULT_GAME_LIB, &LastGameLibTime) )
     {
       SuspendWorkerThreads();
@@ -454,6 +464,7 @@ main()
 
       ResumeWorkerThreads();
     }
+#endif
 
     // TODO(Jesse, id: 153, tags: hot_reload, debug_lib): Doing this properly requires some extra-credit work first.
     //
@@ -505,6 +516,7 @@ main()
 
   Info("Shutting Down");
   Terminate(&Os);
+#endif
   Info("Exiting");
 
   return True;

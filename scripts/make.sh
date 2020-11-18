@@ -1,8 +1,8 @@
 #! /bin/bash
 
-EMCC=0
+EMCC=1
 
-COMMON_OPTIMIZATION_OPTIONS="-O2"
+# COMMON_OPTIMIZATION_OPTIONS="-O2"
 
 RED="\x1b[31m"
 BLUE="\x1b[34m"
@@ -278,7 +278,7 @@ function BuildAllEMCC {
     -I src                          \
     -I src/debug_system             \
     -I examples                     \
-    src/tests/ui_command_buffer.cpp \
+    src/platform.cpp                \
     -o bin/wasm/platform.html
 
     # --embed-file shaders     \
