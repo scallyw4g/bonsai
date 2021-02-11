@@ -314,7 +314,6 @@ function SetSourceFiles
   rm -Rf $META_OUT
   mkdir $META_OUT
   SOURCE_FILES="                                                   \
-    src/bonsai_stdlib/headers/primitives.h                         \
     $(find src -type f -name "*.h"                                 \
     -and -not -wholename "src/net/network.h"                       \
     -and -not -wholename "src/bonsai_stdlib/headers/stream.h"      \
@@ -395,11 +394,11 @@ DumpSourceFilesAndQuit=0
 
 CheckoutMetaOutput=0
 
-FirstPreprocessor=1
+FirstPreprocessor=0
 BuildPreprocessor=1
-SecondPreprocessor=1
+SecondPreprocessor=0
 
-BuildAllProjects=1
+BuildAllProjects=0
 RunTests=0
 FinalPreprocessor=0
 

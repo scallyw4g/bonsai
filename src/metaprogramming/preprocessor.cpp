@@ -4176,7 +4176,7 @@ ResolveMacroConstantExpression(parser *Parser)
 }
 
 bonsai_function void
-EatIf0Block(parser *Parser)
+EatIfBlock(parser *Parser)
 {
   c_token *StartToken = PeekTokenPointer(Parser);
 
@@ -4234,7 +4234,7 @@ ParseStructMember(parse_context *Ctx, counted_string StructName)
         RequireToken(Parser, T.Type);
         if (ResolveMacroConstantExpression(Parser) == 0)
         {
-          EatIf0Block(Parser);
+          EatIfBlock(Parser);
         }
       } break;
 
@@ -4688,11 +4688,37 @@ GetByTypeName(counted_string Name, ast_node_variable_def_stream* Stream)
   return Result;
 }
 
-bonsai_function ast_node*
+bonsai_function ast_node *
 ParseFunctionArgument(parser *Parser, memory_arena *Memory, function_decl_stream *FunctionPrototypes);
 
-bonsai_function ast_node_statement*
+bonsai_function ast_node_statement *
 ParseAllStatements(parse_context *Ctx);
+
+bonsai_function void
+ParseDefine(parse_context *Ctx, parser *Parser)
+{
+}
+
+bonsai_function void
+ParseUndefine(parse_context *Ctx, parser *Parser)
+{
+}
+
+bonsai_function counted_string
+ParseIfDefinedValue(parser *Parser)
+{
+  counted_string Result = {};
+
+  return Result;
+}
+
+bonsai_function b32
+IsDefined(parse_context *Ctx, counted_string DefineValue) 
+{
+  b32 Result = false;
+
+  return Result;
+}
 
 bonsai_function void
 ParseSingleStatement(parse_context *Ctx, ast_node_statement *Result)
@@ -4711,17 +4737,62 @@ ParseSingleStatement(parse_context *Ctx, ast_node_statement *Result)
         RequireToken(Parser, T.Type);
         if (ResolveMacroConstantExpression(Parser) == 0)
         {
-          EatIf0Block(Parser);
+          EatIfBlock(Parser);
         }
       } break;
 
       case CT_PreprocessorDefine:
+      {
+        RequireToken(Parser, T.Type);
+        ParseDefine(Ctx, Parser);
+      } break;
+
+      case CT_PreprocessorUndef:
+      {
+        RequireToken(Parser, T.Type);
+        ParseUndefine(Ctx, Parser);
+      } break;
+
+      case CT_PreprocessorIfDefined:
+      {
+        RequireToken(Parser, T.Type);
+        counted_string DefineValue = ParseIfDefinedValue(Parser);
+        if ( IsDefined(Ctx, DefineValue) )
+        {
+        }
+        else
+        {
+          // TODO(Jesse, tags: preprocessor_if_defined): Are we allowed to do the following?  If so, EatIfBlock should work here as is, otherwise
+          // we need a special function.
+          //
+          // #ifdef(THING)
+          //
+          // #elif (FOO == 1)
+          //
+          // #else
+          //
+          // #endif
+          EatIfBlock(Parser);
+        }
+
+      } break;
+
+      case CT_PreprocessorIfNotDefined:
+      {
+        RequireToken(Parser, T.Type);
+        counted_string DefineValue = ParseIfDefinedValue(Parser);
+        if ( IsDefined(Ctx, DefineValue) )
+        {
+          // TODO(Jesse): @preprocessor_if_defined
+          EatIfBlock(Parser);
+        }
+
+      } break;
+
       case CT_PreprocessorElse:
       case CT_PreprocessorEndif:
-      case CT_PreprocessorUndef:
+
       case CT_PreprocessorPragma:
-      case CT_PreprocessorIfDefined:
-      case CT_PreprocessorIfNotDefined:
       case CT_PreprocessorError:
       case CT_PreprocessorWarning:
       {
@@ -5396,17 +5467,17 @@ ParseDatatypes(parse_context *Ctx)
         RequireToken(Parser, T.Type);
         if (ResolveMacroConstantExpression(Parser) == 0)
         {
-          EatIf0Block(Parser);
+          EatIfBlock(Parser);
         }
       } break;
 
       case CT_PreprocessorDefine:
+      case CT_PreprocessorIfDefined:
+      case CT_PreprocessorIfNotDefined:
       case CT_PreprocessorElse:
       case CT_PreprocessorEndif:
       case CT_PreprocessorUndef:
       case CT_PreprocessorPragma:
-      case CT_PreprocessorIfDefined:
-      case CT_PreprocessorIfNotDefined:
       case CT_PreprocessorError:
       case CT_PreprocessorWarning:
       {
@@ -7222,9 +7293,7 @@ main(s32 ArgCountInit, const char** ArgStrings)
 
     ITERATE_OVER(&Ctx.AllParsers)
     {
-      //
       // TODO(Jesse id: 340): We should only traverse files that were passed to us on the CLI
-      //
 
       parser* Parser = GET_ELEMENT(Iter);
       Rewind(Parser);
@@ -7233,7 +7302,7 @@ main(s32 ArgCountInit, const char** ArgStrings)
 
       if (IsMetaprogrammingOutput(Parser->Filename, Args.Outpath))
       {
-        Info("Skipping %.*s", (u32)Parser->Filename.Count, Parser->Filename.Start);
+        Info("Skipping %S.", Parser->Filename);
       }
       else
       {
@@ -7245,7 +7314,7 @@ main(s32 ArgCountInit, const char** ArgStrings)
           {
             TruncateToCurrentSize(&Parser->OutputTokens);
             Output(Parser->OutputTokens, Parser->Filename, Memory);
-            Success("Output '%.*s'.", (u32)Parser->Filename.Count, Parser->Filename.Start);
+            Success("Output '%S'.", Parser->Filename);
           }
           else
           {
