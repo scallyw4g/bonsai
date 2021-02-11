@@ -267,6 +267,7 @@ function BuildAllEMCC {
     -Wno-c99-designator             \
     -Wno-reorder-init-list          \
     -ferror-limit=2000              \
+    -fno-exceptions\
     -O2                             \
     -g4                             \
     --source-map-base /             \
