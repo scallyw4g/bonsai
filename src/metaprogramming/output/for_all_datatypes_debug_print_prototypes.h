@@ -1,7 +1,4 @@
 
-      bonsai_function void DebugPrint( XVisualInfo* S, u32 Depth = 0);
-      bonsai_function void DebugPrint( XVisualInfo  S, u32 Depth = 0);
-
       bonsai_function void DebugPrint( os* S, u32 Depth = 0);
       bonsai_function void DebugPrint( os  S, u32 Depth = 0);
 
@@ -539,6 +536,9 @@
       bonsai_function void DebugPrint( char_cursor* S, u32 Depth = 0);
       bonsai_function void DebugPrint( char_cursor  S, u32 Depth = 0);
 
+      bonsai_function void DebugPrint( fake* S, u32 Depth = 0);
+      bonsai_function void DebugPrint( fake  S, u32 Depth = 0);
+
       bonsai_function void DebugPrint( linei* S, u32 Depth = 0);
       bonsai_function void DebugPrint( linei  S, u32 Depth = 0);
 
@@ -550,9 +550,6 @@
 
       bonsai_function void DebugPrint( os* S, u32 Depth = 0);
       bonsai_function void DebugPrint( os  S, u32 Depth = 0);
-
-      bonsai_function void DebugPrint( native_file* S, u32 Depth = 0);
-      bonsai_function void DebugPrint( native_file  S, u32 Depth = 0);
 
       bonsai_function void DebugPrint( mesh_metadata* S, u32 Depth = 0);
       bonsai_function void DebugPrint( mesh_metadata  S, u32 Depth = 0);

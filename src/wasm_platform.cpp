@@ -36,7 +36,7 @@ OpenAndInitializeWindow( os *Os, platform *Plat, s32 Ignored)
   attr.majorVersion = 2;
   attr.minorVersion = 0;
 
-  // TODO(Jesse): How do we turn this on?  Currently on my machine it causes
+  // TODO(Jesse id: 367): How do we turn this on?  Currently on my machine it causes
   // context creation to fail.
   // @emcc_vsync
   attr.explicitSwapControl = 0;

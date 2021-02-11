@@ -2713,14 +2713,14 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
       counted_string PrefixPath = IncludePaths->Start[PrefixIndex];
       counted_string FullPath = Concat(PrefixPath, PartialPath, TranArena);
 
-      Info("Searching cached parsed files for (%.*s)", (u32)FullPath.Count, FullPath.Start);
+      Info("Searching cached parsed files for (%S)", FullPath);
 
       parser *Got = GetByFilename(&Ctx->AllParsers, FullPath);
       if (Got)
       {
         Result = Allocate(parser, Ctx->Memory, 1);
         *Result = *Got;
-        Success("Found cached parser for (%.*s)", (u32)FullPath.Count, FullPath.Start);
+        Success("Found cached parser for (%S)", FullPath);
         break;
       }
     }
@@ -2761,7 +2761,7 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
 
   if (!Result)
   {
-    Warn("__BUG__ Unable to resolve include for : %.*s", (u32)PartialPath.Count, PartialPath.Start );
+    Warn("__BUG__ Unable to resolve include for : %S", PartialPath);
   }
 
   return Result;

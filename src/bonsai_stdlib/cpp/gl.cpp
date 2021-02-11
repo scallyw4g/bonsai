@@ -116,7 +116,7 @@ InitializeOpenGlExtensions(os* Os)
   glSwapInterval(VsyncFrames);
 #elif EMCC
 
-  // TODO(Jesse): How do we get vsync here?
+  // TODO(Jesse id: 368): How do we get vsync here?
   // @emcc_vsync
 
 #else

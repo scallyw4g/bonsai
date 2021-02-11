@@ -3,9 +3,14 @@
     - #272 Fold `-` sign into this value at tokenization time?
     - #154 This is pretty shitty because whenever we copy one of these structs this field has to be manually zeroed out ..
     - #262 These should probably be in their own type_ast_node_cast .. ?
+    - #366 Can this go in the posix platform?  How do we open dlls?
+    - #367 How do we turn this on?  Currently on my machine it causes
     - #343 I think this is busted on invalid program input.
     - #278 Disallow invalid suffixes lul/LUL .. LUU .. ULLLL etc..
+    - #363 A bunch of this crap can get taken out of here..  I added it
     - #304 only do this work once
+    - #282 Should we parse out the bonsai_function def explicitly here?
+    - #345 How do we differentiate between arithmetic/logical shifts here?
     - #299 This could be improved by not taking the StructName, and
     - #260 Currently ignoring the second half of a ternary .. we should probably not do this
     - #264 Once we have proper macro expansion, this can be expanded and concatenated to the string as well.
@@ -13,31 +18,29 @@
     - #340 We should only traverse files that were passed to us on the CLI
     - #265 Unnecessary .. I just added these as a hack get parsing to work
     - #266 Unnecessary .. I just added it as a hack get parsing to work
-    - #267 Unnecessary .. I just added these as a hack get parsing to work
-    - #268 Unnecessary .. I just added these as a hack get parsing to work
     - #269 Unnecessary .. I just added these as a hack get parsing to work
     - #270 Unnecessary .. I just added these as a hack get parsing to work
     - #271 Unnecessary .. I just added these as a hack get parsing to work
+    - #267 Unnecessary .. I just added these as a hack get parsing to work
+    - #268 Unnecessary .. I just added these as a hack get parsing to work
+    - #368 How do we get vsync here?
     - #275 Rewrite this in terms of `ToU32(counted_string S)`
-    - #345 How do we differentiate between arithmetic/logical shifts here?
-    - #282 Should we parse out the function def explicitly here?
-    - #363 A bunch of this crap can get taken out of here..  I added it
 
   ## immediate
     - #238 Change name to BitwiseAnd
     - #239 Change name to BitwiseOr
-    - #83 d_union-ify this
-    - #222 Re-add [[nodiscard]] here
-    - #296 When we properly traverse include graphs, this assert should not fail.
     - #347 Nuke this
-    - #348 This should go into an AreEqual function I think..
+    - #83 d_union-ify this
+    - #348 This should go into an AreEqual bonsai_function I think..
+    - #296 When we properly traverse include graphs, this assert should not fail.
+    - #222 Re-add [[nodiscard]] here
 
   ## high_priority
     - #101 Profile and check collision rate of this!
     - #185 these should be printable!
     - #182 This should respect Args.Outpath passed in!
     - #183 This should respect Args.OutPath passed in!
-    - #230 ParseVariable should work with function pointer types
+    - #230 ParseVariable should work with bonsai_function pointer types
 
   ## format_counted_string
     - #91 Jettison this .. Can it be metaprogrammed?
@@ -58,6 +61,7 @@
     - #101 Profile and check collision rate of this!
     - #106 Pass this in!
     - #107 Can we compute this with MouseP to avoid a frame of input delay?
+    - #295 This could be optimized significantly by shuffling the logic around, not to mention using hashtables.
     - #120 Allocate lights such that this swizzle is unneeded
     - #127 Pretty sure we don't have to set the faces anymore??
     - #128 Do culling on these as well?
@@ -65,7 +69,6 @@
     - #132 Pretty sure we can do some XOR trickery or something here to avoid this branch, which could be a large perf win
     - #136 Why are these allocated on the heap?  Seems unnecessary..
     - #139 Is this necessary to avoid some pointer aliasing bug?
-    - #295 This could be optimized significantly by shuffling the logic around, not to mention using hashtables.
     - #364 This should probably go away and make sure we always just use counted strings
     - #365 This should probably go away and make sure we always just use counted strings
 
@@ -101,14 +104,14 @@
     - #91 Jettison this .. Can it be metaprogrammed?
     - #99 Generate this?  Need a compiler feature to generate stuff from primitive types.
     - #100 Do we actually want this in here?
+    - #301 These functions are super repetitive, generate them!
     - #226 Should we handle this differently?
     - #222 Re-add [[nodiscard]] here
+    - #230 ParseVariable should work with bonsai_function pointer types
     - #121 Need a way of dynamically allocating more of these on demand if this unlink fails!
     - #236 Metaprogram a free_mesh_stream!
     - #237 Metaprogram this!!
-    - #230 ParseVariable should work with function pointer types
     - #160 Generate this!
-    - #301 These functions are super repetitive, generate them!
 
   ## robustness
     - #78 How should we actually set this?
@@ -151,7 +154,7 @@
     - #117 Transient arena for this instead of stack allocation ?
 
   ## string_hash
-    - #81 Theres' a null terminated string-hash function that should be replaced by this one most likely
+    - #81 Theres' a null terminated string-hash bonsai_function that should be replaced by this one most likely
     - #101 Profile and check collision rate of this!
 
   ## hashing
@@ -310,7 +313,7 @@
     - #213 There is a degenerate case here, what if the file ends without a newline? While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
     - #214 There is a degenerate case here, what if the file ends with a malformed comment? While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
     - #222 Re-add [[nodiscard]] here
-    - #230 ParseVariable should work with function pointer types
+    - #230 ParseVariable should work with bonsai_function pointer types
 
   ## bug
     - #185 these should be printable!
@@ -334,9 +337,9 @@
     - #105 Test this actually gets respected!!
 
   ## memory_leak
-    - #264 This should use a string builder
     - #350 
     - #351 
+    - #264 This should use a string builder
 
   ## big
     - #293 Constant expression evaluation for #if statements
@@ -357,6 +360,6 @@
     - #346 
 
   ## id_347
-    - #348 This should go into an AreEqual function I think..
-    - #349 Change to a function call
+    - #348 This should go into an AreEqual bonsai_function I think..
+    - #349 Change to a bonsai_function call
 

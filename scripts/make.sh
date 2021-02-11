@@ -1,6 +1,6 @@
 #! /bin/bash
 
-EMCC=1
+EMCC=0
 
 # COMMON_OPTIMIZATION_OPTIONS="-O2"
 
@@ -78,6 +78,8 @@ COMMON_COMPILER_OPTIONS="
   -Wno-c99-extensions
   -Wno-reserved-id-macro
   -Wno-dollar-in-identifier-extension
+
+  -Wno-class-varargs
 
   -Wno-unused-value
   -Wno-unused-variable
@@ -334,12 +336,14 @@ function RunPreprocessor
 {
   SetSourceFiles
   ColorizeTitle "Preprocessing"
-  $PREPROCESSOR_EXECUTABLE $SOURCE_FILES
-  if [ $? -ne 0 ]; then
-    echo ""
-    echo -e "$Failed Preprocessing failed, exiting." 
-    git checkout "src/metaprogramming/output"
-    exit 1
+  if [ -x $PREPROCESSOR_EXECUTABLE ]; then
+    $PREPROCESSOR_EXECUTABLE $SOURCE_FILES
+    if [ $? -ne 0 ]; then
+      echo ""
+      echo -e "$Failed Preprocessing failed, exiting." 
+      git checkout "src/metaprogramming/output"
+      exit 1
+    fi
   fi
 }
 
@@ -366,8 +370,7 @@ function RunEntireBuild {
   fi
 
   if [ $SecondPreprocessor == 1 ]; then
-    PREPROCESSOR_EXECUTABLE="bin/preprocessor_dev"
-    RunPreprocessor
+    bin/preprocessor_dev src/metaprogramming/preprocessor.cpp -I src -I /usr/include/x86_64-linux-gnu -I /usr/include 
   fi
 
   if [ $BuildAllProjects == 1 ]; then
@@ -392,9 +395,9 @@ DumpSourceFilesAndQuit=0
 
 CheckoutMetaOutput=0
 
-FirstPreprocessor=0
-BuildPreprocessor=0
-SecondPreprocessor=0
+FirstPreprocessor=1
+BuildPreprocessor=1
+SecondPreprocessor=1
 
 BuildAllProjects=1
 RunTests=0
