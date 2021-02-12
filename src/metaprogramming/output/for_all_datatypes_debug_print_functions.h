@@ -2477,11 +2477,11 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("counted_string_buffer NamedArguments {\n", Depth+2);
-          DebugPrint(S.NamedArguments, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
+          /* DebugPrint("counted_string_buffer NamedArguments {\n", Depth+2); */
+          /* DebugPrint(S.NamedArguments, Depth+4); */
+          /* DebugPrint("\n"); */
+          /* DebugPrint("}", Depth+2); */
+          /* DebugPrint("\n"); */
 
           DebugPrint("b32 Variadic {\n", Depth+2);
           DebugPrint(S.Variadic, Depth+4);
@@ -7266,7 +7266,7 @@
           DebugPrint("\n");
 
           DebugPrint("VisualID visualid {\n", Depth+2);
-          DebugPrint(S.visualid, Depth+4);
+          DebugPrint((u64)S.visualid, Depth+4);
           DebugPrint("\n");
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
@@ -7323,47 +7323,6 @@
     }
 
     bonsai_function void DebugPrint( XVisualInfo *S, u32 Depth)
-    {
-      if (S) { DebugPrint(*S, Depth); }
-      else { DebugPrint("ptr(0)", Depth); }
-    }
-
-    bonsai_function void DebugPrint( os S, u32 Depth)
-    {
-      if (Depth == 0)
-      {
-        DebugPrint("os {\n", Depth);
-      }
-
-      
-          DebugPrint("window Window {\n", Depth+2);
-          DebugPrint(S.Window, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-          DebugPrint("display Display {\n", Depth+2);
-          DebugPrint(S.Display, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-          DebugPrint("gl_context GlContext {\n", Depth+2);
-          DebugPrint(S.GlContext, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-          DebugPrint("b32 ContinueRunning {\n", Depth+2);
-          DebugPrint(S.ContinueRunning, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-      DebugPrint("}\n", Depth);
-    }
-
-    bonsai_function void DebugPrint( os *S, u32 Depth)
     {
       if (S) { DebugPrint(*S, Depth); }
       else { DebugPrint("ptr(0)", Depth); }

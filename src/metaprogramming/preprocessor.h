@@ -1007,8 +1007,8 @@ meta(generate_stream(ast_node_expression))
 struct ast_node_statement
 {
   ast_node_expression *LHS;
-  ast_node_statement *RHS;
-  ast_node_statement *Next;
+  ast_node_statement  *RHS;
+  ast_node_statement  *Next;
 };
 
 struct ast_node_function_call

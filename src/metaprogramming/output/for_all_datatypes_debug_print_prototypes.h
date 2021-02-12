@@ -1,7 +1,4 @@
 
-      bonsai_function void DebugPrint( os* S, u32 Depth = 0);
-      bonsai_function void DebugPrint( os  S, u32 Depth = 0);
-
       bonsai_function void DebugPrint( native_file* S, u32 Depth = 0);
       bonsai_function void DebugPrint( native_file  S, u32 Depth = 0);
 

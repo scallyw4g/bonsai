@@ -120,8 +120,7 @@ ExponentTests(parser *Parser, c_token_type FloatingPointTokenType)
 bonsai_function void
 TestBasicTokenizationAndParsing(memory_arena* Memory)
 {
-  parser Parser_ = ParserForFile(CS(TEST_FIXTURES_PATH "/preprocessor_basic.cpp"), Memory);
-  parser* Parser = &Parser_;
+  parser *Parser = ParserForFile(CS(TEST_FIXTURES_PATH "/preprocessor_basic.cpp"), Memory);
 
   {
     c_token T = PopTokenRaw(Parser);
@@ -650,8 +649,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
 bonsai_function void
 TestPeekAndPopTokens(memory_arena* Memory)
 {
-  parser Parser_ = ParserForFile(CS(TEST_FIXTURES_PATH "/preprocessor_peek_pop.cpp"), Memory);
-  parser* Parser = &Parser_;
+  parser *Parser = ParserForFile(CS(TEST_FIXTURES_PATH "/preprocessor_peek_pop.cpp"), Memory);
 
   {
     c_token T = PeekToken(Parser, 0);
@@ -799,8 +797,10 @@ TestPeekAndPopTokens(memory_arena* Memory)
 bonsai_function void
 TestStructParsing(memory_arena* Memory)
 {
+  parser *Parser = ParserForFile(CS(TEST_FIXTURES_PATH "/preprocessor_datatypes.cpp"), Memory);
+
   parse_context Ctx = {
-    .CurrentParser = ParserForFile(CS(TEST_FIXTURES_PATH "/preprocessor_datatypes.cpp"), Memory),
+    .CurrentParser = *Parser,
     .Memory = Memory,
   };
 
@@ -812,8 +812,7 @@ TestStructParsing(memory_arena* Memory)
 bonsai_function void
 TestCommentSituation(memory_arena* Memory)
 {
-  parser Parser_ = ParserForFile(CS(TEST_FIXTURES_PATH "/comments.cpp"), Memory);
-  parser* Parser = &Parser_;
+  parser *Parser = ParserForFile(CS(TEST_FIXTURES_PATH "/comments.cpp"), Memory);
 
   {
     c_token T = PeekToken(Parser);
@@ -867,7 +866,7 @@ TestAst(memory_arena *Memory)
     .Memory = Memory,
   };
 
-  Ctx.CurrentParser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/should_parse.cpp"));
+  Ctx.CurrentParser = *(ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/should_parse.cpp")));
 
   ParseDatatypes(&Ctx);
 
@@ -890,10 +889,8 @@ TestMacrosAndIncludes(memory_arena *Memory)
     .Memory = Memory,
   };
 
-  parser Parser_ = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/macro_and_include_test.cpp"));
+  parser Parser_ = *(ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/macro_and_include_test.cpp")));
   parser *Parser = &Parser_;
-
-  parser Copy = Parser_;
 
   /* DumpEntireParser(Parser); */
 
@@ -1156,32 +1153,53 @@ TestMacrosAndIncludes(memory_arena *Memory)
 
   RequireToken(Parser, CT_PreprocessorIf);
   TestThat(ResolveMacroConstantExpression(Parser) == 0);
-  EatIf0Block(Parser);
+  EatIfBlock(Parser);
 
   RequireToken(Parser, CT_PreprocessorIf);
   TestThat(ResolveMacroConstantExpression(Parser) == 0);
-  EatIf0Block(Parser);
+  EatIfBlock(Parser);
 
   RequireToken(Parser, CT_PreprocessorIf);
   TestThat(ResolveMacroConstantExpression(Parser) == 0);
-  EatIf0Block(Parser);
+  EatIfBlock(Parser);
 
   RequireToken(Parser, CT_PreprocessorIf);
   TestThat(ResolveMacroConstantExpression(Parser) == 0);
-  EatIf0Block(Parser);
+  EatIfBlock(Parser);
 
   RequireToken(Parser, CT_PreprocessorIf);
   TestThat(ResolveMacroConstantExpression(Parser) == 0);
-  EatIf0Block(Parser);
+  EatIfBlock(Parser);
 
   RequireToken(Parser, CT_PreprocessorIf);
   TestThat(ResolveMacroConstantExpression(Parser) == 0);
-  EatIf0Block(Parser);
+  EatIfBlock(Parser);
 
 
   TestThat( TokensRemain(Parser) == False );
 
   return;
+}
+
+bonsai_function void
+TestDefinesAndIfDefs(memory_arena *Memory)
+{
+  parse_context Ctx = {
+    .Memory = Memory,
+  };
+
+  Ctx.CurrentParser = *(ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/defines_and_ifdefs0.cpp")));
+  parser *Parser = &Ctx.CurrentParser;
+
+  /* DumpEntireParser(Parser); */
+
+  /* RuntimeBreak(); */
+
+  ast_node_statement *Ast = ParseAllStatements(&Ctx);
+
+  /* WalkAst(Ast); */
+
+  DebugPrint(Ast);
 }
 
 s32
@@ -1200,6 +1218,8 @@ main()
   TestCommentSituation(Memory);
 
   TestMacrosAndIncludes(Memory);
+
+  TestDefinesAndIfDefs(Memory);
 
   TestAst(Memory);
 

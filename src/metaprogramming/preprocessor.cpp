@@ -1,16 +1,18 @@
-# define DEBUG_PRINT (0)
-
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
 #define PLATFORM_GL_IMPLEMENTATIONS 1
 
+
 #include <bonsai_types.h>
+
 
 #define InvalidDefaultWhileParsing(P, ErrorMessage) \
     default: { ParseError(P, PeekTokenPointer(P), ErrorMessage); Assert(False); } break;
 
 
+# define DEBUG_PRINT (0)
 #if DEBUG_PRINT
 #include <bonsai_stdlib/headers/debug_print.h>
+
 #else
 _Pragma("clang diagnostic push")
 _Pragma("clang diagnostic ignored \"-Wunused-macros\"")
@@ -578,6 +580,8 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
 bonsai_function void
 ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_string ErrorString)
 {
+  RuntimeBreak();
+
   Assert(ErrorToken);
 
   u32 LinesOfContext = 4;
@@ -665,12 +669,21 @@ PeekTokenRawPointer(parser* Parser, u32 Lookahead)
   }
 
 #if BONSAI_INTERNAL
+  if (Result && DEBUG_CHECK_FOR_BREAK_HERE(*Result))
+  {
+    RuntimeBreak();
+    Result = PeekTokenRawPointer(Parser, Lookahead + 1);
+  }
+#endif
+
+#if BONSAI_INTERNAL
   if (Result && Result->Type == CTokenType_Identifier) { Assert(Result->Value.Start); Assert(Result->Value.Count);  }
   if (Result) { Assert(Result->Type); }
 #endif
 
   return Result;
 }
+
 bonsai_function c_token
 PeekTokenRaw(parser* Parser, u32 Lookahead)
 {
@@ -740,12 +753,9 @@ PeekTokenPointer(parser* Parser, u32 Lookahead)
 
 #if 0
 #if BONSAI_INTERNAL
-  if (Result)
+  if (Result && DEBUG_CHECK_FOR_BREAK_HERE(*Result))
   {
-    if (DEBUG_CHECK_FOR_BREAK_HERE(*Result))
-    {
-      Result = PeekTokenPointer(Parser, Lookahead+1);
-    }
+    Result = PeekTokenPointer(Parser, Lookahead+1);
   }
 
   if (Result) { Assert(!StringsMatch(Result->Value, CSz("break_here"))); }
@@ -1136,8 +1146,6 @@ CopyMacroArgIntoCursor(c_token_buffer *Src, c_token_cursor *Dest, memory_arena *
     }
   }
 }
-
-
 
 bonsai_function void
 CopyBufferIntoCursor(c_token_buffer *Src, c_token_cursor *Dest)
@@ -1800,24 +1808,27 @@ SplitAndInsertParserInto(parser *ParserToSplit, c_token* SplitPoint, parser *Par
   return SecondHalfOfSplit;
 }
 
-bonsai_function parser
+bonsai_function parser *
 TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, parse_context *Ctx)
 {
-  u32 LineNumber = 0;
-
-  parser Result = AllocateParser(Code.Filename, (u32)Megabytes(1), (u32)Megabytes(1), Memory);
-
-  macro_def_stream MacrosThatNeedToBeParsedOut = {};
-
   if (!Code.Start)
   {
-    Error("Input AnsiStream for %.*s is null.", (s32)Code.Filename.Count, Code.Filename.Start);
-    return Result;
+    Error("Input AnsiStream for %S is null.", Code);
+    return 0;
   }
+
+  parser *Result = Ctx ? Push( &Ctx->AllParsers,
+                               AllocateParser(Code.Filename, (u32)Megabytes(1), (u32)Megabytes(1), Memory),
+                               Memory)
+                       : AllocateParserPtr(Code.Filename, (u32)Megabytes(1), (u32)Megabytes(1), Memory);
+
+
+  macro_def_stream MacrosThatNeedToBeParsedOut = {};
 
   b32 ParsingSingleLineComment = False;
   b32 ParsingMultiLineComment = False;
 
+  u32 LineNumber = 0;
   c_token *LastTokenPushed = 0;
   while(Remaining(&Code))
   {
@@ -2181,8 +2192,8 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
                 .Name = PopIdentifier(&Code),
                 .Body = {
                   .Tokens = {
-                    .Start = Result.Tokens.At,
-                    .At    = Result.Tokens.At,
+                    .Start = Result->Tokens.At,
+                    .At    = Result->Tokens.At,
                   },
                   .Filename = Code.Filename,
                   .LineNumber = LineNumber,
@@ -2486,14 +2497,14 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
     }
 
     Assert(PushT.Type);
-    LastTokenPushed = Push(PushT, &Result.Tokens);
+    LastTokenPushed = Push(PushT, &Result->Tokens);
 
     continue;
   }
 
-  TruncateToCurrentSize(&Result.Tokens);
-  Rewind(&Result);
-  Result.Valid = True;
+  TruncateToCurrentSize(&Result->Tokens);
+  Rewind(Result);
+  Result->Valid = True;
 
   if (Ctx)
   {
@@ -2503,7 +2514,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       if (StringsMatch(Macro->Name, CSz("meta"))) { continue; }
 
       parser *MacroBody = &Macro->Body;
-      MacroBody->Tokens.End = Result.Tokens.End;
+      MacroBody->Tokens.End = Result->Tokens.End;
 
       RequireToken(MacroBody, CT_PreprocessorDefine);
       RequireToken(MacroBody, CToken(CT_MacroLiteral, Macro->Name));
@@ -2579,10 +2590,10 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
   }
 
 
-  Rewind(&Result);
+  Rewind(Result);
 
   // Go through and do macro/include expansion as necessary
-  parser *Current = &Result;
+  parser *Current = Result;
   c_token *LastT = 0;
 
   while (TokensRemain(Current))
@@ -2623,30 +2634,30 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
     }
   }
 
-  Rewind(&Result);
+  Rewind(Result);
   return Result;
 }
 
-bonsai_function parser
+bonsai_function parser *
 TokenizeAnsiStream(parse_context *Ctx, ansi_stream Code)
 {
-  parser Result = TokenizeAnsiStream(Code, Ctx->Memory, False, Ctx);
+  parser *Result = TokenizeAnsiStream(Code, Ctx->Memory, False, Ctx);
   return Result;
 }
 
-bonsai_function parser
+bonsai_function parser *
 ParserForFile(counted_string Filename, memory_arena* Memory)
 {
   ansi_stream SourceFileStream = AnsiStreamFromFile(Filename, Memory);
-  parser Result = TokenizeAnsiStream(SourceFileStream, Memory, False, 0);
+  parser *Result = TokenizeAnsiStream(SourceFileStream, Memory, False, 0);
   return Result;
 }
 
-bonsai_function parser
+bonsai_function parser *
 ParserForFile(parse_context *Ctx, counted_string Filename)
 {
   ansi_stream SourceFileStream = AnsiStreamFromFile(Filename, Ctx->Memory);
-  parser Result = TokenizeAnsiStream(Ctx, SourceFileStream);
+  parser *Result = TokenizeAnsiStream(Ctx, SourceFileStream);
   return Result;
 }
 
@@ -2728,7 +2739,6 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
     if (!Result)
     {
       Info("File not yet parsed (%.*s).", (u32)PartialPath.Count, PartialPath.Start);
-      b32 FoundFreshParse = False;
       for ( u32 PrefixIndex = 0;
             PrefixIndex < Count(IncludePaths);
             ++PrefixIndex )
@@ -2738,10 +2748,8 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
 
         if (FileExists(FullPath))
         {
-          Success("Found included file at (%.*s)", (u32)FullPath.Count, FullPath.Start);
-          FoundFreshParse = True;
-          parser FreshParse = ParserForFile(Ctx, FullPath);
-          Result = Push(&Ctx->AllParsers, FreshParse, Ctx->Memory);
+          Success("Found included file at (%S)", FullPath);
+          Result = ParserForFile(Ctx, FullPath);
           break;
         }
       }
@@ -2751,17 +2759,27 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
 
   if (!Result)
   {
-    if (FileExists(PartialPath))
+    parser *Got = GetByFilename(&Ctx->AllParsers, PartialPath);
+    if (Got)
     {
-      Success("Found included file at (%.*s)", (u32)PartialPath.Count, PartialPath.Start);
-      parser FreshParse = ParserForFile(Ctx, PartialPath);
-      Result = Push(&Ctx->AllParsers, FreshParse, Ctx->Memory);
+      Result = Allocate(parser, Ctx->Memory, 1);
+      *Result = *Got;
+      Success("Found cached parser for (%S)", PartialPath);
     }
   }
 
   if (!Result)
   {
-    Warn("__BUG__ Unable to resolve include for : %S", PartialPath);
+    if (FileExists(PartialPath))
+    {
+      Success("Found included file at (%S)", PartialPath);
+      Result = ParserForFile(Ctx, PartialPath);
+    }
+  }
+
+  if (!Result)
+  {
+    Error("Unable to resolve include for : %S", PartialPath);
   }
 
   return Result;
@@ -4206,7 +4224,6 @@ EatIfBlock(parser *Parser)
 
   if (!Success)
   {
-    RuntimeBreak();
     ParseError(Parser, StartToken, FormatCountedString(TranArena, CSz("Unable to find closing token for "), ToString(CT_PreprocessorIf)));
   }
 
@@ -4695,19 +4712,26 @@ bonsai_function ast_node_statement *
 ParseAllStatements(parse_context *Ctx);
 
 bonsai_function void
-ParseDefine(parse_context *Ctx, parser *Parser)
-{
-}
-
-bonsai_function void
 ParseUndefine(parse_context *Ctx, parser *Parser)
 {
+  NotImplemented;
 }
 
 bonsai_function counted_string
 ParseIfDefinedValue(parser *Parser)
 {
-  counted_string Result = {};
+  u32 NumOpenParens = 0;
+  while (OptionalToken(Parser, CTokenType_OpenParen))
+  {
+    ++NumOpenParens;
+  }
+
+  counted_string Result = RequireToken(Parser, CTokenType_Identifier).Value;
+
+  while (NumOpenParens--)
+  {
+    RequireToken(Parser, CTokenType_CloseParen);
+  }
 
   return Result;
 }
@@ -4715,8 +4739,7 @@ ParseIfDefinedValue(parser *Parser)
 bonsai_function b32
 IsDefined(parse_context *Ctx, counted_string DefineValue) 
 {
-  b32 Result = false;
-
+  b32 Result = GetByName(&Ctx->Datatypes.Macros, DefineValue) != 0;
   return Result;
 }
 
@@ -4744,34 +4767,22 @@ ParseSingleStatement(parse_context *Ctx, ast_node_statement *Result)
       case CT_PreprocessorDefine:
       {
         RequireToken(Parser, T.Type);
-        ParseDefine(Ctx, Parser);
+        EatUntilIncluding(Parser, CTokenType_Newline);
       } break;
 
       case CT_PreprocessorUndef:
       {
+        NotImplemented;
         RequireToken(Parser, T.Type);
-        ParseUndefine(Ctx, Parser);
+        EatUntilIncluding(Parser, CTokenType_Newline);
       } break;
 
       case CT_PreprocessorIfDefined:
       {
         RequireToken(Parser, T.Type);
         counted_string DefineValue = ParseIfDefinedValue(Parser);
-        if ( IsDefined(Ctx, DefineValue) )
+        if (!IsDefined(Ctx, DefineValue) )
         {
-        }
-        else
-        {
-          // TODO(Jesse, tags: preprocessor_if_defined): Are we allowed to do the following?  If so, EatIfBlock should work here as is, otherwise
-          // we need a special function.
-          //
-          // #ifdef(THING)
-          //
-          // #elif (FOO == 1)
-          //
-          // #else
-          //
-          // #endif
           EatIfBlock(Parser);
         }
 
@@ -5629,7 +5640,7 @@ FlushOutputToDisk(parse_context *Ctx, counted_string OutputForThisParser, counte
     Push(CToken(CTokenType_GT),          &Parser->OutputTokens);
   }
 
-  parser OutputParse = TokenizeAnsiStream(Ctx, AnsiStream(OutputForThisParser, OutputPath));
+  parser *OutputParse = TokenizeAnsiStream(Ctx, AnsiStream(OutputForThisParser, OutputPath));
 
   if (IsInlineCode)
   {
@@ -5640,7 +5651,6 @@ FlushOutputToDisk(parse_context *Ctx, counted_string OutputForThisParser, counte
   {
     // What do we do here?
     NotImplemented;
-    /* PushParser(&Ctx->CurrentParser, OutputParse, parser_push_type_include); */
     /* ParseDatatypes(Ctx); */
     /* Push(&Ctx->AllParsers, OutputParse, Memory); */
   }
@@ -5875,9 +5885,7 @@ ParseAllTodosFromFile(counted_string Filename, memory_arena* Memory)
 {
   person_stream People = {};
 
-  parser Parser_ = TokenizeAnsiStream(AnsiStreamFromFile(Filename, Memory), Memory, True, 0);
-
-  parser* Parser = &Parser_;
+  parser *Parser = TokenizeAnsiStream(AnsiStreamFromFile(Filename, Memory), Memory, True, 0);
 
   while (Remaining(&Parser->Tokens))
   {
@@ -6074,9 +6082,9 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
 
     if ( BodyToken.Type == CTokenType_StringLiteral )
     {
-      parser StringParse = TokenizeAnsiStream(AnsiStream(BodyToken.Value, Scope.Filename), Memory, True, Ctx);
+      parser *StringParse = TokenizeAnsiStream(AnsiStream(BodyToken.Value, Scope.Filename), Memory, True, Ctx);
 
-      counted_string Code = Execute(FuncName, StringParse, ReplacePatterns, Ctx, Memory);
+      counted_string Code = Execute(FuncName, *StringParse, ReplacePatterns, Ctx, Memory);
       AppendAndEscapeInteriorOfDoubleQuotedString(&OutputBuilder, Code);
     }
     else if ( BodyToken.Type == CTokenType_OpenParen )
@@ -7108,6 +7116,8 @@ WalkAst(ast_node* Ast)
       {
         InvalidCodePath();
       } break;
+
+      InvalidDefaultCase;
     }
   }
 }
@@ -7259,13 +7269,8 @@ main(s32 ArgCountInit, const char** ArgStrings)
     {
       counted_string CurrentFileName = *Args.Files.At;
 
-      parser Parser = ParserForFile(&Ctx, CurrentFileName);
-      if (Parser.Valid)
-      {
-        Rewind(&Parser);
-        Push(&Ctx.AllParsers, Parser, Memory);
-      }
-      else
+      parser *Parser = ParserForFile(&Ctx, CurrentFileName);
+      if (!Parser->Valid)
       {
         Error("Tokenizing File: %.*s", (s32)CurrentFileName.Count, CurrentFileName.Start);
       }

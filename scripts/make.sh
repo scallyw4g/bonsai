@@ -369,7 +369,7 @@ function RunEntireBuild {
   fi
 
   if [ $SecondPreprocessor == 1 ]; then
-    bin/preprocessor_dev src/metaprogramming/preprocessor.cpp -I src -I /usr/include/x86_64-linux-gnu -I /usr/include 
+    bin/preprocessor_dev src/metaprogramming/preprocessor.cpp -I src -I /usr/include/x86_64-linux-gnu -I /usr/include
   fi
 
   if [ $BuildAllProjects == 1 ]; then
@@ -398,7 +398,7 @@ FirstPreprocessor=0
 BuildPreprocessor=1
 SecondPreprocessor=0
 
-BuildAllProjects=0
+BuildAllProjects=1
 RunTests=0
 FinalPreprocessor=0
 
