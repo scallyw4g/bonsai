@@ -2627,6 +2627,11 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
         Current = SplitAndInsertParserInto(Current, T, Expanded, Current->Tokens.At, Memory);
       } break;
 
+      case CT_PreprocessorIf:
+      {
+        NotImplemented;
+      } break;
+
       default:
       {
         RequireToken(Current, T->Type);
