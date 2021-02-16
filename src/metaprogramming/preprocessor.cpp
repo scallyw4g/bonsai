@@ -1099,8 +1099,8 @@ ParserFromBuffer(c_token_buffer *TokenBuf, umm AtOffset = 0)
   parser Result = {
     .Tokens = {
       .Start = TokenBuf->Start,
-      .At = TokenBuf->Start + AtOffset,
       .End = TokenBuf->Start + TokenBuf->Count,
+      .At = TokenBuf->Start + AtOffset,
     }
   };
 
@@ -5685,8 +5685,7 @@ BootstrapDebugSystem(b32 OpenDebugWindow)
 
   if (OpenDebugWindow)
   {
-    s32 DebugFlags = GLX_CONTEXT_DEBUG_BIT_ARB;
-    b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat, DebugFlags);
+    b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat);
     if (!WindowSuccess) { Error("Initializing Window :( "); return False; }
     Assert(Os.Window);
     AssertNoGlErrors;
@@ -5705,14 +5704,14 @@ BootstrapDebugSystem(b32 OpenDebugWindow)
   DebugState->DebugDoScopeProfiling = True;
   DebugState->Plat = &Plat;
 
-  glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-  glClearDepth(1.0f);
+  GL->ClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+  GL->ClearDepth(1.0f);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  GL->BindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
+  GL->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  GL->BindFramebuffer(GL_FRAMEBUFFER, 0);
+  GL->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   return True;
 }
@@ -7238,8 +7237,8 @@ main(s32 ArgCountInit, const char** ArgStrings)
   }
 
   u32 ArgCount = (u32)ArgCountInit;
-  setbuf(stdout, NULL);
-  setbuf(stderr, NULL);
+  setvbuf(stdout, 0, _IONBF, 0);
+  setvbuf(stderr, 0, _IONBF, 0);
 
   b32 ShouldOpenDebugWindow = DoDebugWindow(ArgStrings, ArgCount);
   if (ShouldOpenDebugWindow)
@@ -7380,8 +7379,8 @@ main(s32 ArgCountInit, const char** ArgStrings)
       /* glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID); */
       /* glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
 
-      glBindFramebuffer(GL_FRAMEBUFFER, 0);
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      GL->BindFramebuffer(GL_FRAMEBUFFER, 0);
+      GL->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
   }
 

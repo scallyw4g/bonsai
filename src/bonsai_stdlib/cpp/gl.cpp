@@ -89,8 +89,8 @@ InitializeOpenGlExtensions(os* Os)
 
 #endif
 
-  glEnable(GL_DEPTH_TEST);
-  glDepthFunc(GL_LEQUAL);
+  GL->Enable(GL_DEPTH_TEST);
+  GL->DepthFunc(GL_LEQUAL);
 
   AssertNoGlErrors;
 

@@ -14,8 +14,6 @@ CloseFile(native_file* File)
   return Result;
 }
 
-static const char* DefaultPermissions = "rw+b";
-
 bonsai_function b32
 Rename(native_file CurrentFile, counted_string NewFilePath)
 {
@@ -34,23 +32,17 @@ Remove(counted_string Filepath)
 }
 
 bonsai_function native_file
-OpenFile(const char* FilePath, const char* Permissions = DefaultPermissions)
+OpenFile(const char* FilePath, const char* Permissions)
 {
   native_file Result = {
     .Path = CS(FilePath)
   };
-
-  FILE* Handle = fopen(FilePath, Permissions);
-  if (Handle)
-  {
-    Result.Handle = Handle;
-  }
-
+  fopen_s(&Result.Handle, FilePath, Permissions);
   return Result;
 }
 
 bonsai_function native_file
-OpenFile(counted_string FilePath, const char* Permissions = DefaultPermissions)
+OpenFile(counted_string FilePath, const char* Permissions)
 {
   const char* NullTerminatedFilePath = GetNullTerminated(FilePath);
   native_file Result = OpenFile(NullTerminatedFilePath, Permissions);
@@ -61,8 +53,8 @@ bonsai_function counted_string
 GetRandomString(u32 Length, random_series* Entropy, memory_arena* Memory)
 {
   counted_string Filename = {
+    .Count = Length,
     .Start = Allocate(char, Memory, Length),
-    .Count = Length
   };
 
   for (u32 CharIndex = 0;
@@ -123,10 +115,19 @@ WriteToFile(native_file* File, counted_string Str)
 }
 
 bonsai_function inline b32
-WriteToFile(native_file* File, ansi_stream Str)
+WriteToFile(native_file* File, ansi_stream *Str)
 {
   b32 Result = WriteToFile(File, CountedString(Str));
   return Result;
+}
+
+bonsai_function void
+ReadBytesIntoBuffer(FILE *Src, u64 BytesToRead, u8* Dest)
+{
+  Assert(BytesToRead);
+  u64 BytesRead = fread(Dest, 1, BytesToRead, Src);
+  Assert(BytesRead != 0);
+  return;
 }
 
 bonsai_function b32

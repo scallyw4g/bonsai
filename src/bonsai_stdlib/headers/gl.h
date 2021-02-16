@@ -1,9 +1,9 @@
 
 // Wrapper so assertions give us file/line numbers
-#define AssertNoGlErrors {            \
-  u32 glErrorNo = glGetError();       \
+#define AssertNoGlErrors do {            \
+  u32 glErrorNo = GL->GetError();       \
   DumpGlErrorEnum(glErrorNo);         \
-  Assert(glErrorNo == GL_NO_ERROR); }
+  Assert(glErrorNo == GL_NO_ERROR); } while (0)
 
 #define GL_NO_ERROR                       0
 
@@ -149,7 +149,11 @@ typedef unsigned short GLushort;
 
 typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
 
+#if 0
 exported_function const GLubyte* glGetString (GLenum name);
+exported_function GLenum glGetError (void);
+exported_function void glDebugMessageCallback (GLDEBUGPROC callback, const void *userParam);
+
 exported_function void glEnable (GLenum cap);
 exported_function void glDisable (GLenum cap);
 exported_function void glCullFace (GLenum mode);
@@ -158,9 +162,6 @@ exported_function void glDepthFunc (GLenum func);
 exported_function void glBlendFunc (GLenum sfactor, GLenum dfactor);
 
 exported_function void glDrawArrays (GLenum mode, GLint first, GLsizei count);
-
-exported_function GLenum glGetError (void);
-exported_function void glDebugMessageCallback (GLDEBUGPROC callback, const void *userParam);
 
 exported_function void glClear (GLbitfield mask);
 exported_function void glClearColor (GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
@@ -268,6 +269,7 @@ exported_function void* glMapBufferRange (GLenum target, GLintptr offset, GLsize
 exported_function GLboolean glUnmapBuffer (GLenum target);
 
 exported_function void glDrawBuffers (GLsizei n, const GLenum *bufs);
+#endif
 
 bonsai_function void
 DumpGlErrorEnum(u32 ErrorNumber)
@@ -328,11 +330,230 @@ DumpGlErrorEnum(u32 ErrorNumber)
   return;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+typedef const GLubyte*  (*OpenglGetString)                 (GLenum name);
+typedef GLenum          (*OpenglGetError)                  (void);
+typedef void            (*OpenglDebugMessageCallback)      (GLDEBUGPROC callback, const void *userParam);
+typedef void            (*OpenglEnable)                    (GLenum cap);
+typedef void            (*OpenglDisable)                   (GLenum cap);
+typedef void            (*OpenglCullFace)                  (GLenum mode);
+typedef void            (*OpenglViewport)                  (GLint x, GLint y, GLsizei width, GLsizei height);
+typedef void            (*OpenglDepthFunc)                 (GLenum func);
+typedef void            (*OpenglBlendFunc)                 (GLenum sfactor, GLenum dfactor);
+typedef void            (*OpenglDrawArrays)                (GLenum mode, GLint first, GLsizei count);
+typedef void            (*OpenglClear)                     (GLbitfield mask);
+typedef void            (*OpenglClearColor)                (GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
+typedef void            (*OpenglClearDepth)                (GLdouble depth);
+typedef void            (*OpenglGenTextures)               (GLsizei n, GLuint *textures);
+typedef void            (*OpenglBindTextures)              (GLuint first, GLsizei count, const GLuint *textures);
+typedef void            (*OpenglBindTexture)               (GLenum target, GLuint texture);
+typedef void            (*OpenglDeleteTextures)            (GLsizei n, const GLuint *textures);
+typedef void            (*OpenglActiveTexture)             (GLenum texture);
+typedef void            (*OpenglTexStorage1D)              (GLenum target, GLsizei levels, GLenum internalformat, GLsizei width);
+typedef void            (*OpenglTexStorage2D)              (GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height);
+typedef void            (*OpenglTexStorage3D)              (GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth);
+typedef void            (*OpenglTexImage1D)                (GLenum target, GLint level, GLint internalformat, GLsizei width, GLint border, GLenum format, GLenum type, const void *pixels);
+typedef void            (*OpenglTexImage2D)                (GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void *pixels);
+typedef void            (*OpenglTexImage3D)                (GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const void *pixels);
+typedef void            (*OpenglTexSubImage1D)             (GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLenum type, const void *pixels);
+typedef void            (*OpenglTexSubImage2D)             (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void *pixels);
+typedef void            (*OpenglTexSubImage3D)             (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const void *pixels);
+typedef void            (*OpenglTexParameterf)             (GLenum target, GLenum pname, GLfloat param);
+typedef void            (*OpenglTexParameterfv)            (GLenum target, GLenum pname, const GLfloat *params);
+typedef void            (*OpenglTexParameteri)             (GLenum target, GLenum pname, GLint param);
+typedef void            (*OpenglTexParameteriv)            (GLenum target, GLenum pname, const GLint *params);
+typedef void            (*OpenglCompressedTexImage3D)      (GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, const void *data);
+typedef void            (*OpenglCompressedTexImage2D)      (GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const void *data);
+typedef void            (*OpenglCompressedTexImage1D)      (GLenum target, GLint level, GLenum internalformat, GLsizei width, GLint border, GLsizei imageSize, const void *data);
+typedef void            (*OpenglPixelStoref)               (GLenum pname, GLfloat param);
+typedef void            (*OpenglPixelStorei)               (GLenum pname, GLint param);
+typedef void            (*OpenglEnableVertexAttribArray)   (GLuint index);
+typedef void            (*OpenglDisableVertexAttribArray)  (GLuint index);
+typedef void            (*OpenglVertexAttribPointer)       (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer);
+typedef void            (*OpenglBindFramebuffer)           (GLenum target, GLuint framebuffer);
+typedef void            (*OpenglDeleteFramebuffers)        (GLsizei n, const GLuint *framebuffers);
+typedef void            (*OpenglGenFramebuffers)           (GLsizei n, GLuint *framebuffers);
+typedef GLenum          (*OpenglCheckFramebufferStatus)    (GLenum target);
+typedef void            (*OpenglFramebufferTexture1D)      (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
+typedef void            (*OpenglFramebufferTexture2D)      (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
+typedef void            (*OpenglFramebufferTexture3D)      (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLint zoffset);
+typedef void            (*OpenglFramebufferTextureLayer)   (GLenum target, GLenum attachment, GLuint texture, GLint level, GLint layer);
+typedef void            (*OpenglFramebufferRenderbuffer)   (GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
+typedef void            (*OpenglCompileShader)             (GLuint shader);
+typedef GLuint          (*OpenglCreateProgram)             (void);
+typedef GLuint          (*OpenglCreateShader)              (GLenum type);
+typedef void            (*OpenglLinkProgram)               (GLuint program);
+typedef void            (*OpenglShaderSource)              (GLuint shader, GLsizei count, const GLchar *const*string, const GLint *length);
+typedef void            (*OpenglUseProgram)                (GLuint program);
+typedef void            (*OpenglGetProgramInfoLog)         (GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
+typedef void            (*OpenglGetShaderInfoLog)          (GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
+typedef void            (*OpenglDeleteProgram)             (GLuint program);
+typedef void            (*OpenglDeleteShader)              (GLuint shader);
+typedef void            (*OpenglDetachShader)              (GLuint program, GLuint shader);
+typedef void            (*OpenglUniform1f)                 (GLint location, GLfloat v0);
+typedef void            (*OpenglUniform2f)                 (GLint location, GLfloat v0, GLfloat v1);
+typedef void            (*OpenglUniform3f)                 (GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
+typedef void            (*OpenglUniform4f)                 (GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
+typedef void            (*OpenglUniform1i)                 (GLint location, GLint v0);
+typedef void            (*OpenglUniform2i)                 (GLint location, GLint v0, GLint v1);
+typedef void            (*OpenglUniform3i)                 (GLint location, GLint v0, GLint v1, GLint v2);
+typedef void            (*OpenglUniform4i)                 (GLint location, GLint v0, GLint v1, GLint v2, GLint v3);
+typedef void            (*OpenglUniform1fv)                (GLint location, GLsizei count, const GLfloat *value);
+typedef void            (*OpenglUniform2fv)                (GLint location, GLsizei count, const GLfloat *value);
+typedef void            (*OpenglUniform3fv)                (GLint location, GLsizei count, const GLfloat *value);
+typedef void            (*OpenglUniform4fv)                (GLint location, GLsizei count, const GLfloat *value);
+typedef void            (*OpenglUniform1iv)                (GLint location, GLsizei count, const GLint *value);
+typedef void            (*OpenglUniform2iv)                (GLint location, GLsizei count, const GLint *value);
+typedef void            (*OpenglUniform3iv)                (GLint location, GLsizei count, const GLint *value);
+typedef void            (*OpenglUniform4iv)                (GLint location, GLsizei count, const GLint *value);
+typedef void            (*OpenglUniformMatrix2fv)          (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
+typedef void            (*OpenglUniformMatrix3fv)          (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
+typedef void            (*OpenglUniformMatrix4fv)          (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
+typedef void            (*OpenglUniform1ui)                (GLint location, GLuint v0);
+typedef void            (*OpenglUniform2ui)                (GLint location, GLuint v0, GLuint v1);
+typedef void            (*OpenglUniform3ui)                (GLint location, GLuint v0, GLuint v1, GLuint v2);
+typedef void            (*OpenglUniform4ui)                (GLint location, GLuint v0, GLuint v1, GLuint v2, GLuint v3);
+typedef void            (*OpenglUniform1uiv)               (GLint location, GLsizei count, const GLuint *value);
+typedef void            (*OpenglUniform2uiv)               (GLint location, GLsizei count, const GLuint *value);
+typedef void            (*OpenglUniform3uiv)               (GLint location, GLsizei count, const GLuint *value);
+typedef void            (*OpenglUniform4uiv)               (GLint location, GLsizei count, const GLuint *value);
+typedef GLint           (*OpenglGetUniformLocation)        (GLuint program, const GLchar *name);
+typedef void            (*OpenglGetShaderiv)               (GLuint shader, GLenum pname, GLint *params);
+typedef void            (*OpenglGetProgramiv)              (GLuint program, GLenum pname, GLint *params);
+typedef void            (*OpenglAttachShader)              (GLuint program, GLuint shader);
+typedef void            (*OpenglBindBuffer)                (GLenum target, GLuint buffer);
+typedef void            (*OpenglDeleteBuffers)             (GLsizei n, const GLuint *buffers);
+typedef void            (*OpenglGenBuffers)                (GLsizei n, GLuint *buffers);
+typedef void            (*OpenglBufferData)                (GLenum target, GLsizeiptr size, const void *data, GLenum usage);
+typedef void*           (*OpenglMapBuffer)                 (GLenum target, GLenum access);
+typedef void*           (*OpenglMapBufferRange)            (GLenum target, GLintptr offset, GLsizeiptr length,  GLenum access);
+typedef GLboolean       (*OpenglUnmapBuffer)               (GLenum target);
+typedef void            (*OpenglDrawBuffers)               (GLsizei n, const GLenum *bufs);
+
+
+
+struct gl_extensions
+{
+  OpenglGetString GetString;
+  OpenglGetError GetError;
+  OpenglDebugMessageCallback DebugMessageCallback;
+  OpenglEnable Enable;
+  OpenglDisable Disable;
+  OpenglCullFace CullFace;
+  OpenglViewport Viewport;
+  OpenglDepthFunc DepthFunc;
+  OpenglBlendFunc BlendFunc;
+  OpenglDrawArrays DrawArrays;
+  OpenglClear Clear;
+  OpenglClearColor ClearColor;
+  OpenglClearDepth ClearDepth;
+  OpenglGenTextures GenTextures;
+  OpenglBindTextures BindTextures;
+  OpenglBindTexture BindTexture;
+  OpenglDeleteTextures DeleteTextures;
+  OpenglActiveTexture ActiveTexture;
+  OpenglTexStorage1D TexStorage1D;
+  OpenglTexStorage2D TexStorage2D;
+  OpenglTexStorage3D TexStorage3D;
+  OpenglTexImage1D TexImage1D;
+  OpenglTexImage2D TexImage2D;
+  OpenglTexImage3D TexImage3D;
+  OpenglTexSubImage1D TexSubImage1D;
+  OpenglTexSubImage2D TexSubImage2D;
+  OpenglTexSubImage3D TexSubImage3D;
+  OpenglTexParameterf TexParameterf;
+  OpenglTexParameterfv TexParameterfv;
+  OpenglTexParameteri TexParameteri;
+  OpenglTexParameteriv TexParameteriv;
+  OpenglCompressedTexImage3D CompressedTexImage3D;
+  OpenglCompressedTexImage2D CompressedTexImage2D;
+  OpenglCompressedTexImage1D CompressedTexImage1D;
+  OpenglPixelStoref PixelStoref;
+  OpenglPixelStorei PixelStorei;
+  OpenglEnableVertexAttribArray EnableVertexAttribArray;
+  OpenglDisableVertexAttribArray DisableVertexAttribArray;
+  OpenglVertexAttribPointer VertexAttribPointer;
+  OpenglBindFramebuffer BindFramebuffer;
+  OpenglDeleteFramebuffers DeleteFramebuffers;
+  OpenglGenFramebuffers GenFramebuffers;
+  OpenglCheckFramebufferStatus CheckFramebufferStatus;
+  OpenglFramebufferTexture1D FramebufferTexture1D;
+  OpenglFramebufferTexture2D FramebufferTexture2D;
+  OpenglFramebufferTexture3D FramebufferTexture3D;
+  OpenglFramebufferTextureLayer FramebufferTextureLayer;
+  OpenglFramebufferRenderbuffer FramebufferRenderbuffer;
+  OpenglCompileShader CompileShader;
+  OpenglCreateProgram CreateProgram;
+  OpenglCreateShader CreateShader;
+  OpenglLinkProgram LinkProgram;
+  OpenglShaderSource ShaderSource;
+  OpenglUseProgram UseProgram;
+  OpenglGetProgramInfoLog GetProgramInfoLog;
+  OpenglGetShaderInfoLog GetShaderInfoLog;
+  OpenglDeleteProgram DeleteProgram;
+  OpenglDeleteShader DeleteShader;
+  OpenglDetachShader DetachShader;
+  OpenglUniform1f Uniform1f;
+  OpenglUniform2f Uniform2f;
+  OpenglUniform3f Uniform3f;
+  OpenglUniform4f Uniform4f;
+  OpenglUniform1i Uniform1i;
+  OpenglUniform2i Uniform2i;
+  OpenglUniform3i Uniform3i;
+  OpenglUniform4i Uniform4i;
+  OpenglUniform1fv Uniform1fv;
+  OpenglUniform2fv Uniform2fv;
+  OpenglUniform3fv Uniform3fv;
+  OpenglUniform4fv Uniform4fv;
+  OpenglUniform1iv Uniform1iv;
+  OpenglUniform2iv Uniform2iv;
+  OpenglUniform3iv Uniform3iv;
+  OpenglUniform4iv Uniform4iv;
+  OpenglUniformMatrix2fv UniformMatrix2fv;
+  OpenglUniformMatrix3fv UniformMatrix3fv;
+  OpenglUniformMatrix4fv UniformMatrix4fv;
+  OpenglUniform1ui Uniform1ui;
+  OpenglUniform2ui Uniform2ui;
+  OpenglUniform3ui Uniform3ui;
+  OpenglUniform4ui Uniform4ui;
+  OpenglUniform1uiv Uniform1uiv;
+  OpenglUniform2uiv Uniform2uiv;
+  OpenglUniform3uiv Uniform3uiv;
+  OpenglUniform4uiv Uniform4uiv;
+  OpenglGetUniformLocation GetUniformLocation;
+  OpenglGetShaderiv GetShaderiv;
+  OpenglGetProgramiv GetProgramiv;
+  OpenglAttachShader AttachShader;
+  OpenglBindBuffer BindBuffer;
+  OpenglDeleteBuffers DeleteBuffers;
+  OpenglGenBuffers GenBuffers;
+  OpenglBufferData BufferData;
+  OpenglMapBuffer MapBuffer;
+  OpenglMapBufferRange MapBufferRange;
+  OpenglUnmapBuffer UnmapBuffer;
+  OpenglDrawBuffers DrawBuffers;
+  // Platform specific (wgl / glX)
+  /* OpenglSwapInterval SwapInterval; */
+};
+
+global_variable gl_extensions *GL;
+
 bonsai_function b32
 CheckShadingLanguageVersion()
 {
-  char *OpenGlVersion = (char*)glGetString(GL_VERSION);
-  r32 ShadingLanguageVersion = (r32)atof((char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+  char *OpenGlVersion = (char*)GL->GetString(GL_VERSION);
+  r32 ShadingLanguageVersion = (r32)atof((char*)GL->GetString(GL_SHADING_LANGUAGE_VERSION));
 
   Info("OpenGl Ver. (%s)", OpenGlVersion );
   Info("GLSL   Ver. (%f)", ShadingLanguageVersion );
@@ -347,49 +568,3 @@ CheckShadingLanguageVersion()
   return Result;
 }
 
-/*
-struct gl_extensions
-{
-  PFNGLCREATESHADERPROC glCreateShader;
-  PFNGLSHADERSOURCEPROC glShaderSource;
-  PFNGLCOMPILESHADERPROC glCompileShader;
-  PFNGLGETSHADERIVPROC glGetShaderiv;
-  PFNGLGETSHADERINFOLOGPROC glGetShaderInfoLog;
-  PFNGLATTACHSHADERPROC glAttachShader;
-  PFNGLDETACHSHADERPROC glDetachShader;
-  PFNGLDELETESHADERPROC glDeleteShader;
-  PFNGLCREATEPROGRAMPROC glCreateProgram;
-  PFNGLLINKPROGRAMPROC glLinkProgram;
-  PFNGLGETPROGRAMIVPROC glGetProgramiv;
-  PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog;
-  PFNGLUSEPROGRAMPROC glUseProgram;
-  PFNGLDELETEPROGRAMPROC glDeleteProgram;
-  PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation;
-  PFNGLGENFRAMEBUFFERSPROC glGenFramebuffers;
-  PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer;
-  PFNGLFRAMEBUFFERTEXTUREPROC glFramebufferTexture;
-  PFNGLFRAMEBUFFERTEXTURE2DPROC glFramebufferTexture2D;
-  PFNGLCHECKFRAMEBUFFERSTATUSPROC glCheckFramebufferStatus;
-  PFNGLCOMPRESSEDTEXIMAGE2DPROC glCompressedTexImage2D;
-  PFNGLGENBUFFERSPROC glGenBuffers;
-  PFNGLBINDBUFFERPROC glBindBuffer;
-  PFNGLBUFFERDATAPROC glBufferData;
-  PFNGLDRAWBUFFERSPROC glDrawBuffers;
-  PFNGLDELETEBUFFERSPROC glDeleteBuffers;
-  PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
-  PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray;
-  PFNGLDISABLEVERTEXATTRIBARRAYPROC glDisableVertexAttribArray;
-  PFNGLGENVERTEXARRAYSPROC glGenVertexArrays;
-  PFNGLBINDVERTEXARRAYPROC glBindVertexArray;
-  PFNGLUNIFORM3FVPROC glUniform3fv;
-  PFNGLUNIFORM2FVPROC glUniform2fv;
-  PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
-  PFNGLUNIFORM1IPROC glUniform1i;
-  PFNGLACTIVETEXTUREPROC glActiveTexture;
-  PFNGLUNIFORM1FPROC glUniform1f;
-  PFNGLUNIFORM1UIPROC glUniform1ui;
-
-  // Platform specific (wgl / glX)
-  PFNSWAPINTERVALPROC glSwapInterval;
-};
-*/ 

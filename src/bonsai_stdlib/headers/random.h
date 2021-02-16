@@ -67,7 +67,7 @@ bonsai_function u32
 MapValueToRange(u32 LowestPossibleValue, r32 Value, u32 HighestPossibleValue)
 {
   u32 Range = HighestPossibleValue - LowestPossibleValue;
-  u32 Result = (u32)(Value*Range) + LowestPossibleValue;
+  u32 Result = ((u32)Value*Range) + LowestPossibleValue;
   Assert(Result >= LowestPossibleValue);
   Assert(Result <= HighestPossibleValue);
   return Result;

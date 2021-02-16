@@ -27,12 +27,12 @@ GetShadowMapMVP(light *GlobalLight)
 void
 RenderAoTexture(ao_render_group *AoGroup)
 {
-  glBindFramebuffer(GL_FRAMEBUFFER, AoGroup->FBO.ID);
+  GL->BindFramebuffer(GL_FRAMEBUFFER, AoGroup->FBO.ID);
   SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
 
-  glUseProgram(AoGroup->Shader.ID);
+  GL->UseProgram(AoGroup->Shader.ID);
 
-  glUniform3fv(AoGroup->SsaoKernelUniform, SSAO_KERNEL_SIZE, (r32*)AoGroup->SsaoKernel);
+  GL->Uniform3fv(AoGroup->SsaoKernelUniform, SSAO_KERNEL_SIZE, (r32*)AoGroup->SsaoKernel);
 
   BindShaderUniforms(&AoGroup->Shader);
 
@@ -60,14 +60,14 @@ UpdateLightingTextures(game_lights *Lights)
 
   u32 Type = GL_TEXTURE_2D;
 
-  glBindTexture(Type, Lights->PositionTex->ID);
-  glTexImage2D( Type, 0, GL_RGB32F,
+  GL->BindTexture(Type, Lights->PositionTex->ID);
+  GL->TexImage2D( Type, 0, GL_RGB32F,
                 Lights->PositionTex->Dim.x, Lights->PositionTex->Dim.y,
                 0,  GL_RGB, GL_FLOAT, PosData);
   AssertNoGlErrors;
 
-  glBindTexture(Type, Lights->ColorTex->ID);
-  glTexImage2D( Type, 0, GL_RGB32F,
+  GL->BindTexture(Type, Lights->ColorTex->ID);
+  GL->TexImage2D( Type, 0, GL_RGB32F,
                 Lights->ColorTex->Dim.x, Lights->ColorTex->Dim.y,
                 0,  GL_RGB, GL_FLOAT, ColorData);
   AssertNoGlErrors;
@@ -78,10 +78,10 @@ UpdateLightingTextures(game_lights *Lights)
 void
 DrawGBufferToFullscreenQuad( platform *Plat, graphics *Graphics)
 {
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  GL->BindFramebuffer(GL_FRAMEBUFFER, 0);
   SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
 
-  glUseProgram(Graphics->gBuffer->LightingShader.ID);
+  GL->UseProgram(Graphics->gBuffer->LightingShader.ID);
 
   UpdateLightingTextures(Graphics->Lights);
   /* Graphics->gBuffer->ShadowMVP = NdcToScreenSpace * GetShadowMapMVP(&Graphics->Lights->Lights[0]); */
@@ -150,8 +150,8 @@ void
 RenderWorldToGBuffer(gpu_mapped_element_buffer* GpuMap, g_buffer_render_group *RG)
 {
   TIMED_FUNCTION();
-  glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO.ID);
-  glUseProgram(RG->gBufferShader.ID);
+  GL->BindFramebuffer(GL_FRAMEBUFFER, RG->FBO.ID);
+  GL->UseProgram(RG->gBufferShader.ID);
 
   SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
 
@@ -161,9 +161,9 @@ RenderWorldToGBuffer(gpu_mapped_element_buffer* GpuMap, g_buffer_render_group *R
   Draw(GpuMap->Buffer.At);
   GpuMap->Buffer.At = 0;
 
-  glDisableVertexAttribArray(0);
-  glDisableVertexAttribArray(1);
-  glDisableVertexAttribArray(2);
+  GL->DisableVertexAttribArray(0);
+  GL->DisableVertexAttribArray(1);
+  GL->DisableVertexAttribArray(2);
 
   return;
 }
@@ -183,8 +183,8 @@ RenderGBuffer(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
 inline void
 RenderPostBuffer(post_processing_group *PostGroup, untextured_3d_geometry_buffer *Mesh)
 {
-  glBindFramebuffer(GL_FRAMEBUFFER, PostGroup->FBO.ID);
-  glUseProgram(PostGroup->Shader.ID);
+  GL->BindFramebuffer(GL_FRAMEBUFFER, PostGroup->FBO.ID);
+  GL->UseProgram(PostGroup->Shader.ID);
 
   SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
 
@@ -199,8 +199,8 @@ RenderPostBuffer(post_processing_group *PostGroup, untextured_3d_geometry_buffer
   Draw(Mesh->At);
   Mesh->At = 0;
 
-  glDisableVertexAttribArray(0);
-  glDisableVertexAttribArray(1);
+  GL->DisableVertexAttribArray(0);
+  GL->DisableVertexAttribArray(1);
 }
 
 inline bool
@@ -353,25 +353,25 @@ inline void
 ClearFramebuffers(graphics *Graphics)
 {
   TIMED_FUNCTION();
-  glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-  glClearDepth(1.0f);
+  GL->ClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+  GL->ClearDepth(1.0f);
 
 #if BONSAI_INTERNAL
   debug_state* DebugState = GetDebugState();
-  glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  GL->BindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
+  GL->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
 
   // FIXME(Jesse): This is taking _forever_ on Linux (GLES) .. does it take
   // forever on other Linux systems?
-  glBindFramebuffer(GL_FRAMEBUFFER, Graphics->gBuffer->FBO.ID);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  GL->BindFramebuffer(GL_FRAMEBUFFER, Graphics->gBuffer->FBO.ID);
+  GL->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   /* glBindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName); */
   /* glClear(GL_DEPTH_BUFFER_BIT); */
 
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  GL->BindFramebuffer(GL_FRAMEBUFFER, 0);
+  GL->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   return;
 }
@@ -873,7 +873,7 @@ void
 DrawParticle(untextured_3d_geometry_buffer *Source, untextured_3d_geometry_buffer *Dest, u8 ColorIndex)
 {
   v4 FaceColors[VERTS_PER_FACE];
-  FillColorArray(ColorIndex, FaceColors, VERTS_PER_FACE);;
+  FillColorArray(ColorIndex, FaceColors, VERTS_PER_FACE);
   BufferVertsChecked( Source, Dest );
   return;
 }

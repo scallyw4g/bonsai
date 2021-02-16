@@ -288,8 +288,16 @@ SafeTruncateToU32(umm Size)
 inline u16
 SafeTruncateToU16(umm Size)
 {
-  Assert(Size <= 0xFFFF);
+  Assert(Size <= u16_MAX);
   u16 Result = (u16)Size;
+  return Result;
+}
+
+bonsai_function u8
+SafeTruncateU8(s32 Size)
+{
+  Assert(Size < u8_MAX);
+  u8 Result = (u8)Size;
   return Result;
 }
 
@@ -395,36 +403,6 @@ Reallocate(u8* Allocation, memory_arena* Arena, umm CurrentSize, umm RequestedSi
   return Result;
 }
 
-bonsai_function void
-Memprotect(void* LastPage, umm PageSize, s32 Protection)
-{
-  s32 ProtectSuccess = (mprotect(LastPage, PageSize, Protection) == 0);
-
-  if (!ProtectSuccess)
-  {
-    if (errno == EACCES)
-    {
-      Error("EACCES");
-    }
-
-    if (errno == EINVAL)
-    {
-      Error("EINVAL");
-    }
-
-    if (errno == ENOMEM)
-    {
-      Error("ENOMEM");
-    }
-
-    Error("mprotect failed");
-    PlatformDebugStacktrace();
-    Assert(False);
-  }
-
-  return;
-}
-
 bonsai_function u8*
 PushSize(memory_arena *Arena, umm SizeIn, umm Alignment, b32 MemProtect)
 {
@@ -480,7 +458,7 @@ PushSize(memory_arena *Arena, umm SizeIn, umm Alignment, b32 MemProtect)
     u8* LastPage = Result + AlignCorrectedSizeIn;
     Assert( (u64)LastPage % PageSize == 0);
 
-    Memprotect((void*)LastPage, PageSize, PROT_NONE);
+    PlatformProtectPage(LastPage);
   }
 #endif
 
@@ -493,7 +471,7 @@ PushSize(memory_arena *Arena, umm SizeIn, umm Alignment, b32 MemProtect)
 
     u8* NextPage = Arena->At + NextPageOffset;
     Assert( (umm)NextPage % PageSize == 0);
-    Memprotect((void*)NextPage, PageSize, PROT_NONE);
+    PlatformProtectPage(NextPage);
 
     Result = NextPage + PageSize;
   }

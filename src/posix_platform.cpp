@@ -1,12 +1,3 @@
-void
-ReadBytes(u8* Dest, u64 BytesToRead, FILE *Src)
-{
-  Assert(BytesToRead);
-  u64 BytesRead = fread(Dest, 1, BytesToRead, Src);
-  Assert(BytesRead != 0);
-  return;
-}
-
 inline void
 PrintSemValue(semaphore *Semaphore)
 {
@@ -105,11 +96,36 @@ u8*
 PlatformProtectPage(u8* Mem)
 {
   u64 PageSize = PlatformGetPageSize();
-
   Assert((u64)Mem % PageSize == 0);
+  s32 ProtectSuccess = (mprotect(Mem, PageSize, PROT_NONE) == 0);
 
-  mprotect(Mem, PageSize, PROT_NONE);
-  u8* Result = Mem + PageSize;
+  u8 *Result = 0;
+  if (ProtectSuccess)
+  {
+    Result = Mem;
+  }
+  else
+  {
+    if (errno == EACCES)
+    {
+      Error("EACCES");
+    }
+
+    if (errno == EINVAL)
+    {
+      Error("EINVAL");
+    }
+
+    if (errno == ENOMEM)
+    {
+      Error("ENOMEM");
+    }
+
+    Error("mprotect failed");
+    PlatformDebugStacktrace();
+    Assert(False);
+  }
+
   return Result;
 }
 

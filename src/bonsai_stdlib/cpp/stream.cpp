@@ -55,19 +55,19 @@ V3Cursor(u32 Count, memory_arena *Memory)
 u8_stream
 U8_StreamFromFile(const char* SourceFile, memory_arena *Memory)
 {
-  FILE *File = fopen(SourceFile, "r");
   u8* FileContents = 0;
   umm FileSize = 0;
 
-  if (File)
+  native_file File = OpenFile(CS(SourceFile));
+  if (File.Handle)
   {
-    fseek(File, 0L, SEEK_END);
-    FileSize = (umm)ftell(File);
+    fseek(File.Handle, 0L, SEEK_END);
+    FileSize = (umm)ftell(File.Handle);
     if (FileSize)
     {
-      rewind(File);
-      FileContents = Allocate(u8, Memory, FileSize);
-      ReadBytes((u8*)FileContents, FileSize, File);
+      rewind(File.Handle);
+      FileContents = (u8*)Allocate(u8, Memory, FileSize);
+      ReadBytesIntoBuffer(File.Handle, FileSize, FileContents);
     }
     else
     {
@@ -124,8 +124,8 @@ counted_string
 CS(u8_stream Stream)
 {
   counted_string Result = {
-    .Start = (const char*)Stream.Start,
     .Count = TotalSize(&Stream),
+    .Start = (const char*)Stream.Start,
   };
   return Result;
 }

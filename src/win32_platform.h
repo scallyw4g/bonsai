@@ -4,9 +4,10 @@
 #pragma warning(disable : 4996)
 
 #include <Windows.h>
-#include <Windowsx.h> // Macros to retrieve mouse coordinates
+#include <windowsx.h> // Macros to retrieve mouse coordinates
 #include <WinBase.h>
-#include <Wingdi.h>
+#include <wingdi.h>
+#include <bonsai_stdlib/headers/wgl.h>
 
 #include <sys/stat.h>
 
@@ -22,37 +23,17 @@
 #define YELLOW_TERMINAL ""
 #define WHITE_TERMINAL ""
 
-#define GlDebugMessage(...)  PrintConsole(" * Gl Debug Message - "); \
-                             VariadicOutputDebugString(__VA_ARGS__); \
-                             PrintConsole("\n")
-
-#define Info(...)  PrintConsole("   Info - ");             \
-                   VariadicOutputDebugString(__VA_ARGS__); \
-                   PrintConsole("\n")
-
-#define Debug(...) VariadicOutputDebugString(__VA_ARGS__); \
-                   PrintConsole("\n")
-
-#define Error(...) PrintConsole(" ! Error - ");            \
-                   VariadicOutputDebugString(__VA_ARGS__); \
-                   PrintConsole("\n")
-
-#define Warn(...)  PrintConsole(" * Warn - ");             \
-                   VariadicOutputDebugString(__VA_ARGS__); \
-                   PrintConsole("\n")
-
 #define RuntimeBreak() __debugbreak()
-
 
 #define GAME_LIB_PATH "bin/Debug/GameLoadable"
 
 #define Newline "\r\n"
 
 // TODO(Jesse): Replace with our internal code to print to console?
-global_variable HANDLE Stdout = GetStdHandle(STD_OUTPUT_HANDLE);
-#define PrintConsole(Message)                        \
-        OutputDebugString(Message);                  \
-        WriteFile(Stdout, Message, strlen(Message), 0, 0);
+/* global_variable HANDLE Stdout = ; */
+/* #define PrintConsole(Message)                        \ */
+/*         OutputDebugString(Message);                  \ */
+/*         WriteFile(Stdout, Message, strlen(Message), 0, 0); */
 
 #define PLATFORM_OFFSET (sizeof(void*))
 
@@ -73,6 +54,7 @@ typedef PFNWGLSWAPINTERVALEXTPROC PFNSWAPINTERVALPROC;
 
 typedef HANDLE thread_id;
 typedef HANDLE semaphore;
+typedef HANDLE native_mutex;
 
 
 // ???
@@ -80,3 +62,47 @@ typedef HMODULE shared_lib;
 typedef HWND window;
 typedef HGLRC gl_context;
 typedef HDC display;
+
+struct native_file
+{
+  FILE* Handle;
+  counted_string Path;
+};
+
+/* global_variable native_file Stdout = */
+/* { */
+/*   .Handle = GetStdHandle(STD_OUTPUT_HANDLE), */
+/*   .Path = CSz("stdout") */
+/* }; */
+
+struct os
+{
+  HWND Window;
+  HDC Display;
+  HGLRC GlContext;
+
+  b32 ContinueRunning = True;
+};
+
+bonsai_function u64
+GetCycleCount()
+{
+  u64 Result = __rdtsc();
+  return Result;
+}
+
+inline b32
+AtomicCompareExchange( volatile u32 *Source, u32 Exchange, u32 Comparator )
+{
+  r64 Val = InterlockedCompareExchange( (LONG volatile *)Source, Exchange, Comparator);
+  b32 Result = (Val == Comparator);
+  return Result;
+}
+
+inline b32
+AtomicCompareExchange( volatile void **Source, void *Exchange, void *Comparator )
+{
+  u64 Val = InterlockedCompareExchange( (u64 volatile *)Source, (u64)Exchange, (u64)Comparator);
+  b32 Result = (Val == (u64)Comparator);
+  return Result;
+}

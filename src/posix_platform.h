@@ -13,8 +13,6 @@
 
 #include <sys/mman.h>   // mmap
 
-#include <stdio.h>
-
 #include <arpa/inet.h>  // inet_addr
 #include <sys/socket.h>
 
@@ -23,7 +21,6 @@
 #define BONSAI_FUNCTION_NAME __func__
 
 #define RuntimeBreak() raise(SIGTRAP)
-#define TriggeredRuntimeBreak() if (GetDebugState) { GetDebugState()->TriggerRuntimeBreak ? RuntimeBreak() : 0 ; }
 
 #define Newline "\n"
 
@@ -39,9 +36,6 @@ typedef sem_t semaphore;
 typedef pthread_mutex_t native_mutex;
 
 typedef void* shared_lib;
-
-bonsai_function void
-LogToConsole(counted_string Output);
 
 inline void
 WakeThread( semaphore *Semaphore )
@@ -136,10 +130,4 @@ struct native_file
 {
   FILE* Handle;
   counted_string Path;
-};
-
-global_variable native_file Stdout =
-{
-  .Handle = stdout,
-  .Path = CSz("stdout")
 };

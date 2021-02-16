@@ -20,8 +20,8 @@ global_variable u32 TestsPassed = 0;
 void
 TestSuiteBegin(const char *TestSuite)
 {
-  setbuf(stdout, NULL);
-  setbuf(stderr, NULL);
+  setvbuf(stdout, 0, _IONBF, 0);
+  setvbuf(stderr, 0, _IONBF, 0);
 
   Debug(Newline BLUE_TERMINAL "---" WHITE_TERMINAL " Starting %s Tests " BLUE_TERMINAL "---" WHITE_TERMINAL, TestSuite);
   return;

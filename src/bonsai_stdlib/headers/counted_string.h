@@ -13,8 +13,8 @@ meta(generate_stream(tagged_counted_string_stream))
 struct char_cursor
 {
   char* Start;
-  char* End;
   char* At;
+  char* End;
   memory_arena* Memory; // TODO(Jesse, id: 100, tags: open_question, metaprogramming): Do we actually want this in here?
 };
 
@@ -126,8 +126,8 @@ Basename(counted_string FilePath)
     }
   }
   counted_string Result = {
+    .Count = FilePath.Count - LastPathSeparator,
     .Start = FilePath.Start + LastPathSeparator,
-    .Count = FilePath.Count - LastPathSeparator
   };
 
   return Result;
@@ -207,7 +207,7 @@ Contains(counted_string S1, counted_string S2)
         S1Index <= Diff;
         ++S1Index)
     {
-      counted_string Temp1 = { .Start = S1.Start+S1Index, .Count = S2.Count };
+      counted_string Temp1 = CS(S1.Start+S1Index, S2.Count);
       Assert(Temp1.Start+Temp1.Count <= S1.Start+S1.Count);
       Result = StringsMatch(&Temp1, &S2);
       if (Result) { return Result; }

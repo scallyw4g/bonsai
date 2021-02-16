@@ -36,10 +36,6 @@
 #define YELLOW_TERMINAL "\x1b[33m"
 #define WHITE_TERMINAL "\x1b[37m"
 
-#define ReadBarrier  asm volatile("" ::: "memory"); _mm_lfence()
-#define WriteBarrier asm volatile("" ::: "memory"); _mm_sfence()
-#define FullBarrier  asm volatile("" ::: "memory"); _mm_sfence(); _mm_lfence()
-
 //
 // glX Business
 //

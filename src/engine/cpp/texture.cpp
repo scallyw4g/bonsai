@@ -5,6 +5,7 @@
 // Note(Jesse): Must match shader define in header.glsl
 #define DEBUG_TEXTURE_DIM 512
 
+#if 0
 texture
 LoadDDS(const char * FilePath, memory_arena *Arena)
 {
@@ -95,6 +96,7 @@ LoadDDS(const char * FilePath, memory_arena *Arena)
 
   return Result;
 }
+#endif
 
 // TODO(Jesse, id: 136, tags: allocation, speed): Why are these allocated on the heap?  Seems unnecessary..
 texture *
@@ -103,23 +105,23 @@ GenTexture(v2i Dim, memory_arena *Mem, u32 TextureDimensionality = GL_TEXTURE_2D
   texture *Texture = Allocate(texture, Mem, 1);
   Texture->Dim = Dim;
 
-  glGenTextures(1, &Texture->ID);
+  GL->GenTextures(1, &Texture->ID);
   Assert(Texture->ID);
 
-  glBindTexture(TextureDimensionality, Texture->ID);
+  GL->BindTexture(TextureDimensionality, Texture->ID);
 
   // Note(Jesse): This is required to be set if mipmapping is off.  The default
   // behavior is to lerp between the two closest mipmap levels, and when there
   // is only one level that fails, at least on my GL implementation.
-  glTexParameteri(TextureDimensionality, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  GL->TexParameteri(TextureDimensionality, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   //
 
-  glTexParameteri(TextureDimensionality, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(TextureDimensionality, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(TextureDimensionality, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(TextureDimensionality, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+  GL->TexParameteri(TextureDimensionality, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  GL->TexParameteri(TextureDimensionality, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  GL->TexParameteri(TextureDimensionality, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  GL->TexParameteri(TextureDimensionality, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
   /* glTexParameteri(TextureDimensionality, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE); */
-  glTexParameteri(TextureDimensionality, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+  GL->TexParameteri(TextureDimensionality, GL_TEXTURE_COMPARE_MODE, GL_NONE);
 
   return Texture;
 }
@@ -139,7 +141,7 @@ MakeTexture_RGBA(v2i Dim, u32* Data, memory_arena *Mem, u32 MaxTextureSlices = 1
   u32 ElementType = GL_UNSIGNED_BYTE;
   if (MaxTextureSlices == 1)
   {
-    glTexImage2D(GL_TEXTURE_2D, 0, (s32)InternalFormat,
+    GL->TexImage2D(GL_TEXTURE_2D, 0, (s32)InternalFormat,
         Texture->Dim.x, Texture->Dim.y, 0, TextureFormat, ElementType, Data);
   }
   else
@@ -159,7 +161,7 @@ MakeTexture_RGBA(v2i Dim, u32* Data, memory_arena *Mem, u32 MaxTextureSlices = 1
      */
 
     s32 Mips = (s32)MaxTextureSlices;
-    glTexStorage3D(GL_TEXTURE_3D, Mips, InternalFormat,
+    GL->TexStorage3D(GL_TEXTURE_3D, Mips, InternalFormat,
                    DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM, (s32)MaxTextureSlices);
 #endif
 
@@ -168,13 +170,13 @@ MakeTexture_RGBA(v2i Dim, u32* Data, memory_arena *Mem, u32 MaxTextureSlices = 1
     s32 zOffset = 0;
 
     s32 TextureDepth = 1;
-    glTexSubImage3D(GL_TEXTURE_3D, 0,
+    GL->TexSubImage3D(GL_TEXTURE_3D, 0,
         xOffset, yOffset, zOffset,
         Texture->Dim.x, Texture->Dim.y, TextureDepth,
         TextureFormat, ElementType, Data);
   }
 
-  glBindTexture(TextureDimensionality, 0);
+  GL->BindTexture(TextureDimensionality, 0);
 
   return Texture;
 }
@@ -187,10 +189,10 @@ MakeTexture_RGBA(v2i Dim, v4* Data, memory_arena *Mem)
   u32 TextureFormat = GL_RGBA;
   s32 InternalFormat = GL_RGBA32F;
   u32 ElementType = GL_FLOAT;
-  glTexImage2D(GL_TEXTURE_2D, 0, InternalFormat,
+  GL->TexImage2D(GL_TEXTURE_2D, 0, InternalFormat,
       Texture->Dim.x, Texture->Dim.y, 0,  TextureFormat, ElementType, Data);
 
-  glBindTexture(GL_TEXTURE_2D, 0);
+  GL->BindTexture(GL_TEXTURE_2D, 0);
 
   return Texture;
 }
@@ -200,13 +202,13 @@ MakeTexture_SingleChannel(v2i Dim, memory_arena *Mem)
 {
   texture *Texture = GenTexture(Dim, Mem);
 
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F,
+  GL->TexImage2D(GL_TEXTURE_2D, 0, GL_R32F,
       Texture->Dim.x, Texture->Dim.y, 0,  GL_RED, GL_FLOAT, 0);
 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  GL->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  GL->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-  glBindTexture(GL_TEXTURE_2D, 0);
+  GL->BindTexture(GL_TEXTURE_2D, 0);
 
   return Texture;
 }
@@ -221,13 +223,13 @@ MakeTexture_RGB(v2i Dim, const v3* Data, memory_arena *Mem)
    * passing this in when creating a Texture?
    */
 
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F,
+  GL->TexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F,
       Texture->Dim.x, Texture->Dim.y, 0,  GL_RGB, GL_FLOAT, Data);
 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  GL->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  GL->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-  glBindTexture(GL_TEXTURE_2D, 0);
+  GL->BindTexture(GL_TEXTURE_2D, 0);
 
   return Texture;
 }
@@ -236,16 +238,16 @@ texture *
 MakeDepthTexture(v2i Dim, memory_arena *Mem)
 {
   texture *Texture = GenTexture(Dim, Mem);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F,
+  GL->TexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F,
     Texture->Dim.x, Texture->Dim.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+  GL->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+  GL->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
   r32 BorderColors[4] = {1};
-  glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, &BorderColors[0]);
+  GL->TexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, &BorderColors[0]);
 
-  glBindTexture(GL_TEXTURE_2D, 0);
+  GL->BindTexture(GL_TEXTURE_2D, 0);
 
   return Texture;
 }
@@ -253,7 +255,7 @@ MakeDepthTexture(v2i Dim, memory_arena *Mem)
 void
 FramebufferDepthTexture(texture *Tex)
 {
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+  GL->FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
       GL_TEXTURE_2D, Tex->ID, 0);
   return;
 }
@@ -262,7 +264,7 @@ void
 FramebufferTexture(framebuffer *FBO, texture *Tex)
 {
   u32 Attachment = FBO->Attachments++;
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + Attachment,
+  GL->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + Attachment,
                          GL_TEXTURE_2D, Tex->ID, 0);
 
   return;

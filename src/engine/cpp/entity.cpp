@@ -1090,6 +1090,7 @@ SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension Vis
   return;
 }
 
+#ifndef BONSAI_WIN32
 entity *
 GetPlayer(entity **Players, client_state *OurClient)
 {
@@ -1102,6 +1103,7 @@ GetPlayer(entity **Players, client_state *OurClient)
 
   return Player;
 }
+#endif
 
 inline void
 SimulateAndRenderParticleSystems(entity** EntityTable, chunk_dimension WorldChunkDim, untextured_3d_geometry_buffer* GeoDest, graphics *Graphics, r32 Dt)

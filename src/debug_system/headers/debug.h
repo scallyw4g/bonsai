@@ -393,7 +393,7 @@ GetMemoryArenaStats(memory_arena *ArenaIn)
 #define TIMED_NAMED_BLOCK(BlockName) debug_timed_function BlockTimer(BlockName)
 
 #define TIMED_BLOCK(BlockName) { debug_timed_function BlockTimer(BlockName)
-#define END_BLOCK(BlockName) }
+#define END_BLOCK(BlockName) } do {} while (0)
 
 #define DEBUG_VALUE(Pointer) if (GetDebugState) {GetDebugState()->DebugValue(Pointer, #Pointer);}
 

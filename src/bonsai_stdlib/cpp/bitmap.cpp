@@ -38,21 +38,21 @@ bitmap
 ReadBitmapFromDisk(const char *Filename, memory_arena *Arena)
 {
   bitmap_header Header = {};
-  FILE *File = fopen(Filename, "rb");
+  native_file File = OpenFile(CS(Filename), "rb");
   s32 SizeReadFromDisk = 0;
   u32* Pixels = 0;
   u32 PixelCount = 0;
-  if (File)
+  if (File.Handle)
   {
-    SizeReadFromDisk += fread(&Header, 1, sizeof(Header), File);
+    SizeReadFromDisk += fread(&Header, 1, sizeof(Header), File.Handle);
 
     // For now, we only support reading bitmaps that are bottom-up ie. Origin in top-left corner
     PixelCount = (u32)Header.Image.WidthInPixels * (u32)Header.Image.HeightInPixels;
     Pixels = Allocate(u32, Arena, PixelCount);
-    SizeReadFromDisk += fread(Pixels, 1, Header.Image.SizeInBytes, File);
+    SizeReadFromDisk += fread(Pixels, 1, Header.Image.SizeInBytes, File.Handle);
   }
   else { Error("Opening %s for reading", Filename); }
-  fclose(File);
+  fclose(File.Handle);
 
   Assert(Header.Image.CompressionType == 3);
   Assert(SizeReadFromDisk == (s32)Header.FileSizeInBytes);
@@ -88,14 +88,14 @@ WriteBitmapToDisk(bitmap *Bitmap, const char *Filename)
   Header.Image.BlueMask             = 0x00FF0000;
 
   u32 SizeWritten = 0;
-  FILE *File = fopen(Filename, "wb");
-  if (File)
+  native_file File = OpenFile(CS(Filename), "rb");
+  if (File.Handle)
   {
-    SizeWritten += fwrite(&Header, 1, sizeof(Header), File);
-    SizeWritten += fwrite(Bitmap->Pixels.Start, 1, TotalSize(&Bitmap->Pixels), File);
+    SizeWritten += fwrite(&Header, 1, sizeof(Header), File.Handle);
+    SizeWritten += fwrite(Bitmap->Pixels.Start, 1, TotalSize(&Bitmap->Pixels), File.Handle);
   }
   else { Error("Opening %s for writing", Filename); }
-  fclose(File);
+  fclose(File.Handle);
 
   Assert(SizeWritten == Header.FileSizeInBytes);
 

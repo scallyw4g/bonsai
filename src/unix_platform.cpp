@@ -82,8 +82,10 @@ typedef Colormap x_colormap;
 typedef XSetWindowAttributes x_set_window_attribs;
 
 b32
-OpenAndInitializeWindow( os *Os, platform *Plat, s32 DebugFlags)
+OpenAndInitializeWindow( os *Os, platform *Plat)
 {
+  s32 DebugFlags = GLX_CONTEXT_DEBUG_BIT_ARB;
+
   GLint GlAttribs[] = {
     GLX_RGBA,
     GLX_DEPTH_SIZE, 24,

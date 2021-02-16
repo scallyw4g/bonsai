@@ -67,8 +67,8 @@ meta(
     struct (Type.name)_cursor
     {
       (Type.name)* Start;
-      (Type.name)* End;
       (Type.name)* At;
+      (Type.name)* End;
     };
 
     bonsai_function (Type.name)_cursor
@@ -1404,7 +1404,7 @@ bonsai_function counted_string
 FinalizeStringFromParser(string_from_parser* Builder)
 {
   umm Count = (umm)(Builder->Parser->Tokens.At->Value.Start - Builder->Start);
-  counted_string Result = { .Start = Builder->Start, .Count = Count };
+  counted_string Result = CS(Builder->Start, Count);
   return Result;
 }
 

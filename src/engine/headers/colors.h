@@ -285,7 +285,7 @@ GetColorData(u32 ColorIndex, r32 Emission = 0.0f)
   Assert(ColorIndex < ArrayCount(DefaultPalette));
   v4 Color = DefaultPalette[ColorIndex];
   v4 Result = V4(Color.rgb/255.0f, Emission);
-  return Result;;
+  return Result;
 }
 
 inline void

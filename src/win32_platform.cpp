@@ -2,16 +2,7 @@
 
 #define BONSAI_MAIN(void) int CALLBACK WinMain( HINSTANCE AppHandle, HINSTANCE Ignored, LPSTR CmdLine, int CmdShow )
 
-static HPALETTE hPalette;
-
-inline b32
-AtomicCompareExchange( volatile unsigned int *Source, unsigned int Exchange, unsigned int Comparator )
-{
-  u32 Val = InterlockedCompareExchange( (LONG volatile *)Source, Exchange, Comparator);
-
-  b32 Result = (Val == Comparator);
-  return Result;
-}
+global_variable HPALETTE global_hPalette;
 
 inline void
 ThreadSleep( semaphore Semaphore )
@@ -34,12 +25,12 @@ CreateSemaphore(void)
   return Result;
 }
 
-int
+bonsai_function u64
 GetLogicalCoreCount()
 {
   SYSTEM_INFO sysinfo;
   GetSystemInfo(&sysinfo);
-  int Result = sysinfo.dwNumberOfProcessors;
+  u64 Result = sysinfo.dwNumberOfProcessors;
   return Result;
 }
 
@@ -61,13 +52,6 @@ CreateThread( LPTHREAD_START_ROUTINE ThreadMain, thread_startup_params *Params)
 }
 
 #define CompleteAllWrites _WriteBarrier(); _mm_sfence()
-
-u64
-GetCycleCount()
-{
-  u64 Result = __rdtsc();
-  return Result;
-}
 
 inline r64
 GetHighPrecisionClock()
@@ -100,9 +84,9 @@ Terminate(os *Os)
     wglDeleteContext(Os->GlContext);
   }
 
-  if (hPalette)
+  if (global_hPalette)
   {
-    DeleteObject(hPalette);
+    DeleteObject(global_hPalette);
   }
 
   ReleaseDC(Os->Window, Os->Display);
@@ -156,7 +140,7 @@ setupPalette(HDC hDC)
     int pixelFormat = GetPixelFormat(hDC);
     PIXELFORMATDESCRIPTOR pfd;
     LOGPALETTE* pPal;
-    int paletteSize;
+    u64 paletteSize;
 
     DescribePixelFormat(hDC, pixelFormat, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
 
@@ -169,14 +153,14 @@ setupPalette(HDC hDC)
     pPal = (LOGPALETTE*)
         malloc(sizeof(LOGPALETTE) + paletteSize * sizeof(PALETTEENTRY));
     pPal->palVersion = 0x300;
-    pPal->palNumEntries = paletteSize;
+    pPal->palNumEntries = (u16)paletteSize;
 
     /* build a simple RGB color palette */
     {
-        int redMask = (1 << pfd.cRedBits) - 1;
-        int greenMask = (1 << pfd.cGreenBits) - 1;
-        int blueMask = (1 << pfd.cBlueBits) - 1;
-        int i;
+        u8 redMask = (u8)(1 << pfd.cRedBits) - 1;
+        u8 greenMask = (u8)(1 << pfd.cGreenBits) - 1;
+        u8 blueMask = (u8)(1 << pfd.cBlueBits) - 1;
+        u64 i;
 
         for (i=0; i<paletteSize; ++i) {
             pPal->palPalEntry[i].peRed =
@@ -239,10 +223,10 @@ WindowMessageCallback(
       os *Os = (os*)GetWindowLongPtr(hWnd, 0);
 
       /* realize palette if this is *not* the current window */
-      if (Os->GlContext && hPalette && (HWND) wParam != hWnd)
+      if (Os->GlContext && global_hPalette && (HWND) wParam != hWnd)
       {
-        UnrealizeObject(hPalette);
-        SelectPalette(Os->Display, hPalette, FALSE);
+        UnrealizeObject(global_hPalette);
+        SelectPalette(Os->Display, global_hPalette, FALSE);
         RealizePalette(Os->Display);
         SwapBuffers(Os->Display);
       }
@@ -254,10 +238,10 @@ WindowMessageCallback(
       os *Os = (os*)GetWindowLongPtr(hWnd, 0);
 
       /* realize palette if this is the current window */
-      if (Os->GlContext && hPalette)
+      if (Os->GlContext && global_hPalette)
       {
-        UnrealizeObject(hPalette);
-        SelectPalette(Os->Display, hPalette, FALSE);
+        UnrealizeObject(global_hPalette);
+        SelectPalette(Os->Display, global_hPalette, FALSE);
         RealizePalette(Os->Display);
         SwapBuffers(Os->Display);
         return TRUE;
@@ -286,19 +270,25 @@ WindowMessageCallback(
     case WM_LBUTTONDOWN:
     {
       platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-      Plat->Input.LMB = True;
+      Plat->Input.LMB.Pressed = True;
     } return 0;
 
     case WM_LBUTTONUP:
     {
       platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-      Plat->Input.LMB = False;
+      Plat->Input.LMB.Pressed = False;
     } return 0;
 
     case WM_RBUTTONDOWN:
     {
       platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-      Plat->Input.RMB = True;
+      Plat->Input.RMB.Pressed = True;
+    } return 0;
+
+    case WM_RBUTTONUP:
+    {
+      platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+      Plat->Input.RMB.Pressed = False;
     } return 0;
 
     case WM_MOUSEMOVE:
@@ -315,7 +305,7 @@ WindowMessageCallback(
 #define BindToInput(Keysym, InputField, Boolean) \
   case Keysym: { \
     platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET); \
-    Plat->Input.##InputField = Boolean; } return 0;
+    Plat->Input.InputField.Pressed = Boolean; } return 0
 
 #define BindKeyupToInput(Keysym, InputField) \
     BindToInput(Keysym, InputField, False)
@@ -355,7 +345,7 @@ WindowMessageCallback(
         BindKeyupToInput(VK_SPACE, Space);
         default: { /* Ignore all other keypresses */ } break;
       }
-    }
+    } break;
 
 
 
@@ -366,7 +356,6 @@ WindowMessageCallback(
         case VK_ESCAPE:
         {
           DestroyWindow(hWnd);
-          return 0;
         } return 0;
 
         BindKeydownToInput(0x57, W);
@@ -394,7 +383,8 @@ WindowMessageCallback(
         BindKeydownToInput(VK_CONTROL, Ctrl);
         BindKeydownToInput(VK_SPACE, Space);
         default: { /* Ignore all other keypresses */ } break;
-      }
+
+      } break;
 
       default: { /* Ignore all other window messages */ } break;
     }
@@ -434,19 +424,19 @@ OpenAndInitializeWindow( os *Os, platform *Plat)
 
   Os->Display = GetDC(Os->Window);
   setupPixelFormat(Os->Display);
-  hPalette = setupPalette(Os->Display);
+  global_hPalette = setupPalette(Os->Display);
   Os->GlContext = wglCreateContext(Os->Display);
   wglMakeCurrent(Os->Display, Os->GlContext);
 
   {
     SetWindowLongPtr(Os->Window, 0, (LONG_PTR)Os);
-    int e = GetLastError();
+    u64 e = GetLastError();
     Assert(!e);
   }
 
   {
     SetWindowLongPtr(Os->Window, sizeof(Os), (LONG_PTR)Plat);
-    int e = GetLastError();
+    u64 e = GetLastError();
     Assert(!e);
   }
 
@@ -485,7 +475,7 @@ OpenLibrary(const char *LibPath)
 inline b32
 CloseLibrary(shared_lib Lib)
 {
-  b32 Result = FreeLibrary(Lib);
+  b32 Result = (b32)FreeLibrary(Lib);
   return Result;
 }
 

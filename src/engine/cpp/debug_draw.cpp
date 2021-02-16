@@ -23,7 +23,7 @@ DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh,
   P2.x = P2.x - (Thickness/2.0f);
 
   v4 FaceColors[VERTS_PER_FACE];
-  FillColorArray(ColorIndex, FaceColors, VERTS_PER_FACE);;
+  FillColorArray(ColorIndex, FaceColors, VERTS_PER_FACE);
 
   {
     v3 localVertexData[] =

@@ -1005,14 +1005,14 @@ GetAllCoplanarVerts(voxel_position* Query, point_buffer* Points, voxel_position*
 bonsai_function b32
 VertsAreColnear(voxel_position* V1, voxel_position* V2, voxel_position* V3)
 {
-  r32 a = V1->x;
-  r32 b = V1->y;
+  r32 a = (r32)V1->x;
+  r32 b = (r32)V1->y;
 
-  r32 m = V2->x;
-  r32 n = V2->y;
+  r32 m = (r32)V2->x;
+  r32 n = (r32)V2->y;
 
-  r32 x = V3->x;
-  r32 y = V3->y;
+  r32 x = (r32)V3->x;
+  r32 y = (r32)V3->y;
 
   b32 Result = (n-b)*(x-m) == (y-n)*(m-a);
   return Result;
