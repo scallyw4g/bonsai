@@ -184,7 +184,6 @@ setupPalette(HDC hDC)
 	return hPalette;
 }
 
-
 LRESULT APIENTRY
 WindowMessageCallback(
     HWND hWnd,
@@ -527,3 +526,70 @@ BonsaiSwapBuffers(os *Os)
 {
   SwapBuffers(Os->Display);
 }
+
+bonsai_function u64
+PlatformGetPageSize()
+{
+  SYSTEM_INFO sysInfo;
+  GetSystemInfo(&sysInfo);
+  local_persist u64 Result = sysInfo.dwPageSize;
+  Assert(Result == 4096);
+  return Result;
+}
+
+bonsai_function u8*
+PlatformAllocateSize(umm AllocationSize)
+{
+  Assert(AllocationSize % PlatformGetPageSize() == 0);
+
+  u32 AllocationType = MEM_COMMIT|MEM_RESERVE;
+  u8 *Result = (u8*)VirtualAlloc(0, AllocationSize, AllocationType, PAGE_READWRITE);
+
+  return Result;
+}
+
+bonsai_function b32
+PlatformDeallocate(u8 *Allocation)
+{
+  b32 Result = (b32)VirtualFree(Allocation, 0, MEM_RELEASE);
+  return Result;
+}
+
+bonsai_function b32
+PlatformSetProtection(u8 *Base, u64 Size, memory_protection_type Protection)
+{
+  b32 Result = False;
+  u64 PageSize = PlatformGetPageSize();
+  if ( (umm)Base % PageSize == 0 &&
+            Size % PageSize == 0 )
+  {
+    u32 NativeProt = 0;
+    switch (Protection)
+    {
+      case MemoryProtection_RW:
+      {
+        NativeProt = PAGE_READWRITE;
+      } break;
+
+      case MemoryProtection_Protected:
+      {
+        NativeProt = PAGE_NOACCESS;
+      } break;
+    }
+
+    u32 OldProtect = 0;
+    CAssert(sizeof(u32) == sizeof(DWORD));
+    if (VirtualProtect( (void*)Base, Size, NativeProt, (PDWORD)&OldProtect))
+    {
+      Result = True;
+    }
+  }
+  else
+  {
+    InvalidCodePath();
+  }
+
+  Assert(Result);
+  return Result;
+}
+

@@ -54,12 +54,13 @@ PlatformLockMutex(mutex *Mutex)
   return;
 }
 
-u64
+bonsai_function u64
 PlatformGetPageSize()
 {
   u64 InvalidSysconfReturn = ((u64)-1);
   local_persist u64 PageSize = (u64)sysconf(_SC_PAGESIZE);
   Assert(PageSize != InvalidSysconfReturn);
+  Assert(PageSize == 4096);
   return PageSize;
 }
 
@@ -178,21 +179,6 @@ PlatformAllocateSize(umm AllocationSize)
   }
 
   return Bytes;
-}
-
-void
-PlatformUnprotectArena(memory_arena *Arena)
-{
-  /* TIMED_FUNCTION(); */
-  umm Size = (umm)Arena->End - (umm)Arena->Start;
-  s32 Err = mprotect(Arena->Start, Size, PROT_READ|PROT_WRITE);
-  if (Err == -1)
-  {
-    Error("Unprotecting arena failed");
-    Assert(False);
-  }
-
-  return;
 }
 
 global_variable volatile b32 MainThreadBlocksWorkerThreads;
@@ -342,34 +328,4 @@ PlatformSetWorkerThreadPriority()
   return;
 }
 #endif
-
-// TODO(Jesse, id: 144, tags: cleanup, platform): This actually has nothing to do with the platform
-inline void
-RewindArena(memory_arena *Arena, umm RestartBlockSize = Megabytes(1) )
-{
-  if (Arena->Prev)
-  {
-    PlatformUnprotectArena(Arena->Prev);
-    VaporizeArena(Arena->Prev);
-    Arena->Prev = 0;
-  }
-
-  PlatformUnprotectArena(Arena);
-
-  u8* ClearByte = Arena->Start;
-  while( ClearByte < Arena->At )
-  {
-    *ClearByte++ = 0;
-  }
-
-  Arena->At = Arena->Start;
-  Arena->NextBlockSize = RestartBlockSize;
-
-#if BONSAI_INTERNAL
-  Arena->Pushes = 0;
-  DEBUG_CLEAR_META_RECORDS_FOR(Arena);
-#endif
-
-  return;
-}
 

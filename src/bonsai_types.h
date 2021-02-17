@@ -169,6 +169,7 @@ global_variable memory_arena* TranArena = &_TranArena;
 //
 
 
+#include <bonsai_stdlib/cpp/memory_arena.cpp>
 #include <bonsai_stdlib/cpp/debug_print.cpp>  // TODO(Jesse, id: 91, tags: cleanup, metaprogramming, format_counted_string): Jettison this .. Can it be metaprogrammed?
 #include <bonsai_stdlib/cpp/platform.cpp>
 #include <bonsai_stdlib/cpp/counted_string.cpp>
