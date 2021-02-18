@@ -61,9 +61,9 @@ bonsai_function b32            TokenIsOperator(c_token_type T);
 bonsai_function b32            NextTokenIsOperator(parser *Parser);
 bonsai_function counted_string RequireOperatorToken(parser *Parser);
 
-bonsai_function void TrimFirstToken(parser* Parser, c_token_type TokenType);
-bonsai_function void TrimLastToken(parser* Parser, c_token_type TokenType);
-bonsai_function void TrimLeadingWhitespace(parser* Parser);
+bonsai_function void           TrimFirstToken(parser* Parser, c_token_type TokenType);
+bonsai_function void           TrimLastToken(parser* Parser, c_token_type TokenType);
+bonsai_function void           TrimLeadingWhitespace(parser* Parser);
 bonsai_function counted_string EatBetween(parser* Parser, c_token_type Open, c_token_type Close);
 
 bonsai_function parser * ResolveInclude(parse_context *Ctx, parser *Parser);
@@ -580,8 +580,6 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
 bonsai_function void
 ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_string ErrorString)
 {
-  RuntimeBreak();
-
   Assert(ErrorToken);
 
   u32 LinesOfContext = 4;
@@ -622,6 +620,9 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
 
   Log("------------------------------------------------------------------------------------\n");
   Parser->Valid = False;
+
+  RuntimeBreak();
+
   return;
 }
 
@@ -2622,14 +2623,59 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       case CT_MacroLiteral:
       {
         Assert(T->Macro);
-
         parser *Expanded = ExpandMacro(Current, T->Macro, Memory);
         Current = SplitAndInsertParserInto(Current, T, Expanded, Current->Tokens.At, Memory);
       } break;
 
-      case CT_PreprocessorIf:
+      // TODO(Jesse) : These three clauses need to have the actual preprocessor tokens dealt with somehow.
+      //
+      // That's a job for another day.
+      case CT_PreprocessorIfDefined:
       {
-        NotImplemented;
+        RequireToken(Parser, T->Type);
+        counted_string DefineValue = ParseIfDefinedValue(Parser);
+        if (IsDefined(Ctx, DefineValue) )
+        {
+          c_token *EndT = EatIfBlock(Parser);
+          EatUntilIncludingEndif(Parser);
+          OmitSectionOfParser(Parser, EndT, Parser->Tokens.At);
+        }
+        else
+        {
+          EatIfBlock(Parser);
+        }
+      } break;
+
+      case CT_PreprocessorIfNotDefined:
+      {
+        RequireToken(Parser, T->Type);
+        counted_string DefineValue = ParseIfDefinedValue(Parser);
+        if (IsDefined(Ctx, DefineValue))
+        {
+          EatIfBlock(Parser);
+        }
+        else
+        {
+          c_token *EndT = EatIfBlock(Parser);
+          EatUntilIncludingEndif(Parser);
+          OmitSectionOfParser(Parser, EndT, Parser->Tokens.At);
+        }
+      } break;
+
+      case CT_PreprocessorIf:
+      case CT_PreprocessorElif:
+      {
+        RequireToken(Parser, T->Type);
+        if (ResolveMacroConstantExpression(Parser) == 0)
+        {
+          EatIfBlock(Parser);
+        }
+        else
+        {
+          c_token *EndT = EatIfBlock(Parser);
+          EatUntilIncludingEndif(Parser);
+          OmitSectionOfParser(Parser, EndT, Parser->Tokens.At);
+        }
       } break;
 
       default:
@@ -4229,10 +4275,36 @@ EatIfBlock(parser *Parser)
 
   if (!Success)
   {
-    ParseError(Parser, StartToken, FormatCountedString(TranArena, CSz("Unable to find closing token for "), ToString(CT_PreprocessorIf)));
+    ParseError(Parser, StartToken, FormatCountedString(TranArena, CSz("Unable to find closing token for %S."), ToString(CT_PreprocessorIf)));
   }
 
   return;
+}
+
+bonsai_function counted_string
+ParseIfDefinedValue(parser *Parser)
+{
+  u32 NumOpenParens = 0;
+  while (OptionalToken(Parser, CTokenType_OpenParen))
+  {
+    ++NumOpenParens;
+  }
+
+  counted_string Result = RequireToken(Parser, CTokenType_Identifier).Value;
+
+  while (NumOpenParens--)
+  {
+    RequireToken(Parser, CTokenType_CloseParen);
+  }
+
+  return Result;
+}
+
+bonsai_function b32
+IsDefined(parse_context *Ctx, counted_string DefineValue) 
+{
+  b32 Result = GetByName(&Ctx->Datatypes.Macros, DefineValue) != 0;
+  return Result;
 }
 
 bonsai_function struct_member
@@ -4250,6 +4322,26 @@ ParseStructMember(parse_context *Ctx, counted_string StructName)
     c_token T = PeekToken(Parser);
     switch(T.Type)
     {
+      case CT_PreprocessorIfDefined:
+      {
+        RequireToken(Parser, T.Type);
+        counted_string DefineValue = ParseIfDefinedValue(Parser);
+        if (!IsDefined(Ctx, DefineValue) )
+        {
+          EatIfBlock(Parser);
+        }
+      } break;
+
+      case CT_PreprocessorIfNotDefined:
+      {
+        RequireToken(Parser, T.Type);
+        counted_string DefineValue = ParseIfDefinedValue(Parser);
+        if ( IsDefined(Ctx, DefineValue) )
+        {
+          EatIfBlock(Parser);
+        }
+      } break;
+
       case CT_PreprocessorIf:
       case CT_PreprocessorElif:
       {
@@ -4261,8 +4353,6 @@ ParseStructMember(parse_context *Ctx, counted_string StructName)
       } break;
 
       case CT_PreprocessorDefine:
-      case CT_PreprocessorIfDefined:
-      case CT_PreprocessorIfNotDefined:
       case CT_PreprocessorElse:
       case CT_PreprocessorEndif:
       case CT_PreprocessorUndef:
@@ -4722,32 +4812,6 @@ ParseUndefine(parse_context *Ctx, parser *Parser)
   NotImplemented;
 }
 
-bonsai_function counted_string
-ParseIfDefinedValue(parser *Parser)
-{
-  u32 NumOpenParens = 0;
-  while (OptionalToken(Parser, CTokenType_OpenParen))
-  {
-    ++NumOpenParens;
-  }
-
-  counted_string Result = RequireToken(Parser, CTokenType_Identifier).Value;
-
-  while (NumOpenParens--)
-  {
-    RequireToken(Parser, CTokenType_CloseParen);
-  }
-
-  return Result;
-}
-
-bonsai_function b32
-IsDefined(parse_context *Ctx, counted_string DefineValue) 
-{
-  b32 Result = GetByName(&Ctx->Datatypes.Macros, DefineValue) != 0;
-  return Result;
-}
-
 bonsai_function void
 ParseSingleStatement(parse_context *Ctx, ast_node_statement *Result)
 {
@@ -4759,6 +4823,27 @@ ParseSingleStatement(parse_context *Ctx, ast_node_statement *Result)
     const c_token T = PeekToken(Parser);
     switch (T.Type)
     {
+
+      case CT_PreprocessorIfDefined:
+      {
+        RequireToken(Parser, T.Type);
+        counted_string DefineValue = ParseIfDefinedValue(Parser);
+        if (!IsDefined(Ctx, DefineValue) )
+        {
+          EatIfBlock(Parser);
+        }
+      } break;
+
+      case CT_PreprocessorIfNotDefined:
+      {
+        RequireToken(Parser, T.Type);
+        counted_string DefineValue = ParseIfDefinedValue(Parser);
+        if ( IsDefined(Ctx, DefineValue) )
+        {
+          EatIfBlock(Parser);
+        }
+      } break;
+
       case CT_PreprocessorIf:
       case CT_PreprocessorElif:
       {
@@ -4782,32 +4867,8 @@ ParseSingleStatement(parse_context *Ctx, ast_node_statement *Result)
         EatUntilIncluding(Parser, CTokenType_Newline);
       } break;
 
-      case CT_PreprocessorIfDefined:
-      {
-        RequireToken(Parser, T.Type);
-        counted_string DefineValue = ParseIfDefinedValue(Parser);
-        if (!IsDefined(Ctx, DefineValue) )
-        {
-          EatIfBlock(Parser);
-        }
-
-      } break;
-
-      case CT_PreprocessorIfNotDefined:
-      {
-        RequireToken(Parser, T.Type);
-        counted_string DefineValue = ParseIfDefinedValue(Parser);
-        if ( IsDefined(Ctx, DefineValue) )
-        {
-          // TODO(Jesse): @preprocessor_if_defined
-          EatIfBlock(Parser);
-        }
-
-      } break;
-
       case CT_PreprocessorElse:
       case CT_PreprocessorEndif:
-
       case CT_PreprocessorPragma:
       case CT_PreprocessorError:
       case CT_PreprocessorWarning:
@@ -4825,16 +4886,8 @@ ParseSingleStatement(parse_context *Ctx, ast_node_statement *Result)
 
       case CTokenType_Identifier:
       {
-        if (Result->LHS)
-        {
-          DebugPrint(Result->LHS);
-          Assert(False);
-        }
-        else
-        {
-          Result->LHS = ParseExpression(Ctx);
-        }
-
+        Assert(!Result->LHS);
+        Result->LHS = ParseExpression(Ctx);
       } break;
 
       case CTokenType_Equals:
@@ -5471,11 +5524,26 @@ ParseDatatypes(parse_context *Ctx)
 
     switch(T.Type)
     {
-      case CT_Pragma:
+      case CT_PreprocessorIfDefined:
       {
-        RequireToken(Parser, T);
-        EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+        RequireToken(Parser, T.Type);
+        counted_string DefineValue = ParseIfDefinedValue(Parser);
+        if (!IsDefined(Ctx, DefineValue) )
+        {
+          EatIfBlock(Parser);
+        }
       } break;
+
+      case CT_PreprocessorIfNotDefined:
+      {
+        RequireToken(Parser, T.Type);
+        counted_string DefineValue = ParseIfDefinedValue(Parser);
+        if ( IsDefined(Ctx, DefineValue) )
+        {
+          EatIfBlock(Parser);
+        }
+      } break;
+
 
       case CT_PreprocessorIf:
       case CT_PreprocessorElif:
@@ -5487,9 +5555,13 @@ ParseDatatypes(parse_context *Ctx)
         }
       } break;
 
+      case CT_Pragma:
+      {
+        RequireToken(Parser, T);
+        EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+      } break;
+
       case CT_PreprocessorDefine:
-      case CT_PreprocessorIfDefined:
-      case CT_PreprocessorIfNotDefined:
       case CT_PreprocessorElse:
       case CT_PreprocessorEndif:
       case CT_PreprocessorUndef:

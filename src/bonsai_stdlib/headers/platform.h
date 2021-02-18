@@ -1,5 +1,4 @@
-/* break_here */
-
+break_here
 #if BONSAI_WIN32
 #include <win32_platform.h>
 #elif BONSAI_LINUX
