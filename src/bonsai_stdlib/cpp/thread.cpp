@@ -1,4 +1,4 @@
-u32
+bonsai_function u32
 GetWorkerThreadCount()
 {
   u32 LogicalCoreCount = PlatformGetLogicalCoreCount();
@@ -13,7 +13,7 @@ GetWorkerThreadCount()
   return ThreadCount;
 }
 
-u32
+bonsai_function u32
 GetTotalThreadCount()
 {
   u32 Result = GetWorkerThreadCount() + 1;

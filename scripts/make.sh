@@ -6,7 +6,7 @@ if [ "$UNAME" == "Linux" ] ; then
   Platform="Linux"
   PLATFORM_LINKER_OPTIONS="-lpthread -lX11 -ldl -lGL"
   PLATFORM_DEFINES="-DBONSAI_LINUX"
-  PLATFORM_INCLUDE_DIRS="-I/usr/src/linux-headers-4.15.0-88/include/"
+  PLATFORM_INCLUDE_DIRS=""
   PLATFORM_CXX_OPTIONS="-ggdb"
 
   # TODO(Jesse): What does -fPIC acutally do?  I found the option documented here,
@@ -170,7 +170,7 @@ function BuildPreprocessor {
   executable="$SRC/metaprogramming/preprocessor.cpp"
   SetOutputBinaryPathBasename "$executable" "$BIN"
   echo -e "$Building $executable"
-  clang++                                                \
+  echo "clang++                                                \
     $OPTIMIZATION_LEVEL                                  \
     $CXX_OPTIONS                                         \
     $PLATFORM_CXX_OPTIONS                                \
@@ -179,8 +179,9 @@ function BuildPreprocessor {
     $PLATFORM_INCLUDE_DIRS                               \
     -I"$SRC"                                             \
     -o "$output_basename""_dev""$PLATFORM_EXE_EXTENSION" \
-    $executable
+    $executable"
 
+  exit 1
   if [ $? -eq 0 ]; then
    echo -e "$Success $executable"
   else
@@ -445,10 +446,10 @@ DumpSourceFilesAndQuit=0
 CheckoutMetaOutput=0
 
 FirstPreprocessor=0
-BuildPreprocessor=0
+BuildPreprocessor=1
 SecondPreprocessor=0
 
-BuildAllProjects=1
+BuildAllProjects=0
 RunTests=0
 FinalPreprocessor=0
 
