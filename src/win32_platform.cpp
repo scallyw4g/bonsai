@@ -25,17 +25,8 @@ CreateSemaphore(void)
   return Result;
 }
 
-bonsai_function u64
-GetLogicalCoreCount()
-{
-  SYSTEM_INFO sysinfo;
-  GetSystemInfo(&sysinfo);
-  u64 Result = sysinfo.dwNumberOfProcessors;
-  return Result;
-}
-
 thread_id
-CreateThread( LPTHREAD_START_ROUTINE ThreadMain, thread_startup_params *Params)
+PlatformCreateThread( LPTHREAD_START_ROUTINE ThreadMain, thread_startup_params *Params)
 {
   DWORD flags = 0;
 
@@ -593,3 +584,28 @@ PlatformSetProtection(u8 *Base, u64 Size, memory_protection_type Protection)
   return Result;
 }
 
+bonsai_function u32
+PlatformGetLogicalCoreCount()
+{
+  SYSTEM_INFO sysinfo;
+  GetSystemInfo(&sysinfo);
+  u32 Result = (u32)sysinfo.dwNumberOfProcessors;
+  return Result;
+}
+
+bonsai_function void
+PlatformDebugStacktrace()
+{
+  // TODO(Jesse): Implement this.
+  //
+  // Helpful answer on how to get started
+  // https://stackoverflow.com/questions/26398064/counterpart-to-glibcs-backtrace-and-backtrace-symbols-on-windows
+  //
+  // using these APIs
+  //
+  // https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/bb204633(v=vs.85)?redirectedfrom=MSDN
+  // https://docs.microsoft.com/en-us/windows/win32/api/dbghelp/nf-dbghelp-symfromaddr?redirectedfrom=MSDN
+  //
+
+  Warn("Stack traces unavailable on windows.");
+}

@@ -58,7 +58,7 @@ U8_StreamFromFile(const char* SourceFile, memory_arena *Memory)
   u8* FileContents = 0;
   umm FileSize = 0;
 
-  native_file File = OpenFile(CS(SourceFile));
+  native_file File = OpenFile(SourceFile);
   if (File.Handle)
   {
     fseek(File.Handle, 0L, SEEK_END);

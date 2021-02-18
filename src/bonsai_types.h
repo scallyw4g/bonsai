@@ -36,11 +36,11 @@
 // Stdlib Headers
 //
 
-#include <bonsai_stdlib/headers/thread.h>
 #include <bonsai_stdlib/headers/assert.h>
 #include <bonsai_stdlib/headers/primitives.h>
 #include <bonsai_stdlib/headers/console_macros.h>
 #include <bonsai_stdlib/headers/platform.h>
+#include <bonsai_stdlib/headers/thread.h>
 #include <bonsai_stdlib/headers/math.h>
 #include <bonsai_stdlib/headers/file.h>
 #include <bonsai_stdlib/headers/vector.h>
@@ -172,6 +172,7 @@ global_variable memory_arena* TranArena = &_TranArena;
 #include <bonsai_stdlib/cpp/memory_arena.cpp>
 #include <bonsai_stdlib/cpp/debug_print.cpp>  // TODO(Jesse, id: 91, tags: cleanup, metaprogramming, format_counted_string): Jettison this .. Can it be metaprogrammed?
 #include <bonsai_stdlib/cpp/platform.cpp>
+#include <bonsai_stdlib/cpp/thread.cpp>
 #include <bonsai_stdlib/cpp/counted_string.cpp>
 #include <bonsai_stdlib/cpp/string_builder.cpp>
 #include <bonsai_stdlib/cpp/stream.cpp>

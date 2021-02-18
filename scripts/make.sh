@@ -7,6 +7,7 @@ if [ "$UNAME" == "Linux" ] ; then
   PLATFORM_LINKER_OPTIONS="-lpthread -lX11 -ldl -lGL"
   PLATFORM_DEFINES="-DBONSAI_LINUX"
   PLATFORM_INCLUDE_DIRS="-I/usr/src/linux-headers-4.15.0-88/include/"
+  PLATFORM_CXX_OPTIONS="-ggdb"
 
   # TODO(Jesse): What does -fPIC acutally do?  I found the option documented here,
   # but with no explanation of what it's doing.  Apparently it's unsupported on
@@ -15,15 +16,21 @@ if [ "$UNAME" == "Linux" ] ; then
   # https://clang.llvm.org/docs/ClangCommandLineReference.html
   # @unsupported_fPIC_flag_windows
   SHARED_LIBRARY_FLAGS="-shared -fPIC"
+  PLATFORM_EXE_EXTENSION=""
+  PLATFORM_LIB_EXTENSION=".so"
 
 elif [[ "$UNAME" == CYGWIN* || "$UNAME" == MINGW* ]] ; then
   Platform="Windows"
   PLATFORM_LINKER_OPTIONS="-lgdi32 -luser32 -lopengl32 -lglu32"
   PLATFORM_DEFINES="-DBONSAI_WIN32"
   PLATFORM_INCLUDE_DIRS=""
+  PLATFORM_CXX_OPTIONS="-g -gcodeview"
 
   # @unsupported_fPIC_flag_windows
   SHARED_LIBRARY_FLAGS="-shared"
+
+  PLATFORM_EXE_EXTENSION=".exe"
+  PLATFORM_LIB_EXTENSION=".dll"
 fi
 
 
@@ -74,10 +81,9 @@ function ColorizeTitle()
 
 # Note(Jesse): Using -std=c++17 so I can mark functions with [[nodiscard]]
 
-CXX_COMPILER_OPTIONS="
+CXX_OPTIONS="
   --std=c++17
   -ferror-limit=2000
-  -ggdb
 
   -Weverything
 
@@ -136,8 +142,8 @@ DEBUG_TESTS_TO_BUILD="
   $TESTS/allocation.cpp
 "
 
+  # $TESTS/ui_command_buffer.cpp
 TESTS_TO_BUILD="
-  $TESTS/ui_command_buffer.cpp
   $TESTS/m4.cpp
   $TESTS/colladaloader.cpp
   $TESTS/test_bitmap.cpp
@@ -164,14 +170,15 @@ function BuildPreprocessor {
   executable="$SRC/metaprogramming/preprocessor.cpp"
   SetOutputBinaryPathBasename "$executable" "$BIN"
   echo -e "$Building $executable"
-  clang++                       \
-    $OPTIMIZATION_LEVEL         \
-    $CXX_COMPILER_OPTIONS       \
-    $PLATFORM_LINKER_OPTIONS    \
-    $PLATFORM_DEFINES           \
-    $PLATFORM_INCLUDE_DIRS      \
-    -I"$SRC"                    \
-    -o "$output_basename""_dev" \
+  clang++                                                \
+    $OPTIMIZATION_LEVEL                                  \
+    $CXX_OPTIONS                                         \
+    $PLATFORM_CXX_OPTIONS                                \
+    $PLATFORM_LINKER_OPTIONS                             \
+    $PLATFORM_DEFINES                                    \
+    $PLATFORM_INCLUDE_DIRS                               \
+    -I"$SRC"                                             \
+    -o "$output_basename""_dev""$PLATFORM_EXE_EXTENSION" \
     $executable
 
   if [ $? -eq 0 ]; then
@@ -195,88 +202,93 @@ function BuildAllClang {
   echo -e "$Delimeter"
   echo -e ""
 
-  ColorizeTitle "Executables"
-  for executable in $EXECUTABLES_TO_BUILD; do
-    SetOutputBinaryPathBasename "$executable" "$BIN"
-    echo -e "$Building $executable"
-    clang++                    \
-      $OPTIMIZATION_LEVEL      \
-      $CXX_COMPILER_OPTIONS    \
-      $PLATFORM_LINKER_OPTIONS \
-      $PLATFORM_DEFINES        \
-      $PLATFORM_INCLUDE_DIRS   \
-      -I"$SRC"                 \
-      -o "$output_basename"    \
-      $executable && echo -e "$Success $executable" &
-  done
+#   ColorizeTitle "Executables"
+#   for executable in $EXECUTABLES_TO_BUILD; do
+#     SetOutputBinaryPathBasename "$executable" "$BIN"
+#     echo -e "$Building $executable"
+#     clang++                                          \
+#       $OPTIMIZATION_LEVEL                            \
+#       $CXX_OPTIONS                                   \
+#       $PLATFORM_CXX_OPTIONS                          \
+#       $PLATFORM_LINKER_OPTIONS                       \
+#       $PLATFORM_DEFINES                              \
+#       $PLATFORM_INCLUDE_DIRS                         \
+#       -I"$SRC"                                       \
+#       -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
+#       $executable && echo -e "$Success $executable" &
+#   done
 
-  echo ""
-  ColorizeTitle "Debug Tests"
-  for executable in $DEBUG_TESTS_TO_BUILD; do
-    SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
-    echo -e "$Building $executable"
-    clang++                    \
-      $CXX_COMPILER_OPTIONS    \
-      $PLATFORM_LINKER_OPTIONS \
-      $PLATFORM_DEFINES        \
-      $PLATFORM_INCLUDE_DIRS   \
-      -I"$SRC"                 \
-      -o "$output_basename"    \
-      $executable && echo -e "$Success $executable" &
-  done
+#   echo ""
+#   ColorizeTitle "Debug Tests"
+#   for executable in $DEBUG_TESTS_TO_BUILD; do
+#     SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
+#     echo -e "$Building $executable"
+#     clang++                                          \
+#       $CXX_OPTIONS                                   \
+#       $PLATFORM_CXX_OPTIONS                          \
+#       $PLATFORM_LINKER_OPTIONS                       \
+#       $PLATFORM_DEFINES                              \
+#       $PLATFORM_INCLUDE_DIRS                         \
+#       -I"$SRC"                                       \
+#       -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
+#       $executable && echo -e "$Success $executable" &
+#   done
 
   echo ""
   ColorizeTitle "Tests"
   for executable in $TESTS_TO_BUILD; do
     SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
     echo -e "$Building $executable"
-    clang++                    \
-      $OPTIMIZATION_LEVEL      \
-      $CXX_COMPILER_OPTIONS    \
-      $PLATFORM_LINKER_OPTIONS \
-      $PLATFORM_DEFINES        \
-      $PLATFORM_INCLUDE_DIRS   \
-      -I"$SRC"                 \
-      -I"$SRC/debug_system"    \
-      -o "$output_basename"    \
+    clang++                                          \
+      $OPTIMIZATION_LEVEL                            \
+      $CXX_OPTIONS                                   \
+      $PLATFORM_CXX_OPTIONS                          \
+      $PLATFORM_LINKER_OPTIONS                       \
+      $PLATFORM_DEFINES                              \
+      $PLATFORM_INCLUDE_DIRS                         \
+      -I"$SRC"                                       \
+      -I"$SRC/debug_system"                          \
+      -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
       $executable && echo -e "$Success $executable" &
   done
 
-  echo ""
-  ColorizeTitle "DebugSystem"
-  DEBUG_SRC_FILE="$SRC/debug_system/debug.cpp"
-  echo -e "$Building $DEBUG_SRC_FILE"
-  clang++                         \
-    $OPTIMIZATION_LEVEL           \
-    $CXX_COMPILER_OPTIONS         \
-    $PLATFORM_LINKER_OPTIONS      \
-    $PLATFORM_DEFINES             \
-    $PLATFORM_INCLUDE_DIRS        \
-    $SHARED_LIBRARY_FLAGS         \
-    -I"$SRC"                      \
-    -I"$SRC/debug_system"         \
-    -o "$BIN/lib_debug_system.so" \
-    "$DEBUG_SRC_FILE" && echo -e "$Success $DEBUG_SRC_FILE" &
+  # echo ""
+  # ColorizeTitle "DebugSystem"
+  # DEBUG_SRC_FILE="$SRC/debug_system/debug.cpp"
+  # echo -e "$Building $DEBUG_SRC_FILE"
+  # clang++                                               \
+  #   $OPTIMIZATION_LEVEL                                 \
+  #   $CXX_OPTIONS                                        \
+  #   $PLATFORM_CXX_OPTIONS                               \
+  #   $PLATFORM_LINKER_OPTIONS                            \
+  #   $PLATFORM_DEFINES                                   \
+  #   $PLATFORM_INCLUDE_DIRS                              \
+  #   $SHARED_LIBRARY_FLAGS                               \
+  #   -I"$SRC"                                            \
+  #   -I"$SRC/debug_system"                               \
+  #   -o "$BIN/lib_debug_system""$PLATFORM_LIB_EXTENSION" \
+  #   "$DEBUG_SRC_FILE" && echo -e "$Success $DEBUG_SRC_FILE" &
 
-  echo ""
-  ColorizeTitle "Examples"
-  for executable in $EXAMPLES_TO_BUILD; do
-    echo -e "$Building $executable"
-    SetOutputBinaryPathBasename "$executable" "$BIN"
-    clang++                                                     \
-      $OPTIMIZATION_LEVEL                                       \
-      $CXX_COMPILER_OPTIONS                                     \
-      $PLATFORM_LINKER_OPTIONS                                  \
-      $PLATFORM_DEFINES                                         \
-      $PLATFORM_INCLUDE_DIRS                                    \
-      $SHARED_LIBRARY_FLAGS                                     \
-      -I"$SRC"                                                  \
-      -I"$executable"                                           \
-      -o "$output_basename"                                     \
-      "$executable/game.cpp" &&                                 \
-      mv "$output_basename" "$output_basename""_loadable.so" && \
-      echo -e "$Success $executable" &
-  done
+  # echo ""
+  # ColorizeTitle "Examples"
+  # for executable in $EXAMPLES_TO_BUILD; do
+  #   echo -e "$Building $executable"
+  #   SetOutputBinaryPathBasename "$executable" "$BIN"
+  #   clang++                                                                           \
+  #     $OPTIMIZATION_LEVEL                                                             \
+  #     $CXX_OPTIONS                                                                    \
+  #     $PLATFORM_CXX_OPTIONS                                                           \
+  #     $PLATFORM_LINKER_OPTIONS                                                        \
+  #     $PLATFORM_DEFINES                                                               \
+  #     $PLATFORM_INCLUDE_DIRS                                                          \
+  #     $SHARED_LIBRARY_FLAGS                                                           \
+  #     -I"$SRC"                                                                        \
+  #     -I"$executable"                                                                 \
+  #     -o "$output_basename"                                                           \
+  #     "$executable/game.cpp" &&                                                       \
+  #     mv "$output_basename" "$output_basename""_loadable""$PLATFORM_LIB_EXTENSION" && \
+  #     echo -e "$Success $executable" &
+  # done
 
   echo -e ""
   echo -e "$Delimeter"
@@ -433,10 +445,10 @@ DumpSourceFilesAndQuit=0
 CheckoutMetaOutput=0
 
 FirstPreprocessor=0
-BuildPreprocessor=1
+BuildPreprocessor=0
 SecondPreprocessor=0
 
-BuildAllProjects=0
+BuildAllProjects=1
 RunTests=0
 FinalPreprocessor=0
 

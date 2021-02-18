@@ -106,3 +106,17 @@ AtomicCompareExchange( volatile void **Source, void *Exchange, void *Comparator 
   b32 Result = (Val == (u64)Comparator);
   return Result;
 }
+
+inline u32
+AtomicIncrement( u32 volatile *Dest)
+{
+  u32 Result = InterlockedIncrement(Dest);
+  return Result;
+}
+
+inline u64
+AtomicIncrement( u64 volatile *Dest)
+{
+  u64 Result = InterlockedIncrement(Dest);
+  return Result;
+}

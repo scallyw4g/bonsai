@@ -2,7 +2,7 @@ struct random_series;
 struct memory_arena;
 struct ansi_stream;
 
-static const char* DefaultPermissions = "rw+b";
+static const char* DefaultPermissions = "a+"; // Open file for read/write, read from start if exists
 
 global_variable native_file Stdout =
 {

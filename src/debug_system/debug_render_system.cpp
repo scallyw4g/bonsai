@@ -78,7 +78,7 @@ FlushBuffer(debug_text_render_group *TextGroup, untextured_2d_geometry_buffer *B
 
   if (TextGroup)
   {
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    GL->BindFramebuffer(GL_FRAMEBUFFER, 0);
     SetViewport(ScreenDim);
     UseShader(&TextGroup->SolidUIShader);
 
@@ -89,8 +89,8 @@ FlushBuffer(debug_text_render_group *TextGroup, untextured_2d_geometry_buffer *B
     Draw(Buffer->At);
     Buffer->At = 0;
 
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
+    GL->DisableVertexAttribArray(0);
+    GL->DisableVertexAttribArray(1);
 
     AssertNoGlErrors;
   }
@@ -107,33 +107,33 @@ FlushBuffer(debug_text_render_group *TextGroup, textured_2d_geometry_buffer *Geo
 {
   if (TextGroup)
   {
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    GL->BindFramebuffer(GL_FRAMEBUFFER, 0);
     SetViewport(ScreenDim);
-    glUseProgram(TextGroup->Text2DShader.ID);
+    GL->UseProgram(TextGroup->Text2DShader.ID);
 
     // Bind Font texture
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_3D, TextGroup->FontTexture->ID);
+    GL->ActiveTexture(GL_TEXTURE0);
+    GL->BindTexture(GL_TEXTURE_3D, TextGroup->FontTexture->ID);
     //
 
-    glUniform1i(TextGroup->TextTextureUniform, 0); // Assign texture unit 0 to the TextTexureUniform
+    GL->Uniform1i(TextGroup->TextTextureUniform, 0); // Assign texture unit 0 to the TextTexureUniform
 
     u32 AttributeIndex = 0;
     BufferVertsToCard( TextGroup->SolidUIVertexBuffer, Geo, &AttributeIndex);
     BufferUVsToCard(   TextGroup->SolidUIUVBuffer,     Geo, &AttributeIndex);
     BufferColorsToCard(TextGroup->SolidUIColorBuffer,  Geo, &AttributeIndex);
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    GL->Enable(GL_BLEND);
+    GL->BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     Draw(Geo->At);
     Geo->At = 0;
 
-    glDisable(GL_BLEND);
+    GL->Disable(GL_BLEND);
 
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(2);
+    GL->DisableVertexAttribArray(0);
+    GL->DisableVertexAttribArray(1);
+    GL->DisableVertexAttribArray(2);
     AssertNoGlErrors;
   }
   else
@@ -1869,14 +1869,14 @@ DrawPickedChunks(debug_ui_render_group* Group)
   }
 
   { // Draw hotchunk to the GameGeo FBO
-    glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
+    GL->BindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
     FlushBuffersToCard(&DebugState->GameGeo);
 
     DebugState->ViewProjection =
       ProjectionMatrix(&DebugState->Camera, DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM) *
       ViewMatrix(ChunkDimension(HotChunk), &DebugState->Camera);
 
-    glUseProgram(Group->GameGeoShader->ID);
+    GL->UseProgram(Group->GameGeoShader->ID);
 
     SetViewport(V2(DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM));
 

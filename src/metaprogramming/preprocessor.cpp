@@ -580,8 +580,6 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
 bonsai_function void
 ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_string ErrorString)
 {
-  RuntimeBreak();
-
   Assert(ErrorToken);
 
   u32 LinesOfContext = 4;
@@ -622,6 +620,9 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
 
   Log("------------------------------------------------------------------------------------\n");
   Parser->Valid = False;
+
+  RuntimeBreak();
+
   return;
 }
 
@@ -1813,7 +1814,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 {
   if (!Code.Start)
   {
-    Error("Input AnsiStream for %S is null.", Code);
+    Error("Input AnsiStream for %S is null.", Code.Filename);
     return 0;
   }
 
@@ -5891,7 +5892,7 @@ ParseAllTodosFromFile(counted_string Filename, memory_arena* Memory)
 
   parser *Parser = TokenizeAnsiStream(AnsiStreamFromFile(Filename, Memory), Memory, True, 0);
 
-  while (Remaining(&Parser->Tokens))
+  while (TokensRemain(Parser))
   {
     RequireToken(Parser, CTokenType_Hash);
     counted_string PersonName = RequireToken(Parser, CTokenType_Identifier).Value;

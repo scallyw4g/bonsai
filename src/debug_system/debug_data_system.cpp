@@ -80,7 +80,7 @@ RegisterArena(const char *Name, memory_arena *Arena)
     const char *CurrentName = Current->Name;
     if (!CurrentName)
     {
-      if (AtomicCompareExchange( (volatile char **)&Current->Name, (volatile char*)Name, (volatile char*)CurrentName ))
+      if (AtomicCompareExchange( (volatile void **)&Current->Name, (void*)Name, (void*)CurrentName ))
       {
         Current->Arena = Arena;
         Registered = True;
