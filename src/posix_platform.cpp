@@ -65,70 +65,85 @@ PlatformGetPageSize()
 }
 
 u32
-GetLogicalCoreCount()
+PlatformGetLogicalCoreCount()
 {
   local_persist u32 CoreCount = (u32)sysconf(_SC_NPROCESSORS_ONLN);
   return CoreCount;
 }
 
-u8*
-PlatformProtectPage(u8* Mem)
+bonsai_function b32
+PlatformSetProtection(u8 *Base, u64 Size, memory_protection_type Protection)
 {
-  u64 PageSize = PlatformGetPageSize();
-  Assert((u64)Mem % PageSize == 0);
-  s32 ProtectSuccess = (mprotect(Mem, PageSize, PROT_NONE) == 0);
+  b32 Result = False;
 
-  u8 *Result = 0;
-  if (ProtectSuccess)
+  u64 PageSize = PlatformGetPageSize();
+  if ( (umm)Base % PageSize == 0 &&
+            Size % PageSize == 0 )
   {
-    Result = Mem;
+    s32 NativeProt = 0;
+    switch (Protection)
+    {
+      case MemoryProtection_RW:
+      {
+        NativeProt = PROT_READ | PROT_WRITE;
+      } break;
+
+      case MemoryProtection_Protected:
+      {
+        NativeProt = PROT_NONE;
+      } break;
+    }
+    Assert(NativeProt);
+
+    if (mprotect(Base, Size, NativeProt) == 0)
+    {
+      Result = True;
+    }
+    else
+    {
+      Error("mprotect failed with code : (%d) ", errno);
+      switch (errno)
+      {
+        case EACCES:
+        {
+          Error("EACCES");
+        } break;
+        case EINVAL:
+        {
+          Error("EINVAL");
+        } break;
+
+        case ENOMEM:
+        {
+          Error("ENOMEM");
+        } break;
+
+        default:
+        {
+          Error("Unknown error code");
+        } break;
+      }
+
+      PlatformDebugStacktrace();
+      InvalidCodePath();
+    }
   }
   else
   {
-    if (errno == EACCES)
-    {
-      Error("EACCES");
-    }
-
-    if (errno == EINVAL)
-    {
-      Error("EINVAL");
-    }
-
-    if (errno == ENOMEM)
-    {
-      Error("ENOMEM");
-    }
-
-    Error("mprotect failed");
-    PlatformDebugStacktrace();
-    Assert(False);
+    InvalidCodePath();
   }
 
   return Result;
 }
 
-void
-PlatformDeallocateArena(memory_arena *Arena)
+bonsai_function b32
+PlatformDeallocate(u8 *Base, umm Size)
 {
-  if (Arena->Start)
-  {
-    s32 Deallocated = (munmap(Arena->Start, TotalSize(Arena)) == 0);
-    Assert(Deallocated);
-  }
+  Assert( (umm)Base % PlatformGetPageSize() == 0);
+  Assert( Size % PlatformGetPageSize() == 0);
 
-#if MEMPROTECT_OVERFLOW
-  {
-    umm PageSize = PlatformGetPageSize();
-    u8 *ArenaBytes =  (u8*)Arena - ((umm)Arena % PageSize);
-    s32 Deallocated = (munmap(ArenaBytes, PageSize*2) == 0);
-    Assert(Deallocated);
-  }
-#else
-  NotImplemented;
-#endif
-
-  return;
+  b32 Deallocated = (munmap(Base, Size) == 0);
+  return Deallocated;
 }
 
 u8*

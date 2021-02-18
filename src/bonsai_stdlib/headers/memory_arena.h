@@ -106,7 +106,7 @@ bonsai_function u64 PlatformGetPageSize();
 bonsai_function b32 PlatformSetProtection(u8 *Base, u64 Size, memory_protection_type Protection);
 
 bonsai_function u8*  PlatformAllocateSize(umm AllocationSize);
-bonsai_function b32 PlatformDeallocate(u8 *Base);
+bonsai_function b32 PlatformDeallocate(u8 *Base, umm Size);
 
 b32
 OnPageBoundary(memory_arena *Arena, umm PageSize)
@@ -360,14 +360,14 @@ DeallocateArena(memory_arena *Arena)
   b32 Result = False;
   if (Arena->Start)
   {
-    Result = PlatformDeallocate(Arena->Start);
+    Result = PlatformDeallocate(Arena->Start, TotalSize(Arena));
   }
 
 #if MEMPROTECT_OVERFLOW
   {
     umm PageSize = PlatformGetPageSize();
     u8 *ArenaBytes =  (u8*)Arena - ((umm)Arena % PageSize);
-    Result &= PlatformDeallocate(ArenaBytes);
+    Result &= PlatformDeallocate(ArenaBytes, PageSize*2);
   }
 #else
   NotImplemented;

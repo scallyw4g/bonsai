@@ -540,9 +540,11 @@ PlatformAllocateSize(umm AllocationSize)
 }
 
 bonsai_function b32
-PlatformDeallocate(u8 *Allocation)
+PlatformDeallocate(u8 *Base, umm Size)
 {
-  b32 Result = (b32)VirtualFree(Allocation, 0, MEM_RELEASE);
+  Assert( (umm)Base % PlatformGetPageSize() == 0);
+  Assert(Size % PlatformGetPageSize() == 0);
+  b32 Result = (b32)VirtualFree(Base, Size, MEM_RELEASE);
   return Result;
 }
 

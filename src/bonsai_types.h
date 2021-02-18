@@ -2,6 +2,7 @@
 // Required for FILE* type .. might want to rebuild the file API to use
 // platform functions instead, but for now the CRT ones are good enough.
 #include <stdio.h>
+#include <math.h>
 
 
 #define BONSAI_INTERNAL (1)
@@ -38,8 +39,8 @@
 
 #include <bonsai_stdlib/headers/assert.h>
 #include <bonsai_stdlib/headers/primitives.h>
-#include <bonsai_stdlib/headers/console_macros.h>
 #include <bonsai_stdlib/headers/platform.h>
+#include <bonsai_stdlib/headers/console_macros.h>
 #include <bonsai_stdlib/headers/thread.h>
 #include <bonsai_stdlib/headers/math.h>
 #include <bonsai_stdlib/headers/file.h>

@@ -118,6 +118,7 @@ CXX_OPTIONS="
   -Wno-extra-semi-stmt
   -Wno-reorder-init-list
   -Wno-unused-macros
+  -Wno-atomic-implicit-seq-cst
 "
 
 
@@ -170,7 +171,7 @@ function BuildPreprocessor {
   executable="$SRC/metaprogramming/preprocessor.cpp"
   SetOutputBinaryPathBasename "$executable" "$BIN"
   echo -e "$Building $executable"
-  echo "clang++                                                \
+  clang++                                                \
     $OPTIMIZATION_LEVEL                                  \
     $CXX_OPTIONS                                         \
     $PLATFORM_CXX_OPTIONS                                \
@@ -179,7 +180,7 @@ function BuildPreprocessor {
     $PLATFORM_INCLUDE_DIRS                               \
     -I"$SRC"                                             \
     -o "$output_basename""_dev""$PLATFORM_EXE_EXTENSION" \
-    $executable"
+    $executable
 
   exit 1
   if [ $? -eq 0 ]; then
