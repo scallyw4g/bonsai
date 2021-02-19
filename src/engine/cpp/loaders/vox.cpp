@@ -252,7 +252,7 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
       }
     }
 
-
+    CloseFile(&ModelFile);
   }
   else
   {

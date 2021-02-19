@@ -2,7 +2,7 @@ struct random_series;
 struct memory_arena;
 struct ansi_stream;
 
-static const char* DefaultPermissions = "a+"; // Open file for read/write, read from start if exists
+static const char* DefaultPermissions = "a+b"; // Open file for read/write, read from start if exists
 
 global_variable native_file Stdout =
 {
@@ -36,6 +36,6 @@ bonsai_function b32 FileExists(const char* Path);
 
 bonsai_function b32 FileExists(counted_string Path);
 
-bonsai_function void LogToConsole(counted_string Output);
+bonsai_function void PrintToStdout(counted_string Output);
 
 bonsai_function void ReadBytesIntoBuffer(FILE *Src, u64 BytesToRead, u8* Dest);

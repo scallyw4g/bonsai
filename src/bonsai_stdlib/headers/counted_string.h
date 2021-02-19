@@ -250,7 +250,7 @@ Trim(counted_string String)
   counted_string Result = String;
   while (Result.Count)
   {
-    if (Result.Start[0] == ' ' || Result.Start[0] == '\n')
+    if (Result.Start[0] == ' ' || Result.Start[0] == '\n' || Result.Start[0] == '\r')
     {
       --Result.Count;
       ++Result.Start;
@@ -263,7 +263,7 @@ Trim(counted_string String)
 
   while (Result.Count)
   {
-    if (Result.Start[Result.Count-1] == ' ' || Result.Start[Result.Count-1] == '\n')
+    if (Result.Start[Result.Count-1] == ' ' || Result.Start[Result.Count-1] == '\n' || Result.Start[Result.Count-1] == '\r')
     {
       --Result.Count;
     }

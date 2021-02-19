@@ -5,12 +5,19 @@ CloseFile(native_file* File)
   if (File->Handle)
   {
     Result = fclose(File->Handle) == 0 ? True : False;
+    File->Handle = 0;
   }
   else
   {
-    Error("Attempted to close %.*s, which was not open.", (s32)File->Path.Count, File->Path.Start);
+    Error("Attempted to close %S, which was not open.", File->Path);
   }
 
+  if (!Result)
+  {
+    Error("Closing file %S", File->Path);
+  }
+
+  Assert(File->Handle == 0);
   return Result;
 }
 
@@ -159,11 +166,16 @@ FileExists(counted_string Path)
 }
 
 bonsai_function void
-LogToConsole(counted_string Output)
+PrintToStdout(counted_string Output)
 {
   if (!WriteToFile(&Stdout, Output))
   {
     Error("Writing to Stdout");
   }
+
+#if BONSAI_WIN32
+  OutputDebugString(GetNullTerminated(Output));
+#endif
+
 }
 

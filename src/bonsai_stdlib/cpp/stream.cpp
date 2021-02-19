@@ -58,7 +58,7 @@ U8_StreamFromFile(const char* SourceFile, memory_arena *Memory)
   u8* FileContents = 0;
   umm FileSize = 0;
 
-  native_file File = OpenFile(SourceFile);
+  native_file File = OpenFile(SourceFile, "rb");
   if (File.Handle)
   {
     fseek(File.Handle, 0L, SEEK_END);
@@ -73,6 +73,8 @@ U8_StreamFromFile(const char* SourceFile, memory_arena *Memory)
     {
       Warn("File %s was empty!", SourceFile);
     }
+
+    CloseFile(&File);
   }
   else
   {
@@ -157,7 +159,7 @@ char *
 PopWord(ansi_stream *Cursor, memory_arena *Arena, const char *Delimeters = 0)
 {
   if (!Delimeters)
-    Delimeters = " \n";
+    Delimeters = " \n\r";
 
   EatWhitespace(Cursor);
   char *Result = ReadUntilTerminatorList(Cursor, Delimeters, Arena);

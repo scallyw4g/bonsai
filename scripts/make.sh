@@ -182,7 +182,6 @@ function BuildPreprocessor {
     -o "$output_basename""_dev""$PLATFORM_EXE_EXTENSION" \
     $executable
 
-  exit 1
   if [ $? -eq 0 ]; then
    echo -e "$Success $executable"
   else
@@ -450,7 +449,7 @@ FirstPreprocessor=0
 BuildPreprocessor=1
 SecondPreprocessor=0
 
-BuildAllProjects=0
+BuildAllProjects=1
 RunTests=0
 FinalPreprocessor=0
 

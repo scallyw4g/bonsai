@@ -4,125 +4,113 @@ typedef va_list bonsai_va_list;
 
 bonsai_function counted_string FormatCountedString_(char* Buffer, umm BufferSize, counted_string FS, va_list Args);
 
-bonsai_function void
-Log(const char* Fmt, ...)
-{
-  const umm BufferSize = 4096;
-  char Buffer[4096];
-
-  counted_string FS = CS(Fmt);
-
-  va_list Args;
-  va_start(Args, Fmt);
-  counted_string S = FormatCountedString_(Buffer, BufferSize, FS, Args);
-  va_end(Args);
-
-  LogToConsole(S);
-}
-
 #define Print(Var) \
   Print_P( Var, #Var )
 
 void
 PrintBinary( unsigned int Input )
 {
-  Log("High bit --> ");
+  Debug("High bit --> ");
   for (int i = (sizeof(int)*8)-1; i >= 0; --i)
   {
     if ( ((Input >> i) & 1) == 1 )
-      Log("1");
+    {
+      Debug("1");
+    }
     else
-      Log("0");
+    {
+      Debug("0");
+    }
 
-    if ( (i % 8) == 0 ) { Log(" "); }
+    if ( (i % 8) == 0 ) { Debug(" "); }
   }
 
-  Log("<-- Low bit \n");
+  Debug("<-- Low bit \n");
 }
 
 inline void
 Print_P( debug_profile_scope *E, const char* name)
 {
-  Log(" -- %s -> %s \n", name, E->Name);
-  Log(" -- Parent %x \n", name, E->Parent);
-  Log(" -- Sibling %x \n", name, E->Sibling);
-  Log(" -- Child %x \n", name, E->Child);
+  Debug(" -- %s -> %s \n", name, E->Name);
+  Debug(" -- Parent %x \n", name, E->Parent);
+  Debug(" -- Sibling %x \n", name, E->Sibling);
+  Debug(" -- Child %x \n", name, E->Child);
 }
 
 inline void
 Print_P( void *P, const char* name)
 {
-  Log(" %s -- %u \n", name, P);
+  Debug(" %s -- %u \n", name, P);
 }
 
 inline void
 Print_P( const char *C, const char* name)
 {
-  Log(" %s -- %s \n", name, C);
+  Debug(" %s -- %s \n", name, C);
 }
 
 inline void
 Print_P( input_event E, const char* name)
 {
-  Log(" -- %s == Pressed %d Clicked %d \n", name, E.Pressed, E.Clicked );
+  Debug(" -- %s == Pressed %d Clicked %d \n", name, E.Pressed, E.Clicked );
 }
 
 inline void
 Print_P( u64 N, const char* name)
 {
-  Log(" -- %s == %lu \n", name, N);
+  Debug(" -- %s == %lu \n", name, N);
 }
 
 inline void
 Print_P( u16 N, const char* name)
 {
-  Log(" -- %s == %u \n", name, N);
+  Debug(" -- %s == %u \n", name, N);
 }
 
 inline void
 Print_P( u32 N, const char* name)
 {
-  Log(" -- %s == %u \n", name, N);
+  Debug(" -- %s == %u \n", name, N);
 }
 
 inline void
 Print_P( s32 N, const char* name)
 {
-  Log(" -- %s == %d \n", name, N);
+  Debug(" -- %s == %d \n", name, N);
 }
 
 inline void
 Print_P( r64 N, const char* name)
 {
-  Log(" -- %s == %f \n", name, N);
+  Debug(" -- %s == %f \n", name, N);
 }
 
 inline void
 Print_P( r32 N, const char* name)
 {
-  Log(" -- %s == %f \n", name, N);
+  Debug(" -- %s == %f \n", name, N);
 }
 
 inline void
 Print_P( aabb P, const char* name)
 {
-  Log(" -- %s", name);
-  Log(" Center: %f %f %f ", P.Center.x, P.Center.y, P.Center.z );
-  Log(" Radius: %f %f %f \n", P.Radius.x, P.Radius.y, P.Radius.z );
+  Debug(" -- %s", name);
+  Debug(" Center: %f %f %f ", P.Center.x, P.Center.y, P.Center.z );
+  Debug(" Radius: %f %f %f \n", P.Radius.x, P.Radius.y, P.Radius.z );
 }
 
 inline void
 Print_P( canonical_position P, const char* name)
 {
-  Log(" -- %s", name);
-  Log(" Offset: %f %f %f ", P.Offset.x, P.Offset.y, P.Offset.z );
-  Log(" WorldP: %d %d %d \n", P.WorldP.x, P.WorldP.y, P.WorldP.z );
+  Debug(" -- %s", name);
+  Debug(" Offset: %f %f %f ", P.Offset.x, P.Offset.y, P.Offset.z );
+  Debug(" WorldP: %d %d %d \n", P.WorldP.x, P.WorldP.y, P.WorldP.z );
 }
 
 inline void
 Print_P( voxel_position P, const char* name)
 {
-  Log(" %s %d %d %d \n", name, P.x, P.y, P.z );
+  Debug(" %s %d %d %d \n", name, P.x, P.y, P.z );
 }
 
 inline void
@@ -139,7 +127,7 @@ Print_P( v4 P, const char* name)
     P.z = 0;
 #endif
 
-  Log(" %s %f %f %f %f \n", name, P.x, P.y, P.z, P.w );
+  Debug(" %s %f %f %f %f \n", name, P.x, P.y, P.z, P.w );
 }
 
 inline void
@@ -156,7 +144,7 @@ Print_P( v3 P, const char* name)
     P.z = 0;
 #endif
 
-  Log(" %s %f %f %f \n", name, P.x, P.y, P.z );
+  Debug(" %s %f %f %f \n", name, P.x, P.y, P.z );
 }
 
 inline void
@@ -170,7 +158,7 @@ Print_P( v2i P, const char* name)
     P.y = 0;
 #endif
 
-  Log(" %s %d %d \n", name, P.x, P.y );
+  Debug(" %s %d %d \n", name, P.x, P.y );
 }
 
 inline void
@@ -184,67 +172,67 @@ Print_P( v2 P, const char* name)
     P.y = 0;
 #endif
 
-  Log(" %s %f %f \n", name, P.x, P.y );
+  Debug(" %s %f %f \n", name, P.x, P.y );
 }
 
 inline void
 Print_P( rect2 Rect, const char* name)
 {
-  Log(" %s.Min %f %f \n", name, Rect.Min.x, Rect.Min.y );
-  Log(" %s.Max %f %f \n", name, Rect.Max.x, Rect.Max.y );
+  Debug(" %s.Min %f %f \n", name, Rect.Min.x, Rect.Min.y );
+  Debug(" %s.Max %f %f \n", name, Rect.Max.x, Rect.Max.y );
 }
 
 inline void
 Print_P( m4 *Mat, const char* name)
 {
-  Log("\n %s ", name );
-  Log(" %f %f %f %f ", Mat->E[0].E[0], Mat->E[0].E[1], Mat->E[0].E[2], Mat->E[0].E[3] );
-  Log(" %f %f %f %f ", Mat->E[1].E[0], Mat->E[1].E[1], Mat->E[1].E[2], Mat->E[1].E[3] );
-  Log(" %f %f %f %f ", Mat->E[2].E[0], Mat->E[2].E[1], Mat->E[2].E[2], Mat->E[2].E[3] );
-  Log(" %f %f %f %f ", Mat->E[3].E[0], Mat->E[3].E[1], Mat->E[3].E[2], Mat->E[3].E[3] );
-  Log("");
+  Debug("\n %s ", name );
+  Debug(" %f %f %f %f ", Mat->E[0].E[0], Mat->E[0].E[1], Mat->E[0].E[2], Mat->E[0].E[3] );
+  Debug(" %f %f %f %f ", Mat->E[1].E[0], Mat->E[1].E[1], Mat->E[1].E[2], Mat->E[1].E[3] );
+  Debug(" %f %f %f %f ", Mat->E[2].E[0], Mat->E[2].E[1], Mat->E[2].E[2], Mat->E[2].E[3] );
+  Debug(" %f %f %f %f ", Mat->E[3].E[0], Mat->E[3].E[1], Mat->E[3].E[2], Mat->E[3].E[3] );
+  Debug("");
 }
 
 inline void
 Print_P(counted_string String, const char* Name)
 {
-  Log("%s %.*s", Name, String.Count, String.Start);
+  Debug("%s %.*s", Name, String.Count, String.Start);
 }
 
 inline void
 Print_P( xml_token *Token, const char* Name)
 {
-  Log("Name: %s", Name);
+  Debug("Name: %s", Name);
   switch (Token->Type)
   {
     case XmlTokenType_Boolean:
     {
-      Log("Boolean %.*s", Token->Property.Name.Count, Token->Property.Name.Start);
+      Debug("Boolean %.*s", Token->Property.Name.Count, Token->Property.Name.Start);
     } break;
 
     case XmlTokenType_Float:
     {
-      Log("Float %.*s = %.*s", Token->Property.Name.Count, Token->Property.Name.Start, Token->Property.Value.Count, Token->Property.Value.Start);
+      Debug("Float %.*s = %.*s", Token->Property.Name.Count, Token->Property.Name.Start, Token->Property.Value.Count, Token->Property.Value.Start);
     } break;
 
     case XmlTokenType_Int:
     {
-      Log("Int %.*s = %.*s", Token->Property.Name.Count, Token->Property.Name.Start, Token->Property.Value.Count, Token->Property.Value.Start);
+      Debug("Int %.*s = %.*s", Token->Property.Name.Count, Token->Property.Name.Start, Token->Property.Value.Count, Token->Property.Value.Start);
     } break;
 
     case XmlTokenType_Property:
     {
-      Log("String %.*s = \"%.*s\"", Token->Property.Name.Count, Token->Property.Name.Start, Token->Property.Value.Count, Token->Property.Value.Start);
+      Debug("String %.*s = \"%.*s\"", Token->Property.Name.Count, Token->Property.Name.Start, Token->Property.Value.Count, Token->Property.Value.Start);
     } break;
 
     case XmlTokenType_Open:
     {
-      Log("OpenToken %.*s", Token->Property.Name.Count, Token->Property.Name.Start);
+      Debug("OpenToken %.*s", Token->Property.Name.Count, Token->Property.Name.Start);
     } break;
 
     case XmlTokenType_Close:
     {
-      Log("CloseToken %.*s", Token->Property.Name.Count, Token->Property.Name.Start);
+      Debug("CloseToken %.*s", Token->Property.Name.Count, Token->Property.Name.Start);
     } break;
 
     InvalidDefaultCase;
@@ -273,21 +261,21 @@ Print_P( xml_tag *Tag, const char* Name)
 inline void
 Print_P( camera *Camera, const char* name)
 {
-  Log("\n %s ", name );
+  Debug("\n %s ", name );
   Print(Camera->TargetP);
   Print(Camera->CurrentP);
   Print(Camera->ViewingTarget);
-  Log("");
+  Debug("");
 }
 
 inline void
 Print_P( interactable *Interactable, const char* name)
 {
-  Log("\n %s ", name );
+  Debug("\n %s ", name );
   Print(Interactable->ID);
   Print(Interactable->MinP);
   Print(Interactable->MaxP);
-  Log("");
+  Debug("");
 }
 
 inline void
@@ -299,7 +287,7 @@ Print_P( interactable Interactable, const char* name)
 inline void
 Print_P( window_layout *Window, const char* name)
 {
-  Log("%s", name);
+  Debug("%s", name);
   Print(Window->Title);
   Print(Window->MaxClip);
   Print(Window->Basis);

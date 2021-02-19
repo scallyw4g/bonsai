@@ -398,7 +398,7 @@ counted_string
 PopWordCounted(ansi_stream *Cursor, const char *Delimeters = 0)
 {
   if (!Delimeters)
-    Delimeters = " \n";
+    Delimeters = " \r\n";
 
   EatWhitespace(Cursor);
 

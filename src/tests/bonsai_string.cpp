@@ -474,12 +474,14 @@ main()
   }
 
   {
-    counted_string TestValue = FormatCountedString(Memory, CSz("%.*s"), CS("thing"));
+    counted_string TestString = CSz("thing");
+    counted_string TestValue = FormatCountedString(Memory, CSz("%.*s"), TestString.Count, TestString.Start);
     TestThat(StringsMatch(TestValue, CS("thing")));
   }
 
   {
-    counted_string TestValue = FormatCountedString(Memory, CSz("%.*s"), CS("thing"));
+    counted_string TestString = CSz("thing");
+    counted_string TestValue = FormatCountedString(Memory, CSz("%S"), TestString);
     TestThat(StringsMatch(TestValue, CS("thing")));
   }
 

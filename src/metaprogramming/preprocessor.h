@@ -1183,7 +1183,7 @@ PrintToken(c_token *Token)
   if (Token && Token->Type)
   {
     Assert(Token->Value.Start && Token->Value.Count);
-    Log("%.*s", Token->Value.Count, Token->Value.Start);
+    Debug("%.*s", Token->Value.Count, Token->Value.Start);
   }
 }
 
@@ -1193,7 +1193,7 @@ PrintToken(c_token Token)
   if (Token.Type)
   {
     Assert(Token.Value.Start && Token.Value.Count);
-    Log("%.*s", Token.Value.Count, Token.Value.Start);
+    Debug("%.*s", Token.Value.Count, Token.Value.Start);
   }
 }
 

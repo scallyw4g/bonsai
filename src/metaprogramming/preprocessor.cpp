@@ -378,7 +378,7 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
 
   if ( ! IsNewline(Parser->Tokens.End[-1].Type) )
   {
-    Log("\n");
+    Debug("\n");
   }
 
   Rewind(&Parser->Tokens);
@@ -398,19 +398,19 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
           ColumnIndex < TabCount;
           ++ColumnIndex)
       {
-        Log("\t");
+        Debug("\t");
       }
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < SpaceCount;
           ++ColumnIndex)
       {
-        Log(" ");
+        Debug(" ");
       }
 
       if (DoPipes)
       {
-        Log("|");
+        Debug("|");
       }
 
       for (u32 ColumnIndex = 0;
@@ -419,20 +419,20 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
       {
         if (DoPipes)
         {
-          Log("~");
+          Debug("~");
         }
         else
         {
-          Log("^");
+          Debug("^");
         }
       }
 
       if (DoPipes)
       {
-        Log("|");
+        Debug("|");
       }
 
-      Log("\n");
+      Debug("\n");
 
       break;
     }
@@ -472,19 +472,19 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
           ColumnIndex < TabCount;
           ++ColumnIndex)
       {
-        Log("\t");
+        Debug("\t");
       }
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < SpaceCount;
           ++ColumnIndex)
       {
-        Log(" ");
+        Debug(" ");
       }
 
       if (DoPipes)
       {
-        Log("  ");
+        Debug("  ");
       }
 
       for (u32 ColumnIndex = 0;
@@ -493,30 +493,30 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
       {
         if (ColumnIndex == ErrorIdentifierLength-1)
         {
-          Log("|");
+          Debug("|");
         }
         else
         {
-          Log(" ");
+          Debug(" ");
         }
       }
 
       counted_string TokenTypeName = ToString(ErrorToken->Type);
-      Log("---> %.*s", TokenTypeName.Count, TokenTypeName.Start );
+      Debug("---> %.*s", TokenTypeName.Count, TokenTypeName.Start );
 
       if (ErrorToken->Value.Count)
       {
-        Log("(%.*s)" , ErrorToken->Value.Count, ErrorToken->Value.Start);
+        Debug("(%.*s)" , ErrorToken->Value.Count, ErrorToken->Value.Start);
       }
 
       if (Expected.Type)
       {
         counted_string ExpectedTypeName = ToString(Expected.Type);
-        Log(" Expecting : %.*s", ExpectedTypeName.Count, ExpectedTypeName.Start);
+        Debug(" Expecting : %.*s", ExpectedTypeName.Count, ExpectedTypeName.Start);
 
         if (Expected.Value.Count)
         {
-          Log("(%.*s)" , Expected.Value.Count, Expected.Value.Start);
+          Debug("(%.*s)" , Expected.Value.Count, Expected.Value.Start);
         }
       }
       else
@@ -525,25 +525,25 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
       }
 
 
-      Log(" %.*s\n", ErrorString.Count, ErrorString.Start);
+      Debug(" %.*s\n", ErrorString.Count, ErrorString.Start);
 
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < TabCount;
           ++ColumnIndex)
       {
-        Log("\t");
+        Debug("\t");
       }
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < SpaceCount + ErrorToken->Value.Count;
           ++ColumnIndex)
       {
-        Log(" ");
+        Debug(" ");
       }
 
       counted_string Filename = Parser->Filename.Count ? Parser->Filename : CSz("(unknown file)");
-      Log("     %.*s:%u:%u\n\n", Filename.Count, Filename.Start, LineNumber, SpaceCount+TabCount);
+      Debug("     %.*s:%u:%u\n\n", Filename.Count, Filename.Start, LineNumber, SpaceCount+TabCount);
 
       break;
     }
@@ -584,7 +584,7 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
 
   u32 LinesOfContext = 4;
 
-  Log("------------------------------------------------------------------------------------\n");
+  Debug("------------------------------------------------------------------------------------\n");
 
   parser LocalParser = *Parser;
   LocalParser.OutputTokens = {};
@@ -610,7 +610,7 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
   else
   {
     Error("Determining where the error occured");
-    Log("Error was : %.*s\n", ErrorString.Count, ErrorString.Start);
+    Debug("Error was : %.*s\n", ErrorString.Count, ErrorString.Start);
   }
 
   EatUntilIncluding(&TrailingLines, CTokenType_Newline);
@@ -618,7 +618,7 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
   TruncateAtNextLineEnd(&TrailingLines, LinesOfContext);
   DumpEntireParser(&TrailingLines);
 
-  Log("------------------------------------------------------------------------------------\n");
+  Debug("------------------------------------------------------------------------------------\n");
   Parser->Valid = False;
 
   RuntimeBreak();
@@ -3303,7 +3303,7 @@ DumpStringStreamToConsole(counted_string_stream* Stream)
       Advance(&Iter))
   {
     counted_string Message = Iter.At->Element;
-    Log("%.*s\n", Message.Count, Message.Start);
+    Debug("%.*s\n", Message.Count, Message.Start);
   }
 }
 

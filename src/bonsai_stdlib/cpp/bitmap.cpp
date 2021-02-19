@@ -50,9 +50,9 @@ ReadBitmapFromDisk(const char *Filename, memory_arena *Arena)
     PixelCount = (u32)Header.Image.WidthInPixels * (u32)Header.Image.HeightInPixels;
     Pixels = Allocate(u32, Arena, PixelCount);
     SizeReadFromDisk += fread(Pixels, 1, Header.Image.SizeInBytes, File.Handle);
+    CloseFile(&File);
   }
   else { Error("Opening %s for reading", Filename); }
-  fclose(File.Handle);
 
   Assert(Header.Image.CompressionType == 3);
   Assert(SizeReadFromDisk == (s32)Header.FileSizeInBytes);
@@ -88,7 +88,7 @@ WriteBitmapToDisk(bitmap *Bitmap, const char *Filename)
   Header.Image.BlueMask             = 0x00FF0000;
 
   u32 SizeWritten = 0;
-  native_file File = OpenFile(CS(Filename), "rb");
+  native_file File = OpenFile(Filename, "rb");
   if (File.Handle)
   {
     SizeWritten += fwrite(&Header, 1, sizeof(Header), File.Handle);
