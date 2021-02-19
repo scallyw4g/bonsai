@@ -132,3 +132,11 @@ struct os
 
   b32 ContinueRunning = True;
 };
+
+inline b32
+fopen_s(FILE **HandleOut, const char *FilePath, const char *Permissions)
+{
+  *HandleOut = fopen(FilePath, Permissions);
+  b32 Result = (b32)(*HandleOut);
+  return Result;
+}

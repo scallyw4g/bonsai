@@ -120,3 +120,4 @@ AtomicIncrement( u64 volatile *Dest)
   u64 Result = InterlockedIncrement(Dest);
   return Result;
 }
+

@@ -38,7 +38,7 @@ OpenFile(const char* FilePath, const char* Permissions)
     .Path = CS(FilePath)
   };
 
-  Result.Handle = fopen(FilePath, Permissions);
+  fopen_s(&Result.Handle, FilePath, Permissions);
   return Result;
 }
 
