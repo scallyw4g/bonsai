@@ -2130,6 +2130,18 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
         Advance(&Code);
       } break;
 
+      case CTokenType_CarrigeReturn:
+      {
+        Advance(&Code);
+        if (PeekToken(&Code).Type == CTokenType_Newline)
+        {
+          PushT.Type = CTokenType_Newline;
+          ++LineNumber;
+          ParsingSingleLineComment = False;
+          Advance(&Code);
+        }
+      } break;
+
       case CTokenType_Newline:
       {
         ++LineNumber;
@@ -2628,10 +2640,10 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
         Current = SplitAndInsertParserInto(Current, T, Expanded, Current->Tokens.At, Memory);
       } break;
 
-      case CT_PreprocessorIf:
-      {
-        NotImplemented;
-      } break;
+      /* case CT_PreprocessorIf: */
+      /* { */
+      /*   NotImplemented; */
+      /* } break; */
 
       default:
       {

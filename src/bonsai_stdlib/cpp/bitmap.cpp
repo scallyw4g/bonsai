@@ -88,14 +88,14 @@ WriteBitmapToDisk(bitmap *Bitmap, const char *Filename)
   Header.Image.BlueMask             = 0x00FF0000;
 
   u32 SizeWritten = 0;
-  native_file File = OpenFile(Filename, "rb");
+  native_file File = OpenFile(Filename, "w+b");
   if (File.Handle)
   {
     SizeWritten += fwrite(&Header, 1, sizeof(Header), File.Handle);
     SizeWritten += fwrite(Bitmap->Pixels.Start, 1, TotalSize(&Bitmap->Pixels), File.Handle);
+    fclose(File.Handle);
   }
   else { Error("Opening %s for writing", Filename); }
-  fclose(File.Handle);
 
   Assert(SizeWritten == Header.FileSizeInBytes);
 
