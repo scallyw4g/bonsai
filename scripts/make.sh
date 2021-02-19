@@ -253,22 +253,22 @@ function BuildAllClang {
       $executable && echo -e "$Success $executable" &
   done
 
-  # echo ""
-  # ColorizeTitle "DebugSystem"
-  # DEBUG_SRC_FILE="$SRC/debug_system/debug.cpp"
-  # echo -e "$Building $DEBUG_SRC_FILE"
-  # clang++                                               \
-  #   $OPTIMIZATION_LEVEL                                 \
-  #   $CXX_OPTIONS                                        \
-  #   $PLATFORM_CXX_OPTIONS                               \
-  #   $PLATFORM_LINKER_OPTIONS                            \
-  #   $PLATFORM_DEFINES                                   \
-  #   $PLATFORM_INCLUDE_DIRS                              \
-  #   $SHARED_LIBRARY_FLAGS                               \
-  #   -I"$SRC"                                            \
-  #   -I"$SRC/debug_system"                               \
-  #   -o "$BIN/lib_debug_system""$PLATFORM_LIB_EXTENSION" \
-  #   "$DEBUG_SRC_FILE" && echo -e "$Success $DEBUG_SRC_FILE" &
+  echo ""
+  ColorizeTitle "DebugSystem"
+  DEBUG_SRC_FILE="$SRC/debug_system/debug.cpp"
+  echo -e "$Building $DEBUG_SRC_FILE"
+  clang++                                               \
+    $OPTIMIZATION_LEVEL                                 \
+    $CXX_OPTIONS                                        \
+    $PLATFORM_CXX_OPTIONS                               \
+    $PLATFORM_LINKER_OPTIONS                            \
+    $PLATFORM_DEFINES                                   \
+    $PLATFORM_INCLUDE_DIRS                              \
+    $SHARED_LIBRARY_FLAGS                               \
+    -I"$SRC"                                            \
+    -I"$SRC/debug_system"                               \
+    -o "$BIN/lib_debug_system""$PLATFORM_LIB_EXTENSION" \
+    "$DEBUG_SRC_FILE" && echo -e "$Success $DEBUG_SRC_FILE" &
 
   # echo ""
   # ColorizeTitle "Examples"

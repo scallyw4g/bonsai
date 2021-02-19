@@ -26,8 +26,6 @@
 
 #define THREAD_MAIN_RETURN void*
 
-#define exported_function extern "C"
-
 #define GlobalCwdBufferLength 2048
 
 

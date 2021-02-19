@@ -2452,7 +2452,7 @@ OpenDebugWindowAndLetUsDoStuff()
   RewindArena(TranArena);
 }
 
-exported_function void
+dynamic_link_lib_export void
 DumpScopeTreeDataToConsole()
 {
   memory_arena* Temp = AllocateArena();

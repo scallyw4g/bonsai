@@ -244,10 +244,9 @@ DebugFrameBegin(hotkeys *Hotkeys)
   return;
 }
 
-exported_function debug_state*
-GetDebugState_Internal();
+dynamic_link_lib_export debug_state* GetDebugState_Internal();
 
-exported_function void
+dynamic_link_lib_export void
 InitDebugSystem(b32 DoInitDebugRenderSystem = True)
 {
   LastMs = GetHighPrecisionClock();
@@ -283,7 +282,7 @@ InitDebugSystem(b32 DoInitDebugRenderSystem = True)
   return;
 }
 
-exported_function debug_state*
+dynamic_link_lib_export debug_state*
 GetDebugState_Internal()
 {
   if (!Internal_DebugState.Initialized)

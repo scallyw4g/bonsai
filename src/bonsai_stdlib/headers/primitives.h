@@ -4,8 +4,19 @@
 #define local_persist     static
 #define global_variable   static
 #define debug_global      static
-#define bonsai_function   static
-#define exported_function extern "C"
+
+#define link_internal     static
+#define link_external     extern "C"
+
+#if BONSAI_WIN32
+#define dynamic_link_lib_export __declspec(dllexport) link_external
+
+#else
+#define dynamic_link_lib_export link_external
+
+#endif
+
+#define bonsai_function link_internal
 
 
 #define True  (1)

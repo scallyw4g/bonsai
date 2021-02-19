@@ -25,19 +25,13 @@
 
 #define RuntimeBreak() __debugbreak()
 
-#define GAME_LIB_PATH "bin/Debug/GameLoadable"
+#define runtime_lib_export __declspec(dllexport)
 
 #define Newline "\r\n"
 
-// TODO(Jesse): Replace with our internal code to print to console?
-/* global_variable HANDLE Stdout = ; */
-/* #define PrintConsole(Message)                        \ */
-/*         OutputDebugString(Message);                  \ */
-/*         WriteFile(Stdout, Message, strlen(Message), 0, 0); */
-
 #define PLATFORM_OFFSET (sizeof(void*))
 
-#define GAME_LIB (GAME_LIB_PATH".dll")
+#define PLATFORM_RUNTIME_LIB_EXTENSION ".dll"
 
 #define THREAD_MAIN_RETURN DWORD WINAPI
 #define GAME_MAIN_PROC FARPROC GameMain
