@@ -143,8 +143,8 @@ DEBUG_TESTS_TO_BUILD="
   $TESTS/allocation.cpp
 "
 
-  # $TESTS/ui_command_buffer.cpp
 TESTS_TO_BUILD="
+  $TESTS/ui_command_buffer.cpp
   $TESTS/m4.cpp
   $TESTS/colladaloader.cpp
   $TESTS/test_bitmap.cpp
