@@ -82,7 +82,7 @@ typedef Colormap x_colormap;
 typedef XSetWindowAttributes x_set_window_attribs;
 
 b32
-OpenAndInitializeWindow( os *Os, platform *Plat)
+OpenAndInitializeWindow(os *Os, platform *Plat)
 {
   s32 DebugFlags = GLX_CONTEXT_DEBUG_BIT_ARB;
 
@@ -172,28 +172,7 @@ GetProcFromLib(shared_lib Lib, const char *Name)
   return Result;
 }
 
-inline void
-ResumeWorkerThreads()
-{
-  TIMED_FUNCTION();
-  MainThreadBlocksWorkerThreads = False;
-  return;
-}
-
-inline void
-SuspendWorkerThreads()
-{
-  TIMED_FUNCTION();
-  MainThreadBlocksWorkerThreads = True;
-
-  u32 WorkerThreadCount = GetWorkerThreadCount();
-  while (WorkerThreadsWaiting < WorkerThreadCount);
-
-  return;
-}
-
-
-inline void
+enline void
 Terminate(os *Os)
 {
   XDestroyWindow(Os->Display, Os->Window);

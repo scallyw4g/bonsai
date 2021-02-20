@@ -753,7 +753,7 @@ RasterizeGlyph(v2i OutputSize, v2i FontMaxEmDim, v2i FontMinGlyphP, u8_stream *G
           u32 LastPixelIndex = 0;
           for (r32 t = 0.0f;
               t < 1.0f;
-              t += 0.0001)
+              t += 0.0001f)
           {
 
             for (u32 VertIndex = 0;

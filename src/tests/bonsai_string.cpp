@@ -566,6 +566,12 @@ main()
     TestThat(StringsMatch(TestValue, CS("this thing thing this")));
   }
 
+  {
+    counted_string TestString = CS(GetCwd());
+    counted_string TestValue = FormatCountedString(Memory, CSz("this %S %S this"), TestString, TestString);
+    Debug(TestString);
+    Debug(TestValue);
+  }
 
 
 #define TEMP_BUFFER_SIZE (64)

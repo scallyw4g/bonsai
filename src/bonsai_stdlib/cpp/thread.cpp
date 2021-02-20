@@ -20,3 +20,20 @@ GetTotalThreadCount()
   return Result;
 }
 
+inline void
+SuspendWorkerThreads()
+{
+  TIMED_FUNCTION();
+  MainThreadBlocksWorkerThreads = True;
+  u32 WorkerThreadCount = GetWorkerThreadCount();
+  while (WorkerThreadsWaiting < WorkerThreadCount);
+  return;
+}
+
+inline void
+ResumeWorkerThreads()
+{
+  TIMED_FUNCTION();
+  MainThreadBlocksWorkerThreads = False;
+  return;
+}

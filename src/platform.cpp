@@ -130,7 +130,7 @@ ThreadMain(void *Input)
       }
     }
 
-    PlatformUnprotectArena(Thread.TempMemory);
+    UnprotectArena(Thread.TempMemory);
     RewindArena(Thread.TempMemory);
   }
 }
@@ -180,7 +180,7 @@ PlatformLaunchWorkerThreads(platform *Plat, bonsai_worker_thread_init_callback W
     Params->InitProc = WorkerThreadInit;
     Params->GameState = GameState;
 
-    CreateThread( ThreadMain, Params );
+    PlatformCreateThread( ThreadMain, Params );
   }
 
   return;
@@ -203,7 +203,7 @@ PlatformInit(platform *Plat, memory_arena *Memory)
 {
   Plat->Memory = Memory;
 
-  u32 LogicalCoreCount = GetLogicalCoreCount();
+  u32 LogicalCoreCount = PlatformGetLogicalCoreCount();
   u32 WorkerThreadCount = GetWorkerThreadCount();
   Info("Detected %u Logical cores, creating %u threads", LogicalCoreCount, WorkerThreadCount);
 
@@ -248,7 +248,7 @@ SearchForProjectRoot(void)
   }
   else
   {
-    b32 ChdirSuceeded = (chdir("..") == 0);
+    b32 ChdirSuceeded = (_chdir("..") == 0);
     b32 NotAtFilesystemRoot = (!IsFilesystemRoot(GetCwd()));
 
     if (ChdirSuceeded && NotAtFilesystemRoot)
@@ -326,6 +326,7 @@ BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
   return;
 }
 
+#if !BONSAI_WIN32
 bonsai_function server_state*
 ServerInit(memory_arena* Memory)
 {
@@ -339,6 +340,7 @@ ServerInit(memory_arena* Memory)
 
   return ServerState;
 }
+#endif
 
 s32
 main()
@@ -347,17 +349,25 @@ main()
 
 #if !EMCC
   if (!SearchForProjectRoot()) { Error("Couldn't find root dir, exiting."); return False; }
-  Info("Found Bonsai Root : %s", GetCwd() );
+
+  // TODO(Jesse): the following docuemnts a bug I ran into while porting to
+  // clang on Windows.  I suspect a compiler bug, but I did very little digging
+  // to verify what the problem is.
+  //
+  // {  // Broken
+  //   Info("Found Bonsai Root : %s", GetCwd() );
+  // }
+  //
+  // { // Works
+  //   const char* RootDir = GetCwd();
+  //   Info("Found Bonsai Root : %s", RootDir );
+  // }
+  //
+  Info("Found Bonsai Root : %S", CS(GetCwd()) );
 #endif
 
   platform Plat = {};
   os Os = {};
-
-#if !EMCC && BONSAI_INTERNAL
-  s32 DebugFlags = GLX_CONTEXT_DEBUG_BIT_ARB;
-#else
-  s32 DebugFlags = 0;
-#endif
 
 #if !EMCC
   // @bootstrap-debug-system
@@ -367,7 +377,7 @@ main()
   GetDebugState = (get_debug_state_proc)GetProcFromLib(DebugLib, "GetDebugState_Internal");
 #endif
 
-  b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat, DebugFlags);
+  b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat);
   if (!WindowSuccess) { Error("Initializing Window :( "); return False; }
 
   Assert(Os.GlContext);
@@ -422,8 +432,10 @@ main()
 
   PlatformLaunchWorkerThreads(&Plat, WorkerThreadInitCallback, GameState);
 
+#if !BONSAI_WIN32
   server_state* ServerState = ServerInit(GameMemory);
   Assert(ServerState);
+#endif
 
   /*
    *  Main Game loop
@@ -506,7 +518,12 @@ main()
 
     BONSAI_API_MAIN_THREAD_CALLBACK_NAME(&Plat, GameState, &Hotkeys);
 
+
+#if BONSAI_LINUX
     DEBUG_FRAME_END(&Plat, ServerState);
+#else
+    DEBUG_FRAME_END(&Plat, 0);
+#endif
 
     BonsaiSwapBuffers(&Os);
     RealDt = MAIN_THREAD_ADVANCE_DEBUG_SYSTEM();

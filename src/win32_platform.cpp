@@ -26,7 +26,7 @@ CreateSemaphore(void)
 }
 
 thread_id
-PlatformCreateThread( LPTHREAD_START_ROUTINE ThreadMain, thread_startup_params *Params)
+PlatformCreateThread( thread_main_callback_type ThreadMain, thread_startup_params *Params)
 {
   DWORD flags = 0;
 
@@ -476,7 +476,7 @@ inline char*
 GetCwd()
 {
   GetCurrentDirectory( CwdBufferLen, CwdBuffer );
-  return &CwdBuffer[0];
+  return CwdBuffer;
 }
 
 b32

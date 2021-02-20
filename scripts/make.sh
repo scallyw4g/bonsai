@@ -12,6 +12,11 @@ if [ "$UNAME" == "Linux" ] ; then
   # TODO(Jesse): What does -fPIC acutally do?  I found the option documented here,
   # but with no explanation of what it's doing.  Apparently it's unsupported on
   # Windows, so hopefully it's not necessary for anything.
+
+  # Turns out that -fPIC turns on rip-relative addressing (among other things?)
+  # such that functions work regardless of where they're loaded into memory.
+  # This is important (obviously) for dynamically-loaded libs and ASLR.
+
   #
   # https://clang.llvm.org/docs/ClangCommandLineReference.html
   # @unsupported_fPIC_flag_windows
@@ -134,8 +139,9 @@ EXAMPLES_TO_BUILD="
 EXECUTABLES_TO_BUILD="
   $SRC/platform.cpp
   $SRC/font/ttf.cpp
-  $SRC/net/server.cpp
 "
+  #$SRC/net/server.cpp
+
 
 # TODO(Jesse, tags: tests, release): The allocation tests crash in release mode because of some
 # ultra-jank-tastic segfault recovery code.  Find another less janky way?
@@ -203,37 +209,37 @@ function BuildAllClang {
   echo -e "$Delimeter"
   echo -e ""
 
-#   ColorizeTitle "Executables"
-#   for executable in $EXECUTABLES_TO_BUILD; do
-#     SetOutputBinaryPathBasename "$executable" "$BIN"
-#     echo -e "$Building $executable"
-#     clang++                                          \
-#       $OPTIMIZATION_LEVEL                            \
-#       $CXX_OPTIONS                                   \
-#       $PLATFORM_CXX_OPTIONS                          \
-#       $PLATFORM_LINKER_OPTIONS                       \
-#       $PLATFORM_DEFINES                              \
-#       $PLATFORM_INCLUDE_DIRS                         \
-#       -I"$SRC"                                       \
-#       -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
-#       $executable && echo -e "$Success $executable" &
-#   done
+  ColorizeTitle "Executables"
+  for executable in $EXECUTABLES_TO_BUILD; do
+    SetOutputBinaryPathBasename "$executable" "$BIN"
+    echo -e "$Building $executable"
+    clang++                                          \
+      $OPTIMIZATION_LEVEL                            \
+      $CXX_OPTIONS                                   \
+      $PLATFORM_CXX_OPTIONS                          \
+      $PLATFORM_LINKER_OPTIONS                       \
+      $PLATFORM_DEFINES                              \
+      $PLATFORM_INCLUDE_DIRS                         \
+      -I"$SRC"                                       \
+      -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
+      $executable && echo -e "$Success $executable" &
+  done
 
-#   echo ""
-#   ColorizeTitle "Debug Tests"
-#   for executable in $DEBUG_TESTS_TO_BUILD; do
-#     SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
-#     echo -e "$Building $executable"
-#     clang++                                          \
-#       $CXX_OPTIONS                                   \
-#       $PLATFORM_CXX_OPTIONS                          \
-#       $PLATFORM_LINKER_OPTIONS                       \
-#       $PLATFORM_DEFINES                              \
-#       $PLATFORM_INCLUDE_DIRS                         \
-#       -I"$SRC"                                       \
-#       -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
-#       $executable && echo -e "$Success $executable" &
-#   done
+  # echo ""
+  # ColorizeTitle "Debug Tests"
+  # for executable in $DEBUG_TESTS_TO_BUILD; do
+  #   SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
+  #   echo -e "$Building $executable"
+  #   clang++                                          \
+  #     $CXX_OPTIONS                                   \
+  #     $PLATFORM_CXX_OPTIONS                          \
+  #     $PLATFORM_LINKER_OPTIONS                       \
+  #     $PLATFORM_DEFINES                              \
+  #     $PLATFORM_INCLUDE_DIRS                         \
+  #     -I"$SRC"                                       \
+  #     -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
+  #     $executable && echo -e "$Success $executable" &
+  # done
 
   echo ""
   ColorizeTitle "Tests"

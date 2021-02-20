@@ -115,3 +115,17 @@ AtomicIncrement( u64 volatile *Dest)
   return Result;
 }
 
+inline u32
+AtomicDecrement( u32 volatile *Dest)
+{
+  u32 Result = InterlockedDecrement(Dest);
+  return Result;
+}
+
+inline u64
+AtomicDecrement( u64 volatile *Dest)
+{
+  u64 Result = InterlockedDecrement(Dest);
+  return Result;
+}
+
