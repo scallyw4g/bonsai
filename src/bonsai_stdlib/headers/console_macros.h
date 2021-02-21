@@ -1,6 +1,8 @@
 global_variable const umm TempDebugOutputBufferSize = 4096;
 global_variable char TempDebugOutputBuffer__[TempDebugOutputBufferSize];
 
+bonsai_function void PrintToStdout(counted_string S);
+
 #define PrintDebugLine(...)     \
   PrintToStdout(FormatCountedString_(TempDebugOutputBuffer__, TempDebugOutputBufferSize, __VA_ARGS__)); \
   PrintToStdout(CSz(Newline))

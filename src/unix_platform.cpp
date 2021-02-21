@@ -156,8 +156,8 @@ OpenAndInitializeWindow(os *Os, platform *Plat)
 
   glXMakeCurrent(Os->Display, xWindow, Os->GlContext);
 
-  GL->DebugMessageCallback(HandleGlDebugMessage, 0);
-  GL->Enable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+  GL.DebugMessageCallback(HandleGlDebugMessage, 0);
+  GL.Enable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
   AssertNoGlErrors;
 

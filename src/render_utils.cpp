@@ -12,7 +12,7 @@ global_variable m4 NdcToScreenSpace =
 #define Draw(VertexCount) do {                      \
   TIMED_BLOCK("Draw");                              \
   DEBUG_TRACK_DRAW_CALL(__FUNCTION__, VertexCount); \
-  GL->DrawArrays(GL_TRIANGLES, 0, (s32)VertexCount);  \
+  GL.DrawArrays(GL_TRIANGLES, 0, (s32)VertexCount);  \
   END_BLOCK(); } while (0)
 
 v3
@@ -35,12 +35,12 @@ Unproject(v2 ScreenP, r32 ClipZDepth, v2 ScreenDim, m4 *InvViewProj)
 void
 Init_Global_QuadVertexBuffer()
 {
-  GL->GenBuffers(1, &Global_QuadVertexBuffer);
+  GL.GenBuffers(1, &Global_QuadVertexBuffer);
   Assert(Global_QuadVertexBuffer);
 
-  GL->BindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer);
-  GL->BufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
-  GL->BindBuffer(GL_ARRAY_BUFFER, 0);
+  GL.BindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer);
+  GL.BufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+  GL.BindBuffer(GL_ARRAY_BUFFER, 0);
 
   return;
 }
@@ -53,14 +53,14 @@ RenderQuad()
     Init_Global_QuadVertexBuffer();
   }
 
-  GL->EnableVertexAttribArray(0);
-  GL->BindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer);
-  GL->VertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  GL.EnableVertexAttribArray(0);
+  GL.BindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer);
+  GL.VertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
   Draw(6);
 
-  GL->BindBuffer(GL_ARRAY_BUFFER, 0);
-  GL->DisableVertexAttribArray(0);
+  GL.BindBuffer(GL_ARRAY_BUFFER, 0);
+  GL.DisableVertexAttribArray(0);
 }
 
 void
@@ -68,12 +68,12 @@ DrawTexturedQuad(shader *SimpleTextureShader)
 {
   r32 Scale = 0.5f;
 
-  GL->DepthFunc(GL_LEQUAL);
+  GL.DepthFunc(GL_LEQUAL);
 
   texture *Texture = SimpleTextureShader->FirstUniform->Texture;
   SetViewport( V2(Texture->Dim.x, Texture->Dim.y)*Scale );
 
-  GL->UseProgram(SimpleTextureShader->ID);
+  GL.UseProgram(SimpleTextureShader->ID);
 
   BindShaderUniforms(SimpleTextureShader);
 
@@ -91,10 +91,10 @@ BufferDataToCard(u32 BufferId, u32 Stride, u32 ByteCount, void *Data, u32 *Attri
   DebugState->BytesBufferedToCard += ByteCount;
 #endif
 
-  GL->EnableVertexAttribArray(*AttributeIndex);
-  GL->BindBuffer(GL_ARRAY_BUFFER, BufferId);
-  GL->BufferData(GL_ARRAY_BUFFER, ByteCount, Data, GL_STATIC_DRAW);
-  GL->VertexAttribPointer(*AttributeIndex, (s32)Stride, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  GL.EnableVertexAttribArray(*AttributeIndex);
+  GL.BindBuffer(GL_ARRAY_BUFFER, BufferId);
+  GL.BufferData(GL_ARRAY_BUFFER, ByteCount, Data, GL_STATIC_DRAW);
+  GL.VertexAttribPointer(*AttributeIndex, (s32)Stride, GL_FLOAT, GL_FALSE, 0, (void*)0);
   *AttributeIndex += 1;
 
   return;

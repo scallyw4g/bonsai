@@ -9,10 +9,10 @@
 #define link_external     extern "C"
 
 #if BONSAI_WIN32
-#define dynamic_link_lib_export __declspec(dllexport) link_external
+#define dll_export __declspec(dllexport) link_external
 
 #else
-#define dynamic_link_lib_export link_external
+#define dll_export link_external
 
 #endif
 

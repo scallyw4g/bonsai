@@ -74,25 +74,25 @@ struct memory_arena
 };
 
 #define AllocateProtection(Type, Arena, Number, Protection)                                                                 \
-  ( GetDebugState ?                                                                                                         \
+  ( GetDebugState && GetDebugState() ?                                                                                      \
       (Type*)GetDebugState()->Debug_Allocate(Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, 1, Protection ) : \
       (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, Protection)                                                      \
   )
 
 #define AllocateAlignedProtection(Type, Arena, Number, Alignment, Protection)                                                      \
-  ( GetDebugState ?                                                                                                                \
+  ( GetDebugState && GetDebugState() ?                                                                                             \
     (Type*)GetDebugState()->Debug_Allocate( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, Alignment, Protection ) : \
     (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, Alignment, Protection)                                                       \
   )
 
 #define AllocateAligned(Type, Arena, Number, Alignment)                                                                     \
-  ( GetDebugState ?                                                                                                         \
+  ( GetDebugState && GetDebugState() ?                                                                                      \
     (Type*)GetDebugState()->Debug_Allocate( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, Alignment, True) : \
     (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, Alignment, True)                                                      \
   )
 
 #define Allocate(Type, Arena, Number)                                                                               \
-  ( GetDebugState ?                                                                                                 \
+  ( GetDebugState && GetDebugState() ?                                                                              \
     (Type*)GetDebugState()->Debug_Allocate( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, 1, True) : \
     (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, True)                                                      \
   )

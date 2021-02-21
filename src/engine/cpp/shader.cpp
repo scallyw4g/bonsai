@@ -6,24 +6,24 @@ CompileShader(ansi_stream Header, ansi_stream Code, u32 Type)
 {
   const int InfoLogLength = 0;
 
-  u32 ShaderID = GL->CreateShader(Type);
+  u32 ShaderID = GL.CreateShader(Type);
 
   const char *Sources[2] = {Header.Start, Code.Start};
   const s32 Lengths[2] = {(s32)TotalSize(&Header), (s32)TotalSize(&Code)};
 
 
   // Compile
-  GL->ShaderSource(ShaderID, 2, Sources, Lengths);
-  GL->CompileShader(ShaderID);
+  GL.ShaderSource(ShaderID, 2, Sources, Lengths);
+  GL.CompileShader(ShaderID);
 
   // Check Status
   s32 Result = GL_FALSE;
-  GL->GetShaderiv(ShaderID, GL_COMPILE_STATUS, &Result);
-  GL->GetShaderiv(ShaderID, GL_INFO_LOG_LENGTH, (s32*)&InfoLogLength);
+  GL.GetShaderiv(ShaderID, GL_COMPILE_STATUS, &Result);
+  GL.GetShaderiv(ShaderID, GL_INFO_LOG_LENGTH, (s32*)&InfoLogLength);
   if ( InfoLogLength > 0 )
   {
     char VertexShaderErrorMessage[InfoLogLength+1] = {};
-    GL->GetShaderInfoLog(ShaderID, InfoLogLength, NULL, VertexShaderErrorMessage);
+    GL.GetShaderInfoLog(ShaderID, InfoLogLength, NULL, VertexShaderErrorMessage);
     Error("Shader : %s", VertexShaderErrorMessage);
     return INVALID_SHADER;
   }
@@ -52,29 +52,29 @@ LoadShaders(counted_string VertShaderPath, counted_string FragFilePath, memory_a
   u32 FragmentShaderID = CompileShader(HeaderCode, FragShaderCode, GL_FRAGMENT_SHADER);
 
   // Link the program
-  u32 ProgramID = GL->CreateProgram();
+  u32 ProgramID = GL.CreateProgram();
   Assert(ProgramID);
-  GL->AttachShader(ProgramID, VertexShaderID);
-  GL->AttachShader(ProgramID, FragmentShaderID);
-  GL->LinkProgram(ProgramID);
+  GL.AttachShader(ProgramID, VertexShaderID);
+  GL.AttachShader(ProgramID, FragmentShaderID);
+  GL.LinkProgram(ProgramID);
 
   // Check the program
-  GL->GetProgramiv(ProgramID, GL_LINK_STATUS, &Result);
-  GL->GetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+  GL.GetProgramiv(ProgramID, GL_LINK_STATUS, &Result);
+  GL.GetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
   if ( InfoLogLength > 0 )
   {
     // TODO(Jesse, id: 134, tags: transient_memory): Transient storage
     char *ProgramErrorMessage = Allocate(char, Memory, InfoLogLength+1);
-    GL->GetProgramInfoLog(ProgramID, InfoLogLength, NULL, ProgramErrorMessage);
+    GL.GetProgramInfoLog(ProgramID, InfoLogLength, NULL, ProgramErrorMessage);
     Error("%s", ProgramErrorMessage);
   }
 
 
-  GL->DetachShader(ProgramID, VertexShaderID);
-  GL->DetachShader(ProgramID, FragmentShaderID);
+  GL.DetachShader(ProgramID, VertexShaderID);
+  GL.DetachShader(ProgramID, FragmentShaderID);
 
-  GL->DeleteShader(VertexShaderID);
-  GL->DeleteShader(FragmentShaderID);
+  GL.DeleteShader(VertexShaderID);
+  GL.DeleteShader(FragmentShaderID);
 
   shader Shader = {};
   Shader.ID = ProgramID;
@@ -86,7 +86,7 @@ LoadShaders(counted_string VertShaderPath, counted_string FragFilePath, memory_a
 s32
 GetShaderUniform(shader *Shader, const char *Name)
 {
-  s32 Result = GL->GetUniformLocation(Shader->ID, Name);
+  s32 Result = GL.GetUniformLocation(Shader->ID, Name);
   if (Result == INVALID_SHADER_UNIFORM)
   {
     Warn("Couldn't retreive %s shader uniform - was it optimized out?", Name);
@@ -149,10 +149,10 @@ MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory)
 b32
 CheckAndClearFramebuffer()
 {
-  b32 Result = (GL->CheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+  b32 Result = (GL.CheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 
-  GL->Clear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-  GL->BindFramebuffer(GL_FRAMEBUFFER, 0);
+  GL.Clear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+  GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
 
   return Result;
 }
@@ -174,46 +174,46 @@ BindShaderUniforms(shader *Shader)
       {
         Assert(TextureUnit < 8); // TODO(Jesse, id: 135, tags: robustness, opengl, texture): Query max gpu textures?
 
-        GL->ActiveTexture(GL_TEXTURE0 + TextureUnit);
-        GL->Uniform1i(Uniform->ID, (s32)TextureUnit);
-        GL->BindTexture(GL_TEXTURE_2D, Uniform->Texture->ID);
+        GL.ActiveTexture(GL_TEXTURE0 + TextureUnit);
+        GL.Uniform1i(Uniform->ID, (s32)TextureUnit);
+        GL.BindTexture(GL_TEXTURE_2D, Uniform->Texture->ID);
 
         TextureUnit++;
       } break;
 
       case ShaderUniform_U32:
       {
-        GL->Uniform1ui(Uniform->ID, *Uniform->U32);
+        GL.Uniform1ui(Uniform->ID, *Uniform->U32);
       } break;
 
       case ShaderUniform_R32:
       {
-        GL->Uniform1f(Uniform->ID, *Uniform->R32);
+        GL.Uniform1f(Uniform->ID, *Uniform->R32);
       } break;
 
       case ShaderUniform_S32:
       {
-        GL->Uniform1i(Uniform->ID, *Uniform->S32);
+        GL.Uniform1i(Uniform->ID, *Uniform->S32);
       } break;
 
       case ShaderUniform_M4:
       {
-        GL->UniformMatrix4fv(Uniform->ID, 1, GL_FALSE, (r32*)Uniform->M4);
+        GL.UniformMatrix4fv(Uniform->ID, 1, GL_FALSE, (r32*)Uniform->M4);
       } break;
 
       case ShaderUniform_V3:
       {
-        GL->Uniform3fv(Uniform->ID, 1, (r32*)Uniform->V3);
+        GL.Uniform3fv(Uniform->ID, 1, (r32*)Uniform->V3);
       } break;
 
       case ShaderUniform_Light:
       {
-        GL->Uniform3fv(Uniform->ID, 1, &Uniform->Light->Position.E[0]);
+        GL.Uniform3fv(Uniform->ID, 1, &Uniform->Light->Position.E[0]);
       } break;
 
       case ShaderUniform_Camera:
       {
-        GL->Uniform3fv(Uniform->ID, 1, &Uniform->Camera->RenderSpacePosition.E[0]);
+        GL.Uniform3fv(Uniform->ID, 1, &Uniform->Camera->RenderSpacePosition.E[0]);
       } break;
 
       InvalidDefaultCase;
@@ -230,7 +230,7 @@ BindShaderUniforms(shader *Shader)
 void
 UseShader(shader *Shader)
 {
-  GL->UseProgram(Shader->ID);
+  GL.UseProgram(Shader->ID);
   BindShaderUniforms(Shader);
   return;
 }

@@ -129,3 +129,37 @@ AtomicDecrement( u64 volatile *Dest)
   return Result;
 }
 
+link_internal void*
+PlatformGetGlFunction(const char* Name)
+{
+  void *Result = 0;
+
+  void *WglProc = (void*)wglGetProcAddress(Name);
+  if ((s64)WglProc == -1 ||
+      (s64)WglProc ==  0 ||
+      (s64)WglProc ==  1 ||
+      (s64)WglProc ==  2 ||
+      (s64)WglProc ==  3 )
+  {
+    HMODULE OpenglDllHandle = LoadLibraryA("opengl32.dll");
+    if (OpenglDllHandle)
+    {
+      Result = (void*)GetProcAddress(OpenglDllHandle, Name);
+    }
+    else
+    {
+      Error("Could not load opengl32.dll");
+    }
+  }
+  else
+  {
+    Result = WglProc;
+  }
+
+  if (!Result)
+  {
+    Error("Couldn't load Opengl fucntion (%s)", Name);
+  }
+
+  return Result;
+}

@@ -1,3 +1,4 @@
+#define DEBUG_LIB_INTERNAL_BUILD 1
 #include <bonsai_types.h>
 
 #include <debug_data_system.cpp>
@@ -213,7 +214,7 @@ DebugFrameBegin(hotkeys *Hotkeys)
 
   if ( Hotkeys->Debug_RedrawEveryPush )
   {
-    State->Debug_RedrawEveryPush = !State->Debug_RedrawEveryPush;
+     State->Debug_RedrawEveryPush = !State->Debug_RedrawEveryPush;
   }
 
   if ( Hotkeys->Debug_ToggleTriggeredRuntimeBreak )
@@ -242,10 +243,32 @@ DebugFrameBegin(hotkeys *Hotkeys)
   return;
 }
 
-dynamic_link_lib_export debug_state *GetDebugState_Internal();
+link_internal debug_state*
+GetDebugState()
+{
+  debug_state *Result = 0;
+  if (Internal_DebugState.Initialized)
+  {
+    Result = &Internal_DebugState;
+  }
+  else
+  {
+    // It's an error to call this without first initializing the debug_state.
+    //
+    // At the time of this writing we're unable to write to stdout here because
+    // that path calls "FormatCountedString_", which is a TIMED_FUNCTION, which
+    // interally calls GetDebugState.
+    //
+    // This path only happens when we compile the entire debug lib statically
+    // inside another app (tests/ui_command_buffer.cpp), which should go away
+    // eventaully.  When it does, this will no longer have to check Initialized
+  }
 
-dynamic_link_lib_export void
-InitDebugSystem(b32 DoInitDebugRenderSystem = True)
+  return Result;
+}
+
+dll_export get_debug_state_proc
+InitDebugSystem(opengl *LoadedGLImpl)
 {
   LastMs = GetHighPrecisionClock();
   Internal_DebugState.Frames[1].StartingCycle = GetCycleCount();
@@ -272,22 +295,13 @@ InitDebugSystem(b32 DoInitDebugRenderSystem = True)
 
   Internal_DebugState.Initialized = True;
 
-  GetDebugState = GetDebugState_Internal;
-
-  heap_allocator Heap = InitHeap(Megabytes(128));
   InitDebugDataSystem(&Internal_DebugState);
-  if (DoInitDebugRenderSystem) { InitDebugRenderSystem(&Internal_DebugState, &Heap); }
-  return;
-}
 
-dynamic_link_lib_export debug_state*
-GetDebugState_Internal()
-{
-  if (!Internal_DebugState.Initialized)
-  {
-    GetDebugState = GetDebugState_Internal;
-    InitDebugSystem();
+  if (LoadedGLImpl) {
+    Assert(LoadedGLImpl->Initialized);
+    heap_allocator Heap = InitHeap(Megabytes(128));
+    InitDebugRenderSystem(&Internal_DebugState, &Heap, LoadedGLImpl);
   }
 
-  return &Internal_DebugState;
+  return GetDebugState;
 }

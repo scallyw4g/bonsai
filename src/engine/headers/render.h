@@ -194,7 +194,7 @@ Untextured3dGeometryBuffer(v3* Verts, v4* Colors, v3* Normals, u32 Count)
 inline void
 SetViewport(v2 Dim)
 {
-  GL->Viewport(0, 0, (s32)Dim.x, (s32)Dim.y);
+  GL.Viewport(0, 0, (s32)Dim.x, (s32)Dim.y);
   return;
 }
 

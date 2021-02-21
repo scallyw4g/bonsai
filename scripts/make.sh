@@ -165,7 +165,6 @@ TESTS_TO_BUILD="
 "
 
 function BuildPreprocessor {
-
   which clang++ > /dev/null
   [ $? -ne 0 ] && echo -e "Please install clang++" && exit 1
 
@@ -201,14 +200,8 @@ function BuildPreprocessor {
   echo -e ""
 }
 
-function BuildAllClang {
-  which clang++ > /dev/null
-  [ $? -ne 0 ] && echo -e "Please install clang++" && exit 1
-
-  echo -e ""
-  echo -e "$Delimeter"
-  echo -e ""
-
+function BuildExecutables
+{
   ColorizeTitle "Executables"
   for executable in $EXECUTABLES_TO_BUILD; do
     SetOutputBinaryPathBasename "$executable" "$BIN"
@@ -224,23 +217,29 @@ function BuildAllClang {
       -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
       $executable && echo -e "$Success $executable" &
   done
+}
 
-  # echo ""
-  # ColorizeTitle "Debug Tests"
-  # for executable in $DEBUG_TESTS_TO_BUILD; do
-  #   SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
-  #   echo -e "$Building $executable"
-  #   clang++                                          \
-  #     $CXX_OPTIONS                                   \
-  #     $PLATFORM_CXX_OPTIONS                          \
-  #     $PLATFORM_LINKER_OPTIONS                       \
-  #     $PLATFORM_DEFINES                              \
-  #     $PLATFORM_INCLUDE_DIRS                         \
-  #     -I"$SRC"                                       \
-  #     -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
-  #     $executable && echo -e "$Success $executable" &
-  # done
+function BuildDebugTests
+{
+  echo ""
+  ColorizeTitle "Debug Tests"
+  for executable in $DEBUG_TESTS_TO_BUILD; do
+    SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
+    echo -e "$Building $executable"
+    clang++                                          \
+      $CXX_OPTIONS                                   \
+      $PLATFORM_CXX_OPTIONS                          \
+      $PLATFORM_LINKER_OPTIONS                       \
+      $PLATFORM_DEFINES                              \
+      $PLATFORM_INCLUDE_DIRS                         \
+      -I"$SRC"                                       \
+      -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
+      $executable && echo -e "$Success $executable" &
+  done
+}
 
+function BuildTests
+{
   echo ""
   ColorizeTitle "Tests"
   for executable in $TESTS_TO_BUILD; do
@@ -258,7 +257,10 @@ function BuildAllClang {
       -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
       $executable && echo -e "$Success $executable" &
   done
+}
 
+function BuildDebugSystem
+{
   echo ""
   ColorizeTitle "DebugSystem"
   DEBUG_SRC_FILE="$SRC/debug_system/debug.cpp"
@@ -275,27 +277,46 @@ function BuildAllClang {
     -I"$SRC/debug_system"                               \
     -o "$BIN/lib_debug_system""$PLATFORM_LIB_EXTENSION" \
     "$DEBUG_SRC_FILE" && echo -e "$Success $DEBUG_SRC_FILE" &
+}
 
-  # echo ""
-  # ColorizeTitle "Examples"
-  # for executable in $EXAMPLES_TO_BUILD; do
-  #   echo -e "$Building $executable"
-  #   SetOutputBinaryPathBasename "$executable" "$BIN"
-  #   clang++                                                                           \
-  #     $OPTIMIZATION_LEVEL                                                             \
-  #     $CXX_OPTIONS                                                                    \
-  #     $PLATFORM_CXX_OPTIONS                                                           \
-  #     $PLATFORM_LINKER_OPTIONS                                                        \
-  #     $PLATFORM_DEFINES                                                               \
-  #     $PLATFORM_INCLUDE_DIRS                                                          \
-  #     $SHARED_LIBRARY_FLAGS                                                           \
-  #     -I"$SRC"                                                                        \
-  #     -I"$executable"                                                                 \
-  #     -o "$output_basename"                                                           \
-  #     "$executable/game.cpp" &&                                                       \
-  #     mv "$output_basename" "$output_basename""_loadable""$PLATFORM_LIB_EXTENSION" && \
-  #     echo -e "$Success $executable" &
-  # done
+function BuildExamples
+{
+  echo ""
+  ColorizeTitle "Examples"
+  for executable in $EXAMPLES_TO_BUILD; do
+    echo -e "$Building $executable"
+    SetOutputBinaryPathBasename "$executable" "$BIN"
+    clang++                                                                           \
+      $OPTIMIZATION_LEVEL                                                             \
+      $CXX_OPTIONS                                                                    \
+      $PLATFORM_CXX_OPTIONS                                                           \
+      $PLATFORM_LINKER_OPTIONS                                                        \
+      $PLATFORM_DEFINES                                                               \
+      $PLATFORM_INCLUDE_DIRS                                                          \
+      $SHARED_LIBRARY_FLAGS                                                           \
+      -I"$SRC"                                                                        \
+      -I"$executable"                                                                 \
+      -o "$output_basename"                                                           \
+      "$executable/game.cpp" &&                                                       \
+      mv "$output_basename" "$output_basename""_loadable""$PLATFORM_LIB_EXTENSION" && \
+      echo -e "$Success $executable" &
+  done
+}
+
+function BuildAllClang
+{
+  which clang++ > /dev/null
+  [ $? -ne 0 ] && echo -e "Please install clang++" && exit 1
+
+  echo -e ""
+  echo -e "$Delimeter"
+  echo -e ""
+
+  [ $BuildExecutables == 1 ] && BuildExecutables
+  [ $BuildDebugTests == 1 ] && BuildDebugTests
+  [ $BuildTests == 1 ] && BuildTests
+  [ $BuildDebugSystem == 1 ] && BuildDebugSystem
+  [ $BuildExamples == 1 ] && BuildExamples
 
   echo -e ""
   echo -e "$Delimeter"
@@ -429,12 +450,10 @@ function RunEntireBuild {
     bin/preprocessor_dev src/metaprogramming/preprocessor.cpp -I src -I /usr/include/x86_64-linux-gnu -I /usr/include
   fi
 
-  if [ $BuildAllProjects == 1 ]; then
-    if [ "$EMCC" == "1" ]; then
-      BuildAllEMCC
-    else
-      BuildAllClang
-    fi
+  if [ $EMCC == 1 ]; then
+    BuildAllEMCC
+  else
+    BuildAllClang
   fi
 
   if [ $RunTests == 1 ]; then
@@ -452,10 +471,16 @@ DumpSourceFilesAndQuit=0
 CheckoutMetaOutput=0
 
 FirstPreprocessor=0
-BuildPreprocessor=1
+BuildPreprocessor=0
 SecondPreprocessor=0
 
-BuildAllProjects=1
+BuildExecutables=1
+BuildDebugTests=0
+BuildTests=1
+BuildDebugSystem=1
+BuildExamples=0
+
+
 RunTests=0
 FinalPreprocessor=0
 

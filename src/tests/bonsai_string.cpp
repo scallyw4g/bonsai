@@ -567,9 +567,7 @@ main()
   }
 
   {
-    counted_string TestString = CS(GetCwd());
-    counted_string TestValue = FormatCountedString(Memory, CSz("this %S %S this"), TestString, TestString);
-    Debug(TestString);
+    counted_string TestValue = FormatCountedString(Memory, CSz("this %s this"), GetCwd());
     Debug(TestValue);
   }
 

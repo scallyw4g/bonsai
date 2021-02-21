@@ -59,7 +59,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   /* DebugPrint(*GameState->Plat); */
 
-  GL->Disable(GL_CULL_FACE);
+  GL.Disable(GL_CULL_FACE);
 
 #if BONSAI_INTERNAL
   if (!GetDebugState)

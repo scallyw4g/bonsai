@@ -39,8 +39,8 @@
 
 #include <bonsai_stdlib/headers/assert.h>
 #include <bonsai_stdlib/headers/primitives.h>
-#include <bonsai_stdlib/headers/platform.h>
 #include <bonsai_stdlib/headers/console_macros.h>
+#include <bonsai_stdlib/headers/platform.h>
 #include <bonsai_stdlib/headers/thread.h>
 #include <bonsai_stdlib/headers/math.h>
 #include <bonsai_stdlib/headers/file.h>

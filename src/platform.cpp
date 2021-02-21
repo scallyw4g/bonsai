@@ -364,32 +364,22 @@ main()
   // }
   //
   Info("Found Bonsai Root : %S", CS(GetCwd()) );
+
 #endif
 
   platform Plat = {};
-  os Os = {};
+  os Os         = {};
 
-#if !EMCC
-  // @bootstrap-debug-system
-  shared_lib DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
-  if (!DebugLib) { Error("Loading DebugLib :( "); return False; }
-
-  GetDebugState = (get_debug_state_proc)GetProcFromLib(DebugLib, "GetDebugState_Internal");
-#endif
-
-  b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat);
-  if (!WindowSuccess) { Error("Initializing Window :( "); return False; }
-
+  if (!OpenAndInitializeWindow(&Os, &Plat)) { Error("Initializing Window :( "); return False; }
   Assert(Os.GlContext);
 
-  AssertNoGlErrors;
-
-  InitializeOpenGlExtensions(&Os);
-  AssertNoGlErrors;
+  if (!InitializeOpengl(&Os)) { Error("Initializing OpenGL :( "); return False; }
 
 #if !EMCC
-  b32 ShadingLanguageIsRecentEnough = CheckShadingLanguageVersion();
-  if (!ShadingLanguageIsRecentEnough) {  return False; }
+  shared_lib DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
+  if (!DebugLib) { Error("Loading DebugLib :( "); return False; }
+  init_debug_system_proc InitDebugSystem = (init_debug_system_proc)GetProcFromLib(DebugLib, "InitDebugSystem");
+  GetDebugState = InitDebugSystem(&GL);
 #endif
 
   AssertNoGlErrors;
@@ -409,7 +399,9 @@ main()
 
   hotkeys Hotkeys = {};
 
-#if !EMCC ///////////////////////////////////// EMCC SHOULD COMPILE AND RUN CORRECTLY UP TO HERE
+#if EMCC ///////////////////////////////////// EMCC SHOULD COMPILE AND RUN CORRECTLY UP TO HERE
+  return True;
+#endif
 
   LibIsNew(DEFAULT_GAME_LIB, &LastGameLibTime);  // Hack to initialize the LastGameLibTime static
 
@@ -533,7 +525,6 @@ main()
 
   Info("Shutting Down");
   Terminate(&Os);
-#endif
   Info("Exiting");
 
   return True;

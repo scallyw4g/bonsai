@@ -1,13 +1,19 @@
 
 // Wrapper so assertions give us file/line numbers
 #define AssertNoGlErrors do {            \
-  u32 glErrorNo = GL->GetError();       \
+  u32 glErrorNo = GL.GetError();       \
   DumpGlErrorEnum(glErrorNo);         \
   Assert(glErrorNo == GL_NO_ERROR); } while (0)
 
 #define GL_NO_ERROR                       0
 
+#define GL_MAJOR_VERSION                  0x821B
+#define GL_MINOR_VERSION                  0x821C
+
+#define GL_VENDOR                         0x1F00
+#define GL_RENDERER                       0x1F01
 #define GL_VERSION                        0x1F02
+#define GL_EXTENSIONS                     0x1F03
 #define GL_SHADING_LANGUAGE_VERSION       0x8B8C
 
 #define GL_BYTE                           0x1400
@@ -318,11 +324,14 @@ typedef void*           (*OpenglMapBuffer)                 (GLenum target, GLenu
 typedef void*           (*OpenglMapBufferRange)            (GLenum target, GLintptr offset, GLsizeiptr length,  GLenum access);
 typedef GLboolean       (*OpenglUnmapBuffer)               (GLenum target);
 typedef void            (*OpenglDrawBuffers)               (GLsizei n, const GLenum *bufs);
+typedef void            (*OpenglGetIntegerv)               (GLenum pname, GLint * data);
 
 
 
-struct gl_extensions
+struct opengl
 {
+  b32 Initialized;
+
   OpenglGetString GetString;
   OpenglGetError GetError;
   OpenglDebugMessageCallback DebugMessageCallback;
@@ -421,28 +430,28 @@ struct gl_extensions
   OpenglMapBufferRange MapBufferRange;
   OpenglUnmapBuffer UnmapBuffer;
   OpenglDrawBuffers DrawBuffers;
+  OpenglGetIntegerv GetIntegerv;
   // Platform specific (wgl / glX)
   /* OpenglSwapInterval SwapInterval; */
 };
 
-global_variable gl_extensions *GL;
+global_variable opengl GL = {};
 
 bonsai_function b32
-CheckShadingLanguageVersion()
+CheckOpenglVersion()
 {
-  char *OpenGlVersion = (char*)GL->GetString(GL_VERSION);
-  r32 ShadingLanguageVersion = (r32)atof((char*)GL->GetString(GL_SHADING_LANGUAGE_VERSION));
+  s32 Version[2];
+  GL.GetIntegerv(GL_MAJOR_VERSION, &Version[0]);
+  GL.GetIntegerv(GL_MINOR_VERSION, &Version[1]);
 
-  Info("OpenGl Ver. (%s)", OpenGlVersion );
-  Info("GLSL   Ver. (%f)", ShadingLanguageVersion );
+  Info("OpenGl Version (%u.%u)", Version[0], Version[1] );
 
-  r32 RequiredShadingLanguageVersion = 3.3f;
-  if (ShadingLanguageVersion < RequiredShadingLanguageVersion)
+  b32 Result = Version[0] >= 3 && Version[1] >= 3;
+  if (!Result)
   {
-    Error("Unsupported Version of GLSL :: Got %f, Needed: %f", ShadingLanguageVersion, RequiredShadingLanguageVersion);
+    Error("Unsupported Version of Opengl ::  Minimum 3.3 required");
   }
 
-  b32 Result = (ShadingLanguageVersion > RequiredShadingLanguageVersion);
   return Result;
 }
 

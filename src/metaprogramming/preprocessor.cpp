@@ -5688,43 +5688,37 @@ debug_global os Os = {};
  * anywhere?  It's also in the platform layer
  */
 bonsai_function b32
-BootstrapDebugSystem(b32 OpenDebugWindow)
+BootstrapDebugSystem()
 {
   shared_lib DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
   if (!DebugLib) { Error("Loading DebugLib :( "); return False; }
 
-  GetDebugState = (get_debug_state_proc)GetProcFromLib(DebugLib, "GetDebugState_Internal");
+  GetDebugState = (get_debug_state_proc)GetProcFromLib(DebugLib, DebugLibName_GetDebugState);
   if (!GetDebugState) { Error("Retreiving GetDebugState from Debug Lib :( "); return False; }
 
-  if (OpenDebugWindow)
-  {
-    b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat);
-    if (!WindowSuccess) { Error("Initializing Window :( "); return False; }
-    Assert(Os.Window);
-    AssertNoGlErrors;
+  b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat);
+  if (!WindowSuccess) { Error("Initializing Window :( "); return False; }
+  Assert(Os.Window);
 
-    InitializeOpenGlExtensions(&Os);
+  InitializeOpengl(&Os);
 
-    b32 ShadingLanguageIsRecentEnough = CheckShadingLanguageVersion();
-    if (!ShadingLanguageIsRecentEnough) { return False; }
-  }
-
-  debug_init_debug_system_proc InitDebugSystem = (debug_init_debug_system_proc)GetProcFromLib(DebugLib, "InitDebugSystem");
+  init_debug_system_proc InitDebugSystem = (init_debug_system_proc)GetProcFromLib(DebugLib, DebugLibName_InitDebugSystem);
   if (!InitDebugSystem) { Error("Retreiving InitDebugSystem from Debug Lib :( "); return False; }
-  InitDebugSystem(OpenDebugWindow);
+
+  GetDebugState = InitDebugSystem(&GL);
 
   debug_state* DebugState = GetDebugState();
   DebugState->DebugDoScopeProfiling = True;
   DebugState->Plat = &Plat;
 
-  GL->ClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-  GL->ClearDepth(1.0f);
+  GL.ClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+  GL.ClearDepth(1.0f);
 
-  GL->BindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
-  GL->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  GL.BindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
+  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  GL->BindFramebuffer(GL_FRAMEBUFFER, 0);
-  GL->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
+  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   return True;
 }
@@ -7256,7 +7250,7 @@ main(s32 ArgCountInit, const char** ArgStrings)
   b32 ShouldOpenDebugWindow = DoDebugWindow(ArgStrings, ArgCount);
   if (ShouldOpenDebugWindow)
   {
-    if (!BootstrapDebugSystem(ShouldOpenDebugWindow))
+    if (BootstrapDebugSystem() == 0)
     {
       Error("Booting debug system");
       return FAILURE_EXIT_CODE;
@@ -7392,8 +7386,8 @@ main(s32 ArgCountInit, const char** ArgStrings)
       /* glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID); */
       /* glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
 
-      GL->BindFramebuffer(GL_FRAMEBUFFER, 0);
-      GL->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
+      GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
   }
 

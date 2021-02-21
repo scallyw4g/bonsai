@@ -105,7 +105,7 @@ framebuffer
 GenFramebuffer()
 {
   framebuffer Framebuffer = {};
-  GL->GenFramebuffers(1, &Framebuffer.ID);
+  GL.GenFramebuffers(1, &Framebuffer.ID);
 
   return Framebuffer;
 }
@@ -142,7 +142,7 @@ SetDrawBuffers(framebuffer *FBO)
     Attachments[AttIndex] =  GL_COLOR_ATTACHMENT0 + AttIndex;
   }
 
-  GL->DrawBuffers((s32)FBO->Attachments, Attachments);
+  GL.DrawBuffers((s32)FBO->Attachments, Attachments);
 }
 
 shader
@@ -203,7 +203,7 @@ MakeSsaoShader(memory_arena *GraphicsMemory, g_buffer_textures *gTextures,
 bool
 InitAoRenderGroup(ao_render_group *AoGroup, memory_arena *GraphicsMemory)
 {
-  GL->BindFramebuffer(GL_FRAMEBUFFER, AoGroup->FBO.ID);
+  GL.BindFramebuffer(GL_FRAMEBUFFER, AoGroup->FBO.ID);
 
   v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
   AssertNoGlErrors;
@@ -226,7 +226,7 @@ InitGbufferRenderGroup( g_buffer_render_group *gBuffer, memory_arena *GraphicsMe
 {
   v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
 
-  GL->BindFramebuffer(GL_FRAMEBUFFER, gBuffer->FBO.ID);
+  GL.BindFramebuffer(GL_FRAMEBUFFER, gBuffer->FBO.ID);
 
   gBuffer->Textures = Allocate(g_buffer_textures, GraphicsMemory, 1);
   gBuffer->Textures->Color    = MakeTexture_RGBA( ScreenDim, (v4*)0, GraphicsMemory);
@@ -254,13 +254,13 @@ b32
 InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory, v2i ShadowMapResolution)
 {
   // The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
-  GL->GenFramebuffers(1, &SG->FramebufferName);
+  GL.GenFramebuffers(1, &SG->FramebufferName);
   Assert(SG->FramebufferName);
 
-  GL->BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
+  GL.BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
 
   SG->ShadowMap = MakeDepthTexture(ShadowMapResolution, GraphicsMemory);
-  GL->FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, SG->ShadowMap->ID, 0);
+  GL.FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, SG->ShadowMap->ID, 0);
 
   // TODO(Jesse, id: 119, tags: opengl, es2): Not present on ES2 .. should we use them?
   // No color output in the bound framebuffer, only depth.
@@ -273,11 +273,11 @@ InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory, v2
   SG->DepthShader = LoadShaders( CSz("DepthRTT.vertexshader"), CSz("DepthRTT.fragmentshader"), GraphicsMemory);
   SG->MVP_ID = (u32)GetShaderUniform(&SG->DepthShader, "depthMVP");
 
-  if(GL->CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+  if(GL.CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     return false;
 
-  GL->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  GL->BindFramebuffer(GL_FRAMEBUFFER, 0);
+  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
 
  return true;
 }
@@ -377,8 +377,8 @@ GraphicsInit(memory_arena *GraphicsMemory)
 #endif
   }
 
-  GL->Enable(GL_CULL_FACE);
-  GL->CullFace(GL_BACK);
+  GL.Enable(GL_CULL_FACE);
+  GL.CullFace(GL_BACK);
 
   AssertNoGlErrors;
 

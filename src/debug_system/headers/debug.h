@@ -1,9 +1,47 @@
-
 struct debug_state;
 struct game_state;
-typedef debug_state* (*get_debug_state_proc)();
+struct os;
+struct platform;
+struct server_state;
+struct hotkeys;
+struct world_chunk;
+struct debug_profile_scope;
+struct debug_thread_state;
 
-bonsai_function get_debug_state_proc GetDebugState;
+typedef void                 (*debug_frame_end_proc)                   (platform*, server_state*);
+typedef void                 (*debug_frame_begin_proc)                 (hotkeys*);
+typedef void                 (*debug_register_arena_proc)              (const char*, memory_arena*);
+typedef void                 (*debug_worker_thread_advance_data_system)(void);
+typedef r32                  (*debug_main_thread_advance_data_system)  (void);
+typedef void                 (*debug_mutex_waiting_proc)               (mutex*);
+typedef void                 (*debug_mutex_aquired_proc)               (mutex*);
+typedef void                 (*debug_mutex_released_proc)              (mutex*);
+typedef debug_profile_scope* (*debug_get_profile_scope_proc)           ();
+typedef void*                (*debug_allocate_proc)                    (memory_arena*, umm, umm, const char*, s32 , const char*, umm, b32);
+typedef void                 (*debug_register_thread_proc)             (u32);
+typedef void                 (*debug_clear_meta_records_proc)          (memory_arena*);
+typedef void                 (*debug_track_draw_call_proc)             (const char*, u32);
+typedef debug_thread_state*  (*debug_get_thread_local_state)           (void);
+typedef void                 (*debug_pick_chunk)                       (world_chunk*, aabb);
+typedef void                 (*debug_compute_pick_ray)                 (platform*, m4*);
+typedef void                 (*debug_value)                            (u32,const char*);
+typedef void                 (*debug_dump_scope_tree_data_to_console)  ();
+typedef void                 (*debug_open_window_and_let_us_do_stuff)  ();
+
+
+typedef debug_state*         (*get_debug_state_proc)  ();
+typedef get_debug_state_proc (*init_debug_system_proc)(opengl *);
+
+#if DEBUG_LIB_INTERNAL_BUILD
+  link_internal debug_state* GetDebugState();
+
+#else
+  link_internal get_debug_state_proc GetDebugState;
+
+#endif
+
+#define DebugLibName_InitDebugSystem "InitDebugSystem"
+#define DebugLibName_GetDebugState "GetDebugState"
 
 #define DEFAULT_DEBUG_LIB "./bin/lib_debug_system" PLATFORM_RUNTIME_LIB_EXTENSION
 
@@ -156,33 +194,6 @@ struct frame_stats
   r64 FrameMs;
 };
 
-struct os;
-struct platform;
-struct server_state;
-struct hotkeys;
-struct world_chunk;
-typedef void (*debug_frame_end_proc)(platform*, server_state*);
-typedef void (*debug_frame_begin_proc)(hotkeys*);
-typedef void (*debug_register_arena_proc)(const char*, memory_arena*);
-typedef void (*debug_worker_thread_advance_data_system)(void);
-typedef r32 (*debug_main_thread_advance_data_system)(void);
-typedef void (*debug_mutex_waiting_proc)(mutex*);
-typedef void (*debug_mutex_aquired_proc)(mutex*);
-typedef void (*debug_mutex_released_proc)(mutex*);
-typedef debug_profile_scope* (*debug_get_profile_scope_proc)();
-typedef void* (*debug_allocate_proc)(memory_arena*, umm, umm, const char*, s32 , const char*, umm, b32);
-typedef void (*debug_register_thread_proc)(u32);
-typedef void (*debug_clear_meta_records_proc)(memory_arena*);
-typedef void (*debug_init_debug_system_proc)(b32);
-typedef void (*debug_track_draw_call_proc)(const char*, u32);
-typedef debug_thread_state* (*debug_get_thread_local_state)(void);
-typedef void (*debug_pick_chunk)(world_chunk*, aabb);
-typedef void (*debug_compute_pick_ray)(platform*, m4*);
-typedef void (*debug_value)(u32,const char*);
-typedef void (*debug_dump_scope_tree_data_to_console)();
-typedef void (*debug_open_window_and_let_us_do_stuff)();
-
-
 struct called_function
 {
   const char* Name;
@@ -269,7 +280,6 @@ struct debug_state
   debug_allocate_proc                       Debug_Allocate;
   debug_register_thread_proc                RegisterThread;
   debug_clear_meta_records_proc             ClearMetaRecordsFor;
-  debug_init_debug_system_proc              InitDebugSystem;
   debug_track_draw_call_proc                TrackDrawCall;
   debug_get_thread_local_state              GetThreadLocalState;
   debug_pick_chunk                          PickChunk;
@@ -323,27 +333,34 @@ struct debug_timed_function
 
   debug_timed_function(const char *Name)
   {
+    // This if doesn't have to be here in internal builds, because we know
+    // statically that it'll be present
+#if !DEBUG_LIB_INTERNAL_BUILD
     if (!GetDebugState) return;
+#endif
 
     debug_state *DebugState = GetDebugState();
-    Clear(this);
-    if (!DebugState->DebugDoScopeProfiling) return;
-
-    ++DebugState->NumScopes;
-
-    this->Scope = DebugState->GetProfileScope();
-    this->Tree = DebugState->GetWriteScopeTree();
-
-    if (this->Scope)
+    if (DebugState)
     {
-      (*this->Tree->WriteScope) = this->Scope;
-      this->Tree->WriteScope = &this->Scope->Child;
+      Clear(this);
+      if (!DebugState->DebugDoScopeProfiling) return;
 
-      this->Scope->Parent = this->Tree->ParentOfNextScope;
-      this->Tree->ParentOfNextScope = this->Scope;
+      ++DebugState->NumScopes;
 
-      this->Scope->Name = Name;
-      this->Scope->StartingCycle = GetCycleCount(); // Intentionally last
+      this->Scope = DebugState->GetProfileScope();
+      this->Tree = DebugState->GetWriteScopeTree();
+
+      if (this->Scope)
+      {
+        (*this->Tree->WriteScope) = this->Scope;
+        this->Tree->WriteScope = &this->Scope->Child;
+
+        this->Scope->Parent = this->Tree->ParentOfNextScope;
+        this->Tree->ParentOfNextScope = this->Scope;
+
+        this->Scope->Name = Name;
+        this->Scope->StartingCycle = GetCycleCount(); // Intentionally last
+      }
     }
 
     return;
@@ -351,21 +368,26 @@ struct debug_timed_function
 
   ~debug_timed_function()
   {
+    // This if doesn't have to be here in internal builds, because we know
+    // statically that it'll be present
+#if !DEBUG_LIB_INTERNAL_BUILD
     if (!GetDebugState) return;
+#endif
 
     debug_state *DebugState = GetDebugState();
-    if (!DebugState->DebugDoScopeProfiling) return;
-    if (!this->Scope) return;
+    if (DebugState)
+    {
+      if (!DebugState->DebugDoScopeProfiling) return;
+      if (!this->Scope) return;
 
-    u64 EndingCycleCount = GetCycleCount(); // Intentionally first
-    u64 CycleCount = (EndingCycleCount - this->Scope->StartingCycle);
-    this->Scope->CycleCount = CycleCount;
+      u64 EndingCycleCount = GetCycleCount(); // Intentionally first
+      u64 CycleCount = (EndingCycleCount - this->Scope->StartingCycle);
+      this->Scope->CycleCount = CycleCount;
 
-    // 'Pop' the scope stack
-    this->Tree->WriteScope = &this->Scope->Sibling;
-    this->Tree->ParentOfNextScope = this->Scope->Parent;
-
-    return;
+      // 'Pop' the scope stack
+      this->Tree->WriteScope = &this->Scope->Sibling;
+      this->Tree->ParentOfNextScope = this->Scope->Parent;
+    }
   }
 
 };
