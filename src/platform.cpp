@@ -419,7 +419,7 @@ main()
 
   bonsai_worker_thread_init_callback WorkerThreadInitCallback = (bonsai_worker_thread_init_callback)GetProcFromLib(GameLib, TO_STRING(BONSAI_API_WORKER_THREAD_INIT_CALLBACK_NAME));
 
-  game_state* GameState = GameInit(&Plat, GameMemory, GetDebugState);
+  game_state* GameState = GameInit(&Plat, GameMemory, GetDebugState, &GL);
   if (!GameState) { Error("Initializing Game State :( "); return False; }
 
   PlatformLaunchWorkerThreads(&Plat, WorkerThreadInitCallback, GameState);

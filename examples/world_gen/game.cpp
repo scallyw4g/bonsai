@@ -82,7 +82,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   /* DebugPrint(*GameState->Plat); */
 
-  glDisable(GL_CULL_FACE);
+  GL.Disable(GL_CULL_FACE);
 
 #if BONSAI_INTERNAL
   if (!GetDebugState)
@@ -208,19 +208,12 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 {
   Info("Initializing Game");
 
+  GL = *GL_in;
+  GetDebugState = GetDebugState_in;
+
   Init_Global_QuadVertexBuffer();
 
-#if BONSAI_INTERNAL
-  GetDebugState = GetDebugState_in;
-#endif
-
   game_state *GameState = Allocate(game_state, GameMemory, 1);
-
-#if BONSAI_INTERNAL
-  Assert(GetDebugState_in);
-  GameState->GetDebugState = GetDebugState_in;
-#endif
-
   GameState->Memory = GameMemory;
   GameState->Noise = perlin_noise(DEBUG_NOISE_SEED);
 

@@ -478,7 +478,7 @@ BuildExecutables=1
 BuildDebugTests=0
 BuildTests=1
 BuildDebugSystem=1
-BuildExamples=0
+BuildExamples=1
 
 
 RunTests=0
