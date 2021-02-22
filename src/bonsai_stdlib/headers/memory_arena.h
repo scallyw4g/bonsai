@@ -397,31 +397,31 @@ ReallocateArena(memory_arena *Arena, umm MinSize, b32 MemProtect)
   return;
 }
 
-inline void
+inline b32
 VaporizeArena(memory_arena *Arena)
 {
+  b32 Result = True;
   if(Arena->Prev)
   {
-    VaporizeArena(Arena->Prev);
+    Result = VaporizeArena(Arena->Prev);
     Arena->Prev = 0;
   }
 
-  DeallocateArena(Arena);
+  Result &= DeallocateArena(Arena);
+  return Result;
 }
 
-bonsai_function void
+bonsai_function b32
 UnprotectArena(memory_arena *Arena)
 {
-  /* TIMED_FUNCTION(); */
   umm Size = (umm)Arena->End - (umm)Arena->Start;
-  b32 Err = PlatformSetProtection(Arena->Start, Size, MemoryProtection_RW);
-  if (Err)
+  b32 Result = PlatformSetProtection(Arena->Start, Size, MemoryProtection_RW);
+  if (Result == False)
   {
     Error("Unprotecting arena failed");
-    Assert(False);
   }
 
-  return;
+  return Result;
 }
 
 bonsai_function u8*

@@ -557,6 +557,7 @@ PlatformDeallocate(u8 *Base, umm Size)
 bonsai_function b32
 PlatformSetProtection(u8 *Base, u64 Size, memory_protection_type Protection)
 {
+  Assert(Size);
   b32 Result = False;
   u64 PageSize = PlatformGetPageSize();
   if ( (umm)Base % PageSize == 0 &&

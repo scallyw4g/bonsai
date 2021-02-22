@@ -130,8 +130,7 @@ ThreadMain(void *Input)
       }
     }
 
-    UnprotectArena(Thread.TempMemory);
-    RewindArena(Thread.TempMemory);
+    Ensure(RewindArena(Thread.TempMemory));
   }
 }
 
@@ -520,7 +519,7 @@ main()
     BonsaiSwapBuffers(&Os);
     RealDt = MAIN_THREAD_ADVANCE_DEBUG_SYSTEM();
 
-    RewindArena(TranArena);
+    Ensure(RewindArena(TranArena));
   }
 
   Info("Shutting Down");
