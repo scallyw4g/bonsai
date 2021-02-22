@@ -56,6 +56,7 @@ RenderQuad()
   GL.EnableVertexAttribArray(0);
   GL.BindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer);
   GL.VertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  AssertNoGlErrors;
 
   Draw(6);
 
@@ -96,6 +97,7 @@ BufferDataToCard(u32 BufferId, u32 Stride, u32 ByteCount, void *Data, u32 *Attri
   GL.BufferData(GL_ARRAY_BUFFER, ByteCount, Data, GL_STATIC_DRAW);
   GL.VertexAttribPointer(*AttributeIndex, (s32)Stride, GL_FLOAT, GL_FALSE, 0, (void*)0);
   *AttributeIndex += 1;
+  AssertNoGlErrors;
 
   return;
 }

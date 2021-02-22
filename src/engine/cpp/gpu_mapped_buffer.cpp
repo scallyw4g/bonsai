@@ -7,18 +7,21 @@ FlushBuffersToCard(gpu_mapped_element_buffer* GpuMap)
   u32 BufferUnmapped = GL.UnmapBuffer(GL_ARRAY_BUFFER);
   GpuMap->Buffer.Verts = 0;
   GL.VertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  AssertNoGlErrors;
 
   GL.EnableVertexAttribArray(1);
   GL.BindBuffer(GL_ARRAY_BUFFER, GpuMap->NormalHandle);
   BufferUnmapped = GL.UnmapBuffer(GL_ARRAY_BUFFER);
   GpuMap->Buffer.Normals = 0;
   GL.VertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  AssertNoGlErrors;
 
   GL.EnableVertexAttribArray(2);
   GL.BindBuffer(GL_ARRAY_BUFFER, GpuMap->ColorHandle);
   BufferUnmapped = GL.UnmapBuffer(GL_ARRAY_BUFFER);
   GpuMap->Buffer.Colors = 0;
   GL.VertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  AssertNoGlErrors;
 
   if (!BufferUnmapped)
   {
@@ -43,16 +46,19 @@ MapGpuElementBuffer(gpu_mapped_element_buffer *GpuMap)
   GL.BindBuffer(GL_ARRAY_BUFFER, GpuMap->VertexHandle);
   GpuMap->Buffer.Verts = (v3*)GL.MapBufferRange(GL_ARRAY_BUFFER, 0, v3Size, GL_MAP_WRITE_BIT);
   GL.VertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  AssertNoGlErrors;
 
   GL.EnableVertexAttribArray(1);
   GL.BindBuffer(GL_ARRAY_BUFFER, GpuMap->NormalHandle);
   GpuMap->Buffer.Normals = (v3*)GL.MapBufferRange(GL_ARRAY_BUFFER, 0, v3Size, GL_MAP_WRITE_BIT);
   GL.VertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  AssertNoGlErrors;
 
   GL.EnableVertexAttribArray(2);
   GL.BindBuffer(GL_ARRAY_BUFFER, GpuMap->ColorHandle);
   GpuMap->Buffer.Colors = (v4*)GL.MapBufferRange(GL_ARRAY_BUFFER, 0, v4Size, GL_MAP_WRITE_BIT);
   GL.VertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  AssertNoGlErrors;
 
   if (!GpuMap->Buffer.Verts) { Error("Allocating gpu_mapped_element_buffer::Verts"); }
   if (!GpuMap->Buffer.Normals) { Error("Allocating gpu_mapped_element_buffer::Normals"); }
