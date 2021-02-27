@@ -119,8 +119,8 @@ struct ray
 bonsai_function b32
 Intersect(aabb AABB, ray Ray)
 {
-  v3 min = AABB.Center - AABB.Radius;;
-  v3 max = AABB.Center + AABB.Radius;;
+  v3 min = AABB.Center - AABB.Radius;
+  v3 max = AABB.Center + AABB.Radius;
 
   r32 tmin = (min.x - Ray.Origin.x) / Ray.Dir.x;
   r32 tmax = (max.x - Ray.Origin.x) / Ray.Dir.x;

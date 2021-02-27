@@ -474,12 +474,14 @@ main()
   }
 
   {
-    counted_string TestValue = FormatCountedString(Memory, CSz("%.*s"), CS("thing"));
+    counted_string TestString = CSz("thing");
+    counted_string TestValue = FormatCountedString(Memory, CSz("%.*s"), TestString.Count, TestString.Start);
     TestThat(StringsMatch(TestValue, CS("thing")));
   }
 
   {
-    counted_string TestValue = FormatCountedString(Memory, CSz("%.*s"), CS("thing"));
+    counted_string TestString = CSz("thing");
+    counted_string TestValue = FormatCountedString(Memory, CSz("%S"), TestString);
     TestThat(StringsMatch(TestValue, CS("thing")));
   }
 
@@ -564,6 +566,10 @@ main()
     TestThat(StringsMatch(TestValue, CS("this thing thing this")));
   }
 
+  {
+    counted_string TestValue = FormatCountedString(Memory, CSz("this %s this"), GetCwd());
+    Debug(TestValue);
+  }
 
 
 #define TEMP_BUFFER_SIZE (64)
@@ -577,19 +583,19 @@ main()
   char_cursor* TempCursor = &TempCursor_;
 
   {
-    MemSet((u8*)TempBuffer, 0, TEMP_BUFFER_SIZE);
+    ClearBuffer((u8*)TempBuffer, TEMP_BUFFER_SIZE);
     Rewind(TempCursor);
     u64ToChar(TempCursor, 42);
     TestThat(StringsMatch(CS(TempBuffer), CS("42")));
   }
   {
-    MemSet((u8*)TempBuffer, 0, TEMP_BUFFER_SIZE);
+    ClearBuffer((u8*)TempBuffer, TEMP_BUFFER_SIZE);
     Rewind(TempCursor);
     u64ToChar(TempCursor, 18446744073709551615ULL);
     TestThat(StringsMatch(CS(TempBuffer), CS("18446744073709551615")));
   }
   {
-    MemSet((u8*)TempBuffer, 0, TEMP_BUFFER_SIZE);
+    ClearBuffer((u8*)TempBuffer, TEMP_BUFFER_SIZE);
     Rewind(TempCursor);
     u64ToChar(TempCursor, 18446744073709551615ULL);
     TestThat(StringsMatch(CS(TempBuffer), CS("18446744073709551615")));
@@ -598,13 +604,13 @@ main()
 
 
   {
-    MemSet((u8*)TempBuffer, 0, TEMP_BUFFER_SIZE);
+    ClearBuffer((u8*)TempBuffer, TEMP_BUFFER_SIZE);
     Rewind(TempCursor);
     f64ToChar(TempCursor, 3.14, 2);
     TestThat(StringsMatch(CS(TempBuffer), CS("3.14")));
   }
   {
-    MemSet((u8*)TempBuffer, 0, TEMP_BUFFER_SIZE);
+    ClearBuffer((u8*)TempBuffer, TEMP_BUFFER_SIZE);
     Rewind(TempCursor);
     f64ToChar(TempCursor, 3.14, 10);
     TestThat(StringsMatch(CS(TempBuffer), CS("3.1400000000")));

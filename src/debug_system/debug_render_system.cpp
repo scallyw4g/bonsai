@@ -78,7 +78,7 @@ FlushBuffer(debug_text_render_group *TextGroup, untextured_2d_geometry_buffer *B
 
   if (TextGroup)
   {
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
     SetViewport(ScreenDim);
     UseShader(&TextGroup->SolidUIShader);
 
@@ -89,8 +89,8 @@ FlushBuffer(debug_text_render_group *TextGroup, untextured_2d_geometry_buffer *B
     Draw(Buffer->At);
     Buffer->At = 0;
 
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
+    GL.DisableVertexAttribArray(0);
+    GL.DisableVertexAttribArray(1);
 
     AssertNoGlErrors;
   }
@@ -107,33 +107,33 @@ FlushBuffer(debug_text_render_group *TextGroup, textured_2d_geometry_buffer *Geo
 {
   if (TextGroup)
   {
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
     SetViewport(ScreenDim);
-    glUseProgram(TextGroup->Text2DShader.ID);
+    GL.UseProgram(TextGroup->Text2DShader.ID);
 
     // Bind Font texture
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_3D, TextGroup->FontTexture->ID);
+    GL.ActiveTexture(GL_TEXTURE0);
+    GL.BindTexture(GL_TEXTURE_3D, TextGroup->FontTexture->ID);
     //
 
-    glUniform1i(TextGroup->TextTextureUniform, 0); // Assign texture unit 0 to the TextTexureUniform
+    GL.Uniform1i(TextGroup->TextTextureUniform, 0); // Assign texture unit 0 to the TextTexureUniform
 
     u32 AttributeIndex = 0;
     BufferVertsToCard( TextGroup->SolidUIVertexBuffer, Geo, &AttributeIndex);
     BufferUVsToCard(   TextGroup->SolidUIUVBuffer,     Geo, &AttributeIndex);
     BufferColorsToCard(TextGroup->SolidUIColorBuffer,  Geo, &AttributeIndex);
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    GL.Enable(GL_BLEND);
+    GL.BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     Draw(Geo->At);
     Geo->At = 0;
 
-    glDisable(GL_BLEND);
+    GL.Disable(GL_BLEND);
 
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(2);
+    GL.DisableVertexAttribArray(0);
+    GL.DisableVertexAttribArray(1);
+    GL.DisableVertexAttribArray(2);
     AssertNoGlErrors;
   }
   else
@@ -1869,14 +1869,14 @@ DrawPickedChunks(debug_ui_render_group* Group)
   }
 
   { // Draw hotchunk to the GameGeo FBO
-    glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
+    GL.BindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
     FlushBuffersToCard(&DebugState->GameGeo);
 
     DebugState->ViewProjection =
       ProjectionMatrix(&DebugState->Camera, DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM) *
       ViewMatrix(ChunkDimension(HotChunk), &DebugState->Camera);
 
-    glUseProgram(Group->GameGeoShader->ID);
+    GL.UseProgram(Group->GameGeoShader->ID);
 
     SetViewport(V2(DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM));
 
@@ -2256,15 +2256,15 @@ DumpScopeTreeDataToConsole_Internal(debug_profile_scope *Scope_in, debug_profile
   while (UniqueScopes)
   {
 
-    Log("\n------------------------\n");
-    Log("%s\n", UniqueScopes->Name);
-    Log("%u\n", UniqueScopes->CallCount);
+    Debug("\n------------------------\n");
+    Debug("%s\n", UniqueScopes->Name);
+    Debug("%u\n", UniqueScopes->CallCount);
     Assert(UniqueScopes->CallCount);
 
-    Log("Total: %lu\n", UniqueScopes->TotalCycles);
-    Log("Min: %lu\n", UniqueScopes->MinCycles);
-    Log("Max: %lu\n", UniqueScopes->MaxCycles);
-    Log("Avg: %f\n", (r32)UniqueScopes->TotalCycles / (r32)UniqueScopes->CallCount);
+    Debug("Total: %lu\n", UniqueScopes->TotalCycles);
+    Debug("Min: %lu\n", UniqueScopes->MinCycles);
+    Debug("Max: %lu\n", UniqueScopes->MaxCycles);
+    Debug("Avg: %f\n", (r32)UniqueScopes->TotalCycles / (r32)UniqueScopes->CallCount);
 
     DumpScopeTreeDataToConsole_Internal(UniqueScopes->Scope->Child, TreeRoot, Memory);
     UniqueScopes = UniqueScopes->NextUnique;
@@ -2452,7 +2452,7 @@ OpenDebugWindowAndLetUsDoStuff()
   RewindArena(TranArena);
 }
 
-exported_function void
+dll_export void
 DumpScopeTreeDataToConsole()
 {
   memory_arena* Temp = AllocateArena();
@@ -2507,10 +2507,10 @@ DumpCallgraphRecursive(debug_ui_render_group *Group, debug_profile_scope* At, u3
       DepthIndex < Depth;
       ++DepthIndex)
   {
-    Log("  ");
+    Debug("  ");
   }
 
-  Log("%s (%lu) \n", At->Name, At->CycleCount);
+  Debug("%s (%lu) \n", At->Name, At->CycleCount);
 
   if (At->Child)
   {
@@ -2609,11 +2609,11 @@ DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugS
 #define TEXT_OUTPUT_FOR_FUNCTION_CALLS 0
 #if TEXT_OUTPUT_FOR_FUNCTION_CALLS
           Print(CS(CurrentScope->Name));
-          Log("\n");
+          Debug("\n");
           Print(CS(CurrentScope->CycleCount));
-          Log("\n");
+          Debug("\n");
           DumpCallgraphRecursive(Group, CurrentScope->Child);
-          Log("\n");
+          Debug("\n");
 #else
           PushColumn(Group, CS(CurrentScope->Name));
           PushNewRow(Group);
@@ -3001,6 +3001,7 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState)
 
 
 
+#ifndef BONSAI_WIN32
 bonsai_function void
 DebugDrawNetworkHud(debug_ui_render_group *Group, network_connection *Network, server_state *ServerState)
 {
@@ -3052,6 +3053,7 @@ DebugDrawNetworkHud(debug_ui_render_group *Group, network_connection *Network, s
 
   return;
 }
+#endif
 
 
 
@@ -3095,7 +3097,7 @@ bonsai_function void
 FramebufferTextureLayer(framebuffer *FBO, texture *Tex, debug_texture_array_slice Layer)
 {
   u32 Attachment = FBO->Attachments++;
-  glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + Attachment,
+  GL.FramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + Attachment,
                             Tex->ID, 0, Layer);
   return;
 }
@@ -3105,14 +3107,14 @@ InitDebugOverlayFramebuffer(debug_text_render_group *TextGroup, memory_arena *De
 {
   TextGroup->FontTexture = LoadBitmap(DebugFont, DebugArena, DebugTextureArraySlice_Count);
 
-  glGenBuffers(1, &TextGroup->SolidUIVertexBuffer);
-  glGenBuffers(1, &TextGroup->SolidUIColorBuffer);
-  glGenBuffers(1, &TextGroup->SolidUIUVBuffer);
+  GL.GenBuffers(1, &TextGroup->SolidUIVertexBuffer);
+  GL.GenBuffers(1, &TextGroup->SolidUIColorBuffer);
+  GL.GenBuffers(1, &TextGroup->SolidUIUVBuffer);
 
   TextGroup->Text2DShader = LoadShaders(CSz("TextVertexShader.vertexshader"),
                                         CSz("TextVertexShader.fragmentshader"), DebugArena);
 
-  TextGroup->TextTextureUniform = glGetUniformLocation(TextGroup->Text2DShader.ID, "TextTextureSampler");
+  TextGroup->TextTextureUniform = GL.GetUniformLocation(TextGroup->Text2DShader.ID, "TextTextureSampler");
 
   return;
 }
@@ -3164,8 +3166,9 @@ MakeRenderToTextureShader(memory_arena *Memory, m4 *ViewProjection)
 }
 
 bonsai_function b32
-InitDebugRenderSystem(debug_state *DebugState, heap_allocator *Heap)
+InitDebugRenderSystem(debug_state *DebugState, heap_allocator *Heap, opengl *LoadedGLImpl)
 {
+  GL = *LoadedGLImpl;
   AllocateMesh(&DebugState->LineMesh, 1024, Heap);
 
   DebugState->UiGroup.TextGroup = Allocate(debug_text_render_group, ThreadsafeDebugMemoryAllocator(), 1);
@@ -3182,7 +3185,7 @@ InitDebugRenderSystem(debug_state *DebugState, heap_allocator *Heap)
   DebugState->SelectedArenas = Allocate(selected_arenas, ThreadsafeDebugMemoryAllocator(), 1);
 
   DebugState->GameGeoFBO = GenFramebuffer();
-  glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
+  GL.BindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
 
   FramebufferTextureLayer(&DebugState->GameGeoFBO, DebugState->UiGroup.TextGroup->FontTexture, DebugTextureArraySlice_Viewport);
   SetDrawBuffers(&DebugState->GameGeoFBO);

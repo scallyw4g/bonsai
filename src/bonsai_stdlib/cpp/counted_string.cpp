@@ -11,8 +11,8 @@ CountedString(umm Count, memory_arena* Memory)
 {
   TIMED_FUNCTION();
   counted_string Result = {
+    .Count = Count,
     .Start = AllocateProtection(const char, Memory, Count, False),
-    .Count = Count
   };
   return Result;
 }
@@ -34,8 +34,8 @@ CountedString(const char* Start, umm Count, memory_arena* Memory)
 {
   TIMED_FUNCTION();
   counted_string Result = {
+    .Count = Count,
     .Start = AllocateProtection(const char, Memory, Count, False),
-    .Count = Count
   };
 
   MemCopy((u8*)Start, (u8*)Result.Start, Count);
@@ -48,8 +48,8 @@ Concat(counted_string S1, counted_string S2, memory_arena* Memory)
 {
   umm TotalLength = S1.Count + S2.Count;
   counted_string Result = {
+    .Count = TotalLength,
     .Start = AllocateProtection(char, Memory, TotalLength, False),
-    .Count = TotalLength
   };
 
   MemCopy((u8*)S1.Start, (u8*)Result.Start, S1.Count);
@@ -417,13 +417,13 @@ FormatCountedString_(char* Buffer, umm BufferSize, counted_string FS, ...)
 }
 
 bonsai_function counted_string
-MemorySize(u64 Number)
+MemorySize(r64 Number)
 {
   r64 KB = (r64)Kilobytes(1);
   r64 MB = (r64)Megabytes(1);
   r64 GB = (r64)Gigabytes(1);
 
-  r64 Display = (r64)Number;
+  r64 Display = Number;
   char Units = ' ';
 
   if (Number >= KB && Number < MB)
@@ -444,6 +444,13 @@ MemorySize(u64 Number)
 
 
   counted_string Result = FormatCountedString(TranArena, CSz("%.1f%c"), (r32)Display, Units);
+  return Result;
+}
+
+bonsai_function counted_string
+MemorySize(u64 Number)
+{
+  counted_string Result = MemorySize((r64)Number);
   return Result;
 }
 
@@ -505,7 +512,7 @@ FormatThousands(u64 Number)
 
   if (Number >= OneThousand)
   {
-    Display = Number / (r32)OneThousand;
+    Display = (r32)Number / (r32)OneThousand;
     Units = 'K';
   }
 

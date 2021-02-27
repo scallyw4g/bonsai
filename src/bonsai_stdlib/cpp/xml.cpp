@@ -339,7 +339,7 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
   xml_parsing_at_indicators TagsAt = {};
   while ( Remaining(Xml) )
   {
-    const char* NameDelimeters = "\n> </";
+    const char* NameDelimeters = "\r\n> </";
 
     b32 StreamValueIsTag = Xml->At[0] == '<' || Xml->At[0] == '/';
 
@@ -402,7 +402,7 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
     while ( *(Xml->At-1) != '>' )
     {
       EatWhitespace(Xml);
-      const char* PropertyDelimeters = "\n> =";
+      const char* PropertyDelimeters = "\r\n> =";
       counted_string PropertyName = ReadUntilTerminatorList(Xml, PropertyDelimeters);
 
       if (PropertyName.Count)
@@ -415,6 +415,7 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
           case '>':
           case ' ':
           case '\n':
+          case '\r':
           {
             if (PropertyName.Count == 1 && PropertyName.Start[0] == '/')
             {

@@ -378,7 +378,7 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
 
   if ( ! IsNewline(Parser->Tokens.End[-1].Type) )
   {
-    Log("\n");
+    Debug("\n");
   }
 
   Rewind(&Parser->Tokens);
@@ -398,19 +398,19 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
           ColumnIndex < TabCount;
           ++ColumnIndex)
       {
-        Log("\t");
+        Debug("\t");
       }
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < SpaceCount;
           ++ColumnIndex)
       {
-        Log(" ");
+        Debug(" ");
       }
 
       if (DoPipes)
       {
-        Log("|");
+        Debug("|");
       }
 
       for (u32 ColumnIndex = 0;
@@ -419,20 +419,20 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
       {
         if (DoPipes)
         {
-          Log("~");
+          Debug("~");
         }
         else
         {
-          Log("^");
+          Debug("^");
         }
       }
 
       if (DoPipes)
       {
-        Log("|");
+        Debug("|");
       }
 
-      Log("\n");
+      Debug("\n");
 
       break;
     }
@@ -472,19 +472,19 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
           ColumnIndex < TabCount;
           ++ColumnIndex)
       {
-        Log("\t");
+        Debug("\t");
       }
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < SpaceCount;
           ++ColumnIndex)
       {
-        Log(" ");
+        Debug(" ");
       }
 
       if (DoPipes)
       {
-        Log("  ");
+        Debug("  ");
       }
 
       for (u32 ColumnIndex = 0;
@@ -493,30 +493,30 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
       {
         if (ColumnIndex == ErrorIdentifierLength-1)
         {
-          Log("|");
+          Debug("|");
         }
         else
         {
-          Log(" ");
+          Debug(" ");
         }
       }
 
       counted_string TokenTypeName = ToString(ErrorToken->Type);
-      Log("---> %.*s", TokenTypeName.Count, TokenTypeName.Start );
+      Debug("---> %.*s", TokenTypeName.Count, TokenTypeName.Start );
 
       if (ErrorToken->Value.Count)
       {
-        Log("(%.*s)" , ErrorToken->Value.Count, ErrorToken->Value.Start);
+        Debug("(%.*s)" , ErrorToken->Value.Count, ErrorToken->Value.Start);
       }
 
       if (Expected.Type)
       {
         counted_string ExpectedTypeName = ToString(Expected.Type);
-        Log(" Expecting : %.*s", ExpectedTypeName.Count, ExpectedTypeName.Start);
+        Debug(" Expecting : %.*s", ExpectedTypeName.Count, ExpectedTypeName.Start);
 
         if (Expected.Value.Count)
         {
-          Log("(%.*s)" , Expected.Value.Count, Expected.Value.Start);
+          Debug("(%.*s)" , Expected.Value.Count, Expected.Value.Start);
         }
       }
       else
@@ -525,25 +525,25 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
       }
 
 
-      Log(" %.*s\n", ErrorString.Count, ErrorString.Start);
+      Debug(" %.*s\n", ErrorString.Count, ErrorString.Start);
 
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < TabCount;
           ++ColumnIndex)
       {
-        Log("\t");
+        Debug("\t");
       }
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < SpaceCount + ErrorToken->Value.Count;
           ++ColumnIndex)
       {
-        Log(" ");
+        Debug(" ");
       }
 
       counted_string Filename = Parser->Filename.Count ? Parser->Filename : CSz("(unknown file)");
-      Log("     %.*s:%u:%u\n\n", Filename.Count, Filename.Start, LineNumber, SpaceCount+TabCount);
+      Debug("     %.*s:%u:%u\n\n", Filename.Count, Filename.Start, LineNumber, SpaceCount+TabCount);
 
       break;
     }
@@ -584,7 +584,7 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
 
   u32 LinesOfContext = 4;
 
-  Log("------------------------------------------------------------------------------------\n");
+  Debug("------------------------------------------------------------------------------------\n");
 
   parser LocalParser = *Parser;
   LocalParser.OutputTokens = {};
@@ -610,7 +610,7 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
   else
   {
     Error("Determining where the error occured");
-    Log("Error was : %.*s\n", ErrorString.Count, ErrorString.Start);
+    Debug("Error was : %.*s\n", ErrorString.Count, ErrorString.Start);
   }
 
   EatUntilIncluding(&TrailingLines, CTokenType_Newline);
@@ -618,7 +618,7 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
   TruncateAtNextLineEnd(&TrailingLines, LinesOfContext);
   DumpEntireParser(&TrailingLines);
 
-  Log("------------------------------------------------------------------------------------\n");
+  Debug("------------------------------------------------------------------------------------\n");
   Parser->Valid = False;
 
   RuntimeBreak();
@@ -1100,8 +1100,8 @@ ParserFromBuffer(c_token_buffer *TokenBuf, umm AtOffset = 0)
   parser Result = {
     .Tokens = {
       .Start = TokenBuf->Start,
-      .At = TokenBuf->Start + AtOffset,
       .End = TokenBuf->Start + TokenBuf->Count,
+      .At = TokenBuf->Start + AtOffset,
     }
   };
 
@@ -1814,7 +1814,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 {
   if (!Code.Start)
   {
-    Error("Input AnsiStream for %S is null.", Code);
+    Error("Input AnsiStream for %S is null.", Code.Filename);
     return 0;
   }
 
@@ -2128,6 +2128,18 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
           ++LineNumber;
         }
         Advance(&Code);
+      } break;
+
+      case CTokenType_CarrigeReturn:
+      {
+        Advance(&Code);
+        if (PeekToken(&Code).Type == CTokenType_Newline)
+        {
+          PushT.Type = CTokenType_Newline;
+          ++LineNumber;
+          ParsingSingleLineComment = False;
+          Advance(&Code);
+        }
       } break;
 
       case CTokenType_Newline:
@@ -3348,7 +3360,7 @@ DumpStringStreamToConsole(counted_string_stream* Stream)
       Advance(&Iter))
   {
     counted_string Message = Iter.At->Element;
-    Log("%.*s\n", Message.Count, Message.Start);
+    Debug("%.*s\n", Message.Count, Message.Start);
   }
 }
 
@@ -5747,44 +5759,37 @@ debug_global os Os = {};
  * anywhere?  It's also in the platform layer
  */
 bonsai_function b32
-BootstrapDebugSystem(b32 OpenDebugWindow)
+BootstrapDebugSystem()
 {
   shared_lib DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
   if (!DebugLib) { Error("Loading DebugLib :( "); return False; }
 
-  GetDebugState = (get_debug_state_proc)GetProcFromLib(DebugLib, "GetDebugState_Internal");
+  GetDebugState = (get_debug_state_proc)GetProcFromLib(DebugLib, DebugLibName_GetDebugState);
   if (!GetDebugState) { Error("Retreiving GetDebugState from Debug Lib :( "); return False; }
 
-  if (OpenDebugWindow)
-  {
-    s32 DebugFlags = GLX_CONTEXT_DEBUG_BIT_ARB;
-    b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat, DebugFlags);
-    if (!WindowSuccess) { Error("Initializing Window :( "); return False; }
-    Assert(Os.Window);
-    AssertNoGlErrors;
+  b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat);
+  if (!WindowSuccess) { Error("Initializing Window :( "); return False; }
+  Assert(Os.Window);
 
-    InitializeOpenGlExtensions(&Os);
+  InitializeOpengl(&Os);
 
-    b32 ShadingLanguageIsRecentEnough = CheckShadingLanguageVersion();
-    if (!ShadingLanguageIsRecentEnough) { return False; }
-  }
-
-  debug_init_debug_system_proc InitDebugSystem = (debug_init_debug_system_proc)GetProcFromLib(DebugLib, "InitDebugSystem");
+  init_debug_system_proc InitDebugSystem = (init_debug_system_proc)GetProcFromLib(DebugLib, DebugLibName_InitDebugSystem);
   if (!InitDebugSystem) { Error("Retreiving InitDebugSystem from Debug Lib :( "); return False; }
-  InitDebugSystem(OpenDebugWindow);
+
+  GetDebugState = InitDebugSystem(&GL);
 
   debug_state* DebugState = GetDebugState();
   DebugState->DebugDoScopeProfiling = True;
   DebugState->Plat = &Plat;
 
-  glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-  glClearDepth(1.0f);
+  GL.ClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+  GL.ClearDepth(1.0f);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  GL.BindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
+  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
+  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   return True;
 }
@@ -5964,7 +5969,7 @@ ParseAllTodosFromFile(counted_string Filename, memory_arena* Memory)
 
   parser *Parser = TokenizeAnsiStream(AnsiStreamFromFile(Filename, Memory), Memory, True, 0);
 
-  while (Remaining(&Parser->Tokens))
+  while (TokensRemain(Parser))
   {
     RequireToken(Parser, CTokenType_Hash);
     counted_string PersonName = RequireToken(Parser, CTokenType_Identifier).Value;
@@ -7310,13 +7315,13 @@ main(s32 ArgCountInit, const char** ArgStrings)
   }
 
   u32 ArgCount = (u32)ArgCountInit;
-  setbuf(stdout, NULL);
-  setbuf(stderr, NULL);
+  setvbuf(stdout, 0, _IONBF, 0);
+  setvbuf(stderr, 0, _IONBF, 0);
 
   b32 ShouldOpenDebugWindow = DoDebugWindow(ArgStrings, ArgCount);
   if (ShouldOpenDebugWindow)
   {
-    if (!BootstrapDebugSystem(ShouldOpenDebugWindow))
+    if (BootstrapDebugSystem() == 0)
     {
       Error("Booting debug system");
       return FAILURE_EXIT_CODE;
@@ -7452,8 +7457,8 @@ main(s32 ArgCountInit, const char** ArgStrings)
       /* glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID); */
       /* glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
 
-      glBindFramebuffer(GL_FRAMEBUFFER, 0);
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
+      GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
   }
 

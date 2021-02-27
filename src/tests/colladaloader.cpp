@@ -8,6 +8,7 @@ TokenizingTest()
   memory_arena *Memory = AllocateArena(Megabytes(1));
   ansi_stream XmlStream = AnsiStreamFromFile(TEST_FIXTURES_PATH "/test_parsing.dae", Memory);
 
+  if (XmlStream.Start)
   {
     xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
     umm TokenCount = AtElements(&XmlTokens);
@@ -148,13 +149,19 @@ TokenizingTest()
     {
       xml_token StringProp = XmlPropertyToken(CS("prop-name"), CS("prop-value\\\""));
 
-      TestThat(TokensAreEqual(XmlTokens.At++, &OuterOpen));
+      xml_token OuterOpenDebug = XmlOpenToken(CS("outer-debug"));
+      xml_token OuterCloseDebug = XmlCloseToken(CS("outer-debug"), 0);
+      TestThat(TokensAreEqual(XmlTokens.At++, &OuterOpenDebug));
       TestThat(TokensAreEqual(XmlTokens.At++, &StringProp));
-      TestThat(TokensAreEqual(XmlTokens.At++, &OuterClose));
+      TestThat(TokensAreEqual(XmlTokens.At++, &OuterCloseDebug));
     }
 
     TestThat(AtElements(&XmlTokens) == TokenCount);
     Rewind(&XmlTokens);
+  }
+  else
+  {
+    ++TestsFailed;
   }
 
   VaporizeArena(Memory);
@@ -189,154 +196,161 @@ ContrivedQueryingTest(const char* IdSelector)
   memory_arena *Memory = AllocateArena(Megabytes(1));
 
   ansi_stream XmlStream = AnsiStreamFromFile(TEST_FIXTURES_PATH "/test_querying.dae", Memory);
-  xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
-  counted_string TheMeaningOfLifeTheUniverseAndEverything = CS("42");
-  counted_string FourtyTwoTwice = CS("42 42");
-
+  if (XmlStream.Start)
   {
-    ansi_stream SelectorStream = AnsiStream("xml first-value");
-    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    xml_token OpenExpected = XmlOpenToken(CS("first-value"));
-    TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
-    TestThat(StringsMatch(&ResultTag->Value, &FourtyTwoTwice));
+    xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
+    counted_string TheMeaningOfLifeTheUniverseAndEverything = CS("42");
+    counted_string FourtyTwoTwice = CS("42 42");
+
+    {
+      ansi_stream SelectorStream = AnsiStream("xml first-value");
+      xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+      xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+      xml_token OpenExpected = XmlOpenToken(CS("first-value"));
+      TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
+      TestThat(StringsMatch(&ResultTag->Value, &FourtyTwoTwice));
+    }
+
+    {
+      counted_string ActualIdValue = CS("id-value");
+      ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("xml first-value%sid-value"), IdSelector));
+      xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+      xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+      xml_token OpenExpected = XmlOpenToken(CS("first-value"));
+      TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
+      TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
+
+      counted_string* ResultIdValue = GetPropertyValue(ResultTag, CS("id"));
+      TestThat(StringsMatch(ResultIdValue, ActualIdValue));
+    }
+
+    {
+      ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("xml first-value%sid-value"), IdSelector));
+      xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+      xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+      xml_token OpenExpected = XmlOpenToken(CS("first-value"));
+      TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
+      TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
+    }
+
+    {
+      ansi_stream SelectorStream = AnsiStream("xml outer inner second-value");
+      xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+      xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+      xml_token OpenExpected = XmlOpenToken(CS("second-value"));
+      TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
+      TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
+    }
+
+    {
+      ansi_stream SelectorStream = AnsiStream("xml third-value");
+      xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+      xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+      xml_token OpenExpected = XmlOpenToken(CS("third-value"));
+      TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
+      TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
+    }
+
+    {
+      ansi_stream SelectorStream = AnsiStream("xml outer inner fourth-value");
+      xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+      xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+      xml_token OpenExpected = XmlOpenToken(CS("fourth-value"));
+      TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
+      TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
+    }
+
+    {
+      ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("xml outer inner%ssecond-fourth-value fourth-value"), IdSelector));
+      xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+      xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+      xml_token OpenExpected = XmlOpenToken(CS("fourth-value"));
+      TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
+      TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
+    }
+
+
+    {
+      ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("xml library_effects effect%smaterial-effect color"), IdSelector));
+      xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+      xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+      xml_token OpenExpected = XmlOpenToken(CS("color"));
+      TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
+      TestThat(StringsMatch(&ResultTag->Value, CS("1 2 3 4")));
+    }
+
+    {
+      ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("xml library_lights light%sLamp-light"), IdSelector));
+      xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+      xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+      xml_token OpenExpected = XmlOpenToken(CS("light"));
+      TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
+
+      counted_string NameValue = CS("Lamp");
+      counted_string* ResultNameValue = GetPropertyValue(ResultTag, CS("name"));
+      TestThat(StringsMatch(NameValue, ResultNameValue));
+    }
+
+    {
+      ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("xml outer%sfoo target"), IdSelector));
+      xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+      xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+      TestThat(!ResultTag);
+    }
+
+    {
+      ansi_stream SelectorStream = AnsiStream("inner fourth-value");
+      xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+      xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+      TestThat(ResultTag);
+      TestThat(StringsMatch(ResultTag->Value, CS("42")));
+    }
+
+    {
+      ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("inner%ssecond-fourth-value fourth-value"), IdSelector));
+      xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+      xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+      TestThat(ResultTag);
+      TestThat(StringsMatch(ResultTag->Value, CS("42")));
+    }
+
+
+    {
+      ansi_stream SelectorStream = AnsiStream("second-value");
+      xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+      xml_tag_stream Results = GetAllMatchingTags(&XmlTokens, &Selector, Memory);
+      TestThat(TotalElements(&Results) == 2);
+      TestThat(StringsMatch(Results.Start[0]->Value, CS("42")));
+      TestThat(StringsMatch(Results.Start[1]->Value, CS("43")));
+    }
+
+    {
+      ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("first-value%sid-value:name=bar"), IdSelector));
+      xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+      xml_tag* Result = GetFirstMatchingTag(&XmlTokens, &Selector);
+      TestThat(Result);
+      TestThat( StringsMatch(GetPropertyValue(Result, CS("name")), CS("bar")) );
+    }
+
+    {
+      ansi_stream SelectorStream = AnsiStream("light:name=Lamp");
+      xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+      xml_tag* Result = GetFirstMatchingTag(&XmlTokens, &Selector);
+      TestThat(Result);
+      TestThat( GetPropertyValue(Result, CS("id")) == 0);
+    }
+
+    {
+      ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("light%sLamp-light:name=Lamp"), IdSelector));
+      xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+      xml_tag* Result = GetFirstMatchingTag(&XmlTokens, &Selector);
+      TestThat(Result);
+      TestThat( StringsMatch(GetPropertyValue(Result, CS("id")), CS("Lamp-light")) );
+    }
   }
-
+  else
   {
-    counted_string ActualIdValue = CS("id-value");
-    ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("xml first-value%sid-value"), IdSelector));
-    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    xml_token OpenExpected = XmlOpenToken(CS("first-value"));
-    TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
-    TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
-
-    counted_string* ResultIdValue = GetPropertyValue(ResultTag, CS("id"));
-    TestThat(StringsMatch(ResultIdValue, ActualIdValue));
-  }
-
-  {
-    ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("xml first-value%sid-value"), IdSelector));
-    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    xml_token OpenExpected = XmlOpenToken(CS("first-value"));
-    TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
-    TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
-  }
-
-  {
-    ansi_stream SelectorStream = AnsiStream("xml outer inner second-value");
-    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    xml_token OpenExpected = XmlOpenToken(CS("second-value"));
-    TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
-    TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
-  }
-
-  {
-    ansi_stream SelectorStream = AnsiStream("xml third-value");
-    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    xml_token OpenExpected = XmlOpenToken(CS("third-value"));
-    TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
-    TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
-  }
-
-  {
-    ansi_stream SelectorStream = AnsiStream("xml outer inner fourth-value");
-    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    xml_token OpenExpected = XmlOpenToken(CS("fourth-value"));
-    TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
-    TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
-  }
-
-  {
-    ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("xml outer inner%ssecond-fourth-value fourth-value"), IdSelector));
-    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    xml_token OpenExpected = XmlOpenToken(CS("fourth-value"));
-    TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
-    TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
-  }
-
-
-  {
-    ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("xml library_effects effect%smaterial-effect color"), IdSelector));
-    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    xml_token OpenExpected = XmlOpenToken(CS("color"));
-    TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
-    TestThat(StringsMatch(&ResultTag->Value, CS("1 2 3 4")));
-  }
-
-  {
-    ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("xml library_lights light%sLamp-light"), IdSelector));
-    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    xml_token OpenExpected = XmlOpenToken(CS("light"));
-    TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
-
-    counted_string NameValue = CS("Lamp");
-    counted_string* ResultNameValue = GetPropertyValue(ResultTag, CS("name"));
-    TestThat(StringsMatch(NameValue, ResultNameValue));
-  }
-
-  {
-    ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("xml outer%sfoo target"), IdSelector));
-    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    TestThat(!ResultTag);
-  }
-
-  {
-    ansi_stream SelectorStream = AnsiStream("inner fourth-value");
-    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    TestThat(ResultTag);
-    TestThat(StringsMatch(ResultTag->Value, CS("42")));
-  }
-
-  {
-    ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("inner%ssecond-fourth-value fourth-value"), IdSelector));
-    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    TestThat(ResultTag);
-    TestThat(StringsMatch(ResultTag->Value, CS("42")));
-  }
-
-
-  {
-    ansi_stream SelectorStream = AnsiStream("second-value");
-    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    xml_tag_stream Results = GetAllMatchingTags(&XmlTokens, &Selector, Memory);
-    TestThat(TotalElements(&Results) == 2);
-    TestThat(StringsMatch(Results.Start[0]->Value, CS("42")));
-    TestThat(StringsMatch(Results.Start[1]->Value, CS("43")));
-  }
-
-  {
-    ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("first-value%sid-value:name=bar"), IdSelector));
-    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    xml_tag* Result = GetFirstMatchingTag(&XmlTokens, &Selector);
-    TestThat(Result);
-    TestThat( StringsMatch(GetPropertyValue(Result, CS("name")), CS("bar")) );
-  }
-
-  {
-    ansi_stream SelectorStream = AnsiStream("light:name=Lamp");
-    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    xml_tag* Result = GetFirstMatchingTag(&XmlTokens, &Selector);
-    TestThat(Result);
-    TestThat( GetPropertyValue(Result, CS("id")) == 0);
-  }
-
-  {
-    ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("light%sLamp-light:name=Lamp"), IdSelector));
-    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    xml_tag* Result = GetFirstMatchingTag(&XmlTokens, &Selector);
-    TestThat(Result);
-    TestThat( StringsMatch(GetPropertyValue(Result, CS("id")), CS("Lamp-light")) );
+    ++TestsFailed;
   }
 
   return;
@@ -347,73 +361,81 @@ BlenderCubeQueryTest(const char* IdSelector)
 {
   memory_arena *Memory = AllocateArena(Megabytes(1));
   ansi_stream XmlStream = AnsiStreamFromFile(TEST_FIXTURES_PATH "/blender_cube.dae", Memory);
-  xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
 
+  if (XmlStream.Start)
   {
-    ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("?xml COLLADA library_geometries geometry%sCube-mesh mesh source%sCube-mesh-positions float_array%sCube-mesh-positions-array"), IdSelector, IdSelector, IdSelector ));
-    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    TestThat( StringsMatch(ResultTag->Value, CS("1 1 -1 1 -1 -1 -1 -0.9999998 -1 -0.9999997 1 -1 1 0.9999995 1 0.9999994 -1.000001 1 -1 -0.9999997 1 -1 1 1") ) );
+    xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
+
+    {
+      ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("?xml COLLADA library_geometries geometry%sCube-mesh mesh source%sCube-mesh-positions float_array%sCube-mesh-positions-array"), IdSelector, IdSelector, IdSelector ));
+      xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+      xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+      TestThat( StringsMatch(ResultTag->Value, CS("1 1 -1 1 -1 -1 -1 -0.9999998 -1 -0.9999997 1 -1 1 0.9999995 1 0.9999994 -1.000001 1 -1 -0.9999997 1 -1 1 1") ) );
+    }
+
+    {
+      ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("?xml COLLADA library_geometries geometry%sCube-mesh mesh source%sCube-mesh-normals float_array%sCube-mesh-normals-array"), IdSelector, IdSelector, IdSelector));
+      xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+      xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+      TestThat( StringsMatch(ResultTag->Value, CS("0 0 -1 0 0 1 1 0 -2.38419e-7 0 -1 -4.76837e-7 -1 2.38419e-7 -1.49012e-7 2.68221e-7 1 2.38419e-7 0 0 -1 0 0 1 1 -5.96046e-7 3.27825e-7 -4.76837e-7 -1 0 -1 2.38419e-7 -1.19209e-7 2.08616e-7 1 0") ) );
+    }
+
+    {
+      ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("?xml COLLADA library_effects effect%sMaterial-effect profile_COMMON technique phong emission color"), IdSelector));
+      xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+      xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+      TestThat( StringsMatch(ResultTag->Value, CS("0 0 0 1") ) );
+    }
+
+    {
+      ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("?xml COLLADA library_effects effect%sMaterial-effect profile_COMMON technique phong ambient color"), IdSelector));
+      xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+      xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+      TestThat( StringsMatch(ResultTag->Value, CS("0 0 0 1") ) );
+    }
+
+    {
+      ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("?xml COLLADA library_effects effect%sMaterial-effect profile_COMMON technique phong shininess float"), IdSelector));
+      xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+      xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+      TestThat( StringsMatch(ResultTag->Value, CS("50") ) );
+    }
+
+    {
+      ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("?xml COLLADA library_effects effect%sMaterial-effect profile_COMMON technique phong index_of_refraction float"), IdSelector));
+      xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+      xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+      TestThat( StringsMatch(ResultTag->Value, CS("1") ) );
+    }
+
+    {
+      ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("?xml COLLADA library_visual_scenes visual_scene%sScene node%sCube instance_geometry bind_material technique_common instance_material"), IdSelector, IdSelector));
+      xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+      xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+      TestThat(ResultTag);
+    }
+
+    {
+      ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("?xml COLLADA library_visual_scenes visual_scene%sScene node%sCube instance_geometry bind_material technique_common"), IdSelector, IdSelector));
+      xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+      xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+      xml_token Expected = XmlOpenToken(CS("technique_common"));
+      TestThat(TokensAreEqual(ResultTag->Open, &Expected));
+      TestThat(ResultTag);
+    }
+
+    {
+      ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("?xml COLLADA library_lights light%sLamp-light extra technique ray_samp"), IdSelector));
+      xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+      xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+      xml_token Expected = XmlOpenToken(CS("ray_samp"));
+      TestThat(TokensAreEqual(ResultTag->Open, &Expected));
+      TestThat(StringsMatch(ResultTag->Value, CS("1")));
+    }
   }
-
+  else
   {
-    ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("?xml COLLADA library_geometries geometry%sCube-mesh mesh source%sCube-mesh-normals float_array%sCube-mesh-normals-array"), IdSelector, IdSelector, IdSelector));
-    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    TestThat( StringsMatch(ResultTag->Value, CS("0 0 -1 0 0 1 1 0 -2.38419e-7 0 -1 -4.76837e-7 -1 2.38419e-7 -1.49012e-7 2.68221e-7 1 2.38419e-7 0 0 -1 0 0 1 1 -5.96046e-7 3.27825e-7 -4.76837e-7 -1 0 -1 2.38419e-7 -1.19209e-7 2.08616e-7 1 0") ) );
-  }
-
-  {
-    ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("?xml COLLADA library_effects effect%sMaterial-effect profile_COMMON technique phong emission color"), IdSelector));
-    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    TestThat( StringsMatch(ResultTag->Value, CS("0 0 0 1") ) );
-  }
-
-  {
-    ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("?xml COLLADA library_effects effect%sMaterial-effect profile_COMMON technique phong ambient color"), IdSelector));
-    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    TestThat( StringsMatch(ResultTag->Value, CS("0 0 0 1") ) );
-  }
-
-  {
-    ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("?xml COLLADA library_effects effect%sMaterial-effect profile_COMMON technique phong shininess float"), IdSelector));
-    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    TestThat( StringsMatch(ResultTag->Value, CS("50") ) );
-  }
-
-  {
-    ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("?xml COLLADA library_effects effect%sMaterial-effect profile_COMMON technique phong index_of_refraction float"), IdSelector));
-    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    TestThat( StringsMatch(ResultTag->Value, CS("1") ) );
-  }
-
-  {
-    ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("?xml COLLADA library_visual_scenes visual_scene%sScene node%sCube instance_geometry bind_material technique_common instance_material"), IdSelector, IdSelector));
-    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    TestThat(ResultTag);
-  }
-
-  {
-    ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("?xml COLLADA library_visual_scenes visual_scene%sScene node%sCube instance_geometry bind_material technique_common"), IdSelector, IdSelector));
-    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    xml_token Expected = XmlOpenToken(CS("technique_common"));
-    TestThat(TokensAreEqual(ResultTag->Open, &Expected));
-    TestThat(ResultTag);
-  }
-
-  {
-    ansi_stream SelectorStream = AnsiStream(FormatCountedString(Memory, CSz("?xml COLLADA library_lights light%sLamp-light extra technique ray_samp"), IdSelector));
-    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    xml_token Expected = XmlOpenToken(CS("ray_samp"));
-    TestThat(TokensAreEqual(ResultTag->Open, &Expected));
-    TestThat(StringsMatch(ResultTag->Value, CS("1")));
+    ++TestsFailed;
   }
 
   return;

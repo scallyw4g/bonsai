@@ -398,7 +398,7 @@ counted_string
 PopWordCounted(ansi_stream *Cursor, const char *Delimeters = 0)
 {
   if (!Delimeters)
-    Delimeters = " \n";
+    Delimeters = " \r\n";
 
   EatWhitespace(Cursor);
 
@@ -407,11 +407,21 @@ PopWordCounted(ansi_stream *Cursor, const char *Delimeters = 0)
 }
 
 bonsai_function counted_string
+CountedString(ansi_stream *Stream)
+{
+  counted_string Result = {
+    .Count = (umm)(Stream->End-Stream->Start),
+    .Start = Stream->Start,
+  };
+  return Result;
+}
+
+bonsai_function counted_string
 CountedString(ansi_stream Stream)
 {
   counted_string Result = {
+    .Count = (umm)(Stream.End-Stream.Start),
     .Start = Stream.Start,
-    .Count = (umm)(Stream.End-Stream.Start)
   };
   return Result;
 }

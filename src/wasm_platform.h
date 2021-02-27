@@ -1,8 +1,6 @@
 #include <emscripten/emscripten.h>
 #include <emscripten/html5.h>
 
-#define BONSAI_FUNCTION_NAME __func__
-
 #define RED_TERMINAL ""
 #define BLUE_TERMINAL ""
 #define GREEN_TERMINAL ""

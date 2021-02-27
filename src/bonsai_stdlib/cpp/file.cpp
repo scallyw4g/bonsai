@@ -5,16 +5,21 @@ CloseFile(native_file* File)
   if (File->Handle)
   {
     Result = fclose(File->Handle) == 0 ? True : False;
+    File->Handle = 0;
   }
   else
   {
-    Error("Attempted to close %.*s, which was not open.", (s32)File->Path.Count, File->Path.Start);
+    Error("Attempted to close %S, which was not open.", File->Path);
   }
 
+  if (!Result)
+  {
+    Error("Closing file %S", File->Path);
+  }
+
+  Assert(File->Handle == 0);
   return Result;
 }
-
-static const char* DefaultPermissions = "rw+b";
 
 bonsai_function b32
 Rename(native_file CurrentFile, counted_string NewFilePath)
@@ -34,23 +39,39 @@ Remove(counted_string Filepath)
 }
 
 bonsai_function native_file
-OpenFile(const char* FilePath, const char* Permissions = DefaultPermissions)
+OpenFile(const char* FilePath, const char* Permissions)
 {
   native_file Result = {
     .Path = CS(FilePath)
   };
 
-  FILE* Handle = fopen(FilePath, Permissions);
-  if (Handle)
+  errno = 0;
+  fopen_s(&Result.Handle, FilePath, Permissions);
+
+  if (!Result.Handle)
   {
-    Result.Handle = Handle;
+    switch(errno)
+    {
+      case EINVAL:
+      {
+        Error("Invalid Permissions string (%s) provided to OpenFile.", Permissions);
+      } break;
+
+      default:
+      {
+      } break;
+    }
+
+    errno = 0;
   }
+
+  Assert(errno == 0);
 
   return Result;
 }
 
 bonsai_function native_file
-OpenFile(counted_string FilePath, const char* Permissions = DefaultPermissions)
+OpenFile(counted_string FilePath, const char* Permissions)
 {
   const char* NullTerminatedFilePath = GetNullTerminated(FilePath);
   native_file Result = OpenFile(NullTerminatedFilePath, Permissions);
@@ -61,8 +82,8 @@ bonsai_function counted_string
 GetRandomString(u32 Length, random_series* Entropy, memory_arena* Memory)
 {
   counted_string Filename = {
+    .Count = Length,
     .Start = Allocate(char, Memory, Length),
-    .Count = Length
   };
 
   for (u32 CharIndex = 0;
@@ -102,7 +123,7 @@ GetTempFile(random_series* Entropy, memory_arena* Memory)
   counted_string Filename = GetTmpFilename(Entropy, Memory);
   native_file Result = OpenFile(Filename, "wb");
   if (!Result.Handle)
-    { Error("Opening File %.*s, errno: %d", (u32)Filename.Count, Filename.Start, errno); }
+    { Error("Opening File %S, errno: %d", Filename, errno); }
   return Result;
 }
 
@@ -123,10 +144,19 @@ WriteToFile(native_file* File, counted_string Str)
 }
 
 bonsai_function inline b32
-WriteToFile(native_file* File, ansi_stream Str)
+WriteToFile(native_file* File, ansi_stream *Str)
 {
   b32 Result = WriteToFile(File, CountedString(Str));
   return Result;
+}
+
+bonsai_function void
+ReadBytesIntoBuffer(FILE *Src, u64 BytesToRead, u8* Dest)
+{
+  Assert(BytesToRead);
+  u64 BytesRead = fread(Dest, 1, BytesToRead, Src);
+  Assert(BytesRead != 0);
+  return;
 }
 
 bonsai_function b32
@@ -157,11 +187,16 @@ FileExists(counted_string Path)
 }
 
 bonsai_function void
-LogToConsole(counted_string Output)
+PrintToStdout(counted_string Output)
 {
   if (!WriteToFile(&Stdout, Output))
   {
     Error("Writing to Stdout");
   }
+
+#if BONSAI_WIN32
+  OutputDebugString(GetNullTerminated(Output));
+#endif
+
 }
 

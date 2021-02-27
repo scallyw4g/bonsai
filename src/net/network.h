@@ -165,6 +165,7 @@ NetworkOp(network_connection *Connection, void *Message, u32 MessageSize, socket
   // therefore this check must be here
   if (!IsDisconnected(Connection))
   {
+    errno = 0;
     switch(SocketOp)
     {
       case SocketOp_Read:

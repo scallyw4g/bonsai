@@ -82,8 +82,10 @@ typedef Colormap x_colormap;
 typedef XSetWindowAttributes x_set_window_attribs;
 
 b32
-OpenAndInitializeWindow( os *Os, platform *Plat, s32 DebugFlags)
+OpenAndInitializeWindow(os *Os, platform *Plat)
 {
+  s32 DebugFlags = GLX_CONTEXT_DEBUG_BIT_ARB;
+
   GLint GlAttribs[] = {
     GLX_RGBA,
     GLX_DEPTH_SIZE, 24,
@@ -144,7 +146,7 @@ OpenAndInitializeWindow( os *Os, platform *Plat, s32 DebugFlags)
 
   GLXContext ShareContext = 0;
   PFNGLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB =
-    (PFNGLXCREATECONTEXTATTRIBSARBPROC)bonsaiGlGetProcAddress("glXCreateContextAttribsARB");
+    (PFNGLXCREATECONTEXTATTRIBSARBPROC)PlatformGetGlFunction("glXCreateContextAttribsARB");
   Assert(glXCreateContextAttribsARB);
 
   Os->GlContext = glXCreateContextAttribsARB(Os->Display, FramebufferConfig, ShareContext, GL_TRUE, OpenGlContextAttribs);
@@ -154,42 +156,16 @@ OpenAndInitializeWindow( os *Os, platform *Plat, s32 DebugFlags)
 
   glXMakeCurrent(Os->Display, xWindow, Os->GlContext);
 
-  glDebugMessageCallback(HandleGlDebugMessage, 0);
-  glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-
-  AssertNoGlErrors;
-
   Os->Window = xWindow;
   return True;
 }
 
-inline GameCallback
+inline void*
 GetProcFromLib(shared_lib Lib, const char *Name)
 {
-  GameCallback Result = (GameCallback)dlsym(Lib, Name);
+  void* Result = dlsym(Lib, Name);
   return Result;
 }
-
-inline void
-ResumeWorkerThreads()
-{
-  TIMED_FUNCTION();
-  MainThreadBlocksWorkerThreads = False;
-  return;
-}
-
-inline void
-SuspendWorkerThreads()
-{
-  TIMED_FUNCTION();
-  MainThreadBlocksWorkerThreads = True;
-
-  u32 WorkerThreadCount = GetWorkerThreadCount();
-  while (WorkerThreadsWaiting < WorkerThreadCount);
-
-  return;
-}
-
 
 inline void
 Terminate(os *Os)
@@ -384,6 +360,7 @@ ConnectToServer(network_connection *Connection)
     Connection->Socket = CreateSocket(Socket_NonBlocking);
   }
 
+  errno = 0;
   s32 ConnectStatus = connect(Connection->Socket.Id,
                               (sockaddr *)&Connection->Address,
                               sizeof(sockaddr_in));

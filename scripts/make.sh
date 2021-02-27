@@ -1,8 +1,47 @@
 #! /bin/bash
 
+Platform="Unknown"
+UNAME=$(uname)
+if [ "$UNAME" == "Linux" ] ; then
+  Platform="Linux"
+  PLATFORM_LINKER_OPTIONS="-lpthread -lX11 -ldl -lGL"
+  PLATFORM_DEFINES="-DBONSAI_LINUX"
+  PLATFORM_INCLUDE_DIRS=""
+  PLATFORM_CXX_OPTIONS="-ggdb"
+
+  # TODO(Jesse): What does -fPIC acutally do?  I found the option documented here,
+  # but with no explanation of what it's doing.  Apparently it's unsupported on
+  # Windows, so hopefully it's not necessary for anything.
+
+  # Turns out that -fPIC turns on rip-relative addressing (among other things?)
+  # such that functions work regardless of where they're loaded into memory.
+  # This is important (obviously) for dynamically-loaded libs and ASLR.
+
+  #
+  # https://clang.llvm.org/docs/ClangCommandLineReference.html
+  # @unsupported_fPIC_flag_windows
+  SHARED_LIBRARY_FLAGS="-shared -fPIC"
+  PLATFORM_EXE_EXTENSION=""
+  PLATFORM_LIB_EXTENSION=".so"
+
+elif [[ "$UNAME" == CYGWIN* || "$UNAME" == MINGW* ]] ; then
+  Platform="Windows"
+  PLATFORM_LINKER_OPTIONS="-lgdi32 -luser32 -lopengl32 -lglu32"
+  PLATFORM_DEFINES="-DBONSAI_WIN32"
+  PLATFORM_INCLUDE_DIRS=""
+  PLATFORM_CXX_OPTIONS="-g -gcodeview"
+
+  # @unsupported_fPIC_flag_windows
+  SHARED_LIBRARY_FLAGS="-shared"
+
+  PLATFORM_EXE_EXTENSION=".exe"
+  PLATFORM_LIB_EXTENSION=".dll"
+fi
+
+
 EMCC=0
 
-# COMMON_OPTIMIZATION_OPTIONS="-O2"
+# OPTIMIZATION_LEVEL="-O2"
 
 RED="\x1b[31m"
 BLUE="\x1b[34m"
@@ -38,9 +77,6 @@ function ColorizeTitle()
   echo -e ""
 }
 
-INCLUDE_DIRECTORIES="$SRC"
-OUTPUT_DIRECTORY="$BIN"
-
 # NOTE(Jesse): -Wno-global-constructors can be turned off when the defaultPallette
 # in colors.h gets axed .. I think.
 
@@ -50,14 +86,12 @@ OUTPUT_DIRECTORY="$BIN"
 
 # Note(Jesse): Using -std=c++17 so I can mark functions with [[nodiscard]]
 
-COMMON_COMPILER_OPTIONS="
-  -I/usr/src/linux-headers-4.15.0-88/include/
-  -DBONSAI_LINUX=1
-
-  -std=c++17
+CXX_OPTIONS="
+  --std=c++17
   -ferror-limit=2000
-  -ggdb
+
   -Weverything
+
   -Wno-c++98-compat-pedantic
   -Wno-gnu-anonymous-struct
   -Wno-missing-prototypes
@@ -84,10 +118,14 @@ COMMON_COMPILER_OPTIONS="
   -Wno-unused-value
   -Wno-unused-variable
   -Wno-unused-parameter
+
+  -Wno-implicit-int-float-conversion
+  -Wno-extra-semi-stmt
+  -Wno-reorder-init-list
+  -Wno-unused-macros
+  -Wno-atomic-implicit-seq-cst
 "
 
-COMMON_LINKER_OPTIONS="-lpthread -lX11 -ldl -lGL"
-SHARED_LIBRARY_FLAGS="-shared -fPIC"
 
 EXAMPLES_TO_BUILD="
   $EXAMPLES/world_gen
@@ -101,8 +139,9 @@ EXAMPLES_TO_BUILD="
 EXECUTABLES_TO_BUILD="
   $SRC/platform.cpp
   $SRC/font/ttf.cpp
-  $SRC/net/server.cpp
 "
+  #$SRC/net/server.cpp
+
 
 # TODO(Jesse, tags: tests, release): The allocation tests crash in release mode because of some
 # ultra-jank-tastic segfault recovery code.  Find another less janky way?
@@ -126,7 +165,6 @@ TESTS_TO_BUILD="
 "
 
 function BuildPreprocessor {
-
   which clang++ > /dev/null
   [ $? -ne 0 ] && echo -e "Please install clang++" && exit 1
 
@@ -138,12 +176,15 @@ function BuildPreprocessor {
   executable="$SRC/metaprogramming/preprocessor.cpp"
   SetOutputBinaryPathBasename "$executable" "$BIN"
   echo -e "$Building $executable"
-  clang++                \
-    $COMMON_OPTIMIZATION_OPTIONS \
-    $COMMON_COMPILER_OPTIONS     \
-    $COMMON_LINKER_OPTIONS       \
-    -I"$SRC"                     \
-    -o "$output_basename""_dev"  \
+  clang++                                                \
+    $OPTIMIZATION_LEVEL                                  \
+    $CXX_OPTIONS                                         \
+    $PLATFORM_CXX_OPTIONS                                \
+    $PLATFORM_LINKER_OPTIONS                             \
+    $PLATFORM_DEFINES                                    \
+    $PLATFORM_INCLUDE_DIRS                               \
+    -I"$SRC"                                             \
+    -o "$output_basename""_dev""$PLATFORM_EXE_EXTENSION" \
     $executable
 
   if [ $? -eq 0 ]; then
@@ -159,7 +200,111 @@ function BuildPreprocessor {
   echo -e ""
 }
 
-function BuildAllClang {
+function BuildExecutables
+{
+  ColorizeTitle "Executables"
+  for executable in $EXECUTABLES_TO_BUILD; do
+    SetOutputBinaryPathBasename "$executable" "$BIN"
+    echo -e "$Building $executable"
+    clang++                                          \
+      $OPTIMIZATION_LEVEL                            \
+      $CXX_OPTIONS                                   \
+      $PLATFORM_CXX_OPTIONS                          \
+      $PLATFORM_LINKER_OPTIONS                       \
+      $PLATFORM_DEFINES                              \
+      $PLATFORM_INCLUDE_DIRS                         \
+      -I"$SRC"                                       \
+      -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
+      $executable && echo -e "$Success $executable" &
+  done
+}
+
+function BuildDebugTests
+{
+  echo ""
+  ColorizeTitle "Debug Tests"
+  for executable in $DEBUG_TESTS_TO_BUILD; do
+    SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
+    echo -e "$Building $executable"
+    clang++                                          \
+      $CXX_OPTIONS                                   \
+      $PLATFORM_CXX_OPTIONS                          \
+      $PLATFORM_LINKER_OPTIONS                       \
+      $PLATFORM_DEFINES                              \
+      $PLATFORM_INCLUDE_DIRS                         \
+      -I"$SRC"                                       \
+      -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
+      $executable && echo -e "$Success $executable" &
+  done
+}
+
+function BuildTests
+{
+  echo ""
+  ColorizeTitle "Tests"
+  for executable in $TESTS_TO_BUILD; do
+    SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
+    echo -e "$Building $executable"
+    clang++                                          \
+      $OPTIMIZATION_LEVEL                            \
+      $CXX_OPTIONS                                   \
+      $PLATFORM_CXX_OPTIONS                          \
+      $PLATFORM_LINKER_OPTIONS                       \
+      $PLATFORM_DEFINES                              \
+      $PLATFORM_INCLUDE_DIRS                         \
+      -I"$SRC"                                       \
+      -I"$SRC/debug_system"                          \
+      -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
+      $executable && echo -e "$Success $executable" &
+  done
+}
+
+function BuildDebugSystem
+{
+  echo ""
+  ColorizeTitle "DebugSystem"
+  DEBUG_SRC_FILE="$SRC/debug_system/debug.cpp"
+  echo -e "$Building $DEBUG_SRC_FILE"
+  clang++                                               \
+    $OPTIMIZATION_LEVEL                                 \
+    $CXX_OPTIONS                                        \
+    $PLATFORM_CXX_OPTIONS                               \
+    $PLATFORM_LINKER_OPTIONS                            \
+    $PLATFORM_DEFINES                                   \
+    $PLATFORM_INCLUDE_DIRS                              \
+    $SHARED_LIBRARY_FLAGS                               \
+    -I"$SRC"                                            \
+    -I"$SRC/debug_system"                               \
+    -o "$BIN/lib_debug_system""$PLATFORM_LIB_EXTENSION" \
+    "$DEBUG_SRC_FILE" && echo -e "$Success $DEBUG_SRC_FILE" &
+}
+
+function BuildExamples
+{
+  echo ""
+  ColorizeTitle "Examples"
+  for executable in $EXAMPLES_TO_BUILD; do
+    echo -e "$Building $executable"
+    SetOutputBinaryPathBasename "$executable" "$BIN"
+    clang++                                                                           \
+      $OPTIMIZATION_LEVEL                                                             \
+      $CXX_OPTIONS                                                                    \
+      $PLATFORM_CXX_OPTIONS                                                           \
+      $PLATFORM_LINKER_OPTIONS                                                        \
+      $PLATFORM_DEFINES                                                               \
+      $PLATFORM_INCLUDE_DIRS                                                          \
+      $SHARED_LIBRARY_FLAGS                                                           \
+      -I"$SRC"                                                                        \
+      -I"$executable"                                                                 \
+      -o "$output_basename"                                                           \
+      "$executable/game.cpp" &&                                                       \
+      mv "$output_basename" "$output_basename""_loadable""$PLATFORM_LIB_EXTENSION" && \
+      echo -e "$Success $executable" &
+  done
+}
+
+function BuildAllClang
+{
   which clang++ > /dev/null
   [ $? -ne 0 ] && echo -e "Please install clang++" && exit 1
 
@@ -167,78 +312,11 @@ function BuildAllClang {
   echo -e "$Delimeter"
   echo -e ""
 
-  ColorizeTitle "Executables"
-  for executable in $EXECUTABLES_TO_BUILD; do
-    SetOutputBinaryPathBasename "$executable" "$BIN"
-    echo -e "$Building $executable"
-    clang++                        \
-      $COMMON_OPTIMIZATION_OPTIONS \
-      $COMMON_COMPILER_OPTIONS     \
-      $COMMON_LINKER_OPTIONS       \
-      -I"$SRC"                     \
-      -o "$output_basename"        \
-      $executable && echo -e "$Success $executable" &
-  done
-
-  echo ""
-  ColorizeTitle "Debug Tests"
-  for executable in $DEBUG_TESTS_TO_BUILD; do
-    SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
-    echo -e "$Building $executable"
-    clang++                      \
-      $COMMON_COMPILER_OPTIONS   \
-      $COMMON_LINKER_OPTIONS     \
-      -I"$SRC"                   \
-      -o "$output_basename"      \
-      $executable && echo -e "$Success $executable" &
-  done
-
-  echo ""
-  ColorizeTitle "Tests"
-  for executable in $TESTS_TO_BUILD; do
-    SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
-    echo -e "$Building $executable"
-    clang++                        \
-      $COMMON_OPTIMIZATION_OPTIONS \
-      $COMMON_COMPILER_OPTIONS     \
-      $COMMON_LINKER_OPTIONS       \
-      -I"$SRC"                     \
-      -I"$SRC/debug_system"        \
-      -o "$output_basename"        \
-      $executable && echo -e "$Success $executable" &
-  done
-
-  echo ""
-  ColorizeTitle "DebugSystem"
-  DEBUG_SRC_FILE="$SRC/debug_system/debug.cpp"
-  echo -e "$Building $DEBUG_SRC_FILE"
-  clang++                          \
-    $COMMON_OPTIMIZATION_OPTIONS   \
-    $COMMON_COMPILER_OPTIONS       \
-    $SHARED_LIBRARY_FLAGS          \
-    $COMMON_LINKER_OPTIONS         \
-    -I"$SRC"                       \
-    -I"$SRC/debug_system"          \
-    -o "$BIN/lib_debug_system.so"  \
-    "$DEBUG_SRC_FILE" && echo -e "$Success $DEBUG_SRC_FILE" &
-
-  echo ""
-  ColorizeTitle "Examples"
-  for executable in $EXAMPLES_TO_BUILD; do
-    echo -e "$Building $executable"
-    SetOutputBinaryPathBasename "$executable" "$BIN"
-    clang++                                                     \
-      $SHARED_LIBRARY_FLAGS                                     \
-      $COMMON_OPTIMIZATION_OPTIONS                              \
-      $COMMON_COMPILER_OPTIONS                                  \
-      $COMMON_LINKER_OPTIONS                                    \
-      -I"$SRC"                                                  \
-      -I"$executable"                                           \
-      -o "$output_basename"                                     \
-      "$executable/game.cpp" &&                                 \
-      mv "$output_basename" "$output_basename""_loadable.so" && \
-      echo -e "$Success $executable" &
-  done
+  [ $BuildExecutables == 1 ] && BuildExecutables
+  [ $BuildDebugTests == 1 ] && BuildDebugTests
+  [ $BuildTests == 1 ] && BuildTests
+  [ $BuildDebugSystem == 1 ] && BuildDebugSystem
+  [ $BuildExamples == 1 ] && BuildExamples
 
   echo -e ""
   echo -e "$Delimeter"
@@ -269,7 +347,7 @@ function BuildAllEMCC {
     -Wno-c99-designator             \
     -Wno-reorder-init-list          \
     -ferror-limit=2000              \
-    -fno-exceptions\
+    -fno-exceptions                 \
     -O2                             \
     -g4                             \
     --source-map-base /             \
@@ -372,12 +450,10 @@ function RunEntireBuild {
     bin/preprocessor_dev src/metaprogramming/preprocessor.cpp -I src -I /usr/include/x86_64-linux-gnu -I /usr/include
   fi
 
-  if [ $BuildAllProjects == 1 ]; then
-    if [ "$EMCC" == "1" ]; then
-      BuildAllEMCC
-    else
-      BuildAllClang
-    fi
+  if [ $EMCC == 1 ]; then
+    BuildAllEMCC
+  else
+    BuildAllClang
   fi
 
   if [ $RunTests == 1 ]; then
@@ -395,10 +471,15 @@ DumpSourceFilesAndQuit=0
 CheckoutMetaOutput=0
 
 FirstPreprocessor=0
-BuildPreprocessor=1
-SecondPreprocessor=1
+BuildPreprocessor=0
+SecondPreprocessor=0
 
-BuildAllProjects=0
+BuildExecutables=1
+BuildDebugTests=1
+BuildTests=0
+BuildDebugSystem=1
+BuildExamples=1
+
 RunTests=0
 FinalPreprocessor=0
 

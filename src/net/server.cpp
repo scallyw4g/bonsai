@@ -27,6 +27,7 @@ CheckForConnectingClient(socket_t *ListeningSocket, network_connection *ClientCo
   Assert(ListeningSocket->Type == Socket_NonBlocking);
 
   u32 AddressSize = sizeof(ClientConnection->Address);
+  errno = 0;
   s32 SocketId = accept4(ListeningSocket->Id,
                         (sockaddr*)&ClientConnection->Address,
                         &AddressSize,
@@ -35,7 +36,6 @@ CheckForConnectingClient(socket_t *ListeningSocket, network_connection *ClientCo
   // The accept() call overwrites this value to let us know how many bytes it
   // wrote to ClientConnection.Address
   Assert(AddressSize == sizeof(ClientConnection->Address));
-
   if (SocketId == -1)
   {
     switch(errno)
@@ -82,6 +82,7 @@ main(int ArgCount, char **Arguments)
 
   network_connection IncomingConnections = CreateNetworkConnection(Socket_NonBlocking, IpAddress);
 
+  errno = 0;
   s32 BindResult =
     bind(IncomingConnections.Socket.Id,
         (sockaddr *)&IncomingConnections.Address,

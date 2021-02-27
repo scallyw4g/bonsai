@@ -12,11 +12,11 @@ enum Chunk_ID
   ID_RGBA = 'ABGR'
 };
 
-inline unsigned char
+inline u8
 ReadChar(FILE* File, int* byteCounter)
 {
   u8 c;
-  ReadBytes(&c, sizeof(u8), File);
+  ReadBytesIntoBuffer(File, sizeof(u8), &c);
   *byteCounter -= sizeof(u8);
   return c;
 }
@@ -25,7 +25,7 @@ inline int
 ReadInt(FILE* File)
 {
   s32 i;
-  ReadBytes((u8*)&i, sizeof(s32), File);
+  ReadBytesIntoBuffer(File, sizeof(s32), (u8*)&i);
   return i;
 }
 
@@ -138,14 +138,14 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
   s32 totalChunkBytes = 0;
   chunk_dimension ReportedDim = {};
 
-  FILE *ModelFile = fopen(filepath, "r");
+  native_file ModelFile = OpenFile(filepath, "r");
 
-  if (ModelFile)
+  if (ModelFile.Handle)
   {
     // Ensure we're dealing with a .vox file
-    ReadVoxChunk(ModelFile);
+    ReadVoxChunk(ModelFile.Handle);
 
-    totalChunkBytes = ReadMainChunk(ModelFile);
+    totalChunkBytes = ReadMainChunk(ModelFile.Handle);
     int bytesRemaining = totalChunkBytes;
 
     // TODO(Jesse, id: 122, tags: robustness, vox_loader) : Actually read all the data!
@@ -154,7 +154,7 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
       /* Log("%d\n", bytesRemaining); */
 
 
-      Chunk_ID CurrentId = GetHeaderType(ModelFile, &bytesRemaining);
+      Chunk_ID CurrentId = GetHeaderType(ModelFile.Handle, &bytesRemaining);
       switch ( CurrentId )
       {
         case ID_RGBA:
@@ -163,7 +163,7 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
 
         case ID_PACK:
         {
-          /* int nChunks = */ ReadPackChunk(ModelFile, &bytesRemaining);
+          /* int nChunks = */ ReadPackChunk(ModelFile.Handle, &bytesRemaining);
         } break;
 
         case ID_SIZE:
@@ -171,12 +171,12 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
           // MagicaVoxel doesn't follow its own file format very well, or the
           // exporter is buggy.  Caching the reported dim lets us discard
           // voxels that are outside the dimension that we think it should be.
-          ReportedDim = ReadSizeChunk(ModelFile, &bytesRemaining);
+          ReportedDim = ReadSizeChunk(ModelFile.Handle, &bytesRemaining);
         } break;
 
         case ID_XYZI:
         {
-          s32 ReportedVoxelCount = ReadXYZIChunk(ModelFile, &bytesRemaining);
+          s32 ReportedVoxelCount = ReadXYZIChunk(ModelFile.Handle, &bytesRemaining);
           s32 ActualVoxelCount = 0;
 
           // TODO(Jesse, id: 123, tags: potential_bug, vox_loader, set_to_f32_min): Should these 0s be set to s32_MIN??
@@ -192,10 +192,10 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
                VoxelCacheIndex < ReportedVoxelCount;
                ++VoxelCacheIndex)
           {
-            s32 X = (s32)ReadChar(ModelFile, &bytesRemaining);
-            s32 Y = (s32)ReadChar(ModelFile, &bytesRemaining);
-            s32 Z = (s32)ReadChar(ModelFile, &bytesRemaining);
-            u8 W = ReadChar(ModelFile, &bytesRemaining); // Color
+            s32 X = (s32)ReadChar(ModelFile.Handle, &bytesRemaining);
+            s32 Y = (s32)ReadChar(ModelFile.Handle, &bytesRemaining);
+            s32 Z = (s32)ReadChar(ModelFile.Handle, &bytesRemaining);
+            u8 W = ReadChar(ModelFile.Handle, &bytesRemaining); // Color
 
             voxel_position TestP = Voxel_Position(X,Y,Z);
             if (IsInsideDim(ReportedDim, TestP))
@@ -252,7 +252,7 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
       }
     }
 
-
+    CloseFile(&ModelFile);
   }
   else
   {

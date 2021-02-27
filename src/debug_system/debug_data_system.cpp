@@ -47,7 +47,17 @@ inline debug_thread_state*
 GetThreadLocalStateFor(u32 ThreadIndex)
 {
   debug_state *State = GetDebugState();
-  debug_thread_state *Result = State->ThreadStates + ThreadIndex;
+
+  // NOTE(Jesse): It's possible that during initialization between the time
+  // that "DebugState->Initialized" is set to true and the time the
+  // debug_thread_state structs are allocated that we'll call this function,
+  // which is why we have to check that ThreadStates is valid.
+  //
+  // TODO(Jesse): Audit codebase to make sure callers of this function actually
+  // check that it returns a valid pointer.
+  debug_thread_state *Result = State->ThreadStates ?
+                                 State->ThreadStates + ThreadIndex : 0;
+
   return Result;
 }
 
@@ -80,7 +90,7 @@ RegisterArena(const char *Name, memory_arena *Arena)
     const char *CurrentName = Current->Name;
     if (!CurrentName)
     {
-      if (AtomicCompareExchange( (volatile char **)&Current->Name, (volatile char*)Name, (volatile char*)CurrentName ))
+      if (AtomicCompareExchange( (volatile void **)&Current->Name, (void*)Name, (void*)CurrentName ))
       {
         Current->Arena = Arena;
         Registered = True;
@@ -574,19 +584,21 @@ GetProfileScope()
   debug_profile_scope *Result = 0;
   debug_thread_state *State = GetThreadLocalState();
 
-  if (State->FirstFreeScope)
+  if (State)
   {
-    Result = State->FirstFreeScope;
-    State->FirstFreeScope = State->FirstFreeScope->Sibling;
+    if (State->FirstFreeScope)
+    {
+      Result = State->FirstFreeScope;
+      State->FirstFreeScope = State->FirstFreeScope->Sibling;
 
-    Clear(Result);
-  }
-  else
-  {
-    Result = AllocateProtection(debug_profile_scope, ThreadsafeDebugMemoryAllocator_debug_profile_scope_only(), 1, False);
+      Clear(Result);
+    }
+    else
+    {
+      Result = AllocateProtection(debug_profile_scope, ThreadsafeDebugMemoryAllocator_debug_profile_scope_only(), 1, False);
+    }
   }
 
-  Assert(Result);
   return Result;
 }
 

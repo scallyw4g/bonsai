@@ -194,7 +194,7 @@ Untextured3dGeometryBuffer(v3* Verts, v4* Colors, v3* Normals, u32 Count)
 inline void
 SetViewport(v2 Dim)
 {
-  glViewport(0, 0, (s32)Dim.x, (s32)Dim.y);
+  GL.Viewport(0, 0, (s32)Dim.x, (s32)Dim.y);
   return;
 }
 
@@ -281,7 +281,7 @@ Rads(degrees Degrees)
 }
 
 inline m4
-ProjectionMatrix(camera *Camera, int WindowWidth, int WindowHeight)
+ProjectionMatrix(camera *Camera, r32 WindowWidth, r32 WindowHeight)
 {
   m4 Result = Perspective( Rads(Camera->Frust.FOV),
                                           V2(WindowWidth, WindowHeight),

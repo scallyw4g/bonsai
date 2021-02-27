@@ -1,12 +1,3 @@
-void
-ReadBytes(u8* Dest, u64 BytesToRead, FILE *Src)
-{
-  Assert(BytesToRead);
-  u64 BytesRead = fread(Dest, 1, BytesToRead, Src);
-  Assert(BytesRead != 0);
-  return;
-}
-
 inline void
 PrintSemValue(semaphore *Semaphore)
 {
@@ -21,7 +12,6 @@ PrintSemValue(semaphore *Semaphore)
   }
   return;
 }
-
 
 void
 PlatformInitializeMutex(mutex *Mutex)
@@ -41,7 +31,6 @@ PlatformUnlockMutex(mutex *Mutex)
     Error("Failed to un-lock mutex");
     Assert(False);
   }
-
   return;
 }
 
@@ -60,80 +49,105 @@ PlatformLockMutex(mutex *Mutex)
     Assert(False);
   }
 
+
   return;
 }
 
-u64
+bonsai_function u64
 PlatformGetPageSize()
 {
   u64 InvalidSysconfReturn = ((u64)-1);
   local_persist u64 PageSize = (u64)sysconf(_SC_PAGESIZE);
   Assert(PageSize != InvalidSysconfReturn);
+  Assert(PageSize == 4096);
+
   return PageSize;
 }
 
 u32
-GetLogicalCoreCount()
+PlatformGetLogicalCoreCount()
 {
   local_persist u32 CoreCount = (u32)sysconf(_SC_NPROCESSORS_ONLN);
+
   return CoreCount;
 }
 
-u32
-GetWorkerThreadCount()
+bonsai_function b32
+PlatformSetProtection(u8 *Base, u64 Size, memory_protection_type Protection)
 {
-  u32 LogicalCoreCount = GetLogicalCoreCount();
-  u32 Bias = 1 + DEBUG_THREAD_COUNT_BIAS; // +1 because we already have a main thread
+  b32 Result = False;
 
-  if (Bias >= LogicalCoreCount)
-  {
-    Bias = LogicalCoreCount - 1;
-  }
-
-  u32 ThreadCount = LogicalCoreCount - Bias;
-  return ThreadCount;
-}
-
-u32
-GetTotalThreadCount()
-{
-  u32 Result = GetWorkerThreadCount() + 1;
-  return Result;
-}
-
-u8*
-PlatformProtectPage(u8* Mem)
-{
   u64 PageSize = PlatformGetPageSize();
+  if ( (umm)Base % PageSize == 0 &&
+            Size % PageSize == 0 )
+  {
+    s32 NativeProt = 0;
+    switch (Protection)
+    {
+      case MemoryProtection_RW:
+      {
+        NativeProt = PROT_READ | PROT_WRITE;
+      } break;
 
-  Assert((u64)Mem % PageSize == 0);
+      case MemoryProtection_Protected:
+      {
+        NativeProt = PROT_NONE;
+      } break;
+    }
 
-  mprotect(Mem, PageSize, PROT_NONE);
-  u8* Result = Mem + PageSize;
+    errno = 0;
+    if (mprotect(Base, Size, NativeProt) == 0)
+    {
+      Result = True;
+    }
+    else
+    {
+      Error("mprotect failed with code : (%d) ", errno);
+      switch (errno)
+      {
+        case EACCES:
+        {
+          Error("EACCES");
+        } break;
+        case EINVAL:
+        {
+          Error("EINVAL");
+        } break;
+
+        case ENOMEM:
+        {
+          Error("ENOMEM");
+        } break;
+
+        default:
+        {
+          Error("Unknown error code");
+        } break;
+      }
+
+      PlatformDebugStacktrace();
+      InvalidCodePath();
+    }
+  }
+  else
+  {
+    InvalidCodePath();
+  }
+
+
+  Assert(errno == 0);
   return Result;
 }
 
-void
-PlatformDeallocateArena(memory_arena *Arena)
+bonsai_function b32
+PlatformDeallocate(u8 *Base, umm Size)
 {
-  if (Arena->Start)
-  {
-    s32 Deallocated = (munmap(Arena->Start, TotalSize(Arena)) == 0);
-    Assert(Deallocated);
-  }
+  Assert( (umm)Base % PlatformGetPageSize() == 0);
+  Assert( Size % PlatformGetPageSize() == 0);
 
-#if MEMPROTECT_OVERFLOW
-  {
-    umm PageSize = PlatformGetPageSize();
-    u8 *ArenaBytes =  (u8*)Arena - ((umm)Arena % PageSize);
-    s32 Deallocated = (munmap(ArenaBytes, PageSize*2) == 0);
-    Assert(Deallocated);
-  }
-#else
-  NotImplemented;
-#endif
+  b32 Deallocated = (munmap(Base, Size) == 0);
 
-  return;
+  return Deallocated;
 }
 
 u8*
@@ -144,6 +158,7 @@ PlatformAllocateSize(umm AllocationSize)
   s32 Protection = PROT_READ|PROT_WRITE;
   s32 Flags = MAP_SHARED|MAP_ANONYMOUS|MAP_NORESERVE;
 
+  errno = 0;
   u8 *Bytes = (u8*)mmap(0, AllocationSize, Protection, Flags,  -1, 0);
   if (Bytes == MAP_FAILED)
   {
@@ -161,26 +176,9 @@ PlatformAllocateSize(umm AllocationSize)
     }
   }
 
+
   return Bytes;
 }
-
-void
-PlatformUnprotectArena(memory_arena *Arena)
-{
-  /* TIMED_FUNCTION(); */
-  umm Size = (umm)Arena->End - (umm)Arena->Start;
-  s32 Err = mprotect(Arena->Start, Size, PROT_READ|PROT_WRITE);
-  if (Err == -1)
-  {
-    Error("Unprotecting arena failed");
-    Assert(False);
-  }
-
-  return;
-}
-
-global_variable volatile b32 MainThreadBlocksWorkerThreads;
-global_variable volatile u32 WorkerThreadsWaiting;
 
 #if PLATFORM_THREADING_IMPLEMENTATIONS
 
@@ -192,6 +190,7 @@ ThreadSleep( semaphore *Semaphore )
   AtomicIncrement(&WorkerThreadsWaiting);
   sem_wait(Semaphore);
   AtomicDecrement(&WorkerThreadsWaiting);
+
   return;
 }
 
@@ -200,36 +199,34 @@ CreateSemaphore(void)
 {
   semaphore Result;
   sem_init(&Result, 0, 0);
-
   return Result;
 }
-
-// TODO(Jesse id: 230, tags: parsing, metaprogramming, high_priority): ParseVariable should work with bonsai_function pointer types
-typedef void* (*thread_main_callback_type)(void*);
 
 typedef pthread_t thread_handle; // TODO(Jesse id: 265): Unnecessary .. I just added it as a hack get parsing to work
 typedef pthread_attr_t thread_attributes; // TODO(Jesse id: 266): Unnecessary .. I just added it as a hack get parsing to work
 
 thread_id
-CreateThread( thread_main_callback_type ThreadMain, thread_startup_params *Params)
+PlatformCreateThread( thread_main_callback_type ThreadMain, thread_startup_params *Params)
 {
   thread_attributes Attribs;
   pthread_attr_init(&Attribs);
 
   thread_handle Thread;
   Params->Self.ID = pthread_create(&Thread, &Attribs, ThreadMain, Params);
-
   return Params->Self.ID;
 }
 
 #endif // PLATFORM_THREADING_IMPLEMENTATIONS
 
+
+global_variable const u32 Global_CwdBufferLength = 4096;
+global_variable char Global_CwdBuffer[Global_CwdBufferLength];
+
 char*
 GetCwd()
 {
-  // @memory-leak
-  // FIXME(Jesse): get_current_dir_name mallocs interally .. do we care?
-  global_variable char *Result = get_current_dir_name();
+  ClearBuffer((u8*)Global_CwdBuffer, Global_CwdBufferLength);
+  char *Result = getcwd(Global_CwdBuffer, Global_CwdBufferLength);
   return (Result);
 }
 
@@ -263,6 +260,8 @@ PlatformSetThreadPriority(s32 Priority)
 {
   bonsai_sched_param Param = {};
   Param.sched_priority = Priority;
+
+  errno = 0;
   s32 E = sched_setscheduler(0, SCHED_FIFO, &Param);
   if (E)
   {
@@ -326,34 +325,4 @@ PlatformSetWorkerThreadPriority()
   return;
 }
 #endif
-
-// TODO(Jesse, id: 144, tags: cleanup, platform): This actually has nothing to do with the platform
-inline void
-RewindArena(memory_arena *Arena, umm RestartBlockSize = Megabytes(1) )
-{
-  if (Arena->Prev)
-  {
-    PlatformUnprotectArena(Arena->Prev);
-    VaporizeArena(Arena->Prev);
-    Arena->Prev = 0;
-  }
-
-  PlatformUnprotectArena(Arena);
-
-  u8* ClearByte = Arena->Start;
-  while( ClearByte < Arena->At )
-  {
-    *ClearByte++ = 0;
-  }
-
-  Arena->At = Arena->Start;
-  Arena->NextBlockSize = RestartBlockSize;
-
-#if BONSAI_INTERNAL
-  Arena->Pushes = 0;
-  DEBUG_CLEAR_META_RECORDS_FOR(Arena);
-#endif
-
-  return;
-}
 

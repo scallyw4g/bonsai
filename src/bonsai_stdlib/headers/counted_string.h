@@ -13,8 +13,8 @@ meta(generate_stream(tagged_counted_string_stream))
 struct char_cursor
 {
   char* Start;
-  char* End;
   char* At;
+  char* End;
   memory_arena* Memory; // TODO(Jesse, id: 100, tags: open_question, metaprogramming): Do we actually want this in here?
 };
 
@@ -41,6 +41,13 @@ CountedString(const char *S)
   counted_string Result = {};
   Result.Start = S;
   Result.Count = Length(S);
+  return Result;
+}
+
+counted_string
+CS(const u8 *S)
+{
+  counted_string Result = CountedString((char*)S);
   return Result;
 }
 
@@ -126,8 +133,8 @@ Basename(counted_string FilePath)
     }
   }
   counted_string Result = {
+    .Count = FilePath.Count - LastPathSeparator,
     .Start = FilePath.Start + LastPathSeparator,
-    .Count = FilePath.Count - LastPathSeparator
   };
 
   return Result;
@@ -207,7 +214,7 @@ Contains(counted_string S1, counted_string S2)
         S1Index <= Diff;
         ++S1Index)
     {
-      counted_string Temp1 = { .Start = S1.Start+S1Index, .Count = S2.Count };
+      counted_string Temp1 = CS(S1.Start+S1Index, S2.Count);
       Assert(Temp1.Start+Temp1.Count <= S1.Start+S1.Count);
       Result = StringsMatch(&Temp1, &S2);
       if (Result) { return Result; }
@@ -250,7 +257,7 @@ Trim(counted_string String)
   counted_string Result = String;
   while (Result.Count)
   {
-    if (Result.Start[0] == ' ' || Result.Start[0] == '\n')
+    if (Result.Start[0] == ' ' || Result.Start[0] == '\n' || Result.Start[0] == '\r')
     {
       --Result.Count;
       ++Result.Start;
@@ -263,7 +270,7 @@ Trim(counted_string String)
 
   while (Result.Count)
   {
-    if (Result.Start[Result.Count-1] == ' ' || Result.Start[Result.Count-1] == '\n')
+    if (Result.Start[Result.Count-1] == ' ' || Result.Start[Result.Count-1] == '\n' || Result.Start[Result.Count-1] == '\r')
     {
       --Result.Count;
     }

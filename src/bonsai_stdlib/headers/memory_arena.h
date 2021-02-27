@@ -6,6 +6,12 @@
 #error "Unfortunately, Underflow and Overflow protection at the same time is impossible"
 #endif
 
+enum memory_protection_type
+{
+  MemoryProtection_Protected,
+  MemoryProtection_RW,
+};
+
 inline umm
 Kilobytes(umm Bytes)
 {
@@ -68,25 +74,25 @@ struct memory_arena
 };
 
 #define AllocateProtection(Type, Arena, Number, Protection)                                                                 \
-  ( GetDebugState ?                                                                                                         \
+  ( GetDebugState && GetDebugState() ?                                                                                      \
       (Type*)GetDebugState()->Debug_Allocate(Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, 1, Protection ) : \
       (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, Protection)                                                      \
   )
 
 #define AllocateAlignedProtection(Type, Arena, Number, Alignment, Protection)                                                      \
-  ( GetDebugState ?                                                                                                                \
+  ( GetDebugState && GetDebugState() ?                                                                                             \
     (Type*)GetDebugState()->Debug_Allocate( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, Alignment, Protection ) : \
     (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, Alignment, Protection)                                                       \
   )
 
 #define AllocateAligned(Type, Arena, Number, Alignment)                                                                     \
-  ( GetDebugState ?                                                                                                         \
+  ( GetDebugState && GetDebugState() ?                                                                                      \
     (Type*)GetDebugState()->Debug_Allocate( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, Alignment, True) : \
     (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, Alignment, True)                                                      \
   )
 
 #define Allocate(Type, Arena, Number)                                                                               \
-  ( GetDebugState ?                                                                                                 \
+  ( GetDebugState && GetDebugState() ?                                                                              \
     (Type*)GetDebugState()->Debug_Allocate( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, 1, True) : \
     (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, True)                                                      \
   )
@@ -96,11 +102,11 @@ struct memory_arena
 #define DEBUG_REGISTER_THREAD(ThreadIndex) do { if (GetDebugState) { GetDebugState()->RegisterThread(ThreadIndex); } } while (false)
 
 
-void PlatformUnprotectArena(memory_arena *Arena);
-void PlatformDeallocateArena(memory_arena *Arena);
-u8*  PlatformAllocateSize(umm AllocationSize);
-u8*  PlatformProtectPage(u8* Mem);
-u64  PlatformGetPageSize();
+bonsai_function u64 PlatformGetPageSize();
+bonsai_function b32 PlatformSetProtection(u8 *Base, u64 Size, memory_protection_type Protection);
+
+bonsai_function u8*  PlatformAllocateSize(umm AllocationSize);
+bonsai_function b32 PlatformDeallocate(u8 *Base, umm Size);
 
 b32
 OnPageBoundary(memory_arena *Arena, umm PageSize)
@@ -220,7 +226,7 @@ struct push_metadata
 };
 
 inline void
-MemSet(u8 *Src, u8 Value, umm Size)
+MemSet(u8 *Src, umm Size, u8 Value)
 {
   // TODO(Jesse, id: 96, tags: speed): Vectorize for speed boost!
   for( umm ByteIndex = 0;
@@ -243,6 +249,12 @@ MemCopy(u8 *Src, u8 *Dest, umm Size)
   }
 }
 
+inline void
+ClearBuffer(u8 *Src, umm Size)
+{
+  MemSet(Src, Size, 0);
+}
+
 inline umm
 HashArenaHead(memory_arena *Arena)
 {
@@ -255,18 +267,6 @@ HashArena(memory_arena *Arena)
 {
   umm Result = (umm)Arena->Start;
   return Result;
-}
-
-inline void
-VaporizeArena(memory_arena *Arena)
-{
-  if(Arena->Prev)
-  {
-    VaporizeArena(Arena->Prev);
-    Arena->Prev = 0;
-  }
-
-  PlatformDeallocateArena(Arena);
 }
 
 inline s32
@@ -288,8 +288,26 @@ SafeTruncateToU32(umm Size)
 inline u16
 SafeTruncateToU16(umm Size)
 {
-  Assert(Size <= 0xFFFF);
+  Assert(Size <= u16_MAX);
   u16 Result = (u16)Size;
+  return Result;
+}
+
+bonsai_function u8
+SafeTruncateU8(s32 Size)
+{
+  Assert(Size < u8_MAX);
+  u8 Result = (u8)Size;
+  return Result;
+}
+
+bonsai_function b32
+ProtectPage(u8* Mem)
+{
+  u64 PageSize = PlatformGetPageSize();
+  Assert((umm)Mem % PageSize == 0);
+
+  b32 Result = PlatformSetProtection(Mem, PageSize, MemoryProtection_Protected);
   return Result;
 }
 
@@ -330,13 +348,35 @@ AllocateArena(umm RequestedBytes = Megabytes(1), b32 MemProtect = True)
   if (MemProtect)
   {
     Assert(OnPageBoundary(Result, PageSize));
-    PlatformProtectPage(ArenaBytes + sizeof(memory_arena));
+    ProtectPage(ArenaBytes + sizeof(memory_arena));
   }
 
   Assert((umm)Result->Start % PageSize == 0);
   Assert(Remaining(Result) >= RequestedBytes);
 #else
   NotImplemented
+#endif
+
+  return Result;
+}
+
+bonsai_function b32
+DeallocateArena(memory_arena *Arena)
+{
+  b32 Result = False;
+  if (Arena->Start)
+  {
+    Result = PlatformDeallocate(Arena->Start, TotalSize(Arena));
+  }
+
+#if MEMPROTECT_OVERFLOW
+  {
+    umm PageSize = PlatformGetPageSize();
+    u8 *ArenaBytes =  (u8*)Arena - ((umm)Arena % PageSize);
+    Result &= PlatformDeallocate(ArenaBytes, PageSize*2);
+  }
+#else
+  NotImplemented;
 #endif
 
   return Result;
@@ -361,6 +401,33 @@ ReallocateArena(memory_arena *Arena, umm MinSize, b32 MemProtect)
   Assert(Arena->At <= Arena->End);
 
   return;
+}
+
+inline b32
+VaporizeArena(memory_arena *Arena)
+{
+  b32 Result = True;
+  if(Arena->Prev)
+  {
+    Result = VaporizeArena(Arena->Prev);
+    Arena->Prev = 0;
+  }
+
+  Result &= DeallocateArena(Arena);
+  return Result;
+}
+
+bonsai_function b32
+UnprotectArena(memory_arena *Arena)
+{
+  umm Size = (umm)Arena->End - (umm)Arena->Start;
+  b32 Result = PlatformSetProtection(Arena->Start, Size, MemoryProtection_RW);
+  if (Result == False)
+  {
+    Error("Unprotecting arena failed");
+  }
+
+  return Result;
 }
 
 bonsai_function u8*
@@ -393,36 +460,6 @@ Reallocate(u8* Allocation, memory_arena* Arena, umm CurrentSize, umm RequestedSi
   }
 
   return Result;
-}
-
-bonsai_function void
-Memprotect(void* LastPage, umm PageSize, s32 Protection)
-{
-  s32 ProtectSuccess = (mprotect(LastPage, PageSize, Protection) == 0);
-
-  if (!ProtectSuccess)
-  {
-    if (errno == EACCES)
-    {
-      Error("EACCES");
-    }
-
-    if (errno == EINVAL)
-    {
-      Error("EINVAL");
-    }
-
-    if (errno == ENOMEM)
-    {
-      Error("ENOMEM");
-    }
-
-    Error("mprotect failed");
-    PlatformDebugStacktrace();
-    Assert(False);
-  }
-
-  return;
 }
 
 bonsai_function u8*
@@ -480,7 +517,7 @@ PushSize(memory_arena *Arena, umm SizeIn, umm Alignment, b32 MemProtect)
     u8* LastPage = Result + AlignCorrectedSizeIn;
     Assert( (u64)LastPage % PageSize == 0);
 
-    Memprotect((void*)LastPage, PageSize, PROT_NONE);
+    ProtectPage(LastPage);
   }
 #endif
 
@@ -493,7 +530,7 @@ PushSize(memory_arena *Arena, umm SizeIn, umm Alignment, b32 MemProtect)
 
     u8* NextPage = Arena->At + NextPageOffset;
     Assert( (umm)NextPage % PageSize == 0);
-    Memprotect((void*)NextPage, PageSize, PROT_NONE);
+    ProtectPage(NextPage);
 
     Result = NextPage + PageSize;
   }

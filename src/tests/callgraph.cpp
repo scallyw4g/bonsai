@@ -32,13 +32,10 @@ main()
   shared_lib DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
   if (!DebugLib) { Error("Loading DebugLib :( "); return False; }
 
-  GetDebugState = (get_debug_state_proc)GetProcFromLib(DebugLib, "GetDebugState_Internal");
-  if (!GetDebugState) { Error("Retreiving GetDebugState from Debug Lib :( "); return False; }
-
-  debug_init_debug_system_proc InitDebugSystem = (debug_init_debug_system_proc)GetProcFromLib(DebugLib, "InitDebugSystem");
+  init_debug_system_proc InitDebugSystem = (init_debug_system_proc)GetProcFromLib(DebugLib, DebugLibName_InitDebugSystem);
   if (!InitDebugSystem) { Error("Retreiving InitDebugSystem from Debug Lib :( "); return False; }
 
-  InitDebugSystem(False);
+  GetDebugState = InitDebugSystem(0);
 
   debug_state* DebugState = GetDebugState();
   DebugState->DebugDoScopeProfiling = True;

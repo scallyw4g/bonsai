@@ -2,12 +2,12 @@
 
 #if BONSAI_INTERNAL
 
-#define Ensure(condition) Assert((condition))
+#  define Ensure(condition) Assert((condition))
 
-#define Assert(condition) \
-  do { if (!(condition)) { Debug(RED_TERMINAL " ! Assertion Failed" WHITE_TERMINAL " - '%s' during %s \n%s:%u:0:Assertion Failed" Newline, #condition, __FUNCTION__, __FILE__, __LINE__); RuntimeBreak(); } } while (false)
+#  define Assert(condition) \
+    do { if (!(condition)) { Debug(RED_TERMINAL " ! Assertion Failed" WHITE_TERMINAL " - '%s' during %s \n%s:%u:0:Assertion Failed" Newline, #condition, __FUNCTION__, __FILE__, __LINE__); RuntimeBreak(); } } while (false)
 
-#define InvalidCodePath() Error("Invalid Code Path - Panic!"); Assert(False)
+#  define InvalidCodePath() Error("Invalid Code Path - Panic!"); Assert(False)
 
 #else
 
@@ -19,9 +19,6 @@
 
 #if BONSAI_INTERNAL
 #define NotImplemented Error("Implement Me!"); Assert(False)
-struct fake { int thing; };
-#define Crash() (((fake*)0)->thing = 3)
 #else
 #define NotImplemented Implement Meeeeee!!!
-#define Crash() Implement this!
 #endif

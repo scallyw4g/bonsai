@@ -2,16 +2,7 @@
 
 #define BONSAI_MAIN(void) int CALLBACK WinMain( HINSTANCE AppHandle, HINSTANCE Ignored, LPSTR CmdLine, int CmdShow )
 
-static HPALETTE hPalette;
-
-inline b32
-AtomicCompareExchange( volatile unsigned int *Source, unsigned int Exchange, unsigned int Comparator )
-{
-  u32 Val = InterlockedCompareExchange( (LONG volatile *)Source, Exchange, Comparator);
-
-  b32 Result = (Val == Comparator);
-  return Result;
-}
+global_variable HPALETTE global_hPalette;
 
 inline void
 ThreadSleep( semaphore Semaphore )
@@ -34,17 +25,8 @@ CreateSemaphore(void)
   return Result;
 }
 
-int
-GetLogicalCoreCount()
-{
-  SYSTEM_INFO sysinfo;
-  GetSystemInfo(&sysinfo);
-  int Result = sysinfo.dwNumberOfProcessors;
-  return Result;
-}
-
 thread_id
-CreateThread( LPTHREAD_START_ROUTINE ThreadMain, thread_startup_params *Params)
+PlatformCreateThread( thread_main_callback_type ThreadMain, thread_startup_params *Params)
 {
   DWORD flags = 0;
 
@@ -61,13 +43,6 @@ CreateThread( LPTHREAD_START_ROUTINE ThreadMain, thread_startup_params *Params)
 }
 
 #define CompleteAllWrites _WriteBarrier(); _mm_sfence()
-
-u64
-GetCycleCount()
-{
-  u64 Result = __rdtsc();
-  return Result;
-}
 
 inline r64
 GetHighPrecisionClock()
@@ -100,12 +75,15 @@ Terminate(os *Os)
     wglDeleteContext(Os->GlContext);
   }
 
-  if (hPalette)
+  if (global_hPalette)
   {
-    DeleteObject(hPalette);
+    DeleteObject(global_hPalette);
   }
 
   ReleaseDC(Os->Window, Os->Display);
+
+  SuspendWorkerThreads();
+
   PostQuitMessage(0);
 
   return;
@@ -115,28 +93,26 @@ void
 setupPixelFormat(HDC hDC)
 {
     PIXELFORMATDESCRIPTOR pfd = {
-        sizeof(PIXELFORMATDESCRIPTOR),  /* size */
-        1,                              /* version */
-        PFD_SUPPORT_OPENGL |
-        PFD_DRAW_TO_WINDOW |
-        PFD_DOUBLEBUFFER,               /* support double-buffering */
-        PFD_TYPE_RGBA,                  /* color type */
-        16,                             /* prefered color depth */
-        0, 0, 0, 0, 0, 0,               /* color bits (ignored) */
-        0,                              /* no alpha buffer */
-        0,                              /* alpha bits (ignored) */
-        0,                              /* no accumulation buffer */
-        0, 0, 0, 0,                     /* accum bits (ignored) */
-        16,                             /* depth buffer */
-        0,                              /* no stencil buffer */
-        0,                              /* no auxiliary buffers */
-        PFD_MAIN_PLANE,                 /* main layer */
-        0,                              /* reserved */
-        0, 0, 0,                        /* no layer, visible, damage masks */
+        sizeof(PIXELFORMATDESCRIPTOR),                              // size
+        1,                                                          // version
+        PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER, // support double-buffering
+        PFD_TYPE_RGBA,                                              // color type
+        16,                                                         // prefered color depth
+        0, 0, 0, 0, 0, 0,                                           // color bits (ignored)
+        0,                                                          // no alpha buffer
+        0,                                                          // alpha bits (ignored)
+        0,                                                          // no accumulation buffer
+        0, 0, 0, 0,                                                 // accum bits (ignored)
+        16,                                                         // depth buffer
+        0,                                                          // no stencil buffer
+        0,                                                          // no auxiliary buffers
+        PFD_MAIN_PLANE,                                             // main layer
+        0,                                                          // reserved
+        0, 0, 0,                                                    // no layer, visible, damage masks
     };
-    int pixelFormat;
 
-    pixelFormat = ChoosePixelFormat(hDC, &pfd);
+    int pixelFormat = ChoosePixelFormat(hDC, &pfd);
+
     if (pixelFormat == 0) {
         MessageBox(WindowFromDC(hDC), "ChoosePixelFormat failed.", "Error",
                 MB_ICONERROR | MB_OK);
@@ -156,7 +132,7 @@ setupPalette(HDC hDC)
     int pixelFormat = GetPixelFormat(hDC);
     PIXELFORMATDESCRIPTOR pfd;
     LOGPALETTE* pPal;
-    int paletteSize;
+    u64 paletteSize;
 
     DescribePixelFormat(hDC, pixelFormat, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
 
@@ -169,14 +145,14 @@ setupPalette(HDC hDC)
     pPal = (LOGPALETTE*)
         malloc(sizeof(LOGPALETTE) + paletteSize * sizeof(PALETTEENTRY));
     pPal->palVersion = 0x300;
-    pPal->palNumEntries = paletteSize;
+    pPal->palNumEntries = (u16)paletteSize;
 
     /* build a simple RGB color palette */
     {
-        int redMask = (1 << pfd.cRedBits) - 1;
-        int greenMask = (1 << pfd.cGreenBits) - 1;
-        int blueMask = (1 << pfd.cBlueBits) - 1;
-        int i;
+        u8 redMask = (u8)(1 << pfd.cRedBits) - 1;
+        u8 greenMask = (u8)(1 << pfd.cGreenBits) - 1;
+        u8 blueMask = (u8)(1 << pfd.cBlueBits) - 1;
+        u64 i;
 
         for (i=0; i<paletteSize; ++i) {
             pPal->palPalEntry[i].peRed =
@@ -199,7 +175,6 @@ setupPalette(HDC hDC)
 
 	return hPalette;
 }
-
 
 LRESULT APIENTRY
 WindowMessageCallback(
@@ -239,10 +214,10 @@ WindowMessageCallback(
       os *Os = (os*)GetWindowLongPtr(hWnd, 0);
 
       /* realize palette if this is *not* the current window */
-      if (Os->GlContext && hPalette && (HWND) wParam != hWnd)
+      if (Os->GlContext && global_hPalette && (HWND) wParam != hWnd)
       {
-        UnrealizeObject(hPalette);
-        SelectPalette(Os->Display, hPalette, FALSE);
+        UnrealizeObject(global_hPalette);
+        SelectPalette(Os->Display, global_hPalette, FALSE);
         RealizePalette(Os->Display);
         SwapBuffers(Os->Display);
       }
@@ -254,10 +229,10 @@ WindowMessageCallback(
       os *Os = (os*)GetWindowLongPtr(hWnd, 0);
 
       /* realize palette if this is the current window */
-      if (Os->GlContext && hPalette)
+      if (Os->GlContext && global_hPalette)
       {
-        UnrealizeObject(hPalette);
-        SelectPalette(Os->Display, hPalette, FALSE);
+        UnrealizeObject(global_hPalette);
+        SelectPalette(Os->Display, global_hPalette, FALSE);
         RealizePalette(Os->Display);
         SwapBuffers(Os->Display);
         return TRUE;
@@ -286,19 +261,25 @@ WindowMessageCallback(
     case WM_LBUTTONDOWN:
     {
       platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-      Plat->Input.LMB = True;
+      Plat->Input.LMB.Pressed = True;
     } return 0;
 
     case WM_LBUTTONUP:
     {
       platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-      Plat->Input.LMB = False;
+      Plat->Input.LMB.Pressed = False;
     } return 0;
 
     case WM_RBUTTONDOWN:
     {
       platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-      Plat->Input.RMB = True;
+      Plat->Input.RMB.Pressed = True;
+    } return 0;
+
+    case WM_RBUTTONUP:
+    {
+      platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+      Plat->Input.RMB.Pressed = False;
     } return 0;
 
     case WM_MOUSEMOVE:
@@ -315,7 +296,7 @@ WindowMessageCallback(
 #define BindToInput(Keysym, InputField, Boolean) \
   case Keysym: { \
     platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET); \
-    Plat->Input.##InputField = Boolean; } return 0;
+    Plat->Input.InputField.Pressed = Boolean; } return 0
 
 #define BindKeyupToInput(Keysym, InputField) \
     BindToInput(Keysym, InputField, False)
@@ -355,7 +336,7 @@ WindowMessageCallback(
         BindKeyupToInput(VK_SPACE, Space);
         default: { /* Ignore all other keypresses */ } break;
       }
-    }
+    } break;
 
 
 
@@ -366,7 +347,6 @@ WindowMessageCallback(
         case VK_ESCAPE:
         {
           DestroyWindow(hWnd);
-          return 0;
         } return 0;
 
         BindKeydownToInput(0x57, W);
@@ -394,7 +374,8 @@ WindowMessageCallback(
         BindKeydownToInput(VK_CONTROL, Ctrl);
         BindKeydownToInput(VK_SPACE, Space);
         default: { /* Ignore all other keypresses */ } break;
-      }
+
+      } break;
 
       default: { /* Ignore all other window messages */ } break;
     }
@@ -425,31 +406,39 @@ OpenAndInitializeWindow( os *Os, platform *Plat)
   wndClass.lpszClassName = className;
   RegisterClass(&wndClass);
 
-
   Os->Window = CreateWindow(
       className, className,
       WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
-      100, 800, Plat->WindowWidth, Plat->WindowHeight,
+      100, 100, 1920, 1080,
       NULL, NULL, AppHandle, NULL);
 
   Os->Display = GetDC(Os->Window);
+
   setupPixelFormat(Os->Display);
-  hPalette = setupPalette(Os->Display);
-  Os->GlContext = wglCreateContext(Os->Display);
+
+  global_hPalette = setupPalette(Os->Display);
+
+  HGLRC TempCtx = wglCreateContext(Os->Display);
+  wglMakeCurrent(Os->Display, TempCtx);
+
+int attribs[] =
+  {
+    WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
+    WGL_CONTEXT_MINOR_VERSION_ARB, 3,
+    WGL_CONTEXT_FLAGS_ARB, 0,
+    0
+  };
+
+  PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
+  Os->GlContext = wglCreateContextAttribsARB(Os->Display, 0, attribs);
+
+  wglMakeCurrent(NULL, NULL);
+  wglDeleteContext(TempCtx);
+
   wglMakeCurrent(Os->Display, Os->GlContext);
 
-  {
-    SetWindowLongPtr(Os->Window, 0, (LONG_PTR)Os);
-    int e = GetLastError();
-    Assert(!e);
-  }
-
-  {
-    SetWindowLongPtr(Os->Window, sizeof(Os), (LONG_PTR)Plat);
-    int e = GetLastError();
-    Assert(!e);
-  }
-
+  SetWindowLongPtr(Os->Window, 0, (LONG_PTR)Os);
+  SetWindowLongPtr(Os->Window, sizeof(Os), (LONG_PTR)Plat);
 
   ShowWindow(Os->Window, SW_SHOW);
   UpdateWindow(Os->Window);
@@ -476,7 +465,7 @@ OpenLibrary(const char *LibPath)
   }
   else
   {
-    Info("Game Lib loaded!");
+    Info("Library (%s) Loaded Successfully.", LibPath);
   }
 
   return Result;
@@ -485,7 +474,7 @@ OpenLibrary(const char *LibPath)
 inline b32
 CloseLibrary(shared_lib Lib)
 {
-  b32 Result = FreeLibrary(Lib);
+  b32 Result = (b32)FreeLibrary(Lib);
   return Result;
 }
 
@@ -496,7 +485,7 @@ inline char*
 GetCwd()
 {
   GetCurrentDirectory( CwdBufferLen, CwdBuffer );
-  return &CwdBuffer[0];
+  return CwdBuffer;
 }
 
 b32
@@ -536,4 +525,99 @@ inline void
 BonsaiSwapBuffers(os *Os)
 {
   SwapBuffers(Os->Display);
+}
+
+bonsai_function u64
+PlatformGetPageSize()
+{
+  SYSTEM_INFO sysInfo;
+  GetSystemInfo(&sysInfo);
+  local_persist u64 Result = sysInfo.dwPageSize;
+  Assert(Result == 4096);
+  return Result;
+}
+
+bonsai_function u8*
+PlatformAllocateSize(umm AllocationSize)
+{
+  Assert(AllocationSize % PlatformGetPageSize() == 0);
+
+  u32 AllocationType = MEM_COMMIT|MEM_RESERVE;
+  u8 *Result = (u8*)VirtualAlloc(0, AllocationSize, AllocationType, PAGE_READWRITE);
+
+  return Result;
+}
+
+bonsai_function b32
+PlatformDeallocate(u8 *Base, umm Size)
+{
+  Assert( (umm)Base % PlatformGetPageSize() == 0);
+  Assert(Size % PlatformGetPageSize() == 0);
+  b32 Result = (b32)VirtualFree(Base, Size, MEM_RELEASE);
+  return Result;
+}
+
+bonsai_function b32
+PlatformSetProtection(u8 *Base, u64 Size, memory_protection_type Protection)
+{
+  Assert(Size);
+  b32 Result = False;
+  u64 PageSize = PlatformGetPageSize();
+  if ( (umm)Base % PageSize == 0 &&
+            Size % PageSize == 0 )
+  {
+    u32 NativeProt = 0;
+    switch (Protection)
+    {
+      case MemoryProtection_RW:
+      {
+        NativeProt = PAGE_READWRITE;
+      } break;
+
+      case MemoryProtection_Protected:
+      {
+        NativeProt = PAGE_NOACCESS;
+      } break;
+    }
+
+    u32 OldProtect = 0;
+    CAssert(sizeof(u32) == sizeof(DWORD));
+    if (VirtualProtect( (void*)Base, Size, NativeProt, (PDWORD)&OldProtect))
+    {
+      Result = True;
+    }
+  }
+  else
+  {
+    InvalidCodePath();
+  }
+
+  Assert(Result);
+  return Result;
+}
+
+bonsai_function u32
+PlatformGetLogicalCoreCount()
+{
+  SYSTEM_INFO sysinfo;
+  GetSystemInfo(&sysinfo);
+  u32 Result = (u32)sysinfo.dwNumberOfProcessors;
+  return Result;
+}
+
+bonsai_function void
+PlatformDebugStacktrace()
+{
+  // TODO(Jesse): Implement this.
+  //
+  // Helpful answer on how to get started
+  // https://stackoverflow.com/questions/26398064/counterpart-to-glibcs-backtrace-and-backtrace-symbols-on-windows
+  //
+  // using these APIs
+  //
+  // https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/bb204633(v=vs.85)?redirectedfrom=MSDN
+  // https://docs.microsoft.com/en-us/windows/win32/api/dbghelp/nf-dbghelp-symfromaddr?redirectedfrom=MSDN
+  //
+
+  Warn("Stack traces unavailable on windows.");
 }

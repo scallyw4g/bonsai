@@ -44,18 +44,11 @@ Cos(r32 Theta)
   return Result;
 }
 
-bonsai_function u8
-SafeTruncateU8(s32 N)
-{
-  Assert(N < 256);
-  return (u8)N;
-}
-
 inline r64
 SafeDivide0(u64 Dividend, u64 Divisor)
 {
   r64 Result = 0.0;
-  if (Divisor != 0.0)
+  if (Divisor != 0)
     Result = (r64)Dividend/(r64)Divisor;
   return Result;
 }

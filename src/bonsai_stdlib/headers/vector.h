@@ -262,11 +262,11 @@ operator*(v3 P1, voxel_position P2)
 inline v3
 operator+(v3 Vec, voxel_position Pos)
 {
-  v3 Result;
-
-  Result.x = Vec.x + Pos.x;
-  Result.y = Vec.y + Pos.y;
-  Result.z = Vec.z + Pos.z;
+  v3 Result = {
+    .x = Vec.x + (r32)Pos.x,
+    .y = Vec.y + (r32)Pos.y,
+    .z = Vec.z + (r32)Pos.z,
+  };
 
   return Result;
 }
@@ -308,9 +308,9 @@ operator-(v3 Vec, voxel_position Pos)
 {
   v3 Result;
 
-  Result.x = Vec.x - Pos.x;
-  Result.y = Vec.y - Pos.y;
-  Result.z = Vec.z - Pos.z;
+  Result.x = Vec.x - (r32)Pos.x;
+  Result.y = Vec.y - (r32)Pos.y;
+  Result.z = Vec.z - (r32)Pos.z;
 
   return Result;
 }
@@ -494,9 +494,9 @@ operator*(voxel_position P1, float f)
 {
   v3 Result;
 
-  Result.x = P1.x * f;
-  Result.y = P1.y * f;
-  Result.z = P1.z * f;
+  Result.x = (r32)P1.x * f;
+  Result.y = (r32)P1.y * f;
+  Result.z = (r32)P1.z * f;
 
   return Result;
 }
@@ -699,8 +699,15 @@ inline v2
 V2(v2i V)
 {
   v2 Result;
-  Result.x = V.x;
-  Result.y = V.y;
+  Result.x = (r32)V.x;
+  Result.y = (r32)V.y;
+  return Result;
+}
+
+inline v2
+V2(s32 F)
+{
+  v2 Result = {(r32)F, (r32)F};
   return Result;
 }
 
@@ -979,9 +986,9 @@ operator/(voxel_position A, r32 f)
 {
   v3 Result;
 
-  Result.x = A.x / f;
-  Result.y = A.y / f;
-  Result.z = A.z / f;
+  Result.x = (r32)A.x / f;
+  Result.y = (r32)A.y / f;
+  Result.z = (r32)A.z / f;
 
   return Result;
 }
@@ -1004,9 +1011,9 @@ operator/(v3 A, voxel_position B)
 {
   v3 Result;
 
-  Result.x = A.x / B.x;
-  Result.y = A.y / B.y;
-  Result.z = A.z / B.z;
+  Result.x = A.x / (r32)B.x;
+  Result.y = A.y / (r32)B.y;
+  Result.z = A.z / (r32)B.z;
 
   return Result;
 }

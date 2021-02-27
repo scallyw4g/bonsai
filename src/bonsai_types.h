@@ -1,3 +1,10 @@
+
+// Required for FILE* type .. might want to rebuild the file API to use
+// platform functions instead, but for now the CRT ones are good enough.
+#include <stdio.h>
+#include <math.h>
+
+
 #define BONSAI_INTERNAL (1)
 
 #define CACHE_LINE_SIZE (64)
@@ -22,21 +29,26 @@
 #define ToggleBitfieldValue(Dest, Value) \
       (Dest) = (Dest) & (Value) ?  ((u32)(Dest) & ~(u32)(Value)) : ((u32)(Dest) | (u32)(Value))
 
+#define TriggeredRuntimeBreak() do { if (GetDebugState && GetDebugState()->TriggerRuntimeBreak) { RuntimeBreak(); } } while (0)
+
 #include <metaprogramming/defines.h>
 
 //
 // Stdlib Headers
 //
 
-
 #include <bonsai_stdlib/headers/assert.h>
 #include <bonsai_stdlib/headers/primitives.h>
-#include <bonsai_stdlib/headers/platform.h>
 #include <bonsai_stdlib/headers/console_macros.h>
+#include <bonsai_stdlib/headers/platform.h>
+#include <bonsai_stdlib/headers/thread.h>
 #include <bonsai_stdlib/headers/math.h>
+#include <bonsai_stdlib/headers/file.h>
 #include <bonsai_stdlib/headers/vector.h>
+#include <bonsai_stdlib/headers/random.h>
 #include <random>                                   // TODO(Jesse, id: 88, tags: perlin, cleanup): Perlin.h depends on this .. rewrite it.
 #include <algorithm>                                // TODO(Jesse, id: 89, tags: perlin, cleanup): Perlin.h depends on this .. rewrite it.
+#include <numeric>                                  // TODO(Jesse, id: 89, tags: perlin, cleanup): Perlin.h depends on this .. rewrite it.
 #include <bonsai_stdlib/headers/perlin.h>
 #include <bonsai_stdlib/headers/input.h>
 #include <bonsai_stdlib/headers/work_queue.h>
@@ -45,7 +57,6 @@
 #include <bonsai_stdlib/headers/heap_allocator.h>
 #include <bonsai_stdlib/headers/counted_string.h>
 #include <bonsai_stdlib/headers/gl.h>
-#include <bonsai_stdlib/headers/random.h>
 #include <bonsai_stdlib/headers/line.h>
 #include <bonsai_stdlib/headers/quaternion.h>
 #include <bonsai_stdlib/headers/string_builder.h>
@@ -146,7 +157,9 @@ meta(generate_cursor(v3))
 
 #include <engine/api.h>
 
+#if BONSAI_LINUX
 #include <net/network.h>
+#endif
 
 global_variable memory_arena _TranArena;
 global_variable memory_arena* TranArena = &_TranArena;
@@ -157,9 +170,11 @@ global_variable memory_arena* TranArena = &_TranArena;
 //
 
 
+#include <bonsai_stdlib/cpp/memory_arena.cpp>
 #include <bonsai_stdlib/cpp/debug_print.cpp>  // TODO(Jesse, id: 91, tags: cleanup, metaprogramming, format_counted_string): Jettison this .. Can it be metaprogrammed?
-#include <bonsai_stdlib/cpp/platform.cpp>
 #include <bonsai_stdlib/cpp/counted_string.cpp>
+#include <bonsai_stdlib/cpp/platform.cpp>
+#include <bonsai_stdlib/cpp/thread.cpp>
 #include <bonsai_stdlib/cpp/string_builder.cpp>
 #include <bonsai_stdlib/cpp/stream.cpp>
 #include <bonsai_stdlib/cpp/bitmap.cpp>

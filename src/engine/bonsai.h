@@ -787,9 +787,9 @@ GetAbsoluteP( world_position P, chunk_dimension WorldChunkDim)
 inline v3
 GetAbsoluteP( canonical_position CP, chunk_dimension WorldChunkDim)
 {
-  v3 Result = V3(CP.Offset.x+(WorldChunkDim.x*CP.WorldP.x),
-                 CP.Offset.y+(WorldChunkDim.y*CP.WorldP.y),
-                 CP.Offset.z+(WorldChunkDim.z*CP.WorldP.z));
+  v3 Result = V3(CP.Offset.x+(r32)(WorldChunkDim.x*CP.WorldP.x),
+                 CP.Offset.y+(r32)(WorldChunkDim.y*CP.WorldP.y),
+                 CP.Offset.z+(r32)(WorldChunkDim.z*CP.WorldP.z));
   return Result;
 }
 

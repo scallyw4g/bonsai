@@ -1,4 +1,4 @@
-#define DEFAULT_GAME_LIB "./bin/building_loadable.so"
+#define DEFAULT_GAME_LIB "./bin/building_loadable" PLATFORM_RUNTIME_LIB_EXTENSION
 
 #define PLATFORM_THREADING_IMPLEMENTATIONS 1
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
@@ -130,8 +130,7 @@ ThreadMain(void *Input)
       }
     }
 
-    PlatformUnprotectArena(Thread.TempMemory);
-    RewindArena(Thread.TempMemory);
+    Ensure(RewindArena(Thread.TempMemory));
   }
 }
 
@@ -180,7 +179,7 @@ PlatformLaunchWorkerThreads(platform *Plat, bonsai_worker_thread_init_callback W
     Params->InitProc = WorkerThreadInit;
     Params->GameState = GameState;
 
-    CreateThread( ThreadMain, Params );
+    PlatformCreateThread( ThreadMain, Params );
   }
 
   return;
@@ -203,7 +202,7 @@ PlatformInit(platform *Plat, memory_arena *Memory)
 {
   Plat->Memory = Memory;
 
-  u32 LogicalCoreCount = GetLogicalCoreCount();
+  u32 LogicalCoreCount = PlatformGetLogicalCoreCount();
   u32 WorkerThreadCount = GetWorkerThreadCount();
   Info("Detected %u Logical cores, creating %u threads", LogicalCoreCount, WorkerThreadCount);
 
@@ -240,23 +239,17 @@ WaitForFrameTime(r64 FrameStartMs, float FPS)
 bonsai_function b32
 SearchForProjectRoot(void)
 {
-  b32 Result = False;
+  b32 Result = FileExists(".root_marker");
 
-  if (FileExists(".root_marker"))
+  b32 ChdirSuceeded = True;
+  b32 NotAtFilesystemRoot = True;
+
+  /* ChdirSuceeded = (_chdir("/home/scallywag/bonsai") == 0); */
+  while (!Result && ChdirSuceeded && NotAtFilesystemRoot)
   {
-    Result = True;
-  }
-  else
-  {
-    b32 ChdirSuceeded = (chdir("..") == 0);
-    b32 NotAtFilesystemRoot = (!IsFilesystemRoot(GetCwd()));
-
-    if (ChdirSuceeded && NotAtFilesystemRoot)
-      Result = SearchForProjectRoot();
-
-    else
-      Result = False;
-
+    ChdirSuceeded = (chdir("..") == 0);
+    NotAtFilesystemRoot = (!IsFilesystemRoot(GetCwd()));
+    Result = FileExists(".root_marker");
   }
 
   return Result;
@@ -326,6 +319,7 @@ BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
   return;
 }
 
+#if !BONSAI_WIN32
 bonsai_function server_state*
 ServerInit(memory_arena* Memory)
 {
@@ -339,6 +333,7 @@ ServerInit(memory_arena* Memory)
 
   return ServerState;
 }
+#endif
 
 s32
 main()
@@ -347,39 +342,37 @@ main()
 
 #if !EMCC
   if (!SearchForProjectRoot()) { Error("Couldn't find root dir, exiting."); return False; }
-  Info("Found Bonsai Root : %s", GetCwd() );
+
+  // TODO(Jesse): the following docuemnts a bug I ran into while porting to
+  // clang on Windows.  I suspect a compiler bug, but I did very little digging
+  // to verify what the problem is.
+  //
+  // {  // Broken
+  //   Info("Found Bonsai Root : %s", GetCwd() );
+  // }
+  //
+  // { // Works
+  //   const char* RootDir = GetCwd();
+  //   Info("Found Bonsai Root : %s", RootDir );
+  // }
+  //
+  Info("Found Bonsai Root : %S", CS(GetCwd()) );
+
 #endif
 
   platform Plat = {};
-  os Os = {};
+  os Os         = {};
 
-#if !EMCC && BONSAI_INTERNAL
-  s32 DebugFlags = GLX_CONTEXT_DEBUG_BIT_ARB;
-#else
-  s32 DebugFlags = 0;
-#endif
-
-#if !EMCC
-  // @bootstrap-debug-system
-  shared_lib DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
-  if (!DebugLib) { Error("Loading DebugLib :( "); return False; }
-
-  GetDebugState = (get_debug_state_proc)GetProcFromLib(DebugLib, "GetDebugState_Internal");
-#endif
-
-  b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat, DebugFlags);
-  if (!WindowSuccess) { Error("Initializing Window :( "); return False; }
-
+  if (!OpenAndInitializeWindow(&Os, &Plat)) { Error("Initializing Window :( "); return False; }
   Assert(Os.GlContext);
 
-  AssertNoGlErrors;
-
-  InitializeOpenGlExtensions(&Os);
-  AssertNoGlErrors;
+  if (!InitializeOpengl(&Os)) { Error("Initializing OpenGL :( "); return False; }
 
 #if !EMCC
-  b32 ShadingLanguageIsRecentEnough = CheckShadingLanguageVersion();
-  if (!ShadingLanguageIsRecentEnough) {  return False; }
+  shared_lib DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
+  if (!DebugLib) { Error("Loading DebugLib :( "); return False; }
+  init_debug_system_proc InitDebugSystem = (init_debug_system_proc)GetProcFromLib(DebugLib, "InitDebugSystem");
+  GetDebugState = InitDebugSystem(&GL);
 #endif
 
   AssertNoGlErrors;
@@ -399,7 +392,9 @@ main()
 
   hotkeys Hotkeys = {};
 
-#if !EMCC ///////////////////////////////////// EMCC SHOULD COMPILE AND RUN CORRECTLY UP TO HERE
+#if EMCC ///////////////////////////////////// EMCC SHOULD COMPILE AND RUN CORRECTLY UP TO HERE
+  return True;
+#endif
 
   LibIsNew(DEFAULT_GAME_LIB, &LastGameLibTime);  // Hack to initialize the LastGameLibTime static
 
@@ -417,13 +412,15 @@ main()
 
   bonsai_worker_thread_init_callback WorkerThreadInitCallback = (bonsai_worker_thread_init_callback)GetProcFromLib(GameLib, TO_STRING(BONSAI_API_WORKER_THREAD_INIT_CALLBACK_NAME));
 
-  game_state* GameState = GameInit(&Plat, GameMemory, GetDebugState);
+  game_state* GameState = GameInit(&Plat, GameMemory, GetDebugState, &GL);
   if (!GameState) { Error("Initializing Game State :( "); return False; }
 
   PlatformLaunchWorkerThreads(&Plat, WorkerThreadInitCallback, GameState);
 
+#if !BONSAI_WIN32
   server_state* ServerState = ServerInit(GameMemory);
   Assert(ServerState);
+#endif
 
   /*
    *  Main Game loop
@@ -506,17 +503,21 @@ main()
 
     BONSAI_API_MAIN_THREAD_CALLBACK_NAME(&Plat, GameState, &Hotkeys);
 
+
+#if BONSAI_LINUX
     DEBUG_FRAME_END(&Plat, ServerState);
+#else
+    DEBUG_FRAME_END(&Plat, 0);
+#endif
 
     BonsaiSwapBuffers(&Os);
     RealDt = MAIN_THREAD_ADVANCE_DEBUG_SYSTEM();
 
-    RewindArena(TranArena);
+    Ensure(RewindArena(TranArena));
   }
 
   Info("Shutting Down");
   Terminate(&Os);
-#endif
   Info("Exiting");
 
   return True;
