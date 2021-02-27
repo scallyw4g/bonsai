@@ -66,8 +66,20 @@ bonsai_function void           TrimLastToken(parser* Parser, c_token_type TokenT
 bonsai_function void           TrimLeadingWhitespace(parser* Parser);
 bonsai_function counted_string EatBetween(parser* Parser, c_token_type Open, c_token_type Close);
 
+
+//
+// Preprocessor stuff
+//
+
 bonsai_function parser * ResolveInclude(parse_context *Ctx, parser *Parser);
 bonsai_function parser * ExpandMacro(parser *Parser, macro_def *Macro, memory_arena *Memory);
+bonsai_function u64 ResolveMacroConstantExpression(parser *Parser);
+
+bonsai_function counted_string ParseIfDefinedValue(parser *Parser);
+bonsai_function b32 IsDefined(parse_context *Ctx, counted_string DefineValue) ;
+bonsai_function c_token* EatIfBlock(parser *Parser);
+bonsai_function void EatUntilIncludingEndif(parser *Parser);
+bonsai_function void OmitSectionOfParser(parser *Parser, c_token *Start, c_token *End);
 
 void DumpTokens(parser *Parser);
 
@@ -378,7 +390,7 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
 
   if ( ! IsNewline(Parser->Tokens.End[-1].Type) )
   {
-    Debug("\n");
+    Log("\n");
   }
 
   Rewind(&Parser->Tokens);
@@ -398,19 +410,19 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
           ColumnIndex < TabCount;
           ++ColumnIndex)
       {
-        Debug("\t");
+        Log("\t");
       }
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < SpaceCount;
           ++ColumnIndex)
       {
-        Debug(" ");
+        Log(" ");
       }
 
       if (DoPipes)
       {
-        Debug("|");
+        Log("|");
       }
 
       for (u32 ColumnIndex = 0;
@@ -419,20 +431,20 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
       {
         if (DoPipes)
         {
-          Debug("~");
+          Log("~");
         }
         else
         {
-          Debug("^");
+          Log("^");
         }
       }
 
       if (DoPipes)
       {
-        Debug("|");
+        Log("|");
       }
 
-      Debug("\n");
+      Log("\n");
 
       break;
     }
@@ -472,19 +484,19 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
           ColumnIndex < TabCount;
           ++ColumnIndex)
       {
-        Debug("\t");
+        Log("\t");
       }
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < SpaceCount;
           ++ColumnIndex)
       {
-        Debug(" ");
+        Log(" ");
       }
 
       if (DoPipes)
       {
-        Debug("  ");
+        Log("  ");
       }
 
       for (u32 ColumnIndex = 0;
@@ -493,30 +505,30 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
       {
         if (ColumnIndex == ErrorIdentifierLength-1)
         {
-          Debug("|");
+          Log("|");
         }
         else
         {
-          Debug(" ");
+          Log(" ");
         }
       }
 
       counted_string TokenTypeName = ToString(ErrorToken->Type);
-      Debug("---> %.*s", TokenTypeName.Count, TokenTypeName.Start );
+      Log("---> %S", TokenTypeName);
 
       if (ErrorToken->Value.Count)
       {
-        Debug("(%.*s)" , ErrorToken->Value.Count, ErrorToken->Value.Start);
+        Log("%S", ErrorToken->Value);
       }
 
       if (Expected.Type)
       {
         counted_string ExpectedTypeName = ToString(Expected.Type);
-        Debug(" Expecting : %.*s", ExpectedTypeName.Count, ExpectedTypeName.Start);
+        Log(" Expecting : %S", ExpectedTypeName);
 
         if (Expected.Value.Count)
         {
-          Debug("(%.*s)" , Expected.Value.Count, Expected.Value.Start);
+          Log("(%S", Expected.Value);
         }
       }
       else
@@ -525,25 +537,25 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
       }
 
 
-      Debug(" %.*s\n", ErrorString.Count, ErrorString.Start);
+      Log(" %S\n", ErrorString);
 
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < TabCount;
           ++ColumnIndex)
       {
-        Debug("\t");
+        Log("\t");
       }
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < SpaceCount + ErrorToken->Value.Count;
           ++ColumnIndex)
       {
-        Debug(" ");
+        Log(" ");
       }
 
       counted_string Filename = Parser->Filename.Count ? Parser->Filename : CSz("(unknown file)");
-      Debug("     %.*s:%u:%u\n\n", Filename.Count, Filename.Start, LineNumber, SpaceCount+TabCount);
+      Log("     %S:%u:%u\n\n", Filename, LineNumber, SpaceCount+TabCount);
 
       break;
     }
@@ -584,7 +596,7 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
 
   u32 LinesOfContext = 4;
 
-  Debug("------------------------------------------------------------------------------------\n");
+  Debug("------------------------------------------------------------------------------------");
 
   parser LocalParser = *Parser;
   LocalParser.OutputTokens = {};
@@ -609,8 +621,8 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
   }
   else
   {
-    Error("Determining where the error occured");
-    Debug("Error was : %.*s\n", ErrorString.Count, ErrorString.Start);
+    Error("Determining where the error occurred");
+    Debug("Error was : %S\n", ErrorString);
   }
 
   EatUntilIncluding(&TrailingLines, CTokenType_Newline);
@@ -618,7 +630,7 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
   TruncateAtNextLineEnd(&TrailingLines, LinesOfContext);
   DumpEntireParser(&TrailingLines);
 
-  Debug("------------------------------------------------------------------------------------\n");
+  Debug("------------------------------------------------------------------------------------");
   Parser->Valid = False;
 
   RuntimeBreak();
@@ -2644,49 +2656,49 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       // That's a job for another day.
       case CT_PreprocessorIfDefined:
       {
-        RequireToken(Parser, T->Type);
-        counted_string DefineValue = ParseIfDefinedValue(Parser);
+        RequireToken(Current, T->Type);
+        counted_string DefineValue = ParseIfDefinedValue(Current);
         if (IsDefined(Ctx, DefineValue) )
         {
-          c_token *EndT = EatIfBlock(Parser);
-          EatUntilIncludingEndif(Parser);
-          OmitSectionOfParser(Parser, EndT, Parser->Tokens.At);
+          c_token *EndT = EatIfBlock(Current);
+          EatUntilIncludingEndif(Current);
+          OmitSectionOfParser(Current, EndT, Current->Tokens.At);
         }
         else
         {
-          EatIfBlock(Parser);
+          EatIfBlock(Current);
         }
       } break;
 
       case CT_PreprocessorIfNotDefined:
       {
-        RequireToken(Parser, T->Type);
-        counted_string DefineValue = ParseIfDefinedValue(Parser);
+        RequireToken(Current, T->Type);
+        counted_string DefineValue = ParseIfDefinedValue(Current);
         if (IsDefined(Ctx, DefineValue))
         {
-          EatIfBlock(Parser);
+          EatIfBlock(Current);
         }
         else
         {
-          c_token *EndT = EatIfBlock(Parser);
-          EatUntilIncludingEndif(Parser);
-          OmitSectionOfParser(Parser, EndT, Parser->Tokens.At);
+          c_token *EndT = EatIfBlock(Current);
+          EatUntilIncludingEndif(Current);
+          OmitSectionOfParser(Current, EndT, Current->Tokens.At);
         }
       } break;
 
       case CT_PreprocessorIf:
       case CT_PreprocessorElif:
       {
-        RequireToken(Parser, T->Type);
-        if (ResolveMacroConstantExpression(Parser) == 0)
+        RequireToken(Current, T->Type);
+        if (ResolveMacroConstantExpression(Current) == 0)
         {
-          EatIfBlock(Parser);
+          EatIfBlock(Current);
         }
         else
         {
-          c_token *EndT = EatIfBlock(Parser);
-          EatUntilIncludingEndif(Parser);
-          OmitSectionOfParser(Parser, EndT, Parser->Tokens.At);
+          c_token *EndT = EatIfBlock(Current);
+          EatUntilIncludingEndif(Current);
+          OmitSectionOfParser(Current, EndT, Current->Tokens.At);
         }
       } break;
 
@@ -3360,7 +3372,7 @@ DumpStringStreamToConsole(counted_string_stream* Stream)
       Advance(&Iter))
   {
     counted_string Message = Iter.At->Element;
-    Debug("%.*s\n", Message.Count, Message.Start);
+    Debug("%S\n", Message);
   }
 }
 
@@ -4005,9 +4017,9 @@ ParseFunctionOrVariableDecl(parse_context *Ctx)
   return Result;
 }
 
-#define TEST__ 'a'
+#define _a_TEST 'a'
 
-#if TEST__
+#if _a_TEST
 
 #endif
 
@@ -4257,6 +4269,18 @@ ResolveMacroConstantExpression(parser *Parser)
 }
 
 bonsai_function void
+EatUntilIncludingEndif(parser *Parser)
+{
+  NotImplemented;
+}
+
+bonsai_function void
+OmitSectionOfParser(parser *Parser, c_token *Start, c_token *End)
+{
+  NotImplemented;
+}
+
+bonsai_function c_token *
 EatIfBlock(parser *Parser)
 {
   c_token *StartToken = PeekTokenPointer(Parser);
@@ -4290,7 +4314,8 @@ EatIfBlock(parser *Parser)
     ParseError(Parser, StartToken, FormatCountedString(TranArena, CSz("Unable to find closing token for %S."), ToString(CT_PreprocessorIf)));
   }
 
-  return;
+  c_token *Result = PeekTokenPointer(Parser);
+  return Result;
 }
 
 bonsai_function counted_string

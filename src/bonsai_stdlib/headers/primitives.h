@@ -110,7 +110,8 @@ struct counted_string
 };
 CAssert(sizeof(counted_string) == 16);
 
-bonsai_function counted_string FormatCountedString_(char* Dest, umm DestSize, const char *FS, ...);
+bonsai_function counted_string
+FormatCountedString_(char* Dest, umm DestSize, const char *FS, ...);
 
 counted_string
 CS(const char *S, umm Count)

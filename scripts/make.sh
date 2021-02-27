@@ -110,7 +110,6 @@ CXX_OPTIONS="
   -Wno-undef
   -Wno-covered-switch-default
   -Wno-c99-extensions
-  -Wno-reserved-id-macro
   -Wno-dollar-in-identifier-extension
 
   -Wno-class-varargs
@@ -471,12 +470,12 @@ DumpSourceFilesAndQuit=0
 CheckoutMetaOutput=0
 
 FirstPreprocessor=0
-BuildPreprocessor=0
+BuildPreprocessor=1
 SecondPreprocessor=0
 
 BuildExecutables=1
 BuildDebugTests=1
-BuildTests=0
+BuildTests=1
 BuildDebugSystem=1
 BuildExamples=1
 
