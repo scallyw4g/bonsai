@@ -2489,6 +2489,13 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
+          DebugPrint("b32 Undefd {\n", Depth+2);
+          DebugPrint(S.Undefed, Depth+4);
+          DebugPrint("\n");
+          DebugPrint("}", Depth+2);
+          DebugPrint("\n");
+
+
       DebugPrint("}\n", Depth);
     }
 
@@ -10889,6 +10896,11 @@
             case CT_Preprocessor__VA_ARGS__:
             {
               DebugPrint("CT_Preprocessor__VA_ARGS__ ", Depth);
+            } break;
+
+            case CT_Erased:
+            {
+              DebugPrint("CT_Erased ", Depth);
             } break;
 
       }

@@ -521,24 +521,36 @@ enum c_token_type
   CT_PreprocessorWarning,
   CT_Preprocessor__VA_ARGS__,
 
+  CT_Erased,
 };
 meta(generate_string_table(c_token_type))
 #include <metaprogramming/output/generate_string_table_c_token_type.h>
 
+
+struct c_token_erased_value
+{
+  c_token_type Type;
+  counted_string Name;
+  umm Value; // NOTE(Jesse): This must be cast to the appropriate type
+};
+
+// TODO(Jesse): This is getting out of hand..
 struct macro_def;
 struct c_token
 {
   c_token_type Type;
   counted_string Value;
 
-  union // These are only valid for their correspoinding literal types
-  {
+  union {
     /* s64 SignedValue; */ // TODO(Jesse id: 272): Fold `-` sign into this value at tokenization time?
     u64 UnsignedValue;
     r64 FloatValue;
     macro_def *Macro;
     c_token *QualifierName;
+
+    c_token_erased_value Erased;
   };
+
 };
 meta(generate_cursor(c_token))
 #include <metaprogramming/output/generate_cursor_c_token.h>
@@ -951,6 +963,7 @@ struct macro_def
 
   counted_string_buffer NamedArguments;
   b32 Variadic;
+  b32 Undefed; // Gets toggled when we hit an undef
 };
 meta(generate_stream(macro_def))
 #include <metaprogramming/output/generate_stream_macro_def.h>
@@ -1180,21 +1193,28 @@ enum output_mode
 inline void
 PrintToken(c_token *Token)
 {
-  if (Token && Token->Type)
+  if (Token)
   {
+    Assert(Token->Type);
     Assert(Token->Value.Start && Token->Value.Count);
+    if (Token->Type == CT_Erased)
+    {
+      Log(RED_TERMINAL);
+    }
+
     Log("%S", Token->Value);
+
+    if (Token->Type == CT_Erased)
+    {
+      Log(WHITE_TERMINAL);
+    }
   }
 }
 
 inline void
 PrintToken(c_token Token)
 {
-  if (Token.Type)
-  {
-    Assert(Token.Value.Start && Token.Value.Count);
-    Log("%S", Token.Value);
-  }
+  PrintToken(&Token);
 }
 
 // TODO(Jesse, id: 347, tags:immediate) : Nuke this

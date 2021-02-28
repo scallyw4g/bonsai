@@ -5,7 +5,7 @@
       counted_string Result = {};
       switch (Type)
       {
-        
+
             case CTokenType_Unknown: { Result = CSz("CTokenType_Unknown"); } break;
 
             case CTokenType_OpenBracket: { Result = CSz("CTokenType_OpenBracket"); } break;
@@ -252,6 +252,7 @@
 
             case CT_Preprocessor__VA_ARGS__: { Result = CSz("CT_Preprocessor__VA_ARGS__"); } break;
 
+            case CT_Erased: { Result = CSz("CT_Erased"); } break;
       }
       return Result;
     }

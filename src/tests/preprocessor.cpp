@@ -1120,7 +1120,7 @@ TestMacrosAndIncludes(memory_arena *Memory)
     RequireToken(Parser, CToken(42u));
     RequireToken(Parser, CTokenType_Semicolon);
 
-   
+
     // MacroFunction5
 
 
@@ -1225,7 +1225,7 @@ TestMacrosAndIncludes(memory_arena *Memory)
 }
 
 bonsai_function void
-TestDefinesAndIfDefs(memory_arena *Memory)
+TestIncludeGuards(memory_arena *Memory)
 {
   parse_context Ctx = {
     .Memory = Memory,
@@ -1235,15 +1235,34 @@ TestDefinesAndIfDefs(memory_arena *Memory)
   if (Parser)
   {
     Ctx.CurrentParser = *Parser;
-
-    DumpEntireParser(Parser);
-
-    RuntimeBreak();
-
-    ast_node_statement *Ast = ParseAllStatements(&Ctx);
-
+    /* DumpEntireParser(Parser); */
+    /* RuntimeBreak(); */
+    /* ast_node_statement *Ast = ParseAllStatements(&Ctx); */
     /* WalkAst(Ast); */
-    DebugPrint(Ast);
+    /* DebugPrint(Ast); */
+  }
+  else
+  {
+    ++TestsFailed;
+  }
+}
+
+bonsai_function void
+TestDefinesAndConditionals(memory_arena *Memory)
+{
+  parse_context Ctx = {
+    .Memory = Memory,
+  };
+
+  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/defines_and_conditionals.cpp"));
+  if (Parser)
+  {
+    Ctx.CurrentParser = *Parser;
+    DumpEntireParser(Parser);
+    /* RuntimeBreak(); */
+    /* ast_node_statement *Ast = ParseAllStatements(&Ctx); */
+    /* WalkAst(Ast); */
+    /* DebugPrint(Ast); */
   }
   else
   {
@@ -1258,6 +1277,7 @@ main()
 
   memory_arena* Memory = AllocateArena();
 
+#if 1
   TestBasicTokenizationAndParsing(Memory);
 
   TestPeekAndPopTokens(Memory);
@@ -1268,9 +1288,12 @@ main()
 
   TestMacrosAndIncludes(Memory);
 
-  TestDefinesAndIfDefs(Memory);
+  TestIncludeGuards(Memory);
 
   TestAst(Memory);
+#endif
+
+  TestDefinesAndConditionals(Memory);
 
   TestSuiteEnd();
   exit(TestsFailed);
