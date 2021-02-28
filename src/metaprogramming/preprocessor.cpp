@@ -73,7 +73,7 @@ bonsai_function counted_string EatBetween(parser* Parser, c_token_type Open, c_t
 
 bonsai_function parser * ResolveInclude(parse_context *Ctx, parser *Parser);
 bonsai_function parser * ExpandMacro(parser *Parser, macro_def *Macro, memory_arena *Memory);
-bonsai_function u64 ResolveMacroConstantExpression(parser *Parser);
+bonsai_function u64 ResolveMacroConstantExpression(parser *Parser, memory_arena *Memory);
 
 bonsai_function counted_string ParseIfDefinedValue(parser *Parser);
 bonsai_function b32 IsDefined(parse_context *Ctx, counted_string DefineValue) ;
@@ -1776,31 +1776,31 @@ CountTokensBeforeNext(parser *Parser, c_token_type T1, c_token_type T2)
 
 
 bonsai_function parser *
-SplitAndInsertParserInto(parser *ParserToSplit, c_token* SplitPoint, parser *ParserToInsert, c_token* SecondHalfStart, memory_arena *Memory)
+SplitAndInsertParserInto(parser *ParserToSplit, c_token* SplitStart, parser *ParserToInsert, c_token* SplitEnd, memory_arena *Memory)
 {
   // TODO(Jesse id: 363): A bunch of this crap can get taken out of here..  I added it
   // during development to aid in debugging.
 
-  Assert(SplitPoint >= ParserToSplit->Tokens.Start);
-  Assert(SplitPoint < ParserToSplit->Tokens.End);
+  Assert(SplitStart >= ParserToSplit->Tokens.Start);
+  Assert(SplitStart < ParserToSplit->Tokens.End);
 
-  Assert(SecondHalfStart >= ParserToSplit->Tokens.Start);
-  Assert(SecondHalfStart < ParserToSplit->Tokens.End);
+  Assert(SplitEnd >= ParserToSplit->Tokens.Start);
+  Assert(SplitEnd < ParserToSplit->Tokens.End);
 
 
   parser *SecondHalfOfSplit = AllocateProtection(parser, Memory, 1, False);
 
   *SecondHalfOfSplit = *ParserToSplit;
 
-  ParserToSplit->Tokens.At = SplitPoint;
-  ParserToSplit->Tokens.End = SplitPoint;
+  ParserToSplit->Tokens.At = SplitStart;
+  ParserToSplit->Tokens.End = SplitStart;
 
   Assert(ParserToSplit->Tokens.At == ParserToSplit->Tokens.End);
-  Assert(ParserToSplit->Tokens.At == SplitPoint);
-  Assert(ParserToSplit->Tokens.End == SplitPoint);
+  Assert(ParserToSplit->Tokens.At == SplitStart);
+  Assert(ParserToSplit->Tokens.End == SplitStart);
 
-  SecondHalfOfSplit->Tokens.Start = SecondHalfStart;
-  SecondHalfOfSplit->Tokens.At = SecondHalfStart;
+  SecondHalfOfSplit->Tokens.Start = SplitEnd;
+  SecondHalfOfSplit->Tokens.At = SplitEnd;
 
   if (ParserToInsert)
   {
@@ -2629,13 +2629,14 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       case CT_PreprocessorInclude:
       {
         parser *IncludeParser = ResolveInclude(Ctx, Current);
-        Current = SplitAndInsertParserInto(Current, T, IncludeParser, Current->Tokens.At, Memory);
-
-        if (!IncludeParser)
+        if (IncludeParser)
+        {
+          Current = SplitAndInsertParserInto(Current, T, IncludeParser, Current->Tokens.At, Memory);
+        }
+        else
         {
           ParseError(Current, T, CSz("Unable to resolve include."));
         }
-
       } break;
 
       case CT_PreprocessorDefine:
@@ -2651,9 +2652,8 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
         Current = SplitAndInsertParserInto(Current, T, Expanded, Current->Tokens.At, Memory);
       } break;
 
-      // TODO(Jesse) : These three clauses need to have the actual preprocessor tokens dealt with somehow.
-      //
-      // That's a job for another day.
+      // TODO(Jesse) : These three clauses need to have the actual preprocessor
+      // tokens dealt with somehow.  That's a job for another day.
       case CT_PreprocessorIfDefined:
       {
         RequireToken(Current, T->Type);
@@ -2690,7 +2690,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       case CT_PreprocessorElif:
       {
         RequireToken(Current, T->Type);
-        if (ResolveMacroConstantExpression(Current) == 0)
+        if (ResolveMacroConstantExpression(Current, Memory) == 0)
         {
           EatIfBlock(Current);
         }
@@ -4175,7 +4175,7 @@ IsOfHigherPrecedenceThan(c_token_type O1, c_token_type O2)
 }
 
 bonsai_function u64
-ResolveMacroConstantExpression(parser *Parser)
+ResolveMacroConstantExpression(parser *Parser, memory_arena *Memory)
 {
   u64 Result = 0;
 
@@ -4187,6 +4187,20 @@ ResolveMacroConstantExpression(parser *Parser)
     c_token T = PeekTokenRaw(Parser);
     switch (T.Type)
     {
+      case CT_MacroLiteral:
+      {
+        parser *Expanded = ExpandMacro(Parser, T.Macro, Memory);
+        Result += ResolveMacroConstantExpression(Expanded, Memory);
+      } break;
+
+      case CTokenType_Identifier:
+      {
+        RequireTokenRaw(Parser, CToken(CSz("defined")));
+        c_token NextToken = PeekToken(Parser);
+        Result = NextToken.Type == CT_MacroLiteral;
+        Done = True;
+      } break;
+
       case CTokenType_CharLiteral:
       case CTokenType_IntLiteral:
       {
@@ -4196,7 +4210,7 @@ ResolveMacroConstantExpression(parser *Parser)
           b32 NextIsOperator = TokenIsOperator(NextTokenType);
           if ( NextIsOperator && IsOfHigherPrecedenceThan(OperatorToApply, NextTokenType) )
           {
-            u64 NextValue = ResolveMacroConstantExpression(Parser);
+            u64 NextValue = ResolveMacroConstantExpression(Parser, Memory);
             Result = ApplyOperator(Parser, Result, OperatorToApply, NextValue);
           }
           else
@@ -4215,7 +4229,7 @@ ResolveMacroConstantExpression(parser *Parser)
       case CTokenType_OpenParen:
       {
         RequireTokenRaw(Parser, T.Type);
-        Result += ResolveMacroConstantExpression(Parser);
+        Result += ResolveMacroConstantExpression(Parser, Memory);
       } break;
 
       case CTokenType_CloseParen:
@@ -4383,7 +4397,7 @@ ParseStructMember(parse_context *Ctx, counted_string StructName)
       case CT_PreprocessorElif:
       {
         RequireToken(Parser, T.Type);
-        if (ResolveMacroConstantExpression(Parser) == 0)
+        if (ResolveMacroConstantExpression(Parser, Ctx->Memory) == 0)
         {
           EatIfBlock(Parser);
         }
@@ -4861,6 +4875,7 @@ ParseSingleStatement(parse_context *Ctx, ast_node_statement *Result)
     switch (T.Type)
     {
 
+#if 0
       case CT_PreprocessorIfDefined:
       {
         RequireToken(Parser, T.Type);
@@ -4885,7 +4900,7 @@ ParseSingleStatement(parse_context *Ctx, ast_node_statement *Result)
       case CT_PreprocessorElif:
       {
         RequireToken(Parser, T.Type);
-        if (ResolveMacroConstantExpression(Parser) == 0)
+        if (ResolveMacroConstantExpression(Parser, Ctx->Memory) == 0)
         {
           EatIfBlock(Parser);
         }
@@ -4913,6 +4928,7 @@ ParseSingleStatement(parse_context *Ctx, ast_node_statement *Result)
         RequireToken(Parser, T.Type);
         EatUntilIncluding(Parser, CTokenType_Newline);
       } break;
+#endif
 
       case CTokenType_IntLiteral:
       case CTokenType_DoubleLiteral:
@@ -5586,7 +5602,7 @@ ParseDatatypes(parse_context *Ctx)
       case CT_PreprocessorElif:
       {
         RequireToken(Parser, T.Type);
-        if (ResolveMacroConstantExpression(Parser) == 0)
+        if (ResolveMacroConstantExpression(Parser, Ctx->Memory) == 0)
         {
           EatIfBlock(Parser);
         }

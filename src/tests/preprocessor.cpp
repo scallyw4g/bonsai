@@ -1186,27 +1186,31 @@ TestMacrosAndIncludes(memory_arena *Memory)
     RequireToken(Parser, CTokenType_CloseParen);
 
     RequireToken(Parser, CT_PreprocessorIf);
-    TestThat(ResolveMacroConstantExpression(Parser) == 0);
+    TestThat(ResolveMacroConstantExpression(Parser, Memory) == 0);
     EatIfBlock(Parser);
 
     RequireToken(Parser, CT_PreprocessorIf);
-    TestThat(ResolveMacroConstantExpression(Parser) == 0);
+    TestThat(ResolveMacroConstantExpression(Parser, Memory) == 0);
     EatIfBlock(Parser);
 
     RequireToken(Parser, CT_PreprocessorIf);
-    TestThat(ResolveMacroConstantExpression(Parser) == 0);
+    TestThat(ResolveMacroConstantExpression(Parser, Memory) == 0);
     EatIfBlock(Parser);
 
     RequireToken(Parser, CT_PreprocessorIf);
-    TestThat(ResolveMacroConstantExpression(Parser) == 0);
+    TestThat(ResolveMacroConstantExpression(Parser, Memory) == 0);
     EatIfBlock(Parser);
 
     RequireToken(Parser, CT_PreprocessorIf);
-    TestThat(ResolveMacroConstantExpression(Parser) == 0);
+    TestThat(ResolveMacroConstantExpression(Parser, Memory) == 0);
     EatIfBlock(Parser);
 
     RequireToken(Parser, CT_PreprocessorIf);
-    TestThat(ResolveMacroConstantExpression(Parser) == 0);
+    TestThat(ResolveMacroConstantExpression(Parser, Memory) == 0);
+    EatIfBlock(Parser);
+
+    RequireToken(Parser, CT_PreprocessorIf);
+    TestThat(ResolveMacroConstantExpression(Parser, Memory) == 0);
     EatIfBlock(Parser);
 
 
@@ -1227,14 +1231,14 @@ TestDefinesAndIfDefs(memory_arena *Memory)
     .Memory = Memory,
   };
 
-  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/defines_and_ifdefs0.cpp"));
+  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/include_guard0.cpp"));
   if (Parser)
   {
     Ctx.CurrentParser = *Parser;
 
-    /* DumpEntireParser(Parser); */
+    DumpEntireParser(Parser);
 
-    /* RuntimeBreak(); */
+    RuntimeBreak();
 
     ast_node_statement *Ast = ParseAllStatements(&Ctx);
 

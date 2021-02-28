@@ -108,6 +108,11 @@ this should be ignored
 this should be ignored
 #endif
 
+#if (2*1-2)
+this should be ignored
+#endif
+
+
 
 
 

@@ -533,9 +533,6 @@
       bonsai_function void DebugPrint( char_cursor* S, u32 Depth = 0);
       bonsai_function void DebugPrint( char_cursor  S, u32 Depth = 0);
 
-      bonsai_function void DebugPrint( fake* S, u32 Depth = 0);
-      bonsai_function void DebugPrint( fake  S, u32 Depth = 0);
-
       bonsai_function void DebugPrint( linei* S, u32 Depth = 0);
       bonsai_function void DebugPrint( linei  S, u32 Depth = 0);
 

@@ -7170,29 +7170,6 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
-    bonsai_function void DebugPrint( fake S, u32 Depth)
-    {
-      if (Depth == 0)
-      {
-        DebugPrint("fake {\n", Depth);
-      }
-
-      
-          DebugPrint("int thing {\n", Depth+2);
-          DebugPrint(S.thing, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
-
-      DebugPrint("}\n", Depth);
-    }
-
-    bonsai_function void DebugPrint( fake *S, u32 Depth)
-    {
-      if (S) { DebugPrint(*S, Depth); }
-      else { DebugPrint("ptr(0)", Depth); }
-    }
-
     bonsai_function void DebugPrint( linei S, u32 Depth)
     {
       if (Depth == 0)

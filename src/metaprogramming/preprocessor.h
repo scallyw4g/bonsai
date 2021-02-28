@@ -412,7 +412,7 @@ enum c_token_type
   CTokenType_EOF           = EOF,
 
 
-  CTokenType_CommentSingleLine     = 256, // Presumably, we'll never need to parse anything that's not ascii, so start the non-ascii tokens at 256
+  CTokenType_CommentSingleLine     = 256, // Making the assumption we'll never parse anything that's not ascii, so start the non-ascii tokens at 256
   CTokenType_CommentMultiLineStart,
   CTokenType_CommentMultiLineEnd,
 
@@ -1270,6 +1270,11 @@ AllocateTokenBuffer(memory_arena* Memory, u32 Count)
   return Result;
 }
 
+// TODO(Jesse): Rewrite one of these in terms of the other.  There's also code
+// in the Push() function for the parser_stream type that might be useful to
+// look at.
+//
+// @parser_allocation_duplication
 bonsai_function parser*
 AllocateParserPtr(counted_string Filename, u32 TokenCount, u32 OutputBufferTokenCount, memory_arena *Memory)
 {
@@ -1297,6 +1302,7 @@ AllocateParserPtr(counted_string Filename, u32 TokenCount, u32 OutputBufferToken
   return Result;
 }
 
+// @parser_allocation_duplication
 bonsai_function parser
 AllocateParser(counted_string Filename, u32 TokenCount, u32 OutputBufferTokenCount, memory_arena *Memory)
 {
