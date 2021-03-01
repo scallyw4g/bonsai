@@ -8,7 +8,7 @@
     default: { ParseError(P, PeekTokenPointer(P), ErrorMessage); Assert(False); } break;
 
 
-# define DEBUG_PRINT (1)
+# define DEBUG_PRINT (0)
 #if DEBUG_PRINT
 #include <bonsai_stdlib/headers/debug_print.h>
 
@@ -56,7 +56,6 @@ bonsai_function c_token        RequireToken(parser *Parser, c_token ExpectedToke
 bonsai_function c_token        RequireToken(parser *Parser, c_token_type ExpectedType);
 bonsai_function c_token        RequireTokenRaw(parser *Parser, c_token Expected);
 bonsai_function c_token        RequireTokenRaw(parser *Parser, c_token_type ExpectedType);
-bonsai_function c_token*       RequireTokenPointer(parser *Parser, c_token_type ExpectedType);
 bonsai_function b32            TokenIsOperator(c_token_type T);
 bonsai_function b32            NextTokenIsOperator(parser *Parser);
 bonsai_function counted_string RequireOperatorToken(parser *Parser);
@@ -730,7 +729,10 @@ PeekTokenPointer(parser* Parser, u32 Lookahead)
   c_token* Result = PeekTokenRawPointer(Parser, LocalLookahead);
   while (Result)
   {
-    if ( Result->Type == CTokenType_CommentSingleLine)
+    if ( Result->Erased )
+    {
+    }
+    else if ( Result->Type == CTokenType_CommentSingleLine)
     {
       /* TODO(Jesse, id: 213, tags: bug, parsing, needs_tests): There is a degenerate case here, what if the file ends without a newline?
        * While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
@@ -898,16 +900,6 @@ OptionalToken(parser* Parser, c_token_type Type)
 {
   b32 Result = (PeekToken(Parser).Type == Type);
   if (Result) { PopToken(Parser); }
-  return Result;
-}
-
-// TODO(Jesse) : Implement
-// @require_token_pointer
-bonsai_function c_token*
-RequireTokenPointer(parser* Parser, c_token ExpectedToken)
-{
-  c_token *Result = 0;
-  NotImplemented;
   return Result;
 }
 
@@ -2289,10 +2281,14 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
               counted_string MacroName = PopIdentifier(&Code);
               Code.At = FirstAfterDefineKeyword;
 
+
+              PushT.Type = CT_PreprocessorUndef;
+              PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
+
+
               macro_def *Macro1 = GetByName(&Ctx->Datatypes.Macros, MacroName);
               if (Macro1)
               {
-                Debug("undefd1");
                 Macro1->Undefed = True;
               }
               else
@@ -2300,7 +2296,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
                 macro_def *Macro2 = GetByName(&MacrosThatNeedToBeParsedOut, MacroName);
                 if (Macro2)
                 {
-                  Debug("undefd2");
                   Macro2->Undefed = True;
                 }
               }
@@ -2567,13 +2562,11 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
                 {
                   PushT.Type = CT_MacroLiteral;
                   PushT.Macro = Macro1;
-                  Debug("HI1 %S", Macro1->Name);
                 }
                 else if (Macro2)
                 {
                   PushT.Type = CT_MacroLiteral;
                   PushT.Macro = Macro2;
-                  Debug("HI2 %S", Macro2->Name);
                 }
               }
             }
@@ -2714,12 +2707,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
         }
       } break;
 
-      case CT_PreprocessorDefine:
-      {
-        RequireToken(Current, T->Type);
-        EatUntilIncluding(Current, CTokenType_Newline);
-      } break;
-
       case CT_MacroLiteral:
       {
         Assert(T->Macro);
@@ -2729,10 +2716,40 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
 
 
+      case CT_PreprocessorUndef:
+      case CT_PreprocessorDefine:
+      {
+        RequireToken(Current, T->Type);
+        EatUntilIncluding(Current, CTokenType_Newline);
+        EraseSectionOfParser(Current, T, Current->Tokens.At, Memory);
+      } break;
+
+
+
+      case CT_PreprocessorIf:
+      case CT_PreprocessorElif:
+      {
+        RequireToken(Current, T->Type);
+        if (ResolveMacroConstantExpression(Current, Memory))
+        {
+          EraseSectionOfParser(Current, T, Current->Tokens.At, Memory);
+
+          c_token *NextPreprocessorToken = EatIfBlock(Current);
+          Assert(NextPreprocessorToken->Type == CT_PreprocessorElse);
+
+          EatUntilIncluding(Current, CT_PreprocessorEndif);
+          EraseSectionOfParser(Current, NextPreprocessorToken, Current->Tokens.At, Memory); // Skip the rest of the blocks
+        }
+        else
+        {
+          c_token *NextPreprocessorToken = EatIfBlock(Current);
+          EraseSectionOfParser(Current, T, NextPreprocessorToken, Memory); // Skip this block
+        }
+      } break;
 
       case CT_PreprocessorIfDefined:
       {
-        EraseToken(Current, T->Type);
+        RequireToken(Current, T->Type);
         c_token *DefineValue = PeekTokenPointer(Current);
         if ( DefineValue->Type == CT_MacroLiteral )
         {
@@ -2752,35 +2769,13 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
       case CT_PreprocessorIfNotDefined:
       {
-        EraseToken(Current, T->Type);
-
+        RequireToken(Current, T->Type);
         c_token *DefineValue = PeekTokenPointer(Current);
         if ( DefineValue->Type != CT_MacroLiteral )
         {
           EraseToken(T);
           EraseToken(DefineValue);
           c_token *NextPreprocessorToken = EatIfBlock(Current);
-          EatUntilIncluding(Current, CT_PreprocessorEndif);
-          EraseSectionOfParser(Current, NextPreprocessorToken, Current->Tokens.At, Memory); // Skip the rest of the blocks
-        }
-        else
-        {
-          c_token *NextPreprocessorToken = EatIfBlock(Current);
-          EraseSectionOfParser(Current, T, NextPreprocessorToken, Memory); // Skip this block
-        }
-      } break;
-
-      case CT_PreprocessorIf:
-      case CT_PreprocessorElif:
-      {
-        RequireToken(Current, T->Type);
-        if (ResolveMacroConstantExpression(Current, Memory))
-        {
-          EraseSectionOfParser(Current, T, Current->Tokens.At, Memory);
-
-          c_token *NextPreprocessorToken = EatIfBlock(Current);
-          Assert(NextPreprocessorToken->Type == CT_PreprocessorElse);
-
           EatUntilIncluding(Current, CT_PreprocessorEndif);
           EraseSectionOfParser(Current, NextPreprocessorToken, Current->Tokens.At, Memory); // Skip the rest of the blocks
         }
@@ -4280,7 +4275,7 @@ ResolveMacroConstantExpression(parser *Parser, memory_arena *Memory)
   b32 Done = False;
   c_token_type OperatorToApply = {};
 
-  while ( !Done && TokensRemain(Parser) )
+  while ( !Done && RawTokensRemain(Parser) )
   {
     c_token T = PeekTokenRaw(Parser); // Has to be raw because newlines delimit the end of a macro constant expression
     switch (T.Type)
@@ -4322,7 +4317,8 @@ ResolveMacroConstantExpression(parser *Parser, memory_arena *Memory)
       {
         if (OperatorToApply)
         {
-          c_token_type NextTokenType = PeekToken(Parser).Type;
+          EatSpacesTabsAndEscapedNewlines(Parser);
+          c_token_type NextTokenType = PeekTokenRaw(Parser).Type;
           b32 NextIsOperator = TokenIsOperator(NextTokenType);
           if ( NextIsOperator && IsOfHigherPrecedenceThan(OperatorToApply, NextTokenType) )
           {
@@ -4401,24 +4397,14 @@ ResolveMacroConstantExpression(parser *Parser, memory_arena *Memory)
 bonsai_function void
 EraseToken(c_token *Token)
 {
-  Token->Erased.Type = Token->Type;
-  Token->Erased.Name = Token->Value;
-  Token->Erased.Value = Token->UnsignedValue;
-
-  Token->Type = CT_Erased;
+  Token->Erased = True;
 }
 
 bonsai_function void
 EraseToken(parser *Parser, c_token_type Type)
 {
-  //@require_token_pointer
-#if 0
-  c_token *T = RequireTokenPointer(Parser, Type);
-  EraseToken(T);
-#endif
-
-  c_token *T = PeekTokenPointer(Parser);
-  RequireToken(Parser, Type);
+  c_token *T = PeekTokenRawPointer(Parser);
+  RequireTokenRaw(Parser, Type);
   EraseToken(T);
 }
 
@@ -4446,7 +4432,7 @@ EraseSectionOfParser(parser *Parser, c_token *FirstToErase, c_token *OnePastLast
 bonsai_function c_token *
 EatIfBlock(parser *Parser)
 {
-  c_token *StartToken = PeekTokenPointer(Parser);
+  c_token *StartToken = PeekTokenRawPointer(Parser);
   c_token *Result = StartToken;
 
   u32 Depth = 0;
@@ -4967,12 +4953,6 @@ ParseFunctionArgument(parser *Parser, memory_arena *Memory, function_decl_stream
 
 bonsai_function ast_node_statement *
 ParseAllStatements(parse_context *Ctx);
-
-bonsai_function void
-ParseUndefine(parse_context *Ctx, parser *Parser)
-{
-  NotImplemented;
-}
 
 bonsai_function void
 ParseSingleStatement(parse_context *Ctx, ast_node_statement *Result)

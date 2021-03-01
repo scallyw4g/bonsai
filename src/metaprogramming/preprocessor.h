@@ -520,26 +520,16 @@ enum c_token_type
   CT_PreprocessorError,
   CT_PreprocessorWarning,
   CT_Preprocessor__VA_ARGS__,
-
-  CT_Erased,
 };
 meta(generate_string_table(c_token_type))
 #include <metaprogramming/output/generate_string_table_c_token_type.h>
 
-
-struct c_token_erased_value
-{
-  c_token_type Type;
-  counted_string Name;
-  umm Value; // NOTE(Jesse): This must be cast to the appropriate type
-};
-
-// TODO(Jesse): This is getting out of hand..
 struct macro_def;
 struct c_token
 {
   c_token_type Type;
   counted_string Value;
+  b32 Erased;
 
   union {
     /* s64 SignedValue; */ // TODO(Jesse id: 272): Fold `-` sign into this value at tokenization time?
@@ -547,8 +537,6 @@ struct c_token
     r64 FloatValue;
     macro_def *Macro;
     c_token *QualifierName;
-
-    c_token_erased_value Erased;
   };
 
 };
@@ -1197,14 +1185,14 @@ PrintToken(c_token *Token)
   {
     Assert(Token->Type);
     Assert(Token->Value.Start && Token->Value.Count);
-    if (Token->Type == CT_Erased)
+    if (Token->Erased)
     {
       Log(RED_TERMINAL);
     }
 
     Log("%S", Token->Value);
 
-    if (Token->Type == CT_Erased)
+    if (Token->Erased)
     {
       Log(WHITE_TERMINAL);
     }

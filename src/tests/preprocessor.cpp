@@ -1259,6 +1259,13 @@ TestDefinesAndConditionals(memory_arena *Memory)
   {
     Ctx.CurrentParser = *Parser;
     DumpEntireParser(Parser);
+
+    while(TokensRemain(Parser))
+    {
+      RequireToken(Parser, CToken(CSz("valid_path")));
+      TestThat(Parser->Valid);
+    }
+
     /* RuntimeBreak(); */
     /* ast_node_statement *Ast = ParseAllStatements(&Ctx); */
     /* WalkAst(Ast); */
@@ -1277,7 +1284,7 @@ main()
 
   memory_arena* Memory = AllocateArena();
 
-#if 1
+#if 0
   TestBasicTokenizationAndParsing(Memory);
 
   TestPeekAndPopTokens(Memory);
