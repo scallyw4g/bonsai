@@ -24,6 +24,9 @@ TestSuiteBegin(const char *TestSuite)
   setvbuf(stderr, 0, _IONBF, 0);
 
   Debug(Newline BLUE_TERMINAL "---" WHITE_TERMINAL " Starting %s Tests " BLUE_TERMINAL "---" WHITE_TERMINAL, TestSuite);
+
+  if (!SearchForProjectRoot()) { Error("Couldn't find root dir."); }
+
   return;
 }
 

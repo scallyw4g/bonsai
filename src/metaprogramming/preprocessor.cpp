@@ -72,7 +72,7 @@ bonsai_function counted_string EatBetween(parser* Parser, c_token_type Open, c_t
 
 bonsai_function parser * ResolveInclude(parse_context *Ctx, parser *Parser);
 bonsai_function parser * ExpandMacro(parser *Parser, macro_def *Macro, memory_arena *Memory);
-bonsai_function u64 ResolveMacroConstantExpression(parser *Parser, memory_arena *Memory);
+bonsai_function u64 ResolveMacroConstantExpression(parser *Parser, memory_arena *Memory, u64 PreviousValue, b32 LogicalNotNextValue);
 
 bonsai_function b32 IsDefined(parse_context *Ctx, counted_string DefineValue) ;
 bonsai_function c_token* EatIfBlock(parser *Parser);
@@ -605,8 +605,6 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
 
   RewindUntil(&LeadingLines, CTokenType_Newline);
   LeadingLines.Tokens.End = LeadingLines.Tokens.At;
-  Assert((LeadingLines.Tokens.At-1)->Type == CTokenType_Newline);
-
   TruncateAtPreviousLineStart(&LeadingLines, LinesOfContext);
   DumpEntireParser(&LeadingLines);
 
@@ -1375,7 +1373,7 @@ bonsai_function void
 EatSpacesTabsAndEscapedNewlines(parser *Parser)
 {
   c_token_type Type = PeekTokenRaw(Parser).Type;
-  while ( TokensRemain(Parser) &&
+  while ( RawTokensRemain(Parser) &&
           ( Type == CTokenType_Space ||
             Type == CTokenType_Tab   ||
             Type == CTokenType_FSlash ) )
@@ -1400,7 +1398,6 @@ EatSpacesTabsAndEscapedNewlines(parser *Parser)
     Type = PeekTokenRaw(Parser).Type;
   }
 }
-// TODO(Jesse): Cache the peeked token instead of calling PeekToken() over and over. Duh.
 
 bonsai_function void
 EatWhitespace(parser* Parser)
@@ -2747,7 +2744,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       case CT_PreprocessorElif:
       {
         RequireToken(Current, T->Type);
-        if (ResolveMacroConstantExpression(Current, Memory))
+        if (ResolveMacroConstantExpression(Current, Memory, 0, False))
         {
           EraseSectionOfParser(Current, T, Current->Tokens.At, Memory);
 
@@ -4284,32 +4281,36 @@ IsOfHigherPrecedenceThan(c_token_type O1, c_token_type O2)
   return False;
 }
 
+// This function is confusing as fuck.  Sorry about that.  It's written
+// recursively because when we encounter a macro literal we either had to call
+// ResolveMacroConstantExpression again on the resulting expanded parser, or
+// track each macro expansion and where we're at in each.  That seemed onerous
+// and annoying, so I did it the 'lazy' recursive way.
 bonsai_function u64
-ResolveMacroConstantExpression(parser *Parser, memory_arena *Memory)
+ResolveMacroConstantExpression(parser *Parser, memory_arena *Memory, u64 PreviousValue, b32 LogicalNotNextValue)
 {
   /* RuntimeBreak(); */
-  u64 Result = 0;
+  u64 Result = PreviousValue;
 
-  b32 Done = False;
-  c_token_type OperatorToApply = {};
+  EatSpacesTabsAndEscapedNewlines(Parser);
 
-  while ( !Done && RawTokensRemain(Parser) )
+  if (RawTokensRemain(Parser))
   {
-    c_token T = PeekTokenRaw(Parser); // Has to be raw because newlines delimit the end of a macro constant expression
+    c_token T = PeekTokenRaw(Parser); // Has to be raw because newlines delimit the end of a macro expression
     switch (T.Type)
     {
       case CT_MacroLiteral:
       {
         parser *Expanded = ExpandMacro(Parser, T.Macro, Memory);
-        Result += ResolveMacroConstantExpression(Expanded, Memory);
+        u64 MacroExpansion = ResolveMacroConstantExpression(Expanded, Memory, Result, LogicalNotNextValue);
+        Result = ResolveMacroConstantExpression(Parser, Memory, MacroExpansion, False);
       } break;
 
       case CTokenType_Bang:
       {
         RequireTokenRaw(Parser, CTokenType_Bang);
-        Result = ResolveMacroConstantExpression(Parser, Memory) == False;
-        Done = True;
-      } break;
+        Result = ResolveMacroConstantExpression(Parser, Memory, Result, LogicalNotNextValue ? False : True);
+     } break;
 
       case CTokenType_Identifier:
       {
@@ -4324,11 +4325,12 @@ ResolveMacroConstantExpression(parser *Parser, memory_arena *Memory)
           }
           else if (NextToken.Type == CTokenType_Identifier)
           {
+            RequireTokenRaw(Parser, CTokenType_Identifier);
             Result = 0;
           }
           else if (NextToken.Type == CTokenType_OpenParen)
           {
-            Result = ResolveMacroConstantExpression(Parser, Memory);
+            Result = ResolveMacroConstantExpression(Parser, Memory, Result, False);
           }
           else
           {
@@ -4341,52 +4343,32 @@ ResolveMacroConstantExpression(parser *Parser, memory_arena *Memory)
           Result = 0;
         }
 
-        Done = True;
+        if (LogicalNotNextValue)
+        {
+          Result = !Result;
+        }
+
       } break;
 
       case CTokenType_CharLiteral:
       case CTokenType_IntLiteral:
       {
-        if (OperatorToApply)
-        {
-          EatSpacesTabsAndEscapedNewlines(Parser);
-          c_token_type NextTokenType = PeekTokenRaw(Parser).Type;
-          b32 NextIsOperator = TokenIsOperator(NextTokenType);
-          if ( NextIsOperator && IsOfHigherPrecedenceThan(OperatorToApply, NextTokenType) )
-          {
-            u64 NextValue = ResolveMacroConstantExpression(Parser, Memory);
-            Result = ApplyOperator(Parser, Result, OperatorToApply, NextValue);
-          }
-          else
-          {
-            Result = ApplyOperator(Parser, Result, OperatorToApply, T.UnsignedValue);
-          }
-        }
-        else
-        {
-          Result = T.UnsignedValue;
-        }
-
         RequireTokenRaw(Parser, T.Type);
+
+        u64 ThisValue = LogicalNotNextValue ? !T.UnsignedValue : T.UnsignedValue;
+        Result = ResolveMacroConstantExpression(Parser, Memory, ThisValue, False);
+
       } break;
 
       case CTokenType_OpenParen:
       {
         RequireTokenRaw(Parser, T.Type);
-        Result += ResolveMacroConstantExpression(Parser, Memory);
-        RequireToken(Parser, CTokenType_CloseParen);
-      } break;
-
-      case CTokenType_CloseParen:
-      case CTokenType_Newline:
-      {
-        Done = True;
-      } break;
-
-      case CTokenType_Space:
-      case CTokenType_Tab:
-      {
-        RequireTokenRaw(Parser, T.Type);
+        Result = ResolveMacroConstantExpression(Parser, Memory, Result, False);
+        if (LogicalNotNextValue)
+        {
+          Result = !Result;
+        }
+        RequireTokenRaw(Parser, CTokenType_CloseParen);
       } break;
 
       case CTokenType_Plus:
@@ -4415,11 +4397,34 @@ ResolveMacroConstantExpression(parser *Parser, memory_arena *Memory)
       case CTokenType_LogicalOr:
       {
         RequireTokenRaw(Parser, T.Type);
-        OperatorToApply = T.Type;
-        u64 NextValue = ResolveMacroConstantExpression(Parser, Memory);
+        c_token_type OperatorToApply = T.Type;
+        u64 NextValue = ResolveMacroConstantExpression(Parser, Memory, Result, False);
+        Result = ApplyOperator(Parser, Result, OperatorToApply, NextValue);
+
+#if 0
+        EatSpacesTabsAndEscapedNewlines(Parser);
+
+        c_token_type NextTokenType = PeekTokenRaw(Parser).Type;
+        b32 NextIsOperator = TokenIsOperator(NextTokenType);
+
+        if ( NextIsOperator && IsOfHigherPrecedenceThan(OperatorToApply, NextTokenType) )
+        {
+          Result = ApplyOperator(Parser, Result, OperatorToApply, NextValue);
+        }
+        else
+        {
+          Result = ApplyOperator(Parser, Result, OperatorToApply, T.UnsignedValue);
+        }
+#endif
       } break;
 
-      InvalidDefaultWhileParsing(Parser, CSz("Now, that's some crap during ResolveMacroConstantExpression"));
+      case CTokenType_Newline:
+      case CTokenType_CloseParen:
+      {
+        // We're done
+      } break;
+
+      InvalidDefaultWhileParsing(Parser, CSz("Invalid Token :: ResolveMacroConstantExpression failed."));
     }
   }
 

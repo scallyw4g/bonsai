@@ -44,6 +44,7 @@
 #include <bonsai_stdlib/headers/thread.h>
 #include <bonsai_stdlib/headers/math.h>
 #include <bonsai_stdlib/headers/file.h>
+#include <bonsai_stdlib/headers/filesystem.h>
 #include <bonsai_stdlib/headers/vector.h>
 #include <bonsai_stdlib/headers/random.h>
 #include <random>                                   // TODO(Jesse, id: 88, tags: perlin, cleanup): Perlin.h depends on this .. rewrite it.
@@ -182,6 +183,7 @@ global_variable memory_arena* TranArena = &_TranArena;
 #include <bonsai_stdlib/cpp/heap_memory.cpp>
 #include <bonsai_stdlib/cpp/xml.cpp>
 #include <bonsai_stdlib/cpp/file.cpp>
+#include <bonsai_stdlib/cpp/filesystem.cpp>
 #include <bonsai_stdlib/cpp/work_queue.cpp>
 #include <bonsai_stdlib/cpp/gl.cpp>
 

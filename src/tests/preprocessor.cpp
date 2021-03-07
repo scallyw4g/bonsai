@@ -1186,31 +1186,31 @@ TestMacrosAndIncludes(memory_arena *Memory)
     RequireToken(Parser, CTokenType_CloseParen);
 
     RequireToken(Parser, CT_PreprocessorIf);
-    TestThat(ResolveMacroConstantExpression(Parser, Memory) == 0);
+    TestThat(ResolveMacroConstantExpression(Parser, Memory, 0, False) == 0);
     EatIfBlock(Parser);
 
     RequireToken(Parser, CT_PreprocessorIf);
-    TestThat(ResolveMacroConstantExpression(Parser, Memory) == 0);
+    TestThat(ResolveMacroConstantExpression(Parser, Memory, 0, False) == 0);
     EatIfBlock(Parser);
 
     RequireToken(Parser, CT_PreprocessorIf);
-    TestThat(ResolveMacroConstantExpression(Parser, Memory) == 0);
+    TestThat(ResolveMacroConstantExpression(Parser, Memory, 0, False) == 0);
     EatIfBlock(Parser);
 
     RequireToken(Parser, CT_PreprocessorIf);
-    TestThat(ResolveMacroConstantExpression(Parser, Memory) == 0);
+    TestThat(ResolveMacroConstantExpression(Parser, Memory, 0, False) == 0);
     EatIfBlock(Parser);
 
     RequireToken(Parser, CT_PreprocessorIf);
-    TestThat(ResolveMacroConstantExpression(Parser, Memory) == 0);
+    TestThat(ResolveMacroConstantExpression(Parser, Memory, 0, False) == 0);
     EatIfBlock(Parser);
 
     RequireToken(Parser, CT_PreprocessorIf);
-    TestThat(ResolveMacroConstantExpression(Parser, Memory) == 0);
+    TestThat(ResolveMacroConstantExpression(Parser, Memory, 0, False) == 0);
     EatIfBlock(Parser);
 
     RequireToken(Parser, CT_PreprocessorIf);
-    TestThat(ResolveMacroConstantExpression(Parser, Memory) == 0);
+    TestThat(ResolveMacroConstantExpression(Parser, Memory, 0, False) == 0);
     EatIfBlock(Parser);
 
 
@@ -1277,6 +1277,31 @@ TestDefinesAndConditionals(memory_arena *Memory)
   }
 }
 
+bonsai_function void
+TestLogicalOperators(memory_arena *Memory)
+{
+  parse_context Ctx = {
+    .Memory = Memory,
+  };
+
+  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/logical_operators.cpp"));
+  if (Parser)
+  {
+    Ctx.CurrentParser = *Parser;
+    DumpEntireParser(Parser);
+
+    while(TokensRemain(Parser))
+    {
+      RequireToken(Parser, CToken(CSz("valid_path")));
+      TestThat(Parser->Valid);
+    }
+  }
+  else
+  {
+    ++TestsFailed;
+  }
+}
+
 s32
 main()
 {
@@ -1298,9 +1323,11 @@ main()
   TestIncludeGuards(Memory);
 
   TestAst(Memory);
-#endif
 
+#endif
   TestDefinesAndConditionals(Memory);
+
+  TestLogicalOperators(Memory);
 
   TestSuiteEnd();
   exit(TestsFailed);
