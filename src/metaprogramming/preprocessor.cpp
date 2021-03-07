@@ -216,10 +216,7 @@ RewindUntil(parser* Parser, c_token_type Type)
   {
     if (Parser->Tokens.At->Type == Type)
     {
-      if (Remaining(Parser))
-      {
-        ++Parser->Tokens.At;
-      }
+      PopTokenRaw(Parser);
       break;
     }
     --Parser->Tokens.At;
@@ -518,7 +515,7 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
 
       if (ErrorToken->Value.Count)
       {
-        Log("%S", ErrorToken->Value);
+        Log("(%S)", ErrorToken->Value);
       }
 
       if (Expected.Type)
@@ -528,7 +525,7 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
 
         if (Expected.Value.Count)
         {
-          Log("(%S", Expected.Value);
+          Log("(%S)", Expected.Value);
         }
       }
       else
@@ -608,6 +605,8 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
 
   RewindUntil(&LeadingLines, CTokenType_Newline);
   LeadingLines.Tokens.End = LeadingLines.Tokens.At;
+  Assert((LeadingLines.Tokens.At-1)->Type == CTokenType_Newline);
+
   TruncateAtPreviousLineStart(&LeadingLines, LinesOfContext);
   DumpEntireParser(&LeadingLines);
 
@@ -883,6 +882,14 @@ bonsai_function b32
 OptionalTokenRaw(parser* Parser, c_token_type Type)
 {
   b32 Result = (PeekTokenRaw(Parser).Type == Type);
+  if (Result) { PopTokenRaw(Parser); }
+  return Result;
+}
+
+bonsai_function b32
+OptionalTokenRaw(parser* Parser, c_token T)
+{
+  b32 Result = (PeekTokenRaw(Parser) == T);
   if (Result) { PopTokenRaw(Parser); }
   return Result;
 }
@@ -2189,6 +2196,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
         if (PeekToken(&Code).Type == CTokenType_Newline)
         {
           PushT.Type = CTokenType_Newline;
+          PushT.Value.Count = 2;
           ++LineNumber;
           ParsingSingleLineComment = False;
           Advance(&Code);
@@ -2592,6 +2600,15 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
   TruncateToCurrentSize(&Result->Tokens);
   Rewind(Result);
   Result->Valid = True;
+
+  while (TokensRemain(Result))
+  {
+    Assert(PopTokenRaw(Result).Type != CTokenType_CarrigeReturn);
+  }
+
+  Rewind(Result);
+
+
 
   if (Ctx)
   {
@@ -4270,6 +4287,7 @@ IsOfHigherPrecedenceThan(c_token_type O1, c_token_type O2)
 bonsai_function u64
 ResolveMacroConstantExpression(parser *Parser, memory_arena *Memory)
 {
+  /* RuntimeBreak(); */
   u64 Result = 0;
 
   b32 Done = False;
@@ -4286,27 +4304,41 @@ ResolveMacroConstantExpression(parser *Parser, memory_arena *Memory)
         Result += ResolveMacroConstantExpression(Expanded, Memory);
       } break;
 
+      case CTokenType_Bang:
+      {
+        RequireTokenRaw(Parser, CTokenType_Bang);
+        Result = ResolveMacroConstantExpression(Parser, Memory) == False;
+        Done = True;
+      } break;
+
       case CTokenType_Identifier:
       {
-        RequireTokenRaw(Parser, CToken(CSz("defined")));
-        EatSpacesTabsAndEscapedNewlines(Parser);
-        c_token NextToken = PeekTokenRaw(Parser);
-        if (NextToken.Type == CT_MacroLiteral)
+        if (OptionalTokenRaw(Parser, CToken(CSz("defined"))))
         {
-          RequireTokenRaw(Parser, CT_MacroLiteral);
-          Result = 1;
-        }
-        else if (NextToken.Type == CTokenType_Identifier)
-        {
-          Result = 0;
-        }
-        else if (NextToken.Type == CTokenType_OpenParen)
-        {
-          Result = ResolveMacroConstantExpression(Parser, Memory);
+          EatSpacesTabsAndEscapedNewlines(Parser);
+          c_token NextToken = PeekTokenRaw(Parser);
+          if (NextToken.Type == CT_MacroLiteral)
+          {
+            RequireTokenRaw(Parser, CT_MacroLiteral);
+            Result = 1;
+          }
+          else if (NextToken.Type == CTokenType_Identifier)
+          {
+            Result = 0;
+          }
+          else if (NextToken.Type == CTokenType_OpenParen)
+          {
+            Result = ResolveMacroConstantExpression(Parser, Memory);
+          }
+          else
+          {
+            InvalidCodePath();
+          }
         }
         else
         {
-          InvalidCodePath();
+          RequireTokenRaw(Parser, CTokenType_Identifier);
+          Result = 0;
         }
 
         Done = True;
@@ -4342,12 +4374,12 @@ ResolveMacroConstantExpression(parser *Parser, memory_arena *Memory)
       {
         RequireTokenRaw(Parser, T.Type);
         Result += ResolveMacroConstantExpression(Parser, Memory);
+        RequireToken(Parser, CTokenType_CloseParen);
       } break;
 
       case CTokenType_CloseParen:
       case CTokenType_Newline:
       {
-        RequireTokenRaw(Parser, T.Type);
         Done = True;
       } break;
 
@@ -4356,7 +4388,6 @@ ResolveMacroConstantExpression(parser *Parser, memory_arena *Memory)
       {
         RequireTokenRaw(Parser, T.Type);
       } break;
-
 
       case CTokenType_Plus:
       case CTokenType_Minus:
@@ -4385,6 +4416,7 @@ ResolveMacroConstantExpression(parser *Parser, memory_arena *Memory)
       {
         RequireTokenRaw(Parser, T.Type);
         OperatorToApply = T.Type;
+        u64 NextValue = ResolveMacroConstantExpression(Parser, Memory);
       } break;
 
       InvalidDefaultWhileParsing(Parser, CSz("Now, that's some crap during ResolveMacroConstantExpression"));

@@ -319,7 +319,7 @@ InitializeOpengl(os* Os)
 
   if (GL.Initialized)
   {
-    GL.DebugMessageCallback(HandleGlDebugMessage, 0);
+    /* GL.DebugMessageCallback(HandleGlDebugMessage, 0); */
 
     GL.Enable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     GL.Enable(GL_DEPTH_TEST);

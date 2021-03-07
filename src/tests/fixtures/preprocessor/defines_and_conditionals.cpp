@@ -1,6 +1,36 @@
-//
-// Value is defined
-//
+/* // */
+/* // Value is defined */
+/* // */
+
+#if 1
+valid_path
+#else
+invalid_path
+#endif
+
+#if 0
+invalid_path
+#else
+valid_path
+#endif
+
+#if 0
+invalid_path
+#elif 0
+invalid_path
+#else
+valid_path
+#endif
+
+#if 0
+invalid_path
+#elif 1
+valid_path
+#else
+invalid_path
+#endif
+
+
 
 #define thing 1
 
@@ -114,5 +144,78 @@ invalid_path
 // Logical operators
 //
 
+#if !0
+valid_path
+#else
+invalid_path
+#endif
 
+#if !(0)
+valid_path
+#else
+invalid_path
+#endif
+
+#if !1
+invalid_path
+#else
+valid_path
+#endif
+
+#if !(1)
+invalid_path
+#else
+valid_path
+#endif
+
+
+
+#if 1 || 1
+valid_path
+#else
+invalid_path
+#endif
+
+#if 1 || 0
+valid_path
+#else
+invalid_path
+#endif
+
+#if !1 || !1
+invalid_path
+#else
+valid_path
+#endif
+
+/* #if !1 || !0 */
+/* valid_path */
+/* #else */
+/* invalid_path */
+/* #endif */
+
+
+/* #if 1 && 0 */
+/* invalid_path */
+/* #else */
+/* valid_path */
+/* #endif */
+
+/* #if 1 && 1 */
+/* valid_path */
+/* #else */
+/* invalid_path */
+/* #endif */
+
+/* #if 1 && !0 */
+/* valid_path */
+/* #else */
+/* invalid_path */
+/* #endif */
+
+/* #if 1 && !1 */
+/* invalid_path */
+/* #else */
+/* valid_path */
+/* #endif */
 

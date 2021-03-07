@@ -474,7 +474,7 @@ BuildPreprocessor=1
 SecondPreprocessor=0
 
 BuildExecutables=1
-BuildDebugTests=1
+BuildDebugTests=0
 BuildTests=1
 BuildDebugSystem=1
 BuildExamples=1

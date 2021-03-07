@@ -50,12 +50,10 @@ main()
       }
       else
       {
-        Log("_");
+        Log(" ");
       }
     }
-    Log(" %u", TableValue);
-
-    Log("\n");
+    Log(" | (%u %u) \n", TableValue, Mapped);
   }
 #endif
 
