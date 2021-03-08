@@ -1288,13 +1288,14 @@ TestLogicalOperators(memory_arena *Memory)
   if (Parser)
   {
     Ctx.CurrentParser = *Parser;
-    DumpEntireParser(Parser);
+    /* DumpEntireParser(Parser); */
 
     while(TokensRemain(Parser))
     {
       RequireToken(Parser, CToken(CSz("valid_path")));
       TestThat(Parser->Valid);
     }
+
   }
   else
   {
@@ -1324,8 +1325,8 @@ main()
 
   TestAst(Memory);
 
-#endif
   TestDefinesAndConditionals(Memory);
+#endif
 
   TestLogicalOperators(Memory);
 
