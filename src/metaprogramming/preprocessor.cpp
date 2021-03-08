@@ -2778,7 +2778,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       {
         RequireToken(Current, T->Type);
         c_token *DefineValue = PeekTokenPointer(Current);
-        if ( DefineValue->Type == CT_MacroLiteral )
+        if ( DefineValue->Type == CT_MacroLiteral && (!DefineValue->Macro->Undefed) )
         {
           EraseToken(T);
           EraseToken(DefineValue);
@@ -2798,7 +2798,8 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       {
         RequireToken(Current, T->Type);
         c_token *DefineValue = PeekTokenPointer(Current);
-        if ( DefineValue->Type != CT_MacroLiteral )
+        if ( DefineValue->Type != CT_MacroLiteral ||
+             (DefineValue->Type == CT_MacroLiteral  && DefineValue->Macro->Undefed) )
         {
           EraseToken(T);
           EraseToken(DefineValue);
@@ -4377,7 +4378,7 @@ ResolveMacroConstantExpression(parser *Parser, memory_arena *Memory, u64 Previou
           if (NextToken.Type == CT_MacroLiteral)
           {
             RequireTokenRaw(Parser, CT_MacroLiteral);
-            Result = 1;
+            Result = NextToken.Macro->Undefed ? 0 : 1;
           }
           else if (NextToken.Type == CTokenType_Identifier)
           {

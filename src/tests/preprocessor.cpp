@@ -1290,14 +1290,6 @@ TestLogicalOperators(memory_arena *Memory)
     Ctx.CurrentParser = *Parser;
     /* DumpEntireParser(Parser); */
 
-/*     RequireToken(Parser, CT_PreprocessorDefine); */
-/*     RequireToken(Parser, CT_MacroLiteral); */
-/*     RequireToken(Parser, CTokenType_IntLiteral); */
-
-/*     RequireToken(Parser, CT_PreprocessorDefine); */
-/*     RequireToken(Parser, CT_MacroLiteral); */
-/*     RequireToken(Parser, CTokenType_IntLiteral); */
-
     while(TokensRemain(Parser))
     {
       RequireToken(Parser, CToken(CSz("valid_path")));
