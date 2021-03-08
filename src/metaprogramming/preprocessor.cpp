@@ -64,6 +64,7 @@ bonsai_function void           TrimFirstToken(parser* Parser, c_token_type Token
 bonsai_function void           TrimLastToken(parser* Parser, c_token_type TokenType);
 bonsai_function void           TrimLeadingWhitespace(parser* Parser);
 bonsai_function counted_string EatBetween(parser* Parser, c_token_type Open, c_token_type Close);
+bonsai_function void           EatSpacesTabsAndEscapedNewlines(parser *Parser);
 
 
 //
@@ -996,6 +997,7 @@ RequireTokenRaw(parser *Parser, c_token Expected )
   else
   {
     Result = {};
+    Assert(False);
   }
   return Result;
 }
@@ -1217,7 +1219,7 @@ ExpandMacro(parser *Parser, macro_def *Macro, memory_arena *Memory)
 {
   parser *Result = AllocateParserPtr(Macro->Body.Filename, (u32)Kilobytes(1), 0, Memory);
 
-  RequireTokenRaw(Parser, CToken(CT_MacroLiteral, Macro->Name));
+  RequireToken(Parser, CToken(CT_MacroLiteral, Macro->Name));
 
   switch (Macro->Type)
   {
@@ -2739,7 +2741,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
         Current = SplitAndInsertParserInto(Current, T, Expanded, Current->Tokens.At, Memory);
       } break;
 
-
       case CT_PreprocessorDefine:
       case CT_PreprocessorUndef:
       {
@@ -2752,10 +2753,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
         }
 
         EatUntilIncluding(Current, CTokenType_Newline);
-        EraseSectionOfParser(Current, T, Current->Tokens.At);
       } break;
-
-
 
       case CT_PreprocessorIf:
       case CT_PreprocessorElif:
@@ -2766,8 +2764,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
           EraseSectionOfParser(Current, T, Current->Tokens.At);
 
           c_token *NextPreprocessorToken = EatIfBlock(Current);
-          Assert(NextPreprocessorToken->Type == CT_PreprocessorElse);
-
           EatUntilIncluding(Current, CT_PreprocessorEndif);
           EraseSectionOfParser(Current, NextPreprocessorToken, Current->Tokens.At);
         }
@@ -2832,6 +2828,39 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       } break;
     }
   }
+
+#if 1
+
+  // Go through and erase preprocessor crap once everything's parsed out
+  Current = Result;
+  LastT = 0;
+
+  Rewind(Current);
+  while (TokensRemain(Current))
+  {
+    c_token *T = PeekTokenPointer(Current);
+    switch (T->Type)
+    {
+      case CT_MacroLiteral:
+      {
+        /* EraseToken(T); */
+      } break;
+
+      case CT_PreprocessorDefine:
+      case CT_PreprocessorUndef:
+      {
+        RequireToken(Current, T->Type);
+        EatUntilIncluding(Current, CTokenType_Newline);
+        EraseSectionOfParser(Current, T, Current->Tokens.At);
+      } break;
+
+      default:
+      {
+        RequireToken(Current, T->Type);
+      } break;
+    }
+  }
+#endif
 
   Rewind(Result);
   return Result;
@@ -4320,9 +4349,17 @@ ResolveMacroConstantExpression(parser *Parser, memory_arena *Memory, u64 Previou
     {
       case CT_MacroLiteral:
       {
-        parser *Expanded = ExpandMacro(Parser, T.Macro, Memory);
-        u64 MacroExpansion = ResolveMacroConstantExpression(Expanded, Memory, Result, LogicalNotNextValue);
-        Result = ResolveMacroConstantExpression(Parser, Memory, MacroExpansion, False);
+        if (T.Macro->Undefed)
+        {
+          RequireTokenRaw(Parser, T.Type);
+          Result = ResolveMacroConstantExpression(Parser, Memory, 0, LogicalNotNextValue);
+        }
+        else
+        {
+          parser *Expanded = ExpandMacro(Parser, T.Macro, Memory);
+          u64 MacroExpansion = ResolveMacroConstantExpression(Expanded, Memory, Result, LogicalNotNextValue);
+          Result = ResolveMacroConstantExpression(Parser, Memory, MacroExpansion, False);
+        }
       } break;
 
       case CTokenType_Bang:

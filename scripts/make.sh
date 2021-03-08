@@ -486,12 +486,12 @@ DumpSourceFilesAndQuit=0
 CheckoutMetaOutput=0
 
 FirstPreprocessor=0
-BuildPreprocessor=1
-SecondPreprocessor=1
+BuildPreprocessor=0
+SecondPreprocessor=0
 
 BuildExecutables=0
 BuildDebugTests=0
-BuildTests=0
+BuildTests=1
 BuildDebugSystem=0
 BuildExamples=0
 

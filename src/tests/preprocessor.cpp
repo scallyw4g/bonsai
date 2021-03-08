@@ -1258,7 +1258,7 @@ TestDefinesAndConditionals(memory_arena *Memory)
   if (Parser)
   {
     Ctx.CurrentParser = *Parser;
-    DumpEntireParser(Parser);
+    /* DumpEntireParser(Parser); */
 
     while(TokensRemain(Parser))
     {
@@ -1290,6 +1290,14 @@ TestLogicalOperators(memory_arena *Memory)
     Ctx.CurrentParser = *Parser;
     /* DumpEntireParser(Parser); */
 
+/*     RequireToken(Parser, CT_PreprocessorDefine); */
+/*     RequireToken(Parser, CT_MacroLiteral); */
+/*     RequireToken(Parser, CTokenType_IntLiteral); */
+
+/*     RequireToken(Parser, CT_PreprocessorDefine); */
+/*     RequireToken(Parser, CT_MacroLiteral); */
+/*     RequireToken(Parser, CTokenType_IntLiteral); */
+
     while(TokensRemain(Parser))
     {
       RequireToken(Parser, CToken(CSz("valid_path")));
@@ -1310,7 +1318,6 @@ main()
 
   memory_arena* Memory = AllocateArena();
 
-#if 0
   TestBasicTokenizationAndParsing(Memory);
 
   TestPeekAndPopTokens(Memory);
@@ -1319,14 +1326,15 @@ main()
 
   TestCommentSituation(Memory);
 
+#if 0
   TestMacrosAndIncludes(Memory);
 
   TestIncludeGuards(Memory);
 
   TestAst(Memory);
+#endif
 
   TestDefinesAndConditionals(Memory);
-#endif
 
   TestLogicalOperators(Memory);
 
