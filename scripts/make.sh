@@ -446,7 +446,23 @@ function RunEntireBuild {
   fi
 
   if [ $SecondPreprocessor == 1 ]; then
-    bin/preprocessor_dev src/metaprogramming/preprocessor.cpp -I src -I /usr/include/x86_64-linux-gnu -I /usr/include
+
+    if [ "$Platform" == "Linux" ] ; then
+      bin/preprocessor_dev                   \
+        src/metaprogramming/preprocessor.cpp \
+        -I src                               \
+        -I /usr/include/x86_64-linux-gnu     \
+        -I /usr/include
+    elif [ "$Platform" == "Windows" ] ; then
+
+      bin/preprocessor_dev                   \
+        src/metaprogramming/preprocessor.cpp \
+        -I ./src                             \
+        -I "C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt"
+
+    else
+      echo "Unknown platform"
+    fi
   fi
 
   if [ $EMCC == 1 ]; then
@@ -471,13 +487,13 @@ CheckoutMetaOutput=0
 
 FirstPreprocessor=0
 BuildPreprocessor=1
-SecondPreprocessor=0
+SecondPreprocessor=1
 
-BuildExecutables=1
+BuildExecutables=0
 BuildDebugTests=0
-BuildTests=1
-BuildDebugSystem=1
-BuildExamples=1
+BuildTests=0
+BuildDebugSystem=0
+BuildExamples=0
 
 RunTests=0
 FinalPreprocessor=0
