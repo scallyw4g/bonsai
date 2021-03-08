@@ -4352,7 +4352,7 @@ ResolveMacroConstantExpression(parser *Parser, memory_arena *Memory, u64 Previou
         if (T.Macro->Undefed)
         {
           RequireTokenRaw(Parser, T.Type);
-          Result = ResolveMacroConstantExpression(Parser, Memory, 0, LogicalNotNextValue);
+          Result = ResolveMacroConstantExpression(Parser, Memory, LogicalNotNextValue ? 1 : 0, False);
         }
         else
         {

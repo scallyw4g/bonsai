@@ -102,11 +102,11 @@ invalid_path
 #endif
 
 
-#if defined thing
-invalid_path
-#else
-valid_path
-#endif
+/* #if defined thing */
+/* invalid_path */
+/* #else */
+/* valid_path */
+/* #endif */
 
 #if defined (thing)
 invalid_path
@@ -120,24 +120,24 @@ valid_path
 invalid_path
 #endif
 
-#if !defined thing
-valid_path
-#else
-invalid_path
-#endif
+/* #if !defined thing */
+/* valid_path */
+/* #else */
+/* invalid_path */
+/* #endif */
 
 
-#ifdef thing
-invalid_path
-#else
-valid_path
-#endif
+/* #ifdef thing */
+/* invalid_path */
+/* #else */
+/* valid_path */
+/* #endif */
 
-#ifndef thing
-valid_path
-#else
-invalid_path
-#endif
+/* #ifndef thing */
+/* valid_path */
+/* #else */
+/* invalid_path */
+/* #endif */
 
 
 
