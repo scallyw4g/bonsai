@@ -92,15 +92,25 @@ DoublyLinkedListSwap(parser *P0, parser *P1)
   Assert(P0 != P1);
 
   b32 Colocated = P0->Next == P1;
+  b32 ColocatedReversed = P1->Next == P0;
+
+  // TODO(Jesse): I'm fairly sure that we don't need this boolean and should
+  // be able to just go off the M pointer values .. but I didn't want to sit
+  // around and figure it out.  Same goes for ColocatedReversed.
   if (Colocated)
   {
     Assert(P1->Prev == P0);
   }
 
-  b32 ColocatedReversed = P1->Next == P0;
   if (ColocatedReversed)
   {
     Assert(P0->Prev == P1);
+    Assert(!Colocated);
+
+    Colocated = True;
+    parser *Temp = P1;
+    P1 = P0;
+    P0 = Temp;
   }
 
   parser M0 = *P0; // Mnemonic M0 == Memory0
@@ -115,26 +125,27 @@ DoublyLinkedListSwap(parser *P0, parser *P1)
   P1->Next = Colocated ? P0 : M0.Next;
   P1->Prev = M0.Prev;
 
-  if (!ColocatedReversed && M1.Next)
+  if (M1.Next)
   {
     M1.Next->Prev = P0;
   }
 
-  if (!Colocated && M1.Prev)
-  {
-    M1.Prev->Next = P0;
-  }
-
-  if (!ColocatedReversed && M0.Prev)
+  if (M0.Prev)
   {
     M0.Prev->Next = P1;
   }
 
-  if (!Colocated && M0.Next)
+  if (!Colocated)
   {
-    M0.Next->Prev = P1;
+    if (M1.Prev)
+    {
+      M1.Prev->Next = P0;
+    }
+    if (M0.Next)
+    {
+      M0.Next->Prev = P1;
+    }
   }
-
 
   return;
 }

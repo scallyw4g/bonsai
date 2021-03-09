@@ -1304,6 +1304,32 @@ TestLogicalOperators(memory_arena *Memory)
   }
 }
 
+#define MAX_PARSERS_IN_PARSER_BLOCK 8
+bonsai_function b32
+ParserChainIntegrityPasses(parser *Mem)
+{
+  CAssert(MAX_PARSERS_IN_PARSER_BLOCK == 8);
+  b32 Result =
+    Mem[0].Next == &Mem[1] &&
+    Mem[1].Next == &Mem[2] &&
+    Mem[2].Next == &Mem[3] &&
+    Mem[3].Next == &Mem[4] &&
+    Mem[4].Next == &Mem[5] &&
+    Mem[5].Next == &Mem[6] &&
+    Mem[6].Next == &Mem[7] &&
+    Mem[7].Next == 0 &&
+    Mem[0].Prev == 0 &&
+    Mem[1].Prev == &Mem[0] &&
+    Mem[2].Prev == &Mem[1] &&
+    Mem[3].Prev == &Mem[2] &&
+    Mem[4].Prev == &Mem[3] &&
+    Mem[5].Prev == &Mem[4] &&
+    Mem[6].Prev == &Mem[5] &&
+    Mem[7].Prev == &Mem[6];
+
+  return Result;
+}
+
 bonsai_function void
 LinkParserBlocks(parser *Mem, u32 ParserCount)
 {
@@ -1312,37 +1338,20 @@ LinkParserBlocks(parser *Mem, u32 ParserCount)
   {
     parser *At = Mem+ParserIndex;
 
+    At->Next = 0;
     At->Prev = Prev;
     if (Prev) { Prev->Next = At; }
 
     Prev = At;
   }
 
-  TestThat(Mem[0].Next == &Mem[1]);
-  TestThat(Mem[1].Next == &Mem[2]);
-  TestThat(Mem[2].Next == &Mem[3]);
-  TestThat(Mem[3].Next == &Mem[4]);
-  TestThat(Mem[4].Next == &Mem[5]);
-  TestThat(Mem[5].Next == &Mem[6]);
-  TestThat(Mem[6].Next == &Mem[7]);
-  TestThat(Mem[7].Next == 0);
-
-  TestThat(Mem[0].Prev == 0);
-  TestThat(Mem[1].Prev == &Mem[0]);
-  TestThat(Mem[2].Prev == &Mem[1]);
-  TestThat(Mem[3].Prev == &Mem[2]);
-  TestThat(Mem[4].Prev == &Mem[3]);
-  TestThat(Mem[5].Prev == &Mem[4]);
-  TestThat(Mem[6].Prev == &Mem[5]);
-  TestThat(Mem[7].Prev == &Mem[6]);
-
+  TestThat(ParserChainIntegrityPasses(Mem));
 }
 
 bonsai_function void
 TestDoublyLinkedListSwap()
 {
-  parser Mem[8] = {};
-
+  parser Mem[MAX_PARSERS_IN_PARSER_BLOCK] = {};
 
   parser *Mem0 = Mem;
   parser *Mem1 = Mem+1;
@@ -1354,112 +1363,244 @@ TestDoublyLinkedListSwap()
   parser *Mem7 = Mem+7;
 
 
-  {
-    LinkParserBlocks(Mem, ArrayCount(Mem));
-    DoublyLinkedListSwap(Mem0, Mem1);
+  { // Test swaps work once
+    {
+      LinkParserBlocks(Mem, ArrayCount(Mem));
+      DoublyLinkedListSwap(Mem0, Mem1);
+      TestThat(Mem0->Next == Mem2);
+      TestThat(Mem0->Prev == Mem1);
+      TestThat(Mem1->Next == Mem0);
+      TestThat(Mem1->Prev == 0);
+      TestThat(Mem2->Next == Mem3);
+      TestThat(Mem2->Prev == Mem0);
+    }
+    {
+      LinkParserBlocks(Mem, ArrayCount(Mem));
+      DoublyLinkedListSwap(Mem1, Mem0);
+      TestThat(Mem0->Next == Mem2);
+      TestThat(Mem0->Prev == Mem1);
+      TestThat(Mem1->Next == Mem0);
+      TestThat(Mem1->Prev == 0);
+      TestThat(Mem2->Next == Mem3);
+      TestThat(Mem2->Prev == Mem0);
+    }
 
-    TestThat(Mem0->Next == Mem2);
-    TestThat(Mem0->Prev == Mem1);
+    {
+      LinkParserBlocks(Mem, ArrayCount(Mem));
+      DoublyLinkedListSwap(Mem1, Mem2);
+      TestThat(Mem1->Next == Mem3);
+      TestThat(Mem1->Prev == Mem2);
+      TestThat(Mem2->Next == Mem1);
+      TestThat(Mem2->Prev == Mem0);
+      TestThat(Mem3->Next == Mem4);
+      TestThat(Mem3->Prev == Mem1);
+      TestThat(Mem0->Next == Mem2);
+      TestThat(Mem0->Prev == 0);
+    }
+    {
+      LinkParserBlocks(Mem, ArrayCount(Mem));
+      DoublyLinkedListSwap(Mem2, Mem1);
+      TestThat(Mem1->Next == Mem3);
+      TestThat(Mem1->Prev == Mem2);
+      TestThat(Mem2->Next == Mem1);
+      TestThat(Mem2->Prev == Mem0);
+      TestThat(Mem3->Next == Mem4);
+      TestThat(Mem3->Prev == Mem1);
+      TestThat(Mem0->Next == Mem2);
+      TestThat(Mem0->Prev == 0);
+    }
 
-    TestThat(Mem1->Next == Mem0);
-    TestThat(Mem1->Prev == 0);
 
-    TestThat(Mem2->Next == Mem3);
-    TestThat(Mem2->Prev == Mem0);
+    {
+      LinkParserBlocks(Mem, ArrayCount(Mem));
+      DoublyLinkedListSwap(Mem1, Mem3);
+      TestThat(Mem0->Next == Mem3);
+      TestThat(Mem0->Prev == 0);
+      TestThat(Mem1->Next == Mem4);
+      TestThat(Mem1->Prev == Mem2);
+      TestThat(Mem2->Next == Mem1);
+      TestThat(Mem2->Prev == Mem3);
+      TestThat(Mem3->Next == Mem2);
+      TestThat(Mem3->Prev == Mem0);
+      TestThat(Mem4->Next == Mem5);
+      TestThat(Mem4->Prev == Mem1);
+    }
+    {
+      LinkParserBlocks(Mem, ArrayCount(Mem));
+      DoublyLinkedListSwap(Mem3, Mem1);
+      TestThat(Mem0->Next == Mem3);
+      TestThat(Mem0->Prev == 0);
+      TestThat(Mem1->Next == Mem4);
+      TestThat(Mem1->Prev == Mem2);
+      TestThat(Mem2->Next == Mem1);
+      TestThat(Mem2->Prev == Mem3);
+      TestThat(Mem3->Next == Mem2);
+      TestThat(Mem3->Prev == Mem0);
+      TestThat(Mem4->Next == Mem5);
+      TestThat(Mem4->Prev == Mem1);
+    }
+
+    {
+      LinkParserBlocks(Mem, ArrayCount(Mem));
+      DoublyLinkedListSwap(Mem1, Mem4);
+      TestThat(Mem0->Next == Mem4);
+      TestThat(Mem0->Prev == 0);
+      TestThat(Mem1->Next == Mem5);
+      TestThat(Mem1->Prev == Mem3);
+      TestThat(Mem2->Next == Mem3);
+      TestThat(Mem2->Prev == Mem4);
+      TestThat(Mem3->Prev == Mem2);
+      TestThat(Mem3->Next == Mem1);
+      TestThat(Mem4->Next == Mem2);
+      TestThat(Mem4->Prev == Mem0);
+    }
+    {
+      LinkParserBlocks(Mem, ArrayCount(Mem));
+      DoublyLinkedListSwap(Mem4, Mem1);
+      TestThat(Mem0->Next == Mem4);
+      TestThat(Mem0->Prev == 0);
+      TestThat(Mem1->Next == Mem5);
+      TestThat(Mem1->Prev == Mem3);
+      TestThat(Mem2->Next == Mem3);
+      TestThat(Mem2->Prev == Mem4);
+      TestThat(Mem3->Prev == Mem2);
+      TestThat(Mem3->Next == Mem1);
+      TestThat(Mem4->Next == Mem2);
+      TestThat(Mem4->Prev == Mem0);
+    }
+
+
+    {
+      LinkParserBlocks(Mem, ArrayCount(Mem));
+      DoublyLinkedListSwap(Mem0, Mem7);
+      TestThat(Mem0->Next == 0);
+      TestThat(Mem0->Prev == Mem6);
+      TestThat(Mem1->Next == Mem2);
+      TestThat(Mem1->Prev == Mem7);
+      TestThat(Mem6->Next == Mem0);
+      TestThat(Mem6->Prev == Mem5);
+      TestThat(Mem7->Next == Mem1);
+      TestThat(Mem7->Prev == 0);
+    }
+    {
+      LinkParserBlocks(Mem, ArrayCount(Mem));
+      DoublyLinkedListSwap(Mem7, Mem0);
+      TestThat(Mem0->Next == 0);
+      TestThat(Mem0->Prev == Mem6);
+      TestThat(Mem1->Next == Mem2);
+      TestThat(Mem1->Prev == Mem7);
+      TestThat(Mem6->Next == Mem0);
+      TestThat(Mem6->Prev == Mem5);
+      TestThat(Mem7->Next == Mem1);
+      TestThat(Mem7->Prev == 0);
+    }
+
+    {
+      LinkParserBlocks(Mem, ArrayCount(Mem));
+      DoublyLinkedListSwap(Mem1, Mem7);
+      TestThat(Mem0->Next == Mem7);
+      TestThat(Mem0->Prev == 0);
+      TestThat(Mem1->Next == 0);
+      TestThat(Mem1->Prev == Mem6);
+      TestThat(Mem6->Next == Mem1);
+      TestThat(Mem6->Prev == Mem5);
+      TestThat(Mem7->Next == Mem2);
+      TestThat(Mem7->Prev == Mem0);
+    }
+    {
+      LinkParserBlocks(Mem, ArrayCount(Mem));
+      DoublyLinkedListSwap(Mem7, Mem1);
+      TestThat(Mem0->Next == Mem7);
+      TestThat(Mem0->Prev == 0);
+      TestThat(Mem1->Next == 0);
+      TestThat(Mem1->Prev == Mem6);
+      TestThat(Mem6->Next == Mem1);
+      TestThat(Mem6->Prev == Mem5);
+      TestThat(Mem7->Next == Mem2);
+      TestThat(Mem7->Prev == Mem0);
+    }
   }
 
-  {
-    LinkParserBlocks(Mem, ArrayCount(Mem));
-    DoublyLinkedListSwap(Mem2, Mem1);
+  { // Test swaps work twice
+    {
+      LinkParserBlocks(Mem, ArrayCount(Mem));
+      DoublyLinkedListSwap(Mem0, Mem1);
+      DoublyLinkedListSwap(Mem0, Mem1);
+      TestThat(ParserChainIntegrityPasses(Mem));
+    }
+    {
+      LinkParserBlocks(Mem, ArrayCount(Mem));
+      DoublyLinkedListSwap(Mem0, Mem1);
+      DoublyLinkedListSwap(Mem1, Mem0);
+      TestThat(ParserChainIntegrityPasses(Mem));
+    }
 
-    TestThat(Mem1->Next == Mem3);
-    TestThat(Mem1->Prev == Mem2);
+    {
+      LinkParserBlocks(Mem, ArrayCount(Mem));
+      DoublyLinkedListSwap(Mem1, Mem2);
+      DoublyLinkedListSwap(Mem1, Mem2);
+      TestThat(ParserChainIntegrityPasses(Mem));
+    }
+    {
+      LinkParserBlocks(Mem, ArrayCount(Mem));
+      DoublyLinkedListSwap(Mem1, Mem2);
+      DoublyLinkedListSwap(Mem2, Mem1);
+      TestThat(ParserChainIntegrityPasses(Mem));
+    }
 
-    TestThat(Mem2->Next == Mem1);
-    TestThat(Mem2->Prev == Mem0);
+    {
+      LinkParserBlocks(Mem, ArrayCount(Mem));
+      DoublyLinkedListSwap(Mem1, Mem3);
+      DoublyLinkedListSwap(Mem1, Mem3);
+      TestThat(ParserChainIntegrityPasses(Mem));
+    }
 
-    TestThat(Mem3->Next == Mem4);
-    TestThat(Mem3->Prev == Mem1);
+    {
+      LinkParserBlocks(Mem, ArrayCount(Mem));
+      DoublyLinkedListSwap(Mem1, Mem3);
+      DoublyLinkedListSwap(Mem3, Mem1);
+      TestThat(ParserChainIntegrityPasses(Mem));
+    }
 
-    TestThat(Mem0->Next == Mem2);
-    TestThat(Mem0->Prev == 0);
-  }
+    {
+      LinkParserBlocks(Mem, ArrayCount(Mem));
+      DoublyLinkedListSwap(Mem1, Mem4);
+      DoublyLinkedListSwap(Mem1, Mem4);
+      TestThat(ParserChainIntegrityPasses(Mem));
+    }
 
-  {
-    LinkParserBlocks(Mem, ArrayCount(Mem));
-    DoublyLinkedListSwap(Mem1, Mem2);
+    {
+      LinkParserBlocks(Mem, ArrayCount(Mem));
+      DoublyLinkedListSwap(Mem1, Mem4);
+      DoublyLinkedListSwap(Mem4, Mem1);
+      TestThat(ParserChainIntegrityPasses(Mem));
+    }
 
-    TestThat(Mem1->Next == Mem3);
-    TestThat(Mem1->Prev == Mem2);
+    {
+      LinkParserBlocks(Mem, ArrayCount(Mem));
+      DoublyLinkedListSwap(Mem0, Mem7);
+      DoublyLinkedListSwap(Mem0, Mem7);
+      TestThat(ParserChainIntegrityPasses(Mem));
+    }
+    {
+      LinkParserBlocks(Mem, ArrayCount(Mem));
+      DoublyLinkedListSwap(Mem0, Mem7);
+      DoublyLinkedListSwap(Mem7, Mem0);
+      TestThat(ParserChainIntegrityPasses(Mem));
+    }
 
-    TestThat(Mem2->Next == Mem1);
-    TestThat(Mem2->Prev == Mem0);
-
-    TestThat(Mem3->Next == Mem4);
-    TestThat(Mem3->Prev == Mem1);
-
-    TestThat(Mem0->Next == Mem2);
-    TestThat(Mem0->Prev == 0);
-  }
-
-  {
-    LinkParserBlocks(Mem, ArrayCount(Mem));
-    DoublyLinkedListSwap(Mem1, Mem3);
-
-    TestThat(Mem0->Next == Mem3);
-    TestThat(Mem0->Prev == 0);
-
-    TestThat(Mem1->Next == Mem4);
-    TestThat(Mem1->Prev == Mem2);
-
-    TestThat(Mem2->Next == Mem1);
-    TestThat(Mem2->Prev == Mem3);
-
-    TestThat(Mem3->Next == Mem2);
-    TestThat(Mem3->Prev == Mem0);
-
-    TestThat(Mem4->Next == Mem5);
-    TestThat(Mem4->Prev == Mem1);
-  }
-
-  {
-    LinkParserBlocks(Mem, ArrayCount(Mem));
-    DoublyLinkedListSwap(Mem1, Mem4);
-
-    TestThat(Mem0->Next == Mem4);
-    TestThat(Mem0->Prev == 0);
-
-    TestThat(Mem1->Next == Mem5);
-    TestThat(Mem1->Prev == Mem3);
-
-    TestThat(Mem2->Next == Mem3);
-    TestThat(Mem2->Prev == Mem4);
-
-    TestThat(Mem3->Prev == Mem2);
-    TestThat(Mem3->Next == Mem1);
-
-    TestThat(Mem4->Next == Mem2);
-    TestThat(Mem4->Prev == Mem0);
-  }
-
-  {
-    LinkParserBlocks(Mem, ArrayCount(Mem));
-    DoublyLinkedListSwap(Mem4, Mem1);
-
-    TestThat(Mem0->Next == Mem4);
-    TestThat(Mem0->Prev == 0);
-
-    TestThat(Mem1->Next == Mem5);
-    TestThat(Mem1->Prev == Mem3);
-
-    TestThat(Mem2->Next == Mem3);
-    TestThat(Mem2->Prev == Mem4);
-
-    TestThat(Mem3->Prev == Mem2);
-    TestThat(Mem3->Next == Mem1);
-
-    TestThat(Mem4->Next == Mem2);
-    TestThat(Mem4->Prev == Mem0);
+    {
+      LinkParserBlocks(Mem, ArrayCount(Mem));
+      DoublyLinkedListSwap(Mem1, Mem7);
+      DoublyLinkedListSwap(Mem1, Mem7);
+      TestThat(ParserChainIntegrityPasses(Mem));
+    }
+    {
+      LinkParserBlocks(Mem, ArrayCount(Mem));
+      DoublyLinkedListSwap(Mem1, Mem7);
+      DoublyLinkedListSwap(Mem7, Mem1);
+      TestThat(ParserChainIntegrityPasses(Mem));
+    }
   }
 }
 
