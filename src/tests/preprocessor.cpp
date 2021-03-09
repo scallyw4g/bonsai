@@ -816,7 +816,7 @@ TestStructParsing(memory_arena* Memory)
   if (Parser)
   {
     parse_context Ctx = {
-      .CurrentParser = *Parser,
+      .CurrentParser = Parser,
       .Memory = Memory,
     };
 
@@ -895,7 +895,7 @@ TestAst(memory_arena *Memory)
   parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/should_parse.cpp"));
   if (Parser)
   {
-    Ctx.CurrentParser = *Parser;
+    Ctx.CurrentParser = Parser;
 
     ParseDatatypes(&Ctx);
 
@@ -926,8 +926,7 @@ TestMacrosAndIncludes(memory_arena *Memory)
 
   if (Parser)
   {
-    DumpEntireParser(Parser);
-    return;
+    /* DumpEntireParser(Parser); */
 
     TestThat(Parser->Next);
     TestThat(Parser->Next->Next);
@@ -945,19 +944,13 @@ TestMacrosAndIncludes(memory_arena *Memory)
     RequireToken(Parser, CToken(1337u));
     RequireToken(Parser, CTokenType_Semicolon);
 
-    RequireToken(Parser, CT_PreprocessorDefine);
-    RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroKeyword")));
-    RequireToken(Parser, CToken(CS("this_is_a_variable_name")));
+    /* RequireToken(Parser, CT_PreprocessorDefine); */
+    /* RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroKeyword"))); */
+    /* RequireToken(Parser, CToken(CS("this_is_a_variable_name"))); */
 
-    RequireToken(Parser, CT_PreprocessorDefine);
-    RequireToken(Parser, CToken(CT_MacroLiteral, CS("IndirectMacroKeyword")));
-    RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroKeyword")));
-
-    RequireToken(Parser, CTokenType_Int);
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CTokenType_Equals);
-    RequireToken(Parser, CToken(42u));
-    RequireToken(Parser, CTokenType_Semicolon);
+    /* RequireToken(Parser, CT_PreprocessorDefine); */
+    /* RequireToken(Parser, CToken(CT_MacroLiteral, CS("IndirectMacroKeyword"))); */
+    /* RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroKeyword"))); */
 
     RequireToken(Parser, CTokenType_Int);
     RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
@@ -965,79 +958,85 @@ TestMacrosAndIncludes(memory_arena *Memory)
     RequireToken(Parser, CToken(42u));
     RequireToken(Parser, CTokenType_Semicolon);
 
-    RequireToken(Parser, CT_PreprocessorDefine);
-    RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroFunction")));
-    RequireToken(Parser, CToken(CTokenType_OpenParen));
-    RequireToken(Parser, CToken(CS("a")));
-    RequireToken(Parser, CToken(CTokenType_CloseParen));
-    RequireToken(Parser, CToken(CS("a")));
-
-    RequireToken(Parser, CT_PreprocessorDefine);
-    RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroFunction2")));
-    RequireToken(Parser, CToken(CTokenType_OpenParen));
-    RequireToken(Parser, CToken(CS("a")));
-    RequireToken(Parser, CToken(CTokenType_CloseParen));
     RequireToken(Parser, CTokenType_Int);
-    RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroKeyword")));
+    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
     RequireToken(Parser, CTokenType_Equals);
-    RequireToken(Parser, CToken(CS("a")));
+    RequireToken(Parser, CToken(42u));
+    RequireToken(Parser, CTokenType_Semicolon);
 
-    RequireToken(Parser, CT_PreprocessorDefine);
-    RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroFunction3")));
-    RequireToken(Parser, CToken(CTokenType_OpenParen));
-    RequireToken(Parser, CToken(CS("a")));
-    RequireToken(Parser, CToken(CTokenType_Comma));
-    RequireToken(Parser, CToken(CS("b")));
-    RequireToken(Parser, CToken(CTokenType_Comma));
-    RequireToken(Parser, CToken(CS("c")));
-    RequireToken(Parser, CToken(CTokenType_Comma));
-    RequireToken(Parser, CToken(CS("d")));
-    RequireToken(Parser, CToken(CTokenType_CloseParen));
-    RequireToken(Parser, CToken(CS("a")));
-    RequireToken(Parser, CToken(CS("b")));
-    RequireToken(Parser, CToken(CS("c")));
-    RequireToken(Parser, CToken(CS("d")));
+    /* RequireToken(Parser, CT_PreprocessorDefine); */
+    /* RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroFunction"))); */
+    /* RequireToken(Parser, CToken(CTokenType_OpenParen)); */
+    /* RequireToken(Parser, CToken(CS("a"))); */
+    /* RequireToken(Parser, CToken(CTokenType_CloseParen)); */
+    /* RequireToken(Parser, CToken(CS("a"))); */
 
-    RequireToken(Parser, CT_PreprocessorDefine);
-    RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroFunction4")));
-    RequireToken(Parser, CToken(CTokenType_OpenParen));
-    RequireToken(Parser, CToken(CS("a")));
-    RequireToken(Parser, CToken(CTokenType_Comma));
-    RequireToken(Parser, CToken(CTokenType_Ellipsis));
-    RequireToken(Parser, CToken(CTokenType_CloseParen));
-    RequireToken(Parser, CToken(CS("a")));
+    /* RequireToken(Parser, CT_PreprocessorDefine); */
+    /* RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroFunction2"))); */
+    /* RequireToken(Parser, CToken(CTokenType_OpenParen)); */
+    /* RequireToken(Parser, CToken(CS("a"))); */
+    /* RequireToken(Parser, CToken(CTokenType_CloseParen)); */
+    /* RequireToken(Parser, CTokenType_Int); */
+    /* RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroKeyword"))); */
+    /* RequireToken(Parser, CTokenType_Equals); */
+    /* RequireToken(Parser, CToken(CS("a"))); */
 
-    RequireToken(Parser, CT_PreprocessorDefine);
-    RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroFunction5")));
-    RequireToken(Parser, CToken(CTokenType_OpenParen));
-    RequireToken(Parser, CToken(CS("a")));
-    RequireToken(Parser, CToken(CTokenType_Comma));
-    RequireToken(Parser, CToken(CS("b")));
-    RequireToken(Parser, CToken(CTokenType_Comma));
-    RequireToken(Parser, CToken(CTokenType_Ellipsis));
-    RequireToken(Parser, CToken(CTokenType_CloseParen));
-    RequireToken(Parser, CToken(CS("a")));
-    RequireToken(Parser, CToken(CS("b")));
-    RequireToken(Parser, CToken(CT_Preprocessor__VA_ARGS__));
+    /* RequireToken(Parser, CT_PreprocessorDefine); */
+    /* RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroFunction3"))); */
+    /* RequireToken(Parser, CToken(CTokenType_OpenParen)); */
+    /* RequireToken(Parser, CToken(CS("a"))); */
+    /* RequireToken(Parser, CToken(CTokenType_Comma)); */
+    /* RequireToken(Parser, CToken(CS("b"))); */
+    /* RequireToken(Parser, CToken(CTokenType_Comma)); */
+    /* RequireToken(Parser, CToken(CS("c"))); */
+    /* RequireToken(Parser, CToken(CTokenType_Comma)); */
+    /* RequireToken(Parser, CToken(CS("d"))); */
+    /* RequireToken(Parser, CToken(CTokenType_CloseParen)); */
+    /* RequireToken(Parser, CToken(CS("a"))); */
+    /* RequireToken(Parser, CToken(CS("b"))); */
+    /* RequireToken(Parser, CToken(CS("c"))); */
+    /* RequireToken(Parser, CToken(CS("d"))); */
+
+    /* RequireToken(Parser, CT_PreprocessorDefine); */
+    /* RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroFunction4"))); */
+    /* RequireToken(Parser, CToken(CTokenType_OpenParen)); */
+    /* RequireToken(Parser, CToken(CS("a"))); */
+    /* RequireToken(Parser, CToken(CTokenType_Comma)); */
+    /* RequireToken(Parser, CToken(CTokenType_Ellipsis)); */
+    /* RequireToken(Parser, CToken(CTokenType_CloseParen)); */
+    /* RequireToken(Parser, CToken(CS("a"))); */
+
+    /* RequireToken(Parser, CT_PreprocessorDefine); */
+    /* RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroFunction5"))); */
+    /* RequireToken(Parser, CToken(CTokenType_OpenParen)); */
+    /* RequireToken(Parser, CToken(CS("a"))); */
+    /* RequireToken(Parser, CToken(CTokenType_Comma)); */
+    /* RequireToken(Parser, CToken(CS("b"))); */
+    /* RequireToken(Parser, CToken(CTokenType_Comma)); */
+    /* RequireToken(Parser, CToken(CTokenType_Ellipsis)); */
+    /* RequireToken(Parser, CToken(CTokenType_CloseParen)); */
+    /* RequireToken(Parser, CToken(CS("a"))); */
+    /* RequireToken(Parser, CToken(CS("b"))); */
+    /* RequireToken(Parser, CToken(CT_Preprocessor__VA_ARGS__)); */
 
 
-    RequireToken(Parser, CT_PreprocessorDefine);
-    RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroFunction6")));
-    RequireToken(Parser, CToken(CTokenType_OpenParen));
-    RequireToken(Parser, CToken(CTokenType_Ellipsis));
-    RequireToken(Parser, CToken(CTokenType_CloseParen));
-    RequireToken(Parser, CToken(CT_Preprocessor__VA_ARGS__));
+    /* RequireToken(Parser, CT_PreprocessorDefine); */
+    /* RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroFunction6"))); */
+    /* RequireToken(Parser, CToken(CTokenType_OpenParen)); */
+    /* RequireToken(Parser, CToken(CTokenType_Ellipsis)); */
+    /* RequireToken(Parser, CToken(CTokenType_CloseParen)); */
+    /* RequireToken(Parser, CToken(CT_Preprocessor__VA_ARGS__)); */
 
 
-    RequireToken(Parser, CT_PreprocessorDefine);
-    RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroFunction7")));
-    RequireToken(Parser, CToken(CTokenType_OpenParen));
-    RequireToken(Parser, CToken(CS("a")));
-    RequireToken(Parser, CToken(CTokenType_Comma));
-    RequireToken(Parser, CToken(CS("b")));
-    RequireToken(Parser, CToken(CTokenType_CloseParen));
-    RequireToken(Parser, CToken(CS("a")));
-    RequireToken(Parser, CToken(CS("b")));
+    /* RequireToken(Parser, CT_PreprocessorDefine); */
+    /* RequireToken(Parser, CToken(CT_MacroLiteral, CS("MacroFunction7"))); */
+    /* RequireToken(Parser, CToken(CTokenType_OpenParen)); */
+    /* RequireToken(Parser, CToken(CS("a"))); */
+    /* RequireToken(Parser, CToken(CTokenType_Comma)); */
+    /* RequireToken(Parser, CToken(CS("b"))); */
+    /* RequireToken(Parser, CToken(CTokenType_CloseParen)); */
+    /* RequireToken(Parser, CToken(CS("a"))); */
+    /* RequireToken(Parser, CToken(CS("b"))); */
 
 
     // MacroFunction
@@ -1178,44 +1177,17 @@ TestMacrosAndIncludes(memory_arena *Memory)
     RequireToken(Parser, CTokenType_CloseParen);
     RequireToken(Parser, CTokenType_Semicolon);
 
-    RequireToken(Parser, CT_PreprocessorDefine);
-    RequireToken(Parser, CT_MacroLiteral);
-    RequireToken(Parser, CTokenType_OpenParen);
-    RequireToken(Parser, CToken(1u));
-    RequireToken(Parser, CTokenType_Minus);
-    RequireToken(Parser, CToken(1u));
-    RequireToken(Parser, CTokenType_CloseParen);
-
-    RequireToken(Parser, CT_PreprocessorIf);
-    TestThat(ResolveMacroConstantExpression(Parser, Memory, 0, False) == 0);
-    EatIfBlock(Parser);
-
-    RequireToken(Parser, CT_PreprocessorIf);
-    TestThat(ResolveMacroConstantExpression(Parser, Memory, 0, False) == 0);
-    EatIfBlock(Parser);
-
-    RequireToken(Parser, CT_PreprocessorIf);
-    TestThat(ResolveMacroConstantExpression(Parser, Memory, 0, False) == 0);
-    EatIfBlock(Parser);
-
-    RequireToken(Parser, CT_PreprocessorIf);
-    TestThat(ResolveMacroConstantExpression(Parser, Memory, 0, False) == 0);
-    EatIfBlock(Parser);
-
-    RequireToken(Parser, CT_PreprocessorIf);
-    TestThat(ResolveMacroConstantExpression(Parser, Memory, 0, False) == 0);
-    EatIfBlock(Parser);
-
-    RequireToken(Parser, CT_PreprocessorIf);
-    TestThat(ResolveMacroConstantExpression(Parser, Memory, 0, False) == 0);
-    EatIfBlock(Parser);
-
-    RequireToken(Parser, CT_PreprocessorIf);
-    TestThat(ResolveMacroConstantExpression(Parser, Memory, 0, False) == 0);
-    EatIfBlock(Parser);
-
+    /* RequireToken(Parser, CT_PreprocessorDefine); */
+    /* RequireToken(Parser, CT_MacroLiteral); */
+    /* RequireToken(Parser, CTokenType_OpenParen); */
+    /* RequireToken(Parser, CToken(1u)); */
+    /* RequireToken(Parser, CTokenType_Minus); */
+    /* RequireToken(Parser, CToken(1u)); */
+    /* RequireToken(Parser, CTokenType_CloseParen); */
 
     TestThat( TokensRemain(Parser) == False );
+
+    /* DumpEntireParser(Parser); */
   }
   else
   {
@@ -1235,7 +1207,7 @@ TestIncludeGuards(memory_arena *Memory)
   parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/include_guard0.cpp"));
   if (Parser)
   {
-    Ctx.CurrentParser = *Parser;
+    Ctx.CurrentParser = Parser;
     /* DumpEntireParser(Parser); */
     /* RuntimeBreak(); */
     /* ast_node_statement *Ast = ParseAllStatements(&Ctx); */
@@ -1258,7 +1230,7 @@ TestDefinesAndConditionals(memory_arena *Memory)
   parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/defines_and_conditionals.cpp"));
   if (Parser)
   {
-    Ctx.CurrentParser = *Parser;
+    Ctx.CurrentParser = Parser;
     /* DumpEntireParser(Parser); */
 
     while(TokensRemain(Parser))
@@ -1288,7 +1260,7 @@ TestLogicalOperators(memory_arena *Memory)
   parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/logical_operators.cpp"));
   if (Parser)
   {
-    Ctx.CurrentParser = *Parser;
+    Ctx.CurrentParser = Parser;
     /* DumpEntireParser(Parser); */
 
     while(TokensRemain(Parser))
@@ -1642,27 +1614,27 @@ main()
 
   memory_arena* Memory = AllocateArena();
 
-  TestDoublyLinkedListSwap();
+/*   TestDoublyLinkedListSwap(); */
 
-  TestParserChain(Memory);
+/*   TestParserChain(Memory); */
 
-  TestBasicTokenizationAndParsing(Memory);
+/*   TestBasicTokenizationAndParsing(Memory); */
 
-  TestPeekAndPopTokens(Memory);
+/*   TestPeekAndPopTokens(Memory); */
 
-  TestStructParsing(Memory);
+/*   TestStructParsing(Memory); */
 
-  TestCommentSituation(Memory);
+/*   TestCommentSituation(Memory); */
 
-  TestMacrosAndIncludes(Memory);
+/*   TestMacrosAndIncludes(Memory); */
 
-  TestIncludeGuards(Memory);
+/*   TestIncludeGuards(Memory); */
 
-  TestAst(Memory);
+  /* TestAst(Memory); */
 
   /* TestDefinesAndConditionals(Memory); */
 
-  /* TestLogicalOperators(Memory); */
+  TestLogicalOperators(Memory);
 
   TestSuiteEnd();
   exit(TestsFailed);

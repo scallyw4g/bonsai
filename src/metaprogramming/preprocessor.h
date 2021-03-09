@@ -1456,7 +1456,7 @@ enum parser_push_type
 
 struct parse_context
 {
-  parser                 CurrentParser;
+  parser                *CurrentParser;
 
   program_datatypes      Datatypes;
   parser_stream          AllParsers;

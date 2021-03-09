@@ -82,37 +82,3 @@ MacroFunction6(MacroFunction2(42));
 
 MacroFunction7(SomeRegularFunctionCall(4, 2);, SomeRegularFunctionCall(42));
 
-#define ZEEROW (1-1)
-
-#if 0
-this should be ignored
-#endif
-
-#if ZEEROW
-this should be ignored
-#endif
-
-#if 0 > 1
-this should be ignored
-#endif
-
-#if 100 == 101
-this should be ignored
-#endif
-
-#if (1 * 0)
-this should be ignored
-#endif
-
-#if (2 < 1)
-this should be ignored
-#endif
-
-#if (2*1-2)
-this should be ignored
-#endif
-
-
-
-
-

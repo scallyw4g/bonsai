@@ -1078,6 +1078,7 @@ RequireToken(parser* Parser, c_token_type ExpectedType)
   return Result;
 }
 
+// @duplicated_require_token_raw
 bonsai_function c_token
 RequireTokenRaw(parser *Parser, c_token Expected )
 {
@@ -1088,25 +1089,26 @@ RequireTokenRaw(parser *Parser, c_token Expected )
   }
   else
   {
-    Result = {};
     Assert(False);
+    Result = {};
   }
   return Result;
 }
 
+// @duplicated_require_token_raw
 bonsai_function c_token
 RequireTokenRaw(parser *Parser, c_token_type Expected )
 {
   c_token Result = PeekTokenRaw(Parser);
-  if (Result.Type == Expected)
+  if (Result.Type == Expected)  // TODO(Jesse tags:id_347) : Change to a bonsai_function call
   {
     PopTokenRaw(Parser);
   }
   else
   {
+    Assert(False);
     Result = {};
   }
-
   return Result;
 }
 
@@ -2842,7 +2844,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
         }
       } break;
 
-#if 0
+#if 1
       case CT_MacroLiteral:
       {
         Assert(T->Macro);
@@ -2879,8 +2881,9 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
         }
         else
         {
-          c_token *NextPreprocessorToken = EatIfBlock(Result);
-          EraseSectionOfParser(Result, T, NextPreprocessorToken);
+          EatIfBlock(Result);
+          OptionalToken(Result, CT_PreprocessorEndif);
+          EraseSectionOfParser(Result, T, Result->Tokens.At);
         }
       } break;
 
@@ -2939,7 +2942,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
     }
   }
 
-#if 0
+#if 1
   // Go through and erase preprocessor crap once everything's parsed out
   Rewind(Result);
   while (TokensRemain(Result))
@@ -2947,18 +2950,12 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
     c_token *T = PeekTokenRawPointer(Result);
     switch (T->Type)
     {
-      case CT_MacroLiteral:
-      {
-        RequireTokenRaw(Result, T->Type);
-        /* EraseToken(T); */
-      } break;
-
       case CT_PreprocessorDefine:
       case CT_PreprocessorUndef:
       {
         RequireTokenRaw(Result, T->Type);
-        /* EatUntilIncluding(Result, CTokenType_Newline); */
-        /* EraseSectionOfParser(Result, T, Result->Tokens.At); */
+        EatUntilIncluding(Result, CTokenType_Newline);
+        EraseSectionOfParser(Result, T, Result->Tokens.At);
       } break;
 
       default:
@@ -3936,7 +3933,7 @@ IsConstructorFunctionName(c_token T)
 bonsai_function type_spec
 ParseTypeSpecifier(parse_context *Ctx)
 {
-  parser *Parser = &Ctx->CurrentParser;
+  parser *Parser = Ctx->CurrentParser;
 
   type_spec Result = {};
 
@@ -4114,7 +4111,7 @@ ParseExpression(parse_context *Ctx, ast_node** Result);
 bonsai_function variable_decl
 ParseVariableDecl(parse_context *Ctx)
 {
-  parser *Parser = &Ctx->CurrentParser;
+  parser *Parser = Ctx->CurrentParser;
 
   variable_decl Result = {
     .Type = ParseTypeSpecifier(Ctx),
@@ -4130,7 +4127,7 @@ ParseVariableDecl(parse_context *Ctx)
   {
     if (PeekToken(Parser).Type == CTokenType_OpenBrace)
     {
-      Result.Value = ParseInitializerList(&Ctx->CurrentParser, Ctx->Memory);
+      Result.Value = ParseInitializerList(Ctx->CurrentParser, Ctx->Memory);
     }
     else
     {
@@ -4144,7 +4141,7 @@ ParseVariableDecl(parse_context *Ctx)
 bonsai_function function_decl
 ParseAndPushFunctionPrototype(parse_context *Ctx, type_spec *ReturnType, counted_string *Name, function_type Type)
 {
-  parser *Parser = &Ctx->CurrentParser;
+  parser *Parser = Ctx->CurrentParser;
 
   function_decl Result = {
     .Type = Type,
@@ -4203,7 +4200,7 @@ ParseStructBody(parse_context *Ctx, counted_string StructName);
 bonsai_function declaration
 ParseFunctionOrVariableDecl(parse_context *Ctx)
 {
-  parser *Parser = &Ctx->CurrentParser;
+  parser *Parser = Ctx->CurrentParser;
 
   declaration Result = {};
 
@@ -4532,6 +4529,7 @@ ResolveMacroConstantExpression(parser *Parser, memory_arena *Memory, u64 Previou
           Result = !Result;
         }
         RequireTokenRaw(Parser, CTokenType_CloseParen);
+        Result = ResolveMacroConstantExpression(Parser, Memory, Result, False);
       } break;
 
       case CTokenType_Plus:
@@ -4646,9 +4644,6 @@ EatIfBlock(parser *Parser)
       ++Depth;
     }
 
-    // TODO(Jesse, tags: immediate): Pretty sure this is buggy.  This will
-    // decrement depth for all else and elif statements, when we actually want
-    // to only decrement depth for endif tokens.
     if ( Result->Type == CT_PreprocessorElse ||
          Result->Type == CT_PreprocessorElif ||
          Result->Type == CT_PreprocessorEndif )
@@ -4658,7 +4653,11 @@ EatIfBlock(parser *Parser)
         Success = True;
         break;
       }
-      --Depth;
+
+      if (Result->Type == CT_PreprocessorEndif)
+      {
+        --Depth;
+      }
     }
 
     RequireTokenRaw(Parser, Result->Type);
@@ -4705,7 +4704,7 @@ bonsai_function struct_member
 ParseStructMember(parse_context *Ctx, counted_string StructName)
 {
   TIMED_FUNCTION();
-  parser *Parser = &Ctx->CurrentParser;
+  parser *Parser = Ctx->CurrentParser;
 
   struct_member Result = {};
 
@@ -4881,7 +4880,7 @@ bonsai_function struct_def
 ParseStructBody(parse_context *Ctx, counted_string StructName)
 {
   TIMED_FUNCTION();
-  parser *Parser = &Ctx->CurrentParser;
+  parser *Parser = Ctx->CurrentParser;
   struct_def Result = StructDef(StructName, Parser->Filename);
 
   RequireToken(Parser, CTokenType_OpenBrace);
@@ -4942,7 +4941,7 @@ ParseEnum(parse_context *Ctx)
 {
   TIMED_FUNCTION();
 
-  parser *Parser = &Ctx->CurrentParser;
+  parser *Parser = Ctx->CurrentParser;
   program_datatypes *Datatypes = &Ctx->Datatypes;
 
   counted_string EnumName = RequireToken(Parser, CTokenType_Identifier).Value;
@@ -5028,7 +5027,7 @@ OptionalPostfixOperator(parser *Parser)
 bonsai_function void
 ParseDatatypeDef(parse_context *Ctx)
 {
-  parser *Parser = &Ctx->CurrentParser;
+  parser *Parser = Ctx->CurrentParser;
   c_token TypeSpecifier = PopToken(Parser);
 
   switch(TypeSpecifier.Type)
@@ -5066,7 +5065,7 @@ ParseDatatypeDef(parse_context *Ctx)
 bonsai_function void
 ParseAndPushTypedef(parse_context *Ctx)
 {
-  parser *Parser = &Ctx->CurrentParser;
+  parser *Parser = Ctx->CurrentParser;
 
   type_spec Type = ParseTypeSpecifier(Ctx);
   counted_string  Alias = {};
@@ -5092,7 +5091,7 @@ ParseAndPushTypedef(parse_context *Ctx)
 bonsai_function void
 ParseTypedef(parse_context *Ctx)
 {
-  parser *Parser = &Ctx->CurrentParser;
+  parser *Parser = Ctx->CurrentParser;
 
   RequireToken(Parser, CTokenType_Typedef);
 
@@ -5160,7 +5159,7 @@ ParseAllStatements(parse_context *Ctx);
 bonsai_function void
 ParseSingleStatement(parse_context *Ctx, ast_node_statement *Result)
 {
-  parser *Parser = &Ctx->CurrentParser;
+  parser *Parser = Ctx->CurrentParser;
 
   b32 Done = False;
   while (!Done && TokensRemain(Parser))
@@ -5350,7 +5349,7 @@ ParseAllStatements(parse_context *Ctx)
 
   ast_node_statement **Current = &Result;
 
-  while ( TokensRemain(&Ctx->CurrentParser) )
+  while ( TokensRemain(Ctx->CurrentParser) )
   {
     Assert(*Current == 0);
 
@@ -5418,7 +5417,7 @@ ParseTypeSpecifierNode(parse_context *Ctx, ast_node_expression *Result, datatype
         Error("BUG during ParseTypeSpecifierNode");
       } break;
 
-      InvalidDefaultWhileParsing(&Ctx->CurrentParser, CSz("Invalid syntax following type-specifier."));
+      InvalidDefaultWhileParsing(Ctx->CurrentParser, CSz("Invalid syntax following type-specifier."));
     }
   }
   else
@@ -5430,7 +5429,7 @@ ParseTypeSpecifierNode(parse_context *Ctx, ast_node_expression *Result, datatype
 bonsai_function b32
 ParseSymbol(parse_context *Ctx, ast_node_expression* Result, b32 SymbolIsNeverTypeSpecifier = True)
 {
-  parser *Parser = &Ctx->CurrentParser;
+  parser *Parser = Ctx->CurrentParser;
 
   b32 PushedParser = False;
 
@@ -5497,7 +5496,7 @@ ParseSymbol(parse_context *Ctx, ast_node_expression* Result, b32 SymbolIsNeverTy
 bonsai_function void
 ParseExpression(parse_context *Ctx, ast_node_expression* Result)
 {
-  parser *Parser = &Ctx->CurrentParser;
+  parser *Parser = Ctx->CurrentParser;
 
   b32 ParsePushedParser = False;
   do
@@ -5771,7 +5770,7 @@ ReduceToTypeSpec(ast_node* InputNode, ast_node_variable_def_stream *Locals)
 bonsai_function ast_node*
 ParseFunctionCall(parse_context *Ctx, counted_string FunctionName)
 {
-  parser *Parser = &Ctx->CurrentParser;
+  parser *Parser = Ctx->CurrentParser;
 
   ast_node *Result = {};
   ast_node_function_call *Node = AllocateAndCastTo(ast_node_function_call, &Result, Ctx->Memory);
@@ -5805,7 +5804,7 @@ ParseFunctionCall(parse_context *Ctx, counted_string FunctionName)
 bonsai_function void
 ParseDatatypes(parse_context *Ctx)
 {
-  parser *Parser = &Ctx->CurrentParser;
+  parser *Parser = Ctx->CurrentParser;
   program_datatypes* Datatypes = &Ctx->Datatypes;
   memory_arena* Memory = Ctx->Memory;
 
@@ -5901,7 +5900,7 @@ FlushOutputToDisk(parse_context *Ctx, counted_string OutputForThisParser, counte
 {
   TIMED_FUNCTION();
 
-  parser *Parser = &Ctx->CurrentParser;
+  parser *Parser = Ctx->CurrentParser;
 
   if (!Parser->Valid)
   {
@@ -5974,7 +5973,7 @@ FlushOutputToDisk(parse_context *Ctx, counted_string OutputForThisParser, counte
     /* Push(&Ctx->AllParsers, OutputParse, Memory); */
   }
 
-  /* PushParser(&Ctx->CurrentParser, OutputParse, parser_push_type_include); */
+  /* PushParser(Ctx->CurrentParser, OutputParse, parser_push_type_include); */
   /* GoGoGadgetMetaprogramming(Ctx, TodoInfo); */
 
   return;
@@ -6958,7 +6957,7 @@ GoGoGadgetMetaprogramming(parse_context* Ctx, todo_list_info* TodoInfo)
   person_stream* People = &TodoInfo->People;
   tagged_counted_string_stream_stream* NameLists = &TodoInfo->NameLists;
 
-  parser *Parser = &Ctx->CurrentParser;
+  parser *Parser = Ctx->CurrentParser;
   while (TokensRemain(Parser))
   {
     const c_token T = PeekTokenRaw(Parser);
