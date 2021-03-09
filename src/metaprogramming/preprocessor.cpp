@@ -73,7 +73,7 @@ bonsai_function void           EatSpacesTabsAndEscapedNewlines(parser *Parser);
 
 bonsai_function parser * ResolveInclude(parse_context *Ctx, parser *Parser);
 bonsai_function parser * ExpandMacro(parser *Parser, macro_def *Macro, memory_arena *Memory);
-bonsai_function u64 ResolveMacroConstantExpression(parser *Parser, memory_arena *Memory, u64 PreviousValue, b32 LogicalNotNextValue);
+bonsai_function u64      ResolveMacroConstantExpression(parser *Parser, memory_arena *Memory, u64 PreviousValue, b32 LogicalNotNextValue);
 
 bonsai_function b32 IsDefined(parse_context *Ctx, counted_string DefineValue) ;
 bonsai_function c_token* EatIfBlock(parser *Parser);
@@ -4579,13 +4579,14 @@ ResolveMacroConstantExpression(parser *Parser, memory_arena *Memory, u64 Previou
 #endif
       } break;
 
+      case CTokenType_CommentSingleLine:
       case CTokenType_Newline:
       case CTokenType_CloseParen:
       {
         // We're done
       } break;
 
-      InvalidDefaultWhileParsing(Parser, CSz("Invalid Token :: ResolveMacroConstantExpression failed."));
+      default: { ParseError(Parser, PeekTokenRawPointer(Parser), CSz("Invalid Token :: ResolveMacroConstantExpression failed.")); Assert(False); } break;
     }
   }
 
@@ -4602,7 +4603,7 @@ bonsai_function void
 EraseToken(parser *Parser, c_token_type Type)
 {
   c_token *T = PeekTokenRawPointer(Parser);
-  RequireTokenRaw(Parser, Type);
+  RequireToken(Parser, Type);
   EraseToken(T);
 }
 
@@ -4812,7 +4813,7 @@ ParseStructMember(parse_context *Ctx, counted_string StructName)
         // Done parsing struct members
       } break;;
 
-      InvalidDefaultWhileParsing(Parser, CS("While parsing struct member."));
+      InvalidDefaultWhileParsing(Parser, CSz("While parsing struct member."));
     }
   } while (Continue);
 
@@ -7537,6 +7538,8 @@ RegisterUnparsedCxxTypes(program_datatypes *Datatypes, memory_arena *Memory)
 s32
 main(s32 ArgCountInit, const char** ArgStrings)
 {
+  if (!SearchForProjectRoot()) { Error("Couldn't find root dir, exiting."); return False; }
+
   if (ArgCountInit < 0)
   {
     Error("Invalid arg count of %d", ArgCountInit);
@@ -7600,7 +7603,7 @@ main(s32 ArgCountInit, const char** ArgStrings)
     ITERATE_OVER(&Ctx.AllParsers)
     {
       parser* Parser = GET_ELEMENT(Iter);
-      Ctx.CurrentParser = *Parser;
+      Ctx.CurrentParser = Parser;
 
       ParseDatatypes(&Ctx);
 
@@ -7614,7 +7617,7 @@ main(s32 ArgCountInit, const char** ArgStrings)
       parser* Parser = GET_ELEMENT(Iter);
       Rewind(Parser);
 
-      Ctx.CurrentParser = *Parser;
+      Ctx.CurrentParser = Parser;
 
       if (IsMetaprogrammingOutput(Parser->Filename, Args.Outpath))
       {

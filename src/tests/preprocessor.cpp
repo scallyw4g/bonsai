@@ -1614,25 +1614,27 @@ main()
 
   memory_arena* Memory = AllocateArena();
 
-/*   TestDoublyLinkedListSwap(); */
+  TestDoublyLinkedListSwap();
 
-/*   TestParserChain(Memory); */
+  TestParserChain(Memory);
 
-/*   TestBasicTokenizationAndParsing(Memory); */
+  TestBasicTokenizationAndParsing(Memory);
 
-/*   TestPeekAndPopTokens(Memory); */
+  TestPeekAndPopTokens(Memory);
 
-/*   TestStructParsing(Memory); */
+  TestStructParsing(Memory);
 
-/*   TestCommentSituation(Memory); */
+  TestCommentSituation(Memory);
 
-/*   TestMacrosAndIncludes(Memory); */
+  TestMacrosAndIncludes(Memory);
 
-/*   TestIncludeGuards(Memory); */
+  TestIncludeGuards(Memory);
 
-  /* TestAst(Memory); */
+#if 0
+  TestAst(Memory);
+#endif
 
-  /* TestDefinesAndConditionals(Memory); */
+  TestDefinesAndConditionals(Memory);
 
   TestLogicalOperators(Memory);
 

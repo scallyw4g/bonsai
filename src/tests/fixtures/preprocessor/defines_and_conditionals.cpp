@@ -357,8 +357,8 @@ valid_path
 
 
 
-#define ONE !(!(1)) || 1
-#define ZERO !(!(0)) && 0
+#define ONE (!(!(1)) || 1)
+#define ZERO (!(!(0)) && 0)
 
 #if !ZERO
 valid_path
