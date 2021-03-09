@@ -1619,7 +1619,18 @@ TestParserChain(memory_arena *Memory)
     RequireToken(Parser, CToken(CSz("parser_token_2")));
     RequireToken(Parser, CToken(CSz("parser_token_3")));
     RequireToken(Parser, CToken(CSz("parser_token_4")));
+
+    Rewind(Parser);
+
+    RequireToken(Parser, CToken(CSz("parser_token_0")));
+    RequireToken(Parser, CToken(CSz("parser_token_1")));
+    RequireToken(Parser, CToken(CSz("parser_token_2")));
+    RequireToken(Parser, CToken(CSz("parser_token_3")));
+    RequireToken(Parser, CToken(CSz("parser_token_4")));
+
+    /* DumpEntireParser(Parser); */
   }
+
 
   return;
 }
@@ -1635,19 +1646,19 @@ main()
 
   TestParserChain(Memory);
 
-  /* TestBasicTokenizationAndParsing(Memory); */
+  TestBasicTokenizationAndParsing(Memory);
 
-  /* TestPeekAndPopTokens(Memory); */
+  TestPeekAndPopTokens(Memory);
 
-  /* TestStructParsing(Memory); */
+  TestStructParsing(Memory);
 
-  /* TestCommentSituation(Memory); */
+  TestCommentSituation(Memory);
 
   TestMacrosAndIncludes(Memory);
 
-  /* TestIncludeGuards(Memory); */
+  TestIncludeGuards(Memory);
 
-  /* TestAst(Memory); */
+  TestAst(Memory);
 
   /* TestDefinesAndConditionals(Memory); */
 

@@ -162,23 +162,31 @@ bonsai_function void
 Rewind(parser* Parser)
 {
   parser *FirstInChain = Parser;
-  while (FirstInChain->Prev)
-  {
-    FirstInChain = FirstInChain->Prev;
-  }
+  while (FirstInChain->Prev) { FirstInChain = FirstInChain->Prev; }
   Assert(!FirstInChain->Prev);
 
-  parser *Current = FirstInChain;
-  while (Current)
   {
-    RewindSingle(Current);
-    Current = Current->Next;
+    parser *Current = FirstInChain;
+    while (Current)
+    {
+      RewindSingle(Current);
+      Current = Current->Next;
+    }
   }
 
   if (FirstInChain != Parser)
   {
     DoublyLinkedListSwap(Parser, FirstInChain);
   }
+
+#if BONSAI_INTERNAL
+  parser *Current = FirstInChain;
+  while (Current)
+  {
+    Assert(Current->Tokens.At == Current->Tokens.Start);
+    Current = Current->Next;
+  }
+#endif
 
   Assert(!Parser->Prev);
 }
@@ -413,11 +421,9 @@ DumpLocalTokens(parser *Parser)
 bonsai_function void
 DumpEntireParser(parser* Parser, u32 LinesToDump = u32_MAX)
 {
-  parser LocalParser = *Parser;
-  LocalParser.OutputTokens = {};
-  Rewind(&LocalParser.Tokens);
+  Rewind(Parser);
 
-  c_token *T = PopTokenRawPointer(&LocalParser);
+  c_token *T = PopTokenRawPointer(Parser);
   while(T && LinesToDump > 0)
   {
     PrintToken(T);
@@ -427,7 +433,7 @@ DumpEntireParser(parser* Parser, u32 LinesToDump = u32_MAX)
       --LinesToDump;
     }
 
-    T = PopTokenRawPointer(&LocalParser);
+    T = PopTokenRawPointer(Parser);
   }
 }
 
@@ -1944,7 +1950,7 @@ SplitAndInsertParserInto(parser *ParserToSplit, c_token* SplitStart, parser *Par
   Assert(SplitEnd >= ParserToSplit->Tokens.Start);
   Assert(SplitEnd <= ParserToSplit->Tokens.End);
 
-  s64 SecondHalfLength = SplitEnd - ParserToSplit->Tokens.End;
+  s64 SecondHalfLength = ParserToSplit->Tokens.End - SplitEnd;
   Assert(SecondHalfLength >= 0);
 
   parser *SecondHalfOfSplit = 0;
@@ -1969,30 +1975,27 @@ SplitAndInsertParserInto(parser *ParserToSplit, c_token* SplitStart, parser *Par
     Rewind(ParserToInsert);
 
     Assert(ParserToInsert->Prev == 0);
-    Assert(ParserToInsert->Next == 0);
-
-    ParserToSplit->Next = ParserToInsert;
-
-    ParserToInsert->Next = SecondHalfOfSplit;
     ParserToInsert->Prev = ParserToSplit;
 
-    parser *ParserToSplitNext = ParserToSplit->Next;
+    parser *LastInParserToInsertNextChain = ParserToInsert;
+    while (LastInParserToInsertNextChain->Next) { LastInParserToInsertNextChain = LastInParserToInsertNextChain->Next; }
+    LastInParserToInsertNextChain->Next = SecondHalfOfSplit;
 
     if (SecondHalfOfSplit)
     {
-      SecondHalfOfSplit->Next = ParserToSplitNext;
+      SecondHalfOfSplit->Next = ParserToSplit->Next;
       SecondHalfOfSplit->Prev = ParserToInsert;
-      Assert(ParserToSplit->Next->Next->Next == ParserToSplitNext);
       Assert(SecondHalfOfSplit->Tokens.At == SecondHalfOfSplit->Tokens.Start);
     }
 
+    ParserToSplit->Next = ParserToInsert;
+
     Assert(ParserToSplit->Next == ParserToInsert);
-    Assert(ParserToSplit->Next->Next == SecondHalfOfSplit);
 
 
     Assert(ParserToSplit->Prev != ParserToSplit);
     /* Assert(ParserToSplit->Next->Next == SecondHalfOfSplit); */
-    /* Assert(ParserToSplit->Next->Next->Next == ParserToSplitNext); */
+    /* Assert(ParserToSplit->Next->Next->Next == ParserToSplit->Next); */
 
     Assert(ParserToInsert->Tokens.At    == ParserToInsert->Tokens.Start);
   }
