@@ -82,7 +82,7 @@ bonsai_function void EraseToken(c_token *Token);
 bonsai_function void EraseToken(parser *Parser, c_token_type Type);
 bonsai_function void EraseSectionOfParser(parser *Parser, c_token *StartToken, c_token *OnePastLastToken);
 
-void DumpTokens(parser *Parser);
+bonsai_function void DumpLocalTokens(parser *Parser);
 
 
 
@@ -395,8 +395,8 @@ EatUntilIncluding(parser* Parser, c_token_type Close)
 /*****************************                ********************************/
 
 
-void
-DumpTokens(parser *Parser)
+bonsai_function void
+DumpLocalTokens(parser *Parser)
 {
   u32 TokenCount = (u32)TotalElements(&Parser->Tokens);
 
@@ -404,7 +404,7 @@ DumpTokens(parser *Parser)
         TokenIndex  < TokenCount;
         ++TokenIndex)
   {
-    PrintToken(Parser->Tokens.Start[TokenIndex]);
+    PrintToken(Parser->Tokens.Start+TokenIndex);
   }
 
   return;
@@ -690,8 +690,6 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
 
   u32 LinesOfContext = 4;
 
-  Debug("------------------------------------------------------------------------------------");
-
   parser *CandidateParser = Parser;
   while (CandidateParser)
   {
@@ -719,21 +717,21 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
     LeadingLines.Tokens.End = LeadingLines.Tokens.At;
     LeadingLines.Next = 0;
     TruncateAtPreviousLineStart(&LeadingLines, LinesOfContext);
-    DumpEntireParser(&LeadingLines);
 
     TruncateAtPreviousLineStart(&ErrorLine, 0);
     TruncateAtNextLineEnd(&ErrorLine, 0);
-    DumpEntireParser(&ErrorLine);
-    {
-      OutputErrorHelperLine(&ErrorLine, ErrorToken, ExpectedToken, ErrorString, LocalParser.LineNumber);
-    }
 
     EatUntilIncluding(&TrailingLines, CTokenType_Newline);
     TrailingLines.Tokens.Start = TrailingLines.Tokens.At;
     TruncateAtNextLineEnd(&TrailingLines, LinesOfContext);
-    DumpEntireParser(&TrailingLines);
 
     Debug("------------------------------------------------------------------------------------");
+      DumpLocalTokens(&LeadingLines);
+      DumpLocalTokens(&ErrorLine);
+      OutputErrorHelperLine(&ErrorLine, ErrorToken, ExpectedToken, ErrorString, LocalParser.LineNumber);
+      DumpLocalTokens(&TrailingLines);
+    Debug("------------------------------------------------------------------------------------");
+
     Parser->Valid = False;
   }
   else
