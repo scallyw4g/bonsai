@@ -1304,12 +1304,195 @@ TestLogicalOperators(memory_arena *Memory)
   }
 }
 
+bonsai_function void
+LinkParserBlocks(parser *Mem, u32 ParserCount)
+{
+  parser *Prev = 0;
+  for (u32 ParserIndex = 0; ParserIndex < ParserCount ; ++ParserIndex)
+  {
+    parser *At = Mem+ParserIndex;
+
+    At->Prev = Prev;
+    if (Prev) { Prev->Next = At; }
+
+    Prev = At;
+  }
+
+  TestThat(Mem[0].Next == &Mem[1]);
+  TestThat(Mem[1].Next == &Mem[2]);
+  TestThat(Mem[2].Next == &Mem[3]);
+  TestThat(Mem[3].Next == &Mem[4]);
+  TestThat(Mem[4].Next == &Mem[5]);
+  TestThat(Mem[5].Next == &Mem[6]);
+  TestThat(Mem[6].Next == &Mem[7]);
+  TestThat(Mem[7].Next == 0);
+
+  TestThat(Mem[0].Prev == 0);
+  TestThat(Mem[1].Prev == &Mem[0]);
+  TestThat(Mem[2].Prev == &Mem[1]);
+  TestThat(Mem[3].Prev == &Mem[2]);
+  TestThat(Mem[4].Prev == &Mem[3]);
+  TestThat(Mem[5].Prev == &Mem[4]);
+  TestThat(Mem[6].Prev == &Mem[5]);
+  TestThat(Mem[7].Prev == &Mem[6]);
+
+}
+
+bonsai_function void
+TestDoublyLinkedListSwap()
+{
+  parser Mem[8] = {};
+
+
+  parser *Mem0 = Mem;
+  parser *Mem1 = Mem+1;
+  parser *Mem2 = Mem+2;
+  parser *Mem3 = Mem+3;
+  parser *Mem4 = Mem+4;
+  parser *Mem5 = Mem+5;
+  parser *Mem6 = Mem+6;
+  parser *Mem7 = Mem+7;
+
+
+  {
+    LinkParserBlocks(Mem, ArrayCount(Mem));
+    DoublyLinkedListSwap(Mem0, Mem1);
+
+    TestThat(Mem0->Next == Mem2);
+    TestThat(Mem0->Prev == Mem1);
+
+    TestThat(Mem1->Next == Mem0);
+    TestThat(Mem1->Prev == 0);
+
+    TestThat(Mem2->Next == Mem3);
+    TestThat(Mem2->Prev == Mem0);
+  }
+
+  {
+    LinkParserBlocks(Mem, ArrayCount(Mem));
+    DoublyLinkedListSwap(Mem2, Mem1);
+
+    TestThat(Mem1->Next == Mem3);
+    TestThat(Mem1->Prev == Mem2);
+
+    TestThat(Mem2->Next == Mem1);
+    TestThat(Mem2->Prev == Mem0);
+
+    TestThat(Mem3->Next == Mem4);
+    TestThat(Mem3->Prev == Mem1);
+
+    TestThat(Mem0->Next == Mem2);
+    TestThat(Mem0->Prev == 0);
+  }
+
+  {
+    LinkParserBlocks(Mem, ArrayCount(Mem));
+    DoublyLinkedListSwap(Mem1, Mem2);
+
+    TestThat(Mem1->Next == Mem3);
+    TestThat(Mem1->Prev == Mem2);
+
+    TestThat(Mem2->Next == Mem1);
+    TestThat(Mem2->Prev == Mem0);
+
+    TestThat(Mem3->Next == Mem4);
+    TestThat(Mem3->Prev == Mem1);
+
+    TestThat(Mem0->Next == Mem2);
+    TestThat(Mem0->Prev == 0);
+  }
+
+  {
+    LinkParserBlocks(Mem, ArrayCount(Mem));
+    DoublyLinkedListSwap(Mem1, Mem3);
+
+    TestThat(Mem0->Next == Mem3);
+    TestThat(Mem0->Prev == 0);
+
+    TestThat(Mem1->Next == Mem4);
+    TestThat(Mem1->Prev == Mem2);
+
+    TestThat(Mem2->Next == Mem1);
+    TestThat(Mem2->Prev == Mem3);
+
+    TestThat(Mem3->Next == Mem2);
+    TestThat(Mem3->Prev == Mem0);
+
+    TestThat(Mem4->Next == Mem5);
+    TestThat(Mem4->Prev == Mem1);
+  }
+
+  {
+    LinkParserBlocks(Mem, ArrayCount(Mem));
+    DoublyLinkedListSwap(Mem1, Mem4);
+
+    TestThat(Mem0->Next == Mem4);
+    TestThat(Mem0->Prev == 0);
+
+    TestThat(Mem1->Next == Mem5);
+    TestThat(Mem1->Prev == Mem3);
+
+    TestThat(Mem2->Next == Mem3);
+    TestThat(Mem2->Prev == Mem4);
+
+    TestThat(Mem3->Prev == Mem2);
+    TestThat(Mem3->Next == Mem1);
+
+    TestThat(Mem4->Next == Mem2);
+    TestThat(Mem4->Prev == Mem0);
+  }
+
+  {
+    LinkParserBlocks(Mem, ArrayCount(Mem));
+    DoublyLinkedListSwap(Mem4, Mem1);
+
+    TestThat(Mem0->Next == Mem4);
+    TestThat(Mem0->Prev == 0);
+
+    TestThat(Mem1->Next == Mem5);
+    TestThat(Mem1->Prev == Mem3);
+
+    TestThat(Mem2->Next == Mem3);
+    TestThat(Mem2->Prev == Mem4);
+
+    TestThat(Mem3->Prev == Mem2);
+    TestThat(Mem3->Next == Mem1);
+
+    TestThat(Mem4->Next == Mem2);
+    TestThat(Mem4->Prev == Mem0);
+  }
+}
+
+bonsai_function void
+TestParserChain(memory_arena *Memory)
+{
+  parse_context Ctx = {
+    .Memory = Memory,
+  };
+
+  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/parser_chain.cpp"));
+  if (Parser)
+  {
+    RequireToken(Parser, CToken(CSz("parser_token_0")));
+    RequireToken(Parser, CToken(CSz("parser_token_1")));
+    RequireToken(Parser, CToken(CSz("parser_token_2")));
+    RequireToken(Parser, CToken(CSz("parser_token_3")));
+    RequireToken(Parser, CToken(CSz("parser_token_4")));
+  }
+
+  return;
+}
+
 s32
 main()
 {
   TestSuiteBegin("Preprocessor");
 
   memory_arena* Memory = AllocateArena();
+
+  TestDoublyLinkedListSwap();
+
+  TestParserChain(Memory);
 
   /* TestBasicTokenizationAndParsing(Memory); */
 

@@ -87,18 +87,54 @@ void DumpTokens(parser *Parser);
 
 
 bonsai_function void
-DoublyLinkedListSwap(parser *P1, parser *P2)
+DoublyLinkedListSwap(parser *P0, parser *P1)
 {
-  parser OriginalParser = *P1;
-  parser *OriginalParserNextPtr = P1->Next;
+  Assert(P0 != P1);
 
-  *P1 = *P2;
+  b32 Colocated = P0->Next == P1;
+  if (Colocated)
+  {
+    Assert(P1->Prev == P0);
+  }
 
-  P1->Prev = OriginalParserNextPtr;
-  *P1->Prev = OriginalParser;
+  b32 ColocatedReversed = P1->Next == P0;
+  if (ColocatedReversed)
+  {
+    Assert(P0->Prev == P1);
+  }
 
-  OriginalParserNextPtr->Next = P1;
-  OriginalParserNextPtr->Prev = OriginalParser.Prev;
+  parser M0 = *P0; // Mnemonic M0 == Memory0
+  parser M1 = *P1;
+
+  *P0 = M1;
+  *P1 = M0;
+
+  P0->Next = M1.Next;
+  P0->Prev = Colocated ? P1 : M1.Prev;
+
+  P1->Next = Colocated ? P0 : M0.Next;
+  P1->Prev = M0.Prev;
+
+  if (!ColocatedReversed && M1.Next)
+  {
+    M1.Next->Prev = P0;
+  }
+
+  if (!Colocated && M1.Prev)
+  {
+    M1.Prev->Next = P0;
+  }
+
+  if (!ColocatedReversed && M0.Prev)
+  {
+    M0.Prev->Next = P1;
+  }
+
+  if (!Colocated && M0.Next)
+  {
+    M0.Next->Prev = P1;
+  }
+
 
   return;
 }
@@ -119,6 +155,7 @@ Rewind(parser* Parser)
   {
     FirstInChain = FirstInChain->Prev;
   }
+  Assert(!FirstInChain->Prev);
 
   parser *Current = FirstInChain;
   while (Current)
@@ -127,7 +164,12 @@ Rewind(parser* Parser)
     Current = Current->Next;
   }
 
-  /* DoublyLinkedListSwap(Parser, FirstInChain); */
+  if (FirstInChain != Parser)
+  {
+    DoublyLinkedListSwap(Parser, FirstInChain);
+  }
+
+  Assert(!Parser->Prev);
 }
 
 bonsai_function b32
@@ -1882,18 +1924,29 @@ CountTokensBeforeNext(parser *Parser, c_token_type T1, c_token_type T2)
 
 
 
-bonsai_function parser *
+bonsai_function void
 SplitAndInsertParserInto(parser *ParserToSplit, c_token* SplitStart, parser *ParserToInsert, c_token* SplitEnd, memory_arena *Memory)
 {
+  Assert(SplitStart <= SplitEnd);
+
   Assert(SplitStart >= ParserToSplit->Tokens.Start);
-  Assert(SplitStart < ParserToSplit->Tokens.End);
+  Assert(SplitStart <= ParserToSplit->Tokens.End);
 
   Assert(SplitEnd >= ParserToSplit->Tokens.Start);
-  Assert(SplitEnd < ParserToSplit->Tokens.End);
+  Assert(SplitEnd <= ParserToSplit->Tokens.End);
 
-  parser *SecondHalfOfSplit = AllocateProtection(parser, Memory, 1, False);
+  s64 SecondHalfLength = SplitEnd - ParserToSplit->Tokens.End;
+  Assert(SecondHalfLength >= 0);
 
-  *SecondHalfOfSplit = *ParserToSplit;
+  parser *SecondHalfOfSplit = 0;
+  if (SecondHalfLength)
+  {
+    SecondHalfOfSplit = AllocateProtection(parser, Memory, 1, False);
+    *SecondHalfOfSplit = *ParserToSplit;
+
+    SecondHalfOfSplit->Tokens.Start = SplitEnd;
+    SecondHalfOfSplit->Tokens.At = SplitEnd;
+  }
 
   ParserToSplit->Tokens.At = SplitStart;
   ParserToSplit->Tokens.End = SplitStart;
@@ -1902,51 +1955,51 @@ SplitAndInsertParserInto(parser *ParserToSplit, c_token* SplitStart, parser *Par
   Assert(ParserToSplit->Tokens.At == SplitStart);
   Assert(ParserToSplit->Tokens.End == SplitStart);
 
-  SecondHalfOfSplit->Tokens.Start = SplitEnd;
-  SecondHalfOfSplit->Tokens.At = SplitEnd;
-
   if (ParserToInsert)
   {
-    parser *OriginalParserToSplitNext = ParserToSplit->Next;
-    Assert(ParserToInsert->Prev == 0);
-    Assert(ParserToInsert->Next == 0);
     Rewind(ParserToInsert);
 
+    Assert(ParserToInsert->Prev == 0);
+    Assert(ParserToInsert->Next == 0);
+
     ParserToSplit->Next = ParserToInsert;
-    // ParserToSplit->Prev = ParserToSplit->Prev; // This stays intact
 
     ParserToInsert->Next = SecondHalfOfSplit;
     ParserToInsert->Prev = ParserToSplit;
 
-    SecondHalfOfSplit->Next = OriginalParserToSplitNext;
-    SecondHalfOfSplit->Prev = ParserToInsert;
+    parser *ParserToSplitNext = ParserToSplit->Next;
+
+    if (SecondHalfOfSplit)
+    {
+      SecondHalfOfSplit->Next = ParserToSplitNext;
+      SecondHalfOfSplit->Prev = ParserToInsert;
+      Assert(ParserToSplit->Next->Next->Next == ParserToSplitNext);
+      Assert(SecondHalfOfSplit->Tokens.At == SecondHalfOfSplit->Tokens.Start);
+    }
 
     Assert(ParserToSplit->Next == ParserToInsert);
     Assert(ParserToSplit->Next->Next == SecondHalfOfSplit);
-    Assert(ParserToSplit->Next->Next->Next == OriginalParserToSplitNext);
+
 
     Assert(ParserToSplit->Prev != ParserToSplit);
     /* Assert(ParserToSplit->Next->Next == SecondHalfOfSplit); */
-    /* Assert(ParserToSplit->Next->Next->Next == OriginalParserToSplitNext); */
-
+    /* Assert(ParserToSplit->Next->Next->Next == ParserToSplitNext); */
 
     Assert(ParserToInsert->Tokens.At    == ParserToInsert->Tokens.Start);
   }
   else
   {
     ParserToSplit->Next = SecondHalfOfSplit;
+    SecondHalfOfSplit->Prev = ParserToSplit;
   }
 
-  Assert(SecondHalfOfSplit->Tokens.At == SecondHalfOfSplit->Tokens.Start);
-
-  return SecondHalfOfSplit;
+  return;
 }
 
-bonsai_function parser *
+bonsai_function void
 SplitAndInsertParserInto(parser *ParserToSplit, parser *ParserToInsert, memory_arena *Memory)
 {
-  parser *Result = SplitAndInsertParserInto(ParserToSplit, ParserToSplit->Tokens.At, ParserToInsert, ParserToSplit->Tokens.At, Memory);
-  return Result;
+  SplitAndInsertParserInto(ParserToSplit, ParserToSplit->Tokens.At, ParserToInsert, ParserToSplit->Tokens.At, Memory);
 }
 
 bonsai_function parser *
@@ -4549,10 +4602,10 @@ EraseSectionOfParser(parser *Parser, c_token *FirstToErase, c_token *OnePastLast
   Assert(FirstToErase <= OnePastLastToErase);
 
   Assert(FirstToErase >= Parser->Tokens.Start);
-  Assert(FirstToErase < Parser->Tokens.End);
+  Assert(FirstToErase <= Parser->Tokens.End);
 
   Assert(OnePastLastToErase >= Parser->Tokens.Start);
-  Assert(OnePastLastToErase < Parser->Tokens.End);
+  Assert(OnePastLastToErase <= Parser->Tokens.End);
 
 
   c_token *At = FirstToErase;
