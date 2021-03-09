@@ -926,7 +926,8 @@ TestMacrosAndIncludes(memory_arena *Memory)
 
   if (Parser)
   {
-    /* DumpEntireParser(Parser); */
+    DumpEntireParser(Parser);
+    return;
 
     TestThat(Parser->Next);
     TestThat(Parser->Next->Next);
@@ -1310,25 +1311,23 @@ main()
 
   memory_arena* Memory = AllocateArena();
 
-  TestBasicTokenizationAndParsing(Memory);
+  /* TestBasicTokenizationAndParsing(Memory); */
 
-  TestPeekAndPopTokens(Memory);
+  /* TestPeekAndPopTokens(Memory); */
 
-  TestStructParsing(Memory);
+  /* TestStructParsing(Memory); */
 
-  TestCommentSituation(Memory);
+  /* TestCommentSituation(Memory); */
 
-#if 0
   TestMacrosAndIncludes(Memory);
 
-  TestIncludeGuards(Memory);
+  /* TestIncludeGuards(Memory); */
 
-  TestAst(Memory);
-#endif
+  /* TestAst(Memory); */
 
-  TestDefinesAndConditionals(Memory);
+  /* TestDefinesAndConditionals(Memory); */
 
-  TestLogicalOperators(Memory);
+  /* TestLogicalOperators(Memory); */
 
   TestSuiteEnd();
   exit(TestsFailed);

@@ -565,6 +565,7 @@ struct parser
   counted_string Filename;
   u32 LineNumber;
 
+  parser *Prev;
   parser *Next;
 };
 meta(generate_cursor(parser))

@@ -87,16 +87,47 @@ void DumpTokens(parser *Parser);
 
 
 bonsai_function void
-Rewind(parser* Parser)
+DoublyLinkedListSwap(parser *P1, parser *P2)
+{
+  parser OriginalParser = *P1;
+  parser *OriginalParserNextPtr = P1->Next;
+
+  *P1 = *P2;
+
+  P1->Prev = OriginalParserNextPtr;
+  *P1->Prev = OriginalParser;
+
+  OriginalParserNextPtr->Next = P1;
+  OriginalParserNextPtr->Prev = OriginalParser.Prev;
+
+  return;
+}
+
+bonsai_function void
+RewindSingle(parser* Parser)
 {
   Rewind(&Parser->OutputTokens);
   Rewind(&Parser->Tokens);
   Parser->LineNumber = 1;
+}
 
-  if (Parser->Next)
+bonsai_function void
+Rewind(parser* Parser)
+{
+  parser *FirstInChain = Parser;
+  while (FirstInChain->Prev)
   {
-    Rewind(Parser->Next);
+    FirstInChain = FirstInChain->Prev;
   }
+
+  parser *Current = FirstInChain;
+  while (Current)
+  {
+    RewindSingle(Current);
+    Current = Current->Next;
+  }
+
+  /* DoublyLinkedListSwap(Parser, FirstInChain); */
 }
 
 bonsai_function b32
@@ -183,8 +214,12 @@ AdvanceParser(parser* Parser)
   else if (Parser->Next)
   {
     Assert( Parser->Next->Tokens.At == Parser->Next->Tokens.Start);
+    Assert(Parser->Next != Parser);
+    Assert(Parser->Next->Next != Parser);
+    Assert(Parser->Next->Next != Parser->Next);
 
-    *Parser = *Parser->Next;
+    DoublyLinkedListSwap(Parser, Parser->Next);
+
     if (Parser->Next)
     {
       Assert(Parser->Next != Parser);
@@ -386,6 +421,7 @@ TruncateAtPreviousLineStart(parser* Parser, u32 Count )
 
   Parser->Tokens.Start = Parser->Tokens.At;
   Parser->Tokens.At = StartingAt;
+  Parser->Prev = 0;
 }
 
 bonsai_function void
@@ -961,7 +997,6 @@ RequireToken(parser* Parser, c_token ExpectedToken)
       Assert(!Parser->Next);
       ParseError(Parser, Parser->Tokens.At, ExpectedToken, FormatCountedString(TranArena, CSz("Stream ended unexpectedly in file : %S"), Parser->Filename));
       RuntimeBreak();
-      PeekTokenPointer(Parser);
     }
 
     Parser->Valid = False;
@@ -1850,15 +1885,11 @@ CountTokensBeforeNext(parser *Parser, c_token_type T1, c_token_type T2)
 bonsai_function parser *
 SplitAndInsertParserInto(parser *ParserToSplit, c_token* SplitStart, parser *ParserToInsert, c_token* SplitEnd, memory_arena *Memory)
 {
-  // TODO(Jesse id: 363): A bunch of this crap can get taken out of here..  I added it
-  // during development to aid in debugging.
-
   Assert(SplitStart >= ParserToSplit->Tokens.Start);
   Assert(SplitStart < ParserToSplit->Tokens.End);
 
   Assert(SplitEnd >= ParserToSplit->Tokens.Start);
   Assert(SplitEnd < ParserToSplit->Tokens.End);
-
 
   parser *SecondHalfOfSplit = AllocateProtection(parser, Memory, 1, False);
 
@@ -1876,9 +1907,29 @@ SplitAndInsertParserInto(parser *ParserToSplit, c_token* SplitStart, parser *Par
 
   if (ParserToInsert)
   {
+    parser *OriginalParserToSplitNext = ParserToSplit->Next;
+    Assert(ParserToInsert->Prev == 0);
+    Assert(ParserToInsert->Next == 0);
     Rewind(ParserToInsert);
+
     ParserToSplit->Next = ParserToInsert;
+    // ParserToSplit->Prev = ParserToSplit->Prev; // This stays intact
+
     ParserToInsert->Next = SecondHalfOfSplit;
+    ParserToInsert->Prev = ParserToSplit;
+
+    SecondHalfOfSplit->Next = OriginalParserToSplitNext;
+    SecondHalfOfSplit->Prev = ParserToInsert;
+
+    Assert(ParserToSplit->Next == ParserToInsert);
+    Assert(ParserToSplit->Next->Next == SecondHalfOfSplit);
+    Assert(ParserToSplit->Next->Next->Next == OriginalParserToSplitNext);
+
+    Assert(ParserToSplit->Prev != ParserToSplit);
+    /* Assert(ParserToSplit->Next->Next == SecondHalfOfSplit); */
+    /* Assert(ParserToSplit->Next->Next->Next == OriginalParserToSplitNext); */
+
+
     Assert(ParserToInsert->Tokens.At    == ParserToInsert->Tokens.Start);
   }
   else
@@ -1888,10 +1939,14 @@ SplitAndInsertParserInto(parser *ParserToSplit, c_token* SplitStart, parser *Par
 
   Assert(SecondHalfOfSplit->Tokens.At == SecondHalfOfSplit->Tokens.Start);
 
-  // TODO(Jesse): Do we actually want to do this for some reason?
-  /* Rewind(ParserToSplit); */
-
   return SecondHalfOfSplit;
+}
+
+bonsai_function parser *
+SplitAndInsertParserInto(parser *ParserToSplit, parser *ParserToInsert, memory_arena *Memory)
+{
+  parser *Result = SplitAndInsertParserInto(ParserToSplit, ParserToSplit->Tokens.At, ParserToInsert, ParserToSplit->Tokens.At, Memory);
+  return Result;
 }
 
 bonsai_function parser *
@@ -1907,7 +1962,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
                                AllocateParser(Code.Filename, (u32)Megabytes(1), (u32)Megabytes(1), Memory),
                                Memory)
                        : AllocateParserPtr(Code.Filename, (u32)Megabytes(1), (u32)Megabytes(1), Memory);
-
 
   macro_def_stream MacrosThatNeedToBeParsedOut = {};
 
@@ -2610,15 +2664,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
   Rewind(Result);
   Result->Valid = True;
 
-  while (TokensRemain(Result))
-  {
-    Assert(PopTokenRaw(Result).Type != CTokenType_CarrigeReturn);
-  }
-
-  Rewind(Result);
-
-
-
   if (Ctx)
   {
     ITERATE_OVER(&MacrosThatNeedToBeParsedOut)
@@ -2712,105 +2757,104 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
   /* RuntimeBreak(); */
 
   // Go through and do macro/include expansion as necessary
-  parser *Current = Result;
   c_token *LastT = 0;
-
-  while (TokensRemain(Current))
+  while (TokensRemain(Result))
   {
-    c_token *T = PeekTokenPointer(Current);
+    c_token *T = PeekTokenPointer(Result);
     switch (T->Type)
     {
       case CT_PreprocessorInclude:
       {
-        parser *IncludeParser = ResolveInclude(Ctx, Current);
+        parser *IncludeParser = ResolveInclude(Ctx, Result);
         if (IncludeParser)
         {
-          EraseSectionOfParser(Current, T, Current->Tokens.At);
-          Current = SplitAndInsertParserInto(Current, Current->Tokens.At, IncludeParser, Current->Tokens.At, Memory);
+          EraseSectionOfParser(Result, T, Result->Tokens.At);
+          SplitAndInsertParserInto(Result, IncludeParser, Memory);
         }
         else
         {
-          ParseError(Current, T, CSz("Unable to resolve include."));
+          ParseError(Result, T, CSz("Unable to resolve include."));
         }
       } break;
 
+#if 0
       case CT_MacroLiteral:
       {
         Assert(T->Macro);
-        parser *Expanded = ExpandMacro(Current, T->Macro, Memory);
-        Current = SplitAndInsertParserInto(Current, T, Expanded, Current->Tokens.At, Memory);
+        parser *Expanded = ExpandMacro(Result, T->Macro, Memory);
+        EraseSectionOfParser(Result, T, Result->Tokens.At);
+        SplitAndInsertParserInto(Result, Expanded, Memory);
       } break;
+#endif
 
       case CT_PreprocessorDefine:
       case CT_PreprocessorUndef:
       {
-        RequireToken(Current, T->Type);
-        counted_string MacroName = PopToken(Current).Value;
+        RequireToken(Result, T->Type);
+        counted_string MacroName = PopToken(Result).Value;
         if (Ctx)
         {
           macro_def *Macro1 = GetByName(&Ctx->Datatypes.Macros, MacroName);
           if (Macro1) { Macro1->Undefed = T->Type == CT_PreprocessorUndef ? True : False; }
         }
 
-        EatUntilIncluding(Current, CTokenType_Newline);
+        EatUntilIncluding(Result, CTokenType_Newline);
       } break;
 
       case CT_PreprocessorIf:
       case CT_PreprocessorElif:
       {
-        RequireToken(Current, T->Type);
-        if (ResolveMacroConstantExpression(Current, Memory, 0, False))
+        RequireToken(Result, T->Type);
+        if (ResolveMacroConstantExpression(Result, Memory, 0, False))
         {
-          EraseSectionOfParser(Current, T, Current->Tokens.At);
-
-          c_token *NextPreprocessorToken = EatIfBlock(Current);
-          EatUntilIncluding(Current, CT_PreprocessorEndif);
-          EraseSectionOfParser(Current, NextPreprocessorToken, Current->Tokens.At);
+          EraseSectionOfParser(Result, T, Result->Tokens.At);
+          c_token *NextPreprocessorToken = EatIfBlock(Result);
+          EatUntilIncluding(Result, CT_PreprocessorEndif);
+          EraseSectionOfParser(Result, NextPreprocessorToken, Result->Tokens.At);
         }
         else
         {
-          c_token *NextPreprocessorToken = EatIfBlock(Current);
-          EraseSectionOfParser(Current, T, NextPreprocessorToken);
+          c_token *NextPreprocessorToken = EatIfBlock(Result);
+          EraseSectionOfParser(Result, T, NextPreprocessorToken);
         }
       } break;
 
       case CT_PreprocessorIfDefined:
       {
-        RequireToken(Current, T->Type);
-        c_token *DefineValue = PeekTokenPointer(Current);
+        RequireToken(Result, T->Type);
+        c_token *DefineValue = PeekTokenPointer(Result);
         if ( DefineValue->Type == CT_MacroLiteral && (!DefineValue->Macro->Undefed) )
         {
           EraseToken(T);
           EraseToken(DefineValue);
-
-          c_token *NextPreprocessorToken = EatIfBlock(Current);
-          EatUntilIncluding(Current, CT_PreprocessorEndif);
-          EraseSectionOfParser(Current, NextPreprocessorToken, Current->Tokens.At);
+          c_token *NextPreprocessorToken = EatIfBlock(Result);
+          EatUntilIncluding(Result, CT_PreprocessorEndif);
+          EraseSectionOfParser(Result, NextPreprocessorToken, Result->Tokens.At);
         }
         else
         {
-          c_token *NextPreprocessorToken = EatIfBlock(Current);
-          EraseSectionOfParser(Current, T, NextPreprocessorToken);
+          c_token *NextPreprocessorToken = EatIfBlock(Result);
+          EraseSectionOfParser(Result, T, NextPreprocessorToken);
         }
       } break;
 
       case CT_PreprocessorIfNotDefined:
       {
-        RequireToken(Current, T->Type);
-        c_token *DefineValue = PeekTokenPointer(Current);
+        RequireToken(Result, T->Type);
+        c_token *DefineValue = PeekTokenPointer(Result);
         if ( DefineValue->Type != CT_MacroLiteral ||
              (DefineValue->Type == CT_MacroLiteral  && DefineValue->Macro->Undefed) )
         {
           EraseToken(T);
           EraseToken(DefineValue);
-          c_token *NextPreprocessorToken = EatIfBlock(Current);
-          EatUntilIncluding(Current, CT_PreprocessorEndif);
-          EraseSectionOfParser(Current, NextPreprocessorToken, Current->Tokens.At);
+          c_token *NextPreprocessorToken = EatIfBlock(Result);
+          EatUntilIncluding(Result, CT_PreprocessorEndif);
+          EraseSectionOfParser(Result, NextPreprocessorToken, Result->Tokens.At);
         }
         else
         {
-          c_token *NextPreprocessorToken = EatIfBlock(Current);
-          EraseSectionOfParser(Current, T, NextPreprocessorToken);
+          c_token *NextPreprocessorToken = EatIfBlock(Result);
+          EraseSectionOfParser(Result, T, NextPreprocessorToken);
         }
       } break;
 
@@ -2818,46 +2862,43 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       // we hit a true clause we eat the rest of the clauses.
       case CT_PreprocessorElse:
       {
-        EraseToken(Current, CT_PreprocessorElse);
-        EatUntilExcluding(Current, CT_PreprocessorEndif);
-        EraseToken(Current, CT_PreprocessorEndif);
+        EraseToken(Result, CT_PreprocessorElse);
+        EatUntilExcluding(Result, CT_PreprocessorEndif);
+        EraseToken(Result, CT_PreprocessorEndif);
       } break;
 
       default:
       {
-        RequireToken(Current, T->Type);
+        RequireToken(Result, T->Type);
       } break;
     }
   }
 
-#if 1
-
+#if 0
   // Go through and erase preprocessor crap once everything's parsed out
-  Current = Result;
-  LastT = 0;
-
-  Rewind(Current);
-  while (TokensRemain(Current))
+  Rewind(Result);
+  while (TokensRemain(Result))
   {
-    c_token *T = PeekTokenPointer(Current);
+    c_token *T = PeekTokenRawPointer(Result);
     switch (T->Type)
     {
       case CT_MacroLiteral:
       {
+        RequireTokenRaw(Result, T->Type);
         /* EraseToken(T); */
       } break;
 
       case CT_PreprocessorDefine:
       case CT_PreprocessorUndef:
       {
-        RequireToken(Current, T->Type);
-        EatUntilIncluding(Current, CTokenType_Newline);
-        EraseSectionOfParser(Current, T, Current->Tokens.At);
+        RequireTokenRaw(Result, T->Type);
+        /* EatUntilIncluding(Result, CTokenType_Newline); */
+        /* EraseSectionOfParser(Result, T, Result->Tokens.At); */
       } break;
 
       default:
       {
-        RequireToken(Current, T->Type);
+        RequireTokenRaw(Result, T->Type);
       } break;
     }
   }
@@ -4540,6 +4581,9 @@ EatIfBlock(parser *Parser)
       ++Depth;
     }
 
+    // TODO(Jesse, tags: immediate): Pretty sure this is buggy.  This will
+    // decrement depth for all else and elif statements, when we actually want
+    // to only decrement depth for endif tokens.
     if ( Result->Type == CT_PreprocessorElse ||
          Result->Type == CT_PreprocessorElif ||
          Result->Type == CT_PreprocessorEndif )
