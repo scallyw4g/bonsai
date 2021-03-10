@@ -1,6 +1,6 @@
-//
-// Value is defined
-//
+/* // */
+/* // Value is defined */
+/* // */
 
 #if 1
 valid_path
@@ -125,7 +125,6 @@ valid_path
 #else
 invalid_path
 #endif
-
 
 #ifdef thing
 invalid_path
@@ -357,8 +356,8 @@ valid_path
 
 
 
-#define ONE (!(!(1)) || 1)
-#define ZERO (!(!(0)) && 0)
+#define ONE 1
+#define ZERO 0
 
 #if !ZERO
 valid_path

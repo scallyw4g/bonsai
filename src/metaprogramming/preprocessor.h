@@ -1408,6 +1408,8 @@ meta(generate_stream_push(struct_member))
 bonsai_function string_from_parser
 StartStringFromParser(parser* Parser)
 {
+  // NOTE(Jesse): This is completely broken if the string spans a parser chain link
+
   string_from_parser Result = {
     .Parser = Parser,
     .Start = Parser->Tokens.At->Value.Start
@@ -1418,6 +1420,15 @@ StartStringFromParser(parser* Parser)
 bonsai_function counted_string
 FinalizeStringFromParser(string_from_parser* Builder)
 {
+  // NOTE(Jesse): This is completely broken if the string spans a parser chain link
+  //
+  // TODO(Jesse, tags: immediate): Detect the above case and allocate memory?
+  // Or.. maybe don't use the string_from_parser thing anymore?  On a cursory
+  // inspection of the codebase we could potentially make it an error to have
+  // that case occur.  I didn't find anywhere that case is ever defined to be
+  // valid.  IE. having an include path span a macro expansion or another
+  // include statement isn't a well defined program.
+
   umm Count = (umm)(Builder->Parser->Tokens.At->Value.Start - Builder->Start);
   counted_string Result = CS(Builder->Start, Count);
   return Result;

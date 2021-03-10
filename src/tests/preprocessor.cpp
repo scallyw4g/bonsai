@@ -926,12 +926,6 @@ TestMacrosAndIncludes(memory_arena *Memory)
 
   if (Parser)
   {
-    /* DumpEntireParser(Parser); */
-
-    TestThat(Parser->Next);
-    TestThat(Parser->Next->Next);
-    TestThat(Parser->Next->Next);
-
     RequireToken(Parser, CTokenType_Int);
     RequireToken(Parser, CToken(CSz("ding")));
     RequireToken(Parser, CTokenType_Equals);
@@ -1615,27 +1609,15 @@ main()
   memory_arena* Memory = AllocateArena();
 
   TestDoublyLinkedListSwap();
-
   TestParserChain(Memory);
-
   TestBasicTokenizationAndParsing(Memory);
-
   TestPeekAndPopTokens(Memory);
-
   TestStructParsing(Memory);
-
   TestCommentSituation(Memory);
-
   TestMacrosAndIncludes(Memory);
-
   TestIncludeGuards(Memory);
-
-#if 0
-  TestAst(Memory);
-#endif
-
+  /* TestAst(Memory); */
   TestDefinesAndConditionals(Memory);
-
   TestLogicalOperators(Memory);
 
   TestSuiteEnd();
