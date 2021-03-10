@@ -8,7 +8,7 @@
     default: { ParseError(P, PeekTokenPointer(P), ErrorMessage); Assert(False); } break;
 
 
-# define DEBUG_PRINT (0)
+#define DEBUG_PRINT (0)
 #if DEBUG_PRINT
 #include <bonsai_stdlib/headers/debug_print.h>
 
@@ -2408,6 +2408,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
               PushT.Type = CT_PreprocessorDefine;
               PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
 
+#if 1
               macro_def Macro = {
                 .Name = PopIdentifier(&Code),
                 .Body = {
@@ -2427,6 +2428,8 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
               {
                 Push(&MacrosThatNeedToBeParsedOut, Macro, Memory);
               }
+#endif
+
             }
             else if ( StringsMatch(TempValue, CSz("undef")) )
             {
@@ -2688,6 +2691,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
           else
           {
 
+#if 1
             if ( !ParsingSingleLineComment &&
                  !ParsingMultiLineComment   )
             {
@@ -2708,6 +2712,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
                 }
               }
             }
+#endif
 
             if (LastTokenPushed && LastTokenPushed->Type == CT_ScopeResolutionOperator)
             {
@@ -2782,8 +2787,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       }
       else
       {
-        // TrimLeadingWhitespace(MacroBody);
-
         Macro->Type = type_macro_keyword;
       }
 
@@ -2812,16 +2815,17 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
     }
 
     ConcatStreams(&Ctx->Datatypes.Macros, &MacrosThatNeedToBeParsedOut);
+
+#if 0
+    ITERATE_OVER(&Ctx->Datatypes.Macros)
+    {
+      DebugPrint(Iter.At->Element);
+    }
+#endif
+
   }
 
-  /* ITERATE_OVER(&Ctx->Datatypes.Macros) */
-  /* { */
-  /*   DebugPrint(Iter.At->Element); */
-  /* } */
-
   Rewind(Result);
-
-  /* RuntimeBreak(); */
 
   // Go through and do macro/include expansion as necessary
   c_token *LastT = 0;
@@ -2847,9 +2851,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 #if 1
       case CT_MacroLiteral:
       {
-        Assert(T->Macro);
         parser *Expanded = ExpandMacro(Result, T->Macro, Memory);
-        EraseSectionOfParser(Result, T, Result->Tokens.At);
         SplitAndInsertParserInto(Result, Expanded, Memory);
       } break;
 #endif
@@ -2950,6 +2952,25 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
     c_token *T = PeekTokenRawPointer(Result);
     switch (T->Type)
     {
+
+      case CT_MacroLiteral:
+      {
+        RequireTokenRaw(Result, T->Type);
+        if (T->Macro->Type == type_macro_function)
+        {
+          EatBetween(Result, CTokenType_OpenParen, CTokenType_CloseParen);
+          EraseSectionOfParser(Result, T, Result->Tokens.At);
+        }
+        else if (T->Macro->Type == type_macro_keyword)
+        {
+          EraseToken(T);
+        }
+        else
+        {
+          InvalidCodePath();
+        }
+      } break;
+
       case CT_PreprocessorDefine:
       case CT_PreprocessorUndef:
       {
