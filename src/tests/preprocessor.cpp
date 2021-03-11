@@ -1606,6 +1606,12 @@ main()
 {
   TestSuiteBegin("Preprocessor");
 
+/* #define thing(a) a */
+/* thing(static int thing(foo)) = 42; */
+
+/*   printf("foo %d\n", foo); */
+
+
   memory_arena* Memory = AllocateArena();
 
   TestDoublyLinkedListSwap();
@@ -1619,6 +1625,7 @@ main()
   /* TestAst(Memory); */
   TestDefinesAndConditionals(Memory);
   TestLogicalOperators(Memory);
+
 
   TestSuiteEnd();
   exit(TestsFailed);
