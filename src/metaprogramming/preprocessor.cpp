@@ -84,6 +84,7 @@ bonsai_function void EraseToken(parser *Parser, c_token_type Type);
 bonsai_function void EraseSectionOfParser(parser *Parser, c_token *StartToken, c_token *OnePastLastToken);
 
 bonsai_function void DumpLocalTokens(parser *Parser);
+bonsai_function void SanityCheckParserChain(parser *Parser);
 
 
 
@@ -101,7 +102,19 @@ DoublyLinkedListSwap(parser *P0, parser *P1)
   // that this routine is well tested so future-me can fearlessly modify it.
   if (Colocated)
   {
-    Assert(P1->Prev == P0);
+    if (P1->Prev != P0)
+    {
+      Assert(false);
+
+      DumpLocalTokens(P0);
+      Debug("\n");
+      DumpLocalTokens(P1);
+      Debug("\n");
+      DumpLocalTokens(P1->Next);
+      Debug("\n");
+      DumpLocalTokens(P1->Prev);
+      Debug("\n");
+    }
   }
 
   if (ColocatedReversed)
@@ -254,6 +267,7 @@ Advance(c_token_cursor* Tokens, u32 Lookahead = 0)
 bonsai_function void
 AdvanceParser(parser* Parser)
 {
+  SanityCheckParserChain(Parser);
   Assert(Parser->Tokens.At >= Parser->Tokens.Start);
   Assert(Parser->Tokens.At <= Parser->Tokens.End);
   Assert(Parser->Tokens.Start <= Parser->Tokens.End);
@@ -299,6 +313,7 @@ AdvanceParser(parser* Parser)
   Assert(Parser->Tokens.At <= Parser->Tokens.End);
   Assert(Parser->Tokens.Start <= Parser->Tokens.End);
 
+  SanityCheckParserChain(Parser);
   return;
 }
 
@@ -1367,8 +1382,22 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
           macro_def *M = GetMacroDef(Ctx, T->Value);
           if (M)
           {
-            T->Type = CT_MacroLiteral;
-            T->Macro = M;
+            if ( M->Type == type_macro_function &&
+                 PeekTokenRaw(InstanceArgs).Type != CTokenType_OpenParen )
+            {
+              // If an identifier is a macro function but it's not invoked the
+              // identifier is left unadultered.
+              //
+              // NOTE(Jesse): I believe this codepath _should_ not have
+              // anything in it, but I'm keeping this here just in case it's
+              // borked.  I haven't hit it yet.
+              RuntimeBreak();
+            }
+            else
+            {
+              T->Type = CT_MacroLiteral;
+              T->Macro = M;
+            }
           }
         }
         Rewind(InstanceArgs);
@@ -1916,7 +1945,6 @@ GetByName(macro_def_stream* Stream, counted_string Name)
     if (!Current->Undefed && StringsMatch(Current->Name, Name))
     {
       Result = Current;
-      Rewind(&Result->Body);
       break;
     }
   }
@@ -1958,10 +1986,30 @@ CountTokensBeforeNext(parser *Parser, c_token_type T1, c_token_type T2)
 
 
 
+bonsai_function void
+SanityCheckParserChain(parser *Parser)
+{
+  parser *FirstInChain = Parser;
+  while (FirstInChain->Prev) FirstInChain = FirstInChain->Prev;
+
+  parser *Current = FirstInChain;
+  while (Current->Next)
+  {
+    Assert(Current->Next->Prev == Current);
+    if (Current->Prev)
+    {
+      Assert(Current->Prev->Next == Current);
+    }
+    Current = Current->Next;
+  }
+}
 
 bonsai_function parser *
 SplitAndInsertParserInto(parser *ParserToSplit, c_token* SplitStart, parser *ParserToInsert, c_token* SplitEnd, memory_arena *Memory)
 {
+  SanityCheckParserChain(ParserToSplit);
+  SanityCheckParserChain(ParserToInsert);
+
   parser *Result = ParserToSplit;
   Assert(SplitStart <= SplitEnd);
 
@@ -1991,41 +2039,63 @@ SplitAndInsertParserInto(parser *ParserToSplit, c_token* SplitStart, parser *Par
   Assert(ParserToSplit->Tokens.At == SplitStart);
   Assert(ParserToSplit->Tokens.End == SplitStart);
 
-  if (ParserToInsert)
+  Result = ParserToInsert;
+
+  Assert(ParserToInsert->Prev == 0);
+  Rewind(ParserToInsert);
+  Assert(ParserToInsert->Prev == 0);
+
+  ParserToSplit->Next = ParserToInsert;
+  ParserToInsert->Prev = ParserToSplit;
+
+  parser *LastInParserToInsertNextChain = ParserToInsert;
+  while (LastInParserToInsertNextChain->Next) { LastInParserToInsertNextChain = LastInParserToInsertNextChain->Next; }
+  LastInParserToInsertNextChain->Next = SecondHalfOfSplit;
+
+  if (SecondHalfOfSplit)
   {
-    Result = ParserToInsert;
-    Rewind(ParserToInsert);
+    Result = SecondHalfOfSplit;
+    SecondHalfOfSplit->Next = ParserToSplit->Next;
 
-    Assert(ParserToInsert->Prev == 0);
-    ParserToInsert->Prev = ParserToSplit;
+#if 0
+    if (ParserToSplit->Next)
+    {
+      ParserToSplit->Next->Prev = SecondHalfOfSplit;
+    }
+#endif
 
-    parser *LastInParserToInsertNextChain = ParserToInsert;
-    while (LastInParserToInsertNextChain->Next) { LastInParserToInsertNextChain = LastInParserToInsertNextChain->Next; }
-    LastInParserToInsertNextChain->Next = SecondHalfOfSplit;
+    SecondHalfOfSplit->Prev = LastInParserToInsertNextChain;
+    Assert(SecondHalfOfSplit->Tokens.At == SecondHalfOfSplit->Tokens.Start);
+  }
+
+#if 1
+
+  { // Sanity checks
+    Assert(ParserToInsert->Tokens.At == ParserToInsert->Tokens.Start);
+
+    if (ParserToSplit->Next) { Assert(ParserToSplit->Next->Prev == ParserToSplit); }
+    if (ParserToSplit->Prev) { Assert(ParserToSplit->Prev->Next == ParserToSplit); }
+    Assert(ParserToSplit->Next == ParserToInsert);
+    Assert(ParserToInsert->Prev == ParserToSplit);
 
     if (SecondHalfOfSplit)
     {
-      Result = SecondHalfOfSplit;
-      SecondHalfOfSplit->Next = ParserToSplit->Next;
-      SecondHalfOfSplit->Prev = ParserToInsert;
-      Assert(SecondHalfOfSplit->Tokens.At == SecondHalfOfSplit->Tokens.Start);
+      Assert(SecondHalfOfSplit->Prev == LastInParserToInsertNextChain);
+      Assert(LastInParserToInsertNextChain->Next == SecondHalfOfSplit);
     }
-
-    ParserToSplit->Next = ParserToInsert;
-
-    Assert(ParserToSplit->Next == ParserToInsert);
-
-
-    Assert(ParserToSplit->Prev != ParserToSplit);
-    /* Assert(ParserToSplit->Next->Next == SecondHalfOfSplit); */
-    /* Assert(ParserToSplit->Next->Next->Next == ParserToSplit->Next); */
-
-    Assert(ParserToInsert->Tokens.At    == ParserToInsert->Tokens.Start);
+    else
+    {
+      Assert(LastInParserToInsertNextChain->Next == 0);
+    }
   }
-  else
+
+#endif
+
+  SanityCheckParserChain(ParserToSplit);
+  SanityCheckParserChain(ParserToInsert);
+  if (SecondHalfOfSplit)
   {
-    ParserToSplit->Next = SecondHalfOfSplit;
-    SecondHalfOfSplit->Prev = ParserToSplit;
+    SanityCheckParserChain(SecondHalfOfSplit);
   }
 
   return Result;
@@ -2453,10 +2523,17 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
       case CTokenType_BSlash:
       {
+        if (PeekToken(&Code, 1).Type == CTokenType_CarrigeReturn)
+        {
+          ++PushT.Value.Count;
+          Advance(&Code);
+          Assert(PeekToken(&Code, 1).Type == CTokenType_Newline);
+        }
+
         if (PeekToken(&Code, 1).Type == CTokenType_Newline)
         {
           PushT.Type = CTokenType_EscapedNewline;
-          PushT.Value.Count = 2;
+          ++PushT.Value.Count;
           Advance(&Code);
           ++LineNumber;
         }
