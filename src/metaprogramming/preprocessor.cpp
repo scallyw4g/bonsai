@@ -2045,9 +2045,6 @@ SplitAndInsertParserInto(parser *ParserToSplit, c_token* SplitStart, parser *Par
   Rewind(ParserToInsert);
   Assert(ParserToInsert->Prev == 0);
 
-  ParserToSplit->Next = ParserToInsert;
-  ParserToInsert->Prev = ParserToSplit;
-
   parser *LastInParserToInsertNextChain = ParserToInsert;
   while (LastInParserToInsertNextChain->Next) { LastInParserToInsertNextChain = LastInParserToInsertNextChain->Next; }
   LastInParserToInsertNextChain->Next = SecondHalfOfSplit;
@@ -2056,17 +2053,12 @@ SplitAndInsertParserInto(parser *ParserToSplit, c_token* SplitStart, parser *Par
   {
     Result = SecondHalfOfSplit;
     SecondHalfOfSplit->Next = ParserToSplit->Next;
-
-#if 0
-    if (ParserToSplit->Next)
-    {
-      ParserToSplit->Next->Prev = SecondHalfOfSplit;
-    }
-#endif
-
     SecondHalfOfSplit->Prev = LastInParserToInsertNextChain;
     Assert(SecondHalfOfSplit->Tokens.At == SecondHalfOfSplit->Tokens.Start);
   }
+
+  ParserToInsert->Prev = ParserToSplit;
+  ParserToSplit->Next = ParserToInsert; // Don't move me
 
 #if 1
 
