@@ -1179,6 +1179,16 @@ TestMacrosAndIncludes(memory_arena *Memory)
     /* RequireToken(Parser, CToken(1u)); */
     /* RequireToken(Parser, CTokenType_CloseParen); */
 
+    RequireToken(Parser, CToken(4u));
+    RequireToken(Parser, CToken(2u));
+
+    RequireToken(Parser, CToken(4u));
+    RequireToken(Parser, CToken(2u));
+
+    RequireToken(Parser, CToken(CSz("MacroFunction8")));
+    RequireToken(Parser, CToken(CSz("MacroFunction8")));
+    RequireToken(Parser, CToken(0u));
+
     TestThat( TokensRemain(Parser) == False );
 
     /* DumpEntireParser(Parser); */

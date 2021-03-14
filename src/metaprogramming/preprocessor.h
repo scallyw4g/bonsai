@@ -1186,14 +1186,37 @@ PrintToken(c_token *Token)
   {
     Assert(Token->Type);
     Assert(Token->Value.Start && Token->Value.Count);
-    if (Token->Erased)
+    const char* Color = 0;
+
+    switch (Token->Type)
     {
-      Log(RED_TERMINAL);
+      case CT_MacroLiteral:
+      {
+        Color = BLUE_TERMINAL;
+        if (Token->Erased)
+        {
+          Color = PURPLE_TERMINAL;
+        }
+      } break;
+
+      default:
+      {
+        if (Token->Erased)
+        {
+          Color = RED_TERMINAL;
+        }
+      } break;
+    }
+
+
+    if (Color)
+    {
+      Log(Color);
     }
 
     Log("%S", Token->Value);
 
-    if (Token->Erased)
+    if (Color)
     {
       Log(WHITE_TERMINAL);
     }

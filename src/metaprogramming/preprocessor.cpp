@@ -731,6 +731,8 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
     parser LocalParser = *CandidateParser;
     LocalParser.OutputTokens = {};
     LocalParser.Tokens.At = ErrorToken;
+    LocalParser.Next = 0;
+    LocalParser.Prev = 0;
 
     parser LeadingLines  = LocalParser;
     parser ErrorLine     = LocalParser;
@@ -1360,7 +1362,7 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
     {
       c_token *Start = PeekTokenPointer(Parser);
 
-      if (Start->Type == CTokenType_OpenParen)
+      if (Start && Start->Type == CTokenType_OpenParen)
       {
         parser InstanceArgs_ =
         {
@@ -1387,11 +1389,6 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
             {
               // If an identifier is a macro function but it's not invoked the
               // identifier is left unadultered.
-              //
-              // NOTE(Jesse): I believe this codepath _should_ not have
-              // anything in it, but I'm keeping this here just in case it's
-              // borked.  I haven't hit it yet.
-              RuntimeBreak();
             }
             else
             {
@@ -2101,7 +2098,7 @@ SplitAndInsertParserInto(parser *ParserToSplit, parser *ParserToInsert, memory_a
 }
 
 bonsai_function void
-ParseMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *Memory)
+ParseMacro(parse_context *Ctx, macro_def *Macro, memory_arena *Memory)
 {
   Assert(Ctx);
   parser *MacroBody = &Macro->Body;
@@ -2111,6 +2108,7 @@ ParseMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *M
   if (OptionalTokenRaw(MacroBody, CTokenType_OpenParen))
   {
     Macro->Type = type_macro_function;
+
     if (OptionalToken(MacroBody, CTokenType_CloseParen))
     {
       // No arguments
@@ -2184,7 +2182,7 @@ ParseMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *M
 }
 
 bonsai_function void
-DefineMacro(parse_context *Ctx, parser *Parser, macro_def *Macro)
+RedefineMacro(parse_context *Ctx, parser *Parser, macro_def *Macro)
 {
   RequireToken(Parser, CT_PreprocessorDefine);
 
@@ -2197,14 +2195,39 @@ DefineMacro(parse_context *Ctx, parser *Parser, macro_def *Macro)
   Macro->Body.Filename = Parser->Filename;
   Macro->Body.LineNumber = Parser->LineNumber;
 
-  ParseMacro(Ctx, Parser, Macro, Ctx->Memory);
+  ParseMacro(Ctx, Macro, Ctx->Memory);
 }
 
 bonsai_function void
-DefineMacro(parse_context *Ctx, parser *Parser, counted_string MacroName)
+PushNewMacro(parse_context *Ctx, parser *Parser, counted_string MacroName)
 {
   macro_def *Macro = Push(&Ctx->Datatypes.Macros, { .Name = MacroName }, Ctx->Memory);
-  DefineMacro(Ctx, Parser, Macro);
+  RedefineMacro(Ctx, Parser, Macro);
+}
+
+bonsai_function b32
+MacroShouldBeExpanded(parser *Parser, c_token *T, macro_def *Macro)
+{
+  Assert(PeekTokenRawPointer(Parser) == T);
+  Assert(T->Type == CTokenType_Identifier);
+  Assert(StringsMatch(T->Value, Macro->Name));
+
+  b32 Result = False;
+
+  switch (Macro->Type)
+  {
+    case type_macro_function:
+    {
+    } break;
+
+    case type_macro_function:
+    {
+    } break;
+
+    InvalidDefaultCase;
+  }
+
+  return Result;
 }
 
 bonsai_function parser *
@@ -2599,43 +2622,11 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
             {
               PushT.Type = CT_PreprocessorDefine;
               PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
-
-#if 0
-              const char* FirstAfterDefineKeyword = Code.At;
-              LineNumber += EatSpacesTabsAndEscapedNewlines(&Code);
-
-              macro_def Macro = {
-                .Name = PopIdentifier(&Code),
-                .Body = {
-                  .Tokens = {
-                    .Start = Result->Tokens.At,
-                    .At    = Result->Tokens.At,
-                  },
-                  .Filename = Code.Filename,
-                  .LineNumber = LineNumber,
-                }
-              };
-
-              Code.At = FirstAfterDefineKeyword;
-
-              if ( !ParsingSingleLineComment &&
-                   !ParsingMultiLineComment   )
-              {
-                Push(&MacrosThatNeedToBeParsedOut, Macro, Memory);
-              }
-#endif
-
             }
             else if ( StringsMatch(TempValue, CSz("undef")) )
             {
               PushT.Type = CT_PreprocessorUndef;
               PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
-#if 0
-              const char* FirstAfterDefineKeyword = Code.At;
-              LineNumber += EatSpacesTabsAndEscapedNewlines(&Code);
-              counted_string MacroName = PopIdentifier(&Code);
-              Code.At = FirstAfterDefineKeyword;
-#endif
             }
             else if ( StringsMatch(TempValue, CSz("if")) )
             {
@@ -2886,30 +2877,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
           }
           else
           {
-
-#if 0
-            if ( !ParsingSingleLineComment &&
-                 !ParsingMultiLineComment   )
-            {
-              if (Ctx)
-              {
-                macro_def *Macro1 = GetByName(&Ctx->Datatypes.Macros, PushT.Value);
-                macro_def *Macro2 = GetByName(&MacrosThatNeedToBeParsedOut, PushT.Value);
-
-                if (Macro1)
-                {
-                  PushT.Type = CT_MacroLiteral;
-                  PushT.Macro = Macro1;
-                }
-                else if (Macro2)
-                {
-                  PushT.Type = CT_MacroLiteral;
-                  PushT.Macro = Macro2;
-                }
-              }
-            }
-#endif
-
             if (LastTokenPushed && LastTokenPushed->Type == CT_ScopeResolutionOperator)
             {
               PushT.QualifierName = LastTokenPushed->QualifierName;
@@ -2931,97 +2898,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
   TruncateToCurrentSize(&Result->Tokens);
   Rewind(Result);
   Result->Valid = True;
-
-#if 0
-  if (Ctx)
-  {
-    ITERATE_OVER(&MacrosThatNeedToBeParsedOut)
-    {
-      macro_def *Macro = GET_ELEMENT(Iter);
-      if (StringsMatch(Macro->Name, CSz("meta"))) { continue; }
-
-      parser *MacroBody = &Macro->Body;
-      MacroBody->Tokens.End = Result->Tokens.End;
-
-      RequireToken(MacroBody, CT_PreprocessorDefine);
-      RequireToken(MacroBody, CToken(CT_MacroLiteral, Macro->Name));
-
-      if (OptionalTokenRaw(MacroBody, CTokenType_OpenParen))
-      {
-        Macro->Type = type_macro_function;
-        if (OptionalToken(MacroBody, CTokenType_CloseParen))
-        {
-          // No arguments
-        }
-        else
-        {
-          u32 ArgCount = 1 + CountTokensBeforeNext(MacroBody, CTokenType_Comma, CTokenType_CloseParen);
-          Macro->NamedArguments = CountedStringBuffer(ArgCount, Memory);
-
-          for ( u32 ArgIndex = 0;
-                ArgIndex < ArgCount-1;
-                ++ArgIndex)
-          {
-            counted_string ArgName = RequireToken(MacroBody, CTokenType_Identifier).Value;
-            Macro->NamedArguments.Start[ArgIndex] = ArgName;
-            RequireToken(MacroBody, CTokenType_Comma);
-          }
-
-          if (PeekToken(MacroBody).Type == CTokenType_Identifier)
-          {
-            counted_string ArgName = RequireToken(MacroBody, CTokenType_Identifier).Value;
-            Macro->NamedArguments.Start[Macro->NamedArguments.Count-1] = ArgName;
-          }
-
-          if (OptionalToken(MacroBody, CTokenType_Ellipsis))
-          {
-            Macro->Variadic = True;
-            Macro->NamedArguments.Count -= 1;
-          }
-
-          RequireToken(MacroBody, CTokenType_CloseParen);
-        }
-      }
-      else
-      {
-        Macro->Type = type_macro_keyword;
-      }
-
-      MacroBody->Tokens.Start = MacroBody->Tokens.At;
-
-      b32 Done = False;
-      while (!Done && TokensRemain(MacroBody))
-      {
-        switch (PeekTokenRaw(MacroBody).Type)
-        {
-          case CTokenType_Newline:
-          {
-            Done = True;
-          } break;
-
-          default: { PopTokenRaw(MacroBody); } break;
-        }
-      }
-
-      TruncateToCurrentSize(&MacroBody->Tokens);
-
-      Assert(MacroBody->Tokens.End);
-      Assert(MacroBody->Tokens.End);
-
-      Rewind(&Macro->Body);
-    }
-
-    ConcatStreams(&Ctx->Datatypes.Macros, &MacrosThatNeedToBeParsedOut);
-
-#if 0
-    ITERATE_OVER(&Ctx->Datatypes.Macros)
-    {
-      DebugPrint(Iter.At->Element);
-    }
-#endif
-
-  }
-#endif
 
   Rewind(Result);
 
@@ -3046,14 +2922,17 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       {
         if (Ctx)
         {
-          macro_def *Macro = GetMacroDef(Ctx, T->Value);
-
-          if (Macro)
+          if (macro_def *Macro = GetMacroDef(Ctx, T->Value))
           {
-            T->Type = CT_MacroLiteral;
-            T->Macro = Macro;
-            parser *Expanded = ExpandMacro(Ctx, Result, T->Macro, Memory);
-            Result = SplitAndInsertParserInto(Result, Expanded, Memory);
+            if (MacroShouldBeExpanded(Result, T, Macro))
+            {
+              parser *Expanded = ExpandMacro(Ctx, Result, T->Macro, Memory);
+              Result = SplitAndInsertParserInto(Result, Expanded, Memory);
+            }
+            else
+            {
+              RequireToken(Result, CToken(T->Value));
+            }
           }
           else
           {
@@ -3073,28 +2952,28 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
       case CT_PreprocessorDefine:
       {
-        c_token *MacroName = PeekTokenPointer(Result, 1);
+        c_token *MacroNameToken = PeekTokenPointer(Result, 1);
         if (Ctx)
         {
-          macro_def *Macro = GetByName(&Ctx->Datatypes.Macros, MacroName->Value);
+          macro_def *Macro = GetByName(&Ctx->Datatypes.Macros, MacroNameToken->Value);
+
+          MacroNameToken->Type = CT_MacroLiteral;
+          MacroNameToken->Macro = Macro;
 
           if (Macro)
           {
             if (!Macro->Undefed)
             {
+              // TODO(Jesse): If the macro is redefined with a matching value
+              // to the currently defined one, don't snow this warning.
               Warn(FormatCountedString(TranArena, CSz("Macro (%S) already defined"), Macro->Name));
             }
 
-            MacroName->Type = CT_MacroLiteral;
-            MacroName->Macro = Macro;
-            DefineMacro(Ctx, Result, Macro);
+            RedefineMacro(Ctx, Result, Macro);
           }
           else
           {
-            MacroName->Type = CT_MacroLiteral;
-            MacroName->Macro = Macro;
-
-            DefineMacro(Ctx, Result, MacroName->Value);
+            PushNewMacro(Ctx, Result, MacroNameToken->Value);
           }
         }
 
@@ -3229,6 +3108,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 #endif
 
   Rewind(Result);
+
   return Result;
 }
 
@@ -4742,6 +4622,7 @@ ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena 
           {
             case CTokenType_Identifier:
             {
+              // TODO(Jesse): This path has to set the next token to CT_MacroLiteral
               b32 NextTokenIsMacro = IsNextTokenMacro(Ctx, Parser);
               RequireToken(Parser, CTokenType_Identifier);
               Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, LogicalNotNextValue ? !NextTokenIsMacro : NextTokenIsMacro, False);
@@ -4757,6 +4638,7 @@ ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena 
                 ++ParenCount;
               }
 
+              // TODO(Jesse): This path has to set the next token to CT_MacroLiteral
               b32 NextTokenIsMacro = IsNextTokenMacro(Ctx, Parser);
               RequireToken(Parser, CTokenType_Identifier);
               Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, LogicalNotNextValue ? !NextTokenIsMacro : NextTokenIsMacro, False);
@@ -4850,6 +4732,12 @@ ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena 
         u64 NextValue = ResolveMacroConstantExpression(Ctx, Parser, Memory, Result, False);
         u64 OperationResult = ApplyOperator(Parser, Result, OperatorToApply, NextValue);
         Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, OperationResult, False);
+      } break;
+
+      case CTokenType_EscapedNewline:
+      {
+        RequireTokenRaw(Parser, T.Type);
+        Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, Result, LogicalNotNextValue);
       } break;
 
       case CTokenType_CommentSingleLine:

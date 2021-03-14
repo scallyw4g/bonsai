@@ -21,6 +21,10 @@ int IndirectMacroKeyword = 42;
 
 #define MacroFunction7(a, b) a b
 
+#define MacroFunction8(a, b) \
+  a                          \
+  b
+
 
 // MacroFunction
 
@@ -59,6 +63,7 @@ MacroFunction4(int this_is_a_variable_name = 42, , , );
 
 MacroFunction4(int this_is_a_variable_name = 42, other, crap here, should just disappear, including MacroKeyword, MacroFunction2(666));
 
+
 // MacroFunction5
 
 
@@ -82,3 +87,12 @@ MacroFunction6(MacroFunction2(42));
 
 MacroFunction7(SomeRegularFunctionCall(4, 2);, SomeRegularFunctionCall(42));
 
+
+// MacroFunction8
+
+
+MacroFunction8(4, 2)
+MacroFunction8 (4, 2)
+MacroFunction8
+
+/* MacroFunction8(MacroFunction8, 0) */
