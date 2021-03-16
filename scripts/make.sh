@@ -451,31 +451,7 @@ function RunEntireBuild {
   fi
 
   if [ $SecondPreprocessor == 1 ]; then
-
-    if [ "$Platform" == "Linux" ] ; then
-
-      bin/preprocessor_dev                   \
-        src/metaprogramming/preprocessor.cpp \
-        -I src                               \
-        -I /usr/include/x86_64-linux-gnu     \
-        -I /usr/include
-
-    elif [ "$Platform" == "Windows" ] ; then
-
-      bin/preprocessor_dev                                                                                           \
-        src/metaprogramming/preprocessor.cpp                                                                         \
-        -I ./src                                                                                                     \
-        -I "C:\Program Files\LLVM\lib\clang\11.0.0\include"                                                          \
-        -I "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29333\include"         \
-        -I "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29333\atlmfc\include"  \
-        -I "C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt"                                        \
-        -I "C:\Program Files (x86)\Windows Kits\10\include\10.0.18362.0\shared"                                      \
-        -I "C:\Program Files (x86)\Windows Kits\10\include\10.0.18362.0\um"                                          \
-        -I "C:\Program Files (x86)\Windows Kits\10\include\10.0.18362.0\winrt"
-
-    else
-      echo "Unknown platform"
-    fi
+    ./scripts/preprocessor_dev.sh
   fi
 
   if [ $EMCC == 1 ]; then
@@ -499,12 +475,12 @@ DumpSourceFilesAndQuit=0
 CheckoutMetaOutput=0
 
 FirstPreprocessor=0
-BuildPreprocessor=0
+BuildPreprocessor=1
 SecondPreprocessor=0
 
 BuildExecutables=0
 BuildDebugTests=0
-BuildTests=1
+BuildTests=0
 BuildDebugSystem=0
 BuildExamples=0
 

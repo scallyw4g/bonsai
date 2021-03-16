@@ -94,5 +94,15 @@ MacroFunction7(SomeRegularFunctionCall(4, 2);, SomeRegularFunctionCall(42));
 MacroFunction8(4, 2)
 MacroFunction8 (4, 2)
 MacroFunction8
+MacroFunction8(MacroFunction8, 0)
 
-/* MacroFunction8(MacroFunction8, 0) */
+
+#define self_including_macro_keyword self_including_macro_keyword 42
+self_including_macro_keyword // should expand to "self_including_macro_keyword 42"
+#undef self_including_macro_keyword
+
+// TODO(Jesse tags: immediate): This shouldn't result in infinite-recursion .. I think?
+//
+/* #define self_including_macro_keyword MacroFunction(self_including_macro_keyword 42) */
+/* self_including_macro_keyword // should expand to "self_including_macro_keyword 42" */
+/* #undef self_including_macro_keyword */
