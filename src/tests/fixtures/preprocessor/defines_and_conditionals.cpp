@@ -563,3 +563,9 @@ invalid_path
 #elif defined bar
 valid_path
 #endif
+
+#if !defined(UNDEFIEND) && defined(_PREFAST_) && !defined(_SDV_)
+invalid_path
+else
+valid_path
+#endif

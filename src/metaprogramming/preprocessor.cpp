@@ -561,8 +561,10 @@ TruncateAtPreviousLineStart(parser* Parser, u32 Count )
 }
 
 bonsai_function void
-OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, counted_string ErrorString, u32 LineNumber)
+OutputErrorHelperLine(parser* ErrorLine, c_token* ErrorToken, c_token Expected, counted_string ErrorString, u32 LineNumber)
 {
+  parser *Parser = ErrorLine;
+
   if (!TotalElements(&Parser->Tokens)) return;
 
   if ( ! IsNewline(Parser->Tokens.End[-1].Type) )
@@ -732,7 +734,7 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
       }
 
       counted_string Filename = Parser->Filename.Count ? Parser->Filename : CSz("(unknown file)");
-      Log("     %S:%u:%u\n\n", Filename, LineNumber, SpaceCount+TabCount);
+      Log("     %S:%u:%u\n", Filename, LineNumber, SpaceCount+TabCount);
 
       break;
     }
@@ -771,7 +773,7 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
 {
   Assert(ErrorToken);
 
-  u32 LinesOfContext = 4;
+  u32 LinesOfContext = 5;
 
   parser *CandidateParser = Parser;
   while (CandidateParser)
@@ -787,35 +789,73 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
 
   if (CandidateParser)
   {
+    CandidateParser->Tokens.At = ErrorToken;
 
-    parser LocalParser = *CandidateParser;
-    LocalParser.OutputTokens = {};
-    LocalParser.Tokens.At = ErrorToken;
-    LocalParser.Next = 0;
-    LocalParser.Prev = 0;
-
-    parser LeadingLines  = LocalParser;
-    parser ErrorLine     = LocalParser;
-    parser TrailingLines = LocalParser;
-
-    RewindUntil(&LeadingLines, CTokenType_Newline);
-    LeadingLines.Tokens.End = LeadingLines.Tokens.At;
-    LeadingLines.Next = 0;
-
-    TruncateAtPreviousLineStart(&LeadingLines, LinesOfContext);
-
-    TruncateAtPreviousLineStart(&ErrorLine, 0);
-    TruncateAtNextLineEnd(&ErrorLine, 0);
-
-    EatUntilIncluding(&TrailingLines, CTokenType_Newline);
-    TrailingLines.Tokens.Start = TrailingLines.Tokens.At;
-    TruncateAtNextLineEnd(&TrailingLines, LinesOfContext);
+    u32 LinesToReverse = 0;
+    while (LinesToReverse++ <= LinesOfContext)
+    {
+      RewindUntil(CandidateParser, CTokenType_Newline);
+    }
+    RequireTokenRaw(CandidateParser, CTokenType_Newline);
 
     Debug("------------------------------------------------------------------------------------");
-      DumpLocalTokens(&LeadingLines);
-      DumpLocalTokens(&ErrorLine);
-      OutputErrorHelperLine(&ErrorLine, ErrorToken, ExpectedToken, ErrorString, LocalParser.LineNumber);
-      DumpLocalTokens(&TrailingLines);
+
+    c_token *T = PopTokenRawPointer(CandidateParser);
+    c_token *LastNewline = T;
+    c_token *NextNewline = T;
+    {
+      while (T && T != ErrorToken)
+      {
+        if (T->Type == CTokenType_Newline)
+        {
+          LastNewline = T;
+        }
+        PrintToken(T);
+        T = PopTokenRawPointer(CandidateParser);
+      }
+    }
+
+    {
+      while (T)
+      {
+        PrintToken(T);
+
+        if (T->Type == CTokenType_Newline)
+        {
+          NextNewline = T;
+          T = PopTokenRawPointer(CandidateParser);
+          break;
+        }
+
+        T = PopTokenRawPointer(CandidateParser);
+      }
+    }
+
+    parser ErrorLine = {
+      .Tokens = {
+        .Start = LastNewline,
+        .End = NextNewline+1,
+        .At = LastNewline,
+      },
+      .Filename = CandidateParser->Filename
+    };
+
+    OutputErrorHelperLine(&ErrorLine,  ErrorToken, ExpectedToken, ErrorString, CandidateParser->LineNumber);
+
+    {
+      u32 LinesToPrint = LinesOfContext;
+      while (T && LinesToPrint)
+      {
+        if (T->Type == CTokenType_Newline)
+        {
+          --LinesToPrint;
+        }
+        PrintToken(T);
+        T = PopTokenRawPointer(CandidateParser);
+      }
+    }
+
+
     Debug("------------------------------------------------------------------------------------");
 
     Parser->Valid = False;

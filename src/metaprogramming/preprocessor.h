@@ -1457,28 +1457,6 @@ FinalizeStringFromParser(string_from_parser* Builder)
   return Result;
 }
 
-bonsai_function c_token_type
-CloseTokenFor(c_token_type T)
-{
-  c_token_type Result = {};
-
-  switch (T)
-  {
-    case CTokenType_OpenParen:
-      Result = CTokenType_CloseParen; break;
-
-    case CTokenType_OpenBrace:
-      Result = CTokenType_CloseBrace; break;
-
-    case CTokenType_OpenBracket:
-      Result = CTokenType_CloseBracket; break;
-
-    InvalidDefaultCase;
-  }
-
-  return Result;
-}
-
 enum parser_push_type
 {
   parser_push_type_noop,
