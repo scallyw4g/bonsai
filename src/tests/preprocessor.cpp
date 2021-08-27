@@ -1192,9 +1192,12 @@ TestMacrosAndIncludes(memory_arena *Memory)
     RequireToken(Parser, CToken(CSz("self_including_macro_keyword")));
     RequireToken(Parser, CToken(42u));
 
-    TestThat( TokensRemain(Parser) == False );
+    RequireToken(Parser, CToken(CSz("self_including_macro_keyword")));
+    RequireToken(Parser, CToken(42u));
 
     /* DumpEntireParser(Parser); */
+
+    TestThat( TokensRemain(Parser) == False );
   }
   else
   {
@@ -1627,20 +1630,18 @@ main()
 
   memory_arena* Memory = AllocateArena();
 
-/*   TestDoublyLinkedListSwap(); */
-/*   TestParserChain(Memory); */
-/*   TestBasicTokenizationAndParsing(Memory); */
-/*   TestPeekAndPopTokens(Memory); */
-/*   TestStructParsing(Memory); */
-/*   TestCommentSituation(Memory); */
-/*   TestMacrosAndIncludes(Memory); */
-/*   TestIncludeGuards(Memory); */
+  TestDoublyLinkedListSwap();
+  TestParserChain(Memory);
+  TestBasicTokenizationAndParsing(Memory);
+  TestPeekAndPopTokens(Memory);
+  TestStructParsing(Memory);
+  TestCommentSituation(Memory);
+  TestMacrosAndIncludes(Memory);
+  TestIncludeGuards(Memory);
+  TestDefinesAndConditionals(Memory);
+  TestLogicalOperators(Memory);
 
   /* TestAst(Memory); */
-
-  TestDefinesAndConditionals(Memory);
-
-  /* TestLogicalOperators(Memory); */
 
 
   TestSuiteEnd();

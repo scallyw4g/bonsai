@@ -564,8 +564,21 @@ invalid_path
 valid_path
 #endif
 
-#if !defined(UNDEFIEND) && defined(_PREFAST_) && !defined(_SDV_)
+#if ! defined(UNDEFINED) && defined(WHATEVER)
 invalid_path
-else
+#else
+valid_path
+#endif
+
+#if defined(UNDEFINED) && ! defined(WHATEVER) && defined(UNDEFINED)
+
+#ifndef (UNDEFINED)
+  invalid_path
+#else
+  invalid_path
+#endif
+
+invalid_path
+#else
 valid_path
 #endif

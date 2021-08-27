@@ -1,6 +1,11 @@
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
 #define PLATFORM_GL_IMPLEMENTATIONS 1
 
+#define thing2(a) a
+#define thing3(a) a thing2(thing3)
+
+static int thing2(a_name) = 1;
+
 #include <bonsai_types.h>
 
 
@@ -73,14 +78,13 @@ bonsai_function void           EatSpacesTabsAndEscapedNewlines(parser *Parser);
 //
 
 bonsai_function parser * ResolveInclude(parse_context *Ctx, parser *Parser);
-bonsai_function parser * ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *Memory);
+bonsai_function parser * ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *Memory, b32 ScanArgsForAdditionalMacros = False);
 bonsai_function u64      ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena *Memory, u64 PreviousValue, b32 LogicalNotNextValue);
 
 bonsai_function macro_def * GetMacroDef(parse_context *Ctx, counted_string DefineValue) ;
 bonsai_function c_token* EatIfBlock(parser *Parser);
 
 bonsai_function void EraseToken(c_token *Token);
-/* bonsai_function void EraseToken(parser *Parser, c_token_type Type); */
 bonsai_function void EraseSectionOfParser(parser *Parser, c_token *StartToken, c_token *OnePastLastToken);
 
 bonsai_function void DumpLocalTokens(parser *Parser);
@@ -561,30 +565,94 @@ TruncateAtPreviousLineStart(parser* Parser, u32 Count )
 }
 
 bonsai_function void
-OutputErrorHelperLine(parser* ErrorLine, c_token* ErrorToken, c_token Expected, counted_string ErrorString, u32 LineNumber)
+ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_string ErrorString)
 {
-  parser *Parser = ErrorLine;
+  Assert(ErrorToken);
 
-  if (!TotalElements(&Parser->Tokens)) return;
+  u32 LinesOfContext = 5;
 
-  if ( ! IsNewline(Parser->Tokens.End[-1].Type) )
+  parser *CandidateParser = Parser;
+  while (CandidateParser)
   {
-    Log("\n");
+    if (ErrorToken >= CandidateParser->Tokens.Start &&
+        ErrorToken < CandidateParser->Tokens.End)
+    {
+      break;
+    }
+
+    CandidateParser = CandidateParser->Next;
   }
 
-  Rewind(&Parser->Tokens);
-
-  u32 SpaceCount = 0;
-  u32 TabCount = 0;
-
-  b32 DoPipes = ErrorToken->Value.Count > 3;
-  u32 ErrorIdentifierLength = DoPipes ? (u32)ErrorToken->Value.Count-2 : (u32)ErrorToken->Value.Count;
-
-  while (Remaining(&Parser->Tokens))
+  if (CandidateParser)
   {
+    CandidateParser->Tokens.At = ErrorToken;
 
-    if (Parser->Tokens.At == ErrorToken)
+    u32 LinesToReverse = 0;
+    while (LinesToReverse++ <= LinesOfContext)
     {
+      RewindUntil(CandidateParser, CTokenType_Newline);
+    }
+    OptionalTokenRaw(CandidateParser, CTokenType_Newline);
+
+    counted_string Filename = CandidateParser->Filename.Count ? CandidateParser->Filename : CSz("(unknown file)");
+    Log("\n%S:%u:0\n", Filename, CandidateParser->LineNumber);
+    Debug("------------------------------------------------------------------------------------");
+
+    u32 SpaceCount = 0;
+    u32 TabCount = 0;
+
+    b32 DoPipes = ErrorToken->Value.Count > 3;
+    u32 ErrorIdentifierLength = DoPipes ? (u32)ErrorToken->Value.Count-2 : (u32)ErrorToken->Value.Count;
+
+
+    while (c_token *T = PopTokenRawPointer(CandidateParser))
+    {
+      PrintToken(T);
+
+      if (T == ErrorToken)
+      {
+        break;
+      }
+
+      if (T->Type == CTokenType_Newline ||
+          T->Type == CTokenType_EscapedNewline)
+      {
+        TabCount = 0;
+        SpaceCount = 0;
+      }
+      else if (T->Type == CTokenType_Tab)
+      {
+        ++TabCount;
+      }
+      else if (T->Value.Count)
+      {
+        SpaceCount += T->Value.Count;
+      }
+      else
+      {
+        ++SpaceCount;
+      }
+    }
+
+    while (c_token *T = PopTokenRawPointer(CandidateParser))
+    {
+      PrintToken(T);
+
+      if (T->Type == CTokenType_Newline)
+      {
+        break;
+      }
+    }
+
+
+    { // Output the error line message
+      if (!PeekTokenRawPointer(CandidateParser))
+      {
+        Log("\n");
+      }
+
+
+
       for (u32 ColumnIndex = 0;
           ColumnIndex < TabCount;
           ++ColumnIndex)
@@ -625,40 +693,6 @@ OutputErrorHelperLine(parser* ErrorLine, c_token* ErrorToken, c_token Expected, 
 
       Log("\n");
 
-      break;
-    }
-
-    if (Parser->Tokens.At->Type == CTokenType_Newline)
-    {
-      SpaceCount = 0;
-      TabCount = 0;
-    }
-    else if (Parser->Tokens.At->Type == CTokenType_EscapedNewline)
-    {
-      SpaceCount = 0;
-      TabCount = 0;
-    }
-    else if (Parser->Tokens.At->Type == CTokenType_Tab)
-    {
-      ++TabCount;
-    }
-    else if (Parser->Tokens.At->Value.Count)
-    {
-      SpaceCount += Parser->Tokens.At->Value.Count;
-    }
-    else
-    {
-      ++SpaceCount;
-    }
-
-    ++Parser->Tokens.At;
-  }
-
-  while (Remaining(&Parser->Tokens))
-  {
-
-    if (Parser->Tokens.At == ErrorToken)
-    {
       for (u32 ColumnIndex = 0;
           ColumnIndex < TabCount;
           ++ColumnIndex)
@@ -700,165 +734,56 @@ OutputErrorHelperLine(parser* ErrorLine, c_token* ErrorToken, c_token Expected, 
         Log("(%S)", ErrorToken->Value);
       }
 
-      if (Expected.Type)
+      if (ExpectedToken.Type)
       {
-        counted_string ExpectedTypeName = ToString(Expected.Type);
+        counted_string ExpectedTypeName = ToString(ExpectedToken.Type);
         Log(" Expecting : %S", ExpectedTypeName);
 
-        if (Expected.Value.Count)
+        if (ExpectedToken.Value.Count)
         {
-          Log("(%S)", Expected.Value);
+          Log("(%S)", ExpectedToken.Value);
         }
       }
       else
       {
-        Assert(!Expected.Value.Count);
+        Assert(!ExpectedToken.Value.Count);
       }
-
 
       Log(" %S\n", ErrorString);
+    }
 
 
-      for (u32 ColumnIndex = 0;
-          ColumnIndex < TabCount;
-          ++ColumnIndex)
+
+
+
+
+
+
+
+
+
+
+
+    u32 LinesToPrint = LinesOfContext;
+    while (c_token *T = PopTokenRawPointer(CandidateParser))
+    {
+      PrintToken(T);
+
+      if (T->Type == CTokenType_Newline)
       {
-        Log("\t");
+        --LinesToPrint;
       }
 
-      for (u32 ColumnIndex = 0;
-          ColumnIndex < SpaceCount + ErrorToken->Value.Count;
-          ++ColumnIndex)
+      if (!LinesToPrint)
       {
-        Log(" ");
-      }
-
-      counted_string Filename = Parser->Filename.Count ? Parser->Filename : CSz("(unknown file)");
-      Log("     %S:%u:%u\n", Filename, LineNumber, SpaceCount+TabCount);
-
-      break;
-    }
-
-    if (Parser->Tokens.At->Type == CTokenType_Newline)
-    {
-      SpaceCount = 0;
-      TabCount = 0;
-    }
-    else if (Parser->Tokens.At->Type == CTokenType_EscapedNewline)
-    {
-      SpaceCount = 0;
-      TabCount = 0;
-    }
-    else if (Parser->Tokens.At->Type == CTokenType_Tab)
-    {
-      ++TabCount;
-    }
-    else if (Parser->Tokens.At->Value.Count)
-    {
-      SpaceCount += Parser->Tokens.At->Value.Count;
-    }
-    else
-    {
-      ++SpaceCount;
-    }
-
-    ++Parser->Tokens.At;
-  }
-
-  return;
-}
-
-bonsai_function void
-ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_string ErrorString)
-{
-  Assert(ErrorToken);
-
-  u32 LinesOfContext = 5;
-
-  parser *CandidateParser = Parser;
-  while (CandidateParser)
-  {
-    if (ErrorToken >= CandidateParser->Tokens.Start &&
-        ErrorToken < CandidateParser->Tokens.End)
-    {
-      break;
-    }
-
-    CandidateParser = CandidateParser->Next;
-  }
-
-  if (CandidateParser)
-  {
-    CandidateParser->Tokens.At = ErrorToken;
-
-    u32 LinesToReverse = 0;
-    while (LinesToReverse++ <= LinesOfContext)
-    {
-      RewindUntil(CandidateParser, CTokenType_Newline);
-    }
-    RequireTokenRaw(CandidateParser, CTokenType_Newline);
-
-    Debug("------------------------------------------------------------------------------------");
-
-    c_token *T = PopTokenRawPointer(CandidateParser);
-    c_token *LastNewline = T;
-    c_token *NextNewline = T;
-    {
-      while (T && T != ErrorToken)
-      {
-        if (T->Type == CTokenType_Newline)
-        {
-          LastNewline = T;
-        }
-        PrintToken(T);
-        T = PopTokenRawPointer(CandidateParser);
-      }
-    }
-
-    {
-      while (T)
-      {
-        PrintToken(T);
-
-        if (T->Type == CTokenType_Newline)
-        {
-          NextNewline = T;
-          T = PopTokenRawPointer(CandidateParser);
-          break;
-        }
-
-        T = PopTokenRawPointer(CandidateParser);
-      }
-    }
-
-    parser ErrorLine = {
-      .Tokens = {
-        .Start = LastNewline,
-        .End = NextNewline+1,
-        .At = LastNewline,
-      },
-      .Filename = CandidateParser->Filename
-    };
-
-    OutputErrorHelperLine(&ErrorLine,  ErrorToken, ExpectedToken, ErrorString, CandidateParser->LineNumber);
-
-    {
-      u32 LinesToPrint = LinesOfContext;
-      while (T && LinesToPrint)
-      {
-        if (T->Type == CTokenType_Newline)
-        {
-          --LinesToPrint;
-        }
-        PrintToken(T);
-        T = PopTokenRawPointer(CandidateParser);
+        break;
       }
     }
 
 
     Debug("------------------------------------------------------------------------------------");
 
-    Parser->Valid = False;
+    CandidateParser->Valid = False;
   }
   else
   {
@@ -1428,9 +1353,27 @@ CopyBufferIntoCursor(c_token_buffer *Src, c_token_cursor *Dest)
 }
 
 bonsai_function parser*
-ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *Memory)
+ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *Memory, b32 ScanArgsForAdditionalMacros)
 {
+  /* if (Macro->IsExpanding) */
+  /* { */
+  /*   Info("Stopped expanding Macro (%S), it's already undergoing expansion.", Macro->Name); */
+  /*   local_persist int Count = 0; */
+  /*   if (++Count > 20) */
+  /*   { */
+  /*     RuntimeBreak(); */
+  /*   } */
+
+  /*   return Parser; */
+  /* } */
+
+  /* Macro->IsExpanding = True; */
+
   parser *Result = AllocateParserPtr(Macro->Body.Filename, (u32)Kilobytes(1), 0, Memory);
+
+  Assert(Macro->Body.Tokens.At == Macro->Body.Tokens.Start);
+  Assert(Macro->Body.Next == 0);
+  Assert(Macro->Body.Prev == 0);
 
   RequireToken(Parser, CToken(CT_MacroLiteral, Macro->Name));
 
@@ -1440,9 +1383,8 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
     {
       parser BodyParser_ = Macro->Body;
       parser *BodyParser = &BodyParser_;
-      while (Remaining(&BodyParser->Tokens))
+      while (c_token *T = PeekTokenRawPointer(BodyParser))
       {
-        c_token *T = PeekTokenRawPointer(BodyParser);
         if (T->Type == CT_MacroLiteral)
         {
           parser *Expanded = ExpandMacro(Ctx, BodyParser, T->Macro, Memory);
@@ -1471,7 +1413,6 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
         };
         parser *InstanceArgs = &InstanceArgs_;
 
-        // TODO(Jesse id: 343): I think this is busted on invalid program input.
         EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
         InstanceArgs->Tokens.End = Parser->Tokens.At;
 
@@ -1479,26 +1420,31 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
         TrimLastToken(InstanceArgs, CTokenType_CloseParen);
 
         Assert(Ctx);
-        while (c_token *T = PopTokenRawPointer(InstanceArgs))
+#if 1
+        if (ScanArgsForAdditionalMacros)
         {
-          macro_def *M = GetMacroDef(Ctx, T->Value);
-          if (M)
+          while (c_token *T = PopTokenRawPointer(InstanceArgs))
           {
-            // TODO(Jesse): Can we call MacroShouldBeExpanded() here instead?
-            // @call_MacroShouldBeExpanded
-            if ( M->Type == type_macro_function &&
-                 PeekTokenRaw(InstanceArgs).Type != CTokenType_OpenParen )
+            macro_def *M = GetMacroDef(Ctx, T->Value);
+            if (M)
             {
-              // If an identifier is a macro function but it's not invoked the
-              // identifier is left unadultered.
-            }
-            else
-            {
-              T->Type = CT_MacroLiteral;
-              T->Macro = M;
+              // TODO(Jesse): Can we call MacroShouldBeExpanded() here instead?
+              // @call_MacroShouldBeExpanded
+              if ( M->Type == type_macro_function &&
+                   PeekTokenRaw(InstanceArgs).Type != CTokenType_OpenParen )
+              {
+                // If an identifier is a macro function but it's not invoked the
+                // identifier is left unadultered.
+              }
+              else
+              {
+                T->Type = CT_MacroLiteral;
+                T->Macro = M;
+              }
             }
           }
         }
+#endif
         Rewind(InstanceArgs);
 
 
@@ -1584,6 +1530,7 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
 
   TruncateToCurrentSize(&Result->Tokens);
   Rewind(Result);
+
   return Result;
 }
 
@@ -2204,11 +2151,36 @@ SplitAndInsertParserInto(parser *ParserToSplit, parser *ParserToInsert, memory_a
   return Result;
 }
 
+bonsai_function parser *
+DuplicateParserTokens(parser *Parser, memory_arena *Memory)
+{
+  Assert(Parser->Tokens.At == Parser->Tokens.Start);
+
+  umm TokenCount = (umm)(Parser->Tokens.End - Parser->Tokens.Start);
+  c_token *NewBuffer = Allocate(c_token, Memory, TokenCount);
+
+  c_token *At = NewBuffer;
+  while (c_token *T = PopTokenRawPointer(Parser))
+  {
+    Assert(!T->Erased);
+    *At++ = *T;
+  }
+
+  Assert(At == (NewBuffer+TokenCount));
+
+  Parser->Tokens.Start = NewBuffer;
+  Parser->Tokens.At = NewBuffer;
+  Parser->Tokens.End = NewBuffer+TokenCount;
+
+  return Parser;
+}
+
 bonsai_function void
 ParseMacro(parse_context *Ctx, macro_def *Macro, memory_arena *Memory)
 {
   Assert(Ctx);
-  parser *MacroBody = &Macro->Body;
+
+  parser *MacroBody = DuplicateParserTokens(&Macro->Body, Memory);
 
   RequireToken(MacroBody, CToken(CT_MacroLiteral, Macro->Name));
 
@@ -2256,9 +2228,10 @@ ParseMacro(parse_context *Ctx, macro_def *Macro, memory_arena *Memory)
   MacroBody->Tokens.Start = MacroBody->Tokens.At;
 
   b32 Done = False;
-  while (!Done && TokensRemain(MacroBody))
+  while (c_token *T = PeekTokenRawPointer(MacroBody))
   {
-    c_token *T = PeekTokenRawPointer(MacroBody);
+    if (Done) break;
+
     switch (T->Type)
     {
       case CTokenType_Identifier:
@@ -2295,6 +2268,12 @@ DefineMacro(parse_context *Ctx, parser *Parser, macro_def *Macro)
 {
   RequireToken(Parser, CT_PreprocessorDefine);
 
+  if (Macro->Body.Tokens.Start)
+  {
+    // The memory leak is in ParseMacro() when we duplicate the body tokens
+    Warn("Leaking memory re-defining Macro (%S)", Macro->Name);
+  }
+
   Macro->Body.Tokens.Start = Parser->Tokens.At;
   Macro->Body.Tokens.At = Parser->Tokens.At;
 
@@ -2305,13 +2284,6 @@ DefineMacro(parse_context *Ctx, parser *Parser, macro_def *Macro)
   Macro->Body.LineNumber = Parser->LineNumber;
 
   ParseMacro(Ctx, Macro, Ctx->Memory);
-}
-
-bonsai_function void
-PushNewMacro(parse_context *Ctx, parser *Parser, counted_string MacroName)
-{
-  macro_def *Macro = Push(&Ctx->Datatypes.Macros, { .Name = MacroName }, Ctx->Memory);
-  DefineMacro(Ctx, Parser, Macro);
 }
 
 // NOTE(Jesse): This routine was written with the intent that it be
@@ -3048,8 +3020,15 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
           {
             if (MacroShouldBeExpanded(Result, T, Macro))
             {
-              parser *Expanded = ExpandMacro(Ctx, Result, Macro, Memory);
+              parser *Expanded = ExpandMacro(Ctx, Result, Macro, Memory, True);
               Result = SplitAndInsertParserInto(Result, Expanded, Memory);
+
+              /* if (StringsMatch(T->Value, CSz("_Acquires_lock_"))) */
+              /* { */
+              /*   DumpEntireParser(Result); */
+              /*   RuntimeBreak(); */
+              /* } */
+
             }
             else
             {
@@ -3076,11 +3055,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       {
         c_token *MacroNameToken = PeekTokenPointer(Result, 1);
 
-        /* if ( StringsMatch(MacroNameToken->Value, CSz("_SAL_VERSION")) ) */
-        /* { */
-        /*   RuntimeBreak(); */
-        /* } */
-
         if (Ctx)
         {
           macro_def *Macro = GetByName(&Ctx->Datatypes.Macros, MacroNameToken->Value);
@@ -3101,7 +3075,8 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
           }
           else
           {
-            PushNewMacro(Ctx, Result, MacroNameToken->Value);
+            macro_def *NewMacro = Push(&Ctx->Datatypes.Macros, { .Name = MacroNameToken->Value }, Ctx->Memory);
+            DefineMacro(Ctx, Result, NewMacro);
           }
         }
 
@@ -3187,6 +3162,12 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
         EraseToken(T);
       } break;
 
+      /* case CTokenType_Extern: */
+      /* { */
+      /*   RequireToken(Result, T->Type); */
+      /*   RuntimeBreak(); */
+      /* } break; */
+
       default:
       {
         RequireToken(Result, T->Type);
@@ -3194,19 +3175,10 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
     }
   }
 
-#if 1
   // Go through and erase preprocessor crap once everything's parsed out
   Rewind(Result);
 
-/*   if (StringsMatch(Result->Filename, CSz("C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.28.29333\\include/sal.h"))) */
-/*   { */
-/*     DumpEntireParser(Result); */
-/*     RuntimeBreak(); */
-/*     Rewind(Result); */
-/*     return Result; */
-/*   } */
-
-  while (TokensRemain(Result))
+  while (RawTokensRemain(Result))
   {
     c_token *T = PeekTokenRawPointer(Result);
     switch (T->Type)
@@ -3244,7 +3216,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       } break;
     }
   }
-#endif
 
   Rewind(Result);
 
@@ -3351,9 +3322,10 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
     /*   } */
     /* } */
 
+#if 0
     if (!Result)
     {
-      Info("File not yet parsed (%S).", PartialPath);
+      /* Info("File not yet parsed (%S).", PartialPath); */
       for ( u32 PrefixIndex = 0;
             PrefixIndex < Count(IncludePaths);
             ++PrefixIndex )
@@ -3363,13 +3335,14 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
 
         if (FileExists(FullPath))
         {
-          Success("Found included file at (%S)", FullPath);
+          Success("Including (%S)", FullPath);
           Result = ParserForFile(Ctx, FullPath);
           break;
         }
       }
 
     }
+#endif
   }
 
   /* if (!Result) */
@@ -4780,7 +4753,6 @@ ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena 
               // TODO(Jesse): This path has to set the next token to CT_MacroLiteral
               b32 NextTokenIsMacro = IsNextTokenMacro(Ctx, Parser);
               RequireToken(Parser, CTokenType_Identifier);
-              Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, LogicalNotNextValue ? !NextTokenIsMacro : NextTokenIsMacro, False);
 
               while (ParenCount--)
               {
@@ -4788,6 +4760,7 @@ ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena 
                 RequireTokenRaw(Parser, CTokenType_CloseParen);
               }
 
+              Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, LogicalNotNextValue ? !NextTokenIsMacro : NextTokenIsMacro, False);
             } break;
 
             InvalidDefaultCase;
@@ -4899,21 +4872,6 @@ EraseToken(c_token *Token)
   Token->Erased = True;
 }
 
-/* bonsai_function void */
-/* EraseToken(parser *Parser, c_token_type Type) */
-/* { */
-/*   c_token *T = PeekTokenRawPointer(Parser); */
-/*   if (T->Type == Type) */
-/*   { */
-/*     RequireToken(Parser, Type); */
-/*     EraseToken(T); */
-/*   } */
-/*   else */
-/*   { */
-/*     ParseError(); */
-/*   } */
-/* } */
-
 bonsai_function void
 EraseSectionOfParser(parser *Parser, c_token *FirstToErase, c_token *OnePastLastToErase)
 {
@@ -4947,7 +4905,9 @@ EatIfBlock(parser *Parser)
   {
     Result = PeekTokenRawPointer(Parser);
 
-    if (Result->Type == CT_PreprocessorIf)
+    if (Result->Type == CT_PreprocessorIf ||
+        Result->Type == CT_PreprocessorIfNotDefined ||
+        Result->Type == CT_PreprocessorIfDefined)
     {
       ++Depth;
     }
@@ -8016,7 +7976,7 @@ main(s32 ArgCountInit, const char** ArgStrings)
     }
   }
 
-  s32 Result = Success ? SUCCESS_EXIT_CODE : FAILURE_EXIT_CODE ;
+  s32 Result = !Success; // ? SUCCESS_EXIT_CODE : FAILURE_EXIT_CODE ;
   return Result;
 }
 #endif

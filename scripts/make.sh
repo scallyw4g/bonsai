@@ -39,7 +39,7 @@ elif [[ "$UNAME" == CYGWIN* || "$UNAME" == MINGW* ]] ; then
 fi
 
 
-EMCC=0
+EMCC=1
 
 # OPTIMIZATION_LEVEL="-O2"
 
@@ -475,14 +475,14 @@ DumpSourceFilesAndQuit=0
 CheckoutMetaOutput=0
 
 FirstPreprocessor=0
-BuildPreprocessor=1
+BuildPreprocessor=0
 SecondPreprocessor=0
 
-BuildExecutables=0
+BuildExecutables=1
 BuildDebugTests=0
-BuildTests=1
-BuildDebugSystem=0
-BuildExamples=0
+BuildTests=0
+BuildDebugSystem=1
+BuildExamples=1
 
 RunTests=0
 FinalPreprocessor=0

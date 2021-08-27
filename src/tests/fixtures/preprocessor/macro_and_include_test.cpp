@@ -101,8 +101,12 @@ MacroFunction8(MacroFunction8, 0)
 self_including_macro_keyword // should expand to "self_including_macro_keyword 42"
 #undef self_including_macro_keyword
 
-// TODO(Jesse tags: immediate): This shouldn't result in infinite-recursion .. I think?
-//
-/* #define self_including_macro_keyword MacroFunction(self_including_macro_keyword 42) */
-/* self_including_macro_keyword // should expand to "self_including_macro_keyword 42" */
-/* #undef self_including_macro_keyword */
+#define self_including_macro_keyword MacroFunction(self_including_macro_keyword 42)
+self_including_macro_keyword // should expand to "self_including_macro_keyword 42"
+#undef self_including_macro_keyword
+
+
+#define m1() m2()
+#define m2() m1()
+
+m2()
