@@ -77,20 +77,21 @@ function ColorizeTitle()
   echo -e ""
 }
 
-# NOTE(Jesse): -Wno-global-constructors can be turned off when the defaultPallette
-# in colors.h gets axed .. I think.
-
 # TODO(Jesse, tags: build_pipeline): Investigate -Wcast-align situation
 
   # -fsanitize=address
 
 # Note(Jesse): Using -std=c++17 so I can mark functions with [[nodiscard]]
 
+# TODO(Jesse): Figure out how to standardize on a compiler across machines such that
+# we can remove -Wno-unknown-warning-optins
 CXX_OPTIONS="
   --std=c++17
   -ferror-limit=2000
 
   -Weverything
+
+  -Wno-unknown-warning-option
 
   -Wno-c++98-compat-pedantic
   -Wno-gnu-anonymous-struct
@@ -149,24 +150,24 @@ DEBUG_TESTS_TO_BUILD="
 "
 
 
-TESTS_TO_BUILD="
-  $TESTS/preprocessor.cpp
-"
-
 # TESTS_TO_BUILD="
-#   $TESTS/ui_command_buffer.cpp
-#   $TESTS/m4.cpp
-#   $TESTS/colladaloader.cpp
-#   $TESTS/test_bitmap.cpp
-#   $TESTS/chunk.cpp
-#   $TESTS/bonsai_string.cpp
-#   $TESTS/objloader.cpp
-#   $TESTS/callgraph.cpp
-#   $TESTS/heap_allocation.cpp
 #   $TESTS/preprocessor.cpp
-#   $TESTS/rng.cpp
-#   $TESTS/file.cpp
 # "
+
+TESTS_TO_BUILD="
+  $TESTS/ui_command_buffer.cpp
+  $TESTS/m4.cpp
+  $TESTS/colladaloader.cpp
+  $TESTS/test_bitmap.cpp
+  $TESTS/chunk.cpp
+  $TESTS/bonsai_string.cpp
+  $TESTS/objloader.cpp
+  $TESTS/callgraph.cpp
+  $TESTS/heap_allocation.cpp
+  $TESTS/preprocessor.cpp
+  $TESTS/rng.cpp
+  $TESTS/file.cpp
+"
 
 function BuildPreprocessor {
   which clang++ > /dev/null
@@ -499,16 +500,16 @@ DumpSourceFilesAndQuit=0
 CheckoutMetaOutput=0
 
 FirstPreprocessor=0
-BuildPreprocessor=0
+BuildPreprocessor=1
 SecondPreprocessor=0
 
-BuildExecutables=0
-BuildDebugTests=0
+BuildExecutables=1
+BuildDebugTests=1
 BuildTests=1
-BuildDebugSystem=0
-BuildExamples=0
+BuildDebugSystem=1
+BuildExamples=1
 
-RunTests=0
+RunTests=1
 FinalPreprocessor=0
 
 time RunEntireBuild

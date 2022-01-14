@@ -507,7 +507,7 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
 
   if ( ! IsNewline(Parser->Tokens.End[-1].Type) )
   {
-    Log("\n");
+    PrintToStdout(CSz("\n"));
   }
 
   Rewind(&Parser->Tokens);
@@ -527,19 +527,19 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
           ColumnIndex < TabCount;
           ++ColumnIndex)
       {
-        Log("\t");
+        PrintToStdout(CSz("\t"));
       }
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < SpaceCount;
           ++ColumnIndex)
       {
-        Log(" ");
+        PrintToStdout(CSz(" "));
       }
 
       if (DoPipes)
       {
-        Log("|");
+        PrintToStdout(CSz("|"));
       }
 
       for (u32 ColumnIndex = 0;
@@ -548,20 +548,20 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
       {
         if (DoPipes)
         {
-          Log("~");
+          PrintToStdout(CSz("~"));
         }
         else
         {
-          Log("^");
+          PrintToStdout(CSz("^"));
         }
       }
 
       if (DoPipes)
       {
-        Log("|");
+        PrintToStdout(CSz("|"));
       }
 
-      Log("\n");
+      PrintToStdout(CSz("\n"));
 
       break;
     }
@@ -601,19 +601,19 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
           ColumnIndex < TabCount;
           ++ColumnIndex)
       {
-        Log("\t");
+        PrintToStdout(CSz("\t"));
       }
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < SpaceCount;
           ++ColumnIndex)
       {
-        Log(" ");
+        PrintToStdout(CSz(" "));
       }
 
       if (DoPipes)
       {
-        Log("  ");
+        PrintToStdout(CSz("  "));
       }
 
       for (u32 ColumnIndex = 0;
@@ -622,30 +622,30 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
       {
         if (ColumnIndex == ErrorIdentifierLength-1)
         {
-          Log("|");
+          PrintToStdout(CSz("|"));
         }
         else
         {
-          Log(" ");
+          PrintToStdout(CSz(" "));
         }
       }
 
       counted_string TokenTypeName = ToString(ErrorToken->Type);
-      Log("---> %S", TokenTypeName);
+      Log_Internal("---> %S", TokenTypeName);
 
       if (ErrorToken->Value.Count)
       {
-        Log("(%S)", ErrorToken->Value);
+        Log_Internal("(%S)", ErrorToken->Value);
       }
 
       if (Expected.Type)
       {
         counted_string ExpectedTypeName = ToString(Expected.Type);
-        Log(" Expecting : %S", ExpectedTypeName);
+        Log_Internal(" Expecting : %S", ExpectedTypeName);
 
         if (Expected.Value.Count)
         {
-          Log("(%S)", Expected.Value);
+          Log_Internal("(%S)", Expected.Value);
         }
       }
       else
@@ -654,25 +654,25 @@ OutputErrorHelperLine(parser* Parser, c_token* ErrorToken, c_token Expected, cou
       }
 
 
-      Log(" %S\n", ErrorString);
+      Log_Internal(" %S\n", ErrorString);
 
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < TabCount;
           ++ColumnIndex)
       {
-        Log("\t");
+        PrintToStdout(CSz("\t"));
       }
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < SpaceCount + ErrorToken->Value.Count;
           ++ColumnIndex)
       {
-        Log(" ");
+        PrintToStdout(CSz(" "));
       }
 
       counted_string Filename = Parser->Filename.Count ? Parser->Filename : CSz("(unknown file)");
-      Log("     %S:%u:%u\n\n", Filename, LineNumber, SpaceCount+TabCount);
+      Log_Internal("     %S:%u:%u\n\n", Filename, LineNumber, SpaceCount+TabCount);
 
       break;
     }
@@ -2216,10 +2216,6 @@ MacroShouldBeExpanded(parser *Parser, c_token *T, macro_def *Macro)
 
   switch (Macro->Type)
   {
-    case type_macro_function:
-    {
-    } break;
-
     case type_macro_function:
     {
     } break;

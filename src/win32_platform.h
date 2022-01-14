@@ -47,8 +47,6 @@
 #define bonsaiGlGetProcAddress(procName) wglGetProcAddress(procName)
 typedef PFNWGLSWAPINTERVALEXTPROC PFNSWAPINTERVALPROC;
 
-// #define Log(str) OutputDebugString(str)
-
 
 typedef HANDLE thread_id;
 typedef HANDLE semaphore;

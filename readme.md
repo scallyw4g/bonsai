@@ -73,5 +73,6 @@ git clone https://github.com/jjbandit/bonsai bonsai && cd bonsai
 
 ## On Windows:
 ```
-TODO(Jesse, tags: platform_windows): Fix the build.
+TODO(Jesse, tags: platform_windows): Document build from scratch.  Should be
+pretty stright-forward.  Download Clang and hit the make script.
 ```

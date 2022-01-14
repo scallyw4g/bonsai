@@ -151,9 +151,6 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
     // TODO(Jesse, id: 122, tags: robustness, vox_loader) : Actually read all the data!
     while (bytesRemaining > 0)
     {
-      /* Log("%d\n", bytesRemaining); */
-
-
       Chunk_ID CurrentId = GetHeaderType(ModelFile.Handle, &bytesRemaining);
       switch ( CurrentId )
       {

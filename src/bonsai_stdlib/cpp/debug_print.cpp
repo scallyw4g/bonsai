@@ -29,15 +29,6 @@ PrintBinary( unsigned int Input )
 }
 
 inline void
-Print_P( debug_profile_scope *E, const char* name)
-{
-  Debug(" -- %s -> %s \n", name, E->Name);
-  Debug(" -- Parent %x \n", name, E->Parent);
-  Debug(" -- Sibling %x \n", name, E->Sibling);
-  Debug(" -- Child %x \n", name, E->Child);
-}
-
-inline void
 Print_P( void *P, const char* name)
 {
   Debug(" %s -- %u \n", name, P);

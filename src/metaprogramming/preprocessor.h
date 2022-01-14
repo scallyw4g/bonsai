@@ -1211,14 +1211,14 @@ PrintToken(c_token *Token)
 
     if (Color)
     {
-      Log(Color);
+      Debug(Color);
     }
 
-    Log("%S", Token->Value);
+    Debug("%S", Token->Value);
 
     if (Color)
     {
-      Log(WHITE_TERMINAL);
+      Debug(WHITE_TERMINAL);
     }
   }
 }
