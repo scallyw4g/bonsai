@@ -64,10 +64,10 @@ global_variable log_level Global_LogLevel = LogLevel_Shush;
                                                             \
 } while (false)
 
-#define Success(...) do {                                  \
+#define LogSuccess(...) do {                                  \
                                                            \
   if (Global_LogLevel <= LogLevel_Normal) {                \
-    Log_Internal(GREEN_TERMINAL " ✓ Success" WHITE_TERMINAL " - "); \
+    Log_Internal(GREEN_TERMINAL " ✓ foo" WHITE_TERMINAL " - "); \
     Debug(__VA_ARGS__);                                    \
   }                                                        \
                                                            \

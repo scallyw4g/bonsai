@@ -514,3 +514,71 @@ invalid_path
 #endif
 
 
+#if 0
+invalid_path
+
+#if 0
+  invalid_path
+#elif 0
+  invalid_path
+#else
+  invalid_path
+#endif
+
+
+#elif 0
+invalid_path
+
+#if 0
+  invalid_path
+#elif 0
+  invalid_path
+#else
+  invalid_path
+#endif
+
+#else
+
+
+#if 0
+  invalid_path
+#elif 0
+  invalid_path
+#else
+  valid_path
+#endif
+
+valid_path
+#endif
+
+
+#if 0
+#define foo
+#else
+#define bar
+#endif
+
+#ifdef foo
+invalid_path
+#elif defined bar
+valid_path
+#endif
+
+#if ! defined(UNDEFINED) && defined(WHATEVER)
+invalid_path
+#else
+valid_path
+#endif
+
+#if defined(UNDEFINED) && ! defined(WHATEVER) && defined(UNDEFINED)
+
+#ifndef (UNDEFINED)
+  invalid_path
+#else
+  invalid_path
+#endif
+
+invalid_path
+#else
+valid_path
+#endif

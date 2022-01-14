@@ -5,15 +5,15 @@ global_variable u32 TestsPassed = 0;
 
 #define TEST_FIXTURES_PATH "src/tests/fixtures"
 
-#define TestThat(condition)                                                                                 \
-  if (!(condition)) {                                                                                       \
-    ++TestsFailed;                                                                                          \
-    TestOut(RED_TERMINAL "   Failed" WHITE_TERMINAL " - '%s' during %s " Newline, #condition, __FUNCTION__ ); \
-    PlatformDebugStacktrace();                                                                              \
-    RuntimeBreak(); \
-    TestOut(Newline Newline);                                                                                 \
-  } else {                                                                                                  \
-    ++TestsPassed;                                                                                          \
+#define TestThat(condition)                                                                                        \
+  if (!(condition)) {                                                                                              \
+    ++TestsFailed;                                                                                                 \
+    TestOut(RED_TERMINAL " X Test Failed" WHITE_TERMINAL " - '%s' during %s " Newline, #condition, __FUNCTION__ ); \
+    PlatformDebugStacktrace();                                                                                     \
+    RuntimeBreak();                                                                                                \
+    TestOut(Newline Newline);                                                                                      \
+  } else {                                                                                                         \
+    ++TestsPassed;                                                                                                 \
   }
 
 global_variable log_level PrevGlobalLogLevel = LogLevel_Debug;

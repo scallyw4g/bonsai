@@ -1189,9 +1189,15 @@ TestMacrosAndIncludes(memory_arena *Memory)
     RequireToken(Parser, CToken(CSz("MacroFunction8")));
     RequireToken(Parser, CToken(0u));
 
-    TestThat( TokensRemain(Parser) == False );
+    RequireToken(Parser, CToken(CSz("self_including_macro_keyword")));
+    RequireToken(Parser, CToken(42u));
+
+    RequireToken(Parser, CToken(CSz("self_including_macro_keyword")));
+    RequireToken(Parser, CToken(42u));
 
     /* DumpEntireParser(Parser); */
+
+    TestThat( TokensRemain(Parser) == False );
   }
   else
   {
@@ -1632,9 +1638,10 @@ main()
   TestCommentSituation(Memory);
   TestMacrosAndIncludes(Memory);
   TestIncludeGuards(Memory);
-  /* TestAst(Memory); */
   TestDefinesAndConditionals(Memory);
   TestLogicalOperators(Memory);
+
+  /* TestAst(Memory); */
 
 
   TestSuiteEnd();

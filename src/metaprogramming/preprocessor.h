@@ -953,6 +953,7 @@ struct macro_def
   counted_string_buffer NamedArguments;
   b32 Variadic;
   b32 Undefed; // Gets toggled when we hit an undef
+  /* b32 IsExpanding; */
 };
 meta(generate_stream(macro_def))
 #include <metaprogramming/output/generate_stream_macro_def.h>
@@ -1454,28 +1455,6 @@ FinalizeStringFromParser(string_from_parser* Builder)
 
   umm Count = (umm)(Builder->Parser->Tokens.At->Value.Start - Builder->Start);
   counted_string Result = CS(Builder->Start, Count);
-  return Result;
-}
-
-bonsai_function c_token_type
-CloseTokenFor(c_token_type T)
-{
-  c_token_type Result = {};
-
-  switch (T)
-  {
-    case CTokenType_OpenParen:
-      Result = CTokenType_CloseParen; break;
-
-    case CTokenType_OpenBrace:
-      Result = CTokenType_CloseBrace; break;
-
-    case CTokenType_OpenBracket:
-      Result = CTokenType_CloseBracket; break;
-
-    InvalidDefaultCase;
-  }
-
   return Result;
 }
 

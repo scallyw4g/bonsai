@@ -21,13 +21,6 @@
 // X11 defines "Success" to 0, which is really annoying
 #ifdef Success
 #undef Success
-
-// TODO(Jesse): This is garbage.. figure out how to not re-def this like this
-// Hint : Why does the X11 Success define not trigger a compiler error?
-#define Success(...)                                                    \
-  PrintToStdout(CSz(GREEN_TERMINAL " ✓ Success" WHITE_TERMINAL " - ")); \
-  Debug(__VA_ARGS__)
-
 #endif
 
 // Backtrace
