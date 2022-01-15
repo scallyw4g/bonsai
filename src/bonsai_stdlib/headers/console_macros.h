@@ -11,6 +11,41 @@ enum log_level
   LogLevel_Shush,
 };
 
+struct terminal_colors
+{
+  counted_string Red    = CSz("\x1b[31m");
+  counted_string Blue   = CSz("\x1b[34m");
+  counted_string Purple = CSz("\x1b[35m");
+  counted_string Green  = CSz("\x1b[32m");
+  counted_string Yellow = CSz("\x1b[33m");
+  counted_string White  = CSz("\x1b[37m");
+};
+
+
+global_variable terminal_colors TerminalColors = {};
+
+bonsai_function void
+SetTerminalColorsOn()
+{
+  TerminalColors.Red    = CSz("\x1b[31m");
+  TerminalColors.Blue   = CSz("\x1b[34m");
+  TerminalColors.Purple = CSz("\x1b[35m");
+  TerminalColors.Green  = CSz("\x1b[32m");
+  TerminalColors.Yellow = CSz("\x1b[33m");
+  TerminalColors.White  = CSz("\x1b[37m");
+}
+
+bonsai_function void
+SetTerminalColorsOff()
+{
+  TerminalColors.Red    = CSz("");
+  TerminalColors.Blue   = CSz("");
+  TerminalColors.Purple = CSz("");
+  TerminalColors.Green  = CSz("");
+  TerminalColors.Yellow = CSz("");
+  TerminalColors.White  = CSz("");
+}
+
 
 global_variable log_level Global_LogLevel = LogLevel_Debug;
 
@@ -46,7 +81,7 @@ global_variable log_level Global_LogLevel = LogLevel_Debug;
 #define Info(...) do {                                     \
                                                            \
   if (Global_LogLevel <= LogLevel_Normal) {                \
-    Log(BLUE_TERMINAL "   Info   " WHITE_TERMINAL " - ");  \
+    Log("%S   Info    %S- ", TerminalColors.Blue, TerminalColors.White);  \
     Debug(__VA_ARGS__);                                    \
   }                                                        \
                                                            \
@@ -57,7 +92,7 @@ global_variable log_level Global_LogLevel = LogLevel_Debug;
 #define Error(...) do {                                   \
                                                           \
   if (Global_LogLevel <= LogLevel_Error) {                \
-    Log(RED_TERMINAL " ! Error  " WHITE_TERMINAL " - ");  \
+    Log("%S ! Error   %S- ", TerminalColors.Red, TerminalColors.White);  \
     Debug(__VA_ARGS__);                                   \
   }                                                       \
                                                           \
@@ -67,7 +102,7 @@ global_variable log_level Global_LogLevel = LogLevel_Debug;
 #define Warn(...) do {                                      \
                                                             \
   if (Global_LogLevel <= LogLevel_Normal) {                 \
-    Log(YELLOW_TERMINAL " * Warning" WHITE_TERMINAL " - "); \
+    Log("%S * Warning %S- ", TerminalColors.Yellow, TerminalColors.White); \
     Debug(__VA_ARGS__);                                     \
   }                                                         \
                                                             \
@@ -76,7 +111,7 @@ global_variable log_level Global_LogLevel = LogLevel_Debug;
 #define LogSuccess(...) do {                                  \
                                                            \
   if (Global_LogLevel <= LogLevel_Normal) {                \
-    Log(GREEN_TERMINAL " ✓ " WHITE_TERMINAL " - "); \
+    Log("%S o Success %S- ", TerminalColors.Green, TerminalColors.White); \
     Debug(__VA_ARGS__);                                    \
   }                                                        \
                                                            \
@@ -85,7 +120,7 @@ global_variable log_level Global_LogLevel = LogLevel_Debug;
 #define OpenGlDebugMessage(...) do {                                     \
                                                                          \
   if (Global_LogLevel <= LogLevel_Debug) {                               \
-    Log(YELLOW_TERMINAL " * OpenGl Debug Message" WHITE_TERMINAL " - "); \
+    Log("%S * OpenGl Debug Message %S- ", TerminalColors.Yellow, TerminalColors.White); \
     Debug(__VA_ARGS__);                                                  \
   }                                                                      \
                                                                          \

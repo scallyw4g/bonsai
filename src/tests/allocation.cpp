@@ -644,9 +644,9 @@ UnprotectedAlignment()
 }
 
 s32
-main()
+main(s32 ArgCount, const char** Args)
 {
-  TestSuiteBegin("Allocation");
+  TestSuiteBegin("Allocation", ArgCount, Args);
 
 #if MEMPROTECT_OVERFLOW
     ArenaAllocation();

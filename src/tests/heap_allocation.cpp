@@ -3,9 +3,9 @@
 #include <tests/test_utils.cpp>
 
 s32
-main()
+main(s32 ArgCount, const char** Args)
 {
-  TestSuiteBegin("HeapAllocation");
+  TestSuiteBegin("HeapAllocation", ArgCount, Args);
 
   heap_allocator Heap = InitHeap(Megabytes(1));
 

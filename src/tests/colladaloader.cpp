@@ -442,9 +442,9 @@ BlenderCubeQueryTest(const char* IdSelector)
 }
 
 s32
-main()
+main(s32 ArgCount, const char** Args)
 {
-  TestSuiteBegin("Collada Loader");
+  TestSuiteBegin("Collada Loader", ArgCount, Args);
 
   XmlTests();
 

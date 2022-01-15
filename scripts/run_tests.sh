@@ -1,19 +1,18 @@
 #! /bin/bash
 
-. scripts/colors.sh
+. scripts/preamble.sh
 
 TESTS_PASSED=0
 
-UNAME=$(uname)
-if [ "$UNAME" == "Linux" ] ; then
+if [ "$Platform" == "Linux" ] ; then
   exe_search_string='bin/tests/*';
-elif [[ "$UNAME" == CYGWIN* || "$UNAME" == MINGW* ]] ; then
+elif [[ "$Platform" == "Windows" ]] ; then
   exe_search_string='bin/tests/*.exe';
 fi
 
 for test_executable in $(find $exe_search_string); do
   # echo "$test_executable"
-  if $test_executable == 0; then
+  if $test_executable $COLORFLAG == 0; then
     echo -n ""
   else
     echo -e "$RED  FAIL  $WHITE$test_executable"

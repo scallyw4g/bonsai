@@ -1629,9 +1629,9 @@ TestParserChain(memory_arena *Memory)
 }
 
 s32
-main()
+main(s32 ArgCount, const char** Args)
 {
-  TestSuiteBegin("Preprocessor");
+  TestSuiteBegin("Preprocessor", ArgCount, Args);
   Global_LogLevel = LogLevel_Debug;
 
 /* #define thing(a) a */

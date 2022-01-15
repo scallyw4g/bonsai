@@ -1,11 +1,8 @@
 #! /bin/bash
 
-. scripts/colors.sh
+. scripts/preamble.sh
 
-Platform="Unknown"
-UNAME=$(uname)
-if [ "$UNAME" == "Linux" ] ; then
-  Platform="Linux"
+if [ "$Platform" == "Linux" ] ; then
   PLATFORM_LINKER_OPTIONS="-lpthread -lX11 -ldl -lGL"
   PLATFORM_DEFINES="-DBONSAI_LINUX"
   PLATFORM_INCLUDE_DIRS=""
@@ -26,8 +23,7 @@ if [ "$UNAME" == "Linux" ] ; then
   PLATFORM_EXE_EXTENSION=""
   PLATFORM_LIB_EXTENSION=".so"
 
-elif [[ "$UNAME" == CYGWIN* || "$UNAME" == MINGW* ]] ; then
-  Platform="Windows"
+elif [[ "$Platform" == "Windows" ]] ; then
   PLATFORM_LINKER_OPTIONS="-lgdi32 -luser32 -lopengl32 -lglu32"
   PLATFORM_DEFINES="-DBONSAI_WIN32"
   PLATFORM_INCLUDE_DIRS=""
@@ -38,6 +34,8 @@ elif [[ "$UNAME" == CYGWIN* || "$UNAME" == MINGW* ]] ; then
 
   PLATFORM_EXE_EXTENSION=".exe"
   PLATFORM_LIB_EXTENSION=".dll"
+else
+  echo "Unsupported Platform ($Platform), exiting." && exit 1
 fi
 
 

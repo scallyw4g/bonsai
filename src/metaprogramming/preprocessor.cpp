@@ -7839,27 +7839,54 @@ RegisterUnparsedCxxTypes(program_datatypes *Datatypes, memory_arena *Memory)
   Push(&Datatypes->StlContainers, Container, Memory);
 }
 
+bonsai_function void
+SetupStdout(u32 ArgCount, const char** ArgStrings)
+{
+  setvbuf(stdout, 0, _IONBF, 0);
+  setvbuf(stderr, 0, _IONBF, 0);
+
+  for ( u32 ArgIndex = 1;
+        ArgIndex < ArgCount;
+        ++ArgIndex)
+  {
+    counted_string Arg = CS(ArgStrings[ArgIndex]);
+
+    if (StringsMatch(CS("-c0"), Arg) ||
+        StringsMatch(CS("--colors-off"), Arg) )
+    {
+      SetTerminalColorsOff();
+    }
+
+  }
+
+  return;
+}
+
 #ifndef EXCLUDE_PREPROCESSOR_MAIN
 #define SUCCESS_EXIT_CODE 0
 #define FAILURE_EXIT_CODE 1
 
 s32
-main(s32 ArgCountInit, const char** ArgStrings)
+main(s32 ArgCount_, const char** ArgStrings)
 {
-  if (!SearchForProjectRoot()) { Error("Couldn't find root dir, exiting."); return False; }
+  Assert(ArgCount_ > 0);
+  u32 ArgCount = (u32)ArgCount_;
 
-  if (ArgCountInit < 0)
-  {
-    Error("Invalid arg count of %d", ArgCountInit);
+  SetupStdout(ArgCount, ArgStrings);
+
+
+  memory_arena Memory_ = {};
+  memory_arena* Memory = &Memory_;
+  arguments Args = ParseArgs(ArgStrings, ArgCount, Memory);
+
+
+  if (!SearchForProjectRoot()) {
+    Error("Couldn't find root dir, exiting."); return False;
     return FAILURE_EXIT_CODE;
   }
 
-  u32 ArgCount = (u32)ArgCountInit;
-  setvbuf(stdout, 0, _IONBF, 0);
-  setvbuf(stderr, 0, _IONBF, 0);
 
-  b32 ShouldOpenDebugWindow = DoDebugWindow(ArgStrings, ArgCount);
-  if (ShouldOpenDebugWindow)
+  if (Args.DoDebugWindow)
   {
     if (BootstrapDebugSystem() == 0)
     {
@@ -7871,12 +7898,7 @@ main(s32 ArgCountInit, const char** ArgStrings)
   b32 Success = True;
   if (ArgCount > 1)
   {
-    memory_arena Memory_ = {};
-    memory_arena* Memory = &Memory_;
-
-    arguments Args = ParseArgs(ArgStrings, ArgCount, Memory);
     Assert(Args.Files.Start == Args.Files.At);
-    Assert(Args.DoDebugWindow == ShouldOpenDebugWindow);
 
     parse_context Ctx = {
       .Memory = Memory,
@@ -7976,7 +7998,7 @@ main(s32 ArgCountInit, const char** ArgStrings)
   }
 
 
-  if (ShouldOpenDebugWindow)
+  if (Args.DoDebugWindow)
   {
     debug_state* DebugState = GetDebugState();
 

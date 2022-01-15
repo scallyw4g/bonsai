@@ -24,9 +24,9 @@ FunctionOne()
 }
 
 s32
-main()
+main(s32 ArgCount, const char** Args)
 {
-  TestSuiteBegin("callgraph");
+  TestSuiteBegin("callgraph", ArgCount, Args);
 
   // @bootstrap-debug-system
   shared_lib DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);

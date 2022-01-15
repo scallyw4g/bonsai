@@ -8,7 +8,7 @@ global_variable u32 TestsPassed = 0;
 #define TestThat(condition)                                                                                        \
   if (!(condition)) {                                                                                              \
     ++TestsFailed;                                                                                                 \
-    TestOut(RED_TERMINAL " X Test Failed" WHITE_TERMINAL " - '%s' during %s " Newline, #condition, __FUNCTION__ ); \
+    TestOut(" %SX Test Failed%S - '%s' during %s " Newline, TerminalColors.Red, TerminalColors.White, #condition, __FUNCTION__ ); \
     PlatformDebugStacktrace();                                                                                     \
     RuntimeBreak();                                                                                                \
     TestOut(Newline Newline);                                                                                      \
@@ -19,15 +19,14 @@ global_variable u32 TestsPassed = 0;
 global_variable log_level PrevGlobalLogLevel = LogLevel_Debug;
 
 void
-TestSuiteBegin(const char *TestSuite)
+TestSuiteBegin(const char *TestSuite, s32 ArgCount, const char** Args)
 {
   PrevGlobalLogLevel = Global_LogLevel;
   Global_LogLevel = LogLevel_Shush;
 
-  setvbuf(stdout, 0, _IONBF, 0);
-  setvbuf(stderr, 0, _IONBF, 0);
+  SetupStdout((u32)ArgCount, Args);
 
-  TestOut(Newline BLUE_TERMINAL "---" WHITE_TERMINAL " Starting %s Tests " BLUE_TERMINAL "---" WHITE_TERMINAL, TestSuite);
+  TestOut(Newline "%S---%S  Starting %s Tests %S---%S", TerminalColors.Blue, TerminalColors.White, TestSuite, TerminalColors.Blue, TerminalColors.White);
 
   if (!SearchForProjectRoot()) { Error("Couldn't find root dir."); }
 
@@ -37,8 +36,8 @@ TestSuiteBegin(const char *TestSuite)
 void
 TestSuiteEnd()
 {
-  TestOut(GREEN_TERMINAL " %u " WHITE_TERMINAL "Tests Passed", TestsPassed);
-  if (TestsFailed) { TestOut(RED_TERMINAL   " %u " WHITE_TERMINAL "Tests Failed", TestsFailed); }
+  TestOut(" %S%u%S Tests Passed", TerminalColors.Green, TestsPassed, TerminalColors.White);
+  if (TestsFailed) { TestOut(" %S%u%S Tests Failed", TerminalColors.Red, TestsFailed, TerminalColors.White); }
 
   Global_LogLevel = PrevGlobalLogLevel;
 

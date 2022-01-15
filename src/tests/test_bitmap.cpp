@@ -35,9 +35,9 @@ TestPacking()
 }
 
 s32
-main()
+main(s32 ArgCount, const char** Args)
 {
-  TestSuiteBegin("Bitmap");
+  TestSuiteBegin("Bitmap", ArgCount, Args);
 
   memory_arena Arena = {};
 

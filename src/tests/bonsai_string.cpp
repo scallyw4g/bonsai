@@ -375,9 +375,9 @@ TestToCapitalCase(memory_arena* Memory)
 }
 
 s32
-main()
+main(s32 ArgCount, const char** Args)
 {
-  TestSuiteBegin("String");
+  TestSuiteBegin("String", ArgCount, Args);
 
   {
     const char *Test1 = "v";

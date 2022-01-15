@@ -3,9 +3,9 @@
 #include <tests/test_utils.cpp>
 
 s32
-main()
+main(s32 ArgCount, const char** Args)
 {
-  TestSuiteBegin("Obj Loader");
+  TestSuiteBegin("Obj Loader", ArgCount, Args);
 
   memory_arena *Memory = AllocateArena(Megabytes(1));
 

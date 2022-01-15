@@ -3,9 +3,9 @@
 #include <tests/test_utils.cpp>
 
 s32
-main()
+main(s32 ArgCount, const char** Args)
 {
-  TestSuiteBegin("File");
+  TestSuiteBegin("File", ArgCount, Args);
 
   memory_arena _Memory = {};
   memory_arena* Memory = &_Memory;

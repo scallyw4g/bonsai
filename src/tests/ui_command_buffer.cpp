@@ -51,9 +51,10 @@ TestTable(debug_ui_render_group* Group)
   PushTableEnd(Group);
 }
 
-s32 main()
+s32
+main(s32 ArgCount, const char** Args)
 {
-  TestSuiteBegin("ui_command_buffer");
+  TestSuiteBegin("ui_command_buffer", ArgCount, Args);
 
   memory_arena Arena           = {};
   debug_ui_render_group* Group = Allocate(debug_ui_render_group, &Arena, 1);

@@ -1187,16 +1187,16 @@ PrintToken(c_token *Token)
   {
     Assert(Token->Type);
     Assert(Token->Value.Start && Token->Value.Count);
-    const char* Color = 0;
+    counted_string Color = {};
 
     switch (Token->Type)
     {
       case CT_MacroLiteral:
       {
-        Color = BLUE_TERMINAL;
+        Color = TerminalColors.Blue;
         if (Token->Erased)
         {
-          Color = PURPLE_TERMINAL;
+          Color = TerminalColors.Purple;
         }
       } break;
 
@@ -1204,22 +1204,22 @@ PrintToken(c_token *Token)
       {
         if (Token->Erased)
         {
-          Color = RED_TERMINAL;
+          Color = TerminalColors.Red;
         }
       } break;
     }
 
 
-    if (Color)
+    if (Color.Count)
     {
       DebugChars(Color);
     }
 
     DebugChars("%S", Token->Value);
 
-    if (Color)
+    if (Color.Count)
     {
-      DebugChars(WHITE_TERMINAL);
+      DebugChars(TerminalColors.White);
     }
   }
 }

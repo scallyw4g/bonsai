@@ -3,9 +3,9 @@
 #include <tests/test_utils.cpp>
 
 s32
-main()
+main(s32 ArgCount, const char** Args)
 {
-  TestSuiteBegin("RNG");
+  TestSuiteBegin("RNG", ArgCount, Args);
 
 #if 0
   random_series Entropy = {43215426453};

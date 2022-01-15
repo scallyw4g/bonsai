@@ -4,9 +4,9 @@
 
 
 s32
-main()
+main(s32 ArgCount, const char** Args)
 {
-  TestSuiteBegin("Chunk");
+  TestSuiteBegin("Chunk", ArgCount, Args);
 
   memory_arena *Memory = AllocateArena(Megabytes(32));
 
