@@ -71,7 +71,7 @@ U8_StreamFromFile(const char* SourceFile, memory_arena *Memory)
     }
     else
     {
-      Warn("File %s was empty!", SourceFile);
+      Warn("File %s is empty!", SourceFile);
     }
 
     CloseFile(&File);
