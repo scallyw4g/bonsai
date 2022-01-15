@@ -1,6 +1,13 @@
 int ding = 42;
 
 #include <src/tests/fixtures/preprocessor/include_test.cpp>
+#include <src/tests/fixtures/preprocessor/include_test_2.cpp>
+
+#include <src/tests/fixtures/preprocessor/empty.cpp>
+#include <src/tests/fixtures/preprocessor/empty.cpp>
+
+#include <src/tests/fixtures/preprocessor/random_define.cpp>
+#include <src/tests/fixtures/preprocessor/random_define.cpp>
 
 #define MacroKeyword    this_is_a_variable_name
 #define IndirectMacroKeyword MacroKeyword
@@ -105,8 +112,10 @@ self_including_macro_keyword // should expand to "self_including_macro_keyword 4
 self_including_macro_keyword // should expand to "self_including_macro_keyword 42"
 #undef self_including_macro_keyword
 
-
-#define m1() m2()
-#define m2() m1()
-
-m2()
+// NOTE(Jesse): I have no idea what this is specified to expand to.  I observed
+// Clang not expanding it at all, so that's what I've programmed.
+//
+  #define m1() m2()
+  #define m2() m1()
+  m2()
+//

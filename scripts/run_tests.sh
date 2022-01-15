@@ -1,5 +1,7 @@
 #! /bin/bash
 
+. scripts/colors.sh
+
 TESTS_PASSED=0
 
 UNAME=$(uname)
@@ -14,7 +16,7 @@ for test_executable in $(find $exe_search_string); do
   if $test_executable == 0; then
     echo -n ""
   else
-    echo "FAIL $test_executable"
+    echo -e "$RED  FAIL  $WHITE$test_executable"
     TESTS_PASSED=1
   fi
 done

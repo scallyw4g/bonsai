@@ -238,7 +238,7 @@ RewindUntil(parser* Parser, c_token_type Type)
   }
 
   Assert(Parser->Tokens.At >= Parser->Tokens.Start);
-  Assert(Parser->Tokens.At < Parser->Tokens.End);
+  Assert(Parser->Tokens.At <= Parser->Tokens.End);
 
   Assert( Parser->Tokens.At->Type == Type ||
          ( Parser->Tokens.At == Parser->Tokens.Start && !Parser->Prev ) );
@@ -596,7 +596,7 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
 
     {
       counted_string Filename = CandidateParser->Filename.Count ? CandidateParser->Filename : CSz("(unknown file)");
-      Log_Internal("\n%S:%u:0\n", Filename, CandidateParser->LineNumber);
+      DebugChars("\n%S:%u:0\n", Filename, CandidateParser->LineNumber);
       Debug("------------------------------------------------------------------------------------");
     }
 
@@ -650,7 +650,7 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
     { // Output the error line message
       if (!PeekTokenRawPointer(CandidateParser))
       {
-        Log_Internal("\n");
+        DebugChars("\n");
       }
 
 
@@ -659,19 +659,19 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
           ColumnIndex < TabCount;
           ++ColumnIndex)
       {
-        PrintToStdout(CSz("\t"));
+        DebugChars(CSz("\t"));
       }
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < SpaceCount;
           ++ColumnIndex)
       {
-        PrintToStdout(CSz(" "));
+        DebugChars(CSz(" "));
       }
 
       if (DoPipes)
       {
-        PrintToStdout(CSz("|"));
+        DebugChars(CSz("|"));
       }
 
       for (u32 ColumnIndex = 0;
@@ -680,38 +680,38 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
       {
         if (DoPipes)
         {
-          PrintToStdout(CSz("~"));
+          DebugChars(CSz("~"));
         }
         else
         {
-          PrintToStdout(CSz("^"));
+          DebugChars(CSz("^"));
         }
       }
 
       if (DoPipes)
       {
-        PrintToStdout(CSz("|"));
+        DebugChars(CSz("|"));
       }
 
-      PrintToStdout(CSz("\n"));
+      DebugChars(CSz("\n"));
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < TabCount;
           ++ColumnIndex)
       {
-        PrintToStdout(CSz("\t"));
+        DebugChars(CSz("\t"));
       }
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < SpaceCount;
           ++ColumnIndex)
       {
-        PrintToStdout(CSz(" "));
+        DebugChars(CSz(" "));
       }
 
       if (DoPipes)
       {
-        PrintToStdout(CSz("  "));
+        DebugChars(CSz("  "));
       }
 
       for (u32 ColumnIndex = 0;
@@ -720,30 +720,30 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
       {
         if (ColumnIndex == ErrorIdentifierLength-1)
         {
-          PrintToStdout(CSz("|"));
+          DebugChars(CSz("|"));
         }
         else
         {
-          PrintToStdout(CSz(" "));
+          DebugChars(CSz(" "));
         }
       }
 
       counted_string TokenTypeName = ToString(ErrorToken->Type);
-      Log_Internal("---> %S", TokenTypeName);
+      DebugChars("---> %S", TokenTypeName);
 
       if (ErrorToken->Value.Count)
       {
-        Log_Internal("(%S)", ErrorToken->Value);
+        DebugChars("(%S)", ErrorToken->Value);
       }
 
       if (ExpectedToken.Type)
       {
         counted_string ExpectedTypeName = ToString(ExpectedToken.Type);
-        Log_Internal(" Expecting : %S", ExpectedTypeName);
+        DebugChars(" Expecting : %S", ExpectedTypeName);
 
         if (ExpectedToken.Value.Count)
         {
-          Log_Internal("(%S)", ExpectedToken.Value);
+          DebugChars("(%S)", ExpectedToken.Value);
         }
       }
       else
@@ -751,26 +751,26 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
         Assert(!ExpectedToken.Value.Count);
       }
 
-      Log_Internal(" %S\n", ErrorString);
+      DebugChars(" %S\n", ErrorString);
 
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < TabCount;
           ++ColumnIndex)
       {
-        PrintToStdout(CSz("\t"));
+        DebugChars(CSz("\t"));
       }
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < SpaceCount + ErrorToken->Value.Count;
           ++ColumnIndex)
       {
-        PrintToStdout(CSz(" "));
+        DebugChars(CSz(" "));
       }
 
       {
         counted_string Filename = Parser->Filename.Count ? Parser->Filename : CSz("(unknown file)");
-        Log_Internal("     %S:%u:%u\n\n", Filename, Parser->LineNumber, SpaceCount+TabCount);
+        DebugChars("     %S:%u:%u\n\n", Filename, Parser->LineNumber, SpaceCount+TabCount);
       }
     }
 
@@ -810,7 +810,7 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
     Debug("Error was : %S\n", ErrorString);
   }
 
-  RuntimeBreak();
+  /* RuntimeBreak(); */
 
   return;
 }
@@ -3024,9 +3024,9 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       case CT_PreprocessorInclude:
       {
         parser *IncludeParser = ResolveInclude(Ctx, Result);
+        EraseSectionOfParser(Result, T, Result->Tokens.At);
         if (IncludeParser)
         {
-          EraseSectionOfParser(Result, T, Result->Tokens.At);
           SplitAndInsertParserInto(Result, IncludeParser, Memory);
         }
       } break;
@@ -3248,6 +3248,7 @@ TokenizeAnsiStream(parse_context *Ctx, ansi_stream Code)
   return Result;
 }
 
+#if 0
 bonsai_function parser *
 ParserForFile(counted_string Filename, memory_arena* Memory)
 {
@@ -3255,6 +3256,7 @@ ParserForFile(counted_string Filename, memory_arena* Memory)
   parser *Result = TokenizeAnsiStream(SourceFileStream, Memory, False, 0);
   return Result;
 }
+#endif
 
 bonsai_function parser *
 ParserForFile(parse_context *Ctx, counted_string Filename)
@@ -3298,7 +3300,8 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
   RequireToken(Parser, CT_PreprocessorInclude);
 
   counted_string PartialPath = {};
-  if (PeekToken(Parser).Type == CTokenType_StringLiteral)
+  c_token NextToken = PeekToken(Parser);
+  if (NextToken.Type == CTokenType_StringLiteral)
   {
     PartialPath = RequireToken(Parser, CTokenType_StringLiteral).Value;
     Error("Relative includes NOT SUPPORTED (%S)", PartialPath);
@@ -3336,12 +3339,12 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
     /*   { */
     /*     Result = Allocate(parser, Ctx->Memory, 1); */
     /*     *Result = *Got; */
-    /*     Success("Found cached parser for (%S)", FullPath); */
+    /*     LogSuccess("Found cached parser for (%S)", FullPath); */
     /*     break; */
     /*   } */
     /* } */
 
-#if 0
+#if 1
     if (!Result)
     {
       /* Info("File not yet parsed (%S).", PartialPath); */
@@ -3354,7 +3357,7 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
 
         if (FileExists(FullPath))
         {
-          Success("Including (%S)", FullPath);
+          LogSuccess("Including (%S)", FullPath);
           Result = ParserForFile(Ctx, FullPath);
           break;
         }
@@ -4514,6 +4517,8 @@ ParseFunctionOrVariableDecl(parse_context *Ctx)
       }
       else if ( OptionalToken(Parser, CTokenType_OpenParen) )
       {
+        // TODO(Jesse): Should this push happen outside this function?  Probably, because
+        // some of the code that calls this function ignores the result which feels weird.
         Result.Type = type_declaration_function_decl;
         Result.function_decl = ParseAndPushFunctionPrototype(Ctx, &DeclType, &DeclNameToken.Value, function_type_normal);
       }
@@ -6116,9 +6121,10 @@ ParseDatatypes(parse_context *Ctx)
 
     switch(T.Type)
     {
+      case CT_Pragma:
       case CTokenType_Meta:
       {
-        RequireToken(Parser, CTokenType_Meta);
+        RequireToken(Parser, T.Type);
         EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
       } break;
 
@@ -6165,8 +6171,9 @@ ParseDatatypes(parse_context *Ctx)
       case CTokenType_Signed:
       case CTokenType_Identifier:
       {
-        // We ignore the result of this .. because we're just looking to push
-        // functions and push them onto the program_datatypes stream
+        // We ignore the result of this.  We're just looking to push functions
+        // and push them onto the program_datatypes stream which this function
+        // does internally.  Maybe we should change that?
         ParseFunctionOrVariableDecl(Ctx);
 
       } break;

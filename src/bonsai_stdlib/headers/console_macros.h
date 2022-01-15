@@ -12,22 +12,31 @@ enum log_level
 };
 
 
-global_variable log_level Global_LogLevel = LogLevel_Shush;
+global_variable log_level Global_LogLevel = LogLevel_Debug;
 
 
-#define Log_Internal(...) PrintToStdout(FormatCountedString_(TempDebugOutputBuffer__, TempDebugOutputBufferSize, __VA_ARGS__))
+#define Log(...) PrintToStdout(FormatCountedString_(TempDebugOutputBuffer__, TempDebugOutputBufferSize, __VA_ARGS__))
 
 
 #define TestOut(...)  \
-    Log_Internal(__VA_ARGS__); \
-    Log_Internal(Newline)
+    Log(__VA_ARGS__); \
+    Log(Newline)
+
+
+#define DebugChars(...) do {                 \
+                                             \
+  if (Global_LogLevel <= LogLevel_Debug) {   \
+    Log(__VA_ARGS__);                        \
+  }                                          \
+                                             \
+} while (false)
 
 
 #define Debug(...) do {                      \
                                              \
   if (Global_LogLevel <= LogLevel_Debug) {   \
-    Log_Internal(__VA_ARGS__);                        \
-    Log_Internal(Newline);                            \
+    Log(__VA_ARGS__);                        \
+    Log(Newline);                            \
   }                                          \
                                              \
 } while (false)
@@ -37,7 +46,7 @@ global_variable log_level Global_LogLevel = LogLevel_Shush;
 #define Info(...) do {                                     \
                                                            \
   if (Global_LogLevel <= LogLevel_Normal) {                \
-    Log_Internal(BLUE_TERMINAL "   Info   " WHITE_TERMINAL " - ");  \
+    Log(BLUE_TERMINAL "   Info   " WHITE_TERMINAL " - ");  \
     Debug(__VA_ARGS__);                                    \
   }                                                        \
                                                            \
@@ -48,7 +57,7 @@ global_variable log_level Global_LogLevel = LogLevel_Shush;
 #define Error(...) do {                                   \
                                                           \
   if (Global_LogLevel <= LogLevel_Error) {                \
-    Log_Internal(RED_TERMINAL " ! Error  " WHITE_TERMINAL " - ");  \
+    Log(RED_TERMINAL " ! Error  " WHITE_TERMINAL " - ");  \
     Debug(__VA_ARGS__);                                   \
   }                                                       \
                                                           \
@@ -58,7 +67,7 @@ global_variable log_level Global_LogLevel = LogLevel_Shush;
 #define Warn(...) do {                                      \
                                                             \
   if (Global_LogLevel <= LogLevel_Normal) {                 \
-    Log_Internal(YELLOW_TERMINAL " * Warning" WHITE_TERMINAL " - "); \
+    Log(YELLOW_TERMINAL " * Warning" WHITE_TERMINAL " - "); \
     Debug(__VA_ARGS__);                                     \
   }                                                         \
                                                             \
@@ -67,7 +76,7 @@ global_variable log_level Global_LogLevel = LogLevel_Shush;
 #define LogSuccess(...) do {                                  \
                                                            \
   if (Global_LogLevel <= LogLevel_Normal) {                \
-    Log_Internal(GREEN_TERMINAL " ✓ foo" WHITE_TERMINAL " - "); \
+    Log(GREEN_TERMINAL " ✓ " WHITE_TERMINAL " - "); \
     Debug(__VA_ARGS__);                                    \
   }                                                        \
                                                            \
@@ -76,7 +85,7 @@ global_variable log_level Global_LogLevel = LogLevel_Shush;
 #define OpenGlDebugMessage(...) do {                                     \
                                                                          \
   if (Global_LogLevel <= LogLevel_Debug) {                               \
-    Log_Internal(YELLOW_TERMINAL " * OpenGl Debug Message" WHITE_TERMINAL " - "); \
+    Log(YELLOW_TERMINAL " * OpenGl Debug Message" WHITE_TERMINAL " - "); \
     Debug(__VA_ARGS__);                                                  \
   }                                                                      \
                                                                          \

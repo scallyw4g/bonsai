@@ -120,7 +120,8 @@ ExponentTests(parser *Parser, c_token_type FloatingPointTokenType)
 bonsai_function void
 TestBasicTokenizationAndParsing(memory_arena* Memory)
 {
-  parser *Parser = ParserForFile(CS(TEST_FIXTURES_PATH "/preprocessor_basic.cpp"), Memory);
+  parse_context Ctx = { .Memory = Memory };
+  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor_basic.cpp"));
 
   if (Parser)
   {
@@ -656,7 +657,8 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
 bonsai_function void
 TestPeekAndPopTokens(memory_arena* Memory)
 {
-  parser *Parser = ParserForFile(CS(TEST_FIXTURES_PATH "/preprocessor_peek_pop.cpp"), Memory);
+  parse_context Ctx = { .Memory = Memory };
+  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor_peek_pop.cpp"));
 
   if (Parser)
   {
@@ -811,15 +813,13 @@ TestPeekAndPopTokens(memory_arena* Memory)
 bonsai_function void
 TestStructParsing(memory_arena* Memory)
 {
-  parser *Parser = ParserForFile(CS(TEST_FIXTURES_PATH "/preprocessor_datatypes.cpp"), Memory);
+  parse_context Ctx = { .Memory = Memory };
+
+  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor_datatypes.cpp"));
 
   if (Parser)
   {
-    parse_context Ctx = {
-      .CurrentParser = Parser,
-      .Memory = Memory,
-    };
-
+    Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
   }
   else
@@ -833,7 +833,8 @@ TestStructParsing(memory_arena* Memory)
 bonsai_function void
 TestCommentSituation(memory_arena* Memory)
 {
-  parser *Parser = ParserForFile(CS(TEST_FIXTURES_PATH "/comments.cpp"), Memory);
+  parse_context Ctx = { .Memory = Memory };
+  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/comments.cpp"));
 
   if (Parser)
   {
@@ -930,6 +931,12 @@ TestMacrosAndIncludes(memory_arena *Memory)
     RequireToken(Parser, CToken(CSz("ding")));
     RequireToken(Parser, CTokenType_Equals);
     RequireToken(Parser, CToken(42u));
+    RequireToken(Parser, CTokenType_Semicolon);
+
+    RequireToken(Parser, CTokenType_Int);
+    RequireToken(Parser, CToken(CSz("thing")));
+    RequireToken(Parser, CTokenType_Equals);
+    RequireToken(Parser, CToken(1337u));
     RequireToken(Parser, CTokenType_Semicolon);
 
     RequireToken(Parser, CTokenType_Int);
@@ -1196,6 +1203,10 @@ TestMacrosAndIncludes(memory_arena *Memory)
     RequireToken(Parser, CToken(42u));
 
     /* DumpEntireParser(Parser); */
+
+    RequireToken(Parser, CToken(CSz("m2")));
+    RequireToken(Parser, CTokenType_OpenParen);
+    RequireToken(Parser, CTokenType_CloseParen);
 
     TestThat( TokensRemain(Parser) == False );
   }
@@ -1621,6 +1632,7 @@ s32
 main()
 {
   TestSuiteBegin("Preprocessor");
+  Global_LogLevel = LogLevel_Debug;
 
 /* #define thing(a) a */
 /* thing(static int thing(foo)) = 42; */
@@ -1630,19 +1642,17 @@ main()
 
   memory_arena* Memory = AllocateArena();
 
-  TestDoublyLinkedListSwap();
-  TestParserChain(Memory);
-  TestBasicTokenizationAndParsing(Memory);
-  TestPeekAndPopTokens(Memory);
-  TestStructParsing(Memory);
-  TestCommentSituation(Memory);
+  /* TestDoublyLinkedListSwap(); */
+  /* TestParserChain(Memory); */
+  /* TestBasicTokenizationAndParsing(Memory); */
+  /* TestPeekAndPopTokens(Memory); */
+  /* TestStructParsing(Memory); */
+  /* TestCommentSituation(Memory); */
   TestMacrosAndIncludes(Memory);
-  TestIncludeGuards(Memory);
-  TestDefinesAndConditionals(Memory);
-  TestLogicalOperators(Memory);
-
+  /* TestIncludeGuards(Memory); */
+  /* TestDefinesAndConditionals(Memory); */
+  /* TestLogicalOperators(Memory); */
   /* TestAst(Memory); */
-
 
   TestSuiteEnd();
   exit(TestsFailed);

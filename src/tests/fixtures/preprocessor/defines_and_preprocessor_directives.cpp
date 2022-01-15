@@ -1,4 +1,3 @@
-
 #define thing1 typedef
 #define thing2 struct { int __val[2]; }
 

@@ -1212,14 +1212,14 @@ PrintToken(c_token *Token)
 
     if (Color)
     {
-      Debug(Color);
+      DebugChars(Color);
     }
 
-    Debug("%S", Token->Value);
+    DebugChars("%S", Token->Value);
 
     if (Color)
     {
-      Debug(WHITE_TERMINAL);
+      DebugChars(WHITE_TERMINAL);
     }
   }
 }

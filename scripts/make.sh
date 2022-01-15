@@ -1,5 +1,7 @@
 #! /bin/bash
 
+. scripts/colors.sh
+
 Platform="Unknown"
 UNAME=$(uname)
 if [ "$UNAME" == "Linux" ] ; then
@@ -9,17 +11,17 @@ if [ "$UNAME" == "Linux" ] ; then
   PLATFORM_INCLUDE_DIRS=""
   PLATFORM_CXX_OPTIONS="-ggdb"
 
-  # TODO(Jesse): What does -fPIC acutally do?  I found the option documented here,
+  # TODO(Jesse): What does -fPIC acutally do?  I found the option documented,
   # but with no explanation of what it's doing.  Apparently it's unsupported on
   # Windows, so hopefully it's not necessary for anything.
-
+  #
   # Turns out that -fPIC turns on rip-relative addressing (among other things?)
   # such that functions work regardless of where they're loaded into memory.
   # This is important (obviously) for dynamically-loaded libs and ASLR.
-
   #
   # https://clang.llvm.org/docs/ClangCommandLineReference.html
   # @unsupported_fPIC_flag_windows
+  #
   SHARED_LIBRARY_FLAGS="-shared -fPIC"
   PLATFORM_EXE_EXTENSION=""
   PLATFORM_LIB_EXTENSION=".so"
@@ -42,12 +44,6 @@ fi
 EMCC=0
 
 # OPTIMIZATION_LEVEL="-O2"
-
-RED="\x1b[31m"
-BLUE="\x1b[34m"
-GREEN="\x1b[32m"
-YELLOW="\x1b[33m"
-WHITE="\x1b[37m"
 
 Delimeter="$RED-----------------------------------------------------------$WHITE"
 Success="$GREEN  ✔ $WHITE"
@@ -147,26 +143,6 @@ EXECUTABLES_TO_BUILD="
 # ultra-jank-tastic segfault recovery code.  Find another less janky way?
 DEBUG_TESTS_TO_BUILD="
   $TESTS/allocation.cpp
-"
-
-
-# TESTS_TO_BUILD="
-#   $TESTS/preprocessor.cpp
-# "
-
-TESTS_TO_BUILD="
-  $TESTS/ui_command_buffer.cpp
-  $TESTS/m4.cpp
-  $TESTS/colladaloader.cpp
-  $TESTS/test_bitmap.cpp
-  $TESTS/chunk.cpp
-  $TESTS/bonsai_string.cpp
-  $TESTS/objloader.cpp
-  $TESTS/callgraph.cpp
-  $TESTS/heap_allocation.cpp
-  $TESTS/preprocessor.cpp
-  $TESTS/rng.cpp
-  $TESTS/file.cpp
 "
 
 function BuildPreprocessor {
@@ -471,6 +447,27 @@ function RunEntireBuild {
 
 }
 
+
+TESTS_TO_BUILD="
+  $TESTS/preprocessor.cpp
+"
+
+# TESTS_TO_BUILD="
+#   $TESTS/ui_command_buffer.cpp
+#   $TESTS/m4.cpp
+#   $TESTS/colladaloader.cpp
+#   $TESTS/test_bitmap.cpp
+#   $TESTS/chunk.cpp
+#   $TESTS/bonsai_string.cpp
+#   $TESTS/objloader.cpp
+#   $TESTS/callgraph.cpp
+#   $TESTS/heap_allocation.cpp
+#   $TESTS/preprocessor.cpp
+#   $TESTS/rng.cpp
+#   $TESTS/file.cpp
+# "
+
+
 DumpSourceFilesAndQuit=0
 
 CheckoutMetaOutput=0
@@ -479,13 +476,13 @@ FirstPreprocessor=0
 BuildPreprocessor=1
 SecondPreprocessor=0
 
-BuildExecutables=1
-BuildDebugTests=1
+BuildExecutables=0
+BuildDebugTests=0
 BuildTests=1
-BuildDebugSystem=1
-BuildExamples=1
+BuildDebugSystem=0
+BuildExamples=0
 
-RunTests=1
+RunTests=0
 FinalPreprocessor=0
 
 time RunEntireBuild

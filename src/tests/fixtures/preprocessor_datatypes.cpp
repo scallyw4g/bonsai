@@ -1,3 +1,5 @@
+#define foo 0
+
 struct thing1
 {
   counted_string StringThing;
