@@ -3248,21 +3248,17 @@ TokenizeAnsiStream(parse_context *Ctx, ansi_stream Code)
   return Result;
 }
 
-#if 0
-bonsai_function parser *
-ParserForFile(counted_string Filename, memory_arena* Memory)
-{
-  ansi_stream SourceFileStream = AnsiStreamFromFile(Filename, Memory);
-  parser *Result = TokenizeAnsiStream(SourceFileStream, Memory, False, 0);
-  return Result;
-}
-#endif
-
 bonsai_function parser *
 ParserForFile(parse_context *Ctx, counted_string Filename)
 {
+  parser *Result = 0;
   ansi_stream SourceFileStream = AnsiStreamFromFile(Filename, Ctx->Memory);
-  parser *Result = TokenizeAnsiStream(Ctx, SourceFileStream);
+
+  if (SourceFileStream.Start)
+  {
+    Result = TokenizeAnsiStream(Ctx, SourceFileStream);
+  }
+
   return Result;
 }
 
@@ -3293,6 +3289,7 @@ GetByFilename(parser_stream* Stream, counted_string Filename)
 bonsai_function parser *
 ResolveInclude(parse_context *Ctx, parser *Parser)
 {
+  counted_string FinalIncludePath = {};
   parser *Result = {};
 
   c_token *ErrorToken = PeekTokenPointer(Parser);
@@ -3325,29 +3322,8 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
   counted_string_cursor *IncludePaths = Ctx->IncludePaths;
   if (IncludePaths)
   {
-    /* for ( u32 PrefixIndex = 0; */
-    /*       PrefixIndex < Count(IncludePaths); */
-    /*       ++PrefixIndex ) */
-    /* { */
-    /*   counted_string PrefixPath = IncludePaths->Start[PrefixIndex]; */
-    /*   counted_string FullPath = Concat(PrefixPath, PartialPath, TranArena); */
-
-    /*   Info("Searching cached parsed files for (%S)", FullPath); */
-
-    /*   parser *Got = GetByFilename(&Ctx->AllParsers, FullPath); */
-    /*   if (Got) */
-    /*   { */
-    /*     Result = Allocate(parser, Ctx->Memory, 1); */
-    /*     *Result = *Got; */
-    /*     LogSuccess("Found cached parser for (%S)", FullPath); */
-    /*     break; */
-    /*   } */
-    /* } */
-
-#if 1
     if (!Result)
     {
-      /* Info("File not yet parsed (%S).", PartialPath); */
       for ( u32 PrefixIndex = 0;
             PrefixIndex < Count(IncludePaths);
             ++PrefixIndex )
@@ -3357,39 +3333,31 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
 
         if (FileExists(FullPath))
         {
-          LogSuccess("Including (%S)", FullPath);
+          FinalIncludePath = FullPath;
           Result = ParserForFile(Ctx, FullPath);
           break;
         }
       }
 
     }
-#endif
   }
 
-  /* if (!Result) */
-  /* { */
-  /*   parser *Got = GetByFilename(&Ctx->AllParsers, PartialPath); */
-  /*   if (Got) */
-  /*   { */
-  /*     Result = Allocate(parser, Ctx->Memory, 1); */
-  /*     *Result = *Got; */
-  /*     Success("Found cached parser for (%S)", PartialPath); */
-  /*   } */
-  /* } */
-
-  if (!Result)
+  if ( ! FinalIncludePath.Count)
   {
     if (FileExists(PartialPath))
     {
-      LogSuccess("Found included file at (%S)", PartialPath);
+      FinalIncludePath = PartialPath;
       Result = ParserForFile(Ctx, PartialPath);
     }
   }
 
-  if (!Result)
+  if (FinalIncludePath.Count)
   {
-    Error("Unable to resolve include for : (%S)", PartialPath);
+    LogSuccess("Including (%S)", FinalIncludePath);
+  }
+  else
+  {
+    Warn("Unable to resolve include for file : (%S)", PartialPath);
   }
 
   return Result;

@@ -16,7 +16,7 @@ for test_executable in $(find $exe_search_string); do
   if $test_executable $COLORFLAG == 0; then
     echo -n ""
   else
-    echo -e "$RED  FAIL  $WHITE$test_executable"
+    echo -e "$RED ! Failures$WHITE in $test_executable"
     TESTS_PASSED=1
   fi
 done

@@ -44,9 +44,9 @@ EMCC=0
 # OPTIMIZATION_LEVEL="-O2"
 
 Delimeter="$RED-----------------------------------------------------------$WHITE"
-Success="$GREEN  ✔ $WHITE"
+Success="$GREEN Success � $WHITE"
 Building="$BLUE  Building $WHITE"
-Failed="$RED  ✗ $WHITE"
+Failed="$RED Failed $WHITE"
 
 ROOT="."
 SRC="$ROOT/src"

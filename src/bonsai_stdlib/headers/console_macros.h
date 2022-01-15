@@ -112,7 +112,7 @@ global_variable log_level Global_LogLevel = LogLevel_Debug;
 #define LogSuccess(...) do {                                  \
                                                            \
   if (Global_LogLevel <= LogLevel_Normal) {                \
-    Log("%S o Success %S- ", TerminalColors.Green, TerminalColors.White); \
+    Log("%S   Success %S- ", TerminalColors.Green, TerminalColors.White); \
     Debug(__VA_ARGS__);                                    \
   }                                                        \
                                                            \
