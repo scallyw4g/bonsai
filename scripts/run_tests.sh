@@ -12,6 +12,7 @@ fi
 
 for test_executable in $(find $exe_search_string); do
   # echo "$test_executable"
+  # echo "$COLORFLAG"
   if $test_executable $COLORFLAG == 0; then
     echo -n ""
   else

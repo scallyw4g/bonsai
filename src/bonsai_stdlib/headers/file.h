@@ -4,11 +4,6 @@ struct ansi_stream;
 
 static const char* DefaultPermissions = "a+b"; // Open file for read/write, read from start if exists
 
-global_variable native_file Stdout =
-{
-  .Handle = stdout,
-  .Path = CSz("stdout")
-};
 
 bonsai_function b32 CloseFile(native_file* File);
 

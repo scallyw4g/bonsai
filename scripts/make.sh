@@ -480,7 +480,7 @@ BuildTests=1
 BuildDebugSystem=0
 BuildExamples=0
 
-RunTests=0
+RunTests=1
 FinalPreprocessor=0
 
 time RunEntireBuild

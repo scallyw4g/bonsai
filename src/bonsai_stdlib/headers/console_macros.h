@@ -46,6 +46,7 @@ SetTerminalColorsOff()
   TerminalColors.White  = CSz("");
 }
 
+bonsai_function void SetupStdout(u32 ArgCount, const char** ArgStrings);
 
 global_variable log_level Global_LogLevel = LogLevel_Debug;
 

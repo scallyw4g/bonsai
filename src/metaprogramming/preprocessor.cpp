@@ -3757,6 +3757,10 @@ ParseArgs(const char** ArgStrings, u32 ArgCount, memory_arena* Memory)
         Push(Include, &Result.IncludePaths);
       }
     }
+    else if ( StringsMatch(CS("-c0"), Arg) ||
+              StringsMatch(CS("--colors-off"), Arg) )
+    {
+    }
     else if ( StringsMatch(CS("-o"), Arg) ||
               StringsMatch(CS("--output-path"), Arg) )
     {
@@ -7839,29 +7843,6 @@ RegisterUnparsedCxxTypes(program_datatypes *Datatypes, memory_arena *Memory)
   Push(&Datatypes->StlContainers, Container, Memory);
 }
 
-bonsai_function void
-SetupStdout(u32 ArgCount, const char** ArgStrings)
-{
-  setvbuf(stdout, 0, _IONBF, 0);
-  setvbuf(stderr, 0, _IONBF, 0);
-
-  for ( u32 ArgIndex = 1;
-        ArgIndex < ArgCount;
-        ++ArgIndex)
-  {
-    counted_string Arg = CS(ArgStrings[ArgIndex]);
-
-    if (StringsMatch(CS("-c0"), Arg) ||
-        StringsMatch(CS("--colors-off"), Arg) )
-    {
-      SetTerminalColorsOff();
-    }
-
-  }
-
-  return;
-}
-
 #ifndef EXCLUDE_PREPROCESSOR_MAIN
 #define SUCCESS_EXIT_CODE 0
 #define FAILURE_EXIT_CODE 1
@@ -7873,7 +7854,6 @@ main(s32 ArgCount_, const char** ArgStrings)
   u32 ArgCount = (u32)ArgCount_;
 
   SetupStdout(ArgCount, ArgStrings);
-
 
   memory_arena Memory_ = {};
   memory_arena* Memory = &Memory_;
