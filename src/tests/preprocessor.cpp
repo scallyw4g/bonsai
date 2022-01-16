@@ -1547,9 +1547,9 @@ TestErrors(memory_arena *Memory)
   parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/errors.cpp"));
   Ctx.CurrentParser = Parser;
 
-  DumpEntireParser(Parser);
-
   ParseDatatypes(&Ctx);
+
+  DumpEntireParser(Parser);
 
   ast_node_statement *Ast = ParseAllStatements(&Ctx);
   WalkAst(Ast);

@@ -10,7 +10,7 @@ static int thing2(a_name) = 1;
 
 
 #define InvalidDefaultWhileParsing(P, ErrorMessage) \
-    default: { ParseError(P, PeekTokenPointer(P), ErrorMessage); Assert(False); } break;
+    default: { ParseError(P, PeekTokenPointer(P), ErrorMessage); } break;
 
 
 
@@ -573,7 +573,6 @@ bonsai_function void
 ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_string ErrorString)
 {
   Assert(ErrorToken);
-
 
   u32 LinesOfContext = 5;
 
@@ -1149,13 +1148,11 @@ RequireToken(parser* Parser, c_token ExpectedToken)
   {
     if (PeekedToken)
     {
-      ParseError(Parser, PeekedToken, ExpectedToken, CS("Require Token Failed"));
-      RuntimeBreak();
+      ParseError(Parser, PeekedToken, ExpectedToken, CS("Require Token Failed"));;
     }
     else
     {
       ParseError(Parser, Parser->Tokens.At, ExpectedToken, FormatCountedString(TranArena, CSz("Stream ended unexpectedly in file : %S"), Parser->Filename));
-      RuntimeBreak();
     }
   }
   else
@@ -4089,7 +4086,7 @@ bonsai_function void
 ParseReferencesIndirectionAndPossibleFunctionPointerness(parser *Parser, type_spec *Result)
 {
   b32 Done = False;
-  while (!Done)
+  while (TokensRemain(Parser) && Done == False)
   {
     c_token T = PeekToken(Parser);
 

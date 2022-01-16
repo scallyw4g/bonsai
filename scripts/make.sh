@@ -44,7 +44,7 @@ EMCC=0
 # OPTIMIZATION_LEVEL="-O2"
 
 Delimeter="$RED-----------------------------------------------------------$WHITE"
-Success="$GREEN Success ” $WHITE"
+Success="$GREEN  Success  $WHITE"
 Building="$BLUE  Building $WHITE"
 Failed="$RED Failed $WHITE"
 
@@ -173,14 +173,11 @@ function BuildPreprocessor {
    echo -e "$Failed Error building preprocessor, exiting."
    exit 1
   fi
-
-  echo -e ""
-  echo -e "$Delimeter"
-  echo -e ""
 }
 
 function BuildExecutables
 {
+  echo ""
   ColorizeTitle "Executables"
   for executable in $EXECUTABLES_TO_BUILD; do
     SetOutputBinaryPathBasename "$executable" "$BIN"
@@ -289,7 +286,6 @@ function BuildAllClang
 
   echo -e ""
   echo -e "$Delimeter"
-  echo -e ""
 
   [ $BuildExecutables == 1 ] && BuildExecutables
   [ $BuildDebugTests == 1 ] && BuildDebugTests
@@ -474,11 +470,11 @@ FirstPreprocessor=0
 BuildPreprocessor=1
 SecondPreprocessor=0
 
-BuildExecutables=0
+BuildExecutables=1
 BuildDebugTests=0
 BuildTests=1
-BuildDebugSystem=0
-BuildExamples=0
+BuildDebugSystem=1
+BuildExamples=1
 
 RunTests=0
 FinalPreprocessor=0
