@@ -1628,6 +1628,19 @@ TestParserChain(memory_arena *Memory)
   return;
 }
 
+bonsai_function void
+TestErrors(memory_arena *Memory)
+{
+  parse_context Ctx = {
+    .Memory = Memory,
+  };
+
+  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/errors.cpp"));
+  Ctx.CurrentParser = Parser;
+
+  ParseDatatypes(&Ctx);
+}
+
 s32
 main(s32 ArgCount, const char** Args)
 {
@@ -1642,6 +1655,7 @@ main(s32 ArgCount, const char** Args)
 
   memory_arena* Memory = AllocateArena();
 
+
   TestDoublyLinkedListSwap();
   TestParserChain(Memory);
   TestBasicTokenizationAndParsing(Memory);
@@ -1653,6 +1667,8 @@ main(s32 ArgCount, const char** Args)
   TestDefinesAndConditionals(Memory);
   TestLogicalOperators(Memory);
   TestAst(Memory);
+
+  TestErrors(Memory);
 
   TestSuiteEnd();
   exit(TestsFailed);

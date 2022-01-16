@@ -1,7 +1,7 @@
 #include <src/tests/fixtures/preprocessor/other_file_that_should_parse.cpp>
 
 #define VariadicMacroFunction3(...) __VA_ARGS__
-VariadicMacroFunction3(A, B, C, D);
+VariadicMacroFunction3(int, i, =, 42);
 
 #define __QWORD unsigned long long
 #define __STD_TYPE typedef
@@ -27,16 +27,18 @@ __STD_TYPE __THING __THING_TYPE_NAME;
 
 // This is buggy
 //
-/* EXTERN_BLOCK */
+#if 0
+EXTERN_BLOCK
 
-/* #include <some_other_file_that_wants_c_linkage.h> */
+#include <some_other_file_that_wants_c_linkage.h>
 
-/* u32 */
-/* ExternalFunc() */
-/* { */
-/* } */
+u32
+ExternalFunc()
+{
+}
 
-/* EXTERN_BLOCK_END */
+EXTERN_BLOCK_END
+#endif
 
 
 

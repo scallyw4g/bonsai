@@ -574,6 +574,7 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
 {
   Assert(ErrorToken);
 
+
   u32 LinesOfContext = 5;
 
   parser *CandidateParser = Parser;
@@ -590,12 +591,23 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
 
   if (CandidateParser)
   {
+    counted_string ParserName = CandidateParser->Filename;
+
     CandidateParser->Tokens.At = ErrorToken;
 
-    u32 LinesToReverse = 0;
-    while (LinesToReverse++ <= LinesOfContext)
+    u32 LinesReversed = 0;
+    while (LinesReversed <= LinesOfContext)
     {
       RewindUntil(CandidateParser, CTokenType_Newline);
+#define TRY_TO_ONLY_PRINT_SAME_FILE 0
+#if TRY_TO_ONLY_PRINT_SAME_FILE
+      if (StringsMatch(CandidateParser->Filename, ParserName))
+      {
+        LinesReversed += 1;
+      }
+#else
+      LinesReversed += 1;
+#endif
     }
     OptionalTokenRaw(CandidateParser, CTokenType_Newline);
 
@@ -614,35 +626,45 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
 
     while (c_token *T = PopTokenRawPointer(CandidateParser))
     {
-      PrintToken(T);
+#if TRY_TO_ONLY_PRINT_SAME_FILE
+      if (StringsMatch(CandidateParser->Filename, ParserName))
+      {
+#endif
+        PrintToken(T);
 
-      if (T == ErrorToken)
-      {
-        break;
-      }
+        if (T == ErrorToken)
+        {
+          break;
+        }
 
-      if (T->Type == CTokenType_Newline ||
-          T->Type == CTokenType_EscapedNewline)
-      {
-        TabCount = 0;
-        SpaceCount = 0;
+        if (T->Type == CTokenType_Newline ||
+            T->Type == CTokenType_EscapedNewline)
+        {
+          TabCount = 0;
+          SpaceCount = 0;
+        }
+        else if (T->Type == CTokenType_Tab)
+        {
+          ++TabCount;
+        }
+        else if (T->Value.Count)
+        {
+          SpaceCount += T->Value.Count;
+        }
+        else
+        {
+          ++SpaceCount;
+        }
+#if TRY_TO_ONLY_PRINT_SAME_FILE
       }
-      else if (T->Type == CTokenType_Tab)
-      {
-        ++TabCount;
-      }
-      else if (T->Value.Count)
-      {
-        SpaceCount += T->Value.Count;
-      }
-      else
-      {
-        ++SpaceCount;
-      }
+#endif
     }
 
     while (c_token *T = PopTokenRawPointer(CandidateParser))
     {
+#if TRY_TO_ONLY_PRINT_SAME_FILE
+      Assert(StringsMatch(CandidateParser->Filename, ParserName));
+#endif
       PrintToken(T);
 
       if (T->Type == CTokenType_Newline)
@@ -791,17 +813,24 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
     u32 LinesToPrint = LinesOfContext;
     while (c_token *T = PopTokenRawPointer(CandidateParser))
     {
-      PrintToken(T);
-
-      if (T->Type == CTokenType_Newline)
+#if TRY_TO_ONLY_PRINT_SAME_FILE
+      if (StringsMatch(CandidateParser->Filename, ParserName))
       {
-        --LinesToPrint;
-      }
+#endif
+        PrintToken(T);
 
-      if (!LinesToPrint)
-      {
-        break;
+        if (T->Type == CTokenType_Newline)
+        {
+          --LinesToPrint;
+        }
+
+        if (!LinesToPrint)
+        {
+          break;
+        }
+#if TRY_TO_ONLY_PRINT_SAME_FILE
       }
+#endif
     }
 
 
@@ -4507,6 +4536,7 @@ ParseFunctionOrVariableDecl(parse_context *Ctx)
       {
         // TODO(Jesse): Should this push happen outside this function?  Probably, because
         // some of the code that calls this function ignores the result which feels weird.
+        // ie. They call this function specifically for this side-effect
         Result.Type = type_declaration_function_decl;
         Result.function_decl = ParseAndPushFunctionPrototype(Ctx, &DeclType, &DeclNameToken.Value, function_type_normal);
       }
@@ -4532,6 +4562,10 @@ ParseFunctionOrVariableDecl(parse_context *Ctx)
           {
             ParseExpression(Ctx, &Result.variable_decl.Value);
           }
+        }
+        else
+        {
+          RequireToken(Parser, CTokenType_Semicolon);
         }
       }
     }
@@ -5083,7 +5117,6 @@ ParseStructMember(parse_context *Ctx, counted_string StructName)
             {
               Result.Type = type_variable_decl;
               Result.variable_decl = Decl.variable_decl;
-              RequireToken(Parser, CTokenType_Semicolon);
             } break;
 
             case type_declaration_function_decl:
