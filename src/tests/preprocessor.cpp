@@ -1140,8 +1140,8 @@ TestIncludeGuards(memory_arena *Memory)
     Ctx.CurrentParser = Parser;
     /* DumpEntireParser(Parser); */
     /* RuntimeBreak(); */
-    /* ast_node_statement *Ast = ParseAllStatements(&Ctx); */
-    /* WalkAst(Ast); */
+    ast_node_statement *Ast = ParseAllStatements(&Ctx);
+    WalkAst(Ast);
     /* DebugPrint(Ast); */
   }
   else
@@ -1547,7 +1547,13 @@ TestErrors(memory_arena *Memory)
   parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/errors.cpp"));
   Ctx.CurrentParser = Parser;
 
+  DumpEntireParser(Parser);
+
   ParseDatatypes(&Ctx);
+
+  ast_node_statement *Ast = ParseAllStatements(&Ctx);
+  WalkAst(Ast);
+  /* DebugPrint(Ast); */
 }
 
 s32

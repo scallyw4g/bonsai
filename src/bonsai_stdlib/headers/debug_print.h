@@ -64,6 +64,7 @@ DebugPrint(const char* E, u32 Depth = 0)
   Log("%*s%s", Depth, "", E);
 }
 
+#if 0
 bonsai_function void
 DebugPrint(native_mutex E, u32 Depth = 0)
 {
@@ -75,6 +76,7 @@ DebugPrint(semaphore E, u32 Depth = 0)
 {
   Log("%*ssemaphore(%u)", Depth, "", *(u32*)&E);
 }
+#endif
 
 meta(
   named_list(external_datatypes)

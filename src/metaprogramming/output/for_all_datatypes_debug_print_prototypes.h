@@ -539,8 +539,10 @@
       bonsai_function void DebugPrint( line* S, u32 Depth = 0);
       bonsai_function void DebugPrint( line  S, u32 Depth = 0);
 
+#if 0
       bonsai_function void DebugPrint( XVisualInfo* S, u32 Depth = 0);
       bonsai_function void DebugPrint( XVisualInfo  S, u32 Depth = 0);
+#endif
 
       bonsai_function void DebugPrint( os* S, u32 Depth = 0);
       bonsai_function void DebugPrint( os  S, u32 Depth = 0);

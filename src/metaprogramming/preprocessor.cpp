@@ -882,32 +882,37 @@ PeekTokenRawPointer(parser* Parser, u32 Lookahead)
   Assert(Parser->Tokens.Start <= Parser->Tokens.End);
 
   c_token* Result = {};
-  u32 TokensRemaining = (u32)Remaining(&Parser->Tokens);
-  if (TokensRemaining > Lookahead)
+
+  if (Parser->Valid)
   {
-    Result = Parser->Tokens.At+Lookahead;
-  }
-  else
-  {
-    if (Parser->Next)
+    u32 TokensRemaining = (u32)Remaining(&Parser->Tokens);
+    if (TokensRemaining > Lookahead)
     {
-      Assert( Parser->Next->Tokens.At == Parser->Next->Tokens.Start);
-      Result = PeekTokenRawPointer(Parser->Next, Lookahead - TokensRemaining);
+      Result = Parser->Tokens.At+Lookahead;
     }
-  }
+    else
+    {
+      if (Parser->Next)
+      {
+        Assert( Parser->Next->Tokens.At == Parser->Next->Tokens.Start);
+        Result = PeekTokenRawPointer(Parser->Next, Lookahead - TokensRemaining);
+      }
+    }
 
 #if BONSAI_INTERNAL
-  if (Result && DEBUG_CHECK_FOR_BREAK_HERE(*Result))
-  {
-    RuntimeBreak();
-    Result = PeekTokenRawPointer(Parser, Lookahead + 1);
-  }
+    if (Result && DEBUG_CHECK_FOR_BREAK_HERE(*Result))
+    {
+      RuntimeBreak();
+      Result = PeekTokenRawPointer(Parser, Lookahead + 1);
+    }
 #endif
 
 #if BONSAI_INTERNAL
-  if (Result && Result->Type == CTokenType_Identifier) { Assert(Result->Value.Start); Assert(Result->Value.Count);  }
-  if (Result) { Assert(Result->Type); }
+    if (Result && Result->Type == CTokenType_Identifier) { Assert(Result->Value.Start); Assert(Result->Value.Count);  }
+    if (Result) { Assert(Result->Type); }
 #endif
+
+  }
 
   Assert(Parser->Tokens.At >= Parser->Tokens.Start);
   Assert(Parser->Tokens.At <= Parser->Tokens.End);
@@ -1152,9 +1157,6 @@ RequireToken(parser* Parser, c_token ExpectedToken)
       ParseError(Parser, Parser->Tokens.At, ExpectedToken, FormatCountedString(TranArena, CSz("Stream ended unexpectedly in file : %S"), Parser->Filename));
       RuntimeBreak();
     }
-
-    Parser->Valid = False;
-    RuntimeBreak();
   }
   else
   {
@@ -3997,7 +3999,6 @@ EatBetween(parser* Parser, c_token_type Open, c_token_type Close)
   {
     RuntimeBreak();
     ParseError(Parser, StartToken, FormatCountedString(TranArena, CSz("Unable to find closing token %S"), ToString(Close)));
-    Parser->Valid = False;
   }
 
   counted_string Result = FinalizeStringFromParser(&Builder);
@@ -6233,7 +6234,7 @@ FlushOutputToDisk(parse_context *Ctx, counted_string OutputForThisParser, counte
 
   if (!Parser->Valid)
   {
-    ParseError(Parser, CSz("Bad parser state."));
+    Error(CSz("Parse Error Encountered, not flushing to disk."));
     return;
   }
 

@@ -7235,6 +7235,7 @@
       else { DebugPrint("ptr(0)", Depth); }
     }
 
+#if 0
     bonsai_function void DebugPrint( XVisualInfo S, u32 Depth)
     {
       if (Depth == 0)
@@ -7311,6 +7312,7 @@
       if (S) { DebugPrint(*S, Depth); }
       else { DebugPrint("ptr(0)", Depth); }
     }
+#endif
 
     bonsai_function void DebugPrint( mesh_metadata S, u32 Depth)
     {

@@ -316,7 +316,7 @@ ProtectPage(u8* Mem)
 bonsai_function memory_arena*
 AllocateArena(umm RequestedBytes = Megabytes(1), b32 MemProtect = True)
 {
-  // FIXME(Jesse): We shouldn't really be able to ask for < 1MB worth of space
+  // TODO(Jesse): We shouldn't really be able to ask for < 1MB worth of space
   u64 PageSize = PlatformGetPageSize();
   u64 ToNextPage = PageSize - (RequestedBytes % PageSize);
   umm AllocationSize = RequestedBytes + ToNextPage;

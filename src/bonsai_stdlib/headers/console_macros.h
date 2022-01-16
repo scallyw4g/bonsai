@@ -21,7 +21,6 @@ struct terminal_colors
   counted_string White  = CSz("\x1b[37m");
 };
 
-
 global_variable terminal_colors TerminalColors = {};
 
 bonsai_function void
@@ -48,7 +47,7 @@ SetTerminalColorsOff()
 
 bonsai_function void SetupStdout(u32 ArgCount, const char** ArgStrings);
 
-global_variable log_level Global_LogLevel = LogLevel_Debug;
+
 
 
 #define Log(...) PrintToStdout(FormatCountedString_(TempDebugOutputBuffer__, TempDebugOutputBufferSize, __VA_ARGS__))

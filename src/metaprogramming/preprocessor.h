@@ -1313,6 +1313,7 @@ AllocateParserPtr(counted_string Filename, u32 TokenCount, u32 OutputBufferToken
 {
   parser *Result = AllocateProtection(parser, Memory, 1, False);
 
+  Result->Valid = 1;
   Result->Filename = Filename;
 
   Result->Tokens = AllocateTokenBuffer(Memory, TokenCount);
