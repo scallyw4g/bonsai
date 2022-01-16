@@ -70,7 +70,7 @@ bonsai_function void           TrimFirstToken(parser* Parser, c_token_type Token
 bonsai_function void           TrimLastToken(parser* Parser, c_token_type TokenType);
 bonsai_function void           TrimLeadingWhitespace(parser* Parser);
 bonsai_function counted_string EatBetween(parser* Parser, c_token_type Open, c_token_type Close);
-bonsai_function void           EatSpacesTabsAndEscapedNewlines(parser *Parser);
+bonsai_function b32            EatSpacesTabsAndEscapedNewlines(parser *Parser);
 
 
 //
@@ -1574,7 +1574,7 @@ EatComment(parser* Parser, c_token_type CommentT)
   {
     case CTokenType_CommentSingleLine:
     {
-      EatUntilIncluding(Parser, CTokenType_Newline);
+      EatUntilExcluding(Parser, CTokenType_Newline);
     } break;
 
     case CTokenType_CommentMultiLineStart:
@@ -1584,7 +1584,6 @@ EatComment(parser* Parser, c_token_type CommentT)
 
     default:
     {
-      Warn("Called EatComment on something that wasn't a comment!");
     } break;
   }
 
@@ -1608,17 +1607,24 @@ EatWhitespaceAndComments(parser* Parser)
 }
 
 // NOTE(Jesse): This is duplicated @duplicate_EatSpacesTabsAndEscapedNewlines
-bonsai_function void
+bonsai_function b32
 EatSpacesTabsAndEscapedNewlines(parser *Parser)
 {
+  b32 Result = False;
+
   c_token_type Type = PeekTokenRaw(Parser).Type;
   while ( RawTokensRemain(Parser) &&
-          ( Type == CTokenType_Space ||
-            Type == CTokenType_Tab   ||
+          ( Type == CTokenType_Space            ||
+            Type == CTokenType_Tab              ||
+            Type == CTokenType_EscapedNewline   ||
             Type == CTokenType_FSlash ) )
   {
+    Result = True;
     if ( Type == CTokenType_FSlash )
     {
+      // NOTE(Jesse): This is garbage and should actually never happen.  An excaped newline is '\n' .. which is a backslash!!!!
+      Assert(False);
+#if 0
       if ( PeekTokenRaw(Parser, 1).Type == CTokenType_Newline )
       {
         RequireTokenRaw(Parser, CTokenType_FSlash);
@@ -1628,6 +1634,7 @@ EatSpacesTabsAndEscapedNewlines(parser *Parser)
       {
         break;
       }
+#endif
     }
     else
     {
@@ -1636,6 +1643,8 @@ EatSpacesTabsAndEscapedNewlines(parser *Parser)
 
     Type = PeekTokenRaw(Parser).Type;
   }
+
+  return Result;
 }
 
 bonsai_function void
@@ -3315,7 +3324,13 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
     else
     {
       RequireToken(Parser, CTokenType_GT);
-      EatSpacesTabsAndEscapedNewlines(Parser);
+      b32 Continue = true;
+      while (Continue)
+      {
+        b32 AteWhitespace = EatSpacesTabsAndEscapedNewlines(Parser);
+        b32 AteComment = EatComment(Parser).Count > 0;
+        Continue = AteWhitespace || AteComment;
+      }
       RequireTokenRaw(Parser, CTokenType_Newline);
     }
   }

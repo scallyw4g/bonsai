@@ -1,13 +1,22 @@
-int ding = 42;
-
-#include <src/tests/fixtures/preprocessor/include_test.cpp>
+#include <src/tests/fixtures/preprocessor/include_test.cpp> // \
+this is actually commented
 #include <src/tests/fixtures/preprocessor/include_test_2.cpp>
 
 #include <src/tests/fixtures/preprocessor/empty.cpp>
 #include <src/tests/fixtures/preprocessor/empty.cpp>
 
-#include <src/tests/fixtures/preprocessor/random_define.cpp>
-#include <src/tests/fixtures/preprocessor/random_define.cpp>
+#include <src/tests/fixtures/preprocessor/random_define.cpp> /* this should be fine */
+
+#include <src/tests/fixtures/preprocessor/random_define.cpp> // this should be fine \
+This line is actually commented
+#include <src/tests/fixtures/preprocessor/random_define.cpp> /* this should be fine */
+#include <src/tests/fixtures/preprocessor/random_define.cpp> /* this should be fine */  \
+
+#include <src/tests/fixtures/preprocessor/empty.cpp> /*
+                                                       */   
+#include <src/tests/fixtures/preprocessor/random_define.cpp> // this should be fine
+
+
 
 #define MacroKeyword    this_is_a_variable_name
 #define IndirectMacroKeyword MacroKeyword
