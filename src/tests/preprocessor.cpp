@@ -1642,17 +1642,17 @@ main(s32 ArgCount, const char** Args)
 
   memory_arena* Memory = AllocateArena();
 
-  /* TestDoublyLinkedListSwap(); */
-  /* TestParserChain(Memory); */
-  /* TestBasicTokenizationAndParsing(Memory); */
-  /* TestPeekAndPopTokens(Memory); */
-  /* TestStructParsing(Memory); */
-  /* TestCommentSituation(Memory); */
+  TestDoublyLinkedListSwap();
+  TestParserChain(Memory);
+  TestBasicTokenizationAndParsing(Memory);
+  TestPeekAndPopTokens(Memory);
+  TestStructParsing(Memory);
+  TestCommentSituation(Memory);
   TestMacrosAndIncludes(Memory);
-  /* TestIncludeGuards(Memory); */
-  /* TestDefinesAndConditionals(Memory); */
-  /* TestLogicalOperators(Memory); */
-  /* TestAst(Memory); */
+  TestIncludeGuards(Memory);
+  TestDefinesAndConditionals(Memory);
+  TestLogicalOperators(Memory);
+  TestAst(Memory);
 
   TestSuiteEnd();
   exit(TestsFailed);

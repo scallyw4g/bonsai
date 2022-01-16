@@ -404,6 +404,11 @@ AdvanceParser(parser* Parser)
 bonsai_function void
 AdvanceTo(parser* Parser, c_token* T)
 {
+  if (Remaining(Parser) == 0)
+  {
+    AdvanceParser(Parser);
+  }
+
   while (Parser->Tokens.At != T)
   {
     AdvanceParser(Parser);
@@ -3024,11 +3029,14 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       case CT_PreprocessorInclude:
       {
         parser *IncludeParser = ResolveInclude(Ctx, Result);
+
         EraseSectionOfParser(Result, T, Result->Tokens.At);
+
         if (IncludeParser)
         {
           SplitAndInsertParserInto(Result, IncludeParser, Memory);
         }
+
       } break;
 
       case CTokenType_Identifier:
