@@ -15,7 +15,7 @@
 
 #include <direct.h> // Chdir
 
-#define RuntimeBreak() __debugbreak()
+#define PLATFORM_RUNTIME_BREAK() __debugbreak()
 
 #define runtime_lib_export __declspec(dllexport)
 

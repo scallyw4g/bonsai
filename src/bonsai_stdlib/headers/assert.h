@@ -5,20 +5,20 @@
 #  define Ensure(condition) Assert((condition))
 
 #  define Assert(condition) \
-    do { if (!(condition)) { Debug("%s ! Assertion Failed%s - '%s' during %s \n%s:%u:0:Assertion Failed" Newline, TerminalColors.Red, TerminalColors.White, #condition, __FUNCTION__, __FILE__, __LINE__); RuntimeBreak(); } } while (false)
+    do { if (!(condition)) { Debug("%S ! Assertion Failed%S - '%s' during %s \n%s:%u:0:Assertion Failed" Newline, TerminalColors.Red, TerminalColors.White, #condition, __FUNCTION__, __FILE__, __LINE__); RuntimeBreak(); } } while (false)
 
 #  define InvalidCodePath() Error("Invalid Code Path - Panic!"); Assert(False)
 
-#else
+#define RuntimeBreak() do { Log("\n   %SRuntimeBreak%S\n\n", TerminalColors.Red, TerminalColors.White); PLATFORM_RUNTIME_BREAK(); } while (false)
+
+#define NotImplemented Error("Implement Me!"); Assert(False)
+
+#else // Release Build
 
 #define Ensure(condition) condition
 #define Assert(...)
 #define InvalidCodePath(...)
-
-#endif
-
-#if BONSAI_INTERNAL
-#define NotImplemented Error("Implement Me!"); Assert(False)
-#else
+#define RuntimeBreak(...)
 #define NotImplemented Implement Meeeeee!!!
+
 #endif

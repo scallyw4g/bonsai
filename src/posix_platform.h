@@ -17,7 +17,7 @@
 #include <sys/socket.h>
 
 
-#define RuntimeBreak() raise(SIGTRAP)
+#define PLATFORM_RUNTIME_BREAK() raise(SIGTRAP)
 
 #define Newline "\n"
 

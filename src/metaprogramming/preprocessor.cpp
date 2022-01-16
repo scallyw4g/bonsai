@@ -815,7 +815,7 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
     Debug("Error was : %S\n", ErrorString);
   }
 
-  /* RuntimeBreak(); */
+  RuntimeBreak();
 
   return;
 }
@@ -3049,13 +3049,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
             {
               parser *Expanded = ExpandMacro(Ctx, Result, Macro, Memory, True);
               Result = SplitAndInsertParserInto(Result, Expanded, Memory);
-
-              /* if (StringsMatch(T->Value, CSz("_Acquires_lock_"))) */
-              /* { */
-              /*   DumpEntireParser(Result); */
-              /*   RuntimeBreak(); */
-              /* } */
-
             }
             else
             {
@@ -4707,7 +4700,6 @@ IsNextTokenMacro(parse_context *Ctx, parser *Parser)
 bonsai_function u64
 ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena *Memory, u64 PreviousValue, b32 LogicalNotNextValue)
 {
-  /* RuntimeBreak(); */
   u64 Result = PreviousValue;
 
   EatSpacesTabsAndEscapedNewlines(Parser);
