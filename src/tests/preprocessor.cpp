@@ -1549,10 +1549,12 @@ TestErrors(memory_arena *Memory)
 
   ParseDatatypes(&Ctx);
 
-  DumpEntireParser(Parser);
+  TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
 
-  ast_node_statement *Ast = ParseAllStatements(&Ctx);
-  WalkAst(Ast);
+  /* DumpEntireParser(Parser); */
+
+  /* ast_node_statement *Ast = ParseAllStatements(&Ctx); */
+  /* WalkAst(Ast); */
   /* DebugPrint(Ast); */
 }
 

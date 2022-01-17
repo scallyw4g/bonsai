@@ -1,6 +1,7 @@
 /* #include <src/bonsai_stdlib/headers/assert.h> */
 /* int foo  151; */
-int foo  132151;  //fdaafhdsafhweagtfhewagfjdsahfodsafodijsa;fjerwa;hgfdsaf
+
+int foo  132151;
 
 /* Assert(foo 1); */
 

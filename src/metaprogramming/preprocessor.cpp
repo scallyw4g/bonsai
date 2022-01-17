@@ -8,7 +8,6 @@ static int thing2(a_name) = 1;
 
 #include <bonsai_types.h>
 
-
 #define InvalidDefaultWhileParsing(P, ErrorMessage) \
     default: { ParseError(P, ErrorMessage, PeekTokenPointer(P)); } break;
 
@@ -573,7 +572,7 @@ TruncateAtPreviousLineStart(parser* Parser, u32 Count )
 // about that because it' bloats that struct and we create those things like
 // crazy.. but I don't really like that it's a global either.
 static char Global_ParseErrorBuffer[4096] = {};
-static char_cursor Global_ParserErrorCursor_ =
+static char_cursor Global_ParseErrorCursor_ =
 {
   .Start = Global_ParseErrorBuffer,
   .End = Global_ParseErrorBuffer+4096,
@@ -654,11 +653,11 @@ Highlight(char_cursor *Dest, char C, counted_string Color)
 }
 
 bonsai_function void
-ParseError(parser* Parser, counted_string ErrorString, c_token* ErrorToken = 0)
+ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessage, c_token* ErrorToken = 0)
 {
   if (!ErrorToken) ErrorToken = Parser->Tokens.At;
 
-  char_cursor *ParserErrorCursor = &Global_ParserErrorCursor_;
+  char_cursor *ParseErrorCursor = &Global_ParseErrorCursor_;
 
   u32 LinesOfContext = 5;
 
@@ -690,8 +689,8 @@ ParseError(parser* Parser, counted_string ErrorString, c_token* ErrorToken = 0)
 
     {
       counted_string Filename = CandidateParser->Filename.Count ? CandidateParser->Filename : CSz("(unknown file)");
-      FormatCountedString_(ParserErrorCursor, CSz("\n%S:%u:0\n"), Filename, CandidateParser->LineNumber);
-      CopyToDest(ParserErrorCursor, CSz("------------------------------------------------------------------------------------\n"));
+      FormatCountedString_(ParseErrorCursor, CSz("\n%S:%u:0\n"), Filename, CandidateParser->LineNumber);
+      CopyToDest(ParseErrorCursor, CSz("------------------------------------------------------------------------------------\n"));
     }
 
     u32 SpaceCount = 0;
@@ -705,14 +704,14 @@ ParseError(parser* Parser, counted_string ErrorString, c_token* ErrorToken = 0)
     {
         if (T == ErrorToken)
         {
-          CopyToDest(ParserErrorCursor, TerminalColors.Red);
+          CopyToDest(ParseErrorCursor, TerminalColors.Red);
         }
 
-        CopyToDest(ParserErrorCursor, T->Value);
+        CopyToDest(ParseErrorCursor, T->Value);
 
         if (T == ErrorToken)
         {
-          CopyToDest(ParserErrorCursor, TerminalColors.White);
+          CopyToDest(ParseErrorCursor, TerminalColors.White);
           break;
         }
 
@@ -741,7 +740,7 @@ ParseError(parser* Parser, counted_string ErrorString, c_token* ErrorToken = 0)
       while (T)
       {
 
-        CopyToDest(ParserErrorCursor, T->Value);
+        CopyToDest(ParseErrorCursor, T->Value);
 
         if (T->Type == CTokenType_Newline || T->Type == CTokenType_EscapedNewline)
         {
@@ -756,42 +755,54 @@ ParseError(parser* Parser, counted_string ErrorString, c_token* ErrorToken = 0)
     { // Output the error line message
       if (!PeekTokenRawPointer(CandidateParser))
       {
-        CopyToDest(ParserErrorCursor, '\n');
+        CopyToDest(ParseErrorCursor, '\n');
       }
 
-      Indent(ParserErrorCursor, TabCount, SpaceCount);
-      OutputIdentifierUnderline(ParserErrorCursor, ErrorIdentifierLength);
-      CopyToDest(ParserErrorCursor, '\n');
+      Indent(ParseErrorCursor, TabCount, SpaceCount);
+      OutputIdentifierUnderline(ParseErrorCursor, ErrorIdentifierLength);
+      CopyToDest(ParseErrorCursor, '\n');
 
-      Indent(ParserErrorCursor, TabCount, SpaceCount+ErrorIdentifierLengthSubOne);
-      Highlight(ParserErrorCursor, '|', TerminalColors.Yellow);
-      CopyToDest(ParserErrorCursor, ' ');
-      CopyToDest(ParserErrorCursor, ' ');
+      Indent(ParseErrorCursor, TabCount, SpaceCount+ErrorIdentifierLengthSubOne);
+      Highlight(ParseErrorCursor, '|', TerminalColors.Yellow);
+      CopyToDest(ParseErrorCursor, ' ');
+      CopyToDest(ParseErrorCursor, ' ');
+
+      Highlight(ParseErrorCursor, CSz("Parse Error\n"), TerminalColors.Yellow);
+
+      Indent(ParseErrorCursor, TabCount, SpaceCount+ErrorIdentifierLengthSubOne);
+      Highlight(ParseErrorCursor, '|', TerminalColors.Yellow);
+      CopyToDest(ParseErrorCursor, '\n');
+
+
+      Indent(ParseErrorCursor, TabCount, SpaceCount+ErrorIdentifierLengthSubOne);
+      Highlight(ParseErrorCursor, '|', TerminalColors.Yellow);
+      CopyToDest(ParseErrorCursor, ' ');
+      CopyToDest(ParseErrorCursor, ' ');
 
       for (u32 ECharIndex = 0;
-          ECharIndex < ErrorString.Count;
+          ECharIndex < ErrorMessage.Count;
           ++ECharIndex)
       {
-        char C = ErrorString.Start[ECharIndex];
-        CopyToDest(ParserErrorCursor, C);
+        char C = ErrorMessage.Start[ECharIndex];
+        CopyToDest(ParseErrorCursor, C);
 
         if (C == '\n')
         {
-          Indent(ParserErrorCursor, TabCount, SpaceCount+ErrorIdentifierLengthSubOne);
-          Highlight(ParserErrorCursor, '|', TerminalColors.Yellow);
-          CopyToDest(ParserErrorCursor, ' ');
-          CopyToDest(ParserErrorCursor, ' ');
+          Indent(ParseErrorCursor, TabCount, SpaceCount+ErrorIdentifierLengthSubOne);
+          Highlight(ParseErrorCursor, '|', TerminalColors.Yellow);
+          CopyToDest(ParseErrorCursor, ' ');
+          CopyToDest(ParseErrorCursor, ' ');
         }
       }
 
-      CopyToDest(ParserErrorCursor, '\n');
+      CopyToDest(ParseErrorCursor, '\n');
 
 
       { // Output the final underline
-        Indent(ParserErrorCursor, TabCount, SpaceCount + ErrorIdentifierLength);
-        CopyToDest(ParserErrorCursor, TerminalColors.Yellow);
-        CopyToDest(ParserErrorCursor, CSz("------------------------------------------------------------------------------------\n"));
-        CopyToDest(ParserErrorCursor, TerminalColors.White);
+        Indent(ParseErrorCursor, TabCount, SpaceCount + ErrorIdentifierLength);
+        CopyToDest(ParseErrorCursor, TerminalColors.Yellow);
+        CopyToDest(ParseErrorCursor, CSz("------------------------------------------------------------------------------------\n"));
+        CopyToDest(ParseErrorCursor, TerminalColors.White);
       }
     }
 
@@ -807,7 +818,7 @@ ParseError(parser* Parser, counted_string ErrorString, c_token* ErrorToken = 0)
     u32 LinesToPrint = LinesOfContext;
     while (c_token *T = PopTokenRawPointer(CandidateParser))
     {
-        CopyToDest(ParserErrorCursor, T->Value);
+        CopyToDest(ParseErrorCursor, T->Value);
 
         if (T->Type == CTokenType_Newline)
         {
@@ -820,23 +831,64 @@ ParseError(parser* Parser, counted_string ErrorString, c_token* ErrorToken = 0)
         }
     }
 
-    CopyToDest(ParserErrorCursor, CSz("------------------------------------------------------------------------------------\n"));
-
-    CandidateParser->Valid = False;
+    CopyToDest(ParseErrorCursor, CSz("------------------------------------------------------------------------------------\n"));
   }
   else
   {
-    FormatCountedString_(ParserErrorCursor, CSz("Error determining where the error occurred\n"));
-    FormatCountedString_(ParserErrorCursor, CSz("Error was : %S\n"), ErrorString);
+    FormatCountedString_(ParseErrorCursor, CSz("Error determining where the error occurred\n"));
+    FormatCountedString_(ParseErrorCursor, CSz("Error messsage was : %S\n"), ErrorMessage);
   }
 
-  PrintToStdout(CS(ParserErrorCursor));
-  ParserErrorCursor->At = ParserErrorCursor->Start;
+
+  PrintToStdout(CS(ParseErrorCursor));
+  ParseErrorCursor->At = ParseErrorCursor->Start;
+
+
+  Parser->Valid = False;
+  Parser->ErrorMessage = ErrorMessage;
+  Parser->ErrorCode = ErrorCode;
+
 
   RuntimeBreak();
 
 
   return;
+}
+
+// TODO(Jesse): This should go away once we port all messaged to the new architecture
+bonsai_function void
+ParseError(parser* Parser, counted_string ErrorMessage, c_token* ErrorToken = 0)
+{
+  ParseError(Parser, ParseErrorCode_Unknown, ErrorMessage, ErrorToken);
+}
+
+
+bonsai_function counted_string
+ParseError_StreamEndedUnexpectedly(parser *Parser)
+{
+  counted_string Result = FormatCountedString(TranArena, CSz("Stream ended unexpectedly in file : %S"), Parser->Filename);
+  ParseError(Parser, ParseErrorCode_StreamEndedUnexpectedly, Result);
+  return Result;
+}
+
+bonsai_function counted_string
+ParseError_ExpectedSemicolonOrEquals(parser *Parser)
+{
+  counted_string Result = FormatCountedString_(TranArena, CSz("Expected %S(%c) or %S(%c) while parsing variable declaration."), ToString(CTokenType_Semicolon), CTokenType_Semicolon, ToString(CTokenType_Equals), CTokenType_Equals );
+  ParseError(Parser, ParseErrorCode_ExpectedSemicolonOrEquals, Result, PeekTokenPointer(Parser) );
+  return Result;
+}
+
+bonsai_function counted_string
+ParseError_RequireTokenFailed(parser *Parser, c_token *Got, c_token *Expected)
+{
+  counted_string Result = FormatCountedString(TranArena,
+                                                    CSz("Require Token Failed \n\nGot      %S(%S)\nExpected %S(%S)"),
+                                                    ToString(Got->Type), Got->Value,
+                                                    ToString(Expected->Type), Expected->Value);
+
+  ParseError(Parser, ParseErrorCode_RequireTokenFailed, Result, Got);
+  return Result;
 }
 
 /*****************************                 *******************************/
@@ -1123,16 +1175,11 @@ RequireToken(parser* Parser, c_token ExpectedToken)
   {
     if (PeekedToken)
     {
-      ParseError(Parser,
-                 FormatCountedString(TranArena,
-                                     CSz("Require Token Failed \n\nGot      %S(%S)\nExpected %S(%S)"),
-                                     ToString(PeekedToken->Type), PeekedToken->Value,
-                                     ToString(ExpectedToken.Type), ExpectedToken.Value),
-                 PeekedToken);
+      ParseError_RequireTokenFailed(Parser, PeekedToken, &ExpectedToken);
     }
     else
     {
-      ParseError(Parser, FormatCountedString(TranArena, CSz("Stream ended unexpectedly in file : %S"), Parser->Filename));
+      ParseError_StreamEndedUnexpectedly(Parser);
     }
   }
   else
@@ -4541,9 +4588,12 @@ ParseFunctionOrVariableDecl(parse_context *Ctx)
             ParseExpression(Ctx, &Result.variable_decl.Value);
           }
         }
+        else if ( OptionalToken(Parser, CTokenType_Semicolon) )
+        {
+        }
         else
         {
-          RequireToken(Parser, CTokenType_Semicolon);
+          ParseError_ExpectedSemicolonOrEquals(Parser);
         }
       }
     }
@@ -5037,7 +5087,7 @@ ParseStructMember(parse_context *Ctx, counted_string StructName)
         }
         else
         {
-          ParseError(Parser, CSz("Destructor name must match the struct name."), PeekTokenPointer(Parser));
+          ParseError(Parser, CSz("Destructor name must match the struct name."));
         }
       } break;
 

@@ -552,9 +552,22 @@ meta(buffer(c_token_buffer))
 meta(generate_stream(c_token_buffer))
 #include <metaprogramming/output/generate_stream_c_token_buffer.h>
 
+enum parse_error_code
+{
+  ParseErrorCode_None,
+  ParseErrorCode_ExpectedSemicolonOrEquals,
+  ParseErrorCode_StreamEndedUnexpectedly,
+  ParseErrorCode_RequireTokenFailed,
+
+  ParseErrorCode_Unknown,
+};
+
 struct parser
 {
   b32 Valid = 1;
+  counted_string ErrorMessage;
+  parse_error_code ErrorCode;
+
   c_token_cursor Tokens;
 
   /* TODO(Jesse id: 154) This is pretty shitty because whenever we copy one of
@@ -1478,3 +1491,6 @@ struct parse_context
   meta_func_stream       MetaFunctions;
   memory_arena          *Memory;
 };
+
+
+
