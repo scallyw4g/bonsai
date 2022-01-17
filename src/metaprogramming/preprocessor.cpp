@@ -10,7 +10,7 @@ static int thing2(a_name) = 1;
 
 
 #define InvalidDefaultWhileParsing(P, ErrorMessage) \
-    default: { ParseError(P, PeekTokenPointer(P), ErrorMessage); } break;
+    default: { ParseError(P, ErrorMessage, PeekTokenPointer(P)); } break;
 
 
 
@@ -654,9 +654,9 @@ Highlight(char_cursor *Dest, char C, counted_string Color)
 }
 
 bonsai_function void
-ParseError(parser* Parser, c_token* ErrorToken, counted_string ErrorString)
+ParseError(parser* Parser, counted_string ErrorString, c_token* ErrorToken = 0)
 {
-  Assert(ErrorToken);
+  if (!ErrorToken) ErrorToken = Parser->Tokens.At;
 
   char_cursor *ParserErrorCursor = &Global_ParserErrorCursor_;
 
@@ -836,13 +836,6 @@ ParseError(parser* Parser, c_token* ErrorToken, counted_string ErrorString)
   RuntimeBreak();
 
 
-  return;
-}
-
-bonsai_function void
-ParseError(parser* Parser, counted_string ErrorString)
-{
-  ParseError(Parser, Parser->Tokens.At, ErrorString);
   return;
 }
 
@@ -1130,11 +1123,16 @@ RequireToken(parser* Parser, c_token ExpectedToken)
   {
     if (PeekedToken)
     {
-      ParseError(Parser, PeekedToken, FormatCountedString(TranArena, CSz("Require Token Failed \n\nGot      %S(%S)\nExpected %S(%S)"), ToString(PeekedToken->Type), PeekedToken->Value, ToString(ExpectedToken.Type), ExpectedToken.Value ));
+      ParseError(Parser,
+                 FormatCountedString(TranArena,
+                                     CSz("Require Token Failed \n\nGot      %S(%S)\nExpected %S(%S)"),
+                                     ToString(PeekedToken->Type), PeekedToken->Value,
+                                     ToString(ExpectedToken.Type), ExpectedToken.Value),
+                 PeekedToken);
     }
     else
     {
-      ParseError(Parser, Parser->Tokens.At, FormatCountedString(TranArena, CSz("Stream ended unexpectedly in file : %S"), Parser->Filename));
+      ParseError(Parser, FormatCountedString(TranArena, CSz("Stream ended unexpectedly in file : %S"), Parser->Filename));
     }
   }
   else
@@ -3937,7 +3935,7 @@ EatUntil_TrackingDepth(parser *Parser, c_token_type Open, c_token_type Close, c_
   if (!Success)
   {
     RuntimeBreak();
-    ParseError(Parser, StartToken, FormatCountedString(TranArena, CSz("Unable to find closing token %S"), ToString(Close)));
+    ParseError(Parser, FormatCountedString(TranArena, CSz("Unable to find closing token %S"), ToString(Close)), StartToken);
   }
 
   return;
@@ -3977,7 +3975,7 @@ EatBetween(parser* Parser, c_token_type Open, c_token_type Close)
   if (!Success)
   {
     RuntimeBreak();
-    ParseError(Parser, StartToken, FormatCountedString(TranArena, CSz("Unable to find closing token %S"), ToString(Close)));
+    ParseError(Parser, FormatCountedString(TranArena, CSz("Unable to find closing token %S"), ToString(Close)), StartToken);
   }
 
   counted_string Result = FinalizeStringFromParser(&Builder);
@@ -4884,7 +4882,7 @@ ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena 
         // We're done
       } break;
 
-      default: { ParseError(Parser, PeekTokenRawPointer(Parser), CSz("Invalid Token :: ResolveMacroConstantExpression failed.")); Assert(False); } break;
+      default: { ParseError(Parser, CSz("Invalid Token :: ResolveMacroConstantExpression failed."), PeekTokenRawPointer(Parser)); } break;
     }
   }
 
@@ -4958,7 +4956,7 @@ EatIfBlock(parser *Parser)
 
   if (!Success)
   {
-    ParseError(Parser, StartToken, FormatCountedString(TranArena, CSz("Unable to find closing token for %S."), ToString(CT_PreprocessorIf)));
+    ParseError(Parser, FormatCountedString(TranArena, CSz("Unable to find closing token for %S."), ToString(CT_PreprocessorIf)), StartToken);
   }
 
   Assert(Result == Parser->Tokens.At);
@@ -5039,7 +5037,7 @@ ParseStructMember(parse_context *Ctx, counted_string StructName)
         }
         else
         {
-          ParseError(Parser, PeekTokenPointer(Parser), CSz("Destructor name must match the struct name."));
+          ParseError(Parser, CSz("Destructor name must match the struct name."), PeekTokenPointer(Parser));
         }
       } break;
 
