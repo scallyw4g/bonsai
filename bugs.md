@@ -1,3 +1,14 @@
+# Jan 17 2022 - 3:00 - closed - Passing a string with format chars to FormatCountedString_
+* va_args
+* format_string
+I ended up printing out an error message that contains format chars and it was
+breaking in a weird way due to how FormatCountedString_ works (va_args).  It
+was trying to pull a bunch of arguments out of registers (off the stack?) that
+weren't there and corrupting stuff.  Not really sure how to prevent this error
+in the future other than using a metaprogramming system to comptime check args
+to variadic functions .. though in this case even that wouldn't have caught the
+error.
+
 # Oct 24 2020 - 1:30 - closed - Calling Reallocate after a TimedFunction causes reallocation to fail
 * allocation
 * memory

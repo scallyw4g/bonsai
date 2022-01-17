@@ -569,6 +569,19 @@ TruncateAtPreviousLineStart(parser* Parser, u32 Count )
   Parser->Prev = 0;
 }
 
+// TODO(Jesse): Remove this?  Maybe put it onto the parser?   I'm not crazy
+// about that because it' bloats that struct and we create those things like
+// crazy.. but I don't really like that it's a global either.
+static char Global_ParseErrorBuffer[4096] = {};
+static char_cursor Global_ParserErrorCursor_ =
+{
+  .Start = Global_ParseErrorBuffer,
+  .End = Global_ParseErrorBuffer+4096,
+  .At = Global_ParseErrorBuffer,
+};
+
+static char_cursor *Global_ParserErrorCursor = &Global_ParserErrorCursor_;
+
 bonsai_function void
 ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_string ErrorString)
 {
@@ -612,8 +625,8 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
 
     {
       counted_string Filename = CandidateParser->Filename.Count ? CandidateParser->Filename : CSz("(unknown file)");
-      DebugChars("\n%S:%u:0\n", Filename, CandidateParser->LineNumber);
-      Debug("------------------------------------------------------------------------------------");
+      FormatCountedString_(Global_ParserErrorCursor, CSz("\n%S:%u:0\n"), Filename, CandidateParser->LineNumber);
+      FormatCountedString_(Global_ParserErrorCursor, CSz("------------------------------------------------------------------------------------\n"));
     }
 
     u32 SpaceCount = 0;
@@ -629,10 +642,16 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
       if (StringsMatch(CandidateParser->Filename, ParserName))
       {
 #endif
-        PrintToken(T);
+        if (T == ErrorToken)
+        {
+          CopyToDest(Global_ParserErrorCursor, TerminalColors.Red);
+        }
+
+        CopyToDest(Global_ParserErrorCursor, T->Value);
 
         if (T == ErrorToken)
         {
+          CopyToDest(Global_ParserErrorCursor, TerminalColors.White);
           break;
         }
 
@@ -659,16 +678,24 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
 #endif
     }
 
-    while (c_token *T = PopTokenRawPointer(CandidateParser))
     {
-#if TRY_TO_ONLY_PRINT_SAME_FILE
-      Assert(StringsMatch(CandidateParser->Filename, ParserName));
-#endif
-      PrintToken(T);
-
-      if (T->Type == CTokenType_Newline)
+      c_token *T = PopTokenRawPointer(CandidateParser);
+      while (T)
       {
-        break;
+#if TRY_TO_ONLY_PRINT_SAME_FILE
+        Assert(StringsMatch(CandidateParser->Filename, ParserName));
+#endif
+
+
+        CopyToDest(Global_ParserErrorCursor, T->Value);
+
+
+        if (T->Type == CTokenType_Newline)
+        {
+          break;
+        }
+
+        T = PopTokenRawPointer(CandidateParser);
       }
     }
 
@@ -676,28 +703,28 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
     { // Output the error line message
       if (!PeekTokenRawPointer(CandidateParser))
       {
-        DebugChars("\n");
+        CopyToDest(Global_ParserErrorCursor, '\n');
       }
-
-
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < TabCount;
           ++ColumnIndex)
       {
-        DebugChars(CSz("\t"));
+        CopyToDest(Global_ParserErrorCursor, '\t');
       }
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < SpaceCount;
           ++ColumnIndex)
       {
-        DebugChars(CSz(" "));
+        CopyToDest(Global_ParserErrorCursor, ' ');
       }
 
       if (DoPipes)
       {
-        DebugChars(CSz("|"));
+        CopyToDest(Global_ParserErrorCursor, TerminalColors.Orange);
+        CopyToDest(Global_ParserErrorCursor, '|');
+        CopyToDest(Global_ParserErrorCursor, TerminalColors.White);
       }
 
       for (u32 ColumnIndex = 0;
@@ -706,38 +733,45 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
       {
         if (DoPipes)
         {
-          DebugChars(CSz("~"));
+          CopyToDest(Global_ParserErrorCursor, TerminalColors.Orange);
+          CopyToDest(Global_ParserErrorCursor, '~');
+          CopyToDest(Global_ParserErrorCursor, TerminalColors.White);
         }
         else
         {
-          DebugChars(CSz("^"));
+          CopyToDest(Global_ParserErrorCursor, TerminalColors.Orange);
+          CopyToDest(Global_ParserErrorCursor, '^');
+          CopyToDest(Global_ParserErrorCursor, TerminalColors.White);
         }
       }
 
       if (DoPipes)
       {
-        DebugChars(CSz("|"));
+        CopyToDest(Global_ParserErrorCursor, TerminalColors.Orange);
+        CopyToDest(Global_ParserErrorCursor, '|');
+        CopyToDest(Global_ParserErrorCursor, TerminalColors.White);
       }
 
-      DebugChars(CSz("\n"));
+      CopyToDest(Global_ParserErrorCursor, '\n');
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < TabCount;
           ++ColumnIndex)
       {
-        DebugChars(CSz("\t"));
+        CopyToDest(Global_ParserErrorCursor, '\t');
       }
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < SpaceCount;
           ++ColumnIndex)
       {
-        DebugChars(CSz(" "));
+        CopyToDest(Global_ParserErrorCursor, ' ');
       }
 
       if (DoPipes)
       {
-        DebugChars(CSz("  "));
+        CopyToDest(Global_ParserErrorCursor, ' ');
+        CopyToDest(Global_ParserErrorCursor, ' ');
       }
 
       for (u32 ColumnIndex = 0;
@@ -746,30 +780,32 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
       {
         if (ColumnIndex == ErrorIdentifierLength-1)
         {
-          DebugChars(CSz("|"));
+          CopyToDest(Global_ParserErrorCursor, TerminalColors.Orange);
+          CopyToDest(Global_ParserErrorCursor, '|');
+          CopyToDest(Global_ParserErrorCursor, TerminalColors.White);
         }
         else
         {
-          DebugChars(CSz(" "));
+          CopyToDest(Global_ParserErrorCursor, ' ');
         }
       }
 
       counted_string TokenTypeName = ToString(ErrorToken->Type);
-      DebugChars("---> %S", TokenTypeName);
+      FormatCountedString_(Global_ParserErrorCursor, CSz("---> %S"), TokenTypeName);
 
       if (ErrorToken->Value.Count)
       {
-        DebugChars("(%S)", ErrorToken->Value);
+        FormatCountedString_(Global_ParserErrorCursor, CSz("(%S)"), ErrorToken->Value);
       }
 
       if (ExpectedToken.Type)
       {
         counted_string ExpectedTypeName = ToString(ExpectedToken.Type);
-        DebugChars(" Expecting : %S", ExpectedTypeName);
+        FormatCountedString_(Global_ParserErrorCursor, CSz(" Expecting : %S"), ExpectedTypeName);
 
         if (ExpectedToken.Value.Count)
         {
-          DebugChars("(%S)", ExpectedToken.Value);
+          FormatCountedString_(Global_ParserErrorCursor, CSz("(%S)"), ExpectedToken.Value);
         }
       }
       else
@@ -777,26 +813,26 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
         Assert(!ExpectedToken.Value.Count);
       }
 
-      DebugChars(" %S\n", ErrorString);
+      FormatCountedString_(Global_ParserErrorCursor, CSz(" %S\n"), ErrorString);
 
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < TabCount;
           ++ColumnIndex)
       {
-        DebugChars(CSz("\t"));
+        FormatCountedString_(Global_ParserErrorCursor, CSz("\t"));
       }
 
       for (u32 ColumnIndex = 0;
           ColumnIndex < SpaceCount + ErrorToken->Value.Count;
           ++ColumnIndex)
       {
-        DebugChars(CSz(" "));
+        FormatCountedString_(Global_ParserErrorCursor, CSz(" "));
       }
 
       {
         counted_string Filename = Parser->Filename.Count ? Parser->Filename : CSz("(unknown file)");
-        DebugChars("     %S:%u:%u\n\n", Filename, Parser->LineNumber, SpaceCount+TabCount);
+        FormatCountedString_(Global_ParserErrorCursor, CSz("     %S:%u:%u\n\n"), Filename, Parser->LineNumber, SpaceCount+TabCount);
       }
     }
 
@@ -816,7 +852,7 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
       if (StringsMatch(CandidateParser->Filename, ParserName))
       {
 #endif
-        PrintToken(T);
+        CopyToDest(Global_ParserErrorCursor, T->Value);
 
         if (T->Type == CTokenType_Newline)
         {
@@ -832,18 +868,21 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
 #endif
     }
 
-
-    Debug("------------------------------------------------------------------------------------");
+    FormatCountedString_(Global_ParserErrorCursor, CSz("------------------------------------------------------------------------------------\n"));
 
     CandidateParser->Valid = False;
   }
   else
   {
-    Error("Determining where the error occurred");
-    Debug("Error was : %S\n", ErrorString);
+    FormatCountedString_(Global_ParserErrorCursor, CSz("Error determining where the error occurred\n"));
+    FormatCountedString_(Global_ParserErrorCursor, CSz("Error was : %S\n"), ErrorString);
   }
 
+  PrintToStdout(CS(Global_ParserErrorCursor));
+  Global_ParserErrorCursor->At = Global_ParserErrorCursor->Start;
+
   RuntimeBreak();
+
 
   return;
 }

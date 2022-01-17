@@ -13,36 +13,41 @@ enum log_level
 
 struct terminal_colors
 {
-  counted_string Red    = CSz("\x1b[31m");
-  counted_string Blue   = CSz("\x1b[34m");
-  counted_string Purple = CSz("\x1b[35m");
-  counted_string Green  = CSz("\x1b[32m");
-  counted_string Yellow = CSz("\x1b[33m");
-  counted_string White  = CSz("\x1b[37m");
+  counted_string Red          = CSz("\x1b[31m");
+  counted_string Blue         = CSz("\x1b[34m");
+  counted_string Purple       = CSz("\x1b[35m");
+  counted_string Green        = CSz("\x1b[32m");
+  counted_string Yellow       = CSz("\x1b[33m");
+  counted_string BrightYellow = CSz("\x1b[93m");
+  counted_string White        = CSz("\x1b[37m");
 };
 
 global_variable terminal_colors TerminalColors = {};
 
+// TODO(Jesse): Metaprogram this
 bonsai_function void
 SetTerminalColorsOn()
 {
-  TerminalColors.Red    = CSz("\x1b[31m");
-  TerminalColors.Blue   = CSz("\x1b[34m");
-  TerminalColors.Purple = CSz("\x1b[35m");
-  TerminalColors.Green  = CSz("\x1b[32m");
-  TerminalColors.Yellow = CSz("\x1b[33m");
-  TerminalColors.White  = CSz("\x1b[37m");
+  TerminalColors.Red          = CSz("\x1b[31m");
+  TerminalColors.Blue         = CSz("\x1b[34m");
+  TerminalColors.Purple       = CSz("\x1b[35m");
+  TerminalColors.Green        = CSz("\x1b[32m");
+  TerminalColors.Yellow       = CSz("\x1b[33m");
+  TerminalColors.BrightYellow = CSz("\x1b[93m");
+  TerminalColors.White        = CSz("\x1b[37m");
 }
 
+// TODO(Jesse): Metaprogram this
 bonsai_function void
 SetTerminalColorsOff()
 {
-  TerminalColors.Red    = CSz("");
-  TerminalColors.Blue   = CSz("");
-  TerminalColors.Purple = CSz("");
-  TerminalColors.Green  = CSz("");
-  TerminalColors.Yellow = CSz("");
-  TerminalColors.White  = CSz("");
+  TerminalColors.Red          = CSz("");
+  TerminalColors.Blue         = CSz("");
+  TerminalColors.Purple       = CSz("");
+  TerminalColors.Green        = CSz("");
+  TerminalColors.Yellow       = CSz("");
+  counted_string BrightYellow = CSz("");
+  TerminalColors.White        = CSz("");
 }
 
 bonsai_function void SetupStdout(u32 ArgCount, const char** ArgStrings);

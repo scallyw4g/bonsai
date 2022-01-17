@@ -58,6 +58,17 @@ CS(const char *S)
   return Result;
 }
 
+counted_string
+CS(char_cursor* Cursor)
+{
+  counted_string Result = {
+    .Start = Cursor->Start,
+    .Count = (umm)(Cursor->At - Cursor->Start),
+  };
+
+  return Result;
+}
+
 b32
 Contains(counted_string Haystack, char Needle)
 {
@@ -305,21 +316,6 @@ Split(counted_string* String, char SplitTarget)
 }
 
 bonsai_function char
-Advance(char_cursor* BufferCursor)
-{
-  char Result = 0;
-  if (Remaining(BufferCursor))
-  {
-    Result = *BufferCursor->At++;
-  }
-  else
-  {
-    Error("Attempted to advance an empty char_cursor!");
-  }
-  return Result;
-}
-
-bonsai_function char
 ToUpper(char C)
 {
   u32 MapToUpper = 'a' - 'A';
@@ -477,6 +473,21 @@ Peek(char_cursor* BufferCursor)
   return Result;
 }
 
+bonsai_function char
+Advance(char_cursor* BufferCursor)
+{
+  char Result = 0;
+  if (Remaining(BufferCursor))
+  {
+    Result = *BufferCursor->At++;
+  }
+  else
+  {
+    Error("Attempted to advance an empty char_cursor!");
+  }
+  return Result;
+}
+
 bonsai_function u32
 EmbeddedU32(char_cursor* FormatCursor)
 {
@@ -533,6 +544,17 @@ CopyToDest(char_cursor *Dest, char C)
   if (DoCopy)
   {
     *Dest->At++ = C;
+  }
+}
+
+bonsai_function void
+CopyToDest(char_cursor *Dest, counted_string String)
+{
+  for (u32 CharIndex = 0;
+      CharIndex < String.Count;
+      ++CharIndex)
+  {
+    CopyToDest(Dest, String.Start[CharIndex]);
   }
 }
 

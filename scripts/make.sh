@@ -24,6 +24,7 @@ if [ "$Platform" == "Linux" ] ; then
   PLATFORM_LIB_EXTENSION=".so"
 
 elif [[ "$Platform" == "Windows" ]] ; then
+
   PLATFORM_LINKER_OPTIONS="-lgdi32 -luser32 -lopengl32 -lglu32"
   PLATFORM_DEFINES="-DBONSAI_WIN32"
   PLATFORM_INCLUDE_DIRS=""
@@ -38,10 +39,11 @@ else
   echo "Unsupported Platform ($Platform), exiting." && exit 1
 fi
 
+OPTIMIZATION_LEVEL="-O0"
+
 
 EMCC=0
 
-# OPTIMIZATION_LEVEL="-O2"
 
 Delimeter="$RED-----------------------------------------------------------$WHITE"
 Success="$GREEN  Success  $WHITE"
@@ -470,11 +472,11 @@ FirstPreprocessor=0
 BuildPreprocessor=1
 SecondPreprocessor=0
 
-BuildExecutables=1
+BuildExecutables=0
 BuildDebugTests=0
 BuildTests=1
-BuildDebugSystem=1
-BuildExamples=1
+BuildDebugSystem=0
+BuildExamples=0
 
 RunTests=0
 FinalPreprocessor=0

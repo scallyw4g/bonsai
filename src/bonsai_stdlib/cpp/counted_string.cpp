@@ -294,12 +294,7 @@ FormatCountedString_(char_cursor* DestCursor, counted_string FS, va_list Args)
             while (PadCount) { CopyToDest(DestCursor, ' '); --PadCount; }
           }
 
-          for (u32 CharIndex = 0;
-              CharIndex < String.Count;
-              ++CharIndex)
-          {
-            CopyToDest(DestCursor, String.Start[CharIndex]);
-          }
+          CopyToDest(DestCursor, String);
 
         } break;
 
@@ -319,6 +314,17 @@ FormatCountedString_(char_cursor* DestCursor, counted_string FS, va_list Args)
 
   umm DestElementsWritten = AtElements(DestCursor);
   counted_string Result = CS((const char*)DestCursor->Start, DestElementsWritten);
+  return Result;
+}
+
+bonsai_function counted_string
+FormatCountedString_(char_cursor* DestCursor, counted_string FS, ...)
+{
+  va_list Args;
+  va_start(Args, FS);
+  counted_string Result = FormatCountedString_(DestCursor, FS, Args);
+  va_end(Args);
+
   return Result;
 }
 
@@ -378,10 +384,12 @@ FormatCountedString_(char* Buffer, umm BufferSize, const char *FS, ...)
     .At    = Buffer,
     .End   = Buffer + BufferSize,
   };
+
   va_list Args;
   va_start(Args, FS);
   counted_string Result = FormatCountedString_(&DestCursor, CS(FS), Args);
   va_end(Args);
+
   return Result;
 }
 
@@ -409,10 +417,12 @@ FormatCountedString_(char* Buffer, umm BufferSize, counted_string FS, ...)
     .At    = Buffer,
     .End   = Buffer + BufferSize,
   };
+
   va_list Args;
   va_start(Args, FS);
   counted_string Result = FormatCountedString_(&DestCursor, FS, Args);
   va_end(Args);
+
   return Result;
 }
 
