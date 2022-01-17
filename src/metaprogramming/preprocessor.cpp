@@ -583,6 +583,79 @@ static char_cursor Global_ParserErrorCursor_ =
 static char_cursor *Global_ParserErrorCursor = &Global_ParserErrorCursor_;
 
 bonsai_function void
+Indent(char_cursor *Dest, u32 TabCount, u32 SpaceCount)
+{
+  for (u32 ColumnIndex = 0;
+      ColumnIndex < TabCount;
+      ++ColumnIndex)
+  {
+    CopyToDest(Dest, '\t');
+  }
+
+  for (u32 ColumnIndex = 0;
+      ColumnIndex < SpaceCount;
+      ++ColumnIndex)
+  {
+    CopyToDest(Dest, ' ');
+  }
+}
+
+bonsai_function void
+OutputIdentifierUnderline(char_cursor *Dest, u32 IdentifierLength)
+{
+  u32 IdentifierLengthSubOne = IdentifierLength > 0 ? IdentifierLength-1 : IdentifierLength;
+  b32 DoPipes = IdentifierLength > 3;
+  for (u32 ColumnIndex = 0;
+      ColumnIndex < IdentifierLength;
+      ++ColumnIndex)
+  {
+    if (DoPipes)
+    {
+      if (ColumnIndex == 0)
+      {
+        CopyToDest(Dest, TerminalColors.Yellow);
+        CopyToDest(Dest, '|');
+        CopyToDest(Dest, TerminalColors.White);
+      }
+      else if (ColumnIndex == IdentifierLengthSubOne)
+      {
+        CopyToDest(Dest, TerminalColors.Yellow);
+        CopyToDest(Dest, '|');
+        CopyToDest(Dest, TerminalColors.White);
+      }
+      else
+      {
+        CopyToDest(Dest, TerminalColors.Yellow);
+        CopyToDest(Dest, '~');
+        CopyToDest(Dest, TerminalColors.White);
+      }
+    }
+    else
+    {
+      CopyToDest(Dest, TerminalColors.Yellow);
+      CopyToDest(Dest, '^');
+      CopyToDest(Dest, TerminalColors.White);
+    }
+  }
+}
+
+bonsai_function void
+Highlight(char_cursor *Dest, counted_string Str, counted_string Color)
+{
+  CopyToDest(Dest, Color);
+  CopyToDest(Dest, Str);
+  CopyToDest(Dest, TerminalColors.White);
+}
+
+bonsai_function void
+Highlight(char_cursor *Dest, char C, counted_string Color)
+{
+  CopyToDest(Dest, Color);
+  CopyToDest(Dest, C);
+  CopyToDest(Dest, TerminalColors.White);
+}
+
+bonsai_function void
 ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_string ErrorString)
 {
   Assert(ErrorToken);
@@ -632,8 +705,8 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
     u32 SpaceCount = 0;
     u32 TabCount = 0;
 
-    b32 DoPipes = ErrorToken->Value.Count > 3;
     u32 ErrorIdentifierLength = (u32)ErrorToken->Value.Count;
+    u32 ErrorIdentifierLengthSubOne = (u32)(ErrorToken->Value.Count > 0 ? ErrorToken->Value.Count-1 : ErrorToken->Value.Count);
 
 
     while (c_token *T = PopTokenRawPointer(CandidateParser))
@@ -706,161 +779,42 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
         CopyToDest(Global_ParserErrorCursor, '\n');
       }
 
-      { // Output the error token underline
-        for (u32 ColumnIndex = 0;
-            ColumnIndex < TabCount;
-            ++ColumnIndex)
-        {
-          CopyToDest(Global_ParserErrorCursor, '\t');
-        }
-
-        for (u32 ColumnIndex = 0;
-            ColumnIndex < SpaceCount;
-            ++ColumnIndex)
-        {
-          CopyToDest(Global_ParserErrorCursor, ' ');
-        }
-
-
-        for (u32 ColumnIndex = 0;
-            ColumnIndex < ErrorIdentifierLength;
-            ++ColumnIndex)
-        {
-          if (DoPipes)
-          {
-            if (ColumnIndex == 0 || ColumnIndex+1 == ErrorIdentifierLength)
-            {
-              CopyToDest(Global_ParserErrorCursor, TerminalColors.BrightYellow);
-              CopyToDest(Global_ParserErrorCursor, '|');
-              CopyToDest(Global_ParserErrorCursor, TerminalColors.White);
-            }
-            else
-            {
-              CopyToDest(Global_ParserErrorCursor, TerminalColors.BrightYellow);
-              CopyToDest(Global_ParserErrorCursor, '~');
-              CopyToDest(Global_ParserErrorCursor, TerminalColors.White);
-            }
-          }
-          else
-          {
-            CopyToDest(Global_ParserErrorCursor, TerminalColors.BrightYellow);
-            CopyToDest(Global_ParserErrorCursor, '^');
-            CopyToDest(Global_ParserErrorCursor, TerminalColors.White);
-          }
-        }
-      }
-
+      Indent(Global_ParserErrorCursor, TabCount, SpaceCount);
+      OutputIdentifierUnderline(Global_ParserErrorCursor, ErrorIdentifierLength);
       CopyToDest(Global_ParserErrorCursor, '\n');
 
-      for (u32 ColumnIndex = 0;
-          ColumnIndex < TabCount;
-          ++ColumnIndex)
-      {
-        CopyToDest(Global_ParserErrorCursor, '\t');
-      }
+      Indent(Global_ParserErrorCursor, TabCount, SpaceCount+ErrorIdentifierLengthSubOne);
+      Highlight(Global_ParserErrorCursor, '|', TerminalColors.Yellow);
+      FormatCountedString_(Global_ParserErrorCursor, CSz("  %S\n"), ErrorString);
 
-      for (u32 ColumnIndex = 0;
-          ColumnIndex < SpaceCount;
-          ++ColumnIndex)
-      {
-        CopyToDest(Global_ParserErrorCursor, ' ');
-      }
+      Indent(Global_ParserErrorCursor, TabCount, SpaceCount+ErrorIdentifierLengthSubOne);
+      Highlight(Global_ParserErrorCursor, '|', TerminalColors.Yellow);
 
-      for (u32 ColumnIndex = 0;
-          ColumnIndex < ErrorIdentifierLength;
-          ++ColumnIndex)
-      {
-        if (ColumnIndex == ErrorIdentifierLength-1)
-        {
-          CopyToDest(Global_ParserErrorCursor, TerminalColors.BrightYellow);
-          CopyToDest(Global_ParserErrorCursor, '|');
-          CopyToDest(Global_ParserErrorCursor, TerminalColors.White);
-        }
-        else
-        {
-          CopyToDest(Global_ParserErrorCursor, ' ');
-        }
-      }
-
-      counted_string TokenTypeName = ToString(ErrorToken->Type);
-      FormatCountedString_(Global_ParserErrorCursor, CSz("  %S"), TokenTypeName);
-
-      if (ErrorToken->Value.Count)
-      {
-        FormatCountedString_(Global_ParserErrorCursor, CSz("(%S)"), ErrorToken->Value);
-      }
+      FormatCountedString_(Global_ParserErrorCursor, CSz("  %S"), ToString(ErrorToken->Type));
+      FormatCountedString_(Global_ParserErrorCursor, CSz("(%S)"), ErrorToken->Value);
 
       if (ExpectedToken.Type)
       {
-        counted_string ExpectedTypeName = ToString(ExpectedToken.Type);
-        FormatCountedString_(Global_ParserErrorCursor, CSz(" Expecting : %S"), ExpectedTypeName);
-
-        if (ExpectedToken.Value.Count)
-        {
-          FormatCountedString_(Global_ParserErrorCursor, CSz("(%S)"), ExpectedToken.Value);
-        }
+        FormatCountedString_(Global_ParserErrorCursor, CSz(" Expecting : %S"), ToString(ExpectedToken.Type));
+        CopyToDest(Global_ParserErrorCursor, ExpectedToken.Value);
+        CopyToDest(Global_ParserErrorCursor, '\n');
       }
       else
       {
         Assert(!ExpectedToken.Value.Count);
       }
 
-      FormatCountedString_(Global_ParserErrorCursor, CSz(" %S\n"), ErrorString);
-
-
-      for (u32 ColumnIndex = 0;
-          ColumnIndex < TabCount;
-          ++ColumnIndex)
-      {
-        FormatCountedString_(Global_ParserErrorCursor, CSz("\t"));
-      }
-
-      for (u32 ColumnIndex = 0;
-          ColumnIndex < SpaceCount + ErrorToken->Value.Count -1;
-          ++ColumnIndex)
-      {
-        FormatCountedString_(Global_ParserErrorCursor, CSz(" "));
-      }
-
-      {
-        counted_string Filename = Parser->Filename.Count ? Parser->Filename : CSz("(unknown file)");
-        FormatCountedString_(Global_ParserErrorCursor, CSz("%S|%S  %S:%u:%u\n"), TerminalColors.BrightYellow, TerminalColors.White, Filename, Parser->LineNumber, SpaceCount+TabCount);
-      }
+      Indent(Global_ParserErrorCursor, TabCount, (u32)(SpaceCount+ErrorIdentifierLengthSubOne));
+      Highlight(Global_ParserErrorCursor, '|', TerminalColors.Yellow);
+      counted_string Filename = Parser->Filename.Count ? Parser->Filename : CSz("(unknown file)");
+      FormatCountedString_(Global_ParserErrorCursor, CSz("  %S:%u:%u\n"), Filename, Parser->LineNumber, SpaceCount+TabCount);
 
 
       { // Output the final underline
-        for (u32 ColumnIndex = 0;
-            ColumnIndex < TabCount;
-            ++ColumnIndex)
-        {
-          CopyToDest(Global_ParserErrorCursor, '\t');
-        }
-
-        for (u32 ColumnIndex = 0;
-            ColumnIndex < SpaceCount;
-            ++ColumnIndex)
-        {
-          CopyToDest(Global_ParserErrorCursor, ' ');
-        }
-
-        for (u32 ColumnIndex = 0;
-            ColumnIndex < ErrorIdentifierLength;
-            ++ColumnIndex)
-        {
-          if (ColumnIndex+1 == ErrorIdentifierLength)
-          {
-            CopyToDest(Global_ParserErrorCursor, TerminalColors.BrightYellow);
-            CopyToDest(Global_ParserErrorCursor, CSz("------------------------------------------------------------------------------------"));
-            CopyToDest(Global_ParserErrorCursor, TerminalColors.White);
-          }
-          else
-          {
-            CopyToDest(Global_ParserErrorCursor, ' ');
-          }
-        }
-
-        CopyToDest(Global_ParserErrorCursor, '\n');
-
+        Indent(Global_ParserErrorCursor, TabCount, SpaceCount + ErrorIdentifierLength);
+        CopyToDest(Global_ParserErrorCursor, TerminalColors.Yellow);
+        CopyToDest(Global_ParserErrorCursor, CSz("------------------------------------------------------------------------------------\n"));
+        CopyToDest(Global_ParserErrorCursor, TerminalColors.White);
       }
     }
 
