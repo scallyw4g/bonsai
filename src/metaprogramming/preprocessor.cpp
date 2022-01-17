@@ -684,15 +684,6 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
     while (LinesReversed <= LinesOfContext)
     {
       RewindUntil(CandidateParser, CTokenType_Newline);
-#define TRY_TO_ONLY_PRINT_SAME_FILE 0
-#if TRY_TO_ONLY_PRINT_SAME_FILE
-      if (StringsMatch(CandidateParser->Filename, ParserName))
-      {
-        LinesReversed += 1;
-      }
-#else
-      LinesReversed += 1;
-#endif
     }
     OptionalTokenRaw(CandidateParser, CTokenType_Newline);
 
@@ -711,10 +702,6 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
 
     while (c_token *T = PopTokenRawPointer(CandidateParser))
     {
-#if TRY_TO_ONLY_PRINT_SAME_FILE
-      if (StringsMatch(CandidateParser->Filename, ParserName))
-      {
-#endif
         if (T == ErrorToken)
         {
           CopyToDest(ParserErrorCursor, TerminalColors.Red);
@@ -746,22 +733,14 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
         {
           ++SpaceCount;
         }
-#if TRY_TO_ONLY_PRINT_SAME_FILE
-      }
-#endif
     }
 
     {
       c_token *T = PopTokenRawPointer(CandidateParser);
       while (T)
       {
-#if TRY_TO_ONLY_PRINT_SAME_FILE
-        Assert(StringsMatch(CandidateParser->Filename, ParserName));
-#endif
-
 
         CopyToDest(ParserErrorCursor, T->Value);
-
 
         if (T->Type == CTokenType_Newline || T->Type == CTokenType_EscapedNewline)
         {
@@ -830,10 +809,6 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
     u32 LinesToPrint = LinesOfContext;
     while (c_token *T = PopTokenRawPointer(CandidateParser))
     {
-#if TRY_TO_ONLY_PRINT_SAME_FILE
-      if (StringsMatch(CandidateParser->Filename, ParserName))
-      {
-#endif
         CopyToDest(ParserErrorCursor, T->Value);
 
         if (T->Type == CTokenType_Newline)
@@ -845,9 +820,6 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
         {
           break;
         }
-#if TRY_TO_ONLY_PRINT_SAME_FILE
-      }
-#endif
     }
 
     CopyToDest(ParserErrorCursor, CSz("------------------------------------------------------------------------------------\n"));
