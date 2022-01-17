@@ -654,7 +654,7 @@ Highlight(char_cursor *Dest, char C, counted_string Color)
 }
 
 bonsai_function void
-ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_string ErrorString)
+ParseError(parser* Parser, c_token* ErrorToken, counted_string ErrorString)
 {
   Assert(ErrorToken);
 
@@ -684,6 +684,7 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
     while (LinesReversed <= LinesOfContext)
     {
       RewindUntil(CandidateParser, CTokenType_Newline);
+      LinesReversed += 1;
     }
     OptionalTokenRaw(CandidateParser, CTokenType_Newline);
 
@@ -764,29 +765,26 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
 
       Indent(ParserErrorCursor, TabCount, SpaceCount+ErrorIdentifierLengthSubOne);
       Highlight(ParserErrorCursor, '|', TerminalColors.Yellow);
-      FormatCountedString_(ParserErrorCursor, CSz("  %S\n"), ErrorString);
+      CopyToDest(ParserErrorCursor, ' ');
+      CopyToDest(ParserErrorCursor, ' ');
 
-      Indent(ParserErrorCursor, TabCount, SpaceCount+ErrorIdentifierLengthSubOne);
-      Highlight(ParserErrorCursor, '|', TerminalColors.Yellow);
-
-      FormatCountedString_(ParserErrorCursor, CSz("  %S"), ToString(ErrorToken->Type));
-      FormatCountedString_(ParserErrorCursor, CSz("(%S)"), ErrorToken->Value);
-
-      if (ExpectedToken.Type)
+      for (u32 ECharIndex = 0;
+          ECharIndex < ErrorString.Count;
+          ++ECharIndex)
       {
-        FormatCountedString_(ParserErrorCursor, CSz(" Expecting : %S"), ToString(ExpectedToken.Type));
-        CopyToDest(ParserErrorCursor, ExpectedToken.Value);
-        CopyToDest(ParserErrorCursor, '\n');
-      }
-      else
-      {
-        Assert(!ExpectedToken.Value.Count);
+        char C = ErrorString.Start[ECharIndex];
+        CopyToDest(ParserErrorCursor, C);
+
+        if (C == '\n')
+        {
+          Indent(ParserErrorCursor, TabCount, SpaceCount+ErrorIdentifierLengthSubOne);
+          Highlight(ParserErrorCursor, '|', TerminalColors.Yellow);
+          CopyToDest(ParserErrorCursor, ' ');
+          CopyToDest(ParserErrorCursor, ' ');
+        }
       }
 
-      Indent(ParserErrorCursor, TabCount, (u32)(SpaceCount+ErrorIdentifierLengthSubOne));
-      Highlight(ParserErrorCursor, '|', TerminalColors.Yellow);
-      counted_string Filename = Parser->Filename.Count ? Parser->Filename : CSz("(unknown file)");
-      FormatCountedString_(ParserErrorCursor, CSz("  %S:%u:%u\n"), Filename, Parser->LineNumber, SpaceCount+TabCount);
+      CopyToDest(ParserErrorCursor, '\n');
 
 
       { // Output the final underline
@@ -813,7 +811,7 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
 
         if (T->Type == CTokenType_Newline)
         {
-          --LinesToPrint;
+          LinesToPrint -= 1;
         }
 
         if (!LinesToPrint)
@@ -844,18 +842,9 @@ ParseError(parser* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_s
 bonsai_function void
 ParseError(parser* Parser, counted_string ErrorString)
 {
-  ParseError(Parser, Parser->Tokens.At, CToken(CTokenType_Unknown), ErrorString);
+  ParseError(Parser, Parser->Tokens.At, ErrorString);
   return;
 }
-
-bonsai_function void
-ParseError(parser* Parser, c_token* ErrorToken, counted_string ErrorString)
-{
-  ParseError(Parser, ErrorToken, CToken(CTokenType_Unknown), ErrorString);
-  return;
-}
-
-
 
 /*****************************                 *******************************/
 /*****************************  Token Control  *******************************/
@@ -1141,11 +1130,11 @@ RequireToken(parser* Parser, c_token ExpectedToken)
   {
     if (PeekedToken)
     {
-      ParseError(Parser, PeekedToken, ExpectedToken, CS("Require Token Failed"));;
+      ParseError(Parser, PeekedToken, FormatCountedString(TranArena, CSz("Require Token Failed \n\nGot      %S(%S)\nExpected %S(%S)"), ToString(PeekedToken->Type), PeekedToken->Value, ToString(ExpectedToken.Type), ExpectedToken.Value ));
     }
     else
     {
-      ParseError(Parser, Parser->Tokens.At, ExpectedToken, FormatCountedString(TranArena, CSz("Stream ended unexpectedly in file : %S"), Parser->Filename));
+      ParseError(Parser, Parser->Tokens.At, FormatCountedString(TranArena, CSz("Stream ended unexpectedly in file : %S"), Parser->Filename));
     }
   }
   else
