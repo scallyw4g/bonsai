@@ -707,7 +707,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
           CopyToDest(ParseErrorCursor, TerminalColors.Red);
         }
 
-        CopyToDest(ParseErrorCursor, T->Value);
+        PrintToken(T, ParseErrorCursor);
 
         if (T == ErrorToken)
         {
@@ -740,7 +740,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
       while (T)
       {
 
-        CopyToDest(ParseErrorCursor, T->Value);
+        PrintToken(T, ParseErrorCursor);
 
         if (T->Type == CTokenType_Newline || T->Type == CTokenType_EscapedNewline)
         {
@@ -818,7 +818,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
     u32 LinesToPrint = LinesOfContext;
     while (c_token *T = PopTokenRawPointer(CandidateParser))
     {
-        CopyToDest(ParseErrorCursor, T->Value);
+        PrintToken(T, ParseErrorCursor);
 
         if (T->Type == CTokenType_Newline)
         {

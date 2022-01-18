@@ -1194,7 +1194,7 @@ enum output_mode
 
 
 inline void
-PrintToken(c_token *Token)
+PrintToken(c_token *Token, char_cursor *Dest = 0)
 {
   if (Token)
   {
@@ -1225,22 +1225,43 @@ PrintToken(c_token *Token)
 
     if (Color.Count)
     {
-      DebugChars(Color);
+      if (Dest)
+      {
+        CopyToDest(Dest, Color);
+      }
+      else
+      {
+        DebugChars(Color);
+      }
     }
 
-    DebugChars("%S", Token->Value);
+      if (Dest)
+      {
+        CopyToDest(Dest, Token->Value);
+      }
+      else
+      {
+        DebugChars("%S", Token->Value);
+      }
 
     if (Color.Count)
     {
-      DebugChars(TerminalColors.White);
+      if (Dest)
+      {
+        CopyToDest(Dest, TerminalColors.White);
+      }
+      else
+      {
+        DebugChars(TerminalColors.White);
+      }
     }
   }
 }
 
 inline void
-PrintToken(c_token Token)
+PrintToken(c_token Token, char_cursor *Dest = 0)
 {
-  PrintToken(&Token);
+  PrintToken(&Token, Dest);
 }
 
 // TODO(Jesse, id: 347, tags:immediate) : Nuke this
