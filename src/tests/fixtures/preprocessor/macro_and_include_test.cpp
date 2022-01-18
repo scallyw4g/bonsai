@@ -14,8 +14,8 @@ This line is actually commented
 
 #include <src/tests/fixtures/preprocessor/empty.cpp> /*
                                                        */   
-#include <src/tests/fixtures/preprocessor/random_define.cpp> // this should be fine
-
+#include <src/tests/fixtures/preprocessor/random_define.cpp> // this should be fine \\\\
+This line is actually commented
 
 
 #define MacroKeyword    this_is_a_variable_name
@@ -43,7 +43,6 @@ int IndirectMacroKeyword = 42;
 
 
 // MacroFunction
-
 
 MacroFunction(int this_is_a_variable_name = 42);
 

@@ -16,7 +16,7 @@ elif [ "$Platform" == "Windows" ] ; then
     # src/bonsai_types.h                                                                         \
 
   bin/preprocessor_dev $COLORFLAG                                                                                           \
-    src/bonsai_types.h                                                                         \
+    src/metaprogramming/preprocessor.cpp                                                                         \
     -I ./src                                                                                                     \
     # -I "C:\Program Files\LLVM\lib\clang\11.0.0\include"                                                          \
     # -I "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29333\include"         \

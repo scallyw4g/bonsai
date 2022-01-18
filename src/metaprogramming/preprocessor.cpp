@@ -87,7 +87,6 @@ bonsai_function void EraseToken(c_token *Token);
 bonsai_function void EraseSectionOfParser(parser *Parser, c_token *StartToken, c_token *OnePastLastToken);
 
 bonsai_function void DumpLocalTokens(parser *Parser);
-bonsai_function void SanityCheckParserChain(parser *Parser);
 
 
 
@@ -167,6 +166,30 @@ DoublyLinkedListSwap(parser *P0, parser *P1)
 
   return;
 }
+
+#if BONSAI_SLOW
+bonsai_function void
+SanityCheckParserChain(parser *Parser)
+{
+  // TODO(Jesse): This is _SUPER_ slow once the parser chain gets sufficiently
+  // long.  Should we re-think our strat here?
+  parser *FirstInChain = Parser;
+  while (FirstInChain->Prev) FirstInChain = FirstInChain->Prev;
+
+  parser *Current = FirstInChain;
+  while (Current->Next)
+  {
+    Assert(Current->Next->Prev == Current);
+    if (Current->Prev)
+    {
+      Assert(Current->Prev->Next == Current);
+    }
+    Current = Current->Next;
+  }
+}
+#else
+#define SanityCheckParserChain(...)
+#endif
 
 bonsai_function void
 RewindUntil(parser* Parser, c_token *T)
@@ -2120,23 +2143,6 @@ CountTokensBeforeNext(parser *Parser, c_token_type T1, c_token_type T2)
 
 
 
-bonsai_function void
-SanityCheckParserChain(parser *Parser)
-{
-  parser *FirstInChain = Parser;
-  while (FirstInChain->Prev) FirstInChain = FirstInChain->Prev;
-
-  parser *Current = FirstInChain;
-  while (Current->Next)
-  {
-    Assert(Current->Next->Prev == Current);
-    if (Current->Prev)
-    {
-      Assert(Current->Prev->Next == Current);
-    }
-    Current = Current->Next;
-  }
-}
 
 bonsai_function parser *
 SplitAndInsertParserInto(parser *ParserToSplit, c_token* SplitStart, parser *ParserToInsert, c_token* SplitEnd, memory_arena *Memory)
@@ -3405,7 +3411,6 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
         if (FileExists(FullPath))
         {
           FinalIncludePath = FullPath;
-          Result = ParserForFile(Ctx, FullPath);
           break;
         }
       }
@@ -3418,13 +3423,13 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
     if (FileExists(PartialPath))
     {
       FinalIncludePath = PartialPath;
-      Result = ParserForFile(Ctx, PartialPath);
     }
   }
 
   if (FinalIncludePath.Count)
   {
     LogSuccess("Including (%S)", FinalIncludePath);
+    Result = ParserForFile(Ctx, PartialPath);
   }
   else
   {

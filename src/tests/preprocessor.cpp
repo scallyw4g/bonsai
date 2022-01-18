@@ -927,6 +927,7 @@ TestMacrosAndIncludes(memory_arena *Memory)
 
   if (Parser)
   {
+
     RequireToken(Parser, CTokenType_Int);
     RequireToken(Parser, CToken(CSz("ding")));
     RequireToken(Parser, CTokenType_Equals);
@@ -945,6 +946,10 @@ TestMacrosAndIncludes(memory_arena *Memory)
     RequireToken(Parser, CToken(1337u));
     RequireToken(Parser, CTokenType_Semicolon);
 
+
+    // MacroKeyword
+
+
     RequireToken(Parser, CTokenType_Int);
     RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
     RequireToken(Parser, CTokenType_Equals);
@@ -956,6 +961,7 @@ TestMacrosAndIncludes(memory_arena *Memory)
     RequireToken(Parser, CTokenType_Equals);
     RequireToken(Parser, CToken(42u));
     RequireToken(Parser, CTokenType_Semicolon);
+
 
     // MacroFunction
 

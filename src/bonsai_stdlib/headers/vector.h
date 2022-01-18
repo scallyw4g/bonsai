@@ -1,6 +1,3 @@
-#include <immintrin.h>
-#include <xmmintrin.h>
-
 struct v2i
 {
   s32 x;

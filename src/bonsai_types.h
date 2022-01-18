@@ -4,6 +4,14 @@
 #include <stdio.h>
 #include <math.h>
 
+#include <random>                                   // TODO(Jesse, id: 88, tags: perlin, cleanup): Perlin.h depends on this .. rewrite it.
+#include <algorithm>                                // TODO(Jesse, id: 89, tags: perlin, cleanup): Perlin.h depends on this .. rewrite it.
+#include <numeric>                                  // TODO(Jesse, id: 89, tags: perlin, cleanup): Perlin.h depends on this .. rewrite it.
+
+#include <immintrin.h>
+#include <xmmintrin.h>
+
+
 
 #define BONSAI_INTERNAL (1)
 
@@ -48,9 +56,6 @@
 #include <bonsai_stdlib/headers/filesystem.h>
 #include <bonsai_stdlib/headers/vector.h>
 #include <bonsai_stdlib/headers/random.h>
-#include <random>                                   // TODO(Jesse, id: 88, tags: perlin, cleanup): Perlin.h depends on this .. rewrite it.
-#include <algorithm>                                // TODO(Jesse, id: 89, tags: perlin, cleanup): Perlin.h depends on this .. rewrite it.
-#include <numeric>                                  // TODO(Jesse, id: 89, tags: perlin, cleanup): Perlin.h depends on this .. rewrite it.
 #include <bonsai_stdlib/headers/perlin.h>
 #include <bonsai_stdlib/headers/input.h>
 #include <bonsai_stdlib/headers/work_queue.h>
