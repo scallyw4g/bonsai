@@ -1550,14 +1550,22 @@ TestErrors(memory_arena *Memory)
     .Memory = Memory,
   };
 
-  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/errors.cpp"));
+  counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors.cpp");
+  parser *Parser = ParserForFile(&Ctx, ParserFilename);
   Ctx.CurrentParser = Parser;
 
   ParseDatatypes(&Ctx);
 
   TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
+  TestThat(StringsMatch(Parser->Filename, ParserFilename));
+  TestThat(Parser->LineNumber == 3);
 
-  /* DumpEntireParser(Parser); */
+  Parser->Valid = True;
+
+  TestThat( OptionalToken(Parser, CToken(132151)) );
+
+
+  DumpEntireParser(Parser);
 
   /* ast_node_statement *Ast = ParseAllStatements(&Ctx); */
   /* WalkAst(Ast); */

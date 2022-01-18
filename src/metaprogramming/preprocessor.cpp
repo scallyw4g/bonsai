@@ -196,9 +196,16 @@ RewindUntil(parser* Parser, c_token *T)
 {
   while (Parser->Tokens.At >= Parser->Tokens.Start)
   {
-    if (Parser->Tokens.At == T)
+    if (RawTokensRemain(Parser))
     {
-      break;
+      if (Parser->Tokens.At->Type == CTokenType_Newline)
+      {
+        Parser->LineNumber -= 1;
+      }
+      if (Parser->Tokens.At == T)
+      {
+        break;
+      }
     }
 
     if (Parser->Tokens.At > Parser->Tokens.Start)
@@ -235,6 +242,15 @@ RewindUntil(parser* Parser, c_token_type Type)
 {
   while (Parser->Tokens.At >= Parser->Tokens.Start)
   {
+    if (RawTokensRemain(Parser))
+    {
+      if (Parser->Tokens.At->Type == CTokenType_Newline)
+      {
+        Parser->LineNumber -= 1;
+        Assert(Parser->LineNumber > 0);
+      }
+    }
+
     if (Parser->Tokens.At > Parser->Tokens.Start)
     {
       --Parser->Tokens.At;
@@ -252,10 +268,15 @@ RewindUntil(parser* Parser, c_token_type Type)
       }
     }
 
-    if (Parser->Tokens.At->Type == Type)
+    // Yes, this is in a different place than the one above.  Yes, that's for a reason.
+    if (RawTokensRemain(Parser))
     {
-      break;
+      if (Parser->Tokens.At->Type == Type)
+      {
+        break;
+      }
     }
+
 
   }
 
@@ -373,6 +394,10 @@ Advance(c_token_cursor* Tokens, u32 Lookahead = 0)
 bonsai_function void
 AdvanceParser(parser* Parser)
 {
+  if (!Parser->Valid)
+  {
+    Warn("Advancing an invalid Parser!");
+  }
   SanityCheckParserChain(Parser);
   Assert(Parser->Tokens.At >= Parser->Tokens.Start);
   Assert(Parser->Tokens.At <= Parser->Tokens.End);
@@ -381,8 +406,7 @@ AdvanceParser(parser* Parser)
   if (Remaining(&Parser->Tokens))
   {
     c_token *T = Parser->Tokens.At;
-    if (T->Type == CTokenType_Newline ||
-        T->Type == CTokenType_EscapedNewline )
+    if (T->Type == CTokenType_Newline)
     {
       ++Parser->LineNumber;
     }
@@ -535,12 +559,29 @@ DumpLocalTokens(parser *Parser)
 bonsai_function void
 DumpEntireParser(parser* Parser, u32 LinesToDump = u32_MAX)
 {
+  Log("%S---%S\n", TerminalColors.Purple, TerminalColors.White);
+
+  b32 WasValid    = Parser->Valid;
+  c_token * WasAt = PeekTokenRawPointer(Parser);
+
+  Parser->Valid = True;
+
   Rewind(Parser);
 
   c_token *T = PopTokenRawPointer(Parser);
   while(T && LinesToDump > 0)
   {
+    if (T == WasAt)
+    {
+      DebugChars(TerminalColors.Purple);
+    }
+
     PrintToken(T);
+
+    if (T == WasAt)
+    {
+      DebugChars(TerminalColors.White);
+    }
 
     if (T->Type == CTokenType_Newline)
     {
@@ -549,6 +590,9 @@ DumpEntireParser(parser* Parser, u32 LinesToDump = u32_MAX)
 
     T = PopTokenRawPointer(Parser);
   }
+
+  Log("%S---%S\n", TerminalColors.Purple, TerminalColors.White);
+  Parser->Valid = WasValid;
 }
 
 bonsai_function void
@@ -700,6 +744,9 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
   {
     counted_string ParserName = CandidateParser->Filename;
 
+    FormatCountedString_(ParseErrorCursor, CSz("\n%S:%u:0\n"), ParserName, CandidateParser->LineNumber);
+    CopyToDest(ParseErrorCursor, CSz("------------------------------------------------------------------------------------\n"));
+
     CandidateParser->Tokens.At = ErrorToken;
 
     u32 LinesReversed = 0;
@@ -709,12 +756,6 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
       LinesReversed += 1;
     }
     OptionalTokenRaw(CandidateParser, CTokenType_Newline);
-
-    {
-      counted_string Filename = CandidateParser->Filename.Count ? CandidateParser->Filename : CSz("(unknown file)");
-      FormatCountedString_(ParseErrorCursor, CSz("\n%S:%u:0\n"), Filename, CandidateParser->LineNumber);
-      CopyToDest(ParseErrorCursor, CSz("------------------------------------------------------------------------------------\n"));
-    }
 
     u32 SpaceCount = 0;
     u32 TabCount = 0;
@@ -867,13 +908,14 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
   ParseErrorCursor->At = ParseErrorCursor->Start;
 
 
+  RewindUntil(Parser, ErrorToken);
+
+
   Parser->Valid = False;
   Parser->ErrorMessage = ErrorMessage;
   Parser->ErrorCode = ErrorCode;
 
-
   RuntimeBreak();
-
 
   return;
 }
@@ -1679,9 +1721,12 @@ EatComment(parser* Parser)
 bonsai_function void
 EatWhitespaceAndComments(parser* Parser)
 {
-  c_token* T = PeekTokenPointer(Parser);
-  if (!T) T = Parser->Tokens.End;
-  AdvanceTo(Parser, T);
+  if (Parser->Valid)
+  {
+    c_token* T = PeekTokenPointer(Parser);
+    if (!T) T = Parser->Tokens.End;
+    AdvanceTo(Parser, T);
+  }
 }
 
 // NOTE(Jesse): This is duplicated @duplicate_EatSpacesTabsAndEscapedNewlines
@@ -2165,8 +2210,8 @@ SplitAndInsertParserInto(parser *ParserToSplit, c_token* SplitStart, parser *Par
   {
     SecondHalfOfSplit = AllocateProtection(parser, Memory, 1, False);
     SecondHalfOfSplit->Valid = 1;
-    SecondHalfOfSplit->Filename = ParserToInsert->Filename;
-    SecondHalfOfSplit->LineNumber = ParserToInsert->LineNumber;
+    SecondHalfOfSplit->Filename = ParserToSplit->Filename;
+    SecondHalfOfSplit->LineNumber = ParserToSplit->LineNumber;
 
     SecondHalfOfSplit->Tokens.Start = SplitEnd;
     SecondHalfOfSplit->Tokens.At = SplitEnd;
@@ -2435,7 +2480,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
   b32 ParsingSingleLineComment = False;
   b32 ParsingMultiLineComment = False;
 
-  u32 LineNumber = 0;
+  u32 LineNumber = 1;
   c_token *LastTokenPushed = 0;
   while(Remaining(&Code))
   {
@@ -3104,7 +3149,9 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
         if (IncludeParser)
         {
-          SplitAndInsertParserInto(Result, IncludeParser, Memory);
+          // TODO(Jesse): Should this actually assign the result?  I think so,
+          // but it might not matter in actual fact
+          /* Result = */ SplitAndInsertParserInto(Result, IncludeParser, Memory);
         }
 
       } break;

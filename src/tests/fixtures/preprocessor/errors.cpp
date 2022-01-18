@@ -1,4 +1,4 @@
-#include <src/bonsai_stdlib/headers/assert.h>
+#include <src/tests/fixtures/preprocessor/empty.cpp>
 
 int foo 132151;
 
