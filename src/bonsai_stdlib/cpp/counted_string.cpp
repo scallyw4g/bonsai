@@ -139,6 +139,14 @@ ToCapitalCase(counted_string Source, memory_arena* Memory)
   return Result;
 }
 
+bonsai_function void
+PadForFormatWidth(char_cursor *Dest, u32 PadCount)
+{
+  {
+    while (PadCount) { CopyToDest(Dest, ' '); --PadCount; }
+  }
+}
+
 bonsai_function counted_string
 FormatCountedString_(char_cursor* DestCursor, counted_string FS, va_list Args)
 {
@@ -204,7 +212,7 @@ FormatCountedString_(char_cursor* DestCursor, counted_string FS, va_list Args)
         case 'd':
         {
           s32 Value = va_arg(Args, s32);
-          s64ToChar(DestCursor, (s64)Value);
+          s64ToChar(DestCursor, (s64)Value, (s32)FormatWidth);
         } break;
 
         case 'l':
@@ -213,26 +221,26 @@ FormatCountedString_(char_cursor* DestCursor, counted_string FS, va_list Args)
           if (CursorAt == 'u')
           {
             u64 Value = va_arg(Args, u64);
-            u64ToChar(DestCursor, Value);
+            u64ToChar(DestCursor, Value, (s32)FormatWidth);
 
           }
           else if (CursorAt == 'd')
           {
             s64 Value = va_arg(Args, s64);
-            s64ToChar(DestCursor, Value);
+            s64ToChar(DestCursor, Value, (s32)FormatWidth);
           }
         } break;
 
         case 'x':
         {
           u64 Value = va_arg(Args, u64);
-          u64ToChar(DestCursor, Value);
+          u64ToChar(DestCursor, Value, (s32)FormatWidth);
         } break;
 
         case 'u':
         {
           u32 Value = va_arg(Args, u32);
-          u64ToChar(DestCursor, (u64)Value);
+          u64ToChar(DestCursor, (u64)Value, (s32)FormatWidth);
         } break;
 
         case 'c':
@@ -242,7 +250,7 @@ FormatCountedString_(char_cursor* DestCursor, counted_string FS, va_list Args)
           if (FormatWidth)
           {
             u32 PadCount = FormatWidth - 1;
-            while (PadCount) { CopyToDest(DestCursor, ' '); --PadCount; }
+            PadForFormatWidth(DestCursor, PadCount);
           }
 
           CopyToDest(DestCursor, Value);
@@ -256,7 +264,7 @@ FormatCountedString_(char_cursor* DestCursor, counted_string FS, va_list Args)
           if (FormatWidth)
           {
             u32 PadCount = FormatWidth - ValueLen;
-            while (PadCount) { CopyToDest(DestCursor, ' '); --PadCount; }
+            PadForFormatWidth(DestCursor, PadCount);
           }
 
           u32 Count = 0;
@@ -273,7 +281,7 @@ FormatCountedString_(char_cursor* DestCursor, counted_string FS, va_list Args)
         case 'f':
         {
           r64 Value = va_arg(Args, r64);
-          f64ToChar(DestCursor, Value, FormatPrecision ? FormatPrecision : DEFAULT_FORMAT_PRECISION);
+          f64ToChar(DestCursor, Value, (s32)FormatWidth, FormatPrecision ? FormatPrecision : DEFAULT_FORMAT_PRECISION);
         } break;
 
         case 'b':
@@ -290,8 +298,7 @@ FormatCountedString_(char_cursor* DestCursor, counted_string FS, va_list Args)
 
           if (FormatWidth)
           {
-            u32 PadCount = FormatWidth - (u32)String.Count;
-            while (PadCount) { CopyToDest(DestCursor, ' '); --PadCount; }
+            PadForFormatWidth(DestCursor, FormatWidth - (u32)String.Count);
           }
 
           CopyToDest(DestCursor, String);

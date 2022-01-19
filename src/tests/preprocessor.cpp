@@ -1546,30 +1546,101 @@ TestParserChain(memory_arena *Memory)
 bonsai_function void
 TestErrors(memory_arena *Memory)
 {
-  parse_context Ctx = {
-    .Memory = Memory,
-  };
 
-  counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors.cpp");
-  parser *Parser = ParserForFile(&Ctx, ParserFilename);
-  Ctx.CurrentParser = Parser;
+  {
+    parse_context Ctx = { .Memory = Memory };
+    counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error0.cpp");
+    parser *Parser = ParserForFile(&Ctx, ParserFilename);
+    Ctx.CurrentParser = Parser;
+    ParseDatatypes(&Ctx);
 
-  ParseDatatypes(&Ctx);
+    TestThat(Parser->Valid == False);
+    TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
+    TestThat(StringsMatch(Parser->Filename, ParserFilename));
+    TestThat(Parser->LineNumber == 1);
 
-  TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
-  TestThat(StringsMatch(Parser->Filename, ParserFilename));
-  TestThat(Parser->LineNumber == 3);
+    Parser->Valid = True;
+    TestThat( OptionalToken(Parser, CToken(132151)) );
+  }
 
-  Parser->Valid = True;
+  {
+    parse_context Ctx = { .Memory = Memory };
+    counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error1.cpp");
+    parser *Parser = ParserForFile(&Ctx, ParserFilename);
+    Ctx.CurrentParser = Parser;
+    ParseDatatypes(&Ctx);
 
-  TestThat( OptionalToken(Parser, CToken(132151)) );
+    TestThat(Parser->Valid == False);
+    TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
+    TestThat(StringsMatch(Parser->Filename, ParserFilename));
+    TestThat(Parser->LineNumber == 3);
+
+    Parser->Valid = True;
+    TestThat( OptionalToken(Parser, CToken(132151)) );
+  }
+  {
+    parse_context Ctx = { .Memory = Memory };
+    counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error2.cpp");
+    parser *Parser = ParserForFile(&Ctx, ParserFilename);
+    Ctx.CurrentParser = Parser;
+    ParseDatatypes(&Ctx);
+
+    TestThat(Parser->Valid == False);
+    TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
+    TestThat(StringsMatch(Parser->Filename, ParserFilename));
+    TestThat(Parser->LineNumber == 3);
+
+    Parser->Valid = True;
+    TestThat( OptionalToken(Parser, CToken(132151)) );
+  }
+  {
+    parse_context Ctx = { .Memory = Memory };
+    counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error3.cpp");
+    parser *Parser = ParserForFile(&Ctx, ParserFilename);
+    Ctx.CurrentParser = Parser;
+    ParseDatatypes(&Ctx);
+
+    TestThat(Parser->Valid == False);
+    TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
+    TestThat(StringsMatch(Parser->Filename, ParserFilename));
+    TestThat(Parser->LineNumber == 3);
+
+    Parser->Valid = True;
+    TestThat( OptionalToken(Parser, CToken(132151)) );
+  }
+  {
+    parse_context Ctx = { .Memory = Memory };
+    counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error4.cpp");
+    parser *Parser = ParserForFile(&Ctx, ParserFilename);
+    Ctx.CurrentParser = Parser;
+    ParseDatatypes(&Ctx);
+
+    TestThat(Parser->Valid == False);
+    TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
+    TestThat(StringsMatch(Parser->Filename, ParserFilename));
+    TestThat(Parser->LineNumber == 3);
+
+    Parser->Valid = True;
+    TestThat( OptionalToken(Parser, CToken(132151)) );
+  }
+  {
+    parse_context Ctx = { .Memory = Memory };
+    counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error5.cpp");
+    parser *Parser = ParserForFile(&Ctx, ParserFilename);
+    Ctx.CurrentParser = Parser;
+    ParseDatatypes(&Ctx);
+
+    TestThat(Parser->Valid == False);
+    TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
+    TestThat(StringsMatch(Parser->Filename, ParserFilename));
+    TestThat(Parser->LineNumber == 3);
+
+    Parser->Valid = True;
+    TestThat( OptionalToken(Parser, CToken(132151)) );
+  }
 
 
-  DumpEntireParser(Parser);
 
-  /* ast_node_statement *Ast = ParseAllStatements(&Ctx); */
-  /* WalkAst(Ast); */
-  /* DebugPrint(Ast); */
 }
 
 s32

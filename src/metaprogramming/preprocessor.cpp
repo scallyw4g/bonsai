@@ -191,6 +191,22 @@ SanityCheckParserChain(parser *Parser)
 #define SanityCheckParserChain(...)
 #endif
 
+bonsai_function c_token *
+PeekTokenReverse(parser *Parser)
+{
+  c_token *Result = 0;
+  if (Parser->Tokens.At > Parser->Tokens.Start)
+  {
+    Result = Parser->Tokens.At -1;
+  }
+  else if (Parser->Prev)
+  {
+    Result = PeekTokenReverse(Parser->Prev);
+  }
+
+  return Result;
+}
+
 bonsai_function void
 RewindUntil(parser* Parser, c_token *T)
 {
@@ -198,9 +214,11 @@ RewindUntil(parser* Parser, c_token *T)
   {
     if (RawTokensRemain(Parser))
     {
-      if (Parser->Tokens.At->Type == CTokenType_Newline)
+      if (!Parser->Tokens.At->Erased && Parser->Tokens.At->Type == CTokenType_Newline)
       {
         Parser->LineNumber -= 1;
+        // TODO(Jesse): Put this assertion back in.  It fires.
+        // Assert(Parser->LineNumber > 0);
       }
       if (Parser->Tokens.At == T)
       {
@@ -244,7 +262,7 @@ RewindUntil(parser* Parser, c_token_type Type)
   {
     if (RawTokensRemain(Parser))
     {
-      if (Parser->Tokens.At->Type == CTokenType_Newline)
+      if (!Parser->Tokens.At->Erased && Parser->Tokens.At->Type == CTokenType_Newline)
       {
         Parser->LineNumber -= 1;
         Assert(Parser->LineNumber > 0);
@@ -573,7 +591,7 @@ DumpEntireParser(parser* Parser, u32 LinesToDump = u32_MAX)
   {
     if (T == WasAt)
     {
-      DebugChars(TerminalColors.Purple);
+      DebugChars(TerminalColors.Green);
     }
 
     PrintToken(T);
@@ -635,16 +653,20 @@ TruncateAtPreviousLineStart(parser* Parser, u32 Count )
   Parser->Prev = 0;
 }
 
+
+
+
+/*****************************                 *******************************/
+/*****************************   Parse Error   *******************************/
+/*****************************                 *******************************/
+
+
+
 // TODO(Jesse): Remove this?  Maybe put it onto the parser?   I'm not crazy
 // about that because it' bloats that struct and we create those things like
 // crazy.. but I don't really like that it's a global either.
-static char Global_ParseErrorBuffer[4096] = {};
-static char_cursor Global_ParseErrorCursor_ =
-{
-  .Start = Global_ParseErrorBuffer,
-  .End = Global_ParseErrorBuffer+4096,
-  .At = Global_ParseErrorBuffer,
-};
+static const u32 Global_ParseErrorBufferSize = 4096;
+static char Global_ParseErrorBuffer[Global_ParseErrorBufferSize] = {};
 
 bonsai_function void
 Indent(char_cursor *Dest, u32 TabCount, u32 SpaceCount)
@@ -720,13 +742,36 @@ Highlight(char_cursor *Dest, char C, counted_string Color)
 }
 
 bonsai_function void
+PrintTray(char_cursor *Dest, parser *Parser, u32 Columns)
+{
+  if (Parser && RawTokensRemain(Parser))
+  {
+    u32 LineNumber = Parser->LineNumber;
+    FormatCountedString_(Dest, CSz("%*d |"), Columns, LineNumber);
+  }
+  else if (!Parser)
+  {
+    FormatCountedString_(Dest, CSz("%*c |"), Columns, ' ');
+  }
+}
+
+bonsai_function void
 ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessage, c_token* ErrorToken = 0)
 {
   if (!ErrorToken) ErrorToken = Parser->Tokens.At;
 
-  char_cursor *ParseErrorCursor = &Global_ParseErrorCursor_;
+  char_cursor ParseErrorCursor_ = {};
+  char_cursor *ParseErrorCursor = &ParseErrorCursor_;
+
+  ParseErrorCursor->Start = Global_ParseErrorBuffer;
+  ParseErrorCursor->At = Global_ParseErrorBuffer;
+  ParseErrorCursor->End = Global_ParseErrorBuffer+Global_ParseErrorBufferSize;
+
 
   u32 LinesOfContext = 5;
+  u32 MaxTrayWidth = 1 + GetColumnsFor(Parser->LineNumber + LinesOfContext);
+
+  counted_string ParserName = {};
 
   parser *CandidateParser = Parser;
   while (CandidateParser)
@@ -742,10 +787,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
   if (CandidateParser)
   {
-    counted_string ParserName = CandidateParser->Filename;
-
-    FormatCountedString_(ParseErrorCursor, CSz("\n%S:%u:0\n"), ParserName, CandidateParser->LineNumber);
-    CopyToDest(ParseErrorCursor, CSz("------------------------------------------------------------------------------------\n"));
+    ParserName = CandidateParser->Filename;
 
     CandidateParser->Tokens.At = ErrorToken;
 
@@ -757,6 +799,8 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
     }
     OptionalTokenRaw(CandidateParser, CTokenType_Newline);
 
+    PrintTray(ParseErrorCursor, CandidateParser, MaxTrayWidth);
+
     u32 SpaceCount = 0;
     u32 TabCount = 0;
 
@@ -766,16 +810,20 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
     while (c_token *T = PopTokenRawPointer(CandidateParser))
     {
+#if 0
         if (T == ErrorToken)
         {
           CopyToDest(ParseErrorCursor, TerminalColors.Red);
         }
+#endif
 
         PrintToken(T, ParseErrorCursor);
 
         if (T == ErrorToken)
         {
+#if 0
           CopyToDest(ParseErrorCursor, TerminalColors.White);
+#endif
           break;
         }
 
@@ -784,6 +832,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
         {
           TabCount = 0;
           SpaceCount = 0;
+          PrintTray(ParseErrorCursor, CandidateParser, MaxTrayWidth);
         }
         else if (T->Type == CTokenType_Tab)
         {
@@ -817,15 +866,18 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
 
     { // Output the error line message
-      if (!PeekTokenRawPointer(CandidateParser))
+
+      if (!PeekTokenRawPointer(CandidateParser) && PeekTokenReverse(CandidateParser)->Type != CTokenType_Newline)
       {
         CopyToDest(ParseErrorCursor, '\n');
       }
 
+      PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
       Indent(ParseErrorCursor, TabCount, SpaceCount);
       OutputIdentifierUnderline(ParseErrorCursor, ErrorIdentifierLength);
       CopyToDest(ParseErrorCursor, '\n');
 
+      PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
       Indent(ParseErrorCursor, TabCount, SpaceCount+ErrorIdentifierLengthSubOne);
       Highlight(ParseErrorCursor, '|', TerminalColors.Yellow);
       CopyToDest(ParseErrorCursor, ' ');
@@ -833,11 +885,13 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
       Highlight(ParseErrorCursor, CSz("Parse Error\n"), TerminalColors.Yellow);
 
+      PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
       Indent(ParseErrorCursor, TabCount, SpaceCount+ErrorIdentifierLengthSubOne);
       Highlight(ParseErrorCursor, '|', TerminalColors.Yellow);
       CopyToDest(ParseErrorCursor, '\n');
 
 
+      PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
       Indent(ParseErrorCursor, TabCount, SpaceCount+ErrorIdentifierLengthSubOne);
       Highlight(ParseErrorCursor, '|', TerminalColors.Yellow);
       CopyToDest(ParseErrorCursor, ' ');
@@ -852,6 +906,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
         if (C == '\n')
         {
+          PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
           Indent(ParseErrorCursor, TabCount, SpaceCount+ErrorIdentifierLengthSubOne);
           Highlight(ParseErrorCursor, '|', TerminalColors.Yellow);
           CopyToDest(ParseErrorCursor, ' ');
@@ -863,9 +918,16 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
 
       { // Output the final underline
-        Indent(ParseErrorCursor, TabCount, SpaceCount + ErrorIdentifierLength);
+        PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
+        Indent(ParseErrorCursor, TabCount, SpaceCount + ErrorIdentifierLengthSubOne);
         CopyToDest(ParseErrorCursor, TerminalColors.Yellow);
-        CopyToDest(ParseErrorCursor, CSz("------------------------------------------------------------------------------------\n"));
+        for (u32 DashIndex = 0;
+            DashIndex < ErrorMessage.Count + 3;
+            ++DashIndex)
+        {
+          CopyToDest(ParseErrorCursor, '-');
+        }
+        CopyToDest(ParseErrorCursor, '\n');
         CopyToDest(ParseErrorCursor, TerminalColors.White);
       }
     }
@@ -878,24 +940,25 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
 
 
+    PrintTray(ParseErrorCursor, CandidateParser, MaxTrayWidth);
 
     u32 LinesToPrint = LinesOfContext;
     while (c_token *T = PopTokenRawPointer(CandidateParser))
     {
-        PrintToken(T, ParseErrorCursor);
-
-        if (T->Type == CTokenType_Newline)
-        {
-          LinesToPrint -= 1;
-        }
-
-        if (!LinesToPrint)
+      PrintToken(T, ParseErrorCursor);
+      if (T->Type == CTokenType_Newline)
+      {
+        LinesToPrint -= 1;
+        if (LinesToPrint == 0)
         {
           break;
         }
+        else
+        {
+          PrintTray(ParseErrorCursor, CandidateParser, MaxTrayWidth);
+        }
+      }
     }
-
-    CopyToDest(ParseErrorCursor, CSz("------------------------------------------------------------------------------------\n"));
   }
   else
   {
@@ -904,16 +967,72 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
   }
 
 
+  u32 LongestLine = 0;
+  {
+    char *End = ParseErrorCursor->End;
+    ParseErrorCursor->End = ParseErrorCursor->At;
+    ParseErrorCursor->At = ParseErrorCursor->Start;
+    u32 CurrentLineLength = 0;
+    while (Remaining(ParseErrorCursor))
+    {
+
+      if (ParseErrorCursor->At[0] == '\n')
+      {
+        if (CurrentLineLength > LongestLine)
+        {
+          LongestLine = CurrentLineLength;
+        }
+        CurrentLineLength = 0;
+      }
+      else if (ParseErrorCursor->At[0] == '\x1b')
+      {
+        while (Remaining(ParseErrorCursor))
+        {
+          Advance(ParseErrorCursor);
+
+          if (ParseErrorCursor->At[0] == 'm')
+          {
+            break;
+          }
+        }
+      }
+      else
+      {
+        CurrentLineLength++;
+      }
+
+      Advance(ParseErrorCursor);
+    }
+    ParseErrorCursor->End = End;
+  }
+
+  for (u32 DashIndex = 0;
+      DashIndex < LongestLine;
+      ++DashIndex)
+  {
+    PrintToStdout(CSz("-"));
+  }
+  PrintToStdout(CSz("\n"));
+
+  for (u32 DashIndex = 0;
+      DashIndex < LongestLine;
+      ++DashIndex)
+  {
+    CopyToDest(ParseErrorCursor, '-');
+  }
+
+  CopyToDest(ParseErrorCursor, '\n');
+  PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
+  CopyToDest(ParseErrorCursor, FormatCountedString(TranArena, CSz(" %S:%u:0\n"), ParserName, CandidateParser->LineNumber));
+
   PrintToStdout(CS(ParseErrorCursor));
-  ParseErrorCursor->At = ParseErrorCursor->Start;
+
 
 
   RewindUntil(Parser, ErrorToken);
-
-
-  Parser->Valid = False;
   Parser->ErrorMessage = ErrorMessage;
   Parser->ErrorCode = ErrorCode;
+  Parser->Valid = False;
 
   RuntimeBreak();
 

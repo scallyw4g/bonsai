@@ -24,7 +24,8 @@ struct terminal_colors
 
 global_variable terminal_colors TerminalColors = {};
 
-// TODO(Jesse): Metaprogram this
+#if 0
+// TODO(Jesse): Metaprogram this?  ATM we only ever turn colors off
 bonsai_function void
 SetTerminalColorsOn()
 {
@@ -36,6 +37,7 @@ SetTerminalColorsOn()
   TerminalColors.BrightYellow = CSz("\x1b[93m");
   TerminalColors.White        = CSz("\x1b[37m");
 }
+#endif
 
 // TODO(Jesse): Metaprogram this
 bonsai_function void

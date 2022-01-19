@@ -559,7 +559,7 @@ CopyToDest(char_cursor *Dest, counted_string String)
 }
 
 bonsai_function void
-u64ToChar(char_cursor* Dest, u64 Value, u32 Base = 10, char *Digits = DecChars)
+u64ToChar(char_cursor* Dest, u64 Value, s32 Columns, u32 Base = 10, char *Digits = DecChars)
 {
   Assert(Base != 0);
 
@@ -574,6 +574,17 @@ u64ToChar(char_cursor* Dest, u64 Value, u32 Base = 10, char *Digits = DecChars)
 
   char *End = Dest->At;
 
+  s32 Length = (s32)(End - Start);
+  s32 PadCount = Columns-Length;
+
+  while (PadCount > 0)
+  {
+    --PadCount;
+    CopyToDest(Dest, ' ');
+  }
+
+  End = Dest->At;
+
   while(Start < End)
   {
       --End;
@@ -587,7 +598,7 @@ u64ToChar(char_cursor* Dest, u64 Value, u32 Base = 10, char *Digits = DecChars)
 }
 
 bonsai_function void
-s64ToChar(char_cursor* Dest, s64 Value, u32 Base = 10, char *Digits = DecChars)
+s64ToChar(char_cursor* Dest, s64 Value, s32 Columns, u32 Base = 10, char *Digits = DecChars)
 {
   if (Value < 0)
   {
@@ -595,14 +606,14 @@ s64ToChar(char_cursor* Dest, s64 Value, u32 Base = 10, char *Digits = DecChars)
     Value = -Value;
   }
 
-  u64ToChar(Dest, (u64)Value, Base, Digits);
+  u64ToChar(Dest, (u64)Value, Columns, Base, Digits);
   return;
 }
 
 // Note(Jesse): Shamelessly copied, then modified, from the Handmade Hero codebase
 #define DEFAULT_FORMAT_PRECISION (16)
 bonsai_function void
-f64ToChar(char_cursor* Dest, r64 Value, u32 Precision = DEFAULT_FORMAT_PRECISION)
+f64ToChar(char_cursor* Dest, r64 Value, s32 Columns, u32 Precision = DEFAULT_FORMAT_PRECISION)
 {
   if(Value < 0)
   {
@@ -612,7 +623,7 @@ f64ToChar(char_cursor* Dest, r64 Value, u32 Precision = DEFAULT_FORMAT_PRECISION
 
   u64 IntegerPart = (u64)Value;
   Value -= (r64)IntegerPart;
-  u64ToChar(Dest, IntegerPart);
+  u64ToChar(Dest, IntegerPart, Columns);
 
   CopyToDest(Dest, '.');
 
@@ -628,5 +639,14 @@ f64ToChar(char_cursor* Dest, r64 Value, u32 Precision = DEFAULT_FORMAT_PRECISION
   }
 
   return;
+}
+
+bonsai_function u32
+GetColumnsFor(u32 N)
+{
+  u32 i = 0;
+  while (N != 0) { N /= 10; ++i; }
+
+  return i;
 }
 
