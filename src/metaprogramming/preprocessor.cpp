@@ -3263,8 +3263,8 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       case CT_PreprocessorInclude:
       {
         parser *IncludeParser = ResolveInclude(Ctx, Result);
-
         EraseSectionOfParser(Result, T, Result->Tokens.At);
+        RequireTokenRaw(Result, CTokenType_Newline);
 
         if (IncludeParser)
         {
@@ -3558,7 +3558,6 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
         b32 AteComment = EatComment(Parser).Count > 0;
         Continue = AteWhitespace || AteComment;
       }
-      RequireTokenRaw(Parser, CTokenType_Newline);
     }
   }
 
