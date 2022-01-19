@@ -1553,12 +1553,10 @@ TestErrors(memory_arena *Memory)
     parser *Parser = ParserForFile(&Ctx, ParserFilename);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
-
     TestThat(Parser->Valid == False);
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
     TestThat(Parser->LineNumber == 1);
-
     Parser->Valid = True;
     TestThat( OptionalToken(Parser, CToken(132151)) );
   }
@@ -1569,72 +1567,66 @@ TestErrors(memory_arena *Memory)
     parser *Parser = ParserForFile(&Ctx, ParserFilename);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
-
     TestThat(Parser->Valid == False);
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
     TestThat(Parser->LineNumber == 3);
-
     Parser->Valid = True;
     TestThat( OptionalToken(Parser, CToken(132151)) );
   }
+
   {
     parse_context Ctx = { .Memory = Memory };
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error2.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
-
     TestThat(Parser->Valid == False);
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
     TestThat(Parser->LineNumber == 3);
-
     Parser->Valid = True;
     TestThat( OptionalToken(Parser, CToken(132151)) );
   }
+
   {
     parse_context Ctx = { .Memory = Memory };
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error3.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
-
     TestThat(Parser->Valid == False);
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
     TestThat(Parser->LineNumber == 3);
-
     Parser->Valid = True;
     TestThat( OptionalToken(Parser, CToken(132151)) );
   }
+
   {
     parse_context Ctx = { .Memory = Memory };
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error4.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
-
     TestThat(Parser->Valid == False);
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
     TestThat(Parser->LineNumber == 3);
-
     Parser->Valid = True;
     TestThat( OptionalToken(Parser, CToken(132151)) );
   }
+
   {
     parse_context Ctx = { .Memory = Memory };
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error5.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
-
     TestThat(Parser->Valid == False);
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
     TestThat(Parser->LineNumber == 3);
-
     Parser->Valid = True;
     TestThat( OptionalToken(Parser, CToken(132151)) );
   }

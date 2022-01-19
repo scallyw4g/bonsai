@@ -68,7 +68,10 @@ bonsai_function counted_string RequireOperatorToken(parser *Parser);
 bonsai_function void           TrimFirstToken(parser* Parser, c_token_type TokenType);
 bonsai_function void           TrimLastToken(parser* Parser, c_token_type TokenType);
 bonsai_function void           TrimLeadingWhitespace(parser* Parser);
+
+// TODO(Jesse, immediate): Change this to a void return type.
 bonsai_function counted_string EatBetween(parser* Parser, c_token_type Open, c_token_type Close);
+
 bonsai_function b32            EatSpacesTabsAndEscapedNewlines(parser *Parser);
 
 
@@ -1632,6 +1635,7 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
 
   /* Macro->IsExpanding = True; */
 
+  // @memory
   parser *Result = AllocateParserPtr(Macro->Body.Filename, (u32)Kilobytes(1), 0, Memory);
 
   Assert(Macro->Body.Tokens.At == Macro->Body.Tokens.Start);
