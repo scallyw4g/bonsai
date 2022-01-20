@@ -1217,7 +1217,7 @@ PrintToken(c_token *Token, char_cursor *Dest = 0)
       {
         if (Token->Erased)
         {
-          Color = TerminalColors.Red;
+          Color = TerminalColors.Grey;
         }
       } break;
     }

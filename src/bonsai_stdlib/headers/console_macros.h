@@ -20,6 +20,7 @@ struct terminal_colors
   counted_string Yellow       = CSz("\x1b[33m");
   counted_string BrightYellow = CSz("\x1b[93m");
   counted_string White        = CSz("\x1b[37m");
+  counted_string Grey         = CSz("\x1b[38;5;242m");
 };
 
 global_variable terminal_colors TerminalColors = {};
@@ -50,6 +51,7 @@ SetTerminalColorsOff()
   TerminalColors.Yellow       = CSz("");
   counted_string BrightYellow = CSz("");
   TerminalColors.White        = CSz("");
+  counted_string Grey         = CSz("");
 }
 
 bonsai_function void SetupStdout(u32 ArgCount, const char** ArgStrings);
