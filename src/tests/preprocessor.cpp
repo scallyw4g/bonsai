@@ -1547,14 +1547,14 @@ bonsai_function void
 TestErrors(memory_arena *Memory)
 {
 
-  Global_DoRuntimeBreak = False;
-
   {
+    Global_DoRuntimeBreak = False;
     parse_context Ctx = { .Memory = Memory };
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error0.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
+    Global_DoRuntimeBreak = True;
     TestThat(Parser->Valid == False);
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
@@ -1564,11 +1564,13 @@ TestErrors(memory_arena *Memory)
   }
 
   {
+    Global_DoRuntimeBreak = False;
     parse_context Ctx = { .Memory = Memory };
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error1.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
+    Global_DoRuntimeBreak = True;
     TestThat(Parser->Valid == False);
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
@@ -1578,11 +1580,13 @@ TestErrors(memory_arena *Memory)
   }
 
   {
+    Global_DoRuntimeBreak = False;
     parse_context Ctx = { .Memory = Memory };
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error2.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
+    Global_DoRuntimeBreak = True;
     TestThat(Parser->Valid == False);
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
@@ -1592,12 +1596,13 @@ TestErrors(memory_arena *Memory)
   }
 
   {
+    Global_DoRuntimeBreak = False;
     parse_context Ctx = { .Memory = Memory };
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error3.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
-  /*   Global_DoRuntimeBreak = True; */
+    Global_DoRuntimeBreak = True;
     TestThat(Parser->Valid == False);
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
@@ -1606,38 +1611,84 @@ TestErrors(memory_arena *Memory)
     TestThat( OptionalToken(Parser, CToken(132151)) );
   }
 
-/*   { */
-/*     parse_context Ctx = { .Memory = Memory }; */
-/*     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error4.cpp"); */
-/*     parser *Parser = ParserForFile(&Ctx, ParserFilename); */
-/*     Ctx.CurrentParser = Parser; */
-/*     ParseDatatypes(&Ctx); */
-/*     TestThat(Parser->Valid == False); */
-/*     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals); */
-/*     TestThat(StringsMatch(Parser->Filename, ParserFilename)); */
-/*     TestThat(Parser->LineNumber == 3); */
-/*     Parser->Valid = True; */
-/*     TestThat( OptionalToken(Parser, CToken(132151)) ); */
-/*   } */
+  {
+    Global_DoRuntimeBreak = False;
+    parse_context Ctx = { .Memory = Memory };
+    counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error4.cpp");
+    parser *Parser = ParserForFile(&Ctx, ParserFilename);
+    Ctx.CurrentParser = Parser;
+    ParseDatatypes(&Ctx);
+    Global_DoRuntimeBreak = True;
+    TestThat(Parser->Valid == False);
+    TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
+    TestThat(StringsMatch(Parser->Filename, ParserFilename));
+    TestThat(Parser->LineNumber == 3);
+    Parser->Valid = True;
+    TestThat( OptionalToken(Parser, CToken(132151)) );
+  }
 
 
-  /* { */
-  /*   parse_context Ctx = { .Memory = Memory }; */
-  /*   counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error5.cpp"); */
-  /*   parser *Parser = ParserForFile(&Ctx, ParserFilename); */
-  /*   Ctx.CurrentParser = Parser; */
-  /*   ParseDatatypes(&Ctx); */
-  /*   TestThat(Parser->Valid == False); */
-  /*   TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals); */
-  /*   TestThat(StringsMatch(Parser->Filename, ParserFilename)); */
-  /*   TestThat(Parser->LineNumber == 3); */
-  /*   Parser->Valid = True; */
-  /*   TestThat( OptionalToken(Parser, CToken(132151)) ); */
-  /* } */
+  {
+    Global_DoRuntimeBreak = False;
+    parse_context Ctx = { .Memory = Memory };
+    counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error5.cpp");
+    parser *Parser = ParserForFile(&Ctx, ParserFilename);
+    Ctx.CurrentParser = Parser;
+    ParseDatatypes(&Ctx);
+    Global_DoRuntimeBreak = True;
+    TestThat(Parser->Valid == False);
+    TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
+    TestThat(StringsMatch(Parser->Filename, ParserFilename));
+    TestThat(Parser->LineNumber == 3);
+    Parser->Valid = True;
+    TestThat( OptionalToken(Parser, CToken(132151)) );
+    DumpEntireParser(Parser);
+  }
 
 
 
 }
+
+void
+TestLineNumbers(memory_arena *Memory)
+{
+  {
+    parse_context Ctx = { .Memory = Memory };
+    counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error5.cpp");
+    parser *Parser = ParserForFile(&Ctx, ParserFilename);
+
+    TestThat(Parser->LineNumber == 1);
+    TestThat(OptionalTokenRaw(Parser, CT_PreprocessorDefine));
+    TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
+    TestThat(OptionalTokenRaw(Parser, CToken(CT_MacroLiteral, CSz("boo"))));
+    TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
+    TestThat(OptionalTokenRaw(Parser, CToken(132151)));
+    TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
+    TestThat(Parser->LineNumber == 2);
+    TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
+    TestThat(Parser->LineNumber == 3);
+    TestThat(OptionalTokenRaw(Parser, CToken(CTokenType_Int, CSz("int"))));
+    TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
+    TestThat(OptionalTokenRaw(Parser, CToken(CTokenType_Identifier, CSz("foo"))));
+    TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
+    TestThat(OptionalTokenRaw(Parser, CToken(CT_MacroLiteral, CSz("boo"))));
+    TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
+    TestThat(OptionalTokenRaw(Parser, CToken(132151)));
+    TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
+    TestThat(Parser->LineNumber == 4);
+
+    // TODO(Jesse): I'm skeptical this is correct
+    TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
+    TestThat(Parser->LineNumber == 5);
+
+    TestThat(PeekTokenRawPointer(Parser) == 0);
+
+    Global_DoRuntimeBreak = True;
+    DumpEntireParser(Parser);
+  }
+
+}
+
 
 s32
 main(s32 ArgCount, const char** Args)
@@ -1660,6 +1711,8 @@ main(s32 ArgCount, const char** Args)
   TestDefinesAndConditionals(Memory);
   TestLogicalOperators(Memory);
   TestAst(Memory);
+
+  TestLineNumbers(Memory);
 
   TestErrors(Memory);
 

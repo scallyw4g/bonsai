@@ -562,6 +562,13 @@ enum parse_error_code
   ParseErrorCode_Unknown,
 };
 
+// TODO(Jesse): There's a reason we might want to move the Prev/Next pointers
+// onto the c_token_cursor struct.  See the TODO on the following tag.
+//
+// @reason_to_seperate_parser_and_tokens
+//
+// This change would also more cleanly track if we're undergoing macro
+// expansion .. I think
 struct parser
 {
   b32 Valid = 1;
@@ -1191,7 +1198,7 @@ enum output_mode
 };
 
 
-
+#define PrintTokenOut(Dest, S) if (Dest) { CopyToDest(Dest, S); } else { DebugChars(S); }
 
 inline void
 PrintToken(c_token *Token, char_cursor *Dest = 0)
@@ -1223,40 +1230,16 @@ PrintToken(c_token *Token, char_cursor *Dest = 0)
     }
 
 
-    if (Color.Count)
-    {
-      if (Dest)
-      {
-        CopyToDest(Dest, Color);
-      }
-      else
-      {
-        DebugChars(Color);
-      }
-    }
+    if (Color.Count) { PrintTokenOut(Dest, Color); }
 
-      if (Dest)
-      {
-        CopyToDest(Dest, Token->Value);
-      }
-      else
-      {
-        DebugChars("%S", Token->Value);
-      }
+    if (Token->Type == CTokenType_Newline) { PrintTokenOut(Dest, CSz("\\n")); }
 
-    if (Color.Count)
-    {
-      if (Dest)
-      {
-        CopyToDest(Dest, TerminalColors.White);
-      }
-      else
-      {
-        DebugChars(TerminalColors.White);
-      }
-    }
+    PrintTokenOut(Dest, Token->Value);
+
+    if (Color.Count) { PrintTokenOut(Dest, TerminalColors.White); }
   }
 }
+#undef PrintTokenOut
 
 inline void
 PrintToken(c_token Token, char_cursor *Dest = 0)
@@ -1343,11 +1326,12 @@ AllocateTokenBuffer(memory_arena* Memory, u32 Count)
 //
 // @parser_allocation_duplication
 bonsai_function parser*
-AllocateParserPtr(counted_string Filename, u32 TokenCount, u32 OutputBufferTokenCount, memory_arena *Memory)
+AllocateParserPtr(counted_string Filename, u32 LineNumber, u32 TokenCount, u32 OutputBufferTokenCount, memory_arena *Memory)
 {
   parser *Result = AllocateProtection(parser, Memory, 1, False);
 
   Result->Valid = 1;
+  Result->LineNumber = LineNumber;
   Result->Filename = Filename;
 
   Result->Tokens = AllocateTokenBuffer(Memory, TokenCount);
@@ -1372,10 +1356,11 @@ AllocateParserPtr(counted_string Filename, u32 TokenCount, u32 OutputBufferToken
 
 // @parser_allocation_duplication
 bonsai_function parser
-AllocateParser(counted_string Filename, u32 TokenCount, u32 OutputBufferTokenCount, memory_arena *Memory)
+AllocateParser(counted_string Filename, u32 LineNumber, u32 TokenCount, u32 OutputBufferTokenCount, memory_arena *Memory)
 {
   parser Result = {
-    .Filename = Filename
+    .Filename = Filename,
+    .LineNumber = LineNumber,
   };
 
   Result.Tokens = AllocateTokenBuffer(Memory, TokenCount);
@@ -1488,7 +1473,22 @@ FinalizeStringFromParser(string_from_parser* Builder)
   // valid.  IE. having an include path span a macro expansion or another
   // include statement isn't a well defined program.
 
-  umm Count = (umm)(Builder->Parser->Tokens.At->Value.Start - Builder->Start);
+  parser *Parser = Builder->Parser;
+  umm Count = 0;
+  if (Parser->Tokens.At == Parser->Tokens.End && Parser->Tokens.At == Parser->Tokens.Start)
+  {
+    // NOTE(Jesse): this is an erronious case .. a parser should never have 0 length
+    InvalidCodePath();
+  }
+  else if (Parser->Tokens.At == Parser->Tokens.End)
+  {
+    Count = (umm)(Parser->Tokens.At[-1].Value.Start - Builder->Start);
+  }
+  else
+  {
+    Count = (umm)(Parser->Tokens.At->Value.Start - Builder->Start);
+  }
+
   counted_string Result = CS(Builder->Start, Count);
   return Result;
 }

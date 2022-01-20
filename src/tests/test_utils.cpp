@@ -8,7 +8,7 @@ global_variable u32 TestsPassed = 0;
 #define TestThat(condition)                                                                                        \
   if (!(condition)) {                                                                                              \
     ++TestsFailed;                                                                                                 \
-    TestOut(" %SX Test Failed%S - '%s' during %s " Newline, TerminalColors.Red, TerminalColors.White, #condition, __FUNCTION__ ); \
+    TestOut(" %S! Test F%S  - '%s' during %s " Newline, TerminalColors.Red, TerminalColors.White, #condition, __FUNCTION__ ); \
     PlatformDebugStacktrace();                                                                                     \
     RuntimeBreak();                                                                                                \
     TestOut(Newline Newline);                                                                                      \

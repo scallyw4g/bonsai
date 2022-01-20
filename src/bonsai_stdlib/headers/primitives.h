@@ -47,6 +47,7 @@ typedef long long int           s64;
 typedef unsigned long long int  u64;
 typedef double                  r64;
 typedef u64                     umm;
+typedef u64                     b64;
 
 CAssert(sizeof(s64) == 8);
 CAssert(sizeof(u64) == 8);

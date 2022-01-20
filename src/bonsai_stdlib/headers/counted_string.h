@@ -69,6 +69,17 @@ CS(char_cursor* Cursor)
   return Result;
 }
 
+char_cursor
+CharCursor(counted_string S)
+{
+  char_cursor Result = {
+    .Start = (char*)S.Start,
+    .At = (char*)S.Start,
+    .End = (char*)(S.Start + S.Count),
+  };
+  return Result;
+}
+
 b32
 Contains(counted_string Haystack, char Needle)
 {

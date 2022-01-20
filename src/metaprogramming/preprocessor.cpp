@@ -167,6 +167,24 @@ DoublyLinkedListSwap(parser *P0, parser *P1)
     }
   }
 
+  // NOTE(Jesse): This is pretty janky, but when we do macro expansion the
+  // whole expansion chain has to be rewound, which means we destroy the line
+  // number information so we have to keep tracking it here.
+  //
+  // TODO(Jesse): An improvement here would be if we made the parser struct not
+  // track Next/Prev pointers and instead put those on the c_token_cursor then
+  // when we did this swap (we'd do it on the token cursors instead) the line
+  // information would live outside the memory we swap, thus be preserved
+  // automatically
+  //
+  // @reason_to_seperate_parser_and_tokens
+  if (StringsMatch(P0->Filename, P1->Filename))
+  {
+    u32 Temp = P0->LineNumber;
+    P0->LineNumber = P1->LineNumber;
+    P1->LineNumber = Temp;
+  }
+
   return;
 }
 
@@ -210,12 +228,18 @@ PeekTokenReverse(parser *Parser)
   return Result;
 }
 
-bonsai_function void
+bonsai_function c_token *
 RewindUntil(parser* Parser, c_token *T)
 {
+  c_token *Result = 0;
+  // TODO(Jesse): We can actually do a bounds check on the Start/End to check
+  // if the supplied token lays on this parser and skip it if not.
+
   while (Parser->Tokens.At >= Parser->Tokens.Start)
   {
-    if (RawTokensRemain(Parser))
+    // NOTE(Jesse): This has to be a manual check, not a call to
+    // RawTokensRemain() because we only want to check if the At token is valid
+    if (Parser->Tokens.At < Parser->Tokens.End)
     {
       if (!Parser->Tokens.At->Erased && Parser->Tokens.At->Type == CTokenType_Newline)
       {
@@ -225,6 +249,7 @@ RewindUntil(parser* Parser, c_token *T)
       }
       if (Parser->Tokens.At == T)
       {
+        Result = T;
         break;
       }
     }
@@ -255,7 +280,12 @@ RewindUntil(parser* Parser, c_token *T)
 
   SanityCheckParserChain(Parser);
 
-  return;
+  if ( Parser->Tokens.At != T )
+  {
+    Warn("Couldn't locate token during RewindUntil.  Token was %S(%S)", ToString(T->Type), T->Value);
+  }
+
+  return Result;
 }
 
 bonsai_function void
@@ -263,7 +293,9 @@ RewindUntil(parser* Parser, c_token_type Type)
 {
   while (Parser->Tokens.At >= Parser->Tokens.Start)
   {
-    if (RawTokensRemain(Parser))
+    // NOTE(Jesse): This has to be a manual check, not a call to
+    // RawTokensRemain() because we only want to check if the At token is valid
+    if (Parser->Tokens.At < Parser->Tokens.End)
     {
       if (!Parser->Tokens.At->Erased && Parser->Tokens.At->Type == CTokenType_Newline)
       {
@@ -342,7 +374,7 @@ Rewind(parser* Parser)
     DoublyLinkedListSwap(Parser, FirstInChain);
   }
 
-#if BONSAI_INTERNAL
+#if BONSAI_SLOW
   parser *Current = FirstInChain;
   while (Current)
   {
@@ -424,7 +456,7 @@ AdvanceParser(parser* Parser)
   Assert(Parser->Tokens.At <= Parser->Tokens.End);
   Assert(Parser->Tokens.Start <= Parser->Tokens.End);
 
-  if (Remaining(&Parser->Tokens))
+  if (Remaining(Parser))
   {
     c_token *T = Parser->Tokens.At;
     if (T->Type == CTokenType_Newline)
@@ -439,7 +471,8 @@ AdvanceParser(parser* Parser)
 
     ++Parser->Tokens.At;
   }
-  else if (Parser->Next)
+
+  if (!Remaining(Parser) && Parser->Next)
   {
     Assert( Parser->Next->Tokens.At == Parser->Next->Tokens.Start);
     Assert(Parser->Next != Parser);
@@ -468,7 +501,7 @@ AdvanceParser(parser* Parser)
   return;
 }
 
-bonsai_function void
+bonsai_function c_token *
 AdvanceTo(parser* Parser, c_token* T)
 {
   if (Remaining(Parser) == 0)
@@ -476,15 +509,24 @@ AdvanceTo(parser* Parser, c_token* T)
     AdvanceParser(Parser);
   }
 
-  while (Parser->Tokens.At != T)
+  while (Remaining(Parser))
   {
-    AdvanceParser(Parser);
+    if (Parser->Tokens.At == T)
+    {
+      return T;
+    }
+    else
+    {
+      AdvanceParser(Parser);
+    }
   }
 
   if (Parser->Tokens.At != T)
   {
     Error("Unable to find supplied token pointer on parser chain during AdvanceTo!");
   }
+
+  return 0;
 }
 
 bonsai_function void
@@ -595,12 +637,16 @@ DumpEntireParser(parser* Parser, u32 LinesToDump = u32_MAX)
     if (T == WasAt)
     {
       DebugChars(TerminalColors.Green);
+      DebugChars(">");
+      DebugChars(TerminalColors.White);
     }
 
     PrintToken(T);
 
     if (T == WasAt)
     {
+      DebugChars(TerminalColors.Green);
+      DebugChars("<");
       DebugChars(TerminalColors.White);
     }
 
@@ -758,12 +804,56 @@ PrintTray(char_cursor *Dest, parser *Parser, u32 Columns)
   }
 }
 
+bonsai_function u32
+GetLongestLineInCursor(char_cursor *Cursor)
+{
+  Assert(Cursor->At == Cursor->Start);
+  u32 Result = 0;
+
+  u32 CurrentLineLength = 0;
+  while (Remaining(Cursor))
+  {
+    if (Cursor->At[0] == '\n')
+    {
+      if (CurrentLineLength > Result)
+      {
+        Result = CurrentLineLength;
+      }
+      CurrentLineLength = 0;
+    }
+    else if (Cursor->At[0] == '\x1b')
+    {
+      while (Remaining(Cursor))
+      {
+        Advance(Cursor);
+
+        if (Cursor->At[0] == 'm')
+        {
+          break;
+        }
+      }
+    }
+    else
+    {
+      CurrentLineLength++;
+    }
+
+    Advance(Cursor);
+  }
+
+  if (CurrentLineLength > Result)
+  {
+    Result = CurrentLineLength;
+  }
+
+  return Result;
+}
+
 bonsai_function void
 ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessage, c_token* ErrorToken = 0)
 {
   if (!ErrorToken) ErrorToken = Parser->Tokens.At;
-
-  u32 ErrorLineNumber = 0;
+  u32 ErrorLineNumber = Parser->LineNumber;
 
   char_cursor ParseErrorCursor_ = {};
   char_cursor *ParseErrorCursor = &ParseErrorCursor_;
@@ -778,34 +868,36 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
   counted_string ParserName = {};
 
-  parser *CandidateParser = Parser;
-  while (CandidateParser)
   {
-    if (ErrorToken >= CandidateParser->Tokens.Start &&
-        ErrorToken < CandidateParser->Tokens.End)
+    if (AdvanceTo(Parser, ErrorToken))
     {
-      break;
     }
-
-    CandidateParser = CandidateParser->Next;
+    else if (RewindUntil(Parser, ErrorToken))
+    {
+    }
+    else
+    {
+      Error("Couldn't find specified token in parser chain.");
+      return;
+    }
   }
 
-  if (CandidateParser)
+  if (Parser)
   {
-    ParserName = CandidateParser->Filename;
+    ParserName = Parser->Filename;
 
-    CandidateParser->Tokens.At = ErrorToken;
-    ErrorLineNumber = CandidateParser->LineNumber;
+    Parser->Tokens.At = ErrorToken;
+    Parser->LineNumber = Parser->LineNumber;
 
     u32 LinesReversed = 0;
     while (LinesReversed <= LinesOfContext)
     {
-      RewindUntil(CandidateParser, CTokenType_Newline);
+      RewindUntil(Parser, CTokenType_Newline);
       LinesReversed += 1;
     }
-    OptionalTokenRaw(CandidateParser, CTokenType_Newline);
+    OptionalTokenRaw(Parser, CTokenType_Newline);
 
-    PrintTray(ParseErrorCursor, CandidateParser, MaxTrayWidth);
+    PrintTray(ParseErrorCursor, Parser, MaxTrayWidth);
 
     u32 SpaceCount = 0;
     u32 TabCount = 0;
@@ -814,22 +906,12 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
     u32 ErrorIdentifierLengthSubOne = (u32)(ErrorToken->Value.Count > 0 ? ErrorToken->Value.Count-1 : ErrorToken->Value.Count);
 
 
-    while (c_token *T = PopTokenRawPointer(CandidateParser))
+    while (c_token *T = PopTokenRawPointer(Parser))
     {
-#if 0
-        if (T == ErrorToken)
-        {
-          CopyToDest(ParseErrorCursor, TerminalColors.Red);
-        }
-#endif
-
         PrintToken(T, ParseErrorCursor);
 
         if (T == ErrorToken)
         {
-#if 0
-          CopyToDest(ParseErrorCursor, TerminalColors.White);
-#endif
           break;
         }
 
@@ -838,7 +920,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
         {
           TabCount = 0;
           SpaceCount = 0;
-          PrintTray(ParseErrorCursor, CandidateParser, MaxTrayWidth);
+          PrintTray(ParseErrorCursor, Parser, MaxTrayWidth);
         }
         else if (T->Type == CTokenType_Tab)
         {
@@ -855,7 +937,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
     }
 
     {
-      c_token *T = PopTokenRawPointer(CandidateParser);
+      c_token *T = PopTokenRawPointer(Parser);
       while (T)
       {
 
@@ -866,14 +948,14 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
           break;
         }
 
-        T = PopTokenRawPointer(CandidateParser);
+        T = PopTokenRawPointer(Parser);
       }
     }
 
 
     { // Output the error line message
 
-      if (!PeekTokenRawPointer(CandidateParser) && PeekTokenReverse(CandidateParser)->Type != CTokenType_Newline)
+      if (!PeekTokenRawPointer(Parser) && PeekTokenReverse(Parser)->Type != CTokenType_Newline)
       {
         CopyToDest(ParseErrorCursor, '\n');
       }
@@ -924,12 +1006,15 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
 
       { // Output the final underline
+        char_cursor ErrorCursor = CharCursor(ErrorMessage);
+        u32 LongestLine = GetLongestLineInCursor(&ErrorCursor);
+
         PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
         Indent(ParseErrorCursor, TabCount, SpaceCount + ErrorIdentifierLengthSubOne);
         CopyToDest(ParseErrorCursor, TerminalColors.Yellow);
         CopyToDest(ParseErrorCursor, '|');
         for (u32 DashIndex = 0;
-            DashIndex < ErrorMessage.Count + 2;
+            DashIndex < LongestLine + 2;
             ++DashIndex)
         {
           CopyToDest(ParseErrorCursor, '_');
@@ -947,10 +1032,11 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
 
 
-    PrintTray(ParseErrorCursor, CandidateParser, MaxTrayWidth);
+
+    PrintTray(ParseErrorCursor, Parser, MaxTrayWidth);
 
     u32 LinesToPrint = LinesOfContext;
-    while (c_token *T = PopTokenRawPointer(CandidateParser))
+    while (c_token *T = PopTokenRawPointer(Parser))
     {
       PrintToken(T, ParseErrorCursor);
       if (T->Type == CTokenType_Newline)
@@ -962,10 +1048,47 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
         }
         else
         {
-          PrintTray(ParseErrorCursor, CandidateParser, MaxTrayWidth);
+          PrintTray(ParseErrorCursor, Parser, MaxTrayWidth);
         }
       }
     }
+
+    char *End = ParseErrorCursor->End;
+    ParseErrorCursor->End = ParseErrorCursor->At;
+    ParseErrorCursor->At = ParseErrorCursor->Start;
+    u32 LongestLine = GetLongestLineInCursor(ParseErrorCursor);
+    ParseErrorCursor->End = End;
+
+    for (u32 DashIndex = 0;
+        DashIndex < LongestLine;
+        ++DashIndex)
+    {
+      PrintToStdout(CSz("-"));
+    }
+    PrintToStdout(CSz("\n"));
+
+    for (u32 DashIndex = 0;
+        DashIndex < LongestLine;
+        ++DashIndex)
+    {
+      CopyToDest(ParseErrorCursor, '-');
+    }
+
+    CopyToDest(ParseErrorCursor, '\n');
+    PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
+    CopyToDest(ParseErrorCursor, FormatCountedString(TranArena, CSz(" %S:%u:0\n"), ParserName, ErrorLineNumber));
+
+    PrintToStdout(CS(ParseErrorCursor));
+
+
+
+    RewindUntil(Parser, ErrorToken);
+    Assert(Parser->Tokens.At == ErrorToken);
+    Assert(Parser->LineNumber == ErrorLineNumber);
+
+    Parser->ErrorMessage = ErrorMessage;
+    Parser->ErrorCode = ErrorCode;
+    Parser->Valid = False;
   }
   else
   {
@@ -973,73 +1096,6 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
     FormatCountedString_(ParseErrorCursor, CSz("Error messsage was : %S\n"), ErrorMessage);
   }
 
-
-  u32 LongestLine = 0;
-  {
-    char *End = ParseErrorCursor->End;
-    ParseErrorCursor->End = ParseErrorCursor->At;
-    ParseErrorCursor->At = ParseErrorCursor->Start;
-    u32 CurrentLineLength = 0;
-    while (Remaining(ParseErrorCursor))
-    {
-
-      if (ParseErrorCursor->At[0] == '\n')
-      {
-        if (CurrentLineLength > LongestLine)
-        {
-          LongestLine = CurrentLineLength;
-        }
-        CurrentLineLength = 0;
-      }
-      else if (ParseErrorCursor->At[0] == '\x1b')
-      {
-        while (Remaining(ParseErrorCursor))
-        {
-          Advance(ParseErrorCursor);
-
-          if (ParseErrorCursor->At[0] == 'm')
-          {
-            break;
-          }
-        }
-      }
-      else
-      {
-        CurrentLineLength++;
-      }
-
-      Advance(ParseErrorCursor);
-    }
-    ParseErrorCursor->End = End;
-  }
-
-  for (u32 DashIndex = 0;
-      DashIndex < LongestLine;
-      ++DashIndex)
-  {
-    PrintToStdout(CSz("-"));
-  }
-  PrintToStdout(CSz("\n"));
-
-  for (u32 DashIndex = 0;
-      DashIndex < LongestLine;
-      ++DashIndex)
-  {
-    CopyToDest(ParseErrorCursor, '-');
-  }
-
-  CopyToDest(ParseErrorCursor, '\n');
-  PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
-  CopyToDest(ParseErrorCursor, FormatCountedString(TranArena, CSz(" %S:%u:0\n"), ParserName, ErrorLineNumber));
-
-  PrintToStdout(CS(ParseErrorCursor));
-
-
-
-  RewindUntil(Parser, ErrorToken);
-  Parser->ErrorMessage = ErrorMessage;
-  Parser->ErrorCode = ErrorCode;
-  Parser->Valid = False;
 
   RuntimeBreak();
 
@@ -1063,9 +1119,9 @@ ParseError_StreamEndedUnexpectedly(parser *Parser)
 }
 
 bonsai_function counted_string
-ParseError_ExpectedSemicolonOrEquals(parser *Parser)
+ParseError_ExpectedSemicolonOrEquals(parser *Parser, c_token *T)
 {
-  counted_string Result = FormatCountedString_(TranArena, CSz("Expected %S(%c) or %S(%c) while parsing variable declaration."), ToString(CTokenType_Semicolon), CTokenType_Semicolon, ToString(CTokenType_Equals), CTokenType_Equals );
+  counted_string Result = FormatCountedString_(TranArena, CSz("Got %S(%S)\n\nExpected %S(%c) or %S(%c) while parsing variable declaration."), ToString(T->Type), T->Value, ToString(CTokenType_Semicolon), CTokenType_Semicolon, ToString(CTokenType_Equals), CTokenType_Equals );
   ParseError(Parser, ParseErrorCode_ExpectedSemicolonOrEquals, Result, PeekTokenPointer(Parser) );
   return Result;
 }
@@ -1640,7 +1696,7 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
   /* Macro->IsExpanding = True; */
 
   // @memory
-  parser *Result = AllocateParserPtr(Macro->Body.Filename, (u32)Kilobytes(1), 0, Memory);
+  parser *Result = AllocateParserPtr(Parser->Filename, Parser->LineNumber, (u32)Kilobytes(1), 0, Memory);
 
   Assert(Macro->Body.Tokens.At == Macro->Body.Tokens.Start);
   Assert(Macro->Body.Next == 0);
@@ -1663,6 +1719,7 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
         }
         else
         {
+          Assert(T->Type != CTokenType_Newline);
           PopTokenRaw(BodyParser);
           Push(*T, &Result->Tokens);
         }
@@ -2493,13 +2550,11 @@ ParseMacro(parse_context *Ctx, macro_def *Macro, memory_arena *Memory)
   }
   MacroBody->Tokens.Start = MacroBody->Tokens.At;
 
-  b32 Done = False;
   while (c_token *T = PeekTokenRawPointer(MacroBody))
   {
-    if (Done) break;
-
     switch (T->Type)
     {
+
       case CTokenType_Identifier:
       {
         RequireToken(MacroBody, T->Type);
@@ -2518,7 +2573,7 @@ ParseMacro(parse_context *Ctx, macro_def *Macro, memory_arena *Memory)
         }
       } break;
 
-      case CTokenType_Newline: { Done = True; } break;
+      case CTokenType_Newline: { InvalidCodePath(); } break;
       default: { PopTokenRaw(MacroBody); } break;
     }
   }
@@ -2543,7 +2598,7 @@ DefineMacro(parse_context *Ctx, parser *Parser, macro_def *Macro)
   Macro->Body.Tokens.Start = Parser->Tokens.At;
   Macro->Body.Tokens.At = Parser->Tokens.At;
 
-  EatUntilIncluding(Parser, CTokenType_Newline);
+  EatUntilExcluding(Parser, CTokenType_Newline);
   Macro->Body.Tokens.End = Parser->Tokens.At;
 
   Macro->Body.Filename = Parser->Filename;
@@ -2599,15 +2654,15 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
     return 0;
   }
 
+  u32 LineNumber = 1;
   parser *Result = Ctx ? Push( &Ctx->AllParsers,
-                               AllocateParser(Code.Filename, (u32)Megabytes(1), (u32)Megabytes(1), Memory),
+                               AllocateParser(Code.Filename, LineNumber, (u32)Megabytes(1), (u32)Megabytes(1), Memory),
                                Memory)
-                       : AllocateParserPtr(Code.Filename, (u32)Megabytes(1), (u32)Megabytes(1), Memory);
+                       : AllocateParserPtr(Code.Filename, LineNumber, (u32)Megabytes(1), (u32)Megabytes(1), Memory);
 
   b32 ParsingSingleLineComment = False;
   b32 ParsingMultiLineComment = False;
 
-  u32 LineNumber = 1;
   c_token *LastTokenPushed = 0;
   while(Remaining(&Code))
   {
@@ -3256,10 +3311,13 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
   }
 
   TruncateToCurrentSize(&Result->Tokens);
+
+  // TODO(Jesse): Is this really necessary?
   Rewind(Result);
   Result->Valid = True;
-
   Rewind(Result);
+
+  // Finished Tokenization -- Run Preprocessor
 
   // Go through and do macro/include expansion as necessary
   c_token *LastT = 0;
@@ -3470,7 +3528,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       case CT_PreprocessorUndef:
       {
         RequireTokenRaw(Result, T->Type);
-        EatUntilIncluding(Result, CTokenType_Newline);
+        EatUntilExcluding(Result, CTokenType_Newline);
         EraseSectionOfParser(Result, T, Result->Tokens.At);
       } break;
 
@@ -4169,6 +4227,8 @@ EatUntil_TrackingDepth(parser *Parser, c_token_type Open, c_token_type Close, c_
 bonsai_function counted_string
 EatBetween(parser* Parser, c_token_type Open, c_token_type Close)
 {
+  c_token *StartParserToken = Parser->Tokens.Start;
+
   string_from_parser Builder = StartStringFromParser(Parser);
 
   c_token *StartToken = PeekTokenPointer(Parser);
@@ -4199,11 +4259,19 @@ EatBetween(parser* Parser, c_token_type Open, c_token_type Close)
 
   if (!Success)
   {
-    RuntimeBreak();
     ParseError(Parser, FormatCountedString(TranArena, CSz("Unable to find closing token %S"), ToString(Close)), StartToken);
   }
 
-  counted_string Result = FinalizeStringFromParser(&Builder);
+  counted_string Result = {};
+  if (Parser->Tokens.Start == StartParserToken)
+  {
+    Result = FinalizeStringFromParser(&Builder);
+  }
+  else
+  {
+    ParseError(Parser, CSz("Unable to call FinalizeStringFromParser during EatBetween due to having spanned a parser chain link."));
+  }
+
   return Result;
 }
 
@@ -4771,7 +4839,7 @@ ParseFunctionOrVariableDecl(parse_context *Ctx)
         }
         else
         {
-          ParseError_ExpectedSemicolonOrEquals(Parser);
+          ParseError_ExpectedSemicolonOrEquals(Parser, PeekTokenPointer(Parser));
         }
       }
     }

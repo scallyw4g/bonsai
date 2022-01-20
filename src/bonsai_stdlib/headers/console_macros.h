@@ -49,9 +49,9 @@ SetTerminalColorsOff()
   TerminalColors.Purple       = CSz("");
   TerminalColors.Green        = CSz("");
   TerminalColors.Yellow       = CSz("");
-  counted_string BrightYellow = CSz("");
+  TerminalColors.BrightYellow = CSz("");
   TerminalColors.White        = CSz("");
-  counted_string Grey         = CSz("");
+  TerminalColors.Grey         = CSz("");
 }
 
 bonsai_function void SetupStdout(u32 ArgCount, const char** ArgStrings);
@@ -103,6 +103,7 @@ bonsai_function void SetupStdout(u32 ArgCount, const char** ArgStrings);
   if (Global_LogLevel <= LogLevel_Error) {                \
     Log("%S ! Error   %S- ", TerminalColors.Red, TerminalColors.White);  \
     Debug(__VA_ARGS__);                                   \
+    RuntimeBreak(); \
   }                                                       \
                                                           \
 } while (false)

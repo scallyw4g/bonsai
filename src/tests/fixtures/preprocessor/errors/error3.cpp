@@ -2,4 +2,4 @@
 
 int foo 132151
 
-#define boo
+#define boo fdsa
