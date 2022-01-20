@@ -1547,6 +1547,8 @@ bonsai_function void
 TestErrors(memory_arena *Memory)
 {
 
+  Global_DoRuntimeBreak = False;
+
   {
     parse_context Ctx = { .Memory = Memory };
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error0.cpp");
@@ -1617,12 +1619,16 @@ TestErrors(memory_arena *Memory)
     TestThat( OptionalToken(Parser, CToken(132151)) );
   }
 
+
   {
     parse_context Ctx = { .Memory = Memory };
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error5.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
+
+    Global_DoRuntimeBreak = True;
+
     TestThat(Parser->Valid == False);
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
     TestThat(StringsMatch(Parser->Filename, ParserFilename));

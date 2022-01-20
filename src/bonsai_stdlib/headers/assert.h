@@ -10,8 +10,12 @@
 #  define InvalidCodePath() Error("Invalid Code Path - Panic!"); Assert(False)
 
 #  define RuntimeBreak() do {                                                       \
-  Log("\n\n %S!%S Break\n\n", TerminalColors.Red, TerminalColors.White);       \
-  if (Global_DoRuntimeBreak || IsDebuggerPresent()) { PLATFORM_RUNTIME_BREAK(); }   \
+  if (Global_DoRuntimeBreak) {\
+    Log("\n\n %S! Break%S\n\n", TerminalColors.Red, TerminalColors.White);       \
+    PLATFORM_RUNTIME_BREAK();\
+  } else {   \
+    Log("   Break   - Skipped\n");       \
+  } \
 } while (false)
 
 #define NotImplemented Error("Implement Me!"); Assert(False)

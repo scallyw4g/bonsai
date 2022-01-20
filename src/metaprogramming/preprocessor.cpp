@@ -763,6 +763,8 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 {
   if (!ErrorToken) ErrorToken = Parser->Tokens.At;
 
+  u32 ErrorLineNumber = 0;
+
   char_cursor ParseErrorCursor_ = {};
   char_cursor *ParseErrorCursor = &ParseErrorCursor_;
 
@@ -793,6 +795,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
     ParserName = CandidateParser->Filename;
 
     CandidateParser->Tokens.At = ErrorToken;
+    ErrorLineNumber = CandidateParser->LineNumber;
 
     u32 LinesReversed = 0;
     while (LinesReversed <= LinesOfContext)
@@ -924,11 +927,12 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
         PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
         Indent(ParseErrorCursor, TabCount, SpaceCount + ErrorIdentifierLengthSubOne);
         CopyToDest(ParseErrorCursor, TerminalColors.Yellow);
+        CopyToDest(ParseErrorCursor, '|');
         for (u32 DashIndex = 0;
-            DashIndex < ErrorMessage.Count + 3;
+            DashIndex < ErrorMessage.Count + 2;
             ++DashIndex)
         {
-          CopyToDest(ParseErrorCursor, '-');
+          CopyToDest(ParseErrorCursor, '_');
         }
         CopyToDest(ParseErrorCursor, '\n');
         CopyToDest(ParseErrorCursor, TerminalColors.White);
@@ -1026,7 +1030,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
   CopyToDest(ParseErrorCursor, '\n');
   PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
-  CopyToDest(ParseErrorCursor, FormatCountedString(TranArena, CSz(" %S:%u:0\n"), ParserName, CandidateParser->LineNumber));
+  CopyToDest(ParseErrorCursor, FormatCountedString(TranArena, CSz(" %S:%u:0\n"), ParserName, ErrorLineNumber));
 
   PrintToStdout(CS(ParseErrorCursor));
 
