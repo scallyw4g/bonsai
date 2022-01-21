@@ -1672,13 +1672,15 @@ TestLineNumbers(memory_arena *Memory)
     TestThat(OptionalTokenRaw(Parser, CToken(CTokenType_Identifier, CSz("foo"))));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
     TestThat(OptionalTokenRaw(Parser, CToken(CT_MacroLiteral, CSz("boo"))));
-    /* TestThat(OptionalTokenRaw(Parser, CTokenType_Space)); */
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
     TestThat(OptionalTokenRaw(Parser, CToken(132151)));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
     TestThat(Parser->LineNumber == 4);
 
-    // TODO(Jesse): I'm skeptical this is correct
+    // NOTE(Jesse): This is actually correct.
+    //
+    // `xxd src/tests/fixtures/preprocessor/errors/error5.cpp` shows that the
+    // file ends with two newlines.  vim is responsible presumably.
     TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
     TestThat(Parser->LineNumber == 5);
 
