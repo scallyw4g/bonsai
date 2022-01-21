@@ -1672,6 +1672,7 @@ TestLineNumbers(memory_arena *Memory)
     TestThat(OptionalTokenRaw(Parser, CToken(CTokenType_Identifier, CSz("foo"))));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
     TestThat(OptionalTokenRaw(Parser, CToken(CT_MacroLiteral, CSz("boo"))));
+    /* TestThat(OptionalTokenRaw(Parser, CTokenType_Space)); */
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
     TestThat(OptionalTokenRaw(Parser, CToken(132151)));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));

@@ -471,15 +471,23 @@ AdvanceParser(parser* Parser)
 
     ++Parser->Tokens.At;
   }
-
-  if (!Remaining(Parser) && Parser->Next)
+  else if (Parser->Next)
   {
-    Assert( Parser->Next->Tokens.At == Parser->Next->Tokens.Start);
+    // NOTE(Jesse): This cannot be just an `if` block.  If this routine
+    // automatically advances the parser to it's `Next` pointer when it hits
+    // the end a bunch of code that assumes eating tokens will end on
+    // immediately the next token breaks.  Specifically, I'm talking about
+    // EatBetween() and friends.  They assume (for their return value) that
+    // they'll be starting and ending in the same c_token_cursor block and
+    // detecting that changeover is pretty annoying in those functions.
+    Assert(Parser->Next->Tokens.At == Parser->Next->Tokens.Start);
     Assert(Parser->Next != Parser);
     Assert(Parser->Next->Next != Parser);
     Assert(Parser->Next->Next != Parser->Next);
 
     DoublyLinkedListSwap(Parser, Parser->Next);
+    Parser->Tokens.At = Parser->Tokens.Start;
+    AdvanceParser(Parser);
 
     if (Parser->Next)
     {
@@ -504,29 +512,27 @@ AdvanceParser(parser* Parser)
 bonsai_function c_token *
 AdvanceTo(parser* Parser, c_token* T)
 {
-  if (Remaining(Parser) == 0)
+  c_token *Result = PeekTokenRawPointer(Parser);
+
+  while (Result && Result != T)
   {
     AdvanceParser(Parser);
+    Result = PeekTokenRawPointer(Parser);
   }
 
-  while (Remaining(Parser))
-  {
-    if (Parser->Tokens.At == T)
-    {
-      return T;
-    }
-    else
-    {
-      AdvanceParser(Parser);
-    }
-  }
-
-  if (Parser->Tokens.At != T)
+  if (Result != T && T != Parser->Tokens.End)
   {
     Error("Unable to find supplied token pointer on parser chain during AdvanceTo!");
   }
+  else
+  {
+    // NOTE(Jesse): These are actually invalid assertions because we can be
+    // peeking to the next parser in the chain.
+    /* Assert(Parser->Tokens.At != Parser->Tokens.End); */
+    /* Assert(Parser->Tokens.At == T); */
+  }
 
-  return 0;
+  return Result;
 }
 
 bonsai_function void
@@ -1379,16 +1385,31 @@ PopToken(parser* Parser)
 bonsai_function b32
 OptionalTokenRaw(parser* Parser, c_token_type Type)
 {
-  b32 Result = (PeekTokenRaw(Parser).Type == Type);
-  if (Result) { PopTokenRaw(Parser); }
+  b32 Result = False;
+  c_token Peeked = PeekTokenRaw(Parser);
+  if (Peeked.Type == Type)
+  {
+    Result = True;
+    c_token Popped = PopTokenRaw(Parser);
+    Assert(Popped.Type == Peeked.Type);
+    Assert(Popped.Type == Type);
+  }
+
   return Result;
 }
 
 bonsai_function b32
 OptionalTokenRaw(parser* Parser, c_token T)
 {
-  b32 Result = (PeekTokenRaw(Parser) == T);
-  if (Result) { PopTokenRaw(Parser); }
+  b32 Result = False;
+  c_token Peeked = PeekTokenRaw(Parser);
+  if (Peeked == T)
+  {
+    Result = True;
+    c_token Popped = PopTokenRaw(Parser);
+    Assert(Popped == Peeked);
+  }
+
   return Result;
 }
 
