@@ -797,14 +797,13 @@ Highlight(char_cursor *Dest, char C, counted_string Color)
 }
 
 bonsai_function void
-PrintTray(char_cursor *Dest, parser *Parser, u32 Columns)
+PrintTray(char_cursor *Dest, u32 LineNumber, u32 Columns)
 {
-  if (Parser && RawTokensRemain(Parser))
+  if (LineNumber)
   {
-    u32 LineNumber = Parser->LineNumber;
     FormatCountedString_(Dest, CSz("%*d |"), Columns, LineNumber);
   }
-  else if (!Parser)
+  else
   {
     FormatCountedString_(Dest, CSz("%*c |"), Columns, ' ');
   }
@@ -903,7 +902,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
     }
     OptionalTokenRaw(Parser, CTokenType_Newline);
 
-    PrintTray(ParseErrorCursor, Parser, MaxTrayWidth);
+    PrintTray(ParseErrorCursor, Parser->LineNumber, MaxTrayWidth);
 
     u32 SpaceCount = 0;
     u32 TabCount = 0;
@@ -926,7 +925,14 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
         {
           TabCount = 0;
           SpaceCount = 0;
-          PrintTray(ParseErrorCursor, Parser, MaxTrayWidth);
+          if (T->Type == CTokenType_Newline)
+          {
+            PrintTray(ParseErrorCursor, Parser->LineNumber, MaxTrayWidth);
+          }
+          else
+          {
+            PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
+          }
         }
         else if (T->Type == CTokenType_Tab)
         {
@@ -942,11 +948,12 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
         }
     }
 
+    c_token *LastTokenBeforeErrorMessage = 0;
     {
       c_token *T = PopTokenRawPointer(Parser);
       while (T)
       {
-
+        LastTokenBeforeErrorMessage = T;
         PrintToken(T, ParseErrorCursor);
 
         if (T->Type == CTokenType_Newline || T->Type == CTokenType_EscapedNewline)
@@ -1038,8 +1045,14 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
 
 
-
-    PrintTray(ParseErrorCursor, Parser, MaxTrayWidth);
+    if (LastTokenBeforeErrorMessage && LastTokenBeforeErrorMessage->Type == CTokenType_Newline)
+    {
+      PrintTray(ParseErrorCursor, Parser->LineNumber, MaxTrayWidth);
+    }
+    else if (LastTokenBeforeErrorMessage && LastTokenBeforeErrorMessage->Type == CTokenType_EscapedNewline)
+    {
+      PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
+    }
 
     u32 LinesToPrint = LinesOfContext;
     while (c_token *T = PopTokenRawPointer(Parser))
@@ -1053,13 +1066,13 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
       if (T->Type == CTokenType_Newline)
       {
         LinesToPrint -= 1;
-        if (LinesToPrint == 0)
+        if (RawTokensRemain(Parser) == 0 || LinesToPrint == 0)
         {
           break;
         }
         else
         {
-          PrintTray(ParseErrorCursor, Parser, MaxTrayWidth);
+          PrintTray(ParseErrorCursor, Parser->LineNumber, MaxTrayWidth);
         }
       }
     }
