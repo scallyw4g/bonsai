@@ -617,6 +617,47 @@ main(s32 ArgCount, const char** Args)
   }
 
   {
+    ClearBuffer((u8*)TempBuffer, TEMP_BUFFER_SIZE);
+    Rewind(TempCursor);
+    f64ToChar(TempCursor, 3.14, 2, 5);
+    TestThat(StringsMatch(CS(TempBuffer), CS(" 3.14")));
+  }
+  {
+    ClearBuffer((u8*)TempBuffer, TEMP_BUFFER_SIZE);
+    Rewind(TempCursor);
+    f64ToChar(TempCursor, 3.14, 10, 13);
+    TestThat(StringsMatch(CS(TempBuffer), CS(" 3.1400000000")));
+  }
+
+  {
+    ClearBuffer((u8*)TempBuffer, TEMP_BUFFER_SIZE);
+    Rewind(TempCursor);
+    f64ToChar(TempCursor, 33.14, 2, 5);
+    TestThat(StringsMatch(CS(TempBuffer), CS("33.14")));
+  }
+  {
+    ClearBuffer((u8*)TempBuffer, TEMP_BUFFER_SIZE);
+    Rewind(TempCursor);
+    f64ToChar(TempCursor, 33.14, 10, 13);
+    TestThat(StringsMatch(CS(TempBuffer), CS("33.1400000000")));
+  }
+
+  {
+    ClearBuffer((u8*)TempBuffer, TEMP_BUFFER_SIZE);
+    Rewind(TempCursor);
+    f64ToChar(TempCursor, 33.14, 2, 6);
+    TestThat(StringsMatch(CS(TempBuffer), CS(" 33.14")));
+  }
+  {
+    ClearBuffer((u8*)TempBuffer, TEMP_BUFFER_SIZE);
+    Rewind(TempCursor);
+    f64ToChar(TempCursor, 33.14, 10, 14);
+    TestThat(StringsMatch(CS(TempBuffer), CS(" 33.1400000000")));
+  }
+
+
+
+  {
     TestThat(IsNumeric('0'));
     TestThat(IsNumeric('1'));
     TestThat(IsNumeric('2'));

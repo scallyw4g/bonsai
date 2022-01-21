@@ -212,7 +212,7 @@ FormatCountedString_(char_cursor* DestCursor, counted_string FS, va_list Args)
         case 'd':
         {
           s32 Value = va_arg(Args, s32);
-          s64ToChar(DestCursor, (s64)Value, (s32)FormatWidth);
+          s64ToChar(DestCursor, (s64)Value, FormatWidth);
         } break;
 
         case 'l':
@@ -221,26 +221,26 @@ FormatCountedString_(char_cursor* DestCursor, counted_string FS, va_list Args)
           if (CursorAt == 'u')
           {
             u64 Value = va_arg(Args, u64);
-            u64ToChar(DestCursor, Value, (s32)FormatWidth);
+            u64ToChar(DestCursor, Value, FormatWidth);
 
           }
           else if (CursorAt == 'd')
           {
             s64 Value = va_arg(Args, s64);
-            s64ToChar(DestCursor, Value, (s32)FormatWidth);
+            s64ToChar(DestCursor, Value, FormatWidth);
           }
         } break;
 
         case 'x':
         {
           u64 Value = va_arg(Args, u64);
-          u64ToChar(DestCursor, Value, (s32)FormatWidth);
+          u64ToChar(DestCursor, Value, FormatWidth);
         } break;
 
         case 'u':
         {
           u32 Value = va_arg(Args, u32);
-          u64ToChar(DestCursor, (u64)Value, (s32)FormatWidth);
+          u64ToChar(DestCursor, (u64)Value, FormatWidth);
         } break;
 
         case 'c':
@@ -281,7 +281,7 @@ FormatCountedString_(char_cursor* DestCursor, counted_string FS, va_list Args)
         case 'f':
         {
           r64 Value = va_arg(Args, r64);
-          f64ToChar(DestCursor, Value, (s32)FormatWidth, FormatPrecision ? FormatPrecision : DEFAULT_FORMAT_PRECISION);
+          f64ToChar(DestCursor, Value, FormatPrecision ? FormatPrecision : DEFAULT_FORMAT_PRECISION, FormatWidth );
         } break;
 
         case 'b':

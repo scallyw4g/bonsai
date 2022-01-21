@@ -628,7 +628,7 @@ DumpLocalTokens(parser *Parser)
 bonsai_function void
 DumpEntireParser(parser* Parser, u32 LinesToDump = u32_MAX)
 {
-  Log("%S---%S\n", TerminalColors.Purple, TerminalColors.White);
+  Debug("%S---%S\n", TerminalColors.Purple, TerminalColors.White);
 
   b32 WasValid    = Parser->Valid;
   c_token * WasAt = PeekTokenRawPointer(Parser);
@@ -664,7 +664,7 @@ DumpEntireParser(parser* Parser, u32 LinesToDump = u32_MAX)
     T = PopTokenRawPointer(Parser);
   }
 
-  Log("%S---%S\n", TerminalColors.Purple, TerminalColors.White);
+  Debug("%S---%S\n", TerminalColors.Purple, TerminalColors.White);
   Parser->Valid = WasValid;
 }
 
@@ -1045,6 +1045,11 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
     while (c_token *T = PopTokenRawPointer(Parser))
     {
       PrintToken(T, ParseErrorCursor);
+      if (T->Type == CTokenType_EscapedNewline)
+      {
+        PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
+      }
+
       if (T->Type == CTokenType_Newline)
       {
         LinesToPrint -= 1;
@@ -1069,9 +1074,9 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
         DashIndex < LongestLine;
         ++DashIndex)
     {
-      PrintToStdout(CSz("-"));
+      DebugChars(CSz("-"));
     }
-    PrintToStdout(CSz("\n"));
+    DebugChars(CSz("\n"));
 
     for (u32 DashIndex = 0;
         DashIndex < LongestLine;
@@ -1084,7 +1089,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
     PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
     CopyToDest(ParseErrorCursor, FormatCountedString(TranArena, CSz(" %S:%u:0\n"), ParserName, ErrorLineNumber));
 
-    PrintToStdout(CS(ParseErrorCursor));
+    DebugChars(CSz("%S"), CS(ParseErrorCursor));
 
 
 
@@ -3681,7 +3686,7 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
   if (FinalIncludePath.Count)
   {
     LogSuccess("Including (%S)", FinalIncludePath);
-    Result = ParserForFile(Ctx, PartialPath);
+    Result = ParserForFile(Ctx, FinalIncludePath);
   }
   else
   {

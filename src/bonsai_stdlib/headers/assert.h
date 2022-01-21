@@ -11,10 +11,10 @@
 
 #  define RuntimeBreak() do {                                                       \
   if (Global_DoRuntimeBreak) {\
-    Log("\n\n %S! Break%S\n\n", TerminalColors.Red, TerminalColors.White);       \
+    Debug("\n\n %S! Break%S\n", TerminalColors.Red, TerminalColors.White);       \
     PLATFORM_RUNTIME_BREAK();\
   } else {   \
-    Log("   Break   - Skipped\n");       \
+    Debug("   Break   - Skipped");       \
   } \
 } while (false)
 

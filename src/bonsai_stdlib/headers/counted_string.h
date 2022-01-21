@@ -396,6 +396,15 @@ ToU32(char C)
   return Result;
 }
 
+bonsai_function u32
+GetColumnsFor(u32 N)
+{
+  u32 i = 0;
+  while (N != 0) { N /= 10; ++i; }
+
+  return i;
+}
+
 bonsai_function r64
 Exp(r64 Base, s32 Exponent)
 {
@@ -570,7 +579,7 @@ CopyToDest(char_cursor *Dest, counted_string String)
 }
 
 bonsai_function void
-u64ToChar(char_cursor* Dest, u64 Value, s32 Columns, u32 Base = 10, char *Digits = DecChars)
+u64ToChar(char_cursor* Dest, u64 Value, u32 Columns = 0, u32 Base = 10, char *Digits = DecChars)
 {
   Assert(Base != 0);
 
@@ -586,7 +595,7 @@ u64ToChar(char_cursor* Dest, u64 Value, s32 Columns, u32 Base = 10, char *Digits
   char *End = Dest->At;
 
   s32 Length = (s32)(End - Start);
-  s32 PadCount = Columns-Length;
+  s32 PadCount = (s32)Columns-(s32)Length;
 
   while (PadCount > 0)
   {
@@ -609,7 +618,7 @@ u64ToChar(char_cursor* Dest, u64 Value, s32 Columns, u32 Base = 10, char *Digits
 }
 
 bonsai_function void
-s64ToChar(char_cursor* Dest, s64 Value, s32 Columns, u32 Base = 10, char *Digits = DecChars)
+s64ToChar(char_cursor* Dest, s64 Value, u32 Columns, u32 Base = 10, char *Digits = DecChars)
 {
   if (Value < 0)
   {
@@ -624,7 +633,7 @@ s64ToChar(char_cursor* Dest, s64 Value, s32 Columns, u32 Base = 10, char *Digits
 // Note(Jesse): Shamelessly copied, then modified, from the Handmade Hero codebase
 #define DEFAULT_FORMAT_PRECISION (16)
 bonsai_function void
-f64ToChar(char_cursor* Dest, r64 Value, s32 Columns, u32 Precision = DEFAULT_FORMAT_PRECISION)
+f64ToChar(char_cursor* Dest, r64 Value, u32 Precision = DEFAULT_FORMAT_PRECISION, u32 Columns = 0)
 {
   if(Value < 0)
   {
@@ -634,8 +643,11 @@ f64ToChar(char_cursor* Dest, r64 Value, s32 Columns, u32 Precision = DEFAULT_FOR
 
   u64 IntegerPart = (u64)Value;
   Value -= (r64)IntegerPart;
-  u64ToChar(Dest, IntegerPart, Columns);
 
+  s32 ColumnPad = (s32)Columns - ((s32)Precision + 1); // NOTE(Jesse): +1 for the '.'
+
+  ColumnPad = Max(ColumnPad, 0);
+  u64ToChar(Dest, IntegerPart, (u32)ColumnPad);
   CopyToDest(Dest, '.');
 
   // Note(casey): Note that this is NOT an accurate way to do this!
@@ -650,14 +662,5 @@ f64ToChar(char_cursor* Dest, r64 Value, s32 Columns, u32 Precision = DEFAULT_FOR
   }
 
   return;
-}
-
-bonsai_function u32
-GetColumnsFor(u32 N)
-{
-  u32 i = 0;
-  while (N != 0) { N /= 10; ++i; }
-
-  return i;
 }
 

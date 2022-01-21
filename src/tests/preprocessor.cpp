@@ -1697,7 +1697,7 @@ s32
 main(s32 ArgCount, const char** Args)
 {
   TestSuiteBegin("Preprocessor", ArgCount, Args);
-  Global_LogLevel = LogLevel_Debug;
+  Global_LogLevel = LogLevel_Shush;
 
 
   memory_arena* Memory = AllocateArena();
