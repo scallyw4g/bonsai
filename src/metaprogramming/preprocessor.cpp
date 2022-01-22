@@ -228,6 +228,15 @@ PeekTokenReverse(parser *Parser)
   return Result;
 }
 
+bonsai_function b32
+TokenShouldModifyLineCount(c_token *T)
+{
+  b32 Result =
+    ( T->Erased == False && T->Type == CTokenType_Newline) ||
+    ( T->Erased == True && T->Type == CTokenType_EscapedNewline );
+  return Result;
+}
+
 bonsai_function c_token *
 RewindUntil(parser* Parser, c_token *T)
 {
@@ -241,7 +250,7 @@ RewindUntil(parser* Parser, c_token *T)
     // RawTokensRemain() because we only want to check if the At token is valid
     if (Parser->Tokens.At < Parser->Tokens.End)
     {
-      if (!Parser->Tokens.At->Erased && Parser->Tokens.At->Type == CTokenType_Newline)
+      if (TokenShouldModifyLineCount(Parser->Tokens.At))
       {
         Parser->LineNumber -= 1;
         // TODO(Jesse): Put this assertion back in.  It fires.
@@ -297,7 +306,7 @@ RewindUntil(parser* Parser, c_token_type Type)
     // RawTokensRemain() because we only want to check if the At token is valid
     if (Parser->Tokens.At < Parser->Tokens.End)
     {
-      if (!Parser->Tokens.At->Erased && Parser->Tokens.At->Type == CTokenType_Newline)
+      if (TokenShouldModifyLineCount(Parser->Tokens.At))
       {
         Parser->LineNumber -= 1;
         Assert(Parser->LineNumber > 0);
@@ -459,7 +468,7 @@ AdvanceParser(parser* Parser)
   if (Remaining(Parser))
   {
     c_token *T = Parser->Tokens.At;
-    if (T->Type == CTokenType_Newline)
+    if (TokenShouldModifyLineCount(T))
     {
       ++Parser->LineNumber;
     }
@@ -858,41 +867,40 @@ bonsai_function void
 ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessage, c_token* ErrorToken = 0)
 {
   if (!ErrorToken) ErrorToken = Parser->Tokens.At;
-  u32 ErrorLineNumber = Parser->LineNumber;
 
   char_cursor ParseErrorCursor_ = {};
   char_cursor *ParseErrorCursor = &ParseErrorCursor_;
-
   ParseErrorCursor->Start = Global_ParseErrorBuffer;
   ParseErrorCursor->At = Global_ParseErrorBuffer;
   ParseErrorCursor->End = Global_ParseErrorBuffer+Global_ParseErrorBufferSize;
 
-
   u32 LinesOfContext = 5;
-  u32 MaxTrayWidth = 1 + GetColumnsFor(Parser->LineNumber + LinesOfContext);
 
   counted_string ParserName = {};
 
+  // TODO(Jesse): If we don't pass an ErrorToken in, does this do a bunch of
+  // unnecessary work?  ie. Advance to the end of the chain, then rewind to
+  // the token again?
+  if (AdvanceTo(Parser, ErrorToken))
   {
-    if (AdvanceTo(Parser, ErrorToken))
-    {
-    }
-    else if (RewindUntil(Parser, ErrorToken))
-    {
-    }
-    else
-    {
-      Error("Couldn't find specified token in parser chain.");
-      return;
-    }
   }
+  else if (RewindUntil(Parser, ErrorToken))
+  {
+  }
+  else
+  {
+    Error("Couldn't find specified token in parser chain.");
+    Parser = 0;
+  }
+
 
   if (Parser)
   {
+    u32 ErrorLineNumber = Parser->LineNumber;
+    u32 MaxTrayWidth = 1 + GetColumnsFor(ErrorLineNumber + LinesOfContext);
     ParserName = Parser->Filename;
 
-    Parser->Tokens.At = ErrorToken;
-    Parser->LineNumber = Parser->LineNumber;
+    Assert(Parser->Tokens.At == ErrorToken);
 
     u32 LinesReversed = 0;
     while (LinesReversed <= LinesOfContext)
@@ -925,7 +933,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
         {
           TabCount = 0;
           SpaceCount = 0;
-          if (T->Type == CTokenType_Newline)
+          if (TokenShouldModifyLineCount(T))
           {
             PrintTray(ParseErrorCursor, Parser->LineNumber, MaxTrayWidth);
           }
@@ -1045,11 +1053,11 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
 
 
-    if (LastTokenBeforeErrorMessage && LastTokenBeforeErrorMessage->Type == CTokenType_Newline)
+    if (TokenShouldModifyLineCount(LastTokenBeforeErrorMessage))
     {
       PrintTray(ParseErrorCursor, Parser->LineNumber, MaxTrayWidth);
     }
-    else if (LastTokenBeforeErrorMessage && LastTokenBeforeErrorMessage->Type == CTokenType_EscapedNewline)
+    else
     {
       PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
     }
@@ -1142,10 +1150,19 @@ ParseError_StreamEndedUnexpectedly(parser *Parser)
   return Result;
 }
 
+#define ParseErrorTokenHelper(T) \
+  (T) ? ToString((T)->Type) : Unknown, (T) ? (T)->Value : Unknown
+
 bonsai_function counted_string
 ParseError_ExpectedSemicolonOrEquals(parser *Parser, c_token *T)
 {
-  counted_string Result = FormatCountedString_(TranArena, CSz("Got %S(%S)\n\nExpected %S(%c) or %S(%c) while parsing variable declaration."), ToString(T->Type), T->Value, ToString(CTokenType_Semicolon), CTokenType_Semicolon, ToString(CTokenType_Equals), CTokenType_Equals );
+  counted_string Unknown = CSz("unknown");
+  counted_string Result =
+    FormatCountedString_(TranArena, CSz("Got %S(%S)\n\nExpected %S(%c) or %S(%c) while parsing variable declaration."),
+        ParseErrorTokenHelper(T),
+        ToString(CTokenType_Semicolon), CTokenType_Semicolon,
+        ToString(CTokenType_Equals), CTokenType_Equals );
+
   ParseError(Parser, ParseErrorCode_ExpectedSemicolonOrEquals, Result, PeekTokenPointer(Parser) );
   return Result;
 }
@@ -1153,10 +1170,11 @@ ParseError_ExpectedSemicolonOrEquals(parser *Parser, c_token *T)
 bonsai_function counted_string
 ParseError_RequireTokenFailed(parser *Parser, c_token *Got, c_token *Expected)
 {
+  counted_string Unknown = CSz("unknown");
   counted_string Result = FormatCountedString(TranArena,
                                                     CSz("Require Token Failed \n\nGot      %S(%S)\nExpected %S(%S)"),
-                                                    ToString(Got->Type), Got->Value,
-                                                    ToString(Expected->Type), Expected->Value);
+                                                    ParseErrorTokenHelper(Got),
+                                                    ParseErrorTokenHelper(Expected));
 
   ParseError(Parser, ParseErrorCode_RequireTokenFailed, Result, Got);
   return Result;
