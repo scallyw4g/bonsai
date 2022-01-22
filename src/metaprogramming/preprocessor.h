@@ -540,7 +540,20 @@ struct c_token
   };
 
 };
-meta(generate_cursor(c_token))
+
+enum token_cursor_source
+{
+  TokenCursorSource_Unknown,
+
+  TokenCursorSource_RootFile,
+  TokenCursorSource_Include,
+  TokenCursorSource_MacroExpansion,
+  TokenCursorSource_MetaprogrammingExpansion,
+};
+
+// TODO(Jesse): Add a way to append additional members to generated datatypes
+// then reenable this.
+/* meta(generate_cursor(c_token)) */
 #include <metaprogramming/output/generate_cursor_c_token.h>
 
 meta(buffer(c_token))
@@ -584,9 +597,6 @@ struct parser
 
   counted_string Filename;
   u32 LineNumber;
-
-  parser *Prev;
-  parser *Next;
 };
 meta(generate_cursor(parser))
 #include <metaprogramming/output/generate_cursor_parser.h>
@@ -1310,9 +1320,11 @@ CToken(c_token_type Type, counted_string Value = CSz(""))
 }
 
 c_token_cursor
-AllocateTokenBuffer(memory_arena* Memory, u32 Count)
+AllocateTokenBuffer(memory_arena* Memory, u32 Count, token_cursor_source Source)
 {
-  c_token_cursor Result = {};
+  c_token_cursor Result = {
+    .Source = Source
+  };
   Result.Start = AllocateProtection(c_token, Memory, Count, False);
   Result.At = Result.Start;
   Result.End = Result.Start + Count;
@@ -1320,50 +1332,15 @@ AllocateTokenBuffer(memory_arena* Memory, u32 Count)
   return Result;
 }
 
-// TODO(Jesse): Rewrite one of these in terms of the other.  There's also code
-// in the Push() function for the parser_stream type that might be useful to
-// look at.
-//
-// @parser_allocation_duplication
-bonsai_function parser*
-AllocateParserPtr(counted_string Filename, u32 LineNumber, u32 TokenCount, u32 OutputBufferTokenCount, memory_arena *Memory)
-{
-  parser *Result = AllocateProtection(parser, Memory, 1, False);
-
-  Result->Valid = 1;
-  Result->LineNumber = LineNumber;
-  Result->Filename = Filename;
-
-  Result->Tokens = AllocateTokenBuffer(Memory, TokenCount);
-  if (!Result->Tokens.Start)
-  {
-    Error("Allocating Token Buffer");
-    return Result;
-  }
-
-  if (OutputBufferTokenCount)
-  {
-    Result->OutputTokens = AllocateTokenBuffer(Memory, OutputBufferTokenCount);
-    if (!Result->OutputTokens.Start)
-    {
-      Error("Allocating OutputTokens Buffer");
-      return Result;
-    }
-  }
-
-  return Result;
-}
-
-// @parser_allocation_duplication
 bonsai_function parser
-AllocateParser(counted_string Filename, u32 LineNumber, u32 TokenCount, u32 OutputBufferTokenCount, memory_arena *Memory)
+AllocateParser(counted_string Filename, u32 LineNumber, u32 TokenCount, token_cursor_source Source, u32 OutputBufferTokenCount, memory_arena *Memory)
 {
   parser Result = {
     .Filename = Filename,
     .LineNumber = LineNumber,
   };
 
-  Result.Tokens = AllocateTokenBuffer(Memory, TokenCount);
+  Result.Tokens = AllocateTokenBuffer(Memory, TokenCount, Source);
   if (!Result.Tokens.Start)
   {
     Error("Allocating Token Buffer");
@@ -1372,7 +1349,7 @@ AllocateParser(counted_string Filename, u32 LineNumber, u32 TokenCount, u32 Outp
 
   if (OutputBufferTokenCount)
   {
-    Result.OutputTokens = AllocateTokenBuffer(Memory, OutputBufferTokenCount);
+    Result.OutputTokens = AllocateTokenBuffer(Memory, OutputBufferTokenCount, Source);
     if (!Result.OutputTokens.Start)
     {
       Error("Allocating OutputTokens Buffer");
@@ -1380,6 +1357,14 @@ AllocateParser(counted_string Filename, u32 LineNumber, u32 TokenCount, u32 Outp
     }
   }
 
+  return Result;
+}
+
+bonsai_function parser*
+AllocateParserPtr(counted_string Filename, u32 LineNumber, u32 TokenCount, token_cursor_source Source, u32 OutputBufferTokenCount, memory_arena *Memory)
+{
+  parser *Result = AllocateProtection(parser, Memory, 1, False);
+  *Result = AllocateParser(Filename, LineNumber, TokenCount, Source, OutputBufferTokenCount, Memory);
   return Result;
 }
 

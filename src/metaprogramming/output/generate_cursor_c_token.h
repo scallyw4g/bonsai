@@ -4,6 +4,12 @@
       c_token* Start;
       c_token* End;
       c_token* At;
+
+      c_token_cursor *Next;
+      c_token_cursor *Prev;
+
+      counted_string Filename;
+      token_cursor_source Source;
     };
 
     bonsai_function c_token_cursor

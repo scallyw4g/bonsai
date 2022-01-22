@@ -121,7 +121,7 @@ bonsai_function void
 TestBasicTokenizationAndParsing(memory_arena* Memory)
 {
   parse_context Ctx = { .Memory = Memory };
-  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor_basic.cpp"));
+  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor_basic.cpp"), TokenCursorSource_RootFile);
 
   if (Parser)
   {
@@ -658,7 +658,7 @@ bonsai_function void
 TestPeekAndPopTokens(memory_arena* Memory)
 {
   parse_context Ctx = { .Memory = Memory };
-  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor_peek_pop.cpp"));
+  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor_peek_pop.cpp"), TokenCursorSource_RootFile);
 
   if (Parser)
   {
@@ -815,7 +815,7 @@ TestStructParsing(memory_arena* Memory)
 {
   parse_context Ctx = { .Memory = Memory };
 
-  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor_datatypes.cpp"));
+  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor_datatypes.cpp"), TokenCursorSource_RootFile);
 
   if (Parser)
   {
@@ -834,7 +834,7 @@ bonsai_function void
 TestCommentSituation(memory_arena* Memory)
 {
   parse_context Ctx = { .Memory = Memory };
-  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/comments.cpp"));
+  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/comments.cpp"), TokenCursorSource_RootFile);
 
   if (Parser)
   {
@@ -893,7 +893,7 @@ TestAst(memory_arena *Memory)
     .Memory = Memory,
   };
 
-  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/should_parse.cpp"));
+  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/should_parse.cpp"), TokenCursorSource_RootFile);
   if (Parser)
   {
     Ctx.CurrentParser = Parser;
@@ -923,7 +923,7 @@ TestMacrosAndIncludes(memory_arena *Memory)
     .Memory = Memory,
   };
 
-  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/macro_and_include_test.cpp"));
+  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/macro_and_include_test.cpp"), TokenCursorSource_RootFile);
 
   if (Parser)
   {
@@ -1140,7 +1140,7 @@ TestIncludeGuards(memory_arena *Memory)
     .Memory = Memory,
   };
 
-  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/include_guard0.cpp"));
+  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/include_guard0.cpp"), TokenCursorSource_RootFile);
   if (Parser)
   {
     Ctx.CurrentParser = Parser;
@@ -1163,7 +1163,7 @@ TestDefinesAndConditionals(memory_arena *Memory)
     .Memory = Memory,
   };
 
-  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/defines_and_conditionals.cpp"));
+  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/defines_and_conditionals.cpp"), TokenCursorSource_RootFile);
   if (Parser)
   {
     Ctx.CurrentParser = Parser;
@@ -1193,7 +1193,7 @@ TestLogicalOperators(memory_arena *Memory)
     .Memory = Memory,
   };
 
-  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/logical_operators.cpp"));
+  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/logical_operators.cpp"), TokenCursorSource_RootFile);
   if (Parser)
   {
     Ctx.CurrentParser = Parser;
@@ -1214,7 +1214,7 @@ TestLogicalOperators(memory_arena *Memory)
 
 #define MAX_PARSERS_IN_PARSER_BLOCK 8
 bonsai_function b32
-ParserChainIntegrityPasses(parser *Mem)
+ParserChainIntegrityPasses(c_token_cursor *Mem)
 {
   CAssert(MAX_PARSERS_IN_PARSER_BLOCK == 8);
   b32 Result =
@@ -1239,12 +1239,12 @@ ParserChainIntegrityPasses(parser *Mem)
 }
 
 bonsai_function void
-LinkParserBlocks(parser *Mem, u32 ParserCount)
+LinkParserBlocks(c_token_cursor *Mem, u32 ParserCount)
 {
-  parser *Prev = 0;
+  c_token_cursor *Prev = 0;
   for (u32 ParserIndex = 0; ParserIndex < ParserCount ; ++ParserIndex)
   {
-    parser *At = Mem+ParserIndex;
+    c_token_cursor *At = Mem+ParserIndex;
 
     At->Next = 0;
     At->Prev = Prev;
@@ -1259,16 +1259,16 @@ LinkParserBlocks(parser *Mem, u32 ParserCount)
 bonsai_function void
 TestDoublyLinkedListSwap()
 {
-  parser Mem[MAX_PARSERS_IN_PARSER_BLOCK] = {};
+  c_token_cursor Mem[MAX_PARSERS_IN_PARSER_BLOCK] = {};
 
-  parser *Mem0 = Mem;
-  parser *Mem1 = Mem+1;
-  parser *Mem2 = Mem+2;
-  parser *Mem3 = Mem+3;
-  parser *Mem4 = Mem+4;
-  parser *Mem5 = Mem+5;
-  parser *Mem6 = Mem+6;
-  parser *Mem7 = Mem+7;
+  c_token_cursor *Mem0 = Mem;
+  c_token_cursor *Mem1 = Mem+1;
+  c_token_cursor *Mem2 = Mem+2;
+  c_token_cursor *Mem3 = Mem+3;
+  c_token_cursor *Mem4 = Mem+4;
+  c_token_cursor *Mem5 = Mem+5;
+  c_token_cursor *Mem6 = Mem+6;
+  c_token_cursor *Mem7 = Mem+7;
 
 
   { // Test swaps work once
@@ -1519,7 +1519,7 @@ TestParserChain(memory_arena *Memory)
     .Memory = Memory,
   };
 
-  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/parser_chain.cpp"));
+  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/parser_chain.cpp"), TokenCursorSource_RootFile);
   if (Parser)
   {
     RequireToken(Parser, CToken(CSz("parser_token_0")));
@@ -1551,7 +1551,7 @@ TestErrors(memory_arena *Memory)
 /*     Global_DoRuntimeBreak = False; */
 /*     parse_context Ctx = { .Memory = Memory }; */
 /*     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error0.cpp"); */
-/*     parser *Parser = ParserForFile(&Ctx, ParserFilename); */
+/*     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile); */
 /*     Ctx.CurrentParser = Parser; */
 /*     ParseDatatypes(&Ctx); */
 /*     Global_DoRuntimeBreak = True; */
@@ -1567,7 +1567,7 @@ TestErrors(memory_arena *Memory)
 /*     Global_DoRuntimeBreak = False; */
 /*     parse_context Ctx = { .Memory = Memory }; */
 /*     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error1.cpp"); */
-/*     parser *Parser = ParserForFile(&Ctx, ParserFilename); */
+/*     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile); */
 /*     Ctx.CurrentParser = Parser; */
 /*     ParseDatatypes(&Ctx); */
 /*     Global_DoRuntimeBreak = True; */
@@ -1583,7 +1583,7 @@ TestErrors(memory_arena *Memory)
 /*     Global_DoRuntimeBreak = False; */
 /*     parse_context Ctx = { .Memory = Memory }; */
 /*     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error2.cpp"); */
-/*     parser *Parser = ParserForFile(&Ctx, ParserFilename); */
+/*     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile); */
 /*     Ctx.CurrentParser = Parser; */
 /*     ParseDatatypes(&Ctx); */
 /*     Global_DoRuntimeBreak = True; */
@@ -1599,7 +1599,7 @@ TestErrors(memory_arena *Memory)
 /*     Global_DoRuntimeBreak = False; */
 /*     parse_context Ctx = { .Memory = Memory }; */
 /*     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error3.cpp"); */
-/*     parser *Parser = ParserForFile(&Ctx, ParserFilename); */
+/*     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile); */
 /*     Ctx.CurrentParser = Parser; */
 /*     ParseDatatypes(&Ctx); */
 /*     Global_DoRuntimeBreak = True; */
@@ -1615,7 +1615,7 @@ TestErrors(memory_arena *Memory)
 /*     Global_DoRuntimeBreak = False; */
 /*     parse_context Ctx = { .Memory = Memory }; */
 /*     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error4.cpp"); */
-/*     parser *Parser = ParserForFile(&Ctx, ParserFilename); */
+/*     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile); */
 /*     Ctx.CurrentParser = Parser; */
 /*     ParseDatatypes(&Ctx); */
 /*     Global_DoRuntimeBreak = True; */
@@ -1632,7 +1632,7 @@ TestErrors(memory_arena *Memory)
 /*     Global_DoRuntimeBreak = False; */
 /*     parse_context Ctx = { .Memory = Memory }; */
 /*     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error5.cpp"); */
-/*     parser *Parser = ParserForFile(&Ctx, ParserFilename); */
+/*     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile); */
 /*     Ctx.CurrentParser = Parser; */
 /*     ParseDatatypes(&Ctx); */
 /*     Global_DoRuntimeBreak = True; */
@@ -1650,7 +1650,7 @@ TestErrors(memory_arena *Memory)
 /*     Global_DoRuntimeBreak = False; */
 /*     parse_context Ctx = { .Memory = Memory }; */
 /*     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error6.cpp"); */
-/*     parser *Parser = ParserForFile(&Ctx, ParserFilename); */
+/*     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile); */
 /*     Ctx.CurrentParser = Parser; */
 /*     ParseDatatypes(&Ctx); */
 /*     Global_DoRuntimeBreak = True; */
@@ -1667,7 +1667,7 @@ TestErrors(memory_arena *Memory)
     Global_DoRuntimeBreak = False;
     parse_context Ctx = { .Memory = Memory };
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error7.cpp");
-    parser *Parser = ParserForFile(&Ctx, ParserFilename);
+    parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
     Global_DoRuntimeBreak = True;
@@ -1690,7 +1690,7 @@ TestLineNumbers(memory_arena *Memory)
   {
     parse_context Ctx = { .Memory = Memory };
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error5.cpp");
-    parser *Parser = ParserForFile(&Ctx, ParserFilename);
+    parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
 
     TestThat(Parser->LineNumber == 1);
     TestThat(OptionalTokenRaw(Parser, CT_PreprocessorDefine));
@@ -1718,6 +1718,41 @@ TestLineNumbers(memory_arena *Memory)
     TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
     TestThat(Parser->LineNumber == 5);
     TestThat(PeekTokenRawPointer(Parser) == 0);
+  }
+
+  {
+    parse_context Ctx = { .Memory = Memory };
+    counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error7.cpp");
+    parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
+
+    TestThat(Parser->LineNumber == 1);
+    TestThat(OptionalTokenRaw(Parser, CT_PreprocessorInclude));
+    TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
+    TestThat(OptionalTokenRaw(Parser, CTokenType_LT));
+    TestThat(OptionalTokenRaw(Parser, CToken(CSz("src"))));
+    TestThat(OptionalTokenRaw(Parser, CTokenType_FSlash));
+    TestThat(OptionalTokenRaw(Parser, CToken(CSz("tests"))));
+    TestThat(OptionalTokenRaw(Parser, CTokenType_FSlash));
+    TestThat(OptionalTokenRaw(Parser, CToken(CSz("fixtures"))));
+    TestThat(OptionalTokenRaw(Parser, CTokenType_FSlash));
+    TestThat(OptionalTokenRaw(Parser, CToken(CSz("preprocessor"))));
+    TestThat(OptionalTokenRaw(Parser, CTokenType_FSlash));
+    TestThat(OptionalTokenRaw(Parser, CToken(CSz("random_define"))));
+    TestThat(OptionalTokenRaw(Parser, CTokenType_Dot));
+    TestThat(OptionalTokenRaw(Parser, CToken(CSz("cpp"))));
+    TestThat(OptionalTokenRaw(Parser, CTokenType_GT));
+    TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
+    TestThat(Parser->LineNumber == 2);
+
+    TestThat(OptionalTokenRaw(Parser, CT_PreprocessorDefine));
+    TestThat(Parser->LineNumber == 1);
+    TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
+    TestThat(OptionalTokenRaw(Parser, CToken(CT_MacroLiteral, CSz("foo"))));
+    TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
+    TestThat(OptionalTokenRaw(Parser, CToken(CSz("bar"))));
+    TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
+    TestThat(Parser->LineNumber == 2);
+
   }
 
 }

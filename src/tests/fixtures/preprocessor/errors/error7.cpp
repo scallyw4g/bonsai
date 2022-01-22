@@ -1,4 +1,4 @@
-#include <src/tests/fixtures/preprocessor/random_define.cpp> break_here
+#include <src/tests/fixtures/preprocessor/random_define.cpp>
 
-int foo Assert(132151)
+int foo 132151
 
