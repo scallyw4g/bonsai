@@ -446,6 +446,12 @@ Reallocate(u8* Allocation, memory_arena* Arena, umm CurrentSize, umm RequestedSi
       }
       else
       {
+        // TODO(Jesse): Should this acutally just reallocate a buffer large
+        // enough to accomodate the whole request?  Probably not because that
+        // would leak memory, but maybe that's fine?
+        //
+        // Alternatively, is there some way we can analyze the calling code to
+        // ensure this case never happens?
         Error("Unable to reallocate : Arena didn't have enough space left to accommodate %lu bytes.", Diff);
       }
     }

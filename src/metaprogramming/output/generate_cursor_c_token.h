@@ -9,7 +9,10 @@
       c_token_cursor *Prev;
 
       counted_string Filename;
+
       token_cursor_source Source;
+      u32 StartLine;
+      u32 EndLine;
     };
 
     bonsai_function c_token_cursor

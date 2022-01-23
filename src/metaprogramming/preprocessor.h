@@ -1320,7 +1320,7 @@ CToken(c_token_type Type, counted_string Value = CSz(""))
 }
 
 c_token_cursor
-AllocateTokenBuffer(memory_arena* Memory, u32 Count, token_cursor_source Source)
+AllocateTokenBuffer(memory_arena* Memory, u32 Count, token_cursor_source Source, u32 LineNumber)
 {
   c_token_cursor Result = {
     .Source = Source
@@ -1328,6 +1328,7 @@ AllocateTokenBuffer(memory_arena* Memory, u32 Count, token_cursor_source Source)
   Result.Start = AllocateProtection(c_token, Memory, Count, False);
   Result.At = Result.Start;
   Result.End = Result.Start + Count;
+  Result.StartLine = LineNumber;
 
   return Result;
 }
@@ -1340,7 +1341,7 @@ AllocateParser(counted_string Filename, u32 LineNumber, u32 TokenCount, token_cu
     .LineNumber = LineNumber,
   };
 
-  Result.Tokens = AllocateTokenBuffer(Memory, TokenCount, Source);
+  Result.Tokens = AllocateTokenBuffer(Memory, TokenCount, Source, LineNumber);
   if (!Result.Tokens.Start)
   {
     Error("Allocating Token Buffer");
@@ -1349,7 +1350,7 @@ AllocateParser(counted_string Filename, u32 LineNumber, u32 TokenCount, token_cu
 
   if (OutputBufferTokenCount)
   {
-    Result.OutputTokens = AllocateTokenBuffer(Memory, OutputBufferTokenCount, Source);
+    Result.OutputTokens = AllocateTokenBuffer(Memory, OutputBufferTokenCount, Source, LineNumber);
     if (!Result.OutputTokens.Start)
     {
       Error("Allocating OutputTokens Buffer");

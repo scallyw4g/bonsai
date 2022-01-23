@@ -347,7 +347,7 @@ FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
 {
   TIMED_FUNCTION();
 
-  umm FinalBufferStartingSize = FS.Count;
+  umm FinalBufferStartingSize = FS.Count + 64;
   char* FinalBuffer = AllocateProtection(char, Memory, FinalBufferStartingSize, False);
 
   char_cursor DestCursor = {
