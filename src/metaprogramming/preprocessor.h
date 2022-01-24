@@ -1208,7 +1208,7 @@ enum output_mode
 };
 
 
-#define PrintTokenOut(Dest, S) if (Dest) { CopyToDest(Dest, S); } else { DebugChars(S); }
+#define PrintTokenOut(Dest, S) if (Dest) { CopyToDest(Dest, S); } else { DebugChars(CSz("%S"), S); }
 
 inline void
 PrintToken(c_token *Token, char_cursor *Dest = 0)

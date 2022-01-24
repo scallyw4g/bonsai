@@ -1,3 +1,6 @@
+/* CAssert(char == 8); */
+/* #define static_assert(...) */
+
 #define PI64 (3.1415926535897932384626433832795028841971693993)
 #define PI32 ((float)PI64)
 

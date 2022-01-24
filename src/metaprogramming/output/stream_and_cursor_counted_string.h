@@ -1,4 +1,11 @@
 
+
+bonsai_function void
+TestFunc()
+{
+  int foo = 32;
+  Assert(foo);
+}
     
     struct counted_string_cursor
     {

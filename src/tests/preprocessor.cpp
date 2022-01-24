@@ -1547,6 +1547,7 @@ bonsai_function void
 TestErrors(memory_arena *Memory)
 {
 
+#if 1
   {
     Global_DoRuntimeBreak = False;
     parse_context Ctx = { .Memory = Memory };
@@ -1677,6 +1678,7 @@ TestErrors(memory_arena *Memory)
     TestThat( OptionalToken(Parser, CToken(132151)) );
     DumpEntireParser(Parser);
   }
+#endif
 
 #if 0
   {
@@ -1697,12 +1699,25 @@ TestErrors(memory_arena *Memory)
   }
 #endif
 
+#if 0
+  {
+    Global_DoRuntimeBreak = True;
+    parse_context Ctx = { .Memory = Memory };
+    counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error9.cpp");
+    parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
+    Ctx.CurrentParser = Parser;
+    ParseDatatypes(&Ctx);
+    DumpEntireParser(Parser);
+  }
+#endif
+
 }
 
 void
 TestLineNumbers(memory_arena *Memory)
 {
 
+#if 1
   {
     parse_context Ctx = { .Memory = Memory };
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error5.cpp");
@@ -1883,6 +1898,7 @@ TestLineNumbers(memory_arena *Memory)
     TestThat(Parser->Tokens.At == Parser->Tokens.Start);
     TestThat(Parser->Tokens.Prev == 0);
   }
+#endif
 
 #if 0
   {
@@ -1901,7 +1917,7 @@ main(s32 ArgCount, const char** Args)
 {
   TestSuiteBegin("Preprocessor", ArgCount, Args);
 
-  /* Global_LogLevel = LogLevel_Debug; */
+  Global_LogLevel = LogLevel_Debug;
   Global_LogLevel = LogLevel_Shush;
 
 

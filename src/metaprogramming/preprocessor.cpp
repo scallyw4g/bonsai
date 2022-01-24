@@ -218,7 +218,7 @@ SanityCheckParserChain(parser *Parser)
 #endif
 
 bonsai_function c_token *
-PeekTokenRawReverse(c_token_cursor *Tokens)
+PeekTokenRawReversePointer(c_token_cursor *Tokens)
 {
   c_token *Result = 0;
   if (Tokens->At > Tokens->Start)
@@ -227,16 +227,16 @@ PeekTokenRawReverse(c_token_cursor *Tokens)
   }
   else if (Tokens->Prev)
   {
-    Result = PeekTokenRawReverse(Tokens->Prev);
+    Result = PeekTokenRawReversePointer(Tokens->Prev);
   }
 
   return Result;
 }
 
 bonsai_function c_token *
-PeekTokenRawReverse(parser *Parser)
+PeekTokenRawReversePointer(parser *Parser)
 {
-  c_token *Result = PeekTokenRawReverse(&Parser->Tokens);
+  c_token *Result = PeekTokenRawReversePointer(&Parser->Tokens);
   return Result;
 }
 
@@ -450,7 +450,8 @@ IsComment(c_token T)
 bonsai_function umm
 Remaining(parser* Parser)
 {
-  umm Result = Remaining(&Parser->Tokens);
+  umm Result = 0;
+  if (Parser->Valid) { Result = Remaining(&Parser->Tokens); }
   return Result;
 }
 
@@ -573,7 +574,7 @@ ParseMacroArgument(parser* Parser, c_token_buffer *Result)
 
   u32 Depth = 0;
   b32 Done = False;
-  while (!Done && Remaining(&Parser->Tokens))
+  while (!Done && Remaining(Parser))
   {
     c_token T = PeekTokenRaw(Parser);
     if (Depth == 0 && T.Type == CTokenType_Comma)
@@ -594,7 +595,7 @@ ParseMacroArgument(parser* Parser, c_token_buffer *Result)
 
   Result->Count = (umm)(Parser->Tokens.At - Result->Start);
 
-  if (Remaining(&Parser->Tokens)) RequireToken(Parser, CTokenType_Comma);
+  if (Remaining(Parser)) RequireToken(Parser, CTokenType_Comma);
 
   return;
 }
@@ -603,7 +604,7 @@ bonsai_function counted_string
 EatUntilExcluding(parser* Parser, c_token_type Close)
 {
   string_from_parser Builder = StartStringFromParser(Parser);
-  while (Remaining(&Parser->Tokens))
+  while (Remaining(Parser))
   {
     if(PeekTokenRaw(Parser).Type == Close)
     {
@@ -622,7 +623,7 @@ bonsai_function counted_string
 EatUntilIncluding(parser* Parser, c_token_type Close)
 {
   string_from_parser Builder = StartStringFromParser(Parser);
-  while (Remaining(&Parser->Tokens))
+  while (Remaining(Parser))
   {
     if(PopTokenRaw(Parser).Type == Close)
     {
@@ -669,14 +670,16 @@ DumpChain(parser* Parser, u32 LinesToDump = u32_MAX)
 
   while(Cursor->Prev) Cursor = Cursor->Prev;
 
-  Debug("---- At Line (%d) ----", Parser->LineNumber);
+  Debug("-------------------- Dumping Cursor -- At Line (%d) ----------------------------", Parser->LineNumber);
 
   u32 Index = 0;
   while (Cursor)
   {
-    Debug("");
     DumpSingle(Cursor, At);
-    Debug("\n^ Link(%d) Cursor Start/End (%d/%d) ^", Index, Cursor->StartLine, Cursor->EndLine);
+    Debug("\n%S^%S Link(%d) Cursor Start/End (%d/%d) %S^%S",
+        TerminalColors.Blue, TerminalColors.White,
+        Index, Cursor->StartLine, Cursor->EndLine,
+        TerminalColors.Blue, TerminalColors.White);
     Cursor = Cursor->Next;
     ++Index;
   }
@@ -935,6 +938,8 @@ GetLongestLineInCursor(char_cursor *Cursor)
 bonsai_function void
 ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessage, c_token* ErrorToken = 0)
 {
+  if (!Parser->Valid) return;
+
   if (!ErrorToken) ErrorToken = Parser->Tokens.At;
 
   char_cursor ParseErrorCursor_ = {};
@@ -1047,7 +1052,9 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
     { // Output the error line message
 
-      if (!PeekTokenRawPointer(Parser) && PeekTokenRawReverse(Parser)->Type != CTokenType_Newline)
+      c_token *NextT = PeekTokenRawPointer(Parser);
+      c_token *PrevT = PeekTokenRawReversePointer(Parser);
+      if (!NextT && PrevT && PrevT->Type != CTokenType_Newline)
       {
         CopyToDest(ParseErrorCursor, '\n');
       }
@@ -1434,14 +1441,14 @@ PopTokenRaw(parser* Parser)
   c_token Result = PeekTokenRaw(Parser);
   AdvanceParser(Parser);
 
+#if BONSAI_INTERNAL
   if (DEBUG_CHECK_FOR_BREAK_HERE(Result))
   {
     RuntimeBreak();
-    if (Remaining(&Parser->Tokens)) { AdvanceParser(Parser); }
+    if (Remaining(Parser)) { AdvanceParser(Parser); }
     Result = PopTokenRaw(Parser);
   }
 
-#if BONSAI_INTERNAL
   Assert(!StringsMatch(Result.Value, CSz("break_here")));
 #endif
 
@@ -1483,7 +1490,7 @@ PopToken(parser* Parser)
   if (DEBUG_CHECK_FOR_BREAK_HERE(Result))
   {
     RuntimeBreak();
-    if (Remaining(&Parser->Tokens)) { AdvanceParser(Parser); }
+    if (Remaining(Parser)) { AdvanceParser(Parser); }
     Result = PopToken(Parser);
   }
 
@@ -1591,9 +1598,10 @@ RequireTokenRaw(parser *Parser, c_token Expected )
   }
   else
   {
-    Assert(False);
+    ParseError(Parser, ParseErrorCode_RequireTokenFailed, CSz("RequireTokenRaw Failed."));
     Result = {};
   }
+
   return Result;
 }
 
@@ -1608,9 +1616,10 @@ RequireTokenRaw(parser *Parser, c_token_type Expected )
   }
   else
   {
-    Assert(False);
+    ParseError(Parser, ParseErrorCode_RequireTokenFailed, CSz("RequireTokenRaw Failed."));
     Result = {};
   }
+
   return Result;
 }
 
@@ -2093,7 +2102,7 @@ EatSpacesTabsAndEscapedNewlines(parser *Parser)
 bonsai_function void
 EatWhitespace(parser* Parser)
 {
-  while (Remaining(&Parser->Tokens) &&
+  while (Remaining(Parser) &&
          IsWhitespace(PeekTokenRaw(Parser).Type))
   {
     PopTokenRaw(Parser);
@@ -2508,10 +2517,19 @@ CountTokensBeforeNext(parser *Parser, c_token_type T1, c_token_type T2)
 
 
 
+bonsai_function c_token_cursor *
+WalkToEnd(c_token_cursor *Cursor)
+{
+  c_token_cursor *Result = Cursor;
+  while (Result->Next) Result = Result->Next;
+  return Result;
+}
 
-bonsai_function void
+bonsai_function c_token_cursor *
 SplitAndInsertTokenCursor(c_token_cursor *CursorToSplit, c_token* SplitStart, u32 LineNumber, c_token_cursor *CursorToInsert, c_token* SplitEnd, memory_arena *Memory)
 {
+  c_token_cursor *Result = WalkToEnd(CursorToInsert);
+
   SanityCheckParserChain(CursorToSplit);
   SanityCheckParserChain(CursorToInsert);
 
@@ -2614,13 +2632,13 @@ SplitAndInsertTokenCursor(c_token_cursor *CursorToSplit, c_token* SplitStart, u3
     Assert(SecondHalfOfSplit->EndLine == 0);
   }
 
-  return;
+  return Result;
 }
 
-bonsai_function void
+bonsai_function c_token_cursor *
 SplitAndInsertTokenCursor(c_token_cursor *CursorToSplit, u32 LineNumber, c_token_cursor *CursorToInsert, memory_arena *Memory)
 {
-  SplitAndInsertTokenCursor(CursorToSplit, CursorToSplit->At, LineNumber, CursorToInsert, CursorToSplit->At, Memory);
+  return SplitAndInsertTokenCursor(CursorToSplit, CursorToSplit->At, LineNumber, CursorToInsert, CursorToSplit->At, Memory);
 }
 
 bonsai_function parser *
@@ -2795,10 +2813,8 @@ MacroShouldBeExpanded(parser *Parser, c_token *T, macro_def *Macro)
 }
 
 bonsai_function void
-SkipCursor(c_token_cursor *At, c_token_cursor *ToSkip)
+SkipToEndOfCursor(c_token_cursor *At, c_token_cursor *ToSkip)
 {
-  Assert(At->Next == ToSkip);
-
   if (ToSkip->Next)
   {
     DoublyLinkedListSwap(At, ToSkip->Next);
@@ -3493,15 +3509,32 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
     {
       case CT_PreprocessorInclude:
       {
+        debug_global u32 HitCount = 0;
+
+        /* Debug("%SHITCOUNT == %d%S", TerminalColors.Red, HitCount, TerminalColors.White); */
+
         parser *IncludeParser = ResolveInclude(Ctx, Result);
         EraseSectionOfParser(Result, T, Result->Tokens.At);
         RequireTokenRaw(Result, CTokenType_Newline);
 
         if (IncludeParser)
         {
-          SplitAndInsertTokenCursor(&Result->Tokens, Result->LineNumber, &IncludeParser->Tokens, Memory);
-          SkipCursor(&Result->Tokens, &IncludeParser->Tokens);
+          /* if (HitCount == 2) */
+          {
+            /* DumpChain(IncludeParser); */
+          }
+
+          c_token_cursor *LastCursorOfChain = SplitAndInsertTokenCursor(&Result->Tokens, Result->LineNumber, &IncludeParser->Tokens, Memory);
+          SkipToEndOfCursor(&Result->Tokens, LastCursorOfChain);
+
+          /* if (HitCount == 1) */
+          {
+            /* DumpChain(Result); */
+            /* exit(0); */
+          }
         }
+
+        ++HitCount;
 
       } break;
 
@@ -3514,8 +3547,8 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
             if (MacroShouldBeExpanded(Result, T, Macro))
             {
               parser *Expanded = ExpandMacro(Ctx, Result, Macro, Memory, True);
-              SplitAndInsertTokenCursor(&Result->Tokens, Result->LineNumber, &Expanded->Tokens, Memory);
-              SkipCursor(&Result->Tokens, &Expanded->Tokens);
+              c_token_cursor *LastCursorOfChain = SplitAndInsertTokenCursor(&Result->Tokens, Result->LineNumber, &Expanded->Tokens, Memory);
+              SkipToEndOfCursor(&Result->Tokens, LastCursorOfChain);
             }
             else
             {
@@ -3661,6 +3694,8 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       } break;
     }
   }
+
+  /* DumpChain(Result); */
 
   // Go through and erase preprocessor crap once everything's parsed out
   Rewind(Result);
@@ -4055,7 +4090,7 @@ ParseDiscriminatedUnion(parser* Parser, program_datatypes* Datatypes, counted_st
   if (OptionalToken(Parser, CTokenType_OpenBrace))
   {
     b32 Complete = False;
-    while (!Complete && Remaining(&Parser->Tokens))
+    while (!Complete && Remaining(Parser))
     {
       c_token Interior = PeekToken(Parser);
 
@@ -4409,7 +4444,7 @@ EatBetween(parser* Parser, c_token_type Open, c_token_type Close)
   RequireToken(Parser, Open);
 
   b32 Success = False;
-  while (Remaining(&Parser->Tokens))
+  while (Remaining(Parser))
   {
     c_token T = PopToken(Parser);
 
@@ -5366,19 +5401,24 @@ EraseToken(c_token *Token)
 bonsai_function void
 EraseSectionOfParser(parser *Parser, c_token *FirstToErase, c_token *OnePastLastToErase)
 {
-  Assert(FirstToErase <= OnePastLastToErase);
+  b32 E0 = (FirstToErase > OnePastLastToErase);
+  b32 E1 = (FirstToErase < Parser->Tokens.Start);
+  b32 E2 = (FirstToErase >= Parser->Tokens.End);
+  b32 E3 = (OnePastLastToErase <= Parser->Tokens.Start);
+  b32 E4 = (OnePastLastToErase > Parser->Tokens.End);
 
-  Assert(FirstToErase >= Parser->Tokens.Start);
-  Assert(FirstToErase <= Parser->Tokens.End);
-
-  Assert(OnePastLastToErase >= Parser->Tokens.Start);
-  Assert(OnePastLastToErase <= Parser->Tokens.End);
-
-
-  c_token *At = FirstToErase;
-  while (At < OnePastLastToErase)
+  if (E0 || E1 || E2 || E3 || E4)
   {
-    EraseToken(At++);
+    ParseError(Parser, CSz("Invalid token span passed to EraseSectionOfParser"));
+  }
+  else
+  {
+    c_token *At = FirstToErase;
+    while (At < OnePastLastToErase)
+    {
+      EraseToken(At++);
+    }
+
   }
 
   return;
@@ -5597,7 +5637,7 @@ ConcatTokensUntil(parser* Parser, c_token_type Close, memory_arena* Memory)
 {
   // TODO(Jesse  id: 225, tags: todos, easy): Rewrite with string_from_parser
   string_builder Builder = {};
-  while (Remaining(&Parser->Tokens) && PeekTokenRaw(Parser).Type != Close)
+  while (Remaining(Parser) && PeekTokenRaw(Parser).Type != Close)
   {
     Append(&Builder, PopTokenRaw(Parser).Value);
   }
