@@ -498,8 +498,6 @@ enum c_token_type
 
   CTokenType_Arrow,
 
-  CT_Pragma,
-
   CT_ScopeResolutionOperator,
   CT_NameQualifier,
 

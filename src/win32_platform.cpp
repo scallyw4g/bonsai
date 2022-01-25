@@ -1,6 +1,6 @@
 #include <chrono> // Timer
 
-#define BONSAI_MAIN(void) int CALLBACK WinMain( HINSTANCE AppHandle, HINSTANCE Ignored, LPSTR CmdLine, int CmdShow )
+#define BONSAI_MAIN() int CALLBACK WinMain( HINSTANCE AppHandle, HINSTANCE Ignored, LPSTR CmdLine, int CmdShow )
 
 global_variable HPALETTE global_hPalette;
 

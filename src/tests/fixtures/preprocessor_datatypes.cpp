@@ -35,3 +35,9 @@ struct thing4
    * also work */
   counted_string StringThing;
 };
+
+struct thing5
+{
+    int zero = 0;
+};
+

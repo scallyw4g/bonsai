@@ -1,4 +1,3 @@
-#define static_assert(...)
 #define CAssert(condition) static_assert((condition), #condition )
 
 #if BONSAI_INTERNAL

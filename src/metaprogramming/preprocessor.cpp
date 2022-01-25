@@ -3504,11 +3504,11 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
           }
           else if ( StringsMatch(PushT.Value, CSz("_Pragma")) )
           {
-            PushT.Type = CT_Pragma;
+            PushT.Type = CT_PreprocessorPragma;
           }
           else if ( StringsMatch(PushT.Value, CSz("__pragma")) )
           {
-            PushT.Type = CT_Pragma;
+            PushT.Type = CT_PreprocessorPragma;
           }
           else if ( StringsMatch(PushT.Value, CSz("extern")) )
           {
@@ -5084,6 +5084,7 @@ ParseFunctionOrVariableDecl(parse_context *Ctx)
           else
           {
             ParseExpression(Ctx, &Result.variable_decl.Value);
+            RequireToken(Parser, CTokenType_Semicolon);
           }
         }
         else if ( OptionalToken(Parser, CTokenType_Semicolon) )
@@ -6672,7 +6673,7 @@ ParseDatatypes(parse_context *Ctx)
 
     switch(T.Type)
     {
-      case CT_Pragma:
+      case CT_PreprocessorPragma:
       case CTokenType_Meta:
       {
         RequireToken(Parser, T.Type);

@@ -1,3 +1,5 @@
+/* #define BONSAI_LINUX (1) */
+
 #if BONSAI_WIN32
 #include <win32_platform.h>
 
@@ -5,7 +7,7 @@
 #include <posix_platform.h>
 #include <unix_platform.h>
 
-#elif EMCC
+#elif BONSAI_EMCC
 #include <posix_platform.h>
 #include <wasm_platform.h>
 
