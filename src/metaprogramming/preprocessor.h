@@ -1198,7 +1198,7 @@ struct todo_list_info
 struct string_from_parser
 {
   parser *Parser;
-  const char* Start;
+  c_token *StartToken;
 };
 
 enum output_mode
@@ -1435,47 +1435,50 @@ meta(generate_stream_iterator(struct_member))
 meta(generate_stream_push(struct_member))
 #include <metaprogramming/output/generate_stream_push_c_decl.h>
 
-bonsai_function string_from_parser
-StartStringFromParser(parser* Parser)
+bonsai_function b32
+Contains(parser *Parser, c_token *T)
 {
-  // NOTE(Jesse): This is completely broken if the string spans a parser chain link
-
-  string_from_parser Result = {
-    .Parser = Parser,
-    .Start = Parser->Tokens.At->Value.Start
-  };
+  b32 Result = False;
+  if (T >= Parser->Tokens.Start && T < Parser->Tokens.End)
+  {
+    Result = True;
+  }
   return Result;
 }
 
 bonsai_function counted_string
 FinalizeStringFromParser(string_from_parser* Builder)
 {
-  // NOTE(Jesse): This is completely broken if the string spans a parser chain link
-  //
-  // TODO(Jesse, tags: immediate): Detect the above case and allocate memory?
-  // Or.. maybe don't use the string_from_parser thing anymore?  On a cursory
-  // inspection of the codebase we could potentially make it an error to have
-  // that case occur.  I didn't find anywhere that case is ever defined to be
-  // valid.  IE. having an include path span a macro expansion or another
-  // include statement isn't a well defined program.
+  counted_string Result = {};
 
   parser *Parser = Builder->Parser;
-  umm Count = 0;
-  if (Parser->Tokens.At == Parser->Tokens.End && Parser->Tokens.At == Parser->Tokens.Start)
+  c_token *StartToken = Builder->StartToken;
+
+  if (Parser)
   {
-    // NOTE(Jesse): this is an erronious case .. a parser should never have 0 length
-    InvalidCodePath();
-  }
-  else if (Parser->Tokens.At == Parser->Tokens.End)
-  {
-    Count = (umm)(Parser->Tokens.At[-1].Value.Start - Builder->Start);
-  }
-  else
-  {
-    Count = (umm)(Parser->Tokens.At->Value.Start - Builder->Start);
+    if (Contains(Parser, StartToken))
+    {
+      umm Count = 0;
+      // NOTE(Jesse): This would be better if it excluded the At token, but
+      // unfortunately we wrote the calling code such that the At token is
+      // implicitly included, so we have to have this weird check.
+      if (Parser->Tokens.At == Parser->Tokens.End)
+      {
+        Count = (umm)(Parser->Tokens.At[-1].Value.Start - Builder->StartToken->Value.Start);
+      }
+      else
+      {
+        Count = (umm)(Parser->Tokens.At->Value.Start - Builder->StartToken->Value.Start);
+      }
+
+      Result = CS(Builder->StartToken->Value.Start, Count);
+    }
+    else
+    {
+      Warn(CSz("Unable to call FinalizeStringFromParser during EatBetween due to having spanned a parser chain link."));
+    }
   }
 
-  counted_string Result = CS(Builder->Start, Count);
   return Result;
 }
 

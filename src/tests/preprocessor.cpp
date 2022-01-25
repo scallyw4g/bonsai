@@ -1682,6 +1682,7 @@ TestErrors(memory_arena *Memory)
 
 #if 0
   {
+    // NOTE(Jesse): This test is still failing.
     Global_DoRuntimeBreak = False;
     parse_context Ctx = { .Memory = Memory };
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error8.cpp");
@@ -1699,15 +1700,16 @@ TestErrors(memory_arena *Memory)
   }
 #endif
 
-#if 0
+#if 1
   {
-    Global_DoRuntimeBreak = True;
+    Global_DoRuntimeBreak = False;
     parse_context Ctx = { .Memory = Memory };
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error9.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
     DumpEntireParser(Parser);
+    TestThat(Parser->Valid);
   }
 #endif
 
@@ -1812,12 +1814,8 @@ TestLineNumbers(memory_arena *Memory)
     TestThat(RewindParserUntil(Parser, CTokenType_Newline));
     TestThat(Parser->LineNumber == 3);
 
-    Global_DoRuntimeBreak = False;
-    DumpChain(Parser);
     TestThat(RewindParserUntil(Parser, CTokenType_Newline));
     TestThat(Parser->LineNumber == 2);
-    DumpChain(Parser);
-    Global_DoRuntimeBreak = True;
 
     TestThat(RewindParserUntil(Parser, CTokenType_Newline) == 0);
     TestThat(Parser->LineNumber == 1);
@@ -1902,6 +1900,7 @@ TestLineNumbers(memory_arena *Memory)
 
 #if 0
   {
+    // NOTE(Jesse): Debug code
     parse_context Ctx = { .Memory = Memory };
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error8.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
@@ -1918,7 +1917,7 @@ main(s32 ArgCount, const char** Args)
   TestSuiteBegin("Preprocessor", ArgCount, Args);
 
   Global_LogLevel = LogLevel_Debug;
-  Global_LogLevel = LogLevel_Shush;
+  /* Global_LogLevel = LogLevel_Shush; */
 
 
   memory_arena* Memory = AllocateArena();

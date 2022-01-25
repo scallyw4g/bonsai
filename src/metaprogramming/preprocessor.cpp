@@ -44,6 +44,7 @@ _Pragma("clang diagnostic pop") // unused-macros
 /*     void Thing2( TestMacro(int a1, int a2) ); */
 /* ) */
 
+
 bonsai_function c_token *      PeekTokenRawPointer(parser *Parser, u32 TokenLookahead = 0);
 bonsai_function c_token        PeekTokenRaw(parser *Parser, u32 Lookahead = 0);
 bonsai_function u32            OffsetOfNext(parser *Parser, u32 Offset, c_token_type Close);
@@ -71,10 +72,10 @@ bonsai_function void           TrimLeadingWhitespace(parser* Parser);
 
 // TODO(Jesse, immediate): Change this to a void return type.
 bonsai_function counted_string EatBetween(parser* Parser, c_token_type Open, c_token_type Close);
+bonsai_function b32 EatWhitespace(parser* Parser);
 
 bonsai_function b32            EatSpacesTabsAndEscapedNewlines(parser *Parser);
 
-bonsai_function void PrintTray(char_cursor *Dest, u32 LineNumber, u32 Columns);
 
 //
 // Preprocessor stuff
@@ -89,10 +90,27 @@ bonsai_function c_token* EatIfBlock(parser *Parser);
 
 bonsai_function void EraseToken(c_token *Token);
 bonsai_function void EraseSectionOfParser(parser *Parser, c_token *StartToken, c_token *OnePastLastToken);
+bonsai_function void SkipToEndOfCursor(c_token_cursor *At, c_token_cursor *ToSkip);
 
 bonsai_function void DumpLocalTokens(parser *Parser);
+bonsai_function void PrintTray(char_cursor *Dest, u32 LineNumber, u32 Columns);
 
 
+bonsai_function string_from_parser
+StartStringFromParser(parser* Parser)
+{
+  c_token *T = PeekTokenRawPointer(Parser);
+
+  string_from_parser Result = {};
+
+  if (T)
+  {
+    Result.Parser = Parser;
+    Result.StartToken = T;
+  }
+
+  return Result;
+}
 
 bonsai_function void
 DoublyLinkedListSwap(c_token_cursor *P0, c_token_cursor *P1)
@@ -434,16 +452,17 @@ IsWhitespace(c_token_type Type)
 }
 
 bonsai_function b32
-IsWhitespace(c_token T)
+IsWhitespace(c_token *T)
 {
-  b32 Result = IsWhitespace(T.Type);
+  b32 Result = IsWhitespace(T->Type);
   return Result;
 }
 
+
 bonsai_function b32
-IsComment(c_token T)
+IsComment(c_token *T)
 {
-  b32 Result = (T.Type == CTokenType_CommentSingleLine) || (T.Type == CTokenType_CommentMultiLineStart);
+  b32 Result = (T->Type == CTokenType_CommentSingleLine) || (T->Type == CTokenType_CommentMultiLineStart);
   return Result;
 }
 
@@ -451,7 +470,17 @@ bonsai_function umm
 Remaining(parser* Parser)
 {
   umm Result = 0;
-  if (Parser->Valid) { Result = Remaining(&Parser->Tokens); }
+
+  if (Parser->Valid)
+  {
+    Result = Remaining(&Parser->Tokens);
+
+    if (!Result && Parser->Tokens.Next)
+    {
+      Result = TotalElements(Parser->Tokens.Next);
+    }
+  }
+
   return Result;
 }
 
@@ -482,7 +511,9 @@ AdvanceParser(parser* Parser)
   Assert(Parser->Tokens.At <= Parser->Tokens.End);
   Assert(Parser->Tokens.Start <= Parser->Tokens.End);
 
-  if (Remaining(Parser))
+  // NOTE(Jesse): This intentionally only checks the current token stream
+  // because if it's at 0 we need to do a DoublyLinkedListSwap
+  if (Remaining(&Parser->Tokens))
   {
     c_token *T = Parser->Tokens.At;
     if (TokenShouldModifyLineCount(T, Parser->Tokens.Source))
@@ -574,6 +605,9 @@ ParseMacroArgument(parser* Parser, c_token_buffer *Result)
 
   u32 Depth = 0;
   b32 Done = False;
+  // TODO(Jesse, correctness): This should probably actually check for
+  // Remaining(&Parser->Tokens) because I don't think valid code would ever
+  // span a cursor chain link
   while (!Done && Remaining(Parser))
   {
     c_token T = PeekTokenRaw(Parser);
@@ -974,7 +1008,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
     u32 MaxTrayWidth = 1 + GetColumnsFor(ErrorLineNumber + LinesOfContext);
     ParserName = Parser->Filename;
 
-    Assert(Parser->Tokens.At == ErrorToken);
+    Assert(PeekTokenRawPointer(Parser) == ErrorToken);
 
     u32 LinesReversed = 0;
     while (LinesReversed <= LinesOfContext)
@@ -1367,7 +1401,7 @@ PeekTokenPointer(parser* Parser, u32 Lookahead)
        */
       LocalLookahead = OffsetOfNext(Parser, LocalLookahead, CTokenType_CommentMultiLineEnd);
     }
-    else if (IsWhitespace(Result->Type))
+    else if (IsWhitespace(Result))
     {
     }
     else if (Result->Type == CT_NameQualifier)
@@ -1386,7 +1420,7 @@ PeekTokenPointer(parser* Parser, u32 Lookahead)
     Result = PeekTokenRawPointer(Parser, LocalLookahead);
   }
 
-  if (Result && (IsWhitespace(*Result) || IsComment(*Result))) { Result = 0; } // Fires if the stream ends with whitespace/comment
+  if (Result && (IsWhitespace(Result) || IsComment(Result))) { Result = 0; } // Fires if the stream ends with whitespace/comment
 
 #if 0
 #if BONSAI_INTERNAL
@@ -1837,11 +1871,11 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
   /* Macro->IsExpanding = True; */
 
   // @memory
-  parser *Result = AllocateParserPtr(Parser->Filename, Parser->LineNumber, (u32)Kilobytes(1), TokenCursorSource_MacroExpansion, 0, Memory);
+  parser *Result = AllocateParserPtr(Parser->Filename, 0, (u32)Kilobytes(1), TokenCursorSource_MacroExpansion, 0, Memory);
 
   // TODO(Jesse): Think more carefully about how we want to track where macros
   // came from.
-  Result->Tokens.EndLine = Parser->LineNumber;
+  Result->Tokens.EndLine = 0;
 
   Assert(Macro->Body.Tokens.At == Macro->Body.Tokens.Start);
   Assert(Macro->Body.Tokens.Next == 0);
@@ -2047,14 +2081,31 @@ EatComment(parser* Parser)
   return Result;
 }
 
+bonsai_function c_token_cursor *
+SeekToEndOfCursorChain(c_token_cursor *Cursor)
+{
+  c_token_cursor *Result = Cursor;
+  while (Result->Next) Result = Result->Next;
+  return Result;
+}
+
 bonsai_function void
 EatWhitespaceAndComments(parser* Parser)
 {
-  if (Parser->Valid)
+  while ( c_token *T = PeekTokenRawPointer(Parser) )
   {
-    c_token* T = PeekTokenPointer(Parser);
-    if (!T) T = Parser->Tokens.End;
-    AdvanceTo(Parser, T);
+    if (IsWhitespace(T))
+    {
+      PopTokenRawPointer(Parser);
+    }
+    else if (IsComment(T))
+    {
+      EatComment(Parser);
+    }
+    else
+    {
+      break;
+    }
   }
 }
 
@@ -2099,23 +2150,27 @@ EatSpacesTabsAndEscapedNewlines(parser *Parser)
   return Result;
 }
 
-bonsai_function void
+bonsai_function b32
 EatWhitespace(parser* Parser)
 {
-  while (Remaining(Parser) &&
-         IsWhitespace(PeekTokenRaw(Parser).Type))
+  b32 Result = False;
+
+  c_token *T = PeekTokenRawPointer(Parser);
+  while (T && IsWhitespace(T))
   {
-    PopTokenRaw(Parser);
+    Result = True;
+    PopTokenRawPointer(Parser);
+    T = PeekTokenRawPointer(Parser);
   }
 
-  return;
+  return Result;
 }
 
 bonsai_function void
 TrimLeadingWhitespace(parser* Parser)
 {
   c_token *T = PeekTokenRawPointer(Parser);
-  while (T && IsWhitespace(T->Type))
+  while (T && IsWhitespace(T))
   {
     PopTokenRawPointer(Parser);
     T = PeekTokenRawPointer(Parser);
@@ -2518,17 +2573,9 @@ CountTokensBeforeNext(parser *Parser, c_token_type T1, c_token_type T2)
 
 
 bonsai_function c_token_cursor *
-WalkToEnd(c_token_cursor *Cursor)
-{
-  c_token_cursor *Result = Cursor;
-  while (Result->Next) Result = Result->Next;
-  return Result;
-}
-
-bonsai_function c_token_cursor *
 SplitAndInsertTokenCursor(c_token_cursor *CursorToSplit, c_token* SplitStart, u32 LineNumber, c_token_cursor *CursorToInsert, c_token* SplitEnd, memory_arena *Memory)
 {
-  c_token_cursor *Result = WalkToEnd(CursorToInsert);
+  c_token_cursor *Result = SeekToEndOfCursorChain(CursorToInsert);
 
   SanityCheckParserChain(CursorToSplit);
   SanityCheckParserChain(CursorToInsert);
@@ -2566,8 +2613,6 @@ SplitAndInsertTokenCursor(c_token_cursor *CursorToSplit, c_token* SplitStart, u3
   Assert(CursorToSplit->End == SplitStart);
 
 
-  Assert(CursorToInsert->StartLine);
-  Assert(CursorToInsert->EndLine);
   Assert(CursorToInsert->Prev == 0);
   Rewind(CursorToInsert);
   Assert(CursorToInsert->Prev == 0);
@@ -2623,8 +2668,10 @@ SplitAndInsertTokenCursor(c_token_cursor *CursorToSplit, c_token* SplitStart, u3
   Assert(CursorToSplit->StartLine);
   Assert(CursorToSplit->EndLine == LineNumber);
 
-  Assert(CursorToInsert->StartLine);
-  Assert(CursorToInsert->EndLine);
+  // TODO(Jesse): Put these back in once we decide on what macro insertion
+  // cursors actually track
+  /* Assert(CursorToInsert->StartLine); */
+  /* Assert(CursorToInsert->EndLine); */
 
   if (SecondHalfOfSplit)
   {
@@ -3547,6 +3594,9 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
             if (MacroShouldBeExpanded(Result, T, Macro))
             {
               parser *Expanded = ExpandMacro(Ctx, Result, Macro, Memory, True);
+
+              EraseSectionOfParser(Result, T, Result->Tokens.At);
+
               c_token_cursor *LastCursorOfChain = SplitAndInsertTokenCursor(&Result->Tokens, Result->LineNumber, &Expanded->Tokens, Memory);
               SkipToEndOfCursor(&Result->Tokens, LastCursorOfChain);
             }
@@ -3598,6 +3648,10 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
             macro_def *NewMacro = Push(&Ctx->Datatypes.Macros, { .Name = MacroNameToken->Value }, Ctx->Memory);
             DefineMacro(Ctx, Result, NewMacro);
           }
+
+          /* RequireTokenRaw(Parser, CTokenType_Newline); */
+          EraseSectionOfParser(Result, T, Result->Tokens.At);
+          RequireTokenRaw(Result, CTokenType_Newline);
         }
 
       } break;
@@ -3611,7 +3665,9 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
           macro_def *Macro1 = GetMacroDef(Ctx, MacroName);
           if (Macro1) { Macro1->Undefed = True; }
         }
-        EatUntilIncluding(Result, CTokenType_Newline);
+        EatUntilExcluding(Result, CTokenType_Newline);
+        EraseSectionOfParser(Result, T, Result->Tokens.At);
+        RequireTokenRaw(Result, CTokenType_Newline);
       } break;
 
       case CT_PreprocessorIf:
@@ -3697,6 +3753,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
   /* DumpChain(Result); */
 
+#if 0
   // Go through and erase preprocessor crap once everything's parsed out
   Rewind(Result);
 
@@ -3711,12 +3768,12 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
         RequireTokenRaw(Result, T->Type);
         if (T->Macro->Type == type_macro_function)
         {
-          EatBetween(Result, CTokenType_OpenParen, CTokenType_CloseParen);
-          EraseSectionOfParser(Result, T, Result->Tokens.At);
+          /* EatBetween(Result, CTokenType_OpenParen, CTokenType_CloseParen); */
+          /* EraseSectionOfParser(Result, T, Result->Tokens.At); */
         }
         else if (T->Macro->Type == type_macro_keyword)
         {
-          EraseToken(T);
+          /* EraseToken(T); */
         }
         else
         {
@@ -3727,9 +3784,9 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       case CT_PreprocessorDefine:
       case CT_PreprocessorUndef:
       {
-        RequireTokenRaw(Result, T->Type);
-        EatUntilExcluding(Result, CTokenType_Newline);
-        EraseSectionOfParser(Result, T, Result->Tokens.At);
+        /* RequireTokenRaw(Result, T->Type); */
+        /* EatUntilExcluding(Result, CTokenType_Newline); */
+        /* EraseSectionOfParser(Result, T, Result->Tokens.At); */
       } break;
 
       default:
@@ -3738,6 +3795,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       } break;
     }
   }
+#endif
 
 
   if (Result->Tokens.EndLine == 0)
@@ -4434,11 +4492,7 @@ EatUntil_TrackingDepth(parser *Parser, c_token_type Open, c_token_type Close, c_
 bonsai_function counted_string
 EatBetween(parser* Parser, c_token_type Open, c_token_type Close)
 {
-  c_token *StartParserToken = Parser->Tokens.Start;
-
   string_from_parser Builder = StartStringFromParser(Parser);
-
-  c_token *StartToken = PeekTokenPointer(Parser);
 
   u32 Depth = 0;
   RequireToken(Parser, Open);
@@ -4466,19 +4520,10 @@ EatBetween(parser* Parser, c_token_type Open, c_token_type Close)
 
   if (!Success)
   {
-    ParseError(Parser, FormatCountedString(TranArena, CSz("Unable to find closing token %S"), ToString(Close)), StartToken);
+    ParseError(Parser, FormatCountedString(TranArena, CSz("Unable to find closing token %S"), ToString(Close)));
   }
 
-  counted_string Result = {};
-  if (Parser->Tokens.Start == StartParserToken)
-  {
-    Result = FinalizeStringFromParser(&Builder);
-  }
-  else
-  {
-    ParseError(Parser, CSz("Unable to call FinalizeStringFromParser during EatBetween due to having spanned a parser chain link."));
-  }
-
+  counted_string Result = FinalizeStringFromParser(&Builder);
   return Result;
 }
 
@@ -5623,7 +5668,7 @@ ParseStructMember(parse_context *Ctx, counted_string StructName)
       case CTokenType_CloseBrace:
       {
         // Done parsing struct members
-      } break;;
+      } break;
 
       InvalidDefaultWhileParsing(Parser, CSz("While parsing struct member."));
     }

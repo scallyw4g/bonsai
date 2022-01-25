@@ -1,1 +1,1 @@
-Assert(i == 4);
+Passthrough(int i = 4);

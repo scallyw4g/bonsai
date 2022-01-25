@@ -1,2 +1,1 @@
-#define Assert(a) a
-#define Nothing(...)
+#define Passthrough(a) a
