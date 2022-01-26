@@ -8,6 +8,8 @@
 
             case CTokenType_Unknown: { Result = CSz("CTokenType_Unknown"); } break;
 
+            case CT_StaticAssert: { Result = CSz("CT_StaticAssert"); } break;
+
             case CTokenType_OpenBracket: { Result = CSz("CTokenType_OpenBracket"); } break;
 
             case CTokenType_CloseBracket: { Result = CSz("CTokenType_CloseBracket"); } break;
@@ -243,6 +245,8 @@
             case CT_PreprocessorUndef: { Result = CSz("CT_PreprocessorUndef"); } break;
 
             case CT_PreprocessorPragma: { Result = CSz("CT_PreprocessorPragma"); } break;
+
+            case CT_KeywordPragma: { Result = CSz("CT_KeywordPragma"); } break;
 
             case CT_PreprocessorError: { Result = CSz("CT_PreprocessorError"); } break;
 

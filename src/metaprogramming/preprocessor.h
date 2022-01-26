@@ -1,3 +1,4 @@
+
 meta(
   func dunion_debug_print(DUnionType)
   {
@@ -456,6 +457,10 @@ enum c_token_type
   CTokenType_Inline,
   CTokenType_TemplateKeyword,
   CTokenType_OperatorKeyword,
+
+  CT_KeywordPragma,
+
+  CT_StaticAssert,
 
   CTokenType_Extern,
   CTokenType_Asm,
@@ -1441,42 +1446,6 @@ Contains(parser *Parser, c_token *T)
   {
     Result = True;
   }
-  return Result;
-}
-
-bonsai_function counted_string
-FinalizeStringFromParser(string_from_parser* Builder)
-{
-  counted_string Result = {};
-
-  parser *Parser = Builder->Parser;
-  c_token *StartToken = Builder->StartToken;
-
-  if (Parser)
-  {
-    if (Contains(Parser, StartToken))
-    {
-      umm Count = 0;
-      // NOTE(Jesse): This would be better if it excluded the At token, but
-      // unfortunately we wrote the calling code such that the At token is
-      // implicitly included, so we have to have this weird check.
-      if (Parser->Tokens.At == Parser->Tokens.End)
-      {
-        Count = (umm)(Parser->Tokens.At[-1].Value.Start - Builder->StartToken->Value.Start);
-      }
-      else
-      {
-        Count = (umm)(Parser->Tokens.At->Value.Start - Builder->StartToken->Value.Start);
-      }
-
-      Result = CS(Builder->StartToken->Value.Start, Count);
-    }
-    else
-    {
-      Warn(CSz("Unable to call FinalizeStringFromParser during EatBetween due to having spanned a parser chain link."));
-    }
-  }
-
   return Result;
 }
 

@@ -1,5 +1,3 @@
-#define BONSAI_LINUX 1
-
 /* #include <linux/ftrace.h> */
 /* #include <linux/getcpu.h> */
 

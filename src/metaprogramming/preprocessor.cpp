@@ -96,6 +96,9 @@ bonsai_function void DumpLocalTokens(parser *Parser);
 bonsai_function void PrintTray(char_cursor *Dest, u32 LineNumber, u32 Columns);
 
 
+bonsai_function void ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessage, c_token* ErrorToken = 0);
+bonsai_function void ParseError(parser* Parser, counted_string ErrorMessage, c_token* ErrorToken = 0);
+
 bonsai_function string_from_parser
 StartStringFromParser(parser* Parser)
 {
@@ -107,6 +110,44 @@ StartStringFromParser(parser* Parser)
   {
     Result.Parser = Parser;
     Result.StartToken = T;
+  }
+
+  return Result;
+}
+
+bonsai_function counted_string
+FinalizeStringFromParser(string_from_parser* Builder)
+{
+  counted_string Result = {};
+
+  parser *Parser = Builder->Parser;
+  c_token *StartToken = Builder->StartToken;
+
+  if (Parser)
+  {
+    if (Contains(Parser, StartToken))
+    {
+      umm Count = 0;
+      // NOTE(Jesse): This would be better if it excluded the At token, but
+      // unfortunately we wrote the calling code such that the At token is
+      // implicitly included, so we have to have this weird check.
+      if (Parser->Tokens.At == Parser->Tokens.End)
+      {
+        Count = (umm)(Parser->Tokens.At[-1].Value.Start - Builder->StartToken->Value.Start);
+      }
+      else
+      {
+        Count = (umm)(Parser->Tokens.At->Value.Start - Builder->StartToken->Value.Start);
+      }
+
+      Result = CS(Builder->StartToken->Value.Start, Count);
+    }
+    else
+    {
+      ParseError(Parser, CSz("shit"));
+      RuntimeBreak();
+      Warn(CSz("Unable to call FinalizeStringFromParser during EatBetween due to having spanned a parser chain link."));
+    }
   }
 
   return Result;
@@ -187,26 +228,6 @@ DoublyLinkedListSwap(c_token_cursor *P0, c_token_cursor *P1)
       M0.Next->Prev = P1;
     }
   }
-
-  // NOTE(Jesse): This is pretty janky, but when we do macro expansion the
-  // whole expansion chain has to be rewound, which means we destroy the line
-  // number information so we have to keep tracking it here.
-  //
-  // TODO(Jesse): An improvement here would be if we made the parser struct not
-  // track Next/Prev pointers and instead put those on the c_token_cursor then
-  // when we did this swap (we'd do it on the token cursors instead) the line
-  // information would live outside the memory we swap, thus be preserved
-  // automatically
-  //
-  // @reason_to_seperate_parser_and_tokens
-#if 0
-  if (StringsMatch(P0->Filename, P1->Filename))
-  {
-    u32 Temp = P0->LineNumber;
-    P0->LineNumber = P1->LineNumber;
-    P1->LineNumber = Temp;
-  }
-#endif
 
   return;
 }
@@ -970,7 +991,7 @@ GetLongestLineInCursor(char_cursor *Cursor)
 }
 
 bonsai_function void
-ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessage, c_token* ErrorToken = 0)
+ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessage, c_token* ErrorToken)
 {
   if (!Parser->Valid) return;
 
@@ -1006,7 +1027,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
   {
     u32 ErrorLineNumber = Parser->LineNumber;
     u32 MaxTrayWidth = 1 + GetColumnsFor(ErrorLineNumber + LinesOfContext);
-    ParserName = Parser->Filename;
+    ParserName = Parser->Tokens.Filename;
 
     Assert(PeekTokenRawPointer(Parser) == ErrorToken);
 
@@ -1248,7 +1269,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
 // TODO(Jesse): This should go away once we port all messaged to the new architecture
 bonsai_function void
-ParseError(parser* Parser, counted_string ErrorMessage, c_token* ErrorToken = 0)
+ParseError(parser* Parser, counted_string ErrorMessage, c_token* ErrorToken)
 {
   ParseError(Parser, ParseErrorCode_Unknown, ErrorMessage, ErrorToken);
 }
@@ -1319,6 +1340,7 @@ PeekTokenRawPointer(c_token_cursor *Tokens, u32 Lookahead)
   {
     if (Tokens->Next)
     {
+      Rewind(Tokens->Next);
       Assert( Tokens->Next->At == Tokens->Next->Start);
       Result = PeekTokenRawPointer(Tokens->Next, Lookahead - TokensRemaining);
     }
@@ -3502,13 +3524,17 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
           {
             PushT.Type = CTokenType_OperatorKeyword;
           }
+          else if ( StringsMatch(PushT.Value, CSz("static_assert")) )
+          {
+            PushT.Type = CT_StaticAssert;
+          }
           else if ( StringsMatch(PushT.Value, CSz("_Pragma")) )
           {
-            PushT.Type = CT_PreprocessorPragma;
+            PushT.Type = CT_KeywordPragma;
           }
           else if ( StringsMatch(PushT.Value, CSz("__pragma")) )
           {
-            PushT.Type = CT_PreprocessorPragma;
+            PushT.Type = CT_KeywordPragma;
           }
           else if ( StringsMatch(PushT.Value, CSz("extern")) )
           {
@@ -3545,7 +3571,13 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
   Result->Valid = True;
   Rewind(Result);
 
+
+  //
+  //
   // Finished Tokenization -- Run Preprocessor
+  //
+  //
+
 
   // Go through and do macro/include expansion as necessary
   c_token *LastT = 0;
@@ -3554,6 +3586,19 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
     c_token *T = PeekTokenPointer(Result);
     switch (T->Type)
     {
+      case CTokenType_Meta:
+      {
+        RequireToken(Result, T->Type);
+        EatBetween(Result, CTokenType_OpenParen, CTokenType_CloseParen);
+      } break;
+
+      case CT_PreprocessorPragma:
+      {
+        RequireToken(Result, T->Type);
+        EatUntilExcluding(Result, CTokenType_Newline);
+        EraseSectionOfParser(Result, T, Result->Tokens.At);
+      } break;
+
       case CT_PreprocessorInclude:
       {
         debug_global u32 HitCount = 0;
@@ -3802,6 +3847,13 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
   {
     Result->Tokens.EndLine = LineNumber;
   }
+  // TODO(Jesse): Pretty sure this assertion should hold up.  This case (I
+  // think) is when we split a parser but there's no `SecondHalfOfSplit`
+  // because it would be 0 length
+  /* else */
+  /* { */
+  /*   Assert(Result->Tokens.EndLine == LineNumber); */
+  /* } */
 
   Rewind(Result);
 
@@ -6673,12 +6725,21 @@ ParseDatatypes(parse_context *Ctx)
 
     switch(T.Type)
     {
-      case CT_PreprocessorPragma:
+      case CT_KeywordPragma:
       case CTokenType_Meta:
       {
         RequireToken(Parser, T.Type);
         EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
       } break;
+
+      case CT_StaticAssert:
+      {
+        RequireToken(Parser, CT_StaticAssert);
+        EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+        RequireToken(Parser, CTokenType_Semicolon);
+        /* EraseSectionOfParser(Result, T, Result->Tokens.At); */
+      } break;
+
 
       case CTokenType_Semicolon:
       {
@@ -8319,7 +8380,6 @@ RegisterPrimitiveDatatypes(program_datatypes *Datatypes, memory_arena *Memory)
   Type->SourceText = CSz("signed short int");
   Push(&Datatypes->Primitives, P, Memory);
 
-
   Type->Token.Value = CSz("float"); Type->SourceText = CSz("float");
   Push(&Datatypes->Primitives, P, Memory);
 
@@ -8433,9 +8493,11 @@ main(s32 ArgCount_, const char** ArgStrings)
       .IncludePaths = &Args.IncludePaths,
     };
 
+#if 0
     todo_list_info TodoInfo = {
       .People = ParseAllTodosFromFile(CSz("todos.md"), Memory),
     };
+#endif
 
     while ( Args.Files.At < Args.Files.End )
     {
@@ -8468,6 +8530,7 @@ main(s32 ArgCount_, const char** ArgStrings)
       continue;
     }
 
+#if 0
     ITERATE_OVER(&Ctx.AllParsers)
     {
       // TODO(Jesse id: 340): We should only traverse files that were passed to us on the CLI
@@ -8502,6 +8565,7 @@ main(s32 ArgCount_, const char** ArgStrings)
 
       continue;
     }
+#endif
 
 #if 0
     ITERATE_OVER(&Ctx.Datatypes.Functions)
@@ -8518,7 +8582,9 @@ main(s32 ArgCount_, const char** ArgStrings)
     }
 #endif
 
+#if 0
     WriteTodosToFile(&TodoInfo.People, Memory);
+#endif
   }
   else
   {

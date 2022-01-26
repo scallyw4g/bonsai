@@ -1561,7 +1561,7 @@ TestErrors(memory_arena *Memory)
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
     TestThat(Parser->LineNumber == 1);
     Parser->Valid = True;
-    TestThat( OptionalToken(Parser, CToken(132151)) );
+    TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
   {
@@ -1577,7 +1577,7 @@ TestErrors(memory_arena *Memory)
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
     TestThat(Parser->LineNumber == 3);
     Parser->Valid = True;
-    TestThat( OptionalToken(Parser, CToken(132151)) );
+    TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
   {
@@ -1593,7 +1593,7 @@ TestErrors(memory_arena *Memory)
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
     TestThat(Parser->LineNumber == 3);
     Parser->Valid = True;
-    TestThat( OptionalToken(Parser, CToken(132151)) );
+    TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
   {
@@ -1609,7 +1609,7 @@ TestErrors(memory_arena *Memory)
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
     TestThat(Parser->LineNumber == 3);
     Parser->Valid = True;
-    TestThat( OptionalToken(Parser, CToken(132151)) );
+    TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
   {
@@ -1625,7 +1625,7 @@ TestErrors(memory_arena *Memory)
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
     TestThat(Parser->LineNumber == 3);
     Parser->Valid = True;
-    TestThat( OptionalToken(Parser, CToken(132151)) );
+    TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
   {
@@ -1641,7 +1641,7 @@ TestErrors(memory_arena *Memory)
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
     TestThat(Parser->LineNumber == 3);
     Parser->Valid = True;
-    TestThat( OptionalToken(Parser, CToken(132151)) );
+    TestThat( OptionalToken(Parser, CToken(132151u)) );
     DumpEntireParser(Parser);
   }
 
@@ -1658,7 +1658,7 @@ TestErrors(memory_arena *Memory)
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
     TestThat(Parser->LineNumber == 3);
     Parser->Valid = True;
-    TestThat( OptionalToken(Parser, CToken(132151)) );
+    TestThat( OptionalToken(Parser, CToken(132151u)) );
     DumpEntireParser(Parser);
   }
 
@@ -1675,7 +1675,7 @@ TestErrors(memory_arena *Memory)
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
     TestThat(Parser->LineNumber == 3);
     Parser->Valid = True;
-    TestThat( OptionalToken(Parser, CToken(132151)) );
+    TestThat( OptionalToken(Parser, CToken(132151u)) );
     DumpEntireParser(Parser);
   }
 #endif
@@ -1695,7 +1695,7 @@ TestErrors(memory_arena *Memory)
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
     TestThat(Parser->LineNumber == 3);
     Parser->Valid = True;
-    TestThat( OptionalToken(Parser, CToken(132151)) );
+    TestThat( OptionalToken(Parser, CToken(132151u)) );
     DumpEntireParser(Parser);
   }
 #endif
@@ -1730,7 +1730,7 @@ TestLineNumbers(memory_arena *Memory)
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
     TestThat(OptionalTokenRaw(Parser, CToken(CT_MacroLiteral, CSz("boo"))));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
-    TestThat(OptionalTokenRaw(Parser, CToken(132151)));
+    TestThat(OptionalTokenRaw(Parser, CToken(132151u)));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
     TestThat(Parser->LineNumber == 2);
     TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
@@ -1741,7 +1741,7 @@ TestLineNumbers(memory_arena *Memory)
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
     TestThat(OptionalTokenRaw(Parser, CToken(CT_MacroLiteral, CSz("boo"))));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
-    TestThat(OptionalTokenRaw(Parser, CToken(132151)));
+    TestThat(OptionalTokenRaw(Parser, CToken(132151u)));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
     TestThat(Parser->LineNumber == 4);
     // NOTE(Jesse): This is actually correct.
@@ -1781,7 +1781,7 @@ TestLineNumbers(memory_arena *Memory)
     TestThat(Parser->LineNumber == 2);
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
-    TestThat(OptionalTokenRaw(Parser, CToken(132151)));
+    TestThat(OptionalTokenRaw(Parser, CToken(132151u)));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
     TestThat(Parser->LineNumber == 3);
     TestThat(OptionalTokenRaw(Parser, CToken(CTokenType_Int, CSz("int"))));
@@ -1793,7 +1793,7 @@ TestLineNumbers(memory_arena *Memory)
     TestThat(OptionalTokenRaw(Parser, CTokenType_EscapedNewline));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
-    TestThat(OptionalTokenRaw(Parser, CToken(132151)));
+    TestThat(OptionalTokenRaw(Parser, CToken(132151u)));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
     TestThat(Parser->LineNumber == 4);
     // NOTE(Jesse): This is actually correct.
@@ -1869,7 +1869,7 @@ TestLineNumbers(memory_arena *Memory)
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
     TestThat(OptionalTokenRaw(Parser, CToken(CSz("bar"))));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
-    TestThat(OptionalToken(Parser, CToken(132151)));
+    TestThat(OptionalToken(Parser, CToken(132151u)));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
     TestThat(Parser->LineNumber == 4);
     TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));

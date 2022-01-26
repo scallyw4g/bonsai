@@ -7,8 +7,8 @@ if [ "$Platform" == "Linux" ] ; then
   bin/preprocessor_dev                   \
     src/metaprogramming/preprocessor.cpp \
     -I src                               \
-    -I /usr/include/x86_64-linux-gnu     \
-    -I /usr/include
+    # -I /usr/include/x86_64-linux-gnu     \
+    # -I /usr/include
 
 elif [ "$Platform" == "Windows" ] ; then
 
