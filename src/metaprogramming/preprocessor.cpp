@@ -45,36 +45,36 @@ _Pragma("clang diagnostic pop") // unused-macros
 /* ) */
 
 
-bonsai_function c_token *      PeekTokenRawPointer(parser *Parser, u32 TokenLookahead = 0);
-bonsai_function c_token        PeekTokenRaw(parser *Parser, u32 Lookahead = 0);
-bonsai_function u32            OffsetOfNext(parser *Parser, u32 Offset, c_token_type Close);
-bonsai_function c_token *      PeekTokenPointer(parser *Parser, u32 TokenLookahead = 0);
-bonsai_function c_token        PeekToken(parser *Parser, u32 Lookahead = 0);
-bonsai_function c_token        PopTokenRaw(parser *Parser);
-bonsai_function c_token *      PopTokenRawPointer(parser *Parser);
-bonsai_function b32            TokensRemain(parser *Parser, u32 TokenLookahead = 0);
-bonsai_function b32            RawTokensRemain(parser *Parser, u32 TokenLookahead = 0);
-bonsai_function c_token        PopToken(parser *Parser);
-bonsai_function b32            OptionalTokenRaw(parser *Parser, c_token_type Type);
-bonsai_function b32            OptionalToken(parser *Parser, c_token T);
-bonsai_function b32            OptionalToken(parser *Parser, c_token_type Type);
-bonsai_function c_token        RequireToken(parser *Parser, c_token ExpectedToken);
-bonsai_function c_token        RequireToken(parser *Parser, c_token_type ExpectedType);
-bonsai_function c_token        RequireTokenRaw(parser *Parser, c_token Expected);
-bonsai_function c_token        RequireTokenRaw(parser *Parser, c_token_type ExpectedType);
-bonsai_function b32            TokenIsOperator(c_token_type T);
-bonsai_function b32            NextTokenIsOperator(parser *Parser);
-bonsai_function counted_string RequireOperatorToken(parser *Parser);
+bonsai_function c_token * PeekTokenRawPointer(parser *Parser, u32 TokenLookahead = 0);
+bonsai_function c_token   PeekTokenRaw(parser *Parser, u32 Lookahead = 0);
+bonsai_function c_token * PeekTokenPointer(parser *Parser, u32 TokenLookahead = 0);
+bonsai_function c_token   PeekToken(parser *Parser, u32 Lookahead = 0);
+bonsai_function c_token   PopTokenRaw(parser *Parser);
+bonsai_function c_token * PopTokenRawPointer(parser *Parser);
+bonsai_function c_token   PopToken(parser *Parser);
+bonsai_function b32       OptionalTokenRaw(parser *Parser, c_token_type Type);
+bonsai_function b32       OptionalToken(parser *Parser, c_token T);
+bonsai_function b32       OptionalToken(parser *Parser, c_token_type Type);
+bonsai_function c_token   RequireToken(parser *Parser, c_token ExpectedToken);
+bonsai_function c_token   RequireToken(parser *Parser, c_token_type ExpectedType);
+bonsai_function c_token   RequireTokenRaw(parser *Parser, c_token Expected);
+bonsai_function c_token   RequireTokenRaw(parser *Parser, c_token_type ExpectedType);
 
-bonsai_function void           TrimFirstToken(parser* Parser, c_token_type TokenType);
-bonsai_function void           TrimLastToken(parser* Parser, c_token_type TokenType);
-bonsai_function void           TrimLeadingWhitespace(parser* Parser);
+bonsai_function b32       TokensRemain(parser *Parser, u32 TokenLookahead = 0);
+bonsai_function b32       RawTokensRemain(parser *Parser, u32 TokenLookahead = 0);
+bonsai_function u32       OffsetOfNext(parser *Parser, u32 Offset, c_token_type Close);
 
-// TODO(Jesse, immediate): Change this to a void return type.
-bonsai_function counted_string EatBetween(parser* Parser, c_token_type Open, c_token_type Close);
-bonsai_function b32 EatWhitespace(parser* Parser);
+bonsai_function b32       TokenIsOperator(c_token_type T);
+bonsai_function b32       NextTokenIsOperator(parser *Parser);
+bonsai_function void      RequireOperatorToken(parser *Parser);
 
-bonsai_function b32            EatSpacesTabsAndEscapedNewlines(parser *Parser);
+bonsai_function void      TrimFirstToken(parser* Parser, c_token_type TokenType);
+bonsai_function void      TrimLastToken(parser* Parser, c_token_type TokenType);
+bonsai_function void      TrimLeadingWhitespace(parser* Parser);
+
+bonsai_function void      EatBetween(parser* Parser, c_token_type Open, c_token_type Close);
+bonsai_function b32       EatWhitespace(parser* Parser);
+bonsai_function b32       EatSpacesTabsAndEscapedNewlines(parser *Parser);
 
 
 //
@@ -146,7 +146,7 @@ FinalizeStringFromParser(string_from_parser* Builder)
     {
       ParseError(Parser, CSz("shit"));
       RuntimeBreak();
-      Warn(CSz("Unable to call FinalizeStringFromParser during EatBetween due to having spanned a parser chain link."));
+      Warn(CSz("Unable to call FinalizeStringFromParser due to having spanned a parser chain link."));
     }
   }
 
@@ -558,6 +558,10 @@ AdvanceParser(parser* Parser)
     // EatBetween() and friends.  They assume (for their return value) that
     // they'll be starting and ending in the same c_token_cursor block and
     // detecting that changeover is pretty annoying in those functions.
+    //
+    // Actually, this may not be true any longer.
+    //
+    // TODO(Jesse, immediate): Verify if the above statement still holds true
     Assert(Parser->Tokens.Next->At == Parser->Tokens.Next->Start);
     Assert(Parser->Tokens.Next != &Parser->Tokens);
     Assert(Parser->Tokens.Next->Next != &Parser->Tokens);
@@ -655,10 +659,9 @@ ParseMacroArgument(parser* Parser, c_token_buffer *Result)
   return;
 }
 
-bonsai_function counted_string
+bonsai_function void
 EatUntilExcluding(parser* Parser, c_token_type Close)
 {
-  string_from_parser Builder = StartStringFromParser(Parser);
   while (Remaining(Parser))
   {
     if(PeekTokenRaw(Parser).Type == Close)
@@ -670,14 +673,12 @@ EatUntilExcluding(parser* Parser, c_token_type Close)
       PopTokenRaw(Parser);
     }
   }
-  counted_string Result = FinalizeStringFromParser(&Builder);
-  return Result;
+  return;
 }
 
-bonsai_function counted_string
+bonsai_function void
 EatUntilIncluding(parser* Parser, c_token_type Close)
 {
-  string_from_parser Builder = StartStringFromParser(Parser);
   while (Remaining(Parser))
   {
     if(PopTokenRaw(Parser).Type == Close)
@@ -685,8 +686,7 @@ EatUntilIncluding(parser* Parser, c_token_type Close)
       break;
     }
   }
-  counted_string Result = FinalizeStringFromParser(&Builder);
-  return Result;
+  return;
 }
 
 
@@ -792,7 +792,11 @@ DumpEntireParser(parser* Parser, u32 LinesToDump = u32_MAX)
   if (WasAt)
   {
     RewindParserUntil(Parser, WasAt);
-    Assert(Parser->Tokens.At == WasAt);
+    if (PeekTokenRawPointer(Parser) != WasAt)
+    {
+      AdvanceTo(Parser, WasAt);
+    }
+    Assert(PeekTokenRawPointer(Parser) == WasAt);
   }
 
   Debug("\n%S---%S", TerminalColors.Purple, TerminalColors.White);
@@ -1737,11 +1741,9 @@ NextTokenIsOperator(parser* Parser)
   return Result;
 }
 
-bonsai_function counted_string
+bonsai_function void
 RequireOperatorToken(parser* Parser)
 {
-  string_from_parser Builder = StartStringFromParser(Parser);
-
   c_token T = PeekToken(Parser);
   switch (T.Type)
   {
@@ -1791,8 +1793,7 @@ RequireOperatorToken(parser* Parser)
     default: { ParseError(Parser, CSz("Expected operator.")); } break;
   }
 
-  counted_string Result = FinalizeStringFromParser(&Builder);
-  return Result;
+  return;
 }
 
 
@@ -2070,20 +2071,21 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
 /*************************                         ***************************/
 
 
-bonsai_function counted_string
+bonsai_function b32
 EatComment(parser* Parser, c_token_type CommentT)
 {
-  string_from_parser Builder = StartStringFromParser(Parser);
-
+  b32 Result = False;
   switch (CommentT)
   {
     case CTokenType_CommentSingleLine:
     {
+      Result = True;
       EatUntilExcluding(Parser, CTokenType_Newline);
     } break;
 
     case CTokenType_CommentMultiLineStart:
     {
+      Result = True;
       EatUntilIncluding(Parser, CTokenType_CommentMultiLineEnd);
     } break;
 
@@ -2092,14 +2094,13 @@ EatComment(parser* Parser, c_token_type CommentT)
     } break;
   }
 
-  counted_string Result = FinalizeStringFromParser(&Builder);
   return Result;
 }
 
-bonsai_function counted_string
+bonsai_function b32
 EatComment(parser* Parser)
 {
-  counted_string Result = EatComment(Parser, PeekTokenRaw(Parser).Type);
+  b32 Result = EatComment(Parser, PeekTokenRaw(Parser).Type);
   return Result;
 }
 
@@ -3926,7 +3927,9 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
   else
   {
     RequireToken(Parser, CTokenType_LT);
-    PartialPath = EatUntilExcluding(Parser, CTokenType_GT);
+    string_from_parser Builder = StartStringFromParser(Parser);
+    EatUntilExcluding(Parser, CTokenType_GT);
+    PartialPath = FinalizeStringFromParser(&Builder);
     if (PartialPath.Count == 0)
     {
       ParseError(Parser, CSz("Include path must be specified."));
@@ -3938,7 +3941,7 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
       while (Continue)
       {
         b32 AteWhitespace = EatSpacesTabsAndEscapedNewlines(Parser);
-        b32 AteComment = EatComment(Parser).Count > 0;
+        b32 AteComment = EatComment(Parser);
         Continue = AteWhitespace || AteComment;
       }
     }
@@ -4541,11 +4544,9 @@ EatUntil_TrackingDepth(parser *Parser, c_token_type Open, c_token_type Close, c_
   return;
 }
 
-bonsai_function counted_string
+bonsai_function void
 EatBetween(parser* Parser, c_token_type Open, c_token_type Close)
 {
-  string_from_parser Builder = StartStringFromParser(Parser);
-
   u32 Depth = 0;
   RequireToken(Parser, Open);
 
@@ -4575,8 +4576,7 @@ EatBetween(parser* Parser, c_token_type Open, c_token_type Close)
     ParseError(Parser, FormatCountedString(TranArena, CSz("Unable to find closing token %S"), ToString(Close)));
   }
 
-  counted_string Result = FinalizeStringFromParser(&Builder);
-  return Result;
+  return;
 }
 
 bonsai_function struct_def
@@ -4869,7 +4869,9 @@ ParseTypeSpecifier(parse_context *Ctx)
       case CTokenType_TemplateKeyword:
       {
         RequireToken(Parser, CTokenType_TemplateKeyword);
-        Result.TemplateSource = EatBetween(Parser, CTokenType_LT, CTokenType_GT);
+        string_from_parser Builder = StartStringFromParser(Parser);
+        EatBetween(Parser, CTokenType_LT, CTokenType_GT);
+        Result.TemplateSource = FinalizeStringFromParser(&Builder);
       } break;
 
       case CTokenType_Extern:
@@ -5082,7 +5084,9 @@ ParseFunctionOrVariableDecl(parse_context *Ctx)
   {
     if ( OptionalToken(Parser, CTokenType_OperatorKeyword) )
     {
-      counted_string OperatorName = RequireOperatorToken(Parser);
+      string_from_parser Builder = StartStringFromParser(Parser);
+      RequireOperatorToken(Parser);
+      counted_string OperatorName = FinalizeStringFromParser(&Builder);
       if ( OptionalToken(Parser, CTokenType_OpenParen) )
       {
         Result.Type = type_declaration_function_decl;
@@ -7948,9 +7952,19 @@ GoGoGadgetMetaprogramming(parse_context* Ctx, todo_list_info* TodoInfo)
             RequireToken(Parser, CTokenType_CloseParen);
             OptionalToken(Parser, CTokenType_Colon);
 
-            counted_string TodoValue = T.Type == CTokenType_CommentSingleLine ?
-              Trim(EatUntilIncluding(Parser, CTokenType_Newline)) :
-              ParseMultiLineTodoValue(Parser, Memory);
+            counted_string TodoValue = {};
+            if ( T.Type == CTokenType_CommentSingleLine )
+            {
+              string_from_parser Builder = StartStringFromParser(Parser);
+                EatUntilIncluding(Parser, CTokenType_Newline);
+              TodoValue = FinalizeStringFromParser(&Builder);
+
+              TodoValue = Trim(TodoValue);
+            }
+            else
+            {
+              TodoValue = ParseMultiLineTodoValue(Parser, Memory);
+            }
 
             person* Person = GetExistingOrCreate(People, PersonName, Memory);
 
@@ -8617,6 +8631,9 @@ main(s32 ArgCount_, const char** ArgStrings)
       GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
   }
+
+  parser P = {};
+  DumpEntireParser(&P);
 
   s32 Result = !Success; // ? SUCCESS_EXIT_CODE : FAILURE_EXIT_CODE ;
   return Result;
