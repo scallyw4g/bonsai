@@ -7865,7 +7865,7 @@ ParseMetaFunctionDef(parser* Parser, counted_string FuncName)
   return Func;
 }
 
-#if 0
+#if 1
 bonsai_function void
 RemoveAllMetaprogrammingOutput(parser_cursor* ParsedFiles, arguments* Args)
 {
@@ -7877,7 +7877,7 @@ RemoveAllMetaprogrammingOutput(parser_cursor* ParsedFiles, arguments* Args)
     parser* Parser = ParsedFiles->Start+ParserIndex;
     if (IsMetaprogrammingOutput(Parser->Filename, Args->Outpath))
     {
-      Info("Removing %.*s", (u32)Parser->Filename.Count, Parser->Filename.Start);
+      Info("Removing %S", Parser->Filename);
       Remove(Parser->Filename);
       continue;
     }
@@ -8550,8 +8550,6 @@ main(s32 ArgCount_, const char** ArgStrings)
   b32 Success = True;
   if (ArgCount > 1)
   {
-    Assert(Args.Files.Start == Args.Files.At);
-
     // TODO(Jesse): Make ParseArgs operate on the parse context directly?
     Ctx.IncludePaths = &Args.IncludePaths;
 
@@ -8563,51 +8561,41 @@ main(s32 ArgCount_, const char** ArgStrings)
 
     RegisterUnparsedCxxTypes(&Ctx.Datatypes, Memory);
 
-    while ( Args.Files.At < Args.Files.End )
-    {
-      counted_string CurrentFileName = *Args.Files.At;
 
-      parser *Parser = ParserForFile(&Ctx, CurrentFileName, TokenCursorSource_RootFile);
-      if (!Parser->Valid)
-      {
-        Error("Tokenizing File: %.*s", (s32)CurrentFileName.Count, CurrentFileName.Start);
-      }
+    Assert(TotalElements(&Args.Files) == 1);
+    Assert(Args.Files.Start == Args.Files.At);
+    counted_string ParserFilename = Args.Files.Start[0];
+
+    parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
+    if (Parser->Valid)
+    {
+      RemoveAllMetaprogrammingOutput(&Ctx.AllParsers, &Args);
 
       Ctx.CurrentParser = Parser;
       ParseDatatypes(&Ctx);
 
       Rewind(Ctx.CurrentParser);
 
-#if 1
-      if (IsMetaprogrammingOutput(Parser->Filename, Args.Outpath))
-      {
-        Info("Skipping %S.", Parser->Filename);
-      }
-      else
-      {
-        GoGoGadgetMetaprogramming(&Ctx, &TodoInfo);
+      GoGoGadgetMetaprogramming(&Ctx, &TodoInfo);
 
-        if (Parser->Valid)
+      if (Parser->Valid)
+      {
+        if (Parser->OutputTokens.At != Parser->OutputTokens.Start)
         {
-          if (Parser->OutputTokens.At != Parser->OutputTokens.Start)
-          {
-            TruncateToCurrentSize(&Parser->OutputTokens);
-            Output(Parser->OutputTokens, Parser->Filename, Memory);
-            LogSuccess("Output '%S'.", Parser->Filename);
-          }
-          else
-          {
-            Error("Tried to output an OutputTokens stream of 0 length!");
-          }
+          TruncateToCurrentSize(&Parser->OutputTokens);
+          Output(Parser->OutputTokens, Parser->Filename, Memory);
+          LogSuccess("Output '%S'.", Parser->Filename);
+        }
+        else
+        {
+          Error("Tried to output an OutputTokens stream of 0 length!");
         }
       }
-#endif
-
-
-      ++Args.Files.At;
     }
-
-    Rewind(&Args.Files);
+    else
+    {
+      Error("Tokenizing File: %S", ParserFilename);
+    }
 
 #if 0
     ITERATE_OVER(&Ctx.Datatypes.Functions)
