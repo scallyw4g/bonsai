@@ -6883,13 +6883,13 @@ FlushOutputToDisk(parse_context *Ctx, counted_string OutputForThisParser, counte
   if ( PeekTokenRaw(Parser).Type == CTokenType_Newline &&
        PeekTokenRaw(Parser, 1).Type == CT_PreprocessorInclude )
   {
-    RequireToken(Parser, CToken(CT_PreprocessorInclude));
-    RequireToken(Parser, CTokenType_LT);
-    RequireToken(Parser, CToken(CS("metaprogramming")));
-    RequireToken(Parser, CTokenType_FSlash);
-    RequireToken(Parser, CToken(CS("output")));
-    RequireToken(Parser, CTokenType_FSlash);
-    counted_string IncludeFilename = RequireToken(Parser, CTokenType_Identifier).Value;
+    RequireTokenRaw(Parser, CToken(CT_PreprocessorInclude));
+    RequireTokenRaw(Parser, CTokenType_LT);
+    RequireTokenRaw(Parser, CToken(CS("metaprogramming")));
+    RequireTokenRaw(Parser, CTokenType_FSlash);
+    RequireTokenRaw(Parser, CToken(CS("output")));
+    RequireTokenRaw(Parser, CTokenType_FSlash);
+    counted_string IncludeFilename = RequireTokenRaw(Parser, CTokenType_Identifier).Value;
 
     string_builder IncludePathBuilder = {};
     Append(&IncludePathBuilder, CS("src/metaprogramming/output/"));
@@ -6898,11 +6898,11 @@ FlushOutputToDisk(parse_context *Ctx, counted_string OutputForThisParser, counte
     if (OptionalToken(Parser, CTokenType_Dot))
     {
       Append(&IncludePathBuilder, CS("."));
-      counted_string Extension = RequireToken(Parser, CTokenType_Identifier).Value;
+      counted_string Extension = RequireTokenRaw(Parser, CTokenType_Identifier).Value;
       Append(&IncludePathBuilder, Extension);
     }
 
-    RequireToken(Parser, CTokenType_GT);
+    RequireTokenRaw(Parser, CTokenType_GT);
 
     OutputPath = Finalize(&IncludePathBuilder, Memory);
     Output(OutputForThisParser, OutputPath, Memory);
@@ -8235,7 +8235,7 @@ GoGoGadgetMetaprogramming(parse_context* Ctx, todo_list_info* TodoInfo)
             }
             else
             {
-              Error("Couldn't resolve %.*s to a metaprogramming directive or bonsai_function name", (u32)DirectiveString.Count, DirectiveString.Start);
+              ParseError(Parser, FormatCountedString(TranArena, CSz("Couldn't resolve %S to a metaprogramming directive or bonsai_function name"), DirectiveString));
             }
           }
 
@@ -8576,7 +8576,7 @@ main(s32 ArgCount_, const char** ArgStrings)
 
       Rewind(Ctx.CurrentParser);
 
-#if 0
+#if 1
       if (IsMetaprogrammingOutput(Parser->Filename, Args.Outpath))
       {
         Info("Skipping %S.", Parser->Filename);

@@ -40,6 +40,7 @@
 #define TriggeredRuntimeBreak() do { if (GetDebugState && GetDebugState()->TriggerRuntimeBreak) { RuntimeBreak(); } } while (0)
 
 #include <metaprogramming/defines.h>
+#include <metaprogramming/functions.h>
 
 //
 // Stdlib Headers
