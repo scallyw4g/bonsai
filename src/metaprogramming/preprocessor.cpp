@@ -860,7 +860,7 @@ TruncateAtPreviousLineStart(parser* Parser, u32 Count )
 // TODO(Jesse): Remove this?  Maybe put it onto the parser?   I'm not crazy
 // about that because it' bloats that struct and we create those things like
 // crazy.. but I don't really like that it's a global either.
-static const u32 Global_ParseErrorBufferSize = 4096;
+static const u32 Global_ParseErrorBufferSize = 1024*16;
 static char Global_ParseErrorBuffer[Global_ParseErrorBufferSize] = {};
 
 bonsai_function void
@@ -1247,8 +1247,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
     PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
     CopyToDest(ParseErrorCursor, FormatCountedString(TranArena, CSz(" %S:%u:0\n"), ParserName, ErrorLineNumber));
 
-    DebugChars(CSz("%S"), CS(ParseErrorCursor));
-
+    PrintToStdout(CS(ParseErrorCursor));
 
 
     RewindParserUntil(Parser, ErrorToken);
@@ -3369,187 +3368,190 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
           PushT.Type = CTokenType_Identifier;
           PushT.Value = PopIdentifier(&Code);
 
-          if ( StringsMatch(PushT.Value, CSz("if")) )
+          if (Ctx)
           {
-            PushT.Type = CTokenType_If;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("else")) )
-          {
-            PushT.Type = CTokenType_Else;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("break")) )
-          {
-            PushT.Type = CTokenType_Break;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("switch")) )
-          {
-            PushT.Type = CTokenType_Switch;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("case")) )
-          {
-            PushT.Type = CTokenType_Case;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("default")) )
-          {
-            PushT.Type = CTokenType_Default;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("for")) )
-          {
-            PushT.Type = CTokenType_For;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("while")) )
-          {
-            PushT.Type = CTokenType_While;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("continue")) )
-          {
-            PushT.Type = CTokenType_Continue;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("return")) )
-          {
-            PushT.Type = CTokenType_Return;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("thread_local")) )
-          {
-            PushT.Type = CTokenType_ThreadLocal;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("const")) )
-          {
-            PushT.Type = CTokenType_Const;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("static")) )
-          {
-            PushT.Type = CTokenType_Static;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("__volatile__")) )
-          {
-            PushT.Type = CTokenType_Volatile;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("volatile")) )
-          {
-            PushT.Type = CTokenType_Volatile;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("void")) )
-          {
-            PushT.Type = CTokenType_Void;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("long")) )
-          {
-            PushT.Type = CTokenType_Long;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("float")) )
-          {
-            PushT.Type = CTokenType_Float;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("char")) )
-          {
-            PushT.Type = CTokenType_Char;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("double")) )
-          {
-            PushT.Type = CTokenType_Double;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("short")) )
-          {
-            PushT.Type = CTokenType_Short;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("int")) )
-          {
-            PushT.Type = CTokenType_Int;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("bool")) )
-          {
-            PushT.Type = CTokenType_Bool;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("__m128")) )
-          {
-            PushT.Type = CTokenType_M128;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("auto")) )
-          {
-            PushT.Type = CTokenType_Auto;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("signed")) )
-          {
-            PushT.Type = CTokenType_Signed;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("unsigned")) )
-          {
-            PushT.Type = CTokenType_Unsigned;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("struct")) )
-          {
-            PushT.Type = CTokenType_Struct;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("typedef")) )
-          {
-            PushT.Type = CTokenType_Typedef;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("__asm__")) )
-          {
-            PushT.Type = CTokenType_Asm;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("asm")) )
-          {
-            PushT.Type = CTokenType_Asm;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("meta")) )
-          {
-            PushT.Type = CTokenType_Meta;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("union")) )
-          {
-            PushT.Type = CTokenType_Union;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("using")) )
-          {
-            PushT.Type = CTokenType_Using;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("enum")) )
-          {
-            PushT.Type = CTokenType_Enum;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("goto")) )
-          {
-            PushT.Type = CTokenType_Goto;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("template")) )
-          {
-            PushT.Type = CTokenType_TemplateKeyword;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("inline")) )
-          {
-            PushT.Type = CTokenType_Inline;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("operator")) )
-          {
-            PushT.Type = CTokenType_OperatorKeyword;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("static_assert")) )
-          {
-            PushT.Type = CT_StaticAssert;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("_Pragma")) )
-          {
-            PushT.Type = CT_KeywordPragma;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("__pragma")) )
-          {
-            PushT.Type = CT_KeywordPragma;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("extern")) )
-          {
-            PushT.Type = CTokenType_Extern;
-          }
-          else if ( StringsMatch(PushT.Value, CSz("__VA_ARGS__")) )
-          {
-            PushT.Type = CT_Preprocessor__VA_ARGS__;
-          }
-          else
-          {
-            if (LastTokenPushed && LastTokenPushed->Type == CT_ScopeResolutionOperator)
+            if ( StringsMatch(PushT.Value, CSz("if")) )
             {
-              PushT.QualifierName = LastTokenPushed->QualifierName;
+              PushT.Type = CTokenType_If;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("else")) )
+            {
+              PushT.Type = CTokenType_Else;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("break")) )
+            {
+              PushT.Type = CTokenType_Break;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("switch")) )
+            {
+              PushT.Type = CTokenType_Switch;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("case")) )
+            {
+              PushT.Type = CTokenType_Case;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("default")) )
+            {
+              PushT.Type = CTokenType_Default;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("for")) )
+            {
+              PushT.Type = CTokenType_For;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("while")) )
+            {
+              PushT.Type = CTokenType_While;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("continue")) )
+            {
+              PushT.Type = CTokenType_Continue;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("return")) )
+            {
+              PushT.Type = CTokenType_Return;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("thread_local")) )
+            {
+              PushT.Type = CTokenType_ThreadLocal;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("const")) )
+            {
+              PushT.Type = CTokenType_Const;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("static")) )
+            {
+              PushT.Type = CTokenType_Static;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("__volatile__")) )
+            {
+              PushT.Type = CTokenType_Volatile;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("volatile")) )
+            {
+              PushT.Type = CTokenType_Volatile;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("void")) )
+            {
+              PushT.Type = CTokenType_Void;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("long")) )
+            {
+              PushT.Type = CTokenType_Long;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("float")) )
+            {
+              PushT.Type = CTokenType_Float;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("char")) )
+            {
+              PushT.Type = CTokenType_Char;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("double")) )
+            {
+              PushT.Type = CTokenType_Double;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("short")) )
+            {
+              PushT.Type = CTokenType_Short;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("int")) )
+            {
+              PushT.Type = CTokenType_Int;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("bool")) )
+            {
+              PushT.Type = CTokenType_Bool;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("__m128")) )
+            {
+              PushT.Type = CTokenType_M128;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("auto")) )
+            {
+              PushT.Type = CTokenType_Auto;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("signed")) )
+            {
+              PushT.Type = CTokenType_Signed;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("unsigned")) )
+            {
+              PushT.Type = CTokenType_Unsigned;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("struct")) )
+            {
+              PushT.Type = CTokenType_Struct;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("typedef")) )
+            {
+              PushT.Type = CTokenType_Typedef;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("__asm__")) )
+            {
+              PushT.Type = CTokenType_Asm;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("asm")) )
+            {
+              PushT.Type = CTokenType_Asm;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("meta")) )
+            {
+              PushT.Type = CTokenType_Meta;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("union")) )
+            {
+              PushT.Type = CTokenType_Union;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("using")) )
+            {
+              PushT.Type = CTokenType_Using;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("enum")) )
+            {
+              PushT.Type = CTokenType_Enum;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("goto")) )
+            {
+              PushT.Type = CTokenType_Goto;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("template")) )
+            {
+              PushT.Type = CTokenType_TemplateKeyword;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("inline")) )
+            {
+              PushT.Type = CTokenType_Inline;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("operator")) )
+            {
+              PushT.Type = CTokenType_OperatorKeyword;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("static_assert")) )
+            {
+              PushT.Type = CT_StaticAssert;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("_Pragma")) )
+            {
+              PushT.Type = CT_KeywordPragma;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("__pragma")) )
+            {
+              PushT.Type = CT_KeywordPragma;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("extern")) )
+            {
+              PushT.Type = CTokenType_Extern;
+            }
+            else if ( StringsMatch(PushT.Value, CSz("__VA_ARGS__")) )
+            {
+              PushT.Type = CT_Preprocessor__VA_ARGS__;
+            }
+            else
+            {
+              if (LastTokenPushed && LastTokenPushed->Type == CT_ScopeResolutionOperator)
+              {
+                PushT.QualifierName = LastTokenPushed->QualifierName;
+              }
             }
           }
         }
@@ -8551,7 +8553,7 @@ main(s32 ArgCount_, const char** ArgStrings)
     // TODO(Jesse): Make ParseArgs operate on the parse context directly?
     Ctx.IncludePaths = &Args.IncludePaths;
 
-#if 0
+#if 1
     todo_list_info TodoInfo = {
       .People = ParseAllTodosFromFile(CSz("todos.md"), Memory),
     };
@@ -8572,26 +8574,9 @@ main(s32 ArgCount_, const char** ArgStrings)
       Ctx.CurrentParser = Parser;
       ParseDatatypes(&Ctx);
 
-      ++Args.Files.At;
-    }
-
-    Rewind(&Args.Files);
-
-    /* RemoveAllMetaprogrammingOutput(&Ctx.AllParsers, &Args); */
-
-    /* RegisterPrimitiveDatatypes(&Ctx.Datatypes, Memory); */
-
+      Rewind(Ctx.CurrentParser);
 
 #if 0
-    ITERATE_OVER(&Ctx.AllParsers)
-    {
-      // TODO(Jesse id: 340): We should only traverse files that were passed to us on the CLI
-
-      parser* Parser = GET_ELEMENT(Iter);
-      Rewind(Parser);
-
-      Ctx.CurrentParser = Parser;
-
       if (IsMetaprogrammingOutput(Parser->Filename, Args.Outpath))
       {
         Info("Skipping %S.", Parser->Filename);
@@ -8614,10 +8599,13 @@ main(s32 ArgCount_, const char** ArgStrings)
           }
         }
       }
-
-      continue;
-    }
 #endif
+
+
+      ++Args.Files.At;
+    }
+
+    Rewind(&Args.Files);
 
 #if 0
     ITERATE_OVER(&Ctx.Datatypes.Functions)
