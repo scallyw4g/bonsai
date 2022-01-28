@@ -5,9 +5,10 @@
 if [ "$Platform" == "Linux" ] ; then
 
   bin/preprocessor_dev                   \
+    -D BONSAI_LINUX                      \
     src/metaprogramming/preprocessor.cpp \
     -I src                               \
-    # -I /usr/include/x86_64-linux-gnu     \
+    # -I /usr/include/x86_64-linux-gnu   \
     # -I /usr/include
 
 elif [ "$Platform" == "Windows" ] ; then
@@ -16,6 +17,7 @@ elif [ "$Platform" == "Windows" ] ; then
     # src/bonsai_types.h                                                                         \
 
   bin/preprocessor_dev $COLORFLAG                                                                                           \
+    -D BONSAI_LINUX \
     src/metaprogramming/preprocessor.cpp                                                                         \
     -I ./src                                                                                                     \
     # -I "C:\Program Files\LLVM\lib\clang\11.0.0\include"                                                          \

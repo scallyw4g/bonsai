@@ -44,6 +44,7 @@ SetTerminalColorsOn()
 bonsai_function void
 SetTerminalColorsOff()
 {
+#if 1
   TerminalColors.Red          = CSz("");
   TerminalColors.Blue         = CSz("");
   TerminalColors.Purple       = CSz("");
@@ -52,6 +53,7 @@ SetTerminalColorsOff()
   TerminalColors.BrightYellow = CSz("");
   TerminalColors.White        = CSz("");
   TerminalColors.Grey         = CSz("");
+#endif
 }
 
 bonsai_function void SetupStdout(u32 ArgCount, const char** ArgStrings);

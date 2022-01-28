@@ -4314,7 +4314,7 @@ PopArgString(const char** ArgStrings, u32 ArgStringCount, u32* ArgIndex)
 }
 
 bonsai_function arguments
-ParseArgs(const char** ArgStrings, u32 ArgCount, memory_arena* Memory)
+ParseArgs(const char** ArgStrings, u32 ArgCount, parse_context *Ctx, memory_arena* Memory)
 {
   arguments Result = {
     .Outpath      = CS("src/metaprogramming/output"),
@@ -4352,6 +4352,46 @@ ParseArgs(const char** ArgStrings, u32 ArgCount, memory_arena* Memory)
         Push(Include, &Result.IncludePaths);
       }
     }
+    else if ( StringsMatch(CS("-D"), Arg) ||
+              StringsMatch(CS("--define"), Arg) )
+    {
+      if (ArgIndex+1 < ArgCount)
+      {
+        ArgIndex += 1;
+        counted_string MacroName = CS(ArgStrings[ArgIndex]);
+
+        if (Contains(CSz("="), MacroName))
+        {
+          Warn("Currently, custom define values are unsupported.  Please use `(--define/-D) DEFINE_NAME` to set DEFINE_NAME=1.");
+        }
+
+        macro_def M = {
+          .Type = type_macro_keyword,
+          .Name = MacroName,
+        };
+
+        // TODO(Jesse): Do we want to track where macro bodies came from more carefully?
+        M.Body.Tokens = AllocateTokenBuffer(Memory, 1, TokenCursorSource_Unknown, 0);
+        M.Body.Tokens.Start[0] = CToken(1u);
+
+        macro_def *NewMacro = Push(&Ctx->Datatypes.Macros, M, Ctx->Memory);
+      }
+      else
+      {
+        Error("Macro name required when using (--define/-D) switches.");
+      }
+
+    }
+#if 0
+    // NOTE(Jesse): This has to come after the above -D path
+    else if ( StartsWith(CSz("-D"), Arg) )
+    {
+      macro_def *NewMacro = Push(&Ctx->Datatypes.Macros, { .Name = MacroNameToken->Value }, Ctx->Memory);
+      NewMacro->Type = type_macro_keyword;
+      counted_string Name = Substring(Arg, 2);
+      NewMacro->Name = Name;
+    }
+#endif
     else if ( StringsMatch(CS("-c0"), Arg) ||
               StringsMatch(CS("--colors-off"), Arg) )
     {
@@ -4643,6 +4683,7 @@ TrimLastToken(parser* Parser, c_token_type TokenType)
 bonsai_function parser
 GetBodyTextForNextScope(parser* Parser)
 {
+  // TODO(Jesse, immediate): This should return c_token_cursor
   parser BodyText = *Parser;
   BodyText.OutputTokens = {};
 
@@ -8472,14 +8513,19 @@ RegisterUnparsedCxxTypes(program_datatypes *Datatypes, memory_arena *Memory)
 s32
 main(s32 ArgCount_, const char** ArgStrings)
 {
+  memory_arena Memory_ = {};
+  memory_arena* Memory = &Memory_;
+
   Assert(ArgCount_ > 0);
   u32 ArgCount = (u32)ArgCount_;
 
+  parse_context Ctx = {
+    .Memory = Memory,
+  };
+
   SetupStdout(ArgCount, ArgStrings);
 
-  memory_arena Memory_ = {};
-  memory_arena* Memory = &Memory_;
-  arguments Args = ParseArgs(ArgStrings, ArgCount, Memory);
+  arguments Args = ParseArgs(ArgStrings, ArgCount, &Ctx, Memory);
 
 
   if (!SearchForProjectRoot()) {
@@ -8502,16 +8548,16 @@ main(s32 ArgCount_, const char** ArgStrings)
   {
     Assert(Args.Files.Start == Args.Files.At);
 
-    parse_context Ctx = {
-      .Memory = Memory,
-      .IncludePaths = &Args.IncludePaths,
-    };
+    // TODO(Jesse): Make ParseArgs operate on the parse context directly?
+    Ctx.IncludePaths = &Args.IncludePaths;
 
 #if 0
     todo_list_info TodoInfo = {
       .People = ParseAllTodosFromFile(CSz("todos.md"), Memory),
     };
 #endif
+
+    RegisterUnparsedCxxTypes(&Ctx.Datatypes, Memory);
 
     while ( Args.Files.At < Args.Files.End )
     {
@@ -8523,6 +8569,9 @@ main(s32 ArgCount_, const char** ArgStrings)
         Error("Tokenizing File: %.*s", (s32)CurrentFileName.Count, CurrentFileName.Start);
       }
 
+      Ctx.CurrentParser = Parser;
+      ParseDatatypes(&Ctx);
+
       ++Args.Files.At;
     }
 
@@ -8532,17 +8581,6 @@ main(s32 ArgCount_, const char** ArgStrings)
 
     /* RegisterPrimitiveDatatypes(&Ctx.Datatypes, Memory); */
 
-    RegisterUnparsedCxxTypes(&Ctx.Datatypes, Memory);
-
-    ITERATE_OVER(&Ctx.AllParsers)
-    {
-      parser* Parser = GET_ELEMENT(Iter);
-      Ctx.CurrentParser = Parser;
-
-      ParseDatatypes(&Ctx);
-
-      continue;
-    }
 
 #if 0
     ITERATE_OVER(&Ctx.AllParsers)
@@ -8631,9 +8669,6 @@ main(s32 ArgCount_, const char** ArgStrings)
       GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
   }
-
-  parser P = {};
-  DumpEntireParser(&P);
 
   s32 Result = !Success; // ? SUCCESS_EXIT_CODE : FAILURE_EXIT_CODE ;
   return Result;

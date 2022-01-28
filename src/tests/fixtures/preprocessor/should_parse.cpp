@@ -181,3 +181,13 @@ TestFunc1()
 
   int Six = 3 + 3;
 }
+
+
+#define global_variable static
+#define bonsai_function static
+#define CSz(NullTerminatedCString) \
+  CS(NullTerminatedCString, sizeof(NullTerminatedCString)-1)
+#include <src/bonsai_stdlib/headers/console_macros.h>
+
+
+

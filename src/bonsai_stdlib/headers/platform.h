@@ -1,6 +1,3 @@
-#define BONSAI_LINUX (1)
-/* #define BONSAI_WIN32 (1) */
-
 #if BONSAI_WIN32
 #include <win32_platform.h>
 
