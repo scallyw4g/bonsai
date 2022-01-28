@@ -947,9 +947,19 @@ b32
 operator==(c_token T1, c_token T2)
 {
   b32 Result = (T1.Type == T2.Type);
-  if (Result && (T1.Value.Count > 1 || T2.Value.Count > 1) )
+
+  if (Result && T1.Type == CTokenType_Newline)
   {
-    Result &= StringsMatch(T1.Value, T2.Value);
+    // NOTE(Jesse): On Windows newline chars can be length 2 (\r\n) so we don't
+    // check that the Value strings match for that case
+    Assert(T2.Type == CTokenType_Newline);
+  }
+  else
+  {
+    if (Result && (T1.Value.Count > 1 || T2.Value.Count > 1) )
+    {
+      Result &= StringsMatch(T1.Value, T2.Value);
+    }
   }
   return Result;
 }

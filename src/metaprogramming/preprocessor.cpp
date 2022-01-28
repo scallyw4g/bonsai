@@ -6883,7 +6883,9 @@ FlushOutputToDisk(parse_context *Ctx, counted_string OutputForThisParser, counte
   if ( PeekTokenRaw(Parser).Type == CTokenType_Newline &&
        PeekTokenRaw(Parser, 1).Type == CT_PreprocessorInclude )
   {
-    RequireTokenRaw(Parser, CToken(CT_PreprocessorInclude));
+    RequireTokenRaw(Parser, CToken(CTokenType_Newline));
+    RequireTokenRaw(Parser, CToken(CT_PreprocessorInclude, CSz("#include")));
+    RequireTokenRaw(Parser, CToken(CTokenType_Space));
     RequireTokenRaw(Parser, CTokenType_LT);
     RequireTokenRaw(Parser, CToken(CS("metaprogramming")));
     RequireTokenRaw(Parser, CTokenType_FSlash);
@@ -6895,7 +6897,7 @@ FlushOutputToDisk(parse_context *Ctx, counted_string OutputForThisParser, counte
     Append(&IncludePathBuilder, CS("src/metaprogramming/output/"));
     Append(&IncludePathBuilder, IncludeFilename);
 
-    if (OptionalToken(Parser, CTokenType_Dot))
+    if (OptionalTokenRaw(Parser, CTokenType_Dot))
     {
       Append(&IncludePathBuilder, CS("."));
       counted_string Extension = RequireTokenRaw(Parser, CTokenType_Identifier).Value;

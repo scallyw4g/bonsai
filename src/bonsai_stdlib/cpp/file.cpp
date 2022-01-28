@@ -26,7 +26,14 @@ Rename(native_file CurrentFile, counted_string NewFilePath)
 {
   const char* Old = GetNullTerminated(CurrentFile.Path);
   const char* New = GetNullTerminated(NewFilePath);
-  b32 Result = (rename(Old, New) == 0) ? True : False;
+  int RenameRet = rename(Old, New);
+
+  b32 Result = (RenameRet == 0) ? True : False;
+
+  if (!Result)
+  {
+    Info("%d", errno);
+  }
   return Result;
 }
 
@@ -59,6 +66,7 @@ OpenFile(const char* FilePath, const char* Permissions)
 
       default:
       {
+        /* Error("Error opening File %s. (Errno==(%d))", FilePath, errno); */
       } break;
     }
 
