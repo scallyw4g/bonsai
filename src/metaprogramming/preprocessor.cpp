@@ -7865,11 +7865,54 @@ ParseMetaFunctionDef(parser* Parser, counted_string FuncName)
   return Func;
 }
 
+// TODO(Jesse): Rewrite this so it doesn't suck
 #if 1
 bonsai_function void
-RemoveAllMetaprogrammingOutput(parser_cursor* ParsedFiles, arguments* Args)
+RemoveAllMetaprogrammingOutputRecursive(const char * OutputPath)
 {
 
+  WIN32_FIND_DATA fdFile;
+  HANDLE hFind = NULL;
+
+  char sPath[2048];
+
+  //Specify a file mask. *.* = We want everything!
+  sprintf(sPath, "%s\\*.*", OutputPath);
+
+  if((hFind = FindFirstFile(sPath, &fdFile)) == INVALID_HANDLE_VALUE)
+  {
+      printf("Path not found: [%s]\n", OutputPath);
+  }
+
+  do
+  {
+      //Find first file will always return "."
+      //    and ".." as the first two directories.
+      if(strcmp(fdFile.cFileName, ".") != 0
+              && strcmp(fdFile.cFileName, "..") != 0)
+      {
+          //Build up our file path using the passed in
+          //  [OutputPath] and the file/foldername we just found:
+          sprintf(sPath, "%s\\%s", OutputPath, fdFile.cFileName);
+
+          //Is the entity a File or Folder?
+          if(fdFile.dwFileAttributes &FILE_ATTRIBUTE_DIRECTORY)
+          {
+              printf("Descending into Directory: %s\n", sPath);
+              RemoveAllMetaprogrammingOutputRecursive(sPath);
+          }
+          else
+          {
+              printf("Removeing File: %s\n", sPath);
+              Ensure(Remove(CS(sPath)));
+          }
+      }
+  }
+  while(FindNextFile(hFind, &fdFile));
+
+  FindClose(hFind);
+
+#if 0
   for (u32 ParserIndex = 0;
       ParserIndex < Count(ParsedFiles);
       ++ParserIndex)
@@ -7882,6 +7925,7 @@ RemoveAllMetaprogrammingOutput(parser_cursor* ParsedFiles, arguments* Args)
       continue;
     }
   }
+#endif
 
 }
 #endif
@@ -8569,7 +8613,7 @@ main(s32 ArgCount_, const char** ArgStrings)
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
     if (Parser->Valid)
     {
-      RemoveAllMetaprogrammingOutput(&Ctx.AllParsers, &Args);
+      RemoveAllMetaprogrammingOutputRecursive(GetNullTerminated(Args.Outpath));
 
       Ctx.CurrentParser = Parser;
       ParseDatatypes(&Ctx);
