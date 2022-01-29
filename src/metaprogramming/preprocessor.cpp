@@ -6936,13 +6936,6 @@ FlushOutputToDisk(parse_context *Ctx, counted_string OutputForThisParser, counte
     // TODO(Jesse, id: 226, tags: metaprogramming, output): Should we handle this differently?
     Warn("Not parsing datatypes in inlined code for %.*s", (u32)OutputPath.Count, OutputPath.Start);
   }
-  else
-  {
-    // What do we do here?
-    NotImplemented;
-    /* ParseDatatypes(Ctx); */
-    /* Push(&Ctx->AllParsers, OutputParse, Memory); */
-  }
 
   /* PushParser(Ctx->CurrentParser, OutputParse, parser_push_type_include); */
   /* GoGoGadgetMetaprogramming(Ctx, TodoInfo); */
@@ -7983,6 +7976,9 @@ GoGoGadgetMetaprogramming(parse_context* Ctx, todo_list_info* TodoInfo)
       case CTokenType_CommentSingleLine:
       {
         c_token CommentStartToken = PopTokenRaw(Parser);
+        EatComment(Parser, CommentStartToken.Type);
+#if 0
+        c_token CommentStartToken = PopTokenRaw(Parser);
         c_token FirstInteriorT = PeekToken(Parser);
         if ( StringsMatch(FirstInteriorT.Value, CSz("TODO")) )
         {
@@ -8070,6 +8066,7 @@ GoGoGadgetMetaprogramming(parse_context* Ctx, todo_list_info* TodoInfo)
         {
           EatComment(Parser, CommentStartToken.Type);
         }
+#endif
 
       } break;
 
@@ -8276,7 +8273,7 @@ GoGoGadgetMetaprogramming(parse_context* Ctx, todo_list_info* TodoInfo)
               }
               else
               {
-                Warn("Unable to generate code for meta_func %.*s", (u32)Func->Name.Count, Func->Name.Start);
+                Warn("Unable to generate code for meta_func %S", Func->Name);
               }
             }
             else
@@ -8622,19 +8619,20 @@ main(s32 ArgCount_, const char** ArgStrings)
 
       GoGoGadgetMetaprogramming(&Ctx, &TodoInfo);
 
-      if (Parser->Valid)
-      {
-        if (Parser->OutputTokens.At != Parser->OutputTokens.Start)
-        {
-          TruncateToCurrentSize(&Parser->OutputTokens);
-          Output(Parser->OutputTokens, Parser->Filename, Memory);
-          LogSuccess("Output '%S'.", Parser->Filename);
-        }
-        else
-        {
-          Error("Tried to output an OutputTokens stream of 0 length!");
-        }
-      }
+/*       if (Parser->Valid) */
+/*       { */
+/*         if (Parser->OutputTokens.At != Parser->OutputTokens.Start) */
+/*         { */
+/*           TruncateToCurrentSize(&Parser->OutputTokens); */
+/*           Output(Parser->OutputTokens, Parser->Filename, Memory); */
+/*           LogSuccess("Output '%S'.", Parser->Filename); */
+/*         } */
+/*         else */
+/*         { */
+/*           Error("Tried to output an OutputTokens stream of 0 length!"); */
+/*         } */
+/*       } */
+
     }
     else
     {
