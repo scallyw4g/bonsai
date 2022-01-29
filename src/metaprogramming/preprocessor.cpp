@@ -4423,6 +4423,7 @@ ParseArgs(const char** ArgStrings, u32 ArgCount, parse_context *Ctx, memory_aren
 
 global_variable random_series TempFileEntropy = {3215432};
 
+#if 0
 bonsai_function b32
 Output(c_token_cursor Code, counted_string Filename, memory_arena* Memory)
 {
@@ -4472,6 +4473,7 @@ Output(c_token_cursor Code, counted_string Filename, memory_arena* Memory)
 
   return Result;
 }
+#endif
 
 bonsai_function b32
 Output(counted_string Code, counted_string OutputFilename, memory_arena* Memory, output_mode Mode = Output_NoOverwrite)
@@ -4496,45 +4498,53 @@ Output(counted_string Code, counted_string OutputFilename, memory_arena* Memory,
           counted_string FileContents = ReadEntireFileIntoString(OutputFilename, Memory);
           if (StringsMatch(Trim(Code), Trim(FileContents)))
           {
-            Info("File contents matched output for %.*s", (u32)OutputFilename.Count, OutputFilename.Start);
+            Info("File contents matched output for %S", OutputFilename);
           }
           else
           {
-            Error("File contents didn't match for %.*s", (u32)OutputFilename.Count, OutputFilename.Start);
+            Error("File contents didn't match for %S", OutputFilename);
             Error("TODO(Jesse): Should probably emit to a similar filname with an incremented extension or something..");
           }
         }
         else if (Rename(TempFile, OutputFilename))
         {
-          Info("Generated and output %.*s", (u32)OutputFilename.Count, OutputFilename.Start);
+          Info("Generated and output %S", OutputFilename);
           Result = True;
         }
         else
         {
-          Error("Renaming tempfile: %.*s -> %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start, (s32)OutputFilename.Count, OutputFilename.Start);
+          Error("Renaming tempfile: %S -> %S", TempFile.Path, OutputFilename);
         }
       }
       else
       {
+        if (FileExists(OutputFilename))
+        {
+          if (!Remove(OutputFilename))
+          {
+            Error("Removing %S", OutputFilename);
+          }
+        }
+
         if (Rename(TempFile, OutputFilename))
         {
-          Info("Generated and output %.*s", (u32)OutputFilename.Count, OutputFilename.Start);
+          Info("Generated and output %S", OutputFilename);
           Result = True;
         }
         else
         {
-          Error("Renaming tempfile: %.*s -> %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start, (s32)OutputFilename.Count, OutputFilename.Start);
+          Error("Renaming tempfile: %S -> %S", TempFile, OutputFilename);
         }
       }
     }
     else
     {
-      Error("Writing to tempfile: %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start);
+      Error("Writing to tempfile: %S", TempFile.Path);
     }
   }
   else
   {
-    Error("Opening tempfile: %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start);
+    Error("Opening tempfile: %S", TempFile.Path);
   }
 
   return Result;
@@ -8610,7 +8620,7 @@ main(s32 ArgCount_, const char** ArgStrings)
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
     if (Parser->Valid)
     {
-      RemoveAllMetaprogrammingOutputRecursive(GetNullTerminated(Args.Outpath));
+      /* RemoveAllMetaprogrammingOutputRecursive(GetNullTerminated(Args.Outpath)); */
 
       Ctx.CurrentParser = Parser;
       ParseDatatypes(&Ctx);

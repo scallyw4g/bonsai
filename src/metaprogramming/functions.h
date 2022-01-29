@@ -1,4 +1,3 @@
-
 meta(
   func dunion_debug_print(DUnionType)
   {
