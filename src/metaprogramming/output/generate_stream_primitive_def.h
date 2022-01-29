@@ -1,21 +1,17 @@
-
-    
-    struct primitive_def_stream_chunk
+        struct primitive_def_stream_chunk
     {
       primitive_def Element;
       primitive_def_stream_chunk* Next;
     };
 
-    
-    struct primitive_def_stream
+        struct primitive_def_stream
     {
       primitive_def_stream_chunk* FirstChunk;
       primitive_def_stream_chunk* LastChunk;
     };
 
 
-    
-    struct primitive_def_iterator
+        struct primitive_def_iterator
     {
       primitive_def_stream* Stream;
       primitive_def_stream_chunk* At;
@@ -45,8 +41,7 @@
     }
 
 
-    
-    bonsai_function primitive_def *
+        bonsai_function primitive_def *
     Push(primitive_def_stream* Stream, primitive_def Element, memory_arena* Memory)
     {
       primitive_def_stream_chunk* NextChunk = (primitive_def_stream_chunk*)PushStruct(Memory, sizeof( primitive_def_stream_chunk ), 1, 0);
@@ -106,6 +101,5 @@
         *S1 = *S2;
       }
     }
-
 
 

@@ -1,10 +1,8 @@
-
-    
-    struct struct_def_cursor
+        struct struct_def_cursor
     {
       struct_def* Start;
-      struct_def* End;
       struct_def* At;
+      struct_def* End;
     };
 
     bonsai_function struct_def_cursor
@@ -19,24 +17,20 @@
       return Result;
     }
 
-    
-    
-    struct struct_def_stream_chunk
+            struct struct_def_stream_chunk
     {
       struct_def Element;
       struct_def_stream_chunk* Next;
     };
 
-    
-    struct struct_def_stream
+        struct struct_def_stream
     {
       struct_def_stream_chunk* FirstChunk;
       struct_def_stream_chunk* LastChunk;
     };
 
 
-    
-    struct struct_def_iterator
+        struct struct_def_iterator
     {
       struct_def_stream* Stream;
       struct_def_stream_chunk* At;
@@ -66,8 +60,7 @@
     }
 
 
-    
-    bonsai_function struct_def *
+        bonsai_function struct_def *
     Push(struct_def_stream* Stream, struct_def Element, memory_arena* Memory)
     {
       struct_def_stream_chunk* NextChunk = (struct_def_stream_chunk*)PushStruct(Memory, sizeof( struct_def_stream_chunk ), 1, 0);
@@ -127,7 +120,6 @@
         *S1 = *S2;
       }
     }
-
 
 
 

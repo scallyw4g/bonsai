@@ -1,21 +1,17 @@
-
-    
-    struct person_stream_chunk
+        struct person_stream_chunk
     {
       person Element;
       person_stream_chunk* Next;
     };
 
-    
-    struct person_stream
+        struct person_stream
     {
       person_stream_chunk* FirstChunk;
       person_stream_chunk* LastChunk;
     };
 
 
-    
-    struct person_iterator
+        struct person_iterator
     {
       person_stream* Stream;
       person_stream_chunk* At;
@@ -45,8 +41,7 @@
     }
 
 
-    
-    bonsai_function person *
+        bonsai_function person *
     Push(person_stream* Stream, person Element, memory_arena* Memory)
     {
       person_stream_chunk* NextChunk = (person_stream_chunk*)PushStruct(Memory, sizeof( person_stream_chunk ), 1, 0);
@@ -106,6 +101,5 @@
         *S1 = *S2;
       }
     }
-
 
 

@@ -144,8 +144,7 @@ FinalizeStringFromParser(string_from_parser* Builder)
     }
     else
     {
-      ParseError(Parser, CSz("shit"));
-      RuntimeBreak();
+      /* ParseError(Parser, CSz("shit")); */
       Warn(CSz("Unable to call FinalizeStringFromParser due to having spanned a parser chain link."));
     }
   }
@@ -561,7 +560,7 @@ AdvanceParser(parser* Parser)
     //
     // Actually, this may not be true any longer.
     //
-    // TODO(Jesse, immediate): Verify if the above statement still holds true
+    // TODO(Jesse, tags: immediate): Verify if the above statement still holds true
     Assert(Parser->Tokens.Next->At == Parser->Tokens.Next->Start);
     Assert(Parser->Tokens.Next != &Parser->Tokens);
     Assert(Parser->Tokens.Next->Next != &Parser->Tokens);
@@ -4059,8 +4058,8 @@ GenerateStructDef(d_union_decl* dUnion, memory_arena* Memory)
           Member->variable_decl.Name),
       Memory);
   }
-  Result = Concat(Result, CS("\n  union\n  {\n"), Memory);
 
+  b32 ValidMemberFound = False;
   for (d_union_member_iterator Iter = Iterator(&dUnion->Members);
       IsValid(&Iter);
       Advance(&Iter))
@@ -4068,11 +4067,20 @@ GenerateStructDef(d_union_decl* dUnion, memory_arena* Memory)
     d_union_member* Member = &Iter.At->Element;
     if (Member->Flags != d_union_flag_enum_only)
     {
+      if (!ValidMemberFound)
+      {
+        Result = Concat(Result, CS("\n  union\n  {\n"), Memory);
+        ValidMemberFound = True;
+      }
       Result = Concat(Result, FormatCountedString(Memory, CSz("    %S %S;\n"), Member->Type, Member->Name), Memory);
     }
   }
+  if (ValidMemberFound)
+  {
+    Result = Concat(Result, CS("  };\n"), Memory);
+  }
 
-  Result = Concat(Result, CS("  };\n};\n\n"), Memory);
+  Result = Concat(Result, CS("};\n\n"), Memory);
 
   return Result;
 }
@@ -4421,8 +4429,6 @@ ParseArgs(const char** ArgStrings, u32 ArgCount, parse_context *Ctx, memory_aren
   return Result;
 }
 
-global_variable random_series TempFileEntropy = {3215432};
-
 #if 0
 bonsai_function b32
 Output(c_token_cursor Code, counted_string Filename, memory_arena* Memory)
@@ -4506,7 +4512,7 @@ Output(counted_string Code, counted_string OutputFilename, memory_arena* Memory,
             Error("TODO(Jesse): Should probably emit to a similar filname with an incremented extension or something..");
           }
         }
-        else if (Rename(TempFile, OutputFilename))
+        else if (Rename(TempFile.Path, OutputFilename))
         {
           Info("Generated and output %S", OutputFilename);
           Result = True;
@@ -4518,22 +4524,14 @@ Output(counted_string Code, counted_string OutputFilename, memory_arena* Memory,
       }
       else
       {
-        if (FileExists(OutputFilename))
-        {
-          if (!Remove(OutputFilename))
-          {
-            Error("Removing %S", OutputFilename);
-          }
-        }
-
-        if (Rename(TempFile, OutputFilename))
+        if (Rename(TempFile.Path, OutputFilename))
         {
           Info("Generated and output %S", OutputFilename);
           Result = True;
         }
         else
         {
-          Error("Renaming tempfile: %S -> %S", TempFile, OutputFilename);
+          Error("Renaming tempfile: %S -> %S", TempFile.Path, OutputFilename);
         }
       }
     }
@@ -7983,9 +7981,11 @@ GoGoGadgetMetaprogramming(parse_context* Ctx, todo_list_info* TodoInfo)
       case CTokenType_CommentMultiLineStart:
       case CTokenType_CommentSingleLine:
       {
+#if 1
         c_token CommentStartToken = PopTokenRaw(Parser);
         EatComment(Parser, CommentStartToken.Type);
-#if 0
+#else
+
         c_token CommentStartToken = PopTokenRaw(Parser);
         c_token FirstInteriorT = PeekToken(Parser);
         if ( StringsMatch(FirstInteriorT.Value, CSz("TODO")) )
@@ -8012,8 +8012,8 @@ GoGoGadgetMetaprogramming(parse_context* Ctx, todo_list_info* TodoInfo)
               Assert(!IdValue.Count);
               GeneratedNewId = True;
               IdValue = CS(++LargestIdFoundInFile);
-              Push(CToken(CS(" id: ")), &Parser->OutputTokens);
-              Push(CToken(IdValue),     &Parser->OutputTokens);
+              /* Push(CToken(CS(" id: ")), &Parser->OutputTokens); */
+              /* Push(CToken(IdValue),     &Parser->OutputTokens); */
             }
 
             OptionalToken(Parser, CTokenType_Comma);
@@ -8022,7 +8022,7 @@ GoGoGadgetMetaprogramming(parse_context* Ctx, todo_list_info* TodoInfo)
             {
               if (GeneratedNewId)
               {
-                Push(CToken(CTokenType_Comma), &Parser->OutputTokens);
+                /* Push(CToken(CTokenType_Comma), &Parser->OutputTokens); */
               }
 
               RequireToken(Parser, CToken(CSz("tags")));
@@ -8106,7 +8106,6 @@ GoGoGadgetMetaprogramming(parse_context* Ctx, todo_list_info* TodoInfo)
               counted_string ArgType = RequireToken(Parser, CTokenType_Identifier).Value;
               counted_string ArgName = RequireToken(Parser, CTokenType_Identifier).Value;
               RequireToken(Parser, CTokenType_CloseParen);
-
 
               parser Body = GetBodyTextForNextScope(Parser);
 
@@ -8353,8 +8352,12 @@ WriteTodosToFile(person_stream* People, memory_arena* Memory)
     Error("Opening Tempfile");
   }
 
-  Rename(TempFile, CSz("todos.md"));
-  CloseFile(&TempFile);
+  AllWritesSucceeded &= CloseFile(&TempFile);
+
+  if (AllWritesSucceeded)
+  {
+    Rename(TempFile.Path, CSz("todos.md"));
+  }
 
   return;
 }
@@ -8602,14 +8605,11 @@ main(s32 ArgCount_, const char** ArgStrings)
     // TODO(Jesse): Make ParseArgs operate on the parse context directly?
     Ctx.IncludePaths = &Args.IncludePaths;
 
-#if 1
     todo_list_info TodoInfo = {
       .People = ParseAllTodosFromFile(CSz("todos.md"), Memory),
     };
-#endif
 
     RegisterUnparsedCxxTypes(&Ctx.Datatypes, Memory);
-
 
     Assert(TotalElements(&Args.Files) == 1);
     Assert(Args.Files.Start == Args.Files.At);
@@ -8662,9 +8662,8 @@ main(s32 ArgCount_, const char** ArgStrings)
     }
 #endif
 
-#if 1
-    WriteTodosToFile(&TodoInfo.People, Memory);
-#endif
+    /* WriteTodosToFile(&TodoInfo.People, Memory); */
+
   }
   else
   {

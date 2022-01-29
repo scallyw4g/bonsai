@@ -270,7 +270,6 @@ meta(
     (generate_stream_struct(Type))
     (generate_stream_iterator(Type))
     (generate_stream_push(Type))
-
   }
 )
 

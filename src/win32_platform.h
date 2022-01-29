@@ -19,7 +19,7 @@
 
 #define runtime_lib_export __declspec(dllexport)
 
-#define Newline "\r\n"
+#define Newline "\n"
 
 #define PLATFORM_OFFSET (sizeof(void*))
 

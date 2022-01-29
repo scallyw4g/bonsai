@@ -1,21 +1,17 @@
-
-    
-    struct tag_stream_chunk
+        struct tag_stream_chunk
     {
       tag Element;
       tag_stream_chunk* Next;
     };
 
-    
-    struct tag_stream
+        struct tag_stream
     {
       tag_stream_chunk* FirstChunk;
       tag_stream_chunk* LastChunk;
     };
 
 
-    
-    struct tag_iterator
+        struct tag_iterator
     {
       tag_stream* Stream;
       tag_stream_chunk* At;
@@ -45,8 +41,7 @@
     }
 
 
-    
-    bonsai_function tag *
+        bonsai_function tag *
     Push(tag_stream* Stream, tag Element, memory_arena* Memory)
     {
       tag_stream_chunk* NextChunk = (tag_stream_chunk*)PushStruct(Memory, sizeof( tag_stream_chunk ), 1, 0);
@@ -106,6 +101,5 @@
         *S1 = *S2;
       }
     }
-
 
 

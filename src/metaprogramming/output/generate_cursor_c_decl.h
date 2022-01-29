@@ -1,9 +1,8 @@
-
     struct struct_member_cursor
     {
       struct_member* Start;
-      struct_member* End;
       struct_member* At;
+      struct_member* End;
     };
 
     bonsai_function struct_member_cursor

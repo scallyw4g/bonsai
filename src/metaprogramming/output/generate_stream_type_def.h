@@ -1,21 +1,17 @@
-
-    
-    struct type_def_stream_chunk
+        struct type_def_stream_chunk
     {
       type_def Element;
       type_def_stream_chunk* Next;
     };
 
-    
-    struct type_def_stream
+        struct type_def_stream
     {
       type_def_stream_chunk* FirstChunk;
       type_def_stream_chunk* LastChunk;
     };
 
 
-    
-    struct type_def_iterator
+        struct type_def_iterator
     {
       type_def_stream* Stream;
       type_def_stream_chunk* At;
@@ -45,8 +41,7 @@
     }
 
 
-    
-    bonsai_function type_def *
+        bonsai_function type_def *
     Push(type_def_stream* Stream, type_def Element, memory_arena* Memory)
     {
       type_def_stream_chunk* NextChunk = (type_def_stream_chunk*)PushStruct(Memory, sizeof( type_def_stream_chunk ), 1, 0);
@@ -106,6 +101,5 @@
         *S1 = *S2;
       }
     }
-
 
 

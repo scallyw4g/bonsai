@@ -1,21 +1,17 @@
-
-    
-    struct ast_node_variable_def_stream_chunk
+        struct ast_node_variable_def_stream_chunk
     {
       ast_node_variable_def Element;
       ast_node_variable_def_stream_chunk* Next;
     };
 
-    
-    struct ast_node_variable_def_stream
+        struct ast_node_variable_def_stream
     {
       ast_node_variable_def_stream_chunk* FirstChunk;
       ast_node_variable_def_stream_chunk* LastChunk;
     };
 
 
-    
-    struct ast_node_variable_def_iterator
+        struct ast_node_variable_def_iterator
     {
       ast_node_variable_def_stream* Stream;
       ast_node_variable_def_stream_chunk* At;
@@ -45,8 +41,7 @@
     }
 
 
-    
-    bonsai_function ast_node_variable_def *
+        bonsai_function ast_node_variable_def *
     Push(ast_node_variable_def_stream* Stream, ast_node_variable_def Element, memory_arena* Memory)
     {
       ast_node_variable_def_stream_chunk* NextChunk = (ast_node_variable_def_stream_chunk*)PushStruct(Memory, sizeof( ast_node_variable_def_stream_chunk ), 1, 0);
@@ -106,6 +101,5 @@
         *S1 = *S2;
       }
     }
-
 
 

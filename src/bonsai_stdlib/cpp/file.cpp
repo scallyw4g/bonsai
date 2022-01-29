@@ -21,19 +21,39 @@ CloseFile(native_file* File)
   return Result;
 }
 
+global_variable random_series TempFileEntropy = {3215432};
+
 bonsai_function b32
-Rename(native_file CurrentFile, counted_string NewFilePath)
+Rename(counted_string CurrentFilePath, counted_string NewFilePath)
 {
-  const char* Old = GetNullTerminated(CurrentFile.Path);
-  const char* New = GetNullTerminated(NewFilePath);
-  int RenameRet = rename(Old, New);
-
-  b32 Result = (RenameRet == 0) ? True : False;
-
-  if (!Result)
+  counted_string TmpFilename = {};
+  if (FileExists(NewFilePath))
   {
-    Info("%d", errno);
+    TmpFilename = GetTmpFilename(&TempFileEntropy, TranArena);
+    Rename(NewFilePath, TmpFilename);
   }
+
+
+  const char* Old = GetNullTerminated(CurrentFilePath);
+  const char* New = GetNullTerminated(NewFilePath);
+  b32 Result = (rename(Old, New) == 0);
+
+  if (Result)
+  {
+    if (TmpFilename.Count)
+    {
+      Remove(TmpFilename);
+    }
+  }
+  else
+  {
+    Info("Error renaming %S -> %S , errno(%d)", CurrentFilePath, NewFilePath, errno);
+    if (TmpFilename.Count)
+    {
+      Rename(TmpFilename, NewFilePath);
+    }
+  }
+
   return Result;
 }
 
@@ -129,7 +149,7 @@ bonsai_function native_file
 GetTempFile(random_series* Entropy, memory_arena* Memory)
 {
   counted_string Filename = GetTmpFilename(Entropy, Memory);
-  native_file Result = OpenFile(Filename, "wb");
+  native_file Result = OpenFile(Filename, "w+b");
   if (!Result.Handle)
     { Error("Opening File %S, errno: %d", Filename, errno); }
   return Result;

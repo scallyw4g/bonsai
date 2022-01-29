@@ -1,21 +1,17 @@
-
-    
-    struct enum_member_stream_chunk
+        struct enum_member_stream_chunk
     {
       enum_member Element;
       enum_member_stream_chunk* Next;
     };
 
-    
-    struct enum_member_stream
+        struct enum_member_stream
     {
       enum_member_stream_chunk* FirstChunk;
       enum_member_stream_chunk* LastChunk;
     };
 
 
-    
-    struct enum_member_iterator
+        struct enum_member_iterator
     {
       enum_member_stream* Stream;
       enum_member_stream_chunk* At;
@@ -45,8 +41,7 @@
     }
 
 
-    
-    bonsai_function enum_member *
+        bonsai_function enum_member *
     Push(enum_member_stream* Stream, enum_member Element, memory_arena* Memory)
     {
       enum_member_stream_chunk* NextChunk = (enum_member_stream_chunk*)PushStruct(Memory, sizeof( enum_member_stream_chunk ), 1, 0);
@@ -106,6 +101,5 @@
         *S1 = *S2;
       }
     }
-
 
 

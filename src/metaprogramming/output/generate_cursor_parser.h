@@ -1,9 +1,8 @@
-
     struct parser_cursor
     {
       parser* Start;
-      parser* End;
       parser* At;
+      parser* End;
     };
 
     bonsai_function parser_cursor

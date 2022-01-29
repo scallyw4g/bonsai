@@ -1,4 +1,3 @@
-
     bonsai_function b32
     AreEqual(memory_arena_stats *Thing1, memory_arena_stats *Thing2)
     {

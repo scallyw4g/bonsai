@@ -1,9 +1,8 @@
-
     struct v3_cursor
     {
       v3* Start;
-      v3* End;
       v3* At;
+      v3* End;
     };
 
     bonsai_function v3_cursor

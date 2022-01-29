@@ -1,21 +1,17 @@
-
-    
-    struct meta_func_stream_chunk
+        struct meta_func_stream_chunk
     {
       meta_func Element;
       meta_func_stream_chunk* Next;
     };
 
-    
-    struct meta_func_stream
+        struct meta_func_stream
     {
       meta_func_stream_chunk* FirstChunk;
       meta_func_stream_chunk* LastChunk;
     };
 
 
-    
-    struct meta_func_iterator
+        struct meta_func_iterator
     {
       meta_func_stream* Stream;
       meta_func_stream_chunk* At;
@@ -45,8 +41,7 @@
     }
 
 
-    
-    bonsai_function meta_func *
+        bonsai_function meta_func *
     Push(meta_func_stream* Stream, meta_func Element, memory_arena* Memory)
     {
       meta_func_stream_chunk* NextChunk = (meta_func_stream_chunk*)PushStruct(Memory, sizeof( meta_func_stream_chunk ), 1, 0);
@@ -106,6 +101,5 @@
         *S1 = *S2;
       }
     }
-
 
 

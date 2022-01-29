@@ -1,21 +1,17 @@
-
-    
-    struct c_token_buffer_stream_chunk
+        struct c_token_buffer_stream_chunk
     {
       c_token_buffer Element;
       c_token_buffer_stream_chunk* Next;
     };
 
-    
-    struct c_token_buffer_stream
+        struct c_token_buffer_stream
     {
       c_token_buffer_stream_chunk* FirstChunk;
       c_token_buffer_stream_chunk* LastChunk;
     };
 
 
-    
-    struct c_token_buffer_iterator
+        struct c_token_buffer_iterator
     {
       c_token_buffer_stream* Stream;
       c_token_buffer_stream_chunk* At;
@@ -45,8 +41,7 @@
     }
 
 
-    
-    bonsai_function c_token_buffer *
+        bonsai_function c_token_buffer *
     Push(c_token_buffer_stream* Stream, c_token_buffer Element, memory_arena* Memory)
     {
       c_token_buffer_stream_chunk* NextChunk = (c_token_buffer_stream_chunk*)PushStruct(Memory, sizeof( c_token_buffer_stream_chunk ), 1, 0);
@@ -106,6 +101,5 @@
         *S1 = *S2;
       }
     }
-
 
 

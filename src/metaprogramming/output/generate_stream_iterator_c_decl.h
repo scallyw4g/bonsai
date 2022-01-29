@@ -1,4 +1,3 @@
-
     struct struct_member_iterator
     {
       struct_member_stream* Stream;

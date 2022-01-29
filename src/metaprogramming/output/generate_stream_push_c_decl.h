@@ -1,4 +1,3 @@
-
     bonsai_function struct_member *
     Push(struct_member_stream* Stream, struct_member Element, memory_arena* Memory)
     {

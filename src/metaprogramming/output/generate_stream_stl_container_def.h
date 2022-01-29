@@ -1,21 +1,17 @@
-
-    
-    struct stl_container_def_stream_chunk
+        struct stl_container_def_stream_chunk
     {
       stl_container_def Element;
       stl_container_def_stream_chunk* Next;
     };
 
-    
-    struct stl_container_def_stream
+        struct stl_container_def_stream
     {
       stl_container_def_stream_chunk* FirstChunk;
       stl_container_def_stream_chunk* LastChunk;
     };
 
 
-    
-    struct stl_container_def_iterator
+        struct stl_container_def_iterator
     {
       stl_container_def_stream* Stream;
       stl_container_def_stream_chunk* At;
@@ -45,8 +41,7 @@
     }
 
 
-    
-    bonsai_function stl_container_def *
+        bonsai_function stl_container_def *
     Push(stl_container_def_stream* Stream, stl_container_def Element, memory_arena* Memory)
     {
       stl_container_def_stream_chunk* NextChunk = (stl_container_def_stream_chunk*)PushStruct(Memory, sizeof( stl_container_def_stream_chunk ), 1, 0);
@@ -106,6 +101,5 @@
         *S1 = *S2;
       }
     }
-
 
 

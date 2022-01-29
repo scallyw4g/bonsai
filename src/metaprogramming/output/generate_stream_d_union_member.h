@@ -1,21 +1,17 @@
-
-    
-    struct d_union_member_stream_chunk
+        struct d_union_member_stream_chunk
     {
       d_union_member Element;
       d_union_member_stream_chunk* Next;
     };
 
-    
-    struct d_union_member_stream
+        struct d_union_member_stream
     {
       d_union_member_stream_chunk* FirstChunk;
       d_union_member_stream_chunk* LastChunk;
     };
 
 
-    
-    struct d_union_member_iterator
+        struct d_union_member_iterator
     {
       d_union_member_stream* Stream;
       d_union_member_stream_chunk* At;
@@ -45,8 +41,7 @@
     }
 
 
-    
-    bonsai_function d_union_member *
+        bonsai_function d_union_member *
     Push(d_union_member_stream* Stream, d_union_member Element, memory_arena* Memory)
     {
       d_union_member_stream_chunk* NextChunk = (d_union_member_stream_chunk*)PushStruct(Memory, sizeof( d_union_member_stream_chunk ), 1, 0);
@@ -106,6 +101,5 @@
         *S1 = *S2;
       }
     }
-
 
 

@@ -1,21 +1,17 @@
-
-    
-    struct ast_node_expression_stream_chunk
+        struct ast_node_expression_stream_chunk
     {
       ast_node_expression Element;
       ast_node_expression_stream_chunk* Next;
     };
 
-    
-    struct ast_node_expression_stream
+        struct ast_node_expression_stream
     {
       ast_node_expression_stream_chunk* FirstChunk;
       ast_node_expression_stream_chunk* LastChunk;
     };
 
 
-    
-    struct ast_node_expression_iterator
+        struct ast_node_expression_iterator
     {
       ast_node_expression_stream* Stream;
       ast_node_expression_stream_chunk* At;
@@ -45,8 +41,7 @@
     }
 
 
-    
-    bonsai_function ast_node_expression *
+        bonsai_function ast_node_expression *
     Push(ast_node_expression_stream* Stream, ast_node_expression Element, memory_arena* Memory)
     {
       ast_node_expression_stream_chunk* NextChunk = (ast_node_expression_stream_chunk*)PushStruct(Memory, sizeof( ast_node_expression_stream_chunk ), 1, 0);
@@ -106,6 +101,5 @@
         *S1 = *S2;
       }
     }
-
 
 

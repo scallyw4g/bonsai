@@ -1,4 +1,3 @@
-
     struct c_token_buffer_buffer
     {
       c_token_buffer* Start;

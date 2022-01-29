@@ -1,21 +1,17 @@
-
-    
-    struct macro_def_stream_chunk
+        struct macro_def_stream_chunk
     {
       macro_def Element;
       macro_def_stream_chunk* Next;
     };
 
-    
-    struct macro_def_stream
+        struct macro_def_stream
     {
       macro_def_stream_chunk* FirstChunk;
       macro_def_stream_chunk* LastChunk;
     };
 
 
-    
-    struct macro_def_iterator
+        struct macro_def_iterator
     {
       macro_def_stream* Stream;
       macro_def_stream_chunk* At;
@@ -45,8 +41,7 @@
     }
 
 
-    
-    bonsai_function macro_def *
+        bonsai_function macro_def *
     Push(macro_def_stream* Stream, macro_def Element, memory_arena* Memory)
     {
       macro_def_stream_chunk* NextChunk = (macro_def_stream_chunk*)PushStruct(Memory, sizeof( macro_def_stream_chunk ), 1, 0);
@@ -106,6 +101,5 @@
         *S1 = *S2;
       }
     }
-
 
 

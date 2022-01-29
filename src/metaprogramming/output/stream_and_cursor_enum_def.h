@@ -1,10 +1,8 @@
-
-    
-    struct enum_def_cursor
+        struct enum_def_cursor
     {
       enum_def* Start;
-      enum_def* End;
       enum_def* At;
+      enum_def* End;
     };
 
     bonsai_function enum_def_cursor
@@ -19,24 +17,20 @@
       return Result;
     }
 
-    
-    
-    struct enum_def_stream_chunk
+            struct enum_def_stream_chunk
     {
       enum_def Element;
       enum_def_stream_chunk* Next;
     };
 
-    
-    struct enum_def_stream
+        struct enum_def_stream
     {
       enum_def_stream_chunk* FirstChunk;
       enum_def_stream_chunk* LastChunk;
     };
 
 
-    
-    struct enum_def_iterator
+        struct enum_def_iterator
     {
       enum_def_stream* Stream;
       enum_def_stream_chunk* At;
@@ -66,8 +60,7 @@
     }
 
 
-    
-    bonsai_function enum_def *
+        bonsai_function enum_def *
     Push(enum_def_stream* Stream, enum_def Element, memory_arena* Memory)
     {
       enum_def_stream_chunk* NextChunk = (enum_def_stream_chunk*)PushStruct(Memory, sizeof( enum_def_stream_chunk ), 1, 0);
@@ -127,7 +120,6 @@
         *S1 = *S2;
       }
     }
-
 
 
 

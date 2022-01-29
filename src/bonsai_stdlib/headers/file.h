@@ -2,18 +2,16 @@ struct random_series;
 struct memory_arena;
 struct ansi_stream;
 
-static const char* DefaultPermissions = "a+b"; // Open file for read/write, read from start if exists
-
 
 bonsai_function b32 CloseFile(native_file* File);
 
-bonsai_function b32 Rename(native_file CurrentFile, counted_string NewFilePath);
+bonsai_function b32 Rename(counted_string CurrentFilePath, counted_string NewFilePath);
 
 bonsai_function b32 Remove(counted_string Filepath);
 
-bonsai_function native_file OpenFile(const char* FilePath, const char* Permissions = DefaultPermissions);
+bonsai_function native_file OpenFile(const char* FilePath, const char* Permissions);
 
-bonsai_function native_file OpenFile(counted_string FilePath, const char* Permissions = DefaultPermissions);
+bonsai_function native_file OpenFile(counted_string FilePath, const char* Permissions);
 
 bonsai_function counted_string GetRandomString(u32 Length, random_series* Entropy, memory_arena* Memory);
 

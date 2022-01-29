@@ -1,4 +1,3 @@
-
     struct counted_string_buffer
     {
       counted_string* Start;

@@ -1,10 +1,8 @@
-
-    
-    struct counted_string_cursor
+        struct counted_string_cursor
     {
       counted_string* Start;
-      counted_string* End;
       counted_string* At;
+      counted_string* End;
     };
 
     bonsai_function counted_string_cursor
@@ -19,24 +17,20 @@
       return Result;
     }
 
-    
-    
-    struct counted_string_stream_chunk
+            struct counted_string_stream_chunk
     {
       counted_string Element;
       counted_string_stream_chunk* Next;
     };
 
-    
-    struct counted_string_stream
+        struct counted_string_stream
     {
       counted_string_stream_chunk* FirstChunk;
       counted_string_stream_chunk* LastChunk;
     };
 
 
-    
-    struct counted_string_iterator
+        struct counted_string_iterator
     {
       counted_string_stream* Stream;
       counted_string_stream_chunk* At;
@@ -66,8 +60,7 @@
     }
 
 
-    
-    bonsai_function counted_string *
+        bonsai_function counted_string *
     Push(counted_string_stream* Stream, counted_string Element, memory_arena* Memory)
     {
       counted_string_stream_chunk* NextChunk = (counted_string_stream_chunk*)PushStruct(Memory, sizeof( counted_string_stream_chunk ), 1, 0);
@@ -127,7 +120,6 @@
         *S1 = *S2;
       }
     }
-
 
 
 
