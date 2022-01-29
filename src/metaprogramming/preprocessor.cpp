@@ -4021,7 +4021,7 @@ GenerateEnumDef(d_union_decl* dUnion, memory_arena* Memory)
 {
   TIMED_FUNCTION();
 
-  counted_string Result = FormatCountedString(Memory, CSz("enum %.*s_type\n{\n  type_%.*s_noop,\n"), dUnion->Name.Count, dUnion->Name.Start, dUnion->Name.Count, dUnion->Name.Start);
+  counted_string Result = FormatCountedString(Memory, CSz("enum %S_type\n{\n  type_%S_noop,\n"), dUnion->Name, dUnion->Name);
 
   for (d_union_member_iterator Iter = Iterator(&dUnion->Members);
       IsValid(&Iter);
@@ -4068,7 +4068,7 @@ GenerateStructDef(d_union_decl* dUnion, memory_arena* Memory)
     d_union_member* Member = &Iter.At->Element;
     if (Member->Flags != d_union_flag_enum_only)
     {
-      Result = Concat(Result, FormatCountedString(Memory, CSz("    %.*s %.*s;\n"), Member->Type.Count, Member->Type.Start, Member->Name.Count, Member->Name.Start), Memory);
+      Result = Concat(Result, FormatCountedString(Memory, CSz("    %S %S;\n"), Member->Type, Member->Name), Memory);
     }
   }
 
@@ -4254,7 +4254,7 @@ ParseDiscriminatedUnion(parser* Parser, program_datatypes* Datatypes, counted_st
     }
     else
     {
-      Error("Couldn't find enum %.*s", (s32)dUnion.CustomEnumType.Count, dUnion.CustomEnumType.Start);
+      Error("Couldn't find enum %S", dUnion.CustomEnumType);
     }
   }
 
@@ -4350,7 +4350,7 @@ ParseArgs(const char** ArgStrings, u32 ArgCount, parse_context *Ctx, memory_aren
           Include = Concat(Include, CSz("/"), TranArena ); // Make sure we end with a '/'
         }
 
-        Info("Include path added : (%.*s)", (u32)Include.Count, Include.Start);
+        Info("Include path added : (%S)", Include);
         Push(Include, &Result.IncludePaths);
       }
     }
@@ -4402,7 +4402,7 @@ ParseArgs(const char** ArgStrings, u32 ArgCount, parse_context *Ctx, memory_aren
               StringsMatch(CS("--output-path"), Arg) )
     {
       Result.Outpath = PopArgString(ArgStrings, ArgCount, &ArgIndex);
-      Error("Output path _NOT_CURRENTLY_SUPPORTED_ : (%.*s)", (u32)Result.Outpath.Count, Result.Outpath.Start);
+      Error("Output path _NOT_CURRENTLY_SUPPORTED_ : (%S)", Result.Outpath);
     }
     else
     {
@@ -4458,17 +4458,17 @@ Output(c_token_cursor Code, counted_string Filename, memory_arena* Memory)
       }
       else
       {
-        Error("Renaming tempfile: %.*s -> %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start, (s32)Filename.Count, Filename.Start);
+        Error("Renaming tempfile: %S -> %S", TempFile.Path, Filename);
       }
     }
     else
     {
-      Error("Writing to tempfile: %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start);
+      Error("Writing to tempfile: %S", TempFile.Path);
     }
   }
   else
   {
-    Error("Opening tempfile: %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start);
+    Error("Opening tempfile: %S", TempFile.Path);
   }
 
   return Result;
@@ -6944,7 +6944,7 @@ FlushOutputToDisk(parse_context *Ctx, counted_string OutputForThisParser, counte
   if (IsInlineCode)
   {
     // TODO(Jesse, id: 226, tags: metaprogramming, output): Should we handle this differently?
-    Warn("Not parsing datatypes in inlined code for %.*s", (u32)OutputPath.Count, OutputPath.Start);
+    Warn("Not parsing datatypes in inlined code for %S", OutputPath);
   }
 
   /* PushParser(Ctx->CurrentParser, OutputParse, parser_push_type_include); */
@@ -7686,9 +7686,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
                           {
                             counted_string Name = UnionMember->variable_decl.Type.Token.Value;
                             counted_string ParentStructName = Replace->Data.struct_def->Type;
-                            Warn("Couldn't find struct type '%.*s' in union parent '%.*s'.",
-                                (u32)Name.Count, Name.Start,
-                                (u32)ParentStructName.Count, ParentStructName.Start);
+                            Warn("Couldn't find struct type '%S' in union parent '%S'.", Name, ParentStructName);
                           }
 
                         }
@@ -7705,7 +7703,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
               }
               else
               {
-                Error("Called map_members on a datatype that wasn't a struct - %.*s", (u32)Replace->Data.enum_def->Name.Count, Replace->Data.enum_def->Name.Start);
+                Error("Called map_members on a datatype that wasn't a struct - %S", Replace->Data.enum_def->Name);
               }
 
             } break;
@@ -7732,7 +7730,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
               }
               else
               {
-                Error("Called map_values on a datatype that wasn't an enum - %.*s", (u32)Replace->Data.struct_def->Type.Count, Replace->Data.struct_def->Type.Start);
+                Error("Called map_values on a datatype that wasn't an enum - %S", Replace->Data.struct_def->Type);
               }
 
             } break;
@@ -7842,7 +7840,7 @@ ParseDatatypeList(parser* Parser, program_datatypes* Datatypes, tagged_counted_s
     }
     else
     {
-      Warn("Type (%.*s) could not be resolved to a struct or named_list, ignoring it.", (u32)DatatypeName.Count, DatatypeName.Start);
+      Warn("Type (%S) could not be resolved to a struct or named_list, ignoring it.", DatatypeName);
     }
 
     OptionalToken(Parser, CTokenType_Comma);
@@ -8131,7 +8129,7 @@ GoGoGadgetMetaprogramming(parse_context* Ctx, todo_list_info* TodoInfo)
               }
               else
               {
-                Warn("Unable to generate code for meta_func %.*s", (u32)Func.Name.Count, Func.Name.Start);
+                Warn("Unable to generate code for meta_func %S", Func.Name);
               }
             }
             else
@@ -8270,7 +8268,7 @@ GoGoGadgetMetaprogramming(parse_context* Ctx, todo_list_info* TodoInfo)
               RequireToken(Parser, CTokenType_CloseParen);
               RequireToken(Parser, CTokenType_CloseParen);
 
-              /* Info("Calling bonsai_function : %.*s(%.*s)", (u32)Func->Name.Count, Func->Name.Start, (u32)DatatypeName.Count, DatatypeName.Start); */
+              /* Info("Calling bonsai_function : %S(%S)", Func->Name, DatatypeName); */
               datatype Arg = GetDatatypeByName(&Ctx->Datatypes, DatatypeName);
               meta_func_arg_stream Args = {};
               Push(&Args, ReplacementPattern(Func->ArgName, Arg), Memory);
@@ -8664,7 +8662,7 @@ main(s32 ArgCount_, const char** ArgStrings)
     }
 #endif
 
-#if 0
+#if 1
     WriteTodosToFile(&TodoInfo.People, Memory);
 #endif
   }
