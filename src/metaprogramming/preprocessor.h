@@ -96,8 +96,7 @@ enum c_token_type
 
 
   CTokenType_CommentSingleLine     = 256, // Making the assumption we'll never parse anything that's not ascii, so start the non-ascii tokens at 256
-  CTokenType_CommentMultiLineStart,
-  CTokenType_CommentMultiLineEnd,
+  CTokenType_CommentMultiLine,
 
   CTokenType_EscapedNewline,
 

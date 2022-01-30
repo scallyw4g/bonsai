@@ -64,11 +64,6 @@ bonsai_function void SetupStdout(u32 ArgCount, const char** ArgStrings);
 #define Log(...) PrintToStdout(FormatCountedString_(TempDebugOutputBuffer__, TempDebugOutputBufferSize, __VA_ARGS__))
 
 
-#define TestOut(...)  \
-    Log(__VA_ARGS__); \
-    Log(Newline)
-
-
 #define DebugChars(...) do {                 \
                                              \
   if (Global_LogLevel <= LogLevel_Debug) {   \

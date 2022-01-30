@@ -482,7 +482,7 @@ IsWhitespace(c_token *T)
 bonsai_function b32
 IsComment(c_token *T)
 {
-  b32 Result = (T->Type == CTokenType_CommentSingleLine) || (T->Type == CTokenType_CommentMultiLineStart);
+  b32 Result = (T->Type == CTokenType_CommentSingleLine) || (T->Type == CTokenType_CommentMultiLine);
   return Result;
 }
 
@@ -609,7 +609,8 @@ AdvanceTo(parser* Parser, c_token* T)
 
   if (Result != T && T != Parser->Tokens.End)
   {
-    Error("Unable to find supplied token pointer on parser chain during AdvanceTo!");
+    // This isn't an error case .. sometimes we call this function expecting to not find the token
+    /* Error("Unable to find supplied token pointer on parser chain during AdvanceTo!"); */
   }
   else
   {
@@ -1000,6 +1001,9 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
   if (!ErrorToken) ErrorToken = Parser->Tokens.At;
 
+  /* DumpChain(Parser, 20); */
+  /* return; */
+
   char_cursor ParseErrorCursor_ = {};
   char_cursor *ParseErrorCursor = &ParseErrorCursor_;
   ParseErrorCursor->Start = Global_ParseErrorBuffer;
@@ -1030,7 +1034,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
   {
     u32 ErrorLineNumber = Parser->LineNumber;
     u32 MaxTrayWidth = 1 + GetColumnsFor(ErrorLineNumber + LinesOfContext);
-    ParserName = Parser->Tokens.Filename;
+    ParserName = Parser->Filename;
 
     Assert(PeekTokenRawPointer(Parser) == ErrorToken);
 
@@ -1227,13 +1231,16 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
     u32 LongestLine = GetLongestLineInCursor(ParseErrorCursor);
     ParseErrorCursor->End = End;
 
-    for (u32 DashIndex = 0;
-        DashIndex < LongestLine;
-        ++DashIndex)
+    if (Global_LogLevel <= LogLevel_Error)
     {
-      DebugChars(CSz("-"));
+      for (u32 DashIndex = 0;
+          DashIndex < LongestLine;
+          ++DashIndex)
+      {
+        Log(CSz("-"));
+      }
+      Log(CSz("\n"));
     }
-    DebugChars(CSz("\n"));
 
     for (u32 DashIndex = 0;
         DashIndex < LongestLine;
@@ -1246,7 +1253,10 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
     PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
     CopyToDest(ParseErrorCursor, FormatCountedString(TranArena, CSz(" %S:%u:0\n"), ParserName, ErrorLineNumber));
 
-    PrintToStdout(CS(ParseErrorCursor));
+    if (Global_LogLevel <= LogLevel_Error)
+    {
+      PrintToStdout(CS(ParseErrorCursor));
+    }
 
 
     RewindParserUntil(Parser, ErrorToken);
@@ -1413,17 +1423,21 @@ PeekTokenPointer(parser* Parser, u32 Lookahead)
     }
     else if ( Result->Type == CTokenType_CommentSingleLine)
     {
+#if 0
       /* TODO(Jesse, id: 213, tags: bug, parsing, needs_tests): There is a degenerate case here, what if the file ends without a newline?
        * While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
        */
       LocalLookahead = OffsetOfNext(Parser, LocalLookahead, CTokenType_Newline);
+#endif
     }
-    else if ( Result->Type == CTokenType_CommentMultiLineStart)
+    else if ( Result->Type == CTokenType_CommentMultiLine)
     {
+#if 0
       /* TODO(Jesse, id: 214, tags: bug, parsing, needs_tests): There is a degenerate case here, what if the file ends with a malformed comment?
        * While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
        */
       LocalLookahead = OffsetOfNext(Parser, LocalLookahead, CTokenType_CommentMultiLineEnd);
+#endif
     }
     else if (IsWhitespace(Result))
     {
@@ -1892,7 +1906,7 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
   /* Macro->IsExpanding = True; */
 
   // @memory
-  parser *Result = AllocateParserPtr(Parser->Filename, 0, (u32)Kilobytes(1), TokenCursorSource_MacroExpansion, 0, Memory);
+  parser *Result = AllocateParserPtr(Parser->Filename, 0, (u32)Kilobytes(2), TokenCursorSource_MacroExpansion, 0, Memory);
 
   // TODO(Jesse): Think more carefully about how we want to track where macros
   // came from.
@@ -2077,14 +2091,14 @@ EatComment(parser* Parser, c_token_type CommentT)
   {
     case CTokenType_CommentSingleLine:
     {
-      Result = True;
-      EatUntilExcluding(Parser, CTokenType_Newline);
+      Result = OptionalTokenRaw(Parser, CTokenType_CommentSingleLine);
+      /* EatUntilExcluding(Parser, CTokenType_Newline); */
     } break;
 
-    case CTokenType_CommentMultiLineStart:
+    case CTokenType_CommentMultiLine:
     {
-      Result = True;
-      EatUntilIncluding(Parser, CTokenType_CommentMultiLineEnd);
+      Result = OptionalTokenRaw(Parser, CTokenType_CommentMultiLine);
+      /* EatUntilIncluding(Parser, CTokenType_CommentMultiLineEnd); */
     } break;
 
     default:
@@ -2108,6 +2122,18 @@ SeekToEndOfCursorChain(c_token_cursor *Cursor)
   c_token_cursor *Result = Cursor;
   while (Result->Next) Result = Result->Next;
   return Result;
+}
+
+bonsai_function void
+EatSpacesTabsEscapedNewlinesAndComments(parser *Parser)
+{
+  b32 Continue = true;
+  while (Continue)
+  {
+    b32 AteWhitespace = EatSpacesTabsAndEscapedNewlines(Parser);
+    b32 AteComment = EatComment(Parser);
+    Continue = AteWhitespace || AteComment;
+  }
 }
 
 bonsai_function void
@@ -2720,7 +2746,7 @@ DuplicateParserTokens(parser *Parser, memory_arena *Memory)
   c_token *At = NewBuffer;
   while (c_token *T = PopTokenRawPointer(Parser))
   {
-    Assert(!T->Erased);
+    Assert(T->Type != CTokenType_CommentMultiLine || T->Type != CTokenType_CommentSingleLine || !T->Erased);
     *At++ = *T;
   }
 
@@ -2733,66 +2759,130 @@ DuplicateParserTokens(parser *Parser, memory_arena *Memory)
   return Parser;
 }
 
-bonsai_function void
-ParseMacro(parse_context *Ctx, macro_def *Macro, memory_arena *Memory)
+bonsai_function b32
+TokenCursorsMatch(parser *C1, parser *C2)
 {
-  Assert(Ctx);
+  umm C1Elements = TotalElements(&C1->Tokens);
+  umm C2Elements = TotalElements(&C2->Tokens);
 
-  parser *MacroBody = DuplicateParserTokens(&Macro->Body, Memory);
+  b32 Result = C1Elements == C2Elements;
 
-  RequireToken(MacroBody, CToken(CT_MacroLiteral, Macro->Name));
+  if (Result)
+  {
+    for(u32 TokenIndex = 0;
+        TokenIndex < C1Elements;
+        ++TokenIndex)
+    {
+      if (C1->Tokens.Start[TokenIndex] != C2->Tokens.Start[TokenIndex])
+      {
+        Result = False;
+        break;
+      }
+    }
+  }
 
-  if (OptionalTokenRaw(MacroBody, CTokenType_OpenParen))
+  return Result;
+}
+
+#if 0
+  if (Macro->Body.Tokens.Start && TokenCursorsMatch(&Macro->Body, &NewMacroBody))
+  {
+    // Redefining a macro with the same body is valid and has no effect from
+    // what I can tell
+    Debug("Macro redef'd with matching body.");
+  }
+
+  if (Macro->Body.Tokens.Start)
+  {
+    // TODO(Jesse): Pretty sure this is actually a hard error case now.
+    //
+    // The memory leak is  when we duplicate the body tokens
+    Warn("Leaking memory re-defining Macro (%S)", Macro->Name);
+
+    DumpEntireParser(&Macro->Body);
+    DumpEntireParser(&NewMacroBody);
+  }
+#endif
+
+bonsai_function void
+DefineMacro(parse_context *Ctx, parser *Parser, macro_def *Macro)
+{
+  memory_arena *Memory = Ctx->Memory;
+
+  RequireToken(Parser, CT_PreprocessorDefine);
+
+  parser NewMacroBody = {};
+
+  NewMacroBody.Tokens.Start = Parser->Tokens.At;
+  NewMacroBody.Tokens.At = Parser->Tokens.At;
+  EatUntilExcluding(Parser, CTokenType_Newline);
+  NewMacroBody.Tokens.End = Parser->Tokens.At;
+
+  /* Macro->Body = NewMacroBody; */
+  /* Macro->Body.Filename = Parser->Filename; */
+  /* Macro->Body.LineNumber = Parser->LineNumber; */
+
+  /* ParseMacro(Ctx, Macro, Ctx->Memory); */
+
+  // We have to copy tokens because ExpandMacro is written with the assumption
+  // that the valid macro body tokens will not be erased (and will not have
+  // undergone macro expansion?), which is invalidated if we don't copy tokens.
+  parser *MacroParser = DuplicateParserTokens(&NewMacroBody, Memory);
+
+  RequireToken(MacroParser, CToken(CT_MacroLiteral, Macro->Name));
+
+  if (OptionalTokenRaw(MacroParser, CTokenType_OpenParen))
   {
     Macro->Type = type_macro_function;
 
-    if (OptionalToken(MacroBody, CTokenType_CloseParen))
+    if (OptionalToken(MacroParser, CTokenType_CloseParen))
     {
       // No arguments
     }
     else
     {
-      u32 ArgCount = 1 + CountTokensBeforeNext(MacroBody, CTokenType_Comma, CTokenType_CloseParen);
+      u32 ArgCount = 1 + CountTokensBeforeNext(MacroParser, CTokenType_Comma, CTokenType_CloseParen);
       Macro->NamedArguments = CountedStringBuffer(ArgCount, Memory);
 
       for ( u32 ArgIndex = 0;
             ArgIndex < ArgCount-1;
             ++ArgIndex)
       {
-        counted_string ArgName = RequireToken(MacroBody, CTokenType_Identifier).Value;
+        counted_string ArgName = RequireToken(MacroParser, CTokenType_Identifier).Value;
         Macro->NamedArguments.Start[ArgIndex] = ArgName;
-        RequireToken(MacroBody, CTokenType_Comma);
+        RequireToken(MacroParser, CTokenType_Comma);
       }
 
-      if (PeekToken(MacroBody).Type == CTokenType_Identifier)
+      if (PeekToken(MacroParser).Type == CTokenType_Identifier)
       {
-        counted_string ArgName = RequireToken(MacroBody, CTokenType_Identifier).Value;
+        counted_string ArgName = RequireToken(MacroParser, CTokenType_Identifier).Value;
         Macro->NamedArguments.Start[Macro->NamedArguments.Count-1] = ArgName;
       }
 
-      if (OptionalToken(MacroBody, CTokenType_Ellipsis))
+      if (OptionalToken(MacroParser, CTokenType_Ellipsis))
       {
         Macro->Variadic = True;
         Macro->NamedArguments.Count -= 1;
       }
 
-      RequireToken(MacroBody, CTokenType_CloseParen);
+      RequireToken(MacroParser, CTokenType_CloseParen);
     }
   }
   else
   {
     Macro->Type = type_macro_keyword;
   }
-  MacroBody->Tokens.Start = MacroBody->Tokens.At;
 
-  while (c_token *T = PeekTokenRawPointer(MacroBody))
+  MacroParser->Tokens.Start = MacroParser->Tokens.At;
+
+  while (c_token *T = PeekTokenRawPointer(MacroParser))
   {
     switch (T->Type)
     {
 
       case CTokenType_Identifier:
       {
-        RequireToken(MacroBody, T->Type);
+        RequireToken(MacroParser, T->Type);
         macro_def *M = GetMacroDef(Ctx, T->Value);
         if (M)
         {
@@ -2809,37 +2899,27 @@ ParseMacro(parse_context *Ctx, macro_def *Macro, memory_arena *Memory)
       } break;
 
       case CTokenType_Newline: { InvalidCodePath(); } break;
-      default: { PopTokenRaw(MacroBody); } break;
+      default: { PopTokenRaw(MacroParser); } break;
     }
   }
 
-  TruncateToCurrentSize(&MacroBody->Tokens);
-  Assert(MacroBody->Tokens.End);
+  TruncateToCurrentSize(&MacroParser->Tokens);
+  Assert(MacroParser->Tokens.End);
 
-  Rewind(&Macro->Body);
-}
-
-bonsai_function void
-DefineMacro(parse_context *Ctx, parser *Parser, macro_def *Macro)
-{
-  RequireToken(Parser, CT_PreprocessorDefine);
-
-  if (Macro->Body.Tokens.Start)
+  if (Macro->Body.Tokens.Start && TokenCursorsMatch(&Macro->Body, MacroParser))
   {
-    // The memory leak is in ParseMacro() when we duplicate the body tokens
-    Warn("Leaking memory re-defining Macro (%S)", Macro->Name);
+    // Redefining a macro with the same body is valid and has no effect from
+    // what I can tell.
+    //
+    // TODO(Jesse, memory, memory-leak): When we have streaming arena allocations rewind the arena here
+    /* Info("Macro redef'd with matching body."); */
+  }
+  else
+  {
+    Macro->Body = *MacroParser;
   }
 
-  Macro->Body.Tokens.Start = Parser->Tokens.At;
-  Macro->Body.Tokens.At = Parser->Tokens.At;
-
-  EatUntilExcluding(Parser, CTokenType_Newline);
-  Macro->Body.Tokens.End = Parser->Tokens.At;
-
-  Macro->Body.Filename = Parser->Filename;
-  Macro->Body.LineNumber = Parser->LineNumber;
-
-  ParseMacro(Ctx, Macro, Ctx->Memory);
+  Rewind(&Macro->Body);
 }
 
 // NOTE(Jesse): This routine was written with the intent that it be
@@ -2913,6 +2993,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
   b32 ParsingMultiLineComment = False;
 
   c_token *LastTokenPushed = 0;
+  c_token *CommentToken = 0;
   while(Remaining(&Code))
   {
     const c_token FirstT = PeekToken(&Code);
@@ -2938,7 +3019,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
           case CTokenType_Star:
           {
             ParsingMultiLineComment = True;
-            PushT.Type = CTokenType_CommentMultiLineStart;
+            PushT.Type = CTokenType_CommentMultiLine;
             PushT.Value = CS(Code.At, 2);
             Advance(&Code);
             Advance(&Code);
@@ -3145,8 +3226,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
         else if (PeekToken(&Code, 1).Type == CTokenType_FSlash)
         {
           ParsingMultiLineComment = False;
-          PushT.Type = CTokenType_CommentMultiLineEnd;
-          PushT.Value = CS(Code.At, 2);
           Advance(&Code);
         }
         else
@@ -3545,12 +3624,9 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
             {
               PushT.Type = CT_Preprocessor__VA_ARGS__;
             }
-            else
+            else if (LastTokenPushed && LastTokenPushed->Type == CT_ScopeResolutionOperator)
             {
-              if (LastTokenPushed && LastTokenPushed->Type == CT_ScopeResolutionOperator)
-              {
-                PushT.QualifierName = LastTokenPushed->QualifierName;
-              }
+              PushT.QualifierName = LastTokenPushed->QualifierName;
             }
           }
         }
@@ -3561,7 +3637,27 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
     }
 
     Assert(PushT.Type);
-    LastTokenPushed = Push(PushT, &Result->Tokens);
+
+    if (ParsingSingleLineComment || ParsingMultiLineComment)
+    {
+      if (!CommentToken)
+      {
+        PushT.Erased = True;
+        CommentToken = Push(PushT, &Result->Tokens);
+      }
+    }
+    else if ( CommentToken && !(ParsingSingleLineComment || ParsingMultiLineComment) )
+    {
+      // We finished parsing a comment on this token
+      umm Count = (umm)(Code.At - CommentToken->Value.Start);
+      CommentToken->Value.Count = Count;
+      CommentToken = 0;
+    }
+    else
+    {
+      LastTokenPushed = Push(PushT, &Result->Tokens);
+    }
+
 
     continue;
   }
@@ -3609,7 +3705,27 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
         parser *IncludeParser = ResolveInclude(Ctx, Result);
         EraseSectionOfParser(Result, T, Result->Tokens.At);
-        RequireTokenRaw(Result, CTokenType_Newline);
+
+        b32 Continue = True;
+        while (Continue)
+        {
+          c_token *Peek = PeekTokenRawPointer(Result);
+
+          if (IsWhitespace(Peek) || IsComment(Peek))
+          {
+            RequireTokenRaw(Result, Peek->Type);
+
+            if (Peek->Type == CTokenType_CommentSingleLine ||
+                Peek->Type == CTokenType_Newline)
+            {
+              Continue = False;
+            }
+          }
+          else
+          {
+            Continue = False;
+          }
+        }
 
         if (IncludeParser)
         {
@@ -3676,25 +3792,17 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
         {
           macro_def *Macro = GetByName(&Ctx->Datatypes.Macros, MacroNameToken->Value);
 
+
+          if (!Macro)
+          {
+            Macro = Push(&Ctx->Datatypes.Macros, { .Name = MacroNameToken->Value }, Ctx->Memory);
+          }
+
           MacroNameToken->Type = CT_MacroLiteral;
           MacroNameToken->Macro = Macro;
 
-          if (Macro)
-          {
-            if (!Macro->Undefed)
-            {
-              // TODO(Jesse): If the macro is redefined with a matching value
-              // to the currently defined one, don't snow this warning.
-              Warn(FormatCountedString(TranArena, CSz("Macro (%S) already defined"), Macro->Name));
-            }
+          DefineMacro(Ctx, Result, Macro);
 
-            DefineMacro(Ctx, Result, Macro);
-          }
-          else
-          {
-            macro_def *NewMacro = Push(&Ctx->Datatypes.Macros, { .Name = MacroNameToken->Value }, Ctx->Memory);
-            DefineMacro(Ctx, Result, NewMacro);
-          }
 
           /* RequireTokenRaw(Parser, CTokenType_Newline); */
           EraseSectionOfParser(Result, T, Result->Tokens.At);
@@ -3938,13 +4046,7 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
     else
     {
       RequireToken(Parser, CTokenType_GT);
-      b32 Continue = true;
-      while (Continue)
-      {
-        b32 AteWhitespace = EatSpacesTabsAndEscapedNewlines(Parser);
-        b32 AteComment = EatComment(Parser);
-        Continue = AteWhitespace || AteComment;
-      }
+      EatSpacesTabsEscapedNewlinesAndComments(Parser);
     }
   }
 
@@ -5580,14 +5682,14 @@ EraseSectionOfParser(parser *Parser, c_token *FirstToErase, c_token *OnePastLast
 bonsai_function c_token *
 EatIfBlock(parser *Parser)
 {
-  c_token *StartToken = PeekTokenRawPointer(Parser);
+  c_token *StartToken = PeekTokenPointer(Parser);
   c_token *Result = StartToken;
 
   u32 Depth = 0;
   b32 Success = False;
-  while ( RawTokensRemain(Parser) )
+  while ( TokensRemain(Parser) )
   {
-    Result = PeekTokenRawPointer(Parser);
+    Result = PeekTokenPointer(Parser);
 
     if (Result->Type == CT_PreprocessorIf ||
         Result->Type == CT_PreprocessorIfNotDefined ||
@@ -5612,7 +5714,7 @@ EatIfBlock(parser *Parser)
       }
     }
 
-    RequireTokenRaw(Parser, Result->Type);
+    RequireToken(Parser, Result->Type);
   }
 
   if (!Success)
@@ -5620,7 +5722,7 @@ EatIfBlock(parser *Parser)
     ParseError(Parser, FormatCountedString(TranArena, CSz("Unable to find closing token for %S."), ToString(CT_PreprocessorIf)), StartToken);
   }
 
-  Assert(Result == Parser->Tokens.At);
+  /* Assert(Result == Parser->Tokens.At); */
   return Result;
 }
 
@@ -7929,6 +8031,7 @@ RemoveAllMetaprogrammingOutputRecursive(const char * OutputPath)
 }
 #endif
 
+#if 0
 bonsai_function counted_string
 ParseMultiLineTodoValue(parser* Parser, memory_arena* Memory)
 {
@@ -7960,6 +8063,7 @@ ParseMultiLineTodoValue(parser* Parser, memory_arena* Memory)
   counted_string Result = Trim(Finalize(&Builder, Memory));
   return Result;
 }
+#endif
 
 bonsai_function void
 GoGoGadgetMetaprogramming(parse_context* Ctx, todo_list_info* TodoInfo)
@@ -7978,12 +8082,12 @@ GoGoGadgetMetaprogramming(parse_context* Ctx, todo_list_info* TodoInfo)
 
     switch( T.Type )
     {
-      case CTokenType_CommentMultiLineStart:
+      case CTokenType_CommentMultiLine:
       case CTokenType_CommentSingleLine:
       {
 #if 1
-        c_token CommentStartToken = PopTokenRaw(Parser);
-        EatComment(Parser, CommentStartToken.Type);
+        c_token CommentToken = RequireTokenRaw(Parser, T.Type);
+        /* EatComment(Parser, CommentStartToken.Type); */
 #else
 
         c_token CommentStartToken = PopTokenRaw(Parser);

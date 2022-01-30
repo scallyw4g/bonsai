@@ -293,3 +293,9 @@ WriteStructTo(d_union_decl* dUnion, native_file* OutFile, memory_arena* Memory)
 
 .42E-1f
 .42E-2f
+
+#if 0
+// #if
+#else
+#endif
+
