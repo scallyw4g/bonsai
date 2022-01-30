@@ -41,6 +41,7 @@ int IndirectMacroKeyword = 42;
   a                          \
   b
 
+#define MacroFunction9(a, b) a ## b
 
 // MacroFunction
 
@@ -110,6 +111,26 @@ MacroFunction8(4, 2)
 MacroFunction8 (4, 2)
 MacroFunction8
 MacroFunction8(MacroFunction8, 0)
+
+
+// MacroFunction9
+
+
+MacroFunction9(this_is_a_, variable_name);
+MacroFunction9(Macro, Keyword);
+MacroFunction9(IndirectMacro, Keyword);
+
+
+#define some_thing this_is_a_variable_name
+#define some foo
+
+MacroFunction9(some, _thing); // this_is_a_variable_name
+
+#undef some
+MacroFunction9(some, _thing); // this_is_a_variable_name
+
+#undef some_thing
+MacroFunction9(some, _thing); // some_thing
 
 
 #define self_including_macro_keyword self_including_macro_keyword 42

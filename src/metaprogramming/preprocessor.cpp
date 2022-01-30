@@ -1,11 +1,6 @@
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
 #define PLATFORM_GL_IMPLEMENTATIONS 1
 
-#define thing2(a) a
-#define thing3(a) a thing2(thing3)
-
-static int thing2(a_name) = 1;
-
 #include <bonsai_types.h>
 
 #define InvalidDefaultWhileParsing(P, ErrorMessage) \
@@ -35,14 +30,6 @@ _Pragma("clang diagnostic pop") // unused-macros
 // TODO(Jesse id: 293, tags: big): Constant expression evaluation for #if statements
 // TODO(Jesse id: 291, tags: big): Macro functions
 // TODO(Jesse id: 292, tags: big): Include graph traversal
-
-
-/* #define TestMacro(a, b) a b */
-
-/* TestMacro( */
-/*     void Thing( TestMacro(int a1, int a2), );, */
-/*     void Thing2( TestMacro(int a1, int a2) ); */
-/* ) */
 
 
 bonsai_function c_token * PeekTokenRawPointer(parser *Parser, u32 TokenLookahead = 0);
@@ -287,6 +274,7 @@ TokenShouldModifyLineCount(c_token *T, token_cursor_source Source)
        Source == TokenCursorSource_Include )
   {
     Result = T->Type == CTokenType_Newline ||
+             T->Type == CTokenType_CommentSingleLine ||
              T->Type == CTokenType_EscapedNewline;
   }
 
@@ -1891,20 +1879,6 @@ CopyBufferIntoCursor(c_token_buffer *Src, c_token_cursor *Dest)
 bonsai_function parser*
 ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *Memory, b32 ScanArgsForAdditionalMacros)
 {
-  /* if (Macro->IsExpanding) */
-  /* { */
-  /*   Info("Stopped expanding Macro (%S), it's already undergoing expansion.", Macro->Name); */
-  /*   local_persist int Count = 0; */
-  /*   if (++Count > 20) */
-  /*   { */
-  /*     RuntimeBreak(); */
-  /*   } */
-
-  /*   return Parser; */
-  /* } */
-
-  /* Macro->IsExpanding = True; */
-
   // @memory
   parser *Result = AllocateParserPtr(Parser->Filename, 0, (u32)Kilobytes(2), TokenCursorSource_MacroExpansion, 0, Memory);
 
@@ -1922,6 +1896,9 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
   {
     case type_macro_keyword:
     {
+      //
+      // Copy the macro body into the result, expanding any extra macros we hit
+      //
       parser BodyParser_ = Macro->Body;
       parser *BodyParser = &BodyParser_;
       while (c_token *T = PeekTokenRawPointer(BodyParser))
@@ -1946,6 +1923,11 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
     {
       c_token *Start = PeekTokenPointer(Parser);
 
+      //
+      // Parse instance args
+      //
+
+      // TODO(Jesse): Shouldn't this be a RequireToken?
       if (Start && Start->Type == CTokenType_OpenParen)
       {
         parser InstanceArgs_ =
@@ -1962,7 +1944,7 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
         TrimLastToken(InstanceArgs, CTokenType_CloseParen);
 
         Assert(Ctx);
-#if 1
+
         if (ScanArgsForAdditionalMacros)
         {
           while (c_token *T = PopTokenRawPointer(InstanceArgs))
@@ -1986,7 +1968,6 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
             }
           }
         }
-#endif
         Rewind(InstanceArgs);
 
         if (TotalElements(&InstanceArgs->Tokens) == 1)
@@ -1999,6 +1980,10 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
           }
         }
 
+
+        //
+        // Zip the named args and the instance args together
+        //
 
         c_token_buffer_buffer ArgValues = {};
         if (Macro->NamedArguments.Count)
@@ -2021,9 +2006,16 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
             ParseMacroArgument(InstanceArgs, Arg);
           }
         }
-
         Assert(Remaining(InstanceArgs) == 0);
 
+
+        //
+        // Actually expand the macro body
+        //
+
+        // TODO(Jesse): Do we actully need to do this copy?  I don't think so,
+        // and I don't like it.  Actually, we might, if we expand the same macro
+        // multiple times.
         parser MacroBody_ = Macro->Body;
         parser *MacroBody = &MacroBody_;
         TrimLeadingWhitespace(MacroBody);
@@ -2828,18 +2820,16 @@ DefineMacro(parse_context *Ctx, parser *Parser, macro_def *Macro)
   EatUntilExcluding(Parser, CTokenType_Newline);
   NewMacroBody.Tokens.End = Parser->Tokens.At;
 
-  /* Macro->Body = NewMacroBody; */
-  /* Macro->Body.Filename = Parser->Filename; */
-  /* Macro->Body.LineNumber = Parser->LineNumber; */
-
-  /* ParseMacro(Ctx, Macro, Ctx->Memory); */
-
   // We have to copy tokens because ExpandMacro is written with the assumption
   // that the valid macro body tokens will not be erased (and will not have
   // undergone macro expansion?), which is invalidated if we don't copy tokens.
   parser *MacroParser = DuplicateParserTokens(&NewMacroBody, Memory);
 
   RequireToken(MacroParser, CToken(CT_MacroLiteral, Macro->Name));
+
+  //
+  // Parse argument list
+  //
 
   if (OptionalTokenRaw(MacroParser, CTokenType_OpenParen))
   {
@@ -2884,6 +2874,10 @@ DefineMacro(parse_context *Ctx, parser *Parser, macro_def *Macro)
   }
 
   MacroParser->Tokens.Start = MacroParser->Tokens.At;
+
+  //
+  // Parse body of macro
+  //
 
   while (c_token *T = PeekTokenRawPointer(MacroParser))
   {
@@ -3802,7 +3796,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
         {
           macro_def *Macro = GetByName(&Ctx->Datatypes.Macros, MacroNameToken->Value);
 
-
           if (!Macro)
           {
             Macro = Push(&Ctx->Datatypes.Macros, { .Name = MacroNameToken->Value }, Ctx->Memory);
@@ -3813,8 +3806,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
           DefineMacro(Ctx, Result, Macro);
 
-
-          /* RequireTokenRaw(Parser, CTokenType_Newline); */
           EraseSectionOfParser(Result, T, Result->Tokens.At);
           RequireTokenRaw(Result, CTokenType_Newline);
         }

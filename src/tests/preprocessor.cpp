@@ -1034,9 +1034,27 @@ TestMacrosAndIncludes(memory_arena *Memory)
     RequireToken(Parser, CToken(4u));
     RequireToken(Parser, CToken(2u));
 
+
+    // MacroFunction8
+
+
     RequireToken(Parser, CToken(CSz("MacroFunction8")));
     RequireToken(Parser, CToken(CSz("MacroFunction8")));
     RequireToken(Parser, CToken(0u));
+
+
+    // MacroFunction9
+
+
+    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
+    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
+    RequireToken(Parser, CToken(CSz("some_thing")));
+
+
+
+    ////////////////////////////
+
+
 
     RequireToken(Parser, CToken(CSz("self_including_macro_keyword")));
     RequireToken(Parser, CToken(42u));
