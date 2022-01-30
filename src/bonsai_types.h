@@ -1,3 +1,12 @@
+#if BONSAI_PREPROCESSOR
+
+// TODO(Jesse): What is the actual purpose of this in stdint.h, and should we
+// actually implement include_next for some reason?  I don't want to, but it
+// might be that that's more correct since I'm fairly sure that's the path
+// clang takes.
+#define __has_include_next(...)
+
+#endif
 
 // Required for FILE* type .. might want to rebuild the file API to use
 // platform functions instead, but for now the CRT ones are good enough.

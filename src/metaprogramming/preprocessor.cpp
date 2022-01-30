@@ -1989,6 +1989,16 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
 #endif
         Rewind(InstanceArgs);
 
+        if (TotalElements(&InstanceArgs->Tokens) == 1)
+        {
+          c_token *T = PeekTokenRawPointer(InstanceArgs);
+          if (StringsMatch(T->Value, CSz("void")))
+          {
+            PopTokenRawPointer(InstanceArgs);
+            Assert(Macro->NamedArguments.Count == 0);
+          }
+        }
+
 
         c_token_buffer_buffer ArgValues = {};
         if (Macro->NamedArguments.Count)
