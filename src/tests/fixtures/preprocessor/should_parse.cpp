@@ -1,3 +1,4 @@
+#include <src/tests/bug_defines.h>
 #include <src/tests/fixtures/preprocessor/other_file_that_should_parse.cpp>
 
 #define VariadicMacroFunction3(...) __VA_ARGS__
@@ -27,7 +28,7 @@ __STD_TYPE __THING __THING_TYPE_NAME;
 
 // This is buggy
 //
-#if 0
+#if BUG_EXTERN_BLOCK_DEFINE
 EXTERN_BLOCK
 
 #include <some_other_file_that_wants_c_linkage.h>
@@ -51,16 +52,20 @@ __pragma(msvc_style(thing));
 #define bonsai_function static
 
 // Buggy comma operator cases
-// int x, y;
-
-// int u = x < 8 ? x : y,
-//     v = h < 4 ? y : x == 12 || y == 14 ? x : y;
+#if BUG_COMMA_OPERATOR
+int x, y;
+int u = x < 8 ? x : y,
+    v = h < 4 ? y : x == 12 || y == 14 ? x : y;
+#endif
 
 unsigned int Int0 = 42;
-// unsigned     Int1 = 42; // This needs to be fixed in the parser
 int          Int2 = 42;
 signed int   Int3 = 42;
-// signed       Int4 = 42; // This needs to be fixed in the parser
+
+#if BUG_SIGNED_UNSIGNED
+unsigned     Int1 = 42; // This needs to be fixed in the parser
+signed       Int4 = 42; // This needs to be fixed in the parser
+#endif
 
 
 

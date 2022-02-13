@@ -1048,8 +1048,15 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
           break;
         }
 
-        if (T->Type == CTokenType_Newline ||
-            T->Type == CTokenType_EscapedNewline)
+        /* if (T->Type == CTokenType_CommentSingleLine || T->Type == CTokenType_CommentMultiLine) */
+        /* { */
+        /*   int fda = 34; */
+        /* } */
+
+        if (T->Type == CTokenType_Newline           ||
+            T->Type == CTokenType_EscapedNewline    ||
+            T->Type == CTokenType_CommentSingleLine ||
+            T->Type == CTokenType_CommentMultiLine )
         {
           TabCount = 0;
           SpaceCount = 0;
@@ -1086,7 +1093,10 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
         LastTokenBeforeErrorMessageSource = Parser->Tokens.Source;
         PrintToken(T, ParseErrorCursor);
 
-        if (T->Type == CTokenType_Newline || T->Type == CTokenType_EscapedNewline)
+        if (T->Type == CTokenType_Newline           ||
+            T->Type == CTokenType_EscapedNewline    ||
+            T->Type == CTokenType_CommentSingleLine ||
+            T->Type == CTokenType_CommentMultiLine )
         {
           break;
         }
@@ -1190,12 +1200,11 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
     while (c_token *T = PopTokenRawPointer(Parser))
     {
       PrintToken(T, ParseErrorCursor);
-      if (T->Type == CTokenType_EscapedNewline)
-      {
-        PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
-      }
 
-      if (T->Type == CTokenType_Newline)
+      if (T->Type == CTokenType_Newline           ||
+          T->Type == CTokenType_EscapedNewline    ||
+          T->Type == CTokenType_CommentSingleLine ||
+          T->Type == CTokenType_CommentMultiLine )
       {
         LinesToPrint -= 1;
         if (RawTokensRemain(Parser) == 0 || LinesToPrint == 0)
