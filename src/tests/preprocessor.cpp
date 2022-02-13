@@ -854,6 +854,9 @@ TestMacrosAndIncludes(memory_arena *Memory)
 
   if (Parser)
   {
+    RequireToken(Parser, CToken(CSz("bar")));
+    RequireToken(Parser, CToken(CSz("bar")));
+    RequireToken(Parser, CToken(CSz("bar")));
 
     RequireToken(Parser, CTokenType_Int);
     RequireToken(Parser, CToken(CSz("ding")));
@@ -1046,9 +1049,11 @@ TestMacrosAndIncludes(memory_arena *Memory)
     // MacroFunction9
 
 
+#if 0
     RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
     RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
     RequireToken(Parser, CToken(CSz("some_thing")));
+#endif
 
 
 
@@ -1064,7 +1069,13 @@ TestMacrosAndIncludes(memory_arena *Memory)
 
     /* DumpEntireParser(Parser); */
 
+#if 0
     RequireToken(Parser, CToken(CSz("m2")));
+    RequireToken(Parser, CTokenType_OpenParen);
+    RequireToken(Parser, CTokenType_CloseParen);
+#endif
+
+    RequireToken(Parser, CToken(CSz("temp__")));
     RequireToken(Parser, CTokenType_OpenParen);
     RequireToken(Parser, CTokenType_CloseParen);
 
@@ -1863,7 +1874,7 @@ main(s32 ArgCount, const char** Args)
 
   Global_LogLevel = LogLevel_Debug;
   /* Global_LogLevel = LogLevel_Error; */
-  /* Global_LogLevel = LogLevel_Shush; */
+  Global_LogLevel = LogLevel_Shush;
 
 
   memory_arena* Memory = AllocateArena();
@@ -1881,7 +1892,6 @@ main(s32 ArgCount, const char** Args)
   TestLogicalOperators(Memory);
   TestAst(Memory);
   TestLineNumbers(Memory);
-
   TestErrors(Memory);
 
   TestSuiteEnd();

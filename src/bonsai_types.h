@@ -4,7 +4,7 @@
 // actually implement include_next for some reason?  I don't want to, but it
 // might be that that's more correct since I'm fairly sure that's the path
 // clang takes.
-#define __has_include_next(...)
+#define __has_include_next(...) 0
 
 #endif
 

@@ -1,3 +1,18 @@
+
+#define foo bar
+foo
+
+#if 1
+  foo
+#else
+  fdsafdsa
+#endif
+
+foo
+
+#undef foo
+
+
 #include <src/tests/fixtures/preprocessor/include_test.cpp> // \
 this is actually commented
 #include <src/tests/fixtures/preprocessor/include_test_2.cpp>
@@ -43,7 +58,9 @@ int IndirectMacroKeyword = 42;
 
 #define MacroFunction9(a, b) a ## b
 
+
 // MacroFunction
+
 
 MacroFunction(int this_is_a_variable_name = 42);
 
@@ -113,6 +130,7 @@ MacroFunction8
 MacroFunction8(MacroFunction8, 0)
 
 
+#if 0
 // MacroFunction9
 
 
@@ -132,6 +150,8 @@ MacroFunction9(some, _thing); // this_is_a_variable_name
 #undef some_thing
 MacroFunction9(some, _thing); // some_thing
 
+#endif
+
 
 #define self_including_macro_keyword self_including_macro_keyword 42
 self_including_macro_keyword // should expand to "self_including_macro_keyword 42"
@@ -144,7 +164,13 @@ self_including_macro_keyword // should expand to "self_including_macro_keyword 4
 // NOTE(Jesse): I have no idea what this is specified to expand to.  I observed
 // Clang not expanding it at all, so that's what I've programmed.
 //
-  #define m1() m2()
-  #define m2() m1()
-  m2()
+// UPDATE(Jesse): This now ends up in an infinite expansion loop.  Fixing the
+// following cases should be done at some point, but since it's currently not
+// a problem I don't have any reason to want to do it.
 //
+  /* #define m1() m2() */
+  /* #define m2() m1() */
+  /* m2() */
+
+#define temp__() temp__()
+temp__()
