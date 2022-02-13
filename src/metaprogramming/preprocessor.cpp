@@ -1905,61 +1905,18 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
   // macro name token without calling RequireTokenRaw().
   RequireToken(Parser, CToken(CT_MacroLiteral, Macro->Name));
 
+  // NOTE(Jesse): These get filled out in the case where we've got a macro
+  // function to expand.  The expansion loop works for both function and
+  // keyword style macros if they're left empty
+  //
+  c_token_buffer_stream VarArgs = {};
+  c_token_buffer_buffer ArgValues = {};
+
   switch (Macro->Type)
   {
     case type_macro_keyword:
     {
-      //
-      // Copy the macro body into the result, expanding any extra macros we hit
-      //
-
-      parser MacroBody_ = Macro->Body;
-      parser *MacroBody = &MacroBody_;
-      while (c_token *T = PeekTokenRawPointer(MacroBody))
-      {
-        Assert(T->Type != CTokenType_Newline);
-
-        switch (T->Type)
-        {
-          case CT_MacroLiteral:
-          {
-              macro_def *M = T->Macro;
-              b32 ShouldExpandMacro = !StringsMatch(M->Name, Macro->Name);
-              if (ShouldExpandMacro)
-              {
-                T->Type = CT_MacroLiteral;
-                T->Macro = M;
-
-                parser *Expanded = ExpandMacro(Ctx, MacroBody, T->Macro, Memory);
-                CopyCursorIntoCursor(&Expanded->Tokens, &Result->Tokens);
-              }
-              else
-              {
-                RequireTokenRaw(MacroBody, T->Type);
-                Push(*T, &Result->Tokens);
-              }
-          } break;
-
-          case CTokenType_Identifier:
-          {
-
-#if BONSAI_SLOW
-            macro_def *M = GetMacroDef(Ctx, T->Value);
-            Assert(!M);
-#endif
-            RequireTokenRaw(MacroBody, T->Type);
-            Push(*T, &Result->Tokens);
-
-          } break;
-
-          default:
-          {
-            RequireTokenRaw(MacroBody, T->Type);
-            Push(*T, &Result->Tokens);
-          } break;
-        }
-      }
-
+      // Keyword macros don't need any special treatment
     } break;
 
     case type_macro_function:
@@ -1970,7 +1927,6 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
       // Parse instance args
       //
 
-      // TODO(Jesse): Shouldn't this be a RequireToken?
       if (Start && Start->Type == CTokenType_OpenParen)
       {
         parser InstanceArgs_ =
@@ -2029,7 +1985,6 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
         // Zip the named args and the instance args together
         //
 
-        c_token_buffer_buffer ArgValues = {};
         if (Macro->NamedArguments.Count)
         {
           ArgValues = CTokenBufferBuffer(Macro->NamedArguments.Count, Memory);
@@ -2041,7 +1996,6 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
           }
         }
 
-        c_token_buffer_stream VarArgs = {};
         if (Macro->Variadic)
         {
           while (Remaining(InstanceArgs))
@@ -2051,98 +2005,98 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
           }
         }
         Assert(Remaining(InstanceArgs) == 0);
-
-
-        //
-        // Expand the macro body
-        //
-
-        parser MacroBody_ = Macro->Body;
-        parser *MacroBody = &MacroBody_;
-        TrimLeadingWhitespace(MacroBody);
-        Rewind(MacroBody);
-        while (c_token *T = PeekTokenRawPointer(MacroBody))
-        {
-          switch (T->Type)
-          {
-            case CT_Preprocessor__VA_ARGS__:
-            {
-              RequireToken(MacroBody, T->Type);
-              ITERATE_OVER(&VarArgs)
-              {
-                c_token_buffer* Arg = GET_ELEMENT(Iter);
-                CopyMacroArgIntoCursor(Ctx, Arg, &Result->Tokens, Memory);
-              }
-            } break;
-
-            case CTokenType_Identifier:
-            {
-              macro_def *M = GetMacroDef(Ctx, T->Value);
-              if (M)
-              {
-                b32 ShouldExpandMacro = !StringsMatch(M->Name, Macro->Name);
-                if (ShouldExpandMacro)
-                {
-                  T->Type = CT_MacroLiteral;
-                  T->Macro = M;
-
-                  parser *Expanded = ExpandMacro(Ctx, MacroBody, T->Macro, Memory);
-                  CopyCursorIntoCursor(&Expanded->Tokens, &Result->Tokens);
-                }
-                else
-                {
-                  RequireTokenRaw(MacroBody, T->Type);
-                }
-              }
-              else
-              {
-                RequireTokenRaw(MacroBody, T->Type);
-              }
-
-              // TODO(Jesse): What is specified to happen if a named argument
-              // has the same value as a defined macro?  Is this correct?
-
-              u32 ArgIndex = (u32)IndexOf(&Macro->NamedArguments, T->Value);
-              if (ArgIndex < Macro->NamedArguments.Count)
-              {
-                c_token_buffer *ArgBuffer = ArgValues.Start + ArgIndex;
-                CopyMacroArgIntoCursor(Ctx, ArgBuffer, &Result->Tokens, Memory);
-              }
-              else
-              {
-                Push(*T, &Result->Tokens);
-              }
-            } break;
-
-            case CT_MacroLiteral:
-            {
-              b32 ShouldExpandMacro = !StringsMatch(T->Macro->Name, Macro->Name);
-              if (ShouldExpandMacro)
-              {
-                parser *Expanded = ExpandMacro(Ctx, MacroBody, T->Macro, Memory);
-                CopyCursorIntoCursor(&Expanded->Tokens, &Result->Tokens);
-              }
-              else
-              {
-                InvalidCodePath();
-              }
-            } break;
-
-            default:
-            {
-              PopTokenRaw(MacroBody);
-              Push(*T, &Result->Tokens);
-            } break;
-          }
-
-        }
-        Assert(Remaining(MacroBody) == 0);
       }
 
     } break;
 
-    InvalidDefaultWhileParsing(Parser, CSz("Error expanding macro!"));
+    InvalidDefaultWhileParsing(Parser, CSz("Invalid Macro Type detected"));
   }
+
+
+  //
+  // Expand the macro body
+  //
+
+  parser MacroBody_ = Macro->Body;
+  parser *MacroBody = &MacroBody_;
+  TrimLeadingWhitespace(MacroBody);
+  Rewind(MacroBody);
+  while (c_token *T = PeekTokenRawPointer(MacroBody))
+  {
+    switch (T->Type)
+    {
+      case CT_Preprocessor__VA_ARGS__:
+      {
+        RequireToken(MacroBody, T->Type);
+        ITERATE_OVER(&VarArgs)
+        {
+          c_token_buffer* Arg = GET_ELEMENT(Iter);
+          CopyMacroArgIntoCursor(Ctx, Arg, &Result->Tokens, Memory);
+        }
+      } break;
+
+      case CTokenType_Identifier:
+      {
+        macro_def *M = GetMacroDef(Ctx, T->Value);
+        if (M)
+        {
+          b32 ShouldExpandMacro = !StringsMatch(M->Name, Macro->Name);
+          if (ShouldExpandMacro)
+          {
+            T->Type = CT_MacroLiteral;
+            T->Macro = M;
+
+            parser *Expanded = ExpandMacro(Ctx, MacroBody, T->Macro, Memory);
+            CopyCursorIntoCursor(&Expanded->Tokens, &Result->Tokens);
+          }
+          else
+          {
+            RequireTokenRaw(MacroBody, T->Type);
+          }
+        }
+        else
+        {
+          RequireTokenRaw(MacroBody, T->Type);
+        }
+
+        // TODO(Jesse): What is specified to happen if a named argument
+        // has the same value as a defined macro?  Is this correct?
+
+        u32 ArgIndex = (u32)IndexOf(&Macro->NamedArguments, T->Value);
+        if (ArgIndex < Macro->NamedArguments.Count)
+        {
+          c_token_buffer *ArgBuffer = ArgValues.Start + ArgIndex;
+          CopyMacroArgIntoCursor(Ctx, ArgBuffer, &Result->Tokens, Memory);
+        }
+        else
+        {
+          Push(*T, &Result->Tokens);
+        }
+      } break;
+
+      case CT_MacroLiteral:
+      {
+        b32 ShouldExpandMacro = !StringsMatch(T->Macro->Name, Macro->Name);
+        if (ShouldExpandMacro)
+        {
+          parser *Expanded = ExpandMacro(Ctx, MacroBody, T->Macro, Memory);
+          CopyCursorIntoCursor(&Expanded->Tokens, &Result->Tokens);
+        }
+        else
+        {
+          InvalidCodePath();
+        }
+      } break;
+
+      default:
+      {
+        PopTokenRaw(MacroBody);
+        Push(*T, &Result->Tokens);
+      } break;
+    }
+
+  }
+  Assert(Remaining(MacroBody) == 0);
 
   TruncateToCurrentSize(&Result->Tokens);
   Rewind(Result);
