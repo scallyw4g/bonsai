@@ -130,7 +130,7 @@ MacroFunction8
 MacroFunction8(MacroFunction8, 0)
 
 
-#if 0
+#if 1
 // MacroFunction9
 
 
@@ -149,6 +149,8 @@ MacroFunction9(some, _thing); // this_is_a_variable_name
 
 #undef some_thing
 MacroFunction9(some, _thing); // some_thing
+
+MacroFunction9(in, t); // CTokenType_Int(int) or CTokenType_Identifier(int) ??
 
 #endif
 

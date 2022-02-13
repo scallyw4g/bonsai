@@ -4007,13 +4007,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 }
 
 bonsai_function parser *
-TokenizeAnsiStream(parse_context *Ctx, ansi_stream Code, token_cursor_source Source)
-{
-  parser *Result = TokenizeAnsiStream(Code, Ctx->Memory, False, Ctx, Source);
-  return Result;
-}
-
-bonsai_function parser *
 ParserForFile(parse_context *Ctx, counted_string Filename, token_cursor_source Source)
 {
   parser *Result = 0;
@@ -4021,7 +4014,7 @@ ParserForFile(parse_context *Ctx, counted_string Filename, token_cursor_source S
 
   if (SourceFileStream.Start)
   {
-    Result = TokenizeAnsiStream(Ctx, SourceFileStream, Source);
+    Result = TokenizeAnsiStream(SourceFileStream, Ctx->Memory, False, Ctx, Source);
   }
 
   return Result;
@@ -7080,7 +7073,7 @@ FlushOutputToDisk(parse_context *Ctx, counted_string OutputForThisParser, counte
     Push(CToken(CTokenType_GT),          &Parser->OutputTokens);
   }
 
-  parser *OutputParse = TokenizeAnsiStream(Ctx, AnsiStream(OutputForThisParser, OutputPath), TokenCursorSource_Unknown);
+  parser *OutputParse = TokenizeAnsiStream(AnsiStream(OutputForThisParser, OutputPath), Ctx->Memory, False, Ctx, TokenCursorSource_Unknown);
 
   if (IsInlineCode)
   {

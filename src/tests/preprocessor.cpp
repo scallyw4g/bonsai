@@ -1049,11 +1049,9 @@ TestMacrosAndIncludes(memory_arena *Memory)
     // MacroFunction9
 
 
-#if 0
     RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
     RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
     RequireToken(Parser, CToken(CSz("some_thing")));
-#endif
 
 
 
@@ -1874,7 +1872,7 @@ main(s32 ArgCount, const char** Args)
 
   Global_LogLevel = LogLevel_Debug;
   /* Global_LogLevel = LogLevel_Error; */
-  Global_LogLevel = LogLevel_Shush;
+  /* Global_LogLevel = LogLevel_Shush; */
 
 
   memory_arena* Memory = AllocateArena();
