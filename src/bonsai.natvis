@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+  <Type Name="counted_string">
+    <DisplayString>{Start,[Count]s8}</DisplayString>
+  </Type>
+
+  <Type Name="c_token">
+    <DisplayString>{Type}, {Value}, {Erased}</DisplayString>
+  </Type>
+
+
+</AutoVisualizer>
