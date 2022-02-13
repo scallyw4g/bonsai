@@ -1891,9 +1891,9 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
 
   EatWhitespaceAndComments(Parser);
 
-  // NOTE(Jesse): Because of how the main preprocessor loop works (the part that
-  // does #if #else evaluation) this routine must be able to require the macro name token
-  // without calling RequireTokenRaw().
+  // NOTE(Jesse): Because of how the main preprocessor loop works (the part
+  // that does #if #else evaluation) this routine must be able to require the
+  // macro name token without calling RequireTokenRaw().
   RequireToken(Parser, CToken(CT_MacroLiteral, Macro->Name));
 
   switch (Macro->Type)
@@ -1933,35 +1933,14 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
 
           case CTokenType_Identifier:
           {
+
 #if BONSAI_SLOW
             macro_def *M = GetMacroDef(Ctx, T->Value);
             Assert(!M);
-#if 0
-            if (M)
-            {
-              b32 ShouldExpandMacro = !StringsMatch(M->Name, Macro->Name);
-              if (ShouldExpandMacro)
-              {
-                T->Type = CT_MacroLiteral;
-                T->Macro = M;
-
-                parser *Expanded = ExpandMacro(Ctx, MacroBody, T->Macro, Memory);
-                CopyCursorIntoCursor(&Expanded->Tokens, &Result->Tokens);
-              }
-              else
-              {
-                RequireTokenRaw(MacroBody, T->Type);
-                Push(*T, &Result->Tokens);
-              }
-            }
-            else
 #endif
+            RequireTokenRaw(MacroBody, T->Type);
+            Push(*T, &Result->Tokens);
 
-#endif
-            {
-              RequireTokenRaw(MacroBody, T->Type);
-              Push(*T, &Result->Tokens);
-            }
           } break;
 
           default:

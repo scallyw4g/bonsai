@@ -1,6 +1,7 @@
 #define EXCLUDE_PREPROCESSOR_MAIN 1
 #include <metaprogramming/preprocessor.cpp>
 #include <tests/test_utils.cpp>
+#include <tests/bug_defines.h>
 
 bonsai_function void
 PositiveExponentTests(parser *Parser, c_token_type FloatingPointTokenType)
@@ -892,6 +893,15 @@ TestMacrosAndIncludes(memory_arena *Memory)
     RequireToken(Parser, CToken(42u));
     RequireToken(Parser, CTokenType_Semicolon);
 
+#if BUG_PASTE_OPERATOR
+    RequireToken(Parser, CTokenType_Int);
+    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
+    RequireToken(Parser, CTokenType_Equals);
+    RequireToken(Parser, CToken(42u));
+    RequireToken(Parser, CTokenType_Semicolon);
+#endif
+
+
 
     // MacroFunction
 
@@ -1049,9 +1059,13 @@ TestMacrosAndIncludes(memory_arena *Memory)
     // MacroFunction9
 
 
+#if BUG_PASTE_OPERATOR
     RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
+    RequireToken(Parser, CToken(CSz("some_thing_else")));
     RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
     RequireToken(Parser, CToken(CSz("some_thing")));
+    RequireToken(Parser, CToken(CTokenType_Int, CSz("int")));
+#endif
 
 
 
