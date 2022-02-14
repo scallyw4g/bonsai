@@ -298,7 +298,7 @@ RewindParserUntil(parser* Parser, c_token *T)
         {
           Parser->LineNumber -= 1;
           // TODO(Jesse): Put this assertion back in.  It fires.
-          // Assert(Parser->LineNumber > 0);
+           /* Assert(Parser->LineNumber > 0); */
         }
         if (Parser->Tokens.At == T)
         {
@@ -616,10 +616,7 @@ ParseMacroArgument(parser* Parser, c_token_buffer *Result)
 
   u32 Depth = 0;
   b32 Done = False;
-  // TODO(Jesse, correctness): This should probably actually check for
-  // Remaining(&Parser->Tokens) because I don't think valid code would ever
-  // span a cursor chain link
-  while (!Done && Remaining(Parser))
+  while (!Done && Remaining(&Parser->Tokens))
   {
     c_token T = PeekTokenRaw(Parser);
     if (Depth == 0 && T.Type == CTokenType_Comma)
@@ -788,8 +785,7 @@ DumpEntireParser(parser* Parser, u32 LinesToDump = u32_MAX)
   Debug("\n%S---%S", TerminalColors.Purple, TerminalColors.White);
   Parser->Valid = WasValid;
 
-  // TODO(Jesse): Put this assert back in
-  /* Assert(Parser->LineNumber = StartingLineNumber); */
+  Assert(Parser->LineNumber = StartingLineNumber);
 }
 
 #if 0
@@ -846,6 +842,9 @@ TruncateAtPreviousLineStart(parser* Parser, u32 Count )
 // TODO(Jesse): Remove this?  Maybe put it onto the parser?   I'm not crazy
 // about that because it' bloats that struct and we create those things like
 // crazy.. but I don't really like that it's a global either.
+//
+// UPDATE(Jesse): Actually now we create parsers pretty sparingly so we should
+// be able to do one per parser without too much bloat..
 static const u32 Global_ParseErrorBufferSize = 1024*16;
 static char Global_ParseErrorBuffer[Global_ParseErrorBufferSize] = {};
 
@@ -1274,7 +1273,6 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
   return;
 }
 
-// TODO(Jesse): This should go away once we port all messaged to the new architecture
 bonsai_function void
 ParseError(parser* Parser, counted_string ErrorMessage, c_token* ErrorToken)
 {
@@ -1419,21 +1417,9 @@ PeekTokenPointer(parser* Parser, u32 Lookahead)
     }
     else if ( Result->Type == CTokenType_CommentSingleLine)
     {
-#if 0
-      /* TODO(Jesse, id: 213, tags: bug, parsing, needs_tests): There is a degenerate case here, what if the file ends without a newline?
-       * While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
-       */
-      LocalLookahead = OffsetOfNext(Parser, LocalLookahead, CTokenType_Newline);
-#endif
     }
     else if ( Result->Type == CTokenType_CommentMultiLine)
     {
-#if 0
-      /* TODO(Jesse, id: 214, tags: bug, parsing, needs_tests): There is a degenerate case here, what if the file ends with a malformed comment?
-       * While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
-       */
-      LocalLookahead = OffsetOfNext(Parser, LocalLookahead, CTokenType_CommentMultiLineEnd);
-#endif
     }
     else if (IsWhitespace(Result))
     {
@@ -1656,7 +1642,7 @@ bonsai_function c_token
 RequireTokenRaw(parser *Parser, c_token Expected )
 {
   c_token *Peek = PeekTokenRawPointer(Parser);
-  if (Peek && *Peek == Expected)  // TODO(Jesse id: 349, tags: id_347) : Change to a bonsai_function call
+  if (Peek && *Peek == Expected)  // TODO(Jesse id: 349, tags: id_347) : Change to a function call instead of == operator
   {
     PopTokenRaw(Parser);
   }
@@ -1675,7 +1661,7 @@ bonsai_function c_token
 RequireTokenRaw(parser *Parser, c_token_type Expected )
 {
   c_token *Peek = PeekTokenRawPointer(Parser);
-  if (Peek->Type == Expected)  // TODO(Jesse tags:id_347) : Change to a bonsai_function call
+  if (Peek->Type == Expected)  // TODO(Jesse tags:id_347) : Change to a function call instead of == operator
   {
     PopTokenRaw(Parser);
   }
@@ -1959,6 +1945,7 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
 
         if (OptionalToken(InstanceArgs, CToken(CTokenType_Void, CSz("void"))))
         {
+          // TODO(Jesse): Make these failure cases into error messages
           Assert(TotalElements(&InstanceArgs->Tokens) == 1);
           Assert(Macro->NamedArguments.Count == 0);
         }
@@ -2782,26 +2769,6 @@ TokenCursorsMatch(parser *C1, parser *C2)
   return Result;
 }
 
-#if 0
-  if (Macro->Body.Tokens.Start && TokenCursorsMatch(&Macro->Body, &NewMacroBody))
-  {
-    // Redefining a macro with the same body is valid and has no effect from
-    // what I can tell
-    Debug("Macro redef'd with matching body.");
-  }
-
-  if (Macro->Body.Tokens.Start)
-  {
-    // TODO(Jesse): Pretty sure this is actually a hard error case now.
-    //
-    // The memory leak is  when we duplicate the body tokens
-    Warn("Leaking memory re-defining Macro (%S)", Macro->Name);
-
-    DumpEntireParser(&Macro->Body);
-    DumpEntireParser(&NewMacroBody);
-  }
-#endif
-
 bonsai_function void
 DefineMacro(parse_context *Ctx, parser *Parser, macro_def *Macro)
 {
@@ -2886,25 +2853,6 @@ DefineMacro(parse_context *Ctx, parser *Parser, macro_def *Macro)
       {
         TryConvertIdentifierToMacro(Ctx, MacroParser, T, Macro);
         RequireTokenRaw(MacroParser, T->Type);
-#if 0
-        RequireToken(MacroParser, T->Type);
-        macro_def *M = GetMacroDef(Ctx, T->Value);
-        if (M)
-        {
-          // TODO(Jesse): Can we call MacroShouldBeExpanded() here instead?
-          // @call_MacroShouldBeExpanded
-          b32 ShouldExpandMacro = !StringsMatch(M->Name, Macro->Name);
-          if (ShouldExpandMacro)
-          {
-            T->Type = CT_MacroLiteral;
-            T->Macro = M;
-          }
-          else
-          {
-            Info("Prevented expanding macro recursively (%S)", Macro->Name);
-          }
-        }
-#endif
       } break;
 
       case CTokenType_Newline: { InvalidCodePath(); } break;
@@ -3691,8 +3639,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
   TruncateToCurrentSize(&Result->Tokens);
 
-  // TODO(Jesse): Is this really necessary?
-  Rewind(Result);
   Result->Valid = True;
   Rewind(Result);
 
@@ -3910,13 +3856,16 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
   {
     Result->Tokens.EndLine = LineNumber;
   }
+
   // TODO(Jesse): Pretty sure this assertion should hold up.  This case (I
   // think) is when we split a parser but there's no `SecondHalfOfSplit`
   // because it would be 0 length
-  /* else */
-  /* { */
-  /*   Assert(Result->Tokens.EndLine == LineNumber); */
-  /* } */
+#if 0
+  else
+  {
+    Assert(Result->Tokens.EndLine == LineNumber);
+  }
+#endif
 
   Rewind(Result);
 
@@ -4464,6 +4413,12 @@ ParseArgs(const char** ArgStrings, u32 ArgCount, parse_context *Ctx, memory_aren
       Result.Outpath = PopArgString(ArgStrings, ArgCount, &ArgIndex);
       Error("Output path _NOT_CURRENTLY_SUPPORTED_ : (%S)", Result.Outpath);
     }
+#if 0
+    else if ( StartsWith(Arg, CSz("-")) )
+    {
+      Error("Unknown Switch %S", Arg);
+    }
+#endif
     else
     {
       Push(Arg, &Result.Files);
@@ -5038,8 +4993,14 @@ ParseTypeSpecifier(parse_context *Ctx)
         if (T.Type == CTokenType_Identifier)
         {
           Result.Datatype = GetDatatypeByName(&Ctx->Datatypes, T.Value);
-          // TODO(Jesse, id: 296, tags: immediate): When we properly traverse include graphs, this assert should not fail.
-          // Assert(Result.Datatype.Type != type_datatype_noop);
+          // TODO(Jesse, id: 296, tags: immediate): When we properly traverse
+          // include graphs, this assert should not fail.
+          //
+          // UPDATE(Jesse): This actually holds up when we specify the full
+          // traversal (at least to the extent that we finish the parse to
+          // date).  Not sure when it'll be able to be put in, but we're close.
+          //
+          /* Assert(Result.Datatype.Type != type_datatype_noop); */
         }
 
         Result.Token = RequireToken(Parser, T.Type);
@@ -5211,6 +5172,8 @@ ParseFunctionOrVariableDecl(parse_context *Ctx)
       {
         // This is a random hack that'll go away once we have macro-bonsai_function expansion
         // TODO(Jesse id: 321 tags: id_320): Once this path goes away, the assertion with the label associated with this todo id should be put back in.
+        Assert(false);
+
         EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
         OptionalToken(Parser, CTokenType_Semicolon);
       }
@@ -5258,7 +5221,7 @@ ParseFunctionOrVariableDecl(parse_context *Ctx)
   }
 
   // TODO(Jesse id: 323, tags: id_321)
-  // Assert(Result.Type);
+  /* Assert(Result.Type); */
   return Result;
 }
 
@@ -5466,7 +5429,7 @@ ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena 
           {
             case CTokenType_Identifier:
             {
-              // TODO(Jesse): This path has to set the next token to CT_MacroLiteral
+              // TODO(Jesse, tags: correctness): Should this path has to set the next token to CT_MacroLiteral
               b32 NextTokenIsMacro = IsNextTokenMacro(Ctx, Parser);
               RequireToken(Parser, CTokenType_Identifier);
               Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, LogicalNotNextValue ? !NextTokenIsMacro : NextTokenIsMacro, False);
@@ -5482,7 +5445,7 @@ ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena 
                 ++ParenCount;
               }
 
-              // TODO(Jesse): This path has to set the next token to CT_MacroLiteral
+              // TODO(Jesse, tags: correctness): Should this path has to set the next token to CT_MacroLiteral
               b32 NextTokenIsMacro = IsNextTokenMacro(Ctx, Parser);
               RequireToken(Parser, CTokenType_Identifier);
 
