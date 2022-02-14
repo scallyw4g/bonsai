@@ -5,6 +5,7 @@
 if [ "$Platform" == "Linux" ] ; then
 
   bin/preprocessor_dev                   \
+    -D BONSAI_PREPROCESSOR               \
     -D BONSAI_LINUX                      \
     src/metaprogramming/preprocessor.cpp \
     -I src                               \
@@ -16,12 +17,15 @@ elif [ "$Platform" == "Windows" ] ; then
     # src/metaprogramming/preprocessor.cpp                                                                         \
     # src/bonsai_types.h                                                                         \
 
+    # -D BONSAI_WIN32                                                                                              \
+    # -D BONSAI_LINUX                                                                                              \
+
   bin/preprocessor_dev $COLORFLAG                                                                                \
     -D BONSAI_PREPROCESSOR                                                                                       \
-    -D BONSAI_LINUX \
+    -D BONSAI_WIN32                                                                                              \
     src/metaprogramming/preprocessor.cpp                                                                         \
     -I ./src                                                                                                     \
-    -I "C:/Program Files/LLVM/lib/clang/11.0.0/include"                                                          \
+    # -I "C:/Program Files/LLVM/lib/clang/11.0.0/include"                                                          \
     # -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/include"         \
     # -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/atlmfc/include"  \
     # -I "C:/Program Files (x86)/Windows Kits/10/Include/10.0.18362.0/ucrt"                                        \

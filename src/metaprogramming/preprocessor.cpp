@@ -2018,7 +2018,9 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
 
       case CTokenType_Identifier:
       {
-#if 1
+        // TODO(Jesse): What is specified to happen if a named argument
+        // has the same value as a defined macro?  Is this correct?
+        //
         if (TryConvertIdentifierToMacro(Ctx, MacroBody, T, Macro))
         {
           parser *Expanded = ExpandMacro(Ctx, MacroBody, T->Macro, Memory);
@@ -2027,43 +2029,18 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
         else
         {
           RequireTokenRaw(MacroBody, T->Type);
-        }
-#else
-        macro_def *M = GetMacroDef(Ctx, T->Value);
-        if (M)
-        {
-          b32 ShouldExpandMacro = !StringsMatch(M->Name, Macro->Name);
-          if (ShouldExpandMacro)
+          u32 ArgIndex = (u32)IndexOf(&Macro->NamedArguments, T->Value);
+          if (ArgIndex < Macro->NamedArguments.Count)
           {
-            T->Type = CT_MacroLiteral;
-            T->Macro = M;
-
-            parser *Expanded = ExpandMacro(Ctx, MacroBody, T->Macro, Memory);
-            CopyCursorIntoCursor(&Expanded->Tokens, &Result->Tokens);
+            c_token_buffer *ArgBuffer = ArgValues.Start + ArgIndex;
+            CopyMacroArgIntoCursor(Ctx, ArgBuffer, &Result->Tokens, Memory);
           }
           else
           {
-            RequireTokenRaw(MacroBody, T->Type);
+            Push(*T, &Result->Tokens);
           }
         }
-        else
-        {
-          RequireTokenRaw(MacroBody, T->Type);
-        }
-#endif
-        // TODO(Jesse): What is specified to happen if a named argument
-        // has the same value as a defined macro?  Is this correct?
 
-        u32 ArgIndex = (u32)IndexOf(&Macro->NamedArguments, T->Value);
-        if (ArgIndex < Macro->NamedArguments.Count)
-        {
-          c_token_buffer *ArgBuffer = ArgValues.Start + ArgIndex;
-          CopyMacroArgIntoCursor(Ctx, ArgBuffer, &Result->Tokens, Memory);
-        }
-        else
-        {
-          Push(*T, &Result->Tokens);
-        }
       } break;
 
       case CT_MacroLiteral:

@@ -3,7 +3,7 @@
 #define MEMPROTECT_OVERFLOW (1)
 
 #if MEMPROTECT_UNDERFLOW && MEMPROTECT_OVERFLOW
-#error "Unfortunately, Underflow and Overflow protection at the same time is impossible"
+#error "Underflow and Overflow protection are mutually exclusive"
 #endif
 
 enum memory_protection_type

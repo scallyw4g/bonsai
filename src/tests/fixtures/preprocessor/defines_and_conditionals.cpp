@@ -1,3 +1,4 @@
+#include <src/tests/bug_defines.h>
 //
 // Value is defined
 //
@@ -563,6 +564,8 @@ invalid_path
 #elif defined bar
 valid_path
 #endif
+#undef bar
+
 
 #if ! defined(UNDEFINED) && defined(WHATEVER)
 invalid_path
@@ -582,4 +585,36 @@ invalid_path
 #else
 valid_path
 #endif
+
+
+
+#define foo (bar || baz)
+#define bar (1)
+#define baz (0)
+#if foo
+valid_path
+#else
+invalid_path
+#endif
+#undef foo
+#undef bar
+#undef baz
+
+
+#if BUG_BLANK_DEFINE_DOESNT_WARN_ON_REDEF
+  #define foo
+  #define foo (1) // THIS SHOULD THROW A WARNING
+  #if foo
+    valid_path
+  #else
+    invalid_path
+  #endif
+#endif
+
+#if BUG_BLANK_DEFINE_DOESNT_ERROR_ON_EVAL
+  #define foo
+  #if foo // This should throw an error
+  #endif
+#endif
+
 
