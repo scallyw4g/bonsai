@@ -1957,8 +1957,9 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
         }
         Rewind(InstanceArgs);
 
-        if (OptionalToken(Parser, CToken(CTokenType_Void, CSz("void"))))
+        if (OptionalToken(InstanceArgs, CToken(CTokenType_Void, CSz("void"))))
         {
+          Assert(TotalElements(&InstanceArgs->Tokens) == 1);
           Assert(Macro->NamedArguments.Count == 0);
         }
 
