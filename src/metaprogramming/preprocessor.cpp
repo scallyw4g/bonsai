@@ -64,6 +64,8 @@ bonsai_function void      EatWhitespaceAndComments(parser *Parser);
 // Preprocessor stuff
 //
 
+bonsai_function macro_def * TryConvertIdentifierToMacro(parse_context *Ctx, parser *Parser, c_token *T);
+
 bonsai_function parser * ResolveInclude(parse_context *Ctx, parser *Parser);
 bonsai_function parser * ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *Memory, b32 ScanArgsForAdditionalMacros = False);
 bonsai_function u64      ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena *Memory, u64 PreviousValue, b32 LogicalNotNextValue);
@@ -1946,40 +1948,19 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
 
         if (ScanArgsForAdditionalMacros)
         {
-          while (c_token *T = PopTokenRawPointer(InstanceArgs))
+          // TODO(Jesse): This is pretty wasteful and could be improved
+          while (c_token *T = PeekTokenRawPointer(InstanceArgs))
           {
-            macro_def *M = GetMacroDef(Ctx, T->Value);
-            if (M)
-            {
-              // TODO(Jesse): Can we call MacroShouldBeExpanded() here instead?
-              // @call_MacroShouldBeExpanded
-              if ( M->Type == type_macro_function &&
-                   PeekTokenRaw(InstanceArgs).Type != CTokenType_OpenParen )
-              {
-                // If an identifier is a macro function but it's not invoked the
-                // identifier is left unadultered.
-              }
-              else
-              {
-                T->Type = CT_MacroLiteral;
-                T->Macro = M;
-              }
-            }
+            TryConvertIdentifierToMacro(Ctx, InstanceArgs, T);
+            PopTokenRaw(InstanceArgs);
           }
         }
         Rewind(InstanceArgs);
 
-        // TODO(Jesse): Pretty sure this can be an OptionalToken()
-        if (TotalElements(&InstanceArgs->Tokens) == 1)
+        if (OptionalToken(Parser, CToken(CTokenType_Void, CSz("void"))))
         {
-          c_token *T = PeekTokenRawPointer(InstanceArgs);
-          if (StringsMatch(T->Value, CSz("void")))
-          {
-            PopTokenRawPointer(InstanceArgs);
-            Assert(Macro->NamedArguments.Count == 0);
-          }
+          Assert(Macro->NamedArguments.Count == 0);
         }
-
 
         //
         // Zip the named args and the instance args together
@@ -2037,6 +2018,17 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
 
       case CTokenType_Identifier:
       {
+#if 0
+        if (TryConvertIdentifierToMacro(Ctx, MacroBody, T))
+        {
+          parser *Expanded = ExpandMacro(Ctx, MacroBody, T->Macro, Memory);
+          CopyCursorIntoCursor(&Expanded->Tokens, &Result->Tokens);
+        }
+        else
+        {
+          RequireTokenRaw(MacroBody, T->Type);
+        }
+#else
         macro_def *M = GetMacroDef(Ctx, T->Value);
         if (M)
         {
@@ -2058,7 +2050,7 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
         {
           RequireTokenRaw(MacroBody, T->Type);
         }
-
+#endif
         // TODO(Jesse): What is specified to happen if a named argument
         // has the same value as a defined macro?  Is this correct?
 
@@ -2956,9 +2948,20 @@ DefineMacro(parse_context *Ctx, parser *Parser, macro_def *Macro)
   Rewind(&Macro->Body);
 }
 
-// NOTE(Jesse): This routine was written with the intent that it be
-// substitituted in place of the conditionals marked by the following
-// identifier.  Not 100% sure that it's appropriate, but there you go.
+bonsai_function void
+SkipToEndOfCursor(c_token_cursor *At, c_token_cursor *ToSkip)
+{
+  if (ToSkip->Next)
+  {
+    DoublyLinkedListSwap(At, ToSkip->Next);
+  }
+  else
+  {
+    ToSkip->At = ToSkip->End;
+    DoublyLinkedListSwap(At, ToSkip);
+  }
+}
+
 // @call_MacroShouldBeExpanded
 bonsai_function b32
 MacroShouldBeExpanded(parser *Parser, c_token *T, macro_def *Macro)
@@ -2976,36 +2979,18 @@ MacroShouldBeExpanded(parser *Parser, c_token *T, macro_def *Macro)
       if (PeekToken(Parser, 1).Type == CTokenType_OpenParen)
       {
         Result = True;
-        T->Type = CT_MacroLiteral;
-        T->Macro = Macro;
       }
     } break;
 
     case type_macro_keyword:
     {
       Result = True;
-      T->Type = CT_MacroLiteral;
-      T->Macro = Macro;
     } break;
 
     InvalidDefaultCase;
   }
 
   return Result;
-}
-
-bonsai_function void
-SkipToEndOfCursor(c_token_cursor *At, c_token_cursor *ToSkip)
-{
-  if (ToSkip->Next)
-  {
-    DoublyLinkedListSwap(At, ToSkip->Next);
-  }
-  else
-  {
-    ToSkip->At = ToSkip->End;
-    DoublyLinkedListSwap(At, ToSkip);
-  }
 }
 
 bonsai_function macro_def *
