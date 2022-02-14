@@ -217,6 +217,16 @@ StringsMatch(counted_string S1, counted_string S2)
   return Result;
 }
 
+bonsai_function b32
+StartsWith(counted_string S1, counted_string S2)
+{
+  umm TruncLength = Min(S1.Count, S2.Count);
+  S1.Count = TruncLength;
+
+  b32 Result = StringsMatch(S1, S2);
+  return Result;
+}
+
 inline b32
 AreEqual(counted_string S1, counted_string S2)
 {

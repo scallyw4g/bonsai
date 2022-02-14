@@ -4395,7 +4395,7 @@ ParseArgs(const char** ArgStrings, u32 ArgCount, parse_context *Ctx, memory_aren
     }
 #if 0
     // NOTE(Jesse): This has to come after the above -D path
-    else if ( StartsWith(CSz("-D"), Arg) )
+    else if ( StartsWith(Arg, CSz("-D")) )
     {
       macro_def *NewMacro = Push(&Ctx->Datatypes.Macros, { .Name = MacroNameToken->Value }, Ctx->Memory);
       NewMacro->Type = type_macro_keyword;
@@ -4403,6 +4403,21 @@ ParseArgs(const char** ArgStrings, u32 ArgCount, parse_context *Ctx, memory_aren
       NewMacro->Name = Name;
     }
 #endif
+    else if ( StringsMatch(CS("--log-level"), Arg) )
+    {
+      if (ArgIndex+1 < ArgCount)
+      {
+        ArgIndex += 1;
+        counted_string MacroName = CS(ArgStrings[ArgIndex]);
+      }
+      else
+      {
+        // TODO(Jesse): Helpfully specify what the accepted values are.
+        Error("Log Level required when using the --log-level switch.");
+      }
+
+
+    }
     else if ( StringsMatch(CS("-c0"), Arg) ||
               StringsMatch(CS("--colors-off"), Arg) )
     {
@@ -4413,7 +4428,7 @@ ParseArgs(const char** ArgStrings, u32 ArgCount, parse_context *Ctx, memory_aren
       Result.Outpath = PopArgString(ArgStrings, ArgCount, &ArgIndex);
       Error("Output path _NOT_CURRENTLY_SUPPORTED_ : (%S)", Result.Outpath);
     }
-#if 0
+#if 1
     else if ( StartsWith(Arg, CSz("-")) )
     {
       Error("Unknown Switch %S", Arg);

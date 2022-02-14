@@ -10,6 +10,7 @@ enum log_level
   LogLevel_Error,
   LogLevel_Shush,
 };
+meta(generate_string_table(log_level));
 
 struct terminal_colors
 {
