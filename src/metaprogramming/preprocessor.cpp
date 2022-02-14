@@ -64,7 +64,7 @@ bonsai_function void      EatWhitespaceAndComments(parser *Parser);
 // Preprocessor stuff
 //
 
-bonsai_function macro_def * TryConvertIdentifierToMacro(parse_context *Ctx, parser *Parser, c_token *T);
+bonsai_function macro_def * TryConvertIdentifierToMacro(parse_context *Ctx, parser *Parser, c_token *T, macro_def *ExpandingMacro);
 
 bonsai_function parser * ResolveInclude(parse_context *Ctx, parser *Parser);
 bonsai_function parser * ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *Memory, b32 ScanArgsForAdditionalMacros = False);
@@ -1951,7 +1951,7 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
           // TODO(Jesse): This is pretty wasteful and could be improved
           while (c_token *T = PeekTokenRawPointer(InstanceArgs))
           {
-            TryConvertIdentifierToMacro(Ctx, InstanceArgs, T);
+            TryConvertIdentifierToMacro(Ctx, InstanceArgs, T, Macro);
             PopTokenRaw(InstanceArgs);
           }
         }
@@ -2018,8 +2018,8 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
 
       case CTokenType_Identifier:
       {
-#if 0
-        if (TryConvertIdentifierToMacro(Ctx, MacroBody, T))
+#if 1
+        if (TryConvertIdentifierToMacro(Ctx, MacroBody, T, Macro))
         {
           parser *Expanded = ExpandMacro(Ctx, MacroBody, T->Macro, Memory);
           CopyCursorIntoCursor(&Expanded->Tokens, &Result->Tokens);
@@ -2906,6 +2906,9 @@ DefineMacro(parse_context *Ctx, parser *Parser, macro_def *Macro)
 
       case CTokenType_Identifier:
       {
+        TryConvertIdentifierToMacro(Ctx, MacroParser, T, Macro);
+        RequireTokenRaw(MacroParser, T->Type);
+#if 0
         RequireToken(MacroParser, T->Type);
         macro_def *M = GetMacroDef(Ctx, T->Value);
         if (M)
@@ -2923,6 +2926,7 @@ DefineMacro(parse_context *Ctx, parser *Parser, macro_def *Macro)
             Info("Prevented expanding macro recursively (%S)", Macro->Name);
           }
         }
+#endif
       } break;
 
       case CTokenType_Newline: { InvalidCodePath(); } break;
@@ -2964,15 +2968,15 @@ SkipToEndOfCursor(c_token_cursor *At, c_token_cursor *ToSkip)
 
 // @call_MacroShouldBeExpanded
 bonsai_function b32
-MacroShouldBeExpanded(parser *Parser, c_token *T, macro_def *Macro)
+MacroShouldBeExpanded(parser *Parser, c_token *T, macro_def *ThisMacro, macro_def *ExpandingMacro)
 {
   Assert(PeekTokenPointer(Parser) == T);
   Assert(T->Type == CTokenType_Identifier);
-  Assert(StringsMatch(T->Value, Macro->Name));
+  Assert(StringsMatch(T->Value, ThisMacro->Name));
 
   b32 Result = False;
 
-  switch (Macro->Type)
+  switch (ThisMacro->Type)
   {
     case type_macro_function:
     {
@@ -2984,27 +2988,35 @@ MacroShouldBeExpanded(parser *Parser, c_token *T, macro_def *Macro)
 
     case type_macro_keyword:
     {
-      Result = True;
+      if (ExpandingMacro && StringsMatch(ExpandingMacro->Name, ThisMacro->Name))
+      {
+        Info("Prevented recursive macro expansion of (%S)",  ExpandingMacro->Name);
+      }
+      else
+      {
+        Result = True;
+      }
     } break;
 
     InvalidDefaultCase;
   }
 
+
   return Result;
 }
 
 bonsai_function macro_def *
-TryConvertIdentifierToMacro(parse_context *Ctx, parser *Parser, c_token *T)
+TryConvertIdentifierToMacro(parse_context *Ctx, parser *Parser, c_token *T, macro_def *ExpandingMacro)
 {
   macro_def *Result = 0;
 
-  if (macro_def *Macro = GetMacroDef(Ctx, T->Value))
+  if (macro_def *ThisMacro = GetMacroDef(Ctx, T->Value))
   {
-    if (MacroShouldBeExpanded(Parser, T, Macro))
+    if (MacroShouldBeExpanded(Parser, T, ThisMacro, ExpandingMacro))
     {
       T->Type = CT_MacroLiteral;
-      T->Macro = Macro;
-      Result = Macro;
+      T->Macro = ThisMacro;
+      Result = ThisMacro;
     }
   }
 
@@ -3770,7 +3782,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       {
         if (Ctx)
         {
-          if (macro_def *Macro = TryConvertIdentifierToMacro(Ctx, Result, T))
+          if (macro_def *Macro = TryConvertIdentifierToMacro(Ctx, Result, T, 0))
           {
             parser *Expanded = ExpandMacro(Ctx, Result, Macro, Memory, True);
             EraseBetweenExcluding(Result, T, Result->Tokens.At);

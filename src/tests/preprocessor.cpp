@@ -1081,15 +1081,17 @@ TestMacrosAndIncludes(memory_arena *Memory)
 
     /* DumpEntireParser(Parser); */
 
-#if 0
+#if BUG_RECURSIVE_MACRO_EXPANSION
     RequireToken(Parser, CToken(CSz("m2")));
     RequireToken(Parser, CTokenType_OpenParen);
     RequireToken(Parser, CTokenType_CloseParen);
 #endif
 
+#if BUG_SELF_INCLUDING_MACRO_FUNCTION
     RequireToken(Parser, CToken(CSz("temp__")));
     RequireToken(Parser, CTokenType_OpenParen);
     RequireToken(Parser, CTokenType_CloseParen);
+#endif
 
     TestThat( TokensRemain(Parser) == False );
   }

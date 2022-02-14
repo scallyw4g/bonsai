@@ -182,5 +182,8 @@ self_including_macro_keyword // should expand to "self_including_macro_keyword 4
   m2()
 #endif
 
-#define temp__() temp__()
-temp__()
+
+#if BUG_SELF_INCLUDING_MACRO_FUNCTION
+#define self_including_macro_function() self_including_macro_function()
+self_including_macro_function()
+#endif

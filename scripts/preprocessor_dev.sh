@@ -18,7 +18,7 @@ elif [ "$Platform" == "Windows" ] ; then
 
   bin/preprocessor_dev $COLORFLAG                                                                                \
     -D BONSAI_PREPROCESSOR                                                                                       \
-    -D BONSAI_WIN32                                                                                              \
+    -D BONSAI_LINUX \
     src/metaprogramming/preprocessor.cpp                                                                         \
     -I ./src                                                                                                     \
     -I "C:/Program Files/LLVM/lib/clang/11.0.0/include"                                                          \
