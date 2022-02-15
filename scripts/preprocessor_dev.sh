@@ -20,7 +20,8 @@ elif [ "$Platform" == "Windows" ] ; then
     # -D BONSAI_WIN32                                                                                              \
     # -D BONSAI_LINUX                                                                                              \
 
-  # LOGLEVEL=LogLevel_Debug
+  LOGLEVEL=LogLevel_Debug
+  LOGLEVEL=LogLevel_Info
   LOGLEVEL=LogLevel_Error
 
   bin/preprocessor_dev                                                                                            \

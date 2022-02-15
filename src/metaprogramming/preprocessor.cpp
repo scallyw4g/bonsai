@@ -2961,9 +2961,9 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
   u32 LineNumber = 1;
   parser *Result = Ctx ? Push( &Ctx->AllParsers,
-                               AllocateParser(Code.Filename, LineNumber, (u32)Megabytes(1), Source, (u32)Megabytes(1), Memory),
+                               AllocateParser(Code.Filename, LineNumber, (u32)Megabytes(2), Source, (u32)Megabytes(2), Memory),
                                Memory)
-                       : AllocateParserPtr(Code.Filename, LineNumber, (u32)Megabytes(1), Source, (u32)Megabytes(1), Memory);
+                       : AllocateParserPtr(Code.Filename, LineNumber, (u32)Megabytes(2), Source, (u32)Megabytes(2), Memory);
 
   b32 ParsingSingleLineComment = False;
   b32 ParsingMultiLineComment = False;
@@ -4329,6 +4329,16 @@ ParseArgs(const char** ArgStrings, u32 ArgCount, parse_context *Ctx, memory_aren
     .Files        = AllocateBuffer<counted_string_cursor, counted_string>((u32)ArgCount, Memory),
     .IncludePaths = AllocateBuffer<counted_string_cursor, counted_string>((u32)ArgCount, Memory),
   };
+
+  LogDirect("Booting Preprocessor\n");
+  for ( u32 ArgIndex = 0;
+        ArgIndex < ArgCount;
+        ++ArgIndex)
+  {
+    counted_string Arg = CS(ArgStrings[ArgIndex]);
+    LogDirect("%S ", Arg);
+  }
+  LogDirect("\n");
 
   for ( u32 ArgIndex = 1;
         ArgIndex < ArgCount;
