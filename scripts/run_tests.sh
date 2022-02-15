@@ -2,7 +2,7 @@
 
 . scripts/preamble.sh
 
-TESTS_PASSED=0
+TESTS_PASSED=1
 
 if [ "$Platform" == "Linux" ] ; then
   exe_search_string='bin/tests/*';
@@ -13,16 +13,15 @@ fi
 for test_executable in $(find $exe_search_string); do
   # echo "$test_executable"
   # echo "$COLORFLAG"
-  if $test_executable $COLORFLAG == 0; then
+  if $test_executable $COLORFLAG --log-level LogLevel_Shush == 0; then
     echo -n ""
   else
-    echo -e "$RED ! Failures$WHITE in $test_executable"
-    TESTS_PASSED=1
+    TESTS_PASSED=0
   fi
 done
 
 
-if [ "$TESTS_PASSED" -eq 0 ]; then
+if [ "$TESTS_PASSED" -eq 1 ]; then
   echo ""
   echo "All Tests Passed"
 else
