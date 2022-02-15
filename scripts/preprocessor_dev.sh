@@ -20,48 +20,55 @@ elif [ "$Platform" == "Windows" ] ; then
     # -D BONSAI_WIN32                                                                                              \
     # -D BONSAI_LINUX                                                                                              \
 
-  LOGLEVEL=LogLevel_Shush
-    # --log-level $LOGLEVEL                                                                                         \
+  # LOGLEVEL=LogLevel_Debug
+  LOGLEVEL=LogLevel_Error
 
-  # bin/preprocessor_dev                                                                                            \
-  #   $COLORFLAG                                                                                                    \
-  #   -D BONSAI_PREPROCESSOR                                                                                        \
-  #   -D BONSAI_WIN32                                                                                               \
-  #   src/metaprogramming/preprocessor.cpp                                                                          \
-  #   -I ./src                                                                                                      \
-  #   -I "C:/Program Files/LLVM/lib/clang/11.0.0/include"                                                           \
-  #   -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/include"          \
-  #   -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/atlmfc/include"   \
-  #   -I "C:/Program Files (x86)/Windows Kits/10/Include/10.0.18362.0/ucrt"                                         \
-  #   -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/shared"                                       \
-  #   -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/um"                                           \
-  #   -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/winrt"
+  bin/preprocessor_dev                                                                                            \
+    --log-level $LOGLEVEL                                                                                         \
+    $COLORFLAG                                                                                                    \
+    -D BONSAI_PREPROCESSOR                                                                                        \
+    -D BONSAI_WIN32                                                                                               \
+    src/metaprogramming/preprocessor.cpp                                                                          \
+    -I ./src                                                                                                      \
+    -I "C:/Program Files/LLVM/lib/clang/11.0.0/include"                                                           \
+    -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/include"          \
+    -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/atlmfc/include"   \
+    -I "C:/Program Files (x86)/Windows Kits/10/Include/10.0.18362.0/ucrt"                                         \
+    -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/shared"                                       \
+    -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/um"                                           \
+    -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/winrt"
 
-  # bin/preprocessor_dev $COLORFLAG                                                                                \
-  #   -D BONSAI_PREPROCESSOR                                                                                       \
-  #   -D BONSAI_LINUX                                                                                              \
-  #   src/metaprogramming/preprocessor.cpp                                                                         \
-  #   -I ./src                                                                                                     \
-  #   -I "C:/Program Files/LLVM/lib/clang/11.0.0/include"                                                          \
-  #   -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/include"         \
-  #   -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/atlmfc/include"  \
-  #   -I "C:/Program Files (x86)/Windows Kits/10/Include/10.0.18362.0/ucrt"                                        \
-  #   -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/shared"                                      \
-  #   -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/um"                                          \
-  #   -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/winrt"
+  bin/preprocessor_dev                                                                                          \
+    $COLORFLAG                                                                                                  \
+    --log-level $LOGLEVEL                                                                                       \
+    -D BONSAI_PREPROCESSOR                                                                                      \
+    -D BONSAI_LINUX                                                                                             \
+    src/metaprogramming/preprocessor.cpp                                                                        \
+    -I ./src                                                                                                    \
+    -I "C:/Program Files/LLVM/lib/clang/11.0.0/include"                                                         \
+    -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/include"        \
+    -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/atlmfc/include" \
+    -I "C:/Program Files (x86)/Windows Kits/10/Include/10.0.18362.0/ucrt"                                       \
+    -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/shared"                                     \
+    -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/um"                                         \
+    -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/winrt"
 
 
-  # bin/preprocessor_dev $COLORFLAG                                                                                \
-  #   -D BONSAI_PREPROCESSOR                                                                                       \
-  #   -D BONSAI_WIN32                                                                                              \
-  #   src/metaprogramming/preprocessor.cpp                                                                         \
-  #   -I ./src                                                                                                     \
+  bin/preprocessor_dev                   \
+    $COLORFLAG                           \
+    --log-level $LOGLEVEL                \
+    -D BONSAI_PREPROCESSOR               \
+    -D BONSAI_WIN32                      \
+    src/metaprogramming/preprocessor.cpp \
+    -I ./src
 
-  bin/preprocessor_dev $COLORFLAG                                                                                \
-    -D BONSAI_PREPROCESSOR                                                                                       \
-    -D BONSAI_LINUX                                                                                              \
-    src/metaprogramming/preprocessor.cpp                                                                         \
-    -I ./src                                                                                                     \
+  bin/preprocessor_dev                   \
+    $COLORFLAG                           \
+    --log-level $LOGLEVEL                \
+    -D BONSAI_PREPROCESSOR               \
+    -D BONSAI_LINUX                      \
+    src/metaprogramming/preprocessor.cpp \
+    -I ./src
 
 
 else

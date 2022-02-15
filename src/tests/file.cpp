@@ -16,7 +16,7 @@ main(s32 ArgCount, const char** Args)
   //
   // We need this #if because on Windows, newlines are \r\n and git replaces them for us.  How nice of it.
 
-  Debug("%u", Contents.Count);
+  DebugLine("%u", Contents.Count);
 #if BONSAI_WIN32
   TestThat(Contents.Count == 12);
 #else

@@ -2256,15 +2256,15 @@ DumpScopeTreeDataToConsole_Internal(debug_profile_scope *Scope_in, debug_profile
   while (UniqueScopes)
   {
 
-    Debug("\n------------------------\n");
-    Debug("%s\n", UniqueScopes->Name);
-    Debug("%u\n", UniqueScopes->CallCount);
+    DebugLine("\n------------------------\n");
+    DebugLine("%s\n", UniqueScopes->Name);
+    DebugLine("%u\n", UniqueScopes->CallCount);
     Assert(UniqueScopes->CallCount);
 
-    Debug("Total: %lu\n", UniqueScopes->TotalCycles);
-    Debug("Min: %lu\n", UniqueScopes->MinCycles);
-    Debug("Max: %lu\n", UniqueScopes->MaxCycles);
-    Debug("Avg: %f\n", (r32)UniqueScopes->TotalCycles / (r32)UniqueScopes->CallCount);
+    DebugLine("Total: %lu\n", UniqueScopes->TotalCycles);
+    DebugLine("Min: %lu\n", UniqueScopes->MinCycles);
+    DebugLine("Max: %lu\n", UniqueScopes->MaxCycles);
+    DebugLine("Avg: %f\n", (r32)UniqueScopes->TotalCycles / (r32)UniqueScopes->CallCount);
 
     DumpScopeTreeDataToConsole_Internal(UniqueScopes->Scope->Child, TreeRoot, Memory);
     UniqueScopes = UniqueScopes->NextUnique;
@@ -2507,10 +2507,10 @@ DumpCallgraphRecursive(debug_ui_render_group *Group, debug_profile_scope* At, u3
       DepthIndex < Depth;
       ++DepthIndex)
   {
-    Debug("  ");
+    DebugChars("  ");
   }
 
-  Debug("%s (%lu) \n", At->Name, At->CycleCount);
+  DebugChars("%s (%lu) \n", At->Name, At->CycleCount);
 
   if (At->Child)
   {
@@ -2609,11 +2609,11 @@ DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugS
 #define TEXT_OUTPUT_FOR_FUNCTION_CALLS 0
 #if TEXT_OUTPUT_FOR_FUNCTION_CALLS
           Print(CS(CurrentScope->Name));
-          Debug("\n");
+          DebugChars("\n");
           Print(CS(CurrentScope->CycleCount));
-          Debug("\n");
+          DebugChars("\n");
           DumpCallgraphRecursive(Group, CurrentScope->Child);
-          Debug("\n");
+          DebugChars("\n");
 #else
           PushColumn(Group, CS(CurrentScope->Name));
           PushNewRow(Group);

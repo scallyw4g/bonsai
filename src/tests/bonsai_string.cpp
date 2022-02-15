@@ -568,7 +568,7 @@ main(s32 ArgCount, const char** Args)
 
   {
     counted_string TestValue = FormatCountedString(Memory, CSz("this %s this"), GetCwd());
-    Debug(TestValue);
+    DebugMessage(TestValue);
   }
 
 

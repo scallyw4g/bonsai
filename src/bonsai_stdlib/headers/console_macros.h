@@ -5,12 +5,13 @@ bonsai_function void PrintToStdout(counted_string S);
 
 enum log_level
 {
+  LogLevel_Undefined,
+
   LogLevel_Debug,
   LogLevel_Normal,
   LogLevel_Error,
   LogLevel_Shush,
 };
-meta(generate_string_table(log_level));
 
 struct terminal_colors
 {
@@ -62,74 +63,90 @@ bonsai_function void SetupStdout(u32 ArgCount, const char** ArgStrings);
 
 
 
-#define Log(...) PrintToStdout(FormatCountedString_(TempDebugOutputBuffer__, TempDebugOutputBufferSize, __VA_ARGS__))
+#define LogDirect(...) PrintToStdout(FormatCountedString_(TempDebugOutputBuffer__, TempDebugOutputBufferSize, __VA_ARGS__))
 
 
-#define DebugChars(...) do {                 \
-                                             \
-  if (Global_LogLevel <= LogLevel_Debug) {   \
-    Log(__VA_ARGS__);                        \
-  }                                          \
-                                             \
+#define DebugChars(...) do {                  \
+                                              \
+  if (Global_LogLevel <= LogLevel_Debug) {    \
+    LogDirect(__VA_ARGS__);                   \
+  }                                           \
+                                              \
 } while (false)
 
 
-#define Debug(...) do {                      \
-                                             \
-  if (Global_LogLevel <= LogLevel_Debug) {   \
-    Log(__VA_ARGS__);                        \
-    Log(Newline);                            \
-  }                                          \
-                                             \
+#define DebugLine(...) do {                                                    \
+                                                                               \
+  if (Global_LogLevel <= LogLevel_Debug) {                                     \
+    LogDirect(__VA_ARGS__);                                                    \
+    LogDirect(Newline);                                                        \
+  }                                                                            \
+                                                                               \
+} while (false)
+
+
+#define DebugMessage(...) do {                                                 \
+                                                                               \
+  if (Global_LogLevel <= LogLevel_Debug) {                                     \
+    LogDirect("%S   Debug   %S- ", TerminalColors.Blue, TerminalColors.White); \
+    LogDirect(__VA_ARGS__);                                                    \
+    LogDirect(Newline);                                                        \
+  }                                                                            \
+                                                                               \
 } while (false)
 
 
 
-#define Info(...) do {                                     \
-                                                           \
-  if (Global_LogLevel <= LogLevel_Normal) {                \
-    Log("%S   Info    %S- ", TerminalColors.Blue, TerminalColors.White);  \
-    Debug(__VA_ARGS__);                                    \
-  }                                                        \
-                                                           \
+#define Info(...) do {                                                           \
+                                                                                 \
+  if (Global_LogLevel <= LogLevel_Normal) {                                      \
+    LogDirect("%S   Info    %S- ", TerminalColors.Blue, TerminalColors.White);   \
+    LogDirect(__VA_ARGS__);                                                      \
+    LogDirect(Newline);                                                          \
+  }                                                                              \
+                                                                                 \
 } while (false)
 
 
 
-#define Error(...) do {                                   \
-                                                          \
-  if (Global_LogLevel <= LogLevel_Error) {                \
-    Log("%S ! Error   %S- ", TerminalColors.Red, TerminalColors.White);  \
-    Debug(__VA_ARGS__);                                   \
-    RuntimeBreak(); \
-  }                                                       \
-                                                          \
+#define Error(...) do {                                                         \
+                                                                                \
+  if (Global_LogLevel <= LogLevel_Error) {                                      \
+    LogDirect("%S ! Error   %S- ", TerminalColors.Red, TerminalColors.White);   \
+    LogDirect(__VA_ARGS__);                                                     \
+    LogDirect(Newline);                                                         \
+    RuntimeBreak();                                                             \
+  }                                                                             \
+                                                                                \
 } while (false)
 
 
-#define Warn(...) do {                                      \
-                                                            \
-  if (Global_LogLevel <= LogLevel_Normal) {                 \
-    Log("%S * Warning %S- ", TerminalColors.Yellow, TerminalColors.White); \
-    Debug(__VA_ARGS__);                                     \
-  }                                                         \
-                                                            \
+#define Warn(...) do {                                                             \
+                                                                                   \
+  if (Global_LogLevel <= LogLevel_Normal) {                                        \
+    LogDirect("%S * Warning %S- ", TerminalColors.Yellow, TerminalColors.White);   \
+    LogDirect(__VA_ARGS__);                                                        \
+    LogDirect(Newline);                                                            \
+  }                                                                                \
+                                                                                   \
 } while (false)
 
-#define LogSuccess(...) do {                                  \
-                                                           \
-  if (Global_LogLevel <= LogLevel_Normal) {                \
-    Log("%S   Success %S- ", TerminalColors.Green, TerminalColors.White); \
-    Debug(__VA_ARGS__);                                    \
-  }                                                        \
-                                                           \
+#define LogSuccess(...) do {                                                      \
+                                                                                  \
+  if (Global_LogLevel <= LogLevel_Normal) {                                       \
+    LogDirect("%S   Success %S- ", TerminalColors.Green, TerminalColors.White);   \
+    LogDirect(__VA_ARGS__);                                                       \
+    LogDirect(Newline);                                                           \
+  }                                                                               \
+                                                                                  \
 } while (false)
 
-#define OpenGlDebugMessage(...) do {                                     \
-                                                                         \
-  if (Global_LogLevel <= LogLevel_Debug) {                               \
-    Log("%S * OpenGl Debug Message %S- ", TerminalColors.Yellow, TerminalColors.White); \
-    Debug(__VA_ARGS__);                                                  \
-  }                                                                      \
-                                                                         \
+#define OpenGlDebugMessage(...) do {                                                            \
+                                                                                                \
+  if (Global_LogLevel <= LogLevel_Debug) {                                                      \
+    LogDirect("%S * OpenGl Debug Message %S- ", TerminalColors.Yellow, TerminalColors.White);   \
+    LogDirect(__VA_ARGS__);                                                                     \
+    LogDirect(Newline);                                                                         \
+  }                                                                                             \
+                                                                                                \
 } while (false)

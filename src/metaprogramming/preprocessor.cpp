@@ -157,13 +157,13 @@ DoublyLinkedListSwap(c_token_cursor *P0, c_token_cursor *P1)
       Assert(false);
 
       DumpLocalTokens(P0);
-      Debug("\n");
+      DebugChars("\n");
       DumpLocalTokens(P1);
-      Debug("\n");
+      DebugChars("\n");
       DumpLocalTokens(P1->Next);
-      Debug("\n");
+      DebugChars("\n");
       DumpLocalTokens(P1->Prev);
-      Debug("\n");
+      DebugChars("\n");
     }
   }
 #endif
@@ -708,13 +708,13 @@ DumpChain(parser* Parser, u32 LinesToDump = u32_MAX)
 
   while(Cursor->Prev) Cursor = Cursor->Prev;
 
-  Debug("-------------------- Dumping Cursor -- At Line (%d) ----------------------------", Parser->LineNumber);
+  DebugLine("-------------------- Dumping Cursor -- At Line (%d) ----------------------------", Parser->LineNumber);
 
   u32 Index = 0;
   while (Cursor)
   {
     DumpSingle(Cursor, At);
-    Debug("\n%S^%S Link(%d) Cursor Start/End (%d/%d) %S^%S",
+    DebugLine("\n%S^%S Link(%d) Cursor Start/End (%d/%d) %S^%S",
         TerminalColors.Blue, TerminalColors.White,
         Index, Cursor->StartLine, Cursor->EndLine,
         TerminalColors.Blue, TerminalColors.White);
@@ -726,7 +726,7 @@ DumpChain(parser* Parser, u32 LinesToDump = u32_MAX)
 bonsai_function void
 DumpEntireParser(parser* Parser, u32 LinesToDump = u32_MAX)
 {
-  Debug("%S---%S", TerminalColors.Purple, TerminalColors.White);
+  DebugLine("%S---%S", TerminalColors.Purple, TerminalColors.White);
 
   u32 StartingLineNumber = Parser->LineNumber;
   b32 WasValid    = Parser->Valid;
@@ -782,7 +782,7 @@ DumpEntireParser(parser* Parser, u32 LinesToDump = u32_MAX)
     Assert(PeekTokenRawPointer(Parser) == WasAt);
   }
 
-  Debug("\n%S---%S", TerminalColors.Purple, TerminalColors.White);
+  DebugLine("\n%S---%S", TerminalColors.Purple, TerminalColors.White);
   Parser->Valid = WasValid;
 
   Assert(Parser->LineNumber = StartingLineNumber);
@@ -1231,9 +1231,9 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
           DashIndex < LongestLine;
           ++DashIndex)
       {
-        Log(CSz("-"));
+        LogDirect(CSz("-"));
       }
-      Log(CSz("\n"));
+      LogDirect(CSz("\n"));
     }
 
     for (u32 DashIndex = 0;
@@ -1249,7 +1249,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
     if (Global_LogLevel <= LogLevel_Error)
     {
-      PrintToStdout(CS(ParseErrorCursor));
+      LogDirect(CS(ParseErrorCursor));
     }
 
 
@@ -1265,6 +1265,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
   {
     FormatCountedString_(ParseErrorCursor, CSz("Error determining where the error occurred\n"));
     FormatCountedString_(ParseErrorCursor, CSz("Error messsage was : %S\n"), ErrorMessage);
+    LogDirect(CS(ParseErrorCursor));
   }
 
 
@@ -4405,22 +4406,12 @@ ParseArgs(const char** ArgStrings, u32 ArgCount, parse_context *Ctx, memory_aren
 #endif
     else if ( StringsMatch(CS("--log-level"), Arg) )
     {
-      if (ArgIndex+1 < ArgCount)
-      {
-        ArgIndex += 1;
-        counted_string MacroName = CS(ArgStrings[ArgIndex]);
-      }
-      else
-      {
-        // TODO(Jesse): Helpfully specify what the accepted values are.
-        Error("Log Level required when using the --log-level switch.");
-      }
-
-
+      // Handled in SetupStdout
     }
     else if ( StringsMatch(CS("-c0"), Arg) ||
               StringsMatch(CS("--colors-off"), Arg) )
     {
+      // Handled in SetupStdout
     }
     else if ( StringsMatch(CS("-o"), Arg) ||
               StringsMatch(CS("--output-path"), Arg) )
@@ -4578,7 +4569,7 @@ DumpStringStreamToConsole(counted_string_stream* Stream)
       Advance(&Iter))
   {
     counted_string Message = Iter.At->Element;
-    Debug("%S\n", Message);
+    DebugChars("%S\n", Message);
   }
 }
 

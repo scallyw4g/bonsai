@@ -98,7 +98,6 @@ RegisterArena(const char *Name, memory_arena *Arena)
       }
       else
       {
-        Debug("Contiue Branch");
         continue;
       }
     }

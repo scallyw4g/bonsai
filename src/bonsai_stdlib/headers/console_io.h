@@ -1,3 +1,8 @@
+// NOTE(Jesse): This is here such that we can see "StringsMatch()"
+//
+meta(string_and_value_tables(log_level));
+#include <metaprogramming/output/string_and_value_tables_log_level.h>
+
 global_variable native_file Stdout =
 {
   .Handle = stdout,
@@ -20,6 +25,39 @@ SetupStdout(u32 ArgCount, const char** ArgStrings)
         StringsMatch(CS("--colors-off"), Arg) )
     {
       SetTerminalColorsOff();
+    }
+    else if ( StringsMatch(CS("--log-level"), Arg) )
+    {
+      if (ArgIndex+1 < ArgCount)
+      {
+        ArgIndex += 1;
+        counted_string LevelString = CS(ArgStrings[ArgIndex]);
+        log_level Level = LogLevel(LevelString);
+        if (Level > LogLevel_Undefined)
+        {
+          Info("Setting Global_LogLevel to %S", LevelString);
+          Global_LogLevel = Level;
+        }
+        else
+        {
+          Warn("Invalid --log-level switch value (%S)", LevelString);
+          DebugChars("           - Valid values are [ ");
+          for (u32 LevelIndex = LogLevel_Debug;
+              LevelIndex <= LogLevel_Shush;
+              ++LevelIndex)
+          {
+            DebugChars("%S", ToString((log_level)LevelIndex));
+            if (LevelIndex < LogLevel_Shush) { DebugChars(", "); } else { DebugChars(" ]"); }
+          }
+
+        }
+
+      }
+      else
+      {
+        // TODO(Jesse): Helpfully specify what the accepted values are.
+        Error("Log Level required when using the --log-level switch.");
+      }
     }
 
   }
