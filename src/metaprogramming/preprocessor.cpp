@@ -1404,14 +1404,6 @@ OffsetOfNext(parser* Parser, u32 Offset, c_token_type Close)
   return Offset;
 }
 
-#if 0
-bonsai_function c_token*
-PeekTokenPointer(parser* Parser, u32 TokensToSkip_in)
-{
-  c_token *Result = PeekTokenPointer(Parser, (s32)TokensToSkip_in);
-  return Result;
-}
-
 bonsai_function c_token*
 PeekTokenPointer(parser* Parser, s32 TokensToSkip_in)
 {
@@ -1471,7 +1463,15 @@ PeekTokenPointer(parser* Parser, s32 TokensToSkip_in)
 
   return Result;
 }
-#else
+
+bonsai_function c_token*
+PeekTokenPointer(parser* Parser, u32 TokensToSkip_in)
+{
+  c_token *Result = PeekTokenPointer(Parser, (s32)TokensToSkip_in);
+  return Result;
+}
+
+#if 0
 bonsai_function c_token*
 PeekTokenPointer(parser* Parser, u32 Lookahead)
 {
