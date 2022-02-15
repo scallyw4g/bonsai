@@ -4407,6 +4407,7 @@ ParseArgs(const char** ArgStrings, u32 ArgCount, parse_context *Ctx, memory_aren
     else if ( StringsMatch(CS("--log-level"), Arg) )
     {
       // Handled in SetupStdout
+      ArgIndex += 1; // Have to skip the switch value
     }
     else if ( StringsMatch(CS("-c0"), Arg) ||
               StringsMatch(CS("--colors-off"), Arg) )
@@ -4419,12 +4420,10 @@ ParseArgs(const char** ArgStrings, u32 ArgCount, parse_context *Ctx, memory_aren
       Result.Outpath = PopArgString(ArgStrings, ArgCount, &ArgIndex);
       Error("Output path _NOT_CURRENTLY_SUPPORTED_ : (%S)", Result.Outpath);
     }
-#if 1
     else if ( StartsWith(Arg, CSz("-")) )
     {
       Error("Unknown Switch %S", Arg);
     }
-#endif
     else
     {
       Push(Arg, &Result.Files);

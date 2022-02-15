@@ -39,8 +39,8 @@ elif [ "$Platform" == "Windows" ] ; then
     -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/winrt"
 
   bin/preprocessor_dev                                                                                          \
-    $COLORFLAG                                                                                                  \
     --log-level $LOGLEVEL                                                                                       \
+    $COLORFLAG                                                                                                  \
     -D BONSAI_PREPROCESSOR                                                                                      \
     -D BONSAI_LINUX                                                                                             \
     src/metaprogramming/preprocessor.cpp                                                                        \
@@ -55,16 +55,16 @@ elif [ "$Platform" == "Windows" ] ; then
 
 
   bin/preprocessor_dev                   \
-    $COLORFLAG                           \
     --log-level $LOGLEVEL                \
+    $COLORFLAG                           \
     -D BONSAI_PREPROCESSOR               \
     -D BONSAI_WIN32                      \
     src/metaprogramming/preprocessor.cpp \
     -I ./src
 
   bin/preprocessor_dev                   \
-    $COLORFLAG                           \
     --log-level $LOGLEVEL                \
+    $COLORFLAG                           \
     -D BONSAI_PREPROCESSOR               \
     -D BONSAI_LINUX                      \
     src/metaprogramming/preprocessor.cpp \
