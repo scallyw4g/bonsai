@@ -64,6 +64,7 @@ bonsai_function void      EatWhitespaceAndComments(parser *Parser);
 // Preprocessor stuff
 //
 
+bonsai_function void       TryTransmuteKeywordToken(c_token *T, c_token *LastTokenPushed);
 bonsai_function macro_def * TryConvertIdentifierToMacro(parse_context *Ctx, parser *Parser, c_token *T, macro_def *ExpandingMacro);
 
 bonsai_function parser * ResolveInclude(parse_context *Ctx, parser *Parser);
@@ -129,7 +130,6 @@ FinalizeStringFromParser(string_from_parser* Builder)
     }
     else
     {
-      /* ParseError(Parser, CSz("shit")); */
       Warn(CSz("Unable to call FinalizeStringFromParser due to having spanned a parser chain link."));
     }
   }
@@ -1404,6 +1404,74 @@ OffsetOfNext(parser* Parser, u32 Offset, c_token_type Close)
   return Offset;
 }
 
+#if 0
+bonsai_function c_token*
+PeekTokenPointer(parser* Parser, u32 TokensToSkip_in)
+{
+  c_token *Result = PeekTokenPointer(Parser, (s32)TokensToSkip_in);
+  return Result;
+}
+
+bonsai_function c_token*
+PeekTokenPointer(parser* Parser, s32 TokensToSkip_in)
+{
+  s32 Direction = GetSign(TokensToSkip_in);
+  if (Direction == 0) Direction = 1;
+
+  s32 LocalLookOffset = 0;
+
+  u32 TokensToSkip = (u32)Abs(TokensToSkip_in);
+  u32 TokenHits = 0;
+
+  Assert(Direction > 0);
+  Assert(LocalLookOffset >= 0);
+  c_token* Result = PeekTokenRawPointer(Parser, (u32)LocalLookOffset);
+  while (Result)
+  {
+    if ( Result->Erased )
+    {
+    }
+    else if ( Result->Type == CTokenType_CommentSingleLine)
+    {
+    }
+    else if ( Result->Type == CTokenType_CommentMultiLine)
+    {
+    }
+    else if (IsWhitespace(Result))
+    {
+    }
+    else if (Result->Type == CT_NameQualifier)
+    {
+      LocalLookOffset += Direction; // Skip the scope resolution operator token -> '::'
+    }
+    else
+    {
+      if (TokenHits++ == TokensToSkip)
+      {
+        break;
+      }
+    }
+
+    LocalLookOffset += Direction;
+    Result = PeekTokenRawPointer(Parser, (u32)LocalLookOffset);
+  }
+
+  if (Result && (IsWhitespace(Result) || IsComment(Result))) { Result = 0; } // Fires if the stream ends with whitespace/comment
+
+#if 0
+#if BONSAI_INTERNAL
+  if (Result && DEBUG_CHECK_FOR_BREAK_HERE(*Result))
+  {
+    Result = PeekTokenPointer(Parser, Lookahead+1);
+  }
+
+  if (Result) { Assert(!StringsMatch(Result->Value, CSz("break_here"))); }
+#endif
+#endif
+
+  return Result;
+}
+#else
 bonsai_function c_token*
 PeekTokenPointer(parser* Parser, u32 Lookahead)
 {
@@ -1456,6 +1524,7 @@ PeekTokenPointer(parser* Parser, u32 Lookahead)
 
   return Result;
 }
+#endif
 
 bonsai_function c_token
 PeekToken(parser* Parser, u32 Lookahead)
@@ -1910,19 +1979,12 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
 
     case type_macro_function:
     {
-      c_token *Start = PeekTokenPointer(Parser);
-
-      //
       // Parse instance args
-      //
 
+      c_token *Start = PeekTokenPointer(Parser);
       if (Start && Start->Type == CTokenType_OpenParen)
       {
-        parser InstanceArgs_ =
-        {
-          .Valid = 1,
-          .Tokens = { .Start = Start, .At = Start, .End = Start, },
-        };
+        parser InstanceArgs_ = { .Tokens = { .Start = Start, .At = Start, .End = Start, }, };
         parser *InstanceArgs = &InstanceArgs_;
 
         EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
@@ -1935,7 +1997,6 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
 
         if (ScanArgsForAdditionalMacros)
         {
-          // TODO(Jesse): This is pretty wasteful and could be improved
           while (c_token *T = PeekTokenRawPointer(InstanceArgs))
           {
             TryConvertIdentifierToMacro(Ctx, InstanceArgs, T, Macro);
@@ -2004,6 +2065,26 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
           CopyMacroArgIntoCursor(Ctx, Arg, &Result->Tokens, Memory);
         }
       } break;
+
+#if BUG_PASTE_OPERATOR
+      case CT_PreprocessorPaste:
+      {
+        // We must have pushed tokens onto the Result stream already to be
+        // pasting something.
+        Assert(Result->Tokens.At != Result->Tokens.Start);
+
+        c_token *Pastee = PeekTokenReversePointer(MacroBody);
+        c_token *Paster = PeekTokenPointer(MacroBody, 1);
+
+        Pastee->Value = Concat(Pastee->Value, Paster->Value, Memory);
+
+        TryTransmuteKeywordToken(Pastee, 0);
+
+        RequireTokenRaw(MacroBody, CT_PreprocessorPaste);
+        PopTokenRaw(MacroBody);
+
+      } break;
+#endif
 
       case CTokenType_Identifier:
       {
@@ -2893,7 +2974,6 @@ SkipToEndOfCursor(c_token_cursor *At, c_token_cursor *ToSkip)
   }
 }
 
-// @call_MacroShouldBeExpanded
 bonsai_function b32
 MacroShouldBeExpanded(parser *Parser, c_token *T, macro_def *ThisMacro, macro_def *ExpandingMacro)
 {
@@ -2950,6 +3030,191 @@ TryConvertIdentifierToMacro(parse_context *Ctx, parser *Parser, c_token *T, macr
   return Result;
 }
 
+bonsai_function void
+TryTransmuteKeywordToken(c_token *T, c_token *LastTokenPushed)
+{
+  if ( StringsMatch(T->Value, CSz("if")) )
+  {
+    T->Type = CTokenType_If;
+  }
+  else if ( StringsMatch(T->Value, CSz("else")) )
+  {
+    T->Type = CTokenType_Else;
+  }
+  else if ( StringsMatch(T->Value, CSz("break")) )
+  {
+    T->Type = CTokenType_Break;
+  }
+  else if ( StringsMatch(T->Value, CSz("switch")) )
+  {
+    T->Type = CTokenType_Switch;
+  }
+  else if ( StringsMatch(T->Value, CSz("case")) )
+  {
+    T->Type = CTokenType_Case;
+  }
+  else if ( StringsMatch(T->Value, CSz("default")) )
+  {
+    T->Type = CTokenType_Default;
+  }
+  else if ( StringsMatch(T->Value, CSz("for")) )
+  {
+    T->Type = CTokenType_For;
+  }
+  else if ( StringsMatch(T->Value, CSz("while")) )
+  {
+    T->Type = CTokenType_While;
+  }
+  else if ( StringsMatch(T->Value, CSz("continue")) )
+  {
+    T->Type = CTokenType_Continue;
+  }
+  else if ( StringsMatch(T->Value, CSz("return")) )
+  {
+    T->Type = CTokenType_Return;
+  }
+  else if ( StringsMatch(T->Value, CSz("thread_local")) )
+  {
+    T->Type = CTokenType_ThreadLocal;
+  }
+  else if ( StringsMatch(T->Value, CSz("const")) )
+  {
+    T->Type = CTokenType_Const;
+  }
+  else if ( StringsMatch(T->Value, CSz("static")) )
+  {
+    T->Type = CTokenType_Static;
+  }
+  else if ( StringsMatch(T->Value, CSz("__volatile__")) )
+  {
+    T->Type = CTokenType_Volatile;
+  }
+  else if ( StringsMatch(T->Value, CSz("volatile")) )
+  {
+    T->Type = CTokenType_Volatile;
+  }
+  else if ( StringsMatch(T->Value, CSz("void")) )
+  {
+    T->Type = CTokenType_Void;
+  }
+  else if ( StringsMatch(T->Value, CSz("long")) )
+  {
+    T->Type = CTokenType_Long;
+  }
+  else if ( StringsMatch(T->Value, CSz("float")) )
+  {
+    T->Type = CTokenType_Float;
+  }
+  else if ( StringsMatch(T->Value, CSz("char")) )
+  {
+    T->Type = CTokenType_Char;
+  }
+  else if ( StringsMatch(T->Value, CSz("double")) )
+  {
+    T->Type = CTokenType_Double;
+  }
+  else if ( StringsMatch(T->Value, CSz("short")) )
+  {
+    T->Type = CTokenType_Short;
+  }
+  else if ( StringsMatch(T->Value, CSz("int")) )
+  {
+    T->Type = CTokenType_Int;
+  }
+  else if ( StringsMatch(T->Value, CSz("bool")) )
+  {
+    T->Type = CTokenType_Bool;
+  }
+  else if ( StringsMatch(T->Value, CSz("__m128")) )
+  {
+    T->Type = CTokenType_M128;
+  }
+  else if ( StringsMatch(T->Value, CSz("auto")) )
+  {
+    T->Type = CTokenType_Auto;
+  }
+  else if ( StringsMatch(T->Value, CSz("signed")) )
+  {
+    T->Type = CTokenType_Signed;
+  }
+  else if ( StringsMatch(T->Value, CSz("unsigned")) )
+  {
+    T->Type = CTokenType_Unsigned;
+  }
+  else if ( StringsMatch(T->Value, CSz("struct")) )
+  {
+    T->Type = CTokenType_Struct;
+  }
+  else if ( StringsMatch(T->Value, CSz("typedef")) )
+  {
+    T->Type = CTokenType_Typedef;
+  }
+  else if ( StringsMatch(T->Value, CSz("__asm__")) )
+  {
+    T->Type = CTokenType_Asm;
+  }
+  else if ( StringsMatch(T->Value, CSz("asm")) )
+  {
+    T->Type = CTokenType_Asm;
+  }
+  else if ( StringsMatch(T->Value, CSz("meta")) )
+  {
+    T->Type = CTokenType_Meta;
+  }
+  else if ( StringsMatch(T->Value, CSz("union")) )
+  {
+    T->Type = CTokenType_Union;
+  }
+  else if ( StringsMatch(T->Value, CSz("using")) )
+  {
+    T->Type = CTokenType_Using;
+  }
+  else if ( StringsMatch(T->Value, CSz("enum")) )
+  {
+    T->Type = CTokenType_Enum;
+  }
+  else if ( StringsMatch(T->Value, CSz("goto")) )
+  {
+    T->Type = CTokenType_Goto;
+  }
+  else if ( StringsMatch(T->Value, CSz("template")) )
+  {
+    T->Type = CTokenType_TemplateKeyword;
+  }
+  else if ( StringsMatch(T->Value, CSz("inline")) )
+  {
+    T->Type = CTokenType_Inline;
+  }
+  else if ( StringsMatch(T->Value, CSz("operator")) )
+  {
+    T->Type = CTokenType_OperatorKeyword;
+  }
+  else if ( StringsMatch(T->Value, CSz("static_assert")) )
+  {
+    T->Type = CT_StaticAssert;
+  }
+  else if ( StringsMatch(T->Value, CSz("_Pragma")) )
+  {
+    T->Type = CT_KeywordPragma;
+  }
+  else if ( StringsMatch(T->Value, CSz("__pragma")) )
+  {
+    T->Type = CT_KeywordPragma;
+  }
+  else if ( StringsMatch(T->Value, CSz("extern")) )
+  {
+    T->Type = CTokenType_Extern;
+  }
+  else if ( StringsMatch(T->Value, CSz("__VA_ARGS__")) )
+  {
+    T->Type = CT_Preprocessor__VA_ARGS__;
+  }
+  else if (LastTokenPushed && LastTokenPushed->Type == CT_ScopeResolutionOperator)
+  {
+    T->QualifierName = LastTokenPushed->QualifierName;
+  }
+}
+
 bonsai_function parser *
 TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, parse_context *Ctx, token_cursor_source Source)
 {
@@ -2972,14 +3237,16 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
   c_token *CommentToken = 0;
   while(Remaining(&Code))
   {
-    const c_token FirstT = PeekToken(&Code);
+    c_token FirstT = PeekToken(&Code);
+    c_token SecondT = {};
+    if (Remaining(&Code, 1)) SecondT = PeekToken(&Code, 1);
+
     c_token PushT = { .Type = FirstT.Type, .Value = CS(Code.At, 1) };
 
     switch (FirstT.Type)
     {
       case CTokenType_FSlash:
       {
-        const c_token SecondT = PeekToken(&Code, 1);
 
         switch (SecondT.Type)
         {
@@ -3018,13 +3285,13 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
       case CTokenType_LT:
       {
-        if (PeekToken(&Code, 1).Type == CTokenType_Equals)
+        if (SecondT.Type == CTokenType_Equals)
         {
           PushT.Type = CTokenType_LessEqual;
           PushT.Value = CS(Code.At, 2);
           Advance(&Code);
         }
-        else if (PeekToken(&Code, 1).Type == CTokenType_LT)
+        else if (SecondT.Type == CTokenType_LT)
         {
           PushT.Type = CTokenType_LeftShift;
           PushT.Value = CS(Code.At, 2);
@@ -3035,13 +3302,13 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
       case CTokenType_GT:
       {
-        if (PeekToken(&Code, 1).Type == CTokenType_Equals)
+        if (SecondT.Type == CTokenType_Equals)
         {
           PushT.Type = CTokenType_GreaterEqual;
           PushT.Value = CS(Code.At, 2);
           Advance(&Code);
         }
-        else if (PeekToken(&Code, 1).Type == CTokenType_GT)
+        else if (SecondT.Type == CTokenType_GT)
         {
           PushT.Type = CTokenType_RightShift;
           PushT.Value = CS(Code.At, 2);
@@ -3052,7 +3319,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
       case CTokenType_Equals:
       {
-        if (PeekToken(&Code, 1).Type == CTokenType_Equals)
+        if (SecondT.Type == CTokenType_Equals)
         {
           PushT.Type = CTokenType_AreEqual;
           PushT.Value = CS(Code.At, 2);
@@ -3063,7 +3330,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
       case CTokenType_Dot:
       {
-        if (PeekToken(&Code, 1).Type == CTokenType_Dot &&
+        if (SecondT.Type == CTokenType_Dot &&
             PeekToken(&Code, 2).Type == CTokenType_Dot)
         {
           PushT.Type = CTokenType_Ellipsis;
@@ -3085,7 +3352,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
       case CTokenType_Bang:
       {
-        if (PeekToken(&Code, 1).Type == CTokenType_Equals)
+        if (SecondT.Type == CTokenType_Equals)
         {
           PushT.Type = CTokenType_NotEqual;
           PushT.Value = CS(Code.At, 2);
@@ -3094,10 +3361,9 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
         Advance(&Code);
       } break;
 
-
       case CTokenType_Hat:
       {
-        if (PeekToken(&Code, 1).Type == CTokenType_Equals)
+        if (SecondT.Type == CTokenType_Equals)
         {
           PushT.Type = CTokenType_XorEquals;
           PushT.Value = CS(Code.At, 2);
@@ -3108,13 +3374,13 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
       case CTokenType_Pipe:
       {
-        if (PeekToken(&Code, 1).Type == CTokenType_Pipe)
+        if (SecondT.Type == CTokenType_Pipe)
         {
           PushT.Type = CTokenType_LogicalOr;
           PushT.Value = CS(Code.At, 2);
           Advance(&Code);
         }
-        else if (PeekToken(&Code, 1).Type == CTokenType_Equals)
+        else if (SecondT.Type == CTokenType_Equals)
         {
           PushT.Type = CTokenType_OrEquals;
           PushT.Value = CS(Code.At, 2);
@@ -3125,13 +3391,13 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
       case CTokenType_Ampersand:
       {
-        if (PeekToken(&Code, 1).Type == CTokenType_Ampersand)
+        if (SecondT.Type == CTokenType_Ampersand)
         {
           PushT.Type = CTokenType_LogicalAnd;
           PushT.Value = CS(Code.At, 2);
           Advance(&Code);
         }
-        else if (PeekToken(&Code, 1).Type == CTokenType_Equals)
+        else if (SecondT.Type == CTokenType_Equals)
         {
           PushT.Type = CTokenType_AndEquals;
           PushT.Value = CS(Code.At, 2);
@@ -3142,7 +3408,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
       case CTokenType_Percent:
       {
-        if (PeekToken(&Code, 1).Type == CTokenType_Equals)
+        if (SecondT.Type == CTokenType_Equals)
         {
           PushT.Type = CTokenType_ModEquals;
           PushT.Value = CS(Code.At, 2);
@@ -3153,19 +3419,19 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
       case CTokenType_Minus:
       {
-        if (PeekToken(&Code, 1).Type == CTokenType_Minus)
+        if (SecondT.Type == CTokenType_Minus)
         {
           PushT.Type = CTokenType_Decrement;
           PushT.Value = CS(Code.At, 2);
           Advance(&Code);
         }
-        else if (PeekToken(&Code, 1).Type == CTokenType_Equals)
+        else if (SecondT.Type == CTokenType_Equals)
         {
           PushT.Type = CTokenType_MinusEquals;
           PushT.Value = CS(Code.At, 2);
           Advance(&Code);
         }
-        else if (PeekToken(&Code, 1).Type == CTokenType_GT)
+        else if (SecondT.Type == CTokenType_GT)
         {
           PushT.Type = CTokenType_Arrow;
           PushT.Value = CS(Code.At, 2);
@@ -3176,13 +3442,13 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
       case CTokenType_Plus:
       {
-        if (PeekToken(&Code, 1).Type == CTokenType_Equals)
+        if (SecondT.Type == CTokenType_Equals)
         {
           PushT.Type = CTokenType_PlusEquals;
           PushT.Value = CS(Code.At, 2);
           Advance(&Code);
         }
-        else if (PeekToken(&Code, 1).Type == CTokenType_Plus)
+        else if (SecondT.Type == CTokenType_Plus)
         {
           PushT.Type = CTokenType_Increment;
           PushT.Value = CS(Code.At, 2);
@@ -3193,13 +3459,13 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
       case CTokenType_Star:
       {
-        if (PeekToken(&Code, 1).Type == CTokenType_Equals)
+        if (SecondT.Type == CTokenType_Equals)
         {
           PushT.Type = CTokenType_TimesEquals;
           PushT.Value = CS(Code.At, 2);
           Advance(&Code);
         }
-        else if (PeekToken(&Code, 1).Type == CTokenType_FSlash)
+        else if (SecondT.Type == CTokenType_FSlash)
         {
           ParsingMultiLineComment = False;
           Advance(&Code);
@@ -3257,7 +3523,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
       case CTokenType_BSlash:
       {
-        if (PeekToken(&Code, 1).Type == CTokenType_CarrigeReturn)
+        if (SecondT.Type == CTokenType_CarrigeReturn)
         {
           ++PushT.Value.Count;
           Advance(&Code);
@@ -3296,7 +3562,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
       case CTokenType_Colon:
       {
-        if (PeekToken(&Code, 1).Type == CTokenType_Colon)
+        if (SecondT.Type == CTokenType_Colon)
         {
           Advance(&Code);
           Advance(&Code);
@@ -3318,7 +3584,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
       case CTokenType_Hash:
       {
-        if (PeekToken(&Code, 1).Type == CTokenType_Hash)
+        if (SecondT.Type == CTokenType_Hash)
         {
           Advance(&Code);
           Advance(&Code);
@@ -3424,186 +3690,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
           if (Ctx)
           {
-            if ( StringsMatch(PushT.Value, CSz("if")) )
-            {
-              PushT.Type = CTokenType_If;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("else")) )
-            {
-              PushT.Type = CTokenType_Else;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("break")) )
-            {
-              PushT.Type = CTokenType_Break;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("switch")) )
-            {
-              PushT.Type = CTokenType_Switch;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("case")) )
-            {
-              PushT.Type = CTokenType_Case;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("default")) )
-            {
-              PushT.Type = CTokenType_Default;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("for")) )
-            {
-              PushT.Type = CTokenType_For;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("while")) )
-            {
-              PushT.Type = CTokenType_While;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("continue")) )
-            {
-              PushT.Type = CTokenType_Continue;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("return")) )
-            {
-              PushT.Type = CTokenType_Return;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("thread_local")) )
-            {
-              PushT.Type = CTokenType_ThreadLocal;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("const")) )
-            {
-              PushT.Type = CTokenType_Const;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("static")) )
-            {
-              PushT.Type = CTokenType_Static;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("__volatile__")) )
-            {
-              PushT.Type = CTokenType_Volatile;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("volatile")) )
-            {
-              PushT.Type = CTokenType_Volatile;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("void")) )
-            {
-              PushT.Type = CTokenType_Void;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("long")) )
-            {
-              PushT.Type = CTokenType_Long;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("float")) )
-            {
-              PushT.Type = CTokenType_Float;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("char")) )
-            {
-              PushT.Type = CTokenType_Char;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("double")) )
-            {
-              PushT.Type = CTokenType_Double;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("short")) )
-            {
-              PushT.Type = CTokenType_Short;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("int")) )
-            {
-              PushT.Type = CTokenType_Int;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("bool")) )
-            {
-              PushT.Type = CTokenType_Bool;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("__m128")) )
-            {
-              PushT.Type = CTokenType_M128;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("auto")) )
-            {
-              PushT.Type = CTokenType_Auto;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("signed")) )
-            {
-              PushT.Type = CTokenType_Signed;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("unsigned")) )
-            {
-              PushT.Type = CTokenType_Unsigned;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("struct")) )
-            {
-              PushT.Type = CTokenType_Struct;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("typedef")) )
-            {
-              PushT.Type = CTokenType_Typedef;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("__asm__")) )
-            {
-              PushT.Type = CTokenType_Asm;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("asm")) )
-            {
-              PushT.Type = CTokenType_Asm;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("meta")) )
-            {
-              PushT.Type = CTokenType_Meta;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("union")) )
-            {
-              PushT.Type = CTokenType_Union;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("using")) )
-            {
-              PushT.Type = CTokenType_Using;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("enum")) )
-            {
-              PushT.Type = CTokenType_Enum;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("goto")) )
-            {
-              PushT.Type = CTokenType_Goto;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("template")) )
-            {
-              PushT.Type = CTokenType_TemplateKeyword;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("inline")) )
-            {
-              PushT.Type = CTokenType_Inline;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("operator")) )
-            {
-              PushT.Type = CTokenType_OperatorKeyword;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("static_assert")) )
-            {
-              PushT.Type = CT_StaticAssert;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("_Pragma")) )
-            {
-              PushT.Type = CT_KeywordPragma;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("__pragma")) )
-            {
-              PushT.Type = CT_KeywordPragma;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("extern")) )
-            {
-              PushT.Type = CTokenType_Extern;
-            }
-            else if ( StringsMatch(PushT.Value, CSz("__VA_ARGS__")) )
-            {
-              PushT.Type = CT_Preprocessor__VA_ARGS__;
-            }
-            else if (LastTokenPushed && LastTokenPushed->Type == CT_ScopeResolutionOperator)
-            {
-              PushT.QualifierName = LastTokenPushed->QualifierName;
-            }
+            TryTransmuteKeywordToken(&PushT, LastTokenPushed);
           }
         }
 
@@ -4330,13 +4417,22 @@ ParseArgs(const char** ArgStrings, u32 ArgCount, parse_context *Ctx, memory_aren
     .IncludePaths = AllocateBuffer<counted_string_cursor, counted_string>((u32)ArgCount, Memory),
   };
 
+  counted_string PrevArg = {};
+
   LogDirect("Booting Preprocessor\n");
   for ( u32 ArgIndex = 0;
         ArgIndex < ArgCount;
         ++ArgIndex)
   {
     counted_string Arg = CS(ArgStrings[ArgIndex]);
-    LogDirect("%S ", Arg);
+    b32 PrevArgWasInclude = StringsMatch(PrevArg, CSz("-I")) || StringsMatch(PrevArg, CSz("--include-path"));
+
+    if (PrevArgWasInclude) { LogDirect("\""); }
+    LogDirect("%S", Arg);
+    if (PrevArgWasInclude) { LogDirect("\""); }
+    LogDirect(" ");
+
+    PrevArg = Arg;
   }
   LogDirect("\n");
 

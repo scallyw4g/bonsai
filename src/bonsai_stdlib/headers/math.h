@@ -153,6 +153,7 @@ Max(s32 A, s32 B)
   return Result;
 }
 
+// TODO(Jesse): Should this not return u32?
 inline s32
 Abs(s32 Int)
 {
@@ -251,12 +252,12 @@ Square( r32 f )
   return Result;
 }
 
-enum Sign { Negative = -1, Zero = 0, Positive = 1 };
+enum sign { Negative = -1, Zero = 0, Positive = 1 };
 
-inline Sign
+inline sign
 GetSign( s32 f )
 {
-  Sign Result = Zero;
+  sign Result = Zero;
 
   if ( f > 0 )
   {
@@ -270,10 +271,10 @@ GetSign( s32 f )
   return Result;
 }
 
-inline Sign
+inline sign
 GetSign( r32 f )
 {
-  Sign Result = Zero;
+  sign Result = Zero;
 
   if ( f > 0.0f )
   {

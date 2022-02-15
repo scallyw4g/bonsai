@@ -1612,7 +1612,6 @@ TestErrors(memory_arena *Memory)
     TestThat(Parser->LineNumber == 3);
     Parser->Valid = True;
     TestThat( OptionalToken(Parser, CToken(132151u)) );
-    DumpEntireParser(Parser);
   }
 
   {
@@ -1629,7 +1628,6 @@ TestErrors(memory_arena *Memory)
     TestThat(Parser->LineNumber == 3);
     Parser->Valid = True;
     TestThat( OptionalToken(Parser, CToken(132151u)) );
-    DumpEntireParser(Parser);
   }
 
   {
@@ -1646,7 +1644,6 @@ TestErrors(memory_arena *Memory)
     TestThat(Parser->LineNumber == 3);
     Parser->Valid = True;
     TestThat( OptionalToken(Parser, CToken(132151u)) );
-    DumpEntireParser(Parser);
   }
 #endif
 
@@ -1666,7 +1663,6 @@ TestErrors(memory_arena *Memory)
     TestThat(Parser->LineNumber == 3);
     Parser->Valid = True;
     TestThat( OptionalToken(Parser, CToken(132151u)) );
-    DumpEntireParser(Parser);
   }
 #endif
 
@@ -1678,7 +1674,6 @@ TestErrors(memory_arena *Memory)
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
-    DumpEntireParser(Parser);
     TestThat(Parser->Valid);
   }
 #endif
