@@ -24,6 +24,10 @@ elif [ "$Platform" == "Windows" ] ; then
   LOGLEVEL=LogLevel_Info
   LOGLEVEL=LogLevel_Error
 
+
+  bin/tests/preprocessor \
+    --log-level LogLevel_Error
+
   bin/preprocessor_dev                                                                                            \
     --log-level $LOGLEVEL                                                                                         \
     $COLORFLAG                                                                                                    \

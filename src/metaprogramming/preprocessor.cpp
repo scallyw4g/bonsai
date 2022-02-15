@@ -28,6 +28,7 @@ _Pragma("clang diagnostic pop") // unused-macros
 
 
 bonsai_function c_token * PeekTokenRawPointer(parser *Parser, u32 TokenLookahead = 0);
+bonsai_function c_token * PeekTokenRawPointer(parser *Parser, s32 TokenLookahead);
 bonsai_function c_token   PeekTokenRaw(parser *Parser, u32 Lookahead = 0);
 bonsai_function c_token * PeekTokenPointer(parser *Parser, u32 TokenLookahead = 0);
 bonsai_function c_token   PeekToken(parser *Parser, u32 Lookahead = 0);
@@ -239,29 +240,6 @@ SanityCheckParserChain(parser *Parser)
 #else
 #define SanityCheckParserChain(...)
 #endif
-
-bonsai_function c_token *
-PeekTokenRawReversePointer(c_token_cursor *Tokens)
-{
-  c_token *Result = 0;
-  if (Tokens->At > Tokens->Start)
-  {
-    Result = Tokens->At -1;
-  }
-  else if (Tokens->Prev)
-  {
-    Result = PeekTokenRawReversePointer(Tokens->Prev);
-  }
-
-  return Result;
-}
-
-bonsai_function c_token *
-PeekTokenRawReversePointer(parser *Parser)
-{
-  c_token *Result = PeekTokenRawReversePointer(&Parser->Tokens);
-  return Result;
-}
 
 bonsai_function b32
 TokenShouldModifyLineCount(c_token *T, token_cursor_source Source)
@@ -1110,7 +1088,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
     { // Output the error line message
 
       c_token *NextT = PeekTokenRawPointer(Parser);
-      c_token *PrevT = PeekTokenRawReversePointer(Parser);
+      c_token *PrevT = PeekTokenRawPointer(Parser, -1);
       if (!NextT && PrevT && PrevT->Type != CTokenType_Newline)
       {
         CopyToDest(ParseErrorCursor, '\n');
@@ -1330,26 +1308,32 @@ ParseError_RequireTokenFailed(parser *Parser, counted_string FuncName, c_token *
   ( (Result).Type == CTokenType_Identifier && StringsMatch(CSz("break_here"), (Result).Value) )
 
 bonsai_function c_token*
-PeekTokenRawPointer(c_token_cursor *Tokens, u32 Lookahead)
+PeekTokenRawPointer(c_token_cursor *Tokens, s32 PeekCount)
 {
+  s32 Direction = GetSign(PeekCount);
+  if (Direction == 0) Direction = 1;
+
+
   Assert(Tokens->At >= Tokens->Start);
   Assert(Tokens->At <= Tokens->End);
   Assert(Tokens->Start <= Tokens->End);
 
   c_token* Result = {};
 
-  u32 TokensRemaining = (u32)Remaining(Tokens);
-  if (TokensRemaining > Lookahead)
+  s32 TokensRemaining = Direction > 0 ? (s32)Remaining(Tokens) : (s32)AtElements(Tokens);
+
+  if (TokensRemaining > Abs(PeekCount))
   {
-    Result = Tokens->At+Lookahead;
+    Result = Tokens->At + PeekCount;
   }
   else
   {
-    if (Tokens->Next)
+    c_token_cursor *Next = Direction > 0 ? Tokens->Next : Tokens->Prev;
+
+    if (Next)
     {
-      Rewind(Tokens->Next);
-      Assert( Tokens->Next->At == Tokens->Next->Start);
-      Result = PeekTokenRawPointer(Tokens->Next, Lookahead - TokensRemaining);
+      Rewind(Next);
+      Result = PeekTokenRawPointer(Next, PeekCount - TokensRemaining*Direction );
     }
   }
 
@@ -1357,11 +1341,9 @@ PeekTokenRawPointer(c_token_cursor *Tokens, u32 Lookahead)
   if (Result && DEBUG_CHECK_FOR_BREAK_HERE(*Result))
   {
     RuntimeBreak();
-    Result = PeekTokenRawPointer(Tokens, Lookahead + 1);
+    Result = PeekTokenRawPointer(Tokens, PeekCount + 1);
   }
-#endif
 
-#if BONSAI_INTERNAL
   if (Result && Result->Type == CTokenType_Identifier) { Assert(Result->Value.Start); Assert(Result->Value.Count);  }
   if (Result) { Assert(Result->Type); }
 #endif
@@ -1374,10 +1356,25 @@ PeekTokenRawPointer(c_token_cursor *Tokens, u32 Lookahead)
 }
 
 bonsai_function c_token*
-PeekTokenRawPointer(parser* Parser, u32 Lookahead)
+PeekTokenRawPointer(c_token_cursor* Tokens, u32 Lookahead)
+{
+  c_token *T = PeekTokenRawPointer(Tokens, (s32)Lookahead);
+  return T;
+}
+
+bonsai_function c_token*
+PeekTokenRawPointer(parser* Parser, s32 Lookahead)
 {
   c_token *T = 0;
   if (Parser->Valid) { T = PeekTokenRawPointer(&Parser->Tokens, Lookahead); }
+  return T;
+}
+
+bonsai_function c_token*
+PeekTokenRawPointer(parser* Parser, u32 Lookahead)
+{
+  c_token *T = 0;
+  if (Parser->Valid) { T = PeekTokenRawPointer(&Parser->Tokens, (s32)Lookahead); }
   return T;
 }
 
@@ -1417,7 +1414,7 @@ PeekTokenPointer(parser* Parser, s32 TokensToSkip_in)
 
   Assert(Direction > 0);
   Assert(LocalLookOffset >= 0);
-  c_token* Result = PeekTokenRawPointer(Parser, (u32)LocalLookOffset);
+  c_token* Result = PeekTokenRawPointer(Parser, LocalLookOffset);
   while (Result)
   {
     if ( Result->Erased )
@@ -2073,7 +2070,7 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
         // pasting something.
         Assert(Result->Tokens.At != Result->Tokens.Start);
 
-        c_token *Pastee = PeekTokenReversePointer(MacroBody);
+        c_token *Pastee = PeekTokenPointer(MacroBody, -1);
         c_token *Paster = PeekTokenPointer(MacroBody, 1);
 
         Pastee->Value = Concat(Pastee->Value, Paster->Value, Memory);
