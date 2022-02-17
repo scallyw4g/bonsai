@@ -9,5 +9,40 @@
     <DisplayString>{Type}, {Value}, {Erased}</DisplayString>
   </Type>
 
+  <Type Name="c_token_cursor">
+    <DisplayString>{Start->Value.Start,[(End-1)->Value.Start+(End-1)->Value.Count - Start->Value.Start]s8}</DisplayString>
+    <Expand>
+
+      <CustomListItems>
+
+        <If Condition="(At->Value.Count != 0)">
+          <Item Name="Start To At"> Start->Value.Start,[(At)->Value.Count + (At)->Value.Start - Start->Value.Start]s8 </Item>
+        </If>
+
+        <!-- If you're wondering WTF I was thinking when I wrote the following .. -->
+        <!-- me too. Apparently Microsoft had a compiler available -->
+        <!-- that you could have just asked to compile some arbitrary code that -->
+        <!-- spits out the display string, but that wasn't on the table -->
+        <!-- for some reason.. Fuck me. -->
+
+        <If Condition="(At->Value.Count == 0)">
+          <If Condition="At != Start">
+            <If Condition="((At-1)->Value.Count != 0)">
+              <Item Name="Start to (At-1)"> Start->Value.Start,[(At-1)->Value.Count + (At-1)->Value.Start - Start->Value.Start]s8 </Item>
+            </If>
+          </If>
+        </If>
+
+        <Item Name="At"> At->Value </Item>
+        <Item Name="End"> At->Value.Start+At->Value.Count,[(End-1)->Value.Count + (End-1)->Value.Start - At->Value.Start - At->Value.Count]s8 </Item>
+        <Item Name="Total"> End - Start </Item>
+        <Item Name="Used"> At - Start </Item>
+        <Item Name="Remaining"> End - At </Item>
+      </CustomListItems>
+
+    </Expand>
+
+  </Type>
+
 
 </AutoVisualizer>

@@ -1,5 +1,7 @@
 #include <src/tests/bug_defines.h>
 
+#if 1
+
 #define foo bar
 foo
 
@@ -35,15 +37,10 @@ This line is actually commented
 
 
 #define MacroKeyword    this_is_a_variable_name
+
 #define IndirectMacroKeyword MacroKeyword
 
-int MacroKeyword = 42;
-int IndirectMacroKeyword = 42;
-
-#if BUG_PASTE_OPERATOR
 #define PastedMacroKeyword Macro ## Keyword
-int PastedMacroKeyword = 42;
-#endif
 
 #define MacroFunction(a) a
 
@@ -64,6 +61,13 @@ int PastedMacroKeyword = 42;
   b
 
 #define MacroFunction9(a, b) a ## b
+
+#define MacroFunction10(a, b, c) a ## b ## c
+
+
+int MacroKeyword = 42;
+int IndirectMacroKeyword = 42;
+int PastedMacroKeyword = 42;
 
 
 // MacroFunction
@@ -140,31 +144,43 @@ MacroFunction8(MacroFunction8, 0)
 // MacroFunction9
 
 
-#if BUG_PASTE_OPERATOR
-MacroFunction9(this_is_a_, variable_name);
-MacroFunction9(Macro, Keyword);
-MacroFunction9(IndirectMacro, Keyword);
+#endif
 
+/* #define MacroFunction9(a, b) a ## b */
+
+MacroFunction9(this_is_a_, variable_name)
+MacroFunction9(Macro, Keyword)
+MacroFunction9(IndirectMacro, Keyword)
+MacroFunction9(PastedMacro, Keyword) // ??? this_is_a_variable_name ???
 
 #define some_thing this_is_a_variable_name
-#define some foo
+#define some fooberdoober
 
-MacroFunction9(some, _thing); // this_is_a_variable_name
-MacroFunction9(some_thing, _else); // some_thing_else
+MacroFunction9(some, _thing) // this_is_a_variable_name
+MacroFunction9(some_thing, _else) // some_thing_else
 
 #undef some
-MacroFunction9(some, _thing); // this_is_a_variable_name
+MacroFunction9(some, _thing) // this_is_a_variable_name
 
 #undef some_thing
-MacroFunction9(some, _thing); // some_thing
+MacroFunction9(some, _thing) // some_thing
 
-MacroFunction9(in, t); // CTokenType_Int(int) or CTokenType_Identifier(int) ??
-#endif
+MacroFunction9(in, t) // CTokenType_Int(int)
+
+/* MacroFunction9(+,+) // CTokenType_Increment(++) */
+
+// MacroFunction10
+
+
+MacroFunction10(i,n,t) // CTokenType_Int(int)
+MacroFunction10(this_is, _a_, variable_name) // this_is_a_variable_name
+MacroFunction10(Mac, ro, Keyword) // this_is_a_variable_name
 
 #define self_including_macro_keyword self_including_macro_keyword 42
 self_including_macro_keyword // should expand to "self_including_macro_keyword 42"
 #undef self_including_macro_keyword
 
+#if BUG_RECURSIVE_MACRO_EXPANSION
 #define self_including_macro_keyword MacroFunction(self_including_macro_keyword 42)
 self_including_macro_keyword // should expand to "self_including_macro_keyword 42"
 #undef self_including_macro_keyword
@@ -176,7 +192,6 @@ self_including_macro_keyword // should expand to "self_including_macro_keyword 4
 // following cases should be done at some point, but since it's currently not
 // a problem I don't have any reason to want to do it.
 //
-#if BUG_RECURSIVE_MACRO_EXPANSION
   #define m1() m2()
   #define m2() m1()
   m2()

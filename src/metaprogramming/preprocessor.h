@@ -233,6 +233,7 @@ enum token_cursor_source
   TokenCursorSource_Include,
   TokenCursorSource_MacroExpansion,
   TokenCursorSource_MetaprogrammingExpansion,
+  TokenCursorSource_PasteOperator,
 };
 
 // TODO(Jesse): Add a way to append additional members to generated datatypes

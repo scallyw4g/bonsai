@@ -26,8 +26,6 @@ TestSuiteBegin(const char *TestSuite, s32 ArgCount, const char** Args)
 
   if (!SearchForProjectRoot()) { Error("Couldn't find root dir."); }
 
-  Global_DoRuntimeBreak = False;
-
   return;
 }
 

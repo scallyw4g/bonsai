@@ -739,6 +739,47 @@ TestPeekAndPopTokens(memory_arena* Memory)
 }
 
 bonsai_function void
+TestBoundaryConditions(memory_arena* Memory)
+{
+  parse_context Ctx = { .Memory = Memory };
+  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/boundary_conditions.cpp"), TokenCursorSource_RootFile);
+
+  c_token Hi = CToken(CSz("hi"));
+  c_token NL = CToken(CTokenType_Newline);
+
+  c_token *Prev = 0;
+  c_token *Next = 0;
+
+  TestThat( Remaining(&Parser->Tokens) == 2 );
+
+  Next = PeekTokenRawPointer(Parser);
+  TestThat( *Next == Hi );
+
+  Prev = PeekTokenPointer(Parser, -1);
+  TestThat( Prev == 0 );
+
+  RequireTokenRaw(Parser, Hi );
+
+  Next = PeekTokenRawPointer(Parser);
+  TestThat( *Next == NL );
+
+  Prev = PeekTokenRawPointer(Parser, -1);
+  TestThat( *Prev == Hi );
+
+  RequireTokenRaw(Parser, NL );
+
+  Next = PeekTokenRawPointer(Parser);
+  TestThat( Next == 0 );
+
+  Prev = PeekTokenRawPointer(Parser, -1);
+  TestThat( *Prev == NL );
+
+  TestThat( RawTokensRemain(Parser) == 0 );
+}
+
+
+
+bonsai_function void
 TestStructParsing(memory_arena* Memory)
 {
   parse_context Ctx = { .Memory = Memory };
@@ -893,13 +934,11 @@ TestMacrosAndIncludes(memory_arena *Memory)
     RequireToken(Parser, CToken(42u));
     RequireToken(Parser, CTokenType_Semicolon);
 
-#if BUG_PASTE_OPERATOR
     RequireToken(Parser, CTokenType_Int);
     RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
     RequireToken(Parser, CTokenType_Equals);
     RequireToken(Parser, CToken(42u));
     RequireToken(Parser, CTokenType_Semicolon);
-#endif
 
 
 
@@ -1059,13 +1098,24 @@ TestMacrosAndIncludes(memory_arena *Memory)
     // MacroFunction9
 
 
-#if BUG_PASTE_OPERATOR
+    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
+    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
+    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
+    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
+
     RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
     RequireToken(Parser, CToken(CSz("some_thing_else")));
     RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
     RequireToken(Parser, CToken(CSz("some_thing")));
     RequireToken(Parser, CToken(CTokenType_Int, CSz("int")));
-#endif
+
+
+    // MacroFunction10
+
+
+    RequireToken(Parser, CToken(CTokenType_Int, CSz("int")));
+    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
+    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
 
 
 
@@ -1076,12 +1126,12 @@ TestMacrosAndIncludes(memory_arena *Memory)
     RequireToken(Parser, CToken(CSz("self_including_macro_keyword")));
     RequireToken(Parser, CToken(42u));
 
+#if BUG_RECURSIVE_MACRO_EXPANSION
     RequireToken(Parser, CToken(CSz("self_including_macro_keyword")));
     RequireToken(Parser, CToken(42u));
 
     /* DumpEntireParser(Parser); */
 
-#if BUG_RECURSIVE_MACRO_EXPANSION
     RequireToken(Parser, CToken(CSz("m2")));
     RequireToken(Parser, CTokenType_OpenParen);
     RequireToken(Parser, CTokenType_CloseParen);
@@ -1674,6 +1724,7 @@ TestErrors(memory_arena *Memory)
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
+    Global_DoRuntimeBreak = True;
     TestThat(Parser->Valid);
   }
 #endif
@@ -1893,6 +1944,7 @@ main(s32 ArgCount, const char** Args)
   TestParserChain(Memory);
   TestBasicTokenizationAndParsing(Memory);
   TestPeekAndPopTokens(Memory);
+  TestBoundaryConditions(Memory);
   TestStructParsing(Memory);
   TestCommentSituation(Memory);
   TestMacrosAndIncludes(Memory);

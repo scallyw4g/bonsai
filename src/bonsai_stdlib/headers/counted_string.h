@@ -391,6 +391,19 @@ IsAlphaNumeric(char C)
   return Result;
 }
 
+bonsai_function b32
+IsAlphaNumeric(counted_string S)
+{
+  b32 Result = True;
+  for (u32 CharIndex = 0;
+      Result && CharIndex < S.Count;
+      ++CharIndex)
+  {
+    Result &= IsAlphaNumeric(S.Start[CharIndex]);
+  }
+  return Result;
+}
+
 bonsai_function u64
 ToU64(char C)
 {
