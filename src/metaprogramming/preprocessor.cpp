@@ -4156,7 +4156,8 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
   if (NextToken.Type == CTokenType_StringLiteral)
   {
     PartialPath = RequireToken(Parser, CTokenType_StringLiteral).Value;
-    Error("Relative includes NOT SUPPORTED (%S)", PartialPath);
+    Warn("Relative includes NOT SUPPORTED (%S)", PartialPath);
+    return Result;
   }
   else
   {

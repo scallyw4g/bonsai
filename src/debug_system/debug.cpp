@@ -243,7 +243,7 @@ DebugFrameBegin(hotkeys *Hotkeys)
   return;
 }
 
-link_internal debug_state*
+dll_export debug_state *
 GetDebugState()
 {
   debug_state *Result = 0;

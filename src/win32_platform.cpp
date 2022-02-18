@@ -447,10 +447,10 @@ int attribs[] =
 }
 
 
-inline FARPROC
+inline void*
 GetProcFromLib(shared_lib Lib, const char *Name)
 {
-  FARPROC Result = (FARPROC)GetProcAddress(Lib, Name);
+  void* Result = (void*)GetProcAddress(Lib, Name);
   return Result;
 }
 
