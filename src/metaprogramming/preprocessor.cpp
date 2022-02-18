@@ -2039,11 +2039,11 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
         }
         Rewind(InstanceArgs);
 
-        if (OptionalToken(InstanceArgs, CToken(CTokenType_Void, CSz("void"))))
+        if ( TotalElements(&InstanceArgs->Tokens) == 1 &&
+              Macro->NamedArguments.Count == 0 )
+
         {
-          // TODO(Jesse): Make these failure cases into error messages
-          Assert(TotalElements(&InstanceArgs->Tokens) == 1);
-          Assert(Macro->NamedArguments.Count == 0);
+          OptionalToken(InstanceArgs, CToken(CTokenType_Void, CSz("void")));
         }
 
         //
@@ -3830,6 +3830,10 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
               PushT.Type = CTokenType_Identifier;
             }
           }
+          else
+          {
+            PushT.Type = CTokenType_Identifier;
+          }
         }
 
       } break;
@@ -4851,6 +4855,40 @@ EatUntil_TrackingDepth(parser *Parser, c_token_type Open, c_token_type Close, c_
 }
 
 bonsai_function void
+EatBetweenRaw(parser* Parser, c_token_type Open, c_token_type Close)
+{
+  u32 Depth = 0;
+  RequireTokenRaw(Parser, Open);
+
+  b32 Success = False;
+  while (RawTokensRemain(Parser))
+  {
+    c_token T = PopTokenRaw(Parser);
+
+    if (T.Type == Open)
+    {
+      ++Depth;
+    }
+
+    if (T.Type == Close)
+    {
+      if (Depth == 0)
+      {
+        Success = True;
+        break;
+      }
+      --Depth;
+    }
+  }
+
+  if (!Success)
+  {
+    ParseError(Parser, FormatCountedString(TranArena, CSz("Unable to find closing token %S"), ToString(Close)));
+  }
+
+  return;
+}
+bonsai_function void
 EatBetween(parser* Parser, c_token_type Open, c_token_type Close)
 {
   u32 Depth = 0;
@@ -5617,6 +5655,23 @@ ApplyOperator(parser *Parser, u64 LHS, c_token_type OperatorType, u64 RHS)
       Result = LHS || RHS;
     } break;
 
+    case CTokenType_Ampersand:
+    {
+      Result = LHS & RHS;
+    } break;
+
+    case CTokenType_Pipe:
+    {
+      Result = LHS | RHS;
+    } break;
+
+    case CTokenType_Hat:
+    {
+      Result = LHS ^ RHS;
+    } break;
+
+
+
     InvalidDefaultWhileParsing(Parser, CSz("Invalid operator type passed to ApplyOperator."));
   }
 
@@ -5644,6 +5699,9 @@ IsNextTokenMacro(parse_context *Ctx, parser *Parser)
 // ResolveMacroConstantExpression again on the resulting expanded parser, or
 // track each macro expansion and where we're at in each.  That seemed onerous
 // and annoying, so I did it the 'lazy' recursive way.
+//
+// TODO(Jesse): Should this function not return a signed value?!  Pretty sure
+// constant expressions can resolve to negative values.. just sayin..
 bonsai_function u64
 ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena *Memory, u64 PreviousValue, b32 LogicalNotNextValue)
 {
@@ -5661,13 +5719,37 @@ ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena 
         if (T.Erased)
         {
           RequireTokenRaw(Parser, T);
+
+          if (T.Macro->Type == type_macro_function)
+          {
+            c_token Next = PeekTokenRaw(Parser);
+            if (Next.Type == CTokenType_OpenParen)
+            {
+              EatBetweenRaw(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+            }
+          }
           Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, Result, LogicalNotNextValue);
         }
         else
         {
           ParseError(Parser, CSz("Invalid MacroLiteral encountered."));
-          InvalidCodePath(); //RequireTokenRaw(Parser, T);
         }
+      } break;
+
+      case CTokenType_Question:
+      {
+        RequireTokenRaw(Parser, T);
+        u64 Operator = ResolveMacroConstantExpression(Ctx, Parser, Memory, Result, LogicalNotNextValue);
+        if (Operator)
+        {
+          Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, Result, LogicalNotNextValue);
+        }
+        else
+        {
+          EatUntilIncluding(Parser, CTokenType_Colon);
+          Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, Result, LogicalNotNextValue);
+        }
+        Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, Result, LogicalNotNextValue);
       } break;
 
       case CTokenType_Bang:
@@ -5791,6 +5873,9 @@ ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena 
       case CTokenType_Decrement:
       case CTokenType_LogicalAnd:
       case CTokenType_LogicalOr:
+      case CTokenType_Ampersand:
+      case CTokenType_Pipe:
+      case CTokenType_Hat:
       {
         RequireTokenRaw(Parser, T.Type);
         c_token_type OperatorToApply = T.Type;
@@ -5799,6 +5884,7 @@ ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena 
         Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, OperationResult, False);
       } break;
 
+      case CTokenType_CommentMultiLine:
       case CTokenType_EscapedNewline:
       {
         RequireTokenRaw(Parser, T.Type);
@@ -5808,11 +5894,12 @@ ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena 
       case CTokenType_CommentSingleLine:
       case CTokenType_Newline:
       case CTokenType_CloseParen:
+      case CTokenType_Colon:
       {
         // We're done
       } break;
 
-      default: { ParseError(Parser, CSz("Invalid Token :: ResolveMacroConstantExpression failed."), PeekTokenRawPointer(Parser)); } break;
+      default: { ParseError(Parser, FormatCountedString_(TranArena, CSz(" ResolveMacroConstantExpression failed : Invalid %S(%S)"), ToString(T.Type), T.Value )); } break;
     }
   }
 
@@ -6522,9 +6609,9 @@ ParseSingleStatement(parse_context *Ctx, ast_node_statement *Result)
       case CTokenType_Increment:
       case CTokenType_Decrement:
 
-      case CTokenType_Tilde:
       case CTokenType_Bang:
       case CTokenType_Ampersand:
+      case CTokenType_Tilde:
       case CTokenType_Star:
       case CTokenType_OpenParen:
       {
