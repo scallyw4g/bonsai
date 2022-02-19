@@ -1,3 +1,48 @@
+
+meta( func hashtable(Type) { (hashtable_struct(Type)) (hashtable_impl(Type)) })
+
+meta(
+  func hashtable_struct(Type)
+  {
+    struct (Type.name)_hashtable
+    {
+      umm Size;
+      (Type.name) **Elements;
+    };
+  }
+);
+
+meta(
+  func hashtable_impl(Type)
+  {
+    bonsai_function (Type.name)_hashtable
+    Allocate_(Type.name)_hashtable(umm ElementCount, memory_arena *Memory)
+    {
+      (Type.name)_hashtable Result = {};
+      Result.Elements = Allocate((Type.name)*, Memory, ElementCount);
+      Result.Size = ElementCount;
+      return Result;
+    }
+
+    bonsai_function (Type.name) *
+    GetFirst((Type.name) *E, (Type.name)_hashtable *Table)
+    {
+      umm HashValue = Hash(E) % Table->Size;
+      (Type.name) *Result = Table->Elements[HashValue];
+      return Result;
+    }
+
+    bonsai_function void
+    Insert((Type.name) *E, (Type.name)_hashtable *Table)
+    {
+      umm HashValue = E->HashValue;
+      (Type.name)** Bucket = Table->Elements + HashValue;
+      while (*Bucket) Bucket = &(*Bucket)->NextInHash;
+      *Bucket = E;
+    }
+  }
+)
+
 meta(
   func dunion_debug_print(DUnionType)
   {

@@ -1234,7 +1234,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
     if (Global_LogLevel <= LogLevel_Error)
     {
-      LogDirect(CS(ParseErrorCursor));
+      LogDirect("%S", CS(ParseErrorCursor));
     }
 
 
@@ -1250,7 +1250,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
   {
     FormatCountedString_(ParseErrorCursor, CSz("Error determining where the error occurred\n"));
     FormatCountedString_(ParseErrorCursor, CSz("Error messsage was : %S\n"), ErrorMessage);
-    LogDirect(CS(ParseErrorCursor));
+    LogDirect("%S", CS(ParseErrorCursor));
   }
 
 

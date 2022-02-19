@@ -45,11 +45,8 @@ struct xml_tag
   xml_property** NextPropertySlot;
 };
 
-struct xml_hashtable
-{
-  umm Size;
-  xml_tag** Table;
-};
+meta(hashtable_struct(xml_tag));
+#include <metaprogramming/output/hashtable_struct_xml_tag.h>
 
 struct xml_token_stream
 {
@@ -57,7 +54,7 @@ struct xml_token_stream
   xml_token* At;
   xml_token* End;
 
-  xml_hashtable Hashes;
+  xml_tag_hashtable Hashes;
 };
 
 struct xml_tag_stream
@@ -152,74 +149,16 @@ XmlIntToken(counted_string Name, counted_string Value)
   return Result;
 }
 
-// Shamelessly ripped from https://cp-algorithms.com/string/string-hashing.html
-
-/* TODO(Jesse, id: 81, tags: string_hash): Theres' a null terminated
- * string-hash bonsai_function that should be replaced by this one most likely
- */
 inline umm
-Hash(counted_string* String)
+Hash(xml_token* Token)
 {
-  umm Result = 0;
-
-#if 1
-  /* TODO(Jesse, id: 82, tags: robustness, rng, hashing): 257 seemed to produce
-   * slightly worse results, but the source literature seemed to indicate using
-   * a constant close to the total number of discrete characters you'll
-   * encounter is advisable.  I believe this to be somewhat higher than 53, but
-   * it would be worth testing on real-world data (source files).
-   */
-  u32 p = 53;
-  u32 m = (u32)1e9 + 9;
-
-  u64 p_pow = 1;
-
-  for (umm CharIndex = 0;
-      CharIndex < String->Count;
-      ++CharIndex)
-  {
-    umm C = (umm)String->Start[CharIndex];
-    Result = (Result + (C - (umm)('a' + 1)) * p_pow) % m;
-    p_pow = (p_pow*p) % m;
-  }
-#else
-  // Note(Jesse): This is just some random thing I came up with that I thought
-  // sounded good ..it's worse than the implementation I got off the internet,
-  // but I though I'd leave it here for posterity.
-
-  u64 A = 6364136223846793005;
-  u64 B = 1442695040888963407;
-  u64 One = 1;
-  u64 Mod = (One << 63);
-
-  u32 Remainder = (u32)(String->Count % sizeof(u32));
-
-  for (umm CharIndex = 0;
-      CharIndex < String->Count;
-      ++CharIndex)
-  {
-    Result = ((A * (umm)String->Start[CharIndex]) + B) % Mod;
-  }
-
-  u32 IterationCount = (u32)(String->Count / sizeof(u32));
-  u32* Data = (u32*)String->Start+Remainder;
-  for (umm IterIndex = 0;
-      IterIndex < IterationCount;
-      ++IterIndex)
-  {
-    Result = ((A * (umm)Data[IterIndex]) + B) % Mod;
-  }
-
-  Result = (u32)(Result >> 31);
-
-#endif
-
+  umm Result = Hash(&Token->Property.Name);
   return Result;
 }
 
 inline umm
-Hash(xml_token* Token)
+Hash(xml_tag* Tag)
 {
-  umm Result = Hash(&Token->Property.Name); // + Hash(&Token->Property.Value);
+  umm Result = Hash(Tag->Open);
   return Result;
 }

@@ -316,13 +316,13 @@ Dump(v3_cursor* Array)
 }
 
 void
-Dump(xml_hashtable * Hash)
+Dump(xml_tag_hashtable *Table)
 {
   for (u32 ElementIndex = 0;
-      ElementIndex < Hash->Size;
+      ElementIndex < Table->Size;
       ++ElementIndex)
   {
-    xml_tag* Element = Hash->Table[ElementIndex];
+    xml_tag* Element = Table->Elements[ElementIndex];
     if (Element)
     {
       Print(ElementIndex);

@@ -1,12 +1,5 @@
-// TODO(Jesse id: 160, tags: metaprogramming, hashtable): Generate this!
-bonsai_function xml_hashtable
-AllocateHashtable(umm Count, memory_arena* Memory)
-{
-  xml_hashtable Result = {};
-  Result.Table = Allocate(xml_tag*, Memory, Count);
-  Result.Size = Count;
-  return Result;
-}
+meta(hashtable_impl(xml_tag));
+#include <metaprogramming/output/hashtable_impl_xml_tag.h>
 
 inline counted_string*
 GetPropertyValue(xml_tag* Tag, counted_string PropertyName)
@@ -151,7 +144,7 @@ AllocateXmlTokenStream(umm TokenCount, memory_arena* Memory)
   Result.End = Result.Start + TokenCount;
 
   // TODO(Jesse, id: 147, tags: hashing): Profile this and see if it's reasonable
-  Result.Hashes = AllocateHashtable(TokenCount/10, Memory);
+  Result.Hashes = Allocate_xml_tag_hashtable(TokenCount/10, Memory);
 
   return Result;
 }
@@ -220,9 +213,8 @@ GetCountMatchingTags(xml_token_stream* Tokens, xml_token_stream* Selectors, u32 
 
   xml_token_stream FirstSelectorStream = *Selectors;
   xml_tag FirstSelector = XmlTagFromReverseStream(&Selectors);
-  umm SelectorHash = Hash(FirstSelector.Open) % Tokens->Hashes.Size;
 
-  xml_tag* RootTag = Tokens->Hashes.Table[SelectorHash];
+  xml_tag *RootTag = GetFirst(&FirstSelector, &Tokens->Hashes);
 
   u32 MaxTagCount = CountTagsInHashBucket(RootTag);
   xml_tag_stream Result = AllocateXmlTagStream(MaxTagCount, Memory);
@@ -369,9 +361,8 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
 
       xml_token* OpenToken = PushToken(&Result, XmlOpenToken(StreamValue));
       xml_tag* OpenTag = XmlTag(OpenToken, TagsAt.CurrentlyOpenTag, HashValue, Memory);
-      xml_tag** Bucket = Result.Hashes.Table + HashValue;
-      while (*Bucket) Bucket = &(*Bucket)->NextInHash;
-      *Bucket = OpenTag;
+
+      Insert(OpenTag, &Result.Hashes);
 
       TagsAt.CurrentlyOpenTag = OpenTag;
       if (TagsAt.LastClosedTag)
