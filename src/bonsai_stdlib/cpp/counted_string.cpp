@@ -234,6 +234,8 @@ FormatCountedString_(char_cursor* DestCursor, counted_string FS, va_list Args)
         case 'x':
         {
           u64 Value = va_arg(Args, u64);
+          // TODO(Jesse): Implement u64ToHex()
+          Warn("Hex Values unsupported at current");
           u64ToChar(DestCursor, Value, FormatWidth);
         } break;
 

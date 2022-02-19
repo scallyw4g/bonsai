@@ -12,7 +12,10 @@ RewindArena(memory_arena *Arena, umm RestartBlockSize = Megabytes(1) )
     Arena->Prev = 0;
   }
 
-  Result &= UnprotectArena(Arena);
+  if (Arena->Start)
+  {
+    Result &= UnprotectArena(Arena);
+  }
 
   u8* ClearByte = Arena->Start;
   while( ClearByte < Arena->At )

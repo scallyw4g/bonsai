@@ -1804,11 +1804,11 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("parser Next {\n", Depth+2);
-          DebugPrint(S.Next, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
+          /* DebugPrint("parser Next {\n", Depth+2); */
+          /* DebugPrint(S.Next, Depth+4); */
+          /* DebugPrint("\n"); */
+          /* DebugPrint("}", Depth+2); */
+          /* DebugPrint("\n"); */
 
       DebugPrint("}\n", Depth);
     }
@@ -3229,11 +3229,11 @@
           DebugPrint("}", Depth+2);
           DebugPrint("\n");
 
-          DebugPrint("char Start {\n", Depth+2);
-          DebugPrint(S.Start, Depth+4);
-          DebugPrint("\n");
-          DebugPrint("}", Depth+2);
-          DebugPrint("\n");
+          /* DebugPrint("char Start {\n", Depth+2); */
+          /* DebugPrint(S.Start, Depth+4); */
+          /* DebugPrint("\n"); */
+          /* DebugPrint("}", Depth+2); */
+          /* DebugPrint("\n"); */
 
       DebugPrint("}\n", Depth);
     }
@@ -10475,15 +10475,15 @@
               DebugPrint("CTokenType_CommentSingleLine ", Depth);
             } break;
 
-            case CTokenType_CommentMultiLineStart:
+            case CTokenType_CommentMultiLine:
             {
-              DebugPrint("CTokenType_CommentMultiLineStart ", Depth);
+              DebugPrint("CTokenType_CommentMultiLine ", Depth);
             } break;
 
-            case CTokenType_CommentMultiLineEnd:
-            {
-              DebugPrint("CTokenType_CommentMultiLineEnd ", Depth);
-            } break;
+            /* case CTokenType_CommentMultiLineEnd: */
+            /* { */
+            /*   DebugPrint("CTokenType_CommentMultiLineEnd ", Depth); */
+            /* } break; */
 
             case CTokenType_EscapedNewline:
             {
@@ -10810,10 +10810,10 @@
               DebugPrint("CTokenType_Arrow ", Depth);
             } break;
 
-            case CT_Pragma:
-            {
-              DebugPrint("CT_Pragma ", Depth);
-            } break;
+            /* case CT_Pragma: */
+            /* { */
+            /*   DebugPrint("CT_Pragma ", Depth); */
+            /* } break; */
 
             case CT_ScopeResolutionOperator:
             {
@@ -10900,9 +10900,14 @@
               DebugPrint("CT_Preprocessor__VA_ARGS__ ", Depth);
             } break;
 
-            case CT_Erased:
+            case CT_KeywordPragma:
             {
-              DebugPrint("CT_Erased ", Depth);
+              DebugPrint("CT_KeywordPragma ", Depth);
+            } break;
+
+            case CT_StaticAssert:
+            {
+              DebugPrint("CT_StaticAssert ", Depth);
             } break;
 
       }
@@ -11643,7 +11648,7 @@
       }
     }
 
-    bonsai_function void DebugPrint( Sign EnumValue, u32 Depth)
+    bonsai_function void DebugPrint( sign EnumValue, u32 Depth)
     {
       switch (EnumValue)
       {

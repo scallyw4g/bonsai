@@ -1,80 +1,80 @@
 bonsai_function void
 DebugPrint(r64 E, u32 Depth = 0)
 {
-  Log("%*s%f", Depth, "", E);
+  DebugLine("%*s%f", Depth, "", E);
 }
 
 bonsai_function void
 DebugPrint(s64 E, u32 Depth = 0)
 {
-  Log("%*s%ld", Depth, "", E);
+  DebugLine("%*s%ld", Depth, "", E);
 }
 
 bonsai_function void
 DebugPrint(u64 E, u32 Depth = 0)
 {
-  Log("%*s%lu", Depth, "", E);
+  DebugLine("%*s%lu", Depth, "", E);
 }
 
 bonsai_function void
 DebugPrint(r32 E, u32 Depth = 0)
 {
-  Log("%*s%.2f", Depth, "", E);
+  DebugLine("%*s%.2f", Depth, "", E);
 }
 
 bonsai_function void
 DebugPrint(s32 E, u32 Depth = 0)
 {
-  Log("%*s%d", Depth, "", E);
+  DebugLine("%*s%d", Depth, "", E);
 }
 
 bonsai_function void
 DebugPrint(u32 E, u32 Depth = 0)
 {
-  Log("%*s%u", Depth, "", E);
+  DebugLine("%*s%u", Depth, "", E);
 }
 
 bonsai_function void
 DebugPrint(volatile void* E, u32 Depth = 0)
 {
-  Log("%*s%p", Depth, "", E);
+  DebugLine("%*s%p", Depth, "", E);
 }
 
 bonsai_function void
 DebugPrint(void* E, u32 Depth = 0)
 {
-  Log("%*s%p", Depth, "", E);
+  DebugLine("%*s%p", Depth, "", E);
 }
 
 bonsai_function void
 DebugPrint(__m128 E, u32 Depth = 0)
 {
-  Log("%*s%f %f %f %f", Depth, "", E[0], E[1], E[2], E[3]);
+  DebugLine("%*s%f %f %f %f", Depth, "", E[0], E[1], E[2], E[3]);
 }
 
 bonsai_function void
 DebugPrint(counted_string E, u32 Depth = 0)
 {
-  Log("%*s%S", Depth, "", E);
+  DebugLine("%*s%S", Depth, "", E);
 }
 
 bonsai_function void
 DebugPrint(const char* E, u32 Depth = 0)
 {
-  Log("%*s%s", Depth, "", E);
+  DebugLine("%*s%s", Depth, "", E);
 }
 
 #if 0
 bonsai_function void
 DebugPrint(native_mutex E, u32 Depth = 0)
 {
-  Log("%*smutex(%u)", Depth, "", *(u32*)&E);
+  DebugLine("%*smutex(%u)", Depth, "", *(u32*)&E);
 }
 
 bonsai_function void
 DebugPrint(semaphore E, u32 Depth = 0)
 {
-  Log("%*ssemaphore(%u)", Depth, "", *(u32*)&E);
+  DebugLine("%*ssemaphore(%u)", Depth, "", *(u32*)&E);
 }
 #endif
 

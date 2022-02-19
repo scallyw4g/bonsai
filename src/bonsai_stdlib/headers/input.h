@@ -88,3 +88,66 @@ GetOrthographicInputs(hotkeys *Hotkeys)
 
   return UpdateDir;
 }
+
+bonsai_function void
+BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
+{
+
+#if BONSAI_INTERNAL
+  Hotkeys->Debug_Pause                    = Input->F12.Pressed;
+  Hotkeys->Debug_ToggleLoopedGamePlayback = Input->F11.Clicked;
+
+  if (Input->F3.Clicked)
+  {
+    Hotkeys->Debug_ToggleProfile = True;
+  }
+
+  if (Input->F1.Clicked)
+  {
+    Hotkeys->Debug_ToggleMenu = True;
+  }
+
+  if (Input->F2.Clicked)
+  {
+    Hotkeys->Debug_ToggleTriggeredRuntimeBreak = True;
+  }
+
+  Hotkeys->Debug_TriangulateDecrement = Input->F3.Clicked;
+  Hotkeys->Debug_TriangulateIncrement = Input->F4.Clicked;
+
+  Hotkeys->Debug_MousePick = Input->F12.Pressed;
+
+  /* Hotkeys->Debug_RedrawEveryPush = Input->F2.Clicked; */
+#endif
+
+  Hotkeys->Left = Input->A.Pressed;
+  Hotkeys->Right = Input->D.Pressed;
+  Hotkeys->Forward = Input->W.Pressed;
+  Hotkeys->Backward = Input->S.Pressed;
+
+  Hotkeys->Player_Fire = Input->Space.Clicked;
+  Hotkeys->Player_Proton = Input->Shift.Clicked;
+
+  Hotkeys->Player_Spawn = Input->Space.Clicked;
+
+  return;
+}
+
+bonsai_function void
+ClearClickedFlags(input *Input)
+{
+meta(
+  func (input InputDef)
+  {
+    (
+      InputDef.map_members (Member) {
+        Input->(Member.name).Clicked = False;
+      }
+    )
+  }
+)
+#include <metaprogramming/output/anonymous_function_input_HLGbqwh0.h>
+
+  return;
+}
+

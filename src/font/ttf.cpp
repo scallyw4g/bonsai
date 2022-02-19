@@ -1011,7 +1011,7 @@ main()
 
         if ( PixelCount(&GlyphBitmap) )
         {
-          Debug("Rasterized Glyph %d (%d)", CharCode, GlyphsRasterized);
+          DebugLine("Rasterized Glyph %d (%d)", CharCode, GlyphsRasterized);
           ++GlyphsRasterized;
 
 #if 1

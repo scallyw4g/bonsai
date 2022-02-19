@@ -229,34 +229,17 @@ ProcessOsMessages(os *Os, platform *Plat)
       {
         if (Event.xbutton.button == Button1)
         {
-          Plat->Input.LMB.Clicked = False;
           Plat->Input.LMB.Pressed = False;
         }
         if (Event.xbutton.button == Button2)
         {
-          Plat->Input.MMB.Clicked = False;
           Plat->Input.MMB.Pressed = False;
         }
         if (Event.xbutton.button == Button3)
         {
-          Plat->Input.RMB.Clicked = False;
           Plat->Input.RMB.Pressed = False;
         }
       } break;
-
-
-#define BindToInput(Keysym, InputField, Boolean) \
-  case Keysym: {                                 \
-    Plat->Input.InputField.Clicked = Boolean; \
-    Plat->Input.InputField.Pressed = Boolean;     \
-  } break;
-
-#define BindKeydownToInput(Keysym, InputField) \
-    BindToInput(Keysym, InputField, True)
-
-#define BindKeyupToInput(Keysym, InputField) \
-    BindToInput(Keysym, InputField, False)
-
 
       case KeyRelease:
       {
@@ -264,27 +247,27 @@ ProcessOsMessages(os *Os, platform *Plat)
         switch (KeySym)
         {
 
-          BindKeyupToInput(XK_w     , W);
-          BindKeyupToInput(XK_s     , S);
-          BindKeyupToInput(XK_a     , A);
-          BindKeyupToInput(XK_d     , D);
-          BindKeyupToInput(XK_q     , Q);
-          BindKeyupToInput(XK_e     , E);
+          BindKeyupToInput(XK_w, W);
+          BindKeyupToInput(XK_s, S);
+          BindKeyupToInput(XK_a, A);
+          BindKeyupToInput(XK_d, D);
+          BindKeyupToInput(XK_q, Q);
+          BindKeyupToInput(XK_e, E);
 
-          BindKeyupToInput(XK_F1    , F1);
-          BindKeyupToInput(XK_F2    , F2);
-          BindKeyupToInput(XK_F3    , F3);
-          BindKeyupToInput(XK_F4    , F4);
-          BindKeyupToInput(XK_F5    , F5);
-          BindKeyupToInput(XK_F6    , F6);
-          BindKeyupToInput(XK_F7    , F7);
-          BindKeyupToInput(XK_F8    , F8);
-          BindKeyupToInput(XK_F9    , F9);
-          BindKeyupToInput(XK_F10   , F10);
-          BindKeyupToInput(XK_F11   , F11);
-          BindKeyupToInput(XK_F12   , F12);
+          BindKeyupToInput(XK_F1, F1);
+          BindKeyupToInput(XK_F2, F2);
+          BindKeyupToInput(XK_F3, F3);
+          BindKeyupToInput(XK_F4, F4);
+          BindKeyupToInput(XK_F5, F5);
+          BindKeyupToInput(XK_F6, F6);
+          BindKeyupToInput(XK_F7, F7);
+          BindKeyupToInput(XK_F8, F8);
+          BindKeyupToInput(XK_F9, F9);
+          BindKeyupToInput(XK_F10, F10);
+          BindKeyupToInput(XK_F11, F11);
+          BindKeyupToInput(XK_F12, F12);
 
-          BindKeyupToInput(XK_space , Space);
+          BindKeyupToInput(XK_space, Space);
 
           default:
           {
@@ -298,27 +281,27 @@ ProcessOsMessages(os *Os, platform *Plat)
         switch (KeySym)
         {
 
-          BindKeydownToInput(XK_w     , W);
-          BindKeydownToInput(XK_s     , S);
-          BindKeydownToInput(XK_a     , A);
-          BindKeydownToInput(XK_d     , D);
-          BindKeydownToInput(XK_q     , Q);
-          BindKeydownToInput(XK_e     , E);
+          BindKeydownToInput(XK_w, W);
+          BindKeydownToInput(XK_s, S);
+          BindKeydownToInput(XK_a, A);
+          BindKeydownToInput(XK_d, D);
+          BindKeydownToInput(XK_q, Q);
+          BindKeydownToInput(XK_e, E);
 
-          BindKeydownToInput(XK_F1    , F1);
-          BindKeydownToInput(XK_F2    , F2);
-          BindKeydownToInput(XK_F3    , F3);
-          BindKeydownToInput(XK_F4    , F4);
-          BindKeydownToInput(XK_F5    , F5);
-          BindKeydownToInput(XK_F6    , F6);
-          BindKeydownToInput(XK_F7    , F7);
-          BindKeydownToInput(XK_F8    , F8);
-          BindKeydownToInput(XK_F9    , F9);
-          BindKeydownToInput(XK_F10   , F10);
-          BindKeydownToInput(XK_F11   , F11);
-          BindKeydownToInput(XK_F12   , F12);
+          BindKeydownToInput(XK_F1, F1);
+          BindKeydownToInput(XK_F2, F2);
+          BindKeydownToInput(XK_F3, F3);
+          BindKeydownToInput(XK_F4, F4);
+          BindKeydownToInput(XK_F5, F5);
+          BindKeydownToInput(XK_F6, F6);
+          BindKeydownToInput(XK_F7, F7);
+          BindKeydownToInput(XK_F8, F8);
+          BindKeydownToInput(XK_F9, F9);
+          BindKeydownToInput(XK_F10, F10);
+          BindKeydownToInput(XK_F11, F11);
+          BindKeydownToInput(XK_F12, F12);
 
-          BindKeydownToInput(XK_space , Space);
+          BindKeydownToInput(XK_space, Space);
 
           case XK_Escape:
           {

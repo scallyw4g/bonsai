@@ -97,7 +97,7 @@ struct font
 
 // TODO(Jesse, id: 77, tags: font, cleanup): Axe this!
 debug_global font Global_Font = {
-  .Size = V2(26, 34),
+  .Size = V2(26*0.5, 34*0.5),
 };
 
 struct ui_element_reference

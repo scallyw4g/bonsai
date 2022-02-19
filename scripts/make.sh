@@ -2,6 +2,8 @@
 
 . scripts/preamble.sh
 
+# OPTIMIZATION_LEVEL="-O2"
+
 if [ "$Platform" == "Linux" ] ; then
   PLATFORM_LINKER_OPTIONS="-lpthread -lX11 -ldl -lGL"
   PLATFORM_DEFINES="-DBONSAI_LINUX"
@@ -38,8 +40,6 @@ elif [[ "$Platform" == "Windows" ]] ; then
 else
   echo "Unsupported Platform ($Platform), exiting." && exit 1
 fi
-
-OPTIMIZATION_LEVEL="-O0"
 
 
 EMCC=0
@@ -472,11 +472,11 @@ FirstPreprocessor=0
 BuildPreprocessor=1
 SecondPreprocessor=0
 
-BuildExecutables=0
+BuildExecutables=1
 BuildDebugTests=0
 BuildTests=1
 BuildDebugSystem=1
-BuildExamples=0
+BuildExamples=1
 
 RunTests=0
 FinalPreprocessor=0

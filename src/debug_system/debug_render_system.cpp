@@ -2420,11 +2420,6 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, r64 Ma
       debug_scope_tree *ReadTree = ThreadState->ScopeTrees + DebugState->ReadScopeIndex;
       frame_stats *Frame = DebugState->Frames + DebugState->ReadScopeIndex;
 
-      if (Group->Input->F2.Clicked)
-      {
-        RuntimeBreak();
-      }
-
       if (MainThreadReadTree->FrameRecorded == ReadTree->FrameRecorded)
       {
         BufferFirstCallToEach(Group, ReadTree->Root, ReadTree->Root, ThreadsafeDebugMemoryAllocator(), &CallgraphWindow, Frame->TotalCycles, 0);

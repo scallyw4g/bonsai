@@ -55,6 +55,8 @@ V3Cursor(u32 Count, memory_arena *Memory)
 u8_stream
 U8_StreamFromFile(const char* SourceFile, memory_arena *Memory)
 {
+  TIMED_FUNCTION();
+
   u8* FileContents = 0;
   umm FileSize = 0;
 
@@ -100,6 +102,8 @@ U8_StreamFromFile(counted_string SourceFile, memory_arena *Memory)
 ansi_stream
 AnsiStreamFromFile(const char* SourceFile, memory_arena *Memory)
 {
+  TIMED_FUNCTION();
+
   u8_stream Binary = U8_StreamFromFile(SourceFile, Memory);
   ansi_stream Result = AnsiStream(&Binary);
   Result.Filename = CS(SourceFile);

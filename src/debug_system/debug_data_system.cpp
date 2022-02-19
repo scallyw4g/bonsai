@@ -594,7 +594,8 @@ GetProfileScope()
     }
     else
     {
-      Result = AllocateProtection(debug_profile_scope, ThreadsafeDebugMemoryAllocator_debug_profile_scope_only(), 1, False);
+      memory_arena *Memory = ThreadsafeDebugMemoryAllocator_debug_profile_scope_only();
+      Result = AllocateProtection(debug_profile_scope, Memory, 1, False);
     }
   }
 

@@ -1,3 +1,17 @@
+
+#define BindToInput(Keysym, InputField, Boolean) \
+  case Keysym: {                                 \
+    Plat->Input.InputField.Clicked = Boolean; \
+    Plat->Input.InputField.Pressed = Boolean;     \
+  } break;
+
+#define BindKeydownToInput(Keysym, InputField) \
+    BindToInput(Keysym, InputField, True)
+
+#define BindKeyupToInput(Keysym, InputField) \
+    BindToInput(Keysym, InputField, False)
+
+
 #if BONSAI_WIN32
 #include <win32_platform.h>
 

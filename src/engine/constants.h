@@ -40,7 +40,7 @@
 #define DEBUG_DRAW_WORLD_AXIES        1
 #define DEBUG_PARTICLE_EFFECTS        1
 
-#define DEBUG_THREAD_COUNT_BIAS       (26)
+#define DEBUG_THREAD_COUNT_BIAS       (17)
 
 #define ENEMY_MODEL      MODELS_PATH "/tie-fighter.vox"
 #define LOOT_MODEL       MODELS_PATH "/3x3x3.vox"

@@ -367,17 +367,19 @@ DeallocateArena(memory_arena *Arena)
   if (Arena->Start)
   {
     Result = PlatformDeallocate(Arena->Start, TotalSize(Arena));
-  }
 
 #if MEMPROTECT_OVERFLOW
-  {
-    umm PageSize = PlatformGetPageSize();
-    u8 *ArenaBytes =  (u8*)Arena - ((umm)Arena % PageSize);
-    Result &= PlatformDeallocate(ArenaBytes, PageSize*2);
-  }
+    {
+      umm PageSize = PlatformGetPageSize();
+      u8 *ArenaBytes =  (u8*)Arena - ((umm)Arena % PageSize);
+      Result &= PlatformDeallocate(ArenaBytes, PageSize*2);
+    }
 #else
-  NotImplemented;
+    NotImplemented;
 #endif
+
+  }
+
 
   return Result;
 }
@@ -413,7 +415,10 @@ VaporizeArena(memory_arena *Arena)
     Arena->Prev = 0;
   }
 
-  Result &= DeallocateArena(Arena);
+  if (Arena->Start)
+  {
+    Result &= DeallocateArena(Arena);
+  }
   return Result;
 }
 

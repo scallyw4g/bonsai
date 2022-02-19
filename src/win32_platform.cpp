@@ -183,6 +183,8 @@ WindowMessageCallback(
     WPARAM wParam,
     LPARAM lParam)
 {
+  platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+  os *Os = (os*)GetWindowLongPtr(hWnd, 0);
 
   switch (message)
   {
@@ -193,15 +195,12 @@ WindowMessageCallback(
 
     case WM_DESTROY:
     {
-      os *Os = (os*)GetWindowLongPtr(hWnd, 0);
       Os->ContinueRunning = false;
 
     } return 0;
 
     case WM_SIZE:
     {
-      platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-
       int WinWidth = LOWORD(lParam);
       int WinHeight = HIWORD(lParam);
 
@@ -211,8 +210,6 @@ WindowMessageCallback(
 
     case WM_PALETTECHANGED:
     {
-      os *Os = (os*)GetWindowLongPtr(hWnd, 0);
-
       /* realize palette if this is *not* the current window */
       if (Os->GlContext && global_hPalette && (HWND) wParam != hWnd)
       {
@@ -226,8 +223,6 @@ WindowMessageCallback(
 
     case WM_QUERYNEWPALETTE:
     {
-      os *Os = (os*)GetWindowLongPtr(hWnd, 0);
-
       /* realize palette if this is the current window */
       if (Os->GlContext && global_hPalette)
       {
@@ -242,8 +237,6 @@ WindowMessageCallback(
 
     case WM_PAINT:
     {
-      os *Os = (os*)GetWindowLongPtr(hWnd, 0);
-
       PAINTSTRUCT ps;
       BeginPaint(hWnd, &ps);
       if (Os->GlContext)
@@ -260,49 +253,32 @@ WindowMessageCallback(
      */
     case WM_LBUTTONDOWN:
     {
-      platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+      Plat->Input.LMB.Clicked = True;
       Plat->Input.LMB.Pressed = True;
     } return 0;
 
     case WM_LBUTTONUP:
     {
-      platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
       Plat->Input.LMB.Pressed = False;
     } return 0;
 
     case WM_RBUTTONDOWN:
     {
-      platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+      Plat->Input.RMB.Clicked = True;
       Plat->Input.RMB.Pressed = True;
     } return 0;
 
     case WM_RBUTTONUP:
     {
-      platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
       Plat->Input.RMB.Pressed = False;
     } return 0;
 
     case WM_MOUSEMOVE:
     {
-      platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
       Plat->MouseP.x = (r32)GET_X_LPARAM(lParam);
       Plat->MouseP.y = (r32)GET_Y_LPARAM(lParam);
 
     } return 0;
-
-
-
-
-#define BindToInput(Keysym, InputField, Boolean) \
-  case Keysym: { \
-    platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET); \
-    Plat->Input.InputField.Pressed = Boolean; } return 0
-
-#define BindKeyupToInput(Keysym, InputField) \
-    BindToInput(Keysym, InputField, False)
-
-#define BindKeydownToInput(Keysym, InputField) \
-    BindToInput(Keysym, InputField, True)
 
 
 
@@ -545,6 +521,11 @@ PlatformAllocateSize(umm AllocationSize)
   u32 AllocationType = MEM_COMMIT|MEM_RESERVE;
   u8 *Result = (u8*)VirtualAlloc(0, AllocationSize, AllocationType, PAGE_READWRITE);
 
+  if (!Result)
+  {
+    Error("Allocating %d bytes.", AllocationSize);
+  }
+
   return Result;
 }
 
@@ -553,7 +534,25 @@ PlatformDeallocate(u8 *Base, umm Size)
 {
   Assert( (umm)Base % PlatformGetPageSize() == 0);
   Assert(Size % PlatformGetPageSize() == 0);
-  b32 Result = (b32)VirtualFree(Base, Size, MEM_RELEASE);
+  b32 Result = (b32)VirtualFree(Base, 0, MEM_RELEASE);
+  if (Result)
+  {
+  }
+  else
+  {
+    char* Buffer;
+
+    FormatMessage(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        0,
+        GetLastError(),
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        (LPTSTR)&Buffer,
+        0,
+        0 );
+
+    Error("Deallocating ptr(%llu) size(%llu) message(%s)", Base, Size, Buffer);
+  }
   return Result;
 }
 

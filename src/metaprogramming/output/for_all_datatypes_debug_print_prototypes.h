@@ -871,7 +871,7 @@
 
       bonsai_function void DebugPrint(mutex_op EnumValue, u32 Depth = 0);
 
-      bonsai_function void DebugPrint(Sign EnumValue, u32 Depth = 0);
+      bonsai_function void DebugPrint(sign EnumValue, u32 Depth = 0);
 
       bonsai_function void DebugPrint(Chunk_ID EnumValue, u32 Depth = 0);
 

@@ -387,6 +387,8 @@ RewindParserUntil(parser* Parser, c_token_type Type)
 bonsai_function void
 Rewind(parser* Parser)
 {
+  TIMED_FUNCTION();
+
   Parser->LineNumber = 1;
   c_token_cursor *FirstInChain = &Parser->Tokens;
   while (FirstInChain->Prev) { FirstInChain = FirstInChain->Prev; }
@@ -1979,6 +1981,8 @@ TryMacroArgSubstitution(c_token *T, counted_string_buffer *NamedArguments, c_tok
 bonsai_function parser *
 ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *Memory, b32 ScanArgsForAdditionalMacros)
 {
+  TIMED_FUNCTION();
+
   // @memory
   parser *Result = AllocateParserPtr(Parser->Filename, Macro->Body.LineNumber, (u32)Kilobytes(3), TokenCursorSource_MacroExpansion, 0, Memory);
 
@@ -2004,6 +2008,7 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
   c_token_buffer_stream VarArgs = {};
   c_token_buffer_buffer ArgValues = {};
 
+  TIMED_BLOCK("Parse Instance Args");
   switch (Macro->Type)
   {
     case type_macro_keyword:
@@ -2076,12 +2081,14 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
 
     InvalidDefaultWhileParsing(Parser, CSz("Invalid Macro Type detected"));
   }
+  END_BLOCK();
 
 
   //
   // Do parameter substitution and pasting
   //
 
+  TIMED_BLOCK("Parameter Sub && Pasting");
   parser MacroBody_ = Macro->Body;
   parser *MacroBody = &MacroBody_;
   TrimLeadingWhitespace(MacroBody);
@@ -2194,9 +2201,12 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
     }
 
   }
+  END_BLOCK();
 
   TruncateToCurrentSize(&Result->Tokens);
   Rewind(Result);
+
+  TIMED_BLOCK("Expand Body");
 
   while (c_token *T = PeekTokenRawPointer(Result))
   {
@@ -2238,8 +2248,8 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
     }
 
   }
-
   Rewind(Result);
+  END_BLOCK();
 
   return Result;
 }
@@ -2954,6 +2964,8 @@ TokenCursorsMatch(parser *C1, parser *C2)
 bonsai_function void
 DefineMacro(parse_context *Ctx, parser *Parser, macro_def *Macro)
 {
+  TIMED_FUNCTION();
+
   memory_arena *Memory = Ctx->Memory;
 
   RequireToken(Parser, CT_PreprocessorDefine);
@@ -3115,6 +3127,8 @@ MacroShouldBeExpanded(parser *Parser, c_token *T, macro_def *ThisMacro, macro_de
 bonsai_function macro_def *
 TryTransmuteIdentifierToMacro(parse_context *Ctx, parser *Parser, c_token *T, macro_def *ExpandingMacro)
 {
+  TIMED_FUNCTION();
+
   macro_def *Result = 0;
 
   if (macro_def *ThisMacro = GetMacroDef(Ctx, T->Value))
@@ -3150,6 +3164,8 @@ IsValidIdentifier(counted_string S)
 bonsai_function b32
 TryTransmuteOperatorToken(c_token *T)
 {
+  TIMED_FUNCTION();
+
   Assert(T->Type == CTokenType_Unknown);
 
   // TODO(Jesse): Implement me.
@@ -3161,6 +3177,8 @@ TryTransmuteOperatorToken(c_token *T)
 bonsai_function b32
 TryTransmuteKeywordToken(c_token *T, c_token *LastTokenPushed)
 {
+  TIMED_FUNCTION();
+
   Assert(T->Type == CTokenType_Unknown);
 
   if ( StringsMatch(T->Value, CSz("if")) )
@@ -3351,6 +3369,8 @@ TryTransmuteKeywordToken(c_token *T, c_token *LastTokenPushed)
 bonsai_function parser *
 TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, parse_context *Ctx, token_cursor_source Source)
 {
+  TIMED_FUNCTION();
+
   if (!Code.Start)
   {
     Error("Input AnsiStream for %S is null.", Code.Filename);
@@ -3358,16 +3378,21 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
   }
 
   u32 LineNumber = 1;
-  parser *Result = Ctx ? Push( &Ctx->AllParsers,
+  parser *Result = {};
+  TIMED_BLOCK("Allocate");
+  Result = Ctx ? Push( &Ctx->AllParsers,
                                AllocateParser(Code.Filename, LineNumber, (u32)Megabytes(2), Source, (u32)Megabytes(2), Memory),
                                Memory)
                        : AllocateParserPtr(Code.Filename, LineNumber, (u32)Megabytes(2), Source, (u32)Megabytes(2), Memory);
+  END_BLOCK();
 
   b32 ParsingSingleLineComment = False;
   b32 ParsingMultiLineComment = False;
 
   c_token *LastTokenPushed = 0;
   c_token *CommentToken = 0;
+
+  TIMED_BLOCK("Lexer");
   while(Remaining(&Code))
   {
     c_token FirstT = PeekToken(&Code);
@@ -3872,6 +3897,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
   Result->Valid = True;
   Rewind(Result);
 
+  END_BLOCK();
 
   //
   //
@@ -3879,6 +3905,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
   //
   //
 
+  TIMED_BLOCK("Preprocessor");
   c_token *LastT = 0;
   while (TokensRemain(Result))
   {
@@ -4081,6 +4108,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       } break;
     }
   }
+  END_BLOCK();
 
   if (Result->Tokens.EndLine == 0)
   {
@@ -4105,6 +4133,8 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 bonsai_function parser *
 ParserForFile(parse_context *Ctx, counted_string Filename, token_cursor_source Source)
 {
+  TIMED_FUNCTION();
+
   parser *Result = 0;
   ansi_stream SourceFileStream = AnsiStreamFromFile(Filename, Ctx->Memory);
 
@@ -4144,6 +4174,8 @@ GetByFilename(parser_stream* Stream, counted_string Filename)
 bonsai_function parser *
 ResolveInclude(parse_context *Ctx, parser *Parser)
 {
+  TIMED_FUNCTION();
+
   counted_string FinalIncludePath = {};
   parser *Result = {};
 
@@ -4215,6 +4247,14 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
   {
     Warn("Unable to resolve include for file : (%S)", PartialPath);
   }
+
+#if BONSAI_INTERNAL
+  if (GetDebugState)
+  {
+    debug_state* DebugState = GetDebugState();
+    DebugState->MainThreadAdvanceDebugSystem();
+  }
+#endif
 
   return Result;
 }
@@ -5706,6 +5746,8 @@ IsNextTokenMacro(parse_context *Ctx, parser *Parser)
 bonsai_function u64
 ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena *Memory, u64 PreviousValue, b32 LogicalNotNextValue)
 {
+  TIMED_FUNCTION();
+
   u64 Result = PreviousValue;
 
   EatSpacesTabsAndEscapedNewlines(Parser);
@@ -6010,6 +6052,7 @@ ParseIfDefinedValue(parser *Parser)
 bonsai_function macro_def *
 GetMacroDef(parse_context *Ctx, counted_string DefineValue)
 {
+  TIMED_FUNCTION();
   macro_def *Macro = GetByName(&Ctx->Datatypes.Macros, DefineValue);
 
   macro_def *Result = 0;
@@ -6448,6 +6491,8 @@ ParseTypedef(parse_context *Ctx)
 bonsai_function function_decl*
 GetByName(counted_string Name, function_decl_stream* Stream)
 {
+  TIMED_FUNCTION();
+
   function_decl *Result = {};
   ITERATE_OVER(Stream)
   {
@@ -7132,6 +7177,8 @@ ParseFunctionCall(parse_context *Ctx, counted_string FunctionName)
 bonsai_function void
 ParseDatatypes(parse_context *Ctx)
 {
+  TIMED_FUNCTION();
+
   parser *Parser = Ctx->CurrentParser;
   program_datatypes* Datatypes = &Ctx->Datatypes;
   memory_arena* Memory = Ctx->Memory;
@@ -7528,6 +7575,8 @@ Todo(counted_string Id, counted_string Value, b32 FoundInCodebase)
 bonsai_function person_stream
 ParseAllTodosFromFile(counted_string Filename, memory_arena* Memory)
 {
+  TIMED_FUNCTION();
+
   person_stream People = {};
 
   parser *Parser = TokenizeAnsiStream(AnsiStreamFromFile(Filename, Memory), Memory, True, 0, TokenCursorSource_Unknown);
@@ -7715,6 +7764,8 @@ Execute(meta_func* Func, meta_func_arg_stream *Args, parse_context* Ctx, memory_
 bonsai_function counted_string
 Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatterns, parse_context* Ctx, memory_arena* Memory)
 {
+  TIMED_FUNCTION();
+
   program_datatypes* Datatypes = &Ctx->Datatypes;
   meta_func_stream* FunctionDefs = &Ctx->MetaFunctions;
 
@@ -8212,6 +8263,8 @@ ParseDatatypeList(parser* Parser, program_datatypes* Datatypes, tagged_counted_s
 bonsai_function meta_func
 ParseMetaFunctionDef(parser* Parser, counted_string FuncName)
 {
+  TIMED_FUNCTION();
+
   RequireToken(Parser, CTokenType_OpenParen);
   counted_string ArgName = RequireToken(Parser, CTokenType_Identifier).Value;
   RequireToken(Parser, CTokenType_CloseParen);
@@ -8227,7 +8280,9 @@ ParseMetaFunctionDef(parser* Parser, counted_string FuncName)
 }
 
 // TODO(Jesse): Rewrite this so it doesn't suck
-#if 1
+//
+// Or maybe just delete it?
+#if 0
 bonsai_function void
 RemoveAllMetaprogrammingOutputRecursive(const char * OutputPath)
 {
@@ -8328,6 +8383,8 @@ ParseMultiLineTodoValue(parser* Parser, memory_arena* Memory)
 bonsai_function void
 GoGoGadgetMetaprogramming(parse_context* Ctx, todo_list_info* TodoInfo)
 {
+  TIMED_FUNCTION();
+
   program_datatypes *Datatypes   = &Ctx->Datatypes;
   meta_func_stream *FunctionDefs = &Ctx->MetaFunctions;
   memory_arena *Memory           = Ctx->Memory;
@@ -8973,6 +9030,9 @@ main(s32 ArgCount_, const char** ArgStrings)
       .People = ParseAllTodosFromFile(CSz("todos.md"), Memory),
     };
 
+    debug_state* DebugState = GetDebugState();
+    DebugState->MainThreadAdvanceDebugSystem();
+
     RegisterUnparsedCxxTypes(&Ctx.Datatypes, Memory);
 
     Assert(TotalElements(&Args.Files) == 1);
@@ -8980,16 +9040,19 @@ main(s32 ArgCount_, const char** ArgStrings)
     counted_string ParserFilename = Args.Files.Start[0];
 
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
+    DebugState->MainThreadAdvanceDebugSystem();
     if (Parser->Valid)
     {
       /* RemoveAllMetaprogrammingOutputRecursive(GetNullTerminated(Args.Outpath)); */
 
       Ctx.CurrentParser = Parser;
       ParseDatatypes(&Ctx);
+    DebugState->MainThreadAdvanceDebugSystem();
 
       Rewind(Ctx.CurrentParser);
 
       GoGoGadgetMetaprogramming(&Ctx, &TodoInfo);
+      DebugState->MainThreadAdvanceDebugSystem();
 
 /*       if (Parser->Valid) */
 /*       { */
@@ -9044,11 +9107,16 @@ main(s32 ArgCount_, const char** ArgStrings)
 
     DebugState->MainThreadAdvanceDebugSystem();
 
+    hotkeys Hotkeys = {};
     while (Os.ContinueRunning)
     {
+      ClearClickedFlags(&Plat.Input);
+
       v2 LastMouseP = Plat.MouseP;
       while ( ProcessOsMessages(&Os, &Plat) );
       Plat.MouseDP = LastMouseP - Plat.MouseP;
+
+      BindHotkeysToInput(&Hotkeys, &Plat.Input);
 
       DebugState->OpenDebugWindowAndLetUsDoStuff();
       BonsaiSwapBuffers(&Os);
@@ -9058,6 +9126,8 @@ main(s32 ArgCount_, const char** ArgStrings)
 
       GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
       GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+      Ensure(RewindArena(TranArena));
     }
   }
 

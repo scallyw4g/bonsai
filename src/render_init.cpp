@@ -326,8 +326,8 @@ GraphicsInit(memory_arena *GraphicsMemory)
   StandardCamera(Result->Camera, 1000.0f);
 
 
-  AllocateGpuElementBuffer(Result->GpuBuffers + 0, (u32)Megabytes(4));
-  AllocateGpuElementBuffer(Result->GpuBuffers + 1, (u32)Megabytes(4));
+  AllocateGpuElementBuffer(Result->GpuBuffers + 0, (u32)Megabytes(32));
+  AllocateGpuElementBuffer(Result->GpuBuffers + 1, (u32)Megabytes(32));
 
 
 #if 0
