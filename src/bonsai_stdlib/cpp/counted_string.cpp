@@ -540,32 +540,10 @@ FormatThousands(u64 Number)
 }
 
 bonsai_function r32
-StringToFloat(counted_string* String)
+ToF64(counted_string* String)
 {
   const char* Temp = GetNullTerminated(*String, TranArena);
   r32 Result = (r32)atof(Temp);
-  return Result;
-}
-
-bonsai_function s32
-StringToInt(counted_string String)
-{
-  const char* Temp = GetNullTerminated(String, TranArena);
-  s32 Result = atoi(Temp); // TODO(Jesse id: 275): Rewrite this in terms of `ToU32(counted_string S)`
-  return Result;
-}
-
-bonsai_function s32
-StringToInt(counted_string* String)
-{
-  s32 Result = StringToInt(*String);
-  return Result;
-}
-
-bonsai_function u32
-StringToUInt(counted_string *String)
-{
-  u32 Result = (u32)StringToInt(String);
   return Result;
 }
 

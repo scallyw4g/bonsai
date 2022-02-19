@@ -509,6 +509,13 @@ ToU32(counted_string S)
   return Result;
 }
 
+bonsai_function u32
+ToU32(counted_string *S)
+{
+  u32 Result = ToU32(*S);
+  return Result;
+}
+
 bonsai_function char
 Peek(char_cursor* BufferCursor)
 {

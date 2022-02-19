@@ -24,13 +24,13 @@ LoadMeshData(xml_token_stream* XmlTokens, counted_string* GeometryId, memory_are
   counted_string PositionsSelector = FormatCountedString(TempMemory, CSz("geometry%.*s float_array%.*s-positions-array"), GeometryId->Count, GeometryId->Start, GeometryId->Count, GeometryId->Start);
   xml_tag* PositionTag             = GetFirstMatchingTag(XmlTokens, &PositionsSelector);
   counted_string PositionString    = PositionTag->Value;
-  u32 PositionCount                = StringToUInt(GetPropertyValue(PositionTag, CS("count")));
+  u32 PositionCount                = ToU32(GetPropertyValue(PositionTag, CS("count")));
   v3_cursor Positions              = ParseV3Array(PositionCount, AnsiStream(PositionString), TempMemory);
 
   counted_string NormalsSelector = FormatCountedString(TempMemory, CSz("geometry%.*s float_array%.*s-normals-array"), GeometryId->Count, GeometryId->Start, GeometryId->Count, GeometryId->Start);
   xml_tag* NormalTag             = GetFirstMatchingTag(XmlTokens, &NormalsSelector);
   counted_string NormalString    = NormalTag->Value;
-  u32 NormalCount                = StringToUInt(GetPropertyValue(NormalTag, CS("count")));
+  u32 NormalCount                = ToU32(GetPropertyValue(NormalTag, CS("count")));
   v3_cursor Normals              = ParseV3Array(NormalCount, AnsiStream(NormalString), TempMemory);
 
   counted_string IndecesSelector = FormatCountedString(TempMemory, CSz("geometry%.*s polylist p"), GeometryId->Count, GeometryId->Start);
@@ -42,7 +42,7 @@ LoadMeshData(xml_token_stream* XmlTokens, counted_string* GeometryId, memory_are
 
   if (Polylist)
   {
-    u32 TotalTriangleCount = StringToUInt(GetPropertyValue(Polylist, CS("count")));
+    u32 TotalTriangleCount = ToU32(GetPropertyValue(Polylist, CS("count")));
 
     counted_string VertexCountSelector = FormatCountedString(TempMemory, CSz("geometry%.*s polylist vcount"), GeometryId->Count, GeometryId->Start);
     ansi_stream Triangles              = AnsiStream(GetFirstMatchingTag(XmlTokens, &VertexCountSelector)->Value);
@@ -66,8 +66,8 @@ LoadMeshData(xml_token_stream* XmlTokens, counted_string* GeometryId, memory_are
       {
         Assert(Mesh.At < Mesh.End);
 
-        u32 PositionIndex = (u32)StringToInt(PopWordCounted(&Indices));
-        u32 NormalIndex = (u32)StringToInt(PopWordCounted(&Indices));
+        u32 PositionIndex = ToU32(PopWordCounted(&Indices));
+        u32 NormalIndex = ToU32(PopWordCounted(&Indices));
         Assert(PositionIndex < TotalElements(&Positions));
         Assert(NormalIndex < TotalElements(&Normals));
 
@@ -103,8 +103,8 @@ LoadMeshData(xml_token_stream* XmlTokens, counted_string* GeometryId, memory_are
       {
         Assert(Mesh.At < Mesh.End);
 
-        u32 PositionIndex = (u32)StringToInt(PopWordCounted(&Indices));
-        u32 NormalIndex = (u32)StringToInt(PopWordCounted(&Indices));
+        u32 PositionIndex = ToU32(PopWordCounted(&Indices));
+        u32 NormalIndex = ToU32(PopWordCounted(&Indices));
         Assert(PositionIndex < TotalElements(&Positions));
         Assert(NormalIndex < TotalElements(&Normals));
 
@@ -217,13 +217,13 @@ LoadCollada(memory_arena *Memory, heap_allocator *Heap, const char * FilePath)
       xml_tag* yKeyframePositionsTag = ParseKeyframesForAxis(&XmlTokens, 'Y', &yKeyframeTimeTag, GeometryName);
       xml_tag* zKeyframePositionsTag = ParseKeyframesForAxis(&XmlTokens, 'Z', &zKeyframeTimeTag, GeometryName);
 
-      u32 xKeyframeCount = StringToUInt(GetPropertyValue(xKeyframeTimeTag, CS("count")));
-      u32 yKeyframeCount = StringToUInt(GetPropertyValue(yKeyframeTimeTag, CS("count")));
-      u32 zKeyframeCount = StringToUInt(GetPropertyValue(zKeyframeTimeTag, CS("count")));
+      u32 xKeyframeCount = ToU32(GetPropertyValue(xKeyframeTimeTag, CS("count")));
+      u32 yKeyframeCount = ToU32(GetPropertyValue(yKeyframeTimeTag, CS("count")));
+      u32 zKeyframeCount = ToU32(GetPropertyValue(zKeyframeTimeTag, CS("count")));
 
-      Assert( xKeyframeCount == StringToUInt(GetPropertyValue(xKeyframePositionsTag, CS("count"))) );
-      Assert( yKeyframeCount == StringToUInt(GetPropertyValue(yKeyframePositionsTag, CS("count"))) );
-      Assert( zKeyframeCount == StringToUInt(GetPropertyValue(zKeyframePositionsTag, CS("count"))) );
+      Assert( xKeyframeCount == ToU32(GetPropertyValue(xKeyframePositionsTag, CS("count"))) );
+      Assert( yKeyframeCount == ToU32(GetPropertyValue(yKeyframePositionsTag, CS("count"))) );
+      Assert( zKeyframeCount == ToU32(GetPropertyValue(zKeyframePositionsTag, CS("count"))) );
 
       r32_stream xKeyframeTimes = ParseFloatArray(xKeyframeCount, AnsiStream(xKeyframeTimeTag->Value), Memory);
       r32_stream yKeyframeTimes = ParseFloatArray(yKeyframeCount, AnsiStream(yKeyframeTimeTag->Value), Memory);

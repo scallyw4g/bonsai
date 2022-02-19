@@ -276,7 +276,7 @@ ParseV3Array(u32 ElementCount, ansi_stream FloatStream, memory_arena* Memory)
         ++Inner)
     {
       counted_string Float = PopWordCounted(&FloatStream);
-      Result.Start[DestIndex].E[Inner] = StringToFloat(&Float);
+      Result.Start[DestIndex].E[Inner] = ToF64(&Float);
     }
     ++Result.At;
   }
@@ -294,7 +294,7 @@ ParseFloatArray(u32 TotalFloatCount, ansi_stream FloatStream, memory_arena* Memo
       ++DestIndex)
   {
     counted_string Float = PopWordCounted(&FloatStream);
-    Result.Start[DestIndex] = StringToFloat(&Float);
+    Result.Start[DestIndex] = ToF64(&Float);
   }
 
   return Result;
