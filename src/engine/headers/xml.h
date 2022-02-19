@@ -36,9 +36,7 @@ struct xml_tag
 
   xml_tag* Parent;
   xml_tag* Sibling;
-  xml_tag* NextInHash;
 
-  umm HashValue;
   counted_string Value;
 
   xml_property* Properties;

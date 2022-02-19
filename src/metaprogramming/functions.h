@@ -25,24 +25,27 @@ meta(
     }
 
     bonsai_function (Type.name) *
-    GetFirst(umm HashValue, (Type.name)_hashtable *Table)
+    GetByHash(umm HashValue, (Type.name)_hashtable *Table)
     {
       (Type.name) *Result = Table->Elements[HashValue % Table->Size];
       return Result;
     }
 
-    bonsai_function (Type.name) *
-    GetFirst((Type.name) *E, (Type.name)_hashtable *Table)
+    bonsai_function void
+    Insert((Type.name) *E, u64 HashValue, (Type.name)_hashtable *Table)
     {
-      umm HashValue = Hash(E);
-      (Type.name) *Result = GetFirst(HashValue, Table);
-      return Result;
+      Assert(Hash(E) == HashValue);
+      HashValue = HashValue % Table->Size;
+
+      (Type.name)** Bucket = Table->Elements + HashValue;
+      while (*Bucket) Bucket = &(*Bucket)->NextInHash;
+      *Bucket = E;
     }
 
     bonsai_function void
     Insert((Type.name) *E, (Type.name)_hashtable *Table)
     {
-      umm HashValue = E->HashValue % Table->Size;
+      umm HashValue = Hash(E) % Table->Size;
       (Type.name)** Bucket = Table->Elements + HashValue;
       while (*Bucket) Bucket = &(*Bucket)->NextInHash;
       *Bucket = E;

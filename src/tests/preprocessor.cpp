@@ -1180,7 +1180,7 @@ TestDefinesAndConditionals(memory_arena *Memory)
     while(TokensRemain(Parser))
     {
       RequireToken(Parser, CToken(CSz("valid_path")));
-      TestThat(Parser->Valid);
+      TestThat(Parser->ErrorCode == ParseErrorCode_None);
     }
 
     /* RuntimeBreak(); */
@@ -1208,7 +1208,7 @@ TestLogicalOperators(memory_arena *Memory)
     while(TokensRemain(Parser))
     {
       RequireToken(Parser, CToken(CSz("valid_path")));
-      TestThat(Parser->Valid);
+      TestThat(Parser->ErrorCode == ParseErrorCode_None);
     }
 
   }
@@ -1560,11 +1560,10 @@ TestErrors(memory_arena *Memory)
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
     Global_DoRuntimeBreak = True;
-    TestThat(Parser->Valid == False);
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
     TestThat(Parser->LineNumber == 1);
-    Parser->Valid = True;
+    Parser->ErrorCode = ParseErrorCode_None;
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
@@ -1576,11 +1575,10 @@ TestErrors(memory_arena *Memory)
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
     Global_DoRuntimeBreak = True;
-    TestThat(Parser->Valid == False);
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
     TestThat(Parser->LineNumber == 3);
-    Parser->Valid = True;
+    Parser->ErrorCode = ParseErrorCode_None;
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
@@ -1592,11 +1590,10 @@ TestErrors(memory_arena *Memory)
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
     Global_DoRuntimeBreak = True;
-    TestThat(Parser->Valid == False);
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
     TestThat(Parser->LineNumber == 3);
-    Parser->Valid = True;
+    Parser->ErrorCode = ParseErrorCode_None;
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
@@ -1608,11 +1605,10 @@ TestErrors(memory_arena *Memory)
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
     Global_DoRuntimeBreak = True;
-    TestThat(Parser->Valid == False);
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
     TestThat(Parser->LineNumber == 3);
-    Parser->Valid = True;
+    Parser->ErrorCode = ParseErrorCode_None;
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
@@ -1624,11 +1620,10 @@ TestErrors(memory_arena *Memory)
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
     Global_DoRuntimeBreak = True;
-    TestThat(Parser->Valid == False);
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
     TestThat(Parser->LineNumber == 3);
-    Parser->Valid = True;
+    Parser->ErrorCode = ParseErrorCode_None;
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
@@ -1640,11 +1635,10 @@ TestErrors(memory_arena *Memory)
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
     Global_DoRuntimeBreak = True;
-    TestThat(Parser->Valid == False);
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
     TestThat(Parser->LineNumber == 3);
-    Parser->Valid = True;
+    Parser->ErrorCode = ParseErrorCode_None;
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
@@ -1656,11 +1650,10 @@ TestErrors(memory_arena *Memory)
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
     Global_DoRuntimeBreak = True;
-    TestThat(Parser->Valid == False);
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
     TestThat(Parser->LineNumber == 3);
-    Parser->Valid = True;
+    Parser->ErrorCode = ParseErrorCode_None;
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
@@ -1672,11 +1665,10 @@ TestErrors(memory_arena *Memory)
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
     Global_DoRuntimeBreak = True;
-    TestThat(Parser->Valid == False);
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
     TestThat(Parser->LineNumber == 3);
-    Parser->Valid = True;
+    Parser->ErrorCode = ParseErrorCode_None;
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 #endif
@@ -1691,16 +1683,14 @@ TestErrors(memory_arena *Memory)
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
     Global_DoRuntimeBreak = True;
-    TestThat(Parser->Valid == False);
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
     TestThat(StringsMatch(Parser->Filename, ParserFilename));
     TestThat(Parser->LineNumber == 3);
-    Parser->Valid = True;
+    Parser->ErrorCode = ParseErrorCode_None;
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 #endif
 
-#if 1
   {
     Global_DoRuntimeBreak = False;
     parse_context Ctx = AllocateParseContext(Memory);
@@ -1709,9 +1699,8 @@ TestErrors(memory_arena *Memory)
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
     Global_DoRuntimeBreak = True;
-    TestThat(Parser->Valid);
+    TestThat(Parser->ErrorCode == ParseErrorCode_None)
   }
-#endif
 
 }
 

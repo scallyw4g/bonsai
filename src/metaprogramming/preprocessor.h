@@ -257,6 +257,8 @@ enum parse_error_code
   ParseErrorCode_StreamEndedUnexpectedly,
   ParseErrorCode_RequireTokenFailed,
 
+  ParseErrorCode_DUnionParse,
+
   ParseErrorCode_Unknown,
 };
 
@@ -269,7 +271,6 @@ enum parse_error_code
 // expansion .. I think
 struct parser
 {
-  b32 Valid = 1;
   counted_string ErrorMessage;
   parse_error_code ErrorCode;
 
@@ -670,8 +671,6 @@ struct macro_def
   b32 Undefed; // Gets toggled when we hit an undef
   /* b32 IsExpanding; */
 
-  // TODO(Jesse): Factor these out?
-  u64 HashValue;
   macro_def *NextInHash;
 };
 meta(generate_stream(macro_def))

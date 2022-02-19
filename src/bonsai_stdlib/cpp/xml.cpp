@@ -214,7 +214,7 @@ GetCountMatchingTags(xml_token_stream* Tokens, xml_token_stream* Selectors, u32 
   xml_token_stream FirstSelectorStream = *Selectors;
   xml_tag FirstSelector = XmlTagFromReverseStream(&Selectors);
 
-  xml_tag *RootTag = GetFirst(&FirstSelector, &Tokens->Hashes);
+  xml_tag *RootTag = GetByHash(Hash(&FirstSelector), &Tokens->Hashes);
 
   u32 MaxTagCount = CountTagsInHashBucket(RootTag);
   xml_tag_stream Result = AllocateXmlTagStream(MaxTagCount, Memory);
@@ -308,12 +308,11 @@ XmlProperty(counted_string Name, counted_string Value, memory_arena* Memory)
 }
 
 xml_tag*
-XmlTag(xml_token* Open, xml_tag *Parent, umm HashValue, memory_arena* Memory)
+XmlTag(xml_token* Open, xml_tag *Parent, memory_arena* Memory)
 {
   xml_tag* Result = Allocate(xml_tag, Memory, 1);
   Result->Open = Open;
   Result->Parent = Parent;
-  Result->HashValue = HashValue;
   return Result;
 }
 
@@ -355,13 +354,11 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
     {
       StreamValue = ReadUntilTerminatorList(Xml, NameDelimeters);
       Assert(!StreamValueIsCloseTag);
-      umm HashValue = Hash(&StreamValue) % Result.Hashes.Size;
 
       b32 IsSelfClosingTag = Xml->At[-1] == '/';
 
       xml_token* OpenToken = PushToken(&Result, XmlOpenToken(StreamValue));
-      xml_tag* OpenTag = XmlTag(OpenToken, TagsAt.CurrentlyOpenTag, HashValue, Memory);
-
+      xml_tag* OpenTag = XmlTag(OpenToken, TagsAt.CurrentlyOpenTag, Memory);
       Insert(OpenTag, &Result.Hashes);
 
       TagsAt.CurrentlyOpenTag = OpenTag;

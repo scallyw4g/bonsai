@@ -462,7 +462,7 @@ Remaining(parser* Parser)
 {
   umm Result = 0;
 
-  if (Parser->Valid)
+  if (Parser->ErrorCode == ParseErrorCode_None)
   {
     Result = Remaining(&Parser->Tokens);
 
@@ -493,10 +493,11 @@ Advance(c_token_cursor* Tokens, u32 Lookahead = 0)
 bonsai_function void
 AdvanceParser(parser* Parser)
 {
-  if (!Parser->Valid)
+  if (Parser->ErrorCode)
   {
     Warn("Advancing an invalid Parser!");
   }
+
   SanityCheckParserChain(Parser);
   Assert(Parser->Tokens.At >= Parser->Tokens.Start);
   Assert(Parser->Tokens.At <= Parser->Tokens.End);
@@ -714,8 +715,8 @@ DumpEntireParser(parser* Parser, u32 LinesToDump = u32_MAX)
   DebugLine("%S---%S", TerminalColors.Purple, TerminalColors.White);
 
   u32 StartingLineNumber = Parser->LineNumber;
-  b32 WasValid    = Parser->Valid;
-  Parser->Valid = True;
+  parse_error_code PrevError = Parser->ErrorCode;
+  Parser->ErrorCode = ParseErrorCode_None;
 
   c_token * WasAt = PeekTokenRawPointer(Parser);
 
@@ -768,7 +769,7 @@ DumpEntireParser(parser* Parser, u32 LinesToDump = u32_MAX)
   }
 
   DebugLine("\n%S---%S", TerminalColors.Purple, TerminalColors.White);
-  Parser->Valid = WasValid;
+  Parser->ErrorCode = PrevError;
 
   Assert(Parser->LineNumber = StartingLineNumber);
 }
@@ -967,7 +968,7 @@ GetLongestLineInCursor(char_cursor *Cursor)
 bonsai_function void
 ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessage, c_token* ErrorToken)
 {
-  if (!Parser->Valid) return;
+  if (Parser->ErrorCode) return;
 
   if (!ErrorToken) ErrorToken = PeekTokenRawPointer(Parser);
 
@@ -1244,7 +1245,6 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
     Parser->ErrorMessage = ErrorMessage;
     Parser->ErrorCode = ErrorCode;
-    Parser->Valid = False;
   }
   else
   {
@@ -1373,7 +1373,7 @@ bonsai_function c_token*
 PeekTokenRawPointer(parser* Parser, s32 Lookahead)
 {
   c_token *T = 0;
-  if (Parser->Valid) { T = PeekTokenRawPointer(&Parser->Tokens, Lookahead); }
+  if (Parser->ErrorCode == ParseErrorCode_None) { T = PeekTokenRawPointer(&Parser->Tokens, Lookahead); }
   return T;
 }
 
@@ -1381,7 +1381,7 @@ bonsai_function c_token*
 PeekTokenRawPointer(parser* Parser, u32 Lookahead)
 {
   c_token *T = 0;
-  if (Parser->Valid) { T = PeekTokenRawPointer(&Parser->Tokens, (s32)Lookahead); }
+  if (Parser->ErrorCode == ParseErrorCode_None) { T = PeekTokenRawPointer(&Parser->Tokens, (s32)Lookahead); }
   return T;
 }
 
@@ -2750,7 +2750,7 @@ bonsai_function macro_def*
 GetByName(macro_def_hashtable *Table, counted_string Name)
 {
   macro_def *Result = {};
-  macro_def *Current = GetFirst(Hash(&Name), Table);
+  macro_def *Current = GetByHash(Hash(&Name), Table);
   while (Current)
   {
     if (!Current->Undefed &&
@@ -3899,7 +3899,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
   TruncateToCurrentSize(&Result->Tokens);
 
-  Result->Valid = True;
   Rewind(Result);
 
   END_BLOCK();
@@ -4004,10 +4003,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
           {
             Macro = Allocate(macro_def, Ctx->Memory, 1);
             Macro->Name = MacroNameToken->Value;
-            Macro->HashValue = Hash(&Macro->Name);
             Insert(Macro, &Ctx->Datatypes.Macros);
-
-            /* Macro = Push( { .Name = MacroNameToken->Value }, Ctx->Memory); */
           }
 
           MacroNameToken->Type = CT_MacroLiteral;
@@ -4518,7 +4514,7 @@ ParseDiscriminatedUnion(parser* Parser, program_datatypes* Datatypes, counted_st
 
         default:
         {
-          Parser->Valid = False;
+          Parser->ErrorCode = ParseErrorCode_DUnionParse;
           Complete = True;
         } break;
       }
@@ -4680,11 +4676,8 @@ ParseArgs(const char** ArgStrings, u32 ArgCount, parse_context *Ctx, memory_aren
 
         Macro->Type = type_macro_keyword;
         Macro->Name = MacroName;
-
-        // TODO(Jesse): Do we want to track where macro bodies came from more carefully?
         Macro->Body = AllocateParser(CSz("<CLI>"), 0, 1, TokenCursorSource_Unknown, 0, Memory);
         Macro->Body.Tokens.Start[0] = CToken(1u);
-        Macro->HashValue = Hash(&Macro->Name);
 
         Insert(Macro, &Ctx->Datatypes.Macros);
       }
@@ -7299,7 +7292,7 @@ FlushOutputToDisk(parse_context *Ctx, counted_string OutputForThisParser, counte
 
   parser *Parser = Ctx->CurrentParser;
 
-  if (!Parser->Valid)
+  if (Parser->ErrorCode)
   {
     Error(CSz("Parse Error Encountered, not flushing to disk."));
     return;
@@ -8661,7 +8654,7 @@ GoGoGadgetMetaprogramming(parse_context* Ctx, todo_list_info* TodoInfo)
           {
             counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
             d_union_decl dUnion = ParseDiscriminatedUnion(Parser, Datatypes, DatatypeName, Memory);
-            if (Parser->Valid)
+            if (Parser->ErrorCode == ParseErrorCode_None)
             {
               counted_string OutfileName = GenerateOutfileNameFor(ToString(Directive), DatatypeName, Memory);
 
@@ -9058,7 +9051,7 @@ main(s32 ArgCount_, const char** ArgStrings)
 
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
     if (DebugState) DebugState->MainThreadAdvanceDebugSystem();
-    if (Parser->Valid)
+    if (Parser->ErrorCode == ParseErrorCode_None)
     {
       /* RemoveAllMetaprogrammingOutputRecursive(GetNullTerminated(Args.Outpath)); */
 
