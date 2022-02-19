@@ -193,13 +193,13 @@ TokenizeSelector(ansi_stream* Selector, memory_arena* Memory)
 }
 
 inline u32
-CountTagsInHashBucket(xml_tag *Tag)
+CountTagsInHashBucket(xml_tag_linked_list_node *Bucket)
 {
   u32 Count = 0;
-  while (Tag)
+  while (Bucket)
   {
     ++Count;
-    Tag = Tag->NextInHash;
+    Bucket = Bucket->Next;
   }
 
   return Count;
@@ -214,14 +214,14 @@ GetCountMatchingTags(xml_token_stream* Tokens, xml_token_stream* Selectors, u32 
   xml_token_stream FirstSelectorStream = *Selectors;
   xml_tag FirstSelector = XmlTagFromReverseStream(&Selectors);
 
-  xml_tag *RootTag = GetByHash(Hash(&FirstSelector), &Tokens->Hashes);
+  xml_tag_linked_list_node *RootTag = GetHashBucket(Hash(&FirstSelector), &Tokens->Hashes);
 
   u32 MaxTagCount = CountTagsInHashBucket(RootTag);
   xml_tag_stream Result = AllocateXmlTagStream(MaxTagCount, Memory);
 
   while (Count && RootTag)
   {
-    xml_tag *CurrentTag = RootTag;
+    xml_tag *CurrentTag = &RootTag->Element;
     *Selectors = FirstSelectorStream;
     xml_tag CurrentSelector = XmlTagFromReverseStream(&Selectors);
 
@@ -249,13 +249,13 @@ GetCountMatchingTags(xml_token_stream* Tokens, xml_token_stream* Selectors, u32 
 
     if (Valid)
     {
-      Push(RootTag, &Result);
+      Push(&RootTag->Element, &Result);
       Assert(Result.At <= Result.End);
 
       --Count;
     }
 
-    RootTag = RootTag->NextInHash;
+    RootTag = RootTag->Next;
   }
 
 
@@ -307,15 +307,6 @@ XmlProperty(counted_string Name, counted_string Value, memory_arena* Memory)
   return Prop;
 }
 
-xml_tag*
-XmlTag(xml_token* Open, xml_tag *Parent, memory_arena* Memory)
-{
-  xml_tag* Result = Allocate(xml_tag, Memory, 1);
-  Result->Open = Open;
-  Result->Parent = Parent;
-  return Result;
-}
-
 xml_token_stream
 TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
 {
@@ -358,8 +349,14 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
       b32 IsSelfClosingTag = Xml->At[-1] == '/';
 
       xml_token* OpenToken = PushToken(&Result, XmlOpenToken(StreamValue));
-      xml_tag* OpenTag = XmlTag(OpenToken, TagsAt.CurrentlyOpenTag, Memory);
-      Insert(OpenTag, &Result.Hashes);
+
+      xml_tag_linked_list_node *Node = Allocate(xml_tag_linked_list_node, Memory, 1);
+      xml_tag *OpenTag = &Node->Element;
+
+      OpenTag->Open = OpenToken;
+      OpenTag->Parent = TagsAt.CurrentlyOpenTag;
+
+      Insert(Node, &Result.Hashes);
 
       TagsAt.CurrentlyOpenTag = OpenTag;
       if (TagsAt.LastClosedTag)

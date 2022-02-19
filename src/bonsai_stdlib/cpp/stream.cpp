@@ -315,6 +315,7 @@ Dump(v3_cursor* Array)
   return;
 }
 
+#if 0
 void
 Dump(xml_tag_hashtable *Table)
 {
@@ -322,7 +323,7 @@ Dump(xml_tag_hashtable *Table)
       ElementIndex < Table->Size;
       ++ElementIndex)
   {
-    xml_tag* Element = Table->Elements[ElementIndex];
+    xml_tag* Element = GetByHash(ElementIndex, Table->Elements);
     if (Element)
     {
       Print(ElementIndex);
@@ -347,3 +348,4 @@ Dump(xml_token_stream *Stream, umm TokenCount)
     Print(Stream->Start + TokenIndex);
   }
 }
+#endif

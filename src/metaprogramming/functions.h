@@ -4,10 +4,16 @@ meta( func hashtable(Type) { (hashtable_struct(Type)) (hashtable_impl(Type)) })
 meta(
   func hashtable_struct(Type)
   {
+    struct (Type.name)_linked_list_node
+    {
+      (Type.name) Element;
+      (Type.name)_linked_list_node *Next;
+    };
+
     struct (Type.name)_hashtable
     {
       umm Size;
-      (Type.name) **Elements;
+      (Type.name)_linked_list_node **Elements;
     };
   }
 );
@@ -15,39 +21,43 @@ meta(
 meta(
   func hashtable_impl(Type)
   {
+    bonsai_function (Type.name)_linked_list_node *
+    Allocate_(Type.name)_linked_list_node(memory_arena *Memory)
+    {
+      (Type.name)_linked_list_node *Result = Allocate( (Type.name)_linked_list_node, Memory, 1);
+      return Result;
+    }
+
     bonsai_function (Type.name)_hashtable
     Allocate_(Type.name)_hashtable(umm ElementCount, memory_arena *Memory)
     {
       (Type.name)_hashtable Result = {};
-      Result.Elements = Allocate((Type.name)*, Memory, ElementCount);
+      Result.Elements = Allocate( (Type.name)_linked_list_node*, Memory, ElementCount);
       Result.Size = ElementCount;
       return Result;
     }
 
-    bonsai_function (Type.name) *
-    GetByHash(umm HashValue, (Type.name)_hashtable *Table)
+    bonsai_function (Type.name)_linked_list_node *
+    GetHashBucket(umm HashValue, (Type.name)_hashtable *Table)
     {
-      (Type.name) *Result = Table->Elements[HashValue % Table->Size];
+      (Type.name)_linked_list_node *Result = Table->Elements[HashValue % Table->Size];
+      return Result;
+    }
+
+    bonsai_function (Type.name) *
+    GetFirstAtBucket(umm HashValue, (Type.name)_hashtable *Table)
+    {
+      (Type.name)_linked_list_node *Bucket = GetHashBucket(HashValue, Table);
+      (Type.name) *Result = &Bucket->Element;
       return Result;
     }
 
     bonsai_function void
-    Insert((Type.name) *E, u64 HashValue, (Type.name)_hashtable *Table)
+    Insert((Type.name)_linked_list_node *E, (Type.name)_hashtable *Table)
     {
-      Assert(Hash(E) == HashValue);
-      HashValue = HashValue % Table->Size;
-
-      (Type.name)** Bucket = Table->Elements + HashValue;
-      while (*Bucket) Bucket = &(*Bucket)->NextInHash;
-      *Bucket = E;
-    }
-
-    bonsai_function void
-    Insert((Type.name) *E, (Type.name)_hashtable *Table)
-    {
-      umm HashValue = Hash(E) % Table->Size;
-      (Type.name)** Bucket = Table->Elements + HashValue;
-      while (*Bucket) Bucket = &(*Bucket)->NextInHash;
+      umm HashValue = Hash(&E->Element) % Table->Size;
+      (Type.name)_linked_list_node **Bucket = Table->Elements + HashValue;
+      while (*Bucket) Bucket = &(*Bucket)->Next;
       *Bucket = E;
     }
   }

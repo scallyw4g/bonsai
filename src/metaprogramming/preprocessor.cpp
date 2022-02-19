@@ -2750,18 +2750,21 @@ bonsai_function macro_def*
 GetByName(macro_def_hashtable *Table, counted_string Name)
 {
   macro_def *Result = {};
-  macro_def *Current = GetByHash(Hash(&Name), Table);
-  while (Current)
+
+  macro_def_linked_list_node *Bucket = GetHashBucket(Hash(&Name), Table);
+  while (Bucket)
   {
-    if (!Current->Undefed &&
-        StringsMatch(Current->Name, Name))
+    macro_def *M = &Bucket->Element;
+
+    if (!M->Undefed &&
+        StringsMatch(M->Name, Name))
     {
-      Result = Current;
+      Result = M;
       break;
     }
     else
     {
-      Current = Current->NextInHash;
+      Bucket = Bucket->Next;
     }
   }
 
@@ -4001,9 +4004,11 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
           if (!Macro)
           {
-            Macro = Allocate(macro_def, Ctx->Memory, 1);
+            macro_def_linked_list_node *MacroNode = Allocate_macro_def_linked_list_node(Ctx->Memory);
+            Macro = &MacroNode->Element;
+
             Macro->Name = MacroNameToken->Value;
-            Insert(Macro, &Ctx->Datatypes.Macros);
+            Insert(MacroNode, &Ctx->Datatypes.Macros);
           }
 
           MacroNameToken->Type = CT_MacroLiteral;
@@ -4672,14 +4677,15 @@ ParseArgs(const char** ArgStrings, u32 ArgCount, parse_context *Ctx, memory_aren
           Warn("Currently, custom define values are unsupported.  Please use `(--define/-D) DEFINE_NAME` to set DEFINE_NAME=1.");
         }
 
-        macro_def *Macro = Allocate(macro_def, Ctx->Memory, 1);
+        macro_def_linked_list_node *MacroNode = Allocate_macro_def_linked_list_node(Ctx->Memory);
+        macro_def *Macro = &MacroNode->Element;
 
         Macro->Type = type_macro_keyword;
         Macro->Name = MacroName;
         Macro->Body = AllocateParser(CSz("<CLI>"), 0, 1, TokenCursorSource_Unknown, 0, Memory);
         Macro->Body.Tokens.Start[0] = CToken(1u);
 
-        Insert(Macro, &Ctx->Datatypes.Macros);
+        Insert(MacroNode, &Ctx->Datatypes.Macros);
       }
       else
       {
