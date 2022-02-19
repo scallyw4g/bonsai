@@ -980,7 +980,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
   ParseErrorCursor->At = Global_ParseErrorBuffer;
   ParseErrorCursor->End = Global_ParseErrorBuffer+Global_ParseErrorBufferSize;
 
-  u32 LinesOfContext = 6;
+  u32 LinesOfContext = 10;
 
   counted_string ParserName = {};
 
@@ -2747,16 +2747,21 @@ EatSpacesTabsAndEscapedNewlines(ansi_stream *Code)
 }
 
 bonsai_function macro_def*
-GetByName(macro_def_stream* Stream, counted_string Name)
+GetByName(macro_def_hashtable *Table, counted_string Name)
 {
-  macro_def* Result = {};
-  ITERATE_OVER(Stream)
+  macro_def *Result = {};
+  macro_def *Current = GetFirst(Hash(&Name), Table);
+  while (Current)
   {
-    macro_def* Current = GET_ELEMENT(Iter);
-    if (!Current->Undefed && StringsMatch(Current->Name, Name))
+    if (!Current->Undefed &&
+        StringsMatch(Current->Name, Name))
     {
       Result = Current;
       break;
+    }
+    else
+    {
+      Current = Current->NextInHash;
     }
   }
 
@@ -3997,7 +4002,12 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
           if (!Macro)
           {
-            Macro = Push(&Ctx->Datatypes.Macros, { .Name = MacroNameToken->Value }, Ctx->Memory);
+            Macro = Allocate(macro_def, Ctx->Memory, 1);
+            Macro->Name = MacroNameToken->Value;
+            Macro->HashValue = Hash(&Macro->Name);
+            Insert(Macro, &Ctx->Datatypes.Macros);
+
+            /* Macro = Push( { .Name = MacroNameToken->Value }, Ctx->Memory); */
           }
 
           MacroNameToken->Type = CT_MacroLiteral;
@@ -4666,16 +4676,17 @@ ParseArgs(const char** ArgStrings, u32 ArgCount, parse_context *Ctx, memory_aren
           Warn("Currently, custom define values are unsupported.  Please use `(--define/-D) DEFINE_NAME` to set DEFINE_NAME=1.");
         }
 
-        macro_def M = {
-          .Type = type_macro_keyword,
-          .Name = MacroName,
-        };
+        macro_def *Macro = Allocate(macro_def, Ctx->Memory, 1);
+
+        Macro->Type = type_macro_keyword;
+        Macro->Name = MacroName;
 
         // TODO(Jesse): Do we want to track where macro bodies came from more carefully?
-        M.Body.Tokens = AllocateTokenBuffer(Memory, 1, TokenCursorSource_Unknown, 0);
-        M.Body.Tokens.Start[0] = CToken(1u);
+        Macro->Body = AllocateParser(CSz("<CLI>"), 0, 1, TokenCursorSource_Unknown, 0, Memory);
+        Macro->Body.Tokens.Start[0] = CToken(1u);
+        Macro->HashValue = Hash(&Macro->Name);
 
-        macro_def *NewMacro = Push(&Ctx->Datatypes.Macros, M, Ctx->Memory);
+        Insert(Macro, &Ctx->Datatypes.Macros);
       }
       else
       {
@@ -8987,6 +8998,8 @@ RegisterUnparsedCxxTypes(program_datatypes *Datatypes, memory_arena *Memory)
 #define SUCCESS_EXIT_CODE 0
 #define FAILURE_EXIT_CODE 1
 
+debug_global debug_state* DebugState = 0;
+
 s32
 main(s32 ArgCount_, const char** ArgStrings)
 {
@@ -8996,9 +9009,7 @@ main(s32 ArgCount_, const char** ArgStrings)
   Assert(ArgCount_ > 0);
   u32 ArgCount = (u32)ArgCount_;
 
-  parse_context Ctx = {
-    .Memory = Memory,
-  };
+  parse_context Ctx = AllocateParseContext(Memory);
 
   SetupStdout(ArgCount, ArgStrings);
 
@@ -9013,7 +9024,11 @@ main(s32 ArgCount_, const char** ArgStrings)
 
   if (Args.DoDebugWindow)
   {
-    if (BootstrapDebugSystem() == 0)
+    if (BootstrapDebugSystem() == 1)
+    {
+      DebugState = GetDebugState();
+    }
+    else
     {
       Error("Booting debug system");
       return FAILURE_EXIT_CODE;
@@ -9030,8 +9045,10 @@ main(s32 ArgCount_, const char** ArgStrings)
       .People = ParseAllTodosFromFile(CSz("todos.md"), Memory),
     };
 
-    debug_state* DebugState = GetDebugState();
-    DebugState->MainThreadAdvanceDebugSystem();
+    if (DebugState)
+    {
+      DebugState->MainThreadAdvanceDebugSystem();
+    }
 
     RegisterUnparsedCxxTypes(&Ctx.Datatypes, Memory);
 
@@ -9040,19 +9057,19 @@ main(s32 ArgCount_, const char** ArgStrings)
     counted_string ParserFilename = Args.Files.Start[0];
 
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
-    DebugState->MainThreadAdvanceDebugSystem();
+    if (DebugState) DebugState->MainThreadAdvanceDebugSystem();
     if (Parser->Valid)
     {
       /* RemoveAllMetaprogrammingOutputRecursive(GetNullTerminated(Args.Outpath)); */
 
       Ctx.CurrentParser = Parser;
       ParseDatatypes(&Ctx);
-    DebugState->MainThreadAdvanceDebugSystem();
+      if (DebugState) DebugState->MainThreadAdvanceDebugSystem();
 
       Rewind(Ctx.CurrentParser);
 
       GoGoGadgetMetaprogramming(&Ctx, &TodoInfo);
-      DebugState->MainThreadAdvanceDebugSystem();
+      if (DebugState) DebugState->MainThreadAdvanceDebugSystem();
 
 /*       if (Parser->Valid) */
 /*       { */
@@ -9098,10 +9115,8 @@ main(s32 ArgCount_, const char** ArgStrings)
   }
 
 
-  if (Args.DoDebugWindow)
+  if (DebugState)
   {
-    debug_state* DebugState = GetDebugState();
-
     DebugState->UIType = DebugUIType_CallGraph;
     DebugState->DisplayDebugMenu = True;
 

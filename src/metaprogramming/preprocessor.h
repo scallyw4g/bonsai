@@ -669,12 +669,24 @@ struct macro_def
   b32 Variadic;
   b32 Undefed; // Gets toggled when we hit an undef
   /* b32 IsExpanding; */
+
+  // TODO(Jesse): Factor these out?
+  u64 HashValue;
+  macro_def *NextInHash;
 };
 meta(generate_stream(macro_def))
 #include <metaprogramming/output/generate_stream_macro_def.h>
 
+bonsai_function umm
+Hash(macro_def *M)
+{
+  umm Result = Hash(&M->Name);
+  // TODO(Jesse): Hash arguments and incorporate Type & Variadic ..?
+  return Result;
+}
 
-
+meta(hashtable(macro_def))
+#include <metaprogramming/output/hashtable_macro_def.h>
 
 
 struct meta_func
@@ -850,7 +862,7 @@ struct program_datatypes
   enum_def_stream          Enums;
   function_decl_stream     Functions;
   type_def_stream          Typedefs;
-  macro_def_stream         Macros;
+  macro_def_hashtable      Macros;
   primitive_def_stream     Primitives;
   stl_container_def_stream StlContainers;
 };
@@ -1161,5 +1173,14 @@ struct parse_context
   memory_arena          *Memory;
 };
 
+bonsai_function parse_context
+AllocateParseContext(memory_arena *Memory)
+{
+  parse_context Ctx = {
+    .Memory = Memory
+  };
+  Ctx.Datatypes.Macros = Allocate_macro_def_hashtable(4096, Memory);
+  return Ctx;
+}
 
 
