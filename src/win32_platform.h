@@ -53,12 +53,6 @@ struct native_file
   counted_string Path;
 };
 
-/* global_variable native_file Stdout = */
-/* { */
-/*   .Handle = GetStdHandle(STD_OUTPUT_HANDLE), */
-/*   .Path = CSz("stdout") */
-/* }; */
-
 struct os
 {
   HWND Window;

@@ -3,6 +3,8 @@
 
 #include <bonsai_types.h>
 
+global_variable memory_arena Global_PermMemory = {};
+
 #define InvalidDefaultWhileParsing(P, ErrorMessage) \
     default: { ParseError(P, ErrorMessage, PeekTokenPointer(P)); } break;
 
@@ -71,8 +73,8 @@ bonsai_function b32         IsValidIdentifier(counted_string S);
 bonsai_function macro_def * TryTransmuteIdentifierToMacro(parse_context *Ctx, parser *Parser, c_token *T, macro_def *ExpandingMacro);
 
 bonsai_function parser * ResolveInclude(parse_context *Ctx, parser *Parser);
-bonsai_function parser * ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *Memory, b32 ScanArgsForAdditionalMacros = False);
-bonsai_function u64      ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena *Memory, u64 PreviousValue, b32 LogicalNotNextValue);
+bonsai_function parser * ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *PermMemory, memory_arena *TempMemory, b32 ScanArgsForAdditionalMacros = False);
+bonsai_function u64      ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena *PermMemory, memory_arena *TempMemory, u64 PreviousValue, b32 LogicalNotNextValue);
 
 bonsai_function c_token_cursor * SplitAndInsertTokenCursor(c_token_cursor *CursorToSplit, u32 LineNumber, c_token_cursor *CursorToInsert, memory_arena *Memory);
 bonsai_function c_token_cursor * SplitAndInsertTokenCursor(c_token_cursor *CursorToSplit, c_token* SplitStart, u32 LineNumber, c_token_cursor *CursorToInsert, c_token* SplitEnd, memory_arena *Memory);
@@ -513,10 +515,10 @@ AdvanceParser(parser* Parser)
       ++Parser->LineNumber;
     }
 
-    if (Remaining(&Parser->OutputTokens))
-    {
-      Push(*T, &Parser->OutputTokens);
-    }
+    /* if (Remaining(&Parser->OutputTokens)) */
+    /* { */
+    /*   Push(*T, &Parser->OutputTokens); */
+    /* } */
 
     ++Parser->Tokens.At;
   }
@@ -1924,29 +1926,6 @@ CopyRemainingIntoCursor(c_token_cursor *Src, c_token_cursor *Dest)
 }
 
 bonsai_function void
-CopyMacroArgIntoCursor(parse_context *Ctx, c_token_buffer *Src, c_token_cursor *Dest, memory_arena *Memory)
-{
-  parser TempParser = ParserFromBuffer(Src);
-  while ( Remaining(&TempParser) )
-  {
-    c_token ArgT = PeekTokenRaw(&TempParser);
-    // TODO(Jesse, tags: immediate): Do we need to do the identifier check here and query macros
-    // by name instead of checking for CT_MacroLiteral tokens?  I think the
-    // answer is yes.
-    /* if (ArgT.Type == CT_MacroLiteral) */
-    /* { */
-    /*   parser *Expanded = ExpandMacro(Ctx, &TempParser, ArgT.Macro, Memory); */
-    /*   CopyRemainingIntoCursor(&Expanded->Tokens, Dest); */
-    /* } */
-    /* else */
-    /* { */
-      PopTokenRaw(&TempParser);
-      Push(ArgT, Dest);
-    /* } */
-  }
-}
-
-bonsai_function void
 CopyBufferIntoCursor(c_token_buffer *Src, c_token_cursor *Dest, u32 Skip = 0)
 {
   if ( Src->Count <= Remaining(Dest) )
@@ -1965,26 +1944,25 @@ CopyBufferIntoCursor(c_token_buffer *Src, c_token_cursor *Dest, u32 Skip = 0)
 }
 
 bonsai_function c_token_buffer *
-TryMacroArgSubstitution(c_token *T, counted_string_buffer *NamedArguments, c_token_buffer_buffer *ArgValues)
+TryMacroArgSubstitution(c_token *T, counted_string_buffer *NamedArguments, c_token_buffer_buffer *ArgInstanceValues)
 {
   c_token_buffer *Result = {};
 
   u32 ArgIndex = (u32)IndexOf(NamedArguments, T->Value);
   if (ArgIndex < NamedArguments->Count)
   {
-    Result = ArgValues->Start + ArgIndex;
+    Result = ArgInstanceValues->Start + ArgIndex;
   }
 
   return Result;
 }
 
 bonsai_function parser *
-ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *Memory, b32 ScanArgsForAdditionalMacros)
+ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *PermMemory, memory_arena *TempMemory, b32 ScanArgsForAdditionalMacros)
 {
   TIMED_FUNCTION();
 
-  // @memory
-  parser *Result = AllocateParserPtr(Parser->Filename, Macro->Body.LineNumber, (u32)Kilobytes(3), TokenCursorSource_MacroExpansion, 0, Memory);
+  parser *Result = AllocateParserPtr(Parser->Filename, Macro->Body.LineNumber, (u32)Kilobytes(3), TokenCursorSource_MacroExpansion, 0, PermMemory);
 
   // TODO(Jesse): Think more carefully about how we want to track where macros
   // came from.
@@ -2006,7 +1984,7 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
   // keyword style macros if they're left empty
   //
   c_token_buffer_stream VarArgs = {};
-  c_token_buffer_buffer ArgValues = {};
+  c_token_buffer_buffer ArgInstanceValues = {};
 
   TIMED_BLOCK("Parse Instance Args");
   switch (Macro->Type)
@@ -2052,17 +2030,17 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
         }
 
         //
-        // Zip the named args and the instance args together
+        // Parse the instance args into their buffer
         //
 
         if (Macro->NamedArguments.Count)
         {
-          ArgValues = CTokenBufferBuffer(Macro->NamedArguments.Count, Memory);
+          ArgInstanceValues = CTokenBufferBuffer(Macro->NamedArguments.Count, TempMemory);
           for ( u32 ArgIndex = 0;
-                ArgIndex < ArgValues.Count;
+                ArgIndex < ArgInstanceValues.Count;
                 ++ArgIndex)
           {
-            ParseMacroArgument(InstanceArgs, ArgValues.Start+ArgIndex);
+            ParseMacroArgument(InstanceArgs, ArgInstanceValues.Start+ArgIndex);
           }
         }
 
@@ -2070,7 +2048,7 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
         {
           while (Remaining(InstanceArgs))
           {
-            c_token_buffer *Arg = Push(&VarArgs, {}, Memory);
+            c_token_buffer *Arg = Push(&VarArgs, {}, TempMemory);
             ParseMacroArgument(InstanceArgs, Arg);
           }
         }
@@ -2103,17 +2081,16 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
         ITERATE_OVER(&VarArgs)
         {
           c_token_buffer* Arg = GET_ELEMENT(Iter);
-          CopyMacroArgIntoCursor(Ctx, Arg, &Result->Tokens, Memory);
+          CopyBufferIntoCursor(Arg, &Result->Tokens);
         }
       } break;
 
-#if 1
       case CTokenType_Identifier:
       {
         // TODO(Jesse): RequireToken should be able to accept a pointer directly, duh.
         RequireToken(MacroBody, *T);
 
-        if (c_token_buffer *ArgBuffer = TryMacroArgSubstitution(T, &Macro->NamedArguments, &ArgValues ))
+        if (c_token_buffer *ArgBuffer = TryMacroArgSubstitution(T, &Macro->NamedArguments, &ArgInstanceValues ))
         {
           CopyBufferIntoCursor(ArgBuffer, &Result->Tokens);
         }
@@ -2126,11 +2103,6 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
       case CT_PreprocessorPaste:
       {
         c_token *Prev = PeekTokenPointer(Result, -1);
-        if (!Prev)
-        {
-          Prev = PeekTokenPointer(Result, -1);
-        }
-        /* DumpEntireParser(Result); */
         c_token *Next = PeekTokenPointer(MacroBody, 1);
 
         // TODO(Jesse): Once token control functions return pointers we can
@@ -2140,7 +2112,7 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
         RequireToken(MacroBody, Next->Type);
 
 
-        if (c_token_buffer *ArgBuffer = TryMacroArgSubstitution(Next, &Macro->NamedArguments, &ArgValues ))
+        if (c_token_buffer *ArgBuffer = TryMacroArgSubstitution(Next, &Macro->NamedArguments, &ArgInstanceValues ))
         {
           parser Temp = ParserFromBuffer(ArgBuffer);
           Next = PopTokenPointer(&Temp);
@@ -2153,7 +2125,7 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
         Assert(Next);
 
         Prev->Type = CTokenType_Unknown;
-        Prev->Value = Concat(Prev->Value, Next->Value, Memory);
+        Prev->Value = Concat(Prev->Value, Next->Value, &Global_PermMemory);
 
         if (TryTransmuteKeywordToken(Prev, 0))
         {
@@ -2189,9 +2161,7 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
         /*   } */
         /* } */
 
-
       } break;
-#endif
 
       default:
       {
@@ -2203,9 +2173,14 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
   }
   END_BLOCK();
 
-  TruncateToCurrentSize(&Result->Tokens);
-  Rewind(Result);
 
+  umm CurrentSize = TotalSize(&Result->Tokens);
+  TruncateToCurrentElements(&Result->Tokens);
+  umm NewSize = TotalSize(&Result->Tokens);
+
+  Reallocate((u8*)Result->Tokens.Start, PermMemory, CurrentSize, NewSize);
+
+  Rewind(Result);
   TIMED_BLOCK("Expand Body");
 
   while (c_token *T = PeekTokenRawPointer(Result))
@@ -2220,9 +2195,9 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
         //
         if (TryTransmuteIdentifierToMacro(Ctx, Result, T, Macro))
         {
-          parser *Expanded = ExpandMacro(Ctx, Result, T->Macro, Memory);
+          parser *Expanded = ExpandMacro(Ctx, Result, T->Macro, PermMemory, TempMemory);
           EraseBetweenExcluding(Result, T, Result->Tokens.At);
-          c_token_cursor *LastCursorOfChain = SplitAndInsertTokenCursor(&Result->Tokens, Result->LineNumber, &Expanded->Tokens, Memory);
+          c_token_cursor *LastCursorOfChain = SplitAndInsertTokenCursor(&Result->Tokens, Result->LineNumber, &Expanded->Tokens, PermMemory);
           SkipToEndOfCursor(&Result->Tokens, LastCursorOfChain);
         }
         else
@@ -2234,9 +2209,9 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
 
       case CT_MacroLiteral:
       {
-        parser *Expanded = ExpandMacro(Ctx, Result, T->Macro, Memory);
+        parser *Expanded = ExpandMacro(Ctx, Result, T->Macro, PermMemory, TempMemory);
         EraseBetweenExcluding(Result, T, Result->Tokens.At);
-        c_token_cursor *LastCursorOfChain = SplitAndInsertTokenCursor(&Result->Tokens, Result->LineNumber, &Expanded->Tokens, Memory);
+        c_token_cursor *LastCursorOfChain = SplitAndInsertTokenCursor(&Result->Tokens, Result->LineNumber, &Expanded->Tokens, PermMemory);
         SkipToEndOfCursor(&Result->Tokens, LastCursorOfChain);
       } break;
 
@@ -2270,13 +2245,11 @@ EatComment(parser* Parser, c_token_type CommentT)
     case CTokenType_CommentSingleLine:
     {
       Result = OptionalTokenRaw(Parser, CTokenType_CommentSingleLine);
-      /* EatUntilExcluding(Parser, CTokenType_Newline); */
     } break;
 
     case CTokenType_CommentMultiLine:
     {
       Result = OptionalTokenRaw(Parser, CTokenType_CommentMultiLine);
-      /* EatUntilIncluding(Parser, CTokenType_CommentMultiLineEnd); */
     } break;
 
     default:
@@ -3379,6 +3352,8 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 {
   TIMED_FUNCTION();
 
+  memory_arena TempMemory = {};
+
   if (!Code.Start)
   {
     Error("Input AnsiStream for %S is null.", Code.Filename);
@@ -3386,13 +3361,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
   }
 
   u32 LineNumber = 1;
-  parser *Result = {};
-  TIMED_BLOCK("Allocate");
-  Result = Ctx ? Push( &Ctx->AllParsers,
-                               AllocateParser(Code.Filename, LineNumber, (u32)Megabytes(2), Source, (u32)Megabytes(2), Memory),
-                               Memory)
-                       : AllocateParserPtr(Code.Filename, LineNumber, (u32)Megabytes(2), Source, (u32)Megabytes(2), Memory);
-  END_BLOCK();
+  parser *Result = AllocateParserPtr(Code.Filename, LineNumber, (u32)Megabytes(2), Source, 0, Memory);
 
   b32 ParsingSingleLineComment = False;
   b32 ParsingMultiLineComment = False;
@@ -3900,7 +3869,11 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
     continue;
   }
 
-  TruncateToCurrentSize(&Result->Tokens);
+  umm CurrentSize = TotalSize(&Result->Tokens);
+  TruncateToCurrentElements(&Result->Tokens);
+  umm NewSize = TotalSize(&Result->Tokens);
+
+  Reallocate((u8*)Result->Tokens.Start, Memory, CurrentSize, NewSize);
 
   Rewind(Result);
 
@@ -3973,7 +3946,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
           if (macro_def *Macro = TryTransmuteIdentifierToMacro(Ctx, Result, T, 0))
           {
             AdvanceTo(Result, T);
-            parser *Expanded = ExpandMacro(Ctx, Result, Macro, Memory, True);
+            parser *Expanded = ExpandMacro(Ctx, Result, Macro, Memory, &TempMemory, True);
             EraseBetweenExcluding(Result, T, Result->Tokens.At);
             c_token_cursor *LastCursorOfExpansionChain = SplitAndInsertTokenCursor(&Result->Tokens, Result->LineNumber, &Expanded->Tokens, Memory);
             SkipToEndOfCursor(&Result->Tokens, LastCursorOfExpansionChain);
@@ -4040,7 +4013,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       case CT_PreprocessorElif:
       {
         RequireToken(Result, T->Type);
-        if (ResolveMacroConstantExpression(Ctx, Result, Memory, 0, False))
+        if (ResolveMacroConstantExpression(Ctx, Result, Memory, &TempMemory, 0, False))
         {
           c_token *RewindT = PeekTokenRawPointer(Result);
           EraseBetweenExcluding(Result, T, Result->Tokens.At);
@@ -4137,6 +4110,8 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 #endif
 
   Rewind(Result);
+
+  Ensure(RewindArena(&TempMemory));
 
   return Result;
 }
@@ -4258,14 +4233,6 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
   {
     Warn("Unable to resolve include for file : (%S)", PartialPath);
   }
-
-#if BONSAI_INTERNAL
-  if (GetDebugState)
-  {
-    debug_state* DebugState = GetDebugState();
-    DebugState->MainThreadAdvanceDebugSystem();
-  }
-#endif
 
   return Result;
 }
@@ -4729,10 +4696,10 @@ ParseArgs(const char** ArgStrings, u32 ArgCount, parse_context *Ctx, memory_aren
     }
   }
 
-  TruncateToCurrentSize(&Result.Files);
+  TruncateToCurrentElements(&Result.Files);
   Rewind(&Result.Files);
 
-  TruncateToCurrentSize(&Result.IncludePaths);
+  TruncateToCurrentElements(&Result.IncludePaths);
   Rewind(&Result.IncludePaths);
 
   Info("%d total include paths added", (u32)Count(&Result.IncludePaths));
@@ -5040,7 +5007,7 @@ GetBodyTextForNextScope(parser* Parser)
 {
   // TODO(Jesse, immediate): This should return c_token_cursor
   parser BodyText = *Parser;
-  BodyText.OutputTokens = {};
+  /* BodyText.OutputTokens = {}; */
 
   BodyText.Tokens.Start = BodyText.Tokens.At;
   EatBetween(Parser, CTokenType_OpenBrace, CTokenType_CloseBrace);
@@ -5754,7 +5721,7 @@ IsNextTokenMacro(parse_context *Ctx, parser *Parser)
 // TODO(Jesse): Should this function not return a signed value?!  Pretty sure
 // constant expressions can resolve to negative values.. just sayin..
 bonsai_function u64
-ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena *Memory, u64 PreviousValue, b32 LogicalNotNextValue)
+ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena *PermMemory, memory_arena *TempMemory, u64 PreviousValue, b32 LogicalNotNextValue)
 {
   TIMED_FUNCTION();
 
@@ -5781,7 +5748,7 @@ ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena 
               EatBetweenRaw(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
             }
           }
-          Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, Result, LogicalNotNextValue);
+          Result = ResolveMacroConstantExpression(Ctx, Parser, PermMemory, TempMemory, Result, LogicalNotNextValue);
         }
         else
         {
@@ -5792,23 +5759,23 @@ ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena 
       case CTokenType_Question:
       {
         RequireTokenRaw(Parser, T);
-        u64 Operator = ResolveMacroConstantExpression(Ctx, Parser, Memory, Result, LogicalNotNextValue);
+        u64 Operator = ResolveMacroConstantExpression(Ctx, Parser, PermMemory, TempMemory, Result, LogicalNotNextValue);
         if (Operator)
         {
-          Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, Result, LogicalNotNextValue);
+          Result = ResolveMacroConstantExpression(Ctx, Parser, PermMemory, TempMemory, Result, LogicalNotNextValue);
         }
         else
         {
           EatUntilIncluding(Parser, CTokenType_Colon);
-          Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, Result, LogicalNotNextValue);
+          Result = ResolveMacroConstantExpression(Ctx, Parser, PermMemory, TempMemory, Result, LogicalNotNextValue);
         }
-        Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, Result, LogicalNotNextValue);
+        Result = ResolveMacroConstantExpression(Ctx, Parser, PermMemory, TempMemory, Result, LogicalNotNextValue);
       } break;
 
       case CTokenType_Bang:
       {
         RequireTokenRaw(Parser, CTokenType_Bang);
-        Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, Result, LogicalNotNextValue ? False : True);
+        Result = ResolveMacroConstantExpression(Ctx, Parser, PermMemory, TempMemory, Result, LogicalNotNextValue ? False : True);
      } break;
 
       case CTokenType_Identifier:
@@ -5824,7 +5791,7 @@ ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena 
               // TODO(Jesse, tags: correctness): Should this path has to set the next token to CT_MacroLiteral
               b32 NextTokenIsMacro = IsNextTokenMacro(Ctx, Parser);
               RequireToken(Parser, CTokenType_Identifier);
-              Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, LogicalNotNextValue ? !NextTokenIsMacro : NextTokenIsMacro, False);
+              Result = ResolveMacroConstantExpression(Ctx, Parser, PermMemory, TempMemory, LogicalNotNextValue ? !NextTokenIsMacro : NextTokenIsMacro, False);
             } break;
 
             case CTokenType_OpenParen:
@@ -5847,7 +5814,7 @@ ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena 
                 RequireTokenRaw(Parser, CTokenType_CloseParen);
               }
 
-              Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, LogicalNotNextValue ? !NextTokenIsMacro : NextTokenIsMacro, False);
+              Result = ResolveMacroConstantExpression(Ctx, Parser, PermMemory, TempMemory, LogicalNotNextValue ? !NextTokenIsMacro : NextTokenIsMacro, False);
             } break;
 
             InvalidDefaultCase;
@@ -5863,14 +5830,14 @@ ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena 
             pT->Type = CT_MacroLiteral;
             pT->Macro = Macro;
 
-            parser *Expanded = ExpandMacro(Ctx, Parser, Macro, Memory);
-            u64 MacroExpansion = ResolveMacroConstantExpression(Ctx, Expanded, Memory, Result, LogicalNotNextValue);
-            Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, MacroExpansion, False);
+            parser *Expanded = ExpandMacro(Ctx, Parser, Macro, PermMemory, TempMemory);
+            u64 MacroExpansion = ResolveMacroConstantExpression(Ctx, Expanded, PermMemory, TempMemory, Result, LogicalNotNextValue);
+            Result = ResolveMacroConstantExpression(Ctx, Parser, PermMemory, TempMemory, MacroExpansion, False);
           }
           else if (!Macro || Macro->Undefed)
           {
             RequireTokenRaw(Parser, CTokenType_Identifier);
-            Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, LogicalNotNextValue ? 1 : 0, False);
+            Result = ResolveMacroConstantExpression(Ctx, Parser, PermMemory, TempMemory, LogicalNotNextValue ? 1 : 0, False);
           }
           else
           {
@@ -5885,19 +5852,19 @@ ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena 
         RequireTokenRaw(Parser, T.Type);
 
         u64 ThisValue = LogicalNotNextValue ? !T.UnsignedValue : T.UnsignedValue;
-        Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, ThisValue, False);
+        Result = ResolveMacroConstantExpression(Ctx, Parser, PermMemory, TempMemory, ThisValue, False);
 
       } break;
 
       case CTokenType_OpenParen:
       {
         RequireTokenRaw(Parser, T.Type);
-        Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, Result, False);
+        Result = ResolveMacroConstantExpression(Ctx, Parser, PermMemory, TempMemory, Result, False);
         if (LogicalNotNextValue)
         {
           Result = !Result;
         }
-        Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, Result, False);
+        Result = ResolveMacroConstantExpression(Ctx, Parser, PermMemory, TempMemory, Result, False);
         EatSpacesTabsAndEscapedNewlines(Parser);
         RequireTokenRaw(Parser, CTokenType_CloseParen);
       } break;
@@ -5932,16 +5899,16 @@ ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena 
       {
         RequireTokenRaw(Parser, T.Type);
         c_token_type OperatorToApply = T.Type;
-        u64 NextValue = ResolveMacroConstantExpression(Ctx, Parser, Memory, Result, False);
+        u64 NextValue = ResolveMacroConstantExpression(Ctx, Parser, PermMemory, TempMemory, Result, False);
         u64 OperationResult = ApplyOperator(Parser, Result, OperatorToApply, NextValue);
-        Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, OperationResult, False);
+        Result = ResolveMacroConstantExpression(Ctx, Parser, PermMemory, TempMemory, OperationResult, False);
       } break;
 
       case CTokenType_CommentMultiLine:
       case CTokenType_EscapedNewline:
       {
         RequireTokenRaw(Parser, T.Type);
-        Result = ResolveMacroConstantExpression(Ctx, Parser, Memory, Result, LogicalNotNextValue);
+        Result = ResolveMacroConstantExpression(Ctx, Parser, PermMemory, TempMemory, Result, LogicalNotNextValue);
       } break;
 
       case CTokenType_CommentSingleLine:
@@ -7342,6 +7309,7 @@ FlushOutputToDisk(parse_context *Ctx, counted_string OutputForThisParser, counte
     OutputPath = Concat(CS("src/metaprogramming/output/"), NewFilename, Memory);
     Output(OutputForThisParser, OutputPath, Memory);
 
+#if 0
     Push(CToken(CTokenType_Newline),     &Parser->OutputTokens);
     Push(CToken(CTokenType_Hash),        &Parser->OutputTokens);
     Push(CToken(CS("include")),          &Parser->OutputTokens);
@@ -7354,6 +7322,7 @@ FlushOutputToDisk(parse_context *Ctx, counted_string OutputForThisParser, counte
     Push(CToken(CTokenType_FSlash),      &Parser->OutputTokens);
     Push(CToken(NewFilename),            &Parser->OutputTokens);
     Push(CToken(CTokenType_GT),          &Parser->OutputTokens);
+#endif
   }
 
   parser *OutputParse = TokenizeAnsiStream(AnsiStream(OutputForThisParser, OutputPath), Ctx->Memory, False, Ctx, TokenCursorSource_Unknown);
@@ -8999,11 +8968,15 @@ RegisterUnparsedCxxTypes(program_datatypes *Datatypes, memory_arena *Memory)
 
 debug_global debug_state* DebugState = 0;
 
+
+
 s32
 main(s32 ArgCount_, const char** ArgStrings)
 {
   memory_arena Memory_ = {};
   memory_arena* Memory = &Memory_;
+
+  Memory->NextBlockSize = Megabytes(10);
 
   Assert(ArgCount_ > 0);
   u32 ArgCount = (u32)ArgCount_;
@@ -9026,6 +8999,9 @@ main(s32 ArgCount_, const char** ArgStrings)
     if (BootstrapDebugSystem() == 1)
     {
       DebugState = GetDebugState();
+      DebugState->MainThreadAdvanceDebugSystem();
+      DEBUG_REGISTER_ARENA(Memory);
+      DEBUG_REGISTER_ARENA(&Global_PermMemory);
     }
     else
     {
@@ -9044,11 +9020,6 @@ main(s32 ArgCount_, const char** ArgStrings)
       .People = ParseAllTodosFromFile(CSz("todos.md"), Memory),
     };
 
-    if (DebugState)
-    {
-      DebugState->MainThreadAdvanceDebugSystem();
-    }
-
     RegisterUnparsedCxxTypes(&Ctx.Datatypes, Memory);
 
     Assert(TotalElements(&Args.Files) == 1);
@@ -9056,25 +9027,28 @@ main(s32 ArgCount_, const char** ArgStrings)
     counted_string ParserFilename = Args.Files.Start[0];
 
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
+
     if (DebugState) DebugState->MainThreadAdvanceDebugSystem();
+
     if (Parser->ErrorCode == ParseErrorCode_None)
     {
       /* RemoveAllMetaprogrammingOutputRecursive(GetNullTerminated(Args.Outpath)); */
 
       Ctx.CurrentParser = Parser;
       ParseDatatypes(&Ctx);
+
       if (DebugState) DebugState->MainThreadAdvanceDebugSystem();
 
       Rewind(Ctx.CurrentParser);
 
-      GoGoGadgetMetaprogramming(&Ctx, &TodoInfo);
       if (DebugState) DebugState->MainThreadAdvanceDebugSystem();
+      GoGoGadgetMetaprogramming(&Ctx, &TodoInfo);
 
 /*       if (Parser->Valid) */
 /*       { */
 /*         if (Parser->OutputTokens.At != Parser->OutputTokens.Start) */
 /*         { */
-/*           TruncateToCurrentSize(&Parser->OutputTokens); */
+/*           TruncateToCurrentElements(&Parser->OutputTokens); */
 /*           Output(Parser->OutputTokens, Parser->Filename, Memory); */
 /*           LogSuccess("Output '%S'.", Parser->Filename); */
 /*         } */
@@ -9116,8 +9090,9 @@ main(s32 ArgCount_, const char** ArgStrings)
 
   if (DebugState)
   {
-    DebugState->UIType = DebugUIType_CallGraph;
+    DebugState->UIType = DebugUIType_Memory;
     DebugState->DisplayDebugMenu = True;
+    DebugState->DebugDoScopeProfiling = False;
 
     DebugState->MainThreadAdvanceDebugSystem();
 

@@ -1,4 +1,4 @@
-#define TOTAL_MUTEX_OP_RECORDS (4096)
+#define MUTEX_OPS_PER_FRAME (64)
 
 enum mutex_op
 {
@@ -27,6 +27,6 @@ struct mutex_op_record
 struct mutex_op_array
 {
   u32 NextRecord;
-  mutex_op_record Records[TOTAL_MUTEX_OP_RECORDS];
+  mutex_op_record Records[MUTEX_OPS_PER_FRAME];
 };
 

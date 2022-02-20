@@ -31,7 +31,7 @@ Count(stream_t* Stream)
 }
 
 template <typename stream_t> inline void
-TruncateToCurrentSize(stream_t* Stream)
+TruncateToCurrentElements(stream_t* Stream)
 {
   Assert(Stream->At <= Stream->End);
   Stream->End = Stream->At;

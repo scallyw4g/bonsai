@@ -75,7 +75,6 @@ GetThreadLocalState()
 /****************************                       **************************/
 
 
-
 void
 RegisterArena(const char *Name, memory_arena *Arena)
 {
@@ -668,7 +667,7 @@ ReserveMutexOpRecord(mutex *Mutex, mutex_op Op, debug_state *State)
   u32 WriteIndex = ThreadState->WriteIndex % DEBUG_FRAMES_TRACKED;
   mutex_op_array *MutexOps = &ThreadState->MutexOps[WriteIndex];
 
-  if (MutexOps->NextRecord < TOTAL_MUTEX_OP_RECORDS)
+  if (MutexOps->NextRecord < MUTEX_OPS_PER_FRAME)
   {
     Record = MutexOps->Records + MutexOps->NextRecord++;
     Record->Cycle = GetCycleCount();
@@ -677,7 +676,7 @@ ReserveMutexOpRecord(mutex *Mutex, mutex_op Op, debug_state *State)
   }
   else
   {
-    Warn("Total debug mutex operations of %u exceeded, discarding record info.", TOTAL_MUTEX_OP_RECORDS);
+    Warn("Total debug mutex operations of %u exceeded, discarding record info.", MUTEX_OPS_PER_FRAME);
   }
 
   return Record;

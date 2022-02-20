@@ -211,8 +211,8 @@ meta(generate_string_table(c_token_type))
 struct macro_def;
 struct c_token
 {
-  c_token_type Type;
   counted_string Value;
+  c_token_type Type;
   b32 Erased;
 
   union {
@@ -279,7 +279,7 @@ struct parser
   /* TODO(Jesse id: 154) This is pretty shitty because whenever we copy one of
    * these structs this field has to be manually zeroed out ..
    */
-  c_token_cursor OutputTokens;
+  /* c_token_cursor OutputTokens; */
 
   counted_string Filename;
   u32 LineNumber;
@@ -670,8 +670,6 @@ struct macro_def
   b32 Variadic;
   b32 Undefed; // Gets toggled when we hit an undef
   /* b32 IsExpanding; */
-
-  macro_def *NextInHash;
 };
 meta(generate_stream(macro_def))
 #include <metaprogramming/output/generate_stream_macro_def.h>
@@ -1042,18 +1040,14 @@ AllocateTokenBuffer(memory_arena* Memory, u32 Count, token_cursor_source Source,
 bonsai_function parser
 AllocateParser(counted_string Filename, u32 LineNumber, u32 TokenCount, token_cursor_source Source, u32 OutputBufferTokenCount, memory_arena *Memory)
 {
+  TIMED_FUNCTION();
+
   parser Result = {
     .Filename = Filename,
     .LineNumber = LineNumber,
   };
 
-  Result.Tokens = AllocateTokenBuffer(Memory, TokenCount, Source, LineNumber);
-  if (!Result.Tokens.Start)
-  {
-    Error("Allocating Token Buffer");
-    return Result;
-  }
-
+#if 0
   if (OutputBufferTokenCount)
   {
     Result.OutputTokens = AllocateTokenBuffer(Memory, OutputBufferTokenCount, Source, LineNumber);
@@ -1063,6 +1057,14 @@ AllocateParser(counted_string Filename, u32 LineNumber, u32 TokenCount, token_cu
       return Result;
     }
   }
+#endif
+
+  Result.Tokens = AllocateTokenBuffer(Memory, TokenCount, Source, LineNumber);
+  if (!Result.Tokens.Start)
+  {
+    Error("Allocating Token Buffer");
+    return Result;
+  }
 
   return Result;
 }
@@ -1070,6 +1072,7 @@ AllocateParser(counted_string Filename, u32 LineNumber, u32 TokenCount, token_cu
 bonsai_function parser*
 AllocateParserPtr(counted_string Filename, u32 LineNumber, u32 TokenCount, token_cursor_source Source, u32 OutputBufferTokenCount, memory_arena *Memory)
 {
+  Assert(OutputBufferTokenCount == 0);
   parser *Result = AllocateProtection(parser, Memory, 1, False);
   *Result = AllocateParser(Filename, LineNumber, TokenCount, Source, OutputBufferTokenCount, Memory);
   return Result;
@@ -1166,7 +1169,6 @@ struct parse_context
   parser                *CurrentParser;
 
   program_datatypes      Datatypes;
-  parser_stream          AllParsers;
   counted_string_cursor *IncludePaths;
   meta_func_stream       MetaFunctions;
   memory_arena          *Memory;

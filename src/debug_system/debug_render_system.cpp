@@ -2783,7 +2783,7 @@ PushMemoryBargraphTable(debug_ui_render_group *Group, selected_arenas *SelectedA
   PushNewRow(Group);
 
   memory_arena *CurrentArena = HeadArena;
-  while (CurrentArena)
+  while (CurrentArena && CurrentArena->Start)
   {
     v3 Color = DefaultColor;
     for (u32 ArenaIndex = 0;

@@ -73,28 +73,32 @@ struct memory_arena
 #endif
 };
 
-#define AllocateProtection(Type, Arena, Number, Protection)                                                                 \
-  ( GetDebugState && GetDebugState() ?                                                                                      \
-      (Type*)GetDebugState()->Debug_Allocate(Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, 1, Protection ) : \
-      (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, Protection)                                                      \
+#define STRINGIZE(x) STRINGIZE2(x)
+#define STRINGIZE2(x) #x
+#define LINE_STRING STRINGIZE(__LINE__)
+
+#define AllocateProtection(Type, Arena, Number, Protection)                                                                                              \
+  ( GetDebugState && GetDebugState() ?                                                                                                                   \
+      (Type*)GetDebugState()->Debug_Allocate(Arena, sizeof(Type), (umm)Number, #Type " " __FILE__ ":" LINE_STRING, __LINE__, __FILE__, 1, Protection ) : \
+      (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, Protection)                                                                                   \
   )
 
-#define AllocateAlignedProtection(Type, Arena, Number, Alignment, Protection)                                                      \
-  ( GetDebugState && GetDebugState() ?                                                                                             \
-    (Type*)GetDebugState()->Debug_Allocate( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, Alignment, Protection ) : \
-    (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, Alignment, Protection)                                                       \
+#define AllocateAlignedProtection(Type, Arena, Number, Alignment, Protection)                                                                                   \
+  ( GetDebugState && GetDebugState() ?                                                                                                                          \
+    (Type*)GetDebugState()->Debug_Allocate( Arena, sizeof(Type), (umm)Number, #Type ":" __FILE__ ":" LINE_STRING, __LINE__, __FILE__, Alignment, Protection ) : \
+    (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, Alignment, Protection)                                                                                    \
   )
 
-#define AllocateAligned(Type, Arena, Number, Alignment)                                                                     \
-  ( GetDebugState && GetDebugState() ?                                                                                      \
-    (Type*)GetDebugState()->Debug_Allocate( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, Alignment, True) : \
-    (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, Alignment, True)                                                      \
+#define AllocateAligned(Type, Arena, Number, Alignment)                                                                                                  \
+  ( GetDebugState && GetDebugState() ?                                                                                                                   \
+    (Type*)GetDebugState()->Debug_Allocate( Arena, sizeof(Type), (umm)Number, #Type ":" __FILE__ ":" LINE_STRING, __LINE__, __FILE__, Alignment, True) : \
+    (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, Alignment, True)                                                                                   \
   )
 
-#define Allocate(Type, Arena, Number)                                                                               \
-  ( GetDebugState && GetDebugState() ?                                                                              \
-    (Type*)GetDebugState()->Debug_Allocate( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, 1, True) : \
-    (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, True)                                                      \
+#define Allocate(Type, Arena, Number)                                                                                                             \
+  ( GetDebugState && GetDebugState() ?                                                                                                            \
+    (Type*)GetDebugState()->Debug_Allocate( Arena, sizeof(Type), (umm)Number, #Type ":" __FILE__ ":" LINE_STRING , __LINE__, __FILE__, 1, True) : \
+    (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, True)                                                                                    \
   )
 
 #define DEBUG_REGISTER_ARENA(Arena) do { if (GetDebugState) { GetDebugState()->RegisterArena(#Arena, Arena); } } while (false)
@@ -105,8 +109,34 @@ struct memory_arena
 bonsai_function u64 PlatformGetPageSize();
 bonsai_function b32 PlatformSetProtection(u8 *Base, u64 Size, memory_protection_type Protection);
 
-bonsai_function u8*  PlatformAllocateSize(umm AllocationSize);
-bonsai_function b32 PlatformDeallocate(u8 *Base, umm Size);
+bonsai_function u8 * PlatformAllocateSize(umm AllocationSize);
+bonsai_function b32  PlatformDeallocate(u8 *Base, umm Size);
+
+#if 0
+struct temp_memory_handle
+{
+  memory_arena *Arena;
+  u8* At;
+};
+
+bonsai_function void
+EndTemporaryMemory(temp_memory_handle Handle)
+{
+  return;
+}
+
+bonsai_function temp_memory_handle
+BeginTemporaryMemory(memory_arena *Arena)
+{
+  temp_memory_handle Result = {
+    .Arena = Arena,
+    .At = Arena->At,
+  };
+
+  return Result;
+}
+#endif
+
 
 b32
 OnPageBoundary(memory_arena *Arena, umm PageSize)
@@ -441,28 +471,24 @@ Reallocate(u8* Allocation, memory_arena* Arena, umm CurrentSize, umm RequestedSi
   u8* Result = 0;
   if (Allocation + CurrentSize == Arena->At)
   {
-    if (RequestedSize > CurrentSize)
+    // TODO(Jesse, tags: correctness): Theoretically we could pass arguments
+    // that fuck this up, but in practice we'll never hit that case in my
+    // lifetime (probably).
+    s64 Diff = (s64)(RequestedSize - CurrentSize);
+    if ((s64)Remaining(Arena) >= Diff)
     {
-      umm Diff = RequestedSize - CurrentSize;
-      if (Remaining(Arena) >= Diff)
-      {
-        Arena->At += Diff;
-        Result = Allocation;
-      }
-      else
-      {
-        // TODO(Jesse): Should this acutally just reallocate a buffer large
-        // enough to accomodate the whole request?  Probably not because that
-        // would leak memory, but maybe that's fine?
-        //
-        // Alternatively, is there some way we can analyze the calling code to
-        // ensure this case never happens?
-        Error("Unable to reallocate : Arena didn't have enough space left to accommodate %lu bytes.", Diff);
-      }
+      Arena->At += Diff;
+      Result = Allocation;
     }
     else
     {
-      Error("Unable to reallocate : RequestedSize < CurrentSize");
+      // TODO(Jesse): Should this acutally just reallocate a buffer large
+      // enough to accomodate the whole request?  Probably not because that
+      // would leak memory, but maybe that's fine?
+      //
+      // Alternatively, is there some way we can analyze the calling code to
+      // ensure this case never happens?
+      Error("Unable to reallocate : Arena didn't have enough space left to accommodate %lu bytes.", Diff);
     }
   }
   else
