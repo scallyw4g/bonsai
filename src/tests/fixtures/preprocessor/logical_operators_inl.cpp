@@ -141,3 +141,48 @@ valid_path
 #endif
 
 
+
+
+
+
+
+
+
+#if defined(ONE) && ONE
+valid_path
+#else
+invalid_path
+#endif
+
+#if ONE && defined(ONE)
+valid_path
+#else
+invalid_path
+#endif
+
+
+#if !defined(UNDEFINED) && ONE
+valid_path
+#else
+invalid_path
+#endif
+
+#if ONE && !defined(UNDEFINED)
+valid_path
+#else
+invalid_path
+#endif
+
+
+#if defined(ZERO) && ZERO
+invalid_path
+#else
+valid_path
+#endif
+
+#if ZERO && defined(ZERO)
+invalid_path
+#else
+valid_path
+#endif
+

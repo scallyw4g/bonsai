@@ -3361,6 +3361,13 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
   }
 
   u32 LineNumber = 1;
+
+  // TODO(Jesse, tags: robustness): We should probably modify this and
+  // ExpandMacro to reallocate the Result parser if they don't end up having
+  // enough tokens to hold the entire file (or expansion).  At current, if we
+  // ever parse a file with more than 2,000,000 tokens we'll just fail.
+  //
+  // Similar story with ExpandMacro.
   parser *Result = AllocateParserPtr(Code.Filename, LineNumber, (u32)Megabytes(2), Source, 0, Memory);
 
   b32 ParsingSingleLineComment = False;
@@ -5786,11 +5793,15 @@ ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena 
           c_token NextToken = PeekTokenRaw(Parser);
           switch (NextToken.Type)
           {
+            case CT_MacroLiteral:
             case CTokenType_Identifier:
             {
               // TODO(Jesse, tags: correctness): Should this path has to set the next token to CT_MacroLiteral
-              b32 NextTokenIsMacro = IsNextTokenMacro(Ctx, Parser);
-              RequireToken(Parser, CTokenType_Identifier);
+              c_token *PotentialMacroToken = PeekTokenRawPointer(Parser);
+              macro_def *M = GetMacroDef(Ctx, PotentialMacroToken->Value);
+              b64 NextTokenIsMacro = (M && !M->Undefed);
+              RequireTokenRaw(Parser, PotentialMacroToken->Type);
+
               Result = ResolveMacroConstantExpression(Ctx, Parser, PermMemory, TempMemory, LogicalNotNextValue ? !NextTokenIsMacro : NextTokenIsMacro, False);
             } break;
 
@@ -5805,8 +5816,10 @@ ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena 
               }
 
               // TODO(Jesse, tags: correctness): Should this path has to set the next token to CT_MacroLiteral
-              b32 NextTokenIsMacro = IsNextTokenMacro(Ctx, Parser);
-              RequireToken(Parser, CTokenType_Identifier);
+              c_token *PotentialMacroToken = PeekTokenRawPointer(Parser);
+              macro_def *M = GetMacroDef(Ctx, PotentialMacroToken->Value);
+              b64 NextTokenIsMacro = (M && !M->Undefed);
+              RequireTokenRaw(Parser, PotentialMacroToken->Type);
 
               while (ParenCount--)
               {

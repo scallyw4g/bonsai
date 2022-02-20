@@ -448,20 +448,20 @@ TESTS_TO_BUILD="
   $TESTS/preprocessor.cpp
 "
 
-# TESTS_TO_BUILD="
-#   $TESTS/ui_command_buffer.cpp
-#   $TESTS/m4.cpp
-#   $TESTS/colladaloader.cpp
-#   $TESTS/test_bitmap.cpp
-#   $TESTS/chunk.cpp
-#   $TESTS/bonsai_string.cpp
-#   $TESTS/objloader.cpp
-#   $TESTS/callgraph.cpp
-#   $TESTS/heap_allocation.cpp
-#   $TESTS/preprocessor.cpp
-#   $TESTS/rng.cpp
-#   $TESTS/file.cpp
-# "
+TESTS_TO_BUILD="
+  $TESTS/ui_command_buffer.cpp
+  $TESTS/m4.cpp
+  $TESTS/colladaloader.cpp
+  $TESTS/test_bitmap.cpp
+  $TESTS/chunk.cpp
+  $TESTS/bonsai_string.cpp
+  $TESTS/objloader.cpp
+  $TESTS/callgraph.cpp
+  $TESTS/heap_allocation.cpp
+  $TESTS/preprocessor.cpp
+  $TESTS/rng.cpp
+  $TESTS/file.cpp
+"
 
 
 DumpSourceFilesAndQuit=0
@@ -472,7 +472,7 @@ FirstPreprocessor=0
 BuildPreprocessor=1
 SecondPreprocessor=0
 
-BuildExecutables=0
+BuildExecutables=1
 BuildDebugTests=0
 BuildTests=1
 BuildDebugSystem=1
