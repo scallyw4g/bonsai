@@ -73,6 +73,22 @@ signed       Int4 = 42; // This needs to be fixed in the parser
 typedef unsigned int u32;
 u32 SizeOfInt = sizeof(int);
 
+typedef struct foo bar;
+
+typedef struct {
+  int thingy;
+} thing;
+
+typedef struct thing {
+  int thingy;
+} thing;
+
+
+const unsigned short const * dfsafdsa;
+const unsigned short * dfsafdsa;
+
+const unsigned long const * dfsafdsa;
+const unsigned long * dfsafdsa;
 
 
 #define MacroFunction(P1, P2) P1 P2

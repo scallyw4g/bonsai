@@ -115,6 +115,7 @@
             case CT_MacroLiteral: { Result = CSz("CT_MacroLiteral"); } break;
             case CT_PreprocessorPaste: { Result = CSz("CT_PreprocessorPaste"); } break;
             case CT_PreprocessorInclude: { Result = CSz("CT_PreprocessorInclude"); } break;
+            case CT_PreprocessorIncludeNext: { Result = CSz("CT_PreprocessorIncludeNext"); } break;
             case CT_PreprocessorIf: { Result = CSz("CT_PreprocessorIf"); } break;
             case CT_PreprocessorElse: { Result = CSz("CT_PreprocessorElse"); } break;
             case CT_PreprocessorElif: { Result = CSz("CT_PreprocessorElif"); } break;

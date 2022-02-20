@@ -72,7 +72,7 @@ bonsai_function b32         TryTransmuteOperatorToken(c_token *T);
 bonsai_function b32         IsValidIdentifier(counted_string S);
 bonsai_function macro_def * TryTransmuteIdentifierToMacro(parse_context *Ctx, parser *Parser, c_token *T, macro_def *ExpandingMacro);
 
-bonsai_function parser * ResolveInclude(parse_context *Ctx, parser *Parser);
+bonsai_function parser * ResolveInclude(parse_context *Ctx, parser *Parser, b32 SkipFirst);
 bonsai_function parser * ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *PermMemory, memory_arena *TempMemory, b32 ScanArgsForAdditionalMacros = False);
 bonsai_function u64      ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena *PermMemory, memory_arena *TempMemory, u64 PreviousValue, b32 LogicalNotNextValue);
 
@@ -3790,6 +3790,11 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
               PushT.Type = CT_PreprocessorInclude;
               PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
             }
+            else if ( StringsMatch(TempValue, CSz("include_next")) )
+            {
+              PushT.Type = CT_PreprocessorIncludeNext;
+              PushT.Value.Count = (umm)(TempValue.Start + TempValue.Count - HashCharacter);
+            }
             else if ( StringsMatch(TempValue, CSz("error")) )
             {
               PushT.Type = CT_PreprocessorError;
@@ -3913,8 +3918,17 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       } break;
 
       case CT_PreprocessorInclude:
+      case CT_PreprocessorIncludeNext:
       {
-        parser *IncludeParser = ResolveInclude(Ctx, Result);
+        b32 SkipFirst = False;
+        if (T->Type == CT_PreprocessorIncludeNext)
+        {
+          SkipFirst = True;
+        }
+
+        RequireToken(Result, T->Type);
+
+        parser *IncludeParser = ResolveInclude(Ctx, Result, SkipFirst);
         EraseBetweenExcluding(Result, T, Result->Tokens.At);
 
         b32 Continue = True;
@@ -4165,7 +4179,7 @@ GetByFilename(parser_stream* Stream, counted_string Filename)
 
 // TODO(Jesse): Should this return a c_token_cursor* ?
 bonsai_function parser *
-ResolveInclude(parse_context *Ctx, parser *Parser)
+ResolveInclude(parse_context *Ctx, parser *Parser, b32 SkipFirst)
 {
   TIMED_FUNCTION();
 
@@ -4173,8 +4187,6 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
   parser *Result = {};
 
   c_token *ErrorToken = PeekTokenPointer(Parser);
-
-  RequireToken(Parser, CT_PreprocessorInclude);
 
   counted_string PartialPath = {};
   c_token NextToken = PeekToken(Parser);
@@ -4215,8 +4227,15 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
 
         if (FileExists(FullPath))
         {
-          FinalIncludePath = FullPath;
-          break;
+          if (SkipFirst)
+          {
+            SkipFirst = False;
+          }
+          else
+          {
+            FinalIncludePath = FullPath;
+            break;
+          }
         }
       }
 
@@ -4227,7 +4246,14 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
   {
     if (FileExists(PartialPath))
     {
-      FinalIncludePath = PartialPath;
+      if (SkipFirst)
+      {
+        SkipFirst = False;
+      }
+      else
+      {
+        FinalIncludePath = PartialPath;
+      }
     }
   }
 
@@ -4238,7 +4264,14 @@ ResolveInclude(parse_context *Ctx, parser *Parser)
   }
   else
   {
-    Warn("Unable to resolve include for file : (%S)", PartialPath);
+    if (SkipFirst)
+    {
+      Warn("Unable to resolve include_next for file : (%S)", PartialPath);
+    }
+    else
+    {
+      Warn("Unable to resolve include for file : (%S)", PartialPath);
+    }
   }
 
   return Result;
@@ -5033,6 +5066,11 @@ bonsai_function void
 ParseReferencesIndirectionAndPossibleFunctionPointerness(parser *Parser, type_spec *Result)
 {
   b32 Done = False;
+  if (OptionalToken(Parser, CTokenType_Const))
+  {
+    Result->ConstPointer = True;
+  }
+
   while (TokensRemain(Parser) && Done == False)
   {
     c_token T = PeekToken(Parser);
@@ -5196,8 +5234,15 @@ ParseTypeSpecifier(parse_context *Ctx)
 
       case CTokenType_Const:
       {
-        RequireToken(Parser, CTokenType_Const);
-        Result.Const = True;
+        if (Result.Const)
+        {
+          Done = True;
+        }
+        else
+        {
+          RequireToken(Parser, CTokenType_Const);
+          Result.Const = True;
+        }
       } break;
 
       case CTokenType_Static:
@@ -5257,42 +5302,13 @@ ParseTypeSpecifier(parse_context *Ctx)
 
       case CTokenType_Inline:
       {
-        // TODO(Jesse id: 282): Should we parse out the bonsai_function def explicitly here?
         RequireToken(Parser, T.Type);
         Result.Inline = True;
       } break;
 
-      case CTokenType_Short:
-      {
-        RequireToken(Parser, T.Type);
-        Result.Short = True;
-        if (PeekToken(Parser).Type == CTokenType_Int)
-        {
-          Result.Token = RequireToken(Parser, CTokenType_Int);
-        }
-        Done = True;
-      } break;
-
       case CTokenType_Long:
-      {
-        RequireToken(Parser, T.Type);
-
-        Result.Long = True;
-
-        if (OptionalToken(Parser, CTokenType_Long))
-        {
-          Result.LongLong = True;
-        }
-
-        if (PeekToken(Parser).Type == CTokenType_Int)
-        {
-          Result.Token = RequireToken(Parser, CTokenType_Int);
-        }
-
-        Done = True;
-      } break;
-
       case CTokenType_Double:
+      case CTokenType_Short:
       case CTokenType_Float:
       case CTokenType_Char:
       case CTokenType_Int:
@@ -5316,6 +5332,26 @@ ParseTypeSpecifier(parse_context *Ctx)
         }
 
         Result.Token = RequireToken(Parser, T.Type);
+
+        if (T.Type == CTokenType_Short)
+        {
+          Result.Short = True;
+          if (PeekToken(Parser).Type == CTokenType_Int)
+          {
+            Result.Token = RequireToken(Parser, CTokenType_Int);
+          }
+        }
+        else if(T.Type == CTokenType_Long)
+        {
+          Result.Long = True;
+          if (OptionalToken(Parser, CTokenType_Long)) { Result.LongLong = True; }
+          if (PeekToken(Parser).Type == CTokenType_Int)
+          {
+            Result.Token = RequireToken(Parser, CTokenType_Int);
+          }
+        }
+
+
         Result.HasTemplateArguments = TryAndEatTemplateParameterList(Parser, &Ctx->Datatypes);
 
         if (IsConstructorFunctionName(Result.Token))
@@ -5478,18 +5514,7 @@ ParseFunctionOrVariableDecl(parse_context *Ctx)
     else
     {
       c_token DeclNameToken = RequireToken(Parser, CTokenType_Identifier);
-
-      macro_def *Macro = GetByName(&Ctx->Datatypes.Macros, DeclNameToken.Value);
-      if ((!DeclType.Token.Type) && Macro && Macro->Type == type_macro_function)
-      {
-        // This is a random hack that'll go away once we have macro-bonsai_function expansion
-        // TODO(Jesse id: 321 tags: id_320): Once this path goes away, the assertion with the label associated with this todo id should be put back in.
-        Assert(false);
-
-        EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
-        OptionalToken(Parser, CTokenType_Semicolon);
-      }
-      else if ( OptionalToken(Parser, CTokenType_OpenParen) )
+      if ( OptionalToken(Parser, CTokenType_OpenParen) )
       {
         // TODO(Jesse): Should this push happen outside this function?  Probably, because
         // some of the code that calls this function ignores the result which feels weird.
@@ -6462,6 +6487,17 @@ ParseTypedef(parse_context *Ctx)
     {
       struct_def S = ParseStructBody(Ctx, CS(""));
       S.Type = RequireToken(Parser, CTokenType_Identifier).Value;
+      RequireToken(Parser, CTokenType_Semicolon);
+      Push(&Ctx->Datatypes.Structs, S, Ctx->Memory);
+    }
+    else if (PeekToken(Parser, 0).Type == CTokenType_Identifier && PeekToken(Parser, 1).Type == CTokenType_OpenBrace)
+    {
+      c_token Type = RequireToken(Parser, CTokenType_Identifier);
+
+      struct_def S = ParseStructBody(Ctx, Type.Value);
+
+      OptionalToken(Parser, CTokenType_Identifier);
+
       RequireToken(Parser, CTokenType_Semicolon);
       Push(&Ctx->Datatypes.Structs, S, Ctx->Memory);
     }

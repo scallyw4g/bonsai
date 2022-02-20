@@ -192,6 +192,7 @@ enum c_token_type
   CT_PreprocessorPaste,
 
   CT_PreprocessorInclude,
+  CT_PreprocessorIncludeNext,
   CT_PreprocessorIf,
   CT_PreprocessorElse,
   CT_PreprocessorElif,
@@ -414,6 +415,7 @@ struct type_spec
 
   b32 ThreadLocal;
   b32 Const;
+  b32 ConstPointer;
   b32 Static;
   b32 Volatile;
 

@@ -6,6 +6,13 @@
 // clang takes.
 #define __has_include_next(...) 0
 
+// TODO(Jesse): Do we actually want to make keywords for these for some reason?
+// Doubtful, but maybe?
+#define __cdecl
+#define __stdcall
+#define __fastcall
+#define __declspec(...)
+
 #endif
 
 // Required for FILE* type .. might want to rebuild the file API to use
