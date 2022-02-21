@@ -2,6 +2,7 @@ enum struct_member_type
 {
   type_struct_member_noop,
   type_variable_decl,
+  type_struct_decl,
   type_function_decl,
   type_struct_member_anonymous,
 };

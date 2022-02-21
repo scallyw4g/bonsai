@@ -90,6 +90,44 @@ const unsigned short * dfsafdsa;
 const unsigned long const * dfsafdsa;
 const unsigned long * dfsafdsa;
 
+struct test_tfdsa
+{
+  struct
+  {
+    int foo;
+  };
+};
+
+struct test_outer
+{
+  struct test_inner
+  {
+    int foo;
+  };
+
+  test_inner other;
+  test_inner *otherptr;
+};
+
+struct test_tfdsa
+{
+  struct fdsafdsa
+  {
+    int foo;
+  };
+};
+
+struct test_tfdsa
+{
+  struct fdsafdsa foo;
+};
+
+struct test_tfdsa
+{
+  struct fdsafdsa *foo;
+};
+
+
 
 #define MacroFunction(P1, P2) P1 P2
 MacroFunction(u32 AnUnsignedInt = 42;, )

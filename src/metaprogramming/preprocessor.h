@@ -400,14 +400,24 @@ enum linkage_type
   linkage_extern_c,
 };
 
+struct type_indirection_info
+{
+  b32 ConstPointer;
+
+  u32 ReferenceLevel;
+  u32 IndirectionLevel;
+
+  b32 IsFunctionPointer;
+  counted_string FunctionPointerTypeName;
+};
+
 struct type_spec
 {
   c_token Token;
 
   datatype Datatype;
 
-  u32 ReferenceLevel;
-  u32 IndirectionLevel;
+  type_indirection_info Indirection;
 
   b32 IsMetaTemplateVar;
 
@@ -415,7 +425,6 @@ struct type_spec
 
   b32 ThreadLocal;
   b32 Const;
-  b32 ConstPointer;
   b32 Static;
   b32 Volatile;
 
@@ -430,8 +439,6 @@ struct type_spec
   b32 Enum;
 
   b32 Inline;
-  b32 IsFunctionPointer;
-  counted_string FunctionPointerTypeName;
 
   linkage_type Linkage;
 
@@ -511,6 +518,7 @@ meta(
   d_union struct_member
   {
     variable_decl
+    struct_decl              enum_only
     function_decl
     struct_member_anonymous
   }

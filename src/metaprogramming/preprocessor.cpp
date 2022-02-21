@@ -5062,13 +5062,15 @@ GetBodyTextForNextScope(parser* Parser)
   return BodyText;
 }
 
-bonsai_function void
-ParseReferencesIndirectionAndPossibleFunctionPointerness(parser *Parser, type_spec *Result)
+bonsai_function type_indirection_info
+ParseReferencesIndirectionAndPossibleFunctionPointerness(parser *Parser)
 {
+  type_indirection_info Result = {};
+
   b32 Done = False;
   if (OptionalToken(Parser, CTokenType_Const))
   {
-    Result->ConstPointer = True;
+    Result.ConstPointer = True;
   }
 
   while (TokensRemain(Parser) && Done == False)
@@ -5081,25 +5083,25 @@ ParseReferencesIndirectionAndPossibleFunctionPointerness(parser *Parser, type_sp
       {
         RequireToken(Parser, CTokenType_OpenParen);
         RequireToken(Parser, CTokenType_Star);
-        Result->FunctionPointerTypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+        Result.FunctionPointerTypeName = RequireToken(Parser, CTokenType_Identifier).Value;
         if (PeekToken(Parser).Type == CTokenType_OpenParen)
            { EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen); }
         RequireToken(Parser, CTokenType_CloseParen);
         EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
-        Result->IsFunctionPointer = True;
+        Result.IsFunctionPointer = True;
         Done = True;
       } break;
 
       case CTokenType_Ampersand:
       {
         RequireToken(Parser, CTokenType_Ampersand);
-        ++Result->ReferenceLevel;
+        ++Result.ReferenceLevel;
       } break;
 
       case CTokenType_Star:
       {
         RequireToken(Parser, CTokenType_Star);
-        ++Result->IndirectionLevel;
+        ++Result.IndirectionLevel;
       } break;
 
       case CTokenType_Const:
@@ -5123,7 +5125,7 @@ ParseReferencesIndirectionAndPossibleFunctionPointerness(parser *Parser, type_sp
     }
   }
 
-  return;
+  return Result;
 }
 
 bonsai_function b32
@@ -5359,7 +5361,7 @@ ParseTypeSpecifier(parse_context *Ctx)
         }
         else
         {
-          ParseReferencesIndirectionAndPossibleFunctionPointerness(Parser, &Result);
+          Result.Indirection = ParseReferencesIndirectionAndPossibleFunctionPointerness(Parser);
         }
 
         Done = True;
@@ -5488,7 +5490,7 @@ ParseFunctionOrVariableDecl(parse_context *Ctx)
 
   type_spec DeclType = ParseTypeSpecifier(Ctx);
 
-  if (DeclType.IsFunctionPointer)
+  if (DeclType.Indirection.IsFunctionPointer)
   {
     RequireToken(Parser, CTokenType_Semicolon);
   }
@@ -6133,8 +6135,41 @@ ParseStructMember(parse_context *Ctx, counted_string StructName)
       case CTokenType_Struct:
       {
         RequireToken(Parser, CTokenType_Struct);
-        Result.Type = type_struct_member_anonymous;
-        Result.struct_member_anonymous.Body = ParseStructBody(Ctx, CS("anonymous_struct"));
+
+        c_token Next = PeekToken(Parser);
+        if (Next.Type == CTokenType_Identifier)
+        {
+          RequireToken(Parser, Next);
+
+          Result.Type = type_variable_decl;
+
+          Next = PeekToken(Parser);
+          if (Next.Type == CTokenType_OpenBrace)
+          {
+            Result.Type = type_struct_decl;
+            Result.struct_member_anonymous.Body = ParseStructBody(Ctx, CS("anonymous_struct"));
+          }
+          else if (Next.Type == CTokenType_Identifier)
+          {
+            /* Result.Name = */ RequireToken(Parser, Next).Value;
+          }
+          else
+          {
+            type_indirection_info Indirection = ParseReferencesIndirectionAndPossibleFunctionPointerness(Parser);
+            /* Result.Name = */ RequireToken(Parser, CTokenType_Identifier).Value;
+          }
+        }
+        else if (Next.Type == CTokenType_OpenBrace)
+        {
+          // Anonymous struct / union
+          Result.Type = type_struct_member_anonymous;
+          Result.struct_member_anonymous.Body = ParseStructBody(Ctx, CS("anonymous_struct"));
+        }
+        else
+        {
+          InvalidCodePath();
+        }
+
         RequireToken(Parser, CTokenType_Semicolon);
       } break;
 
@@ -6456,9 +6491,9 @@ ParseAndPushTypedef(parse_context *Ctx)
   type_spec Type = ParseTypeSpecifier(Ctx);
   counted_string  Alias = {};
 
-  if (Type.IsFunctionPointer)
+  if (Type.Indirection.IsFunctionPointer)
   {
-    Alias = Type.FunctionPointerTypeName;
+    Alias = Type.Indirection.FunctionPointerTypeName;
   }
   else
   {
@@ -7880,6 +7915,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
 
                     case type_struct_member_noop:
                     case type_struct_member_anonymous:
+                    case type_struct_decl:
                     case type_function_decl:
                     {
                     }
@@ -7980,6 +8016,11 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
                     case type_function_decl:
                     {
                       TypeName = Replace->Data.struct_member->function_decl.Name;
+                    } break;
+
+                    case type_struct_decl:
+                    {
+                      TypeName = CSz("TODO(Jesse): Preserve the struct name here.");
                     } break;
 
                     case type_struct_member_anonymous:
@@ -8092,6 +8133,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
 
                     } break;
 
+                    case type_struct_decl:
                     case type_struct_member_anonymous:
                     {
                       for (struct_member_iterator UnionMemberIter = Iterator(&Member->struct_member_anonymous.Body.Members);
