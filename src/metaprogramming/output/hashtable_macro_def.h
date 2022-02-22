@@ -49,3 +49,11 @@
       *Bucket = E;
     }
 
+    bonsai_function void
+    Insert(macro_def E, macro_def_hashtable *Table, memory_arena *Memory)
+    {
+      macro_def_linked_list_node *Bucket = Allocate_macro_def_linked_list_node(Memory);
+      Bucket->Element = E;
+      Insert(Bucket, Table);
+    }
+

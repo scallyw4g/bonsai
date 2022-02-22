@@ -13,6 +13,22 @@
 #define __fastcall
 #define __declspec(...)
 
+// TODO(Jesse): I observed needing to define one of _M_IX86, _M_X64, _M_ARM, _M_ARM64
+// Presumably this is fine, but what do these actually do?
+#define _M_X64 1
+
+// TODO(Jesse): wtf does this do?
+#define __inline
+
+// NOTE(Jesse): I looked up some defines that clang does for you, and this is
+// what I came up with
+#define _WIN32
+#define _WIN64
+#define __clang__
+#define __clang_major__ (11)
+#define __clang_minor__ (0)
+#define __clang_patchlevel__ (0)
+
 #endif
 
 // Required for FILE* type .. might want to rebuild the file API to use

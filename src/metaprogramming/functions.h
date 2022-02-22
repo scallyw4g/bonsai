@@ -60,6 +60,14 @@ meta(
       while (*Bucket) Bucket = &(*Bucket)->Next;
       *Bucket = E;
     }
+
+    bonsai_function void
+    Insert((Type.name) E, (Type.name)_hashtable *Table, memory_arena *Memory)
+    {
+      (Type.name)_linked_list_node *Bucket = Allocate_(Type.name)_linked_list_node(Memory);
+      Bucket->Element = E;
+      Insert(Bucket, Table);
+    }
   }
 )
 

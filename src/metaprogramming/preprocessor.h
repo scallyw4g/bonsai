@@ -1,9 +1,4 @@
 
-
-
-
-
-
 enum d_union_flags
 {
   d_union_flag_none,
@@ -865,11 +860,13 @@ struct arguments
 
 struct program_datatypes
 {
+  macro_def_hashtable      Macros;
+  counted_string_hashtable FilesParsed;
+
   struct_def_stream        Structs;
   enum_def_stream          Enums;
   function_decl_stream     Functions;
   type_def_stream          Typedefs;
-  macro_def_hashtable      Macros;
   primitive_def_stream     Primitives;
   stl_container_def_stream StlContainers;
 };
@@ -1191,6 +1188,7 @@ AllocateParseContext(memory_arena *Memory)
     .Memory = Memory
   };
   Ctx.Datatypes.Macros = Allocate_macro_def_hashtable(4096, Memory);
+  Ctx.Datatypes.FilesParsed = Allocate_counted_string_hashtable(512, Memory);
   return Ctx;
 }
 

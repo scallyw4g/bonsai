@@ -38,3 +38,11 @@
       *Bucket = E;
     }
 
+    bonsai_function void
+    Insert(xml_tag E, xml_tag_hashtable *Table, memory_arena *Memory)
+    {
+      xml_tag_linked_list_node *Bucket = Allocate_xml_tag_linked_list_node(Memory);
+      Bucket->Element = E;
+      Insert(Bucket, Table);
+    }
+

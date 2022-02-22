@@ -1,6 +1,9 @@
 #include <src/tests/bug_defines.h>
 #include <src/tests/fixtures/preprocessor/other_file_that_should_parse.cpp>
 
+void func(arg_type *ArgName);
+void func(arg_type *);
+
 #define VariadicMacroFunction3(...) __VA_ARGS__
 VariadicMacroFunction3(int, i, =, 42);
 
@@ -23,21 +26,12 @@ __STD_TYPE __THING __THING_TYPE_NAME;
 
 
 
+#if BUG_EXTERN_BLOCK_DEFINE
 #define EXTERN_BLOCK extern "C" {
 #define EXTERN_BLOCK_END }
-
-// This is buggy
-//
-#if BUG_EXTERN_BLOCK_DEFINE
 EXTERN_BLOCK
-
 #include <some_other_file_that_wants_c_linkage.h>
-
-u32
-ExternalFunc()
-{
-}
-
+u32 ExternalFunc() { }
 EXTERN_BLOCK_END
 #endif
 
@@ -51,9 +45,9 @@ __pragma(msvc_style(thing));
 
 #define bonsai_function static
 
-// Buggy comma operator cases
-#if BUG_COMMA_OPERATOR
 int x, y;
+
+#if BUG_COMMA_OPERATOR
 int u = x < 8 ? x : y,
     v = h < 4 ? y : x == 12 || y == 14 ? x : y;
 #endif
@@ -113,7 +107,7 @@ struct test_tfdsa
 {
   struct fdsafdsa
   {
-    int foo;
+    int foo, bar;
   };
 };
 

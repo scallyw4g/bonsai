@@ -1150,20 +1150,31 @@ bonsai_function void
 TestIncludeGuards(memory_arena *Memory)
 {
 
-  parse_context Ctx = AllocateParseContext(Memory);
-  parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/include_guard0.cpp"), TokenCursorSource_RootFile);
-  if (Parser)
   {
-    Ctx.CurrentParser = Parser;
-    /* DumpEntireParser(Parser); */
-    /* RuntimeBreak(); */
-    ast_node_statement *Ast = ParseAllStatements(&Ctx);
-    WalkAst(Ast);
-    /* DebugPrint(Ast); */
+    parse_context Ctx = AllocateParseContext(Memory);
+    parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/include_guard0.cpp"), TokenCursorSource_RootFile);
+    if (Parser)
+    {
+      Ctx.CurrentParser = Parser;
+      /* DumpEntireParser(Parser); */
+      /* RuntimeBreak(); */
+      ast_node_statement *Ast = ParseAllStatements(&Ctx);
+      WalkAst(Ast);
+      /* DebugPrint(Ast); */
+    }
+    else
+    {
+      ++TestsFailed;
+    }
   }
-  else
+
   {
-    ++TestsFailed;
+    parse_context Ctx = AllocateParseContext(Memory);
+    parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/pragma_once0.cpp"), TokenCursorSource_RootFile);
+    if ( ! Parser )
+    {
+      ++TestsFailed;
+    }
   }
 }
 

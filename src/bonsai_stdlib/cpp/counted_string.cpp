@@ -5,6 +5,9 @@ meta(buffer(counted_string))
 meta(index_of(counted_string))
 #include <metaprogramming/output/index_of_counted_string.h>
 
+meta(hashtable(counted_string))
+#include <metaprogramming/output/hashtable_counted_string.h>
+
 
 counted_string
 CountedString(umm Count, memory_arena* Memory)

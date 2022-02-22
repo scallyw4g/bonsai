@@ -1280,14 +1280,15 @@ ParseError_StreamEndedUnexpectedly(parser *Parser)
   (T) ? ToString((T)->Type) : Unknown, (T) ? (T)->Value : Unknown
 
 bonsai_function counted_string
-ParseError_ExpectedSemicolonOrEquals(parser *Parser, c_token *T)
+ParseError_ExpectedSemicolonEqualsOrComma(parser *Parser, c_token *T)
 {
   counted_string Unknown = CSz("unknown");
   counted_string Result =
-    FormatCountedString_(TranArena, CSz("Got %S(%S)\n\nExpected %S(%c) or %S(%c) while parsing variable declaration."),
+    FormatCountedString_(TranArena, CSz("Got %S(%S)\n\nExpected %S(%c), %S(%c) or %S(%c) while parsing variable declaration."),
         ParseErrorTokenHelper(T),
         ToString(CTokenType_Semicolon), CTokenType_Semicolon,
-        ToString(CTokenType_Equals), CTokenType_Equals );
+        ToString(CTokenType_Equals), CTokenType_Equals,
+        ToString(CTokenType_Comma), CTokenType_Comma);
 
   ParseError(Parser, ParseErrorCode_ExpectedSemicolonOrEquals, Result, PeekTokenPointer(Parser) );
   return Result;
@@ -2719,6 +2720,30 @@ EatSpacesTabsAndEscapedNewlines(ansi_stream *Code)
   return LinesEaten;
 }
 
+bonsai_function counted_string*
+GetByValue(counted_string_hashtable *Table, counted_string Value)
+{
+  counted_string *Result = {};
+
+  counted_string_linked_list_node *Bucket = GetHashBucket(Hash(&Value), Table);
+  while (Bucket)
+  {
+    counted_string *Element = &Bucket->Element;
+
+    if (StringsMatch(Element, Value))
+    {
+      Result = Element;
+      break;
+    }
+    else
+    {
+      Bucket = Bucket->Next;
+    }
+  }
+
+  return Result;
+}
+
 bonsai_function macro_def*
 GetByName(macro_def_hashtable *Table, counted_string Name)
 {
@@ -3913,8 +3938,28 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       case CT_PreprocessorPragma:
       {
         RequireToken(Result, T->Type);
-        EatUntilExcluding(Result, CTokenType_Newline);
-        EraseBetweenExcluding(Result, T, Result->Tokens.At);
+
+        if (OptionalToken(Result, CToken(CSz("once"))))
+        {
+          if (GetByValue(&Ctx->Datatypes.FilesParsed, Code.Filename))
+          {
+            // TODO(Jesse, tags: memory): Free all memory
+            parser Temp = {};
+            *Result = Temp;
+            T = 0;
+          }
+          else
+          {
+            Insert(Code.Filename, &Ctx->Datatypes.FilesParsed, Memory);
+          }
+        }
+
+        if (T)
+        {
+          EatUntilExcluding(Result, CTokenType_Newline);
+          EraseBetweenExcluding(Result, T, Result->Tokens.At);
+        }
+
       } break;
 
       case CT_PreprocessorInclude:
@@ -5399,23 +5444,27 @@ ParseVariableDecl(parse_context *Ctx)
 
   variable_decl Result = {
     .Type = ParseTypeSpecifier(Ctx),
-    .Name = RequireToken(Parser, CTokenType_Identifier).Value,
   };
 
-  if ( PeekToken(Parser).Type == CTokenType_OpenBracket )
+  if (PeekToken(Parser).Type == CTokenType_Identifier)
   {
-    ParseExpression(Ctx, &Result.StaticBufferSize);
-  }
+    Result.Name = RequireToken(Parser, CTokenType_Identifier).Value;
 
-  if (OptionalToken(Parser, CTokenType_Equals))
-  {
-    if (PeekToken(Parser).Type == CTokenType_OpenBrace)
+    if ( PeekToken(Parser).Type == CTokenType_OpenBracket )
     {
-      Result.Value = ParseInitializerList(Ctx->CurrentParser, Ctx->Memory);
+      ParseExpression(Ctx, &Result.StaticBufferSize);
     }
-    else
+
+    if (OptionalToken(Parser, CTokenType_Equals))
     {
-      ParseExpression(Ctx, &Result.Value);
+      if (PeekToken(Parser).Type == CTokenType_OpenBrace)
+      {
+        Result.Value = ParseInitializerList(Ctx->CurrentParser, Ctx->Memory);
+      }
+      else
+      {
+        ParseExpression(Ctx, &Result.Value);
+      }
     }
   }
 
@@ -5492,7 +5541,6 @@ ParseFunctionOrVariableDecl(parse_context *Ctx)
 
   if (DeclType.Indirection.IsFunctionPointer)
   {
-    RequireToken(Parser, CTokenType_Semicolon);
   }
   else
   {
@@ -5545,15 +5593,17 @@ ParseFunctionOrVariableDecl(parse_context *Ctx)
           else
           {
             ParseExpression(Ctx, &Result.variable_decl.Value);
-            RequireToken(Parser, CTokenType_Semicolon);
           }
         }
-        else if ( OptionalToken(Parser, CTokenType_Semicolon) )
+        else if ( PeekToken(Parser).Type == CTokenType_Semicolon )
+        {
+        }
+        else if ( PeekToken(Parser).Type == CTokenType_Comma )
         {
         }
         else
         {
-          ParseError_ExpectedSemicolonOrEquals(Parser, PeekTokenPointer(Parser));
+          ParseError_ExpectedSemicolonEqualsOrComma(Parser, PeekTokenPointer(Parser));
         }
       }
     }
@@ -6097,145 +6147,138 @@ ParseStructMember(parse_context *Ctx, counted_string StructName)
 
   struct_member Result = {};
 
-  b32 Continue = False;
-  do {
-    Continue = False;
-
-    c_token T = PeekToken(Parser);
-    switch(T.Type)
+  c_token T = PeekToken(Parser);
+  switch(T.Type)
+  {
+    case CTokenType_Tilde:
     {
-      case CTokenType_Tilde:
+      RequireToken(Parser, CTokenType_Tilde);
+
+      if (StringsMatch(StructName, PeekToken(Parser).Value) &&
+           PeekToken(Parser, 1).Type == CTokenType_OpenParen)
       {
-        RequireToken(Parser, CTokenType_Tilde);
+        RequireToken(Parser, CTokenType_Identifier);
+        RequireToken(Parser, CTokenType_OpenParen);
 
-        if (StringsMatch(StructName, PeekToken(Parser).Value) &&
-             PeekToken(Parser, 1).Type == CTokenType_OpenParen)
-        {
-          RequireToken(Parser, CTokenType_Identifier);
-          RequireToken(Parser, CTokenType_OpenParen);
-
-          Result.Type = type_function_decl;
-          type_spec ReturnType = {};
-          Result.function_decl = ParseAndPushFunctionPrototype(Ctx, &ReturnType, &StructName, function_type_destructor);
-        }
-        else
-        {
-          ParseError(Parser, CSz("Destructor name must match the struct name."));
-        }
-      } break;
-
-      case CTokenType_Union:
+        Result.Type = type_function_decl;
+        type_spec ReturnType = {};
+        Result.function_decl = ParseAndPushFunctionPrototype(Ctx, &ReturnType, &StructName, function_type_destructor);
+      }
+      else
       {
-        RequireToken(Parser, CTokenType_Union);
-        Result.Type = type_struct_member_anonymous;
-        Result.struct_member_anonymous.Body = ParseStructBody(Ctx, CS("anonymous_union"));
-        RequireToken(Parser, CTokenType_Semicolon);
-      } break;
+        ParseError(Parser, CSz("Destructor name must match the struct name."));
+      }
+    } break;
 
-      case CTokenType_Struct:
+    case CTokenType_Union:
+    {
+      RequireToken(Parser, CTokenType_Union);
+      Result.Type = type_struct_member_anonymous;
+      Result.struct_member_anonymous.Body = ParseStructBody(Ctx, CS("anonymous_union"));
+    } break;
+
+    case CTokenType_Struct:
+    {
+      RequireToken(Parser, CTokenType_Struct);
+
+      c_token Next = PeekToken(Parser);
+      if (Next.Type == CTokenType_Identifier)
       {
-        RequireToken(Parser, CTokenType_Struct);
+        RequireToken(Parser, Next);
 
-        c_token Next = PeekToken(Parser);
-        if (Next.Type == CTokenType_Identifier)
+        Result.Type = type_variable_decl;
+
+        Next = PeekToken(Parser);
+        if (Next.Type == CTokenType_OpenBrace)
         {
-          RequireToken(Parser, Next);
-
-          Result.Type = type_variable_decl;
-
-          Next = PeekToken(Parser);
-          if (Next.Type == CTokenType_OpenBrace)
-          {
-            Result.Type = type_struct_decl;
-            Result.struct_member_anonymous.Body = ParseStructBody(Ctx, CS("anonymous_struct"));
-          }
-          else if (Next.Type == CTokenType_Identifier)
-          {
-            /* Result.Name = */ RequireToken(Parser, Next).Value;
-          }
-          else
-          {
-            type_indirection_info Indirection = ParseReferencesIndirectionAndPossibleFunctionPointerness(Parser);
-            /* Result.Name = */ RequireToken(Parser, CTokenType_Identifier).Value;
-          }
-        }
-        else if (Next.Type == CTokenType_OpenBrace)
-        {
-          // Anonymous struct / union
-          Result.Type = type_struct_member_anonymous;
+          Result.Type = type_struct_decl;
           Result.struct_member_anonymous.Body = ParseStructBody(Ctx, CS("anonymous_struct"));
         }
+        else if (Next.Type == CTokenType_Identifier)
+        {
+          /* Result.Name = */ RequireToken(Parser, Next).Value;
+        }
         else
         {
-          InvalidCodePath();
+          type_indirection_info Indirection = ParseReferencesIndirectionAndPossibleFunctionPointerness(Parser);
+          /* Result.Name = */ RequireToken(Parser, CTokenType_Identifier).Value;
         }
-
-        RequireToken(Parser, CTokenType_Semicolon);
-      } break;
-
-      case CTokenType_ThreadLocal:
-      case CTokenType_Const:
-      case CTokenType_Static:
-      case CTokenType_Volatile:
-      case CTokenType_Void:
-      case CTokenType_Long:
-      case CTokenType_M128:
-      case CTokenType_Bool:
-      case CTokenType_Auto:
-      case CTokenType_Double:
-      case CTokenType_Float:
-      case CTokenType_Char:
-      case CTokenType_Int:
-      case CTokenType_Short:
-      case CTokenType_Unsigned:
-      case CTokenType_Signed:
-      case CTokenType_Identifier:
+      }
+      else if (Next.Type == CTokenType_OpenBrace)
       {
-        u32 DefKeywordsEncountered = 0;
-        if ( StringsMatch(StructName, T.Value) && PeekToken(Parser, 1).Type == CTokenType_OpenParen)
-        {
-          // Constructor bonsai_function
-          RequireToken(Parser, CTokenType_Identifier);
-          RequireToken(Parser, CTokenType_OpenParen);
+        // Anonymous struct / union
+        Result.Type = type_struct_member_anonymous;
+        Result.struct_member_anonymous.Body = ParseStructBody(Ctx, CS("anonymous_struct"));
+      }
+      else
+      {
+        InvalidCodePath();
+      }
+    } break;
 
-          Result.Type = type_function_decl;
-          type_spec ReturnType = {};
-          Result.function_decl = ParseAndPushFunctionPrototype(Ctx, &ReturnType, &StructName, function_type_constructor);
-        }
-        else
+    case CTokenType_ThreadLocal:
+    case CTokenType_Const:
+    case CTokenType_Static:
+    case CTokenType_Volatile:
+    case CTokenType_Void:
+    case CTokenType_Long:
+    case CTokenType_M128:
+    case CTokenType_Bool:
+    case CTokenType_Auto:
+    case CTokenType_Double:
+    case CTokenType_Float:
+    case CTokenType_Char:
+    case CTokenType_Int:
+    case CTokenType_Short:
+    case CTokenType_Unsigned:
+    case CTokenType_Signed:
+    case CTokenType_Identifier:
+    {
+      u32 DefKeywordsEncountered = 0;
+      if ( StringsMatch(StructName, T.Value) && PeekToken(Parser, 1).Type == CTokenType_OpenParen)
+      {
+        // Constructor
+        RequireToken(Parser, CTokenType_Identifier);
+        RequireToken(Parser, CTokenType_OpenParen);
+
+        Result.Type = type_function_decl;
+        type_spec ReturnType = {};
+        Result.function_decl = ParseAndPushFunctionPrototype(Ctx, &ReturnType, &StructName, function_type_constructor);
+      }
+      else
+      {
+        declaration Decl = ParseFunctionOrVariableDecl(Ctx);
+        switch (Decl.Type)
         {
-          declaration Decl = ParseFunctionOrVariableDecl(Ctx);
-          switch (Decl.Type)
+          case type_declaration_variable_decl:
           {
-            case type_declaration_variable_decl:
-            {
-              Result.Type = type_variable_decl;
-              Result.variable_decl = Decl.variable_decl;
-            } break;
+            Result.Type = type_variable_decl;
+            Result.variable_decl = Decl.variable_decl;
+          } break;
 
-            case type_declaration_function_decl:
-            {
-              Result.Type = type_function_decl;
-              Result.function_decl = Decl.function_decl;
-            } break;
+          case type_declaration_function_decl:
+          {
+            Result.Type = type_function_decl;
+            Result.function_decl = Decl.function_decl;
+          } break;
 
-            case type_declaration_noop:
-            {
-              InvalidCodePath();
-            } break;
-          }
+          case type_declaration_noop:
+          {
+            InvalidCodePath();
+          } break;
         }
+      }
 
-      } break;
+    } break;
 
-      case CTokenType_CloseBrace:
-      {
-        // Done parsing struct members
-      } break;
+    case CTokenType_Semicolon:
+    case CTokenType_CloseBrace:
+    {
+      // Done parsing struct member, or finished with the struct
+    } break;
 
-      InvalidDefaultWhileParsing(Parser, CSz("While parsing struct member."));
-    }
-  } while (Continue);
+    InvalidDefaultWhileParsing(Parser, CSz("While parsing struct member."));
+  }
 
   return Result;
 }
@@ -6318,6 +6361,15 @@ ParseStructBody(parse_context *Ctx, counted_string StructName)
     {
       Push(&Result.Members, Declaration, Ctx->Memory);
     }
+
+    while (OptionalToken(Parser, CTokenType_Comma))
+    {
+      counted_string Name = RequireToken(Parser, CTokenType_Identifier).Value;
+      Declaration.variable_decl.Name = Name;
+
+      Push(&Result.Members, Declaration, Ctx->Memory);
+    }
+    RequireToken(Parser, CTokenType_Semicolon);
   }
 
   RequireToken(Parser, CTokenType_CloseBrace);
@@ -7313,6 +7365,11 @@ ParseDatatypes(parse_context *Ctx)
         // and push them onto the program_datatypes stream which this function
         // does internally.  Maybe we should change that?
         ParseFunctionOrVariableDecl(Ctx);
+
+        while (OptionalToken(Parser, CTokenType_Comma))
+        {
+          RequireToken(Parser, CTokenType_Identifier);
+        }
 
       } break;
 
