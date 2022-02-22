@@ -645,6 +645,11 @@ invalid_path
 #undef baz
 
 
+#define foo_func(a, ...) a
+
+#pragma whatever() // this should break
+foo_func(valid_path, invalid_path)
+
 #if BUG_BLANK_DEFINE_DOESNT_WARN_ON_REDEF
   #define foo
   #define foo (1) // THIS SHOULD THROW A WARNING

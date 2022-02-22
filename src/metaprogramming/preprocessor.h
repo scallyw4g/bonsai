@@ -428,6 +428,7 @@ struct type_spec
 
   b32 Long;
   b32 LongLong;
+  b32 LongDouble;
   b32 Short;
 
   b32 Struct;
@@ -922,6 +923,31 @@ PrintToken(c_token *Token, char_cursor *Dest = 0)
 
     switch (Token->Type)
     {
+      case CT_PreprocessorInclude:
+      case CT_PreprocessorIncludeNext:
+      case CT_PreprocessorIf:
+      case CT_PreprocessorElse:
+      case CT_PreprocessorElif:
+      case CT_PreprocessorEndif:
+      case CT_PreprocessorIfDefined:
+      case CT_PreprocessorIfNotDefined:
+      case CT_PreprocessorDefine:
+      case CT_PreprocessorUndef:
+      case CT_PreprocessorPragma:
+      case CT_PreprocessorError:
+      case CT_PreprocessorWarning:
+      case CT_Preprocessor__VA_ARGS__:
+      {
+        if (Token->Erased)
+        {
+          Color = TerminalColors.BrightYellow;
+        }
+        else
+        {
+          Color = TerminalColors.Yellow;
+        }
+      } break;
+
       case CT_MacroLiteral:
       {
         Color = TerminalColors.Blue;
@@ -1179,6 +1205,12 @@ struct parse_context
   counted_string_cursor *IncludePaths;
   meta_func_stream       MetaFunctions;
   memory_arena          *Memory;
+};
+
+enum erase_token_mode
+{
+  PreserveTokens = 0,
+  EraseTokens = 1,
 };
 
 bonsai_function parse_context

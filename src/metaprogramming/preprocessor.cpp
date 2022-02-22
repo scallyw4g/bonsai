@@ -80,7 +80,8 @@ bonsai_function c_token_cursor * SplitAndInsertTokenCursor(c_token_cursor *Curso
 bonsai_function c_token_cursor * SplitAndInsertTokenCursor(c_token_cursor *CursorToSplit, c_token* SplitStart, u32 LineNumber, c_token_cursor *CursorToInsert, c_token* SplitEnd, memory_arena *Memory);
 
 bonsai_function macro_def * GetMacroDef(parse_context *Ctx, counted_string DefineValue) ;
-bonsai_function c_token *   EatIfBlock(parser *Parser);
+bonsai_function c_token *   EatIfBlock(parser *Parser, erase_token_mode);
+bonsai_function c_token *   EraseAllRemainingIfBlocks(parser *Parser);
 
 bonsai_function void EraseToken(c_token *Token);
 bonsai_function void EraseBetweenExcluding(parser *Parser, c_token *StartToken, c_token *OnePastLastToken);
@@ -257,7 +258,6 @@ TokenShouldModifyLineCount(c_token *T, token_cursor_source Source)
        Source == TokenCursorSource_Include )
   {
     Result = T->Type == CTokenType_Newline ||
-             T->Type == CTokenType_CommentSingleLine ||
              T->Type == CTokenType_EscapedNewline;
   }
 
@@ -833,7 +833,7 @@ TruncateAtPreviousLineStart(parser* Parser, u32 Count )
 //
 // UPDATE(Jesse): Actually now we create parsers pretty sparingly so we should
 // be able to do one per parser without too much bloat..
-static const u32 Global_ParseErrorBufferSize = 1024*16;
+static const u32 Global_ParseErrorBufferSize = 64*1024;
 static char Global_ParseErrorBuffer[Global_ParseErrorBufferSize] = {};
 
 bonsai_function void
@@ -983,7 +983,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
   ParseErrorCursor->At = Global_ParseErrorBuffer;
   ParseErrorCursor->End = Global_ParseErrorBuffer+Global_ParseErrorBufferSize;
 
-  u32 LinesOfContext = 10;
+  u32 LinesOfContext = 100;
 
   counted_string ParserName = {};
 
@@ -1037,14 +1037,8 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
           break;
         }
 
-        /* if (T->Type == CTokenType_CommentSingleLine || T->Type == CTokenType_CommentMultiLine) */
-        /* { */
-        /*   int fda = 34; */
-        /* } */
-
         if (T->Type == CTokenType_Newline           ||
             T->Type == CTokenType_EscapedNewline    ||
-            T->Type == CTokenType_CommentSingleLine ||
             T->Type == CTokenType_CommentMultiLine )
         {
           TabCount = 0;
@@ -1084,7 +1078,6 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
         if (T->Type == CTokenType_Newline           ||
             T->Type == CTokenType_EscapedNewline    ||
-            T->Type == CTokenType_CommentSingleLine ||
             T->Type == CTokenType_CommentMultiLine )
         {
           break;
@@ -1192,7 +1185,6 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
       if (T->Type == CTokenType_Newline           ||
           T->Type == CTokenType_EscapedNewline    ||
-          T->Type == CTokenType_CommentSingleLine ||
           T->Type == CTokenType_CommentMultiLine )
       {
         LinesToPrint -= 1;
@@ -3892,8 +3884,15 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
     }
     else if ( CommentToken && !(ParsingSingleLineComment || ParsingMultiLineComment) )
     {
-      // We finished parsing a comment on this token
       umm Count = (umm)(Code.At - CommentToken->Value.Start);
+#if 1
+      // We finished parsing a comment on this token
+      if (PushT.Type == CTokenType_Newline || PushT.Type == CTokenType_CarrigeReturn)
+      {
+        if (Count > 0) { Count -= 1; } // Exclude the \r or \n from single line comments
+        LastTokenPushed = Push(PushT, &Result->Tokens);
+      }
+#endif
       CommentToken->Value.Count = Count;
       CommentToken = 0;
     }
@@ -3976,6 +3975,8 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
         parser *IncludeParser = ResolveInclude(Ctx, Result, SkipFirst);
         EraseBetweenExcluding(Result, T, Result->Tokens.At);
 
+        // TODO(Jesse): Pretty sure this can be EatUntilExcluding(Reuslt, CTokenType_Newline)
+        // although when I tried it it failed for some reason.  TBD.
         b32 Continue = True;
         while (Continue)
         {
@@ -4083,58 +4084,55 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
         {
           c_token *RewindT = PeekTokenRawPointer(Result);
           EraseBetweenExcluding(Result, T, Result->Tokens.At);
-
-          c_token *NextPreprocessorToken = EatIfBlock(Result);
-          EatUntilIncluding(Result, CT_PreprocessorEndif);
-
-          EraseBetweenExcluding(Result, NextPreprocessorToken, Result->Tokens.At);
+          Assert(T->Erased);
+          EatIfBlock(Result, PreserveTokens);
+          EraseAllRemainingIfBlocks(Result);
           RewindParserUntil(Result, RewindT);
         }
         else
         {
-          EatIfBlock(Result);
-          OptionalToken(Result, CT_PreprocessorEndif); // TODO(Jesse): What does this accomplish?  Why would there ever be an extra #endif?!
           EraseBetweenExcluding(Result, T, Result->Tokens.At);
+          EatIfBlock(Result, EraseTokens);
         }
       } break;
 
       case CT_PreprocessorIfDefined:
       {
         RequireToken(Result, T->Type);
-        c_token *DefineValue = PeekTokenPointer(Result);
+        c_token *DefineValue = PopTokenPointer(Result);
+
+        EraseToken(T);
+        EraseToken(DefineValue);
+
         if ( GetMacroDef(Ctx, DefineValue->Value) )
         {
-          EraseToken(T);
-          EraseToken(DefineValue);
-          c_token *NextPreprocessorToken = EatIfBlock(Result);
-          EatUntilIncluding(Result, CT_PreprocessorEndif);
-          EraseBetweenExcluding(Result, NextPreprocessorToken, Result->Tokens.At);
+          EatIfBlock(Result, PreserveTokens);
+          EraseAllRemainingIfBlocks(Result);
           RewindParserUntil(Result, T);
         }
         else
         {
-          c_token *NextPreprocessorToken = EatIfBlock(Result);
-          EraseBetweenExcluding(Result, T, NextPreprocessorToken);
+          EatIfBlock(Result, EraseTokens);
         }
       } break;
 
       case CT_PreprocessorIfNotDefined:
       {
         RequireToken(Result, T->Type);
-        c_token *DefineValue = PeekTokenPointer(Result);
+        c_token *DefineValue = PopTokenPointer(Result);
+
+        EraseToken(T);
+        EraseToken(DefineValue);
+
         if ( ! GetMacroDef(Ctx, DefineValue->Value) )
         {
-          EraseToken(T);
-          EraseToken(DefineValue);
-          c_token *NextPreprocessorToken = EatIfBlock(Result);
-          EatUntilIncluding(Result, CT_PreprocessorEndif);
-          EraseBetweenExcluding(Result, NextPreprocessorToken, Result->Tokens.At);
+          EatIfBlock(Result, PreserveTokens);
+          EraseAllRemainingIfBlocks(Result);
           RewindParserUntil(Result, T);
         }
         else
         {
-          c_token *NextPreprocessorToken = EatIfBlock(Result);
-          EraseBetweenExcluding(Result, T, NextPreprocessorToken);
+          EatIfBlock(Result, EraseTokens);
         }
       } break;
 
@@ -5392,7 +5390,8 @@ ParseTypeSpecifier(parse_context *Ctx)
         {
           Result.Long = True;
           if (OptionalToken(Parser, CTokenType_Long)) { Result.LongLong = True; }
-          if (PeekToken(Parser).Type == CTokenType_Int)
+          else if (OptionalToken(Parser, CTokenType_Double)) { Result.LongDouble = True; }
+          else if (PeekToken(Parser).Type == CTokenType_Int)
           {
             Result.Token = RequireToken(Parser, CTokenType_Int);
           }
@@ -6049,17 +6048,54 @@ EraseBetweenExcluding(parser *Parser, c_token *FirstToErase, c_token *OnePastLas
 }
 
 bonsai_function c_token *
-EatIfBlock(parser *Parser)
+EraseAllRemainingIfBlocks(parser *Parser)
 {
-  c_token *StartToken = PeekTokenPointer(Parser);
+  c_token *StartToken = PeekTokenRawPointer(Parser);
   c_token *Result = StartToken;
 
   u32 Depth = 0;
-  b32 Success = False;
-  while ( TokensRemain(Parser) )
+  while (Result)
   {
-    Result = PeekTokenPointer(Parser);
+    if (Result->Type == CT_PreprocessorIf ||
+        Result->Type == CT_PreprocessorIfNotDefined ||
+        Result->Type == CT_PreprocessorIfDefined)
+    {
+      ++Depth;
+    }
 
+    if (Result->Type == CT_PreprocessorEndif )
+    {
+      if (Depth == 0)
+      {
+        break;
+      }
+
+      --Depth;
+    }
+
+    Result->Erased = True;
+    RequireTokenRaw(Parser, *Result);
+    Result = PeekTokenRawPointer(Parser);
+  }
+
+  if (!Result)
+  {
+    ParseError(Parser, FormatCountedString(TranArena, CSz("Unable to find closing token for %S."), ToString(CT_PreprocessorIf)), StartToken);
+  }
+
+  /* Assert(Result == Parser->Tokens.At); */
+  return Result;
+}
+
+bonsai_function c_token *
+EatIfBlock(parser *Parser, erase_token_mode Erased)
+{
+  c_token *StartToken = PeekTokenRawPointer(Parser);
+  c_token *Result = StartToken;
+
+  u32 Depth = 0;
+  while (Result)
+  {
     if (Result->Type == CT_PreprocessorIf ||
         Result->Type == CT_PreprocessorIfNotDefined ||
         Result->Type == CT_PreprocessorIfDefined)
@@ -6073,7 +6109,6 @@ EatIfBlock(parser *Parser)
     {
       if (Depth == 0)
       {
-        Success = True;
         break;
       }
 
@@ -6083,10 +6118,12 @@ EatIfBlock(parser *Parser)
       }
     }
 
-    RequireToken(Parser, Result->Type);
+    Result->Erased = Erased;
+    RequireTokenRaw(Parser, *Result);
+    Result = PeekTokenRawPointer(Parser);
   }
 
-  if (!Success)
+  if (!Result)
   {
     ParseError(Parser, FormatCountedString(TranArena, CSz("Unable to find closing token for %S."), ToString(CT_PreprocessorIf)), StartToken);
   }
@@ -6568,8 +6605,12 @@ ParseTypedef(parse_context *Ctx)
 
   RequireToken(Parser, CTokenType_Typedef);
 
-  if ( OptionalToken(Parser, CTokenType_Struct) )
+  c_token *Peek = PeekTokenPointer(Parser);
+  if ( Peek->Type == CTokenType_Struct ||
+       Peek->Type == CTokenType_Union
+     )
   {
+    RequireToken(Parser, *Peek);
     if (PeekToken(Parser).Type == CTokenType_OpenBrace)
     {
       struct_def S = ParseStructBody(Ctx, CS(""));

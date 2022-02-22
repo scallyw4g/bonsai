@@ -1,4 +1,4 @@
-global_variable const umm TempDebugOutputBufferSize = 4096*4;
+global_variable const umm TempDebugOutputBufferSize = 64*1024;
 global_variable char TempDebugOutputBuffer__[TempDebugOutputBufferSize];
 
 bonsai_function void PrintToStdout(counted_string S);

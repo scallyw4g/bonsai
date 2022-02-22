@@ -2,13 +2,13 @@
 
 #if 1
 
-#define foo bar
+#define foo valid_path
 foo
 
 #if 1
   foo
 #else
-  fdsafdsa
+  invalid_path
 #endif
 
 foo
@@ -202,3 +202,23 @@ self_including_macro_keyword // should expand to "self_including_macro_keyword 4
 #define self_including_macro_function() self_including_macro_function()
 self_including_macro_function()
 #endif
+
+
+#ifndef _DEBUG
+
+  valid_path
+
+#else
+
+  invalid_path
+
+  #ifndef _DEBUG
+    invalid_path
+  #else
+    invalid_path
+  #endif
+
+  invalid_path
+
+#endif
+

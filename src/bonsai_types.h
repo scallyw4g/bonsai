@@ -29,6 +29,9 @@
 #define __clang_minor__ (0)
 #define __clang_patchlevel__ (0)
 
+// TODO(Jesse): Appropriate?
+/* #define _DEBUG (1) */
+
 #endif
 
 // Required for FILE* type .. might want to rebuild the file API to use

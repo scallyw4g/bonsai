@@ -131,12 +131,13 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
       c_token T = PopTokenRaw(Parser);
       TestThat(T.Type == CTokenType_CommentSingleLine);
     }
-    /* { */
-    /*   c_token T = PopTokenRaw(Parser); */
-    /*   TestThat(T.Type == CTokenType_Newline); */
-    /* } */
-    {
 
+    {
+      c_token T = PopTokenRaw(Parser);
+      TestThat(T.Type == CTokenType_Newline);
+    }
+
+    {
       c_token T = PopTokenRaw(Parser);
       TestThat(T.Type == CTokenType_CommentMultiLine);
     }
@@ -886,12 +887,13 @@ TestMacrosAndIncludes(memory_arena *Memory)
 {
   parse_context Ctx = AllocateParseContext(Memory);
   parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/macro_and_include_test.cpp"), TokenCursorSource_RootFile);
+  DumpEntireParser(Parser);
 
   if (Parser)
   {
-    RequireToken(Parser, CToken(CSz("bar")));
-    RequireToken(Parser, CToken(CSz("bar")));
-    RequireToken(Parser, CToken(CSz("bar")));
+    RequireToken(Parser, CToken(CSz("valid_path")));
+    RequireToken(Parser, CToken(CSz("valid_path")));
+    RequireToken(Parser, CToken(CSz("valid_path")));
 
     RequireToken(Parser, CTokenType_Int);
     RequireToken(Parser, CToken(CSz("ding")));
@@ -1135,6 +1137,8 @@ TestMacrosAndIncludes(memory_arena *Memory)
     RequireToken(Parser, CTokenType_OpenParen);
     RequireToken(Parser, CTokenType_CloseParen);
 #endif
+
+    RequireToken(Parser, CToken(CSz("valid_path")));
 
     TestThat( TokensRemain(Parser) == False );
   }

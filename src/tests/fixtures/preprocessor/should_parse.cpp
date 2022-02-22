@@ -84,6 +84,8 @@ const unsigned short * dfsafdsa;
 const unsigned long const * dfsafdsa;
 const unsigned long * dfsafdsa;
 
+const long double thing;
+
 struct test_tfdsa
 {
   struct
