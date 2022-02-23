@@ -135,6 +135,7 @@ enum c_token_type
   CTokenType_OperatorKeyword,
 
   CT_KeywordPragma,
+  CT_KeywordAttribute,
 
   CT_StaticAssert,
 

@@ -76,6 +76,7 @@
             case CTokenType_TemplateKeyword: { Result = CSz("CTokenType_TemplateKeyword"); } break;
             case CTokenType_OperatorKeyword: { Result = CSz("CTokenType_OperatorKeyword"); } break;
             case CT_KeywordPragma: { Result = CSz("CT_KeywordPragma"); } break;
+            case CT_KeywordAttribute: { Result = CSz("CT_KeywordAttribute"); } break;
             case CT_StaticAssert: { Result = CSz("CT_StaticAssert"); } break;
             case CTokenType_Extern: { Result = CSz("CTokenType_Extern"); } break;
             case CTokenType_Asm: { Result = CSz("CTokenType_Asm"); } break;

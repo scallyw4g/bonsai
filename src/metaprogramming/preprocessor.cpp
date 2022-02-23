@@ -80,7 +80,7 @@ bonsai_function c_token_cursor * SplitAndInsertTokenCursor(c_token_cursor *Curso
 bonsai_function c_token_cursor * SplitAndInsertTokenCursor(c_token_cursor *CursorToSplit, c_token* SplitStart, u32 LineNumber, c_token_cursor *CursorToInsert, c_token* SplitEnd, memory_arena *Memory);
 
 bonsai_function macro_def * GetMacroDef(parse_context *Ctx, counted_string DefineValue) ;
-bonsai_function c_token *   EatIfBlock(parser *Parser, erase_token_mode);
+bonsai_function c_token *   EatIfBlock(parser *Parser, erase_token_mode Erased);
 bonsai_function c_token *   EraseAllRemainingIfBlocks(parser *Parser);
 
 bonsai_function void EraseToken(c_token *Token);
@@ -983,7 +983,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
   ParseErrorCursor->At = Global_ParseErrorBuffer;
   ParseErrorCursor->End = Global_ParseErrorBuffer+Global_ParseErrorBufferSize;
 
-  u32 LinesOfContext = 100;
+  u32 LinesOfContext = 25;
 
   counted_string ParserName = {};
 
@@ -1414,12 +1414,6 @@ PeekTokenPointer(parser* Parser, s32 TokensToSkip_in)
   u32 TokensToSkip = (u32)Abs(TokensToSkip_in - LocalLookOffset); // This is confusing .. sorry
   u32 TokenHits = 0;
 
-  /* Assert(Direction > 0); */
-  /* Assert(LocalLookOffset >= 0); */
-  if (Direction < 0)
-  {
-    int foo = 0;
-  }
   c_token* Result = PeekTokenRawPointer(Parser, LocalLookOffset);
   while (Result)
   {
@@ -3351,6 +3345,10 @@ TryTransmuteKeywordToken(c_token *T, c_token *LastTokenPushed)
   {
     T->Type = CTokenType_Extern;
   }
+  else if ( StringsMatch(T->Value, CSz("__attribute__")) )
+  {
+    T->Type = CT_KeywordAttribute;
+  }
   else if ( StringsMatch(T->Value, CSz("__VA_ARGS__")) )
   {
     T->Type = CT_Preprocessor__VA_ARGS__;
@@ -5265,6 +5263,12 @@ ParseTypeSpecifier(parse_context *Ctx)
 
     switch (T.Type)
     {
+      case CT_KeywordAttribute:
+      {
+        RequireToken(Parser, CT_KeywordAttribute);
+        EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+      } break;
+
       case CTokenType_At:
       {
         RequireToken(Parser, CTokenType_At);
@@ -5953,9 +5957,9 @@ ResolveMacroConstantExpression(parse_context *Ctx, parser *Parser, memory_arena 
         {
           Result = !Result;
         }
-        Result = ResolveMacroConstantExpression(Ctx, Parser, PermMemory, TempMemory, Result, False);
         EatSpacesTabsAndEscapedNewlines(Parser);
         RequireTokenRaw(Parser, CTokenType_CloseParen);
+        Result = ResolveMacroConstantExpression(Ctx, Parser, PermMemory, TempMemory, Result, False);
       } break;
 
       case CTokenType_Plus:

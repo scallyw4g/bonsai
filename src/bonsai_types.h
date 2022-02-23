@@ -32,6 +32,10 @@
 // TODO(Jesse): Appropriate?
 /* #define _DEBUG (1) */
 
+// TODO(Jesse): I added this as a way of getting the STL headers to skip a
+// bunch of C++ shit.  Not sure if that's the best way, but there you go.
+#define RC_INVOKED (1)
+
 #endif
 
 // Required for FILE* type .. might want to rebuild the file API to use

@@ -86,6 +86,20 @@ const unsigned long * dfsafdsa;
 
 const long double thing;
 
+#if 0
+typedef long long __m64 __attribute__((__vector_size__(8), __aligned__(8)));
+
+int foo __attribute__((__aligned__(8)));
+
+struct test_tfdsa
+{
+  struct
+  {
+    int foo __attribute__((__aligned__(8)));
+  };
+};
+#endif
+
 struct test_tfdsa
 {
   struct
