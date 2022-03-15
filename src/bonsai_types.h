@@ -34,7 +34,10 @@
 
 // TODO(Jesse): I added this as a way of getting the STL headers to skip a
 // bunch of C++ shit.  Not sure if that's the best way, but there you go.
-#define RC_INVOKED (1)
+/* #define RC_INVOKED (1) */
+
+// Maybe this is better than RC_INVOKED?
+/* #define _M_CEE_PURE (1) */
 
 #endif
 

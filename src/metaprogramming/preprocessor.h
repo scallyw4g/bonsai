@@ -121,7 +121,6 @@ enum c_token_type
   CTokenType_Signed,
 
   CTokenType_Bool,
-  CTokenType_M128,
   CTokenType_Auto,
   CTokenType_Void,
   CTokenType_Double,
@@ -394,6 +393,7 @@ enum linkage_type
   linkage_noop,
   linkage_extern,
   linkage_extern_c,
+  linkage_extern_cpp,
 };
 
 struct type_indirection_info
@@ -427,6 +427,8 @@ struct type_spec
   b32 Unsigned;
   b32 Signed;
 
+  b32 Int;
+  b32 Char;
   b32 Long;
   b32 LongLong;
   b32 LongDouble;

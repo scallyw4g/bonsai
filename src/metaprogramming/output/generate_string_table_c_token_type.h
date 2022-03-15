@@ -64,7 +64,6 @@
             case CTokenType_Unsigned: { Result = CSz("CTokenType_Unsigned"); } break;
             case CTokenType_Signed: { Result = CSz("CTokenType_Signed"); } break;
             case CTokenType_Bool: { Result = CSz("CTokenType_Bool"); } break;
-            case CTokenType_M128: { Result = CSz("CTokenType_M128"); } break;
             case CTokenType_Auto: { Result = CSz("CTokenType_Auto"); } break;
             case CTokenType_Void: { Result = CSz("CTokenType_Void"); } break;
             case CTokenType_Double: { Result = CSz("CTokenType_Double"); } break;

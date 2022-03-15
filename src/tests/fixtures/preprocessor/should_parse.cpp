@@ -43,8 +43,6 @@ _Pragma("whatever");
 __pragma(msvc_style(thing));
 
 
-#define bonsai_function static
-
 int x, y;
 
 #if BUG_COMMA_OPERATOR
@@ -56,10 +54,8 @@ unsigned int Int0 = 42;
 int          Int2 = 42;
 signed int   Int3 = 42;
 
-#if BUG_SIGNED_UNSIGNED
 unsigned     Int1 = 42; // This needs to be fixed in the parser
 signed       Int4 = 42; // This needs to be fixed in the parser
-#endif
 
 
 
@@ -84,12 +80,23 @@ const unsigned short * dfsafdsa;
 const unsigned long const * dfsafdsa;
 const unsigned long * dfsafdsa;
 
+const long long int thing;
 const long double thing;
 
-#if 0
+unsigned long int thing;
+unsigned long long int thing;
+
 typedef long long __m64 __attribute__((__vector_size__(8), __aligned__(8)));
 
 int foo __attribute__((__aligned__(8)));
+
+#if BUG_ATTRIBUTE_KEYWORD
+enum foo
+{
+  val __attribute__((enum_attribute))
+};
+
+__attribute__((type_attribute)) int foo;
 
 struct test_tfdsa
 {
@@ -99,6 +106,10 @@ struct test_tfdsa
   };
 };
 #endif
+
+typedef int __v4si __attribute__((__vector_size__(16)));
+typedef float __v4sf __attribute__((__vector_size__(16)));
+typedef float __m128 __attribute__((__vector_size__(16), __aligned__(16)));
 
 struct test_tfdsa
 {
@@ -152,6 +163,8 @@ MacroFunction(u32 AnotherUnsignedInt = sizeof(u32);, )
 // #define CheekyDisappearingFunction(...)
 
 #else
+
+#define bonsai_function static
 
 bonsai_function u32
 CheekyDisappearingFunction()
@@ -249,6 +262,11 @@ TestFunc1()
   }
 
   int Six = 3 + 3;
+}
+
+static inline unsigned __attribute__((function_attribute))
+TestFunc(int foo)
+{
 }
 
 

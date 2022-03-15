@@ -1038,8 +1038,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
         }
 
         if (T->Type == CTokenType_Newline           ||
-            T->Type == CTokenType_EscapedNewline    ||
-            T->Type == CTokenType_CommentMultiLine )
+            T->Type == CTokenType_EscapedNewline)
         {
           TabCount = 0;
           SpaceCount = 0;
@@ -1077,8 +1076,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
         PrintToken(T, ParseErrorCursor);
 
         if (T->Type == CTokenType_Newline           ||
-            T->Type == CTokenType_EscapedNewline    ||
-            T->Type == CTokenType_CommentMultiLine )
+            T->Type == CTokenType_EscapedNewline)
         {
           break;
         }
@@ -1184,8 +1182,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
       PrintToken(T, ParseErrorCursor);
 
       if (T->Type == CTokenType_Newline           ||
-          T->Type == CTokenType_EscapedNewline    ||
-          T->Type == CTokenType_CommentMultiLine )
+          T->Type == CTokenType_EscapedNewline)
       {
         LinesToPrint -= 1;
         if (RawTokensRemain(Parser) == 0 || LinesToPrint == 0)
@@ -3265,10 +3262,6 @@ TryTransmuteKeywordToken(c_token *T, c_token *LastTokenPushed)
   {
     T->Type = CTokenType_Bool;
   }
-  else if ( StringsMatch(T->Value, CSz("__m128")) )
-  {
-    T->Type = CTokenType_M128;
-  }
   else if ( StringsMatch(T->Value, CSz("auto")) )
   {
     T->Type = CTokenType_Auto;
@@ -3320,6 +3313,14 @@ TryTransmuteKeywordToken(c_token *T, c_token *LastTokenPushed)
   else if ( StringsMatch(T->Value, CSz("template")) )
   {
     T->Type = CTokenType_TemplateKeyword;
+  }
+  else if ( StringsMatch(T->Value, CSz("__inline__")) )
+  {
+    T->Type = CTokenType_Inline;
+  }
+  else if ( StringsMatch(T->Value, CSz("__inline")) )
+  {
+    T->Type = CTokenType_Inline;
   }
   else if ( StringsMatch(T->Value, CSz("inline")) )
   {
@@ -5158,6 +5159,7 @@ ParseReferencesIndirectionAndPossibleFunctionPointerness(parser *Parser)
       case CTokenType_CloseParen: // Valid closing token during a cast
       case CTokenType_Identifier:
       case CTokenType_OperatorKeyword: // Finish parsing the return type of an operator funciton
+      case CTokenType_Semicolon:
       {
         Done = True;
       } break;
@@ -5196,7 +5198,6 @@ TryAndEatTemplateParameterList(parser *Parser, program_datatypes *Datatypes)
       case CTokenType_Unsigned:
       case CTokenType_Signed:
       case CTokenType_Bool:
-      case CTokenType_M128:
       case CTokenType_Auto:
       case CTokenType_Void:
       case CTokenType_Double:
@@ -5249,6 +5250,17 @@ IsConstructorFunctionName(c_token T)
   return Result;
 }
 
+bonsai_function void
+ParseLongness(parser *Parser, type_spec *Result)
+{
+  if (OptionalToken(Parser, CTokenType_Double)) { Result->LongDouble = True; }
+  else
+  {
+    if (OptionalToken(Parser, CTokenType_Long)) { Result->LongLong = True; }
+    if (OptionalToken(Parser, CTokenType_Int)) { Result->Int = True; }
+  }
+}
+
 bonsai_function type_spec
 ParseTypeSpecifier(parse_context *Ctx)
 {
@@ -5265,6 +5277,7 @@ ParseTypeSpecifier(parse_context *Ctx)
     {
       case CT_KeywordAttribute:
       {
+        // Type attribute
         RequireToken(Parser, CT_KeywordAttribute);
         EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
       } break;
@@ -5307,15 +5320,33 @@ ParseTypeSpecifier(parse_context *Ctx)
       } break;
 
       case CTokenType_Signed:
-      {
-        RequireToken(Parser, CTokenType_Signed);
-        Result.Signed = True;
-      } break;
-
       case CTokenType_Unsigned:
       {
-        RequireToken(Parser, CTokenType_Unsigned);
-        Result.Unsigned = True;
+        RequireToken(Parser, T);
+
+        if (T.Type == CTokenType_Signed)
+        {
+          Result.Signed = True;
+        }
+        else if (T.Type == CTokenType_Unsigned)
+        {
+          Result.Unsigned = True;
+        }
+        else
+        {
+          InvalidCodePath();
+        }
+
+        if (OptionalToken(Parser, CTokenType_Int))
+        { Result.Int = True; }
+        else if (OptionalToken(Parser, CTokenType_Short))
+        { Result.Short = True; }
+        else if (OptionalToken(Parser, CTokenType_Char))
+        { Result.Char = True; }
+        else if (OptionalToken(Parser, CTokenType_Long))
+        { ParseLongness(Parser, &Result); }
+
+        Done = True;
       } break;
 
       case CTokenType_Enum:
@@ -5346,7 +5377,10 @@ ParseTypeSpecifier(parse_context *Ctx)
         {
           Result.Linkage = linkage_extern_c;
         }
-
+        else if ( OptionalToken(Parser, CToken(CTokenType_StringLiteral, CSz("\"C++\""))) )
+        {
+          Result.Linkage = linkage_extern_cpp;
+        }
       } break;
 
       case CTokenType_Inline:
@@ -5356,19 +5390,43 @@ ParseTypeSpecifier(parse_context *Ctx)
       } break;
 
       case CTokenType_Long:
-      case CTokenType_Double:
+      {
+        RequireToken(Parser, CTokenType_Long);
+        ParseLongness(Parser, &Result);
+        Done = True;
+      } break;
+
       case CTokenType_Short:
+      {
+        Result.Short = True;
+        RequireToken(Parser, CTokenType_Short);
+
+        if (OptionalToken(Parser, CTokenType_Int)) { Result.Int = True; }
+
+        Done = True;
+      } break;
+
+      case CTokenType_Double:
       case CTokenType_Float:
       case CTokenType_Char:
       case CTokenType_Int:
       case CTokenType_Void:
-      case CTokenType_M128:
       case CTokenType_Bool:
       case CTokenType_Auto:
+      {
+        RequireToken(Parser, T.Type);
+        Done = True;
+      } break;
+
       case CTokenType_Identifier:
       {
-        if (T.Type == CTokenType_Identifier)
+        if (Result.Token.Type)
         {
+          Done = True;
+        }
+        else
+        {
+          Result.Token = RequireToken(Parser, T.Type);
           Result.Datatype = GetDatatypeByName(&Ctx->Datatypes, T.Value);
           // TODO(Jesse, id: 296, tags: immediate): When we properly traverse
           // include graphs, this assert should not fail.
@@ -5379,48 +5437,41 @@ ParseTypeSpecifier(parse_context *Ctx)
           //
           /* Assert(Result.Datatype.Type != type_datatype_noop); */
         }
-
-        Result.Token = RequireToken(Parser, T.Type);
-
-        if (T.Type == CTokenType_Short)
-        {
-          Result.Short = True;
-          if (PeekToken(Parser).Type == CTokenType_Int)
-          {
-            Result.Token = RequireToken(Parser, CTokenType_Int);
-          }
-        }
-        else if(T.Type == CTokenType_Long)
-        {
-          Result.Long = True;
-          if (OptionalToken(Parser, CTokenType_Long)) { Result.LongLong = True; }
-          else if (OptionalToken(Parser, CTokenType_Double)) { Result.LongDouble = True; }
-          else if (PeekToken(Parser).Type == CTokenType_Int)
-          {
-            Result.Token = RequireToken(Parser, CTokenType_Int);
-          }
-        }
-
-
-        Result.HasTemplateArguments = TryAndEatTemplateParameterList(Parser, &Ctx->Datatypes);
-
-        if (IsConstructorFunctionName(Result.Token))
-        {
-        }
-        else
-        {
-          Result.Indirection = ParseReferencesIndirectionAndPossibleFunctionPointerness(Parser);
-        }
-
-        Done = True;
       } break;
 
-      InvalidDefaultWhileParsing(Parser, CSz("Invalid token encountered while parsing a type specifier"));
+      default:
+      {
+        Done = True;
+      } break;
     }
-
     EatWhitespaceAndComments(Parser);
     continue;
   }
+
+
+  // Value Attribute
+  if (OptionalToken(Parser, CT_KeywordAttribute))
+  {
+    EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+  }
+
+
+  Result.HasTemplateArguments = TryAndEatTemplateParameterList(Parser, &Ctx->Datatypes);
+
+  // TODO(Jesse): This check is weird.  Should
+  // ParseReferencesIndirectionAndPossibleFunctionPointerness not just handle
+  // this case?
+  if (IsConstructorFunctionName(Result.Token))
+  {
+  }
+  else
+  {
+    Result.Indirection = ParseReferencesIndirectionAndPossibleFunctionPointerness(Parser);
+  }
+
+  /* Result.HasTemplateArguments = TryAndEatTemplateParameterList(Parser, &Ctx->Datatypes); */
+  /* Result.Indirection = ParseReferencesIndirectionAndPossibleFunctionPointerness(Parser); */
+
 
   return Result;
 }
@@ -5452,6 +5503,11 @@ ParseVariableDecl(parse_context *Ctx)
   if (PeekToken(Parser).Type == CTokenType_Identifier)
   {
     Result.Name = RequireToken(Parser, CTokenType_Identifier).Value;
+
+    if (OptionalToken(Parser, CT_KeywordAttribute))
+    {
+      EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+    }
 
     if ( PeekToken(Parser).Type == CTokenType_OpenBracket )
     {
@@ -5577,9 +5633,15 @@ ParseFunctionOrVariableDecl(parse_context *Ctx)
       }
       else
       {
+        // TODO(Jesse): Call ParseVariableDecl here!!
         Result.Type = type_declaration_variable_decl;
         Result.variable_decl.Type = DeclType;
         Result.variable_decl.Name = DeclNameToken.Value;
+
+        if (OptionalToken(Parser, CT_KeywordAttribute))
+        {
+          EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+        }
 
         if ( OptionalToken(Parser, CTokenType_OpenBracket) )
         {
@@ -6263,7 +6325,6 @@ ParseStructMember(parse_context *Ctx, counted_string StructName)
     case CTokenType_Volatile:
     case CTokenType_Void:
     case CTokenType_Long:
-    case CTokenType_M128:
     case CTokenType_Bool:
     case CTokenType_Auto:
     case CTokenType_Double:
@@ -6450,20 +6511,9 @@ ParseIntegerConstant(parser* Parser)
   return Result;
 }
 
-bonsai_function enum_def
-ParseEnum(parse_context *Ctx)
+bonsai_function void
+ParseEnumBody(parse_context *Ctx, parser *Parser, enum_def *Enum, memory_arena *Memory)
 {
-  TIMED_FUNCTION();
-
-  parser *Parser = Ctx->CurrentParser;
-  program_datatypes *Datatypes = &Ctx->Datatypes;
-
-  counted_string EnumName = RequireToken(Parser, CTokenType_Identifier).Value;
-
-  enum_def Enum = {
-    .Name = EnumName
-  };
-
   RequireToken(Parser, CTokenType_OpenBrace);
 
   b32 Done = False;
@@ -6477,7 +6527,7 @@ ParseEnum(parse_context *Ctx)
       Field.Value = ParseExpression(Ctx);
     }
 
-    Push(&Enum.Members, Field, Ctx->Memory);
+    Push(&Enum->Members, Field, Ctx->Memory);
 
     if(OptionalToken(Parser, CTokenType_Comma))
     {
@@ -6492,6 +6542,25 @@ ParseEnum(parse_context *Ctx)
       Done = True;
     }
   }
+
+  return;
+}
+
+bonsai_function enum_def
+ParseEnum(parse_context *Ctx)
+{
+  TIMED_FUNCTION();
+
+  parser *Parser = Ctx->CurrentParser;
+  program_datatypes *Datatypes = &Ctx->Datatypes;
+
+  counted_string EnumName = RequireToken(Parser, CTokenType_Identifier).Value;
+
+  enum_def Enum = {
+    .Name = EnumName
+  };
+
+  ParseEnumBody(Ctx, Parser, &Enum, Ctx->Memory);
 
   return Enum;
 }
@@ -6592,6 +6661,12 @@ ParseAndPushTypedef(parse_context *Ctx)
   {
     Alias = RequireToken(Parser, CTokenType_Identifier).Value;
   }
+
+  if (OptionalToken(Parser, CT_KeywordAttribute))
+  {
+    EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+  }
+
   RequireToken(Parser, CTokenType_Semicolon);
 
   type_def Typedef = {
@@ -6637,6 +6712,33 @@ ParseTypedef(parse_context *Ctx)
     {
       ParseAndPushTypedef(Ctx);
     }
+  }
+  else if (Peek->Type == CTokenType_Enum)
+  {
+    RequireToken(Parser, *Peek);
+
+    enum_def Enum = {};
+
+    {
+      c_token Name = PeekToken(Parser);
+      if (Name.Type == CTokenType_Identifier)
+      {
+        RequireToken(Parser, Name);
+        Enum.Name = Name.Value;
+      }
+    }
+
+    ParseEnumBody(Ctx, Parser, &Enum, Ctx->Memory);
+
+    {
+      c_token Name = PeekToken(Parser);
+      if (Name.Type == CTokenType_Identifier)
+      {
+        RequireToken(Parser, Name);
+        Enum.Name = Name.Value;
+      }
+    }
+
   }
   else
   {
@@ -6793,7 +6895,6 @@ ParseSingleStatement(parse_context *Ctx, ast_node_statement *Result)
       case CTokenType_Static:
       case CTokenType_Volatile:
       case CTokenType_Void:
-      case CTokenType_M128:
       case CTokenType_Bool:
       case CTokenType_Auto:
       case CTokenType_Double:
@@ -7071,7 +7172,6 @@ ParseExpression(parse_context *Ctx, ast_node_expression* Result)
       case CTokenType_Volatile:
       case CTokenType_Void:
       case CTokenType_Long:
-      case CTokenType_M128:
       case CTokenType_Bool:
       case CTokenType_Auto:
       case CTokenType_Double:
@@ -7394,7 +7494,6 @@ ParseDatatypes(parse_context *Ctx)
       case CTokenType_Volatile:
       case CTokenType_Void:
       case CTokenType_Long:
-      case CTokenType_M128:
       case CTokenType_Bool:
       case CTokenType_Auto:
       case CTokenType_Double:
