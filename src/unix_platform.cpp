@@ -36,7 +36,7 @@ HandleGlDebugMessage(GLenum Source, GLenum Type, GLuint Id, GLenum Severity,
   if (Severity != GL_DEBUG_SEVERITY_NOTIFICATION)
   {
 
-    Debug("%s", Message);
+    DebugLine("%s", Message);
     RuntimeBreak();
     const char* MessageTypeName = 0;
     switch(Type) {
@@ -348,7 +348,7 @@ ConnectToServer(network_connection *Connection)
 
   if (ConnectStatus == 0)
   {
-      Debug("Connected");
+      DebugLine("Connected");
       Connection->State = ConnectionState_AwaitingHandshake;
   }
   else if (ConnectStatus == -1)

@@ -5,7 +5,7 @@
     };
 
     bonsai_function xml_tag_hashtable
-    Allocate_hashtable_xml_tag(umm ElementCount)
+    Allocate_hashtable_xml_tag(umm ElementCount, memory_arena *Memory)
     {
       xml_tag_hashtable Result = {};
       Result.Table = Allocate(xml_tag*, Memory, ElementCount);
