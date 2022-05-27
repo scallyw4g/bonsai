@@ -1717,6 +1717,26 @@ TestErrors(memory_arena *Memory)
     TestThat(Parser->ErrorCode == ParseErrorCode_None)
   }
 
+  {
+    Global_DoRuntimeBreak = False;
+    parse_context Ctx = AllocateParseContext(Memory);
+    counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error11.cpp");
+    parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
+    Ctx.CurrentParser = Parser;
+    ParseDatatypes(&Ctx);
+    Global_DoRuntimeBreak = True;
+
+    // NOTE(Jesse, tags: error_message, clarity): This error message isn't
+    // really what we want to tell the user but as long as it breaks here we're
+    // fine for now.
+    TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
+
+    TestThat(StringsMatch(Parser->Filename, ParserFilename));
+    TestThat(Parser->LineNumber == 2);
+    Parser->ErrorCode = ParseErrorCode_None;
+    /* TestThat( OptionalToken(Parser, CToken(132151u)) ); */
+  }
+
 }
 
 void
