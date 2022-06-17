@@ -41,7 +41,7 @@ void
 BreakSegfaultHandler(int sig, siginfo_t *si, void *data)
 {
   HitSegfault = True;
-  Debug(RED_TERMINAL "   CRASH! " WHITE_TERMINAL);
+  DebugChars(RED_TERMINAL "   CRASH! " WHITE_TERMINAL);
   PlatformDebugStacktrace();
   RuntimeBreak();
 }

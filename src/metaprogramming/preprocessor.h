@@ -209,7 +209,13 @@ struct c_token
 {
   counted_string Value;
   c_token_type Type;
-  b32 Erased;
+
+  b32 Erased; // TODO(Jesse): Pack this into .. LineNumber ?  Should profile if
+              // it actually makes any perf difference.  It probably doesn't
+              // since the size of this struct is pretty weird anyways.
+
+  counted_string Filename;
+  u32 LineNumber;
 
   union {
     /* s64 SignedValue; */ // TODO(Jesse id: 272): Fold `-` sign into this value at tokenization time?
@@ -276,9 +282,6 @@ struct parser
    * these structs this field has to be manually zeroed out ..
    */
   /* c_token_cursor OutputTokens; */
-
-  counted_string Filename;
-  u32 LineNumber;
 };
 meta(generate_cursor(parser))
 #include <metaprogramming/output/generate_cursor_parser.h>
@@ -1068,7 +1071,6 @@ AllocateTokenBuffer(memory_arena* Memory, u32 Count, token_cursor_source Source,
   Result.Start = AllocateProtection(c_token, Memory, Count, False);
   Result.At = Result.Start;
   Result.End = Result.Start + Count;
-  Result.StartLine = LineNumber;
 
   return Result;
 }
@@ -1078,10 +1080,7 @@ AllocateParser(counted_string Filename, u32 LineNumber, u32 TokenCount, token_cu
 {
   TIMED_FUNCTION();
 
-  parser Result = {
-    .Filename = Filename,
-    .LineNumber = LineNumber,
-  };
+  parser Result = {};
 
 #if 0
   if (OutputBufferTokenCount)

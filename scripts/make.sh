@@ -289,11 +289,11 @@ function BuildAllClang
   echo -e ""
   echo -e "$Delimeter"
 
-  [ $BuildExecutables == 1 ] && BuildExecutables
-  [ $BuildDebugTests == 1 ] && BuildDebugTests
-  [ $BuildTests == 1 ] && BuildTests
-  [ $BuildDebugSystem == 1 ] && BuildDebugSystem
-  [ $BuildExamples == 1 ] && BuildExamples
+  [[ $BuildExecutables == 1 || $BUILD_EVERYTHING == 1 ]] && BuildExecutables
+  [[ $BuildDebugTests == 1  || $BUILD_EVERYTHING == 1 ]] && BuildDebugTests
+  [[ $BuildTests == 1       || $BUILD_EVERYTHING == 1 ]] && BuildTests
+  [[ $BuildDebugSystem == 1 || $BUILD_EVERYTHING == 1 ]] && BuildDebugSystem
+  [[ $BuildExamples == 1    || $BUILD_EVERYTHING == 1 ]] && BuildExamples
 
   echo -e ""
   echo -e "$Delimeter"
@@ -418,7 +418,7 @@ function RunEntireBuild {
     RunPreprocessor
   fi
 
-  if [ $BuildPreprocessor == 1 ]; then
+  if [[ $BuildPreprocessor == 1 || $BUILD_EVERYTHING == 1 ]]; then
     BuildPreprocessor
     [ ! -x $PREPROCESSOR_EXECUTABLE ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
   fi
@@ -445,10 +445,6 @@ function RunEntireBuild {
 
 
 TESTS_TO_BUILD="
-  $TESTS/preprocessor.cpp
-"
-
-TESTS_TO_BUILD="
   $TESTS/ui_command_buffer.cpp
   $TESTS/m4.cpp
   $TESTS/colladaloader.cpp
@@ -463,6 +459,15 @@ TESTS_TO_BUILD="
   $TESTS/file.cpp
 "
 
+if [[ $BUILD_EVERYTHING != 1 ]]; then
+
+  TESTS_TO_BUILD="
+    $TESTS/preprocessor.cpp
+  "
+
+fi
+
+BUILD_EVERYTHING=0
 
 DumpSourceFilesAndQuit=0
 
@@ -472,10 +477,10 @@ FirstPreprocessor=0
 BuildPreprocessor=1
 SecondPreprocessor=0
 
-BuildExecutables=1
+BuildExecutables=0
 BuildDebugTests=0
 BuildTests=1
-BuildDebugSystem=1
+BuildDebugSystem=0
 BuildExamples=0
 
 RunTests=0

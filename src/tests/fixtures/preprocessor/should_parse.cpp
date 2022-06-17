@@ -1,66 +1,66 @@
-/* #include <src/tests/bug_defines.h> */
-/* #include <src/tests/fixtures/preprocessor/other_file_that_should_parse.cpp> */
+#include <src/tests/bug_defines.h>
+#include <src/tests/fixtures/preprocessor/other_file_that_should_parse.cpp>
 
-/* void func(arg_type *ArgName); */
-/* void func(arg_type *); */
+void func(arg_type *ArgName);
+void func(arg_type *);
 
-/* #define VariadicMacroFunction3(...) __VA_ARGS__ */
-/* VariadicMacroFunction3(int, i, =, 42); */
+#define VariadicMacroFunction3(...) __VA_ARGS__
+VariadicMacroFunction3(int, i, =, 42);
 
-/* #define __QWORD unsigned long long */
-/* #define __STD_TYPE typedef */
-/* #define __DEV_T_TYPE __QWORD */
-/* #define __FSID_T_TYPE struct { int __val[2]; } */
+#define __QWORD unsigned long long
+#define __STD_TYPE typedef
+#define __DEV_T_TYPE __QWORD
+#define __FSID_T_TYPE struct { int __val[2]; }
 
-/* __STD_TYPE __FSID_T_TYPE __fsid_t; */
-/* __STD_TYPE __DEV_T_TYPE __dev_t; */
-
-
-
-/* #define __THING int */
-/* #define __INDIRECT_THING_TYPE_NAME __alias_for_int */
-/* #define __THING_TYPE_NAME __INDIRECT_THING_TYPE_NAME */
-
-/* __STD_TYPE __THING __THING_TYPE_NAME; */
+__STD_TYPE __FSID_T_TYPE __fsid_t;
+__STD_TYPE __DEV_T_TYPE __dev_t;
 
 
 
+#define __THING int
+#define __INDIRECT_THING_TYPE_NAME __alias_for_int
+#define __THING_TYPE_NAME __INDIRECT_THING_TYPE_NAME
 
-/* #if BUG_EXTERN_BLOCK_DEFINE */
-/* #define EXTERN_BLOCK extern "C" { */
-/* #define EXTERN_BLOCK_END } */
-/* EXTERN_BLOCK */
-/* #include <some_other_file_that_wants_c_linkage.h> */
-/* u32 ExternalFunc() { } */
-/* EXTERN_BLOCK_END */
-/* #endif */
+__STD_TYPE __THING __THING_TYPE_NAME;
 
 
 
-/* _Pragma("whatever") */
-/* _Pragma("whatever"); */
 
-/* __pragma(msvc_style(thing)); */
+#if BUG_EXTERN_BLOCK_DEFINE
+#define EXTERN_BLOCK extern "C" {
+#define EXTERN_BLOCK_END }
+EXTERN_BLOCK
+#include <some_other_file_that_wants_c_linkage.h>
+u32 ExternalFunc() { }
+EXTERN_BLOCK_END
+#endif
 
 
-/* int x, y; */
 
-/* #if BUG_COMMA_OPERATOR */
-/* int u = x < 8 ? x : y, */
-/*     v = h < 4 ? y : x == 12 || y == 14 ? x : y; */
-/* #endif */
+_Pragma("whatever")
+_Pragma("whatever");
 
-/* unsigned int Int0 = 42; */
-/* int          Int2 = 42; */
-/* signed int   Int3 = 42; */
+__pragma(msvc_style(thing));
 
-/* unsigned     Int1 = 42; // This needs to be fixed in the parser */
-/* signed       Int4 = 42; // This needs to be fixed in the parser */
+
+int x, y;
+
+#if BUG_COMMA_OPERATOR
+int u = x < 8 ? x : y,
+    v = h < 4 ? y : x == 12 || y == 14 ? x : y;
+#endif
+
+unsigned int Int0 = 42;
+int          Int2 = 42;
+signed int   Int3 = 42;
+
+unsigned     Int1 = 42; // This needs to be fixed in the parser
+signed       Int4 = 42; // This needs to be fixed in the parser
 
 
 /* typedef long int __int64; */
-typedef long int s64;
-typedef unsigned s64 u64;
+/* typedef long int s64; */
+/* typedef unsigned s64 u64; */
 
 
 typedef unsigned int u32;

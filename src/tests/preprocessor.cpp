@@ -1568,6 +1568,8 @@ TestErrors(memory_arena *Memory)
 
 #if 1
   {
+    /* RuntimeBreak(); */
+
     Global_DoRuntimeBreak = False;
     parse_context Ctx = AllocateParseContext(Memory);
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error0.cpp");
@@ -1576,9 +1578,8 @@ TestErrors(memory_arena *Memory)
     ParseDatatypes(&Ctx);
     Global_DoRuntimeBreak = True;
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
-    TestThat(StringsMatch(Parser->Filename, ParserFilename));
-    TestThat(Parser->LineNumber == 1);
     Parser->ErrorCode = ParseErrorCode_None;
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
@@ -1591,9 +1592,8 @@ TestErrors(memory_arena *Memory)
     ParseDatatypes(&Ctx);
     Global_DoRuntimeBreak = True;
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
-    TestThat(StringsMatch(Parser->Filename, ParserFilename));
-    TestThat(Parser->LineNumber == 3);
     Parser->ErrorCode = ParseErrorCode_None;
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 3);
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
@@ -1606,9 +1606,8 @@ TestErrors(memory_arena *Memory)
     ParseDatatypes(&Ctx);
     Global_DoRuntimeBreak = True;
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
-    TestThat(StringsMatch(Parser->Filename, ParserFilename));
-    TestThat(Parser->LineNumber == 3);
     Parser->ErrorCode = ParseErrorCode_None;
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 3);
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
@@ -1621,9 +1620,8 @@ TestErrors(memory_arena *Memory)
     ParseDatatypes(&Ctx);
     Global_DoRuntimeBreak = True;
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
-    TestThat(StringsMatch(Parser->Filename, ParserFilename));
-    TestThat(Parser->LineNumber == 3);
     Parser->ErrorCode = ParseErrorCode_None;
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 3);
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
@@ -1636,9 +1634,8 @@ TestErrors(memory_arena *Memory)
     ParseDatatypes(&Ctx);
     Global_DoRuntimeBreak = True;
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
-    TestThat(StringsMatch(Parser->Filename, ParserFilename));
-    TestThat(Parser->LineNumber == 3);
     Parser->ErrorCode = ParseErrorCode_None;
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 3);
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
@@ -1651,9 +1648,8 @@ TestErrors(memory_arena *Memory)
     ParseDatatypes(&Ctx);
     Global_DoRuntimeBreak = True;
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
-    TestThat(StringsMatch(Parser->Filename, ParserFilename));
-    TestThat(Parser->LineNumber == 3);
     Parser->ErrorCode = ParseErrorCode_None;
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 3);
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
@@ -1666,9 +1662,8 @@ TestErrors(memory_arena *Memory)
     ParseDatatypes(&Ctx);
     Global_DoRuntimeBreak = True;
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
-    TestThat(StringsMatch(Parser->Filename, ParserFilename));
-    TestThat(Parser->LineNumber == 3);
     Parser->ErrorCode = ParseErrorCode_None;
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 3);
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
@@ -1681,9 +1676,8 @@ TestErrors(memory_arena *Memory)
     ParseDatatypes(&Ctx);
     Global_DoRuntimeBreak = True;
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
-    TestThat(StringsMatch(Parser->Filename, ParserFilename));
-    TestThat(Parser->LineNumber == 3);
     Parser->ErrorCode = ParseErrorCode_None;
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 3);
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 #endif
@@ -1699,9 +1693,8 @@ TestErrors(memory_arena *Memory)
     ParseDatatypes(&Ctx);
     Global_DoRuntimeBreak = True;
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
-    TestThat(StringsMatch(Parser->Filename, ParserFilename));
-    TestThat(Parser->LineNumber == 3);
     Parser->ErrorCode = ParseErrorCode_None;
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 3);
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 #endif
@@ -1731,9 +1724,9 @@ TestErrors(memory_arena *Memory)
     // fine for now.
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
 
-    TestThat(StringsMatch(Parser->Filename, ParserFilename));
-    TestThat(Parser->LineNumber == 2);
+    /* TestThat(StringsMatch(Parser->Filename, ParserFilename)); */
     Parser->ErrorCode = ParseErrorCode_None;
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 2);
     /* TestThat( OptionalToken(Parser, CToken(132151u)) ); */
   }
 
@@ -1749,16 +1742,19 @@ TestLineNumbers(memory_arena *Memory)
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error5.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
 
-    TestThat(Parser->LineNumber == 1);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
     TestThat(OptionalTokenRaw(Parser, CT_PreprocessorDefine));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
     TestThat(OptionalTokenRaw(Parser, CToken(CT_MacroLiteral, CSz("boo"))));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
     TestThat(OptionalTokenRaw(Parser, CToken(132151u)));
+
     TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
-    TestThat(Parser->LineNumber == 2);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 2);
+
     TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
-    TestThat(Parser->LineNumber == 3);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 3);
+
     TestThat(OptionalTokenRaw(Parser, CToken(CTokenType_Int, CSz("int"))));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
     TestThat(OptionalTokenRaw(Parser, CToken(CTokenType_Identifier, CSz("foo"))));
@@ -1766,26 +1762,32 @@ TestLineNumbers(memory_arena *Memory)
     TestThat(OptionalTokenRaw(Parser, CToken(CT_MacroLiteral, CSz("boo"))));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
     TestThat(OptionalTokenRaw(Parser, CToken(132151u)));
+
     TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
-    TestThat(Parser->LineNumber == 4);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 4);
+
     // NOTE(Jesse): This is actually correct.
     //
     // `xxd src/tests/fixtures/preprocessor/errors/error5.cpp` shows that the
     // file ends with two newlines.  vim is responsible presumably.
     TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
-    TestThat(Parser->LineNumber == 5);
     TestThat(PeekTokenRawPointer(Parser) == 0);
 
+
     TestThat(RewindParserUntil(Parser, CTokenType_Newline));
-    TestThat(Parser->LineNumber == 4);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 4);
+
     TestThat(RewindParserUntil(Parser, CTokenType_Newline));
-    TestThat(Parser->LineNumber == 3);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 3);
+
     TestThat(RewindParserUntil(Parser, CTokenType_Newline));
-    TestThat(Parser->LineNumber == 2);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 2);
+
     TestThat(RewindParserUntil(Parser, CTokenType_Newline));
-    TestThat(Parser->LineNumber == 1);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
+
     TestThat(RewindParserUntil(Parser, CTokenType_Newline) == 0);
-    TestThat(Parser->LineNumber == 1);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
 
     TestThat(Parser->Tokens.At == Parser->Tokens.Start);
     TestThat(Parser->Tokens.Prev == 0);
@@ -1796,18 +1798,23 @@ TestLineNumbers(memory_arena *Memory)
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error6.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
 
-    TestThat(Parser->LineNumber == 1);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
+
     TestThat(OptionalTokenRaw(Parser, CT_PreprocessorDefine));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
     TestThat(OptionalTokenRaw(Parser, CToken(CT_MacroLiteral, CSz("boo"))));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
+
     TestThat(OptionalTokenRaw(Parser, CTokenType_EscapedNewline));
-    TestThat(Parser->LineNumber == 2);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 2);
+
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
     TestThat(OptionalTokenRaw(Parser, CToken(132151u)));
+
     TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
-    TestThat(Parser->LineNumber == 3);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 3);
+
     TestThat(OptionalTokenRaw(Parser, CToken(CTokenType_Int, CSz("int"))));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
     TestThat(OptionalTokenRaw(Parser, CToken(CTokenType_Identifier, CSz("foo"))));
@@ -1818,34 +1825,32 @@ TestLineNumbers(memory_arena *Memory)
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
     TestThat(OptionalTokenRaw(Parser, CToken(132151u)));
+
     TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
-    TestThat(Parser->LineNumber == 4);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 4);
+
     // NOTE(Jesse): This is actually correct.
     //
     // `xxd src/tests/fixtures/preprocessor/errors/error5.cpp` shows that the
     // file ends with two newlines.  vim is responsible presumably.
     TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
-    TestThat(Parser->LineNumber == 5);
-
-
     TestThat(PeekTokenRawPointer(Parser) == 0);
-    TestThat(Parser->LineNumber == 5);
 
 
     TestThat(RewindParserUntil(Parser, CTokenType_Newline));
-    TestThat(Parser->LineNumber == 4);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 4);
 
     TestThat(RewindParserUntil(Parser, CTokenType_Newline));
-    TestThat(Parser->LineNumber == 3);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 3);
 
     TestThat(RewindParserUntil(Parser, CTokenType_Newline));
-    TestThat(Parser->LineNumber == 2);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 2);
 
     TestThat(RewindParserUntil(Parser, CTokenType_Newline) == 0);
-    TestThat(Parser->LineNumber == 1);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
 
     TestThat(RewindParserUntil(Parser, CTokenType_Newline) == 0);
-    TestThat(Parser->LineNumber == 1);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
 
     TestThat(Parser->Tokens.At == Parser->Tokens.Start);
     TestThat(Parser->Tokens.Prev == 0);
@@ -1856,7 +1861,8 @@ TestLineNumbers(memory_arena *Memory)
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error7.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
 
-    TestThat(Parser->LineNumber == 1);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
+
     TestThat(OptionalTokenRaw(Parser, CT_PreprocessorInclude));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
     TestThat(OptionalTokenRaw(Parser, CTokenType_LT));
@@ -1872,20 +1878,22 @@ TestLineNumbers(memory_arena *Memory)
     TestThat(OptionalTokenRaw(Parser, CTokenType_Dot));
     TestThat(OptionalTokenRaw(Parser, CToken(CSz("cpp"))));
     TestThat(OptionalTokenRaw(Parser, CTokenType_GT));
+
     TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
-    TestThat(Parser->LineNumber == 2);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
 
     TestThat(OptionalTokenRaw(Parser, CT_PreprocessorDefine));
-    TestThat(Parser->LineNumber == 1);
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
     TestThat(OptionalTokenRaw(Parser, CToken(CT_MacroLiteral, CSz("foo"))));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
     TestThat(OptionalTokenRaw(Parser, CToken(CSz("bar"))));
-    TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
-    TestThat(Parser->LineNumber == 2);
 
     TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
-    TestThat(Parser->LineNumber == 3);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 2);
+
+    TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 3);
+
     TestThat(OptionalTokenRaw(Parser, CToken(CTokenType_Int, CSz("int"))));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
 
@@ -1894,28 +1902,32 @@ TestLineNumbers(memory_arena *Memory)
     TestThat(OptionalTokenRaw(Parser, CToken(CSz("bar"))));
     TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
     TestThat(OptionalToken(Parser, CToken(132151u)));
+
     TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
-    TestThat(Parser->LineNumber == 4);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 4);
+
     TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
-    TestThat(Parser->LineNumber == 5);
 
     TestThat(PeekTokenRawPointer(Parser) == 0);
 
 
-    TestThat(Parser->LineNumber == 5);
     TestThat(RewindParserUntil(Parser, CTokenType_Newline));
-    TestThat(Parser->LineNumber == 4);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 4);
+
     TestThat(RewindParserUntil(Parser, CTokenType_Newline));
-    TestThat(Parser->LineNumber == 3);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 3);
+
     TestThat(RewindParserUntil(Parser, CTokenType_Newline));
-    TestThat(Parser->LineNumber == 2);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 2);
+
     TestThat(RewindParserUntil(Parser, CTokenType_Newline));
-    TestThat(Parser->LineNumber == 1);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
+
     TestThat(RewindParserUntil(Parser, CTokenType_Newline));
-    TestThat(Parser->LineNumber == 1);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
 
     TestThat(RewindParserUntil(Parser, CTokenType_Newline) == 0);
-    TestThat(Parser->LineNumber == 1);
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
 
     TestThat(Parser->Tokens.At == Parser->Tokens.Start);
     TestThat(Parser->Tokens.Prev == 0);
