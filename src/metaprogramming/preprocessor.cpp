@@ -708,8 +708,7 @@ DumpEntireParser(parser* Parser, u32 LinesToDump = u32_MAX)
   DebugChars(CS(&TempCursor));
   TempCursor.At = TempCursor.Start;
 
-  c_token *T = PopTokenRawPointer(Parser);
-  while(T && LinesToDump > 0)
+  while(c_token *T = PopTokenRawPointer(Parser))
   {
     if (T == WasAt)
     {
@@ -718,22 +717,15 @@ DumpEntireParser(parser* Parser, u32 LinesToDump = u32_MAX)
 
     PrintToken(T);
 
-    /* if (T == WasAt) */
-    /* { */
-    /*   DebugChars(TerminalColors.Green); */
-    /*   DebugChars("<"); */
-    /*   DebugChars(TerminalColors.White); */
-    /* } */
-
     if (IsNewline(T))
     {
-      --LinesToDump;
-      PrintTray(&TempCursor, T, 5);
+      if (LinesToDump-- == 0) break;
+
+      PrintTray(&TempCursor, PeekTokenRawPointer(Parser), 5);
       DebugChars(CS(&TempCursor));
       TempCursor.At = TempCursor.Start;
     }
 
-    T = PopTokenRawPointer(Parser);
   }
 
   if (WasAt)
