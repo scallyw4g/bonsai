@@ -1130,7 +1130,10 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
 
 
-    PrintTray(ParseErrorCursor, PeekTokenRawPointer(Parser), MaxTrayWidth);
+    {
+      c_token *NextT = PeekTokenRawPointer(Parser);
+      if (NextT) { PrintTray(ParseErrorCursor, NextT, MaxTrayWidth); }
+    }
 
     u32 LinesToPrint = LinesOfContext;
     while ( c_token *T = PopTokenRawPointer(Parser) )
@@ -1139,11 +1142,10 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
       if ( IsNewline(T->Type) )
       {
-        PrintTray(ParseErrorCursor, PeekTokenRawPointer(Parser), MaxTrayWidth);
-        LinesToPrint -= 1;
+        c_token *NextT = PeekTokenRawPointer(Parser);
+        if (NextT) { PrintTray(ParseErrorCursor, NextT, MaxTrayWidth); }
+        if (LinesToPrint-- == 0) break;
       }
-
-      if (LinesToPrint == 0) break;
     }
 
     char *End = ParseErrorCursor->End;
