@@ -1,4 +1,20 @@
+
 #include <src/tests/bug_defines.h>
+
+#if 1
+
+// 0 \
+   1 \
+   2 \
+   3
+
+/* 0
+ * 1
+ * 2
+   3 */
+
+#endif
+
 
 #if 1
 
@@ -14,8 +30,6 @@ foo
 foo
 
 #undef foo
-
-
 #include <src/tests/fixtures/preprocessor/include_test.cpp> // \
 this is actually commented
 #include <src/tests/fixtures/preprocessor/include_test_2.cpp>
@@ -145,8 +159,6 @@ MacroFunction8(MacroFunction8, 0)
 
 
 #endif
-
-/* #define MacroFunction9(a, b) a ## b */
 
 MacroFunction9(this_is_a_, variable_name)
 MacroFunction9(Macro, Keyword)

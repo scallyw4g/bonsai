@@ -688,7 +688,7 @@ DumpChain(parser* Parser, u32 LinesToDump = u32_MAX)
 }
 
 bonsai_function void
-DumpEntireParser(parser* Parser, u32 LinesToDump = u32_MAX)
+DumpEntireParser(parser* Parser, u32 LinesToDump = u32_MAX, b32 Verbose = False)
 {
   DebugLine("%S---%S", TerminalColors.Purple, TerminalColors.White);
 
@@ -700,13 +700,19 @@ DumpEntireParser(parser* Parser, u32 LinesToDump = u32_MAX)
 
   Rewind(Parser);
 
-  char TempBuffer[32];
-  counted_string TempString = CSz(TempBuffer);
-  char_cursor TempCursor = CharCursor(TempString);
+  char TrayBuffer[32];
+  counted_string TempString = CSz(TrayBuffer);
+  char_cursor TrayCursor = CharCursor(TempString);
 
-  PrintTray(&TempCursor, PeekTokenRawPointer(Parser), 5);
-  DebugChars(CS(&TempCursor));
-  TempCursor.At = TempCursor.Start;
+
+  /* b32 DoTray = true;//!Verbose; */
+  b32 DoTray = !Verbose;
+  if (DoTray)
+  {
+    PrintTray(&TrayCursor, PeekTokenRawPointer(Parser), 5);
+    DebugChars(CS(&TrayCursor));
+    TrayCursor.At = TrayCursor.Start;
+  }
 
   while(c_token *T = PopTokenRawPointer(Parser))
   {
@@ -715,15 +721,31 @@ DumpEntireParser(parser* Parser, u32 LinesToDump = u32_MAX)
       DebugChars("%S>%S", TerminalColors.Green, TerminalColors.White);
     }
 
+    if (Verbose)
+    {
+      counted_string ErasedString = T->Erased ? CSz("(e)") : CSz("   ");
+      DebugChars("(%d) %S %S", T->LineNumber, ErasedString, ToString(T->Type));
+    }
+
     PrintToken(T);
 
     if (IsNewline(T))
     {
       if (LinesToDump-- == 0) break;
 
-      PrintTray(&TempCursor, PeekTokenRawPointer(Parser), 5);
-      DebugChars(CS(&TempCursor));
-      TempCursor.At = TempCursor.Start;
+      if (DoTray)
+      {
+        PrintTray(&TrayCursor, PeekTokenRawPointer(Parser), 5);
+        DebugChars(CS(&TrayCursor));
+        TrayCursor.At = TrayCursor.Start;
+      }
+    }
+    else
+    {
+      if (Verbose)
+      {
+        DebugChars("\n");
+      }
     }
 
   }
@@ -3340,7 +3362,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
     {
       case CTokenType_FSlash:
       {
-
         switch (SecondT.Type)
         {
           case CTokenType_FSlash:
@@ -3808,17 +3829,39 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
     PushT.Filename = Code.Filename;
     PushT.LineNumber = LineNumber;
 
-    if ( IsNewline(PushT.Type) )
-    {
-      ++LineNumber;
-    }
-
     if (ParsingSingleLineComment || ParsingMultiLineComment)
     {
       if (!CommentToken)
       {
         PushT.Erased = True;
         CommentToken = Push(PushT, &Result->Tokens);
+      }
+
+      if (
+           PushT.Type == CTokenType_EscapedNewline ||
+           (ParsingMultiLineComment && PushT.Type == CTokenType_Newline)
+         )
+      {
+
+#if 0
+        static int thing;
+        if (thing == 0)
+        {
+          RuntimeBreak();
+          thing = 2;
+        }
+#endif
+        LastTokenPushed = Push(PushT, &Result->Tokens);
+
+        Assert(CommentToken->Erased);
+        CommentToken->Value.Count = (umm)(Code.At - CommentToken->Value.Start - (u32)PushT.Value.Count);
+        CommentToken->LineNumber = LineNumber;
+        CommentToken = Push(*CommentToken, &Result->Tokens);
+        Assert(CommentToken->Erased);
+
+        CommentToken->LineNumber = LineNumber+1;
+        CommentToken->Value.Start = Code.At;
+
       }
     }
     else if ( CommentToken && !(ParsingSingleLineComment || ParsingMultiLineComment) )
@@ -3828,11 +3871,15 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       // We finished parsing a comment on this token
       if (PushT.Type == CTokenType_Newline || PushT.Type == CTokenType_CarrigeReturn)
       {
+
+        // TODO(Jesse): Is this actually busted for \r\n ?  Seems like we should sub 2 for that case?
         if (Count > 0) { Count -= 1; } // Exclude the \r or \n from single line comments
+
         LastTokenPushed = Push(PushT, &Result->Tokens);
       }
 
       CommentToken->Value.Count = Count;
+      Assert(CommentToken->Erased);
       CommentToken = 0;
     }
     else
@@ -3840,6 +3887,8 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       LastTokenPushed = Push(PushT, &Result->Tokens);
     }
 
+    // NOTE(Jesse): This has to come last.
+    if ( IsNewline(PushT.Type) ) { ++LineNumber; }
 
     continue;
   }
@@ -6081,7 +6130,7 @@ EraseAllRemainingIfBlocks(parser *Parser)
 }
 
 bonsai_function c_token *
-EatIfBlock(parser *Parser, erase_token_mode Erased)
+EatIfBlock(parser *Parser, erase_token_mode EraseMode)
 {
   c_token *StartToken = PeekTokenRawPointer(Parser);
   c_token *Result = StartToken;
@@ -6111,7 +6160,11 @@ EatIfBlock(parser *Parser, erase_token_mode Erased)
       }
     }
 
-    Result->Erased = Erased;
+    if (EraseMode == EraseTokens)
+    {
+      Result->Erased = True;
+    }
+
     RequireTokenRaw(Parser, *Result);
     Result = PeekTokenRawPointer(Parser);
   }

@@ -916,7 +916,7 @@ enum output_mode
 };
 
 
-#define PrintTokenOut(Dest, S) if (Dest) { CopyToDest(Dest, S); } else { DebugChars(CSz("%S"), S); }
+#define WriteTo(Dest, S) if (Dest) { CopyToDest(Dest, S); } else { DebugChars(CSz("%S"), S); }
 
 inline void
 PrintToken(c_token *Token, char_cursor *Dest = 0)
@@ -956,10 +956,13 @@ PrintToken(c_token *Token, char_cursor *Dest = 0)
 
       case CT_MacroLiteral:
       {
-        Color = TerminalColors.Blue;
         if (Token->Erased)
         {
           Color = TerminalColors.Purple;
+        }
+        else
+        {
+          Color = TerminalColors.Blue;
         }
       } break;
 
@@ -973,16 +976,16 @@ PrintToken(c_token *Token, char_cursor *Dest = 0)
     }
 
 
-    if (Color.Count) { PrintTokenOut(Dest, Color); }
+    if (Color.Count) { WriteTo(Dest, Color); }
 
-    if (Token->Type == CTokenType_Newline) { PrintTokenOut(Dest, CSz("\\n")); }
+    if (Token->Type == CTokenType_Newline) { WriteTo(Dest, CSz("\\n")); }
 
-    PrintTokenOut(Dest, Token->Value);
+    WriteTo(Dest, Token->Value);
 
-    if (Color.Count) { PrintTokenOut(Dest, TerminalColors.White); }
+    if (Color.Count) { WriteTo(Dest, TerminalColors.White); }
   }
 }
-#undef PrintTokenOut
+#undef WriteTo
 
 inline void
 PrintToken(c_token Token, char_cursor *Dest = 0)

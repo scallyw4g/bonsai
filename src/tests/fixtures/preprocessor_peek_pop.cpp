@@ -12,3 +12,6 @@ counted_string
  * line */
 
 counted_string
+
+// single \
+line

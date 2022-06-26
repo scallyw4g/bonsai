@@ -1,5 +1,24 @@
 #! /bin/bash
 
+BUILD_EVERYTHING=0
+
+DumpSourceFilesAndQuit=0
+
+CheckoutMetaOutput=0
+
+FirstPreprocessor=0
+BuildPreprocessor=1
+SecondPreprocessor=0
+
+BuildExecutables=0
+BuildDebugTests=0
+BuildTests=1
+BuildDebugSystem=0
+BuildExamples=0
+
+RunTests=0
+FinalPreprocessor=0
+
 . scripts/preamble.sh
 
 # OPTIMIZATION_LEVEL="-O2"
@@ -459,31 +478,10 @@ TESTS_TO_BUILD="
   $TESTS/file.cpp
 "
 
-if [[ $BUILD_EVERYTHING != 1 ]]; then
-
+if [[ $BUILD_EVERYTHING == 0 ]]; then
   TESTS_TO_BUILD="
     $TESTS/preprocessor.cpp
   "
-
 fi
-
-BUILD_EVERYTHING=0
-
-DumpSourceFilesAndQuit=0
-
-CheckoutMetaOutput=0
-
-FirstPreprocessor=0
-BuildPreprocessor=1
-SecondPreprocessor=0
-
-BuildExecutables=0
-BuildDebugTests=0
-BuildTests=1
-BuildDebugSystem=0
-BuildExamples=0
-
-RunTests=0
-FinalPreprocessor=0
 
 time RunEntireBuild

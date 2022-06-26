@@ -591,6 +591,8 @@ TestPeekAndPopTokens(memory_arena* Memory)
 
   if (Parser)
   {
+    /* DumpEntireParser(Parser, u32_MAX, 1); */
+    /* RuntimeBreak(); */
     {
       c_token T = PeekToken(Parser, 0);
       TestThat(T == CToken(CS("bonsai_function")));
@@ -730,6 +732,27 @@ TestPeekAndPopTokens(memory_arena* Memory)
       c_token T = PopToken(Parser);
       TestThat(T == CToken(CSz("counted_string")));
     }
+
+    TestThat(PopTokenRaw(Parser) == CToken(CTokenType_Newline, CSz("\n")));
+    TestThat(PopTokenRaw(Parser) == CToken(CTokenType_Newline, CSz("\n")));
+
+    TestThat(PopTokenRaw(Parser) == CToken(CTokenType_CommentSingleLine, CSz("// single ") ));
+
+    {
+      c_token T = PeekTokenRaw(Parser);
+      TestThat(T == CToken(CTokenType_EscapedNewline, CSz("\\\n")));
+    }
+
+    {
+      c_token T = PopTokenRaw(Parser);
+      TestThat(T == CToken(CTokenType_EscapedNewline, CSz("\\\n")));
+    }
+
+    /* TestThat(PopTokenRaw(Parser) == CToken(CTokenType_EscapedNewline, CSz("\\\n"))); */
+
+    TestThat(PopTokenRaw(Parser) == CToken(CTokenType_CommentSingleLine, CSz("line")));
+    TestThat(PopTokenRaw(Parser) == CToken(CTokenType_Newline, CSz("\n")));
+
   }
   else
   {
@@ -888,6 +911,7 @@ TestMacrosAndIncludes(memory_arena *Memory)
   parse_context Ctx = AllocateParseContext(Memory);
   parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/macro_and_include_test.cpp"), TokenCursorSource_RootFile);
   DumpEntireParser(Parser);
+  /* DumpEntireParser(Parser, u32_MAX, 1); */
 
   if (Parser)
   {
