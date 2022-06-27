@@ -69,7 +69,7 @@ bonsai_function void      EatWhitespaceAndComments(parser *Parser);
 
 bonsai_function b32         TryTransmuteKeywordToken(c_token *T, c_token *LastTokenPushed);
 bonsai_function b32         TryTransmuteOperatorToken(c_token *T);
-bonsai_function b32         IsValidIdentifier(counted_string S);
+bonsai_function b32         TryTransmuteIdentifierToken(c_token *T);
 bonsai_function macro_def * TryTransmuteIdentifierToMacro(parse_context *Ctx, parser *Parser, c_token *T, macro_def *ExpandingMacro);
 
 bonsai_function parser * ResolveInclude(parse_context *Ctx, parser *Parser, b32 SkipFirst);
@@ -1849,7 +1849,7 @@ RequireOperatorToken(parser* Parser)
 bonsai_function parser
 ParserFromBuffer(c_token_buffer *TokenBuf, umm AtOffset = 0)
 {
-  Assert(AtOffset < TokenBuf->Count);
+  Assert(AtOffset <= TokenBuf->Count);
   parser Result = {
     .Tokens = {
       .Start = TokenBuf->Start,
@@ -1967,6 +1967,13 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
         TrimFirstToken(InstanceArgs, CTokenType_OpenParen);
         TrimLastToken(InstanceArgs, CTokenType_CloseParen);
 
+      /* if (StringsMatch(Macro->Name, CSz("__CONCAT"))) */
+      /* { */
+      /*   RuntimeBreak(); */
+      /*   DumpEntireParser(InstanceArgs); */
+      /* } */
+
+
         Assert(Ctx);
 
         if (ScanArgsForAdditionalMacros)
@@ -2069,6 +2076,11 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
         RequireToken(MacroBody, Next->Type);
 
 
+        /* if (StringsMatch(Macro->Name, CSz("__CONCAT"))) */
+        /* { */
+        /*   RuntimeBreak(); */
+        /* } */
+
         if (c_token_buffer *ArgBuffer = TryMacroArgSubstitution(Next, &Macro->NamedArguments, &ArgInstanceValues ))
         {
           parser Temp = ParserFromBuffer(ArgBuffer);
@@ -2076,48 +2088,34 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
           CopyRemainingIntoCursor(&Temp.Tokens, &Result->Tokens);
         }
 
-        // TODO(Jesse): These are actually valid failure modes .. detect them
-        // and throw errors.
-        Assert(Prev);
-        Assert(Next);
-
-        Prev->Type = CTokenType_Unknown;
-        Prev->Value = Concat(Prev->Value, Next->Value, &Global_PermMemory);
-
-        if (TryTransmuteKeywordToken(Prev, 0))
+        if (Prev && Next)
         {
-        }
-        else if (TryTransmuteOperatorToken(Prev))
-        {
-        }
-        else if (IsValidIdentifier(Prev->Value))
-        {
-          Prev->Type = CTokenType_Identifier;
-        }
-        else
-        {
-          ParseError(Result, FormatCountedString(TranArena, CSz("Invalid token generated during paste (%S)"), Prev->Value), Prev);
-        }
+          Prev->Type = CT_PreprocessorPaste_InvalidToken;
+          Prev->Value = Concat(Prev->Value, Next->Value, &Global_PermMemory);
 
-        /* if (Prev->Type == CTokenType_Identifier) */
-        /* { */
-        /*   if (TryTransmuteIdentifierToMacro(Ctx, &PasteParser, Prev, Macro)) */
-        /*   { */
-        /*     // TODO(Jesse): I'm pretty sure this is technically incorrect */
-        /*     // although unlikely to cause problems in practice.  If a pasted */
-        /*     // token becomes converted to a macro, but the arguments are */
-        /*     // expanded from a macro subsequent in the original parser this */
-        /*     // will not produce the correct result. */
-        /*     // */
-        /*     // I'm not 100% sure that's actually the specified behavior, but I */
-        /*     // wouldn't be surprised if that's true.  In any case, I believe */
-        /*     // that this will work in practice basically 100% of the time. */
-        /*     // */
-        /*     parser *Expanded = ExpandMacro(Ctx, &PasteParser, Prev->Macro, Memory); */
-        /*     CopyRemainingIntoCursor(&Expanded->Tokens, &Result->Tokens); */
-        /*   } */
-        /* } */
+          if (TryTransmuteKeywordToken(Prev, 0))
+          {
+          }
+          else if (TryTransmuteOperatorToken(Prev))
+          {
+          }
+          else if (TryTransmuteIdentifierToken(Prev))
+          {
+          }
+          else
+          {
+            TruncateToCurrentElements(&Result->Tokens);
+            ParseError(Result,
+                       FormatCountedString(TranArena, CSz("Invalid token generated during paste (%S)"), Prev->Value),
+                       Prev);
+          }
 
+          Assert(Prev->Type != CT_PreprocessorPaste_InvalidToken);
+        }
+        else if (Next) // No Prev pointer .. macro was called like : CONCAT(,only_passed_one_thing)
+        {
+          Push(*Next, &Result->Tokens);
+        }
       } break;
 
       default:
@@ -3094,16 +3092,23 @@ TryTransmuteIdentifierToMacro(parse_context *Ctx, parser *Parser, c_token *T, ma
 
 
 bonsai_function b32
-IsValidIdentifier(counted_string S)
+TryTransmuteIdentifierToken(c_token *T)
 {
+  Assert(T->Type == CT_PreprocessorPaste_InvalidToken);
+
   b32 Result = True;
 
   for (u32 CharIndex = 0;
-      Result && CharIndex < S.Count;
+      Result && CharIndex < T->Value.Count;
       ++CharIndex)
   {
-    char C = S.Start[CharIndex];
+    char C = T->Value.Start[CharIndex];
     Result &= IsAlphaNumeric(C) || C == '_';;
+  }
+
+  if (Result)
+  {
+    T->Type = CTokenType_Identifier;
   }
 
   return Result;
@@ -3114,11 +3119,11 @@ TryTransmuteOperatorToken(c_token *T)
 {
   TIMED_FUNCTION();
 
-  Assert(T->Type == CTokenType_Unknown);
+  Assert(T->Type == CT_PreprocessorPaste_InvalidToken);
 
   // TODO(Jesse): Implement me.
 
-  b32 Result = T->Type != CTokenType_Unknown;
+  b32 Result = T->Type != CT_PreprocessorPaste_InvalidToken;
   return Result;
 }
 
@@ -3127,7 +3132,10 @@ TryTransmuteKeywordToken(c_token *T, c_token *LastTokenPushed)
 {
   TIMED_FUNCTION();
 
-  Assert(T->Type == CTokenType_Unknown);
+  c_token_type StartType = T->Type;
+
+  Assert(T->Type == CT_PreprocessorPaste_InvalidToken ||
+         T->Type == CTokenType_Unknown);
 
   if ( StringsMatch(T->Value, CSz("if")) )
   {
@@ -3318,7 +3326,7 @@ TryTransmuteKeywordToken(c_token *T, c_token *LastTokenPushed)
     T->QualifierName = LastTokenPushed->QualifierName;
   }
 
-  b32 Result = T->Type != CTokenType_Unknown;
+  b32 Result = T->Type != StartType;
   return Result;
 }
 

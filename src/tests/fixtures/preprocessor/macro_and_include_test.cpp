@@ -160,7 +160,10 @@ MacroFunction8(MacroFunction8, 0)
 
 #endif
 
+MacroFunction9(,this_is_a_variable_name)
+MacroFunction9(this_is_a_variable_name,)
 MacroFunction9(this_is_a_, variable_name)
+
 MacroFunction9(Macro, Keyword)
 MacroFunction9(IndirectMacro, Keyword)
 MacroFunction9(PastedMacro, Keyword) // ??? this_is_a_variable_name ???

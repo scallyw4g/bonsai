@@ -185,6 +185,7 @@ enum c_token_type
   CT_MacroLiteral,
 
   CT_PreprocessorPaste,
+  CT_PreprocessorPaste_InvalidToken,
 
   CT_PreprocessorInclude,
   CT_PreprocessorIncludeNext,

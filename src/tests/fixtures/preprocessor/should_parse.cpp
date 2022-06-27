@@ -58,9 +58,11 @@ unsigned     Int1 = 42; // This needs to be fixed in the parser
 signed       Int4 = 42; // This needs to be fixed in the parser
 
 
-/* typedef long int __int64; */
-/* typedef long int s64; */
-/* typedef unsigned s64 u64; */
+typedef long int __int64;
+typedef long int s64;
+#if BUG_TYPEDEF_THING
+typedef unsigned s64 u64;
+#endif
 
 
 typedef unsigned int u32;

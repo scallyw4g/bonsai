@@ -4,13 +4,16 @@
 
 if [ "$Platform" == "Linux" ] ; then
 
+  # gdb --args bin/preprocessor_dev        \
   bin/preprocessor_dev                   \
     -D BONSAI_PREPROCESSOR               \
     -D BONSAI_LINUX                      \
+    -D __x86_64__                        \
     src/metaprogramming/preprocessor.cpp \
     -I src                               \
-    # -I /usr/include/x86_64-linux-gnu   \
-    # -I /usr/include
+    -I /usr/include                      \
+    -I /usr/include/x86_64-linux-gnu     \
+    -I /usr/include/clang/6.0.0/include  \
 
 elif [ "$Platform" == "Windows" ] ; then
 

@@ -21,7 +21,7 @@ FinalPreprocessor=0
 
 . scripts/preamble.sh
 
-# OPTIMIZATION_LEVEL="-O2"
+OPTIMIZATION_LEVEL="-O0"
 
 if [ "$Platform" == "Linux" ] ; then
   PLATFORM_LINKER_OPTIONS="-lpthread -lX11 -ldl -lGL"

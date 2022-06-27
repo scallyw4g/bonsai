@@ -1120,10 +1120,14 @@ TestMacrosAndIncludes(memory_arena *Memory)
     RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
     RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
     RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
+
+    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
+    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
     RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
 
     RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
     RequireToken(Parser, CToken(CSz("some_thing_else")));
+
     RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
     RequireToken(Parser, CToken(CSz("some_thing")));
     RequireToken(Parser, CToken(CTokenType_Int, CSz("int")));
