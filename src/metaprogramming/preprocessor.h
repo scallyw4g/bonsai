@@ -259,11 +259,14 @@ enum parse_error_code
   ParseErrorCode_ExpectedSemicolonOrEquals,
   ParseErrorCode_StreamEndedUnexpectedly,
   ParseErrorCode_RequireTokenFailed,
+  ParseErrorCode_InvalidTokenGenerated,
 
   ParseErrorCode_DUnionParse,
 
   ParseErrorCode_Unknown,
 };
+/* meta(generate_string_table(parse_error_code)) */
+/* #include <metaprogramming/output/generate_string_table_parse_error_code.h> */
 
 // TODO(Jesse): There's a reason we might want to move the Prev/Next pointers
 // onto the c_token_cursor struct.  See the TODO on the following tag.
@@ -979,7 +982,7 @@ PrintToken(c_token *Token, char_cursor *Dest = 0)
 
     if (Color.Count) { WriteTo(Dest, Color); }
 
-    if (Token->Type == CTokenType_Newline) { WriteTo(Dest, CSz("\\n")); }
+    /* if (Token->Type == CTokenType_Newline) { WriteTo(Dest, CSz("\\n")); } */
 
     WriteTo(Dest, Token->Value);
 

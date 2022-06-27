@@ -4,8 +4,28 @@
 
 #  define Ensure(condition) Assert((condition))
 
-#  define Assert(condition) \
-    do { if (!(condition)) { LogDirect("%S ! Assert%S  - '%s' during %s \n%s:%u:0:Assertion Failed" Newline, TerminalColors.Red, TerminalColors.White, #condition, __FUNCTION__, __FILE__, __LINE__); RuntimeBreak(); } } while (false)
+#  define Assert(condition)                                                  \
+    do {                                                                     \
+      if (!(condition)) {                                                    \
+        LogDirect("%S ! Assert%S  - Failed" Newline,                         \
+                  TerminalColors.Red,                                        \
+                  TerminalColors.White);                                     \
+                                                                             \
+        LogDirect(" %S!%S         - %s during %s()" Newline,                        \
+                  TerminalColors.Red,                                        \
+                  TerminalColors.White,                                      \
+                  #condition,                                                \
+                  __FUNCTION__);                                             \
+                                                                             \
+        LogDirect(" %S!%S         - %s:%u:0" Newline,                        \
+                  TerminalColors.Red,                                        \
+                  TerminalColors.White,                                      \
+                  __FILE__,                                                  \
+                  __LINE__);                                                 \
+                                                                             \
+        RuntimeBreak();                                                      \
+      }                                                                      \
+    } while (false)
 
 #  define InvalidCodePath() Error("Invalid Code Path - Panic!"); Assert(False)
 

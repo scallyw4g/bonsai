@@ -1758,6 +1758,21 @@ TestErrors(memory_arena *Memory)
     /* TestThat( OptionalToken(Parser, CToken(132151u)) ); */
   }
 
+  {
+    Global_DoRuntimeBreak = False;
+    parse_context Ctx = AllocateParseContext(Memory);
+    counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error12.cpp");
+    parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
+    /* Ctx.CurrentParser = Parser; */
+    /* ParseDatatypes(&Ctx); */
+    Global_DoRuntimeBreak = True;
+
+    TestThat(Parser->ErrorCode == ParseErrorCode_InvalidTokenGenerated);
+
+    Parser->ErrorCode = ParseErrorCode_None;
+    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 2);
+  }
+
 }
 
 void
@@ -1802,19 +1817,19 @@ TestLineNumbers(memory_arena *Memory)
     TestThat(PeekTokenRawPointer(Parser) == 0);
 
 
-    TestThat(RewindParserUntil(Parser, CTokenType_Newline));
+    TestThat(RewindTo(Parser, CTokenType_Newline));
     TestThat(PeekTokenRawPointer(Parser)->LineNumber == 4);
 
-    TestThat(RewindParserUntil(Parser, CTokenType_Newline));
+    TestThat(RewindTo(Parser, CTokenType_Newline));
     TestThat(PeekTokenRawPointer(Parser)->LineNumber == 3);
 
-    TestThat(RewindParserUntil(Parser, CTokenType_Newline));
+    TestThat(RewindTo(Parser, CTokenType_Newline));
     TestThat(PeekTokenRawPointer(Parser)->LineNumber == 2);
 
-    TestThat(RewindParserUntil(Parser, CTokenType_Newline));
+    TestThat(RewindTo(Parser, CTokenType_Newline));
     TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
 
-    TestThat(RewindParserUntil(Parser, CTokenType_Newline) == 0);
+    TestThat(RewindTo(Parser, CTokenType_Newline) == 0);
     TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
 
     TestThat(Parser->Tokens.At == Parser->Tokens.Start);
@@ -1865,19 +1880,19 @@ TestLineNumbers(memory_arena *Memory)
     TestThat(PeekTokenRawPointer(Parser) == 0);
 
 
-    TestThat(RewindParserUntil(Parser, CTokenType_Newline));
+    TestThat(RewindTo(Parser, CTokenType_Newline));
     TestThat(PeekTokenRawPointer(Parser)->LineNumber == 4);
 
-    TestThat(RewindParserUntil(Parser, CTokenType_Newline));
+    TestThat(RewindTo(Parser, CTokenType_Newline));
     TestThat(PeekTokenRawPointer(Parser)->LineNumber == 3);
 
-    TestThat(RewindParserUntil(Parser, CTokenType_Newline));
+    TestThat(RewindTo(Parser, CTokenType_Newline));
     TestThat(PeekTokenRawPointer(Parser)->LineNumber == 2);
 
-    TestThat(RewindParserUntil(Parser, CTokenType_Newline) == 0);
+    TestThat(RewindTo(Parser, CTokenType_Newline) == 0);
     TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
 
-    TestThat(RewindParserUntil(Parser, CTokenType_Newline) == 0);
+    TestThat(RewindTo(Parser, CTokenType_Newline) == 0);
     TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
 
     TestThat(Parser->Tokens.At == Parser->Tokens.Start);
@@ -1939,22 +1954,22 @@ TestLineNumbers(memory_arena *Memory)
     TestThat(PeekTokenRawPointer(Parser) == 0);
 
 
-    TestThat(RewindParserUntil(Parser, CTokenType_Newline));
+    TestThat(RewindTo(Parser, CTokenType_Newline));
     TestThat(PeekTokenRawPointer(Parser)->LineNumber == 4);
 
-    TestThat(RewindParserUntil(Parser, CTokenType_Newline));
+    TestThat(RewindTo(Parser, CTokenType_Newline));
     TestThat(PeekTokenRawPointer(Parser)->LineNumber == 3);
 
-    TestThat(RewindParserUntil(Parser, CTokenType_Newline));
+    TestThat(RewindTo(Parser, CTokenType_Newline));
     TestThat(PeekTokenRawPointer(Parser)->LineNumber == 2);
 
-    TestThat(RewindParserUntil(Parser, CTokenType_Newline));
+    TestThat(RewindTo(Parser, CTokenType_Newline));
     TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
 
-    TestThat(RewindParserUntil(Parser, CTokenType_Newline));
+    TestThat(RewindTo(Parser, CTokenType_Newline));
     TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
 
-    TestThat(RewindParserUntil(Parser, CTokenType_Newline) == 0);
+    TestThat(RewindTo(Parser, CTokenType_Newline) == 0);
     TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
 
     TestThat(Parser->Tokens.At == Parser->Tokens.Start);

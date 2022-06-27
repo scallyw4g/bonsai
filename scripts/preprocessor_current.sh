@@ -24,9 +24,7 @@ if [ "$Platform" == "Linux" ] ; then
     -D BONSAI_PREPROCESSOR               \
     -D BONSAI_LINUX                      \
     src/metaprogramming/preprocessor.cpp \
-    -I src                               \
-    -I /usr/include/x86_64-linux-gnu   \
-    -I /usr/include
+    -I src
 
 elif [ "$Platform" == "Windows" ] ; then
 

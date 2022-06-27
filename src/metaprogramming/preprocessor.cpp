@@ -488,10 +488,7 @@ Advance(c_token_cursor* Tokens, u32 Lookahead = 0)
 bonsai_function void
 AdvanceParser(parser* Parser)
 {
-  if (Parser->ErrorCode)
-  {
-    Warn("Advancing an invalid Parser!");
-  }
+  if (Parser->ErrorCode) { Warn("Advancing an invalid Parser!"); }
 
   SanityCheckParserChain(Parser);
   Assert(Parser->Tokens.At >= Parser->Tokens.Start);
@@ -962,10 +959,42 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 {
   if (Parser->ErrorCode) return;
 
-  if (!ErrorToken) ErrorToken = PeekTokenRawPointer(Parser);
+
+#if 0
+  c_token_cursor *At = &Parser->Tokens;
+  while (At &&
+         (At->Source == TokenCursorSource_MacroExpansion ||
+          At->Source == TokenCursorSource_MetaprogrammingExpansion ||
+          At->Source == TokenCursorSource_PasteOperator))
+  {
+    switch (Parser->Tokens.Source)
+    {
+      case TokenCursorSource_MacroExpansion:
+      case TokenCursorSource_MetaprogrammingExpansion:
+      case TokenCursorSource_PasteOperator:
+      {
+        DebugLine("**************");
+        DumpSingle(At, At->At);
+        DebugLine("**************");
+        break;
+      }
+
+      default: {} break;
+    }
+
+    At = At->Prev;
+  }
+  if (At && At->Prev)
+  {
+  DumpSingle(At->Prev, At->Prev->At);
+  }
+#else
 
   /* DumpChain(Parser, 20); */
-  /* return; */
+
+#endif
+
+  if (!ErrorToken) ErrorToken = PeekTokenRawPointer(Parser);
 
   char_cursor ParseErrorCursor_ = {};
   char_cursor *ParseErrorCursor = &ParseErrorCursor_;
@@ -1201,6 +1230,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
     if (Global_LogLevel <= LogLevel_Error)
     {
       LogDirect("%S", CS(ParseErrorCursor));
+      /* LogDirect(ToString(ErrorCode)); */
     }
 
 
@@ -2091,13 +2121,29 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
           }
           else
           {
+            umm CurrentSize = TotalSize(&Result->Tokens);
             TruncateToCurrentElements(&Result->Tokens);
+            umm NewSize = TotalSize(&Result->Tokens);
+
+            Reallocate((u8*)Result->Tokens.Start, PermMemory, CurrentSize, NewSize);
+
+            /* EraseBetweenExcluding(Parser, T, Parser->Tokens.At); */
+            /* c_token_cursor *LastCursorOfChain = SplitAndInsertTokenCursor(&Parser->Tokens, &Result->Tokens, PermMemory); */
+            /* SkipToEndOfCursor(&Parser->Tokens, LastCursorOfChain); */
+
             ParseError(Result,
+                       ParseErrorCode_InvalidTokenGenerated,
                        FormatCountedString(TranArena, CSz("Invalid token generated during paste (%S)"), Prev->Value),
                        Prev);
+
+            /* ParseError(Parser, */
+            /*            ParseErrorCode_InvalidTokenGenerated, */
+            /*            FormatCountedString(TranArena, CSz("Invalid token generated during paste (%S)"), Prev->Value), */
+            /*            PeekTokenRawPointer(Parser)); */
+
           }
 
-          Assert(Prev->Type != CT_PreprocessorPaste_InvalidToken);
+          /* Assert(Prev->Type != CT_PreprocessorPaste_InvalidToken); */
         }
         else if (Next) // No Prev pointer .. macro was called like : CONCAT(,only_passed_one_thing)
         {
@@ -6316,7 +6362,8 @@ ParseStructMember(parse_context *Ctx, counted_string StructName)
     case CTokenType_Identifier:
     {
       u32 DefKeywordsEncountered = 0;
-      if ( StringsMatch(StructName, T.Value) && PeekToken(Parser, 1).Type == CTokenType_OpenParen)
+      if ( StringsMatch(StructName, T.Value) &&
+           PeekToken(Parser, 1).Type == CTokenType_OpenParen)
       {
         // Constructor
         RequireToken(Parser, CTokenType_Identifier);
@@ -6450,7 +6497,8 @@ ParseStructBody(parse_context *Ctx, counted_string StructName)
 
       Push(&Result.Members, Declaration, Ctx->Memory);
     }
-    RequireToken(Parser, CTokenType_Semicolon);
+    // NOTE(Jesse): function bodies don't have to be followed by semicolons
+    OptionalToken(Parser, CTokenType_Semicolon);
   }
 
   RequireToken(Parser, CTokenType_CloseBrace);
