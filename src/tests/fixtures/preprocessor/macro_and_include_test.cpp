@@ -182,6 +182,8 @@ MacroFunction9(some, _thing) // some_thing
 
 MacroFunction9(in, t) // CTokenType_Int(int)
 
+MacroFunction9(Macro, MacroFunction9(,Keyword)) // this_is_a_variable_name
+
 /* MacroFunction9(+,+) // CTokenType_Increment(++) */
 
 // MacroFunction10
@@ -190,6 +192,9 @@ MacroFunction9(in, t) // CTokenType_Int(int)
 MacroFunction10(i,n,t) // CTokenType_Int(int)
 MacroFunction10(this_is, _a_, variable_name) // this_is_a_variable_name
 MacroFunction10(Mac, ro, Keyword) // this_is_a_variable_name
+MacroFunction10(Macro, , Keyword) // this_is_a_variable_name
+MacroFunction10(,Macro,Keyword) // this_is_a_variable_name
+MacroFunction10(Macro,Keyword,) // this_is_a_variable_name
 
 #define self_including_macro_keyword self_including_macro_keyword 42
 self_including_macro_keyword // should expand to "self_including_macro_keyword 42"

@@ -226,6 +226,13 @@ struct c_token
     c_token *QualifierName;
   };
 
+  operator bool()
+  {
+    /* Assert( ((u64)Type ^ Value.Count) != 0); // Make sure they're both set, or both unset */
+    b32 Result = (b32)((u64)Type | Value.Count);
+    return Result;
+  }
+
 };
 
 enum token_cursor_source

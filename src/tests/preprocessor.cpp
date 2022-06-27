@@ -910,235 +910,238 @@ TestMacrosAndIncludes(memory_arena *Memory)
 {
   parse_context Ctx = AllocateParseContext(Memory);
   parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/macro_and_include_test.cpp"), TokenCursorSource_RootFile);
-  DumpEntireParser(Parser);
+  /* DumpEntireParser(Parser); */
   /* DumpEntireParser(Parser, u32_MAX, 1); */
 
   if (Parser)
   {
-    RequireToken(Parser, CToken(CSz("valid_path")));
-    RequireToken(Parser, CToken(CSz("valid_path")));
-    RequireToken(Parser, CToken(CSz("valid_path")));
+    TestThat(RequireToken(Parser, CToken(CSz("valid_path"))));
+    TestThat(RequireToken(Parser, CToken(CSz("valid_path"))));
+    TestThat(RequireToken(Parser, CToken(CSz("valid_path"))));
 
-    RequireToken(Parser, CTokenType_Int);
-    RequireToken(Parser, CToken(CSz("ding")));
-    RequireToken(Parser, CTokenType_Equals);
-    RequireToken(Parser, CToken(42u));
-    RequireToken(Parser, CTokenType_Semicolon);
+    TestThat(RequireToken(Parser, CTokenType_Int));
+    TestThat(RequireToken(Parser, CToken(CSz("ding"))));
+    TestThat(RequireToken(Parser, CTokenType_Equals));
+    TestThat(RequireToken(Parser, CToken(42u)));
+    TestThat(RequireToken(Parser, CTokenType_Semicolon));
 
-    RequireToken(Parser, CTokenType_Int);
-    RequireToken(Parser, CToken(CSz("thing")));
-    RequireToken(Parser, CTokenType_Equals);
-    RequireToken(Parser, CToken(1337u));
-    RequireToken(Parser, CTokenType_Semicolon);
+    TestThat(RequireToken(Parser, CTokenType_Int));
+    TestThat(RequireToken(Parser, CToken(CSz("thing"))));
+    TestThat(RequireToken(Parser, CTokenType_Equals));
+    TestThat(RequireToken(Parser, CToken(1337u)));
+    TestThat(RequireToken(Parser, CTokenType_Semicolon));
 
-    RequireToken(Parser, CTokenType_Int);
-    RequireToken(Parser, CToken(CSz("thing")));
-    RequireToken(Parser, CTokenType_Equals);
-    RequireToken(Parser, CToken(1337u));
-    RequireToken(Parser, CTokenType_Semicolon);
+    TestThat(RequireToken(Parser, CTokenType_Int));
+    TestThat(RequireToken(Parser, CToken(CSz("thing"))));
+    TestThat(RequireToken(Parser, CTokenType_Equals));
+    TestThat(RequireToken(Parser, CToken(1337u)));
+    TestThat(RequireToken(Parser, CTokenType_Semicolon));
 
 
     // MacroKeyword
 
 
-    RequireToken(Parser, CTokenType_Int);
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CTokenType_Equals);
-    RequireToken(Parser, CToken(42u));
-    RequireToken(Parser, CTokenType_Semicolon);
+    TestThat(RequireToken(Parser, CTokenType_Int));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CTokenType_Equals));
+    TestThat(RequireToken(Parser, CToken(42u)));
+    TestThat(RequireToken(Parser, CTokenType_Semicolon));
 
-    RequireToken(Parser, CTokenType_Int);
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CTokenType_Equals);
-    RequireToken(Parser, CToken(42u));
-    RequireToken(Parser, CTokenType_Semicolon);
+    TestThat(RequireToken(Parser, CTokenType_Int));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CTokenType_Equals));
+    TestThat(RequireToken(Parser, CToken(42u)));
+    TestThat(RequireToken(Parser, CTokenType_Semicolon));
 
-    RequireToken(Parser, CTokenType_Int);
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CTokenType_Equals);
-    RequireToken(Parser, CToken(42u));
-    RequireToken(Parser, CTokenType_Semicolon);
+    TestThat(RequireToken(Parser, CTokenType_Int));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CTokenType_Equals));
+    TestThat(RequireToken(Parser, CToken(42u)));
+    TestThat(RequireToken(Parser, CTokenType_Semicolon));
 
 
 
     // MacroFunction
 
 
-    RequireToken(Parser, CTokenType_Int);
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CTokenType_Equals);
-    RequireToken(Parser, CToken(42u));
-    RequireToken(Parser, CTokenType_Semicolon);
+    TestThat(RequireToken(Parser, CTokenType_Int));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CTokenType_Equals));
+    TestThat(RequireToken(Parser, CToken(42u)));
+    TestThat(RequireToken(Parser, CTokenType_Semicolon));
 
-    RequireToken(Parser, CTokenType_Int);
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CTokenType_Equals);
-    RequireToken(Parser, CToken(42u));
-    RequireToken(Parser, CTokenType_Semicolon);
+    TestThat(RequireToken(Parser, CTokenType_Int));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CTokenType_Equals));
+    TestThat(RequireToken(Parser, CToken(42u)));
+    TestThat(RequireToken(Parser, CTokenType_Semicolon));
 
-    RequireToken(Parser, CToken(CSz("SomeRegularFunctionCall")));
-    RequireToken(Parser, CTokenType_OpenParen);
-    RequireToken(Parser, CToken(42u));
-    RequireToken(Parser, CTokenType_CloseParen);
-    RequireToken(Parser, CTokenType_Semicolon);
+    TestThat(RequireToken(Parser, CToken(CSz("SomeRegularFunctionCall"))));
+    TestThat(RequireToken(Parser, CTokenType_OpenParen));
+    TestThat(RequireToken(Parser, CToken(42u)));
+    TestThat(RequireToken(Parser, CTokenType_CloseParen));
+    TestThat(RequireToken(Parser, CTokenType_Semicolon));
 
 
     // MacroFunction2
 
 
-    RequireToken(Parser, CTokenType_Int);
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CTokenType_Equals);
-    RequireToken(Parser, CToken(42u));
-    RequireToken(Parser, CTokenType_Semicolon);
+    TestThat(RequireToken(Parser, CTokenType_Int));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CTokenType_Equals));
+    TestThat(RequireToken(Parser, CToken(42u)));
+    TestThat(RequireToken(Parser, CTokenType_Semicolon));
 
-    RequireToken(Parser, CTokenType_Int);
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CTokenType_Equals);
-    RequireToken(Parser, CToken(42u));
-    RequireToken(Parser, CTokenType_Semicolon);
+    TestThat(RequireToken(Parser, CTokenType_Int));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CTokenType_Equals));
+    TestThat(RequireToken(Parser, CToken(42u)));
+    TestThat(RequireToken(Parser, CTokenType_Semicolon));
 
-    RequireToken(Parser, CTokenType_Int);
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CTokenType_Equals);
-    RequireToken(Parser, CToken(42u));
-    RequireToken(Parser, CTokenType_Semicolon);
+    TestThat(RequireToken(Parser, CTokenType_Int));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CTokenType_Equals));
+    TestThat(RequireToken(Parser, CToken(42u)));
+    TestThat(RequireToken(Parser, CTokenType_Semicolon));
 
 
     // MacroFunction3
 
 
-    RequireToken(Parser, CTokenType_Int);
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CTokenType_Equals);
-    RequireToken(Parser, CToken(42u));
-    RequireToken(Parser, CTokenType_Semicolon);
+    TestThat(RequireToken(Parser, CTokenType_Int));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CTokenType_Equals));
+    TestThat(RequireToken(Parser, CToken(42u)));
+    TestThat(RequireToken(Parser, CTokenType_Semicolon));
 
-    RequireToken(Parser, CTokenType_Int);
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CTokenType_Equals);
-    RequireToken(Parser, CToken(42u));
-    RequireToken(Parser, CTokenType_Semicolon);
+    TestThat(RequireToken(Parser, CTokenType_Int));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CTokenType_Equals));
+    TestThat(RequireToken(Parser, CToken(42u)));
+    TestThat(RequireToken(Parser, CTokenType_Semicolon));
 
-    RequireToken(Parser, CTokenType_Int);
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CTokenType_Equals);
-    RequireToken(Parser, CToken(42u));
-    RequireToken(Parser, CTokenType_Semicolon);
+    TestThat(RequireToken(Parser, CTokenType_Int));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CTokenType_Equals));
+    TestThat(RequireToken(Parser, CToken(42u)));
+    TestThat(RequireToken(Parser, CTokenType_Semicolon));
 
 
     // MacroFunction4
 
 
-    RequireToken(Parser, CTokenType_Int);
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CTokenType_Equals);
-    RequireToken(Parser, CToken(42u));
-    RequireToken(Parser, CTokenType_Semicolon);
+    TestThat(RequireToken(Parser, CTokenType_Int));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CTokenType_Equals));
+    TestThat(RequireToken(Parser, CToken(42u)));
+    TestThat(RequireToken(Parser, CTokenType_Semicolon));
 
-    RequireToken(Parser, CTokenType_Int);
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CTokenType_Equals);
-    RequireToken(Parser, CToken(42u));
-    RequireToken(Parser, CTokenType_Semicolon);
+    TestThat(RequireToken(Parser, CTokenType_Int));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CTokenType_Equals));
+    TestThat(RequireToken(Parser, CToken(42u)));
+    TestThat(RequireToken(Parser, CTokenType_Semicolon));
 
 
     // MacroFunction5
 
 
-    RequireToken(Parser, CTokenType_Int);
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CTokenType_Equals);
-    RequireToken(Parser, CToken(42u));
-    RequireToken(Parser, CTokenType_Semicolon);
+    TestThat(RequireToken(Parser, CTokenType_Int));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CTokenType_Equals));
+    TestThat(RequireToken(Parser, CToken(42u)));
+    TestThat(RequireToken(Parser, CTokenType_Semicolon));
 
 
     // MacroFunction6
 
 
-    RequireToken(Parser, CTokenType_Int);
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CTokenType_Equals);
-    RequireToken(Parser, CToken(42u));
-    RequireToken(Parser, CTokenType_Semicolon);
+    TestThat(RequireToken(Parser, CTokenType_Int));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CTokenType_Equals));
+    TestThat(RequireToken(Parser, CToken(42u)));
+    TestThat(RequireToken(Parser, CTokenType_Semicolon));
 
-    RequireToken(Parser, CTokenType_Int);
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CTokenType_Equals);
-    RequireToken(Parser, CToken(42u));
-    RequireToken(Parser, CTokenType_Semicolon);
+    TestThat(RequireToken(Parser, CTokenType_Int));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CTokenType_Equals));
+    TestThat(RequireToken(Parser, CToken(42u)));
+    TestThat(RequireToken(Parser, CTokenType_Semicolon));
 
-    RequireToken(Parser, CTokenType_Int);
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CTokenType_Equals);
-    RequireToken(Parser, CToken(42u));
-    RequireToken(Parser, CTokenType_Semicolon);
+    TestThat(RequireToken(Parser, CTokenType_Int));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CTokenType_Equals));
+    TestThat(RequireToken(Parser, CToken(42u)));
+    TestThat(RequireToken(Parser, CTokenType_Semicolon));
 
-    RequireToken(Parser, CTokenType_Int);
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CTokenType_Equals);
-    RequireToken(Parser, CToken(42u));
-    RequireToken(Parser, CTokenType_Semicolon);
+    TestThat(RequireToken(Parser, CTokenType_Int));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CTokenType_Equals));
+    TestThat(RequireToken(Parser, CToken(42u)));
+    TestThat(RequireToken(Parser, CTokenType_Semicolon));
 
 
     // MacroFunction7
 
 
-    RequireToken(Parser, CToken(CSz("SomeRegularFunctionCall")));
-    RequireToken(Parser, CTokenType_OpenParen);
-    RequireToken(Parser, CToken(4u));
-    RequireToken(Parser, CTokenType_Comma);
-    RequireToken(Parser, CToken(2u));
-    RequireToken(Parser, CTokenType_CloseParen);
-    RequireToken(Parser, CTokenType_Semicolon);
+    TestThat(RequireToken(Parser, CToken(CSz("SomeRegularFunctionCall"))));
+    TestThat(RequireToken(Parser, CTokenType_OpenParen));
+    TestThat(RequireToken(Parser, CToken(4u)));
+    TestThat(RequireToken(Parser, CTokenType_Comma));
+    TestThat(RequireToken(Parser, CToken(2u)));
+    TestThat(RequireToken(Parser, CTokenType_CloseParen));
+    TestThat(RequireToken(Parser, CTokenType_Semicolon));
 
 
-    RequireToken(Parser, CToken(CSz("SomeRegularFunctionCall")));
-    RequireToken(Parser, CTokenType_OpenParen);
-    RequireToken(Parser, CToken(42u));
-    RequireToken(Parser, CTokenType_CloseParen);
-    RequireToken(Parser, CTokenType_Semicolon);
+    TestThat(RequireToken(Parser, CToken(CSz("SomeRegularFunctionCall"))));
+    TestThat(RequireToken(Parser, CTokenType_OpenParen));
+    TestThat(RequireToken(Parser, CToken(42u)));
+    TestThat(RequireToken(Parser, CTokenType_CloseParen));
+    TestThat(RequireToken(Parser, CTokenType_Semicolon));
 
-    RequireToken(Parser, CToken(4u));
-    RequireToken(Parser, CToken(2u));
+    TestThat(RequireToken(Parser, CToken(4u)));
+    TestThat(RequireToken(Parser, CToken(2u)));
 
-    RequireToken(Parser, CToken(4u));
-    RequireToken(Parser, CToken(2u));
+    TestThat(RequireToken(Parser, CToken(4u)));
+    TestThat(RequireToken(Parser, CToken(2u)));
 
 
     // MacroFunction8
 
 
-    RequireToken(Parser, CToken(CSz("MacroFunction8")));
-    RequireToken(Parser, CToken(CSz("MacroFunction8")));
-    RequireToken(Parser, CToken(0u));
+    TestThat(RequireToken(Parser, CToken(CSz("MacroFunction8"))));
+    TestThat(RequireToken(Parser, CToken(CSz("MacroFunction8"))));
+    TestThat(RequireToken(Parser, CToken(0u)));
 
 
     // MacroFunction9
 
 
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
 
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
 
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CToken(CSz("some_thing_else")));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CToken(CSz("some_thing_else"))));
 
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CToken(CSz("some_thing")));
-    RequireToken(Parser, CToken(CTokenType_Int, CSz("int")));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CToken(CSz("some_thing"))));
+    TestThat(RequireToken(Parser, CToken(CTokenType_Int, CSz("int"))));
 
 
     // MacroFunction10
 
 
-    RequireToken(Parser, CToken(CTokenType_Int, CSz("int")));
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
-    RequireToken(Parser, CToken(CSz("this_is_a_variable_name")));
+    TestThat(RequireToken(Parser, CToken(CTokenType_Int, CSz("int"))));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
 
 
 
@@ -1146,27 +1149,27 @@ TestMacrosAndIncludes(memory_arena *Memory)
 
 
 
-    RequireToken(Parser, CToken(CSz("self_including_macro_keyword")));
-    RequireToken(Parser, CToken(42u));
+    TestThat(RequireToken(Parser, CToken(CSz("self_including_macro_keyword"))));
+    TestThat(RequireToken(Parser, CToken(42u)));
 
 #if BUG_RECURSIVE_MACRO_EXPANSION
-    RequireToken(Parser, CToken(CSz("self_including_macro_keyword")));
-    RequireToken(Parser, CToken(42u));
+    TestThat(RequireToken(Parser, CToken(CSz("self_including_macro_keyword"))));
+    TestThat(RequireToken(Parser, CToken(42u)));
 
     /* DumpEntireParser(Parser); */
 
-    RequireToken(Parser, CToken(CSz("m2")));
-    RequireToken(Parser, CTokenType_OpenParen);
-    RequireToken(Parser, CTokenType_CloseParen);
+    TestThat(RequireToken(Parser, CToken(CSz("m2"))));
+    TestThat(RequireToken(Parser, CTokenType_OpenParen));
+    TestThat(RequireToken(Parser, CTokenType_CloseParen));
 #endif
 
 #if BUG_SELF_INCLUDING_MACRO_FUNCTION
-    RequireToken(Parser, CToken(CSz("temp__")));
-    RequireToken(Parser, CTokenType_OpenParen);
-    RequireToken(Parser, CTokenType_CloseParen);
+    TestThat(RequireToken(Parser, CToken(CSz("temp__"))));
+    TestThat(RequireToken(Parser, CTokenType_OpenParen));
+    TestThat(RequireToken(Parser, CTokenType_CloseParen));
 #endif
 
-    RequireToken(Parser, CToken(CSz("valid_path")));
+    TestThat(RequireToken(Parser, CToken(CSz("valid_path"))));
 
     TestThat( TokensRemain(Parser) == False );
   }
@@ -1222,7 +1225,7 @@ TestDefinesAndConditionals(memory_arena *Memory)
 
     while(TokensRemain(Parser))
     {
-      RequireToken(Parser, CToken(CSz("valid_path")));
+      TestThat(RequireToken(Parser, CToken(CSz("valid_path"))));
       TestThat(Parser->ErrorCode == ParseErrorCode_None);
     }
 
@@ -1250,7 +1253,7 @@ TestLogicalOperators(memory_arena *Memory)
 
     while(TokensRemain(Parser))
     {
-      RequireToken(Parser, CToken(CSz("valid_path")));
+      TestThat(RequireToken(Parser, CToken(CSz("valid_path"))));
       TestThat(Parser->ErrorCode == ParseErrorCode_None);
     }
 
@@ -1569,19 +1572,19 @@ TestParserChain(memory_arena *Memory)
   parser *Parser = ParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/parser_chain.cpp"), TokenCursorSource_RootFile);
   if (Parser)
   {
-    RequireToken(Parser, CToken(CSz("parser_token_0")));
-    RequireToken(Parser, CToken(CSz("parser_token_1")));
-    RequireToken(Parser, CToken(CSz("parser_token_2")));
-    RequireToken(Parser, CToken(CSz("parser_token_3")));
-    RequireToken(Parser, CToken(CSz("parser_token_4")));
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_0"))));
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_1"))));
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_2"))));
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_3"))));
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_4"))));
 
     Rewind(Parser);
 
-    RequireToken(Parser, CToken(CSz("parser_token_0")));
-    RequireToken(Parser, CToken(CSz("parser_token_1")));
-    RequireToken(Parser, CToken(CSz("parser_token_2")));
-    RequireToken(Parser, CToken(CSz("parser_token_3")));
-    RequireToken(Parser, CToken(CSz("parser_token_4")));
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_0"))));
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_1"))));
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_2"))));
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_3"))));
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_4"))));
 
     /* DumpEntireParser(Parser); */
   }
