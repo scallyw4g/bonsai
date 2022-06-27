@@ -2,7 +2,7 @@
 
 . scripts/preamble.sh
 
-TESTS_PASSED=1
+EXIT_CODE=0
 
 if [ "$Platform" == "Linux" ] ; then
   exe_search_string='bin/tests/*';
@@ -16,17 +16,19 @@ for test_executable in $(find $exe_search_string); do
   if $test_executable $COLORFLAG --log-level LogLevel_Shush == 0; then
     echo -n ""
   else
-    TESTS_PASSED=0
+    EXIT_CODE=$(($EXIT_CODE+1))
   fi
 done
 
-
-if [ "$TESTS_PASSED" -eq 1 ]; then
+if [ "$EXIT_CODE" -eq 0 ]; then
   echo ""
   echo "All Tests Passed"
+elif [ "$EXIT_CODE" -eq 1 ]; then
+  echo ""
+  echo "$EXIT_CODE Test suite failed. Inspect log for details."
 else
   echo ""
-  echo "One or more failures.  Inspect log for details."
+  echo "$EXIT_CODE Test suites failed. Inspect log for details."
 fi
 
-exit "$TESTS_PASSED"
+exit $EXIT_CODE
