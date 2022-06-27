@@ -265,7 +265,7 @@ TokenShouldModifyLineCount(c_token *T, token_cursor_source Source)
 }
 
 bonsai_function c_token *
-RewindParserUntil(parser* Parser, c_token *T)
+RewindTo(parser* Parser, c_token *T)
 {
   c_token *Result = 0;
   if (T)
@@ -314,20 +314,20 @@ RewindParserUntil(parser* Parser, c_token *T)
 
     if ( Parser->Tokens.At != T )
     {
-      Warn("Couldn't locate token during RewindParserUntil.  Token was %S(%S)", ToString(T->Type), T->Value);
+      Warn("Couldn't locate token during RewindTo.  Token was %S(%S)", ToString(T->Type), T->Value);
     }
 
   }
   else
   {
-    Warn("ptr(0) passed to RewindParserUntil");
+    Warn("ptr(0) passed to RewindTo");
   }
 
   return Result;
 }
 
 bonsai_function b32
-RewindParserUntil(parser* Parser, c_token_type Type)
+RewindTo(parser* Parser, c_token_type Type)
 {
   b32 Result = False;
   while (Parser->Tokens.At >= Parser->Tokens.Start)
@@ -752,7 +752,7 @@ DumpEntireParser(parser* Parser, u32 LinesToDump = u32_MAX, b32 Verbose = False)
 
   if (WasAt)
   {
-    RewindParserUntil(Parser, WasAt);
+    RewindTo(Parser, WasAt);
     if (PeekTokenRawPointer(Parser) != WasAt)
     {
       AdvanceTo(Parser, WasAt);
@@ -983,7 +983,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
   if (AdvanceTo(Parser, ErrorToken))
   {
   }
-  else if (RewindParserUntil(Parser, ErrorToken))
+  else if (RewindTo(Parser, ErrorToken))
   {
   }
   else
@@ -1004,7 +1004,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
     u32 LinesReversed = 0;
     while (LinesReversed <= LinesOfContext)
     {
-      RewindParserUntil(Parser, CTokenType_Newline);
+      RewindTo(Parser, CTokenType_Newline);
       LinesReversed += 1;
     }
 
@@ -1204,7 +1204,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
     }
 
 
-    RewindParserUntil(Parser, ErrorToken);
+    RewindTo(Parser, ErrorToken);
     Assert(Parser->Tokens.At == ErrorToken);
     Assert(Parser->Tokens.At->LineNumber == ErrorLineNumber);
 
@@ -4074,7 +4074,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
           Assert(T->Erased);
           EatIfBlock(Result, PreserveTokens);
           EraseAllRemainingIfBlocks(Result);
-          RewindParserUntil(Result, RewindT);
+          RewindTo(Result, RewindT);
         }
         else
         {
@@ -4095,7 +4095,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
         {
           EatIfBlock(Result, PreserveTokens);
           EraseAllRemainingIfBlocks(Result);
-          RewindParserUntil(Result, T);
+          RewindTo(Result, T);
         }
         else
         {
@@ -4115,7 +4115,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
         {
           EatIfBlock(Result, PreserveTokens);
           EraseAllRemainingIfBlocks(Result);
-          RewindParserUntil(Result, T);
+          RewindTo(Result, T);
         }
         else
         {
