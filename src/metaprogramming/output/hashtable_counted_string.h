@@ -9,17 +9,7 @@
       umm Size;
       counted_string_linked_list_node **Elements;
     };
-
-    bonsai_function counted_string_hashtable
-    Allocate_hashtable_counted_string(umm ElementCount, memory_arena *Memory)
-    {
-      counted_string_hashtable Result = {};
-      Result.Elements = Allocate(counted_string_linked_list_node*, Memory, ElementCount);
-      Result.Size = ElementCount;
-      return Result;
-    }
-
-    bonsai_function counted_string_linked_list_node *
+     bonsai_function counted_string_linked_list_node *
     Allocate_counted_string_linked_list_node(memory_arena *Memory)
     {
       counted_string_linked_list_node *Result = Allocate( counted_string_linked_list_node, Memory, 1);

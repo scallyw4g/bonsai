@@ -1598,128 +1598,117 @@ TestErrors(memory_arena *Memory)
   {
     /* RuntimeBreak(); */
 
-    Global_DoRuntimeBreak = False;
     parse_context Ctx = AllocateParseContext(Memory);
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error0.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
-    Global_DoRuntimeBreak = True;
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
+    TestThat(Parser->ErrorToken->LineNumber == 1);
+
     Parser->ErrorCode = ParseErrorCode_None;
-    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
   {
-    Global_DoRuntimeBreak = False;
     parse_context Ctx = AllocateParseContext(Memory);
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error1.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
-    Global_DoRuntimeBreak = True;
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
+    TestThat(Parser->ErrorToken->LineNumber == 3);
+
     Parser->ErrorCode = ParseErrorCode_None;
-    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 3);
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
   {
-    Global_DoRuntimeBreak = False;
     parse_context Ctx = AllocateParseContext(Memory);
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error2.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
-    Global_DoRuntimeBreak = True;
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
+    TestThat(Parser->ErrorToken->LineNumber == 3);
+
     Parser->ErrorCode = ParseErrorCode_None;
-    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 3);
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
   {
-    Global_DoRuntimeBreak = False;
     parse_context Ctx = AllocateParseContext(Memory);
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error3.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
-    Global_DoRuntimeBreak = True;
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
+    TestThat(Parser->ErrorToken->LineNumber == 3);
+
     Parser->ErrorCode = ParseErrorCode_None;
-    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 3);
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
   {
-    Global_DoRuntimeBreak = False;
     parse_context Ctx = AllocateParseContext(Memory);
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error4.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
-    Global_DoRuntimeBreak = True;
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
+    TestThat(Parser->ErrorToken->LineNumber == 3);
+
     Parser->ErrorCode = ParseErrorCode_None;
-    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 3);
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
   {
-    Global_DoRuntimeBreak = False;
     parse_context Ctx = AllocateParseContext(Memory);
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error5.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
-    Global_DoRuntimeBreak = True;
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
+    TestThat(Parser->ErrorToken->LineNumber == 3);
+
     Parser->ErrorCode = ParseErrorCode_None;
-    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 3);
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
   {
-    Global_DoRuntimeBreak = False;
     parse_context Ctx = AllocateParseContext(Memory);
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error6.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
-    Global_DoRuntimeBreak = True;
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
+    TestThat(Parser->ErrorToken->LineNumber == 3);
+
     Parser->ErrorCode = ParseErrorCode_None;
-    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 3);
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
 
   {
-    Global_DoRuntimeBreak = False;
     parse_context Ctx = AllocateParseContext(Memory);
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error7.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
-    Global_DoRuntimeBreak = True;
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
+    TestThat(Parser->ErrorToken->LineNumber == 3);
+
     Parser->ErrorCode = ParseErrorCode_None;
-    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 3);
     TestThat( OptionalToken(Parser, CToken(132151u)) );
   }
-#endif
 
 #if 0
   {
     // NOTE(Jesse): This test is still failing.
-    Global_DoRuntimeBreak = False;
     parse_context Ctx = AllocateParseContext(Memory);
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error8.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
-    Global_DoRuntimeBreak = True;
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
     Parser->ErrorCode = ParseErrorCode_None;
     TestThat(PeekTokenRawPointer(Parser)->LineNumber == 3);
@@ -1728,24 +1717,20 @@ TestErrors(memory_arena *Memory)
 #endif
 
   {
-    Global_DoRuntimeBreak = False;
     parse_context Ctx = AllocateParseContext(Memory);
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error9.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
-    Global_DoRuntimeBreak = True;
     TestThat(Parser->ErrorCode == ParseErrorCode_None)
   }
 
   {
-    Global_DoRuntimeBreak = False;
     parse_context Ctx = AllocateParseContext(Memory);
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error11.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
-    Global_DoRuntimeBreak = True;
 
     // NOTE(Jesse, tags: error_message, clarity): This error message isn't
     // really what we want to tell the user but as long as it breaks here we're
@@ -1753,24 +1738,18 @@ TestErrors(memory_arena *Memory)
     TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
 
     /* TestThat(StringsMatch(Parser->Filename, ParserFilename)); */
-    Parser->ErrorCode = ParseErrorCode_None;
-    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 2);
+    TestThat(Parser->ErrorToken->LineNumber == 2);
     /* TestThat( OptionalToken(Parser, CToken(132151u)) ); */
   }
+#endif
 
   {
-    Global_DoRuntimeBreak = False;
     parse_context Ctx = AllocateParseContext(Memory);
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error12.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
-    /* Ctx.CurrentParser = Parser; */
-    /* ParseDatatypes(&Ctx); */
-    Global_DoRuntimeBreak = True;
 
     TestThat(Parser->ErrorCode == ParseErrorCode_InvalidTokenGenerated);
-
-    Parser->ErrorCode = ParseErrorCode_None;
-    TestThat(PeekTokenRawPointer(Parser)->LineNumber == 2);
+    TestThat(Parser->ErrorToken->LineNumber == 5);
   }
 
 }

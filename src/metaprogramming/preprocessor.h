@@ -265,8 +265,8 @@ enum parse_error_code
 
   ParseErrorCode_Unknown,
 };
-/* meta(generate_string_table(parse_error_code)) */
-/* #include <metaprogramming/output/generate_string_table_parse_error_code.h> */
+meta(generate_string_table(parse_error_code))
+#include <metaprogramming/output/generate_string_table_parse_error_code.h>
 
 // TODO(Jesse): There's a reason we might want to move the Prev/Next pointers
 // onto the c_token_cursor struct.  See the TODO on the following tag.
@@ -279,6 +279,7 @@ struct parser
 {
   counted_string ErrorMessage;
   parse_error_code ErrorCode;
+  c_token *ErrorToken;
 
   c_token_cursor Tokens;
 
