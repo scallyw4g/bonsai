@@ -1967,13 +1967,6 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
         TrimFirstToken(InstanceArgs, CTokenType_OpenParen);
         TrimLastToken(InstanceArgs, CTokenType_CloseParen);
 
-      /* if (StringsMatch(Macro->Name, CSz("__CONCAT"))) */
-      /* { */
-      /*   RuntimeBreak(); */
-      /*   DumpEntireParser(InstanceArgs); */
-      /* } */
-
-
         Assert(Ctx);
 
         if (ScanArgsForAdditionalMacros)
@@ -2074,12 +2067,6 @@ ExpandMacro(parse_context *Ctx, parser *Parser, macro_def *Macro, memory_arena *
         // PeekTokenPointer call above
         RequireToken(MacroBody, CT_PreprocessorPaste);
         RequireToken(MacroBody, Next->Type);
-
-
-        /* if (StringsMatch(Macro->Name, CSz("__CONCAT"))) */
-        /* { */
-        /*   RuntimeBreak(); */
-        /* } */
 
         if (c_token_buffer *ArgBuffer = TryMacroArgSubstitution(Next, &Macro->NamedArguments, &ArgInstanceValues ))
         {
@@ -3811,6 +3798,19 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
         {
           PushT.Value = PopIdentifier(&Code);
 
+          // This looks kinda dumb but this code has to look like this to
+          // pacify the asserts in TryTransmuteKeywordToken().  Not sure if
+          // that's actually a good reason for making this code very verbose,
+          // but I'm leaving it like this for now.
+          //
+          // For reference the less-verbose version I had in mind is:
+          //
+          // PushT.Type = CTokenType_Identifier;
+          // TryTransmuteKeywordToken(&PushT, LastTokenPushed);
+          //
+          // But this triggers the assert in TryTransmuteKeywordToken, which I
+          // don't really want to get rid of.
+
           if (Ctx)
           {
             if (TryTransmuteKeywordToken(&PushT, LastTokenPushed))
@@ -3850,15 +3850,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
            (ParsingMultiLineComment && PushT.Type == CTokenType_Newline)
          )
       {
-
-#if 0
-        static int thing;
-        if (thing == 0)
-        {
-          RuntimeBreak();
-          thing = 2;
-        }
-#endif
         LastTokenPushed = Push(PushT, &Result->Tokens);
 
         Assert(CommentToken->Erased);
