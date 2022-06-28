@@ -655,7 +655,16 @@ DumpSingle(c_token_cursor *Cursor, c_token *At)
     {
       DebugChars("%S>%S", TerminalColors.Green, TerminalColors.White);
     }
-    PrintToken(T);
+
+    // NOTE(Jesse): Handle cursors that haven't been completely filled
+    if (T->Type)
+    {
+      PrintToken(T);
+    }
+    else
+    {
+      break;
+    }
   }
 
   return;
@@ -1002,7 +1011,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
   ParseErrorCursor->At = Global_ParseErrorBuffer;
   ParseErrorCursor->End = Global_ParseErrorBuffer+Global_ParseErrorBufferSize;
 
-  u32 LinesOfContext = 25;
+  u32 LinesOfContext = 7;
 
   counted_string ParserName = {};
 
@@ -1226,6 +1235,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
       LogDirect(CSz("\n"));
     }
 
+    CopyToDest(ParseErrorCursor, '\n');
     for (u32 DashIndex = 0;
         DashIndex < LongestLine;
         ++DashIndex)
@@ -1689,28 +1699,31 @@ OptionalToken(parser* Parser, c_token_type Type)
 bonsai_function c_token
 RequireToken(parser* Parser, c_token ExpectedToken)
 {
-  c_token* PeekedToken = PeekTokenPointer(Parser);
-
   c_token Result = {};
-  if (PeekedToken) Result = *PeekedToken;
 
-  // TODO(Jesse, id: 348, tags: immediate, id_347) : This should go into an AreEqual bonsai_function I think..
-  if ( Result.Type != ExpectedToken.Type ||
-       (ExpectedToken.Value.Count > 0 && !StringsMatch(ExpectedToken.Value, Result.Value) ))
+  if (Parser->ErrorCode == ParseErrorCode_None)
   {
-    ParseError_RequireTokenFailed( Parser,
-                                   CSz("RequireToken"),
-                                   PeekedToken ? PeekedToken : PeekTokenRawPointer(Parser),
-                                   &ExpectedToken );
-  }
-  else
-  {
-    Result = PopToken(Parser);
-  }
+    c_token* PeekedToken = PeekTokenPointer(Parser);
+    if (PeekedToken) Result = *PeekedToken;
+
+    // TODO(Jesse, id: 348, tags: immediate, id_347) : This should go into an AreEqual bonsai_function I think..
+    if ( Result.Type != ExpectedToken.Type ||
+         (ExpectedToken.Value.Count > 0 && !StringsMatch(ExpectedToken.Value, Result.Value) ))
+    {
+      ParseError_RequireTokenFailed( Parser,
+                                     CSz("RequireToken"),
+                                     PeekedToken ? PeekedToken : PeekTokenRawPointer(Parser),
+                                     &ExpectedToken );
+    }
+    else
+    {
+      Result = PopToken(Parser);
+    }
 
 #if BONSAI_INTERNAL
-  Assert(!StringsMatch(Result.Value, CSz("break_here")));
+    Assert(!StringsMatch(Result.Value, CSz("break_here")));
 #endif
+  }
 
   return Result;
 }
@@ -1944,7 +1957,7 @@ TryMacroArgSubstitution(c_token *T, counted_string_buffer *NamedArguments, c_tok
   c_token_buffer *Result = {};
 
   u32 ArgIndex = (u32)IndexOf(NamedArguments, T->Value);
-  if (ArgIndex < NamedArguments->Count)
+  if (ArgIndex < NamedArguments->Count && ArgIndex < ArgInstanceValues->Count)
   {
     Result = ArgInstanceValues->Start + ArgIndex;
   }
@@ -2126,9 +2139,39 @@ ExpandMacro( parse_context *Ctx,
         if (c_token_buffer *ArgBuffer = TryMacroArgSubstitution(Next, &Macro->NamedArguments, &ArgInstanceValues ))
         {
           parser Temp = ParserFromBuffer(ArgBuffer);
-          Next = PopTokenPointer(&Temp);
-          CopyRemainingIntoCursor(&Temp.Tokens, &Result->Tokens);
+          Next = PeekTokenPointer(&Temp);
+
+          if (Next && Next->Type == CT_MacroLiteral)
+          {
+            // NOTE(Jesse, tags: begin_temporary_memory): We need BeginTemporaryMemory here
+            parser *Expanded = ExpandMacro(Ctx, &Temp, Next->Macro, TranArena, TempMemory);
+            if (Expanded->ErrorCode)
+            {
+              // TOOD(Jesse, tags: immediate): Write a test that exercises this
+              // path.  Right now there's a bug blocking it
+              ParseError( &Temp,
+                          Expanded->ErrorCode,
+                          FormatCountedString(TranArena, CSz("0 While Expanding %S"), Next->Value),
+                          Next);
+            }
+            else
+            {
+              Next = PopTokenPointer(Expanded);
+              CopyRemainingIntoCursor(&Expanded->Tokens, &Result->Tokens);
+              DumpChain(Result);
+            }
+            // NOTE(Jesse, tags: end_temporary_memory begin_temporary_memory):
+            // We would roll-back the temp-mem here
+          }
+          else
+          {
+            Ensure(PopTokenPointer(&Temp) == Next);
+            CopyRemainingIntoCursor(&Temp.Tokens, &Result->Tokens);
+            Rewind(&Temp);
+          }
+
         }
+
 
         if (Prev && Next)
         {

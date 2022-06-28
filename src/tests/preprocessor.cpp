@@ -1132,6 +1132,16 @@ TestMacrosAndIncludes(memory_arena *Memory)
     TestThat(RequireToken(Parser, CToken(CSz("some_thing"))));
     TestThat(RequireToken(Parser, CToken(CTokenType_Int, CSz("int"))));
 
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
+    /* TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name")))); */
+
+#if BUG_OPERATOR_PASTE
+    TestThat(RequireToken(Parser, CToken(CTokenType_Increment, CSz("++"))));
+#endif
+
 
     // MacroFunction10
 
@@ -1750,10 +1760,18 @@ TestErrors(memory_arena *Memory)
     parse_context Ctx = AllocateParseContext(Memory);
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error12.cpp");
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
-
     TestThat(Parser->ErrorCode == ParseErrorCode_InvalidTokenGenerated);
     TestThat(Parser->ErrorToken->LineNumber == 5);
   }
+
+  {
+    parse_context Ctx = AllocateParseContext(Memory);
+    counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error13.cpp");
+    parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
+    TestThat(Parser->ErrorCode == ParseErrorCode_InvalidTokenGenerated);
+    TestThat(Parser->ErrorToken->LineNumber == 5);
+  }
+
 
 }
 

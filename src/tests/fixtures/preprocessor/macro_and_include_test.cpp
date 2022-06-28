@@ -183,8 +183,14 @@ MacroFunction9(some, _thing) // some_thing
 MacroFunction9(in, t) // CTokenType_Int(int)
 
 MacroFunction9(Macro, MacroFunction9(,Keyword)) // this_is_a_variable_name
+MacroFunction9(MacroKeyword, ) // this_is_a_variable_name
+MacroFunction9(MacroFunction9(Macro, Keyword), ) // this_is_a_variable_name
+MacroFunction9(, MacroFunction9(Macro, Keyword)) // this_is_a_variable_name
+/* MacroFunction9(MacroFunction9(Macro, ), Keyword) // this_is_a_variable_name */
 
-/* MacroFunction9(+,+) // CTokenType_Increment(++) */
+#if BUG_OPERATOR_PASTE
+MacroFunction9(+,+) // CTokenType_Increment(++)
+#endif
 
 // MacroFunction10
 
