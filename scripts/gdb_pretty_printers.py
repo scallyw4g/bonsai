@@ -23,6 +23,28 @@ class counted_string_printer:
         return self.val['Start'].string('ascii', 'strict', int(self.val['Count']))
 
 
+# class c_token_printer:
+#     def __init__(self, val):
+#         self.val = val
+
+#     def to_string(self):
+#         # return str(self.val['Type'].type.name)
+#         return str(self.val['Type'])
+#         # print(self.val)
+#         # return '{}({})'# .format(self.val.to_string(), counted_string_printer(self.val['Value']).to_string())
+
+
+
+# class c_token_buffer_printer:
+    # def __init__(self, val):
+    #     self.val = val
+
+    # def to_string(self):
+        # count = self.val['Count']
+        # for i in count:
+        #     c_token_printer(self.val['Name']).to_string()
+
+
 class xml_property_printer:
     def __init__(self, val):
         self.val = val
@@ -54,9 +76,9 @@ class xml_token_printer:
             return "%s" % (value_string)
         elif type_string == "Open":
             return "<%s>" % (value_string)
-        elif  type_string == "Close":
+        elif type_string == "Close":
             return "</%s>" % (value_string)
-        elif  type_string == "Unknown":
+        elif type_string == "Unknown":
             return "Zero Token"
         else:
             return "Invalid type string encountered in pretty printer {}".format(type_string)
@@ -64,8 +86,10 @@ class xml_token_printer:
 def bonsai_pretty_printers():
     pp = gdb.printing.RegexpCollectionPrettyPrinter("bonsai_printers")
     pp.add_printer('counted_string'       , '^counted_string$' , counted_string_printer)
-    pp.add_printer('xml_token_printer'    , '^xml_token$'      , xml_token_printer)
+    # pp.add_printer('c_token'              , '^c_token'         , c_token_printer)
+    # pp.add_printer('c_token_buffer'       , '^c_token_buffer'  , c_token_buffer_printer)
     pp.add_printer('xml_property_printer' , '^xml_property$'   , xml_property_printer)
+    pp.add_printer('xml_token_printer'    , '^xml_token$'      , xml_token_printer)
     pp.add_printer('v4'                   , '^v4$'             , v4_printer)
     pp.add_printer('v3'                   , '^v3$'             , v3_printer)
     return pp
