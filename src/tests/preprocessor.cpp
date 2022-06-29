@@ -813,6 +813,7 @@ TestStructParsing(memory_arena* Memory)
   {
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
+    TestThat(Parser->ErrorCode == ParseErrorCode_None);
   }
   else
   {
@@ -888,6 +889,7 @@ TestAst(memory_arena *Memory)
     Ctx.CurrentParser = Parser;
 
     ParseDatatypes(&Ctx);
+    TestThat(Parser->ErrorCode == ParseErrorCode_None);
 
     ITERATE_OVER(&Ctx.Datatypes.Functions)
     {
@@ -1125,8 +1127,7 @@ TestMacrosAndIncludes(memory_arena *Memory)
     TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
     TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
 
-    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
-    TestThat(RequireToken(Parser, CToken(CSz("some_thing_else"))));
+    TestThat(RequireToken(Parser, CToken(CSz("fooberdoober_thing"))));
 
     TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
     TestThat(RequireToken(Parser, CToken(CSz("some_thing"))));
@@ -1136,7 +1137,7 @@ TestMacrosAndIncludes(memory_arena *Memory)
     TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
     TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
     TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
-    /* TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name")))); */
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
 
 #if BUG_OPERATOR_PASTE
     TestThat(RequireToken(Parser, CToken(CTokenType_Increment, CSz("++"))));
@@ -1735,7 +1736,7 @@ TestErrors(memory_arena *Memory)
     parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
     Ctx.CurrentParser = Parser;
     ParseDatatypes(&Ctx);
-    TestThat(Parser->ErrorCode == ParseErrorCode_None)
+    TestThat(Parser->ErrorCode == ParseErrorCode_None) // TODO(Jesse, tags: tests): Curious for TestErrors .. ?
   }
 
   {
@@ -1754,7 +1755,6 @@ TestErrors(memory_arena *Memory)
     TestThat(Parser->ErrorToken->LineNumber == 2);
     /* TestThat( OptionalToken(Parser, CToken(132151u)) ); */
   }
-#endif
 
   {
     parse_context Ctx = AllocateParseContext(Memory);
@@ -1763,6 +1763,7 @@ TestErrors(memory_arena *Memory)
     TestThat(Parser->ErrorCode == ParseErrorCode_InvalidTokenGenerated);
     TestThat(Parser->ErrorToken->LineNumber == 5);
   }
+#endif
 
   {
     parse_context Ctx = AllocateParseContext(Memory);

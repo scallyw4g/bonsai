@@ -7,6 +7,16 @@ void func(arg_type *);
 #define VariadicMacroFunction3(...) __VA_ARGS__
 VariadicMacroFunction3(int, i, =, 42);
 
+int foo = 0;
+long int foo = 0;
+long foo = 0;
+long long foo = 0;
+long double foo = 0;
+
+unsigned long foo = 0;
+unsigned long long foo = 0;
+unsigned long int foo = 0;
+
 #define __QWORD unsigned long long
 #define __STD_TYPE typedef
 #define __DEV_T_TYPE __QWORD
@@ -57,6 +67,8 @@ signed int   Int3 = 42;
 unsigned     Int1 = 42; // This needs to be fixed in the parser
 signed       Int4 = 42; // This needs to be fixed in the parser
 
+
+typedef unsigned short int u16;
 
 typedef long int __int64;
 typedef long int s64;

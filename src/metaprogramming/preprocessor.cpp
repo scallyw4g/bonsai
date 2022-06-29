@@ -1011,7 +1011,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
   ParseErrorCursor->At = Global_ParseErrorBuffer;
   ParseErrorCursor->End = Global_ParseErrorBuffer+Global_ParseErrorBufferSize;
 
-  u32 LinesOfContext = 7;
+  u32 LinesOfContext = 18;
 
   counted_string ParserName = {};
 
@@ -1914,6 +1914,11 @@ CopyRemainingIntoCursor(c_token_cursor *Src, c_token_cursor *Dest)
 {
   u32 SrcElements = (u32)Remaining(Src);
   u32 DestElements = (u32)Remaining(Dest);
+
+  /* DebugLine(FormatCountedString(TranArena, CSz("copy %lu -> %lu"), SrcElements, DestElements)); */
+  /* DumpSingle(Src, Src->Start); */
+  /* DumpSingle(Dest, Dest->Start); */
+
   if ( SrcElements <= DestElements )
   {
     for ( u32 TokenIndex = 0;
@@ -1965,6 +1970,12 @@ TryMacroArgSubstitution(c_token *T, counted_string_buffer *NamedArguments, c_tok
   return Result;
 }
 
+
+// TODO(Jesse, tags: immediate, memory):  The memory allocation in this function
+// is super bad.  What we need is Begin/End TemporaryMemory such that we can
+// allocate a bunch of temp shit on the TempMemory arena and roll it all back
+// at the end of the function.  The only thing that goes on the PermMemory is
+// the Result.
 bonsai_function parser *
 ExpandMacro( parse_context *Ctx,
              parser *Parser,
@@ -1976,14 +1987,14 @@ ExpandMacro( parse_context *Ctx,
 {
   TIMED_FUNCTION();
 
-  parser *Result = AllocateParserPtr(
-                    CSz("macro_expansion TODO(Jesse): What do we say here?"),
-                    0,
-                    (u32)Kilobytes(3),
-                    TokenCursorSource_MacroExpansion,
-                    0,
-                    PermMemory
-                  );
+  parser *FirstPass = AllocateParserPtr(
+                        CSz("macro_expansion TODO(Jesse): What do we say here?"),
+                        0,
+                        (u32)Kilobytes(3),
+                        TokenCursorSource_MacroExpansion,
+                        0,
+                        TranArena
+                      );
 
   Assert(Macro->Body.Tokens.At == Macro->Body.Tokens.Start);
   Assert(Macro->Body.Tokens.Next == 0);
@@ -2084,9 +2095,6 @@ ExpandMacro( parse_context *Ctx,
   // Do parameter substitution and pasting
   //
 
-  // TODO(Jesse): This is a bit janky.. Not sure what would be better though.
-  b32 Err = False;
-
   TIMED_BLOCK("Parameter Sub && Pasting");
   parser MacroBody_ = Macro->Body;
   parser *MacroBody = &MacroBody_;
@@ -2096,7 +2104,7 @@ ExpandMacro( parse_context *Ctx,
 
   while (c_token *T = PeekTokenRawPointer(MacroBody))
   {
-    if (Err) break;
+    if (MacroBody->ErrorCode) break;
 
     switch (T->Type)
     {
@@ -2106,7 +2114,7 @@ ExpandMacro( parse_context *Ctx,
         ITERATE_OVER(&VarArgs)
         {
           c_token_buffer* Arg = GET_ELEMENT(Iter);
-          CopyBufferIntoCursor(Arg, &Result->Tokens);
+          CopyBufferIntoCursor(Arg, &FirstPass->Tokens);
         }
       } break;
 
@@ -2117,22 +2125,61 @@ ExpandMacro( parse_context *Ctx,
 
         if (c_token_buffer *ArgBuffer = TryMacroArgSubstitution(T, &Macro->NamedArguments, &ArgInstanceValues ))
         {
-          CopyBufferIntoCursor(ArgBuffer, &Result->Tokens);
+          parser Src = ParserFromBuffer(ArgBuffer);
+          while (c_token* ArgT = PeekTokenRawPointer(&Src))
+          {
+            if (ArgT->Type == CT_MacroLiteral)
+            {
+              parser *Expanded = ExpandMacro(Ctx, &Src, ArgT->Macro, PermMemory, TempMemory);
+              if (Expanded->ErrorCode == ParseErrorCode_None)
+              {
+                // Copy expanded buffer into FirstPass, marking self-referring
+                // keyword instances such that we don't expand them again.
+                while (c_token* ExpandedT = PopTokenRawPointer(Expanded))
+                {
+                  // TODO(Jesse, tags: metaprogramming, correctness): Test this
+                  // path actually does what I intended.  At the moment I
+                  // observed self-refe'd macros not getting expanded due to MacroShouldBeExpanded()
+                  if (Macro->Type == type_macro_keyword && StringsMatch(ExpandedT->Value, Macro->Name))
+                  {
+                    ExpandedT->Type = CT_MacroLiteral_SelfRefExpansion;
+                  }
+                  Push(*ExpandedT, &FirstPass->Tokens);
+                }
+              }
+              else
+              {
+                ParseError( FirstPass,
+                            Expanded->ErrorCode,
+                            FormatCountedString(TranArena, CSz("While Expanding %S"), ArgT->Value),
+                            ArgT);
+              }
+            }
+            else
+            {
+              // @token_control_pointers
+              Ensure(PopTokenRawPointer(&Src) == ArgT);
+              Push(*ArgT, &FirstPass->Tokens);
+            }
+
+          }
         }
         else
         {
-          Push(*T, &Result->Tokens);
+          Push(*T, &FirstPass->Tokens);
         }
       } break;
 
       case CT_PreprocessorPaste:
       {
-        c_token *Prev = PeekTokenPointer(Result, -1);
+        c_token *Prev = PeekTokenPointer(FirstPass, -1);
         c_token *Next = PeekTokenPointer(MacroBody, 1);
 
         // TODO(Jesse): Once token control functions return pointers we can
         // rewrite this such that Next gets assigned here instead of in the
         // PeekTokenPointer call above
+        //
+        // @token_control_pointers
         RequireToken(MacroBody, CT_PreprocessorPaste);
         RequireToken(MacroBody, Next->Type);
 
@@ -2141,6 +2188,7 @@ ExpandMacro( parse_context *Ctx,
           parser Temp = ParserFromBuffer(ArgBuffer);
           Next = PeekTokenPointer(&Temp);
 
+#if 1
           if (Next && Next->Type == CT_MacroLiteral)
           {
             // NOTE(Jesse, tags: begin_temporary_memory): We need BeginTemporaryMemory here
@@ -2157,17 +2205,18 @@ ExpandMacro( parse_context *Ctx,
             else
             {
               Next = PopTokenPointer(Expanded);
-              CopyRemainingIntoCursor(&Expanded->Tokens, &Result->Tokens);
-              DumpChain(Result);
+              CopyRemainingIntoCursor(&Expanded->Tokens, &FirstPass->Tokens);
+              DumpChain(FirstPass);
             }
             // NOTE(Jesse, tags: end_temporary_memory begin_temporary_memory):
             // We would roll-back the temp-mem here
           }
           else
+#endif
           {
+            // @token_control_pointers
             Ensure(PopTokenPointer(&Temp) == Next);
-            CopyRemainingIntoCursor(&Temp.Tokens, &Result->Tokens);
-            Rewind(&Temp);
+            CopyRemainingIntoCursor(&Temp.Tokens, &FirstPass->Tokens);
           }
 
         }
@@ -2189,30 +2238,28 @@ ExpandMacro( parse_context *Ctx,
           }
           else
           {
-            umm CurrentSize = TotalSize(&Result->Tokens);
-            TruncateToCurrentElements(&Result->Tokens);
-            umm NewSize = TotalSize(&Result->Tokens);
-            Reallocate((u8*)Result->Tokens.Start, PermMemory, CurrentSize, NewSize);
+            umm CurrentSize = TotalSize(&FirstPass->Tokens);
+            TruncateToCurrentElements(&FirstPass->Tokens);
+            /* umm NewSize = TotalSize(&FirstPass->Tokens); */
+            /* Reallocate((u8*)FirstPass->Tokens.Start, TranArena, CurrentSize, NewSize); */
 
-            ParseError(Result,
+            ParseError(FirstPass,
                        ParseErrorCode_InvalidTokenGenerated,
                        FormatCountedString(TranArena, CSz("Invalid token generated during paste (%S)"), Prev->Value),
                        Prev);
-
-            Err = True;
           }
 
         }
         else if (Next) // No Prev pointer .. macro was called like : CONCAT(,only_passed_one_thing)
         {
-          Push(*Next, &Result->Tokens);
+          Push(*Next, &FirstPass->Tokens);
         }
       } break;
 
       default:
       {
         PopTokenRaw(MacroBody);
-        Push(*T, &Result->Tokens);
+        Push(*T, &FirstPass->Tokens);
       } break;
     }
 
@@ -2220,84 +2267,124 @@ ExpandMacro( parse_context *Ctx,
   END_BLOCK();
 
 
-  // NOTE(Jesse): If we hit an error we've already realloc'd the Result
-  if (Err == False)
-  {
+  parser *Result = AllocateParserPtr(
+                      CSz("macro_expansion TODO(Jesse): What do we say here?"),
+                      0,
+                      (u32)Kilobytes(32),
+                      TokenCursorSource_MacroExpansion,
+                      0,
+                      PermMemory
+                    );
+
+
+  { // NOTE(Jesse): Unnecessary to reallocate here .. blow whole allocation
+    // away at the end of the function
+    umm CurrentSize = TotalSize(&FirstPass->Tokens);
+    TruncateToCurrentElements(&FirstPass->Tokens);
+  }
+
+  Rewind(FirstPass);
+
+#if 0
     umm CurrentSize = TotalSize(&Result->Tokens);
     TruncateToCurrentElements(&Result->Tokens);
-    umm NewSize = TotalSize(&Result->Tokens);
-    Reallocate((u8*)Result->Tokens.Start, PermMemory, CurrentSize, NewSize);
-
-    Rewind(Result);
+#else
+  if (FirstPass->ErrorCode == ParseErrorCode_None)
+  {
     TIMED_BLOCK("Expand Body");
 
-    while (c_token *T = PeekTokenRawPointer(Result))
+    while (c_token *T = PeekTokenRawPointer(FirstPass))
     {
       T->LineNumber = MacroNameT.LineNumber;
       T->Filename = MacroNameT.Filename;
 
-      c_token TCached = *T;
       switch(T->Type)
       {
         case CTokenType_Identifier:
         {
           // TODO(Jesse): What is specified to happen if a named argument
           // has the same value as a defined macro?  Is this correct?
-          //
-          if (TryTransmuteIdentifierToMacro(Ctx, Result, T, Macro))
+
+          if (TryTransmuteIdentifierToMacro(Ctx, FirstPass, T, Macro))
           {
-            parser *Expanded = ExpandMacro(Ctx, Result, T->Macro, PermMemory, TempMemory);
+            parser *Expanded = ExpandMacro(Ctx, FirstPass, T->Macro, PermMemory, TempMemory);
             if (Expanded->ErrorCode)
             {
-              ParseError( Result,
+              ParseError( FirstPass,
                           Expanded->ErrorCode,
                           FormatCountedString(TranArena, CSz("While Expanding %S"), T->Value),
                           T);
             }
             else
             {
-              EraseBetweenExcluding(Result, T, Result->Tokens.At);
-              c_token_cursor *LastCursorOfChain = SplitAndInsertTokenCursor(&Result->Tokens, &Expanded->Tokens, PermMemory);
-              SkipToEndOfCursor(&Result->Tokens, LastCursorOfChain);
+              CopyRemainingIntoCursor(&Expanded->Tokens, &Result->Tokens);
             }
           }
           else
           {
-            RequireTokenRaw(Result, T->Type);
+            // @token_control_pointers
+            Ensure(PopTokenRawPointer(FirstPass) == T);
+            Push(*T, &Result->Tokens);
           }
 
         } break;
 
         case CT_MacroLiteral:
         {
-          parser *Expanded = ExpandMacro(Ctx, Result, T->Macro, PermMemory, TempMemory);
+          parser *Expanded = ExpandMacro(Ctx, FirstPass, T->Macro, PermMemory, TempMemory);
           if (Expanded->ErrorCode)
           {
-            ParseError( Result,
+            ParseError( FirstPass,
                         Expanded->ErrorCode,
                         FormatCountedString(TranArena, CSz("While Expanding %S"), T->Value),
                         T);
           }
           else
           {
-            EraseBetweenExcluding(Result, T, Result->Tokens.At);
-            c_token_cursor *LastCursorOfChain = SplitAndInsertTokenCursor(&Result->Tokens, &Expanded->Tokens, PermMemory);
-            SkipToEndOfCursor(&Result->Tokens, LastCursorOfChain);
+            CopyRemainingIntoCursor(&Expanded->Tokens, &Result->Tokens);
           }
         } break;
 
 
         default:
         {
-          RequireTokenRaw(Result, T->Type);
+          // @token_control_pointers
+          Ensure(PopTokenRawPointer(FirstPass) == T);
+          Push(*T, &Result->Tokens);
         } break;
       }
 
     }
 
-    Rewind(Result);
     END_BLOCK();
   }
+#endif
+
+  if (FirstPass->ErrorCode == ParseErrorCode_None)
+  {
+    umm CurrentSize = TotalSize(&FirstPass->Tokens);
+    TruncateToCurrentElements(&FirstPass->Tokens);
+    /* umm NewSize = TotalSize(&FirstPass->Tokens); */
+    /* Reallocate((u8*)FirstPass->Tokens.Start, TranArena, CurrentSize, NewSize); */
+  }
+
+  {
+    umm CurrentSize = TotalSize(&Result->Tokens);
+    TruncateToCurrentElements(&Result->Tokens);
+    /* umm NewSize = TotalSize(&Result->Tokens); */
+    /* Reallocate((u8*)Result->Tokens.Start, PermMemory, CurrentSize, NewSize); */
+  }
+
+  Rewind(Result);
+  /* LogDirect("\n\n -- %S\n", Macro->Name); */
+  /* DumpChain(FirstPass); */
+  /* DumpChain(Result); */
+  /* LogDirect("\n"); */
+
+  Result->ErrorCode = FirstPass->ErrorCode;
+  Result->ErrorToken = FirstPass->ErrorToken;
+  Result->ErrorMessage = FirstPass->ErrorMessage;
+
 
   return Result;
 }
@@ -5366,6 +5453,9 @@ IsConstructorFunctionName(c_token T)
 bonsai_function void
 ParseLongness(parser *Parser, type_spec *Result)
 {
+  RequireToken(Parser, CTokenType_Long);
+  Result->Long = True;
+
   if (OptionalToken(Parser, CTokenType_Double)) { Result->LongDouble = True; }
   else
   {
@@ -5450,16 +5540,36 @@ ParseTypeSpecifier(parse_context *Ctx)
           InvalidCodePath();
         }
 
-        if (OptionalToken(Parser, CTokenType_Int))
-        { Result.Int = True; }
-        else if (OptionalToken(Parser, CTokenType_Short))
-        { Result.Short = True; }
-        else if (OptionalToken(Parser, CTokenType_Char))
-        { Result.Char = True; }
-        else if (OptionalToken(Parser, CTokenType_Long))
-        { ParseLongness(Parser, &Result); }
+        while (c_token *nT = PeekTokenPointer(Parser) )
+        {
+          if (Done) break;
 
-        Done = True;
+          switch ( nT->Type )
+          {
+            case CTokenType_Int:
+            {
+              RequireToken(Parser, nT->Type);
+              Result.Int = True;
+            } break;
+            case CTokenType_Short:
+            {
+              RequireToken(Parser, nT->Type);
+              Result.Short = True;
+            } break;
+            case CTokenType_Char:
+            {
+              RequireToken(Parser, nT->Type);
+              Result.Char = True;
+            } break;
+            case CTokenType_Long:
+            {
+              ParseLongness(Parser, &Result);
+            } break;
+
+            default: Done = True; break;
+          }
+
+        }
       } break;
 
       case CTokenType_Enum:
@@ -5504,7 +5614,6 @@ ParseTypeSpecifier(parse_context *Ctx)
 
       case CTokenType_Long:
       {
-        RequireToken(Parser, CTokenType_Long);
         ParseLongness(Parser, &Result);
         Done = True;
       } break;

@@ -19,6 +19,7 @@
 #if 1
 
 #define foo valid_path
+
 foo
 
 #if 1
@@ -171,8 +172,7 @@ MacroFunction9(PastedMacro, Keyword) // ??? this_is_a_variable_name ???
 #define some_thing this_is_a_variable_name
 #define some fooberdoober
 
-MacroFunction9(some, _thing) // this_is_a_variable_name
-MacroFunction9(some_thing, _else) // some_thing_else
+MacroFunction9(some, _thing) // fooberdoober_thing
 
 #undef some
 MacroFunction9(some, _thing) // this_is_a_variable_name
@@ -186,7 +186,7 @@ MacroFunction9(Macro, MacroFunction9(,Keyword)) // this_is_a_variable_name
 MacroFunction9(MacroKeyword, ) // this_is_a_variable_name
 MacroFunction9(MacroFunction9(Macro, Keyword), ) // this_is_a_variable_name
 MacroFunction9(, MacroFunction9(Macro, Keyword)) // this_is_a_variable_name
-/* MacroFunction9(MacroFunction9(Macro, ), Keyword) // this_is_a_variable_name */
+MacroFunction9(MacroFunction9(Macro, ), Keyword) // this_is_a_variable_name
 
 #if BUG_OPERATOR_PASTE
 MacroFunction9(+,+) // CTokenType_Increment(++)
