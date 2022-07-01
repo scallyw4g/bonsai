@@ -2004,6 +2004,7 @@ main(s32 ArgCount, const char** Args)
   memory_arena* Memory = AllocateArena();
 
 
+#if 1
   TestDoublyLinkedListSwap();
   TestParserChain(Memory);
   TestBasicTokenizationAndParsing(Memory);
@@ -2015,9 +2016,11 @@ main(s32 ArgCount, const char** Args)
   TestIncludeGuards(Memory);
   TestDefinesAndConditionals(Memory);
   TestLogicalOperators(Memory);
-  TestAst(Memory);
   TestLineNumbers(Memory);
   TestErrors(Memory);
+#endif
+
+  TestAst(Memory);
 
   TestSuiteEnd();
   exit(TestsFailed);

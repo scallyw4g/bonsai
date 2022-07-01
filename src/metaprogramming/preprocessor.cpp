@@ -38,8 +38,8 @@ bonsai_function c_token   PopTokenRaw(parser *Parser);
 bonsai_function c_token * PopTokenRawPointer(parser *Parser);
 bonsai_function c_token   PopToken(parser *Parser);
 bonsai_function b32       OptionalTokenRaw(parser *Parser, c_token_type Type);
-bonsai_function b32       OptionalToken(parser *Parser, c_token T);
-bonsai_function b32       OptionalToken(parser *Parser, c_token_type Type);
+bonsai_function c_token * OptionalToken(parser *Parser, c_token T);
+bonsai_function c_token * OptionalToken(parser *Parser, c_token_type Type);
 bonsai_function c_token   RequireToken(parser *Parser, c_token ExpectedToken);
 bonsai_function c_token   RequireToken(parser *Parser, c_token_type ExpectedType);
 bonsai_function c_token   RequireTokenRaw(parser *Parser, c_token Expected);
@@ -1680,19 +1680,19 @@ OptionalTokenRaw(parser* Parser, c_token T)
   return Result;
 }
 
-bonsai_function b32
+bonsai_function c_token *
 OptionalToken(parser* Parser, c_token T)
 {
-  b32 Result = (PeekToken(Parser) == T);
-  if (Result) { PopToken(Parser); }
+  c_token *Result = PeekTokenPointer(Parser);
+  if (Result && *Result == T) { RequireToken(Parser, *Result); } else { Result = 0;}
   return Result;
 }
 
-bonsai_function b32
+bonsai_function c_token *
 OptionalToken(parser* Parser, c_token_type Type)
 {
-  b32 Result = (PeekToken(Parser).Type == Type);
-  if (Result) { PopToken(Parser); }
+  c_token *Result = PeekTokenPointer(Parser);
+  if (Result && Result->Type == Type) { RequireToken(Parser, *Result); } else { Result = 0; }
   return Result;
 }
 
@@ -2206,7 +2206,7 @@ ExpandMacro( parse_context *Ctx,
             {
               Next = PopTokenPointer(Expanded);
               CopyRemainingIntoCursor(&Expanded->Tokens, &FirstPass->Tokens);
-              DumpChain(FirstPass);
+              /* DumpChain(FirstPass); */
             }
             // NOTE(Jesse, tags: end_temporary_memory begin_temporary_memory):
             // We would roll-back the temp-mem here
@@ -5235,13 +5235,6 @@ StructDef(counted_string Type) // , counted_string Sourcefile)
 }
 
 bonsai_function b32
-EatStar(parser* Parser)
-{
-  b32 Result = OptionalToken(Parser, CTokenType_Star);
-  return Result;
-}
-
-bonsai_function b32
 NextTokenIsSpaceOrTab(parser *Parser)
 {
   b32 Result = PeekTokenRaw(Parser).Type == CTokenType_Space ||
@@ -6513,8 +6506,22 @@ ParseStructMember(parse_context *Ctx, counted_string StructName)
     case CTokenType_Union:
     {
       RequireToken(Parser, CTokenType_Union);
+      // NOTE(Jesse): The naming here is actually busted .. a union can be
+      // named as a member of things so this should just be
+      // `type_union_member` or something.  Same goes for structs.
       Result.Type = type_struct_member_anonymous;
-      Result.struct_member_anonymous.Body = ParseStructBody(Ctx, CS("anonymous_union"));
+
+      Result.struct_member_anonymous.Body = ParseStructBody(Ctx, CSz(""));
+
+      if (c_token *TypeT = OptionalToken(Parser, CTokenType_Identifier))
+      {
+        Result.struct_member_anonymous.Body.Type = TypeT->Value;
+      }
+      else
+      {
+        Result.struct_member_anonymous.Body.Type = CS("anonymous_union");
+      }
+
     } break;
 
     case CTokenType_Struct:
@@ -6702,10 +6709,9 @@ ParseStructBody(parse_context *Ctx, counted_string StructName)
       Push(&Result.Members, Declaration, Ctx->Memory);
     }
 
+    //  Parse comma-separated definitions .. ie `struct fing { int foo, bar, baz; };`
     while (OptionalToken(Parser, CTokenType_Comma))
     {
-      // TODO(Jesse, tags: immediate): Is this actually broken??  We could
-      // parse things other than a variable_decl here..
       counted_string Name = RequireToken(Parser, CTokenType_Identifier).Value;
       Declaration.variable_decl.Name = Name;
       Push(&Result.Members, Declaration, Ctx->Memory);

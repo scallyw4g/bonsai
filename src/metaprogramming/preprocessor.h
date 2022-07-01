@@ -209,15 +209,15 @@ meta(generate_string_table(c_token_type))
 struct macro_def;
 struct c_token
 {
-  counted_string Value;
   c_token_type Type;
+  counted_string Value;
 
+  counted_string Filename;
+  u32 LineNumber;
   b32 Erased; // TODO(Jesse): Pack this into .. LineNumber ?  Should profile if
               // it actually makes any perf difference.  It probably doesn't
               // since the size of this struct is pretty weird anyways.
 
-  counted_string Filename;
-  u32 LineNumber;
 
   union {
     /* s64 SignedValue; */ // TODO(Jesse id: 272): Fold `-` sign into this value at tokenization time?

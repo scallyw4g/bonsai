@@ -14,6 +14,7 @@ if [ "$Platform" == "Linux" ] ; then
     -I /usr/include                      \
     -I /usr/include/x86_64-linux-gnu     \
     -I /usr/include/clang/6.0.0/include  \
+    -I /usr/include/c++/6
 
 elif [ "$Platform" == "Windows" ] ; then
 

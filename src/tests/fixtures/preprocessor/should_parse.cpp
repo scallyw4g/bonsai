@@ -1,3 +1,4 @@
+#if 1
 #include <src/tests/bug_defines.h>
 #include <src/tests/fixtures/preprocessor/other_file_that_should_parse.cpp>
 
@@ -294,5 +295,15 @@ TestFunc(int foo)
   CS(NullTerminatedCString, sizeof(NullTerminatedCString)-1)
 #include <src/bonsai_stdlib/headers/console_macros.h>
 
+#undef foo;
+#undef bar;
 
+#endif
+
+struct fingy
+{
+  union {
+    int foo;
+  } fing;
+};
 
