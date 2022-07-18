@@ -79,8 +79,6 @@
 #define ToggleBitfieldValue(Dest, Value) \
       (Dest) = (Dest) & (Value) ?  ((u32)(Dest) & ~(u32)(Value)) : ((u32)(Dest) | (u32)(Value))
 
-#define TriggeredRuntimeBreak() do { if (GetDebugState && GetDebugState()->TriggerRuntimeBreak) { RuntimeBreak(); } } while (0)
-
 #include <metaprogramming/defines.h>
 #include <metaprogramming/functions.h>
 

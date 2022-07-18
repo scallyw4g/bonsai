@@ -489,6 +489,7 @@ MultipleAllocations()
       }
     }
 
+#if BONSAI_INTERNAL
     {
       memory_arena_stats MemStats1 = GetMemoryArenaStats(&Arena);
       memory_arena_stats MemStats2 = GetMemoryArenaStats(&Arena);
@@ -498,6 +499,7 @@ MultipleAllocations()
       TestThat( AreEqual(&MemStats1,  &MemStats3) );
       TestThat( AreEqual(&MemStats2,  &MemStats3) );
     }
+#endif
 
   }
 
@@ -675,6 +677,7 @@ main(s32 ArgCount, const char** Args)
     VaporizeArena(TestArena);
   }
 
+#if MEMPROTECT_OVERFLOW
   {
     memory_arena* TestArena = AllocateArena();
     u8* Thing = Allocate(u8, TestArena, 32);
@@ -683,6 +686,7 @@ main(s32 ArgCount, const char** Args)
     TestThat(!Thing2);
     VaporizeArena(TestArena);
   }
+#endif
 
   TestSuiteEnd();
   exit(TestsFailed);

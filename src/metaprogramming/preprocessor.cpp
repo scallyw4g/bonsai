@@ -7882,6 +7882,7 @@ debug_global os Os = {};
 bonsai_function b32
 BootstrapDebugSystem()
 {
+#if BONSAI_INTERNAL
   shared_lib DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
   if (!DebugLib) { Error("Loading DebugLib :( "); return False; }
 
@@ -7911,6 +7912,8 @@ BootstrapDebugSystem()
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
   GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+#endif
 
   return True;
 }

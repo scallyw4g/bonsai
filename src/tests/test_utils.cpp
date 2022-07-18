@@ -5,15 +5,15 @@ global_variable u32 TestsPassed = 0;
 
 #define TEST_FIXTURES_PATH "src/tests/fixtures"
 
-#define TestThat(condition)                                                                                        \
-  if (!(condition)) {                                                                                              \
-    ++TestsFailed;                                                                                                 \
-    LogDirect(" %S! Fail  %S  - %s" Newline, TerminalColors.Red, TerminalColors.White, #condition); \
-    LogDirect(" %S!       %S  - %s() (%s) " Newline Newline, TerminalColors.Red, TerminalColors.White, __FUNCTION__, __FILE__); \
-    PlatformDebugStacktrace();                                                                                     \
-    RuntimeBreak();                                                                                                \
-  } else {                                                                                                         \
-    ++TestsPassed;                                                                                                 \
+#define TestThat(condition)                                                                                                                  \
+  if (!(condition)) {                                                                                                                        \
+    ++TestsFailed;                                                                                                                           \
+    LogDirect(" %S! Test   %S - %s" Newline, TerminalColors.Red, TerminalColors.White, #condition);                                          \
+    LogDirect(" %S! Failed %S - %s() (%s:%u) " Newline Newline, TerminalColors.Red, TerminalColors.White, __FUNCTION__, __FILE__, __LINE__); \
+    PlatformDebugStacktrace();                                                                                                               \
+    RuntimeBreak();                                                                                                                          \
+  } else {                                                                                                                                   \
+    ++TestsPassed;                                                                                                                           \
   }
 
 global_variable log_level PrevGlobalLogLevel = LogLevel_Debug;

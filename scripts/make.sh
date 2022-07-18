@@ -1,18 +1,18 @@
 #! /bin/bash
 
-BUILD_EVERYTHING=0
+BUILD_EVERYTHING=1
 
 DumpSourceFilesAndQuit=0
 
 CheckoutMetaOutput=0
 
 FirstPreprocessor=0
-BuildPreprocessor=1
+BuildPreprocessor=0
 SecondPreprocessor=0
 
 BuildExecutables=0
-BuildDebugTests=0
-BuildTests=1
+BuildDebugTests=1
+BuildTests=0
 BuildDebugSystem=0
 BuildExamples=0
 

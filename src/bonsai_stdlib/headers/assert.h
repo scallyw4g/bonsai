@@ -38,6 +38,8 @@
   } \
 } while (false)
 
+#define TriggeredRuntimeBreak() do { if (GetDebugState && GetDebugState()->TriggerRuntimeBreak) { RuntimeBreak(); } } while (0)
+
 #define NotImplemented Error("Implement Me!"); Assert(False)
 
 #else // Release Build
@@ -46,6 +48,7 @@
 #define Assert(...)
 #define InvalidCodePath(...)
 #define RuntimeBreak(...)
-#define NotImplemented Implement Meeeeee!!!
+#define TriggeredRuntimeBreak(...)
+#define NotImplemented Implement_Meeeeee
 
 #endif

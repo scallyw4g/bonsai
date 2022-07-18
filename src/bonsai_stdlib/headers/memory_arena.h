@@ -77,6 +77,8 @@ struct memory_arena
 #define STRINGIZE2(x) #x
 #define LINE_STRING STRINGIZE(__LINE__)
 
+#if BONSAI_INTERNAL
+
 #define AllocateProtection(Type, Arena, Number, Protection)                                                                                              \
   ( GetDebugState && GetDebugState() ?                                                                                                                   \
       (Type*)GetDebugState()->Debug_Allocate(Arena, sizeof(Type), (umm)Number, #Type " " __FILE__ ":" LINE_STRING, __LINE__, __FILE__, 1, Protection ) : \
@@ -100,6 +102,23 @@ struct memory_arena
     (Type*)GetDebugState()->Debug_Allocate( Arena, sizeof(Type), (umm)Number, #Type ":" __FILE__ ":" LINE_STRING , __LINE__, __FILE__, 1, True) : \
     (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, True)                                                                                    \
   )
+
+#else
+
+#define AllocateProtection(Type, Arena, Number, Protection) \
+      (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, Protection)
+
+#define AllocateAlignedProtection(Type, Arena, Number, Alignment, Protection) \
+    (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, Alignment, Protection)
+
+#define AllocateAligned(Type, Arena, Number, Alignment) \
+    (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, Alignment, True)
+
+#define Allocate(Type, Arena, Number) \
+    (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, True)
+
+#endif
+
 
 #define DEBUG_REGISTER_ARENA(Arena) do { if (GetDebugState) { GetDebugState()->RegisterArena(#Arena, Arena); } } while (false)
 
@@ -383,8 +402,11 @@ AllocateArena(umm RequestedBytes = Megabytes(1), b32 MemProtect = True)
 
   Assert((umm)Result->Start % PageSize == 0);
   Assert(Remaining(Result) >= RequestedBytes);
+#elif MEMPROTECT_UNDERFLOW
+  NotImplemented;
 #else
-  NotImplemented
+  Assert(OnPageBoundary(Result, PageSize));
+  Assert(Remaining(Result) >= RequestedBytes);
 #endif
 
   return Result;
@@ -404,8 +426,11 @@ DeallocateArena(memory_arena *Arena)
       u8 *ArenaBytes =  (u8*)Arena - ((umm)Arena % PageSize);
       Result &= PlatformDeallocate(ArenaBytes, PageSize*2);
     }
-#else
+#elif MEMPROTECT_UNDERFLOW
     NotImplemented;
+#else
+      umm PageSize = PlatformGetPageSize();
+      Result &= PlatformDeallocate((u8*)Arena, PageSize);
 #endif
 
   }
@@ -498,6 +523,32 @@ Reallocate(u8* Allocation, memory_arena* Arena, umm CurrentSize, umm RequestedSi
 
   return Result;
 }
+
+// NOTE(Jesse): This is some random-ass code I put in to benchmark this bump
+// allocator against malloc.  Turns out we're about 13x faster.
+#define ALLOCATOR_USE_MALLOC 0
+#if ALLOCATOR_USE_MALLOC
+
+bonsai_function u8*
+PushSize(memory_arena *Arena, umm SizeIn, umm Alignment, b32 MemProtect)
+{
+  umm ToAlignment = Alignment - (SizeIn % Alignment);
+  umm AlignCorrectedSizeIn = SizeIn;
+
+  u8* Result = (u8*)calloc(AlignCorrectedSizeIn,1);
+
+  umm AtToAlignment = Alignment - ((umm)Result % Alignment);
+  if (AtToAlignment != Alignment)
+  {
+    Result += AtToAlignment;
+  }
+
+  Assert(((umm)Result % Alignment) == 0);
+
+  return Result;
+}
+
+#else
 
 bonsai_function u8*
 PushSize(memory_arena *Arena, umm SizeIn, umm Alignment, b32 MemProtect)
@@ -595,6 +646,8 @@ PushSize(memory_arena *Arena, umm SizeIn, umm Alignment, b32 MemProtect)
   Assert(Remaining(Arena) <= TotalSize(Arena)); // Sanity Check
   return Result;
 }
+
+#endif
 
 bonsai_function void*
 PushStruct(memory_arena *Memory, umm sizeofStruct, umm Alignment = 1, b32 MemProtect = True)

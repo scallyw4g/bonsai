@@ -4,9 +4,7 @@ DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh,
 {
   // 2 verts per line, 3 r32s per vert
 
-#if BONSAI_INTERNAL
   u32 MeshStartingAt = Mesh->At;
-#endif
 
   v3 localNormalData[] =
   {
@@ -85,11 +83,9 @@ DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh,
         FaceColors);
   }
 
-#if BONSAI_INTERNAL
 #define VERTS_PER_LINE (18)
   u32 VertsBuffered = Mesh->At - MeshStartingAt;
   Assert(VertsBuffered == VERTS_PER_LINE);
-#endif
 
 #if 0
   // This is for anti-aliasing the lines; it draws extra triangles along the edges which can be set to alpha 0
