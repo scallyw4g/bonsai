@@ -114,6 +114,7 @@
             case CT_NameQualifier: { Result = CSz("CT_NameQualifier"); } break;
             case CT_MacroLiteral: { Result = CSz("CT_MacroLiteral"); } break;
             case CT_MacroLiteral_SelfRefExpansion: { Result = CSz("CT_MacroLiteral_SelfRefExpansion"); } break;
+            case CT_MacroExpansion: { Result = CSz("CT_MacroExpansion"); } break;
             case CT_PreprocessorPaste: { Result = CSz("CT_PreprocessorPaste"); } break;
             case CT_PreprocessorPaste_InvalidToken: { Result = CSz("CT_PreprocessorPaste_InvalidToken"); } break;
             case CT_PreprocessorInclude: { Result = CSz("CT_PreprocessorInclude"); } break;

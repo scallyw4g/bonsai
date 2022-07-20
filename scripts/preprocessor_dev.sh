@@ -4,8 +4,9 @@
 
 if [ "$Platform" == "Linux" ] ; then
 
-  # gdb --args bin/preprocessor_dev        \
-  bin/preprocessor_dev                   \
+  DEBUGGER=$1
+
+  $DEBUGGER bin/preprocessor_dev         \
     -D BONSAI_PREPROCESSOR               \
     -D BONSAI_LINUX                      \
     -D __x86_64__                        \
@@ -13,8 +14,9 @@ if [ "$Platform" == "Linux" ] ; then
     -I src                               \
     -I /usr/include                      \
     -I /usr/include/x86_64-linux-gnu     \
-    -I /usr/include/clang/6.0.0/include  \
-    -I /usr/include/c++/6
+    -I /usr/include/clang/6.0.0/include 
+
+    # -I /usr/include/c++/6 # NOTE(Jesse): This is where <random>, <algorithm> and <numeric> live.  Rewrite perlin.h
 
 elif [ "$Platform" == "Windows" ] ; then
 

@@ -65,18 +65,22 @@ unsigned int Int0 = 42;
 int          Int2 = 42;
 signed int   Int3 = 42;
 
-unsigned     Int1 = 42; // This needs to be fixed in the parser
-signed       Int4 = 42; // This needs to be fixed in the parser
+unsigned     Int1 = 42;
+signed       Int4 = 42;
 
 
 typedef unsigned short int u16;
 
 typedef long int __int64;
 typedef long int s64;
+
 #if BUG_TYPEDEF_THING
+// NOTE(Jesse): I'm actually not even sure this is valid code.  Clang rejects
+// it last I checked, though msvc accepted it at one point.
 typedef unsigned s64 u64;
 #endif
 
+typedef void func(int *ArgName);
 
 typedef unsigned int u32;
 
@@ -269,6 +273,7 @@ TestFunc1()
   if (whatever)
   {
     /* This should
+
      * parse
      */
 #define foo

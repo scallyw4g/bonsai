@@ -543,6 +543,22 @@ AdvanceParser(parser* Parser)
   return;
 }
 
+bonsai_function b32
+Scan(parser *Parser, c_token *Needle, sign Direction)
+{
+  b32 Result = False;
+
+  s32 TokenIndex = 0;
+  while (c_token *T = PeekTokenRawPointer(Parser, TokenIndex))
+  {
+    if (T == Needle) { Result = True; break; }
+
+    TokenIndex += Direction;
+  }
+
+  return Result;
+}
+
 bonsai_function c_token *
 AdvanceTo(parser* Parser, c_token* T)
 {
@@ -970,32 +986,38 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
   Parser->ErrorCode = ParseErrorCode_None;
 
 #if 0
-  c_token_cursor *At = &Parser->Tokens;
-  while (At &&
-         (At->Source == TokenCursorSource_MacroExpansion ||
-          At->Source == TokenCursorSource_MetaprogrammingExpansion ||
-          At->Source == TokenCursorSource_PasteOperator))
+  c_token_cursor *At = Parser->Tokens.Prev;
+  if (At)
   {
-    switch (Parser->Tokens.Source)
+    /* switch (At->Source) */
     {
-      case TokenCursorSource_MacroExpansion:
-      case TokenCursorSource_MetaprogrammingExpansion:
-      case TokenCursorSource_PasteOperator:
+      /* case TokenCursorSource_RootFile: */
+      /* case TokenCursorSource_Include: */
       {
-        DebugLine("**************");
-        DumpSingle(At, At->At);
-        DebugLine("**************");
-        break;
+        {
+          parser Temp = {
+            .Tokens = *At,
+          };
+
+          s32 NumReversed = 0;
+          while (c_token *T = PeekTokenRawPointer(&Temp, NumReversed--))
+          {
+            /* DebugChars("%d ", NumReversed); */
+            if (T && T->Type == CT_PreprocessorInclude && !StringsMatch(ErrorToken->Filename, T->Filename))
+            {
+              ParseError(&Temp, ErrorCode, CS("Included from here"), T);
+            }
+          }
+
+        }
+
+        /* break; */
       }
 
-      default: {} break;
+      /* default: {} break; */
     }
 
     At = At->Prev;
-  }
-  if (At && At->Prev)
-  {
-  DumpSingle(At->Prev, At->Prev->At);
   }
 #else
 
@@ -1015,9 +1037,6 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
   counted_string ParserName = {};
 
-  // TODO(Jesse): If we don't pass an ErrorToken in, does this do a bunch of
-  // unnecessary work?  ie. Advance to the end of the chain, then rewind to
-  // the token again?
   if (AdvanceTo(Parser, ErrorToken))
   {
   }
@@ -1352,8 +1371,16 @@ PeekTokenRawPointer(c_token_cursor *Tokens, s32 PeekCount)
 
     if (Next)
     {
-      Rewind(Next);
-      Result = PeekTokenRawPointer(Next, PeekCount - TokensRemaining*Direction );
+      c_token_cursor TmpNext = *Next;
+      if (Direction > 0)
+      {
+        Rewind(&TmpNext);
+      }
+      else
+      {
+        FastForward(&TmpNext);
+      }
+      Result = PeekTokenRawPointer(&TmpNext, PeekCount - TokensRemaining*Direction);
     }
   }
 
@@ -2006,6 +2033,8 @@ ExpandMacro( parse_context *Ctx,
   // NOTE(Jesse): Because of how the main preprocessor loop works (the part
   // that does #if #else evaluation) this routine must be able to require the
   // macro name token without calling RequireTokenRaw().
+  //
+  // NOTE(Jesse): Is this a bug??
   c_token MacroNameT = RequireTokenRaw(Parser, CToken(CT_MacroLiteral, Macro->Name));
 
   // NOTE(Jesse): These get filled out in the case where we've got a macro
@@ -4054,16 +4083,16 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
     if (ParsingSingleLineComment || ParsingMultiLineComment)
     {
+
+      // Set CommentToken on the first loop through when we start parsing a comment
       if (!CommentToken)
       {
         PushT.Erased = True;
         CommentToken = Push(PushT, &Result->Tokens);
       }
 
-      if (
-           PushT.Type == CTokenType_EscapedNewline ||
-           (ParsingMultiLineComment && PushT.Type == CTokenType_Newline)
-         )
+      if ( (PushT.Type == CTokenType_EscapedNewline) ||
+           (ParsingMultiLineComment && PushT.Type == CTokenType_Newline) )
       {
         LastTokenPushed = Push(PushT, &Result->Tokens);
 
@@ -4075,7 +4104,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
         CommentToken->LineNumber = LineNumber+1;
         CommentToken->Value.Start = Code.At;
-
       }
     }
     else if ( CommentToken && !(ParsingSingleLineComment || ParsingMultiLineComment) )
@@ -4087,7 +4115,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
       {
 
         // TODO(Jesse): Is this actually busted for \r\n ?  Seems like we should sub 2 for that case?
-        if (Count > 0) { Count -= 1; } // Exclude the \r or \n from single line comments
+        if (Count) { Count -= 1; } // Exclude the \r or \n from single line comments
 
         LastTokenPushed = Push(PushT, &Result->Tokens);
       }
@@ -5684,10 +5712,6 @@ ParseTypeSpecifier(parse_context *Ctx)
     Result.Indirection = ParseReferencesIndirectionAndPossibleFunctionPointerness(Parser);
   }
 
-  /* Result.HasTemplateArguments = TryAndEatTemplateParameterList(Parser, &Ctx->Datatypes); */
-  /* Result.Indirection = ParseReferencesIndirectionAndPossibleFunctionPointerness(Parser); */
-
-
   return Result;
 }
 
@@ -5795,6 +5819,12 @@ ParseAndPushFunctionPrototype(parse_context *Ctx, type_spec *ReturnType, counted
   else
   {
     // void FunctionName( arg A1, arg, A2);
+    //
+    if (OptionalToken(Parser, CT_KeywordAttribute))
+    {
+      EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+    }
+
     RequireToken(Parser, CTokenType_Semicolon);
   }
 
@@ -6898,7 +6928,8 @@ ParseAndPushTypedef(parse_context *Ctx)
   parser *Parser = Ctx->CurrentParser;
 
   type_spec Type = ParseTypeSpecifier(Ctx);
-  counted_string  Alias = {};
+  counted_string Alias = {};
+  b32 IsFunction = Type.Indirection.IsFunctionPointer;
 
   if (Type.Indirection.IsFunctionPointer)
   {
@@ -6907,6 +6938,18 @@ ParseAndPushTypedef(parse_context *Ctx)
   else
   {
     Alias = RequireToken(Parser, CTokenType_Identifier).Value;
+
+    if (PeekToken(Parser).Type == CTokenType_OpenParen)
+    {
+      // TODO(Jesse): This is pretty half-baked and probably should be represented
+      // differently.  I just hacked it in here to get typedef'd funcs to parse.
+      //
+      // I guess we could just eat the function arguments and discard them like we
+      // do for function pointers..
+      IsFunction = True;
+
+      EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+    }
   }
 
   if (OptionalToken(Parser, CT_KeywordAttribute))
@@ -6919,6 +6962,7 @@ ParseAndPushTypedef(parse_context *Ctx)
   type_def Typedef = {
     .Type = Type,
     .Alias = Alias,
+    .IsFunction = IsFunction,
   };
 
   Push(&Ctx->Datatypes.Typedefs, Typedef, Ctx->Memory);

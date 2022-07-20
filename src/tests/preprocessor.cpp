@@ -575,7 +575,71 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
 
     EatWhitespaceAndComments(Parser);
 
-    /* TestThat(Remaining(&Parser->Tokens) == 0); */
+
+    {
+      c_token *T = PopTokenRawPointer(Parser);
+      TestThat(T->Type == CT_PreprocessorInclude);
+    }
+    {
+      c_token *T = PopTokenRawPointer(Parser);
+      TestThat(T->Type == CTokenType_Space);
+    }
+    {
+      EatBetweenRaw(Parser, CTokenType_LT, CTokenType_GT);
+    }
+
+
+    {
+      c_token *T = PeekTokenRawPointer(Parser, -1);
+      TestThat(T->Type == CTokenType_GT);
+    }
+    {
+      c_token *T = PeekTokenRawPointer(Parser, -13);
+      TestThat(T->Type == CTokenType_LT);
+    }
+    {
+      c_token *T = PeekTokenRawPointer(Parser, -15);
+      TestThat(T->Type == CT_PreprocessorInclude);
+    }
+
+
+    {
+      c_token *T = PopTokenRawPointer(Parser);
+      TestThat(T->Type == CTokenType_Newline);
+    }
+
+    {
+      c_token *T = PopTokenRawPointer(Parser);
+      TestThat(T->Type == CTokenType_Identifier);
+      TestThat(StringsMatch(T->Value, CSz("hi")));
+    }
+    {
+      c_token *T = PopTokenRawPointer(Parser);
+      TestThat(T->Type == CTokenType_Newline);
+    }
+    {
+      c_token *T = PopTokenRawPointer(Parser);
+      TestThat(T->Type == CTokenType_Newline);
+    }
+
+    {
+      c_token *T = PeekTokenRawPointer(Parser, -1);
+      TestThat(T->Type == CTokenType_Newline);
+    }
+    {
+      c_token *T = PeekTokenRawPointer(Parser, -2);
+      TestThat(T->Type == CTokenType_Newline);
+    }
+    {
+      c_token *T = PeekTokenRawPointer(Parser, -3);
+      TestThat(T->Type == CTokenType_Identifier);
+      TestThat(StringsMatch(T->Value, CSz("hi")));
+    }
+
+
+
+
+    TestThat(Remaining(&Parser->Tokens) == 0);
   }
   else
   {
@@ -1763,7 +1827,6 @@ TestErrors(memory_arena *Memory)
     TestThat(Parser->ErrorCode == ParseErrorCode_InvalidTokenGenerated);
     TestThat(Parser->ErrorToken->LineNumber == 5);
   }
-#endif
 
   {
     parse_context Ctx = AllocateParseContext(Memory);
@@ -1772,6 +1835,23 @@ TestErrors(memory_arena *Memory)
     TestThat(Parser->ErrorCode == ParseErrorCode_InvalidTokenGenerated);
     TestThat(Parser->ErrorToken->LineNumber == 5);
   }
+#endif
+
+  {
+    parse_context Ctx = AllocateParseContext(Memory);
+    counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error14.cpp");
+    parser *Parser = ParserForFile(&Ctx, ParserFilename, TokenCursorSource_RootFile);
+    Ctx.CurrentParser = Parser;
+    ParseDatatypes(&Ctx);
+
+    TestThat(Parser->ErrorCode == ParseErrorCode_ExpectedSemicolonOrEquals);
+
+    /* TestThat(StringsMatch(Parser->Filename, ParserFilename)); */
+    /* TestThat(Parser->ErrorToken->LineNumber == 2); */
+    /* TestThat( OptionalToken(Parser, CToken(132151u)) ); */
+  }
+
+
 
 
 }

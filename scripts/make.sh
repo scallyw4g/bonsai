@@ -1,23 +1,20 @@
 #! /bin/bash
 
-BUILD_EVERYTHING=1
-
-DumpSourceFilesAndQuit=0
+BUILD_EVERYTHING=0
 
 CheckoutMetaOutput=0
 
-FirstPreprocessor=0
-BuildPreprocessor=0
-SecondPreprocessor=0
-
+BuildPreprocessor=1
 BuildExecutables=0
-BuildDebugTests=1
-BuildTests=0
+BuildDebugTests=0
+BuildTests=1
 BuildDebugSystem=0
 BuildExamples=0
 
+RunFirstPreprocessor=0
+RunSecondPreprocessor=0
 RunTests=0
-FinalPreprocessor=0
+RunFinalPreprocessor=0
 
 . scripts/preamble.sh
 
@@ -422,17 +419,11 @@ function RunPreprocessor
 
 function RunEntireBuild {
 
-  if [ $DumpSourceFilesAndQuit == 1 ]; then
-    SetSourceFiles
-    echo "gdb --args bin/preprocessor_dev" $SOURCE_FILES
-    exit 1
-  fi
-
   if [ $CheckoutMetaOutput == 1 ]; then
     git checkout "src/metaprogramming/output"
   fi
 
-  if [ $FirstPreprocessor == 1 ]; then
+  if [ $RunFirstPreprocessor == 1 ]; then
     PREPROCESSOR_EXECUTABLE="bin/preprocessor_current"
     RunPreprocessor
   fi
@@ -442,7 +433,7 @@ function RunEntireBuild {
     [ ! -x $PREPROCESSOR_EXECUTABLE ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
   fi
 
-  if [ $SecondPreprocessor == 1 ]; then
+  if [ $RunSecondPreprocessor == 1 ]; then
     ./scripts/preprocessor_dev.sh
   fi
 
@@ -456,7 +447,7 @@ function RunEntireBuild {
     ./scripts/run_tests.sh
   fi
 
-  if [ $FinalPreprocessor == 1 ]; then
+  if [ $RunFinalPreprocessor == 1 ]; then
     RunPreprocessor
   fi
 

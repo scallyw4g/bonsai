@@ -184,6 +184,7 @@ enum c_token_type
 
   CT_MacroLiteral,
   CT_MacroLiteral_SelfRefExpansion,
+  CT_MacroExpansion,
 
   CT_PreprocessorPaste,
   CT_PreprocessorPaste_InvalidToken,
@@ -207,6 +208,7 @@ meta(generate_string_table(c_token_type))
 #include <metaprogramming/output/generate_string_table_c_token_type.h>
 
 struct macro_def;
+struct c_token_cursor;
 struct c_token
 {
   c_token_type Type;
@@ -225,11 +227,12 @@ struct c_token
     r64 FloatValue;
     macro_def *Macro;
     c_token *QualifierName;
+    c_token_cursor *MacroExpansion;
   };
 
   operator bool()
   {
-    /* Assert( ((u64)Type ^ Value.Count) != 0); // Make sure they're both set, or both unset */
+    Assert( ((u64)Type ^ Value.Count) != 0); // Make sure they're both set, or both unset
     b32 Result = (b32)((u64)Type | Value.Count);
     return Result;
   }
@@ -576,6 +579,7 @@ struct type_def
 {
   type_spec Type;
   counted_string Alias;
+  b32 IsFunction;
 };
 meta(generate_stream(type_def))
 #include <metaprogramming/output/generate_stream_type_def.h>
@@ -937,7 +941,11 @@ PrintToken(c_token *Token, char_cursor *Dest = 0)
   if (Token)
   {
     Assert(Token->Type);
-    Assert(Token->Value.Start && Token->Value.Count);
+
+    // NOTE(Jesse): Annoyingly, printing out the line tray for multi-line comments
+    // requires that we allow printing tokens with Value.Count == 0
+    /* Assert(Token->Value.Start && Token->Value.Count); */
+
     counted_string Color = {};
 
     switch (Token->Type)

@@ -43,6 +43,15 @@ Rewind(stream_t* Stream)
   Stream->At = Stream->Start;
 }
 
+template <typename stream_t> inline void
+FastForward(stream_t* Stream)
+{
+  if (Stream->Start < Stream->End)
+  {
+    Stream->At = Stream->End -1;
+  }
+}
+
 ansi_stream
 AnsiStream(counted_string* String, counted_string Filename = {})
 {
