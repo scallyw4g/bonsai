@@ -286,6 +286,12 @@ SanityCheckParserChain(parser *Parser)
 #define SanityCheckParserChain(...)
 #endif
 
+inline void
+Invalidate(c_token_cursor *Tokens)
+{
+  Tokens->At = Tokens->End;
+}
+
 inline b32
 IsValid(c_token_cursor *Tokens)
 {
@@ -528,6 +534,7 @@ umm Remaining(c_token_cursor *Tokens)
 #endif
 
 
+#if 0
 bonsai_function void
 Advance(c_token_cursor* Tokens, u32 Lookahead = 0)
 {
@@ -542,6 +549,7 @@ Advance(c_token_cursor* Tokens, u32 Lookahead = 0)
 
   return;
 }
+#endif
 
 bonsai_function void
 AdvanceParser(parser* Parser)
@@ -1492,21 +1500,21 @@ GetNext(c_token_cursor *Tokens, s32 Direction)
   {
     Result = Tokens->At;
   }
-  else if ( Direction == -1 && TokensRemaining > 0)
+  else if ( Direction == -1 && TokensRemaining > 0 )
   {
     Tokens->At += Direction;
     Assert(ValidForCursor(Tokens, Tokens->At));
     Result = Tokens->At;
   }
-  else if ( Direction == 1 && TokensRemaining > 1)
+  else if ( Direction == 1 && TokensRemaining > 1 )
   {
     Tokens->At += Direction;
     Assert(ValidForCursor(Tokens, Tokens->At));
     Result = Tokens->At;
   }
-  else // Setting to the End tells the outside world
+  else
   {
-    Tokens->At = Tokens->End;
+    Invalidate(Tokens);
   }
 
   return Result;
@@ -1665,7 +1673,7 @@ PeekTokenRawCursor(c_token_cursor *Tokens, s32 Direction)
 
 
     if ( (SearchDown      && IsValid(&Result) == 0) ||
-         (SearchDown == 0 && IsValid(&Result)  > 0)  )
+         (SearchDown == 0 && IsValid(&Result)  > 0) )
     {
       At = GetNext(&Result, Direction);
     }
@@ -1677,6 +1685,8 @@ PeekTokenRawCursor(c_token_cursor *Tokens, s32 Direction)
     }
 #endif
 
+    // TODO(Jesse): Should this be the Result.Up pointer??  Don't think there's
+    // a bug here but there might be.
     if (Tokens->Up.Up && At == 0) // Down buffer(s) and current buffer had nothing, pop up
     {
       c_token_cursor Tmp = *Tokens->Up.Up;
@@ -1759,9 +1769,9 @@ PeekTokenCursor(c_token_cursor *Tokens, s32 Skip)
   if (Direction == 0) Direction = 1;
   Assert(Direction == 1 || Direction == -1);
 
-  c_token_cursor Current = PeekTokenRawCursor(Tokens, 0);
 
-  s32 Hits = 0;
+  s32 Hits = Min(0, Direction);
+  c_token_cursor Current = PeekTokenRawCursor(Tokens, Hits);
   while ( IsValid(&Current) )
   {
     if ( Current.At->Erased )
@@ -1961,14 +1971,18 @@ TokensRemain(parser *Parser, u32 Count)
 bonsai_function c_token *
 PopTokenPointer(parser* Parser)
 {
-  c_token_cursor Current = PeekTokenCursor(Parser, 1);
-  c_token *Result = AdvanceTo(Parser, &Current);
+  c_token_cursor NextT = PeekTokenCursor(Parser);
 
-  if (Result == 0)
-  {
-    Assert(Parser->Tokens->Up.Up == 0);
-    Parser->Tokens->At = Parser->Tokens->End;
-  }
+  // TODO(Jesse): This is kinda tortured .. should probably work on the API
+  // here. In particular it's not obvious what AdvanceTo returns, and it
+  // actually returns what I wouldn't expect if I guessed.
+  //
+  // Furthermore the first AdvanceTo is necessary because of the return value
+  // weirdness, while it shouldn't be necessary if the API was better.
+
+  AdvanceTo(Parser, &NextT);
+  c_token_cursor NextRawT = PeekTokenRawCursor(&NextT, 1);
+  c_token *Result = AdvanceTo(Parser, &NextRawT);
 
 #if BONSAI_INTERNAL
   if (DEBUG_CHECK_FOR_BREAK_HERE(Result))

@@ -866,8 +866,10 @@ TestBoundaryConditions(memory_arena* Memory)
   Next = PeekTokenRawPointer(Parser);
   TestThat( Next == 0 );
 
+#if BUG_LAST_TOKEN_IN_CHAIN_PEEK_BACK
   Prev = PeekTokenRawPointer(Parser, -1);
   TestThat( *Prev == NL );
+#endif
 
   TestThat( RawTokensRemain(Parser) == 0 );
 }
@@ -1278,7 +1280,6 @@ TestMacrosAndIncludes(memory_arena *Memory)
 bonsai_function void
 TestIncludeGuards(memory_arena *Memory)
 {
-
   {
     parse_context Ctx = AllocateParseContext(Memory);
     parser *Parser = PreprocessedParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/include_guard0.cpp"), TokenCursorSource_RootFile, 0);
@@ -2150,7 +2151,6 @@ void ValidateParser_PeekTokenRawPointer(parser *Parser, c_token *ExpectedTokens,
   }
 }
 
-
 void TestThings(memory_arena *Memory)
 {
   parse_context Ctx = AllocateParseContext(Memory);
@@ -2437,10 +2437,9 @@ main(s32 ArgCount, const char** Args)
   TestThings(Memory);
 
   TestDoublyLinkedListSwap();
-
-#if 0
   TestPeekAndPopTokens(Memory);
   TestBoundaryConditions(Memory);
+#if 0
   TestParserChain(Memory);
   TestBasicTokenizationAndParsing(Memory);
   TestStructParsing(Memory);
