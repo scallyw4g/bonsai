@@ -10,6 +10,7 @@
             case ParseErrorCode_RequireTokenFailed: { Result = CSz("ParseErrorCode_RequireTokenFailed"); } break;
             case ParseErrorCode_InvalidTokenGenerated: { Result = CSz("ParseErrorCode_InvalidTokenGenerated"); } break;
             case ParseErrorCode_DUnionParse: { Result = CSz("ParseErrorCode_DUnionParse"); } break;
+            case ParseErrorCode_InputStreamNull: { Result = CSz("ParseErrorCode_InputStreamNull"); } break;
             case ParseErrorCode_Unknown: { Result = CSz("ParseErrorCode_Unknown"); } break;
 
       }

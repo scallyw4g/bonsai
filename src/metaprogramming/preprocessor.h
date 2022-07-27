@@ -184,13 +184,14 @@ enum c_token_type
 
   CT_MacroLiteral,
   CT_MacroLiteral_SelfRefExpansion,
-  CT_MacroExpansion,
+  /* CT_MacroExpansion, */
 
   CT_PreprocessorPaste,
   CT_PreprocessorPaste_InvalidToken,
 
   CT_PreprocessorInclude,
   CT_PreprocessorIncludeNext,
+
   CT_PreprocessorIf,
   CT_PreprocessorElse,
   CT_PreprocessorElif,
@@ -203,12 +204,49 @@ enum c_token_type
   CT_PreprocessorError,
   CT_PreprocessorWarning,
   CT_Preprocessor__VA_ARGS__,
+
+  CT_InsertedCode,
 };
 meta(generate_string_table(c_token_type))
 #include <metaprogramming/output/generate_string_table_c_token_type.h>
 
-struct macro_def;
+enum c_token_flags
+{
+  CTFlags_None = 0,
+
+  CTFlags_RelativeInclude = 1 << 0,
+};
+
 struct c_token_cursor;
+#if 0
+struct c_token;
+struct up_info
+{
+  c_token_cursor *Tokens;
+  c_token *At;
+};
+
+up_info
+UpInfo(c_token_cursor *Tokens, c_token *At)
+{
+  up_info Result = {
+    .Tokens = Tokens,
+    .At = At,
+  };
+  return Result;
+}
+#endif
+
+
+struct macro_def;
+struct macro_expansion
+{
+  c_token_cursor *Expansion;
+  macro_def *Def;
+};
+
+
+struct parser;
 struct c_token
 {
   c_token_type Type;
@@ -216,26 +254,31 @@ struct c_token
 
   counted_string Filename;
   u32 LineNumber;
-  b32 Erased; // TODO(Jesse): Pack this into .. LineNumber ?  Should profile if
-              // it actually makes any perf difference.  It probably doesn't
-              // since the size of this struct is pretty weird anyways.
+  b32 Erased; // TODO(Jesse): Pack this into Flags
 
+  u8 Flags;
 
-  union {
-    /* s64 SignedValue; */ // TODO(Jesse id: 272): Fold `-` sign into this value at tokenization time?
-    u64 UnsignedValue;
-    r64 FloatValue;
-    macro_def *Macro;
-    c_token *QualifierName;
-    c_token_cursor *MacroExpansion;
+  union
+  {
+     /* s64           SignedValue; */ // TODO(Jesse id: 272): Fold `-` sign into this value at tokenization time?
+     u64              UnsignedValue;
+     r64              FloatValue;
+     c_token        * QualifierName;
+     c_token_cursor * Down;
+     counted_string   IncludePath; // TODO(Jesse): We probably care that these increase struct size by 8.  Heap allocate to fix
+
+     macro_expansion Macro;
   };
 
+  // TODO(Jesse)(correctness): The preprocessor doesn't support this for some reason..
+#ifndef BONSAI_PREPROCESSOR
   operator bool()
   {
     Assert( ((u64)Type ^ Value.Count) != 0); // Make sure they're both set, or both unset
     b32 Result = (b32)((u64)Type | Value.Count);
     return Result;
   }
+#endif
 
 };
 
@@ -248,6 +291,7 @@ enum token_cursor_source
   TokenCursorSource_MacroExpansion,
   TokenCursorSource_MetaprogrammingExpansion,
   TokenCursorSource_PasteOperator,
+  TokenCursorSource_CommandLineOption,
 };
 
 // TODO(Jesse): Add a way to append additional members to generated datatypes
@@ -255,8 +299,27 @@ enum token_cursor_source
 /* meta(generate_cursor(c_token)) */
 #include <metaprogramming/output/generate_cursor_c_token.h>
 
+
+bonsai_function c_token_cursor
+CTokenCursor(c_token *Start, c_token *End)
+{
+  c_token_cursor Result = {
+    .Start = Start,
+    .End = End,
+    .At = Start,
+  };
+  return Result;
+}
+
 meta(buffer(c_token))
 #include <metaprogramming/output/buffer_c_token.h>
+
+bonsai_function c_token_cursor
+CTokenCursor(c_token_buffer *Buf)
+{
+  c_token_cursor Result = CTokenCursor(Buf->Start, Buf->Start + Buf->Count);
+  return Result;
+}
 
 meta(buffer(c_token_buffer))
 #include <metaprogramming/output/buffer_c_token_buffer.h>
@@ -274,30 +337,20 @@ enum parse_error_code
 
   ParseErrorCode_DUnionParse,
 
+  ParseErrorCode_InputStreamNull,
+
   ParseErrorCode_Unknown,
 };
 meta(generate_string_table(parse_error_code))
 #include <metaprogramming/output/generate_string_table_parse_error_code.h>
 
-// TODO(Jesse): There's a reason we might want to move the Prev/Next pointers
-// onto the c_token_cursor struct.  See the TODO on the following tag.
-//
-// @reason_to_seperate_parser_and_tokens
-//
-// This change would also more cleanly track if we're undergoing macro
-// expansion .. I think
 struct parser
 {
   counted_string ErrorMessage;
   parse_error_code ErrorCode;
   c_token *ErrorToken;
 
-  c_token_cursor Tokens;
-
-  /* TODO(Jesse id: 154) This is pretty shitty because whenever we copy one of
-   * these structs this field has to be manually zeroed out ..
-   */
-  /* c_token_cursor OutputTokens; */
+  c_token_cursor *Tokens;
 };
 meta(generate_cursor(parser))
 #include <metaprogramming/output/generate_cursor_parser.h>
@@ -305,7 +358,14 @@ meta(generate_cursor(parser))
 meta(generate_stream(parser))
 #include <metaprogramming/output/generate_stream_parser.h>
 
-
+bonsai_function parser
+MakeParser(c_token_cursor *Tokens)
+{
+  parser Result = {
+    .Tokens = Tokens,
+  };
+  return Result;
+}
 
 meta(
   d_union struct_member_function
@@ -693,7 +753,7 @@ struct macro_def
 {
   macro_type Type;
   counted_string Name;
-  parser Body;
+  c_token_cursor Body;
 
   counted_string_buffer NamedArguments;
   b32 Variadic;
@@ -1086,40 +1146,41 @@ CToken(c_token_type Type, counted_string Value = CSz(""))
   return Result;
 }
 
-c_token_cursor
-AllocateTokenBuffer(memory_arena* Memory, u32 Count, token_cursor_source Source, u32 LineNumber)
+inline void
+CTokenCursor(c_token_cursor *Result, c_token *Buffer, umm Count, counted_string Filename, token_cursor_source Source, c_token_cursor_up Up)
 {
-  c_token_cursor Result = {
-    .Source = Source
-  };
-  Result.Start = AllocateProtection(c_token, Memory, Count, False);
-  Result.At = Result.Start;
-  Result.End = Result.Start + Count;
+  Result->Filename = Filename;
+  Result->Source = Source;
+  Result->Start = Buffer;
+  Result->At = Result->Start;
+  Result->End = Result->Start + Count;
+  Result->Up = Up;
+}
 
+inline void
+CTokenCursor(c_token_cursor *Result, umm Count, memory_arena *Memory, counted_string Filename, token_cursor_source Source, c_token_cursor_up Up)
+{
+  c_token *Buffer = AllocateProtection(c_token, Memory, Count, False);
+  CTokenCursor(Result, Buffer, Count, Filename, Source, Up);
+}
+
+c_token_cursor *
+AllocateTokenCursor(memory_arena* Memory, counted_string Filename, umm Count, token_cursor_source Source, u32 LineNumber, c_token_cursor_up Up)
+{
+  c_token_cursor *Result = Allocate(c_token_cursor, Memory, 1);
+  CTokenCursor(Result, Count, Memory, Filename, Source, Up);
   return Result;
 }
 
 bonsai_function parser
-AllocateParser(counted_string Filename, u32 LineNumber, u32 TokenCount, token_cursor_source Source, u32 OutputBufferTokenCount, memory_arena *Memory)
+AllocateParser(counted_string Filename, u32 LineNumber, u32 TokenCount, token_cursor_source Source, u32 OutputBufferTokenCount, c_token_cursor_up Up, memory_arena *Memory)
 {
   TIMED_FUNCTION();
 
   parser Result = {};
 
-#if 0
-  if (OutputBufferTokenCount)
-  {
-    Result.OutputTokens = AllocateTokenBuffer(Memory, OutputBufferTokenCount, Source, LineNumber);
-    if (!Result.OutputTokens.Start)
-    {
-      Error("Allocating OutputTokens Buffer");
-      return Result;
-    }
-  }
-#endif
-
-  Result.Tokens = AllocateTokenBuffer(Memory, TokenCount, Source, LineNumber);
-  if (!Result.Tokens.Start)
+  Result.Tokens = AllocateTokenCursor(Memory, Filename, TokenCount, Source, LineNumber, Up);
+  if (!Result.Tokens->Start)
   {
     Error("Allocating Token Buffer");
     return Result;
@@ -1129,11 +1190,11 @@ AllocateParser(counted_string Filename, u32 LineNumber, u32 TokenCount, token_cu
 }
 
 bonsai_function parser*
-AllocateParserPtr(counted_string Filename, u32 LineNumber, u32 TokenCount, token_cursor_source Source, u32 OutputBufferTokenCount, memory_arena *Memory)
+AllocateParserPtr(counted_string Filename, u32 LineNumber, u32 TokenCount, token_cursor_source Source, u32 OutputBufferTokenCount, c_token_cursor_up Up,  memory_arena *Memory)
 {
   Assert(OutputBufferTokenCount == 0);
   parser *Result = AllocateProtection(parser, Memory, 1, False);
-  *Result = AllocateParser(Filename, LineNumber, TokenCount, Source, OutputBufferTokenCount, Memory);
+  *Result = AllocateParser(Filename, LineNumber, TokenCount, Source, OutputBufferTokenCount, Up, Memory);
   return Result;
 }
 
@@ -1191,7 +1252,7 @@ PeekToken(ansi_stream* Stream, u32 Lookahead = 0)
   }
   else
   {
-    Warn("Attempted to get token past end of stream on file : %.*s", (u32)Stream->Filename.Count, Stream->Filename.Start);
+    Warn("Attempted to get token past end of stream on file : %S", Stream->Filename);
   }
 
   return Result;
@@ -1207,7 +1268,7 @@ bonsai_function b32
 Contains(parser *Parser, c_token *T)
 {
   b32 Result = False;
-  if (T >= Parser->Tokens.Start && T < Parser->Tokens.End)
+  if (T >= Parser->Tokens->Start && T < Parser->Tokens->End)
   {
     Result = True;
   }
@@ -1250,4 +1311,10 @@ AllocateParseContext(memory_arena *Memory)
   return Ctx;
 }
 
+bonsai_function b32
+ValidForCursor(c_token_cursor *Tokens, c_token *T)
+{
+  b32 Result = T < Tokens->End && T >= Tokens->Start;
+  return Result;
+}
 

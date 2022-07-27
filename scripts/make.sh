@@ -4,7 +4,7 @@ BUILD_EVERYTHING=0
 
 CheckoutMetaOutput=0
 
-BuildPreprocessor=1
+BuildPreprocessor=0
 BuildExecutables=0
 BuildDebugTests=0
 BuildTests=1

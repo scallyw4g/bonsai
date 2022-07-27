@@ -29,13 +29,16 @@
 
 #  define InvalidCodePath() Error("Invalid Code Path - Panic!"); Assert(False)
 
-#  define RuntimeBreak() do {                                                       \
-  if (Global_DoRuntimeBreak) {\
-    LogDirect("\n\n %S! Break%S\n", TerminalColors.Red, TerminalColors.White);       \
-    PLATFORM_RUNTIME_BREAK();\
-  } else {   \
-    DebugLine("   Break   - Skipped");       \
-  } \
+#  define RuntimeBreak() do {                         \
+  if (Global_DoRuntimeBreak) {                        \
+    LogDirect(Newline);                               \
+    LogDirect("%S", TerminalColors.Red);              \
+    LogDirect(" # Runtime Break # " Newline Newline); \
+    LogDirect("%S", TerminalColors.White);            \
+    PLATFORM_RUNTIME_BREAK();                         \
+  } else {                                            \
+    DebugLine("   Break   - Skipped");                \
+  }                                                   \
 } while (false)
 
 #define TriggeredRuntimeBreak() do { if (GetDebugState && GetDebugState()->TriggerRuntimeBreak) { RuntimeBreak(); } } while (0)

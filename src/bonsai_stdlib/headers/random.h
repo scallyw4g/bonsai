@@ -33,10 +33,10 @@ RandomU32(random_series *Entropy)
   return Result;
 }
 
-inline s32
+inline u32
 RandomPositiveS32(random_series *Entropy)
 {
-  s32 Result = Abs((s32)RandomU32(Entropy));
+  u32 Result = Abs((s32)RandomU32(Entropy));
   Assert(Result >= 0);
   return Result;
 }

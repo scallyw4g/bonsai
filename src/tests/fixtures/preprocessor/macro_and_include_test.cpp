@@ -30,6 +30,8 @@ foo
 
 foo
 
+// Include Test
+
 #undef foo
 #include <src/tests/fixtures/preprocessor/include_test.cpp> // \
 this is actually commented
@@ -78,6 +80,7 @@ This line is actually commented
 #define MacroFunction9(a, b) a ## b
 
 #define MacroFunction10(a, b, c) a ## b ## c
+
 
 
 int MacroKeyword = 42;

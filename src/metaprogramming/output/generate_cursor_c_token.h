@@ -1,16 +1,22 @@
 
+struct c_token_cursor;
+struct c_token_cursor_up
+{
+  c_token_cursor *Up;
+  c_token *At;
+};
+
     struct c_token_cursor
     {
+      token_cursor_source Source;
+
       c_token* Start;
       c_token* End;
       c_token* At;
 
-      c_token_cursor *Next;
-      c_token_cursor *Prev;
+      c_token_cursor_up Up;
 
       counted_string Filename;
-
-      token_cursor_source Source;
     };
 
     bonsai_function c_token_cursor

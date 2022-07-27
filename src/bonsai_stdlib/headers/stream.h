@@ -329,14 +329,14 @@ ReadUntilTerminatorString(ansi_stream *Cursor, counted_string Terminator)
   return Result;
 }
 
-bonsai_function b32
+bonsai_function char
 Advance(ansi_stream* Cursor, u32 Lookahead = 0)
 {
-  b32 Result = False;
+  char Result = False;
   if (Remaining(Cursor, Lookahead))
   {
+    Result = *Cursor->At;
     Cursor->At += Lookahead+1;
-    Result = True;
   }
   else
   {

@@ -114,7 +114,6 @@
             case CT_NameQualifier: { Result = CSz("CT_NameQualifier"); } break;
             case CT_MacroLiteral: { Result = CSz("CT_MacroLiteral"); } break;
             case CT_MacroLiteral_SelfRefExpansion: { Result = CSz("CT_MacroLiteral_SelfRefExpansion"); } break;
-            case CT_MacroExpansion: { Result = CSz("CT_MacroExpansion"); } break;
             case CT_PreprocessorPaste: { Result = CSz("CT_PreprocessorPaste"); } break;
             case CT_PreprocessorPaste_InvalidToken: { Result = CSz("CT_PreprocessorPaste_InvalidToken"); } break;
             case CT_PreprocessorInclude: { Result = CSz("CT_PreprocessorInclude"); } break;
@@ -131,6 +130,7 @@
             case CT_PreprocessorError: { Result = CSz("CT_PreprocessorError"); } break;
             case CT_PreprocessorWarning: { Result = CSz("CT_PreprocessorWarning"); } break;
             case CT_Preprocessor__VA_ARGS__: { Result = CSz("CT_Preprocessor__VA_ARGS__"); } break;
+            case CT_InsertedCode: { Result = CSz("CT_InsertedCode"); } break;
 
       }
       return Result;

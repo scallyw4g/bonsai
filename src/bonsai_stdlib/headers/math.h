@@ -154,11 +154,10 @@ Max(s32 A, s32 B)
 }
 
 // TODO(Jesse): Should this not return u32?
-inline s32
+inline u32
 Abs(s32 Int)
 {
-  s32 Result = Int;
-  Result = Result < 0 ? -Result : Result;
+  u32 Result = (u32)(Int < 0 ? -Int : Int);
   return Result;
 }
 
