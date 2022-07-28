@@ -314,6 +314,12 @@ TokenShouldModifyLineCount(c_token *T, token_cursor_source Source)
   return Result;
 }
 
+bonsai_function void
+CopyInto(c_token_cursor_up *Src, c_token_cursor *Dest)
+{
+  NotImplemented;
+}
+
 bonsai_function c_token *
 RewindTo(parser* Parser, c_token *T)
 {
@@ -342,10 +348,9 @@ RewindTo(parser* Parser, c_token *T)
       }
       else
       {
-        if (Parser->Tokens->Up.Up)
+        if (Parser->Tokens->Up.Start)
         {
-          Parser->Tokens = Parser->Tokens->Up.Up;
-          Parser->Tokens->At = Parser->Tokens->Up.At;
+          CopyInto(&Parser->Tokens->Up, Parser->Tokens);
         }
         else
         {
@@ -1687,10 +1692,10 @@ PeekTokenRawCursor(c_token_cursor *Tokens, s32 Direction)
 
     // TODO(Jesse): Should this be the Result.Up pointer??  Don't think there's
     // a bug here but there might be.
-    if (Tokens->Up.Up && At == 0) // Down buffer(s) and current buffer had nothing, pop up
+    if (Result.Up.Up && At == 0) // Down buffer(s) and current buffer had nothing, pop up
     {
-      c_token_cursor Tmp = *Tokens->Up.Up;
-      Tmp.At = Tokens->Up.At;
+      c_token_cursor Tmp = *Result.Up.Up;
+      Tmp.At = Result.Up.At;
 
       Result = PeekTokenRawCursor(&Tmp, Min(0, Direction));
     }
@@ -4587,11 +4592,16 @@ RunPreprocessor(parse_context *Ctx, parser *Parser, memory_arena *Memory)
         EraseToken(T);
         EraseToken(InsertedCodeT);
 
-        InsertedCodeT->Down = ResolveInclude(Ctx, Parser, T);
+        InsertedCodeT->Down = Allocate(c_token_cursor, Memory, 1);
+        c_token_cursor *Inc = ResolveInclude(Ctx, Parser, T);
+        *InsertedCodeT->Down = *Inc;
+
 
         if (InsertedCodeT->Down)
         {
-          InsertedCodeT->Down->Up.Up = Parser->Tokens;
+          InsertedCodeT->Down->Up.Up = Allocate(c_token_cursor, Memory, 1);
+          *InsertedCodeT->Down->Up.Up = *Parser->Tokens;
+
           InsertedCodeT->Down->Up.At = Parser->Tokens->At;
           Assert(InsertedCodeT->Down->At == InsertedCodeT->Down->Start);
         }
@@ -4802,6 +4812,13 @@ RunPreprocessor(parse_context *Ctx, parser *Parser, memory_arena *Memory)
   return (Parser->ErrorCode == ParseErrorCode_None);
 }
 
+bonsai_function c_token_cursor *
+CTokenCursorForAnsiStream(parse_context *Ctx, ansi_stream SourceFileStream, token_cursor_source Source)
+{
+  c_token_cursor *Result = TokenizeAnsiStream(SourceFileStream, Ctx->Memory, False, Ctx, Source);
+  return Result;
+}
+
 bonsai_function parser *
 ParserForAnsiStream(parse_context *Ctx, ansi_stream SourceFileStream, token_cursor_source Source)
 {
@@ -4813,7 +4830,9 @@ ParserForAnsiStream(parse_context *Ctx, ansi_stream SourceFileStream, token_curs
   {
     if (SourceFileStream.Start)
     {
-      Result->Tokens = TokenizeAnsiStream(SourceFileStream, Ctx->Memory, False, Ctx, Source);
+      c_token_cursor *Allocation = CTokenCursorForAnsiStream(Ctx, SourceFileStream, Source);
+      Result->Tokens = Allocate(c_token_cursor, Ctx->Memory, 1);
+      *Result->Tokens = *Allocation;
     }
     else
     {
@@ -4840,16 +4859,18 @@ ParserForFile(parse_context *Ctx, counted_string Filename, token_cursor_source S
 bonsai_function parser *
 PreprocessedParserForFile(parse_context *Ctx, counted_string Filename, token_cursor_source Source, c_token_cursor *Up)
 {
-  parser *Result = ParserForFile(Ctx, Filename, Source);
-  if (Result && Result->ErrorCode == ParseErrorCode_None)
+  parser *Result = 0;
+  parser *Parser = ParserForFile(Ctx, Filename, Source);
+  if (Parser && Parser->ErrorCode == ParseErrorCode_None)
   {
-    if (RunPreprocessor(Ctx, Result, Ctx->Memory))
+    if (RunPreprocessor(Ctx, Parser, Ctx->Memory))
     {
+      Result =  Allocate(parser, Ctx->Memory, 1);
+      *Result = *Parser;
       // All good
     }
     else
     {
-      Result = 0;
       Error("While running preprocessor");
     }
   }

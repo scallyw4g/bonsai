@@ -1671,6 +1671,14 @@ TestParserChain(memory_arena *Memory)
 
     /* RuntimeBreak(); */
 
+    FullRewind(Parser);
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_0"))));
+
+    FullRewind(Parser);
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_0"))));
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_1"))));
+
+    FullRewind(Parser);
     TestThat(RequireToken(Parser, CToken(CSz("parser_token_0"))));
     TestThat(RequireToken(Parser, CToken(CSz("parser_token_1"))));
     TestThat(RequireToken(Parser, CToken(CSz("parser_token_2"))));
@@ -1678,13 +1686,11 @@ TestParserChain(memory_arena *Memory)
     TestThat(RequireToken(Parser, CToken(CSz("parser_token_4"))));
 
     FullRewind(Parser);
-
     TestThat(RequireToken(Parser, CToken(CSz("parser_token_0"))));
     TestThat(RequireToken(Parser, CToken(CSz("parser_token_1"))));
     TestThat(RequireToken(Parser, CToken(CSz("parser_token_2"))));
     TestThat(RequireToken(Parser, CToken(CSz("parser_token_3"))));
     TestThat(RequireToken(Parser, CToken(CSz("parser_token_4"))));
-
   }
 
 
@@ -2439,8 +2445,8 @@ main(s32 ArgCount, const char** Args)
   TestDoublyLinkedListSwap();
   TestPeekAndPopTokens(Memory);
   TestBoundaryConditions(Memory);
-#if 0
   TestParserChain(Memory);
+#if 0
   TestBasicTokenizationAndParsing(Memory);
   TestStructParsing(Memory);
   TestCommentSituation(Memory);
