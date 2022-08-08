@@ -596,17 +596,21 @@ Advance(c_token_cursor* Tokens, u32 Lookahead = 0)
 bonsai_function c_token *
 AdvanceTo(parser *Parser, peek_result *Peek)
 {
-  c_token *Result = 0;
-  if (Peek->At)
-  {
-    // NOTE(Jesse): Yes, it's really weird we return the thing we were on here
-    // instead of what we're advancing to.  Yes, we should change it.
-    Result = Parser->Tokens->At;
+  Assert(Parser->Tokens->At < Parser->Tokens->End);
+  // NOTE(Jesse): Yes, it's really weird we return the thing we were on here
+  // instead of what we're advancing to.  Yes, we should change it.
+  c_token *Result = Parser->Tokens->At;
 
+  if (IsValid(Peek))
+  {
     Assert(Peek->Tokens);
     Parser->Tokens = Peek->Tokens;
     Parser->Tokens->At = Peek->At;
     Assert(Peek->Tokens->At == Peek->At);
+  }
+  else
+  {
+    Parser->Tokens->At = Parser->Tokens->End;
   }
 
   return Result;
@@ -1755,7 +1759,8 @@ PeekTokenRawCursor(c_token_cursor *Tokens, s32 Direction, b32 CanSearchDown)
       {
         c_token *UpAt = Tokens->Up.Up->At;
         Tokens->Up.Up->At = Tokens->Up.At;
-        Assert(Tokens->Up.At->Type == CT_InsertedCode);
+        Assert(Tokens->Up.At->Type == CT_InsertedCode ||
+               Tokens->Up.At->Type == CT_MacroLiteral);
         Result = PeekTokenRawCursor(Tokens->Up.Up, Direction);
         Tokens->Up.Up->At = UpAt;
         Result.DoNotDescend = True;
@@ -1786,7 +1791,8 @@ PeekTokenRawCursor(c_token_cursor *Tokens, s32 Direction, b32 CanSearchDown)
       {
         c_token *UpAt = Tokens->Up.Up->At;
         Tokens->Up.Up->At = Tokens->Up.At;
-        Assert(Tokens->Up.At->Type == CT_InsertedCode);
+        Assert(Tokens->Up.At->Type == CT_InsertedCode ||
+               Tokens->Up.At->Type == CT_MacroLiteral);
         Result = PeekTokenRawCursor(Tokens->Up.Up, 0, False);
         Tokens->Up.Up->At = UpAt;
         Result.DoNotDescend = True;
@@ -1794,7 +1800,7 @@ PeekTokenRawCursor(c_token_cursor *Tokens, s32 Direction, b32 CanSearchDown)
 
     } break;
 
-    InvalidDefaultCase();
+    InvalidDefaultCase;
   }
 
   *Tokens = Cached;
@@ -2091,14 +2097,7 @@ PopTokenRaw(parser* Parser)
   c_token *T = 0;
 
   peek_result Peek = PeekTokenRawCursor(Parser, 1);
-  if (IsValid(&Peek))
-  {
-    T = AdvanceTo(Parser, &Peek);
-  }
-  else
-  {
-    Invalidate(Parser->Tokens);
-  }
+  T = AdvanceTo(Parser, &Peek);
 
   c_token Result = {};
   if (T) Result = *T;
@@ -4826,6 +4825,8 @@ RunPreprocessor(parse_context *Ctx, parser *Parser, memory_arena *Memory)
             {
               EraseBetweenExcluding(Parser, T, Parser->Tokens->At);
               T->Macro.Expansion = Expanded->Tokens;
+              Expanded->Tokens->Up.Up = Parser->Tokens;
+              Expanded->Tokens->Up.At = T;
             }
           }
           else

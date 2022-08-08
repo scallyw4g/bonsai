@@ -2167,12 +2167,12 @@ typedef c_token* (*peek_pointer_func)(parser *, s32);
 void ValidateParser(peek_pointer_func Peeker, pop_pointer_func Popper, parser *Parser, c_token *ExpectedTokens, s32 TokenCount)
 {
   {
-    c_token *T = Peeker(Parser, -2);
+    auto T = Peeker(Parser, -2);
     TestThat(T == 0);
     Peeker(Parser, -2);
   }
   {
-    c_token *T = Peeker(Parser, -1);
+    auto T = Peeker(Parser, -1);
     TestThat(T == 0);
     Peeker(Parser, -1);
   }
@@ -2184,8 +2184,8 @@ void ValidateParser(peek_pointer_func Peeker, pop_pointer_func Popper, parser *P
     {
       Assert(AbsOffset < TokenCount);
       int PeekOffset = AbsOffset - At;
-      c_token *T = Peeker(Parser, PeekOffset);
-      TestThat( T && *T == ExpectedTokens[AbsOffset]);
+      auto T = Peeker(Parser, PeekOffset);
+      TestThat( AreEqual(T, ExpectedTokens[AbsOffset]) );
       Peeker(Parser, PeekOffset);
     }
 
@@ -2194,12 +2194,12 @@ void ValidateParser(peek_pointer_func Peeker, pop_pointer_func Popper, parser *P
 
   At = TokenCount;
   {
-    c_token *T = Peeker(Parser, At++);
+    auto T = Peeker(Parser, At++);
     TestThat(T == 0);
     Peeker(Parser, At);
   }
   {
-    c_token *T = Peeker(Parser, At++);
+    auto T = Peeker(Parser, At++);
     TestThat(T == 0);
     Peeker(Parser, At);
   }
@@ -2483,13 +2483,13 @@ main(s32 ArgCount, const char** Args)
   TestThings(Memory);
 
   TestDoublyLinkedListSwap();
-  TestPeekAndPopTokens(Memory);
   TestBoundaryConditions(Memory);
+  TestPeekAndPopTokens(Memory);
   TestParserChain(Memory);
-#if 0
   TestBasicTokenizationAndParsing(Memory);
   TestStructParsing(Memory);
   TestCommentSituation(Memory);
+#if 0
   TestMacrosAndIncludes(Memory);
   TestIncludeGuards(Memory);
   TestDefinesAndConditionals(Memory);

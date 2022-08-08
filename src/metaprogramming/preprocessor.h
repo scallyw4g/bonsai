@@ -1088,9 +1088,7 @@ PrintToken(c_token Token, char_cursor *Dest = 0)
   PrintToken(&Token, Dest);
 }
 
-// TODO(Jesse, id: 347, tags:immediate) : Nuke this
-b32
-operator==(c_token T1, c_token T2)
+b32 AreEqual(c_token T1, c_token T2)
 {
   b32 Result = (T1.Type == T2.Type);
 
@@ -1107,6 +1105,43 @@ operator==(c_token T1, c_token T2)
       Result &= StringsMatch(T1.Value, T2.Value);
     }
   }
+  return Result;
+}
+
+b32 AreEqual(c_token *T1, c_token T2)
+{
+  b32 Result = False;
+  if (T1)
+  {
+    Result = AreEqual(*T1, T2);
+  }
+  return Result;
+}
+
+b32 AreEqual(c_token T1, c_token *T2)
+{
+  b32 Result = False;
+  if (T2)
+  {
+    Result = AreEqual(T1, *T2);
+  }
+  return Result;
+}
+
+b32 AreEqual(c_token *T1, c_token *T2)
+{
+  b32 Result = False;
+  if (T1 && T2)
+  {
+    Result = AreEqual(*T1, *T2);
+  }
+  return Result;
+}
+
+b32
+operator==(c_token T1, c_token T2)
+{
+  b32 Result = AreEqual(T1, T2);
   return Result;
 }
 
