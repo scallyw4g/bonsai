@@ -264,9 +264,14 @@ struct c_token
      u64              UnsignedValue;
      r64              FloatValue;
      c_token        * QualifierName;
-     c_token_cursor * Down;
      counted_string   IncludePath; // TODO(Jesse): We probably care that these increase struct size by 8.  Heap allocate to fix
 
+     // NOTE(Jesse): I ordered the 'macro_expansion' struct such that the
+     // pointer to the expanded macro will be at the same place as the `Down`
+     // poninter.  This is sketchy as fuck, but it'll work, and this the
+     // assertions at @janky-macro-expansion-struct-ordering should catch the
+     // bug if we reorder the pointers.
+     c_token_cursor * Down;
      macro_expansion Macro;
   };
 
@@ -274,12 +279,19 @@ struct c_token
 #ifndef BONSAI_PREPROCESSOR
   operator bool()
   {
-    Assert( ((u64)Type ^ Value.Count) != 0); // Make sure they're both set, or both unset
     b32 Result = (b32)((u64)Type | Value.Count);
     return Result;
   }
 #endif
 
+};
+
+struct peek_result
+{
+  c_token_cursor *Tokens;
+
+  c_token *At;
+  b32 DoNotDescend;
 };
 
 enum token_cursor_source
@@ -292,6 +304,8 @@ enum token_cursor_source
   TokenCursorSource_MetaprogrammingExpansion,
   TokenCursorSource_PasteOperator,
   TokenCursorSource_CommandLineOption,
+
+  TokenCursorSource_Count,
 };
 
 // TODO(Jesse): Add a way to append additional members to generated datatypes
@@ -1138,10 +1152,10 @@ CToken(counted_string Value)
 inline c_token
 CToken(c_token_type Type, counted_string Value = CSz(""))
 {
-  c_token Result = {
-    .Type = Type,
-    .Value = Value
-  };
+  c_token Result = {};
+
+  Result.Type = Type;
+  Result.Value = Value;
 
   return Result;
 }
@@ -1312,7 +1326,7 @@ AllocateParseContext(memory_arena *Memory)
 }
 
 bonsai_function b32
-ValidForCursor(c_token_cursor *Tokens, c_token *T)
+IsValidForCursor(c_token_cursor *Tokens, c_token *T)
 {
   b32 Result = T < Tokens->End && T >= Tokens->Start;
   return Result;

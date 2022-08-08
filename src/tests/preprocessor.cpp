@@ -1673,10 +1673,39 @@ TestParserChain(memory_arena *Memory)
 
     FullRewind(Parser);
     TestThat(RequireToken(Parser, CToken(CSz("parser_token_0"))));
+    FullRewind(Parser);
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_0"))));
+
+    SanityCheckParserChain(Parser);
 
     FullRewind(Parser);
     TestThat(RequireToken(Parser, CToken(CSz("parser_token_0"))));
     TestThat(RequireToken(Parser, CToken(CSz("parser_token_1"))));
+    FullRewind(Parser);
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_0"))));
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_1"))));
+
+    SanityCheckParserChain(Parser);
+
+    FullRewind(Parser);
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_0"))));
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_1"))));
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_2"))));
+    FullRewind(Parser);
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_0"))));
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_1"))));
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_2"))));
+
+    FullRewind(Parser);
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_0"))));
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_1"))));
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_2"))));
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_3"))));
+    FullRewind(Parser);
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_0"))));
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_1"))));
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_2"))));
+    TestThat(RequireToken(Parser, CToken(CSz("parser_token_3"))));
 
     FullRewind(Parser);
     TestThat(RequireToken(Parser, CToken(CSz("parser_token_0"))));
@@ -1684,7 +1713,6 @@ TestParserChain(memory_arena *Memory)
     TestThat(RequireToken(Parser, CToken(CSz("parser_token_2"))));
     TestThat(RequireToken(Parser, CToken(CSz("parser_token_3"))));
     TestThat(RequireToken(Parser, CToken(CSz("parser_token_4"))));
-
     FullRewind(Parser);
     TestThat(RequireToken(Parser, CToken(CSz("parser_token_0"))));
     TestThat(RequireToken(Parser, CToken(CSz("parser_token_1"))));
@@ -2101,60 +2129,82 @@ TestLineNumbers(memory_arena *Memory)
 
 #endif
 
-void ValidateParser_PeekTokenPointer(parser *Parser, c_token *ExpectedTokens, umm TokenCount)
+typedef c_token (*struct_peek_func)(parser *, s32);
+void ValidateParser_Struct(struct_peek_func Peeker, parser *Parser, c_token *ExpectedTokens, s32 TokenCount)
 {
   {
-    c_token *T = PeekTokenPointer(Parser, -2);
+    c_token T = Peeker(Parser, -2);
     TestThat(T == 0);
   }
   {
-    c_token *T = PeekTokenPointer(Parser, -1);
+    c_token T = Peeker(Parser, -1);
     TestThat(T == 0);
   }
 
-  u32 At = 0;
+  s32 At = 0;
   for (; At < TokenCount; ++At)
   {
-    c_token *T = PeekTokenPointer(Parser, At);
-    TestThat(T && *T == ExpectedTokens[At]);
+    c_token T = Peeker(Parser, At);
+    TestThat(T == ExpectedTokens[At]);
   }
 
   {
-    c_token *T = PeekTokenPointer(Parser, At++);
+    c_token T = Peeker(Parser, At++);
     TestThat(T == 0);
   }
   {
-    c_token *T = PeekTokenPointer(Parser, At++);
+    c_token T = Peeker(Parser, At++);
     TestThat(T == 0);
   }
 }
+typedef c_token* (*pop_struct_func)(parser *, s32);
+typedef c_token* (*peek_struct_func)(parser *, s32);
 
-void ValidateParser_PeekTokenRawPointer(parser *Parser, c_token *ExpectedTokens, umm TokenCount)
+typedef c_token* (*require_pointer_func)(parser *, c_token);
+typedef c_token* (*pop_pointer_func)(parser *);
+typedef c_token* (*peek_pointer_func)(parser *, s32);
+
+void ValidateParser(peek_pointer_func Peeker, pop_pointer_func Popper, parser *Parser, c_token *ExpectedTokens, s32 TokenCount)
 {
   {
-    c_token *T = PeekTokenRawPointer(Parser, -2);
+    c_token *T = Peeker(Parser, -2);
     TestThat(T == 0);
+    Peeker(Parser, -2);
   }
   {
-    c_token *T = PeekTokenRawPointer(Parser, -1);
+    c_token *T = Peeker(Parser, -1);
     TestThat(T == 0);
+    Peeker(Parser, -1);
   }
 
-  u32 At = 0;
-  for (; At < TokenCount; ++At)
+  s32 At = 0;
+  for (; At < TokenCount; At++)
   {
-    c_token *T = PeekTokenRawPointer(Parser, At);
-    TestThat(T && *T == ExpectedTokens[At]);
+    for (s32 AbsOffset = 0; AbsOffset < TokenCount; AbsOffset++)
+    {
+      Assert(AbsOffset < TokenCount);
+      int PeekOffset = AbsOffset - At;
+      c_token *T = Peeker(Parser, PeekOffset);
+      TestThat( T && *T == ExpectedTokens[AbsOffset]);
+      Peeker(Parser, PeekOffset);
+    }
+
+    TestThat(ExpectedTokens[At] == *(Popper(Parser)));
   }
 
+  At = TokenCount;
   {
-    c_token *T = PeekTokenRawPointer(Parser, At++);
+    c_token *T = Peeker(Parser, At++);
     TestThat(T == 0);
+    Peeker(Parser, At);
   }
   {
-    c_token *T = PeekTokenRawPointer(Parser, At++);
+    c_token *T = Peeker(Parser, At++);
     TestThat(T == 0);
+    Peeker(Parser, At);
   }
+
+  FullRewind(Parser);
 }
 
 void TestThings(memory_arena *Memory)
@@ -2262,20 +2312,8 @@ void TestSingleCursorTokenControl(memory_arena *Memory)
       CToken(CTokenType_Identifier, CSz("baz")),
       CToken(CTokenType_Newline, CSz("\n")),
     };
-    ValidateParser_PeekTokenRawPointer(Parser, ExpectedTokens, ArrayCount(ExpectedTokens));
+    ValidateParser(PeekTokenRawPointer, PopTokenRawPointer, Parser, ExpectedTokens, ArrayCount(ExpectedTokens));
 
-    s32 At = 0;
-    for (; At < (s32)ArrayCount(ExpectedTokens); At++)
-    {
-      for (s32 AbsOffset = 0; AbsOffset < (s32)ArrayCount(ExpectedTokens); AbsOffset++)
-      {
-        int PeekOffset = AbsOffset - At;
-        c_token *T = PeekTokenRawPointer(Parser, PeekOffset);
-        TestThat(*T == ExpectedTokens[AbsOffset]);
-      }
-
-      RequireTokenRaw(Parser, ExpectedTokens[At]);
-    }
   }
 
   FullRewind(Parser);
@@ -2303,7 +2341,7 @@ void TestSingleCursorTokenControl(memory_arena *Memory)
 
     FullRewind(Parser);
 
-    ValidateParser_PeekTokenPointer(Parser, ExpectedTokens, ArrayCount(ExpectedTokens));
+    ValidateParser(PeekTokenPointer, PopTokenPointer, Parser, ExpectedTokens, ArrayCount(ExpectedTokens));
   }
 }
 
@@ -2332,7 +2370,7 @@ void TestMultiCursorTokenControl(memory_arena *Memory)
     T->Erased = True;
 
     DownTokens->Up.Up = Parser->Tokens;
-    DownTokens->Up.At = T+1;
+    DownTokens->Up.At = T;
   }
 
   {
@@ -2352,7 +2390,8 @@ void TestMultiCursorTokenControl(memory_arena *Memory)
       CToken(CTokenType_Newline, CSz("\n")),
     };
 
-    ValidateParser_PeekTokenRawPointer(Parser, ExpectedTokens, ArrayCount(ExpectedTokens));
+    ValidateParser(PeekTokenRawPointer, PopTokenRawPointer, Parser, ExpectedTokens, ArrayCount(ExpectedTokens));
+    ValidateParser_Struct(PeekTokenRaw, Parser, ExpectedTokens, ArrayCount(ExpectedTokens));
   }
 
   {
@@ -2365,7 +2404,8 @@ void TestMultiCursorTokenControl(memory_arena *Memory)
       CToken(CTokenType_Identifier, CSz("baz_outer")),
     };
 
-    ValidateParser_PeekTokenPointer(Parser, ExpectedTokens, ArrayCount(ExpectedTokens));
+    ValidateParser(PeekTokenPointer, PopTokenPointer, Parser, ExpectedTokens, ArrayCount(ExpectedTokens));
+    ValidateParser_Struct(PeekToken, Parser, ExpectedTokens, ArrayCount(ExpectedTokens));
   }
 
 #if 0

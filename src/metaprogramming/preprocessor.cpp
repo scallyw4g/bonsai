@@ -29,10 +29,13 @@ _Pragma("clang diagnostic pop") // unused-macros
 
 
 
-bonsai_function c_token_cursor PeekTokenRawCursor(c_token_cursor *Tokens, s32 TokenLookahead = 0);
-bonsai_function c_token_cursor PeekTokenRawCursor(parser *Parser, s32 TokenLookahead = 0);
-bonsai_function c_token_cursor PeekTokenCursor(c_token_cursor *Tokens, s32 TokenLookahead = 0);
-bonsai_function c_token_cursor PeekTokenCursor(parser *Parser, s32 TokenLookahead = 0);
+bonsai_function peek_result PeekTokenRawCursor(peek_result *Peek, s32 TokenLookahead = 0);
+bonsai_function peek_result PeekTokenRawCursor(c_token_cursor *Tokens, s32 TokenLookahead, b32 CanSearchDown = True);
+bonsai_function peek_result PeekTokenRawCursor(parser *Parser, s32 TokenLookahead = 0);
+
+bonsai_function peek_result PeekTokenCursor(peek_result *Peek, s32 TokenLookahead = 0);
+bonsai_function peek_result PeekTokenCursor(c_token_cursor *Tokens, s32 TokenLookahead = 0);
+bonsai_function peek_result PeekTokenCursor(parser *Parser, s32 TokenLookahead = 0);
 
 bonsai_function c_token* PeekTokenRawPointer(parser *Parser, u32 TokenLookahead);
 bonsai_function c_token* PeekTokenRawPointer(parser *Parser, s32 TokenLookahead = 0);
@@ -41,7 +44,7 @@ bonsai_function c_token * PeekTokenPointer(c_token_cursor *Tokens, s32 TokenLook
 bonsai_function c_token * PeekTokenPointer(parser *Parser, u32 TokenLookahead = 0);
 
 bonsai_function c_token   PeekTokenRaw(parser *Parser, s32 Lookahead = 0);
-bonsai_function c_token   PeekToken(parser *Parser, u32 Lookahead = 0);
+bonsai_function c_token   PeekToken(parser *Parser, s32 Lookahead = 0);
 bonsai_function c_token   PopTokenRaw(parser *Parser);
 bonsai_function c_token * PopTokenRawPointer(parser *Parser);
 bonsai_function c_token   PopToken(parser *Parser);
@@ -98,6 +101,47 @@ bonsai_function void PrintTraySimple(c_token *T);
 
 bonsai_function void ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessage, c_token* ErrorToken = 0);
 bonsai_function void ParseError(parser* Parser, counted_string ErrorMessage, c_token* ErrorToken = 0);
+
+inline c_token_cursor *
+HasValidDownPointer(c_token *T)
+{
+  c_token_cursor *Result = (T && T->Down && (T->Type == CT_MacroLiteral || T->Type == CT_InsertedCode)) ? T->Down : 0;
+  return Result;
+}
+
+#if BONSAI_SLOW
+bonsai_function void
+SanityCheckCTokenCursor(c_token_cursor *Current)
+{
+#if 1
+  for (u32 TokenIndex = 0; TokenIndex < TotalElements(Current); ++TokenIndex)
+  {
+    c_token *T = Current->Start + TokenIndex;
+
+    if (HasValidDownPointer(T))
+    {
+      Assert(T->Down->Up.Up == Current);
+      SanityCheckCTokenCursor(T->Down);
+    }
+  }
+#endif
+}
+
+bonsai_function void
+SanityCheckParserChain(parser *Parser)
+{
+#if 1
+  Assert(Parser->Tokens->Up.Up != Parser->Tokens);
+
+  c_token_cursor *FirstInChain = Parser->Tokens;
+
+  while (FirstInChain->Up.Up) FirstInChain = FirstInChain->Up.Up;
+  SanityCheckCTokenCursor(FirstInChain);
+#endif
+}
+#else
+#define SanityCheckParserChain(...)
+#endif
 
 bonsai_function string_from_parser
 StartStringFromParser(parser* Parser)
@@ -262,29 +306,11 @@ DoublyLinkedListSwap(d_list *P0, d_list *P1)
 }
 #endif
 
-#if BONSAI_SLOW
-bonsai_function void
-SanityCheckParserChain(parser *Parser)
+inline void
+Invalidate(peek_result *Peek)
 {
-  // TODO(Jesse): This is _SUPER_ slow once the parser chain gets sufficiently
-  // long.  Should we re-think our strat here?
-  parser *FirstInChain = Parser;
-  while (FirstInChain->Prev) FirstInChain = FirstInChain->Prev;
-
-  parser *Current = FirstInChain;
-  while (Current->Next)
-  {
-    Assert(Current->Next->Prev == Current);
-    if (Current->Prev)
-    {
-      Assert(Current->Prev->Next == Current);
-    }
-    Current = Current->Next;
-  }
+  Peek->At = 0;
 }
-#else
-#define SanityCheckParserChain(...)
-#endif
 
 inline void
 Invalidate(c_token_cursor *Tokens)
@@ -293,9 +319,9 @@ Invalidate(c_token_cursor *Tokens)
 }
 
 inline b32
-IsValid(c_token_cursor *Tokens)
+IsValid(peek_result *Peek)
 {
-  b32 Result = Tokens->At != Tokens->End;
+  b32 Result = Peek->At != 0;
   return Result;
 }
 
@@ -317,7 +343,14 @@ TokenShouldModifyLineCount(c_token *T, token_cursor_source Source)
 bonsai_function void
 CopyInto(c_token_cursor_up *Src, c_token_cursor *Dest)
 {
-  NotImplemented;
+#if 0
+  Dest->At = Src->At;
+  Dest->Start = Src->Start;
+  Dest->End = Src->End;
+#else
+  *Dest = *Src->Up;
+  Dest->At = Src->At;
+#endif
 }
 
 bonsai_function c_token *
@@ -348,7 +381,7 @@ RewindTo(parser* Parser, c_token *T)
       }
       else
       {
-        if (Parser->Tokens->Up.Start)
+        if (Parser->Tokens->Up.Up)
         {
           CopyInto(&Parser->Tokens->Up, Parser->Tokens);
         }
@@ -435,6 +468,8 @@ FullRewind(parser* Parser)
 {
   TIMED_FUNCTION();
 
+  SanityCheckParserChain(Parser);
+
   c_token_cursor *Current = Parser->Tokens;
   Rewind(Current);
 
@@ -450,6 +485,8 @@ FullRewind(parser* Parser)
     Parser->Tokens = Current;
   }
   Assert(Parser->Tokens->Up.Up == 0);
+
+  SanityCheckParserChain(Parser);
 }
 
 bonsai_function b32
@@ -556,9 +593,30 @@ Advance(c_token_cursor* Tokens, u32 Lookahead = 0)
 }
 #endif
 
+bonsai_function c_token *
+AdvanceTo(parser *Parser, peek_result *Peek)
+{
+  c_token *Result = 0;
+  if (Peek->At)
+  {
+    // NOTE(Jesse): Yes, it's really weird we return the thing we were on here
+    // instead of what we're advancing to.  Yes, we should change it.
+    Result = Parser->Tokens->At;
+
+    Assert(Peek->Tokens);
+    Parser->Tokens = Peek->Tokens;
+    Parser->Tokens->At = Peek->At;
+    Assert(Peek->Tokens->At == Peek->At);
+  }
+
+  return Result;
+}
+
 bonsai_function void
 AdvanceParser(parser* Parser)
 {
+  NotImplemented;
+#if 0
   if (Parser->ErrorCode) { Warn("Advancing an invalid Parser!"); }
 
   SanityCheckParserChain(Parser);
@@ -566,10 +624,10 @@ AdvanceParser(parser* Parser)
   Assert(Parser->Tokens->At <= Parser->Tokens->End);
   Assert(Parser->Tokens->Start <= Parser->Tokens->End);
 
-  c_token_cursor T = PeekTokenRawCursor(Parser->Tokens, 1);
-  if (T.At)
+  peek_result Peek = PeekTokenRawCursor(Parser->Tokens, 1);
+  if (IsValid(&Peek))
   {
-    *Parser->Tokens = T;
+    AdvanceTo(Parser, &Peek);
   }
   else
   {
@@ -586,6 +644,7 @@ AdvanceParser(parser* Parser)
   SanityCheckParserChain(Parser);
 
   return;
+#endif
 }
 
 #if 0
@@ -606,34 +665,44 @@ Scan(parser *Parser, c_token *Needle, sign Direction)
 }
 #endif
 
+#if 0
 bonsai_function c_token *
 AdvanceTo(parser* Parser, c_token_cursor *T)
 {
   c_token *Result = IsValid(Parser->Tokens) ? Parser->Tokens->At : 0;
+  SanityCheckParserChain(Parser);
+  parser OldParser = *Parser;
+  c_token_cursor OldTokens = *Parser->Tokens;
   *Parser->Tokens = *T;
+  SanityCheckParserChain(Parser);
   return Result;
 }
+#endif
 
 bonsai_function c_token *
 AdvanceTo(parser* Parser, c_token* T)
 {
-  c_token_cursor Result = PeekTokenRawCursor(Parser);
+  SanityCheckParserChain(Parser);
+  peek_result Peek = PeekTokenRawCursor(Parser);
 
-  while (IsValid(&Result) && Result.At != T)
+  while (IsValid(&Peek) && Peek.At != T)
   {
-    Result = PeekTokenRawCursor(Parser, 1);
+    Peek = PeekTokenRawCursor(Parser, 1);
   }
 
-  if (IsValid(&Result))
+  if (IsValid(&Peek))
   {
-    *Parser->Tokens = Result;
+    Assert(Peek.At == T);
+    AdvanceTo(Parser, &Peek);
+    Assert(Parser->Tokens->At == T);
   }
   else
   {
     Warn("Couldn't advance parser to specified token.");
   }
 
-  return Result.At;
+  SanityCheckParserChain(Parser);
+  return Peek.At;
 }
 
 bonsai_function void
@@ -1508,13 +1577,13 @@ GetNext(c_token_cursor *Tokens, s32 Direction)
   else if ( Direction == -1 && TokensRemaining > 0 )
   {
     Tokens->At += Direction;
-    Assert(ValidForCursor(Tokens, Tokens->At));
+    Assert(IsValidForCursor(Tokens, Tokens->At));
     Result = Tokens->At;
   }
   else if ( Direction == 1 && TokensRemaining > 1 )
   {
     Tokens->At += Direction;
-    Assert(ValidForCursor(Tokens, Tokens->At));
+    Assert(IsValidForCursor(Tokens, Tokens->At));
     Result = Tokens->At;
   }
   else
@@ -1539,7 +1608,7 @@ GetToken(c_token_cursor *Tokens, s32 PeekIndex)
     if (TokensRemaining > Abs(PeekIndex))
     {
       Result = Tokens->At + PeekIndex;
-      Assert(ValidForCursor(Tokens, Result));
+      Assert(IsValidForCursor(Tokens, Result));
     }
     else
     {
@@ -1639,73 +1708,114 @@ PeekTokenRawPointer(c_token_cursor *Tokens, s32 MaxPeek)
 
 #else
 
-bonsai_function c_token_cursor
-PeekTokenRawCursor(c_token_cursor *Tokens, s32 Direction)
+bonsai_function peek_result
+PeekTokenRawCursor(c_token_cursor *Tokens, s32 Direction, b32 CanSearchDown)
 {
   Assert(Direction > -2 && Direction < 2);
 
-  c_token_cursor Result = *Tokens;
+  c_token_cursor Cached = *Tokens;
+
+  peek_result Result = {};
+  Result.Tokens = Tokens;
+
+  if (Tokens->At < Tokens->End)
+  {
+    Result.At = Tokens->At;
+  }
 
   if (Direction == 0)
   {
   }
-  else
+  else if (Direction == 1)
   {
-    Assert(Direction == 1 || Direction == -1);
-
-    c_token *At = GetNext(&Result, 0);
-    b32 SearchDown = (At && At->Down && (At->Type == CT_MacroLiteral || At->Type == CT_InsertedCode));
+    c_token_cursor *Down = HasValidDownPointer(Result.At);
+    b32 SearchDown = CanSearchDown && Down && RemainingForDir(Down, Direction) > 0;
     if (SearchDown)
     {
-      c_token_cursor *Down = At->Down;
-      // NOTE(Jesse): I ordered the 'macro_expansion' struct such that the
-      // pointer to the expanded macro will be at the same place as the
-      // `Down` poninter.  This is sketchy as fuck, but it'll work, and
-      // this assertion should catch the bug if we reorder the pointers.
-      Assert(Down == Result.At->Macro.Expansion);
-      Assert(Down->At == Down->Start);
+      Assert(Result.At->Down == Result.At->Macro.Expansion); // @janky-macro-expansion-struct-ordering
 
+      c_token *PrevDownAt = Down->At;
+      Down->At = Down->Start;
       Result = PeekTokenRawCursor(Down, Min(0, Direction));
-
-#if BONSAI_INTERNAL
-      At = GetNext(&Result, 0);
-#endif
+      Down->At = PrevDownAt;
 
       // NOTE(Jesse): This is not strictly valid, but for well-formed code it
       // should always pass
-      Assert(GetNext(&Result, 0) != 0);
+      Assert(GetNext(Tokens, 0) != 0);
     }
 
-
-    if ( (SearchDown      && IsValid(&Result) == 0) ||
-         (SearchDown == 0 && IsValid(&Result)  > 0) )
+    if ( (SearchDown && IsValid(&Result) == False) || // Didn't get a token peeking down
+          SearchDown == False                       )
     {
-      At = GetNext(&Result, Direction);
+      Result.At = GetNext(Tokens, Direction);
     }
 
-#if BONSAI_INTERNAL
-    if (IsValid(&Result))
+    if (!IsValid(&Result) && Tokens->Up.Up) // Down buffer(s) and current buffer had nothing, pop up
     {
-      Assert(At == Result.At);
-    }
-#endif
-
-    // TODO(Jesse): Should this be the Result.Up pointer??  Don't think there's
-    // a bug here but there might be.
-    if (Result.Up.Up && At == 0) // Down buffer(s) and current buffer had nothing, pop up
-    {
-      c_token_cursor Tmp = *Result.Up.Up;
-      Tmp.At = Result.Up.At;
-
-      Result = PeekTokenRawCursor(&Tmp, Min(0, Direction));
+      c_token *UpAt = Tokens->Up.Up->At;
+      Tokens->Up.Up->At = Tokens->Up.At;
+      Assert(Tokens->Up.At->Type == CT_InsertedCode);
+      Result = PeekTokenRawCursor(Tokens->Up.Up, Direction);
+      Tokens->Up.Up->At = UpAt;
+      Result.DoNotDescend = True;
     }
   }
+  else if (Direction == -1)
+  {
+    Result.At = GetNext(Tokens, Direction);
+
+    c_token_cursor *Down = HasValidDownPointer(Result.At);
+    b32 SearchDown = CanSearchDown && Down && RemainingForDir(Down, Direction) > 0;
+    if (SearchDown)
+    {
+      Assert(Result.At->Down == Result.At->Macro.Expansion); // @janky-macro-expansion-struct-ordering
+
+      c_token *PrevDownAt = Down->At;
+      Down->At = Down->End;
+      Result = PeekTokenRawCursor(Down, Min(0, Direction));
+      Down->At = PrevDownAt;
+
+      // NOTE(Jesse): This is not strictly valid, but for well-formed code it
+      // should always pass
+      Assert(GetNext(Tokens, 0) != 0);
+    }
+
+    if (!IsValid(&Result) && Tokens->Up.Up) // Down buffer(s) and current buffer had nothing, pop up
+    {
+      c_token *UpAt = Tokens->Up.Up->At;
+      Tokens->Up.Up->At = Tokens->Up.At;
+      Assert(Tokens->Up.At->Type == CT_InsertedCode);
+      Result = PeekTokenRawCursor(Tokens->Up.Up, 0, False);
+      Tokens->Up.Up->At = UpAt;
+      Result.DoNotDescend = True;
+    }
+
+  }
+  else
+  {
+    InvalidCodePath();
+  }
+
+
+  *Tokens = Cached;
+
+  if (IsValid(&Result))
+  {
+    Assert(Result.At);
+    Assert(Result.Tokens);
+    Assert(IsValidForCursor(Result.Tokens, Result.At));
+
+    Assert(Result.Tokens->Start);
+    Assert(Result.Tokens->At);
+    Assert(Result.Tokens->End);
+  }
+
 
 #if 0
 #if BONSAI_INTERNAL
   if (Result && DEBUG_CHECK_FOR_BREAK_HERE(*Result))
   {
-    Result = PeekTokenPointer(Tokens, Lookahead+1);
+    Result = PeekTokenPointer(Tokens, Direction);
   }
 
   if (Result) { Assert(!StringsMatch(Result->Value, CSz("break_here"))); }
@@ -1715,10 +1825,30 @@ PeekTokenRawCursor(c_token_cursor *Tokens, s32 Direction)
   return Result;
 }
 
-bonsai_function c_token_cursor
+bonsai_function peek_result
+PeekTokenRawCursor(peek_result *Peek, s32 Direction)
+{
+  peek_result Result = {};
+
+  if (IsValid(Peek))
+  {
+    c_token *PrevAt = Peek->Tokens->At;
+    Peek->Tokens->At = Peek->At;
+    peek_result TmpResult = PeekTokenRawCursor(Peek->Tokens, Direction, Peek->DoNotDescend == False);
+    Peek->Tokens->At = PrevAt;
+
+    if (IsValid(&TmpResult))
+    {
+      Result = TmpResult;
+    }
+  }
+  return Result;
+}
+
+bonsai_function peek_result
 PeekTokenRawCursor(parser *Parser, s32 Direction)
 {
-  c_token_cursor Result = PeekTokenRawCursor(Parser->Tokens, Direction);
+  peek_result Result = PeekTokenRawCursor(Parser->Tokens, Direction);
   return Result;
 }
 
@@ -1731,7 +1861,7 @@ PeekTokenRawPointer(parser* Parser, s32 Lookahead)
 
   if (Parser->ErrorCode == ParseErrorCode_None)
   {
-    c_token_cursor Current = PeekTokenRawCursor(Parser->Tokens, 0);
+    peek_result Current = PeekTokenRawCursor(Parser->Tokens, 0);
 
     s32 Direction = GetSign(Lookahead);
     s32 Count = 0;
@@ -1765,9 +1895,11 @@ PeekTokenRaw(parser* Parser, s32 Direction)
   return Result;
 }
 
-bonsai_function c_token_cursor
+bonsai_function peek_result
 PeekTokenCursor(c_token_cursor *Tokens, s32 Skip)
 {
+  SanityCheckCTokenCursor(Tokens);
+
   c_token *Result = {};
 
   s32 Direction = GetSign(Skip);
@@ -1776,7 +1908,7 @@ PeekTokenCursor(c_token_cursor *Tokens, s32 Skip)
 
 
   s32 Hits = Min(0, Direction);
-  c_token_cursor Current = PeekTokenRawCursor(Tokens, Hits);
+  peek_result Current = PeekTokenRawCursor(Tokens, Hits);
   while ( IsValid(&Current) )
   {
     if ( Current.At->Erased )
@@ -1812,7 +1944,7 @@ PeekTokenCursor(c_token_cursor *Tokens, s32 Skip)
   // TODO(Jesse): Pack the conditional up above into a function we can call
   // here.. ?  Not sure what we'd do about the CT_NameQualifier thing, but
   // ending on that token is an invalid program anyways so whatever.
-  if (IsValid(&Current) && (Current.At->Erased || IsWhitespace(Current.At) || IsComment(Current.At))) { Current.At = Current.End; } // Fires if the stream ends with whitespace/comment
+  if (IsValid(&Current) && (Current.At->Erased || IsWhitespace(Current.At) || IsComment(Current.At))) { Invalidate(&Current); } // Fires if the stream ends with whitespace/comment
 
 
 #if 0
@@ -1826,14 +1958,15 @@ PeekTokenCursor(c_token_cursor *Tokens, s32 Skip)
 #endif
 #endif
 
+  SanityCheckCTokenCursor(Tokens);
   return Current;
 }
 
 
-bonsai_function c_token_cursor
+bonsai_function peek_result
 PeekTokenCursor(parser *Parser, s32 Skip)
 {
-  c_token_cursor Result = PeekTokenCursor(Parser->Tokens, Skip);
+  peek_result Result = PeekTokenCursor(Parser->Tokens, Skip);
   return Result;
 }
 
@@ -1841,7 +1974,7 @@ bonsai_function c_token*
 PeekTokenPointer(parser* Parser, s32 Skip)
 {
   c_token *Result = 0;
-  c_token_cursor C = PeekTokenCursor(Parser->Tokens, Skip);
+  peek_result C = PeekTokenCursor(Parser->Tokens, Skip);
   if (IsValid(&C)) Result = C.At;
   return Result;
 }
@@ -1849,9 +1982,7 @@ PeekTokenPointer(parser* Parser, s32 Skip)
 bonsai_function c_token*
 PeekTokenPointer(parser* Parser, u32 Skip)
 {
-  c_token *Result = 0;
-  c_token_cursor C = PeekTokenCursor(Parser->Tokens, (s32)Skip);
-  if (IsValid(&C)) Result = C.At;
+  c_token *Result = PeekTokenPointer(Parser, (s32)Skip);
   return Result;
 }
 
@@ -1911,7 +2042,7 @@ PeekTokenPointer(parser* Parser, u32 Lookahead)
 #endif
 
 bonsai_function c_token
-PeekToken(parser* Parser, u32 Lookahead)
+PeekToken(parser* Parser, s32 Lookahead)
 {
   c_token* Pointer = PeekTokenPointer(Parser, Lookahead);
   c_token Result = {};
@@ -1922,9 +2053,25 @@ PeekToken(parser* Parser, u32 Lookahead)
 bonsai_function c_token *
 PopTokenRawPointer(parser* Parser)
 {
-  c_token_cursor Next = PeekTokenRawCursor(Parser, 1);
-  c_token *Result = AdvanceTo(Parser, &Next);
+  peek_result This = PeekTokenRawCursor(Parser);
+  c_token *Result = 0;
 
+  if (IsValid(&This))
+  {
+    Result = AdvanceTo(Parser, &This);
+  }
+
+  peek_result Next = PeekTokenRawCursor(Parser, 1);
+  if (IsValid(&Next))
+  {
+    Result = AdvanceTo(Parser, &Next);
+  }
+  else
+  {
+    Invalidate(Parser->Tokens);
+  }
+
+#if BONSAI_INTERNAL
   if (Result && DEBUG_CHECK_FOR_BREAK_HERE(Result))
   {
     RuntimeBreak();
@@ -1932,7 +2079,6 @@ PopTokenRawPointer(parser* Parser)
     Result = PopTokenRawPointer(Parser);
   }
 
-#if BONSAI_INTERNAL
   if (Result) { Assert(!StringsMatch(Result->Value, CSz("break_here"))); }
 #endif
 
@@ -1942,8 +2088,20 @@ PopTokenRawPointer(parser* Parser)
 bonsai_function c_token
 PopTokenRaw(parser* Parser)
 {
-  c_token Result = PeekTokenRaw(Parser);
-  AdvanceParser(Parser);
+  c_token *T = 0;
+
+  peek_result Peek = PeekTokenRawCursor(Parser, 1);
+  if (IsValid(&Peek))
+  {
+    T = AdvanceTo(Parser, &Peek);
+  }
+  else
+  {
+    Invalidate(Parser->Tokens);
+  }
+
+  c_token Result = {};
+  if (T) Result = *T;
 
 #if BONSAI_INTERNAL
   if (DEBUG_CHECK_FOR_BREAK_HERE(&Result))
@@ -1976,7 +2134,7 @@ TokensRemain(parser *Parser, u32 Count)
 bonsai_function c_token *
 PopTokenPointer(parser* Parser)
 {
-  c_token_cursor NextT = PeekTokenCursor(Parser);
+  peek_result NextT = PeekTokenCursor(Parser);
 
   // TODO(Jesse): This is kinda tortured .. should probably work on the API
   // here. In particular it's not obvious what AdvanceTo returns, and it
@@ -1984,9 +2142,13 @@ PopTokenPointer(parser* Parser)
   //
   // Furthermore the first AdvanceTo is necessary because of the return value
   // weirdness, while it shouldn't be necessary if the API was better.
+  //
+  // UPDATE(Jesse): Now we `should` be able to just do `AdvanceTo(NextRawT)`
+  // without the intermediate AdvanceTo .. I think
+  //
 
   AdvanceTo(Parser, &NextT);
-  c_token_cursor NextRawT = PeekTokenRawCursor(&NextT, 1);
+  peek_result NextRawT = PeekTokenRawCursor(&NextT, 1);
   c_token *Result = AdvanceTo(Parser, &NextRawT);
 
 #if BONSAI_INTERNAL
@@ -3432,14 +3594,15 @@ DuplicateParserTokens(parser *Parser, memory_arena *Memory)
   c_token *NewBuffer = Allocate(c_token, Memory, TokenCount);
 
   c_token *At = NewBuffer;
+  u32 AtIndex = 0;
   while (c_token *T = PopTokenRawPointer(Parser))
   {
     // TODO(Jesse)(correctness): This assertion sounds fishy to me.. shouldn't it be and's ?
     Assert(T->Type != CTokenType_CommentMultiLine || T->Type != CTokenType_CommentSingleLine || !T->Erased);
-    *At++ = *T;
+    At[AtIndex++] = *T;
   }
 
-  Assert(At == (NewBuffer+TokenCount));
+  Assert(AtIndex == TokenCount);
 
   Parser->Tokens->Start = NewBuffer;
   Parser->Tokens->At = NewBuffer;
@@ -4592,17 +4755,18 @@ RunPreprocessor(parse_context *Ctx, parser *Parser, memory_arena *Memory)
         EraseToken(T);
         EraseToken(InsertedCodeT);
 
-        InsertedCodeT->Down = Allocate(c_token_cursor, Memory, 1);
-        c_token_cursor *Inc = ResolveInclude(Ctx, Parser, T);
-        *InsertedCodeT->Down = *Inc;
+        /* InsertedCodeT->Down = Allocate(c_token_cursor, Memory, 1); */
+        /* c_token_cursor *Inc = ResolveInclude(Ctx, Parser, T); */
+        /* *InsertedCodeT->Down = *Inc; */
 
-
+        InsertedCodeT->Down = ResolveInclude(Ctx, Parser, T);
         if (InsertedCodeT->Down)
         {
-          InsertedCodeT->Down->Up.Up = Allocate(c_token_cursor, Memory, 1);
-          *InsertedCodeT->Down->Up.Up = *Parser->Tokens;
-
-          InsertedCodeT->Down->Up.At = Parser->Tokens->At;
+          /* InsertedCodeT->Down->Up.Up = Allocate(c_token_cursor, Memory, 1); */
+          /* *InsertedCodeT->Down->Up.Up = *Parser->Tokens; */
+          InsertedCodeT->Down->Up.Up = Parser->Tokens;
+          InsertedCodeT->Down->Up.At = InsertedCodeT;
+          Assert(InsertedCodeT->Down->Up.At->Type == CT_InsertedCode);
           Assert(InsertedCodeT->Down->At == InsertedCodeT->Down->Start);
         }
 
@@ -4830,9 +4994,7 @@ ParserForAnsiStream(parse_context *Ctx, ansi_stream SourceFileStream, token_curs
   {
     if (SourceFileStream.Start)
     {
-      c_token_cursor *Allocation = CTokenCursorForAnsiStream(Ctx, SourceFileStream, Source);
-      Result->Tokens = Allocate(c_token_cursor, Ctx->Memory, 1);
-      *Result->Tokens = *Allocation;
+      Result->Tokens = CTokenCursorForAnsiStream(Ctx, SourceFileStream, Source);
     }
     else
     {
@@ -4859,14 +5021,14 @@ ParserForFile(parse_context *Ctx, counted_string Filename, token_cursor_source S
 bonsai_function parser *
 PreprocessedParserForFile(parse_context *Ctx, counted_string Filename, token_cursor_source Source, c_token_cursor *Up)
 {
-  parser *Result = 0;
-  parser *Parser = ParserForFile(Ctx, Filename, Source);
-  if (Parser && Parser->ErrorCode == ParseErrorCode_None)
+  parser *Result = ParserForFile(Ctx, Filename, Source);
+  if (Result && Result->ErrorCode == ParseErrorCode_None)
   {
-    if (RunPreprocessor(Ctx, Parser, Ctx->Memory))
+    if (RunPreprocessor(Ctx, Result, Ctx->Memory))
     {
-      Result =  Allocate(parser, Ctx->Memory, 1);
-      *Result = *Parser;
+      /* c_token_cursor Tmp = *Result->Tokens; */
+      /* Result->Tokens = Allocate(c_token_cursor, Ctx->Memory, 1); */
+      /* *Result->Tokens = Tmp; */
       // All good
     }
     else
@@ -5923,7 +6085,7 @@ TryAndEatTemplateParameterList(parser *Parser, program_datatypes *Datatypes)
 
   while (ValidTemplateList && !Done)
   {
-    c_token TemplateParamListTestT = PeekToken(Parser, Lookahead);
+    c_token TemplateParamListTestT = PeekToken(Parser, (s32)Lookahead);
 
     switch (TemplateParamListTestT.Type)
     {
