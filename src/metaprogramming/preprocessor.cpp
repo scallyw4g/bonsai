@@ -1723,79 +1723,79 @@ PeekTokenRawCursor(c_token_cursor *Tokens, s32 Direction, b32 CanSearchDown)
     Result.At = Tokens->At;
   }
 
-  if (Direction == 0)
+  switch  (Direction)
   {
-  }
-  else if (Direction == 1)
-  {
-    c_token_cursor *Down = HasValidDownPointer(Result.At);
-    b32 SearchDown = CanSearchDown && Down && RemainingForDir(Down, Direction) > 0;
-    if (SearchDown)
+    case 0: {} break;
+
+    case 1:
     {
-      Assert(Result.At->Down == Result.At->Macro.Expansion); // @janky-macro-expansion-struct-ordering
+      c_token_cursor *Down = HasValidDownPointer(Result.At);
+      b32 SearchDown = CanSearchDown && Down && RemainingForDir(Down, Direction) > 0;
+      if (SearchDown)
+      {
+        Assert(Result.At->Down == Result.At->Macro.Expansion); // @janky-macro-expansion-struct-ordering
 
-      c_token *PrevDownAt = Down->At;
-      Down->At = Down->Start;
-      Result = PeekTokenRawCursor(Down, Min(0, Direction));
-      Down->At = PrevDownAt;
+        c_token *PrevDownAt = Down->At;
+        Down->At = Down->Start;
+        Result = PeekTokenRawCursor(Down, Min(0, Direction));
+        Down->At = PrevDownAt;
 
-      // NOTE(Jesse): This is not strictly valid, but for well-formed code it
-      // should always pass
-      Assert(GetNext(Tokens, 0) != 0);
-    }
+        // NOTE(Jesse): This is not strictly valid, but for well-formed code it
+        // should always pass
+        Assert(GetNext(Tokens, 0) != 0);
+      }
 
-    if ( (SearchDown && IsValid(&Result) == False) || // Didn't get a token peeking down
-          SearchDown == False                       )
+      if ( (SearchDown && IsValid(&Result) == False) || // Didn't get a token peeking down
+            SearchDown == False                       )
+      {
+        Result.At = GetNext(Tokens, Direction);
+      }
+
+      if (!IsValid(&Result) && Tokens->Up.Up) // Down buffer(s) and current buffer had nothing, pop up
+      {
+        c_token *UpAt = Tokens->Up.Up->At;
+        Tokens->Up.Up->At = Tokens->Up.At;
+        Assert(Tokens->Up.At->Type == CT_InsertedCode);
+        Result = PeekTokenRawCursor(Tokens->Up.Up, Direction);
+        Tokens->Up.Up->At = UpAt;
+        Result.DoNotDescend = True;
+      }
+    } break;
+
+    case -1:
     {
       Result.At = GetNext(Tokens, Direction);
-    }
 
-    if (!IsValid(&Result) && Tokens->Up.Up) // Down buffer(s) and current buffer had nothing, pop up
-    {
-      c_token *UpAt = Tokens->Up.Up->At;
-      Tokens->Up.Up->At = Tokens->Up.At;
-      Assert(Tokens->Up.At->Type == CT_InsertedCode);
-      Result = PeekTokenRawCursor(Tokens->Up.Up, Direction);
-      Tokens->Up.Up->At = UpAt;
-      Result.DoNotDescend = True;
-    }
+      c_token_cursor *Down = HasValidDownPointer(Result.At);
+      b32 SearchDown = CanSearchDown && Down && RemainingForDir(Down, Direction) > 0;
+      if (SearchDown)
+      {
+        Assert(Result.At->Down == Result.At->Macro.Expansion); // @janky-macro-expansion-struct-ordering
+
+        c_token *PrevDownAt = Down->At;
+        Down->At = Down->End;
+        Result = PeekTokenRawCursor(Down, Min(0, Direction));
+        Down->At = PrevDownAt;
+
+        // NOTE(Jesse): This is not strictly valid, but for well-formed code it
+        // should always pass
+        Assert(GetNext(Tokens, 0) != 0);
+      }
+
+      if (!IsValid(&Result) && Tokens->Up.Up) // Down buffer(s) and current buffer had nothing, pop up
+      {
+        c_token *UpAt = Tokens->Up.Up->At;
+        Tokens->Up.Up->At = Tokens->Up.At;
+        Assert(Tokens->Up.At->Type == CT_InsertedCode);
+        Result = PeekTokenRawCursor(Tokens->Up.Up, 0, False);
+        Tokens->Up.Up->At = UpAt;
+        Result.DoNotDescend = True;
+      }
+
+    } break;
+
+    InvalidDefaultCase();
   }
-  else if (Direction == -1)
-  {
-    Result.At = GetNext(Tokens, Direction);
-
-    c_token_cursor *Down = HasValidDownPointer(Result.At);
-    b32 SearchDown = CanSearchDown && Down && RemainingForDir(Down, Direction) > 0;
-    if (SearchDown)
-    {
-      Assert(Result.At->Down == Result.At->Macro.Expansion); // @janky-macro-expansion-struct-ordering
-
-      c_token *PrevDownAt = Down->At;
-      Down->At = Down->End;
-      Result = PeekTokenRawCursor(Down, Min(0, Direction));
-      Down->At = PrevDownAt;
-
-      // NOTE(Jesse): This is not strictly valid, but for well-formed code it
-      // should always pass
-      Assert(GetNext(Tokens, 0) != 0);
-    }
-
-    if (!IsValid(&Result) && Tokens->Up.Up) // Down buffer(s) and current buffer had nothing, pop up
-    {
-      c_token *UpAt = Tokens->Up.Up->At;
-      Tokens->Up.Up->At = Tokens->Up.At;
-      Assert(Tokens->Up.At->Type == CT_InsertedCode);
-      Result = PeekTokenRawCursor(Tokens->Up.Up, 0, False);
-      Tokens->Up.Up->At = UpAt;
-      Result.DoNotDescend = True;
-    }
-
-  }
-  else
-  {
-    InvalidCodePath();
-  }
-
 
   *Tokens = Cached;
 
