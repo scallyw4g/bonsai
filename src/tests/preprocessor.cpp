@@ -2045,30 +2045,21 @@ TestLineNumbers(memory_arena *Memory)
     TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
 
     TestThat(OptionalTokenRaw(Parser, CT_PreprocessorInclude));
-    TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
-    TestThat(OptionalTokenRaw(Parser, CTokenType_LT));
-    TestThat(OptionalTokenRaw(Parser, CToken(CSz("src"))));
-    TestThat(OptionalTokenRaw(Parser, CTokenType_FSlash));
-    TestThat(OptionalTokenRaw(Parser, CToken(CSz("tests"))));
-    TestThat(OptionalTokenRaw(Parser, CTokenType_FSlash));
-    TestThat(OptionalTokenRaw(Parser, CToken(CSz("fixtures"))));
-    TestThat(OptionalTokenRaw(Parser, CTokenType_FSlash));
-    TestThat(OptionalTokenRaw(Parser, CToken(CSz("preprocessor"))));
-    TestThat(OptionalTokenRaw(Parser, CTokenType_FSlash));
-    TestThat(OptionalTokenRaw(Parser, CToken(CSz("random_define"))));
-    TestThat(OptionalTokenRaw(Parser, CTokenType_Dot));
-    TestThat(OptionalTokenRaw(Parser, CToken(CSz("cpp"))));
-    TestThat(OptionalTokenRaw(Parser, CTokenType_GT));
 
-    TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
+    TestThat(OptionalTokenRaw(Parser, CT_InsertedCode));
+
+      TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
+      TestThat(OptionalTokenRaw(Parser, CT_PreprocessorDefine));
+      TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
+      TestThat(OptionalTokenRaw(Parser, CToken(CT_MacroLiteral, CSz("foo"))));
+      TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
+      TestThat(OptionalTokenRaw(Parser, CToken(CSz("bar"))));
+
+      TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
+      TestThat(OptionalTokenRaw(Parser, CTokenType_Newline)); // End of the include file
+
+
     TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
-
-    TestThat(OptionalTokenRaw(Parser, CT_PreprocessorDefine));
-    TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
-    TestThat(OptionalTokenRaw(Parser, CToken(CT_MacroLiteral, CSz("foo"))));
-    TestThat(OptionalTokenRaw(Parser, CTokenType_Space));
-    TestThat(OptionalTokenRaw(Parser, CToken(CSz("bar"))));
-
     TestThat(OptionalTokenRaw(Parser, CTokenType_Newline));
     TestThat(PeekTokenRawPointer(Parser)->LineNumber == 2);
 
@@ -2489,11 +2480,11 @@ main(s32 ArgCount, const char** Args)
   TestBasicTokenizationAndParsing(Memory);
   TestStructParsing(Memory);
   TestCommentSituation(Memory);
-#if 0
   TestMacrosAndIncludes(Memory);
   TestIncludeGuards(Memory);
   TestDefinesAndConditionals(Memory);
   TestLogicalOperators(Memory);
+#if 1
   TestLineNumbers(Memory);
   TestErrors(Memory);
   TestAst(Memory);

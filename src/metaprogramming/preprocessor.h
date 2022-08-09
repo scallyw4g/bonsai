@@ -260,19 +260,20 @@ struct c_token
 
   union
   {
-     /* s64           SignedValue; */ // TODO(Jesse id: 272): Fold `-` sign into this value at tokenization time?
-     u64              UnsignedValue;
-     r64              FloatValue;
-     c_token        * QualifierName;
-     counted_string   IncludePath; // TODO(Jesse): We probably care that these increase struct size by 8.  Heap allocate to fix
+     /* s64         SignedValue; */ // TODO(Jesse id: 272): Fold `-` sign into this value at tokenization time?
+     u64            UnsignedValue;
+     r64            FloatValue;
+     c_token        *QualifierName;
 
      // NOTE(Jesse): I ordered the 'macro_expansion' struct such that the
      // pointer to the expanded macro will be at the same place as the `Down`
      // poninter.  This is sketchy as fuck, but it'll work, and this the
      // assertions at @janky-macro-expansion-struct-ordering should catch the
      // bug if we reorder the pointers.
-     c_token_cursor * Down;
+     c_token_cursor  *Down;
      macro_expansion Macro;
+
+     counted_string IncludePath; // TODO(Jesse): We probably care that this (and Macro) increase struct size by 8.  Heap allocate to fix?
   };
 
   // TODO(Jesse)(correctness): The preprocessor doesn't support this for some reason..
@@ -305,6 +306,10 @@ enum token_cursor_source
   TokenCursorSource_PasteOperator,
   TokenCursorSource_CommandLineOption,
 
+  // NOTE(Jesse): These should be created temporarily and discarded.  This type
+  // should never be seen in "user" code.. it's just used in parsing.
+  TokenCursorSource_IntermediateRepresentaton,
+
   TokenCursorSource_Count,
 };
 
@@ -314,26 +319,8 @@ enum token_cursor_source
 #include <metaprogramming/output/generate_cursor_c_token.h>
 
 
-bonsai_function c_token_cursor
-CTokenCursor(c_token *Start, c_token *End)
-{
-  c_token_cursor Result = {
-    .Start = Start,
-    .End = End,
-    .At = Start,
-  };
-  return Result;
-}
-
 meta(buffer(c_token))
 #include <metaprogramming/output/buffer_c_token.h>
-
-bonsai_function c_token_cursor
-CTokenCursor(c_token_buffer *Buf)
-{
-  c_token_cursor Result = CTokenCursor(Buf->Start, Buf->Start + Buf->Count);
-  return Result;
-}
 
 meta(buffer(c_token_buffer))
 #include <metaprogramming/output/buffer_c_token_buffer.h>
@@ -1014,8 +1001,6 @@ PrintToken(c_token *Token, char_cursor *Dest = 0)
 {
   if (Token)
   {
-    Assert(Token->Type);
-
     // NOTE(Jesse): Annoyingly, printing out the line tray for multi-line comments
     // requires that we allow printing tokens with Value.Count == 0
     /* Assert(Token->Value.Start && Token->Value.Count); */
@@ -1205,6 +1190,28 @@ CTokenCursor(c_token_cursor *Result, c_token *Buffer, umm Count, counted_string 
   Result->End = Result->Start + Count;
   Result->Up = Up;
 }
+
+bonsai_function c_token_cursor
+CTokenCursor(c_token *Start, c_token *End, counted_string Filename, token_cursor_source Source, c_token_cursor_up Up)
+{
+  c_token_cursor Result = {
+    .Start = Start,
+    .End = End,
+    .At = Start,
+    .Filename = Filename,
+    .Source = Source,
+    .Up = Up,
+  };
+  return Result;
+}
+
+bonsai_function c_token_cursor
+CTokenCursor(c_token_buffer *Buf, counted_string Filename, token_cursor_source Source, c_token_cursor_up Up)
+{
+  c_token_cursor Result = CTokenCursor(Buf->Start, Buf->Start + Buf->Count, Filename, Source, Up);
+  return Result;
+}
+
 
 inline void
 CTokenCursor(c_token_cursor *Result, umm Count, memory_arena *Memory, counted_string Filename, token_cursor_source Source, c_token_cursor_up Up)

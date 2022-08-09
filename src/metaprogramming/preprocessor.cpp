@@ -73,6 +73,7 @@ bonsai_function b32       EatWhitespace(parser* Parser);
 bonsai_function b32       EatSpacesTabsAndEscapedNewlines(parser *Parser);
 bonsai_function void      EatWhitespaceAndComments(parser *Parser);
 
+bonsai_function void      FullRewind(parser* Parser);
 
 //
 // Preprocessor stuff
@@ -356,109 +357,61 @@ CopyInto(c_token_cursor_up *Src, c_token_cursor *Dest)
 bonsai_function c_token *
 RewindTo(parser* Parser, c_token *T)
 {
-  c_token *Result = 0;
+  peek_result Current = {};
   if (T)
   {
-    // TODO(Jesse): We can actually do a bounds check on the Start/End to check
-    // if the supplied token lays on this parser and skip it if not.
-
-    while (Parser->Tokens->At >= Parser->Tokens->Start)
+    Current = PeekTokenRawCursor(Parser->Tokens, 0);
+    while (Current.At && Current.At != T)
     {
-      // NOTE(Jesse): This has to be a manual check, not a call to
-      // RawTokensRemain() because we only want to check if the At token is valid
-      if (Parser->Tokens->At < Parser->Tokens->End)
-      {
-        if (Parser->Tokens->At == T)
-        {
-          Result = T;
-          break;
-        }
-      }
-
-      if (Parser->Tokens->At > Parser->Tokens->Start)
-      {
-        --Parser->Tokens->At;
-      }
-      else
-      {
-        if (Parser->Tokens->Up.Up)
-        {
-          CopyInto(&Parser->Tokens->Up, Parser->Tokens);
-        }
-        else
-        {
-          break;
-        }
-      }
+      Current = PeekTokenRawCursor(&Current, -1);
     }
 
-    Assert(Parser->Tokens->At >= Parser->Tokens->Start);
-    Assert(Parser->Tokens->At < Parser->Tokens->End);
-
-    Assert( Parser->Tokens->At == T ||
-           ( Parser->Tokens->At == Parser->Tokens->Start && !Parser->Tokens->Up.Up ) );
-
-    SanityCheckParserChain(Parser);
-
-    if ( Parser->Tokens->At != T )
+    if (IsValid(&Current))
     {
-      Warn("Couldn't locate token during RewindTo.  Token was %S(%S)", ToString(T->Type), T->Value);
+      Parser->Tokens = Current.Tokens;
+      Parser->Tokens->At = Current.At;
     }
-
+    else
+    {
+      FullRewind(Parser);
+    }
   }
   else
   {
     Warn("ptr(0) passed to RewindTo");
   }
 
-  return Result;
+  return Current.At;
 }
 
-bonsai_function b32
+bonsai_function c_token *
 RewindTo(parser* Parser, c_token_type Type)
 {
-  b32 Result = False;
-  while (Parser->Tokens->At >= Parser->Tokens->Start)
+  peek_result Current = {};
+  if (Type)
   {
-    if (Parser->Tokens->At > Parser->Tokens->Start)
+    Current = PeekTokenRawCursor(Parser->Tokens, -1);
+    while (Current.At && Current.At->Type != Type)
     {
-      --Parser->Tokens->At;
+      Current = PeekTokenRawCursor(&Current, -1);
+    }
+
+    if (IsValid(&Current))
+    {
+      Parser->Tokens = Current.Tokens;
+      Parser->Tokens->At = Current.At;
     }
     else
     {
-      if (Parser->Tokens->Up.Up)
-      {
-        Parser->Tokens = Parser->Tokens->Up.Up;
-        Parser->Tokens->At = Parser->Tokens->Up.At;
-      }
-      else
-      {
-        break;
-      }
+      FullRewind(Parser);
     }
-
-    // Yes, this is in a different place than the one above.  Yes, that's for a reason.
-    if (Parser->Tokens->At < Parser->Tokens->End)
-    {
-      if (Parser->Tokens->At->Type == Type)
-      {
-        Result = True;
-        break;
-      }
-    }
-
-
+  }
+  else
+  {
+    Warn("CTokenType_Unknown passed to RewindTo");
   }
 
-  Assert(Parser->Tokens->At >= Parser->Tokens->Start);
-  Assert(Parser->Tokens->At <= Parser->Tokens->End);
-
-  Assert( Parser->Tokens->At->Type == Type ||
-         ( Parser->Tokens->At == Parser->Tokens->Start && !Parser->Tokens->Up.Up ) );
-
-  SanityCheckParserChain(Parser);
-
-  return Result;
+  return Current.At;
 }
 
 // NOTE(Jesse): This function should actually just be able to walk the "Up" chain
@@ -596,21 +549,24 @@ Advance(c_token_cursor* Tokens, u32 Lookahead = 0)
 bonsai_function c_token *
 AdvanceTo(parser *Parser, peek_result *Peek)
 {
-  Assert(Parser->Tokens->At < Parser->Tokens->End);
-  // NOTE(Jesse): Yes, it's really weird we return the thing we were on here
-  // instead of what we're advancing to.  Yes, we should change it.
-  c_token *Result = Parser->Tokens->At;
+  c_token *Result = 0;
+  if (Parser->Tokens->At < Parser->Tokens->End)
+  {
+    // NOTE(Jesse): Yes, it's really weird we return the thing we were on here
+    // instead of what we're advancing to.  Yes, we should change it.
+    Result = Parser->Tokens->At;
 
-  if (IsValid(Peek))
-  {
-    Assert(Peek->Tokens);
-    Parser->Tokens = Peek->Tokens;
-    Parser->Tokens->At = Peek->At;
-    Assert(Peek->Tokens->At == Peek->At);
-  }
-  else
-  {
-    Parser->Tokens->At = Parser->Tokens->End;
+    if (IsValid(Peek))
+    {
+      Assert(Peek->Tokens);
+      Parser->Tokens = Peek->Tokens;
+      Parser->Tokens->At = Peek->At;
+      Assert(Peek->Tokens->At == Peek->At);
+    }
+    else
+    {
+      Parser->Tokens->At = Parser->Tokens->End;
+    }
   }
 
   return Result;
@@ -691,7 +647,7 @@ AdvanceTo(parser* Parser, c_token* T)
 
   while (IsValid(&Peek) && Peek.At != T)
   {
-    Peek = PeekTokenRawCursor(Parser, 1);
+    Peek = PeekTokenRawCursor(&Peek, 1);
   }
 
   if (IsValid(&Peek))
@@ -835,11 +791,20 @@ DumpChain(parser* Parser, u32 LinesToDump = u32_MAX)
 #endif
 
 bonsai_function void
-PrintTokenVerbose(c_token_cursor *Tokens, c_token *T, u32 Depth)
+PrintTokenVerbose(c_token_cursor *Tokens, c_token *T, c_token *AbsAt, u32 Depth)
 {
-  counted_string AtMarker = Tokens->At == T ? CSz("(*)") : CSz("( )");
+  counted_string AtMarker = CSz(" ");
+  if (AbsAt == T )
+  {
+    AtMarker = CSz("" GREEN_TERMINAL ">" WHITE_TERMINAL "");
+  }
+  else if (Tokens->At == T)
+  {
+    AtMarker = CSz(">");
+  }
+
   counted_string ErasedString = T->Erased ? CSz("(e)") : CSz("   ");
-  DebugChars("%*s(%S) (%d) %S %S %S ", Depth*2, "",  Basename(T->Filename), T->LineNumber, AtMarker, ErasedString, ToString(T->Type));
+  DebugChars("%*s(%S) (%d) %S %S %S ", Depth*2, "",  Basename(T->Filename), T->LineNumber, ErasedString, AtMarker, ToString(T->Type));
   PrintToken(*T);
 
   if (T->Type != CTokenType_Newline && T->Type != CTokenType_EscapedNewline)
@@ -849,7 +814,7 @@ PrintTokenVerbose(c_token_cursor *Tokens, c_token *T, u32 Depth)
 }
 
 bonsai_function void
-DumpCursorSimple(c_token_cursor* Tokens, u32 Depth = 0)
+DumpCursorSimple(c_token_cursor* Tokens, c_token *AbsoluteAt = 0, u32 Depth = 0)
 {
   DebugLine("\n%*s>> Dumping Cursor %S", Depth*4, "", Tokens->Filename);
 
@@ -859,9 +824,9 @@ DumpCursorSimple(c_token_cursor* Tokens, u32 Depth = 0)
   {
     c_token *T = Tokens->Start + TIndex;
 
-    PrintToken(T);
-    PrintTraySimple(T);
-    /* PrintTokenVerbose(Tokens, T, Depth); */
+    /* PrintToken(T); */
+    /* PrintTraySimple(T); */
+    PrintTokenVerbose(Tokens, T, AbsoluteAt, Depth);
 
     switch (T->Type)
     {
@@ -871,13 +836,21 @@ DumpCursorSimple(c_token_cursor* Tokens, u32 Depth = 0)
         if (T->Down)
         {
           Assert(T->Down->Up.Up == Tokens);
-          DumpCursorSimple(T->Down, Depth+1);
+          DumpCursorSimple(T->Down, AbsoluteAt, Depth+1);
         }
       } break;
 
       default: {} break;;
     }
   }
+
+  if (AbsoluteAt == Tokens->End)
+  {
+    c_token UnknownMarkerToken = {};
+    UnknownMarkerToken.Filename = Tokens->Start->Filename;
+    PrintTokenVerbose(Tokens, &UnknownMarkerToken, &UnknownMarkerToken, Depth);
+  }
+
   DebugLine("\n%*s>> done", Depth*4, "");
 }
 
@@ -2521,7 +2494,8 @@ ExpandMacro( parse_context *Ctx,
   // that does #if #else evaluation) this routine must be able to require the
   // macro name token without calling RequireTokenRaw().
   //
-  // NOTE(Jesse): Is this a bug??
+  // TODO(Jesse, correctness): Is this a bug, or is the above comment wrong?
+  //
   c_token MacroNameT = RequireTokenRaw(Parser, CToken(CT_MacroLiteral, Macro->Name));
 
   // NOTE(Jesse): These get filled out in the case where we've got a macro
@@ -2546,7 +2520,7 @@ ExpandMacro( parse_context *Ctx,
       c_token *Start = PeekTokenPointer(Parser);
       if (Start && Start->Type == CTokenType_OpenParen)
       {
-        c_token_cursor Tokens = CTokenCursor(Start, Start);
+        c_token_cursor Tokens = CTokenCursor(Start, Start, CSz(DEFAULT_FILE_IDENTIFIER), TokenCursorSource_IntermediateRepresentaton, {0,0} );
         parser InstanceArgs_ = { .Tokens = &Tokens };
         parser *InstanceArgs = &InstanceArgs_;
 
@@ -2647,7 +2621,7 @@ ExpandMacro( parse_context *Ctx,
 
         if (c_token_buffer *ArgBuffer = TryMacroArgSubstitution(T, &Macro->NamedArguments, &ArgInstanceValues ))
         {
-          c_token_cursor Tokens = CTokenCursor(ArgBuffer);
+          c_token_cursor Tokens = CTokenCursor(ArgBuffer, CSz(DEFAULT_FILE_IDENTIFIER), TokenCursorSource_IntermediateRepresentaton, {0,0} );
           parser Src = MakeParser(&Tokens);
           while (c_token* ArgT = PeekTokenRawPointer(&Src))
           {
@@ -2708,11 +2682,10 @@ ExpandMacro( parse_context *Ctx,
 
         if (c_token_buffer *ArgBuffer = TryMacroArgSubstitution(Next, &Macro->NamedArguments, &ArgInstanceValues ))
         {
-          c_token_cursor Tokens = CTokenCursor(ArgBuffer);
+          c_token_cursor Tokens = CTokenCursor(ArgBuffer, CSz(DEFAULT_FILE_IDENTIFIER), TokenCursorSource_IntermediateRepresentaton, {0,0} );
           parser Temp = MakeParser(&Tokens);
           Next = PeekTokenPointer(&Temp);
 
-#if 1
           if (Next && Next->Type == CT_MacroLiteral)
           {
             // NOTE(Jesse, tags: begin_temporary_memory): We need BeginTemporaryMemory here
@@ -2736,7 +2709,6 @@ ExpandMacro( parse_context *Ctx,
             // We would roll-back the temp-mem here
           }
           else
-#endif
           {
             // @token_control_pointers
             Ensure(PopTokenPointer(&Temp) == Next);
@@ -2797,7 +2769,7 @@ ExpandMacro( parse_context *Ctx,
                       (u32)Kilobytes(32),
                       TokenCursorSource_MacroExpansion,
                       0,
-                      {Parser->Tokens, Parser->Tokens->At},
+                      {0,0},
                       PermMemory
                     );
 
@@ -4725,8 +4697,8 @@ RunPreprocessor(parse_context *Ctx, parser *Parser, memory_arena *Memory)
           if (GetByValue(&Ctx->Datatypes.FilesParsed, T->Filename))
           {
             // TODO(Jesse, tags: memory): Free all memory
-            parser Temp = {};
-            *Parser = Temp;
+            Parser->Tokens->At = Parser->Tokens->Start;
+            Parser->Tokens->End = Parser->Tokens->Start;
             T = 0;
           }
           else
@@ -4825,8 +4797,11 @@ RunPreprocessor(parse_context *Ctx, parser *Parser, memory_arena *Memory)
             {
               EraseBetweenExcluding(Parser, T, Parser->Tokens->At);
               T->Macro.Expansion = Expanded->Tokens;
+              T->Macro.Def = Macro;
               Expanded->Tokens->Up.Up = Parser->Tokens;
               Expanded->Tokens->Up.At = T;
+              Assert(Parser->Tokens->Source != TokenCursorSource_IntermediateRepresentaton);
+              Assert(Expanded->Tokens->Up.At->Type == CT_MacroLiteral);
             }
           }
           else
@@ -8826,33 +8801,36 @@ ParseAllTodosFromFile(counted_string Filename, memory_arena* Memory)
 
   parser *Parser = ParserForFile(0, Filename, TokenCursorSource_Unknown);
 
-  while (TokensRemain(Parser))
+  if (Parser)
   {
-    RequireToken(Parser, CTokenType_Hash);
-    counted_string PersonName = RequireToken(Parser, CTokenType_Identifier).Value;
-
-    person* Person = GetExistingOrCreate(&People, PersonName, Memory);
-    while (OptionalToken(Parser, CT_PreprocessorPaste))
+    while (TokensRemain(Parser))
     {
-      counted_string TagName = RequireToken(Parser, CTokenType_Identifier).Value;
+      RequireToken(Parser, CTokenType_Hash);
+      counted_string PersonName = RequireToken(Parser, CTokenType_Identifier).Value;
 
-      tag* Tag = GetExistingOrCreate(&Person->Tags, TagName, Memory);
-      while (OptionalToken(Parser, CTokenType_Minus))
+      person* Person = GetExistingOrCreate(&People, PersonName, Memory);
+      while (OptionalToken(Parser, CT_PreprocessorPaste))
       {
-        RequireToken(Parser, CTokenType_Hash);
-        c_token TodoId = RequireToken(Parser, CTokenType_IntLiteral);
+        counted_string TagName = RequireToken(Parser, CTokenType_Identifier).Value;
 
-        LargestIdFoundInFile = Max(LargestIdFoundInFile, (u32)TodoId.UnsignedValue);
-        counted_string TodoValue = Trim(ConcatTokensUntilNewline(Parser, Memory));
-        todo NewTodo = Todo(TodoId.Value, TodoValue, False);
-        Push(&Tag->Todos, NewTodo, Memory);
+        tag* Tag = GetExistingOrCreate(&Person->Tags, TagName, Memory);
+        while (OptionalToken(Parser, CTokenType_Minus))
+        {
+          RequireToken(Parser, CTokenType_Hash);
+          c_token TodoId = RequireToken(Parser, CTokenType_IntLiteral);
+
+          LargestIdFoundInFile = Max(LargestIdFoundInFile, (u32)TodoId.UnsignedValue);
+          counted_string TodoValue = Trim(ConcatTokensUntilNewline(Parser, Memory));
+          todo NewTodo = Todo(TodoId.Value, TodoValue, False);
+          Push(&Tag->Todos, NewTodo, Memory);
+          EatWhitespace(Parser);
+        }
+
         EatWhitespace(Parser);
       }
 
       EatWhitespace(Parser);
     }
-
-    EatWhitespace(Parser);
   }
 
   return People;
