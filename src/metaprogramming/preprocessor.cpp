@@ -96,7 +96,7 @@ bonsai_function void EraseToken(c_token *Token);
 bonsai_function void EraseBetweenExcluding(parser *Parser, c_token *StartToken, c_token *OnePastLastToken);
 
 bonsai_function void DumpLocalTokens(parser *Parser);
-bonsai_function void PrintTray(char_cursor *Dest, c_token *T, u32 Columns);
+bonsai_function void PrintTray(char_cursor *Dest, c_token *T, u32 Columns, counted_string Color);
 bonsai_function void PrintTraySimple(c_token *T);
 
 
@@ -1007,6 +1007,22 @@ static const u32 Global_ParseErrorBufferSize = 64*1024;
 static char Global_ParseErrorBuffer[Global_ParseErrorBufferSize] = {};
 
 bonsai_function void
+Highlight(char_cursor *Dest, counted_string Str, counted_string Color)
+{
+  CopyToDest(Dest, Color);
+  CopyToDest(Dest, Str);
+  CopyToDest(Dest, TerminalColors.White);
+}
+
+bonsai_function void
+Highlight(char_cursor *Dest, char C, counted_string Color)
+{
+  CopyToDest(Dest, Color);
+  CopyToDest(Dest, C);
+  CopyToDest(Dest, TerminalColors.White);
+}
+
+bonsai_function void
 Indent(char_cursor *Dest, u32 TabCount, u32 SpaceCount)
 {
   for (u32 ColumnIndex = 0;
@@ -1064,22 +1080,6 @@ OutputIdentifierUnderline(char_cursor *Dest, u32 IdentifierLength)
 }
 
 bonsai_function void
-Highlight(char_cursor *Dest, counted_string Str, counted_string Color)
-{
-  CopyToDest(Dest, Color);
-  CopyToDest(Dest, Str);
-  CopyToDest(Dest, TerminalColors.White);
-}
-
-bonsai_function void
-Highlight(char_cursor *Dest, char C, counted_string Color)
-{
-  CopyToDest(Dest, Color);
-  CopyToDest(Dest, C);
-  CopyToDest(Dest, TerminalColors.White);
-}
-
-bonsai_function void
 PrintTraySimple(c_token *T)
 {
   if (T)
@@ -1096,7 +1096,7 @@ PrintTraySimple(c_token *T)
 }
 
 bonsai_function void
-PrintTray(char_cursor *Dest, c_token *T, u32 Columns)
+PrintTray(char_cursor *Dest, c_token *T, u32 Columns, counted_string Color = TerminalColors.White)
 {
   if (T)
   {
@@ -1104,7 +1104,7 @@ PrintTray(char_cursor *Dest, c_token *T, u32 Columns)
   }
   else
   {
-    FormatCountedString_(Dest, CSz("%*c |"), Columns, ' ');
+    FormatCountedString_(Dest, CSz("%*c %S|%S"), Columns, ' ', Color, TerminalColors.White);
   }
 }
 
@@ -1250,8 +1250,6 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
     u32 TabCount = 0;
 
     u32 ErrorIdentifierLength = (u32)ErrorToken->Value.Count;
-    u32 ErrorIdentifierLengthSubOne = (u32)(ErrorToken->Value.Count > 0 ? ErrorToken->Value.Count-1 : ErrorToken->Value.Count);
-
 
     //
     // Print context until we hit the error token.  Also keep track of spaces
@@ -1296,6 +1294,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
         ++SpaceCount;
       }
 
+      continue;
     }
 
     //
@@ -1332,9 +1331,10 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
       OutputIdentifierUnderline(ParseErrorCursor, ErrorIdentifierLength);
       CopyToDest(ParseErrorCursor, '\n');
 
-      PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
-      Indent(ParseErrorCursor, TabCount, SpaceCount+ErrorIdentifierLengthSubOne);
-      Highlight(ParseErrorCursor, '|', TerminalColors.Yellow);
+      PrintTray(ParseErrorCursor, 0, MaxTrayWidth, TerminalColors.Yellow);
+      CopyToDest(ParseErrorCursor, '\n');
+
+      PrintTray(ParseErrorCursor, 0, MaxTrayWidth, TerminalColors.Yellow);
       CopyToDest(ParseErrorCursor, ' ');
       CopyToDest(ParseErrorCursor, ' ');
 
@@ -1344,15 +1344,11 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
       CopyToDest(ParseErrorCursor, '\n');
 
 
-      PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
-      Indent(ParseErrorCursor, TabCount, SpaceCount+ErrorIdentifierLengthSubOne);
-      Highlight(ParseErrorCursor, '|', TerminalColors.Yellow);
+      PrintTray(ParseErrorCursor, 0, MaxTrayWidth, TerminalColors.Yellow);
       CopyToDest(ParseErrorCursor, '\n');
 
 
-      PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
-      Indent(ParseErrorCursor, TabCount, SpaceCount+ErrorIdentifierLengthSubOne);
-      Highlight(ParseErrorCursor, '|', TerminalColors.Yellow);
+      PrintTray(ParseErrorCursor, 0, MaxTrayWidth, TerminalColors.Yellow);
       CopyToDest(ParseErrorCursor, ' ');
       CopyToDest(ParseErrorCursor, ' ');
 
@@ -1365,9 +1361,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
         if (C == '\n')
         {
-          PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
-          Indent(ParseErrorCursor, TabCount, SpaceCount+ErrorIdentifierLengthSubOne);
-          Highlight(ParseErrorCursor, '|', TerminalColors.Yellow);
+          PrintTray(ParseErrorCursor, 0, MaxTrayWidth, TerminalColors.Yellow);
           CopyToDest(ParseErrorCursor, ' ');
           CopyToDest(ParseErrorCursor, ' ');
         }
@@ -1380,10 +1374,8 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
         char_cursor ErrorCursor = CharCursor(ErrorMessage);
         u64 LongestLine = GetLongestLineInCursor(&ErrorCursor);
 
-        PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
-        Indent(ParseErrorCursor, TabCount, SpaceCount + ErrorIdentifierLengthSubOne);
+        PrintTray(ParseErrorCursor, 0, MaxTrayWidth, TerminalColors.Yellow);
         CopyToDest(ParseErrorCursor, TerminalColors.Yellow);
-        CopyToDest(ParseErrorCursor, '|');
         for (u32 DashIndex = 0;
             DashIndex < LongestLine + 2;
             ++DashIndex)
