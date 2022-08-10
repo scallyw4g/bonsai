@@ -1041,10 +1041,13 @@ Indent(char_cursor *Dest, u32 TabCount, u32 SpaceCount)
 }
 
 bonsai_function void
-OutputIdentifierUnderline(char_cursor *Dest, u32 IdentifierLength)
+OutputIdentifierUnderline(char_cursor *Dest, u32 IdentifierLength, counted_string Color)
 {
   u32 IdentifierLengthSubOne = IdentifierLength > 0 ? IdentifierLength-1 : IdentifierLength;
   b32 DoPipes = IdentifierLength > 3;
+
+  CopyToDest(Dest, Color);
+
   for (u32 ColumnIndex = 0;
       ColumnIndex < IdentifierLength;
       ++ColumnIndex)
@@ -1053,30 +1056,24 @@ OutputIdentifierUnderline(char_cursor *Dest, u32 IdentifierLength)
     {
       if (ColumnIndex == 0)
       {
-        CopyToDest(Dest, TerminalColors.Yellow);
         CopyToDest(Dest, '|');
-        CopyToDest(Dest, TerminalColors.White);
       }
       else if (ColumnIndex == IdentifierLengthSubOne)
       {
-        CopyToDest(Dest, TerminalColors.Yellow);
         CopyToDest(Dest, '|');
-        CopyToDest(Dest, TerminalColors.White);
       }
       else
       {
-        CopyToDest(Dest, TerminalColors.Yellow);
         CopyToDest(Dest, '~');
-        CopyToDest(Dest, TerminalColors.White);
       }
     }
     else
     {
-      CopyToDest(Dest, TerminalColors.Yellow);
       CopyToDest(Dest, '^');
-      CopyToDest(Dest, TerminalColors.White);
     }
   }
+
+  CopyToDest(Dest, TerminalColors.White);
 }
 
 bonsai_function void
@@ -1326,9 +1323,10 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
         CopyToDest(ParseErrorCursor, '\n');
       }
 
-      PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
+      Indent(ParseErrorCursor, 0, MaxTrayWidth);
+      Highlight(ParseErrorCursor, CSz(" >"), TerminalColors.DarkRed);
       Indent(ParseErrorCursor, TabCount, SpaceCount);
-      OutputIdentifierUnderline(ParseErrorCursor, ErrorIdentifierLength);
+      OutputIdentifierUnderline(ParseErrorCursor, ErrorIdentifierLength, TerminalColors.DarkRed);
       CopyToDest(ParseErrorCursor, '\n');
 
       PrintTray(ParseErrorCursor, 0, MaxTrayWidth, TerminalColors.Yellow);

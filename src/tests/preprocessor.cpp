@@ -960,7 +960,6 @@ TestAst(memory_arena *Memory)
   if (Parser)
   {
     /* DumpCursorSimple(Parser->Tokens, Parser->Tokens->At); */
-
     /* RuntimeBreak(); */
 
     Ctx.CurrentParser = Parser;
