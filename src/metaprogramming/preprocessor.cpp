@@ -114,7 +114,6 @@ HasValidDownPointer(c_token *T)
 bonsai_function void
 SanityCheckCTokenCursor(c_token_cursor *Current)
 {
-#if 1
   for (u32 TokenIndex = 0; TokenIndex < TotalElements(Current); ++TokenIndex)
   {
     c_token *T = Current->Start + TokenIndex;
@@ -125,7 +124,6 @@ SanityCheckCTokenCursor(c_token_cursor *Current)
       SanityCheckCTokenCursor(T->Down);
     }
   }
-#endif
 }
 
 bonsai_function void
@@ -142,6 +140,7 @@ SanityCheckParserChain(parser *Parser)
 }
 #else
 #define SanityCheckParserChain(...)
+#define SanityCheckCTokenCursor(...)
 #endif
 
 bonsai_function string_from_parser
@@ -360,7 +359,7 @@ RewindTo(parser* Parser, c_token *T)
   peek_result Current = {};
   if (T)
   {
-    Current = PeekTokenRawCursor(Parser->Tokens, 0);
+    Current = PeekTokenRawCursor(Parser->Tokens, -1);
     while (Current.At && Current.At != T)
     {
       Current = PeekTokenRawCursor(&Current, -1);
@@ -796,15 +795,15 @@ PrintTokenVerbose(c_token_cursor *Tokens, c_token *T, c_token *AbsAt, u32 Depth)
   counted_string AtMarker = CSz(" ");
   if (AbsAt == T )
   {
-    AtMarker = CSz("" GREEN_TERMINAL ">" WHITE_TERMINAL "");
+    AtMarker = CSz(GREEN_TERMINAL ">" WHITE_TERMINAL);
   }
   else if (Tokens->At == T)
   {
     AtMarker = CSz(">");
   }
 
-  counted_string ErasedString = T->Erased ? CSz("(e)") : CSz("   ");
-  DebugChars("%*s(%S) (%d) %S %S %S ", Depth*2, "",  Basename(T->Filename), T->LineNumber, ErasedString, AtMarker, ToString(T->Type));
+  counted_string ErasedString = T->Erased ? CSz("e") : CSz(" ");
+  DebugChars("%*s(%S) %d %S %S %S ", Depth*2, "",  Basename(T->Filename), T->LineNumber, ErasedString, AtMarker, ToString(T->Type));
   PrintToken(*T);
 
   if (T->Type != CTokenType_Newline && T->Type != CTokenType_EscapedNewline)
@@ -813,7 +812,7 @@ PrintTokenVerbose(c_token_cursor *Tokens, c_token *T, c_token *AbsAt, u32 Depth)
   }
 }
 
-bonsai_function void
+void
 DumpCursorSimple(c_token_cursor* Tokens, c_token *AbsoluteAt = 0, u32 Depth = 0)
 {
   DebugLine("\n%*s>> Dumping Cursor %S", Depth*4, "", Tokens->Filename);
@@ -1217,9 +1216,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
 
   counted_string ParserName = {};
 
-  Assert(Parser->Tokens->At == ErrorToken);
-
-#if 0
+#if 1
   if (AdvanceTo(Parser, ErrorToken))
   {
   }
@@ -1256,53 +1253,61 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
     u32 ErrorIdentifierLengthSubOne = (u32)(ErrorToken->Value.Count > 0 ? ErrorToken->Value.Count-1 : ErrorToken->Value.Count);
 
 
+    //
+    // Print context until we hit the error token.  Also keep track of spaces
+    // and tabs while we go such that we know how much to indent error message
+    //
     PrintTray(ParseErrorCursor, PeekTokenRawPointer(Parser), MaxTrayWidth);
     while (c_token *T = PopTokenRawPointer(Parser))
     {
-        PrintToken(T, ParseErrorCursor);
+      PrintToken(T, ParseErrorCursor);
 
-        if (T == ErrorToken)
-        {
-          break;
-        }
-        else if ( IsNewline(T->Type) )
-        {
-          TabCount = 0;
-          SpaceCount = 0;
+      // TODO(Jesse, easy): These serial ifs could probably be cleaned up with a switch.
+      if (T == ErrorToken)
+      {
+        break;
+      }
+      else if ( IsNewline(T->Type) )
+      {
+        TabCount = 0;
+        SpaceCount = 0;
 
-          if (TokenShouldModifyLineCount(T, Parser->Tokens->Source))
-          {
-            PrintTray(ParseErrorCursor, PeekTokenRawPointer(Parser), MaxTrayWidth);
-          }
-          else
-          {
-            PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
-          }
-
-        }
-        else if (T->Type == CTokenType_Tab)
+        // TODO(Jesse, easy): Pretty sure this can go away and just call PrintTray w/ Peek
+        if (TokenShouldModifyLineCount(T, Parser->Tokens->Source))
         {
-          ++TabCount;
-        }
-        else if (T->Value.Count)
-        {
-          SpaceCount += T->Value.Count;
+          PrintTray(ParseErrorCursor, PeekTokenRawPointer(Parser), MaxTrayWidth);
         }
         else
         {
-          ++SpaceCount;
+          PrintTray(ParseErrorCursor, 0, MaxTrayWidth);
         }
+
+      }
+      else if (T->Type == CTokenType_Tab)
+      {
+        ++TabCount;
+      }
+      else if (T->Value.Count)
+      {
+        SpaceCount += T->Value.Count;
+      }
+      else
+      {
+        ++SpaceCount;
+      }
 
     }
 
+    //
+    // Print the rest of the line the error token was found on.
+    //
     {
       c_token *T = PopTokenRawPointer(Parser);
       while (T)
       {
         PrintToken(T, ParseErrorCursor);
 
-        if (T->Type == CTokenType_Newline           ||
-            T->Type == CTokenType_EscapedNewline)
+        if (IsNewline(T))
         {
           break;
         }
@@ -1311,12 +1316,13 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
       }
     }
 
-
-    { // Output the error line message
-
+    //
+    // Output the error message
+    //
+    {
       c_token *NextT = PeekTokenRawPointer(Parser);
       c_token *PrevT = PeekTokenRawPointer(Parser, -1);
-      if (!NextT && PrevT && PrevT->Type != CTokenType_Newline)
+      if (NextT == 0 && PrevT && PrevT->Type != CTokenType_Newline)
       {
         CopyToDest(ParseErrorCursor, '\n');
       }
@@ -1827,7 +1833,11 @@ PeekTokenRawCursor(peek_result *Peek, s32 Direction)
 bonsai_function peek_result
 PeekTokenRawCursor(parser *Parser, s32 Direction)
 {
-  peek_result Result = PeekTokenRawCursor(Parser->Tokens, Direction);
+  peek_result Result = {};
+  if (Parser->ErrorCode == ParseErrorCode_None)
+  {
+    Result = PeekTokenRawCursor(Parser->Tokens, Direction);
+  }
   return Result;
 }
 
@@ -1840,10 +1850,10 @@ PeekTokenRawPointer(parser* Parser, s32 Lookahead)
 
   if (Parser->ErrorCode == ParseErrorCode_None)
   {
-    peek_result Current = PeekTokenRawCursor(Parser->Tokens, 0);
-
     s32 Direction = GetSign(Lookahead);
-    s32 Count = 0;
+    s32 Count = Direction;
+
+    peek_result Current = PeekTokenRawCursor(Parser->Tokens, Direction);
     while (Count != Lookahead)
     {
       Current = PeekTokenRawCursor(&Current, Direction);
@@ -1902,9 +1912,6 @@ PeekTokenCursor(c_token_cursor *Tokens, s32 Skip)
     else if (IsWhitespace(Current.At))
     {
     }
-    else if (Current.At->Type == CT_NameQualifier)
-    {
-    }
     else
     {
       if (Hits == Skip)
@@ -1921,8 +1928,7 @@ PeekTokenCursor(c_token_cursor *Tokens, s32 Skip)
   }
 
   // TODO(Jesse): Pack the conditional up above into a function we can call
-  // here.. ?  Not sure what we'd do about the CT_NameQualifier thing, but
-  // ending on that token is an invalid program anyways so whatever.
+  // here.. ? 
   if (IsValid(&Current) && (Current.At->Erased || IsWhitespace(Current.At) || IsComment(Current.At))) { Invalidate(&Current); } // Fires if the stream ends with whitespace/comment
 
 
@@ -1945,7 +1951,11 @@ PeekTokenCursor(c_token_cursor *Tokens, s32 Skip)
 bonsai_function peek_result
 PeekTokenCursor(parser *Parser, s32 Skip)
 {
-  peek_result Result = PeekTokenCursor(Parser->Tokens, Skip);
+  peek_result Result = {};
+  if (Parser->ErrorCode == ParseErrorCode_None)
+  {
+    Result = PeekTokenCursor(Parser->Tokens, Skip);
+  }
   return Result;
 }
 
@@ -1953,8 +1963,11 @@ bonsai_function c_token*
 PeekTokenPointer(parser* Parser, s32 Skip)
 {
   c_token *Result = 0;
-  peek_result C = PeekTokenCursor(Parser->Tokens, Skip);
-  if (IsValid(&C)) Result = C.At;
+  if (Parser->ErrorCode == ParseErrorCode_None)
+  {
+    peek_result C = PeekTokenCursor(Parser->Tokens, Skip);
+    if (IsValid(&C)) Result = C.At;
+  }
   return Result;
 }
 
@@ -1986,10 +1999,6 @@ PeekTokenPointer(parser* Parser, u32 Lookahead)
     }
     else if (IsWhitespace(Result))
     {
-    }
-    else if (Result->Type == CT_NameQualifier)
-    {
-      ++LocalLookahead; // Skip the scope resolution operator token -> '::'
     }
     else
     {
@@ -3030,6 +3039,10 @@ TrimLeadingWhitespace(parser* Parser)
 bonsai_function void
 TrimTrailingWhitespace(parser* Parser)
 {
+  // NOTE(Jesse): This function is fucked.  Use token control functions so we
+  // don't bilndly eat macros and includes!!
+  BUG;
+
   c_token* CurrentToken = Parser->Tokens->End-1;
 
   while (CurrentToken > Parser->Tokens->Start)
@@ -5009,7 +5022,7 @@ PreprocessedParserForFile(parse_context *Ctx, counted_string Filename, token_cur
     }
     else
     {
-      Error("While running preprocessor");
+      Warn("Error encountered while running preprocessor on file %S", Filename);
     }
   }
 
@@ -5958,16 +5971,46 @@ TrimLastToken(parser* Parser, c_token_type TokenType)
   }
 }
 
-bonsai_function parser
-GetBodyTextForNextScope(parser* Parser)
+inline b32
+TokenValidFor(c_token_cursor *Tokens, c_token *T)
 {
-  // TODO(Jesse, immediate): This should return c_token_cursor
-  parser BodyText = *Parser;
-  /* BodyText.OutputTokens = {}; */
+  b32 Result = T >= Tokens->Start && T <= Tokens->End;
+  return Result;
+}
 
-  BodyText.Tokens->Start = BodyText.Tokens->At;
+bonsai_function parser
+GetBodyTextForNextScope(parser* Parser, memory_arena *Memory)
+{
+  // TODO(Jesse, immediate): This should return c_token_cursor .. I think ..
+  parser BodyText = {};
+
+  c_token_cursor *Tokens = AllocateProtection(c_token_cursor, Memory, 1, False);
+  BodyText.Tokens = Tokens;
+
+  c_token_cursor *StartTokens = Parser->Tokens;
+  c_token *Start = PeekTokenPointer(Parser);
+
   EatBetween(Parser, CTokenType_OpenBrace, CTokenType_CloseBrace);
-  BodyText.Tokens->End = Parser->Tokens->At;
+
+  // TODO(Jesse, immediate): This is janky as fuck and should work..
+  // differently.  I'm not entirely sure _what_ should be different, but the
+  // assertions and -1 +1 business below is a symptom of the return value of
+  // this function having to be a slice into an existing c_token_cursor.  This
+  // holds true without issue (at the moment) for the interpreter code, but the
+  // C++ parsing code can encounter situations where the token after End was on
+  // a different cursor, so we do these sketchy hacks.  There are also
+  // situations where this fails completely.. ie if a function is closed by a
+  // macro.  So..  what we should do in that situation is unclear.
+  //
+  // This is documented with the define BUG_BODY_SCOPE_ACROSS_C_TOKEN_CURSOR_BOUNDARY
+  //
+  c_token *End = PeekTokenRawPointer(Parser, -1);
+
+  Assert(End->Type == CTokenType_CloseBrace);
+  Assert(TokenValidFor(StartTokens, Start));
+  Assert(TokenValidFor(StartTokens, End));
+
+  CTokenCursor(Tokens, Start, (umm)(End-Start) + 1, Start->Filename, TokenCursorSource_BodyText, {});
 
   TrimFirstToken(&BodyText, CTokenType_OpenBrace);
   TrimUntilNewline(&BodyText);
@@ -6032,6 +6075,7 @@ ParseReferencesIndirectionAndPossibleFunctionPointerness(parser *Parser)
       case CTokenType_Comma: // This gets called on macro-functions too, so this is valid
       case CTokenType_CloseParen: // Valid closing token during a cast
       case CTokenType_Identifier:
+      case CT_NameQualifier:
       case CTokenType_OperatorKeyword: // Finish parsing the return type of an operator funciton
       case CTokenType_Semicolon:
       {
@@ -6135,6 +6179,24 @@ ParseLongness(parser *Parser, type_spec *Result)
   {
     if (OptionalToken(Parser, CTokenType_Long)) { Result->LongLong = True; }
     if (OptionalToken(Parser, CTokenType_Int)) { Result->Int = True; }
+  }
+}
+
+bonsai_function void
+EatNameQualifiers(parser *Parser)
+{
+  while (c_token *T = PeekTokenPointer(Parser))
+  {
+    if (T->Type == CT_NameQualifier)
+    {
+      RequireToken(Parser, *T);
+      RequireToken(Parser, CT_ScopeResolutionOperator);
+    }
+    else
+    {
+      Assert(T->Type == CTokenType_Identifier);
+      break;
+    }
   }
 }
 
@@ -6315,6 +6377,12 @@ ParseTypeSpecifier(parse_context *Ctx)
         Done = True;
       } break;
 
+      case CT_NameQualifier:
+      {
+        EatNameQualifiers(Parser);
+      } break;
+
+
       case CTokenType_Identifier:
       {
         if (Result.Token.Type)
@@ -6467,7 +6535,7 @@ ParseAndPushFunctionPrototype(parse_context *Ctx, type_spec *ReturnType, counted
   if (PeekToken(Parser).Type == CTokenType_OpenBrace)
   {
     // void FunctionName( arg A1, arg, A2) { .. body text .. }
-    Result.Body = GetBodyTextForNextScope(Parser);
+    Result.Body = GetBodyTextForNextScope(Parser, Ctx->Memory);
     Push(&Ctx->Datatypes.Functions, Result, Ctx->Memory);
   }
   else
@@ -6521,6 +6589,8 @@ ParseFunctionOrVariableDecl(parse_context *Ctx)
     }
     else
     {
+      EatNameQualifiers(Parser);
+
       c_token DeclNameToken = RequireToken(Parser, CTokenType_Identifier);
       if ( OptionalToken(Parser, CTokenType_OpenParen) )
       {
@@ -7252,6 +7322,11 @@ ParseStructMember(parse_context *Ctx, counted_string StructName)
         InvalidCodePath();
       }
     } break;
+
+    case CT_NameQualifier:
+    {
+      EatNameQualifiers(Parser);
+    } [[fallthrough]];
 
     case CTokenType_ThreadLocal:
     case CTokenType_Const:
@@ -8438,6 +8513,11 @@ ParseDatatypes(parse_context *Ctx)
         EatUntilIncluding(Parser, CTokenType_Semicolon);
       } break;
 
+      case CT_NameQualifier:
+      {
+        EatNameQualifiers(Parser);
+      } break;
+
       case CTokenType_TemplateKeyword:
       case CTokenType_Extern:
       case CTokenType_Inline:
@@ -9028,7 +9108,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
             case is_struct:
             {
               RequireToken(&Scope, CTokenType_Question);
-              parser StructScope = GetBodyTextForNextScope(&Scope);
+              parser StructScope = GetBodyTextForNextScope(&Scope, Memory);
               if (Replace->Data.Type == type_struct_def)
               {
                 counted_string Code = Execute(FuncName, StructScope, ReplacePatterns, Ctx, Memory);
@@ -9039,7 +9119,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
             case is_enum:
             {
               RequireToken(&Scope, CTokenType_Question);
-              parser EnumScope = GetBodyTextForNextScope(&Scope);
+              parser EnumScope = GetBodyTextForNextScope(&Scope, Memory);
               switch (Replace->Data.Type)
               {
                 case type_enum_member:
@@ -9257,7 +9337,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
                 RequireToken(&Scope, CTokenType_CloseParen);
               }
 
-              parser MapMemberScope = GetBodyTextForNextScope(&Scope);
+              parser MapMemberScope = GetBodyTextForNextScope(&Scope, Memory);
 
               if (Replace->Data.Type == type_struct_def)
               {
@@ -9354,7 +9434,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
               RequireToken(&Scope, CTokenType_OpenParen);
               counted_string EnumValueMatch  = RequireToken(&Scope, CTokenType_Identifier).Value;
               RequireToken(&Scope, CTokenType_CloseParen);
-              parser NextScope = GetBodyTextForNextScope(&Scope);
+              parser NextScope = GetBodyTextForNextScope(&Scope, Memory);
 
               if (Replace->Data.Type == type_enum_def)
               {
@@ -9491,14 +9571,14 @@ ParseDatatypeList(parser* Parser, program_datatypes* Datatypes, tagged_counted_s
 }
 
 bonsai_function meta_func
-ParseMetaFunctionDef(parser* Parser, counted_string FuncName)
+ParseMetaFunctionDef(parser* Parser, counted_string FuncName, memory_arena *Memory)
 {
   TIMED_FUNCTION();
 
   RequireToken(Parser, CTokenType_OpenParen);
   counted_string ArgName = RequireToken(Parser, CTokenType_Identifier).Value;
   RequireToken(Parser, CTokenType_CloseParen);
-  parser Body = GetBodyTextForNextScope(Parser);
+  parser Body = GetBodyTextForNextScope(Parser, Memory);
 
   meta_func Func = {
     .Name = FuncName,
@@ -9758,7 +9838,7 @@ GoGoGadgetMetaprogramming(parse_context* Ctx, todo_list_info* TodoInfo)
               counted_string ArgName = RequireToken(Parser, CTokenType_Identifier).Value;
               RequireToken(Parser, CTokenType_CloseParen);
 
-              parser Body = GetBodyTextForNextScope(Parser);
+              parser Body = GetBodyTextForNextScope(Parser, Memory);
 
               meta_func Func = {
                 .Name = CSz("anonymous_function"),
@@ -9785,7 +9865,7 @@ GoGoGadgetMetaprogramming(parse_context* Ctx, todo_list_info* TodoInfo)
             else
             {
               counted_string FuncName = RequireToken(Parser, CTokenType_Identifier).Value;
-              meta_func Func = ParseMetaFunctionDef(Parser, FuncName);
+              meta_func Func = ParseMetaFunctionDef(Parser, FuncName, Memory);
               Push(FunctionDefs, Func, Memory);
             }
 
@@ -9831,10 +9911,10 @@ GoGoGadgetMetaprogramming(parse_context* Ctx, todo_list_info* TodoInfo)
             }
 
             RequireToken(Parser, CToken(ToString(func)));
-            meta_func StructFunc = ParseMetaFunctionDef(Parser, CSz("for_datatypes_struct_callback"));
+            meta_func StructFunc = ParseMetaFunctionDef(Parser, CSz("for_datatypes_struct_callback"), Memory);
 
             RequireToken(Parser, CToken(ToString(func)));
-            meta_func EnumFunc = ParseMetaFunctionDef(Parser, CSz("for_datatypes_enum_callback"));
+            meta_func EnumFunc = ParseMetaFunctionDef(Parser, CSz("for_datatypes_enum_callback"), Memory);
 
             RequireToken(Parser, CTokenType_CloseParen);
 
@@ -10267,9 +10347,11 @@ main(s32 ArgCount_, const char** ArgStrings)
     // TODO(Jesse): Make ParseArgs operate on the parse context directly?
     Ctx.IncludePaths = &Args.IncludePaths;
 
-    todo_list_info TodoInfo = {
-      .People = ParseAllTodosFromFile(CSz("todos.md"), Memory),
-    };
+    todo_list_info TodoInfo = {};
+
+    /* todo_list_info TodoInfo = { */
+    /*   .People = ParseAllTodosFromFile(CSz("todos.md"), Memory), */
+    /* }; */
 
     RegisterUnparsedCxxTypes(&Ctx.Datatypes, Memory);
 

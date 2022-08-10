@@ -12,9 +12,10 @@ if [ "$Platform" == "Linux" ] ; then
     -D __x86_64__                        \
     src/metaprogramming/preprocessor.cpp \
     -I src                               \
-    -I /usr/include                      \
-    -I /usr/include/x86_64-linux-gnu     \
-    -I /usr/include/clang/6.0.0/include 
+
+    # -I /usr/include                      \
+    # -I /usr/include/x86_64-linux-gnu     \
+    # -I /usr/include/clang/6.0.0/include 
 
     # -I /usr/include/c++/6 # NOTE(Jesse): This is where <random>, <algorithm> and <numeric> live.  Rewrite perlin.h
 

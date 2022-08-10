@@ -4,7 +4,7 @@ BUILD_EVERYTHING=0
 
 CheckoutMetaOutput=0
 
-BuildPreprocessor=0
+BuildPreprocessor=1
 BuildExecutables=0
 BuildDebugTests=0
 BuildTests=1
@@ -22,7 +22,7 @@ OPTIMIZATION_LEVEL="-O0"
 
 if [ "$Platform" == "Linux" ] ; then
   PLATFORM_LINKER_OPTIONS="-lpthread -lX11 -ldl -lGL"
-  PLATFORM_DEFINES="-DBONSAI_LINUX -DBONSAI_SLOW"
+  PLATFORM_DEFINES="-DBONSAI_LINUX" # -DBONSAI_SLOW"
   PLATFORM_INCLUDE_DIRS=""
   PLATFORM_CXX_OPTIONS="-ggdb"
 

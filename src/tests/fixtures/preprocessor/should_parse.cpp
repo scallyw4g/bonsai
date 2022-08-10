@@ -1,3 +1,4 @@
+
 #if 1
 #include <src/tests/bug_defines.h>
 #include <src/tests/fixtures/preprocessor/other_file_that_should_parse.cpp>
@@ -182,52 +183,52 @@ MacroFunction(u32 AnotherUnsignedInt = sizeof(u32);, )
 
 
 
-#if 0
-// #define CheekyDisappearingFunction(...)
-
-#else
-
 #define bonsai_function static
 
+
+#if BUG_BODY_SCOPE_ACROSS_C_TOKEN_CURSOR_BOUNDARY
+#define CLOSE_SKETCHY_FUNC }
 bonsai_function u32
-CheekyDisappearingFunction()
+SketchyFunc()
+{
+  return 42;
+CLOSE_SKETCHY_FUNC
+#endif
+
+bonsai_function u32
+CheekyFunction()
 {
   return 42;
 }
 
-/* bonsai_function u32 */
-/* CallTheCheekyFunction() */
-/* { */
-/*   u32 CheekyResult = CheekyDisappearingFunction(); */
-/*   return CheekyResult; */
-/* } */
-
-#endif
-
-/* #if 1 */
-/* #define AnotherCheekyDisappearingFunction(...) */
-/* #else */
-/* bonsai_function u32 */
-/* AnotherCheekyDisappearingFunction() */
-/* { */
-/*   return 42; */
-/* } */
-
-/* bonsai_function u32 */
-/* CallTheAnotherCheekyFunction() */
-/* { */
-/*   u32 AnotherCheekyResult = AnotherCheekyDisappearingFunction(); */
-/*   return AnotherCheekyResult; */
-/* } */
-/* #endif */
+bonsai_function u32
+CallTheCheekyFunction()
+{
+  u32 CheekyResult = CheekyFunction();
+  return CheekyResult;
+}
 
 
-/* bonsai_function void */
-/* CallBothCheeks() */
-/* { */
-/*   CheekyDisappearingFunction(); */
-/*   AnotherCheekyDisappearingFunction(); */
-/* } */
+bonsai_function u32
+AnotherCheekyFunction()
+{
+  return 42;
+}
+
+bonsai_function u32
+CallAnotherCheekyFunction()
+{
+  u32 AnotherCheekyResult = AnotherCheekyFunction();
+  return AnotherCheekyResult;
+}
+
+
+bonsai_function void
+CallBothCheeks()
+{
+  CheekyDisappearingFunction();
+  AnotherCheekyFunction();
+}
 
 
 
@@ -250,6 +251,8 @@ thing::thing() // Constructor bonsai_function
 thing::thing<int>()
 {
 }
+
+#endif
 
 int
 thing::DoTheThing(unsigned int Count) // Member bonsai_function
@@ -302,8 +305,6 @@ TestFunc(int foo)
 
 #undef foo;
 #undef bar;
-
-#endif
 
 struct fingy
 {

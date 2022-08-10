@@ -305,6 +305,7 @@ enum token_cursor_source
   TokenCursorSource_MetaprogrammingExpansion,
   TokenCursorSource_PasteOperator,
   TokenCursorSource_CommandLineOption,
+  TokenCursorSource_BodyText,
 
   // NOTE(Jesse): These should be created temporarily and discarded.  This type
   // should never be seen in "user" code.. it's just used in parsing.
@@ -1223,7 +1224,7 @@ CTokenCursor(c_token_cursor *Result, umm Count, memory_arena *Memory, counted_st
 c_token_cursor *
 AllocateTokenCursor(memory_arena* Memory, counted_string Filename, umm Count, token_cursor_source Source, u32 LineNumber, c_token_cursor_up Up)
 {
-  c_token_cursor *Result = Allocate(c_token_cursor, Memory, 1);
+  c_token_cursor *Result = AllocateProtection(c_token_cursor, Memory, 1, False);
   CTokenCursor(Result, Count, Memory, Filename, Source, Up);
   return Result;
 }

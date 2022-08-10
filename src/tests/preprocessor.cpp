@@ -959,6 +959,10 @@ TestAst(memory_arena *Memory)
   parser *Parser = PreprocessedParserForFile(&Ctx, CS(TEST_FIXTURES_PATH "/preprocessor/should_parse.cpp"), TokenCursorSource_RootFile, 0);
   if (Parser)
   {
+    /* DumpCursorSimple(Parser->Tokens, Parser->Tokens->At); */
+
+    /* RuntimeBreak(); */
+
     Ctx.CurrentParser = Parser;
 
     ParseDatatypes(&Ctx);
@@ -1876,6 +1880,7 @@ TestErrors(memory_arena *Memory)
     TestThat(Parser->ErrorToken->LineNumber == 2);
     /* TestThat( OptionalToken(Parser, CToken(132151u)) ); */
   }
+#endif
 
   {
     parse_context Ctx = AllocateParseContext(Memory);
@@ -1885,6 +1890,7 @@ TestErrors(memory_arena *Memory)
     TestThat(Parser->ErrorToken->LineNumber == 5);
   }
 
+#if 1
   {
     parse_context Ctx = AllocateParseContext(Memory);
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error13.cpp");
@@ -1892,7 +1898,6 @@ TestErrors(memory_arena *Memory)
     TestThat(Parser->ErrorCode == ParseErrorCode_InvalidTokenGenerated);
     TestThat(Parser->ErrorToken->LineNumber == 5);
   }
-#endif
 
   {
     parse_context Ctx = AllocateParseContext(Memory);
@@ -1907,6 +1912,7 @@ TestErrors(memory_arena *Memory)
     /* TestThat(Parser->ErrorToken->LineNumber == 2); */
     /* TestThat( OptionalToken(Parser, CToken(132151u)) ); */
   }
+#endif
 
 
 
@@ -2467,12 +2473,11 @@ main(s32 ArgCount, const char** Args)
   memory_arena* Memory = AllocateArena();
 
 
+#if 1
   TestSingleCursorTokenControl(Memory);
   TestMultiCursorTokenControl(Memory);
-
   // TODO(Jesse): Axe this or turn it into something more meaningful
   TestThings(Memory);
-
   TestDoublyLinkedListSwap();
   TestBoundaryConditions(Memory);
   TestPeekAndPopTokens(Memory);
@@ -2484,11 +2489,10 @@ main(s32 ArgCount, const char** Args)
   TestIncludeGuards(Memory);
   TestDefinesAndConditionals(Memory);
   TestLogicalOperators(Memory);
-#if 1
   TestLineNumbers(Memory);
   TestErrors(Memory);
-  TestAst(Memory);
 #endif
+  TestAst(Memory);
 
   TestSuiteEnd();
   exit(TestsFailed);

@@ -97,7 +97,11 @@
 #include <bonsai_stdlib/headers/filesystem.h>
 #include <bonsai_stdlib/headers/vector.h>
 #include <bonsai_stdlib/headers/random.h>
+
+#ifndef BONSAI_PREPROCESSOR
 #include <bonsai_stdlib/headers/perlin.h>
+#endif
+
 #include <bonsai_stdlib/headers/input.h>
 #include <bonsai_stdlib/headers/work_queue.h>
 #include <bonsai_stdlib/headers/memory_arena.h>
