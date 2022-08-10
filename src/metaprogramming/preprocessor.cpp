@@ -3029,14 +3029,15 @@ TrimLeadingWhitespace(parser* Parser)
 bonsai_function void
 TrimTrailingWhitespace(parser* Parser)
 {
-  // NOTE(Jesse): This function is fucked.  Use token control functions so we
-  // don't bilndly eat macros and includes!!
-  BUG;
-
   c_token* CurrentToken = Parser->Tokens->End-1;
 
   while (CurrentToken > Parser->Tokens->Start)
   {
+    // TODO(Jesse, correctness) This function fails if we hit one of these!
+    // Rewrite it such that we properly traverse "Down" pointers.
+    Assert( ! (Parser->Tokens->At->Type == CT_InsertedCode ||
+               Parser->Tokens->At->Type == CT_MacroLiteral) );
+
     if ( CurrentToken->Type == CTokenType_Space ||
          CurrentToken->Type == CTokenType_Tab )
     {
@@ -6008,6 +6009,8 @@ GetBodyTextForNextScope(parser* Parser, memory_arena *Memory)
   TrimTrailingWhitespace(&BodyText);
   Rewind(BodyText.Tokens);
 
+  Assert(BodyText.Tokens->At == BodyText.Tokens->Start);
+
   return BodyText;
 }
 
@@ -8586,30 +8589,32 @@ FlushOutputToDisk(parse_context *Ctx, counted_string OutputForThisParser, counte
        PeekTokenRaw(Parser, 1).Type == CT_PreprocessorInclude )
   {
     RequireTokenRaw(Parser, CToken(CTokenType_Newline));
-    RequireTokenRaw(Parser, CToken(CT_PreprocessorInclude, CSz("#include")));
-    RequireTokenRaw(Parser, CToken(CTokenType_Space));
-    RequireTokenRaw(Parser, CTokenType_LT);
-    RequireTokenRaw(Parser, CToken(CS("metaprogramming")));
-    RequireTokenRaw(Parser, CTokenType_FSlash);
-    RequireTokenRaw(Parser, CToken(CS("output")));
-    RequireTokenRaw(Parser, CTokenType_FSlash);
-    counted_string IncludeFilename = RequireTokenRaw(Parser, CTokenType_Identifier).Value;
+    /* RuntimeBreak(); */
+    OutputPath = RequireTokenRaw(Parser, CT_PreprocessorInclude).IncludePath;
 
-    string_builder IncludePathBuilder = {};
-    Append(&IncludePathBuilder, CS("src/metaprogramming/output/"));
-    Append(&IncludePathBuilder, IncludeFilename);
+    /* RequireTokenRaw(Parser, CToken(CTokenType_Space)); */
+    /* RequireTokenRaw(Parser, CTokenType_LT); */
+    /* RequireTokenRaw(Parser, CToken(CS("metaprogramming"))); */
+    /* RequireTokenRaw(Parser, CTokenType_FSlash); */
+    /* RequireTokenRaw(Parser, CToken(CS("output"))); */
+    /* RequireTokenRaw(Parser, CTokenType_FSlash); */
+    /* counted_string IncludeFilename = RequireTokenRaw(Parser, CTokenType_Identifier).Value; */
 
-    if (OptionalTokenRaw(Parser, CTokenType_Dot))
-    {
-      Append(&IncludePathBuilder, CS("."));
-      counted_string Extension = RequireTokenRaw(Parser, CTokenType_Identifier).Value;
-      Append(&IncludePathBuilder, Extension);
-    }
+    /* string_builder IncludePathBuilder = {}; */
+    /* Append(&IncludePathBuilder, CS("src/metaprogramming/output/")); */
+    /* Append(&IncludePathBuilder, IncludeFilename); */
 
-    RequireTokenRaw(Parser, CTokenType_GT);
+    /* if (OptionalTokenRaw(Parser, CTokenType_Dot)) */
+    /* { */
+    /*   Append(&IncludePathBuilder, CS(".")); */
+    /*   counted_string Extension = RequireTokenRaw(Parser, CTokenType_Identifier).Value; */
+    /*   Append(&IncludePathBuilder, Extension); */
+    /* } */
 
-    OutputPath = Finalize(&IncludePathBuilder, Memory);
-    Output(OutputForThisParser, OutputPath, Memory);
+    /* RequireTokenRaw(Parser, CTokenType_GT); */
+
+    /* OutputPath = Finalize(&IncludePathBuilder, Memory); */
+    Output(OutputForThisParser, Concat(CSz("src/"), OutputPath, Memory), Memory);
   }
   else
   {
@@ -9062,21 +9067,33 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
   program_datatypes* Datatypes = &Ctx->Datatypes;
   meta_func_stream* FunctionDefs = &Ctx->MetaFunctions;
 
-  Rewind(Scope.Tokens);
+  Assert(Scope.Tokens->At == Scope.Tokens->Start);
 
   string_builder OutputBuilder = {};
   while (Remaining(Scope.Tokens))
   {
-    c_token BodyToken = PopTokenRaw(&Scope);
+    c_token *BodyToken = PopTokenRawPointer(&Scope);
 
-    if ( BodyToken.Type == CTokenType_StringLiteral )
+    if ( BodyToken->Type == CTokenType_StringLiteral )
     {
-      parser *StringParse = ParserForAnsiStream(Ctx, AnsiStream(BodyToken.Value), TokenCursorSource_MetaprogrammingExpansion);
+      counted_string TempStr = BodyToken->Value;
+      Assert(TempStr.Count >= 2);
+      Assert(TempStr.Start[0] == '"');
+      Assert(TempStr.Start[TempStr.Count-1] == '"');
 
+      TempStr.Count -= 2;
+      TempStr.Start += 1;
+
+      parser *StringParse = ParserForAnsiStream(Ctx, AnsiStream(TempStr), TokenCursorSource_MetaprogrammingExpansion);
       counted_string Code = Execute(FuncName, *StringParse, ReplacePatterns, Ctx, Memory);
-      AppendAndEscapeInteriorOfDoubleQuotedString(&OutputBuilder, Code);
+
+      Append(&OutputBuilder, CSz("\""));
+      Append(&OutputBuilder, EscapeDoubleQuotes(Code, OutputBuilder.Memory));
+      Append(&OutputBuilder, CSz("\""));
+
+/*       AppendAndEscapeInteriorOfDoubleQuotedString(&OutputBuilder, Code); */
     }
-    else if ( BodyToken.Type == CTokenType_OpenParen )
+    else if ( BodyToken->Type == CTokenType_OpenParen )
     {
       b32 ExecutedChildFunc = False;
       ITERATE_OVER_AS(Replace, ReplacePatterns)
@@ -9328,7 +9345,6 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
               }
 
               parser MapMemberScope = GetBodyTextForNextScope(&Scope, Memory);
-
               if (Replace->Data.Type == type_struct_def)
               {
                 ITERATE_OVER_AS(Member, &Replace->Data.struct_def->Members)
@@ -9357,6 +9373,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
                       {
                         meta_func_arg_stream NewArgs = CopyStream(ReplacePatterns, Memory);
                         Push(&NewArgs, ReplacementPattern(MatchPattern, Datatype(Member)), Memory);
+                        Rewind(MapMemberScope.Tokens);
                         counted_string StructFieldOutput = Execute(FuncName, MapMemberScope, &NewArgs, Ctx, Memory);
                         Append(&OutputBuilder, StructFieldOutput);
                       }
@@ -9389,6 +9406,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
                                 };
                                 Push(&NewArgs, ReplacementPattern(ChildName, Datatype(&SyntheticStruct)), Memory);
                               }
+                              Rewind(MapMemberScope.Tokens);
                               counted_string StructFieldOutput = Execute(FuncName, MapMemberScope, &NewArgs, Ctx, Memory);
                               Append(&OutputBuilder, StructFieldOutput);
                             }
@@ -9433,6 +9451,7 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
                   enum_member* EnumMember = GET_ELEMENT(Iter);
                   meta_func_arg_stream NewArgs = CopyStream(ReplacePatterns, Memory);
                   Push(&NewArgs, ReplacementPattern(EnumValueMatch, Datatype(EnumMember)), Memory);
+                  Rewind(NextScope.Tokens);
                   counted_string EnumFieldOutput = Execute(FuncName, NextScope, &NewArgs, Ctx, Memory);
                   Append(&OutputBuilder, EnumFieldOutput);
                   continue;
@@ -9489,12 +9508,12 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
       }
       else
       {
-        Append(&OutputBuilder, BodyToken.Value);
+        Append(&OutputBuilder, BodyToken->Value);
       }
     }
     else
     {
-      Append(&OutputBuilder, BodyToken.Value);
+      Append(&OutputBuilder, BodyToken->Value);
     }
 
     continue;
@@ -9507,7 +9526,12 @@ Execute(counted_string FuncName, parser Scope, meta_func_arg_stream* ReplacePatt
 bonsai_function counted_string
 Execute(meta_func* Func, meta_func_arg_stream *Args, parse_context* Ctx, memory_arena* Memory)
 {
+  Assert(Func->Body.Tokens->At == Func->Body.Tokens->Start);
+
   counted_string Result = Execute(Func->Name, Func->Body, Args, Ctx, Memory);
+
+  Assert(Func->Body.Tokens->At == Func->Body.Tokens->End);
+  Rewind(Func->Body.Tokens);
   return Result;
 }
 

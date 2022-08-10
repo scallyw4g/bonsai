@@ -17,6 +17,8 @@ struct terminal_colors
 {
   counted_string Red          = CSz("\x1b[31m");
   counted_string BrightRed    = CSz("\x1b[91m");
+  counted_string DarkRed      = CSz("\x1b[38;5;88m");
+
   counted_string Blue         = CSz("\x1b[34m");
   counted_string BrightBlue   = CSz("\x1b[94m");
   counted_string Purple       = CSz("\x1b[35m");
@@ -28,8 +30,6 @@ struct terminal_colors
 
   counted_string White        = CSz("\x1b[37m");
   counted_string Grey         = CSz("\x1b[38;5;242m");
-
-  counted_string DarkRed         = CSz("\x1b[38;5;88m");
 };
 
 global_variable terminal_colors TerminalColors = {};
@@ -61,6 +61,8 @@ SetTerminalColorsOff()
 #if 1
   TerminalColors.Red          = CSz("");
   TerminalColors.BrightRed    = CSz("");
+  TerminalColors.DarkRed      = CSz("");
+
   TerminalColors.BrightBlue   = CSz("");
   TerminalColors.Blue         = CSz("");
   TerminalColors.Purple       = CSz("");
