@@ -1,5 +1,5 @@
 
-#if 1
+#if 0
 #include <src/tests/bug_defines.h>
 #include <src/tests/fixtures/preprocessor/other_file_that_should_parse.cpp>
 
@@ -26,7 +26,6 @@ unsigned long int foo = 0;
 
 __STD_TYPE __FSID_T_TYPE __fsid_t;
 __STD_TYPE __DEV_T_TYPE __dev_t;
-
 
 
 #define __THING int
@@ -252,7 +251,6 @@ thing::thing<int>()
 {
 }
 
-#endif
 
 int
 thing::DoTheThing(unsigned int Count) // Member bonsai_function
@@ -313,3 +311,65 @@ struct fingy
   } fing;
 };
 
+#endif // switch at top, {0, 1}
+
+struct __locale_data
+{
+  int foo;
+};
+
+struct __locale_data *__locales[13];
+
+struct foo {
+  struct __locale_data *__locales[13];
+};
+
+// NOTE(Jesse): These came from https://cseweb.ucsd.edu//~ricko/rt_lt.rule.html
+// TODO(Jesse): Get these to all parse
+
+int i;                 // an int
+int *p;                // an int pointer (ptr to an int)
+int a[];               // an array of ints
+int f();               // a function returning an int
+int **pp;              // a pointer to an int pointer (ptr to a ptr to an int)
+/* int (*pa)[];           // a pointer to an array of ints */
+int (*pf)();           // a pointer to a function returning an int
+int *ap[];             // an array of int pointers (array of ptrs to ints)
+/* int aa[][];            // an array of arrays of ints */
+int *fp();             // a function returning an int pointer
+int ***ppp;            // a pointer to a pointer to an int pointer
+/* int (**ppa)[];         // a pointer to a pointer to an array of ints */
+/* int (**ppf)();         // a pointer to a pointer to a function returning an int */
+/* int *(*pap)[];         // a pointer to an array of int pointers */
+/* int (*paa)[][];        // a pointer to an array of arrays of ints */
+int *(*pfp)();         // a pointer to a function returning an int pointer
+int **app[];           // an array of pointers to int pointers
+/* int (*apa[])[];        // an array of pointers to arrays of ints */
+/* int (*apf[])();        // an array of pointers to functions returning an int */
+/* int *aap[][];          // an array of arrays of int pointers */
+/* int aaa[][][];         // an array of arrays of arrays of ints */
+int **fpp();           // a function returning a pointer to an int pointer
+/* int (*fpa())[];        // a function returning a pointer to an array of ints */
+int (*fpf())();        // a function returning a pointer to a function returning an int
+
+
+
+// TODO(Jesse): Ensure these all throw errors.. ?  At the moment they do, but
+// once I fix the above cases I bet some will parse successfully.
+
+#if 0
+int *fap()[];          // a function returning an array of int pointers (ILLEGAL)
+int faa()[][];         // a function returning an array of arrays of ints (ILLEGAL)
+int faf()[]();         // a function returning an array of functions returning an int (ILLEGAL)
+int *ffp()();          // a function returning a function returning an int pointer (ILLEGAL)
+int fa()[];            // a function returning an array of ints (ILLEGAL)
+int ff()();            // a function returning a function returning an int (ILLEGAL)
+int (*paf)[]();        // a pointer to a an array of functions returning an int (ILLEGAL)
+int (*pfa)()[];        // a pointer to a function returning an array of ints (ILLEGAL)
+int (*pff)()();        // a pointer to a function returning a function returning an int (ILLEGAL)
+int aaf[][]();         // an array of arrays of functions returning an int (ILLEGAL)
+int *afp[]();          // an array of functions returning int pointers (ILLEGAL)
+int afa[]()[];         // an array of functions returning an array of ints (ILLEGAL)
+int aff[]()();         // an array of functions returning functions returning an int (ILLEGAL)
+int af[]();            // an array of functions returning an int (ILLEGAL)
+#endif

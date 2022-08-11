@@ -312,6 +312,8 @@ enum token_cursor_source
 
   TokenCursorSource_Count,
 };
+meta(generate_string_table(token_cursor_source));
+#include <metaprogramming/output/generate_string_table_token_cursor_source.h>
 
 // TODO(Jesse): Add a way to append additional members to generated datatypes
 // then reenable this.

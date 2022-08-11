@@ -340,19 +340,6 @@ TokenShouldModifyLineCount(c_token *T, token_cursor_source Source)
   return Result;
 }
 
-bonsai_function void
-CopyInto(c_token_cursor_up *Src, c_token_cursor *Dest)
-{
-#if 0
-  Dest->At = Src->At;
-  Dest->Start = Src->Start;
-  Dest->End = Src->End;
-#else
-  *Dest = *Src->Up;
-  Dest->At = Src->At;
-#endif
-}
-
 bonsai_function c_token *
 RewindTo(parser* Parser, c_token *T)
 {
@@ -425,18 +412,18 @@ FullRewind(parser* Parser)
   c_token_cursor *Current = Parser->Tokens;
   Rewind(Current);
 
-  while (Current->Up.Up)
+  while (Current->Up.Tokens)
   {
-    Current = Current->Up.Up;
+    Current = Current->Up.Tokens;
     Rewind(Current);
   }
-  Assert(Current->Up.Up == 0);
+  Assert(Current->Up.Tokens == 0);
 
   if (Current != Parser->Tokens)
   {
     Parser->Tokens = Current;
   }
-  Assert(Parser->Tokens->Up.Up == 0);
+  Assert(Parser->Tokens->Up.Tokens == 0);
 
   SanityCheckParserChain(Parser);
 }
@@ -501,12 +488,12 @@ Remaining(parser* Parser)
   {
     Result = Remaining(Parser->Tokens);
 
-    if (!Result && Parser->Tokens->Up.Up)
+    if (!Result && Parser->Tokens->Up.Tokens)
     {
       NotImplemented;
       // NOTE(Jesse): This is going to be buggy because it's not setting the At
       // and then resetting it
-      Result = Remaining(Parser->Tokens->Up.Up);
+      Result = Remaining(Parser->Tokens->Up.Tokens);
     }
   }
 
@@ -813,6 +800,33 @@ PrintTokenVerbose(c_token_cursor *Tokens, c_token *T, c_token *AbsAt, u32 Depth)
 }
 
 void
+DumpCursorSlice(c_token_cursor* Tokens, umm PrevTokens, umm NextTokens)
+{
+  DebugLine("\n >> Dumping Cursor %S", Tokens->Filename);
+
+  PrintTraySimple(Tokens->Start);
+
+  c_token *StartT = Tokens->At - Min(PrevTokens, AtElements(Tokens));
+  Assert(IsValidForCursor(Tokens, StartT));
+
+  c_token *EndT = Tokens->At + Min(NextTokens, Remaining(Tokens));
+  Assert(IsValidForCursor(Tokens, EndT) || EndT == Tokens->End);
+
+
+  c_token *At = StartT;
+  while (At < EndT)
+  {
+    PrintToken(At);
+    PrintTraySimple(At);
+    /* PrintTokenVerbose(Tokens, T, AbsoluteAt, Depth); */
+
+    ++At;
+  }
+
+  DebugLine("\n");
+}
+
+void
 DumpCursorSimple(c_token_cursor* Tokens, c_token *AbsoluteAt = 0, u32 Depth = 0)
 {
   DebugLine("\n%*s>> Dumping Cursor %S", Depth*4, "", Tokens->Filename);
@@ -834,7 +848,7 @@ DumpCursorSimple(c_token_cursor* Tokens, c_token *AbsoluteAt = 0, u32 Depth = 0)
       {
         if (T->Down)
         {
-          Assert(T->Down->Up.Up == Tokens);
+          Assert(T->Down->Up.Tokens == Tokens);
           DumpCursorSimple(T->Down, AbsoluteAt, Depth+1);
         }
       } break;
@@ -1151,50 +1165,45 @@ GetLongestLineInCursor(char_cursor *Cursor)
 }
 
 bonsai_function void
+PrintContext(c_token_cursor_up *Up)
+{
+  if (Up->Tokens)
+  {
+    if (Up->Tokens->Up.Tokens)
+    {
+      PrintContext(&Up->Tokens->Up);
+    }
+
+    c_token_cursor Tokens = *Up->Tokens;
+                   Tokens.At = Up->At;
+
+
+    u32 LinesOfContext = 5;
+
+/*     u32 LinesReversed = 0; */
+/*     while (LinesReversed <= LinesOfContext) */
+/*     { */
+/*       RewindTo(Parser, CTokenType_Newline); */
+/*       LinesReversed += 1; */
+/*     } */
+
+    /* peek_result Current = PeekTokenCursor(Parser, 0, False); */
+    /* while (IsValid(&Current)) */
+
+    DumpCursorSlice(&Tokens, 35, 35);
+  }
+}
+
+bonsai_function void
 ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessage, c_token* ErrorToken)
 {
   parse_error_code PrevErrorCode = Parser->ErrorCode;
   Parser->ErrorCode = ParseErrorCode_None;
 
-#if 0
-  c_token_cursor *At = Parser->Tokens->Prev;
-  if (At)
+  if (Parser->Tokens->Up.Tokens)
   {
-    /* switch (At->Source) */
-    {
-      /* case TokenCursorSource_RootFile: */
-      /* case TokenCursorSource_Include: */
-      {
-        {
-          parser Temp = {
-            .Tokens = *At,
-          };
-
-          s32 NumReversed = 0;
-          while (c_token *T = PeekTokenRawPointer(&Temp, NumReversed--))
-          {
-            /* DebugChars("%d ", NumReversed); */
-            if (T && T->Type == CT_PreprocessorInclude && !StringsMatch(ErrorToken->Filename, T->Filename))
-            {
-              ParseError(&Temp, ErrorCode, CS("Included from here"), T);
-            }
-          }
-
-        }
-
-        /* break; */
-      }
-
-      /* default: {} break; */
-    }
-
-    At = At->Prev;
+    PrintContext(&Parser->Tokens->Up);
   }
-#else
-
-  /* DumpChain(Parser, 20); */
-
-#endif
 
   // @optimize_call_advance_instead_of_being_dumb
   if (!ErrorToken)
@@ -1209,7 +1218,7 @@ ParseError(parser* Parser, parse_error_code ErrorCode, counted_string ErrorMessa
   ParseErrorCursor->At = Global_ParseErrorBuffer;
   ParseErrorCursor->End = Global_ParseErrorBuffer+Global_ParseErrorBufferSize;
 
-  u32 LinesOfContext = 18;
+  u32 LinesOfContext = 10;
 
   counted_string ParserName = {};
 
@@ -1724,14 +1733,14 @@ PeekTokenRawCursor(c_token_cursor *Tokens, s32 Direction, b32 CanSearchDown)
         Result.At = GetNext(Tokens, Direction);
       }
 
-      if (!IsValid(&Result) && Tokens->Up.Up) // Down buffer(s) and current buffer had nothing, pop up
+      if (!IsValid(&Result) && Tokens->Up.Tokens) // Down buffer(s) and current buffer had nothing, pop up
       {
-        c_token *UpAt = Tokens->Up.Up->At;
-        Tokens->Up.Up->At = Tokens->Up.At;
+        c_token *UpAt = Tokens->Up.Tokens->At;
+        Tokens->Up.Tokens->At = Tokens->Up.At;
         Assert(Tokens->Up.At->Type == CT_InsertedCode ||
                Tokens->Up.At->Type == CT_MacroLiteral);
-        Result = PeekTokenRawCursor(Tokens->Up.Up, Direction);
-        Tokens->Up.Up->At = UpAt;
+        Result = PeekTokenRawCursor(Tokens->Up.Tokens, Direction);
+        Tokens->Up.Tokens->At = UpAt;
         Result.DoNotDescend = True;
       }
     } break;
@@ -1756,14 +1765,14 @@ PeekTokenRawCursor(c_token_cursor *Tokens, s32 Direction, b32 CanSearchDown)
         Assert(GetNext(Tokens, 0) != 0);
       }
 
-      if (!IsValid(&Result) && Tokens->Up.Up) // Down buffer(s) and current buffer had nothing, pop up
+      if (!IsValid(&Result) && Tokens->Up.Tokens) // Down buffer(s) and current buffer had nothing, pop up
       {
-        c_token *UpAt = Tokens->Up.Up->At;
-        Tokens->Up.Up->At = Tokens->Up.At;
+        c_token *UpAt = Tokens->Up.Tokens->At;
+        Tokens->Up.Tokens->At = Tokens->Up.At;
         Assert(Tokens->Up.At->Type == CT_InsertedCode ||
                Tokens->Up.At->Type == CT_MacroLiteral);
-        Result = PeekTokenRawCursor(Tokens->Up.Up, 0, False);
-        Tokens->Up.Up->At = UpAt;
+        Result = PeekTokenRawCursor(Tokens->Up.Tokens, 0, False);
+        Tokens->Up.Tokens->At = UpAt;
         Result.DoNotDescend = True;
       }
 
@@ -2485,7 +2494,7 @@ ExpandMacro( parse_context *Ctx,
                       );
 
   Assert(Macro->Body.At == Macro->Body.Start);
-  Assert(Macro->Body.Up.Up == 0);
+  Assert(Macro->Body.Up.Tokens == 0);
 
   EatWhitespaceAndComments(Parser);
 
@@ -2624,7 +2633,8 @@ ExpandMacro( parse_context *Ctx,
           parser Src = MakeParser(&Tokens);
           while (c_token* ArgT = PeekTokenRawPointer(&Src))
           {
-            if (ArgT->Type == CT_MacroLiteral)
+            if (ArgT->Type == CT_MacroLiteral ||
+               (ArgT->Type == CTokenType_Identifier && TryTransmuteIdentifierToMacro(Ctx, &Src, ArgT, Macro)) )
             {
               parser *Expanded = ExpandMacro(Ctx, &Src, ArgT->Macro.Def, PermMemory, TempMemory);
               if (Expanded->ErrorCode == ParseErrorCode_None)
@@ -2709,6 +2719,17 @@ ExpandMacro( parse_context *Ctx,
           }
           else
           {
+            // If we ever hit this assertion (I think) it means that Next was
+            // declared as a macro _after_ the currently expanding macro.  I
+            // was not sure if this case would ever happen, but it might.
+            //
+            // TODO(Jesse, correctness, immediate): Prove/Deny this can ever be
+            // hit, and the above statement is correct.
+            if (Next && Next->Type == CTokenType_Identifier && TryTransmuteIdentifierToMacro(Ctx, &Temp, Next, Macro) )
+            {
+              Assert(False);
+            }
+
             // @token_control_pointers
             Ensure(PopTokenPointer(&Temp) == Next);
             CopyRemainingIntoCursor(Temp.Tokens, FirstPass->Tokens);
@@ -2721,6 +2742,11 @@ ExpandMacro( parse_context *Ctx,
         {
           Prev->Type = CT_PreprocessorPaste_InvalidToken;
           Prev->Value = Concat(Prev->Value, Next->Value, &Global_PermMemory);
+
+          // TODO(Jesse, correctness): Pasting numeric tokens together should
+          // result in new numeric tokens .. yes..?  Write TryTransmuteNumber()
+          //
+          Prev->UnsignedValue = 0;
 
           if (TryTransmuteKeywordToken(Prev, 0))
           {
@@ -4739,7 +4765,7 @@ RunPreprocessor(parse_context *Ctx, parser *Parser, memory_arena *Memory)
         {
           /* InsertedCodeT->Down->Up.Up = Allocate(c_token_cursor, Memory, 1); */
           /* *InsertedCodeT->Down->Up.Up = *Parser->Tokens; */
-          InsertedCodeT->Down->Up.Up = Parser->Tokens;
+          InsertedCodeT->Down->Up.Tokens = Parser->Tokens;
           InsertedCodeT->Down->Up.At = InsertedCodeT;
           Assert(InsertedCodeT->Down->Up.At->Type == CT_InsertedCode);
           Assert(InsertedCodeT->Down->At == InsertedCodeT->Down->Start);
@@ -4802,7 +4828,7 @@ RunPreprocessor(parse_context *Ctx, parser *Parser, memory_arena *Memory)
               EraseBetweenExcluding(Parser, T, Parser->Tokens->At);
               T->Macro.Expansion = Expanded->Tokens;
               T->Macro.Def = Macro;
-              Expanded->Tokens->Up.Up = Parser->Tokens;
+              Expanded->Tokens->Up.Tokens = Parser->Tokens;
               Expanded->Tokens->Up.At = T;
               Assert(Parser->Tokens->Source != TokenCursorSource_IntermediateRepresentaton);
               Assert(Expanded->Tokens->Up.At->Type == CT_MacroLiteral);
@@ -4948,7 +4974,7 @@ RunPreprocessor(parse_context *Ctx, parser *Parser, memory_arena *Memory)
     }
   }
 
-  Assert (Parser->Tokens->Up.Up == 0);
+  Assert (Parser->Tokens->Up.Tokens == 0);
   Rewind(Parser->Tokens);
 
   Ensure(RewindArena(&TempMemory));
@@ -5334,7 +5360,12 @@ GetDatatypeByName(program_datatypes* Datatypes, counted_string Name)
 
   if (S)
   {
-    Assert(!T && !E && !StlContainer);
+    if (!T && !E && !StlContainer)
+    {
+      // TODO(Jesse, correctness): Not sure what the solution to this is, but
+      // this is definitely incorrect.
+      BUG;
+    }
     Result = Datatype(S);
   }
   else if (E)
@@ -5876,36 +5907,38 @@ EatBetweenExcluding(ansi_stream *Code, char Open, char Close)
 bonsai_function void
 EatBetween(parser* Parser, c_token_type Open, c_token_type Close)
 {
-  u32 Depth = 0;
-  RequireToken(Parser, Open);
-
   b32 Success = False;
-  while (Remaining(Parser))
+
+  if (Parser->ErrorCode == ParseErrorCode_None)
   {
-    c_token T = PopToken(Parser);
+    u32 Depth = 0;
+    RequireToken(Parser, Open);
 
-    if (T.Type == Open)
+    while (Remaining(Parser))
     {
-      ++Depth;
-    }
+      c_token T = PopToken(Parser);
 
-    if (T.Type == Close)
-    {
-      if (Depth == 0)
+      if (T.Type == Open)
       {
-        Success = True;
-        break;
+        ++Depth;
       }
-      --Depth;
+
+      if (T.Type == Close)
+      {
+        if (Depth == 0)
+        {
+          Success = True;
+          break;
+        }
+        --Depth;
+      }
+    }
+
+    if (!Success)
+    {
+      ParseError(Parser, FormatCountedString(TranArena, CSz("Unable to find closing token %S"), ToString(Close)));
     }
   }
-
-  if (!Success)
-  {
-    ParseError(Parser, FormatCountedString(TranArena, CSz("Unable to find closing token %S"), ToString(Close)));
-  }
-
-  return;
 }
 
 bonsai_function struct_def
@@ -7259,9 +7292,9 @@ ParseStructMember(parse_context *Ctx, counted_string StructName)
     case CTokenType_Union:
     {
       RequireToken(Parser, CTokenType_Union);
-      // NOTE(Jesse): The naming here is actually busted .. a union can be
-      // named as a member of things so this should just be
-      // `type_union_member` or something.  Same goes for structs.
+      // NOTE(Jesse): The naming here is busted .. a union can be named as a
+      // member of things so this should just be `type_union_member` or
+      // something.  Same goes for structs.
       Result.Type = type_struct_member_anonymous;
 
       Result.struct_member_anonymous.Body = ParseStructBody(Ctx, CSz(""));
@@ -7559,7 +7592,8 @@ ParseEnum(parse_context *Ctx)
   parser *Parser = Ctx->CurrentParser;
   program_datatypes *Datatypes = &Ctx->Datatypes;
 
-  counted_string EnumName = RequireToken(Parser, CTokenType_Identifier).Value;
+  c_token *EnumNameT = OptionalToken(Parser, CTokenType_Identifier);
+  counted_string EnumName = EnumNameT ? EnumNameT->Value : CSz("(anonymous enum)");
 
   enum_def Enum = {
     .Name = EnumName
@@ -8493,7 +8527,14 @@ ParseDatatypes(parse_context *Ctx)
       case CTokenType_Enum:
       case CTokenType_Union:
       {
-        ParseDatatypeDef(Ctx);
+        if (PeekToken(Parser, 2).Type == CTokenType_OpenBrace)
+        {
+          ParseDatatypeDef(Ctx);
+        }
+        else
+        {
+          EatUntilIncluding(Parser, CTokenType_Semicolon);
+        }
       } break;
 
       case CTokenType_Typedef:

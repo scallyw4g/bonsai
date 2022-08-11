@@ -251,3 +251,13 @@ self_including_macro_function()
 
 #endif
 
+
+// NOTE(Jesse): This tests that we properly handle macros declared out-of-order
+// during pasting
+#define concat(x,y) x##y
+#define concat_constant_to(a) concat(this_is_a_, a)
+#define concat_4(b, c, _) concat_constant_to( concat_2(b, c) )
+#define concat_2(d, r) concat(d, r)
+#define whatever double
+concat_4(variable_name,, (whatever __x))
+

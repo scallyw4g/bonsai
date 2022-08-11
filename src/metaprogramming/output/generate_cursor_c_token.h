@@ -2,7 +2,7 @@
 struct c_token_cursor;
 struct c_token_cursor_up
 {
-  c_token_cursor *Up;
+  c_token_cursor *Tokens;
   c_token *At;
 };
 

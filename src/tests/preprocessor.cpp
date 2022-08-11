@@ -994,8 +994,8 @@ TestMacrosAndIncludes(memory_arena *Memory)
   if (Parser)
   {
     FullRewind(Parser);
-    DumpCursorSimple(Parser->Tokens);
 
+    /* DumpCursorSimple(Parser->Tokens); */
     /* FullRewind(Parser); */
     /* DumpEntireParser(Parser); */
 
@@ -1269,6 +1269,8 @@ TestMacrosAndIncludes(memory_arena *Memory)
 #endif
 
     TestThat(RequireToken(Parser, CToken(CSz("valid_path"))));
+
+    TestThat(RequireToken(Parser, CToken(CSz("this_is_a_variable_name"))));
 
     TestThat( TokensRemain(Parser) == False );
   }
@@ -1879,7 +1881,6 @@ TestErrors(memory_arena *Memory)
     TestThat(Parser->ErrorToken->LineNumber == 2);
     /* TestThat( OptionalToken(Parser, CToken(132151u)) ); */
   }
-#endif
 
   {
     parse_context Ctx = AllocateParseContext(Memory);
@@ -1889,7 +1890,6 @@ TestErrors(memory_arena *Memory)
     TestThat(Parser->ErrorToken->LineNumber == 5);
   }
 
-#if 1
   {
     parse_context Ctx = AllocateParseContext(Memory);
     counted_string ParserFilename = CSz(TEST_FIXTURES_PATH "/preprocessor/errors/error13.cpp");
@@ -1897,6 +1897,8 @@ TestErrors(memory_arena *Memory)
     TestThat(Parser->ErrorCode == ParseErrorCode_InvalidTokenGenerated);
     TestThat(Parser->ErrorToken->LineNumber == 5);
   }
+
+#endif
 
   {
     parse_context Ctx = AllocateParseContext(Memory);
@@ -1911,7 +1913,6 @@ TestErrors(memory_arena *Memory)
     /* TestThat(Parser->ErrorToken->LineNumber == 2); */
     /* TestThat( OptionalToken(Parser, CToken(132151u)) ); */
   }
-#endif
 
 
 
@@ -1976,7 +1977,7 @@ TestLineNumbers(memory_arena *Memory)
     TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
 
     TestThat(Parser->Tokens->At == Parser->Tokens->Start);
-    TestThat(Parser->Tokens->Up.Up == 0);
+    TestThat(Parser->Tokens->Up.Tokens == 0);
   }
 
   {
@@ -2039,7 +2040,7 @@ TestLineNumbers(memory_arena *Memory)
     TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
 
     TestThat(Parser->Tokens->At == Parser->Tokens->Start);
-    TestThat(Parser->Tokens->Up.Up == 0);
+    TestThat(Parser->Tokens->Up.Tokens == 0);
   }
 
   {
@@ -2107,7 +2108,7 @@ TestLineNumbers(memory_arena *Memory)
     TestThat(PeekTokenRawPointer(Parser)->LineNumber == 1);
 
     TestThat(Parser->Tokens->At == Parser->Tokens->Start);
-    TestThat(Parser->Tokens->Up.Up == 0);
+    TestThat(Parser->Tokens->Up.Tokens == 0);
   }
 #endif
 
@@ -2365,7 +2366,7 @@ void TestMultiCursorTokenControl(memory_arena *Memory)
     T->Down = DownTokens;
     T->Erased = True;
 
-    DownTokens->Up.Up = Parser->Tokens;
+    DownTokens->Up.Tokens = Parser->Tokens;
     DownTokens->Up.At = T;
   }
 
@@ -2472,7 +2473,7 @@ main(s32 ArgCount, const char** Args)
   memory_arena* Memory = AllocateArena();
 
 
-#if 1
+#if 0
   TestSingleCursorTokenControl(Memory);
   TestMultiCursorTokenControl(Memory);
   // TODO(Jesse): Axe this or turn it into something more meaningful
