@@ -390,15 +390,11 @@ WorkerThreadAdvanceDebugSystem()
 
 global_variable r64 LastMs;
 
-r32
-MainThreadAdvanceDebugSystem()
+void //r32
+MainThreadAdvanceDebugSystem(r64 Dt)
 {
   TIMED_FUNCTION();
   Assert(ThreadLocal_ThreadIndex == 0);
-
-  r64 CurrentMS = GetHighPrecisionClock();
-  r64 Dt = (CurrentMS - LastMs)/1000.0;
-  LastMs = CurrentMS;
 
   Assert(ThreadLocal_ThreadIndex == 0);
   debug_thread_state *MainThreadState = GetThreadLocalStateFor(ThreadLocal_ThreadIndex);

@@ -12,7 +12,7 @@ typedef void                 (*debug_frame_end_proc)                   (platform
 typedef void                 (*debug_frame_begin_proc)                 (hotkeys*);
 typedef void                 (*debug_register_arena_proc)              (const char*, memory_arena*);
 typedef void                 (*debug_worker_thread_advance_data_system)(void);
-typedef r32                  (*debug_main_thread_advance_data_system)  (void);
+typedef r32                  (*debug_main_thread_advance_data_system)  (r64);
 typedef void                 (*debug_mutex_waiting_proc)               (mutex*);
 typedef void                 (*debug_mutex_aquired_proc)               (mutex*);
 typedef void                 (*debug_mutex_released_proc)              (mutex*);
@@ -437,7 +437,7 @@ void DebugTimedMutexReleased(mutex *Mut);
 #define TIMED_MUTEX_RELEASED(Mut) if (GetDebugState) {GetDebugState()->MutexReleased(Mut);}
 
 // NOTE(Jesse): Cannot be protected with an if (GetDebugState) block because the return value is used
-#define MAIN_THREAD_ADVANCE_DEBUG_SYSTEM() GetDebugState()->MainThreadAdvanceDebugSystem();
+#define MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(dt) if (GetDebugState) {GetDebugState()->MainThreadAdvanceDebugSystem(dt);}
 #define WORKER_THREAD_ADVANCE_DEBUG_SYSTEM() if (GetDebugState) {GetDebugState()->WorkerThreadAdvanceDebugSystem();}
 
 #define DEBUG_CLEAR_META_RECORDS_FOR(Arena) if (GetDebugState) {GetDebugState()->ClearMetaRecordsFor(Arena);}
@@ -463,7 +463,7 @@ void DebugTimedMutexReleased(mutex *Mut);
 #define DEBUG_FRAME_BEGIN(...)
 
 #define WORKER_THREAD_WAIT_FOR_DEBUG_SYSTEM(...)
-#define MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(...) RealDt
+#define MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(...)
 #define WORKER_THREAD_ADVANCE_DEBUG_SYSTEM()
 
 #define DEBUG_CLEAR_META_RECORDS_FOR(...)

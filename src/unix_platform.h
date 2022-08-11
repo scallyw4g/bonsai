@@ -7,7 +7,9 @@
 
 // X11 typedefs Cursor to some internal type.. and I want it, so we're hijacking it here.
 // https://stackoverflow.com/questions/25867905/how-could-i-temporarily-un-typedef-something
-#define Cursor X11PleaseStop
+//
+// Could instead shove these includes in a namespace but.. meh.
+#define Cursor X11_Please_Stahp
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #undef Cursor

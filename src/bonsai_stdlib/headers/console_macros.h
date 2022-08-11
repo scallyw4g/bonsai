@@ -139,6 +139,17 @@ bonsai_function void SetupStdout(u32 ArgCount, const char** ArgStrings);
 } while (false)
 
 
+#define BUG(...) do {                                                              \
+                                                                                   \
+  if (Global_LogLevel <= LogLevel_Error) {                                         \
+    LogDirect("%S * BUG     %S- ", TerminalColors.Red, TerminalColors.White);      \
+    LogDirect(__VA_ARGS__);                                                        \
+    LogDirect(Newline);                                                            \
+  }                                                                                \
+                                                                                   \
+} while (false)
+
+
 #define Warn(...) do {                                                             \
                                                                                    \
   if (Global_LogLevel <= LogLevel_Normal) {                                        \

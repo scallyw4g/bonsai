@@ -330,13 +330,13 @@ main()
    */
 
 
+  r32 LastMs = 0;
   r32 RealDt = 0;
   while ( Os.ContinueRunning )
   {
     ClearClickedFlags(&Plat.Input);
     DEBUG_FRAME_BEGIN(&Hotkeys);
 
-    Plat.dt = RealDt;
     if (Plat.dt > 0.1f)
     {
       Warn("DT exceeded 100ms, truncating.");
@@ -414,7 +414,13 @@ main()
 #endif
 
     BonsaiSwapBuffers(&Os);
-    RealDt = MAIN_THREAD_ADVANCE_DEBUG_SYSTEM();
+
+    r64 CurrentMS = GetHighPrecisionClock();
+    RealDt = (CurrentMS - LastMs)/1000.0;
+    LastMs = CurrentMS;
+    Plat.dt = RealDt;
+
+    MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(RealDt);
 
     Ensure(RewindArena(TranArena));
   }

@@ -1,5 +1,56 @@
 
-#if 0
+// unnamed function pointer
+b32 foo( b32 (*) ( int*, int) );
+
+b32 foo(char[42]);
+
+typedef struct _XOC *XOC, *XFontSet;
+
+int foo, *bar;
+
+struct foo
+{
+  int bar, *bazz;
+};
+
+struct foo
+{
+  struct bar {
+  } baz, *bazz;
+};
+
+struct foo
+{
+  struct bar {
+  } baz;
+
+  union booz {
+  } fooz;
+};
+
+struct sockaddr_in
+{
+  unsigned char sin_zero[sizeof(struct sockaddr) - sizeof(in_port_t) - sizeof(struct in_addr)];
+};
+
+struct _fpstate
+{
+  struct _fpxreg  _st[8];
+  __uint32_t      __glibc_reserved1[24];
+};
+
+
+
+int sigqueue(enum sigval __val);
+int sigqueue(const enum sigval __val);
+
+int sigqueue(struct sigval __val);
+int sigqueue(const struct sigval __val);
+
+int sigqueue(union sigval __val);
+int sigqueue(const union sigval __val);
+
+#if 1
 #include <src/tests/bug_defines.h>
 #include <src/tests/fixtures/preprocessor/other_file_that_should_parse.cpp>
 
@@ -311,8 +362,6 @@ struct fingy
   } fing;
 };
 
-#endif // switch at top, {0, 1}
-
 struct __locale_data
 {
   int foo;
@@ -323,6 +372,45 @@ struct __locale_data *__locales[13];
 struct foo {
   struct __locale_data *__locales[13];
 };
+
+struct foo
+{
+  struct
+  {
+    int bar;
+  } baz;
+};
+
+struct foo
+{
+  struct
+  {
+    int bar;
+  } baz[42];
+};
+
+enum
+{
+  foo = 0,
+  bar = 1,
+};
+
+typedef foo bar[42];
+
+#endif // switch at top, {0, 1}
+
+/* void (*__routine) (void *); */
+
+struct _pthread_cleanup_buffer
+{
+  void (*__routine) (void *);
+  /* void *__arg;                            /1* Its argument.  *1/ */
+  /* int __canceltype;                       /1* Saved cancellation type. *1/ */
+  /* struct _pthread_cleanup_buffer *__prev; /1* Chaining of cleanup functions.  *1/ */
+};
+
+
+
 
 // NOTE(Jesse): These came from https://cseweb.ucsd.edu//~ricko/rt_lt.rule.html
 // TODO(Jesse): Get these to all parse

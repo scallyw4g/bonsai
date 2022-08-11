@@ -517,6 +517,7 @@ struct type_spec
   b32 Short;
 
   b32 Struct;
+  b32 Union;
   b32 Enum;
 
   b32 Inline;

@@ -44,7 +44,6 @@
 #define TriggeredRuntimeBreak() do { if (GetDebugState && GetDebugState()->TriggerRuntimeBreak) { RuntimeBreak(); } } while (0)
 
 #define NotImplemented Error("Implement Me!"); Assert(False)
-#define BUG Warn("Hit a known-buggy codepath : " __FILE__ ":" STRINGIZE(__LINE__))
 
 #else // Release Build
 
@@ -53,7 +52,11 @@
 #define InvalidCodePath(...)
 #define RuntimeBreak(...)
 #define TriggeredRuntimeBreak(...)
-#define NotImplemented implement_me_plox
-#define BUG KnOwN_BuGgY_CoDePaTh_DeTeCtEd
 
-#endif
+#define NotImplemented
+/* #define BUG */
+
+/* #define NotImplemented implement_me_plox */
+/* #define BUG(...) KnOwN_BuGgY_CoDePaTh_DeTeCtEd */
+
+#endif // BONSAI_INTERNAL

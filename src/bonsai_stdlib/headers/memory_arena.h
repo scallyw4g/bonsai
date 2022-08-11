@@ -103,7 +103,11 @@ struct memory_arena
     (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, True)                                                                                    \
   )
 
-#else
+#define DEBUG_REGISTER_ARENA(Arena) do { if (GetDebugState) { GetDebugState()->RegisterArena(#Arena, Arena); } } while (false)
+
+#define DEBUG_REGISTER_THREAD(ThreadIndex) do { if (GetDebugState) { GetDebugState()->RegisterThread(ThreadIndex); } } while (false)
+
+#else // BONSAI_INTERNAL
 
 #define AllocateProtection(Type, Arena, Number, Protection) \
       (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, Protection)
@@ -117,12 +121,12 @@ struct memory_arena
 #define Allocate(Type, Arena, Number) \
     (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, True)
 
+
+#define DEBUG_REGISTER_ARENA(...)
+#define DEBUG_REGISTER_THREAD(...)
+
 #endif
 
-
-#define DEBUG_REGISTER_ARENA(Arena) do { if (GetDebugState) { GetDebugState()->RegisterArena(#Arena, Arena); } } while (false)
-
-#define DEBUG_REGISTER_THREAD(ThreadIndex) do { if (GetDebugState) { GetDebugState()->RegisterThread(ThreadIndex); } } while (false)
 
 
 bonsai_function u64 PlatformGetPageSize();
