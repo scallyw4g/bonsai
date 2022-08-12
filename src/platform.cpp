@@ -330,8 +330,8 @@ main()
    */
 
 
-  r32 LastMs = 0;
-  r32 RealDt = 0;
+  r64 LastMs = 0;
+  r64 RealDt = 0;
   while ( Os.ContinueRunning )
   {
     ClearClickedFlags(&Plat.Input);
@@ -418,7 +418,7 @@ main()
     r64 CurrentMS = GetHighPrecisionClock();
     RealDt = (CurrentMS - LastMs)/1000.0;
     LastMs = CurrentMS;
-    Plat.dt = RealDt;
+    Plat.dt = (r32)RealDt;
 
     MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(RealDt);
 

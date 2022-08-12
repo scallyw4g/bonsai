@@ -12,7 +12,7 @@ typedef void                 (*debug_frame_end_proc)                   (platform
 typedef void                 (*debug_frame_begin_proc)                 (hotkeys*);
 typedef void                 (*debug_register_arena_proc)              (const char*, memory_arena*);
 typedef void                 (*debug_worker_thread_advance_data_system)(void);
-typedef r32                  (*debug_main_thread_advance_data_system)  (r64);
+typedef void                 (*debug_main_thread_advance_data_system)  (r64);
 typedef void                 (*debug_mutex_waiting_proc)               (mutex*);
 typedef void                 (*debug_mutex_aquired_proc)               (mutex*);
 typedef void                 (*debug_mutex_released_proc)              (mutex*);

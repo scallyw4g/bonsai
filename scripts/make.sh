@@ -1,6 +1,6 @@
 #! /bin/bash
 
-BUILD_EVERYTHING=0
+BUILD_EVERYTHING=1
 
 CheckoutMetaOutput=0
 

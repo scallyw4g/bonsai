@@ -390,7 +390,7 @@ WorkerThreadAdvanceDebugSystem()
 
 global_variable r64 LastMs;
 
-void //r32
+void
 MainThreadAdvanceDebugSystem(r64 Dt)
 {
   TIMED_FUNCTION();
@@ -431,8 +431,6 @@ MainThreadAdvanceDebugSystem(r64 Dt)
     frame_stats *NextFrame = SharedState->Frames + NextFrameWriteIndex;
     NextFrame->StartingCycle = CurrentCycles;
   }
-
-  return (r32)Dt;
 }
 
 min_max_avg_dt

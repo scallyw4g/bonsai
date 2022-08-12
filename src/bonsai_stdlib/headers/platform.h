@@ -1,3 +1,4 @@
+#define CACHE_LINE_SIZE (64)
 
 #define BindToInput(Keysym, InputField, Boolean) \
   case Keysym: {                                 \
