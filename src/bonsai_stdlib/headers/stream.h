@@ -1,3 +1,57 @@
+struct u32_stream
+{
+  u32* Start;
+  u32* At;
+  u32* End;
+};
+
+struct u8_stream
+{
+  u8* Start;
+  u8* At;
+  u8* End;
+};
+
+enum text_encoding
+{
+  TextEncoding_ASCII,
+
+  TextEncoding_UTF8,
+  TextEncoding_UTF16LE,
+  TextEncoding_UTF16BE,
+
+  TextEncoding_UTF32LE,
+  TextEncoding_UTF32BE,
+
+  TextEncoding_UTF7,
+  TextEncoding_UTF1,
+
+  TextEncoding_EBCDIC,
+  TextEncoding_CSCU,
+  TextEncoding_BOCU,
+  TextEncoding_GB18030
+};
+
+meta(generate_string_table(text_encoding))
+#include <metaprogramming/output/generate_string_table_text_encoding.h>
+
+struct ansi_stream
+{
+  const char* Start;
+  const char* At;
+  const char* End;
+
+  counted_string Filename;
+  text_encoding Encoding;
+};
+
+struct r32_stream
+{
+  r32* Start;
+  r32* At;
+  r32* End;
+};
+
 
 template <typename element_t, typename stream_t>inline element_t *
 Push(element_t Element, stream_t *Array)

@@ -1,81 +1,24 @@
-#if BONSAI_PREPROCESSOR
-
-#include <massive_include_list.h>
-
-// TODO(Jesse): What is the actual purpose of this in stdint.h, and should we
-// actually implement include_next for some reason?  I don't want to, but it
-// might be that that's more correct since I'm fairly sure that's the path
-// clang takes.
-#define __has_include_next(...) 0
-
-// TODO(Jesse): Do we actually want to make keywords for these for some reason?
-// Doubtful, but maybe?
-#define __cdecl
-#define __stdcall
-#define __fastcall
-#define __declspec(...)
-
-// TODO(Jesse): I observed needing to define one of _M_IX86, _M_X64, _M_ARM, _M_ARM64
-// Presumably this is fine, but what do these actually do?
-#define _M_X64 1
-
-// TODO(Jesse): wtf does this do?
-#define __inline
-
-// NOTE(Jesse): I looked up some defines that clang does for you, and this is
-// what I came up with
-#define _WIN32
-#define _WIN64
-#define __clang__
-#define __clang_major__ (11)
-#define __clang_minor__ (0)
-#define __clang_patchlevel__ (0)
-
-// TODO(Jesse): Appropriate?
-/* #define _DEBUG (1) */
-
-// TODO(Jesse): I added this as a way of getting the STL headers to skip a
-// bunch of C++ shit.  Not sure if that's the best way, but there you go.
-/* #define RC_INVOKED (1) */
-
-// Maybe this is better than RC_INVOKED?
-/* #define _M_CEE_PURE (1) */
-
-#endif
 
 // Required for FILE* type .. might want to rebuild the file API to use
 // platform functions instead, but for now the CRT ones are good enough.
+//
 #include <stdio.h>
 #include <math.h>
 
-#include <random>                                   // TODO(Jesse, id: 88, tags: perlin, cleanup): Perlin.h depends on this .. rewrite it.
-#include <algorithm>                                // TODO(Jesse, id: 89, tags: perlin, cleanup): Perlin.h depends on this .. rewrite it.
-#include <numeric>                                  // TODO(Jesse, id: 89, tags: perlin, cleanup): Perlin.h depends on this .. rewrite it.
+#include <random>    // TODO(Jesse, id: 88, tags: perlin, cleanup): Perlin.h depends on this .. rewrite it.
+#include <algorithm> // TODO(Jesse, id: 89, tags: perlin, cleanup): Perlin.h depends on this .. rewrite it.
+#include <numeric>   // TODO(Jesse, id: 89, tags: perlin, cleanup): Perlin.h depends on this .. rewrite it.
+
+//
+// SIMD
+//
 
 #include <immintrin.h>
 #include <xmmintrin.h>
 
-
-
-#define ITERATE_OVER_AS(prefix, value_ptr)                   \
-  for (auto prefix##Iter = Iterator((value_ptr)); \
-      IsValid(&prefix##Iter);                                \
-      Advance(&prefix##Iter))
-
-#define ITERATE_OVER(value_ptr)           \
-  for (auto Iter = Iterator((value_ptr)); \
-      IsValid(&Iter);                     \
-      Advance(&Iter))
-
-#define GET_ELEMENT(I) (&(I).At->Element)
-
-#define UnsetBitfield(type, Dest, Value) do { \
-  Assert( (Dest) & (Value) );                 \
-  (Dest) = (type)((Dest) & ~(Value));         \
-} while (false)
-
-#define ToggleBitfieldValue(Dest, Value) \
-      (Dest) = (Dest) & (Value) ?  ((u32)(Dest) & ~(u32)(Value)) : ((u32)(Dest) | (u32)(Value))
+//
+// Metaprogramming API
+//
 
 #include <metaprogramming/defines.h>
 #include <metaprogramming/functions.h>
@@ -84,6 +27,7 @@
 // Stdlib Headers
 //
 
+#include <bonsai_stdlib/headers/iterator_macros.h>
 #include <bonsai_stdlib/headers/assert.h>
 #include <bonsai_stdlib/headers/primitives.h>
 #include <bonsai_stdlib/headers/console_macros.h>
@@ -111,66 +55,7 @@
 #include <bonsai_stdlib/headers/line.h>
 #include <bonsai_stdlib/headers/quaternion.h>
 #include <bonsai_stdlib/headers/string_builder.h>
-
-struct u32_stream
-{
-  u32* Start;
-  u32* At;
-  u32* End;
-};
-
-struct u8_stream
-{
-  u8* Start;
-  u8* At;
-  u8* End;
-};
-
-enum text_encoding
-{
-  TextEncoding_ASCII,
-
-  TextEncoding_UTF8,
-  TextEncoding_UTF16LE,
-  TextEncoding_UTF16BE,
-
-  TextEncoding_UTF32LE,
-  TextEncoding_UTF32BE,
-
-  TextEncoding_UTF7,
-  TextEncoding_UTF1,
-
-  TextEncoding_EBCDIC,
-  TextEncoding_CSCU,
-  TextEncoding_BOCU,
-  TextEncoding_GB18030
-};
-
-meta(generate_string_table(text_encoding))
-#include <metaprogramming/output/generate_string_table_text_encoding.h>
-
-struct ansi_stream
-{
-  const char* Start;
-  const char* At;
-  const char* End;
-
-  counted_string Filename;
-  text_encoding Encoding;
-};
-
-struct r32_stream
-{
-  r32* Start;
-  r32* At;
-  r32* End;
-};
-
 #include <bonsai_stdlib/headers/stream.h>
-
-meta(generate_cursor(v3))
-#include <metaprogramming/output/generate_cursor_v3.h>
-
 #include <bonsai_stdlib/headers/matrix.h>
 #include <bonsai_stdlib/headers/mutex.h>
 #include <bonsai_stdlib/headers/rect.h>
@@ -211,10 +96,6 @@ meta(generate_cursor(v3))
 #if BONSAI_LINUX
 #include <net/network.h>
 #endif
-
-global_variable memory_arena _TranArena;
-global_variable memory_arena* TranArena = &_TranArena;
-
 
 //
 // Stdlib Implementation
@@ -262,4 +143,3 @@ global_variable memory_arena* TranArena = &_TranArena;
 #include <engine/cpp/entity.cpp>
 #include <bonsai_asset_loaders.cpp>
 
-#include <metaprogramming/preprocessor.h>

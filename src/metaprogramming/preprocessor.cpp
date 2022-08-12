@@ -2,6 +2,7 @@
 #define PLATFORM_GL_IMPLEMENTATIONS 1
 
 #include <bonsai_types.h>
+#include <metaprogramming/preprocessor.h>
 
 global_variable memory_arena Global_PermMemory = {};
 
