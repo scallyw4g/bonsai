@@ -586,7 +586,7 @@ CopyToDest(char_cursor *Dest, char C)
     }
     else
     {
-      Error("Unable to reallocate char_cursor; no memory pointer!");
+      Warn("Unable to reallocate char_cursor; no memory pointer!");
       DoCopy = False;
     }
   }

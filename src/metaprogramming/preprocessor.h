@@ -52,6 +52,39 @@ enum c_token_type
 {
   CTokenType_Unknown = 0,
 
+  CT_ControlChar_Start_of_Heading          = 1,
+  CT_ControlChar_Start_of_Text             = 2,
+  CT_ControlChar_End_of_Text               = 3,
+  CT_ControlChar_End_of_Transmission       = 4,
+  CT_ControlChar_Enquiry                   = 5,
+  CT_ControlChar_Acknowledgement           = 6,
+  CT_ControlChar_Bell                      = 7,
+  CT_ControlChar_Backspace                 = 8,
+  /* CT_ControlChar_Horizontal_Tab            = 9, */
+  /* CT_ControlChar_Line_Feed                 = 10, */
+  CT_ControlChar_Vertical_Tab              = 11,
+  CT_ControlChar_Form_Feed                 = 12,
+  /* CT_ControlChar_Carriage_Return           = 13, */
+  CT_ControlChar_Shift_Out                 = 14,
+  CT_ControlChar_Shift_In                  = 15,
+  CT_ControlChar_Data_Link_Escape          = 16,
+  CT_ControlChar_Device_Control_1          = 17,
+  CT_ControlChar_Device_Control_2          = 18,
+  CT_ControlChar_Device_Control_3          = 19,
+  CT_ControlChar_Device_Control_4          = 20,
+  CT_ControlChar_Negative_Acknowledgement  = 21,
+  CT_ControlChar_Synchronous_Idle          = 22,
+  CT_ControlChar_End_of_Transmission_Block = 23,
+  CT_ControlChar_Cancel                    = 24,
+  CT_ControlChar_End_of_Medium             = 25,
+  CT_ControlChar_Substitute                = 26,
+  CT_ControlChar_Escape                    = 27,
+  CT_ControlChar_File_Separator            = 28,
+  CT_ControlChar_Group_Separator           = 29,
+  CT_ControlChar_Record_Separator          = 30,
+  CT_ControlChar_Unit_Separator            = 31,
+  CT_ControlChar_Delete                    = 127,
+
   CTokenType_OpenBracket   = '[',
   CTokenType_CloseBracket  = ']',
   CTokenType_OpenBrace     = '{',
@@ -1268,6 +1301,37 @@ PeekToken(ansi_stream* Stream, u32 Lookahead = 0)
     // TODO(Jesse, id: 193, tags: metaprogramming): Metaprogram this.  I've had bugs multiple times because of it.
     switch (At)
     {
+
+      case CT_ControlChar_Start_of_Heading:
+      case CT_ControlChar_Start_of_Text:
+      case CT_ControlChar_End_of_Text:
+      case CT_ControlChar_End_of_Transmission:
+      case CT_ControlChar_Enquiry:
+      case CT_ControlChar_Acknowledgement:
+      case CT_ControlChar_Bell:
+      case CT_ControlChar_Backspace:
+      case CT_ControlChar_Vertical_Tab:
+      case CT_ControlChar_Form_Feed:
+      case CT_ControlChar_Shift_Out:
+      case CT_ControlChar_Shift_In:
+      case CT_ControlChar_Data_Link_Escape:
+      case CT_ControlChar_Device_Control_1:
+      case CT_ControlChar_Device_Control_2:
+      case CT_ControlChar_Device_Control_3:
+      case CT_ControlChar_Device_Control_4:
+      case CT_ControlChar_Negative_Acknowledgement:
+      case CT_ControlChar_Synchronous_Idle:
+      case CT_ControlChar_End_of_Transmission_Block:
+      case CT_ControlChar_Cancel:
+      case CT_ControlChar_End_of_Medium:
+      case CT_ControlChar_Substitute:
+      case CT_ControlChar_Escape:
+      case CT_ControlChar_File_Separator:
+      case CT_ControlChar_Group_Separator:
+      case CT_ControlChar_Record_Separator:
+      case CT_ControlChar_Unit_Separator:
+      case CT_ControlChar_Delete:
+
       case CTokenType_OpenBracket:
       case CTokenType_CloseBracket:
       case CTokenType_OpenBrace:

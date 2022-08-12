@@ -5,6 +5,35 @@
       switch (Type)
       {
                     case CTokenType_Unknown: { Result = CSz("CTokenType_Unknown"); } break;
+            case CT_ControlChar_Start_of_Heading: { Result = CSz("CT_ControlChar_Start_of_Heading"); } break;
+            case CT_ControlChar_Start_of_Text: { Result = CSz("CT_ControlChar_Start_of_Text"); } break;
+            case CT_ControlChar_End_of_Text: { Result = CSz("CT_ControlChar_End_of_Text"); } break;
+            case CT_ControlChar_End_of_Transmission: { Result = CSz("CT_ControlChar_End_of_Transmission"); } break;
+            case CT_ControlChar_Enquiry: { Result = CSz("CT_ControlChar_Enquiry"); } break;
+            case CT_ControlChar_Acknowledgement: { Result = CSz("CT_ControlChar_Acknowledgement"); } break;
+            case CT_ControlChar_Bell: { Result = CSz("CT_ControlChar_Bell"); } break;
+            case CT_ControlChar_Backspace: { Result = CSz("CT_ControlChar_Backspace"); } break;
+            case CT_ControlChar_Vertical_Tab: { Result = CSz("CT_ControlChar_Vertical_Tab"); } break;
+            case CT_ControlChar_Form_Feed: { Result = CSz("CT_ControlChar_Form_Feed"); } break;
+            case CT_ControlChar_Shift_Out: { Result = CSz("CT_ControlChar_Shift_Out"); } break;
+            case CT_ControlChar_Shift_In: { Result = CSz("CT_ControlChar_Shift_In"); } break;
+            case CT_ControlChar_Data_Link_Escape: { Result = CSz("CT_ControlChar_Data_Link_Escape"); } break;
+            case CT_ControlChar_Device_Control_1: { Result = CSz("CT_ControlChar_Device_Control_1"); } break;
+            case CT_ControlChar_Device_Control_2: { Result = CSz("CT_ControlChar_Device_Control_2"); } break;
+            case CT_ControlChar_Device_Control_3: { Result = CSz("CT_ControlChar_Device_Control_3"); } break;
+            case CT_ControlChar_Device_Control_4: { Result = CSz("CT_ControlChar_Device_Control_4"); } break;
+            case CT_ControlChar_Negative_Acknowledgement: { Result = CSz("CT_ControlChar_Negative_Acknowledgement"); } break;
+            case CT_ControlChar_Synchronous_Idle: { Result = CSz("CT_ControlChar_Synchronous_Idle"); } break;
+            case CT_ControlChar_End_of_Transmission_Block: { Result = CSz("CT_ControlChar_End_of_Transmission_Block"); } break;
+            case CT_ControlChar_Cancel: { Result = CSz("CT_ControlChar_Cancel"); } break;
+            case CT_ControlChar_End_of_Medium: { Result = CSz("CT_ControlChar_End_of_Medium"); } break;
+            case CT_ControlChar_Substitute: { Result = CSz("CT_ControlChar_Substitute"); } break;
+            case CT_ControlChar_Escape: { Result = CSz("CT_ControlChar_Escape"); } break;
+            case CT_ControlChar_File_Separator: { Result = CSz("CT_ControlChar_File_Separator"); } break;
+            case CT_ControlChar_Group_Separator: { Result = CSz("CT_ControlChar_Group_Separator"); } break;
+            case CT_ControlChar_Record_Separator: { Result = CSz("CT_ControlChar_Record_Separator"); } break;
+            case CT_ControlChar_Unit_Separator: { Result = CSz("CT_ControlChar_Unit_Separator"); } break;
+            case CT_ControlChar_Delete: { Result = CSz("CT_ControlChar_Delete"); } break;
             case CTokenType_OpenBracket: { Result = CSz("CTokenType_OpenBracket"); } break;
             case CTokenType_CloseBracket: { Result = CSz("CTokenType_CloseBracket"); } break;
             case CTokenType_OpenBrace: { Result = CSz("CTokenType_OpenBrace"); } break;

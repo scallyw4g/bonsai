@@ -433,6 +433,7 @@ IsNewline(c_token_type Type)
 {
   b32 Result = Type == CTokenType_Newline        ||
                Type == CTokenType_EscapedNewline ||
+               Type == CT_ControlChar_Form_Feed  ||
                Type == CTokenType_CarrigeReturn;
 
   return Result;
@@ -453,6 +454,7 @@ IsWhitespace(c_token_type Type)
                Type == CTokenType_EscapedNewline ||
                Type == CTokenType_CarrigeReturn  ||
                Type == CTokenType_Tab            ||
+               Type == CT_ControlChar_Form_Feed  ||
                Type == CTokenType_Space;
 
   return Result;
@@ -2493,7 +2495,7 @@ ExpandMacro( parse_context *Ctx,
   parser *FirstPass = AllocateParserPtr(
                         CSz("macro_expansion TODO(Jesse): What do we say here?"),
                         0,
-                        (u32)Kilobytes(3),
+                        (u32)Kilobytes(32),
                         TokenCursorSource_MacroExpansion,
                         0,
                         {0, 0},
@@ -2553,7 +2555,10 @@ ExpandMacro( parse_context *Ctx,
           // @optimize_call_advance_instead_of_being_dumb
           while (c_token *T = PeekTokenRawPointer(InstanceArgs))
           {
-            TryTransmuteIdentifierToMacro(Ctx, InstanceArgs, T, Macro);
+            if (T->Type == CTokenType_Identifier)
+            {
+              TryTransmuteIdentifierToMacro(Ctx, InstanceArgs, T, Macro);
+            }
             PopTokenRaw(InstanceArgs);
           }
         }
@@ -3818,6 +3823,8 @@ TryTransmuteIdentifierToMacro(parse_context *Ctx, parser *Parser, c_token *T, ma
 {
   TIMED_FUNCTION();
 
+  Assert(T->Type == CTokenType_Identifier);
+
   macro_def *Result = 0;
 
   if (macro_def *ThisMacro = GetMacroDef(Ctx, T->Value))
@@ -4086,7 +4093,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
   // TODO(Jesse)(hardening): This could now (easily?) expand as we go, but at
   // the moment I don't see a reason for doing that work.  Maybe when I get
   // around to hardening.
-  c_token_cursor *Tokens = AllocateTokenCursor(Memory, Code.Filename, (u32)Megabytes(2), Source, LineNumber, {0, 0});
+  c_token_cursor *Tokens = AllocateTokenCursor(Memory, Code.Filename, (u32)Megabytes(8), Source, LineNumber, {0, 0});
 
   if (!Tokens->Start)
   {
@@ -4096,7 +4103,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes, par
 
   if (Code.Start)
   {
-
     b32 ParsingSingleLineComment = False;
     b32 ParsingMultiLineComment = False;
 
@@ -4867,7 +4873,7 @@ RunPreprocessor(parse_context *Ctx, parser *Parser, memory_arena *Memory)
 
           if (!Macro)
           {
-            macro_def_linked_list_node *MacroNode = Allocate(macro_def_linked_list_node, Ctx->Memory, 1);
+            macro_def_linked_list_node *MacroNode = AllocateProtection(macro_def_linked_list_node, Ctx->Memory, 1, False);
             Macro = &MacroNode->Element;
 
             Macro->Name = MacroNameToken->Value;
@@ -7312,6 +7318,14 @@ ParseStructMember(parse_context *Ctx, counted_string StructName)
       }
     } break;
 
+    // NOTE(Jesse): We don't handle inline enum declarations atm
+    case CTokenType_Enum:
+    {
+      RequireToken(Parser, T.Type);
+      Result.Type = type_variable_decl;
+      Result.variable_decl = ParseVariableDecl(Ctx);
+    } break;
+
     case CTokenType_Union:
     case CTokenType_Struct:
     {
@@ -7489,23 +7503,35 @@ struct comma_separated_decl
 {
   counted_string Name;
   type_indirection_info Indirection;
+  ast_node *StaticBufferSize;
 };
 
 bonsai_function comma_separated_decl
-ParseCommaSeperatedDecl(parser *Parser)
+ParseCommaSeperatedDecl(parse_context *Ctx)
 {
+  parser *Parser = Ctx->CurrentParser;
   comma_separated_decl Result = {};
   Result.Indirection = ParseReferencesIndirectionAndPossibleFunctionPointerness(Parser);
+
   Result.Name = RequireToken(Parser, CTokenType_Identifier).Value;
+
+  if ( OptionalToken(Parser, CTokenType_OpenBracket) )
+  {
+    ParseExpression(Ctx, &Result.StaticBufferSize );
+    RequireToken(Parser, CTokenType_CloseBracket);
+  }
+
   return Result;
 }
 
 bonsai_function void
-EatAdditionalCommaSeperatedNames(parser *Parser)
+EatAdditionalCommaSeperatedNames(parse_context *Ctx)
 {
+  parser *Parser = Ctx->CurrentParser;
+
   while (OptionalToken(Parser, CTokenType_Comma))
   {
-    ParseCommaSeperatedDecl(Parser);
+    ParseCommaSeperatedDecl(Ctx);
   }
 }
 
@@ -7544,7 +7570,7 @@ ParseStructBody(parse_context *Ctx, counted_string StructName)
     //  Parse comma-separated definitions .. ie `struct fing { int foo, bar, baz; };`
     while (OptionalToken(Parser, CTokenType_Comma))
     {
-      counted_string Name = ParseCommaSeperatedDecl(Parser).Name;
+      counted_string Name = ParseCommaSeperatedDecl(Ctx).Name;
       Declaration.variable_decl.Name = Name;
       Push(&Result.Members, Declaration, Ctx->Memory);
     }
@@ -7755,7 +7781,7 @@ ParseAndPushTypedef(parse_context *Ctx)
     }
   }
 
-  EatAdditionalCommaSeperatedNames(Parser);
+  EatAdditionalCommaSeperatedNames(Ctx);
 
   TryEatAttributes(Parser);
 
@@ -7795,11 +7821,11 @@ ParseTypedef(parse_context *Ctx)
     {
       struct_def S = ParseStructBody(Ctx, CS(""));
 
-      comma_separated_decl Decl = ParseCommaSeperatedDecl(Parser);
+      comma_separated_decl Decl = ParseCommaSeperatedDecl(Ctx);
       S.Type = Decl.Name;
       TryEatAttributes(Parser);
 
-      EatAdditionalCommaSeperatedNames(Parser);
+      EatAdditionalCommaSeperatedNames(Ctx);
 
       RequireToken(Parser, CTokenType_Semicolon);
       Push(&Ctx->Datatypes.Structs, S, Ctx->Memory);
@@ -7807,11 +7833,11 @@ ParseTypedef(parse_context *Ctx)
     else if ( PeekToken(Parser, 0).Type == CTokenType_Identifier &&
               PeekToken(Parser, 1).Type == CTokenType_OpenBrace )
     {
-      comma_separated_decl Decl = ParseCommaSeperatedDecl(Parser);
+      comma_separated_decl Decl = ParseCommaSeperatedDecl(Ctx);
       struct_def S = ParseStructBody(Ctx, Decl.Name);
 
-      /* comma_separated_decl ActualName = */ ParseCommaSeperatedDecl(Parser);
-      EatAdditionalCommaSeperatedNames(Parser);
+      /* comma_separated_decl ActualName = */ ParseCommaSeperatedDecl(Ctx);
+      EatAdditionalCommaSeperatedNames(Ctx);
 
       RequireToken(Parser, CTokenType_Semicolon);
       Push(&Ctx->Datatypes.Structs, S, Ctx->Memory);
@@ -8639,7 +8665,7 @@ ParseDatatypes(parse_context *Ctx)
         // does internally.  Maybe we should change that?
         ParseFunctionOrVariableDecl(Ctx);
 
-        EatAdditionalCommaSeperatedNames(Parser);
+        EatAdditionalCommaSeperatedNames(Ctx);
       } break;
 
       InvalidDefaultWhileParsing(Parser, CSz("Invalid token encountered while parsing a datatype."));
@@ -10419,7 +10445,7 @@ main(s32 ArgCount_, const char** ArgStrings)
   memory_arena Memory_ = {};
   memory_arena* Memory = &Memory_;
 
-  Memory->NextBlockSize = Megabytes(10);
+  Memory->NextBlockSize = Gigabytes(2);
 
   Assert(ArgCount_ > 0);
   u32 ArgCount = (u32)ArgCount_;

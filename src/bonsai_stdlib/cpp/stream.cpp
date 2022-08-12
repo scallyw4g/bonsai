@@ -68,7 +68,7 @@ U8_StreamFromFile(const char* SourceFile, memory_arena *Memory)
     if (FileSize)
     {
       rewind(File.Handle);
-      FileContents = (u8*)Allocate(u8, Memory, FileSize);
+      FileContents = (u8*)AllocateProtection(u8, Memory, FileSize, False);
       ReadBytesIntoBuffer(File.Handle, FileSize, FileContents);
     }
     else
