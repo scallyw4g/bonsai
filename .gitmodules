@@ -1,3 +1,6 @@
 [submodule "src/poof"]
 	path = src/poof
 	url = git@github.com:jjbandit/poof
+[submodule "src/bonsai_stdlib"]
+	path = src/bonsai_stdlib
+	url = git@github.com:jjbandit/bonsai_stdlib
