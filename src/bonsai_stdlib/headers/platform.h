@@ -20,15 +20,15 @@
     BindToInput(Keysym, InputField, False)
 
 #if BONSAI_WIN32
-#include <win32_platform.h>
+#include <bonsai_stdlib/platform/win32_platform.h>
 
 #elif BONSAI_LINUX
-#include <posix_platform.h>
-#include <unix_platform.h>
+#include <bonsai_stdlib/platform/posix_platform.h>
+#include <bonsai_stdlib/platform/unix_platform.h>
 
 #elif BONSAI_EMCC
-#include <posix_platform.h>
-#include <wasm_platform.h>
+#include <bonsai_stdlib/platform/posix_platform.h>
+#include <bonsai_stdlib/platform/wasm_platform.h>
 
 #else
 #error "Unknown Platform!"
