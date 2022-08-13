@@ -16,4 +16,4 @@
 #include <engine/cpp/world.cpp>
 #include <engine/cpp/physics.cpp>
 #include <engine/cpp/entity.cpp>
-#include <bonsai_asset_loaders.cpp>
+#include <engine/cpp/asset_loaders.cpp>

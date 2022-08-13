@@ -332,7 +332,7 @@ main()
   void * SetDebugStateProc = GetProcFromLib(GameLib, "SetDebugState" );
   if (SetDebugStateProc)
   {
-    SetDebugStateProc(GetDebugState);
+    /* SetDebugStateProc(GetDebugState); */
   }
   else
   {
