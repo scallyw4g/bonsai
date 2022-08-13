@@ -356,10 +356,10 @@ ClearFramebuffers(graphics *Graphics)
   GL.ClearColor(0.2f, 0.2f, 0.2f, 1.0f);
   GL.ClearDepth(1.0f);
 
-#if BONSAI_INTERNAL
-  debug_state* DebugState = GetDebugState();
-  GL.BindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
-  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+#if BONSAI_DEBUG_SYSTEM_API
+  GetDebugState()->ClearFramebuffers();
+  /* GL.BindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID); */
+  /* GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
 #endif
 
   // FIXME(Jesse): This is taking _forever_ on Linux (GLES) .. does it take

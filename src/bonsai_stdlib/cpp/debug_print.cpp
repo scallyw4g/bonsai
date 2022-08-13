@@ -1,3 +1,4 @@
+#if 0
 
 // TODO(Jesse id: 265): Unnecessary .. I just added these as a hack get parsing to work
 typedef va_list bonsai_va_list;
@@ -90,13 +91,13 @@ Print_P( aabb P, const char* name)
   DebugLine(" Radius: %f %f %f \n", P.Radius.x, P.Radius.y, P.Radius.z );
 }
 
-inline void
-Print_P( canonical_position P, const char* name)
-{
-  DebugLine(" -- %s", name);
-  DebugLine(" Offset: %f %f %f ", P.Offset.x, P.Offset.y, P.Offset.z );
-  DebugLine(" WorldP: %d %d %d \n", P.WorldP.x, P.WorldP.y, P.WorldP.z );
-}
+/* inline void */
+/* Print_P( canonical_position P, const char* name) */
+/* { */
+/*   DebugLine(" -- %s", name); */
+/*   DebugLine(" Offset: %f %f %f ", P.Offset.x, P.Offset.y, P.Offset.z ); */
+/*   DebugLine(" WorldP: %d %d %d \n", P.WorldP.x, P.WorldP.y, P.WorldP.z ); */
+/* } */
 
 inline void
 Print_P( voxel_position P, const char* name)
@@ -249,38 +250,39 @@ Print_P( xml_tag *Tag, const char* Name)
   return;
 }
 
-inline void
-Print_P( camera *Camera, const char* name)
-{
-  DebugLine("\n %s ", name );
-  Print(Camera->TargetP);
-  Print(Camera->CurrentP);
-  Print(Camera->ViewingTarget);
-  DebugLine("");
-}
+/* inline void */
+/* Print_P( camera *Camera, const char* name) */
+/* { */
+/*   DebugLine("\n %s ", name ); */
+/*   Print(Camera->TargetP); */
+/*   Print(Camera->CurrentP); */
+/*   Print(Camera->ViewingTarget); */
+/*   DebugLine(""); */
+/* } */
 
-inline void
-Print_P( interactable *Interactable, const char* name)
-{
-  DebugLine("\n %s ", name );
-  Print(Interactable->ID);
-  Print(Interactable->MinP);
-  Print(Interactable->MaxP);
-  DebugLine("");
-}
+/* inline void */
+/* Print_P( interactable *Interactable, const char* name) */
+/* { */
+/*   DebugLine("\n %s ", name ); */
+/*   Print(Interactable->ID); */
+/*   Print(Interactable->MinP); */
+/*   Print(Interactable->MaxP); */
+/*   DebugLine(""); */
+/* } */
 
-inline void
-Print_P( interactable Interactable, const char* name)
-{
-  Print_P(&Interactable, name);
-}
+/* inline void */
+/* Print_P( interactable Interactable, const char* name) */
+/* { */
+/*   Print_P(&Interactable, name); */
+/* } */
 
-inline void
-Print_P( window_layout *Window, const char* name)
-{
-  DebugLine("%s", name);
-  Print(Window->Title);
-  Print(Window->MaxClip);
-  Print(Window->Basis);
-}
+/* inline void */
+/* Print_P( window_layout *Window, const char* name) */
+/* { */
+/*   DebugLine("%s", name); */
+/*   Print(Window->Title); */
+/*   Print(Window->MaxClip); */
+/*   Print(Window->Basis); */
+/* } */
 
+#endif

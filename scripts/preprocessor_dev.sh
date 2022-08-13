@@ -6,7 +6,10 @@ if [ "$Platform" == "Linux" ] ; then
 
   DEBUGGER=$1
 
+  DEBUGFLAG="--do-debug-window"
+
   $DEBUGGER bin/preprocessor_dev         \
+    $DEBUGFLAG                           \
     -D BONSAI_PREPROCESSOR               \
     -D BONSAI_LINUX                      \
     -D __x86_64__                        \

@@ -285,6 +285,14 @@ InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory, v2
 void
 StandardCamera(camera* Camera, float FarClip, float DistanceFromTarget = 600.0f)
 {
+  // NOTE(Jesse): I changed this to a pointer such that we didn't have to know
+  // the size of camera structs in the debug system, but I didn't bother to
+  // allocate the actual struct.  If this is crashing just allocate a camera at
+  // startup.
+  //
+  // @allocate_camera_at_startup
+  Assert(Camera);
+
   Camera->Frust.farClip = FarClip;
   Camera->Frust.nearClip = 1.0f;
   Camera->Frust.width = 30.0f;

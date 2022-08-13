@@ -26,7 +26,7 @@ struct game_state
   entity** EntityTable;
   entity *Player;
 
-#if BONSAI_INTERNAL
+#if BONSAI_DEBUG_SYSTEM_API
   get_debug_state_proc GetDebugState;
 #endif
 };

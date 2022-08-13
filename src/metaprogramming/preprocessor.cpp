@@ -1,7 +1,11 @@
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
 #define PLATFORM_GL_IMPLEMENTATIONS 1
+#define BONSAI_DEBUG_SYSTEM_API 1
 
-#include <bonsai_types.h>
+#include <bonsai_stdlib/bonsai_stdlib.h>
+#include <bonsai_stdlib/bonsai_stdlib.cpp>
+
+#include <metaprogramming/functions.h>
 #include <metaprogramming/preprocessor.h>
 
 global_variable memory_arena Global_PermMemory = {};
@@ -8789,12 +8793,11 @@ debug_global os Os = {};
 bonsai_function b32
 BootstrapDebugSystem()
 {
-#if BONSAI_INTERNAL
   shared_lib DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
   if (!DebugLib) { Error("Loading DebugLib :( "); return False; }
 
-  GetDebugState = (get_debug_state_proc)GetProcFromLib(DebugLib, DebugLibName_GetDebugState);
-  if (!GetDebugState) { Error("Retreiving GetDebugState from Debug Lib :( "); return False; }
+  /* GetDebugState = (get_debug_state_proc)GetProcFromLib(DebugLib, DebugLibName_GetDebugState); */
+  /* if (!GetDebugState) { Error("Retreiving GetDebugState from Debug Lib :( "); return False; } */
 
   b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat);
   if (!WindowSuccess) { Error("Initializing Window :( "); return False; }
@@ -8814,13 +8817,10 @@ BootstrapDebugSystem()
   GL.ClearColor(0.2f, 0.2f, 0.2f, 1.0f);
   GL.ClearDepth(1.0f);
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
-  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  DebugState->ClearFramebuffers();
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
   GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-#endif
 
   return True;
 }
@@ -10436,9 +10436,6 @@ RegisterUnparsedCxxTypes(program_datatypes *Datatypes, memory_arena *Memory)
 #define SUCCESS_EXIT_CODE 0
 #define FAILURE_EXIT_CODE 1
 
-debug_global debug_state* DebugState = 0;
-
-
 
 s32
 main(s32 ArgCount_, const char** ArgStrings)
@@ -10464,13 +10461,11 @@ main(s32 ArgCount_, const char** ArgStrings)
   }
 
 
-#if BONSAI_INTERNAL
   if (Args.DoDebugWindow)
   {
     if (BootstrapDebugSystem() == 1)
     {
-      DebugState = GetDebugState();
-      DebugState->MainThreadAdvanceDebugSystem(0);
+      GetDebugState()->MainThreadAdvanceDebugSystem(0);
       DEBUG_REGISTER_ARENA(Memory);
       DEBUG_REGISTER_ARENA(&Global_PermMemory);
     }
@@ -10480,7 +10475,6 @@ main(s32 ArgCount_, const char** ArgStrings)
       return FAILURE_EXIT_CODE;
     }
   }
-#endif
 
   b32 Success = True;
   if (ArgCount > 1)
@@ -10562,9 +10556,10 @@ main(s32 ArgCount_, const char** ArgStrings)
   }
 
 
-#if BONSAI_INTERNAL
-  if (DebugState)
+  // BootstrapDebugSystem is behind a flag, or it could have failed.
+  if (GetDebugState)
   {
+    debug_state *DebugState = GetDebugState();
     DebugState->UIType = DebugUIType_Memory;
     DebugState->DisplayDebugMenu = True;
     DebugState->DebugDoScopeProfiling = False;
@@ -10585,16 +10580,14 @@ main(s32 ArgCount_, const char** ArgStrings)
       DebugState->OpenDebugWindowAndLetUsDoStuff();
       BonsaiSwapBuffers(&Os);
 
-      /* glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID); */
-      /* glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
+      DebugState->ClearFramebuffers();
 
       GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
       GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-      Ensure(RewindArena(TranArena));
+      /* Ensure(RewindArena(TranArena)); */
     }
   }
-#endif
 
   s32 Result = !Success; // ? SUCCESS_EXIT_CODE : FAILURE_EXIT_CODE ;
   return Result;

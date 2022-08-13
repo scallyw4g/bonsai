@@ -3,12 +3,16 @@
 #define PLATFORM_THREADING_IMPLEMENTATIONS 1
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
 #define PLATFORM_GL_IMPLEMENTATIONS 1
+#define BONSAI_DEBUG_SYSTEM_API 1
 
-#include <bonsai_types.h>
+#include <bonsai_stdlib/bonsai_stdlib.h>
+#include <bonsai_stdlib/bonsai_stdlib.cpp>
+
+#include <engine/engine.h>
+
 
 global_variable s64 LastGameLibTime;
 global_variable bonsai_worker_thread_callback BONSAI_API_WORKER_THREAD_CALLBACK_NAME;
-
 
 #include <sys/stat.h>
 
@@ -67,9 +71,9 @@ DrainQueue(work_queue* Queue, thread_local_state* Thread)
     }
     else
     {
-      b32 Exchanged = AtomicCompareExchange(&Queue->DequeueIndex,
-                                        (DequeueIndex+1)% WORK_QUEUE_SIZE,
-                                        DequeueIndex);
+      b32 Exchanged = AtomicCompareExchange( &Queue->DequeueIndex,
+                                             (DequeueIndex+1) % WORK_QUEUE_SIZE,
+                                             DequeueIndex );
       if ( Exchanged )
       {
         work_queue_entry* Entry = Queue->Entries + DequeueIndex;
@@ -107,6 +111,9 @@ ThreadMain(void *Input)
 
     DrainQueue(ThreadParams->HighPriority, &Thread);
 
+    // TODO(Jesse) call DrainQueue here?!  We should also escape this loop if
+    // anything shows up on the high-priority queue.. so maybe that's why I
+    // left this as-is.
     work_queue* LowPriority = ThreadParams->LowPriority;
     for (;;)
     {
@@ -118,9 +125,9 @@ ThreadMain(void *Input)
       }
       else
       {
-        b32 Exchanged = AtomicCompareExchange(&LowPriority->DequeueIndex,
-                                          (DequeueIndex+1)% WORK_QUEUE_SIZE,
-                                          DequeueIndex);
+        b32 Exchanged = AtomicCompareExchange( &LowPriority->DequeueIndex,
+                                               (DequeueIndex+1) % WORK_QUEUE_SIZE,
+                                               DequeueIndex );
         if ( Exchanged )
         {
           work_queue_entry* Entry = LowPriority->Entries + DequeueIndex;
@@ -134,6 +141,8 @@ ThreadMain(void *Input)
   }
 }
 
+#if 0
+// TODO(Jesse): Move to counted_string.h
 bonsai_function b32
 StrMatch(char *Str1, char *Str2)
 {
@@ -150,6 +159,7 @@ StrMatch(char *Str1, char *Str2)
   return Result;
 }
 
+// TODO(Jesse): Move to counted_string.h
 bonsai_function b32
 StrStr(char *Str1, char *Str2)
 {
@@ -162,6 +172,7 @@ StrStr(char *Str1, char *Str2)
 
   return Result;
 }
+#endif
 
 bonsai_function void
 PlatformLaunchWorkerThreads(platform *Plat, bonsai_worker_thread_init_callback WorkerThreadInit, game_state* GameState)
@@ -257,11 +268,8 @@ main()
 {
   Info("Initializing Bonsai");
 
-#if !EMCC
   if (!SearchForProjectRoot()) { Error("Couldn't find root dir, exiting."); return False; }
   Info("Found Bonsai Root : %S", CS(GetCwd()) );
-
-#endif
 
   platform Plat = {};
   os Os         = {};
@@ -271,12 +279,10 @@ main()
 
   if (!InitializeOpengl(&Os)) { Error("Initializing OpenGL :( "); return False; }
 
-#if !EMCC
   shared_lib DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
   if (!DebugLib) { Error("Loading DebugLib :( "); return False; }
   init_debug_system_proc InitDebugSystem = (init_debug_system_proc)GetProcFromLib(DebugLib, "InitDebugSystem");
   GetDebugState = InitDebugSystem(&GL);
-#endif
 
   AssertNoGlErrors;
 
@@ -304,18 +310,41 @@ main()
   shared_lib GameLib = OpenLibrary(DEFAULT_GAME_LIB);
   if (!GameLib) { Error("Loading GameLib :( "); return False; }
 
-  bonsai_main_thread_init_callback GameInit = (bonsai_main_thread_init_callback)GetProcFromLib(GameLib, TO_STRING(BONSAI_API_MAIN_THREAD_INIT_CALLBACK_NAME));
-  if (!GameInit) { Error("Retreiving " TO_STRING(BONSAI_API_MAIN_THREAD_INIT_CALLBACK_NAME) " from Game Lib :( "); return False; }
+  bonsai_main_thread_init_callback GameInit = (bonsai_main_thread_init_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_MAIN_THREAD_INIT_CALLBACK_NAME));
+  if (!GameInit) { Error("Retreiving " STRINGIZE(BONSAI_API_MAIN_THREAD_INIT_CALLBACK_NAME) " from Game Lib :( "); return False; }
 
-  bonsai_main_thread_callback BONSAI_API_MAIN_THREAD_CALLBACK_NAME = (bonsai_main_thread_callback)GetProcFromLib(GameLib, TO_STRING(BONSAI_API_MAIN_THREAD_CALLBACK_NAME));
-  if (!BONSAI_API_MAIN_THREAD_CALLBACK_NAME) { Error("Retreiving " TO_STRING(BONSAI_API_MAIN_THREAD_CALLBACK_NAME) " from Game Lib :( "); return False; }
+  bonsai_main_thread_callback BONSAI_API_MAIN_THREAD_CALLBACK_NAME = (bonsai_main_thread_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_MAIN_THREAD_CALLBACK_NAME));
+  if (!BONSAI_API_MAIN_THREAD_CALLBACK_NAME) { Error("Retreiving " STRINGIZE(BONSAI_API_MAIN_THREAD_CALLBACK_NAME) " from Game Lib :( "); return False; }
 
-  BONSAI_API_WORKER_THREAD_CALLBACK_NAME = (bonsai_worker_thread_callback)GetProcFromLib(GameLib, TO_STRING(BONSAI_API_WORKER_THREAD_CALLBACK_NAME) );
-  if (!BONSAI_API_WORKER_THREAD_CALLBACK_NAME) { Error("Retreiving " TO_STRING(BONSAI_API_WORKER_THREAD_CALLBACK_NAME) " from Game Lib :( "); return False; }
+  BONSAI_API_WORKER_THREAD_CALLBACK_NAME = (bonsai_worker_thread_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_WORKER_THREAD_CALLBACK_NAME) );
+  if (!BONSAI_API_WORKER_THREAD_CALLBACK_NAME) { Error("Retreiving " STRINGIZE(BONSAI_API_WORKER_THREAD_CALLBACK_NAME) " from Game Lib :( "); return False; }
 
-  bonsai_worker_thread_init_callback WorkerThreadInitCallback = (bonsai_worker_thread_init_callback)GetProcFromLib(GameLib, TO_STRING(BONSAI_API_WORKER_THREAD_INIT_CALLBACK_NAME));
+  bonsai_worker_thread_init_callback WorkerThreadInitCallback = (bonsai_worker_thread_init_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_WORKER_THREAD_INIT_CALLBACK_NAME));
 
-  game_state* GameState = GameInit(&Plat, GameMemory, GetDebugState, &GL);
+  // NOTE(Jesse): This used to pass GetDebugState into the game library, but we
+  // now have to use GetProcFromLib() to hook up the pointer.  I'm writing this
+  // as I'm refactoring, so once you hit this there might be a better way, but
+  // as of this writing that seems like the best option.  This change was made
+  // such that GameInit() doesn't need to know about any debug system types,
+  // and in fact the entire engine shouldn't need to know about anything in the
+  // debug system.
+  //
+  void * SetDebugStateProc = GetProcFromLib(GameLib, "SetDebugState" );
+  if (SetDebugStateProc)
+  {
+    SetDebugStateProc(GetDebugState);
+  }
+  else
+  {
+    // The game doesn't have to export that function if it doesn't want
+    // debugging enabled
+  }
+
+
+
+  NotImplemented;
+
+  game_state* GameState = GameInit(&Plat, GameMemory, &GL);
   if (!GameState) { Error("Initializing Game State :( "); return False; }
 
   PlatformLaunchWorkerThreads(&Plat, WorkerThreadInitCallback, GameState);
@@ -359,8 +388,8 @@ main()
       CloseLibrary(GameLib);
       GameLib = OpenLibrary(DEFAULT_GAME_LIB);
 
-      BONSAI_API_MAIN_THREAD_CALLBACK_NAME = (bonsai_main_thread_callback)GetProcFromLib(GameLib, TO_STRING(BONSAI_API_MAIN_THREAD_CALLBACK_NAME));
-      BONSAI_API_WORKER_THREAD_CALLBACK_NAME = (bonsai_worker_thread_callback)GetProcFromLib(GameLib, TO_STRING(BONSAI_API_WORKER_THREAD_CALLBACK_NAME));
+      BONSAI_API_MAIN_THREAD_CALLBACK_NAME = (bonsai_main_thread_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_MAIN_THREAD_CALLBACK_NAME));
+      BONSAI_API_WORKER_THREAD_CALLBACK_NAME = (bonsai_worker_thread_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_WORKER_THREAD_CALLBACK_NAME));
 
       ResumeWorkerThreads();
     }

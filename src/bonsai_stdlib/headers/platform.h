@@ -1,3 +1,10 @@
+//
+// Required for FILE* type .. might want to rebuild the file API to use
+// platform functions instead, but for now the CRT ones are good enough.
+//
+#include <stdio.h>
+
+
 #define CACHE_LINE_SIZE (64)
 
 #define BindToInput(Keysym, InputField, Boolean) \
@@ -11,7 +18,6 @@
 
 #define BindKeyupToInput(Keysym, InputField) \
     BindToInput(Keysym, InputField, False)
-
 
 #if BONSAI_WIN32
 #include <win32_platform.h>

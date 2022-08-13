@@ -1,3 +1,5 @@
+#define DEBUG_THREAD_COUNT_BIAS (17)
+
 bonsai_function u32
 GetWorkerThreadCount()
 {

@@ -7,19 +7,11 @@
 #  define Assert(condition)                                                  \
     do {                                                                     \
       if (!(condition)) {                                                    \
-        LogDirect("%S ! Assert%S  - Failed" Newline,                         \
+        LogDirect("%S ! FAILED%S  - `Assert(%s)` during %s() %s:%u:0" Newline,                         \
                   TerminalColors.Red,                                        \
-                  TerminalColors.White);                                     \
-                                                                             \
-        LogDirect(" %S!%S         - %s during %s()" Newline,                        \
-                  TerminalColors.Red,                                        \
-                  TerminalColors.White,                                      \
+                  TerminalColors.White,                                     \
                   #condition,                                                \
-                  __FUNCTION__);                                             \
-                                                                             \
-        LogDirect(" %S!%S         - %s:%u:0" Newline,                        \
-                  TerminalColors.Red,                                        \
-                  TerminalColors.White,                                      \
+                  __FUNCTION__,                                             \
                   __FILE__,                                                  \
                   __LINE__);                                                 \
                                                                              \
@@ -41,8 +33,6 @@
   }                                                   \
 } while (false)
 
-#define TriggeredRuntimeBreak() do { if (GetDebugState && GetDebugState()->TriggerRuntimeBreak) { RuntimeBreak(); } } while (0)
-
 #define NotImplemented Error("Implement Me!"); Assert(False)
 
 #else // Release Build
@@ -51,7 +41,6 @@
 #define Assert(...)
 #define InvalidCodePath(...)
 #define RuntimeBreak(...)
-#define TriggeredRuntimeBreak(...)
 
 #define NotImplemented
 /* #define BUG */
@@ -60,3 +49,12 @@
 /* #define BUG(...) KnOwN_BuGgY_CoDePaTh_DeTeCtEd */
 
 #endif // BONSAI_INTERNAL
+
+
+#if BONSAI_DEBUG_SYSTEM_API
+#define TriggeredRuntimeBreak() do { if (GetDebugState && GetDebugState()->TriggerRuntimeBreak) { RuntimeBreak(); } } while (0)
+
+#else
+
+#define TriggeredRuntimeBreak(...)
+#endif

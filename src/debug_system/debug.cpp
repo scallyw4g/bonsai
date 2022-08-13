@@ -1,5 +1,12 @@
 #define DEBUG_LIB_INTERNAL_BUILD 1
-#include <bonsai_types.h>
+
+#include <bonsai_stdlib/bonsai_stdlib.h>
+#include <bonsai_stdlib/bonsai_stdlib.cpp>
+
+#include <engine/engine.h>
+#include <engine/engine.cpp>
+
+#include <metaprogramming/functions.h>
 
 #include <debug_data_system.cpp>
 #include <interactable.cpp>
@@ -273,6 +280,7 @@ InitDebugSystem(opengl *LoadedGLImpl)
   LastMs = GetHighPrecisionClock();
   Internal_DebugState.Frames[1].StartingCycle = GetCycleCount();
 
+  Internal_DebugState.ClearFramebuffers               = ClearFramebuffers;
   Internal_DebugState.FrameEnd                        = DebugFrameEnd;
   Internal_DebugState.FrameBegin                      = DebugFrameBegin;
   Internal_DebugState.RegisterArena                   = RegisterArena;

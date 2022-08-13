@@ -350,6 +350,13 @@ InitializeOpengl(os* Os)
     AssertNoGlErrors;
   }
 
-  b32 Result = GL.Initialized && CheckOpenglVersion();
+  if (GL.Initialized && CheckOpenglVersion() == False)
+  {
+    Warn("Unsupported Version of Opengl ::  Minimum 3.3 required.");
+    Warn("The driver successfully supplied all required function pointers, however your program may not run correctly.");
+    Warn("If you experience issues, please upgrade to an OpenGL 3.3 compliant driver.");
+  }
+
+  b32 Result = GL.Initialized;
   return Result;
 }

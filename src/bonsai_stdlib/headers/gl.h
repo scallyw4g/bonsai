@@ -447,11 +447,6 @@ CheckOpenglVersion()
   Info("OpenGl Version (%u.%u)", Version[0], Version[1] );
 
   b32 Result = Version[0] >= 3 && Version[1] >= 3;
-  if (!Result)
-  {
-    Error("Unsupported Version of Opengl ::  Minimum 3.3 required");
-  }
-
   return Result;
 }
 

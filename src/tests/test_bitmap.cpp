@@ -1,5 +1,6 @@
 
-#include <bonsai_types.h>
+#include <bonsai_stdlib/bonsai_stdlib.h>
+#include <bonsai_stdlib/bonsai_stdlib.cpp>
 #include <tests/test_utils.cpp>
 
 inline void

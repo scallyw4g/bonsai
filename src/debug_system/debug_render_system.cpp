@@ -72,6 +72,13 @@ SelectColorState(render_state* RenderState, ui_style *Style)
 
 
 bonsai_function void
+ClearFramebuffers()
+{
+  GL.BindFramebuffer(GL_FRAMEBUFFER, GetDebugState()->GameGeoFBO.ID);
+  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+bonsai_function void
 FlushBuffer(debug_text_render_group *TextGroup, untextured_2d_geometry_buffer *Buffer, v2 ScreenDim)
 {
   TIMED_FUNCTION();
@@ -1780,7 +1787,7 @@ PushChunkView(debug_ui_render_group* Group, world_chunk* Chunk, window_layout* W
   input* WindowInput = 0;
   if (Pressed(Group, &ViewportButton))
     { WindowInput = Group->Input; }
-  UpdateGameCamera( -0.005f*(*Group->MouseDP), WindowInput, Canonical_Position(0), &DebugState->Camera, Chunk_Dimension(0,0,0));
+  UpdateGameCamera( -0.005f*(*Group->MouseDP), WindowInput, Canonical_Position(0), DebugState->Camera, Chunk_Dimension(0,0,0));
 }
 
 bonsai_function void
@@ -1873,8 +1880,8 @@ DrawPickedChunks(debug_ui_render_group* Group)
     FlushBuffersToCard(&DebugState->GameGeo);
 
     DebugState->ViewProjection =
-      ProjectionMatrix(&DebugState->Camera, DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM) *
-      ViewMatrix(ChunkDimension(HotChunk), &DebugState->Camera);
+      ProjectionMatrix(DebugState->Camera, DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM) *
+      ViewMatrix(ChunkDimension(HotChunk), DebugState->Camera);
 
     GL.UseProgram(Group->GameGeoShader->ID);
 
@@ -2453,13 +2460,13 @@ DumpScopeTreeDataToConsole()
   memory_arena* Temp = AllocateArena();
   debug_state* DebugState = GetDebugState();
 
-  Print("Starting debug data dump");
+  /* Print("Starting debug data dump"); */
 
   /* debug_thread_state *ThreadState = GetThreadLocalStateFor(0); */
   debug_scope_tree *ReadTree = DebugState->GetWriteScopeTree();
   DumpScopeTreeDataToConsole_Internal(ReadTree->Root, ReadTree->Root, Temp);
 
-  Print("Ending debug data dump");
+  /* Print("Ending debug data dump"); */
 
   return;
 }
@@ -3195,7 +3202,8 @@ InitDebugRenderSystem(debug_state *DebugState, heap_allocator *Heap, opengl *Loa
   DebugState->GameGeoShader = MakeRenderToTextureShader(ThreadsafeDebugMemoryAllocator(),
                                                         &DebugState->ViewProjection);
 
-  StandardCamera(&DebugState->Camera, 1000.0f, 100.0f);
+  DebugState->Camera = Allocate(camera, ThreadsafeDebugMemoryAllocator(), 1);
+  StandardCamera(DebugState->Camera, 1000.0f, 100.0f);
 
   return Result;
 }

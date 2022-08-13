@@ -91,6 +91,14 @@ GetMouseDelta(platform *Plat)
 bonsai_function void
 UpdateGameCamera(v2 MouseDelta, input *Input, canonical_position NewTarget, camera* Camera, chunk_dimension WorldChunkDim)
 {
+  // NOTE(Jesse): I changed this to a pointer such that we didn't have to know
+  // the size of camera structs in the debug system, but I didn't bother to
+  // allocate the actual struct.  If this is crashing just allocate a camera at
+  // startup.
+  //
+  // @allocate_camera_at_startup
+  Assert(Camera);
+
   if (Input)
   {
     if (Input->LMB.Pressed)

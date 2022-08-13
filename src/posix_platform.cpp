@@ -4,7 +4,8 @@ PrintSemValue(semaphore *Semaphore)
   s32 SemValue;
   if (sem_getvalue(Semaphore, &SemValue) == 0)
   {
-    Print(SemValue);
+    NotImplemented;
+    /* DebugPrint(SemValue); */
   }
   else
   {
@@ -212,8 +213,8 @@ PlatformCreateThread( thread_main_callback_type ThreadMain, thread_startup_param
   pthread_attr_init(&Attribs);
 
   thread_handle Thread;
-  Params->Self.ID = pthread_create(&Thread, &Attribs, ThreadMain, Params);
-  return Params->Self.ID;
+  thread_id Result = pthread_create(&Thread, &Attribs, ThreadMain, Params);
+  return Result;
 }
 
 #endif // PLATFORM_THREADING_IMPLEMENTATIONS

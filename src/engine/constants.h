@@ -17,10 +17,6 @@
 #define MODELS_PATH "models"
 #define SHADER_PATH "shaders"
 
-#define SCREEN_RATIO (1)
-#define SCR_WIDTH (3840/SCREEN_RATIO)
-#define SCR_HEIGHT (2160/SCREEN_RATIO)
-
 /* #define PLAYER_MODEL MODELS_PATH"/chr_knight.vox" */
 /* #define PLAYER_MODEL MODELS_PATH"/ephtracy.vox" */
 /* #define PLAYER_MODEL MODELS_PATH"/chr_sword.vox" */
@@ -39,8 +35,6 @@
 #define DEBUG_HIGHLIGHT_VOID_CHUNKS   0
 #define DEBUG_DRAW_WORLD_AXIES        1
 #define DEBUG_PARTICLE_EFFECTS        1
-
-#define DEBUG_THREAD_COUNT_BIAS       (17)
 
 #define ENEMY_MODEL      MODELS_PATH "/tie-fighter.vox"
 #define LOOT_MODEL       MODELS_PATH "/3x3x3.vox"

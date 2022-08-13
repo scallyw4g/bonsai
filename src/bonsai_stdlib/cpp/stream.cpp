@@ -303,6 +303,7 @@ ParseFloatArray(u32 TotalFloatCount, ansi_stream FloatStream, memory_arena* Memo
   return Result;
 }
 
+#if 0
 void
 Dump(v3_cursor* Array)
 {
@@ -318,7 +319,6 @@ Dump(v3_cursor* Array)
   return;
 }
 
-#if 0
 void
 Dump(xml_tag_hashtable *Table)
 {

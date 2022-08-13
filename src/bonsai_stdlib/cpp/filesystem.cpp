@@ -1,6 +1,9 @@
 bonsai_function b32
 SearchForProjectRoot(void)
 {
+#if EMCC
+  b32 Result = True;
+#else
   b32 Result = FileExists(".root_marker");
 
   b32 ChdirSuceeded = True;
@@ -13,6 +16,6 @@ SearchForProjectRoot(void)
     NotAtFilesystemRoot = (!IsFilesystemRoot(GetCwd()));
     Result = FileExists(".root_marker");
   }
-
+#endif
   return Result;
 }

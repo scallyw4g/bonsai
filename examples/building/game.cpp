@@ -54,14 +54,16 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 {
   TIMED_FUNCTION();
 
+#if BONSAI_DEBUG_SYSTEM_API
   GetDebugState()->Plat = GameState->Plat;
   GetDebugState()->GameState = GameState;
+#endif
 
   /* DebugPrint(*GameState->Plat); */
 
   GL.Disable(GL_CULL_FACE);
 
-#if BONSAI_INTERNAL
+#if BONSAI_DEBUG_SYSTEM_API
   if (!GetDebugState)
   {
     GetDebugState = GameState->GetDebugState;
@@ -124,7 +126,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   v2 MouseDelta = GetMouseDelta(Plat);
   input* GameInput = &Plat->Input;
 
-#if BONSAI_INTERNAL
+#if BONSAI_DEBUG_SYSTEM_API
   if (GetDebugState()->UiGroup.PressedInteractionId != StringHash("GameViewport"))
   {
     GameInput = 0;
@@ -148,7 +150,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     BufferEntities( GameState->EntityTable, &GpuMap->Buffer, Graphics, World, Plat->dt);
   END_BLOCK("BufferMeshes");
 
-#if BONSAI_INTERNAL
+#if BONSAI_DEBUG_SYSTEM_API
   for (u32 ChunkIndex = 0;
       ChunkIndex < GetDebugState()->PickedChunkCount;
       ++ChunkIndex)
@@ -186,7 +188,6 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   Info("Initializing Game");
 
   GL = *GL_in;
-  GetDebugState = GetDebugState_in;
 
   Init_Global_QuadVertexBuffer();
 

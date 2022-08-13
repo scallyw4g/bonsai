@@ -8,6 +8,7 @@ struct world_chunk;
 struct debug_profile_scope;
 struct debug_thread_state;
 
+typedef void                 (*debug_clear_framebuffers_proc)          ();
 typedef void                 (*debug_frame_end_proc)                   (platform*, server_state*);
 typedef void                 (*debug_frame_begin_proc)                 (hotkeys*);
 typedef void                 (*debug_register_arena_proc)              (const char*, memory_arena*);
@@ -45,7 +46,6 @@ typedef get_debug_state_proc (*init_debug_system_proc)(opengl *);
 
 #define DEFAULT_DEBUG_LIB "./bin/lib_debug_system" PLATFORM_RUNTIME_LIB_EXTENSION
 
-#if BONSAI_INTERNAL
 
 #define DEBUG_FRAMES_TRACKED (128)
 
@@ -71,31 +71,6 @@ struct min_max_avg_dt
   r64 Min;
   r64 Max;
   r64 Avg;
-};
-
-struct input;
-struct debug_ui_render_group
-{
-  gpu_mapped_element_buffer*  GameGeo;
-  shader*                     GameGeoShader;
-  debug_text_render_group*    TextGroup;
-
-  u64 InteractionStackTop;
-
-  v2 *MouseP;
-  v2 *MouseDP;
-  v2 ScreenDim;
-  input *Input;
-
-  window_layout *HighestWindow; // NOTE(Jesse): Highest in terms of InteractionStackIndex
-
-  umm HoverInteractionId;
-  umm ClickedInteractionId;
-  umm PressedInteractionId;
-
-  untextured_2d_geometry_buffer Geo;
-
-  ui_render_command_buffer *CommandBuffer;
 };
 
 struct debug_profile_scope
@@ -146,7 +121,7 @@ struct debug_thread_state
 
   volatile u32 WriteIndex; // Note(Jesse): This must not straddle a cache line on x86 because multiple threads read from the main threads copy of this
 
-#if EMCC
+#if EMCC // NOTE(Jesse): Uhh, wtf?  Oh, EMCC pointers are 32 bits..? FML
   u8 Pad[36];
 #else
   u8 Pad[12];
@@ -208,19 +183,7 @@ struct debug_state
   platform* Plat;
   game_state* GameState;
 
-  debug_ui_render_group UiGroup;
-
-  untextured_3d_geometry_buffer LineMesh;
   u32 UIType = DebugUIType_None;
-
-  // For the GameGeo
-  camera Camera;
-
-  framebuffer GameGeoFBO;
-  shader GameGeoShader;
-  m4 ViewProjection;
-  gpu_mapped_element_buffer GameGeo;
-  shader DebugGameGeoTextureShader;
 
   selected_arenas *SelectedArenas;
 
@@ -274,6 +237,7 @@ struct debug_state
     return Result;
   }
 
+  debug_clear_framebuffers_proc             ClearFramebuffers;
   debug_frame_end_proc                      FrameEnd;
   debug_frame_begin_proc                    FrameBegin;
   debug_register_arena_proc                 RegisterArena;
@@ -293,6 +257,28 @@ struct debug_state
   debug_value                               DebugValue;
   debug_dump_scope_tree_data_to_console     DumpScopeTreeDataToConsole;
   debug_open_window_and_let_us_do_stuff     OpenDebugWindowAndLetUsDoStuff;
+
+  // TODO(Jesse): Put this into some sort of debug_render struct such that
+  // users of the library (externally) don't have to include all the rendering
+  // code that the library relies on.
+  //
+  // NOTE(Jesse): This stuff has to be "hidden" at the end of the struct so the
+  // external ABI is the same as the internal ABI until this point
+#if DEBUG_LIB_INTERNAL_BUILD
+  debug_ui_render_group UiGroup;
+
+  untextured_3d_geometry_buffer LineMesh;
+
+  // For the GameGeo
+  camera *Camera;
+
+  framebuffer GameGeoFBO;
+  shader GameGeoShader;
+  m4 ViewProjection;
+  gpu_mapped_element_buffer GameGeo;
+  shader DebugGameGeoTextureShader;
+#endif
+
 };
 
 struct debug_draw_call
@@ -436,44 +422,12 @@ void DebugTimedMutexReleased(mutex *Mut);
 #define TIMED_MUTEX_AQUIRED(Mut)  if (GetDebugState) {GetDebugState()->MutexAquired(Mut);}
 #define TIMED_MUTEX_RELEASED(Mut) if (GetDebugState) {GetDebugState()->MutexReleased(Mut);}
 
-// NOTE(Jesse): Cannot be protected with an if (GetDebugState) block because the return value is used
-#define MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(dt) if (GetDebugState) {GetDebugState()->MainThreadAdvanceDebugSystem(dt);}
-#define WORKER_THREAD_ADVANCE_DEBUG_SYSTEM() if (GetDebugState) {GetDebugState()->WorkerThreadAdvanceDebugSystem();}
+#define MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(dt)               if (GetDebugState) {GetDebugState()->MainThreadAdvanceDebugSystem(dt);}
+#define WORKER_THREAD_ADVANCE_DEBUG_SYSTEM()               if (GetDebugState) {GetDebugState()->WorkerThreadAdvanceDebugSystem();}
 
-#define DEBUG_CLEAR_META_RECORDS_FOR(Arena) if (GetDebugState) {GetDebugState()->ClearMetaRecordsFor(Arena);}
-#define DEBUG_TRACK_DRAW_CALL(CallingFunction, VertCount) if (GetDebugState) {GetDebugState()->TrackDrawCall(CallingFunction, VertCount);}
+#define DEBUG_CLEAR_META_RECORDS_FOR(Arena)                if (GetDebugState) {GetDebugState()->ClearMetaRecordsFor(Arena);}
+#define DEBUG_TRACK_DRAW_CALL(CallingFunction, VertCount)  if (GetDebugState) {GetDebugState()->TrackDrawCall(CallingFunction, VertCount);}
 
-#define DEBUG_REGISTER_VIEW_PROJECTION_MATRIX(ViewProjPtr) if (GetDebugState) {GetDebugState()->ViewProjection = ViewProjPtr;;}
-
-#define DEBUG_COMPUTE_PICK_RAY(Plat, ViewProjPtr) if (GetDebugState) {GetDebugState()->ComputePickRay(Plat, ViewProjPtr);}
-#define DEBUG_PICK_CHUNK(Chunk, ChunkAABB) if (GetDebugState) {GetDebugState()->PickChunk(Chunk, ChunkAABB);}
-
-#else
-
-#define TIMED_FUNCTION(...)
-#define TIMED_BLOCK(...)
-#define END_BLOCK(...)
-
-#define TIMED_MUTEX_WAITING(...)
-#define TIMED_MUTEX_AQUIRED(...)
-#define TIMED_MUTEX_RELEASED(...)
-
-#define DEBUG_FRAME_RECORD(...)
-#define DEBUG_FRAME_END(...)
-#define DEBUG_FRAME_BEGIN(...)
-
-#define WORKER_THREAD_WAIT_FOR_DEBUG_SYSTEM(...)
-#define MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(...)
-#define WORKER_THREAD_ADVANCE_DEBUG_SYSTEM()
-
-#define DEBUG_CLEAR_META_RECORDS_FOR(...)
-#define DEBUG_TRACK_DRAW_CALL(...)
-
-#define DEBUG_REGISTER_VIEW_PROJECTION_MATRIX(...)
-
-#define DEBUG_COMPUTE_PICK_RAY(...)
-#define DEBUG_PICK_CHUNK(...)
-
-#endif
-
-
+#define DEBUG_REGISTER_VIEW_PROJECTION_MATRIX(ViewProjPtr) if (GetDebugState) {GetDebugState()->ViewProjection = ViewProjPtr;}
+#define DEBUG_COMPUTE_PICK_RAY(Plat, ViewProjPtr)          if (GetDebugState) {GetDebugState()->ComputePickRay(Plat, ViewProjPtr);}
+#define DEBUG_PICK_CHUNK(Chunk, ChunkAABB)                 if (GetDebugState) {GetDebugState()->PickChunk(Chunk, ChunkAABB);}

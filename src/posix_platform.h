@@ -16,7 +16,6 @@
 #include <arpa/inet.h>  // inet_addr
 #include <sys/socket.h>
 
-
 #define PLATFORM_RUNTIME_BREAK() raise(SIGTRAP)
 
 #define Newline "\n"

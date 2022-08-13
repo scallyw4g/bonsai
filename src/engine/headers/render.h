@@ -1,53 +1,3 @@
-enum shader_uniform_type
-{
-  ShaderUniform_Undefined,
-  ShaderUniform_M4,
-  ShaderUniform_V3,
-  ShaderUniform_S32,
-  ShaderUniform_U32,
-  ShaderUniform_R32,
-  ShaderUniform_Texture,
-  ShaderUniform_Light,
-  ShaderUniform_Camera,
-};
-
-struct texture;
-struct light;
-struct camera;
-
-// TODO(Jesse, id: 83, tags: metaprogramming, immediate): d_union-ify this
-struct shader_uniform
-{
-  shader_uniform_type Type;
-  union {
-    texture *Texture;
-    light *Light;
-    m4 *M4;
-    v3 *V3;
-    s32 *S32;
-    u32 *U32;
-    r32 *R32;
-    camera *Camera;
-    void *Data;
-  };
-
-  s32 ID;
-  const char *Name;
-  shader_uniform *Next;
-};
-
-struct shader
-{
-  u32 ID;
-  shader_uniform *FirstUniform;
-};
-
-struct texture
-{
-  u32 ID;
-  v2i Dim;
-};
-
 debug_global float
 g_quad_vertex_buffer_data[] =
 {
@@ -81,12 +31,6 @@ struct RenderBasis
   m4 ModelMatrix;
   m4 ViewMatrix;
   m4 ProjectionMatrix;
-};
-
-struct framebuffer
-{
-  u32 ID;
-  u32 Attachments;
 };
 
 #define SSAO_KERNEL_SIZE 32
@@ -135,49 +79,6 @@ struct shadow_render_group
 
   texture *ShadowMap;
 };
-
-struct untextured_3d_geometry_buffer
-{
-  v3 *Verts;
-  v4 *Colors;
-  v3 *Normals;
-
-  u32 End;
-  u32 At;
-};
-
-struct gpu_mapped_element_buffer
-{
-  u32 VertexHandle;
-  u32 NormalHandle;
-  u32 ColorHandle;
-
-  untextured_3d_geometry_buffer Buffer;
-};
-
-struct textured_2d_geometry_buffer
-{
-  v3 *Verts;
-  v3 *Colors;
-  v3 *UVs;
-
-  u32 End;
-  u32 At;
-};
-
-struct untextured_2d_geometry_buffer
-{
-  v3 *Verts;
-  v3 *Colors;
-
-  u32 End;
-  u32 At;
-};
-
-global_variable m4 IdentityMatrix = {V4(1, 0, 0 ,0),
-                                     V4(0, 1, 0 ,0),
-                                     V4(0, 0, 1 ,0),
-                                     V4(0, 0, 0 ,0)};
 
 untextured_3d_geometry_buffer
 Untextured3dGeometryBuffer(v3* Verts, v4* Colors, v3* Normals, u32 Count)
@@ -283,6 +184,14 @@ Rads(degrees Degrees)
 inline m4
 ProjectionMatrix(camera *Camera, r32 WindowWidth, r32 WindowHeight)
 {
+  // NOTE(Jesse): I changed this to a pointer such that we didn't have to know
+  // the size of camera structs in the debug system, but I didn't bother to
+  // allocate the actual struct.  If this is crashing just allocate a camera at
+  // startup.
+  //
+  // @allocate_camera_at_startup
+  Assert(Camera);
+
   m4 Result = Perspective( Rads(Camera->Frust.FOV),
                                           V2(WindowWidth, WindowHeight),
                                           Camera->Frust.nearClip,

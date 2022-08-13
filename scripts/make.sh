@@ -5,9 +5,9 @@ BUILD_EVERYTHING=1
 CheckoutMetaOutput=0
 
 BuildPreprocessor=1
-BuildExecutables=0
+BuildExecutables=1
 BuildDebugTests=0
-BuildTests=1
+BuildTests=0
 BuildDebugSystem=0
 BuildExamples=0
 
@@ -182,6 +182,7 @@ function BuildPreprocessor {
     $PLATFORM_CXX_OPTIONS                                \
     $PLATFORM_LINKER_OPTIONS                             \
     $PLATFORM_DEFINES                                    \
+    -D "BONSAI_DEBUG_SYSTEM_API" \
     $PLATFORM_INCLUDE_DIRS                               \
     -I"$SRC"                                             \
     -o "$output_basename""_dev""$PLATFORM_EXE_EXTENSION" \
@@ -268,6 +269,7 @@ function BuildDebugSystem
     $PLATFORM_CXX_OPTIONS                               \
     $PLATFORM_LINKER_OPTIONS                            \
     $PLATFORM_DEFINES                                   \
+    -D "BONSAI_DEBUG_SYSTEM_API"                        \
     $PLATFORM_INCLUDE_DIRS                              \
     $SHARED_LIBRARY_FLAGS                               \
     -I"$SRC"                                            \

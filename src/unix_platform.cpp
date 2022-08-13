@@ -1,3 +1,6 @@
+#include <bonsai_net/network.h>
+
+
 void *
 OpenLibrary(const char *filename)
 {
@@ -77,6 +80,7 @@ HandleGlDebugMessage(GLenum Source, GLenum Type, GLuint Id, GLenum Severity,
   return;
 }
 
+#if PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS
 // TODO(Jesse id: 267): Unnecessary .. I just added these as a hack get parsing to work
 typedef Colormap x_colormap;
 typedef XSetWindowAttributes x_set_window_attribs;
@@ -179,7 +183,6 @@ Terminate(os *Os)
 // TODO(Jesse id: 268): Unnecessary .. I just added these as a hack get parsing to work
 typedef XEvent x_event;
 
-#if PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS
 b32
 ProcessOsMessages(os *Os, platform *Plat)
 {

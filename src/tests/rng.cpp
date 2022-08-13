@@ -1,5 +1,6 @@
 
-#include <bonsai_types.h>
+#include <bonsai_stdlib/bonsai_stdlib.h>
+#include <bonsai_stdlib/bonsai_stdlib.cpp>
 #include <tests/test_utils.cpp>
 
 s32
@@ -29,7 +30,7 @@ main(s32 ArgCount, const char** Args)
       MaxValue = HitTable[HashValue];
     }
   }
-  Log("Max: %u\n", MaxValue);
+  DebugLine("Max: %u", MaxValue);
 
   u32 MappedRowSize = 128;
   for (u32 TableIndex = 0;
@@ -46,14 +47,14 @@ main(s32 ArgCount, const char** Args)
     {
       if (ValueIndex < Mapped)
       {
-        Log(".");
+        DebugChars(".");
       }
       else
       {
-        Log(" ");
+        DebugChars(" ");
       }
     }
-    Log(" | (%u %u) \n", TableValue, Mapped);
+    DebugLine(" | (%u %u) ", TableValue, Mapped);
   }
 #endif
 

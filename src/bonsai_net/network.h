@@ -9,7 +9,7 @@ struct client_state
 {
   s32 Id;
   u32 Counter;
-  canonical_position P;
+  /* canonical_position P; */
 };
 
 struct server_state

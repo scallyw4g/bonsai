@@ -1,3 +1,11 @@
+#ifndef BONSAI_PREPROCESSOR
+
+// TODO(Jesse): Rewrite this such that we can remove these headers.  We have
+// all the facilities to do so.
+#include <random>
+#include <algorithm>
+#include <numeric>
+
 // THIS IS A DIRECT TRANSLATION TO C++11 FROM THE REFERENCE
 // JAVA IMPLEMENTATION OF THE IMPROVED PERLIN FUNCTION (see http://mrl.nyu.edu/~perlin/noise/)
 // THE ORIGINAL JAVA IMPLEMENTATION IS COPYRIGHT 2002 KEN PERLIN
@@ -113,3 +121,5 @@ perlin_noise::grad(int hash, double x, double y, double z) {
   double res = ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
   return res;
 }
+
+#endif

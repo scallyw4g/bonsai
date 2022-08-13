@@ -77,7 +77,7 @@ struct memory_arena
 #define STRINGIZE2(x) #x
 #define LINE_STRING STRINGIZE(__LINE__)
 
-#if BONSAI_INTERNAL
+#if BONSAI_DEBUG_SYSTEM_API
 
 #define AllocateProtection(Type, Arena, Number, Protection)                                                                                              \
   ( GetDebugState && GetDebugState() ?                                                                                                                   \

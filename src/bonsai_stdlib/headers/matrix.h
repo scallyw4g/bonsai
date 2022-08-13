@@ -36,6 +36,12 @@ struct m4
   }
 };
 
+global_variable m4 IdentityMatrix = {V4(1, 0, 0 ,0),
+                                     V4(0, 1, 0 ,0),
+                                     V4(0, 0, 1 ,0),
+                                     V4(0, 0, 0 ,0)};
+
+
 struct m_nxn
 {
   r32* Elements;

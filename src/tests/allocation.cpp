@@ -1,4 +1,6 @@
-#include <bonsai_types.h>
+
+#include <bonsai_stdlib/bonsai_stdlib.h>
+#include <bonsai_stdlib/bonsai_stdlib.cpp>
 #include <tests/test_utils.cpp>
 
 
@@ -489,7 +491,7 @@ MultipleAllocations()
       }
     }
 
-#if BONSAI_INTERNAL
+#if BONSAI_DEBUG_SYSTEM_API
     {
       memory_arena_stats MemStats1 = GetMemoryArenaStats(&Arena);
       memory_arena_stats MemStats2 = GetMemoryArenaStats(&Arena);
