@@ -17,5 +17,5 @@ meta(
     work_queue_entry_copy_buffer
   }
 )
-#include <metaprogramming/output/d_union_work_queue_entry.h>
+#include <poof/output/d_union_work_queue_entry.h>
 

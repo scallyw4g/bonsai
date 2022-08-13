@@ -1,6 +1,6 @@
 #! /bin/bash
 
-BUILD_EVERYTHING=1
+BUILD_EVERYTHING=0
 
 CheckoutMetaOutput=0
 
@@ -29,7 +29,7 @@ EXAMPLES="$ROOT/examples"
 TESTS="$SRC/tests"
 BIN="$ROOT/bin"
 BIN_TEST="$BIN/tests"
-META_OUT="$SRC/metaprogramming/output"
+META_OUT="$SRC/poof/output"
 
 # PREPROCESSOR_EXECUTABLE="bin/preprocessor_dev"
 # PREPROCESSOR_EXECUTABLE="bin/preprocessor_current"
@@ -127,7 +127,7 @@ function BuildPoof {
   echo -e ""
 
   ColorizeTitle "Building Preprocessor"
-  executable="$SRC/metaprogramming/preprocessor.cpp"
+  executable="$SRC/poof/preprocessor.cpp"
   SetOutputBinaryPathBasename "$executable" "$BIN"
   echo -e "$Building $executable"
   clang++                                                \
@@ -337,7 +337,7 @@ if [ ! -d "$BIN_TEST" ]; then
   mkdir "$BIN_TEST"
 fi
 
-# SOURCE_FILES="src/metaprogramming/preprocessor.h"
+# SOURCE_FILES="src/poof/preprocessor.h"
 
 function SetSourceFiles
 {
@@ -349,7 +349,7 @@ function SetSourceFiles
     -and -not -wholename "src/bonsai_stdlib/headers/stream.h"      \
     -and -not -wholename "src/bonsai_stdlib/headers/perlin.h"      \
     -and -not -wholename "src/bonsai_stdlib/headers/primitives.h"  \
-    -and -not -wholename "src/metaprogramming/defines.h"           \
+    -and -not -wholename "src/poof/defines.h"           \
     -and -not -wholename "src/win32_platform.h"                    \
     -and -not -path      "src/tests/*" )                           \
                                                                    \
@@ -370,7 +370,7 @@ function RunPreprocessor
     if [ $? -ne 0 ]; then
       echo ""
       echo -e "$Failed Preprocessing failed, exiting." 
-      git checkout "src/metaprogramming/output"
+      git checkout "src/poof/output"
       exit 1
     fi
   fi
@@ -379,7 +379,7 @@ function RunPreprocessor
 function RunEntireBuild {
 
   if [ $CheckoutMetaOutput == 1 ]; then
-    git checkout "src/metaprogramming/output"
+    git checkout "src/poof/output"
   fi
 
   if [ $RunFirstPreprocessor == 1 ]; then

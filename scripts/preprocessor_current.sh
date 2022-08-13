@@ -2,7 +2,7 @@
 
 . scripts/preamble.sh
 
-    # src/metaprogramming/preprocessor.cpp                                                                         \
+    # src/poof/preprocessor.cpp                                                                         \
     # src/bonsai_types.h                                                                                           \
 
     # -D BONSAI_WIN32                                                                                              \
@@ -23,7 +23,7 @@ if [ "$Platform" == "Linux" ] ; then
   bin/preprocessor_current               \
     -D BONSAI_PREPROCESSOR               \
     -D BONSAI_LINUX                      \
-    src/metaprogramming/preprocessor.cpp \
+    src/poof/preprocessor.cpp \
     -I src
 
 elif [ "$Platform" == "Windows" ] ; then
@@ -34,7 +34,7 @@ elif [ "$Platform" == "Windows" ] ; then
     $COLORFLAG                           \
     -D BONSAI_PREPROCESSOR               \
     -D BONSAI_LINUX                      \
-    src/metaprogramming/preprocessor.cpp \
+    src/poof/preprocessor.cpp \
     -I ./src
 
 

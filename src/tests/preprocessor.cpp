@@ -1,5 +1,5 @@
 #define EXCLUDE_PREPROCESSOR_MAIN 1
-#include <metaprogramming/preprocessor.cpp>
+#include <poof/preprocessor.cpp>
 #include <tests/test_utils.cpp>
 #include <tests/bug_defines.h>
 

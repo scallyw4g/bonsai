@@ -1,0 +1,3 @@
+[submodule "src/poof"]
+	path = src/poof
+	url = git@github.com:jjbandit/poof
