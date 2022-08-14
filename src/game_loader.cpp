@@ -247,7 +247,7 @@ WaitForFrameTime(r64 FrameStartMs, float FPS)
 }
 #endif
 
-#if !BONSAI_WIN32
+#if BONSAI_NETWORK_IMPLEMENTATION
 bonsai_function server_state*
 ServerInit(memory_arena* Memory)
 {
@@ -349,7 +349,7 @@ main()
 
   PlatformLaunchWorkerThreads(&Plat, WorkerThreadInitCallback, GameState);
 
-#if !BONSAI_WIN32
+#if BONSAI_NETWORK_IMPLEMENTATION
   server_state* ServerState = ServerInit(GameMemory);
   Assert(ServerState);
 #endif
@@ -436,7 +436,7 @@ main()
     BONSAI_API_MAIN_THREAD_CALLBACK_NAME(&Plat, GameState, &Hotkeys);
 
 
-#if BONSAI_LINUX
+#if BONSAI_NETWORK_IMPLEMENTATION
     DEBUG_FRAME_END(&Plat, ServerState);
 #else
     DEBUG_FRAME_END(&Plat, 0);

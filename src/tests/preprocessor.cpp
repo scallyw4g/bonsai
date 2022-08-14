@@ -845,7 +845,8 @@ TestBoundaryConditions(memory_arena* Memory)
   c_token *Prev = 0;
   c_token *Next = 0;
 
-  TestThat( Remaining(Parser->Tokens) == 2 );
+  TestThat( PeekTokenRawPointer(Parser->Tokens, 1) != 0 );
+  TestThat( PeekTokenRawPointer(Parser->Tokens, 2) == 0 );
 
   Next = PeekTokenRawPointer(Parser);
   TestThat( *Next == Hi );
