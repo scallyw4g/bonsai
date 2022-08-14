@@ -7,3 +7,6 @@
 [submodule "scripts"]
 	path = scripts
 	url = git@github.com:jjbandit/bonsai_build_scripts
+[submodule "src/bonsai_debug"]
+	path = src/bonsai_debug
+	url = git@github.com:jjbandit/bonsai_debug
