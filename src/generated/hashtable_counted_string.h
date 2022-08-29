@@ -28,6 +28,7 @@
     bonsai_function counted_string_linked_list_node *
     GetHashBucket(umm HashValue, counted_string_hashtable *Table)
     {
+      Assert(Table->Size);
       counted_string_linked_list_node *Result = Table->Elements[HashValue % Table->Size];
       return Result;
     }
@@ -40,20 +41,23 @@
       return Result;
     }
 
-    bonsai_function void
-    Insert(counted_string_linked_list_node *E, counted_string_hashtable *Table)
+    bonsai_function counted_string*
+    Insert(counted_string_linked_list_node *Node, counted_string_hashtable *Table)
     {
-      umm HashValue = Hash(&E->Element) % Table->Size;
+      Assert(Table->Size);
+      umm HashValue = Hash(&Node->Element) % Table->Size;
       counted_string_linked_list_node **Bucket = Table->Elements + HashValue;
       while (*Bucket) Bucket = &(*Bucket)->Next;
-      *Bucket = E;
+      *Bucket = Node;
+      return &Bucket[0]->Element;
     }
 
-    bonsai_function void
-    Insert(counted_string E, counted_string_hashtable *Table, memory_arena *Memory)
+    bonsai_function counted_string*
+    Insert(counted_string Element, counted_string_hashtable *Table, memory_arena *Memory)
     {
       counted_string_linked_list_node *Bucket = Allocate_counted_string_linked_list_node(Memory);
-      Bucket->Element = E;
+      Bucket->Element = Element;
       Insert(Bucket, Table);
+      return &Bucket->Element;
     }
 

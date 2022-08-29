@@ -10,7 +10,7 @@ struct work_queue_entry_init_world_chunk
   void *Input;
 };
 
-meta(
+poof(
   d_union work_queue_entry
   {
     work_queue_entry_init_world_chunk

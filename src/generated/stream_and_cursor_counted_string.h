@@ -59,6 +59,13 @@
       Iter->At = Iter->At->Next;
     }
 
+    bonsai_function b32
+    IsLastElement(counted_string_iterator* Iter)
+    {
+      b32 Result = Iter->At->Next == 0;
+      return Result;
+    }
+
 
         bonsai_function counted_string *
     Push(counted_string_stream* Stream, counted_string Element, memory_arena* Memory)
