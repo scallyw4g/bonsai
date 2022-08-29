@@ -322,6 +322,8 @@ function RunEntireBuild {
 
 function RunPoof {
 
+  [ -d src/generated ] && rm -Rf src/generated
+
   poof                         \
    --log-level LogLevel_Debug  \
    -I src/                     \
