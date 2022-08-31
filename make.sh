@@ -2,17 +2,15 @@
 
 BUILD_EVERYTHING=0
 
-CheckoutMetaOutput=0
-
 RunPoof=1
 
-BuildExecutables=0
-BuildDebugTests=0
-BuildTests=0
-BuildDebugSystem=0
-BuildExamples=0
+BuildExecutables=1
+BuildDebugTests=1
+BuildTests=1
+BuildDebugSystem=1
+BuildExamples=1
 
-RunTests=0
+RunTests=1
 
 . scripts/preamble.sh
 . scripts/setup_for_cxx.sh
@@ -27,67 +25,6 @@ EXAMPLES="$ROOT/examples"
 TESTS="$SRC/tests"
 BIN="$ROOT/bin"
 BIN_TEST="$BIN/tests"
-
-function SetOutputBinaryPathBasename()
-{
-  base_file="${1##*/}"
-  output_basename="$2/${base_file%%.*}"
-}
-
-function ColorizeTitle()
-{
-  echo -e "$YELLOW$1$WHITE"
-  echo -e ""
-}
-
-# TODO(Jesse, tags: build_pipeline): Investigate -Wcast-align situation
-
-  # -fsanitize=address
-
-# Note(Jesse): Using -std=c++17 so I can mark functions with [[nodiscard]]
-
-# TODO(Jesse): Figure out how to standardize on a compiler across machines such that
-# we can remove -Wno-unknown-warning-optins
-CXX_OPTIONS="
-  --std=c++17
-  -ferror-limit=2000
-
-  -Weverything
-
-  -Wno-unknown-warning-option
-
-  -Wno-c++98-compat-pedantic
-  -Wno-gnu-anonymous-struct
-  -Wno-missing-prototypes
-  -Wno-zero-as-null-pointer-constant
-  -Wno-format-nonliteral
-  -Wno-cast-qual
-  -Wno-unused-function
-  -Wno-four-char-constants
-  -Wno-old-style-cast
-  -Wno-float-equal
-  -Wno-double-promotion
-  -Wno-padded
-  -Wno-global-constructors
-  -Wno-cast-align
-  -Wno-switch-enum
-  -Wno-undef
-  -Wno-covered-switch-default
-  -Wno-c99-extensions
-  -Wno-dollar-in-identifier-extension
-
-  -Wno-class-varargs
-
-  -Wno-unused-value
-  -Wno-unused-variable
-  -Wno-unused-parameter
-
-  -Wno-implicit-int-float-conversion
-  -Wno-extra-semi-stmt
-  -Wno-reorder-init-list
-  -Wno-unused-macros
-  -Wno-atomic-implicit-seq-cst
-"
 
 
 EXAMPLES_TO_BUILD="
@@ -166,7 +103,7 @@ function BuildTests
       $PLATFORM_DEFINES                              \
       $PLATFORM_INCLUDE_DIRS                         \
       -I"$SRC"                                       \
-      -I"$SRC/bonsai_debug"                          \
+      -I"$SRC/include"                               \
       -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
       $executable && echo -e "$Success $executable" &
   done
@@ -299,8 +236,8 @@ fi
 
 function RunEntireBuild {
 
-  if [ $CheckoutMetaOutput == 1 ]; then
-    git checkout "src/generated"
+  if [ $RunPoof == 1 ]; then
+    RunPoof
   fi
 
   if [ $EMCC == 1 ]; then
@@ -313,25 +250,31 @@ function RunEntireBuild {
     ./scripts/run_tests.sh
   fi
 
-  if [ $RunPoof == 1 ]; then
-    RunPoof
-  fi
-
-
 }
 
-function RunPoof {
-
-  [ -d src/generated ] && rm -Rf src/generated
-
+function RunPoofHelper {
+   # --log-level LogLevel_Debug  \
   poof                         \
-   --log-level LogLevel_Debug  \
    -I src/                     \
    -I include/                 \
    -D BONSAI_LINUX             \
    -o src/generated            \
-   src/game_loader.cpp
+   $1
 
+}
+
+function RunPoof
+{
+
+  [ -d src/generated ] && rm -Rf src/generated
+
+   RunPoofHelper src/game_loader.cpp
+
+   RunPoofHelper examples/world_gen/game.cpp
+
+   RunPoofHelper examples/building/game.cpp
+
+   RunPoofHelper src/bonsai_debug/debug.cpp
 }
 
 
@@ -351,6 +294,12 @@ TESTS_TO_BUILD="
 
 # if [[ $BUILD_EVERYTHING == 0 ]]; then
 #   TESTS_TO_BUILD="
+#   $TESTS/bonsai_string.cpp
+#   $TESTS/objloader.cpp
+#   $TESTS/callgraph.cpp
+#   $TESTS/heap_allocation.cpp
+#   $TESTS/rng.cpp
+#   $TESTS/file.cpp
 #   "
 # fi
 

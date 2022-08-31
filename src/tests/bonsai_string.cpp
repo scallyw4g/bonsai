@@ -1,7 +1,7 @@
 
 #include <bonsai_stdlib/bonsai_stdlib.h>
 #include <bonsai_stdlib/bonsai_stdlib.cpp>
-#include <tests/test_utils.cpp>
+#include <bonsai_stdlib/test/utils.h>
 
 void
 TestPopWord(ansi_stream *Stream, memory_arena *Memory)
@@ -425,7 +425,7 @@ main(s32 ArgCount, const char** Args)
   {
     counted_string Path = CS("thing/ding/dong");
     counted_string Dong = Basename(Path);
-    TestThat(StringsMatch(Dong, CS("/dong")));
+    TestThat(StringsMatch(Dong, CS("dong")));
   }
 
   counted_string Thing = CS("thing");

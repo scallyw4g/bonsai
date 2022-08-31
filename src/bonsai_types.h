@@ -5,5 +5,3 @@
 
 #include <engine/engine.h>
 #include <engine/engine.cpp>
-
-#include <poof/functions.h>

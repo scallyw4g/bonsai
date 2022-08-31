@@ -1,6 +1,8 @@
 
 #include <bonsai_types.h>
-#include <tests/test_utils.cpp>
+#include <bonsai_stdlib/test/utils.h>
+
+#include <tests/test_defines.h>
 
 void
 TokenizingTest()

@@ -1,8 +1,8 @@
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
 #define BONSAI_DEBUG_SYSTEM_API 1
 
-#include <debug.cpp>
-#include <tests/test_utils.cpp>
+#include <bonsai_debug/debug.cpp>
+#include <bonsai_stdlib/test/utils.h>
 
 
 bonsai_function void

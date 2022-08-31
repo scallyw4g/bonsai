@@ -2,7 +2,7 @@
 #define BONSAI_DEBUG_SYSTEM_API 1
 
 #include <bonsai_types.h>
-#include <tests/test_utils.cpp>
+#include <bonsai_stdlib/test/utils.h>
 
 void
 FunctionThree()

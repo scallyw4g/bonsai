@@ -1,7 +1,7 @@
 
 #include <bonsai_stdlib/bonsai_stdlib.h>
 #include <bonsai_stdlib/bonsai_stdlib.cpp>
-#include <tests/test_utils.cpp>
+#include <bonsai_stdlib/test/utils.h>
 
 
 struct test_struct_1k

@@ -1090,7 +1090,7 @@ SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension Vis
   return;
 }
 
-#ifndef BONSAI_WIN32
+#if BONSAI_NETWORK_IMPLEMENTATION
 entity *
 GetPlayer(entity **Players, client_state *OurClient)
 {
