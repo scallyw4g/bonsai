@@ -253,6 +253,7 @@ function RunEntireBuild {
 }
 
 function RunPoofHelper {
+
    # --log-level LogLevel_Debug  \
   poof                         \
    -I src/                     \
@@ -265,16 +266,19 @@ function RunPoofHelper {
 
 function RunPoof
 {
+  echo -e ""
+  echo -e "$Delimeter"
+  echo -e ""
 
+  ColorizeTitle "Poofing"
   [ -d src/generated ] && rm -Rf src/generated
 
-   RunPoofHelper src/game_loader.cpp
+  RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
+  RunPoofHelper src/bonsai_debug/debug.cpp && echo -e "$Success poofed src/bonsai_debug/debug.cpp" &
 
-   RunPoofHelper examples/world_gen/game.cpp
+  wait
 
-   RunPoofHelper examples/building/game.cpp
-
-   RunPoofHelper src/bonsai_debug/debug.cpp
+  [ -d tmp ] && rmdir tmp
 }
 
 
