@@ -41,7 +41,7 @@
       return Result;
     }
 
-    bonsai_function counted_string*
+    bonsai_function counted_string *
     Insert(counted_string_linked_list_node *Node, counted_string_hashtable *Table)
     {
       Assert(Table->Size);

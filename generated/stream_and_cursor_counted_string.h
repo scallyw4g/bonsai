@@ -1,14 +1,14 @@
         struct counted_string_cursor
     {
-      counted_string* Start;
-      counted_string* At;
-      counted_string* End;
+      counted_string *Start;
+      counted_string *At;
+      counted_string *End;
     };
 
     bonsai_function counted_string_cursor
     CountedStringCursor(umm ElementCount, memory_arena* Memory)
     {
-      counted_string* Start = (counted_string*)PushStruct(Memory, sizeof( counted_string ), 1, 0);
+      counted_string *Start = (counted_string*)PushStruct(Memory, sizeof(counted_string), 1, 0);
       counted_string_cursor Result = {
         .Start = Start,
         .End = Start+ElementCount,
@@ -70,7 +70,7 @@
         bonsai_function counted_string *
     Push(counted_string_stream* Stream, counted_string Element, memory_arena* Memory)
     {
-      counted_string_stream_chunk* NextChunk = (counted_string_stream_chunk*)PushStruct(Memory, sizeof( counted_string_stream_chunk ), 1, 0);
+      counted_string_stream_chunk* NextChunk = (counted_string_stream_chunk*)PushStruct(Memory, sizeof(counted_string_stream_chunk), 1, 0);
       NextChunk->Element = Element;
 
       if (!Stream->FirstChunk)

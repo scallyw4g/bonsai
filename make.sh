@@ -10,7 +10,7 @@ BuildTests=1
 BuildDebugSystem=1
 BuildExamples=1
 
-RunTests=1
+RunTests=0
 
 . scripts/preamble.sh
 . scripts/setup_for_cxx.sh
@@ -63,7 +63,8 @@ function BuildExecutables
       $PLATFORM_LINKER_OPTIONS                       \
       $PLATFORM_DEFINES                              \
       $PLATFORM_INCLUDE_DIRS                         \
-      -I"$SRC"                                       \
+      -I "$ROOT"                                     \
+      -I "$SRC"                                      \
       -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
       $executable && echo -e "$Success $executable" &
   done
@@ -82,6 +83,7 @@ function BuildDebugTests
       $PLATFORM_LINKER_OPTIONS                       \
       $PLATFORM_DEFINES                              \
       $PLATFORM_INCLUDE_DIRS                         \
+      -I "$ROOT"                                     \
       -I"$SRC"                                       \
       -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
       $executable && echo -e "$Success $executable" &
@@ -102,6 +104,7 @@ function BuildTests
       $PLATFORM_LINKER_OPTIONS                       \
       $PLATFORM_DEFINES                              \
       $PLATFORM_INCLUDE_DIRS                         \
+      -I "$ROOT"                                     \
       -I"$SRC"                                       \
       -I"$SRC/include"                               \
       -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
@@ -123,6 +126,7 @@ function BuildDebugSystem
     $PLATFORM_DEFINES                                   \
     $PLATFORM_INCLUDE_DIRS                              \
     $SHARED_LIBRARY_FLAGS                               \
+    -I "$ROOT"                                          \
     -I"$SRC"                                            \
     -I"$SRC/bonsai_debug"                               \
     -o "$BIN/lib_debug_system""$PLATFORM_LIB_EXTENSION" \
@@ -144,6 +148,7 @@ function BuildExamples
       $PLATFORM_DEFINES                                                               \
       $PLATFORM_INCLUDE_DIRS                                                          \
       $SHARED_LIBRARY_FLAGS                                                           \
+      -I "$ROOT"                                                                      \
       -I"$SRC"                                                                        \
       -I"$executable"                                                                 \
       -o "$output_basename"                                                           \
@@ -254,12 +259,12 @@ function RunEntireBuild {
 
 function RunPoofHelper {
 
-   # --log-level LogLevel_Debug  \
-  poof                         \
-   -I src/                     \
-   -I include/                 \
-   -D BONSAI_LINUX             \
-   -o src/generated            \
+   # --log-level LogLevel_Debug \
+  poof                          \
+   -I src/                      \
+   -I include/                  \
+   -D BONSAI_LINUX              \
+   -o generated                 \
    $1
 
 }
@@ -272,9 +277,10 @@ function RunPoof
 
   ColorizeTitle "Poofing"
   [ -d src/generated ] && rm -Rf src/generated
+  [ -d generated ] && rm -Rf generated
 
-  RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
-  RunPoofHelper src/bonsai_debug/debug.cpp && echo -e "$Success poofed src/bonsai_debug/debug.cpp" &
+  RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp"
+  RunPoofHelper src/bonsai_debug/debug.cpp && echo -e "$Success poofed src/bonsai_debug/debug.cpp"
 
   wait
 

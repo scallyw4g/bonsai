@@ -30,7 +30,7 @@
       return Result;
     }
 
-    bonsai_function xml_tag*
+    bonsai_function xml_tag *
     Insert(xml_tag_linked_list_node *Node, xml_tag_hashtable *Table)
     {
       Assert(Table->Size);

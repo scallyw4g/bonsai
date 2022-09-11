@@ -1,0 +1,3 @@
+break ParseError
+break /home/scallywag/work/poof/include/bonsai_stdlib/cpp/counted_string.cpp:404
+  condition $bpnum FinalBufferStartingSize == 82
