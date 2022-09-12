@@ -38,7 +38,7 @@ struct current_triangles
   boundary_voxels* SurfacePoints;
 };
 
-bonsai_function void
+link_internal void
 PushTriangle(current_triangles* CurrentTris, triangle* ToPush)
 {
   Assert(CurrentTris->Count < CurrentTris->Max);
@@ -47,7 +47,7 @@ PushTriangle(current_triangles* CurrentTris, triangle* ToPush)
   return;
 }
 
-bonsai_function void
+link_internal void
 DeleteFace(current_triangles* CurrentTris, u32 DeletionIndex)
 {
   --CurrentTris->Count;
@@ -62,7 +62,7 @@ DeleteFace(current_triangles* CurrentTris, u32 DeletionIndex)
 
 #if 1
 
-bonsai_function r32
+link_internal r32
 ComputeMatchSum(triangle *Triangle, voxel_position* Point)
 {
   r32 Result = 0.0f;
@@ -81,7 +81,7 @@ ComputeMatchSum(triangle *Triangle, voxel_position* Point)
 }
 
 #else
-bonsai_function r32
+link_internal r32
 ComputeMatchSum(triangle *Triangle, voxel_position* Point)
 {
   r32 Result = 0.0f;
@@ -94,7 +94,7 @@ ComputeMatchSum(triangle *Triangle, voxel_position* Point)
 }
 #endif
 
-bonsai_function triangle*
+link_internal triangle*
 FindClosestFace(current_triangles* CurrentTriangles, voxel_position* Point)
 {
   triangle* BestMatch = CurrentTriangles->Tris[0];
@@ -117,7 +117,7 @@ FindClosestFace(current_triangles* CurrentTriangles, voxel_position* Point)
   return BestMatch;
 }
 
-bonsai_function void
+link_internal void
 SplitFace(current_triangles* CurrentTriangles, triangle* Closest, voxel_position* Point, memory_arena* Memory)
 {
   triangle* NewTri0 = Triangle(Closest->Points[0], Closest->Points[1], Point, Memory);
@@ -135,7 +135,7 @@ SplitFace(current_triangles* CurrentTriangles, triangle* Closest, voxel_position
 
 #endif
 
-bonsai_function void
+link_internal void
 Swap(voxel_position* P1, voxel_position* P2)
 {
   voxel_position Tmp = *P1;

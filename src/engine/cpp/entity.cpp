@@ -208,7 +208,7 @@ AllocateEntity(memory_arena *Memory, chunk_dimension ModelDim)
   return Entity;
 }
 
-bonsai_function entity**
+link_internal entity**
 AllocateEntityTable(memory_arena* Memory, u32 Count)
 {
   entity** Result = Allocate(entity*, Memory, Count);

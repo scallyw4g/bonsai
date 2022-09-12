@@ -1,4 +1,4 @@
-    bonsai_function counted_string
+    link_internal counted_string
     ToString( text_encoding Type)
     {
       counted_string Result = {};

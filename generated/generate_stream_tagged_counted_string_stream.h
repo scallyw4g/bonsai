@@ -17,7 +17,7 @@
       tagged_counted_string_stream_stream_chunk* At;
     };
 
-    bonsai_function tagged_counted_string_stream_iterator
+    link_internal tagged_counted_string_stream_iterator
     Iterator(tagged_counted_string_stream_stream* Stream)
     {
       tagged_counted_string_stream_iterator Iterator = {
@@ -27,20 +27,20 @@
       return Iterator;
     }
 
-    bonsai_function b32
+    link_internal b32
     IsValid(tagged_counted_string_stream_iterator* Iter)
     {
       b32 Result = Iter->At != 0;
       return Result;
     }
 
-    bonsai_function void
+    link_internal void
     Advance(tagged_counted_string_stream_iterator* Iter)
     {
       Iter->At = Iter->At->Next;
     }
 
-    bonsai_function b32
+    link_internal b32
     IsLastElement(tagged_counted_string_stream_iterator* Iter)
     {
       b32 Result = Iter->At->Next == 0;
@@ -48,7 +48,7 @@
     }
 
 
-        bonsai_function tagged_counted_string_stream *
+        link_internal tagged_counted_string_stream *
     Push(tagged_counted_string_stream_stream* Stream, tagged_counted_string_stream Element, memory_arena* Memory)
     {
       tagged_counted_string_stream_stream_chunk* NextChunk = (tagged_counted_string_stream_stream_chunk*)PushStruct(Memory, sizeof(tagged_counted_string_stream_stream_chunk), 1, 0);
@@ -73,7 +73,7 @@
       return Result;
     }
 
-    bonsai_function void
+    link_internal void
     ConcatStreams( tagged_counted_string_stream_stream *S1, tagged_counted_string_stream_stream *S2)
     {
       if (S1->LastChunk)

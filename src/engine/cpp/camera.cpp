@@ -1,5 +1,5 @@
 
-bonsai_function void
+link_internal void
 UpdateCameraP(canonical_position NewTarget, camera *Camera, chunk_dimension WorldChunkDim)
 {
   TIMED_FUNCTION();
@@ -88,7 +88,7 @@ GetMouseDelta(platform *Plat)
   return Result;
 }
 
-bonsai_function void
+link_internal void
 UpdateGameCamera(v2 MouseDelta, input *Input, canonical_position NewTarget, camera* Camera, chunk_dimension WorldChunkDim)
 {
   // NOTE(Jesse): I changed this to a pointer such that we didn't have to know

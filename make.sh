@@ -1,14 +1,14 @@
 #! /bin/bash
 
-BUILD_EVERYTHING=0
+BUILD_EVERYTHING=1
 
-RunPoof=1
+RunPoof=0
 
-BuildExecutables=1
-BuildDebugTests=1
-BuildTests=1
+BuildExecutables=0
+BuildDebugTests=0
+BuildTests=0
 BuildDebugSystem=1
-BuildExamples=1
+BuildExamples=0
 
 RunTests=0
 
@@ -127,8 +127,8 @@ function BuildDebugSystem
     $PLATFORM_INCLUDE_DIRS                              \
     $SHARED_LIBRARY_FLAGS                               \
     -I "$ROOT"                                          \
-    -I"$SRC"                                            \
-    -I"$SRC/bonsai_debug"                               \
+    -I "$SRC"                                           \
+    -I "$SRC/bonsai_debug"                              \
     -o "$BIN/lib_debug_system""$PLATFORM_LIB_EXTENSION" \
     "$DEBUG_SRC_FILE" && echo -e "$Success $DEBUG_SRC_FILE" &
 }

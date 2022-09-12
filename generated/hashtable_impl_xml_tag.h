@@ -1,11 +1,11 @@
-    bonsai_function xml_tag_linked_list_node *
+    link_internal xml_tag_linked_list_node *
     Allocate_xml_tag_linked_list_node(memory_arena *Memory)
     {
       xml_tag_linked_list_node *Result = Allocate( xml_tag_linked_list_node, Memory, 1);
       return Result;
     }
 
-    bonsai_function xml_tag_hashtable
+    link_internal xml_tag_hashtable
     Allocate_xml_tag_hashtable(umm ElementCount, memory_arena *Memory)
     {
       xml_tag_hashtable Result = {};
@@ -14,7 +14,7 @@
       return Result;
     }
 
-    bonsai_function xml_tag_linked_list_node *
+    link_internal xml_tag_linked_list_node *
     GetHashBucket(umm HashValue, xml_tag_hashtable *Table)
     {
       Assert(Table->Size);
@@ -22,7 +22,7 @@
       return Result;
     }
 
-    bonsai_function xml_tag *
+    link_internal xml_tag *
     GetFirstAtBucket(umm HashValue, xml_tag_hashtable *Table)
     {
       xml_tag_linked_list_node *Bucket = GetHashBucket(HashValue, Table);
@@ -30,7 +30,7 @@
       return Result;
     }
 
-    bonsai_function xml_tag *
+    link_internal xml_tag *
     Insert(xml_tag_linked_list_node *Node, xml_tag_hashtable *Table)
     {
       Assert(Table->Size);
@@ -41,7 +41,7 @@
       return &Bucket[0]->Element;
     }
 
-    bonsai_function xml_tag*
+    link_internal xml_tag*
     Insert(xml_tag Element, xml_tag_hashtable *Table, memory_arena *Memory)
     {
       xml_tag_linked_list_node *Bucket = Allocate_xml_tag_linked_list_node(Memory);

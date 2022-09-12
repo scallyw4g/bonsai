@@ -5,7 +5,7 @@
 #include <bonsai_stdlib/test/utils.h>
 
 
-bonsai_function void
+link_internal void
 TestTable(debug_ui_render_group* Group)
 {
   PushTableStart(Group);

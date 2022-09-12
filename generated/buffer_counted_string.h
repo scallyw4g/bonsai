@@ -4,7 +4,7 @@
       umm Count;
     };
 
-    bonsai_function counted_string_buffer
+    link_internal counted_string_buffer
     CountedStringBuffer(umm ElementCount, memory_arena* Memory)
     {
       counted_string_buffer Result = {};

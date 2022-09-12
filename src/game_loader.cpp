@@ -18,7 +18,7 @@ global_variable bonsai_worker_thread_callback BONSAI_API_WORKER_THREAD_CALLBACK_
 
 typedef struct stat bonsai_stat;
 
-bonsai_function b32
+link_internal b32
 LibIsNew(const char *LibPath, s64 *LastLibTime)
 {
   b32 Result = False;
@@ -40,7 +40,7 @@ LibIsNew(const char *LibPath, s64 *LastLibTime)
   return Result;
 }
 
-bonsai_function thread_local_state
+link_internal thread_local_state
 DefaultThreadLocalState()
 {
   thread_local_state Thread = {};
@@ -59,7 +59,7 @@ DefaultThreadLocalState()
   return Thread;
 }
 
-bonsai_function void
+link_internal void
 DrainQueue(work_queue* Queue, thread_local_state* Thread)
 {
   for (;;)
@@ -84,7 +84,7 @@ DrainQueue(work_queue* Queue, thread_local_state* Thread)
   }
 }
 
-bonsai_function THREAD_MAIN_RETURN
+link_internal THREAD_MAIN_RETURN
 ThreadMain(void *Input)
 {
   thread_startup_params *ThreadParams = (thread_startup_params *)Input;
@@ -143,7 +143,7 @@ ThreadMain(void *Input)
 
 #if 0
 // TODO(Jesse): Move to counted_string.h
-bonsai_function b32
+link_internal b32
 StrMatch(char *Str1, char *Str2)
 {
   char *Haystack = Str1;
@@ -160,7 +160,7 @@ StrMatch(char *Str1, char *Str2)
 }
 
 // TODO(Jesse): Move to counted_string.h
-bonsai_function b32
+link_internal b32
 StrStr(char *Str1, char *Str2)
 {
   b32 Result = StrMatch(Str1, Str2);
@@ -174,7 +174,7 @@ StrStr(char *Str1, char *Str2)
 }
 #endif
 
-bonsai_function void
+link_internal void
 PlatformLaunchWorkerThreads(platform *Plat, bonsai_worker_thread_init_callback WorkerThreadInit, game_state* GameState)
 {
   u32 WorkerThreadCount = GetWorkerThreadCount();
@@ -196,7 +196,7 @@ PlatformLaunchWorkerThreads(platform *Plat, bonsai_worker_thread_init_callback W
   return;
 }
 
-bonsai_function void
+link_internal void
 InitQueue(work_queue* Queue, memory_arena* Memory, semaphore* Semaphore)
 {
   Queue->EnqueueIndex = 0;
@@ -208,7 +208,7 @@ InitQueue(work_queue* Queue, memory_arena* Memory, semaphore* Semaphore)
   return;
 }
 
-bonsai_function void
+link_internal void
 PlatformInit(platform *Plat, memory_arena *Memory)
 {
   Plat->Memory = Memory;
@@ -231,7 +231,7 @@ PlatformInit(platform *Plat, memory_arena *Memory)
 /*
  *  Poor mans vsync
  */
-bonsai_function void
+link_internal void
 WaitForFrameTime(r64 FrameStartMs, float FPS)
 {
   TIMED_FUNCTION();
@@ -248,7 +248,7 @@ WaitForFrameTime(r64 FrameStartMs, float FPS)
 #endif
 
 #if BONSAI_NETWORK_IMPLEMENTATION
-bonsai_function server_state*
+link_internal server_state*
 ServerInit(memory_arena* Memory)
 {
   server_state* ServerState = Allocate(server_state, Memory, 1);

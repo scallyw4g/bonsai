@@ -13,7 +13,7 @@ ChunkIsGarbage(world_chunk* Chunk)
   return Garbage;
 }
 
-bonsai_function world_chunk*
+link_internal world_chunk*
 AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension Dim)
 {
   u32 MaxLodMeshVerts = POINT_BUFFER_SIZE*3;
@@ -54,7 +54,7 @@ GetWorldChunkHash(world_position P, chunk_dimension VisibleRegion)
   return HashIndex;
 }
 
-bonsai_function void
+link_internal void
 InsertChunkIntoWorld(world *World, world_chunk *Chunk, chunk_dimension VisibleRegion)
 {
   u32 HashIndex = GetWorldChunkHash(Chunk->WorldP, VisibleRegion);
@@ -93,7 +93,7 @@ InsertChunkIntoWorld(world *World, world_chunk *Chunk, chunk_dimension VisibleRe
   return;
 }
 
-bonsai_function world_chunk*
+link_internal world_chunk*
 GetWorldChunkFor(memory_arena *Storage, world *World, world_position P, chunk_dimension VisibleRegion)
 {
   /* TIMED_FUNCTION(); */
@@ -123,7 +123,7 @@ GetNextWorldChunkHash(u32 HashIndex)
   return Result;
 }
 
-bonsai_function void
+link_internal void
 DeallocateMesh(world_chunk* Chunk, mesh_freelist* MeshFreelist, memory_arena* Memory)
 {
   Chunk->Mesh->At = 0;
@@ -141,7 +141,7 @@ DeallocateMesh(world_chunk* Chunk, mesh_freelist* MeshFreelist, memory_arena* Me
   return;
 }
 
-bonsai_function void
+link_internal void
 FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, memory_arena* Memory)
 {
   TIMED_FUNCTION();
@@ -174,7 +174,7 @@ FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, m
   return;
 }
 
-bonsai_function world_chunk*
+link_internal world_chunk*
 GetWorldChunk( world *World, world_position P, chunk_dimension VisibleRegion)
 {
   /* TIMED_FUNCTION(); */
@@ -196,7 +196,7 @@ GetWorldChunk( world *World, world_position P, chunk_dimension VisibleRegion)
   return Result;
 }
 
-bonsai_function void
+link_internal void
 CollectUnusedChunks(world *World, mesh_freelist* MeshFreelist, memory_arena* Memory, chunk_dimension VisibleRegion)
 {
   TIMED_FUNCTION();
@@ -269,7 +269,7 @@ CollectUnusedChunks(world *World, mesh_freelist* MeshFreelist, memory_arena* Mem
   return;
 }
 
-bonsai_function inline b32
+link_internal inline b32
 IsFilledInWorld( world *World, world_chunk *chunk, canonical_position VoxelP, chunk_dimension VisibleRegion)
 {
   /* TIMED_FUNCTION(); */
@@ -298,7 +298,7 @@ NotFilledInWorld( world *World, world_chunk *chunk, canonical_position VoxelP, c
   return Result;
 }
 
-bonsai_function void
+link_internal void
 CopyChunkOffset(world_chunk *Src, voxel_position SrcChunkDim, world_chunk *Dest, voxel_position DestChunkDim, voxel_position Offset)
 {
   TIMED_FUNCTION();
@@ -329,7 +329,7 @@ CopyChunkOffset(world_chunk *Src, voxel_position SrcChunkDim, world_chunk *Dest,
   return;
 }
 
-bonsai_function void
+link_internal void
 InitChunkPlane(s32 zIndex, world_chunk *Chunk, chunk_dimension ChunkDim, u8 Color )
 {
   for ( s32 z = 0; z < ChunkDim.z; ++ z)
@@ -351,7 +351,7 @@ InitChunkPlane(s32 zIndex, world_chunk *Chunk, chunk_dimension ChunkDim, u8 Colo
   return;
 }
 
-bonsai_function u32
+link_internal u32
 InitChunkPerlinPlane(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Dim, u8 ColorIndex, s32 Amplitude, s64 zMin, chunk_dimension WorldChunkDim)
 {
   TIMED_FUNCTION();
@@ -400,7 +400,7 @@ InitChunkPerlinPlane(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimensi
   return ChunkSum;
 }
 
-bonsai_function void
+link_internal void
 InitChunkPerlin(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Dim, u8 ColorIndex, chunk_dimension WorldChunkDim)
 {
   TIMED_FUNCTION();
@@ -448,7 +448,7 @@ InitChunkPerlin(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Di
   return;
 }
 
-bonsai_function void
+link_internal void
 BuildWorldChunkMesh(world_chunk *ReadChunk, chunk_dimension ReadChunkDim,
                     world_chunk *WriteChunk, chunk_dimension WriteChunkDim,
                     untextured_3d_geometry_buffer* DestGeometry)
@@ -563,7 +563,7 @@ BuildWorldChunkMesh(world_chunk *ReadChunk, chunk_dimension ReadChunkDim,
   return;
 }
 
-bonsai_function void
+link_internal void
 BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension WorldChunkDim, untextured_3d_geometry_buffer* DestMesh, chunk_dimension VisibleRegion)
 {
   TIMED_FUNCTION();
@@ -659,7 +659,7 @@ BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension World
   }
 }
 
-bonsai_function void
+link_internal void
 InitializeWorldChunkPerlin(perlin_noise *Noise,
                            chunk_dimension WorldChunkDim,
                            world_chunk *DestChunk,
@@ -709,7 +709,7 @@ InitializeWorldChunkPerlin(perlin_noise *Noise,
   return;
 }
 
-bonsai_function void
+link_internal void
 InitializeWorldChunkPlane(world_chunk *DestChunk, chunk_dimension WorldChunkDim, untextured_3d_geometry_buffer* DestGeometry, memory_arena* TempMemory)
 {
   TIMED_FUNCTION();
@@ -754,7 +754,7 @@ InitializeWorldChunkPlane(world_chunk *DestChunk, chunk_dimension WorldChunkDim,
   return;
 }
 
-bonsai_function inline untextured_3d_geometry_buffer*
+link_internal inline untextured_3d_geometry_buffer*
 GetMeshForChunk(mesh_freelist* Freelist, memory_arena* PermMemory)
 {
   free_mesh* MeshContainer = Unlink_TS(&Freelist->FirstFree);
@@ -778,7 +778,7 @@ GetMeshForChunk(mesh_freelist* Freelist, memory_arena* PermMemory)
   return Result;
 }
 
-bonsai_function void
+link_internal void
 ClipAndDisplaceToMinDim(untextured_3d_geometry_buffer* Buffer, v3 Min, v3 Dim)
 {
   v3 Max = Min+Dim;
@@ -807,7 +807,7 @@ ClipAndDisplaceToMinDim(untextured_3d_geometry_buffer* Buffer, v3 Min, v3 Dim)
   }
 }
 
-bonsai_function void
+link_internal void
 FindEdgeIntersections(point_buffer* Dest, chunk_data* ChunkData, chunk_dimension ChunkDim)
 {
   {
@@ -882,7 +882,7 @@ FindEdgeIntersections(point_buffer* Dest, chunk_data* ChunkData, chunk_dimension
 }
 
 #if 1
-bonsai_function b32
+link_internal b32
 VertsAreCoplanar(voxel_position* V1, voxel_position* V2, chunk_dimension WorldChunkDim)
 {
   b32 Result = ( V1->x == V2->x && (V1->x == 0 || V1->x == WorldChunkDim.x) ) ||
@@ -891,14 +891,14 @@ VertsAreCoplanar(voxel_position* V1, voxel_position* V2, chunk_dimension WorldCh
   return Result;
 }
 
-bonsai_function b32
+link_internal b32
 VertsAreNotCoplanar(voxel_position* V1, voxel_position* V2, chunk_dimension WorldChunkDim)
 {
   b32 Result = !VertsAreCoplanar(V1, V2, WorldChunkDim);
   return Result;
 }
 
-bonsai_function voxel_position*
+link_internal voxel_position*
 GetPrevCoplanarVertex(voxel_position* Query, point_buffer* Points, chunk_dimension WorldChunkDim)
 {
   voxel_position* Result = 0;
@@ -922,7 +922,7 @@ GetPrevCoplanarVertex(voxel_position* Query, point_buffer* Points, chunk_dimensi
   return Result;
 }
 
-bonsai_function voxel_position*
+link_internal voxel_position*
 GetNextCoplanarVertex(voxel_position* Query, point_buffer* Points, chunk_dimension WorldChunkDim)
 {
   voxel_position* Result = 0;
@@ -946,7 +946,7 @@ GetNextCoplanarVertex(voxel_position* Query, point_buffer* Points, chunk_dimensi
   return Result;
 }
 
-bonsai_function voxel_position*
+link_internal voxel_position*
 GetClosestCoplanarPointRelativeTo(voxel_position* Query, voxel_position* Start, voxel_position* OnePastLastVert, v3 RelativePoint, chunk_dimension WorldChunkDim, voxel_position* Skip = 0)
 {
   voxel_position* Result = 0;
@@ -973,7 +973,7 @@ GetClosestCoplanarPointRelativeTo(voxel_position* Query, voxel_position* Start, 
 }
 
 #define MAX_COPLANAR_VERT_COUNT 32
-bonsai_function u32
+link_internal u32
 GetAllCoplanarVerts(voxel_position* Query, point_buffer* Points, voxel_position* Results, chunk_dimension WorldChunkDim)
 {
   u32 Count = 0;
@@ -1002,7 +1002,7 @@ GetAllCoplanarVerts(voxel_position* Query, point_buffer* Points, voxel_position*
 /*   return Result; */
 /* } */
 
-bonsai_function b32
+link_internal b32
 VertsAreColnear(voxel_position* V1, voxel_position* V2, voxel_position* V3)
 {
   r32 a = (r32)V1->x;
@@ -1018,7 +1018,7 @@ VertsAreColnear(voxel_position* V1, voxel_position* V2, voxel_position* V3)
   return Result;
 }
 
-bonsai_function b32
+link_internal b32
 TrianglesAreEqual(triangle* T1, triangle* T2)
 {
   b32 Result = (
@@ -1029,7 +1029,7 @@ TrianglesAreEqual(triangle* T1, triangle* T2)
   return Result;
 }
 
-bonsai_function b32
+link_internal b32
 TriangleIsUniqueInSet(triangle* Query, triangle** Set, u32 SetCount)
 {
   b32 Result = True;
@@ -1054,7 +1054,7 @@ TriangleIsUniqueInSet(triangle* Query, triangle** Set, u32 SetCount)
 
 untextured_3d_geometry_buffer ReserveBufferSpace(untextured_3d_geometry_buffer* Reservation, u32 ElementsToReserve);
 
-bonsai_function voxel_position*
+link_internal voxel_position*
 GetClosestPointRelativeTo(voxel_position* Query, voxel_position* Start, voxel_position* OnePastLastVert, v3 RelativePoint, voxel_position* Skip = 0)
 {
   voxel_position* Result = 0;
@@ -1080,7 +1080,7 @@ GetClosestPointRelativeTo(voxel_position* Query, voxel_position* Start, voxel_po
   return Result;
 }
 
-bonsai_function b32
+link_internal b32
 HasUnfilledNeighbors(s32 Index, world_chunk* Chunk, chunk_dimension ChunkDim)
 {
   TIMED_FUNCTION();
@@ -1131,7 +1131,7 @@ HasUnfilledNeighbors(s32 Index, world_chunk* Chunk, chunk_dimension ChunkDim)
   return Result;
 }
 
-bonsai_function void
+link_internal void
 GetBoundingVoxelsClippedTo(world_chunk* Chunk, chunk_dimension ChunkDim, boundary_voxels* Dest, aabb Clip)
 {
   /* TIMED_FUNCTION(); */
@@ -1187,7 +1187,7 @@ struct plane_computation
 
 // Note(Jesse): Ported from a rust implementation/post at:
 // https://www.ilikebigbits.com/2015_03_04_plane_from_points.html
-bonsai_function plane_computation
+link_internal plane_computation
 BestFittingPlaneFor(boundary_voxels* BoundingPoints)
 {
   plane_computation Result = {};
@@ -1265,7 +1265,7 @@ BestFittingPlaneFor(boundary_voxels* BoundingPoints)
   return Result;
 }
 
-bonsai_function v3
+link_internal v3
 ComputeNormalSVD(boundary_voxels* BoundingPoints, memory_arena* TempMemory)
 {
   m_nxn* X = Allocate_3xN_Matrix(BoundingPoints->At, TempMemory);
@@ -1282,7 +1282,7 @@ ComputeNormalSVD(boundary_voxels* BoundingPoints, memory_arena* TempMemory)
   return Result;
 }
 
-bonsai_function void
+link_internal void
 InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChunk, chunk_dimension WorldChunkDim, s32 Amplititude, s32 zMin)
 {
   TIMED_FUNCTION();
@@ -1571,7 +1571,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
   return;
 }
 
-bonsai_function chunk_dimension
+link_internal chunk_dimension
 ChunkDimension(world_chunk* Chunk)
 {
   chunk_dimension Result = {};
@@ -1584,7 +1584,7 @@ ChunkDimension(world_chunk* Chunk)
   return Result;
 }
 
-bonsai_function void
+link_internal void
 InitializeWorldChunkEmpty(world_chunk *DestChunk)
 {
   TIMED_FUNCTION();

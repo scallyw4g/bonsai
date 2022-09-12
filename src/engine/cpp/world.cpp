@@ -1,4 +1,4 @@
-bonsai_function world*
+link_internal world*
 AllocateAndInitWorld(world_position Center, voxel_position WorldChunkDim, chunk_dimension VisibleRegion)
 {
 

@@ -86,7 +86,7 @@ ViewMatrix(chunk_dimension WorldChunkDim, camera *Camera)
 }
 
 // Note(Jesse): Lifted from the MESA implementation of the GLU library
-bonsai_function b32
+link_internal b32
 Inverse(r32 m[16], r32 invOut[16])
 {
   TIMED_FUNCTION();

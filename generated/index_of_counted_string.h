@@ -1,4 +1,4 @@
-    bonsai_function umm
+    link_internal umm
     IndexOf(counted_string_buffer *Buf, counted_string Element)
     {
       umm Result = Buf->Count;
