@@ -961,6 +961,17 @@ BufferWorldChunk(untextured_3d_geometry_buffer *Dest, world_chunk *Chunk, graphi
   return;
 }
 
+link_internal work_queue_entry
+WorkQueueEntry(work_queue_entry_copy_buffer_set *CopySet)
+{
+  work_queue_entry Result = {
+    .Type = type_work_queue_entry_copy_buffer_set,
+    .work_queue_entry_copy_buffer_set = *CopySet,
+  };
+
+  return Result;
+}
+
 void
 BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, graphics *Graphics, world_position VisibleRegion)
 {
@@ -970,6 +981,7 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
   world_position Min = World->Center - Radius;
   world_position Max = World->Center + Radius + 1;
 
+  work_queue_entry_copy_buffer_set CopySet = {};
   for (s32 z = Min.z; z < Max.z; ++ z)
   {
     for (s32 y = Min.y; y < Max.y; ++ y)
@@ -977,7 +989,7 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
       for (s32 x = Min.x; x < Max.x; ++ x)
       {
         world_position P = World_Position(x,y,z);
-        world_chunk *Chunk = GetWorldChunk( World, P, VisibleRegion);
+        world_chunk *Chunk = GetWorldChunk( World, P, VisibleRegion );
 
         if (Chunk && Chunk->Mesh)
         {
@@ -985,7 +997,25 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
                            MinMaxAABB(GetRenderP(World->ChunkDim, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera),
                                       GetRenderP(World->ChunkDim, Canonical_Position(World->ChunkDim, Chunk->WorldP), Graphics->Camera)));
 
-          BufferWorldChunk(Dest, Chunk, Graphics, &Plat->HighPriority, World->ChunkDim);
+          chunk_data *ChunkData = Chunk->Data;
+          if (ChunkData->Flags == Chunk_MeshComplete && Chunk->Mesh->At)
+          {
+            work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer(Chunk->Mesh, Dest, Chunk, Graphics->Camera, World->ChunkDim);
+
+            CopySet.CopyTargets[CopySet.Count] = CopyJob;
+            ++CopySet.Count;
+
+            if (CopySet.Count == WORK_QUEUE_MAX_COPY_TARGETS)
+            {
+              work_queue_entry Entry = WorkQueueEntry(&CopySet);
+              PushWorkQueueEntry(&Plat->HighPriority, &Entry);
+
+              Clear(&CopySet);
+            }
+          }
+
+
+          /* BufferWorldChunk(Dest, Chunk, Graphics, &Plat->HighPriority, World->ChunkDim); */
         }
         else if (!Chunk)
         {
@@ -994,6 +1024,12 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
         }
       }
     }
+  }
+
+  if (CopySet.Count > 0)
+  {
+    work_queue_entry Entry = WorkQueueEntry(&CopySet);
+    PushWorkQueueEntry(&Plat->HighPriority, &Entry);
   }
 
   return;

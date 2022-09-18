@@ -1616,20 +1616,30 @@ InitializeWorldChunkEmpty(world_chunk *DestChunk)
   return;
 }
 
-inline void
-QueueChunkMeshForCopy(work_queue *Queue, untextured_3d_geometry_buffer* Src, untextured_3d_geometry_buffer* Dest, world_chunk *Chunk, camera* Camera, chunk_dimension WorldChunkDim)
+link_internal work_queue_entry_copy_buffer
+WorkQueueEntryCopyBuffer(untextured_3d_geometry_buffer* Src, untextured_3d_geometry_buffer* Dest, world_chunk *Chunk, camera* Camera, chunk_dimension WorldChunkDim)
 {
   untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Dest, Src->At);
 
-  work_queue_entry Entry = {
-    .Type = type_work_queue_entry_copy_buffer,
-    .work_queue_entry_copy_buffer.Src = Src,
-    .work_queue_entry_copy_buffer.Dest = CopyDest,
-    .work_queue_entry_copy_buffer.Basis = GetRenderP(WorldChunkDim, Chunk->WorldP, Camera),
-  };
+  work_queue_entry_copy_buffer Result = {};
+  Result.Src = Src;
+  Result.Dest = CopyDest;
+  Result.Basis = GetRenderP(WorldChunkDim, Chunk->WorldP, Camera);
 
   Assert(CopyDest.At == 0);
   Assert(CopyDest.End == Src->At);
+
+  return Result;
+}
+
+inline void
+QueueChunkMeshForCopy(work_queue *Queue, untextured_3d_geometry_buffer* Src, untextured_3d_geometry_buffer* Dest, world_chunk *Chunk, camera* Camera, chunk_dimension WorldChunkDim)
+{
+  work_queue_entry Entry = {
+    .Type = type_work_queue_entry_copy_buffer,
+    .work_queue_entry_copy_buffer = WorkQueueEntryCopyBuffer(Src, Dest, Chunk, Camera, WorldChunkDim),
+  };
+
 
   PushWorkQueueEntry(Queue, &Entry);
 

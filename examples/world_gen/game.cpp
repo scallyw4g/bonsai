@@ -36,10 +36,23 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory)
   return Result;
 }
 
+link_internal void
+DoCopyJob(work_queue_entry_copy_buffer *Job)
+{
+  untextured_3d_geometry_buffer* Src = Job->Src;
+  untextured_3d_geometry_buffer* Dest = &Job->Dest;
+  Assert(Src->At <= Dest->End);
+
+  v3 Basis = Job->Basis;
+  BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
+}
+
 BONSAI_API_WORKER_THREAD_CALLBACK()
 {
   switch (Entry->Type)
   {
+    case type_work_queue_entry_noop: { InvalidCodePath(); } break;
+
     case type_work_queue_entry_init_world_chunk:
     {
       world_chunk* DestChunk = (world_chunk*)Entry->work_queue_entry_init_world_chunk.Input;
@@ -63,15 +76,23 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
     case type_work_queue_entry_copy_buffer:
     {
-      untextured_3d_geometry_buffer* Src = Entry->work_queue_entry_copy_buffer.Src;
-      untextured_3d_geometry_buffer* Dest = &Entry->work_queue_entry_copy_buffer.Dest;
-      Assert(Src->At <= Dest->End);
+      work_queue_entry_copy_buffer *CopyJob = SafeAccess(work_queue_entry_copy_buffer, Entry);
+      DoCopyJob(CopyJob);
 
-      v3 Basis = Entry->work_queue_entry_copy_buffer.Basis;
-      BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
     } break;
 
-    InvalidDefaultCase;
+    case type_work_queue_entry_copy_buffer_set:
+    {
+      TIMED_BLOCK("Copy Set");
+      work_queue_entry_copy_buffer_set *CopySet = SafeAccess(work_queue_entry_copy_buffer_set, Entry);
+      for (u32 CopyIndex = 0; CopyIndex < CopySet->Count; ++CopyIndex)
+      {
+        work_queue_entry_copy_buffer CopyJob = CopySet->CopyTargets[CopyIndex];
+        DoCopyJob(&CopyJob);
+      }
+
+      END_BLOCK("Copy Set");
+    } break;
   }
 
   return;
