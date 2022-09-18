@@ -38,6 +38,7 @@ struct game_state;
 #define BONSAI_API_WORKER_THREAD_INIT_CALLBACK() \
   dll_export void BONSAI_API_WORKER_THREAD_INIT_CALLBACK_NAME(BONSAI_API_WORKER_THREAD_INIT_CALLBACK_PARAMS)
 
+
 typedef void (*GameCallback)(void*);
 
 typedef void (*bonsai_main_thread_callback)        (BONSAI_API_MAIN_THREAD_CALLBACK_PARAMS);

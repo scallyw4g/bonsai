@@ -3,6 +3,10 @@
 #include <game_constants.h>
 #include <game_types.h>
 
+/* #define PLATFORM_THREADING_IMPLEMENTATIONS 1 */
+/* #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1 */
+/* #define PLATFORM_GL_IMPLEMENTATIONS 1 */
+/* #define BONSAI_DEBUG_SYSTEM_API 1 */
 
 #define RANDOM_HOTKEY_MASHING 0
 #if RANDOM_HOTKEY_MASHING
@@ -78,6 +82,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   TIMED_FUNCTION();
 
 #if BONSAI_DEBUG_SYSTEM_API
+  if (!GetDebugState) { GetDebugState = (get_debug_state_proc)Plat->GetDebugStateProc; }
   GetDebugState()->Plat = GameState->Plat;
   GetDebugState()->GameState = GameState;
 #endif
@@ -87,10 +92,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   GL.Disable(GL_CULL_FACE);
 
 #if BONSAI_DEBUG_SYSTEM_API
-  if (!GetDebugState)
-  {
-    GetDebugState = GameState->GetDebugState;
-  }
 #endif
 
   world                 *World         = GameState->World;
@@ -128,20 +129,21 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 #if DEBUG_DRAW_WORLD_AXIES
   {
     untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_LINE*3);
-    DEBUG_DrawLine(&CopyDest, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
-    DEBUG_DrawLine(&CopyDest, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
-    DEBUG_DrawLine(&CopyDest, V3(0,0,0), V3(0, 0, 10000), BLUE, 0.5f );
+    DEBUG_DrawLine(&CopyDest, V3(0,0,0), V3(10000, 0, 0), RED, 0.2f );
+    DEBUG_DrawLine(&CopyDest, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.2f );
+    DEBUG_DrawLine(&CopyDest, V3(0,0,0), V3(0, 0, 10000), BLUE, 0.2f );
   }
 #endif
 
   if (Hotkeys->Player_Spawn)
   {
     Unspawn(Player);
-    world_position PlayerChunkP = World_Position(0, 0, -2);
+    world_position PlayerChunkP = World_Position(0, 0, -11);
     SpawnPlayer(GameState->Models, Player,  Canonical_Position(V3(0,0,2), World_Position(0,0,0)), &GameState->Entropy);
     World->Center = PlayerChunkP;
   }
 
+  TIMED_BLOCK("Game Simulation");
   SimulatePlayer(World, Player, Camera, Hotkeys, Plat->dt, g_VisibleRegion);
 
   CollectUnusedChunks(World, &GameState->MeshFreelist, GameState->Memory, g_VisibleRegion);
@@ -150,17 +152,19 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   input* GameInput = &Plat->Input;
 
 #if BONSAI_DEBUG_SYSTEM_API
+#if 0
   if (GetDebugState()->UiGroup.PressedInteractionId != StringHash("GameViewport"))
   {
     GameInput = 0;
   }
 #endif
+#endif
 
   UpdateGameCamera(MouseDelta, GameInput, Player->P, Camera, World->ChunkDim);
-
   SimulateEntities(World, GameState->EntityTable, Plat->dt, g_VisibleRegion);
-
   SimulateAndRenderParticleSystems(GameState->EntityTable, World->ChunkDim, &GpuMap->Buffer, Graphics, Plat->dt);
+
+  END_BLOCK("Game Simulation");
 
   gBuffer->ViewProjection =
     ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *

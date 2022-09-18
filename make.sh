@@ -1,14 +1,14 @@
 #! /bin/bash
 
-BUILD_EVERYTHING=1
+BUILD_EVERYTHING=0
 
 RunPoof=1
 
-BuildExecutables=0
+BuildExecutables=1
 BuildDebugTests=0
 BuildTests=0
 BuildDebugSystem=1
-BuildExamples=0
+BuildExamples=1
 
 RunTests=0
 
@@ -25,6 +25,8 @@ EXAMPLES="$ROOT/examples"
 TESTS="$SRC/tests"
 BIN="$ROOT/bin"
 BIN_TEST="$BIN/tests"
+
+BONSAI_INTERNAL='-D BONSAI_INTERNAL'
 
 
 EXAMPLES_TO_BUILD="
@@ -59,6 +61,7 @@ function BuildExecutables
     clang++                                          \
       $OPTIMIZATION_LEVEL                            \
       $CXX_OPTIONS                                   \
+      $BONSAI_INTERNAL                               \
       $PLATFORM_CXX_OPTIONS                          \
       $PLATFORM_LINKER_OPTIONS                       \
       $PLATFORM_DEFINES                              \
@@ -79,6 +82,7 @@ function BuildDebugTests
     echo -e "$Building $executable"
     clang++                                          \
       $CXX_OPTIONS                                   \
+      $BONSAI_INTERNAL \
       $PLATFORM_CXX_OPTIONS                          \
       $PLATFORM_LINKER_OPTIONS                       \
       $PLATFORM_DEFINES                              \
@@ -100,6 +104,7 @@ function BuildTests
     clang++                                          \
       $OPTIMIZATION_LEVEL                            \
       $CXX_OPTIONS                                   \
+      $BONSAI_INTERNAL \
       $PLATFORM_CXX_OPTIONS                          \
       $PLATFORM_LINKER_OPTIONS                       \
       $PLATFORM_DEFINES                              \
@@ -121,6 +126,7 @@ function BuildDebugSystem
   clang++                                               \
     $OPTIMIZATION_LEVEL                                 \
     $CXX_OPTIONS                                        \
+    $BONSAI_INTERNAL \
     $PLATFORM_CXX_OPTIONS                               \
     $PLATFORM_LINKER_OPTIONS                            \
     $PLATFORM_DEFINES                                   \
@@ -143,6 +149,8 @@ function BuildExamples
     clang++                                                                           \
       $OPTIMIZATION_LEVEL                                                             \
       $CXX_OPTIONS                                                                    \
+      $BONSAI_INTERNAL                                                                \
+      -D BONSAI_DEBUG_SYSTEM_API=1                                                    \
       $PLATFORM_CXX_OPTIONS                                                           \
       $PLATFORM_LINKER_OPTIONS                                                        \
       $PLATFORM_DEFINES                                                               \
@@ -210,6 +218,7 @@ function BuildAllEMCC {
     -msimd128                       \
     -DEMCC=1                        \
     -DWASM=1                        \
+    $BONSAI_INTERNAL \
     -I src                          \
     -I src/bonsai_debug             \
     -I examples                     \
@@ -264,6 +273,7 @@ function RunPoofHelper {
    -I src/                      \
    -I include/                  \
    -D BONSAI_LINUX              \
+   $BONSAI_INTERNAL \
    -o generated                 \
    $1
 

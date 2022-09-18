@@ -209,9 +209,10 @@ InitQueue(work_queue* Queue, memory_arena* Memory, semaphore* Semaphore)
 }
 
 link_internal void
-PlatformInit(platform *Plat, memory_arena *Memory)
+PlatformInit(platform *Plat, memory_arena *Memory, void* GetDebugStateProc)
 {
   Plat->Memory = Memory;
+  Plat->GetDebugStateProc = GetDebugStateProc;
 
   u32 LogicalCoreCount = PlatformGetLogicalCoreCount();
   u32 WorkerThreadCount = GetWorkerThreadCount();
@@ -268,8 +269,8 @@ main()
 {
   Info("Initializing Bonsai");
 
-  if (!SearchForProjectRoot()) { Error("Couldn't find root dir, exiting."); return False; }
-  Info("Found Bonsai Root : %S", CS(GetCwd()) );
+  /* if (!SearchForProjectRoot()) { Error("Couldn't find root dir, exiting."); return False; } */
+  /* Info("Found Bonsai Root : %S", CS(GetCwd()) ); */
 
   platform Plat = {};
   os Os         = {};
@@ -292,7 +293,7 @@ main()
   DEBUG_REGISTER_ARENA(GameMemory);
   DEBUG_REGISTER_ARENA(PlatMemory);
 
-  PlatformInit(&Plat, PlatMemory);
+  PlatformInit(&Plat, PlatMemory, (void*)GetDebugState);
 
 #if BONSAI_INTERNAL
   // debug_recording_state *Debug_RecordingState = Allocate(debug_recording_state, GameMemory, 1);
@@ -339,10 +340,6 @@ main()
     // The game doesn't have to export that function if it doesn't want
     // debugging enabled
   }
-
-
-
-  NotImplemented;
 
   game_state* GameState = GameInit(&Plat, GameMemory, &GL);
   if (!GameState) { Error("Initializing Game State :( "); return False; }
@@ -433,7 +430,9 @@ main()
     /*   if (IsDisconnected(&Plat.Network)) { ConnectToServer(&Plat.Network); } */
     /* END_BLOCK("Network Ops"); */
 
+    TIMED_BLOCK("GameUpdateAndRender");
     BONSAI_API_MAIN_THREAD_CALLBACK_NAME(&Plat, GameState, &Hotkeys);
+    END_BLOCK("GameUpdateAndRender");
 
 
 #if BONSAI_NETWORK_IMPLEMENTATION

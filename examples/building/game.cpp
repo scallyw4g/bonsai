@@ -55,6 +55,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   TIMED_FUNCTION();
 
 #if BONSAI_DEBUG_SYSTEM_API
+  if (!GetDebugState) { GetDebugState = GameState->GetDebugState; }
   GetDebugState()->Plat = GameState->Plat;
   GetDebugState()->GameState = GameState;
 #endif
@@ -63,12 +64,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   GL.Disable(GL_CULL_FACE);
 
-#if BONSAI_DEBUG_SYSTEM_API
-  if (!GetDebugState)
-  {
-    GetDebugState = GameState->GetDebugState;
-  }
-#endif
 
   world                 *World         = GameState->World;
   graphics              *Graphics      = GameState->Graphics;
@@ -127,10 +122,12 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   input* GameInput = &Plat->Input;
 
 #if BONSAI_DEBUG_SYSTEM_API
+#if 0
   if (GetDebugState()->UiGroup.PressedInteractionId != StringHash("GameViewport"))
   {
     GameInput = 0;
   }
+#endif
 #endif
 
   UpdateGameCamera(MouseDelta, GameInput, Player->P, Camera, World->ChunkDim);
