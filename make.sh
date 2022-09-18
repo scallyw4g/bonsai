@@ -2,7 +2,7 @@
 
 BUILD_EVERYTHING=1
 
-RunPoof=0
+RunPoof=1
 
 BuildExecutables=0
 BuildDebugTests=0
