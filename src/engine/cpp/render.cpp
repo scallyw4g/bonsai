@@ -1000,7 +1000,7 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
           chunk_data *ChunkData = Chunk->Data;
           if (ChunkData->Flags == Chunk_MeshComplete && Chunk->Mesh->At)
           {
-            work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer(Chunk->Mesh, Dest, Chunk, Graphics->Camera, World->ChunkDim);
+            work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer(Chunk->LodMesh, Dest, Chunk, Graphics->Camera, World->ChunkDim);
 
             CopySet.CopyTargets[CopySet.Count] = CopyJob;
             ++CopySet.Count;

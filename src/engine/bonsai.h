@@ -103,6 +103,8 @@ enum model_index
   ModelIndex_Projectile,
   ModelIndex_Proton,
 
+  ModelIndex_Level,
+
   ModelIndex_Count,
 };
 

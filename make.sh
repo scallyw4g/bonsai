@@ -32,6 +32,7 @@ BONSAI_INTERNAL='-D BONSAI_INTERNAL'
 EXAMPLES_TO_BUILD="
   $EXAMPLES/world_gen
   $EXAMPLES/building
+  $EXAMPLES/the_wanderer
 "
 
   # $EXAMPLES/animation_test

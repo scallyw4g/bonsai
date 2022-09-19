@@ -21,10 +21,11 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory)
 {
   model *Result = Allocate(model, GameState->Memory, ModelIndex_Count);
 
-  Result[ModelIndex_Enemy] = LoadVoxModel(Memory, &GameState->Heap, ENEMY_MODEL);
-  Result[ModelIndex_Player] = LoadCollada(Memory, &GameState->Heap, "models/two-axis-animated-cube.dae");
-  /* Result[ModelIndex_Player] = LoadVoxModel(Memory, PLAYER_MODEL); */
-  Result[ModelIndex_Loot] = LoadVoxModel(Memory, &GameState->Heap, LOOT_MODEL);
+  /* Result[ModelIndex_Enemy]  = LoadVoxModel(Memory, &GameState->Heap, ENEMY_MODEL); */
+  /* Result[ModelIndex_Player] = LoadCollada(Memory, &GameState->Heap, "models/two-axis-animated-cube.dae"); */
+  Result[ModelIndex_Player] = LoadVoxModel(Memory, &GameState->Heap, "models/chr_old.vox");
+  Result[ModelIndex_Level] = LoadVoxModel(Memory, &GameState->Heap, "../voxel-model/vox/monument/monu10.vox");
+  /* Result[ModelIndex_Loot]   = LoadVoxModel(Memory, &GameState->Heap, LOOT_MODEL); */
 
   /* chunk_dimension ProjectileDim = Chunk_Dimension(1,30,1); */
   /* Result[ModelIndex_Projectile].Chunk = AllocateChunk(Memory, &GameState->Heap, ProjectileDim); */

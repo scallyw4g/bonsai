@@ -3,7 +3,6 @@ link_internal void
 UpdateCameraP(canonical_position NewTarget, camera *Camera, chunk_dimension WorldChunkDim)
 {
   TIMED_FUNCTION();
-  /* test multiline comment */
   if (Camera->DistanceFromTarget <= 0.1f)
   {
     Camera->DistanceFromTarget = 0.1f;
@@ -21,7 +20,7 @@ UpdateCameraP(canonical_position NewTarget, camera *Camera, chunk_dimension Worl
   Camera->ViewingTarget = NewTarget;
 
   Camera->TargetP = Canonicalize(WorldChunkDim, NewTarget - (Camera->Front*Camera->DistanceFromTarget));
-  Camera->CurrentP = Lerp(0.20f, Camera->CurrentP, Camera->TargetP, WorldChunkDim);
+  Camera->CurrentP = Lerp(0.25f, Camera->CurrentP, Camera->TargetP, WorldChunkDim);
 
   Camera->RenderSpacePosition = GetRenderP(WorldChunkDim, Camera->CurrentP, Camera);
 
@@ -70,12 +69,10 @@ UpdateCameraP(canonical_position NewTarget, camera *Camera, chunk_dimension Worl
 
 #endif
 
-  /* thing */
-
+  // TODO(Jesse, id: 128, tags: correctness, robustness, speed): Do culling on these as well?
   /* plane Near; */
   /* plane Far; */
 
-  // TODO(Jesse, id: 128, tags: correctness, robustness, speed): Do culling on these as well?
 
   return;
 }
@@ -83,8 +80,8 @@ UpdateCameraP(canonical_position NewTarget, camera *Camera, chunk_dimension Worl
 inline v2
 GetMouseDelta(platform *Plat)
 {
-  r32 mouseSpeed = -0.001f;
-  v2 Result = Plat->MouseDP * mouseSpeed;
+  r32 DPToWorldModifier = -0.001f;
+  v2 Result = Plat->MouseDP * DPToWorldModifier;
   return Result;
 }
 
