@@ -23,7 +23,7 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory)
 
   /* Result[ModelIndex_Enemy]  = LoadVoxModel(Memory, &GameState->Heap, ENEMY_MODEL); */
   /* Result[ModelIndex_Player] = LoadCollada(Memory, &GameState->Heap, "models/two-axis-animated-cube.dae"); */
-  Result[ModelIndex_Player] = LoadVoxModel(Memory, &GameState->Heap, "models/chr_old.vox");
+  Result[ModelIndex_Player] = LoadVoxModel(Memory, &GameState->Heap, "models/chr_sasami.vox");
   Result[ModelIndex_Level] = LoadVoxModel(Memory, &GameState->Heap, "../voxel-model/vox/monument/monu10.vox");
   /* Result[ModelIndex_Loot]   = LoadVoxModel(Memory, &GameState->Heap, LOOT_MODEL); */
 
@@ -173,13 +173,11 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   v2 MouseDelta = GetMouseDelta(Plat);
   input* GameInput = &Plat->Input;
 
-#if BONSAI_DEBUG_SYSTEM_API
-#if 0
+#if 0 // BONSAI_DEBUG_SYSTEM_API
   if (GetDebugState()->UiGroup.PressedInteractionId != StringHash("GameViewport"))
   {
     GameInput = 0;
   }
-#endif
 #endif
 
   UpdateGameCamera(MouseDelta, GameInput, Player->P, Camera, World->ChunkDim);

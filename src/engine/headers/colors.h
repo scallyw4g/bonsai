@@ -359,22 +359,23 @@ global_variable v4 DefaultPalette[256] = {
 CAssert( ArrayCount( DefaultPalette ) <= (0xff+1) );
 
 inline v4
-GetColorData(u32 ColorIndex, r32 Emission = 0.0f)
+GetColorData(v4 *Src, u32 ColorIndex, r32 Emission = 1.0f)
 {
-  Assert(ColorIndex < ArrayCount(DefaultPalette));
-  v4 Color = DefaultPalette[ColorIndex];
+  Assert(ColorIndex <= 0xff);
+
+  v4 Color = Src[ColorIndex];
   v4 Result = V4(Color.rgb/255.0f, Emission);
   return Result;
 }
 
 inline void
-FillColorArray(u32 ColorIndex, v4 *Array, s32 Count, r32 Emission = 1.0f)
+FillColorArray(u32 ColorIndex, v4 *Dest, v4 *Src, s32 Count, r32 Emission = 1.0f)
 {
   for (s32 Index = 0;
       Index < Count;
       ++Index)
   {
-    Array[Index] = GetColorData(ColorIndex, Emission);
+    Dest[Index] = GetColorData(Src, ColorIndex, Emission);
   }
 
   return;

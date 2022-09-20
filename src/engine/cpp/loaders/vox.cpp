@@ -95,9 +95,8 @@ ReadMainChunk(FILE *File)
 inline chunk_dimension
 ReadSizeChunk(FILE *File, int* byteCounter)
 {
-  // Is throwing the chunk size away okay?
-  ReadInt(File, byteCounter);
-  ReadInt(File, byteCounter);
+  int ChunkContentBytes = ReadInt(File, byteCounter);
+  int ChildChunkCount = ReadInt(File, byteCounter);
 
   int chunkX = ReadInt(File, byteCounter);
   int chunkY = ReadInt(File, byteCounter);
@@ -110,21 +109,18 @@ ReadSizeChunk(FILE *File, int* byteCounter)
 inline int
 ReadPackChunk(FILE *File, int* byteCounter)
 {
-  // Is throwing the chunk size away okay?
-  ReadInt(File, byteCounter);
-  ReadInt(File, byteCounter);
+  int ChunkContentBytes = ReadInt(File, byteCounter);
+  int ChildChunkCount = ReadInt(File, byteCounter);
 
-  int nChunks = ReadInt(File, byteCounter);
-
-  return nChunks;
+  int TotalChunkCount = ReadInt(File, byteCounter);
+  return TotalChunkCount;
 }
 
 inline int
 ReadXYZIChunk(FILE *File, int* byteCounter)
 {
-  // This is the size of teh XYZI chunk .. should always be 1 int (nVoxels)
-  ReadInt(File, byteCounter);
-  ReadInt(File, byteCounter);
+  int ChunkContentBytes = ReadInt(File, byteCounter);
+  int ChildChunkCount = ReadInt(File, byteCounter);
 
   int nVoxels = ReadInt(File, byteCounter);
   return nVoxels;
@@ -133,9 +129,10 @@ ReadXYZIChunk(FILE *File, int* byteCounter)
 model
 LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepath)
 {
+  TIMED_FUNCTION();
+
   model Result = {};
   chunk_data* Chunk = 0;
-  s32 totalChunkBytes = 0;
   chunk_dimension ReportedDim = {};
 
   native_file ModelFile = OpenFile(filepath, "r");
@@ -145,10 +142,12 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
     // Ensure we're dealing with a .vox file
     ReadVoxChunk(ModelFile.Handle);
 
-    totalChunkBytes = ReadMainChunk(ModelFile.Handle);
-    int bytesRemaining = totalChunkBytes;
+    s32 totalChunkBytes = ReadMainChunk(ModelFile.Handle);
+    s32 bytesRemaining = totalChunkBytes;
 
-    // TODO(Jesse, id: 122, tags: robustness, vox_loader) : Actually read all the data!
+    int TotalChunkCount = 1; // Sometimes overwritten if theres a 'PACK' chunk
+    int TotalChunksRead = 0;
+
     while (bytesRemaining > 0)
     {
       Chunk_ID CurrentId = GetHeaderType(ModelFile.Handle, &bytesRemaining);
@@ -156,11 +155,30 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
       {
         case ID_RGBA:
         {
+          int ChunkContentBytes = ReadInt(ModelFile.Handle, &bytesRemaining);
+          int ChildChunkCount = ReadInt(ModelFile.Handle, &bytesRemaining);
+
+          Assert(ChunkContentBytes == 256*4);
+          Assert(ChildChunkCount == 0);
+
+          Result.Palette = (v4*)HeapAllocate(Heap, 256);
+
+          for (u32 PallettIndex = 0; PallettIndex < 256; ++PallettIndex)
+          {
+            u8 R = ReadChar(ModelFile.Handle, &bytesRemaining);
+            u8 G = ReadChar(ModelFile.Handle, &bytesRemaining);
+            u8 B = ReadChar(ModelFile.Handle, &bytesRemaining);
+            u8 A = ReadChar(ModelFile.Handle, &bytesRemaining);
+          }
+
+          /* Assert(bytesRemaining == 4); */
+          /* ReadInt(ModelFile.Handle, &bytesRemaining); */
+
         } break;
 
         case ID_PACK:
         {
-          /* int nChunks = */ ReadPackChunk(ModelFile.Handle, &bytesRemaining);
+          TotalChunkCount = ReadPackChunk(ModelFile.Handle, &bytesRemaining);
         } break;
 
         case ID_SIZE:
@@ -173,13 +191,16 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
 
         case ID_XYZI:
         {
+          ++TotalChunksRead;
+
           s32 ReportedVoxelCount = ReadXYZIChunk(ModelFile.Handle, &bytesRemaining);
+
           s32 ActualVoxelCount = 0;
 
-          // TODO(Jesse, id: 123, tags: potential_bug, vox_loader, set_to_f32_min): Should these 0s be set to s32_MIN??
-          s32 maxX = 0;
-          s32 maxY = 0;
-          s32 maxZ = 0;
+          s32 maxX = s32_MIN;
+          s32 maxY = s32_MIN;
+          s32 maxZ = s32_MIN;
+
           s32 minX = s32_MAX;
           s32 minY = s32_MAX;
           s32 minZ = s32_MAX;
@@ -208,6 +229,10 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
 
               LocalVoxelCache[VoxelCacheIndex] = boundary_voxel(X,Y,Z,W);
               SetFlag(&LocalVoxelCache[VoxelCacheIndex], Voxel_Filled);
+            }
+            else
+            {
+              BUG("Voxel detected outside the dimention it should be in!");
             }
           }
 
@@ -240,14 +265,13 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
           free(LocalVoxelCache);
 
           SetFlag(Chunk, Chunk_Initialized);
-
-          // TODO(Jesse, id: 125, tags: open_question, robustness, vox_loader): Are we really done?
-          goto loaded;
         } break;
 
         InvalidDefaultCase;
       }
     }
+
+    Assert(bytesRemaining == 0);
 
     CloseFile(&ModelFile);
   }
@@ -256,10 +280,10 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
     Error("Couldn't read model file '%s' .", filepath);
   }
 
-loaded:
-
   AllocateMesh(&Result.Mesh, 6*VERTS_PER_FACE*(u32)Volume(Result.Dim), Heap);
-  BuildEntityMesh(Chunk, &Result.Mesh, Result.Dim);
+
+  v4 *ColorPalette = Result.Palette ? Result.Palette : DefaultPalette;
+  BuildEntityMesh(Chunk, &Result.Mesh, ColorPalette, Result.Dim);
 
   return Result;
 }

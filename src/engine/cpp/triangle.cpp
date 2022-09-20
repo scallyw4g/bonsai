@@ -81,7 +81,7 @@ BufferTriangle(untextured_3d_geometry_buffer* Dest, triangle* Triangle, v3 Norma
   VertBuffer[2] = V3(Triangle->Points[2]);
 
   v4 FaceColors[VERTS_PER_FACE];
-  FillColorArray(ColorIndex, FaceColors, VERTS_PER_FACE);
+  FillColorArray(ColorIndex, FaceColors, DefaultPalette, VERTS_PER_FACE);
 
   BufferVertsChecked(
     Dest,
@@ -102,7 +102,7 @@ BufferTriangle(untextured_3d_geometry_buffer *Mesh, v3 *Verts, v3 Normal, u32 Co
   MemCopy((u8*)Verts, (u8*)VertBuffer, 9 * sizeof(r32) );
 
   v4 FaceColors[VERTS_PER_FACE];
-  FillColorArray(ColorIndex, FaceColors, VERTS_PER_FACE);
+  FillColorArray(ColorIndex, FaceColors, DefaultPalette, VERTS_PER_FACE);
 
   BufferVertsChecked(
     Mesh,

@@ -195,7 +195,7 @@ BufferVertsChecked(
 }
 
 void
-BuildEntityMesh(chunk_data *Chunk, untextured_3d_geometry_buffer* Mesh, chunk_dimension Dim)
+BuildEntityMesh(chunk_data *Chunk, untextured_3d_geometry_buffer* Mesh, v4 *ColorPalette, chunk_dimension Dim)
 {
   for ( int z = 0; z < Dim.z ; ++z )
   {
@@ -217,7 +217,7 @@ BuildEntityMesh(chunk_data *Chunk, untextured_3d_geometry_buffer* Mesh, chunk_di
         v3 VertexData[6];
 
         v4 FaceColors[VERTS_PER_FACE];
-        FillColorArray(Voxel->Color, FaceColors, VERTS_PER_FACE);
+        FillColorArray(Voxel->Color, FaceColors, ColorPalette, VERTS_PER_FACE);
 
 
         voxel_position rightVoxel = LocalVoxelP + Voxel_Position(1, 0, 0);
@@ -317,7 +317,7 @@ DrawVoxel( untextured_3d_geometry_buffer *Mesh,
   /* TIMED_FUNCTION(); */
 
   v4 FaceColors[VERTS_PER_FACE];
-  FillColorArray(ColorIndex, FaceColors, VERTS_PER_FACE, Emission);
+  FillColorArray(ColorIndex, FaceColors, DefaultPalette, VERTS_PER_FACE, Emission);
 
   v3 VertexData[6];
 

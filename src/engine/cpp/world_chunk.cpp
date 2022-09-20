@@ -498,7 +498,7 @@ BuildWorldChunkMesh(world_chunk *ReadChunk, chunk_dimension ReadChunkDim,
         v4 FaceColors[VERTS_PER_FACE];
 
         voxel *Voxel = &WriteChunkData->Voxels[GetIndex(CurrentP, WriteChunkDim)];
-        FillColorArray(Voxel->Color, FaceColors, VERTS_PER_FACE);
+        FillColorArray(Voxel->Color, FaceColors, DefaultPalette, VERTS_PER_FACE);
 #if 0
         for (u32 ColorIndex = 0;
             ColorIndex < VERTS_PER_FACE;
@@ -604,7 +604,7 @@ BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension World
         v3 Diameter = V3(1.0f);
         v3 VertexData[VERTS_PER_FACE];
         v4 FaceColors[VERTS_PER_FACE];
-        FillColorArray(Voxel->Color, FaceColors, VERTS_PER_FACE);
+        FillColorArray(Voxel->Color, FaceColors, DefaultPalette, VERTS_PER_FACE);
 
 
         for (u32 ColorIndex = 0;
