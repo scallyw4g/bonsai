@@ -7,8 +7,8 @@ RunPoof=1
 BuildExecutables=1
 BuildDebugTests=0
 BuildTests=0
-BuildDebugSystem=1
-BuildExamples=1
+BuildDebugSystem=0
+BuildExamples=0
 
 RunTests=0
 
@@ -40,10 +40,11 @@ EXAMPLES_TO_BUILD="
   # $EXAMPLES/space_invaders
 
 EXECUTABLES_TO_BUILD="
+  $SRC/tools/asset_packer.cpp
   $SRC/game_loader.cpp
   $SRC/font/ttf.cpp
 "
-  #$SRC/net/server.cpp
+  # $SRC/net/server.cpp
 
 
 # TODO(Jesse, tags: tests, release): The allocation tests crash in release mode because of some
@@ -269,12 +270,12 @@ function RunEntireBuild {
 
 function RunPoofHelper {
 
-   # --log-level LogLevel_Debug \
+   # --log-level LogLevel_Debug   \
   poof                          \
    -I src/                      \
    -I include/                  \
    -D BONSAI_LINUX              \
-   $BONSAI_INTERNAL \
+   $BONSAI_INTERNAL             \
    -o generated                 \
    $1
 
@@ -290,8 +291,10 @@ function RunPoof
   [ -d src/generated ] && rm -Rf src/generated
   [ -d generated ] && rm -Rf generated
 
-  RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp"
-  RunPoofHelper src/bonsai_debug/debug.cpp && echo -e "$Success poofed src/bonsai_debug/debug.cpp"
+  RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
+  RunPoofHelper src/bonsai_debug/debug.cpp && echo -e "$Success poofed src/bonsai_debug/debug.cpp" &
+  RunPoofHelper examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &
+  RunPoofHelper src/tools/asset_packer.cpp && echo -e "$Success poofed src/tools/asset_packer.cpp" &
 
   wait
 

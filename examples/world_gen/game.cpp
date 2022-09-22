@@ -51,48 +51,53 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 {
   switch (Entry->Type)
   {
-    case type_work_queue_entry_noop: { InvalidCodePath(); } break;
+     case type_work_queue_entry_noop: { InvalidCodePath(); } break;
 
-    case type_work_queue_entry_init_world_chunk:
-    {
-      world_chunk* DestChunk = (world_chunk*)Entry->work_queue_entry_init_world_chunk.Input;
-      if (!ChunkIsGarbage(DestChunk))
-      {
-        s32 Amplititude = 100;
-        s32 StartingZDepth = -100;
-        InitializeWorldChunkPerlinPlane( Thread,
-                                         DestChunk,
-                                         WORLD_CHUNK_DIM,
-                                         Amplititude,
-                                         StartingZDepth );
+     case type_work_queue_entry_init_asset:
+     {
+       NotImplemented;
+     } break;
 
-        /* Assert(DestChunk->CurrentTriangles->SurfacePoints->Count == 0); */
-        /* GetBoundingVoxels(DestChunk, DestChunk->CurrentTriangles->SurfacePoints); */
+     case type_work_queue_entry_init_world_chunk:
+     {
+       world_chunk* DestChunk = Entry->work_queue_entry_init_world_chunk.Chunk;
+       if (!ChunkIsGarbage(DestChunk))
+       {
+         s32 Amplititude = 100;
+         s32 StartingZDepth = -100;
+         InitializeWorldChunkPerlinPlane( Thread,
+                                          DestChunk,
+                                          WORLD_CHUNK_DIM,
+                                          Amplititude,
+                                          StartingZDepth );
 
-        /* Triangulate(DestChunk->LodMesh, DestChunk, WORLD_CHUNK_DIM, Thread->TempMemory); */
-        /* Triangulate(DestChunk->LodMesh, DestChunk->CurrentTriangles, DestChunk, Thread->TempMemory); */
-      }
-    } break;
+         /* Assert(DestChunk->CurrentTriangles->SurfacePoints->Count == 0); */
+         /* GetBoundingVoxels(DestChunk, DestChunk->CurrentTriangles->SurfacePoints); */
 
-    case type_work_queue_entry_copy_buffer:
-    {
-      work_queue_entry_copy_buffer *CopyJob = SafeAccess(work_queue_entry_copy_buffer, Entry);
-      DoCopyJob(CopyJob);
+         /* Triangulate(DestChunk->LodMesh, DestChunk, WORLD_CHUNK_DIM, Thread->TempMemory); */
+         /* Triangulate(DestChunk->LodMesh, DestChunk->CurrentTriangles, DestChunk, Thread->TempMemory); */
+       }
+     } break;
 
-    } break;
+     case type_work_queue_entry_copy_buffer:
+     {
+       work_queue_entry_copy_buffer *CopyJob = SafeAccess(work_queue_entry_copy_buffer, Entry);
+       DoCopyJob(CopyJob);
 
-    case type_work_queue_entry_copy_buffer_set:
-    {
-      TIMED_BLOCK("Copy Set");
-      work_queue_entry_copy_buffer_set *CopySet = SafeAccess(work_queue_entry_copy_buffer_set, Entry);
-      for (u32 CopyIndex = 0; CopyIndex < CopySet->Count; ++CopyIndex)
-      {
-        work_queue_entry_copy_buffer CopyJob = CopySet->CopyTargets[CopyIndex];
-        DoCopyJob(&CopyJob);
-      }
+     } break;
 
-      END_BLOCK("Copy Set");
-    } break;
+     case type_work_queue_entry_copy_buffer_set:
+     {
+       TIMED_BLOCK("Copy Set");
+       work_queue_entry_copy_buffer_set *CopySet = SafeAccess(work_queue_entry_copy_buffer_set, Entry);
+       for (u32 CopyIndex = 0; CopyIndex < CopySet->Count; ++CopyIndex)
+       {
+         work_queue_entry_copy_buffer CopyJob = CopySet->CopyTargets[CopyIndex];
+         DoCopyJob(&CopyJob);
+       }
+
+       END_BLOCK("Copy Set");
+     } break;
   }
 
   return;

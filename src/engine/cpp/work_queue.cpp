@@ -24,7 +24,7 @@ QueueChunkForInit(work_queue *Queue, world_chunk *Chunk)
 
   work_queue_entry Entry = {};
 
-  Entry.work_queue_entry_init_world_chunk.Input = (void*)Chunk;
+  Entry.work_queue_entry_init_world_chunk.Chunk = Chunk;
   Entry.Type = type_work_queue_entry_init_world_chunk;
 
   Chunk->Data->Flags = Chunk_Queued;

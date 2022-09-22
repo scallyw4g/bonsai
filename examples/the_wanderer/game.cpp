@@ -16,6 +16,12 @@ static hotkeys StashedHotkeys = {};
 #endif
 
 
+/* scene * */
+/* AllocateGameScene(game_state *GameState, memory_arena *Memory) */
+/* { */
+/*   scene *Result = Allocate(scene, GameState->Memory, 1); */
+/* } */
+
 model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory)
 {
@@ -24,7 +30,7 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory)
   /* Result[ModelIndex_Enemy]  = LoadVoxModel(Memory, &GameState->Heap, ENEMY_MODEL); */
   /* Result[ModelIndex_Player] = LoadCollada(Memory, &GameState->Heap, "models/two-axis-animated-cube.dae"); */
   Result[ModelIndex_Player] = LoadVoxModel(Memory, &GameState->Heap, "models/chr_sasami.vox");
-  Result[ModelIndex_Level] = LoadVoxModel(Memory, &GameState->Heap, "../voxel-model/vox/monument/monu10.vox");
+  /* Result[ModelIndex_Level] = LoadVoxModel(Memory, &GameState->Heap, "../voxel-model/vox/monument/monu10.vox"); */
   /* Result[ModelIndex_Loot]   = LoadVoxModel(Memory, &GameState->Heap, LOOT_MODEL); */
 
   /* chunk_dimension ProjectileDim = Chunk_Dimension(1,30,1); */
@@ -48,38 +54,76 @@ DoCopyJob(work_queue_entry_copy_buffer *Job)
   BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
 }
 
+link_internal void
+InitializeChunkFromScene(thread_local_state *Thread, world_chunk *Chunk, chunk_dimension WorldChunkDim)
+{
+}
+
+struct asset
+{
+  chunk_data *Data;
+  untextured_3d_geometry_buffer *Mesh;
+};
+poof(buffer(asset));
+#include <generated/buffer_asset.h>
+
+link_internal asset_buffer
+FindAssetsForWorldChunk(native_file *Packfile, world_chunk *Chunk)
+{
+  return {};
+}
+
+link_internal b32
+InitChunkAssets(asset_pack *Assets, world_chunk *Chunk)
+{
+  b32 Result = False;
+
+  native_file Packfile = OpenFile(Assets->BAPFilename, "r");
+
+  asset_buffer ChunkAssets = FindAssetsForWorldChunk(&Packfile, Chunk);
+
+  // NOTE(Jesse): For now we only store the mesh data, but in the future we're
+  // going to have other assets (trees, items, ..?) connected to the chunk
+  if (ChunkAssets.Count)
+  {
+    Result = True;
+    Assert(ChunkAssets.Count == 1);
+
+    asset *ChunkAsset = ChunkAssets.Start;
+
+    Chunk->Data = ChunkAsset->Data;
+    Chunk->Mesh = ChunkAsset->Mesh;
+  }
+
+  return Result;
+}
+
 BONSAI_API_WORKER_THREAD_CALLBACK()
 {
   switch (Entry->Type)
   {
     case type_work_queue_entry_noop: { InvalidCodePath(); } break;
 
+    case type_work_queue_entry_init_asset:
+    {
+      work_queue_entry_init_asset *Job = SafeAccess(work_queue_entry_init_asset, Entry);
+
+      world_chunk *Chunk = Job->Chunk;
+      asset_pack *Assets = Job->Assets;
+
+      Ensure(InitChunkAssets( Assets, Chunk ));
+
+    } break;
+
     case type_work_queue_entry_init_world_chunk:
     {
-      world_chunk* DestChunk = (world_chunk*)Entry->work_queue_entry_init_world_chunk.Input;
-      if (!ChunkIsGarbage(DestChunk))
-      {
-        s32 Amplititude = 100;
-        s32 StartingZDepth = -100;
-        InitializeWorldChunkPerlinPlane( Thread,
-                                         DestChunk,
-                                         WORLD_CHUNK_DIM,
-                                         Amplititude,
-                                         StartingZDepth );
-
-        /* Assert(DestChunk->CurrentTriangles->SurfacePoints->Count == 0); */
-        /* GetBoundingVoxels(DestChunk, DestChunk->CurrentTriangles->SurfacePoints); */
-
-        /* Triangulate(DestChunk->LodMesh, DestChunk, WORLD_CHUNK_DIM, Thread->TempMemory); */
-        /* Triangulate(DestChunk->LodMesh, DestChunk->CurrentTriangles, DestChunk, Thread->TempMemory); */
-      }
+      NotImplemented;
     } break;
 
     case type_work_queue_entry_copy_buffer:
     {
       work_queue_entry_copy_buffer *CopyJob = SafeAccess(work_queue_entry_copy_buffer, Entry);
       DoCopyJob(CopyJob);
-
     } break;
 
     case type_work_queue_entry_copy_buffer_set:
@@ -91,9 +135,9 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
         work_queue_entry_copy_buffer CopyJob = CopySet->CopyTargets[CopyIndex];
         DoCopyJob(&CopyJob);
       }
-
       END_BLOCK("Copy Set");
     } break;
+
   }
 
   return;
@@ -255,9 +299,12 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->Heap = InitHeap(Gigabytes(4));
   GameState->World = AllocateAndInitWorld(WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 
+  /* InitWorldFor("../voxel-model/vox/monument/monu10.vox", GameState->World); */
+
   GameState->EntityTable = AllocateEntityTable(GameMemory, TOTAL_ENTITY_COUNT);
 
   GameState->Models = AllocateGameModels(GameState, GameState->Memory);
+  /* GameState->Scene = AllocateGameScene("../voxel-model/vox/monument/monu10.vox"); */
 
   GameState->Player = GetFreeEntity(GameState->EntityTable);
   SpawnPlayer(GameState->Models, GameState->Player, Canonical_Position(Voxel_Position(0), WorldCenter), &GameState->Entropy);

@@ -19,7 +19,7 @@ precision highp sampler3D;
 #define u32 unsigned int
 #define s32 int
 
-#define USE_SSAO_SHADER 1
+#define USE_SSAO_SHADER 0
 #define USE_SHADOW_MAPPING 0
 
 // Note(Jesse): Must match corresponding C++ define

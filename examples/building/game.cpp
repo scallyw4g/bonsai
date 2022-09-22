@@ -19,7 +19,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
   {
     case type_work_queue_entry_init_world_chunk:
     {
-      world_chunk* DestChunk = (world_chunk*)Entry->work_queue_entry_init_world_chunk.Input;
+      world_chunk* DestChunk = Entry->work_queue_entry_init_world_chunk.Chunk;
       if (!ChunkIsGarbage(DestChunk))
       {
         s32 Amplititude = 100;

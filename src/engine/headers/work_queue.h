@@ -13,10 +13,18 @@ struct work_queue_entry_copy_buffer_set
   work_queue_entry_copy_buffer CopyTargets[WORK_QUEUE_MAX_COPY_TARGETS];
 };
 
+struct world_chunk;
 struct work_queue_entry_init_world_chunk
 {
-  void *Input;
+  world_chunk *Chunk;
 };
+
+struct work_queue_entry_init_asset
+{
+  asset_pack *Assets;
+  world_chunk *Chunk;
+};
+
 
 poof(
   d_union work_queue_entry
@@ -24,6 +32,7 @@ poof(
     work_queue_entry_init_world_chunk
     work_queue_entry_copy_buffer
     work_queue_entry_copy_buffer_set
+    work_queue_entry_init_asset
   }
 )
 #include <generated/d_union_work_queue_entry.h>

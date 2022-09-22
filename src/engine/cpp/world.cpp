@@ -1,7 +1,6 @@
 link_internal world*
 AllocateAndInitWorld(world_position Center, voxel_position WorldChunkDim, chunk_dimension VisibleRegion)
 {
-
   memory_arena* Memory = AllocateArena();
   world *World = Allocate(world, Memory, 1 );
   World->Memory = Memory;

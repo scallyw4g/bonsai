@@ -16,4 +16,5 @@
 #include <engine/cpp/world.cpp>
 #include <engine/cpp/physics.cpp>
 #include <engine/cpp/entity.cpp>
+#include <engine/cpp/asset.cpp>
 #include <engine/cpp/asset_loaders.cpp>

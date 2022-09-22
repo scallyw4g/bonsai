@@ -110,7 +110,8 @@ enum model_index
 
 struct voxel
 {
-  voxel_flag Flags;
+  // I wrote some extremely brain-damaged code that needs to be deleted before this is possible
+  voxel_flag Flags; // TODO(Jesse): Change this to a u8.  @make_voxel_2_bytes
   u8 Color;
 };
 
@@ -154,7 +155,7 @@ CAssert(sizeof(chunk_data) == CACHE_LINE_SIZE);
 
 struct model
 {
-  untextured_3d_geometry_buffer Mesh; // 32 bytes
+  untextured_3d_geometry_buffer Mesh;
   chunk_dimension Dim;
   animation Animation;
 
@@ -706,16 +707,26 @@ GetIndexUnsafe(voxel_position P, chunk_dimension Dim)
 }
 
 inline s32
+GetIndex(s32 X, s32 Y, s32 Z, chunk_dimension Dim)
+{
+  Assert(X < Dim.x);
+  Assert(Y < Dim.y);
+  Assert(Z < Dim.z);
+
+  s32 Result = X +
+              (Y*Dim.x) +
+              (Z*Dim.x*Dim.y);
+
+  Assert(Result < Volume(Dim));
+
+  return Result;
+}
+
+inline s32
 GetIndex(voxel_position P, chunk_dimension Dim)
 {
-  s32 i =
-    (P.x) +
-    (P.y*Dim.x) +
-    (P.z*Dim.x*Dim.y);
-
-  Assert(i < Volume(Dim));
-
-  return i;
+  s32 Result = GetIndex(P.x, P.y, P.z, Dim);
+  return Result;
 }
 
 inline s32

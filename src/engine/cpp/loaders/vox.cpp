@@ -126,13 +126,17 @@ ReadXYZIChunk(FILE *File, int* byteCounter)
   return nVoxels;
 }
 
-model
-LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepath)
+struct vox_data
 {
-  TIMED_FUNCTION();
+  chunk_dimension Dim;
+  chunk_data *ChunkData;
+  v4 *Palette;
+};
 
-  model Result = {};
-  chunk_data* Chunk = 0;
+vox_data
+LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepath)
+{
+  vox_data Result = {};
   chunk_dimension ReportedDim = {};
 
   native_file ModelFile = OpenFile(filepath, "r");
@@ -170,10 +174,6 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
             u8 B = ReadChar(ModelFile.Handle, &bytesRemaining);
             u8 A = ReadChar(ModelFile.Handle, &bytesRemaining);
           }
-
-          /* Assert(bytesRemaining == 4); */
-          /* ReadInt(ModelFile.Handle, &bytesRemaining); */
-
         } break;
 
         case ID_PACK:
@@ -183,9 +183,6 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
 
         case ID_SIZE:
         {
-          // MagicaVoxel doesn't follow its own file format very well, or the
-          // exporter is buggy.  Caching the reported dim lets us discard
-          // voxels that are outside the dimension that we think it should be.
           ReportedDim = ReadSizeChunk(ModelFile.Handle, &bytesRemaining);
         } break;
 
@@ -242,14 +239,7 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
 
           chunk_dimension ModelDim = Max - Min;
 
-          /* TODO(Jesse, id: 124, tags: robustness, vox_loader): Load models in
-           * multiple chunks instead of one monolithic one. The storage for
-           * chunks must be as large as the largest chunk we will EVER load,
-           * which should definately not be decided at compile time.
-           */
-          Chunk = AllocateChunk(WorldStorage, ModelDim);
-          Assert(Chunk);
-
+          Result.ChunkData = AllocateChunk(WorldStorage, ModelDim);
           Result.Dim = ModelDim;
 
           for( int VoxelCacheIndex = 0;
@@ -258,13 +248,13 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
           {
             boundary_voxel *Voxel = &LocalVoxelCache[VoxelCacheIndex];
             Voxel->Offset -= Min;
-            s32 Index = GetIndex(Voxel->Offset, Result.Dim);
-            Chunk->Voxels[Index] = Voxel->V;
+            s32 Index = GetIndex(Voxel->Offset, ModelDim);
+            Result.ChunkData->Voxels[Index] = Voxel->V;
           }
 
           free(LocalVoxelCache);
 
-          SetFlag(Chunk, Chunk_Initialized);
+          SetFlag(Result.ChunkData, Chunk_Initialized);
         } break;
 
         InvalidDefaultCase;
@@ -280,6 +270,20 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
     Error("Couldn't read model file '%s' .", filepath);
   }
 
+  return Result;
+}
+
+model
+LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepath)
+{
+  TIMED_FUNCTION();
+
+  model Result = {};
+  vox_data Vox = LoadVoxData(WorldStorage, Heap, filepath);
+  chunk_data *Chunk = Vox.ChunkData;
+
+  // TODO(Jesse): This wastes a shit-ton of memory.  Should probably have a way
+  // of realloc-ing, or sum up how much memory we'll need first?
   AllocateMesh(&Result.Mesh, 6*VERTS_PER_FACE*(u32)Volume(Result.Dim), Heap);
 
   v4 *ColorPalette = Result.Palette ? Result.Palette : DefaultPalette;

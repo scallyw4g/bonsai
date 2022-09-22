@@ -1,3 +1,12 @@
+
+link_internal u32
+Volume(world_chunk* Chunk)
+{
+  u32 Result = Chunk->DimX*Chunk->DimY*Chunk->DimZ;
+  Assert(Result);
+  return Result;
+}
+
 inline b32
 ChunkIsGarbage(world_chunk* Chunk)
 {
@@ -13,13 +22,12 @@ ChunkIsGarbage(world_chunk* Chunk)
   return Garbage;
 }
 
-link_internal world_chunk*
-AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension Dim)
+link_internal void
+AllocateWorldChunk(world_chunk *Result, memory_arena *Storage, world_position WorldP, chunk_dimension Dim)
 {
   u32 MaxLodMeshVerts = POINT_BUFFER_SIZE*3;
-
   /* CAssert(sizeof(world_chunk) == CACHE_LINE_SIZE); */
-  world_chunk *Result = AllocateAlignedProtection(world_chunk, Storage, 1, CACHE_LINE_SIZE, false);
+
   // FIXME(Jesse): The *2048 is an unnecessary debugging crutch .. take it out
   Result->LodMesh     = AllocateMesh(Storage, MaxLodMeshVerts*2048);
   Result->Data        = AllocateChunk(Storage, Dim);
@@ -36,7 +44,13 @@ AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension
   /* Result->CurrentTriangles->SurfacePoints->Points = AllocateAlignedProtection(voxel_position, Storage, Volume(WorldChunkDim), 64, False); */
 
   /* SeedTriangulation(Result->CurrentTriangles, Storage); */
+}
 
+link_internal world_chunk*
+AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension Dim)
+{
+  world_chunk *Result = AllocateAlignedProtection(world_chunk, Storage, 1, CACHE_LINE_SIZE, false);
+  AllocateWorldChunk(Result, Storage, WorldP, Dim);
   return Result;
 }
 
@@ -96,7 +110,6 @@ InsertChunkIntoWorld(world *World, world_chunk *Chunk, chunk_dimension VisibleRe
 link_internal world_chunk*
 GetWorldChunkFor(memory_arena *Storage, world *World, world_position P, chunk_dimension VisibleRegion)
 {
-  /* TIMED_FUNCTION(); */
   world_chunk *Result = 0;
 
   if (World->FreeChunkCount == 0)
@@ -259,12 +272,6 @@ CollectUnusedChunks(world *World, mesh_freelist* MeshFreelist, memory_arena* Mem
       }
     }
   }
-
-  /* Print(ChunksPresentInHashtable); */
-  /* if(ChunksCollected) */
-  /* { */
-  /*   Print(ChunksCollected); */
-  /* } */
 
   return;
 }
@@ -449,9 +456,13 @@ InitChunkPerlin(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Di
 }
 
 link_internal void
-BuildWorldChunkMesh(world_chunk *ReadChunk, chunk_dimension ReadChunkDim,
-                    world_chunk *WriteChunk, chunk_dimension WriteChunkDim,
-                    untextured_3d_geometry_buffer* DestGeometry)
+BuildWorldChunkMesh( world_chunk *ReadChunk,
+                     chunk_dimension ReadChunkDim,
+
+                     world_chunk *WriteChunk,
+                     chunk_dimension WriteChunkDim,
+
+                     untextured_3d_geometry_buffer *DestGeometry )
 {
   TIMED_FUNCTION();
 
@@ -564,7 +575,11 @@ BuildWorldChunkMesh(world_chunk *ReadChunk, chunk_dimension ReadChunkDim,
 }
 
 link_internal void
-BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension WorldChunkDim, untextured_3d_geometry_buffer* DestMesh, chunk_dimension VisibleRegion)
+BuildWorldChunkMesh( world *World,
+                     world_chunk *WorldChunk,
+                     chunk_dimension WorldChunkDim,
+                     untextured_3d_geometry_buffer *DestMesh,
+                     chunk_dimension VisibleRegion )
 {
   TIMED_FUNCTION();
 
