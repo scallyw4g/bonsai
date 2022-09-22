@@ -1,8 +1,9 @@
-#include <engine/cpp/work_queue.cpp>
+#include <engine/cpp/asset.cpp>
 #include <engine/cpp/render_position.cpp>
 #include <engine/cpp/canonical_position.cpp>
 #include <engine/cpp/chunk.cpp>
 #include <engine/cpp/mesh.cpp>
+#include <engine/cpp/work_queue.cpp>
 #include <engine/cpp/threadsafe.cpp>
 #include <engine/cpp/triangle.cpp>
 #include <engine/cpp/camera.cpp>
@@ -16,5 +17,4 @@
 #include <engine/cpp/world.cpp>
 #include <engine/cpp/physics.cpp>
 #include <engine/cpp/entity.cpp>
-#include <engine/cpp/asset.cpp>
 #include <engine/cpp/asset_loaders.cpp>

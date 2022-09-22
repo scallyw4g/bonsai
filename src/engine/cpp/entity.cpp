@@ -1039,7 +1039,7 @@ SimulatePlayer(world* World, entity *Player, camera* Camera, hotkeys *Hotkeys, r
 }
 
 void
-SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension VisibleRegion)
+SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension VisibleRegion, camera *Camera, hotkeys *Hotkeys)
 {
   TIMED_FUNCTION();
 
@@ -1081,6 +1081,7 @@ SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension Vis
 
       case EntityType_Player:
       {
+        SimulatePlayer(World, Entity, Camera, Hotkeys, dt, VisibleRegion);
       } break;
 
       InvalidDefaultCase;

@@ -109,8 +109,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     World->Center = PlayerChunkP;
   }
 
-  SimulatePlayers(GameState, Player, Hotkeys, Plat->dt);
-
   UpdateGameCamera(Plat->MouseDP, &Plat->Input, Player->P, Camera);
 
   SimulateEntities(GameState, Plat->dt);

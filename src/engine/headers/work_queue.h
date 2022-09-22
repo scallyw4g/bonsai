@@ -21,7 +21,6 @@ struct work_queue_entry_init_world_chunk
 
 struct work_queue_entry_init_asset
 {
-  asset_pack *Assets;
   world_chunk *Chunk;
 };
 

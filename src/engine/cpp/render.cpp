@@ -973,7 +973,7 @@ WorkQueueEntry(work_queue_entry_copy_buffer_set *CopySet)
 }
 
 void
-BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, graphics *Graphics, world_position VisibleRegion)
+BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, graphics *Graphics, world_position VisibleRegion, heap_allocator *Heap)
 {
   TIMED_FUNCTION();
 
@@ -997,10 +997,12 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
                            MinMaxAABB(GetRenderP(World->ChunkDim, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera),
                                       GetRenderP(World->ChunkDim, Canonical_Position(World->ChunkDim, Chunk->WorldP), Graphics->Camera)));
 
+#if 1
           chunk_data *ChunkData = Chunk->Data;
           if (ChunkData->Flags == Chunk_MeshComplete && Chunk->Mesh->At)
           {
-            work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer(Chunk->LodMesh, Dest, Chunk, Graphics->Camera, World->ChunkDim);
+            work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer(Chunk->Mesh, Dest, Chunk, Graphics->Camera, World->ChunkDim);
+            /* work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer(Chunk->LodMesh, Dest, Chunk, Graphics->Camera, World->ChunkDim); */
 
             CopySet.CopyTargets[CopySet.Count] = CopyJob;
             ++CopySet.Count;
@@ -1009,18 +1011,18 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
             {
               work_queue_entry Entry = WorkQueueEntry(&CopySet);
               PushWorkQueueEntry(&Plat->HighPriority, &Entry);
-
               Clear(&CopySet);
             }
           }
 
-
-          /* BufferWorldChunk(Dest, Chunk, Graphics, &Plat->HighPriority, World->ChunkDim); */
+#else
+          BufferWorldChunk(Dest, Chunk, Graphics, &Plat->HighPriority, World->ChunkDim);
+#endif
         }
         else if (!Chunk)
         {
           Chunk = GetWorldChunkFor(World->Memory, World, P, VisibleRegion);
-          QueueChunkForInit(&Plat->LowPriority, Chunk);
+          QueueChunkForInit(&Plat->LowPriority, Chunk, Heap);
         }
       }
     }

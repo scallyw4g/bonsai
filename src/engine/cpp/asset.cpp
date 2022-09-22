@@ -1,54 +1,82 @@
 
-enum world_chunk_file_tag
+
+link_internal world_chunk_file_header
+MakeWorldChunkFileHeader(world_chunk *Chunk)
 {
-  WorldChunkFileTag_VOXD = 'DXOV', // Voxel data
+  world_chunk_file_header Result = {};
 
-  WorldChunkFileTag_MESH = 'HSEM', // Mesh data
-  WorldChunkFileTag_VERT = 'TREV',
-  WorldChunkFileTag_COLO = 'OLOC',
-  WorldChunkFileTag_NORM = 'MRON',
-};
+  Result.WHNK = WorldChunkFileTag_WHNK;
+  Result.Version = 1;
+  Result.Checksum = 0xdeadbeef;
 
+  Result.VoxelElementCount = Volume(Chunk);
+  Result.VoxelElementSize  = (u32)sizeof(voxel);
+
+  untextured_3d_geometry_buffer *Mesh = Chunk->Mesh;
+
+  Result.MeshElementCount = Mesh->At;
+
+  Result.VertexElementSize = (u32)sizeof(v3);
+  Result.ColorElementSize  = (u32)sizeof(v4);
+  Result.NormalElementSize = (u32)sizeof(v3);
+
+  return Result;
+}
+
+#if 0
+link_internal _3d_geometry_buffer_sizes
+GetSizeRequirements(untextured_3d_geometry_buffer *Mesh)
+{
+  _3d_geometry_buffer_sizes Result = {};
+  Result.TotalElements = Mesh->At;
+
+  Result.VertElementSize = (u32)sizeof(v3);
+  Result.VertByteCount = Result.TotalElements*Result.VertElementSize;
+
+  Result.ColorElementSize = (u32)sizeof(v4);
+  Result.ColorByteCount = Result.TotalElements*Result.ColorElementSize;
+
+  Result.NormalElementSize = (u32)sizeof(v3);
+  Result.NormalByteCount = Result.TotalElements*Result.NormalElementSize;
+
+  Result.TotalBytes = Result.VertByteCount + Result.ColorByteCount + Result.NormalByteCount;
+
+  return Result;
+}
+#endif
 
 link_internal b32
-Serialize(native_file *File, untextured_3d_geometry_buffer *Mesh)
+Serialize(native_file *File, untextured_3d_geometry_buffer *Mesh, world_chunk_file_header *FileHeader)
 {
   b32 Result = True;
-  u64 TotalElements = Mesh->At;
 
-  u32 VertElementSize = (u32)sizeof(v3);
-  u64 VertByteCount = TotalElements*VertElementSize;
+  u64 TotalElements = FileHeader->MeshElementCount;
 
-  u32 ColorElementSize = (u32)sizeof(v4);
-  u64 ColorByteCount = TotalElements*ColorElementSize;
+  u32 VertElementSize = FileHeader->VertexElementSize;
+  u64 VertByteCount = VertElementSize * TotalElements;
 
-  u32 NormalElementSize = (u32)sizeof(v3);
-  u64 NormalByteCount = TotalElements*NormalElementSize;
+  u32 ColorElementSize = FileHeader->ColorElementSize;
+  u64 ColorByteCount = ColorElementSize * TotalElements;
 
-  u64 TotalBytes = VertByteCount + ColorByteCount + NormalByteCount;
+  u32 NormalElementSize = FileHeader->NormalElementSize;
+  u64 NormalByteCount = NormalElementSize * TotalElements;
 
-  u32 Header = WorldChunkFileTag_MESH;
-  Result &= WriteToFile(File, Header);
-  Result &= WriteToFile(File, TotalElements);
-
-  Header = WorldChunkFileTag_VERT;
-  Result &= WriteToFile(File, Header);
-  Result &= WriteToFile(File, VertElementSize);
+  u32 Tag = WorldChunkFileTag_VERT;
+  Result &= WriteToFile(File, Tag);
   Result &= WriteToFile(File, (u8*)Mesh->Verts, VertByteCount);
 
-  Header = WorldChunkFileTag_COLO;
-  Result &= WriteToFile(File, Header);
-  Result &= WriteToFile(File, ColorElementSize);
+  Tag = WorldChunkFileTag_COLO;
+  Result &= WriteToFile(File, Tag);
   Result &= WriteToFile(File, (u8*)Mesh->Colors, ColorByteCount);
 
-  Header = WorldChunkFileTag_NORM;
-  Result &= WriteToFile(File, Header);
-  Result &= WriteToFile(File, NormalElementSize);
+  Tag = WorldChunkFileTag_NORM;
+  Result &= WriteToFile(File, Tag);
   Result &= WriteToFile(File, (u8*)Mesh->Normals, NormalByteCount);
 
   return Result;
 }
 
+#if 0
 link_internal void*
 ReadBuffer(native_file *File, umm ByteCount, memory_arena *Memory)
 {
@@ -56,12 +84,13 @@ ReadBuffer(native_file *File, umm ByteCount, memory_arena *Memory)
   NotImplemented;
   return Result;
 }
+#endif
 
 link_internal u64
 Read_u64(native_file *File)
 {
   u64 Result = 0;
-  NotImplemented;
+  Ensure(ReadBytesIntoBuffer(File, sizeof(u64), (u8*)&Result));
   return Result;
 }
 
@@ -69,117 +98,117 @@ link_internal u32
 Read_u32(native_file *File)
 {
   u32 Result = 0;
-  NotImplemented;
+  Ensure(ReadBytesIntoBuffer(File, sizeof(u32), (u8*)&Result));
   return Result;
 }
 
 link_internal untextured_3d_geometry_buffer*
-DeserializeMesh(native_file *File, memory_arena *Memory)
+DeserializeMesh(native_file *File, world_chunk_file_header *Header, untextured_3d_geometry_buffer *Result)
 {
-  untextured_3d_geometry_buffer *Result = Allocate(untextured_3d_geometry_buffer, Memory, 1);
+  u64 TotalElements = Header->MeshElementCount;
 
-  u32 Header = Read_u32(File);
-  Assert(Header == WorldChunkFileTag_MESH);
-
-  u32 TotalElements = Read_u32(File);
+  Assert(Result->At == 0);
+  Assert(TotalElements == Result->End);
+  Result->At = Result->End;
 
   //
   // Vertex data
-  Header = Read_u32(File);
-  Assert(Header ==  WorldChunkFileTag_VERT);
+  //
+  u32 Tag = Read_u32(File);
+  Assert(Tag ==  WorldChunkFileTag_VERT);
 
-  u32 VertElementSize = Read_u32(File);
+  u32 VertElementSize = Header->VertexElementSize;
   Assert(VertElementSize == (u32)sizeof(v3));
-  Result->Verts = (v3*)ReadBuffer(File, VertElementSize*TotalElements, Memory);
+  ReadBytesIntoBuffer(File, VertElementSize*TotalElements, (u8*)Result->Verts);
 
   //
   // Color data
-  Header = Read_u32(File);
-  Assert(Header == WorldChunkFileTag_COLO);
+  Tag = Read_u32(File);
+  Assert(Tag == WorldChunkFileTag_COLO);
 
-  u32 ColorElementSize = Read_u32(File);
+  u32 ColorElementSize = Header->ColorElementSize;
   Assert(ColorElementSize == (u32)sizeof(v4));
-  Result->Colors = (v4*)ReadBuffer(File, ColorElementSize*TotalElements, Memory);
+  ReadBytesIntoBuffer(File, ColorElementSize*TotalElements, (u8*)Result->Colors);
 
   //
   // Normal data
-  Header = Read_u32(File);
-  Assert(Header == WorldChunkFileTag_NORM);
+  Tag = Read_u32(File);
+  Assert(Tag == WorldChunkFileTag_NORM);
 
-  u32 NormalElementSize = Read_u32(File);
+  u32 NormalElementSize = Header->NormalElementSize;
   Assert(NormalElementSize == (u32)sizeof(v3));
-  Result->Normals = (v3*)ReadBuffer(File, NormalElementSize*TotalElements, Memory);
+  ReadBytesIntoBuffer(File, NormalElementSize*TotalElements, (u8*)Result->Normals);
+
+  return Result;
+}
+
+global_variable counted_string Global_AssetPrefixPath = CSz("assets");
+
+link_internal world_chunk_file_header
+ReadWorldChunkFileHeader(native_file *File)
+{
+  world_chunk_file_header Result = {};
+
+  Ensure( ReadBytesIntoBuffer(File, sizeof(Result), (u8*)&Result) );
+
+  Assert( Result.WHNK == WorldChunkFileTag_WHNK );
+  Assert( Result.Version == 1 );
+  Assert( Result.Checksum == 0xdeadbeef );
+
+  Assert( Result.VoxelElementSize  == sizeof(voxel) );
+  Assert( Result.VertexElementSize == sizeof(v3) );
+  Assert( Result.ColorElementSize  == sizeof(v4) );
+  Assert( Result.NormalElementSize == sizeof(v3) );
 
   return Result;
 }
 
 link_internal world_chunk *
-DeserializeChunk(counted_string AssetPath, world_position WorldP, memory_arena *Memory)
+DeserializeChunk(const char *zAssetPath,  world_chunk *Result)
 {
-  world_chunk *Result = Allocate(world_chunk, Memory, 1);
-  counted_string Filename = FormatCountedString(TranArena, CSz("%S/world_chunk_%u_%u_%u"), AssetPath, WorldP.x, WorldP.y, WorldP.z);
+  native_file AssetFile = OpenFile(zAssetPath, "r");
+  world_chunk_file_header Header = ReadWorldChunkFileHeader(&AssetFile);
 
-  native_file File = OpenFile(Filename, "w");
+  u32 Tag = Read_u32(&AssetFile);
+  Assert( Tag ==  WorldChunkFileTag_VOXD );
+  umm VoxByteCount = Header.VoxelElementCount * Header.VoxelElementSize;
+  ReadBytesIntoBuffer(&AssetFile, VoxByteCount, (u8*)Result->Data->Voxels);
 
-  u32 WRLD = Read_u32(&File);
-  u32 CHNK = Read_u32(&File);
-  Assert( WRLD == 'DLRW' );
-  Assert( CHNK == 'KNHC' );
-
-  u32 VersionNumber = Read_u32(&File);
-  u64 Checksum = Read_u64(&File);
-  Assert( VersionNumber == 0 );
-  Assert( Checksum == 0xdeadbeef );
-
-
+  if (Header.MeshElementCount)
   {
-    u32 Header = Read_u32(&File);
-    Assert( Header ==  WorldChunkFileTag_VOXD );
-
-    u32 VoxelCount = Read_u32(&File);
-    u32 VoxSize = Read_u32(&File);
-    Assert(VoxSize == (u32)sizeof(voxel));
-
-    u32 VoxByteCount = Read_u32(&File);
-
-    Result->Data->Voxels = (voxel*)ReadBuffer(&File, VoxByteCount, Memory);
+    DeserializeMesh(&AssetFile, &Header, Result->Mesh);
   }
 
-  Result->Mesh = DeserializeMesh(&File, Memory);
-
+  CloseFile(&AssetFile);
   return Result;
 }
 
-link_internal void
+link_internal b32
 SerializeChunk(world_chunk *Chunk, counted_string AssetPath)
 {
+  b32 Result = True;
+
   auto WorldP = Chunk->WorldP;
   counted_string Filename = FormatCountedString(TranArena, CSz("%S/world_chunk_%u_%u_%u"), AssetPath, WorldP.x, WorldP.y, WorldP.z);
 
   native_file File = OpenFile(Filename, "w");
 
-  Ensure( WriteToFile(&File, CSz("WRLDCHNK")) );
+  world_chunk_file_header FileHeader = MakeWorldChunkFileHeader(Chunk);
 
-  u32 VersionNumber = 0;
-  u64 Checksum = 0xdeadbeef;
-  Ensure( WriteToFile(&File, VersionNumber) );
-  Ensure( WriteToFile(&File, Checksum) );
-
+  Result &= WriteToFile(&File, (u8*)&FileHeader, sizeof(FileHeader));
 
   {
-    u32 Header = WorldChunkFileTag_VOXD;
+    u64 VoxByteCount = FileHeader.VoxelElementCount * FileHeader.VoxelElementSize;
 
-    u32 VoxelCount = Volume(Chunk);
-    u32 VoxSize = (u32)sizeof(voxel);
-    u32 VoxByteCount = VoxelCount*VoxSize;
-
-    Ensure( WriteToFile(&File, Header) );
-    Ensure( WriteToFile(&File, VoxelCount) );
-    Ensure( WriteToFile(&File, VoxSize) );
-    Ensure( WriteToFile(&File, (u8*)Chunk->Data->Voxels, VoxByteCount) );
+    u32 Tag = WorldChunkFileTag_VOXD;
+    Result &= WriteToFile(&File, Tag);
+    Result &= WriteToFile(&File, (u8*)Chunk->Data->Voxels, VoxByteCount);
   }
 
-  Ensure( Serialize(&File, Chunk->Mesh) );
+  Result &= Serialize(&File, Chunk->Mesh, &FileHeader);
 
+  CloseFile(&File);
+
+  return Result;
 }
 

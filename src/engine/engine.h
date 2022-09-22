@@ -3,6 +3,7 @@
 #include <engine/headers/canonical_position.h>
 #include <engine/headers/camera.h>
 #include <engine/headers/render.h>
+#include <engine/headers/world_chunk.h>
 #include <engine/headers/asset.h>
 #include <engine/headers/work_queue.h>
 #include <engine/headers/graphics.h>

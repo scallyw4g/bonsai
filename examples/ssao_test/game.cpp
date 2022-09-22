@@ -40,8 +40,6 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Play
   DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(0, 0, 10000), BLUE, 0.5f );
 #endif
 
-  SimulatePlayers(GameState, Player, Hotkeys, Plat->dt);
-
   UpdateCameraP(Plat, World, Player->P, Camera);
 
   SimulateEntities(GameState, Plat->dt);

@@ -170,7 +170,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   }
 
   TIMED_BLOCK("Game Simulation");
-  SimulatePlayer(World, Player, Camera, Hotkeys, Plat->dt, g_VisibleRegion);
 
   CollectUnusedChunks(World, &GameState->MeshFreelist, GameState->Memory, g_VisibleRegion);
 

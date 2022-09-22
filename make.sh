@@ -5,10 +5,11 @@ BUILD_EVERYTHING=0
 RunPoof=1
 
 BuildExecutables=1
-BuildDebugTests=0
-BuildTests=0
+BuildExamples=1
 BuildDebugSystem=0
-BuildExamples=0
+
+BuildTests=0
+BuildDebugTests=0
 
 RunTests=0
 
@@ -30,10 +31,10 @@ BONSAI_INTERNAL='-D BONSAI_INTERNAL'
 
 
 EXAMPLES_TO_BUILD="
-  $EXAMPLES/world_gen
-  $EXAMPLES/building
   $EXAMPLES/the_wanderer
 "
+  # $EXAMPLES/world_gen
+  # $EXAMPLES/building
 
   # $EXAMPLES/animation_test
   # $EXAMPLES/ssao_test
@@ -42,8 +43,8 @@ EXAMPLES_TO_BUILD="
 EXECUTABLES_TO_BUILD="
   $SRC/tools/asset_packer.cpp
   $SRC/game_loader.cpp
-  $SRC/font/ttf.cpp
 "
+  # $SRC/font/ttf.cpp
   # $SRC/net/server.cpp
 
 

@@ -1,9 +1,9 @@
 #include <bonsai_types.h>
-#include <bonsai_stdlib/headers/debug_print.h>
+/* #include <bonsai_stdlib/headers/debug_print.h> */
 
 // TODO(Jesse): Formalize this for fuck sakes
 global_variable chunk_dimension
-WORLD_CHUNK_DIM = Chunk_Dimension(64, 64, 64);
+WORLD_CHUNK_DIM = Chunk_Dimension(32, 32, 32);
 
 s32 main(s32 ArgCount, const char **Args)
 {

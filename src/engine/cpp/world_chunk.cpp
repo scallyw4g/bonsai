@@ -1,12 +1,4 @@
 
-link_internal u32
-Volume(world_chunk* Chunk)
-{
-  u32 Result = Chunk->DimX*Chunk->DimY*Chunk->DimZ;
-  Assert(Result);
-  return Result;
-}
-
 inline b32
 ChunkIsGarbage(world_chunk* Chunk)
 {
@@ -1654,7 +1646,6 @@ QueueChunkMeshForCopy(work_queue *Queue, untextured_3d_geometry_buffer* Src, unt
     .Type = type_work_queue_entry_copy_buffer,
     .work_queue_entry_copy_buffer = WorkQueueEntryCopyBuffer(Src, Dest, Chunk, Camera, WorldChunkDim),
   };
-
 
   PushWorkQueueEntry(Queue, &Entry);
 

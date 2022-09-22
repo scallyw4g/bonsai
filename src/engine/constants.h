@@ -28,7 +28,7 @@
 /* #define PLAYER_MODEL MODELS_PATH"/3x3x3.vox" */
 /* #define PLAYER_MODEL MODELS_PATH"/x-wing.vox" */
 
-#define DEBUG_CHUNK_AABB              0
+#define DEBUG_CHUNK_AABB              1
 #define DEBUG_DRAW_COLLISION_VOLUMES  0
 #define DEBUG_WORLD_GENERATION        0
 #define DEBUG_DRAW_SHADOW_MAP_TEXTURE 1
