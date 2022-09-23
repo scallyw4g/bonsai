@@ -10,8 +10,6 @@ s32 main(s32 ArgCount, const char **Args)
   memory_arena *Memory = AllocateArena(Gigabytes(2));
   heap_allocator Heap = InitHeap(Gigabytes(2));
 
-  /* model TerrainModel = LoadVoxModel(Memory, &Heap, "../voxel-model/vox/monument/monu10.vox"); */
-
   vox_data Vox = LoadVoxData(Memory, &Heap, "../voxel-model/vox/monument/monu10.vox");
 
   s32 xChunkCount = 1 + (Vox.Dim.x / WORLD_CHUNK_DIM.x);
@@ -37,27 +35,18 @@ s32 main(s32 ArgCount, const char **Args)
   // around.  Since this runs offline I don't care about speed, but if we ever
   // run it in the game it's probably worth doing.
 
-/*   s32 GreatestChunkIndex = -1; */
   for (s32 zIndex = 0; zIndex < Vox.Dim.z; ++zIndex)
   {
     for (s32 yIndex = 0; yIndex < Vox.Dim.y; ++yIndex)
     {
       for (s32 xIndex = 0; xIndex < Vox.Dim.x; ++xIndex)
       {
-        s32 SrcIndex = GetIndex(xIndex, yIndex, zIndex, Vox.Dim);
-
         s32 xChunk =  (xIndex / WORLD_CHUNK_DIM.x);
         s32 yChunk =  (yIndex / WORLD_CHUNK_DIM.y);
-        s32 zChunk =  (yIndex / WORLD_CHUNK_DIM.z);
+        s32 zChunk =  (zIndex / WORLD_CHUNK_DIM.z);
 
         s32 ChunkIndex = GetIndex( xChunk, yChunk, zChunk, ChunkCounts);
         Assert(ChunkIndex < (s32)TotalChunkCount);
-
-        /* if (ChunkIndex > GreatestChunkIndex) */
-        /* { */
-        /*   Info("%d", ChunkIndex); */
-        /*   GreatestChunkIndex = ChunkIndex; */
-        /* } */
 
         world_chunk *Chunk = Chunks + ChunkIndex;
 
@@ -65,6 +54,8 @@ s32 main(s32 ArgCount, const char **Args)
         s32 yRel = yIndex % WORLD_CHUNK_DIM.y;
         s32 zRel = zIndex % WORLD_CHUNK_DIM.z;
         s32 DestIndex = GetIndex(xRel, yRel, zRel, WORLD_CHUNK_DIM);
+
+        s32 SrcIndex = GetIndex(xIndex, yIndex, zIndex, Vox.Dim);
 
         Chunk->Data->Voxels[DestIndex] = Vox.ChunkData->Voxels[SrcIndex];
       }
@@ -78,7 +69,12 @@ s32 main(s32 ArgCount, const char **Args)
 
     u32 NumVerts = (u32)Kilobytes(128);
     Chunk->Mesh = AllocateMesh( Memory, NumVerts );
-    BuildEntityMesh(Chunk->Data, Chunk->Mesh, Vox.Palette, WORLD_CHUNK_DIM);
+    v4 *Palette = Vox.Palette ? Vox.Palette : DefaultPalette;
+    if (Vox.Palette == 0)
+    {
+      Warn("No Palette found, using default");
+    }
+    BuildEntityMesh(Chunk->Data, Chunk->Mesh, Palette, WORLD_CHUNK_DIM);
 
     SerializeChunk(Chunk, CSz("assets"));
   }

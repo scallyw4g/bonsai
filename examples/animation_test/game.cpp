@@ -52,7 +52,11 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
     case WorkEntryType_InitWorldChunk:
     {
       world_chunk* Dest = (world_chunk*)Entry->Input;
-      if (!ChunkIsGarbage(Dest))
+      if (ChunkIsGarbage(DestChunk))
+      {
+        Chunk->Data->Flags = Chunk_MeshComplete;
+      }
+       else
       {
         InitializeWorldChunkPerlinPlane(Thread, Dest, 10, -10);
       }

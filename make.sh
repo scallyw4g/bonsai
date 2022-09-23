@@ -6,7 +6,7 @@ RunPoof=1
 
 BuildExecutables=1
 BuildExamples=1
-BuildDebugSystem=0
+BuildDebugSystem=1
 
 BuildTests=0
 BuildDebugTests=0
@@ -16,7 +16,7 @@ RunTests=0
 . scripts/preamble.sh
 . scripts/setup_for_cxx.sh
 
-OPTIMIZATION_LEVEL="-O0"
+OPTIMIZATION_LEVEL="-O2"
 EMCC=0
 
 
@@ -31,8 +31,9 @@ BONSAI_INTERNAL='-D BONSAI_INTERNAL'
 
 
 EXAMPLES_TO_BUILD="
-  $EXAMPLES/the_wanderer
+  $EXAMPLES/asset_picker
 "
+  # $EXAMPLES/the_wanderer
   # $EXAMPLES/world_gen
   # $EXAMPLES/building
 
@@ -294,7 +295,8 @@ function RunPoof
 
   RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
   RunPoofHelper src/bonsai_debug/debug.cpp && echo -e "$Success poofed src/bonsai_debug/debug.cpp" &
-  RunPoofHelper examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &
+  RunPoofHelper examples/asset_picker/game.cpp && echo -e "$Success poofed examples/asset_picker/game.cpp" &
+  # RunPoofHelper examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &
   RunPoofHelper src/tools/asset_packer.cpp && echo -e "$Success poofed src/tools/asset_packer.cpp" &
 
   wait

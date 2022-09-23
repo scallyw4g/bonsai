@@ -3,35 +3,83 @@
 #include <game_constants.h>
 #include <game_types.h>
 
+/* global_variable chunk_dimension */
+/* WORLD_CHUNK_DIM = Chunk_Dimension(32, 32, 32); */
+
+link_internal world_chunk
+DeserializeChunk(const char *zAssetPath, memory_arena *Memory)
+{
+  native_file AssetFile = OpenFile(zAssetPath, "r");
+  world_chunk_file_header Header = ReadWorldChunkFileHeader(&AssetFile);
+
+  world_chunk Result = {};
+  AllocateWorldChunk(&Result, Memory, {}, WORLD_CHUNK_DIM);
+  Result.Mesh = AllocateMesh(Memory, (u32)Header.MeshElementCount);
+
+  u32 Tag = Read_u32(&AssetFile);
+  Assert( Tag ==  WorldChunkFileTag_VOXD );
+  umm VoxByteCount = Header.VoxelElementCount * Header.VoxelElementSize;
+  ReadBytesIntoBuffer(&AssetFile, VoxByteCount, (u8*)Result.Data->Voxels);
+
+  BuildEntityMesh(Result.Data, Result.Mesh, DefaultPalette, WORLD_CHUNK_DIM);
+
+  CloseFile(&AssetFile);
+  return Result;
+}
+
+link_internal model
+LoadWorldChunk(memory_arena *Memory, heap_allocator *Heap, const char* zAssetPath )
+{
+  world_chunk Chunk = DeserializeChunk(zAssetPath, Memory);
+
+  model Result = {};
+
+  Result.Mesh = *Chunk.Mesh;
+  Result.Mesh.At = Result.Mesh.End;
+
+  Result.Dim = Chunk_Dimension(Chunk.DimX, Chunk.DimY, Chunk.DimZ);
+
+  return Result;
+}
+
 model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory)
 {
   model *Result = Allocate(model, GameState->Memory, ModelIndex_Count);
-  Result[ModelIndex_Player] = LoadVoxModel(Memory, &GameState->Heap, "models/chr_sasami.vox");
-  Result[ModelIndex_Proton] = LoadVoxModel(Memory, &GameState->Heap, PROJECTILE_MODEL);
+  Result[ModelIndex_Player] = LoadVoxModel(Memory, &GameState->Heap, "models/chr_old.vox");
+  /* Result[ModelIndex_Player] = LoadVoxModel(Memory, &GameState->Heap, "../voxel-model/vox/monument/monu10.vox"); */
+  /* Result[ModelIndex_Player] = LoadWorldChunk(Memory, &GameState->Heap, "assets/world_chunk_1_0_0"); */
 
   return Result;
 }
 
 BONSAI_API_WORKER_THREAD_CALLBACK()
 {
-  switch (Entry->Type)
+  work_queue_entry_type Type = Entry->Type;
+  switch (Type)
   {
     case type_work_queue_entry_noop: { InvalidCodePath(); } break;
 
     case type_work_queue_entry_init_asset:
     {
-      work_queue_entry_init_asset *Job = SafeAccess(work_queue_entry_init_asset, Entry);
+#if 1
+      volatile work_queue_entry_init_asset *Job = SafeAccess(work_queue_entry_init_asset, Entry);
       world_chunk *Chunk = Job->Chunk;
-      /* const char* zAssetPath = Chunk->zAssetPath; */
 
-      // TODO(Jesse): Improve ergonomics here?
-      counted_string AssetPath = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, Thread->TempMemory);
-      const char* zAssetPath = GetNullTerminated(AssetPath, Thread->TempMemory);
+      if (ChunkIsGarbage(Chunk))
+      {
+        MarkChunkInitialized(Chunk);
+      }
+      else
+      {
+        // TODO(Jesse): Improve ergonomics here?
+        counted_string AssetPath = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, Thread->TempMemory);
+        const char* zAssetPath = GetNullTerminated(AssetPath, Thread->TempMemory);
+        DeserializeChunk(zAssetPath, Chunk);
+        MarkChunkInitialized(Chunk);
+      }
 
-      DeserializeChunk(zAssetPath, Chunk);
-
-      MarkChunkInitialized(Chunk);
+#endif
     } break;
 
     case type_work_queue_entry_init_world_chunk:
@@ -41,25 +89,23 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
     case type_work_queue_entry_copy_buffer:
     {
-      work_queue_entry_copy_buffer *CopyJob = SafeAccess(work_queue_entry_copy_buffer, Entry);
+      volatile work_queue_entry_copy_buffer *CopyJob = SafeAccess(work_queue_entry_copy_buffer, Entry);
       DoCopyJob(CopyJob);
     } break;
 
     case type_work_queue_entry_copy_buffer_set:
     {
       TIMED_BLOCK("Copy Set");
-      work_queue_entry_copy_buffer_set *CopySet = SafeAccess(work_queue_entry_copy_buffer_set, Entry);
+      volatile work_queue_entry_copy_buffer_set *CopySet = SafeAccess(work_queue_entry_copy_buffer_set, Entry);
       for (u32 CopyIndex = 0; CopyIndex < CopySet->Count; ++CopyIndex)
       {
-        work_queue_entry_copy_buffer CopyJob = CopySet->CopyTargets[CopyIndex];
-        DoCopyJob(&CopyJob);
+        volatile work_queue_entry_copy_buffer *CopyJob = CopySet->CopyTargets + CopyIndex;
+        DoCopyJob(CopyJob);
       }
       END_BLOCK("Copy Set");
     } break;
 
   }
-
-  return;
 }
 
 BONSAI_API_MAIN_THREAD_CALLBACK()
@@ -100,8 +146,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   if (Hotkeys->Player_Spawn)
   {
     Unspawn(Player);
-    SpawnPlayer(GameState->Models, Player,  Canonical_Position(V3(0,0,0), World_Position(0,0,0)), &GameState->Entropy);
-    World->Center = World_Position(0, 0, 0);
+    SpawnPlayer(GameState->Models, Player,  Canonical_Position(V3(0,0,0), World_Position(0,0,2)), &GameState->Entropy);
+    World->Center = World_Position(0, 0, 2);
   }
 
   TIMED_BLOCK("Game Simulation");
@@ -155,6 +201,9 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   TIMED_BLOCK("Wait for worker threads");
     for (;;) { if (QueueIsEmpty(&Plat->HighPriority)) { break; } }
+    WaitForWorkerThreads(&Plat->WorkerThreadsWaiting);
+    /* SuspendWorkerThreads(); */
+    /* ResumeWorkerThreads(); */
   END_BLOCK("Wait for worker threads");
 
   TIMED_BLOCK("RenderToScreen");
@@ -188,12 +237,14 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->Plat = Plat;
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
-  world_position WorldCenter = World_Position(0, 0, 0);
+  world_position WorldCenter = World_Position(0, 0, 2);
 
   GameState->Heap = InitHeap(Gigabytes(4));
   GameState->World = AllocateAndInitWorld(WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 
   GameState->EntityTable = AllocateEntityTable(GameMemory, TOTAL_ENTITY_COUNT);
+
+  GameState->Models = AllocateGameModels(GameState, GameMemory);
 
   GameState->Player = GetFreeEntity(GameState->EntityTable);
   SpawnPlayer(GameState->Models, GameState->Player, Canonical_Position(Voxel_Position(0), WorldCenter), &GameState->Entropy);

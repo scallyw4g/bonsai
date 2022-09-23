@@ -20,7 +20,11 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
     case type_work_queue_entry_init_world_chunk:
     {
       world_chunk* DestChunk = Entry->work_queue_entry_init_world_chunk.Chunk;
-      if (!ChunkIsGarbage(DestChunk))
+      if (ChunkIsGarbage(DestChunk))
+      {
+        Chunk->Data->Flags = Chunk_MeshComplete;
+      }
+      else
       {
         s32 Amplititude = 100;
         s32 StartingZDepth = -100;

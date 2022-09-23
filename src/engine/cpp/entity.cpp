@@ -577,7 +577,7 @@ EntityWorldCollision(world *World, entity *Entity, collision_event *Event, chunk
         Chunk->Data->Voxels[i] = {};
         /* ZeroMesh(&Chunk->Data->Mesh); */
         // TODO(Jesse, id: 131, tags: not_implemented): This path needs to call CanBuildWorldChunkMesh or something similar
-        BuildWorldChunkMesh(World, Chunk, World->ChunkDim, Chunk->Mesh, VisibleRegion);
+        /* BuildWorldChunkMesh(World, Chunk, World->ChunkDim, Chunk->Mesh, VisibleRegion); */
       }
       Unspawn(Entity);
     } break;

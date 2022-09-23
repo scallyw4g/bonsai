@@ -37,7 +37,7 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory)
 }
 
 link_internal void
-DoCopyJob(work_queue_entry_copy_buffer *Job)
+DoCopyJob(volatile work_queue_entry_copy_buffer *Job)
 {
   untextured_3d_geometry_buffer* Src = Job->Src;
   untextured_3d_geometry_buffer* Dest = &Job->Dest;
@@ -61,7 +61,11 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
      case type_work_queue_entry_init_world_chunk:
      {
        world_chunk* DestChunk = Entry->work_queue_entry_init_world_chunk.Chunk;
-       if (!ChunkIsGarbage(DestChunk))
+       if (ChunkIsGarbage(DestChunk))
+       {
+         Chunk->Data->Flags = Chunk_MeshComplete;
+       }
+       else
        {
          s32 Amplititude = 100;
          s32 StartingZDepth = -100;
@@ -70,12 +74,6 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                                           WORLD_CHUNK_DIM,
                                           Amplititude,
                                           StartingZDepth );
-
-         /* Assert(DestChunk->CurrentTriangles->SurfacePoints->Count == 0); */
-         /* GetBoundingVoxels(DestChunk, DestChunk->CurrentTriangles->SurfacePoints); */
-
-         /* Triangulate(DestChunk->LodMesh, DestChunk, WORLD_CHUNK_DIM, Thread->TempMemory); */
-         /* Triangulate(DestChunk->LodMesh, DestChunk->CurrentTriangles, DestChunk, Thread->TempMemory); */
        }
      } break;
 

@@ -1,12 +1,12 @@
 struct work_queue_entry_copy_buffer
 {
-  untextured_3d_geometry_buffer* Src;
+  untextured_3d_geometry_buffer *Src;
   untextured_3d_geometry_buffer Dest;
   v3 Basis;
 };
 
 
-#define WORK_QUEUE_MAX_COPY_TARGETS 16
+#define WORK_QUEUE_MAX_COPY_TARGETS 8
 struct work_queue_entry_copy_buffer_set
 {
   u32 Count;

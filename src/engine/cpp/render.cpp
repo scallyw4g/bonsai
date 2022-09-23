@@ -962,6 +962,17 @@ BufferWorldChunk(untextured_3d_geometry_buffer *Dest, world_chunk *Chunk, graphi
 }
 
 link_internal work_queue_entry
+WorkQueueEntry(work_queue_entry_copy_buffer *Job)
+{
+  work_queue_entry Result = {
+    .Type = type_work_queue_entry_copy_buffer,
+    .work_queue_entry_copy_buffer = *Job,
+  };
+
+  return Result;
+}
+
+link_internal work_queue_entry
 WorkQueueEntry(work_queue_entry_copy_buffer_set *CopySet)
 {
   work_queue_entry Result = {
@@ -972,7 +983,7 @@ WorkQueueEntry(work_queue_entry_copy_buffer_set *CopySet)
   return Result;
 }
 
-void
+link_internal void
 BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, graphics *Graphics, world_position VisibleRegion, heap_allocator *Heap)
 {
   TIMED_FUNCTION();
@@ -997,14 +1008,19 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
                            MinMaxAABB(GetRenderP(World->ChunkDim, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera),
                                       GetRenderP(World->ChunkDim, Canonical_Position(World->ChunkDim, Chunk->WorldP), Graphics->Camera)));
 
-#if 1
           chunk_data *ChunkData = Chunk->Data;
           if (ChunkData->Flags == Chunk_MeshComplete && Chunk->Mesh->At)
           {
-            work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer(Chunk->Mesh, Dest, Chunk, Graphics->Camera, World->ChunkDim);
+            work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer( Chunk->Mesh,
+                                                                             Dest,
+                                                                             Chunk,
+                                                                             Graphics->Camera,
+                                                                             World->ChunkDim );
+
             /* work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer(Chunk->LodMesh, Dest, Chunk, Graphics->Camera, World->ChunkDim); */
 
             CopySet.CopyTargets[CopySet.Count] = CopyJob;
+
             ++CopySet.Count;
 
             if (CopySet.Count == WORK_QUEUE_MAX_COPY_TARGETS)
@@ -1012,17 +1028,18 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
               work_queue_entry Entry = WorkQueueEntry(&CopySet);
               PushWorkQueueEntry(&Plat->HighPriority, &Entry);
               Clear(&CopySet);
+              Assert(CopySet.Count == 0);
             }
           }
 
-#else
+#if 0
           BufferWorldChunk(Dest, Chunk, Graphics, &Plat->HighPriority, World->ChunkDim);
 #endif
         }
         else if (!Chunk)
         {
           Chunk = GetWorldChunkFor(World->Memory, World, P, VisibleRegion);
-          QueueChunkForInit(&Plat->LowPriority, Chunk, Heap);
+          QueueChunkForInit(&Plat->LowPriority, Chunk);
         }
       }
     }
@@ -1037,7 +1054,7 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
   return;
 }
 
-void
+link_internal void
 BufferEntities( entity **EntityTable, untextured_3d_geometry_buffer* Dest,
                 graphics *Graphics, world *World, r32 dt)
 {

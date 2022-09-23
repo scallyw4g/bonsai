@@ -1,4 +1,4 @@
-#define DEFAULT_GAME_LIB "./bin/the_wanderer_loadable" PLATFORM_RUNTIME_LIB_EXTENSION
+#define DEFAULT_GAME_LIB "./bin/asset_picker_loadable" PLATFORM_RUNTIME_LIB_EXTENSION
 
 #define PLATFORM_THREADING_IMPLEMENTATIONS 1
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
@@ -64,22 +64,21 @@ DrainQueue(work_queue* Queue, thread_local_state* Thread)
 {
   for (;;)
   {
+    // NOTE(Jesse): Must read and comared DequeueIndex instead of calling QueueIsEmpty
     u32 DequeueIndex = Queue->DequeueIndex;
-    if ( DequeueIndex == Queue->EnqueueIndex)
+    if (DequeueIndex == Queue->EnqueueIndex)
     {
       break;
     }
-    else
+
+    b32 Exchanged = AtomicCompareExchange( &Queue->DequeueIndex,
+                                           (DequeueIndex+1) % WORK_QUEUE_SIZE,
+                                           DequeueIndex );
+    if ( Exchanged )
     {
-      b32 Exchanged = AtomicCompareExchange( &Queue->DequeueIndex,
-                                             (DequeueIndex+1) % WORK_QUEUE_SIZE,
-                                             DequeueIndex );
-      if ( Exchanged )
-      {
-        work_queue_entry* Entry = Queue->Entries + DequeueIndex;
-        BONSAI_API_WORKER_THREAD_CALLBACK_NAME(Entry, Thread);
-        Entry->Type = type_work_queue_entry_noop;
-      }
+      volatile work_queue_entry* Entry = Queue->Entries + DequeueIndex;
+      BONSAI_API_WORKER_THREAD_CALLBACK_NAME(Entry, Thread);
+      /* Entry->Type = type_work_queue_entry_noop; */
     }
   }
 }
@@ -97,43 +96,38 @@ ThreadMain(void *Input)
   {
     WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
 
-    if (MainThreadBlocksWorkerThreads)
-    {
-      AtomicIncrement(&WorkerThreadsWaiting);
-      while(MainThreadBlocksWorkerThreads);
-      AtomicDecrement(&WorkerThreadsWaiting);
-    }
-
     // This is a pointer to a single semaphore for all queues, so only sleeping
     // on one is sufficient, and equal to sleeping on all, because they all
     // point to the same semaphore
-    ThreadSleep( ThreadParams->HighPriority->GlobalQueueSemaphore );
+    ThreadSleep( ThreadParams->HighPriority->GlobalQueueSemaphore, ThreadParams->WorkerThreadsWaiting );
 
-    DrainQueue(ThreadParams->HighPriority, &Thread);
+    DrainQueue( ThreadParams->HighPriority, &Thread );
 
-    // TODO(Jesse) call DrainQueue here?!  We should also escape this loop if
-    // anything shows up on the high-priority queue.. so maybe that's why I
-    // left this as-is.
+    /* ThreadSleep( ThreadParams->HighPriority->GlobalQueueSemaphore, ThreadParams->WorkerThreadsWaiting ); */
+
     work_queue* LowPriority = ThreadParams->LowPriority;
     for (;;)
     {
-      u32 DequeueIndex = LowPriority->DequeueIndex;
-      if ( DequeueIndex == LowPriority->EnqueueIndex ||
-           !QueueIsEmpty(ThreadParams->HighPriority) )
+      b32 HighPriorityJobs = QueueIsEmpty(ThreadParams->HighPriority) == false;
+      if ( HighPriorityJobs )
       {
         break;
       }
-      else
+
+      // NOTE(Jesse): Must read and comared DequeueIndex instead of calling QueueIsEmpty
+      u32 DequeueIndex = LowPriority->DequeueIndex;
+      if (DequeueIndex == LowPriority->EnqueueIndex)
       {
-        b32 Exchanged = AtomicCompareExchange( &LowPriority->DequeueIndex,
-                                               (DequeueIndex+1) % WORK_QUEUE_SIZE,
-                                               DequeueIndex );
-        if ( Exchanged )
-        {
-          work_queue_entry* Entry = LowPriority->Entries + DequeueIndex;
-          BONSAI_API_WORKER_THREAD_CALLBACK_NAME(Entry, &Thread);
-          Entry->Type = type_work_queue_entry_noop;
-        }
+        break;
+      }
+
+      b32 Exchanged = AtomicCompareExchange( &LowPriority->DequeueIndex,
+                                              (DequeueIndex+1) % WORK_QUEUE_SIZE,
+                                              DequeueIndex );
+      if ( Exchanged )
+      {
+        volatile work_queue_entry *Entry = LowPriority->Entries+DequeueIndex;
+        BONSAI_API_WORKER_THREAD_CALLBACK_NAME(Entry, &Thread);
       }
     }
 
@@ -189,6 +183,7 @@ PlatformLaunchWorkerThreads(platform *Plat, bonsai_worker_thread_init_callback W
     Params->LowPriority = &Plat->LowPriority;
     Params->InitProc = WorkerThreadInit;
     Params->GameState = GameState;
+    Params->WorkerThreadsWaiting = &Plat->WorkerThreadsWaiting;
 
     PlatformCreateThread( ThreadMain, Params );
   }
@@ -380,15 +375,13 @@ main()
 #if !EMCC
     if ( LibIsNew(DEFAULT_GAME_LIB, &LastGameLibTime) )
     {
-      SuspendWorkerThreads();
+      WaitForWorkerThreads(&Plat.WorkerThreadsWaiting);
 
       CloseLibrary(GameLib);
       GameLib = OpenLibrary(DEFAULT_GAME_LIB);
 
       BONSAI_API_MAIN_THREAD_CALLBACK_NAME = (bonsai_main_thread_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_MAIN_THREAD_CALLBACK_NAME));
       BONSAI_API_WORKER_THREAD_CALLBACK_NAME = (bonsai_worker_thread_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_WORKER_THREAD_CALLBACK_NAME));
-
-      ResumeWorkerThreads();
     }
 #endif
 
@@ -454,7 +447,7 @@ main()
   }
 
   Info("Shutting Down");
-  Terminate(&Os);
+  Terminate(&Os, &Plat);
   Info("Exiting");
 
   return True;

@@ -88,7 +88,7 @@ struct model
   chunk_dimension Dim;
   animation Animation;
 
-  v4 *Palette; // Optional
+  /* v4 *Palette; // Optional */
 };
 
 struct physics
@@ -260,7 +260,7 @@ struct world
 {
   world_chunk **ChunkHash;
   world_chunk **FreeChunks;
-  int FreeChunkCount;
+  umm FreeChunkCount;
 
   // This is the number of chunks in xyz we're going to update and render
   chunk_dimension VisibleRegion;

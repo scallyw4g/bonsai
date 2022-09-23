@@ -6,9 +6,8 @@
 #define WORLD_Y V3(0,1,0)
 #define WORLD_Z V3(0,0,1)
 
-#define WORLD_HASH_SIZE_MULTIPLIER (8)
-#define WORLD_HASH_SIZE (16384*WORLD_HASH_SIZE_MULTIPLIER) // TODO(Jesse, id: 78, tags: robustness, over_allocation): How should we actually set this?
-#define FREELIST_SIZE (65536)
+#define WORLD_HASH_SIZE (Kilobytes(4)) // TODO(Jesse): Should this be dynamic?
+#define FREELIST_SIZE (Kilobytes(64))
 
 #define NOISE_FREQUENCY (100L)
 

@@ -163,8 +163,8 @@ ReadWorldChunkFileHeader(native_file *File)
   return Result;
 }
 
-link_internal world_chunk *
-DeserializeChunk(const char *zAssetPath,  world_chunk *Result)
+link_internal void
+DeserializeChunk(const char *zAssetPath, world_chunk *Result)
 {
   native_file AssetFile = OpenFile(zAssetPath, "r");
   world_chunk_file_header Header = ReadWorldChunkFileHeader(&AssetFile);
@@ -180,7 +180,6 @@ DeserializeChunk(const char *zAssetPath,  world_chunk *Result)
   }
 
   CloseFile(&AssetFile);
-  return Result;
 }
 
 link_internal b32

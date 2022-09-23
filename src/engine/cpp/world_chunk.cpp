@@ -2,15 +2,10 @@
 inline b32
 ChunkIsGarbage(world_chunk* Chunk)
 {
+  // NOTE(Jesse): Should only ever be called from workers to check if the main
+  // thread has marked the chunk garbage
   Assert( IsSet(Chunk, Chunk_Queued) );
-  b32 Garbage = False;
-
-  if (IsSet(Chunk, Chunk_Garbage))
-  {
-    Chunk->Data->Flags = Chunk_Collected;
-    Garbage = True;
-  }
-
+  b32 Garbage = IsSet(Chunk, Chunk_Garbage);
   return Garbage;
 }
 
@@ -49,12 +44,22 @@ AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension
 inline u32
 GetWorldChunkHash(world_position P, chunk_dimension VisibleRegion)
 {
-  /* TIMED_FUNCTION(); */
+  world_position NonzeroP = P + World_Position(1);
 
-  u32 I =
-    (u32)((P.x) +
-         (P.y*VisibleRegion.x) +
-         (P.z*VisibleRegion.x*VisibleRegion.y)) * WORLD_HASH_SIZE_MULTIPLIER;
+
+  s32 WHS_Factor = (s32)WORLD_HASH_SIZE / (Volume(VisibleRegion))+1;
+
+  s32 xFactor = WHS_Factor;
+  s32 yFactor = WHS_Factor * VisibleRegion.x;
+  s32 zFactor = WHS_Factor * VisibleRegion.x * VisibleRegion.y;
+
+  s32 Ix = (P.x * xFactor);
+
+  s32 Iy = (P.y * yFactor);
+
+  s32 Iz = (P.z * zFactor);
+
+  u32 I = u32(Ix ^ Iy ^ Iz);
 
   u32 HashIndex = I % WORLD_HASH_SIZE;
   return HashIndex;
@@ -90,7 +95,8 @@ InsertChunkIntoWorld(world *World, world_chunk *Chunk, chunk_dimension VisibleRe
 #if BONSAI_INTERNAL
   if (BucketsSkipped > 10)
   {
-    Warn("%u Collisions encountered while inserting chunk into world", BucketsSkipped);
+    world_position P = Chunk->WorldP;
+    Warn("%u Collisions encountered while inserting chunk into world for chunk (%d, %d, %d) with hash value (%u)", BucketsSkipped, P.x, P.y, P.z, StartingHashIndex);
   }
 #endif
 
@@ -150,7 +156,7 @@ link_internal void
 FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, memory_arena* Memory)
 {
   TIMED_FUNCTION();
-  if ( Chunk->Data->Flags == Chunk_MeshComplete || Chunk->Data->Flags == Chunk_Collected  )
+  if ( Chunk->Data->Flags == Chunk_MeshComplete )
   {
     Chunk->LodMesh_Complete = False;
     Chunk->LodMesh->At = 0;
@@ -162,12 +168,6 @@ FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, m
 
     Assert(World->FreeChunkCount < FREELIST_SIZE);
     World->FreeChunks[World->FreeChunkCount++] = Chunk;
-
-
-    // FIXME(Jesse): Memoryleak
-    /* SeedTriangulation( Chunk->CurrentTriangles, Memory); */
-    /* Chunk->CurrentTriangles->CurrentPointIndex = 0; */
-    /* Chunk->CurrentTriangles->SurfacePoints->End = 0; */
 
     ZeroChunk(Chunk->Data);
   }
@@ -182,7 +182,7 @@ FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, m
 link_internal world_chunk*
 GetWorldChunk( world *World, world_position P, chunk_dimension VisibleRegion)
 {
-  /* TIMED_FUNCTION(); */
+  TIMED_FUNCTION();
   u32 HashIndex = GetWorldChunkHash(P, VisibleRegion);
 
   world_chunk *Result = World->ChunkHash[HashIndex];
@@ -216,51 +216,17 @@ CollectUnusedChunks(world *World, mesh_freelist* MeshFreelist, memory_arena* Mem
       ChunkIndex < WORLD_HASH_SIZE;
       ++ChunkIndex)
   {
-    world_chunk** Chunk = WorldHash + ChunkIndex;
+    world_chunk **ChunkBucket = WorldHash + ChunkIndex;
+    world_chunk *Chunk = *ChunkBucket;
 
-    if (*Chunk)
+    if (Chunk)
     {
-      world_position ChunkP = (*Chunk)->WorldP;
+      world_position ChunkP = Chunk->WorldP;
 
-      if ( !(ChunkP >= Min && ChunkP <= Max) )
+      if (!(ChunkP >= Min && ChunkP <= Max))
       {
-
-        if ( (*Chunk)->Data->Flags == Chunk_MeshComplete || (*Chunk)->Data->Flags == Chunk_Collected  )
-        {
-          /* ++ChunksCollected; */
-          u32 ChunkHash = GetWorldChunkHash(ChunkP, VisibleRegion);
-
-          world_chunk** Current = WorldHash + ChunkHash;
-          u32 CurrentHash = GetWorldChunkHash((*Current)->WorldP, VisibleRegion);
-
-          world_chunk** LastChunkOfSameHashValue = WorldHash + ChunkHash;
-
-          while (*Current && GetWorldChunkHash((*Current)->WorldP, VisibleRegion) == ChunkHash)
-          {
-            LastChunkOfSameHashValue = Current;
-            CurrentHash = GetNextWorldChunkHash(CurrentHash);
-            Current = WorldHash + CurrentHash;
-          }
-
-          if (Chunk == LastChunkOfSameHashValue)
-          {
-            FreeWorldChunk(World, *Chunk, MeshFreelist, Memory);
-            *Chunk = 0;
-          }
-          else
-          {
-            FreeWorldChunk(World, *Chunk, MeshFreelist, Memory);
-            *Chunk = *LastChunkOfSameHashValue;
-            *LastChunkOfSameHashValue = 0;
-            --ChunkIndex;
-          }
-
-        }
-        else
-        {
-          SetFlag(*Chunk, Chunk_Garbage);
-        }
-
+        FreeWorldChunk(World, Chunk, MeshFreelist, Memory);
+        *ChunkBucket = 0;
       }
     }
   }
@@ -268,6 +234,7 @@ CollectUnusedChunks(world *World, mesh_freelist* MeshFreelist, memory_arena* Mem
   return;
 }
 
+#if 0
 link_internal inline b32
 IsFilledInWorld( world *World, world_chunk *chunk, canonical_position VoxelP, chunk_dimension VisibleRegion)
 {
@@ -296,6 +263,7 @@ NotFilledInWorld( world *World, world_chunk *chunk, canonical_position VoxelP, c
   b32 Result = !(IsFilledInWorld(World, chunk, VoxelP, VisibleRegion));
   return Result;
 }
+#endif
 
 link_internal void
 CopyChunkOffset(world_chunk *Src, voxel_position SrcChunkDim, world_chunk *Dest, voxel_position DestChunkDim, voxel_position Offset)
@@ -566,6 +534,7 @@ BuildWorldChunkMesh( world_chunk *ReadChunk,
   return;
 }
 
+#if 0
 link_internal void
 BuildWorldChunkMesh( world *World,
                      world_chunk *WorldChunk,
@@ -665,22 +634,18 @@ BuildWorldChunkMesh( world *World,
     }
   }
 }
+#endif
 
 link_internal void
-InitializeWorldChunkPerlin(perlin_noise *Noise,
-                           chunk_dimension WorldChunkDim,
-                           world_chunk *DestChunk,
-                           untextured_3d_geometry_buffer* DestGeometry,
-                           memory_arena *TempMemory)
+InitializeWorldChunkPerlin( perlin_noise *Noise,
+                            chunk_dimension WorldChunkDim,
+                            world_chunk *DestChunk,
+                            untextured_3d_geometry_buffer* DestGeometry,
+                            memory_arena *TempMemory )
 {
   TIMED_FUNCTION();
   Assert( IsSet(DestChunk, Chunk_Queued) );
-
-  if (IsSet(DestChunk, Chunk_Garbage))
-  {
-    DestChunk->Data->Flags = Chunk_Collected;
-    return;
-  }
+  /* Assert( !IsSet(DestChunk, Chunk_Garbage) ) */
 
 #if 0
   // Don't blow out the Flags for this chunk or risk assertions on other
@@ -721,12 +686,7 @@ InitializeWorldChunkPlane(world_chunk *DestChunk, chunk_dimension WorldChunkDim,
 {
   TIMED_FUNCTION();
   Assert( IsSet(DestChunk, Chunk_Queued) );
-
-  if (IsSet(DestChunk, Chunk_Garbage))
-  {
-    DestChunk->Data->Flags = Chunk_Collected;
-    return;
-  }
+  /* Assert(!IsSet(DestChunk, Chunk_Garbage)); */
 
 #if 0
   // Don't blow out the Flags for this chunk or risk assertions on other
@@ -1596,12 +1556,7 @@ InitializeWorldChunkEmpty(world_chunk *DestChunk)
 {
   TIMED_FUNCTION();
   Assert( IsSet(DestChunk, Chunk_Queued) );
-
-  if (IsSet(DestChunk, Chunk_Garbage))
-  {
-    DestChunk->Data->Flags = Chunk_Collected;
-    return;
-  }
+  /* Assert(!IsSet(DestChunk, Chunk_Garbage)); */
 
 #if 0
   // Don't blow out the Flags for this chunk or risk assertions on other
@@ -1651,3 +1606,50 @@ QueueChunkMeshForCopy(work_queue *Queue, untextured_3d_geometry_buffer* Src, unt
 
   return;
 }
+
+// TODO(Jesse)(hack): Remove this!
+global_variable memory_arena Global_PermMemory = {};
+
+inline void
+QueueChunkForInit(work_queue *Queue, world_chunk *Chunk)
+{
+  TIMED_FUNCTION();
+  Assert( Chunk->Data->Flags == Chunk_Uninitialized );
+
+  work_queue_entry Entry = {};
+
+  counted_string AssetFilename = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, TranArena);
+
+  native_file AssetFile = OpenFile(AssetFilename, "r");
+  if (AssetFile.Handle)
+  {
+    Info("Queueing Chunk for asset-backed init (%p)", Chunk);
+    world_chunk_file_header Header = ReadWorldChunkFileHeader(&AssetFile);
+    CloseFile(&AssetFile);
+
+    if (Header.MeshElementCount)
+    {
+      Assert(Chunk->Mesh == 0);
+      Chunk->Mesh = AllocateMesh(&Global_PermMemory, (u32)Header.MeshElementCount);
+    }
+
+    Entry.Type = type_work_queue_entry_init_asset;
+    work_queue_entry_init_asset *Job = SafeAccess(work_queue_entry_init_asset, &Entry);
+
+    Job->Chunk = Chunk;
+    /* Job->File = File; */
+  }
+  else
+  {
+    Info("Queueing Chunk for regural init (%p)", Chunk);
+    Entry.Type = type_work_queue_entry_init_world_chunk;
+    work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, &Entry);
+    Job->Chunk = Chunk;
+  }
+
+  Chunk->Data->Flags = Chunk_Queued;
+  PushWorkQueueEntry(Queue, &Entry);
+
+  return;
+}
+

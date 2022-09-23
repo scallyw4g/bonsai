@@ -1,3 +1,25 @@
+# Sept 23 2022 - 3:00 - closed - Reordered a load that had to be where it was
+* concurrency
+* dumb
+I knowingly (for no real reason) fucked around with the thread-queue code and
+introduced a bug.  Don't play with fire kids.
+
+# Sept 22 2022 - 4:00 - closed - Typo when parsing .vox data into asset packfile
+* concurrency
+Getting some weird flashing/flickering when doing CopySet, but not when doing
+the regular mt copy job.. very confusing.
+
+Turned out that the main thread was only waiting till the thread queue was
+empty, not until all jobs were finished.  This caused the workers to overwrite
+random stuff from the next frame while they finished.  Only presented when the
+jobs were long-running enough to interfere with the next frame.
+
+# Sept 22 2022 - 1:00 - closed - Typo when parsing .vox data into asset packfile
+* copy-pasta
+I had a typo that took me quite a while to find.  It presented as if I had a
+memory bug, so that's what I was looking for, but it was actually that I
+copy-pasta'd a yIndex when it should have been zIndex
+
 # Jan 17 2022 - 3:00 - closed - Passing a string with format chars to FormatCountedString_
 * va_args
 * format_string

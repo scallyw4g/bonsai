@@ -6,8 +6,8 @@ enum chunk_flag
   Chunk_Queued          = 1 << 2,
   Chunk_MeshComplete    = 1 << 3,
   Chunk_GpuMeshComplete = 1 << 4,
+
   Chunk_Garbage         = 1 << 5,
-  Chunk_Collected       = 1 << 6,
 };
 
 enum voxel_flag
@@ -117,4 +117,10 @@ MarkChunkInitialized(world_chunk *Chunk)
     Assert(Chunk->Mesh->At == Chunk->Mesh->End);
   }
 }
+
+link_internal void
+AllocateWorldChunk(world_chunk *Result, memory_arena *Storage, world_position WorldP, chunk_dimension Dim);
+
+link_internal world_chunk*
+AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension Dim);
 

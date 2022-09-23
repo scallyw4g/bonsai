@@ -167,13 +167,18 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
 
           Result.Palette = (v4*)HeapAllocate(Heap, 256);
 
-          for (u32 PallettIndex = 0; PallettIndex < 256; ++PallettIndex)
+          for (u32 PaletteIndex = 0; PaletteIndex < 256; ++PaletteIndex)
           {
             u8 R = ReadChar(ModelFile.Handle, &bytesRemaining);
             u8 G = ReadChar(ModelFile.Handle, &bytesRemaining);
             u8 B = ReadChar(ModelFile.Handle, &bytesRemaining);
             u8 A = ReadChar(ModelFile.Handle, &bytesRemaining);
+            Result.Palette[PaletteIndex].r = R;
+            Result.Palette[PaletteIndex].g = G;
+            Result.Palette[PaletteIndex].b = B;
+            Result.Palette[PaletteIndex].a = A;
           }
+
         } break;
 
         case ID_PACK:
@@ -280,14 +285,17 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
 
   model Result = {};
   vox_data Vox = LoadVoxData(WorldStorage, Heap, filepath);
-  chunk_data *Chunk = Vox.ChunkData;
+  chunk_data *ChunkData = Vox.ChunkData;
+
+  Result.Dim = Vox.Dim;
 
   // TODO(Jesse): This wastes a shit-ton of memory.  Should probably have a way
   // of realloc-ing, or sum up how much memory we'll need first?
-  AllocateMesh(&Result.Mesh, 6*VERTS_PER_FACE*(u32)Volume(Result.Dim), Heap);
+  AllocateMesh(&Result.Mesh, 6*VERTS_PER_FACE*(u32)Volume(Result.Dim), WorldStorage);
 
-  v4 *ColorPalette = Result.Palette ? Result.Palette : DefaultPalette;
-  BuildEntityMesh(Chunk, &Result.Mesh, ColorPalette, Result.Dim);
+  v4 *ColorPalette = Vox.Palette ? Vox.Palette : DefaultPalette;
+  BuildEntityMesh(ChunkData, &Result.Mesh, ColorPalette, Result.Dim);
 
   return Result;
 }
+
