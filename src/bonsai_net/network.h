@@ -261,3 +261,17 @@ FlushIncomingMessages(network_connection *Connection, T *Message)
 
   return AnyMessagesRead;
 }
+
+link_internal server_state*
+ServerInit(memory_arena* Memory)
+{
+  server_state* ServerState = Allocate(server_state, Memory, 1);
+  for (u32 ClientIndex = 0;
+      ClientIndex < MAX_CLIENTS;
+      ++ClientIndex)
+  {
+    ServerState->Clients[ClientIndex].Id = -1;
+  }
+
+  return ServerState;
+}

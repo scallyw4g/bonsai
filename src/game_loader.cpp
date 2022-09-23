@@ -71,12 +71,12 @@ ThreadMain(void *Input)
 
   for (;;)
   {
-    WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
-
     // This is a pointer to a single semaphore for all queues, so only sleeping
     // on one is sufficient, and equal to sleeping on all, because they all
     // point to the same semaphore
     ThreadSleep( ThreadParams->HighPriority->GlobalQueueSemaphore, ThreadParams->WorkerThreadsWaiting );
+
+    WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
 
     DrainQueue( ThreadParams->HighPriority, &Thread, GameWorkerThreadCallback );
 
@@ -111,39 +111,6 @@ ThreadMain(void *Input)
     Ensure(RewindArena(Thread.TempMemory));
   }
 }
-
-#if 0
-// TODO(Jesse): Move to counted_string.h
-link_internal b32
-StrMatch(char *Str1, char *Str2)
-{
-  char *Haystack = Str1;
-  char *Needle = Str2;
-
-  b32 Matched = True;
-  while( Matched && *Haystack && *Needle )
-  {
-    Matched = *(Haystack++) == *(Needle++);
-  }
-
-  b32 Result = (*Needle == 0 && Matched);
-  return Result;
-}
-
-// TODO(Jesse): Move to counted_string.h
-link_internal b32
-StrStr(char *Str1, char *Str2)
-{
-  b32 Result = StrMatch(Str1, Str2);
-
-  while(*Str1++)
-  {
-    Result |= StrMatch(Str1, Str2);
-  }
-
-  return Result;
-}
-#endif
 
 link_internal void
 PlatformLaunchWorkerThreads(platform *Plat, bonsai_worker_thread_init_callback WorkerThreadInit, bonsai_worker_thread_callback WorkerThreadCallback, game_state* GameState)
@@ -198,44 +165,12 @@ PlatformInit(platform *Plat, memory_arena *Memory, void* GetDebugStateProc)
 
   Plat->Threads = Allocate(thread_startup_params, Plat->Memory, WorkerThreadCount);
 
-  return;
-}
-
-#if 0
-/*
- *  Poor mans vsync
- */
-link_internal void
-WaitForFrameTime(r64 FrameStartMs, float FPS)
-{
-  TIMED_FUNCTION();
-  r64 frameTarget = (1.0/(r64)FPS)*1000.0f;
-  r64 FrameTime = GetHighPrecisionClock() - FrameStartMs;
-
-  while (FrameTime < frameTarget)
-  {
-    FrameTime = GetHighPrecisionClock() - FrameStartMs;
-  }
-
-  return;
-}
-#endif
-
 #if BONSAI_NETWORK_IMPLEMENTATION
-link_internal server_state*
-ServerInit(memory_arena* Memory)
-{
-  server_state* ServerState = Allocate(server_state, Memory, 1);
-  for (u32 ClientIndex = 0;
-      ClientIndex < MAX_CLIENTS;
-      ++ClientIndex)
-  {
-    ServerState->Clients[ClientIndex].Id = -1;
-  }
-
-  return ServerState;
-}
+  Plat->ServerState = ServerInit(GameMemory);
 #endif
+
+  return;
+}
 
 
 s32
@@ -326,11 +261,6 @@ main()
 
   PlatformLaunchWorkerThreads(&Plat, WorkerThreadInitCallback, GameWorkerThreadCallback, GameState);
 
-#if BONSAI_NETWORK_IMPLEMENTATION
-  server_state* ServerState = ServerInit(GameMemory);
-  Assert(ServerState);
-#endif
-
   thread_local_state MainThread = DefaultThreadLocalState();
 
 
@@ -353,8 +283,8 @@ main()
 
     if (Plat.dt > 0.1f)
     {
-      Warn("DT exceeded 100ms, truncating.");
-      Plat.dt = 0.1f;
+      Warn("DT exceeded 100ms, truncating to 33.33ms");
+      Plat.dt = 0.03333f;
     }
 
     TIMED_BLOCK("Frame Preamble");
@@ -428,13 +358,11 @@ main()
       WaitForWorkerThreads(&Plat.WorkerThreadsWaiting);
     END_BLOCK("WaitForWorkerThreads");
 
-#if BONSAI_NETWORK_IMPLEMENTATION
-    DEBUG_FRAME_END(&Plat, ServerState);
-#else
-    DEBUG_FRAME_END(&Plat, 0);
-#endif
+    DEBUG_FRAME_END(&Plat);
 
-    GameRenderCallback(&Plat);
+    TIMED_BLOCK("Render");
+      GameRenderCallback(&Plat);
+    END_BLOCK();
 
     Ensure(RewindArena(TranArena));
 
