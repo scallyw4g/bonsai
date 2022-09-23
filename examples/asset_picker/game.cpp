@@ -1,3 +1,5 @@
+#define PLATFORM_GL_IMPLEMENTATIONS 1
+
 #include <bonsai_types.h>
 
 #include <game_constants.h>
@@ -121,13 +123,13 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   GL.Disable(GL_CULL_FACE);
 
   world                 *World         = GameState->World;
-  graphics              *Graphics      = GameState->Graphics;
+  graphics              *Graphics      = Plat->Graphics;
   g_buffer_render_group *gBuffer       = Graphics->gBuffer;
-  ao_render_group       *AoGroup       = Graphics->AoGroup;
   camera                *Camera        = Graphics->Camera;
 
-  Graphics->GpuBufferWriteIndex = (Graphics->GpuBufferWriteIndex + 1) % 2;
-  gpu_mapped_element_buffer* GpuMap = Graphics->GpuBuffers + Graphics->GpuBufferWriteIndex;
+  Graphics->Lights->Count = 0;
+
+  gpu_mapped_element_buffer* GpuMap = GetCurrentGpuMap(Graphics);
 
   MapGpuElementBuffer(GpuMap);
 
@@ -199,20 +201,15 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   }
 #endif
 
-  TIMED_BLOCK("Wait for worker threads");
-    for (;;) { if (QueueIsEmpty(&Plat->HighPriority)) { break; } }
+#if 0
+    TIMED_BLOCK("DrainQueue");
+      DrainQueue(&Plat->HighPriority, Thread, BONSAI_API_WORKER_THREAD_CALLBACK_NAME);
+    END_BLOCK("DrainQueue");
+
     WaitForWorkerThreads(&Plat->WorkerThreadsWaiting);
-    /* SuspendWorkerThreads(); */
-    /* ResumeWorkerThreads(); */
-  END_BLOCK("Wait for worker threads");
 
-  TIMED_BLOCK("RenderToScreen");
-    RenderGBuffer(GpuMap, Graphics);
-    RenderAoTexture(AoGroup);
-    DrawGBufferToFullscreenQuad(Plat, Graphics);
-  END_BLOCK("RenderToScreen");
-
-  Graphics->Lights->Count = 0;
+    /* Renderer_FrameEnd(Plat); */
+#endif
 
   return;
 }
@@ -221,20 +218,26 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 {
   Info("Initializing Game");
 
+
+  game_state *GameState = Allocate(game_state, GameMemory, 1);
+
   GL = *GL_in;
+  GameState->Plat = Plat;
+  GameState->Memory = GameMemory;
+
+
 
   Init_Global_QuadVertexBuffer();
 
-  game_state *GameState = Allocate(game_state, GameMemory, 1);
-  GameState->Memory = GameMemory;
   GameState->Noise = perlin_noise(DEBUG_NOISE_SEED);
 
-  GameState->Graphics = GraphicsInit(GameMemory);
-  if (!GameState->Graphics) { Error("Initializing Graphics"); return False; }
+  GameState->Plat->Graphics = GraphicsInit(GameMemory);
 
-  StandardCamera(GameState->Graphics->Camera, 10000.0f, 300.0f);
+  /* GameState->Graphics = GraphicsInit(GameMemory); */
+  /* if (!GameState->Graphics) { Error("Initializing Graphics"); return False; } */
 
-  GameState->Plat = Plat;
+  StandardCamera(Plat->Graphics->Camera, 10000.0f, 300.0f);
+
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
   world_position WorldCenter = World_Position(0, 0, 2);

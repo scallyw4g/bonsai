@@ -95,6 +95,13 @@ DrawGBufferToFullscreenQuad( platform *Plat, graphics *Graphics)
   return;
 }
 
+link_internal gpu_mapped_element_buffer *
+GetCurrentGpuMap(graphics *Graphics)
+{
+  gpu_mapped_element_buffer* GpuMap = Graphics->GpuBuffers + Graphics->GpuBufferWriteIndex;
+  return GpuMap;
+}
+
 #if 0
 void
 DEBUG_CopyTextureToMemory(texture *Texture)
@@ -202,6 +209,25 @@ RenderPostBuffer(post_processing_group *PostGroup, untextured_3d_geometry_buffer
   GL.DisableVertexAttribArray(0);
   GL.DisableVertexAttribArray(1);
 }
+
+#if PLATFORM_GL_IMPLEMENTATIONS
+link_external void
+Renderer_FrameEnd(platform *Plat)
+{
+  graphics        *Graphics = Plat->Graphics;
+  ao_render_group *AoGroup  = Graphics->AoGroup;
+  gpu_mapped_element_buffer *GpuMap = GetCurrentGpuMap(Graphics);
+
+  RenderGBuffer(GpuMap, Graphics);
+  RenderAoTexture(AoGroup);
+  DrawGBufferToFullscreenQuad(Plat, Graphics);
+
+  BonsaiSwapBuffers(Plat->Os);
+
+  Graphics->GpuBufferWriteIndex = (Graphics->GpuBufferWriteIndex + 1) % 2;
+}
+#endif
+
 
 inline bool
 IsRightChunkBoundary( chunk_dimension ChunkDim, int idx )

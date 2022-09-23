@@ -12,7 +12,6 @@
 
 
 global_variable s64 LastGameLibTime;
-global_variable bonsai_worker_thread_callback BONSAI_API_WORKER_THREAD_CALLBACK_NAME;
 
 #include <sys/stat.h>
 
@@ -59,34 +58,12 @@ DefaultThreadLocalState()
   return Thread;
 }
 
-link_internal void
-DrainQueue(work_queue* Queue, thread_local_state* Thread)
-{
-  for (;;)
-  {
-    // NOTE(Jesse): Must read and comared DequeueIndex instead of calling QueueIsEmpty
-    u32 DequeueIndex = Queue->DequeueIndex;
-    if (DequeueIndex == Queue->EnqueueIndex)
-    {
-      break;
-    }
-
-    b32 Exchanged = AtomicCompareExchange( &Queue->DequeueIndex,
-                                           (DequeueIndex+1) % WORK_QUEUE_SIZE,
-                                           DequeueIndex );
-    if ( Exchanged )
-    {
-      volatile work_queue_entry* Entry = Queue->Entries + DequeueIndex;
-      BONSAI_API_WORKER_THREAD_CALLBACK_NAME(Entry, Thread);
-      /* Entry->Type = type_work_queue_entry_noop; */
-    }
-  }
-}
-
 link_internal THREAD_MAIN_RETURN
 ThreadMain(void *Input)
 {
   thread_startup_params *ThreadParams = (thread_startup_params *)Input;
+  bonsai_worker_thread_callback GameWorkerThreadCallback = ThreadParams->GameWorkerThreadCallback;
+
   DEBUG_REGISTER_THREAD(ThreadParams->Self.ThreadIndex);
 
   thread_local_state Thread = DefaultThreadLocalState();
@@ -101,7 +78,7 @@ ThreadMain(void *Input)
     // point to the same semaphore
     ThreadSleep( ThreadParams->HighPriority->GlobalQueueSemaphore, ThreadParams->WorkerThreadsWaiting );
 
-    DrainQueue( ThreadParams->HighPriority, &Thread );
+    DrainQueue( ThreadParams->HighPriority, &Thread, GameWorkerThreadCallback );
 
     /* ThreadSleep( ThreadParams->HighPriority->GlobalQueueSemaphore, ThreadParams->WorkerThreadsWaiting ); */
 
@@ -127,7 +104,7 @@ ThreadMain(void *Input)
       if ( Exchanged )
       {
         volatile work_queue_entry *Entry = LowPriority->Entries+DequeueIndex;
-        BONSAI_API_WORKER_THREAD_CALLBACK_NAME(Entry, &Thread);
+        GameWorkerThreadCallback(Entry, &Thread);
       }
     }
 
@@ -169,7 +146,7 @@ StrStr(char *Str1, char *Str2)
 #endif
 
 link_internal void
-PlatformLaunchWorkerThreads(platform *Plat, bonsai_worker_thread_init_callback WorkerThreadInit, game_state* GameState)
+PlatformLaunchWorkerThreads(platform *Plat, bonsai_worker_thread_init_callback WorkerThreadInit, bonsai_worker_thread_callback WorkerThreadCallback, game_state* GameState)
 {
   u32 WorkerThreadCount = GetWorkerThreadCount();
 
@@ -182,6 +159,7 @@ PlatformLaunchWorkerThreads(platform *Plat, bonsai_worker_thread_init_callback W
     Params->HighPriority = &Plat->HighPriority;
     Params->LowPriority = &Plat->LowPriority;
     Params->InitProc = WorkerThreadInit;
+    Params->GameWorkerThreadCallback = WorkerThreadCallback;
     Params->GameState = GameState;
     Params->WorkerThreadsWaiting = &Plat->WorkerThreadsWaiting;
 
@@ -259,6 +237,7 @@ ServerInit(memory_arena* Memory)
 }
 #endif
 
+
 s32
 main()
 {
@@ -269,6 +248,8 @@ main()
 
   platform Plat = {};
   os Os         = {};
+
+  Plat.Os = &Os;
 
   if (!OpenAndInitializeWindow(&Os, &Plat)) { Error("Initializing Window :( "); return False; }
   Assert(Os.GlContext);
@@ -306,14 +287,18 @@ main()
   shared_lib GameLib = OpenLibrary(DEFAULT_GAME_LIB);
   if (!GameLib) { Error("Loading GameLib :( "); return False; }
 
-  bonsai_main_thread_init_callback GameInit = (bonsai_main_thread_init_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_MAIN_THREAD_INIT_CALLBACK_NAME));
-  if (!GameInit) { Error("Retreiving " STRINGIZE(BONSAI_API_MAIN_THREAD_INIT_CALLBACK_NAME) " from Game Lib :( "); return False; }
+  bonsai_main_thread_init_callback GameInitCallback = (bonsai_main_thread_init_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_MAIN_THREAD_INIT_CALLBACK_NAME));
+  if (!GameInitCallback) { Error("Retreiving " STRINGIZE(BONSAI_API_MAIN_THREAD_INIT_CALLBACK_NAME) " from Game Lib :( "); return False; }
 
-  bonsai_main_thread_callback BONSAI_API_MAIN_THREAD_CALLBACK_NAME = (bonsai_main_thread_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_MAIN_THREAD_CALLBACK_NAME));
-  if (!BONSAI_API_MAIN_THREAD_CALLBACK_NAME) { Error("Retreiving " STRINGIZE(BONSAI_API_MAIN_THREAD_CALLBACK_NAME) " from Game Lib :( "); return False; }
+  bonsai_main_thread_callback GameMainThreadCallback = (bonsai_main_thread_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_MAIN_THREAD_CALLBACK_NAME));
+  if (!GameMainThreadCallback) { Error("Retreiving " STRINGIZE(BONSAI_API_MAIN_THREAD_CALLBACK_NAME) " from Game Lib :( "); return False; }
 
-  BONSAI_API_WORKER_THREAD_CALLBACK_NAME = (bonsai_worker_thread_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_WORKER_THREAD_CALLBACK_NAME) );
-  if (!BONSAI_API_WORKER_THREAD_CALLBACK_NAME) { Error("Retreiving " STRINGIZE(BONSAI_API_WORKER_THREAD_CALLBACK_NAME) " from Game Lib :( "); return False; }
+  bonsai_worker_thread_callback GameWorkerThreadCallback = (bonsai_worker_thread_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_WORKER_THREAD_CALLBACK_NAME) );
+  if (!GameWorkerThreadCallback) { Error("Retreiving " STRINGIZE(BONSAI_API_WORKER_THREAD_CALLBACK_NAME) " from Game Lib :( "); return False; }
+
+  bonsai_render_callback GameRenderCallback = (bonsai_render_callback)GetProcFromLib(GameLib, STRINGIZE(Renderer_FrameEnd) );
+  if (!GameRenderCallback) { Error("Retreiving " STRINGIZE(Renderer_FrameEnd) " from Game Lib :( "); return False; }
+
 
   bonsai_worker_thread_init_callback WorkerThreadInitCallback = (bonsai_worker_thread_init_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_WORKER_THREAD_INIT_CALLBACK_NAME));
 
@@ -336,15 +321,18 @@ main()
     // debugging enabled
   }
 
-  game_state* GameState = GameInit(&Plat, GameMemory, &GL);
+  game_state* GameState = GameInitCallback(&Plat, GameMemory, &GL);
   if (!GameState) { Error("Initializing Game State :( "); return False; }
 
-  PlatformLaunchWorkerThreads(&Plat, WorkerThreadInitCallback, GameState);
+  PlatformLaunchWorkerThreads(&Plat, WorkerThreadInitCallback, GameWorkerThreadCallback, GameState);
 
 #if BONSAI_NETWORK_IMPLEMENTATION
   server_state* ServerState = ServerInit(GameMemory);
   Assert(ServerState);
 #endif
+
+  thread_local_state MainThread = DefaultThreadLocalState();
+
 
   /*
    *  Main Game loop
@@ -355,6 +343,11 @@ main()
   r64 RealDt = 0;
   while ( Os.ContinueRunning )
   {
+    r64 CurrentMS = GetHighPrecisionClock();
+    RealDt = (CurrentMS - LastMs)/1000.0;
+    LastMs = CurrentMS;
+    Plat.dt = (r32)RealDt;
+
     ClearClickedFlags(&Plat.Input);
     DEBUG_FRAME_BEGIN(&Hotkeys);
 
@@ -380,8 +373,8 @@ main()
       CloseLibrary(GameLib);
       GameLib = OpenLibrary(DEFAULT_GAME_LIB);
 
-      BONSAI_API_MAIN_THREAD_CALLBACK_NAME = (bonsai_main_thread_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_MAIN_THREAD_CALLBACK_NAME));
-      BONSAI_API_WORKER_THREAD_CALLBACK_NAME = (bonsai_worker_thread_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_WORKER_THREAD_CALLBACK_NAME));
+      GameMainThreadCallback = (bonsai_main_thread_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_MAIN_THREAD_CALLBACK_NAME));
+      GameWorkerThreadCallback = (bonsai_worker_thread_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_WORKER_THREAD_CALLBACK_NAME));
     }
 #endif
 
@@ -423,10 +416,17 @@ main()
     /*   if (IsDisconnected(&Plat.Network)) { ConnectToServer(&Plat.Network); } */
     /* END_BLOCK("Network Ops"); */
 
-    TIMED_BLOCK("GameUpdateAndRender");
-    BONSAI_API_MAIN_THREAD_CALLBACK_NAME(&Plat, GameState, &Hotkeys);
-    END_BLOCK("GameUpdateAndRender");
+    TIMED_BLOCK("GameUpdate");
+      GameMainThreadCallback(&Plat, GameState, &Hotkeys, &MainThread);
+    END_BLOCK("GameUpdate");
 
+    TIMED_BLOCK("DrainQueue");
+      DrainQueue(&Plat.HighPriority, &MainThread, GameWorkerThreadCallback);
+    END_BLOCK("DrainQueue");
+
+    TIMED_BLOCK("WaitForWorkerThreads");
+      WaitForWorkerThreads(&Plat.WorkerThreadsWaiting);
+    END_BLOCK("WaitForWorkerThreads");
 
 #if BONSAI_NETWORK_IMPLEMENTATION
     DEBUG_FRAME_END(&Plat, ServerState);
@@ -434,21 +434,18 @@ main()
     DEBUG_FRAME_END(&Plat, 0);
 #endif
 
-    BonsaiSwapBuffers(&Os);
-
-    r64 CurrentMS = GetHighPrecisionClock();
-    RealDt = (CurrentMS - LastMs)/1000.0;
-    LastMs = CurrentMS;
-    Plat.dt = (r32)RealDt;
-
-    MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(RealDt);
+    GameRenderCallback(&Plat);
 
     Ensure(RewindArena(TranArena));
+
+    MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(RealDt);
   }
 
   Info("Shutting Down");
+
   Terminate(&Os, &Plat);
+
   Info("Exiting");
 
-  return True;
+  return 0;
 }

@@ -6,7 +6,7 @@ struct work_queue_entry_copy_buffer
 };
 
 
-#define WORK_QUEUE_MAX_COPY_TARGETS 8
+#define WORK_QUEUE_MAX_COPY_TARGETS 4
 struct work_queue_entry_copy_buffer_set
 {
   u32 Count;
@@ -35,4 +35,27 @@ poof(
   }
 )
 #include <generated/d_union_work_queue_entry.h>
+
+link_internal void
+DrainQueue(work_queue* Queue, thread_local_state* Thread, bonsai_worker_thread_callback GameWorkerThreadCallback)
+{
+  for (;;)
+  {
+    // NOTE(Jesse): Must read and comared DequeueIndex instead of calling QueueIsEmpty
+    u32 DequeueIndex = Queue->DequeueIndex;
+    if (DequeueIndex == Queue->EnqueueIndex)
+    {
+      break;
+    }
+
+    b32 Exchanged = AtomicCompareExchange( &Queue->DequeueIndex,
+                                           (DequeueIndex+1) % WORK_QUEUE_SIZE,
+                                           DequeueIndex );
+    if ( Exchanged )
+    {
+      volatile work_queue_entry* Entry = Queue->Entries + DequeueIndex;
+      GameWorkerThreadCallback(Entry, Thread);
+    }
+  }
+}
 

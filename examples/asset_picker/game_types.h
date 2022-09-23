@@ -7,9 +7,8 @@ struct random_series;
 
 struct game_state
 {
-  world         *World;
   platform      *Plat;
-  graphics      *Graphics;
+  world         *World;
 
   memory_arena*   Memory;
   heap_allocator  Heap;

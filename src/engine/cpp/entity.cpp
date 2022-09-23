@@ -1004,7 +1004,7 @@ SimulatePlayer(world* World, entity *Player, camera* Camera, hotkeys *Hotkeys, r
     }
     /* Player->Physics.Force += GetOrthographicInputs(Hotkeys)*dt; */
 
-    PhysicsUpdate(&Player->Physics, dt, False);
+    PhysicsUpdate(&Player->Physics, dt);
 
     world_position OriginalPlayerP = Player->P.WorldP;
     UpdateEntityP( World, Player, Player->Physics.Delta, VisibleRegion);

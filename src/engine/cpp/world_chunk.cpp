@@ -1623,7 +1623,7 @@ QueueChunkForInit(work_queue *Queue, world_chunk *Chunk)
   native_file AssetFile = OpenFile(AssetFilename, "r");
   if (AssetFile.Handle)
   {
-    Info("Queueing Chunk for asset-backed init (%p)", Chunk);
+    /* Info("Queueing Chunk for asset-backed init (%p)", Chunk); */
     world_chunk_file_header Header = ReadWorldChunkFileHeader(&AssetFile);
     CloseFile(&AssetFile);
 
@@ -1641,7 +1641,7 @@ QueueChunkForInit(work_queue *Queue, world_chunk *Chunk)
   }
   else
   {
-    Info("Queueing Chunk for regural init (%p)", Chunk);
+    /* Info("Queueing Chunk for regural init (%p)", Chunk); */
     Entry.Type = type_work_queue_entry_init_world_chunk;
     work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, &Entry);
     Job->Chunk = Chunk;
