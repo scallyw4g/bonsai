@@ -1,3 +1,5 @@
+#if PLATFORM_GL_IMPLEMENTATIONS
+
 #include <engine/render/render_init.cpp>
 #include <engine/render/render_utils.cpp>
 
@@ -153,7 +155,7 @@ RenderShadowMap(untextured_3d_geometry_buffer *Mesh, graphics *Graphics)
 }
 #endif
 
-void
+link_internal void
 RenderWorldToGBuffer(gpu_mapped_element_buffer* GpuMap, g_buffer_render_group *RG)
 {
   TIMED_FUNCTION();
@@ -175,7 +177,7 @@ RenderWorldToGBuffer(gpu_mapped_element_buffer* GpuMap, g_buffer_render_group *R
   return;
 }
 
-inline void
+link_internal void
 RenderGBuffer(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
 {
   TIMED_FUNCTION();
@@ -187,7 +189,7 @@ RenderGBuffer(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
   return;
 }
 
-inline void
+link_internal void
 RenderPostBuffer(post_processing_group *PostGroup, untextured_3d_geometry_buffer *Mesh)
 {
   GL.BindFramebuffer(GL_FRAMEBUFFER, PostGroup->FBO.ID);
@@ -210,7 +212,6 @@ RenderPostBuffer(post_processing_group *PostGroup, untextured_3d_geometry_buffer
   GL.DisableVertexAttribArray(1);
 }
 
-#if PLATFORM_GL_IMPLEMENTATIONS
 link_external void
 Renderer_FrameEnd(platform *Plat)
 {
@@ -226,7 +227,6 @@ Renderer_FrameEnd(platform *Plat)
 
   Graphics->GpuBufferWriteIndex = (Graphics->GpuBufferWriteIndex + 1) % 2;
 }
-#endif
 
 
 inline bool
@@ -1095,3 +1095,5 @@ BufferEntities( entity **EntityTable, untextured_3d_geometry_buffer* Dest,
 
   return;
 }
+
+#endif

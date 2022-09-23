@@ -9,7 +9,6 @@ struct game_state
 {
   world         *World;
   platform      *Plat;
-  graphics      *Graphics;
 
   memory_arena*   Memory;
   heap_allocator  Heap;

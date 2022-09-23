@@ -51,51 +51,50 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 {
   switch (Entry->Type)
   {
-     case type_work_queue_entry_noop: { InvalidCodePath(); } break;
+    case type_work_queue_entry_noop: { InvalidCodePath(); } break;
 
-     case type_work_queue_entry_init_asset:
-     {
-       NotImplemented;
-     } break;
+    case type_work_queue_entry_init_asset:
+    {
+      NotImplemented;
+    } break;
 
-     case type_work_queue_entry_init_world_chunk:
-     {
-       world_chunk* DestChunk = Entry->work_queue_entry_init_world_chunk.Chunk;
-       if (ChunkIsGarbage(DestChunk))
-       {
-         Chunk->Data->Flags = Chunk_MeshComplete;
-       }
-       else
-       {
-         s32 Amplititude = 100;
-         s32 StartingZDepth = -100;
-         InitializeWorldChunkPerlinPlane( Thread,
-                                          DestChunk,
-                                          WORLD_CHUNK_DIM,
-                                          Amplititude,
-                                          StartingZDepth );
-       }
-     } break;
+    case type_work_queue_entry_init_world_chunk:
+    {
+      world_chunk* DestChunk = Entry->work_queue_entry_init_world_chunk.Chunk;
+      if (ChunkIsGarbage(DestChunk))
+      {
+        Chunk->Data->Flags = Chunk_MeshComplete;
+      }
+      else
+      {
+        s32 Amplititude = 100;
+        s32 StartingZDepth = -100;
+        InitializeWorldChunkPerlinPlane( Thread,
+                                         DestChunk,
+                                         WORLD_CHUNK_DIM,
+                                         Amplititude,
+                                         StartingZDepth );
+      }
+    } break;
 
-     case type_work_queue_entry_copy_buffer:
-     {
-       work_queue_entry_copy_buffer *CopyJob = SafeAccess(work_queue_entry_copy_buffer, Entry);
-       DoCopyJob(CopyJob);
+    case type_work_queue_entry_copy_buffer:
+    {
+      work_queue_entry_copy_buffer *CopyJob = SafeAccess(work_queue_entry_copy_buffer, Entry);
+      DoCopyJob(CopyJob);
+    } break;
 
-     } break;
+    case type_work_queue_entry_copy_buffer_set:
+    {
+      TIMED_BLOCK("Copy Set");
+      work_queue_entry_copy_buffer_set *CopySet = SafeAccess(work_queue_entry_copy_buffer_set, Entry);
+      for (u32 CopyIndex = 0; CopyIndex < CopySet->Count; ++CopyIndex)
+      {
+        work_queue_entry_copy_buffer CopyJob = CopySet->CopyTargets[CopyIndex];
+        DoCopyJob(&CopyJob);
+      }
 
-     case type_work_queue_entry_copy_buffer_set:
-     {
-       TIMED_BLOCK("Copy Set");
-       work_queue_entry_copy_buffer_set *CopySet = SafeAccess(work_queue_entry_copy_buffer_set, Entry);
-       for (u32 CopyIndex = 0; CopyIndex < CopySet->Count; ++CopyIndex)
-       {
-         work_queue_entry_copy_buffer CopyJob = CopySet->CopyTargets[CopyIndex];
-         DoCopyJob(&CopyJob);
-       }
-
-       END_BLOCK("Copy Set");
-     } break;
+      END_BLOCK("Copy Set");
+    } break;
   }
 
   return;

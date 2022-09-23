@@ -1,4 +1,4 @@
-#define DEFAULT_GAME_LIB "./bin/asset_picker_loadable" PLATFORM_RUNTIME_LIB_EXTENSION
+#define DEFAULT_GAME_LIB "./bin/the_wanderer_loadable" PLATFORM_RUNTIME_LIB_EXTENSION
 
 #define PLATFORM_THREADING_IMPLEMENTATIONS 1
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
@@ -80,7 +80,7 @@ ThreadMain(void *Input)
 
     DrainQueue( ThreadParams->HighPriority, &Thread, GameWorkerThreadCallback );
 
-    /* ThreadSleep( ThreadParams->HighPriority->GlobalQueueSemaphore, ThreadParams->WorkerThreadsWaiting ); */
+    ThreadSleep( ThreadParams->HighPriority->GlobalQueueSemaphore, ThreadParams->WorkerThreadsWaiting );
 
     work_queue* LowPriority = ThreadParams->LowPriority;
     for (;;)

@@ -533,9 +533,13 @@ SpawnPlayer(model* Models, entity *Player, canonical_position InitialP, random_s
   r32 RateOfFire = 0.8f;
   s32 Health = 10;
 
-  model *Model = Models + ModelIndex_Player;
-  v3 CollisionVolumeRadius = Model->Dim * Scale * 0.5f;
-  /* Print(CollisionVolumeRadius); */
+  model *Model = 0;
+  v3 CollisionVolumeRadius = {};
+  if (Models)
+  {
+    Model = Models + ModelIndex_Player;
+    CollisionVolumeRadius = Model->Dim * Scale * 0.5f;
+  }
 
   SpawnEntity(
       Player,

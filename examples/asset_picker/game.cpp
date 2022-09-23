@@ -199,16 +199,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   }
 #endif
 
-#if 0
-    TIMED_BLOCK("DrainQueue");
-      DrainQueue(&Plat->HighPriority, Thread, BONSAI_API_WORKER_THREAD_CALLBACK_NAME);
-    END_BLOCK("DrainQueue");
-
-    WaitForWorkerThreads(&Plat->WorkerThreadsWaiting);
-
-    /* Renderer_FrameEnd(Plat); */
-#endif
-
   return;
 }
 

@@ -1,3 +1,5 @@
+#define PLATFORM_GL_IMPLEMENTATIONS 1
+
 #include <bonsai_types.h>
 
 #include <game_constants.h>
@@ -7,7 +9,7 @@ model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory)
 {
   model *Result = Allocate(model, GameState->Memory, ModelIndex_Count);
-  Result[ModelIndex_Player] = LoadVoxModel(Memory, &GameState->Heap, "models/chr_sasami.vox");
+  Result[ModelIndex_Player] = LoadVoxModel(Memory, &GameState->Heap, "models/chr_old.vox");
   Result[ModelIndex_Proton] = LoadVoxModel(Memory, &GameState->Heap, PROJECTILE_MODEL);
 
   return Result;
@@ -21,7 +23,18 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
     case type_work_queue_entry_init_asset:
     {
-      work_queue_entry_init_asset *Job = SafeAccess(work_queue_entry_init_asset, Entry);
+      volatile work_queue_entry_init_asset *Job = SafeAccess(work_queue_entry_init_asset, Entry);
+      world_chunk *Chunk = Job->Chunk;
+      Chunk->Data->Flags = Chunk_MeshComplete;
+#if 0
+      s32 Amplititude = 7;
+      s32 StartingZDepth = 0;
+      InitializeWorldChunkPerlinPlane( Thread,
+                                       Chunk,
+                                       WORLD_CHUNK_DIM,
+                                       Amplititude,
+                                       StartingZDepth );
+      volatile work_queue_entry_init_asset *Job = SafeAccess(work_queue_entry_init_asset, Entry);
       world_chunk *Chunk = Job->Chunk;
       /* const char* zAssetPath = Chunk->zAssetPath; */
 
@@ -32,27 +45,36 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       DeserializeChunk(zAssetPath, Chunk);
 
       MarkChunkInitialized(Chunk);
+#endif
     } break;
 
     case type_work_queue_entry_init_world_chunk:
     {
-      // TODO(Jesse): Initialize from noise here?
+      volatile work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
+      world_chunk *Chunk = Job->Chunk;
+      s32 Amplititude = 7;
+      s32 StartingZDepth = 0;
+      InitializeWorldChunkPerlinPlane( Thread,
+                                       Chunk,
+                                       WORLD_CHUNK_DIM,
+                                       Amplititude,
+                                       StartingZDepth );
     } break;
 
     case type_work_queue_entry_copy_buffer:
     {
-      work_queue_entry_copy_buffer *CopyJob = SafeAccess(work_queue_entry_copy_buffer, Entry);
+      volatile work_queue_entry_copy_buffer *CopyJob = SafeAccess(work_queue_entry_copy_buffer, Entry);
       DoCopyJob(CopyJob);
     } break;
 
     case type_work_queue_entry_copy_buffer_set:
     {
       TIMED_BLOCK("Copy Set");
-      work_queue_entry_copy_buffer_set *CopySet = SafeAccess(work_queue_entry_copy_buffer_set, Entry);
+      volatile work_queue_entry_copy_buffer_set *CopySet = SafeAccess(work_queue_entry_copy_buffer_set, Entry);
       for (u32 CopyIndex = 0; CopyIndex < CopySet->Count; ++CopyIndex)
       {
-        work_queue_entry_copy_buffer CopyJob = CopySet->CopyTargets[CopyIndex];
-        DoCopyJob(&CopyJob);
+        volatile work_queue_entry_copy_buffer *CopyJob = &CopySet->CopyTargets[CopyIndex];
+        DoCopyJob(CopyJob);
       }
       END_BLOCK("Copy Set");
     } break;
@@ -72,10 +94,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   GetDebugState()->GameState = GameState;
 #endif
 
-  GL.Disable(GL_CULL_FACE);
-
   world                 *World         = GameState->World;
-  graphics              *Graphics      = GameState->Graphics;
+  graphics              *Graphics      = GameState->Plat->Graphics;
   g_buffer_render_group *gBuffer       = Graphics->gBuffer;
   ao_render_group       *AoGroup       = Graphics->AoGroup;
   camera                *Camera        = Graphics->Camera;
@@ -153,16 +173,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   }
 #endif
 
-  TIMED_BLOCK("Wait for worker threads");
-    for (;;) { if (QueueIsEmpty(&Plat->HighPriority)) { break; } }
-  END_BLOCK("Wait for worker threads");
-
-  TIMED_BLOCK("RenderToScreen");
-    RenderGBuffer(GpuMap, Graphics);
-    RenderAoTexture(AoGroup);
-    DrawGBufferToFullscreenQuad(Plat, Graphics);
-  END_BLOCK("RenderToScreen");
-
   Graphics->Lights->Count = 0;
 
   return;
@@ -174,18 +184,19 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GL = *GL_in;
 
-  Init_Global_QuadVertexBuffer();
-
   game_state *GameState = Allocate(game_state, GameMemory, 1);
   GameState->Memory = GameMemory;
+  GameState->Plat = Plat;
+
+  Init_Global_QuadVertexBuffer();
+
   GameState->Noise = perlin_noise(DEBUG_NOISE_SEED);
 
-  GameState->Graphics = GraphicsInit(GameMemory);
-  if (!GameState->Graphics) { Error("Initializing Graphics"); return False; }
+  GameState->Plat->Graphics = GraphicsInit(GameMemory);
+  if (!GameState->Plat->Graphics) { Error("Initializing Graphics"); return False; }
 
-  StandardCamera(GameState->Graphics->Camera, 10000.0f, 300.0f);
+  StandardCamera(GameState->Plat->Graphics->Camera, 10000.0f, 300.0f);
 
-  GameState->Plat = Plat;
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
   world_position WorldCenter = World_Position(0, 0, 0);
@@ -194,6 +205,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->World = AllocateAndInitWorld(WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 
   GameState->EntityTable = AllocateEntityTable(GameMemory, TOTAL_ENTITY_COUNT);
+
+  GameState->Models = AllocateGameModels(GameState, GameMemory);
 
   GameState->Player = GetFreeEntity(GameState->EntityTable);
   SpawnPlayer(GameState->Models, GameState->Player, Canonical_Position(Voxel_Position(0), WorldCenter), &GameState->Entropy);
