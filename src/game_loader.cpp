@@ -75,14 +75,27 @@ ThreadMain(void *Input)
 
   for (;;)
   {
-    WaitOnFutex(ThreadParams->SuspendWorkerThreads);
-
+#if 0
     // This is a pointer to a single semaphore for all queues, so only sleeping
     // on one is sufficient, and equal to sleeping on all, because they all
     // point to the same semaphore
     ThreadSleep( ThreadParams->HighPriority->GlobalQueueSemaphore );
+#else
+    for (;;)
+    {
+      WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
 
-    WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
+      if (!QueueIsEmpty(ThreadParams->HighPriority)) break;
+
+      if (!QueueIsEmpty(ThreadParams->LowPriority)) break;
+
+      if ( FutexIsSignaled(ThreadParams->SuspendWorkerThreads) ) break;
+
+      SleepMs(3);
+    }
+#endif
+
+    WaitOnFutex(ThreadParams->SuspendWorkerThreads);
 
     AtomicIncrement(ThreadParams->HighPriorityWorkerCount);
     DrainQueue( ThreadParams->HighPriority, &Thread, GameWorkerThreadCallback );
@@ -152,13 +165,13 @@ PlatformLaunchWorkerThreads(platform *Plat, bonsai_worker_thread_init_callback W
 }
 
 link_internal void
-InitQueue(work_queue* Queue, memory_arena* Memory, semaphore* Semaphore)
+InitQueue(work_queue* Queue, memory_arena* Memory) //, semaphore* Semaphore)
 {
   Queue->EnqueueIndex = 0;
   Queue->DequeueIndex = 0;
 
   Queue->Entries = Allocate(work_queue_entry, Memory, WORK_QUEUE_SIZE);
-  Queue->GlobalQueueSemaphore = Semaphore;
+  /* Queue->GlobalQueueSemaphore = Semaphore; */
 
   return;
 }
@@ -173,10 +186,10 @@ PlatformInit(platform *Plat, memory_arena *Memory, void* GetDebugStateProc)
   u32 WorkerThreadCount = GetWorkerThreadCount();
   Info("Detected %u Logical cores, creating %u threads", LogicalCoreCount, WorkerThreadCount);
 
-  Plat->QueueSemaphore = CreateSemaphore();
+  /* Plat->QueueSemaphore = CreateSemaphore(); */
 
-  InitQueue(&Plat->LowPriority, Plat->Memory, &Plat->QueueSemaphore);
-  InitQueue(&Plat->HighPriority, Plat->Memory, &Plat->QueueSemaphore);
+  InitQueue(&Plat->LowPriority, Plat->Memory); //, &Plat->QueueSemaphore);
+  InitQueue(&Plat->HighPriority, Plat->Memory); //, &Plat->QueueSemaphore);
 
   Plat->Threads = Allocate(thread_startup_params, Plat->Memory, WorkerThreadCount);
 

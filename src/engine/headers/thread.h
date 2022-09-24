@@ -11,7 +11,7 @@ struct thread_startup_params
   volatile u32 *HighPriorityWorkerCount;
   bonsai_futex *SuspendWorkerThreads;
 
-  semaphore  *GlobalQueueSemaphore;
+  /* semaphore  *GlobalQueueSemaphore; */
   work_queue *LowPriority;
   work_queue *HighPriority;
   thread Self;

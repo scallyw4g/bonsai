@@ -16,7 +16,7 @@ PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
   u32 NewIndex = (Queue->EnqueueIndex+1) % WORK_QUEUE_SIZE;
   AtomicExchange(&Queue->EnqueueIndex, NewIndex);
 
-  WakeThread( Queue->GlobalQueueSemaphore );
+  /* WakeThread( Queue->GlobalQueueSemaphore ); */
 }
 
 link_internal void
