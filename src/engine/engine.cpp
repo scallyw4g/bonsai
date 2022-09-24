@@ -1,3 +1,4 @@
+#include <engine/cpp/game_api.cpp>
 #include <engine/cpp/asset.cpp>
 #include <engine/cpp/render_position.cpp>
 #include <engine/cpp/canonical_position.cpp>

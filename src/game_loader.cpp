@@ -187,13 +187,12 @@ PlatformInit(platform *Plat, memory_arena *Memory, void* GetDebugStateProc)
   return;
 }
 
-
 s32
 main()
 {
   Info("Initializing Bonsai");
 
-  /* if (!SearchForProjectRoot()) { Error("Couldn't find root dir, exiting."); return False; } */
+  /* if (!SearchForProjectRoot()) { Error("Couldn't find root dir, exiting."); return 1; } */
   /* Info("Found Bonsai Root : %S", CS(GetCwd()) ); */
 
   platform Plat = {};
@@ -201,13 +200,14 @@ main()
 
   Plat.Os = &Os;
 
-  if (!OpenAndInitializeWindow(&Os, &Plat)) { Error("Initializing Window :( "); return False; }
+  if (!OpenAndInitializeWindow(&Os, &Plat)) { Error("Initializing Window :( "); return 1; }
   Assert(Os.GlContext);
 
-  if (!InitializeOpengl(&Os)) { Error("Initializing OpenGL :( "); return False; }
+  if (!InitializeOpengl(&Os)) { Error("Initializing OpenGL :( "); return 1; }
 
   shared_lib DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
-  if (!DebugLib) { Error("Loading DebugLib :( "); return False; }
+  if (!DebugLib) { Error("Loading DebugLib :( "); return 1; }
+
   init_debug_system_proc InitDebugSystem = (init_debug_system_proc)GetProcFromLib(DebugLib, "InitDebugSystem");
   GetDebugState = InitDebugSystem(&GL);
 
@@ -235,30 +235,15 @@ main()
   LibIsNew(DEFAULT_GAME_LIB, &LastGameLibTime);  // Hack to initialize the LastGameLibTime static
 
   shared_lib GameLib = OpenLibrary(DEFAULT_GAME_LIB);
-  if (!GameLib) { Error("Loading GameLib :( "); return False; }
+  if (!GameLib) { Error("Loading GameLib :( "); return 1; }
 
-  bonsai_main_thread_init_callback GameInitCallback = (bonsai_main_thread_init_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_MAIN_THREAD_INIT_CALLBACK_NAME));
-  if (!GameInitCallback) { Error("Retreiving " STRINGIZE(BONSAI_API_MAIN_THREAD_INIT_CALLBACK_NAME) " from Game Lib :( "); return False; }
+  game_api GameApi = {};
+  if (!InitializeGameApi(&GameApi, &GL, GameLib)) { Error("Initializing GameApi :( "); return 1; }
 
-  bonsai_main_thread_callback GameMainThreadCallback = (bonsai_main_thread_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_MAIN_THREAD_CALLBACK_NAME));
-  if (!GameMainThreadCallback) { Error("Retreiving " STRINGIZE(BONSAI_API_MAIN_THREAD_CALLBACK_NAME) " from Game Lib :( "); return False; }
+  game_state* GameState = GameApi.GameInit(&Plat, GameMemory, &GL);
+  if (!GameState) { Error("Initializing Game State :( "); return 1; }
 
-  bonsai_worker_thread_callback GameWorkerThreadCallback = (bonsai_worker_thread_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_WORKER_THREAD_CALLBACK_NAME) );
-  if (!GameWorkerThreadCallback) { Error("Retreiving " STRINGIZE(BONSAI_API_WORKER_THREAD_CALLBACK_NAME) " from Game Lib :( "); return False; }
-
-  bonsai_render_callback GameRenderCallback = (bonsai_render_callback)GetProcFromLib(GameLib, STRINGIZE(Renderer_FrameEnd) );
-  if (!GameRenderCallback) { Error("Retreiving " STRINGIZE(Renderer_FrameEnd) " from Game Lib :( "); return False; }
-
-
-  bonsai_worker_thread_init_callback WorkerThreadInitCallback = (bonsai_worker_thread_init_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_WORKER_THREAD_INIT_CALLBACK_NAME));
-
-
-
-
-  game_state* GameState = GameInitCallback(&Plat, GameMemory, &GL);
-  if (!GameState) { Error("Initializing Game State :( "); return False; }
-
-  PlatformLaunchWorkerThreads(&Plat, WorkerThreadInitCallback, GameWorkerThreadCallback, GameState);
+  PlatformLaunchWorkerThreads(&Plat, GameApi.WorkerInit, GameApi.WorkerMain, GameState);
 
   thread_local_state MainThread = DefaultThreadLocalState();
 
@@ -297,19 +282,12 @@ main()
 #if !EMCC
     if ( LibIsNew(DEFAULT_GAME_LIB, &LastGameLibTime) )
     {
-      SuspendWorkerThreads(&Plat.SuspendWorkerThreads);
+      SignalAndWaitForWorkers(&Plat.SuspendWorkerThreads);
 
       CloseLibrary(GameLib);
       GameLib = OpenLibrary(DEFAULT_GAME_LIB);
 
-      GameMainThreadCallback = (bonsai_main_thread_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_MAIN_THREAD_CALLBACK_NAME));
-      Assert(GameMainThreadCallback);
-
-      GameWorkerThreadCallback = (bonsai_worker_thread_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_WORKER_THREAD_CALLBACK_NAME));
-      Assert(GameWorkerThreadCallback);
-
-      GameRenderCallback = (bonsai_render_callback)GetProcFromLib(GameLib, STRINGIZE(Renderer_FrameEnd) );
-      Assert(GameRenderCallback);
+      Ensure(InitializeGameApi(&GameApi, &GL, GameLib));
 
       UnsignalFutex(&Plat.SuspendWorkerThreads);
     }
@@ -338,10 +316,10 @@ main()
     {
       CloseLibrary(DebugLib);
       DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
-      if (!DebugLib) { Error("Loading DebugLib :( "); return False; }
+      if (!DebugLib) { Error("Loading DebugLib :( "); return 1; }
 
       GetDebugState = (get_debug_state_proc)GetProcFromLib(DebugLib, "GetDebugState_Internal");
-      if (!GetDebugState) { Error("Retreiving GetDebugState from Debug Lib :( "); return False; }
+      if (!GetDebugState) { Error("Retreiving GetDebugState from Debug Lib :( "); return 1; }
     }
 #endif
 
@@ -354,11 +332,11 @@ main()
     /* END_BLOCK("Network Ops"); */
 
     TIMED_BLOCK("GameUpdate");
-      GameMainThreadCallback(&Plat, GameState, &Hotkeys, &MainThread);
+      GameApi.GameMain(&Plat, GameState, &Hotkeys, &MainThread);
     END_BLOCK("GameUpdate");
 
     TIMED_BLOCK("DrainQueue");
-      DrainQueue(&Plat.HighPriority, &MainThread, GameWorkerThreadCallback);
+      DrainQueue(&Plat.HighPriority, &MainThread, GameApi.WorkerMain);
     END_BLOCK("DrainQueue");
 
     TIMED_BLOCK("WaitForWorkerThreads");
@@ -368,7 +346,7 @@ main()
     DEBUG_FRAME_END(&Plat);
 
     TIMED_BLOCK("Render");
-      GameRenderCallback(&Plat);
+      GameApi.Render(&Plat);
     END_BLOCK();
 
     Ensure(RewindArena(TranArena));

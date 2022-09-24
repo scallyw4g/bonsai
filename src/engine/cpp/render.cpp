@@ -212,7 +212,7 @@ RenderPostBuffer(post_processing_group *PostGroup, untextured_3d_geometry_buffer
   GL.DisableVertexAttribArray(1);
 }
 
-link_external void
+link_export void
 Renderer_FrameEnd(platform *Plat)
 {
   graphics        *Graphics = Plat->Graphics;

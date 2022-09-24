@@ -1,4 +1,5 @@
 #include <engine/api.h>
+#include <engine/headers/thread.h>
 #include <engine/constants.h>
 #include <engine/headers/colors.h>
 #include <engine/headers/canonical_position.h>
