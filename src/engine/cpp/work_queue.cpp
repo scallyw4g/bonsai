@@ -2,6 +2,13 @@ void
 PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
 {
   TIMED_FUNCTION();
+
+  while (QueueIsFull(Queue))
+  {
+    Perf("Queue full!");
+    SleepMs(1);
+  }
+
   volatile work_queue_entry* Dest = Queue->Entries + Queue->EnqueueIndex;
   Clear(Dest);
   Assert(Dest->Type == type_work_queue_entry_noop);
@@ -13,7 +20,7 @@ PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
 
   FullBarrier;
 
-  u32 NewIndex = (Queue->EnqueueIndex+1) % WORK_QUEUE_SIZE;
+  u32 NewIndex = GetNextQueueIndex(Queue->EnqueueIndex);
   AtomicExchange(&Queue->EnqueueIndex, NewIndex);
 
   /* WakeThread( Queue->GlobalQueueSemaphore ); */

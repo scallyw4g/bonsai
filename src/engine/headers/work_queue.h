@@ -53,7 +53,7 @@ DrainQueue(work_queue* Queue, thread_local_state* Thread, bonsai_worker_thread_c
     }
 
     b32 Exchanged = AtomicCompareExchange( &Queue->DequeueIndex,
-                                           (DequeueIndex+1) % WORK_QUEUE_SIZE,
+                                           GetNextQueueIndex(DequeueIndex),
                                            DequeueIndex );
     if ( Exchanged )
     {

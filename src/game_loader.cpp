@@ -125,7 +125,7 @@ ThreadMain(void *Input)
       }
 
       b32 Exchanged = AtomicCompareExchange( &LowPriority->DequeueIndex,
-                                              (DequeueIndex+1) % WORK_QUEUE_SIZE,
+                                              GetNextQueueIndex(DequeueIndex),
                                               DequeueIndex );
       if ( Exchanged )
       {
