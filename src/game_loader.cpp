@@ -1,8 +1,7 @@
 #define DEFAULT_GAME_LIB "./bin/the_wanderer_loadable" PLATFORM_RUNTIME_LIB_EXTENSION
 
-#define PLATFORM_THREADING_IMPLEMENTATIONS 1
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
-#define PLATFORM_GL_IMPLEMENTATIONS 1
+/* #define PLATFORM_GL_IMPLEMENTATIONS 1 */
 #define BONSAI_DEBUG_SYSTEM_API 1
 
 #include <bonsai_stdlib/bonsai_stdlib.h>
@@ -47,6 +46,10 @@ DefaultThreadLocalState()
   Thread.TempMemory = AllocateArena();
   Thread.PermMemory = AllocateArena();
 
+  // TODO(Jesse)(safety): Given the below, how exactly is it safe to register
+  // the PermMemory?  Seems to me like that's still just as liable to cause bad
+  // behavior, but less likely.
+  //
   // NOTE(Jesse): As it stands the debug system doesn't do any locking when
   // constructing the debug arena stats, so we can't ever free memory allocated
   // on debug registered arenas on threads outside the main one.
@@ -62,6 +65,7 @@ link_internal THREAD_MAIN_RETURN
 ThreadMain(void *Input)
 {
   thread_startup_params *ThreadParams = (thread_startup_params *)Input;
+
   bonsai_worker_thread_callback GameWorkerThreadCallback = ThreadParams->GameWorkerThreadCallback;
 
   DEBUG_REGISTER_THREAD(ThreadParams->Self.ThreadIndex);
@@ -71,22 +75,31 @@ ThreadMain(void *Input)
 
   for (;;)
   {
+    WaitOnFutex(ThreadParams->SuspendWorkerThreads);
+
     // This is a pointer to a single semaphore for all queues, so only sleeping
     // on one is sufficient, and equal to sleeping on all, because they all
     // point to the same semaphore
-    ThreadSleep( ThreadParams->HighPriority->GlobalQueueSemaphore, ThreadParams->WorkerThreadsWaiting );
+    ThreadSleep( ThreadParams->HighPriority->GlobalQueueSemaphore );
 
     WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
 
+    AtomicIncrement(ThreadParams->HighPriorityWorkerCount);
     DrainQueue( ThreadParams->HighPriority, &Thread, GameWorkerThreadCallback );
-
-    ThreadSleep( ThreadParams->HighPriority->GlobalQueueSemaphore, ThreadParams->WorkerThreadsWaiting );
+    AtomicDecrement(ThreadParams->HighPriorityWorkerCount);
 
     work_queue* LowPriority = ThreadParams->LowPriority;
     for (;;)
     {
+      WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
+
       b32 HighPriorityJobs = QueueIsEmpty(ThreadParams->HighPriority) == false;
       if ( HighPriorityJobs )
+      {
+        break;
+      }
+
+      if ( FutexIsSignaled(ThreadParams->SuspendWorkerThreads) )
       {
         break;
       }
@@ -117,9 +130,9 @@ PlatformLaunchWorkerThreads(platform *Plat, bonsai_worker_thread_init_callback W
 {
   u32 WorkerThreadCount = GetWorkerThreadCount();
 
-  for (u32 ThreadIndex = 0;
-      ThreadIndex < WorkerThreadCount;
-      ++ ThreadIndex )
+  for ( u32 ThreadIndex = 0;
+        ThreadIndex < WorkerThreadCount;
+        ++ThreadIndex )
   {
     thread_startup_params *Params = &Plat->Threads[ThreadIndex];
     Params->Self.ThreadIndex = ThreadIndex + 1;
@@ -128,7 +141,9 @@ PlatformLaunchWorkerThreads(platform *Plat, bonsai_worker_thread_init_callback W
     Params->InitProc = WorkerThreadInit;
     Params->GameWorkerThreadCallback = WorkerThreadCallback;
     Params->GameState = GameState;
-    Params->WorkerThreadsWaiting = &Plat->WorkerThreadsWaiting;
+
+    Params->HighPriorityWorkerCount = &Plat->HighPriorityWorkerCount;
+    Params->SuspendWorkerThreads = &Plat->SuspendWorkerThreads;
 
     PlatformCreateThread( ThreadMain, Params );
   }
@@ -237,24 +252,8 @@ main()
 
   bonsai_worker_thread_init_callback WorkerThreadInitCallback = (bonsai_worker_thread_init_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_WORKER_THREAD_INIT_CALLBACK_NAME));
 
-  // NOTE(Jesse): This used to pass GetDebugState into the game library, but we
-  // now have to use GetProcFromLib() to hook up the pointer.  I'm writing this
-  // as I'm refactoring, so once you hit this there might be a better way, but
-  // as of this writing that seems like the best option.  This change was made
-  // such that GameInit() doesn't need to know about any debug system types,
-  // and in fact the entire engine shouldn't need to know about anything in the
-  // debug system.
-  //
-  void * SetDebugStateProc = GetProcFromLib(GameLib, "SetDebugState" );
-  if (SetDebugStateProc)
-  {
-    /* SetDebugStateProc(GetDebugState); */
-  }
-  else
-  {
-    // The game doesn't have to export that function if it doesn't want
-    // debugging enabled
-  }
+
+
 
   game_state* GameState = GameInitCallback(&Plat, GameMemory, &GL);
   if (!GameState) { Error("Initializing Game State :( "); return False; }
@@ -298,13 +297,21 @@ main()
 #if !EMCC
     if ( LibIsNew(DEFAULT_GAME_LIB, &LastGameLibTime) )
     {
-      WaitForWorkerThreads(&Plat.WorkerThreadsWaiting);
+      SuspendWorkerThreads(&Plat.SuspendWorkerThreads);
 
       CloseLibrary(GameLib);
       GameLib = OpenLibrary(DEFAULT_GAME_LIB);
 
       GameMainThreadCallback = (bonsai_main_thread_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_MAIN_THREAD_CALLBACK_NAME));
+      Assert(GameMainThreadCallback);
+
       GameWorkerThreadCallback = (bonsai_worker_thread_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_WORKER_THREAD_CALLBACK_NAME));
+      Assert(GameWorkerThreadCallback);
+
+      GameRenderCallback = (bonsai_render_callback)GetProcFromLib(GameLib, STRINGIZE(Renderer_FrameEnd) );
+      Assert(GameRenderCallback);
+
+      UnsignalFutex(&Plat.SuspendWorkerThreads);
     }
 #endif
 
@@ -355,7 +362,7 @@ main()
     END_BLOCK("DrainQueue");
 
     TIMED_BLOCK("WaitForWorkerThreads");
-      WaitForWorkerThreads(&Plat.WorkerThreadsWaiting);
+      WaitForWorkerThreads(&Plat.HighPriorityWorkerCount);
     END_BLOCK("WaitForWorkerThreads");
 
     DEBUG_FRAME_END(&Plat);

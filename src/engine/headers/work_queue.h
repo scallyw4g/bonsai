@@ -41,6 +41,8 @@ DrainQueue(work_queue* Queue, thread_local_state* Thread, bonsai_worker_thread_c
 {
   for (;;)
   {
+    WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
+
     // NOTE(Jesse): Must read and comared DequeueIndex instead of calling QueueIsEmpty
     u32 DequeueIndex = Queue->DequeueIndex;
     if (DequeueIndex == Queue->EnqueueIndex)

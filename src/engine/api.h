@@ -54,7 +54,8 @@ struct thread_startup_params
   bonsai_worker_thread_init_callback InitProc;
   game_state *GameState;
 
-  volatile u32 *WorkerThreadsWaiting;
+  volatile u32 *HighPriorityWorkerCount;
+  bonsai_futex *SuspendWorkerThreads;
 
   semaphore  *GlobalQueueSemaphore;
   work_queue *LowPriority;
