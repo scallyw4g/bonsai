@@ -73,7 +73,7 @@ ThreadMain(void *Input)
   thread_local_state Thread = DefaultThreadLocalState();
   if (ThreadParams->InitProc) { ThreadParams->InitProc(&Thread, ThreadParams->GameState); }
 
-  for (;;)
+  while (FutexNotSignaled(ThreadParams->WorkerThreadsExitFutex))
   {
 #if 0
     // This is a pointer to a single semaphore for all queues, so only sleeping
@@ -89,13 +89,15 @@ ThreadMain(void *Input)
 
       if (!QueueIsEmpty(ThreadParams->LowPriority)) break;
 
-      if ( FutexIsSignaled(ThreadParams->SuspendWorkerThreads) ) break;
+      if ( FutexIsSignaled(ThreadParams->WorkerThreadsSuspendFutex) ) break;
+
+      if ( FutexIsSignaled(ThreadParams->WorkerThreadsExitFutex) ) break;
 
       SleepMs(3);
     }
 #endif
 
-    WaitOnFutex(ThreadParams->SuspendWorkerThreads);
+    WaitOnFutex(ThreadParams->WorkerThreadsSuspendFutex);
 
     AtomicIncrement(ThreadParams->HighPriorityWorkerCount);
     DrainQueue( ThreadParams->HighPriority, &Thread, GameWorkerThreadCallback );
@@ -112,7 +114,7 @@ ThreadMain(void *Input)
         break;
       }
 
-      if ( FutexIsSignaled(ThreadParams->SuspendWorkerThreads) )
+      if ( FutexIsSignaled(ThreadParams->WorkerThreadsSuspendFutex) )
       {
         break;
       }
@@ -136,6 +138,10 @@ ThreadMain(void *Input)
 
     Ensure(RewindArena(Thread.TempMemory));
   }
+
+  WaitOnFutex(ThreadParams->WorkerThreadsExitFutex);
+
+  return 0;
 }
 
 link_internal void
@@ -156,7 +162,8 @@ PlatformLaunchWorkerThreads(platform *Plat, bonsai_worker_thread_init_callback W
     Params->GameState = GameState;
 
     Params->HighPriorityWorkerCount = &Plat->HighPriorityWorkerCount;
-    Params->SuspendWorkerThreads = &Plat->SuspendWorkerThreads;
+    Params->WorkerThreadsSuspendFutex = &Plat->WorkerThreadsSuspendFutex;
+    Params->WorkerThreadsExitFutex = &Plat->WorkerThreadsExitFutex;
 
     PlatformCreateThread( ThreadMain, Params );
   }
@@ -291,14 +298,14 @@ main()
 #if !EMCC
     if ( LibIsNew(DEFAULT_GAME_LIB, &LastGameLibTime) )
     {
-      SignalAndWaitForWorkers(&Plat.SuspendWorkerThreads);
+      SignalAndWaitForWorkers(&Plat.WorkerThreadsSuspendFutex);
 
       CloseLibrary(GameLib);
       GameLib = OpenLibrary(DEFAULT_GAME_LIB);
 
       Ensure(InitializeGameApi(&GameApi, GameLib));
 
-      UnsignalFutex(&Plat.SuspendWorkerThreads);
+      UnsignalFutex(&Plat.WorkerThreadsSuspendFutex);
     }
 #endif
 

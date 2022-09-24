@@ -9,7 +9,9 @@ struct thread_startup_params
   game_state *GameState;
 
   volatile u32 *HighPriorityWorkerCount;
-  bonsai_futex *SuspendWorkerThreads;
+
+  bonsai_futex *WorkerThreadsSuspendFutex;
+  bonsai_futex *WorkerThreadsExitFutex;
 
   /* semaphore  *GlobalQueueSemaphore; */
   work_queue *LowPriority;
