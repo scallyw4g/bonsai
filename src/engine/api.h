@@ -5,7 +5,7 @@
 #define BONSAI_API_ON_GAME_LIB_LOAD_CALLBACK_NAME     OnGameLibLoad
 
 #define BONSAI_API_MAIN_THREAD_CALLBACK_PARAMS         platform *Plat, game_state *GameState, hotkeys *Hotkeys, thread_local_state *Thread
-#define BONSAI_API_MAIN_THREAD_INIT_CALLBACK_PARAMS    platform *Plat, memory_arena *GameMemory, opengl* GL_in
+#define BONSAI_API_MAIN_THREAD_INIT_CALLBACK_PARAMS    platform *Plat, memory_arena *GameMemory
 #define BONSAI_API_WORKER_THREAD_CALLBACK_PARAMS       volatile work_queue_entry* Entry, thread_local_state* Thread
 #define BONSAI_API_WORKER_THREAD_INIT_CALLBACK_PARAMS  thread_local_state* Thread, game_state* GameState
 
@@ -34,7 +34,7 @@ typedef game_state* (*bonsai_main_thread_init_callback) (BONSAI_API_MAIN_THREAD_
 
 typedef void (*bonsai_render_callback)(platform *Plat);
 
-typedef b32 (*bonsai_on_load_callback)(opengl *LoadedGlInstance);
+typedef b32 (*bonsai_on_load_callback)();
 
 
 struct game_api
@@ -54,37 +54,30 @@ struct game_api
 };
 
 link_export b32
-BONSAI_API_ON_GAME_LIB_LOAD_CALLBACK_NAME (opengl *InitializedGlInstance)
+BONSAI_API_ON_GAME_LIB_LOAD_CALLBACK_NAME ()
 {
-  b32 Result = InitializedGlInstance->Initialized;
-  GL = *InitializedGlInstance;
+#if PLATFORM_GL_IMPLEMENTATIONS
+  b32 Result = InitializeOpenglFunctions();
+#else
+  b32 Result = True;
+#endif
   return Result;
 }
 
 #if PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS
 link_internal b32
-InitializeGameApi(game_api *GameApi, opengl *LoadedGlInstance, shared_lib GameLib)
+InitializeGameApi(game_api *GameApi, shared_lib GameLib)
 {
-  b32 Result = False;
+  GameApi->GameInit = (bonsai_main_thread_init_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_MAIN_THREAD_INIT_CALLBACK_NAME));
+  GameApi->GameMain = (bonsai_main_thread_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_MAIN_THREAD_CALLBACK_NAME));
+  GameApi->WorkerInit = (bonsai_worker_thread_init_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_WORKER_THREAD_INIT_CALLBACK_NAME));
+  GameApi->WorkerMain = (bonsai_worker_thread_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_WORKER_THREAD_CALLBACK_NAME) );
+  GameApi->Render = (bonsai_render_callback)GetProcFromLib(GameLib, STRINGIZE(Renderer_FrameEnd) );
 
-  if (LoadedGlInstance->Initialized)
-  {
-    GameApi->GameInit = (bonsai_main_thread_init_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_MAIN_THREAD_INIT_CALLBACK_NAME));
-    GameApi->GameMain = (bonsai_main_thread_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_MAIN_THREAD_CALLBACK_NAME));
-    GameApi->WorkerInit = (bonsai_worker_thread_init_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_WORKER_THREAD_INIT_CALLBACK_NAME));
-    GameApi->WorkerMain = (bonsai_worker_thread_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_WORKER_THREAD_CALLBACK_NAME) );
-    GameApi->Render = (bonsai_render_callback)GetProcFromLib(GameLib, STRINGIZE(Renderer_FrameEnd) );
+  GameApi->OnLoad = (bonsai_on_load_callback)GetProcFromLib(GameLib, "OnGameLibLoad" );
 
-    GameApi->OnLoad = (bonsai_on_load_callback)GetProcFromLib(GameLib, "OnGameLibLoad" );
-
-    Result = (GameApi->GameInit && GameApi->GameMain && GameApi->WorkerMain && GameApi->Render && GameApi->OnLoad);
-
-    if (Result) { Result = GameApi->OnLoad(LoadedGlInstance); }
-  }
-  else
-  {
-    Error("Cannot initialize GameApi, Opengl not loaded!");
-  }
+  b32 Result = (GameApi->GameInit && GameApi->GameMain && GameApi->WorkerMain && GameApi->Render && GameApi->OnLoad);
+  if (Result) { Result = GameApi->OnLoad(); }
 
   return Result;
 }

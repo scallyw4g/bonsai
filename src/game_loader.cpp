@@ -1,7 +1,7 @@
 #define DEFAULT_GAME_LIB "./bin/the_wanderer_loadable" PLATFORM_RUNTIME_LIB_EXTENSION
 
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
-/* #define PLATFORM_GL_IMPLEMENTATIONS 1 */
+#define PLATFORM_GL_IMPLEMENTATIONS 1
 #define BONSAI_DEBUG_SYSTEM_API 1
 
 #include <bonsai_stdlib/bonsai_stdlib.h>
@@ -200,18 +200,14 @@ main()
 
   Plat.Os = &Os;
 
-  if (!OpenAndInitializeWindow(&Os, &Plat)) { Error("Initializing Window :( "); return 1; }
+  if (!OpenAndInitializeWindow(&Os, &Plat, 1)) { Error("Initializing Window :( "); return 1; }
   Assert(Os.GlContext);
-
-  if (!InitializeOpengl(&Os)) { Error("Initializing OpenGL :( "); return 1; }
 
   shared_lib DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
   if (!DebugLib) { Error("Loading DebugLib :( "); return 1; }
 
   init_debug_system_proc InitDebugSystem = (init_debug_system_proc)GetProcFromLib(DebugLib, "InitDebugSystem");
-  GetDebugState = InitDebugSystem(&GL);
-
-  AssertNoGlErrors;
+  GetDebugState = InitDebugSystem();
 
   memory_arena *PlatMemory = AllocateArena();
   memory_arena *GameMemory = AllocateArena();
@@ -238,9 +234,9 @@ main()
   if (!GameLib) { Error("Loading GameLib :( "); return 1; }
 
   game_api GameApi = {};
-  if (!InitializeGameApi(&GameApi, &GL, GameLib)) { Error("Initializing GameApi :( "); return 1; }
+  if (!InitializeGameApi(&GameApi, GameLib)) { Error("Initializing GameApi :( "); return 1; }
 
-  game_state* GameState = GameApi.GameInit(&Plat, GameMemory, &GL);
+  game_state* GameState = GameApi.GameInit(&Plat, GameMemory);
   if (!GameState) { Error("Initializing Game State :( "); return 1; }
 
   PlatformLaunchWorkerThreads(&Plat, GameApi.WorkerInit, GameApi.WorkerMain, GameState);
@@ -287,7 +283,7 @@ main()
       CloseLibrary(GameLib);
       GameLib = OpenLibrary(DEFAULT_GAME_LIB);
 
-      Ensure(InitializeGameApi(&GameApi, &GL, GameLib));
+      Ensure(InitializeGameApi(&GameApi, GameLib));
 
       UnsignalFutex(&Plat.SuspendWorkerThreads);
     }

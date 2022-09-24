@@ -1,3 +1,7 @@
+#ifndef PLATFORM_GL_IMPLEMENTATIONS
+#error "Requires PLATFORM_GL_IMPLEMENTATIONS"
+#endif
+
 #define INVALID_SHADER_UNIFORM (-1)
 #define INVALID_SHADER (u32)(-1)
 
@@ -234,4 +238,3 @@ UseShader(shader *Shader)
   BindShaderUniforms(Shader);
   return;
 }
-

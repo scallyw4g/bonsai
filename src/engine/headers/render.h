@@ -1,3 +1,4 @@
+
 debug_global float
 g_quad_vertex_buffer_data[] =
 {
@@ -90,13 +91,6 @@ Untextured3dGeometryBuffer(v3* Verts, v4* Colors, v3* Normals, u32 Count)
   Result.At = Count;
 
   return Result;
-}
-
-inline void
-SetViewport(v2 Dim)
-{
-  GL.Viewport(0, 0, (s32)Dim.x, (s32)Dim.y);
-  return;
 }
 
 /* TODO(Jesse, id: 84, tags: opengl, completeness, engine): This only gets used

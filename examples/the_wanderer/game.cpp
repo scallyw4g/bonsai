@@ -182,8 +182,6 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 {
   Info("Initializing Game");
 
-  GL = *GL_in;
-
   game_state *GameState = Allocate(game_state, GameMemory, 1);
   GameState->Memory = GameMemory;
   GameState->Plat = Plat;
