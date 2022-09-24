@@ -39,6 +39,8 @@ poof(
 link_internal void
 DrainQueue(work_queue* Queue, thread_local_state* Thread, bonsai_worker_thread_callback GameWorkerThreadCallback)
 {
+  TIMED_FUNCTION();
+
   for (;;)
   {
     WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();

@@ -215,6 +215,8 @@ RenderPostBuffer(post_processing_group *PostGroup, untextured_3d_geometry_buffer
 link_export void
 Renderer_FrameEnd(platform *Plat)
 {
+  TIMED_FUNCTION();
+
   graphics        *Graphics = Plat->Graphics;
   ao_render_group *AoGroup  = Graphics->AoGroup;
   gpu_mapped_element_buffer *GpuMap = GetCurrentGpuMap(Graphics);

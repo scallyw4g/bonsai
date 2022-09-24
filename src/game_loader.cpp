@@ -327,23 +327,17 @@ main()
     /*   if (IsDisconnected(&Plat.Network)) { ConnectToServer(&Plat.Network); } */
     /* END_BLOCK("Network Ops"); */
 
-    TIMED_BLOCK("GameUpdate");
+    TIMED_BLOCK("GameMain");
       GameApi.GameMain(&Plat, GameState, &Hotkeys, &MainThread);
-    END_BLOCK("GameUpdate");
+    END_BLOCK("GameMain");
 
-    TIMED_BLOCK("DrainQueue");
-      DrainQueue(&Plat.HighPriority, &MainThread, GameApi.WorkerMain);
-    END_BLOCK("DrainQueue");
+    DrainQueue(&Plat.HighPriority, &MainThread, GameApi.WorkerMain);
 
-    TIMED_BLOCK("WaitForWorkerThreads");
-      WaitForWorkerThreads(&Plat.HighPriorityWorkerCount);
-    END_BLOCK("WaitForWorkerThreads");
+    WaitForWorkerThreads(&Plat.HighPriorityWorkerCount);
 
     DEBUG_FRAME_END(&Plat);
 
-    TIMED_BLOCK("Render");
-      GameApi.Render(&Plat);
-    END_BLOCK();
+    GameApi.Render(&Plat);
 
     Ensure(RewindArena(TranArena));
 
