@@ -20,8 +20,6 @@ struct game_state
   model   *Models;
   event_queue EventQueue;
 
-  mesh_freelist MeshFreelist;
-
   entity *EntityTable[TOTAL_ENTITY_COUNT];
   entity *Player;
 };

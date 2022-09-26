@@ -19,7 +19,7 @@ IsFilledInChunk( chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim)
 {
   b32 isFilled = True;
 
-  if (Chunk && ( IsSet(Chunk, Chunk_Initialized) || IsSet(Chunk, Chunk_MeshComplete) ))
+  if (Chunk && ( IsSet(Chunk, Chunk_VoxelsInitialized) ))
   {
     s32 i = GetIndex(VoxelP, Dim);
 
@@ -73,5 +73,5 @@ FillChunk(chunk_data *chunk, chunk_dimension Dim, u8 ColorIndex = BLACK)
     chunk->Voxels[i].Color = ColorIndex;
   }
 
-  SetFlag(chunk, Chunk_Initialized);
+  SetFlag(chunk, Chunk_VoxelsInitialized);
 }

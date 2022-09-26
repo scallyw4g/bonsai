@@ -1,4 +1,22 @@
 
+link_internal void
+FinalizeChunkInitialization(world_chunk *Chunk)
+{
+  FullBarrier;
+
+  /* UnSetFlag(Chunk->Data, Chunk_Garbage); */
+  UnSetFlag(Chunk->Data, Chunk_Queued);
+
+  SetFlag(Chunk->Data, Chunk_VoxelsInitialized);
+
+  Chunk->LodMesh_Complete = True;
+
+  if (Chunk->Mesh && Chunk->Mesh->At)
+  {
+    SetFlag(Chunk->Data, Chunk_MeshComplete);
+  }
+}
+
 inline b32
 ChunkIsGarbage(world_chunk* Chunk)
 {
@@ -44,9 +62,6 @@ AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension
 inline u32
 GetWorldChunkHash(world_position P, chunk_dimension VisibleRegion)
 {
-  world_position NonzeroP = P + World_Position(1);
-
-
   s32 WHS_Factor = (s32)WORLD_HASH_SIZE / (Volume(VisibleRegion))+1;
 
   s32 xFactor = WHS_Factor;
@@ -65,9 +80,10 @@ GetWorldChunkHash(world_position P, chunk_dimension VisibleRegion)
   return HashIndex;
 }
 
-link_internal void
+link_internal b32
 InsertChunkIntoWorld(world *World, world_chunk *Chunk, chunk_dimension VisibleRegion)
 {
+  b32 Result = True;
   u32 HashIndex = GetWorldChunkHash(Chunk->WorldP, VisibleRegion);
   u32 StartingHashIndex = HashIndex;
 #if BONSAI_INTERNAL
@@ -82,7 +98,7 @@ InsertChunkIntoWorld(world *World, world_chunk *Chunk, chunk_dimension VisibleRe
 
     if (HashIndex == StartingHashIndex)
     {
-      Error("Hashtable full!");
+      Result = False;
       break;
     }
 
@@ -102,27 +118,38 @@ InsertChunkIntoWorld(world *World, world_chunk *Chunk, chunk_dimension VisibleRe
 
   *Current = Chunk;
 
-  return;
+  return Result;
 }
 
 link_internal world_chunk*
 GetWorldChunkFor(memory_arena *Storage, world *World, world_position P, chunk_dimension VisibleRegion)
 {
   world_chunk *Result = 0;
+  world_chunk *Chunk = 0;
 
   if (World->FreeChunkCount == 0)
   {
-    Result = AllocateWorldChunk(Storage, P, World->ChunkDim);
+    Chunk = AllocateWorldChunk(Storage, P, World->ChunkDim);
   }
   else
   {
-    Result = World->FreeChunks[--World->FreeChunkCount];
+    Chunk = World->FreeChunks[--World->FreeChunkCount];
   }
+  Assert(Chunk->Data->Flags == Chunk_Uninitialized);
 
-  Assert(Result->Data->Flags == Chunk_Uninitialized);
-
-  Result->WorldP = P;
-  InsertChunkIntoWorld(World, Result, VisibleRegion);
+  if (Chunk)
+  {
+    Chunk->WorldP = P;
+    if (InsertChunkIntoWorld(World, Chunk, VisibleRegion))
+    {
+      Result = Chunk;
+    }
+    else
+    {
+      Leak("Leaking chunk, Call FreeWorldChunk");
+      /* FreeWorldChunk(World, Chunk, Storage, Resources->MeshFreelist); */
+    }
+  }
 
   return Result;
 }
@@ -156,11 +183,9 @@ link_internal void
 FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, memory_arena* Memory)
 {
   TIMED_FUNCTION();
-  if ( Chunk->Data->Flags == Chunk_MeshComplete )
-  {
-    Chunk->LodMesh_Complete = False;
-    Chunk->LodMesh->At = 0;
 
+  /* if ( NotSet(Chunk->Data, Chunk_Queued) ) */
+  {
     if (Chunk->Mesh)
     {
       DeallocateMesh(Chunk, MeshFreelist, Memory);
@@ -169,33 +194,48 @@ FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, m
     Assert(World->FreeChunkCount < FREELIST_SIZE);
     World->FreeChunks[World->FreeChunkCount++] = Chunk;
 
+    chunk_data *Data = Chunk->Data;
+    u32 Vol = Chunk->DimX * Chunk->DimY * Chunk->DimZ;
+    for (u32 VoxIndex = 0; VoxIndex < Vol; ++VoxIndex)
+    {
+      Data->Voxels[VoxIndex] = {};
+    }
+
+    Clear(Chunk);
+    /* Clear(Data); */
+    Chunk->Data = Data;
     ZeroChunk(Chunk->Data);
   }
-  else
+  /* else */
   {
-    SetFlag(Chunk, Chunk_Garbage);
+    /* SetFlag(Chunk, Chunk_Garbage); */
   }
-
-  return;
 }
 
 link_internal world_chunk*
 GetWorldChunk( world *World, world_position P, chunk_dimension VisibleRegion)
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
   u32 HashIndex = GetWorldChunkHash(P, VisibleRegion);
+  u32 StartingHashIndex = HashIndex;
 
   world_chunk *Result = World->ChunkHash[HashIndex];
 
-  while (Result)
+  for (;;)
   {
-    if (Result->WorldP == P)
+    if (Result && Result->WorldP == P)
     {
       break;
     }
 
     HashIndex = (HashIndex + 1) % WORLD_HASH_SIZE;
     Result = World->ChunkHash[HashIndex];
+
+    if (HashIndex == StartingHashIndex)
+    {
+      Result = 0;
+      break;
+    }
   }
 
   return Result;
@@ -219,14 +259,21 @@ CollectUnusedChunks(world *World, mesh_freelist* MeshFreelist, memory_arena* Mem
     world_chunk **ChunkBucket = WorldHash + ChunkIndex;
     world_chunk *Chunk = *ChunkBucket;
 
-    if (Chunk)
+    if ( Chunk )
     {
       world_position ChunkP = Chunk->WorldP;
 
-      if (!(ChunkP >= Min && ChunkP <= Max))
+      if (! (ChunkP >= Min && ChunkP <= Max) )
       {
-        FreeWorldChunk(World, Chunk, MeshFreelist, Memory);
-        *ChunkBucket = 0;
+        if (NotSet(Chunk, Chunk_Queued))
+        {
+          FreeWorldChunk(World, Chunk, MeshFreelist, Memory);
+          *ChunkBucket = 0;
+        }
+        else
+        {
+          SetFlag(Chunk, Chunk_Garbage);
+        }
       }
     }
   }
@@ -429,8 +476,8 @@ BuildWorldChunkMesh( world_chunk *ReadChunk,
   chunk_data *WriteChunkData = WriteChunk->Data;
   chunk_data *ReadChunkData = ReadChunk->Data;
 
-  Assert(IsSet(ReadChunk, Chunk_Initialized));
-  Assert(IsSet(WriteChunk, Chunk_Initialized));
+  Assert(IsSet(ReadChunk, Chunk_VoxelsInitialized));
+  Assert(IsSet(WriteChunk, Chunk_VoxelsInitialized));
 
   voxel_position rightVoxel;
   voxel_position leftVoxel;
@@ -546,7 +593,7 @@ BuildWorldChunkMesh( world *World,
 
   chunk_data *Chunk = WorldChunk->Data;
 
-  Assert(IsSet(Chunk, Chunk_Initialized));
+  Assert(IsSet(Chunk, Chunk_VoxelsInitialized));
 
   Assert(NotSet(Chunk, Chunk_Queued));
 
@@ -670,13 +717,15 @@ InitializeWorldChunkPerlin( perlin_noise *Noise,
   InitChunkPerlin(Noise, SyntheticChunk, SynChunkDim, GRASS_GREEN, WorldChunkDim);
   CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Voxel_Position(1));
 
-  SetFlag(DestChunk, Chunk_Initialized);
-  SetFlag(SyntheticChunk, Chunk_Initialized);
+  FullBarrier;
+
+  SetFlag(DestChunk, Chunk_VoxelsInitialized);
+  SetFlag(SyntheticChunk, Chunk_VoxelsInitialized);
 
   BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, DestChunk,  WorldChunkDim, DestGeometry);
   DestChunk->Mesh = DestGeometry;
 
-  DestChunk->Data->Flags = Chunk_MeshComplete;
+  FinalizeChunkInitialization(DestChunk);
 
   return;
 }
@@ -711,12 +760,14 @@ InitializeWorldChunkPlane(world_chunk *DestChunk, chunk_dimension WorldChunkDim,
   InitChunkPlane(1, SyntheticChunk, SynChunkDim, GREEN);
   CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Voxel_Position(1));
 
-  SetFlag(DestChunk, Chunk_Initialized);
-  SetFlag(SyntheticChunk, Chunk_Initialized);
+  FullBarrier;
+
+  SetFlag(DestChunk, Chunk_VoxelsInitialized);
+  SetFlag(SyntheticChunk, Chunk_VoxelsInitialized);
 
   BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, DestGeometry);
 
-  DestChunk->Data->Flags = Chunk_MeshComplete;
+  FinalizeChunkInitialization(DestChunk);
 
   return;
 }
@@ -1054,7 +1105,7 @@ HasUnfilledNeighbors(s32 Index, world_chunk* Chunk, chunk_dimension ChunkDim)
 
   chunk_data *ChunkData = Chunk->Data;
 
-  Assert(IsSet(Chunk, Chunk_Initialized) || IsSet(Chunk, Chunk_MeshComplete));
+  Assert( IsSet(Chunk, Chunk_VoxelsInitialized) );
 
   s32 VolumeChunkDim = Volume(ChunkDim);
   Assert(Index < VolumeChunkDim);
@@ -1280,11 +1331,13 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
     world_chunk *SyntheticChunk = AllocateWorldChunk(Thread->TempMemory, SynChunkP, SynChunkDim );
 
-    u32 SyntheticChunkSum = InitChunkPerlinPlane(Thread->Noise, SyntheticChunk, SynChunkDim, GRASS_GREEN, Amplititude, zMin, WorldChunkDim);
+    u32 SyntheticChunkSum = InitChunkPerlinPlane(&Thread->Noise, SyntheticChunk, SynChunkDim, GRASS_GREEN, Amplititude, zMin, WorldChunkDim);
     CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Voxel_Position(1));
 
-    SetFlag(DestChunk, Chunk_Initialized);
-    SetFlag(SyntheticChunk, Chunk_Initialized);
+    FullBarrier;
+
+    SetFlag(DestChunk, Chunk_VoxelsInitialized);
+    SetFlag(SyntheticChunk, Chunk_VoxelsInitialized);
 
     if (SyntheticChunkSum > 0 && SyntheticChunkSum < (u32)Volume(SynChunkDim))
     {
@@ -1294,6 +1347,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
     }
 
 
+#if 0
     if (DestChunk->Mesh && DestChunk->Mesh->At)  // Compute 0th LOD
     {
       u32 SynChunkVolume = (u32)Volume(SynChunkDim);
@@ -1538,11 +1592,12 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 #endif
       }
     }
+#endif
 
   }
 
-  DestChunk->LodMesh_Complete = True;
-  DestChunk->Data->Flags = Chunk_MeshComplete;
+
+  FinalizeChunkInitialization(DestChunk);
 
   return;
 }
@@ -1582,7 +1637,7 @@ InitializeWorldChunkEmpty(world_chunk *DestChunk)
   }
 #endif
 
-  DestChunk->Data->Flags = Chunk_MeshComplete;
+  FinalizeChunkInitialization(DestChunk);
 
   return;
 }

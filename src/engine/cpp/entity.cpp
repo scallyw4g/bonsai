@@ -46,8 +46,9 @@ IsPlayer(entity *Entity)
 collision_event
 GetCollision( world *World, canonical_position TestP, v3 CollisionDim, chunk_dimension VisibleRegion)
 {
-  collision_event Collision;
-  Collision.didCollide = false;
+  TIMED_FUNCTION();
+
+  collision_event Collision = {};
 
   chunk_dimension WorldChunkDim = World->ChunkDim;
 
@@ -78,10 +79,15 @@ GetCollision( world *World, canonical_position TestP, v3 CollisionDim, chunk_dim
 
         if (!chunk)
         {
+          /* InvalidCodePath(); */
           Collision.CP = LoopTestP;
           Collision.didCollide = true;
           Collision.Chunk = 0;
           goto end;
+        }
+
+        if (IsSet(chunk, Chunk_MeshComplete))
+        {
         }
 
         if ( IsFilledInChunk(chunk->Data, Voxel_Position(LoopTestP.Offset), World->ChunkDim) )
@@ -143,6 +149,8 @@ GetCollision(entity **Entities, entity *Entity, chunk_dimension WorldChunkDim)
 collision_event
 GetCollision(world *World, entity *Entity, chunk_dimension VisibleRegion, v3 Offset = V3(0,0,0) )
 {
+  TIMED_FUNCTION();
+
   collision_event C = {};
 
   if ( !Spawned(Entity) )
@@ -473,7 +481,7 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset)
   Params.EmissionChance = 2.0f;
 
   Params.Physics.Speed = 18;
-  Params.Physics.Drag = 2.0f;
+  Params.Physics.Drag = V3(2.0f);
   Params.Physics.Mass = 0.3f;
 
   SpawnParticleSystem(Entity->Emitter, &Params );
@@ -502,15 +510,15 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset)
   // FIXME(Jesse): Make a mode for infinite emission
   Params.EmissionLifespan = f32_MAX;
   Params.ParticleLifespan = 0.35f;
-  Params.EmissionChance = 4.0f;
+  Params.EmissionChance = 3.0f;
 
   Params.Physics.Speed = 8;
-  Params.Physics.Drag = 2.2f;
+  Params.Physics.Drag = V3(2.2f);
   Params.Physics.Mass = 1.0f;
 
   Params.Physics.Velocity = V3(0.0f, 0.0f, 7.0f);
 
-  Params.StartingDiameter = V3(0.40f);
+  Params.StartingDiameter = V3(0.85f);
 
   Params.SystemMovementCoefficient = 0.1f;
 
@@ -520,25 +528,47 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset)
 }
 
 void
-SpawnPlayer(model* Models, entity *Player, canonical_position InitialP, random_series* Entropy)
+SpawnPlayer(platform *Plat, world *World, model* Models, entity *Player, canonical_position InitialP, random_series* Entropy)
 {
   Info("Player Spawned");
 
   physics Physics = {};
-  Physics.Drag = 6.0f;
-  Physics.Mass = 7.0f;
-  Physics.Speed = 20000;
+  Physics.Drag = V3(1.f, 1.f, 1.f);
+  Physics.Mass = 1.f;
+  Physics.Speed = 1;
 
-  r32 Scale = 0.40f;
+  r32 Scale = 1.0f;
   r32 RateOfFire = 0.8f;
   s32 Health = 10;
 
   model *Model = 0;
   v3 CollisionVolumeRadius = {};
+
   if (Models)
   {
     Model = Models + ModelIndex_Player;
-    CollisionVolumeRadius = Model->Dim * Scale * 0.5f;
+    CollisionVolumeRadius = Model->Dim * Scale * 0.5f; // 0.5f is to shrink to a radius, instead of dim
+  }
+
+  for (s32 z = -1; z < (s32)CollisionVolumeRadius.z; ++ z)
+  {
+    for (s32 y = -1; y < (s32)CollisionVolumeRadius.y; ++ y)
+    {
+      for (s32 x = -1; x < (s32)CollisionVolumeRadius.x; ++ x)
+      {
+        canonical_position CP = Canonicalize(World->ChunkDim, V3(x, y, z), Player->P.WorldP);
+
+        world_chunk *Chunk = GetWorldChunk( World, CP.WorldP, World->VisibleRegion );
+        if (Chunk == 0)
+        {
+          Chunk = GetWorldChunkFor(World->Memory, World, CP.WorldP, World->VisibleRegion);
+          if (Chunk)
+          {
+            QueueChunkForInit(&Plat->HighPriority, Chunk);
+          }
+        }
+      }
+    }
   }
 
   SpawnEntity(
@@ -556,8 +586,10 @@ SpawnPlayer(model* Models, entity *Player, canonical_position InitialP, random_s
       Health
     );
 
-  v3 Offset = V3(4.5f, -0.5f, 2.0f);
+  v3 Offset = V3(7.0f, 0.0f, 5.0f);
   SpawnFire(Player, Entropy, Offset);
+
+  WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
 
   return;
 }
@@ -569,7 +601,10 @@ EntityWorldCollision(world *World, entity *Entity, collision_event *Event, chunk
 
   switch (Entity->Type)
   {
-    case EntityType_Player: {} break;
+    case EntityType_Player:
+    {
+
+    } break;
 
     case EntityType_PlayerProjectile:
     {
@@ -746,39 +781,47 @@ DoEntityCollisions(entity** EntityTable, entity *Entity, event_queue* EventQueue
 }
 
 v3
-GetAtomicUpdateVector( v3 Gross )
+ClampBetween( r32 Min, v3 Gross, r32 Max )
 {
   v3 Result = Gross;
 
-  if ( Gross.x > 1.0f )
+  if ( Gross.x > Max )
   {
-    Result.x = 1.0f;
+    Result.x = Max;
   }
-  if ( Gross.x < -1.0f )
+  if ( Gross.x < Min )
   {
-    Result.x = -1.0f;
-  }
-
-
-  if ( Gross.y > 1.0f )
-  {
-    Result.y = 1.0f;
-  }
-  if ( Gross.y < -1.0f )
-  {
-    Result.y = -1.0f;
+    Result.x = Min;
   }
 
 
-  if ( Gross.z > 1.0f )
+  if ( Gross.y > Max )
   {
-    Result.z = 1.0f;
+    Result.y = Max;
   }
-  if ( Gross.z < -1.0f )
+  if ( Gross.y < Min )
   {
-    Result.z = -1.0f;
+    Result.y = Min;
   }
 
+
+  if ( Gross.z > Max )
+  {
+    Result.z = Max;
+  }
+  if ( Gross.z < Min )
+  {
+    Result.z = Min;
+  }
+
+  return Result;
+}
+
+r32
+Truncate(r32 Input)
+{
+  s32 Truncated = (s32)Input;
+  r32 Result = (r32)Truncated;
   return Result;
 }
 
@@ -786,15 +829,16 @@ void
 UpdateEntityP(world* World, entity *Entity, v3 GrossDelta, chunk_dimension VisibleRegion)
 {
   TIMED_FUNCTION();
+
+  /* DebugLine("GrossDelta (%f %f %f)", GrossDelta.x, GrossDelta.y, GrossDelta.z); */
+
   chunk_dimension WorldChunkDim = World->ChunkDim;
   collision_event C = {};
   v3 Remaining = GrossDelta;
 
-  while ( Remaining != V3(0,0,0) )
+  while (LengthSq(Remaining) > 0)
   {
-    Assert(Length(Remaining) >= 0);
-
-    v3 StepDelta = GetAtomicUpdateVector(Remaining);
+    v3 StepDelta = ClampBetween(-1.0f, Remaining, 1.0f);
     Remaining -= StepDelta;
 
     for (u32 AxisIndex = 0;
@@ -804,16 +848,34 @@ UpdateEntityP(world* World, entity *Entity, v3 GrossDelta, chunk_dimension Visib
       Entity->P.Offset.E[AxisIndex] += StepDelta.E[AxisIndex];
       Entity->P = Canonicalize(WorldChunkDim, Entity->P);
       C = GetCollision(World, Entity, VisibleRegion);
-      if (C.didCollide)
+
+      if ( C.didCollide ) //&& C.Chunk && IsSet(C.Chunk->Data, Chunk_VoxelsInitialized) )
       {
+        /* Entity->P.Offset.E[AxisIndex] -= StepDelta.E[AxisIndex]; */
+        /* Entity->P = Canonicalize(WorldChunkDim, Entity->P); */
+
         Entity->Physics.Velocity.E[AxisIndex] = 0;
+        Entity->Physics.Delta.E[AxisIndex] = 0;
+
+        if (C.Chunk == 0 || NotSet(C.Chunk->Data, Chunk_VoxelsInitialized) )
+        {
+          break;
+        }
+
         Entity->P.Offset.E[AxisIndex] = C.CP.Offset.E[AxisIndex];
         Entity->P.WorldP.E[AxisIndex] = C.CP.WorldP.E[AxisIndex];
 
         if (StepDelta.E[AxisIndex] > 0)
+        {
           Entity->P.Offset.E[AxisIndex] -= (Entity->CollisionVolumeRadius.E[AxisIndex]*2);
-        else
-          Entity->P.Offset.E[AxisIndex]++;
+        }
+        else if (StepDelta.E[AxisIndex] < 0)
+        {
+          /* Truncate(Entity->P.Offset.E[AxisIndex]);// += 1.0f; */
+          /* Entity->P.Offset.E[AxisIndex] += 1.0f; */
+          Entity->P.Offset.E[AxisIndex] ++;
+          /* Truncate(Entity->P.Offset.E[AxisIndex] += 1.0f); */
+        }
 
         Entity->P = Canonicalize(WorldChunkDim, Entity->P);
         EntityWorldCollision(World, Entity, &C, VisibleRegion);
@@ -832,7 +894,7 @@ UpdateEntityP(world* World, entity *Entity, v3 GrossDelta, chunk_dimension Visib
 
   // Entites that aren't moving can still be positioned outside the world if
   // the player moves the world to do so
-  if (AssertCollision.didCollide )
+  if (AssertCollision.didCollide)
     EntityWorldCollision(World, Entity, &C, VisibleRegion);
 
   return;
@@ -872,7 +934,6 @@ void
 UpdateVisibleRegion(world* World, world_position WorldDisp)
 {
   World->Center += WorldDisp;
-  return;
 }
 
 b32
@@ -890,7 +951,6 @@ SpawnParticle(particle_system *System)
     r32 Z = RandomBilateral(&System->Entropy);
 
     v3 Random = V3(X,Y,Z);
-
     Particle->Offset = (Random*System->SpawnRegion.Radius) + System->SpawnRegion.Center;
 
     Particle->Physics = System->ParticlePhysics;
@@ -934,7 +994,7 @@ SimulateAndRenderParticleSystem(
     r32 dt
   )
 {
-  particle_system *System       = SystemEntity->Emitter;
+  particle_system *System = SystemEntity->Emitter;
 
   if (Inactive(System))
     return;
@@ -945,6 +1005,24 @@ SimulateAndRenderParticleSystem(
   {
     while (SpawnParticle(System));
   }
+
+  v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera, WorldChunkDim);
+
+  /* DEBUG_VALUE(System->SpawnRegion.Center.x); */
+  /* DEBUG_VALUE(System->SpawnRegion.Center.y); */
+  /* DEBUG_VALUE(System->SpawnRegion.Center.z); */
+
+  /* DEBUG_VALUE(System->SpawnRegion.Radius.x); */
+  /* DEBUG_VALUE(System->SpawnRegion.Radius.y); */
+  /* DEBUG_VALUE(System->SpawnRegion.Radius.z); */
+
+  /* /1* DEBUG_VALUE(420.0f); *1/ */
+  /* if (LengthSq(RenderSpaceP) > 0.0f) */
+  /* { */
+  /*   DEBUG_VALUE(RenderSpaceP.x); */
+  /*   DEBUG_VALUE(RenderSpaceP.y); */
+  /*   DEBUG_VALUE(RenderSpaceP.z); */
+  /* } */
 
   v3 EmissionColor = Normalize(V3(3,1,0));
   for ( s32 ParticleIndex = 0;
@@ -958,6 +1036,18 @@ SimulateAndRenderParticleSystem(
 
     Particle->Offset += Particle->Physics.Delta;
     Particle->Offset -= EntityDelta * System->SystemMovementCoefficient;
+
+/*     DEBUG_VALUE(EntityDelta.x); */
+/*     DEBUG_VALUE(EntityDelta.y); */
+/*     DEBUG_VALUE(EntityDelta.z); */
+
+/*     DEBUG_VALUE(Particle->Physics.Delta.x); */
+/*     DEBUG_VALUE(Particle->Physics.Delta.y); */
+/*     DEBUG_VALUE(Particle->Physics.Delta.z); */
+
+/*     DEBUG_VALUE(Particle->Offset.x); */
+/*     DEBUG_VALUE(Particle->Offset.y); */
+/*     DEBUG_VALUE(Particle->Offset.z); */
 
     v3 MinDiameter = V3(0.1f);
 
@@ -976,11 +1066,10 @@ SimulateAndRenderParticleSystem(
     u8 ColorIndex = (u8)((Particle->RemainingLifespan / System->ParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
     Assert(ColorIndex >= 0 && ColorIndex <= PARTICLE_SYSTEM_COLOR_COUNT);
 
-    v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera, WorldChunkDim);
     DrawVoxel( Dest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 3.0f );
 
 #if 0
-    if (RandomUnilateral(&System->Entropy) > 0.9)
+    if (RandomUnilateral(&System->Entropy) > 0.99f)
     {
       DoLight(Graphics->Lights, RenderSpaceP + Particle->Offset, EmissionColor);
     }
@@ -988,7 +1077,7 @@ SimulateAndRenderParticleSystem(
   }
 
 
-#if 1
+#if 0
   v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera, WorldChunkDim) + System->SpawnRegion.Center;
   DoLight(Graphics->Lights, RenderSpaceP, 10.0f*EmissionColor);
 #endif
@@ -1000,18 +1089,30 @@ void
 SimulatePlayer(world* World, entity *Player, camera* Camera, hotkeys *Hotkeys, r32 dt, chunk_dimension VisibleRegion)
 {
   TIMED_FUNCTION();
+
   if (Spawned(Player))
   {
     if (Hotkeys)
     {
       Player->Physics.Force += GetCameraRelativeInput(Hotkeys, Camera)*dt;
+      /* Player->Physics.Force += GetOrthographicInputs(Hotkeys)*dt; */
     }
-    /* Player->Physics.Force += GetOrthographicInputs(Hotkeys)*dt; */
+
+
+    /* DEBUG_VALUE(Player->Physics.Speed); */
 
     PhysicsUpdate(&Player->Physics, dt);
 
     world_position OriginalPlayerP = Player->P.WorldP;
     UpdateEntityP( World, Player, Player->Physics.Delta, VisibleRegion);
+
+    DEBUG_VALUE(Player->Physics.Velocity.x);
+    DEBUG_VALUE(Player->Physics.Velocity.y);
+    DEBUG_VALUE(Player->Physics.Velocity.z);
+
+    DEBUG_VALUE(Player->Physics.Delta.x);
+    DEBUG_VALUE(Player->Physics.Delta.y);
+    DEBUG_VALUE(Player->Physics.Delta.z);
 
     world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP );
     UpdateVisibleRegion(World, WorldDisp);
@@ -1129,7 +1230,7 @@ SimulateAndRenderParticleSystems(entity** EntityTable, chunk_dimension WorldChun
 inline b32
 IsGrounded( world *World, entity *entity, chunk_dimension VisibleRegion)
 {
-  collision_event c = GetCollision(World, entity, VisibleRegion, V3(0.0f,-0.001f, 0.0f));
+  collision_event c = GetCollision(World, entity, VisibleRegion, V3(0.0f, 0.0f, -0.0001f));
   return c.didCollide;
 }
 

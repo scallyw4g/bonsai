@@ -7,12 +7,6 @@ struct random_series;
 
 struct game_state
 {
-  platform      *Plat;
-  world         *World;
-
-  memory_arena*   Memory;
-  heap_allocator  Heap;
-
   random_series Entropy;
 
   perlin_noise Noise;
@@ -20,9 +14,6 @@ struct game_state
   model   *Models;
   event_queue EventQueue;
 
-  mesh_freelist MeshFreelist;
-
-  entity** EntityTable;
   entity *Player;
 
 #if BONSAI_DEBUG_SYSTEM_API

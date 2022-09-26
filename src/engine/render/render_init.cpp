@@ -87,7 +87,7 @@ MakeLightingShader(memory_arena *GraphicsMemory,
 
   AssertNoGlErrors;
 
-#if 0
+#if 1
   if (Lights)
   {
     *Current = GetUniform(GraphicsMemory, &Shader, Lights->Lights, "Lights");
@@ -283,7 +283,7 @@ InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory, v2
 }
 
 void
-StandardCamera(camera* Camera, float FarClip, float DistanceFromTarget = 600.0f)
+StandardCamera(camera* Camera, float FarClip, float DistanceFromTarget, canonical_position InitialTarget)
 {
   // NOTE(Jesse): I changed this to a pointer such that we didn't have to know
   // the size of camera structs in the debug system, but I didn't bother to
@@ -293,16 +293,26 @@ StandardCamera(camera* Camera, float FarClip, float DistanceFromTarget = 600.0f)
   // @allocate_camera_at_startup
   Assert(Camera);
 
+  Clear(Camera);
+
   Camera->Frust.farClip = FarClip;
   Camera->Frust.nearClip = 1.0f;
   Camera->Frust.width = 30.0f;
   Camera->Frust.FOV = 45.0f;
   Camera->Up = WORLD_Z;
   Camera->Right = WORLD_X;
-  Camera->Front = V3(0,0,0);
-  Camera->Pitch = PI32;
+
+  Camera->Pitch = PI32 - (PI32*0.25f);
+  Camera->Yaw = PI32*0.15f;
 
   Camera->DistanceFromTarget = DistanceFromTarget;
+
+  /* UpdateCameraP( */
+  /*     Canonical_Position(Voxel_Position(1,1,1), World_Position(0,0,0)), */
+  /*     Camera, */
+  /*     WorldChunkDim); */
+
+  UpdateGameCamera({}, {}, InitialTarget, Camera, {{32, 32, 32}});
 
   return;
 }
@@ -331,7 +341,7 @@ GraphicsInit(memory_arena *GraphicsMemory)
   Result->Lights = LightingInit(GraphicsMemory);
 
   Result->Camera = Allocate(camera, GraphicsMemory, 1);
-  StandardCamera(Result->Camera, 1000.0f);
+  StandardCamera(Result->Camera, 1000.f, 600.f, {});
 
   AllocateGpuElementBuffer(Result->GpuBuffers + 0, (u32)Megabytes(4));
   AllocateGpuElementBuffer(Result->GpuBuffers + 1, (u32)Megabytes(4));

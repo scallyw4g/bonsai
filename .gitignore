@@ -15,5 +15,4 @@ build/*
 
 bin/
 tmp/
-assets/
 breakpoints

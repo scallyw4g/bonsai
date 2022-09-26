@@ -1,3 +1,47 @@
+
+struct world;
+struct heap_allocator;
+struct entity;
+
+struct engine_resources
+{
+  os         *Os;
+  platform   *Plat;
+  graphics   *Graphics;
+  hotkeys    *Hotkeys;
+
+  world      *World;
+  game_state *GameState;
+
+
+  heap_allocator Heap;
+  memory_arena *Memory;
+
+  entity **EntityTable;
+
+  // TODO(Jesse): Formalize this
+  /* world_position *VisibleRegion; */
+
+  // TODO(Jesse): Put this on the camera?
+  canonical_position *CameraTargetP;
+
+  mesh_freelist MeshFreelist;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 enum frame_event_type
 {
   FrameEvent_Undefined,
@@ -97,7 +141,7 @@ struct physics
   v3 Force;
   v3 Delta;
 
-  r32 Drag;
+  v3 Drag;
   r32 Mass;
 
   r32 Speed;
@@ -154,7 +198,7 @@ struct particle_system
 
   u8 Colors[PARTICLE_SYSTEM_COLOR_COUNT];
 
-#define PARTICLES_PER_SYSTEM   (1024)
+#define PARTICLES_PER_SYSTEM   (4096)
   particle Particles[PARTICLES_PER_SYSTEM];
 };
 
@@ -262,12 +306,11 @@ struct world
   world_chunk **FreeChunks;
   umm FreeChunkCount;
 
-  // This is the number of chunks in xyz we're going to update and render
-  chunk_dimension VisibleRegion;
+  world_position Center;
+  chunk_dimension VisibleRegion; // The number of chunks in xyz we're going to update and render
 
   chunk_dimension ChunkDim;
 
-  world_position Center;
 
   memory_arena* Memory;
 };
@@ -591,7 +634,6 @@ void
 ZeroChunk( chunk_data *Chunk )
 {
   Chunk->Flags = Chunk_Uninitialized;
-  return;
 }
 
 inline s32

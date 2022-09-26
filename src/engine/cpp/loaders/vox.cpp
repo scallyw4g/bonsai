@@ -126,13 +126,6 @@ ReadXYZIChunk(FILE *File, int* byteCounter)
   return nVoxels;
 }
 
-struct vox_data
-{
-  chunk_dimension Dim;
-  chunk_data *ChunkData;
-  v4 *Palette;
-};
-
 vox_data
 LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepath)
 {
@@ -245,7 +238,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
           chunk_dimension ModelDim = Max - Min;
 
           Result.ChunkData = AllocateChunk(WorldStorage, ModelDim);
-          Result.Dim = ModelDim;
+          Result.ChunkData->Dim = ModelDim;
 
           for( int VoxelCacheIndex = 0;
                VoxelCacheIndex < ActualVoxelCount;
@@ -259,7 +252,9 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
 
           free(LocalVoxelCache);
 
-          SetFlag(Result.ChunkData, Chunk_Initialized);
+          FullBarrier;
+
+          SetFlag(Result.ChunkData, Chunk_VoxelsInitialized);
         } break;
 
         InvalidDefaultCase;
@@ -287,7 +282,7 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
   vox_data Vox = LoadVoxData(WorldStorage, Heap, filepath);
   chunk_data *ChunkData = Vox.ChunkData;
 
-  Result.Dim = Vox.Dim;
+  Result.Dim = ChunkData->Dim;
 
   // TODO(Jesse): This wastes a shit-ton of memory.  Should probably have a way
   // of realloc-ing, or sum up how much memory we'll need first?

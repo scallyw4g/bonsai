@@ -142,7 +142,8 @@ DeserializeMesh(native_file *File, world_chunk_file_header *Header, untextured_3
   return Result;
 }
 
-global_variable counted_string Global_AssetPrefixPath = CSz("assets");
+global_variable counted_string
+Global_AssetPrefixPath = CSz("");
 
 link_internal world_chunk_file_header
 ReadWorldChunkFileHeader(native_file *File)

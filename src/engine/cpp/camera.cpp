@@ -3,7 +3,7 @@ link_internal void
 UpdateCameraP(canonical_position NewTarget, camera *Camera, chunk_dimension WorldChunkDim)
 {
   TIMED_FUNCTION();
-  if (Camera->DistanceFromTarget <= 0.1f)
+  if (Camera->DistanceFromTarget < 0.1f)
   {
     Camera->DistanceFromTarget = 0.1f;
   }
@@ -21,6 +21,7 @@ UpdateCameraP(canonical_position NewTarget, camera *Camera, chunk_dimension Worl
 
   Camera->TargetP = Canonicalize(WorldChunkDim, NewTarget - (Camera->Front*Camera->DistanceFromTarget));
   Camera->CurrentP = Lerp(0.25f, Camera->CurrentP, Camera->TargetP, WorldChunkDim);
+  /* Camera->CurrentP = Canonicalize(WorldChunkDim, Camera->CurrentP); */
 
   Camera->RenderSpacePosition = GetRenderP(WorldChunkDim, Camera->CurrentP, Camera);
 
@@ -107,7 +108,7 @@ UpdateGameCamera(v2 MouseDelta, input *Input, canonical_position NewTarget, came
 
     if (Input->RMB.Pressed)
     {
-      Camera->DistanceFromTarget += MouseDelta.y*200.0f;
+      Camera->DistanceFromTarget += MouseDelta.y*300.0f;
     }
   }
 

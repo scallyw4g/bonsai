@@ -6,7 +6,7 @@
 #define WORLD_Y V3(0,1,0)
 #define WORLD_Z V3(0,0,1)
 
-#define WORLD_HASH_SIZE (Kilobytes(4)) // TODO(Jesse): Should this be dynamic?
+#define WORLD_HASH_SIZE (Kilobytes(8)) // TODO(Jesse): Should this be dynamic?
 #define FREELIST_SIZE (Kilobytes(64))
 
 #define NOISE_FREQUENCY (100L)
@@ -28,7 +28,7 @@
 /* #define PLAYER_MODEL MODELS_PATH"/x-wing.vox" */
 
 #define DEBUG_CHUNK_AABB              0
-#define DEBUG_DRAW_COLLISION_VOLUMES  0
+#define DEBUG_DRAW_COLLISION_VOLUMES  1
 #define DEBUG_WORLD_GENERATION        0
 #define DEBUG_DRAW_SHADOW_MAP_TEXTURE 0
 #define DEBUG_HIGHLIGHT_VOID_CHUNKS   0

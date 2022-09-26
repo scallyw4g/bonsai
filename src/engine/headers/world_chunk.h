@@ -1,13 +1,13 @@
 enum chunk_flag
 {
-  Chunk_Uninitialized   = 0 << 0,
-  Chunk_Initialized     = 1 << 1,
+  Chunk_Uninitialized     = 0 << 0,
 
-  Chunk_Queued          = 1 << 2,
-  Chunk_MeshComplete    = 1 << 3,
-  Chunk_GpuMeshComplete = 1 << 4,
+  Chunk_Queued            = 1 << 1,
+  Chunk_VoxelsInitialized = 1 << 2,
+  Chunk_MeshComplete      = 1 << 3,
+  /* Chunk_GpuMeshComplete   = 1 << 4, */
 
-  Chunk_Garbage         = 1 << 5,
+  Chunk_Garbage           = 1 << 5,
 };
 
 enum voxel_flag
@@ -57,12 +57,14 @@ struct boundary_voxel
 struct chunk_data
 {
   chunk_flag Flags;
+  chunk_dimension Dim; // TODO(Jesse): can be 3x u8 instead of 3x s32
+
   voxel *Voxels;
 
 #if EMCC
-  u8 Pad[56];
+  u8 Pad[44];
 #else
-  u8 Pad[52];
+  u8 Pad[40];
 #endif
 };
 CAssert(sizeof(chunk_data) == CACHE_LINE_SIZE);
@@ -106,17 +108,18 @@ Volume(world_chunk* Chunk)
   return Result;
 }
 
-void
-MarkChunkInitialized(world_chunk *Chunk)
-{
-  Chunk->Data->Flags = Chunk_MeshComplete;
-  if (Chunk->Mesh)
-  {
-    Assert(Chunk->Mesh->At);
-    Assert(Chunk->Mesh->End);
-    Assert(Chunk->Mesh->At == Chunk->Mesh->End);
-  }
-}
+/* void */
+/* MarkChunkInitialized(world_chunk *Chunk) */
+/* { */
+
+/*   Chunk->Data->Flags |= Chunk_MeshComplete; */
+/*   if (Chunk->Mesh) */
+/*   { */
+/*     Assert(Chunk->Mesh->At); */
+/*     Assert(Chunk->Mesh->End); */
+/*     Assert(Chunk->Mesh->At == Chunk->Mesh->End); */
+/*   } */
+/* } */
 
 link_internal void
 AllocateWorldChunk(world_chunk *Result, memory_arena *Storage, world_position WorldP, chunk_dimension Dim);

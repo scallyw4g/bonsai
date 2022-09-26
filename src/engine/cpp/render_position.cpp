@@ -91,6 +91,8 @@ Inverse(r32 m[16], r32 invOut[16])
 {
   TIMED_FUNCTION();
 
+  // TODO(Jesse): Does changing these to r32 have a material effect on this routine?
+
   r64 inv[16];
   r64 det;
 

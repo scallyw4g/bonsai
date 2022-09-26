@@ -16,7 +16,7 @@ RunTests=0
 . scripts/preamble.sh
 . scripts/setup_for_cxx.sh
 
-OPTIMIZATION_LEVEL="-O0"
+OPTIMIZATION_LEVEL="-O2"
 EMCC=0
 
 
@@ -31,9 +31,9 @@ BONSAI_INTERNAL='-D BONSAI_INTERNAL'
 
 
 EXAMPLES_TO_BUILD="
+  $EXAMPLES/asset_picker
   $EXAMPLES/the_wanderer
 "
-  # $EXAMPLES/asset_picker
   # $EXAMPLES/world_gen
   # $EXAMPLES/building
 

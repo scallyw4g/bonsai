@@ -212,25 +212,6 @@ RenderPostBuffer(post_processing_group *PostGroup, untextured_3d_geometry_buffer
   GL.DisableVertexAttribArray(1);
 }
 
-link_export void
-Renderer_FrameEnd(platform *Plat)
-{
-  TIMED_FUNCTION();
-
-  graphics        *Graphics = Plat->Graphics;
-  ao_render_group *AoGroup  = Graphics->AoGroup;
-  gpu_mapped_element_buffer *GpuMap = GetCurrentGpuMap(Graphics);
-
-  RenderGBuffer(GpuMap, Graphics);
-  RenderAoTexture(AoGroup);
-  DrawGBufferToFullscreenQuad(Plat, Graphics);
-
-  BonsaiSwapBuffers(Plat->Os);
-
-  Graphics->GpuBufferWriteIndex = (Graphics->GpuBufferWriteIndex + 1) % 2;
-}
-
-
 inline bool
 IsRightChunkBoundary( chunk_dimension ChunkDim, int idx )
 {
@@ -385,7 +366,12 @@ ClearFramebuffers(graphics *Graphics)
   GL.ClearDepth(1.0f);
 
 #if BONSAI_DEBUG_SYSTEM_API
+#if DEBUG_LIB_INTERNAL_BUILD
   GetDebugState()->ClearFramebuffers();
+#else
+  if (GetDebugState) GetDebugState()->ClearFramebuffers();
+#endif
+
   /* GL.BindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID); */
   /* GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
 #endif
@@ -482,7 +468,7 @@ SetupAndBuildExteriorBoundary(
   {
     world_chunk *Neighbor = GetWorldChunk( World, Chunk->WorldP + OffsetVector );
 
-    if ( Neighbor && IsSet( Neighbor, Chunk_Initialized) )
+    if ( Neighbor && IsSet( Neighbor, Chunk_VoxelsInitialized) )
     {
       UnSetFlag( Chunk, Flag );
       BuildExteriorBoundaryVoxels( Chunk, World->ChunkDim, Neighbor, OffsetVector);
@@ -850,6 +836,8 @@ TraverseSurfaceToBoundary( world *World, chunk_data *Chunk, voxel_position Start
   return CurrentP;
 }
 
+// NOTE(Jesse): Pretty sure this function can be deleted
+#if 0
 b32
 CanBuildWorldChunkBoundary(world *World, world_chunk *Chunk, chunk_dimension VisibleRegion)
 {
@@ -868,25 +856,26 @@ CanBuildWorldChunkBoundary(world *World, world_chunk *Chunk, chunk_dimension Vis
 
   // We could try bailing early to save the cache sometimes
   world_chunk *TestChunk = GetWorldChunk( World, Left , VisibleRegion);
-  Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
+  Result &= TestChunk && IsSet(TestChunk, Chunk_VoxelsInitialized);
 
   TestChunk = GetWorldChunk( World, Right, VisibleRegion );
-  Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
+  Result &= TestChunk && IsSet(TestChunk, Chunk_VoxelsInitialized);
 
   TestChunk = GetWorldChunk( World, Top, VisibleRegion );
-  Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
+  Result &= TestChunk && IsSet(TestChunk, Chunk_VoxelsInitialized);
 
   TestChunk = GetWorldChunk( World, Bot, VisibleRegion );
-  Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
+  Result &= TestChunk && IsSet(TestChunk, Chunk_VoxelsInitialized);
 
   TestChunk = GetWorldChunk( World, Front, VisibleRegion );
-  Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
+  Result &= TestChunk && IsSet(TestChunk, Chunk_VoxelsInitialized);
 
   TestChunk = GetWorldChunk( World, Back, VisibleRegion );
-  Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
+  Result &= TestChunk && IsSet(TestChunk, Chunk_VoxelsInitialized);
 
   return Result;
 }
+#endif
 
 void
 DrawFolie(untextured_3d_geometry_buffer *Mesh, aabb *AABB)
@@ -1012,15 +1001,31 @@ WorkQueueEntry(work_queue_entry_copy_buffer_set *CopySet)
 }
 
 link_internal void
+PushCopyJob(work_queue *Queue, work_queue_entry_copy_buffer_set *Set, work_queue_entry_copy_buffer *Job)
+{
+  Set->CopyTargets[Set->Count] = *Job;
+  ++Set->Count;
+
+  if (Set->Count == WORK_QUEUE_MAX_COPY_TARGETS)
+  {
+    work_queue_entry Entry = WorkQueueEntry(Set);
+    PushWorkQueueEntry(Queue, &Entry);
+    Clear(Set);
+    Assert(Set->Count == 0);
+  }
+}
+
+link_internal void
 BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, graphics *Graphics, world_position VisibleRegion, heap_allocator *Heap)
 {
   TIMED_FUNCTION();
 
   chunk_dimension Radius = VisibleRegion/2;
   world_position Min = World->Center - Radius;
-  world_position Max = World->Center + Radius + 1;
+  world_position Max = World->Center + Radius;
 
   work_queue_entry_copy_buffer_set CopySet = {};
+
   for (s32 z = Min.z; z < Max.z; ++ z)
   {
     for (s32 y = Min.y; y < Max.y; ++ y)
@@ -1030,34 +1035,65 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
         world_position P = World_Position(x,y,z);
         world_chunk *Chunk = GetWorldChunk( World, P, VisibleRegion );
 
+        u32 ColorIndex = 0;
+
+        if (Chunk)
+        {
+            chunk_data *ChunkData = Chunk->Data;
+
+            if (IsSet(ChunkData, Chunk_Queued))
+            {
+              ColorIndex = TEAL;
+            }
+
+            if (IsSet(ChunkData, Chunk_VoxelsInitialized))
+            {
+              /* ColorIndex = GREEN; */
+            }
+
+            if (IsSet(ChunkData, Chunk_Garbage))
+            {
+              ColorIndex = ORANGE;
+            }
+
+        }
+        else
+        {
+          ColorIndex = RED;
+        }
+
         if (Chunk && Chunk->Mesh)
         {
-          DEBUG_PICK_CHUNK(Chunk,
-                           MinMaxAABB(GetRenderP(World->ChunkDim, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera),
-                                      GetRenderP(World->ChunkDim, Canonical_Position(World->ChunkDim, Chunk->WorldP), Graphics->Camera)));
+          DEBUG_PICK_CHUNK( Chunk,
+                            MinMaxAABB( GetRenderP(World->ChunkDim, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera),
+                                        GetRenderP(World->ChunkDim, Canonical_Position(World->ChunkDim, Chunk->WorldP), Graphics->Camera) ) );
 
           chunk_data *ChunkData = Chunk->Data;
-          if (ChunkData->Flags == Chunk_MeshComplete && Chunk->Mesh->At)
+
+          if ( IsSet(ChunkData->Flags, Chunk_MeshComplete) )
           {
+            Assert(Chunk->Mesh->At);
+
             work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer( Chunk->Mesh,
                                                                              Dest,
                                                                              Chunk,
                                                                              Graphics->Camera,
                                                                              World->ChunkDim );
 
+            PushCopyJob(&Plat->HighPriority, &CopySet, &CopyJob);
+
             /* work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer(Chunk->LodMesh, Dest, Chunk, Graphics->Camera, World->ChunkDim); */
 
-            CopySet.CopyTargets[CopySet.Count] = CopyJob;
+/*             if (ColorIndex) */
+/*             { */
+/*               untextured_3d_geometry_buffer AABBDest = ReserveBufferSpace(Dest, VERTS_PER_AABB); */
+/*               v3 MinP = GetRenderP(World->ChunkDim, Canonical_Position(V3(0,0,0), P), Graphics->Camera); */
+/*               v3 MaxP = GetRenderP(World->ChunkDim, Canonical_Position(World->ChunkDim, P), Graphics->Camera); */
+/*               DEBUG_DrawAABB(&AABBDest, MinP, MaxP, ColorIndex, 0.5f); */
+/*               /1* PushCopyJob(work_queue *Queue, work_queue_entry_copy_buffer_set *Set, work_queue_entry_copy_buffer *Job) *1/ */
+/*             } */
 
-            ++CopySet.Count;
 
-            if (CopySet.Count == WORK_QUEUE_MAX_COPY_TARGETS)
-            {
-              work_queue_entry Entry = WorkQueueEntry(&CopySet);
-              PushWorkQueueEntry(&Plat->HighPriority, &Entry);
-              Clear(&CopySet);
-              Assert(CopySet.Count == 0);
-            }
           }
 
 #if 0
@@ -1067,7 +1103,10 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
         else if (!Chunk)
         {
           Chunk = GetWorldChunkFor(World->Memory, World, P, VisibleRegion);
-          QueueChunkForInit(&Plat->LowPriority, Chunk);
+          if (Chunk)
+          {
+            QueueChunkForInit(&Plat->LowPriority, Chunk);
+          }
         }
       }
     }
@@ -1096,6 +1135,21 @@ BufferEntities( entity **EntityTable, untextured_3d_geometry_buffer* Dest,
   }
 
   return;
+}
+
+link_internal void
+Render_BufferGameGeometry(engine_resources *Resources)
+{
+  platform                  *Plat         = Resources->Plat;
+  graphics                  *Graphics     = Resources->Graphics;
+  world                     *World        = Resources->World;
+  memory_arena              *Memory       = Resources->Memory;
+  heap_allocator            *Heap         = &Resources->Heap;
+  entity                   **EntityTable  = Resources->EntityTable;
+  gpu_mapped_element_buffer *GpuMap       = GetCurrentGpuMap(Graphics);
+
+  BufferWorld(Plat, &GpuMap->Buffer, World, Graphics, Resources->World->VisibleRegion, Heap);
+  BufferEntities( EntityTable, &GpuMap->Buffer, Graphics, World, Plat->dt);
 }
 
 #endif

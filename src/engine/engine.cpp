@@ -24,3 +24,5 @@
 #include <engine/cpp/physics.cpp>
 #include <engine/cpp/entity.cpp>
 #include <engine/cpp/asset_loaders.cpp>
+#include <engine/cpp/api.cpp>
+#include <engine/cpp/simulate.cpp>

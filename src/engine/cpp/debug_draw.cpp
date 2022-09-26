@@ -1,3 +1,5 @@
+
+
 inline void
 DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh,
                 v3 P1, v3 P2, u32 ColorIndex, r32 Thickness )
@@ -17,8 +19,8 @@ DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh,
     {{0, 0, 0}},
   };
 
-  P1.x = P1.x - (Thickness/2.0f);
-  P2.x = P2.x - (Thickness/2.0f);
+  /* P1.x = P1.x - (Thickness/2.0f); */
+  /* P2.x = P2.x - (Thickness/2.0f); */
 
   v4 FaceColors[VERTS_PER_FACE];
   FillColorArray(ColorIndex, FaceColors, DefaultPalette, VERTS_PER_FACE);

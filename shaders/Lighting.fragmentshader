@@ -45,16 +45,33 @@ vec2 poissonDisk[16] = vec2[](
 
 
 
-
-
+vec3 Global_LightPosition = vec3(0.5f, -1.0f, 0.5f);
+vec3 Global_LightColor = vec3(1,1,1);
+float Global_LightPower = 0.12f; // 1.0 == full sun
 
 // Tuning
   float gamma = 2.2f;
-  float GlobalLightIntensity = 0.2f; // 1.0 represents full sun
-
-  float materialShininess = 100.0f;
+  float materialShininess = 2.0f;
 //
 
+
+vec3 SpecLightingCalc(float AttenuationFactor, vec3 DiffuseColor, vec3 FragToLight, vec3 FragPosition, vec3 FragNormal, vec3 CameraP)
+{
+  vec3 reflectionVector = reflect(FragToLight, FragNormal);
+  vec3 FragToCamera = normalize(FragPosition - CameraP);
+  float cosAngle = max(0.0, dot(FragToCamera, reflectionVector));
+  float SpecularPower = pow(cosAngle, materialShininess);
+  vec3 SpecularLight = DiffuseColor * SpecularPower; // * AttenuationFactor;
+
+  return SpecularLight;
+}
+
+vec3 DiffuseLightingCalc(float AttenuationFactor, vec3 DiffuseColor, vec3 FragToLight, vec3 FragNormal, vec3 CameraP)
+{
+  float LightCosTheta = clamp( dot( FragNormal, FragToLight), 0.0f, 1.0f);
+  vec3 DirectLight = (DiffuseColor + Global_LightColor) * LightCosTheta * AttenuationFactor;
+  return DirectLight;
+}
 
 void main()
 {
@@ -64,15 +81,23 @@ void main()
   vec3 FragNormal   = texture(gNormal, gBufferUV).rgb;   // modelspace
   vec3 FragPosition = texture(gPosition, gBufferUV).rgb; // worldspace
 
-  vec3 AmbientLight = Diffuse * GlobalLightIntensity * Emission;
+  vec3 AmbientLight = Diffuse * Global_LightPower * Emission;
 
   vec3 AccumulatedLight = AmbientLight;
+
+  {
+    vec3 FragToLight = normalize(Global_LightPosition);
+    float LightAtt = Global_LightPower;
+    AccumulatedLight += DiffuseLightingCalc(LightAtt, Diffuse, FragToLight, FragNormal, CameraP);
+    /* AccumulatedLight += SpecLightingCalc(LightAtt, Diffuse, FragToLight, FragPosition, FragNormal, CameraP); */
+  }
+
 
 
 #if 0
   for ( s32 LightIndex = 0;
-      LightIndex < LightCount;
-      ++LightIndex)
+        LightIndex < LightCount;
+        ++LightIndex)
   {
     ivec2 LightUV = ivec2(LightIndex, 0);
 

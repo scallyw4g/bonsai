@@ -1,4 +1,6 @@
 #include <bonsai_types.h>
+
+
 /* #include <bonsai_stdlib/headers/debug_print.h> */
 
 // TODO(Jesse): Formalize this for fuck sakes
@@ -12,9 +14,10 @@ s32 main(s32 ArgCount, const char **Args)
 
   vox_data Vox = LoadVoxData(Memory, &Heap, "../voxel-model/vox/monument/monu10.vox");
 
-  s32 xChunkCount = 1 + (Vox.Dim.x / WORLD_CHUNK_DIM.x);
-  s32 yChunkCount = 1 + (Vox.Dim.y / WORLD_CHUNK_DIM.y);
-  s32 zChunkCount = 1 + (Vox.Dim.z / WORLD_CHUNK_DIM.z);
+  chunk_dimension Dim = Vox.ChunkData->Dim;
+  s32 xChunkCount = 1 + (Dim.x / WORLD_CHUNK_DIM.x);
+  s32 yChunkCount = 1 + (Dim.y / WORLD_CHUNK_DIM.y);
+  s32 zChunkCount = 1 + (Dim.z / WORLD_CHUNK_DIM.z);
 
   chunk_dimension ChunkCounts = Chunk_Dimension(xChunkCount, yChunkCount, zChunkCount);
 
@@ -35,11 +38,11 @@ s32 main(s32 ArgCount, const char **Args)
   // around.  Since this runs offline I don't care about speed, but if we ever
   // run it in the game it's probably worth doing.
 
-  for (s32 zIndex = 0; zIndex < Vox.Dim.z; ++zIndex)
+  for (s32 zIndex = 0; zIndex < Dim.z; ++zIndex)
   {
-    for (s32 yIndex = 0; yIndex < Vox.Dim.y; ++yIndex)
+    for (s32 yIndex = 0; yIndex < Dim.y; ++yIndex)
     {
-      for (s32 xIndex = 0; xIndex < Vox.Dim.x; ++xIndex)
+      for (s32 xIndex = 0; xIndex < Dim.x; ++xIndex)
       {
         s32 xChunk =  (xIndex / WORLD_CHUNK_DIM.x);
         s32 yChunk =  (yIndex / WORLD_CHUNK_DIM.y);
@@ -55,7 +58,7 @@ s32 main(s32 ArgCount, const char **Args)
         s32 zRel = zIndex % WORLD_CHUNK_DIM.z;
         s32 DestIndex = GetIndex(xRel, yRel, zRel, WORLD_CHUNK_DIM);
 
-        s32 SrcIndex = GetIndex(xIndex, yIndex, zIndex, Vox.Dim);
+        s32 SrcIndex = GetIndex(xIndex, yIndex, zIndex, Dim);
 
         Chunk->Data->Voxels[DestIndex] = Vox.ChunkData->Voxels[SrcIndex];
       }

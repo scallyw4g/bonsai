@@ -1,4 +1,4 @@
-#define DEFAULT_GAME_LIB "./bin/the_wanderer_loadable" PLATFORM_RUNTIME_LIB_EXTENSION
+#define DEFAULT_GAME_LIB "./bin/asset_picker_loadable" PLATFORM_RUNTIME_LIB_EXTENSION
 
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
 #define PLATFORM_GL_IMPLEMENTATIONS 1
@@ -39,9 +39,11 @@ LibIsNew(const char *LibPath, s64 *LastLibTime)
 }
 
 link_internal thread_local_state
-DefaultThreadLocalState()
+DefaultThreadLocalState(mesh_freelist *MeshFreelist)
 {
   thread_local_state Thread = {};
+
+  Thread.MeshFreelist = MeshFreelist;
 
   Thread.TempMemory = AllocateArena();
   Thread.PermMemory = AllocateArena();
@@ -70,8 +72,9 @@ ThreadMain(void *Input)
 
   DEBUG_REGISTER_THREAD(ThreadParams->Self.ThreadIndex);
 
-  thread_local_state Thread = DefaultThreadLocalState();
-  if (ThreadParams->InitProc) { ThreadParams->InitProc(&Thread, ThreadParams->GameState); }
+  thread_local_state Thread = DefaultThreadLocalState(&ThreadParams->EngineResources->MeshFreelist);
+
+  if (ThreadParams->InitProc) { ThreadParams->InitProc(&Thread); }
 
   while (FutexNotSignaled(ThreadParams->WorkerThreadsExitFutex))
   {
@@ -108,16 +111,11 @@ ThreadMain(void *Input)
     {
       WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
 
-      b32 HighPriorityJobs = QueueIsEmpty(ThreadParams->HighPriority) == false;
-      if ( HighPriorityJobs )
-      {
-        break;
-      }
+      if (!QueueIsEmpty(ThreadParams->HighPriority)) break;
 
-      if ( FutexIsSignaled(ThreadParams->WorkerThreadsSuspendFutex) )
-      {
-        break;
-      }
+      if ( FutexIsSignaled(ThreadParams->WorkerThreadsExitFutex) ) break;
+
+      if ( FutexIsSignaled(ThreadParams->WorkerThreadsSuspendFutex) ) break;
 
       // NOTE(Jesse): Must read and comared DequeueIndex instead of calling QueueIsEmpty
       u32 DequeueIndex = LowPriority->DequeueIndex;
@@ -145,7 +143,7 @@ ThreadMain(void *Input)
 }
 
 link_internal void
-PlatformLaunchWorkerThreads(platform *Plat, bonsai_worker_thread_init_callback WorkerThreadInit, bonsai_worker_thread_callback WorkerThreadCallback, game_state* GameState)
+PlatformLaunchWorkerThreads(platform *Plat, engine_resources *EngineResources, bonsai_worker_thread_init_callback WorkerThreadInit, bonsai_worker_thread_callback WorkerThreadCallback)
 {
   u32 WorkerThreadCount = GetWorkerThreadCount();
 
@@ -159,7 +157,7 @@ PlatformLaunchWorkerThreads(platform *Plat, bonsai_worker_thread_init_callback W
     Params->LowPriority = &Plat->LowPriority;
     Params->InitProc = WorkerThreadInit;
     Params->GameWorkerThreadCallback = WorkerThreadCallback;
-    Params->GameState = GameState;
+    Params->EngineResources = EngineResources;
 
     Params->HighPriorityWorkerCount = &Plat->HighPriorityWorkerCount;
     Params->WorkerThreadsSuspendFutex = &Plat->WorkerThreadsSuspendFutex;
@@ -208,7 +206,7 @@ PlatformInit(platform *Plat, memory_arena *Memory, void* GetDebugStateProc)
 }
 
 s32
-main()
+main( s32 ArgCount, const char ** Args )
 {
   Info("Initializing Bonsai");
 
@@ -217,17 +215,26 @@ main()
 
   platform Plat = {};
   os Os         = {};
+  engine_resources EngineResources = {};
+  hotkeys Hotkeys = {};
 
-  Plat.Os = &Os;
+  EngineResources.Plat = &Plat;
+  EngineResources.Os = &Os;
+  EngineResources.Hotkeys = &Hotkeys;
 
-  if (!OpenAndInitializeWindow(&Os, &Plat, 1)) { Error("Initializing Window :( "); return 1; }
+  s32 VSyncFrames = 0;
+  if (!OpenAndInitializeWindow(&Os, &Plat, VSyncFrames)) { Error("Initializing Window :( "); return 1; }
   Assert(Os.GlContext);
 
-  shared_lib DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
-  if (!DebugLib) { Error("Loading DebugLib :( "); return 1; }
 
-  init_debug_system_proc InitDebugSystem = (init_debug_system_proc)GetProcFromLib(DebugLib, "InitDebugSystem");
-  GetDebugState = InitDebugSystem();
+  shared_lib DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
+  if (!DebugLib) { ("Loading DebugLib :( "); return 1; }
+
+  if (DebugLib)
+  {
+    init_debug_system_proc InitDebugSystem = (init_debug_system_proc)GetProcFromLib(DebugLib, "InitDebugSystem");
+    GetDebugState = InitDebugSystem();
+  }
 
   memory_arena *PlatMemory = AllocateArena();
   memory_arena *GameMemory = AllocateArena();
@@ -242,26 +249,49 @@ main()
   // AllocateAndInitializeArena(&Debug_RecordingState->RecordedMainMemory, Gigabytes(3));
 #endif
 
-  hotkeys Hotkeys = {};
-
 #if EMCC ///////////////////////////////////// EMCC SHOULD COMPILE AND RUN CORRECTLY UP TO HERE
   return True;
 #endif
 
   LibIsNew(DEFAULT_GAME_LIB, &LastGameLibTime);  // Hack to initialize the LastGameLibTime static
 
-  shared_lib GameLib = OpenLibrary(DEFAULT_GAME_LIB);
+  const char* GameLibName = DEFAULT_GAME_LIB;
+  switch (ArgCount)
+  {
+    case 1: {} break;
+
+    case 2:
+    {
+      GameLibName = Args[1];
+    } break;
+
+    default: { Error("Invalid number of arguments"); }
+  }
+
+  shared_lib GameLib = OpenLibrary(GameLibName);
   if (!GameLib) { Error("Loading GameLib :( "); return 1; }
 
   game_api GameApi = {};
   if (!InitializeGameApi(&GameApi, GameLib)) { Error("Initializing GameApi :( "); return 1; }
 
-  game_state* GameState = GameApi.GameInit(&Plat, GameMemory);
-  if (!GameState) { Error("Initializing Game State :( "); return 1; }
+  engine_api EngineApi = {};
+  if (!InitializeEngineApi(&EngineApi, GameLib)) { Error("Initializing EngineApi :( "); return 1; }
 
-  PlatformLaunchWorkerThreads(&Plat, GameApi.WorkerInit, GameApi.WorkerMain, GameState);
+  Ensure( EngineApi.OnLibraryLoad(&EngineResources) );
+  Ensure( EngineApi.Init(&EngineResources) );
 
-  thread_local_state MainThread = DefaultThreadLocalState();
+  if (GameApi.WorkerMain)
+  {
+    PlatformLaunchWorkerThreads(&Plat, &EngineResources, GameApi.WorkerInit, GameApi.WorkerMain);
+  }
+
+  thread_local_state MainThread = DefaultThreadLocalState(&EngineResources.MeshFreelist);
+
+  if (GameApi.GameInit)
+  {
+    EngineResources.GameState = GameApi.GameInit(&EngineResources, &MainThread);
+    if (!EngineResources.GameState) { Error("Initializing Game :( "); return 1; }
+  }
 
 
   /*
@@ -273,11 +303,6 @@ main()
   r64 RealDt = 0;
   while ( Os.ContinueRunning )
   {
-    r64 CurrentMS = GetHighPrecisionClock();
-    RealDt = (CurrentMS - LastMs)/1000.0;
-    LastMs = CurrentMS;
-    Plat.dt = (r32)RealDt;
-
     ClearClickedFlags(&Plat.Input);
     DEBUG_FRAME_BEGIN(&Hotkeys);
 
@@ -347,19 +372,27 @@ main()
     /*   if (IsDisconnected(&Plat.Network)) { ConnectToServer(&Plat.Network); } */
     /* END_BLOCK("Network Ops"); */
 
+    Ensure( EngineApi.FrameBegin(&EngineResources) );
+
     TIMED_BLOCK("GameMain");
-      GameApi.GameMain(&Plat, GameState, &Hotkeys, &MainThread);
+      GameApi.GameMain(&EngineResources, &MainThread);
     END_BLOCK("GameMain");
 
-    DrainQueue(&Plat.HighPriority, &MainThread, GameApi.WorkerMain);
-
+    DrainQueue(&Plat.HighPriority, &MainThread,GameApi.WorkerMain);
     WaitForWorkerThreads(&Plat.HighPriorityWorkerCount);
+
+    Ensure( EngineApi.FrameEnd(&EngineResources) );
 
     DEBUG_FRAME_END(&Plat);
 
-    GameApi.Render(&Plat);
+    Ensure( EngineApi.Render(&EngineResources) );
 
     Ensure(RewindArena(TranArena));
+
+    r64 CurrentMS = GetHighPrecisionClock();
+    RealDt = (CurrentMS - LastMs)/1000.0;
+    LastMs = CurrentMS;
+    Plat.dt = (r32)RealDt;
 
     MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(RealDt);
   }

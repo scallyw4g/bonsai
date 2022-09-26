@@ -79,3 +79,10 @@ GetAssetFilenameFor(counted_string AssetPath, world_position WorldP, memory_aren
   return Result;
 }
 
+// Used when loading .vox files
+struct vox_data
+{
+  chunk_data *ChunkData;
+  v4 *Palette;
+};
+

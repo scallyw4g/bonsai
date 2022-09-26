@@ -1,22 +1,21 @@
 
+// TODO(Jesse): Make this per-game
+global_variable v3 Global_WorldGravity = V3(0.0f, 0.0f, -10.f);
 
 inline void
 PhysicsUpdate(physics *Physics, r32 dt, b32 ApplyGravity = True)
 {
-  v3 Gravity = ApplyGravity ? V3(0.0f, 0.0f, -100.0f) : V3(0);
-  v3 Acceleration = SafeDivide(Physics->Force*Physics->Speed, Physics->Mass) + Gravity;
+  v3 Gravity = ApplyGravity ? Global_WorldGravity : V3(0);
 
-  Physics->Force -=
-    Physics->Force*Physics->Drag*dt;
+  /* v3 Acceleration = SafeDivide(1.f*Physics->Force*Physics->Speed, Physics->Mass) + (Gravity); */
 
-  Physics->Velocity -=
-    Physics->Velocity*Physics->Drag*dt;
+/*   Physics->Velocity += (Acceleration * dt); */
 
-  Physics->Delta =
-    (Physics->Velocity*dt) + (0.5f*Acceleration*Square(dt));
+  Physics->Velocity += (Gravity * dt);
 
-  Physics->Velocity = SafeDivide(Physics->Delta, dt);
+  Physics->Delta = Physics->Velocity * dt;
 
-  return;
+/*   Physics->Force = Physics->Force - (Physics->Force*dt); */
+  Physics->Force = V3(0);
 }
 

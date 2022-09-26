@@ -339,7 +339,5 @@ DrawVoxel( untextured_3d_geometry_buffer *Mesh,
 
   BackFaceVertexData( Center, Diameter, VertexData);
   BufferVertsChecked(Mesh, 6, VertexData, BackFaceNormalData, FaceColors);
-
-  return;
 }
 
