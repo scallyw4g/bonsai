@@ -4,9 +4,9 @@ BUILD_EVERYTHING=0
 
 RunPoof=1
 
-BuildExecutables=1
+BuildExecutables=0
 BuildExamples=1
-BuildDebugSystem=1
+BuildDebugSystem=0
 
 BuildTests=0
 BuildDebugTests=0
@@ -31,9 +31,9 @@ BONSAI_INTERNAL='-D BONSAI_INTERNAL'
 
 
 EXAMPLES_TO_BUILD="
-  $EXAMPLES/asset_picker
   $EXAMPLES/the_wanderer
 "
+  # $EXAMPLES/asset_picker
   # $EXAMPLES/world_gen
   # $EXAMPLES/building
 

@@ -23,25 +23,15 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
     case type_work_queue_entry_init_asset:
     {
-      volatile work_queue_entry_init_asset *Job = SafeAccess(work_queue_entry_init_asset, Entry);
-      world_chunk *Chunk = Job->Chunk;
-      s32 Amplititude = 10;
-      s32 StartingZDepth = -40;
-      InitializeWorldChunkPerlinPlane( Thread,
-                                       Chunk,
-                                       WORLD_CHUNK_DIM,
-                                       Amplititude,
-                                       StartingZDepth );
-
-      Assert( NotSet(Chunk->Data, Chunk_Queued ));
+      NotImplemented;
     } break;
 
     case type_work_queue_entry_init_world_chunk:
     {
       volatile work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
       world_chunk *Chunk = Job->Chunk;
-      s32 Amplititude = 10;
-      s32 StartingZDepth = -40;
+      s32 Amplititude = 15;
+      s32 StartingZDepth = -50;
       InitializeWorldChunkPerlinPlane( Thread,
                                        Chunk,
                                        WORLD_CHUNK_DIM,
@@ -83,29 +73,18 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   entity *Player = GameState->Player;
 
 #if 1
-  float Interval = .5f;
+  float Interval = 1.f;
   static float TimeToWait = Interval;
   TimeToWait -= Plat->dt;
 
-  /* if (Player->Physics.Velocity.x == 0.0f) */
-  /* { */
-  /*   if (TimeToWait < 0) */
-  /*   { */
-  /*     Player->Physics.Force += V3(0.0f, 0.0f, 1.0f); */
-  /*     TimeToWait = 20; */
-  /*   } */
-  /* } */
-
-  /* if (TimeToWait < 0) */
-  /* { */
-  /* } */
-
-  Player->Physics.Velocity += V3(5.f, 0.0f, 0.0f) * Plat->dt;
-
-  if (IsGrounded( World, Player, g_VisibleRegion) && TimeToWait < 0)
+  if (TimeToWait < 0.f)
   {
-    TimeToWait = Interval;
-    Player->Physics.Velocity += V3(0.f, 0.f, 1.f);
+    Player->Physics.Force += V3(1000.f, 0.0f, 0.0f);
+  }
+
+  if (IsGrounded( World, Player, g_VisibleRegion))
+  {
+    Player->Physics.Force += V3(0.f, 0.f, 150.f);
   }
 
   if (Hotkeys->Player_Jump)

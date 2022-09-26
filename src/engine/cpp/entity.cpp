@@ -534,7 +534,7 @@ SpawnPlayer(platform *Plat, world *World, model* Models, entity *Player, canonic
 
   physics Physics = {};
   Physics.Drag = V3(1.f, 1.f, 1.f);
-  Physics.Mass = 1.f;
+  Physics.Mass = 4.f;
   Physics.Speed = 1;
 
   r32 Scale = 1.0f;

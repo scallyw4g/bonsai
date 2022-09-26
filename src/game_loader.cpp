@@ -1,5 +1,3 @@
-#define DEFAULT_GAME_LIB "./bin/asset_picker_loadable" PLATFORM_RUNTIME_LIB_EXTENSION
-
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
 #define PLATFORM_GL_IMPLEMENTATIONS 1
 #define BONSAI_DEBUG_SYSTEM_API 1
@@ -253,9 +251,7 @@ main( s32 ArgCount, const char ** Args )
   return True;
 #endif
 
-  LibIsNew(DEFAULT_GAME_LIB, &LastGameLibTime);  // Hack to initialize the LastGameLibTime static
-
-  const char* GameLibName = DEFAULT_GAME_LIB;
+  const char* GameLibName = "./bin/asset_picker_loadable" PLATFORM_RUNTIME_LIB_EXTENSION;
   switch (ArgCount)
   {
     case 1: {} break;
@@ -267,6 +263,8 @@ main( s32 ArgCount, const char ** Args )
 
     default: { Error("Invalid number of arguments"); }
   }
+
+  LibIsNew(GameLibName, &LastGameLibTime);  // Hack to initialize the LastGameLibTime static
 
   shared_lib GameLib = OpenLibrary(GameLibName);
   if (!GameLib) { Error("Loading GameLib :( "); return 1; }
@@ -321,14 +319,17 @@ main( s32 ArgCount, const char ** Args )
     BindHotkeysToInput(&Hotkeys, &Plat.Input);
 
 #if !EMCC
-    if ( LibIsNew(DEFAULT_GAME_LIB, &LastGameLibTime) )
+    if ( LibIsNew(GameLibName, &LastGameLibTime) )
     {
       SignalAndWaitForWorkers(&Plat.WorkerThreadsSuspendFutex);
 
       CloseLibrary(GameLib);
-      GameLib = OpenLibrary(DEFAULT_GAME_LIB);
+      GameLib = OpenLibrary(GameLibName);
 
       Ensure(InitializeGameApi(&GameApi, GameLib));
+      Ensure(InitializeEngineApi(&EngineApi, GameLib));
+
+      Ensure( EngineApi.OnLibraryLoad(&EngineResources) );
 
       UnsignalFutex(&Plat.WorkerThreadsSuspendFutex);
     }
