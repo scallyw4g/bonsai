@@ -447,11 +447,11 @@ SpawnParticleSystem(particle_system *System, particle_system_init_params *Params
   System->SystemMovementCoefficient = Params->SystemMovementCoefficient;
 
   System->EmissionLifespan = Params->EmissionLifespan;
-  System->EmissionChance = Params->EmissionChance;
+  System->ParticlesPerSecond = Params->ParticlesPerSecond;
 
   System->ParticleLifespan = Params->ParticleLifespan;
 
-  System->StartingDiameter = Params->StartingDiameter;
+  System->ParticleStartingDim = Params->ParticleStartingDim;
 
   System->Entropy = Params->Entropy;
 
@@ -478,7 +478,7 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset)
 
   Params.EmissionLifespan = 0.10f;
   Params.ParticleLifespan = 0.55f;
-  Params.EmissionChance = 2.0f;
+  Params.ParticlesPerSecond = 2.0f;
 
   Params.Physics.Speed = 18;
   /* Params.Physics.Drag = V3(2.0f); */
@@ -510,7 +510,7 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset)
   // FIXME(Jesse): Make a mode for infinite emission
   Params.EmissionLifespan = f32_MAX;
   Params.ParticleLifespan = 0.35f;
-  Params.EmissionChance = 3.0f;
+  Params.ParticlesPerSecond = 300.0f;
 
   Params.Physics.Speed = 8;
   /* Params.Physics.Drag = V3(2.2f); */
@@ -518,7 +518,7 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset)
 
   Params.Physics.Velocity = V3(0.0f, 0.0f, 7.0f);
 
-  Params.StartingDiameter = V3(0.85f);
+  Params.ParticleStartingDim = V3(0.85f);
 
   Params.SystemMovementCoefficient = 0.1f;
 
@@ -936,36 +936,33 @@ UpdateVisibleRegion(world* World, world_position WorldDisp)
   World->Center += WorldDisp;
 }
 
-b32
+#if 1
+link_internal particle *
 SpawnParticle(particle_system *System)
 {
-  b32 Spawn = ((RandomUnilateral(&System->Entropy)) * System->EmissionChance) >= 0.5f;
+  particle *Particle = &System->Particles[System->ActiveParticles++];
+  Assert(System->ActiveParticles < PARTICLES_PER_SYSTEM);
 
-  if (Spawn)
-  {
-    particle *Particle = &System->Particles[System->ActiveParticles++];
-    Assert(System->ActiveParticles < PARTICLES_PER_SYSTEM);
+  r32 X = RandomBilateral(&System->Entropy);
+  r32 Y = RandomBilateral(&System->Entropy);
+  r32 Z = RandomBilateral(&System->Entropy);
 
-    r32 X = RandomBilateral(&System->Entropy);
-    r32 Y = RandomBilateral(&System->Entropy);
-    r32 Z = RandomBilateral(&System->Entropy);
+  v3 Random = V3(X,Y,Z);
+  Particle->Offset = (Random*System->SpawnRegion.Radius) + System->SpawnRegion.Center;
 
-    v3 Random = V3(X,Y,Z);
-    Particle->Offset = (Random*System->SpawnRegion.Radius) + System->SpawnRegion.Center;
+  Particle->Physics = System->ParticlePhysics;
+  Particle->Physics.Force = Normalize(Random);
 
-    Particle->Physics = System->ParticlePhysics;
-    Particle->Physics.Force = Normalize(Random);
+  Particle->RemainingLifespan = System->ParticleLifespan;
 
-    Particle->RemainingLifespan = System->ParticleLifespan;
-  }
-
-  return Spawn;
+  return Particle;
 }
+#endif
 
 inline b32
 ShouldEmit(particle_system *System)
 {
-  b32 Result = (System->EmissionLifespan >= 0);
+  b32 Result = (System->EmissionLifespan == f32_MAX || System->EmissionLifespan > 0);
   return Result;
 }
 
@@ -984,7 +981,16 @@ DoLight(game_lights *Lights, v3 Position, v3 Color)
  return;
 }
 
-void
+link_internal void
+SimulateParticle(particle_system *System, particle *Particle, r32 dt, v3 EntityDelta, b32 ApplyGravity)
+{
+  PhysicsUpdate(&Particle->Physics, dt, ApplyGravity);
+  Particle->Offset += Particle->Physics.Delta;
+  Particle->Offset -= EntityDelta * System->SystemMovementCoefficient;
+  Particle->RemainingLifespan -= dt;
+}
+
+link_internal void
 SimulateAndRenderParticleSystem(
     graphics *Graphics,
     chunk_dimension WorldChunkDim,
@@ -1000,29 +1006,32 @@ SimulateAndRenderParticleSystem(
     return;
 
   System->EmissionLifespan -= dt;
+  System->ElapsedSinceLastEmission += dt;
 
-  if (ShouldEmit(System))
+  u32 SpawnCount = (u32)(System->ElapsedSinceLastEmission * System->ParticlesPerSecond);
+
+  r32 SpawnInterval = 1.f/System->ParticlesPerSecond;
+
+  DEBUG_VALUE(SpawnInterval);
+  DEBUG_VALUE((r32)SpawnCount);
+
+  b32 ApplyGravity = False;
+
+  for (u32 SpawnIndex = 0; SpawnIndex < SpawnCount; ++SpawnIndex)
   {
-    while (SpawnParticle(System));
+    /* particle *Particle = System->Particles + System->ActiveParticles + SpawnIndex; */
+    particle *Particle = SpawnParticle(System);
+    SimulateParticle(System, Particle, SpawnIndex*SpawnInterval, EntityDelta, ApplyGravity);
   }
 
+  System->ElapsedSinceLastEmission -= (r32)SpawnCount*SpawnInterval;
+  DEBUG_VALUE(System->ElapsedSinceLastEmission);
+
+  /* System->ActiveParticles += SpawnCount; */
+  DEBUG_VALUE(System->ActiveParticles);
+  DEBUG_VALUE(System->ParticleLifespan);
+
   v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera, WorldChunkDim);
-
-  /* DEBUG_VALUE(System->SpawnRegion.Center.x); */
-  /* DEBUG_VALUE(System->SpawnRegion.Center.y); */
-  /* DEBUG_VALUE(System->SpawnRegion.Center.z); */
-
-  /* DEBUG_VALUE(System->SpawnRegion.Radius.x); */
-  /* DEBUG_VALUE(System->SpawnRegion.Radius.y); */
-  /* DEBUG_VALUE(System->SpawnRegion.Radius.z); */
-
-  /* /1* DEBUG_VALUE(420.0f); *1/ */
-  /* if (LengthSq(RenderSpaceP) > 0.0f) */
-  /* { */
-  /*   DEBUG_VALUE(RenderSpaceP.x); */
-  /*   DEBUG_VALUE(RenderSpaceP.y); */
-  /*   DEBUG_VALUE(RenderSpaceP.z); */
-  /* } */
 
   v3 EmissionColor = Normalize(V3(3,1,0));
   for ( s32 ParticleIndex = 0;
@@ -1031,49 +1040,43 @@ SimulateAndRenderParticleSystem(
   {
     particle *Particle = &System->Particles[ParticleIndex];
 
-    b32 ApplyGravity = False;
-    PhysicsUpdate(&Particle->Physics, dt, ApplyGravity);
-
-    Particle->Offset += Particle->Physics.Delta;
-    Particle->Offset -= EntityDelta * System->SystemMovementCoefficient;
-
-/*     DEBUG_VALUE(EntityDelta.x); */
-/*     DEBUG_VALUE(EntityDelta.y); */
-/*     DEBUG_VALUE(EntityDelta.z); */
-
-/*     DEBUG_VALUE(Particle->Physics.Delta.x); */
-/*     DEBUG_VALUE(Particle->Physics.Delta.y); */
-/*     DEBUG_VALUE(Particle->Physics.Delta.z); */
-
-/*     DEBUG_VALUE(Particle->Offset.x); */
-/*     DEBUG_VALUE(Particle->Offset.y); */
-/*     DEBUG_VALUE(Particle->Offset.z); */
-
-    v3 MinDiameter = V3(0.1f);
-
-    Particle->RemainingLifespan -= dt;
+    SimulateParticle(System, Particle, dt, EntityDelta, ApplyGravity);
 
     if ( Particle->RemainingLifespan < 0)
     {
       // Swap out last partcile for the current partcile and decrement
       particle *SwapParticle = &System->Particles[System->ActiveParticles--];
       *Particle = *SwapParticle;
-      continue;
     }
+    else
+    {
 
-    v3 Diameter = ((Particle->RemainingLifespan / System->ParticleLifespan) + MinDiameter) * System->StartingDiameter;
+      /* DEBUG_VALUE(Particle->Offset.x); */
+      /* DEBUG_VALUE(Particle->Offset.y); */
+      /* DEBUG_VALUE(Particle->Offset.z); */
 
-    u8 ColorIndex = (u8)((Particle->RemainingLifespan / System->ParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
-    Assert(ColorIndex >= 0 && ColorIndex <= PARTICLE_SYSTEM_COLOR_COUNT);
+      v3 MinDiameter = V3(0.1f);
+      v3 Diameter = ((Particle->RemainingLifespan / System->ParticleLifespan) + MinDiameter) * System->ParticleStartingDim;
 
-    DrawVoxel( Dest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 3.0f );
+      /* DEBUG_VALUE(Diameter.x); */
+      /* DEBUG_VALUE(Diameter.y); */
+      /* DEBUG_VALUE(Diameter.z); */
+
+
+      u8 ColorIndex = (u8)((Particle->RemainingLifespan / System->ParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
+      Assert(ColorIndex >= 0 && ColorIndex <= PARTICLE_SYSTEM_COLOR_COUNT);
+
+/*       DEBUG_VALUE((r32)ColorIndex); */
+
+      DrawVoxel( Dest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 3.0f );
 
 #if 0
-    if (RandomUnilateral(&System->Entropy) > 0.99f)
-    {
-      DoLight(Graphics->Lights, RenderSpaceP + Particle->Offset, EmissionColor);
-    }
+      if (RandomUnilateral(&System->Entropy) > 0.99f)
+      {
+        DoLight(Graphics->Lights, RenderSpaceP + Particle->Offset, EmissionColor);
+      }
 #endif
+    }
   }
 
 
@@ -1081,8 +1084,6 @@ SimulateAndRenderParticleSystem(
   v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera, WorldChunkDim) + System->SpawnRegion.Center;
   DoLight(Graphics->Lights, RenderSpaceP, 10.0f*EmissionColor);
 #endif
-
-  return;
 }
 
 void
@@ -1231,6 +1232,6 @@ inline b32
 IsGrounded( world *World, entity *entity, chunk_dimension VisibleRegion)
 {
   collision_event c = GetCollision(World, entity, VisibleRegion, V3(0.0f, 0.0f, -0.0001f));
-  return c.didCollide;
+  return c.didCollide && c.Chunk;
 }
 

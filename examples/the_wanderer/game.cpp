@@ -77,14 +77,14 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   static float TimeToWait = Interval;
   TimeToWait -= Plat->dt;
 
-  if (TimeToWait < 0.f)
-  {
-    Player->Physics.Force += V3(1000.f, 0.0f, 0.0f);
-  }
+  Player->Physics.Speed = 60.f;
+  Player->Physics.Mass = 20.f;
 
-  if (IsGrounded( World, Player, g_VisibleRegion))
+  if (TimeToWait < 0.f && IsGrounded( World, Player, g_VisibleRegion))
   {
-    Player->Physics.Force += V3(0.f, 0.f, 150.f);
+    Player->Physics.Force += V3(200.f, 0.0f, 0.0f);
+    Player->Physics.Force += V3(0.f, 0.f, .25f) * Player->Physics.Speed;
+    TimeToWait = Interval;
   }
 
   if (Hotkeys->Player_Jump)

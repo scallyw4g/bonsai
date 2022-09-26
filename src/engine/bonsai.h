@@ -161,44 +161,43 @@ struct particle
 #define PARTICLE_SYSTEM_COLOR_COUNT 6
 struct particle_system_init_params
 {
+  random_series Entropy;
+
+  r32 EmissionLifespan; // How long the system emits for
+
+  r32 ParticleLifespan; // How long an individual particle lasts
+  r32 ParticlesPerSecond;
+  v3 ParticleStartingDim;
+
   aabb SpawnRegion;
+
   physics Physics;
   r32 SystemMovementCoefficient;
-
-  r32 EmissionLifespan;
-  r32 EmissionChance;
-
-  r32 ParticleLifespan;
-
-  v3 StartingDiameter;
-
-  random_series Entropy;
 
   u8 Colors[PARTICLE_SYSTEM_COLOR_COUNT];
 };
 
+
+#define PARTICLES_PER_SYSTEM   (4096)
 struct particle_system
 {
   random_series Entropy;
 
+  r32 ElapsedSinceLastEmission;
+  r32 EmissionLifespan; // How long the system emits for
+
   s32 ActiveParticles;
-  r32 ParticleDuration;
+
+  r32 ParticleLifespan; // How long an individual particle lasts
+  r32 ParticlesPerSecond;
+  v3 ParticleStartingDim;
 
   aabb SpawnRegion;
-
-  v3 StartingDiameter;
-
-  r32 EmissionLifespan;
-
-  r32 ParticleLifespan;
-  r32 EmissionChance;
 
   physics ParticlePhysics;
   r32 SystemMovementCoefficient;
 
   u8 Colors[PARTICLE_SYSTEM_COLOR_COUNT];
-
-#define PARTICLES_PER_SYSTEM   (4096)
   particle Particles[PARTICLES_PER_SYSTEM];
 };
 
