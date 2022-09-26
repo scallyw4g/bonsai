@@ -481,7 +481,7 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset)
   Params.EmissionChance = 2.0f;
 
   Params.Physics.Speed = 18;
-  Params.Physics.Drag = V3(2.0f);
+  /* Params.Physics.Drag = V3(2.0f); */
   Params.Physics.Mass = 0.3f;
 
   SpawnParticleSystem(Entity->Emitter, &Params );
@@ -513,7 +513,7 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset)
   Params.EmissionChance = 3.0f;
 
   Params.Physics.Speed = 8;
-  Params.Physics.Drag = V3(2.2f);
+  /* Params.Physics.Drag = V3(2.2f); */
   Params.Physics.Mass = 1.0f;
 
   Params.Physics.Velocity = V3(0.0f, 0.0f, 7.0f);
@@ -533,9 +533,9 @@ SpawnPlayer(platform *Plat, world *World, model* Models, entity *Player, canonic
   Info("Player Spawned");
 
   physics Physics = {};
-  Physics.Drag = V3(1.f, 1.f, 1.f);
+  /* Physics.Drag = V3(1.f, 1.f, 1.f); */
   Physics.Mass = 4.f;
-  Physics.Speed = 1;
+  Physics.Speed = 4;
 
   r32 Scale = 1.0f;
   r32 RateOfFire = 0.8f;
@@ -1094,7 +1094,7 @@ SimulatePlayer(world* World, entity *Player, camera* Camera, hotkeys *Hotkeys, r
   {
     if (Hotkeys)
     {
-      Player->Physics.Force += GetCameraRelativeInput(Hotkeys, Camera)*dt;
+      Player->Physics.Force += (dt * Player->Physics.Speed * GetCameraRelativeInput(Hotkeys, Camera));
       /* Player->Physics.Force += GetOrthographicInputs(Hotkeys)*dt; */
     }
 

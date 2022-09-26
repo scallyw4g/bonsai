@@ -82,10 +82,12 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 #endif
 
   entity *Player = GameState->Player;
+  Player->Physics.Speed = 60.f;
+  Player->Physics.Mass = 35.f;
 
   if ( IsGrounded(World, Player, World->VisibleRegion) && Hotkeys->Player_Jump )
   {
-    Player->Physics.Force += V3(0, 0, 1);
+    Player->Physics.Force += V3(0.f, 0.f, 0.5f) * Player->Physics.Speed;
   }
 
   /* if (IsGrounded(World, Player, World->VisibleRegion))// && Hotkeys->Player_Jump) */
