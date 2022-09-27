@@ -49,7 +49,12 @@ Bonsai_Init(engine_resources *Resources)
 link_export b32
 Bonsai_FrameBegin(engine_resources *Resources)
 {
+  graphics *G = Resources->Graphics;
+  G->GpuBufferWriteIndex = (G->GpuBufferWriteIndex + 1) % 2;
+
   UNPACK_ENGINE_RESOURCES();
+
+  MapGpuElementBuffer(GpuMap);
 
 #if !DEBUG_LIB_INTERNAL_BUILD
 #if BONSAI_DEBUG_SYSTEM_API
@@ -58,7 +63,8 @@ Bonsai_FrameBegin(engine_resources *Resources)
 #endif
 #endif
 
-  MapGpuElementBuffer(GpuMap);
+  /* DEBUG_VALUE(GpuMap); */
+  /* MapGpuElementBuffer(GpuMap); */
   ClearFramebuffers(Graphics);
 
 #if DEBUG_DRAW_WORLD_AXIES
@@ -133,8 +139,6 @@ Bonsai_Render(engine_resources *Resources)
   DrawGBufferToFullscreenQuad(Plat, Graphics);
 
   BonsaiSwapBuffers(Resources->Os);
-
-  Graphics->GpuBufferWriteIndex = (Graphics->GpuBufferWriteIndex + 1) % 2;
 
   b32 Result = True;
   return Result;

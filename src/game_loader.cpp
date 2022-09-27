@@ -94,7 +94,7 @@ ThreadMain(void *Input)
 
       if ( FutexIsSignaled(ThreadParams->WorkerThreadsExitFutex) ) break;
 
-      SleepMs(3);
+      SleepMs(1);
     }
 #endif
 
@@ -379,12 +379,12 @@ main( s32 ArgCount, const char ** Args )
       GameApi.GameMain(&EngineResources, &MainThread);
     END_BLOCK("GameMain");
 
-    DrainQueue(&Plat.HighPriority, &MainThread,GameApi.WorkerMain);
-    WaitForWorkerThreads(&Plat.HighPriorityWorkerCount);
-
     Ensure( EngineApi.FrameEnd(&EngineResources) );
 
     DEBUG_FRAME_END(&Plat);
+
+    DrainQueue(&Plat.HighPriority, &MainThread,GameApi.WorkerMain);
+    WaitForWorkerThreads(&Plat.HighPriorityWorkerCount);
 
     Ensure( EngineApi.Render(&EngineResources) );
 

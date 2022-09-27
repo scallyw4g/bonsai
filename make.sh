@@ -4,7 +4,7 @@ BUILD_EVERYTHING=0
 
 RunPoof=1
 
-BuildExecutables=0
+BuildExecutables=1
 BuildExamples=1
 BuildDebugSystem=1
 

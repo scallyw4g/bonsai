@@ -100,7 +100,6 @@ DrawGBufferToFullscreenQuad( platform *Plat, graphics *Graphics)
 link_internal gpu_mapped_element_buffer *
 GetCurrentGpuMap(graphics *Graphics)
 {
-
   gpu_mapped_element_buffer* GpuMap = Graphics->GpuBuffers + Graphics->GpuBufferWriteIndex;
   return GpuMap;
 }

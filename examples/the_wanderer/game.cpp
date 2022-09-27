@@ -80,6 +80,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   Player->Physics.Speed = 60.f;
   Player->Physics.Mass = 20.f;
 
+  Player->Physics.Force += V3(20.f, 0.0f, 0.0f) * Plat->dt;
+
   if (TimeToWait < 0.f && IsGrounded( World, Player, g_VisibleRegion))
   {
     Player->Physics.Force += V3(200.f, 0.0f, 0.0f);
