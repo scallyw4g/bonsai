@@ -1012,9 +1012,6 @@ SimulateAndRenderParticleSystem(
 
   r32 SpawnInterval = 1.f/System->ParticlesPerSecond;
 
-  DEBUG_VALUE(SpawnInterval);
-  DEBUG_VALUE((r32)SpawnCount);
-
   b32 ApplyGravity = False;
 
   for (u32 SpawnIndex = 0; SpawnIndex < SpawnCount; ++SpawnIndex)
@@ -1025,11 +1022,6 @@ SimulateAndRenderParticleSystem(
   }
 
   System->ElapsedSinceLastEmission -= (r32)SpawnCount*SpawnInterval;
-  DEBUG_VALUE(System->ElapsedSinceLastEmission);
-
-  /* System->ActiveParticles += SpawnCount; */
-  DEBUG_VALUE(System->ActiveParticles);
-  DEBUG_VALUE(System->ParticleLifespan);
 
   v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera, WorldChunkDim);
 
@@ -1050,23 +1042,11 @@ SimulateAndRenderParticleSystem(
     }
     else
     {
-
-      /* DEBUG_VALUE(Particle->Offset.x); */
-      /* DEBUG_VALUE(Particle->Offset.y); */
-      /* DEBUG_VALUE(Particle->Offset.z); */
-
       v3 MinDiameter = V3(0.1f);
       v3 Diameter = ((Particle->RemainingLifespan / System->ParticleLifespan) + MinDiameter) * System->ParticleStartingDim;
 
-      /* DEBUG_VALUE(Diameter.x); */
-      /* DEBUG_VALUE(Diameter.y); */
-      /* DEBUG_VALUE(Diameter.z); */
-
-
       u8 ColorIndex = (u8)((Particle->RemainingLifespan / System->ParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
       Assert(ColorIndex >= 0 && ColorIndex <= PARTICLE_SYSTEM_COLOR_COUNT);
-
-/*       DEBUG_VALUE((r32)ColorIndex); */
 
       DrawVoxel( Dest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 3.0f );
 
@@ -1099,21 +1079,10 @@ SimulatePlayer(world* World, entity *Player, camera* Camera, hotkeys *Hotkeys, r
       /* Player->Physics.Force += GetOrthographicInputs(Hotkeys)*dt; */
     }
 
-
-    /* DEBUG_VALUE(Player->Physics.Speed); */
-
     PhysicsUpdate(&Player->Physics, dt);
 
     world_position OriginalPlayerP = Player->P.WorldP;
     UpdateEntityP( World, Player, Player->Physics.Delta, VisibleRegion);
-
-    DEBUG_VALUE(Player->Physics.Velocity.x);
-    DEBUG_VALUE(Player->Physics.Velocity.y);
-    DEBUG_VALUE(Player->Physics.Velocity.z);
-
-    DEBUG_VALUE(Player->Physics.Delta.x);
-    DEBUG_VALUE(Player->Physics.Delta.y);
-    DEBUG_VALUE(Player->Physics.Delta.z);
 
     world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP );
     UpdateVisibleRegion(World, WorldDisp);

@@ -137,6 +137,8 @@ BufferVertsChecked(
     v3 Scale = V3(1)
   )
 {
+  TIMED_FUNCTION();
+
   if (Dest->At + Src->At <= Dest->End)
   {
 

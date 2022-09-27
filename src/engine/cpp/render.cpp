@@ -952,29 +952,15 @@ ReserveBufferSpace(untextured_3d_geometry_buffer* Reservation, u32 ElementsToRes
 void
 BufferWorldChunk(untextured_3d_geometry_buffer *Dest, world_chunk *Chunk, graphics *Graphics, work_queue* Queue, chunk_dimension WorldChunkDim)
 {
-  if (!Chunk || !Chunk->Mesh)
-    return;
-
   chunk_data *ChunkData = Chunk->Data;
-  if (ChunkData->Flags == Chunk_MeshComplete && Chunk->Mesh->At)
-  {
-    QueueChunkMeshForCopy(Queue, Chunk->Mesh, Dest, Chunk, Graphics->Camera, WorldChunkDim);
+  Assert( IsSet(ChunkData->Flags, Chunk_MeshComplete) && Chunk->Mesh->At );
 
-    /* if (Chunk->LodMesh_Complete && Chunk->LodMesh->At) */
-    /* { */
-    /*   QueueChunkMeshForCopy(Queue, Chunk->LodMesh, Dest, Chunk, Graphics->Camera, WorldChunkDim); */
-    /* } */
+  QueueChunkMeshForCopy(Queue, Chunk->Mesh, Dest, Chunk, Graphics->Camera, WorldChunkDim);
 
-  }
-  else if (IsSet(ChunkData, Chunk_Queued))
-  {
-    // Note(Jesse): This is really slow so use judiciously
-    /* DEBUG_DrawChunkAABB(&World->Mesh, Graphics, Chunk, WORLD_CHUNK_DIM, TEAL, 0.1f); */
-  }
-  else
-  {
-    /* DEBUG_DrawChunkAABB(&World->Mesh, Graphics, Chunk, WORLD_CHUNK_DIM, RED, 0.1f); */
-  }
+  /* if (Chunk->LodMesh_Complete && Chunk->LodMesh->At) */
+  /* { */
+  /*   QueueChunkMeshForCopy(Queue, Chunk->LodMesh, Dest, Chunk, Graphics->Camera, WorldChunkDim); */
+  /* } */
 
   return;
 }
@@ -1075,13 +1061,25 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
           {
             Assert(Chunk->Mesh->At);
 
-            work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer( Chunk->Mesh,
-                                                                             Dest,
-                                                                             Chunk,
-                                                                             Graphics->Camera,
-                                                                             World->ChunkDim );
 
-            PushCopyJob(&Plat->HighPriority, &CopySet, &CopyJob);
+            // NOTE(Jesse): Random heruistic for packing small meshes together
+            // into a bulk copy job
+#if 1
+            if (Chunk->Mesh->At < Kilobytes(4))
+            {
+              work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer( Chunk->Mesh,
+                                                                               Dest,
+                                                                               Chunk,
+                                                                               Graphics->Camera,
+                                                                               World->ChunkDim );
+              PushCopyJob(&Plat->HighPriority, &CopySet, &CopyJob);
+            }
+            else
+#endif
+            {
+              BufferWorldChunk(Dest, Chunk, Graphics, &Plat->HighPriority, World->ChunkDim);
+            }
+
 
             /* work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer(Chunk->LodMesh, Dest, Chunk, Graphics->Camera, World->ChunkDim); */
 
