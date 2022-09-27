@@ -36,17 +36,6 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory)
   return Result;
 }
 
-link_internal void
-DoCopyJob(volatile work_queue_entry_copy_buffer *Job)
-{
-  untextured_3d_geometry_buffer* Src = Job->Src;
-  untextured_3d_geometry_buffer* Dest = &Job->Dest;
-  Assert(Src->At <= Dest->End);
-
-  v3 Basis = Job->Basis;
-  BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
-}
-
 BONSAI_API_WORKER_THREAD_CALLBACK()
 {
   switch (Entry->Type)

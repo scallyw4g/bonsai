@@ -29,9 +29,8 @@ Bonsai_Init(engine_resources *Resources)
 {
   b32 Result = True;
 
-  Resources->Memory = AllocateArena();;
-
-  UNPACK_ENGINE_RESOURCES();
+  memory_arena *Memory = AllocateArena();;
+  Resources->Memory = Memory;
 
   Init_Global_QuadVertexBuffer();
 
