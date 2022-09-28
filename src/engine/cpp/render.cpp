@@ -1065,7 +1065,7 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
             // NOTE(Jesse): Random heruistic for packing small meshes together
             // into a bulk copy job
 #if 1
-            if (Chunk->Mesh->At < Kilobytes(4))
+            if (Chunk->Mesh->At < Kilobytes(8))
             {
               work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer( Chunk->Mesh,
                                                                                Dest,

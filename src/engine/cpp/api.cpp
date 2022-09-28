@@ -21,12 +21,21 @@ link_export b32
 Bonsai_OnLibraryLoad(engine_resources *Resources)
 {
   b32 Result = InitializeOpenglFunctions();
+
+#if BONSAI_DEBUG_SYSTEM_API
+#if !DEBUG_LIB_INTERNAL_BUILD
+  GetDebugState = (get_debug_state_proc)Resources->Plat->GetDebugStateProc;
+#endif
+#endif
+
   return Result;
 }
 
 link_export b32
 Bonsai_Init(engine_resources *Resources)
 {
+  TIMED_FUNCTION();
+
   b32 Result = True;
 
   memory_arena *Memory = AllocateArena();;
@@ -49,19 +58,14 @@ Bonsai_Init(engine_resources *Resources)
 link_export b32
 Bonsai_FrameBegin(engine_resources *Resources)
 {
+  TIMED_FUNCTION();
+
   graphics *G = Resources->Graphics;
   G->GpuBufferWriteIndex = (G->GpuBufferWriteIndex + 1) % 2;
 
   UNPACK_ENGINE_RESOURCES();
 
   MapGpuElementBuffer(GpuMap);
-
-#if !DEBUG_LIB_INTERNAL_BUILD
-#if BONSAI_DEBUG_SYSTEM_API
-  GetDebugState = (get_debug_state_proc)Plat->GetDebugStateProc;
-  if (GetDebugState) { GetDebugState()->Plat = Plat; GetDebugState()->GameState = GameState; }
-#endif
-#endif
 
   /* DEBUG_VALUE(GpuMap); */
   /* MapGpuElementBuffer(GpuMap); */
@@ -92,31 +96,36 @@ Bonsai_FrameBegin(engine_resources *Resources)
 link_export b32
 Bonsai_FrameEnd(engine_resources *Resources)
 {
+  TIMED_FUNCTION();
+
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  Bonsai_GameSimulation(Resources);
+  Bonsai_SimulateEntitiesAndWorld(Resources);
   Render_BufferGameGeometry(Resources);
 
   Resources->Graphics->gBuffer->ViewProjection =
     ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
     ViewMatrix(World->ChunkDim, Camera);
 
-#if BONSAI_DEBUG_SYSTEM_API
-  DEBUG_COMPUTE_PICK_RAY(Plat, &gBuffer->ViewProjection);
-  for (u32 ChunkIndex = 0;
-      ChunkIndex < GetDebugState()->PickedChunkCount;
-      ++ChunkIndex)
+#if 0 // BONSAI_DEBUG_SYSTEM_API
+  if (GetDebugState)
   {
-    world_chunk *Chunk = GetDebugState()->PickedChunks[ChunkIndex];
-    untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
-    u8 Color = GREEN;
-
-    if (Chunk == GetDebugState()->HotChunk)
+    DEBUG_COMPUTE_PICK_RAY(&gBuffer->ViewProjection);
+    for (u32 ChunkIndex = 0;
+        ChunkIndex < GetDebugState()->PickedChunkCount;
+        ++ChunkIndex)
     {
-      Color = PINK;
-    }
+      world_chunk *Chunk = GetDebugState()->PickedChunks[ChunkIndex];
+      untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
+      u8 Color = GREEN;
 
-    DEBUG_DrawChunkAABB(&CopyDest, Graphics, Chunk, World->ChunkDim, Color, 0.35f);
+      if (Chunk == GetDebugState()->HotChunk)
+      {
+        Color = PINK;
+      }
+
+      DEBUG_DrawChunkAABB(&CopyDest, Graphics, Chunk, World->ChunkDim, Color, 0.35f);
+    }
   }
 #endif
 

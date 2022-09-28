@@ -104,6 +104,18 @@ ThreadMain(void *Input)
     DrainQueue( ThreadParams->HighPriority, &Thread, GameWorkerThreadCallback );
     AtomicDecrement(ThreadParams->HighPriorityWorkerCount);
 
+#if 0
+    // TODO(Jesse): Vectorize the clear on this such that we can turn this back
+    // on instead of allocating fresh pages every time.  In the end re-using
+    // pages and zeroing them ourselves will (theoretically) be faster
+    //
+    // @turn_rewind_arena_back_on
+    Ensure( RewindArena(Thread.TempMemory) );
+#else
+    Ensure( VaporizeArena(Thread.TempMemory) );
+    Ensure( Thread.TempMemory = AllocateArena() );
+#endif
+
     work_queue* LowPriority = ThreadParams->LowPriority;
     for (;;)
     {
@@ -131,8 +143,6 @@ ThreadMain(void *Input)
         GameWorkerThreadCallback(Entry, &Thread);
       }
     }
-
-    Ensure(RewindArena(Thread.TempMemory));
   }
 
   WaitOnFutex(ThreadParams->WorkerThreadsExitFutex);
@@ -373,6 +383,7 @@ main( s32 ArgCount, const char ** Args )
     /*   if (IsDisconnected(&Plat.Network)) { ConnectToServer(&Plat.Network); } */
     /* END_BLOCK("Network Ops"); */
 
+    /* TIMED_BLOCK(" -- Frame --"); */
     Ensure( EngineApi.FrameBegin(&EngineResources) );
 
     TIMED_BLOCK("GameMain");
@@ -381,10 +392,10 @@ main( s32 ArgCount, const char ** Args )
 
     Ensure( EngineApi.FrameEnd(&EngineResources) );
 
-    DEBUG_FRAME_END(&Plat);
-
     DrainQueue(&Plat.HighPriority, &MainThread,GameApi.WorkerMain);
     WaitForWorkerThreads(&Plat.HighPriorityWorkerCount);
+
+    DEBUG_FRAME_END(&Plat.MouseP, &Plat.MouseDP, V2(Plat.WindowWidth, Plat.WindowHeight), &Plat.Input, Plat.dt);
 
     Ensure( EngineApi.Render(&EngineResources) );
 
@@ -396,6 +407,7 @@ main( s32 ArgCount, const char ** Args )
     Plat.dt = (r32)RealDt;
 
     MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(RealDt);
+    /* END_BLOCK("-- Frame --"); */
   }
 
   Info("Shutting Down");

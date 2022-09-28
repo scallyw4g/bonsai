@@ -76,11 +76,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES();
 
-#if BONSAI_DEBUG_SYSTEM_API
-  GetDebugState = (get_debug_state_proc)Plat->GetDebugStateProc;
-  if (GetDebugState) { GetDebugState()->Plat = Plat; GetDebugState()->GameState = GameState; }
-#endif
-
   entity *Player = GameState->Player;
   Player->Physics.Speed = 60.f;
   Player->Physics.Mass = 35.f;

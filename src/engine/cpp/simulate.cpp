@@ -2,7 +2,7 @@
 #if PLATFORM_GL_IMPLEMENTATIONS
 
 link_internal void
-Bonsai_GameSimulation(engine_resources *Resources)
+Bonsai_SimulateEntitiesAndWorld(engine_resources *Resources)
 {
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Resources);

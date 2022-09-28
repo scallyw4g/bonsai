@@ -40,8 +40,7 @@ EXECUTABLES_TO_BUILD="
   $SRC/tools/asset_packer.cpp
   $SRC/game_loader.cpp
 "
-  # $SRC/font/ttf.cpp
-  # $SRC/net/server.cpp
+  # $SRC/font/ttf.cpp  # $SRC/net/server.cpp
 
 
 # TODO(Jesse, tags: tests, release): The allocation tests crash in release mode because of some
