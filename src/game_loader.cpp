@@ -312,7 +312,7 @@ main( s32 ArgCount, const char ** Args )
   while ( Os.ContinueRunning )
   {
     ClearClickedFlags(&Plat.Input);
-    DEBUG_FRAME_BEGIN(&Hotkeys);
+    Clear(&Hotkeys);
 
     if (Plat.dt > 0.1f)
     {
@@ -327,6 +327,8 @@ main( s32 ArgCount, const char ** Args )
     Plat.MouseDP = LastMouseP - Plat.MouseP;
 
     BindHotkeysToInput(&Hotkeys, &Plat.Input);
+
+    DEBUG_FRAME_BEGIN(Hotkeys.Debug_ToggleMenu, Hotkeys.Debug_ToggleProfile);
 
 #if !EMCC
     if ( LibIsNew(GameLibName, &LastGameLibTime) )

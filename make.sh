@@ -2,16 +2,18 @@
 
 BUILD_EVERYTHING=0
 
-RunPoof=1
+RunPoof=0
 
-BuildExecutables=1
-BuildExamples=1
-BuildDebugSystem=1
+BuildExecutables=0
+BuildExamples=0
+BuildDebugSystem=0
 
 BuildTests=0
 BuildDebugTests=0
 
 RunTests=0
+
+MakeDebugLibRelease=1
 
 . scripts/preamble.sh
 . scripts/setup_for_cxx.sh
@@ -20,8 +22,10 @@ OPTIMIZATION_LEVEL="-O2"
 EMCC=0
 
 
+# ROOT="$(pwd)"
 ROOT="."
 SRC="$ROOT/src"
+INCLUDE="$ROOT/include"
 EXAMPLES="$ROOT/examples"
 TESTS="$SRC/tests"
 BIN="$ROOT/bin"
@@ -49,6 +53,24 @@ DEBUG_TESTS_TO_BUILD="
   $TESTS/allocation.cpp
 "
 
+
+DEBUG_LIB_RELEASE_DIR="releases/debug_lib"
+function MakeDebugLibRelease
+{
+  [ ! -d releases ] && mkdir releases
+  [ -d $DEBUG_LIB_RELEASE_DIR ] && rm -Rf $DEBUG_LIB_RELEASE_DIR && mkdir $DEBUG_LIB_RELEASE_DIR
+
+  BuildDebugSystem
+  [ $? -ne 0 ] && exit 1
+
+  cat include/bonsai_debug/headers/public.h       >  $DEBUG_LIB_RELEASE_DIR/api.h
+  cat include/bonsai_stdlib/headers/primitives.h  >> $DEBUG_LIB_RELEASE_DIR/api.h
+  cat include/bonsai_debug/headers/api.h          >> $DEBUG_LIB_RELEASE_DIR/api.h
+
+  cp "$BIN/lib_bonsai_debug""$PLATFORM_LIB_EXTENSION" $DEBUG_LIB_RELEASE_DIR
+}
+
+
 function BuildExecutables
 {
   echo ""
@@ -66,6 +88,7 @@ function BuildExecutables
       $PLATFORM_INCLUDE_DIRS                         \
       -I "$ROOT"                                     \
       -I "$SRC"                                      \
+      -I "$INCLUDE"                             \
       -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
       $executable && echo -e "$Success $executable" &
   done
@@ -108,8 +131,8 @@ function BuildTests
       $PLATFORM_DEFINES                              \
       $PLATFORM_INCLUDE_DIRS                         \
       -I "$ROOT"                                     \
-      -I"$SRC"                                       \
-      -I"$SRC/include"                               \
+      -I "$SRC"                                      \
+      -I "$INCLUDE"                              \
       -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
       $executable && echo -e "$Success $executable" &
   done
@@ -119,12 +142,12 @@ function BuildDebugSystem
 {
   echo ""
   ColorizeTitle "DebugSystem"
-  DEBUG_SRC_FILE="$SRC/bonsai_debug/debug.cpp"
+  DEBUG_SRC_FILE="$INCLUDE/bonsai_debug/debug.cpp"
   echo -e "$Building $DEBUG_SRC_FILE"
   clang++                                               \
     $OPTIMIZATION_LEVEL                                 \
     $CXX_OPTIONS                                        \
-    $BONSAI_INTERNAL \
+    $BONSAI_INTERNAL                                    \
     $PLATFORM_CXX_OPTIONS                               \
     $PLATFORM_LINKER_OPTIONS                            \
     $PLATFORM_DEFINES                                   \
@@ -132,8 +155,8 @@ function BuildDebugSystem
     $SHARED_LIBRARY_FLAGS                               \
     -I "$ROOT"                                          \
     -I "$SRC"                                           \
-    -I "$SRC/bonsai_debug"                              \
-    -o "$BIN/lib_debug_system""$PLATFORM_LIB_EXTENSION" \
+    -I "$INCLUDE"                                       \
+    -o "$BIN/lib_bonsai_debug""$PLATFORM_LIB_EXTENSION" \
     "$DEBUG_SRC_FILE" && echo -e "$Success $DEBUG_SRC_FILE" &
 }
 
@@ -155,8 +178,9 @@ function BuildExamples
       $PLATFORM_INCLUDE_DIRS                                                          \
       $SHARED_LIBRARY_FLAGS                                                           \
       -I "$ROOT"                                                                      \
-      -I"$SRC"                                                                        \
-      -I"$executable"                                                                 \
+      -I "$INCLUDE"                                                                   \
+      -I "$SRC"                                                                       \
+      -I "$executable"                                                                \
       -o "$output_basename"                                                           \
       "$executable/game.cpp" &&                                                       \
       mv "$output_basename" "$output_basename""_loadable""$PLATFORM_LIB_EXTENSION" && \
@@ -248,6 +272,10 @@ fi
 
 function RunEntireBuild {
 
+  if [ $MakeDebugLibRelease == 1 ]; then
+    MakeDebugLibRelease
+  fi
+
   if [ $RunPoof == 1 ]; then
     RunPoof
   fi
@@ -288,7 +316,7 @@ function RunPoof
   [ -d generated ] && rm -Rf generated
 
   RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
-  RunPoofHelper src/bonsai_debug/debug.cpp && echo -e "$Success poofed src/bonsai_debug/debug.cpp" &
+  RunPoofHelper include/bonsai_debug/debug.cpp && echo -e "$Success poofed src/include/bonsai_debug/debug.cpp" &
   RunPoofHelper examples/asset_picker/game.cpp && echo -e "$Success poofed examples/asset_picker/game.cpp" &
   # RunPoofHelper examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &
   RunPoofHelper src/tools/asset_packer.cpp && echo -e "$Success poofed src/tools/asset_packer.cpp" &

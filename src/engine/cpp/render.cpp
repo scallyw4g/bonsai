@@ -1051,9 +1051,11 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
 
         if (Chunk && Chunk->Mesh)
         {
+#if 0
           DEBUG_PICK_CHUNK( Chunk,
                             MinMaxAABB( GetRenderP(World->ChunkDim, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera),
                                         GetRenderP(World->ChunkDim, Canonical_Position(World->ChunkDim, Chunk->WorldP), Graphics->Camera) ) );
+#endif
 
           chunk_data *ChunkData = Chunk->Data;
 
