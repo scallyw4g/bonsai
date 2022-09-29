@@ -190,10 +190,9 @@ InitQueue(work_queue* Queue, memory_arena* Memory) //, semaphore* Semaphore)
 }
 
 link_internal void
-PlatformInit(platform *Plat, memory_arena *Memory, void* GetDebugStateProc)
+PlatformInit(platform *Plat, memory_arena *Memory)
 {
   Plat->Memory = Memory;
-  Plat->GetDebugStateProc = GetDebugStateProc;
 
   u32 LogicalCoreCount = PlatformGetLogicalCoreCount();
   u32 WorkerThreadCount = GetWorkerThreadCount();
@@ -235,14 +234,25 @@ main( s32 ArgCount, const char ** Args )
   Assert(Os.GlContext);
 
 
+  Ensure( InitializeBonsaiDebug(DEFAULT_DEBUG_LIB) );
+  Assert(Global_DebugStatePointer);
+  EngineResources.DebugState = Global_DebugStatePointer;
+
+#if 0
   shared_lib DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
   if (!DebugLib) { ("Loading DebugLib :( "); return 1; }
 
   if (DebugLib)
   {
+    bonsai_debug_api DebugApi = {};
+    if (InitializeBootstrapDebugApi(DebugLib, &Api))
+    {
+
+    }
     init_debug_system_proc InitDebugSystem = (init_debug_system_proc)GetProcFromLib(DebugLib, "InitDebugSystem");
     GetDebugState = InitDebugSystem();
   }
+#endif
 
   memory_arena *PlatMemory = AllocateArena();
   memory_arena *GameMemory = AllocateArena();
@@ -250,7 +260,7 @@ main( s32 ArgCount, const char ** Args )
   DEBUG_REGISTER_ARENA(GameMemory);
   DEBUG_REGISTER_ARENA(PlatMemory);
 
-  PlatformInit(&Plat, PlatMemory, (void*)GetDebugState);
+  PlatformInit(&Plat, PlatMemory);
 
 #if BONSAI_INTERNAL
   // debug_recording_state *Debug_RecordingState = Allocate(debug_recording_state, GameMemory, 1);
@@ -328,7 +338,7 @@ main( s32 ArgCount, const char ** Args )
 
     BindHotkeysToInput(&Hotkeys, &Plat.Input);
 
-    DEBUG_FRAME_BEGIN(Hotkeys.Debug_ToggleMenu, Hotkeys.Debug_ToggleProfile);
+    DEBUG_FRAME_BEGIN(Hotkeys.Debug_ToggleMenu, Hotkeys.Debug_ToggleProfiling);
 
 #if !EMCC
     if ( LibIsNew(GameLibName, &LastGameLibTime) )
@@ -401,7 +411,7 @@ main( s32 ArgCount, const char ** Args )
 
     Ensure( EngineApi.Render(&EngineResources) );
 
-    Ensure(RewindArena(TranArena));
+    Ensure( RewindArena(TranArena) );
 
     r64 CurrentMS = GetHighPrecisionClock();
     RealDt = (CurrentMS - LastMs)/1000.0;

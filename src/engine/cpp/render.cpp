@@ -370,7 +370,7 @@ ClearFramebuffers(graphics *Graphics)
 #if DEBUG_LIB_INTERNAL_BUILD
   GetDebugState()->ClearFramebuffers();
 #else
-  if (GetDebugState) GetDebugState()->ClearFramebuffers();
+  if (GetDebugState()) GetDebugState()->ClearFramebuffers();
 #endif
 
   /* GL.BindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID); */

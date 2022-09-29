@@ -4,16 +4,16 @@ BUILD_EVERYTHING=0
 
 RunPoof=0
 
-BuildExecutables=0
-BuildExamples=0
-BuildDebugSystem=0
+BuildExecutables=1
+BuildExamples=1
+BuildDebugSystem=1
 
 BuildTests=0
 BuildDebugTests=0
 
 RunTests=0
 
-MakeDebugLibRelease=1
+MakeDebugLibRelease=0
 
 . scripts/preamble.sh
 . scripts/setup_for_cxx.sh

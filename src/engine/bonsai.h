@@ -1,4 +1,6 @@
 
+struct debug_state;
+
 struct world;
 struct heap_allocator;
 struct entity;
@@ -26,6 +28,7 @@ struct engine_resources
   canonical_position *CameraTargetP;
 
   mesh_freelist MeshFreelist;
+  debug_state *DebugState;
 };
 
 

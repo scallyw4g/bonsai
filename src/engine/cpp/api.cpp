@@ -21,13 +21,7 @@ link_export b32
 Bonsai_OnLibraryLoad(engine_resources *Resources)
 {
   b32 Result = InitializeOpenglFunctions();
-
-#if BONSAI_DEBUG_SYSTEM_API
-#if !DEBUG_LIB_INTERNAL_BUILD
-  GetDebugState = (get_debug_state_proc)Resources->Plat->GetDebugStateProc;
-#endif
-#endif
-
+  Global_DebugStatePointer = Resources->DebugState;
   return Result;
 }
 
