@@ -13,7 +13,7 @@ BuildDebugTests=0
 
 RunTests=0
 
-MakeDebugLibRelease=0
+MakeDebugLibRelease=1
 
 . scripts/preamble.sh
 . scripts/setup_for_cxx.sh
@@ -63,10 +63,13 @@ function MakeDebugLibRelease
   BuildDebugSystem
   [ $? -ne 0 ] && exit 1
 
-  cat include/bonsai_debug/headers/public.h       >  $DEBUG_LIB_RELEASE_DIR/api.h
+  echo "#pragma once"                             >  $DEBUG_LIB_RELEASE_DIR/api.h
+  cat include/bonsai_debug/headers/public.h       >> $DEBUG_LIB_RELEASE_DIR/api.h
   cat include/bonsai_stdlib/headers/primitives.h  >> $DEBUG_LIB_RELEASE_DIR/api.h
   cat include/bonsai_debug/headers/api.h          >> $DEBUG_LIB_RELEASE_DIR/api.h
 
+  cp texture_atlas_0.bmp $DEBUG_LIB_RELEASE_DIR
+  cp -R shaders $DEBUG_LIB_RELEASE_DIR
   cp "$BIN/lib_bonsai_debug""$PLATFORM_LIB_EXTENSION" $DEBUG_LIB_RELEASE_DIR
 }
 

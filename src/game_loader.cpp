@@ -1,6 +1,9 @@
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
 #define PLATFORM_GL_IMPLEMENTATIONS 1
 #define BONSAI_DEBUG_SYSTEM_API 1
+#define BONSAI_DEBUG_LIB_LOADER_API 1
+
+#define DEFAULT_DEBUG_LIB "./bin/lib_bonsai_debug" PLATFORM_RUNTIME_LIB_EXTENSION
 
 #include <bonsai_stdlib/bonsai_stdlib.h>
 #include <bonsai_stdlib/bonsai_stdlib.cpp>
