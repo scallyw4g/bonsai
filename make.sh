@@ -4,9 +4,9 @@ BUILD_EVERYTHING=0
 
 RunPoof=0
 
-BuildExecutables=1
-BuildExamples=1
-BuildDebugSystem=1
+BuildExecutables=0
+BuildExamples=0
+BuildDebugSystem=0
 
 BuildTests=0
 BuildDebugTests=0
@@ -63,6 +63,9 @@ function MakeDebugLibRelease
   BuildDebugSystem
   [ $? -ne 0 ] && exit 1
 
+  wait
+  sync
+
   echo "#pragma once"                             >  $DEBUG_LIB_RELEASE_DIR/api.h
   cat include/bonsai_debug/headers/public.h       >> $DEBUG_LIB_RELEASE_DIR/api.h
   cat include/bonsai_stdlib/headers/primitives.h  >> $DEBUG_LIB_RELEASE_DIR/api.h
@@ -71,6 +74,8 @@ function MakeDebugLibRelease
   cp texture_atlas_0.bmp $DEBUG_LIB_RELEASE_DIR
   cp -R shaders $DEBUG_LIB_RELEASE_DIR
   cp "$BIN/lib_bonsai_debug""$PLATFORM_LIB_EXTENSION" $DEBUG_LIB_RELEASE_DIR
+
+  sync
 }
 
 

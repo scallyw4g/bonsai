@@ -1,7 +1,9 @@
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
 #define PLATFORM_GL_IMPLEMENTATIONS 1
-#define BONSAI_DEBUG_SYSTEM_API 1
 #define BONSAI_DEBUG_LIB_LOADER_API 1
+
+// TODO(Jesse): This is old/should go
+#define BONSAI_DEBUG_SYSTEM_API 1
 
 #define DEFAULT_DEBUG_LIB "./bin/lib_bonsai_debug" PLATFORM_RUNTIME_LIB_EXTENSION
 
@@ -9,7 +11,6 @@
 #include <bonsai_stdlib/bonsai_stdlib.cpp>
 
 #include <engine/engine.h>
-
 
 global_variable s64 LastGameLibTime;
 
@@ -241,6 +242,8 @@ main( s32 ArgCount, const char ** Args )
   Assert(Global_DebugStatePointer);
   EngineResources.DebugState = Global_DebugStatePointer;
 
+  heap_allocator DebugHeap = InitHeap(Megabytes(32));
+  GetDebugState()->InitializeRenderSystem(GetDebugState(), &DebugHeap);
 #if 0
   shared_lib DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
   if (!DebugLib) { ("Loading DebugLib :( "); return 1; }
