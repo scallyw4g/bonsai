@@ -5,7 +5,7 @@
 // TODO(Jesse): This is old/should go
 #define BONSAI_DEBUG_SYSTEM_API 1
 
-#define DEFAULT_DEBUG_LIB "./bin/lib_bonsai_debug" PLATFORM_RUNTIME_LIB_EXTENSION
+#define DEFAULT_DEBUG_LIB "./bin/lib_bonsai_debug_loadable" PLATFORM_RUNTIME_LIB_EXTENSION
 
 #include <bonsai_stdlib/bonsai_stdlib.h>
 #include <bonsai_stdlib/bonsai_stdlib.cpp>
@@ -13,6 +13,7 @@
 #include <engine/engine.h>
 
 global_variable s64 LastGameLibTime;
+global_variable s64 LastDebugLibTime;
 
 #include <sys/stat.h>
 
@@ -238,27 +239,14 @@ main( s32 ArgCount, const char ** Args )
   Assert(Os.GlContext);
 
 
-  Ensure( InitializeBonsaiDebug(DEFAULT_DEBUG_LIB) );
+  shared_lib DebugLib = InitializeBonsaiDebug(DEFAULT_DEBUG_LIB);
+  Assert(DebugLib);
   Assert(Global_DebugStatePointer);
+
   EngineResources.DebugState = Global_DebugStatePointer;
 
   heap_allocator DebugHeap = InitHeap(Megabytes(32));
   GetDebugState()->InitializeRenderSystem(GetDebugState(), &DebugHeap);
-#if 0
-  shared_lib DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
-  if (!DebugLib) { ("Loading DebugLib :( "); return 1; }
-
-  if (DebugLib)
-  {
-    bonsai_debug_api DebugApi = {};
-    if (InitializeBootstrapDebugApi(DebugLib, &Api))
-    {
-
-    }
-    init_debug_system_proc InitDebugSystem = (init_debug_system_proc)GetProcFromLib(DebugLib, "InitDebugSystem");
-    GetDebugState = InitDebugSystem();
-  }
-#endif
 
   memory_arena *PlatMemory = AllocateArena();
   memory_arena *GameMemory = AllocateArena();
@@ -290,7 +278,8 @@ main( s32 ArgCount, const char ** Args )
     default: { Error("Invalid number of arguments"); }
   }
 
-  LibIsNew(GameLibName, &LastGameLibTime);  // Hack to initialize the LastGameLibTime static
+  LibIsNew(GameLibName, &LastGameLibTime); // Hack to initialize the lib timer statics
+  LibIsNew(DEFAULT_DEBUG_LIB, &LastDebugLibTime);
 
   shared_lib GameLib = OpenLibrary(GameLibName);
   if (!GameLib) { Error("Loading GameLib :( "); return 1; }
@@ -351,7 +340,6 @@ main( s32 ArgCount, const char ** Args )
     {
       SignalAndWaitForWorkers(&Plat.WorkerThreadsSuspendFutex);
 
-      CloseLibrary(GameLib);
       GameLib = OpenLibrary(GameLibName);
 
       Ensure(InitializeGameApi(&GameApi, GameLib));
@@ -363,35 +351,37 @@ main( s32 ArgCount, const char ** Args )
     }
 #endif
 
-    // TODO(Jesse, id: 153, tags: hot_reload, debug_lib): Doing this properly requires some extra-credit work first.
-    //
-    // 1) We need the game code to be able to call GetDebugState() willy-nilly,
-    // so when the debug lib gets refreshed it has to be passed to the game
-    // code somehow.
-    //
-    // Possibly allow the game code to export the bonsai_function pointer it uses for
-    // GetDebugState, then we can just overwrite it from here..?  Or have the
-    // game code store a pointer to the actual debug_state that we can
-    // overwrite.  That kinda seems like a step backwards though.
-    //
-    // 2) Reloading the debug lib as it stands will wipe out any data in the
-    // debug_state, so if that wants to be preserved it's gotta get copied
-    // somewhere, or live outside the debug lib.  Might make sense to have the
-    // platform layer allocate and pass the debug_state around and the
-    // debug_lib is just a pile of functions to operate on it ..?
-
-#if 0
-    local_persist s64 LastDebugLibTime;
+    /* local_persist s64 LastDebugLibTime; */
     if ( LibIsNew(DEFAULT_DEBUG_LIB, &LastDebugLibTime) )
     {
-      CloseLibrary(DebugLib);
-      DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
-      if (!DebugLib) { Error("Loading DebugLib :( "); return 1; }
+      SignalAndWaitForWorkers(&Plat.WorkerThreadsSuspendFutex);
 
-      GetDebugState = (get_debug_state_proc)GetProcFromLib(DebugLib, "GetDebugState_Internal");
-      if (!GetDebugState) { Error("Retreiving GetDebugState from Debug Lib :( "); return 1; }
+      debug_state *Cached = Global_DebugStatePointer;
+      Global_DebugStatePointer = 0;
+
+      // NOTE(Jesse): We hold pointers to static strings in the first debug_lib
+      // we allocate, so we can't unload.  TBD if we care about copying them.. but we might.
+      //
+      // CloseLibrary(DebugLib);
+
+      DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
+      bonsai_debug_api DebugApi = {};
+
+      if (DebugLib)
+      {
+        if (InitializeBootstrapDebugApi(DebugLib, &DebugApi))
+        {
+          DebugApi.BonsaiDebug_OnLoad(Cached);
+          Ensure( EngineApi.OnLibraryLoad(&EngineResources) );
+        }
+        else { Error("Initializing DebugLib API"); }
+      }
+      else { Error("Reloading DebugLib"); }
+
+      Global_DebugStatePointer = Cached;
+
+      UnsignalFutex(&Plat.WorkerThreadsSuspendFutex);
     }
-#endif
 
     /* DEBUG_FRAME_RECORD(Debug_RecordingState, &Hotkeys); */
 

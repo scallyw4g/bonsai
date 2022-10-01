@@ -4,21 +4,21 @@ BUILD_EVERYTHING=0
 
 RunPoof=0
 
-BuildExecutables=0
+BuildExecutables=1
 BuildExamples=0
-BuildDebugSystem=0
+BuildDebugSystem=1
 
 BuildTests=0
 BuildDebugTests=0
 
 RunTests=0
 
-MakeDebugLibRelease=1
+MakeDebugLibRelease=0
 
 . scripts/preamble.sh
 . scripts/setup_for_cxx.sh
 
-OPTIMIZATION_LEVEL="-O2"
+OPTIMIZATION_LEVEL="-O0"
 EMCC=0
 
 
@@ -73,7 +73,7 @@ function MakeDebugLibRelease
 
   cp texture_atlas_0.bmp $DEBUG_LIB_RELEASE_DIR
   cp -R shaders $DEBUG_LIB_RELEASE_DIR
-  cp "$BIN/lib_bonsai_debug""$PLATFORM_LIB_EXTENSION" $DEBUG_LIB_RELEASE_DIR
+  cp "$BIN/lib_bonsai_debug_loadable""$PLATFORM_LIB_EXTENSION" $DEBUG_LIB_RELEASE_DIR/lib_bonsai_debug
 
   sync
 }
@@ -151,21 +151,24 @@ function BuildDebugSystem
   echo ""
   ColorizeTitle "DebugSystem"
   DEBUG_SRC_FILE="$INCLUDE/bonsai_debug/debug.cpp"
+  output_basename="$BIN/lib_bonsai_debug"
   echo -e "$Building $DEBUG_SRC_FILE"
-  clang++                                               \
-    $OPTIMIZATION_LEVEL                                 \
-    $CXX_OPTIONS                                        \
-    $BONSAI_INTERNAL                                    \
-    $PLATFORM_CXX_OPTIONS                               \
-    $PLATFORM_LINKER_OPTIONS                            \
-    $PLATFORM_DEFINES                                   \
-    $PLATFORM_INCLUDE_DIRS                              \
-    $SHARED_LIBRARY_FLAGS                               \
-    -I "$ROOT"                                          \
-    -I "$SRC"                                           \
-    -I "$INCLUDE"                                       \
-    -o "$BIN/lib_bonsai_debug""$PLATFORM_LIB_EXTENSION" \
-    "$DEBUG_SRC_FILE" && echo -e "$Success $DEBUG_SRC_FILE" &
+  clang++                                                                           \
+    $OPTIMIZATION_LEVEL                                                             \
+    $CXX_OPTIONS                                                                    \
+    $BONSAI_INTERNAL                                                                \
+    $PLATFORM_CXX_OPTIONS                                                           \
+    $PLATFORM_LINKER_OPTIONS                                                        \
+    $PLATFORM_DEFINES                                                               \
+    $PLATFORM_INCLUDE_DIRS                                                          \
+    $SHARED_LIBRARY_FLAGS                                                           \
+    -I "$ROOT"                                                                      \
+    -I "$SRC"                                                                       \
+    -I "$INCLUDE"                                                                   \
+    -o $output_basename                                                             \
+    "$DEBUG_SRC_FILE" &&                                                            \
+    mv "$output_basename" "$output_basename""_loadable""$PLATFORM_LIB_EXTENSION" && \
+    echo -e "$Success $output_basename" &
 }
 
 function BuildExamples
