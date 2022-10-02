@@ -6,7 +6,7 @@ RunPoof=0
 
 BuildExecutables=1
 BuildExamples=1
-BuildDebugSystem=1
+BuildDebugSystem=0
 
 BuildTests=0
 BuildDebugTests=0
@@ -57,8 +57,10 @@ DEBUG_TESTS_TO_BUILD="
 DEBUG_LIB_RELEASE_DIR="releases/debug_lib"
 function MakeDebugLibRelease
 {
-  [ ! -d releases ] && mkdir releases
-  [ -d $DEBUG_LIB_RELEASE_DIR ] && rm -Rf $DEBUG_LIB_RELEASE_DIR && mkdir $DEBUG_LIB_RELEASE_DIR
+  [ -d $DEBUG_LIB_RELEASE_DIR ] && rm -Rf $DEBUG_LIB_RELEASE_DIR
+  mkdir -p $DEBUG_LIB_RELEASE_DIR
+
+  sync
 
   BuildDebugSystem
   [ $? -ne 0 ] && exit 1
@@ -71,9 +73,11 @@ function MakeDebugLibRelease
   cat include/bonsai_stdlib/headers/primitives.h  >> $DEBUG_LIB_RELEASE_DIR/api.h
   cat include/bonsai_debug/headers/api.h          >> $DEBUG_LIB_RELEASE_DIR/api.h
 
+  sync
+
   cp texture_atlas_0.bmp $DEBUG_LIB_RELEASE_DIR
   cp -R shaders $DEBUG_LIB_RELEASE_DIR
-  cp "$BIN/lib_bonsai_debug_loadable""$PLATFORM_LIB_EXTENSION" $DEBUG_LIB_RELEASE_DIR/lib_bonsai_debug
+  cp "$BIN/lib_bonsai_debug_loadable""$PLATFORM_LIB_EXTENSION" $DEBUG_LIB_RELEASE_DIR/lib_bonsai_debug"$PLATFORM_LIB_EXTENSION"
 
   sync
 }
@@ -168,6 +172,7 @@ function BuildDebugSystem
     -o $output_basename                                                             \
     "$DEBUG_SRC_FILE" &&                                                            \
     mv "$output_basename" "$output_basename""_loadable""$PLATFORM_LIB_EXTENSION" && \
+    sync && \
     echo -e "$Success $output_basename" &
 }
 
