@@ -2,12 +2,13 @@
 link_internal world*
 AllocateWorld()
 {
-  memory_arena* Memory = AllocateArena();
-  world *World = Allocate(world, Memory, 1 );
-  World->Memory = Memory;
+  memory_arena* WorldMemory = AllocateArena();
+  DEBUG_REGISTER_ARENA(WorldMemory, 0);
+  world *World = Allocate(world, WorldMemory, 1 );
+  World->Memory = WorldMemory;
 
-  World->ChunkHash = Allocate(world_chunk*, Memory, WORLD_HASH_SIZE );
-  World->FreeChunks = Allocate(world_chunk*, Memory, FREELIST_SIZE );
+  World->ChunkHash = Allocate(world_chunk*, WorldMemory, WORLD_HASH_SIZE );
+  World->FreeChunks = Allocate(world_chunk*, WorldMemory, FREELIST_SIZE );
 
   return World;
 }

@@ -42,7 +42,7 @@ LibIsNew(const char *LibPath, s64 *LastLibTime)
 }
 
 link_internal thread_local_state
-DefaultThreadLocalState(mesh_freelist *MeshFreelist)
+DefaultThreadLocalState(mesh_freelist *MeshFreelist, u32 ThreadId)
 {
   thread_local_state Thread = {};
 
@@ -59,9 +59,8 @@ DefaultThreadLocalState(mesh_freelist *MeshFreelist)
   // constructing the debug arena stats, so we can't ever free memory allocated
   // on debug registered arenas on threads outside the main one.
   //
-  /* DEBUG_REGISTER_ARENA(Thread.TempMemory); */
-
-  DEBUG_REGISTER_ARENA(Thread.PermMemory);
+  DEBUG_REGISTER_ARENA(Thread.TempMemory, ThreadId);
+  DEBUG_REGISTER_ARENA(Thread.PermMemory, ThreadId);
 
   return Thread;
 }
@@ -75,7 +74,7 @@ ThreadMain(void *Input)
 
   DEBUG_REGISTER_THREAD(ThreadParams->Self.ThreadIndex);
 
-  thread_local_state Thread = DefaultThreadLocalState(&ThreadParams->EngineResources->MeshFreelist);
+  thread_local_state Thread = DefaultThreadLocalState(&ThreadParams->EngineResources->MeshFreelist, ThreadParams->Self.ThreadIndex);
 
   if (ThreadParams->InitProc) { ThreadParams->InitProc(&Thread); }
 
@@ -90,6 +89,8 @@ ThreadMain(void *Input)
     for (;;)
     {
       WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
+
+      /* TIMED_NAMED_BLOCK("CheckForWorkAndSleep"); */
 
       if (!QueueIsEmpty(ThreadParams->HighPriority)) break;
 
@@ -109,7 +110,7 @@ ThreadMain(void *Input)
     DrainQueue( ThreadParams->HighPriority, &Thread, GameWorkerThreadCallback );
     AtomicDecrement(ThreadParams->HighPriorityWorkerCount);
 
-#if 0
+#if 1
     // TODO(Jesse): Vectorize the clear on this such that we can turn this back
     // on instead of allocating fresh pages every time.  In the end re-using
     // pages and zeroing them ourselves will (theoretically) be faster
@@ -117,6 +118,9 @@ ThreadMain(void *Input)
     // @turn_rewind_arena_back_on
     Ensure( RewindArena(Thread.TempMemory) );
 #else
+    // Can't do this anymore because the debug system needs a static handle to
+    // the base address of the arena, which VaporizeArena unmaps
+    //
     Ensure( VaporizeArena(Thread.TempMemory) );
     Ensure( Thread.TempMemory = AllocateArena() );
 #endif
@@ -248,11 +252,13 @@ main( s32 ArgCount, const char ** Args )
   heap_allocator DebugHeap = InitHeap(Megabytes(32));
   GetDebugState()->InitializeRenderSystem(GetDebugState(), &DebugHeap);
 
+
   memory_arena *PlatMemory = AllocateArena();
   memory_arena *GameMemory = AllocateArena();
 
-  DEBUG_REGISTER_ARENA(GameMemory);
-  DEBUG_REGISTER_ARENA(PlatMemory);
+  DEBUG_REGISTER_ARENA(GameMemory, 0);
+  DEBUG_REGISTER_ARENA(PlatMemory, 0);
+  DEBUG_REGISTER_ARENA(TranArena, 0);
 
   PlatformInit(&Plat, PlatMemory);
 
@@ -298,7 +304,7 @@ main( s32 ArgCount, const char ** Args )
     PlatformLaunchWorkerThreads(&Plat, &EngineResources, GameApi.WorkerInit, GameApi.WorkerMain);
   }
 
-  thread_local_state MainThread = DefaultThreadLocalState(&EngineResources.MeshFreelist);
+  thread_local_state MainThread = DefaultThreadLocalState(&EngineResources.MeshFreelist, 0);
 
   if (GameApi.GameInit)
   {
@@ -351,7 +357,6 @@ main( s32 ArgCount, const char ** Args )
     }
 #endif
 
-    /* local_persist s64 LastDebugLibTime; */
     if ( LibIsNew(DEFAULT_DEBUG_LIB, &LastDebugLibTime) )
     {
       SignalAndWaitForWorkers(&Plat.WorkerThreadsSuspendFutex);
@@ -362,7 +367,7 @@ main( s32 ArgCount, const char ** Args )
       // NOTE(Jesse): We hold pointers to static strings in the first debug_lib
       // we allocate, so we can't unload.  TBD if we care about copying them.. but we might.
       //
-      // CloseLibrary(DebugLib);
+      /* CloseLibrary(DebugLib); */
 
       DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
       bonsai_debug_api DebugApi = {};
@@ -401,9 +406,14 @@ main( s32 ArgCount, const char ** Args )
     Ensure( EngineApi.FrameEnd(&EngineResources) );
 
     DrainQueue(&Plat.HighPriority, &MainThread,GameApi.WorkerMain);
-    WaitForWorkerThreads(&Plat.HighPriorityWorkerCount);
+    /* WaitForWorkerThreads(&Plat.HighPriorityWorkerCount); */
+
+    // Have to suspend workers to collate memory allocation records
+    SignalAndWaitForWorkers(&Plat.WorkerThreadsSuspendFutex);
 
     DEBUG_FRAME_END(&Plat.MouseP, &Plat.MouseDP, V2(Plat.WindowWidth, Plat.WindowHeight), &Plat.Input, Plat.dt);
+
+    UnsignalFutex(&Plat.WorkerThreadsSuspendFutex);
 
     Ensure( EngineApi.Render(&EngineResources) );
 

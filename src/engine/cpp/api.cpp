@@ -32,19 +32,23 @@ Bonsai_Init(engine_resources *Resources)
 
   b32 Result = True;
 
-  memory_arena *Memory = AllocateArena();;
-  Resources->Memory = Memory;
+  DEBUG_REGISTER_ARENA(TranArena, 0);
+
+  memory_arena *BonsaiInitArena = AllocateArena();;
+  DEBUG_REGISTER_ARENA(BonsaiInitArena, 0);
+
+  Resources->Memory = BonsaiInitArena;
 
   Init_Global_QuadVertexBuffer();
 
   Resources->World = AllocateWorld();
   if (!Resources->World) { Error("Initializing World"); return False; }
 
-  Resources->Graphics = GraphicsInit(Memory);
+  Resources->Graphics = GraphicsInit(BonsaiInitArena);
   if (!Resources->Graphics) { Error("Initializing Graphics"); return False; }
 
   Resources->Heap = InitHeap(Gigabytes(4));
-  Resources->EntityTable = AllocateEntityTable(Memory, TOTAL_ENTITY_COUNT);
+  Resources->EntityTable = AllocateEntityTable(BonsaiInitArena, TOTAL_ENTITY_COUNT);
 
   return Result;
 }

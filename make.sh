@@ -5,7 +5,7 @@ BUILD_EVERYTHING=0
 RunPoof=0
 
 BuildExecutables=1
-BuildExamples=0
+BuildExamples=1
 BuildDebugSystem=1
 
 BuildTests=0
@@ -13,12 +13,12 @@ BuildDebugTests=0
 
 RunTests=0
 
-MakeDebugLibRelease=0
+MakeDebugLibRelease=1
 
 . scripts/preamble.sh
 . scripts/setup_for_cxx.sh
 
-OPTIMIZATION_LEVEL="-O0"
+OPTIMIZATION_LEVEL="-O2"
 EMCC=0
 
 
