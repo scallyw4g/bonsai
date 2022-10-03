@@ -369,15 +369,20 @@ GetColorData(v4 *Src, u32 ColorIndex, r32 Emission = 1.0f)
 }
 
 inline void
-FillColorArray(u32 ColorIndex, v4 *Dest, v4 *Src, s32 Count, r32 Emission = 1.0f)
+FillColorArray(v4 Color, v4 *Dest, s32 Count)
 {
   for (s32 Index = 0;
       Index < Count;
       ++Index)
   {
-    Dest[Index] = GetColorData(Src, ColorIndex, Emission);
+    Dest[Index] = Color;
   }
-
-  return;
 }
+
+inline void
+FillColorArray(u32 ColorIndex, v4 *Dest, v4 *Src, s32 Count, r32 Emission = 1.0f)
+{
+  FillColorArray(GetColorData(Src, ColorIndex, Emission), Dest, Count);
+}
+
 

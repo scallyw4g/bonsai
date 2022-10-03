@@ -1,3 +1,4 @@
+#define PARTICLE_SYSTEM_EMIT_FOREVER f32_MAX
 
 inline void
 Deactivate(particle_system *System)
@@ -449,7 +450,11 @@ SpawnParticleSystem(particle_system *System, particle_system_init_params *Params
   System->EmissionLifespan = Params->EmissionLifespan;
   System->ParticlesPerSecond = Params->ParticlesPerSecond;
 
+  System->LifespanMod = Params->LifespanMod;
   System->ParticleLifespan = Params->ParticleLifespan;
+
+  System->ParticleTurbMin = Params->ParticleTurbMin;
+  System->ParticleTurbMax = Params->ParticleTurbMax;
 
   System->ParticleStartingDim = Params->ParticleStartingDim;
 
@@ -505,20 +510,33 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset)
   Params.Colors[4] = YELLOW;
   Params.Colors[5] = WHITE;
 
-  Params.SpawnRegion = aabb(Offset, V3(0.2f));
+  /* Params.Colors[1] = (u8)RandomU32(Entropy); */
+  /* Params.Colors[2] = (u8)RandomU32(Entropy); */
+  /* Params.Colors[3] = (u8)RandomU32(Entropy); */
+  /* Params.Colors[4] = (u8)RandomU32(Entropy); */
+  /* Params.Colors[5] = (u8)RandomU32(Entropy); */
 
-  // FIXME(Jesse): Make a mode for infinite emission
-  Params.EmissionLifespan = f32_MAX;
-  Params.ParticleLifespan = 0.35f;
-  Params.ParticlesPerSecond = 300.0f;
 
-  Params.Physics.Speed = 8;
+  Params.SpawnRegion = aabb(Offset, V3(0.13f));
+
+  Params.EmissionLifespan = PARTICLE_SYSTEM_EMIT_FOREVER;
+  Params.LifespanMod = 0.05f;
+  Params.ParticleLifespan = 0.25f;
+  Params.ParticlesPerSecond = 200.0f;
+
+  Params.Physics.Speed = 1;
   /* Params.Physics.Drag = V3(2.2f); */
-  Params.Physics.Mass = 1.0f;
+  Params.Physics.Mass = 6.0f;
 
-  Params.Physics.Velocity = V3(0.0f, 0.0f, 7.0f);
+  r32 xyTurb = 8.f;
+  /* r32 xyTurb = 2.5f; */
+  /* r32 xyTurb = 0.0f; */
+  Params.ParticleTurbMin = V3(-xyTurb, -xyTurb, -4.0f);
+  Params.ParticleTurbMax = V3(xyTurb, xyTurb, 35.0f);
 
-  Params.ParticleStartingDim = V3(0.85f);
+  Params.Physics.Velocity = V3(0.0f, 0.0f, 9.0f);
+
+  Params.ParticleStartingDim = V3(0.9f);
 
   Params.SystemMovementCoefficient = 0.1f;
 
@@ -586,7 +604,7 @@ SpawnPlayer(platform *Plat, world *World, model* Models, entity *Player, canonic
       Health
     );
 
-  v3 Offset = V3(7.0f, 0.0f, 5.0f);
+  v3 Offset = V3(7.0f, -.75f, 4.5f);
   SpawnFire(Player, Entropy, Offset);
 
   WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
@@ -950,10 +968,18 @@ SpawnParticle(particle_system *System)
   v3 Random = V3(X,Y,Z);
   Particle->Offset = (Random*System->SpawnRegion.Radius) + System->SpawnRegion.Center;
 
-  Particle->Physics = System->ParticlePhysics;
-  Particle->Physics.Force = Normalize(Random);
 
-  Particle->RemainingLifespan = System->ParticleLifespan;
+  v3 TurbMin = System->ParticleTurbMin;
+  v3 TurbMax = System->ParticleTurbMax;
+
+  r32 TurbX = MapValueToRange(TurbMin.x, Abs(X), TurbMax.x);
+  r32 TurbY = MapValueToRange(TurbMin.y, Abs(Y), TurbMax.y);
+  r32 TurbZ = MapValueToRange(TurbMin.z, Abs(Z), TurbMax.z);
+
+  Particle->Physics = System->ParticlePhysics;
+  Particle->Physics.Force = V3(TurbX, TurbY, TurbZ);
+
+  Particle->RemainingLifespan = System->ParticleLifespan + RandomBetween(0.f,  &System->Entropy, System->LifespanMod);
 
   return Particle;
 }
@@ -1005,7 +1031,11 @@ SimulateAndRenderParticleSystem(
   if (Inactive(System))
     return;
 
-  System->EmissionLifespan -= dt;
+  if (System->EmissionLifespan < PARTICLE_SYSTEM_EMIT_FOREVER)
+  {
+    System->EmissionLifespan -= dt;
+  }
+
   System->ElapsedSinceLastEmission += dt;
 
   u32 SpawnCount = (u32)(System->ElapsedSinceLastEmission * System->ParticlesPerSecond);
@@ -1025,7 +1055,6 @@ SimulateAndRenderParticleSystem(
 
   v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera, WorldChunkDim);
 
-  v3 EmissionColor = Normalize(V3(3,1,0));
   for ( s32 ParticleIndex = 0;
         ParticleIndex < System->ActiveParticles;
         ++ParticleIndex)
@@ -1043,14 +1072,16 @@ SimulateAndRenderParticleSystem(
     else
     {
       v3 MinDiameter = V3(0.1f);
-      v3 Diameter = ((Particle->RemainingLifespan / System->ParticleLifespan) + MinDiameter) * System->ParticleStartingDim;
+      r32 MaxParticleLifespan = (System->ParticleLifespan+System->LifespanMod);
+      v3 Diameter = ((Particle->RemainingLifespan / MaxParticleLifespan) + MinDiameter) * System->ParticleStartingDim;
 
-      u8 ColorIndex = (u8)((Particle->RemainingLifespan / System->ParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
+      u8 ColorIndex = (u8)((Particle->RemainingLifespan / MaxParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
       Assert(ColorIndex >= 0 && ColorIndex <= PARTICLE_SYSTEM_COLOR_COUNT);
 
       DrawVoxel( Dest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 3.0f );
 
 #if 0
+      v3 EmissionColor = Normalize(V3(3,1,0));
       if (RandomUnilateral(&System->Entropy) > 0.99f)
       {
         DoLight(Graphics->Lights, RenderSpaceP + Particle->Offset, EmissionColor);

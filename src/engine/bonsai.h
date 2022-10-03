@@ -168,9 +168,13 @@ struct particle_system_init_params
 
   r32 EmissionLifespan; // How long the system emits for
 
+  r32 LifespanMod;
   r32 ParticleLifespan; // How long an individual particle lasts
   r32 ParticlesPerSecond;
   v3 ParticleStartingDim;
+
+  v3 ParticleTurbMin;
+  v3 ParticleTurbMax;
 
   aabb SpawnRegion;
 
@@ -191,9 +195,13 @@ struct particle_system
 
   s32 ActiveParticles;
 
+  r32 LifespanMod;
   r32 ParticleLifespan; // How long an individual particle lasts
   r32 ParticlesPerSecond;
   v3 ParticleStartingDim;
+
+  v3 ParticleTurbMin;
+  v3 ParticleTurbMax;
 
   aabb SpawnRegion;
 

@@ -311,17 +311,13 @@ AllocateMesh(memory_arena* Arena, u32 NumVerts)
   AllocateMesh(Result, NumVerts, Arena);
   return Result;
 }
-
 inline void
-DrawVoxel( untextured_3d_geometry_buffer *Mesh,
-           v3 RenderP, u32 ColorIndex, v3 Diameter, r32 Emission = 1.0f)
+DrawVoxel( untextured_3d_geometry_buffer *Mesh, v3 RenderP, v4 Color, v3 Diameter)
 {
-  /* TIMED_FUNCTION(); */
+  v3 VertexData[6];
 
   v4 FaceColors[VERTS_PER_FACE];
-  FillColorArray(ColorIndex, FaceColors, DefaultPalette, VERTS_PER_FACE, Emission);
-
-  v3 VertexData[6];
+  FillColorArray(Color, FaceColors, VERTS_PER_FACE);
 
   v3 Center = RenderP - (Diameter*0.5);
   RightFaceVertexData( Center, Diameter, VertexData);
@@ -342,4 +338,14 @@ DrawVoxel( untextured_3d_geometry_buffer *Mesh,
   BackFaceVertexData( Center, Diameter, VertexData);
   BufferVertsChecked(Mesh, 6, VertexData, BackFaceNormalData, FaceColors);
 }
+
+
+inline void
+DrawVoxel( untextured_3d_geometry_buffer *Mesh,
+           v3 RenderP, u32 ColorIndex, v3 Diameter, r32 Emission = 1.0f)
+{
+  v4 Color = GetColorData(DefaultPalette, ColorIndex, Emission);
+  DrawVoxel(Mesh, RenderP, Color, Diameter);
+}
+
 

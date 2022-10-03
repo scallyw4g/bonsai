@@ -258,7 +258,8 @@ main( s32 ArgCount, const char ** Args )
 
   DEBUG_REGISTER_ARENA(GameMemory, 0);
   DEBUG_REGISTER_ARENA(PlatMemory, 0);
-  DEBUG_REGISTER_ARENA(TranArena, 0);
+
+  DEBUG_REGISTER_NAMED_ARENA(TranArena, 0, "game_loader TranArena");
 
   PlatformInit(&Plat, PlatMemory);
 
@@ -346,6 +347,7 @@ main( s32 ArgCount, const char ** Args )
     {
       SignalAndWaitForWorkers(&Plat.WorkerThreadsSuspendFutex);
 
+      CloseLibrary(GameLib);
       GameLib = OpenLibrary(GameLibName);
 
       Ensure(InitializeGameApi(&GameApi, GameLib));
@@ -355,7 +357,6 @@ main( s32 ArgCount, const char ** Args )
 
       UnsignalFutex(&Plat.WorkerThreadsSuspendFutex);
     }
-#endif
 
     if ( LibIsNew(DEFAULT_DEBUG_LIB, &LastDebugLibTime) )
     {
@@ -366,6 +367,9 @@ main( s32 ArgCount, const char ** Args )
 
       // NOTE(Jesse): We hold pointers to static strings in the first debug_lib
       // we allocate, so we can't unload.  TBD if we care about copying them.. but we might.
+      //
+      // We also allocate debug_profile_scopes from it, which we'd have to do
+      // elsewhere .. somehow.. I think..
       //
       /* CloseLibrary(DebugLib); */
 
@@ -387,6 +391,7 @@ main( s32 ArgCount, const char ** Args )
 
       UnsignalFutex(&Plat.WorkerThreadsSuspendFutex);
     }
+#endif
 
     /* DEBUG_FRAME_RECORD(Debug_RecordingState, &Hotkeys); */
 
@@ -417,12 +422,12 @@ main( s32 ArgCount, const char ** Args )
 
     Ensure( EngineApi.Render(&EngineResources) );
 
-    Ensure( RewindArena(TranArena) );
-
     r64 CurrentMS = GetHighPrecisionClock();
     RealDt = (CurrentMS - LastMs)/1000.0;
     LastMs = CurrentMS;
     Plat.dt = (r32)RealDt;
+
+    Ensure( RewindArena(TranArena) );
 
     MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(RealDt);
     /* END_BLOCK("-- Frame --"); */

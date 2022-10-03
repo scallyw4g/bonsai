@@ -32,7 +32,7 @@ Bonsai_Init(engine_resources *Resources)
 
   b32 Result = True;
 
-  DEBUG_REGISTER_ARENA(TranArena, 0);
+  DEBUG_REGISTER_NAMED_ARENA(TranArena, 0, "game_lib TranArena");
 
   memory_arena *BonsaiInitArena = AllocateArena();;
   DEBUG_REGISTER_ARENA(BonsaiInitArena, 0);
@@ -126,6 +126,8 @@ Bonsai_FrameEnd(engine_resources *Resources)
     }
   }
 #endif
+
+  RewindArena(TranArena);
 
   b32 Result = True;
   return Result;
