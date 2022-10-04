@@ -26,6 +26,43 @@ PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
   /* WakeThread( Queue->GlobalQueueSemaphore ); */
 }
 
+link_internal work_queue_entry
+WorkQueueEntry(work_queue_entry_copy_buffer *Job)
+{
+  work_queue_entry Result = {
+    .Type = type_work_queue_entry_copy_buffer,
+    .work_queue_entry_copy_buffer = *Job,
+  };
+
+  return Result;
+}
+
+link_internal work_queue_entry
+WorkQueueEntry(work_queue_entry_copy_buffer_set *CopySet)
+{
+  work_queue_entry Result = {
+    .Type = type_work_queue_entry_copy_buffer_set,
+    .work_queue_entry_copy_buffer_set = *CopySet,
+  };
+
+  return Result;
+}
+
+link_internal void
+PushCopyJob(work_queue *Queue, work_queue_entry_copy_buffer_set *Set, work_queue_entry_copy_buffer *Job)
+{
+  Set->CopyTargets[Set->Count] = *Job;
+  ++Set->Count;
+
+  if (Set->Count == WORK_QUEUE_MAX_COPY_TARGETS)
+  {
+    work_queue_entry Entry = WorkQueueEntry(Set);
+    PushWorkQueueEntry(Queue, &Entry);
+    Clear(Set);
+    Assert(Set->Count == 0);
+  }
+}
+
 link_internal void
 DoCopyJob(volatile work_queue_entry_copy_buffer *Job)
 {
@@ -36,5 +73,3 @@ DoCopyJob(volatile work_queue_entry_copy_buffer *Job)
   v3 Basis = *(v3*)&Job->Basis;
   BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
 }
-
-

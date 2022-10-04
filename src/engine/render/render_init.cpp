@@ -399,7 +399,7 @@ GraphicsInit(memory_arena *GraphicsMemory)
 #endif
   }
 
-  GL.Enable(GL_CULL_FACE);
+  /* GL.Enable(GL_CULL_FACE); */
   GL.CullFace(GL_BACK);
 
   AssertNoGlErrors;

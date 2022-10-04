@@ -9,8 +9,6 @@ FinalizeChunkInitialization(world_chunk *Chunk)
 
   SetFlag(Chunk->Data, Chunk_VoxelsInitialized);
 
-  Chunk->LodMesh_Complete = True;
-
   if (Chunk->Mesh && Chunk->Mesh->At)
   {
     SetFlag(Chunk->Data, Chunk_MeshComplete);
@@ -1206,7 +1204,7 @@ struct plane_computation
 // Note(Jesse): Ported from a rust implementation/post at:
 // https://www.ilikebigbits.com/2015_03_04_plane_from_points.html
 link_internal plane_computation
-BestFittingPlaneFor(boundary_voxels* BoundingPoints)
+BigBits_BestFittingPlaneFor_2015(boundary_voxels* BoundingPoints)
 {
   plane_computation Result = {};
 
@@ -1253,22 +1251,22 @@ BestFittingPlaneFor(boundary_voxels* BoundingPoints)
 
     r32 D_max = Max( Max(D_X, D_Y), D_Z);
 
-    if (D_max <= 0.0f)
+    if (D_max > 0.0f)
     {
       // Pick path with best conditioning:
       v3 Normal = {};
 
       if (D_max == D_X)
       {
-        Normal = V3(D_X, XZ*YZ - XY*ZZ, XY*YZ - XZ*YY);
+        Normal = Normalize(V3(D_X, XZ*YZ - XY*ZZ, XY*YZ - XZ*YY));
       }
       else if (D_max == D_Y)
       {
-        Normal = V3(XZ*YZ - XY*ZZ, D_Y, XY*XZ - YZ*XX);
+        Normal = Normalize(V3(XZ*YZ - XY*ZZ, D_Y, XY*XZ - YZ*XX));
       }
       else if (D_max == D_Z)
       {
-        Normal = V3(XY*YZ - XZ*YY, XY*XZ - YZ*XX, D_Z);
+        Normal = Normalize(V3(XY*YZ - XZ*YY, XY*XZ - YZ*XX, D_Z));
       }
       else
       {
@@ -1283,6 +1281,88 @@ BestFittingPlaneFor(boundary_voxels* BoundingPoints)
   return Result;
 }
 
+#if 0
+// Ported from a rust implementation at
+// http://www.ilikebigbits.com/2017_09_25_plane_from_points_2.html
+//
+link_internal v3
+BigBits_BestFittingPlaneFor_2017(boundary_voxels *Points)
+{
+  let n = points.len();
+  if n < 3 {
+      return None;
+  }
+
+  let mut sum = Vec3{x:0.0, y:0.0, z:0.0};
+  for p in points {
+      sum = &sum + &p;
+  }
+  let centroid = &sum * (1.0 / (n as f64));
+
+  // Calculate full 3x3 covariance matrix, excluding symmetries:
+  let mut xx = 0.0; let mut xy = 0.0; let mut xz = 0.0;
+  let mut yy = 0.0; let mut yz = 0.0; let mut zz = 0.0;
+
+  for p in points {
+      let r = p - centroid;
+      xx += r.x * r.x;
+      xy += r.x * r.y;
+      xz += r.x * r.z;
+      yy += r.y * r.y;
+      yz += r.y * r.z;
+      zz += r.z * r.z;
+  }
+
+  xx /= n as f64;
+  xy /= n as f64;
+  xz /= n as f64;
+  yy /= n as f64;
+  yz /= n as f64;
+  zz /= n as f64;
+
+  let mut weighted_dir = Vec3{x: 0.0, y: 0.0, z: 0.0};
+
+  {
+      let det_x = yy*zz - yz*yz;
+      let axis_dir = Vec3{
+          x: det_x,
+          y: xz*yz - xy*zz,
+          z: xy*yz - xz*yy,
+      };
+      let mut weight = det_x * det_x;
+      if weighted_dir.dot(&axis_dir) < 0.0 { weight = -weight; }
+      weighted_dir += &axis_dir * weight;
+  }
+
+  {
+      let det_y = xx*zz - xz*xz;
+      let axis_dir = Vec3{
+          x: xz*yz - xy*zz,
+          y: det_y,
+          z: xy*xz - yz*xx,
+      };
+      let mut weight = det_y * det_y;
+      if weighted_dir.dot(&axis_dir) < 0.0 { weight = -weight; }
+      weighted_dir += &axis_dir * weight;
+  }
+
+  {
+      let det_z = xx*yy - xy*xy;
+      let axis_dir = Vec3{
+          x: xy*yz - xz*yy,
+          y: xy*xz - yz*xx,
+          z: det_z,
+      };
+      let mut weight = det_z * det_z;
+      if weighted_dir.dot(&axis_dir) < 0.0 { weight = -weight; }
+      weighted_dir += &axis_dir * weight;
+  }
+
+  let normal = normalize(&weighted_dir);
+}
+#endif
+
+
 link_internal v3
 ComputeNormalSVD(boundary_voxels* BoundingPoints, memory_arena* TempMemory)
 {
@@ -1290,7 +1370,7 @@ ComputeNormalSVD(boundary_voxels* BoundingPoints, memory_arena* TempMemory)
 
   v3 Centroid = V3(BoundingPoints->Max - BoundingPoints->Min);
   for ( u32 PointIndex = 0;
-        PointIndex < BoundingPoints->At;
+        PointIndex < BoundingPoints->At; // Should this not go to BoundingPoints->At*3 if we're doing assignment by PointIndex%3 ..?
         ++PointIndex)
   {
     X->Elements[PointIndex] = V3(BoundingPoints->Points[PointIndex]).E[PointIndex%3] - Centroid.E[PointIndex%3];
@@ -1299,6 +1379,98 @@ ComputeNormalSVD(boundary_voxels* BoundingPoints, memory_arena* TempMemory)
   v3 Result = {};
   return Result;
 }
+
+link_internal v3
+ComputeNormalBonsai(world_chunk *DestChunk, v3i DestChunkDim, v3 BoundingVoxelMidpoint)
+{
+  v3 Normal = {};
+  for ( s32 VoxelIndex = 0;
+        VoxelIndex < Volume(DestChunkDim);
+        ++VoxelIndex)
+  {
+    voxel *Voxel = &DestChunk->Data->Voxels[VoxelIndex];
+    if (Voxel->Flags != Voxel_Empty)
+    {
+      voxel_position TestP = GetPosition(VoxelIndex, DestChunkDim);
+      v3 CenterRelativeTestP = BoundingVoxelMidpoint - V3(TestP);
+      Normal += Normalize(CenterRelativeTestP);
+    }
+  }
+
+  Normal = Normalize(Normal);
+  return Normal;
+}
+
+link_internal voxel_position
+GetBoundingVoxelsMidpoint(world_chunk *Chunk, v3i ChunkDim)
+{
+  point_buffer TempBuffer = {};
+  point_buffer *EdgeBoundaryVoxels = &TempBuffer;
+
+  TempBuffer.Min = Voxel_Position(s32_MAX);
+  TempBuffer.Max = Voxel_Position(s32_MIN);
+
+  /* FindEdgeIntersections(EdgeBoundaryVoxels, DestChunk->Data, WorldChunkDim); */
+  FindEdgeIntersections(EdgeBoundaryVoxels, Chunk->Data, ChunkDim);
+  /* DestChunk->EdgeBoundaryVoxelCount = EdgeBoundaryVoxels->Count; */
+
+  voxel_position BoundingVoxelMidpoint = EdgeBoundaryVoxels->Min + ((EdgeBoundaryVoxels->Max - EdgeBoundaryVoxels->Min)/2.0f);
+  return BoundingVoxelMidpoint;
+}
+
+link_internal void
+ComputeStandingSpots(v3i WorldChunkDim, world_chunk *Chunk, memory_arena *TempMemory)
+{
+  TIMED_FUNCTION();
+
+  v3i TileChunkDim = V3i(8);
+  world_chunk TileChunk = {};
+  AllocateWorldChunk(&TileChunk, TempMemory, {}, TileChunkDim);
+  boundary_voxels* BoundingPoints = AllocateBoundaryVoxels((u32)Volume(TileChunkDim), TempMemory);
+
+  Assert(WorldChunkDim.x % TileChunkDim.x == 0);
+  Assert(WorldChunkDim.y % TileChunkDim.y == 0);
+  Assert(WorldChunkDim.z % TileChunkDim.z == 0);
+
+  v3i Tiles =  WorldChunkDim/TileChunkDim;
+  for (s32 zTile = 0; zTile < Tiles.z; ++zTile)
+  {
+    for (s32 yTile = 0; yTile < Tiles.y; ++yTile)
+    {
+      for (s32 xTile = 0; xTile < Tiles.x; ++xTile)
+      {
+        v3i Offset = V3i(xTile, yTile, zTile) * TileChunkDim;
+
+        CopyChunkOffset(Chunk, WorldChunkDim, &TileChunk, TileChunkDim, Offset);
+        SetFlag(&TileChunk, Chunk_VoxelsInitialized);
+
+        GetBoundingVoxelsClippedTo(&TileChunk, TileChunkDim, BoundingPoints, MinMaxAABB(V3(0), V3(TileChunkDim)) );
+
+        point_buffer TempBuffer = {};
+        TempBuffer.Min = Voxel_Position(s32_MAX);
+        TempBuffer.Max = Voxel_Position(s32_MIN);
+        point_buffer *EdgeBoundaryVoxels = &TempBuffer;
+
+        FindEdgeIntersections(EdgeBoundaryVoxels, TileChunk.Data, TileChunkDim);
+        voxel_position BoundingVoxelMidpoint = EdgeBoundaryVoxels->Min + ((EdgeBoundaryVoxels->Max - EdgeBoundaryVoxels->Min)/2.0f);
+
+        /* v3 Normal = ComputeNormalBonsai(&TileChunk, TileChunkDim, V3(BoundingVoxelMidpoint)); */
+        plane_computation P = BigBits_BestFittingPlaneFor_2015(BoundingPoints);
+
+        if (P.Complete && BoundingPoints->At)
+        {
+          /* v3 ChunkBasis = GetSimSpaceP(World, Chunk); */
+          DEBUG_DrawAABB( Chunk->LodMesh, AABBMinDim(V3(Offset), V3(TileChunkDim)*0.95f), BLUE, 0.25f);
+          DEBUG_DrawLine( Chunk->LodMesh, V3(Offset)+V3(BoundingVoxelMidpoint), V3(Offset)+V3(BoundingVoxelMidpoint)+(P.Plane.Normal*10.0f), RED, 0.2f);
+        }
+
+        BoundingPoints->At = 0;
+      }
+    }
+  }
+
+}
+
 
 link_internal void
 InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChunk, chunk_dimension WorldChunkDim, s32 Amplititude, s32 zMin)
@@ -1347,6 +1519,20 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
     }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #if 0
     if (DestChunk->Mesh && DestChunk->Mesh->At)  // Compute 0th LOD
     {
@@ -1359,6 +1545,9 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
       CopyChunkOffset(SyntheticChunk, SynChunkDim, SyntheticChunk, NewSynChunkDim, Voxel_Position(1));
       SynChunkDim = NewSynChunkDim;
 
+
+
+
       point_buffer TempBuffer = {};
       point_buffer *EdgeBoundaryVoxels = &TempBuffer;
 
@@ -1370,6 +1559,8 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
       DestChunk->EdgeBoundaryVoxelCount = EdgeBoundaryVoxels->Count;
 
       voxel_position BoundingVoxelMidpoint = EdgeBoundaryVoxels->Min + ((EdgeBoundaryVoxels->Max - EdgeBoundaryVoxels->Min)/2.0f);
+
+
 
       // Find closest bounding point to the midpoint of the bounding volume
       voxel_position FoundCenterPoint = BoundingVoxelMidpoint;
@@ -1393,8 +1584,12 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
         }
       }
 
-#if 1
+#if 0
       v3 Normal = ComputeNormalSVD(BoundingPoints, Thread->TempMemory);
+#else
+
+#if 0
+      v3 Normal =  ComputeNormalBonsai(DestChunk, BoundingVoxelMidpoint, WorldChunkDim);
 #else
       v3 Normal = {};
       for ( s32 VoxelIndex = 0;
@@ -1411,6 +1606,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
       }
 
       Normal = Normalize(Normal);
+#endif
 #endif
 
       DEBUG_DrawLine( DestChunk->LodMesh, V3(FoundCenterPoint), V3(FoundCenterPoint)+(Normal*10.0f), RED, 0.2f);
@@ -1475,7 +1671,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
             if ( LowestAngleBetween && Dot(FirstNormal, Normal) < 0.0f )
             {
-              TriggeredRuntimeBreak();
+              /* TriggeredRuntimeBreak(); */
 
               SecondClosestVoxelBuffer.At = 0;
               DrawVoxel( &SecondClosestVoxelBuffer, V3(*LowestAngleBetween)+V3(0.2f), BLUE, V3(0.7f));
@@ -1642,35 +1838,6 @@ InitializeWorldChunkEmpty(world_chunk *DestChunk)
   return;
 }
 
-link_internal work_queue_entry_copy_buffer
-WorkQueueEntryCopyBuffer(untextured_3d_geometry_buffer* Src, untextured_3d_geometry_buffer* Dest, world_chunk *Chunk, camera* Camera, chunk_dimension WorldChunkDim)
-{
-  untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Dest, Src->At);
-
-  work_queue_entry_copy_buffer Result = {};
-  Result.Src = Src;
-  Result.Dest = CopyDest;
-  Result.Basis = GetRenderP(WorldChunkDim, Chunk->WorldP, Camera);
-
-  Assert(CopyDest.At == 0);
-  Assert(CopyDest.End == Src->At);
-
-  return Result;
-}
-
-inline void
-QueueChunkMeshForCopy(work_queue *Queue, untextured_3d_geometry_buffer* Src, untextured_3d_geometry_buffer* Dest, world_chunk *Chunk, camera* Camera, chunk_dimension WorldChunkDim)
-{
-  work_queue_entry Entry = {
-    .Type = type_work_queue_entry_copy_buffer,
-    .work_queue_entry_copy_buffer = WorkQueueEntryCopyBuffer(Src, Dest, Chunk, Camera, WorldChunkDim),
-  };
-
-  PushWorkQueueEntry(Queue, &Entry);
-
-  return;
-}
-
 // TODO(Jesse)(hack): Remove this!
 global_variable memory_arena Global_PermMemory = {};
 
@@ -1717,3 +1884,179 @@ QueueChunkForInit(work_queue *Queue, world_chunk *Chunk)
   return;
 }
 
+
+
+
+#if PLATFORM_GL_IMPLEMENTATIONS
+link_internal work_queue_entry_copy_buffer
+WorkQueueEntryCopyBuffer(untextured_3d_geometry_buffer* Src, untextured_3d_geometry_buffer* Dest, world_chunk *Chunk, camera* Camera, chunk_dimension WorldChunkDim)
+{
+  untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Dest, Src->At);
+
+  work_queue_entry_copy_buffer Result = {};
+  Result.Src = Src;
+  Result.Dest = CopyDest;
+  Result.Basis = GetRenderP(WorldChunkDim, Chunk->WorldP, Camera);
+
+  Assert(CopyDest.At == 0);
+  Assert(CopyDest.End == Src->At);
+
+  return Result;
+}
+
+inline void
+QueueChunkMeshForCopy(work_queue *Queue, untextured_3d_geometry_buffer* Src, untextured_3d_geometry_buffer* Dest, world_chunk *Chunk, camera* Camera, chunk_dimension WorldChunkDim)
+{
+  work_queue_entry Entry = {
+    .Type = type_work_queue_entry_copy_buffer,
+    .work_queue_entry_copy_buffer = WorkQueueEntryCopyBuffer(Src, Dest, Chunk, Camera, WorldChunkDim),
+  };
+
+  PushWorkQueueEntry(Queue, &Entry);
+
+  return;
+}
+
+void
+BufferWorldChunk(untextured_3d_geometry_buffer *Dest, world_chunk *Chunk, graphics *Graphics, work_queue* Queue, chunk_dimension WorldChunkDim)
+{
+  chunk_data *ChunkData = Chunk->Data;
+  Assert( IsSet(ChunkData->Flags, Chunk_MeshComplete) && Chunk->Mesh->At );
+
+  QueueChunkMeshForCopy(Queue, Chunk->Mesh, Dest, Chunk, Graphics->Camera, WorldChunkDim);
+
+  /* if (Chunk->LodMesh_Complete && Chunk->LodMesh->At) */
+  /* { */
+  /*   QueueChunkMeshForCopy(Queue, Chunk->LodMesh, Dest, Chunk, Graphics->Camera, WorldChunkDim); */
+  /* } */
+
+  return;
+}
+
+link_internal void
+BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, graphics *Graphics, world_position VisibleRegion, heap_allocator *Heap)
+{
+  TIMED_FUNCTION();
+
+  chunk_dimension Radius = VisibleRegion/2;
+  world_position Min = World->Center - Radius;
+  world_position Max = World->Center + Radius;
+
+  work_queue_entry_copy_buffer_set CopySet = {};
+
+
+  for (s32 z = Min.z; z < Max.z; ++ z)
+  {
+    for (s32 y = Min.y; y < Max.y; ++ y)
+    {
+      for (s32 x = Min.x; x < Max.x; ++ x)
+      {
+        world_position P = World_Position(x,y,z);
+        world_chunk *Chunk = GetWorldChunk( World, P, VisibleRegion );
+
+        u32 ColorIndex = 0;
+
+        if (Chunk)
+        {
+            chunk_data *ChunkData = Chunk->Data;
+
+            if (IsSet(ChunkData, Chunk_Queued))
+            {
+              ColorIndex = TEAL;
+            }
+
+            if (IsSet(ChunkData, Chunk_VoxelsInitialized))
+            {
+              /* ColorIndex = GREEN; */
+            }
+
+            if (IsSet(ChunkData, Chunk_Garbage))
+            {
+              ColorIndex = ORANGE;
+            }
+
+        }
+        else
+        {
+          ColorIndex = RED;
+        }
+
+        if (Chunk && Chunk->Mesh)
+        {
+#if 0
+          DEBUG_PICK_CHUNK( Chunk,
+                            MinMaxAABB( GetRenderP(World->ChunkDim, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera),
+                                        GetRenderP(World->ChunkDim, Canonical_Position(World->ChunkDim, Chunk->WorldP), Graphics->Camera) ) );
+#endif
+
+          chunk_data *ChunkData = Chunk->Data;
+
+          if ( IsSet(ChunkData->Flags, Chunk_MeshComplete) )
+          {
+            Assert(Chunk->Mesh->At);
+
+
+#if 1
+            if (Chunk->LodMesh_Complete && Chunk->LodMesh->At)
+            {
+              work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer(Chunk->LodMesh, Dest, Chunk, Graphics->Camera, World->ChunkDim);
+              PushCopyJob(&Plat->HighPriority, &CopySet, &CopyJob);
+            }
+#endif
+
+            // NOTE(Jesse): Random heruistic for packing small meshes together
+            // into a bulk copy job
+            if (Chunk->Mesh->At < Kilobytes(8))
+            {
+              work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer( Chunk->Mesh,
+                                                                               Dest,
+                                                                               Chunk,
+                                                                               Graphics->Camera,
+                                                                               World->ChunkDim );
+              PushCopyJob(&Plat->HighPriority, &CopySet, &CopyJob);
+            }
+            else
+            {
+              BufferWorldChunk(Dest, Chunk, Graphics, &Plat->HighPriority, World->ChunkDim);
+            }
+
+
+
+/*             if (ColorIndex) */
+/*             { */
+/*               untextured_3d_geometry_buffer AABBDest = ReserveBufferSpace(Dest, VERTS_PER_AABB); */
+/*               v3 MinP = GetRenderP(World->ChunkDim, Canonical_Position(V3(0,0,0), P), Graphics->Camera); */
+/*               v3 MaxP = GetRenderP(World->ChunkDim, Canonical_Position(World->ChunkDim, P), Graphics->Camera); */
+/*               DEBUG_DrawAABB(&AABBDest, MinP, MaxP, ColorIndex, 0.5f); */
+/*               /1* PushCopyJob(work_queue *Queue, work_queue_entry_copy_buffer_set *Set, work_queue_entry_copy_buffer *Job) *1/ */
+/*             } */
+
+
+          }
+
+#if 0
+          BufferWorldChunk(Dest, Chunk, Graphics, &Plat->HighPriority, World->ChunkDim);
+#endif
+        }
+        else if (!Chunk)
+        {
+          Chunk = GetWorldChunkFor(World->Memory, World, P, VisibleRegion);
+          if (Chunk)
+          {
+            QueueChunkForInit(&Plat->LowPriority, Chunk);
+          }
+        }
+      }
+    }
+  }
+
+  if (CopySet.Count > 0)
+  {
+    work_queue_entry Entry = WorkQueueEntry(&CopySet);
+    PushWorkQueueEntry(&Plat->HighPriority, &Entry);
+  }
+
+  return;
+}
+
+#endif

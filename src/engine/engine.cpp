@@ -11,7 +11,6 @@
 #include <engine/cpp/camera.cpp>
 #include <engine/cpp/debug_draw.cpp>
 #include <engine/cpp/lod.cpp>
-#include <engine/cpp/world_chunk.cpp>
 
 #if PLATFORM_GL_IMPLEMENTATIONS
 #include <engine/cpp/shader.cpp>
@@ -20,6 +19,7 @@
 #endif
 
 #include <engine/cpp/render.cpp>
+#include <engine/cpp/world_chunk.cpp>
 #include <engine/cpp/world.cpp>
 #include <engine/cpp/physics.cpp>
 #include <engine/cpp/entity.cpp>

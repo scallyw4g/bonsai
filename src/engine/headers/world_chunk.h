@@ -30,6 +30,8 @@ struct voxel
   u8 Color;
 };
 
+CAssert(sizeof(voxel) == 8);
+
 struct boundary_voxel
 {
   voxel V;
@@ -108,18 +110,20 @@ Volume(world_chunk* Chunk)
   return Result;
 }
 
-/* void */
-/* MarkChunkInitialized(world_chunk *Chunk) */
-/* { */
+struct world
+{
+  world_chunk **ChunkHash;
+  world_chunk **FreeChunks;
+  umm FreeChunkCount;
 
-/*   Chunk->Data->Flags |= Chunk_MeshComplete; */
-/*   if (Chunk->Mesh) */
-/*   { */
-/*     Assert(Chunk->Mesh->At); */
-/*     Assert(Chunk->Mesh->End); */
-/*     Assert(Chunk->Mesh->At == Chunk->Mesh->End); */
-/*   } */
-/* } */
+  world_position Center;
+  chunk_dimension VisibleRegion; // The number of chunks in xyz we're going to update and render
+
+  chunk_dimension ChunkDim;
+
+
+  memory_arena* Memory;
+};
 
 link_internal void
 AllocateWorldChunk(world_chunk *Result, memory_arena *Storage, world_position WorldP, chunk_dimension Dim);
@@ -127,3 +131,5 @@ AllocateWorldChunk(world_chunk *Result, memory_arena *Storage, world_position Wo
 link_internal world_chunk*
 AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension Dim);
 
+link_internal void
+BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, graphics *Graphics, world_position VisibleRegion, heap_allocator *Heap);

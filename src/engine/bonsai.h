@@ -310,20 +310,7 @@ struct free_world_chunk
   world_chunk *Next;
 };
 
-struct world
-{
-  world_chunk **ChunkHash;
-  world_chunk **FreeChunks;
-  umm FreeChunkCount;
-
-  world_position Center;
-  chunk_dimension VisibleRegion; // The number of chunks in xyz we're going to update and render
-
-  chunk_dimension ChunkDim;
-
-
-  memory_arena* Memory;
-};
+struct world;
 
 inline void
 UnSetFlag( voxel_flag *Flags, voxel_flag Flag )

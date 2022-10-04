@@ -4,8 +4,8 @@ BUILD_EVERYTHING=0
 
 RunPoof=0
 
-BuildExecutables=0
-BuildExamples=0
+BuildExecutables=1
+BuildExamples=1
 BuildDebugSystem=1
 
 BuildTests=0
@@ -35,10 +35,11 @@ BONSAI_INTERNAL='-D BONSAI_INTERNAL'
 
 
 EXAMPLES_TO_BUILD="
-  $EXAMPLES/the_wanderer
-  $EXAMPLES/asset_picker
+  $EXAMPLES/tile_gen
 "
-  #$EXAMPLES/world_gen
+  # $EXAMPLES/the_wanderer
+  # $EXAMPLES/asset_picker
+  # $EXAMPLES/world_gen
 
 EXECUTABLES_TO_BUILD="
   $SRC/tools/asset_packer.cpp
