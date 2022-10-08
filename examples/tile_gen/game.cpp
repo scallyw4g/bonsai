@@ -32,7 +32,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
     {
       volatile work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
       world_chunk *Chunk = Job->Chunk;
-      s32 Amplititude = 45;
+      s32 Amplititude = 65;
       s32 StartingZDepth = -50;
       InitializeWorldChunkPerlinPlane( Thread,
                                        Chunk,

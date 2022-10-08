@@ -314,6 +314,8 @@ link_internal void
 CopyChunkOffset(world_chunk *Src, voxel_position SrcChunkDim, world_chunk *Dest, voxel_position DestChunkDim, voxel_position Offset)
 {
   TIMED_FUNCTION();
+  Assert(Dest->FilledCount == 0);
+
   for ( s32 z = 0; z < DestChunkDim.z; ++ z)
   {
     for ( s32 y = 0; y < DestChunkDim.y; ++ y)
@@ -337,8 +339,6 @@ CopyChunkOffset(world_chunk *Src, voxel_position SrcChunkDim, world_chunk *Dest,
     }
   }
 
-
-  return;
 }
 
 link_internal void
@@ -1461,18 +1461,45 @@ ComputeStandingSpots(v3i SynChunkDim, world_chunk *SynChunk, world_chunk *DestCh
         {
 
           u32 NumVoxelsPerSlice = (u32)(TileChunkDim.x * TileChunkDim.y);
-          u32 DeltaVoxelsToConsiderStandable = (u32)(NumVoxelsPerSlice * 0.75f);
+          u32 DeltaVoxelsToConsiderStandable = (u32)(NumVoxelsPerSlice * 0.90f);
 
-          if (BoundingPoints->At > (NumVoxelsPerSlice - DeltaVoxelsToConsiderStandable) &&
-              Dot(P.Plane.Normal, V3(0,0,1)) > 0.98f)
+          u32 MinBoundaryVoxelsToBeConsideredStandable = 62;//(NumVoxelsPerSlice - DeltaVoxelsToConsiderStandable);
+          u32 MinTotalVoxelsToBeConsideredStandable = 0; //(u32)(Volume(TileChunkDim) * 0.10f);
+          u32 MaxTotalVoxelsToBeConsideredStandable = (u32)(Volume(TileChunkDim)); // * 0.90f);
+
+
+
+          r32 PercentageOf90Deg = 30.f / 100.f;
+          r32 Deg90 = (PI32/4);
+          r32 NormalDotThresh = Deg90 * PercentageOf90Deg;
+
+          if (BoundingPoints->At > MinBoundaryVoxelsToBeConsideredStandable &&
+              TileChunk.FilledCount >= MinTotalVoxelsToBeConsideredStandable &&
+              TileChunk.FilledCount <= MaxTotalVoxelsToBeConsideredStandable &&
+              Dot(P.Plane.Normal, V3(0,0,1)) > Cos(NormalDotThresh))
           {
             /* v3 ChunkBasis = GetSimSpaceP(World, SynChunk); */
-            DEBUG_DrawAABB( DestChunk->LodMesh, AABBMinDim(V3(Offset), V3(TileChunkDim)*0.95f), BLUE, 0.25f);
-            DEBUG_DrawLine( DestChunk->LodMesh, V3(Offset)+V3(BoundingVoxelMidpoint), V3(Offset)+V3(BoundingVoxelMidpoint)+(P.Plane.Normal*10.0f), RED, 0.2f);
+
+            v3 TileDrawDim = V3(TileChunkDim.x-1, TileChunkDim.y-1, 1);
+
+            DEBUG_DrawAABB( DestChunk->LodMesh,
+                            AABBMinDim(
+                              V3(Offset) + V3(0, 0, BoundingVoxelMidpoint.z),
+                              TileDrawDim),
+                              /* V3(TileChunkDim.x*.8f, TileChunkDim.y*.8f, 1.f)), */
+                            BLUE,
+                            0.25f);
+
+            DEBUG_DrawLine( DestChunk->LodMesh,
+                            V3(Offset)+V3(BoundingVoxelMidpoint),
+                            V3(Offset)+V3(BoundingVoxelMidpoint)+(P.Plane.Normal*10.0f),
+                            RED,
+                            0.2f);
           }
         }
 
         BoundingPoints->At = 0;
+        TileChunk.FilledCount = 0;
       }
     }
   }
