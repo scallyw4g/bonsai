@@ -1204,7 +1204,7 @@ struct plane_computation
 // Note(Jesse): Ported from a rust implementation/post at:
 // https://www.ilikebigbits.com/2015_03_04_plane_from_points.html
 link_internal plane_computation
-BigBits_BestFittingPlaneFor_2015(boundary_voxels* BoundingPoints)
+BigBits2015_BestFittingPlaneFor(boundary_voxels* BoundingPoints)
 {
   plane_computation Result = {};
 
@@ -1419,29 +1419,29 @@ GetBoundingVoxelsMidpoint(world_chunk *Chunk, v3i ChunkDim)
 }
 
 link_internal void
-ComputeStandingSpots(v3i WorldChunkDim, world_chunk *Chunk, memory_arena *TempMemory)
+ComputeStandingSpots(v3i SynChunkDim, world_chunk *SynChunk, world_chunk *DestChunk, memory_arena *TempMemory)
 {
   TIMED_FUNCTION();
 
-  v3i TileChunkDim = V3i(8);
+  v3i TileChunkDim = V3i(9);
   world_chunk TileChunk = {};
   AllocateWorldChunk(&TileChunk, TempMemory, {}, TileChunkDim);
   boundary_voxels* BoundingPoints = AllocateBoundaryVoxels((u32)Volume(TileChunkDim), TempMemory);
 
-  Assert(WorldChunkDim.x % TileChunkDim.x == 0);
-  Assert(WorldChunkDim.y % TileChunkDim.y == 0);
-  Assert(WorldChunkDim.z % TileChunkDim.z == 0);
+  /* Assert(SynChunkDim.x % TileChunkDim.x == 0); */
+  /* Assert(SynChunkDim.y % TileChunkDim.y == 0); */
+  /* Assert(SynChunkDim.z % TileChunkDim.z == 0); */
 
-  v3i Tiles =  WorldChunkDim/TileChunkDim;
+  v3i Tiles =  SynChunkDim/(TileChunkDim-1);
   for (s32 zTile = 0; zTile < Tiles.z; ++zTile)
   {
     for (s32 yTile = 0; yTile < Tiles.y; ++yTile)
     {
       for (s32 xTile = 0; xTile < Tiles.x; ++xTile)
       {
-        v3i Offset = V3i(xTile, yTile, zTile) * TileChunkDim;
+        v3i Offset = V3i(xTile, yTile, zTile) * (TileChunkDim-1);
 
-        CopyChunkOffset(Chunk, WorldChunkDim, &TileChunk, TileChunkDim, Offset);
+        CopyChunkOffset(SynChunk, SynChunkDim, &TileChunk, TileChunkDim, Offset);
         SetFlag(&TileChunk, Chunk_VoxelsInitialized);
 
         GetBoundingVoxelsClippedTo(&TileChunk, TileChunkDim, BoundingPoints, MinMaxAABB(V3(0), V3(TileChunkDim)) );
@@ -1455,13 +1455,21 @@ ComputeStandingSpots(v3i WorldChunkDim, world_chunk *Chunk, memory_arena *TempMe
         voxel_position BoundingVoxelMidpoint = EdgeBoundaryVoxels->Min + ((EdgeBoundaryVoxels->Max - EdgeBoundaryVoxels->Min)/2.0f);
 
         /* v3 Normal = ComputeNormalBonsai(&TileChunk, TileChunkDim, V3(BoundingVoxelMidpoint)); */
-        plane_computation P = BigBits_BestFittingPlaneFor_2015(BoundingPoints);
+        plane_computation P = BigBits2015_BestFittingPlaneFor(BoundingPoints);
 
         if (P.Complete && BoundingPoints->At)
         {
-          /* v3 ChunkBasis = GetSimSpaceP(World, Chunk); */
-          DEBUG_DrawAABB( Chunk->LodMesh, AABBMinDim(V3(Offset), V3(TileChunkDim)*0.95f), BLUE, 0.25f);
-          DEBUG_DrawLine( Chunk->LodMesh, V3(Offset)+V3(BoundingVoxelMidpoint), V3(Offset)+V3(BoundingVoxelMidpoint)+(P.Plane.Normal*10.0f), RED, 0.2f);
+
+          u32 NumVoxelsPerSlice = (u32)(TileChunkDim.x * TileChunkDim.y);
+          u32 DeltaVoxelsToConsiderStandable = (u32)(NumVoxelsPerSlice * 0.75f);
+
+          if (BoundingPoints->At > (NumVoxelsPerSlice - DeltaVoxelsToConsiderStandable) &&
+              Dot(P.Plane.Normal, V3(0,0,1)) > 0.98f)
+          {
+            /* v3 ChunkBasis = GetSimSpaceP(World, SynChunk); */
+            DEBUG_DrawAABB( DestChunk->LodMesh, AABBMinDim(V3(Offset), V3(TileChunkDim)*0.95f), BLUE, 0.25f);
+            DEBUG_DrawLine( DestChunk->LodMesh, V3(Offset)+V3(BoundingVoxelMidpoint), V3(Offset)+V3(BoundingVoxelMidpoint)+(P.Plane.Normal*10.0f), RED, 0.2f);
+          }
         }
 
         BoundingPoints->At = 0;
@@ -1521,6 +1529,13 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
 
 
+
+
+
+
+
+
+    ComputeStandingSpots(SynChunkDim, SyntheticChunk, DestChunk, Thread->TempMemory);
 
 
 
