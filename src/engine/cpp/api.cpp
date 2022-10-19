@@ -34,7 +34,7 @@ Bonsai_Init(engine_resources *Resources)
 
   DEBUG_REGISTER_NAMED_ARENA(TranArena, 0, "game_lib TranArena");
 
-  memory_arena *BonsaiInitArena = AllocateArena();;
+  memory_arena *BonsaiInitArena = AllocateArena(Megabytes(256));;
   DEBUG_REGISTER_ARENA(BonsaiInitArena, 0);
 
   Resources->Memory = BonsaiInitArena;

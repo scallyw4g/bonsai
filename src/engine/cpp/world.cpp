@@ -2,7 +2,7 @@
 link_internal world*
 AllocateWorld()
 {
-  memory_arena* WorldMemory = AllocateArena();
+  memory_arena* WorldMemory = AllocateArena(Gigabytes(5));
   DEBUG_REGISTER_ARENA(WorldMemory, 0);
   world *World = Allocate(world, WorldMemory, 1 );
   World->Memory = WorldMemory;

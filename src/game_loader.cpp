@@ -49,7 +49,7 @@ DefaultThreadLocalState(mesh_freelist *MeshFreelist, u32 ThreadId)
   Thread.MeshFreelist = MeshFreelist;
 
   Thread.TempMemory = AllocateArena();
-  Thread.PermMemory = AllocateArena();
+  Thread.PermMemory = AllocateArena(Megabytes(256));
 
   // TODO(Jesse)(safety): Given the below, how exactly is it safe to register
   // the PermMemory?  Seems to me like that's still just as liable to cause bad
