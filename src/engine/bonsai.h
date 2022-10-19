@@ -633,6 +633,21 @@ ZeroChunk( chunk_data *Chunk )
   Chunk->Flags = Chunk_Uninitialized;
 }
 
+void
+ClearWorldChunk( world_chunk *Chunk )
+{
+  ZeroChunk(Chunk->Data);
+
+  Chunk->WorldP = {};
+  Chunk->FilledCount = {};
+  Chunk->Picked = {};
+  Chunk->LodMesh_Complete = {};
+  Chunk->DrawBoundingVoxels = {};
+  Chunk->PointsToLeaveRemaining = {};
+  Chunk->TriCount = {};
+  Chunk->EdgeBoundaryVoxelCount = {};
+}
+
 inline s32
 GetIndexUnsafe(voxel_position P, chunk_dimension Dim)
 {

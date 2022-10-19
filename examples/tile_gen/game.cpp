@@ -32,11 +32,13 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
     {
       volatile work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
       world_chunk *Chunk = Job->Chunk;
-      s32 Amplititude = 65;
+      s32 Frequency = 200;
+      s32 Amplititude = 250;
       s32 StartingZDepth = -50;
       InitializeWorldChunkPerlinPlane( Thread,
                                        Chunk,
                                        WORLD_CHUNK_DIM,
+                                       Frequency,
                                        Amplititude,
                                        StartingZDepth );
 
@@ -119,7 +121,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   Resources->CameraTargetP = &GameState->Player->P;
 
-  StandardCamera(Graphics->Camera, 10000.0f, 2000.0f, GameState->Player->P);
+  StandardCamera(Graphics->Camera, 10000.0f, 800.0f, GameState->Player->P);
 
   return GameState;
 }

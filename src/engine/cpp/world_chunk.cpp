@@ -364,7 +364,7 @@ InitChunkPlane(s32 zIndex, world_chunk *Chunk, chunk_dimension ChunkDim, u8 Colo
 }
 
 link_internal u32
-InitChunkPerlinPlane(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Dim, u8 ColorIndex, s32 Amplitude, s64 zMin, chunk_dimension WorldChunkDim)
+InitChunkPerlinPlane(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Dim, u8 ColorIndex, s32 Frequency, s32 Amplitude, s64 zMin, chunk_dimension WorldChunkDim)
 {
   TIMED_FUNCTION();
 
@@ -383,8 +383,8 @@ InitChunkPerlinPlane(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimensi
         ChunkData->Voxels[VoxIndex].Flags = Voxel_Empty;
         Assert( NotSet(&ChunkData->Voxels[VoxIndex], Voxel_Filled) );
 
-        double InX = ((double)x + ( (double)WorldChunkDim.x*(double)WorldChunk->WorldP.x))/NOISE_FREQUENCY;
-        double InY = ((double)y + ( (double)WorldChunkDim.y*(double)WorldChunk->WorldP.y))/NOISE_FREQUENCY;
+        double InX = ((double)x + ( (double)WorldChunkDim.x*(double)WorldChunk->WorldP.x))/Frequency;
+        double InY = ((double)y + ( (double)WorldChunkDim.y*(double)WorldChunk->WorldP.y))/Frequency;
         double InZ = 1.0;
 
         s64 zAbsolute = z - (zMin-Amplitude) + (WorldChunkDim.z*WorldChunk->WorldP.z);
@@ -1155,17 +1155,11 @@ GetBoundingVoxelsClippedTo(world_chunk* Chunk, chunk_dimension ChunkDim, boundar
   v3 MinClip = GetMin(Clip);
   v3 MaxClip = GetMax(Clip);
 
-  for (s32 z = 0;
-      z < ChunkDim.z;
-      ++z)
+  for (s32 z = 0; z < ChunkDim.z; ++z)
   {
-    for (s32 y = 0;
-        y < ChunkDim.y;
-        ++y)
+    for (s32 y = 0; y < ChunkDim.y; ++y)
     {
-      for (s32 x = 0;
-          x < ChunkDim.x;
-          ++x)
+      for (s32 x = 0; x < ChunkDim.x; ++x)
       {
         voxel_position P = Voxel_Position(x, y, z);
 
@@ -1418,97 +1412,137 @@ GetBoundingVoxelsMidpoint(world_chunk *Chunk, v3i ChunkDim)
   return BoundingVoxelMidpoint;
 }
 
+struct standing_spot
+{
+  plane_computation PlaneComp;
+  voxel_position BoundingVoxelMidpoint;
+  b32 CanStand;
+};
+
+standing_spot
+ComputeStandingSpotFor8x8x2(world_chunk *SynChunk, v3i SynChunkDim, world_chunk *TempTileChunk, v3i TileChunkDim, v3i Offset, boundary_voxels *TempBoundingPoints)
+{
+  standing_spot Result = {};
+  GetBoundingVoxelsClippedTo(TempTileChunk, TileChunkDim, TempBoundingPoints, MinMaxAABB(V3(0), V3(TileChunkDim)) );
+
+
+  // NOTE(Jesse): This could be omitted and computed (granted, more coarsely) from the bounding voxels min/max
+  point_buffer TempBuffer = {};
+  TempBuffer.Min = Voxel_Position(s32_MAX);
+  TempBuffer.Max = Voxel_Position(s32_MIN);
+  point_buffer *EdgeBoundaryVoxels = &TempBuffer;
+  FindEdgeIntersections(EdgeBoundaryVoxels, TempTileChunk->Data, TileChunkDim);
+  Result.BoundingVoxelMidpoint = EdgeBoundaryVoxels->Min + ((EdgeBoundaryVoxels->Max - EdgeBoundaryVoxels->Min)/2.0f);
+
+  if (TempBoundingPoints->At >= (8*8))
+  {
+    Result.CanStand = True;
+  }
+
+  return Result;
+}
+
+standing_spot
+ComputeStandingSpotFor8x8x8(world_chunk *SynChunk, v3i SynChunkDim, world_chunk *TempTileChunk, v3i TileChunkDim, v3i Offset, boundary_voxels *TempBoundingPoints)
+{
+  standing_spot Result = {};
+
+  GetBoundingVoxelsClippedTo(TempTileChunk, TileChunkDim, TempBoundingPoints, MinMaxAABB(V3(0), V3(TileChunkDim)) );
+
+  point_buffer TempBuffer = {};
+  TempBuffer.Min = Voxel_Position(s32_MAX);
+  TempBuffer.Max = Voxel_Position(s32_MIN);
+  point_buffer *EdgeBoundaryVoxels = &TempBuffer;
+  FindEdgeIntersections(EdgeBoundaryVoxels, TempTileChunk->Data, TileChunkDim);
+  Result.BoundingVoxelMidpoint = EdgeBoundaryVoxels->Min + ((EdgeBoundaryVoxels->Max - EdgeBoundaryVoxels->Min)/2.0f);
+
+  /* v3 Normal = ComputeNormalBonsai(TempTileChunk, TileChunkDim, V3(BoundingVoxelMidpoint)); */
+  Result.PlaneComp = BigBits2015_BestFittingPlaneFor(TempBoundingPoints);
+
+  if (Result.PlaneComp.Complete && TempBoundingPoints->At)
+  {
+    u32 NumVoxelsPerSlice = (u32)(TileChunkDim.x * TileChunkDim.y);
+    u32 DeltaVoxelsToConsiderStandable = (u32)(NumVoxelsPerSlice * 0.90f);
+
+    local_persist u32 MinBoundaryVoxelsToBeConsideredStandable = 64/2;//(NumVoxelsPerSlice - DeltaVoxelsToConsiderStandable);
+    local_persist u32 MinTotalVoxelsToBeConsideredStandable = 0; //(u32)(Volume(TileChunkDim) * 0.10f);
+    u32 MaxTotalVoxelsToBeConsideredStandable = (u32)(Volume(TileChunkDim)); // * 0.90f);
+
+    r32 PercentageOf90Deg = 25.f / 100.f;
+    r32 Deg90 = (PI32/4);
+    r32 NormalDotThresh = Deg90 * PercentageOf90Deg;
+
+    Result.CanStand =  // LastZStandingSpot == False &&
+                       TempBoundingPoints->At > MinBoundaryVoxelsToBeConsideredStandable &&
+                       TempTileChunk->FilledCount >= MinTotalVoxelsToBeConsideredStandable &&
+                       TempTileChunk->FilledCount <= MaxTotalVoxelsToBeConsideredStandable &&
+                       Dot(Result.PlaneComp.Plane.Normal, V3(0,0,1)) > Cos(NormalDotThresh) ;
+  }
+
+  return Result;
+}
+
 link_internal void
-ComputeStandingSpots(v3i SynChunkDim, world_chunk *SynChunk, world_chunk *DestChunk, memory_arena *TempMemory)
+ComputeStandingSpots(v3i SrcChunkDim, world_chunk *SrcChunk, world_chunk *DestChunk, memory_arena *TempMemory)
 {
   TIMED_FUNCTION();
 
-  v3i TileChunkDim = V3i(9);
+  v3i TileChunkDim = V3i(9, 9, 3);
   world_chunk TileChunk = {};
   AllocateWorldChunk(&TileChunk, TempMemory, {}, TileChunkDim);
-  boundary_voxels* BoundingPoints = AllocateBoundaryVoxels((u32)Volume(TileChunkDim), TempMemory);
+  boundary_voxels* TempBoundingPoints = AllocateBoundaryVoxels((u32)Volume(TileChunkDim), TempMemory);
 
   /* Assert(SynChunkDim.x % TileChunkDim.x == 0); */
   /* Assert(SynChunkDim.y % TileChunkDim.y == 0); */
   /* Assert(SynChunkDim.z % TileChunkDim.z == 0); */
 
-  v3i Tiles =  SynChunkDim/(TileChunkDim-1);
-  for (s32 zTile = 0; zTile < Tiles.z; ++zTile)
+  v3i Tiles =  (SrcChunkDim-1)/(TileChunkDim-1);
+  for (s32 yTile = 0; yTile < Tiles.y; ++yTile)
   {
-    for (s32 yTile = 0; yTile < Tiles.y; ++yTile)
+    for (s32 xTile = 0; xTile < Tiles.x; ++xTile)
     {
-      for (s32 xTile = 0; xTile < Tiles.x; ++xTile)
-      {
-        v3i Offset = V3i(xTile, yTile, zTile) * (TileChunkDim-1);
+      /* ? LastZStandingSpot = ComputeStandingSpotFromPrevZChunk(); // {}; */
 
-        CopyChunkOffset(SynChunk, SynChunkDim, &TileChunk, TileChunkDim, Offset);
+      for (s32 zTile = 0; zTile < Tiles.z; ++zTile) // NOTE(Jesse): Intentionally Z-major
+      {
+        v3i Offset = (V3i(xTile, yTile, zTile) * (TileChunkDim-1));// + V3(1);
+        CopyChunkOffset(SrcChunk, SrcChunkDim, &TileChunk, TileChunkDim, Offset);
         SetFlag(&TileChunk, Chunk_VoxelsInitialized);
 
-        GetBoundingVoxelsClippedTo(&TileChunk, TileChunkDim, BoundingPoints, MinMaxAABB(V3(0), V3(TileChunkDim)) );
+        standing_spot Spot = ComputeStandingSpotFor8x8x2(SrcChunk, SrcChunkDim, &TileChunk, TileChunkDim, Offset, TempBoundingPoints);
 
-        point_buffer TempBuffer = {};
-        TempBuffer.Min = Voxel_Position(s32_MAX);
-        TempBuffer.Max = Voxel_Position(s32_MIN);
-        point_buffer *EdgeBoundaryVoxels = &TempBuffer;
-
-        FindEdgeIntersections(EdgeBoundaryVoxels, TileChunk.Data, TileChunkDim);
-        voxel_position BoundingVoxelMidpoint = EdgeBoundaryVoxels->Min + ((EdgeBoundaryVoxels->Max - EdgeBoundaryVoxels->Min)/2.0f);
-
-        /* v3 Normal = ComputeNormalBonsai(&TileChunk, TileChunkDim, V3(BoundingVoxelMidpoint)); */
-        plane_computation P = BigBits2015_BestFittingPlaneFor(BoundingPoints);
-
-        if (P.Complete && BoundingPoints->At)
+        if (Spot.CanStand)
         {
+          /* v3 ChunkBasis = GetSimSpaceP(World, SrcChunk); */
 
-          u32 NumVoxelsPerSlice = (u32)(TileChunkDim.x * TileChunkDim.y);
-          u32 DeltaVoxelsToConsiderStandable = (u32)(NumVoxelsPerSlice * 0.90f);
+          v3 TileDrawDim = V3(TileChunkDim.x-1, TileChunkDim.y-1, 2) * .8f;
 
-          u32 MinBoundaryVoxelsToBeConsideredStandable = 62;//(NumVoxelsPerSlice - DeltaVoxelsToConsiderStandable);
-          u32 MinTotalVoxelsToBeConsideredStandable = 0; //(u32)(Volume(TileChunkDim) * 0.10f);
-          u32 MaxTotalVoxelsToBeConsideredStandable = (u32)(Volume(TileChunkDim)); // * 0.90f);
+          DEBUG_DrawAABB( DestChunk->LodMesh,
+                          AABBMinDim(
+                            V3(Offset) + V3(0, 0, Spot.BoundingVoxelMidpoint.z),
+                            TileDrawDim),
+                            /* V3(TileChunkDim.x*.8f, TileChunkDim.y*.8f, 1.f)), */
+                          BLUE,
+                          0.25f);
 
+          /* DEBUG_DrawLine( DestChunk->LodMesh, */
+          /*                 V3(Offset)+V3(Spot.BoundingVoxelMidpoint), */
+          /*                 V3(Offset)+V3(Spot.BoundingVoxelMidpoint)+(Spot.PlaneComp.Plane.Normal*10.0f), */
+          /*                 RED, */
+          /*                 0.2f); */
 
-
-          r32 PercentageOf90Deg = 30.f / 100.f;
-          r32 Deg90 = (PI32/4);
-          r32 NormalDotThresh = Deg90 * PercentageOf90Deg;
-
-          if (BoundingPoints->At > MinBoundaryVoxelsToBeConsideredStandable &&
-              TileChunk.FilledCount >= MinTotalVoxelsToBeConsideredStandable &&
-              TileChunk.FilledCount <= MaxTotalVoxelsToBeConsideredStandable &&
-              Dot(P.Plane.Normal, V3(0,0,1)) > Cos(NormalDotThresh))
-          {
-            /* v3 ChunkBasis = GetSimSpaceP(World, SynChunk); */
-
-            v3 TileDrawDim = V3(TileChunkDim.x-1, TileChunkDim.y-1, 1);
-
-            DEBUG_DrawAABB( DestChunk->LodMesh,
-                            AABBMinDim(
-                              V3(Offset) + V3(0, 0, BoundingVoxelMidpoint.z),
-                              TileDrawDim),
-                              /* V3(TileChunkDim.x*.8f, TileChunkDim.y*.8f, 1.f)), */
-                            BLUE,
-                            0.25f);
-
-            DEBUG_DrawLine( DestChunk->LodMesh,
-                            V3(Offset)+V3(BoundingVoxelMidpoint),
-                            V3(Offset)+V3(BoundingVoxelMidpoint)+(P.Plane.Normal*10.0f),
-                            RED,
-                            0.2f);
-          }
         }
 
-        BoundingPoints->At = 0;
-        TileChunk.FilledCount = 0;
+        ClearWorldChunk(&TileChunk);
+        TempBoundingPoints->At = 0;
       }
     }
   }
-
 }
 
 
 link_internal void
-InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChunk, chunk_dimension WorldChunkDim, s32 Amplititude, s32 zMin)
+InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChunk, chunk_dimension WorldChunkDim, s32 Frequency, s32 Amplititude, s32 zMin)
 {
   TIMED_FUNCTION();
 
@@ -1538,7 +1572,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
     world_chunk *SyntheticChunk = AllocateWorldChunk(Thread->TempMemory, SynChunkP, SynChunkDim );
 
-    u32 SyntheticChunkSum = InitChunkPerlinPlane(&Thread->Noise, SyntheticChunk, SynChunkDim, GRASS_GREEN, Amplititude, zMin, WorldChunkDim);
+    u32 SyntheticChunkSum = InitChunkPerlinPlane(&Thread->Noise, SyntheticChunk, SynChunkDim, GRASS_GREEN, Frequency, Amplititude, zMin, WorldChunkDim);
     CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Voxel_Position(1));
 
     FullBarrier;
