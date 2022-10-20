@@ -1,5 +1,3 @@
-#if PLATFORM_GL_IMPLEMENTATIONS
-
 #include <engine/render/render_init.cpp>
 #include <engine/render/render_utils.cpp>
 
@@ -25,6 +23,35 @@ GetShadowMapMVP(light *GlobalLight)
   return depthProjectionMatrix * depthViewMatrix;
 }
 #endif
+
+
+link_internal maybe_ray
+ComputeRayFromCursor(platform *Plat, m4* ViewProjection)
+{
+  maybe_ray Result = {};
+
+  m4 InverseViewProjection = {};
+  b32 Inverted = Inverse((r32*)ViewProjection, (r32*)&InverseViewProjection);
+  if (Inverted)
+  {
+    v3 MouseMinWorldP = Unproject( Plat->MouseP,
+                                   0.0f,
+                                   V2(Plat->WindowWidth, Plat->WindowHeight),
+                                   &InverseViewProjection);
+
+    v3 MouseMaxWorldP = Unproject( Plat->MouseP,
+                                   1.0f,
+                                   V2(Plat->WindowWidth, Plat->WindowHeight),
+                                   &InverseViewProjection);
+
+    v3 RayDirection = Normalize(MouseMaxWorldP - MouseMinWorldP);
+
+    Result.Ray = { .Origin = MouseMinWorldP, .Dir = RayDirection };
+    Result.Tag = Maybe_Yes;
+  }
+
+  return Result;
+}
 
 void
 RenderAoTexture(ao_render_group *AoGroup)
@@ -979,5 +1006,3 @@ Render_BufferGameGeometry(engine_resources *Resources)
   BufferWorld(Plat, &GpuMap->Buffer, World, Graphics, Resources->World->VisibleRegion, Heap);
   BufferEntities( EntityTable, &GpuMap->Buffer, Graphics, World, Plat->dt);
 }
-
-#endif

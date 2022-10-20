@@ -5,6 +5,31 @@ struct world;
 struct heap_allocator;
 struct entity;
 
+#define MAX_PICKED_WORLD_CHUNKS (64)
+
+// TODO(Jesse): Once poof can accept pointer types and multiple arguments we can generate this struct
+/* poof(static_buffer(world_chunk*, MAX_PICKED_WORLD_CHUNKS)) */
+/* #include <generated/buffer_world_chunk.h> */
+struct world_chunk_static_buffer
+{
+  world_chunk *E[MAX_PICKED_WORLD_CHUNKS];
+  u64 At;
+};
+
+struct engine_debug
+{
+  world_chunk_static_buffer PickedChunks;
+};
+
+link_internal void
+Push(world_chunk_static_buffer *Buf, world_chunk *Chunk)
+{
+  if (Buf->At < MAX_PICKED_WORLD_CHUNKS)
+  {
+    Buf->E[Buf->At++] = Chunk;
+  }
+}
+
 struct engine_resources
 {
   os         *Os;
@@ -28,15 +53,25 @@ struct engine_resources
   canonical_position *CameraTargetP;
 
   mesh_freelist MeshFreelist;
+
+  engine_debug EngineDebug;
   debug_state *DebugState;
 };
 
-
-
-
-
-
-
+#define UNPACK_ENGINE_RESOURCES(Res)                                      \
+  platform                  *Plat          =  Resources->Plat;            \
+  world                     *World         =  Resources->World;           \
+  game_state                *GameState     =  Resources->GameState;       \
+  memory_arena              *Memory        =  Resources->Memory;          \
+  heap_allocator            *Heap          = &Resources->Heap;            \
+  entity                   **EntityTable   =  Resources->EntityTable;     \
+  hotkeys                   *Hotkeys       =  Resources->Hotkeys;         \
+  engine_debug              *EngineDebug   = &Resources->EngineDebug;     \
+  mesh_freelist             *MeshFreelist  = &Resources->MeshFreelist;    \
+  graphics                  *Graphics      =  Resources->Graphics;        \
+  gpu_mapped_element_buffer *GpuMap        =  GetCurrentGpuMap(Graphics); \
+  g_buffer_render_group     *gBuffer       =  Graphics->gBuffer;;         \
+  camera                    *Camera        =  Graphics->Camera;
 
 
 

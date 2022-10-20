@@ -1,21 +1,5 @@
 #if PLATFORM_GL_IMPLEMENTATIONS
 
-#define UNPACK_ENGINE_RESOURCES(Res)                                      \
-  platform                  *Plat          =  Resources->Plat;            \
-  world                     *World         =  Resources->World;           \
-  game_state                *GameState     =  Resources->GameState;       \
-  memory_arena              *Memory        =  Resources->Memory;          \
-  heap_allocator            *Heap          = &Resources->Heap;            \
-  entity                   **EntityTable   =  Resources->EntityTable;     \
-  hotkeys                   *Hotkeys       =  Resources->Hotkeys;         \
-  mesh_freelist             *MeshFreelist  = &Resources->MeshFreelist;    \
-  graphics                  *Graphics      =  Resources->Graphics;        \
-  gpu_mapped_element_buffer *GpuMap        =  GetCurrentGpuMap(Graphics); \
-  g_buffer_render_group     *gBuffer       =  Graphics->gBuffer;;         \
-  camera                    *Camera        =  Graphics->Camera;
-
-
-
 
 link_export b32
 Bonsai_OnLibraryLoad(engine_resources *Resources)
@@ -105,27 +89,7 @@ Bonsai_FrameEnd(engine_resources *Resources)
     ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
     ViewMatrix(World->ChunkDim, Camera);
 
-#if 0 // BONSAI_DEBUG_SYSTEM_API
-  if (GetDebugState)
-  {
-    DEBUG_COMPUTE_PICK_RAY(&gBuffer->ViewProjection);
-    for (u32 ChunkIndex = 0;
-        ChunkIndex < GetDebugState()->PickedChunkCount;
-        ++ChunkIndex)
-    {
-      world_chunk *Chunk = GetDebugState()->PickedChunks[ChunkIndex];
-      untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
-      u8 Color = GREEN;
-
-      if (Chunk == GetDebugState()->HotChunk)
-      {
-        Color = PINK;
-      }
-
-      DEBUG_DrawChunkAABB(&CopyDest, Graphics, Chunk, World->ChunkDim, Color, 0.35f);
-    }
-  }
-#endif
+  Debug_DoWorldChunkPicking(Resources);
 
   RewindArena(TranArena);
 

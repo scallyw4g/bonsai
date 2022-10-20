@@ -16,9 +16,9 @@
 #include <engine/cpp/shader.cpp>
 #include <engine/cpp/texture.cpp>
 #include <engine/cpp/gpu_mapped_buffer.cpp>
+#include <engine/cpp/render.cpp>
 #endif
 
-#include <engine/cpp/render.cpp>
 #include <engine/cpp/world_chunk.cpp>
 #include <engine/cpp/world.cpp>
 #include <engine/cpp/physics.cpp>

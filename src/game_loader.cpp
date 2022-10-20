@@ -416,7 +416,7 @@ main( s32 ArgCount, const char ** Args )
     // Have to suspend workers to collate memory allocation records
     SignalAndWaitForWorkers(&Plat.WorkerThreadsSuspendFutex);
 
-    DEBUG_FRAME_END(&Plat.MouseP, &Plat.MouseDP, V2(Plat.WindowWidth, Plat.WindowHeight), &Plat.Input, Plat.dt);
+    DEBUG_FRAME_END(&Plat.MouseP, &Plat.MouseDP, V2(Plat.WindowWidth, Plat.WindowHeight), &Plat.Input, Plat.dt, &EngineResources.EngineDebug.PickedChunks);
 
     UnsignalFutex(&Plat.WorkerThreadsSuspendFutex);
 

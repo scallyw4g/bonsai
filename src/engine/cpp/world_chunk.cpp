@@ -2014,12 +2014,11 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
 {
   TIMED_FUNCTION();
 
+  work_queue_entry_copy_buffer_set CopySet = {};
+
   chunk_dimension Radius = VisibleRegion/2;
   world_position Min = World->Center - Radius;
   world_position Max = World->Center + Radius;
-
-  work_queue_entry_copy_buffer_set CopySet = {};
-
 
   for (s32 z = Min.z; z < Max.z; ++ z)
   {
@@ -2059,18 +2058,11 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
 
         if (Chunk && Chunk->Mesh)
         {
-#if 0
-          DEBUG_PICK_CHUNK( Chunk,
-                            MinMaxAABB( GetRenderP(World->ChunkDim, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera),
-                                        GetRenderP(World->ChunkDim, Canonical_Position(World->ChunkDim, Chunk->WorldP), Graphics->Camera) ) );
-#endif
-
           chunk_data *ChunkData = Chunk->Data;
 
           if ( IsSet(ChunkData->Flags, Chunk_MeshComplete) )
           {
             Assert(Chunk->Mesh->At);
-
 
 #if 1
             if (Chunk->LodMesh_Complete && Chunk->LodMesh->At)
@@ -2135,4 +2127,76 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
   return;
 }
 
+link_internal void
+Debug_DoWorldChunkPicking(engine_resources *Resources)
+{
+  UNPACK_ENGINE_RESOURCES(Resources);
+
+  world_chunk_static_buffer *PickedChunks = &EngineDebug->PickedChunks;
+  if (Hotkeys->Debug_PickChunks)
+  {
+    PickedChunks->At = 0;
+
+    maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection);
+
+    if (MaybeRay.Tag == Maybe_Yes)
+    {
+      chunk_dimension VisibleRegion = World->VisibleRegion;
+      chunk_dimension Radius = VisibleRegion/2;
+      world_position Min = World->Center - Radius;
+      world_position Max = World->Center + Radius;
+
+      for (s32 z = Min.z; z < Max.z; ++ z)
+      {
+        for (s32 y = Min.y; y < Max.y; ++ y)
+        {
+          for (s32 x = Min.x; x < Max.x; ++ x)
+          {
+            world_position P = World_Position(x,y,z);
+            world_chunk *Chunk = GetWorldChunk( World, P, VisibleRegion );
+
+            u32 ColorIndex = 0;
+
+            if (Chunk)
+            {
+              aabb ChunkAABB = MinMaxAABB( GetRenderP(World->ChunkDim, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera),
+                                           GetRenderP(World->ChunkDim, Canonical_Position(World->ChunkDim, Chunk->WorldP), Graphics->Camera) );
+
+              if ( Intersect(ChunkAABB, MaybeRay.Ray) )
+              {
+                Push(PickedChunks, Chunk);
+              }
+            }
+          }
+        }
+      }
+
+    }
+    else
+    {
+      // Was unable to invert the ViewProjection matrix
+    }
+  }
+
+  for ( u32 ChunkIndex = 0;
+            ChunkIndex < PickedChunks->At;
+          ++ChunkIndex )
+  {
+    world_chunk *Chunk = PickedChunks->E[ChunkIndex];
+    untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
+    u8 Color = LIGHT_GREEN;
+
+    if (Chunk == GetDebugState()->PickedChunk)
+    {
+      Color = PINK;
+    }
+
+    if (Chunk == GetDebugState()->HoverChunk)
+    {
+      Color = YELLOW;
+    }
+
+    DEBUG_DrawChunkAABB(&CopyDest, Graphics, Chunk, World->ChunkDim, Color, 0.35f);
+  }
+}
 #endif
