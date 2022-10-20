@@ -1,9 +1,8 @@
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
 #define PLATFORM_GL_IMPLEMENTATIONS 1
-#define BONSAI_DEBUG_LIB_LOADER_API 1
 
-// TODO(Jesse): This is old/should go
-#define BONSAI_DEBUG_SYSTEM_API 1
+#define DEBUG_SYSTEM_API 1
+#define DEBUG_SYSTEM_LOADER_API 1
 
 #define DEFAULT_DEBUG_LIB "./bin/lib_bonsai_debug_loadable" PLATFORM_RUNTIME_LIB_EXTENSION
 
@@ -243,14 +242,15 @@ main( s32 ArgCount, const char ** Args )
   Assert(Os.GlContext);
 
 
+#if DEBUG_SYSTEM_API
   shared_lib DebugLib = InitializeBonsaiDebug(DEFAULT_DEBUG_LIB);
   Assert(DebugLib);
   Assert(Global_DebugStatePointer);
-
   EngineResources.DebugState = Global_DebugStatePointer;
 
   heap_allocator DebugHeap = InitHeap(Megabytes(32));
   GetDebugState()->InitializeRenderSystem(GetDebugState(), &DebugHeap);
+#endif
 
 
   memory_arena *PlatMemory = AllocateArena();
@@ -358,6 +358,7 @@ main( s32 ArgCount, const char ** Args )
       UnsignalFutex(&Plat.WorkerThreadsSuspendFutex);
     }
 
+#if DEBUG_SYSTEM_API
     if ( LibIsNew(DEFAULT_DEBUG_LIB, &LastDebugLibTime) )
     {
       SignalAndWaitForWorkers(&Plat.WorkerThreadsSuspendFutex);
@@ -391,7 +392,9 @@ main( s32 ArgCount, const char ** Args )
 
       UnsignalFutex(&Plat.WorkerThreadsSuspendFutex);
     }
-#endif
+#endif // DEBUG_SYSTEM_API
+
+#endif // EMCC
 
     /* DEBUG_FRAME_RECORD(Debug_RecordingState, &Hotkeys); */
 

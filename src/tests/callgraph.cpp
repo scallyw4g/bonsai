@@ -1,5 +1,5 @@
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
-#define BONSAI_DEBUG_SYSTEM_API 1
+#define DEBUG_SYSTEM_API 1
 
 #include <bonsai_types.h>
 #include <bonsai_stdlib/test/utils.h>

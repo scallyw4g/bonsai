@@ -6,7 +6,7 @@
 /* #define PLATFORM_THREADING_IMPLEMENTATIONS 1 */
 /* #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1 */
 /* #define PLATFORM_GL_IMPLEMENTATIONS 1 */
-/* #define BONSAI_DEBUG_SYSTEM_API 1 */
+/* #define DEBUG_SYSTEM_API 1 */
 
 #define RANDOM_HOTKEY_MASHING 0
 #if RANDOM_HOTKEY_MASHING
@@ -93,7 +93,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 {
   TIMED_FUNCTION();
 
-#if BONSAI_DEBUG_SYSTEM_API
+#if DEBUG_SYSTEM_API
   if (!GetDebugState) { GetDebugState = (get_debug_state_proc)Plat->GetDebugStateProc; }
   GetDebugState()->Plat = GameState->Plat;
   GetDebugState()->GameState = GameState;
@@ -102,9 +102,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   /* DebugPrint(*GameState->Plat); */
 
   GL.Disable(GL_CULL_FACE);
-
-#if BONSAI_DEBUG_SYSTEM_API
-#endif
 
   world                 *World         = GameState->World;
   graphics              *Graphics      = GameState->Graphics;
@@ -162,7 +159,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   v2 MouseDelta = GetMouseDelta(Plat);
   input* GameInput = &Plat->Input;
 
-#if BONSAI_DEBUG_SYSTEM_API
+#if DEBUG_SYSTEM_API
 #if 0
   if (GetDebugState()->UiGroup.PressedInteractionId != StringHash("GameViewport"))
   {
@@ -188,7 +185,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     BufferEntities( GameState->EntityTable, &GpuMap->Buffer, Graphics, World, Plat->dt);
   END_BLOCK("BufferMeshes");
 
-#if BONSAI_DEBUG_SYSTEM_API
+#if DEBUG_SYSTEM_API
   for (u32 ChunkIndex = 0;
       ChunkIndex < GetDebugState()->PickedChunkCount;
       ++ChunkIndex)

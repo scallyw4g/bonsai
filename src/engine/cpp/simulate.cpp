@@ -12,7 +12,7 @@ Bonsai_SimulateEntitiesAndWorld(engine_resources *Resources)
   v2 MouseDelta = GetMouseDelta(Plat);
   input* GameInput = &Plat->Input;
 
-#if 0 // BONSAI_DEBUG_SYSTEM_API
+#if 0 // DEBUG_SYSTEM_API
   if (GetDebugState()->UiGroup.PressedInteractionId != StringHash("GameViewport"))
   {
     GameInput = 0;

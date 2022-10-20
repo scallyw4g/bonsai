@@ -87,7 +87,7 @@ DrawTexturedQuad(shader *SimpleTextureShader)
 inline void
 BufferDataToCard(u32 BufferId, u32 Stride, u32 ByteCount, void *Data, u32 *AttributeIndex)
 {
-#if BONSAI_DEBUG_SYSTEM_API
+#if DEBUG_SYSTEM_API
   debug_state *DebugState = GetDebugState();
   DebugState->BytesBufferedToCard += ByteCount;
 #endif

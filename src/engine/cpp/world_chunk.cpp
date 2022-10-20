@@ -2199,4 +2199,190 @@ Debug_DoWorldChunkPicking(engine_resources *Resources)
     DEBUG_DrawChunkAABB(&CopyDest, Graphics, Chunk, World->ChunkDim, Color, 0.35f);
   }
 }
+
+struct debug_ui_render_group;
+
+#if 1
+
+link_internal void
+PushChunkView(debug_ui_render_group* Group, world_chunk* Chunk, window_layout* Window)
+{
+  debug_state* DebugState = GetDebugState();
+  PushWindowStart(Group, Window);
+    PushTableStart(Group);
+      b32 DebugButtonPressed = False;
+
+      interactable_handle PrevButton = PushButtonStart(Group, (umm)"PrevButton");
+        PushColumn(Group, CSz("<"));
+      PushButtonEnd(Group);
+
+      if (Clicked(Group, &PrevButton))
+      {
+        Chunk->PointsToLeaveRemaining = Min(Chunk->PointsToLeaveRemaining+1, Chunk->EdgeBoundaryVoxelCount);
+        DebugButtonPressed = True;
+      }
+
+
+      interactable_handle NextButton = PushButtonStart(Group, (umm)"NextButton");
+        PushColumn(Group, CSz(">"));
+      PushButtonEnd(Group);
+
+      if (Clicked(Group, &NextButton))
+      {
+        Chunk->PointsToLeaveRemaining = Max(Chunk->PointsToLeaveRemaining-1, 0);
+        DebugButtonPressed = True;
+      }
+
+      counted_string ButtonText = Chunk->DrawBoundingVoxels ? CSz("|") : CSz("O");
+
+      interactable_handle ToggleBoundingVoxelsButton = PushButtonStart(Group, (umm)"ToggleBoundingVoxelsButton");
+        PushColumn(Group, ButtonText);
+      PushButtonEnd(Group);
+
+      if (Clicked(Group, &ToggleBoundingVoxelsButton))
+      {
+        Chunk->DrawBoundingVoxels = !Chunk->DrawBoundingVoxels;
+        DebugButtonPressed = True;
+      }
+
+      if (DebugButtonPressed)
+      {
+        Chunk->LodMesh_Complete = False;
+        Chunk->LodMesh->At = 0;
+        Chunk->Mesh = 0;
+        Chunk->FilledCount = 0;
+        Chunk->Data->Flags = Chunk_Uninitialized;
+        NotImplemented;
+        /* QueueChunkForInit( &DebugState->Plat->HighPriority, Chunk); */
+      }
+
+      PushNewRow(Group);
+    PushTableEnd(Group);
+
+    PushTableStart(Group);
+      interactable_handle ViewportButton = PushButtonStart(Group, (umm)"ViewportButton");
+        PushTexturedQuad(Group, DebugTextureArraySlice_Viewport, zDepth_Text);
+      PushButtonEnd(Group);
+    PushTableEnd(Group);
+
+  PushWindowEnd(Group, Window);
+
+  input* WindowInput = 0;
+  if (Pressed(Group, &ViewportButton))
+    { WindowInput = Group->Input; }
+  UpdateGameCamera( -0.005f*(*Group->MouseDP), WindowInput, Canonical_Position(0), DebugState->Camera, Chunk_Dimension(32,32,8));
+}
+
+link_internal void
+PushChunkDetails(debug_ui_render_group* Group, world_chunk* Chunk, window_layout* Window)
+{
+  PushWindowStart(Group, Window);
+  PushTableStart(Group);
+    PushColumn(Group, CSz("WorldP"));
+    PushColumn(Group, CS(Chunk->WorldP.x));
+    PushColumn(Group, CS(Chunk->WorldP.y));
+    PushColumn(Group, CS(Chunk->WorldP.z));
+    PushNewRow(Group);
+
+    PushColumn(Group, CSz("PointsToLeaveRemaining"));
+    PushColumn(Group, CS(Chunk->PointsToLeaveRemaining));
+    PushNewRow(Group);
+
+    PushColumn(Group, CSz("BoundaryVoxels Count"));
+    PushColumn(Group, CS(Chunk->EdgeBoundaryVoxelCount));
+    PushNewRow(Group);
+
+    PushColumn(Group, CSz("Triangles"));
+    PushColumn(Group, CS(Chunk->TriCount));
+    PushNewRow(Group);
+  PushTableEnd(Group);
+  PushWindowEnd(Group, Window);
+}
+
+link_internal world_chunk*
+DrawPickedChunks(debug_ui_render_group* Group, world_chunk_static_buffer *PickedChunks, world_chunk *HotChunk)
+{
+  debug_state* DebugState = GetDebugState();
+  DebugState->HoverChunk = 0;
+
+  MapGpuElementBuffer(&DebugState->GameGeo);
+
+  v2 ListingWindowBasis = V2(20, 350);
+  local_persist window_layout ListingWindow = WindowLayout("Picked Chunks", ListingWindowBasis, V2(400, 1600));
+
+  PushWindowStart(Group, &ListingWindow);
+  PushTableStart(Group);
+
+  for (u32 ChunkIndex = 0;
+      ChunkIndex < PickedChunks->At;
+      ++ChunkIndex)
+  {
+    world_chunk *Chunk = PickedChunks->E[ChunkIndex];
+
+    interactable_handle PositionButton = PushButtonStart(Group, (umm)"PositionButton"^(umm)Chunk);
+      ui_style Style = Chunk == DebugState->PickedChunk ? DefaultSelectedStyle : DefaultStyle;
+      PushColumn(Group, CS(Chunk->WorldP.x), &Style);
+      PushColumn(Group, CS(Chunk->WorldP.y), &Style);
+      PushColumn(Group, CS(Chunk->WorldP.z), &Style);
+    PushButtonEnd(Group);
+
+    if (Clicked(Group, &PositionButton)) { HotChunk = Chunk; }
+    if (Hover(Group, &PositionButton)) { DebugState->HoverChunk = Chunk; }
+
+    interactable_handle CloseButton = PushButtonStart(Group, (umm)"CloseButton"^(umm)Chunk);
+      PushColumn(Group, CSz("X"));
+    PushButtonEnd(Group);
+
+    if ( Clicked(Group, &CloseButton) )
+    {
+      world_chunk** SwapChunk = PickedChunks->E + ChunkIndex;
+      if (*SwapChunk == HotChunk) { HotChunk = 0; }
+      *SwapChunk = PickedChunks->E[--PickedChunks->At];
+    }
+
+    PushNewRow(Group);
+  }
+
+  PushTableEnd(Group);
+  PushWindowEnd(Group, &ListingWindow);
+
+  if (HotChunk)
+  {
+    v3 Basis = -0.5f*V3(ChunkDimension(HotChunk));
+    untextured_3d_geometry_buffer* Src = HotChunk->LodMesh;
+    untextured_3d_geometry_buffer* Dest = &Group->GameGeo->Buffer;
+    BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
+  }
+
+  { // Draw hotchunk to the GameGeo FBO
+    GL.BindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
+    FlushBuffersToCard(&DebugState->GameGeo);
+
+    DebugState->ViewProjection =
+      ProjectionMatrix(DebugState->Camera, DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM) *
+      ViewMatrix(ChunkDimension(HotChunk), DebugState->Camera);
+
+    GL.UseProgram(Group->GameGeoShader->ID);
+
+    SetViewport(V2(DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM));
+
+    BindShaderUniforms(Group->GameGeoShader);
+
+    Draw(DebugState->GameGeo.Buffer.At);
+    DebugState->GameGeo.Buffer.At = 0;
+  }
+
+  if (HotChunk)
+  {
+    local_persist window_layout ChunkDetailWindow = WindowLayout("Chunk Details", BasisRightOf(&ListingWindow),     V2(1100.0f, 400.0f));
+    local_persist window_layout ChunkViewWindow   = WindowLayout("Chunk View",    BasisRightOf(&ChunkDetailWindow), V2(800.0f));
+
+    PushChunkDetails(Group, HotChunk, &ChunkDetailWindow);
+    PushChunkView(Group, HotChunk, &ChunkViewWindow);
+  }
+
+  return HotChunk;
+}
+#endif
+
 #endif

@@ -62,7 +62,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
   }
 #endif
 
-#if 0 // BONSAI_DEBUG_SYSTEM_API
+#if 0 // DEBUG_SYSTEM_API
   if (GetDebugState()->UiGroup.PressedInteractionId != StringHash("GameViewport"))
   {
     GameInput = 0;

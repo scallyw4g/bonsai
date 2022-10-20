@@ -491,7 +491,7 @@ MultipleAllocations()
       }
     }
 
-#if BONSAI_DEBUG_SYSTEM_API
+#if DEBUG_SYSTEM_API
     {
       memory_arena_stats MemStats1 = GetMemoryArenaStats(&Arena);
       memory_arena_stats MemStats2 = GetMemoryArenaStats(&Arena);

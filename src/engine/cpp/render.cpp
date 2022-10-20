@@ -393,8 +393,8 @@ ClearFramebuffers(graphics *Graphics)
   GL.ClearColor(0.2f, 0.2f, 0.2f, 1.0f);
   GL.ClearDepth(1.0f);
 
-#if BONSAI_DEBUG_SYSTEM_API
-#if DEBUG_LIB_INTERNAL_BUILD
+#if DEBUG_SYSTEM_API
+#if DEBUG_SYSTEM_INTERNAL_BUILD
   GetDebugState()->ClearFramebuffers();
 #else
   if (GetDebugState()) GetDebugState()->ClearFramebuffers();

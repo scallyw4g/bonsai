@@ -1,6 +1,6 @@
 #include <engine/cpp/game_api.cpp>
 #include <engine/cpp/asset.cpp>
-#include <engine/cpp/render_position.cpp>
+#include <engine/cpp/render_position.cpp> // TODO(Jesse): Move into PLATFORM_GL_IMPLEMENTATIONS block?
 #include <engine/cpp/canonical_position.cpp>
 #include <engine/cpp/chunk.cpp>
 #include <engine/cpp/mesh.cpp>
@@ -19,6 +19,9 @@
 #include <engine/cpp/render.cpp>
 #endif
 
+
+#include <bonsai_debug/interactable.cpp>
+#include <engine/cpp/ui.cpp>
 #include <engine/cpp/world_chunk.cpp>
 #include <engine/cpp/world.cpp>
 #include <engine/cpp/physics.cpp>

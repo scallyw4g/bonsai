@@ -188,7 +188,7 @@ function BuildExamples
       $OPTIMIZATION_LEVEL                                                             \
       $CXX_OPTIONS                                                                    \
       $BONSAI_INTERNAL                                                                \
-      -D BONSAI_DEBUG_SYSTEM_API=1                                                    \
+      -D DEBUG_SYSTEM_API=1                                                    \
       $PLATFORM_CXX_OPTIONS                                                           \
       $PLATFORM_LINKER_OPTIONS                                                        \
       $PLATFORM_DEFINES                                                               \
