@@ -160,7 +160,7 @@ MakeTexture_RGBA(v2i Dim, u32* Data, memory_arena *Mem, u32 MaxTextureSlices = 1
 
     s32 Mips = (s32)MaxTextureSlices;
     GL.TexStorage3D(GL_TEXTURE_3D, Mips, InternalFormat,
-                   DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM, (s32)MaxTextureSlices);
+                    DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM, (s32)MaxTextureSlices);
 #endif
 
     s32 xOffset = 0;
@@ -279,7 +279,7 @@ LoadBitmap(const char* FilePath, memory_arena *Arena, u32 SliceCount)
 texture*
 LoadBitmap(const char* FilePath, memory_arena *Arena)
 {
-  bitmap TexBitmap = ReadBitmapFromDisk(FilePath, Arena);
+  bitmap TexBitmap = ReadBitmapFromDisk(FilePath, TranArena);
   texture* Result = MakeTexture_RGBA(TexBitmap.Dim, TexBitmap.Pixels.Start, Arena);
   return Result;
 }

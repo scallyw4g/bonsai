@@ -38,16 +38,16 @@ CompileShader(ansi_stream Header, ansi_stream Code, u32 Type)
 }
 
 shader
-LoadShaders(counted_string VertShaderPath, counted_string FragFilePath, memory_arena *Memory)
+LoadShaders(counted_string VertShaderPath, counted_string FragFilePath)
 {
-  Info("Creating shader : %.*s | %.*s", (u32)VertShaderPath.Count, VertShaderPath.Start,(u32)FragFilePath.Count, FragFilePath.Start);
+  Info("Creating shader : %S | %S", VertShaderPath, FragFilePath);
 
-  counted_string ComputedVertPath = FormatCountedString( Memory, CSz("%S/%S"), CSz(SHADER_PATH), VertShaderPath);
-  counted_string ComputedFragPath = FormatCountedString( Memory, CSz("%S/%S"), CSz(SHADER_PATH), FragFilePath);
+  counted_string ComputedVertPath = FormatCountedString( TranArena, CSz("%S/%S"), CSz(SHADER_PATH), VertShaderPath);
+  counted_string ComputedFragPath = FormatCountedString( TranArena, CSz("%S/%S"), CSz(SHADER_PATH), FragFilePath);
 
-  ansi_stream HeaderCode       = ReadEntireFileIntoAnsiStream(CSz(SHADER_PATH "/header.glsl"), Memory);
-  ansi_stream VertexShaderCode = ReadEntireFileIntoAnsiStream(ComputedVertPath, Memory);
-  ansi_stream FragShaderCode   = ReadEntireFileIntoAnsiStream(ComputedFragPath, Memory);
+  ansi_stream HeaderCode       = ReadEntireFileIntoAnsiStream(CSz(SHADER_PATH "/header.glsl"), TranArena);
+  ansi_stream VertexShaderCode = ReadEntireFileIntoAnsiStream(ComputedVertPath, TranArena);
+  ansi_stream FragShaderCode   = ReadEntireFileIntoAnsiStream(ComputedFragPath, TranArena);
 
   s32 Result = GL_FALSE;
   int InfoLogLength;
@@ -67,8 +67,7 @@ LoadShaders(counted_string VertShaderPath, counted_string FragFilePath, memory_a
   GL.GetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
   if ( InfoLogLength > 0 )
   {
-    // TODO(Jesse, id: 134, tags: transient_memory): Transient storage
-    char *ProgramErrorMessage = Allocate(char, Memory, InfoLogLength+1);
+    char *ProgramErrorMessage = Allocate(char, TranArena, InfoLogLength+1);
     GL.GetProgramInfoLog(ProgramID, InfoLogLength, NULL, ProgramErrorMessage);
     Error("%s", ProgramErrorMessage);
   }
@@ -139,9 +138,7 @@ BasicTypeUniformAllocators(r32, R32)
 shader
 MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory)
 {
-  shader SimpleTextureShader = LoadShaders( CSz("Passthrough.vertexshader"),
-                                            CSz("SimpleTexture.fragmentshader"),
-                                            GraphicsMemory );
+  shader SimpleTextureShader = LoadShaders( CSz("Passthrough.vertexshader"), CSz("SimpleTexture.fragmentshader") );
 
   SimpleTextureShader.FirstUniform = GetUniform(GraphicsMemory, &SimpleTextureShader, Texture, "Texture");
 

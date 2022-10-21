@@ -48,7 +48,7 @@ MakeLightingShader(memory_arena *GraphicsMemory,
     g_buffer_textures *gTextures,/* texture *ShadowMap,*/ texture *Ssao,
     /*m4 *ShadowMVP, */ game_lights *Lights, camera *Camera)
 {
-  shader Shader = LoadShaders( CSz("Lighting.vertexshader"), CSz("Lighting.fragmentshader"), GraphicsMemory);
+  shader Shader = LoadShaders( CSz("Lighting.vertexshader"), CSz("Lighting.fragmentshader") );
 
   shader_uniform **Current = &Shader.FirstUniform;
 
@@ -145,8 +145,7 @@ SetDrawBuffers(framebuffer *FBO)
 shader
 CreateGbufferShader(memory_arena *GraphicsMemory, m4 *ViewProjection, camera *Camera)
 {
-  shader Shader = LoadShaders( CSz("gBuffer.vertexshader"),
-                               CSz("gBuffer.fragmentshader"), GraphicsMemory);
+  shader Shader = LoadShaders( CSz("gBuffer.vertexshader"), CSz("gBuffer.fragmentshader") );
 
   shader_uniform **Current = &Shader.FirstUniform;
 
@@ -169,8 +168,7 @@ shader
 MakeSsaoShader(memory_arena *GraphicsMemory, g_buffer_textures *gTextures,
     texture *SsaoNoiseTexture, v3 *SsaoNoiseTile, m4 *ViewProjection)
 {
-  shader Shader = LoadShaders( CSz("Passthrough.vertexshader"),
-                               CSz("Ao.fragmentshader"), GraphicsMemory);
+  shader Shader = LoadShaders( CSz("Passthrough.vertexshader"), CSz("Ao.fragmentshader") );
 
   shader_uniform **Current = &Shader.FirstUniform;
 
@@ -267,7 +265,7 @@ InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory, v2
   // For debug-only visualization of this texture
   SG->DebugTextureShader = MakeSimpleTextureShader(SG->ShadowMap, GraphicsMemory);
 
-  SG->DepthShader = LoadShaders( CSz("DepthRTT.vertexshader"), CSz("DepthRTT.fragmentshader"), GraphicsMemory);
+  SG->DepthShader = LoadShaders( CSz("DepthRTT.vertexshader"), CSz("DepthRTT.fragmentshader") );
   SG->MVP_ID = (u32)GetShaderUniform(&SG->DepthShader, "depthMVP");
 
   if(GL.CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
