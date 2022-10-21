@@ -395,9 +395,9 @@ ClearFramebuffers(graphics *Graphics)
 
 #if DEBUG_SYSTEM_API
 #if DEBUG_SYSTEM_INTERNAL_BUILD
-  GetDebugState()->ClearFramebuffers();
+  GetDebugState()->ClearFramebuffers(&GetDebugState()->PickedChunksRenderGroup);
 #else
-  if (GetDebugState()) GetDebugState()->ClearFramebuffers();
+  if (GetDebugState()) GetDebugState()->ClearFramebuffers(&GetDebugState()->PickedChunksRenderGroup);
 #endif
 
   /* GL.BindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID); */

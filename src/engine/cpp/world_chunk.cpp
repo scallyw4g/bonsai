@@ -2268,7 +2268,7 @@ PushChunkView(debug_ui_render_group* Group, world_chunk* Chunk, window_layout* W
   input* WindowInput = 0;
   if (Pressed(Group, &ViewportButton))
     { WindowInput = Group->Input; }
-  UpdateGameCamera( -0.005f*(*Group->MouseDP), WindowInput, Canonical_Position(0), DebugState->Camera, Chunk_Dimension(32,32,8));
+  UpdateGameCamera( -0.005f*(*Group->MouseDP), WindowInput, Canonical_Position(0), DebugState->PickedChunksRenderGroup.Camera, Chunk_Dimension(32,32,8));
 }
 
 link_internal void
@@ -2298,12 +2298,12 @@ PushChunkDetails(debug_ui_render_group* Group, world_chunk* Chunk, window_layout
 }
 
 link_internal world_chunk*
-DrawPickedChunks(debug_ui_render_group* Group, world_chunk_static_buffer *PickedChunks, world_chunk *HotChunk)
+DrawPickedChunks(debug_ui_render_group* Group, render_entity_to_texture_group *PickedChunksRenderGroup, world_chunk_static_buffer *PickedChunks, world_chunk *HotChunk)
 {
   debug_state* DebugState = GetDebugState();
   DebugState->HoverChunk = 0;
 
-  MapGpuElementBuffer(&DebugState->GameGeo);
+  MapGpuElementBuffer(&PickedChunksRenderGroup->GameGeo);
 
   v2 ListingWindowBasis = V2(20, 350);
   local_persist window_layout ListingWindow = WindowLayout("Picked Chunks", ListingWindowBasis, V2(400, 1600));
@@ -2348,26 +2348,26 @@ DrawPickedChunks(debug_ui_render_group* Group, world_chunk_static_buffer *Picked
   {
     v3 Basis = -0.5f*V3(ChunkDimension(HotChunk));
     untextured_3d_geometry_buffer* Src = HotChunk->LodMesh;
-    untextured_3d_geometry_buffer* Dest = &Group->GameGeo->Buffer;
+    untextured_3d_geometry_buffer* Dest = &DebugState->PickedChunksRenderGroup.GameGeo.Buffer;
     BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
   }
 
   { // Draw hotchunk to the GameGeo FBO
-    GL.BindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
-    FlushBuffersToCard(&DebugState->GameGeo);
+    GL.BindFramebuffer(GL_FRAMEBUFFER, PickedChunksRenderGroup->GameGeoFBO.ID);
+    FlushBuffersToCard(&PickedChunksRenderGroup->GameGeo);
 
-    DebugState->ViewProjection =
-      ProjectionMatrix(DebugState->Camera, DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM) *
-      ViewMatrix(ChunkDimension(HotChunk), DebugState->Camera);
+    PickedChunksRenderGroup->ViewProjection =
+      ProjectionMatrix(PickedChunksRenderGroup->Camera, DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM) *
+      ViewMatrix(ChunkDimension(HotChunk), PickedChunksRenderGroup->Camera);
 
-    GL.UseProgram(Group->GameGeoShader->ID);
+    GL.UseProgram(PickedChunksRenderGroup->GameGeoShader.ID);
 
     SetViewport(V2(DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM));
 
-    BindShaderUniforms(Group->GameGeoShader);
+    BindShaderUniforms(&PickedChunksRenderGroup->GameGeoShader);
 
-    Draw(DebugState->GameGeo.Buffer.At);
-    DebugState->GameGeo.Buffer.At = 0;
+    Draw(PickedChunksRenderGroup->GameGeo.Buffer.At);
+    PickedChunksRenderGroup->GameGeo.Buffer.At = 0;
   }
 
   if (HotChunk)

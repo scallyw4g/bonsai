@@ -114,9 +114,9 @@ ClearFramebuffer(framebuffer FBO)
 }
 
 link_internal void
-ClearFramebuffers()
+ClearFramebuffers(render_entity_to_texture_group *Group)
 {
-  ClearFramebuffer(GetDebugState()->GameGeoFBO);
+  ClearFramebuffer(Group->GameGeoFBO);
 }
 
 link_internal void
