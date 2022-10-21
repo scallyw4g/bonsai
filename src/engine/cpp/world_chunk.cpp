@@ -2202,8 +2202,6 @@ Debug_DoWorldChunkPicking(engine_resources *Resources)
 
 struct debug_ui_render_group;
 
-#if 1
-
 link_internal void
 PushChunkView(debug_ui_render_group* Group, world_chunk* Chunk, window_layout* Window)
 {
@@ -2383,6 +2381,5 @@ DrawPickedChunks(debug_ui_render_group* Group, world_chunk_static_buffer *Picked
 
   return HotChunk;
 }
-#endif
 
 #endif

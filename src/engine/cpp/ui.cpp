@@ -153,42 +153,32 @@ FlushBuffer(debug_text_render_group *TextGroup, untextured_2d_geometry_buffer *B
 link_internal void
 FlushBuffer(debug_text_render_group *TextGroup, textured_2d_geometry_buffer *Geo, v2 ScreenDim)
 {
-  if (TextGroup)
-  {
-    GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
-    SetViewport(ScreenDim);
-    GL.UseProgram(TextGroup->Text2DShader.ID);
+  GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
+  SetViewport(ScreenDim);
+  GL.UseProgram(TextGroup->Text2DShader.ID);
 
-    // Bind Font texture
-    GL.ActiveTexture(GL_TEXTURE0);
-    GL.BindTexture(GL_TEXTURE_3D, TextGroup->FontTexture->ID);
-    //
+  GL.ActiveTexture(GL_TEXTURE0);
+  GL.BindTexture(GL_TEXTURE_3D, TextGroup->DebugTextureArray->ID);
 
-    GL.Uniform1i(TextGroup->TextTextureUniform, 0); // Assign texture unit 0 to the TextTexureUniform
+  GL.Uniform1i(TextGroup->TextTextureUniform, 0); // Assign texture unit 0 to the TextTexureUniform
 
-    u32 AttributeIndex = 0;
-    BufferVertsToCard( TextGroup->SolidUIVertexBuffer, Geo, &AttributeIndex);
-    BufferUVsToCard(   TextGroup->SolidUIUVBuffer,     Geo, &AttributeIndex);
-    BufferColorsToCard(TextGroup->SolidUIColorBuffer,  Geo, &AttributeIndex);
+  u32 AttributeIndex = 0;
+  BufferVertsToCard( TextGroup->SolidUIVertexBuffer, Geo, &AttributeIndex);
+  BufferUVsToCard(   TextGroup->SolidUIUVBuffer,     Geo, &AttributeIndex);
+  BufferColorsToCard(TextGroup->SolidUIColorBuffer,  Geo, &AttributeIndex);
 
-    GL.Enable(GL_BLEND);
-    GL.BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  GL.Enable(GL_BLEND);
+  GL.BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    Draw(Geo->At);
-    Geo->At = 0;
+  Draw(Geo->At);
+  Geo->At = 0;
 
-    GL.Disable(GL_BLEND);
+  GL.Disable(GL_BLEND);
 
-    GL.DisableVertexAttribArray(0);
-    GL.DisableVertexAttribArray(1);
-    GL.DisableVertexAttribArray(2);
-    AssertNoGlErrors;
-  }
-  else
-  {
-    Warn("FlushBuffer call issued without a RenderGroup!");
-  }
-
+  GL.DisableVertexAttribArray(0);
+  GL.DisableVertexAttribArray(1);
+  GL.DisableVertexAttribArray(2);
+  AssertNoGlErrors;
 }
 
 link_internal void
