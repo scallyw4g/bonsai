@@ -110,9 +110,7 @@ ClearFramebuffer(framebuffer FBO)
 {
   GL.BindFramebuffer(GL_FRAMEBUFFER, FBO.ID);
   GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-  // TODO(Jesse): This is a bit more hygenic but I didn't want to randomly add it without testing
-  /* GL.BindFramebuffer(GL_FRAMEBUFFER, 0); */
+  GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 link_internal void
