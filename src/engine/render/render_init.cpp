@@ -133,11 +133,8 @@ CreateGbuffer(memory_arena *Memory)
 void
 SetDrawBuffers(framebuffer *FBO)
 {
-  // TODO(Jesse, id: 118, tags: transient_memory): Transient storage?
-  u32 Attachments[32] = {};
-  for (u32 AttIndex = 0;
-      AttIndex < FBO->Attachments;
-      ++AttIndex)
+  u32 *Attachments = Allocate(u32, TranArena, FBO->Attachments);
+  for (u32 AttIndex = 0; AttIndex < FBO->Attachments; ++AttIndex)
   {
     Attachments[AttIndex] =  GL_COLOR_ATTACHMENT0 + AttIndex;
   }
