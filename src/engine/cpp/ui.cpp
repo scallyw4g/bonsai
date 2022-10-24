@@ -158,7 +158,7 @@ FlushBuffer(debug_text_render_group *TextGroup, textured_2d_geometry_buffer *Geo
   GL.UseProgram(TextGroup->Text2DShader.ID);
 
   GL.ActiveTexture(GL_TEXTURE0);
-  GL.BindTexture(GL_TEXTURE_3D, TextGroup->DebugTextureArray->ID);
+  GL.BindTexture(GL_TEXTURE_2D_ARRAY, TextGroup->DebugTextureArray->ID);
 
   GL.Uniform1i(TextGroup->TextTextureUniform, 0); // Assign texture unit 0 to the TextTexureUniform
 

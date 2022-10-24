@@ -131,7 +131,7 @@ MakeTexture_RGBA(v2i Dim, u32* Data, memory_arena *Mem, u32 MaxTextureSlices = 1
 
   b32 Multidimensional = MaxTextureSlices > 1;
 
-  u32 TextureDimensionality = Multidimensional ? GL_TEXTURE_3D : GL_TEXTURE_2D;
+  u32 TextureDimensionality = Multidimensional ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D;
   texture *Texture = GenTexture(Dim, Mem, TextureDimensionality);
 
   u32 InternalFormat = GL_RGBA8;
@@ -148,7 +148,7 @@ MakeTexture_RGBA(v2i Dim, u32* Data, memory_arena *Mem, u32 MaxTextureSlices = 1
      */
 
 #if 0
-    glTexImage3D(GL_TEXTURE_3D, MaxTextureSlices, InternalFormat,
+    glTexImage3D(GL_TEXTURE_2D_ARRAY, MaxTextureSlices, InternalFormat,
         Texture->Dim.x, Texture->Dim.y, MaxTextureSlices,
         0, TextureFormat, ElementType,
         0);
@@ -159,7 +159,7 @@ MakeTexture_RGBA(v2i Dim, u32* Data, memory_arena *Mem, u32 MaxTextureSlices = 1
      */
 
     s32 Mips = (s32)MaxTextureSlices;
-    GL.TexStorage3D(GL_TEXTURE_3D, Mips, InternalFormat,
+    GL.TexStorage3D(GL_TEXTURE_2D_ARRAY, Mips, InternalFormat,
                     DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM, (s32)MaxTextureSlices);
 #endif
 
@@ -168,10 +168,10 @@ MakeTexture_RGBA(v2i Dim, u32* Data, memory_arena *Mem, u32 MaxTextureSlices = 1
     s32 zOffset = 0;
 
     s32 TextureDepth = 1;
-    GL.TexSubImage3D(GL_TEXTURE_3D, 0,
-        xOffset, yOffset, zOffset,
-        Texture->Dim.x, Texture->Dim.y, TextureDepth,
-        TextureFormat, ElementType, Data);
+    GL.TexSubImage3D( GL_TEXTURE_2D_ARRAY, 0,
+                      xOffset, yOffset, zOffset,
+                      Texture->Dim.x, Texture->Dim.y, TextureDepth,
+                      TextureFormat, ElementType, Data );
   }
 
   GL.BindTexture(TextureDimensionality, 0);

@@ -3,19 +3,17 @@ in vec3 VertColor;
 
 out vec4 color;
 
-uniform sampler3D TextTextureSampler;
+uniform highp sampler2DArray TextTextureSampler;
 
 void main()
 {
-  // TODO(Jesse, tags: texture, cleanup): Pass the UVs in a more sensible format??
-  vec4 BitmapTexel = texelFetch( TextTextureSampler,
-                                 ivec3(UV*vec3(DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM, 1)),
-                                 0);
-
-  //
-  // FIXME(Jesse): Do some proper alpha-handling!
-  if (BitmapTexel.a <= 0.7f)
+  vec4 BitmapTexel = texture( TextTextureSampler, UV );
+  if (BitmapTexel.a > 0.00f)
+  {
+    color = vec4(VertColor * BitmapTexel.rgb * BitmapTexel.a, BitmapTexel.a);
+  }
+  else
+  {
     discard;
-
-  color = vec4(VertColor * BitmapTexel.rgb * BitmapTexel.a, BitmapTexel.a);
+  }
 }
