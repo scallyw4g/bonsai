@@ -9,23 +9,23 @@
 
 
 inline void
-AdvanceClip(layout *Layout, v2 TestP)
+UpdateDrawBounds(layout *Layout, v2 TestP)
 {
-  v2 AbsP = TestP + Layout->Basis;
+  v2 AbsP = Layout->Basis + TestP;
   while (Layout)
   {
-    v2 RelP = AbsP - Layout->Basis;
-    Layout->DrawBounds.Min = Min(RelP, Layout->DrawBounds.Min);
-    Layout->DrawBounds.Max = Max(RelP, Layout->DrawBounds.Max);
+    v2 LayoutRelP = AbsP - Layout->Basis;
+    Layout->DrawBounds.Min = Min(LayoutRelP, Layout->DrawBounds.Min);
+    Layout->DrawBounds.Max = Max(LayoutRelP, Layout->DrawBounds.Max);
 
     Layout = Layout->Prev;
   }
 }
 
 inline void
-AdvanceClip(layout *Layout)
+UpdateDrawBounds(layout *Layout)
 {
-  AdvanceClip(Layout, Layout->At);
+  UpdateDrawBounds(Layout, Layout->At);
 }
 
 r32
@@ -46,7 +46,7 @@ link_internal void
 AdvanceSpaces(u32 N, layout *Layout, v2 FontSize)
 {
   Layout->At.x += (N*FontSize.x);
-  AdvanceClip(Layout);
+  UpdateDrawBounds(Layout);
   return;
 }
 
@@ -62,7 +62,9 @@ NewLine(layout *Layout)
   Layout->At.y = Layout->DrawBounds.Max.y + VerticalAdvance;
   Layout->At.x = 0.0f;
 
-  AdvanceClip(Layout);
+  // TODO(Jesse): Do we actually want to call this here?  Probably not if we
+  // just do a newline and not print anything?
+  UpdateDrawBounds(Layout);
 
   return;
 }
@@ -511,7 +513,7 @@ AdvanceLayoutStackBy(v2 Delta, layout* Layout)
 {
   while (Layout) {
     Layout->At += Delta;
-    AdvanceClip(Layout);
+    UpdateDrawBounds(Layout);
     Layout = Layout->Prev;
   }
 }
@@ -532,7 +534,7 @@ BufferValue(counted_string Text, debug_ui_render_group *Group, layout* Layout, v
   AdvanceLayoutStackBy(V2(xDelta, 0), Layout);
 
   v2 MaxP = Layout->At + V2(0, Style->Font.Size.y);
-  AdvanceClip(Layout, MaxP);
+  UpdateDrawBounds(Layout, MaxP);
 
 #if DEBUG_UI_OUTLINE_VALUES
   v2 EndingP = Layout->Basis + MaxClipP;
@@ -704,7 +706,7 @@ PushTexturedQuad(debug_ui_render_group *Group, debug_texture_array_slice Texture
 }
 
 link_internal void
-PushUntexturedQuadAt(debug_ui_render_group* Group, v2 At, v2 QuadDim, z_depth zDepth, ui_style *Style = 0 )
+PushUntexturedQuadAt(debug_ui_render_group* Group, v2 Offset, v2 QuadDim, z_depth zDepth, ui_style *Style = 0 )
 {
   ui_render_command Command =
   {
@@ -716,7 +718,7 @@ PushUntexturedQuadAt(debug_ui_render_group* Group, v2 At, v2 QuadDim, z_depth zD
       .Style = Style? *Style : DefaultStyle,
       .Layout  =
       {
-        .At         = At,
+        .At         = Offset,
         .DrawBounds = InvertedInfinityRectangle(),
       }
     }
@@ -739,7 +741,7 @@ PushUntexturedQuad(debug_ui_render_group* Group, v2 Offset, v2 QuadDim, z_depth 
       .Style   = Style? *Style : DefaultStyle,
       .Layout  =
       {
-        .At = Offset,
+        .Basis   = Offset,
         .Padding = Padding,
         .DrawBounds = InvertedInfinityRectangle(),
       },
@@ -1004,7 +1006,7 @@ PopLayout(layout** Layout)
 
   v4 Padding = PoppedLayout->Padding;
   v2 ClipTest = PoppedLayout->DrawBounds.Max + V2(0, Padding.Bottom);
-  AdvanceClip(PoppedLayout, ClipTest);
+  UpdateDrawBounds(PoppedLayout, ClipTest);
 
   v2 Advance = V2(Padding.Right, -Padding.Top);
   AdvanceLayoutStackBy(Advance, PoppedLayout);
@@ -1148,8 +1150,8 @@ ProcessUntexturedQuadAtPush(debug_ui_render_group* Group, ui_render_command_unte
 
   BufferUntexturedQuad(Group, &Group->Geo, MinP, Dim, Color, Z, MaxClip);
 
-  AdvanceClip(&Command->Layout, MinP);
-  AdvanceClip(&Command->Layout, MinP + Dim);
+  UpdateDrawBounds(&Command->Layout, MinP);
+  UpdateDrawBounds(&Command->Layout, MinP + Dim);
 
   return;
 }
@@ -1167,14 +1169,13 @@ ProcessUntexturedQuadPush(debug_ui_render_group* Group, ui_render_command_untext
 
   if (Command->Params & QuadRenderParam_AdvanceClip)
   {
-    AdvanceClip(RenderState->Layout, RenderState->Layout->At);
-    AdvanceClip(RenderState->Layout, RenderState->Layout->At + Dim);
+    UpdateDrawBounds(RenderState->Layout, RenderState->Layout->At);
+    UpdateDrawBounds(RenderState->Layout, RenderState->Layout->At + Dim);
   }
 
   if (Command->Params & QuadRenderParam_AdvanceLayout)
   {
-    RenderState->Layout->At.x += Dim.x;
-    AdvanceClip(RenderState->Layout);
+    AdvanceLayoutStackBy(V2(Dim.x, 0), RenderState->Layout);
   }
 
   return;
@@ -1567,6 +1568,10 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
           r32 BasisX = RenderState.Layout->Basis.x;
           r32 BasisY = GetAbsoluteDrawBoundsMax(RenderState.Layout).y;
           TypedCommand->Layout.Basis = V2(BasisX, BasisY);
+
+          // TODO(Jesse, bug): Seems to me like we should fully setup the basis
+          // point then call this very last, though the Position_RightOf path
+          // doesn't do that..
           PushLayout(&RenderState.Layout, &TypedCommand->Layout);
 
           if (TypedCommand->Position == Position_RightOf)
@@ -1624,24 +1629,27 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       case type_ui_render_command_textured_quad:
       {
         ui_render_command_textured_quad* TypedCommand = RenderCommandAs(textured_quad, Command);
-        /* PushLayout(&RenderState.Layout, &TypedCommand->Layout); */
+        TypedCommand->Layout.Basis += GetAbsoluteAt(RenderState.Layout);
+
+        PushLayout(&RenderState.Layout, &TypedCommand->Layout);
         ProcessTexturedQuadPush(Group, TypedCommand, &RenderState);
-        /* PopLayout(&RenderState.Layout); */
+        PopLayout(&RenderState.Layout);
+      } break;
+
+      case type_ui_render_command_untextured_quad:
+      {
+        ui_render_command_untextured_quad* TypedCommand = RenderCommandAs(untextured_quad, Command);
+        TypedCommand->Layout.Basis += GetAbsoluteAt(RenderState.Layout);
+
+        PushLayout(&RenderState.Layout, &TypedCommand->Layout);
+        ProcessUntexturedQuadPush(Group, TypedCommand, &RenderState);
+        PopLayout(&RenderState.Layout);
       } break;
 
       case type_ui_render_command_untextured_quad_at:
       {
         ui_render_command_untextured_quad_at* TypedCommand = RenderCommandAs(untextured_quad_at, Command);
         ProcessUntexturedQuadAtPush(Group, TypedCommand, &RenderState);
-      } break;
-
-      case type_ui_render_command_untextured_quad:
-      {
-        ui_render_command_untextured_quad* TypedCommand = RenderCommandAs(untextured_quad, Command);
-        TypedCommand->Layout.Basis = GetAbsoluteAt(RenderState.Layout);
-        PushLayout(&RenderState.Layout, &TypedCommand->Layout);
-        ProcessUntexturedQuadPush(Group, TypedCommand, &RenderState);
-        PopLayout(&RenderState.Layout);
       } break;
 
       case type_ui_render_command_new_row:
@@ -1673,6 +1681,12 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       {
         ui_render_command_border* Border = RenderCommandAs(border, Command);
         BufferBorder(Group, Border->Bounds, Border->Color, GetZ(zDepth_Border, RenderState.Window), DISABLE_CLIPPING);
+      } break;
+
+      case type_ui_render_command_force_advance:
+      {
+        ui_render_command_force_advance* TypedCommand = RenderCommandAs(force_advance, Command);
+        AdvanceLayoutStackBy(TypedCommand->Offset, RenderState.Layout);
       } break;
 
       InvalidDefaultCase;
