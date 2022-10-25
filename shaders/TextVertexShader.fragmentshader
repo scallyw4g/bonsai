@@ -8,12 +8,5 @@ uniform highp sampler2DArray TextTextureSampler;
 void main()
 {
   vec4 BitmapTexel = texture( TextTextureSampler, UV );
-  if (BitmapTexel.a > 0.00f)
-  {
-    color = vec4(VertColor * BitmapTexel.rgb * BitmapTexel.a, BitmapTexel.a);
-  }
-  else
-  {
-    discard;
-  }
+  color = vec4(VertColor * BitmapTexel.rgb * BitmapTexel.a, BitmapTexel.a);
 }

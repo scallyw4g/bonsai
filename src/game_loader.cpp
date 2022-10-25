@@ -416,14 +416,15 @@ main( s32 ArgCount, const char ** Args )
     DrainQueue(&Plat.HighPriority, &MainThread,GameApi.WorkerMain);
     /* WaitForWorkerThreads(&Plat.HighPriorityWorkerCount); */
 
-    // Have to suspend workers to collate memory allocation records
-    SignalAndWaitForWorkers(&Plat.WorkerThreadsSuspendFutex);
+    Ensure( EngineApi.Render(&EngineResources) );
 
+    // NOTE(Jesse): This must come after the game geometry has rendered so the
+    // alpha-blended text works properly
+    SignalAndWaitForWorkers(&Plat.WorkerThreadsSuspendFutex); // suspend workers to collate memory allocation records
     DEBUG_FRAME_END(&Plat.MouseP, &Plat.MouseDP, V2(Plat.WindowWidth, Plat.WindowHeight), &Plat.Input, Plat.dt, &EngineResources.EngineDebug.PickedChunks);
-
     UnsignalFutex(&Plat.WorkerThreadsSuspendFutex);
 
-    Ensure( EngineApi.Render(&EngineResources) );
+    BonsaiSwapBuffers(EngineResources.Os);
 
     r64 CurrentMS = GetHighPrecisionClock();
     RealDt = (CurrentMS - LastMs)/1000.0;

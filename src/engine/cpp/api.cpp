@@ -111,8 +111,6 @@ Bonsai_Render(engine_resources *Resources)
   RenderAoTexture(AoGroup);
   DrawGBufferToFullscreenQuad(Plat, Graphics);
 
-  BonsaiSwapBuffers(Resources->Os);
-
   b32 Result = True;
   return Result;
 }

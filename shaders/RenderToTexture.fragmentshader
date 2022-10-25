@@ -5,5 +5,6 @@ in vec4 Color;
 void main()
 {
   TargetTexture = Color;
+  TargetTexture.a = 1.f;
 }
 
