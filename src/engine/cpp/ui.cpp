@@ -897,23 +897,22 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
     PushUntexturedQuadAt(Group, GetAbsoluteMaxClip(Window)-Dim, Dim, zDepth_Border);
   PushButtonEnd(Group);
 
-  ui_style TextStyle = UiStyleFromLightestColor(V3(0.95f));
-  ui_style TitleBarStyle = UiStyleFromLightestColor(V3(0.25f, 0.f, 0.25f));
+  ui_style TitleBarStyle = UiStyleFromLightestColor(V3(0.20f, 0.f, 0.20f));
   PushButtonStart(Group, TitleBarInteractionId);
-    PushForceAdvance(Group, V2(0, Global_Font.Size.y*.1f));
+    PushForceAdvance(Group, V2(Global_Font.Size.x*.25f, Global_Font.Size.y*.2f));
+    Text(Group, Window->Title);
     Text(Group, CSz(" "));
-    Text(Group, Window->Title, &TextStyle);
-    Text(Group, CSz(" "));
-    Text(Group, CS(Window->InteractionStackIndex), &TextStyle);
-    PushUntexturedQuadAt(Group, Window->Basis, V2(Window->MaxClip.x, Global_Font.Size.y*1.2f), zDepth_TitleBar, &TitleBarStyle);
+    Text(Group, CS(Window->InteractionStackIndex));
+    PushUntexturedQuadAt(Group, Window->Basis, V2(Window->MaxClip.x, Global_Font.Size.y*1.4f), zDepth_TitleBar, &TitleBarStyle);
   PushButtonEnd(Group);
-
-  PushForceAdvance(Group, V2(0, Global_Font.Size.y*1.1f));
 
   PushBorder(Group, GetBounds(Window), V3(1.f));
 
   ui_style BackgroundStyle = UiStyleFromLightestColor(V3(.1f, 0.f, .1f));
   PushUntexturedQuadAt(Group, Window->Basis, Window->MaxClip, zDepth_Background, &BackgroundStyle);
+
+  /* PushForceAdvance(Group, V2(0, Global_Font.Size.y*1.1f)); */
+  PushForceAdvance(Group, V2(0.f, Global_Font.Size.y*1.2f));
 
   return;
 }

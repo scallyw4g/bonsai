@@ -36,9 +36,9 @@ BONSAI_INTERNAL='-D BONSAI_INTERNAL'
 
 EXAMPLES_TO_BUILD="
   $EXAMPLES/tile_gen
+  $EXAMPLES/asset_picker
 "
   # $EXAMPLES/the_wanderer
-  # $EXAMPLES/asset_picker
   # $EXAMPLES/world_gen
 
 EXECUTABLES_TO_BUILD="
