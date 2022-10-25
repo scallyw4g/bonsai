@@ -34,6 +34,11 @@ case type_ui_render_command_untextured_quad_at:
   Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Command->ui_render_command_untextured_quad_at.Layout));
   Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Command->ui_render_command_untextured_quad_at.Layout));
 } break;
+case type_ui_render_command_force_advance:
+{
+  Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Command->ui_render_command_force_advance.Layout));
+  Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Command->ui_render_command_force_advance.Layout));
+} break;
 
 
 

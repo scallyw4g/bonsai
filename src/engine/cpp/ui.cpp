@@ -827,6 +827,18 @@ PushBorder(debug_ui_render_group *Group, rect2 BoundsRelativeToCurrentWindow, v3
 }
 
 link_internal void
+PushForceAdvance(debug_ui_render_group *Group, v2 Offset)
+{
+  ui_render_command Command = {
+    .Type = type_ui_render_command_force_advance,
+    .ui_render_command_force_advance.Offset = Offset
+  };
+  PushUiRenderCommand(Group, &Command);
+  return;
+}
+
+
+link_internal void
 PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
 {
   umm TitleBarInteractionId = (umm)"WindowTitleBar"^(umm)Window;
@@ -1686,7 +1698,9 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       case type_ui_render_command_force_advance:
       {
         ui_render_command_force_advance* TypedCommand = RenderCommandAs(force_advance, Command);
+        PushLayout(&RenderState.Layout, &TypedCommand->Layout);
         AdvanceLayoutStackBy(TypedCommand->Offset, RenderState.Layout);
+        PopLayout(&RenderState.Layout);
       } break;
 
       InvalidDefaultCase;
