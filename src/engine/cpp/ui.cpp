@@ -716,8 +716,8 @@ PushUntexturedQuadAt(debug_ui_render_group* Group, v2 At, v2 QuadDim, z_depth zD
       .Style = Style? *Style : DefaultStyle,
       .Layout  =
       {
+        .At         = At,
         .DrawBounds = InvertedInfinityRectangle(),
-        .At    = At,
       }
     }
   };
@@ -878,16 +878,18 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
 
   PushUiRenderCommand(Group, &Command);
 
+  // NOTE(Jesse): Must come first to take precedence over the title bar when clicking
+  v2 Dim = V2(20);
+  PushButtonStart(Group, ResizeHandleInteractionId);
+    PushUntexturedQuadAt(Group, GetAbsoluteMaxClip(Window)-Dim, Dim, zDepth_Border);
+  PushButtonEnd(Group);
+
   ui_style TextStyle = UiStyleFromLightestColor(V3(0.25f));
   PushButtonStart(Group, TitleBarInteractionId);
     Text(Group, Window->Title, &TextStyle);
-    /* Text(Group, CS(Window->InteractionStackIndex)); */
+    Text(Group, CSz(" "));
+    Text(Group, CS(Window->InteractionStackIndex), &TextStyle);
     PushUntexturedQuadAt(Group, Window->Basis, V2(Window->MaxClip.x, Global_Font.Size.y), zDepth_TitleBar);
-  PushButtonEnd(Group);
-
-  v2 Dim = V2(15);
-  PushButtonStart(Group, ResizeHandleInteractionId);
-    PushUntexturedQuadAt(Group, GetAbsoluteMaxClip(Window)-Dim, Dim, zDepth_Border, &DefaultStyle);
   PushButtonEnd(Group);
 
   PushBorder(Group, GetBounds(Window), V3(1.f));
@@ -954,7 +956,7 @@ ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId,
 }
 
 link_internal b32
-Button(debug_ui_render_group* Group, counted_string ButtonName, umm ButtonId, ui_style* Style = 0, v4 Padding = V4(0))
+Button(debug_ui_render_group* Group, counted_string ButtonName, umm ButtonId, ui_style* Style = 0, v4 Padding = DefaultButtonPadding)
 {
   // TODO(Jesse, id: 108, tags: cleanup, potential_bug): Do we have to pass the style to both of these functions, and is that a good idea?
   interactable_handle Button = PushButtonStart(Group, ButtonId, Style);
@@ -1267,8 +1269,8 @@ SetWindowZDepths(ui_render_command_buffer *CommandBuffer)
 
   BubbleSort(WindowSortParams.SortKeys, WindowSortParams.Count);
 
-  r32 SliceInterval = 1.0f/(r32)WindowSortParams.Count;
-  SliceInterval -= SliceInterval*0.01f;
+  r64 SliceInterval = 1.0/(r64)WindowSortParams.Count;
+  SliceInterval -= SliceInterval*0.0001;
 
   for (u32 SortKeyIndex = 0;
       SortKeyIndex < WindowSortParams.Count;
@@ -1277,10 +1279,11 @@ SetWindowZDepths(ui_render_command_buffer *CommandBuffer)
     u32 CommandIndex = (u32)WindowSortParams.SortKeys[SortKeyIndex].Index;
     window_layout* Window = CommandBuffer->Commands[CommandIndex].ui_render_command_window_start.Window;
 
-    Window->zBackground = 1.0f - (SliceInterval*(r32)SortKeyIndex) - SliceInterval;
-    Window->zTitleBar   = Window->zBackground + (SliceInterval*0.1f);
-    Window->zText       = Window->zBackground + (SliceInterval*0.2f);
-    Window->zBorder     = Window->zBackground + (SliceInterval*0.3f);
+    r64 Basis = 1.0 - (SliceInterval*(r64)SortKeyIndex) - SliceInterval;
+    Window->zBackground = (r32)(Basis);
+    Window->zTitleBar   = (r32)(Basis + (SliceInterval*0.1));
+    Window->zText       = (r32)(Basis + (SliceInterval*0.2));
+    Window->zBorder     = (r32)(Basis + (SliceInterval*0.3));
     Assert(Window->zBackground <= 1.0f);
     Assert(Window->zBackground >= 0.0f);
 
