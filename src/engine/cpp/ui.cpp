@@ -1604,6 +1604,12 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
     {
       case type_ui_render_command_window_start:
       {
+        Assert(LengthSq(DefaultLayout.Padding.xy) == 0);
+        Assert(LengthSq(DefaultLayout.Padding.zw) == 0);
+
+        Assert(RenderState.Layout == &DefaultLayout);
+        PopLayout(&RenderState.Layout);
+
         Assert(!RenderState.Window);
         ui_render_command_window_start* TypedCommand = RenderCommandAs(window_start, Command);
         RenderState.WindowStartCommandIndex = NextCommandIndex-1;
@@ -1617,8 +1623,12 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
         Assert(TypedCommand->Window == RenderState.Window);
         RenderState.Window = 0;
         PopLayout(&RenderState.Layout);
-        Assert(RenderState.Layout == &DefaultLayout);
+        Assert(RenderState.Layout == 0);
+
         RenderState.WindowStartCommandIndex = 0;
+
+        PushLayout(&RenderState.Layout, &DefaultLayout);
+        Assert(RenderState.Layout == &DefaultLayout);
       } break;
 
       case type_ui_render_command_table_start:
