@@ -18,12 +18,12 @@ FlushBuffersToCard(gpu_mapped_element_buffer* GpuMap)
 
   GL.EnableVertexAttribArray(2);
   GL.BindBuffer(GL_ARRAY_BUFFER, GpuMap->ColorHandle);
-  BufferUnmapped = GL.UnmapBuffer(GL_ARRAY_BUFFER);
+  BufferUnmapped &= GL.UnmapBuffer(GL_ARRAY_BUFFER);
   GpuMap->Buffer.Colors = 0;
   GL.VertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
   AssertNoGlErrors;
 
-  if (BufferUnmapped != True) { Error("glUnmapBuffer Failed"); }
+  if (BufferUnmapped == False) { Error("glUnmapBuffer Failed"); }
 
   GL.BindBuffer(GL_ARRAY_BUFFER, 0);
 

@@ -431,10 +431,10 @@ main( s32 ArgCount, const char ** Args )
     LastMs = CurrentMS;
     Plat.dt = (r32)RealDt;
 
-    Ensure( RewindArena(TranArena) );
-
     MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(RealDt);
     /* END_BLOCK("-- Frame --"); */
+
+    Ensure( RewindArena(TranArena) );
   }
 
   Info("Shutting Down");

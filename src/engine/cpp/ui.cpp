@@ -185,7 +185,7 @@ FlushBuffer(debug_text_render_group *TextGroup, textured_2d_geometry_buffer *Geo
 }
 
 link_internal void
-FlushBuffers(debug_ui_render_group *UiGroup, v2 ScreenDim)
+FlushUIBuffers(debug_ui_render_group *UiGroup, v2 ScreenDim)
 {
   if (UiGroup->TextGroup)
   {
@@ -199,6 +199,9 @@ FlushBuffers(debug_ui_render_group *UiGroup, v2 ScreenDim)
 link_internal void
 BufferQuadUVs(textured_2d_geometry_buffer* Geo, rect2 UV, debug_texture_array_slice Slice)
 {
+  // @streaming_ui_render_memory
+  Assert(BufferHasRoomFor(Geo, u32_COUNT_PER_QUAD));
+
   v3 LeftTop    = V3(UV.Min.x, UV.Min.y, (r32)Slice);
   v3 RightTop   = V3(UV.Max.x, UV.Min.y, (r32)Slice);
   v3 RightBottom = V3(UV.Max.x, UV.Max.y, (r32)Slice);
@@ -250,33 +253,35 @@ UVsForChar(u8 C)
 template <typename T> link_internal void
 BufferColorsDirect(T* Geo, v3 Color)
 {
+  // @streaming_ui_render_memory
+  Assert(BufferHasRoomFor(Geo, u32_COUNT_PER_QUAD));
+
   v3* Colors = Geo->Colors;
   u32 StartingIndex = Geo->At;
-  if (BufferHasRoomFor(Geo, u32_COUNT_PER_QUAD))
+  for ( u32 ColorIndex = StartingIndex;
+        ColorIndex < StartingIndex + u32_COUNT_PER_QUAD + 1;
+        ++ColorIndex)
   {
-    for ( u32 ColorIndex = StartingIndex;
-          ColorIndex < StartingIndex + u32_COUNT_PER_QUAD + 1;
-          ++ColorIndex)
-    {
-      Colors[ColorIndex] = Color;
-    }
+    Colors[ColorIndex] = Color;
   }
 
   return;
 }
 
+// TODO(Jesse): This is just wasteful .. BufferColorsDirect does this check!
 template <typename T> link_internal void
 BufferColors(debug_ui_render_group *Group, T *Geo, v3 Color)
 {
-  if (!BufferHasRoomFor(Geo, u32_COUNT_PER_QUAD))
-    FlushBuffer(Group->TextGroup, Geo, Group->ScreenDim);
-
+  // @streaming_ui_render_memory
+  Assert(BufferHasRoomFor(Geo, u32_COUNT_PER_QUAD));
   BufferColorsDirect(Geo, Color);
 }
 
 template <typename T>link_internal clip_result
 BufferQuadDirect(T *Geo, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim, v2 MaxClip)
 {
+  // @streaming_ui_render_memory
+  Assert(BufferHasRoomFor(Geo, u32_COUNT_PER_QUAD));
   Assert(ScreenDim.x > 0);
   Assert(ScreenDim.y > 0);
 
@@ -284,76 +289,69 @@ BufferQuadDirect(T *Geo, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim, v2 MaxClip)
   // Note(Jesse): Z==1 | near-clip
   clip_result Result = {};
 
-  if (BufferHasRoomFor(Geo, u32_COUNT_PER_QUAD))
+  v3 *Dest = Geo->Verts;
+  u32 StartingIndex = Geo->At;
+
+  Assert(Z >= 0.0f && Z <= 1.0f);
+
+  if ( MaxClip.x <= MinP.x || MaxClip.y <= MinP.y )
   {
-    v3 *Dest = Geo->Verts;
-    u32 StartingIndex = Geo->At;
-
-    Assert(Z >= 0.0f && Z <= 1.0f);
-
-    if ( MaxClip.x <= MinP.x || MaxClip.y <= MinP.y )
-    {
-      Result.ClipStatus = ClipStatus_FullyClipped;
-    }
-    else
-    {
-      r32 Left   = MinP.x;
-      r32 Right  = Left+Dim.x;
-      r32 Top    = MinP.y;
-      r32 Bottom = Top+Dim.y;
-
-      v3 LeftTop    = V3(Left, Top, Z);
-      v3 RightTop   = V3(Right, Top, Z);
-      v3 RightBottom = V3(Right, Bottom, Z);
-      v3 LeftBottom  = V3(Left, Bottom, Z);
-
-      if (Left < MaxClip.x && Right > MaxClip.x)
-      {
-        r32 Total = RightBottom.x - LeftBottom.x;
-        r32 TotalClipped = RightBottom.x - MaxClip.x;
-        Result.PartialClip.Max.x = TotalClipped / Total;
-
-        Result.MaxClip.x = RightTop.x = RightBottom.x = MaxClip.x;
-        Result.ClipStatus = ClipStatus_PartialClipping;
-
-        Assert(Result.PartialClip.Max.x >= 0.0f && Result.PartialClip.Max.x <= 1.0f);
-      }
-
-      if (Top < MaxClip.y && Bottom > MaxClip.y)
-      {
-        r32 Total = RightBottom.y - RightTop.y;
-        r32 TotalClipped = RightBottom.y - MaxClip.y;
-        Result.PartialClip.Max.y = TotalClipped / Total;
-
-        Result.MaxClip.y = LeftBottom.y = RightBottom.y = MaxClip.y;
-        Result.ClipStatus = ClipStatus_PartialClipping;
-
-        Assert(Result.PartialClip.Max.y >= 0.0f && Result.PartialClip.Max.y <= 1.0f);
-      }
-
-      #define TO_NDC(P) ((P * ToNDC) - 1.0f)
-      v3 ToNDC = 2.0f/V3(ScreenDim.x, ScreenDim.y, 1.0f);
-
-      // Native OpenGL screen coordinates are {0,0} at the bottom-left corner. This
-      // maps the origin to the top-left of the screen.
-      // @inverted_screen_y_coordinate
-      v3 InvertYZ = V3(1.0f, -1.0f, -1.0f);
-
-      Dest[StartingIndex++] = InvertYZ * TO_NDC(LeftTop);
-      Dest[StartingIndex++] = InvertYZ * TO_NDC(LeftBottom);
-      Dest[StartingIndex++] = InvertYZ * TO_NDC(RightTop);
-
-      Dest[StartingIndex++] = InvertYZ * TO_NDC(RightBottom);
-      Dest[StartingIndex++] = InvertYZ * TO_NDC(RightTop);
-      Dest[StartingIndex++] = InvertYZ * TO_NDC(LeftBottom);
-      #undef TO_NDC
-
-      Result.MaxClip = RightBottom.xy;
-    }
+    Result.ClipStatus = ClipStatus_FullyClipped;
   }
   else
   {
-    Error("Ran out of room on Geo in BufferQuadDirect");
+    r32 Left   = MinP.x;
+    r32 Right  = Left+Dim.x;
+    r32 Top    = MinP.y;
+    r32 Bottom = Top+Dim.y;
+
+    v3 LeftTop    = V3(Left, Top, Z);
+    v3 RightTop   = V3(Right, Top, Z);
+    v3 RightBottom = V3(Right, Bottom, Z);
+    v3 LeftBottom  = V3(Left, Bottom, Z);
+
+    if (Left < MaxClip.x && Right > MaxClip.x)
+    {
+      r32 Total = RightBottom.x - LeftBottom.x;
+      r32 TotalClipped = RightBottom.x - MaxClip.x;
+      Result.PartialClip.Max.x = TotalClipped / Total;
+
+      Result.MaxClip.x = RightTop.x = RightBottom.x = MaxClip.x;
+      Result.ClipStatus = ClipStatus_PartialClipping;
+
+      Assert(Result.PartialClip.Max.x >= 0.0f && Result.PartialClip.Max.x <= 1.0f);
+    }
+
+    if (Top < MaxClip.y && Bottom > MaxClip.y)
+    {
+      r32 Total = RightBottom.y - RightTop.y;
+      r32 TotalClipped = RightBottom.y - MaxClip.y;
+      Result.PartialClip.Max.y = TotalClipped / Total;
+
+      Result.MaxClip.y = LeftBottom.y = RightBottom.y = MaxClip.y;
+      Result.ClipStatus = ClipStatus_PartialClipping;
+
+      Assert(Result.PartialClip.Max.y >= 0.0f && Result.PartialClip.Max.y <= 1.0f);
+    }
+
+    #define TO_NDC(P) ((P * ToNDC) - 1.0f)
+    v3 ToNDC = 2.0f/V3(ScreenDim.x, ScreenDim.y, 1.0f);
+
+    // Native OpenGL screen coordinates are {0,0} at the bottom-left corner. This
+    // maps the origin to the top-left of the screen.
+    // @inverted_screen_y_coordinate
+    v3 InvertYZ = V3(1.0f, -1.0f, -1.0f);
+
+    Dest[StartingIndex++] = InvertYZ * TO_NDC(LeftTop);
+    Dest[StartingIndex++] = InvertYZ * TO_NDC(LeftBottom);
+    Dest[StartingIndex++] = InvertYZ * TO_NDC(RightTop);
+
+    Dest[StartingIndex++] = InvertYZ * TO_NDC(RightBottom);
+    Dest[StartingIndex++] = InvertYZ * TO_NDC(RightTop);
+    Dest[StartingIndex++] = InvertYZ * TO_NDC(LeftBottom);
+    #undef TO_NDC
+
+    Result.MaxClip = RightBottom.xy;
   }
 
   return Result;
@@ -366,47 +364,43 @@ BufferTexturedQuad(debug_ui_render_group *Group,
 {
   clip_result Result = {};
 
-  if (Group->TextGroup)
+  textured_2d_geometry_buffer* Geo = &Group->TextGroup->Geo;
+  // @streaming_ui_render_memory
+  Assert(BufferHasRoomFor(Geo, u32_COUNT_PER_QUAD));
+
+  Result = BufferQuadDirect(Geo, MinP, Dim, Z, Group->ScreenDim, MaxClip);
+  switch (Result.ClipStatus)
   {
-    textured_2d_geometry_buffer* Geo = &Group->TextGroup->Geo;
-
-    if (!BufferHasRoomFor(Geo, u32_COUNT_PER_QUAD))
-      FlushBuffer(Group->TextGroup, Geo, Group->ScreenDim);
-
-    Result = BufferQuadDirect(Geo, MinP, Dim, Z, Group->ScreenDim, MaxClip);
-    switch (Result.ClipStatus)
+    case ClipStatus_NoClipping:
     {
-      case ClipStatus_NoClipping:
-      {
-        BufferQuadUVs(Geo, UV, TextureSlice);
-        BufferColors(Group, Geo, Color);
-        Geo->At += u32_COUNT_PER_QUAD;
-      } break;
+      BufferQuadUVs(Geo, UV, TextureSlice);
+      BufferColors(Group, Geo, Color);
+      Geo->At += u32_COUNT_PER_QUAD;
+    } break;
 
-      case ClipStatus_PartialClipping:
-      {
-        v2 MinUvDiagonal = UV.Max - UV.Min;
-        v2 MaxUvDiagonal = UV.Min - UV.Max;
+    case ClipStatus_PartialClipping:
+    {
+      v2 MinUvDiagonal = UV.Max - UV.Min;
+      v2 MaxUvDiagonal = UV.Min - UV.Max;
 
-        v2 MinUvModifier = MinUvDiagonal * Result.PartialClip.Min;
-        v2 MaxUvModifier = MaxUvDiagonal * Result.PartialClip.Max;
+      v2 MinUvModifier = MinUvDiagonal * Result.PartialClip.Min;
+      v2 MaxUvModifier = MaxUvDiagonal * Result.PartialClip.Max;
 
-        UV.Min += MinUvModifier;
-        UV.Max += MaxUvModifier;
+      UV.Min += MinUvModifier;
+      UV.Max += MaxUvModifier;
 
-        BufferQuadUVs(Geo, UV, TextureSlice);
-        BufferColors(Group, Geo, Color);
-        Geo->At += u32_COUNT_PER_QUAD;
-      } break;
+      BufferQuadUVs(Geo, UV, TextureSlice);
+      BufferColors(Group, Geo, Color);
+      Geo->At += u32_COUNT_PER_QUAD;
+    } break;
 
-      case ClipStatus_FullyClipped:
-      {
-      } break;
+    case ClipStatus_FullyClipped:
+    {
+    } break;
 
-      InvalidDefaultCase;
-    }
-
+    InvalidDefaultCase;
   }
+
 
   return Result;
 }
@@ -415,8 +409,8 @@ link_internal clip_result
 BufferUntexturedQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
                      v2 MinP, v2 Dim, v3 Color, r32 Z, v2 MaxClip)
 {
-  if (!BufferHasRoomFor(Geo, u32_COUNT_PER_QUAD))
-    FlushBuffer(Group->TextGroup, Geo, Group->ScreenDim);
+  // @streaming_ui_render_memory
+  Assert(BufferHasRoomFor(Geo, u32_COUNT_PER_QUAD));
 
   clip_result Result = BufferQuadDirect(Geo, MinP, Dim, Z, Group->ScreenDim, MaxClip);
   switch (Result.ClipStatus)
@@ -1597,9 +1591,13 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
   layout DefaultLayout = {};
   render_state RenderState = { .Layout = &DefaultLayout };
 
+  GetDebugState()->DebugValue_u32(Group->SolidGeoCountLastFrame, "Solid Geo");
+  GetDebugState()->DebugValue_u32(Group->TextGeoCountLastFrame, "Text Geo");
+
+
   SetWindowZDepths(CommandBuffer);
 
-  for (u32 PassIndex = 0; PassIndex < 2; ++PassIndex)
+  for (u32 PassIndex = 0; PassIndex < 1; ++PassIndex)
   {
     u32 NextCommandIndex = 0;
     ui_render_command *Command = GetCommand(CommandBuffer, NextCommandIndex++);
@@ -1689,14 +1687,14 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
           TypedCommand->Layout.Basis = GetNextInlineElementBasis(&RenderState);
 
           PushLayout(&RenderState.Layout, &TypedCommand->Layout);
-          BufferValue(TypedCommand->String, Group, &RenderState, &TypedCommand->Style, PassIndex == 1);
+          BufferValue(TypedCommand->String, Group, &RenderState, &TypedCommand->Style, PassIndex == 0);
           PopLayout(&RenderState.Layout);
         } break;
 
         case type_ui_render_command_text_at:
         {
           ui_render_command_text_at* TextCommand = RenderCommandAs(text_at, Command);
-          BufferTextAt(Group, TextCommand->At, TextCommand->Text, Global_Font.Size, V3(1), 1.0f, TextCommand->MaxClip, PassIndex == 1);
+          BufferTextAt(Group, TextCommand->At, TextCommand->Text, Global_Font.Size, V3(1), 1.0f, TextCommand->MaxClip, PassIndex == 0);
         } break;
 
         case type_ui_render_command_textured_quad:
@@ -1705,7 +1703,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
           TypedCommand->Layout.Basis += GetAbsoluteAt(RenderState.Layout);
 
           PushLayout(&RenderState.Layout, &TypedCommand->Layout);
-          ProcessTexturedQuadPush(Group, TypedCommand, &RenderState, PassIndex == 1);
+          ProcessTexturedQuadPush(Group, TypedCommand, &RenderState, PassIndex == 0);
           PopLayout(&RenderState.Layout);
         } break;
 
@@ -1764,14 +1762,20 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       Command = GetCommand(CommandBuffer, NextCommandIndex++);
     }
 
-    FlushBuffers(Group, Group->ScreenDim);
+    /* FlushUIBuffers(Group, Group->ScreenDim); */
 
     DefaultLayout.At = {};
     DefaultLayout.DrawBounds = InvertedInfinityRectangle();
+    RenderState = { .Layout = &DefaultLayout };
     ResetAllLayouts(CommandBuffer);
   }
 
   CommandBuffer->CommandCount = 0;
+
+  Group->SolidGeoCountLastFrame = Group->Geo.At;
+  Group->TextGeoCountLastFrame = Group->TextGroup->Geo.At;
+
+  FlushUIBuffers(Group, Group->ScreenDim);
 
   return;
 }
