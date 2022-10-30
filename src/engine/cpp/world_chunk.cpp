@@ -32,7 +32,7 @@ AllocateWorldChunk(world_chunk *Result, memory_arena *Storage, world_position Wo
   /* CAssert(sizeof(world_chunk) == CACHE_LINE_SIZE); */
 
   // FIXME(Jesse): The *2048 is an unnecessary debugging crutch .. take it out
-  Result->LodMesh     = AllocateMesh(Storage, MaxLodMeshVerts*2048);
+  /* Result->LodMesh     = AllocateMesh(Storage, MaxLodMeshVerts*2048); */
   Result->Data        = AllocateChunk(Storage, Dim);
   Result->WorldP      = WorldP;
 
@@ -160,17 +160,18 @@ GetNextWorldChunkHash(u32 HashIndex)
 }
 
 link_internal void
-DeallocateMesh(world_chunk* Chunk, mesh_freelist* MeshFreelist, memory_arena* Memory)
+DeallocateMesh(untextured_3d_geometry_buffer** Mesh, mesh_freelist* MeshFreelist, memory_arena* Memory)
 {
-  Chunk->Mesh->At = 0;
   free_mesh* Container = Unlink_TS(&MeshFreelist->Containers);
   if (!Container)
   {
     Container = Allocate(free_mesh, Memory, 1);
   }
 
-  Container->Mesh = Chunk->Mesh;
-  Chunk->Mesh = 0;
+  Container->Mesh = *Mesh;
+
+  (*Mesh)->At = 0;
+  *Mesh = 0;
 
   Link_TS(&MeshFreelist->FirstFree, Container);
 
@@ -186,7 +187,8 @@ FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, m
   {
     if (Chunk->Mesh)
     {
-      DeallocateMesh(Chunk, MeshFreelist, Memory);
+      DeallocateMesh(&Chunk->Mesh, MeshFreelist, Memory);
+      DeallocateMesh(&Chunk->LodMesh, MeshFreelist, Memory);
     }
 
     Assert(World->FreeChunkCount < FREELIST_SIZE);
@@ -1582,8 +1584,10 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
     if (SyntheticChunkSum > 0 && SyntheticChunkSum < (u32)Volume(SynChunkDim))
     {
+      Assert(!DestChunk->LodMesh);
       Assert(!DestChunk->Mesh);
       DestChunk->Mesh = GetMeshForChunk(Thread->MeshFreelist, Thread->PermMemory);
+      DestChunk->LodMesh = GetMeshForChunk(Thread->MeshFreelist, Thread->PermMemory);
       BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, DestChunk->Mesh);
     }
 
