@@ -4,9 +4,9 @@ BUILD_EVERYTHING=0
 
 RunPoof=1
 
-BuildExecutables=1
-BuildExamples=1
-BuildDebugSystem=1
+BuildExecutables=0
+BuildExamples=0
+BuildDebugSystem=0
 
 BuildTests=0
 BuildDebugTests=0
@@ -309,15 +309,33 @@ function RunEntireBuild {
 
 }
 
+
+# --log-level LogLevel_Debug -I src/ -I include/ -I "C:/Program Files/LLVM/lib/clang/11.0.0/include" -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/include" -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/atlmfc/include" -I "C:/Program Files (x86)/Windows Kits/10/Include/10.0.18362.0/ucrt" -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/shared" -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/um" -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/winrt" -D BONSAI_WIN32 -D BONSAI_INTERNAL -o generated src/game_loader.cpp
+
 function RunPoofHelper {
 
-   # --log-level LogLevel_Debug   \
-  poof                          \
-   -I src/                      \
-   -I include/                  \
-   -D BONSAI_LINUX              \
-   $BONSAI_INTERNAL             \
-   -o generated                 \
+   # -D _M_CEE_PURE \
+
+   # -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/include"        \
+   # -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/atlmfc/include" \
+
+  poof                                                                                                         \
+   --log-level LogLevel_Debug                                                                                  \
+   -I src/                                                                                                     \
+   -I include/                                                                                                 \
+   -I "C:/Program Files/LLVM/lib/clang/11.0.0/include"                                                         \
+   -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/include"        \
+   -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/atlmfc/include" \
+   -I "C:/Program Files (x86)/Windows Kits/10/Include/10.0.18362.0/ucrt"                                       \
+   -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/shared"                                     \
+   -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/um"                                         \
+   -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/winrt"                                      \
+   -D _M_X64                                                                                                   \
+   -D _M_CEE                                                                                                   \
+   -D _M_CEE                                                                                                   \
+   $PLATFORM_DEFINES                                                                                           \
+   $BONSAI_INTERNAL                                                                                            \
+   -o generated                                                                                                \
    $1
 
 }
@@ -335,7 +353,7 @@ function RunPoof
   RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
   RunPoofHelper include/bonsai_debug/debug.cpp && echo -e "$Success poofed src/include/bonsai_debug/debug.cpp" &
   RunPoofHelper examples/asset_picker/game.cpp && echo -e "$Success poofed examples/asset_picker/game.cpp" &
-  # RunPoofHelper examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &
+  RunPoofHelper examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &
   RunPoofHelper src/tools/asset_packer.cpp && echo -e "$Success poofed src/tools/asset_packer.cpp" &
 
   wait

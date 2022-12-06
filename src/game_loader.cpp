@@ -439,6 +439,9 @@ main( s32 ArgCount, const char ** Args )
 
   Info("Shutting Down");
 
+  SignalAndWaitForWorkers(&Plat.WorkerThreadsExitFutex);
+  UnsignalFutex(&Plat.WorkerThreadsExitFutex);
+
   Terminate(&Os, &Plat);
 
   Info("Exiting");
