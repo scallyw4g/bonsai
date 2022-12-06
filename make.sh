@@ -2,9 +2,9 @@
 
 BUILD_EVERYTHING=0
 
-RunPoof=1
+RunPoof=0
 
-BuildExecutables=0
+BuildExecutables=1
 BuildExamples=0
 BuildDebugSystem=0
 
@@ -331,7 +331,6 @@ function RunPoofHelper {
    -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/um"                                         \
    -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/winrt"                                      \
    -D _M_X64                                                                                                   \
-   -D _M_CEE                                                                                                   \
    -D _M_CEE                                                                                                   \
    $PLATFORM_DEFINES                                                                                           \
    $BONSAI_INTERNAL                                                                                            \
