@@ -2131,6 +2131,7 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
   return;
 }
 
+#if DEBUG_SYSTEM_API
 link_internal void
 Debug_DoWorldChunkPicking(engine_resources *Resources)
 {
@@ -2385,5 +2386,6 @@ DrawPickedChunks(debug_ui_render_group* Group, render_entity_to_texture_group *P
 
   return HotChunk;
 }
+#endif // DEBUG_SYSTEM_API
 
-#endif
+#endif // PLATFORM_GL_IMPLEMENTATIONS

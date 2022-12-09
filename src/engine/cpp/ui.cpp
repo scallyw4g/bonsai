@@ -115,6 +115,18 @@ ClearFramebuffer(framebuffer FBO)
   GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+struct render_entity_to_texture_group
+{
+  // For the GameGeo
+  camera *Camera;
+  framebuffer GameGeoFBO;
+  shader GameGeoShader;
+  m4 ViewProjection;
+  gpu_mapped_element_buffer GameGeo;
+  shader DebugGameGeoTextureShader;
+
+};
+
 link_internal void
 ClearFramebuffers(render_entity_to_texture_group *Group)
 {
@@ -1591,8 +1603,8 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
   layout DefaultLayout = {};
   render_state RenderState = { .Layout = &DefaultLayout };
 
-  GetDebugState()->DebugValue_u32(Group->SolidGeoCountLastFrame, "Solid Geo");
-  GetDebugState()->DebugValue_u32(Group->TextGeoCountLastFrame, "Text Geo");
+  /* GetDebugState()->DebugValue_u32(Group->SolidGeoCountLastFrame, "Solid Geo"); */
+  /* GetDebugState()->DebugValue_u32(Group->TextGeoCountLastFrame, "Text Geo"); */
 
   SetWindowZDepths(CommandBuffer);
 

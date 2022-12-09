@@ -5,7 +5,7 @@
 #include <game_constants.h>
 #include <game_types.h>
 
-debug_state *Global_DebugStatePointer;
+global_variable debug_state *Global_DebugStatePointer;
 
 model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *Heap)

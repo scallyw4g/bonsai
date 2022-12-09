@@ -5,7 +5,7 @@ BUILD_EVERYTHING=0
 RunPoof=0
 
 BuildExecutables=1
-BuildExamples=0
+BuildExamples=1
 BuildDebugSystem=0
 
 BuildTests=0
@@ -18,7 +18,7 @@ MakeDebugLibRelease=0
 . scripts/preamble.sh
 . scripts/setup_for_cxx.sh
 
-OPTIMIZATION_LEVEL="-O2"
+OPTIMIZATION_LEVEL="-O0"
 EMCC=0
 
 
@@ -42,9 +42,9 @@ EXAMPLES_TO_BUILD="
   # $EXAMPLES/world_gen
 
 EXECUTABLES_TO_BUILD="
-  $SRC/tools/asset_packer.cpp
   $SRC/game_loader.cpp
 "
+  # $SRC/tools/asset_packer.cpp
   # $SRC/font/ttf.cpp  # $SRC/net/server.cpp
 
 
@@ -188,7 +188,6 @@ function BuildExamples
       $OPTIMIZATION_LEVEL                                                             \
       $CXX_OPTIONS                                                                    \
       $BONSAI_INTERNAL                                                                \
-      -D DEBUG_SYSTEM_API=1                                                    \
       $PLATFORM_CXX_OPTIONS                                                           \
       $PLATFORM_LINKER_OPTIONS                                                        \
       $PLATFORM_DEFINES                                                               \

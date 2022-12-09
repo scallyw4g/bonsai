@@ -5,7 +5,9 @@ link_export b32
 Bonsai_OnLibraryLoad(engine_resources *Resources)
 {
   b32 Result = InitializeOpenglFunctions();
+#if DEBUG_SYSTEM_API
   Global_DebugStatePointer = Resources->DebugState;
+#endif
   return Result;
 }
 
@@ -89,7 +91,9 @@ Bonsai_FrameEnd(engine_resources *Resources)
     ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
     ViewMatrix(World->ChunkDim, Camera);
 
+#if DEBUG_SYSTEM_API
   Debug_DoWorldChunkPicking(Resources);
+#endif
 
   RewindArena(TranArena);
 
