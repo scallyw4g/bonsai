@@ -1600,7 +1600,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
 
 
-    ComputeStandingSpots(SynChunkDim, SyntheticChunk, DestChunk, Thread->TempMemory);
+    /* ComputeStandingSpots(SynChunkDim, SyntheticChunk, DestChunk, Thread->TempMemory); */
 
 
 

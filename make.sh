@@ -6,7 +6,7 @@ RunPoof=0
 
 BuildExecutables=1
 BuildExamples=1
-BuildDebugSystem=0
+BuildDebugSystem=1
 
 BuildTests=0
 BuildDebugTests=0
@@ -18,7 +18,7 @@ MakeDebugLibRelease=0
 . scripts/preamble.sh
 . scripts/setup_for_cxx.sh
 
-OPTIMIZATION_LEVEL="-O0"
+OPTIMIZATION_LEVEL="-O2"
 EMCC=0
 
 
@@ -185,6 +185,7 @@ function BuildExamples
     echo -e "$Building $executable"
     SetOutputBinaryPathBasename "$executable" "$BIN"
     clang++                                                                           \
+      -D DEBUG_SYSTEM_API=1 \
       $OPTIMIZATION_LEVEL                                                             \
       $CXX_OPTIONS                                                                    \
       $BONSAI_INTERNAL                                                                \

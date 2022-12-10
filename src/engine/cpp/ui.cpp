@@ -115,18 +115,6 @@ ClearFramebuffer(framebuffer FBO)
   GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-struct render_entity_to_texture_group
-{
-  // For the GameGeo
-  camera *Camera;
-  framebuffer GameGeoFBO;
-  shader GameGeoShader;
-  m4 ViewProjection;
-  gpu_mapped_element_buffer GameGeo;
-  shader DebugGameGeoTextureShader;
-
-};
-
 link_internal void
 ClearFramebuffers(render_entity_to_texture_group *Group)
 {
@@ -1051,6 +1039,8 @@ GetCommand(ui_render_command_buffer* CommandBuffer, u32 CommandIndex)
 link_internal window_layout*
 GetHighestWindow(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffer)
 {
+  TIMED_FUNCTION();
+
   u64 HighestInteractionStackIndex = 0;
   window_layout* HighestWindow = 0;
 
@@ -1600,6 +1590,8 @@ GetNextInlineElementBasis(render_state* RenderState)
 link_internal void
 FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *CommandBuffer)
 {
+  TIMED_FUNCTION();
+
   layout DefaultLayout = {};
   render_state RenderState = { .Layout = &DefaultLayout };
 
