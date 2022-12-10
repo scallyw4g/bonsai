@@ -78,7 +78,7 @@ function MakeDebugLibRelease
 
   cp texture_atlas_0.bmp $DEBUG_LIB_RELEASE_DIR
   cp -R shaders $DEBUG_LIB_RELEASE_DIR
-  cp "$BIN/lib_bonsai_debug_loadable""$PLATFORM_LIB_EXTENSION" $DEBUG_LIB_RELEASE_DIR/lib_bonsai_debug"$PLATFORM_LIB_EXTENSION"
+  cp "$BIN/lib_debug_system""$PLATFORM_LIB_EXTENSION" $DEBUG_LIB_RELEASE_DIR/lib_debug_system"$PLATFORM_LIB_EXTENSION"
 
   sync
 }
@@ -156,7 +156,7 @@ function BuildDebugSystem
   echo ""
   ColorizeTitle "DebugSystem"
   DEBUG_SRC_FILE="$INCLUDE/bonsai_debug/debug.cpp"
-  output_basename="$BIN/lib_bonsai_debug"
+  output_basename="$BIN/lib_debug_system"
   echo -e "$Building $DEBUG_SRC_FILE"
   clang++                                                                           \
     $OPTIMIZATION_LEVEL                                                             \

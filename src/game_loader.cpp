@@ -4,8 +4,6 @@
 #define DEBUG_SYSTEM_API 1
 #define DEBUG_SYSTEM_LOADER_API 1
 
-#define DEFAULT_DEBUG_LIB "./bin/lib_bonsai_debug_loadable" PLATFORM_RUNTIME_LIB_EXTENSION
-
 #include <bonsai_stdlib/bonsai_stdlib.h>
 #include <bonsai_stdlib/bonsai_stdlib.cpp>
 
@@ -239,7 +237,7 @@ main( s32 ArgCount, const char ** Args )
 
 
 #if DEBUG_SYSTEM_API
-  shared_lib DebugLib = InitializeBonsaiDebug(DEFAULT_DEBUG_LIB);
+  shared_lib DebugLib = InitializeBonsaiDebug("./bin/lib_debug_system_loadable" PLATFORM_RUNTIME_LIB_EXTENSION);
   Assert(DebugLib);
   Assert(Global_DebugStatePointer);
   EngineResources.DebugState = Global_DebugStatePointer;
@@ -319,8 +317,7 @@ main( s32 ArgCount, const char ** Args )
   r64 RealDt = 0;
   while ( Os.ContinueRunning )
   {
-    ClearClickedFlags(&Plat.Input);
-    Clear(&Hotkeys);
+    ResetInputForFrameStart(&Plat.Input, &Hotkeys);
 
     if (Plat.dt > 0.1f)
     {
