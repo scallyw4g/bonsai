@@ -994,6 +994,7 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
     }
   }
 
+  PushNewRow(Group);
   PushForceAdvance(Group, Window->Scroll);
   PushResetDrawBounds(Group);
 
@@ -1764,10 +1765,12 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
         PopLayout(&RenderState.Layout);
 
-        v2 DBM = GetAbsoluteDrawBoundsMax(RenderState.Layout);// - GetScroll(RenderState.Window);
-        v2 AbsAt = GetAbsoluteAt(RenderState.Layout);// - GetScroll(RenderState.Window);
-        v2 Advance = DBM - AbsAt;
-        AdvanceLayoutStackBy( V2(0.f, Advance.y), RenderState.Layout);
+        /* v2 DBM = GetAbsoluteDrawBoundsMax(RenderState.Layout);// - GetScroll(RenderState.Window); */
+        /* v2 AbsAt = GetAbsoluteAt(RenderState.Layout);// - GetScroll(RenderState.Window); */
+        /* v2 Advance = DBM - AbsAt; */
+        /* AdvanceLayoutStackBy( V2(0.f, Advance.y), RenderState.Layout); */
+
+        NewRow(RenderState.Layout);
 
       } break;
 
