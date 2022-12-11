@@ -277,6 +277,13 @@ BufferColors(debug_ui_render_group *Group, T *Geo, v3 Color)
   BufferColorsDirect(Geo, Color);
 }
 
+inline b32
+RangeContains(r32 Min, r32 N, r32 Max)
+{
+  b32 Result = (N >= Min && N < Max);
+  return Result;
+}
+
 template <typename T>link_internal clip_result
 BufferQuadDirect(T *Geo, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim, rect2 Clip)
 {
@@ -294,7 +301,8 @@ BufferQuadDirect(T *Geo, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim, rect2 Clip)
 
   Assert(Z >= 0.0f && Z <= 1.0f);
 
-  if ( Clip.Max.x <= MinP.x || Clip.Max.y <= MinP.y )
+  v2 MaxP = MinP+Dim;
+  if ( Clip.Max.x <= MinP.x || Clip.Max.y <= MinP.y || MaxP.x < Clip.Min.x || MaxP.y < Clip.Min.y )
   {
     Result.ClipStatus = ClipStatus_FullyClipped;
   }
@@ -310,10 +318,10 @@ BufferQuadDirect(T *Geo, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim, rect2 Clip)
     v3 RightBottom = V3(Right, Bottom, Z);
     v3 LeftBottom  = V3(Left, Bottom, Z);
 
-    if (Left < Clip.Max.x && Right > Clip.Max.x)
+    if (RangeContains(Left, Clip.Max.x, Right))
     {
-      r32 Total = RightBottom.x - LeftBottom.x;
-      r32 TotalClipped = RightBottom.x - Clip.Max.x;
+      r32 Total = Right - Left;
+      r32 TotalClipped = Right - Clip.Max.x;
       Result.PartialClip.Max.x = TotalClipped / Total;
 
       Result.Clip.Max.x = RightTop.x = RightBottom.x = Clip.Max.x;
@@ -322,16 +330,28 @@ BufferQuadDirect(T *Geo, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim, rect2 Clip)
       Assert(Result.PartialClip.Max.x >= 0.0f && Result.PartialClip.Max.x <= 1.0f);
     }
 
-    if (Top < Clip.Max.y && Bottom > Clip.Max.y)
+    if (RangeContains(Top, Clip.Max.y, Bottom))
     {
-      r32 Total = RightBottom.y - RightTop.y;
-      r32 TotalClipped = RightBottom.y - Clip.Max.y;
+      r32 Total = Bottom - Top;
+      r32 TotalClipped = Bottom - Clip.Max.y;
       Result.PartialClip.Max.y = TotalClipped / Total;
 
       Result.Clip.Max.y = LeftBottom.y = RightBottom.y = Clip.Max.y;
       Result.ClipStatus = ClipStatus_PartialClipping;
 
       Assert(Result.PartialClip.Max.y >= 0.0f && Result.PartialClip.Max.y <= 1.0f);
+    }
+
+    if (RangeContains(Top, Clip.Min.y, Bottom))
+    {
+      r32 Total = Bottom - Top;
+      r32 TotalClipped = Clip.Min.y - Top;
+      Result.PartialClip.Min.y = TotalClipped / Total;
+
+      Result.Clip.Min.y = LeftTop.y = RightTop.y = Clip.Min.y;
+      Result.ClipStatus = ClipStatus_PartialClipping;
+
+      Assert(Result.PartialClip.Min.y >= 0.0f && Result.PartialClip.Min.y <= 1.0f);
     }
 
     #define TO_NDC(P) ((P * ToNDC) - 1.0f)
@@ -559,6 +579,11 @@ BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* Ren
   if ((RenderParams & TextRenderParam_NoScroll) == 0)
   {
     AbsAt -= Scroll;
+  }
+
+  if ((RenderParams & TextRenderParam_NoClip))
+  {
+    Clip = DISABLE_CLIPPING;
   }
 
   BufferValue(Text, AbsAt, Group, Layout, Color, Style, Z, Clip, DoBuffering);
@@ -907,11 +932,10 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
 
   ui_style TitleBarStyle = UiStyleFromLightestColor(V3(0.20f, 0.f, 0.20f));
   PushButtonStart(Group, TitleBarInteractionId);
-    PushForceAdvance(Group, V2(Global_Font.Size.x*.25f, Global_Font.Size.y*.2f));
-    Text(Group, Window->Title, &DefaultStyle, TextRenderParam_NoScroll);
-    Text(Group, CSz(" "), &DefaultStyle, TextRenderParam_NoScroll);
-    Text(Group, CS(Window->InteractionStackIndex), &DefaultStyle, TextRenderParam_NoScroll);
-    PushUntexturedQuadAt(Group, Window->Basis, V2(Window->MaxClip.x, Global_Font.Size.y*1.4f), zDepth_TitleBar, &TitleBarStyle);
+    counted_string TitleText = FormatCountedString(TranArena, CSz("%S (%u)"), Window->Title, Window->InteractionStackIndex);
+    PushForceAdvance(Group, V2(Global_Font.Size.x*.25f, Global_TitleBarPadding));
+    Text(Group, TitleText, &DefaultStyle, (text_render_params)(TextRenderParam_NoScroll|TextRenderParam_NoClip) );
+    PushUntexturedQuadAt(Group, Window->Basis, V2(Window->MaxClip.x, Global_TitleBarHeight), zDepth_TitleBar, &TitleBarStyle);
   PushButtonEnd(Group);
 
   PushBorder(Group, GetBounds(Window), V3(1.f));
