@@ -319,6 +319,7 @@ function RunPoofHelper {
    # -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/include"        \
    # -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/atlmfc/include" \
 
+
   poof                                                                                                         \
    --log-level LogLevel_Debug                                                                                  \
    -I src/                                                                                                     \
@@ -332,6 +333,7 @@ function RunPoofHelper {
    -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/winrt"                                      \
    -D _M_X64                                                                                                   \
    -D _M_CEE                                                                                                   \
+   -D POOF_PREPROCESSOR \
    $PLATFORM_DEFINES                                                                                           \
    $BONSAI_INTERNAL                                                                                            \
    -o generated                                                                                                \
@@ -349,11 +351,11 @@ function RunPoof
   [ -d src/generated ] && rm -Rf src/generated
   [ -d generated ] && rm -Rf generated
 
-  RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
+  # RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
   RunPoofHelper include/bonsai_debug/debug.cpp && echo -e "$Success poofed src/include/bonsai_debug/debug.cpp" &
-  RunPoofHelper examples/asset_picker/game.cpp && echo -e "$Success poofed examples/asset_picker/game.cpp" &
-  RunPoofHelper examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &
-  RunPoofHelper src/tools/asset_packer.cpp && echo -e "$Success poofed src/tools/asset_packer.cpp" &
+  # RunPoofHelper examples/asset_picker/game.cpp && echo -e "$Success poofed examples/asset_picker/game.cpp" &
+  # RunPoofHelper examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &
+  # RunPoofHelper src/tools/asset_packer.cpp && echo -e "$Success poofed src/tools/asset_packer.cpp" &
 
   wait
 

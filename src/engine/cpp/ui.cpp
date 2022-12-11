@@ -879,6 +879,16 @@ PushBorder(debug_ui_render_group *Group, rect2 BoundsRelativeToCurrentWindow, v3
 }
 
 link_internal void
+PushResetDrawBounds(debug_ui_render_group *Group)
+{
+  ui_render_command Command = {
+    .Type = type_ui_render_command_reset_draw_bounds,
+  };
+  PushUiRenderCommand(Group, &Command);
+  return;
+}
+
+link_internal void
 PushForceAdvance(debug_ui_render_group *Group, v2 Offset)
 {
   ui_render_command Command = {
@@ -982,7 +992,7 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
   }
 
   PushForceAdvance(Group, Window->Scroll);
-  /* PushNewRow(Group); */
+  PushResetDrawBounds(Group);
 
   return;
 }
@@ -1851,6 +1861,11 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
         PushLayout(&RenderState.Layout, &TypedCommand->Layout);
         AdvanceLayoutStackBy(TypedCommand->Offset, RenderState.Layout);
         PopLayout(&RenderState.Layout);
+      } break;
+
+      case type_ui_render_command_reset_draw_bounds:
+      {
+        RenderState.Layout->DrawBounds = InvertedInfinityRectangle();
       } break;
 
       InvalidDefaultCase;

@@ -2356,7 +2356,10 @@ DrawPickedChunks(debug_ui_render_group* Group, render_entity_to_texture_group *P
     v3 Basis = -0.5f*V3(ChunkDimension(HotChunk));
     untextured_3d_geometry_buffer* Src = HotChunk->LodMesh;
     untextured_3d_geometry_buffer* Dest = &DebugState->PickedChunksRenderGroup.GameGeo.Buffer;
-    BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
+    if (Src && Dest)
+    {
+      BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
+    }
   }
 
   { // Draw hotchunk to the GameGeo FBO
