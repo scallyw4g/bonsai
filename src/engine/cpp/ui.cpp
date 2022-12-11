@@ -53,26 +53,29 @@ AdvanceSpaces(u32 N, layout *Layout, v2 FontSize)
 link_internal void AdvanceLayoutStackBy(v2 Delta, layout* Layout);
 
 link_internal void
-NewLine(layout *Layout)
+NewRow(layout *Layout)
 {
 #if 1
-  r32 VerticalAdvance = 0;
-  if (Layout->At.x == 0.0f)
-  {
-    VerticalAdvance = Global_Font.Size.y;
-  }
+  // NOTE(Jesse): This is a special case for if we call NewRow() multiple
+  // times in a row without drawing stuff.. ie:
+  //
+  // BufferSomeText();
+  // NewRow();
+  // NewRow();
+  // BufferSomeText();
+  //
+  if (Layout->At.x == 0.0f) { Layout->At.y += Global_Font.Size.y; }
 
   Layout->At.x = 0.0f;
 
   // NOTE(Jesse): This adds DrawBounds.Max.y such that if we draw stuff other
   // than text on the line we get proper advancement.  Expanded callgraph nodes
   // are a good example
-  Layout->At.y = Layout->DrawBounds.Max.y + VerticalAdvance;
+  Layout->At.y = Layout->DrawBounds.Max.y;
   /* Layout->At.y += VerticalAdvance; */
 
-
   // TODO(Jesse): Do we actually want to call this here?  Probably not if we
-  // just do a newline and not print anything?
+  // just do a NewRow and not print anything?
   UpdateDrawBounds(Layout);
 #else
 
@@ -1832,7 +1835,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
       case type_ui_render_command_new_row:
       {
-        NewLine(RenderState.Layout);
+        NewRow(RenderState.Layout);
       } break;
 
       case type_ui_render_command_button_start:
