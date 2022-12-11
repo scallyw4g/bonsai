@@ -50,21 +50,40 @@ AdvanceSpaces(u32 N, layout *Layout, v2 FontSize)
   return;
 }
 
+link_internal void AdvanceLayoutStackBy(v2 Delta, layout* Layout);
+
 link_internal void
 NewLine(layout *Layout)
 {
+#if 1
   r32 VerticalAdvance = 0;
   if (Layout->At.x == 0.0f)
   {
     VerticalAdvance = Global_Font.Size.y;
   }
 
-  Layout->At.y = Layout->DrawBounds.Max.y + VerticalAdvance;
   Layout->At.x = 0.0f;
+
+  // NOTE(Jesse): This adds DrawBounds.Max.y such that if we draw stuff other
+  // than text on the line we get proper advancement.  Expanded callgraph nodes
+  // are a good example
+  Layout->At.y = Layout->DrawBounds.Max.y + VerticalAdvance;
+  /* Layout->At.y += VerticalAdvance; */
+
 
   // TODO(Jesse): Do we actually want to call this here?  Probably not if we
   // just do a newline and not print anything?
   UpdateDrawBounds(Layout);
+#else
+
+  // NOTE(Jesse): This is misguided; when there are two tables next to
+  // one-another the advance ends up counting both of them on the default
+  // layout, which means the next element gets bumped down the sum of both
+  // their heights, not the max height of either.
+  Layout->At.x = 0.0f;
+  AdvanceLayoutStackBy( V2(0.f, Global_Font.Size.y), Layout);
+
+#endif
 
   return;
 }
@@ -522,7 +541,8 @@ BufferBorder(debug_ui_render_group *Group, interactable* PickerListInteraction, 
 link_internal void
 AdvanceLayoutStackBy(v2 Delta, layout* Layout)
 {
-  while (Layout) {
+  while (Layout)
+  {
     Layout->At += Delta;
     UpdateDrawBounds(Layout);
     Layout = Layout->Prev;
@@ -571,17 +591,17 @@ BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* Ren
   r32 Z          = GetZ(zDepth_Text, Window);
   rect2 Clip     = GetAbsoluteClip(Window);
   v3 Color       = SelectColorState(RenderState, Style);
-  v2 Scroll      = Window ? Window->Scroll : V2(0);
+  /* v2 Scroll      = Window ? Window->Scroll : V2(0); */
   v2 AbsAt       = GetAbsoluteAt(Layout);
 
   // NOTE(Jesse): This is weird, but it's how I wanted the phrasing on the API
   // side, so we have this double-negative check here.
   if ((RenderParams & TextRenderParam_NoScroll) == 0)
   {
-    AbsAt -= Scroll;
+    /* AbsAt -= Scroll; */
   }
 
-  if ((RenderParams & TextRenderParam_NoClip))
+  if (RenderParams & TextRenderParam_NoClip)
   {
     Clip = DISABLE_CLIPPING;
   }
@@ -873,6 +893,8 @@ PushForceAdvance(debug_ui_render_group *Group, v2 Offset)
 link_internal void
 PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
 {
+  TIMED_FUNCTION();
+
   umm TitleBarInteractionId = (umm)"WindowTitleBar"^(umm)Window;
   interactable_handle TitleBarHandle = { .Id = TitleBarInteractionId };
   if (Pressed(Group, &TitleBarHandle))
@@ -917,7 +939,8 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
     .ui_render_command_window_start = {
       .Window = Window,
       .Layout = {
-        .Basis = Window->Basis
+        .Basis = Window->Basis,
+        .DrawBounds = InvertedInfinityRectangle(),
       }
     }
   };
@@ -931,10 +954,13 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
   PushButtonEnd(Group);
 
   ui_style TitleBarStyle = UiStyleFromLightestColor(V3(0.20f, 0.f, 0.20f));
+  counted_string TitleText = FormatCountedString(TranArena, CSz("%S (%u)"), Window->Title, Window->InteractionStackIndex);
+
+  PushForceAdvance(Group, V2(Global_TitleBarPadding));
+  Text(Group, TitleText, &DefaultStyle, (text_render_params)(TextRenderParam_NoScroll|TextRenderParam_NoClip) );
+  /* PushForceAdvance(Group, V2(.0f, Global_TitleBarPadding)); */
+
   PushButtonStart(Group, TitleBarInteractionId);
-    counted_string TitleText = FormatCountedString(TranArena, CSz("%S (%u)"), Window->Title, Window->InteractionStackIndex);
-    PushForceAdvance(Group, V2(Global_Font.Size.x*.25f, Global_TitleBarPadding));
-    Text(Group, TitleText, &DefaultStyle, (text_render_params)(TextRenderParam_NoScroll|TextRenderParam_NoClip) );
     PushUntexturedQuadAt(Group, Window->Basis, V2(Window->MaxClip.x, Global_TitleBarHeight), zDepth_TitleBar, &TitleBarStyle);
   PushButtonEnd(Group);
 
@@ -943,8 +969,20 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
   ui_style BackgroundStyle = UiStyleFromLightestColor(V3(.1f, 0.f, .1f));
   PushUntexturedQuadAt(Group, Window->Basis, Window->MaxClip, zDepth_Background, &BackgroundStyle);
 
-  /* PushForceAdvance(Group, V2(0, Global_Font.Size.y*1.1f)); */
-  PushForceAdvance(Group, V2(0.f, Global_Font.Size.y*1.2f));
+  PushForceAdvance(Group, V2(0.f, Global_TitleBarHeight));
+  PushForceAdvance(Group, V2(0.f, Global_TitleBarPadding));
+
+  if (Length(Window->Scroll) != 0.0f)
+  {
+    DebugLine(CSz("%f %f"), Window->Scroll.x, Window->Scroll.y);
+    if (Window->Scroll.y < -100)
+    {
+      /* RuntimeBreak(); */
+    }
+  }
+
+  PushForceAdvance(Group, Window->Scroll);
+  /* PushNewRow(Group); */
 
   return;
 }
@@ -1631,6 +1669,8 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
   TIMED_FUNCTION();
 
   layout DefaultLayout = {};
+  DefaultLayout.DrawBounds = InvertedInfinityRectangle();
+
   render_state RenderState = { .Layout = &DefaultLayout };
 
   /* GetDebugState()->DebugValue_u32(Group->SolidGeoCountLastFrame, "Solid Geo"); */
@@ -1680,7 +1720,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
         {
           ui_render_command_table_start* TypedCommand = RenderCommandAs(table_start, Command);
           r32 BasisX = RenderState.Layout->Basis.x;
-          r32 BasisY = GetAbsoluteDrawBoundsMax(RenderState.Layout).y;
+          r32 BasisY = GetAbsoluteAt(RenderState.Layout).y;
           TypedCommand->Layout.Basis = V2(BasisX, BasisY);
 
           // TODO(Jesse, bug): Seems to me like we should fully setup the basis
@@ -1691,7 +1731,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
           if (TypedCommand->Position == Position_RightOf)
           {
             ui_render_command_table_start* RelativeTable = GetCommandAs(table_start, CommandBuffer, TypedCommand->RelativeTo.Index);
-            TypedCommand->Layout.Basis = V2(GetAbsoluteDrawBoundsMax(&RelativeTable->Layout).x, RelativeTable->Layout.Basis.y);
+            TypedCommand->Layout.Basis = V2(GetAbsoluteDrawBoundsMax(&RelativeTable->Layout).x, RelativeTable->Layout.Basis.y );
           }
         }
         else
@@ -1703,11 +1743,19 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
       case type_ui_render_command_table_end:
       {
-        if (RenderState.Layout->At.x > 0.0f) { NewLine(RenderState.Layout); }
+        if (RenderState.Layout->At.x > 0.0f) { AdvanceLayoutStackBy( V2(0.f, Global_Font.Size.y), RenderState.Layout); }
+
 #if DEBUG_UI_OUTLINE_TABLES
         BufferBorder(Group, GetAbsoluteDrawBounds(RenderState.Layout), V3(0,0,1), 0.9f, DISABLE_CLIPPING);
 #endif
+
         PopLayout(&RenderState.Layout);
+
+        v2 DBM = GetAbsoluteDrawBoundsMax(RenderState.Layout);// - GetScroll(RenderState.Window);
+        v2 AbsAt = GetAbsoluteAt(RenderState.Layout);// - GetScroll(RenderState.Window);
+        v2 Advance = DBM - AbsAt;
+        AdvanceLayoutStackBy( V2(0.f, Advance.y), RenderState.Layout);
+
       } break;
 
       case type_ui_render_command_column_start:

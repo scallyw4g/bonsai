@@ -2305,6 +2305,8 @@ PushChunkDetails(debug_ui_render_group* Group, world_chunk* Chunk, window_layout
 link_internal world_chunk*
 DrawPickedChunks(debug_ui_render_group* Group, render_entity_to_texture_group *PickedChunksRenderGroup, world_chunk_static_buffer *PickedChunks, world_chunk *HotChunk)
 {
+  TIMED_FUNCTION();
+
   debug_state* DebugState = GetDebugState();
   DebugState->HoverChunk = 0;
 
