@@ -173,7 +173,7 @@ PlatformLaunchWorkerThreads(platform *Plat, engine_resources *EngineResources, b
     Params->WorkerThreadsSuspendFutex = &Plat->WorkerThreadsSuspendFutex;
     Params->WorkerThreadsExitFutex = &Plat->WorkerThreadsExitFutex;
 
-    PlatformCreateThread( ThreadMain, Params );
+    PlatformCreateThread( ThreadMain, Params, ThreadIndex);
   }
 
   return;
