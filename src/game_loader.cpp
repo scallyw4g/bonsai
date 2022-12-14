@@ -219,6 +219,8 @@ main( s32 ArgCount, const char ** Args )
 {
   Info("Initializing Bonsai");
 
+  Platform_EnableContextSwitchTracing();
+
   /* if (!SearchForProjectRoot()) { Error("Couldn't find root dir, exiting."); return 1; } */
   /* Info("Found Bonsai Root : %S", CS(GetCwd()) ); */
 
