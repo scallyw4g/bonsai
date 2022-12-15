@@ -16,7 +16,9 @@ struct thread_startup_params
   work_queue *LowPriority;
   work_queue *HighPriority;
 
-  thread Self;
+  volatile u32 ThreadIndex;
+  volatile u32 ThreadId;
+  /* volatile thread_handle ThreadHandle; */
 };
 
 struct mesh_freelist;

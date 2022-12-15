@@ -65,9 +65,9 @@ ThreadMain(void *Input)
 
   bonsai_worker_thread_callback GameWorkerThreadCallback = ThreadParams->GameWorkerThreadCallback;
 
-  DEBUG_REGISTER_THREAD(ThreadParams->Self.ThreadIndex);
+  DEBUG_REGISTER_THREAD(ThreadParams);
 
-  thread_local_state Thread = DefaultThreadLocalState(&ThreadParams->EngineResources->MeshFreelist, ThreadParams->Self.ThreadIndex);
+  thread_local_state Thread = DefaultThreadLocalState(&ThreadParams->EngineResources->MeshFreelist, ThreadParams->ThreadIndex);
 
   if (ThreadParams->InitProc) { ThreadParams->InitProc(&Thread); }
 
@@ -153,7 +153,7 @@ ThreadMain(void *Input)
 }
 
 link_internal void
-PlatformLaunchWorkerThreads(platform *Plat, engine_resources *EngineResources, bonsai_worker_thread_init_callback WorkerThreadInit, bonsai_worker_thread_callback WorkerThreadCallback)
+LaunchWorkerThreads(platform *Plat, engine_resources *EngineResources, bonsai_worker_thread_init_callback WorkerThreadInit, bonsai_worker_thread_callback WorkerThreadCallback)
 {
   u32 WorkerThreadCount = GetWorkerThreadCount();
 
@@ -162,7 +162,7 @@ PlatformLaunchWorkerThreads(platform *Plat, engine_resources *EngineResources, b
         ++ThreadIndex )
   {
     thread_startup_params *Params = &Plat->Threads[ThreadIndex];
-    Params->Self.ThreadIndex = ThreadIndex + 1;
+    Params->ThreadIndex = ThreadIndex + 1;
     Params->HighPriority = &Plat->HighPriority;
     Params->LowPriority = &Plat->LowPriority;
     Params->InitProc = WorkerThreadInit;
@@ -173,7 +173,7 @@ PlatformLaunchWorkerThreads(platform *Plat, engine_resources *EngineResources, b
     Params->WorkerThreadsSuspendFutex = &Plat->WorkerThreadsSuspendFutex;
     Params->WorkerThreadsExitFutex = &Plat->WorkerThreadsExitFutex;
 
-    PlatformCreateThread( ThreadMain, Params, ThreadIndex);
+    Params->ThreadId = PlatformCreateThread( ThreadMain, Params, ThreadIndex );
   }
 
   return;
@@ -298,7 +298,7 @@ main( s32 ArgCount, const char ** Args )
 
   if (GameApi.WorkerMain)
   {
-    PlatformLaunchWorkerThreads(&Plat, &EngineResources, GameApi.WorkerInit, GameApi.WorkerMain);
+    LaunchWorkerThreads(&Plat, &EngineResources, GameApi.WorkerInit, GameApi.WorkerMain);
   }
 
   thread_local_state MainThread = DefaultThreadLocalState(&EngineResources.MeshFreelist, 0);
@@ -319,6 +319,11 @@ main( s32 ArgCount, const char ** Args )
   r64 RealDt = 0;
   while ( Os.ContinueRunning )
   {
+    /* u32 CSwitchEventsThisFrame = CSwitchEventsPerFrame; */
+    /* CSwitchEventsPerFrame = 0; */
+    /* DebugLine("%u", CSwitchEventsThisFrame); */
+
+
     ResetInputForFrameStart(&Plat.Input, &Hotkeys);
 
     if (Plat.dt > 0.1f)
