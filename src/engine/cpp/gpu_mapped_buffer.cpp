@@ -2,6 +2,8 @@
 inline void
 FlushBuffersToCard(gpu_mapped_element_buffer* GpuMap)
 {
+  TIMED_FUNCTION();
+
   GL.EnableVertexAttribArray(0);
   GL.BindBuffer(GL_ARRAY_BUFFER, GpuMap->VertexHandle);
   u32 BufferUnmapped = GL.UnmapBuffer(GL_ARRAY_BUFFER);
