@@ -313,20 +313,15 @@ RangeContains(r32 Min, r32 N, r32 Max)
   return Result;
 }
 
-template <typename T> link_internal clip_result
-BufferQuadDirect(T *Geo, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim, rect2 Clip)
+link_internal clip_result
+ClipRect3AgainstRect2(v2 MinP, v2 Dim, r32 Z, rect2 Clip)
 {
-  // @streaming_ui_render_memory
-  Assert(BufferHasRoomFor(Geo, u32_COUNT_PER_QUAD));
-  Assert(ScreenDim.x > 0);
-  Assert(ScreenDim.y > 0);
-
   // Note(Jesse): Z==0 | far-clip
   // Note(Jesse): Z==1 | near-clip
-  clip_result Result = {};
-
-  v3 *Dest = Geo->Verts;
-  u32 StartingIndex = Geo->At;
+  clip_result Result = {
+    .ClippedMin = MinP,
+    .ClippedMax = MinP+Dim,
+  };
 
   Assert(Z >= 0.0f && Z <= 1.0f);
 
@@ -353,7 +348,7 @@ BufferQuadDirect(T *Geo, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim, rect2 Clip)
       r32 TotalClipped = Right - Clip.Max.x;
       Result.PartialClip.Max.x = TotalClipped / Total;
 
-      Result.Clip.Max.x = RightTop.x = RightBottom.x = Clip.Max.x;
+      Result.ClippedMax.x = RightTop.x = RightBottom.x = Clip.Max.x;
       Result.ClipStatus = ClipStatus_PartialClipping;
 
       Assert(Result.PartialClip.Max.x >= 0.0f && Result.PartialClip.Max.x <= 1.0f);
@@ -365,7 +360,7 @@ BufferQuadDirect(T *Geo, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim, rect2 Clip)
       r32 TotalClipped = Bottom - Clip.Max.y;
       Result.PartialClip.Max.y = TotalClipped / Total;
 
-      Result.Clip.Max.y = LeftBottom.y = RightBottom.y = Clip.Max.y;
+      Result.ClippedMax.y = LeftBottom.y = RightBottom.y = Clip.Max.y;
       Result.ClipStatus = ClipStatus_PartialClipping;
 
       Assert(Result.PartialClip.Max.y >= 0.0f && Result.PartialClip.Max.y <= 1.0f);
@@ -377,32 +372,64 @@ BufferQuadDirect(T *Geo, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim, rect2 Clip)
       r32 TotalClipped = Clip.Min.y - Top;
       Result.PartialClip.Min.y = TotalClipped / Total;
 
-      Result.Clip.Min.y = LeftTop.y = RightTop.y = Clip.Min.y;
+      Result.ClippedMin.y = LeftTop.y = RightTop.y = Clip.Min.y;
       Result.ClipStatus = ClipStatus_PartialClipping;
 
       Assert(Result.PartialClip.Min.y >= 0.0f && Result.PartialClip.Min.y <= 1.0f);
     }
 
-    #define TO_NDC(P) ((P * ToNDC) - 1.0f)
-    v3 ToNDC = 2.0f/V3(ScreenDim.x, ScreenDim.y, 1.0f);
-
-    // Native OpenGL screen coordinates are {0,0} at the bottom-left corner. This
-    // maps the origin to the top-left of the screen.
-    // @inverted_screen_y_coordinate
-    v3 InvertYZ = V3(1.0f, -1.0f, -1.0f);
-
-    Dest[StartingIndex++] = InvertYZ * TO_NDC(LeftTop);
-    Dest[StartingIndex++] = InvertYZ * TO_NDC(LeftBottom);
-    Dest[StartingIndex++] = InvertYZ * TO_NDC(RightTop);
-
-    Dest[StartingIndex++] = InvertYZ * TO_NDC(RightBottom);
-    Dest[StartingIndex++] = InvertYZ * TO_NDC(RightTop);
-    Dest[StartingIndex++] = InvertYZ * TO_NDC(LeftBottom);
-    #undef TO_NDC
-
-    Result.Clip.Max = RightBottom.xy;
+    /* Result.Clip.Max = RightBottom.xy; */
   }
 
+  return Result;
+}
+
+
+template <typename T> link_internal void
+BufferQuadDirect(T *Geo, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim)
+{
+  Assert(BufferHasRoomFor(Geo, u32_COUNT_PER_QUAD));
+  Assert(ScreenDim.x > 0);
+  Assert(ScreenDim.y > 0);
+
+  r32 Left   = MinP.x;
+  r32 Right  = Left+Dim.x;
+  r32 Top    = MinP.y;
+  r32 Bottom = Top+Dim.y;
+
+  v3 LeftTop    = V3(Left, Top, Z);
+  v3 RightTop   = V3(Right, Top, Z);
+  v3 RightBottom = V3(Right, Bottom, Z);
+  v3 LeftBottom  = V3(Left, Bottom, Z);
+
+
+  #define TO_NDC(P) ((P * ToNDC) - 1.0f)
+  v3 ToNDC = 2.0f/V3(ScreenDim.x, ScreenDim.y, 1.0f);
+
+  // Native OpenGL screen coordinates are {0,0} at the bottom-left corner. This
+  // maps the origin to the top-left of the screen.
+  // @inverted_screen_y_coordinate
+  v3 InvertYZ = V3(1.0f, -1.0f, -1.0f);
+
+  v3 *Dest = Geo->Verts;
+  u32 StartingIndex = Geo->At;
+  Dest[StartingIndex++] = InvertYZ * TO_NDC(LeftTop);
+  Dest[StartingIndex++] = InvertYZ * TO_NDC(LeftBottom);
+  Dest[StartingIndex++] = InvertYZ * TO_NDC(RightTop);
+
+  Dest[StartingIndex++] = InvertYZ * TO_NDC(RightBottom);
+  Dest[StartingIndex++] = InvertYZ * TO_NDC(RightTop);
+  Dest[StartingIndex++] = InvertYZ * TO_NDC(LeftBottom);
+  #undef TO_NDC
+}
+
+template <typename T> link_internal clip_result
+BufferQuadDirect(T* Geo, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim, rect2 Clip)
+{
+  clip_result Result = ClipRect3AgainstRect2(MinP, Dim, Z, Clip);
+  // NOTE(Jesse): Intentionally not switching on the clip_result.ClipStatus
+  // It's the callers responsibility to do that (and advance the Geo->At pointer)
+  BufferQuadDirect(Geo, Result.ClippedMin, Result.ClippedMax-Result.ClippedMin, Z, ScreenDim);
   return Result;
 }
 
@@ -411,17 +438,18 @@ BufferTexturedQuad(debug_ui_render_group *Group,
                    debug_texture_array_slice TextureSlice,
                    v2 MinP, v2 Dim, rect2 UV, v3 Color, r32 Z, rect2 Clip)
 {
-  clip_result Result = {};
-
   textured_2d_geometry_buffer* Geo = &Group->TextGroup->Geo;
+
   // @streaming_ui_render_memory
   Assert(BufferHasRoomFor(Geo, u32_COUNT_PER_QUAD));
 
-  Result = BufferQuadDirect(Geo, MinP, Dim, Z, Group->ScreenDim, Clip);
+  /* Result = BufferQuadDirect(Geo, MinP, Dim, Z, Group->ScreenDim, Clip); */
+  clip_result Result = ClipRect3AgainstRect2(MinP, Dim, Z, Clip);
   switch (Result.ClipStatus)
   {
     case ClipStatus_NoClipping:
     {
+      BufferQuadDirect(Geo, MinP, Dim, Z, Group->ScreenDim);
       BufferQuadUVs(Geo, UV, TextureSlice);
       BufferColors(Group, Geo, Color);
       Geo->At += u32_COUNT_PER_QUAD;
@@ -438,6 +466,7 @@ BufferTexturedQuad(debug_ui_render_group *Group,
       UV.Min += MinUvModifier;
       UV.Max += MaxUvModifier;
 
+      BufferQuadDirect(Geo, Result.ClippedMin, Result.ClippedMax-Result.ClippedMin, Z, Group->ScreenDim);
       BufferQuadUVs(Geo, UV, TextureSlice);
       BufferColors(Group, Geo, Color);
       Geo->At += u32_COUNT_PER_QUAD;
