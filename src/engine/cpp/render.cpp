@@ -212,7 +212,7 @@ RenderGBuffer(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
 
   RenderWorldToGBuffer(GpuMap, Graphics->gBuffer);
 
-  AssertNoGlErrors;
+  /* AssertNoGlErrors; */
 
   return;
 }

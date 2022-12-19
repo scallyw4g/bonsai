@@ -300,13 +300,20 @@ BufferColors(debug_ui_render_group *Group, T *Geo, v3 Color)
 }
 
 inline b32
+RangeContains(u64 Min, u64 N, u64 Max)
+{
+  b32 Result = (N >= Min && N < Max);
+  return Result;
+}
+
+inline b32
 RangeContains(r32 Min, r32 N, r32 Max)
 {
   b32 Result = (N >= Min && N < Max);
   return Result;
 }
 
-template <typename T>link_internal clip_result
+template <typename T> link_internal clip_result
 BufferQuadDirect(T *Geo, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim, rect2 Clip)
 {
   // @streaming_ui_render_memory
@@ -553,7 +560,7 @@ AdvanceLayoutStackBy(v2 Delta, layout* Layout)
 }
 
 link_internal void
-BufferValue(counted_string Text, v2 AbsAt, debug_ui_render_group *Group, layout* Layout, v3 Color, ui_style* Style, r32 Z, rect2 Clip, b32 DoBuffering = True)
+BufferValue(counted_string Text, v2 AbsAt, debug_ui_render_group *Group, layout* Layout, v3 Color, ui_style* Style, r32 Z, rect2 Clip, text_render_params Params, b32 DoBuffering = True)
 {
   r32 xDelta = 0;
   /* v2 MinP = GetAbsoluteAt(Layout) + V2(xDelta, 0); */
@@ -572,34 +579,44 @@ BufferValue(counted_string Text, v2 AbsAt, debug_ui_render_group *Group, layout*
     xDelta += Style->Font.Size.x;
   }
 
-  AdvanceLayoutStackBy(V2(xDelta, 0), Layout);
+  if ( (Params & TextRenderParam_NoAdvanceLayout) == False)
+  {
+    AdvanceLayoutStackBy(V2(xDelta, 0), Layout);
+    v2 MaxP = Layout->At + V2(0, Style->Font.Size.y);
+    UpdateDrawBounds(Layout, MaxP);
+  }
 
-  v2 MaxP = Layout->At + V2(0, Style->Font.Size.y);
-  UpdateDrawBounds(Layout, MaxP);
-
-#if DEBUG_UI_OUTLINE_VALUES
-  v2 EndingP = Layout->Basis + MaxClipP;
-  BufferBorder(Group, RectMinMax(StartingP, EndingP), V3(0, 0, 1), Z, DISABLE_CLIPPING);
-#endif
+/* #if DEBUG_UI_OUTLINE_VALUES */
+  /* v2 EndingP = Layout->Basis + MaxClipP; */
+  /* BufferBorder(Group, RectMinMax(StartingP, EndingP), V3(0, 0, 1), Z, DISABLE_CLIPPING); */
+/* #endif */
 
   return;
 }
 
 link_internal void
-BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* RenderState, ui_style* Style, text_render_params RenderParams, b32 DoBuffering = True)
+BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* RenderState, ui_style* Style, v2 Offset, rect2 Clip, text_render_params RenderParams, b32 DoBuffering = True)
 {
   layout* Layout = RenderState->Layout;
   window_layout* Window = RenderState->Window;
 
   r32 Z          = GetZ(zDepth_Text, Window);
-  rect2 Clip     = GetAbsoluteClip(Window);
   v3 Color       = SelectColorState(RenderState, Style);
   /* v2 Scroll      = Window ? Window->Scroll : V2(0); */
-  v2 AbsAt       = GetAbsoluteAt(Layout);
+  v2 AbsAt       = GetAbsoluteAt(Layout) + Offset;
+
+  if (Area(Clip) == 0.0f && Clip.Min.x == 0)
+  {
+      Clip = GetAbsoluteClip(Window);
+  }
+  else
+  {
+    Clip += GetAbsoluteAt(Layout);
+  }
 
   // NOTE(Jesse): This is weird, but it's how I wanted the phrasing on the API
   // side, so we have this double-negative check here.
-  if ((RenderParams & TextRenderParam_NoScroll) == 0)
+  /* if ((RenderParams & TextRenderParam_NoScroll) == 0) */
   {
     /* AbsAt -= Scroll; */
   }
@@ -609,7 +626,7 @@ BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* Ren
     Clip = DISABLE_CLIPPING;
   }
 
-  BufferValue(Text, AbsAt, Group, Layout, Color, Style, Z, Clip, DoBuffering);
+  BufferValue(Text, AbsAt, Group, Layout, Color, Style, Z, Clip, RenderParams, DoBuffering);
   return;
 }
 
@@ -667,14 +684,16 @@ PushNewRow(debug_ui_render_group *Group)
 }
 
 link_internal void
-Text(debug_ui_render_group* Group, counted_string String, ui_style *Style = &DefaultStyle, text_render_params RenderParams = TextRenderParam_Default)
+Text(debug_ui_render_group* Group, counted_string String, ui_style *Style = &DefaultStyle, text_render_params RenderParams = TextRenderParam_Default, v2 Offset = {}, rect2 Clip = {})
 {
   ui_render_command Command = {
     .Type = type_ui_render_command_text,
     .ui_render_command_text = {
       .String = String,
       .Style = *Style,
-      .Params = RenderParams
+      .Offset = Offset,
+      .Clip = Clip,
+      .Params = RenderParams,
     }
   };
 
@@ -723,14 +742,15 @@ PushColumn(debug_ui_render_group *Group, counted_string String, ui_style* Style 
 }
 
 link_internal void
-PushTextAt(debug_ui_render_group *Group, counted_string Text, v2 At, rect2 Clip)
+PushTextAt(debug_ui_render_group *Group, counted_string Text, v2 At, rect2 Clip, font Font = Global_Font)
 {
   ui_render_command Command = {
-    .Type           = type_ui_render_command_text_at,
+    .Type = type_ui_render_command_text_at,
 
     .ui_render_command_text_at.Text    = Text,
     .ui_render_command_text_at.At      = At,
     .ui_render_command_text_at.Clip    = Clip,
+    /* .ui_render_command_text_at.Font    = Font, */
   };
 
   PushUiRenderCommand(Group, &Command);
@@ -741,7 +761,7 @@ PushTextAt(debug_ui_render_group *Group, counted_string Text, v2 At, rect2 Clip)
 link_internal void
 PushTooltip(debug_ui_render_group *Group, counted_string Text)
 {
-  PushTextAt(Group, Text, *Group->MouseP+V2(12, -7), DISABLE_CLIPPING);
+  PushTextAt(Group, Text, *Group->MouseP+V2(14, -7), DISABLE_CLIPPING);
   return;
 }
 
@@ -970,7 +990,7 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
   counted_string TitleText = FormatCountedString(TranArena, CSz("%S (%u)"), Window->Title, Window->InteractionStackIndex);
 
   PushForceAdvance(Group, V2(Global_TitleBarPadding));
-  Text(Group, TitleText, &DefaultStyle, (text_render_params)(TextRenderParam_NoScroll|TextRenderParam_NoClip) );
+  Text(Group, TitleText, &DefaultStyle, TextRenderParam_NoClip );
   /* PushForceAdvance(Group, V2(.0f, Global_TitleBarPadding)); */
 
   PushButtonStart(Group, TitleBarInteractionId);
@@ -1048,10 +1068,10 @@ ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId,
     Style->Color = Style->ClickedColor;
   }
 
-  if (Style->IsActive && !Result.Pressed)
-  {
-    Style->Color = Style->ActiveColor;
-  }
+  /* if (Style->IsActive && !Result.Pressed) */
+  /* { */
+  /*   Style->Color = Style->ActiveColor; */
+  /* } */
 
   return Result;
 }
@@ -1573,7 +1593,7 @@ PreprocessTable(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
           {
             ui_render_command_text* TypedCommand = RenderCommandAs(text, Command);
             Assert(CurrentWidth);
-            *CurrentWidth += (TypedCommand->String.Count * Global_Font.Size.x);
+            *CurrentWidth += TypedCommand->Offset.x + (TypedCommand->String.Count * Global_Font.Size.x);
           } break;
 
           case type_ui_render_command_new_row:
@@ -1800,7 +1820,8 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
         TypedCommand->Layout.Basis = GetNextInlineElementBasis(&RenderState);
 
         PushLayout(&RenderState.Layout, &TypedCommand->Layout);
-        BufferValue(TypedCommand->String, Group, &RenderState, &TypedCommand->Style, TypedCommand->Params);
+        /* AdvanceLayoutStackBy(TypedCommand->Offset, RenderState.Layout); */
+        BufferValue(TypedCommand->String, Group, &RenderState, &TypedCommand->Style, TypedCommand->Offset, TypedCommand->Clip, TypedCommand->Params);
         PopLayout(&RenderState.Layout);
       } break;
 
