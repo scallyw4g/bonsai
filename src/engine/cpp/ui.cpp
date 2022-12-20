@@ -314,7 +314,7 @@ RangeContains(r32 Min, r32 N, r32 Max)
 }
 
 link_internal clip_result
-ClipRect3AgainstRect2(v2 MinP, v2 Dim, r32 Z, rect2 Clip)
+ClipRect3AgainstRect2(v2 MinP, v2 Dim, r32 Z, rect2 *UV, rect2 Clip)
 {
   // Note(Jesse): Z==0 | far-clip
   // Note(Jesse): Z==1 | near-clip
@@ -346,36 +346,48 @@ ClipRect3AgainstRect2(v2 MinP, v2 Dim, r32 Z, rect2 Clip)
     {
       r32 Total = Right - Left;
       r32 TotalClipped = Right - Clip.Max.x;
-      Result.PartialClip.Max.x = TotalClipped / Total;
+      Result.ClipRatio.Max.x = TotalClipped / Total;
 
       Result.ClippedMax.x = RightTop.x = RightBottom.x = Clip.Max.x;
       Result.ClipStatus = ClipStatus_PartialClipping;
 
-      Assert(Result.PartialClip.Max.x >= 0.0f && Result.PartialClip.Max.x <= 1.0f);
+      Assert(Result.ClipRatio.Max.x >= 0.0f && Result.ClipRatio.Max.x <= 1.0f);
     }
 
     if (RangeContains(Top, Clip.Max.y, Bottom))
     {
       r32 Total = Bottom - Top;
       r32 TotalClipped = Bottom - Clip.Max.y;
-      Result.PartialClip.Max.y = TotalClipped / Total;
+      Result.ClipRatio.Max.y = TotalClipped / Total;
 
       Result.ClippedMax.y = LeftBottom.y = RightBottom.y = Clip.Max.y;
       Result.ClipStatus = ClipStatus_PartialClipping;
 
-      Assert(Result.PartialClip.Max.y >= 0.0f && Result.PartialClip.Max.y <= 1.0f);
+      Assert(Result.ClipRatio.Max.y >= 0.0f && Result.ClipRatio.Max.y <= 1.0f);
     }
 
     if (RangeContains(Top, Clip.Min.y, Bottom))
     {
       r32 Total = Bottom - Top;
       r32 TotalClipped = Clip.Min.y - Top;
-      Result.PartialClip.Min.y = TotalClipped / Total;
+      Result.ClipRatio.Min.y = TotalClipped / Total;
 
       Result.ClippedMin.y = LeftTop.y = RightTop.y = Clip.Min.y;
       Result.ClipStatus = ClipStatus_PartialClipping;
 
-      Assert(Result.PartialClip.Min.y >= 0.0f && Result.PartialClip.Min.y <= 1.0f);
+      Assert(Result.ClipRatio.Min.y >= 0.0f && Result.ClipRatio.Min.y <= 1.0f);
+    }
+
+    if (UV)
+    {
+      v2 MinUvDiagonal = UV->Max - UV->Min;
+      v2 MaxUvDiagonal = UV->Min - UV->Max;
+
+      v2 MinUvModifier = MinUvDiagonal * Result.ClipRatio.Min;
+      v2 MaxUvModifier = MaxUvDiagonal * Result.ClipRatio.Max;
+
+      UV->Min += MinUvModifier;
+      UV->Max += MaxUvModifier;
     }
 
     /* Result.Clip.Max = RightBottom.xy; */
@@ -423,48 +435,44 @@ BufferQuadDirect(T *Geo, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim)
   #undef TO_NDC
 }
 
+#if 0
 template <typename T> link_internal clip_result
 BufferQuadDirect(T* Geo, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim, rect2 Clip)
 {
-  clip_result Result = ClipRect3AgainstRect2(MinP, Dim, Z, Clip);
+  clip_result Result = ClipRect3AgainstRect2(MinP, Dim, Z, 0, Clip);
   // NOTE(Jesse): Intentionally not switching on the clip_result.ClipStatus
   // It's the callers responsibility to do that (and advance the Geo->At pointer)
   BufferQuadDirect(Geo, Result.ClippedMin, Result.ClippedMax-Result.ClippedMin, Z, ScreenDim);
   return Result;
 }
+#endif
 
 link_internal clip_result
 BufferTexturedQuad(debug_ui_render_group *Group,
                    debug_texture_array_slice TextureSlice,
-                   v2 MinP, v2 Dim, rect2 UV, v3 Color, r32 Z, rect2 Clip)
+                   v2 MinP, v2 Dim, rect2 UV, v3 Color, r32 Z,
+                   rect2 Clip, rect2 *ClipOptional)
 {
   textured_2d_geometry_buffer* Geo = &Group->TextGroup->Geo;
 
   // @streaming_ui_render_memory
   Assert(BufferHasRoomFor(Geo, u32_COUNT_PER_QUAD));
 
-  /* Result = BufferQuadDirect(Geo, MinP, Dim, Z, Group->ScreenDim, Clip); */
-  clip_result Result = ClipRect3AgainstRect2(MinP, Dim, Z, Clip);
+  clip_result Result = ClipRect3AgainstRect2(MinP, Dim, Z, &UV, Clip);
+  if (ClipOptional)
+  {
+    clip_status PrevClipStatus = Result.ClipStatus;
+    Result = ClipRect3AgainstRect2(Result.ClippedMin, Result.ClippedMax-Result.ClippedMin, Z, &UV, *ClipOptional);
+
+    clip_status FinalClipStatus = (clip_status)Max((u32)Result.ClipStatus, (u32)PrevClipStatus);
+    Result.ClipStatus = FinalClipStatus;
+  }
+
   switch (Result.ClipStatus)
   {
     case ClipStatus_NoClipping:
-    {
-      BufferQuadDirect(Geo, MinP, Dim, Z, Group->ScreenDim);
-      BufferQuadUVs(Geo, UV, TextureSlice);
-      BufferColors(Group, Geo, Color);
-      Geo->At += u32_COUNT_PER_QUAD;
-    } break;
-
     case ClipStatus_PartialClipping:
     {
-      v2 MinUvDiagonal = UV.Max - UV.Min;
-      v2 MaxUvDiagonal = UV.Min - UV.Max;
-
-      v2 MinUvModifier = MinUvDiagonal * Result.PartialClip.Min;
-      v2 MaxUvModifier = MaxUvDiagonal * Result.PartialClip.Max;
-
-      UV.Min += MinUvModifier;
-      UV.Max += MaxUvModifier;
 
       BufferQuadDirect(Geo, Result.ClippedMin, Result.ClippedMax-Result.ClippedMin, Z, Group->ScreenDim);
       BufferQuadUVs(Geo, UV, TextureSlice);
@@ -490,12 +498,13 @@ BufferUntexturedQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer
   // @streaming_ui_render_memory
   Assert(BufferHasRoomFor(Geo, u32_COUNT_PER_QUAD));
 
-  clip_result Result = BufferQuadDirect(Geo, MinP, Dim, Z, Group->ScreenDim, Clip);
+  clip_result Result = ClipRect3AgainstRect2(MinP, Dim, Z, 0, Clip);
   switch (Result.ClipStatus)
   {
     case ClipStatus_NoClipping:
     case ClipStatus_PartialClipping:
     {
+      BufferQuadDirect(Geo, Result.ClippedMin, Result.ClippedMax-Result.ClippedMin, Z, Group->ScreenDim);
       BufferColors(Group, Geo, Color);
       Geo->At += u32_COUNT_PER_QUAD;
     } break;
@@ -521,7 +530,7 @@ BufferUntexturedQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer
 }
 
 link_internal void
-BufferChar(debug_ui_render_group *Group, u8 Char, v2 MinP, v2 FontSize, v3 Color, r32 Z, rect2 Clip)
+BufferChar(debug_ui_render_group *Group, u8 Char, v2 MinP, v2 FontSize, v3 Color, r32 Z, rect2 ClipWindow, rect2 *ClipOptional)
 {
   rect2 UV = UVsForChar(Char);
 
@@ -534,17 +543,17 @@ BufferChar(debug_ui_render_group *Group, u8 Char, v2 MinP, v2 FontSize, v3 Color
 
   v2 ShadowOffset = 0.075f*FontSize;
   BufferTexturedQuad( Group, DebugTextureArraySlice_Font,
-                      MinP+ShadowOffset, FontSize, UV, ShadowColor, Z, Clip);
+                      MinP+ShadowOffset, FontSize, UV, ShadowColor, Z, ClipWindow, ClipOptional);
 
   BufferTexturedQuad( Group, DebugTextureArraySlice_Font,
-                      MinP, FontSize, UV, Color, Z, Clip);
+                      MinP, FontSize, UV, Color, Z, ClipWindow, ClipOptional);
 }
 
 link_internal void
-BufferChar(debug_ui_render_group *Group, u8 Char, v2 MinP, v2 FontSize, u32 Color, r32 Z, rect2 Clip)
+BufferChar(debug_ui_render_group *Group, u8 Char, v2 MinP, v2 FontSize, u32 Color, r32 Z, rect2 ClipWindow, rect2 *ClipOptional)
 {
   v3 ColorVector = GetColorData(DefaultPalette, Color).xyz;
-  BufferChar(Group, Char, MinP, FontSize, ColorVector, Z, Clip);
+  BufferChar(Group, Char, MinP, FontSize, ColorVector, Z, ClipWindow, ClipOptional);
 }
 
 link_internal void
@@ -589,7 +598,7 @@ AdvanceLayoutStackBy(v2 Delta, layout* Layout)
 }
 
 link_internal void
-BufferValue(counted_string Text, v2 AbsAt, debug_ui_render_group *Group, layout* Layout, v3 Color, ui_style* Style, r32 Z, rect2 Clip, text_render_params Params, b32 DoBuffering = True)
+BufferValue(counted_string Text, v2 AbsAt, debug_ui_render_group *Group, layout* Layout, v3 Color, ui_style* Style, r32 Z, rect2 ClipWindow, rect2 *ClipOptional, text_render_params Params, b32 DoBuffering = True)
 {
   r32 xDelta = 0;
   /* v2 MinP = GetAbsoluteAt(Layout) + V2(xDelta, 0); */
@@ -602,7 +611,7 @@ BufferValue(counted_string Text, v2 AbsAt, debug_ui_render_group *Group, layout*
 
     if (DoBuffering)
     {
-      BufferChar(Group, (u8)Text.Start[CharIndex], AbsMinP, Style->Font.Size, Color, Z, Clip);
+      BufferChar(Group, (u8)Text.Start[CharIndex], AbsMinP, Style->Font.Size, Color, Z, ClipWindow, ClipOptional);
     }
 
     xDelta += Style->Font.Size.x;
@@ -624,24 +633,24 @@ BufferValue(counted_string Text, v2 AbsAt, debug_ui_render_group *Group, layout*
 }
 
 link_internal void
-BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* RenderState, ui_style* Style, v2 Offset, rect2 Clip, text_render_params RenderParams, b32 DoBuffering = True)
+BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* RenderState, ui_style* Style, v2 Offset, rect2 ClipOptional, text_render_params RenderParams, b32 DoBuffering = True)
 {
   layout* Layout = RenderState->Layout;
   window_layout* Window = RenderState->Window;
 
-  r32 Z          = GetZ(zDepth_Text, Window);
-  v3 Color       = SelectColorState(RenderState, Style);
-  /* v2 Scroll      = Window ? Window->Scroll : V2(0); */
-  v2 AbsAt       = GetAbsoluteAt(Layout) + Offset;
+  r32 Z            = GetZ(zDepth_Text, Window);
+  v3 Color         = SelectColorState(RenderState, Style);
+  /* v2 Scroll        = Window ? Window->Scroll : V2(0); */
+  v2 AbsAt         = GetAbsoluteAt(Layout) + Offset;
+  rect2 ClipWindow = GetAbsoluteClip(Window);
 
-  if (Area(Clip) == 0.0f && Clip.Min.x == 0)
+  rect2 *ClipOptionalPtr = 0;
+  if (Area(ClipOptional) > 0.f)
   {
-      Clip = GetAbsoluteClip(Window);
+    ClipOptional += GetAbsoluteAt(Layout);
+    ClipOptionalPtr = &ClipOptional;
   }
-  else
-  {
-    Clip += GetAbsoluteAt(Layout);
-  }
+
 
   // NOTE(Jesse): This is weird, but it's how I wanted the phrasing on the API
   // side, so we have this double-negative check here.
@@ -652,10 +661,11 @@ BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* Ren
 
   if (RenderParams & TextRenderParam_NoClip)
   {
-    Clip = DISABLE_CLIPPING;
+    ClipWindow = DISABLE_CLIPPING;
+    ClipOptionalPtr = 0;
   }
 
-  BufferValue(Text, AbsAt, Group, Layout, Color, Style, Z, Clip, RenderParams, DoBuffering);
+  BufferValue(Text, AbsAt, Group, Layout, Color, Style, Z, ClipWindow, ClipOptionalPtr, RenderParams, DoBuffering);
   return;
 }
 
@@ -669,7 +679,7 @@ BufferTextAt(debug_ui_render_group *Group, v2 BasisP, counted_string Text, v2 Fo
         CharIndex++ )
     {
       v2 MinP = BasisP + V2(FontSize.x*CharIndex, 0);
-      BufferChar(Group, (u8)Text.Start[CharIndex], MinP, FontSize, Color, Z, Clip);
+      BufferChar(Group, (u8)Text.Start[CharIndex], MinP, FontSize, Color, Z, Clip, 0);
     }
   }
 }
@@ -1285,7 +1295,7 @@ ProcessTexturedQuadPush(debug_ui_render_group* Group, ui_render_command_textured
 
   if (DoBuffering)
   {
-    BufferTexturedQuad( Group, Command->TextureSlice, MinP, Dim, UVsForFullyCoveredQuad(), V3(1), Z, Clip);
+    BufferTexturedQuad( Group, Command->TextureSlice, MinP, Dim, UVsForFullyCoveredQuad(), V3(1), Z, Clip, 0);
   }
 
   AdvanceLayoutStackBy(V2(Dim.x, 0), RenderState->Layout);
