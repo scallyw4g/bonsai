@@ -1845,7 +1845,6 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
           v2 Advance = V2(TypedCommand->MaxWidth - TypedCommand->Width, 0);
           AdvanceLayoutStackBy(Advance, RenderState.Layout);
         }
-
       } break;
 
       case type_ui_render_command_column_end:
@@ -1856,12 +1855,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       case type_ui_render_command_text:
       {
         ui_render_command_text* TypedCommand = RenderCommandAs(text, Command);
-        TypedCommand->Layout.Basis = GetNextInlineElementBasis(&RenderState);
-
-        PushLayout(&RenderState.Layout, &TypedCommand->Layout);
-        /* AdvanceLayoutStackBy(TypedCommand->Offset, RenderState.Layout); */
         BufferValue(TypedCommand->String, Group, &RenderState, &TypedCommand->Style, TypedCommand->Offset, TypedCommand->Clip, TypedCommand->Params);
-        PopLayout(&RenderState.Layout);
       } break;
 
       case type_ui_render_command_text_at:

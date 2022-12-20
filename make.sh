@@ -319,18 +319,21 @@ function RunPoofHelper {
    # -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/include"        \
    # -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/atlmfc/include" \
 
+   # -I "C:/Program Files/LLVM/lib/clang/11.0.0/include"                                                         \
+   # -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/include"        \
+   # -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/atlmfc/include" \
+   # -I "C:/Program Files (x86)/Windows Kits/10/Include/10.0.18362.0/ucrt"                                       \
+   # -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/shared"                                     \
+   # -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/um"                                         \
+   # -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/winrt"                                      \
+
+
+   # --log-level LogLevel_Debug                                                                                  \
 
   poof                                                                                                         \
-   --log-level LogLevel_Debug                                                                                  \
+    -c0 \
    -I src/                                                                                                     \
    -I include/                                                                                                 \
-   -I "C:/Program Files/LLVM/lib/clang/11.0.0/include"                                                         \
-   -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/include"        \
-   -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/atlmfc/include" \
-   -I "C:/Program Files (x86)/Windows Kits/10/Include/10.0.18362.0/ucrt"                                       \
-   -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/shared"                                     \
-   -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/um"                                         \
-   -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/winrt"                                      \
    -D _M_X64                                                                                                   \
    -D _M_CEE                                                                                                   \
    -D POOF_PREPROCESSOR \
@@ -351,7 +354,7 @@ function RunPoof
   [ -d src/generated ] && rm -Rf src/generated
   [ -d generated ] && rm -Rf generated
 
-  # RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
+  RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
   RunPoofHelper include/bonsai_debug/debug.cpp && echo -e "$Success poofed src/include/bonsai_debug/debug.cpp" &
   # RunPoofHelper examples/asset_picker/game.cpp && echo -e "$Success poofed examples/asset_picker/game.cpp" &
   # RunPoofHelper examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &
