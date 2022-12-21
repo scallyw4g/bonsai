@@ -299,12 +299,14 @@ BufferColors(debug_ui_render_group *Group, T *Geo, v3 Color)
   BufferColorsDirect(Geo, Color);
 }
 
+#if 1
 inline b32
-RangeContains(u64 Min, u64 N, u64 Max)
+RangeContainsInclusive(u64 Min, u64 N, u64 Max)
 {
-  b32 Result = (N >= Min && N < Max);
+  b32 Result = (N >= Min && N <= Max);
   return Result;
 }
+#endif
 
 inline b32
 RangeContains(r32 Min, r32 N, r32 Max)
@@ -1046,11 +1048,11 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
 
   if (Length(Window->Scroll) != 0.0f)
   {
-    DebugLine(CSz("%f %f"), Window->Scroll.x, Window->Scroll.y);
-    if (Window->Scroll.y < -100)
-    {
-      /* RuntimeBreak(); */
-    }
+    /* DebugLine(CSz("%f %f"), Window->Scroll.x, Window->Scroll.y); */
+    /* if (Window->Scroll.y < 0) */
+    /* { */
+    /*   Window->Scroll.y = Min(0.f, Window->Scroll.y + 3.f); */
+    /* } */
   }
 
   PushNewRow(Group);
