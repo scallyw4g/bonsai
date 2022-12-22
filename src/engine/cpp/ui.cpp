@@ -1004,7 +1004,7 @@ PushWindowStartInternal( debug_ui_render_group *Group,
   Text(Group, TitleText, &DefaultStyle, TextRenderParam_DisableClipping );
   /* PushForceAdvance(Group, V2(.0f, Global_TitleBarPadding)); */
 
-  /* if (!Window->Minimized) */
+  if (!Window->Minimized)
   {
     PushButtonStart(Group, MinimizeInteractionId);
       Text(Group, MinimizedIcon, &DefaultStyle, TextRenderParam_DisableClipping, MinimizeButtonOffset );
@@ -1047,67 +1047,55 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
 {
   TIMED_FUNCTION();
 
-  counted_string TitleText = FormatCountedString(TranArena, CSz("%S (%u)(%u)(%S)"), Window->Title, Window->InteractionStackIndex, Window->MinimizeIndex, Window->Minimized?CSz("o"):CSz("_"));
+  v2 ResizeHandleDim = V2(20);
+  counted_string TitleText = FormatCountedString(TranArena, CSz("%S (%u)"), Window->Title, Window->InteractionStackIndex);
   counted_string MinimizedIcon = CSz("_");
   rect2 TitleRect = GetDrawBounds(TitleText, &DefaultStyle);
 
   umm TitleBarInteractionId = (umm)"WindowTitleBar"^(umm)Window;
   interactable_handle TitleBarHandle = { .Id = TitleBarInteractionId };
-  if (Pressed(Group, &TitleBarHandle))
-  {
-    Window->Basis -= *Group->MouseDP; // TODO(Jesse, id: 107, tags: cleanup, speed): Can we compute this with MouseP to avoid a frame of input delay?
-  }
+
+
+  umm MinimizeInteractionId = (umm)"WindowMinimizeInteraction"^(umm)Window;
+  interactable_handle MinimizeButtonHandle = { .Id = MinimizeInteractionId };
 
   if (Window->Minimized && Clicked(Group, &TitleBarHandle))
   {
     UnminimizeWindow(Group, Window);
   }
-
-  /* DebugViewDatastructure(Group->MinimizedWindowBuffer); */
-
-  umm MinimizeInteractionId = (umm)"WindowMinimizeInteraction"^(umm)Window;
-  interactable_handle MinimizeButtonHandle = { .Id = MinimizeInteractionId };
-  if (Clicked(Group, &MinimizeButtonHandle))
+  else if (Pressed(Group, &TitleBarHandle))
   {
-    DebugLine("Clicked (%lu)", MinimizeInteractionId);
-    Window->Minimized = !Window->Minimized;
-
-    if (Window->Minimized)
-    {
-      for (u32 MinimizeIndex = 0; MinimizeIndex < MAX_MINIMIZED_WINDOWS; ++MinimizeIndex)
-      {
-        window_layout **Slot = Group->MinimizedWindowBuffer + MinimizeIndex;
-        if (*Slot == 0)
-        {
-          *Slot = Window;
-          Window->MinimizeIndex = MinimizeIndex;
-          break;
-        }
-      }
-
-      Window->CachedBasis = Window->Basis;
-      Window->CachedMaxClip = Window->MaxClip;
-      Window->CachedScroll = Window->Scroll;
-
-      rect2 MinimizedIconRect = GetDrawBounds(MinimizedIcon, &DefaultStyle);
-
-      rect2 MinimizedTitleBarBounds = RectMinDim({}, V2(MinimizedIconRect.Max.x + TitleRect.Max.x, Global_TitleBarHeight));
-
-      r32 MinimizedWindowWidth = MinimizedTitleBarBounds.Max.x;
-
-      v2 WindowBasis = V2(Group->ScreenDim.x - MinimizedWindowWidth - 100, 50 + (Window->MinimizeIndex * Global_TitleBarHeight) );
-      v2 WindowMaxClip  = MinimizedTitleBarBounds.Max + V2(50, 0);
-
-      Window->Basis = WindowBasis;
-      Window->MaxClip = WindowMaxClip;
-
-    }
-    else
-    {
-      UnminimizeWindow(Group, Window);
-    }
-
+    Window->Basis -= *Group->MouseDP; // TODO(Jesse, id: 107, tags: cleanup, speed): Can we compute this with MouseP to avoid a frame of input delay?
   }
+  else if (!Window->Minimized && Clicked(Group, &MinimizeButtonHandle))
+  {
+    Window->Minimized = True;
+
+    for (u32 MinimizeIndex = 0; MinimizeIndex < MAX_MINIMIZED_WINDOWS; ++MinimizeIndex)
+    {
+      window_layout **Slot = Group->MinimizedWindowBuffer + MinimizeIndex;
+      if (*Slot == 0)
+      {
+        *Slot = Window;
+        Window->MinimizeIndex = MinimizeIndex;
+        break;
+      }
+    }
+
+    Window->CachedBasis = Window->Basis;
+    Window->CachedMaxClip = Window->MaxClip;
+    Window->CachedScroll = Window->Scroll;
+
+    rect2 MinimizedTitleBarBounds = RectMinDim({}, V2(TitleRect.Max.x, Global_TitleBarHeight));
+
+    v2 WindowOffsetFromCornerOfScreen = V2(20);
+    v2 WindowDim  = MinimizedTitleBarBounds.Max + V2(ResizeHandleDim.x, 0) + V2(20, 0);
+    v2 WindowBasis = V2(Group->ScreenDim.x - WindowDim.x - WindowOffsetFromCornerOfScreen.x, (Window->MinimizeIndex * Global_TitleBarHeight) + WindowOffsetFromCornerOfScreen.y );
+
+    Window->Basis = WindowBasis;
+    Window->MaxClip = WindowDim;
+  }
+
 
   umm ResizeHandleInteractionId = (umm)"WindowResizeWidget"^(umm)Window;
   interactable_handle ResizeHandle = { .Id = ResizeHandleInteractionId };
@@ -1139,7 +1127,6 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
     }
   }
 
-  v2 ResizeHandleDim = V2(20);
   PushWindowStartInternal( Group,
                            Window,
                            TitleText,
