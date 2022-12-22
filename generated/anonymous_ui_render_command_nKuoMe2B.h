@@ -14,6 +14,11 @@ case type_ui_render_command_column_start:
   Command->ui_render_command_column_start.Layout.At = {};
   Command->ui_render_command_column_start.Layout.DrawBounds = InvertedInfinityRectangle();
 } break;
+case type_ui_render_command_text:
+{
+  Command->ui_render_command_text.Layout.At = {};
+  Command->ui_render_command_text.Layout.DrawBounds = InvertedInfinityRectangle();
+} break;
 case type_ui_render_command_textured_quad:
 {
   Command->ui_render_command_textured_quad.Layout.At = {};

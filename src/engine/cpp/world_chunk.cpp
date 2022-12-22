@@ -2264,7 +2264,7 @@ PushChunkView(debug_ui_render_group* Group, world_chunk* Chunk, window_layout* W
 
     PushTableStart(Group);
       interactable_handle ViewportButton = PushButtonStart(Group, (umm)"ViewportButton");
-        PushTexturedQuad(Group, DebugTextureArraySlice_Viewport, zDepth_Text);
+        PushTexturedQuad(Group, DebugTextureArraySlice_Viewport, Window->MaxClip, zDepth_Text);
       PushButtonEnd(Group);
     PushTableEnd(Group);
 

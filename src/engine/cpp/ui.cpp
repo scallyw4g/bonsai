@@ -91,15 +91,6 @@ NewRow(layout *Layout)
   return;
 }
 
-link_internal v2
-GetTextBounds(u32 TextLength, font* Font)
-{
-  v2 Result = {};
-  Result.x = TextLength * Font->Size.x;
-  Result.y = Font->Size.y;
-  return Result;
-}
-
 link_internal v3
 SelectColorState(render_state* RenderState, ui_style *Style)
 {
@@ -635,16 +626,14 @@ BufferValue(counted_string Text, v2 AbsAt, debug_ui_render_group *Group, layout*
 }
 
 link_internal void
-BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* RenderState, ui_style* Style, v2 Offset, rect2 ClipOptional, text_render_params RenderParams, b32 DoBuffering = True)
+BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* RenderState, ui_style* Style, rect2 ClipOptional, text_render_params RenderParams, b32 DoBuffering = True)
 {
   layout* Layout = RenderState->Layout;
-  window_layout* Window = RenderState->Window;
 
-  r32 Z            = GetZ(zDepth_Text, Window);
-  v3 Color         = SelectColorState(RenderState, Style);
-  /* v2 Scroll        = Window ? Window->Scroll : V2(0); */
-  v2 AbsAt         = GetAbsoluteAt(Layout) + Offset;
-  rect2 ClipWindow = GetAbsoluteClip(Window);
+  r32 Z      = GetZ(zDepth_Text, RenderState->Window);
+  v3 Color   = SelectColorState(RenderState, Style);
+  v2 AbsAt   = GetAbsoluteAt(Layout);
+  rect2 Clip = RenderState->ClipRect; //GetAbsoluteClip(RenderState->Window);
 
   rect2 *ClipOptionalPtr = 0;
   if (Area(ClipOptional) > 0.f)
@@ -661,14 +650,13 @@ BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* Ren
     /* AbsAt -= Scroll; */
   }
 
-  if (RenderParams & TextRenderParam_NoClip)
+  if (RenderParams & TextRenderParam_DisableClipping)
   {
-    ClipWindow = DISABLE_CLIPPING;
+    Clip = DISABLE_CLIPPING;
     ClipOptionalPtr = 0;
   }
 
-  BufferValue(Text, AbsAt, Group, Layout, Color, Style, Z, ClipWindow, ClipOptionalPtr, RenderParams, DoBuffering);
-  return;
+  BufferValue(Text, AbsAt, Group, Layout, Color, Style, Z, Clip, ClipOptionalPtr, RenderParams, DoBuffering);
 }
 
 link_internal void
@@ -807,12 +795,13 @@ PushTooltip(debug_ui_render_group *Group, counted_string Text)
 }
 
 link_internal void
-PushTexturedQuad(debug_ui_render_group *Group, debug_texture_array_slice TextureSlice, z_depth zDepth)
+PushTexturedQuad(debug_ui_render_group *Group, debug_texture_array_slice TextureSlice, v2 Dim, z_depth zDepth)
 {
   ui_render_command Command = {
     .Type = type_ui_render_command_textured_quad,
 
     .ui_render_command_textured_quad.TextureSlice = TextureSlice,
+    .ui_render_command_textured_quad.Dim = Dim,
     .ui_render_command_textured_quad.zDepth = zDepth,
   };
 
@@ -963,17 +952,161 @@ PushForceAdvance(debug_ui_render_group *Group, v2 Offset)
   return;
 }
 
+link_internal rect2
+GetDrawBounds(counted_string String, ui_style *Style)
+{
+  r32 xMax = (String.Count * Style->Font.Size.x);
+  rect2 Result =  RectMinMax({}, {xMax, Style->Font.Size.y});
+  return Result;
+}
+
+link_internal void
+PushWindowStartInternal( debug_ui_render_group *Group,
+                         window_layout *Window,
+                         cs TitleText,
+                         cs MinimizedIcon,
+                         umm ResizeHandleInteractionId,
+                         umm MinimizeInteractionId,
+                         umm TitleBarInteractionId,
+                         v2 WindowResizeHandleMin,
+                         v2 WindowResizeHandleDim,
+                         v2 MinimizeButtonOffset,
+                         v2 WindowBasis,
+                         v2 WindowMaxClip,
+                         v2 WindowScroll )
+{
+  rect2 AbsWindowBounds = RectMinDim(WindowBasis, WindowMaxClip);
+  rect2 ClipRect = RectMinMax(AbsWindowBounds.Min + V2(0, Global_TitleBarHeight), AbsWindowBounds.Max);
+
+  ui_render_command Command = {
+    .Type = type_ui_render_command_window_start,
+
+    .ui_render_command_window_start = {
+      .Window = Window,
+      .ClipRect = ClipRect,
+      .Layout = {
+        .Basis = WindowBasis,
+        .DrawBounds = InvertedInfinityRectangle(),
+      }
+    }
+  };
+
+  PushUiRenderCommand(Group, &Command);
+
+  // NOTE(Jesse): Must come first to take precedence over the title bar when clicking
+  v2 Dim = V2(20);
+  PushButtonStart(Group, ResizeHandleInteractionId);
+    PushUntexturedQuadAt(Group, WindowResizeHandleMin, WindowResizeHandleDim, zDepth_Border);
+  PushButtonEnd(Group);
+
+  PushForceAdvance(Group, V2(Global_TitleBarPadding));
+
+  Text(Group, TitleText, &DefaultStyle, TextRenderParam_DisableClipping );
+  /* PushForceAdvance(Group, V2(.0f, Global_TitleBarPadding)); */
+
+  /* if (!Window->Minimized) */
+  {
+    PushButtonStart(Group, MinimizeInteractionId);
+      Text(Group, MinimizedIcon, &DefaultStyle, TextRenderParam_DisableClipping, MinimizeButtonOffset );
+    PushButtonEnd(Group);
+  }
+
+  PushButtonStart(Group, TitleBarInteractionId);
+    ui_style TitleBarStyle = UiStyleFromLightestColor(V3(0.20f, 0.f, 0.20f));
+    PushUntexturedQuadAt(Group, WindowBasis, V2(WindowMaxClip.x, Global_TitleBarHeight), zDepth_TitleBar, &TitleBarStyle);
+  PushButtonEnd(Group);
+
+  PushBorder(Group, AbsWindowBounds, V3(1.f));
+
+  ui_style BackgroundStyle = UiStyleFromLightestColor(V3(.1f, 0.f, .1f));
+  PushUntexturedQuadAt(Group, WindowBasis, WindowMaxClip, zDepth_Background, &BackgroundStyle);
+
+  PushForceAdvance(Group, V2(0.f, Global_TitleBarHeight));
+  PushForceAdvance(Group, V2(0.f, Global_TitleBarPadding));
+
+  PushNewRow(Group);
+  PushForceAdvance(Group, WindowScroll);
+  PushResetDrawBounds(Group);
+}
+
+link_internal void
+UnminimizeWindow(debug_ui_render_group *Group, window_layout *Window)
+{
+  Window->Minimized = False;
+
+  Group->MinimizedWindowBuffer[Window->MinimizeIndex] = 0;
+  Window->MinimizeIndex = 0;
+
+  Window->Basis = Window->CachedBasis;
+  Window->MaxClip = Window->CachedMaxClip;
+  Window->Scroll = Window->CachedScroll;
+}
 
 link_internal void
 PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
 {
   TIMED_FUNCTION();
 
+  counted_string TitleText = FormatCountedString(TranArena, CSz("%S (%u)(%u)(%S)"), Window->Title, Window->InteractionStackIndex, Window->MinimizeIndex, Window->Minimized?CSz("o"):CSz("_"));
+  counted_string MinimizedIcon = CSz("_");
+  rect2 TitleRect = GetDrawBounds(TitleText, &DefaultStyle);
+
   umm TitleBarInteractionId = (umm)"WindowTitleBar"^(umm)Window;
   interactable_handle TitleBarHandle = { .Id = TitleBarInteractionId };
   if (Pressed(Group, &TitleBarHandle))
   {
     Window->Basis -= *Group->MouseDP; // TODO(Jesse, id: 107, tags: cleanup, speed): Can we compute this with MouseP to avoid a frame of input delay?
+  }
+
+  if (Window->Minimized && Clicked(Group, &TitleBarHandle))
+  {
+    UnminimizeWindow(Group, Window);
+  }
+
+  /* DebugViewDatastructure(Group->MinimizedWindowBuffer); */
+
+  umm MinimizeInteractionId = (umm)"WindowMinimizeInteraction"^(umm)Window;
+  interactable_handle MinimizeButtonHandle = { .Id = MinimizeInteractionId };
+  if (Clicked(Group, &MinimizeButtonHandle))
+  {
+    DebugLine("Clicked (%lu)", MinimizeInteractionId);
+    Window->Minimized = !Window->Minimized;
+
+    if (Window->Minimized)
+    {
+      for (u32 MinimizeIndex = 0; MinimizeIndex < MAX_MINIMIZED_WINDOWS; ++MinimizeIndex)
+      {
+        window_layout **Slot = Group->MinimizedWindowBuffer + MinimizeIndex;
+        if (*Slot == 0)
+        {
+          *Slot = Window;
+          Window->MinimizeIndex = MinimizeIndex;
+          break;
+        }
+      }
+
+      Window->CachedBasis = Window->Basis;
+      Window->CachedMaxClip = Window->MaxClip;
+      Window->CachedScroll = Window->Scroll;
+
+      rect2 MinimizedIconRect = GetDrawBounds(MinimizedIcon, &DefaultStyle);
+
+      rect2 MinimizedTitleBarBounds = RectMinDim({}, V2(MinimizedIconRect.Max.x + TitleRect.Max.x, Global_TitleBarHeight));
+
+      r32 MinimizedWindowWidth = MinimizedTitleBarBounds.Max.x;
+
+      v2 WindowBasis = V2(Group->ScreenDim.x - MinimizedWindowWidth - 100, 50 + (Window->MinimizeIndex * Global_TitleBarHeight) );
+      v2 WindowMaxClip  = MinimizedTitleBarBounds.Max + V2(50, 0);
+
+      Window->Basis = WindowBasis;
+      Window->MaxClip = WindowMaxClip;
+
+    }
+    else
+    {
+      UnminimizeWindow(Group, Window);
+    }
+
   }
 
   umm ResizeHandleInteractionId = (umm)"WindowResizeWidget"^(umm)Window;
@@ -1006,61 +1139,22 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
     }
   }
 
-
-  ui_render_command Command = {
-    .Type = type_ui_render_command_window_start,
-
-    .ui_render_command_window_start = {
-      .Window = Window,
-      .Layout = {
-        .Basis = Window->Basis,
-        .DrawBounds = InvertedInfinityRectangle(),
-      }
-    }
-  };
-
-  PushUiRenderCommand(Group, &Command);
-
-  // NOTE(Jesse): Must come first to take precedence over the title bar when clicking
-  v2 Dim = V2(20);
-  PushButtonStart(Group, ResizeHandleInteractionId);
-    PushUntexturedQuadAt(Group, GetAbsoluteMaxClip(Window)-Dim, Dim, zDepth_Border);
-  PushButtonEnd(Group);
-
-  ui_style TitleBarStyle = UiStyleFromLightestColor(V3(0.20f, 0.f, 0.20f));
-  counted_string TitleText = FormatCountedString(TranArena, CSz("%S (%u)"), Window->Title, Window->InteractionStackIndex);
-
-  PushForceAdvance(Group, V2(Global_TitleBarPadding));
-  Text(Group, TitleText, &DefaultStyle, TextRenderParam_NoClip );
-  /* PushForceAdvance(Group, V2(.0f, Global_TitleBarPadding)); */
-
-  PushButtonStart(Group, TitleBarInteractionId);
-    PushUntexturedQuadAt(Group, Window->Basis, V2(Window->MaxClip.x, Global_TitleBarHeight), zDepth_TitleBar, &TitleBarStyle);
-  PushButtonEnd(Group);
-
-  PushBorder(Group, GetBounds(Window), V3(1.f));
-
-  ui_style BackgroundStyle = UiStyleFromLightestColor(V3(.1f, 0.f, .1f));
-  PushUntexturedQuadAt(Group, Window->Basis, Window->MaxClip, zDepth_Background, &BackgroundStyle);
-
-  PushForceAdvance(Group, V2(0.f, Global_TitleBarHeight));
-  PushForceAdvance(Group, V2(0.f, Global_TitleBarPadding));
-
-  if (Length(Window->Scroll) != 0.0f)
-  {
-    /* DebugLine(CSz("%f %f"), Window->Scroll.x, Window->Scroll.y); */
-    /* if (Window->Scroll.y < 0) */
-    /* { */
-    /*   Window->Scroll.y = Min(0.f, Window->Scroll.y + 3.f); */
-    /* } */
-  }
-
-  PushNewRow(Group);
-  PushForceAdvance(Group, Window->Scroll);
-  PushResetDrawBounds(Group);
-
-  return;
+  v2 ResizeHandleDim = V2(20);
+  PushWindowStartInternal( Group,
+                           Window,
+                           TitleText,
+                           MinimizedIcon,
+                           ResizeHandleInteractionId,
+                           MinimizeInteractionId,
+                           TitleBarInteractionId,
+                           GetAbsoluteMaxClip(Window)-ResizeHandleDim,
+                           ResizeHandleDim,
+                           V2(Window->MaxClip.x-TitleRect.Max.x-50, 0),
+                           Window->Basis,
+                           Window->MaxClip,
+                           Window->Scroll );
 }
+
 
 link_internal void
 PushWindowEnd(debug_ui_render_group *Group, window_layout *Window)
@@ -1291,9 +1385,9 @@ link_internal void
 ProcessTexturedQuadPush(debug_ui_render_group* Group, ui_render_command_textured_quad *Command, render_state* RenderState, b32 DoBuffering = True)
 {
   v2 MinP    = GetAbsoluteAt(RenderState->Layout);
-  v2 Dim     = RenderState->Window->MaxClip;
+  v2 Dim     = Command->Dim; // RenderState->Window->MaxClip;
   r32 Z      = GetZ(Command->zDepth, RenderState->Window);
-  rect2 Clip = GetAbsoluteClip(RenderState->Window);
+  rect2 Clip = RenderState->ClipRect; //GetAbsoluteClip(RenderState->Window);
 
   if (DoBuffering)
   {
@@ -1309,7 +1403,7 @@ ProcessTexturedQuadPush(debug_ui_render_group* Group, ui_render_command_textured
 link_internal void
 ProcessUntexturedQuadAtPush(debug_ui_render_group* Group, ui_render_command_untextured_quad_at *Command, render_state* RenderState, b32 DoBuffering = True)
 {
-  rect2 Clip = GetAbsoluteClip(RenderState->Window);
+  rect2 Clip = RenderState->ClipRect; //GetAbsoluteClip(RenderState->Window);
   v2 MinP    = GetAbsoluteAt(&Command->Layout);
   v2 Dim     = Command->QuadDim;
   v3 Color   = SelectColorState(RenderState, &Command->Style);
@@ -1329,7 +1423,7 @@ ProcessUntexturedQuadAtPush(debug_ui_render_group* Group, ui_render_command_unte
 link_internal void
 ProcessUntexturedQuadPush(debug_ui_render_group* Group, ui_render_command_untextured_quad *Command, render_state* RenderState, b32 DoBuffering = True)
 {
-  rect2 Clip = GetAbsoluteClip(RenderState->Window);
+  rect2 Clip = RenderState->ClipRect; //GetAbsoluteClip(RenderState->Window);
   v2 MinP    = GetAbsoluteAt(RenderState->Layout);
   v2 Dim     = Command->QuadDim;
   v3 Color   = SelectColorState(RenderState, &Command->Style);
@@ -1480,7 +1574,7 @@ FindPreviousCommand(ui_render_command_buffer* CommandBuffer, ui_render_command_t
   Assert(StartingIndex < CommandBuffer->CommandCount);
 
   find_command_result Result = {};
-  for (u32 CommandIndex = StartingIndex-1;
+  for (u32 CommandIndex = StartingIndex;
       ;
       --CommandIndex)
   {
@@ -1601,6 +1695,7 @@ FindRelativeDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, v2 Relati
   return Result;
 }
 
+
 link_internal u32
 PreprocessTable(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
 {
@@ -1634,7 +1729,7 @@ PreprocessTable(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
           {
             ui_render_command_text* TypedCommand = RenderCommandAs(text, Command);
             Assert(CurrentWidth);
-            *CurrentWidth += TypedCommand->Offset.x + (TypedCommand->String.Count * Global_Font.Size.x);
+            *CurrentWidth += TypedCommand->Offset.x + GetDrawBounds(TypedCommand->String, &TypedCommand->Style).Max.x;
           } break;
 
           case type_ui_render_command_new_row:
@@ -1731,13 +1826,6 @@ PreprocessTable(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
   return OnePastTableEnd;
 }
 
-link_internal v2
-GetNextInlineElementBasis(render_state* RenderState)
-{
-  v2 Result = GetAbsoluteAt(RenderState->Layout);
-  return Result;
-}
-
 link_internal void
 FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *CommandBuffer)
 {
@@ -1746,7 +1834,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
   layout DefaultLayout = {};
   DefaultLayout.DrawBounds = InvertedInfinityRectangle();
 
-  render_state RenderState = { .Layout = &DefaultLayout };
+  render_state RenderState = { .Layout = &DefaultLayout, .ClipRect = DISABLE_CLIPPING };
 
   /* GetDebugState()->DebugValue_u32(Group->SolidGeoCountLastFrame, "Solid Geo"); */
   /* GetDebugState()->DebugValue_u32(Group->TextGeoCountLastFrame, "Text Geo"); */
@@ -1767,11 +1855,13 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
         Assert(RenderState.Layout == &DefaultLayout);
         PopLayout(&RenderState.Layout);
 
+
         Assert(!RenderState.Window);
         ui_render_command_window_start* TypedCommand = RenderCommandAs(window_start, Command);
         RenderState.WindowStartCommandIndex = NextCommandIndex-1;
         PushLayout(&RenderState.Layout, &TypedCommand->Layout);
         RenderState.Window = TypedCommand->Window;
+        RenderState.ClipRect = TypedCommand->ClipRect;
       } break;
 
       case type_ui_render_command_window_end:
@@ -1786,6 +1876,8 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
         PushLayout(&RenderState.Layout, &DefaultLayout);
         Assert(RenderState.Layout == &DefaultLayout);
+
+        RenderState.ClipRect = DISABLE_CLIPPING;
       } break;
 
       case type_ui_render_command_table_start:
@@ -1825,12 +1917,6 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 #endif
 
         PopLayout(&RenderState.Layout);
-
-        /* v2 DBM = GetAbsoluteDrawBoundsMax(RenderState.Layout);// - GetScroll(RenderState.Window); */
-        /* v2 AbsAt = GetAbsoluteAt(RenderState.Layout);// - GetScroll(RenderState.Window); */
-        /* v2 Advance = DBM - AbsAt; */
-        /* AdvanceLayoutStackBy( V2(0.f, Advance.y), RenderState.Layout); */
-
         NewRow(RenderState.Layout);
 
       } break;
@@ -1838,7 +1924,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       case type_ui_render_command_column_start:
       {
         ui_render_command_column_start* TypedCommand = RenderCommandAs(column_start, Command);
-        TypedCommand->Layout.Basis = GetNextInlineElementBasis(&RenderState);
+        TypedCommand->Layout.Basis += GetAbsoluteAt(RenderState.Layout);
 
         PushLayout(&RenderState.Layout, &TypedCommand->Layout);
 
@@ -1857,7 +1943,13 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       case type_ui_render_command_text:
       {
         ui_render_command_text* TypedCommand = RenderCommandAs(text, Command);
-        BufferValue(TypedCommand->String, Group, &RenderState, &TypedCommand->Style, TypedCommand->Offset, TypedCommand->Clip, TypedCommand->Params);
+        TypedCommand->Layout.Basis += GetAbsoluteAt(RenderState.Layout) + TypedCommand->Offset;
+
+        PushLayout(&RenderState.Layout, &TypedCommand->Layout);
+
+        BufferValue(TypedCommand->String, Group, &RenderState, &TypedCommand->Style, TypedCommand->Clip, TypedCommand->Params);
+
+        PopLayout(&RenderState.Layout);
       } break;
 
       case type_ui_render_command_text_at:

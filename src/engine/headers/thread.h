@@ -17,7 +17,7 @@ struct thread_startup_params
   work_queue *HighPriority;
 
   volatile u32 ThreadIndex;
-  volatile u32 ThreadId;
+  /* volatile u32 ThreadId; */
   /* volatile thread_handle ThreadHandle; */
 };
 
