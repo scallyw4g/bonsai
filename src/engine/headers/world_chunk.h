@@ -25,12 +25,9 @@ enum voxel_flag
 
 struct voxel
 {
-  // I wrote some extremely brain-damaged code that needs to be deleted before this is possible
-  voxel_flag Flags; // TODO(Jesse): Change this to a u8.  @make_voxel_2_bytes
+  u8 Flags;
   u8 Color;
 };
-
-CAssert(sizeof(voxel) == 8);
 
 struct boundary_voxel
 {

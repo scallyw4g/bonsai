@@ -376,9 +376,10 @@ UnSetFlag( world_chunk *Chunk, chunk_flag Flag )
 /* } */
 
 inline void
-SetFlag( voxel_flag *Flags, voxel_flag Flag )
+SetFlag( u8 *Flags, voxel_flag Flag )
 {
-  *Flags = (voxel_flag)(*Flags | Flag);
+  /* Assert(Flag < u8_MAX); */
+  *Flags = (u8)(*Flags | Flag);
   return;
 }
 
@@ -418,7 +419,7 @@ SetFlag(boundary_voxel *Voxel, voxel_flag Flag )
 }
 
 inline b32
-IsSet( voxel_flag Flags, voxel_flag Flag )
+IsSet( u8 Flags, voxel_flag Flag )
 {
   b32 Result = ( (Flags & Flag) != 0 );
   return Result;
