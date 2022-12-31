@@ -6,7 +6,7 @@ struct work_queue_entry_copy_buffer
 };
 
 
-#define WORK_QUEUE_MAX_COPY_TARGETS 12
+#define WORK_QUEUE_MAX_COPY_TARGETS 8
 struct work_queue_entry_copy_buffer_set
 {
   u32 Count;

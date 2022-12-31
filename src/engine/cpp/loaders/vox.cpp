@@ -237,7 +237,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
 
           chunk_dimension ModelDim = Max - Min;
 
-          Result.ChunkData = AllocateChunk(WorldStorage, ModelDim);
+          Result.ChunkData = AllocateChunkData(WorldStorage, ModelDim);
           Result.ChunkData->Dim = ModelDim;
 
           for( int VoxelCacheIndex = 0;
@@ -254,7 +254,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
 
           FullBarrier;
 
-          SetFlag(Result.ChunkData, Chunk_VoxelsInitialized);
+          Result.ChunkData->Flags = Chunk_VoxelsInitialized;
         } break;
 
         InvalidDefaultCase;

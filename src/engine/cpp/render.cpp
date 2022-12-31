@@ -562,7 +562,7 @@ GetSign(voxel_position P)
 }
 
 voxel_position
-RayTraceCollision(chunk_data *Chunk, chunk_dimension Dim, v3 StartingP, v3 Ray, v3 CenteringRay)
+RayTraceCollision(world_chunk *Chunk, chunk_dimension Dim, v3 StartingP, v3 Ray, v3 CenteringRay)
 {
   Assert(LengthSq(Ray) == 1);
   v3 Result = V3(-1,-1,-1);
@@ -756,7 +756,7 @@ Triangulate(untextured_3d_geometry_buffer* Dest, world_chunk* Chunk, chunk_dimen
 #endif
 
 inline b32
-IsBoundaryVoxel(chunk_data *Chunk, voxel_position Offset, chunk_dimension Dim)
+IsBoundaryVoxel(world_chunk *Chunk, voxel_position Offset, chunk_dimension Dim)
 {
   s32 VoxelIndex = GetIndex(Offset, Dim);
   voxel *V = &Chunk->Voxels[VoxelIndex];
@@ -773,7 +773,7 @@ IsBoundaryVoxel(chunk_data *Chunk, voxel_position Offset, chunk_dimension Dim)
 }
 
 inline void
-CheckAndIncrementCurrentP( chunk_data *Chunk, chunk_dimension Dim, voxel_position *CurrentP, s32 *CurrentClosestDistanceSq, voxel_position TargetP, voxel_position TestP)
+CheckAndIncrementCurrentP( world_chunk *Chunk, chunk_dimension Dim, voxel_position *CurrentP, s32 *CurrentClosestDistanceSq, voxel_position TargetP, voxel_position TestP)
 {
   if ( IsInsideDim(Dim, TestP) )
   {
@@ -790,7 +790,7 @@ CheckAndIncrementCurrentP( chunk_data *Chunk, chunk_dimension Dim, voxel_positio
 }
 
 voxel_position
-TraverseSurfaceToBoundary( world *World, chunk_data *Chunk, voxel_position StartingP, voxel_position IterDir)
+TraverseSurfaceToBoundary( world *World, world_chunk *Chunk, voxel_position StartingP, voxel_position IterDir)
 {
   s32 CurrentClosestDistanceSq = 0;
   voxel_position TargetP = (IterDir * World->ChunkDim) - IterDir;

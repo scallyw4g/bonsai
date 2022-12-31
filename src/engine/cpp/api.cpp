@@ -82,10 +82,14 @@ Bonsai_FrameEnd(engine_resources *Resources)
 {
   TIMED_FUNCTION();
 
+  SignalFutex(&Resources->Plat->HighPriorityModeFutex);
+
   UNPACK_ENGINE_RESOURCES(Resources);
 
   Bonsai_SimulateEntitiesAndWorld(Resources);
+
   Render_BufferGameGeometry(Resources);
+  UnsignalFutex(&Resources->Plat->HighPriorityModeFutex);
 
   Resources->Graphics->gBuffer->ViewProjection =
     ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *

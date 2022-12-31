@@ -55,35 +55,27 @@ struct boundary_voxel
   }
 };
 
-#pragma pack(push, 1)
 struct chunk_data
 {
   chunk_flag Flags;
   chunk_dimension Dim; // TODO(Jesse): can be 3x u8 instead of 3x s32
-
   voxel *Voxels;
-
-#if EMCC
-  u8 Pad[44];
-#else
-  u8 Pad[40];
-#endif
 };
-CAssert(sizeof(chunk_data) == CACHE_LINE_SIZE);
-#pragma pack(pop)
 
 #pragma pack(push, 1)
 struct current_triangles;
 struct world_chunk
 {
-  chunk_data* Data;
+  chunk_flag Flags;
+
+  chunk_dimension Dim; // TODO(Jesse): can be 3x u8 instead of 3x s32
+
+  voxel *Voxels;
   untextured_3d_geometry_buffer* Mesh;
   untextured_3d_geometry_buffer* LodMesh;
 
   world_position WorldP;
-
   u32 FilledCount;
-
   b32 Picked;
   b32 LodMesh_Complete;
   b32 DrawBoundingVoxels;

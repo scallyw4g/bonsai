@@ -23,6 +23,8 @@ PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
   u32 NewIndex = GetNextQueueIndex(Queue->EnqueueIndex);
   AtomicExchange(&Queue->EnqueueIndex, NewIndex);
 
+  FullBarrier;
+
   /* WakeThread( Queue->GlobalQueueSemaphore ); */
 }
 
@@ -51,6 +53,8 @@ WorkQueueEntry(work_queue_entry_copy_buffer_set *CopySet)
 link_internal void
 PushCopyJob(work_queue *Queue, work_queue_entry_copy_buffer_set *Set, work_queue_entry_copy_buffer *Job)
 {
+  TIMED_FUNCTION();
+
   Set->CopyTargets[Set->Count] = *Job;
   ++Set->Count;
 

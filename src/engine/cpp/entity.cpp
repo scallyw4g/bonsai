@@ -65,20 +65,20 @@ GetCollision( world *World, canonical_position TestP, v3 CollisionDim, chunk_dim
       for ( int x = MinP.x; x < MaxP.x; x++ )
       {
         canonical_position LoopTestP = Canonicalize( WorldChunkDim, V3(x,y,z), TestP.WorldP );
-        world_chunk *chunk = GetWorldChunk( World, LoopTestP.WorldP, VisibleRegion);
+        world_chunk *Chunk = GetWorldChunk( World, LoopTestP.WorldP, VisibleRegion);
 
 #if 0
         /* TODO(Jesse, id: 129, tags: theading, speed, gameplay_improvement):
          * Can we somehow atomically pull this one off the queue and initialize it on demand?
          */
-        if (chunk && NotSet(chunk->Data->flags, Chunk_Initialized) )
+        if (Chunk && NotSet(Chunk->flags, Chunk_Initialized) )
         {
-          chunk->Data->flags = (chunk->Data->flags | Chunk_Queued); // ???
-          InitializeVoxels(chunk);
+          Chunk->flags = (Chunk->flags | Chunk_Queued); // ???
+          InitializeVoxels(Chunk);
         }
 #endif
 
-        if (!chunk)
+        if (!Chunk)
         {
           /* InvalidCodePath(); */
           Collision.CP = LoopTestP;
@@ -87,15 +87,15 @@ GetCollision( world *World, canonical_position TestP, v3 CollisionDim, chunk_dim
           goto end;
         }
 
-        if (IsSet(chunk, Chunk_MeshComplete))
+        if (IsSet(Chunk, Chunk_MeshComplete))
         {
         }
 
-        if ( IsFilledInChunk(chunk->Data, Voxel_Position(LoopTestP.Offset), World->ChunkDim) )
+        if ( IsFilledInChunk(Chunk, Voxel_Position(LoopTestP.Offset), World->ChunkDim) )
         {
           Collision.CP = LoopTestP;
           Collision.didCollide = true;
-          Collision.Chunk = chunk;
+          Collision.Chunk = Chunk;
           goto end;
         }
 
@@ -631,8 +631,8 @@ EntityWorldCollision(world *World, entity *Entity, collision_event *Event, chunk
         NotImplemented;
         s32 i = GetIndex(Voxel_Position(Event->CP.Offset), World->ChunkDim);
         world_chunk *Chunk = Event->Chunk;
-        Chunk->Data->Voxels[i] = {};
-        /* ZeroMesh(&Chunk->Data->Mesh); */
+        Chunk->Voxels[i] = {};
+        /* ZeroMesh(&Chunk->Mesh); */
         // TODO(Jesse, id: 131, tags: not_implemented): This path needs to call CanBuildWorldChunkMesh or something similar
         /* BuildWorldChunkMesh(World, Chunk, World->ChunkDim, Chunk->Mesh, VisibleRegion); */
       }
@@ -867,7 +867,7 @@ UpdateEntityP(world* World, entity *Entity, v3 GrossDelta, chunk_dimension Visib
       Entity->P = Canonicalize(WorldChunkDim, Entity->P);
       C = GetCollision(World, Entity, VisibleRegion);
 
-      if ( C.didCollide ) //&& C.Chunk && IsSet(C.Chunk->Data, Chunk_VoxelsInitialized) )
+      if ( C.didCollide ) //&& C.Chunk && IsSet(C.Chunk, Chunk_VoxelsInitialized) )
       {
         /* Entity->P.Offset.E[AxisIndex] -= StepDelta.E[AxisIndex]; */
         /* Entity->P = Canonicalize(WorldChunkDim, Entity->P); */
@@ -875,7 +875,7 @@ UpdateEntityP(world* World, entity *Entity, v3 GrossDelta, chunk_dimension Visib
         Entity->Physics.Velocity.E[AxisIndex] = 0;
         Entity->Physics.Delta.E[AxisIndex] = 0;
 
-        if (C.Chunk == 0 || NotSet(C.Chunk->Data, Chunk_VoxelsInitialized) )
+        if (C.Chunk == 0 || NotSet(C.Chunk, Chunk_VoxelsInitialized) )
         {
           break;
         }

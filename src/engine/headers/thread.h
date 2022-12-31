@@ -10,6 +10,7 @@ struct thread_startup_params
 
   volatile u32 *HighPriorityWorkerCount;
 
+  bonsai_futex *HighPriorityModeFutex;
   bonsai_futex *WorkerThreadsSuspendFutex;
   bonsai_futex *WorkerThreadsExitFutex;
 

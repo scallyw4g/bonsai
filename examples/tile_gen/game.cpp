@@ -47,7 +47,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
       Chunk->LodMesh_Complete = True;
 
-      Assert( NotSet(Chunk->Data, Chunk_Queued ));
+      Assert( NotSet(Chunk, Chunk_Queued ));
     } break;
 
     case type_work_queue_entry_copy_buffer:

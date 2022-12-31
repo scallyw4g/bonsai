@@ -87,7 +87,8 @@ ThreadMain(void *Input)
 
       if (!QueueIsEmpty(ThreadParams->HighPriority)) break;
 
-      if (!QueueIsEmpty(ThreadParams->LowPriority)) break;
+      if ( ! FutexIsSignaled(ThreadParams->HighPriorityModeFutex) &&
+           ! QueueIsEmpty(ThreadParams->LowPriority) ) break;
 
       if ( FutexIsSignaled(ThreadParams->WorkerThreadsSuspendFutex) ) break;
 
@@ -104,12 +105,13 @@ ThreadMain(void *Input)
     AtomicDecrement(ThreadParams->HighPriorityWorkerCount);
 
 #if 1
-    // TODO(Jesse): Vectorize the clear on this such that we can turn this back
-    // on instead of allocating fresh pages every time.  In the end re-using
-    // pages and zeroing them ourselves will (theoretically) be faster
-    //
-    // @turn_rewind_arena_back_on
-    Ensure( RewindArena(Thread.TempMemory) );
+    if ( ! FutexIsSignaled(ThreadParams->HighPriorityModeFutex) )
+    {
+      /* if (Thread.TempMemory->At != Thread.TempMemory->Start) */
+      {
+        Ensure( RewindArena(Thread.TempMemory) );
+      }
+    }
 #else
     // Can't do this anymore because the debug system needs a static handle to
     // the base address of the arena, which VaporizeArena unmaps
@@ -123,7 +125,9 @@ ThreadMain(void *Input)
     {
       WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
 
-      if (!QueueIsEmpty(ThreadParams->HighPriority)) break;
+      if ( ! QueueIsEmpty(ThreadParams->HighPriority)) break;
+
+      if ( FutexIsSignaled(ThreadParams->HighPriorityModeFutex) ) break;
 
       if ( FutexIsSignaled(ThreadParams->WorkerThreadsExitFutex) ) break;
 
@@ -170,6 +174,8 @@ LaunchWorkerThreads(platform *Plat, engine_resources *EngineResources, bonsai_wo
     Params->EngineResources = EngineResources;
 
     Params->HighPriorityWorkerCount = &Plat->HighPriorityWorkerCount;
+
+    Params->HighPriorityModeFutex = &Plat->HighPriorityModeFutex;
     Params->WorkerThreadsSuspendFutex = &Plat->WorkerThreadsSuspendFutex;
     Params->WorkerThreadsExitFutex = &Plat->WorkerThreadsExitFutex;
 
@@ -416,9 +422,15 @@ main( s32 ArgCount, const char ** Args )
 
     Ensure( EngineApi.Render(&EngineResources) );
 
-    // NOTE(Jesse): This must come after the game geometry has rendered so the
+    WaitForWorkerThreads(&Plat.HighPriorityWorkerCount);
+
+    /* while () */
+    /* { */
+    /* } */
+    /* SignalAndWaitForWorkers(&Plat.WorkerThreadsSuspendFutex); // suspend workers to collate memory allocation records */
+
+    // NOTE(Jesse): DEBUG_FRAME_END must come after the game geometry has rendered so the
     // alpha-blended text works properly
-    SignalAndWaitForWorkers(&Plat.WorkerThreadsSuspendFutex); // suspend workers to collate memory allocation records
     DEBUG_FRAME_END(&Plat.MouseP, &Plat.MouseDP, V2(Plat.WindowWidth, Plat.WindowHeight), &Plat.Input, Plat.dt, &EngineResources.EngineDebug.PickedChunks);
     UnsignalFutex(&Plat.WorkerThreadsSuspendFutex);
 

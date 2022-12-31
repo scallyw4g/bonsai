@@ -64,7 +64,11 @@ NewRow(layout *Layout)
   // NewRow();
   // BufferSomeText();
   //
-  if (Layout->At.x == 0.0f) { Layout->At.y += Global_Font.Size.y; }
+  // It also handles if we draw a bunch of stuff but don't ever advance the
+  // layout, and do advance the DrawBounds
+  //
+  r32 VerticalAdvance = 0.f;
+  if (Layout->At.y == Layout->DrawBounds.Max.y) { VerticalAdvance = Global_Font.Size.y; }
 
   Layout->At.x = 0.0f;
 
@@ -72,7 +76,7 @@ NewRow(layout *Layout)
   // than text on the line we get proper advancement.  Expanded callgraph nodes
   // are a good example
   Layout->At.y = Layout->DrawBounds.Max.y;
-  /* Layout->At.y += VerticalAdvance; */
+  Layout->At.y += VerticalAdvance;
 
   // TODO(Jesse): Do we actually want to call this here?  Probably not if we
   // just do a NewRow and not print anything?
@@ -994,7 +998,6 @@ PushWindowStartInternal( debug_ui_render_group *Group,
   PushUiRenderCommand(Group, &Command);
 
   // NOTE(Jesse): Must come first to take precedence over the title bar when clicking
-  v2 Dim = V2(20);
   PushButtonStart(Group, ResizeHandleInteractionId);
     PushUntexturedQuadAt(Group, WindowResizeHandleMin, WindowResizeHandleDim, zDepth_Border);
   PushButtonEnd(Group);
@@ -1716,7 +1719,7 @@ PreprocessTable(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
           {
             ui_render_command_text* TypedCommand = RenderCommandAs(text, Command);
             Assert(CurrentWidth);
-            *CurrentWidth += TypedCommand->Offset.x + GetDrawBounds(TypedCommand->String, &TypedCommand->Style).Max.x;
+            *CurrentWidth += GetDrawBounds(TypedCommand->String, &TypedCommand->Style).Max.x;
           } break;
 
           case type_ui_render_command_new_row:
@@ -1746,7 +1749,7 @@ PreprocessTable(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
         CommandIndex < OnePastTableEnd;
         ++CommandIndex)
     {
-      ui_render_command* Command =  GetCommand(CommandBuffer, CommandIndex);
+      ui_render_command* Command = GetCommand(CommandBuffer, CommandIndex);
       switch(Command->Type)
       {
           case type_ui_render_command_column_start:

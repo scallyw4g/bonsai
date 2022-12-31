@@ -1,6 +1,6 @@
 inline void
 FindBoundaryVoxelsAlongEdge(
-    chunk_data *Data,
+    world_chunk *Chunk,
     chunk_dimension Dim,
     voxel_position Start,
     voxel_position Iter,
@@ -8,7 +8,7 @@ FindBoundaryVoxelsAlongEdge(
   )
 {
   voxel_position CurrentP = Start;
-  b32 StartIsFilled = IsFilledInChunk(Data, CurrentP, Dim);
+  b32 StartIsFilled = IsFilledInChunk(Chunk, CurrentP, Dim);
 
   Assert(Length(V3(Iter)) == 1.0f);
 
@@ -16,7 +16,7 @@ FindBoundaryVoxelsAlongEdge(
   {
     b32 TransitionToFilled = !StartIsFilled;
 
-    b32 CurrentPIsFilled = IsFilledInChunk(Data, CurrentP, Dim);
+    b32 CurrentPIsFilled = IsFilledInChunk(Chunk, CurrentP, Dim);
     if (CurrentPIsFilled != StartIsFilled)
     {
       Assert(PB->Count < POINT_BUFFER_SIZE);

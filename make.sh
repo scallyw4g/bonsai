@@ -34,11 +34,12 @@ BIN_TEST="$BIN/tests"
 BONSAI_INTERNAL='-D BONSAI_INTERNAL'
 
 
+  # $EXAMPLES/asset_picker
+
 EXAMPLES_TO_BUILD="
+  $EXAMPLES/the_wanderer
   $EXAMPLES/tile_gen
-  $EXAMPLES/asset_picker
 "
-  # $EXAMPLES/the_wanderer
   # $EXAMPLES/world_gen
 
 EXECUTABLES_TO_BUILD="

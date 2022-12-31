@@ -173,7 +173,7 @@ DeserializeChunk(const char *zAssetPath, world_chunk *Result)
   u32 Tag = Read_u32(&AssetFile);
   Assert( Tag ==  WorldChunkFileTag_VOXD );
   umm VoxByteCount = Header.VoxelElementCount * Header.VoxelElementSize;
-  ReadBytesIntoBuffer(&AssetFile, VoxByteCount, (u8*)Result->Data->Voxels);
+  ReadBytesIntoBuffer(&AssetFile, VoxByteCount, (u8*)Result->Voxels);
 
   if (Header.MeshElementCount)
   {
@@ -202,7 +202,7 @@ SerializeChunk(world_chunk *Chunk, counted_string AssetPath)
 
     u32 Tag = WorldChunkFileTag_VOXD;
     Result &= WriteToFile(&File, Tag);
-    Result &= WriteToFile(&File, (u8*)Chunk->Data->Voxels, VoxByteCount);
+    Result &= WriteToFile(&File, (u8*)Chunk->Voxels, VoxByteCount);
   }
 
   Result &= Serialize(&File, Chunk->Mesh, &FileHeader);

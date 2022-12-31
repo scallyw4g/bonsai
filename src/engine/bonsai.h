@@ -362,18 +362,18 @@ UnSetFlag( chunk_flag *Flags, chunk_flag Flag )
 }
 
 inline void
-UnSetFlag( chunk_data *Chunk, chunk_flag Flag )
+UnSetFlag( world_chunk *Chunk, chunk_flag Flag )
 {
   UnSetFlag(&Chunk->Flags, Flag);
   return;
 }
 
-inline void
-UnSetFlag( world_chunk *Chunk, chunk_flag Flag )
-{
-  UnSetFlag(Chunk->Data, Flag);
-  return;
-}
+/* inline void */
+/* UnSetFlag( world_chunk *Chunk, chunk_flag Flag ) */
+/* { */
+/*   UnSetFlag(Chunk->Data, Flag); */
+/*   return; */
+/* } */
 
 inline void
 SetFlag( voxel_flag *Flags, voxel_flag Flag )
@@ -389,17 +389,17 @@ SetFlag( chunk_flag *Flags, chunk_flag Flag )
   return;
 }
 
-inline void
-SetFlag( chunk_data *Chunk, chunk_flag Flag )
-{
-  SetFlag(&Chunk->Flags, Flag);
-  return;
-}
+/* inline void */
+/* SetFlag( chunk_data *Chunk, chunk_flag Flag ) */
+/* { */
+/*   SetFlag(&Chunk->Flags, Flag); */
+/*   return; */
+/* } */
 
 inline void
 SetFlag( world_chunk *Chunk, chunk_flag Flag )
 {
-  SetFlag(Chunk->Data, Flag);
+  Chunk->Flags = (chunk_flag)(Chunk->Flags | Flag);
   return;
 }
 
@@ -431,17 +431,17 @@ IsSet( chunk_flag Flags, chunk_flag Flag )
   return Result;
 }
 
-inline b32
-IsSet( chunk_data *C, chunk_flag Flag )
-{
-  b32 Result = IsSet(C->Flags, Flag);
-  return Result;
-}
+/* inline b32 */
+/* IsSet( chunk_data *C, chunk_flag Flag ) */
+/* { */
+/*   b32 Result = IsSet(C->Flags, Flag); */
+/*   return Result; */
+/* } */
 
 inline b32
 IsSet( world_chunk *Chunk, chunk_flag Flag )
 {
-  b32 Result = IsSet(Chunk->Data, Flag);
+  b32 Result = IsSet(Chunk->Flags, Flag);
   return Result;
 }
 
@@ -473,17 +473,17 @@ NotSet( chunk_flag Flags, chunk_flag Flag )
   return Result;
 }
 
-inline b32
-NotSet( chunk_data *Chunk, chunk_flag Flag )
-{
-  b32 Result = !(IsSet(Chunk, Flag));
-  return Result;
-}
+/* inline b32 */
+/* NotSet( chunk_data *Chunk, chunk_flag Flag ) */
+/* { */
+/*   b32 Result = !(IsSet(Chunk, Flag)); */
+/*   return Result; */
+/* } */
 
 inline b32
 NotSet( world_chunk *Chunk, chunk_flag Flag )
 {
-  b32 Result = !(IsSet(Chunk->Data, Flag));
+  b32 Result = !(IsSet(Chunk, Flag));
   return Result;
 }
 
@@ -662,17 +662,19 @@ ZeroMesh( untextured_3d_geometry_buffer *Mesh )
   return;
 }
 
-void
-ZeroChunk( chunk_data *Chunk )
-{
-  Chunk->Flags = Chunk_Uninitialized;
-}
+/* void */
+/* ZeroChunk( world_chunk *Chunk ) */
+/* { */
+/*   Chunk->Flags = Chunk_Uninitialized; */
+/* } */
 
 void
 ClearWorldChunk( world_chunk *Chunk )
 {
-  ZeroChunk(Chunk->Data);
+  /* ZeroChunk(Chunk); */
 
+  Chunk->Flags = {};
+  Chunk->Dim = {};
   Chunk->WorldP = {};
   Chunk->FilledCount = {};
   Chunk->Picked = {};

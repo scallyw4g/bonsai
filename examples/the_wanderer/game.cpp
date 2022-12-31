@@ -5,13 +5,11 @@
 #include <game_constants.h>
 #include <game_types.h>
 
-debug_state *Global_DebugStatePointer;
-
 model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *Heap)
 {
   model *Result = Allocate(model, Memory, ModelIndex_Count);
-  Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_old.vox");
+  Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_rain.vox");
   Result[ModelIndex_Proton] = LoadVoxModel(Memory, Heap, PROJECTILE_MODEL);
 
   return Result;
@@ -32,15 +30,19 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
     {
       volatile work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
       world_chunk *Chunk = Job->Chunk;
-      s32 Amplititude = 15;
-      s32 StartingZDepth = -50;
+      s32 Frequency = 100;
+      /* s32 Amplititude = 25; */
+      /* s32 Amplititude = 150; */
+      s32 Amplititude = 50;
+      s32 StartingZDepth = -1 * WORLD_CHUNK_DIM.z;
       InitializeWorldChunkPerlinPlane( Thread,
                                        Chunk,
                                        WORLD_CHUNK_DIM,
+                                       Frequency,
                                        Amplititude,
                                        StartingZDepth );
 
-      Assert( NotSet(Chunk->Data, Chunk_Queued ));
+      Assert( NotSet(Chunk, Chunk_Queued ));
     } break;
 
     case type_work_queue_entry_copy_buffer:
@@ -87,8 +89,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   if (TimeToWait < 0.f && IsGrounded( World, Player, g_VisibleRegion))
   {
-    Player->Physics.Force += V3(200.f, 0.0f, 0.0f);
-    Player->Physics.Force += V3(0.f, 0.f, .25f) * Player->Physics.Speed;
+    Player->Physics.Force += V3(250.f, 0.0f, 0.0f);
+    Player->Physics.Force += V3(0.f, 0.f, 20.f);
     TimeToWait = Interval;
   }
 
