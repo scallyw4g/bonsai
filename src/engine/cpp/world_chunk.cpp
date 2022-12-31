@@ -223,7 +223,8 @@ FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, m
 link_internal world_chunk*
 GetWorldChunk( world *World, world_position P, chunk_dimension VisibleRegion)
 {
-  /* TIMED_FUNCTION(); */
+  /* TIMED_FUNCTION(); */ // This makes things much slower
+
   u32 HashIndex = GetWorldChunkHash(P, VisibleRegion);
   u32 StartingHashIndex = HashIndex;
 

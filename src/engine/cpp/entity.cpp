@@ -157,7 +157,10 @@ GetCollision(world *World, entity *Entity, chunk_dimension VisibleRegion, v3 Off
   if ( !Spawned(Entity) )
     return C;
 
-  C = GetCollision( World, Canonicalize(World->ChunkDim, Entity->P + Offset), Entity->CollisionVolumeRadius*2.0f, VisibleRegion);
+  C = GetCollision( World,
+      Canonicalize(World->ChunkDim, Entity->P + Offset),
+      Entity->CollisionVolumeRadius*2.0f,
+      VisibleRegion);
 
   return C;
 }
@@ -859,13 +862,26 @@ UpdateEntityP(world* World, entity *Entity, v3 GrossDelta, chunk_dimension Visib
     v3 StepDelta = ClampBetween(-1.0f, Remaining, 1.0f);
     Remaining -= StepDelta;
 
-    for (u32 AxisIndex = 0;
-        AxisIndex < 3;
-        ++AxisIndex)
+    for ( u32 AxisIndex = 0;
+              AxisIndex < 3;
+            ++AxisIndex )
     {
       Entity->P.Offset.E[AxisIndex] += StepDelta.E[AxisIndex];
       Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-      C = GetCollision(World, Entity, VisibleRegion);
+
+      v3 CollisionVolume = Entity->CollisionVolumeRadius*2.0f;
+
+      canonical_position CollisionBasis = Entity->P;
+      if (StepDelta.E[AxisIndex] > 0.f) // We're going in the positive direction
+      {
+
+        CollisionBasis.Offset.E[AxisIndex] += CollisionVolume.E[AxisIndex] -1.f;
+        CollisionBasis = Canonicalize(WorldChunkDim, CollisionBasis);
+      }
+
+      CollisionVolume.E[AxisIndex] = 1.f;
+
+      C = GetCollision(World, CollisionBasis, CollisionVolume, VisibleRegion);
 
       if ( C.didCollide ) //&& C.Chunk && IsSet(C.Chunk, Chunk_VoxelsInitialized) )
       {
