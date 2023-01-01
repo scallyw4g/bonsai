@@ -107,14 +107,11 @@ ThreadMain(void *Input)
 #if 1
     if ( ! FutexIsSignaled(ThreadParams->HighPriorityModeFutex) )
     {
-      /* if (Thread.TempMemory->At != Thread.TempMemory->Start) */
-      {
-        Ensure( RewindArena(Thread.TempMemory) );
-      }
+      Ensure( RewindArena(Thread.TempMemory) );
     }
 #else
-    // Can't do this anymore because the debug system needs a static handle to
-    // the base address of the arena, which VaporizeArena unmaps
+    // Can't do this because the debug system needs a static handle to the base
+    // address of the arena, which VaporizeArena unmaps
     //
     Ensure( VaporizeArena(Thread.TempMemory) );
     Ensure( Thread.TempMemory = AllocateArena() );
@@ -418,23 +415,18 @@ main( s32 ArgCount, const char ** Args )
     Ensure( EngineApi.FrameEnd(&EngineResources) );
 
     DrainQueue(&Plat.HighPriority, &MainThread,GameApi.WorkerMain);
-    /* WaitForWorkerThreads(&Plat.HighPriorityWorkerCount); */
-
-    Ensure( EngineApi.Render(&EngineResources) );
 
     WaitForWorkerThreads(&Plat.HighPriorityWorkerCount);
 
-    /* while () */
-    /* { */
-    /* } */
-    /* SignalAndWaitForWorkers(&Plat.WorkerThreadsSuspendFutex); // suspend workers to collate memory allocation records */
+    Ensure( EngineApi.Render(&EngineResources) );
 
     // NOTE(Jesse): DEBUG_FRAME_END must come after the game geometry has rendered so the
     // alpha-blended text works properly
     DEBUG_FRAME_END(&Plat.MouseP, &Plat.MouseDP, V2(Plat.WindowWidth, Plat.WindowHeight), &Plat.Input, Plat.dt, &EngineResources.EngineDebug.PickedChunks);
-    UnsignalFutex(&Plat.WorkerThreadsSuspendFutex);
 
     BonsaiSwapBuffers(EngineResources.Os);
+
+    Ensure( RewindArena(TranArena) );
 
     r64 CurrentMS = GetHighPrecisionClock();
     RealDt = (CurrentMS - LastMs)/1000.0;
@@ -442,9 +434,6 @@ main( s32 ArgCount, const char ** Args )
     Plat.dt = (r32)RealDt;
 
     MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(RealDt);
-    /* END_BLOCK("-- Frame --"); */
-
-    Ensure( RewindArena(TranArena) );
   }
 
   Info("Shutting Down");

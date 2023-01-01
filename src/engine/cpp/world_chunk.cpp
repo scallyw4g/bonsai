@@ -169,11 +169,10 @@ GetNextWorldChunkHash(u32 HashIndex)
 link_internal void
 DeallocateMesh(untextured_3d_geometry_buffer** Mesh, mesh_freelist* MeshFreelist, memory_arena* Memory)
 {
+  Assert(Mesh && *Mesh);
+
   free_mesh* Container = Unlink_TS(&MeshFreelist->Containers);
-  if (!Container)
-  {
-    Container = Allocate(free_mesh, Memory, 1);
-  }
+  if (!Container) { Container = Allocate(free_mesh, Memory, 1); }
 
   Container->Mesh = *Mesh;
 
@@ -189,14 +188,11 @@ link_internal void
 FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, memory_arena* Memory)
 {
   TIMED_FUNCTION();
+  Assert ( NotSet(Chunk, Chunk_Queued) );
 
-  /* if ( NotSet(Chunk, Chunk_Queued) ) */
   {
-    if (Chunk->Mesh)
-    {
-      DeallocateMesh(&Chunk->Mesh, MeshFreelist, Memory);
-      DeallocateMesh(&Chunk->LodMesh, MeshFreelist, Memory);
-    }
+    if (Chunk->Mesh)    { DeallocateMesh(&Chunk->Mesh, MeshFreelist, Memory); }
+    if (Chunk->LodMesh) { DeallocateMesh(&Chunk->LodMesh, MeshFreelist, Memory); }
 
     Assert(World->FreeChunkCount < FREELIST_SIZE);
     World->FreeChunks[World->FreeChunkCount++] = Chunk;
@@ -270,9 +266,14 @@ CollectUnusedChunks(world *World, mesh_freelist* MeshFreelist, memory_arena* Mem
 
     if ( Chunk )
     {
+      if (Chunk->Flags == Chunk_Uninitialized)
+      {
+        FreeWorldChunk(World, Chunk, MeshFreelist, Memory);
+      }
+
       world_position ChunkP = Chunk->WorldP;
 
-      if (! (ChunkP >= Min && ChunkP <= Max) )
+      if ( ! (ChunkP >= Min && ChunkP <= Max) )
       {
         if (NotSet(Chunk, Chunk_Queued))
         {
@@ -1602,7 +1603,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
 
 
-    /* ComputeStandingSpots(SynChunkDim, SyntheticChunk, DestChunk, Thread->TempMemory); */
+    ComputeStandingSpots(SynChunkDim, SyntheticChunk, DestChunk, Thread->TempMemory);
 
 
 
@@ -2073,6 +2074,11 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
         }
 #endif
 
+/*         if (Chunk && Chunk->Flags == Chunk_Uninitialized ) */
+/*         { */
+/*           QueueChunkForInit(&Plat->LowPriority, Chunk); */
+/*         } */
+
         if (Chunk && Chunk->Mesh)
         {
           /* chunk_data *ChunkData = Chunk; */
@@ -2269,7 +2275,6 @@ PushChunkView(debug_ui_render_group* Group, world_chunk* Chunk, window_layout* W
         Chunk->Mesh = 0;
         Chunk->FilledCount = 0;
         Chunk->Flags = Chunk_Uninitialized;
-        NotImplemented;
         /* QueueChunkForInit( &DebugState->Plat->HighPriority, Chunk); */
       }
 
