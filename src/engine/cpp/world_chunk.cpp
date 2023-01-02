@@ -1420,7 +1420,7 @@ GetBoundingVoxelsMidpoint(world_chunk *Chunk, v3i ChunkDim)
 struct standing_spot
 {
   plane_computation PlaneComp;
-  voxel_position BoundingVoxelMidpoint;
+  /* voxel_position BoundingVoxelMidpoint; */
   b32 CanStand;
 };
 
@@ -1430,7 +1430,7 @@ ComputeStandingSpotFor8x8x2(world_chunk *SynChunk, v3i SynChunkDim, world_chunk 
   standing_spot Result = {};
   GetBoundingVoxelsClippedTo(TempTileChunk, TileChunkDim, TempBoundingPoints, MinMaxAABB(V3(0), V3(TileChunkDim)) );
 
-
+#if 0
   // NOTE(Jesse): This could be omitted and computed (granted, more coarsely) from the bounding voxels min/max
   point_buffer TempBuffer = {};
   TempBuffer.Min = Voxel_Position(s32_MAX);
@@ -1438,6 +1438,7 @@ ComputeStandingSpotFor8x8x2(world_chunk *SynChunk, v3i SynChunkDim, world_chunk 
   point_buffer *EdgeBoundaryVoxels = &TempBuffer;
   FindEdgeIntersections(EdgeBoundaryVoxels, TempTileChunk, TileChunkDim);
   Result.BoundingVoxelMidpoint = EdgeBoundaryVoxels->Min + ((EdgeBoundaryVoxels->Max - EdgeBoundaryVoxels->Min)/2.0f);
+#endif
 
   if (TempBoundingPoints->At >= (8*8))
   {
@@ -1454,12 +1455,14 @@ ComputeStandingSpotFor8x8x8(world_chunk *SynChunk, v3i SynChunkDim, world_chunk 
 
   GetBoundingVoxelsClippedTo(TempTileChunk, TileChunkDim, TempBoundingPoints, MinMaxAABB(V3(0), V3(TileChunkDim)) );
 
+#if 0
   point_buffer TempBuffer = {};
   TempBuffer.Min = Voxel_Position(s32_MAX);
   TempBuffer.Max = Voxel_Position(s32_MIN);
   point_buffer *EdgeBoundaryVoxels = &TempBuffer;
   FindEdgeIntersections(EdgeBoundaryVoxels, TempTileChunk, TileChunkDim);
   Result.BoundingVoxelMidpoint = EdgeBoundaryVoxels->Min + ((EdgeBoundaryVoxels->Max - EdgeBoundaryVoxels->Min)/2.0f);
+#endif
 
   /* v3 Normal = ComputeNormalBonsai(TempTileChunk, TileChunkDim, V3(BoundingVoxelMidpoint)); */
   Result.PlaneComp = BigBits2015_BestFittingPlaneFor(TempBoundingPoints);
@@ -1520,11 +1523,12 @@ ComputeStandingSpots(v3i SrcChunkDim, world_chunk *SrcChunk, world_chunk *DestCh
         {
           /* v3 ChunkBasis = GetSimSpaceP(World, SrcChunk); */
 
-          v3 TileDrawDim = V3(TileChunkDim.x-1, TileChunkDim.y-1, 2) * .8f;
+          /* v3 TileDrawDim = V3(TileChunkDim.x-1, TileChunkDim.y-1, 2) * .8f; */
+          v3 TileDrawDim = (TileChunkDim-1.f) * .8f;
 
           DEBUG_DrawAABB( DestChunk->LodMesh,
                           AABBMinDim(
-                            V3(Offset) + V3(0, 0, Spot.BoundingVoxelMidpoint.z),
+                            V3(Offset),// + V3(0, 0, Spot.BoundingVoxelMidpoint.z),
                             TileDrawDim),
                             /* V3(TileChunkDim.x*.8f, TileChunkDim.y*.8f, 1.f)), */
                           BLUE,
@@ -1538,7 +1542,7 @@ ComputeStandingSpots(v3i SrcChunkDim, world_chunk *SrcChunk, world_chunk *DestCh
 
         }
 
-        ClearWorldChunk(&TileChunk);
+        ClearWorldChunk(&TileChunk); // We overwrite this.. do we have to clear it?
         TempBoundingPoints->At = 0;
       }
     }
@@ -2270,22 +2274,15 @@ PushChunkView(debug_ui_render_group* Group, world_chunk* Chunk, window_layout* W
 
       if (DebugButtonPressed)
       {
-        Chunk->LodMesh_Complete = False;
-        Chunk->LodMesh->At = 0;
-        Chunk->Mesh = 0;
-        Chunk->FilledCount = 0;
-        Chunk->Flags = Chunk_Uninitialized;
-        /* QueueChunkForInit( &DebugState->Plat->HighPriority, Chunk); */
+        Chunk->Flags = Chunk_Uninitialized; // Tells the thing that collects chunks to recycle this one and reinitialize
       }
 
       PushNewRow(Group);
     PushTableEnd(Group);
 
-    PushTableStart(Group);
-      interactable_handle ViewportButton = PushButtonStart(Group, (umm)"ViewportButton");
-        PushTexturedQuad(Group, DebugTextureArraySlice_Viewport, Window->MaxClip, zDepth_Text);
-      PushButtonEnd(Group);
-    PushTableEnd(Group);
+    interactable_handle ViewportButton = PushButtonStart(Group, (umm)"ViewportButton");
+      PushTexturedQuad(Group, DebugTextureArraySlice_Viewport, Window->MaxClip, zDepth_Text);
+    PushButtonEnd(Group);
 
   PushWindowEnd(Group, Window);
 

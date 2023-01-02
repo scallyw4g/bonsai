@@ -1385,6 +1385,7 @@ ProcessTexturedQuadPush(debug_ui_render_group* Group, ui_render_command_textured
   }
 
   AdvanceLayoutStackBy(V2(Dim.x, 0), RenderState->Layout);
+  UpdateDrawBounds(RenderState->Layout, MinP+Dim);
 
   /* Command->Layout.Basis = MinP; */
   /* Command->Layout.DrawBounds.Max = Clip.MaxClip - MinP; */
