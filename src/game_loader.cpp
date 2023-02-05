@@ -8,11 +8,14 @@
 #include <bonsai_stdlib/bonsai_stdlib.cpp>
 
 #include <engine/engine.h>
+#include <engine/engine.cpp>
 
 global_variable s64 LastGameLibTime;
 global_variable s64 LastDebugLibTime;
 
 #include <sys/stat.h>
+
+#include <bonsai_debug/headers/win32_pmc.cpp>
 
 typedef struct stat bonsai_stat;
 
@@ -217,14 +220,92 @@ PlatformInit(platform *Plat, memory_arena *Memory)
   return;
 }
 
+
+#if 0
+void
+Debug_BeginPMCMonitoring(pmc_kernel_session *Session)
+{
+  pmc_counter pmc0{  L"DCMiss", 1, 50 };
+  pmc_counter pmc1{  L"DCAccess", 1, 49 };
+
+  /* pmc_counter pmc0{  L"DCacheMisses", 1, 8 }; */
+  /* pmc_counter pmc1{  L"ICacheMisses", 1, 9 }; */
+
+  /* pmc_counter pmc0{  L"ICMiss ", 1, 95 }; */
+  /* pmc_counter pmc1{  L"ICFetch", 1, 94 }; */
+
+  /* pmc_counter pmc0{  L"DCacheMisses", 1, 8 }; */
+  /* pmc_counter pmc1{  L"DCacheAccesses", 1, 21 }; */
+
+/*     pmc_counter pmc0{  L"ICacheMisses", 1, 9 }; */
+/*     pmc_counter pmc1{  L"ICacheIssues", 1, 20 }; */
+
+  Session->start({});
+  /* Session->start({pmc0}); */
+  /* Session->start({pmc0, pmc1}); */
+}
+
+void Debug_EndAndReportPMCMonitoring(pmc_kernel_session *Session)
+{
+  Session->stop();
+
+  std::cout << "++++++RESULTS+++++++" << std::endl;
+
+  auto results = Session->results();
+
+  auto t0 = results[pmc0];
+  auto t1 = results[pmc1];
+
+  /* DebugLine("Total %s : %llu", pmc0.Name, t0); */
+  /* DebugLine("Total %s : %llu", pmc1.Name, t1); */
+
+  std::wcout << "Total " << pmc0.Name << "(" << t0 << ")" << std::endl;
+  std::wcout << "Total " << pmc1.Name << "(" << t1 << ")" << std::endl;
+
+  std::cout << "Ratio: " << SafeDivide0((double)t0, (double)t1) << std::endl;
+}
+#endif
+
 s32
 main( s32 ArgCount, const char ** Args )
 {
   Info("Initializing Bonsai");
 
+    for (const auto& pmc : query_available_pmc()) {
+        std::wcout << pmc.Name << "(" << pmc.native_source << ")" << std::endl;
+    }
+#if 1
+  AMD_CheckSupportedCounters();
+
+  pmc_kernel_session Session;
+  /* Debug_BeginPMCMonitoring(&PMCSession); */
+
+  /* pmc_counter pmc0{  L"DCMiss", 1, 50 }; */
+  /* pmc_counter pmc1{  L"DCAccess", 1, 49 }; */
+
+  pmc_counter pmc0{  L"DCacheMisses", 1, 8 };
+  pmc_counter pmc1{  L"ICacheMisses", 1, 9 };
+
+  /* pmc_counter pmc0{  L"ICMiss ", 1, 95 }; */
+  /* pmc_counter pmc1{  L"ICFetch", 1, 94 }; */
+
+  /* pmc_counter pmc0{  L"DCacheMisses", 1, 8 }; */
+  /* pmc_counter pmc1{  L"DCacheAccesses", 1, 21 }; */
+
+/*     pmc_counter pmc0{  L"ICacheMisses", 1, 9 }; */
+/*     pmc_counter pmc1{  L"ICacheIssues", 1, 20 }; */
+
+  /* Session.start({}); */
+  /* Session.start({pmc0}); */
+  Session.start({pmc0, pmc1});
+
+#endif
+
+
   /* if (!SearchForProjectRoot()) { Error("Couldn't find root dir, exiting."); return 1; } */
   /* Info("Found Bonsai Root : %S", CS(GetCwd()) ); */
 
+#if 1
   platform Plat = {};
   os Os         = {};
   engine_resources EngineResources = {};
@@ -314,7 +395,6 @@ main( s32 ArgCount, const char ** Args )
   /*
    *  Main Game loop
    */
-
 
   r64 LastMs = 0;
   r64 RealDt = 0;
@@ -436,6 +516,28 @@ main( s32 ArgCount, const char ** Args )
     MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(RealDt);
   }
 
+#if 0
+  Debug_EndAndReportPMCMonitoring(&PMCSession);
+#else
+  Session.stop();
+
+  std::cout << "++++++RESULTS+++++++" << std::endl;
+
+  auto results = Session.results();
+
+  auto t0 = results[pmc0];
+  auto t1 = results[pmc1];
+
+  /* DebugLine("Total %s : %llu", pmc0.Name, t0); */
+  /* DebugLine("Total %s : %llu", pmc1.Name, t1); */
+
+  std::wcout << "Total " << pmc0.Name << "(" << t0 << ")" << std::endl;
+  std::wcout << "Total " << pmc1.Name << "(" << t1 << ")" << std::endl;
+
+  std::cout << "Ratio: " << SafeDivide0((double)t0, (double)t1) << std::endl;
+
+#endif
+
   Info("Shutting Down");
 
   SignalAndWaitForWorkers(&Plat.WorkerThreadsExitFutex);
@@ -446,4 +548,5 @@ main( s32 ArgCount, const char ** Args )
   Info("Exiting");
 
   return 0;
+#endif
 }

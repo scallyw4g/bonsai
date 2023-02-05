@@ -561,6 +561,91 @@ GetSign(voxel_position P)
   return Result;
 }
 
+link_internal world_chunk* GetWorldChunk( world *World, world_position P, chunk_dimension VisibleRegion);
+untextured_3d_geometry_buffer ReserveBufferSpace(untextured_3d_geometry_buffer* Reservation, u32 ElementsToReserve);
+
+canonical_position
+RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, v3 RayDir)
+{
+  UNPACK_ENGINE_RESOURCES(Resources);
+  Assert(Length(RayDir) <= 1.001f);
+
+  /* { */
+  /*   untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL); */
+  /*   v3 RenderP = GetRenderP(World->ChunkDim, AbsRayOrigin, Camera); */
+  /*   DrawVoxel( &VoxelMesh, RenderP, V4(1,1,0,1), V3(11.f) ); */
+  /* } */
+
+  b32 Collision = False;
+  canonical_position Result = {};
+#if 0
+
+  world_position AbsWorldCenter = World->Center * World->ChunkDim;
+  world_position AbsVisibleRegionDim = World->VisibleRegion * World->ChunkDim;
+  /* aabb VisibleRegionAABB = AABBCenterDim(-1.f*Camera->ViewingTarget.Offset, V3(AbsVisibleRegionDim) ); */
+  aabb AbsVisibleRegionAABB = AABBCenterDim(V3(AbsWorldCenter), V3(AbsVisibleRegionDim) );
+
+  r32 tRayVisibleRegion = Intersect(AbsVisibleRegionAABB, Ray(V3(AbsRayOrigin), RayDir) );
+
+  /* { */
+  /*   untextured_3d_geometry_buffer AABBMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB); */
+  /*   DEBUG_DrawAABB(&AABBMesh, AbsVisibleRegionAABB, RED, .5f); */
+  /* } */
+
+  b32 Intersected = tRayVisibleRegion != f32_MAX;
+  DEBUG_VALUE_u32(Intersected);
+  if (Intersected)
+  {
+    canonical_position Current = AbsRayOrigin; //Canonical_Position(World->ChunkDim, AbsRayOrigin, World_Position(0));
+
+    b32 HaveHitChunks = False;
+    b32 Done = False;
+    u32 DebugIterationIndex = 0;
+    while (!Done)
+    {
+      for (u32 DimIndex = 0; DimIndex < 3; ++DimIndex)
+      {
+        if (IsInside(VisibleRegionAABB, V3(Current.WorldP)))
+        {
+          HaveHitChunks = True;
+
+          world_chunk *Chunk = GetWorldChunk(World, Current.WorldP, World->VisibleRegion);
+
+          if (Chunk)
+          {
+            if (IsFilledInChunk( Chunk, Voxel_Position(Current.Offset), World->ChunkDim))
+            {
+              Collision = True;
+              Done = True;
+              break;
+            }
+          }
+        }
+
+        if (HaveHitChunks && !IsInside(VisibleRegionAABB, V3(Current.WorldP)))
+        {
+          Done = True;
+          break;
+        }
+
+        Current.Offset += RayDir.E[DimIndex];
+        Current = Canonicalize(World->ChunkDim, Current);
+      }
+
+      if (++DebugIterationIndex == 10000) break;
+    }
+
+    if (Collision)
+    {
+      Result = Current;
+    }
+  }
+
+#endif
+
+  return Result;
+}
+
 voxel_position
 RayTraceCollision(world_chunk *Chunk, chunk_dimension Dim, v3 StartingP, v3 Ray, v3 CenteringRay)
 {

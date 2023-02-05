@@ -110,7 +110,6 @@ struct world
 
   chunk_dimension ChunkDim;
 
-
   memory_arena* Memory;
 };
 

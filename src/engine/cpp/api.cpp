@@ -99,6 +99,8 @@ Bonsai_FrameEnd(engine_resources *Resources)
   Debug_DoWorldChunkPicking(Resources);
 #endif
 
+  SelectVoxel(Resources);
+
   RewindArena(TranArena);
 
   b32 Result = True;
