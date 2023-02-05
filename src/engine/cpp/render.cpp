@@ -2,29 +2,6 @@
 #include <engine/render/render_utils.cpp>
 
 
-#if 0
-inline m4
-GetShadowMapMVP(light *GlobalLight)
-{
-  // Compute the MVP matrix from the light's point of view
-  /* v3 Translate = GetRenderP(Camera->Target, Camera); */
-  m4 depthProjectionMatrix = Orthographic(SHADOW_MAP_X,
-                                          SHADOW_MAP_Y,
-                                          SHADOW_MAP_Z_MIN,
-                                          SHADOW_MAP_Z_MAX);
-
-  v3 Front = Normalize(GlobalLight->Position);
-  v3 Right = Cross( Front, V3(0,1,0) );
-  v3 Up = Cross(Right, Front);
-
-  v3 Target = V3(0);
-  m4 depthViewMatrix =  LookAt(GlobalLight->Position, Target, Up);
-
-  return depthProjectionMatrix * depthViewMatrix;
-}
-#endif
-
-
 link_internal maybe_ray
 ComputeRayFromCursor(platform *Plat, m4* ViewProjection)
 {
@@ -146,46 +123,69 @@ DEBUG_CopyTextureToMemory(texture *Texture)
 }
 #endif
 
-#if 0
-void
-RenderShadowMap(untextured_3d_geometry_buffer *Mesh, graphics *Graphics)
+#if 1
+#define SHADOW_MAP_RESOLUTION_X 1024
+#define SHADOW_MAP_RESOLUTION_Y 1024
+
+#define SHADOW_MAP_X 50
+#define SHADOW_MAP_Y 50
+
+#define SHADOW_MAP_Z_MIN 50
+#define SHADOW_MAP_Z_MAX 50
+
+#if 1
+inline m4
+GetShadowMapMVP(light *Sun)
+{
+  // Compute the MVP matrix from the light's point of view
+  /* v3 Translate = GetRenderP(Camera->Target, Camera); */
+  m4 depthProjectionMatrix = Orthographic(SHADOW_MAP_X,
+                                          SHADOW_MAP_Y,
+                                          SHADOW_MAP_Z_MIN,
+                                          SHADOW_MAP_Z_MAX);
+
+  v3 Front = Normalize(Sun->Position);
+  v3 Right = Cross( Front, V3(0,1,0) );
+  v3 Up = Cross(Right, Front);
+
+  v3 Target = V3(0);
+  m4 depthViewMatrix =  LookAt(Sun->Position, Target, Up);
+
+  return depthProjectionMatrix * depthViewMatrix;
+}
+#endif
+
+
+link_internal void
+RenderShadowMap(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
+/* RenderShadowMap(shadow_render_group *SG, graphics *Graphics) */
 {
   TIMED_FUNCTION();
+
+  shadow_render_group *SG = Graphics->SG;
+
+  GL.BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
+  GL.UseProgram(SG->DepthShader.ID);
+
   SetViewport(V2(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y));
 
-  m4 MVP = GetShadowMapMVP(Camera, &SG->GameLights[0]);
+  m4 MVP = GetShadowMapMVP(&SG->Sun);
+  GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &MVP.E[0].E[0]);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
+  Draw(GpuMap->Buffer.At);
 
-  glUseProgram(SG->DepthShader.ID);
-  glUniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &MVP.E[0].E[0]);
-
-  // 1rst attribute buffer : vertices
-  glEnableVertexAttribArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer);
-  glBufferData(GL_ARRAY_BUFFER, Mesh->At*sizeof(v3), Mesh->VertexData, GL_STATIC_DRAW);
-  glVertexAttribPointer(
-    0,                  // The attribute we want to configure
-    3,                  // size
-    GL_FLOAT,           // type
-    GL_FALSE,           // normalized?
-    0,                  // stride
-    (void*)0            // array buffer offset
-  );
-
-  Draw(Mesh->At);
-
-  glDisableVertexAttribArray(0);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
 
   return;
 }
 #endif
 
 link_internal void
-RenderWorldToGBuffer(gpu_mapped_element_buffer* GpuMap, g_buffer_render_group *RG)
+RenderGBuffer(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
 {
   TIMED_FUNCTION();
+
+  auto RG = Graphics->gBuffer;
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, RG->FBO.ID);
   GL.UseProgram(RG->gBufferShader.ID);
@@ -196,23 +196,8 @@ RenderWorldToGBuffer(gpu_mapped_element_buffer* GpuMap, g_buffer_render_group *R
 
   FlushBuffersToCard(GpuMap);
   Draw(GpuMap->Buffer.At);
-  GpuMap->Buffer.At = 0;
 
-  GL.DisableVertexAttribArray(0);
-  GL.DisableVertexAttribArray(1);
-  GL.DisableVertexAttribArray(2);
-
-  return;
-}
-
-link_internal void
-RenderGBuffer(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
-{
-  TIMED_FUNCTION();
-
-  RenderWorldToGBuffer(GpuMap, Graphics->gBuffer);
-
-  /* AssertNoGlErrors; */
+  AssertNoGlErrors;
 
   return;
 }

@@ -266,7 +266,7 @@ InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory, v2
   SG->DebugTextureShader = MakeSimpleTextureShader(SG->ShadowMap, GraphicsMemory);
 
   SG->DepthShader = LoadShaders( CSz("DepthRTT.vertexshader"), CSz("DepthRTT.fragmentshader") );
-  SG->MVP_ID = (u32)GetShaderUniform(&SG->DepthShader, "depthMVP");
+  SG->MVP_ID = GetShaderUniform(&SG->DepthShader, "depthMVP");
 
   if(GL.CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     return false;

@@ -118,8 +118,14 @@ Bonsai_Render(engine_resources *Resources)
   gpu_mapped_element_buffer *GpuMap = GetCurrentGpuMap(Graphics);
 
   RenderGBuffer(GpuMap, Graphics);
+  /* RenderShadowMap(GpuMap, Graphics); */
   RenderAoTexture(AoGroup);
   DrawGBufferToFullscreenQuad(Plat, Graphics);
+
+  GpuMap->Buffer.At = 0;
+  GL.DisableVertexAttribArray(0);
+  GL.DisableVertexAttribArray(1);
+  GL.DisableVertexAttribArray(2);
 
   b32 Result = True;
   return Result;
