@@ -45,8 +45,8 @@ AllocateAndInitSsaoNoise(ao_render_group *AoGroup, memory_arena *GraphicsMemory)
 
 shader
 MakeLightingShader(memory_arena *GraphicsMemory,
-    g_buffer_textures *gTextures,/* texture *ShadowMap,*/ texture *Ssao,
-    /*m4 *ShadowMVP, */ game_lights *Lights, camera *Camera)
+    g_buffer_textures *gTextures, texture *ShadowMap, texture *Ssao,
+    m4 *ShadowMVP, game_lights *Lights, camera *Camera)
 {
   shader Shader = LoadShaders( CSz("Lighting.vertexshader"), CSz("Lighting.fragmentshader") );
 
@@ -61,14 +61,14 @@ MakeLightingShader(memory_arena *GraphicsMemory,
   *Current = GetUniform(GraphicsMemory, &Shader, gTextures->Position, "gPosition");
   Current = &(*Current)->Next;
 
-  /* *Current = GetUniform(GraphicsMemory, &Shader, ShadowMap, "shadowMap"); */
-  /* Current = &(*Current)->Next; */
+  *Current = GetUniform(GraphicsMemory, &Shader, ShadowMap, "shadowMap");
+  Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, Ssao, "Ssao");
   Current = &(*Current)->Next;
 
-  /* *Current = GetUniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP"); */
-  /* Current = &(*Current)->Next; */
+  *Current = GetUniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
+  Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, Lights->ColorTex, "LightColors");
   Current = &(*Current)->Next;
@@ -125,7 +125,7 @@ CreateGbuffer(memory_arena *Memory)
   g_buffer_render_group *gBuffer = Allocate(g_buffer_render_group, Memory, 1);
   gBuffer->FBO = GenFramebuffer();
   gBuffer->ViewProjection = IdentityMatrix;
-  gBuffer->ShadowMVP = IdentityMatrix;
+  /* gBuffer->MVP = IdentityMatrix; */
 
   return gBuffer;
 }
@@ -245,8 +245,8 @@ InitGbufferRenderGroup( g_buffer_render_group *gBuffer, memory_arena *GraphicsMe
   return Result;
 }
 
-b32
-InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory, v2i ShadowMapResolution)
+link_internal b32
+InitializeShadowGroup(shadow_render_group *SG, memory_arena *GraphicsMemory, v2i ShadowMapResolution)
 {
   // The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
   GL.GenFramebuffers(1, &SG->FramebufferName);
@@ -254,8 +254,13 @@ InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory, v2
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
 
+  SG->Sun.Position = Normalize(V3(1,1,1));
+  /* SG->Sun->Color = Color; */
+
   SG->ShadowMap = MakeDepthTexture(ShadowMapResolution, GraphicsMemory);
-  GL.FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, SG->ShadowMap->ID, 0);
+
+  FramebufferDepthTexture(SG->ShadowMap);
+  /* GL.FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, SG->ShadowMap->ID, 0); */
 
   // TODO(Jesse, id: 119, tags: opengl, es2): Not present on ES2 .. should we use them?
   // No color output in the bound framebuffer, only depth.
@@ -263,7 +268,7 @@ InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory, v2
   /* glReadBuffer(GL_NONE); */
 
   // For debug-only visualization of this texture
-  SG->DebugTextureShader = MakeSimpleTextureShader(SG->ShadowMap, GraphicsMemory);
+  /* SG->DebugTextureShader = MakeSimpleTextureShader(SG->ShadowMap, GraphicsMemory); */
 
   SG->DepthShader = LoadShaders( CSz("DepthRTT.vertexshader"), CSz("DepthRTT.fragmentshader") );
   SG->MVP_ID = GetShaderUniform(&SG->DepthShader, "depthMVP");
@@ -274,7 +279,7 @@ InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory, v2
   GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
 
- return true;
+  return true;
 }
 
 void
@@ -347,9 +352,18 @@ GraphicsInit(memory_arena *GraphicsMemory)
   MapGpuElementBuffer(Result->GpuBuffers+1);
   FlushBuffersToCard(Result->GpuBuffers+1);
 
-#if 0
+#if 1
+#define SHADOW_MAP_RESOLUTION_X (16*1024)
+#define SHADOW_MAP_RESOLUTION_Y (16*1024)
+
+#define SHADOW_MAP_X 128
+#define SHADOW_MAP_Y 128
+
+#define SHADOW_MAP_Z_MIN -128
+#define SHADOW_MAP_Z_MAX 128
+
   shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1);
-  if (!InitializeShadowBuffer(SG, GraphicsMemory, v2i()))
+  if (!InitializeShadowGroup(SG, GraphicsMemory, V2i(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y)))
   {
     Error("Initializing Shadow Buffer"); return False;
   }
@@ -371,8 +385,8 @@ GraphicsInit(memory_arena *GraphicsMemory)
   texture *SsaoNoiseTexture = AllocateAndInitSsaoNoise(AoGroup, GraphicsMemory);
 
   gBuffer->LightingShader =
-    MakeLightingShader(GraphicsMemory, gBuffer->Textures, /* shadowMapTexturePtr, */
-                       AoGroup->Texture, /* &gBuffer->ShadowMVP, */Result->Lights, Result->Camera);
+    MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap,
+                       AoGroup->Texture, &SG->MVP, Result->Lights, Result->Camera);
 
   gBuffer->gBufferShader =
     CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection, Result->Camera);
@@ -385,11 +399,12 @@ GraphicsInit(memory_arena *GraphicsMemory)
 
   { // To keep these here or not to keep these here..
 #if BONSAI_INTERNAL
-#if 0
-    gBuffer->DebugColorTextureShader    = MakeSimpleTextureShader(gBuffer->Textures->Color    , GraphicsMemory);
-    gBuffer->DebugNormalTextureShader   = MakeSimpleTextureShader(gBuffer->Textures->Normal   , GraphicsMemory);
-    gBuffer->DebugPositionTextureShader = MakeSimpleTextureShader(gBuffer->Textures->Position , GraphicsMemory);
+#if 1
+    gBuffer->DebugColorShader    = MakeSimpleTextureShader(gBuffer->Textures->Color    , GraphicsMemory);
+    gBuffer->DebugNormalShader   = MakeSimpleTextureShader(gBuffer->Textures->Normal   , GraphicsMemory);
+    gBuffer->DebugPositionShader = MakeSimpleTextureShader(gBuffer->Textures->Position , GraphicsMemory);
     AoGroup->DebugSsaoShader            = MakeSimpleTextureShader(AoGroup->Texture            , GraphicsMemory);
+    SG->DebugTextureShader              = MakeSimpleTextureShader(SG->ShadowMap               , GraphicsMemory);
 #endif
 #endif
   }
@@ -399,9 +414,9 @@ GraphicsInit(memory_arena *GraphicsMemory)
 
   AssertNoGlErrors;
 
+  Result->SG = SG;
   Result->AoGroup = AoGroup;
   Result->gBuffer = gBuffer;
-  Result->SG = 0;
 
   return Result;
 }

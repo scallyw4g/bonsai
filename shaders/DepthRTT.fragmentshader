@@ -1,5 +1,8 @@
+/* out vec4 color; */
+
 void main()
 {
   /* Depth is written linearized to the texture; our projection is orthographic */
+  /* color = vec4(1,0,0,1); */
 }
 

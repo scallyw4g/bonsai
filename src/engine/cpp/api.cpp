@@ -118,9 +118,15 @@ Bonsai_Render(engine_resources *Resources)
   gpu_mapped_element_buffer *GpuMap = GetCurrentGpuMap(Graphics);
 
   RenderGBuffer(GpuMap, Graphics);
-  /* RenderShadowMap(GpuMap, Graphics); */
+  RenderShadowMap(GpuMap, Graphics);
   RenderAoTexture(AoGroup);
   DrawGBufferToFullscreenQuad(Plat, Graphics);
+
+  Debug_DrawTextureToDebugQuad( &Graphics->SG->DebugTextureShader );
+  /* Debug_DrawTextureToDebugQuad(&AoGroup->DebugSsaoShader); */
+  /* Debug_DrawTextureToDebugQuad(&Graphics->gBuffer->DebugColorShader); */
+  /* Debug_DrawTextureToDebugQuad(&Graphics->gBuffer->DebugPositionShader); */
+  /* Debug_DrawTextureToDebugQuad(&Graphics->gBuffer->DebugNormalShader); */
 
   GpuMap->Buffer.At = 0;
   GL.DisableVertexAttribArray(0);

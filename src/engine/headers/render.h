@@ -62,11 +62,13 @@ struct g_buffer_render_group
 
   g_buffer_textures *Textures;
 
+  shader DebugColorShader;
+  shader DebugNormalShader;
+  shader DebugPositionShader;
+
   shader LightingShader;
   shader gBufferShader;
 
-  // Cached here because this one gets pre-multiplied by the NdcToScreenSpace bias matrix
-  m4 ShadowMVP;
   m4 ViewProjection;
 };
 
@@ -77,6 +79,8 @@ struct shadow_render_group
 
   shader DebugTextureShader;
   shader DepthShader;
+
+  m4 MVP;
 
   texture *ShadowMap;
   light Sun;

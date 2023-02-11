@@ -48,10 +48,7 @@ Init_Global_QuadVertexBuffer()
 void
 RenderQuad()
 {
-  if (!Global_QuadVertexBuffer)
-  {
-    Init_Global_QuadVertexBuffer();
-  }
+  if (!Global_QuadVertexBuffer) { Init_Global_QuadVertexBuffer(); }
 
   GL.EnableVertexAttribArray(0);
   GL.BindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer);

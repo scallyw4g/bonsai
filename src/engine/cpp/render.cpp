@@ -81,8 +81,24 @@ UpdateLightingTextures(game_lights *Lights)
   return;
 }
 
-void
-DrawGBufferToFullscreenQuad( platform *Plat, graphics *Graphics)
+link_internal void
+Debug_DrawTextureToDebugQuad( shader *DebugShader )
+{
+  GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
+  SetViewport(V2(256));
+
+  GL.UseProgram(DebugShader->ID);
+  BindShaderUniforms(DebugShader);
+
+  RenderQuad();
+
+  AssertNoGlErrors;
+
+  return;
+}
+
+link_internal void
+DrawGBufferToFullscreenQuad( platform *Plat, graphics *Graphics )
 {
   GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
   SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
@@ -90,7 +106,7 @@ DrawGBufferToFullscreenQuad( platform *Plat, graphics *Graphics)
   GL.UseProgram(Graphics->gBuffer->LightingShader.ID);
 
   UpdateLightingTextures(Graphics->Lights);
-  /* Graphics->gBuffer->ShadowMVP = NdcToScreenSpace * GetShadowMapMVP(&Graphics->Lights->Lights[0]); */
+  Graphics->SG->MVP = NdcToScreenSpace * Graphics->SG->MVP;
 
   BindShaderUniforms(&Graphics->gBuffer->LightingShader);
 
@@ -124,15 +140,6 @@ DEBUG_CopyTextureToMemory(texture *Texture)
 #endif
 
 #if 1
-#define SHADOW_MAP_RESOLUTION_X 1024
-#define SHADOW_MAP_RESOLUTION_Y 1024
-
-#define SHADOW_MAP_X 50
-#define SHADOW_MAP_Y 50
-
-#define SHADOW_MAP_Z_MIN 50
-#define SHADOW_MAP_Z_MAX 50
-
 #if 1
 inline m4
 GetShadowMapMVP(light *Sun)
@@ -158,7 +165,6 @@ GetShadowMapMVP(light *Sun)
 
 link_internal void
 RenderShadowMap(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
-/* RenderShadowMap(shadow_render_group *SG, graphics *Graphics) */
 {
   TIMED_FUNCTION();
 
@@ -169,8 +175,8 @@ RenderShadowMap(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
 
   SetViewport(V2(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y));
 
-  m4 MVP = GetShadowMapMVP(&SG->Sun);
-  GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &MVP.E[0].E[0]);
+  SG->MVP = GetShadowMapMVP(&SG->Sun);
+  GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]);
 
   Draw(GpuMap->Buffer.At);
 
@@ -388,6 +394,9 @@ ClearFramebuffers(graphics *Graphics)
   /* GL.BindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID); */
   /* GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
 #endif
+
+  GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName);
+  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   // FIXME(Jesse): This is taking _forever_ on Linux (GLES) .. does it take
   // forever on other Linux systems?

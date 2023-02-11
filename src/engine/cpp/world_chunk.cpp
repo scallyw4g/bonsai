@@ -2188,13 +2188,14 @@ SelectVoxel(engine_resources *Resources)
 #endif
 
 #if 1
+
     canonical_position HitP = RayTraceCollision( Resources,
                                                  /* World_Position(MaybeRay.Ray.Origin), */
                                                  Camera->CurrentP,
                                                  MaybeRay.Ray.Dir);
 
 
-    DebugLine("(%d %d %d) (%f %f %f)", HitP.WorldP.x, HitP.WorldP.y, HitP.WorldP.z , HitP.Offset.x, HitP.Offset.y, HitP.Offset.z);
+    /* DebugLine("(%d %d %d) (%f %f %f)", HitP.WorldP.x, HitP.WorldP.y, HitP.WorldP.z , HitP.Offset.x, HitP.Offset.y, HitP.Offset.z); */
 
     {
       v3 RenderP = GetRenderP(World->ChunkDim, Camera->CurrentP, Camera);
