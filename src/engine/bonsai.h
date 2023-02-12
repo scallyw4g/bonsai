@@ -46,6 +46,8 @@ struct engine_resources
 
   entity **EntityTable;
 
+  u64 FrameIndex;
+
   // TODO(Jesse): Formalize this
   /* world_position *VisibleRegion; */
 

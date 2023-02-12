@@ -101,7 +101,10 @@ Volume(world_chunk* Chunk)
 
 struct world
 {
+  u32 HashSize;
+  world_chunk **ChunkHashMemory[2];
   world_chunk **ChunkHash;
+
   world_chunk **FreeChunks;
   umm FreeChunkCount;
 

@@ -58,9 +58,9 @@ AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension
 }
 
 inline u32
-GetWorldChunkHash(world_position P, chunk_dimension VisibleRegion)
+GetWorldChunkHash(world_position P, chunk_dimension VisibleRegion, u32 WorldHashSize)
 {
-  s32 WHS_Factor = (s32)WORLD_HASH_SIZE / (Volume(VisibleRegion))+1;
+  s32 WHS_Factor = (s32)WorldHashSize / (Volume(VisibleRegion))+1;
 
   s32 xFactor = WHS_Factor;
   s32 yFactor = WHS_Factor * VisibleRegion.x;
@@ -74,25 +74,26 @@ GetWorldChunkHash(world_position P, chunk_dimension VisibleRegion)
 
   u32 I = u32(Ix ^ Iy ^ Iz);
 
-  u32 HashIndex = I % WORLD_HASH_SIZE;
+  u32 HashIndex = I % WorldHashSize;
   return HashIndex;
 }
 
 link_internal b32
-InsertChunkIntoWorld(world *World, world_chunk *Chunk, chunk_dimension VisibleRegion)
+InsertChunkIntoWorld(world_chunk **WorldChunkHash, world_chunk *Chunk, chunk_dimension VisibleRegion, u32 WorldHashSize)
 {
   b32 Result = True;
-  u32 HashIndex = GetWorldChunkHash(Chunk->WorldP, VisibleRegion);
+  u32 HashIndex = GetWorldChunkHash(Chunk->WorldP, VisibleRegion, WorldHashSize);
   u32 StartingHashIndex = HashIndex;
+
 #if BONSAI_INTERNAL
   u32 BucketsSkipped = 0;
 #endif
-  world_chunk **Current = World->ChunkHash + HashIndex;
 
+  world_chunk **Current = WorldChunkHash + HashIndex;
   while (*Current)
   {
-    HashIndex = (HashIndex + 1) % WORLD_HASH_SIZE;
-    Current = World->ChunkHash + HashIndex;
+    HashIndex = (HashIndex + 1) % WorldHashSize;
+    Current = WorldChunkHash + HashIndex;
 
     if (HashIndex == StartingHashIndex)
     {
@@ -116,6 +117,14 @@ InsertChunkIntoWorld(world *World, world_chunk *Chunk, chunk_dimension VisibleRe
 
   *Current = Chunk;
 
+  return Result;
+}
+
+// TODO(Jesse): Remove VisibleRegion as argument to this fn.  It's on the world
+link_internal b32
+InsertChunkIntoWorld(world *World, world_chunk *Chunk, chunk_dimension VisibleRegion)
+{
+  b32 Result = InsertChunkIntoWorld(World->ChunkHash, Chunk, VisibleRegion, World->HashSize);
   return Result;
 }
 
@@ -159,12 +168,12 @@ GetWorldChunkFor(memory_arena *Storage, world *World, world_position P, chunk_di
   return Result;
 }
 
-inline u32
-GetNextWorldChunkHash(u32 HashIndex)
-{
-  u32 Result = (HashIndex + 1) % WORLD_HASH_SIZE;
-  return Result;
-}
+/* inline u32 */
+/* GetNextWorldChunkHash(u32 HashIndex) */
+/* { */
+/*   u32 Result = (HashIndex + 1) % WORLD_HASH_SIZE; */
+/*   return Result; */
+/* } */
 
 link_internal void
 DeallocateMesh(untextured_3d_geometry_buffer** Mesh, mesh_freelist* MeshFreelist, memory_arena* Memory)
@@ -187,6 +196,7 @@ DeallocateMesh(untextured_3d_geometry_buffer** Mesh, mesh_freelist* MeshFreelist
 link_internal void
 FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, memory_arena* Memory)
 {
+#if 1
   TIMED_FUNCTION();
   Assert ( NotSet(Chunk, Chunk_Queued) );
 
@@ -214,6 +224,7 @@ FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, m
   {
     /* SetFlag(Chunk, Chunk_Garbage); */
   }
+#endif
 }
 
 // TODO(Jesse): The VisibleRegion is stored on the World pointer .. might as
@@ -224,21 +235,26 @@ GetWorldChunk( world *World, world_position P, chunk_dimension VisibleRegion)
 {
   /* TIMED_FUNCTION(); */ // This makes things much slower
 
-  u32 HashIndex = GetWorldChunkHash(P, VisibleRegion);
+  u32 HashIndex = GetWorldChunkHash(P, VisibleRegion, World->HashSize);
   u32 StartingHashIndex = HashIndex;
 
   world_chunk *Result = World->ChunkHash[HashIndex];
 
   for (;;)
   {
+#if 1
     if (!Result) break;
-
-    if (Result->WorldP == P)
+#else
+    if (Result)
+#endif
     {
-      break;
+      if (Result->WorldP == P)
+      {
+        break;
+      }
     }
 
-    HashIndex = (HashIndex + 1) % WORLD_HASH_SIZE;
+    HashIndex = (HashIndex + 1) % World->HashSize;
     Result = World->ChunkHash[HashIndex];
 
     if (HashIndex == StartingHashIndex)
@@ -251,11 +267,32 @@ GetWorldChunk( world *World, world_position P, chunk_dimension VisibleRegion)
   return Result;
 }
 
+link_internal world_chunk**
+CurrentWorldHashtable(engine_resources *Engine)
+{
+  u32 Index = Engine->FrameIndex % 2;
+  world_chunk **Hashtable = Engine->World->ChunkHashMemory[Index];
+  return Hashtable;
+}
+
+link_internal world_chunk**
+NextWorldHashtable(engine_resources *Engine)
+{
+  u32 Index = (Engine->FrameIndex+1) % 2;
+  world_chunk **Hashtable = Engine->World->ChunkHashMemory[Index];
+  return Hashtable;
+}
+
 link_internal void
-CollectUnusedChunks(world *World, mesh_freelist* MeshFreelist, memory_arena* Memory, chunk_dimension VisibleRegion)
+CollectUnusedChunks(engine_resources *Engine, mesh_freelist* MeshFreelist, memory_arena* Memory, chunk_dimension VisibleRegion)
 {
   TIMED_FUNCTION();
-  world_chunk ** WorldHash = World->ChunkHash;
+
+  world *World = Engine->World;
+
+#if 1
+  world_chunk ** CurrentWorldHash = CurrentWorldHashtable(Engine);
+  world_chunk ** NextWorldHash = NextWorldHashtable(Engine);
 
   world_position CenterP = World->Center;
   chunk_dimension Radius = (VisibleRegion/2);
@@ -263,10 +300,10 @@ CollectUnusedChunks(world *World, mesh_freelist* MeshFreelist, memory_arena* Mem
   world_position Max = CenterP + Radius;
 
   for (u32 ChunkIndex = 0;
-      ChunkIndex < WORLD_HASH_SIZE;
+      ChunkIndex < World->HashSize;
       ++ChunkIndex)
   {
-    world_chunk **ChunkBucket = WorldHash + ChunkIndex;
+    world_chunk **ChunkBucket = CurrentWorldHash + ChunkIndex;
     world_chunk *Chunk = *ChunkBucket;
 
     if ( Chunk )
@@ -275,24 +312,34 @@ CollectUnusedChunks(world *World, mesh_freelist* MeshFreelist, memory_arena* Mem
       {
         FreeWorldChunk(World, Chunk, MeshFreelist, Memory);
       }
-
-      world_position ChunkP = Chunk->WorldP;
-
-      if ( ! (ChunkP >= Min && ChunkP <= Max) )
+      else
       {
-        if (NotSet(Chunk, Chunk_Queued))
+        world_position ChunkP = Chunk->WorldP;
+
+        if ( ChunkP >= Min && ChunkP < Max )
         {
-          FreeWorldChunk(World, Chunk, MeshFreelist, Memory);
-          *ChunkBucket = 0;
+          InsertChunkIntoWorld(NextWorldHash, Chunk, World->VisibleRegion, World->HashSize);
         }
         else
         {
-          SetFlag(Chunk, Chunk_Garbage);
+          if (Chunk->Flags & Chunk_Queued)
+          {
+            SetFlag(&Chunk->Flags, Chunk_Garbage);
+            InsertChunkIntoWorld(NextWorldHash, Chunk, World->VisibleRegion, World->HashSize);
+          }
+          else
+          {
+            FreeWorldChunk(World, Chunk, MeshFreelist, Memory);
+          }
         }
       }
+
     }
+
+    *ChunkBucket = 0;
   }
 
+#endif
   return;
 }
 
@@ -1884,7 +1931,6 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
   }
 
-
   FinalizeChunkInitialization(DestChunk);
 
   return;
@@ -2031,7 +2077,12 @@ BufferWorldChunk(untextured_3d_geometry_buffer *Dest, world_chunk *Chunk, graphi
 }
 
 link_internal void
-BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, graphics *Graphics, world_position VisibleRegion, heap_allocator *Heap)
+BufferWorld( platform* Plat,
+             untextured_3d_geometry_buffer* Dest,
+             world* World,
+             graphics *Graphics,
+             world_position VisibleRegion,
+             heap_allocator *Heap )
 {
   TIMED_FUNCTION();
 
@@ -2050,36 +2101,53 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
         world_position P = World_Position(x,y,z);
         world_chunk *Chunk = 0;
         {
-          TIMED_NAMED_BLOCK("GetWorldCHunk");
+          TIMED_NAMED_BLOCK("GetWorldChunk");
           Chunk = GetWorldChunk( World, P, VisibleRegion );
         }
 
-#if 0
+#if 1
         u32 ColorIndex = 0;
 
         if (Chunk)
         {
-            chunk_data *ChunkData = Chunk;
+          if (Chunk->Flags == Chunk_Uninitialized)
+          {
+            ColorIndex = TEAL;
+          }
 
-            if (IsSet(ChunkData, Chunk_Queued))
-            {
-              ColorIndex = TEAL;
-            }
+          if (IsSet(Chunk, Chunk_Queued))
+          {
+            ColorIndex = BLUE;
+          }
 
-            if (IsSet(ChunkData, Chunk_VoxelsInitialized))
-            {
-              /* ColorIndex = GREEN; */
-            }
+          if (IsSet(Chunk, Chunk_VoxelsInitialized))
+          {
+            /* ColorIndex = GREEN; */
+          }
 
-            if (IsSet(ChunkData, Chunk_Garbage))
-            {
-              ColorIndex = ORANGE;
-            }
+          if (IsSet(Chunk, Chunk_MeshComplete))
+          {
+            /* ColorIndex = GREEN; */
+          }
+
+          if (IsSet(Chunk, Chunk_Garbage))
+          {
+            ColorIndex = ORANGE;
+          }
 
         }
         else
         {
           ColorIndex = RED;
+        }
+
+        if (ColorIndex)
+        {
+          untextured_3d_geometry_buffer AABBDest = ReserveBufferSpace(Dest, VERTS_PER_AABB);
+          v3 MinP = GetRenderP(World->ChunkDim, Canonical_Position(V3(0,0,0), P), Graphics->Camera);
+          v3 MaxP = GetRenderP(World->ChunkDim, Canonical_Position(World->ChunkDim, P), Graphics->Camera);
+          DEBUG_DrawAABB(&AABBDest, MinP, MaxP, ColorIndex, 0.5f);
+          /* PushCopyJob(work_queue *Queue, work_queue_entry_copy_buffer_set *Set, work_queue_entry_copy_buffer *Job) */
         }
 #endif
 
@@ -2090,8 +2158,6 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
 
         if (Chunk && Chunk->Mesh)
         {
-          /* chunk_data *ChunkData = Chunk; */
-
           if ( IsSet(Chunk->Flags, Chunk_MeshComplete) )
           {
             Assert(Chunk->Mesh->At);
@@ -2122,16 +2188,6 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
 
 
 
-/*             if (ColorIndex) */
-/*             { */
-/*               untextured_3d_geometry_buffer AABBDest = ReserveBufferSpace(Dest, VERTS_PER_AABB); */
-/*               v3 MinP = GetRenderP(World->ChunkDim, Canonical_Position(V3(0,0,0), P), Graphics->Camera); */
-/*               v3 MaxP = GetRenderP(World->ChunkDim, Canonical_Position(World->ChunkDim, P), Graphics->Camera); */
-/*               DEBUG_DrawAABB(&AABBDest, MinP, MaxP, ColorIndex, 0.5f); */
-/*               /1* PushCopyJob(work_queue *Queue, work_queue_entry_copy_buffer_set *Set, work_queue_entry_copy_buffer *Job) *1/ */
-/*             } */
-
-
           }
 
 #if 0
@@ -2145,6 +2201,10 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
           if (Chunk)
           {
             QueueChunkForInit(&Plat->LowPriority, Chunk);
+          }
+          else
+          {
+            InvalidCodePath();
           }
         }
       }

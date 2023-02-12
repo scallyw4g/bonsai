@@ -119,6 +119,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
+  Resources->World = AllocateWorld(Volume(g_VisibleRegion));
   InitWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 
   GameState->Models = AllocateGameModels(GameState, Memory, Heap);

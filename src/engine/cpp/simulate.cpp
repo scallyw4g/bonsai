@@ -7,8 +7,6 @@ Bonsai_SimulateEntitiesAndWorld(engine_resources *Resources)
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  CollectUnusedChunks(World, &Resources->MeshFreelist, Memory, World->VisibleRegion);
-
   v2 MouseDelta = GetMouseDelta(Plat);
   input* GameInput = &Plat->Input;
 

@@ -10,9 +10,9 @@ void main()
 
   // Linearize Depth texture
 
-  float Far = 50.0f;
-  float Near = 0.1f;
-  float ZDepth = texture(Texture, UV).x;
-  color = vec4( vec3((2.0 * Near) / (Far + Near - ZDepth * (Far - Near))), 1 );
+  /* float Far = 50.0f; */
+  /* float Near = 0.1f; */
+  /* float ZDepth = texture(Texture, UV).x; */
+  /* color = vec4( vec3((2.0 * Near) / (Far + Near - ZDepth * (Far - Near))), 1 ); */
 
 }

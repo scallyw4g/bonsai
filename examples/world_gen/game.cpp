@@ -154,7 +154,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   TIMED_BLOCK("Game Simulation");
 
-  CollectUnusedChunks(World, &GameState->MeshFreelist, GameState->Memory, g_VisibleRegion);
+  CollectUnusedChunks(Resources, &GameState->MeshFreelist, GameState->Memory, g_VisibleRegion);
 
   v2 MouseDelta = GetMouseDelta(Plat);
   input* GameInput = &Plat->Input;

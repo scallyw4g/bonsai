@@ -27,8 +27,8 @@ Bonsai_Init(engine_resources *Resources)
 
   Init_Global_QuadVertexBuffer();
 
-  Resources->World = AllocateWorld();
-  if (!Resources->World) { Error("Initializing World"); return False; }
+  Resources->World = Allocate(world, BonsaiInitArena, 1);
+  if (!Resources->World) { Error("Allocating World"); return False; }
 
   Resources->Graphics = GraphicsInit(BonsaiInitArena);
   if (!Resources->Graphics) { Error("Initializing Graphics"); return False; }
@@ -44,10 +44,17 @@ Bonsai_FrameBegin(engine_resources *Resources)
 {
   TIMED_FUNCTION();
 
+  // Must come before we update the frame index
+  CollectUnusedChunks(Resources, &Resources->MeshFreelist, Resources->World->Memory, Resources->World->VisibleRegion);
+
+  Resources->FrameIndex += 1;
+
   graphics *G = Resources->Graphics;
-  G->GpuBufferWriteIndex = (G->GpuBufferWriteIndex + 1) % 2;
+  G->GpuBufferWriteIndex = (Resources->FrameIndex) % 2;
 
   UNPACK_ENGINE_RESOURCES();
+
+  World->ChunkHash = CurrentWorldHashtable(Resources);
 
   MapGpuElementBuffer(GpuMap);
 

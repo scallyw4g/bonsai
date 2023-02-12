@@ -1,22 +1,21 @@
-// TODO(Jesse)(immediate): Pass arena in?
-link_internal world*
-AllocateWorld()
+link_internal world *
+AllocateAndInitWorld(world* World, world_position Center, voxel_position WorldChunkDim, chunk_dimension VisibleRegion)
 {
-  memory_arena* WorldMemory = AllocateArena(Gigabytes(5));
+  memory_arena *WorldMemory = AllocateArena(Gigabytes(2));
   DEBUG_REGISTER_ARENA(WorldMemory, 0);
-  world *World = Allocate(world, WorldMemory, 1 );
+
   World->Memory = WorldMemory;
 
-  World->ChunkHash = Allocate(world_chunk*, WorldMemory, WORLD_HASH_SIZE );
+  World->HashSize = (u32)(Volume(VisibleRegion)*2); //WorldHashSize;
+  World->ChunkHashMemory[0] = Allocate(world_chunk*, WorldMemory, World->HashSize );
+  World->ChunkHashMemory[1] = Allocate(world_chunk*, WorldMemory, World->HashSize );
+
+  World->ChunkHash = World->ChunkHashMemory[0];
   World->FreeChunks = Allocate(world_chunk*, WorldMemory, FREELIST_SIZE );
 
-  return World;
-}
-
-link_internal void
-InitWorld(world* World, world_position Center, voxel_position WorldChunkDim, chunk_dimension VisibleRegion)
-{
   World->ChunkDim = WorldChunkDim;
   World->VisibleRegion = VisibleRegion;
   World->Center = Center;
+
+  return World;
 }

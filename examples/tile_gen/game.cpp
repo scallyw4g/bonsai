@@ -110,7 +110,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->Models = AllocateGameModels(GameState, Memory, Heap);
 
   world_position WorldCenter = World_Position(0, 0, 0);
-  InitWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
+  AllocateAndInitWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 
   GameState->Player = GetFreeEntity(EntityTable);
   SpawnPlayer( Plat,
