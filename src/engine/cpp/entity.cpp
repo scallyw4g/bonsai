@@ -838,14 +838,6 @@ ClampBetween( r32 Min, v3 Gross, r32 Max )
   return Result;
 }
 
-r32
-Truncate(r32 Input)
-{
-  s32 Truncated = (s32)Input;
-  r32 Result = (r32)Truncated;
-  return Result;
-}
-
 void
 UpdateEntityP(world* World, entity *Entity, v3 GrossDelta, chunk_dimension VisibleRegion)
 {

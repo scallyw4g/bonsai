@@ -1477,6 +1477,54 @@ struct standing_spot
 };
 
 standing_spot
+ComputeStandingSpotFor8x8x2_V2(world_chunk *SrcChunk, v3i SrcChunkDim, v3i TileChunkOffset, v3i TileChunkDim, boundary_voxels *TempBoundingPoints)
+{
+  standing_spot Result = {};
+
+  s32 xMax = TileChunkOffset.x + TileChunkDim.x;
+  s32 yMax = TileChunkOffset.y + TileChunkDim.y;
+  s32 zMax = TileChunkOffset.z + TileChunkDim.z;
+
+  for (s32 z = TileChunkOffset.z; z < zMax; ++z)
+  {
+    for (s32 y = TileChunkOffset.y; y < yMax; ++y)
+    {
+      for (s32 x = TileChunkOffset.x; x < xMax; ++x)
+      {
+        voxel_position P = Voxel_Position(x, y, z);
+
+        s32 vIndex = GetIndex(P, SrcChunkDim);
+        voxel *V = SrcChunk->Voxels + vIndex;
+        if (IsSet(V, Voxel_Filled) && HasUnfilledNeighbors(vIndex, SrcChunk, SrcChunkDim))
+        {
+          Assert(TempBoundingPoints->At < TempBoundingPoints->End);
+          TempBoundingPoints->Points[TempBoundingPoints->At++] = P;
+
+          TempBoundingPoints->Min = Min(P, TempBoundingPoints->Min);
+          TempBoundingPoints->Max = Max(P, TempBoundingPoints->Max);
+        }
+      }
+    }
+  }
+
+#if 0
+  // NOTE(Jesse): This could be omitted and computed (granted, more coarsely) from the bounding voxels min/max
+  point_buffer TempBuffer = {};
+  TempBuffer.Min = Voxel_Position(s32_MAX);
+  TempBuffer.Max = Voxel_Position(s32_MIN);
+  point_buffer *EdgeBoundaryVoxels = &TempBuffer;
+  FindEdgeIntersections(EdgeBoundaryVoxels, TempTileChunk, TileChunkDim);
+  Result.BoundingVoxelMidpoint = EdgeBoundaryVoxels->Min + ((EdgeBoundaryVoxels->Max - EdgeBoundaryVoxels->Min)/2.0f);
+#endif
+
+  if (TempBoundingPoints->At >= (8*6))
+  {
+    Result.CanStand = True;
+  }
+
+  return Result;
+}
+standing_spot
 ComputeStandingSpotFor8x8x2(world_chunk *SynChunk, v3i SynChunkDim, world_chunk *TempTileChunk, v3i TileChunkDim, v3i Offset, boundary_voxels *TempBoundingPoints)
 {
   standing_spot Result = {};
@@ -1543,11 +1591,11 @@ ComputeStandingSpotFor8x8x8(world_chunk *SynChunk, v3i SynChunkDim, world_chunk 
 }
 
 link_internal void
-ComputeStandingSpots(v3i SrcChunkDim, world_chunk *SrcChunk, world_chunk *DestChunk, memory_arena *TempMemory)
+ComputeStandingSpots(v3i SrcChunkDim, world_chunk *SrcChunk, untextured_3d_geometry_buffer* Mesh, memory_arena *TempMemory)
 {
   TIMED_FUNCTION();
 
-  v3i TileChunkDim = V3i(9, 9, 3);
+  v3i TileChunkDim = V3i(8, 8, 3);
   world_chunk TileChunk = {};
   AllocateWorldChunk(&TileChunk, TempMemory, {}, TileChunkDim);
   boundary_voxels* TempBoundingPoints = AllocateBoundaryVoxels((u32)Volume(TileChunkDim), TempMemory);
@@ -1556,31 +1604,25 @@ ComputeStandingSpots(v3i SrcChunkDim, world_chunk *SrcChunk, world_chunk *DestCh
   /* Assert(SynChunkDim.y % TileChunkDim.y == 0); */
   /* Assert(SynChunkDim.z % TileChunkDim.z == 0); */
 
-  v3i Tiles =  (SrcChunkDim-1)/(TileChunkDim-1);
-  for (s32 yTile = 0; yTile < Tiles.y; ++yTile)
+  v3i Max = SrcChunkDim;
+  for (s32 yIndex = 1; yIndex+TileChunkDim.y < Max.y; yIndex += TileChunkDim.y)
   {
-    for (s32 xTile = 0; xTile < Tiles.x; ++xTile)
+    for (s32 xIndex = 1; xIndex+TileChunkDim.x < Max.x; xIndex += TileChunkDim.x)
     {
-      /* ? LastZStandingSpot = ComputeStandingSpotFromPrevZChunk(); // {}; */
-
-      for (s32 zTile = 0; zTile < Tiles.z; ++zTile) // NOTE(Jesse): Intentionally Z-major
+      for (s32 zIndex = 0; zIndex+TileChunkDim.z < Max.z; zIndex += 1)
       {
-        v3i Offset = (V3i(xTile, yTile, zTile) * (TileChunkDim-1));// + V3(1);
-        CopyChunkOffset(SrcChunk, SrcChunkDim, &TileChunk, TileChunkDim, Offset);
-        SetFlag(&TileChunk, Chunk_VoxelsInitialized);
-
-        standing_spot Spot = ComputeStandingSpotFor8x8x2(SrcChunk, SrcChunkDim, &TileChunk, TileChunkDim, Offset, TempBoundingPoints);
+        v3i TileChunkOffset = V3i(xIndex, yIndex, zIndex);
+        standing_spot Spot = ComputeStandingSpotFor8x8x2_V2(SrcChunk, SrcChunkDim, TileChunkOffset, TileChunkDim, TempBoundingPoints);
 
         if (Spot.CanStand)
         {
-          /* v3 ChunkBasis = GetSimSpaceP(World, SrcChunk); */
+          v3 TileDrawDim = V3(TileChunkDim) * .95f;
 
-          /* v3 TileDrawDim = V3(TileChunkDim.x-1, TileChunkDim.y-1, 2) * .8f; */
-          v3 TileDrawDim = (TileChunkDim-1.f) * .8f;
+          DrawVoxel(Mesh, V3(TileChunkOffset)+0.5f-0.05f, WHITE, V3(1.10f) );
 
-          DEBUG_DrawAABB( DestChunk->LodMesh,
+          DEBUG_DrawAABB( Mesh,
                           AABBMinDim(
-                            V3(Offset),// + V3(0, 0, Spot.BoundingVoxelMidpoint.z),
+                            V3(TileChunkOffset),// + V3(0, 0, Spot.BoundingVoxelMidpoint.z),
                             TileDrawDim),
                             /* V3(TileChunkDim.x*.8f, TileChunkDim.y*.8f, 1.f)), */
                           BLUE,
@@ -1651,7 +1693,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
     }
 
 
-    /* ComputeStandingSpots(SynChunkDim, SyntheticChunk, DestChunk, Thread->TempMemory); */
+    ComputeStandingSpots(SynChunkDim, SyntheticChunk, DestChunk->LodMesh, Thread->TempMemory);
 
 
 #if 0
@@ -2232,24 +2274,13 @@ GetChunksIntersectingRay(world *World, ray *Ray, picked_world_chunk_static_buffe
           r32 tChunk = Intersect(ChunkAABB, Ray);
           if ( tChunk != f32_MAX )
           {
-
-            if ( AllChunksBuffer )
-            {
-              // NOTE(Jesse): This fails, which means we have to sort these
-              /* if (AllChunksBuffer->At) */
-              /* { */
-              /*   Assert(tChunk > AllChunksBuffer->E[AllChunksBuffer->At-1].tValue); */
-              /* } */
-
-              Push(AllChunksBuffer, Chunk, tChunk);
-            }
+            if ( AllChunksBuffer ) { Push(AllChunksBuffer, Chunk, tChunk); }
 
             if (tChunk < tChunkMin)
             {
               ClosestChunk = Chunk;
               tChunkMin = tChunk;
             }
-
           }
         }
       }
@@ -2326,8 +2357,7 @@ struct picked_voxel
   r32 tChunk; // f32_MAX indicates no collision
   world_chunk *Chunk;
 
-  r32 tVoxel;
-  // voxel_position VoxelP; << Inferred by truncating ray*tVoxel
+  v3 VoxelRelP; // Relative to origin of chunk
 };
 
 link_internal picked_voxel
@@ -2371,9 +2401,7 @@ RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, 
 
     v3 CollisionP = MaybeRay.Ray.Origin + (MaybeRay.Ray.Dir*tChunk);
 
-    /* v3 CameraOffset = Camera->ViewingTarget.Offset + V3(Camera->ViewingTarget.WorldP * World->ChunkDim); */
-    v3 CameraOffset = V3(0);
-    v3 StartP = CollisionP + CameraOffset + (Advance*0.1f);
+    v3 StartP = CollisionP + (Advance*0.1f);
 
     v3 AtP = StartP - (ClosestChunk->WorldP*World->ChunkDim);
 
@@ -2395,17 +2423,12 @@ RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, 
         Hit = True;
         ClosestChunkIndex = -1;
 
-        /* if (Collision.tChunk != f32_MAX) */
-          v3 MinP =  V3(ClosestChunk->WorldP * World->ChunkDim);
-          v3 VoxelP = AtP;
-          r32 tVoxel = Length( (AtP+StartP) - MaybeRay.Ray.Origin);
-          /* v3 VoxelP = MaybeRay.Ray.Origin + MaybeRay.Ray.Dir*tVoxel; */
-          untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
-          DrawVoxel( &VoxelMesh, GetRenderP(World->ChunkDim, MinP + V3(Voxel_Position(VoxelP)) + V3(0.5f), Camera), V4(1,0,0,1), V3(1.05f) );
+        /* v3 MinP =  V3(ClosestChunk->WorldP * World->ChunkDim); */
+        /* v3 VoxelP = MinP + Truncate(AtP); */
 
-        Result.Chunk = ClosestChunk;
         Result.tChunk = tChunk;
-        Result.tVoxel = tVoxel;
+        Result.Chunk = ClosestChunk;
+        Result.VoxelRelP = AtP;
 
         break;
       }
@@ -2456,6 +2479,8 @@ RayTraceCollision(world_chunk *Chunk, chunk_dimension Dim, v3 StartingP, v3 Ray,
 link_internal void
 SelectVoxel(engine_resources *Resources)
 {
+  TIMED_FUNCTION();
+
   UNPACK_ENGINE_RESOURCES(Resources);
 
   maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection, Camera, World->ChunkDim);
@@ -2490,10 +2515,46 @@ SelectVoxel(engine_resources *Resources)
     if (Collision.tChunk != f32_MAX)
     {
       v3 MinP =  V3(Collision.Chunk->WorldP * World->ChunkDim);
-      v3 VoxelP =  MaybeRay.Ray.Dir * Collision.tVoxel;
-      untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
-      DrawVoxel( &VoxelMesh, GetRenderP(World->ChunkDim, Voxel_Position(MinP+VoxelP) + V3(0.5f), Camera), V4(1,0,0,1), V3(1.05f) );
+      v3 VoxelP = MinP + Truncate(Collision.VoxelRelP);
+      untextured_3d_geometry_buffer OutlineAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
+      v3 Offset = V3(0.001f);
+      DEBUG_DrawAABB( &OutlineAABB,
+                      GetRenderP(World->ChunkDim, VoxelP-Offset, Camera),
+                      GetRenderP(World->ChunkDim, VoxelP+V3(1.f)+Offset, Camera),
+                      GREY, 0.05f);
     }
+
+    local_persist b32 Picked;
+    local_persist picked_voxel PickedVoxel;
+    if (Hotkeys->Debug_PickChunks_Voxel)
+    {
+      Picked = True;
+      PickedVoxel = Collision;
+    }
+
+    if (Picked)
+    {
+      v3 MinP =  V3(PickedVoxel.Chunk->WorldP * World->ChunkDim);
+      v3 VoxelP = MinP + Truncate(PickedVoxel.VoxelRelP);
+
+      untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
+      DrawVoxel( &VoxelMesh, GetRenderP(World->ChunkDim, VoxelP+V3(.5f), Camera), V4(1,0,0,1), V3(1.05f) );
+
+      untextured_3d_geometry_buffer ChunkAABBMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
+      auto ChunkAABB = AABBMinDim( GetRenderP(World->ChunkDim, MinP, Camera), V3(World->ChunkDim));
+      DEBUG_DrawAABB(&ChunkAABBMesh, ChunkAABB, RED);
+    }
+
+    if (Hotkeys->Debug_Action_ComputeStandingSpot)
+    {
+      /* v3i TileChunkOffset = (V3i(xIndex, yTile, zTile) * (TileChunkDim-1));// + V3(1); */
+      v3i TileChunkOffset = Voxel_Position(PickedVoxel.VoxelRelP);
+      v3i TileChunkDim = Chunk_Dimension(8, 8, 2);
+      boundary_voxels* TempBoundingPoints = AllocateBoundaryVoxels((u32)Volume(TileChunkDim), TranArena);
+      standing_spot Spot = ComputeStandingSpotFor8x8x2_V2(PickedVoxel.Chunk, World->ChunkDim, TileChunkOffset, TileChunkDim, TempBoundingPoints);
+    }
+
+
 
 #endif
   }

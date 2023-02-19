@@ -25,16 +25,17 @@ DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh,
   v4 FaceColors[VERTS_PER_FACE];
   FillColorArray(ColorIndex, FaceColors, DefaultPalette, VERTS_PER_FACE);
 
+  r32 HalfThickness = Thickness/2.f;
   {
     v3 localVertexData[] =
     {
-      {{P1.x             , P1.y , P1.z}} ,
-      {{P2.x             , P2.y , P2.z}} ,
-      {{P1.x + Thickness , P1.y , P1.z}} ,
+      {{P1.x - HalfThickness , P1.y , P1.z}} ,
+      {{P2.x - HalfThickness , P2.y , P2.z}} ,
+      {{P1.x + HalfThickness , P1.y , P1.z}} ,
 
-      {{P1.x + Thickness , P1.y , P1.z}} ,
-      {{P2.x             , P2.y , P2.z}} ,
-      {{P2.x + Thickness , P2.y , P2.z}} ,
+      {{P1.x + HalfThickness , P1.y , P1.z}} ,
+      {{P2.x - HalfThickness , P2.y , P2.z}} ,
+      {{P2.x + HalfThickness , P2.y , P2.z}} ,
     };
 
 
@@ -48,13 +49,13 @@ DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh,
   {
     v3 localVertexData[] =
     {
-      {{P1.x , P1.y             , P1.z}} ,
-      {{P2.x , P2.y             , P2.z}} ,
-      {{P1.x , P1.y + Thickness , P1.z}} ,
+      {{P1.x , P1.y - HalfThickness , P1.z}} ,
+      {{P2.x , P2.y - HalfThickness , P2.z}} ,
+      {{P1.x , P1.y + HalfThickness , P1.z}} ,
 
-      {{P1.x , P1.y + Thickness , P1.z}} ,
-      {{P2.x , P2.y             , P2.z}} ,
-      {{P2.x , P2.y + Thickness , P2.z}} ,
+      {{P1.x , P1.y + HalfThickness , P1.z}} ,
+      {{P2.x , P2.y - HalfThickness , P2.z}} ,
+      {{P2.x , P2.y + HalfThickness , P2.z}} ,
     };
 
 
@@ -68,13 +69,13 @@ DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh,
   {
     v3 localVertexData[] =
     {
-      {{P1.x , P1.y , P1.z}}              ,
-      {{P2.x , P2.y , P2.z}}              ,
-      {{P1.x , P1.y , P1.z + Thickness }} ,
+      {{P1.x , P1.y , P1.z - HalfThickness }} ,
+      {{P2.x , P2.y , P2.z - HalfThickness }} ,
+      {{P1.x , P1.y , P1.z + HalfThickness }} ,
 
-      {{P1.x , P1.y , P1.z + Thickness }} ,
-      {{P2.x , P2.y , P2.z             }} ,
-      {{P2.x , P2.y , P2.z + Thickness }} ,
+      {{P1.x , P1.y , P1.z + HalfThickness }} ,
+      {{P2.x , P2.y , P2.z - HalfThickness }} ,
+      {{P2.x , P2.y , P2.z + HalfThickness }} ,
     };
 
 
