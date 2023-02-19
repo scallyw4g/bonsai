@@ -8,7 +8,7 @@ BuildExecutables=1
 BuildExamples=1
 BuildDebugSystem=1
 
-BuildTests=0
+BuildTests=1
 BuildDebugTests=0
 
 RunTests=0
@@ -368,18 +368,19 @@ function RunPoof
 
 
 TESTS_TO_BUILD="
-  $TESTS/ui_command_buffer.cpp
-  $TESTS/m4.cpp
-  $TESTS/colladaloader.cpp
-  $TESTS/test_bitmap.cpp
   $TESTS/chunk.cpp
-  $TESTS/bonsai_string.cpp
-  $TESTS/objloader.cpp
-  $TESTS/callgraph.cpp
-  $TESTS/heap_allocation.cpp
-  $TESTS/rng.cpp
-  $TESTS/file.cpp
 "
+
+#   $TESTS/ui_command_buffer.cpp
+#   $TESTS/m4.cpp
+#   $TESTS/colladaloader.cpp
+#   $TESTS/test_bitmap.cpp
+#   $TESTS/bonsai_string.cpp
+#   $TESTS/objloader.cpp
+#   $TESTS/callgraph.cpp
+#   $TESTS/heap_allocation.cpp
+#   $TESTS/rng.cpp
+#   $TESTS/file.cpp
 
 # if [[ $BUILD_EVERYTHING == 0 ]]; then
 #   TESTS_TO_BUILD="

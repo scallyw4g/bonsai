@@ -10,23 +10,26 @@ struct entity;
 // TODO(Jesse): Once poof can accept pointer types and multiple arguments we can generate this struct
 /* poof(static_buffer(world_chunk*, MAX_PICKED_WORLD_CHUNKS)) */
 /* #include <generated/buffer_world_chunk.h> */
-struct world_chunk_static_buffer
+struct picked_world_chunk_static_buffer
 {
-  world_chunk *E[MAX_PICKED_WORLD_CHUNKS];
+  picked_world_chunk E[MAX_PICKED_WORLD_CHUNKS];
   u64 At;
 };
 
 struct engine_debug
 {
-  world_chunk_static_buffer PickedChunks;
+  picked_world_chunk_static_buffer PickedChunks;
 };
 
 link_internal void
-Push(world_chunk_static_buffer *Buf, world_chunk *Chunk)
+Push(picked_world_chunk_static_buffer *Buf, world_chunk *Chunk, r32 t)
 {
   if (Buf->At < MAX_PICKED_WORLD_CHUNKS)
   {
-    Buf->E[Buf->At++] = Chunk;
+    Buf->E[Buf->At].E = Chunk;
+    Buf->E[Buf->At].tValue = t;
+
+    ++Buf->At;
   }
 }
 
@@ -745,40 +748,6 @@ inline b32
 NotFilled(chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim)
 {
   b32 Result = !IsFilled(Chunk, VoxelP, Dim);
-  return Result;
-}
-
-inline voxel_position
-ClampNegative( voxel_position V )
-{
-  voxel_position Result = V;
-
-  if ( V.x > 0 )
-    Result.x = 0;
-
-  if ( V.y > 0 )
-    Result.y = 0;
-
-  if ( V.z > 0 )
-    Result.z = 0;
-
-  return Result;
-}
-
-inline voxel_position
-ClampPositive( voxel_position V )
-{
-  voxel_position Result = V;
-
-  if ( V.x < 0 )
-    Result.x = 0;
-
-  if ( V.y < 0 )
-    Result.y = 0;
-
-  if ( V.z < 0 )
-    Result.z = 0;
-
   return Result;
 }
 

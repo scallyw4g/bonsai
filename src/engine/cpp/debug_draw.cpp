@@ -205,10 +205,11 @@ DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, v3 MinP, v3 MaxP, u32 ColorI
   DEBUG_DrawLine(Mesh, BotFL, BotRL, ColorIndex, Thickness);
   DEBUG_DrawLine(Mesh, BotFR, BotRR, ColorIndex, Thickness);
 
+
   return;
 }
 
-inline void
+link_internal void
 DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, aabb Rect, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {
   v3 MinP = Rect.Center - Rect.Radius;
@@ -217,10 +218,9 @@ DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, aabb Rect, u32 ColorIndex, r
   return;
 }
 
-inline void
-DEBUG_DrawChunkAABB( untextured_3d_geometry_buffer *Mesh, graphics *Graphics,
-                     world_position WorldP, chunk_dimension WorldChunkDim,
-                     u32 ColorIndex , r32 Thickness = DEFAULT_LINE_THICKNESS)
+link_internal void
+DEBUG_DrawChunkAABB( untextured_3d_geometry_buffer *Mesh, graphics *Graphics, world_position WorldP,
+                     chunk_dimension WorldChunkDim, u32 ColorIndex , r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
   v3 MinP = GetRenderP(WorldChunkDim, Canonical_Position(V3(0,0,0), WorldP), Graphics->Camera);
   v3 MaxP = GetRenderP(WorldChunkDim, Canonical_Position(WorldChunkDim, WorldP), Graphics->Camera);
@@ -229,13 +229,13 @@ DEBUG_DrawChunkAABB( untextured_3d_geometry_buffer *Mesh, graphics *Graphics,
   return;
 }
 
-inline void
-DEBUG_DrawChunkAABB(untextured_3d_geometry_buffer *Mesh, graphics *Graphics,
-                    world_chunk *Chunk, chunk_dimension WorldChunkDim,
-                    u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS)
+link_internal void
+DEBUG_DrawChunkAABB( untextured_3d_geometry_buffer *Mesh, graphics *Graphics, world_chunk *Chunk,
+                     chunk_dimension WorldChunkDim, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
   v3 MinP = GetRenderP(WorldChunkDim, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera);
   v3 MaxP = GetRenderP(WorldChunkDim, Canonical_Position(WorldChunkDim, Chunk->WorldP), Graphics->Camera);
+
 
   DEBUG_DrawAABB(Mesh, MinP, MaxP, ColorIndex, Thickness);
   return;

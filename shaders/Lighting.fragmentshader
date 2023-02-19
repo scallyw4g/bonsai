@@ -163,12 +163,16 @@ void main()
 
   /* float Visibility = 1.0f; */
 
-  for (int index = 0; index < 16; index++){
+#if 0
+  float sampleDepth = texture(shadowMap, FragPShadowScreenSpace.xy).x;
+  if ( fragPDepth > sampleDepth ) { Visibility = vec3(0.25f); }
+#else
+  for (int index = 0; index < 16; index++)
+  {
     float sampleDepth = texture(shadowMap, vec2(FragPShadowScreenSpace.xy + poissonDisk[index]/5000.0) ).x;
-
-    if ( fragPDepth > sampleDepth )
-      Visibility -= sampleVis;
+    if ( fragPDepth > sampleDepth ) { Visibility -= sampleVis; }
   }
+#endif
 
 #endif
 

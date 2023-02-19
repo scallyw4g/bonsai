@@ -1651,25 +1651,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
     }
 
 
-
-
-
-
-
-
-
-
     /* ComputeStandingSpots(SynChunkDim, SyntheticChunk, DestChunk, Thread->TempMemory); */
-
-
-
-
-
-
-
-
-
-
 
 
 #if 0
@@ -2025,8 +2007,6 @@ QueueChunkForInit(work_queue *Queue, world_chunk *Chunk)
 }
 
 
-
-
 #if PLATFORM_GL_IMPLEMENTATIONS
 link_internal work_queue_entry_copy_buffer
 WorkQueueEntryCopyBuffer(untextured_3d_geometry_buffer* Src, untextured_3d_geometry_buffer* Dest, world_chunk *Chunk, camera* Camera, chunk_dimension WorldChunkDim)
@@ -2105,7 +2085,7 @@ BufferWorld( platform* Plat,
           Chunk = GetWorldChunk( World, P, VisibleRegion );
         }
 
-#if 1
+#if 0
         u32 ColorIndex = 0;
 
         if (Chunk)
@@ -2220,6 +2200,363 @@ BufferWorld( platform* Plat,
   return;
 }
 
+// TODO(Jesse): This is pretty wack.  Why the fuck do we transform chunks into
+// render space to do this collision test?  Shouldn't we transform the ray into
+// absolute space ..?
+link_internal picked_world_chunk
+GetChunksIntersectingRay(world *World, graphics *Graphics, ray *Ray, picked_world_chunk_static_buffer *AllChunksBuffer)
+{
+  world_chunk *ClosestChunk = 0;
+
+  chunk_dimension VisibleRegion = World->VisibleRegion;
+  chunk_dimension Radius = VisibleRegion/2;
+  world_position Min = World->Center - Radius;
+  world_position Max = World->Center + Radius;
+
+  f32 tChunkMin = f32_MAX;
+  for (s32 z = Min.z; z < Max.z; ++ z)
+  {
+    for (s32 y = Min.y; y < Max.y; ++ y)
+    {
+      for (s32 x = Min.x; x < Max.x; ++ x)
+      {
+        world_position P = World_Position(x,y,z);
+        world_chunk *Chunk = GetWorldChunk( World, P, VisibleRegion );
+
+        u32 ColorIndex = 0;
+
+        if (Chunk)
+        {
+          aabb ChunkAABB = MinMaxAABB( GetRenderP(World->ChunkDim, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera),
+                                       GetRenderP(World->ChunkDim, Canonical_Position(World->ChunkDim, Chunk->WorldP), Graphics->Camera) );
+
+          r32 tChunk = Intersect(ChunkAABB, Ray);
+          if ( tChunk != f32_MAX )
+          {
+
+            if ( AllChunksBuffer )
+            {
+              // NOTE(Jesse): This fails, which means we have to sort these
+              /* if (AllChunksBuffer->At) */
+              /* { */
+              /*   Assert(tChunk > AllChunksBuffer->E[AllChunksBuffer->At-1].tValue); */
+              /* } */
+
+              Push(AllChunksBuffer, Chunk, tChunk);
+            }
+
+            if (tChunk < tChunkMin)
+            {
+              ClosestChunk = Chunk;
+              tChunkMin = tChunk;
+            }
+
+          }
+        }
+      }
+    }
+  }
+
+  return { .E = ClosestChunk, .tValue = tChunkMin };
+}
+
+link_internal world_chunk*
+GetChunksFromMouseP(engine_resources *Resources, picked_world_chunk_static_buffer *AllChunksBuffer)
+{
+  if (AllChunksBuffer) { Assert(AllChunksBuffer->At == 0); }
+
+  UNPACK_ENGINE_RESOURCES(Resources);
+  picked_world_chunk ClosestChunk = {};
+
+  maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection);
+  if (MaybeRay.Tag == Maybe_Yes)
+  {
+    ClosestChunk = GetChunksIntersectingRay(World, Graphics, &MaybeRay.Ray, AllChunksBuffer);
+  }
+
+  return ClosestChunk.E;
+}
+
+
+#if DEBUG_SYSTEM_API
+
+link_internal void
+Debug_DoWorldChunkPicking(engine_resources *Resources)
+{
+
+/*   NotImplemented; */
+
+#if 0
+  if (AllChunksBuffer)
+  {
+    for ( u32 ChunkIndex = 0;
+              ChunkIndex < AllChunksBuffer->At;
+            ++ChunkIndex )
+    {
+      world_chunk *Chunk = AllChunksBuffer->E[ChunkIndex];
+      untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
+      u8 Color = LIGHT_GREEN;
+
+      if (Chunk == GetDebugState()->PickedChunk)
+      {
+        Color = PINK;
+      }
+
+      if (Chunk == GetDebugState()->HoverChunk)
+      {
+        Color = YELLOW;
+      }
+
+      DEBUG_DrawChunkAABB(&CopyDest, Graphics, Chunk, World->ChunkDim, Color, 0.35f);
+    }
+  }
+#endif
+}
+
+link_internal aabb
+WorldChunkAABB(world_chunk *Chunk, v3 WorldChunkDim)
+{
+  v3 MinP = V3(Chunk->WorldP) * WorldChunkDim;
+  v3 MaxP = MinP + WorldChunkDim;
+  aabb Result = AABBMinMax(MinP, MaxP);
+  return Result;
+}
+
+canonical_position
+RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, v3 RayDir)
+{
+  UNPACK_ENGINE_RESOURCES(Resources);
+  Assert(Length(RayDir) <= 1.0001f);
+
+  /* { */
+  /*   untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL); */
+  /*   v3 RenderP = GetRenderP(World->ChunkDim, AbsRayOrigin, Camera); */
+  /*   DrawVoxel( &VoxelMesh, RenderP, V4(1,1,0,1), V3(11.f) ); */
+  /* } */
+
+  b32 Collision = False;
+  canonical_position Result = {};
+  v3 WorldChunkDim = V3(World->ChunkDim);
+
+  picked_world_chunk_static_buffer AllChunksBuffer = {};
+
+  maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection);
+  if (MaybeRay.Tag == Maybe_Yes) { GetChunksIntersectingRay(World, Graphics, &MaybeRay.Ray, &AllChunksBuffer); }
+
+
+  v3 Advance = MaybeRay.Ray.Dir;
+  b32 Hit = False;
+
+  BubbleSort((sort_key_f*)AllChunksBuffer.E, (u32)AllChunksBuffer.At);
+
+  for (s64 ClosestChunkIndex = s64(AllChunksBuffer.At)-1; ClosestChunkIndex > -1; --ClosestChunkIndex)
+  {
+    r32 tChunk = (r32)AllChunksBuffer.E[ClosestChunkIndex].tValue;
+    world_chunk *ClosestChunk = AllChunksBuffer.E[ClosestChunkIndex].E;
+
+    if (ClosestChunk->FilledCount == 0) continue;
+
+    /* { */
+    /*   untextured_3d_geometry_buffer AABBMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB); */
+    /*   DEBUG_DrawChunkAABB(&AABBMesh, Graphics, ClosestChunk, World->ChunkDim, RED); */
+    /* } */
+
+    v3 CollisionP = MaybeRay.Ray.Origin + (MaybeRay.Ray.Dir*tChunk);
+
+    v3 CameraOffset = Camera->ViewingTarget.Offset + (Camera->ViewingTarget.WorldP * World->ChunkDim);
+    v3 StartP = CollisionP + CameraOffset + (Advance*0.1f);
+
+    /* { */
+    /*   untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL); */
+    /*   DrawVoxel( &VoxelMesh, GetRenderP(World->ChunkDim, StartP, Camera), V4(1,1,0,1), V3(0.25f) ); */
+    /* } */
+
+
+    v3 AtP = StartP - (ClosestChunk->WorldP*World->ChunkDim);
+
+    /* v3 MinP =  V3(ClosestChunk->WorldP * World->ChunkDim); */
+    /* v3 MaxP = MinP + World->ChunkDim; */
+    /* aabb ChunkAABB = AABBMinMax(MinP, MaxP); */
+
+    /* { */
+    /*   untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL); */
+    /*   DrawVoxel( &VoxelMesh, GetRenderP(World->ChunkDim, MinP + AtP, Camera), V4(1,1,0,1), V3(0.5f) ); */
+    /* } */
+
+
+#if 0
+    v3 ChunkP = GetRenderP(World->ChunkDim, ClosestChunk->WorldP, Camera);
+    for (s32 zIndex = -64; zIndex < -32; ++zIndex)
+    {
+      for (s32 yIndex = -64; yIndex < -32; ++yIndex)
+      {
+        for (s32 xIndex = -64; xIndex < -32; ++xIndex)
+        {
+          /* voxel_position MappedP = Voxel_Position(xIndex, yIndex, zIndex); */
+          voxel_position MappedP = MapRealPosToLocalPos(World->ChunkDim, Voxel_Position(xIndex, yIndex, zIndex));
+          if (IsFilledInChunk(ClosestChunk, MappedP, World->ChunkDim))
+          {
+            untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
+            DrawVoxel( &VoxelMesh, ChunkP + MappedP, V4(1,0,1,1), V3(0.2f) );
+          }
+        }
+      }
+    }
+#endif
+
+    u32 AxisIndex = 0;
+    for (;;)
+    {
+      if ( AtP.x < 0 || AtP.x >= WorldChunkDim.x ||
+           AtP.y < 0 || AtP.y >= WorldChunkDim.y ||
+           AtP.z < 0 || AtP.z >= WorldChunkDim.z )
+      {
+        Hit = False;
+        break;
+      }
+
+      /* { */
+      /*   untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL); */
+      /*   DrawVoxel( &VoxelMesh, GetRenderP(World->ChunkDim, MinP + AtP, Camera), V4(0,0,1,1), V3(0.2f) ); */
+      /* } */
+
+      // TODO(Jesse): Instead of trucating, make ClosestCentroid(AtP)
+      voxel_position LocalTestP = Voxel_Position(AtP);
+      if (IsFilledInChunk(ClosestChunk, LocalTestP, World->ChunkDim))
+      {
+        Hit = True;
+        ClosestChunkIndex = -1;
+
+        {
+          v3 MinP =  V3(ClosestChunk->WorldP * World->ChunkDim);
+          untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
+          DrawVoxel( &VoxelMesh, GetRenderP(World->ChunkDim, MinP + V3(Voxel_Position(AtP)) + V3(0.5f), Camera), V4(1,0,0,1), V3(1.05f) );
+        }
+
+        break;
+      }
+
+      AtP.E[AxisIndex] += Advance.E[AxisIndex];
+      AxisIndex = (AxisIndex + 1) % 3;
+
+    }
+
+
+    /* if (Hit) */
+    /* { */
+    /*   untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL); */
+    /*   DrawVoxel( &VoxelMesh, GetRenderP(World->ChunkDim, MinP + V3(Voxel_Position(AtP)) + V3(0.5f), Camera), V4(1,0,0,1), V3(1.25f) ); */
+    /*   DEBUG_VALUE_r32(AtP.x); */
+    /*   DEBUG_VALUE_r32(AtP.y); */
+    /*   DEBUG_VALUE_r32(AtP.z); */
+    /* } */
+
+  }
+
+
+
+#if 0
+
+  world_position AbsWorldCenter = World->Center * World->ChunkDim;
+  world_position AbsVisibleRegionDim = World->VisibleRegion * World->ChunkDim;
+  /* aabb VisibleRegionAABB = AABBCenterDim(-1.f*Camera->ViewingTarget.Offset, V3(AbsVisibleRegionDim) ); */
+  aabb AbsVisibleRegionAABB = AABBCenterDim(V3(AbsWorldCenter), V3(AbsVisibleRegionDim) );
+
+  r32 tRayVisibleRegion = Intersect(AbsVisibleRegionAABB, Ray(V3(AbsRayOrigin), RayDir) );
+
+  /* { */
+  /*   untextured_3d_geometry_buffer AABBMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB); */
+  /*   DEBUG_DrawAABB(&AABBMesh, AbsVisibleRegionAABB, RED, .5f); */
+  /* } */
+
+  b32 Intersected = tRayVisibleRegion != f32_MAX;
+  DEBUG_VALUE_u32(Intersected);
+  if (Intersected)
+  {
+    canonical_position Current = AbsRayOrigin; //Canonical_Position(World->ChunkDim, AbsRayOrigin, World_Position(0));
+
+    b32 HaveHitChunks = False;
+    b32 Done = False;
+    u32 DebugIterationIndex = 0;
+    while (!Done)
+    {
+      for (u32 DimIndex = 0; DimIndex < 3; ++DimIndex)
+      {
+        if (IsInside(VisibleRegionAABB, V3(Current.WorldP)))
+        {
+          HaveHitChunks = True;
+
+          world_chunk *Chunk = GetWorldChunk(World, Current.WorldP, World->VisibleRegion);
+
+          if (Chunk)
+          {
+            if (IsFilledInChunk( Chunk, Voxel_Position(Current.Offset), World->ChunkDim))
+            {
+              Collision = True;
+              Done = True;
+              break;
+            }
+          }
+        }
+
+        if (HaveHitChunks && !IsInside(VisibleRegionAABB, V3(Current.WorldP)))
+        {
+          Done = True;
+          break;
+        }
+
+        Current.Offset += RayDir.E[DimIndex];
+        Current = Canonicalize(World->ChunkDim, Current);
+      }
+
+      if (++DebugIterationIndex == 10000) break;
+    }
+
+    if (Collision)
+    {
+      Result = Current;
+    }
+  }
+
+#endif
+
+  return Result;
+}
+
+voxel_position
+RayTraceCollision(world_chunk *Chunk, chunk_dimension Dim, v3 StartingP, v3 Ray, v3 CenteringRay)
+{
+  Assert(LengthSq(Ray) == 1);
+  v3 Result = V3(-1,-1,-1);
+
+  // Clamp magnitude of this ray to 1 in each axis
+  CenteringRay = GetSign(CenteringRay);
+
+  v3 CurrentP = StartingP;
+  while ( IsInsideDim(Dim, CurrentP) )
+  {
+    v3 CachedP = CurrentP;
+
+    while ( IsInsideDim(Dim, CurrentP) )
+    {
+      if ( IsFilledInChunk(Chunk, Voxel_Position(CurrentP), Dim) )
+      {
+        Result = CurrentP;
+        goto finished;
+      }
+
+      CurrentP += Ray;
+    }
+
+    CurrentP = CachedP;
+    CurrentP += CenteringRay;
+  }
+
+  finished:
+
+  return Voxel_Position(Result);
+}
+
 link_internal void
 SelectVoxel(engine_resources *Resources)
 {
@@ -2269,97 +2606,6 @@ SelectVoxel(engine_resources *Resources)
       DrawVoxel( &VoxelMesh, RenderP, V4(1,0,0,1), V3(1.1f) );
     }
 #endif
-  }
-}
-
-#if DEBUG_SYSTEM_API
-link_internal void
-Debug_DoWorldChunkPicking(engine_resources *Resources)
-{
-  UNPACK_ENGINE_RESOURCES(Resources);
-
-  world_chunk_static_buffer *PickedChunks = &EngineDebug->PickedChunks;
-  if (Hotkeys->Debug_PickChunks_All || Hotkeys->Debug_PickChunks_Terrain)
-  {
-    PickedChunks->At = 0;
-
-    maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection);
-
-    if (MaybeRay.Tag == Maybe_Yes)
-    {
-      chunk_dimension VisibleRegion = World->VisibleRegion;
-      chunk_dimension Radius = VisibleRegion/2;
-      world_position Min = World->Center - Radius;
-      world_position Max = World->Center + Radius;
-
-      f32 tChunkMin = f32_MAX;
-      world_chunk *ClosestChunk = 0;
-      for (s32 z = Min.z; z < Max.z; ++ z)
-      {
-        for (s32 y = Min.y; y < Max.y; ++ y)
-        {
-          for (s32 x = Min.x; x < Max.x; ++ x)
-          {
-            world_position P = World_Position(x,y,z);
-            world_chunk *Chunk = GetWorldChunk( World, P, VisibleRegion );
-
-            u32 ColorIndex = 0;
-
-            if (Chunk)
-            {
-              aabb ChunkAABB = MinMaxAABB( GetRenderP(World->ChunkDim, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera),
-                                           GetRenderP(World->ChunkDim, Canonical_Position(World->ChunkDim, Chunk->WorldP), Graphics->Camera) );
-
-              r32 tChunk = Intersect(ChunkAABB, MaybeRay.Ray);
-              if ( tChunk != f32_MAX )
-              {
-                if ( Hotkeys->Debug_PickChunks_All )
-                {
-                  Push(PickedChunks, Chunk);
-                }
-                else if (Hotkeys->Debug_PickChunks_Terrain && Chunk->FilledCount > 0 && tChunk < tChunkMin)
-                {
-                  ClosestChunk = Chunk;
-                }
-
-              }
-            }
-          }
-        }
-      }
-
-      if (ClosestChunk)
-      {
-        Assert(Hotkeys->Debug_PickChunks_Terrain);
-        Assert(!Hotkeys->Debug_PickChunks_All);
-        Push(PickedChunks, ClosestChunk);
-      }
-    }
-    else
-    {
-      // Was unable to invert the ViewProjection matrix
-    }
-  }
-
-  for ( u32 ChunkIndex = 0;
-            ChunkIndex < PickedChunks->At;
-          ++ChunkIndex )
-  {
-    world_chunk *Chunk = PickedChunks->E[ChunkIndex];
-    untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
-    u8 Color = LIGHT_GREEN;
-
-    if (Chunk == GetDebugState()->PickedChunk)
-    {
-      Color = PINK;
-    }
-
-    if (Chunk == GetDebugState()->HoverChunk)
-    {
-      Color = YELLOW;
-    }
-
-    DEBUG_DrawChunkAABB(&CopyDest, Graphics, Chunk, World->ChunkDim, Color, 0.35f);
   }
 }
 
@@ -2452,8 +2698,8 @@ PushChunkDetails(debug_ui_render_group* Group, world_chunk* Chunk, window_layout
   PushWindowEnd(Group, Window);
 }
 
-link_internal world_chunk*
-DrawPickedChunks(debug_ui_render_group* Group, render_entity_to_texture_group *PickedChunksRenderGroup, world_chunk_static_buffer *PickedChunks, world_chunk *HotChunk)
+link_internal picked_world_chunk*
+DrawPickedChunks(debug_ui_render_group* Group, render_entity_to_texture_group *PickedChunksRenderGroup, picked_world_chunk_static_buffer *PickedChunks, picked_world_chunk *HotChunk)
 {
   TIMED_FUNCTION();
 
@@ -2472,26 +2718,26 @@ DrawPickedChunks(debug_ui_render_group* Group, render_entity_to_texture_group *P
       ChunkIndex < PickedChunks->At;
       ++ChunkIndex)
   {
-    world_chunk *Chunk = PickedChunks->E[ChunkIndex];
+    picked_world_chunk *PickedChunk = PickedChunks->E + ChunkIndex;
 
-    interactable_handle PositionButton = PushButtonStart(Group, (umm)"PositionButton"^(umm)Chunk);
-      ui_style Style = Chunk == DebugState->PickedChunk ? DefaultSelectedStyle : DefaultStyle;
-      PushColumn(Group, CS(Chunk->WorldP.x), &Style);
-      PushColumn(Group, CS(Chunk->WorldP.y), &Style);
-      PushColumn(Group, CS(Chunk->WorldP.z), &Style);
+    interactable_handle PositionButton = PushButtonStart(Group, (umm)"PositionButton"^(umm)PickedChunk);
+      ui_style Style = PickedChunk == DebugState->PickedChunk ? DefaultSelectedStyle : DefaultStyle;
+      PushColumn(Group, CS(PickedChunk->E->WorldP.x), &Style);
+      PushColumn(Group, CS(PickedChunk->E->WorldP.y), &Style);
+      PushColumn(Group, CS(PickedChunk->E->WorldP.z), &Style);
     PushButtonEnd(Group);
 
-    if (Clicked(Group, &PositionButton)) { HotChunk = Chunk; }
-    if (Hover(Group, &PositionButton)) { DebugState->HoverChunk = Chunk; }
+    if (Clicked(Group, &PositionButton)) { HotChunk = PickedChunk; }
+    if (Hover(Group, &PositionButton)) { DebugState->HoverChunk = PickedChunk; }
 
-    interactable_handle CloseButton = PushButtonStart(Group, (umm)"CloseButton"^(umm)Chunk);
+    interactable_handle CloseButton = PushButtonStart(Group, (umm)"CloseButton"^(umm)PickedChunk);
       PushColumn(Group, CSz("X"));
     PushButtonEnd(Group);
 
     if ( Clicked(Group, &CloseButton) )
     {
-      world_chunk** SwapChunk = PickedChunks->E + ChunkIndex;
-      if (*SwapChunk == HotChunk) { HotChunk = 0; }
+      picked_world_chunk* SwapChunk = PickedChunks->E + ChunkIndex;
+      if (SwapChunk == HotChunk) { HotChunk = 0; }
       *SwapChunk = PickedChunks->E[--PickedChunks->At];
     }
 
@@ -2503,40 +2749,39 @@ DrawPickedChunks(debug_ui_render_group* Group, render_entity_to_texture_group *P
 
   if (HotChunk)
   {
-    v3 Basis = -0.5f*V3(ChunkDimension(HotChunk));
-    untextured_3d_geometry_buffer* Src = HotChunk->LodMesh;
+    v3 Basis = -0.5f*V3(ChunkDimension(HotChunk->E));
+    untextured_3d_geometry_buffer* Src = HotChunk->E->LodMesh;
     untextured_3d_geometry_buffer* Dest = &DebugState->PickedChunksRenderGroup.GameGeo.Buffer;
     if (Src && Dest)
     {
       BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
     }
-  }
 
-  { // Draw hotchunk to the GameGeo FBO
-    GL.BindFramebuffer(GL_FRAMEBUFFER, PickedChunksRenderGroup->GameGeoFBO.ID);
-    FlushBuffersToCard(&PickedChunksRenderGroup->GameGeo);
 
-    PickedChunksRenderGroup->ViewProjection =
-      ProjectionMatrix(PickedChunksRenderGroup->Camera, DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM) *
-      ViewMatrix(ChunkDimension(HotChunk), PickedChunksRenderGroup->Camera);
+    {
+      // Draw hotchunk to the GameGeo FBO
+      GL.BindFramebuffer(GL_FRAMEBUFFER, PickedChunksRenderGroup->GameGeoFBO.ID);
+      FlushBuffersToCard(&PickedChunksRenderGroup->GameGeo);
 
-    GL.UseProgram(PickedChunksRenderGroup->GameGeoShader.ID);
+      PickedChunksRenderGroup->ViewProjection =
+        ProjectionMatrix(PickedChunksRenderGroup->Camera, DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM) *
+        ViewMatrix(ChunkDimension(HotChunk->E), PickedChunksRenderGroup->Camera);
 
-    SetViewport(V2(DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM));
+      GL.UseProgram(PickedChunksRenderGroup->GameGeoShader.ID);
 
-    BindShaderUniforms(&PickedChunksRenderGroup->GameGeoShader);
+      SetViewport(V2(DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM));
 
-    Draw(PickedChunksRenderGroup->GameGeo.Buffer.At);
-    PickedChunksRenderGroup->GameGeo.Buffer.At = 0;
-  }
+      BindShaderUniforms(&PickedChunksRenderGroup->GameGeoShader);
 
-  if (HotChunk)
-  {
+      Draw(PickedChunksRenderGroup->GameGeo.Buffer.At);
+      PickedChunksRenderGroup->GameGeo.Buffer.At = 0;
+    }
+
     local_persist window_layout ChunkDetailWindow = WindowLayout("Chunk Details", BasisRightOf(&ListingWindow),     V2(1100.0f, 400.0f));
     local_persist window_layout ChunkViewWindow   = WindowLayout("Chunk View",    BasisRightOf(&ChunkDetailWindow), V2(800.0f));
 
-    PushChunkDetails(Group, HotChunk, &ChunkDetailWindow);
-    PushChunkView(Group, HotChunk, &ChunkViewWindow);
+    PushChunkDetails(Group, HotChunk->E, &ChunkDetailWindow);
+    PushChunkView(Group, HotChunk->E, &ChunkViewWindow);
   }
 
   return HotChunk;

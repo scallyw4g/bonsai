@@ -1491,6 +1491,36 @@ GetWindowSortParams(ui_render_command_buffer *CommandBuffer)
 }
 
 link_internal void
+BubbleSort(sort_key_f* Keys, u32 Count)
+{
+  for (u32 Ignored = 0;
+      Ignored < Count;
+      ++Ignored)
+  {
+    b32 Sorted = True;
+
+    for (u32 Inner = 0;
+        Inner < (Count-1);
+        ++Inner)
+    {
+      auto* KeyA = Keys+Inner;
+      auto* KeyB = Keys+Inner+1;
+
+      if (KeyA->Value < KeyB->Value)
+      {
+        auto Temp = *KeyA;
+        *KeyA = *KeyB;
+        *KeyB = Temp;
+        Sorted = False;
+      }
+    }
+
+    if (Sorted) break;
+  }
+
+  return;
+}
+link_internal void
 BubbleSort(sort_key* Keys, u32 Count)
 {
   for (u32 Ignored = 0;
@@ -1503,12 +1533,12 @@ BubbleSort(sort_key* Keys, u32 Count)
         Inner < (Count-1);
         ++Inner)
     {
-      sort_key* KeyA = Keys+Inner;
-      sort_key* KeyB = Keys+Inner+1;
+      auto* KeyA = Keys+Inner;
+      auto* KeyB = Keys+Inner+1;
 
       if (KeyA->Value < KeyB->Value)
       {
-        sort_key Temp = *KeyA;
+        auto Temp = *KeyA;
         *KeyA = *KeyB;
         *KeyB = Temp;
         Sorted = False;

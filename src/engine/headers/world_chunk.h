@@ -91,6 +91,12 @@ struct world_chunk
 /* CAssert(sizeof(world_chunk) == CACHE_LINE_SIZE); */
 #pragma pack(pop)
 
+struct picked_world_chunk
+{
+  world_chunk *E;
+  r64 tValue;
+};
+
 link_internal u32
 Volume(world_chunk* Chunk)
 {
