@@ -2204,7 +2204,7 @@ BufferWorld( platform* Plat,
 // render space to do this collision test?  Shouldn't we transform the ray into
 // absolute space ..?
 link_internal picked_world_chunk
-GetChunksIntersectingRay(world *World, graphics *Graphics, ray *Ray, picked_world_chunk_static_buffer *AllChunksBuffer)
+GetChunksIntersectingRay(world *World, ray *Ray, picked_world_chunk_static_buffer *AllChunksBuffer)
 {
   world_chunk *ClosestChunk = 0;
 
@@ -2227,8 +2227,7 @@ GetChunksIntersectingRay(world *World, graphics *Graphics, ray *Ray, picked_worl
 
         if (Chunk)
         {
-          aabb ChunkAABB = MinMaxAABB( GetRenderP(World->ChunkDim, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera),
-                                       GetRenderP(World->ChunkDim, Canonical_Position(World->ChunkDim, Chunk->WorldP), Graphics->Camera) );
+          aabb ChunkAABB = AABBMinDim( V3(World->ChunkDim*Chunk->WorldP), V3(World->ChunkDim) );
 
           r32 tChunk = Intersect(ChunkAABB, Ray);
           if ( tChunk != f32_MAX )
@@ -2268,10 +2267,10 @@ GetChunksFromMouseP(engine_resources *Resources, picked_world_chunk_static_buffe
   UNPACK_ENGINE_RESOURCES(Resources);
   picked_world_chunk ClosestChunk = {};
 
-  maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection);
+  maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection, Camera, World->ChunkDim);
   if (MaybeRay.Tag == Maybe_Yes)
   {
-    ClosestChunk = GetChunksIntersectingRay(World, Graphics, &MaybeRay.Ray, AllChunksBuffer);
+    ClosestChunk = GetChunksIntersectingRay(World, &MaybeRay.Ray, AllChunksBuffer);
   }
 
   return ClosestChunk.E;
@@ -2322,7 +2321,16 @@ WorldChunkAABB(world_chunk *Chunk, v3 WorldChunkDim)
   return Result;
 }
 
-canonical_position
+struct picked_voxel
+{
+  r32 tChunk; // f32_MAX indicates no collision
+  world_chunk *Chunk;
+
+  r32 tVoxel;
+  // voxel_position VoxelP; << Inferred by truncating ray*tVoxel
+};
+
+link_internal picked_voxel
 RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, v3 RayDir)
 {
   UNPACK_ENGINE_RESOURCES(Resources);
@@ -2335,13 +2343,12 @@ RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, 
   /* } */
 
   b32 Collision = False;
-  canonical_position Result = {};
   v3 WorldChunkDim = V3(World->ChunkDim);
 
   picked_world_chunk_static_buffer AllChunksBuffer = {};
 
-  maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection);
-  if (MaybeRay.Tag == Maybe_Yes) { GetChunksIntersectingRay(World, Graphics, &MaybeRay.Ray, &AllChunksBuffer); }
+  maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection, Camera, World->ChunkDim);
+  if (MaybeRay.Tag == Maybe_Yes) { GetChunksIntersectingRay(World, &MaybeRay.Ray, &AllChunksBuffer); }
 
 
   v3 Advance = MaybeRay.Ray.Dir;
@@ -2349,6 +2356,7 @@ RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, 
 
   BubbleSort((sort_key_f*)AllChunksBuffer.E, (u32)AllChunksBuffer.At);
 
+  picked_voxel Result = { .tChunk =  f32_MAX };
   for (s64 ClosestChunkIndex = s64(AllChunksBuffer.At)-1; ClosestChunkIndex > -1; --ClosestChunkIndex)
   {
     r32 tChunk = (r32)AllChunksBuffer.E[ClosestChunkIndex].tValue;
@@ -2363,46 +2371,11 @@ RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, 
 
     v3 CollisionP = MaybeRay.Ray.Origin + (MaybeRay.Ray.Dir*tChunk);
 
-    v3 CameraOffset = Camera->ViewingTarget.Offset + (Camera->ViewingTarget.WorldP * World->ChunkDim);
+    /* v3 CameraOffset = Camera->ViewingTarget.Offset + V3(Camera->ViewingTarget.WorldP * World->ChunkDim); */
+    v3 CameraOffset = V3(0);
     v3 StartP = CollisionP + CameraOffset + (Advance*0.1f);
 
-    /* { */
-    /*   untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL); */
-    /*   DrawVoxel( &VoxelMesh, GetRenderP(World->ChunkDim, StartP, Camera), V4(1,1,0,1), V3(0.25f) ); */
-    /* } */
-
-
     v3 AtP = StartP - (ClosestChunk->WorldP*World->ChunkDim);
-
-    /* v3 MinP =  V3(ClosestChunk->WorldP * World->ChunkDim); */
-    /* v3 MaxP = MinP + World->ChunkDim; */
-    /* aabb ChunkAABB = AABBMinMax(MinP, MaxP); */
-
-    /* { */
-    /*   untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL); */
-    /*   DrawVoxel( &VoxelMesh, GetRenderP(World->ChunkDim, MinP + AtP, Camera), V4(1,1,0,1), V3(0.5f) ); */
-    /* } */
-
-
-#if 0
-    v3 ChunkP = GetRenderP(World->ChunkDim, ClosestChunk->WorldP, Camera);
-    for (s32 zIndex = -64; zIndex < -32; ++zIndex)
-    {
-      for (s32 yIndex = -64; yIndex < -32; ++yIndex)
-      {
-        for (s32 xIndex = -64; xIndex < -32; ++xIndex)
-        {
-          /* voxel_position MappedP = Voxel_Position(xIndex, yIndex, zIndex); */
-          voxel_position MappedP = MapRealPosToLocalPos(World->ChunkDim, Voxel_Position(xIndex, yIndex, zIndex));
-          if (IsFilledInChunk(ClosestChunk, MappedP, World->ChunkDim))
-          {
-            untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
-            DrawVoxel( &VoxelMesh, ChunkP + MappedP, V4(1,0,1,1), V3(0.2f) );
-          }
-        }
-      }
-    }
-#endif
 
     u32 AxisIndex = 0;
     for (;;)
@@ -2415,11 +2388,6 @@ RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, 
         break;
       }
 
-      /* { */
-      /*   untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL); */
-      /*   DrawVoxel( &VoxelMesh, GetRenderP(World->ChunkDim, MinP + AtP, Camera), V4(0,0,1,1), V3(0.2f) ); */
-      /* } */
-
       // TODO(Jesse): Instead of trucating, make ClosestCentroid(AtP)
       voxel_position LocalTestP = Voxel_Position(AtP);
       if (IsFilledInChunk(ClosestChunk, LocalTestP, World->ChunkDim))
@@ -2427,11 +2395,17 @@ RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, 
         Hit = True;
         ClosestChunkIndex = -1;
 
-        {
+        /* if (Collision.tChunk != f32_MAX) */
           v3 MinP =  V3(ClosestChunk->WorldP * World->ChunkDim);
+          v3 VoxelP = AtP;
+          r32 tVoxel = Length( (AtP+StartP) - MaybeRay.Ray.Origin);
+          /* v3 VoxelP = MaybeRay.Ray.Origin + MaybeRay.Ray.Dir*tVoxel; */
           untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
-          DrawVoxel( &VoxelMesh, GetRenderP(World->ChunkDim, MinP + V3(Voxel_Position(AtP)) + V3(0.5f), Camera), V4(1,0,0,1), V3(1.05f) );
-        }
+          DrawVoxel( &VoxelMesh, GetRenderP(World->ChunkDim, MinP + V3(Voxel_Position(VoxelP)) + V3(0.5f), Camera), V4(1,0,0,1), V3(1.05f) );
+
+        Result.Chunk = ClosestChunk;
+        Result.tChunk = tChunk;
+        Result.tVoxel = tVoxel;
 
         break;
       }
@@ -2440,85 +2414,7 @@ RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, 
       AxisIndex = (AxisIndex + 1) % 3;
 
     }
-
-
-    /* if (Hit) */
-    /* { */
-    /*   untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL); */
-    /*   DrawVoxel( &VoxelMesh, GetRenderP(World->ChunkDim, MinP + V3(Voxel_Position(AtP)) + V3(0.5f), Camera), V4(1,0,0,1), V3(1.25f) ); */
-    /*   DEBUG_VALUE_r32(AtP.x); */
-    /*   DEBUG_VALUE_r32(AtP.y); */
-    /*   DEBUG_VALUE_r32(AtP.z); */
-    /* } */
-
   }
-
-
-
-#if 0
-
-  world_position AbsWorldCenter = World->Center * World->ChunkDim;
-  world_position AbsVisibleRegionDim = World->VisibleRegion * World->ChunkDim;
-  /* aabb VisibleRegionAABB = AABBCenterDim(-1.f*Camera->ViewingTarget.Offset, V3(AbsVisibleRegionDim) ); */
-  aabb AbsVisibleRegionAABB = AABBCenterDim(V3(AbsWorldCenter), V3(AbsVisibleRegionDim) );
-
-  r32 tRayVisibleRegion = Intersect(AbsVisibleRegionAABB, Ray(V3(AbsRayOrigin), RayDir) );
-
-  /* { */
-  /*   untextured_3d_geometry_buffer AABBMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB); */
-  /*   DEBUG_DrawAABB(&AABBMesh, AbsVisibleRegionAABB, RED, .5f); */
-  /* } */
-
-  b32 Intersected = tRayVisibleRegion != f32_MAX;
-  DEBUG_VALUE_u32(Intersected);
-  if (Intersected)
-  {
-    canonical_position Current = AbsRayOrigin; //Canonical_Position(World->ChunkDim, AbsRayOrigin, World_Position(0));
-
-    b32 HaveHitChunks = False;
-    b32 Done = False;
-    u32 DebugIterationIndex = 0;
-    while (!Done)
-    {
-      for (u32 DimIndex = 0; DimIndex < 3; ++DimIndex)
-      {
-        if (IsInside(VisibleRegionAABB, V3(Current.WorldP)))
-        {
-          HaveHitChunks = True;
-
-          world_chunk *Chunk = GetWorldChunk(World, Current.WorldP, World->VisibleRegion);
-
-          if (Chunk)
-          {
-            if (IsFilledInChunk( Chunk, Voxel_Position(Current.Offset), World->ChunkDim))
-            {
-              Collision = True;
-              Done = True;
-              break;
-            }
-          }
-        }
-
-        if (HaveHitChunks && !IsInside(VisibleRegionAABB, V3(Current.WorldP)))
-        {
-          Done = True;
-          break;
-        }
-
-        Current.Offset += RayDir.E[DimIndex];
-        Current = Canonicalize(World->ChunkDim, Current);
-      }
-
-      if (++DebugIterationIndex == 10000) break;
-    }
-
-    if (Collision)
-    {
-      Result = Current;
-    }
-  }
-
-#endif
 
   return Result;
 }
@@ -2562,7 +2458,7 @@ SelectVoxel(engine_resources *Resources)
 {
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection);
+  maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection, Camera, World->ChunkDim);
 
   if (MaybeRay.Tag == Maybe_Yes)
   {
@@ -2586,25 +2482,19 @@ SelectVoxel(engine_resources *Resources)
 
 #if 1
 
-    canonical_position HitP = RayTraceCollision( Resources,
-                                                 /* World_Position(MaybeRay.Ray.Origin), */
-                                                 Camera->CurrentP,
-                                                 MaybeRay.Ray.Dir);
+    picked_voxel Collision = RayTraceCollision( Resources,
+                                                /* World_Position(MaybeRay.Ray.Origin), */
+                                                Camera->CurrentP,
+                                                MaybeRay.Ray.Dir);
 
-
-    /* DebugLine("(%d %d %d) (%f %f %f)", HitP.WorldP.x, HitP.WorldP.y, HitP.WorldP.z , HitP.Offset.x, HitP.Offset.y, HitP.Offset.z); */
-
+    if (Collision.tChunk != f32_MAX)
     {
-      v3 RenderP = GetRenderP(World->ChunkDim, Camera->CurrentP, Camera);
+      v3 MinP =  V3(Collision.Chunk->WorldP * World->ChunkDim);
+      v3 VoxelP =  MaybeRay.Ray.Dir * Collision.tVoxel;
       untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
-      DrawVoxel( &VoxelMesh, RenderP, V4(1,1,0,1), V3(1.1f) );
+      DrawVoxel( &VoxelMesh, GetRenderP(World->ChunkDim, Voxel_Position(MinP+VoxelP) + V3(0.5f), Camera), V4(1,0,0,1), V3(1.05f) );
     }
 
-    {
-      v3 RenderP = GetRenderP(World->ChunkDim, HitP, Camera);
-      untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
-      DrawVoxel( &VoxelMesh, RenderP, V4(1,0,0,1), V3(1.1f) );
-    }
 #endif
   }
 }

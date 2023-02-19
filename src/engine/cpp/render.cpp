@@ -3,7 +3,7 @@
 
 
 link_internal maybe_ray
-ComputeRayFromCursor(platform *Plat, m4* ViewProjection)
+ComputeRayFromCursor(platform *Plat, m4* ViewProjection, camera *Camera, v3i WorldChunkDim)
 {
   maybe_ray Result = {};
 
@@ -23,7 +23,9 @@ ComputeRayFromCursor(platform *Plat, m4* ViewProjection)
 
     v3 RayDirection = Normalize(MouseMaxWorldP - MouseMinWorldP);
 
-    Result.Ray = { .Origin = MouseMinWorldP, .Dir = RayDirection };
+    v3 CameraOffset = Camera->ViewingTarget.Offset + V3(Camera->ViewingTarget.WorldP * WorldChunkDim);
+    /* v3 CameraOffset = V3(0); */
+    Result.Ray = { .Origin = MouseMinWorldP + CameraOffset, .Dir = RayDirection };
     Result.Tag = Maybe_Yes;
   }
 
