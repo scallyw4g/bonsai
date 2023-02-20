@@ -101,7 +101,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   /* DebugPrint(*GameState->Plat); */
 
-  GL.Disable(GL_CULL_FACE);
+  /* GL.Disable(GL_CULL_FACE); */
 
   world                 *World         = GameState->World;
   graphics              *Graphics      = GameState->Graphics;

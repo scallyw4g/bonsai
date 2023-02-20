@@ -56,9 +56,9 @@ s32 main(s32 ArgCount, const char **Args)
         s32 xRel = xIndex % WORLD_CHUNK_DIM.x;
         s32 yRel = yIndex % WORLD_CHUNK_DIM.y;
         s32 zRel = zIndex % WORLD_CHUNK_DIM.z;
-        s32 DestIndex = GetIndex(xRel, yRel, zRel, WORLD_CHUNK_DIM);
 
         s32 SrcIndex = GetIndex(xIndex, yIndex, zIndex, Dim);
+        s32 DestIndex = GetIndex(xRel, yRel, zRel, WORLD_CHUNK_DIM);
 
         Chunk->Voxels[DestIndex] = Vox.ChunkData->Voxels[SrcIndex];
       }
@@ -69,14 +69,21 @@ s32 main(s32 ArgCount, const char **Args)
   for (s32 ChunkIndex = 0; ChunkIndex < TotalChunkCount; ++ChunkIndex)
   {
     world_chunk *Chunk = Chunks + ChunkIndex;
+    Chunk->Flags = Chunk_VoxelsInitialized;
 
     u32 NumVerts = (u32)Kilobytes(128);
     Chunk->Mesh = AllocateMesh( Memory, NumVerts );
+
     v4 *Palette = Vox.Palette ? Vox.Palette : DefaultPalette;
-    if (Vox.Palette == 0)
-    {
-      Warn("No Palette found, using default");
-    }
+    if (Vox.Palette == 0) { Warn("No Palette found, using default"); }
+
+    chunk_dimension SrcChunkOffset = Chunk->WorldP * WORLD_CHUNK_DIM;
+
+    world_chunk SrcChunk = {
+      .Flags = Vox.ChunkData->Flags,
+      .Dim = Vox.ChunkData->Dim,
+      .Voxels = Vox.ChunkData->Voxels,
+    };
 
     chunk_data Data =
     {
@@ -84,7 +91,24 @@ s32 main(s32 ArgCount, const char **Args)
       .Dim = Chunk->Dim,
       .Voxels = Chunk->Voxels,
     };
+
+#if 1
+    Assert(Length(SrcChunk.Dim) > 0);
+    BuildWorldChunkMesh(&SrcChunk,
+                         SrcChunk.Dim,
+                         SrcChunkOffset,
+
+                         Chunk,
+                         WORLD_CHUNK_DIM,
+                         Chunk->Mesh );
+#else
     BuildEntityMesh(&Data, Chunk->Mesh, Palette, WORLD_CHUNK_DIM);
+#endif
+
+    voxel_position_buffer StandingSpots = V3iBuffer(128, TranArena);
+    v3i TileDim = V3i(8, 8, 3);
+    SrcChunkOffset = SrcChunkOffset - V3i(0,0,TileDim.z);
+    ComputeStandingSpots(SrcChunk.Dim, &SrcChunk, V3(SrcChunkOffset), TileDim, Chunk->Mesh, &StandingSpots, TranArena);
 
     SerializeChunk(Chunk, CSz("examples/asset_picker/assets"));
   }

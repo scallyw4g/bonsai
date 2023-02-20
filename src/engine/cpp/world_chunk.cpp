@@ -522,10 +522,12 @@ InitChunkPerlin(perlin_noise *Noise, world_chunk *Chunk, chunk_dimension Dim, u8
   return;
 }
 
+// TODO(Jesse): The fuck do we need DestChunk for?  If we're just building a
+// mesh from the SrcChunk I find that extremely sus.
 link_internal void
 BuildWorldChunkMesh( world_chunk *SrcChunk,
                      chunk_dimension SrcChunkDim,
-                     chunk_dimension SrcChunkApron,
+                     chunk_dimension SrcChunkOffset,
 
                      world_chunk *DestChunk,
                      chunk_dimension DestChunkDim,
@@ -553,11 +555,18 @@ BuildWorldChunkMesh( world_chunk *SrcChunk,
 
   /* random_series ColorEntropy = {33453}; */
 
-  for ( s32 z = 0; z < DestChunkDim.z ; ++z )
+
+  v3 Diameter = V3(1.0f);
+  v3 VertexData[VERTS_PER_FACE];
+  v4 FaceColors[VERTS_PER_FACE];
+
+  auto MinDim = SrcChunkOffset;
+  auto MaxDim = Min(SrcChunkDim-1, SrcChunkOffset+DestChunkDim+1);
+  for ( s32 z = MinDim.z; z < MaxDim.z ; ++z )
   {
-    for ( s32 y = 0; y < DestChunkDim.y ; ++y )
+    for ( s32 y = MinDim.y; y < MaxDim.y ; ++y )
     {
-      for ( s32 x = 0; x < DestChunkDim.x ; ++x )
+      for ( s32 x = MinDim.x; x < MaxDim.x ; ++x )
       {
         voxel_position DestP  = Voxel_Position(x,y,z);
 
@@ -566,14 +575,10 @@ BuildWorldChunkMesh( world_chunk *SrcChunk,
         /*                       RandomBilateral(&ColorEntropy), */
         /*                       1.0f); */
 
-        if ( NotFilledInChunk( DestChunk, DestP, DestChunkDim ) )
+        if ( NotFilledInChunk( SrcChunk, DestP, SrcChunkDim ) )
           continue;
 
-        v3 Diameter = V3(1.0f);
-        v3 VertexData[VERTS_PER_FACE];
-        v4 FaceColors[VERTS_PER_FACE];
-
-        voxel *Voxel = &DestChunk->Voxels[GetIndex(DestP, DestChunkDim)];
+        voxel *Voxel = SrcChunk->Voxels + GetIndex(DestP, SrcChunkDim);
         FillColorArray(Voxel->Color, FaceColors, DefaultPalette, VERTS_PER_FACE);
 #if 0
         for (u32 ColorIndex = 0;
@@ -585,51 +590,51 @@ BuildWorldChunkMesh( world_chunk *SrcChunk,
 #endif
 
         rightVoxel = DestP + Voxel_Position(1, 0, 0);
-        rightVoxelReadIndex = GetIndex(rightVoxel+SrcChunkApron, SrcChunkDim);
+        rightVoxelReadIndex = GetIndex(rightVoxel, SrcChunkDim);
 
         leftVoxel  = DestP - Voxel_Position(1, 0, 0);
-        leftVoxelReadIndex  = GetIndex(leftVoxel+SrcChunkApron, SrcChunkDim);
+        leftVoxelReadIndex  = GetIndex(leftVoxel, SrcChunkDim);
 
         topVoxel   = DestP + Voxel_Position(0, 0, 1);
-        topVoxelReadIndex   = GetIndex(topVoxel+SrcChunkApron, SrcChunkDim);
+        topVoxelReadIndex   = GetIndex(topVoxel, SrcChunkDim);
 
         botVoxel   = DestP - Voxel_Position(0, 0, 1);
-        botVoxelReadIndex   = GetIndex(botVoxel+SrcChunkApron, SrcChunkDim);
+        botVoxelReadIndex   = GetIndex(botVoxel, SrcChunkDim);
 
         frontVoxel = DestP + Voxel_Position(0, 1, 0);
-        frontVoxelReadIndex = GetIndex(frontVoxel+SrcChunkApron, SrcChunkDim);
+        frontVoxelReadIndex = GetIndex(frontVoxel, SrcChunkDim);
 
         backVoxel  = DestP - Voxel_Position(0, 1, 0);
-        backVoxelReadIndex  = GetIndex(backVoxel+SrcChunkApron, SrcChunkDim);
+        backVoxelReadIndex  = GetIndex(backVoxel, SrcChunkDim);
 
         if ( NotFilledInChunk( SrcChunk, rightVoxelReadIndex) )
         {
-          RightFaceVertexData( V3(DestP), Diameter, VertexData);
+          RightFaceVertexData( V3(DestP-SrcChunkOffset), Diameter, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, RightFaceNormalData, FaceColors);
         }
         if ( NotFilledInChunk( SrcChunk, leftVoxelReadIndex) )
         {
-          LeftFaceVertexData( V3(DestP), Diameter, VertexData);
+          LeftFaceVertexData( V3(DestP-SrcChunkOffset), Diameter, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, LeftFaceNormalData, FaceColors);
         }
         if ( NotFilledInChunk( SrcChunk, botVoxelReadIndex) )
         {
-          BottomFaceVertexData( V3(DestP), Diameter, VertexData);
+          BottomFaceVertexData( V3(DestP-SrcChunkOffset), Diameter, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, BottomFaceNormalData, FaceColors);
         }
         if ( NotFilledInChunk( SrcChunk, topVoxelReadIndex) )
         {
-          TopFaceVertexData( V3(DestP), Diameter, VertexData);
+          TopFaceVertexData( V3(DestP-SrcChunkOffset), Diameter, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, TopFaceNormalData, FaceColors);
         }
         if ( NotFilledInChunk( SrcChunk, frontVoxelReadIndex) )
         {
-          FrontFaceVertexData( V3(DestP), Diameter, VertexData);
+          FrontFaceVertexData( V3(DestP-SrcChunkOffset), Diameter, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, FrontFaceNormalData, FaceColors);
         }
         if ( NotFilledInChunk( SrcChunk, backVoxelReadIndex) )
         {
-          BackFaceVertexData( V3(DestP), Diameter, VertexData);
+          BackFaceVertexData( V3(DestP-SrcChunkOffset), Diameter, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, BackFaceNormalData, FaceColors);
         }
       }
@@ -850,7 +855,7 @@ GetMeshForChunk(mesh_freelist* Freelist, memory_arena* PermMemory)
   }
   else
   {
-    Result = AllocateMesh(PermMemory, (u32)Kilobytes(64));
+    Result = AllocateMesh(PermMemory, (u32)Kilobytes(64*2));
     Assert(Result);
   }
 
@@ -1159,6 +1164,28 @@ GetClosestPointRelativeTo(voxel_position* Query, voxel_position* Start, voxel_po
   return Result;
 }
 
+link_internal b32
+AboveVoxelIsUnfilled(s32 Index, world_chunk* Chunk, chunk_dimension ChunkDim)
+{
+  TIMED_FUNCTION();
+
+  Assert( IsSet(Chunk, Chunk_VoxelsInitialized) );
+
+  s32 VolumeChunkDim = Volume(ChunkDim);
+  Assert(Index < VolumeChunkDim);
+
+  voxel_position CurrentP = GetPosition(Index, ChunkDim);
+
+  voxel_position TopVoxel   = CurrentP + Voxel_Position(0, 0, 1);
+  s32 TopVoxelReadIndex   = GetIndexUnsafe(TopVoxel, ChunkDim);
+
+  b32 Result = False;
+
+  if (TopVoxelReadIndex > -1 && TopVoxelReadIndex < VolumeChunkDim)
+    Result |= NotFilledInChunk( Chunk, TopVoxelReadIndex);
+
+  return Result;
+}
 link_internal b32
 HasUnfilledNeighbors(s32 Index, world_chunk* Chunk, chunk_dimension ChunkDim)
 {
@@ -1498,7 +1525,7 @@ ComputeStandingSpotFor8x8x2_V2(world_chunk *SrcChunk, v3i SrcChunkDim, v3i TileC
 
         s32 vIndex = GetIndex(P, SrcChunkDim);
         voxel *V = SrcChunk->Voxels + vIndex;
-        if (IsSet(V, Voxel_Filled) && HasUnfilledNeighbors(vIndex, SrcChunk, SrcChunkDim))
+        if (IsSet(V, Voxel_Filled) && AboveVoxelIsUnfilled(vIndex, SrcChunk, SrcChunkDim))
         {
           Assert(TempBoundingPoints->At < TempBoundingPoints->End);
           TempBoundingPoints->Points[TempBoundingPoints->At++] = P;
@@ -1522,7 +1549,7 @@ ComputeStandingSpotFor8x8x2_V2(world_chunk *SrcChunk, v3i SrcChunkDim, v3i TileC
 
   // NOTE(Jesse): Pseudo-randomly chosen heuristic that produces good results
   // for highly contoured terrain
-  if (TempBoundingPoints->At >= (8*5)-5)
+  if (TempBoundingPoints->At >= (8*4))
   {
     Result.CanStand = True;
   }
@@ -1598,11 +1625,10 @@ ComputeStandingSpotFor8x8x8(world_chunk *SynChunk, v3i SynChunkDim, world_chunk 
 #endif
 
 link_internal void
-ComputeStandingSpots(v3i SrcChunkDim, world_chunk *SrcChunk, v3 SrcChunkApron, untextured_3d_geometry_buffer* Mesh, voxel_position_buffer *StandingSpots, memory_arena *TempMemory)
+ComputeStandingSpots(v3i SrcChunkDim, world_chunk *SrcChunk, v3 SrcChunkOffset, v3i TileDim, untextured_3d_geometry_buffer* Mesh, voxel_position_buffer *StandingSpots, memory_arena *TempMemory)
 {
   TIMED_FUNCTION();
 
-  v3i TileDim = V3i(8, 8, 3);
   /* world_chunk TileChunk = {}; */
   /* AllocateWorldChunk(&TileChunk, TempMemory, {}, TileDim); */
   boundary_voxels* TempBoundingPoints = AllocateBoundaryVoxels((u32)Volume(TileDim), TempMemory);
@@ -1627,12 +1653,12 @@ ComputeStandingSpots(v3i SrcChunkDim, world_chunk *SrcChunk, v3 SrcChunkApron, u
           // contained a standing spot here, then advance into our chunk.
           if (zIndex != 0)
           {
-            /* Push(StandingSpots, TileOffset + SrcChunkApron); */
+            /* Push(StandingSpots, TileOffset + SrcChunkOffset); */
 
             v3 TileDrawDim = V3(TileDim) * .95f;
 
-            auto MinP = V3(TileOffset)-SrcChunkApron;
-            DrawVoxel(Mesh, MinP+0.5f-0.05f, WHITE, V3(1.10f) );
+            auto MinP = V3(TileOffset)-SrcChunkOffset;
+            /* DrawVoxel(Mesh, MinP+0.5f-0.05f, WHITE, V3(1.10f) ); */
 
             DEBUG_DrawAABB( Mesh,
                             AABBMinDim(
@@ -1712,7 +1738,8 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
 
     voxel_position_buffer StandingSpots = V3iBuffer(128, Thread->PermMemory);
-    ComputeStandingSpots(SynChunkDim, SyntheticChunk, V3(Apron), DestChunk->LodMesh, &StandingSpots, Thread->TempMemory);
+    v3i TileDim = V3i(8, 8, 3);
+    ComputeStandingSpots(SynChunkDim, SyntheticChunk, V3(Apron), TileDim, DestChunk->LodMesh, &StandingSpots, Thread->TempMemory);
 
 
 #if 0

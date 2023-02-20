@@ -513,6 +513,7 @@ main( s32 ArgCount, const char ** Args )
     RealDt = (CurrentMS - LastMs)/1000.0;
     LastMs = CurrentMS;
     Plat.dt = (r32)RealDt;
+    Plat.GameTime += RealDt;
 
     MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(RealDt);
   }

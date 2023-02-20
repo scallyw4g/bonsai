@@ -61,7 +61,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       {
         counted_string AssetFilename = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, Thread->TempMemory);
 
-        native_file AssetFile = OpenFile(AssetFilename, "r");
+        native_file AssetFile = OpenFile(AssetFilename, "r+b");
         if (AssetFile.Handle)
         {
           DeserializeChunk(&AssetFile, Chunk, Thread->MeshFreelist, Thread->PermMemory);

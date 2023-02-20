@@ -6,6 +6,8 @@ precision highp sampler2DShadow;
 precision highp sampler2D;
 precision highp sampler3D;
 
+#define f32_MAX (1E+37f)
+#define f32_MIN (1E-37f)
 
 #define v4 vec4
 #define v3 vec3

@@ -383,8 +383,8 @@ inline void
 ClearFramebuffers(graphics *Graphics)
 {
   TIMED_FUNCTION();
-  GL.ClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-  GL.ClearDepth(1.0f);
+  GL.ClearColor(f32_MAX, f32_MAX, f32_MAX, f32_MAX);
+  GL.ClearDepth(f32_MAX);
 
 #if DEBUG_SYSTEM_API
 #if DEBUG_SYSTEM_INTERNAL_BUILD

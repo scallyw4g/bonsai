@@ -273,7 +273,7 @@ SerializeChunk(world_chunk *Chunk, counted_string AssetPath)
   auto WorldP = Chunk->WorldP;
   counted_string Filename = FormatCountedString(TranArena, CSz("%S/world_chunk_%u_%u_%u"), AssetPath, WorldP.x, WorldP.y, WorldP.z);
 
-  native_file File = OpenFile(Filename, "w");
+  native_file File = OpenFile(Filename, "w+b");
 
   world_chunk_file_header_v1 FileHeader = MakeWorldChunkFileHeader_v1(Chunk);
 

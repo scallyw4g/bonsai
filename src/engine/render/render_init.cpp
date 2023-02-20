@@ -44,9 +44,15 @@ AllocateAndInitSsaoNoise(ao_render_group *AoGroup, memory_arena *GraphicsMemory)
 }
 
 shader
-MakeLightingShader(memory_arena *GraphicsMemory,
-    g_buffer_textures *gTextures, texture *ShadowMap, texture *Ssao,
-    m4 *ShadowMVP, game_lights *Lights, camera *Camera)
+MakeLightingShader( memory_arena *GraphicsMemory,
+                    g_buffer_textures *gTextures,
+                    texture *ShadowMap,
+                    texture *Ssao,
+                    m4 *ShadowMVP,
+                    game_lights *Lights,
+                    camera *Camera,
+                    v3 *SunPosition,
+                    v3 *SunColor )
 {
   shader Shader = LoadShaders( CSz("Lighting.vertexshader"), CSz("Lighting.fragmentshader") );
 
@@ -83,6 +89,12 @@ MakeLightingShader(memory_arena *GraphicsMemory,
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, Camera, "CameraP");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, SunPosition, "SunPosition");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, SunColor, "SunColor");
   Current = &(*Current)->Next;
 
   AssertNoGlErrors;
@@ -386,7 +398,8 @@ GraphicsInit(memory_arena *GraphicsMemory)
 
   gBuffer->LightingShader =
     MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap,
-                       AoGroup->Texture, &SG->MVP, Result->Lights, Result->Camera);
+                       AoGroup->Texture, &SG->MVP, Result->Lights, Result->Camera,
+                       &SG->Sun.Position, &SG->Sun.Color);
 
   gBuffer->gBufferShader =
     CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection, Result->Camera);
@@ -409,7 +422,7 @@ GraphicsInit(memory_arena *GraphicsMemory)
 #endif
   }
 
-  /* GL.Enable(GL_CULL_FACE); */
+  GL.Enable(GL_CULL_FACE);
   GL.CullFace(GL_BACK);
 
   AssertNoGlErrors;

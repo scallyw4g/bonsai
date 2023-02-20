@@ -132,7 +132,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
   vox_data Result = {};
   chunk_dimension ReportedDim = {};
 
-  native_file ModelFile = OpenFile(filepath, "rb");
+  native_file ModelFile = OpenFile(filepath, "r+b");
 
   if (ModelFile.Handle)
   {

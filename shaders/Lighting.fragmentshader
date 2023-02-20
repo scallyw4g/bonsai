@@ -15,9 +15,10 @@ uniform r32 LightIndexToUV;
 uniform sampler2D LightColors;
 uniform sampler2D LightPositions;
 
-
 uniform mat4 ShadowMVP;
 
+uniform vec3 SunPosition;
+uniform vec3 SunColor;
 uniform vec3 CameraP;
 
 int AoBlurSize = 4; // size of AO noise texture
@@ -45,9 +46,10 @@ vec2 poissonDisk[16] = vec2[](
 
 
 
-vec3 Global_LightPosition = vec3(0.5f, -1.0f, 0.5f);
-vec3 Global_LightColor = vec3(1,1,1);
+/* vec3 SunPosition = vec3(0.5f, -1.0f, 0.5f); */
+/* vec3 SunColor = vec3(1,1,1); */
 float Global_LightPower = 0.12f; // 1.0 == full sun
+/* float Global_LightPower = 1.0f; // 1.0 == full sun */
 
 // Tuning
   float gamma = 2.2f;
@@ -69,24 +71,40 @@ vec3 SpecLightingCalc(float AttenuationFactor, vec3 DiffuseColor, vec3 FragToLig
 vec3 DiffuseLightingCalc(float AttenuationFactor, vec3 DiffuseColor, vec3 FragToLight, vec3 FragNormal, vec3 CameraP)
 {
   float LightCosTheta = clamp( dot( FragNormal, FragToLight), 0.0f, 1.0f);
-  vec3 DirectLight = (DiffuseColor + Global_LightColor) * LightCosTheta * AttenuationFactor;
+  vec3 DirectLight = (DiffuseColor + SunColor) * LightCosTheta * AttenuationFactor;
   return DirectLight;
 }
 
+#define SCR_WIDTH (3840)
+#define SCR_HEIGHT (2160)
+
 void main()
 {
-  vec3 Diffuse      = texture(gColor, gBufferUV).rgb;
-  float Emission    = texture(gColor, gBufferUV).a;
+  vec2 gBufferTextureWidth = vec2(SCR_WIDTH, SCR_HEIGHT);
+  ivec2 texelCoord = ivec2(gBufferUV*gBufferTextureWidth);
+  vec3 FragPosition = texelFetch(gPosition, texelCoord, 0).rgb;
+  r32 DiscardThresh = f32_MAX;
+  if (FragPosition.x == DiscardThresh)
+  { OutColor = V4(0.2f, 0.2f, 0.2f, 1.0f); return; }
 
-  vec3 FragNormal   = texture(gNormal, gBufferUV).rgb;   // modelspace
-  vec3 FragPosition = texture(gPosition, gBufferUV).rgb; // worldspace
+  /* OutColor = V4(FragPosition, 1.f); */
+  /* return; */
+
+
+  vec3 Diffuse = texelFetch(gColor, texelCoord, 0).rgb;
+  float Emission = texelFetch(gColor, texelCoord, 0).a;
+  /* vec3 Diffuse      = texture(gColor, gBufferUV).rgb; */
+  /* float Emission    = texture(gColor, gBufferUV).a; */
+
+  vec3 FragNormal = texelFetch(gNormal, texelCoord, 0).rgb;
+  /* vec3 FragNormal   = texture(gNormal, gBufferUV).rgb;   // modelspace */
 
   vec3 AmbientLight = Diffuse * Global_LightPower * Emission;
 
   vec3 AccumulatedLight = AmbientLight;
 
   {
-    vec3 FragToLight = normalize(Global_LightPosition);
+    vec3 FragToLight = normalize(SunPosition);
     float LightAtt = Global_LightPower;
     AccumulatedLight += DiffuseLightingCalc(LightAtt, Diffuse, FragToLight, FragNormal, CameraP);
     /* AccumulatedLight += SpecLightingCalc(LightAtt, Diffuse, FragToLight, FragPosition, FragNormal, CameraP); */
@@ -150,25 +168,31 @@ void main()
    *  Shadow Mapping
    */
   vec4 FragPShadowScreenSpace = ShadowMVP * vec4(FragPosition, 1.0f);
-
   float fragPDepth = FragPShadowScreenSpace.z;
 
-  float acneBias = 0.0001f; // Fix acne
+  float acneBias = 0.00000001f; // Fix acne
+
   /* acneBias = 0.0f; */
   /* float ShadowDepth = texture(shadowMap, vec3(FragPShadowScreenSpace.xy, FragPShadowScreenSpace.z/FragPShadowScreenSpace.w)).x + acneBias; */
-  float ShadowDepth = texture(shadowMap, FragPShadowScreenSpace.xy).x + acneBias;
-
+  /* float ShadowDepth = texture(shadowMap, FragPShadowScreenSpace.xy).x + acneBias; */
   /* if ( fragPDepth > ShadowDepth ) */
   /*   Visibility = vec3(0.1f); */
 
   /* float Visibility = 1.0f; */
 
 #if 0
+
+  /* float sampleDepth = texture(shadowMap, FragPShadowScreenSpace.xy).x; */
+  /* Visibility = vec3(sampleDepth, 0.f, 0.f); */
+
   float sampleDepth = texture(shadowMap, FragPShadowScreenSpace.xy).x;
-  if ( fragPDepth > sampleDepth ) { Visibility = vec3(0.25f); }
+  /* Visibility = sampleDepth; */
+  if ( fragPDepth > (sampleDepth+acneBias) ) { Visibility = vec3(0.25f); }
+
 #else
   for (int index = 0; index < 16; index++)
   {
+    // TODO(Jesse): Does this produce better results using texelFetch?
     float sampleDepth = texture(shadowMap, vec2(FragPShadowScreenSpace.xy + poissonDisk[index]/5000.0) ).x;
     if ( fragPDepth > sampleDepth ) { Visibility -= sampleVis; }
   }
