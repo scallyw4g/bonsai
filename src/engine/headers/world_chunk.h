@@ -64,12 +64,13 @@ struct current_triangles;
 struct world_chunk
 {
   chunk_flag Flags;
-
   chunk_dimension Dim; // TODO(Jesse): can be 3x u8 instead of 3x s32
-
   voxel *Voxels;
+
   untextured_3d_geometry_buffer* Mesh;
   untextured_3d_geometry_buffer* LodMesh;
+
+  voxel_position_buffer StandingSpots;
 
   world_position WorldP;
   u32 FilledCount;
@@ -130,3 +131,6 @@ AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension
 
 link_internal void
 BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, graphics *Graphics, world_position VisibleRegion, heap_allocator *Heap);
+
+link_internal untextured_3d_geometry_buffer*
+GetMeshForChunk(mesh_freelist* Freelist, memory_arena* PermMemory);

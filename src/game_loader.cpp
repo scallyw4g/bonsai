@@ -271,10 +271,11 @@ main( s32 ArgCount, const char ** Args )
 {
   Info("Initializing Bonsai");
 
-    for (const auto& pmc : query_available_pmc()) {
-        std::wcout << pmc.Name << "(" << pmc.native_source << ")" << std::endl;
-    }
-#if 1
+#if 0
+  /* for (const auto& pmc : query_available_pmc()) { */
+  /*     std::wcout << pmc.Name << "(" << pmc.native_source << ")" << std::endl; */
+  /* } */
+
   AMD_CheckSupportedCounters();
 
   pmc_kernel_session Session;
@@ -518,12 +519,12 @@ main( s32 ArgCount, const char ** Args )
 
 #if 0
   Debug_EndAndReportPMCMonitoring(&PMCSession);
-#else
-  Session.stop();
+#endif
 
-  std::cout << "++++++RESULTS+++++++" << std::endl;
-
-  auto results = Session.results();
+#if 0
+  /* Session.stop(); */
+  /* std::cout << "++++++RESULTS+++++++" << std::endl; */
+  /* auto results = Session.results(); */
 
   auto t0 = results[pmc0];
   auto t1 = results[pmc1];

@@ -25,6 +25,4 @@ Input->S.Clicked = False;
 Input->D.Clicked = False;
 Input->Q.Clicked = False;
 Input->E.Clicked = False;
-/* Input->MouseWheelDelta.Clicked = False; */
-
 

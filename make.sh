@@ -8,7 +8,7 @@ BuildExecutables=1
 BuildExamples=1
 BuildDebugSystem=1
 
-BuildTests=1
+BuildTests=0
 BuildDebugTests=0
 
 RunTests=0
@@ -34,9 +34,9 @@ BIN_TEST="$BIN/tests"
 BONSAI_INTERNAL='-D BONSAI_INTERNAL'
 
 
-  # $EXAMPLES/asset_picker
 
 EXAMPLES_TO_BUILD="
+  $EXAMPLES/asset_picker
   $EXAMPLES/the_wanderer
   $EXAMPLES/tile_gen
 "
@@ -44,8 +44,8 @@ EXAMPLES_TO_BUILD="
 
 EXECUTABLES_TO_BUILD="
   $SRC/game_loader.cpp
+  $SRC/tools/asset_packer.cpp
 "
-  # $SRC/tools/asset_packer.cpp
   # $SRC/font/ttf.cpp  # $SRC/net/server.cpp
 
 
@@ -329,10 +329,10 @@ function RunPoofHelper {
    # -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/winrt"                                      \
 
 
-   # --log-level LogLevel_Debug                                                                                  \
 
+   # --log-level LogLevel_Debug                                                                                  \
   poof                                                                                                         \
-    -c0 \
+   -c0 \
    -I src/                                                                                                     \
    -I include/                                                                                                 \
    -D _M_X64                                                                                                   \
@@ -356,10 +356,10 @@ function RunPoof
   [ -d generated ] && rm -Rf generated
 
   RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
-  RunPoofHelper include/bonsai_debug/debug.cpp && echo -e "$Success poofed src/include/bonsai_debug/debug.cpp" &
-  RunPoofHelper examples/asset_picker/game.cpp && echo -e "$Success poofed examples/asset_picker/game.cpp" &
-  RunPoofHelper examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &
-  RunPoofHelper src/tools/asset_packer.cpp && echo -e "$Success poofed src/tools/asset_packer.cpp" &
+  # RunPoofHelper include/bonsai_debug/debug.cpp && echo -e "$Success poofed src/include/bonsai_debug/debug.cpp" &
+  # RunPoofHelper examples/asset_picker/game.cpp && echo -e "$Success poofed examples/asset_picker/game.cpp" &
+  # RunPoofHelper examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &
+  # RunPoofHelper src/tools/asset_packer.cpp && echo -e "$Success poofed src/tools/asset_packer.cpp" &
 
   wait
 

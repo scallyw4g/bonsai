@@ -11,10 +11,10 @@ model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *Heap)
 {
   model *Result = Allocate(model, Memory, ModelIndex_Count);
-  /* Result[ModelIndex_Player] = LoadVoxModel(Memory, &GameState->Heap, "models/chr_rain.vox"); */
-  Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_old.vox");
-  /* Result[ModelIndex_Player] = LoadVoxModel(Memory, &GameState->Heap, "../voxel-model/vox/monument/monu10.vox"); */
-  /* Result[ModelIndex_Player] = LoadWorldChunk(Memory, &GameState->Heap, "assets/world_chunk_1_0_0"); */
+  Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_rain.vox");
+  /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_old.vox"); */
+  /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "../voxel-model/vox/monument/monu10.vox"); */
+  /* Result[ModelIndex_Player] = LoadWorldChunk(Memory, Heap, "assets/world_chunk_1_0_0"); */
 
   return Result;
 }
@@ -28,6 +28,9 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
     case type_work_queue_entry_init_asset:
     {
+      InvalidCodePath();
+
+#if 0
       volatile work_queue_entry_init_asset *Job = SafeAccess(work_queue_entry_init_asset, Entry);
       world_chunk *Chunk = Job->Chunk;
 
@@ -43,13 +46,34 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       }
 
       FinalizeChunkInitialization(Chunk);
+#endif
     } break;
 
     case type_work_queue_entry_init_world_chunk:
     {
       volatile work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
       world_chunk *Chunk = Job->Chunk;
+
+      if (ChunkIsGarbage(Chunk))
+      {
+      }
+      else
+      {
+        counted_string AssetFilename = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, Thread->TempMemory);
+
+        native_file AssetFile = OpenFile(AssetFilename, "r");
+        if (AssetFile.Handle)
+        {
+          DeserializeChunk(&AssetFile, Chunk, Thread->MeshFreelist, Thread->PermMemory);
+          CloseFile(&AssetFile);
+          // fsync?
+        }
+      }
+
+
+
       FinalizeChunkInitialization(Chunk);
+
     } break;
 
     case type_work_queue_entry_copy_buffer:
@@ -119,8 +143,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
-  Resources->World = AllocateWorld(Volume(g_VisibleRegion));
-  InitWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
+  AllocateAndInitWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 
   GameState->Models = AllocateGameModels(GameState, Memory, Heap);
 

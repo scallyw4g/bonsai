@@ -833,7 +833,7 @@ InitializeWorldChunkPlane(world_chunk *DestChunk, chunk_dimension WorldChunkDim,
   return;
 }
 
-link_internal inline untextured_3d_geometry_buffer*
+link_internal untextured_3d_geometry_buffer*
 GetMeshForChunk(mesh_freelist* Freelist, memory_arena* PermMemory)
 {
   free_mesh* MeshContainer = Unlink_TS(&Freelist->FirstFree);
@@ -1475,9 +1475,8 @@ GetBoundingVoxelsMidpoint(world_chunk *Chunk, v3i ChunkDim)
 
 struct standing_spot
 {
-  plane_computation PlaneComp;
-  /* voxel_position BoundingVoxelMidpoint; */
   b32 CanStand;
+  voxel_position P;
 };
 
 standing_spot
@@ -1521,7 +1520,9 @@ ComputeStandingSpotFor8x8x2_V2(world_chunk *SrcChunk, v3i SrcChunkDim, v3i TileC
   Result.BoundingVoxelMidpoint = EdgeBoundaryVoxels->Min + ((EdgeBoundaryVoxels->Max - EdgeBoundaryVoxels->Min)/2.0f);
 #endif
 
-  if (TempBoundingPoints->At >= (8*5)-4)
+  // NOTE(Jesse): Pseudo-randomly chosen heuristic that produces good results
+  // for highly contoured terrain
+  if (TempBoundingPoints->At >= (8*5)-5)
   {
     Result.CanStand = True;
   }
@@ -1552,6 +1553,7 @@ ComputeStandingSpotFor8x8x2(world_chunk *SynChunk, v3i SynChunkDim, world_chunk 
   return Result;
 }
 
+#if 0
 standing_spot
 ComputeStandingSpotFor8x8x8(world_chunk *SynChunk, v3i SynChunkDim, world_chunk *TempTileChunk, v3i TileChunkDim, v3i Offset, boundary_voxels *TempBoundingPoints)
 {
@@ -1569,7 +1571,7 @@ ComputeStandingSpotFor8x8x8(world_chunk *SynChunk, v3i SynChunkDim, world_chunk 
 #endif
 
   /* v3 Normal = ComputeNormalBonsai(TempTileChunk, TileChunkDim, V3(BoundingVoxelMidpoint)); */
-  Result.PlaneComp = BigBits2015_BestFittingPlaneFor(TempBoundingPoints);
+  /* Result.PlaneComp = BigBits2015_BestFittingPlaneFor(TempBoundingPoints); */
 
   if (Result.PlaneComp.Complete && TempBoundingPoints->At)
   {
@@ -1593,9 +1595,10 @@ ComputeStandingSpotFor8x8x8(world_chunk *SynChunk, v3i SynChunkDim, world_chunk 
 
   return Result;
 }
+#endif
 
 link_internal void
-ComputeStandingSpots(v3i SrcChunkDim, world_chunk *SrcChunk, v3 SrcChunkApron, untextured_3d_geometry_buffer* Mesh, memory_arena *TempMemory)
+ComputeStandingSpots(v3i SrcChunkDim, world_chunk *SrcChunk, v3 SrcChunkApron, untextured_3d_geometry_buffer* Mesh, voxel_position_buffer *StandingSpots, memory_arena *TempMemory)
 {
   TIMED_FUNCTION();
 
@@ -1624,6 +1627,8 @@ ComputeStandingSpots(v3i SrcChunkDim, world_chunk *SrcChunk, v3 SrcChunkApron, u
           // contained a standing spot here, then advance into our chunk.
           if (zIndex != 0)
           {
+            /* Push(StandingSpots, TileOffset + SrcChunkApron); */
+
             v3 TileDrawDim = V3(TileDim) * .95f;
 
             auto MinP = V3(TileOffset)-SrcChunkApron;
@@ -1681,7 +1686,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
     }
 #endif
 
-    chunk_dimension Apron = Chunk_Dimension(1,1,4);
+    chunk_dimension Apron = Chunk_Dimension(1,1,3);
     chunk_dimension SynChunkDim = WorldChunkDim + (Apron*2);
     chunk_dimension SynChunkP = DestChunk->WorldP - Apron;
 
@@ -1705,7 +1710,9 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
     }
 
 
-    ComputeStandingSpots(SynChunkDim, SyntheticChunk, V3(Apron), DestChunk->LodMesh, Thread->TempMemory);
+
+    voxel_position_buffer StandingSpots = V3iBuffer(128, Thread->PermMemory);
+    ComputeStandingSpots(SynChunkDim, SyntheticChunk, V3(Apron), DestChunk->LodMesh, &StandingSpots, Thread->TempMemory);
 
 
 #if 0
@@ -2255,7 +2262,7 @@ BufferWorld( platform* Plat,
 }
 
 // TODO(Jesse): This is pretty wack.  Why the fuck do we transform chunks into
-// render space to do this collision test?  Shouldn't we transform the ray into
+// render space to do this collision test?  Shouldn&GameState->'t we transform the ray into
 // absolute space ..?
 link_internal picked_world_chunk
 GetChunksIntersectingRay(world *World, ray *Ray, picked_world_chunk_static_buffer *AllChunksBuffer)

@@ -60,7 +60,7 @@ s32 main(s32 ArgCount, const char **Args)
 
         s32 SrcIndex = GetIndex(xIndex, yIndex, zIndex, Dim);
 
-        Chunk->Data->Voxels[DestIndex] = Vox.ChunkData->Voxels[SrcIndex];
+        Chunk->Voxels[DestIndex] = Vox.ChunkData->Voxels[SrcIndex];
       }
     }
   }
@@ -77,9 +77,16 @@ s32 main(s32 ArgCount, const char **Args)
     {
       Warn("No Palette found, using default");
     }
-    BuildEntityMesh(Chunk->Data, Chunk->Mesh, Palette, WORLD_CHUNK_DIM);
 
-    SerializeChunk(Chunk, CSz("assets"));
+    chunk_data Data =
+    {
+      .Flags = Chunk->Flags,
+      .Dim = Chunk->Dim,
+      .Voxels = Chunk->Voxels,
+    };
+    BuildEntityMesh(&Data, Chunk->Mesh, Palette, WORLD_CHUNK_DIM);
+
+    SerializeChunk(Chunk, CSz("examples/asset_picker/assets"));
   }
 
 }
