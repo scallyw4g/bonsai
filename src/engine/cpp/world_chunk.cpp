@@ -1665,8 +1665,7 @@ ComputeStandingSpots(v3i SrcChunkDim, world_chunk *SrcChunk, v3 SrcChunkOffset, 
                               MinP,// + V3(0, 0, Spot.BoundingVoxelMidpoint.z),
                               TileDrawDim),
                               /* V3(TileDim.x*.8f, TileDim.y*.8f, 1.f)), */
-                            BLUE,
-                            0.25f);
+                            BLUE);
           }
 
           /* DEBUG_DrawLine( DestChunk->LodMesh, */
@@ -2567,7 +2566,7 @@ SelectVoxel(engine_resources *Resources)
       DEBUG_DrawAABB( &OutlineAABB,
                       GetRenderP(World->ChunkDim, VoxelP-Offset, Camera),
                       GetRenderP(World->ChunkDim, VoxelP+V3(1.f)+Offset, Camera),
-                      GREY, 0.05f);
+                      WHITE, 0.05f);
     }
 
     local_persist b32 Picked;

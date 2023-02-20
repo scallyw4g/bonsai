@@ -1,6 +1,17 @@
 
 
 inline void
+DEBUG_DrawLine_Aligned( untextured_3d_geometry_buffer *Mesh,
+                        v3 P1, v3 P2, u32 ColorIndex, r32 Thickness )
+{
+  v3 Radius = (P2-P1)/2.f;
+  v3 Center = P1 + Radius;
+
+  v3 DrawDim = Max(Abs(Radius*2.f), V3(Thickness));
+  DrawVoxel(Mesh, Center, ColorIndex, DrawDim);
+}
+
+inline void
 DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh,
                 v3 P1, v3 P2, u32 ColorIndex, r32 Thickness )
 {
@@ -130,7 +141,7 @@ DEBUG_DrawLine(untextured_3d_geometry_buffer *Mesh, line Line, u32 ColorIndex, r
   return;
 }
 
-#define DEFAULT_LINE_THICKNESS (0.15f)
+#define DEFAULT_LINE_THICKNESS (0.1f)
 void
 DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, v3 MinP, v3 MaxP, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {
@@ -186,25 +197,25 @@ DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, v3 MinP, v3 MaxP, u32 ColorI
   //
   // Top
 #define LINES_PER_AABB (12)
-#define VERTS_PER_AABB (VERTS_PER_LINE*LINES_PER_AABB)
-  DEBUG_DrawLine(Mesh, TopRL, TopRR, ColorIndex, Thickness);
-  DEBUG_DrawLine(Mesh, TopFL, TopFR, ColorIndex, Thickness);
-  DEBUG_DrawLine(Mesh, TopFL, TopRL, ColorIndex, Thickness);
-  DEBUG_DrawLine(Mesh, TopFR, TopRR, ColorIndex, Thickness);
+#define VERTS_PER_AABB (VERTS_PER_VOXEL*LINES_PER_AABB)
+  DEBUG_DrawLine_Aligned(Mesh, TopRL, TopRR, ColorIndex, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, TopFL, TopFR, ColorIndex, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, TopFL, TopRL, ColorIndex, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, TopFR, TopRR, ColorIndex, Thickness);
 
   // Right
-  DEBUG_DrawLine(Mesh, TopFR, BotFR, ColorIndex, Thickness);
-  DEBUG_DrawLine(Mesh, TopRR, BotRR, ColorIndex, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, TopFR, BotFR, ColorIndex, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, TopRR, BotRR, ColorIndex, Thickness);
 
   // Left
-  DEBUG_DrawLine(Mesh, TopFL, BotFL, ColorIndex, Thickness);
-  DEBUG_DrawLine(Mesh, TopRL, BotRL, ColorIndex, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, TopFL, BotFL, ColorIndex, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, TopRL, BotRL, ColorIndex, Thickness);
 
   // Bottom
-  DEBUG_DrawLine(Mesh, BotRL, BotRR, ColorIndex, Thickness);
-  DEBUG_DrawLine(Mesh, BotFL, BotFR, ColorIndex, Thickness);
-  DEBUG_DrawLine(Mesh, BotFL, BotRL, ColorIndex, Thickness);
-  DEBUG_DrawLine(Mesh, BotFR, BotRR, ColorIndex, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, BotRL, BotRR, ColorIndex, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, BotFL, BotFR, ColorIndex, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, BotFL, BotRL, ColorIndex, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, BotFR, BotRR, ColorIndex, Thickness);
 
 
   return;

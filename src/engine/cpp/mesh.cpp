@@ -311,6 +311,7 @@ AllocateMesh(memory_arena* Arena, u32 NumVerts)
   AllocateMesh(Result, NumVerts, Arena);
   return Result;
 }
+
 inline void
 DrawVoxel( untextured_3d_geometry_buffer *Mesh, v3 RenderP, v4 Color, v3 Diameter)
 {
