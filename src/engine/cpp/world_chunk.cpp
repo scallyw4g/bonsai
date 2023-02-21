@@ -1624,11 +1624,55 @@ ComputeStandingSpotFor8x8x8(world_chunk *SynChunk, v3i SynChunkDim, world_chunk 
 }
 #endif
 
+link_internal v3i_buffer
+Compact(v3i_stream *Stream, memory_arena *PermMemory)
+{
+  v3i_buffer Result = V3iBuffer(Stream->ChunkCount, PermMemory);
+  /* DebugLine("compact %u", Result.Count); */
+
+  u32 Index = 0;
+  ITERATE_OVER(Stream)
+  {
+    v3i *Spot = GET_ELEMENT(Iter);
+    Result.Start[Index] = *Spot;
+    /* DebugLine("compact (%d, %d, %d)", Spot->x, Spot->y, Spot->z); */
+
+    ++Index;
+  }
+
+  Deallocate(Stream);
+
+  return Result;
+}
+
+link_internal b32
+IsValidForDestChunk(v3i Spot, v3i DestChunkDim)
+{
+  b32 Result =
+    Spot.x >= 0 && Spot.x < DestChunkDim.x &&
+    Spot.y >= 0 && Spot.y < DestChunkDim.y &&
+    Spot.z >= 0 && Spot.z < DestChunkDim.z;
+
+  return Result;
+}
+
 link_internal void
-ComputeStandingSpots(v3i SrcChunkDim, world_chunk *SrcChunk, v3 SrcChunkOffset, v3i TileDim, untextured_3d_geometry_buffer* Mesh, voxel_position_buffer *StandingSpots, memory_arena *TempMemory)
+ComputeStandingSpots( v3i SrcChunkDim,
+                      world_chunk *SrcChunk,
+                      v3i SrcChunkOffset,
+
+                      v3i SrcChunkToDestChunk,
+                      v3i TileDim,
+
+                      v3i DestChunkDim,
+                      untextured_3d_geometry_buffer* Mesh,
+                      voxel_position_buffer *DestStandingSpots,
+                      memory_arena *PermMemory,
+                      memory_arena *TempMemory )
 {
   TIMED_FUNCTION();
 
+#if 1
   /* world_chunk TileChunk = {}; */
   /* AllocateWorldChunk(&TileChunk, TempMemory, {}, TileDim); */
   boundary_voxels* TempBoundingPoints = AllocateBoundaryVoxels((u32)Volume(TileDim), TempMemory);
@@ -1637,12 +1681,16 @@ ComputeStandingSpots(v3i SrcChunkDim, world_chunk *SrcChunk, v3 SrcChunkOffset, 
   /* Assert(SynChunkDim.y % TileDim.y == 0); */
   /* Assert(SynChunkDim.z % TileDim.z == 0); */
 
-  v3i Max = SrcChunkDim;
-  for (s32 yIndex = 1; yIndex+TileDim.y < Max.y; yIndex += TileDim.y)
+  v3i_stream StandingSpotsStream = {};
+
+  auto MinDim = SrcChunkOffset;
+  auto MaxDim = Min(SrcChunkDim-TileDim, MinDim+V3i(0,0,TileDim.z)+DestChunkDim+SrcChunkToDestChunk+1);
+
+  for (s32 yIndex = MinDim.y; yIndex < MaxDim.y; yIndex += TileDim.y)
   {
-    for (s32 xIndex = 1; xIndex+TileDim.x < Max.x; xIndex += TileDim.x)
+    for (s32 xIndex = MinDim.x; xIndex < MaxDim.x; xIndex += TileDim.x)
     {
-      for (s32 zIndex = 0; zIndex+TileDim.z < Max.z; zIndex += 1)
+      for (s32 zIndex = MinDim.z; zIndex < MaxDim.z; zIndex += 1)
       {
         v3i TileOffset = V3i(xIndex, yIndex, zIndex);
         standing_spot Spot = ComputeStandingSpotFor8x8x2_V2(SrcChunk, SrcChunkDim, TileOffset, TileDim, TempBoundingPoints);
@@ -1651,13 +1699,17 @@ ComputeStandingSpots(v3i SrcChunkDim, world_chunk *SrcChunk, v3 SrcChunkOffset, 
         {
           // NOTE(Jesse): We do the first one just to check if the previous chunk
           // contained a standing spot here, then advance into our chunk.
-          if (zIndex != 0)
+          /* if (zIndex != 0) */
           {
-            /* Push(StandingSpots, TileOffset + SrcChunkOffset); */
+            v3i DestSpot = TileOffset-SrcChunkOffset-SrcChunkToDestChunk;
+            if (IsValidForDestChunk(DestSpot, DestChunkDim))
+            {
+              Push(&StandingSpotsStream, DestSpot);
+            }
 
+#if 0
             v3 TileDrawDim = V3(TileDim) * .95f;
-
-            auto MinP = V3(TileOffset)-SrcChunkOffset;
+            auto MinP = V3(TileOffset)-SrcChunkToDestChunk;
             /* DrawVoxel(Mesh, MinP+0.5f-0.05f, WHITE, V3(1.10f) ); */
 
             DEBUG_DrawAABB( Mesh,
@@ -1666,6 +1718,7 @@ ComputeStandingSpots(v3i SrcChunkDim, world_chunk *SrcChunk, v3 SrcChunkOffset, 
                               TileDrawDim),
                               /* V3(TileDim.x*.8f, TileDim.y*.8f, 1.f)), */
                             BLUE);
+#endif
           }
 
           /* DEBUG_DrawLine( DestChunk->LodMesh, */
@@ -1682,6 +1735,13 @@ ComputeStandingSpots(v3i SrcChunkDim, world_chunk *SrcChunk, v3 SrcChunkOffset, 
       }
     }
   }
+
+#else
+  v3i_stream StandingSpotsStream = {};
+  Push(&StandingSpotsStream, V3i(0));
+#endif
+
+  *DestStandingSpots = Compact(&StandingSpotsStream, PermMemory);
 }
 
 
@@ -1736,10 +1796,34 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
 
 
-    voxel_position_buffer StandingSpots = V3iBuffer(128, Thread->PermMemory);
+    /* voxel_position_stream StandingSpots = {}; */
     v3i TileDim = V3i(8, 8, 3);
-    ComputeStandingSpots(SynChunkDim, SyntheticChunk, V3(Apron), TileDim, DestChunk->LodMesh, &StandingSpots, Thread->TempMemory);
+    ComputeStandingSpots( SynChunkDim, SyntheticChunk, {{1,1,0}}, {{0,0,3}}, TileDim,
+                          WorldChunkDim, DestChunk->LodMesh, &DestChunk->StandingSpots,
+                          Thread->PermMemory, Thread->TempMemory);
 
+    u32 StandingSpotCount = (u32)DestChunk->StandingSpots.Count;
+    for (u32 SpotIndex = 0; SpotIndex < StandingSpotCount; ++SpotIndex)
+    {
+      v3i *Spot = DestChunk->StandingSpots.Start + SpotIndex;
+
+      /* v3i TileDim = V3i(8, 8, 3); */
+      v3 TileDrawDim = V3(TileDim) * .95f;
+      v3 MinP = V3(*Spot); //GetRenderP(World->ChunkDim, V3(*Spot), Graphics->Camera) + (World->ChunkDim*Chunk->WorldP);
+
+      /* DrawVoxel(Mesh, MinP+0.5f-0.05f, WHITE, V3(1.10f) ); */
+
+      /* DebugLine("compute (%d, %d, %d)", Spot->x, Spot->y, Spot->z); */
+      /* DebugLine("(%f, %f, %f)", MinP.x, MinP.y, MinP.z); */
+
+      untextured_3d_geometry_buffer AABBDest = ReserveBufferSpace(DestChunk->Mesh, VERTS_PER_AABB);
+      DEBUG_DrawAABB( &AABBDest,
+                      AABBMinDim(
+                        MinP,// + V3(0, 0, Spot.BoundingVoxelMidpoint.z),
+                        TileDrawDim),
+                        /* V3(TileDim.x*.8f, TileDim.y*.8f, 1.f)), */
+                      BLUE);
+    }
 
 #if 0
     if (DestChunk->Mesh && DestChunk->Mesh->At)  // Compute 0th LOD
@@ -2237,6 +2321,29 @@ BufferWorld( platform* Plat,
             }
 #endif
 
+            umm StandingSpotCount = Chunk->StandingSpots.Count;
+            /* DebugLine("drawing (%u) standing spots", StandingSpotCount); */
+#if 0
+            for (u32 SpotIndex = 0; SpotIndex < StandingSpotCount; ++SpotIndex)
+            {
+              v3i *Spot = Chunk->StandingSpots.Start + SpotIndex;
+
+              v3i TileDim = V3i(8, 8, 3);
+              v3 TileDrawDim = V3(TileDim);
+              v3 MinP =  V3(0.f, 0.f, 0.1f) + GetRenderP(World->ChunkDim, V3(*Spot), Graphics->Camera) + (World->ChunkDim*Chunk->WorldP);
+
+              /* DrawVoxel(Mesh, MinP+0.5f-0.05f, WHITE, V3(1.10f) ); */
+
+              untextured_3d_geometry_buffer AABBDest = ReserveBufferSpace(Dest, VERTS_PER_AABB);
+              DEBUG_DrawAABB( &AABBDest,
+                              AABBMinDim(
+                                MinP,// + V3(0, 0, Spot.BoundingVoxelMidpoint.z),
+                                TileDrawDim),
+                                /* V3(TileDim.x*.8f, TileDim.y*.8f, 1.f)), */
+                              BLUE);
+            }
+#endif
+
             // NOTE(Jesse): Random heruistic for packing small meshes together
             // into a bulk copy job
             if (Chunk->Mesh->At < Kilobytes(2))
@@ -2569,11 +2676,11 @@ SelectVoxel(engine_resources *Resources)
                       WHITE, 0.05f);
     }
 
-    local_persist b32 Picked;
+    local_persist b32 Picked = False;
     local_persist picked_voxel PickedVoxel;
     if (Hotkeys->Debug_PickChunks_Voxel)
     {
-      Picked = True;
+      Picked = Collision.tChunk != f32_MAX;
       PickedVoxel = Collision;
     }
 

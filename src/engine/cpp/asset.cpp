@@ -1,5 +1,26 @@
 
 
+link_internal world_chunk_file_header_v2
+MakeWorldChunkFileHeader_v2(world_chunk *Chunk)
+{
+  world_chunk_file_header_v2 Result = {};
+
+  Result.WHNK = WorldChunkFileTag_WHNK;
+  Result.Version = 2;
+  Result.Checksum = 0xdeadbeef;
+
+  Result.VoxelElementCount        = Volume(Chunk);
+  Result.StandingSpotElementCount = (u32)Chunk->StandingSpots.Count;
+  Result.MeshElementCount         = Chunk->Mesh->At;
+
+  Result.VertexElementSize        = (u32)sizeof(v3);
+  Result.ColorElementSize         = (u32)sizeof(v4);
+  Result.NormalElementSize        = (u32)sizeof(v3);
+  Result.StandingSpotElementSize  = (u32)sizeof(v3i);
+  Result.VoxelElementSize         = (u32)sizeof(voxel);
+
+  return Result;
+}
 link_internal world_chunk_file_header_v1
 MakeWorldChunkFileHeader_v1(world_chunk *Chunk)
 {
@@ -44,32 +65,69 @@ GetSizeRequirements(untextured_3d_geometry_buffer *Mesh)
 #endif
 
 link_internal b32
-Serialize(native_file *File, untextured_3d_geometry_buffer *Mesh, world_chunk_file_header_v1 *FileHeader)
+SerializeMesh(native_file *File, untextured_3d_geometry_buffer *Mesh, world_chunk_file_header_v2 *FileHeader)
 {
   b32 Result = True;
 
   u64 TotalElements = FileHeader->MeshElementCount;
 
-  u32 VertElementSize = FileHeader->VertexElementSize;
-  u64 VertByteCount = VertElementSize * TotalElements;
+  if (TotalElements)
+  {
+    u32 VertElementSize = FileHeader->VertexElementSize;
+    u64 VertByteCount = VertElementSize * TotalElements;
 
-  u32 ColorElementSize = FileHeader->ColorElementSize;
-  u64 ColorByteCount = ColorElementSize * TotalElements;
+    u32 ColorElementSize = FileHeader->ColorElementSize;
+    u64 ColorByteCount = ColorElementSize * TotalElements;
 
-  u32 NormalElementSize = FileHeader->NormalElementSize;
-  u64 NormalByteCount = NormalElementSize * TotalElements;
+    u32 NormalElementSize = FileHeader->NormalElementSize;
+    u64 NormalByteCount = NormalElementSize * TotalElements;
 
-  u32 Tag = WorldChunkFileTag_VERT;
-  Result &= WriteToFile(File, Tag);
-  Result &= WriteToFile(File, (u8*)Mesh->Verts, VertByteCount);
+    u32 Tag = WorldChunkFileTag_VERT;
+    Result &= WriteToFile(File, Tag);
+    Result &= WriteToFile(File, (u8*)Mesh->Verts, VertByteCount);
 
-  Tag = WorldChunkFileTag_COLO;
-  Result &= WriteToFile(File, Tag);
-  Result &= WriteToFile(File, (u8*)Mesh->Colors, ColorByteCount);
+    Tag = WorldChunkFileTag_COLO;
+    Result &= WriteToFile(File, Tag);
+    Result &= WriteToFile(File, (u8*)Mesh->Colors, ColorByteCount);
 
-  Tag = WorldChunkFileTag_NORM;
-  Result &= WriteToFile(File, Tag);
-  Result &= WriteToFile(File, (u8*)Mesh->Normals, NormalByteCount);
+    Tag = WorldChunkFileTag_NORM;
+    Result &= WriteToFile(File, Tag);
+    Result &= WriteToFile(File, (u8*)Mesh->Normals, NormalByteCount);
+  }
+
+  return Result;
+}
+
+link_internal b32
+SerializeMesh(native_file *File, untextured_3d_geometry_buffer *Mesh, world_chunk_file_header_v1 *FileHeader)
+{
+  b32 Result = True;
+
+  u64 TotalElements = FileHeader->MeshElementCount;
+
+  if (TotalElements)
+  {
+    u32 VertElementSize = FileHeader->VertexElementSize;
+    u64 VertByteCount = VertElementSize * TotalElements;
+
+    u32 ColorElementSize = FileHeader->ColorElementSize;
+    u64 ColorByteCount = ColorElementSize * TotalElements;
+
+    u32 NormalElementSize = FileHeader->NormalElementSize;
+    u64 NormalByteCount = NormalElementSize * TotalElements;
+
+    u32 Tag = WorldChunkFileTag_VERT;
+    Result &= WriteToFile(File, Tag);
+    Result &= WriteToFile(File, (u8*)Mesh->Verts, VertByteCount);
+
+    Tag = WorldChunkFileTag_COLO;
+    Result &= WriteToFile(File, Tag);
+    Result &= WriteToFile(File, (u8*)Mesh->Colors, ColorByteCount);
+
+    Tag = WorldChunkFileTag_NORM;
+    Result &= WriteToFile(File, Tag);
+    Result &= WriteToFile(File, (u8*)Mesh->Normals, NormalByteCount);
+  }
 
   return Result;
 }
@@ -257,12 +315,34 @@ DeserializeChunk(native_file *AssetFile, world_chunk *Result, mesh_freelist *Mes
   umm VoxByteCount = Header.VoxelElementCount * Header.VoxelElementSize;
   ReadBytesIntoBuffer(AssetFile, VoxByteCount, (u8*)Result->Voxels);
 
+  Result->FilledCount = Header.VoxelElementCount;
+
   if (Header.MeshElementCount)
   {
     Result->Mesh = GetMeshForChunk(MeshFreelist, PermMemory);
     Result->LodMesh = GetMeshForChunk(MeshFreelist, PermMemory);
     DeserializeMesh(AssetFile, &Header, Result->Mesh);
   }
+
+  if (Header.StandingSpotElementCount)
+  {
+    u64 TotalElements = Header.StandingSpotElementCount;
+    Result->StandingSpots = V3iBuffer(TotalElements, PermMemory);
+
+    DebugLine("Standing Spots (%u)", TotalElements);
+
+    //
+    // SPOT data
+    //
+    Tag = Read_u32(AssetFile);
+    Assert(Tag ==  WorldChunkFileTag_SPOT);
+
+    u32 SpotElementSize = Header.StandingSpotElementSize;
+    Assert(SpotElementSize == (u32)sizeof(v3));
+    umm ByteCount = SpotElementSize*TotalElements;
+    ReadBytesIntoBuffer(AssetFile, ByteCount, (u8*)Result->StandingSpots.Start);
+  }
+
 }
 
 link_internal b32
@@ -275,7 +355,7 @@ SerializeChunk(world_chunk *Chunk, counted_string AssetPath)
 
   native_file File = OpenFile(Filename, "w+b");
 
-  world_chunk_file_header_v1 FileHeader = MakeWorldChunkFileHeader_v1(Chunk);
+  world_chunk_file_header_v2 FileHeader = MakeWorldChunkFileHeader_v2(Chunk);
 
   Result &= WriteToFile(&File, (u8*)&FileHeader, sizeof(FileHeader));
 
@@ -287,18 +367,15 @@ SerializeChunk(world_chunk *Chunk, counted_string AssetPath)
     Result &= WriteToFile(&File, (u8*)Chunk->Voxels, VoxByteCount);
   }
 
-#if 0
+  Result &= SerializeMesh(&File, Chunk->Mesh, &FileHeader);
+
   {
-    u64 VoxByteCount = FileHeader.VoxelElementCount * FileHeader.VoxelElementSize;
-
-    u32 Tag = WorldChunkFileTag_VOXD;
+    DebugLine("Writing (%u) StandingSpots", FileHeader.StandingSpotElementCount);
+    u64 StandingSpotByteCount = FileHeader.StandingSpotElementSize * FileHeader.StandingSpotElementCount;
+    u32 Tag = WorldChunkFileTag_SPOT;
     Result &= WriteToFile(&File, Tag);
-    Result &= WriteToFile(&File, (u8*)Chunk->Voxels, VoxByteCount);
+    Result &= WriteToFile(&File, (u8*)Chunk->StandingSpots.Start, StandingSpotByteCount);
   }
-#endif
-
-
-  Result &= Serialize(&File, Chunk->Mesh, &FileHeader);
 
   CloseFile(&File);
 

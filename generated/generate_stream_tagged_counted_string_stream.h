@@ -9,6 +9,7 @@ struct tagged_counted_string_stream_stream
   memory_arena *Memory;
   tagged_counted_string_stream_stream_chunk* FirstChunk;
   tagged_counted_string_stream_stream_chunk* LastChunk;
+  umm ChunkCount;
 };
 
 link_internal void
@@ -82,6 +83,8 @@ Push(tagged_counted_string_stream_stream* Stream, tagged_counted_string_stream E
 
   Assert(NextChunk->Next == 0);
   Assert(Stream->LastChunk->Next == 0);
+
+  Stream->ChunkCount += 1;
 
   tagged_counted_string_stream *Result = &NextChunk->Element;
   return Result;

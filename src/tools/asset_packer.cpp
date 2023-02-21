@@ -5,19 +5,19 @@
 
 // TODO(Jesse): Formalize this for fuck sakes
 global_variable chunk_dimension
-WORLD_CHUNK_DIM = Chunk_Dimension(32, 32, 32);
+WorldChunkDim = Chunk_Dimension(32, 32, 32);
 
 s32 main(s32 ArgCount, const char **Args)
 {
   memory_arena *Memory = AllocateArena(Gigabytes(2));
   heap_allocator Heap = InitHeap(Gigabytes(2));
 
-  vox_data Vox = LoadVoxData(Memory, &Heap, "../voxel-model/vox/monument/monu10.vox");
+  vox_data Vox = LoadVoxData(Memory, &Heap, "../voxel-model/vox/monument/monu2.vox");
 
-  chunk_dimension Dim = Vox.ChunkData->Dim;
-  s32 xChunkCount = 1 + (Dim.x / WORLD_CHUNK_DIM.x);
-  s32 yChunkCount = 1 + (Dim.y / WORLD_CHUNK_DIM.y);
-  s32 zChunkCount = 1 + (Dim.z / WORLD_CHUNK_DIM.z);
+  chunk_dimension ModelDim = Vox.ChunkData->Dim;
+  s32 xChunkCount = 1 + (ModelDim.x / WorldChunkDim.x);
+  s32 yChunkCount = 1 + (ModelDim.y / WorldChunkDim.y);
+  s32 zChunkCount = 1 + (ModelDim.z / WorldChunkDim.z);
 
   chunk_dimension ChunkCounts = Chunk_Dimension(xChunkCount, yChunkCount, zChunkCount);
 
@@ -28,7 +28,7 @@ s32 main(s32 ArgCount, const char **Args)
   {
     world_chunk *Chunk = Chunks + ChunkIndex;
     world_position ChunkP = GetPosition(ChunkIndex, ChunkCounts);
-    AllocateWorldChunk(Chunk, Memory, ChunkP, WORLD_CHUNK_DIM);
+    AllocateWorldChunk(Chunk, Memory, ChunkP, WorldChunkDim);
   }
 
   Info("%d %d %d", ChunkCounts.x, ChunkCounts.y, ChunkCounts.z);
@@ -38,27 +38,27 @@ s32 main(s32 ArgCount, const char **Args)
   // around.  Since this runs offline I don't care about speed, but if we ever
   // run it in the game it's probably worth doing.
 
-  for (s32 zIndex = 0; zIndex < Dim.z; ++zIndex)
+  for (s32 zIndex = 0; zIndex < ModelDim.z; ++zIndex)
   {
-    for (s32 yIndex = 0; yIndex < Dim.y; ++yIndex)
+    for (s32 yIndex = 0; yIndex < ModelDim.y; ++yIndex)
     {
-      for (s32 xIndex = 0; xIndex < Dim.x; ++xIndex)
+      for (s32 xIndex = 0; xIndex < ModelDim.x; ++xIndex)
       {
-        s32 xChunk =  (xIndex / WORLD_CHUNK_DIM.x);
-        s32 yChunk =  (yIndex / WORLD_CHUNK_DIM.y);
-        s32 zChunk =  (zIndex / WORLD_CHUNK_DIM.z);
+        s32 xChunk =  (xIndex / WorldChunkDim.x);
+        s32 yChunk =  (yIndex / WorldChunkDim.y);
+        s32 zChunk =  (zIndex / WorldChunkDim.z);
 
         s32 ChunkIndex = GetIndex( xChunk, yChunk, zChunk, ChunkCounts);
         Assert(ChunkIndex < (s32)TotalChunkCount);
 
         world_chunk *Chunk = Chunks + ChunkIndex;
 
-        s32 xRel = xIndex % WORLD_CHUNK_DIM.x;
-        s32 yRel = yIndex % WORLD_CHUNK_DIM.y;
-        s32 zRel = zIndex % WORLD_CHUNK_DIM.z;
+        s32 xRel = xIndex % WorldChunkDim.x;
+        s32 yRel = yIndex % WorldChunkDim.y;
+        s32 zRel = zIndex % WorldChunkDim.z;
 
-        s32 SrcIndex = GetIndex(xIndex, yIndex, zIndex, Dim);
-        s32 DestIndex = GetIndex(xRel, yRel, zRel, WORLD_CHUNK_DIM);
+        s32 SrcIndex = GetIndex(xIndex, yIndex, zIndex, ModelDim);
+        s32 DestIndex = GetIndex(xRel, yRel, zRel, WorldChunkDim);
 
         Chunk->Voxels[DestIndex] = Vox.ChunkData->Voxels[SrcIndex];
       }
@@ -77,7 +77,7 @@ s32 main(s32 ArgCount, const char **Args)
     v4 *Palette = Vox.Palette ? Vox.Palette : DefaultPalette;
     if (Vox.Palette == 0) { Warn("No Palette found, using default"); }
 
-    chunk_dimension SrcChunkOffset = Chunk->WorldP * WORLD_CHUNK_DIM;
+    chunk_dimension SrcChunkOffset = Chunk->WorldP * WorldChunkDim;
 
     world_chunk SrcChunk = {
       .Flags = Vox.ChunkData->Flags,
@@ -99,16 +99,19 @@ s32 main(s32 ArgCount, const char **Args)
                          SrcChunkOffset,
 
                          Chunk,
-                         WORLD_CHUNK_DIM,
+                         WorldChunkDim,
                          Chunk->Mesh );
 #else
-    BuildEntityMesh(&Data, Chunk->Mesh, Palette, WORLD_CHUNK_DIM);
+    BuildEntityMesh(&Data, Chunk->Mesh, Palette, WorldChunkDim);
 #endif
 
-    voxel_position_buffer StandingSpots = V3iBuffer(128, TranArena);
     v3i TileDim = V3i(8, 8, 3);
-    SrcChunkOffset = SrcChunkOffset - V3i(0,0,TileDim.z);
-    ComputeStandingSpots(SrcChunk.Dim, &SrcChunk, V3(SrcChunkOffset), TileDim, Chunk->Mesh, &StandingSpots, TranArena);
+    auto ActualSrcChunkOffset = Max(V3i(0), SrcChunkOffset - V3i(0,0,TileDim.z));
+    v3i  SrcChunkToDestChunk = {}; //SrcChunkOffset - ActualSrcChunkOffset;
+    Assert(LengthSq(SrcChunkToDestChunk) >= 0);
+    /* v3i_buffer AllStandingSpots = {}; */
+    ComputeStandingSpots( SrcChunk.Dim, &SrcChunk, SrcChunkOffset, SrcChunkToDestChunk, TileDim,
+                          WorldChunkDim, Chunk->Mesh, &Chunk->StandingSpots, Memory, TranArena);
 
     SerializeChunk(Chunk, CSz("examples/asset_picker/assets"));
   }

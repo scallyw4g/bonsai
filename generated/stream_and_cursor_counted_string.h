@@ -28,6 +28,7 @@ struct counted_string_stream
   memory_arena *Memory;
   counted_string_stream_chunk* FirstChunk;
   counted_string_stream_chunk* LastChunk;
+  umm ChunkCount;
 };
 
 link_internal void
@@ -101,6 +102,8 @@ Push(counted_string_stream* Stream, counted_string Element)
 
   Assert(NextChunk->Next == 0);
   Assert(Stream->LastChunk->Next == 0);
+
+  Stream->ChunkCount += 1;
 
   counted_string *Result = &NextChunk->Element;
   return Result;
