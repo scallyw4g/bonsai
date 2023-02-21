@@ -15,8 +15,8 @@ uniform vec3 SsaoKernel[SSAO_KERNEL_SIZE];
 uniform mat4 ViewProjection;
 
 // Tuning
-  float SsaoRadius = 0.35f;
-  float DepthThreshold = 0.004f;
+  float SsaoRadius = 0.45f;
+  float DepthThreshold = 0.0013f;
 //
 
 void main()
@@ -35,12 +35,16 @@ void main()
   mat3 Reorientation = mat3(Right, Front, Up) * SsaoRadius;
 
   float AO = 1.0f;
-  float OccluderContribution = 0.5f/float(SSAO_KERNEL_SIZE);
+  float OccluderContribution = 1.f/float(SSAO_KERNEL_SIZE);
 
   // NOTE(Jesse): I was getting some artifacts when at 90deg to a surface so I
   // added a bias to the sample.
-  /* float Bias = 0.0008f; */
-  float Bias = 0.0000f;
+  //
+  // NOTE(Jesse): Made bias proportional to the depth of the fragment such that
+  // at large distances banding doesn't come back
+  //
+  float Bias = FragDepth*0.0001f;
+  /* float Bias = 0.0000f; */
   float BiasedFragDepth = FragDepth - Bias;
 
   for ( int KernelIndex = 0;
@@ -68,11 +72,18 @@ void main()
     float ThreshholdPerc = clamp(DistanceToThreshhold / DepthThreshold, 0, 1);
 
     AO -= (OccluderContribution * ThreshholdPerc);
-#else
+#endif
+
+#if 0
     float Occluded = clamp((DepthDelta * 10000000.0f), 0.0f, 1.0f);
 
     if (DepthDelta < DepthThreshold)
       AO -= (OccluderContribution * Occluded);
+#endif
+
+#if 1
+    if ( BiasedFragDepth>SampleDepth && (BiasedFragDepth-SampleDepth < DepthThreshold) )
+      AO -= OccluderContribution;
 #endif
   }
 
