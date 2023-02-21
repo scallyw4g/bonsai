@@ -98,8 +98,7 @@ s32 main(s32 ArgCount, const char **Args)
                          SrcChunk.Dim,
                          SrcChunkOffset,
 
-                         Chunk,
-                         WorldChunkDim,
+                         SrcChunkOffset+WorldChunkDim,
                          Chunk->Mesh );
 #else
     BuildEntityMesh(&Data, Chunk->Mesh, Palette, WorldChunkDim);

@@ -196,6 +196,7 @@ BufferVertsChecked(
   return;
 }
 
+// TODO(Jesse): Delete this func in favor of BuildWorldChunkMesh
 void
 BuildEntityMesh(chunk_data *Chunk, untextured_3d_geometry_buffer* Mesh, v4 *ColorPalette, chunk_dimension Dim)
 {
@@ -207,7 +208,7 @@ BuildEntityMesh(chunk_data *Chunk, untextured_3d_geometry_buffer* Mesh, v4 *Colo
       {
         voxel_position LocalVoxelP = Voxel_Position(x,y,z);
 
-        if ( NotFilled( Chunk, LocalVoxelP, Dim) )
+        if ( NotFilled( Chunk->Voxels, LocalVoxelP, Dim) )
           continue;
 
         voxel_position P = Voxel_Position(x,y,z);
@@ -234,32 +235,32 @@ BuildEntityMesh(chunk_data *Chunk, untextured_3d_geometry_buffer* Mesh, v4 *Colo
 
 
         // FIXME(Jesse): This should use a BufferVertsChecked path
-        if ( (!IsInsideDim(Dim, rightVoxel)) || NotFilled( Chunk, rightVoxel, Dim))
+        if ( (!IsInsideDim(Dim, rightVoxel)) || NotFilled( Chunk->Voxels, rightVoxel, Dim))
         {
           RightFaceVertexData( VP, Diameter, VertexData);
           BufferVertsDirect(Mesh, 6, VertexData, RightFaceNormalData, FaceColors);
         }
-        if ( (!IsInsideDim( Dim, leftVoxel  )) || NotFilled( Chunk, leftVoxel, Dim))
+        if ( (!IsInsideDim( Dim, leftVoxel  )) || NotFilled( Chunk->Voxels, leftVoxel, Dim))
         {
           LeftFaceVertexData( VP, Diameter, VertexData);
           BufferVertsDirect(Mesh, 6, VertexData, LeftFaceNormalData, FaceColors);
         }
-        if ( (!IsInsideDim( Dim, botVoxel   )) || NotFilled( Chunk, botVoxel, Dim))
+        if ( (!IsInsideDim( Dim, botVoxel   )) || NotFilled( Chunk->Voxels, botVoxel, Dim))
         {
           BottomFaceVertexData( VP, Diameter, VertexData);
           BufferVertsDirect(Mesh, 6, VertexData, BottomFaceNormalData, FaceColors);
         }
-        if ( (!IsInsideDim( Dim, topVoxel   )) || NotFilled( Chunk, topVoxel, Dim))
+        if ( (!IsInsideDim( Dim, topVoxel   )) || NotFilled( Chunk->Voxels, topVoxel, Dim))
         {
           TopFaceVertexData( VP, Diameter, VertexData);
           BufferVertsDirect(Mesh, 6, VertexData, TopFaceNormalData, FaceColors);
         }
-        if ( (!IsInsideDim( Dim, frontVoxel )) || NotFilled( Chunk, frontVoxel, Dim))
+        if ( (!IsInsideDim( Dim, frontVoxel )) || NotFilled( Chunk->Voxels, frontVoxel, Dim))
         {
           FrontFaceVertexData( VP, Diameter, VertexData);
           BufferVertsDirect(Mesh, 6, VertexData, FrontFaceNormalData, FaceColors);
         }
-        if ( (!IsInsideDim( Dim, backVoxel  )) || NotFilled( Chunk, backVoxel, Dim))
+        if ( (!IsInsideDim( Dim, backVoxel  )) || NotFilled( Chunk->Voxels, backVoxel, Dim))
         {
           BackFaceVertexData( VP, Diameter, VertexData);
           BufferVertsDirect(Mesh, 6, VertexData, BackFaceNormalData, FaceColors);

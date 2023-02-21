@@ -173,12 +173,12 @@ BottomFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
   /* TIMED_FUNCTION(); */
   r32 Temp[] = {
-    MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z ,
-    MinP.x              , MinP.y              , MinP.z ,
     MinP.x + Diameter.x , MinP.y              , MinP.z ,
     MinP.x              , MinP.y              , MinP.z ,
     MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z ,
     MinP.x              , MinP.y + Diameter.y , MinP.z ,
+    MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z ,
+    MinP.x              , MinP.y              , MinP.z ,
   };
 
   MemCopy((u8*)Temp, (u8*)Result, sizeof(Temp));

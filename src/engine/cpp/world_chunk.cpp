@@ -527,17 +527,19 @@ InitChunkPerlin(perlin_noise *Noise, world_chunk *Chunk, chunk_dimension Dim, u8
 link_internal void
 BuildWorldChunkMesh( world_chunk *SrcChunk,
                      chunk_dimension SrcChunkDim,
-                     chunk_dimension SrcChunkOffset,
 
-                     world_chunk *DestChunk,
-                     chunk_dimension DestChunkDim,
+                     chunk_dimension SrcChunkMin,
+                     chunk_dimension SrcChunkMax,
+
+                     /* world_chunk *DestChunk, */
+                     /* chunk_dimension DestChunkDim, */
 
                      untextured_3d_geometry_buffer *DestGeometry )
 {
   TIMED_FUNCTION();
 
   Assert(IsSet(SrcChunk, Chunk_VoxelsInitialized));
-  Assert(IsSet(DestChunk, Chunk_VoxelsInitialized));
+  /* Assert(IsSet(DestChunk, Chunk_VoxelsInitialized)); */
 
   voxel_position rightVoxel;
   voxel_position leftVoxel;
@@ -560,8 +562,8 @@ BuildWorldChunkMesh( world_chunk *SrcChunk,
   v3 VertexData[VERTS_PER_FACE];
   v4 FaceColors[VERTS_PER_FACE];
 
-  auto MinDim = SrcChunkOffset;
-  auto MaxDim = Min(SrcChunkDim-1, SrcChunkOffset+DestChunkDim+1);
+  auto MinDim = SrcChunkMin;
+  auto MaxDim = Min(SrcChunkDim, SrcChunkMax); // SrcChunkMin+DestChunkDim+1
   for ( s32 z = MinDim.z; z < MaxDim.z ; ++z )
   {
     for ( s32 y = MinDim.y; y < MaxDim.y ; ++y )
@@ -590,51 +592,41 @@ BuildWorldChunkMesh( world_chunk *SrcChunk,
 #endif
 
         rightVoxel = DestP + Voxel_Position(1, 0, 0);
-        rightVoxelReadIndex = GetIndex(rightVoxel, SrcChunkDim);
-
         leftVoxel  = DestP - Voxel_Position(1, 0, 0);
-        leftVoxelReadIndex  = GetIndex(leftVoxel, SrcChunkDim);
-
         topVoxel   = DestP + Voxel_Position(0, 0, 1);
-        topVoxelReadIndex   = GetIndex(topVoxel, SrcChunkDim);
-
         botVoxel   = DestP - Voxel_Position(0, 0, 1);
-        botVoxelReadIndex   = GetIndex(botVoxel, SrcChunkDim);
-
         frontVoxel = DestP + Voxel_Position(0, 1, 0);
-        frontVoxelReadIndex = GetIndex(frontVoxel, SrcChunkDim);
-
         backVoxel  = DestP - Voxel_Position(0, 1, 0);
-        backVoxelReadIndex  = GetIndex(backVoxel, SrcChunkDim);
 
-        if ( NotFilledInChunk( SrcChunk, rightVoxelReadIndex) )
+
+        if ( !IsInsideDim( SrcChunkDim, rightVoxel) || NotFilled( SrcChunk->Voxels, rightVoxel, SrcChunkDim) )
         {
-          RightFaceVertexData( V3(DestP-SrcChunkOffset), Diameter, VertexData);
+          RightFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, RightFaceNormalData, FaceColors);
         }
-        if ( NotFilledInChunk( SrcChunk, leftVoxelReadIndex) )
+        if ( !IsInsideDim( SrcChunkDim, leftVoxel) || NotFilled( SrcChunk->Voxels, leftVoxel, SrcChunkDim) )
         {
-          LeftFaceVertexData( V3(DestP-SrcChunkOffset), Diameter, VertexData);
+          LeftFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, LeftFaceNormalData, FaceColors);
         }
-        if ( NotFilledInChunk( SrcChunk, botVoxelReadIndex) )
+        if ( !IsInsideDim( SrcChunkDim, botVoxel) || NotFilled( SrcChunk->Voxels, botVoxel, SrcChunkDim) )
         {
-          BottomFaceVertexData( V3(DestP-SrcChunkOffset), Diameter, VertexData);
+          BottomFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, BottomFaceNormalData, FaceColors);
         }
-        if ( NotFilledInChunk( SrcChunk, topVoxelReadIndex) )
+        if ( !IsInsideDim( SrcChunkDim, topVoxel) || NotFilled( SrcChunk->Voxels, topVoxel, SrcChunkDim) )
         {
-          TopFaceVertexData( V3(DestP-SrcChunkOffset), Diameter, VertexData);
+          TopFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, TopFaceNormalData, FaceColors);
         }
-        if ( NotFilledInChunk( SrcChunk, frontVoxelReadIndex) )
+        if ( !IsInsideDim( SrcChunkDim, frontVoxel) || NotFilled( SrcChunk->Voxels, frontVoxel, SrcChunkDim) )
         {
-          FrontFaceVertexData( V3(DestP-SrcChunkOffset), Diameter, VertexData);
+          FrontFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, FrontFaceNormalData, FaceColors);
         }
-        if ( NotFilledInChunk( SrcChunk, backVoxelReadIndex) )
+        if ( !IsInsideDim( SrcChunkDim, backVoxel) || NotFilled( SrcChunk->Voxels, backVoxel, SrcChunkDim) )
         {
-          BackFaceVertexData( V3(DestP-SrcChunkOffset), Diameter, VertexData);
+          BackFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, BackFaceNormalData, FaceColors);
         }
       }
@@ -787,7 +779,7 @@ InitializeWorldChunkPerlin( perlin_noise *Noise,
   SetFlag(DestChunk, Chunk_VoxelsInitialized);
   SetFlag(SyntheticChunk, Chunk_VoxelsInitialized);
 
-  BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, Apron, DestChunk,  WorldChunkDim, DestGeometry);
+  BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, Apron, Apron+WorldChunkDim, DestGeometry);
   DestChunk->Mesh = DestGeometry;
 
   FinalizeChunkInitialization(DestChunk);
@@ -831,7 +823,7 @@ InitializeWorldChunkPlane(world_chunk *DestChunk, chunk_dimension WorldChunkDim,
   SetFlag(DestChunk, Chunk_VoxelsInitialized);
   SetFlag(SyntheticChunk, Chunk_VoxelsInitialized);
 
-  BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, Apron, DestChunk, WorldChunkDim, DestGeometry);
+  BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, Apron, Apron+WorldChunkDim, DestGeometry);
 
   FinalizeChunkInitialization(DestChunk);
 
@@ -1791,7 +1783,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
       Assert(!DestChunk->Mesh);
       DestChunk->Mesh = GetMeshForChunk(Thread->MeshFreelist, Thread->PermMemory);
       DestChunk->LodMesh = GetMeshForChunk(Thread->MeshFreelist, Thread->PermMemory);
-      BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, Apron, DestChunk, WorldChunkDim, DestChunk->Mesh);
+      BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, Apron, Apron+WorldChunkDim, DestChunk->Mesh);
     }
 
 

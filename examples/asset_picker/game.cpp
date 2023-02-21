@@ -85,8 +85,6 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
         }
       }
 
-
-
       FinalizeChunkInitialization(Chunk);
 
     } break;
@@ -154,6 +152,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   world_position WorldCenter = World_Position(1, 1, 3);
   canonical_position PlayerSpawnP = Canonical_Position(Voxel_Position(0), WorldCenter);
+
   StandardCamera(Graphics->Camera, 10000.0f, 300.0f, PlayerSpawnP);
 
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;

@@ -705,6 +705,10 @@ GetIndexUnsafe(voxel_position P, chunk_dimension Dim)
 inline s32
 GetIndex(s32 X, s32 Y, s32 Z, chunk_dimension Dim)
 {
+  Assert(X >= 0);
+  Assert(Y >= 0);
+  Assert(Z >= 0);
+
   Assert(X < Dim.x);
   Assert(Y < Dim.y);
   Assert(Z < Dim.z);
@@ -713,6 +717,7 @@ GetIndex(s32 X, s32 Y, s32 Z, chunk_dimension Dim)
               (Y*Dim.x) +
               (Z*Dim.x*Dim.y);
 
+  Assert(Result >= 0);
   Assert(Result < Volume(Dim));
 
   return Result;
@@ -733,21 +738,18 @@ GetIndex(v3 Offset, chunk_dimension Dim)
 }
 
 inline b32
-IsFilled( chunk_data *chunk, voxel_position VoxelP, chunk_dimension Dim)
+IsFilled( voxel *Voxels, voxel_position VoxelP, chunk_dimension Dim)
 {
-  int i = GetIndex(VoxelP, Dim);
+  s32 VoxelIndex = GetIndex(VoxelP, Dim);
 
-  Assert(i > -1);
-  Assert(i < Volume(Dim));
-
-  b32 isFilled = IsSet(&chunk->Voxels[i], Voxel_Filled);
+  b32 isFilled = IsSet(Voxels + VoxelIndex, Voxel_Filled);
   return isFilled;
 }
 
 inline b32
-NotFilled(chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim)
+NotFilled(voxel *Voxels, voxel_position VoxelP, chunk_dimension Dim)
 {
-  b32 Result = !IsFilled(Chunk, VoxelP, Dim);
+  b32 Result = !IsFilled(Voxels, VoxelP, Dim);
   return Result;
 }
 
