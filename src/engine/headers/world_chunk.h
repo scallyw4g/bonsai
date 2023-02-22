@@ -94,9 +94,16 @@ struct world_chunk
 
 struct picked_world_chunk
 {
-  world_chunk *E;
-  r64 tValue;
+  world_chunk *Chunk;
+  r64 tChunk; // f32_MAX indicates not picked
 };
+
+struct picked_voxel
+{
+  picked_world_chunk PickedChunk;
+  v3 VoxelRelP; // Relative to origin of chunk
+};
+
 
 link_internal u32
 Volume(world_chunk* Chunk)
@@ -122,6 +129,14 @@ struct world
 
   memory_arena* Memory;
 };
+
+struct standing_spot
+{
+  b32 CanStand;
+  voxel_position P;
+};
+
+struct mesh_freelist;
 
 link_internal void
 AllocateWorldChunk(world_chunk *Result, memory_arena *Storage, world_position WorldP, chunk_dimension Dim);

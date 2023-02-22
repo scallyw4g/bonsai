@@ -8,7 +8,7 @@
 #define BONSAI_API_MAIN_THREAD_INIT_CALLBACK_PARAMS    engine_resources *Resources, thread_local_state *MainThread
 
 #define BONSAI_API_WORKER_THREAD_CALLBACK_PARAMS       volatile work_queue_entry* Entry, thread_local_state* Thread
-#define BONSAI_API_WORKER_THREAD_INIT_CALLBACK_PARAMS  thread_local_state* Thread
+#define BONSAI_API_WORKER_THREAD_INIT_CALLBACK_PARAMS  thread_local_state* AllThreads, s32 ThreadIndex
 
 
 #define BONSAI_API_MAIN_THREAD_CALLBACK() \
@@ -35,7 +35,6 @@ typedef void        (*bonsai_worker_thread_callback)    (BONSAI_API_WORKER_THREA
 typedef game_state* (*bonsai_main_thread_init_callback) (BONSAI_API_MAIN_THREAD_INIT_CALLBACK_PARAMS);
 
 typedef b32 (*bonsai_engine_callback)(engine_resources*);
-
 
 struct game_api
 {

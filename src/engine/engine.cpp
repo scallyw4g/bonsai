@@ -9,7 +9,11 @@
 #include <engine/cpp/threadsafe.cpp>
 #include <engine/cpp/triangle.cpp>
 #include <engine/cpp/camera.cpp>
+
+#if PLATFORM_GL_IMPLEMENTATIONS
 #include <engine/cpp/debug_draw.cpp>
+#endif
+
 #include <engine/cpp/lod.cpp>
 
 #if PLATFORM_GL_IMPLEMENTATIONS

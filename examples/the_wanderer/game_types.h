@@ -9,8 +9,6 @@ struct game_state
 {
   random_series Entropy;
 
-  perlin_noise Noise;
-
   model   *Models;
   event_queue EventQueue;
 

@@ -103,8 +103,6 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState = Allocate(game_state, Resources->Memory, 1);
 
-  GameState->Noise = perlin_noise(DEBUG_NOISE_SEED);
-
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
   GameState->Models = AllocateGameModels(GameState, Memory, Heap);
@@ -127,8 +125,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   return GameState;
 }
 
-/* BONSAI_API_WORKER_THREAD_INIT_CALLBACK() */
-/* { */
-/*   /1* Thread->MeshFreelist = &EngineResources->MeshFreelist; *1/ */
-/*   /1* Thread->Noise = &GameState->Noise; *1/ */
-/* } */
+BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
+{
+  Global_ThreadStates = AllThreads;
+  ThreadLocal_ThreadIndex = ThreadIndex;
+}

@@ -39,8 +39,8 @@ EXAMPLES_TO_BUILD="
   $EXAMPLES/asset_picker
   $EXAMPLES/the_wanderer
   $EXAMPLES/tile_gen
+  $EXAMPLES/turn_based
 "
-  # $EXAMPLES/world_gen
 
 EXECUTABLES_TO_BUILD="
   $SRC/game_loader.cpp

@@ -118,8 +118,6 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState = Allocate(game_state, Resources->Memory, 1);
 
-  GameState->Noise = perlin_noise(DEBUG_NOISE_SEED);
-
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
   GameState->Models = AllocateGameModels(GameState, Memory, Heap);

@@ -1,4 +1,5 @@
 #define PLATFORM_GL_IMPLEMENTATIONS 1
+#define DEBUG_SYSTEM_API 1
 
 #include <bonsai_types.h>
 
@@ -62,6 +63,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
       FinalizeChunkInitialization(Chunk);
 #endif
+
     } break;
 
     case type_work_queue_entry_init_world_chunk:
@@ -82,6 +84,24 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           DeserializeChunk(&AssetFile, Chunk, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
           CloseFile(&AssetFile);
           // fsync?
+        }
+        else
+        {
+          s32 Frequency = 20;
+          s32 Amplititude = 6;
+          s32 StartingZDepth = 4;
+          InitializeWorldChunkPerlinPlane( Thread,
+                                           Chunk,
+                                           WORLD_CHUNK_DIM,
+                                           Frequency,
+                                           Amplititude,
+                                           StartingZDepth );
+
+          FullBarrier;
+
+          /* Chunk->LodMesh_Complete = True; */
+          /* Assert( NotSet(Chunk, Chunk_Queued )); */
+
         }
       }
 

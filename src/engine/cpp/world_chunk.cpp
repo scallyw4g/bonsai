@@ -428,13 +428,14 @@ InitChunkPlane(s32 zIndex, world_chunk *Chunk, chunk_dimension ChunkDim, u8 Colo
 }
 
 link_internal u32
-InitChunkPerlinPlane(perlin_noise *Noise, world_chunk *Chunk, chunk_dimension Dim, u8 ColorIndex, s32 Frequency, s32 Amplitude, s64 zMin, chunk_dimension WorldChunkDim)
+InitChunkPerlinPlane( perlin_noise *Noise,
+                      world_chunk *Chunk, chunk_dimension Dim, chunk_dimension SrcToDest,
+                      u8 ColorIndex, s32 Frequency, s32 Amplitude, s64 zMin,
+                      chunk_dimension WorldChunkDim)
 {
   TIMED_FUNCTION();
 
   u32 ChunkSum = 0;
-
-  Assert(Chunk);
 
   for ( s32 z = 0; z < Dim.z; ++ z)
   {
@@ -446,16 +447,19 @@ InitChunkPerlinPlane(perlin_noise *Noise, world_chunk *Chunk, chunk_dimension Di
         Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
         Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
 
-        double InX = ((double)x + ( (double)WorldChunkDim.x*(double)Chunk->WorldP.x))/Frequency;
-        double InY = ((double)y + ( (double)WorldChunkDim.y*(double)Chunk->WorldP.y))/Frequency;
+        double InX = ((double)x + SrcToDest.x + ( (double)WorldChunkDim.x*(double)Chunk->WorldP.x))/Frequency;
+        double InY = ((double)y + SrcToDest.y + ( (double)WorldChunkDim.y*(double)Chunk->WorldP.y))/Frequency;
+        /* double InZ = ((double)z + ( (double)WorldChunkDim.z*(double)Chunk->WorldP.z))/Frequency; */
         double InZ = 1.0;
 
-        s64 zAbsolute = z - (zMin-Amplitude) + (WorldChunkDim.z*Chunk->WorldP.z);
-        r64 zSlicesAt = (1.0/(r64)Amplitude) * (r64)zAbsolute;
+
+        s64 WorldZ = z - SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z);
+        /* r64 zSlicesAt = SafeDivide0(1.0, (r64)Amplitude) * (r64)WorldZ; */
 
         r64 NoiseValue = Noise->noise(InX, InY, InZ);
+        s32 MaxZ = (s32)Abs( (r64)(NoiseValue*(r64)Amplitude) );
 
-        b32 NoiseChoice = NoiseValue > zSlicesAt ? True : False;
+        b32 NoiseChoice = WorldZ < MaxZ;
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(NoiseChoice * Voxel_Filled));
 
         if (NoiseChoice)
@@ -1492,12 +1496,6 @@ GetBoundingVoxelsMidpoint(world_chunk *Chunk, v3i ChunkDim)
   return BoundingVoxelMidpoint;
 }
 
-struct standing_spot
-{
-  b32 CanStand;
-  voxel_position P;
-};
-
 standing_spot
 ComputeStandingSpotFor8x8x2_V2(world_chunk *SrcChunk, v3i SrcChunkDim, v3i TileChunkOffset, v3i TileChunkDim, boundary_voxels *TempBoundingPoints)
 {
@@ -1619,20 +1617,24 @@ ComputeStandingSpotFor8x8x8(world_chunk *SynChunk, v3i SynChunkDim, world_chunk 
 link_internal v3i_buffer
 Compact(v3i_stream *Stream, memory_arena *PermMemory)
 {
-  v3i_buffer Result = V3iBuffer(Stream->ChunkCount, PermMemory);
-  /* DebugLine("compact %u", Result.Count); */
-
-  u32 Index = 0;
-  ITERATE_OVER(Stream)
+  v3i_buffer Result = {};
+  if (Stream->ChunkCount)
   {
-    v3i *Spot = GET_ELEMENT(Iter);
-    Result.Start[Index] = *Spot;
-    /* DebugLine("compact (%d, %d, %d)", Spot->x, Spot->y, Spot->z); */
+    Result = V3iBuffer(Stream->ChunkCount, PermMemory);
+    /* DebugLine("compact %u", Result.Count); */
 
-    ++Index;
+    u32 Index = 0;
+    ITERATE_OVER(Stream)
+    {
+      v3i *Spot = GET_ELEMENT(Iter);
+      Result.Start[Index] = *Spot;
+      /* DebugLine("compact (%d, %d, %d)", Spot->x, Spot->y, Spot->z); */
+
+      ++Index;
+    }
+
+    Deallocate(Stream);
   }
-
-  Deallocate(Stream);
 
   return Result;
 }
@@ -1699,6 +1701,7 @@ ComputeStandingSpots( v3i SrcChunkDim,
               Push(&StandingSpotsStream, DestSpot);
             }
 
+            DrawStandingSpot(Mesh, DestSpot, V3(TileDim));
 #if 0
             v3 TileDrawDim = V3(TileDim) * .95f;
             auto MinP = V3(TileOffset)-SrcChunkToDestChunk;
@@ -1736,7 +1739,6 @@ ComputeStandingSpots( v3i SrcChunkDim,
   *DestStandingSpots = Compact(&StandingSpotsStream, PermMemory);
 }
 
-
 link_internal void
 InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChunk, chunk_dimension WorldChunkDim, s32 Frequency, s32 Amplititude, s32 zMin)
 {
@@ -1765,11 +1767,15 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
     chunk_dimension Apron = Chunk_Dimension(1,1,3);
     chunk_dimension SynChunkDim = WorldChunkDim + (Apron*2);
-    chunk_dimension SynChunkP = DestChunk->WorldP - Apron;
+    chunk_dimension SynChunkP = DestChunk->WorldP;
 
     world_chunk *SyntheticChunk = AllocateWorldChunk(Thread->TempMemory, SynChunkP, SynChunkDim );
 
-    u32 SyntheticChunkSum = InitChunkPerlinPlane(&Thread->Noise, SyntheticChunk, SynChunkDim, GRASS_GREEN, Frequency, Amplititude, zMin, WorldChunkDim);
+    u32 SyntheticChunkSum = InitChunkPerlinPlane( Thread->PerlinNoise,
+                                                  SyntheticChunk, SynChunkDim, Apron,
+                                                  GRASS_GREEN, Frequency, Amplititude, zMin,
+                                                  WorldChunkDim );
+
     CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Apron);
 
     FullBarrier;
@@ -1781,8 +1787,8 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
     {
       Assert(!DestChunk->LodMesh);
       Assert(!DestChunk->Mesh);
-      DestChunk->Mesh = GetMeshForChunk(Thread->MeshFreelist, Thread->PermMemory);
-      DestChunk->LodMesh = GetMeshForChunk(Thread->MeshFreelist, Thread->PermMemory);
+      DestChunk->Mesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+      DestChunk->LodMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
       BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, Apron, Apron+WorldChunkDim, DestChunk->Mesh);
     }
 
@@ -1798,23 +1804,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
     for (u32 SpotIndex = 0; SpotIndex < StandingSpotCount; ++SpotIndex)
     {
       v3i *Spot = DestChunk->StandingSpots.Start + SpotIndex;
-
-      /* v3i TileDim = V3i(8, 8, 3); */
-      v3 TileDrawDim = V3(TileDim) * .95f;
-      v3 MinP = V3(*Spot); //GetRenderP(World->ChunkDim, V3(*Spot), Graphics->Camera) + (World->ChunkDim*Chunk->WorldP);
-
-      /* DrawVoxel(Mesh, MinP+0.5f-0.05f, WHITE, V3(1.10f) ); */
-
-      /* DebugLine("compute (%d, %d, %d)", Spot->x, Spot->y, Spot->z); */
-      /* DebugLine("(%f, %f, %f)", MinP.x, MinP.y, MinP.z); */
-
-      untextured_3d_geometry_buffer AABBDest = ReserveBufferSpace(DestChunk->Mesh, VERTS_PER_AABB);
-      DEBUG_DrawAABB( &AABBDest,
-                      AABBMinDim(
-                        MinP,// + V3(0, 0, Spot.BoundingVoxelMidpoint.z),
-                        TileDrawDim),
-                        /* V3(TileDim.x*.8f, TileDim.y*.8f, 1.f)), */
-                      BLUE);
+      DrawStandingSpot(DestChunk->Mesh, *Spot, V3(TileDim));
     }
 
 #if 0
@@ -2316,23 +2306,11 @@ BufferWorld( platform* Plat,
             umm StandingSpotCount = Chunk->StandingSpots.Count;
             /* DebugLine("drawing (%u) standing spots", StandingSpotCount); */
 #if 0
+            v3i TileDim = V3i(8, 8, 3);
             for (u32 SpotIndex = 0; SpotIndex < StandingSpotCount; ++SpotIndex)
             {
               v3i *Spot = Chunk->StandingSpots.Start + SpotIndex;
-
-              v3i TileDim = V3i(8, 8, 3);
-              v3 TileDrawDim = V3(TileDim);
-              v3 MinP =  V3(0.f, 0.f, 0.1f) + GetRenderP(World->ChunkDim, V3(*Spot), Graphics->Camera) + (World->ChunkDim*Chunk->WorldP);
-
-              /* DrawVoxel(Mesh, MinP+0.5f-0.05f, WHITE, V3(1.10f) ); */
-
-              untextured_3d_geometry_buffer AABBDest = ReserveBufferSpace(Dest, VERTS_PER_AABB);
-              DEBUG_DrawAABB( &AABBDest,
-                              AABBMinDim(
-                                MinP,// + V3(0, 0, Spot.BoundingVoxelMidpoint.z),
-                                TileDrawDim),
-                                /* V3(TileDim.x*.8f, TileDim.y*.8f, 1.f)), */
-                              BLUE);
+              DrawStandingSpot(DestChunk->Mesh, *Spot, V3(TileDim));
             }
 #endif
 
@@ -2431,7 +2409,7 @@ GetChunksIntersectingRay(world *World, ray *Ray, picked_world_chunk_static_buffe
     }
   }
 
-  return { .E = ClosestChunk, .tValue = tChunkMin };
+  return { .Chunk = ClosestChunk, .tChunk = tChunkMin };
 }
 
 link_internal world_chunk*
@@ -2448,43 +2426,7 @@ GetChunksFromMouseP(engine_resources *Resources, picked_world_chunk_static_buffe
     ClosestChunk = GetChunksIntersectingRay(World, &MaybeRay.Ray, AllChunksBuffer);
   }
 
-  return ClosestChunk.E;
-}
-
-
-#if DEBUG_SYSTEM_API
-
-link_internal void
-Debug_DoWorldChunkPicking(engine_resources *Resources)
-{
-
-/*   NotImplemented; */
-
-#if 0
-  if (AllChunksBuffer)
-  {
-    for ( u32 ChunkIndex = 0;
-              ChunkIndex < AllChunksBuffer->At;
-            ++ChunkIndex )
-    {
-      world_chunk *Chunk = AllChunksBuffer->E[ChunkIndex];
-      untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
-      u8 Color = LIGHT_GREEN;
-
-      if (Chunk == GetDebugState()->PickedChunk)
-      {
-        Color = PINK;
-      }
-
-      if (Chunk == GetDebugState()->HoverChunk)
-      {
-        Color = YELLOW;
-      }
-
-      DEBUG_DrawChunkAABB(&CopyDest, Graphics, Chunk, World->ChunkDim, Color, 0.35f);
-    }
-  }
-#endif
+  return ClosestChunk.Chunk;
 }
 
 link_internal aabb
@@ -2495,14 +2437,6 @@ WorldChunkAABB(world_chunk *Chunk, v3 WorldChunkDim)
   aabb Result = AABBMinMax(MinP, MaxP);
   return Result;
 }
-
-struct picked_voxel
-{
-  r32 tChunk; // f32_MAX indicates no collision
-  world_chunk *Chunk;
-
-  v3 VoxelRelP; // Relative to origin of chunk
-};
 
 link_internal picked_voxel
 RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, v3 RayDir)
@@ -2530,11 +2464,11 @@ RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, 
 
   BubbleSort((sort_key_f*)AllChunksBuffer.E, (u32)AllChunksBuffer.At);
 
-  picked_voxel Result = { .tChunk =  f32_MAX };
+  picked_voxel Result = { .PickedChunk.tChunk =  f32_MAX };
   for (s64 ClosestChunkIndex = s64(AllChunksBuffer.At)-1; ClosestChunkIndex > -1; --ClosestChunkIndex)
   {
-    r32 tChunk = (r32)AllChunksBuffer.E[ClosestChunkIndex].tValue;
-    world_chunk *ClosestChunk = AllChunksBuffer.E[ClosestChunkIndex].E;
+    r32 tChunk = (r32)AllChunksBuffer.E[ClosestChunkIndex].tChunk;
+    world_chunk *ClosestChunk = AllChunksBuffer.E[ClosestChunkIndex].Chunk;
 
     if (ClosestChunk->FilledCount == 0) continue;
 
@@ -2570,8 +2504,8 @@ RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, 
         /* v3 MinP =  V3(ClosestChunk->WorldP * World->ChunkDim); */
         /* v3 VoxelP = MinP + Truncate(AtP); */
 
-        Result.tChunk = tChunk;
-        Result.Chunk = ClosestChunk;
+        Result.PickedChunk.tChunk = tChunk;
+        Result.PickedChunk.Chunk = ClosestChunk;
         Result.VoxelRelP = AtP;
 
         break;
@@ -2656,9 +2590,9 @@ SelectVoxel(engine_resources *Resources)
                                                 Camera->CurrentP,
                                                 MaybeRay.Ray.Dir);
 
-    if (Collision.tChunk != f32_MAX)
+    if (Collision.PickedChunk.tChunk != f32_MAX)
     {
-      v3 MinP =  V3(Collision.Chunk->WorldP * World->ChunkDim);
+      v3 MinP =  V3(Collision.PickedChunk.Chunk->WorldP * World->ChunkDim);
       v3 VoxelP = MinP + Truncate(Collision.VoxelRelP);
       untextured_3d_geometry_buffer OutlineAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
       v3 Offset = V3(0.001f);
@@ -2672,13 +2606,13 @@ SelectVoxel(engine_resources *Resources)
     local_persist picked_voxel PickedVoxel;
     if (Hotkeys->Debug_PickChunks_Voxel)
     {
-      Picked = Collision.tChunk != f32_MAX;
+      Picked = Collision.PickedChunk.tChunk != f32_MAX;
       PickedVoxel = Collision;
     }
 
     if (Picked)
     {
-      v3 MinP =  V3(PickedVoxel.Chunk->WorldP * World->ChunkDim);
+      v3 MinP =  V3(PickedVoxel.PickedChunk.Chunk->WorldP * World->ChunkDim);
       v3 VoxelP = MinP + Truncate(PickedVoxel.VoxelRelP);
 
       untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
@@ -2687,6 +2621,11 @@ SelectVoxel(engine_resources *Resources)
       untextured_3d_geometry_buffer ChunkAABBMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
       auto ChunkAABB = AABBMinDim( GetRenderP(World->ChunkDim, MinP, Camera), V3(World->ChunkDim));
       DEBUG_DrawAABB(&ChunkAABBMesh, ChunkAABB, RED);
+
+#if DEBUG_SYSTEM_API
+      GetDebugState()->PickedChunk = &PickedVoxel.PickedChunk;
+#endif
+
     }
 
     if (Hotkeys->Debug_Action_ComputeStandingSpot)
@@ -2695,13 +2634,48 @@ SelectVoxel(engine_resources *Resources)
       v3i TileChunkOffset = Voxel_Position(PickedVoxel.VoxelRelP);
       v3i TileChunkDim = Chunk_Dimension(8, 8, 2);
       boundary_voxels* TempBoundingPoints = AllocateBoundaryVoxels((u32)Volume(TileChunkDim), TranArena);
-      standing_spot Spot = ComputeStandingSpotFor8x8x2_V2(PickedVoxel.Chunk, World->ChunkDim, TileChunkOffset, TileChunkDim, TempBoundingPoints);
+      standing_spot Spot = ComputeStandingSpotFor8x8x2_V2(PickedVoxel.PickedChunk.Chunk, World->ChunkDim, TileChunkOffset, TileChunkDim, TempBoundingPoints);
     }
 
 
 
 #endif
   }
+}
+
+#if DEBUG_SYSTEM_API
+
+link_internal void
+Debug_DoWorldChunkPicking(engine_resources *Resources)
+{
+
+/*   NotImplemented; */
+
+#if 0
+  if (AllChunksBuffer)
+  {
+    for ( u32 ChunkIndex = 0;
+              ChunkIndex < AllChunksBuffer->At;
+            ++ChunkIndex )
+    {
+      world_chunk *Chunk = AllChunksBuffer->E[ChunkIndex];
+      untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
+      u8 Color = LIGHT_GREEN;
+
+      if (Chunk == GetDebugState()->PickedChunk)
+      {
+        Color = PINK;
+      }
+
+      if (Chunk == GetDebugState()->HoverChunk)
+      {
+        Color = YELLOW;
+      }
+
+      DEBUG_DrawChunkAABB(&CopyDest, Graphics, Chunk, World->ChunkDim, Color, 0.35f);
+    }
+  }
+#endif
 }
 
 struct debug_ui_render_group;
@@ -2801,8 +2775,6 @@ DrawPickedChunks(debug_ui_render_group* Group, render_entity_to_texture_group *P
   debug_state* DebugState = GetDebugState();
   DebugState->HoverChunk = 0;
 
-  MapGpuElementBuffer(&PickedChunksRenderGroup->GameGeo);
-
   v2 ListingWindowBasis = V2(20, 350);
   local_persist window_layout ListingWindow = WindowLayout("Picked Chunks", ListingWindowBasis, V2(400, 1600));
 
@@ -2817,9 +2789,9 @@ DrawPickedChunks(debug_ui_render_group* Group, render_entity_to_texture_group *P
 
     interactable_handle PositionButton = PushButtonStart(Group, (umm)"PositionButton"^(umm)PickedChunk);
       ui_style Style = PickedChunk == DebugState->PickedChunk ? DefaultSelectedStyle : DefaultStyle;
-      PushColumn(Group, CS(PickedChunk->E->WorldP.x), &Style);
-      PushColumn(Group, CS(PickedChunk->E->WorldP.y), &Style);
-      PushColumn(Group, CS(PickedChunk->E->WorldP.z), &Style);
+      PushColumn(Group, CS(PickedChunk->Chunk->WorldP.x), &Style);
+      PushColumn(Group, CS(PickedChunk->Chunk->WorldP.y), &Style);
+      PushColumn(Group, CS(PickedChunk->Chunk->WorldP.z), &Style);
     PushButtonEnd(Group);
 
     if (Clicked(Group, &PositionButton)) { HotChunk = PickedChunk; }
@@ -2844,8 +2816,10 @@ DrawPickedChunks(debug_ui_render_group* Group, render_entity_to_texture_group *P
 
   if (HotChunk)
   {
-    v3 Basis = -0.5f*V3(ChunkDimension(HotChunk->E));
-    untextured_3d_geometry_buffer* Src = HotChunk->E->LodMesh;
+    MapGpuElementBuffer(&PickedChunksRenderGroup->GameGeo);
+
+    v3 Basis = -0.5f*V3(ChunkDimension(HotChunk->Chunk));
+    untextured_3d_geometry_buffer* Src = HotChunk->Chunk->LodMesh;
     untextured_3d_geometry_buffer* Dest = &DebugState->PickedChunksRenderGroup.GameGeo.Buffer;
     if (Src && Dest)
     {
@@ -2860,7 +2834,7 @@ DrawPickedChunks(debug_ui_render_group* Group, render_entity_to_texture_group *P
 
       PickedChunksRenderGroup->ViewProjection =
         ProjectionMatrix(PickedChunksRenderGroup->Camera, DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM) *
-        ViewMatrix(ChunkDimension(HotChunk->E), PickedChunksRenderGroup->Camera);
+        ViewMatrix(ChunkDimension(HotChunk->Chunk), PickedChunksRenderGroup->Camera);
 
       GL.UseProgram(PickedChunksRenderGroup->GameGeoShader.ID);
 
@@ -2875,8 +2849,8 @@ DrawPickedChunks(debug_ui_render_group* Group, render_entity_to_texture_group *P
     local_persist window_layout ChunkDetailWindow = WindowLayout("Chunk Details", BasisRightOf(&ListingWindow),     V2(1100.0f, 400.0f));
     local_persist window_layout ChunkViewWindow   = WindowLayout("Chunk View",    BasisRightOf(&ChunkDetailWindow), V2(800.0f));
 
-    PushChunkDetails(Group, HotChunk->E, &ChunkDetailWindow);
-    PushChunkView(Group, HotChunk->E, &ChunkViewWindow);
+    PushChunkDetails(Group, HotChunk->Chunk, &ChunkDetailWindow);
+    PushChunkView(Group, HotChunk->Chunk, &ChunkViewWindow);
   }
 
   return HotChunk;

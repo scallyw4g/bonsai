@@ -26,8 +26,8 @@ Push(picked_world_chunk_static_buffer *Buf, world_chunk *Chunk, r32 t)
 {
   if (Buf->At < MAX_PICKED_WORLD_CHUNKS)
   {
-    Buf->E[Buf->At].E = Chunk;
-    Buf->E[Buf->At].tValue = t;
+    Buf->E[Buf->At].Chunk = Chunk;
+    Buf->E[Buf->At].tChunk = t;
 
     ++Buf->At;
   }
@@ -43,6 +43,7 @@ struct engine_resources
   world      *World;
   game_state *GameState;
 
+  thread_local_state *ThreadStates;
 
   heap_allocator Heap;
   memory_arena *Memory;

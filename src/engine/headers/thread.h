@@ -17,17 +17,8 @@ struct thread_startup_params
   work_queue *LowPriority;
   work_queue *HighPriority;
 
-  volatile u32 ThreadIndex;
+  volatile s32 ThreadIndex;
   /* volatile u32 ThreadId; */
   /* volatile thread_handle ThreadHandle; */
-};
-
-struct mesh_freelist;
-struct thread_local_state
-{
-  memory_arena  *PermMemory;
-  memory_arena  *TempMemory;
-  mesh_freelist *MeshFreelist;
-  perlin_noise  Noise;
 };
 

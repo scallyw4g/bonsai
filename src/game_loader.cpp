@@ -37,42 +37,22 @@ LibIsNew(const char *LibPath, s64 *LastLibTime)
   return Result;
 }
 
-link_internal thread_local_state
-DefaultThreadLocalState(mesh_freelist *MeshFreelist, u32 ThreadId)
-{
-  thread_local_state Thread = {};
-
-  Thread.MeshFreelist = MeshFreelist;
-
-  Thread.TempMemory = AllocateArena();
-  Thread.PermMemory = AllocateArena(Megabytes(256));
-
-  // TODO(Jesse)(safety): Given the below, how exactly is it safe to register
-  // the PermMemory?  Seems to me like that's still just as liable to cause bad
-  // behavior, but less likely.
-  //
-  // NOTE(Jesse): As it stands the debug system doesn't do any locking when
-  // constructing the debug arena stats, so we can't ever free memory allocated
-  // on debug registered arenas on threads outside the main one.
-  //
-  DEBUG_REGISTER_ARENA(Thread.TempMemory, ThreadId);
-  DEBUG_REGISTER_ARENA(Thread.PermMemory, ThreadId);
-
-  return Thread;
-}
-
 link_internal THREAD_MAIN_RETURN
 ThreadMain(void *Input)
 {
   thread_startup_params *ThreadParams = (thread_startup_params *)Input;
+  /* thread_local_state *Thread = ThreadParams->ThreadLocalState; */
 
   bonsai_worker_thread_callback GameWorkerThreadCallback = ThreadParams->GameWorkerThreadCallback;
 
+  SetThreadLocal_ThreadIndex(ThreadParams->ThreadIndex);
+  thread_local_state *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
+  /* Assert(Thread == ThreadParams->ThreadLocalState); */
+
   DEBUG_REGISTER_THREAD(ThreadParams);
 
-  thread_local_state Thread = DefaultThreadLocalState(&ThreadParams->EngineResources->MeshFreelist, ThreadParams->ThreadIndex);
 
-  if (ThreadParams->InitProc) { ThreadParams->InitProc(&Thread); }
+  if (ThreadParams->InitProc) { ThreadParams->InitProc(Global_ThreadStates, ThreadParams->ThreadIndex); }
 
   while (FutexNotSignaled(ThreadParams->WorkerThreadsExitFutex))
   {
@@ -104,13 +84,13 @@ ThreadMain(void *Input)
     WaitOnFutex(ThreadParams->WorkerThreadsSuspendFutex);
 
     AtomicIncrement(ThreadParams->HighPriorityWorkerCount);
-    DrainQueue( ThreadParams->HighPriority, &Thread, GameWorkerThreadCallback );
+    DrainQueue( ThreadParams->HighPriority, Thread, GameWorkerThreadCallback );
     AtomicDecrement(ThreadParams->HighPriorityWorkerCount);
 
 #if 1
     if ( ! FutexIsSignaled(ThreadParams->HighPriorityModeFutex) )
     {
-      Ensure( RewindArena(Thread.TempMemory) );
+      Ensure( RewindArena(Thread->TempMemory) );
     }
 #else
     // Can't do this because the debug system needs a static handle to the base
@@ -146,7 +126,7 @@ ThreadMain(void *Input)
       if ( Exchanged )
       {
         volatile work_queue_entry *Entry = LowPriority->Entries+DequeueIndex;
-        GameWorkerThreadCallback(Entry, &Thread);
+        GameWorkerThreadCallback(Entry, Thread);
       }
     }
   }
@@ -159,14 +139,26 @@ ThreadMain(void *Input)
 link_internal void
 LaunchWorkerThreads(platform *Plat, engine_resources *EngineResources, bonsai_worker_thread_init_callback WorkerThreadInit, bonsai_worker_thread_callback WorkerThreadCallback)
 {
-  u32 WorkerThreadCount = GetWorkerThreadCount();
+  s32 TotalThreadCount  = (s32)GetTotalThreadCount();
 
-  for ( u32 ThreadIndex = 0;
-        ThreadIndex < WorkerThreadCount;
-        ++ThreadIndex )
+#if 0
+  Global_ThreadStates = AllocateAligned(thread_local_state, EngineResources->Plat->Memory, TotalThreadCount, CACHE_LINE_SIZE);
+
+  for ( s32 ThreadIndex = 0;
+            ThreadIndex < TotalThreadCount;
+          ++ThreadIndex )
+  {
+    Global_ThreadStates[ThreadIndex] = DefaultThreadLocalState(EngineResources, ThreadIndex);
+  }
+#endif
+
+  // This loop is for worker threads; it's skipping thread index 0, the main thread
+  for ( s32 ThreadIndex = 1;
+            ThreadIndex < TotalThreadCount;
+          ++ThreadIndex )
   {
     thread_startup_params *Params = &Plat->Threads[ThreadIndex];
-    Params->ThreadIndex = ThreadIndex + 1;
+    Params->ThreadIndex = ThreadIndex;
     Params->HighPriority = &Plat->HighPriority;
     Params->LowPriority = &Plat->LowPriority;
     Params->InitProc = WorkerThreadInit;
@@ -312,17 +304,21 @@ main( s32 ArgCount, const char ** Args )
   engine_resources EngineResources = {};
   hotkeys Hotkeys = {};
 
+  memory_arena BootstrapArena = {};
+
   EngineResources.Plat = &Plat;
   EngineResources.Os = &Os;
   EngineResources.Hotkeys = &Hotkeys;
+  EngineResources.ThreadStates = Initialize_ThreadLocal_ThreadStates((s32)GetTotalThreadCount(), &EngineResources, &BootstrapArena);
+
+  Global_ThreadStates = EngineResources.ThreadStates;
 
   s32 VSyncFrames = 0;
   if (!OpenAndInitializeWindow(&Os, &Plat, VSyncFrames)) { Error("Initializing Window :( "); return 1; }
   Assert(Os.GlContext);
 
-
 #if DEBUG_SYSTEM_API
-  shared_lib DebugLib = InitializeBonsaiDebug("./bin/lib_debug_system_loadable" PLATFORM_RUNTIME_LIB_EXTENSION);
+  shared_lib DebugLib = InitializeBonsaiDebug("./bin/lib_debug_system_loadable" PLATFORM_RUNTIME_LIB_EXTENSION, Global_ThreadStates);
   Assert(DebugLib);
   Assert(Global_DebugStatePointer);
   EngineResources.DebugState = Global_DebugStatePointer;
@@ -337,6 +333,7 @@ main( s32 ArgCount, const char ** Args )
 
   DEBUG_REGISTER_ARENA(GameMemory, 0);
   DEBUG_REGISTER_ARENA(PlatMemory, 0);
+  DEBUG_REGISTER_ARENA(&BootstrapArena, 0);
 
   DEBUG_REGISTER_NAMED_ARENA(TranArena, 0, "game_loader TranArena");
 
@@ -384,7 +381,7 @@ main( s32 ArgCount, const char ** Args )
     LaunchWorkerThreads(&Plat, &EngineResources, GameApi.WorkerInit, GameApi.WorkerMain);
   }
 
-  thread_local_state MainThread = DefaultThreadLocalState(&EngineResources.MeshFreelist, 0);
+  thread_local_state MainThread = DefaultThreadLocalState(&EngineResources, 0);
 
   if (GameApi.GameInit)
   {
@@ -463,7 +460,7 @@ main( s32 ArgCount, const char ** Args )
       {
         if (InitializeBootstrapDebugApi(DebugLib, &DebugApi))
         {
-          DebugApi.BonsaiDebug_OnLoad(Cached);
+          DebugApi.BonsaiDebug_OnLoad(Cached, Global_ThreadStates);
           Ensure( EngineApi.OnLibraryLoad(&EngineResources) );
         }
         else { Error("Initializing DebugLib API"); }

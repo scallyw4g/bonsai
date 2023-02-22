@@ -4,11 +4,19 @@
 #include <engine/headers/colors.h>
 #include <engine/headers/canonical_position.h>
 #include <engine/headers/camera.h>
+
+#if PLATFORM_GL_IMPLEMENTATIONS
 #include <engine/headers/render.h>
+#endif
+
 #include <engine/headers/world_chunk.h>
 #include <engine/headers/asset.h>
 #include <engine/headers/work_queue.h>
+
+#if PLATFORM_GL_IMPLEMENTATIONS
 #include <engine/headers/graphics.h>
+#endif
+
 #include <engine/headers/triangle.h>
 #include <engine/headers/mesh.h>
 #include <engine/headers/animation.h>

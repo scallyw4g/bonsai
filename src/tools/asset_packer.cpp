@@ -1,3 +1,4 @@
+#define PLATFORM_GL_IMPLEMENTATIONS 1
 #include <bonsai_types.h>
 
 
@@ -12,7 +13,10 @@ s32 main(s32 ArgCount, const char **Args)
   memory_arena *Memory = AllocateArena(Gigabytes(2));
   heap_allocator Heap = InitHeap(Gigabytes(2));
 
-  vox_data Vox = LoadVoxData(Memory, &Heap, "../voxel-model/vox/monument/monu2.vox");
+  Global_ThreadStates = Initialize_ThreadLocal_ThreadStates((s32)GetTotalThreadCount(), 0, Memory);
+  SetThreadLocal_ThreadIndex(0);
+
+  vox_data Vox = LoadVoxData(Memory, &Heap, "../voxel-model/vox/monument/monu3.vox");
 
   chunk_dimension ModelDim = Vox.ChunkData->Dim;
   s32 xChunkCount = 1 + (ModelDim.x / WorldChunkDim.x);

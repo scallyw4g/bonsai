@@ -2,6 +2,28 @@
 #include <engine/render/render_utils.cpp>
 
 
+
+link_internal void
+DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, v3i Spot, v3 TileDim)
+{
+  /* v3i TileDim = V3i(8, 8, 3); */
+  v3 TileDrawDim = TileDim/2.f;
+  v3 MinP = V3(Spot); //GetRenderP(World->ChunkDim, V3(*Spot), Graphics->Camera) + (World->ChunkDim*Chunk->WorldP);
+
+  /* DrawVoxel(Mesh, MinP+0.5f-0.05f, WHITE, V3(1.10f) ); */
+
+  /* DebugLine("compute (%d, %d, %d)", Spot->x, Spot->y, Spot->z); */
+  /* DebugLine("(%f, %f, %f)", MinP.x, MinP.y, MinP.z); */
+
+  untextured_3d_geometry_buffer AABBDest = ReserveBufferSpace(Mesh, VERTS_PER_AABB);
+  DEBUG_DrawAABB( &AABBDest,
+                  AABBMinDim(
+                    MinP + (TileDrawDim/2) + V3(0,0,1),// + V3(0, 0, Spot.BoundingVoxelMidpoint.z),
+                    TileDrawDim),
+                    /* V3(TileDim.x*.8f, TileDim.y*.8f, 1.f)), */
+                  BLUE);
+}
+
 link_internal maybe_ray
 ComputeRayFromCursor(platform *Plat, m4* ViewProjection, camera *Camera, v3i WorldChunkDim)
 {
