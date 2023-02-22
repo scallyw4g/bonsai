@@ -132,12 +132,50 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
 BONSAI_API_MAIN_THREAD_CALLBACK()
 {
+  Assert(ThreadLocal_ThreadIndex == 0);
+
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES();
 
   entity *Player = GameState->Player;
   Player->Physics.Speed = 60.f;
   Player->Physics.Mass = 35.f;
+
+  picked_voxel Pick = PickVoxel(Resources);
+
+  if (Pick.PickedChunk.tChunk != f32_MAX)
+  {
+    world_chunk *ClosestChunk = Pick.PickedChunk.Chunk;
+    v3 MinP =  V3(ClosestChunk->WorldP * World->ChunkDim);
+    v3 VoxelP = MinP + Truncate(Pick.VoxelRelP);
+
+    untextured_3d_geometry_buffer OutlineAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
+    v3 Offset = V3(0.001f);
+    DEBUG_DrawAABB( &OutlineAABB,
+                    GetRenderP(World->ChunkDim, VoxelP-Offset, Camera),
+                    GetRenderP(World->ChunkDim, VoxelP+V3(1.f)+Offset, Camera),
+                    WHITE, 0.05f);
+
+    for (u32 StandingSpotIndex = 0;
+             StandingSpotIndex < ClosestChunk->StandingSpots.Count;
+           ++StandingSpotIndex)
+    {
+      v3i *Spot = ClosestChunk->StandingSpots.Start + StandingSpotIndex;
+
+      aabb SpotRect = AABBMinMax(V3(*Spot), V3(*Spot+Global_StandingSpotDim));
+      if (IsInside(SpotRect, Truncate(Pick.VoxelRelP)))
+      {
+        /* untextured_3d_geometry_buffer SpotAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB); */
+        v3 RenderP = GetRenderP(World->ChunkDim, MinP+V3(*Spot), Camera);
+        DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_LINE_THICKNESS+0.05f);
+        if (Input->LMB.Clicked)
+        {
+          Player->P = Canonical_Position(*Spot + V3(0,0,5), ClosestChunk->WorldP);
+        }
+      }
+    }
+
+  }
 
   if ( IsGrounded(World, Player, World->VisibleRegion) && Hotkeys->Player_Jump )
   {
@@ -162,13 +200,15 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 {
+  SetThreadLocal_ThreadIndex(0);
+
   Resources->GameState = Allocate(game_state, Resources->Memory, 1);
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
   Global_AssetPrefixPath = CSz("examples/asset_picker/assets");
 
-  world_position WorldCenter = World_Position(1, 1, 3);
+  world_position WorldCenter = World_Position(2, 2, 3);
   canonical_position PlayerSpawnP = Canonical_Position(Voxel_Position(0), WorldCenter);
 
   StandardCamera(Graphics->Camera, 10000.0f, 300.0f, PlayerSpawnP);
@@ -182,7 +222,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->Player = GetFreeEntity(EntityTable);
   SpawnPlayer(Plat, World, GameState->Models, GameState->Player, PlayerSpawnP, &GameState->Entropy);
 
-  Resources->CameraTargetP = &GameState->Player->P;
+  entity *CameraTarget = GetFreeEntity(EntityTable);
+  CameraTarget->P = Canonical_Position(Voxel_Position(0), {{2,2,2}});
+  Resources->CameraTargetP = &CameraTarget->P;
 
   return GameState;
 }
@@ -190,5 +232,5 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
 {
   Global_ThreadStates = AllThreads;
-  ThreadLocal_ThreadIndex = ThreadIndex;
+  SetThreadLocal_ThreadIndex(ThreadIndex);
 }

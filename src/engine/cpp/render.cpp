@@ -4,24 +4,19 @@
 
 
 link_internal void
-DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, v3i Spot, v3 TileDim)
+DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, v3 SpotRenderP, v3 TileDim, u32 ColorIndex = BLUE, r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
-  /* v3i TileDim = V3i(8, 8, 3); */
-  v3 TileDrawDim = TileDim/2.f;
-  v3 MinP = V3(Spot); //GetRenderP(World->ChunkDim, V3(*Spot), Graphics->Camera) + (World->ChunkDim*Chunk->WorldP);
+  v3 HalfTileDim = TileDim/2.f;
+  v3 QuarterTileDim = HalfTileDim/2.f;
 
-  /* DrawVoxel(Mesh, MinP+0.5f-0.05f, WHITE, V3(1.10f) ); */
+  untextured_3d_geometry_buffer AABBDest = ReserveBufferSpace(Mesh, VERTS_PER_VOXEL);
 
-  /* DebugLine("compute (%d, %d, %d)", Spot->x, Spot->y, Spot->z); */
-  /* DebugLine("(%f, %f, %f)", MinP.x, MinP.y, MinP.z); */
+  auto RenderP = SpotRenderP+QuarterTileDim+V3(QuarterTileDim.xy,0.f)+V3(0,0,2);
+  DrawVoxel(&AABBDest, RenderP, ColorIndex, HalfTileDim + Thickness);
 
-  untextured_3d_geometry_buffer AABBDest = ReserveBufferSpace(Mesh, VERTS_PER_AABB);
-  DEBUG_DrawAABB( &AABBDest,
-                  AABBMinDim(
-                    MinP + (TileDrawDim/2) + V3(0,0,1),// + V3(0, 0, Spot.BoundingVoxelMidpoint.z),
-                    TileDrawDim),
-                    /* V3(TileDim.x*.8f, TileDim.y*.8f, 1.f)), */
-                  BLUE);
+  /* DEBUG_DrawAABB( &AABBDest, */
+  /*                 AABBMinDim( , TileDrawDim), */
+  /*                 ColorIndex, Thickness); */
 }
 
 link_internal maybe_ray

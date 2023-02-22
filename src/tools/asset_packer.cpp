@@ -108,13 +108,22 @@ s32 main(s32 ArgCount, const char **Args)
     BuildEntityMesh(&Data, Chunk->Mesh, Palette, WorldChunkDim);
 #endif
 
-    v3i TileDim = V3i(8, 8, 3);
-    auto ActualSrcChunkOffset = Max(V3i(0), SrcChunkOffset - V3i(0,0,TileDim.z));
+    auto ActualSrcChunkOffset = Max(V3i(0), SrcChunkOffset - V3i(0,0,Global_StandingSpotDim.z));
     v3i  SrcChunkToDestChunk = {}; //SrcChunkOffset - ActualSrcChunkOffset;
     Assert(LengthSq(SrcChunkToDestChunk) >= 0);
     /* v3i_buffer AllStandingSpots = {}; */
-    ComputeStandingSpots( SrcChunk.Dim, &SrcChunk, SrcChunkOffset, SrcChunkToDestChunk, TileDim,
+
+    ComputeStandingSpots( SrcChunk.Dim, &SrcChunk, SrcChunkOffset, SrcChunkToDestChunk, Global_StandingSpotDim,
                           WorldChunkDim, Chunk->Mesh, &Chunk->StandingSpots, Memory, TranArena);
+
+
+    u32 StandingSpotCount = (u32)Chunk->StandingSpots.Count;
+    for (u32 SpotIndex = 0; SpotIndex < StandingSpotCount; ++SpotIndex)
+    {
+      v3i *Spot = Chunk->StandingSpots.Start + SpotIndex;
+      DrawStandingSpot(Chunk->Mesh, V3(*Spot), V3(Global_StandingSpotDim));
+    }
+
 
     SerializeChunk(Chunk, CSz("examples/asset_picker/assets"));
   }

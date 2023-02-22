@@ -87,10 +87,6 @@ GetCollision( world *World, canonical_position TestP, v3 CollisionDim, chunk_dim
           goto end;
         }
 
-        if (IsSet(Chunk, Chunk_MeshComplete))
-        {
-        }
-
         if ( IsFilledInChunk(Chunk, Voxel_Position(LoopTestP.Offset), World->ChunkDim) )
         {
           Collision.CP = LoopTestP;
@@ -1123,8 +1119,8 @@ SimulatePlayer(world* World, entity *Player, camera* Camera, hotkeys *Hotkeys, r
     world_position OriginalPlayerP = Player->P.WorldP;
     UpdateEntityP( World, Player, Player->Physics.Delta, VisibleRegion);
 
-    world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP );
-    UpdateVisibleRegion(World, WorldDisp);
+    /* world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP ); */
+    /* UpdateVisibleRegion(World, WorldDisp); */
 
 #if 0
     Player->FireCooldown -= dt;

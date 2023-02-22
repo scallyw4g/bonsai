@@ -162,7 +162,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->Player = GetFreeEntity(EntityTable);
   SpawnPlayer(Plat, World, GameState->Models, GameState->Player, PlayerSpawnP, &GameState->Entropy);
 
-  Resources->CameraTargetP = &GameState->Player->P;
+  /* Resources->CameraTargetP = &GameState->Player->P; */
 
   return GameState;
 }

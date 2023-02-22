@@ -20,6 +20,8 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *
 
 BONSAI_API_WORKER_THREAD_CALLBACK()
 {
+  Assert(ThreadLocal_ThreadIndex);
+
   switch (Entry->Type)
   {
     case type_work_queue_entry_noop: { InvalidCodePath(); } break;
@@ -44,8 +46,6 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                                        StartingZDepth );
 
       FullBarrier;
-
-      Chunk->LodMesh_Complete = True;
 
       Assert( NotSet(Chunk, Chunk_Queued ));
     } break;
@@ -77,6 +77,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 {
   TIMED_FUNCTION();
 
+  Assert(ThreadLocal_ThreadIndex);
+
   UNPACK_ENGINE_RESOURCES(Resources);
 
   /* GL.Disable(GL_CULL_FACE); */
@@ -99,6 +101,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 {
+  SetThreadLocal_ThreadIndex(0);
+
   UNPACK_ENGINE_RESOURCES(Resources);
 
   GameState = Allocate(game_state, Resources->Memory, 1);
@@ -128,5 +132,5 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
 {
   Global_ThreadStates = AllThreads;
-  ThreadLocal_ThreadIndex = ThreadIndex;
+  SetThreadLocal_ThreadIndex(ThreadIndex);
 }

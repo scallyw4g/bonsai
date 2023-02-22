@@ -74,9 +74,10 @@ struct engine_resources
   hotkeys                   *Hotkeys       =  Resources->Hotkeys;         \
   engine_debug              *EngineDebug   = &Resources->EngineDebug;     \
   mesh_freelist             *MeshFreelist  = &Resources->MeshFreelist;    \
+  input                     *Input         = &Resources->Plat->Input;     \
   graphics                  *Graphics      =  Resources->Graphics;        \
   gpu_mapped_element_buffer *GpuMap        =  GetCurrentGpuMap(Graphics); \
-  g_buffer_render_group     *gBuffer       =  Graphics->gBuffer;;         \
+  g_buffer_render_group     *gBuffer       =  Graphics->gBuffer;          \
   camera                    *Camera        =  Graphics->Camera;
 
 
@@ -685,7 +686,6 @@ ClearWorldChunk( world_chunk *Chunk )
   Chunk->WorldP = {};
   Chunk->FilledCount = {};
   Chunk->Picked = {};
-  Chunk->LodMesh_Complete = {};
   Chunk->DrawBoundingVoxels = {};
   Chunk->PointsToLeaveRemaining = {};
   Chunk->TriCount = {};

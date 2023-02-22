@@ -314,40 +314,41 @@ AllocateMesh(memory_arena* Arena, u32 NumVerts)
 }
 
 inline void
-DrawVoxel( untextured_3d_geometry_buffer *Mesh, v3 RenderP, v4 Color, v3 Diameter)
+DrawVoxel( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelCenter, v4 Color, v3 Diameter)
 {
   v3 VertexData[6];
 
   v4 FaceColors[VERTS_PER_FACE];
   FillColorArray(Color, FaceColors, VERTS_PER_FACE);
 
-  v3 Center = RenderP - (Diameter*0.5);
-  RightFaceVertexData( Center, Diameter, VertexData);
+  v3 MinP = RenderP_VoxelCenter - (Diameter*0.5);
+
+  RightFaceVertexData( MinP, Diameter, VertexData);
   BufferVertsChecked(Mesh, 6, VertexData, RightFaceNormalData, FaceColors);
 
-  LeftFaceVertexData( Center, Diameter, VertexData);
+  LeftFaceVertexData( MinP, Diameter, VertexData);
   BufferVertsChecked(Mesh, 6, VertexData, LeftFaceNormalData, FaceColors);
 
-  BottomFaceVertexData( Center, Diameter, VertexData);
+  BottomFaceVertexData( MinP, Diameter, VertexData);
   BufferVertsChecked(Mesh, 6, VertexData, BottomFaceNormalData, FaceColors);
 
-  TopFaceVertexData( Center, Diameter, VertexData);
+  TopFaceVertexData( MinP, Diameter, VertexData);
   BufferVertsChecked(Mesh, 6, VertexData, TopFaceNormalData, FaceColors);
 
-  FrontFaceVertexData( Center, Diameter, VertexData);
+  FrontFaceVertexData( MinP, Diameter, VertexData);
   BufferVertsChecked(Mesh, 6, VertexData, FrontFaceNormalData, FaceColors);
 
-  BackFaceVertexData( Center, Diameter, VertexData);
+  BackFaceVertexData( MinP, Diameter, VertexData);
   BufferVertsChecked(Mesh, 6, VertexData, BackFaceNormalData, FaceColors);
 }
 
 
 inline void
 DrawVoxel( untextured_3d_geometry_buffer *Mesh,
-           v3 RenderP, u32 ColorIndex, v3 Diameter, r32 Emission = 1.0f)
+           v3 RenderP_VoxelCenter, u32 ColorIndex, v3 Diameter, r32 Emission = 1.0f)
 {
   v4 Color = GetColorData(DefaultPalette, ColorIndex, Emission);
-  DrawVoxel(Mesh, RenderP, Color, Diameter);
+  DrawVoxel(Mesh, RenderP_VoxelCenter, Color, Diameter);
 }
 
 

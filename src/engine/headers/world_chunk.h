@@ -4,7 +4,6 @@ enum chunk_flag
 
   Chunk_Queued            = 1 << 1,
   Chunk_VoxelsInitialized = 1 << 2,
-  Chunk_MeshComplete      = 1 << 3,
   /* Chunk_GpuMeshComplete   = 1 << 4, */
 
   Chunk_Garbage           = 1 << 5,
@@ -69,13 +68,13 @@ struct world_chunk
 
   untextured_3d_geometry_buffer* Mesh;
   untextured_3d_geometry_buffer* LodMesh;
+  untextured_3d_geometry_buffer* DebugMesh;
 
   voxel_position_buffer StandingSpots;
 
   world_position WorldP;
   u32 FilledCount;
   b32 Picked;
-  b32 LodMesh_Complete;
   b32 DrawBoundingVoxels;
 
   s32 PointsToLeaveRemaining;
@@ -103,7 +102,6 @@ struct picked_voxel
   picked_world_chunk PickedChunk;
   v3 VoxelRelP; // Relative to origin of chunk
 };
-
 
 link_internal u32
 Volume(world_chunk* Chunk)
@@ -135,6 +133,8 @@ struct standing_spot
   b32 CanStand;
   voxel_position P;
 };
+
+global_variable v3i Global_StandingSpotDim = V3i(8,8,3);
 
 struct mesh_freelist;
 

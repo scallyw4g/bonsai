@@ -201,6 +201,3 @@ ProjectionMatrix(camera *Camera, r32 WindowWidth, r32 WindowHeight)
 
 untextured_3d_geometry_buffer
 ReserveBufferSpace(untextured_3d_geometry_buffer* Reservation, u32 ElementsToReserve);
-
-link_internal void
-DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, v3i Spot, v3 TileDim);

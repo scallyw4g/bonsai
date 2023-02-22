@@ -127,6 +127,7 @@ ThreadMain(void *Input)
       {
         volatile work_queue_entry *Entry = LowPriority->Entries+DequeueIndex;
         GameWorkerThreadCallback(Entry, Thread);
+        Ensure( RewindArena(Thread->TempMemory) );
       }
     }
   }
@@ -261,6 +262,8 @@ void Debug_EndAndReportPMCMonitoring(pmc_kernel_session *Session)
 s32
 main( s32 ArgCount, const char ** Args )
 {
+  SetThreadLocal_ThreadIndex(0);
+
   Info("Initializing Bonsai");
 
 #if 0
