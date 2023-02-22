@@ -259,6 +259,10 @@ SpawnEntity( model *GameModels, entity *Entity, entity_type Type)
       Entity->Model = GameModels[EntityType_None];
     } break;
 
+    case EntityType_Default:
+    {
+    } break;
+
     InvalidDefaultCase;
   }
 
@@ -1108,12 +1112,6 @@ SimulatePlayer(world* World, entity *Player, camera* Camera, hotkeys *Hotkeys, r
 
   if (Spawned(Player))
   {
-    if (Hotkeys)
-    {
-      Player->Physics.Force += (dt * Player->Physics.Speed * GetCameraRelativeInput(Hotkeys, Camera));
-      /* Player->Physics.Force += GetOrthographicInputs(Hotkeys)*dt; */
-    }
-
     PhysicsUpdate(&Player->Physics, dt);
 
     world_position OriginalPlayerP = Player->P.WorldP;
@@ -1164,6 +1162,10 @@ SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension Vis
 
     switch (Entity->Type)
     {
+      case EntityType_None: { InvalidCodePath(); } break;
+
+      case EntityType_PlayerProton:
+      case EntityType_Loot:
       case EntityType_Static:
       {
       } break;
@@ -1194,7 +1196,13 @@ SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension Vis
         SimulatePlayer(World, Entity, Camera, Hotkeys, dt, VisibleRegion);
       } break;
 
-      InvalidDefaultCase;
+      case EntityType_Default:
+      {
+        /* PhysicsUpdate(&Entity->Physics, dt); */
+        /* UpdateEntityP(World, Entity, Entity->Physics.Delta, VisibleRegion); */
+      } break;
+
+      /* default: { InvalidCodePath(); } break; */
     }
   }
 

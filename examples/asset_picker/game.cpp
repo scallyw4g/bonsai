@@ -119,6 +119,12 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   Player->Physics.Speed = 60.f;
   Player->Physics.Mass = 35.f;
 
+  if (Hotkeys)
+  {
+    Player->Physics.Force += (Plat->dt * Player->Physics.Speed * GetCameraRelativeInput(Hotkeys, Camera));
+    /* Player->Physics.Force += GetOrthographicInputs(Hotkeys)*dt; */
+  }
+
   if ( IsGrounded(World, Player, World->VisibleRegion) && Hotkeys->Player_Jump )
   {
     Player->Physics.Force += V3(0.f, 0.f, 0.5f) * Player->Physics.Speed;

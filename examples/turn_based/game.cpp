@@ -177,6 +177,19 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   }
 
+  if (Hotkeys)
+  {
+    r32 CameraSpeed = 100.f;
+    v3 CameraDelta = (GetCameraRelativeInput(Hotkeys, Camera));
+    CameraDelta.z = 0.f;
+    CameraDelta = Normalize(CameraDelta) * CameraSpeed * Plat->dt;
+
+    GameState->CameraTarget->P.Offset += CameraDelta;
+    Canonicalize(World->ChunkDim, GameState->CameraTarget->P);
+
+    /* Player->Physics.Force += GetOrthographicInputs(Hotkeys)*dt; */
+  }
+
   if ( IsGrounded(World, Player, World->VisibleRegion) && Hotkeys->Player_Jump )
   {
     Player->Physics.Force += V3(0.f, 0.f, 0.5f) * Player->Physics.Speed;
@@ -222,9 +235,12 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->Player = GetFreeEntity(EntityTable);
   SpawnPlayer(Plat, World, GameState->Models, GameState->Player, PlayerSpawnP, &GameState->Entropy);
 
-  entity *CameraTarget = GetFreeEntity(EntityTable);
-  CameraTarget->P = Canonical_Position(Voxel_Position(0), {{2,2,2}});
-  Resources->CameraTargetP = &CameraTarget->P;
+  GameState->CameraTarget = GetFreeEntity(EntityTable);
+  SpawnEntity( 0, GameState->CameraTarget, EntityType_Default);
+
+  GameState->CameraTarget->P = Canonical_Position(Voxel_Position(0), {{2,2,2}});
+
+  Resources->CameraTargetP = &GameState->CameraTarget->P;
 
   return GameState;
 }

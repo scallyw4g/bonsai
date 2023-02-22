@@ -131,7 +131,10 @@ enum entity_type
   EntityType_Loot             = 1 << 4,
   EntityType_PlayerProton     = 1 << 5,
   EntityType_ParticleSystem   = 1 << 6,
+
   EntityType_Static           = 1 << 7,
+
+  EntityType_Default           = 1 << 8, // Nothing special about it, just needed an entity
 };
 
 global_variable const entity_type ENTITY_TYPES = (entity_type)

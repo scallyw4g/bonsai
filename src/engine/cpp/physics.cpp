@@ -10,7 +10,7 @@ PhysicsUpdate(physics *Physics, r32 dt, b32 ApplyGravity = True)
 {
   v3 Gravity = ApplyGravity ? Global_WorldGravity : V3(0);
 
-  v3 Acceleration = SafeDivide(1.f*Physics->Force*Physics->Speed, Physics->Mass);
+  v3 Acceleration = SafeDivide0(1.f*Physics->Force*Physics->Speed, Physics->Mass);
 
   Physics->Velocity += (Acceleration) + (Gravity * dt);
 
