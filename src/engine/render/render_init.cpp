@@ -311,6 +311,7 @@ StandardCamera(camera* Camera, float FarClip, float DistanceFromTarget, canonica
   Camera->Frust.nearClip = 1.0f;
   Camera->Frust.width = 30.0f;
   Camera->Frust.FOV = 45.0f;
+
   Camera->Up = WORLD_Z;
   Camera->Right = WORLD_X;
 

@@ -745,7 +745,6 @@ inline b32
 IsFilled( voxel *Voxels, voxel_position VoxelP, chunk_dimension Dim)
 {
   s32 VoxelIndex = GetIndex(VoxelP, Dim);
-
   b32 isFilled = IsSet(Voxels + VoxelIndex, Voxel_Filled);
   return isFilled;
 }
@@ -754,6 +753,14 @@ inline b32
 NotFilled(voxel *Voxels, voxel_position VoxelP, chunk_dimension Dim)
 {
   b32 Result = !IsFilled(Voxels, VoxelP, Dim);
+  return Result;
+}
+
+inline voxel*
+GetVoxel( world_chunk* Chunk, voxel_position VoxelP)
+{
+  s32 VoxelIndex = GetIndex(VoxelP, Chunk->Dim);
+  voxel *Result = Chunk->Voxels + VoxelIndex;
   return Result;
 }
 

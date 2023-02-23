@@ -313,6 +313,22 @@ AllocateMesh(memory_arena* Arena, u32 NumVerts)
   return Result;
 }
 
+link_internal void
+DeallocateMesh(untextured_3d_geometry_buffer** Mesh, mesh_freelist* MeshFreelist, memory_arena* Memory)
+{
+  Assert(Mesh && *Mesh);
+
+  free_mesh* Container = Unlink_TS(&MeshFreelist->Containers);
+  if (!Container) { Container = Allocate(free_mesh, Memory, 1); }
+
+  Container->Mesh = *Mesh;
+
+  (*Mesh)->At = 0;
+  *Mesh = 0;
+
+  Link_TS(&MeshFreelist->FirstFree, Container);
+}
+
 inline void
 DrawVoxel( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelCenter, v4 Color, v3 Diameter)
 {

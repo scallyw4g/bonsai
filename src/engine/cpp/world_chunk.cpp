@@ -8,6 +8,7 @@ FinalizeChunkInitialization(world_chunk *Chunk)
   UnSetFlag(&Chunk->Flags, Chunk_Queued);
 
   SetFlag(&Chunk->Flags, Chunk_VoxelsInitialized);
+  SetFlag(&Chunk->Flags, Chunk_MeshesInitialized);
 }
 
 inline b32
@@ -31,6 +32,7 @@ AllocateWorldChunk(world_chunk *Result, memory_arena *Storage, world_position Wo
   Result->Voxels      = AllocateVoxels(Storage, Dim);
   Result->WorldP      = WorldP;
 
+  Result->Dim  = Dim;
   Result->DimX = SafeTruncateU8(Dim.x);
   Result->DimY = SafeTruncateU8(Dim.y);
   Result->DimZ = SafeTruncateU8(Dim.z);
@@ -171,24 +173,6 @@ GetWorldChunkFor(memory_arena *Storage, world *World, world_position P, chunk_di
 /* } */
 
 link_internal void
-DeallocateMesh(untextured_3d_geometry_buffer** Mesh, mesh_freelist* MeshFreelist, memory_arena* Memory)
-{
-  Assert(Mesh && *Mesh);
-
-  free_mesh* Container = Unlink_TS(&MeshFreelist->Containers);
-  if (!Container) { Container = Allocate(free_mesh, Memory, 1); }
-
-  Container->Mesh = *Mesh;
-
-  (*Mesh)->At = 0;
-  *Mesh = 0;
-
-  Link_TS(&MeshFreelist->FirstFree, Container);
-
-  return;
-}
-
-link_internal void
 FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, memory_arena* Memory)
 {
 #if 1
@@ -222,6 +206,7 @@ FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, m
   }
 #endif
 }
+
 
 // TODO(Jesse): The VisibleRegion is stored on the World pointer .. might as
 // well not pass it as a parameter through here because this function gets
@@ -261,6 +246,12 @@ GetWorldChunk( world *World, world_position P, chunk_dimension VisibleRegion)
   }
 
   return Result;
+}
+
+link_internal world_chunk*
+GetWorldChunk( world *World, world_position P)
+{
+  return GetWorldChunk(World, P, World->VisibleRegion);
 }
 
 link_internal world_chunk**
@@ -821,7 +812,7 @@ InitializeWorldChunkPlane(world_chunk *DestChunk, chunk_dimension WorldChunkDim,
 
   world_chunk *SyntheticChunk = AllocateWorldChunk(TempMemory, SynChunkP, SynChunkDim );
 
-  InitChunkPlane(1, SyntheticChunk, SynChunkDim, GREEN);
+  InitChunkPlane(1, SyntheticChunk, SynChunkDim, GRASS_GREEN);
   CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Voxel_Position(1));
 
   FullBarrier;
@@ -1616,6 +1607,11 @@ ComputeStandingSpotFor8x8x8(world_chunk *SynChunk, v3i SynChunkDim, world_chunk 
 }
 #endif
 
+poof(generate_stream_compact(v3i))
+#include <generated/generate_stream_compact_v3i.h>
+
+
+#if 0
 link_internal v3i_buffer
 Compact(v3i_stream *Stream, memory_arena *PermMemory)
 {
@@ -1640,6 +1636,7 @@ Compact(v3i_stream *Stream, memory_arena *PermMemory)
 
   return Result;
 }
+#endif
 
 link_internal b32
 IsValidForDestChunk(v3i Spot, v3i DestChunkDim)
@@ -1739,6 +1736,11 @@ ComputeStandingSpots( v3i SrcChunkDim,
 #endif
 
   *DestStandingSpots = Compact(&StandingSpotsStream, PermMemory);
+}
+
+link_internal void
+DoChunkMeshes(thread_local_state *Thread, world_chunk *DestChunk, chunk_dimension WorldChunkDim, s32 Frequency, s32 Amplititude, s32 zMin)
+{
 }
 
 link_internal void
@@ -2035,7 +2037,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
             TriIndex < TriangleCount;
             ++TriIndex)
         {
-          BufferTriangle(LodMesh, Triangles[TriIndex], V3(0,0,1), GREEN); // , Color++);
+          BufferTriangle(LodMesh, Triangles[TriIndex], V3(0,0,1), GRASS_GREEN); // , Color++);
         }
 
         DestChunk->TriCount = TriangleCount;
@@ -2158,7 +2160,7 @@ inline void
 QueueChunkForInit(work_queue *Queue, world_chunk *Chunk)
 {
   TIMED_FUNCTION();
-  Assert( Chunk->Flags == Chunk_Uninitialized );
+  Assert( NotSet(Chunk->Flags, Chunk_Queued) );
 
   work_queue_entry Entry = {};
 
@@ -2193,7 +2195,7 @@ QueueChunkForInit(work_queue *Queue, world_chunk *Chunk)
     Job->Chunk = Chunk;
   }
 
-  Chunk->Flags = Chunk_Queued;
+  SetFlag(&Chunk->Flags, Chunk_Queued);
   PushWorkQueueEntry(Queue, &Entry);
 
   return;
@@ -2202,7 +2204,7 @@ QueueChunkForInit(work_queue *Queue, world_chunk *Chunk)
 
 #if PLATFORM_GL_IMPLEMENTATIONS
 link_internal work_queue_entry_copy_buffer
-WorkQueueEntryCopyBuffer(untextured_3d_geometry_buffer* Src, untextured_3d_geometry_buffer* Dest, world_chunk *Chunk, camera* Camera, chunk_dimension WorldChunkDim)
+WorkQueueEntryCopyBuffer(untextured_3d_geometry_buffer* Src, untextured_3d_geometry_buffer* Dest, untextured_3d_geometry_buffer **ReplaceWhenDone, world_chunk *Chunk, camera* Camera, chunk_dimension WorldChunkDim)
 {
   TIMED_FUNCTION();
 
@@ -2210,6 +2212,7 @@ WorkQueueEntryCopyBuffer(untextured_3d_geometry_buffer* Src, untextured_3d_geome
   /* SleepMs(1); */
 
   work_queue_entry_copy_buffer Result = {};
+  Result.ReplaceWhenDone = ReplaceWhenDone;
   Result.Src = Src;
   Result.Dest = CopyDest;
   Result.Basis = GetRenderP(WorldChunkDim, Chunk->WorldP, Camera);
@@ -2221,11 +2224,11 @@ WorkQueueEntryCopyBuffer(untextured_3d_geometry_buffer* Src, untextured_3d_geome
 }
 
 inline void
-QueueChunkMeshForCopy(work_queue *Queue, untextured_3d_geometry_buffer* Src, untextured_3d_geometry_buffer* Dest, world_chunk *Chunk, camera* Camera, chunk_dimension WorldChunkDim)
+QueueChunkMeshForCopy(work_queue *Queue, untextured_3d_geometry_buffer* Src, untextured_3d_geometry_buffer* Dest, untextured_3d_geometry_buffer **ReplaceWhenDone, world_chunk *Chunk, camera* Camera, chunk_dimension WorldChunkDim)
 {
   work_queue_entry Entry = {
     .Type = type_work_queue_entry_copy_buffer,
-    .work_queue_entry_copy_buffer = WorkQueueEntryCopyBuffer(Src, Dest, Chunk, Camera, WorldChunkDim),
+    .work_queue_entry_copy_buffer = WorkQueueEntryCopyBuffer(Src, Dest, ReplaceWhenDone, Chunk, Camera, WorldChunkDim),
   };
 
   PushWorkQueueEntry(Queue, &Entry);
@@ -2237,10 +2240,6 @@ void
 BufferWorldChunk(untextured_3d_geometry_buffer *Dest, world_chunk *Chunk, graphics *Graphics, work_queue* Queue, chunk_dimension WorldChunkDim)
 {
   TIMED_FUNCTION();
-
-  Assert(Chunk->Mesh->At);
-
-  QueueChunkMeshForCopy(Queue, Chunk->Mesh, Dest, Chunk, Graphics->Camera, WorldChunkDim);
 
   /* if (Chunk->LodMesh_Complete && Chunk->LodMesh->At) */
   /* { */
@@ -2325,22 +2324,26 @@ BufferWorld( platform* Plat,
         }
 #endif
 
-/*         if (Chunk && Chunk->Flags == Chunk_Uninitialized ) */
-/*         { */
-/*           QueueChunkForInit(&Plat->LowPriority, Chunk); */
-/*         } */
 
         if (Chunk)
         {
+          if ( NotSet(Chunk->Flags, Chunk_Queued) )
+          {
+            if ( NotSet(Chunk->Flags, Chunk_MeshesInitialized) )
+            {
+              QueueChunkForInit(&Plat->LowPriority, Chunk);
+            }
+          }
+
           if (Chunk->DebugMesh)
           {
-            work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer(Chunk->DebugMesh, Dest, Chunk, Graphics->Camera, World->ChunkDim);
+            work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer(Chunk->DebugMesh, Dest, 0, Chunk, Graphics->Camera, World->ChunkDim);
             PushCopyJob(&Plat->HighPriority, &CopySet, &CopyJob);
           }
 
           if (Chunk->LodMesh)
           {
-            work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer(Chunk->LodMesh, Dest, Chunk, Graphics->Camera, World->ChunkDim);
+            work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer(Chunk->LodMesh, Dest, 0, Chunk, Graphics->Camera, World->ChunkDim);
             PushCopyJob(&Plat->HighPriority, &CopySet, &CopyJob);
             continue;
           }
@@ -2355,14 +2358,22 @@ BufferWorld( platform* Plat,
           }
 #endif
 
-          if (Chunk->Mesh)
+          if ( untextured_3d_geometry_buffer *Mesh = (untextured_3d_geometry_buffer *)AtomicReplace((volatile void**)&Chunk->Mesh, 0) )
           {
+            if (Mesh->At == 0)
+            {
+              // TODO(Jesse): Actually do this
+              /* DeallocateMesh(&Mesh); */
+              continue;
+            }
+
             // NOTE(Jesse): Random heruistic for packing small meshes together
             // into a bulk copy job
-            if (Chunk->Mesh->At < Kilobytes(2))
+            if (Mesh->At < Kilobytes(2))
             {
-              work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer( Chunk->Mesh,
+              work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer( Mesh,
                                                                                Dest,
+                                                                               &Chunk->Mesh,
                                                                                Chunk,
                                                                                Graphics->Camera,
                                                                                World->ChunkDim );
@@ -2370,7 +2381,7 @@ BufferWorld( platform* Plat,
             }
             else
             {
-              BufferWorldChunk(Dest, Chunk, Graphics, &Plat->HighPriority, World->ChunkDim);
+              QueueChunkMeshForCopy(&Plat->HighPriority, Mesh, Dest, &Chunk->Mesh, Chunk, Graphics->Camera, World->ChunkDim);
             }
           }
 
@@ -2378,7 +2389,6 @@ BufferWorld( platform* Plat,
         }
         else
         {
-
           Chunk = GetWorldChunkFor(World->Memory, World, P, VisibleRegion);
           if (Chunk)
           { QueueChunkForInit(&Plat->LowPriority, Chunk); }
@@ -2398,9 +2408,73 @@ BufferWorld( platform* Plat,
   return;
 }
 
-// TODO(Jesse): This is pretty wack.  Why the fuck do we transform chunks into
-// render space to do this collision test?  Shouldn&GameState->'t we transform the ray into
-// absolute space ..?
+link_internal v3
+GetSimSpaceP(world *World, canonical_position P)
+{
+  canonical_position WorldCenter = Canonical_Position(V3(0), World->Center);
+  canonical_position CenterToP = P - WorldCenter;
+  v3 Result = CenterToP.Offset + (CenterToP.WorldP*World->ChunkDim);
+  return Result;
+}
+
+link_internal v3
+GetSimSpaceP(world *World, world_chunk *Chunk)
+{
+  world_position CenterToP = Chunk->WorldP - World->Center;
+  v3 Result = V3(CenterToP)*V3(World->ChunkDim);
+  return Result;
+}
+
+link_internal aabb
+GetSimSpaceAABB(world *World, world_chunk *Chunk)
+{
+  v3 SimSpaceMin = GetSimSpaceP(World, Chunk);
+  aabb Result = AABBMinDim(SimSpaceMin, V3(World->ChunkDim) );
+  return Result;
+}
+
+
+link_internal standing_spot_buffer
+GetStandingSpotsWithinRadius(world *World, canonical_position P, r32 Radius, memory_arena *TempMemory)
+{
+  auto MinWorldP = P.WorldP -1;
+  auto MaxWorldP = P.WorldP +2;
+
+  v3 SimSpaceP = GetSimSpaceP(World, P);
+
+/*   temp_memory_handle TempMemHandle = BeginTemporaryMemory(TempMemory); */
+
+  standing_spot_stream StandingSpotStream = {};
+
+  for (s32 zWorld = MinWorldP.z; zWorld < MaxWorldP.z; ++zWorld)
+  {
+    for (s32 yWorld = MinWorldP.y; yWorld < MaxWorldP.y; ++yWorld)
+    {
+      for (s32 xWorld = MinWorldP.x; xWorld < MaxWorldP.x; ++xWorld)
+      {
+        world_chunk *Chunk = GetWorldChunk(World, {{xWorld, yWorld, zWorld}});
+        if (Chunk)
+        {
+          for (u32 StandingSpotIndex = 0; StandingSpotIndex < Chunk->StandingSpots.Count; ++StandingSpotIndex)
+          {
+            v3i StandingSpot = Chunk->StandingSpots.Start[StandingSpotIndex];
+            v3 SimSpaceStandingSpot = GetSimSpaceP(World, Canonical_Position(StandingSpot, Chunk->WorldP));
+
+            if ( Abs(LengthSq(SimSpaceP-SimSpaceStandingSpot)) < Square(Radius) )
+            {
+              standing_spot Spot = { .P = Canonical_Position(StandingSpot, Chunk->WorldP), .CanStand = True };
+              Push(&StandingSpotStream, Spot );
+            }
+          }
+        }
+      }
+    }
+  }
+
+  standing_spot_buffer Result = Compact(&StandingSpotStream, TempMemory);
+  return Result;
+}
+
 link_internal picked_world_chunk
 GetChunksIntersectingRay(world *World, ray *Ray, picked_world_chunk_static_buffer *AllChunksBuffer)
 {

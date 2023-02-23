@@ -103,7 +103,7 @@ struct asset
   untextured_3d_geometry_buffer *Mesh;
 };
 
-poof(buffer(asset));
+poof(buffer(asset))
 #include <generated/buffer_asset.h>
 
 link_internal counted_string

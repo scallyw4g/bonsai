@@ -65,10 +65,11 @@ PushCopyJob(work_queue *Queue, work_queue_entry_copy_buffer_set *Set, work_queue
     Clear(Set);
     Assert(Set->Count == 0);
   }
+
 }
 
 link_internal void
-DoCopyJob(volatile work_queue_entry_copy_buffer *Job)
+DoCopyJob(volatile work_queue_entry_copy_buffer *Job, mesh_freelist* MeshFreelist, memory_arena* PermMemory)
 {
   untextured_3d_geometry_buffer* Src = Job->Src;
   untextured_3d_geometry_buffer* Dest = (untextured_3d_geometry_buffer*)&Job->Dest;
@@ -76,4 +77,13 @@ DoCopyJob(volatile work_queue_entry_copy_buffer *Job)
 
   v3 Basis = *(v3*)&Job->Basis;
   BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
+
+
+  if (Job->ReplaceWhenDone)
+  {
+    if (!AtomicCompareExchange((volatile void**)Job->ReplaceWhenDone, Src, 0) )
+    {
+      DeallocateMesh(&Src, MeshFreelist, PermMemory);
+    }
+  }
 }

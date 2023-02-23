@@ -4,7 +4,8 @@ enum chunk_flag
 
   Chunk_Queued            = 1 << 1,
   Chunk_VoxelsInitialized = 1 << 2,
-  /* Chunk_GpuMeshComplete   = 1 << 4, */
+
+  Chunk_MeshesInitialized = 1 << 3, // This gets unset when we need to regen the meshes
 
   Chunk_Garbage           = 1 << 5,
 };
@@ -131,8 +132,40 @@ struct world
 struct standing_spot
 {
   b32 CanStand;
-  voxel_position P;
+  canonical_position P;
 };
+
+inline standing_spot
+StandingSpot(v3 Offset, world_position WP)
+{
+  standing_spot Result = {};
+  Result.P = Canonical_Position(Offset, WP);
+  return Result;
+}
+
+inline canonical_position
+Canonical_Position(picked_voxel *V)
+{
+  canonical_position Result = Canonical_Position(V->VoxelRelP, V->PickedChunk.Chunk->WorldP);
+  return Result;
+}
+
+inline canonical_position
+Canonicalize( world *World, canonical_position CP )
+{
+  canonical_position Result = Canonicalize( World->ChunkDim, CP.Offset, CP.WorldP );
+  return Result;
+}
+
+poof(buffer(standing_spot))
+#include <generated/buffer_standing_spot.h>
+
+poof(generate_stream(standing_spot))
+#include <generated/generate_stream_standing_spot.h>
+
+poof(generate_stream_compact(standing_spot))
+#include <generated/generate_stream_compact_standing_spot.h>
+
 
 global_variable v3i Global_StandingSpotDim = V3i(8,8,3);
 

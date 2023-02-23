@@ -92,7 +92,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
     case type_work_queue_entry_copy_buffer:
     {
       volatile work_queue_entry_copy_buffer *CopyJob = SafeAccess(work_queue_entry_copy_buffer, Entry);
-      DoCopyJob(CopyJob);
+      DoCopyJob(CopyJob, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
     } break;
 
     case type_work_queue_entry_copy_buffer_set:
@@ -102,7 +102,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       for (u32 CopyIndex = 0; CopyIndex < CopySet->Count; ++CopyIndex)
       {
         volatile work_queue_entry_copy_buffer *CopyJob = CopySet->CopyTargets + CopyIndex;
-        DoCopyJob(CopyJob);
+        DoCopyJob(CopyJob, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
       }
       END_BLOCK("Copy Set");
     } break;

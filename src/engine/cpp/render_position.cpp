@@ -32,6 +32,13 @@ GetRenderP( chunk_dimension WorldChunkDim, world_position WorldP, camera *Camera
 }
 
 inline v3
+GetRenderP( chunk_dimension WorldChunkDim, standing_spot *Spot, camera *Camera)
+{
+  v3 Result = Spot->P.Offset + GetRenderP(WorldChunkDim, Spot->P.WorldP, Camera);
+  return Result;
+}
+
+inline v3
 GetRenderP( chunk_dimension WorldChunkDim, entity *entity, camera *Camera)
 {
   v3 Result = GetRenderP(WorldChunkDim, entity->P, Camera);

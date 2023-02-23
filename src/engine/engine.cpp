@@ -3,10 +3,10 @@
 #include <engine/cpp/render_position.cpp> // TODO(Jesse): Move into PLATFORM_GL_IMPLEMENTATIONS block?
 #include <engine/cpp/canonical_position.cpp>
 #include <engine/cpp/chunk.cpp>
-#include <engine/cpp/mesh.cpp>
 #include <engine/cpp/thread.cpp>
-#include <engine/cpp/work_queue.cpp>
 #include <engine/cpp/threadsafe.cpp>
+#include <engine/cpp/mesh.cpp>
+#include <engine/cpp/work_queue.cpp>
 #include <engine/cpp/triangle.cpp>
 #include <engine/cpp/camera.cpp>
 

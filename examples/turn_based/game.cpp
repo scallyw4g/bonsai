@@ -12,6 +12,8 @@ model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *Heap)
 {
   model *Result = Allocate(model, Memory, ModelIndex_Count);
+  Result[ModelIndex_Enemy] = LoadVoxModel(Memory, Heap, "models/chr_tama.vox");
+
   /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_bow.vox"); */
   /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_cat.vox"); */
   /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_fox.vox"); */
@@ -76,31 +78,48 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       }
       else
       {
-        counted_string AssetFilename = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, Thread->TempMemory);
-
-        native_file AssetFile = OpenFile(AssetFilename, "r+b");
-        if (AssetFile.Handle)
+        if ( NotSet(Chunk->Flags, Chunk_VoxelsInitialized) )
         {
-          DeserializeChunk(&AssetFile, Chunk, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-          CloseFile(&AssetFile);
-          // fsync?
+          counted_string AssetFilename = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, Thread->TempMemory);
+
+          native_file AssetFile = OpenFile(AssetFilename, "r+b");
+          if (AssetFile.Handle)
+          {
+            DeserializeChunk(&AssetFile, Chunk, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+            CloseFile(&AssetFile);
+            // fsync?
+          }
+          else
+          {
+            s32 Frequency = 20;
+            s32 Amplititude = 6;
+            s32 StartingZDepth = 4;
+            InitializeWorldChunkPerlinPlane( Thread,
+                                             Chunk,
+                                             WORLD_CHUNK_DIM,
+                                             Frequency,
+                                             Amplititude,
+                                             StartingZDepth );
+
+            FullBarrier;
+
+            /* Chunk->LodMesh_Complete = True; */
+            /* Assert( NotSet(Chunk, Chunk_Queued )); */
+
+          }
         }
-        else
+        else if ( NotSet(Chunk->Flags, Chunk_MeshesInitialized) )
         {
-          s32 Frequency = 20;
-          s32 Amplititude = 6;
-          s32 StartingZDepth = 4;
-          InitializeWorldChunkPerlinPlane( Thread,
-                                           Chunk,
-                                           WORLD_CHUNK_DIM,
-                                           Frequency,
-                                           Amplititude,
-                                           StartingZDepth );
+          Assert( IsSet(Chunk->Flags, Chunk_VoxelsInitialized) );
 
-          FullBarrier;
-
-          /* Chunk->LodMesh_Complete = True; */
-          /* Assert( NotSet(Chunk, Chunk_Queued )); */
+          /* if ( DestChunk->FilledCount > 0 && */
+          /*      DestChunk->FilledCount < (u32)Volume(WorldChunkDim)) */
+          {
+            untextured_3d_geometry_buffer *NewMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+            BuildWorldChunkMesh(Chunk, Chunk->Dim, {}, Chunk->Dim, NewMesh);
+            untextured_3d_geometry_buffer *OldMesh = (untextured_3d_geometry_buffer*)AtomicReplace((volatile void**)&Chunk->Mesh, NewMesh);
+            if (OldMesh) { DeallocateMesh(&OldMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
+          }
 
         }
       }
@@ -112,7 +131,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
     case type_work_queue_entry_copy_buffer:
     {
       volatile work_queue_entry_copy_buffer *CopyJob = SafeAccess(work_queue_entry_copy_buffer, Entry);
-      DoCopyJob(CopyJob);
+      DoCopyJob(CopyJob, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
     } break;
 
     case type_work_queue_entry_copy_buffer_set:
@@ -122,12 +141,102 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       for (u32 CopyIndex = 0; CopyIndex < CopySet->Count; ++CopyIndex)
       {
         volatile work_queue_entry_copy_buffer *CopyJob = CopySet->CopyTargets + CopyIndex;
-        DoCopyJob(CopyJob);
+        DoCopyJob(CopyJob, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
       }
       END_BLOCK("Copy Set");
     } break;
 
   }
+}
+
+global_variable random_series EnemyEntropy = {543232654};
+
+link_internal canonical_position
+MoveToStandingSpot(world *World, canonical_position P)
+{
+  canonical_position Result = Canonicalize(World->ChunkDim, Canonical_Position(P.Offset + V3(0,0,5), P.WorldP));
+  return Result;
+}
+
+link_internal void
+DoFireballAt(world *World, picked_voxel *Location, f32 Radius)
+{
+  canonical_position P = Canonical_Position(Location);
+
+  auto MinP = Canonicalize(World, P-V3(Radius));
+  auto MaxP = Canonicalize(World, P+V3(Radius));
+
+  auto LocationSimSpace = GetSimSpaceP(World, P);
+
+  aabb SimSpaceQueryAABB = AABBMinMax( (LocationSimSpace - Radius),
+                                       (LocationSimSpace + Radius) + 1.0f );
+
+  for (s32 zChunk = MinP.WorldP.z; zChunk <= MaxP.WorldP.z; ++zChunk)
+  {
+    for (s32 yChunk = MinP.WorldP.y; yChunk <= MaxP.WorldP.y; ++yChunk)
+    {
+      for (s32 xChunk = MinP.WorldP.x; xChunk <= MaxP.WorldP.x; ++xChunk)
+      {
+        world_position ChunkP = World_Position(xChunk, yChunk, zChunk);
+        world_chunk *Chunk = GetWorldChunk(World, ChunkP);
+        if (Chunk)
+        {
+          aabb SimSpaceChunkRect = GetSimSpaceAABB(World, Chunk);
+          aabb SimSpaceIntersectionRect = Difference(&SimSpaceChunkRect, &SimSpaceQueryAABB);
+
+          auto SimSpaceIntersectionMin = GetMin(SimSpaceIntersectionRect);
+          auto SimSpaceIntersectionMax = GetMax(SimSpaceIntersectionRect);
+
+          v3 SimSpaceChunkMin = GetMin(SimSpaceChunkRect);
+          /* v3 SimSpaceChunkMax = GetMax(SimSpaceChunkRect); */
+
+          auto ChunkRelRectMin = SimSpaceIntersectionMin - SimSpaceChunkMin;
+          auto ChunkRelRectMax = SimSpaceIntersectionMax - SimSpaceChunkMin;
+
+          for (s32 zVoxel = s32(ChunkRelRectMin.z); zVoxel < s32(ChunkRelRectMax.z); ++zVoxel)
+          {
+            for (s32 yVoxel = s32(ChunkRelRectMin.y); yVoxel < s32(ChunkRelRectMax.y); ++yVoxel)
+            {
+              for (s32 xVoxel = s32(ChunkRelRectMin.x); xVoxel < s32(ChunkRelRectMax.x); ++xVoxel)
+              {
+                voxel_position RelVoxP = Voxel_Position(xVoxel, yVoxel, zVoxel);
+                voxel *V = GetVoxel(Chunk, RelVoxP);
+
+                v3 SimSpaceVoxP = V3(RelVoxP) + SimSpaceChunkMin;
+                if (LengthSq(SimSpaceVoxP - LocationSimSpace) < Square(Radius))
+                {
+                  if (V->Flags & Voxel_Filled) { --Chunk->FilledCount; UnSetFlag(&Chunk->Flags, Chunk_MeshesInitialized); }
+                  V->Flags = Voxel_Empty;
+                }
+
+              }
+            }
+          }
+
+        }
+      }
+    }
+  }
+
+#if 0
+  auto LocationSimSpace = GetSimSpaceP(World, Location);
+
+  auto MinP = Voxel_Position(LocationSimSpace - Radius);
+  auto MaxP = Voxel_Position(LocationSimSpace + Radius + 1.f);
+
+  for (u32 zIndex = MinP.z; zIndex < MaxP.z; ++zIndex)
+  {
+    for (u32 yIndex = MinP.y; yIndex < MaxP.y; ++yIndex)
+    {
+      for (u32 xIndex = MinP.x; xIndex < MaxP.x; ++xIndex)
+      {
+        voxel_position SimSpaceVoxelP = Voxel_Position(zIndex, yIndex, xIndex);
+      }
+    }
+  }
+
+#endif
+
 }
 
 BONSAI_API_MAIN_THREAD_CALLBACK()
@@ -140,6 +249,29 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   entity *Player = GameState->Player;
   Player->Physics.Speed = 60.f;
   Player->Physics.Mass = 35.f;
+
+  entity *Enemy = GameState->Enemy;
+
+  f32 StandingSpotSearchThresh = 15.f;
+
+  standing_spot_buffer EnemySpots = GetStandingSpotsWithinRadius(World, Enemy->P, StandingSpotSearchThresh, GetTranArena());
+  for (u32 SpotIndex = 0; SpotIndex < EnemySpots.Count; ++SpotIndex)
+  {
+    standing_spot *Spot = EnemySpots.Start + SpotIndex;
+    v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
+    DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_LINE_THICKNESS*3.f);
+  }
+
+
+
+  standing_spot_buffer PlayerSpots = GetStandingSpotsWithinRadius(World, Player->P, StandingSpotSearchThresh, GetTranArena());
+  for (u32 SpotIndex = 0; SpotIndex < PlayerSpots.Count; ++SpotIndex)
+  {
+    standing_spot *Spot = PlayerSpots.Start + SpotIndex;
+    v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
+    DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), GREEN, DEFAULT_LINE_THICKNESS*3.f);
+  }
+
 
   picked_voxel Pick = PickVoxel(Resources);
 
@@ -156,21 +288,84 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
                     GetRenderP(World->ChunkDim, VoxelP+V3(1.f)+Offset, Camera),
                     WHITE, 0.05f);
 
+
+    if (Input->F8.Clicked)
+    {
+      DoFireballAt(World, &Pick, 10.f);
+    }
+
+
     for (u32 StandingSpotIndex = 0;
              StandingSpotIndex < ClosestChunk->StandingSpots.Count;
            ++StandingSpotIndex)
     {
-      v3i *Spot = ClosestChunk->StandingSpots.Start + StandingSpotIndex;
+      v3 SpotOffset = V3(ClosestChunk->StandingSpots.Start[StandingSpotIndex]);
+      standing_spot Spot = StandingSpot(SpotOffset, ClosestChunk->WorldP);
 
-      aabb SpotRect = AABBMinMax(V3(*Spot), V3(*Spot+Global_StandingSpotDim));
+      aabb SpotRect = AABBMinMax(SpotOffset, SpotOffset+Global_StandingSpotDim);
       if (IsInside(SpotRect, Truncate(Pick.VoxelRelP)))
       {
         /* untextured_3d_geometry_buffer SpotAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB); */
-        v3 RenderP = GetRenderP(World->ChunkDim, MinP+V3(*Spot), Camera);
-        DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_LINE_THICKNESS+0.05f);
+        v3 RenderP = GetRenderP(World->ChunkDim, MinP+SpotOffset, Camera);
+        DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_LINE_THICKNESS*3.f);
         if (Input->LMB.Clicked)
         {
-          Player->P = Canonical_Position(*Spot + V3(0,0,5), ClosestChunk->WorldP);
+          v3 PlayerSimP = GetSimSpaceP(World, Player->P);
+          v3 SpotSimP = GetSimSpaceP(World, Spot.P);
+          if (PointsAreWithinDistance(PlayerSimP, SpotSimP, StandingSpotSearchThresh))
+          {
+            Player->P = MoveToStandingSpot(World, Canonical_Position(SpotOffset, ClosestChunk->WorldP) );
+
+            u32 EnemyChoice = 0; // RandomU32(&EnemyEntropy) % 4;
+
+            local_persist b32 Power = False;
+            switch(EnemyChoice)
+            {
+              case 0:
+              case 1:
+              case 2:
+              {
+                DebugLine("move");
+                /* world_chunk *EnemyChunk = GetWorldChunk(World, ); */
+                if (EnemySpots.Count)
+                {
+                  for (;;)
+                  {
+                    u32 SpotChoice = RandomU32(&EnemyEntropy) % EnemySpots.Count;
+                    canonical_position ChoiceP = EnemySpots.Start[SpotChoice].P;
+                    v3 ChoiceSimP = GetSimSpaceP(World, ChoiceP);
+                    v3 EnemySimP = GetSimSpaceP(World, Enemy->P);
+
+                    if (PointsAreWithinDistance(ChoiceSimP, EnemySimP, 5.f))
+                    {
+                      if (EnemySpots.Count == 1) break;
+                    }
+                    else
+                    {
+                      Enemy->P = MoveToStandingSpot(World, ChoiceP); break;
+                    }
+                  }
+                }
+              } break;
+
+              case 3:
+              {
+                if (Power)
+                {
+                  DebugLine("shoot");
+                  Power=False;
+                }
+                else
+                {
+                  DebugLine("power");
+                  Power=True;
+                }
+              } break;
+
+
+              InvalidDefaultCase;
+            }
+          }
         }
       }
     }
@@ -179,15 +374,13 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   if (Hotkeys)
   {
-    r32 CameraSpeed = 100.f;
+    r32 CameraSpeed = 125.f;
     v3 CameraDelta = (GetCameraRelativeInput(Hotkeys, Camera));
     CameraDelta.z = 0.f;
     CameraDelta = Normalize(CameraDelta) * CameraSpeed * Plat->dt;
 
     GameState->CameraTarget->P.Offset += CameraDelta;
     Canonicalize(World->ChunkDim, GameState->CameraTarget->P);
-
-    /* Player->Physics.Force += GetOrthographicInputs(Hotkeys)*dt; */
   }
 
   if ( IsGrounded(World, Player, World->VisibleRegion) && Hotkeys->Player_Jump )
@@ -224,7 +417,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   world_position WorldCenter = World_Position(2, 2, 3);
   canonical_position PlayerSpawnP = Canonical_Position(Voxel_Position(0), WorldCenter);
 
-  StandardCamera(Graphics->Camera, 10000.0f, 300.0f, PlayerSpawnP);
+  StandardCamera(Graphics->Camera, 10000.0f, 1000.0f, PlayerSpawnP);
+  /* Graphics->Camera->CurrentP.WorldP = World_Position(1, -1, 1); */
+  /* Graphics->Camera->CurrentP.Offset = V3(1, -1, 1); */
 
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
@@ -233,7 +428,12 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->Models = AllocateGameModels(GameState, Memory, Heap);
 
   GameState->Player = GetFreeEntity(EntityTable);
-  SpawnPlayer(Plat, World, GameState->Models, GameState->Player, PlayerSpawnP, &GameState->Entropy);
+  SpawnPlayer(Plat, World, GameState->Models + ModelIndex_Player, GameState->Player, PlayerSpawnP, &GameState->Entropy);
+
+  auto EnemySpawnP = Canonical_Position(V3(0), World_Position(2,1,3));
+  GameState->Enemy = GetFreeEntity(EntityTable);
+  SpawnPlayer(Plat, World, GameState->Models + ModelIndex_Enemy, GameState->Enemy, EnemySpawnP, &GameState->Entropy);
+
 
   GameState->CameraTarget = GetFreeEntity(EntityTable);
   SpawnEntity( 0, GameState->CameraTarget, EntityType_Default);

@@ -31,7 +31,7 @@
 #define DEBUG_DRAW_COLLISION_VOLUMES  0
 #define DEBUG_WORLD_GENERATION        0
 #define DEBUG_HIGHLIGHT_VOID_CHUNKS   0
-#define DEBUG_DRAW_WORLD_AXIES        0
+#define DEBUG_DRAW_WORLD_AXIES        1
 #define DEBUG_PARTICLE_EFFECTS        1
 
 #define ENEMY_MODEL      MODELS_PATH "/tie-fighter.vox"

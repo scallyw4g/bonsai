@@ -549,9 +549,9 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset)
 }
 
 void
-SpawnPlayer(platform *Plat, world *World, model* Models, entity *Player, canonical_position InitialP, random_series* Entropy)
+SpawnPlayer(platform *Plat, world *World, model* Model, entity *Player, canonical_position InitialP, random_series* Entropy)
 {
-  Info("Player Spawned");
+  /* Info("Player Spawned"); */
 
   physics Physics = {};
   /* Physics.Drag = V3(1.f, 1.f, 1.f); */
@@ -562,12 +562,10 @@ SpawnPlayer(platform *Plat, world *World, model* Models, entity *Player, canonic
   r32 RateOfFire = 0.8f;
   s32 Health = 10;
 
-  model *Model = 0;
   v3 CollisionVolumeRadius = {};
 
-  if (Models)
+  if (Model)
   {
-    Model = Models + ModelIndex_Player;
     CollisionVolumeRadius = Model->Dim * Scale * 0.5f; // 0.5f is to shrink to a radius, instead of dim
   }
 
@@ -1172,7 +1170,7 @@ SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension Vis
 
       case EntityType_Enemy:
       {
-        NotImplemented;
+        /* NotImplemented; */
         /* SimulateEnemy(GameState, Entity, dt); */
         /* PhysicsUpdate(&Entity->Physics, dt); */
         /* UpdateEntityP(GameState, Entity, Entity->Physics.Delta); */
