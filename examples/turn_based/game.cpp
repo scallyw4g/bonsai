@@ -6,7 +6,52 @@
 #include <game_constants.h>
 #include <game_types.h>
 
-/* global_variable debug_state *Global_DebugStatePointer; */
+link_internal void DoWorldUpdate(world *World, world_chunk **ChunkBuffer, u32 ChunkCount, picked_voxel *Location, f32 Radius);
+
+link_internal void
+QueueWorldUpdateForRegion(platform *Plat, world *World, picked_voxel *Location, f32 Radius, memory_arena *Memory)
+{
+  TIMED_FUNCTION();
+
+  canonical_position P = Canonical_Position(Location);
+
+  auto MinP = Canonicalize(World, P-V3(Radius));
+  auto MaxP = Canonicalize(World, P+V3(Radius));
+
+  auto LocationSimSpace = GetSimSpaceP(World, P);
+
+  aabb SimSpaceQueryAABB = AABBMinMax( (LocationSimSpace - Radius),
+                                       (LocationSimSpace + Radius) + 1.0f );
+
+  // TODO(Jesse)(leak): Each one of these gets leaked at the moment
+  world_position Delta = MaxP.WorldP-MinP.WorldP+1;
+  u32 TotalChunkCount = Abs(Volume(Delta));
+  world_chunk **Buffer = AllocateAligned(world_chunk*, Memory, TotalChunkCount, CACHE_LINE_SIZE);
+
+  u32 ChunkIndex = 0;
+  for (s32 zChunk = MinP.WorldP.z; zChunk <= MaxP.WorldP.z; ++zChunk)
+  {
+    for (s32 yChunk = MinP.WorldP.y; yChunk <= MaxP.WorldP.y; ++yChunk)
+    {
+      for (s32 xChunk = MinP.WorldP.x; xChunk <= MaxP.WorldP.x; ++xChunk)
+      {
+        world_position ChunkP = World_Position(xChunk, yChunk, zChunk);
+        world_chunk *Chunk = GetWorldChunk(World, ChunkP);
+        if (Chunk)
+        {
+          Assert(ChunkIndex < TotalChunkCount);
+          Buffer[ChunkIndex++] = Chunk;
+        }
+      }
+    }
+  }
+
+  work_queue_entry Entry = {
+    .Type = type_work_queue_entry_update_world_region,
+    .work_queue_entry_update_world_region = WorkQueueEntryUpdateWorldRegion(Location, 50.f, Buffer, ChunkIndex),
+  };
+  PushWorkQueueEntry(&Plat->LowPriority, &Entry);
+}
 
 model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *Heap)
@@ -68,9 +113,21 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
     } break;
 
+    case type_work_queue_entry_update_world_region:
+    {
+      /* DebugLine("update world!"); */
+      work_queue_entry_update_world_region *Job = SafeAccess(work_queue_entry_update_world_region, Entry);
+
+      picked_voxel Location = Job->Location;
+      r32 Radius = Job->Radius;
+      world *World = Thread->EngineResources->World;
+
+      DoWorldUpdate(World, Job->ChunkBuffer, Job->ChunkCount, &Location, Radius);
+    } break;
+
     case type_work_queue_entry_init_world_chunk:
     {
-      volatile work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
+      work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
       world_chunk *Chunk = Job->Chunk;
 
       if (ChunkIsGarbage(Chunk))
@@ -117,6 +174,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           {
             untextured_3d_geometry_buffer *NewMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
             BuildWorldChunkMesh(Chunk, Chunk->Dim, {}, Chunk->Dim, NewMesh);
+
             untextured_3d_geometry_buffer *OldMesh = (untextured_3d_geometry_buffer*)AtomicReplace((volatile void**)&Chunk->Mesh, NewMesh);
             if (OldMesh) { DeallocateMesh(&OldMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
           }
@@ -159,8 +217,10 @@ MoveToStandingSpot(world *World, canonical_position P)
 }
 
 link_internal void
-DoFireballAt(world *World, picked_voxel *Location, f32 Radius)
+DoWorldUpdate(world *World, world_chunk **ChunkBuffer, u32 ChunkCount, picked_voxel *Location, f32 Radius)
 {
+  TIMED_FUNCTION();
+
   canonical_position P = Canonical_Position(Location);
 
   auto MinP = Canonicalize(World, P-V3(Radius));
@@ -171,71 +231,63 @@ DoFireballAt(world *World, picked_voxel *Location, f32 Radius)
   aabb SimSpaceQueryAABB = AABBMinMax( (LocationSimSpace - Radius),
                                        (LocationSimSpace + Radius) + 1.0f );
 
-  for (s32 zChunk = MinP.WorldP.z; zChunk <= MaxP.WorldP.z; ++zChunk)
+  /* for (s32 zChunk = MinP.WorldP.z; zChunk <= MaxP.WorldP.z; ++zChunk) */
+  /* { */
+  /*   for (s32 yChunk = MinP.WorldP.y; yChunk <= MaxP.WorldP.y; ++yChunk) */
+  /*   { */
+  /*     for (s32 xChunk = MinP.WorldP.x; xChunk <= MaxP.WorldP.x; ++xChunk) */
+  /*     { */
+  /*       world_position ChunkP = World_Position(xChunk, yChunk, zChunk); */
+  /*       world_chunk *Chunk = GetWorldChunk(World, ChunkP); */
+  for (u32 ChunkIndex = 0; ChunkIndex < ChunkCount; ++ChunkIndex)
   {
-    for (s32 yChunk = MinP.WorldP.y; yChunk <= MaxP.WorldP.y; ++yChunk)
+    world_chunk *Chunk = ChunkBuffer[ChunkIndex];
+    Assert(Chunk);
     {
-      for (s32 xChunk = MinP.WorldP.x; xChunk <= MaxP.WorldP.x; ++xChunk)
+      aabb SimSpaceChunkRect = GetSimSpaceAABB(World, Chunk);
+      aabb SimSpaceIntersectionRect = Difference(&SimSpaceChunkRect, &SimSpaceQueryAABB);
+
+      auto SimSpaceIntersectionMin = GetMin(SimSpaceIntersectionRect);
+      auto SimSpaceIntersectionMax = GetMax(SimSpaceIntersectionRect);
+
+      v3 SimSpaceChunkMin = GetMin(SimSpaceChunkRect);
+      /* v3 SimSpaceChunkMax = GetMax(SimSpaceChunkRect); */
+
+      auto ChunkRelRectMin = SimSpaceIntersectionMin - SimSpaceChunkMin;
+      auto ChunkRelRectMax = SimSpaceIntersectionMax - SimSpaceChunkMin;
+
+      b32 AnyVoxelsModified = False;
+      for (s32 zVoxel = s32(ChunkRelRectMin.z); zVoxel < s32(ChunkRelRectMax.z); ++zVoxel)
       {
-        world_position ChunkP = World_Position(xChunk, yChunk, zChunk);
-        world_chunk *Chunk = GetWorldChunk(World, ChunkP);
-        if (Chunk)
+        for (s32 yVoxel = s32(ChunkRelRectMin.y); yVoxel < s32(ChunkRelRectMax.y); ++yVoxel)
         {
-          aabb SimSpaceChunkRect = GetSimSpaceAABB(World, Chunk);
-          aabb SimSpaceIntersectionRect = Difference(&SimSpaceChunkRect, &SimSpaceQueryAABB);
-
-          auto SimSpaceIntersectionMin = GetMin(SimSpaceIntersectionRect);
-          auto SimSpaceIntersectionMax = GetMax(SimSpaceIntersectionRect);
-
-          v3 SimSpaceChunkMin = GetMin(SimSpaceChunkRect);
-          /* v3 SimSpaceChunkMax = GetMax(SimSpaceChunkRect); */
-
-          auto ChunkRelRectMin = SimSpaceIntersectionMin - SimSpaceChunkMin;
-          auto ChunkRelRectMax = SimSpaceIntersectionMax - SimSpaceChunkMin;
-
-          for (s32 zVoxel = s32(ChunkRelRectMin.z); zVoxel < s32(ChunkRelRectMax.z); ++zVoxel)
+          for (s32 xVoxel = s32(ChunkRelRectMin.x); xVoxel < s32(ChunkRelRectMax.x); ++xVoxel)
           {
-            for (s32 yVoxel = s32(ChunkRelRectMin.y); yVoxel < s32(ChunkRelRectMax.y); ++yVoxel)
+            voxel_position RelVoxP = Voxel_Position(xVoxel, yVoxel, zVoxel);
+            voxel *V = GetVoxel(Chunk, RelVoxP);
+
+            v3 SimSpaceVoxP = V3(RelVoxP) + SimSpaceChunkMin;
+            if (LengthSq(SimSpaceVoxP - LocationSimSpace) < Square(Radius))
             {
-              for (s32 xVoxel = s32(ChunkRelRectMin.x); xVoxel < s32(ChunkRelRectMax.x); ++xVoxel)
-              {
-                voxel_position RelVoxP = Voxel_Position(xVoxel, yVoxel, zVoxel);
-                voxel *V = GetVoxel(Chunk, RelVoxP);
-
-                v3 SimSpaceVoxP = V3(RelVoxP) + SimSpaceChunkMin;
-                if (LengthSq(SimSpaceVoxP - LocationSimSpace) < Square(Radius))
-                {
-                  if (V->Flags & Voxel_Filled) { --Chunk->FilledCount; UnSetFlag(&Chunk->Flags, Chunk_MeshesInitialized); }
-                  V->Flags = Voxel_Empty;
-                }
-
-              }
+              if (V->Flags & Voxel_Filled) { --Chunk->FilledCount; AnyVoxelsModified = True; }
+              V->Flags = Voxel_Empty;
             }
-          }
 
+          }
         }
       }
-    }
-  }
 
-#if 0
-  auto LocationSimSpace = GetSimSpaceP(World, Location);
+      FullBarrier;
 
-  auto MinP = Voxel_Position(LocationSimSpace - Radius);
-  auto MaxP = Voxel_Position(LocationSimSpace + Radius + 1.f);
-
-  for (u32 zIndex = MinP.z; zIndex < MaxP.z; ++zIndex)
-  {
-    for (u32 yIndex = MinP.y; yIndex < MaxP.y; ++yIndex)
-    {
-      for (u32 xIndex = MinP.x; xIndex < MaxP.x; ++xIndex)
+      if (AnyVoxelsModified)
       {
-        voxel_position SimSpaceVoxelP = Voxel_Position(zIndex, yIndex, xIndex);
+        UnSetFlag(&Chunk->Flags, Chunk_MeshesInitialized); 
       }
     }
   }
-
-#endif
+      /* } */
+    /* } */
+  /* } */
 
 }
 
@@ -291,7 +343,12 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
     if (Input->F8.Clicked)
     {
-      DoFireballAt(World, &Pick, 10.f);
+
+#if 1
+      QueueWorldUpdateForRegion(Plat, World, &Pick, 100.f, Resources->Memory);
+#else
+      DoFireballAt(World, &Pick, 100.f);
+#endif
     }
 
 

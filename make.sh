@@ -35,18 +35,20 @@ BONSAI_INTERNAL='-D BONSAI_INTERNAL'
 
 
 
+  # $EXAMPLES/asset_picker
+  # $EXAMPLES/the_wanderer
+  # $EXAMPLES/tile_gen
+
 EXAMPLES_TO_BUILD="
-  $EXAMPLES/asset_picker
-  $EXAMPLES/the_wanderer
-  $EXAMPLES/tile_gen
   $EXAMPLES/turn_based
 "
 
 EXECUTABLES_TO_BUILD="
   $SRC/game_loader.cpp
-  $SRC/tools/asset_packer.cpp
 "
-  # $SRC/font/ttf.cpp  # $SRC/net/server.cpp
+  # $SRC/tools/asset_packer.cpp
+  # $SRC/font/ttf.cpp
+  # $SRC/net/server.cpp
 
 
 # TODO(Jesse, tags: tests, release): The allocation tests crash in release mode because of some

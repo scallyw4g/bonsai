@@ -64,6 +64,10 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 #endif
     } break;
 
+    case type_work_queue_entry_update_world_region:
+    {
+    } break;
+
     case type_work_queue_entry_init_world_chunk:
     {
       volatile work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);

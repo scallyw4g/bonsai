@@ -219,7 +219,9 @@ GetWorldChunk( world *World, world_position P, chunk_dimension VisibleRegion)
   u32 HashIndex = GetWorldChunkHash(P, VisibleRegion, World->HashSize);
   u32 StartingHashIndex = HashIndex;
 
-  world_chunk *Result = World->ChunkHash[HashIndex];
+  world_chunk **WorldHash = World->ChunkHash;
+
+  world_chunk *Result = WorldHash[HashIndex];
 
   for (;;)
   {
@@ -236,7 +238,7 @@ GetWorldChunk( world *World, world_position P, chunk_dimension VisibleRegion)
     }
 
     HashIndex = (HashIndex + 1) % World->HashSize;
-    Result = World->ChunkHash[HashIndex];
+    Result = WorldHash[HashIndex];
 
     if (HashIndex == StartingHashIndex)
     {
@@ -2203,6 +2205,19 @@ QueueChunkForInit(work_queue *Queue, world_chunk *Chunk)
 
 
 #if PLATFORM_GL_IMPLEMENTATIONS
+link_internal work_queue_entry_update_world_region
+WorkQueueEntryUpdateWorldRegion(picked_voxel *Location, f32 Radius, world_chunk** ChunkBuffer, u32 ChunkCount)
+{
+  work_queue_entry_update_world_region Result =
+  {
+    .Location = *Location,
+    .Radius = Radius,
+    .ChunkBuffer = ChunkBuffer,
+    .ChunkCount = ChunkCount
+  };
+  return Result;
+}
+
 link_internal work_queue_entry_copy_buffer
 WorkQueueEntryCopyBuffer(untextured_3d_geometry_buffer* Src, untextured_3d_geometry_buffer* Dest, untextured_3d_geometry_buffer **ReplaceWhenDone, world_chunk *Chunk, camera* Camera, chunk_dimension WorldChunkDim)
 {

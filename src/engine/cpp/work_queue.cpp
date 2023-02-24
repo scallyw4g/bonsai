@@ -83,6 +83,7 @@ DoCopyJob(volatile work_queue_entry_copy_buffer *Job, mesh_freelist* MeshFreelis
   {
     if (!AtomicCompareExchange((volatile void**)Job->ReplaceWhenDone, Src, 0) )
     {
+      DebugLine("fooberdoober1");
       DeallocateMesh(&Src, MeshFreelist, PermMemory);
     }
   }

@@ -20,6 +20,15 @@ struct work_queue_entry_init_world_chunk
   world_chunk *Chunk;
 };
 
+struct work_queue_entry_update_world_region
+{
+  picked_voxel Location;
+  f32 Radius;
+  world_chunk **ChunkBuffer;
+  u32 ChunkCount;
+};
+
+
 struct work_queue_entry_init_asset
 {
   world_chunk *Chunk;
@@ -33,6 +42,7 @@ poof(
     work_queue_entry_copy_buffer
     work_queue_entry_copy_buffer_set
     work_queue_entry_init_asset
+    work_queue_entry_update_world_region
   }
 )
 #include <generated/d_union_work_queue_entry.h>
