@@ -179,18 +179,6 @@ LaunchWorkerThreads(platform *Plat, engine_resources *EngineResources, bonsai_wo
 }
 
 link_internal void
-InitQueue(work_queue* Queue, memory_arena* Memory) //, semaphore* Semaphore)
-{
-  Queue->EnqueueIndex = 0;
-  Queue->DequeueIndex = 0;
-
-  Queue->Entries = Allocate(work_queue_entry, Memory, WORK_QUEUE_SIZE);
-  /* Queue->GlobalQueueSemaphore = Semaphore; */
-
-  return;
-}
-
-link_internal void
 PlatformInit(platform *Plat, memory_arena *Memory)
 {
   Plat->Memory = Memory;

@@ -2342,6 +2342,8 @@ BufferWorld( platform* Plat,
 
         if (Chunk)
         {
+
+#if 0
           if ( NotSet(Chunk->Flags, Chunk_Queued) )
           {
             if ( NotSet(Chunk->Flags, Chunk_MeshesInitialized) )
@@ -2349,6 +2351,7 @@ BufferWorld( platform* Plat,
               QueueChunkForInit(&Plat->LowPriority, Chunk);
             }
           }
+#endif
 
           if (Chunk->DebugMesh)
           {

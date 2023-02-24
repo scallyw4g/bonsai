@@ -1,13 +1,31 @@
+link_internal void
+InitQueue(work_queue* Queue, memory_arena* Memory) //, semaphore* Semaphore)
+{
+  Queue->EnqueueIndex = 0;
+  Queue->DequeueIndex = 0;
+
+  Queue->Entries = Allocate(work_queue_entry, Memory, WORK_QUEUE_SIZE);
+  /* Queue->GlobalQueueSemaphore = Semaphore; */
+
+  PlatformInitializeMutex(&Queue->EnqueueMutex);
+
+  return;
+}
+
 void
 PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
 {
   TIMED_FUNCTION();
+
+  PlatformLockMutex(&Queue->EnqueueMutex);
 
   while (QueueIsFull(Queue))
   {
     Perf("Queue full!");
     SleepMs(1);
   }
+
+
 
   volatile work_queue_entry* Dest = Queue->Entries + Queue->EnqueueIndex;
   Clear(Dest);
@@ -24,6 +42,8 @@ PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
   AtomicExchange(&Queue->EnqueueIndex, NewIndex);
 
   FullBarrier;
+
+  PlatformUnlockMutex(&Queue->EnqueueMutex);
 
   /* WakeThread( Queue->GlobalQueueSemaphore ); */
 }

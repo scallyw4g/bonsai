@@ -28,13 +28,12 @@ struct work_queue_entry_update_world_region
   u32 ChunkCount;
 };
 
-
 struct work_queue_entry_init_asset
 {
   world_chunk *Chunk;
 };
 
-
+// TODO(Jesse): Should these be cache-line sized/aligned?
 poof(
   d_union work_queue_entry
   {
