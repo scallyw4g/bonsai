@@ -7,7 +7,7 @@ InitQueue(work_queue* Queue, memory_arena* Memory) //, semaphore* Semaphore)
   Queue->Entries = Allocate(work_queue_entry, Memory, WORK_QUEUE_SIZE);
   /* Queue->GlobalQueueSemaphore = Semaphore; */
 
-  PlatformInitializeMutex(&Queue->EnqueueMutex);
+  /* InitQueue(&Queue->EnqueueMutex); */
 
   return;
 }
@@ -17,7 +17,7 @@ PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
 {
   TIMED_FUNCTION();
 
-  PlatformLockMutex(&Queue->EnqueueMutex);
+  AcquireFutex(&Queue->EnqueueFutex);
 
   while (QueueIsFull(Queue))
   {
@@ -43,7 +43,7 @@ PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
 
   FullBarrier;
 
-  PlatformUnlockMutex(&Queue->EnqueueMutex);
+  ReleaseFutex(&Queue->EnqueueFutex);
 
   /* WakeThread( Queue->GlobalQueueSemaphore ); */
 }

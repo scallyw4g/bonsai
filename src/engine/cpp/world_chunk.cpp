@@ -431,8 +431,8 @@ InitChunkPerlinPlane( perlin_noise *Noise,
 
   if (MaxZ < -Amplitude)
   {
-    s32 MaxIndex = Volume(WorldChunkDim);
-    for ( s32 VoxIndex = 0; VoxIndex < MaxIndex; VoxIndex)
+    s32 MaxIndex = Volume(Dim);
+    for ( s32 VoxIndex = 0; VoxIndex < MaxIndex; ++VoxIndex)
     {
       Chunk->Voxels[VoxIndex].Flags = Voxel_Filled;
       Chunk->Voxels[VoxIndex].Color = ColorIndex;
@@ -2375,14 +2375,14 @@ BufferWorld( platform* Plat,
             Assert(Dest->End);
             work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer(&Chunk->Mesh, Dest, Chunk->WorldP, Graphics->Camera, World->ChunkDim);
             /* if (CopyJob.Dest.End < Kilobytes(2)) */
-            /* { */
-            /*   PushCopyJob(&Plat->HighPriority, &CopySet, &CopyJob); */
-            /* } */
-            /* else */
             {
-              auto Entry = WorkQueueEntry(&CopyJob);
-              PushWorkQueueEntry(&Plat->HighPriority, &Entry);
+              PushCopyJob(&Plat->HighPriority, &CopySet, &CopyJob);
             }
+            /* else */
+            /* { */
+            /*   auto Entry = WorkQueueEntry(&CopyJob); */
+            /*   PushWorkQueueEntry(&Plat->HighPriority, &Entry); */
+            /* } */
           }
 
 #if 0
