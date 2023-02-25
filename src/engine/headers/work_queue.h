@@ -20,6 +20,11 @@ struct work_queue_entry_init_world_chunk
   world_chunk *Chunk;
 };
 
+struct work_queue_entry_rebuild_mesh
+{
+  world_chunk *Chunk;
+};
+
 struct work_queue_entry_update_world_region
 {
   picked_voxel Location;
@@ -42,6 +47,7 @@ poof(
     work_queue_entry_copy_buffer_set
     work_queue_entry_init_asset
     work_queue_entry_update_world_region
+    work_queue_entry_rebuild_mesh
   }
 )
 #include <generated/d_union_work_queue_entry.h>

@@ -59,6 +59,13 @@ struct chunk_data
   voxel *Voxels;
 };
 
+enum world_chunk_mesh_index
+{
+  MeshIndex_Main  = 1 << 0,
+  MeshIndex_Lod   = 1 << 1,
+  MeshIndex_Debug = 1 << 2,
+};
+
 #pragma pack(push, 1)
 struct current_triangles;
 struct world_chunk
@@ -66,6 +73,8 @@ struct world_chunk
   chunk_flag Flags;
   chunk_dimension Dim; // TODO(Jesse): can be 3x u8 instead of 3x s32
   voxel *Voxels;
+
+  u32 SelectedMeshes;
 
   untextured_3d_geometry_buffer* Mesh;
   untextured_3d_geometry_buffer* LodMesh;

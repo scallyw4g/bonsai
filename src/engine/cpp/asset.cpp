@@ -319,6 +319,7 @@ DeserializeChunk(native_file *AssetFile, world_chunk *Result, mesh_freelist *Mes
 
   if (Header.MeshElementCount)
   {
+    Result->SelectedMeshes |= MeshIndex_Main;
     Result->Mesh = GetMeshForChunk(MeshFreelist, PermMemory);
     DeserializeMesh(AssetFile, &Header, Result->Mesh);
   }
