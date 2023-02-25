@@ -447,7 +447,8 @@ BufferChunkMesh(graphics *Graphics, untextured_3d_geometry_buffer *Dest, untextu
   v3 ModelBasisP =
     GetRenderP( WorldChunkDim, Canonical_Position(Offset, WorldP), Graphics->Camera);
 
-  BufferVertsChecked(Dest, Src->At,
+  auto CopyBuffer = ReserveBufferSpace( Dest, Src->At);
+  BufferVertsChecked(&CopyBuffer, Src->At,
       Src->Verts, Src->Normals, Src->Colors,
       ModelBasisP, V3(Scale));
 
@@ -923,18 +924,28 @@ ReserveBufferSpace(untextured_3d_geometry_buffer* Reservation, u32 ElementsToRes
   Assert(ElementsToReserve);
 
   untextured_3d_geometry_buffer Result = {};
-  if (Reservation->At + ElementsToReserve < Reservation->End)
-  {
-    Result.Verts = Reservation->Verts + Reservation->At;
-    Result.Colors = Reservation->Colors + Reservation->At;
-    Result.Normals = Reservation->Normals + Reservation->At;
-    Result.End = ElementsToReserve;
 
-    Reservation->At += ElementsToReserve;
-  }
-  else
+  for (;;)
   {
-    Warn("Failed to reserve buffer space");
+    umm ReservationAt = Reservation->At;
+    umm ReservationRequest = ReservationAt + ElementsToReserve;
+    if (ReservationRequest < Reservation->End)
+    {
+      if ( AtomicCompareExchange(&Reservation->At, (u32)ReservationRequest, (u32)ReservationAt) )
+      {
+        Result.Verts = Reservation->Verts + ReservationAt;
+        Result.Colors = Reservation->Colors + ReservationAt;
+        Result.Normals = Reservation->Normals + ReservationAt;
+        Result.End = ElementsToReserve;
+
+        break;
+      }
+    }
+    else
+    {
+      Warn("Failed to reserve buffer space");
+      break;
+    }
   }
 
   return Result;

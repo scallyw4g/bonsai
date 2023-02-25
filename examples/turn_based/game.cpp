@@ -6,120 +6,6 @@
 #include <game_constants.h>
 #include <game_types.h>
 
-link_internal void
-QueueWorldUpdateForRegion(platform *Plat, world *World, picked_voxel *Location, f32 Radius, memory_arena *Memory)
-{
-  TIMED_FUNCTION();
-
-  canonical_position P = Canonical_Position(Location);
-
-  auto MinP = Canonicalize(World, P-V3(Radius));
-  auto MaxP = Canonicalize(World, P+V3(Radius));
-
-  auto LocationSimSpace = GetSimSpaceP(World, P);
-
-  aabb SimSpaceQueryAABB = AABBMinMax( (LocationSimSpace - Radius),
-                                       (LocationSimSpace + Radius) + 1.0f );
-
-  world_position Delta = MaxP.WorldP - MinP.WorldP + 1;
-  u32 TotalChunkCount = Abs(Volume(Delta));
-
-  // TODO(Jesse)(leak): Each one of these gets leaked at the moment
-  world_chunk **Buffer = AllocateAligned(world_chunk*, Memory, TotalChunkCount, CACHE_LINE_SIZE);
-
-  u32 ChunkIndex = 0;
-  for (s32 zChunk = MinP.WorldP.z; zChunk <= MaxP.WorldP.z; ++zChunk)
-  {
-    for (s32 yChunk = MinP.WorldP.y; yChunk <= MaxP.WorldP.y; ++yChunk)
-    {
-      for (s32 xChunk = MinP.WorldP.x; xChunk <= MaxP.WorldP.x; ++xChunk)
-      {
-        world_position ChunkP = World_Position(xChunk, yChunk, zChunk);
-        world_chunk *Chunk = GetWorldChunk(World, ChunkP);
-        if (Chunk)
-        {
-          Assert(ChunkIndex < TotalChunkCount);
-          Buffer[ChunkIndex++] = Chunk;
-        }
-      }
-    }
-  }
-
-  work_queue_entry Entry = {
-    .Type = type_work_queue_entry_update_world_region,
-    .work_queue_entry_update_world_region = WorkQueueEntryUpdateWorldRegion(Location, Radius, Buffer, ChunkIndex),
-  };
-  PushWorkQueueEntry(&Plat->LowPriority, &Entry);
-}
-
-link_internal void
-DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 ChunkCount, picked_voxel *Location, f32 Radius)
-{
-  TIMED_FUNCTION();
-
-  canonical_position P = Canonical_Position(Location);
-
-  auto MinP = Canonicalize(World, P-V3(Radius));
-  auto MaxP = Canonicalize(World, P+V3(Radius));
-
-  auto LocationSimSpace = GetSimSpaceP(World, P);
-
-  aabb SimSpaceQueryAABB = AABBMinMax( (LocationSimSpace - Radius),
-                                       (LocationSimSpace + Radius) + 1.0f );
-
-  for (u32 ChunkIndex = 0; ChunkIndex < ChunkCount; ++ChunkIndex)
-  {
-    world_chunk *Chunk = ChunkBuffer[ChunkIndex];
-    Assert(Chunk);
-    {
-      aabb SimSpaceChunkRect = GetSimSpaceAABB(World, Chunk);
-      aabb SimSpaceIntersectionRect = Difference(&SimSpaceChunkRect, &SimSpaceQueryAABB);
-
-      auto SimSpaceIntersectionMin = GetMin(SimSpaceIntersectionRect);
-      auto SimSpaceIntersectionMax = GetMax(SimSpaceIntersectionRect);
-
-      v3 SimSpaceChunkMin = GetMin(SimSpaceChunkRect);
-      /* v3 SimSpaceChunkMax = GetMax(SimSpaceChunkRect); */
-
-      auto ChunkRelRectMin = SimSpaceIntersectionMin - SimSpaceChunkMin;
-      auto ChunkRelRectMax = SimSpaceIntersectionMax - SimSpaceChunkMin;
-
-      b32 AnyVoxelsModified = False;
-      for (s32 zVoxel = s32(ChunkRelRectMin.z); zVoxel < s32(ChunkRelRectMax.z); ++zVoxel)
-      {
-        for (s32 yVoxel = s32(ChunkRelRectMin.y); yVoxel < s32(ChunkRelRectMax.y); ++yVoxel)
-        {
-          for (s32 xVoxel = s32(ChunkRelRectMin.x); xVoxel < s32(ChunkRelRectMax.x); ++xVoxel)
-          {
-            voxel_position RelVoxP = Voxel_Position(xVoxel, yVoxel, zVoxel);
-            voxel *V = GetVoxel(Chunk, RelVoxP);
-
-            v3 SimSpaceVoxP = V3(RelVoxP) + SimSpaceChunkMin;
-            if (LengthSq(SimSpaceVoxP - LocationSimSpace) < Square(Radius))
-            {
-              if (V->Flags & Voxel_Filled) { --Chunk->FilledCount; AnyVoxelsModified = True; }
-              V->Flags = Voxel_Empty;
-            }
-
-          }
-        }
-      }
-
-      FullBarrier;
-
-      if (AnyVoxelsModified)
-      {
-        UnSetFlag(&Chunk->Flags, Chunk_Queued);
-        UnSetFlag(&Chunk->Flags, Chunk_MeshesInitialized);
-        /* QueueChunkForInit(Queue, Chunk); */
-        QueueChunkForMeshRebuild(Queue, Chunk);
-      }
-
-    }
-  }
-}
-
-
 model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *Heap)
 {
@@ -182,7 +68,6 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
     case type_work_queue_entry_update_world_region:
     {
-      /* DebugLine("update world!"); */
       work_queue_entry_update_world_region *Job = SafeAccess(work_queue_entry_update_world_region, Entry);
 
       picked_voxel Location = Job->Location;
@@ -200,23 +85,56 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
       Assert( IsSet(Chunk->Flags, Chunk_VoxelsInitialized) );
 
-      if ( Chunk->SelectedMeshes & MeshIndex_Main )
       {
-        untextured_3d_geometry_buffer *NewMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-        BuildWorldChunkMesh(Chunk, Chunk->Dim, {}, Chunk->Dim, NewMesh);
+        if (ChunkCouldHaveBoundaryVoxels(Chunk))
+        {
+          untextured_3d_geometry_buffer *NewMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+          BuildWorldChunkMesh(Chunk, Chunk->Dim, {}, Chunk->Dim, NewMesh);
 
-        untextured_3d_geometry_buffer *OldMesh = (untextured_3d_geometry_buffer*)AtomicReplace((volatile void**)&Chunk->Mesh, NewMesh);
-        if (OldMesh) { DeallocateMesh(&OldMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
+          if ( Chunk->SelectedMeshes & MeshIndex_Main )
+          {
+            untextured_3d_geometry_buffer *OldMesh = (untextured_3d_geometry_buffer*)TakeOwnershipSync((volatile void**)&Chunk->Mesh);
+            DeallocateMesh(&OldMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+          }
+
+          Assert(NewMesh->At);
+          Assert(Chunk->Mesh == 0);
+          Replace((volatile void**)&Chunk->Mesh, (void*)NewMesh);
+
+          Chunk->SelectedMeshes |= MeshIndex_Main;
+        }
+        else
+        {
+          Chunk->SelectedMeshes &= (~(u32)MeshIndex_Main);
+        }
       }
 
-      if ( Chunk->SelectedMeshes & MeshIndex_Lod )
+#if 0
       {
-        untextured_3d_geometry_buffer *LodMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-        ComputeLodMesh( Thread, Chunk, World->ChunkDim, Chunk, World->ChunkDim, LodMesh, False);
+        if (ChunkCouldHaveBoundaryVoxels(Chunk))
+        {
+          untextured_3d_geometry_buffer *LodMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+          ComputeLodMesh( Thread, Chunk, World->ChunkDim, Chunk, World->ChunkDim, LodMesh, False);
 
-        untextured_3d_geometry_buffer *OldMesh = (untextured_3d_geometry_buffer*)AtomicReplace((volatile void**)&Chunk->LodMesh, LodMesh);
-        if (OldMesh) { DeallocateMesh(&OldMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
+          if (LodMesh->At)
+          {
+            if ( Chunk->SelectedMeshes & MeshIndex_Lod )
+            {
+              untextured_3d_geometry_buffer *OldMesh = (untextured_3d_geometry_buffer*)TakeOwnershipSync((volatile void**)&Chunk->LodMesh);
+              DeallocateMesh(&OldMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+            }
+
+            Assert(Chunk->LodMesh == 0);
+            Replace((volatile void**)&Chunk->LodMesh, (void*)LodMesh);
+            Chunk->SelectedMeshes |= MeshIndex_Lod;
+          }
+        }
+        else
+        {
+          Chunk->SelectedMeshes &= (~(u32)MeshIndex_Lod);
+        }
       }
+#endif
 
       FinalizeChunkInitialization(Chunk);
     } break;
@@ -368,7 +286,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     if (Input->F8.Clicked)
     {
 #if 1
-      QueueWorldUpdateForRegion(Plat, World, &Pick, 2.f, Resources->Memory);
+      QueueWorldUpdateForRegion(Plat, World, &Pick, 10.f, Resources->Memory);
 #else
       DoFireballAt(World, &Pick, 100.f);
 #endif
@@ -494,7 +412,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   Global_AssetPrefixPath = CSz("examples/asset_picker/assets");
 
-  world_position WorldCenter = World_Position(2, 2, 3);
+  world_position WorldCenter = World_Position(2, 2, 0);
   canonical_position PlayerSpawnP = Canonical_Position(Voxel_Position(0), WorldCenter);
 
   StandardCamera(Graphics->Camera, 10000.0f, 1000.0f, PlayerSpawnP);
@@ -510,7 +428,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->Player = GetFreeEntity(EntityTable);
   SpawnPlayer(Plat, World, GameState->Models + ModelIndex_Player, GameState->Player, PlayerSpawnP, &GameState->Entropy);
 
-  auto EnemySpawnP = Canonical_Position(V3(0), World_Position(2,1,3));
+  auto EnemySpawnP = Canonical_Position(V3(0), PlayerSpawnP.WorldP - World_Position(2,1,0));
   GameState->Enemy = GetFreeEntity(EntityTable);
   SpawnPlayer(Plat, World, GameState->Models + ModelIndex_Enemy, GameState->Enemy, EnemySpawnP, &GameState->Entropy);
 

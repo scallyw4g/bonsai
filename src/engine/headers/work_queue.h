@@ -1,8 +1,7 @@
 struct work_queue_entry_copy_buffer
 {
-  untextured_3d_geometry_buffer **ReplaceWhenDone;
-  untextured_3d_geometry_buffer *Src;
-  untextured_3d_geometry_buffer Dest;
+  untextured_3d_geometry_buffer **Src;
+  untextured_3d_geometry_buffer *Dest;
   v3 Basis;
 };
 

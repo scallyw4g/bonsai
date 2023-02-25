@@ -175,6 +175,39 @@ poof(generate_stream(standing_spot))
 poof(generate_stream_compact(standing_spot))
 #include <generated/generate_stream_compact_standing_spot.h>
 
+link_internal v3
+GetSimSpaceP(world *World, canonical_position P)
+{
+  canonical_position WorldCenter = Canonical_Position(V3(0), World->Center);
+  canonical_position CenterToP = P - WorldCenter;
+  v3 Result = CenterToP.Offset + (CenterToP.WorldP*World->ChunkDim);
+  return Result;
+}
+
+link_internal v3
+GetSimSpaceP(world *World, world_chunk *Chunk)
+{
+  world_position CenterToP = Chunk->WorldP - World->Center;
+  v3 Result = V3(CenterToP)*V3(World->ChunkDim);
+  return Result;
+}
+
+link_internal aabb
+GetSimSpaceAABB(world *World, world_chunk *Chunk)
+{
+  v3 SimSpaceMin = GetSimSpaceP(World, Chunk);
+  aabb Result = AABBMinDim(SimSpaceMin, V3(World->ChunkDim) );
+  return Result;
+}
+
+link_internal b32
+ChunkCouldHaveBoundaryVoxels(world_chunk *Chunk)
+{
+  b32 Reuslt = Chunk->FilledCount > 0 &&
+               Chunk->FilledCount < (u32)Volume(Chunk->Dim);
+  return Reuslt;
+}
+
 
 global_variable v3i Global_StandingSpotDim = V3i(8,8,3);
 

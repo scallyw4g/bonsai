@@ -130,6 +130,37 @@ BufferVertsDirect(
 }
 
 inline void
+BufferVertsCounted(
+    umm Count,
+    untextured_3d_geometry_buffer* Src,
+    untextured_3d_geometry_buffer* Dest,
+    v3 Offset = V3(0),
+    v3 Scale = V3(1)
+  )
+{
+  TIMED_FUNCTION();
+
+  if (Dest->At + Count <= Dest->End)
+  {
+
+    BufferVertsDirect(Dest->Verts + Dest->At,
+                      Dest->Normals + Dest->At,
+                      Dest->Colors + Dest->At,
+                      Src->At,
+                      Src->Verts, Src->Normals, Src->Colors,
+                      Offset, Scale);
+
+    Dest->At += Src->At;
+  }
+  else
+  {
+    Assert(False);
+    Error("Ran out of memory on untextured_3d_geometry_buffer");
+    /* PlatformDebugStacktrace(); */
+  }
+}
+
+inline void
 BufferVertsChecked(
     untextured_3d_geometry_buffer* Src,
     untextured_3d_geometry_buffer* Dest,

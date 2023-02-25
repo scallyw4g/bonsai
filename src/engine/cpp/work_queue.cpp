@@ -88,23 +88,36 @@ PushCopyJob(work_queue *Queue, work_queue_entry_copy_buffer_set *Set, work_queue
 
 }
 
+link_internal void*
+TakeOwnershipSync(volatile void** Src)
+{
+  TIMED_FUNCTION();
+  void *Result = AtomicExchange(Src, (void*)0);
+  while (!Result) { Result = AtomicExchange(Src, (void*)0); }
+  return Result;
+}
+
+link_internal void
+Replace(volatile void** Dest, void* Element)
+{
+  Ensure( AtomicExchange(Dest, Element) == 0);
+}
+
 link_internal void
 DoCopyJob(volatile work_queue_entry_copy_buffer *Job, mesh_freelist* MeshFreelist, memory_arena* PermMemory)
 {
-  untextured_3d_geometry_buffer* Src = Job->Src;
-  untextured_3d_geometry_buffer* Dest = (untextured_3d_geometry_buffer*)&Job->Dest;
-  Assert(Src->At <= Dest->End);
+  /* untextured_3d_geometry_buffer* Src = Job->Src; */
+  untextured_3d_geometry_buffer *Dest = Job->Dest;
 
+  /* untextured_3d_geometry_buffer *SrcBuffer = (untextured_3d_geometry_buffer *)TakeOwnershipSync((volatile void**)Src); */
+  /* Replace((volatile void**)Src, (void*)SrcBuffer); */
+
+
+  untextured_3d_geometry_buffer *Src = (untextured_3d_geometry_buffer*)TakeOwnershipSync((volatile void**)Job->Src);
+  untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Dest, Src->At);
+  /* umm Count = Min(Src->At, &CopyDest->End); */
   v3 Basis = *(v3*)&Job->Basis;
-  BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
+  BufferVertsChecked( Src, &CopyDest, Basis, V3(1.0f));
 
-
-  if (Job->ReplaceWhenDone)
-  {
-    if (!AtomicCompareExchange((volatile void**)Job->ReplaceWhenDone, Src, 0) )
-    {
-      DebugLine("fooberdoober1");
-      DeallocateMesh(&Src, MeshFreelist, PermMemory);
-    }
-  }
+  Ensure( AtomicCompareExchange((volatile void**)Job->Src, Src, 0) );
 }
