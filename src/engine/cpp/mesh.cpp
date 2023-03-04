@@ -360,6 +360,24 @@ DeallocateMesh(untextured_3d_geometry_buffer** Mesh, mesh_freelist* MeshFreelist
   Link_TS(&MeshFreelist->FirstFree, Container);
 }
 
+link_internal void
+DeallocateMeshes(threadsafe_geometry_buffer *Buf, mesh_freelist* MeshFreelist, memory_arena* Memory)
+{
+  TakeOwnershipSync(Buf, MeshBit_Main);
+  if ( auto Mesh = ReplaceMesh(Buf, MeshBit_Main, 0, __rdtsc()) ) { DeallocateMesh(&Mesh, MeshFreelist, Memory); }
+  ReleaseOwnership(Buf, MeshBit_Main, 0);
+
+  TakeOwnershipSync(Buf, MeshBit_Lod);
+  if ( auto Mesh = ReplaceMesh(Buf, MeshBit_Lod, 0, __rdtsc()) ) { DeallocateMesh(&Mesh, MeshFreelist, Memory); }
+  ReleaseOwnership(Buf, MeshBit_Lod, 0);
+
+  TakeOwnershipSync(Buf, MeshBit_Debug);
+  if ( auto Mesh = ReplaceMesh(Buf, MeshBit_Debug, 0, __rdtsc()) ) { DeallocateMesh(&Mesh, MeshFreelist, Memory); }
+  ReleaseOwnership(Buf, MeshBit_Debug, 0);
+
+  Buf->MeshMask = 0;
+}
+
 inline void
 DrawVoxel( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelCenter, v4 Color, v3 Diameter)
 {

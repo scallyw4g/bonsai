@@ -11,7 +11,7 @@ MakeWorldChunkFileHeader_v2(world_chunk *Chunk)
 
   Result.VoxelElementCount        = Volume(Chunk);
   Result.StandingSpotElementCount = (u32)Chunk->StandingSpots.Count;
-  Result.MeshElementCount         = Chunk->Mesh->At;
+  Result.MeshElementCount         = Chunk->Meshes.E[MeshIndex_Main]->At;
 
   Result.VertexElementSize        = (u32)sizeof(v3);
   Result.ColorElementSize         = (u32)sizeof(v4);
@@ -33,7 +33,7 @@ MakeWorldChunkFileHeader_v1(world_chunk *Chunk)
   Result.VoxelElementCount = Volume(Chunk);
   Result.VoxelElementSize  = (u32)sizeof(voxel);
 
-  Result.MeshElementCount = Chunk->Mesh->At;
+  Result.MeshElementCount = Chunk->Meshes.E[MeshIndex_Main]->At;
 
   Result.VertexElementSize = (u32)sizeof(v3);
   Result.ColorElementSize  = (u32)sizeof(v4);
@@ -195,6 +195,8 @@ DeserializeMesh(native_file *File, world_chunk_file_header *Header, untextured_3
   Assert(NormalElementSize == (u32)sizeof(v3));
   ReadBytesIntoBuffer(File, NormalElementSize*TotalElements, (u8*)Result->Normals);
 
+  Result->Timestamp = __rdtsc();
+
   return Result;
 }
 
@@ -319,9 +321,11 @@ DeserializeChunk(native_file *AssetFile, world_chunk *Result, mesh_freelist *Mes
 
   if (Header.MeshElementCount)
   {
-    Result->SelectedMeshes |= MeshIndex_Main;
-    Result->Mesh = GetMeshForChunk(MeshFreelist, PermMemory);
-    DeserializeMesh(AssetFile, &Header, Result->Mesh);
+    /* Result->SelectedMeshes |= MeshBit_Main; */
+    /* Result->Mesh = GetMeshForChunk(MeshFreelist, PermMemory); */
+    untextured_3d_geometry_buffer *Mesh = GetMeshForChunk(MeshFreelist, PermMemory);
+    DeserializeMesh(AssetFile, &Header, Mesh);
+    Ensure( ReplaceMesh(&Result->Meshes, MeshBit_Main, Mesh, Mesh->Timestamp) == 0);
   }
 
   if (Header.StandingSpotElementCount)
@@ -367,7 +371,9 @@ SerializeChunk(world_chunk *Chunk, counted_string AssetPath)
     Result &= WriteToFile(&File, (u8*)Chunk->Voxels, VoxByteCount);
   }
 
-  Result &= SerializeMesh(&File, Chunk->Mesh, &FileHeader);
+  auto Mesh = TakeOwnershipSync(&Chunk->Meshes, MeshBit_Main);
+  Result &= SerializeMesh(&File, Mesh, &FileHeader);
+  ReleaseOwnership(&Chunk->Meshes, MeshBit_Main, Mesh);
 
   {
     DebugLine("Writing (%u) StandingSpots", FileHeader.StandingSpotElementCount);

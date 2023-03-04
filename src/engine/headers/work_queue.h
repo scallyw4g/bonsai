@@ -1,3 +1,12 @@
+struct work_queue_entry_copy_buffer_ref
+{
+  threadsafe_geometry_buffer *Buf;
+  world_chunk_mesh_bitfield MeshBit;
+
+  untextured_3d_geometry_buffer *Dest;
+  v3 Basis;
+};
+
 struct work_queue_entry_copy_buffer
 {
   untextured_3d_geometry_buffer **Src;
@@ -44,6 +53,7 @@ poof(
     work_queue_entry_init_world_chunk
     work_queue_entry_copy_buffer
     work_queue_entry_copy_buffer_set
+    work_queue_entry_copy_buffer_ref
     work_queue_entry_init_asset
     work_queue_entry_update_world_region
     work_queue_entry_rebuild_mesh
@@ -77,4 +87,13 @@ DrainQueue(work_queue* Queue, thread_local_state* Thread, bonsai_worker_thread_c
     }
   }
 }
+
+/* link_internal untextured_3d_geometry_buffer * */
+/* GetMeshFor(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bitfield MeshBit); */
+
+link_internal untextured_3d_geometry_buffer *
+TakeOwnershipSync(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bitfield MeshBit);
+
+link_internal void
+ReleaseOwnership(threadsafe_geometry_buffer *Src, world_chunk_mesh_bitfield MeshBit, untextured_3d_geometry_buffer *Buf);
 

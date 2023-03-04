@@ -45,25 +45,6 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
     case type_work_queue_entry_init_asset:
     {
       InvalidCodePath();
-
-#if 0
-      volatile work_queue_entry_init_asset *Job = SafeAccess(work_queue_entry_init_asset, Entry);
-      world_chunk *Chunk = Job->Chunk;
-
-      if (ChunkIsGarbage(Chunk))
-      {
-      }
-      else
-      {
-        // TODO(Jesse): Improve ergonomics here?
-        counted_string AssetPath = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, Thread->TempMemory);
-        const char* zAssetPath = GetNullTerminated(AssetPath, Thread->TempMemory);
-        DeserializeChunk(zAssetPath, Chunk);
-      }
-
-      FinalizeChunkInitialization(Chunk);
-#endif
-
     } break;
 
     case type_work_queue_entry_update_world_region:
@@ -81,44 +62,42 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
     {
       work_queue_entry_rebuild_mesh *Job = SafeAccess(work_queue_entry_rebuild_mesh, Entry);
       world_chunk *Chunk = Job->Chunk;
-      world *World = Thread->EngineResources->World;
-
       Assert( IsSet(Chunk->Flags, Chunk_VoxelsInitialized) );
 
+      untextured_3d_geometry_buffer *NewMesh = 0;
+
+      if (Chunk->FilledCount > 0)
       {
-        if (ChunkCouldHaveBoundaryVoxels(Chunk))
+        untextured_3d_geometry_buffer *GeneratedMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+        BuildWorldChunkMesh(Chunk, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh);
+
+        if (GeneratedMesh->At) // Replace with new mesh
         {
-          untextured_3d_geometry_buffer *NewMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-          BuildWorldChunkMesh(Chunk, Chunk->Dim, {}, Chunk->Dim, NewMesh);
-
-          if ( Chunk->SelectedMeshes & MeshIndex_Main )
-          {
-            untextured_3d_geometry_buffer *OldMesh = (untextured_3d_geometry_buffer*)TakeOwnershipSync((volatile void**)&Chunk->Mesh);
-            DeallocateMesh(&OldMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-          }
-
-          Assert(NewMesh->At);
-          Assert(Chunk->Mesh == 0);
-          Replace((volatile void**)&Chunk->Mesh, (void*)NewMesh);
-
-          Chunk->SelectedMeshes |= MeshIndex_Main;
+          NewMesh = GeneratedMesh;
         }
         else
         {
-          Chunk->SelectedMeshes &= (~(u32)MeshIndex_Main);
+          DeallocateMesh(&GeneratedMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
         }
       }
 
+      umm Timestamp = NewMesh ? NewMesh->Timestamp : __rdtsc();
+      TakeOwnershipSync(&Chunk->Meshes, MeshBit_Main);
+      auto Replaced = ReplaceMesh(&Chunk->Meshes, MeshBit_Main, NewMesh, Timestamp);
+      if (Replaced) { DeallocateMesh(&Replaced, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
+      ReleaseOwnership(&Chunk->Meshes, MeshBit_Main, NewMesh);
+
 #if 0
       {
-        if (ChunkCouldHaveBoundaryVoxels(Chunk))
+        if (Chunk->FilledCount > 0)
         {
+          world *World = Thread->EngineResources->World;
           untextured_3d_geometry_buffer *LodMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
           ComputeLodMesh( Thread, Chunk, World->ChunkDim, Chunk, World->ChunkDim, LodMesh, False);
 
           if (LodMesh->At)
           {
-            if ( Chunk->SelectedMeshes & MeshIndex_Lod )
+            if ( Chunk->SelectedMeshes & MeshBit_Lod )
             {
               untextured_3d_geometry_buffer *OldMesh = (untextured_3d_geometry_buffer*)TakeOwnershipSync((volatile void**)&Chunk->LodMesh);
               DeallocateMesh(&OldMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
@@ -126,12 +105,12 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
             Assert(Chunk->LodMesh == 0);
             Replace((volatile void**)&Chunk->LodMesh, (void*)LodMesh);
-            Chunk->SelectedMeshes |= MeshIndex_Lod;
+            Chunk->SelectedMeshes |= MeshBit_Lod;
           }
         }
         else
         {
-          Chunk->SelectedMeshes &= (~(u32)MeshIndex_Lod);
+          Chunk->SelectedMeshes &= (~(u32)MeshBit_Lod);
         }
       }
 #endif
@@ -151,7 +130,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       {
         if ( NotSet(Chunk->Flags, Chunk_VoxelsInitialized) )
         {
-#if 0
+#if 1
           counted_string AssetFilename = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, Thread->TempMemory);
 
           native_file AssetFile = OpenFile(AssetFilename, "r+b");
@@ -201,6 +180,12 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
       FinalizeChunkInitialization(Chunk);
 
+    } break;
+
+    case type_work_queue_entry_copy_buffer_ref:
+    {
+      work_queue_entry_copy_buffer_ref *CopyJob = SafeAccess(work_queue_entry_copy_buffer_ref, Entry);
+      DoCopyJob(CopyJob, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
     } break;
 
     case type_work_queue_entry_copy_buffer:

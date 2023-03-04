@@ -61,9 +61,54 @@ struct chunk_data
 
 enum world_chunk_mesh_index
 {
-  MeshIndex_Main  = 1 << 0,
-  MeshIndex_Lod   = 1 << 1,
-  MeshIndex_Debug = 1 << 2,
+  MeshIndex_Main,
+  MeshIndex_Lod,
+  MeshIndex_Debug,
+
+  MeshIndex_Count,
+};
+
+enum world_chunk_mesh_bitfield
+{
+  MeshBit_Main  = (1 << MeshIndex_Main),
+  MeshBit_Lod   = (1 << MeshIndex_Lod),
+  MeshBit_Debug = (1 << MeshIndex_Debug),
+
+  MeshBit_Count  = (1 << MeshIndex_Count),
+};
+
+world_chunk_mesh_index
+ToIndex(world_chunk_mesh_bitfield Bit)
+{
+  switch (Bit)
+  {
+    case MeshBit_Main:
+    {
+      return MeshIndex_Main;
+    } break;
+
+    case MeshBit_Lod:
+    {
+      return MeshIndex_Lod;
+    } break;
+
+    case MeshBit_Debug:
+    {
+      return MeshIndex_Debug;
+    } break;
+
+    case MeshBit_Count:
+    {
+      return MeshIndex_Count;
+    } break;
+  }
+}
+
+struct threadsafe_geometry_buffer
+{
+  volatile u32 MeshMask;
+  volatile untextured_3d_geometry_buffer *E[MeshIndex_Count];
+  bonsai_futex Futexes[MeshIndex_Count];
 };
 
 #pragma pack(push, 1)
@@ -74,11 +119,15 @@ struct world_chunk
   chunk_dimension Dim; // TODO(Jesse): can be 3x u8 instead of 3x s32
   voxel *Voxels;
 
+#if 0
   u32 SelectedMeshes;
 
   untextured_3d_geometry_buffer* Mesh;
   untextured_3d_geometry_buffer* LodMesh;
   untextured_3d_geometry_buffer* DebugMesh;
+#endif
+
+  threadsafe_geometry_buffer Meshes;
 
   voxel_position_buffer StandingSpots;
 
@@ -200,15 +249,6 @@ GetSimSpaceAABB(world *World, world_chunk *Chunk)
   return Result;
 }
 
-link_internal b32
-ChunkCouldHaveBoundaryVoxels(world_chunk *Chunk)
-{
-  b32 Reuslt = Chunk->FilledCount > 0 &&
-               Chunk->FilledCount < (u32)Volume(Chunk->Dim);
-  return Reuslt;
-}
-
-
 global_variable v3i Global_StandingSpotDim = V3i(8,8,3);
 
 struct mesh_freelist;
@@ -224,3 +264,9 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
 
 link_internal untextured_3d_geometry_buffer*
 GetMeshForChunk(mesh_freelist* Freelist, memory_arena* PermMemory);
+
+link_internal untextured_3d_geometry_buffer *
+ReplaceMesh(threadsafe_geometry_buffer *, world_chunk_mesh_bitfield , untextured_3d_geometry_buffer *, u64 );
+
+/* link_internal untextured_3d_geometry_buffer * */
+/* SetMesh(world_chunk *Chunk, world_chunk_mesh_bitfield MeshBit, mesh_freelist *MeshFreelist, memory_arena *PermMemory); */

@@ -60,11 +60,22 @@ WorkQueueEntry(work_queue_entry_copy_buffer *Job)
 }
 
 link_internal work_queue_entry
-WorkQueueEntry(work_queue_entry_copy_buffer_set *CopySet)
+WorkQueueEntry(work_queue_entry_copy_buffer_ref *Job)
+{
+  work_queue_entry Result = {
+    .Type = type_work_queue_entry_copy_buffer_ref,
+    .work_queue_entry_copy_buffer_ref = *Job,
+  };
+
+  return Result;
+}
+
+link_internal work_queue_entry
+WorkQueueEntry(work_queue_entry_copy_buffer_set *Job)
 {
   work_queue_entry Result = {
     .Type = type_work_queue_entry_copy_buffer_set,
-    .work_queue_entry_copy_buffer_set = *CopySet,
+    .work_queue_entry_copy_buffer_set = *Job,
   };
 
   return Result;
@@ -88,14 +99,70 @@ PushCopyJob(work_queue *Queue, work_queue_entry_copy_buffer_set *Set, work_queue
 
 }
 
-link_internal void*
-TakeOwnershipSync(volatile void** Src)
+/* link_internal untextured_3d_geometry_buffer* */
+/* TryTakeOwnership(volatile untextured_3d_geometry_buffer ** Src) */
+/* { */
+/*   untextured_3d_geometry_buffer *Result = (untextured_3d_geometry_buffer*)AtomicExchange((volatile void**)Src, (void*)0); */
+/*   return Result; */
+/* } */
+
+link_internal untextured_3d_geometry_buffer *
+TakeOwnershipSync(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
 {
   TIMED_FUNCTION();
-  void *Result = AtomicExchange(Src, (void*)0);
-  while (!Result) { Result = AtomicExchange(Src, (void*)0); }
+
+  AcquireFutex(&Buf->Futexes[ToIndex(MeshBit)]);
+
+  untextured_3d_geometry_buffer *Result = (untextured_3d_geometry_buffer *)Buf->E[ToIndex(MeshBit)];
   return Result;
+
+#if 0
+  while (Result == 0)
+  {
+    if (Buf->MeshMask & MeshBit)
+    {
+      Result = TryTakeOwnership(&Buf->E[ToIndex(MeshBit)]);
+    }
+    else
+    {
+      break;
+    }
+  }
+
+  if (Result)
+  {
+    Assert(Buf->MeshMask & MeshBit);
+  }
+  else
+  {
+    // NOTE(Jesse): This doesn't _strictly_ have to be true, but it would be
+    // very unlikely to happen at the moment I added it, and I just wanted to
+    // make sure it didn't fire.  Remove it
+    Assert((Buf->MeshMask&MeshBit) == 0);
+  }
+  return Result;
+#endif
 }
+
+link_internal void
+ReleaseOwnership(threadsafe_geometry_buffer *Src, world_chunk_mesh_bitfield MeshBit, untextured_3d_geometry_buffer *Buf)
+{
+  if (Buf) { Assert(Src->MeshMask & MeshBit); }
+
+#if BONSAI_INTERNAL
+  auto OldMesh = AtomicWrite((volatile void**)&Src->E[ToIndex(MeshBit)], (void*)Buf);
+  Assert(OldMesh == (void*)Buf);
+#endif
+
+  ReleaseFutex(&Src->Futexes[ToIndex(MeshBit)]);
+}
+
+/* link_internal untextured_3d_geometry_buffer * */
+/* GetMeshFor(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bitfield MeshBit) */
+/* { */
+/*   auto Result = TakeOwnershipSync(Buf, MeshBit); */
+/*   return Result; */
+/* } */
 
 link_internal void
 Replace(volatile void** Dest, void* Element)
@@ -104,8 +171,27 @@ Replace(volatile void** Dest, void* Element)
 }
 
 link_internal void
+DoCopyJob(work_queue_entry_copy_buffer_ref *Job, mesh_freelist* MeshFreelist, memory_arena* PermMemory)
+{
+  untextured_3d_geometry_buffer *Src = TakeOwnershipSync(Job->Buf, Job->MeshBit);
+
+  if (Src)
+  {
+    untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Job->Dest, Src->At);
+    v3 Basis = Job->Basis;
+    BufferVertsChecked( Src, &CopyDest, Basis, V3(1.0f));
+
+  }
+  ReleaseOwnership(Job->Buf, Job->MeshBit, Src);
+}
+
+link_internal void
 DoCopyJob(volatile work_queue_entry_copy_buffer *Job, mesh_freelist* MeshFreelist, memory_arena* PermMemory)
 {
+  // NOTE(Jesse): This code is broken .. use copy_buffer_ref instead
+  InvalidCodePath();
+
+#if 0
   /* untextured_3d_geometry_buffer* Src = Job->Src; */
   untextured_3d_geometry_buffer *Dest = Job->Dest;
 
@@ -113,11 +199,12 @@ DoCopyJob(volatile work_queue_entry_copy_buffer *Job, mesh_freelist* MeshFreelis
   /* Replace((volatile void**)Src, (void*)SrcBuffer); */
 
 
-  untextured_3d_geometry_buffer *Src = (untextured_3d_geometry_buffer*)TakeOwnershipSync((volatile void**)Job->Src);
+  untextured_3d_geometry_buffer *Src = TakeOwnershipSync(Job->Src, );
   untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Dest, Src->At);
   /* umm Count = Min(Src->At, &CopyDest->End); */
   v3 Basis = *(v3*)&Job->Basis;
   BufferVertsChecked( Src, &CopyDest, Basis, V3(1.0f));
 
   Ensure( AtomicCompareExchange((volatile void**)Job->Src, Src, 0) );
+#endif
 }

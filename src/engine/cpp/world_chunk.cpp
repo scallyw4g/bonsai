@@ -1,3 +1,124 @@
+link_internal void
+UnSetMeshBit(world_chunk *Chunk, world_chunk_mesh_bitfield MeshBit)
+{
+  // TODO(Jesse): Actually assert this?
+  // Seems like a good idea, but we might want to just unconditionally nuke it
+  Assert(Chunk->Meshes.MeshMask & MeshBit);
+  Chunk->Meshes.MeshMask = Chunk->Meshes.MeshMask & (~MeshBit);
+}
+
+link_internal untextured_3d_geometry_buffer *
+ReplaceMesh( threadsafe_geometry_buffer *Meshes,
+             world_chunk_mesh_bitfield MeshBit,
+             untextured_3d_geometry_buffer *Buf,
+             u64 BufTimestamp )
+{
+  if (Buf) { Assert(Buf->At); }
+
+  untextured_3d_geometry_buffer *Result = {};
+
+  untextured_3d_geometry_buffer *CurrentMesh = (untextured_3d_geometry_buffer*)Meshes->E[ToIndex(MeshBit)];
+
+#if 1
+  /* AcquireFutex( &Meshes->Futexes[ToIndex(MeshBit)] ); */
+
+  if (CurrentMesh)
+  {
+    if (CurrentMesh->Timestamp < BufTimestamp)
+    {
+      Meshes->E[ToIndex(MeshBit)] = Buf;
+      Result = CurrentMesh;
+    }
+  }
+  else
+  {
+    Meshes->E[ToIndex(MeshBit)] = Buf;
+  }
+
+  if (Meshes->E[ToIndex(MeshBit)]) { Meshes->MeshMask |= MeshBit; }
+
+  /* ReleaseFutex( &Meshes->Futexes[ToIndex(MeshBit)] ); */
+
+  return Result;
+#endif
+
+
+#if 0
+  // NOTE(Jesse): We need a futex here such that we know nobody else is hammering
+  // on the MeshMask.
+  //
+  // NOTE(Jesse): We need the atomics here because TakeOwnershipSync uses Atomics,
+  // and if we just use regular reads/writes we'd have bugs
+  //
+  // TODO(Jesse): If we used a lock in TakeOwnershipSync .. would we avoid the
+  // need for atomics here?
+  AcquireFutex( &Meshes->Futexes[ToIndex(MeshBit)] );
+  while (true)
+  {
+    if (CurrentMesh)
+    {
+      if ( CurrentMesh->Timestamp < BufTimestamp )
+      {
+        if ( AtomicCompareExchange((volatile void**)&Chunk->Meshes.E[ToIndex(MeshBit)], (void*)Buf, (void*)CurrentMesh) )
+        {
+          if (Buf) { Chunk->Meshes.MeshMask |= MeshBit; }
+          else { Chunk->Meshes.MeshMask &= (~MeshBit); }
+          break;
+        }
+      }
+      else
+      {
+        // The one we're trying to swap is older than the one in there, leave it alone and free ours
+        // NOTE(Jesse): In some contexts (where it's theoretically impossible to hit this path)
+        // we pass 0 for the freelist/memory.  I'm still going to protect the deallocate just
+        // in case somehow we got here from one of those paths, but I think we should never
+        // see the "Leak" below
+        if (Buf)
+        {
+          if (MeshFreelist)
+          {
+          }
+          else
+          {
+            Leak("Impossible to free Buf, MeshFreelist was ptr(0)");
+          }
+        }
+        break;
+      }
+    }
+    else
+    {
+      if ( AtomicCompareExchange((volatile void**)&Chunk->Meshes.E[ToIndex(MeshBit)], (void*)Buf, 0) )
+      {
+          if (Buf) { Chunk->Meshes.MeshMask |= MeshBit; }
+          else { Chunk->Meshes.MeshMask &= (~MeshBit); }
+        break;
+      }
+    }
+  }
+  ReleaseFutex( &Meshes->Futexes[ToIndex(MeshBit)] );
+#endif
+
+#if 0
+  Chunk->Meshes.MeshMask |= MeshBit;
+  FullBarrier; // < Shouldn't need this.. I don't think
+  auto OldMesh = AtomicWrite((volatile void**)&Chunk->Meshes.E[ToIndex(MeshBit)], Buf);
+
+  Assert(OldMesh == 0);
+  Assert(Chunk->Meshes.E[ToIndex(MeshBit)] == Buf); // < Not strictly true, could have been taken on other thread already.  added for debugging
+#endif
+}
+
+#if 0
+link_internal untextured_3d_geometry_buffer *
+SetMesh(world_chunk *Chunk, world_chunk_mesh_bitfield MeshBit, mesh_freelist *MeshFreelist, memory_arena *PermMemory)
+{
+  Assert((Chunk->Meshes.MeshMask&MeshBit) == 0);
+  auto Buf = GetMeshForChunk(MeshFreelist, PermMemory);
+  SetMesh(Chunk, MeshBit, Buf, 0, MeshFreelist, PermMemory);
+  return Buf;
+}
+#endif
 
 link_internal void
 FinalizeChunkInitialization(world_chunk *Chunk)
@@ -180,9 +301,12 @@ FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, m
   Assert ( NotSet(Chunk, Chunk_Queued) );
 
   {
+    DeallocateMeshes(&Chunk->Meshes, MeshFreelist, Memory);
+#if 0
     if (Chunk->Mesh)    { DeallocateMesh(&Chunk->Mesh, MeshFreelist, Memory); }
     if (Chunk->LodMesh) { DeallocateMesh(&Chunk->LodMesh, MeshFreelist, Memory); }
     if (Chunk->DebugMesh) { DeallocateMesh(&Chunk->DebugMesh, MeshFreelist, Memory); }
+#endif
 
     Assert(World->FreeChunkCount < FREELIST_SIZE);
     World->FreeChunks[World->FreeChunkCount++] = Chunk;
@@ -532,17 +656,12 @@ InitChunkPerlin(perlin_noise *Noise, world_chunk *Chunk, chunk_dimension Dim, u8
   return;
 }
 
-// TODO(Jesse): The fuck do we need DestChunk for?  If we're just building a
-// mesh from the SrcChunk I find that extremely sus.
 link_internal void
 BuildWorldChunkMesh( world_chunk *SrcChunk,
                      chunk_dimension SrcChunkDim,
 
                      chunk_dimension SrcChunkMin,
                      chunk_dimension SrcChunkMax,
-
-                     /* world_chunk *DestChunk, */
-                     /* chunk_dimension DestChunkDim, */
 
                      untextured_3d_geometry_buffer *DestGeometry )
 {
@@ -643,7 +762,7 @@ BuildWorldChunkMesh( world_chunk *SrcChunk,
     }
   }
 
-  return;
+  DestGeometry->Timestamp = __rdtsc();
 }
 
 #if 0
@@ -790,7 +909,9 @@ InitializeWorldChunkPerlin( perlin_noise *Noise,
   SetFlag(SyntheticChunk, Chunk_VoxelsInitialized);
 
   BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, Apron, Apron+WorldChunkDim, DestGeometry);
-  DestChunk->Mesh = DestGeometry;
+
+  Ensure( ReplaceMesh(&DestChunk->Meshes, MeshBit_Main, DestGeometry, DestGeometry->Timestamp) == 0);
+  /* DestChunk->Mesh = DestGeometry; */
 
   FinalizeChunkInitialization(DestChunk);
 
@@ -2127,7 +2248,8 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
   if (PrimaryMesh)
   {
     if (PrimaryMesh->At)
-    { DestChunk->Mesh = PrimaryMesh; FullBarrier; DestChunk->SelectedMeshes |= MeshIndex_Main; }
+    { Ensure( ReplaceMesh(&DestChunk->Meshes, MeshBit_Main, PrimaryMesh, PrimaryMesh->Timestamp) == 0); }
+      /* DestChunk->Mesh = PrimaryMesh; FullBarrier; DestChunk->SelectedMeshes |= MeshIndex_Main; } */
     else
     { DeallocateMesh(&PrimaryMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
   }
@@ -2135,7 +2257,8 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
   if (LodMesh)
   {
     if (LodMesh->At)
-    { DestChunk->LodMesh = LodMesh; FullBarrier; DestChunk->SelectedMeshes |= MeshIndex_Lod; }
+    { Ensure( ReplaceMesh(&DestChunk->Meshes, MeshBit_Lod, LodMesh, LodMesh->Timestamp) == 0); }
+    /* { DestChunk->LodMesh = LodMesh; FullBarrier; DestChunk->SelectedMeshes |= MeshIndex_Lod; } */
     else
     { DeallocateMesh(&LodMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
   }
@@ -2143,7 +2266,8 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
   if (DebugMesh)
   {
     if (DebugMesh->At)
-    { DestChunk->DebugMesh = DebugMesh; FullBarrier; DestChunk->SelectedMeshes |= MeshIndex_Debug; }
+    { Ensure( ReplaceMesh(&DestChunk->Meshes, MeshBit_Debug, DebugMesh, DebugMesh->Timestamp) == 0); }
+    /* { DestChunk->DebugMesh = DebugMesh; FullBarrier; DestChunk->SelectedMeshes |= MeshIndex_Debug; } */
     else
     { DeallocateMesh(&DebugMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
   }
@@ -2220,7 +2344,9 @@ inline void
 QueueChunkForMeshRebuild(work_queue *Queue, world_chunk *Chunk)
 {
   TIMED_FUNCTION();
-  Assert( NotSet(Chunk->Flags, Chunk_Queued) );
+
+  // NOTE(Jesse): This is legal
+  /* Assert( NotSet(Chunk->Flags, Chunk_Queued) ); */
 
   work_queue_entry Entry = {};
 
@@ -2254,6 +2380,19 @@ WorkQueueEntryUpdateWorldRegion(picked_voxel *Location, f32 Radius, world_chunk*
     .ChunkBuffer = ChunkBuffer,
     .ChunkCount = ChunkCount
   };
+  return Result;
+}
+
+link_internal work_queue_entry_copy_buffer_ref
+WorkQueueEntryCopyBufferRef(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bitfield MeshBit, untextured_3d_geometry_buffer* Dest, world_position ChunkP, camera* Camera, chunk_dimension WorldChunkDim)
+{
+  work_queue_entry_copy_buffer_ref Result = {};
+
+  Result.Buf = Buf;
+  Result.MeshBit = MeshBit;
+  Result.Dest = Dest;
+  Result.Basis = GetRenderP(WorldChunkDim, ChunkP, Camera);
+
   return Result;
 }
 
@@ -2370,19 +2509,32 @@ BufferWorld( platform* Plat,
 
         if (Chunk)
         {
-          if (Chunk->SelectedMeshes & MeshIndex_Main)
+          /* if (Chunk->SelectedMeshes & MeshIndex_Main) */
           {
             Assert(Dest->End);
-            work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer(&Chunk->Mesh, Dest, Chunk->WorldP, Graphics->Camera, World->ChunkDim);
-            /* if (CopyJob.Dest.End < Kilobytes(2)) */
+            /* untextured_3d_geometry_buffer *Mesh = (untextured_3d_geometry_buffer *)TakeOwnershipSync((volatile void**)&Chunk->Mesh); */
+            /* untextured_3d_geometry_buffer *Mesh = GetMeshFor(&Chunk->Meshes, MeshBit_Main); */
+            /* u32 Count = Mesh->At; */
+            /* ReplaceMesh(Chunk, MeshBit_Main, Mesh); */
+            /* Replace((volatile void**)&Chunk->Mesh, (void*)Mesh); */
+
+            /* if (Chunk->Meshes.MeshMask & MeshBit_Main) */
+            {
+              auto CopyJob = WorkQueueEntryCopyBufferRef(&Chunk->Meshes, MeshBit_Main, Dest, Chunk->WorldP, Graphics->Camera, World->ChunkDim);
+              auto Entry = WorkQueueEntry(&CopyJob);
+              PushWorkQueueEntry(&Plat->HighPriority, &Entry);
+            }
+#if 0
+            if (Count < Kilobytes(16))
             {
               PushCopyJob(&Plat->HighPriority, &CopySet, &CopyJob);
             }
-            /* else */
-            /* { */
-            /*   auto Entry = WorkQueueEntry(&CopyJob); */
-            /*   PushWorkQueueEntry(&Plat->HighPriority, &Entry); */
-            /* } */
+            else
+            {
+              auto Entry = WorkQueueEntry(&CopyJob);
+              PushWorkQueueEntry(&Plat->HighPriority, &Entry);
+            }
+#endif
           }
 
 #if 0
@@ -3063,11 +3215,19 @@ DrawPickedChunks(debug_ui_render_group* Group, render_entity_to_texture_group *P
     v3 Basis = -0.5f*V3(ChunkDimension(HotChunk->Chunk));
     untextured_3d_geometry_buffer* Dest = &DebugState->PickedChunksRenderGroup.GameGeo.Buffer;
 
-    if (HotChunk->Chunk->SelectedMeshes & MeshIndex_Main)
+    /* if (HotChunk->Chunk->SelectedMeshes & MeshIndex_Main) */
     {
-      untextured_3d_geometry_buffer *Src = (untextured_3d_geometry_buffer*)TakeOwnershipSync((volatile void**)&HotChunk->Chunk->Mesh);
-      BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
-      Replace((volatile void**)&HotChunk->Chunk->Mesh, Src);
+
+      untextured_3d_geometry_buffer *Src = TakeOwnershipSync(&HotChunk->Chunk->Meshes, MeshBit_Main);
+      Assert (Src);
+      {
+        BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
+      }
+      ReleaseOwnership(&HotChunk->Chunk->Meshes, MeshBit_Main, Src);
+
+      /* untextured_3d_geometry_buffer *Src = (untextured_3d_geometry_buffer*)TakeOwnershipSync((volatile void**)&HotChunk->Chunk->Mesh); */
+      /* BufferVertsChecked(Src, Dest, Basis, V3(1.0f)); */
+      /* Replace((volatile void**)&HotChunk->Chunk->Mesh, Src); */
     }
 
     {
