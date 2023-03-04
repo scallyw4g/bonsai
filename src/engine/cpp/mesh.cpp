@@ -363,17 +363,9 @@ DeallocateMesh(untextured_3d_geometry_buffer** Mesh, mesh_freelist* MeshFreelist
 link_internal void
 DeallocateMeshes(threadsafe_geometry_buffer *Buf, mesh_freelist* MeshFreelist, memory_arena* Memory)
 {
-  TakeOwnershipSync(Buf, MeshBit_Main);
-  if ( auto Mesh = ReplaceMesh(Buf, MeshBit_Main, 0, __rdtsc()) ) { DeallocateMesh(&Mesh, MeshFreelist, Memory); }
-  ReleaseOwnership(Buf, MeshBit_Main, 0);
-
-  TakeOwnershipSync(Buf, MeshBit_Lod);
-  if ( auto Mesh = ReplaceMesh(Buf, MeshBit_Lod, 0, __rdtsc()) ) { DeallocateMesh(&Mesh, MeshFreelist, Memory); }
-  ReleaseOwnership(Buf, MeshBit_Lod, 0);
-
-  TakeOwnershipSync(Buf, MeshBit_Debug);
-  if ( auto Mesh = ReplaceMesh(Buf, MeshBit_Debug, 0, __rdtsc()) ) { DeallocateMesh(&Mesh, MeshFreelist, Memory); }
-  ReleaseOwnership(Buf, MeshBit_Debug, 0);
+  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Main, 0, __rdtsc()) )  { DeallocateMesh(&Mesh, MeshFreelist, Memory); }
+  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod, 0, __rdtsc()) )   { DeallocateMesh(&Mesh, MeshFreelist, Memory); }
+  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Debug, 0, __rdtsc()) ) { DeallocateMesh(&Mesh, MeshFreelist, Memory); }
 
   Buf->MeshMask = 0;
 }

@@ -325,7 +325,7 @@ DeserializeChunk(native_file *AssetFile, world_chunk *Result, mesh_freelist *Mes
     /* Result->Mesh = GetMeshForChunk(MeshFreelist, PermMemory); */
     untextured_3d_geometry_buffer *Mesh = GetMeshForChunk(MeshFreelist, PermMemory);
     DeserializeMesh(AssetFile, &Header, Mesh);
-    Ensure( ReplaceMesh(&Result->Meshes, MeshBit_Main, Mesh, Mesh->Timestamp) == 0);
+    Ensure( AtomicReplaceMesh(&Result->Meshes, MeshBit_Main, Mesh, Mesh->Timestamp) == 0);
   }
 
   if (Header.StandingSpotElementCount)

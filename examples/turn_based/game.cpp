@@ -71,7 +71,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
         untextured_3d_geometry_buffer *GeneratedMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
         BuildWorldChunkMesh(Chunk, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh);
 
-        if (GeneratedMesh->At) // Replace with new mesh
+        if (GeneratedMesh->At)
         {
           NewMesh = GeneratedMesh;
         }
@@ -82,10 +82,10 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       }
 
       umm Timestamp = NewMesh ? NewMesh->Timestamp : __rdtsc();
-      TakeOwnershipSync(&Chunk->Meshes, MeshBit_Main);
-      auto Replaced = ReplaceMesh(&Chunk->Meshes, MeshBit_Main, NewMesh, Timestamp);
+      /* TakeOwnershipSync(&Chunk->Meshes, MeshBit_Main); */
+      auto Replaced = AtomicReplaceMesh(&Chunk->Meshes, MeshBit_Main, NewMesh, Timestamp);
       if (Replaced) { DeallocateMesh(&Replaced, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
-      ReleaseOwnership(&Chunk->Meshes, MeshBit_Main, NewMesh);
+      /* ReleaseOwnership(&Chunk->Meshes, MeshBit_Main, NewMesh); */
 
 #if 0
       {
@@ -271,7 +271,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     if (Input->F8.Clicked)
     {
 #if 1
-      QueueWorldUpdateForRegion(Plat, World, &Pick, 10.f, Resources->Memory);
+      QueueWorldUpdateForRegion(Plat, World, &Pick, 20.f, Resources->Memory);
 #else
       DoFireballAt(World, &Pick, 100.f);
 #endif

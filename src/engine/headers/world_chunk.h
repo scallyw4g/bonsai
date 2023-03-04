@@ -268,5 +268,8 @@ GetMeshForChunk(mesh_freelist* Freelist, memory_arena* PermMemory);
 link_internal untextured_3d_geometry_buffer *
 ReplaceMesh(threadsafe_geometry_buffer *, world_chunk_mesh_bitfield , untextured_3d_geometry_buffer *, u64 );
 
+link_internal untextured_3d_geometry_buffer *
+AtomicReplaceMesh(threadsafe_geometry_buffer *, world_chunk_mesh_bitfield , untextured_3d_geometry_buffer *, u64 );
+
 /* link_internal untextured_3d_geometry_buffer * */
 /* SetMesh(world_chunk *Chunk, world_chunk_mesh_bitfield MeshBit, mesh_freelist *MeshFreelist, memory_arena *PermMemory); */

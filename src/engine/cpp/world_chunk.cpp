@@ -13,14 +13,13 @@ ReplaceMesh( threadsafe_geometry_buffer *Meshes,
              untextured_3d_geometry_buffer *Buf,
              u64 BufTimestamp )
 {
+  Assert( Meshes->Futexes[ToIndex(MeshBit)].SignalValue == (u32)ThreadLocal_ThreadIndex );
   if (Buf) { Assert(Buf->At); }
 
   untextured_3d_geometry_buffer *Result = {};
 
   untextured_3d_geometry_buffer *CurrentMesh = (untextured_3d_geometry_buffer*)Meshes->E[ToIndex(MeshBit)];
 
-#if 1
-  /* AcquireFutex( &Meshes->Futexes[ToIndex(MeshBit)] ); */
 
   if (CurrentMesh)
   {
@@ -37,76 +36,19 @@ ReplaceMesh( threadsafe_geometry_buffer *Meshes,
 
   if (Meshes->E[ToIndex(MeshBit)]) { Meshes->MeshMask |= MeshBit; }
 
-  /* ReleaseFutex( &Meshes->Futexes[ToIndex(MeshBit)] ); */
-
   return Result;
-#endif
+}
 
-
-#if 0
-  // NOTE(Jesse): We need a futex here such that we know nobody else is hammering
-  // on the MeshMask.
-  //
-  // NOTE(Jesse): We need the atomics here because TakeOwnershipSync uses Atomics,
-  // and if we just use regular reads/writes we'd have bugs
-  //
-  // TODO(Jesse): If we used a lock in TakeOwnershipSync .. would we avoid the
-  // need for atomics here?
-  AcquireFutex( &Meshes->Futexes[ToIndex(MeshBit)] );
-  while (true)
-  {
-    if (CurrentMesh)
-    {
-      if ( CurrentMesh->Timestamp < BufTimestamp )
-      {
-        if ( AtomicCompareExchange((volatile void**)&Chunk->Meshes.E[ToIndex(MeshBit)], (void*)Buf, (void*)CurrentMesh) )
-        {
-          if (Buf) { Chunk->Meshes.MeshMask |= MeshBit; }
-          else { Chunk->Meshes.MeshMask &= (~MeshBit); }
-          break;
-        }
-      }
-      else
-      {
-        // The one we're trying to swap is older than the one in there, leave it alone and free ours
-        // NOTE(Jesse): In some contexts (where it's theoretically impossible to hit this path)
-        // we pass 0 for the freelist/memory.  I'm still going to protect the deallocate just
-        // in case somehow we got here from one of those paths, but I think we should never
-        // see the "Leak" below
-        if (Buf)
-        {
-          if (MeshFreelist)
-          {
-          }
-          else
-          {
-            Leak("Impossible to free Buf, MeshFreelist was ptr(0)");
-          }
-        }
-        break;
-      }
-    }
-    else
-    {
-      if ( AtomicCompareExchange((volatile void**)&Chunk->Meshes.E[ToIndex(MeshBit)], (void*)Buf, 0) )
-      {
-          if (Buf) { Chunk->Meshes.MeshMask |= MeshBit; }
-          else { Chunk->Meshes.MeshMask &= (~MeshBit); }
-        break;
-      }
-    }
-  }
-  ReleaseFutex( &Meshes->Futexes[ToIndex(MeshBit)] );
-#endif
-
-#if 0
-  Chunk->Meshes.MeshMask |= MeshBit;
-  FullBarrier; // < Shouldn't need this.. I don't think
-  auto OldMesh = AtomicWrite((volatile void**)&Chunk->Meshes.E[ToIndex(MeshBit)], Buf);
-
-  Assert(OldMesh == 0);
-  Assert(Chunk->Meshes.E[ToIndex(MeshBit)] == Buf); // < Not strictly true, could have been taken on other thread already.  added for debugging
-#endif
+link_internal untextured_3d_geometry_buffer *
+AtomicReplaceMesh( threadsafe_geometry_buffer *Meshes,
+                   world_chunk_mesh_bitfield MeshBit,
+                   untextured_3d_geometry_buffer *Buf,
+                   u64 BufTimestamp )
+{
+  TakeOwnershipSync(Meshes, MeshBit);
+  auto Replace = ReplaceMesh(Meshes, MeshBit, Buf, BufTimestamp);
+  ReleaseOwnership(Meshes, MeshBit, Buf);
+  return Replace;
 }
 
 #if 0
@@ -910,7 +852,7 @@ InitializeWorldChunkPerlin( perlin_noise *Noise,
 
   BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, Apron, Apron+WorldChunkDim, DestGeometry);
 
-  Ensure( ReplaceMesh(&DestChunk->Meshes, MeshBit_Main, DestGeometry, DestGeometry->Timestamp) == 0);
+  Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Main, DestGeometry, DestGeometry->Timestamp) == 0);
   /* DestChunk->Mesh = DestGeometry; */
 
   FinalizeChunkInitialization(DestChunk);
@@ -2248,7 +2190,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
   if (PrimaryMesh)
   {
     if (PrimaryMesh->At)
-    { Ensure( ReplaceMesh(&DestChunk->Meshes, MeshBit_Main, PrimaryMesh, PrimaryMesh->Timestamp) == 0); }
+    { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Main, PrimaryMesh, PrimaryMesh->Timestamp) == 0); }
       /* DestChunk->Mesh = PrimaryMesh; FullBarrier; DestChunk->SelectedMeshes |= MeshIndex_Main; } */
     else
     { DeallocateMesh(&PrimaryMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
@@ -2257,7 +2199,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
   if (LodMesh)
   {
     if (LodMesh->At)
-    { Ensure( ReplaceMesh(&DestChunk->Meshes, MeshBit_Lod, LodMesh, LodMesh->Timestamp) == 0); }
+    { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Lod, LodMesh, LodMesh->Timestamp) == 0); }
     /* { DestChunk->LodMesh = LodMesh; FullBarrier; DestChunk->SelectedMeshes |= MeshIndex_Lod; } */
     else
     { DeallocateMesh(&LodMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
@@ -2266,7 +2208,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
   if (DebugMesh)
   {
     if (DebugMesh->At)
-    { Ensure( ReplaceMesh(&DestChunk->Meshes, MeshBit_Debug, DebugMesh, DebugMesh->Timestamp) == 0); }
+    { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Debug, DebugMesh, DebugMesh->Timestamp) == 0); }
     /* { DestChunk->DebugMesh = DebugMesh; FullBarrier; DestChunk->SelectedMeshes |= MeshIndex_Debug; } */
     else
     { DeallocateMesh(&DebugMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
@@ -2689,6 +2631,7 @@ DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 Ch
         UnSetFlag(&Chunk->Flags, Chunk_Queued);
         UnSetFlag(&Chunk->Flags, Chunk_MeshesInitialized);
         /* QueueChunkForInit(Queue, Chunk); */
+        /* QueueChunkForMeshRebuild(Queue, Chunk); */
         QueueChunkForMeshRebuild(Queue, Chunk);
       }
 

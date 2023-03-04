@@ -5,11 +5,8 @@ InitQueue(work_queue* Queue, memory_arena* Memory) //, semaphore* Semaphore)
   Queue->DequeueIndex = 0;
 
   Queue->Entries = Allocate(work_queue_entry, Memory, WORK_QUEUE_SIZE);
-  /* Queue->GlobalQueueSemaphore = Semaphore; */
 
-  /* InitQueue(&Queue->EnqueueMutex); */
-
-  return;
+  InitializeFutex(&Queue->EnqueueFutex);
 }
 
 void
@@ -111,6 +108,7 @@ TakeOwnershipSync(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bitfield Mes
 {
   TIMED_FUNCTION();
 
+  /* Assert(Buf->Futexes[ToIndex(MeshBit)]); */
   AcquireFutex(&Buf->Futexes[ToIndex(MeshBit)]);
 
   untextured_3d_geometry_buffer *Result = (untextured_3d_geometry_buffer *)Buf->E[ToIndex(MeshBit)];
@@ -149,10 +147,11 @@ ReleaseOwnership(threadsafe_geometry_buffer *Src, world_chunk_mesh_bitfield Mesh
 {
   if (Buf) { Assert(Src->MeshMask & MeshBit); }
 
-#if BONSAI_INTERNAL
-  auto OldMesh = AtomicWrite((volatile void**)&Src->E[ToIndex(MeshBit)], (void*)Buf);
-  Assert(OldMesh == (void*)Buf);
-#endif
+  // NOTE(Jesse): This is a dumb assertion; the buffer we're replacing depends on so many things it's difficult to pass it in here
+/* #if BONSAI_INTERNAL */
+/*   untextured_3d_geometry_buffer *OldMesh = (untextured_3d_geometry_buffer *)AtomicWrite((volatile void**)&Src->E[ToIndex(MeshBit)], (void*)Buf); */
+/*   Assert(OldMesh == Buf); */
+/* #endif */
 
   ReleaseFutex(&Src->Futexes[ToIndex(MeshBit)]);
 }
