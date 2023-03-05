@@ -29,6 +29,13 @@ struct voxel
   u8 Color;
 };
 
+b32
+operator ==(voxel &V1, voxel &V2)
+{
+  b32 Result = V1.Flags == V2.Flags && V1.Color == V2.Color;
+  return Result;
+}
+
 struct boundary_voxel
 {
   voxel V;

@@ -55,7 +55,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       r32 Radius = Job->Radius;
       world *World = Thread->EngineResources->World;
 
-      DoWorldUpdate(&Thread->EngineResources->Plat->LowPriority, World, Job->ChunkBuffer, Job->ChunkCount, &Location, Radius);
+      DoWorldUpdate(&Thread->EngineResources->Plat->LowPriority, World, Job->ChunkBuffer, Job->ChunkCount, &Location, Radius, Thread);
     } break;
 
     case type_work_queue_entry_rebuild_mesh:
