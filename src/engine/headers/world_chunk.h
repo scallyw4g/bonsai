@@ -240,11 +240,26 @@ GetSimSpaceP(world *World, canonical_position P)
   return Result;
 }
 
+link_internal v3i
+GetSimSpacePi(world *World, world_chunk *Chunk)
+{
+  world_position CenterToP = Chunk->WorldP - World->Center;
+  v3i Result = CenterToP*World->ChunkDim;
+  return Result;
+}
+
 link_internal v3
 GetSimSpaceP(world *World, world_chunk *Chunk)
 {
-  world_position CenterToP = Chunk->WorldP - World->Center;
-  v3 Result = V3(CenterToP)*V3(World->ChunkDim);
+  v3 Result = V3(GetSimSpacePi(World, Chunk));
+  return Result;
+}
+
+link_internal rect3i
+GetSimSpaceAABBi(world *World, world_chunk *Chunk)
+{
+  v3i SimSpaceMin = GetSimSpacePi(World, Chunk);
+  rect3i Result = Rect3iMinDim(SimSpaceMin, World->ChunkDim );
   return Result;
 }
 

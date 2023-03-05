@@ -2572,6 +2572,14 @@ QueueWorldUpdateForRegion(platform *Plat, world *World, picked_voxel *Location, 
 }
 
 link_internal u32
+MapIntoQueryBox(v3i SimSpaceVoxP, v3i SimSpaceQueryMinP, voxel_position SimSpaceQueryDim)
+{
+  auto Rel = SimSpaceVoxP - SimSpaceQueryMinP;
+  auto Result = GetIndex(Rel, SimSpaceQueryDim);
+  return (u32)Result;
+}
+
+link_internal u32
 MapIntoQueryBox(v3 SimSpaceVoxP, v3 SimSpaceQueryMinP, voxel_position SimSpaceQueryDim)
 {
   v3 Rel = SimSpaceVoxP - SimSpaceQueryMinP;
@@ -2591,10 +2599,10 @@ DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 Ch
 
   auto LocationSimSpace = GetSimSpaceP(World, P);
 
-  aabb SimSpaceQueryAABB = AABBMinMax( (LocationSimSpace - Radius),
-                                       (LocationSimSpace + Radius) + 1.0f );
+  rect3i SimSpaceQueryAABB = Rect3iMinMax( V3i(LocationSimSpace - Radius),
+                                           V3i(LocationSimSpace + Radius) + 1.0f );
 
-  voxel_position QueryDim = Voxel_Position(GetDim(SimSpaceQueryAABB));
+  voxel_position QueryDim = GetDim(SimSpaceQueryAABB);
 
   s32 TotalVoxels_signed = Volume(SimSpaceQueryAABB);
   Assert(TotalVoxels_signed > 0);
@@ -2606,29 +2614,29 @@ DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 Ch
   voxel UnsetVoxel = { 0xff, 0xff };
   for (u32 VoxelIndex = 0; VoxelIndex < TotalVoxels; ++VoxelIndex) { CopiedVoxels[VoxelIndex] = UnsetVoxel; }
 
-  v3 SimSpaceQueryMinP = GetMin(SimSpaceQueryAABB);
+  v3i SimSpaceQueryMinP = SimSpaceQueryAABB.Min;
 
   for (u32 ChunkIndex = 0; ChunkIndex < ChunkCount; ++ChunkIndex)
   {
     world_chunk *Chunk = ChunkBuffer[ChunkIndex];
-    aabb SimSpaceChunkRect = GetSimSpaceAABB(World, Chunk);
-    aabb SimSpaceIntersectionRect = Difference(&SimSpaceChunkRect, &SimSpaceQueryAABB);
+    auto SimSpaceChunkRect = GetSimSpaceAABBi(World, Chunk);
+    auto SimSpaceIntersectionRect = Difference(&SimSpaceChunkRect, &SimSpaceQueryAABB);
 
-    auto SimSpaceIntersectionMin = GetMin(SimSpaceIntersectionRect);
-    auto SimSpaceIntersectionMax = GetMax(SimSpaceIntersectionRect);
+    auto SimSpaceIntersectionMin = SimSpaceIntersectionRect.Min;
+    auto SimSpaceIntersectionMax = SimSpaceIntersectionRect.Max;
 
-    v3 SimSpaceChunkMin = GetMin(SimSpaceChunkRect);
-    /* v3 SimSpaceChunkMax = GetMax(SimSpaceChunkRect); */
+    auto SimSpaceChunkMin = SimSpaceChunkRect.Min;
+    auto SimSpaceChunkMax = SimSpaceChunkRect.Max;
 
     auto ChunkRelRectMin = SimSpaceIntersectionMin - SimSpaceChunkMin;
     auto ChunkRelRectMax = SimSpaceIntersectionMax - SimSpaceChunkMin;
 
     b32 AnyVoxelsModified = False;
-    for (f32 zVoxel = f32(ChunkRelRectMin.z); zVoxel < f32(ChunkRelRectMax.z); zVoxel += 1.f)
+    for (s32 zVoxel = s32(ChunkRelRectMin.z); zVoxel < s32(ChunkRelRectMax.z); zVoxel += 1)
     {
-      for (f32 yVoxel = f32(ChunkRelRectMin.y); yVoxel < f32(ChunkRelRectMax.y); yVoxel += 1.f)
+      for (s32 yVoxel = s32(ChunkRelRectMin.y); yVoxel < s32(ChunkRelRectMax.y); yVoxel += 1)
       {
-        for (f32 xVoxel = f32(ChunkRelRectMin.x); xVoxel < f32(ChunkRelRectMax.x); xVoxel += 1.f)
+        for (s32 xVoxel = s32(ChunkRelRectMin.x); xVoxel < s32(ChunkRelRectMax.x); xVoxel += 1)
         {
           voxel_position RelVoxP = Voxel_Position(s32(xVoxel), s32(yVoxel), s32(zVoxel));
           voxel *V = GetVoxel(Chunk, RelVoxP);
@@ -2637,8 +2645,8 @@ DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 Ch
           // outside the legal boundary for the chunk
           //
           // Not completely sure that checks out, but I'm working on it..
-          v3 SimSpaceVoxPTruncated = V3(RelVoxP) + SimSpaceChunkMin;
-          v3 SimSpaceVoxPExact = V3(xVoxel, yVoxel, zVoxel) + SimSpaceChunkMin;
+          /* v3i SimSpaceVoxPTruncated = V3(RelVoxP) + SimSpaceChunkMin; */
+          v3i SimSpaceVoxPExact = V3i(xVoxel, yVoxel, zVoxel) + SimSpaceChunkMin;
 
           if (LengthSq(SimSpaceVoxPExact - LocationSimSpace) < Square(Radius))
           {
