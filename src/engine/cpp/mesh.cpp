@@ -408,4 +408,18 @@ DrawVoxel( untextured_3d_geometry_buffer *Mesh,
   DrawVoxel(Mesh, RenderP_VoxelCenter, Color, Diameter);
 }
 
+inline void
+DrawVoxel_MinDim( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelMin, v4 Color, v3 Diameter, r32 Emission = 1.0f)
+{
+  v3 HalfDim = Diameter/2.f;
+  v3 VoxelCenter = RenderP_VoxelMin + HalfDim;
+  DrawVoxel(Mesh, VoxelCenter, Color, Diameter);
+}
+
+inline void
+DrawVoxel_MinDim( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelMin, u32 ColorIndex, v3 Diameter, r32 Emission = 1.0f)
+{
+  v4 Color = GetColorData(DefaultPalette, ColorIndex, Emission);
+  DrawVoxel_MinDim(Mesh, RenderP_VoxelMin, Color, Diameter);
+}
 

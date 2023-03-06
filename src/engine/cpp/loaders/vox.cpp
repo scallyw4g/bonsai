@@ -270,6 +270,8 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
     Error("Couldn't read model file '%s' .", filepath);
   }
 
+  MarkBoundaryVoxels( Result.ChunkData->Voxels, Result.ChunkData->Dim, {}, Result.ChunkData->Dim);
+
   return Result;
 }
 
@@ -287,9 +289,10 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
   // TODO(Jesse): This wastes a shit-ton of memory.  Should probably have a way
   // of realloc-ing, or sum up how much memory we'll need first?
   AllocateMesh(&Result.Mesh, 6*VERTS_PER_FACE*(u32)Volume(Result.Dim), WorldStorage);
+  /* Result.Mesh = GetMeshForChunk(); */
 
   v4 *ColorPalette = Vox.Palette ? Vox.Palette : DefaultPalette;
-  BuildEntityMesh(ChunkData, &Result.Mesh, ColorPalette, Result.Dim);
+  BuildWorldChunkMeshFromMarkedVoxels(ChunkData->Voxels, Result.Dim, {}, Result.Dim, &Result.Mesh, ColorPalette);
 
   return Result;
 }

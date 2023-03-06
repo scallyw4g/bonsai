@@ -4,19 +4,25 @@
 
 
 link_internal void
-DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, v3 SpotRenderP, v3 TileDim, u32 ColorIndex = BLUE, r32 Thickness = DEFAULT_LINE_THICKNESS)
+DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, v3 RenderSpot_MinP, v3 TileDim, u32 ColorIndex = BLUE, r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
+#if 0
+  untextured_3d_geometry_buffer AABBDest = ReserveBufferSpace(Mesh, VERTS_PER_VOXEL);
+  auto MinP = RenderSpot_MinP - Thickness;
+  DrawVoxel_MinDim(&AABBDest, MinP, ColorIndex, TileDim + (Thickness*2.f));
+#else
   v3 HalfTileDim = TileDim/2.f;
   v3 QuarterTileDim = HalfTileDim/2.f;
 
   untextured_3d_geometry_buffer AABBDest = ReserveBufferSpace(Mesh, VERTS_PER_VOXEL);
 
-  auto RenderP = SpotRenderP+QuarterTileDim+V3(QuarterTileDim.xy,0.f)+V3(0,0,2);
-  DrawVoxel(&AABBDest, RenderP, ColorIndex, HalfTileDim + Thickness);
+  auto MinP = RenderSpot_MinP-Thickness+V3(QuarterTileDim.xy,0.f)+V3(0,0,2);
+  DrawVoxel_MinDim(&AABBDest, MinP, ColorIndex, HalfTileDim + Thickness*2.f);
 
   /* DEBUG_DrawAABB( &AABBDest, */
   /*                 AABBMinDim( , TileDrawDim), */
   /*                 ColorIndex, Thickness); */
+#endif
 }
 
 link_internal maybe_ray

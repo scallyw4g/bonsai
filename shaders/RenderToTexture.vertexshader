@@ -3,12 +3,14 @@ layout(location = 1) in vec3 vertexNormal_modelspace;
 layout(location = 2) in vec4 vertexColor;
 
 out vec4 Color;
+out vec3 Normal;
 
 uniform mat4 ViewProjection;
 
 void main()
 {
   Color = vertexColor;
+  Normal = vertexNormal_modelspace;
   gl_Position = ViewProjection * vec4(vertexPosition_modelspace, 1);
 }
 

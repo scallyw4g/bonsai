@@ -1,10 +1,16 @@
 layout (location = 0) out vec4 TargetTexture;
 
 in vec4 Color;
+in vec3 Normal;
+
 
 void main()
 {
-  TargetTexture = Color;
+  vec3 SunP = normalize(V3(1.f, 0.75f, 0.5f));
+
+  float cosTheta = max(0.25f, dot(Normal, SunP));
+
+  TargetTexture.xyz = Color.xyz * cosTheta;
   TargetTexture.a = 1.f;
 }
 

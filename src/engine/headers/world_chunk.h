@@ -21,7 +21,11 @@ enum voxel_flag
   Voxel_BottomFace = 1 << 4,
   Voxel_FrontFace  = 1 << 5,
   Voxel_BackFace   = 1 << 6,
+
+  Voxel_INVALID_BIT= 1 << 7,
 };
+
+global_variable u8 VoxelFaceMask = Voxel_LeftFace | Voxel_RightFace | Voxel_TopFace | Voxel_BottomFace | Voxel_FrontFace | Voxel_BackFace;
 
 struct voxel
 {
@@ -29,10 +33,32 @@ struct voxel
   u8 Color;
 };
 
+link_internal b32
+IsValid(voxel *V)
+{
+  b32 Result = (V->Flags & Voxel_INVALID_BIT) == 0;
+  if (V->Flags & Voxel_Filled)
+  {
+    Result &= (V->Flags & Voxel_INVALID_BIT) == 0;
+  }
+  else
+  {
+    Result &= (V->Flags & VoxelFaceMask) == 0;
+  }
+  return Result;
+}
+
 b32
 operator ==(voxel &V1, voxel &V2)
 {
   b32 Result = V1.Flags == V2.Flags && V1.Color == V2.Color;
+  return Result;
+}
+
+b32
+operator !=(voxel &V1, voxel &V2)
+{
+  b32 Result = !(V1==V2);
   return Result;
 }
 
@@ -118,6 +144,16 @@ struct threadsafe_geometry_buffer
   bonsai_futex Futexes[MeshIndex_Count];
 };
 
+link_internal b32
+HasMesh(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
+{
+  b32 Result = (Buf->MeshMask & MeshBit) != 0;
+  return Result;
+}
+
+
+#define WORLD_CHUNK_STANDING_SPOT_COUNT (32)
+
 #pragma pack(push, 1)
 struct current_triangles;
 struct world_chunk
@@ -126,17 +162,8 @@ struct world_chunk
   chunk_dimension Dim; // TODO(Jesse): can be 3x u8 instead of 3x s32
   voxel *Voxels;
 
-#if 0
-  u32 SelectedMeshes;
-
-  untextured_3d_geometry_buffer* Mesh;
-  untextured_3d_geometry_buffer* LodMesh;
-  untextured_3d_geometry_buffer* DebugMesh;
-#endif
-
   threadsafe_geometry_buffer Meshes;
-
-  voxel_position_buffer StandingSpots;
+  voxel_position_cursor StandingSpots;
 
   world_position WorldP;
   u32 FilledCount;

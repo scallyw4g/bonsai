@@ -66,10 +66,15 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
       untextured_3d_geometry_buffer *NewMesh = 0;
 
-      if (Chunk->FilledCount > 0)
+      /* if (Chunk->FilledCount > 0) */
       {
         untextured_3d_geometry_buffer *GeneratedMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-        BuildWorldChunkMesh(Chunk, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh);
+        /* MarkBoundaryVoxels( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-2); */
+        /* MarkBoundaryVoxels( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh ); */
+        BuildWorldChunkMeshFromMarkedVoxels( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh );
+        /* BuildWorldChunkMesh(Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh); */
+
+        DrawDebugVoxels( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh );
 
         if (GeneratedMesh->At)
         {
@@ -143,8 +148,8 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           else
 #endif
           {
-            s32 Frequency = 20;
-            s32 Amplititude = 6;
+            s32 Frequency = 50;
+            s32 Amplititude = 50;
             s32 StartingZDepth = 4;
             InitializeWorldChunkPerlinPlane( Thread,
                                              Chunk,
@@ -271,7 +276,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     if (Input->F8.Clicked)
     {
 #if 1
-      QueueWorldUpdateForRegion(Plat, World, &Pick, 20.f, Resources->Memory);
+      QueueWorldUpdateForRegion(Plat, World, &Pick, 2.f, Resources->Memory);
 #else
       DoFireballAt(World, &Pick, 100.f);
 #endif
@@ -279,7 +284,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
 
     for (u32 StandingSpotIndex = 0;
-             StandingSpotIndex < ClosestChunk->StandingSpots.Count;
+             StandingSpotIndex < AtElements(&ClosestChunk->StandingSpots);
            ++StandingSpotIndex)
     {
       v3 SpotOffset = V3(ClosestChunk->StandingSpots.Start[StandingSpotIndex]);
@@ -395,7 +400,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  Global_AssetPrefixPath = CSz("examples/asset_picker/assets");
+  Global_AssetPrefixPath = CSz("examples/turn_based/assets");
 
   world_position WorldCenter = World_Position(2, 2, 0);
   canonical_position PlayerSpawnP = Canonical_Position(Voxel_Position(0), WorldCenter);

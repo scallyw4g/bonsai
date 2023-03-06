@@ -100,6 +100,8 @@ AllocateWorldChunk(world_chunk *Result, memory_arena *Storage, world_position Wo
   Result->DimY = SafeTruncateU8(Dim.y);
   Result->DimZ = SafeTruncateU8(Dim.z);
 
+  Result->StandingSpots = V3iCursor(WORLD_CHUNK_STANDING_SPOT_COUNT, Storage);
+
   /* Result->CurrentTriangles = AllocateCurrentTriangles(2*4096, Storage); */
   /* Result->CurrentTriangles->SurfacePoints = AllocateAlignedProtection(boundary_voxels, Storage, 1, 64, False); */
 
@@ -599,7 +601,258 @@ InitChunkPerlin(perlin_noise *Noise, world_chunk *Chunk, chunk_dimension Dim, u8
 }
 
 link_internal void
-BuildWorldChunkMesh( world_chunk *SrcChunk,
+MarkBoundaryVoxels( voxel *Voxels,
+                    chunk_dimension SrcChunkDim,
+
+                    chunk_dimension SrcChunkMin,
+                    chunk_dimension SrcChunkMax )
+{
+  TIMED_FUNCTION();
+
+  v3 Diameter = V3(1.0f);
+  v3 VertexData[VERTS_PER_FACE];
+  v4 FaceColors[VERTS_PER_FACE];
+
+  auto MinDim = SrcChunkMin;
+  auto MaxDim = Min(SrcChunkDim, SrcChunkMax); // SrcChunkMin+DestChunkDim+1
+  for ( s32 z = MinDim.z; z < MaxDim.z ; ++z )
+  {
+    for ( s32 y = MinDim.y; y < MaxDim.y ; ++y )
+    {
+      for ( s32 x = MinDim.x; x < MaxDim.x ; ++x )
+      {
+        voxel_position DestP  = Voxel_Position(x,y,z);
+
+        voxel *Voxel = Voxels + GetIndex(DestP, SrcChunkDim);
+
+        if (IsFilled(Voxel))
+        {
+          Voxel->Flags = Voxel_Filled;
+
+          voxel_position rightVoxel = DestP + Voxel_Position(1, 0, 0);
+          voxel_position leftVoxel  = DestP - Voxel_Position(1, 0, 0);
+          voxel_position topVoxel   = DestP + Voxel_Position(0, 0, 1);
+          voxel_position botVoxel   = DestP - Voxel_Position(0, 0, 1);
+          voxel_position frontVoxel = DestP + Voxel_Position(0, 1, 0);
+          voxel_position backVoxel  = DestP - Voxel_Position(0, 1, 0);
+
+
+          if ( !IsInsideDim( SrcChunkDim, rightVoxel) || NotFilled( Voxels, rightVoxel, SrcChunkDim) )
+          {
+            Voxel->Flags |= Voxel_RightFace;
+          }
+          if ( !IsInsideDim( SrcChunkDim, leftVoxel) || NotFilled( Voxels, leftVoxel, SrcChunkDim) )
+          {
+            Voxel->Flags |= Voxel_LeftFace;
+          }
+          if ( !IsInsideDim( SrcChunkDim, botVoxel) || NotFilled( Voxels, botVoxel, SrcChunkDim) )
+          {
+            Voxel->Flags |= Voxel_BottomFace;
+          }
+          if ( !IsInsideDim( SrcChunkDim, topVoxel) || NotFilled( Voxels, topVoxel, SrcChunkDim) )
+          {
+            Voxel->Flags |= Voxel_TopFace;
+          }
+          if ( !IsInsideDim( SrcChunkDim, frontVoxel) || NotFilled( Voxels, frontVoxel, SrcChunkDim) )
+          {
+            Voxel->Flags |= Voxel_FrontFace;
+          }
+          if ( !IsInsideDim( SrcChunkDim, backVoxel) || NotFilled( Voxels, backVoxel, SrcChunkDim) )
+          {
+            Voxel->Flags |= Voxel_BackFace;
+          }
+        }
+      }
+    }
+  }
+}
+
+link_internal void
+DrawDebugVoxels( voxel *Voxels,
+                 chunk_dimension SrcChunkDim,
+
+                 chunk_dimension SrcChunkMin,
+                 chunk_dimension SrcChunkMax,
+
+                 untextured_3d_geometry_buffer *DestGeometry )
+{
+  TIMED_FUNCTION();
+
+  /* Assert(IsSet(SrcChunk, Chunk_VoxelsInitialized)); */
+  /* Assert(IsSet(DestChunk, Chunk_VoxelsInitialized)); */
+
+  voxel_position rightVoxel;
+  voxel_position leftVoxel;
+  voxel_position topVoxel;
+  voxel_position botVoxel;
+  voxel_position frontVoxel;
+  voxel_position backVoxel;
+
+  s32 rightVoxelReadIndex;
+  s32 leftVoxelReadIndex;
+  s32 topVoxelReadIndex;
+  s32 botVoxelReadIndex;
+  s32 frontVoxelReadIndex;
+  s32 backVoxelReadIndex;
+
+  /* random_series ColorEntropy = {33453}; */
+
+
+  v3 Diameter = V3(1.0f);
+  v3 VertexData[VERTS_PER_FACE];
+  v4 FaceColors[VERTS_PER_FACE];
+
+  auto MinDim = SrcChunkMin;
+  auto MaxDim = Min(SrcChunkDim, SrcChunkMax); // SrcChunkMin+DestChunkDim+1
+  for ( s32 z = MinDim.z; z < MaxDim.z ; ++z )
+  {
+    for ( s32 y = MinDim.y; y < MaxDim.y ; ++y )
+    {
+      for ( s32 x = MinDim.x; x < MaxDim.x ; ++x )
+      {
+        voxel_position DestP  = Voxel_Position(x,y,z);
+        s32 Index = GetIndex(DestP, SrcChunkDim);
+        voxel *Voxel = Voxels + Index;
+
+#if 0
+        FillColorArray(RED, FaceColors, DefaultPalette, VERTS_PER_FACE);
+        if (Voxel->Flags & Voxel_Filled)
+        {
+          TopFaceVertexData( V3(DestP-SrcChunkMin), V3(0.25f), VertexData);
+          BufferVertsDirect(DestGeometry, 6, VertexData, RightFaceNormalData, FaceColors);
+          /* DrawVoxel( DestGeometry, V3(x,y,z), V4(1,0,0,1), V3(.1f)); */
+        }
+#endif
+
+        // TODO(Jesse): This copy could be avoided in multiple ways, and should be.
+        FillColorArray(Voxel->Color, FaceColors, DefaultPalette, VERTS_PER_FACE);
+
+        if (Voxel->Flags & Voxel_RightFace)
+        {
+          RightFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
+          BufferVertsDirect(DestGeometry, 6, VertexData, RightFaceNormalData, FaceColors);
+        }
+        if (Voxel->Flags & Voxel_LeftFace)
+        {
+          LeftFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
+          BufferVertsDirect(DestGeometry, 6, VertexData, LeftFaceNormalData, FaceColors);
+        }
+        if (Voxel->Flags & Voxel_BottomFace)
+        {
+          BottomFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
+          BufferVertsDirect(DestGeometry, 6, VertexData, BottomFaceNormalData, FaceColors);
+        }
+        if (Voxel->Flags & Voxel_TopFace)
+        {
+          TopFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
+          BufferVertsDirect(DestGeometry, 6, VertexData, TopFaceNormalData, FaceColors);
+        }
+        if (Voxel->Flags & Voxel_FrontFace)
+        {
+          FrontFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
+          BufferVertsDirect(DestGeometry, 6, VertexData, FrontFaceNormalData, FaceColors);
+        }
+        if (Voxel->Flags & Voxel_BackFace)
+        {
+          BackFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
+          BufferVertsDirect(DestGeometry, 6, VertexData, BackFaceNormalData, FaceColors);
+        }
+      }
+    }
+  }
+
+  DestGeometry->Timestamp = __rdtsc();
+}
+link_internal void
+BuildWorldChunkMeshFromMarkedVoxels( voxel *Voxels,
+                                     chunk_dimension SrcChunkDim,
+
+                                     chunk_dimension SrcChunkMin,
+                                     chunk_dimension SrcChunkMax,
+
+                                     untextured_3d_geometry_buffer *DestGeometry,
+                                     v4* ColorPallette = DefaultPalette )
+{
+  TIMED_FUNCTION();
+
+  /* Assert(IsSet(SrcChunk, Chunk_VoxelsInitialized)); */
+  /* Assert(IsSet(DestChunk, Chunk_VoxelsInitialized)); */
+
+  voxel_position rightVoxel;
+  voxel_position leftVoxel;
+  voxel_position topVoxel;
+  voxel_position botVoxel;
+  voxel_position frontVoxel;
+  voxel_position backVoxel;
+
+  s32 rightVoxelReadIndex;
+  s32 leftVoxelReadIndex;
+  s32 topVoxelReadIndex;
+  s32 botVoxelReadIndex;
+  s32 frontVoxelReadIndex;
+  s32 backVoxelReadIndex;
+
+  /* random_series ColorEntropy = {33453}; */
+
+
+  v3 Diameter = V3(1.0f);
+  v3 VertexData[VERTS_PER_FACE];
+  v4 FaceColors[VERTS_PER_FACE];
+
+  auto MinDim = SrcChunkMin;
+  auto MaxDim = Min(SrcChunkDim, SrcChunkMax); // SrcChunkMin+DestChunkDim+1
+  for ( s32 z = MinDim.z; z < MaxDim.z ; ++z )
+  {
+    for ( s32 y = MinDim.y; y < MaxDim.y ; ++y )
+    {
+      for ( s32 x = MinDim.x; x < MaxDim.x ; ++x )
+      {
+        voxel_position DestP  = Voxel_Position(x,y,z);
+        s32 Index = GetIndex(DestP, SrcChunkDim);
+        voxel *Voxel = Voxels + Index;
+
+        // TODO(Jesse): This copy could be avoided in multiple ways, and should be.
+        FillColorArray(Voxel->Color, FaceColors, ColorPallette, VERTS_PER_FACE);
+
+        if (Voxel->Flags & Voxel_RightFace)
+        {
+          RightFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
+          BufferVertsDirect(DestGeometry, 6, VertexData, RightFaceNormalData, FaceColors);
+        }
+        if (Voxel->Flags & Voxel_LeftFace)
+        {
+          LeftFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
+          BufferVertsDirect(DestGeometry, 6, VertexData, LeftFaceNormalData, FaceColors);
+        }
+        if (Voxel->Flags & Voxel_BottomFace)
+        {
+          BottomFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
+          BufferVertsDirect(DestGeometry, 6, VertexData, BottomFaceNormalData, FaceColors);
+        }
+        if (Voxel->Flags & Voxel_TopFace)
+        {
+          TopFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
+          BufferVertsDirect(DestGeometry, 6, VertexData, TopFaceNormalData, FaceColors);
+        }
+        if (Voxel->Flags & Voxel_FrontFace)
+        {
+          FrontFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
+          BufferVertsDirect(DestGeometry, 6, VertexData, FrontFaceNormalData, FaceColors);
+        }
+        if (Voxel->Flags & Voxel_BackFace)
+        {
+          BackFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
+          BufferVertsDirect(DestGeometry, 6, VertexData, BackFaceNormalData, FaceColors);
+        }
+      }
+    }
+  }
+
+  DestGeometry->Timestamp = __rdtsc();
+}
+
+link_internal void
+BuildWorldChunkMesh( voxel *Voxels,
                      chunk_dimension SrcChunkDim,
 
                      chunk_dimension SrcChunkMin,
@@ -609,7 +862,9 @@ BuildWorldChunkMesh( world_chunk *SrcChunk,
 {
   TIMED_FUNCTION();
 
-  Assert(IsSet(SrcChunk, Chunk_VoxelsInitialized));
+  InvalidCodePath();
+
+  /* Assert(IsSet(SrcChunk, Chunk_VoxelsInitialized)); */
   /* Assert(IsSet(DestChunk, Chunk_VoxelsInitialized)); */
 
   voxel_position rightVoxel;
@@ -648,10 +903,14 @@ BuildWorldChunkMesh( world_chunk *SrcChunk,
         /*                       RandomBilateral(&ColorEntropy), */
         /*                       1.0f); */
 
-        if ( NotFilledInChunk( SrcChunk, DestP, SrcChunkDim ) )
+        /* if ( NotFilledInChunk( SrcChunk, DestP, SrcChunkDim ) ) */
+        /*   continue; */
+
+        voxel *Voxel = Voxels + GetIndex(DestP, SrcChunkDim);
+
+        if (NotFilled(Voxel))
           continue;
 
-        voxel *Voxel = SrcChunk->Voxels + GetIndex(DestP, SrcChunkDim);
         FillColorArray(Voxel->Color, FaceColors, DefaultPalette, VERTS_PER_FACE);
 #if 0
         for (u32 ColorIndex = 0;
@@ -670,32 +929,32 @@ BuildWorldChunkMesh( world_chunk *SrcChunk,
         backVoxel  = DestP - Voxel_Position(0, 1, 0);
 
 
-        if ( !IsInsideDim( SrcChunkDim, rightVoxel) || NotFilled( SrcChunk->Voxels, rightVoxel, SrcChunkDim) )
+        if ( !IsInsideDim( SrcChunkDim, rightVoxel) || NotFilled( Voxels, rightVoxel, SrcChunkDim) )
         {
           RightFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, RightFaceNormalData, FaceColors);
         }
-        if ( !IsInsideDim( SrcChunkDim, leftVoxel) || NotFilled( SrcChunk->Voxels, leftVoxel, SrcChunkDim) )
+        if ( !IsInsideDim( SrcChunkDim, leftVoxel) || NotFilled( Voxels, leftVoxel, SrcChunkDim) )
         {
           LeftFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, LeftFaceNormalData, FaceColors);
         }
-        if ( !IsInsideDim( SrcChunkDim, botVoxel) || NotFilled( SrcChunk->Voxels, botVoxel, SrcChunkDim) )
+        if ( !IsInsideDim( SrcChunkDim, botVoxel) || NotFilled( Voxels, botVoxel, SrcChunkDim) )
         {
           BottomFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, BottomFaceNormalData, FaceColors);
         }
-        if ( !IsInsideDim( SrcChunkDim, topVoxel) || NotFilled( SrcChunk->Voxels, topVoxel, SrcChunkDim) )
+        if ( !IsInsideDim( SrcChunkDim, topVoxel) || NotFilled( Voxels, topVoxel, SrcChunkDim) )
         {
           TopFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, TopFaceNormalData, FaceColors);
         }
-        if ( !IsInsideDim( SrcChunkDim, frontVoxel) || NotFilled( SrcChunk->Voxels, frontVoxel, SrcChunkDim) )
+        if ( !IsInsideDim( SrcChunkDim, frontVoxel) || NotFilled( Voxels, frontVoxel, SrcChunkDim) )
         {
           FrontFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, FrontFaceNormalData, FaceColors);
         }
-        if ( !IsInsideDim( SrcChunkDim, backVoxel) || NotFilled( SrcChunk->Voxels, backVoxel, SrcChunkDim) )
+        if ( !IsInsideDim( SrcChunkDim, backVoxel) || NotFilled( Voxels, backVoxel, SrcChunkDim) )
         {
           BackFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, BackFaceNormalData, FaceColors);
@@ -850,7 +1109,9 @@ InitializeWorldChunkPerlin( perlin_noise *Noise,
   SetFlag(DestChunk, Chunk_VoxelsInitialized);
   SetFlag(SyntheticChunk, Chunk_VoxelsInitialized);
 
-  BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, Apron, Apron+WorldChunkDim, DestGeometry);
+  NotImplemented;
+  MarkBoundaryVoxels(SyntheticChunk->Voxels, SynChunkDim, Apron, Apron+WorldChunkDim);
+  BuildWorldChunkMeshFromMarkedVoxels(SyntheticChunk->Voxels, SynChunkDim, Apron, Apron+WorldChunkDim, DestGeometry);
 
   Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Main, DestGeometry, DestGeometry->Timestamp) == 0);
   /* DestChunk->Mesh = DestGeometry; */
@@ -896,7 +1157,7 @@ InitializeWorldChunkPlane(world_chunk *DestChunk, chunk_dimension WorldChunkDim,
   SetFlag(DestChunk, Chunk_VoxelsInitialized);
   SetFlag(SyntheticChunk, Chunk_VoxelsInitialized);
 
-  BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, Apron, Apron+WorldChunkDim, DestGeometry);
+  BuildWorldChunkMesh(SyntheticChunk->Voxels, SynChunkDim, Apron, Apron+WorldChunkDim, DestGeometry);
 
   FinalizeChunkInitialization(DestChunk);
 
@@ -920,7 +1181,7 @@ GetMeshForChunk(mesh_freelist* Freelist, memory_arena* PermMemory)
   }
   else
   {
-    Result = AllocateMesh(PermMemory, (u32)Kilobytes(64*2));
+    Result = AllocateMesh(PermMemory, (u32)Kilobytes(64*4));
     Assert(Result);
   }
 
@@ -1230,11 +1491,11 @@ GetClosestPointRelativeTo(voxel_position* Query, voxel_position* Start, voxel_po
 }
 
 link_internal b32
-AboveVoxelIsUnfilled(s32 Index, world_chunk* Chunk, chunk_dimension ChunkDim)
+AboveVoxelIsUnfilled(s32 Index, voxel *Voxels, chunk_dimension ChunkDim)
 {
   TIMED_FUNCTION();
 
-  Assert( IsSet(Chunk, Chunk_VoxelsInitialized) );
+  /* Assert( IsSet(Chunk, Chunk_VoxelsInitialized) ); */
 
   s32 VolumeChunkDim = Volume(ChunkDim);
   Assert(Index < VolumeChunkDim);
@@ -1247,7 +1508,7 @@ AboveVoxelIsUnfilled(s32 Index, world_chunk* Chunk, chunk_dimension ChunkDim)
   b32 Result = False;
 
   if (TopVoxelReadIndex > -1 && TopVoxelReadIndex < VolumeChunkDim)
-    Result |= NotFilledInChunk( Chunk, TopVoxelReadIndex);
+    Result |= NotFilled( Voxels+TopVoxelReadIndex );
 
   return Result;
 }
@@ -1565,8 +1826,9 @@ GetBoundingVoxelsMidpoint(world_chunk *Chunk, v3i ChunkDim)
   return BoundingVoxelMidpoint;
 }
 
+/* // TODO(Jesse): This literally only accumulates an integer .. remove TempBoundingPoints and other ancillary shit */
 standing_spot
-ComputeStandingSpotFor8x8x2_V2(world_chunk *SrcChunk, v3i SrcChunkDim, v3i TileChunkOffset, v3i TileChunkDim, boundary_voxels *TempBoundingPoints)
+ComputeStandingSpotFor8x8x2_V2(voxel *Voxels, v3i SrcChunkDim, v3i TileChunkOffset, v3i TileChunkDim) //, boundary_voxels *TempBoundingPoints)
 {
   standing_spot Result = {};
 
@@ -1574,6 +1836,7 @@ ComputeStandingSpotFor8x8x2_V2(world_chunk *SrcChunk, v3i SrcChunkDim, v3i TileC
   s32 yMax = TileChunkOffset.y + TileChunkDim.y;
   s32 zMax = TileChunkOffset.z + TileChunkDim.z;
 
+  u32 StandableCount = 0;
   for (s32 z = TileChunkOffset.z; z < zMax; ++z)
   {
     for (s32 y = TileChunkOffset.y; y < yMax; ++y)
@@ -1583,14 +1846,15 @@ ComputeStandingSpotFor8x8x2_V2(world_chunk *SrcChunk, v3i SrcChunkDim, v3i TileC
         voxel_position P = Voxel_Position(x, y, z);
 
         s32 vIndex = GetIndex(P, SrcChunkDim);
-        voxel *V = SrcChunk->Voxels + vIndex;
-        if (IsSet(V, Voxel_Filled) && AboveVoxelIsUnfilled(vIndex, SrcChunk, SrcChunkDim))
+        voxel *V = Voxels + vIndex;
+        if (IsSet(V, Voxel_Filled) && IsSet(V, Voxel_TopFace))
         {
-          Assert(TempBoundingPoints->At < TempBoundingPoints->End);
-          TempBoundingPoints->Points[TempBoundingPoints->At++] = P;
+          StandableCount ++;
+          /* Assert(TempBoundingPoints->At < TempBoundingPoints->End); */
+          /* TempBoundingPoints->Points[TempBoundingPoints->At++] = P; */
 
-          TempBoundingPoints->Min = Min(P, TempBoundingPoints->Min);
-          TempBoundingPoints->Max = Max(P, TempBoundingPoints->Max);
+          /* TempBoundingPoints->Min = Min(P, TempBoundingPoints->Min); */
+          /* TempBoundingPoints->Max = Max(P, TempBoundingPoints->Max); */
         }
       }
     }
@@ -1608,10 +1872,17 @@ ComputeStandingSpotFor8x8x2_V2(world_chunk *SrcChunk, v3i SrcChunkDim, v3i TileC
 
   // NOTE(Jesse): Pseudo-randomly chosen heuristic that produces good results
   // for highly contoured terrain
+  if (StandableCount >= (8*4))
+  {
+    Result.CanStand = True;
+  }
+
+#if 0
   if (TempBoundingPoints->At >= (8*4))
   {
     Result.CanStand = True;
   }
+#endif
 
   return Result;
 }
@@ -1727,7 +1998,7 @@ IsValidForDestChunk(v3i Spot, v3i DestChunkDim)
 
 link_internal void
 ComputeStandingSpots( v3i SrcChunkDim,
-                      world_chunk *SrcChunk,
+                      voxel *Voxels,
                       v3i SrcChunkOffset,
 
                       v3i SrcChunkToDestChunk,
@@ -1735,8 +2006,8 @@ ComputeStandingSpots( v3i SrcChunkDim,
 
                       v3i DestChunkDim,
                       untextured_3d_geometry_buffer* DebugMesh,
-                      voxel_position_buffer *DestStandingSpots,
-                      memory_arena *PermMemory,
+                      voxel_position_cursor *DestStandingSpots,
+                      /* memory_arena *PermMemory, */
                       memory_arena *TempMemory )
 {
   TIMED_FUNCTION();
@@ -1744,16 +2015,16 @@ ComputeStandingSpots( v3i SrcChunkDim,
 #if 1
   /* world_chunk TileChunk = {}; */
   /* AllocateWorldChunk(&TileChunk, TempMemory, {}, TileDim); */
-  boundary_voxels* TempBoundingPoints = AllocateBoundaryVoxels((u32)Volume(TileDim), TempMemory);
+  /* boundary_voxels* TempBoundingPoints = AllocateBoundaryVoxels((u32)Volume(TileDim), TempMemory); */
 
   /* Assert(SynChunkDim.x % TileDim.x == 0); */
   /* Assert(SynChunkDim.y % TileDim.y == 0); */
   /* Assert(SynChunkDim.z % TileDim.z == 0); */
 
-  v3i_stream StandingSpotsStream = {};
+  /* v3i_stream StandingSpotsStream = {}; */
 
   auto MinDim = SrcChunkOffset;
-  auto MaxDim = Min(SrcChunkDim-TileDim, MinDim+V3i(0,0,TileDim.z)+DestChunkDim+SrcChunkToDestChunk+1);
+  auto MaxDim = SrcChunkDim-TileDim; // Min( SrcChunkDim-TileDim, MinDim+V3i(0,0,TileDim.z)+DestChunkDim+SrcChunkToDestChunk+1);
 
   for (s32 yIndex = MinDim.y; yIndex < MaxDim.y; yIndex += TileDim.y)
   {
@@ -1762,46 +2033,22 @@ ComputeStandingSpots( v3i SrcChunkDim,
       for (s32 zIndex = MinDim.z; zIndex < MaxDim.z; zIndex += 1)
       {
         v3i TileOffset = V3i(xIndex, yIndex, zIndex);
-        standing_spot Spot = ComputeStandingSpotFor8x8x2_V2(SrcChunk, SrcChunkDim, TileOffset, TileDim, TempBoundingPoints);
+        standing_spot Spot = ComputeStandingSpotFor8x8x2_V2(Voxels, SrcChunkDim, TileOffset, TileDim); //, TempBoundingPoints);
 
         if (Spot.CanStand)
         {
-          // NOTE(Jesse): We do the first one just to check if the previous chunk
-          // contained a standing spot here, then advance into our chunk.
-          /* if (zIndex != 0) */
+          v3i DestSpot = TileOffset-SrcChunkOffset-SrcChunkToDestChunk;
+          if (IsValidForDestChunk(DestSpot, DestChunkDim))
           {
-            v3i DestSpot = TileOffset-SrcChunkOffset-SrcChunkToDestChunk;
-            if (IsValidForDestChunk(DestSpot, DestChunkDim))
-            {
-              Push(&StandingSpotsStream, DestSpot);
-            }
-
+            Push(DestSpot, DestStandingSpots);
             DrawStandingSpot(DebugMesh, V3(DestSpot), V3(TileDim));
-#if 0
-            v3 TileDrawDim = V3(TileDim) * .95f;
-            auto MinP = V3(TileOffset)-SrcChunkToDestChunk;
-            /* DrawVoxel(Mesh, MinP+0.5f-0.05f, WHITE, V3(1.10f) ); */
-
-            DEBUG_DrawAABB( Mesh,
-                            AABBMinDim(
-                              MinP,// + V3(0, 0, Spot.BoundingVoxelMidpoint.z),
-                              TileDrawDim),
-                              /* V3(TileDim.x*.8f, TileDim.y*.8f, 1.f)), */
-                            BLUE);
-#endif
           }
-
-          /* DEBUG_DrawLine( DestChunk->LodMesh, */
-          /*                 V3(Offset)+V3(Spot.BoundingVoxelMidpoint), */
-          /*                 V3(Offset)+V3(Spot.BoundingVoxelMidpoint)+(Spot.PlaneComp.Plane.Normal*10.0f), */
-          /*                 RED, */
-          /*                 0.2f); */
-
           zIndex += TileDim.z;
+
         }
 
         /* ClearWorldChunk(&TileChunk); // We overwrite this.. do we have to clear it? */
-        TempBoundingPoints->At = 0;
+        /* TempBoundingPoints->At = 0; */
       }
     }
   }
@@ -1811,7 +2058,24 @@ ComputeStandingSpots( v3i SrcChunkDim,
   Push(&StandingSpotsStream, V3i(0));
 #endif
 
-  *DestStandingSpots = Compact(&StandingSpotsStream, PermMemory);
+  /* *DestStandingSpots = Compact(&StandingSpotsStream, PermMemory); */
+}
+
+link_internal void
+ComputeStandingSpots( v3i SrcChunkDim,
+                      world_chunk *SrcChunk,
+                      v3i SrcChunkOffset,
+
+                      v3i SrcChunkToDestChunk,
+                      v3i TileDim,
+
+                      v3i DestChunkDim,
+                      untextured_3d_geometry_buffer* DebugMesh,
+                      voxel_position_cursor *DestStandingSpots,
+                      /* memory_arena *PermMemory, */
+                      memory_arena *TempMemory )
+{
+  ComputeStandingSpots( SrcChunkDim, SrcChunk->Voxels, SrcChunkOffset, SrcChunkToDestChunk, TileDim, DestChunkDim, DebugMesh, DestStandingSpots, /* PermMemory, */ TempMemory );
 }
 
 link_internal void
@@ -2123,18 +2387,20 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
     }
 #endif
 
-    chunk_dimension Apron = Chunk_Dimension(1,1,3);
-    chunk_dimension SynChunkDim = WorldChunkDim + (Apron*2);
+    chunk_dimension Apron = Chunk_Dimension(2,2,4);
+    chunk_dimension SynChunkDim = WorldChunkDim + (Apron);
     chunk_dimension SynChunkP = DestChunk->WorldP;
 
     world_chunk *SyntheticChunk = AllocateWorldChunk(Thread->TempMemory, SynChunkP, SynChunkDim );
 
     u32 SyntheticChunkSum = InitChunkPerlinPlane( Thread->PerlinNoise,
-                                                  SyntheticChunk, SynChunkDim, Apron,
+                                                  SyntheticChunk, SynChunkDim, {{1,1,2}},
                                                   GRASS_GREEN, Frequency, Amplititude, zMin,
                                                   WorldChunkDim );
 
-    CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Apron);
+    MarkBoundaryVoxels(SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
+
+    CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, {{1,1,2}});
 
     FullBarrier;
 
@@ -2146,20 +2412,21 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
     if ( DestChunk->FilledCount > 0) // && DestChunk->FilledCount < (u32)Volume(WorldChunkDim))
     {
       PrimaryMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-      BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, Apron, Apron+WorldChunkDim, PrimaryMesh);
+      /* BuildWorldChunkMesh(SyntheticChunk->Voxels, SynChunkDim, Apron, Apron+WorldChunkDim, PrimaryMesh); */
+      BuildWorldChunkMeshFromMarkedVoxels(SyntheticChunk->Voxels, SynChunkDim, {{1,1,2}}, SynChunkDim-V3i(1,1,2), PrimaryMesh);
     }
 
 
 
     /* voxel_position_stream StandingSpots = {}; */
-#if 0
+#if 1
     DebugMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-    ComputeStandingSpots( SynChunkDim, SyntheticChunk, {{1,1,0}}, {{0,0, Global_StandingSpotDim.z}}, Global_StandingSpotDim,
+    ComputeStandingSpots( SynChunkDim, SyntheticChunk, {{1,1,0}}, {{0,0,2}}, Global_StandingSpotDim,
                           WorldChunkDim, DebugMesh, &DestChunk->StandingSpots,
-                          Thread->PermMemory, Thread->TempMemory);
+                          Thread->TempMemory);
 #endif
 
-    u32 StandingSpotCount = (u32)DestChunk->StandingSpots.Count;
+    u32 StandingSpotCount = (u32)AtElements(&DestChunk->StandingSpots);
     for (u32 SpotIndex = 0; SpotIndex < StandingSpotCount; ++SpotIndex)
     {
       v3i *Spot = DestChunk->StandingSpots.Start + SpotIndex;
@@ -2168,11 +2435,13 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
     if (SyntheticChunkSum)  // Compute 0th LOD
     {
+#if 0
       LodMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
       ComputeLodMesh( Thread,
                       DestChunk, WorldChunkDim,
                       SyntheticChunk, SynChunkDim,
                       LodMesh, True);
+#endif
 
 #if 0
       LodMesh->At = 0;
@@ -2493,13 +2762,14 @@ BufferWorld( platform* Plat,
           }
 #endif
 
-#if 0
-          umm StandingSpotCount = Chunk->StandingSpots.Count;
-          DebugLine("drawing (%u) standing spots", StandingSpotCount);
+#if 1
+          umm StandingSpotCount = AtElements(&Chunk->StandingSpots);
+          /* DebugLine("drawing (%u) standing spots", StandingSpotCount); */
           for (u32 SpotIndex = 0; SpotIndex < StandingSpotCount; ++SpotIndex)
           {
             v3i *Spot = Chunk->StandingSpots.Start + SpotIndex;
-            DrawStandingSpot(DestChunk->Mesh, *Spot, V3(Global_StandingSpotDim));
+            v3 RenderSpot = GetRenderP(World->ChunkDim, Canonical_Position(*Spot, Chunk->WorldP), Graphics->Camera);
+            DrawStandingSpot(Dest, RenderSpot, V3(Global_StandingSpotDim));
           }
 #endif
 
@@ -2599,8 +2869,9 @@ DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 Ch
 
   auto LocationSimSpace = GetSimSpaceP(World, P);
 
-  rect3i SimSpaceQueryAABB = Rect3iMinMax( V3i(LocationSimSpace - Radius),
-                                           V3i(LocationSimSpace + Radius) + 1.0f );
+
+  rect3i SimSpaceQueryAABB = Rect3iMinMax( V3i(LocationSimSpace - Radius) - 3.0f ,
+                                           V3i(LocationSimSpace + Radius) + 4.0f );
 
   voxel_position QueryDim = GetDim(SimSpaceQueryAABB);
 
@@ -2620,7 +2891,7 @@ DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 Ch
   {
     world_chunk *Chunk = ChunkBuffer[ChunkIndex];
     auto SimSpaceChunkRect = GetSimSpaceAABBi(World, Chunk);
-    auto SimSpaceIntersectionRect = Difference(&SimSpaceChunkRect, &SimSpaceQueryAABB);
+    auto SimSpaceIntersectionRect = Union(&SimSpaceChunkRect, &SimSpaceQueryAABB);
 
     auto SimSpaceIntersectionMin = SimSpaceIntersectionRect.Min;
     auto SimSpaceIntersectionMax = SimSpaceIntersectionRect.Max;
@@ -2641,44 +2912,147 @@ DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 Ch
           voxel_position RelVoxP = Voxel_Position(s32(xVoxel), s32(yVoxel), s32(zVoxel));
           voxel *V = GetVoxel(Chunk, RelVoxP);
 
-          // NOTE(Jesse): Can't add the actual offset because that pushes us
-          // outside the legal boundary for the chunk
-          //
-          // Not completely sure that checks out, but I'm working on it..
-          /* v3i SimSpaceVoxPTruncated = V3(RelVoxP) + SimSpaceChunkMin; */
           v3i SimSpaceVoxPExact = V3i(xVoxel, yVoxel, zVoxel) + SimSpaceChunkMin;
 
+          voxel CopyValue = *V;
           if (LengthSq(SimSpaceVoxPExact - LocationSimSpace) < Square(Radius))
           {
             if (V->Flags & Voxel_Filled) { --Chunk->FilledCount; AnyVoxelsModified = True; }
-            V->Flags = Voxel_Empty;
+            CopyValue.Flags = Voxel_Empty;
           }
-
 
           Assert(SimSpaceQueryMinP <= SimSpaceVoxPExact);
           u32 Index = MapIntoQueryBox(SimSpaceVoxPExact, SimSpaceQueryMinP, QueryDim);
           Assert(Index < TotalVoxels);
-          if (Index == 19) {
-            int breakhere = 0; }
           Assert(CopiedVoxels[Index] == UnsetVoxel);
-          CopiedVoxels[Index] = *V;
+          CopiedVoxels[Index] = CopyValue;
+          Assert(IsValid(CopiedVoxels+Index));
+        }
+      }
+    }
+  }
 
+
+  MarkBoundaryVoxels( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-2);
+  /* MarkBoundaryVoxels( CopiedVoxels, QueryDim, {}, QueryDim); */
+
+
+  for (u32 ChunkIndex = 0; ChunkIndex < ChunkCount; ++ChunkIndex)
+  {
+    world_chunk *Chunk = ChunkBuffer[ChunkIndex];
+    auto SimSpaceChunkRect = GetSimSpaceAABBi(World, Chunk);
+    auto SimSpaceIntersectionRect = Union(&SimSpaceChunkRect, &SimSpaceQueryAABB);
+
+    auto SimSpaceIntersectionMin = SimSpaceIntersectionRect.Min;
+    auto SimSpaceIntersectionMax = SimSpaceIntersectionRect.Max;
+
+    auto SimSpaceChunkMin = SimSpaceChunkRect.Min;
+    auto SimSpaceChunkMax = SimSpaceChunkRect.Max;
+
+    auto ChunkRelRectMin = SimSpaceIntersectionMin - SimSpaceChunkMin;
+    auto ChunkRelRectMax = SimSpaceIntersectionMax - SimSpaceChunkMin;
+
+    for (s32 zVoxel = s32(ChunkRelRectMin.z); zVoxel < s32(ChunkRelRectMax.z); zVoxel += 1)
+    {
+      for (s32 yVoxel = s32(ChunkRelRectMin.y); yVoxel < s32(ChunkRelRectMax.y); yVoxel += 1)
+      {
+        for (s32 xVoxel = s32(ChunkRelRectMin.x); xVoxel < s32(ChunkRelRectMax.x); xVoxel += 1)
+        {
+          voxel_position RelVoxP = Voxel_Position(s32(xVoxel), s32(yVoxel), s32(zVoxel));
+          voxel *V = GetVoxel(Chunk, RelVoxP);
+
+          v3i SimSpaceVoxPExact = V3i(xVoxel, yVoxel, zVoxel) + SimSpaceChunkMin;
+
+          Assert(SimSpaceQueryMinP <= SimSpaceVoxPExact);
+          u32 Index = MapIntoQueryBox(SimSpaceVoxPExact, SimSpaceQueryMinP, QueryDim);
+          Assert(Index < TotalVoxels);
+          Assert(CopiedVoxels[Index] != UnsetVoxel);
+          Assert(IsValid(CopiedVoxels+Index));
+          *V = CopiedVoxels[Index];
         }
       }
     }
 
-    FullBarrier;
+  }
 
-    if (AnyVoxelsModified)
+
+#if 1
+  auto Mesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+  BuildWorldChunkMeshFromMarkedVoxels( CopiedVoxels, QueryDim, {}, QueryDim, Mesh );
+
+  aabb QueryAABB = AABBMinMax( {}, V3i(7.f + Radius*2.f) );
+
+  DEBUG_DrawAABB(Mesh, QueryAABB, RED);
+
+  world_chunk *TempChunk = AllocateWorldChunk(Thread->PermMemory, MinP.WorldP, QueryDim);
+  picked_world_chunk *PickedChunk = Allocate(picked_world_chunk, Thread->PermMemory, 1);
+  PickedChunk->Chunk = TempChunk;
+
+  AtomicReplaceMesh( &TempChunk->Meshes, MeshBit_Main, Mesh, Mesh->Timestamp);
+
+#if DEBUG_SYSTEM_API
+  GetDebugState()->PickedChunk = PickedChunk;
+#endif
+#endif
+
+
+  voxel_position_cursor StandingSpots = V3iCursor(WORLD_CHUNK_STANDING_SPOT_COUNT, Thread->TempMemory);
+  ComputeStandingSpots( QueryDim,
+                        CopiedVoxels,
+                        {},
+
+                        {},
+                        Global_StandingSpotDim,
+
+                        QueryDim,
+
+                        Mesh,
+                        &StandingSpots,
+                        /* Thread->PermMemory, */
+                        Thread->TempMemory );
+
+  FullBarrier;
+  for (u32 ChunkIndex = 0; ChunkIndex < ChunkCount; ++ChunkIndex)
+  {
+    world_chunk *Chunk = ChunkBuffer[ChunkIndex];
+
+    DebugLine("Start StandingSpotCount(%d)/(%d)", AtElements(&Chunk->StandingSpots), Count(&Chunk->StandingSpots));
+
+    for (u32 StandingSpotIndex = 0; StandingSpotIndex < AtElements(&Chunk->StandingSpots); ++StandingSpotIndex)
     {
-      UnSetFlag(&Chunk->Flags, Chunk_Queued);
-      UnSetFlag(&Chunk->Flags, Chunk_MeshesInitialized);
-      /* QueueChunkForInit(Queue, Chunk); */
-      /* QueueChunkForMeshRebuild(Queue, Chunk); */
-      QueueChunkForMeshRebuild(Queue, Chunk);
+      voxel_position Spot = Chunk->StandingSpots.Start[StandingSpotIndex];
+      voxel_position SimSpot = Spot + SimSpaceQueryMinP;
+      if ( Contains(SimSpaceQueryAABB, SimSpot) ||
+           Contains(SimSpaceQueryAABB, SimSpot+Global_StandingSpotDim) )
+      {
+        voxel_position SwapSpot = Pop<voxel_position, voxel_position_cursor>(&Chunk->StandingSpots);
+        Chunk->StandingSpots.Start[StandingSpotIndex] = SwapSpot;
+      }
     }
 
+    for (u32 StandingSpotIndex = 0; StandingSpotIndex < AtElements(&StandingSpots); ++StandingSpotIndex)
+    {
+      voxel_position QueryRelSpot = StandingSpots.Start[StandingSpotIndex];
+      voxel_position SimSpot = QueryRelSpot + SimSpaceQueryMinP;
+      rect3i SimSpaceChunkAABB = GetSimSpaceAABBi(World, Chunk);
+
+      if ( Contains(SimSpaceChunkAABB, SimSpot) )
+      {
+        voxel_position ChunkRelSpot = SimSpot - SimSpaceChunkAABB.Min;
+        Assert(Contains(World->ChunkDim, ChunkRelSpot));
+        Push(ChunkRelSpot, &Chunk->StandingSpots);
+      }
+    }
+
+    DebugLine("End StandingSpotCount(%d)", AtElements(&Chunk->StandingSpots));
+
+    UnSetFlag(&Chunk->Flags, Chunk_Queued);
+    UnSetFlag(&Chunk->Flags, Chunk_MeshesInitialized);
+    /* QueueChunkForInit(Queue, Chunk); */
+    /* QueueChunkForMeshRebuild(Queue, Chunk); */
+    QueueChunkForMeshRebuild(Queue, Chunk);
   }
+
 }
 
 link_internal standing_spot_buffer
@@ -2702,7 +3076,7 @@ GetStandingSpotsWithinRadius(world *World, canonical_position P, r32 Radius, mem
         world_chunk *Chunk = GetWorldChunk(World, {{xWorld, yWorld, zWorld}});
         if (Chunk)
         {
-          for (u32 StandingSpotIndex = 0; StandingSpotIndex < Chunk->StandingSpots.Count; ++StandingSpotIndex)
+          for (u32 StandingSpotIndex = 0; StandingSpotIndex < AtElements(&Chunk->StandingSpots); ++StandingSpotIndex)
           {
             v3i StandingSpot = Chunk->StandingSpots.Start[StandingSpotIndex];
             v3 SimSpaceStandingSpot = GetSimSpaceP(World, Canonical_Position(StandingSpot, Chunk->WorldP));
@@ -2961,7 +3335,7 @@ PickVoxel(engine_resources *Resources)
                       WHITE, 0.05f);
 
       for (u32 StandingSpotIndex = 0;
-               StandingSpotIndex < ClosestChunk->StandingSpots.Count;
+               StandingSpotIndex < AtElements(&ClosestChunk->StandingSpots);
              ++StandingSpotIndex)
       {
         v3i *Spot = ClosestChunk->StandingSpots.Start + StandingSpotIndex;
@@ -2983,6 +3357,13 @@ PickVoxel(engine_resources *Resources)
     {
       Picked = (Result.PickedChunk.tChunk != f32_MAX);
       PickedVoxel = Result;
+
+#if DEBUG_SYSTEM_API
+      if (Picked)
+      {
+        GetDebugState()->PickedChunk = &PickedVoxel.PickedChunk;
+      }
+#endif
     }
 
     if (Picked)
@@ -2997,9 +3378,6 @@ PickVoxel(engine_resources *Resources)
       auto ChunkAABB = AABBMinDim( GetRenderP(World->ChunkDim, MinP, Camera), V3(World->ChunkDim));
       DEBUG_DrawAABB(&ChunkAABBMesh, ChunkAABB, RED);
 
-#if DEBUG_SYSTEM_API
-      GetDebugState()->PickedChunk = &PickedVoxel.PickedChunk;
-#endif
     }
 
     if (Hotkeys->Debug_Action_ComputeStandingSpot)
@@ -3007,8 +3385,8 @@ PickVoxel(engine_resources *Resources)
       /* v3i TileChunkOffset = (V3i(xIndex, yTile, zTile) * (TileChunkDim-1));// + V3(1); */
       v3i TileChunkOffset = Voxel_Position(PickedVoxel.VoxelRelP);
       v3i TileChunkDim = Chunk_Dimension(8, 8, 2);
-      boundary_voxels* TempBoundingPoints = AllocateBoundaryVoxels((u32)Volume(TileChunkDim), TranArena);
-      standing_spot Spot = ComputeStandingSpotFor8x8x2_V2(PickedVoxel.PickedChunk.Chunk, World->ChunkDim, TileChunkOffset, TileChunkDim, TempBoundingPoints);
+      /* boundary_voxels* TempBoundingPoints = AllocateBoundaryVoxels((u32)Volume(TileChunkDim), TranArena); */
+      standing_spot Spot = ComputeStandingSpotFor8x8x2_V2(PickedVoxel.PickedChunk.Chunk->Voxels, World->ChunkDim, TileChunkOffset, TileChunkDim); //, TempBoundingPoints);
     }
 
 
@@ -3139,6 +3517,10 @@ PushChunkDetails(debug_ui_render_group* Group, world_chunk* Chunk, window_layout
     PushColumn(Group, CSz("Triangles"));
     PushColumn(Group, CS(Chunk->TriCount));
     PushNewRow(Group);
+
+    PushColumn(Group, CSz("StandingSpots"));
+    PushColumn(Group, CS(AtElements(&Chunk->StandingSpots)));
+    PushNewRow(Group);
   PushTableEnd(Group);
   PushWindowEnd(Group, Window);
 }
@@ -3204,7 +3586,7 @@ DrawPickedChunks(debug_ui_render_group* Group, render_entity_to_texture_group *P
     {
 
       untextured_3d_geometry_buffer *Src = TakeOwnershipSync(&HotChunk->Chunk->Meshes, MeshBit_Main);
-      Assert (Src);
+      if (Src)
       {
         BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
       }

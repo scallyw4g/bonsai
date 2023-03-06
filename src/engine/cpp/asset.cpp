@@ -10,8 +10,12 @@ MakeWorldChunkFileHeader_v2(world_chunk *Chunk)
   Result.Checksum = 0xdeadbeef;
 
   Result.VoxelElementCount        = Volume(Chunk);
-  Result.StandingSpotElementCount = (u32)Chunk->StandingSpots.Count;
-  Result.MeshElementCount         = Chunk->Meshes.E[MeshIndex_Main]->At;
+  Result.StandingSpotElementCount = (u32)AtElements(&Chunk->StandingSpots);
+
+  if (HasMesh(&Chunk->Meshes, MeshBit_Main))
+  {
+    Result.MeshElementCount       = Chunk->Meshes.E[MeshIndex_Main]->At;
+  }
 
   Result.VertexElementSize        = (u32)sizeof(v3);
   Result.ColorElementSize         = (u32)sizeof(v4);
@@ -33,7 +37,11 @@ MakeWorldChunkFileHeader_v1(world_chunk *Chunk)
   Result.VoxelElementCount = Volume(Chunk);
   Result.VoxelElementSize  = (u32)sizeof(voxel);
 
-  Result.MeshElementCount = Chunk->Meshes.E[MeshIndex_Main]->At;
+  if (HasMesh(&Chunk->Meshes, MeshBit_Main))
+  {
+    Result.MeshElementCount = Chunk->Meshes.E[MeshIndex_Main]->At;
+  }
+
 
   Result.VertexElementSize = (u32)sizeof(v3);
   Result.ColorElementSize  = (u32)sizeof(v4);
@@ -331,7 +339,7 @@ DeserializeChunk(native_file *AssetFile, world_chunk *Result, mesh_freelist *Mes
   if (Header.StandingSpotElementCount)
   {
     u64 TotalElements = Header.StandingSpotElementCount;
-    Result->StandingSpots = V3iBuffer(TotalElements, PermMemory);
+    Result->StandingSpots = V3iCursor(WORLD_CHUNK_STANDING_SPOT_COUNT, PermMemory);
 
     DebugLine("Standing Spots (%u)", TotalElements);
 

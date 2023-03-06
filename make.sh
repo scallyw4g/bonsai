@@ -45,8 +45,8 @@ EXAMPLES_TO_BUILD="
 
 EXECUTABLES_TO_BUILD="
   $SRC/game_loader.cpp
+  $SRC/tools/asset_packer.cpp
 "
-  # $SRC/tools/asset_packer.cpp
   # $SRC/font/ttf.cpp
   # $SRC/net/server.cpp
 

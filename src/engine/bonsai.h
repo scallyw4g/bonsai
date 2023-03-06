@@ -742,6 +742,23 @@ GetIndex(v3 Offset, chunk_dimension Dim)
 }
 
 inline b32
+IsFilled(voxel *Voxel)
+{
+  b32 Result = (Voxel->Flags & Voxel_Filled) == Voxel_Filled;
+#if BONSAI_INTERNAL
+  if (!Result) Assert(Voxel->Flags == 0);
+#endif
+  return Result;
+}
+
+inline b32
+NotFilled(voxel *Voxel)
+{
+  b32 Result = !IsFilled(Voxel);
+  return Result;
+}
+
+inline b32
 IsFilled( voxel *Voxels, voxel_position VoxelP, chunk_dimension Dim)
 {
   s32 VoxelIndex = GetIndex(VoxelP, Dim);
@@ -794,20 +811,17 @@ GetAABB(entity *Entity, chunk_dimension WorldChunkDim)
 }
 
 inline b32
+Contains( voxel_position Dim, voxel_position P )
+{
+  b32 Result = ( P.x >= 0    && P.y >= 0    && P.z >= 0 &&
+                 P.x < Dim.x && P.y < Dim.y && P.z < Dim.z );
+  return Result;
+}
+
+inline b32
 IsInsideDim( voxel_position Dim, voxel_position P )
 {
-  b32 Result = False;
-
-  Result = (
-              P.x >= 0 &&
-              P.y >= 0 &&
-              P.z >= 0 &&
-
-              P.x < Dim.x &&
-              P.y < Dim.y &&
-              P.z < Dim.z
-           );
-
+  b32 Result = Contains(Dim, P);
   return Result;
 }
 

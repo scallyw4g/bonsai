@@ -76,7 +76,7 @@ s32 main(s32 ArgCount, const char **Args)
     Chunk->Flags = Chunk_VoxelsInitialized;
 
     u32 NumVerts = (u32)Kilobytes(128);
-    Chunk->Mesh = AllocateMesh( Memory, NumVerts );
+    auto Mesh = AllocateMesh( Memory, NumVerts );
 
     v4 *Palette = Vox.Palette ? Vox.Palette : DefaultPalette;
     if (Vox.Palette == 0) { Warn("No Palette found, using default"); }
@@ -98,14 +98,14 @@ s32 main(s32 ArgCount, const char **Args)
 
 #if 1
     Assert(Length(SrcChunk.Dim) > 0);
-    BuildWorldChunkMesh(&SrcChunk,
-                         SrcChunk.Dim,
-                         SrcChunkOffset,
+    BuildWorldChunkMeshFromMarkedVoxels(SrcChunk.Voxels,
+                                        SrcChunk.Dim,
+                                        SrcChunkOffset,
 
-                         SrcChunkOffset+WorldChunkDim,
-                         Chunk->Mesh );
+                                        SrcChunkOffset+WorldChunkDim,
+                                        Mesh );
 #else
-    BuildEntityMesh(&Data, Chunk->Mesh, Palette, WorldChunkDim);
+    BuildEntityMesh(&Data, Mesh, Palette, WorldChunkDim);
 #endif
 
     auto ActualSrcChunkOffset = Max(V3i(0), SrcChunkOffset - V3i(0,0,Global_StandingSpotDim.z));
@@ -114,18 +114,22 @@ s32 main(s32 ArgCount, const char **Args)
     /* v3i_buffer AllStandingSpots = {}; */
 
     ComputeStandingSpots( SrcChunk.Dim, &SrcChunk, SrcChunkOffset, SrcChunkToDestChunk, Global_StandingSpotDim,
-                          WorldChunkDim, Chunk->Mesh, &Chunk->StandingSpots, Memory, TranArena);
+                          WorldChunkDim, Mesh, &Chunk->StandingSpots, TranArena);
 
 
-    u32 StandingSpotCount = (u32)Chunk->StandingSpots.Count;
+    u32 StandingSpotCount = (u32)AtElements(&Chunk->StandingSpots);
     for (u32 SpotIndex = 0; SpotIndex < StandingSpotCount; ++SpotIndex)
     {
       v3i *Spot = Chunk->StandingSpots.Start + SpotIndex;
-      DrawStandingSpot(Chunk->Mesh, V3(*Spot), V3(Global_StandingSpotDim));
+      DrawStandingSpot(Mesh, V3(*Spot), V3(Global_StandingSpotDim));
     }
 
 
-    SerializeChunk(Chunk, CSz("examples/asset_picker/assets"));
+    if (Mesh->At)
+    {
+      AtomicReplaceMesh( &Chunk->Meshes, MeshBit_Main, Mesh, __rdtsc() );
+    }
+    SerializeChunk(Chunk, CSz("examples/turn_based/assets"));
   }
 
 }
