@@ -299,6 +299,8 @@ GetSimSpaceAABB(world *World, world_chunk *Chunk)
 }
 
 global_variable v3i Global_StandingSpotDim = V3i(8,8,3);
+global_variable v3i Global_ChunkApronDim = V3i(2,2,4);
+global_variable v3i Global_HalfChunkApronDim = V3i(1,1,2);
 
 struct mesh_freelist;
 

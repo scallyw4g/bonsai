@@ -231,6 +231,13 @@ DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, aabb Rect, u32 ColorIndex, r
 }
 
 link_internal void
+DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, rect3i Rect, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
+{
+  DEBUG_DrawAABB( Mesh, V3(Rect.Min), V3(Rect.Max), ColorIndex, Thickness );
+}
+
+
+link_internal void
 DEBUG_DrawChunkAABB( untextured_3d_geometry_buffer *Mesh, graphics *Graphics, world_position WorldP,
                      chunk_dimension WorldChunkDim, u32 ColorIndex , r32 Thickness = DEFAULT_LINE_THICKNESS)
 {

@@ -37,6 +37,10 @@ struct work_queue_entry_update_world_region
 {
   picked_voxel Location;
   f32 Radius;
+
+  canonical_position MinP;
+  canonical_position MaxP;
+
   world_chunk **ChunkBuffer;
   u32 ChunkCount;
 };

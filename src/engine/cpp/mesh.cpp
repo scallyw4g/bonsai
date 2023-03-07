@@ -399,6 +399,17 @@ DrawVoxel( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelCenter, v4 Color
   BufferVertsChecked(Mesh, 6, VertexData, BackFaceNormalData, FaceColors);
 }
 
+inline void
+DrawVoxel_CenterDim( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelCenter, v4 Color, v3 Diameter)
+{
+  DrawVoxel(Mesh, RenderP_VoxelCenter, Color, Diameter);
+}
+
+inline void
+DrawVoxel_CenterDim( untextured_3d_geometry_buffer *Mesh, v3i RenderP_VoxelCenter, v4 Color, v3 Diameter)
+{
+  DrawVoxel(Mesh, V3(RenderP_VoxelCenter), Color, Diameter);
+}
 
 inline void
 DrawVoxel( untextured_3d_geometry_buffer *Mesh,
