@@ -511,6 +511,8 @@ InitChunkPerlinPlane( perlin_noise *Noise,
   if (MinZ > Amplitude)
     return ChunkSum;
 
+  Frequency = Max(Frequency, 1);
+
   for ( s32 z = 0; z < Dim.z; ++ z)
   {
     for ( s32 y = 0; y < Dim.y; ++ y)
@@ -1181,7 +1183,7 @@ GetMeshForChunk(mesh_freelist* Freelist, memory_arena* PermMemory)
   }
   else
   {
-    Result = AllocateMesh(PermMemory, (u32)Kilobytes(64*4));
+    Result = AllocateMesh(PermMemory, (u32)Kilobytes(64*2));
     Assert(Result);
   }
 
@@ -2977,7 +2979,8 @@ DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 Ch
 
 
 #if 1
-  auto Mesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+  auto Mesh = AllocateMesh(Thread->PermMemory, (u32)Kilobytes(64*32));
+  // GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
   BuildWorldChunkMeshFromMarkedVoxels( CopiedVoxels, QueryDim, {}, QueryDim, Mesh );
 
   aabb QueryAABB = AABBMinMax( {}, V3i(7.f + Radius*2.f) );
@@ -2996,20 +2999,12 @@ DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 Ch
 #endif
 
 
-  voxel_position_cursor StandingSpots = V3iCursor(WORLD_CHUNK_STANDING_SPOT_COUNT, Thread->TempMemory);
-  ComputeStandingSpots( QueryDim,
-                        CopiedVoxels,
-                        {},
+  voxel_position_cursor StandingSpots = V3iCursor(8*WORLD_CHUNK_STANDING_SPOT_COUNT, Thread->TempMemory);
 
-                        {},
-                        Global_StandingSpotDim,
-
+  ComputeStandingSpots( QueryDim, CopiedVoxels, {},
+                        {}, Global_StandingSpotDim,
                         QueryDim,
-
-                        Mesh,
-                        &StandingSpots,
-                        /* Thread->PermMemory, */
-                        Thread->TempMemory );
+                        Mesh, &StandingSpots, Thread->TempMemory );
 
   FullBarrier;
   for (u32 ChunkIndex = 0; ChunkIndex < ChunkCount; ++ChunkIndex)
@@ -3018,24 +3013,53 @@ DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 Ch
 
     DebugLine("Start StandingSpotCount(%d)/(%d)", AtElements(&Chunk->StandingSpots), Count(&Chunk->StandingSpots));
 
-    for (u32 StandingSpotIndex = 0; StandingSpotIndex < AtElements(&Chunk->StandingSpots); ++StandingSpotIndex)
+    u32 StandingSpotIndex = 0;
+    for (;;)
     {
-      voxel_position Spot = Chunk->StandingSpots.Start[StandingSpotIndex];
-      voxel_position SimSpot = Spot + SimSpaceQueryMinP;
-      if ( Contains(SimSpaceQueryAABB, SimSpot) ||
-           Contains(SimSpaceQueryAABB, SimSpot+Global_StandingSpotDim) )
+      u32 LastIndex = (u32)AtElements(&Chunk->StandingSpots);
+      if (StandingSpotIndex >= LastIndex) { break; }
+
+      auto SimSpaceChunkRect = GetSimSpaceAABBi(World, Chunk);
+      auto SimSpaceChunkMin = SimSpaceChunkRect.Min;
+      voxel_position ChunkSpot = Chunk->StandingSpots.Start[StandingSpotIndex];
+      voxel_position ChunkSimSpot = SimSpaceChunkMin + ChunkSpot;
+      rect3i SimSpotAABB = Rect3iMinDim(ChunkSimSpot, Global_StandingSpotDim);
+
+      voxel_position QueryRelChunkSpot = ChunkSimSpot - SimSpaceQueryMinP;
+
       {
+        /* DrawStandingSpot(Mesh, V3(QueryRelChunkSpot), V3(Global_StandingSpotDim), TEAL, DEFAULT_LINE_THICKNESS*1.5f); */
+      }
+
+      auto SimSpaceUnion = Union(&SimSpotAABB, &SimSpaceQueryAABB);
+      auto SimSpaceUnionDim = GetDim(SimSpaceUnion);
+      if (Volume(SimSpaceUnion) > 0)
+      {
+        voxel_position QueryRelUnion = SimSpaceUnion.Min - SimSpaceQueryMinP;
+        DrawVoxel_MinDim(Mesh, V3(QueryRelUnion), ORANGE, V3(SimSpaceUnionDim), DEFAULT_LINE_THICKNESS*2.f);
+
+        DebugLine("Dropping StandingSpot(%d,%d,%d)", ChunkSpot.x, ChunkSpot.y, ChunkSpot.z);
+
         voxel_position SwapSpot = Pop<voxel_position, voxel_position_cursor>(&Chunk->StandingSpots);
         Chunk->StandingSpots.Start[StandingSpotIndex] = SwapSpot;
+        DrawStandingSpot(Mesh, V3(QueryRelChunkSpot), V3(Global_StandingSpotDim), RED, DEFAULT_LINE_THICKNESS*2.f);
+        /* ++StandingSpotIndex; */
+      }
+      else
+      {
+        DebugLine("Keeping StandingSpot(%d,%d,%d)", ChunkSpot.x, ChunkSpot.y, ChunkSpot.z);
+        DrawStandingSpot(Mesh, V3(QueryRelChunkSpot), V3(Global_StandingSpotDim), GREEN, DEFAULT_LINE_THICKNESS*2.f);
+        ++StandingSpotIndex;
       }
     }
 
-    for (u32 StandingSpotIndex = 0; StandingSpotIndex < AtElements(&StandingSpots); ++StandingSpotIndex)
+    for (StandingSpotIndex = 0; StandingSpotIndex < AtElements(&StandingSpots); ++StandingSpotIndex)
     {
       voxel_position QueryRelSpot = StandingSpots.Start[StandingSpotIndex];
       voxel_position SimSpot = QueryRelSpot + SimSpaceQueryMinP;
       rect3i SimSpaceChunkAABB = GetSimSpaceAABBi(World, Chunk);
 
+      /* DrawStandingSpot(Mesh, V3(QueryRelSpot), V3(Global_StandingSpotDim), TEAL, DEFAULT_LINE_THICKNESS*1.5f); */
       if ( Contains(SimSpaceChunkAABB, SimSpot) )
       {
         voxel_position ChunkRelSpot = SimSpot - SimSpaceChunkAABB.Min;

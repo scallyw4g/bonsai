@@ -199,7 +199,7 @@ struct picked_voxel
 link_internal u32
 Volume(world_chunk* Chunk)
 {
-  u32 Result = Chunk->DimX*Chunk->DimY*Chunk->DimZ;
+  u32 Result = (u32)Volume(Chunk->Dim);
   Assert(Result);
   return Result;
 }

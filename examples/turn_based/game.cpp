@@ -148,9 +148,13 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           else
 #endif
           {
-            s32 Frequency = 50;
-            s32 Amplititude = 50;
-            s32 StartingZDepth = 4;
+            s32 Frequency = 0;
+            s32 Amplititude = 0;
+            s32 StartingZDepth = 0;
+
+            /* s32 Frequency = 50; */
+            /* s32 Amplititude = 50; */
+            /* s32 StartingZDepth = 4; */
             InitializeWorldChunkPerlinPlane( Thread,
                                              Chunk,
                                              WORLD_CHUNK_DIM,
@@ -276,7 +280,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     if (Input->F8.Clicked)
     {
 #if 1
-      QueueWorldUpdateForRegion(Plat, World, &Pick, 2.f, Resources->Memory);
+      QueueWorldUpdateForRegion(Plat, World, &Pick, 20.f, Resources->Memory);
 #else
       DoFireballAt(World, &Pick, 100.f);
 #endif
