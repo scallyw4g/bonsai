@@ -37,6 +37,8 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *
 
 BONSAI_API_WORKER_THREAD_CALLBACK()
 {
+  world *World = Thread->EngineResources->World;
+
   work_queue_entry_type Type = Entry->Type;
   switch (Type)
   {
@@ -53,7 +55,6 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
       picked_voxel Location = Job->Location;
       r32 Radius = Job->Radius;
-      world *World = Thread->EngineResources->World;
 
       DoWorldUpdate(&Thread->EngineResources->Plat->LowPriority, World, Job->ChunkBuffer, Job->ChunkCount, &Location, Job->MinP, Job->MaxP, Radius, Thread);
     } break;
@@ -141,16 +142,24 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           native_file AssetFile = OpenFile(AssetFilename, "r+b");
 #endif
           {
-            s32 Frequency = 0;
-            s32 Amplititude = 0;
-            s32 StartingZDepth = 0;
+
+            /* s32 Frequency = 0; */
+            /* s32 Amplititude = 0; */
+            /* s32 StartingZDepth = 0; */
 
             /* s32 Frequency = 50; */
             /* s32 Amplititude = 50; */
-            /* s32 StartingZDepth = 4; */
+            /* s32 StartingZDepth = -40; // TODO(Jesse): Figure out why this isn't doing anything */
+
+            s32 Frequency = 50;
+            s32 Amplititude = 15;
+            s32 StartingZDepth = -40;
+
+            Assert(Chunk->Dim == World->ChunkDim);
             InitializeWorldChunkPerlinPlane( Thread,
                                              Chunk,
-                                             WORLD_CHUNK_DIM,
+                                             Chunk->Dim,
+                                             &AssetFile,
                                              Frequency,
                                              Amplititude,
                                              StartingZDepth );
@@ -160,15 +169,6 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             /* Chunk->LodMesh_Complete = True; */
             /* Assert( NotSet(Chunk, Chunk_Queued )); */
 
-          }
-
-          if (AssetFile.Handle)
-          {
-            world_chunk *AssetChunk = AllocateWorldChunk(Thread->TempMemory, {}, WORLD_CHUNK_DIM+Global_ChunkApronDim);
-            DeserializeChunk(&AssetFile, AssetChunk, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-            CloseFile(&AssetFile);
-
-            MergeChunksOffset(Chunk, AssetChunk, Global_HalfChunkApronDim);
           }
 
         }
