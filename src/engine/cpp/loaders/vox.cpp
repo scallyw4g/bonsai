@@ -127,7 +127,7 @@ ReadXYZIChunk(FILE *File, int* byteCounter)
 }
 
 vox_data
-LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepath)
+LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepath, chunk_dimension HalfApron = {})
 {
   vox_data Result = {};
   chunk_dimension ReportedDim = {};
@@ -200,6 +200,8 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
           s32 minY = s32_MAX;
           s32 minZ = s32_MAX;
 
+          // TODO(Jesse)(leak): WTF is calloc doing in here?!
+          Leak("TODO(Jesse): Don't leak memory when loading (%s)!", filepath);
           boundary_voxel *LocalVoxelCache = (boundary_voxel *)calloc((umm)ReportedVoxelCount, sizeof(boundary_voxel) );
           for( s32 VoxelCacheIndex = 0;
                VoxelCacheIndex < ReportedVoxelCount;
@@ -214,15 +216,15 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
             if (IsInsideDim(ReportedDim, TestP))
             {
               ++ActualVoxelCount;
-              maxX = Max(X, maxX);
-              maxY = Max(Y, maxY);
-              maxZ = Max(Z, maxZ);
+              maxX = Max(TestP.x, maxX);
+              maxY = Max(TestP.y, maxY);
+              maxZ = Max(TestP.z, maxZ);
 
-              minX = Min(X, minX);
-              minY = Min(Y, minY);
-              minZ = Min(Z, minZ);
+              minX = Min(TestP.x, minX);
+              minY = Min(TestP.y, minY);
+              minZ = Min(TestP.z, minZ);
 
-              LocalVoxelCache[VoxelCacheIndex] = boundary_voxel(X,Y,Z,W);
+              LocalVoxelCache[VoxelCacheIndex] = boundary_voxel(TestP.x, TestP.y, TestP.z, W);
               SetFlag(&LocalVoxelCache[VoxelCacheIndex], Voxel_Filled);
             }
             else
@@ -235,7 +237,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
           chunk_dimension Max = Chunk_Dimension(maxX+IndexToPosition, maxY+IndexToPosition, maxZ+IndexToPosition);
           chunk_dimension Min = Chunk_Dimension(minX, minY, minZ);
 
-          chunk_dimension ModelDim = Max - Min;
+          chunk_dimension ModelDim = Max - Min + HalfApron*2;
 
           Result.ChunkData = AllocateChunkData(WorldStorage, ModelDim);
           Result.ChunkData->Dim = ModelDim;
@@ -245,7 +247,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
                ++VoxelCacheIndex)
           {
             boundary_voxel *Voxel = &LocalVoxelCache[VoxelCacheIndex];
-            Voxel->Offset -= Min;
+            Voxel->Offset = Voxel->Offset - Min + HalfApron;
             s32 Index = GetIndex(Voxel->Offset, ModelDim);
             Result.ChunkData->Voxels[Index] = Voxel->V;
           }

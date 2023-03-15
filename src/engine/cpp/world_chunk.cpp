@@ -432,6 +432,40 @@ NotFilledInWorld( world *World, world_chunk *chunk, canonical_position VoxelP, c
 #endif
 
 link_internal void
+MergeChunksOffset(world_chunk *Src, world_chunk *Dest, voxel_position Offset)
+{
+  TIMED_FUNCTION();
+  Assert(Dest->FilledCount == 0);
+
+  u32 SrcChunkDim = Src->Dim;
+  u32 DestChunkDim = Dest->Dim;
+
+  Dest->FilledCount = 0;
+  for ( s32 z = 0; z < DestChunkDim.z; ++ z)
+  {
+    for ( s32 y = 0; y < DestChunkDim.y; ++ y)
+    {
+      for ( s32 x = 0; x < DestChunkDim.x; ++ x)
+      {
+        s32 SrcIndex = TryGetIndex(Voxel_Position(x,y,z) + Offset, SrcChunkDim);
+        if (SrcIndex > -1)
+        {
+          s32 DestIndex = GetIndex(Voxel_Position(x,y,z), DestChunkDim);
+          Dest->Voxels[DestIndex].Flags |= (Src->Voxels[SrcIndex].Flags & Voxel_Filled);
+          Dest->FilledCount += Dest->Voxels[DestIndex].Flags & Voxel_Filled;
+          CAssert(Voxel_Filled == 1);
+
+          // At the moment at least, I'm running under the assumption that the
+          // dest chunk will be ready for the face mask computation to be run
+          Assert(Dest->Voxels.Flags & VoxelFaceMask == 0);
+        }
+      }
+    }
+  }
+
+}
+
+link_internal void
 CopyChunkOffset(world_chunk *Src, voxel_position SrcChunkDim, world_chunk *Dest, voxel_position DestChunkDim, voxel_position Offset)
 {
   TIMED_FUNCTION();
@@ -443,19 +477,14 @@ CopyChunkOffset(world_chunk *Src, voxel_position SrcChunkDim, world_chunk *Dest,
     {
       for ( s32 x = 0; x < DestChunkDim.x; ++ x)
       {
-        s32 SrcIndex = GetIndex(Voxel_Position(x,y,z) + Offset, SrcChunkDim);
-        s32 DestIndex = GetIndex(Voxel_Position(x,y,z), DestChunkDim);
-
-#if 1
-        Dest->Voxels[DestIndex] = Src->Voxels[SrcIndex];
-#else
-        voxel vSrc = Src->Voxels[SrcIndex];
-        voxel *vDest = Dest->Voxels[DestIndex];
-        vDest = vSrc;
-#endif
-
-        Dest->FilledCount += Dest->Voxels[DestIndex].Flags & Voxel_Filled;
-        CAssert(Voxel_Filled == 1);
+        s32 SrcIndex = TryGetIndex(Voxel_Position(x,y,z) + Offset, SrcChunkDim);
+        if (SrcIndex > -1)
+        {
+          s32 DestIndex = GetIndex(Voxel_Position(x,y,z), DestChunkDim);
+          Dest->Voxels[DestIndex] = Src->Voxels[SrcIndex];
+          Dest->FilledCount += Dest->Voxels[DestIndex].Flags & Voxel_Filled;
+          CAssert(Voxel_Filled == 1);
+        }
       }
     }
   }
@@ -1935,7 +1964,7 @@ ComputeStandingSpotFor8x8x2_V2(voxel *Voxels, v3i SrcChunkDim, v3i TileChunkOffs
 
   // NOTE(Jesse): Pseudo-randomly chosen heuristic that produces good results
   // for highly contoured terrain
-  if (StandableCount >= (8*4))
+  if (StandableCount >= (8*4)-4)
   {
     Result.CanStand = True;
   }
@@ -2104,7 +2133,7 @@ ComputeStandingSpots( v3i SrcChunkDim,
           if (IsValidForDestChunk(DestSpot, DestChunkDim))
           {
             Push(DestSpot, DestStandingSpots);
-            DrawStandingSpot(DebugMesh, V3(DestSpot), V3(TileDim));
+            /* DrawStandingSpot(DebugMesh, V3(DestSpot), V3(TileDim)); */
           }
           zIndex += TileDim.z;
         }
@@ -3103,14 +3132,16 @@ DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 Ch
 
     DebugLine("Start StandingSpotCount(%d)/(%d)", AtElements(&Chunk->StandingSpots), Count(&Chunk->StandingSpots));
 
+    auto SimSpaceChunkRect = GetSimSpaceAABBi(World, Chunk);
+    auto SimSpaceChunkMin = SimSpaceChunkRect.Min;
+
+    // NOTE(Jesse): Cull old standing spots that are entirely inside the update AABB
     u32 StandingSpotIndex = 0;
     for (;;)
     {
       u32 LastIndex = (u32)AtElements(&Chunk->StandingSpots);
       if (StandingSpotIndex >= LastIndex) { break; }
 
-      auto SimSpaceChunkRect = GetSimSpaceAABBi(World, Chunk);
-      auto SimSpaceChunkMin = SimSpaceChunkRect.Min;
       voxel_position ChunkSpot = Chunk->StandingSpots.Start[StandingSpotIndex];
       voxel_position ChunkSimSpot = SimSpaceChunkMin + ChunkSpot;
       rect3i SimSpotAABB = Rect3iMinDim(ChunkSimSpot, Global_StandingSpotDim);
@@ -3123,7 +3154,7 @@ DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 Ch
 
       auto SimSpaceSpotUnion = Union(&SimSpotAABB, &SimSpaceQueryAABB);
       auto SimSpaceUnionDim = GetDim(SimSpaceSpotUnion);
-      if (Volume(SimSpaceSpotUnion) == Volume(Global_StandingSpotDim))
+      if (Volume(SimSpaceSpotUnion) == Volume(Global_StandingSpotDim)) // Cull
       {
         voxel_position QueryRelUnion = SimSpaceSpotUnion.Min - SimSpaceQueryMinP;
         voxel_position SwapSpot = Pop<voxel_position, voxel_position_cursor>(&Chunk->StandingSpots);
@@ -3140,17 +3171,37 @@ DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 Ch
       }
     }
 
+    // Cull gen'd standing spots that overlap with any current standing spots
     for (StandingSpotIndex = 0; StandingSpotIndex < AtElements(&StandingSpots); ++StandingSpotIndex)
     {
       voxel_position QueryRelSpot = StandingSpots.Start[StandingSpotIndex];
       voxel_position SimSpot = QueryRelSpot + SimSpaceQueryMinP;
+      rect3i SimSpotAABB = Rect3iMinDim(SimSpot, Global_StandingSpotDim);
 
-      DrawStandingSpot(Mesh, V3(QueryRelSpot), V3(Global_StandingSpotDim), TEAL, DEFAULT_LINE_THICKNESS*1.5f);
-      if ( Contains(SimSpaceChunkAABB, SimSpot) )
+      //
+      // NOTE(Jesse): I'm not entirely sure this is working properly, but it seems to be
+      b32 Skip = false;
+      for (u32 ChunkStandingSpotIndex = 0; ChunkStandingSpotIndex < AtElements(&Chunk->StandingSpots); ++ChunkStandingSpotIndex)
       {
-        voxel_position ChunkRelSpot = SimSpot - SimSpaceChunkAABB.Min;
-        Assert(Contains(World->ChunkDim, ChunkRelSpot));
-        Push(ChunkRelSpot, &Chunk->StandingSpots);
+        voxel_position ChunkSpot = Chunk->StandingSpots.Start[ChunkStandingSpotIndex];
+        voxel_position ChunkSimSpot = ChunkSpot + SimSpaceChunkMin;
+        rect3i ChunkSimSpotAABB = Rect3iMinDim(ChunkSimSpot, Global_StandingSpotDim);
+        if (Volume(Union(&SimSpotAABB, &ChunkSimSpotAABB)))
+        {
+          Skip = true;
+          break;
+        }
+      }
+
+      if (!Skip)
+      {
+        DrawStandingSpot(Mesh, V3(QueryRelSpot), V3(Global_StandingSpotDim), TEAL, DEFAULT_LINE_THICKNESS*1.5f);
+        if ( Contains(SimSpaceChunkAABB, SimSpot) )
+        {
+          voxel_position ChunkRelSpot = SimSpot - SimSpaceChunkAABB.Min;
+          Assert(Contains(World->ChunkDim, ChunkRelSpot));
+          Push(ChunkRelSpot, &Chunk->StandingSpots);
+        }
       }
     }
 

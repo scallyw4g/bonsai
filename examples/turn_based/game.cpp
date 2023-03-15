@@ -139,13 +139,6 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           counted_string AssetFilename = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, Thread->TempMemory);
 
           native_file AssetFile = OpenFile(AssetFilename, "r+b");
-          if (AssetFile.Handle)
-          {
-            DeserializeChunk(&AssetFile, Chunk, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-            CloseFile(&AssetFile);
-            // fsync?
-          }
-          else
 #endif
           {
             s32 Frequency = 0;
@@ -168,6 +161,16 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             /* Assert( NotSet(Chunk, Chunk_Queued )); */
 
           }
+
+          if (AssetFile.Handle)
+          {
+            world_chunk *AssetChunk = AllocateWorldChunk(Thread->TempMemory, {}, WORLD_CHUNK_DIM+Global_ChunkApronDim);
+            DeserializeChunk(&AssetFile, AssetChunk, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+            CloseFile(&AssetFile);
+
+            MergeChunksOffset(Chunk, AssetChunk, Global_HalfChunkApronDim);
+          }
+
         }
         else if ( NotSet(Chunk->Flags, Chunk_MeshesInitialized) )
         {
@@ -407,7 +410,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   Global_AssetPrefixPath = CSz("examples/turn_based/assets");
 
   world_position WorldCenter = World_Position(2, 2, 0);
-  canonical_position PlayerSpawnP = Canonical_Position(Voxel_Position(0), WorldCenter);
+  canonical_position PlayerSpawnP = Canonical_Position(Voxel_Position(0), WorldCenter + World_Position(0,0,3));
 
   StandardCamera(Graphics->Camera, 10000.0f, 1000.0f, PlayerSpawnP);
   /* Graphics->Camera->CurrentP.WorldP = World_Position(1, -1, 1); */
@@ -422,7 +425,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->Player = GetFreeEntity(EntityTable);
   SpawnPlayer(Plat, World, GameState->Models + ModelIndex_Player, GameState->Player, PlayerSpawnP, &GameState->Entropy);
 
-  auto EnemySpawnP = Canonical_Position(V3(0), PlayerSpawnP.WorldP - World_Position(2,1,0));
+  auto EnemySpawnP = Canonical_Position(V3(0), WorldCenter + World_Position(-1,-1,3));
   GameState->Enemy = GetFreeEntity(EntityTable);
   SpawnPlayer(Plat, World, GameState->Models + ModelIndex_Enemy, GameState->Enemy, EnemySpawnP, &GameState->Entropy);
 

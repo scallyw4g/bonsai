@@ -320,6 +320,8 @@ DeserializeChunk(native_file *AssetFile, world_chunk *Result, mesh_freelist *Mes
     } break;
   }
 
+  Assert(Header.VoxelElementCount == Volume(Result));
+
   u32 Tag = Read_u32(AssetFile);
   Assert( Tag ==  WorldChunkFileTag_VOXD );
   umm VoxByteCount = Header.VoxelElementCount * Header.VoxelElementSize;
@@ -327,7 +329,7 @@ DeserializeChunk(native_file *AssetFile, world_chunk *Result, mesh_freelist *Mes
 
   Result->FilledCount = Header.VoxelElementCount;
 
-  if (Header.MeshElementCount)
+  if (MeshFreelist && Header.MeshElementCount)
   {
     /* Result->SelectedMeshes |= MeshBit_Main; */
     /* Result->Mesh = GetMeshForChunk(MeshFreelist, PermMemory); */

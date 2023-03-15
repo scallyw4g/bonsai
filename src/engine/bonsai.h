@@ -707,6 +707,22 @@ GetIndexUnsafe(voxel_position P, chunk_dimension Dim)
 }
 
 inline s32
+TryGetIndex(chunk_dimension P, chunk_dimension Dim)
+{
+  s32 Result = -1;
+  if (P.x >= 0 && P.y >= 0 && P.z >= 0 &&
+      P.x < Dim.x && P.y < Dim.y && P.z < Dim.z)
+  {
+    Result = P.x +
+            (P.y*Dim.x) +
+            (P.z*Dim.x*Dim.y);
+    Assert(Result >= 0);
+  }
+
+  Assert(Result < Volume(Dim));
+  return Result;
+}
+inline s32
 GetIndex(s32 X, s32 Y, s32 Z, chunk_dimension Dim)
 {
   Assert(X >= 0);
