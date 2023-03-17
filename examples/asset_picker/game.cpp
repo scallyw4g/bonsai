@@ -180,5 +180,5 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
 {
   Global_ThreadStates = AllThreads;
-  ThreadLocal_ThreadIndex = ThreadIndex;
+  SetThreadLocal_ThreadIndex(ThreadIndex);
 }

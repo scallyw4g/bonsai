@@ -1638,13 +1638,16 @@ ResetAllLayouts(ui_render_command_buffer* CommandBuffer)
           {
             Member.is_union?
             {
-              Member.map_members(UMember).containing(layout)
+              Member.map_members(UMember)
               {
-                case type_(UMember.type):
+                UMember.contains_type(layout)?
                 {
-                  Command->(UMember.name).Layout.At = {};
-                  Command->(UMember.name).Layout.DrawBounds = InvertedInfinityRectangle();
-                } break;
+                  case type_(UMember.type):
+                  {
+                    Command->(UMember.name).Layout.At = {};
+                    Command->(UMember.name).Layout.DrawBounds = InvertedInfinityRectangle();
+                  } break;
+                }
               }
             }
           }
@@ -1682,13 +1685,16 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
           {
             Member.is_union?
             {
-              Member.map_members(UMember).containing(layout)
+              Member.map_members(UMember)
               {
-                case type_(UMember.type):
+                UMember.contains_type(layout)
                 {
-                  Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Command->(UMember.name).Layout));
-                  Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Command->(UMember.name).Layout));
-                } break;
+                  case type_(UMember.type):
+                  {
+                    Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Command->(UMember.name).Layout));
+                    Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Command->(UMember.name).Layout));
+                  } break;
+                }
               }
             }
           }
