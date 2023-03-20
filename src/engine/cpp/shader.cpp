@@ -107,32 +107,52 @@ PushShaderUniform( memory_arena *Mem, const char *Name)
 }
 
 
-// TODO(Jesse, id: 237, tags: metaprogramming): Metaprogram this!!
-#define BasicTypeUniformAllocators(type, TypeName)                             \
-  shader_uniform *                                                             \
-  PushShaderUniform( memory_arena *Mem, const char *Name, type *Value)         \
-  {                                                                            \
-    shader_uniform *Uniform = PushShaderUniform(Mem, Name);                    \
-    Uniform->TypeName = Value;                                                 \
-    Uniform->Type = ShaderUniform_##TypeName;                                  \
-    return Uniform;                                                            \
-  }                                                                            \
-  shader_uniform *                                                             \
-  GetUniform(memory_arena *Mem, shader *Shader, type *Value, const char *Name) \
-  {                                                                            \
-    shader_uniform *Uniform = PushShaderUniform(Mem, Name, Value);             \
-    Uniform->ID = GetShaderUniform(Shader, Name);                              \
-    return Uniform;                                                            \
-  }
+poof(
+  func gen_shader_uniform_push(uniform_t)
+  {
+    shader_uniform *
+    PushShaderUniform( memory_arena *Mem, const char *Name, uniform_t.name *Value)
+    {
+      shader_uniform *Uniform = PushShaderUniform(Mem, Name);
+      Uniform->Type = ShaderUniform_(uniform_t.name.to_capital_case);
+      Uniform->uniform_t.name.to_capital_case = Value;
+      return Uniform;
+    }
 
-BasicTypeUniformAllocators(camera, Camera)
-BasicTypeUniformAllocators(texture, Texture)
-BasicTypeUniformAllocators(light, Light)
-BasicTypeUniformAllocators(m4, M4)
-BasicTypeUniformAllocators(v3, V3)
-BasicTypeUniformAllocators(u32, U32)
-BasicTypeUniformAllocators(s32, S32)
-BasicTypeUniformAllocators(r32, R32)
+    shader_uniform *
+    GetUniform(memory_arena *Mem, shader *Shader, uniform_t.name *Value, const char *Name)
+    {
+      shader_uniform *Uniform = PushShaderUniform(Mem, Name, Value);
+      Uniform->ID = GetShaderUniform(Shader, Name);
+      return Uniform;
+    }
+  }
+);
+
+poof(gen_shader_uniform_push(camera));
+#include <generated/gen_shader_uniform_push_camera.h>
+
+poof(gen_shader_uniform_push(texture));
+#include <generated/gen_shader_uniform_push_texture.h>
+
+poof(gen_shader_uniform_push(light));
+#include <generated/gen_shader_uniform_push_light.h>
+
+poof(gen_shader_uniform_push(m4));
+#include <generated/gen_shader_uniform_push_m4.h>
+
+poof(gen_shader_uniform_push(v3));
+#include <generated/gen_shader_uniform_push_v3.h>
+
+poof(gen_shader_uniform_push(u32));
+#include <generated/gen_shader_uniform_push_unsigned int .h>
+
+poof(gen_shader_uniform_push(s32));
+#include <generated/gen_shader_uniform_push_int .h>
+
+poof(gen_shader_uniform_push(r32));
+#include <generated/gen_shader_uniform_push_float .h>
+
 
 
 shader
