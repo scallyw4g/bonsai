@@ -1,6 +1,7 @@
 struct v3i_cursor
 {
   v3i *Start;
+  // TODO(Jesse)(immediate): For the love of fucksakes change these to indices
   v3i *At;
   v3i *End;
 };
