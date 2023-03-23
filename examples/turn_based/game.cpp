@@ -230,6 +230,19 @@ MoveToStandingSpot(world *World, canonical_position P)
   return Result;
 }
 
+enum player_action
+{
+  PlayerAction_None,
+
+  PlayerAction_Move,
+  PlayerAction_Charge,
+  PlayerAction_Fire,
+  PlayerAction_Jump,
+};
+poof(generate_string_table(player_action))
+#include <generated/generate_string_table_player_action.h>
+
+
 BONSAI_API_MAIN_THREAD_CALLBACK()
 {
   Assert(ThreadLocal_ThreadIndex == 0);
@@ -282,89 +295,145 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
     if (Input->F8.Clicked)
     {
-#if 1
       QueueWorldUpdateForRegion(Plat, World, &Pick, 20.f, Resources->Memory);
-#else
-      DoFireballAt(World, &Pick, 100.f);
-#endif
     }
 
+    local_persist player_action SelectedAction = {};
 
-    for (u32 StandingSpotIndex = 0;
-             StandingSpotIndex < AtElements(&ClosestChunk->StandingSpots);
-           ++StandingSpotIndex)
+    if (Input->Q.Clicked)
     {
-      v3 SpotOffset = V3(ClosestChunk->StandingSpots.Start[StandingSpotIndex]);
-      standing_spot Spot = StandingSpot(SpotOffset, ClosestChunk->WorldP);
+      SelectedAction = PlayerAction_Move;
+    }
 
-      aabb SpotRect = AABBMinMax(SpotOffset, SpotOffset+Global_StandingSpotDim);
-      if (IsInside(SpotRect, Truncate(Pick.VoxelRelP)))
+    if (Input->W.Clicked)
+    {
+      SelectedAction = PlayerAction_Charge;
+    }
+
+    if (Input->E.Clicked)
+    {
+      SelectedAction = PlayerAction_Fire;
+    }
+
+    if (Input->R.Clicked)
+    {
+      SelectedAction = PlayerAction_Jump;
+    }
+
+    GetDebugState()->DebugValue_u64(SelectedAction, ToString(SelectedAction).Start);
+
+    b32 DidPlayerAction = False;
+    switch (SelectedAction)
+    {
+      case PlayerAction_None:
       {
-        /* untextured_3d_geometry_buffer SpotAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB); */
-        v3 RenderP = GetRenderP(World->ChunkDim, MinP+SpotOffset, Camera);
-        DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_LINE_THICKNESS*3.f);
-        if (Input->LMB.Clicked)
+      } break;
+
+      case PlayerAction_Move:
+      {
+        for (u32 StandingSpotIndex = 0;
+                 StandingSpotIndex < AtElements(&ClosestChunk->StandingSpots);
+               ++StandingSpotIndex)
         {
-          v3 PlayerSimP = GetSimSpaceP(World, Player->P);
-          v3 SpotSimP = GetSimSpaceP(World, Spot.P);
-          if (PointsAreWithinDistance(PlayerSimP, SpotSimP, StandingSpotSearchThresh))
+          v3 SpotOffset = V3(ClosestChunk->StandingSpots.Start[StandingSpotIndex]);
+          standing_spot Spot = StandingSpot(SpotOffset, ClosestChunk->WorldP);
+
+          aabb SpotRect = AABBMinMax(SpotOffset, SpotOffset+Global_StandingSpotDim);
+          if (IsInside(SpotRect, Truncate(Pick.VoxelRelP)))
           {
-            Player->P = MoveToStandingSpot(World, Canonical_Position(SpotOffset, ClosestChunk->WorldP) );
-
-            u32 EnemyChoice = 0; // RandomU32(&EnemyEntropy) % 4;
-
-            local_persist b32 Power = False;
-            switch(EnemyChoice)
+            /* untextured_3d_geometry_buffer SpotAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB); */
+            v3 RenderP = GetRenderP(World->ChunkDim, MinP+SpotOffset, Camera);
+            DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_LINE_THICKNESS*3.f);
+            if (Input->LMB.Clicked)
             {
-              case 0:
-              case 1:
-              case 2:
+              DidPlayerAction = True;
+              v3 PlayerSimP = GetSimSpaceP(World, Player->P);
+              v3 SpotSimP = GetSimSpaceP(World, Spot.P);
+              if (PointsAreWithinDistance(PlayerSimP, SpotSimP, StandingSpotSearchThresh))
               {
-                DebugLine("move");
-                /* world_chunk *EnemyChunk = GetWorldChunk(World, ); */
-                if (EnemySpots.Count)
-                {
-                  for (;;)
-                  {
-                    u32 SpotChoice = RandomU32(&EnemyEntropy) % EnemySpots.Count;
-                    canonical_position ChoiceP = EnemySpots.Start[SpotChoice].P;
-                    v3 ChoiceSimP = GetSimSpaceP(World, ChoiceP);
-                    v3 EnemySimP = GetSimSpaceP(World, Enemy->P);
+                Player->P = MoveToStandingSpot(World, Canonical_Position(SpotOffset, ClosestChunk->WorldP) );
 
-                    if (PointsAreWithinDistance(ChoiceSimP, EnemySimP, 5.f))
-                    {
-                      if (EnemySpots.Count == 1) break;
-                    }
-                    else
-                    {
-                      Enemy->P = MoveToStandingSpot(World, ChoiceP); break;
-                    }
-                  }
-                }
-              } break;
-
-              case 3:
-              {
-                if (Power)
-                {
-                  DebugLine("shoot");
-                  Power=False;
-                }
-                else
-                {
-                  DebugLine("power");
-                  Power=True;
-                }
-              } break;
-
-
-              InvalidDefaultCase;
+              }
             }
           }
         }
-      }
+      } break;
+
+      case PlayerAction_Charge:
+      {
+        if (Input->LMB.Clicked)
+        {
+        }
+      } break;
+
+      case PlayerAction_Fire:
+      {
+        if (Input->LMB.Clicked)
+        {
+        }
+      } break;
+
+      case PlayerAction_Jump:
+      {
+        if (Input->LMB.Clicked)
+        {
+        }
+      } break;
     }
 
+
+    if (DidPlayerAction)
+    {
+      u32 EnemyChoice = 0; // RandomU32(&EnemyEntropy) % 4;
+
+      local_persist u32 EnemyPower = 0;
+      switch(EnemyChoice)
+      {
+        case 0:
+        case 1:
+        case 2:
+        {
+          DebugLine("move");
+          /* world_chunk *EnemyChunk = GetWorldChunk(World, ); */
+          if (EnemySpots.Count)
+          {
+            for (;;)
+            {
+              u32 SpotChoice = RandomU32(&EnemyEntropy) % EnemySpots.Count;
+              canonical_position ChoiceP = EnemySpots.Start[SpotChoice].P;
+              v3 ChoiceSimP = GetSimSpaceP(World, ChoiceP);
+              v3 EnemySimP = GetSimSpaceP(World, Enemy->P);
+
+              if (PointsAreWithinDistance(ChoiceSimP, EnemySimP, 5.f))
+              {
+                if (EnemySpots.Count == 1) break;
+              }
+              else
+              {
+                Enemy->P = MoveToStandingSpot(World, ChoiceP); break;
+              }
+            }
+          }
+        } break;
+
+        case 3:
+        {
+          if (EnemyPower)
+          {
+            DebugLine("shoot");
+            EnemyPower=0;
+          }
+          else
+          {
+            DebugLine("EnemyPower");
+            EnemyPower++;
+          }
+        } break;
+
+
+        InvalidDefaultCase;
+      }
+    }
   }
 
   if (Hotkeys)
