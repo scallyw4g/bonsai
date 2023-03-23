@@ -60,4 +60,4 @@ Insert(counted_string Element, counted_string_hashtable *Table, memory_arena *Me
   Insert(Bucket, Table);
   return &Bucket->Element;
 }
-
+ 
