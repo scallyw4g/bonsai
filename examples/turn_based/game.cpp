@@ -6,6 +6,9 @@
 #include <game_constants.h>
 #include <game_types.h>
 
+global_variable v3
+Global_EntityFireballOffset = V3(7.0f, -.75f, 4.5f);
+
 model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *Heap)
 {
@@ -153,7 +156,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
             s32 Frequency = 50;
             s32 Amplititude = 15;
-            s32 StartingZDepth = -40;
+            s32 StartingZDepth = -5;
 
             Assert(Chunk->Dim == World->ChunkDim);
             InitializeWorldChunkPerlinPlane( Thread,
@@ -268,15 +271,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
 
 
-  standing_spot_buffer PlayerSpots = GetStandingSpotsWithinRadius(World, Player->P, StandingSpotSearchThresh, GetTranArena());
-  for (u32 SpotIndex = 0; SpotIndex < PlayerSpots.Count; ++SpotIndex)
-  {
-    standing_spot *Spot = PlayerSpots.Start + SpotIndex;
-    v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
-    DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), GREEN, DEFAULT_LINE_THICKNESS*3.f);
-  }
-
-
   picked_voxel Pick = PickVoxel(Resources);
 
   if (Pick.PickedChunk.tChunk != f32_MAX)
@@ -299,6 +293,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     }
 
     local_persist player_action SelectedAction = {};
+    local_persist b32 PlayerCharged = {};
 
     if (Input->Q.Clicked)
     {
@@ -331,6 +326,15 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
       case PlayerAction_Move:
       {
+        standing_spot_buffer PlayerSpots = GetStandingSpotsWithinRadius(World, Player->P, StandingSpotSearchThresh, GetTranArena());
+        for (u32 SpotIndex = 0; SpotIndex < PlayerSpots.Count; ++SpotIndex)
+        {
+          standing_spot *Spot = PlayerSpots.Start + SpotIndex;
+          v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
+          DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), GREEN, DEFAULT_LINE_THICKNESS*3.f);
+        }
+
+
         for (u32 StandingSpotIndex = 0;
                  StandingSpotIndex < AtElements(&ClosestChunk->StandingSpots);
                ++StandingSpotIndex)
@@ -346,13 +350,12 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
             DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_LINE_THICKNESS*3.f);
             if (Input->LMB.Clicked)
             {
-              DidPlayerAction = True;
               v3 PlayerSimP = GetSimSpaceP(World, Player->P);
               v3 SpotSimP = GetSimSpaceP(World, Spot.P);
               if (PointsAreWithinDistance(PlayerSimP, SpotSimP, StandingSpotSearchThresh))
               {
+                DidPlayerAction = True;
                 Player->P = MoveToStandingSpot(World, Canonical_Position(SpotOffset, ClosestChunk->WorldP) );
-
               }
             }
           }
@@ -361,15 +364,36 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
       case PlayerAction_Charge:
       {
-        if (Input->LMB.Clicked)
+        if (PlayerCharged)
         {
+        }
+        else
+        {
+          if (Input->LMB.Clicked)
+          {
+            PlayerCharged = True;
+            SpawnFire(Player, &GameState->Entropy, Global_EntityFireballOffset);
+            DidPlayerAction = True;
+          }
         }
       } break;
 
       case PlayerAction_Fire:
       {
-        if (Input->LMB.Clicked)
+        if (PlayerCharged)
         {
+          OutlineAABB.At = 0;
+          DEBUG_DrawAABB( &OutlineAABB,
+                          GetRenderP(World->ChunkDim, VoxelP-Offset, Camera),
+                          GetRenderP(World->ChunkDim, VoxelP+V3(1.f)+Offset, Camera),
+                          RED, 0.15f);
+          if (Input->LMB.Clicked)
+          {
+            PlayerCharged = False;
+            Deactivate(Player->Emitter);
+            DidPlayerAction = True;
+            QueueWorldUpdateForRegion(Plat, World, &Pick, 5.f, Resources->Memory);
+          }
         }
       } break;
 
@@ -377,6 +401,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       {
         if (Input->LMB.Clicked)
         {
+          DidPlayerAction = True;
         }
       } break;
     }
@@ -384,7 +409,9 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
     if (DidPlayerAction)
     {
-      u32 EnemyChoice = 0; // RandomU32(&EnemyEntropy) % 4;
+      SelectedAction = PlayerAction_None;
+      /* u32 EnemyChoice = RandomU32(&EnemyEntropy) % 4; */
+      u32 EnemyChoice = 0;
 
       local_persist u32 EnemyPower = 0;
       switch(EnemyChoice)

@@ -442,6 +442,12 @@ SpawnProjectile(entity** EntityTable,
 }
 
 void
+UnspawnParticleSystem(particle_system *System)
+{
+  System->EmissionLifespan = 0.f;
+}
+
+void
 SpawnParticleSystem(particle_system *System, particle_system_init_params *Params)
 {
   Assert(Inactive(System));
@@ -575,7 +581,7 @@ SpawnPlayer(platform *Plat, world *World, model* Model, entity *Player, canonica
     {
       for (s32 x = -1; x < (s32)CollisionVolumeRadius.x; ++ x)
       {
-        canonical_position CP = Canonicalize(World->ChunkDim, V3(x, y, z), Player->P.WorldP);
+        canonical_position CP = Canonicalize(World->ChunkDim, V3(x, y, z), InitialP.WorldP);
 
         world_chunk *Chunk = GetWorldChunk( World, CP.WorldP, World->VisibleRegion );
         if (Chunk == 0)
@@ -604,9 +610,6 @@ SpawnPlayer(platform *Plat, world *World, model* Model, entity *Player, canonica
       RateOfFire,
       Health
     );
-
-  v3 Offset = V3(7.0f, -.75f, 4.5f);
-  SpawnFire(Player, Entropy, Offset);
 
   WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
 

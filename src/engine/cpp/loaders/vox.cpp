@@ -9,7 +9,19 @@ enum Chunk_ID
   ID_PACK = 'KCAP',
   ID_SIZE = 'EZIS',
   ID_XYZI = 'IZYX',
-  ID_RGBA = 'ABGR'
+  ID_RGBA = 'ABGR',
+
+  // chunks that are present in vox version 200
+
+  ID_nTRN = 'NRTn',
+  ID_nGRP = 'PRGn',
+  ID_nSHP = 'PHSn',
+  ID_MATL = 'LTAM',
+  ID_LAYR = 'RYAL',
+  ID_rOBJ = 'JBOr',
+  ID_rCAM = 'MACr',
+  ID_NOTE = 'ETON',
+  ID_IMAP = 'PAMI',
 };
 
 inline u8
@@ -36,17 +48,53 @@ ReadInt(FILE* File, int* byteCounter)
   return ReadInt(File);
 }
 
+link_internal void
+ParseVoxString(FILE* File, int* byteCounter)
+{
+  s32 Count = ReadInt(File, byteCounter);
+  Assert(*byteCounter >= Count);
+  *byteCounter -= Count;
+  u8 Garbage;
+  for (s32 Index = 0; Index < Count; ++Index)
+  {
+    ReadBytesIntoBuffer(File, 1, &Garbage);
+  }
+}
+
+link_internal void
+ParseVoxDict(FILE* File, int* byteCounter)
+{
+  s32 KVPairCount = ReadInt(File, byteCounter);
+  for (s32 Index = 0; Index < KVPairCount; ++Index)
+  {
+    ParseVoxString(File, byteCounter);
+    ParseVoxString(File, byteCounter);
+  }
+}
+
+link_internal void
+ParseVoxRotation(FILE* File, int* byteCounter)
+{
+  ReadChar(File, byteCounter);
+}
+
 inline Chunk_ID
 GetHeaderType(FILE* File, int* byteCounter)
 {
   int ID = ReadInt(File, byteCounter);
 
-  Assert( ID == ID_VOX  ||
-          ID == ID_MAIN ||
-          ID == ID_PACK ||
-          ID == ID_SIZE ||
-          ID == ID_XYZI ||
-          ID == ID_RGBA );
+  /* if ( ID == ID_VOX  || */
+  /*      ID == ID_MAIN || */
+  /*      ID == ID_PACK || */
+  /*      ID == ID_SIZE || */
+  /*      ID == ID_XYZI || */
+  /*      ID == ID_RGBA ) */
+  /* { */
+  /* } */
+  /* else */
+  /* { */
+  /*   Error("Unknown Header type (%d)", ID); */
+  /* } */
 
   return (Chunk_ID)ID;
 }
@@ -59,7 +107,10 @@ ReadVoxChunk(FILE *File)
   Assert( ID == ID_VOX );
 
   Version = ReadInt(File);
-  Assert(Version == 150);
+  if (Version > 200)
+  {
+    Error("Unsupported VOX version (%d)", Version);
+  }
 
   return;
 }
@@ -258,6 +309,72 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
 
           Result.ChunkData->Flags = Chunk_VoxelsInitialized;
         } break;
+
+        case ID_nTRN:
+        {
+          int ChunkContentBytes = ReadInt(ModelFile.Handle, &bytesRemaining);
+          int ChildChunkCount = ReadInt(ModelFile.Handle, &bytesRemaining);
+
+
+          int NodeId = ReadInt(ModelFile.Handle, &bytesRemaining);
+          /* bytesRemaining = 0; */
+          /* break; */
+
+          // Transform node chunk
+          ParseVoxDict(ModelFile.Handle, &bytesRemaining);
+          s32 ChildNodeId = ReadInt(ModelFile.Handle, &bytesRemaining);
+          Ensure(ReadInt(ModelFile.Handle, &bytesRemaining) == -1); // reserved field
+          s32 LayerId = ReadInt(ModelFile.Handle, &bytesRemaining);
+          s32 FrameCount = ReadInt(ModelFile.Handle, &bytesRemaining);
+          Assert(FrameCount); // Apparently this has to be greater than 0
+
+          for (s32 FrameIndex = 0; FrameIndex < FrameCount; ++FrameIndex)
+          {
+            ParseVoxDict(ModelFile.Handle, &bytesRemaining);
+          }
+
+        } break;
+
+        case ID_nGRP:
+        {
+          NotImplemented;
+        } break;
+
+        case ID_nSHP:
+        {
+          NotImplemented;
+        } break;
+
+        case ID_MATL:
+        {
+          NotImplemented;
+        } break;
+
+        case ID_LAYR:
+        {
+          NotImplemented;
+        } break;
+
+        case ID_rOBJ:
+        {
+          NotImplemented;
+        } break;
+
+        case ID_rCAM:
+        {
+          NotImplemented;
+        } break;
+
+        case ID_NOTE:
+        {
+          NotImplemented;
+        } break;
+
+        case ID_IMAP:
+        {
+          NotImplemented;
+        } break;
+
 
         InvalidDefaultCase;
       }

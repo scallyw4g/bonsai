@@ -16,7 +16,19 @@ s32 main(s32 ArgCount, const char **Args)
   Global_ThreadStates = Initialize_ThreadLocal_ThreadStates((s32)GetTotalThreadCount(), 0, Memory);
   SetThreadLocal_ThreadIndex(0);
 
-  vox_data Vox = LoadVoxData(Memory, &Heap, "../voxel-model/vox/monument/monu3.vox", Global_HalfChunkApronDim);
+  if (ArgCount < 3)
+  {
+    Error("Please supply a path to the model to pack, followed by the path to output to.");
+  }
+
+  const char* InputVox = Args[1];
+  cs OutputPath = CS(Args[2]);
+
+  Info("Packing (%s) -> (%S)", InputVox, OutputPath);
+
+
+  /* vox_data Vox = LoadVoxData(Memory, &Heap, "../voxel-model/vox/monument/monu3.vox", Global_HalfChunkApronDim); */
+  vox_data Vox = LoadVoxData(Memory, &Heap, InputVox, Global_HalfChunkApronDim);
   /* vox_data Vox = LoadVoxData(Memory, &Heap, "models/AncientTemple.vox"); */
 
   chunk_dimension ModelDim = Vox.ChunkData->Dim;
@@ -135,7 +147,7 @@ s32 main(s32 ArgCount, const char **Args)
     /* { */
     /*   AtomicReplaceMesh( &Chunk->Meshes, MeshBit_Main, Mesh, __rdtsc() ); */
     /* } */
-    SerializeChunk(Chunk, CSz("examples/turn_based/assets"));
+    SerializeChunk(Chunk, OutputPath);
   }
 
 }

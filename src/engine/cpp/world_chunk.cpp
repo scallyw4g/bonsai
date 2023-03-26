@@ -567,15 +567,19 @@ InitChunkPerlinPlane( perlin_noise *Noise,
         /* r64 zSlicesAt = SafeDivide0(1.0, (r64)Amplitude) * (r64)WorldZ; */
 
         r64 NoiseValue = Noise->noise(InX, InY, InZ);
-        s32 zValue = (s32)Abs( (r64)(NoiseValue*(r64)Amplitude) );
+        s32 zValue = s32(zMin) + (s32)Abs( (r64)(NoiseValue*(r64)Amplitude) );
 
         b32 NoiseChoice = WorldZ < zValue;
-        SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(NoiseChoice * Voxel_Filled));
+        Assert(NoiseChoice == 0 || NoiseChoice == 1);
+
+        SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*NoiseChoice));
+        Chunk->Voxels[VoxIndex].Color = ColorIndex*u8(NoiseChoice);
+        ChunkSum += NoiseChoice;
+
+        Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
 
         if (NoiseChoice)
         {
-          Chunk->Voxels[VoxIndex].Color = ColorIndex;
-          ++ChunkSum;
           Assert( IsSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
         }
         else
@@ -2876,7 +2880,7 @@ BufferWorld( platform* Plat,
           }
 #endif
 
-#if 1
+#if 0
           umm StandingSpotCount = AtElements(&Chunk->StandingSpots);
           /* DebugLine("drawing (%u) standing spots", StandingSpotCount); */
           for (u32 SpotIndex = 0; SpotIndex < StandingSpotCount; ++SpotIndex)
