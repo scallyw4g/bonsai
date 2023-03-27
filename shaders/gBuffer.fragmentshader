@@ -1,3 +1,4 @@
+
 in vec3 vertexP_worldspace;
 in vec3 vertexN_worldspace;
 in vec4 MaterialColor;
@@ -16,11 +17,106 @@ Linearize(float Depth)
   return Result;
 }
 
+bool IsNear(float A, float B)
+{
+  float Thresh = 0.02f;
+  if ( A < B+Thresh && A > B-Thresh )
+  {
+    return true;
+  }
+  return false;
+}
+
+float
+ModThresh(vec3 In, float Thresh, float ModVal)
+{
+  float t = 0.f;
+  float lowThresh = Thresh;
+  float highThresh = ModVal - Thresh;
+  vec3 highThreshV = vec3(highThresh);
+
+  v3 Modded = mod(In, ModVal);
+
+  int HitCount = 0;
+  if ( Modded.x >= 0.00f )
+  {
+    if (Modded.x < lowThresh)
+    {
+      HitCount ++;
+      t += lowThresh-Modded.x;
+    }
+
+    if (Modded.x > highThresh)
+    {
+      HitCount ++;
+      float ThreshToMod = Modded.x - highThresh;
+      t += ThreshToMod;
+    }
+  }
+
+  if ( Modded.y >= 0.00f )
+  {
+    if (Modded.y < lowThresh)
+    {
+      HitCount ++;
+      t += lowThresh-Modded.y;
+    }
+
+    if (Modded.y > highThresh)
+    {
+      HitCount ++;
+      float ThreshToMod = Modded.y - highThresh;
+      t += ThreshToMod;
+    }
+  }
+
+  if ( Modded.z >= 0.00f )
+  {
+    if (Modded.z < lowThresh)
+    {
+      HitCount ++;
+      t += lowThresh-Modded.z;
+    }
+
+    if (Modded.z > highThresh)
+    {
+      HitCount ++;
+      float ThreshToMod = Modded.z - highThresh;
+      t += ThreshToMod;
+    }
+  }
+
+  /* t = clamp(t, 0.f, Thresh); */
+  /* t = MapValueToRange(t, 0.f, Thresh, 0.f, 1.f); */
+
+  t = MapValueToRange(t, 0.f, Thresh*3.f, 0.f, 1.f);
+
+  return t;
+}
+
 void main()
 {
   gPosition.xyz = vertexP_worldspace;
   gPosition.w = Linearize(gl_FragCoord.z); // Depth
-
   gNormal = vertexN_worldspace;
-  gColor = MaterialColor;
+
+  vec4 FinalColor = MaterialColor;
+
+  vec3 NormFix = vec3(0.99999999f) - abs(gNormal);
+  float t = ModThresh(abs(gPosition.xyz)*NormFix, 0.1f, 1.0f);
+  FinalColor.xyz = mix(FinalColor.xyz, vec3(1.1f)-FinalColor.xyz, pow(t, 3.f));
+
+  /* int LargeStepCount = ModThresh(gPosition.xyz*NormFix, 0.025f, 32.0f); */
+  /* if (SmallStepCount > 0 && LargeStepCount > 0) */
+  /* { */
+  /*   FinalColor.xyz = vec3(0.0f); */
+  /* } */
+
+
+  /* FinalColor.xyz = abs(gNormal); */
+  /* FinalColor.xyz = abs(gPosition.xyz*0.01f); */
+  /* FinalColor.xyz = vec3(abs(gPosition.w)); */
+
+
+  gColor = FinalColor;
 }

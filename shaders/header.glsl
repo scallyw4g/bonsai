@@ -1,4 +1,5 @@
 #version 310 es
+#extension GL_NV_shader_buffer_load : enable
 
 
 precision highp float;
@@ -25,6 +26,10 @@ precision highp sampler3D;
 #define USE_SHADOW_MAPPING 1
 
 // Note(Jesse): Must match corresponding C++ define
+#define SHADOW_MAP_RESOLUTION_X (16*1024)
+#define SHADOW_MAP_RESOLUTION_Y (16*1024)
+
+// Note(Jesse): Must match corresponding C++ define
 #define DEBUG_TEXTURE_DIM 512
 
 #define PoissonDiskSize 16
@@ -48,3 +53,19 @@ vec2 poissonDisk[PoissonDiskSize] = vec2[](
    vec2(  0.14383161, -0.14100790 )
 );
 
+// TODO(Jesse): Metaprogram these.  I've already got them in the C++ math lib
+float MapValueToRange(float value, float inMin, float inMax, float outMin, float outMax) {
+  return outMin + (outMax - outMin) * (value - inMin) / (inMax - inMin);
+}
+
+vec2 MapValueToRange(vec2 value, vec2 inMin, vec2 inMax, vec2 outMin, vec2 outMax) {
+  return outMin + (outMax - outMin) * (value - inMin) / (inMax - inMin);
+}
+
+vec3 MapValueToRange(vec3 value, vec3 inMin, vec3 inMax, vec3 outMin, vec3 outMax) {
+  return outMin + (outMax - outMin) * (value - inMin) / (inMax - inMin);
+}
+
+vec4 MapValueToRange(vec4 value, vec4 inMin, vec4 inMax, vec4 outMin, vec4 outMax) {
+  return outMin + (outMax - outMin) * (value - inMin) / (inMax - inMin);
+}
