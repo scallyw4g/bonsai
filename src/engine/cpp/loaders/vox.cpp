@@ -395,7 +395,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
 }
 
 model
-LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepath)
+LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepath, memory_arena *TempMemory)
 {
   TIMED_FUNCTION();
 
@@ -411,7 +411,7 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
   /* Result.Mesh = GetMeshForChunk(); */
 
   v4 *ColorPalette = Vox.Palette ? Vox.Palette : DefaultPalette;
-  BuildWorldChunkMeshFromMarkedVoxels(ChunkData->Voxels, Result.Dim, {}, Result.Dim, &Result.Mesh, ColorPalette);
+  BuildWorldChunkMeshFromMarkedVoxels_Greedy(ChunkData->Voxels, Result.Dim, {}, Result.Dim, &Result.Mesh, TempMemory, ColorPalette);
 
   return Result;
 }

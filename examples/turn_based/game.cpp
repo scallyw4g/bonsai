@@ -12,14 +12,16 @@ Global_EntityFireballOffset = V3(7.0f, -.75f, 4.5f);
 model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *Heap)
 {
+  // TODO(Jesse)(leak, memory): Pass temp memory to LoadVoxModel
+
   model *Result = Allocate(model, Memory, ModelIndex_Count);
-  Result[ModelIndex_Enemy] = LoadVoxModel(Memory, Heap, "models/chr_tama.vox");
+  Result[ModelIndex_Enemy] = LoadVoxModel(Memory, Heap, "models/chr_tama.vox", Memory);
 
   /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_bow.vox"); */
   /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_cat.vox"); */
   /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_fox.vox"); */
   /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_gumi.vox"); */
-  Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_jp.vox");
+  Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_jp.vox", Memory);
   /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_knight.vox"); */
   /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_man.vox"); */
   /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_mom.vox"); */
@@ -75,10 +77,10 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
         untextured_3d_geometry_buffer *GeneratedMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
         /* MarkBoundaryVoxels( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-2); */
         /* MarkBoundaryVoxels( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh ); */
-        BuildWorldChunkMeshFromMarkedVoxels( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh );
+        BuildWorldChunkMeshFromMarkedVoxels_Greedy( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh, Thread->TempMemory);
         /* BuildWorldChunkMesh(Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh); */
 
-        DrawDebugVoxels( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh );
+        /* DrawDebugVoxels( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh ); */
 
         if (GeneratedMesh->At)
         {

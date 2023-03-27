@@ -7,6 +7,7 @@ AllocateAndInitWorld(world* World, world_position Center, voxel_position WorldCh
   World->Memory = WorldMemory;
 
   World->HashSize = (u32)(Volume(VisibleRegion)*2); //WorldHashSize;
+  /* World->HashSize = (u32)(Volume(VisibleRegion)*4); //WorldHashSize; */
   World->ChunkHashMemory[0] = Allocate(world_chunk*, WorldMemory, World->HashSize );
   World->ChunkHashMemory[1] = Allocate(world_chunk*, WorldMemory, World->HashSize );
 
