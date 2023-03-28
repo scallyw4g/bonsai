@@ -761,8 +761,9 @@ inline b32
 IsFilled(voxel *Voxel)
 {
   b32 Result = (Voxel->Flags & Voxel_Filled) == Voxel_Filled;
+
 #if BONSAI_INTERNAL
-  if (!Result) Assert(Voxel->Flags == 0);
+  if (!Result) Assert( (Voxel->Flags&VoxelFaceMask) == 0);
 #endif
   return Result;
 }

@@ -256,7 +256,7 @@ SpawnEntity( model *GameModels, entity *Entity, entity_type Type)
 
     case EntityType_ParticleSystem:
     {
-      Entity->Model = GameModels[EntityType_None];
+      /* Entity->Model = GameModels[EntityType_None]; */
     } break;
 
     case EntityType_Default:
@@ -474,9 +474,12 @@ SpawnParticleSystem(particle_system *System, particle_system_init_params *Params
   return;
 }
 
+void SpawnFire(entity *Entity, random_series *Entropy, v3 Offset);
+
 void
-SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset)
+SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius)
 {
+#if 0
   particle_system_init_params Params = {};
 
   Params.Entropy.Seed = RandomU32(Entropy);
@@ -490,6 +493,7 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset)
 
   Params.SpawnRegion = aabb(Offset, V3(1.2f));
 
+  /* Params.ActiveParticles = 1; */
   Params.EmissionLifespan = 0.10f;
   Params.ParticleLifespan = 0.55f;
   Params.ParticlesPerSecond = 2.0f;
@@ -501,6 +505,55 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset)
   SpawnParticleSystem(Entity->Emitter, &Params );
 
   return;
+#else
+  /* Entity->Physics.Mass = 1.f; */
+  /* Entity->Physics.Drag = V3(1.f, 1.f, 1.f); */
+
+  particle_system_init_params Params = {};
+
+  Params.Entropy.Seed = RandomU32(Entropy);
+
+  /* Params.Colors[0] = BLACK; */
+  /* Params.Colors[1] = DARK_DARK_RED; */
+  /* Params.Colors[2] = DARK_RED; */
+  /* Params.Colors[3] = ORANGE; */
+  /* Params.Colors[4] = YELLOW; */
+  /* Params.Colors[5] = WHITE; */
+
+  Params.Colors[1] = (u8)RandomU32(Entropy);
+  Params.Colors[2] = (u8)RandomU32(Entropy);
+  Params.Colors[3] = (u8)RandomU32(Entropy);
+  Params.Colors[4] = (u8)RandomU32(Entropy);
+  Params.Colors[5] = (u8)RandomU32(Entropy);
+
+
+  Params.SpawnRegion = aabb(Offset, V3(Radius) );
+
+  Params.EmissionLifespan = 0.25f;
+  Params.LifespanMod = 0.15f;
+  Params.ParticleLifespan = 0.15f;
+  Params.ParticlesPerSecond = 500.0f*Radius;
+
+  Params.Physics.Speed = 2;
+  /* Params.Physics.Drag = V3(2.2f); */
+  Params.Physics.Mass = 3.0f;
+
+  r32 xyTurb = 30.f;
+  /* r32 xyTurb = 2.5f; */
+  /* r32 xyTurb = 0.0f; */
+  Params.ParticleTurbMin = V3(-xyTurb, -xyTurb, -4.0f);
+  Params.ParticleTurbMax = V3(xyTurb, xyTurb, 15.0f);
+
+  /* Params.Physics.Velocity = V3(0.f, 0.f, 10.f); */
+
+  Params.ParticleStartingDim = V3(1.3f);
+
+  Params.SystemMovementCoefficient = 0.1f;
+
+  SpawnParticleSystem(Entity->Emitter, &Params);
+
+  return;
+#endif
 }
 
 // FIXME(Jesse): Remove the f32_MAX EmissionLifespan below
@@ -560,7 +613,7 @@ SpawnPlayer(platform *Plat, world *World, model* Model, entity *Player, canonica
   /* Info("Player Spawned"); */
 
   physics Physics = {};
-  /* Physics.Drag = V3(1.f, 1.f, 1.f); */
+  /* Physics.Drag = V3(.15f, .15f, 0.f); */
   Physics.Mass = 2.f;
   Physics.Speed = 4;
 
@@ -645,7 +698,7 @@ EntityWorldCollision(world *World, entity *Entity, collision_event *Event, chunk
 
     default:
     {
-      Unspawn(Entity);
+      /* Unspawn(Entity); */
     } break;
   }
 }
@@ -1052,12 +1105,14 @@ SimulateAndRenderParticleSystem(
   r32 SpawnInterval = 1.f/System->ParticlesPerSecond;
 
   b32 ApplyGravity = False;
-
-  for (u32 SpawnIndex = 0; SpawnIndex < SpawnCount; ++SpawnIndex)
+  if (System->EmissionLifespan > 0)
   {
-    /* particle *Particle = System->Particles + System->ActiveParticles + SpawnIndex; */
-    particle *Particle = SpawnParticle(System);
-    SimulateParticle(System, Particle, SpawnIndex*SpawnInterval, EntityDelta, ApplyGravity);
+    for (u32 SpawnIndex = 0; SpawnIndex < SpawnCount; ++SpawnIndex)
+    {
+      /* particle *Particle = System->Particles + System->ActiveParticles + SpawnIndex; */
+      particle *Particle = SpawnParticle(System);
+      SimulateParticle(System, Particle, SpawnIndex*SpawnInterval, EntityDelta, ApplyGravity);
+    }
   }
 
   System->ElapsedSinceLastEmission -= (r32)SpawnCount*SpawnInterval;

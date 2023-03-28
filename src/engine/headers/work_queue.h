@@ -33,8 +33,18 @@ struct work_queue_entry_rebuild_mesh
   world_chunk *Chunk;
 };
 
+enum world_update_operation
+{
+  WorldUpdateOperation_None,
+  WorldUpdateOperation_Additive,
+  WorldUpdateOperation_Subtractive,
+};
+
 struct work_queue_entry_update_world_region
 {
+  world_update_operation Op;
+  u8 ColorIndex;
+
   picked_voxel Location;
   f32 Radius;
 

@@ -18,6 +18,21 @@
 #define ORANGE  8
 #define GREY   6
 
+
+#define DARK_GREY   254
+#define DARK_DARK_GREY   255
+
+#define GREY_0   247
+#define GREY_1   248
+#define GREY_2   249
+#define GREY_3   250
+#define GREY_4   251
+#define GREY_4   251
+#define GREY_5   252
+#define GREY_6   253
+#define GREY_7   254
+#define GREY_8   255
+
 #if 1
 //  RR GG BB AA
 static v4 DefaultPalette[] = {
@@ -276,7 +291,7 @@ static v4 DefaultPalette[] = {
   V4(0x55, 0x55, 0x55, 0xff),
   V4(0x44, 0x44, 0x44, 0xff),
   V4(0x22, 0x22, 0x22, 0xff),
-  V4(0x00, 0x00, 0x00, 0x00), // BLACK
+  V4(0x11, 0x11, 0x11, 0x11),
 };
 #else
 global_variable v4 DefaultPalette[256] = {

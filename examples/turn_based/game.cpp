@@ -61,7 +61,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       picked_voxel Location = Job->Location;
       r32 Radius = Job->Radius;
 
-      DoWorldUpdate(&Thread->EngineResources->Plat->LowPriority, World, Job->ChunkBuffer, Job->ChunkCount, &Location, Job->MinP, Job->MaxP, Radius, Thread);
+      DoWorldUpdate(&Thread->EngineResources->Plat->LowPriority, World, Job->ChunkBuffer, Job->ChunkCount, &Location, Job->MinP, Job->MaxP, Job->Op, Job->ColorIndex, Radius, Thread);
     } break;
 
     case type_work_queue_entry_rebuild_mesh:
@@ -226,7 +226,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
   }
 }
 
-global_variable random_series EnemyEntropy = {543232654};
+global_variable random_series Global_GameEntropy = {543232654};
 
 link_internal canonical_position
 MoveToStandingSpot(world *World, canonical_position P)
@@ -247,6 +247,18 @@ enum player_action
 poof(generate_string_table(player_action))
 #include <generated/generate_string_table_player_action.h>
 
+void
+DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position PickCP, f32 Radius)
+{
+  UNPACK_ENGINE_RESOURCES(Resources);
+
+  QueueWorldUpdateForRegion(Plat, World, Pick, WorldUpdateOperation_Subtractive, DARK_GREY, Radius, Resources->Memory);
+
+  entity *ExplosionEntity = GetFreeEntity(EntityTable);
+  SpawnEntity( 0, ExplosionEntity, EntityType_ParticleSystem);
+  ExplosionEntity->P = PickCP;
+  SpawnExplosion(ExplosionEntity, &Global_GameEntropy, {}, Radius);
+}
 
 BONSAI_API_MAIN_THREAD_CALLBACK()
 {
@@ -281,6 +293,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     v3 MinP =  V3(ClosestChunk->WorldP * World->ChunkDim);
     v3 VoxelP = MinP + Truncate(Pick.VoxelRelP);
 
+    canonical_position PickCP = Canonical_Position(Pick.VoxelRelP, ClosestChunk->WorldP);
+
     untextured_3d_geometry_buffer OutlineAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
     v3 Offset = V3(0.001f);
     DEBUG_DrawAABB( &OutlineAABB,
@@ -291,7 +305,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
     if (Input->F8.Clicked)
     {
-      QueueWorldUpdateForRegion(Plat, World, &Pick, 20.f, Resources->Memory);
+      DoSplotion(Resources, &Pick, PickCP, 20.f);
     }
 
     local_persist player_action SelectedAction = {};
@@ -315,6 +329,12 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     if (Input->R.Clicked)
     {
       SelectedAction = PlayerAction_Jump;
+    }
+
+    if (Input->T.Clicked)
+    {
+      Deactivate(Player->Emitter);
+      DoSplotion(Resources, &Pick, PickCP, 5.f);
     }
 
     GetDebugState()->DebugValue_u64(SelectedAction, ToString(SelectedAction).Start);
@@ -394,7 +414,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
             PlayerCharged = False;
             Deactivate(Player->Emitter);
             DidPlayerAction = True;
-            QueueWorldUpdateForRegion(Plat, World, &Pick, 5.f, Resources->Memory);
+            DoSplotion(Resources, &Pick, PickCP, 5.f);
           }
         }
       } break;
@@ -412,7 +432,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     if (DidPlayerAction)
     {
       SelectedAction = PlayerAction_None;
-      /* u32 EnemyChoice = RandomU32(&EnemyEntropy) % 4; */
+      /* u32 EnemyChoice = RandomU32(&Global_GameEntropy) % 4; */
       u32 EnemyChoice = 0;
 
       local_persist u32 EnemyPower = 0;
@@ -428,7 +448,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           {
             for (;;)
             {
-              u32 SpotChoice = RandomU32(&EnemyEntropy) % EnemySpots.Count;
+              u32 SpotChoice = RandomU32(&Global_GameEntropy) % EnemySpots.Count;
               canonical_position ChoiceP = EnemySpots.Start[SpotChoice].P;
               v3 ChoiceSimP = GetSimSpaceP(World, ChoiceP);
               v3 EnemySimP = GetSimSpaceP(World, Enemy->P);

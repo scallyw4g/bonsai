@@ -22,8 +22,13 @@ enum voxel_flag
   Voxel_FrontFace  = 1 << 5,
   Voxel_BackFace   = 1 << 6,
 
-  Voxel_INVALID_BIT= 1 << 7,
+  // NOTE(Jesse): Random leftover bit used for special-case processing.  As of
+  // the time of this writing it's used to mark voxels that have been mutated
+  // during DoWorldUpdate, then change their color in a later pass if they're
+  // both marked, and become boundary voxels.
+  Voxel_MarkBit    = 1 << 7,
 };
+CAssert(Voxel_MarkBit < u8_MAX);
 
 global_variable u8 VoxelFaceMask = Voxel_LeftFace | Voxel_RightFace | Voxel_TopFace | Voxel_BottomFace | Voxel_FrontFace | Voxel_BackFace;
 
@@ -33,6 +38,7 @@ struct voxel
   u8 Color;
 };
 
+#if 0
 link_internal b32
 IsValid(voxel *V)
 {
@@ -47,6 +53,7 @@ IsValid(voxel *V)
   }
   return Result;
 }
+#endif
 
 b32
 operator ==(voxel &V1, voxel &V2)

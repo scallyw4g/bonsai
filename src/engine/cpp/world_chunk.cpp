@@ -710,7 +710,10 @@ link_internal void
 MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
                                     chunk_dimension SrcChunkDim,
                                     chunk_dimension SrcChunkMin,
-                                    chunk_dimension SrcChunkMax )
+                                    chunk_dimension SrcChunkMax,
+                                    random_series *Entropy = 0,
+                                    u8 NewColorMin = 0,
+                                    u8 NewColorMax = 0 )
 {
   TIMED_FUNCTION();
 
@@ -730,6 +733,8 @@ MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
 
         voxel *Voxel = Voxels + GetIndex(DestP, SrcChunkDim);
 
+        b32 WasExteriorVoxel = (Voxel->Flags & VoxelFaceMask) != 0;
+        b32 WasMarked = (Voxel->Flags & Voxel_MarkBit) != 0;
         if (IsFilled(Voxel))
         {
           Voxel->Flags = Voxel_Filled;
@@ -766,6 +771,24 @@ MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
           {
             Voxel->Flags |= Voxel_BackFace;
           }
+        }
+        b32 IsExteriorVoxel = (Voxel->Flags & VoxelFaceMask) != 0;
+
+        // If we marked the voxel, and it's getting uncovered, change it's
+        // color to the one we specified.
+        //
+        // This is basically a special-purpose hack to change the surface color
+        // of holes we create
+        if (Entropy)
+        {
+          if ( WasMarked &&
+               WasExteriorVoxel == False &&
+               IsExteriorVoxel == True)
+          {
+            u32 NewColor = RandomBetween((u32)NewColorMin, Entropy, (u32)NewColorMax+1);
+            Voxel->Color = SafeTruncateU8(NewColor);
+          }
+          UnSetFlag((voxel_flag*)&Voxel->Flags, Voxel_MarkBit);
         }
       }
     }
@@ -3013,10 +3036,12 @@ WorkQueueEntryRebuildMesh(world_chunk *Chunk)
 }
 
 link_internal work_queue_entry_update_world_region
-WorkQueueEntryUpdateWorldRegion(picked_voxel *Location, f32 Radius, canonical_position MinP, canonical_position MaxP, world_chunk** ChunkBuffer, u32 ChunkCount)
+WorkQueueEntryUpdateWorldRegion(world_update_operation Op, u8 ColorIndex, picked_voxel *Location, f32 Radius, canonical_position MinP, canonical_position MaxP, world_chunk** ChunkBuffer, u32 ChunkCount)
 {
   work_queue_entry_update_world_region Result =
   {
+    .Op = Op,
+    .ColorIndex = ColorIndex,
     .Location = *Location,
     .Radius = Radius,
     .ChunkBuffer = ChunkBuffer,
@@ -3229,7 +3254,7 @@ BufferWorld( platform* Plat,
 }
 
 link_internal void
-QueueWorldUpdateForRegion(platform *Plat, world *World, picked_voxel *Location, f32 Radius, memory_arena *Memory)
+QueueWorldUpdateForRegion(platform *Plat, world *World, picked_voxel *Location, world_update_operation Op, u8 ColorIndex, f32 Radius, memory_arena *Memory)
 {
   TIMED_FUNCTION();
 
@@ -3285,7 +3310,7 @@ QueueWorldUpdateForRegion(platform *Plat, world *World, picked_voxel *Location, 
 
   work_queue_entry Entry = {
     .Type = type_work_queue_entry_update_world_region,
-    .work_queue_entry_update_world_region = WorkQueueEntryUpdateWorldRegion(Location, Radius, MinP, MaxP, Buffer, ChunkIndex),
+    .work_queue_entry_update_world_region = WorkQueueEntryUpdateWorldRegion(Op, ColorIndex, Location, Radius, MinP, MaxP, Buffer, ChunkIndex),
   };
   PushWorkQueueEntry(&Plat->LowPriority, &Entry);
 }
@@ -3307,7 +3332,9 @@ MapIntoQueryBox(v3 SimSpaceVoxP, v3 SimSpaceQueryMinP, voxel_position SimSpaceQu
 }
 
 link_internal void
-DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 ChunkCount, picked_voxel *Location, canonical_position MinP, canonical_position MaxP, f32 Radius, thread_local_state *Thread)
+DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 ChunkCount,
+              picked_voxel *Location, canonical_position MinP, canonical_position MaxP,
+              world_update_operation Op, u8 NewColor, f32 Radius, thread_local_state *Thread)
 {
   TIMED_FUNCTION();
 
@@ -3356,6 +3383,8 @@ DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 Ch
     auto ChunkRelRectMin = SimSpaceIntersectionMin - SimSpaceChunkMin;
     auto ChunkRelRectMax = SimSpaceIntersectionMax - SimSpaceChunkMin;
 
+    random_series Entropy = {54392};
+
     b32 AnyVoxelsModified = False;
     for (s32 zVoxel = s32(ChunkRelRectMin.z); zVoxel < s32(ChunkRelRectMax.z); zVoxel += 1)
     {
@@ -3365,31 +3394,94 @@ DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 Ch
         {
           voxel_position RelVoxP = Voxel_Position(s32(xVoxel), s32(yVoxel), s32(zVoxel));
           voxel *V = GetVoxel(Chunk, RelVoxP);
+          Assert( (V->Flags & Voxel_MarkBit) == 0);
 
           v3i SimSpaceVoxPExact = V3i(xVoxel, yVoxel, zVoxel) + SimSpaceChunkMin;
 
           voxel CopyValue = *V;
+
+          // TODO(Jesse): This routine maybe should be split into multiple
+          // routines that have this logic welded into them ..?
           if (LengthSq(SimSpaceVoxPExact - LocationSimSpace) < Square(Radius))
           {
-            if (V->Flags & Voxel_Filled) { --Chunk->FilledCount; AnyVoxelsModified = True; }
-            CopyValue.Flags = Voxel_Empty;
+            /* CopyValue.Flags &= Voxel_MarkBit; */
+            switch(Op)
+            {
+              InvalidCase(WorldUpdateOperation_None);
+
+              case WorldUpdateOperation_Subtractive:
+              {
+                if (CopyValue.Flags&VoxelFaceMask)
+                {
+                  --Chunk->FilledCount;
+                  AnyVoxelsModified = True;
+                  CopyValue.Flags = Voxel_Empty;
+                }
+                CopyValue.Flags |= Voxel_MarkBit;
+              } break;
+
+              case WorldUpdateOperation_Additive:
+              {
+                if ( (CopyValue.Flags&Voxel_Filled) == 0 ) { ++Chunk->FilledCount; AnyVoxelsModified = True; }
+                CopyValue.Flags = Voxel_Filled;
+                CopyValue.Color = NewColor;
+              } break;
+            }
+
           }
+          else if (LengthSq(SimSpaceVoxPExact - LocationSimSpace) < Square(Radius+1.f))
+          {
+            switch(Op)
+            {
+              InvalidCase(WorldUpdateOperation_None);
+
+              case WorldUpdateOperation_Subtractive:
+              {
+                /* CopyValue.Flags &= Voxel_MarkBit; */
+                if (CopyValue.Flags&VoxelFaceMask)
+                {
+                  CopyValue.Color = GREY_8;
+                }
+                else
+                {
+                  CopyValue.Flags |= Voxel_MarkBit;
+                }
+                /* else */
+                /* { */
+                /*   if (RandomUnilateral(&Entropy) > 0.25) */
+                /*   { */
+                /*     CopyValue.Color = NewColor; */
+                /*   } */
+                /*   else */
+                /*   { */
+                /*     CopyValue.Color = DARK_DARK_GREY; */
+                /*   } */
+                /* } */
+              } break;
+
+              case WorldUpdateOperation_Additive:
+              {
+              } break;
+            }
+          }
+
 
           Assert(SimSpaceQueryMinP <= SimSpaceVoxPExact);
           u32 Index = MapIntoQueryBox(SimSpaceVoxPExact, SimSpaceQueryMinP, QueryDim);
           Assert(Index < TotalVoxels);
           Assert(CopiedVoxels[Index] == UnsetVoxel);
           CopiedVoxels[Index] = CopyValue;
-          Assert(IsValid(CopiedVoxels+Index));
+          /* Assert(IsValid(CopiedVoxels+Index)); */
         }
       }
     }
   }
 
 
+  random_series Entropy = {43246};
   // NOTE(Jesse): We can actually do the entire dim here, but it's probably
   // better (faster) to just do what we actually need to
-  MarkBoundaryVoxels_NoExteriorFaces( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-1);
+  MarkBoundaryVoxels_NoExteriorFaces( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-1, &Entropy, GREY_5, GREY_7);
   /* MarkBoundaryVoxels( CopiedVoxels, QueryDim, {}, QueryDim); */
 
 
@@ -3423,8 +3515,10 @@ DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 Ch
           u32 Index = MapIntoQueryBox(SimSpaceVoxPExact, SimSpaceQueryMinP, QueryDim);
           Assert(Index < TotalVoxels);
           Assert(CopiedVoxels[Index] != UnsetVoxel);
-          Assert(IsValid(CopiedVoxels+Index));
+          /* Assert(IsValid(CopiedVoxels+Index)); */
+          Assert( (V->Flags & Voxel_MarkBit) == 0);
           *V = CopiedVoxels[Index];
+          Assert( (V->Flags & Voxel_MarkBit) == 0);
         }
       }
     }
