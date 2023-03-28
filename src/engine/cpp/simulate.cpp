@@ -17,10 +17,10 @@ Bonsai_SimulateEntitiesAndWorld(engine_resources *Resources)
   }
 #endif
 
-  SimulateEntities(World, EntityTable, Plat->dt, World->VisibleRegion, Camera, Hotkeys);
   auto TargetP = Resources->CameraTargetP ? *Resources->CameraTargetP : Canonical_Position(0);
   UpdateGameCamera(MouseDelta, GameInput, TargetP, Camera, World->ChunkDim);
-  DispatchSimulateParticleSystemJobs(&Plat->HighPriority, EntityTable, World->ChunkDim, &GpuMap->Buffer, Graphics, Plat->dt);
+  SimulateEntities(World, EntityTable, Plat->dt, World->VisibleRegion, Camera, Hotkeys,  &GpuMap->Buffer, &Plat->HighPriority);
+  /* DispatchSimulateParticleSystemJobs(&Plat->HighPriority, EntityTable, World->ChunkDim, &GpuMap->Buffer, Graphics, Plat->dt); */
 }
 
 #endif

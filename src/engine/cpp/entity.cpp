@@ -1180,7 +1180,7 @@ SimulatePlayer(world* World, entity *Player, camera* Camera, hotkeys *Hotkeys, r
 }
 
 void
-SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension VisibleRegion, camera *Camera, hotkeys *Hotkeys)
+SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension VisibleRegion, camera *Camera, hotkeys *Hotkeys, untextured_3d_geometry_buffer *Dest, work_queue *Queue)
 {
   TIMED_FUNCTION();
 
@@ -1192,6 +1192,16 @@ SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension Vis
 
     if (!Spawned(Entity))
         continue;
+
+    particle_system *System = Entity->Emitter;
+    if (Active(System))
+    {
+      auto EntityDelta = Entity->Physics.Delta;
+
+      v3 RenderSpaceP  = GetRenderP(Entity->P, Camera, World->ChunkDim);
+      auto Job = WorkQueueEntry(System, Dest, EntityDelta, RenderSpaceP, dt);
+      PushWorkQueueEntry(Queue, &Job);
+    }
 
     switch (Entity->Type)
     {
@@ -1222,6 +1232,8 @@ SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension Vis
       {
         PhysicsUpdate(&Entity->Physics, dt);
         UpdateEntityP(World, Entity, Entity->Physics.Delta, VisibleRegion);
+
+        if (Inactive(System)) { Unspawn(Entity); }
       } break;
 
       case EntityType_Player:
@@ -1347,15 +1359,6 @@ DispatchSimulateParticleSystemJobs(work_queue *Queue, entity** EntityTable, chun
         EntityIndex < TOTAL_ENTITY_COUNT;
         ++EntityIndex )
   {
-    entity *Entity = EntityTable[EntityIndex];
-    particle_system *System = Entity->Emitter;
-
-    if (Inactive(System)) { continue; }
-    auto EntityDelta = Entity->Physics.Delta;
-
-    v3 RenderSpaceP  = GetRenderP(Entity->P, Graphics->Camera, WorldChunkDim);
-    auto Job = WorkQueueEntry(System, Dest, EntityDelta, RenderSpaceP, dt);
-    PushWorkQueueEntry(Queue, &Job);
   }
 }
 
