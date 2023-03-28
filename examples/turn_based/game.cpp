@@ -47,7 +47,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
   work_queue_entry_type Type = Entry->Type;
   switch (Type)
   {
-    case type_work_queue_entry_noop: { InvalidCodePath(); } break;
+    InvalidCase(type_work_queue_entry_noop);
 
     case type_work_queue_entry_init_asset:
     {
@@ -62,6 +62,12 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       r32 Radius = Job->Radius;
 
       DoWorldUpdate(&Thread->EngineResources->Plat->LowPriority, World, Job->ChunkBuffer, Job->ChunkCount, &Location, Job->MinP, Job->MaxP, Job->Op, Job->ColorIndex, Radius, Thread);
+    } break;
+
+    case type_work_queue_entry_sim_particle_system:
+    {
+      work_queue_entry_sim_particle_system *Job = SafeAccess(work_queue_entry_sim_particle_system, Entry);
+      SimulateParticleSystem(Job);
     } break;
 
     case type_work_queue_entry_rebuild_mesh:
@@ -341,7 +347,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
     if (Input->T.Clicked)
     {
-      Deactivate(Player->Emitter);
       DoSplotion(Resources, &Pick, PickCP, 5.f);
     }
 

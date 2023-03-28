@@ -230,7 +230,7 @@ struct particle_system
   r32 Drag;
   r32 EmissionLifespan; // How long the system emits for
 
-  s32 ActiveParticles;
+  u32 ActiveParticles;
 
   r32 LifespanMod;
   r32 ParticleLifespan; // How long an individual particle lasts

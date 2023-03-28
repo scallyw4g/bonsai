@@ -14,6 +14,29 @@ struct work_queue_entry_copy_buffer
   v3 Basis;
 };
 
+struct particle_system;
+struct work_queue_entry_sim_particle_system
+{
+  particle_system *System;
+  untextured_3d_geometry_buffer *Dest;
+  v3 EntityDelta;
+  v3 RenderSpaceP;
+  r32 dt;
+};
+poof(gen_constructor(work_queue_entry_sim_particle_system))
+
+link_internal work_queue_entry_sim_particle_system
+WorkQueueEntrySimParticleSystem( particle_system *System, untextured_3d_geometry_buffer *Dest, v3 EntityDelta, v3 RenderSpaceP, r32 dt)
+{
+  work_queue_entry_sim_particle_system Result = {
+    .System = System,
+    .Dest = Dest,
+    .EntityDelta = EntityDelta,
+    .RenderSpaceP = RenderSpaceP,
+    .dt = dt,
+  };
+  return Result;
+}
 
 #define WORK_QUEUE_MAX_COPY_TARGETS 8
 struct work_queue_entry_copy_buffer_set
@@ -60,7 +83,13 @@ struct work_queue_entry_init_asset
   world_chunk *Chunk;
 };
 
-// TODO(Jesse): Should these be cache-line sized/aligned?
+struct work_queue_entry__align_to_cache_line_helper_struct
+{
+  // NOTE(Jesse): This is just to ensure the union size is a multiple of a
+  // cache line
+  /* u8 Pad[(CACHE_LINE_SIZE*2)-8]; */
+};
+
 poof(
   d_union work_queue_entry
   {
@@ -71,9 +100,27 @@ poof(
     work_queue_entry_init_asset
     work_queue_entry_update_world_region
     work_queue_entry_rebuild_mesh
+    work_queue_entry_sim_particle_system
   }
 )
 #include <generated/d_union_work_queue_entry.h>
+
+// TODO(Jesse): Turn this on
+/* CAssert(sizeof(work_queue_entry) % CACHE_LINE_SIZE == 0); */
+
+poof(d_union_constructors(work_queue_entry))
+#include <generated/d_union_constructors_work_queue_entry.h>
+
+// TODO(Jesse): Gen this from the constructors generator
+link_internal work_queue_entry
+WorkQueueEntry( particle_system *System, untextured_3d_geometry_buffer *Dest, v3 EntityDelta, v3 RenderSpaceP, r32 dt)
+{
+  work_queue_entry Result = WorkQueueEntry(WorkQueueEntrySimParticleSystem(System, Dest, EntityDelta, RenderSpaceP, dt));
+  return Result;
+}
+
+
+
 
 link_internal void
 DrainQueue(work_queue* Queue, thread_local_state* Thread, bonsai_worker_thread_callback GameWorkerThreadCallback)

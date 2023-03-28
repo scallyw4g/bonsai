@@ -45,6 +45,7 @@ PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
   /* WakeThread( Queue->GlobalQueueSemaphore ); */
 }
 
+// TODO(Jesse): Generate these
 link_internal work_queue_entry
 WorkQueueEntry(work_queue_entry_copy_buffer *Job)
 {

@@ -1138,92 +1138,6 @@ SimulateParticle(particle_system *System, particle *Particle, r32 dt, v3 EntityD
   Particle->RemainingLifespan -= dt;
 }
 
-link_internal void
-SimulateAndRenderParticleSystem(
-    graphics *Graphics,
-    chunk_dimension WorldChunkDim,
-    untextured_3d_geometry_buffer *Dest,
-    entity *SystemEntity,
-    v3 EntityDelta,
-    r32 dt
-  )
-{
-  particle_system *System = SystemEntity->Emitter;
-
-  if (Inactive(System))
-    return;
-
-  if (System->EmissionLifespan < PARTICLE_SYSTEM_EMIT_FOREVER)
-  {
-    System->EmissionLifespan -= dt;
-  }
-
-  System->ElapsedSinceLastEmission += dt;
-
-  u32 SpawnCount = (u32)(System->ElapsedSinceLastEmission * System->ParticlesPerSecond);
-
-  r32 SpawnInterval = 1.f/System->ParticlesPerSecond;
-
-  if (System->EmissionLifespan > 0)
-  {
-    for (u32 SpawnIndex = 0; SpawnIndex < SpawnCount; ++SpawnIndex)
-    {
-      /* particle *Particle = System->Particles + System->ActiveParticles + SpawnIndex; */
-      particle *Particle = SpawnParticle(System);
-      SimulateParticle(System, Particle, SpawnIndex*SpawnInterval, EntityDelta);
-    }
-  }
-
-  System->ElapsedSinceLastEmission -= (r32)SpawnCount*SpawnInterval;
-
-  v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera, WorldChunkDim);
-
-  for ( s32 ParticleIndex = 0;
-        ParticleIndex < System->ActiveParticles;
-        )
-  {
-    particle *Particle = &System->Particles[ParticleIndex];
-
-    {
-      v3 MinDiameter = System->ParticleStartingDim * System->ParticleEndingDim;
-      r32 MaxParticleLifespan = (System->ParticleLifespan+System->LifespanMod);
-      r32 t = (Particle->RemainingLifespan / MaxParticleLifespan);
-      v3 Diameter = Lerp(t, MinDiameter, System->ParticleStartingDim);
-
-      u8 ColorIndex = (u8)((Particle->RemainingLifespan / MaxParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
-      Assert(ColorIndex >= 0 && ColorIndex < PARTICLE_SYSTEM_COLOR_COUNT);
-
-      DrawVoxel( Dest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 3.0f );
-
-#if 0
-      v3 EmissionColor = Normalize(V3(3,1,0));
-      if (RandomUnilateral(&System->Entropy) > 0.99f)
-      {
-        DoLight(Graphics->Lights, RenderSpaceP + Particle->Offset, EmissionColor);
-      }
-#endif
-    }
-
-    SimulateParticle(System, Particle, dt, EntityDelta);
-    if ( Particle->RemainingLifespan < 0)
-    {
-      // Swap out last partcile for the current partcile and decrement
-      particle *SwapParticle = &System->Particles[--System->ActiveParticles];
-      *Particle = *SwapParticle;
-    }
-    else
-    {
-      ++ParticleIndex;
-    }
-  }
-
-
-#if 0
-  v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera, WorldChunkDim) + System->SpawnRegion.Center;
-  DoLight(Graphics->Lights, RenderSpaceP, 10.0f*EmissionColor);
-#endif
-}
-
 void
 SimulatePlayer(world* World, entity *Player, camera* Camera, hotkeys *Hotkeys, r32 dt, chunk_dimension VisibleRegion)
 {
@@ -1343,8 +1257,89 @@ GetPlayer(entity **Players, client_state *OurClient)
 }
 #endif
 
-inline void
-SimulateAndRenderParticleSystems(entity** EntityTable, chunk_dimension WorldChunkDim, untextured_3d_geometry_buffer* GeoDest, graphics *Graphics, r32 Dt)
+link_internal void
+SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
+{
+  TIMED_FUNCTION();
+
+  auto System      = Job->System;
+  auto EntityDelta = Job->EntityDelta;
+  auto dt          = Job->dt;
+  v3 RenderSpaceP  = Job->RenderSpaceP; //GetRenderP(Entity->P, Graphics->Camera, WorldChunkDim);
+
+  if (System->EmissionLifespan < PARTICLE_SYSTEM_EMIT_FOREVER)
+  {
+    System->EmissionLifespan -= dt;
+  }
+
+  System->ElapsedSinceLastEmission += dt;
+
+  u32 SpawnCount = (u32)(System->ElapsedSinceLastEmission * System->ParticlesPerSecond);
+
+  r32 SpawnInterval = 1.f/System->ParticlesPerSecond;
+
+  if (System->EmissionLifespan > 0)
+  {
+    for (u32 SpawnIndex = 0; SpawnIndex < SpawnCount; ++SpawnIndex)
+    {
+      /* particle *Particle = System->Particles + System->ActiveParticles + SpawnIndex; */
+      particle *Particle = SpawnParticle(System);
+      SimulateParticle(System, Particle, SpawnIndex*SpawnInterval, EntityDelta);
+    }
+  }
+
+  System->ElapsedSinceLastEmission -= (r32)SpawnCount*SpawnInterval;
+
+  auto Dest = ReserveBufferSpace(Job->Dest, System->ActiveParticles*VERTS_PER_PARTICLE);
+  for ( u32 ParticleIndex = 0;
+        ParticleIndex < System->ActiveParticles;
+        )
+  {
+    particle *Particle = &System->Particles[ParticleIndex];
+
+    {
+      v3 MinDiameter = System->ParticleStartingDim * System->ParticleEndingDim;
+      r32 MaxParticleLifespan = (System->ParticleLifespan+System->LifespanMod);
+      r32 t = (Particle->RemainingLifespan / MaxParticleLifespan);
+      v3 Diameter = Lerp(t, MinDiameter, System->ParticleStartingDim);
+
+      u8 ColorIndex = (u8)((Particle->RemainingLifespan / MaxParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
+      Assert(ColorIndex >= 0 && ColorIndex < PARTICLE_SYSTEM_COLOR_COUNT);
+
+      DrawVoxel( &Dest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 3.0f );
+
+#if 0
+      v3 EmissionColor = Normalize(V3(3,1,0));
+      if (RandomUnilateral(&System->Entropy) > 0.99f)
+      {
+        DoLight(Graphics->Lights, RenderSpaceP + Particle->Offset, EmissionColor);
+      }
+#endif
+    }
+
+    SimulateParticle(System, Particle, dt, EntityDelta);
+    if ( Particle->RemainingLifespan < 0)
+    {
+      // Swap out last partcile for the current partcile and decrement
+      particle *SwapParticle = &System->Particles[--System->ActiveParticles];
+      *Particle = *SwapParticle;
+    }
+    else
+    {
+      ++ParticleIndex;
+    }
+  }
+
+#if 0
+  v3 RenderSpaceP = GetRenderP(Entity->P, Graphics->Camera, WorldChunkDim) + System->SpawnRegion.Center;
+  DoLight(Graphics->Lights, RenderSpaceP, 10.0f*EmissionColor);
+#endif
+    /* } */
+
+}
+
+link_internal void
+DispatchSimulateParticleSystemJobs(work_queue *Queue, entity** EntityTable, chunk_dimension WorldChunkDim, untextured_3d_geometry_buffer* Dest, graphics *Graphics, r32 dt)
 {
   TIMED_FUNCTION();
 
@@ -1353,10 +1348,15 @@ SimulateAndRenderParticleSystems(entity** EntityTable, chunk_dimension WorldChun
         ++EntityIndex )
   {
     entity *Entity = EntityTable[EntityIndex];
-    SimulateAndRenderParticleSystem(Graphics, WorldChunkDim, GeoDest, Entity, Entity->Physics.Delta, Dt);
-  }
+    particle_system *System = Entity->Emitter;
 
-  return;
+    if (Inactive(System)) { continue; }
+    auto EntityDelta = Entity->Physics.Delta;
+
+    v3 RenderSpaceP  = GetRenderP(Entity->P, Graphics->Camera, WorldChunkDim);
+    auto Job = WorkQueueEntry(System, Dest, EntityDelta, RenderSpaceP, dt);
+    PushWorkQueueEntry(Queue, &Job);
+  }
 }
 
 inline b32

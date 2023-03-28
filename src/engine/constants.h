@@ -1,6 +1,7 @@
 // 6 verticies per face, 6 faces per voxel
 #define VERTS_PER_FACE (6)
 #define VERTS_PER_VOXEL (VERTS_PER_FACE*6)
+#define VERTS_PER_PARTICLE VERTS_PER_VOXEL
 
 #define WORLD_X V3(1,0,0)
 #define WORLD_Y V3(0,1,0)

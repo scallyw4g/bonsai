@@ -34,7 +34,6 @@
 #define GREY_2   249
 #define GREY_3   250
 #define GREY_4   251
-#define GREY_4   251
 #define GREY_5   252
 #define GREY_6   253
 #define GREY_7   254
