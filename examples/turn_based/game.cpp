@@ -254,10 +254,18 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
 
   QueueWorldUpdateForRegion(Plat, World, Pick, WorldUpdateOperation_Subtractive, DARK_GREY, Radius, Resources->Memory);
 
-  entity *ExplosionEntity = GetFreeEntity(EntityTable);
-  SpawnEntity( 0, ExplosionEntity, EntityType_ParticleSystem);
-  ExplosionEntity->P = PickCP;
-  SpawnExplosion(ExplosionEntity, &Global_GameEntropy, {}, Radius);
+  {
+    entity *E = GetFreeEntity(EntityTable);
+    SpawnEntity( 0, E, EntityType_ParticleSystem);
+    E->P = PickCP + V3(0.5f);
+    SpawnExplosion(E, &Global_GameEntropy, {}, Radius);
+  }
+  {
+    entity *E = GetFreeEntity(EntityTable);
+    SpawnEntity( 0, E, EntityType_ParticleSystem);
+    E->P = PickCP + V3(0.5f);
+    SpawnSmoke(E, &Global_GameEntropy, {}, Radius);
+  }
 }
 
 BONSAI_API_MAIN_THREAD_CALLBACK()

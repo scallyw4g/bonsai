@@ -198,44 +198,36 @@ struct physics
 struct particle
 {
   // TODO(Jesse, id: 85, tags: robustness, memory_consumption): Compress to 16 bit float?
+  v3 Velocity;
   v3 Offset;
 
-  physics Physics;
+  /* physics Physics; */
 
   u8 Color;
   r32 RemainingLifespan;
 };
 
-#define PARTICLE_SYSTEM_COLOR_COUNT 6
-struct particle_system_init_params
+enum particle_spawn_type
 {
-  random_series Entropy;
+  ParticleSpawnType_None,
 
-  r32 EmissionLifespan; // How long the system emits for
-
-  r32 LifespanMod;
-  r32 ParticleLifespan; // How long an individual particle lasts
-  r32 ParticlesPerSecond;
-  v3 ParticleStartingDim;
-
-  v3 ParticleTurbMin;
-  v3 ParticleTurbMax;
-
-  aabb SpawnRegion;
-
-  physics Physics;
-  r32 SystemMovementCoefficient;
-
-  u8 Colors[PARTICLE_SYSTEM_COLOR_COUNT];
+  ParticleSpawnType_Random, // Particles spawn with random velocity
+  ParticleSpawnType_Expanding, // Spawn velocity pointing away from center of spawn region
+  ParticleSpawnType_Contracting, // Spawn velocity pointing towards center of spawn region
 };
 
+// TODO(Jesse)(metaprogramming): Make a struct paste thing such that we can
+// just splat the init params into here
 
+#define PARTICLE_SYSTEM_COLOR_COUNT 6
 #define PARTICLES_PER_SYSTEM   (4096)
 struct particle_system
 {
   random_series Entropy;
 
-  r32 ElapsedSinceLastEmission;
+  particle_spawn_type SpawnType;
+
+  r32 Drag;
   r32 EmissionLifespan; // How long the system emits for
 
   s32 ActiveParticles;
@@ -243,17 +235,20 @@ struct particle_system
   r32 LifespanMod;
   r32 ParticleLifespan; // How long an individual particle lasts
   r32 ParticlesPerSecond;
+
   v3 ParticleStartingDim;
+  f32 ParticleEndingDim;
 
   v3 ParticleTurbMin;
   v3 ParticleTurbMax;
 
   aabb SpawnRegion;
 
-  physics ParticlePhysics;
   r32 SystemMovementCoefficient;
 
   u8 Colors[PARTICLE_SYSTEM_COLOR_COUNT];
+
+  r32 ElapsedSinceLastEmission;
   particle Particles[PARTICLES_PER_SYSTEM];
 };
 

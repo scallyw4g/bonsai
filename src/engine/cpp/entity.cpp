@@ -447,13 +447,23 @@ UnspawnParticleSystem(particle_system *System)
   System->EmissionLifespan = 0.f;
 }
 
+#if 0
 void
 SpawnParticleSystem(particle_system *System, particle_system_init_params *Params)
 {
   Assert(Inactive(System));
 
+  /* poof( */
+  /*   func (particle_system_init_params TParams) */
+  /*   { */
+  /*     TParams.map_members (M) */
+  /*     { */
+  /*       System->(M.name) = Params->(M.name); */
+  /*     } */
+  /*   } */
+  /* ) */
+
   System->SpawnRegion = Params->SpawnRegion;
-  System->ParticlePhysics = Params->Physics;
   System->SystemMovementCoefficient = Params->SystemMovementCoefficient;
 
   System->EmissionLifespan = Params->EmissionLifespan;
@@ -468,92 +478,111 @@ SpawnParticleSystem(particle_system *System, particle_system_init_params *Params
   System->ParticleStartingDim = Params->ParticleStartingDim;
 
   System->Entropy = Params->Entropy;
+  System->Drag = Params->Drag;
+  System->SpawnType = Params->SpawnType;
 
   MemCopy( (u8*)&Params->Colors, (u8*)&System->Colors, sizeof(System->Colors) );
 
   return;
 }
+#endif
 
 void SpawnFire(entity *Entity, random_series *Entropy, v3 Offset);
 
 void
+SpawnSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius)
+{
+  particle_system *System = Entity->Emitter;
+
+  System->SpawnType = ParticleSpawnType_Expanding;
+
+  System->Entropy.Seed = RandomU32(Entropy);
+
+  System->Colors[0] = GREY_0;
+  System->Colors[1] = GREY_1;
+  System->Colors[2] = GREY_2;
+  System->Colors[3] = GREY_4;
+  System->Colors[4] = GREY_6;
+  System->Colors[5] = GREY_8;
+
+  System->SpawnRegion = aabb(Offset, V3(Radius, Radius, Radius) * 0.25f );
+
+  System->EmissionLifespan = 0.25f;
+  System->LifespanMod = 0.75f;
+  System->ParticleLifespan = 0.5f;
+  System->ParticlesPerSecond = 100.0f*Radius;
+
+  /* System->Physics.Speed = 2; */
+  /* System->Physics.Drag = V3(2.2f); */
+  /* System->Physics.Mass = 3.0f; */
+
+  r32 TurbMin = 1.5f*Radius;
+  r32 TurbMax = 3.f*Radius;
+
+  System->ParticleTurbMin = V3(TurbMin);
+  System->ParticleTurbMax = V3(TurbMax);
+
+  System->ParticleStartingDim = V3(0.1f) * Radius;
+  System->ParticleEndingDim = 2.5f;
+
+  System->SystemMovementCoefficient = 0.1f;
+  System->Drag = 2.f;
+
+  /* SpawnParticleSystem(Entity->Emitter, &Params); */
+
+  return;
+}
+void
 SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius)
 {
-#if 0
-  particle_system_init_params Params = {};
+  particle_system *System = Entity->Emitter;
 
-  Params.Entropy.Seed = RandomU32(Entropy);
+  System->SpawnType = ParticleSpawnType_Expanding;
 
-  Params.Colors[0] = BLACK;
-  Params.Colors[1] = DARK_DARK_RED;
-  Params.Colors[2] = DARK_RED;
-  Params.Colors[3] = ORANGE;
-  Params.Colors[4] = YELLOW;
-  Params.Colors[5] = WHITE;
+  System->Entropy.Seed = RandomU32(Entropy);
 
-  Params.SpawnRegion = aabb(Offset, V3(1.2f));
+  System->Colors[0] = BLACK;
+  System->Colors[1] = DARK_DARK_RED;
+  System->Colors[2] = LIGHT_RED;
+  System->Colors[3] = DARK_ORANGE;
+  System->Colors[4] = YELLOW;
+  System->Colors[5] = WHITE;
 
-  /* Params.ActiveParticles = 1; */
-  Params.EmissionLifespan = 0.10f;
-  Params.ParticleLifespan = 0.55f;
-  Params.ParticlesPerSecond = 2.0f;
-
-  Params.Physics.Speed = 18;
-  /* Params.Physics.Drag = V3(2.0f); */
-  Params.Physics.Mass = 0.3f;
-
-  SpawnParticleSystem(Entity->Emitter, &Params );
-
-  return;
-#else
-  /* Entity->Physics.Mass = 1.f; */
-  /* Entity->Physics.Drag = V3(1.f, 1.f, 1.f); */
-
-  particle_system_init_params Params = {};
-
-  Params.Entropy.Seed = RandomU32(Entropy);
-
-  /* Params.Colors[0] = BLACK; */
-  /* Params.Colors[1] = DARK_DARK_RED; */
-  /* Params.Colors[2] = DARK_RED; */
-  /* Params.Colors[3] = ORANGE; */
-  /* Params.Colors[4] = YELLOW; */
-  /* Params.Colors[5] = WHITE; */
-
-  Params.Colors[1] = (u8)RandomU32(Entropy);
-  Params.Colors[2] = (u8)RandomU32(Entropy);
-  Params.Colors[3] = (u8)RandomU32(Entropy);
-  Params.Colors[4] = (u8)RandomU32(Entropy);
-  Params.Colors[5] = (u8)RandomU32(Entropy);
+  /* System->Colors[1] = (u8)RandomU32(Entropy); */
+  /* System->Colors[2] = (u8)RandomU32(Entropy); */
+  /* System->Colors[3] = (u8)RandomU32(Entropy); */
+  /* System->Colors[4] = (u8)RandomU32(Entropy); */
+  /* System->Colors[5] = (u8)RandomU32(Entropy); */
 
 
-  Params.SpawnRegion = aabb(Offset, V3(Radius) );
+  System->SpawnRegion = aabb(Offset, V3(Radius*0.10f) );
 
-  Params.EmissionLifespan = 0.25f;
-  Params.LifespanMod = 0.15f;
-  Params.ParticleLifespan = 0.15f;
-  Params.ParticlesPerSecond = 500.0f*Radius;
+  System->EmissionLifespan = 0.25f;
+  System->LifespanMod = 0.15f;
+  System->ParticleLifespan = 0.15f;
+  System->ParticlesPerSecond = 500.0f*Radius;
 
-  Params.Physics.Speed = 2;
-  /* Params.Physics.Drag = V3(2.2f); */
-  Params.Physics.Mass = 3.0f;
+  /* System->Physics.Speed = 2; */
+  /* System->Physics.Drag = V3(2.2f); */
+  /* System->Physics.Mass = 3.0f; */
 
-  r32 xyTurb = 30.f;
+  r32 xyTurb = 7.f*Radius;
   /* r32 xyTurb = 2.5f; */
   /* r32 xyTurb = 0.0f; */
-  Params.ParticleTurbMin = V3(-xyTurb, -xyTurb, -4.0f);
-  Params.ParticleTurbMax = V3(xyTurb, xyTurb, 15.0f);
+  System->ParticleTurbMin = V3(-xyTurb, -xyTurb, -xyTurb);
+  System->ParticleTurbMax = V3(xyTurb, xyTurb, xyTurb);
 
-  /* Params.Physics.Velocity = V3(0.f, 0.f, 10.f); */
+  /* System->Physics.Velocity = V3(0.f, 0.f, 10.f); */
 
-  Params.ParticleStartingDim = V3(1.3f);
+  System->ParticleStartingDim = V3(0.3f) * Radius;
+  System->ParticleEndingDim = 0.1f;
 
-  Params.SystemMovementCoefficient = 0.1f;
+  System->SystemMovementCoefficient = 0.1f;
+  System->Drag = 11.0f;
 
-  SpawnParticleSystem(Entity->Emitter, &Params);
+  /* SpawnParticleSystem(Entity->Emitter, &Params); */
 
   return;
-#endif
 }
 
 // FIXME(Jesse): Remove the f32_MAX EmissionLifespan below
@@ -561,48 +590,53 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius)
 void
 SpawnFire(entity *Entity, random_series *Entropy, v3 Offset)
 {
-  particle_system_init_params Params = {};
+  particle_system *System = Entity->Emitter;
 
-  Params.Entropy.Seed = RandomU32(Entropy);
+  System->SpawnType = ParticleSpawnType_Random;
 
-  Params.Colors[0] = BLACK;
-  Params.Colors[1] = DARK_DARK_RED;
-  Params.Colors[2] = DARK_RED;
-  Params.Colors[3] = ORANGE;
-  Params.Colors[4] = YELLOW;
-  Params.Colors[5] = WHITE;
+  System->Drag = 6.0f;
 
-  /* Params.Colors[1] = (u8)RandomU32(Entropy); */
-  /* Params.Colors[2] = (u8)RandomU32(Entropy); */
-  /* Params.Colors[3] = (u8)RandomU32(Entropy); */
-  /* Params.Colors[4] = (u8)RandomU32(Entropy); */
-  /* Params.Colors[5] = (u8)RandomU32(Entropy); */
+  System->Entropy.Seed = RandomU32(Entropy);
+
+  System->Colors[0] = BLACK;
+  System->Colors[1] = DARK_DARK_RED;
+  System->Colors[2] = DARK_RED;
+  System->Colors[3] = DARK_ORANGE;
+  System->Colors[4] = YELLOW;
+  System->Colors[5] = WHITE;
+
+  /* System->Colors[1] = (u8)RandomU32(Entropy); */
+  /* System->Colors[2] = (u8)RandomU32(Entropy); */
+  /* System->Colors[3] = (u8)RandomU32(Entropy); */
+  /* System->Colors[4] = (u8)RandomU32(Entropy); */
+  /* System->Colors[5] = (u8)RandomU32(Entropy); */
 
 
-  Params.SpawnRegion = aabb(Offset, V3(0.13f));
+  System->SpawnRegion = aabb(Offset, V3(0.16f));
 
-  Params.EmissionLifespan = PARTICLE_SYSTEM_EMIT_FOREVER;
-  Params.LifespanMod = 0.05f;
-  Params.ParticleLifespan = 0.25f;
-  Params.ParticlesPerSecond = 200.0f;
+  System->EmissionLifespan = PARTICLE_SYSTEM_EMIT_FOREVER;
+  System->LifespanMod = 0.07f;
+  System->ParticleLifespan = 0.25f;
+  System->ParticlesPerSecond = 150.0f;
 
-  Params.Physics.Speed = 1;
-  /* Params.Physics.Drag = V3(2.2f); */
-  Params.Physics.Mass = 6.0f;
+  /* System->Physics.Speed = 1; */
+  /* System->Physics.Drag = V3(2.2f); */
+  /* System->Physics.Mass = 6.0f; */
 
-  r32 xyTurb = 8.f;
+  r32 xyTurb = 4.f;
   /* r32 xyTurb = 2.5f; */
   /* r32 xyTurb = 0.0f; */
-  Params.ParticleTurbMin = V3(-xyTurb, -xyTurb, -4.0f);
-  Params.ParticleTurbMax = V3(xyTurb, xyTurb, 35.0f);
+  System->ParticleTurbMin = V3(-xyTurb, -xyTurb, 20.0f);
+  System->ParticleTurbMax = V3(xyTurb, xyTurb, 35.0f);
 
-  Params.Physics.Velocity = V3(0.0f, 0.0f, 9.0f);
+  /* System->Physics.Velocity = V3(0.0f, 0.0f, 9.0f); */
 
-  Params.ParticleStartingDim = V3(0.9f);
+  System->ParticleStartingDim = V3(0.9f);
+  System->ParticleEndingDim = 0.1f;
 
-  Params.SystemMovementCoefficient = 0.1f;
+  System->SystemMovementCoefficient = 0.1f;
 
-  SpawnParticleSystem(Entity->Emitter, &Params);
+  /* SpawnParticleSystem(Entity->Emitter, &Params); */
 
   return;
 }
@@ -1027,19 +1061,43 @@ SpawnParticle(particle_system *System)
   r32 Y = RandomBilateral(&System->Entropy);
   r32 Z = RandomBilateral(&System->Entropy);
 
-  v3 Random = V3(X,Y,Z);
-  Particle->Offset = (Random*System->SpawnRegion.Radius) + System->SpawnRegion.Center;
+  // NOTE(Jesse): Normalizing this vector makes the spawn region spherical.
+  // Not sure how we want to control that, but it should probably be parameterized
+  v3 Random = Normalize(V3(X,Y,Z));
 
+  Particle->Offset = (Random*System->SpawnRegion.Radius) + System->SpawnRegion.Center;
 
   v3 TurbMin = System->ParticleTurbMin;
   v3 TurbMax = System->ParticleTurbMax;
 
-  r32 TurbX = MapValueToRange(TurbMin.x, Abs(X), TurbMax.x);
-  r32 TurbY = MapValueToRange(TurbMin.y, Abs(Y), TurbMax.y);
-  r32 TurbZ = MapValueToRange(TurbMin.z, Abs(Z), TurbMax.z);
+  switch(System->SpawnType)
+  {
+    InvalidCase(ParticleSpawnType_None);
 
-  Particle->Physics = System->ParticlePhysics;
-  Particle->Physics.Force = V3(TurbX, TurbY, TurbZ);
+    case ParticleSpawnType_Random:
+    {
+      r32 TurbX = MapValueToRange(TurbMin.x, Abs(X), TurbMax.x);
+      r32 TurbY = MapValueToRange(TurbMin.y, Abs(Y), TurbMax.y);
+      r32 TurbZ = MapValueToRange(TurbMin.z, Abs(Z), TurbMax.z);
+      Particle->Velocity = V3(TurbX, TurbY, TurbZ);
+    } break;
+
+    case ParticleSpawnType_Expanding:
+    {
+      r32 RangeX = TurbMax.x - TurbMin.x;
+      r32 RangeY = TurbMax.y - TurbMin.y;
+      r32 RangeZ = TurbMax.z - TurbMin.z;
+      Particle->Velocity = Random * V3(RangeX, RangeY, RangeZ);
+    } break;
+
+    case ParticleSpawnType_Contracting:
+    {
+      r32 RangeX = TurbMax.x - TurbMin.x;
+      r32 RangeY = TurbMax.y - TurbMin.y;
+      r32 RangeZ = TurbMax.z - TurbMin.z;
+      Particle->Velocity = -1.f * Random * V3(RangeX, RangeY, RangeZ);
+    } break;
+  }
 
   Particle->RemainingLifespan = System->ParticleLifespan + RandomBetween(0.f,  &System->Entropy, System->LifespanMod);
 
@@ -1070,10 +1128,12 @@ DoLight(game_lights *Lights, v3 Position, v3 Color)
 }
 
 link_internal void
-SimulateParticle(particle_system *System, particle *Particle, r32 dt, v3 EntityDelta, b32 ApplyGravity)
+SimulateParticle(particle_system *System, particle *Particle, r32 dt, v3 EntityDelta)
 {
-  PhysicsUpdate(&Particle->Physics, dt, ApplyGravity);
-  Particle->Offset += Particle->Physics.Delta;
+  Particle->Velocity -= (Particle->Velocity * System->Drag * dt);
+  v3 Delta = Particle->Velocity * dt;
+
+  Particle->Offset += Delta;
   Particle->Offset -= EntityDelta * System->SystemMovementCoefficient;
   Particle->RemainingLifespan -= dt;
 }
@@ -1104,14 +1164,13 @@ SimulateAndRenderParticleSystem(
 
   r32 SpawnInterval = 1.f/System->ParticlesPerSecond;
 
-  b32 ApplyGravity = False;
   if (System->EmissionLifespan > 0)
   {
     for (u32 SpawnIndex = 0; SpawnIndex < SpawnCount; ++SpawnIndex)
     {
       /* particle *Particle = System->Particles + System->ActiveParticles + SpawnIndex; */
       particle *Particle = SpawnParticle(System);
-      SimulateParticle(System, Particle, SpawnIndex*SpawnInterval, EntityDelta, ApplyGravity);
+      SimulateParticle(System, Particle, SpawnIndex*SpawnInterval, EntityDelta);
     }
   }
 
@@ -1121,26 +1180,18 @@ SimulateAndRenderParticleSystem(
 
   for ( s32 ParticleIndex = 0;
         ParticleIndex < System->ActiveParticles;
-        ++ParticleIndex)
+        )
   {
     particle *Particle = &System->Particles[ParticleIndex];
 
-    SimulateParticle(System, Particle, dt, EntityDelta, ApplyGravity);
-
-    if ( Particle->RemainingLifespan < 0)
     {
-      // Swap out last partcile for the current partcile and decrement
-      particle *SwapParticle = &System->Particles[System->ActiveParticles--];
-      *Particle = *SwapParticle;
-    }
-    else
-    {
-      v3 MinDiameter = V3(0.1f);
+      v3 MinDiameter = System->ParticleStartingDim * System->ParticleEndingDim;
       r32 MaxParticleLifespan = (System->ParticleLifespan+System->LifespanMod);
-      v3 Diameter = ((Particle->RemainingLifespan / MaxParticleLifespan) + MinDiameter) * System->ParticleStartingDim;
+      r32 t = (Particle->RemainingLifespan / MaxParticleLifespan);
+      v3 Diameter = Lerp(t, MinDiameter, System->ParticleStartingDim);
 
       u8 ColorIndex = (u8)((Particle->RemainingLifespan / MaxParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
-      Assert(ColorIndex >= 0 && ColorIndex <= PARTICLE_SYSTEM_COLOR_COUNT);
+      Assert(ColorIndex >= 0 && ColorIndex < PARTICLE_SYSTEM_COLOR_COUNT);
 
       DrawVoxel( Dest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 3.0f );
 
@@ -1151,6 +1202,18 @@ SimulateAndRenderParticleSystem(
         DoLight(Graphics->Lights, RenderSpaceP + Particle->Offset, EmissionColor);
       }
 #endif
+    }
+
+    SimulateParticle(System, Particle, dt, EntityDelta);
+    if ( Particle->RemainingLifespan < 0)
+    {
+      // Swap out last partcile for the current partcile and decrement
+      particle *SwapParticle = &System->Particles[--System->ActiveParticles];
+      *Particle = *SwapParticle;
+    }
+    else
+    {
+      ++ParticleIndex;
     }
   }
 

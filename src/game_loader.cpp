@@ -415,6 +415,7 @@ main( s32 ArgCount, const char ** Args )
 #if !EMCC
     if ( LibIsNew(GameLibName, &LastGameLibTime) )
     {
+      Info("Reloading Game Lib");
       SignalAndWaitForWorkers(&Plat.WorkerThreadsSuspendFutex);
 
       CloseLibrary(GameLib);
@@ -426,6 +427,7 @@ main( s32 ArgCount, const char ** Args )
       Ensure( EngineApi.OnLibraryLoad(&EngineResources) );
 
       UnsignalFutex(&Plat.WorkerThreadsSuspendFutex);
+      Info("Reload Success");
     }
 
 #if DEBUG_SYSTEM_API

@@ -373,6 +373,8 @@ DeallocateMeshes(threadsafe_geometry_buffer *Buf, mesh_freelist* MeshFreelist, m
 inline void
 DrawVoxel( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelCenter, v4 Color, v3 Diameter)
 {
+  /* TIMED_FUNCTION(); */
+
   v3 VertexData[6];
 
   v4 FaceColors[VERTS_PER_FACE];
