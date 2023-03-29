@@ -29,7 +29,7 @@
 /* #define PLAYER_MODEL MODELS_PATH"/x-wing.vox" */
 
 #define DEBUG_CHUNK_AABB              0
-#define DEBUG_DRAW_COLLISION_VOLUMES  0
+#define DEBUG_DRAW_COLLISION_VOLUMES  1
 #define DEBUG_WORLD_GENERATION        0
 #define DEBUG_HIGHLIGHT_VOID_CHUNKS   0
 #define DEBUG_DRAW_WORLD_AXIES        1
@@ -39,7 +39,7 @@
 #define LOOT_MODEL       MODELS_PATH "/3x3x3.vox"
 #define PROJECTILE_MODEL MODELS_PATH "/3x3x3.vox"
 
-#define TOTAL_ENTITY_COUNT     (1024)
+#define TOTAL_ENTITY_COUNT     (1024*2)
 
 // THIS MUST MATCH THE DEFINE IN header.glsl
 // Also must be a power of two

@@ -113,11 +113,10 @@ struct game_mode
 
 enum entity_state
 {
-  EntityState_Uninitialized    = 0,
-  EntityState_Initialized      = 1 << 0,
-  EntityState_Spawned          = 1 << 1,
-  EntityState_Destroyed        = 1 << 2,
-  EntityState_Reserved         = 1 << 3,
+  EntityState_Free        = 0,
+  EntityState_Spawned     = 1 << 0,
+  EntityState_Destroyed   = 1 << 1,
+  EntityState_Reserved    = 1 << 2,
 };
 
 enum entity_type

@@ -12,22 +12,21 @@ Destroy(entity *Entity)
 {
   Assert( Spawned(Entity) );
   Entity->State = EntityState_Destroyed;
-
   Assert(Entity->Emitter);
   Deactivate(Entity->Emitter);
-
-  return;
 }
 
 inline void
 Unspawn(entity *Entity)
 {
-  Entity->State = EntityState_Initialized;
-
+  Entity->State = EntityState_Free;
   Assert(Entity->Emitter);
-  Deactivate(Entity->Emitter);
+  auto Emitter = Entity->Emitter;
 
-  return;
+  Clear(Entity);
+  Deactivate(Emitter);
+
+  Entity->Emitter = Emitter;
 }
 
 inline b32
@@ -161,6 +160,8 @@ GetCollision(world *World, entity *Entity, chunk_dimension VisibleRegion, v3 Off
   return C;
 }
 
+
+#if 0
 inline void
 SpawnLoot(entity *Entity, random_series *Entropy, model *GameModels)
 {
@@ -178,6 +179,7 @@ SpawnLoot(entity *Entity, random_series *Entropy, model *GameModels)
 
   return;
 }
+#endif
 
 entity *
 GetFreeEntity(entity** EntityTable)
@@ -189,17 +191,19 @@ GetFreeEntity(entity** EntityTable)
         ++EntityIndex )
   {
     entity *TestEntity = EntityTable[EntityIndex];
-    if (Unspawned(TestEntity) && !Destroyed(TestEntity) && !Reserved(TestEntity) )
+    if (TestEntity->State == EntityState_Free)
     {
       Result = TestEntity;
-
       Result->State = EntityState_Reserved;
       break;
     }
   }
 
-  Assert(Unspawned(Result));
-  Assert(!Destroyed(Result));
+  if (Result)
+  {
+    Assert(Unspawned(Result));
+    Assert(!Destroyed(Result));
+  }
 
   return Result;
 }
@@ -237,6 +241,7 @@ SpawnEntity( model *GameModels, entity *Entity, entity_type Type)
   // could change in the future
   Assert(Unspawned(Entity));
   Assert(!Destroyed(Entity));
+  Assert(Entity->State == EntityState_Reserved);
 
   Entity->State = EntityState_Spawned;
   Entity->Type = Type;
@@ -487,8 +492,6 @@ SpawnParticleSystem(particle_system *System, particle_system_init_params *Params
 }
 #endif
 
-void SpawnFire(entity *Entity, random_series *Entropy, v3 Offset);
-
 void
 SpawnSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius)
 {
@@ -510,7 +513,7 @@ SpawnSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius)
   System->EmissionLifespan = 0.25f;
   System->LifespanMod = 0.75f;
   System->ParticleLifespan = 0.5f;
-  System->ParticlesPerSecond = 100.0f*Radius;
+  System->ParticlesPerSecond = 80.0f*Radius;
 
   /* System->Physics.Speed = 2; */
   /* System->Physics.Drag = V3(2.2f); */
@@ -522,7 +525,7 @@ SpawnSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius)
   System->ParticleTurbMin = V3(TurbMin);
   System->ParticleTurbMax = V3(TurbMax);
 
-  System->ParticleStartingDim = V3(0.1f) * Radius;
+  System->ParticleStartingDim = V3(0.10f, 0.10f, 0.06f) * Radius;
   System->ParticleEndingDim = 2.5f;
 
   System->SystemMovementCoefficient = 0.1f;
@@ -532,6 +535,45 @@ SpawnSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius)
 
   return;
 }
+
+void
+SpawnSplotionBitty(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius)
+{
+  particle_system *System = Entity->Emitter;
+
+  System->SpawnType = ParticleSpawnType_Expanding;
+
+  System->Entropy.Seed = RandomU32(Entropy);
+
+  System->Colors[0] = GREY_0;
+  System->Colors[1] = GREY_1;
+  System->Colors[2] = GREY_2;
+  System->Colors[3] = GREY_3;
+  System->Colors[4] = GREY_5;
+  System->Colors[5] = RED;
+
+  System->SpawnRegion = aabb(Offset, V3(Radius) );
+
+  /* System->EmissionLifespan = 3.0f; */
+  System->EmissionLifespan = 0.23f;
+  System->LifespanMod = 0.25f;
+  System->ParticleLifespan = 0.25f;
+  System->ParticlesPerSecond = 20.0f;
+
+  System->ParticleTurbMin = V3(0.f, 0.f, 0.f);
+  System->ParticleTurbMax = V3(0.f, 0.f, .1f);
+
+  System->ParticleStartingDim = V3(0.10f);
+  System->ParticleEndingDim = 6.f;
+
+  System->SystemMovementCoefficient = 1.f;
+  /* System->Drag = 11.0f; */
+
+  /* SpawnParticleSystem(Entity->Emitter, &Params); */
+
+  return;
+}
+
 void
 SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius)
 {
@@ -543,9 +585,9 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius)
 
   System->Colors[0] = BLACK;
   System->Colors[1] = DARK_DARK_RED;
-  System->Colors[2] = LIGHT_RED;
+  System->Colors[2] = DARK_RED;
   System->Colors[3] = DARK_ORANGE;
-  System->Colors[4] = YELLOW;
+  System->Colors[4] = LIGHT_ORANGE;
   System->Colors[5] = WHITE;
 
   /* System->Colors[1] = (u8)RandomU32(Entropy); */
@@ -717,9 +759,9 @@ EntityWorldCollision(world *World, entity *Entity, collision_event *Event, chunk
 
     case EntityType_PlayerProjectile:
     {
+      NotImplemented;
       if (Event->Chunk)
       {
-        NotImplemented;
         s32 i = GetIndex(Voxel_Position(Event->CP.Offset), World->ChunkDim);
         world_chunk *Chunk = Event->Chunk;
         Chunk->Voxels[i] = {};
@@ -788,6 +830,8 @@ ProcessCollisionRule(
     event_queue   *EventQueue
   )
 {
+  NotImplemented;
+
   Assert(First!=Second);
 
   collision_type CollisionType = (collision_type)(First->Type | Second->Type);
@@ -946,53 +990,63 @@ UpdateEntityP(world* World, entity *Entity, v3 GrossDelta, chunk_dimension Visib
               AxisIndex < 3;
             ++AxisIndex )
     {
-      Entity->P.Offset.E[AxisIndex] += StepDelta.E[AxisIndex];
-      Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-
-      v3 CollisionVolume = Entity->CollisionVolumeRadius*2.0f;
-
-      canonical_position CollisionBasis = Entity->P;
-      if (StepDelta.E[AxisIndex] > 0.f) // We're going in the positive direction
+      if (StepDelta.E[AxisIndex] != 0.0f)
       {
-
-        CollisionBasis.Offset.E[AxisIndex] += CollisionVolume.E[AxisIndex] -1.f;
-        CollisionBasis = Canonicalize(WorldChunkDim, CollisionBasis);
-      }
-
-      CollisionVolume.E[AxisIndex] = 1.f;
-
-      C = GetCollision(World, CollisionBasis, CollisionVolume, VisibleRegion);
-
-      if ( C.didCollide ) //&& C.Chunk && IsSet(C.Chunk, Chunk_VoxelsInitialized) )
-      {
-        /* Entity->P.Offset.E[AxisIndex] -= StepDelta.E[AxisIndex]; */
-        /* Entity->P = Canonicalize(WorldChunkDim, Entity->P); */
-
-        Entity->Physics.Velocity.E[AxisIndex] = 0;
-        Entity->Physics.Delta.E[AxisIndex] = 0;
-
-        if (C.Chunk == 0 || NotSet(C.Chunk, Chunk_VoxelsInitialized) )
-        {
-          break;
-        }
-
-        Entity->P.Offset.E[AxisIndex] = C.CP.Offset.E[AxisIndex];
-        Entity->P.WorldP.E[AxisIndex] = C.CP.WorldP.E[AxisIndex];
-
-        if (StepDelta.E[AxisIndex] > 0)
-        {
-          Entity->P.Offset.E[AxisIndex] -= (Entity->CollisionVolumeRadius.E[AxisIndex]*2);
-        }
-        else if (StepDelta.E[AxisIndex] < 0)
-        {
-          /* Truncate(Entity->P.Offset.E[AxisIndex]);// += 1.0f; */
-          /* Entity->P.Offset.E[AxisIndex] += 1.0f; */
-          Entity->P.Offset.E[AxisIndex] ++;
-          /* Truncate(Entity->P.Offset.E[AxisIndex] += 1.0f); */
-        }
-
+        Entity->P.Offset.E[AxisIndex] += StepDelta.E[AxisIndex];
         Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-        EntityWorldCollision(World, Entity, &C, VisibleRegion);
+
+        canonical_position CollisionBasis = Entity->P;
+
+        v3 CollisionVolume = Entity->CollisionVolumeRadius*2.0f;
+        if (StepDelta.E[AxisIndex] > 0.f) // We're going in the positive direction
+        {
+          CollisionBasis.Offset.E[AxisIndex] += Truncate(CollisionVolume.E[AxisIndex]);
+          CollisionBasis = Canonicalize(WorldChunkDim, CollisionBasis);
+        }
+
+        CollisionVolume.E[AxisIndex] = Min(CollisionVolume.E[AxisIndex], 1.f);
+
+        C = GetCollision(World, CollisionBasis, CollisionVolume, VisibleRegion);
+
+        if ( C.didCollide ) //&& C.Chunk && IsSet(C.Chunk, Chunk_VoxelsInitialized) )
+        {
+          /* Entity->P.Offset.E[AxisIndex] -= StepDelta.E[AxisIndex]; */
+          /* Entity->P = Canonicalize(WorldChunkDim, Entity->P); */
+
+          // TODO(Jesse): Parameterize by adding something to physics struct
+          Entity->Physics.Velocity.E[AxisIndex] *= -0.25f;
+
+          /* Entity->Physics.Velocity.E[AxisIndex] = 0.f; */
+          Entity->Physics.Delta.E[AxisIndex] = 0;
+
+  /*         if (C.Chunk == 0 || NotSet(C.Chunk, Chunk_VoxelsInitialized) ) */
+  /*         { */
+  /*           break; */
+  /*         } */
+
+          Entity->P.Offset.E[AxisIndex] = C.CP.Offset.E[AxisIndex];
+          Entity->P.WorldP.E[AxisIndex] = C.CP.WorldP.E[AxisIndex];
+
+          if (StepDelta.E[AxisIndex] > 0)
+          {
+            Entity->P.Offset.E[AxisIndex] -= (Entity->CollisionVolumeRadius.E[AxisIndex]*2.f);
+          }
+          else if (StepDelta.E[AxisIndex] < 0)
+          {
+            /* Truncate(Entity->P.Offset.E[AxisIndex]);// += 1.0f; */
+            Entity->P.Offset.E[AxisIndex] += 1.0f;
+            /* Entity->P.Offset.E[AxisIndex] += 1.001f; */
+            /* Entity->P.Offset.E[AxisIndex] ++; */
+            /* Entity->P.Offset.E[AxisIndex] = Truncate(Entity->P.Offset.E[AxisIndex] += 1.0f); */
+          }
+          else
+          {
+            InvalidCodePath();
+          }
+
+          Entity->P = Canonicalize(WorldChunkDim, Entity->P);
+          EntityWorldCollision(World, Entity, &C, VisibleRegion);
+        }
       }
     }
 
@@ -1179,6 +1233,8 @@ SimulatePlayer(world* World, entity *Player, camera* Camera, hotkeys *Hotkeys, r
   return;
 }
 
+link_internal void SimulateParticleSystem(work_queue_entry_sim_particle_system *Job);
+
 void
 SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension VisibleRegion, camera *Camera, hotkeys *Hotkeys, untextured_3d_geometry_buffer *Dest, work_queue *Queue)
 {
@@ -1194,14 +1250,6 @@ SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension Vis
         continue;
 
     particle_system *System = Entity->Emitter;
-    if (Active(System))
-    {
-      auto EntityDelta = Entity->Physics.Delta;
-
-      v3 RenderSpaceP  = GetRenderP(Entity->P, Camera, World->ChunkDim);
-      auto Job = WorkQueueEntry(System, Dest, EntityDelta, RenderSpaceP, dt);
-      PushWorkQueueEntry(Queue, &Job);
-    }
 
     switch (Entity->Type)
     {
@@ -1230,8 +1278,11 @@ SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension Vis
 
       case EntityType_ParticleSystem:
       {
-        PhysicsUpdate(&Entity->Physics, dt);
-        UpdateEntityP(World, Entity, Entity->Physics.Delta, VisibleRegion);
+        /* if (System->EmissionLifespan > 0) */
+        {
+          PhysicsUpdate(&Entity->Physics, dt);
+          UpdateEntityP(World, Entity, Entity->Physics.Delta, VisibleRegion);
+        }
 
         if (Inactive(System)) { Unspawn(Entity); }
       } break;
@@ -1248,6 +1299,16 @@ SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension Vis
       } break;
 
       /* default: { InvalidCodePath(); } break; */
+    }
+
+    if (Active(System))
+    {
+      auto EntityDelta = Entity->Physics.Delta;
+
+      v3 RenderSpaceP  = GetRenderP(Entity->P, Camera, World->ChunkDim);
+      auto Job = WorkQueueEntry(System, Dest, EntityDelta, RenderSpaceP, dt);
+      /* SimulateParticleSystem(&Job.work_queue_entry_sim_particle_system); */
+      PushWorkQueueEntry(Queue, &Job);
     }
   }
 
@@ -1277,7 +1338,7 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
   auto System      = Job->System;
   auto EntityDelta = Job->EntityDelta;
   auto dt          = Job->dt;
-  v3 RenderSpaceP  = Job->RenderSpaceP; //GetRenderP(Entity->P, Graphics->Camera, WorldChunkDim);
+  v3 RenderSpaceP  = Job->RenderSpaceP;
 
   if (System->EmissionLifespan < PARTICLE_SYSTEM_EMIT_FOREVER)
   {
@@ -1302,43 +1363,47 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
 
   System->ElapsedSinceLastEmission -= (r32)SpawnCount*SpawnInterval;
 
-  auto Dest = ReserveBufferSpace(Job->Dest, System->ActiveParticles*VERTS_PER_PARTICLE);
-  for ( u32 ParticleIndex = 0;
-        ParticleIndex < System->ActiveParticles;
-        )
+  if (System->ActiveParticles)
   {
-    particle *Particle = &System->Particles[ParticleIndex];
-
+    auto Dest = ReserveBufferSpace(Job->Dest, System->ActiveParticles*VERTS_PER_PARTICLE);
+    for ( u32 ParticleIndex = 0;
+          ParticleIndex < System->ActiveParticles;
+          )
     {
-      v3 MinDiameter = System->ParticleStartingDim * System->ParticleEndingDim;
-      r32 MaxParticleLifespan = (System->ParticleLifespan+System->LifespanMod);
-      r32 t = (Particle->RemainingLifespan / MaxParticleLifespan);
-      v3 Diameter = Lerp(t, MinDiameter, System->ParticleStartingDim);
+      particle *Particle = &System->Particles[ParticleIndex];
 
-      u8 ColorIndex = (u8)((Particle->RemainingLifespan / MaxParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
-      Assert(ColorIndex >= 0 && ColorIndex < PARTICLE_SYSTEM_COLOR_COUNT);
+      if (Particle->RemainingLifespan > 0.f)
+      {
+        v3 MinDiameter = System->ParticleStartingDim * System->ParticleEndingDim;
+        r32 MaxParticleLifespan = (System->ParticleLifespan+System->LifespanMod);
+        r32 t = (Particle->RemainingLifespan / MaxParticleLifespan);
+        v3 Diameter = Lerp(t, MinDiameter, System->ParticleStartingDim);
 
-      DrawVoxel( &Dest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 3.0f );
+        u8 ColorIndex = (u8)((Particle->RemainingLifespan / MaxParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
+        Assert(ColorIndex >= 0 && ColorIndex < PARTICLE_SYSTEM_COLOR_COUNT);
+
+        DrawVoxel( &Dest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 3.0f );
 
 #if 0
-      v3 EmissionColor = Normalize(V3(3,1,0));
-      if (RandomUnilateral(&System->Entropy) > 0.99f)
-      {
-        DoLight(Graphics->Lights, RenderSpaceP + Particle->Offset, EmissionColor);
-      }
+        v3 EmissionColor = Normalize(V3(3,1,0));
+        if (RandomUnilateral(&System->Entropy) > 0.99f)
+        {
+          DoLight(Graphics->Lights, RenderSpaceP + Particle->Offset, EmissionColor);
+        }
 #endif
-    }
+      }
 
-    SimulateParticle(System, Particle, dt, EntityDelta);
-    if ( Particle->RemainingLifespan < 0)
-    {
-      // Swap out last partcile for the current partcile and decrement
-      particle *SwapParticle = &System->Particles[--System->ActiveParticles];
-      *Particle = *SwapParticle;
-    }
-    else
-    {
-      ++ParticleIndex;
+      SimulateParticle(System, Particle, dt, EntityDelta);
+      if ( Particle->RemainingLifespan < 0)
+      {
+        // Swap out last partcile for the current partcile and decrement
+        particle *SwapParticle = &System->Particles[--System->ActiveParticles];
+        *Particle = *SwapParticle;
+      }
+      else
+      {
+        ++ParticleIndex;
+      }
     }
   }
 
@@ -1346,20 +1411,6 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
   v3 RenderSpaceP = GetRenderP(Entity->P, Graphics->Camera, WorldChunkDim) + System->SpawnRegion.Center;
   DoLight(Graphics->Lights, RenderSpaceP, 10.0f*EmissionColor);
 #endif
-    /* } */
-
-}
-
-link_internal void
-DispatchSimulateParticleSystemJobs(work_queue *Queue, entity** EntityTable, chunk_dimension WorldChunkDim, untextured_3d_geometry_buffer* Dest, graphics *Graphics, r32 dt)
-{
-  TIMED_FUNCTION();
-
-  for ( s32 EntityIndex = 0;
-        EntityIndex < TOTAL_ENTITY_COUNT;
-        ++EntityIndex )
-  {
-  }
 }
 
 inline b32

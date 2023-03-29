@@ -260,6 +260,7 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
 
   QueueWorldUpdateForRegion(Plat, World, Pick, WorldUpdateOperation_Subtractive, DARK_GREY, Radius, Resources->Memory);
 
+#if 1
   {
     entity *E = GetFreeEntity(EntityTable);
     SpawnEntity( 0, E, EntityType_ParticleSystem);
@@ -271,6 +272,24 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
     SpawnEntity( 0, E, EntityType_ParticleSystem);
     E->P = PickCP + V3(0.5f);
     SpawnSmoke(E, &Global_GameEntropy, {}, Radius);
+  }
+#endif
+
+  u32 MaxBitties = 4*u32(Radius);
+  for (u32 BittyIndex = 0; BittyIndex < MaxBitties; ++BittyIndex)
+  {
+    entity *E = GetFreeEntity(EntityTable);
+    SpawnEntity( 0, E, EntityType_ParticleSystem);
+    E->Physics.Speed = 1.f;
+
+    E->CollisionVolumeRadius = V3(.1f);
+
+    v3 Rnd = RandomV3Bilateral(&Global_GameEntropy);
+    E->Physics.Mass = 25.f;
+    E->Physics.Force = Rnd*150.f*Radius;
+    E->Physics.Force.z = Abs(E->Physics.Force.z) * 0.25f;
+    E->P = PickCP + (Rnd*Radius) + V3(0.f, 0.f, 2.0f);
+    SpawnSplotionBitty(E, &Global_GameEntropy, {}, .1f);
   }
 }
 
@@ -317,10 +336,10 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
                     WHITE, 0.05f);
 
 
-    if (Input->F8.Clicked)
-    {
-      DoSplotion(Resources, &Pick, PickCP, 20.f);
-    }
+    /* if (Input->F8.Clicked) */
+    /* { */
+    /*   DoSplotion(Resources, &Pick, PickCP, 20.f); */
+    /* } */
 
     local_persist player_action SelectedAction = {};
     local_persist b32 PlayerCharged = {};
@@ -347,8 +366,20 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
     if (Input->T.Clicked)
     {
+      DoSplotion(Resources, &Pick, PickCP, 2.5f);
+    }
+
+    if (Input->Y.Clicked)
+    {
       DoSplotion(Resources, &Pick, PickCP, 5.f);
     }
+
+    if (Input->U.Clicked)
+    {
+      DoSplotion(Resources, &Pick, PickCP, 10.f);
+    }
+
+
 
     GetDebugState()->DebugValue_u64(SelectedAction, ToString(SelectedAction).Start);
 

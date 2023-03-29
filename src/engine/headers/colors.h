@@ -8,7 +8,7 @@
 
 #define RED             3
 #define LIGHT_RED     104
-#define DARK_RED      176
+#define DARK_RED      147
 #define DARK_DARK_RED 182
 
 #define GREEN       186
@@ -21,7 +21,8 @@
 #define PINK    7
 
 #define LIGHT_ORANGE  8
-#define DARK_ORANGE  63
+#define ORANGE  63
+#define DARK_ORANGE  135
 
 #define GREY   6
 
@@ -46,7 +47,7 @@ static v4 DefaultPalette[] = {
   V4(0x00, 0x7B, 0x0C, 0xff), // 2 GRASS_GREEN
   V4(0xff, 0x00, 0x00, 0xff), // 3 RED
   V4(0x00, 0x00, 0x66, 0xff), // 4 BLUE
-  V4(0xff, 0xcc, 0xff, 0xff), // 5 YELLOW
+  V4(0xff, 0xcc, 0x00, 0xff), // 5 YELLOW
   V4(0x00, 0x80, 0x80, 0xff), // 6 TEAL
   V4(0xff, 0x33, 0x99, 0xff), // 7 PINK
   V4(0xff, 0x99, 0x00, 0xff), // 8

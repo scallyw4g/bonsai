@@ -907,7 +907,8 @@ BufferEntity( untextured_3d_geometry_buffer* Dest, entity *Entity, animation *An
   {
 #if DEBUG_DRAW_COLLISION_VOLUMES
     aabb AABB = GetRenderSpaceAABB(WorldChunkDim, Entity, Graphics->Camera);
-    DEBUG_DrawAABB(Dest, AABB, PINK);
+    auto CopyDest = ReserveBufferSpace(Dest, VERTS_PER_AABB);
+    DEBUG_DrawAABB(&CopyDest, AABB, PINK);
 #endif
 
     v3 AnimationOffset = {};
