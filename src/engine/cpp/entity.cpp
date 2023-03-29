@@ -235,7 +235,7 @@ AllocateEntityTable(memory_arena* Memory, u32 Count)
 }
 
 void
-SpawnEntity( model *GameModels, entity *Entity, entity_type Type)
+SpawnEntity( model *GameModels, entity *Entity, entity_type Type, model_index ModelIndex)
 {
   // These are mutually exclusive, so checking both is redundant, but that
   // could change in the future
@@ -247,21 +247,24 @@ SpawnEntity( model *GameModels, entity *Entity, entity_type Type)
   Entity->Type = Type;
   Entity->FireCooldown = Entity->RateOfFire;
 
+  if (ModelIndex)
+  {
+    Entity->Model = GameModels[ModelIndex];
+  }
+
+#if 0
   switch (Type)
   {
     case EntityType_Player:
     {
-      Entity->Model = GameModels[EntityType_Player];
     } break;
 
     case EntityType_Enemy:
     {
-      Entity->Model = GameModels[EntityType_Enemy];
     } break;
 
     case EntityType_ParticleSystem:
     {
-      /* Entity->Model = GameModels[EntityType_None]; */
     } break;
 
     case EntityType_Default:
@@ -270,6 +273,7 @@ SpawnEntity( model *GameModels, entity *Entity, entity_type Type)
 
     InvalidDefaultCase;
   }
+#endif
 
   return;
 }
@@ -554,8 +558,8 @@ SpawnSplotionBitty(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius
 
   System->SpawnRegion = aabb(Offset, V3(Radius) );
 
-  /* System->EmissionLifespan = 3.0f; */
-  System->EmissionLifespan = 0.23f;
+  System->EmissionLifespan = 3.0f;
+  /* System->EmissionLifespan = 0.23f; */
   System->LifespanMod = 0.25f;
   System->ParticleLifespan = 0.25f;
   System->ParticlesPerSecond = 20.0f;

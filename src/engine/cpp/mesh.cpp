@@ -48,6 +48,64 @@ BufferVertsDirect(
     u32 NumVerts,
     v3 *SrcVerts, v3 *SrcNormals, v4 *SrcVertColors,
     v3 Offset,
+    v3 Scale,
+    Quaternion Rot
+  )
+{
+  TIMED_FUNCTION();
+
+  __m128 mmScale = _mm_set_ps(0, Scale.z, Scale.y, Scale.x);
+  __m128 mmOffset = _mm_set_ps(0, Offset.z, Offset.y, Offset.x);
+
+  Assert(NumVerts % 3 == 0);
+
+  MemCopy((u8*)SrcNormals,     (u8*)DestNormals,  sizeof(*SrcNormals)*NumVerts );
+  MemCopy((u8*)SrcVertColors,  (u8*)DestColors,   sizeof(*SrcVertColors)*NumVerts );
+
+  /* v3 HalfOffset = Offset*0.5f; */
+  for ( u32 VertIndex = 0;
+        VertIndex < NumVerts;
+        VertIndex += 3 )
+  {
+    v3 VertSrc0 = Rotate(SrcVerts[VertIndex + 0], Rot);
+    v3 VertSrc1 = Rotate(SrcVerts[VertIndex + 1], Rot);
+    v3 VertSrc2 = Rotate(SrcVerts[VertIndex + 2], Rot);
+
+    f32_reg Vert0;
+    f32_reg Vert1;
+    f32_reg Vert2;
+
+    Vert0.Sse = _mm_set_ps(0, VertSrc0.z, VertSrc0.y, VertSrc0.x);
+    Vert1.Sse = _mm_set_ps(0, VertSrc1.z, VertSrc1.y, VertSrc1.x);
+    Vert2.Sse = _mm_set_ps(0, VertSrc2.z, VertSrc2.y, VertSrc2.x);
+
+    Vert0.Sse = _mm_add_ps( _mm_mul_ps(Vert0.Sse, mmScale), mmOffset);
+    Vert1.Sse = _mm_add_ps( _mm_mul_ps(Vert1.Sse, mmScale), mmOffset);
+    Vert2.Sse = _mm_add_ps( _mm_mul_ps(Vert2.Sse, mmScale), mmOffset);
+
+    v3 Result0 = {{ Vert0.F[0], Vert0.F[1], Vert0.F[2] }};
+    v3 Result1 = {{ Vert1.F[0], Vert1.F[1], Vert1.F[2] }};
+    v3 Result2 = {{ Vert2.F[0], Vert2.F[1], Vert2.F[2] }};
+
+    DestVerts[0] = Result0;
+    DestVerts[1] = Result1;
+    DestVerts[2] = Result2;
+
+    DestVerts += 3;
+    DestNormals += 3;
+    DestColors += 3;
+  }
+
+
+
+  return;
+}
+inline void
+BufferVertsDirect(
+    v3 *DestVerts, v3 *DestNormals, v4 *DestColors,
+    u32 NumVerts,
+    v3 *SrcVerts, v3 *SrcNormals, v4 *SrcVertColors,
+    v3 Offset,
     v3 Scale
   )
 {
@@ -100,10 +158,41 @@ BufferVertsDirect(
 }
 
 inline void
+BufferVertsChecked(
+    untextured_3d_geometry_buffer *Dest,
+    u32 NumVerts,
+    v3 *VertsPositions, v3 *Normals, v4 *VertColors,
+    v3 Offset,
+    v3 Scale,
+    Quaternion Rot
+  )
+{
+  TIMED_FUNCTION();
+  if (!BufferHasRoomFor(Dest, NumVerts))
+  {
+    Assert(false);
+    Error("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1);
+    return;
+  }
+
+  BufferVertsDirect(Dest->Verts + Dest->At,
+                    Dest->Normals + Dest->At,
+                    Dest->Colors + Dest->At,
+                    NumVerts,
+                    VertsPositions, Normals, VertColors,
+                    Offset, Scale, Rot);
+
+  Dest->At += NumVerts;
+
+
+  return;
+}
+
+inline void
 BufferVertsDirect(
     untextured_3d_geometry_buffer *Dest,
     u32 NumVerts,
-    v3 *VertsPositions, v3 *Normals, v4 *VertColors, 
+    v3 *VertsPositions, v3 *Normals, v4 *VertColors,
     v3 Offset,
     v3 Scale
   )
@@ -315,6 +404,7 @@ AllocateMesh(untextured_3d_geometry_buffer *Mesh, u32 NumVerts, memory_arena *Me
   return;
 }
 
+#if 1
 void
 AllocateMesh(untextured_3d_geometry_buffer *Mesh, u32 NumVerts, heap_allocator *Heap)
 {
@@ -335,6 +425,7 @@ AllocateMesh(heap_allocator* Heap, u32 NumVerts)
   AllocateMesh(Result, NumVerts, Heap);
   return Result;
 }
+#endif
 
 untextured_3d_geometry_buffer*
 AllocateMesh(memory_arena* Arena, u32 NumVerts)

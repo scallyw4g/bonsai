@@ -167,6 +167,8 @@ enum model_index
   ModelIndex_Loot       = EntityType_Loot,
   ModelIndex_Projectile,
   ModelIndex_Proton,
+  ModelIndex_Bitty0,
+  ModelIndex_Bitty1,
 
   ModelIndex_Level,
 

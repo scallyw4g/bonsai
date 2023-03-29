@@ -209,7 +209,8 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
           Assert(ChunkContentBytes == 256*4);
           Assert(ChildChunkCount == 0);
 
-          Result.Palette = (v4*)HeapAllocate(Heap, 256);
+          /* Result.Palette = (v4*)HeapAllocate(Heap, 256); */
+          Result.Palette = Allocate(v4, WorldStorage, 256);
 
           for (u32 PaletteIndex = 0; PaletteIndex < 256; ++PaletteIndex)
           {
@@ -317,8 +318,6 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
 
 
           int NodeId = ReadInt(ModelFile.Handle, &bytesRemaining);
-          /* bytesRemaining = 0; */
-          /* break; */
 
           // Transform node chunk
           ParseVoxDict(ModelFile.Handle, &bytesRemaining);
@@ -332,6 +331,9 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
           {
             ParseVoxDict(ModelFile.Handle, &bytesRemaining);
           }
+
+          // TODO(Jesse): Finish implementing the rest of the cases
+          bytesRemaining = 0;
 
         } break;
 

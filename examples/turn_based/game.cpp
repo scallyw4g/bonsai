@@ -36,6 +36,10 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *
   /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_tsurugi.vox"); */
   /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "../voxel-model/vox/monument/monu10.vox"); */
   /* Result[ModelIndex_Player] = LoadWorldChunk(Memory, Heap, "assets/world_chunk_1_0_0"); */
+  Result[ModelIndex_Enemy] = LoadVoxModel(Memory, Heap, "models/chr_jp.vox", Memory);
+
+  Result[ModelIndex_Bitty0] = LoadVoxModel(Memory, Heap, "models/splotion_bitty_0.vox", Memory);
+  Result[ModelIndex_Bitty1] = LoadVoxModel(Memory, Heap, "models/splotion_bitty_1.vox", Memory);
 
   return Result;
 }
@@ -263,13 +267,13 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
 #if 1
   {
     entity *E = GetFreeEntity(EntityTable);
-    SpawnEntity( 0, E, EntityType_ParticleSystem);
+    SpawnEntity( 0, E, EntityType_ParticleSystem, ModelIndex_None);
     E->P = PickCP + V3(0.5f);
     SpawnExplosion(E, &Global_GameEntropy, {}, Radius);
   }
   {
     entity *E = GetFreeEntity(EntityTable);
-    SpawnEntity( 0, E, EntityType_ParticleSystem);
+    SpawnEntity( 0, E, EntityType_ParticleSystem, ModelIndex_None);
     E->P = PickCP + V3(0.5f);
     SpawnSmoke(E, &Global_GameEntropy, {}, Radius);
   }
@@ -279,9 +283,11 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
   for (u32 BittyIndex = 0; BittyIndex < MaxBitties; ++BittyIndex)
   {
     entity *E = GetFreeEntity(EntityTable);
-    SpawnEntity( 0, E, EntityType_ParticleSystem);
+    SpawnEntity( GameState->Models , E, EntityType_ParticleSystem, (model_index)(ModelIndex_Bitty0 + (BittyIndex % 2)) );
     E->Physics.Speed = 1.f;
 
+    E->Rotation = RandomRotation(&Global_GameEntropy);
+    E->Scale = 0.2f;
     E->CollisionVolumeRadius = V3(.1f);
 
     v3 Rnd = RandomV3Bilateral(&Global_GameEntropy);
@@ -303,6 +309,11 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   entity *Player = GameState->Player;
   Player->Physics.Speed = 60.f;
   Player->Physics.Mass = 35.f;
+
+  /* v3 RotP = {}; */
+  /* RotP.x = Sin(r32(Plat->GameTime)); */
+  /* RotP.y = Cos(r32(Plat->GameTime)); */
+  /* Player->Rotation = RotatePoint(V3(0.f, -1.f, 0.f), RotP); */
 
   entity *Enemy = GameState->Enemy;
 
@@ -593,7 +604,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
 
   GameState->CameraTarget = GetFreeEntity(EntityTable);
-  SpawnEntity( 0, GameState->CameraTarget, EntityType_Default);
+  SpawnEntity( 0, GameState->CameraTarget, EntityType_Default, ModelIndex_None);
 
   GameState->CameraTarget->P = Canonical_Position(Voxel_Position(0), {{2,2,0}});
 

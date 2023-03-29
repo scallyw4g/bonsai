@@ -439,7 +439,7 @@ ClearFramebuffers(graphics *Graphics)
 
 void
 BufferChunkMesh(graphics *Graphics, untextured_3d_geometry_buffer *Dest, untextured_3d_geometry_buffer *Src,
-                chunk_dimension WorldChunkDim, world_position WorldP, r32 Scale = 1.0f, v3 Offset = V3(0))
+                chunk_dimension WorldChunkDim, world_position WorldP, r32 Scale = 1.0f, v3 Offset = V3(0), Quaternion Rot = {})
 {
   /* TIMED_FUNCTION(); */
 
@@ -454,9 +454,19 @@ BufferChunkMesh(graphics *Graphics, untextured_3d_geometry_buffer *Dest, untextu
     GetRenderP( WorldChunkDim, Canonical_Position(Offset, WorldP), Graphics->Camera);
 
   auto CopyBuffer = ReserveBufferSpace( Dest, Src->At);
-  BufferVertsChecked(&CopyBuffer, Src->At,
-      Src->Verts, Src->Normals, Src->Colors,
-      ModelBasisP, V3(Scale));
+  if (Length(Rot.xyz) == 0.f)
+  {
+    BufferVertsChecked(&CopyBuffer, Src->At,
+                       Src->Verts, Src->Normals, Src->Colors,
+                       ModelBasisP, V3(Scale));
+  }
+  else
+  {
+
+    BufferVertsChecked(&CopyBuffer, Src->At,
+                       Src->Verts, Src->Normals, Src->Colors,
+                       ModelBasisP, V3(Scale), Rot);
+  }
 
   return;
 }
@@ -918,7 +928,7 @@ BufferEntity( untextured_3d_geometry_buffer* Dest, entity *Entity, animation *An
       AnimationOffset = GetInterpolatedPosition(Animation);
     }
 
-    BufferChunkMesh(Graphics, Dest, &Entity->Model.Mesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Entity->P.Offset + AnimationOffset);
+    BufferChunkMesh(Graphics, Dest, &Entity->Model.Mesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Entity->P.Offset + AnimationOffset, Entity->Rotation);
   }
 
   return;
