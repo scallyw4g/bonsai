@@ -252,8 +252,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
           s32 minY = s32_MAX;
           s32 minZ = s32_MAX;
 
-          // TODO(Jesse)(leak): WTF is calloc doing in here?!
-          Leak("TODO(Jesse): Don't leak memory when loading (%s)!", filepath);
+          // TODO(Jesse)(calloc, memory): WTF is calloc doing in here?!
           boundary_voxel *LocalVoxelCache = (boundary_voxel *)calloc((umm)ReportedVoxelCount, sizeof(boundary_voxel) );
           for( s32 VoxelCacheIndex = 0;
                VoxelCacheIndex < ReportedVoxelCount;
@@ -316,7 +315,6 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
           int ChunkContentBytes = ReadInt(ModelFile.Handle, &bytesRemaining);
           int ChildChunkCount = ReadInt(ModelFile.Handle, &bytesRemaining);
 
-
           int NodeId = ReadInt(ModelFile.Handle, &bytesRemaining);
 
           // Transform node chunk
@@ -331,52 +329,27 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
           {
             ParseVoxDict(ModelFile.Handle, &bytesRemaining);
           }
-
-          // TODO(Jesse): Finish implementing the rest of the cases
-          bytesRemaining = 0;
-
-        } break;
-
-        case ID_nGRP:
-        {
-          NotImplemented;
-        } break;
-
-        case ID_nSHP:
-        {
-          NotImplemented;
-        } break;
-
-        case ID_MATL:
-        {
-          NotImplemented;
-        } break;
-
-        case ID_LAYR:
-        {
-          NotImplemented;
         } break;
 
         case ID_rOBJ:
-        {
-          NotImplemented;
-        } break;
-
         case ID_rCAM:
-        {
-          NotImplemented;
-        } break;
-
         case ID_NOTE:
-        {
-          NotImplemented;
-        } break;
-
         case ID_IMAP:
+        case ID_LAYR:
+        case ID_MATL:
+        case ID_nSHP:
+        case ID_nGRP:
         {
-          NotImplemented;
-        } break;
+          int ChunkContentBytes = ReadInt(ModelFile.Handle, &bytesRemaining);
+          int ChildChunkCount = ReadInt(ModelFile.Handle, &bytesRemaining);
 
+          for (s32 ByteIndex = 0; ByteIndex < ChunkContentBytes; ++ByteIndex)
+          {
+            ReadChar(ModelFile.Handle, &bytesRemaining);
+          }
+
+          Info("Skipping unsupported Chunk type (%S) while parsing (%s)", CS((const char*)&CurrentId, 4), filepath);
+        } break;
 
         InvalidDefaultCase;
       }
