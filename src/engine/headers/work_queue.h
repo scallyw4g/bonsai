@@ -23,7 +23,7 @@ struct work_queue_entry_sim_particle_system
   v3 RenderSpaceP;
   r32 dt;
 };
-poof(gen_constructor(work_queue_entry_sim_particle_system))
+/* poof(gen_constructor(work_queue_entry_sim_particle_system)) */
 
 link_internal work_queue_entry_sim_particle_system
 WorkQueueEntrySimParticleSystem( particle_system *System, untextured_3d_geometry_buffer *Dest, v3 EntityDelta, v3 RenderSpaceP, r32 dt)

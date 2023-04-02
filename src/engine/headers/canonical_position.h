@@ -115,6 +115,30 @@ Canonical_Position(chunk_dimension WorldChunkDim, voxel_position Offset, world_p
   return Result;
 }
 
+#if 0
+// NOTE(Jesse): I'm not really sure how these functions should actually work,
+// but it's definitely not like this.
+link_internal canonical_position
+Max(canonical_position P1, canonical_position P2)
+{
+  canonical_position Result = {
+    .WorldP = Max(P1.WorldP, P2.WorldP),
+    .Offset = Max(P1.Offset, P2.Offset),
+  };
+  return Result;
+}
+
+link_internal canonical_position
+Min(canonical_position P1, canonical_position P2)
+{
+  canonical_position Result = {
+    .WorldP = Min(P1.WorldP, P2.WorldP),
+    .Offset = Min(P1.Offset, P2.Offset),
+  };
+  return Result;
+}
+#endif
+
 inline canonical_position
 operator-(canonical_position A, v3 B)
 {

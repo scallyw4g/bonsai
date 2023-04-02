@@ -191,6 +191,38 @@ InsertChunkIntoWorld(world *World, world_chunk *Chunk, chunk_dimension VisibleRe
 }
 
 link_internal world_chunk*
+AllocateAndInsertChunk(memory_arena *Storage, world *World, world_position P)
+{
+  TIMED_FUNCTION();
+
+  world_chunk *Result = 0;
+
+  world_chunk *Chunk = AllocateWorldChunk(Storage, P, World->ChunkDim);
+  Assert(Chunk->Flags == Chunk_Uninitialized);
+
+  if (Chunk)
+  {
+    if (InsertChunkIntoWorld(World, Chunk, World->VisibleRegion))
+    {
+      Result = Chunk;
+    }
+    else
+    {
+      Leak("Unable to insert chunk into world. Leaking chunk, call FreeWorldChunk here");
+      /* FreeWorldChunk(World, Chunk, Storage, Resources->MeshFreelist); */
+    }
+  }
+
+  if (Result)
+  {
+    Assert(Result->Voxels);
+    Assert(Result->Dim == World->ChunkDim);
+  }
+
+  return Result;
+}
+
+link_internal world_chunk*
 GetWorldChunkFor(memory_arena *Storage, world *World, world_position P, chunk_dimension VisibleRegion)
 {
   TIMED_FUNCTION();
@@ -225,6 +257,7 @@ GetWorldChunkFor(memory_arena *Storage, world *World, world_position P, chunk_di
   if (Result)
   {
     Assert(Result->Voxels);
+    Assert(Result->Dim == World->ChunkDim);
   }
 
   return Result;
@@ -280,7 +313,7 @@ FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, m
 // well not pass it as a parameter through here because this function gets
 // called a shit-ton
 link_internal world_chunk*
-GetWorldChunk( world *World, world_position P, chunk_dimension VisibleRegion)
+GetWorldChunkFromHashtable( world *World, world_position P, chunk_dimension VisibleRegion)
 {
   /* TIMED_FUNCTION(); */ // This makes things much slower
 
@@ -319,9 +352,9 @@ GetWorldChunk( world *World, world_position P, chunk_dimension VisibleRegion)
 }
 
 link_internal world_chunk*
-GetWorldChunk( world *World, world_position P)
+GetWorldChunkFromHashtable( world *World, world_position P)
 {
-  return GetWorldChunk(World, P, World->VisibleRegion);
+  return GetWorldChunkFromHashtable(World, P, World->VisibleRegion);
 }
 
 link_internal world_chunk**
@@ -2999,6 +3032,7 @@ QueueChunkForInit(work_queue *Queue, world_chunk *Chunk)
     Job->Chunk = Chunk;
   }
 
+  Assert( NotSet(Chunk->Flags, Chunk_Queued) );
   SetFlag(&Chunk->Flags, Chunk_Queued);
   PushWorkQueueEntry(Queue, &Entry);
 
@@ -3126,7 +3160,7 @@ BufferWorld( platform* Plat,
         world_chunk *Chunk = 0;
         {
           TIMED_NAMED_BLOCK("GetWorldChunk");
-          Chunk = GetWorldChunk( World, P, VisibleRegion );
+          Chunk = GetWorldChunkFromHashtable( World, P, VisibleRegion );
         }
 
 #if 0
@@ -3234,7 +3268,8 @@ BufferWorld( platform* Plat,
         }
         else
         {
-          Chunk = GetWorldChunkFor(World->Memory, World, P, VisibleRegion);
+          /* Chunk = GetOrAllocateWorldChunk(World->Memory, World, P, VisibleRegion); */
+          Chunk = AllocateAndInsertChunk(World->Memory, World, P);
           if (Chunk)
           { QueueChunkForInit(&Plat->LowPriority, Chunk); }
           else
@@ -3298,7 +3333,7 @@ QueueWorldUpdateForRegion(platform *Plat, world *World, picked_voxel *Location, 
       for (s32 xChunk = MinP.WorldP.x; xChunk <= MaxP.WorldP.x; ++xChunk)
       {
         world_position ChunkP = World_Position(xChunk, yChunk, zChunk);
-        world_chunk *Chunk = GetWorldChunk(World, ChunkP);
+        world_chunk *Chunk = GetWorldChunkFromHashtable(World, ChunkP);
         if (Chunk)
         {
           Assert(ChunkIndex < TotalChunkCount);
@@ -3578,7 +3613,7 @@ DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 Ch
     DEBUG_DrawAABB(DebugMesh, QueryRelChunkAABB, RED);
 #endif
 
-    DebugLine("Start StandingSpotCount(%d)/(%d)", AtElements(&Chunk->StandingSpots), Count(&Chunk->StandingSpots));
+    /* DebugLine("Start StandingSpotCount(%d)/(%d)", AtElements(&Chunk->StandingSpots), Count(&Chunk->StandingSpots)); */
 
     auto SimSpaceChunkRect = GetSimSpaceAABBi(World, Chunk);
     auto SimSpaceChunkMin = SimSpaceChunkRect.Min;
@@ -3659,7 +3694,7 @@ DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 Ch
       }
     }
 
-    DebugLine("End StandingSpotCount(%d)", AtElements(&Chunk->StandingSpots));
+    /* DebugLine("End StandingSpotCount(%d)", AtElements(&Chunk->StandingSpots)); */
 
     UnSetFlag(&Chunk->Flags, Chunk_Queued);
     UnSetFlag(&Chunk->Flags, Chunk_MeshesInitialized);
@@ -3688,7 +3723,7 @@ GetStandingSpotsWithinRadius(world *World, canonical_position P, r32 Radius, mem
     {
       for (s32 xWorld = MinWorldP.x; xWorld < MaxWorldP.x; ++xWorld)
       {
-        world_chunk *Chunk = GetWorldChunk(World, {{xWorld, yWorld, zWorld}});
+        world_chunk *Chunk = GetWorldChunkFromHashtable(World, {{xWorld, yWorld, zWorld}});
         if (Chunk)
         {
           for (u32 StandingSpotIndex = 0; StandingSpotIndex < AtElements(&Chunk->StandingSpots); ++StandingSpotIndex)
@@ -3729,7 +3764,7 @@ GetChunksIntersectingRay(world *World, ray *Ray, picked_world_chunk_static_buffe
       for (s32 x = Min.x; x < Max.x; ++ x)
       {
         world_position P = World_Position(x,y,z);
-        world_chunk *Chunk = GetWorldChunk( World, P, VisibleRegion );
+        world_chunk *Chunk = GetWorldChunkFromHashtable( World, P, VisibleRegion );
 
         u32 ColorIndex = 0;
 

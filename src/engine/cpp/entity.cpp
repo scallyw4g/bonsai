@@ -52,6 +52,7 @@ GetCollision( world *World, canonical_position TestP, v3 CollisionDim, chunk_dim
 
   chunk_dimension WorldChunkDim = World->ChunkDim;
 
+  // TODO(Jesse): Probably just assert this is true
   TestP = Canonicalize(WorldChunkDim, TestP);
 
   voxel_position MinP = Voxel_Position(TestP.Offset);
@@ -64,40 +65,18 @@ GetCollision( world *World, canonical_position TestP, v3 CollisionDim, chunk_dim
       for ( int x = MinP.x; x < MaxP.x; x++ )
       {
         canonical_position LoopTestP = Canonicalize( WorldChunkDim, V3(x,y,z), TestP.WorldP );
-        world_chunk *Chunk = GetWorldChunk( World, LoopTestP.WorldP, VisibleRegion);
+        world_chunk *Chunk = GetWorldChunkFromHashtable( World, LoopTestP.WorldP, VisibleRegion);
 
-#if 0
-        /* TODO(Jesse, id: 129, tags: theading, speed, gameplay_improvement):
-         * Can we somehow atomically pull this one off the queue and initialize it on demand?
-         */
-        if (Chunk && NotSet(Chunk->flags, Chunk_Initialized) )
+        if ( !Chunk || IsFilledInChunk(Chunk, Voxel_Position(LoopTestP.Offset), World->ChunkDim) )
         {
-          Chunk->flags = (Chunk->flags | Chunk_Queued); // ???
-          InitializeVoxels(Chunk);
-        }
-#endif
-
-        if (!Chunk)
-        {
-          /* InvalidCodePath(); */
-          Collision.CP = LoopTestP;
-          Collision.didCollide = true;
-          Collision.Chunk = 0;
-          goto end;
-        }
-
-        if ( IsFilledInChunk(Chunk, Voxel_Position(LoopTestP.Offset), World->ChunkDim) )
-        {
-          Collision.CP = LoopTestP;
-          Collision.didCollide = true;
-          Collision.Chunk = Chunk;
-          goto end;
+          if (Collision.Count == 0) { Collision.MinP = LoopTestP; }
+          Collision.MaxP = LoopTestP;
+          Collision.Count ++;
         }
 
       }
     }
   }
-  end:
 
   return Collision;
 }
@@ -562,7 +541,8 @@ SpawnSplotionBitty(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius
   /* System->EmissionLifespan = 0.23f; */
   System->LifespanMod = 0.25f;
   System->ParticleLifespan = 0.25f;
-  System->ParticlesPerSecond = 20.0f;
+  /* System->ParticlesPerSecond = 20.0f; */
+  System->ParticlesPerSecond = 0.0f;
 
   System->ParticleTurbMin = V3(0.f, 0.f, 0.f);
   System->ParticleTurbMax = V3(0.f, 0.f, .1f);
@@ -688,16 +668,19 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset)
 }
 
 void
-SpawnPlayer(platform *Plat, world *World, model* Model, entity *Player, canonical_position InitialP, random_series* Entropy)
+SpawnPlayer( platform *Plat,
+             world *World,
+             model* Model,
+             entity *Player,
+             canonical_position InitialP,
+             random_series* Entropy,
+
+             r32 Scale = 1.0f )
 {
-  /* Info("Player Spawned"); */
-
   physics Physics = {};
-  /* Physics.Drag = V3(.15f, .15f, 0.f); */
-  Physics.Mass = 2.f;
-  Physics.Speed = 4;
+  Physics.Speed = 60.f;
+  Physics.Mass = 35.f;
 
-  r32 Scale = 1.0f;
   r32 RateOfFire = 0.8f;
   s32 Health = 10;
 
@@ -716,7 +699,7 @@ SpawnPlayer(platform *Plat, world *World, model* Model, entity *Player, canonica
       {
         canonical_position CP = Canonicalize(World->ChunkDim, V3(x, y, z), InitialP.WorldP);
 
-        world_chunk *Chunk = GetWorldChunk( World, CP.WorldP, World->VisibleRegion );
+        world_chunk *Chunk = GetWorldChunkFromHashtable( World, CP.WorldP, World->VisibleRegion );
         if (Chunk == 0)
         {
           Chunk = GetWorldChunkFor(World->Memory, World, CP.WorldP, World->VisibleRegion);
@@ -744,7 +727,7 @@ SpawnPlayer(platform *Plat, world *World, model* Model, entity *Player, canonica
       Health
     );
 
-  WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
+  /* WaitForWorkerThreads(&Plat->HighPriorityWorkerCount); */
 
   return;
 }
@@ -764,6 +747,7 @@ EntityWorldCollision(world *World, entity *Entity, collision_event *Event, chunk
     case EntityType_PlayerProjectile:
     {
       NotImplemented;
+#if 0
       if (Event->Chunk)
       {
         s32 i = GetIndex(Voxel_Position(Event->CP.Offset), World->ChunkDim);
@@ -774,6 +758,7 @@ EntityWorldCollision(world *World, entity *Entity, collision_event *Event, chunk
         /* BuildWorldChunkMesh(World, Chunk, World->ChunkDim, Chunk->Mesh, VisibleRegion); */
       }
       Unspawn(Entity);
+#endif
     } break;
 
     default:
@@ -1012,44 +997,47 @@ UpdateEntityP(world* World, entity *Entity, v3 GrossDelta, chunk_dimension Visib
 
         C = GetCollision(World, CollisionBasis, CollisionVolume, VisibleRegion);
 
-        if ( C.didCollide ) //&& C.Chunk && IsSet(C.Chunk, Chunk_VoxelsInitialized) )
+        if ( C.Count > 0 ) //&& C.Chunk && IsSet(C.Chunk, Chunk_VoxelsInitialized) )
         {
-          /* Entity->P.Offset.E[AxisIndex] -= StepDelta.E[AxisIndex]; */
-          /* Entity->P = Canonicalize(WorldChunkDim, Entity->P); */
-
           // TODO(Jesse): Parameterize by adding something to physics struct
-          Entity->Physics.Velocity.E[AxisIndex] *= -0.25f;
+          /* Entity->Physics.Velocity.E[AxisIndex] *= -0.25f; */
+          Entity->Physics.Velocity.E[AxisIndex] = 0.f;
 
           /* Entity->Physics.Velocity.E[AxisIndex] = 0.f; */
           Entity->Physics.Delta.E[AxisIndex] = 0;
 
-  /*         if (C.Chunk == 0 || NotSet(C.Chunk, Chunk_VoxelsInitialized) ) */
-  /*         { */
-  /*           break; */
-  /*         } */
-
-          Entity->P.Offset.E[AxisIndex] = C.CP.Offset.E[AxisIndex];
-          Entity->P.WorldP.E[AxisIndex] = C.CP.WorldP.E[AxisIndex];
-
+#if 1
+          Entity->P.Offset.E[AxisIndex] -= StepDelta.E[AxisIndex];
+          Entity->P = Canonicalize(WorldChunkDim, Entity->P);
+#else
+          Entity->P.Offset.E[AxisIndex] -= StepDelta.E[AxisIndex];
           if (StepDelta.E[AxisIndex] > 0)
           {
-            Entity->P.Offset.E[AxisIndex] -= (Entity->CollisionVolumeRadius.E[AxisIndex]*2.f);
-          }
-          else if (StepDelta.E[AxisIndex] < 0)
-          {
-            /* Truncate(Entity->P.Offset.E[AxisIndex]);// += 1.0f; */
-            Entity->P.Offset.E[AxisIndex] += 1.0f;
-            /* Entity->P.Offset.E[AxisIndex] += 1.001f; */
-            /* Entity->P.Offset.E[AxisIndex] ++; */
-            /* Entity->P.Offset.E[AxisIndex] = Truncate(Entity->P.Offset.E[AxisIndex] += 1.0f); */
-          }
-          else
-          {
-            InvalidCodePath();
+            r32 Max = Entity->P.Offset.E[AxisIndex] + Entity->CollisionVolumeRadius.E[AxisIndex];
+
+            Entity->P.WorldP.E[AxisIndex] = C.MinP.WorldP.E[AxisIndex];
+            Entity->P.Offset.E[AxisIndex] = C.MinP.Offset.E[AxisIndex];
+            Entity->P.Offset.E[AxisIndex] -= ((Entity->CollisionVolumeRadius.E[AxisIndex]*2.f) + 0.001f);
           }
 
+          if (StepDelta.E[AxisIndex] < 0)
+          {
+#if 1
+            Entity->P.Offset.E[AxisIndex] = Truncate(Entity->P.Offset.E[AxisIndex] += 1.0f);
+#else
+            Entity->P.WorldP.E[AxisIndex] = C.MaxP.WorldP.E[AxisIndex];
+            Entity->P.Offset.E[AxisIndex] = C.MaxP.Offset.E[AxisIndex];
+            /* Entity->P.Offset.E[AxisIndex] += 1.0f; */
+            /* Truncate(Entity->P.Offset.E[AxisIndex]);// += 1.0f; */
+            Entity->P.Offset.E[AxisIndex] += 1.001f;
+            /* Entity->P.Offset.E[AxisIndex] ++; */
+            /* Entity->P.Offset.E[AxisIndex] = Truncate(Entity->P.Offset.E[AxisIndex] += 1.0f); */
+#endif
+          }
+#endif
+
           Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-          EntityWorldCollision(World, Entity, &C, VisibleRegion);
+          /* EntityWorldCollision(World, Entity, &C, VisibleRegion); */
         }
       }
     }
@@ -1063,10 +1051,11 @@ UpdateEntityP(world* World, entity *Entity, v3 GrossDelta, chunk_dimension Visib
   Entity->P = Canonicalize(WorldChunkDim, Entity->P);
 
   collision_event AssertCollision = GetCollision(World, Entity, VisibleRegion);
+  /* Assert(AssertCollision.Count == 0); */
 
   // Entites that aren't moving can still be positioned outside the world if
   // the player moves the world to do so
-  if (AssertCollision.didCollide)
+  if (AssertCollision.Count)
     EntityWorldCollision(World, Entity, &C, VisibleRegion);
 
   return;
@@ -1203,6 +1192,7 @@ SimulatePlayer(world* World, entity *Player, camera* Camera, hotkeys *Hotkeys, r
 
   if (Spawned(Player))
   {
+    /* DebugLine("force(%d, %d, %d)", Player->Physics.Force.x, Player->Physics.Force.y, Player->Physics.Force.z ); */
     PhysicsUpdate(&Player->Physics, dt);
 
     world_position OriginalPlayerP = Player->P.WorldP;
@@ -1253,8 +1243,6 @@ SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension Vis
     if (!Spawned(Entity))
         continue;
 
-    particle_system *System = Entity->Emitter;
-
     switch (Entity->Type)
     {
       case EntityType_None: { InvalidCodePath(); } break;
@@ -1282,13 +1270,17 @@ SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension Vis
 
       case EntityType_ParticleSystem:
       {
-        /* if (System->EmissionLifespan > 0) */
+        particle_system *System = Entity->Emitter;
+        if (Inactive(System))
+        {
+          Unspawn(Entity);
+        }
+        else
         {
           PhysicsUpdate(&Entity->Physics, dt);
           UpdateEntityP(World, Entity, Entity->Physics.Delta, VisibleRegion);
         }
 
-        if (Inactive(System)) { Unspawn(Entity); }
       } break;
 
       case EntityType_Player:
@@ -1305,6 +1297,7 @@ SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension Vis
       /* default: { InvalidCodePath(); } break; */
     }
 
+    particle_system *System = Entity->Emitter;
     if (Active(System))
     {
       auto EntityDelta = Entity->Physics.Delta;
@@ -1421,6 +1414,36 @@ inline b32
 IsGrounded( world *World, entity *entity, chunk_dimension VisibleRegion)
 {
   collision_event c = GetCollision(World, entity, VisibleRegion, V3(0.0f, 0.0f, -0.0001f));
-  return c.didCollide && c.Chunk;
+  return c.Count > 0;
 }
 
+link_internal v3
+GetSimSpaceCenterP(entity *E, v3 SimSpaceP)
+{
+  v3 Result = SimSpaceP + E->CollisionVolumeRadius;
+  return Result;
+}
+
+link_internal u32_buffer
+GatherEntitiesIntersecting(world *World, entity **EntityTable, sphere *S, memory_arena *Memory)
+{
+  u32_stream Stream = {};
+  for (u32 EIndex = 0; EIndex < TOTAL_ENTITY_COUNT; ++EIndex)
+  {
+    entity *E = EntityTable[EIndex];
+    if (E)
+    {
+      aabb EntityAABB = GetSimSpaceAABB(World, E);
+
+      /* v3 ESimP = GetSimSpaceP(World, E->P); */
+      /* v3 ESimCenterP = GetSimSpaceCenterP(E, ESimP); */
+
+      if (Intersect(&EntityAABB, S))
+      {
+        Push(&Stream, EIndex);
+      }
+    }
+  }
+  u32_buffer Result = Compact(&Stream, Memory);
+  return Result;
+}

@@ -62,8 +62,8 @@ LoadObj(memory_arena *PermMem, heap_allocator *Heap, const char * FilePath)
   v3_cursor TempVerts       = V3Cursor(Stats.VertCount, TranArena);
   v3_cursor TempNormals     = V3Cursor(Stats.NormalCount, TranArena);
 
-  u32_stream VertIndicies   = U32_Stream(Stats.FaceCount*3, TranArena);
-  u32_stream NormalIndicies = U32_Stream(Stats.FaceCount*3, TranArena);
+  u32_cursor VertIndicies   = U32Cursor(Stats.FaceCount*3, TranArena);
+  u32_cursor NormalIndicies = U32Cursor(Stats.FaceCount*3, TranArena);
 
   while (Stream.At < Stream.End)
   {

@@ -14,29 +14,41 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *
 {
   // TODO(Jesse)(leak, memory): Pass temp memory to LoadVoxModel
 
-  model *Result = Allocate(model, Memory, ModelIndex_Count);
-  Result[ModelIndex_Enemy] = LoadVoxModel(Memory, Heap, "models/chr_tama.vox", Memory);
+  model *Result                                       = Allocate(model, Memory, ModelIndex_Count);
+  /* Result[ModelIndex_Enemy]                         = LoadVoxModel(Memory, Heap, "models/chr_tama.vox", Memory); */
 
-  /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_bow.vox"); */
-  /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_cat.vox"); */
-  /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_fox.vox"); */
-  /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_gumi.vox"); */
-  Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_jp.vox", Memory);
-  /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_knight.vox"); */
-  /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_man.vox"); */
-  /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_mom.vox"); */
-  /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_old.vox"); */
-  /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_poem.vox"); */
-  /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_rain.vox"); */
-  /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_sasami.vox"); */
-  /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_sol.vox"); */
-  /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_sword.vox"); */
-  /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_tale.vox"); */
-  /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_tama.vox"); */
-  /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_tsurugi.vox"); */
-  /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "../voxel-model/vox/monument/monu10.vox"); */
-  /* Result[ModelIndex_Player] = LoadWorldChunk(Memory, Heap, "assets/world_chunk_1_0_0"); */
-  Result[ModelIndex_Enemy] = LoadVoxModel(Memory, Heap, "models/chr_jp.vox", Memory);
+  Result[ModelIndex_Enemy_Skeleton_Axe]              = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_AXE.vox", Memory);
+  Result[ModelIndex_Enemy_Skeleton_Sword]            = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_SWORD.vox", Memory);
+  Result[ModelIndex_Enemy_Skeleton_Lasher]           = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_LASHER.vox", Memory);
+  Result[ModelIndex_Enemy_Skeleton_Archer]           = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_ARCHER.vox", Memory);
+  Result[ModelIndex_Enemy_Skeleton_Spear]            = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_SPEAR.vox", Memory);
+  Result[ModelIndex_Enemy_Skeleton_AxeArmor]         = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_AXE_ARMOR.vox", Memory);
+  Result[ModelIndex_Enemy_Skeleton_Hounds]           = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_HOUNDS.vox", Memory);
+  Result[ModelIndex_Enemy_Skeleton_Horserider]       = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_HORSERIDER.vox", Memory);
+  Result[ModelIndex_Enemy_Skeleton_Horsebanner]      = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_HORSE_BANNER.vox", Memory);
+  Result[ModelIndex_Enemy_Skeleton_Shaman]           = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_SHAMAN.vox", Memory);
+  Result[ModelIndex_Enemy_Skeleton_Champion]         = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_CHAMPION.vox", Memory);
+  Result[ModelIndex_Enemy_Skeleton_ChampionChampion] = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_CHAMPION_CATAPHRACT.vox", Memory);
+  Result[ModelIndex_Enemy_Skeleton_Concubiner]       = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_CONCUBINER.vox", Memory);
+  Result[ModelIndex_Enemy_Skeleton_King]             = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_KING.vox", Memory);
+
+  Result[ModelIndex_Player_jp]      = LoadVoxModel(Memory, Heap, "models/chr_jp.vox", Memory);
+  Result[ModelIndex_Player_bow]     = LoadVoxModel(Memory, Heap, "models/chr_bow.vox", Memory);
+  Result[ModelIndex_Player_cat]     = LoadVoxModel(Memory, Heap, "models/chr_cat.vox", Memory);
+  Result[ModelIndex_Player_fox]     = LoadVoxModel(Memory, Heap, "models/chr_fox.vox", Memory);
+  Result[ModelIndex_Player_gumi]    = LoadVoxModel(Memory, Heap, "models/chr_gumi.vox", Memory);
+  Result[ModelIndex_Player_knight]  = LoadVoxModel(Memory, Heap, "models/chr_knight.vox", Memory);
+  Result[ModelIndex_Player_man]     = LoadVoxModel(Memory, Heap, "models/chr_man.vox", Memory);
+  Result[ModelIndex_Player_mom]     = LoadVoxModel(Memory, Heap, "models/chr_mom.vox", Memory);
+  Result[ModelIndex_Player_old]     = LoadVoxModel(Memory, Heap, "models/chr_old.vox", Memory);
+  Result[ModelIndex_Player_poem]    = LoadVoxModel(Memory, Heap, "models/chr_poem.vox", Memory);
+  Result[ModelIndex_Player_rain]    = LoadVoxModel(Memory, Heap, "models/chr_rain.vox", Memory);
+  Result[ModelIndex_Player_sasami]  = LoadVoxModel(Memory, Heap, "models/chr_sasami.vox", Memory);
+  Result[ModelIndex_Player_sol]     = LoadVoxModel(Memory, Heap, "models/chr_sol.vox", Memory);
+  Result[ModelIndex_Player_sword]   = LoadVoxModel(Memory, Heap, "models/chr_sword.vox", Memory);
+  Result[ModelIndex_Player_tale]    = LoadVoxModel(Memory, Heap, "models/chr_tale.vox", Memory);
+  Result[ModelIndex_Player_tama]    = LoadVoxModel(Memory, Heap, "models/chr_tama.vox", Memory);
+  Result[ModelIndex_Player_tsurugi] = LoadVoxModel(Memory, Heap, "models/chr_tsurugi.vox", Memory);
 
   Result[ModelIndex_Bitty0] = LoadVoxModel(Memory, Heap, "models/splotion_bitty_0.vox", Memory);
   Result[ModelIndex_Bitty1] = LoadVoxModel(Memory, Heap, "models/splotion_bitty_1.vox", Memory);
@@ -258,11 +270,44 @@ poof(generate_string_table(player_action))
 #include <generated/generate_string_table_player_action.h>
 
 void
-DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position PickCP, f32 Radius)
+DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position PickCP, f32 Radius, memory_arena *TempMemory)
 {
   UNPACK_ENGINE_RESOURCES(Resources);
 
   QueueWorldUpdateForRegion(Plat, World, Pick, WorldUpdateOperation_Subtractive, DARK_GREY, Radius, Resources->Memory);
+
+#if 1
+  v3 SplosionSimP = GetSimSpaceP(World, PickCP);
+
+  sphere Explosion = Sphere(SplosionSimP, Radius);
+  u32_buffer Hits = GatherEntitiesIntersecting(World, EntityTable, &Explosion, TempMemory);
+
+  for (u32 HitIndex = 0; HitIndex < Hits.Count; ++HitIndex)
+  {
+    u32 EntityIndex = Hits.Start[HitIndex];
+    entity *HitEntity = EntityTable[EntityIndex];
+
+    v3 ESimP = GetSimSpaceP(World, HitEntity->P);
+    v3 EntityCenterP = GetSimSpaceCenterP(HitEntity, ESimP);
+
+    aabb EntityAABB = GetSimSpaceAABB(World, HitEntity);
+    v3 ClosestEntityPToSplosion = ClipPToAABB(&EntityAABB, Explosion.P);
+
+    v3 SplosionToClosestEntityP = ClosestEntityPToSplosion - SplosionSimP;
+    v3 SplosionToEntityCenter = EntityCenterP - SplosionSimP;
+
+    r32 t = SafeDivide0(Length(SplosionToClosestEntityP), Radius);
+    t = Clamp01(t);
+
+
+    v3 MaxPower = V3(15.f, 15.f, 3.f) * Radius;
+    v3 Power = Lerp(t, MaxPower, V3(0) );
+
+    /* DebugLine("t(%f) Power(%f,%f,%f)", t, Power.x, Power.y, Power.z); */
+
+    HitEntity->Physics.Force += Normalize(SplosionToEntityCenter) * Power;
+  }
+#endif
 
 #if 1
   {
@@ -279,6 +324,7 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
   }
 #endif
 
+#if 1
   u32 MaxBitties = 4*u32(Radius);
   for (u32 BittyIndex = 0; BittyIndex < MaxBitties; ++BittyIndex)
   {
@@ -287,16 +333,18 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
     E->Physics.Speed = 1.f;
 
     E->Rotation = RandomRotation(&Global_GameEntropy);
-    E->Scale = 0.2f;
+    E->Scale = 0.3f;
     E->CollisionVolumeRadius = V3(.1f);
 
     v3 Rnd = RandomV3Bilateral(&Global_GameEntropy);
     E->Physics.Mass = 25.f;
-    E->Physics.Force = Rnd*150.f*Radius;
+    E->Physics.Force += Rnd*150.f*Radius;
     E->Physics.Force.z = Abs(E->Physics.Force.z) * 0.25f;
     E->P = PickCP + (Rnd*Radius) + V3(0.f, 0.f, 2.0f);
+    E->P.Offset.z = PickCP.Offset.z + 2.f;
     SpawnSplotionBitty(E, &Global_GameEntropy, {}, .1f);
   }
+#endif
 }
 
 BONSAI_API_MAIN_THREAD_CALLBACK()
@@ -307,8 +355,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   UNPACK_ENGINE_RESOURCES();
 
   entity *Player = GameState->Player;
-  Player->Physics.Speed = 60.f;
-  Player->Physics.Mass = 35.f;
 
   /* v3 RotP = {}; */
   /* RotP.x = Sin(r32(Plat->GameTime)); */
@@ -377,17 +423,17 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
     if (Input->T.Clicked)
     {
-      DoSplotion(Resources, &Pick, PickCP, 2.5f);
+      DoSplotion(Resources, &Pick, PickCP, 4.f, GetTranArena());
     }
 
     if (Input->Y.Clicked)
     {
-      DoSplotion(Resources, &Pick, PickCP, 5.f);
+      DoSplotion(Resources, &Pick, PickCP, 6.f, GetTranArena());
     }
 
     if (Input->U.Clicked)
     {
-      DoSplotion(Resources, &Pick, PickCP, 10.f);
+      DoSplotion(Resources, &Pick, PickCP, 8.f, GetTranArena());
     }
 
 
@@ -469,7 +515,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
             PlayerCharged = False;
             Deactivate(Player->Emitter);
             DidPlayerAction = True;
-            DoSplotion(Resources, &Pick, PickCP, 5.f);
+            DoSplotion(Resources, &Pick, PickCP, 5.f, GetTranArena());
           }
         }
       } break;
@@ -561,12 +607,12 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   /*   Player->Physics.Force += V3(0, 0, 1); */
   /* } */
 
-  if (Hotkeys->Player_Spawn)
-  {
-    Unspawn(Player);
-    SpawnPlayer(Plat, World, GameState->Models, Player,  Canonical_Position(V3(0,0,0), World_Position(0,0,2)), &GameState->Entropy);
-    World->Center = World_Position(0, 0, 2);
-  }
+  /* if (Hotkeys->Player_Spawn) */
+  /* { */
+  /*   Unspawn(Player); */
+  /*   SpawnPlayer(Plat, World, GameState->Models, Player,  Canonical_Position(V3(0,0,0), World_Position(0,0,2)), &GameState->Entropy); */
+  /*   World->Center = World_Position(0, 0, 2); */
+  /* } */
 
 
   return;
@@ -595,13 +641,30 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState->Models = AllocateGameModels(GameState, Memory, Heap);
 
+  u32 PlayerModelIndex = RandomBetween(ModelIndex_FirstPlayer, &GameState->Entropy, ModelIndex_LastPlayer+1);
   GameState->Player = GetFreeEntity(EntityTable);
-  SpawnPlayer(Plat, World, GameState->Models + ModelIndex_Player, GameState->Player, PlayerSpawnP, &GameState->Entropy);
+  SpawnPlayer(Plat, World, GameState->Models + PlayerModelIndex, GameState->Player, PlayerSpawnP, &GameState->Entropy);
 
-  auto EnemySpawnP = Canonical_Position(V3(0), WorldCenter + World_Position(-1,-1,3));
-  GameState->Enemy = GetFreeEntity(EntityTable);
-  SpawnPlayer(Plat, World, GameState->Models + ModelIndex_Enemy, GameState->Enemy, EnemySpawnP, &GameState->Entropy);
+  u32 EnemyCount = 32;
+  v3i HalfVisibleRegion = g_VisibleRegion / 2;
+  HalfVisibleRegion.z = 0;
+  for (u32 EnemyIndex = 0; EnemyIndex < EnemyCount; ++EnemyIndex)
+  {
+    world_position WP = World_Position(
+        (s32)RandomBetween(0, &GameState->Entropy, (u32)g_VisibleRegion.x),
+        (s32)RandomBetween(0, &GameState->Entropy, (u32)g_VisibleRegion.y),
+        1);
 
+    u32 EnemyModelIndex = RandomBetween(ModelIndex_FirstEnemy, &GameState->Entropy, ModelIndex_LastEnemy+1);
+    Assert(EnemyModelIndex >= ModelIndex_FirstEnemy);
+    Assert(EnemyModelIndex <= ModelIndex_LastEnemy);
+
+    auto EnemySpawnP = Canonical_Position(V3(0), WorldCenter + WP - HalfVisibleRegion );
+    GameState->Enemy = GetFreeEntity(EntityTable);
+    SpawnPlayer(Plat, World, GameState->Models + EnemyModelIndex, GameState->Enemy, EnemySpawnP, &GameState->Entropy, 0.35f);
+  }
+
+  WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
 
   GameState->CameraTarget = GetFreeEntity(EntityTable);
   SpawnEntity( 0, GameState->CameraTarget, EntityType_Default, ModelIndex_None);

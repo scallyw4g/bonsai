@@ -365,7 +365,7 @@ SerializeChunk(world_chunk *Chunk, counted_string AssetPath)
   b32 Result = True;
 
   auto WorldP = Chunk->WorldP;
-  counted_string Filename = FormatCountedString(TranArena, CSz("%S/world_chunk_%u_%u_%u"), AssetPath, WorldP.x, WorldP.y, WorldP.z);
+  counted_string Filename = GetAssetFilenameFor(AssetPath, WorldP, GetTranArena());
 
   native_file File = OpenFile(Filename, "w+b");
 

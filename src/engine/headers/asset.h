@@ -109,7 +109,7 @@ poof(buffer(asset))
 link_internal counted_string
 GetAssetFilenameFor(counted_string AssetPath, world_position WorldP, memory_arena *Memory)
 {
-  counted_string Result = FormatCountedString(Memory, CSz("%S/world_chunk_%u_%u_%u"), AssetPath, WorldP.x, WorldP.y, WorldP.z);
+  counted_string Result = FormatCountedString(Memory, CSz("%S/world_chunk_%d_%d_%d"), AssetPath, WorldP.x, WorldP.y, WorldP.z);
   return Result;
 }
 
