@@ -21,6 +21,14 @@ s32 main(s32 ArgCount, const char **Args)
     Error("Please supply a path to the model to pack, followed by the path to output to.");
   }
 
+  world_position Origin = {};
+  if (ArgCount == 6)
+  {
+    Origin.x = ToS32(CS(Args[3]));
+    Origin.y = ToS32(CS(Args[4]));
+    Origin.z = ToS32(CS(Args[5]));
+  }
+
   const char* InputVox = Args[1];
   cs OutputPath = CS(Args[2]);
 
@@ -147,6 +155,7 @@ s32 main(s32 ArgCount, const char **Args)
     /* { */
     /*   AtomicReplaceMesh( &Chunk->Meshes, MeshBit_Main, Mesh, __rdtsc() ); */
     /* } */
+    Chunk->WorldP += Origin;
     SerializeChunk(Chunk, OutputPath);
   }
 
