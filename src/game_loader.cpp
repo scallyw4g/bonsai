@@ -314,8 +314,7 @@ main( s32 ArgCount, const char ** Args )
   Assert(Global_DebugStatePointer);
   EngineResources.DebugState = Global_DebugStatePointer;
 
-  heap_allocator DebugHeap = InitHeap(Megabytes(32));
-  GetDebugState()->InitializeRenderSystem(GetDebugState(), &DebugHeap);
+  GetDebugState()->InitializeRenderSystem();
 #endif
 
 

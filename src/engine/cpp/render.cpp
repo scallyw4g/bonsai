@@ -1,5 +1,3 @@
-#include <engine/render/render_init.cpp>
-#include <engine/render/render_utils.cpp>
 
 
 
