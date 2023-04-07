@@ -139,7 +139,7 @@ ClearFramebuffers(render_entity_to_texture_group *Group)
 }
 
 link_internal void
-FlushBuffer(debug_text_render_group *TextGroup, untextured_2d_geometry_buffer *Buffer, v2 ScreenDim)
+FlushBuffer(render_buffers_2d *TextGroup, untextured_2d_geometry_buffer *Buffer, v2 ScreenDim)
 {
   TIMED_FUNCTION();
 
@@ -170,7 +170,7 @@ FlushBuffer(debug_text_render_group *TextGroup, untextured_2d_geometry_buffer *B
 }
 
 link_internal void
-FlushBuffer(debug_text_render_group *TextGroup, textured_2d_geometry_buffer *Geo, v2 ScreenDim)
+FlushBuffer(render_buffers_2d *TextGroup, textured_2d_geometry_buffer *Geo, v2 ScreenDim)
 {
   GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
   SetViewport(ScreenDim);
@@ -202,7 +202,7 @@ FlushBuffer(debug_text_render_group *TextGroup, textured_2d_geometry_buffer *Geo
 }
 
 link_internal void
-FlushUIBuffers(debug_ui_render_group *UiGroup, v2 ScreenDim)
+FlushUIBuffers(renderer_2d *UiGroup, v2 ScreenDim)
 {
   if (UiGroup->TextGroup)
   {
@@ -287,7 +287,7 @@ BufferColorsDirect(T* Geo, v3 Color)
 
 // TODO(Jesse): This is just wasteful .. BufferColorsDirect does this check!
 template <typename T> link_internal void
-BufferColors(debug_ui_render_group *Group, T *Geo, v3 Color)
+BufferColors(renderer_2d *Group, T *Geo, v3 Color)
 {
   // @streaming_ui_render_memory
   Assert(BufferHasRoomFor(Geo, u32_COUNT_PER_QUAD));
@@ -445,7 +445,7 @@ BufferQuadDirect(T* Geo, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim, rect2 Clip)
 #endif
 
 link_internal clip_result
-BufferTexturedQuad(debug_ui_render_group *Group,
+BufferTexturedQuad(renderer_2d *Group,
                    debug_texture_array_slice TextureSlice,
                    v2 MinP, v2 Dim, rect2 UV, v3 Color, r32 Z,
                    rect2 Clip, rect2 *ClipOptional)
@@ -489,7 +489,7 @@ BufferTexturedQuad(debug_ui_render_group *Group,
 }
 
 link_internal clip_result
-BufferUntexturedQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
+BufferUntexturedQuad(renderer_2d *Group, untextured_2d_geometry_buffer *Geo,
                      v2 MinP, v2 Dim, v3 Color, r32 Z, rect2 Clip)
 {
   // @streaming_ui_render_memory
@@ -517,7 +517,7 @@ BufferUntexturedQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer
 }
 
 link_internal clip_result
-BufferUntexturedQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
+BufferUntexturedQuad(renderer_2d *Group, untextured_2d_geometry_buffer *Geo,
                          rect2 Rect, v3 Color, r32 Z, rect2 Clip)
 {
   v2 MinP = Rect.Min;
@@ -527,7 +527,7 @@ BufferUntexturedQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer
 }
 
 link_internal void
-BufferChar(debug_ui_render_group *Group, u8 Char, v2 MinP, v2 FontSize, v3 Color, r32 Z, rect2 ClipWindow, rect2 *ClipOptional)
+BufferChar(renderer_2d *Group, u8 Char, v2 MinP, v2 FontSize, v3 Color, r32 Z, rect2 ClipWindow, rect2 *ClipOptional)
 {
   rect2 UV = UVsForChar(Char);
 
@@ -547,14 +547,14 @@ BufferChar(debug_ui_render_group *Group, u8 Char, v2 MinP, v2 FontSize, v3 Color
 }
 
 link_internal void
-BufferChar(debug_ui_render_group *Group, u8 Char, v2 MinP, v2 FontSize, u32 Color, r32 Z, rect2 ClipWindow, rect2 *ClipOptional)
+BufferChar(renderer_2d *Group, u8 Char, v2 MinP, v2 FontSize, u32 Color, r32 Z, rect2 ClipWindow, rect2 *ClipOptional)
 {
   v3 ColorVector = GetColorData(DefaultPalette, Color).xyz;
   BufferChar(Group, Char, MinP, FontSize, ColorVector, Z, ClipWindow, ClipOptional);
 }
 
 link_internal void
-BufferBorder(debug_ui_render_group *Group, rect2 Rect, v3 Color, r32 Z, rect2 Clip)
+BufferBorder(renderer_2d *Group, rect2 Rect, v3 Color, r32 Z, rect2 Clip)
 {
   v2 TopLeft     = Rect.Min;
   v2 BottomRight = Rect.Max;
@@ -576,7 +576,7 @@ BufferBorder(debug_ui_render_group *Group, rect2 Rect, v3 Color, r32 Z, rect2 Cl
 }
 
 link_internal void
-BufferBorder(debug_ui_render_group *Group, interactable* PickerListInteraction, v3 Color, r32 Z, rect2 Clip)
+BufferBorder(renderer_2d *Group, interactable* PickerListInteraction, v3 Color, r32 Z, rect2 Clip)
 {
   rect2 Bounds = RectMinMax(PickerListInteraction->MinP, PickerListInteraction->MaxP);
   BufferBorder(Group, Bounds, Color, Z, Clip);
@@ -595,7 +595,7 @@ AdvanceLayoutStackBy(v2 Delta, layout* Layout)
 }
 
 link_internal void
-BufferValue(counted_string Text, v2 AbsAt, debug_ui_render_group *Group, layout* Layout, v3 Color, ui_style* Style, r32 Z, rect2 ClipWindow, rect2 *ClipOptional, text_render_params Params, b32 DoBuffering = True)
+BufferValue(counted_string Text, v2 AbsAt, renderer_2d *Group, layout* Layout, v3 Color, ui_style* Style, r32 Z, rect2 ClipWindow, rect2 *ClipOptional, text_render_params Params, b32 DoBuffering = True)
 {
   r32 xDelta = 0;
   /* v2 MinP = GetAbsoluteAt(Layout) + V2(xDelta, 0); */
@@ -630,7 +630,7 @@ BufferValue(counted_string Text, v2 AbsAt, debug_ui_render_group *Group, layout*
 }
 
 link_internal void
-BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* RenderState, ui_style* Style, rect2 ClipOptional, text_render_params RenderParams, b32 DoBuffering = True)
+BufferValue(counted_string Text, renderer_2d *Group, render_state* RenderState, ui_style* Style, rect2 ClipOptional, text_render_params RenderParams, b32 DoBuffering = True)
 {
   layout* Layout = RenderState->Layout;
 
@@ -664,7 +664,7 @@ BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* Ren
 }
 
 link_internal void
-BufferTextAt(debug_ui_render_group *Group, v2 BasisP, counted_string Text, v2 FontSize, v3 Color, r32 Z, rect2 Clip, b32 DoBuffering = True)
+BufferTextAt(renderer_2d *Group, v2 BasisP, counted_string Text, v2 FontSize, v3 Color, r32 Z, rect2 Clip, b32 DoBuffering = True)
 {
   if (DoBuffering)
   {
@@ -684,7 +684,7 @@ BufferTextAt(debug_ui_render_group *Group, v2 BasisP, counted_string Text, v2 Fo
 #define INVALID_RENDER_COMMAND_INDEX (u32_MAX)
 
 link_internal u32
-PushUiRenderCommand(debug_ui_render_group *Group, ui_render_command* Command)
+PushUiRenderCommand(renderer_2d *Group, ui_render_command* Command)
 {
   ui_render_command_buffer *CommandBuffer = Group->CommandBuffer;
 
@@ -705,7 +705,7 @@ PushUiRenderCommand(debug_ui_render_group *Group, ui_render_command* Command)
 }
 
 link_internal void
-PushNewRow(debug_ui_render_group *Group)
+PushNewRow(renderer_2d *Group)
 {
   ui_render_command Command = {
     .Type = type_ui_render_command_new_row
@@ -717,7 +717,7 @@ PushNewRow(debug_ui_render_group *Group)
 }
 
 link_internal void
-Text(debug_ui_render_group* Group, counted_string String, ui_style *Style = &DefaultStyle, text_render_params RenderParams = TextRenderParam_Default, v2 Offset = {}, rect2 Clip = {})
+Text(renderer_2d* Group, counted_string String, ui_style *Style = &DefaultStyle, text_render_params RenderParams = TextRenderParam_Default, v2 Offset = {}, rect2 Clip = {})
 {
   ui_render_command Command = {
     .Type = type_ui_render_command_text,
@@ -736,7 +736,7 @@ Text(debug_ui_render_group* Group, counted_string String, ui_style *Style = &Def
 }
 
 link_internal void
-StartColumn(debug_ui_render_group *Group, ui_style* Style = 0, v4 Padding = V4(0), column_render_params Params = ColumnRenderParam_RightAlign)
+StartColumn(renderer_2d *Group, ui_style* Style = 0, v4 Padding = V4(0), column_render_params Params = ColumnRenderParam_RightAlign)
 {
   ui_render_command Command = {
     .Type = type_ui_render_command_column_start,
@@ -753,7 +753,7 @@ StartColumn(debug_ui_render_group *Group, ui_style* Style = 0, v4 Padding = V4(0
 }
 
 link_internal void
-EndColumn(debug_ui_render_group* Group)
+EndColumn(renderer_2d* Group)
 {
   ui_render_command Command = {
     .Type = type_ui_render_command_column_end,
@@ -765,7 +765,7 @@ EndColumn(debug_ui_render_group* Group)
 }
 
 link_internal void
-PushColumn(debug_ui_render_group *Group, counted_string String, ui_style* Style = &DefaultStyle, v4 Padding = DefaultColumnPadding, column_render_params Params = ColumnRenderParam_RightAlign)
+PushColumn(renderer_2d *Group, counted_string String, ui_style* Style = &DefaultStyle, v4 Padding = DefaultColumnPadding, column_render_params Params = ColumnRenderParam_RightAlign)
 {
   StartColumn(Group, Style, Padding, Params);
     Text(Group, String, Style);
@@ -775,7 +775,7 @@ PushColumn(debug_ui_render_group *Group, counted_string String, ui_style* Style 
 }
 
 link_internal void
-PushTextAt(debug_ui_render_group *Group, counted_string Text, v2 At, rect2 Clip, font Font = Global_Font)
+PushTextAt(renderer_2d *Group, counted_string Text, v2 At, rect2 Clip, font Font = Global_Font)
 {
   ui_render_command Command = {
     .Type = type_ui_render_command_text_at,
@@ -792,14 +792,14 @@ PushTextAt(debug_ui_render_group *Group, counted_string Text, v2 At, rect2 Clip,
 }
 
 link_internal void
-PushTooltip(debug_ui_render_group *Group, counted_string Text)
+PushTooltip(renderer_2d *Group, counted_string Text)
 {
   PushTextAt(Group, Text, *Group->MouseP+V2(14, -7), DISABLE_CLIPPING);
   return;
 }
 
 link_internal void
-PushTexturedQuad(debug_ui_render_group *Group, debug_texture_array_slice TextureSlice, v2 Dim, z_depth zDepth)
+PushTexturedQuad(renderer_2d *Group, debug_texture_array_slice TextureSlice, v2 Dim, z_depth zDepth)
 {
   ui_render_command Command = {
     .Type = type_ui_render_command_textured_quad,
@@ -815,7 +815,7 @@ PushTexturedQuad(debug_ui_render_group *Group, debug_texture_array_slice Texture
 }
 
 link_internal void
-PushUntexturedQuadAt(debug_ui_render_group* Group, v2 Offset, v2 QuadDim, z_depth zDepth, ui_style *Style = 0 )
+PushUntexturedQuadAt(renderer_2d* Group, v2 Offset, v2 QuadDim, z_depth zDepth, ui_style *Style = 0 )
 {
   ui_render_command Command =
   {
@@ -837,7 +837,7 @@ PushUntexturedQuadAt(debug_ui_render_group* Group, v2 Offset, v2 QuadDim, z_dept
 }
 
 link_internal void
-PushUntexturedQuad(debug_ui_render_group* Group, v2 Offset, v2 QuadDim, z_depth zDepth, ui_style *Style = 0, v4 Padding = V4(0), quad_render_params Params = QuadRenderParam_Default )
+PushUntexturedQuad(renderer_2d* Group, v2 Offset, v2 QuadDim, z_depth zDepth, ui_style *Style = 0, v4 Padding = V4(0), quad_render_params Params = QuadRenderParam_Default )
 {
   ui_render_command Command = {
     .Type = type_ui_render_command_untextured_quad,
@@ -863,7 +863,7 @@ PushUntexturedQuad(debug_ui_render_group* Group, v2 Offset, v2 QuadDim, z_depth 
 }
 
 link_internal void
-PushButtonEnd(debug_ui_render_group *Group, button_end_params Params = ButtonEndParam_NoOp)
+PushButtonEnd(renderer_2d *Group, button_end_params Params = ButtonEndParam_NoOp)
 {
   ui_render_command Command = {
     .Type = type_ui_render_command_button_end,
@@ -874,7 +874,7 @@ PushButtonEnd(debug_ui_render_group *Group, button_end_params Params = ButtonEnd
 }
 
 link_internal interactable_handle
-PushButtonStart(debug_ui_render_group *Group, umm InteractionId, ui_style* Style = 0)
+PushButtonStart(renderer_2d *Group, umm InteractionId, ui_style* Style = 0)
 {
   ui_render_command Command = {
     .Type = type_ui_render_command_button_start,
@@ -892,7 +892,7 @@ PushButtonStart(debug_ui_render_group *Group, umm InteractionId, ui_style* Style
 }
 
 link_internal ui_element_reference
-PushTableStart(debug_ui_render_group* Group, relative_position Position = Position_None,  ui_element_reference RelativeTo = {})
+PushTableStart(renderer_2d* Group, relative_position Position = Position_None,  ui_element_reference RelativeTo = {})
 {
   ui_render_command Command = {
     .Type = type_ui_render_command_table_start,
@@ -911,7 +911,7 @@ PushTableStart(debug_ui_render_group* Group, relative_position Position = Positi
 }
 
 link_internal void
-PushTableEnd(debug_ui_render_group *Group)
+PushTableEnd(renderer_2d *Group)
 {
   ui_render_command Command = {
     .Type = type_ui_render_command_table_end,
@@ -923,7 +923,7 @@ PushTableEnd(debug_ui_render_group *Group)
 }
 
 link_internal void
-PushBorder(debug_ui_render_group *Group, rect2 BoundsRelativeToCurrentWindow, v3 Color)
+PushBorder(renderer_2d *Group, rect2 BoundsRelativeToCurrentWindow, v3 Color)
 {
   ui_render_command Command = {
     .Type = type_ui_render_command_border,
@@ -936,7 +936,7 @@ PushBorder(debug_ui_render_group *Group, rect2 BoundsRelativeToCurrentWindow, v3
 }
 
 link_internal void
-PushResetDrawBounds(debug_ui_render_group *Group)
+PushResetDrawBounds(renderer_2d *Group)
 {
   ui_render_command Command = {
     .Type = type_ui_render_command_reset_draw_bounds,
@@ -946,7 +946,7 @@ PushResetDrawBounds(debug_ui_render_group *Group)
 }
 
 link_internal void
-PushForceAdvance(debug_ui_render_group *Group, v2 Offset)
+PushForceAdvance(renderer_2d *Group, v2 Offset)
 {
   ui_render_command Command = {
     .Type = type_ui_render_command_force_advance,
@@ -965,7 +965,7 @@ GetDrawBounds(counted_string String, ui_style *Style)
 }
 
 link_internal void
-PushWindowStartInternal( debug_ui_render_group *Group,
+PushWindowStartInternal( renderer_2d *Group,
                          window_layout *Window,
                          cs TitleText,
                          cs MinimizedIcon,
@@ -1033,7 +1033,7 @@ PushWindowStartInternal( debug_ui_render_group *Group,
 }
 
 link_internal void
-UnminimizeWindow(debug_ui_render_group *Group, window_layout *Window)
+UnminimizeWindow(renderer_2d *Group, window_layout *Window)
 {
   Window->Minimized = False;
 
@@ -1046,7 +1046,7 @@ UnminimizeWindow(debug_ui_render_group *Group, window_layout *Window)
 }
 
 link_internal void
-PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
+PushWindowStart(renderer_2d *Group, window_layout *Window)
 {
   TIMED_FUNCTION();
 
@@ -1147,7 +1147,7 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
 
 
 link_internal void
-PushWindowEnd(debug_ui_render_group *Group, window_layout *Window)
+PushWindowEnd(renderer_2d *Group, window_layout *Window)
 {
   ui_render_command EndCommand = {};
   EndCommand.Type = type_ui_render_command_window_end;
@@ -1165,7 +1165,7 @@ PushWindowEnd(debug_ui_render_group *Group, window_layout *Window)
 
 
 link_internal button_interaction_result
-ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId, window_layout *Window, ui_style *Style)
+ButtonInteraction(renderer_2d* Group, rect2 Bounds, umm InteractionId, window_layout *Window, ui_style *Style)
 {
   button_interaction_result Result = {};
 
@@ -1202,7 +1202,7 @@ ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId,
 }
 
 link_internal b32
-Button(debug_ui_render_group* Group, counted_string ButtonName, umm ButtonId, ui_style* Style = 0, v4 Padding = DefaultButtonPadding)
+Button(renderer_2d* Group, counted_string ButtonName, umm ButtonId, ui_style* Style = 0, v4 Padding = DefaultButtonPadding)
 {
   // TODO(Jesse, id: 108, tags: cleanup, potential_bug): Do we have to pass the style to both of these functions, and is that a good idea?
   interactable_handle Button = PushButtonStart(Group, ButtonId, Style);
@@ -1272,7 +1272,7 @@ GetCommand(ui_render_command_buffer* CommandBuffer, u32 CommandIndex)
 }
 
 link_internal window_layout*
-GetHighestWindow(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffer)
+GetHighestWindow(renderer_2d* Group, ui_render_command_buffer* CommandBuffer)
 {
   TIMED_FUNCTION();
 
@@ -1315,7 +1315,7 @@ GetHighestWindow(debug_ui_render_group* Group, ui_render_command_buffer* Command
 }
 
 link_internal void
-ProcessButtonStart(debug_ui_render_group* Group, render_state* RenderState, umm ButtonId)
+ProcessButtonStart(renderer_2d* Group, render_state* RenderState, umm ButtonId)
 {
   if (ButtonId == Group->HoverInteractionId)
   {
@@ -1339,7 +1339,7 @@ ProcessButtonStart(debug_ui_render_group* Group, render_state* RenderState, umm 
 }
 
 link_internal void
-ProcessButtonEnd(debug_ui_render_group *Group, umm InteractionId, render_state* RenderState, rect2 AbsButtonBounds, ui_style* Style)
+ProcessButtonEnd(renderer_2d *Group, umm InteractionId, render_state* RenderState, rect2 AbsButtonBounds, ui_style* Style)
 {
   Assert(InteractionId);
 
@@ -1372,7 +1372,7 @@ ProcessButtonEnd(debug_ui_render_group *Group, umm InteractionId, render_state* 
 }
 
 link_internal void
-ProcessTexturedQuadPush(debug_ui_render_group* Group, ui_render_command_textured_quad *Command, render_state* RenderState, b32 DoBuffering = True)
+ProcessTexturedQuadPush(renderer_2d* Group, ui_render_command_textured_quad *Command, render_state* RenderState, b32 DoBuffering = True)
 {
   v2 MinP    = GetAbsoluteAt(RenderState->Layout);
   v2 Dim     = Command->Dim; // RenderState->Window->MaxClip;
@@ -1392,7 +1392,7 @@ ProcessTexturedQuadPush(debug_ui_render_group* Group, ui_render_command_textured
 }
 
 link_internal void
-ProcessUntexturedQuadAtPush(debug_ui_render_group* Group, ui_render_command_untextured_quad_at *Command, render_state* RenderState, b32 DoBuffering = True)
+ProcessUntexturedQuadAtPush(renderer_2d* Group, ui_render_command_untextured_quad_at *Command, render_state* RenderState, b32 DoBuffering = True)
 {
   rect2 Clip = RenderState->ClipRect; //GetAbsoluteClip(RenderState->Window);
   v2 MinP    = GetAbsoluteAt(&Command->Layout);
@@ -1412,7 +1412,7 @@ ProcessUntexturedQuadAtPush(debug_ui_render_group* Group, ui_render_command_unte
 }
 
 link_internal void
-ProcessUntexturedQuadPush(debug_ui_render_group* Group, ui_render_command_untextured_quad *Command, render_state* RenderState, b32 DoBuffering = True)
+ProcessUntexturedQuadPush(renderer_2d* Group, ui_render_command_untextured_quad *Command, render_state* RenderState, b32 DoBuffering = True)
 {
   rect2 Clip = RenderState->ClipRect; //GetAbsoluteClip(RenderState->Window);
   v2 MinP    = GetAbsoluteAt(RenderState->Layout);
@@ -1854,7 +1854,7 @@ PreprocessTable(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
 }
 
 link_internal void
-FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *CommandBuffer)
+FlushCommandBuffer(renderer_2d *Group, ui_render_command_buffer *CommandBuffer)
 {
   TIMED_FUNCTION();
 

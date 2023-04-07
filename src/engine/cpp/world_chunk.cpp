@@ -4082,10 +4082,11 @@ Debug_DoWorldChunkPicking(engine_resources *Resources)
 #endif
 }
 
-struct debug_ui_render_group;
+// TODO(Jesse): Should be able to remove this?  Soon?
+struct renderer_2d;
 
 link_internal void
-PushChunkView(debug_ui_render_group* Group, world_chunk* Chunk, window_layout* Window)
+PushChunkView(renderer_2d* Group, world_chunk* Chunk, window_layout* Window)
 {
   debug_state* DebugState = GetDebugState();
   PushWindowStart(Group, Window);
@@ -4146,7 +4147,7 @@ PushChunkView(debug_ui_render_group* Group, world_chunk* Chunk, window_layout* W
 }
 
 link_internal void
-PushChunkDetails(debug_ui_render_group* Group, world_chunk* Chunk, window_layout* Window)
+PushChunkDetails(renderer_2d* Group, world_chunk* Chunk, window_layout* Window)
 {
   PushWindowStart(Group, Window);
   PushTableStart(Group);
@@ -4176,7 +4177,7 @@ PushChunkDetails(debug_ui_render_group* Group, world_chunk* Chunk, window_layout
 }
 
 link_internal picked_world_chunk*
-DrawPickedChunks(debug_ui_render_group* Group, render_entity_to_texture_group *PickedChunksRenderGroup, picked_world_chunk_static_buffer *PickedChunks, picked_world_chunk *HotChunk)
+DrawPickedChunks(renderer_2d* Group, render_entity_to_texture_group *PickedChunksRenderGroup, picked_world_chunk_static_buffer *PickedChunks, picked_world_chunk *HotChunk)
 {
   TIMED_FUNCTION();
 
