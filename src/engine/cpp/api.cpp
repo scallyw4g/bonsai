@@ -156,6 +156,9 @@ Bonsai_Render(engine_resources *Resources)
   GL.DisableVertexAttribArray(1);
   GL.DisableVertexAttribArray(2);
 
+  Resources->GameUiRenderer.ScreenDim = V2(Plat->WindowWidth, Plat->WindowHeight);
+  FlushCommandBuffer(&Resources->GameUiRenderer, Resources->GameUiRenderer.CommandBuffer);
+
   b32 Result = True;
   return Result;
 }

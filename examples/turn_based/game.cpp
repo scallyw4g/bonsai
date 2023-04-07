@@ -437,8 +437,11 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     }
 
 
-
-    GetDebugState()->DebugValue_u64(SelectedAction, ToString(SelectedAction).Start);
+    PushForceAdvance(GameUi, V2(0, 128));
+    PushTableStart(GameUi);
+      PushColumn(GameUi, ToString(SelectedAction));
+      PushNewRow(GameUi);
+    PushTableEnd(GameUi);
 
     b32 DidPlayerAction = False;
     switch (SelectedAction)

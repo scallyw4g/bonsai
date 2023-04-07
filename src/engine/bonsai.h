@@ -78,6 +78,7 @@ struct engine_resources
   mesh_freelist             *MeshFreelist  = &Resources->MeshFreelist;    \
   input                     *Input         = &Resources->Plat->Input;     \
   graphics                  *Graphics      =  Resources->Graphics;        \
+  renderer_2d               *GameUi        = &Resources->GameUiRenderer;  \
   gpu_mapped_element_buffer *GpuMap        =  GetCurrentGpuMap(Graphics); \
   g_buffer_render_group     *gBuffer       =  Graphics->gBuffer;          \
   camera                    *Camera        =  Graphics->Camera;
