@@ -26,9 +26,18 @@ float BlurredAO = 0.0f;
 
 
 
+// NOTE(Jesse): These are done, leaving here for posterity for a bit.
+// DONE(Jesse): Tune the sun color & ambient light color to be orange/teal
+// DONE(Jesse): Tune the sun color & ambient light intensities to be 10:1
+// DONE(Jesse): Add back-lighting, which is a light from the opposite direciton of the sun.  
+// DONE(Jesse): Don't modulate key-light by SSAO
+//
+// https://www.youtube.com/watch?v=-pdSjBPH3zM
+//
 /* vec3 SunPosition = vec3(0.5f, -1.0f, 0.5f); */
 /* vec3 SunColor = vec3(1,1,1); */
-float Global_LightPower = 0.1f; // 1.0 == full sun
+float Global_LightPower = 0.25f; // 1.0 == full sun
+vec3 AmbientLightColor = V3(0.25, 0.4, 0.7);
 /* float Global_LightPower = 1.0f; // 1.0 == full sun */
 
 // Tuning
@@ -64,155 +73,171 @@ void main()
   ivec2 texelCoord = ivec2(gBufferUV*gBufferTextureDim);
   vec4 FragPosition = texelFetch(gPosition, texelCoord, 0);
 
+  vec3 ToneMapped;
+  vec3 KeyLightContrib = vec3(0.f);
+  vec3 BackLightContrib = vec3(0.f);
+
   r32 DiscardThresh = f32_MAX;
   if (FragPosition.x == DiscardThresh)
-  { OutColor = V4(0.2f, 0.2f, 0.2f, 1.0f); return; }
-
-  /* OutColor = V4(FragPosition, 1.f); */
-  /* return; */
-
-
-  vec3 Diffuse = texelFetch(gColor, texelCoord, 0).rgb;
-  float Emission = texelFetch(gColor, texelCoord, 0).a;
-  /* vec3 Diffuse      = texture(gColor, gBufferUV).rgb; */
-  /* float Emission    = texture(gColor, gBufferUV).a; */
-
-  vec3 FragNormal = texelFetch(gNormal, texelCoord, 0).rgb;
-  /* vec3 FragNormal   = texture(gNormal, gBufferUV).rgb;   // modelspace */
-
-  vec3 AmbientLight = Diffuse * Global_LightPower * Emission;
-
-  vec3 AccumulatedLight = AmbientLight;
-
   {
-    vec3 FragToLight = normalize(SunPosition);
-    float LightAtt = Global_LightPower;
-    AccumulatedLight += DiffuseLightingCalc(LightAtt, Diffuse, FragToLight, FragNormal, CameraP);
-    /* AccumulatedLight += SpecLightingCalc(LightAtt, Diffuse, FragToLight, FragPosition, FragNormal, CameraP); */
+    ToneMapped = V3(0.2f, 0.2f, 0.2f);
   }
+  else
+  {
+    /* OutColor = V4(FragPosition, 1.f); */
+    /* return; */
+
+
+    vec3 Diffuse = texelFetch(gColor, texelCoord, 0).rgb;
+    float Emission = texelFetch(gColor, texelCoord, 0).a;
+    /* vec3 Diffuse      = texture(gColor, gBufferUV).rgb; */
+    /* float Emission    = texture(gColor, gBufferUV).a; */
+
+    vec3 FragNormal = texelFetch(gNormal, texelCoord, 0).rgb;
+    /* vec3 FragNormal   = texture(gNormal, gBufferUV).rgb;   // modelspace */
+
+    vec3 AmbientLight = AmbientLightColor * Diffuse * Global_LightPower*0.1f * Emission;
+
+    {
+      vec3 FragToLight = normalize(SunPosition);
+      vec3 LightToFrag = -FragToLight;
+
+      float LightAtt = Global_LightPower;
+      BackLightContrib = DiffuseLightingCalc(0.25f*LightAtt, Diffuse, LightToFrag, FragNormal, CameraP);
+      KeyLightContrib = DiffuseLightingCalc(LightAtt, Diffuse, FragToLight, FragNormal, CameraP);
+      /* KeyLightContrib += SpecLightingCalc(LightAtt, Diffuse, FragToLight, FragPosition, FragNormal, CameraP); */
+    }
 
 
 
+    vec3 PointLightsContrib = V3(0.f);
 #if 0
-  for ( s32 LightIndex = 0;
-        LightIndex < LightCount;
-        ++LightIndex)
-  {
-    ivec2 LightUV = ivec2(LightIndex, 0);
+    for ( s32 LightIndex = 0;
+          LightIndex < LightCount;
+          ++LightIndex)
+    {
+      ivec2 LightUV = ivec2(LightIndex, 0);
 
-    vec3 LightPosition = texelFetch(LightPositions, LightUV, 0).rgb;
-    vec3 LightColor = texelFetch(LightColors, LightUV, 0).rgb;
+      vec3 LightPosition = texelFetch(LightPositions, LightUV, 0).rgb;
+      vec3 LightColor = texelFetch(LightColors, LightUV, 0).rgb;
 
-    vec3 FragToLight = normalize(LightPosition - FragPosition.xyz);
+      vec3 FragToLight = normalize(LightPosition - FragPosition.xyz);
 
-    float LightCosTheta = clamp( dot( FragNormal, FragToLight), 0.0f, 1.0f);
+      float LightCosTheta = clamp( dot( FragNormal, FragToLight), 0.0f, 1.0f);
 
-    float Distance = distance(FragPosition.xyz, LightPosition);
-    float LightAtt = 1.0f/(Distance*Distance);
+      float Distance = distance(FragPosition.xyz, LightPosition);
+      float LightAtt = 1.0f/(Distance*Distance);
 
-    vec3 reflectionVector = reflect(FragToLight, FragNormal);
-    vec3 FragToCamera = normalize(FragPosition.xyz - CameraP);
-    float cosAngle = max(0.0, dot(FragToCamera, reflectionVector));
-    float SpecularPower = pow(cosAngle, materialShininess);
+      vec3 reflectionVector = reflect(FragToLight, FragNormal);
+      vec3 FragToCamera = normalize(FragPosition.xyz - CameraP);
+      float cosAngle = max(0.0, dot(FragToCamera, reflectionVector));
+      float SpecularPower = pow(cosAngle, materialShininess);
 
-    vec3 DirectLight = (Diffuse + LightColor) * LightCosTheta * LightAtt;
-    vec3 SpecularLight = (Diffuse + LightColor) * SpecularPower * LightAtt;
+      vec3 DirectLight = (Diffuse + LightColor) * LightCosTheta * LightAtt;
+      vec3 SpecularLight = (Diffuse + LightColor) * SpecularPower * LightAtt;
 
-    AccumulatedLight += DirectLight + SpecularLight;
-  }
+      PointLightsContrib += DirectLight + SpecularLight;
+    }
 #endif
 
 #if USE_SSAO_SHADER
-  vec2 texelSize = 1.0 / vec2(textureSize(Ssao, 0));
-  float AccumAO = 0.0;
+    vec2 texelSize = 1.0 / vec2(textureSize(Ssao, 0));
+    float AccumAO = 0.0;
 
-  vec2 hlim = vec2(float(-AoBlurSize) * 0.5 + 0.5);
+    vec2 hlim = vec2(float(-AoBlurSize) * 0.5 + 0.5);
 
-  for (int i = 0; i < AoBlurSize; ++i) {
-     for (int j = 0; j < AoBlurSize; ++j) {
-        vec2 TexOffset = (hlim + vec2(float(i), float(j))) * texelSize;
-        AccumAO += texture(Ssao, gBufferUV + TexOffset).r;
-     }
-  }
+    for (int i = 0; i < AoBlurSize; ++i) {
+       for (int j = 0; j < AoBlurSize; ++j) {
+          vec2 TexOffset = (hlim + vec2(float(i), float(j))) * texelSize;
+          AccumAO += texture(Ssao, gBufferUV + TexOffset).r;
+       }
+    }
 
-  BlurredAO = AccumAO / float(AoBlurSize * AoBlurSize);
+    BlurredAO = AccumAO / float(AoBlurSize * AoBlurSize);
 #else
-  BlurredAO = 1.0f;
+    BlurredAO = 1.0f;
 #endif
 
 
-  vec3 Visibility = vec3(1.0f);
-  vec3 sampleVis = vec3(1.0f/5.f);
-  /* vec3 sampleVis = vec3(1.f/7.f); */
+    vec3 ShadowVisibility = vec3(1.0f);
+    vec3 sampleVis = vec3(1.0f/5.f);
+    /* vec3 sampleVis = vec3(1.f/7.f); */
 
 #if USE_SHADOW_MAPPING
-  /*
-   *  Shadow Mapping
-   */
-  float acneBias = 0.00001f; // Fix acne
+    /*
+     *  Shadow Mapping
+     */
+    float acneBias = 0.0001f; // Fix acne
 
-  vec4 FragPShadowSpace = ShadowMVP * vec4(FragPosition.xyz, 1.f);
-  float FragDepth = FragPShadowSpace.z - acneBias; //*FragPShadowSpace.w;;
-  /* OutColor = vec4(FragDepth, FragDepth, FragDepth, 1.f); */
-  /* OutColor = FragPShadowSpace; */
-  /* return; */
+    vec4 FragPShadowSpace = ShadowMVP * vec4(FragPosition.xyz, 1.f);
+    float FragDepth = FragPShadowSpace.z - acneBias; //*FragPShadowSpace.w;;
+    /* OutColor = vec4(FragDepth, FragDepth, FragDepth, 1.f); */
+    /* OutColor = FragPShadowSpace; */
+    /* return; */
 
 
-  v2 ShadowMapUVStep = vec2(1.f)/vec2(float(SHADOW_MAP_RESOLUTION_X), float(SHADOW_MAP_RESOLUTION_Y));
+    v2 ShadowMapUVStep = vec2(1.f)/vec2(float(SHADOW_MAP_RESOLUTION_X), float(SHADOW_MAP_RESOLUTION_Y));
 
-  float ShadowSampleDepth = texture(shadowMap, FragPShadowSpace.xy ).x + acneBias;
-  if ( FragDepth > ShadowSampleDepth ) { Visibility -= vec3(0.5f); }
+    float ShadowSampleDepth = texture(shadowMap, FragPShadowSpace.xy ).x + acneBias;
+    if ( FragDepth > ShadowSampleDepth ) { ShadowVisibility -= vec3(1.f); }
 
-  // NOTE(Jesse): This is misguided.  The correct thing to do is to write
-  // shadow information to a buffer, then sample that buffer using a box filter
-  // (or some other blur function).  The reason to do it that way instead of
-  // directly here is that for each sample you take here, you'd have to
-  // recompute the actual shadow map value at the sample pos, which would be
-  // much too expensive even at small sample rates.
-  //
-  // I'm going to leave this here, but it causes flashing when the sun rotates
-  // such that the number of samples this hits true branches for change for the
-  // whole scene.
-  //
-  // Might be fine if the sun location was a fixed point, but that seems lame.
-  //
+    // NOTE(Jesse): This is misguided.  The correct thing to do is to write
+    // shadow information to a buffer, then sample that buffer using a box filter
+    // (or some other blur function).  The reason to do it that way instead of
+    // directly here is that for each sample you take here, you'd have to
+    // recompute the actual shadow map value at the sample pos, which would be
+    // much too expensive even at small sample rates.
+    //
+    // I'm going to leave this here, but it causes flashing when the sun rotates
+    // such that the number of samples this hits true branches for change for the
+    // whole scene.
+    //
+    // Might be fine if the sun location was a fixed point, but that seems lame.
+    //
 #if 0
-  // TODO(Jesse): Does this produce better results using texelFetch?
-  vec2 Mapped = vec2(FragPShadowSpace.xy + vec2(ShadowMapUVStep.x, 0.f));
-  ShadowSampleDepth = texture(shadowMap, Mapped).x + acneBias;
-  if ( FragDepth > ShadowSampleDepth ) { Visibility -= sampleVis; }
+    // TODO(Jesse): Does this produce better results using texelFetch?
+    vec2 Mapped = vec2(FragPShadowSpace.xy + vec2(ShadowMapUVStep.x, 0.f));
+    ShadowSampleDepth = texture(shadowMap, Mapped).x + acneBias;
+    if ( FragDepth > ShadowSampleDepth ) { ShadowVisibility -= sampleVis; }
 
-  Mapped = vec2(FragPShadowSpace.xy + vec2(-ShadowMapUVStep.x, 0.f));
-  ShadowSampleDepth = texture(shadowMap, Mapped).x + acneBias;
-  if ( FragDepth > ShadowSampleDepth ) { Visibility -= sampleVis; }
+    Mapped = vec2(FragPShadowSpace.xy + vec2(-ShadowMapUVStep.x, 0.f));
+    ShadowSampleDepth = texture(shadowMap, Mapped).x + acneBias;
+    if ( FragDepth > ShadowSampleDepth ) { ShadowVisibility -= sampleVis; }
 
-  Mapped = vec2(FragPShadowSpace.xy + vec2(0.f, ShadowMapUVStep.y));
-  ShadowSampleDepth = texture(shadowMap, Mapped).x + acneBias;
-  if ( FragDepth > ShadowSampleDepth ) { Visibility -= sampleVis; }
+    Mapped = vec2(FragPShadowSpace.xy + vec2(0.f, ShadowMapUVStep.y));
+    ShadowSampleDepth = texture(shadowMap, Mapped).x + acneBias;
+    if ( FragDepth > ShadowSampleDepth ) { ShadowVisibility -= sampleVis; }
 
-  Mapped = vec2(FragPShadowSpace.xy + vec2(0.f, -ShadowMapUVStep.y));
-  ShadowSampleDepth = texture(shadowMap, Mapped).x + acneBias;
-  if ( FragDepth > ShadowSampleDepth ) { Visibility -= sampleVis; }
+    Mapped = vec2(FragPShadowSpace.xy + vec2(0.f, -ShadowMapUVStep.y));
+    ShadowSampleDepth = texture(shadowMap, Mapped).x + acneBias;
+    if ( FragDepth > ShadowSampleDepth ) { ShadowVisibility -= sampleVis; }
 #endif
 
-  /* OutColor = vec4(vec3(FragDepth < ShadowSampleDepth ), 1.f); */
-  /* return; */
+    /* OutColor = vec4(vec3(FragDepth < ShadowSampleDepth ), 1.f); */
+    /* return; */
 
 #endif
 
-  /* Visibility = max(Visibility, vec3(Global_LightPower)); */
-  /* OutColor = vec4(Visibility, 1.f); */
-  /* return; */
-
-  /*
-   *  Tone-mapping && gamma correction
-   */
-  vec3 TotalLight = BlurredAO * Visibility * AccumulatedLight;
+    /* ShadowVisibility = max(ShadowVisibility, vec3(Global_LightPower)); */
+    /* OutColor = vec4(ShadowVisibility, 1.f); */
+    /* return; */
 
 
-  // Reinhard tone mapping
-  vec3 ToneMapped = TotalLight / (TotalLight + vec3(1.0f));
+    /*
+     *  Tone-mapping && gamma correction
+     */
+    vec3 TotalLight = KeyLightContrib*ShadowVisibility +
+                      (BlurredAO * (PointLightsContrib+AmbientLight+BackLightContrib) );
+
+    // Reinhard tone mapping
+    ToneMapped = TotalLight / (TotalLight + vec3(1.0f));
+  }
+
+  vec3 CameraToFrag = normalize(FragPosition.xyz - CameraP);
+  /* float Shine = clamp(pow(dot(SunPosition, CameraToFrag), 2.f), 0.f, 1.f); */
+  float Shine = 0.f;
 
   // Gamma correction
-  OutColor = vec4(pow(ToneMapped, vec3(1.0f / gamma)), 1.0f);
+  OutColor = vec4(pow(ToneMapped, vec3(1.0f / gamma)), 1.0f) + Shine;
+  /* OutColor = vec4(KeyLightContrib, 1.f); */
 }
