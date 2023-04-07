@@ -60,6 +60,8 @@ struct engine_resources
 
   mesh_freelist MeshFreelist;
 
+  renderer_2d GameUiRenderer;
+
   engine_debug EngineDebug;
   debug_state *DebugState;
 };

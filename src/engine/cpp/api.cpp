@@ -8,6 +8,14 @@ Bonsai_OnLibraryLoad(engine_resources *Resources)
 #if DEBUG_SYSTEM_API
   Global_DebugStatePointer = Resources->DebugState;
 #endif
+
+  Global_ThreadStates = Resources->ThreadStates;
+
+  // We should only ever call this from the main thread, and this sets our
+  // thread index such that the game doesn't have to worry about doing it.
+  if (ThreadLocal_ThreadIndex == -1) { SetThreadLocal_ThreadIndex(0); }
+  else { Assert(ThreadLocal_ThreadIndex == 0); }
+
   return Result;
 }
 
@@ -24,16 +32,20 @@ Bonsai_Init(engine_resources *Resources)
   DEBUG_REGISTER_ARENA(BonsaiInitArena, 0);
 
   Resources->Memory = BonsaiInitArena;
+  Resources->Heap = InitHeap(Gigabytes(4));
 
   Init_Global_QuadVertexBuffer();
 
   Resources->World = Allocate(world, BonsaiInitArena, 1);
   if (!Resources->World) { Error("Allocating World"); return False; }
 
-  Resources->Graphics = GraphicsInit(BonsaiInitArena);
+  memory_arena *GraphicsMemory = AllocateArena();
+  Resources->Graphics = GraphicsInit(GraphicsMemory);
   if (!Resources->Graphics) { Error("Initializing Graphics"); return False; }
 
-  Resources->Heap = InitHeap(Gigabytes(4));
+  memory_arena *GraphicsMemory2D = AllocateArena();
+  InitRenderer2D(&Resources->GameUiRenderer, &Resources->Heap, GraphicsMemory2D);
+
   Resources->EntityTable = AllocateEntityTable(BonsaiInitArena, TOTAL_ENTITY_COUNT);
 
   return Result;

@@ -620,8 +620,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 {
-  SetThreadLocal_ThreadIndex(0);
-
   Resources->GameState = Allocate(game_state, Resources->Memory, 1);
 
   UNPACK_ENGINE_RESOURCES(Resources);

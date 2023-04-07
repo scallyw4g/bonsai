@@ -420,8 +420,8 @@ main( s32 ArgCount, const char ** Args )
       CloseLibrary(GameLib);
       GameLib = OpenLibrary(GameLibName);
 
-      Ensure(InitializeGameApi(&GameApi, GameLib));
       Ensure(InitializeEngineApi(&EngineApi, GameLib));
+      Ensure(InitializeGameApi(&GameApi, GameLib));
 
       Ensure( EngineApi.OnLibraryLoad(&EngineResources) );
 
