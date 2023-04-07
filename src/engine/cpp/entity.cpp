@@ -1424,6 +1424,22 @@ GetSimSpaceCenterP(entity *E, v3 SimSpaceP)
   return Result;
 }
 
+link_internal v3
+GetSimSpaceP(world *World, entity *Entity)
+{
+  world_position Basis = Entity->P.WorldP - World->Center;
+  v3 Result = V3(Basis*World->ChunkDim) + Entity->P.Offset;
+  return Result;
+}
+
+link_internal aabb
+GetSimSpaceAABB(world *World, entity *Entity)
+{
+  v3 SimSpaceP = GetSimSpaceP(World, Entity);
+  aabb Result = AABBMinRad(SimSpaceP, Entity->CollisionVolumeRadius);
+  return Result;
+}
+
 link_internal u32_buffer
 GatherEntitiesIntersecting(world *World, entity **EntityTable, sphere *S, memory_arena *Memory)
 {

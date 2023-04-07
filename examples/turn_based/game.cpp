@@ -641,7 +641,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState->Models = AllocateGameModels(GameState, Memory, Heap);
 
-  u32 PlayerModelIndex = RandomBetween(ModelIndex_FirstPlayer, &GameState->Entropy, ModelIndex_LastPlayer+1);
+  u32 PlayerModelIndex = RandomBetween(ModelIndex_FirstPlayerModel, &GameState->Entropy, ModelIndex_LastPlayerModel+1);
   GameState->Player = GetFreeEntity(EntityTable);
   SpawnPlayer(Plat, World, GameState->Models + PlayerModelIndex, GameState->Player, PlayerSpawnP, &GameState->Entropy);
 
@@ -655,9 +655,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
         (s32)RandomBetween(0, &GameState->Entropy, (u32)g_VisibleRegion.y),
         1);
 
-    u32 EnemyModelIndex = RandomBetween(ModelIndex_FirstEnemy, &GameState->Entropy, ModelIndex_LastEnemy+1);
-    Assert(EnemyModelIndex >= ModelIndex_FirstEnemy);
-    Assert(EnemyModelIndex <= ModelIndex_LastEnemy);
+    u32 EnemyModelIndex = RandomBetween(ModelIndex_FirstEnemyModel, &GameState->Entropy, ModelIndex_LastEnemyModel+1);
+    Assert(EnemyModelIndex >= ModelIndex_FirstEnemyModel);
+    Assert(EnemyModelIndex <= ModelIndex_LastEnemyModel);
 
     auto EnemySpawnP = Canonical_Position(V3(0), WorldCenter + WP - HalfVisibleRegion );
     GameState->Enemy = GetFreeEntity(EntityTable);
