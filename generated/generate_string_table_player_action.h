@@ -9,6 +9,7 @@ ToString( player_action Type)
     case PlayerAction_Charge: { Result = CSz("PlayerAction_Charge"); } break;
     case PlayerAction_Fire: { Result = CSz("PlayerAction_Fire"); } break;
     case PlayerAction_Jump: { Result = CSz("PlayerAction_Jump"); } break;
+    case PlayerAction_Count: { Result = CSz("PlayerAction_Count"); } break;
 
   }
   return Result;

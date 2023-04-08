@@ -265,6 +265,8 @@ enum player_action
   PlayerAction_Charge,
   PlayerAction_Fire,
   PlayerAction_Jump,
+
+  PlayerAction_Count,
 };
 poof(generate_string_table(player_action))
 #include <generated/generate_string_table_player_action.h>
@@ -377,6 +379,9 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   picked_voxel Pick = PickVoxel(Resources);
 
+  local_persist player_action SelectedAction = {};
+  local_persist b32 PlayerCharged = {};
+
   if (Pick.PickedChunk.tChunk != f32_MAX)
   {
     world_chunk *ClosestChunk = Pick.PickedChunk.Chunk;
@@ -398,54 +403,47 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     /*   DoSplotion(Resources, &Pick, PickCP, 20.f); */
     /* } */
 
-    local_persist player_action SelectedAction = {};
-    local_persist b32 PlayerCharged = {};
 
-    if (Input->Q.Clicked)
+    if (Input->Z.Clicked)
     {
       SelectedAction = PlayerAction_Move;
     }
 
-    if (Input->W.Clicked)
+    if (Input->X.Clicked)
     {
       SelectedAction = PlayerAction_Charge;
     }
 
-    if (Input->E.Clicked)
+    if (Input->C.Clicked)
     {
       SelectedAction = PlayerAction_Fire;
     }
 
-    if (Input->R.Clicked)
+    if (Input->V.Clicked)
     {
       SelectedAction = PlayerAction_Jump;
     }
 
-    if (Input->T.Clicked)
+    if (Input->R.Clicked)
     {
       DoSplotion(Resources, &Pick, PickCP, 4.f, GetTranArena());
     }
 
-    if (Input->Y.Clicked)
+    if (Input->T.Clicked)
     {
       DoSplotion(Resources, &Pick, PickCP, 6.f, GetTranArena());
     }
 
-    if (Input->U.Clicked)
+    if (Input->Y.Clicked)
     {
       DoSplotion(Resources, &Pick, PickCP, 8.f, GetTranArena());
     }
 
 
-    PushForceAdvance(GameUi, V2(0, 128));
-    PushTableStart(GameUi);
-      PushColumn(GameUi, ToString(SelectedAction));
-      PushNewRow(GameUi);
-    PushTableEnd(GameUi);
-
     b32 DidPlayerAction = False;
     switch (SelectedAction)
     {
+      case PlayerAction_Count:
       case PlayerAction_None:
       {
       } break;
@@ -532,7 +530,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       } break;
     }
 
-
     if (DidPlayerAction)
     {
       SelectedAction = PlayerAction_None;
@@ -588,6 +585,17 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       }
     }
   }
+
+  PushForceAdvance(GameUi, V2(0, 128));
+  for (u32 ActionIndex = 0; ActionIndex < PlayerAction_Count; ++ActionIndex)
+  {
+    ui_style *Style = ActionIndex == SelectedAction ? &DefaultSelectedStyle : &DefaultStyle;
+    PushTableStart(GameUi);
+      PushColumn(GameUi, ToString((player_action)ActionIndex), Style);
+      PushNewRow(GameUi);
+    PushTableEnd(GameUi);
+  }
+
 
   if (Hotkeys)
   {
