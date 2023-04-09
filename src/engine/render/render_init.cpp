@@ -366,14 +366,15 @@ GraphicsInit(memory_arena *GraphicsMemory)
   FlushBuffersToCard(Result->GpuBuffers+1);
 
 #if 1
-#define SHADOW_MAP_RESOLUTION_X (16*1024)
-#define SHADOW_MAP_RESOLUTION_Y (16*1024)
+  // NOTE(Jesse): 32x1024 x2 == 64k at 32bit float
+#define SHADOW_MAP_RESOLUTION_X (32*1024)
+#define SHADOW_MAP_RESOLUTION_Y (32*1024)
 
-#define SHADOW_MAP_X 256
-#define SHADOW_MAP_Y 256
+#define SHADOW_MAP_X 128
+#define SHADOW_MAP_Y 128
 
-#define SHADOW_MAP_Z_MIN -256
-#define SHADOW_MAP_Z_MAX 256
+#define SHADOW_MAP_Z_MIN -128
+#define SHADOW_MAP_Z_MAX 128
 
   shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1);
   if (!InitializeShadowGroup(SG, GraphicsMemory, V2i(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y)))
