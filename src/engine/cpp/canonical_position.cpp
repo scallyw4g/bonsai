@@ -13,6 +13,7 @@ ToV3(canonical_position P, chunk_dimension WorldChunkDim)
   return Result;
 }
 
+#if 1
 canonical_position
 Lerp(r32 t, canonical_position p1, canonical_position p2, chunk_dimension WorldChunkDim)
 {
@@ -23,5 +24,12 @@ Lerp(r32 t, canonical_position p1, canonical_position p2, chunk_dimension WorldC
 
   canonical_position Result = Canonicalize(WorldChunkDim, p1 + (t*ToP2));
   return Result;
+}
+#endif
+
+link_internal void
+Canonicalize( world *World, canonical_position *P)
+{
+  *P = Canonicalize(World->ChunkDim, P->Offset, P->WorldP);
 }
 

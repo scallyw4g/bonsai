@@ -36,7 +36,7 @@ float BlurredAO = 0.0f;
 //
 /* vec3 SunPosition = vec3(0.5f, -1.0f, 0.5f); */
 /* vec3 SunColor = vec3(1,1,1); */
-float Global_LightPower = 0.25f; // 1.0 == full sun
+float Global_LightPower = 0.5f; // 1.0 == full sun
 vec3 AmbientLightColor = V3(0.25, 0.4, 0.7);
 /* float Global_LightPower = 1.0f; // 1.0 == full sun */
 
@@ -239,5 +239,6 @@ void main()
 
   // Gamma correction
   OutColor = vec4(pow(ToneMapped, vec3(1.0f / gamma)), 1.0f) + Shine;
+  // OutColor = vec4(ToneMapped, 1.f);
   /* OutColor = vec4(KeyLightContrib, 1.f); */
 }

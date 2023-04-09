@@ -960,7 +960,14 @@ ClampBetween( r32 Min, v3 Gross, r32 Max )
 }
 
 void
-UpdateEntityP(world* World, entity *Entity, v3 GrossDelta, chunk_dimension VisibleRegion)
+UpdateEntityP(world* World, entity *Entity, v3 Delta)
+{
+  Entity->P.Offset += Delta;
+  Canonicalize(World, &Entity->P);
+}
+
+void
+MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta, chunk_dimension VisibleRegion)
 {
   TIMED_FUNCTION();
 
@@ -1196,7 +1203,7 @@ SimulatePlayer(world* World, entity *Player, camera* Camera, hotkeys *Hotkeys, r
     PhysicsUpdate(&Player->Physics, dt);
 
     world_position OriginalPlayerP = Player->P.WorldP;
-    UpdateEntityP( World, Player, Player->Physics.Delta, VisibleRegion);
+    MoveEntityInWorld( World, Player, Player->Physics.Delta, VisibleRegion);
 
     /* world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP ); */
     /* UpdateVisibleRegion(World, WorldDisp); */
@@ -1258,14 +1265,14 @@ SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension Vis
         /* NotImplemented; */
         /* SimulateEnemy(GameState, Entity, dt); */
         /* PhysicsUpdate(&Entity->Physics, dt); */
-        /* UpdateEntityP(GameState, Entity, Entity->Physics.Delta); */
+        /* MoveEntityInWorld(GameState, Entity, Entity->Physics.Delta); */
       } break;
 
       case EntityType_PlayerProjectile:
       case EntityType_EnemyProjectile:
       {
         PhysicsUpdate(&Entity->Physics, dt);
-        UpdateEntityP(World, Entity, Entity->Physics.Delta, VisibleRegion);
+        MoveEntityInWorld(World, Entity, Entity->Physics.Delta, VisibleRegion);
       } break;
 
       case EntityType_ParticleSystem:
@@ -1278,7 +1285,7 @@ SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension Vis
         else
         {
           PhysicsUpdate(&Entity->Physics, dt);
-          UpdateEntityP(World, Entity, Entity->Physics.Delta, VisibleRegion);
+          MoveEntityInWorld(World, Entity, Entity->Physics.Delta, VisibleRegion);
         }
 
       } break;
@@ -1291,7 +1298,7 @@ SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension Vis
       case EntityType_Default:
       {
         /* PhysicsUpdate(&Entity->Physics, dt); */
-        /* UpdateEntityP(World, Entity, Entity->Physics.Delta, VisibleRegion); */
+        /* MoveEntityInWorld(World, Entity, Entity->Physics.Delta, VisibleRegion); */
       } break;
 
       /* default: { InvalidCodePath(); } break; */
@@ -1425,10 +1432,25 @@ GetSimSpaceCenterP(entity *E, v3 SimSpaceP)
 }
 
 link_internal v3
+GetSimSpaceBaseP(entity *E, v3 SimSpaceP)
+{
+  v3 Result = SimSpaceP + E->CollisionVolumeRadius.xy;
+  return Result;
+}
+
+
+/* link_internal v3 */
+/* GetSimSpaceP(world *World, canonical_position P) */
+/* { */
+/*   world_position Basis = P.WorldP - World->Center; */
+/*   v3 Result = V3(Basis*World->ChunkDim) + P.Offset; */
+/*   return Reuslt; */
+/* } */
+
+link_internal v3
 GetSimSpaceP(world *World, entity *Entity)
 {
-  world_position Basis = Entity->P.WorldP - World->Center;
-  v3 Result = V3(Basis*World->ChunkDim) + Entity->P.Offset;
+  v3 Result = GetSimSpaceP(World, Entity->P);
   return Result;
 }
 

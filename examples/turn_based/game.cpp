@@ -390,6 +390,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
     canonical_position PickCP = Canonical_Position(Pick.VoxelRelP, ClosestChunk->WorldP);
 
+    v3 CursorSimP = GetSimSpaceP(World, PickCP);
+
     untextured_3d_geometry_buffer OutlineAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
     v3 Offset = V3(0.001f);
     DEBUG_DrawAABB( &OutlineAABB,
@@ -450,27 +452,55 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
       case PlayerAction_Move:
       {
-        standing_spot_buffer PlayerSpots = GetStandingSpotsWithinRadius(World, Player->P, StandingSpotSearchThresh, GetTranArena());
+        canonical_position PlayerBaseP = Player->P;
+        PlayerBaseP.Offset += Player->CollisionVolumeRadius.xy;
+        PlayerBaseP = Canonicalize(World, PlayerBaseP);
+
+        standing_spot_buffer PlayerSpots = GetStandingSpotsWithinRadius(World, PlayerBaseP, StandingSpotSearchThresh, GetTranArena());
         for (u32 SpotIndex = 0; SpotIndex < PlayerSpots.Count; ++SpotIndex)
         {
           standing_spot *Spot = PlayerSpots.Start + SpotIndex;
           v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
-          DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), GREEN, DEFAULT_LINE_THICKNESS*3.f);
+
+          v3 SpotSimP = GetSimSpaceP(World, Spot->P);
+          aabb SpotSimAABB = AABBMinDim(SpotSimP, Global_StandingSpotDim);
+          if (IsInside(SpotSimAABB, CursorSimP))
+          {
+            DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), TEAL, DEFAULT_LINE_THICKNESS*3.f);
+
+            if (Input->LMB.Clicked)
+            {
+              DidPlayerAction = True;
+
+              v3 PlayerBaseSimP = GetSimSpaceP(World, PlayerBaseP);
+              v3 SpotTopSimP = SpotSimP + V3(Global_StandingSpotHalfDim.xy, Global_StandingSpotDim.z);
+              v3 UpdateV = SpotTopSimP - PlayerBaseSimP;
+              /* Player->P = MoveToStandingSpot(World, Spot->P); */
+              UpdateEntityP(World, Player, UpdateV);
+            }
+          }
+          else
+          {
+            DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), GREEN, DEFAULT_LINE_THICKNESS*3.f);
+          }
+
         }
 
-
+#if 0
         for (u32 StandingSpotIndex = 0;
                  StandingSpotIndex < AtElements(&ClosestChunk->StandingSpots);
                ++StandingSpotIndex)
         {
           v3 SpotOffset = V3(ClosestChunk->StandingSpots.Start[StandingSpotIndex]);
           standing_spot Spot = StandingSpot(SpotOffset, ClosestChunk->WorldP);
+          v3 RenderP = GetRenderP(World->ChunkDim, MinP+SpotOffset, Camera);
+          DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), PINK, DEFAULT_LINE_THICKNESS*4.f);
 
           aabb SpotRect = AABBMinMax(SpotOffset, SpotOffset+Global_StandingSpotDim);
           if (IsInside(SpotRect, Truncate(Pick.VoxelRelP)))
           {
             /* untextured_3d_geometry_buffer SpotAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB); */
-            v3 RenderP = GetRenderP(World->ChunkDim, MinP+SpotOffset, Camera);
+            /* v3 RenderP = GetRenderP(World->ChunkDim, MinP+SpotOffset, Camera); */
             DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_LINE_THICKNESS*3.f);
             if (Input->LMB.Clicked)
             {
@@ -484,6 +514,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
             }
           }
         }
+#endif
       } break;
 
       case PlayerAction_Charge:
@@ -654,7 +685,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->Player = GetFreeEntity(EntityTable);
   SpawnPlayer(Plat, World, GameState->Models + PlayerModelIndex, GameState->Player, PlayerSpawnP, &GameState->Entropy);
 
-  u32 EnemyCount = 32;
+  u32 EnemyCount = 8;
   v3i HalfVisibleRegion = g_VisibleRegion / 2;
   HalfVisibleRegion.z = 0;
   for (u32 EnemyIndex = 0; EnemyIndex < EnemyCount; ++EnemyIndex)

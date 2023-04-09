@@ -3254,7 +3254,7 @@ BufferWorld( platform* Plat,
           }
 #endif
 
-#if 0
+#if 1
           umm StandingSpotCount = AtElements(&Chunk->StandingSpots);
           /* DebugLine("drawing (%u) standing spots", StandingSpotCount); */
           for (u32 SpotIndex = 0; SpotIndex < StandingSpotCount; ++SpotIndex)
@@ -3708,8 +3708,8 @@ DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 Ch
 link_internal standing_spot_buffer
 GetStandingSpotsWithinRadius(world *World, canonical_position P, r32 Radius, memory_arena *TempMemory)
 {
-  auto MinWorldP = P.WorldP -1;
-  auto MaxWorldP = P.WorldP +2;
+  auto MinWorldP = P.WorldP - 1;
+  auto MaxWorldP = P.WorldP + 1;
 
   v3 SimSpaceP = GetSimSpaceP(World, P);
 
@@ -3717,11 +3717,11 @@ GetStandingSpotsWithinRadius(world *World, canonical_position P, r32 Radius, mem
 
   standing_spot_stream StandingSpotStream = {};
 
-  for (s32 zWorld = MinWorldP.z; zWorld < MaxWorldP.z; ++zWorld)
+  for (s32 zWorld = MinWorldP.z; zWorld <= MaxWorldP.z; ++zWorld)
   {
-    for (s32 yWorld = MinWorldP.y; yWorld < MaxWorldP.y; ++yWorld)
+    for (s32 yWorld = MinWorldP.y; yWorld <= MaxWorldP.y; ++yWorld)
     {
-      for (s32 xWorld = MinWorldP.x; xWorld < MaxWorldP.x; ++xWorld)
+      for (s32 xWorld = MinWorldP.x; xWorld <= MaxWorldP.x; ++xWorld)
       {
         world_chunk *Chunk = GetWorldChunkFromHashtable(World, {{xWorld, yWorld, zWorld}});
         if (Chunk)
@@ -3730,8 +3730,11 @@ GetStandingSpotsWithinRadius(world *World, canonical_position P, r32 Radius, mem
           {
             v3i StandingSpot = Chunk->StandingSpots.Start[StandingSpotIndex];
             v3 SimSpaceStandingSpot = GetSimSpaceP(World, Canonical_Position(StandingSpot, Chunk->WorldP));
+            aabb StandingSpotAABB = AABBMinDim(SimSpaceStandingSpot, Global_StandingSpotDim);
 
-            if ( Abs(LengthSq(SimSpaceP-SimSpaceStandingSpot)) < Square(Radius) )
+            sphere Query = Sphere(SimSpaceP, Radius);
+            /* if ( Abs(LengthSq(SimSpaceP-SimSpaceStandingSpot)) < Square(Radius) ) */
+            if (Intersect(&StandingSpotAABB, &Query))
             {
               standing_spot Spot = { .P = Canonical_Position(StandingSpot, Chunk->WorldP), .CanStand = True };
               Push(&StandingSpotStream, Spot );
