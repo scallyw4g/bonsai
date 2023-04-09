@@ -365,15 +365,14 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   entity *Enemy = GameState->Enemy;
 
-  f32 StandingSpotSearchThresh = 15.f;
 
-  standing_spot_buffer EnemySpots = GetStandingSpotsWithinRadius(World, Enemy->P, StandingSpotSearchThresh, GetTranArena());
-  for (u32 SpotIndex = 0; SpotIndex < EnemySpots.Count; ++SpotIndex)
-  {
-    standing_spot *Spot = EnemySpots.Start + SpotIndex;
-    v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
-    DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_LINE_THICKNESS*3.f);
-  }
+  /* standing_spot_buffer EnemySpots = GetStandingSpotsWithinRadius(World, Enemy->P, EnemyMoveSpeed, GetTranArena()); */
+  /* for (u32 SpotIndex = 0; SpotIndex < EnemySpots.Count; ++SpotIndex) */
+  /* { */
+  /*   standing_spot *Spot = EnemySpots.Start + SpotIndex; */
+  /*   v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera); */
+  /*   DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_LINE_THICKNESS*3.f); */
+  /* } */
 
 
 
@@ -456,7 +455,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         PlayerBaseP.Offset += Player->CollisionVolumeRadius.xy;
         PlayerBaseP = Canonicalize(World, PlayerBaseP);
 
-        standing_spot_buffer PlayerSpots = GetStandingSpotsWithinRadius(World, PlayerBaseP, StandingSpotSearchThresh, GetTranArena());
+        f32 PlayerMoveSpeed = 13.f;
+        standing_spot_buffer PlayerSpots = GetStandingSpotsWithinRadius(World, PlayerBaseP, PlayerMoveSpeed, GetTranArena());
         for (u32 SpotIndex = 0; SpotIndex < PlayerSpots.Count; ++SpotIndex)
         {
           standing_spot *Spot = PlayerSpots.Start + SpotIndex;
@@ -474,8 +474,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
               v3 PlayerBaseSimP = GetSimSpaceP(World, PlayerBaseP);
               v3 SpotTopSimP = SpotSimP + V3(Global_StandingSpotHalfDim.xy, Global_StandingSpotDim.z);
-              v3 UpdateV = SpotTopSimP - PlayerBaseSimP;
-              /* Player->P = MoveToStandingSpot(World, Spot->P); */
+              v3 UpdateV = SpotTopSimP - PlayerBaseSimP + V3(0,0,2);
               UpdateEntityP(World, Player, UpdateV);
             }
           }
@@ -483,38 +482,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           {
             DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), GREEN, DEFAULT_LINE_THICKNESS*3.f);
           }
-
         }
 
-#if 0
-        for (u32 StandingSpotIndex = 0;
-                 StandingSpotIndex < AtElements(&ClosestChunk->StandingSpots);
-               ++StandingSpotIndex)
-        {
-          v3 SpotOffset = V3(ClosestChunk->StandingSpots.Start[StandingSpotIndex]);
-          standing_spot Spot = StandingSpot(SpotOffset, ClosestChunk->WorldP);
-          v3 RenderP = GetRenderP(World->ChunkDim, MinP+SpotOffset, Camera);
-          DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), PINK, DEFAULT_LINE_THICKNESS*4.f);
-
-          aabb SpotRect = AABBMinMax(SpotOffset, SpotOffset+Global_StandingSpotDim);
-          if (IsInside(SpotRect, Truncate(Pick.VoxelRelP)))
-          {
-            /* untextured_3d_geometry_buffer SpotAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB); */
-            /* v3 RenderP = GetRenderP(World->ChunkDim, MinP+SpotOffset, Camera); */
-            DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_LINE_THICKNESS*3.f);
-            if (Input->LMB.Clicked)
-            {
-              v3 PlayerSimP = GetSimSpaceP(World, Player->P);
-              v3 SpotSimP = GetSimSpaceP(World, Spot.P);
-              if (PointsAreWithinDistance(PlayerSimP, SpotSimP, StandingSpotSearchThresh))
-              {
-                DidPlayerAction = True;
-                Player->P = MoveToStandingSpot(World, Canonical_Position(SpotOffset, ClosestChunk->WorldP) );
-              }
-            }
-          }
-        }
-#endif
       } break;
 
       case PlayerAction_Charge:
@@ -575,26 +544,42 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         case 2:
         {
           DebugLine("move");
-          /* world_chunk *EnemyChunk = GetWorldChunk(World, ); */
-          if (EnemySpots.Count)
-          {
-            for (;;)
-            {
-              u32 SpotChoice = RandomU32(&Global_GameEntropy) % EnemySpots.Count;
-              canonical_position ChoiceP = EnemySpots.Start[SpotChoice].P;
-              v3 ChoiceSimP = GetSimSpaceP(World, ChoiceP);
-              v3 EnemySimP = GetSimSpaceP(World, Enemy->P);
+          v3 PlayerBaseP = GetSimSpaceBaseP(World, Player);
+          f32 ShortestDistanceToPlayerSq = f32_MAX;
+          u32 ClosestTileIndex = u32_MAX;
 
-              if (PointsAreWithinDistance(ChoiceSimP, EnemySimP, 5.f))
-              {
-                if (EnemySpots.Count == 1) break;
-              }
-              else
-              {
-                Enemy->P = MoveToStandingSpot(World, ChoiceP); break;
-              }
+          canonical_position EntityBaseP = Enemy->P;
+          EntityBaseP.Offset += Enemy->CollisionVolumeRadius.xy;
+          Canonicalize(World, &EntityBaseP);
+
+          f32 EnemyMoveSpeed = 8.f;
+          standing_spot_buffer Spots = GetStandingSpotsWithinRadius(World, EntityBaseP, EnemyMoveSpeed, GetTranArena());
+          for (u32 SpotIndex = 0; SpotIndex < Spots.Count; ++SpotIndex)
+          {
+            standing_spot *Spot = Spots.Start + SpotIndex;
+            v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
+            DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_LINE_THICKNESS*3.f);
+
+            v3 SpotSimP = GetSimSpaceP(World, Spot->P);
+            r32 ThisDist = DistanceSq(SpotSimP, PlayerBaseP);
+            if (ThisDist < ShortestDistanceToPlayerSq)
+            {
+              ShortestDistanceToPlayerSq = ThisDist;
+              ClosestTileIndex = SpotIndex;
             }
           }
+
+          if (ClosestTileIndex < Spots.Count)
+          {
+            standing_spot *Spot = Spots.Start + ClosestTileIndex;
+
+            v3 EnemyBaseSimP = GetSimSpaceP(World, EntityBaseP);
+            v3 SpotSimP = GetSimSpaceP(World, Spot->P);
+            v3 SpotTopSimP = SpotSimP + V3(Global_StandingSpotHalfDim.xy, Global_StandingSpotDim.z);
+            v3 UpdateV = SpotTopSimP - EnemyBaseSimP + V3(0,0,2);
+            UpdateEntityP(World, Enemy, UpdateV);
+          }
+
         } break;
 
         case 3:

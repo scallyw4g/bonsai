@@ -1438,19 +1438,18 @@ GetSimSpaceBaseP(entity *E, v3 SimSpaceP)
   return Result;
 }
 
-
-/* link_internal v3 */
-/* GetSimSpaceP(world *World, canonical_position P) */
-/* { */
-/*   world_position Basis = P.WorldP - World->Center; */
-/*   v3 Result = V3(Basis*World->ChunkDim) + P.Offset; */
-/*   return Reuslt; */
-/* } */
-
 link_internal v3
 GetSimSpaceP(world *World, entity *Entity)
 {
   v3 Result = GetSimSpaceP(World, Entity->P);
+  return Result;
+}
+
+link_internal v3
+GetSimSpaceBaseP(world *World, entity *E)
+{
+  v3 SimSpaceP = GetSimSpaceP(World, E);
+  v3 Result = GetSimSpaceBaseP(E, SimSpaceP);
   return Result;
 }
 
