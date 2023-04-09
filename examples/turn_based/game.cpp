@@ -379,7 +379,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   picked_voxel Pick = PickVoxel(Resources);
 
   local_persist player_action SelectedAction = {};
-  local_persist b32 PlayerCharged = {};
+  local_persist u32 PlayerChargeLevel = {};
 
   if (Pick.PickedChunk.tChunk != f32_MAX)
   {
@@ -488,23 +488,17 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
       case PlayerAction_Charge:
       {
-        if (PlayerCharged)
+        if (Input->LMB.Clicked)
         {
-        }
-        else
-        {
-          if (Input->LMB.Clicked)
-          {
-            PlayerCharged = True;
-            SpawnFire(Player, &GameState->Entropy, Global_EntityFireballOffset);
-            DidPlayerAction = True;
-          }
+          ++PlayerChargeLevel;
+          SpawnFire(Player, &GameState->Entropy, Global_EntityFireballOffset, PlayerChargeLevel);
+          DidPlayerAction = True;
         }
       } break;
 
       case PlayerAction_Fire:
       {
-        if (PlayerCharged)
+        if (PlayerChargeLevel)
         {
           OutlineAABB.At = 0;
           DEBUG_DrawAABB( &OutlineAABB,
@@ -513,10 +507,10 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
                           RED, 0.15f);
           if (Input->LMB.Clicked)
           {
-            PlayerCharged = False;
+            DoSplotion(Resources, &Pick, PickCP, 2.f + r32(PlayerChargeLevel)*2.f, GetTranArena());
+            PlayerChargeLevel = 0.f;
             Deactivate(Player->Emitter);
             DidPlayerAction = True;
-            DoSplotion(Resources, &Pick, PickCP, 5.f, GetTranArena());
           }
         }
       } break;

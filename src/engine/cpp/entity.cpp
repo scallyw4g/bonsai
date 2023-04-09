@@ -614,7 +614,7 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius)
 // FIXME(Jesse): Remove the f32_MAX EmissionLifespan below
 
 void
-SpawnFire(entity *Entity, random_series *Entropy, v3 Offset)
+SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim)
 {
   particle_system *System = Entity->Emitter;
 
@@ -638,7 +638,7 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset)
   /* System->Colors[5] = (u8)RandomU32(Entropy); */
 
 
-  System->SpawnRegion = aabb(Offset, V3(0.16f));
+  System->SpawnRegion = aabb(Offset, V3(0.16f)*Dim);
 
   System->EmissionLifespan = PARTICLE_SYSTEM_EMIT_FOREVER;
   System->LifespanMod = 0.07f;
@@ -649,16 +649,16 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset)
   /* System->Physics.Drag = V3(2.2f); */
   /* System->Physics.Mass = 6.0f; */
 
-  r32 xyTurb = 4.f;
+  r32 xyTurb = 4.f*Dim;
   /* r32 xyTurb = 2.5f; */
   /* r32 xyTurb = 0.0f; */
-  System->ParticleTurbMin = V3(-xyTurb, -xyTurb, 20.0f);
-  System->ParticleTurbMax = V3(xyTurb, xyTurb, 35.0f);
+  System->ParticleTurbMin = V3(-xyTurb, -xyTurb, 20.0f*Dim);
+  System->ParticleTurbMax = V3(xyTurb, xyTurb, 35.0f*Dim);
 
   /* System->Physics.Velocity = V3(0.0f, 0.0f, 9.0f); */
 
-  System->ParticleStartingDim = V3(0.9f);
-  System->ParticleEndingDim = 0.1f;
+  System->ParticleStartingDim = V3(0.9f)*Dim;
+  System->ParticleEndingDim = 0.1f*Dim;
 
   System->SystemMovementCoefficient = 0.1f;
 
