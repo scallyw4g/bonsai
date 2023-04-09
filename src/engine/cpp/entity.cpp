@@ -81,8 +81,10 @@ GetCollision( world *World, canonical_position TestP, v3 CollisionDim, chunk_dim
   return Collision;
 }
 
+link_internal aabb GetSimSpaceAABB(world *World, entity *Entity);
+
 inline b32
-GetCollision(entity *First, entity *Second, chunk_dimension WorldChunkDim)
+GetCollision(world *World, entity *First, entity *Second)
 {
   TIMED_FUNCTION();
   if (Destroyed(First) || Destroyed(Second))
@@ -91,15 +93,15 @@ GetCollision(entity *First, entity *Second, chunk_dimension WorldChunkDim)
   if (Unspawned(First) || Unspawned(Second))
     return False;
 
-  aabb FirstAABB = GetAABB(First, WorldChunkDim);
-  aabb SecondAABB = GetAABB(Second, WorldChunkDim);
+  aabb FirstAABB = GetSimSpaceAABB(World, First);
+  aabb SecondAABB = GetSimSpaceAABB(World, Second);
 
   b32 Result = Intersect(&FirstAABB, &SecondAABB);
   return Result;
 }
 
 inline b32
-GetCollision(entity **Entities, entity *Entity, chunk_dimension WorldChunkDim)
+GetCollision(world *World, entity **Entities, entity *Entity)
 {
   b32 Result = False;
 
@@ -112,7 +114,7 @@ GetCollision(entity **Entities, entity *Entity, chunk_dimension WorldChunkDim)
     if (TestEntity == Entity)
       continue;
 
-    Result = GetCollision(Entity, TestEntity, WorldChunkDim);
+    Result = GetCollision(World, Entity, TestEntity);
   }
 
   return Result;
@@ -537,12 +539,12 @@ SpawnSplotionBitty(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius
 
   System->SpawnRegion = aabb(Offset, V3(Radius) );
 
-  System->EmissionLifespan = 3.0f;
+  System->EmissionLifespan = 1.0f;
   /* System->EmissionLifespan = 0.23f; */
   System->LifespanMod = 0.25f;
   System->ParticleLifespan = 0.25f;
-  /* System->ParticlesPerSecond = 20.0f; */
-  System->ParticlesPerSecond = 0.0f;
+  System->ParticlesPerSecond = 20.0f;
+  /* System->ParticlesPerSecond = 0.0f; */
 
   System->ParticleTurbMin = V3(0.f, 0.f, 0.f);
   System->ParticleTurbMax = V3(0.f, 0.f, .1f);
@@ -897,6 +899,35 @@ ProcessCollisionRule(
   return;
 }
 
+
+link_internal collision_event
+DoEntityCollisions(world *World, entity** EntityTable, entity *Entity)
+{
+  TIMED_FUNCTION();
+
+  Assert(Spawned(Entity));
+
+  collision_event Result = {};
+  for (s32 EntityIndex = 0;
+      EntityIndex < TOTAL_ENTITY_COUNT;
+      ++EntityIndex)
+  {
+    entity *TestEntity = EntityTable[EntityIndex];
+    if (Entity != TestEntity)
+    {
+      if (GetCollision(World, Entity, TestEntity))
+      {
+        // TODO(Jesse): Should we actually test the overlapping area here?  Probably.
+        Result.Count ++;
+      }
+    }
+  }
+
+  return Result;
+}
+
+#if 0
+// Defunct, but I'm keeping it for posterity in case it's relevant
 void
 DoEntityCollisions(entity** EntityTable, entity *Entity, event_queue* EventQueue, chunk_dimension WorldChunkDim)
 {
@@ -921,6 +952,7 @@ DoEntityCollisions(entity** EntityTable, entity *Entity, event_queue* EventQueue
 
   return;
 }
+#endif
 
 v3
 ClampBetween( r32 Min, v3 Gross, r32 Max )

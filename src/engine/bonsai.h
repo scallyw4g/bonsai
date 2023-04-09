@@ -858,6 +858,7 @@ GetAbsoluteP( canonical_position CP, chunk_dimension WorldChunkDim)
   return Result;
 }
 
+#if 0
 inline aabb
 GetAABB(entity *Entity, chunk_dimension WorldChunkDim)
 {
@@ -867,6 +868,7 @@ GetAABB(entity *Entity, chunk_dimension WorldChunkDim)
   aabb Result(Center, Radius);
   return Result;
 }
+#endif
 
 inline b32
 Contains( voxel_position Dim, voxel_position P )

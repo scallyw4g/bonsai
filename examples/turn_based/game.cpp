@@ -359,7 +359,6 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
     /* u32 EnemyChoice = RandomU32(&Global_GameEntropy) % 4; */
     u32 EnemyChoice = 0;
 
-    local_persist u32 EnemyPower = 0;
     switch(EnemyChoice)
     {
       case 0:
@@ -371,12 +370,14 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
         f32 ShortestDistanceToPlayerSq = f32_MAX;
         u32 ClosestTileIndex = u32_MAX;
 
-        canonical_position EntityBaseP = Enemy->P;
-        EntityBaseP.Offset += Enemy->CollisionVolumeRadius.xy;
-        Canonicalize(World, &EntityBaseP);
+        canonical_position EnemyOriginalP = Enemy->P;
+
+        canonical_position EnemyBaseP = Enemy->P;
+        EnemyBaseP.Offset += Enemy->CollisionVolumeRadius.xy;
+        Canonicalize(World, &EnemyBaseP);
 
         f32 EnemyMoveSpeed = 8.f;
-        standing_spot_buffer Spots = GetStandingSpotsWithinRadius(World, EntityBaseP, EnemyMoveSpeed, GetTranArena());
+        standing_spot_buffer Spots = GetStandingSpotsWithinRadius(World, EnemyBaseP, EnemyMoveSpeed, GetTranArena());
         for (u32 SpotIndex = 0; SpotIndex < Spots.Count; ++SpotIndex)
         {
           standing_spot *Spot = Spots.Start + SpotIndex;
@@ -396,27 +397,21 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
         {
           standing_spot *Spot = Spots.Start + ClosestTileIndex;
 
-          v3 EnemyBaseSimP = GetSimSpaceP(World, EntityBaseP);
+          v3 EnemyBaseSimP = GetSimSpaceP(World, EnemyBaseP);
           v3 SpotSimP = GetSimSpaceP(World, Spot->P);
           v3 SpotTopSimP = SpotSimP + V3(Global_StandingSpotHalfDim.xy, Global_StandingSpotDim.z);
-          v3 UpdateV = SpotTopSimP - EnemyBaseSimP + V3(0,0,2);
+          v3 UpdateV = SpotTopSimP - EnemyBaseSimP + V3(0,0,3);
           UpdateEntityP(World, Enemy, UpdateV);
+
+          // Disallow enemies moving onto other entities
+          collision_event EntityCollision = DoEntityCollisions(World, EntityTable, Enemy);
+          if (EntityCollision.Count) { Enemy->P = EnemyOriginalP; }
         }
 
       } break;
 
       case 3:
       {
-        if (EnemyPower)
-        {
-          DebugLine("shoot");
-          EnemyPower=0;
-        }
-        else
-        {
-          DebugLine("EnemyPower");
-          EnemyPower++;
-        }
       } break;
 
 
@@ -684,7 +679,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
         (s32)RandomBetween(0, &GameState->Entropy, (u32)g_VisibleRegion.y),
         1);
 
-    u32 EnemyModelIndex = RandomBetween(ModelIndex_FirstEnemyModel, &GameState->Entropy, ModelIndex_LastEnemyModel+1);
+    u32 EnemyModelIndex = RandomBetween(ModelIndex_FirstEnemyModel, &GameState->Entropy, ModelIndex_Enemy_Skeleton_AxeArmor+1);
     Assert(EnemyModelIndex >= ModelIndex_FirstEnemyModel);
     Assert(EnemyModelIndex <= ModelIndex_LastEnemyModel);
 
