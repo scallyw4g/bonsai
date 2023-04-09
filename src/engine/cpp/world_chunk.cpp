@@ -2855,6 +2855,11 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 {
   TIMED_FUNCTION();
 
+  // @runtime_assert_chunk_aprons_are_valid
+  Assert(Global_ChunkApronDim.x == Global_ChunkApronMinDim.x + Global_ChunkApronMaxDim.x);
+  Assert(Global_ChunkApronDim.y == Global_ChunkApronMinDim.y + Global_ChunkApronMaxDim.y);
+  Assert(Global_ChunkApronDim.z == Global_ChunkApronMinDim.z + Global_ChunkApronMaxDim.z);
+
   Assert(!ChunkIsGarbage(DestChunk));
 
   ClearChunkVoxels(DestChunk->Voxels, DestChunk->Dim);
@@ -2863,14 +2868,13 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
   untextured_3d_geometry_buffer* LodMesh = 0;
   untextured_3d_geometry_buffer* DebugMesh = 0;
 
-  chunk_dimension Apron = Global_ChunkApronDim;
-  chunk_dimension SynChunkDim = WorldChunkDim + (Apron);
+  chunk_dimension SynChunkDim = WorldChunkDim + Global_ChunkApronDim;
   chunk_dimension SynChunkP = DestChunk->WorldP;
 
   world_chunk *SyntheticChunk = AllocateWorldChunk(Thread->TempMemory, SynChunkP, SynChunkDim );
 
   u32 SyntheticChunkSum = InitChunkPerlinPlane( Thread->PerlinNoise,
-                                                SyntheticChunk, SynChunkDim, {{1,1,2}},
+                                                SyntheticChunk, SynChunkDim, Global_ChunkApronMinDim,
                                                 GRASS_GREEN, Frequency, Amplititude, zMin,
                                                 WorldChunkDim );
 
@@ -2888,7 +2892,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
   MarkBoundaryVoxels_NoExteriorFaces(SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
 
-  CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, {{1,1,2}});
+  CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Global_ChunkApronMinDim);
 
   FullBarrier;
 
@@ -2900,7 +2904,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
   if ( DestChunk->FilledCount > 0) // && DestChunk->FilledCount < (u32)Volume(WorldChunkDim))
   {
     PrimaryMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-    /* BuildWorldChunkMesh(SyntheticChunk->Voxels, SynChunkDim, Apron, Apron+WorldChunkDim, PrimaryMesh); */
+    /* BuildWorldChunkMesh(SyntheticChunk->Voxels, SynChunkDim, Global_ChunkApronDim, Global_ChunkApronDim+WorldChunkDim, PrimaryMesh); */
     BuildWorldChunkMeshFromMarkedVoxels_Greedy(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim, PrimaryMesh, Thread->TempMemory);
   }
 
@@ -2909,7 +2913,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
   /* voxel_position_stream StandingSpots = {}; */
 #if 1
   DebugMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-  ComputeStandingSpots( SynChunkDim, SyntheticChunk, {{1,1,0}}, {{0,0,2}}, Global_StandingSpotDim,
+  ComputeStandingSpots( SynChunkDim, SyntheticChunk, {{1,1,0}}, {{0,0,1}}, Global_StandingSpotDim,
                         WorldChunkDim, DebugMesh, &DestChunk->StandingSpots,
                         Thread->TempMemory);
 #endif
@@ -3295,8 +3299,10 @@ QueueWorldUpdateForRegion(platform *Plat, world *World, picked_voxel *Location, 
 
   canonical_position P = Canonical_Position(Location);
 
-  auto MinPCoarse = Canonicalize(World, P-V3(Radius+1.f) - V3(Global_HalfChunkApronDim));
-  auto MaxPCoarse = Canonicalize(World, P+V3(Radius+2.f) + V3(Global_HalfChunkApronDim));
+  auto MinPCoarse = Canonicalize(World, P-V3(Radius+1.f) - V3(Global_ChunkApronMinDim));
+
+  // TODO(Jesse): I think because we're eventually comparing MaxP with <= the +2 here can be a +1 ..?
+  auto MaxPCoarse = Canonicalize(World, P+V3(Radius+2.f) + V3(Global_ChunkApronMaxDim));
 
   // These value align the min/max positions to StandingSpot boundaries in global space
   auto MinPFixup = V3i(MinPCoarse.Offset) % V3i(Global_StandingSpotDim.xy, 1);

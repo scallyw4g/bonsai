@@ -309,7 +309,16 @@ global_variable v3i Global_StandingSpotDim = V3i(8,8,3);
 global_variable v3 Global_StandingSpotHalfDim = Global_StandingSpotDim/2.f;
 
 global_variable v3i Global_ChunkApronDim = V3i(2,2,4);
-global_variable v3i Global_HalfChunkApronDim = V3i(1,1,2);
+global_variable v3i Global_ChunkApronMinDim = V3i(1,1,1);
+global_variable v3i Global_ChunkApronMaxDim = V3i(1,1,3);
+
+// NOTE(Jesse): Unfortunately C++ is too braindead to do this at compile time
+// (even if you mark the variables as const). I also tried all kinds of
+// ridiculous const-casting trickery to no avail, so I'm doing it at runtime
+// @runtime_assert_chunk_aprons_are_valid
+/* CAssert((const int)Global_ChunkApronDim.x == (const int)((const int)Global_ChunkApronMinDim.x + (const int)Global_ChunkApronMaxDim.x)); */
+/* CAssert(Global_ChunkApronDim.y == Global_ChunkApronMinDim.y + Global_ChunkApronMaxDim.y); */
+/* CAssert(Global_ChunkApronDim.z == Global_ChunkApronMinDim.z + Global_ChunkApronMaxDim.z); */
 
 struct mesh_freelist;
 

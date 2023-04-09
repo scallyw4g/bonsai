@@ -178,7 +178,7 @@ ReadXYZIChunk(FILE *File, int* byteCounter)
 }
 
 vox_data
-LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepath, chunk_dimension HalfApron = {})
+LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepath, chunk_dimension HalfApronMin = {}, chunk_dimension HalfApronMax = {})
 {
   vox_data Result = {};
   chunk_dimension ReportedDim = {};
@@ -288,7 +288,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
           chunk_dimension Max = Chunk_Dimension(maxX+IndexToPosition, maxY+IndexToPosition, maxZ+IndexToPosition);
           chunk_dimension Min = Chunk_Dimension(minX, minY, minZ);
 
-          chunk_dimension ModelDim = Max - Min + HalfApron*2;
+          chunk_dimension ModelDim = Max - Min + HalfApronMin + HalfApronMax;
 
           Result.ChunkData = AllocateChunkData(WorldStorage, ModelDim);
           Result.ChunkData->Dim = ModelDim;
@@ -298,7 +298,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
                ++VoxelCacheIndex)
           {
             boundary_voxel *Voxel = &LocalVoxelCache[VoxelCacheIndex];
-            Voxel->Offset = Voxel->Offset - Min + HalfApron;
+            Voxel->Offset = Voxel->Offset - Min + HalfApronMin;
             s32 Index = GetIndex(Voxel->Offset, ModelDim);
             Result.ChunkData->Voxels[Index] = Voxel->V;
           }

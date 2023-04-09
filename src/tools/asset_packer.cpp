@@ -36,7 +36,7 @@ s32 main(s32 ArgCount, const char **Args)
 
 
   /* vox_data Vox = LoadVoxData(Memory, &Heap, "../voxel-model/vox/monument/monu3.vox", Global_HalfChunkApronDim); */
-  vox_data Vox = LoadVoxData(Memory, &Heap, InputVox, Global_HalfChunkApronDim);
+  vox_data Vox = LoadVoxData(Memory, &Heap, InputVox, Global_ChunkApronMinDim, Global_ChunkApronMaxDim);
   /* vox_data Vox = LoadVoxData(Memory, &Heap, "models/AncientTemple.vox"); */
 
   chunk_dimension ModelDim = Vox.ChunkData->Dim;
@@ -106,7 +106,7 @@ s32 main(s32 ArgCount, const char **Args)
     v4 *Palette = Vox.Palette ? Vox.Palette : DefaultPalette;
     if (Vox.Palette == 0) { Warn("No Palette found, using default"); }
 
-    chunk_dimension SrcChunkOffset = Global_HalfChunkApronDim + (Chunk->WorldP * WorldChunkDim);
+    chunk_dimension SrcChunkOffset = Global_ChunkApronMinDim + (Chunk->WorldP * WorldChunkDim);
 
     world_chunk SrcChunk = {
       .Flags = Vox.ChunkData->Flags,
@@ -122,7 +122,7 @@ s32 main(s32 ArgCount, const char **Args)
     };
 
     /* auto Offset = Max( SrcChunkOffset-Global_HalfChunkApronDim, {}); */
-    auto Offset = SrcChunkOffset-Global_HalfChunkApronDim;
+    auto Offset = SrcChunkOffset-Global_ChunkApronMinDim;
     CopyChunkOffset(&SrcChunk, SrcChunk.Dim, Chunk, FatChunkDim, Offset);
 
 /*     Assert(Length(SrcChunk.Dim) > 0); */
