@@ -349,12 +349,88 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
 #endif
 }
 
+void
+EnemyUpdate(engine_resources *Engine, entity *Enemy)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  /* if (GameState->DidPlayerAction) */
+  {
+    /* u32 EnemyChoice = RandomU32(&Global_GameEntropy) % 4; */
+    u32 EnemyChoice = 0;
+
+    local_persist u32 EnemyPower = 0;
+    switch(EnemyChoice)
+    {
+      case 0:
+      case 1:
+      case 2:
+      {
+        DebugLine("move");
+        v3 PlayerBaseP = GetSimSpaceBaseP(World, GameState->Player);
+        f32 ShortestDistanceToPlayerSq = f32_MAX;
+        u32 ClosestTileIndex = u32_MAX;
+
+        canonical_position EntityBaseP = Enemy->P;
+        EntityBaseP.Offset += Enemy->CollisionVolumeRadius.xy;
+        Canonicalize(World, &EntityBaseP);
+
+        f32 EnemyMoveSpeed = 8.f;
+        standing_spot_buffer Spots = GetStandingSpotsWithinRadius(World, EntityBaseP, EnemyMoveSpeed, GetTranArena());
+        for (u32 SpotIndex = 0; SpotIndex < Spots.Count; ++SpotIndex)
+        {
+          standing_spot *Spot = Spots.Start + SpotIndex;
+          v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
+          DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_LINE_THICKNESS*3.f);
+
+          v3 SpotSimP = GetSimSpaceP(World, Spot->P);
+          r32 ThisDist = DistanceSq(SpotSimP, PlayerBaseP);
+          if (ThisDist < ShortestDistanceToPlayerSq)
+          {
+            ShortestDistanceToPlayerSq = ThisDist;
+            ClosestTileIndex = SpotIndex;
+          }
+        }
+
+        if (GameState->DidPlayerAction && ClosestTileIndex < Spots.Count)
+        {
+          standing_spot *Spot = Spots.Start + ClosestTileIndex;
+
+          v3 EnemyBaseSimP = GetSimSpaceP(World, EntityBaseP);
+          v3 SpotSimP = GetSimSpaceP(World, Spot->P);
+          v3 SpotTopSimP = SpotSimP + V3(Global_StandingSpotHalfDim.xy, Global_StandingSpotDim.z);
+          v3 UpdateV = SpotTopSimP - EnemyBaseSimP + V3(0,0,2);
+          UpdateEntityP(World, Enemy, UpdateV);
+        }
+
+      } break;
+
+      case 3:
+      {
+        if (EnemyPower)
+        {
+          DebugLine("shoot");
+          EnemyPower=0;
+        }
+        else
+        {
+          DebugLine("EnemyPower");
+          EnemyPower++;
+        }
+      } break;
+
+
+      InvalidDefaultCase;
+    }
+  }
+}
+
 BONSAI_API_MAIN_THREAD_CALLBACK()
 {
   Assert(ThreadLocal_ThreadIndex == 0);
 
   TIMED_FUNCTION();
-  UNPACK_ENGINE_RESOURCES();
+  UNPACK_ENGINE_RESOURCES(Resources);
 
   entity *Player = GameState->Player;
 
@@ -363,8 +439,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   /* RotP.y = Cos(r32(Plat->GameTime)); */
   /* Player->Rotation = RotatePoint(V3(0.f, -1.f, 0.f), RotP); */
 
-  entity *Enemy = GameState->Enemy;
-
+  /* entity *Enemy = GameState->Enemy; */
 
   /* standing_spot_buffer EnemySpots = GetStandingSpotsWithinRadius(World, Enemy->P, EnemyMoveSpeed, GetTranArena()); */
   /* for (u32 SpotIndex = 0; SpotIndex < EnemySpots.Count; ++SpotIndex) */
@@ -441,7 +516,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     }
 
 
-    b32 DidPlayerAction = False;
+    GameState->DidPlayerAction = False;
     switch (SelectedAction)
     {
       case PlayerAction_Count:
@@ -470,7 +545,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
             if (Input->LMB.Clicked)
             {
-              DidPlayerAction = True;
+              GameState->DidPlayerAction = True;
 
               v3 PlayerBaseSimP = GetSimSpaceP(World, PlayerBaseP);
               v3 SpotTopSimP = SpotSimP + V3(Global_StandingSpotHalfDim.xy, Global_StandingSpotDim.z);
@@ -492,7 +567,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         {
           ++PlayerChargeLevel;
           SpawnFire(Player, &GameState->Entropy, Global_EntityFireballOffset, PlayerChargeLevel);
-          DidPlayerAction = True;
+          GameState->DidPlayerAction = True;
         }
       } break;
 
@@ -510,7 +585,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
             DoSplotion(Resources, &Pick, PickCP, 2.f + r32(PlayerChargeLevel)*2.f, GetTranArena());
             PlayerChargeLevel = 0.f;
             Deactivate(Player->Emitter);
-            DidPlayerAction = True;
+            GameState->DidPlayerAction = True;
           }
         }
       } break;
@@ -519,81 +594,16 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       {
         if (Input->LMB.Clicked)
         {
-          DidPlayerAction = True;
+          GameState->DidPlayerAction = True;
         }
       } break;
     }
 
-    if (DidPlayerAction)
+    if (GameState->DidPlayerAction)
     {
       SelectedAction = PlayerAction_None;
-      /* u32 EnemyChoice = RandomU32(&Global_GameEntropy) % 4; */
-      u32 EnemyChoice = 0;
-
-      local_persist u32 EnemyPower = 0;
-      switch(EnemyChoice)
-      {
-        case 0:
-        case 1:
-        case 2:
-        {
-          DebugLine("move");
-          v3 PlayerBaseP = GetSimSpaceBaseP(World, Player);
-          f32 ShortestDistanceToPlayerSq = f32_MAX;
-          u32 ClosestTileIndex = u32_MAX;
-
-          canonical_position EntityBaseP = Enemy->P;
-          EntityBaseP.Offset += Enemy->CollisionVolumeRadius.xy;
-          Canonicalize(World, &EntityBaseP);
-
-          f32 EnemyMoveSpeed = 8.f;
-          standing_spot_buffer Spots = GetStandingSpotsWithinRadius(World, EntityBaseP, EnemyMoveSpeed, GetTranArena());
-          for (u32 SpotIndex = 0; SpotIndex < Spots.Count; ++SpotIndex)
-          {
-            standing_spot *Spot = Spots.Start + SpotIndex;
-            v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
-            DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_LINE_THICKNESS*3.f);
-
-            v3 SpotSimP = GetSimSpaceP(World, Spot->P);
-            r32 ThisDist = DistanceSq(SpotSimP, PlayerBaseP);
-            if (ThisDist < ShortestDistanceToPlayerSq)
-            {
-              ShortestDistanceToPlayerSq = ThisDist;
-              ClosestTileIndex = SpotIndex;
-            }
-          }
-
-          if (ClosestTileIndex < Spots.Count)
-          {
-            standing_spot *Spot = Spots.Start + ClosestTileIndex;
-
-            v3 EnemyBaseSimP = GetSimSpaceP(World, EntityBaseP);
-            v3 SpotSimP = GetSimSpaceP(World, Spot->P);
-            v3 SpotTopSimP = SpotSimP + V3(Global_StandingSpotHalfDim.xy, Global_StandingSpotDim.z);
-            v3 UpdateV = SpotTopSimP - EnemyBaseSimP + V3(0,0,2);
-            UpdateEntityP(World, Enemy, UpdateV);
-          }
-
-        } break;
-
-        case 3:
-        {
-          if (EnemyPower)
-          {
-            DebugLine("shoot");
-            EnemyPower=0;
-          }
-          else
-          {
-            DebugLine("EnemyPower");
-            EnemyPower++;
-          }
-        } break;
-
-
-        InvalidDefaultCase;
-      }
     }
+
   }
 
   PushForceAdvance(GameUi, V2(0, 128));
@@ -631,7 +641,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   /* if (Hotkeys->Player_Spawn) */
   /* { */
   /*   Unspawn(Player); */
-  /*   SpawnPlayer(Plat, World, GameState->Models, Player,  Canonical_Position(V3(0,0,0), World_Position(0,0,2)), &GameState->Entropy); */
+  /*   SpawnPlayerLikeEntity(Plat, World, GameState->Models, Player,  Canonical_Position(V3(0,0,0), World_Position(0,0,2)), &GameState->Entropy); */
   /*   World->Center = World_Position(0, 0, 2); */
   /* } */
 
@@ -662,9 +672,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   u32 PlayerModelIndex = RandomBetween(ModelIndex_FirstPlayerModel, &GameState->Entropy, ModelIndex_LastPlayerModel+1);
   GameState->Player = GetFreeEntity(EntityTable);
-  SpawnPlayer(Plat, World, GameState->Models + PlayerModelIndex, GameState->Player, PlayerSpawnP, &GameState->Entropy);
+  SpawnPlayerLikeEntity(Plat, World, GameState->Models + PlayerModelIndex, GameState->Player, PlayerSpawnP, &GameState->Entropy);
 
-  u32 EnemyCount = 8;
+  u32 EnemyCount = 3;
   v3i HalfVisibleRegion = g_VisibleRegion / 2;
   HalfVisibleRegion.z = 0;
   for (u32 EnemyIndex = 0; EnemyIndex < EnemyCount; ++EnemyIndex)
@@ -679,8 +689,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
     Assert(EnemyModelIndex <= ModelIndex_LastEnemyModel);
 
     auto EnemySpawnP = Canonical_Position(V3(0), WorldCenter + WP - HalfVisibleRegion );
-    GameState->Enemy = GetFreeEntity(EntityTable);
-    SpawnPlayer(Plat, World, GameState->Models + EnemyModelIndex, GameState->Enemy, EnemySpawnP, &GameState->Entropy, 0.35f);
+    auto Enemy = GetFreeEntity(EntityTable);
+    Enemy->Update = EnemyUpdate;
+    SpawnPlayerLikeEntity(Plat, World, GameState->Models + EnemyModelIndex, Enemy, EnemySpawnP, &GameState->Entropy, 0.35f);
   }
 
   WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);

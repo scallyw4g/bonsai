@@ -668,14 +668,14 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim)
 }
 
 void
-SpawnPlayer( platform *Plat,
-             world *World,
-             model* Model,
-             entity *Player,
-             canonical_position InitialP,
-             random_series* Entropy,
+SpawnPlayerLikeEntity( platform *Plat,
+                       world *World,
+                       model* Model,
+                       entity *Player,
+                       canonical_position InitialP,
+                       random_series* Entropy,
 
-             r32 Scale = 1.0f )
+                       r32 Scale = 1.0f )
 {
   physics Physics = {};
   Physics.Speed = 60.f;
@@ -1237,9 +1237,10 @@ SimulatePlayer(world* World, entity *Player, camera* Camera, hotkeys *Hotkeys, r
 link_internal void SimulateParticleSystem(work_queue_entry_sim_particle_system *Job);
 
 void
-SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension VisibleRegion, camera *Camera, hotkeys *Hotkeys, untextured_3d_geometry_buffer *Dest, work_queue *Queue)
+SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleRegion, untextured_3d_geometry_buffer *Dest, work_queue *Queue)
 {
   TIMED_FUNCTION();
+  UNPACK_ENGINE_RESOURCES(Resources);
 
   for ( s32 EntityIndex = 0;
         EntityIndex < TOTAL_ENTITY_COUNT;
@@ -1249,6 +1250,11 @@ SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension Vis
 
     if (!Spawned(Entity))
         continue;
+
+    if (Entity->Update)
+    {
+      Entity->Update(Resources, Entity);
+    }
 
     switch (Entity->Type)
     {
@@ -1262,10 +1268,6 @@ SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension Vis
 
       case EntityType_Enemy:
       {
-        /* NotImplemented; */
-        /* SimulateEnemy(GameState, Entity, dt); */
-        /* PhysicsUpdate(&Entity->Physics, dt); */
-        /* MoveEntityInWorld(GameState, Entity, Entity->Physics.Delta); */
       } break;
 
       case EntityType_PlayerProjectile:

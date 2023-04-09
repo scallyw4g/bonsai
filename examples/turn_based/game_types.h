@@ -13,8 +13,9 @@ struct game_state
   event_queue EventQueue;
 
   entity *Player;
-  entity *Enemy;
   entity *CameraTarget;
+
+  b32 DidPlayerAction;
 
 #if DEBUG_SYSTEM_API
   get_debug_state_proc GetDebugState;

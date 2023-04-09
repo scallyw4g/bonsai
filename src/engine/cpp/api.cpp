@@ -64,7 +64,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
   graphics *G = Resources->Graphics;
   G->GpuBufferWriteIndex = (Resources->FrameIndex) % 2;
 
-  UNPACK_ENGINE_RESOURCES();
+  UNPACK_ENGINE_RESOURCES(Resources);
 
   World->ChunkHash = CurrentWorldHashtable(Resources);
 

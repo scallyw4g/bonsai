@@ -67,18 +67,18 @@ struct engine_resources
 };
 
 #define UNPACK_ENGINE_RESOURCES(Res)                                      \
-  platform                  *Plat          =  Resources->Plat;            \
-  world                     *World         =  Resources->World;           \
-  game_state                *GameState     =  Resources->GameState;       \
-  memory_arena              *Memory        =  Resources->Memory;          \
-  heap_allocator            *Heap          = &Resources->Heap;            \
-  entity                   **EntityTable   =  Resources->EntityTable;     \
-  hotkeys                   *Hotkeys       =  Resources->Hotkeys;         \
-  engine_debug              *EngineDebug   = &Resources->EngineDebug;     \
-  mesh_freelist             *MeshFreelist  = &Resources->MeshFreelist;    \
-  input                     *Input         = &Resources->Plat->Input;     \
-  graphics                  *Graphics      =  Resources->Graphics;        \
-  renderer_2d               *GameUi        = &Resources->GameUiRenderer;  \
+  platform                  *Plat          =  Res->Plat;            \
+  world                     *World         =  Res->World;           \
+  game_state                *GameState     =  Res->GameState;       \
+  memory_arena              *Memory        =  Res->Memory;          \
+  heap_allocator            *Heap          = &Res->Heap;            \
+  entity                   **EntityTable   =  Res->EntityTable;     \
+  hotkeys                   *Hotkeys       =  Res->Hotkeys;         \
+  engine_debug              *EngineDebug   = &Res->EngineDebug;     \
+  mesh_freelist             *MeshFreelist  = &Res->MeshFreelist;    \
+  input                     *Input         = &Res->Plat->Input;     \
+  graphics                  *Graphics      =  Res->Graphics;        \
+  renderer_2d               *GameUi        = &Res->GameUiRenderer;  \
   gpu_mapped_element_buffer *GpuMap        =  GetCurrentGpuMap(Graphics); \
   g_buffer_render_group     *gBuffer       =  Graphics->gBuffer;          \
   camera                    *Camera        =  Graphics->Camera;
@@ -293,6 +293,9 @@ struct particle_system
   particle Particles[PARTICLES_PER_SYSTEM];
 };
 
+struct entity;
+typedef void (*update_callback)(engine_resources *, entity *);
+
 struct entity
 {
   model Model;
@@ -316,6 +319,8 @@ struct entity
   r32 FireCooldown;
 
   s32 Health;
+
+  update_callback Update;
 };
 
 struct frame_event
