@@ -3159,7 +3159,7 @@ BufferWorld( platform* Plat,
 
   // NOTE(Jesse): Debug
   Assert(Min == V3i(0));
-  Assert(Max == V3i(4));
+  Assert(Max == V3i(2));
 
   for (s32 z = Min.z; z < Max.z; ++ z)
   {
