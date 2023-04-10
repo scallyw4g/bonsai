@@ -192,8 +192,10 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                   {
                   } break;
 
-                  case TileOption_Ground:
+                  case TileOption_Stone:
+                  case TileOption_Dirt:
                   {
+                    u8 Color = TileOptions == TileOption_Stone ? GREY_4 : GRASS_GREEN;
                     v3i VoxMin = (V3i(xTile, yTile, zTile)*TileDim) % World->ChunkDim;
                     v3i VoxMax = VoxMin + TileDim;
                     for (s32 zVox = VoxMin.z; zVox < VoxMax.z; ++zVox)
@@ -204,7 +206,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                         {
                           s32 VoxIndex = GetIndex(xVox, yVox, zVox, World->ChunkDim);
                           Chunk->Voxels[VoxIndex].Flags = Voxel_Filled;
-                          Chunk->Voxels[VoxIndex].Color = GRASS_GREEN;
+                          Chunk->Voxels[VoxIndex].Color = Color;
                           ++Chunk->FilledCount;
                         }
                       }
@@ -724,7 +726,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   Global_AssetPrefixPath = CSz("examples/turn_based/assets");
 
-  world_position WorldCenter = World_Position(1, 1, 1);
+  world_position WorldCenter = World_Position(16, 16, 16);
   /* world_position WorldCenter = {}; */
   canonical_position PlayerSpawnP = Canonical_Position(Voxel_Position(0), WorldCenter + World_Position(0,0,3));
 

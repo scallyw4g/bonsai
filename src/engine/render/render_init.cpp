@@ -370,11 +370,11 @@ GraphicsInit(memory_arena *GraphicsMemory)
 #define SHADOW_MAP_RESOLUTION_X (32*1024)
 #define SHADOW_MAP_RESOLUTION_Y (32*1024)
 
-#define SHADOW_MAP_X 128
-#define SHADOW_MAP_Y 128
+#define SHADOW_MAP_X 32*32
+#define SHADOW_MAP_Y 32*32
 
-#define SHADOW_MAP_Z_MIN -128
-#define SHADOW_MAP_Z_MAX 128
+#define SHADOW_MAP_Z_MIN -32*32
+#define SHADOW_MAP_Z_MAX  32*32
 
   shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1);
   if (!InitializeShadowGroup(SG, GraphicsMemory, V2i(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y)))

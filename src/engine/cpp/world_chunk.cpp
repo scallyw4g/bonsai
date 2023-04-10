@@ -3158,8 +3158,8 @@ BufferWorld( platform* Plat,
   v3i Max = World->Center + Radius;
 
   // NOTE(Jesse): Debug
-  Assert(Min == V3i(0));
-  Assert(Max == V3i(2));
+  /* Assert(Min == V3i(0)); */
+  /* Assert(Max == V3i(4)); */
 
   for (s32 z = Min.z; z < Max.z; ++ z)
   {
