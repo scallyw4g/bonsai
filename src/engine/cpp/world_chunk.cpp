@@ -3030,6 +3030,8 @@ QueueChunkForInit(work_queue *Queue, world_chunk *Chunk)
   TIMED_FUNCTION();
   Assert( NotSet(Chunk->Flags, Chunk_Queued) );
 
+/*   DebugLine("Queuing Chunk (%p)(%d, %d, %d)", Chunk, Chunk->WorldP.x, Chunk->WorldP.y, Chunk->WorldP.z); */
+
   work_queue_entry Entry = {};
   {
     Entry.Type = type_work_queue_entry_init_world_chunk;
@@ -3151,9 +3153,13 @@ BufferWorld( platform* Plat,
 
   work_queue_entry_copy_buffer_set CopySet = {};
 
-  chunk_dimension Radius = VisibleRegion/2;
-  world_position Min = World->Center - Radius;
-  world_position Max = World->Center + Radius;
+  v3i Radius = VisibleRegion/2;
+  v3i Min = World->Center - Radius;
+  v3i Max = World->Center + Radius;
+
+  // NOTE(Jesse): Debug
+  Assert(Min == V3i(0));
+  Assert(Max == V3i(4));
 
   for (s32 z = Min.z; z < Max.z; ++ z)
   {

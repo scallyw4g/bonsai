@@ -125,7 +125,7 @@ GetOptionsForDirectionAndChoice(v3i Dir, u32 Choice)
   u32 OptionIndex = u32_MAX;
   for (u32 OriginIndex = 0; OriginIndex < 3; ++OriginIndex)
   {
-    if (Dir.E[OriginIndex])
+    if (Dir.E[OriginIndex] != 0)
     {
       Assert(OptionIndex == u32_MAX);
       OptionIndex = OriginIndex;
@@ -137,9 +137,46 @@ GetOptionsForDirectionAndChoice(v3i Dir, u32 Choice)
   }
   Assert(OptionIndex != u32_MAX);
 
+
   u32 ChoiceIndex = TileOptionIndex(Choice);
   u32 Result = TileConnectivity[ChoiceIndex][OptionIndex];
   Assert(Result);
+
+#if 0
+  switch (Choice)
+  {
+    InvalidCase(TileOption_None);
+
+    case TileOption_Air:
+    {
+      if (Dir == V3i(0, 0, 1))
+      {
+        Assert(OptionIndex == 2);
+        Assert(Result == TileOption_Air);
+      }
+      else if (Dir == V3i(0, 0, -1))
+      {
+        Assert(OptionIndex == 5);
+        Assert(Result == (TileOption_Air|TileOption_Ground));
+      }
+    } break;
+
+    case TileOption_Ground:
+    {
+      if (Dir == V3i(0, 0, 1))
+      {
+        Assert(OptionIndex == 2);
+        Assert(Result == (TileOption_Air|TileOption_Ground) );
+      }
+      else if (Dir == V3i(0, 0, -1))
+      {
+        Assert(OptionIndex == 5);
+        Assert(Result == TileOption_Ground);
+      }
+    } break;
+  }
+#endif
+
   return Result;
 }
 
@@ -210,6 +247,16 @@ InitializeWorld_WFC(world *World, v3i VisibleRegion, v3i TileDim, memory_arena *
     TileSuperpositions[TileIndex] = TileMaxEntropy;
   }
 
+  for (s32 yTile = TileMinDim.y; yTile < TileMaxDim.y; ++yTile)
+  {
+    for (s32 xTile = TileMinDim.x; xTile < TileMaxDim.x; ++xTile)
+    {
+      s32 TileIndex = GetIndex(xTile, yTile, 0, TileMaxDim);
+      TileSuperpositions[TileIndex] = TileOption_Ground;
+    }
+  }
+
+#if 0
   b32 Continue = True;
   while (Continue)
   {
@@ -265,6 +312,52 @@ InitializeWorld_WFC(world *World, v3i VisibleRegion, v3i TileDim, memory_arena *
     }
 
   }
+#endif
+
+    for (s32 zTile = TileMinDim.z; zTile < TileMaxDim.z; ++zTile)
+    {
+      for (s32 yTile = TileMinDim.y; yTile < TileMaxDim.y; ++yTile)
+      {
+        for (s32 xTile = TileMinDim.x; xTile < TileMaxDim.x; ++xTile)
+        {
+          s32 TileIndex = GetIndex(xTile, yTile, zTile, TileMaxDim);
+          u32 TileOptions = TileSuperpositions[TileIndex];
+          u32 BitsSet = CountBitsSet_Kernighan(TileOptions);
+
+          // We haven't fully collapsed this tile, and it's got lower entropy
+          // than we've seen yet.
+          u32 TileChoice = u32_MAX;
+          if (BitsSet > 1)
+          {
+            // TODO(Jesse): This should (at least in my head) be able to return (1, N) inclusive
+            // but it does not for (1, 2)
+            u32 BitChoice = RandomBetween(1, Series, BitsSet+1);
+
+            TileChoice = GetNthSetBit(BitChoice, TileOptions);
+            Assert(CountBitsSet_Kernighan(TileChoice) == 1);
+
+            TileSuperpositions[TileIndex] = TileChoice;
+          }
+          else
+          {
+            TileChoice = TileOptions;
+          }
+
+          Assert(TileChoice != u32_MAX);
+
+          v3i P = V3iFromIndex(TileIndex, TileMaxDim);
+
+          PropagateChangesTo(TileChoice,  P, V3i( 1, 0, 0), TileMaxDim, TileSuperpositions);
+          /* PropagateChangesTo(TileChoice,  P, V3i(-1, 0, 0), TileMaxDim, TileSuperpositions); */
+
+          PropagateChangesTo(TileChoice,  P, V3i( 0, 1, 0), TileMaxDim, TileSuperpositions);
+          /* PropagateChangesTo(TileChoice,  P, V3i( 0,-1, 0), TileMaxDim, TileSuperpositions); */
+
+          PropagateChangesTo(TileChoice,  P, V3i( 0, 0, 1), TileMaxDim, TileSuperpositions);
+          /* PropagateChangesTo(TileChoice,  P, V3i( 0, 0,-1), TileMaxDim, TileSuperpositions); */
+        }
+      }
+    }
 
   for (s32 TileIndex = 0; TileIndex < TileSuperpositionCount; ++TileIndex)
   {

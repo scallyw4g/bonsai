@@ -164,23 +164,24 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       {
         if ( NotSet(Chunk->Flags, Chunk_VoxelsInitialized) )
         {
-
           // TODO(Jesse): Deduplicate this
           v3i TileDim = V3i(8);
 
           v3i AbsTileMaxDim = World->VisibleRegion*World->ChunkDim / TileDim;
           Assert((World->VisibleRegion*World->ChunkDim%TileDim) == V3i(0));
 
-          v3i TileMinDim = (Chunk->WorldP+World->VisibleRegion/2) *World->ChunkDim / TileDim;
-          v3i TileMaxDim = TileMinDim + (World->ChunkDim/TileDim);
+          v3i TilesPerWorldChunk = World->ChunkDim / TileDim;
 
-          for (s32 zTile = TileMinDim.z; zTile < TileMaxDim.z; ++zTile)
+          v3i TileMin = (Chunk->WorldP) *TilesPerWorldChunk;
+          v3i TileMax = TileMin + TilesPerWorldChunk;
+
+          for (s32 zTile = TileMin.z; zTile < TileMax.z; ++zTile)
           {
-            for (s32 yTile = TileMinDim.y; yTile < TileMaxDim.y; ++yTile)
+            for (s32 yTile = TileMin.y; yTile < TileMax.y; ++yTile)
             {
-              for (s32 xTile = TileMinDim.x; xTile < TileMaxDim.x; ++xTile)
+              for (s32 xTile = TileMin.x; xTile < TileMax.x; ++xTile)
               {
-                s32 TileIndex = GetIndex(xTile, yTile, zTile, TileMaxDim);
+                s32 TileIndex = GetIndex(xTile, yTile, zTile, AbsTileMaxDim);
                 Assert(TileIndex < TileSuperpositionCount);
                 u32 TileOptions = TileSuperpositions[TileIndex];
 
@@ -723,8 +724,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   Global_AssetPrefixPath = CSz("examples/turn_based/assets");
 
-  /* world_position WorldCenter = World_Position(2, 2, 0); */
-  world_position WorldCenter = {}; //World_Position(2, 2, 0);
+  world_position WorldCenter = World_Position(2, 2, 2);
+  /* world_position WorldCenter = {}; */
   canonical_position PlayerSpawnP = Canonical_Position(Voxel_Position(0), WorldCenter + World_Position(0,0,3));
 
   StandardCamera(Graphics->Camera, 10000.0f, 1000.0f, PlayerSpawnP);
