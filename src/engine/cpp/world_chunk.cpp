@@ -2862,6 +2862,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
   Assert(!ChunkIsGarbage(DestChunk));
 
+  // TODO(Jesse): Pretty sure this is unnecessary
   ClearChunkVoxels(DestChunk->Voxels, DestChunk->Dim);
 
   untextured_3d_geometry_buffer* PrimaryMesh = 0;
@@ -3272,7 +3273,6 @@ BufferWorld( platform* Plat,
         }
         else
         {
-          /* Chunk = GetOrAllocateWorldChunk(World->Memory, World, P, VisibleRegion); */
           Chunk = AllocateAndInsertChunk(World->Memory, World, P);
           if (Chunk)
           { QueueChunkForInit(&Plat->LowPriority, Chunk); }

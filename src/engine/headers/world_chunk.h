@@ -220,10 +220,10 @@ struct world
   world_chunk **FreeChunks;
   umm FreeChunkCount;
 
-  world_position Center;
-  chunk_dimension VisibleRegion; // The number of chunks in xyz we're going to update and render
+  v3i Center;
+  v3i VisibleRegion; // The number of chunks in xyz we're going to update and render
 
-  chunk_dimension ChunkDim;
+  v3i ChunkDim;
 
   memory_arena* Memory;
 };

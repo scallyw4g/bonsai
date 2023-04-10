@@ -156,6 +156,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
       world_chunk *Chunk = Job->Chunk;
 
+
       if (ChunkIsGarbage(Chunk))
       {
       }
@@ -163,13 +164,81 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       {
         if ( NotSet(Chunk->Flags, Chunk_VoxelsInitialized) )
         {
+
+          // TODO(Jesse): Deduplicate this
+          v3i TileDim = V3i(8);
+
+          v3i AbsTileMaxDim = World->VisibleRegion*World->ChunkDim / TileDim;
+          Assert((World->VisibleRegion*World->ChunkDim%TileDim) == V3i(0));
+
+          v3i TileMinDim = (Chunk->WorldP+World->VisibleRegion/2) *World->ChunkDim / TileDim;
+          v3i TileMaxDim = TileMinDim + (World->ChunkDim/TileDim);
+
+          for (s32 zTile = TileMinDim.z; zTile < TileMaxDim.z; ++zTile)
+          {
+            for (s32 yTile = TileMinDim.y; yTile < TileMaxDim.y; ++yTile)
+            {
+              for (s32 xTile = TileMinDim.x; xTile < TileMaxDim.x; ++xTile)
+              {
+                s32 TileIndex = GetIndex(xTile, yTile, zTile, TileMaxDim);
+                Assert(TileIndex < TileSuperpositionCount);
+                u32 TileOptions = TileSuperpositions[TileIndex];
+
+                switch (TileOptions)
+                {
+                  /* case TileOption_None: */
+                  case TileOption_Air:
+                  {
+                  } break;
+
+                  case TileOption_Ground:
+                  {
+                    v3i VoxMin = (V3i(xTile, yTile, zTile)*TileDim) % World->ChunkDim;
+                    v3i VoxMax = VoxMin + TileDim;
+                    for (s32 zVox = VoxMin.z; zVox < VoxMax.z; ++zVox)
+                    {
+                      for (s32 yVox = VoxMin.y; yVox < VoxMax.y; ++yVox)
+                      {
+                        for (s32 xVox = VoxMin.x; xVox < VoxMax.x; ++xVox)
+                        {
+                          s32 VoxIndex = GetIndex(xVox, yVox, zVox, World->ChunkDim);
+                          Chunk->Voxels[VoxIndex].Flags = Voxel_Filled;
+                          Chunk->Voxels[VoxIndex].Color = GRASS_GREEN;
+                          ++Chunk->FilledCount;
+                        }
+                      }
+                    }
+                  } break;
+
+                  InvalidCase(TileOption_None);
+                }
+
+              }
+            }
+          }
+          MarkBoundaryVoxels_MakeExteriorFaces(Chunk->Voxels, World->ChunkDim, {}, World->ChunkDim);
+
+          if ( Chunk->FilledCount > 0)
+          {
+            auto PrimaryMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+            BuildWorldChunkMeshFromMarkedVoxels_Greedy(Chunk->Voxels, World->ChunkDim, {}, World->ChunkDim, PrimaryMesh, Thread->TempMemory);
+            if (PrimaryMesh->At)
+            { Ensure( AtomicReplaceMesh(&Chunk->Meshes, MeshBit_Main, PrimaryMesh, PrimaryMesh->Timestamp) == 0); }
+            else
+            { DeallocateMesh(&PrimaryMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
+          }
+
+        }
+      }
+
+#if 0
 #if 1
           counted_string AssetFilename = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, Thread->TempMemory);
-
           native_file AssetFile = OpenFile(AssetFilename, "r+b");
 #endif
           {
 
+#if 1
             /* s32 Frequency = 0; */
             /* s32 Amplititude = 0; */
             /* s32 StartingZDepth = 0; */
@@ -196,6 +265,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             /* Chunk->LodMesh_Complete = True; */
             /* Assert( NotSet(Chunk, Chunk_Queued )); */
 
+#endif
           }
 
         }
@@ -217,6 +287,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
         }
       }
 
+#endif
       FinalizeChunkInitialization(Chunk);
 
     } break;
@@ -623,10 +694,10 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     Canonicalize(World->ChunkDim, GameState->CameraTarget->P);
   }
 
-  if ( IsGrounded(World, Player, World->VisibleRegion) && Hotkeys->Player_Jump )
-  {
-    Player->Physics.Force += V3(0.f, 0.f, 0.5f) * Player->Physics.Speed;
-  }
+  /* if ( IsGrounded(World, Player, World->VisibleRegion) && Hotkeys->Player_Jump ) */
+  /* { */
+  /*   Player->Physics.Force += V3(0.f, 0.f, 0.5f) * Player->Physics.Speed; */
+  /* } */
 
   /* if (IsGrounded(World, Player, World->VisibleRegion))// && Hotkeys->Player_Jump) */
   /* { */
@@ -652,7 +723,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   Global_AssetPrefixPath = CSz("examples/turn_based/assets");
 
-  world_position WorldCenter = World_Position(2, 2, 0);
+  /* world_position WorldCenter = World_Position(2, 2, 0); */
+  world_position WorldCenter = {}; //World_Position(2, 2, 0);
   canonical_position PlayerSpawnP = Canonical_Position(Voxel_Position(0), WorldCenter + World_Position(0,0,3));
 
   StandardCamera(Graphics->Camera, 10000.0f, 1000.0f, PlayerSpawnP);
@@ -661,10 +733,15 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
-  AllocateAndInitWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
+  AllocateWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
+
+  /* InitializeWorld_WFC(world *World, v3i VisibleRegion, v3i TileDim, memory_arena *Memory, random_series *Series) */
+  random_series WorldEntropy = {54930695483};
+  InitializeWorld_WFC(Resources->World, g_VisibleRegion, V3i(8), Memory, &WorldEntropy);
 
   GameState->Models = AllocateGameModels(GameState, Memory, Heap);
 
+#if 0
   u32 PlayerModelIndex = RandomBetween(ModelIndex_FirstPlayerModel, &GameState->Entropy, ModelIndex_LastPlayerModel+1);
   GameState->Player = GetFreeEntity(EntityTable);
   SpawnPlayerLikeEntity(Plat, World, GameState->Models + PlayerModelIndex, GameState->Player, PlayerSpawnP, &GameState->Entropy);
@@ -688,6 +765,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
     Enemy->Update = EnemyUpdate;
     SpawnPlayerLikeEntity(Plat, World, GameState->Models + EnemyModelIndex, Enemy, EnemySpawnP, &GameState->Entropy, 0.35f);
   }
+#endif
 
   WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
 

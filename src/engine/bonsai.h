@@ -396,8 +396,6 @@ struct free_world_chunk
   world_chunk *Next;
 };
 
-struct world;
-
 inline void
 UnSetFlag( voxel_flag *Flags, voxel_flag Flag )
 {
@@ -692,33 +690,12 @@ GetPackedVoxel(int x, int y, int z, int w)
 
 #endif
 
-inline voxel_position
-GetPosition(s32 Index, chunk_dimension Dim)
-{
- int x = Index % Dim.x;
- int y = (Index/Dim.x) % Dim.y ;
- int z = Index / (Dim.x*Dim.y);
-
- Assert(x <= Dim.x);
- Assert(y <= Dim.y);
- Assert(z <= Dim.z);
-
- voxel_position Result = Voxel_Position(x,y,z);
- return Result;
-}
-
 void
 ZeroMesh( untextured_3d_geometry_buffer *Mesh )
 {
   Mesh->At = 0;
   return;
 }
-
-/* void */
-/* ZeroChunk( world_chunk *Chunk ) */
-/* { */
-/*   Chunk->Flags = Chunk_Uninitialized; */
-/* } */
 
 void
 ClearWorldChunk( world_chunk *Chunk )
@@ -763,6 +740,7 @@ TryGetIndex(chunk_dimension P, chunk_dimension Dim)
   Assert(Result < Volume(Dim));
   return Result;
 }
+
 inline s32
 GetIndex(s32 X, s32 Y, s32 Z, chunk_dimension Dim)
 {
@@ -796,6 +774,29 @@ GetIndex(v3 Offset, chunk_dimension Dim)
 {
   s32 Index = GetIndex( Voxel_Position(Offset), Dim);
   return Index;
+}
+
+inline voxel_position
+V3iFromIndex(s32 Index, chunk_dimension Dim)
+{
+ int x = Index % Dim.x;
+ int y = (Index/Dim.x) % Dim.y;
+ int z = Index / (Dim.x*Dim.y);
+
+ // TODO(Jesse): Should this acutally not be strictly less than ..?
+ Assert(x <= Dim.x);
+ Assert(y <= Dim.y);
+ Assert(z <= Dim.z);
+
+ voxel_position Result = Voxel_Position(x,y,z);
+ return Result;
+}
+
+inline voxel_position
+GetPosition(s32 Index, chunk_dimension Dim)
+{
+  auto Result = V3iFromIndex(Index, Dim);
+  return Result;
 }
 
 inline b32
