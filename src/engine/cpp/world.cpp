@@ -101,20 +101,20 @@ global_variable u32 TileConnectivity[10][6] = {
   //
   // Air Tiles
   {
-    TileOption_Air|TileOption_Dirt|TileOption_HouseBase_North|TileOption_HouseBase_South, //  x
-    TileOption_Air|TileOption_Dirt|TileOption_HouseBase_North|TileOption_HouseBase_South, //  y
+    TileOption_Air|TileOption_Dirt|TileOption_HouseBase_North|TileOption_HouseBase_South|TileOption_HouseBase_Interior, //  x
+    TileOption_Air|TileOption_Dirt|TileOption_HouseBase_North|TileOption_HouseBase_South|TileOption_HouseBase_Interior, //  y
     TileOption_Air,                                            //  z
 
-    TileOption_Air|TileOption_Dirt|TileOption_HouseBase_North|TileOption_HouseBase_South, // -x
-    TileOption_Air|TileOption_Dirt|TileOption_HouseBase_North|TileOption_HouseBase_South, // -y
-    TileOption_Air|TileOption_Dirt|TileOption_HouseBase_North|TileOption_HouseBase_South, // -z
+    TileOption_Air|TileOption_Dirt|TileOption_HouseBase_North|TileOption_HouseBase_South|TileOption_HouseBase_Interior, // -x
+    TileOption_Air|TileOption_Dirt|TileOption_HouseBase_North|TileOption_HouseBase_South|TileOption_HouseBase_Interior, // -y
+    TileOption_Air|TileOption_Dirt|TileOption_HouseBase_North|TileOption_HouseBase_South|TileOption_HouseBase_Interior, // -z
   },
 
   // Dirt Tiles
   {
     TileOption_Air|TileOption_Dirt|TileOption_Stone,                      //  x
     TileOption_Air|TileOption_Dirt|TileOption_Stone,                      //  y
-    TileOption_Air|TileOption_HouseBase_North|TileOption_HouseBase_South, //  z
+    TileOption_Air|TileOption_HouseBase_North|TileOption_HouseBase_South|TileOption_HouseBase_Interior, //  z
 
     TileOption_Air|TileOption_Dirt|TileOption_Stone, // -x
     TileOption_Air|TileOption_Dirt|TileOption_Stone, // -y
@@ -149,11 +149,11 @@ global_variable u32 TileConnectivity[10][6] = {
     TileOption_Air, // -y
     TileOption_Dirt // -z
   },
-  //
+
   // TileOption_HouseBase_South
   {
-    TileOption_HouseBase_South|TileOption_Air,  //  x
-    TileOption_Air,  //  y
+    TileOption_HouseBase_South|TileOption_Air,    //  x
+    TileOption_HouseBase_Interior|TileOption_Air, //  y
     TileOption_Air,  //  z
 
     TileOption_HouseBase_South|TileOption_Air,  // -x
@@ -161,6 +161,22 @@ global_variable u32 TileConnectivity[10][6] = {
     TileOption_Dirt // -z
   },
 
+  // East
+  { TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, },
+
+  // West
+  { TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, },
+
+  // TileOption_HouseBase_Interior
+  {
+    TileOption_HouseBase_Interior|TileOption_Air,  //  x
+    TileOption_HouseBase_Interior|TileOption_Air,  //  y
+    TileOption_Air,  //  z
+
+    TileOption_HouseBase_Interior|TileOption_Air,  // -x
+    TileOption_HouseBase_South|TileOption_HouseBase_Interior|TileOption_Air,  // -y
+    TileOption_Dirt // -z
+  },
 
 
 #if 0
@@ -419,7 +435,7 @@ InitializeWorld_WFC(world *World, v3i VisibleRegion, v3i TileDim, memory_arena *
   }
 #endif
 
-#if 1
+#if 0
   {
     v3i P = V3i(4, 4, 1);
     s32 TileIndex = GetIndex(P, Global_TileSuperpositionsDim);
