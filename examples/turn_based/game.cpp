@@ -221,6 +221,10 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           }
           MarkBoundaryVoxels_MakeExteriorFaces(Chunk->Voxels, World->ChunkDim, {}, World->ChunkDim);
 
+          ComputeStandingSpots( World->ChunkDim, Chunk, {}, {}, Global_StandingSpotDim,
+                                World->ChunkDim, 0, &Chunk->StandingSpots, Thread->TempMemory);
+
+
           if ( Chunk->FilledCount > 0)
           {
             auto PrimaryMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
@@ -744,7 +748,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState->Models = AllocateGameModels(GameState, Memory, Heap);
 
-#if 0
+#if 1
   u32 PlayerModelIndex = RandomBetween(ModelIndex_FirstPlayerModel, &GameState->Entropy, ModelIndex_LastPlayerModel+1);
   GameState->Player = GetFreeEntity(EntityTable);
   SpawnPlayerLikeEntity(Plat, World, GameState->Models + PlayerModelIndex, GameState->Player, PlayerSpawnP, &GameState->Entropy);
