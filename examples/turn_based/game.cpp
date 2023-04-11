@@ -56,6 +56,33 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *
   return Result;
 }
 
+u8
+GetColorForTile(u32 TileType)
+{
+  switch (TileType)
+  {
+    case TileOption_None:
+      return RED;
+
+    case TileOption_HouseBase_North:
+    case TileOption_HouseBase_South:
+    case TileOption_HouseBase_East:
+    case TileOption_HouseBase_West:
+      return GREY_6;
+
+    case TileOption_HouseBase_Interior:
+      return GREY_4;
+
+    case TileOption_Stone:
+      return GREY_2;
+
+    case TileOption_Dirt:
+      return GRASS_GREEN;
+  }
+
+  return BLACK;
+}
+
 BONSAI_API_WORKER_THREAD_CALLBACK()
 {
   world *World = Thread->EngineResources->World;
@@ -192,10 +219,16 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                   {
                   } break;
 
-                  case TileOption_Stone:
+                  case TileOption_None:
+                  case TileOption_HouseBase_North:
+                  case TileOption_HouseBase_South:
+                  case TileOption_HouseBase_East:
+                  case TileOption_HouseBase_West:
+                  case TileOption_HouseBase_Interior:
                   case TileOption_Dirt:
+                  case TileOption_Stone:
                   {
-                    u8 Color = TileOptions == TileOption_Stone ? GREY_4 : GRASS_GREEN;
+                    u8 Color = GetColorForTile(TileOptions);
                     v3i VoxMin = (V3i(xTile, yTile, zTile)*TileDim) % World->ChunkDim;
                     v3i VoxMax = VoxMin + TileDim;
                     for (s32 zVox = VoxMin.z; zVox < VoxMax.z; ++zVox)
@@ -213,7 +246,6 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                     }
                   } break;
 
-                  InvalidCase(TileOption_None);
                 }
 
               }
@@ -730,7 +762,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   Global_AssetPrefixPath = CSz("examples/turn_based/assets");
 
-  world_position WorldCenter = World_Position(16, 16, 16);
+  world_position WorldCenter = World_Position(1, 1, 1);
   /* world_position WorldCenter = {}; */
   canonical_position PlayerSpawnP = Canonical_Position(Voxel_Position(0), WorldCenter + World_Position(0,0,3));
 
@@ -748,7 +780,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState->Models = AllocateGameModels(GameState, Memory, Heap);
 
-#if 1
+#if 0
   u32 PlayerModelIndex = RandomBetween(ModelIndex_FirstPlayerModel, &GameState->Entropy, ModelIndex_LastPlayerModel+1);
   GameState->Player = GetFreeEntity(EntityTable);
   SpawnPlayerLikeEntity(Plat, World, GameState->Models + PlayerModelIndex, GameState->Player, PlayerSpawnP, &GameState->Entropy);

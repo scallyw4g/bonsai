@@ -29,7 +29,13 @@ enum tile_option
   TileOption_Dirt   = 1 << 1,
   TileOption_Stone  = 1 << 2,
 
-  TileOption_HighestBit = TileOption_Stone,
+  TileOption_HouseBase_North    = 1 << 3,
+  TileOption_HouseBase_South    = 1 << 4,
+  TileOption_HouseBase_East     = 1 << 5,
+  TileOption_HouseBase_West     = 1 << 6,
+  TileOption_HouseBase_Interior = 1 << 7,
+
+  TileOption_HighestBit = TileOption_HouseBase_Interior,
 };
 // TODO(Jesse)(metaprogramming): Metaprogram this if I ever hit a bug here..
 //
@@ -58,15 +64,41 @@ TileOptionIndex( u32 O )
     {
       Result = 3;
     } break;
+
+    case TileOption_HouseBase_North:
+    {
+      Result = 4;
+    } break;
+
+    case TileOption_HouseBase_South:
+    {
+      Result = 5;
+    } break;
+
+    case TileOption_HouseBase_East:
+    {
+      Result = 6;
+    } break;
+
+    case TileOption_HouseBase_West:
+    {
+      Result = 7;
+    } break;
+
+    case TileOption_HouseBase_Interior:
+    {
+      Result = 8;
+    } break;
   }
+
   return Result;
 }
 
-global_variable u32 TileConnectivity[4][6] = {
+global_variable u32 TileConnectivity[10][6] = {
 
   // Null tile
   { TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, },
-
+  //
   // Air Tiles
   {
     TileOption_Air|TileOption_Dirt, //  x
@@ -86,7 +118,7 @@ global_variable u32 TileConnectivity[4][6] = {
 
     TileOption_Air|TileOption_Dirt|TileOption_Stone, // -x
     TileOption_Air|TileOption_Dirt|TileOption_Stone, // -y
-    TileOption_Stone                                 // -z
+    TileOption_Stone,                                // -z
   },
 
   // Stone
@@ -99,6 +131,115 @@ global_variable u32 TileConnectivity[4][6] = {
     TileOption_Dirt|TileOption_Stone, // -y
     TileOption_Stone                  // -z
   },
+
+
+#if 0
+  // Air Tiles
+  {
+    TileOption_Air|TileOption_Dirt|
+      TileOption_HouseBase_North|TileOption_HouseBase_South|TileOption_HouseBase_East|TileOption_HouseBase_West, //  x
+
+    TileOption_Air|TileOption_Dirt|
+      TileOption_HouseBase_North|TileOption_HouseBase_South|TileOption_HouseBase_East|TileOption_HouseBase_West, //  y
+
+    TileOption_Air,                 //  z
+
+    TileOption_Air|TileOption_Dirt|
+      TileOption_HouseBase_North|TileOption_HouseBase_South|TileOption_HouseBase_East|TileOption_HouseBase_West, // -x
+
+    TileOption_Air|TileOption_Dirt|
+      TileOption_HouseBase_North|TileOption_HouseBase_South|TileOption_HouseBase_East|TileOption_HouseBase_West, // -y
+
+    TileOption_Air|TileOption_Dirt| // -z
+      TileOption_HouseBase_Interior|TileOption_HouseBase_North|TileOption_HouseBase_South|TileOption_HouseBase_East|TileOption_HouseBase_West,
+  },
+
+  // Dirt Tiles
+  {
+    TileOption_Air|TileOption_Dirt|TileOption_Stone, //  x
+    TileOption_Air|TileOption_Dirt|TileOption_Stone, //  y
+    TileOption_Air|                                  //  z
+      TileOption_HouseBase_Interior|TileOption_HouseBase_North|TileOption_HouseBase_South|TileOption_HouseBase_East|TileOption_HouseBase_West,
+
+    TileOption_Air|TileOption_Dirt|TileOption_Stone, // -x
+    TileOption_Air|TileOption_Dirt|TileOption_Stone, // -y
+    TileOption_Stone,                                // -z
+  },
+
+  // Stone
+  {
+    TileOption_Dirt|TileOption_Stone, //  x
+    TileOption_Dirt|TileOption_Stone, //  y
+    TileOption_Dirt|TileOption_Stone, //  z
+
+    TileOption_Dirt|TileOption_Stone, // -x
+    TileOption_Dirt|TileOption_Stone, // -y
+    TileOption_Stone                  // -z
+  },
+
+  // NOTE(Jesse) Houses are constructed like this:
+  //
+  // N N N N N N
+  // W         E
+  // W         E
+  // W         E
+  // S S S S S S
+  // TileOption_HouseBase_North
+  {
+    TileOption_HouseBase_North|TileOption_Air,  //  x
+    TileOption_Air,  //  y
+    TileOption_Air,  //  z
+
+    TileOption_HouseBase_North|TileOption_Air,  // -x
+    TileOption_HouseBase_West|TileOption_HouseBase_East|TileOption_HouseBase_Interior,   // -y
+    TileOption_Dirt // -z
+  },
+
+  // TileOption_HouseBase_South
+  {
+    TileOption_HouseBase_South|TileOption_Air,  //  x
+    TileOption_HouseBase_West|TileOption_HouseBase_East|TileOption_HouseBase_Interior,   // y
+    TileOption_Air,  //  z
+
+    TileOption_HouseBase_South|TileOption_Air,  // -x
+    TileOption_Air,   //  -y
+    TileOption_Dirt // -z
+  },
+
+  // TileOption_HouseBase_East
+  {
+    TileOption_Air,  //  x
+    TileOption_HouseBase_East|TileOption_HouseBase_North,  //  y
+    TileOption_Air,  //  z
+
+    TileOption_HouseBase_Interior,  // -x
+    TileOption_HouseBase_East|TileOption_HouseBase_South,  // -y
+    TileOption_Dirt // -z
+  },
+
+  // TileOption_HouseBase_West
+  {
+    TileOption_HouseBase_Interior, //  x
+    TileOption_HouseBase_West|TileOption_HouseBase_North,  //  y
+    TileOption_Air,  //  z
+
+    TileOption_Air,  // -x
+    TileOption_HouseBase_West|TileOption_HouseBase_South,  //  -y
+    TileOption_Dirt // -z
+  },
+
+  // TileOption_HouseBase_Interior
+  {
+    TileOption_HouseBase_Interior|TileOption_HouseBase_East,  //  x
+    TileOption_HouseBase_Interior|TileOption_HouseBase_North, //  y
+    TileOption_Air,  //  z
+
+    TileOption_HouseBase_Interior|TileOption_HouseBase_West,  //  -x
+    TileOption_HouseBase_Interior|TileOption_HouseBase_South, //  -y
+    TileOption_Dirt // -z
+  },
+#endif
+
 };
 
 
@@ -183,29 +324,18 @@ PropagateChangesTo(u32 PrevTileOptions, v3i Origin, v3i Direction, v3i Superposi
     }
 
     *NewTile &= TotalOptionsToPropagate;
+    /* Assert(*NewTile); */
 
     if ( NewTileValue != *NewTile )
     {
-      v3i Dir = V3i( 1, 0, 0);
-      PropagateChangesTo(TotalOptionsToPropagate, NewP, Dir, SuperpositionsShape, TileSuperpositions);
-
-      Dir = V3i(-1, 0, 0);
-      PropagateChangesTo(TotalOptionsToPropagate, NewP, Dir, SuperpositionsShape, TileSuperpositions);
-
-      Dir = V3i( 0, 1, 0);
-      PropagateChangesTo(TotalOptionsToPropagate, NewP, Dir, SuperpositionsShape, TileSuperpositions);
-
-      Dir = V3i( 0,-1, 0);
-      PropagateChangesTo(TotalOptionsToPropagate, NewP, Dir, SuperpositionsShape, TileSuperpositions);
-
-      Dir = V3i( 0, 0, 1);
-      PropagateChangesTo(TotalOptionsToPropagate, NewP, Dir, SuperpositionsShape, TileSuperpositions);
-
-      Dir = V3i( 0, 0,-1);
-      PropagateChangesTo(TotalOptionsToPropagate, NewP, Dir, SuperpositionsShape, TileSuperpositions);
+      PropagateChangesTo(TotalOptionsToPropagate, NewP, V3i( 1, 0, 0), SuperpositionsShape, TileSuperpositions);
+      PropagateChangesTo(TotalOptionsToPropagate, NewP, V3i(-1, 0, 0), SuperpositionsShape, TileSuperpositions);
+      PropagateChangesTo(TotalOptionsToPropagate, NewP, V3i( 0, 1, 0), SuperpositionsShape, TileSuperpositions);
+      PropagateChangesTo(TotalOptionsToPropagate, NewP, V3i( 0,-1, 0), SuperpositionsShape, TileSuperpositions);
+      PropagateChangesTo(TotalOptionsToPropagate, NewP, V3i( 0, 0, 1), SuperpositionsShape, TileSuperpositions);
+      PropagateChangesTo(TotalOptionsToPropagate, NewP, V3i( 0, 0,-1), SuperpositionsShape, TileSuperpositions);
     }
 
-    Assert(*NewTile);
   }
 }
 
@@ -238,24 +368,51 @@ InitializeWorld_WFC(world *World, v3i VisibleRegion, v3i TileDim, memory_arena *
     {
       s32 TileIndex = GetIndex(xTile, yTile, 0, Global_TileSuperpositionsDim);
 
-      r32 Rnd = RandomBetween(0.f, Series, 1.f);
-      if (Rnd > 0.50f)
+#if 0
+      /* r32 Rnd = RandomBetween(0.f, Series, 1.f); */
+      /* if (Rnd > 0.50f) */
       {
         TileSuperpositions[TileIndex] = TileOption_Stone;
         v3i P = V3i(xTile, yTile, 0);
         PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 1, 0, 0), Global_TileSuperpositionsDim, TileSuperpositions);
         PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i(-1, 0, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-
         PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 1, 0), Global_TileSuperpositionsDim, TileSuperpositions);
         PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0,-1, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-
         PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0, 1), Global_TileSuperpositionsDim, TileSuperpositions);
         PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0,-1), Global_TileSuperpositionsDim, TileSuperpositions);
-        /* goto done_seeding; */
       }
+
+
+#endif
     }
   }
-/* done_seeding: */
+#endif
+
+#if 1
+  {
+    v3i P = V3i(4, 4, 2);
+    s32 TileIndex = GetIndex(P, Global_TileSuperpositionsDim);
+    TileSuperpositions[TileIndex] = TileOption_Stone;
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 1, 0, 0), Global_TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i(-1, 0, 0), Global_TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 1, 0), Global_TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0,-1, 0), Global_TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0, 1), Global_TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0,-1), Global_TileSuperpositionsDim, TileSuperpositions);
+  }
+#endif
+#if 0
+  {
+    v3i P = V3i(0, 0, 0);
+    s32 TileIndex = GetIndex(P, Global_TileSuperpositionsDim);
+    TileSuperpositions[TileIndex] = TileOption_HouseBase_South;
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 1, 0, 0), Global_TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i(-1, 0, 0), Global_TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 1, 0), Global_TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0,-1, 0), Global_TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0, 1), Global_TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0,-1), Global_TileSuperpositionsDim, TileSuperpositions);
+  }
 #endif
 
 #if 0
@@ -365,7 +522,7 @@ InitializeWorld_WFC(world *World, v3i VisibleRegion, v3i TileDim, memory_arena *
   {
     if (TileSuperpositions[TileIndex] == TileOption_None)
     {
-      Error("Degenerate case; Wave Function Collapse failed to solve.");
+      /* Error("Degenerate case; Wave Function Collapse failed to solve."); */
     }
   }
 
