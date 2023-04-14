@@ -66,6 +66,7 @@ GetColorForTile(u32 TileType)
 
     case TileOption_HouseBase_North:
       return GREEN;
+
     case TileOption_HouseBase_South:
       return BLUE;
 
@@ -765,7 +766,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   Global_AssetPrefixPath = CSz("examples/turn_based/assets");
 
-  world_position WorldCenter = World_Position(1, 1, 1);
+  world_position WorldCenter = World_Position(2, 2, 2);
   /* world_position WorldCenter = {}; */
   canonical_position PlayerSpawnP = Canonical_Position(Voxel_Position(0), WorldCenter + World_Position(0,0,3));
 

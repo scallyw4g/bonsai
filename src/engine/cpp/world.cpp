@@ -65,6 +65,7 @@ TileOptionIndex( u32 O )
       Result = 3;
     } break;
 
+#if 1
     case TileOption_HouseBase_North:
     {
       Result = 4;
@@ -84,6 +85,7 @@ TileOptionIndex( u32 O )
     {
       Result = 7;
     } break;
+#endif
 
     case TileOption_HouseBase_Interior:
     {
@@ -98,23 +100,24 @@ global_variable u32 TileConnectivity[10][6] = {
 
   // Null tile
   { TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, },
+
   //
   // Air Tiles
   {
-    TileOption_Air|TileOption_Dirt|TileOption_HouseBase_North|TileOption_HouseBase_South|TileOption_HouseBase_Interior, //  x
-    TileOption_Air|TileOption_Dirt|TileOption_HouseBase_North|TileOption_HouseBase_South|TileOption_HouseBase_Interior, //  y
-    TileOption_Air,                                            //  z
+    TileOption_Air|TileOption_Dirt|TileOption_HouseBase_Interior, //  x
+    TileOption_Air|TileOption_Dirt|TileOption_HouseBase_Interior, //  y
+    TileOption_Air,                                               //  z
 
-    TileOption_Air|TileOption_Dirt|TileOption_HouseBase_North|TileOption_HouseBase_South|TileOption_HouseBase_Interior, // -x
-    TileOption_Air|TileOption_Dirt|TileOption_HouseBase_North|TileOption_HouseBase_South|TileOption_HouseBase_Interior, // -y
-    TileOption_Air|TileOption_Dirt|TileOption_HouseBase_North|TileOption_HouseBase_South|TileOption_HouseBase_Interior, // -z
+    TileOption_Air|TileOption_Dirt|TileOption_HouseBase_Interior, // -x
+    TileOption_Air|TileOption_Dirt|TileOption_HouseBase_Interior, // -y
+    TileOption_Air|TileOption_Dirt|TileOption_HouseBase_Interior, // -z
   },
 
   // Dirt Tiles
   {
-    TileOption_Air|TileOption_Dirt|TileOption_Stone,                      //  x
-    TileOption_Air|TileOption_Dirt|TileOption_Stone,                      //  y
-    TileOption_Air|TileOption_HouseBase_North|TileOption_HouseBase_South|TileOption_HouseBase_Interior, //  z
+    TileOption_Air|TileOption_Dirt|TileOption_Stone, //  x
+    TileOption_Air|TileOption_Dirt|TileOption_Stone, //  y
+    TileOption_Air|TileOption_HouseBase_Interior,    //  z
 
     TileOption_Air|TileOption_Dirt|TileOption_Stone, // -x
     TileOption_Air|TileOption_Dirt|TileOption_Stone, // -y
@@ -139,6 +142,8 @@ global_variable u32 TileConnectivity[10][6] = {
   // W         E
   // W         E
   // S S S S S S
+
+#if 1
   // TileOption_HouseBase_North
   {
     TileOption_HouseBase_North|TileOption_Air,  //  x
@@ -146,20 +151,42 @@ global_variable u32 TileConnectivity[10][6] = {
     TileOption_Air,  //  z
 
     TileOption_HouseBase_North|TileOption_Air,  // -x
-    TileOption_Air, // -y
+    TileOption_HouseBase_Interior, // -y
     TileOption_Dirt // -z
   },
 
   // TileOption_HouseBase_South
   {
     TileOption_HouseBase_South|TileOption_Air,    //  x
-    TileOption_HouseBase_Interior|TileOption_Air, //  y
+    TileOption_HouseBase_Interior, //  y
     TileOption_Air,  //  z
 
     TileOption_HouseBase_South|TileOption_Air,  // -x
     TileOption_Air, // -y
     TileOption_Dirt // -z
   },
+  // East
+  { TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, },
+
+  // West
+  { TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, },
+
+  // TileOption_HouseBase_Interior
+  {
+    TileOption_HouseBase_Interior|TileOption_Air,  //  x
+    TileOption_HouseBase_North|TileOption_HouseBase_Interior,  //  y
+    TileOption_Air,  //  z
+    TileOption_HouseBase_Interior|TileOption_Air,  // -x
+    TileOption_HouseBase_South|TileOption_HouseBase_Interior,  // -y
+    TileOption_Dirt // -z
+  },
+
+#else
+  // North
+  { TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, },
+
+  // South
+  { TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, },
 
   // East
   { TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, },
@@ -172,11 +199,11 @@ global_variable u32 TileConnectivity[10][6] = {
     TileOption_HouseBase_Interior|TileOption_Air,  //  x
     TileOption_HouseBase_Interior|TileOption_Air,  //  y
     TileOption_Air,  //  z
-
     TileOption_HouseBase_Interior|TileOption_Air,  // -x
-    TileOption_HouseBase_South|TileOption_HouseBase_Interior|TileOption_Air,  // -y
+    TileOption_HouseBase_Interior|TileOption_Air,  // -y
     TileOption_Dirt // -z
   },
+#endif
 
 
 #if 0
