@@ -2,11 +2,11 @@
 
 BUILD_EVERYTHING=0
 
-RunPoof=0
+RunPoof=1
 
-BuildExecutables=1
-BuildExamples=1
-BuildDebugSystem=1
+BuildExecutables=0
+BuildExamples=0
+BuildDebugSystem=0
 
 BuildTests=0
 BuildDebugTests=0
@@ -334,7 +334,6 @@ function RunPoofHelper {
 
    # --log-level LogLevel_Debug                                                                                  \
   poof                                                                                                         \
-   -c0 \
    -I src/                                                                                                     \
    -I include/                                                                                                 \
    -D _M_X64                                                                                                   \
@@ -357,12 +356,12 @@ function RunPoof
   [ -d src/generated ] && rm -Rf src/generated
   [ -d generated ] && rm -Rf generated
 
-  # RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
+  RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
   # RunPoofHelper include/bonsai_debug/debug.cpp && echo -e "$Success poofed src/include/bonsai_debug/debug.cpp" &
   # RunPoofHelper examples/asset_picker/game.cpp && echo -e "$Success poofed examples/asset_picker/game.cpp" &
   # RunPoofHelper examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &
   # RunPoofHelper src/tools/asset_packer.cpp && echo -e "$Success poofed src/tools/asset_packer.cpp" &
-  RunPoofHelper examples/turn_based/game.cpp && echo -e "$Success poofed examples/turn_based/game.cpp" &
+  # RunPoofHelper examples/turn_based/game.cpp && echo -e "$Success poofed examples/turn_based/game.cpp" &
 
   wait
 
