@@ -41,6 +41,7 @@ BONSAI_INTERNAL='-D BONSAI_INTERNAL'
 
 EXAMPLES_TO_BUILD="
   $EXAMPLES/turn_based
+  $EXAMPLES/wave_function_collapse_terrain
 "
 
 EXECUTABLES_TO_BUILD="

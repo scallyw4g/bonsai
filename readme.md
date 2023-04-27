@@ -33,18 +33,8 @@ fast-paced arcade style games.
 -------------------------------------------------------------------------------
 ## Renderer
 
-[ ] Some sort of Anti-Aliasing
-
--------------------------------------------------------------------------------
-## Particle System
-
-[ ] Turbulance
-
--------------------------------------------------------------------------------
-## Voxel Loader
-
-[ ] MagicaVoxel has an exporter bug and I don't trust it anymore.  Make an
-editor mode!
+[ ] TAA
+[ ] Transparency : https://www.jcgt.org/published/0002/02/09/paper.pdf
 
 -------------------------------------------------------------------------------
 ## Sound
@@ -67,12 +57,14 @@ Ensure you have an OpenGL driver, X11 and clang
 ### Common
 
 ```
-git clone https://github.com/jjbandit/bonsai bonsai && cd bonsai
+git clone --recursive https://github.com/jjbandit/bonsai bonsai && cd bonsai
 ./scripts/make.sh
 ```
 
 ## On Windows:
+Bonsai requires clang and bash to build on Windows.  git-bash should do the trick.
+
 ```
-TODO(Jesse, tags: platform_windows): Document build from scratch.  Should be
-pretty stright-forward.  Download Clang and hit the make script.
+git clone --recursive https://github.com/jjbandit/bonsai bonsai && cd bonsai
+./scripts/make.sh
 ```
