@@ -378,6 +378,30 @@ GetOptionsForDirectionAndChoice(v3i Dir, u32 Choice)
   return Result;
 }
 
+link_internal u32
+UnsetLeastSignificantSetBit(u32 *Input)
+{
+  u32 Result = 0;
+  NotImplemented;
+  return Result;
+}
+
+link_internal u32
+CountBitsSet_Kernighan(u32 Input)
+{
+  u32 Result = 0;
+  NotImplemented;
+  return Result;
+}
+
+link_internal u32
+GetNthSetBit(u32 Target, u32 NBit)
+{
+  u32 Result= 0;
+  NotImplemented;
+  return Result;
+}
+
 link_internal void
 PropagateChangesTo(u32 PrevTileOptions, v3i Origin, v3i Direction, v3i SuperpositionsShape, u32 *TileSuperpositions)
 {

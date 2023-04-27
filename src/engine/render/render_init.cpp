@@ -285,6 +285,8 @@ InitializeShadowGroup(shadow_render_group *SG, memory_arena *GraphicsMemory, v2i
   SG->DepthShader = LoadShaders( CSz("DepthRTT.vertexshader"), CSz("DepthRTT.fragmentshader") );
   SG->MVP_ID = GetShaderUniform(&SG->DepthShader, "depthMVP");
 
+  AssertNoGlErrors;
+
   if(GL.CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     return false;
 
@@ -379,7 +381,9 @@ GraphicsInit(memory_arena *GraphicsMemory)
   shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1);
   if (!InitializeShadowGroup(SG, GraphicsMemory, V2i(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y)))
   {
-    Error("Initializing Shadow Buffer"); return False;
+    // TODO(Jesse): Figure why we're failing to do this!
+    /* Error("Initializing Shadow Buffer"); return False; */
+    SoftError("Initializing Shadow Buffer");// return False;
   }
 #endif
 

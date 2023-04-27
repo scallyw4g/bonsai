@@ -27,28 +27,28 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *
   Result[ModelIndex_Enemy_Skeleton_Horserider]       = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_HORSERIDER.vox", Memory);
   Result[ModelIndex_Enemy_Skeleton_Horsebanner]      = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_HORSE_BANNER.vox", Memory);
   Result[ModelIndex_Enemy_Skeleton_Shaman]           = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_SHAMAN.vox", Memory);
-  Result[ModelIndex_Enemy_Skeleton_Champion]         = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_CHAMPION.vox", Memory);
+  /* Result[ModelIndex_Enemy_Skeleton_Champion]         = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_CHAMPION.vox", Memory); */
   Result[ModelIndex_Enemy_Skeleton_ChampionChampion] = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_CHAMPION_CATAPHRACT.vox", Memory);
   Result[ModelIndex_Enemy_Skeleton_Concubiner]       = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_CONCUBINER.vox", Memory);
   Result[ModelIndex_Enemy_Skeleton_King]             = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_KING.vox", Memory);
 
-  Result[ModelIndex_Player_jp]      = LoadVoxModel(Memory, Heap, "models/players/chr_jp.vox", Memory);
-  Result[ModelIndex_Player_bow]     = LoadVoxModel(Memory, Heap, "models/players/chr_bow.vox", Memory);
-  Result[ModelIndex_Player_cat]     = LoadVoxModel(Memory, Heap, "models/players/chr_cat.vox", Memory);
-  Result[ModelIndex_Player_fox]     = LoadVoxModel(Memory, Heap, "models/players/chr_fox.vox", Memory);
-  Result[ModelIndex_Player_gumi]    = LoadVoxModel(Memory, Heap, "models/players/chr_gumi.vox", Memory);
-  Result[ModelIndex_Player_knight]  = LoadVoxModel(Memory, Heap, "models/players/chr_knight.vox", Memory);
-  Result[ModelIndex_Player_man]     = LoadVoxModel(Memory, Heap, "models/players/chr_man.vox", Memory);
-  Result[ModelIndex_Player_mom]     = LoadVoxModel(Memory, Heap, "models/players/chr_mom.vox", Memory);
-  Result[ModelIndex_Player_old]     = LoadVoxModel(Memory, Heap, "models/players/chr_old.vox", Memory);
-  Result[ModelIndex_Player_poem]    = LoadVoxModel(Memory, Heap, "models/players/chr_poem.vox", Memory);
-  Result[ModelIndex_Player_rain]    = LoadVoxModel(Memory, Heap, "models/players/chr_rain.vox", Memory);
-  Result[ModelIndex_Player_sasami]  = LoadVoxModel(Memory, Heap, "models/players/chr_sasami.vox", Memory);
-  Result[ModelIndex_Player_sol]     = LoadVoxModel(Memory, Heap, "models/players/chr_sol.vox", Memory);
-  Result[ModelIndex_Player_sword]   = LoadVoxModel(Memory, Heap, "models/players/chr_sword.vox", Memory);
-  Result[ModelIndex_Player_tale]    = LoadVoxModel(Memory, Heap, "models/players/chr_tale.vox", Memory);
-  Result[ModelIndex_Player_tama]    = LoadVoxModel(Memory, Heap, "models/players/chr_tama.vox", Memory);
-  Result[ModelIndex_Player_tsurugi] = LoadVoxModel(Memory, Heap, "models/players/chr_tsurugi.vox", Memory);
+  /* Result[ModelIndex_Player_jp]      = LoadVoxModel(Memory, Heap, "models/players/chr_jp.vox", Memory); */
+  /* Result[ModelIndex_Player_bow]     = LoadVoxModel(Memory, Heap, "models/players/chr_bow.vox", Memory); */
+  /* Result[ModelIndex_Player_cat]     = LoadVoxModel(Memory, Heap, "models/players/chr_cat.vox", Memory); */
+  /* Result[ModelIndex_Player_fox]     = LoadVoxModel(Memory, Heap, "models/players/chr_fox.vox", Memory); */
+  /* Result[ModelIndex_Player_gumi]    = LoadVoxModel(Memory, Heap, "models/players/chr_gumi.vox", Memory); */
+  /* Result[ModelIndex_Player_knight]  = LoadVoxModel(Memory, Heap, "models/players/chr_knight.vox", Memory); */
+  /* Result[ModelIndex_Player_man]     = LoadVoxModel(Memory, Heap, "models/players/chr_man.vox", Memory); */
+  /* Result[ModelIndex_Player_mom]     = LoadVoxModel(Memory, Heap, "models/players/chr_mom.vox", Memory); */
+  /* Result[ModelIndex_Player_old]     = LoadVoxModel(Memory, Heap, "models/players/chr_old.vox", Memory); */
+  /* Result[ModelIndex_Player_poem]    = LoadVoxModel(Memory, Heap, "models/players/chr_poem.vox", Memory); */
+  /* Result[ModelIndex_Player_rain]    = LoadVoxModel(Memory, Heap, "models/players/chr_rain.vox", Memory); */
+  /* Result[ModelIndex_Player_sasami]  = LoadVoxModel(Memory, Heap, "models/players/chr_sasami.vox", Memory); */
+  /* Result[ModelIndex_Player_sol]     = LoadVoxModel(Memory, Heap, "models/players/chr_sol.vox", Memory); */
+  /* Result[ModelIndex_Player_sword]   = LoadVoxModel(Memory, Heap, "models/players/chr_sword.vox", Memory); */
+  /* Result[ModelIndex_Player_tale]    = LoadVoxModel(Memory, Heap, "models/players/chr_tale.vox", Memory); */
+  /* Result[ModelIndex_Player_tama]    = LoadVoxModel(Memory, Heap, "models/players/chr_tama.vox", Memory); */
+  /* Result[ModelIndex_Player_tsurugi] = LoadVoxModel(Memory, Heap, "models/players/chr_tsurugi.vox", Memory); */
 
   Result[ModelIndex_Bitty0] = LoadVoxModel(Memory, Heap, "models/splotion_bitty_0.vox", Memory);
   Result[ModelIndex_Bitty1] = LoadVoxModel(Memory, Heap, "models/splotion_bitty_1.vox", Memory);
@@ -188,6 +188,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       world_chunk *Chunk = Job->Chunk;
 
 
+#if 0
       if (ChunkIsGarbage(Chunk))
       {
       }
@@ -274,62 +275,43 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
         }
       }
 
-#if 0
+#else
+
 #if 1
           counted_string AssetFilename = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, Thread->TempMemory);
           native_file AssetFile = OpenFile(AssetFilename, "r+b");
 #endif
-          {
+      {
 
 #if 1
-            /* s32 Frequency = 0; */
-            /* s32 Amplititude = 0; */
-            /* s32 StartingZDepth = 0; */
+        /* s32 Frequency = 0; */
+        /* s32 Amplititude = 0; */
+        /* s32 StartingZDepth = 0; */
 
-            /* s32 Frequency = 50; */
-            /* s32 Amplititude = 50; */
-            /* s32 StartingZDepth = -40; // TODO(Jesse): Figure out why this isn't doing anything */
+        /* s32 Frequency = 50; */
+        /* s32 Amplititude = 50; */
+        /* s32 StartingZDepth = -40; // TODO(Jesse): Figure out why this isn't doing anything */
 
-            s32 Frequency = 50;
-            s32 Amplititude = 15;
-            s32 StartingZDepth = -5;
+        s32 Frequency = 50;
+        s32 Amplititude = 15;
+        s32 StartingZDepth = -5;
 
-            Assert(Chunk->Dim == World->ChunkDim);
-            InitializeWorldChunkPerlinPlane( Thread,
-                                             Chunk,
-                                             Chunk->Dim,
-                                             &AssetFile,
-                                             Frequency,
-                                             Amplititude,
-                                             StartingZDepth );
+        Assert(Chunk->Dim == World->ChunkDim);
+        InitializeWorldChunkPerlinPlane( Thread,
+                                         Chunk,
+                                         Chunk->Dim,
+                                         &AssetFile,
+                                         Frequency,
+                                         Amplititude,
+                                         StartingZDepth );
 
-            FullBarrier;
+        FullBarrier;
 
-            /* Chunk->LodMesh_Complete = True; */
-            /* Assert( NotSet(Chunk, Chunk_Queued )); */
+        /* Chunk->LodMesh_Complete = True; */
+        /* Assert( NotSet(Chunk, Chunk_Queued )); */
 
 #endif
-          }
-
-        }
-        else if ( NotSet(Chunk->Flags, Chunk_MeshesInitialized) )
-        {
-          InvalidCodePath();
-          /* Assert( IsSet(Chunk->Flags, Chunk_VoxelsInitialized) ); */
-
-          /* /1* if ( DestChunk->FilledCount > 0 && *1/ */
-          /* /1*      DestChunk->FilledCount < (u32)Volume(WorldChunkDim)) *1/ */
-          /* { */
-          /*   untextured_3d_geometry_buffer *NewMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory); */
-          /*   BuildWorldChunkMesh(Chunk, Chunk->Dim, {}, Chunk->Dim, NewMesh); */
-
-          /*   untextured_3d_geometry_buffer *OldMesh = (untextured_3d_geometry_buffer*)AtomicReplace((volatile void**)&Chunk->Mesh, NewMesh); */
-          /*   if (OldMesh) { DeallocateMesh(&OldMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); } */
-          /* } */
-
-        }
       }
-
 #endif
       FinalizeChunkInitialization(Chunk);
 
@@ -780,7 +762,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   /* InitializeWorld_WFC(world *World, v3i VisibleRegion, v3i TileDim, memory_arena *Memory, random_series *Series) */
   random_series WorldEntropy = {54930695483};
-  InitializeWorld_WFC(Resources->World, g_VisibleRegion, V3i(8), Memory, &WorldEntropy);
+  /* InitializeWorld_WFC(Resources->World, g_VisibleRegion, V3i(8), Memory, &WorldEntropy); */
 
   GameState->Models = AllocateGameModels(GameState, Memory, Heap);
 

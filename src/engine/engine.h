@@ -1,3 +1,5 @@
+// TODO(Jesse): Why would we ever build the engine _without_ the GL implementations?
+
 #include <engine/api.h>
 #include <engine/headers/thread.h>
 #include <engine/constants.h>

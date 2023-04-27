@@ -15,7 +15,6 @@
 #define WORLD_GRAVITY (V3(0.0f, 0.0f, 0.0f))
 
 #define MODELS_PATH "models"
-#define SHADER_PATH "shaders"
 
 /* #define PLAYER_MODEL MODELS_PATH"/chr_knight.vox" */
 /* #define PLAYER_MODEL MODELS_PATH"/ephtracy.vox" */

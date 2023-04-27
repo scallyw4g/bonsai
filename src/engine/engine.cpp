@@ -18,18 +18,13 @@
 
 #if PLATFORM_GL_IMPLEMENTATIONS
 #include <engine/cpp/shader.cpp>
-#include <engine/cpp/texture.cpp>
 #include <engine/cpp/gpu_mapped_buffer.cpp>
 
 #include <engine/render/render_init.cpp>
 #include <engine/render/render_utils.cpp>
 #include <engine/cpp/render.cpp> // TODO(Jesse): Probably time to split this up?
-
-#include <engine/render/2d.cpp>
 #endif
 
-
-#include <bonsai_debug/interactable.cpp>
 #include <engine/cpp/ui.cpp>
 #include <engine/cpp/world_chunk.cpp>
 #include <engine/cpp/world.cpp>
