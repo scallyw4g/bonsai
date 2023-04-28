@@ -28,14 +28,15 @@ enum tile_option
   TileOption_Air    = 1 << 0,
   TileOption_Dirt   = 1 << 1,
   TileOption_Stone  = 1 << 2,
+  TileOption_HighestBit = TileOption_Stone,
 
-  TileOption_HouseBase_North    = 1 << 3,
-  TileOption_HouseBase_South    = 1 << 4,
-  TileOption_HouseBase_East     = 1 << 5,
-  TileOption_HouseBase_West     = 1 << 6,
-  TileOption_HouseBase_Interior = 1 << 7,
+  /* TileOption_HouseBase_North    = 1 << 3, */
+  /* TileOption_HouseBase_South    = 1 << 4, */
+  /* TileOption_HouseBase_East     = 1 << 5, */
+  /* TileOption_HouseBase_West     = 1 << 6, */
+  /* TileOption_HouseBase_Interior = 1 << 7, */
+  /* TileOption_HighestBit = TileOption_HouseBase_Interior, */
 
-  TileOption_HighestBit = TileOption_HouseBase_Interior,
 };
 // TODO(Jesse)(metaprogramming): Metaprogram this if I ever hit a bug here..
 //
@@ -65,7 +66,7 @@ TileOptionIndex( u32 O )
       Result = 3;
     } break;
 
-#if 1
+#if 0
     case TileOption_HouseBase_North:
     {
       Result = 4;
@@ -85,17 +86,58 @@ TileOptionIndex( u32 O )
     {
       Result = 7;
     } break;
-#endif
 
     case TileOption_HouseBase_Interior:
     {
       Result = 8;
     } break;
+#endif
   }
 
   return Result;
 }
 
+global_variable u32 TileConnectivity[10][6] = {
+
+  // Null tile
+  { TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, },
+
+  //
+  // Air Tiles
+  {
+    TileOption_Air|TileOption_Dirt, //  x
+    TileOption_Air|TileOption_Dirt, //  y
+    TileOption_Air,                 //  z
+
+    TileOption_Air|TileOption_Dirt, // -x
+    TileOption_Air|TileOption_Dirt, // -y
+    TileOption_Air|TileOption_Dirt, // -z
+  },
+
+  // Dirt Tiles
+  {
+    TileOption_Air|TileOption_Dirt|TileOption_Stone, //  x
+    TileOption_Air|TileOption_Dirt|TileOption_Stone, //  y
+    TileOption_Air,    //  z
+
+    TileOption_Air|TileOption_Dirt|TileOption_Stone, // -x
+    TileOption_Air|TileOption_Dirt|TileOption_Stone, // -y
+    TileOption_Stone,                                // -z
+  },
+
+  // Stone
+  {
+    TileOption_Dirt|TileOption_Stone, //  x
+    TileOption_Dirt|TileOption_Stone, //  y
+    TileOption_Dirt|TileOption_Stone, //  z
+
+    TileOption_Dirt|TileOption_Stone, // -x
+    TileOption_Dirt|TileOption_Stone, // -y
+    TileOption_Stone                  // -z
+  },
+};
+
+#if 0
 global_variable u32 TileConnectivity[10][6] = {
 
   // Null tile
@@ -315,6 +357,7 @@ global_variable u32 TileConnectivity[10][6] = {
 #endif
 
 };
+#endif
 
 
 link_internal u32
@@ -381,8 +424,11 @@ GetOptionsForDirectionAndChoice(v3i Dir, u32 Choice)
 link_internal u32
 UnsetLeastSignificantSetBit(u32 *Input)
 {
-  u32 Result = 0;
-  NotImplemented;
+  u32 StartValue = *Input;
+  u32 Cleared = StartValue & (StartValue - 1);
+  *Input = Cleared;
+
+  u32 Result = (StartValue & ~(Cleared));
   return Result;
 }
 
@@ -390,15 +436,22 @@ link_internal u32
 CountBitsSet_Kernighan(u32 Input)
 {
   u32 Result = 0;
-  NotImplemented;
+  while (Input != 0)
+  {
+      Input = Input & (Input - 1);
+      Result++;
+  }
   return Result;
 }
 
 link_internal u32
 GetNthSetBit(u32 Target, u32 NBit)
 {
-  u32 Result= 0;
-  NotImplemented;
+  u32 Result = u32_MAX;
+  for (u32 BitIndex = 0; BitIndex < NBit; ++BitIndex)
+  {
+    Result = UnsetLeastSignificantSetBit(&Target);
+  }
   return Result;
 }
 
@@ -616,7 +669,7 @@ InitializeWorld_WFC(world *World, v3i VisibleRegion, v3i TileDim, memory_arena *
             // but it does not for (1, 2)
             u32 BitChoice = RandomBetween(1, Series, BitsSet+1);
 
-            TileChoice = GetNthSetBit(BitChoice, TileOptions);
+            TileChoice = GetNthSetBit(TileOptions, BitChoice);
             Assert(CountBitsSet_Kernighan(TileChoice) == 1);
 
             TileSuperpositions[TileIndex] = TileChoice;

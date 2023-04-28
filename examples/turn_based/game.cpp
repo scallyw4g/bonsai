@@ -64,6 +64,7 @@ GetColorForTile(u32 TileType)
     case TileOption_None:
       return RED;
 
+#if 0
     case TileOption_HouseBase_North:
       return GREEN;
 
@@ -76,6 +77,7 @@ GetColorForTile(u32 TileType)
 
     case TileOption_HouseBase_Interior:
       return YELLOW;
+#endif
 
     case TileOption_Stone:
       return GREY_2;

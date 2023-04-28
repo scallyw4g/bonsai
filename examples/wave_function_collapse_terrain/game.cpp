@@ -64,6 +64,7 @@ GetColorForTile(u32 TileType)
     case TileOption_None:
       return RED;
 
+#if 0
     case TileOption_HouseBase_North:
       return GREEN;
 
@@ -76,6 +77,7 @@ GetColorForTile(u32 TileType)
 
     case TileOption_HouseBase_Interior:
       return YELLOW;
+#endif
 
     case TileOption_Stone:
       return GREY_2;
@@ -188,7 +190,6 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       world_chunk *Chunk = Job->Chunk;
 
 
-#if 0
       if (ChunkIsGarbage(Chunk))
       {
       }
@@ -225,11 +226,13 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                   } break;
 
                   case TileOption_None:
+#if 0
                   case TileOption_HouseBase_North:
                   case TileOption_HouseBase_South:
                   case TileOption_HouseBase_East:
                   case TileOption_HouseBase_West:
                   case TileOption_HouseBase_Interior:
+#endif
                   case TileOption_Dirt:
                   case TileOption_Stone:
                   {
@@ -275,44 +278,6 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
         }
       }
 
-#else
-
-#if 1
-          counted_string AssetFilename = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, Thread->TempMemory);
-          native_file AssetFile = OpenFile(AssetFilename, "r+b");
-#endif
-      {
-
-#if 1
-        /* s32 Frequency = 0; */
-        /* s32 Amplititude = 0; */
-        /* s32 StartingZDepth = 0; */
-
-        /* s32 Frequency = 50; */
-        /* s32 Amplititude = 50; */
-        /* s32 StartingZDepth = -40; // TODO(Jesse): Figure out why this isn't doing anything */
-
-        s32 Frequency = 50;
-        s32 Amplititude = 15;
-        s32 StartingZDepth = -5;
-
-        Assert(Chunk->Dim == World->ChunkDim);
-        InitializeWorldChunkPerlinPlane( Thread,
-                                         Chunk,
-                                         Chunk->Dim,
-                                         &AssetFile,
-                                         Frequency,
-                                         Amplititude,
-                                         StartingZDepth );
-
-        FullBarrier;
-
-        /* Chunk->LodMesh_Complete = True; */
-        /* Assert( NotSet(Chunk, Chunk_Queued )); */
-
-#endif
-      }
-#endif
       FinalizeChunkInitialization(Chunk);
 
     } break;
@@ -760,9 +725,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   AllocateWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 
-  /* InitializeWorld_WFC(world *World, v3i VisibleRegion, v3i TileDim, memory_arena *Memory, random_series *Series) */
   random_series WorldEntropy = {54930695483};
-  /* InitializeWorld_WFC(Resources->World, g_VisibleRegion, V3i(8), Memory, &WorldEntropy); */
+  InitializeWorld_WFC(Resources->World, g_VisibleRegion, V3i(8), Memory, &WorldEntropy);
 
   GameState->Models = AllocateGameModels(GameState, Memory, Heap);
 

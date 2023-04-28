@@ -32,6 +32,10 @@ precision highp sampler3D;
 // Note(Jesse): Must match corresponding C++ define
 #define DEBUG_TEXTURE_DIM 512
 
+// Note(Jesse): Must match corresponding C++ define
+#define SCR_WIDTH (1920)
+#define SCR_HEIGHT (1080)
+
 #define PoissonDiskSize 16
 vec2 poissonDisk[PoissonDiskSize] = vec2[](
    vec2( -0.94201624, -0.39906216 ),

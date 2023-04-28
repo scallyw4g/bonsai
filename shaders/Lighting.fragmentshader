@@ -64,8 +64,6 @@ vec3 DiffuseLightingCalc(float AttenuationFactor, vec3 DiffuseColor, vec3 FragTo
   return DirectLight;
 }
 
-#define SCR_WIDTH (3840)
-#define SCR_HEIGHT (2160)
 
 void main()
 {
