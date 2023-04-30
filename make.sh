@@ -42,6 +42,7 @@ BONSAI_INTERNAL='-D BONSAI_INTERNAL'
 EXAMPLES_TO_BUILD="
   $EXAMPLES/turn_based
   $EXAMPLES/wave_function_collapse_terrain
+  $EXAMPLES/tools/voxel_synthesis_rule_baker
 "
 
 EXECUTABLES_TO_BUILD="
@@ -333,8 +334,9 @@ function RunPoofHelper {
 
 
 
-   # --log-level LogLevel_Debug                                                                                  \
+
   poof                                                                                                         \
+   --log-level LogLevel_Debug                                                                                  \
    -I src/                                                                                                     \
    -I include/                                                                                                 \
    -D _M_X64                                                                                                   \
@@ -354,17 +356,21 @@ function RunPoof
   echo -e ""
 
   ColorizeTitle "Poofing"
-  [ -d src/generated ] && rm -Rf src/generated
-  [ -d generated ] && rm -Rf generated
+  # [ -d src/generated ] && rm -Rf src/generated
+  # [ -d generated ] && rm -Rf generated
 
-  RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
-  RunPoofHelper include/bonsai_debug/debug.cpp && echo -e "$Success poofed src/include/bonsai_debug/debug.cpp" &
+  # RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
+  # RunPoofHelper include/bonsai_debug/debug.cpp && echo -e "$Success poofed src/include/bonsai_debug/debug.cpp" &
   # RunPoofHelper examples/asset_picker/game.cpp && echo -e "$Success poofed examples/asset_picker/game.cpp" &
   # RunPoofHelper examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &
+  # RunPoofHelper examples/turn_based/game.cpp && echo -e "$Success poofed examples/turn_based/game.cpp" &
+
   # RunPoofHelper src/tools/asset_packer.cpp && echo -e "$Success poofed src/tools/asset_packer.cpp" &
-  RunPoofHelper examples/turn_based/game.cpp && echo -e "$Success poofed examples/turn_based/game.cpp" &
+  RunPoofHelper src/tools/voxel_synthesis_rule_baker.cpp && echo -e "$Success poofed src/tools/voxel_synthesis_rule_baker.cpp" &
+
 
   wait
+  sync
 
   [ -d tmp ] && rmdir tmp
 }

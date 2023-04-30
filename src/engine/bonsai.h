@@ -390,12 +390,6 @@ struct collision_event
   canonical_position MaxP;
 };
 
-struct free_world_chunk
-{
-  world_chunk *chunk_data;
-  world_chunk *Next;
-};
-
 inline void
 UnSetFlag( voxel_flag *Flags, voxel_flag Flag )
 {

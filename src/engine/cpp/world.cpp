@@ -494,6 +494,7 @@ PropagateChangesTo(u32 PrevTileOptions, v3i Origin, v3i Direction, v3i Superposi
 global_variable s32 TileSuperpositionCount = 0;
 global_variable u32 *TileSuperpositions = {};
 global_variable v3i Global_TileSuperpositionsDim = {};
+global_variable v3i Global_TileDim = V3i(8);
 
 link_internal void
 InitializeWorld_WFC(world *World, v3i VisibleRegion, v3i TileDim, memory_arena *Memory, random_series *Series)
