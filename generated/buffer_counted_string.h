@@ -22,3 +22,11 @@ CountedStringBuffer(umm ElementCount, memory_arena* Memory)
   return Result;
 }
 
+link_inline counted_string *
+Get(counted_string_buffer *Buf, u32 Index)
+{
+  Assert(Index < Buf->Count);
+  counted_string *Result = Buf->Start + Index;
+  return Result;
+}
+

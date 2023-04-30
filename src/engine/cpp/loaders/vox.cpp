@@ -366,27 +366,37 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
 
   MarkBoundaryVoxels_MakeExteriorFaces( Result.ChunkData->Voxels, Result.ChunkData->Dim, {}, Result.ChunkData->Dim);
 
+  if (Result.Palette == 0)
+  {
+    Result.Palette = DefaultPalette;
+  }
+
   return Result;
 }
 
-model
-LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepath, memory_arena *TempMemory)
+link_internal void
+AllocateAndBuildMesh(vox_data *Vox, model *DestModel, memory_arena *TempMemory, memory_arena *PermMemory)
+{
+  chunk_data *ChunkData = Vox->ChunkData;
+  DestModel->Dim = ChunkData->Dim;
+
+  // TODO(Jesse): This wastes a shit-ton of memory.  Should probably have a way
+  // of realloc-ing, or sum up how much memory we'll need first?
+  AllocateMesh(&DestModel->Mesh, 6*VERTS_PER_FACE*(u32)Volume(DestModel->Dim), PermMemory);
+  /* DestModel->Mesh = GetMeshForChunk(); */
+
+  BuildWorldChunkMeshFromMarkedVoxels_Greedy(Vox, &DestModel->Mesh, TempMemory);
+  // TODO(Jesse): Roll back what memory we don't use here.. or maybe allocate the initial buffer with temp and copy to perm?
+}
+
+link_internal model
+LoadVoxModel(memory_arena *PermMemory, heap_allocator *Heap, char const *filepath, memory_arena *TempMemory)
 {
   TIMED_FUNCTION();
 
   model Result = {};
-  vox_data Vox = LoadVoxData(WorldStorage, Heap, filepath);
-  chunk_data *ChunkData = Vox.ChunkData;
-
-  Result.Dim = ChunkData->Dim;
-
-  // TODO(Jesse): This wastes a shit-ton of memory.  Should probably have a way
-  // of realloc-ing, or sum up how much memory we'll need first?
-  AllocateMesh(&Result.Mesh, 6*VERTS_PER_FACE*(u32)Volume(Result.Dim), WorldStorage);
-  /* Result.Mesh = GetMeshForChunk(); */
-
-  v4 *ColorPalette = Vox.Palette ? Vox.Palette : DefaultPalette;
-  BuildWorldChunkMeshFromMarkedVoxels_Greedy(ChunkData->Voxels, Result.Dim, {}, Result.Dim, &Result.Mesh, TempMemory, ColorPalette);
+  vox_data Vox = LoadVoxData(PermMemory, Heap, filepath);
+  AllocateAndBuildMesh(&Vox, &Result, TempMemory, PermMemory );
 
   return Result;
 }

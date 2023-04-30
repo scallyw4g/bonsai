@@ -197,8 +197,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       {
         if ( NotSet(Chunk->Flags, Chunk_VoxelsInitialized) )
         {
-          // TODO(Jesse): Deduplicate this
-          v3i TileDim = V3i(8);
+          v3i TileDim = Global_TileDim;
 
           v3i AbsTileMaxDim = World->VisibleRegion*World->ChunkDim / TileDim;
           Assert((World->VisibleRegion*World->ChunkDim%TileDim) == V3i(0));
@@ -726,7 +725,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   AllocateWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 
   random_series WorldEntropy = {54930695483};
-  InitializeWorld_WFC(Resources->World, g_VisibleRegion, V3i(8), Memory, &WorldEntropy);
+  InitializeWorld_WFC(Resources->World, g_VisibleRegion, Global_TileDim, Memory, &WorldEntropy);
 
   GameState->Models = AllocateGameModels(GameState, Memory, Heap);
 

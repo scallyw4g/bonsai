@@ -1237,6 +1237,14 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
 }
 
 link_internal void
+BuildWorldChunkMeshFromMarkedVoxels_Greedy( vox_data *Vox,
+                                            untextured_3d_geometry_buffer *DestGeometry,
+                                            memory_arena *TempMemory)
+{
+  BuildWorldChunkMeshFromMarkedVoxels_Greedy(Vox->ChunkData->Voxels, Vox->ChunkData->Dim, {}, Vox->ChunkData->Dim, DestGeometry, TempMemory, Vox->Palette);
+}
+
+link_internal void
 BuildWorldChunkMeshFromMarkedVoxels_Naieve( voxel *Voxels,
                                             chunk_dimension SrcChunkDim,
 

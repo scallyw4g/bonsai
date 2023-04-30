@@ -2,7 +2,7 @@
 
 BUILD_EVERYTHING=0
 
-RunPoof=0
+RunPoof=1
 
 BuildExecutables=1
 BuildExamples=1
@@ -22,6 +22,7 @@ OPTIMIZATION_LEVEL="-O0"
 EMCC=0
 
 
+# NOTE(Jesse): Can't do this cause it fucks with the paths poof outputs
 # ROOT="$(pwd)"
 ROOT="."
 SRC="$ROOT/src"
@@ -40,6 +41,7 @@ BONSAI_INTERNAL='-D BONSAI_INTERNAL'
   # $EXAMPLES/tile_gen
 
 EXAMPLES_TO_BUILD="
+  $EXAMPLES/blank_project
   $EXAMPLES/turn_based
   $EXAMPLES/wave_function_collapse_terrain
   $EXAMPLES/tools/voxel_synthesis_rule_baker
@@ -364,9 +366,10 @@ function RunPoof
   # RunPoofHelper examples/asset_picker/game.cpp && echo -e "$Success poofed examples/asset_picker/game.cpp" &
   # RunPoofHelper examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &
   # RunPoofHelper examples/turn_based/game.cpp && echo -e "$Success poofed examples/turn_based/game.cpp" &
+  RunPoofHelper examples/tools/voxel_synthesis_rule_baker/game.cpp && echo -e "$Success poofed examples/tools/voxel_synthesis_rule_baker/game.cpp" &
 
   # RunPoofHelper src/tools/asset_packer.cpp && echo -e "$Success poofed src/tools/asset_packer.cpp" &
-  RunPoofHelper src/tools/voxel_synthesis_rule_baker.cpp && echo -e "$Success poofed src/tools/voxel_synthesis_rule_baker.cpp" &
+  # RunPoofHelper src/tools/voxel_synthesis_rule_baker.cpp && echo -e "$Success poofed src/tools/voxel_synthesis_rule_baker.cpp" &
 
 
   wait

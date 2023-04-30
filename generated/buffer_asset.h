@@ -22,3 +22,11 @@ AssetBuffer(umm ElementCount, memory_arena* Memory)
   return Result;
 }
 
+link_inline asset *
+Get(asset_buffer *Buf, u32 Index)
+{
+  Assert(Index < Buf->Count);
+  asset *Result = Buf->Start + Index;
+  return Result;
+}
+

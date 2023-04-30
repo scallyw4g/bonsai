@@ -22,3 +22,11 @@ StandingSpotBuffer(umm ElementCount, memory_arena* Memory)
   return Result;
 }
 
+link_inline standing_spot *
+Get(standing_spot_buffer *Buf, u32 Index)
+{
+  Assert(Index < Buf->Count);
+  standing_spot *Result = Buf->Start + Index;
+  return Result;
+}
+

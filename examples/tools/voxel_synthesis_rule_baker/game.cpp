@@ -1,12 +1,10 @@
-#define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
 #define PLATFORM_GL_IMPLEMENTATIONS 1
-
-#define BONSAI_DEBUG_LIB_LOADER_API 1
 #define BONSAI_DEBUG_SYSTEM_API 1
-
 
 #include <bonsai_types.h>
 
+#include <examples/tools/voxel_synthesis_rule_baker/game_constants.h>
+#include <examples/tools/voxel_synthesis_rule_baker/game_types.h>
 
 #define DimIterator( xArg, yArg, zArg, Dim) \
   for (s32 zArg = 0; zArg < Dim.z; ++zArg)  \
@@ -23,21 +21,6 @@
   for (s32 yArg = Min.y; yArg < Max.y; ++yArg)       \
   for (s32 xArg = Min.x; xArg < Max.x; ++xArg)
 
-
-enum voxel_rule_direction
-{
-  VoxelRuleDir_PosX,
-  VoxelRuleDir_NegX,
-
-  VoxelRuleDir_PosY,
-  VoxelRuleDir_NegY,
-
-  VoxelRuleDir_PosZ,
-  VoxelRuleDir_NegZ,
-
-  VoxelRuleDir_Count,
-};
-CAssert(VoxelRuleDir_Count == 6);
 
 #if 0
 // TODO(Jesse)(metaprogramming, ptr_type): Metaprogram this when we can pass
@@ -60,57 +43,6 @@ AllocateBuffer(umm Count, memory_arena *Memory)
   return Result;
 }
 #endif
-
-typedef u64 tile_rule;
-
-struct tile_ruleset
-{
-  tile_rule E[VoxelRuleDir_Count];
-};
-
-struct voxel_synth_tile
-{
-  u32 RuleId;
-  u32 VoxelOffset;
-
-  u64 HashValue;
-  chunk_data *SrcChunk;
-};
-
-// TODO(Jesse)(poof, indirection): need to be able to add the indirection to SrcChunk in the arguments
-/* poof(gen_constructor(voxel_synth_tile)) */
-/* #include <generated/gen_constructor_voxel_synth_tile.h> */
-
-link_internal voxel_synth_tile
-VoxelSynthTile( u32 RuleId , u32 VoxelOffset , u64 HashValue , chunk_data *SrcChunk  )
-{
-  voxel_synth_tile Reuslt = {
-    .RuleId = RuleId,
-    .VoxelOffset = VoxelOffset,
-    .HashValue = HashValue,
-    .SrcChunk = SrcChunk
-  };
-  return Reuslt;
-}
-
-
-link_internal u64
-AreEqual(voxel_synth_tile *T0, voxel_synth_tile *T1)
-{
-  // TODO(Jesse): Compare the actual voxel data!
-  u64 Result = T0->HashValue == T1->HashValue;
-  return Result;
-}
-
-link_internal u64
-Hash(voxel_synth_tile *Tile)
-{
-  u64 Result = {};
-  return Result;
-}
-
-poof( hashtable(voxel_synth_tile) )
-#include <generated/hashtable_voxel_synth_tile.h>
 
 #define MAX_TILE_RULESETS (64)
 
@@ -168,7 +100,7 @@ WriteRulesForAdjacentTile(tile_ruleset *ThisTileRules, v3i ThisTileP, voxel_synt
   s32 TestTileIndex = TryGetIndex(TestTileP, Global_TileDim);
   if (TestTileIndex > -1)
   {
-    voxel_synth_tile *TestTile = AllTiles.E + TestTileIndex;
+    voxel_synth_tile *TestTile = AllTiles.Start + TestTileIndex;
     ThisTileRules->E[Dir] &= (1 << TestTile->RuleId);
   }
 }
@@ -196,29 +128,22 @@ GetElement(voxel_synth_tile_hashtable *Hashtable, voxel_synth_tile *Tile)
   return Result;
 }
 
-s32 main(s32 ArgCount, const char** Args)
+link_internal voxel_synthesis_result
+ComputeVoxelSynthesisRules(const char* InputVox)
 {
   memory_arena *Memory = AllocateArena(Gigabytes(2));
   heap_allocator Heap = InitHeap(Gigabytes(2));
 
-  Global_ThreadStates = Initialize_ThreadLocal_ThreadStates((s32)GetTotalThreadCount(), 0, Memory);
-  SetThreadLocal_ThreadIndex(0);
+  /* Global_ThreadStates = Initialize_ThreadLocal_ThreadStates((s32)GetTotalThreadCount(), 0, Memory); */
+  /* SetThreadLocal_ThreadIndex(0); */
 
-  if (ArgCount < 3)
-  {
-    Error("Please supply a path to the model to synthesize rules for, followed by the path to output rules to.");
-  }
-
-  const char* InputVox = Args[1];
-  cs OutputPath = CS(Args[2]);
-
-  Info("Synthesizing rules for (%s) -> (%S)", InputVox, OutputPath);
+  Info("Synthesizing rules for (%s)", InputVox);
 
   vox_data Vox = LoadVoxData(Memory, &Heap, InputVox, Global_ChunkApronMinDim, Global_ChunkApronMaxDim);
 
   chunk_dimension TileDim = Vox.ChunkData->Dim / Global_TileDim;
 
-  voxel_synth_tile *AllTiles = Allocate(voxel_synth_tile, Memory, Volume(TileDim) );
+  voxel_synth_tile_buffer AllTiles = VoxelSynthTileBuffer(umm(Volume(TileDim)), Memory);
 
   // TODO(Jesse): At the moment we know statically that the number of unique
   // tiles will never exceed 64, so maybe a full blown hashtable is overkill.
@@ -270,13 +195,13 @@ s32 main(s32 ArgCount, const char** Args)
     }
 
     s32 TileIndex = GetIndex(TileP, TileDim);
-    AllTiles[TileIndex] = Tile;
+    AllTiles.Start[TileIndex] = Tile;
   }
 
   // NOTE(Jesse): For the moment we're going to encode the tiles as a
   // u64 bitfield, so we can't generate more than 64 of them.
   Assert(NextTileId < MAX_TILE_RULESETS);
-  tile_ruleset *AllRules = Allocate(tile_ruleset, Memory, NextTileId);
+  tile_ruleset_buffer AllRules = TileRulesetBuffer(NextTileId, Memory);
 
   // NOTE(Jesse): Iterate over all the tiles, pick out their corresponding rule
   // from AllRules and add the connectivity rules for the adjacent tile rule IDs.
@@ -284,8 +209,8 @@ s32 main(s32 ArgCount, const char** Args)
   {
     v3i TileP = V3i(xTile, yTile, zTile);
     s32 TileIndex = GetIndex(TileP, TileDim);
-    voxel_synth_tile *Tile = AllTiles + TileIndex;
-    tile_ruleset *ThisTileRuleset = AllRules + Tile->RuleId;
+    voxel_synth_tile *Tile = AllTiles.Start + TileIndex;
+    tile_ruleset *ThisTileRuleset = AllRules.Start + Tile->RuleId;
 
     {
       WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, VoxelRuleDir_PosX);
@@ -299,5 +224,73 @@ s32 main(s32 ArgCount, const char** Args)
     }
   }
 
-  return 0;
+  voxel_synthesis_result Result = {
+    .VoxData = Vox,
+    .Tiles = AllTiles,
+    .Rules = AllRules,
+  };
+
+  return Result;
+}
+
+BONSAI_API_WORKER_THREAD_CALLBACK()
+{
+}
+
+BONSAI_API_MAIN_THREAD_CALLBACK()
+{
+  Assert(ThreadLocal_ThreadIndex == 0);
+
+  TIMED_FUNCTION();
+  UNPACK_ENGINE_RESOURCES(Resources);
+
+}
+
+BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
+{
+  Resources->GameState = Allocate(game_state, Resources->Memory, 1);
+
+  UNPACK_ENGINE_RESOURCES(Resources);
+
+  Global_AssetPrefixPath = CSz("examples/voxel_synthesis_rule_baker/assets");
+
+  world_position WorldCenter = {};
+  canonical_position CameraTarget = {};
+
+  StandardCamera(Graphics->Camera, 10000.0f, 1000.0f, CameraTarget);
+
+  GameState->Entropy.Seed = DEBUG_NOISE_SEED;
+
+  AllocateWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
+
+  random_series WorldEntropy = {54930695483};
+  WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
+
+  /* GameState->CameraTarget = GetFreeEntity(EntityTable); */
+  /* SpawnEntity( 0, GameState->CameraTarget, EntityType_Default, ModelIndex_None); */
+  /* GameState->CameraTarget->P = Canonical_Position(Voxel_Position(0), {{2,2,0}}); */
+  /* Resources->CameraTargetP = &GameState->CameraTarget->P; */
+
+  GameState->BakeResult = ComputeVoxelSynthesisRules("examples/tools/voxel_synthesis_rule_baker/assets/test.vox");
+
+  memory_arena *TempMemory = AllocateArena();
+
+  entity *BakeEntity = GetFreeEntity(EntityTable);
+  AllocateAndBuildMesh(&GameState->BakeResult.VoxData, &BakeEntity->Model, TempMemory, Resources->Memory);
+  SpawnEntity(0, BakeEntity, EntityType_Default, ModelIndex_None);
+
+  voxel_synth_tile_buffer BakedTiles = GameState->BakeResult.Tiles;
+  for (u32 SynthTileIndex = 0; SynthTileIndex < BakedTiles.Count; ++SynthTileIndex)
+  {
+    voxel_synth_tile *Tile = Get(&BakedTiles, SynthTileIndex);
+  }
+
+  VaporizeArena(TempMemory);
+  return GameState;
+}
+
+BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
+{
+  Global_ThreadStates = AllThreads;
+  SetThreadLocal_ThreadIndex(ThreadIndex);
 }
