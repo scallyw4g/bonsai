@@ -135,7 +135,7 @@ Bonsai_Render(engine_resources *Resources)
   shadow_render_group *SG   = Graphics->SG;
   gpu_mapped_element_buffer *GpuMap = GetCurrentGpuMap(Graphics);
 
-  r32 MappedGameTime = (r32)(Plat->GameTime / 18.0);
+  r32 MappedGameTime = Plat->GameTime / 18.0f;
 
   SG->Sun.Position.x = Sin(MappedGameTime);
   SG->Sun.Position.y = Cos(MappedGameTime);

@@ -194,7 +194,7 @@ struct world_chunk
 struct picked_world_chunk
 {
   world_chunk *Chunk;
-  r64 tChunk; // f32_MAX indicates not picked
+  r32 tChunk; // f32_MAX indicates not picked
 };
 
 struct picked_voxel

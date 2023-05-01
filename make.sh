@@ -4,9 +4,9 @@ BUILD_EVERYTHING=0
 
 RunPoof=0
 
-BuildExecutables=0
+BuildExecutables=1
 BuildExamples=1
-BuildDebugSystem=0
+BuildDebugSystem=1
 
 BuildTests=0
 BuildDebugTests=0

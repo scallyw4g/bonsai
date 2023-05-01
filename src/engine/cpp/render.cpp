@@ -405,7 +405,7 @@ ClearFramebuffers(graphics *Graphics)
 {
   TIMED_FUNCTION();
   GL.ClearColor(f32_MAX, f32_MAX, f32_MAX, f32_MAX);
-  GL.ClearDepth(f32_MAX);
+  GL.ClearDepth(f64_MAX);
 
 #if DEBUG_SYSTEM_API
 #if DEBUG_SYSTEM_INTERNAL_BUILD

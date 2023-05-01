@@ -385,8 +385,8 @@ main( s32 ArgCount, const char ** Args )
    *  Main Game loop
    */
 
-  r64 LastMs = 0;
-  r64 RealDt = 0;
+  r32 LastMs = 0;
+  r32 RealDt = 0;
   while ( Os.ContinueRunning )
   {
     /* u32 CSwitchEventsThisFrame = CSwitchEventsPerFrame; */
@@ -499,10 +499,10 @@ main( s32 ArgCount, const char ** Args )
 
     Ensure( RewindArena(TranArena) );
 
-    r64 CurrentMS = GetHighPrecisionClock();
-    RealDt = (CurrentMS - LastMs)/1000.0;
+    r32 CurrentMS = (r32)GetHighPrecisionClock();
+    RealDt = (CurrentMS - LastMs)/1000.0f;
     LastMs = CurrentMS;
-    Plat.dt = (r32)RealDt;
+    Plat.dt = RealDt;
     Plat.GameTime += RealDt;
 
     MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(RealDt);
