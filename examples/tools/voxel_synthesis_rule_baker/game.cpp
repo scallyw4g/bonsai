@@ -139,9 +139,9 @@ ComputeVoxelSynthesisRules(const char* InputVox)
 
   Info("Synthesizing rules for (%s)", InputVox);
 
-  vox_data Vox = LoadVoxData(Memory, &Heap, InputVox, Global_ChunkApronMinDim, Global_ChunkApronMaxDim);
+  vox_data Vox = LoadVoxData(Memory, &Heap, InputVox); //, Global_ChunkApronMinDim, Global_ChunkApronMaxDim);
 
-  chunk_dimension TileDim = Vox.ChunkData->Dim / Global_TileDim;
+  chunk_dimension TileDim = Max(V3i(1), Vox.ChunkData->Dim / Global_TileDim);
 
   voxel_synth_tile_buffer AllTiles = VoxelSynthTileBuffer(umm(Volume(TileDim)), Memory);
 
@@ -244,6 +244,19 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Resources);
 
+  /* CameraFollowEntity(); */
+
+  if (Hotkeys)
+  {
+    r32 CameraSpeed = 125.f;
+    v3 CameraDelta = (GetCameraRelativeInput(Hotkeys, Camera));
+    CameraDelta.z = 0.f;
+    CameraDelta = Normalize(CameraDelta) * CameraSpeed * Plat->dt;
+
+    GameState->CameraTarget->P.Offset += CameraDelta;
+    Canonicalize(World->ChunkDim, GameState->CameraTarget->P);
+  }
+
 }
 
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
@@ -255,9 +268,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   Global_AssetPrefixPath = CSz("examples/voxel_synthesis_rule_baker/assets");
 
   world_position WorldCenter = {};
-  canonical_position CameraTarget = {};
+  canonical_position CameraTargetP = {};
 
-  StandardCamera(Graphics->Camera, 10000.0f, 1000.0f, CameraTarget);
+  StandardCamera(Graphics->Camera, 10000.0f, 1000.0f, CameraTargetP);
 
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
@@ -266,26 +279,55 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   random_series WorldEntropy = {54930695483};
   WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
 
-  /* GameState->CameraTarget = GetFreeEntity(EntityTable); */
-  /* SpawnEntity( 0, GameState->CameraTarget, EntityType_Default, ModelIndex_None); */
-  /* GameState->CameraTarget->P = Canonical_Position(Voxel_Position(0), {{2,2,0}}); */
-  /* Resources->CameraTargetP = &GameState->CameraTarget->P; */
+  GameState->CameraTarget = GetFreeEntity(EntityTable);
+  SpawnEntity(GameState->CameraTarget);
+  GameState->CameraTarget->P = Canonical_Position(Voxel_Position(0), {{0,0,0}});
+  Resources->CameraTargetP = &GameState->CameraTarget->P;
 
-  GameState->BakeResult = ComputeVoxelSynthesisRules("examples/tools/voxel_synthesis_rule_baker/assets/test.vox");
+  GameState->BakeResult = ComputeVoxelSynthesisRules("models/test2.vox");
 
   memory_arena *TempMemory = AllocateArena();
 
-  entity *BakeEntity = GetFreeEntity(EntityTable);
-  AllocateAndBuildMesh(&GameState->BakeResult.VoxData, &BakeEntity->Model, TempMemory, Resources->Memory);
-  SpawnEntity(0, BakeEntity, EntityType_Default, ModelIndex_None);
-
   voxel_synth_tile_buffer BakedTiles = GameState->BakeResult.Tiles;
+  vox_data *VoxData = &GameState->BakeResult.VoxData;
+  chunk_data *ChunkData = VoxData->ChunkData;
+
+  entity *BakeEntity = GetFreeEntity(EntityTable);
+  BakeEntity->CollisionVolumeRadius = ChunkData->Dim/2.f;
+  BakeEntity->P = Canonical_Position(V3(0), V3i(0,0,1));
+  AllocateAndBuildMesh(&GameState->BakeResult.VoxData, &BakeEntity->Model, TempMemory, Resources->Memory);
+  SpawnEntity(BakeEntity);
+  Info("Drawing (%d) Baked tiles", BakedTiles.Count);
+
+
+
+  /* world_chunk TmpChunk = {}; */
+  /* AllocateWorldChunk(&TmpChunk, Memory, {}, Global_TileDim); */
+
   for (u32 SynthTileIndex = 0; SynthTileIndex < BakedTiles.Count; ++SynthTileIndex)
   {
     voxel_synth_tile *Tile = Get(&BakedTiles, SynthTileIndex);
+    v3i VoxOffset = V3iFromIndex(s32(Tile->VoxelOffset), ChunkData->Dim);
+
+    entity *TileEntity = GetFreeEntity(EntityTable);
+    TileEntity->CollisionVolumeRadius = V3(Global_TileDim/2);
+
+    // TODO(Jesse)(memory, heap, mesh)
+    AllocateMesh( &TileEntity->Model.Mesh, u32(Kilobytes(4)), Memory);
+
+    BuildWorldChunkMeshFromMarkedVoxels_Greedy( ChunkData->Voxels, ChunkData->Dim,
+                                                VoxOffset, VoxOffset+Global_TileDim,
+                                                &TileEntity->Model.Mesh,
+                                                TempMemory,
+                                                VoxData->Palette );
+
+    TileEntity->P.Offset += V3(s32(SynthTileIndex)*(Global_TileDim.x+8), 0, 0 );
+    TileEntity->P = Canonicalize(World->ChunkDim, TileEntity->P);
+    SpawnEntity(TileEntity);
   }
 
   VaporizeArena(TempMemory);
+
   return GameState;
 }
 

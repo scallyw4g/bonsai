@@ -710,6 +710,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   }
 
 
+  /* CameraFollowEntity(Hotkeys, Camera, GameState->CameraTarget); */
   if (Hotkeys)
   {
     r32 CameraSpeed = 125.f;

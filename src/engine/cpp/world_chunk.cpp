@@ -1257,7 +1257,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve( voxel *Voxels,
   TIMED_FUNCTION();
 
   // NOTE(Jesse): Use the greedy function.
-  InvalidCodePath();
+  /* InvalidCodePath(); */
 
   /* Assert(IsSet(SrcChunk, Chunk_VoxelsInitialized)); */
   /* Assert(IsSet(DestChunk, Chunk_VoxelsInitialized)); */

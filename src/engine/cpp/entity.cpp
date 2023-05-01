@@ -259,6 +259,12 @@ SpawnEntity( model *GameModels, entity *Entity, entity_type Type, model_index Mo
   return;
 }
 
+link_internal void
+SpawnEntity(entity *Entity)
+{
+  SpawnEntity(0, Entity, EntityType_Default, ModelIndex_None);
+}
+
 void
 SpawnEntity(
     entity *Entity,

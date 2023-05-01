@@ -22,3 +22,11 @@ U32Buffer(umm ElementCount, memory_arena* Memory)
   return Result;
 }
 
+link_inline u32 *
+Get(u32_buffer *Buf, u32 Index)
+{
+  Assert(Index < Buf->Count);
+  u32 *Result = Buf->Start + Index;
+  return Result;
+}
+
