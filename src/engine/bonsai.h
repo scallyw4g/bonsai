@@ -7,8 +7,8 @@ struct entity;
 
 #define MAX_PICKED_WORLD_CHUNKS (64)
 
-// TODO(Jesse): Once poof can accept pointer types and multiple arguments we can generate this struct
-/* poof(static_buffer(world_chunk*, MAX_PICKED_WORLD_CHUNKS)) */
+// TODO(Jesse)(metaprogramming, ptr): Once poof can accept pointer types we can generate this struct
+/* poof(static_buffer(world_chunk*, 64)) */
 /* #include <generated/buffer_world_chunk.h> */
 struct picked_world_chunk_static_buffer
 {

@@ -3769,6 +3769,8 @@ GetStandingSpotsWithinRadius(world *World, canonical_position P, r32 Radius, mem
   return Result;
 }
 
+// TODO(Jesse)(perf): This might be dumb.  I think we should be able to do
+// Bresenham here and directly compute the intersected set.
 link_internal picked_world_chunk
 GetChunksIntersectingRay(world *World, ray *Ray, picked_world_chunk_static_buffer *AllChunksBuffer)
 {
@@ -3915,7 +3917,6 @@ RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, 
 
       AtP.E[AxisIndex] += Advance.E[AxisIndex];
       AxisIndex = (AxisIndex + 1) % 3;
-
     }
   }
 
@@ -3957,7 +3958,7 @@ RayTraceCollision(world_chunk *Chunk, chunk_dimension Dim, v3 StartingP, v3 Ray,
 }
 
 link_internal picked_voxel
-PickVoxel(engine_resources *Resources)
+MousePickVoxel(engine_resources *Resources)
 {
   TIMED_FUNCTION();
 
@@ -3989,10 +3990,7 @@ PickVoxel(engine_resources *Resources)
 
 #if 1
 
-    Result = RayTraceCollision( Resources,
-                                                /* World_Position(MaybeRay.Ray.Origin), */
-                                                Camera->CurrentP,
-                                                MaybeRay.Ray.Dir);
+    Result = RayTraceCollision( Resources, Camera->CurrentP, MaybeRay.Ray.Dir);
 
     if (Result.PickedChunk.tChunk != f32_MAX)
     {
@@ -4007,6 +4005,7 @@ PickVoxel(engine_resources *Resources)
                       GetRenderP(World->ChunkDim, VoxelP+V3(1.f)+Offset, Camera),
                       WHITE, 0.05f);
 
+      // Highlight standing spot we're hovering over
       for (u32 StandingSpotIndex = 0;
                StandingSpotIndex < AtElements(&ClosestChunk->StandingSpots);
              ++StandingSpotIndex)

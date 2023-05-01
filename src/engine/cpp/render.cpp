@@ -902,6 +902,14 @@ DrawParticle(untextured_3d_geometry_buffer *Source, untextured_3d_geometry_buffe
   return;
 }
 
+link_internal void
+DrawEntityCollisionVolume(entity *Entity, untextured_3d_geometry_buffer *Dest, graphics *Graphics, v3i WorldChunkDim, u8 ColorIndex = PINK, f32 Thickness = DEFAULT_LINE_THICKNESS)
+{
+  aabb AABB = GetRenderSpaceAABB(WorldChunkDim, Entity, Graphics->Camera);
+  auto CopyDest = ReserveBufferSpace(Dest, VERTS_PER_AABB);
+  DEBUG_DrawAABB(&CopyDest, AABB, ColorIndex, Thickness);
+}
+
 void
 BufferEntity( untextured_3d_geometry_buffer* Dest, entity *Entity, animation *Animation, graphics *Graphics, chunk_dimension WorldChunkDim, r32 dt)
 {
@@ -914,9 +922,7 @@ BufferEntity( untextured_3d_geometry_buffer* Dest, entity *Entity, animation *An
   if (Spawned(Entity))
   {
 #if DEBUG_DRAW_COLLISION_VOLUMES
-    aabb AABB = GetRenderSpaceAABB(WorldChunkDim, Entity, Graphics->Camera);
-    auto CopyDest = ReserveBufferSpace(Dest, VERTS_PER_AABB);
-    DEBUG_DrawAABB(&CopyDest, AABB, PINK);
+    DrawEntityCollisionVolume(Entity, Dest, Graphics, WorldChunkDim);
 #endif
 
     v3 AnimationOffset = {};

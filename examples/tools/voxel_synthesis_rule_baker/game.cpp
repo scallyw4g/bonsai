@@ -257,6 +257,11 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     Canonicalize(World->ChunkDim, GameState->CameraTarget->P);
   }
 
+  entity *Entity = MousePickEntity(Resources);
+  if (Entity)
+  {
+    DrawEntityCollisionVolume(Entity, &GpuMap->Buffer, Graphics, World->ChunkDim, BLACK, 0.2f );
+  }
 }
 
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
@@ -294,7 +299,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   entity *BakeEntity = GetFreeEntity(EntityTable);
   BakeEntity->CollisionVolumeRadius = ChunkData->Dim/2.f;
-  BakeEntity->P = Canonical_Position(V3(0), V3i(0,0,1));
+  BakeEntity->P = Canonical_Position(V3(0), V3i(-1,0,0));
   AllocateAndBuildMesh(&GameState->BakeResult.VoxData, &BakeEntity->Model, TempMemory, Resources->Memory);
   SpawnEntity(BakeEntity);
   Info("Drawing (%d) Baked tiles", BakedTiles.Count);

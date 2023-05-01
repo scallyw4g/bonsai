@@ -1524,3 +1524,56 @@ GatherEntitiesIntersecting(world *World, entity **EntityTable, sphere *S, memory
   u32_buffer Result = Compact(&Stream, Memory);
   return Result;
 }
+
+link_internal b32
+Intersect(world *World, ray *Ray, entity *Entity)
+{
+  aabb EntityAABB = GetSimSpaceAABB(World, Entity);
+  b32 Result = (Intersect(EntityAABB, Ray) != f32_MAX);
+  return Result;
+}
+
+link_internal entity *
+GetEntitiesIntersectingRay(world *World, entity **EntityTable, ray *Ray)
+{
+  entity *Result = {};
+  for ( s32 EntityIndex = 0; EntityIndex < TOTAL_ENTITY_COUNT; ++EntityIndex )
+  {
+    entity *Entity = EntityTable[EntityIndex];
+    if (!Spawned(Entity)) continue;
+
+    if (Intersect(World, Ray, Entity))
+    {
+      Result = Entity;
+    }
+  }
+
+  return Result;
+}
+
+link_internal entity *
+RayTraceEntityCollision(engine_resources *Resources, ray *Ray )
+{
+  entity *Result = GetEntitiesIntersectingRay(Resources->World, Resources->EntityTable, Ray);
+  return Result;
+}
+
+
+link_internal entity *
+MousePickEntity(engine_resources *Resources)
+{
+  TIMED_FUNCTION();
+  UNPACK_ENGINE_RESOURCES(Resources);
+
+  entity *Result = {};
+
+  maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection, Camera, World->ChunkDim);
+
+
+  if (MaybeRay.Tag == Maybe_Yes)
+  {
+    Result = RayTraceEntityCollision( Resources, &MaybeRay.Ray);
+  }
+
+  return Result;
+}

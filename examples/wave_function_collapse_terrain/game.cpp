@@ -506,7 +506,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
 
 
-  picked_voxel Pick = PickVoxel(Resources);
+  picked_voxel Pick = MousePickVoxel(Resources);
 
   local_persist player_action SelectedAction = {};
   local_persist u32 PlayerChargeLevel = {};
