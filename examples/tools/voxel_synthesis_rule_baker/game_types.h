@@ -24,12 +24,10 @@ struct tile_ruleset
 poof(buffer(tile_ruleset));
 #include <generated/buffer_tile_ruleset.h>
 
-/* jpfdsafdsa */
-
 struct voxel_synth_tile
 {
   u32 RuleId;
-  u32 VoxelOffset;
+  u32 VoxelIndex;
 
   u64 HashValue;
   chunk_data *SrcChunk;
@@ -43,13 +41,13 @@ poof(buffer(voxel_synth_tile))
 /* #include <generated/gen_constructor_voxel_synth_tile.h> */
 
 link_internal voxel_synth_tile
-VoxelSynthTile( u32 RuleId , u32 VoxelOffset , u64 HashValue , chunk_data *SrcChunk  )
+VoxelSynthTile( u32 RuleId , u32 VoxelIndex , u64 HashValue , chunk_data *SrcChunk  )
 {
   voxel_synth_tile Reuslt = {
     .RuleId = RuleId,
-    .VoxelOffset = VoxelOffset,
+    .VoxelIndex = VoxelIndex,
     .HashValue = HashValue,
-    .SrcChunk = SrcChunk
+    .SrcChunk = SrcChunk // TODO(Jesse): Only store this once, instead of on every tile.. duh.
   };
   return Reuslt;
 }
@@ -66,7 +64,7 @@ AreEqual(voxel_synth_tile *T0, voxel_synth_tile *T1)
 link_internal u64
 Hash(voxel_synth_tile *Tile)
 {
-  u64 Result = {};
+  u64 Result = Tile->HashValue;
   return Result;
 }
 
@@ -85,6 +83,8 @@ struct game_state
 {
   random_series Entropy;
   voxel_synthesis_result BakeResult;
+
+  entity *BakeEntity; // Entity that has the original mesh attached to it.
 
   entity *CameraTarget;
 

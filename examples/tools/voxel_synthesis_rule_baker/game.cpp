@@ -108,7 +108,8 @@ WriteRulesForAdjacentTile(tile_ruleset *ThisTileRules, v3i ThisTileP, voxel_synt
 link_inline u64
 Hash(voxel *V, v3i P)
 {
-  u64 Result = u64(P.x + P.y + P.z + V->Flags + V->Color);
+  /* u64 Result = u64(P.x + P.y + P.z + V->Flags + V->Color); */
+  u64 Result = u64(V->Flags + V->Color);
   return Result;
 }
 
@@ -118,13 +119,34 @@ GetElement(voxel_synth_tile_hashtable *Hashtable, voxel_synth_tile *Tile)
   voxel_synth_tile *Result = {};
   voxel_synth_tile_linked_list_node *TileBucket = GetHashBucket(Tile->HashValue, Hashtable);
 
-  // TODO(Jesse): These assertions ensure we don't hit hash collisions.  When
-  // we need to handle that case, smarten up AreEqual()
-  /* Assert(TileBucket); */
-  /* Assert(TileBucket->Next == 0); */
-  /* while (AreEqual(Tile, TileBucket->E) == False) { TileBucket = TileBucket->Next; } */
+  while (TileBucket)
+  {
+    if (AreEqual(Tile, &TileBucket->Element)) { Result = &TileBucket->Element; break; }
+    TileBucket = TileBucket->Next;
+  }
 
-  if (TileBucket) { Result = &TileBucket->Element; }
+  if (TileBucket)
+  {
+    /* Result = &TileBucket->Element; */
+  }
+#if BONSAI_INTERNAL
+  else
+  {
+    for (u32 Index = 0; Index < Hashtable->Size; ++Index)
+    {
+      voxel_synth_tile_linked_list_node *Bucket = GetHashBucket(Index, Hashtable);
+
+      while (Bucket)
+      {
+        Assert(AreEqual(Tile, &Bucket->Element) == False);
+        Assert(Tile->HashValue != Bucket->Element.HashValue);
+
+        Bucket = Bucket->Next;
+      }
+    }
+  }
+#endif
+
   return Result;
 }
 
@@ -141,9 +163,11 @@ ComputeVoxelSynthesisRules(const char* InputVox)
 
   vox_data Vox = LoadVoxData(Memory, &Heap, InputVox); //, Global_ChunkApronMinDim, Global_ChunkApronMaxDim);
 
-  chunk_dimension TileDim = Max(V3i(1), Vox.ChunkData->Dim / Global_TileDim);
+  // TODO(Jesse): This adds an extra chunk around the perimeter even if the dim
+  // directly divides into the TileDim..
+  chunk_dimension ChunkTileDim = V3i(1) + (Vox.ChunkData->Dim/Global_TileDim);
 
-  voxel_synth_tile_buffer AllTiles = VoxelSynthTileBuffer(umm(Volume(TileDim)), Memory);
+  voxel_synth_tile_buffer AllTiles = VoxelSynthTileBuffer(umm(Volume(ChunkTileDim)), Memory);
 
   // TODO(Jesse): At the moment we know statically that the number of unique
   // tiles will never exceed 64, so maybe a full blown hashtable is overkill.
@@ -158,10 +182,10 @@ ComputeVoxelSynthesisRules(const char* InputVox)
   // record the RuleId we stored in the original tile.
   voxel_synth_tile_hashtable TileHashtable = Allocate_voxel_synth_tile_hashtable(1024, Memory);
   u32 NextTileId = 0;
-  DimIterator(xTile, yTile, zTile, TileDim)
+  DimIterator(xTile, yTile, zTile, ChunkTileDim)
   {
     v3i TileP = V3i(xTile, yTile, zTile);
-    v3i VoxOffset = TileP * TileDim;
+    v3i VoxOffset = TileP * Global_TileDim;
 
     u64 TileHash = {};
 
@@ -177,25 +201,31 @@ ComputeVoxelSynthesisRules(const char* InputVox)
         voxel *V = Vox.ChunkData->Voxels + VoxIndex;
         if (V->Flags & Voxel_Filled)
         {
-          TileHash += Hash(V, VoxP);
+          // Mod by the tile dim to normalize to that box
+          TileHash += Hash(V, VoxP % Global_TileDim);
         }
       }
     }
 
-    voxel_synth_tile Tile = VoxelSynthTile( 0, u32(GetIndex(VoxOffset, Vox.ChunkData->Dim)), TileHash, Vox.ChunkData);
-    if (voxel_synth_tile *GotTile = GetElement(&TileHashtable, &Tile))
+    s32 BaseVoxIndex = TryGetIndex(VoxOffset, Vox.ChunkData->Dim);
+    if (BaseVoxIndex > -1)
     {
-      Tile.RuleId = GotTile->RuleId;
-    }
-    else
-    {
-      Assert(NextTileId < MAX_TILE_RULESETS); // NOTE(Jesse) For debugging
-      Tile.RuleId = NextTileId++;
-      Insert(Tile, &TileHashtable, Memory);
-    }
+      voxel_synth_tile Tile = VoxelSynthTile( 0, u32(BaseVoxIndex), TileHash, Vox.ChunkData);
+      if (voxel_synth_tile *GotTile = GetElement(&TileHashtable, &Tile))
+      {
+        Assert(GotTile->HashValue == Tile.HashValue);
+        Tile.RuleId = GotTile->RuleId;
+      }
+      else
+      {
+        Assert(NextTileId < MAX_TILE_RULESETS); // NOTE(Jesse) For debugging
+        Tile.RuleId = NextTileId++;
+        Insert(Tile, &TileHashtable, Memory);
+      }
 
-    s32 TileIndex = GetIndex(TileP, TileDim);
-    AllTiles.Start[TileIndex] = Tile;
+      s32 TileIndex = GetIndex(TileP, ChunkTileDim);
+      AllTiles.Start[TileIndex] = Tile;
+    }
   }
 
   // NOTE(Jesse): For the moment we're going to encode the tiles as a
@@ -205,10 +235,10 @@ ComputeVoxelSynthesisRules(const char* InputVox)
 
   // NOTE(Jesse): Iterate over all the tiles, pick out their corresponding rule
   // from AllRules and add the connectivity rules for the adjacent tile rule IDs.
-  DimIterator(xTile, yTile, zTile, TileDim)
+  DimIterator(xTile, yTile, zTile, ChunkTileDim)
   {
     v3i TileP = V3i(xTile, yTile, zTile);
-    s32 TileIndex = GetIndex(TileP, TileDim);
+    s32 TileIndex = GetIndex(TileP, ChunkTileDim);
     voxel_synth_tile *Tile = AllTiles.Start + TileIndex;
     tile_ruleset *ThisTileRuleset = AllRules.Start + Tile->RuleId;
 
@@ -261,6 +291,36 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   if (Entity)
   {
     DrawEntityCollisionVolume(Entity, &GpuMap->Buffer, Graphics, World->ChunkDim, BLACK, 0.2f );
+
+    voxel_synth_tile *HoverTile = (voxel_synth_tile*)Entity->UserData;
+    if (HoverTile)
+    {
+      voxel_synth_tile_buffer BakedTiles = GameState->BakeResult.Tiles;
+      /* tile_ruleset_buffer Rules = GameState->BakeResult.Rules; */
+      /* vox_data *VoxData = &GameState->BakeResult.VoxData; */
+      /* chunk_data *ChunkData = VoxData->ChunkData; */
+      for (u32 BakedTileIndex = 0; BakedTileIndex < BakedTiles.Count; ++BakedTileIndex)
+      {
+        voxel_synth_tile *BakeTile = BakedTiles.Start+BakedTileIndex;
+        // NOTE(Jesse): We really should just be able to check the rule id, but
+        // checking the hash value as well ensures that if we have tiles that
+        // entirely hang off the edge (and thus are completely 0) get skipped.
+        if (BakeTile->RuleId == HoverTile->RuleId &&
+            BakeTile->HashValue == HoverTile->HashValue)
+        {
+          entity *E = GameState->BakeEntity;
+          Info("HoverTile RuleId(%d) HashValue(%u)", HoverTile->RuleId, HoverTile->HashValue);
+          Info(" BakeTile RuleId(%d) HashValue(%u)", BakeTile->RuleId, BakeTile->HashValue);
+
+          v3i VoxBaseP = V3iFromIndex(s32(BakeTile->VoxelIndex), BakeTile->SrcChunk->Dim);
+          v3 EntityBasis = GetRenderP(World->ChunkDim, E, Camera);
+
+          aabb Rect = AABBMinDim(EntityBasis + VoxBaseP, Global_TileDim);
+          DEBUG_DrawAABB(&GpuMap->Buffer, Rect, RED, 0.2f);
+        }
+      }
+    }
+
   }
 }
 
@@ -289,30 +349,63 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->CameraTarget->P = Canonical_Position(Voxel_Position(0), {{0,0,0}});
   Resources->CameraTargetP = &GameState->CameraTarget->P;
 
-  GameState->BakeResult = ComputeVoxelSynthesisRules("models/test2.vox");
+  /* GameState->BakeResult = ComputeVoxelSynthesisRules("models/test2.vox"); */
+  GameState->BakeResult = ComputeVoxelSynthesisRules("models/square.vox");
+  /* GameState->BakeResult = ComputeVoxelSynthesisRules("models/square_expanded.vox"); */
+  /* GameState->BakeResult = ComputeVoxelSynthesisRules("models/archway.vox"); */
 
   memory_arena *TempMemory = AllocateArena();
 
+  tile_ruleset_buffer Rules = GameState->BakeResult.Rules;
   voxel_synth_tile_buffer BakedTiles = GameState->BakeResult.Tiles;
   vox_data *VoxData = &GameState->BakeResult.VoxData;
   chunk_data *ChunkData = VoxData->ChunkData;
 
   entity *BakeEntity = GetFreeEntity(EntityTable);
+  GameState->BakeEntity = BakeEntity;
+
   BakeEntity->CollisionVolumeRadius = ChunkData->Dim/2.f;
   BakeEntity->P = Canonical_Position(V3(0), V3i(-1,0,0));
   AllocateAndBuildMesh(&GameState->BakeResult.VoxData, &BakeEntity->Model, TempMemory, Resources->Memory);
   SpawnEntity(BakeEntity);
   Info("Drawing (%d) Baked tiles", BakedTiles.Count);
 
+  for (u32 RuleIndex = 0; RuleIndex < Rules.Count; ++RuleIndex)
+  {
+    for (u32 SynthTileIndex = 0; SynthTileIndex < BakedTiles.Count; ++SynthTileIndex)
+    {
+      voxel_synth_tile *Tile = Get(&BakedTiles, SynthTileIndex);
+      if (RuleIndex == Tile->RuleId)
+      {
+        v3i VoxOffset = V3iFromIndex(s32(Tile->VoxelIndex), ChunkData->Dim);
 
+        entity *TileEntity = GetFreeEntity(EntityTable);
+        TileEntity->CollisionVolumeRadius = V3(Global_TileDim/2);
 
-  /* world_chunk TmpChunk = {}; */
-  /* AllocateWorldChunk(&TmpChunk, Memory, {}, Global_TileDim); */
+        // TODO(Jesse)(memory, heap, mesh)
+        AllocateMesh( &TileEntity->Model.Mesh, u32(Kilobytes(4)), Memory);
 
+        BuildWorldChunkMeshFromMarkedVoxels_Greedy( ChunkData->Voxels, ChunkData->Dim,
+                                                    VoxOffset, VoxOffset+Global_TileDim,
+                                                    &TileEntity->Model.Mesh,
+                                                    TempMemory,
+                                                    VoxData->Palette );
+
+        TileEntity->P.Offset += V3(s32(RuleIndex)*(Global_TileDim.x+8), 0, 0 );
+        TileEntity->P = Canonicalize(World->ChunkDim, TileEntity->P);
+        SpawnEntity(TileEntity);
+        TileEntity->UserData = (void*)Tile;
+        break;
+      }
+    }
+
+  }
+
+#if 0
   for (u32 SynthTileIndex = 0; SynthTileIndex < BakedTiles.Count; ++SynthTileIndex)
   {
     voxel_synth_tile *Tile = Get(&BakedTiles, SynthTileIndex);
-    v3i VoxOffset = V3iFromIndex(s32(Tile->VoxelOffset), ChunkData->Dim);
+    v3i VoxOffset = V3iFromIndex(s32(Tile->VoxelIndex), ChunkData->Dim);
 
     entity *TileEntity = GetFreeEntity(EntityTable);
     TileEntity->CollisionVolumeRadius = V3(Global_TileDim/2);
@@ -329,7 +422,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
     TileEntity->P.Offset += V3(s32(SynthTileIndex)*(Global_TileDim.x+8), 0, 0 );
     TileEntity->P = Canonicalize(World->ChunkDim, TileEntity->P);
     SpawnEntity(TileEntity);
+    TileEntity->UserData = (void*)Tile;
   }
+#endif
 
   VaporizeArena(TempMemory);
 
