@@ -57,7 +57,7 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *
 }
 
 u8
-GetColorForTile(u32 TileType)
+GetColorForTile(u64 TileType)
 {
   switch (TileType)
   {
@@ -214,8 +214,8 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
               for (s32 xTile = TileMin.x; xTile < TileMax.x; ++xTile)
               {
                 s32 TileIndex = GetIndex(xTile, yTile, zTile, AbsTileMaxDim);
-                Assert(TileIndex < TileSuperpositionCount);
-                u32 TileOptions = TileSuperpositions[TileIndex];
+                Assert(TileIndex < World->TileSuperpositionCount);
+                u64 TileOptions = World->TileSuperpositions[TileIndex];
 
                 switch (TileOptions)
                 {

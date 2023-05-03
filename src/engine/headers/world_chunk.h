@@ -226,6 +226,11 @@ struct world
   v3i ChunkDim;
 
   memory_arena* Memory;
+
+  // TODO(Jesse): Where should these really live?
+  s32 TileSuperpositionCount;
+  u64 *TileSuperpositions;
+
 };
 
 struct standing_spot

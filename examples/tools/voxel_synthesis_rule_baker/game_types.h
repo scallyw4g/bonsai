@@ -81,6 +81,10 @@ struct voxel_synthesis_result
 
 struct game_state
 {
+  // TODO(Jesse): Formalize these
+  u64 *TileSuperpositions;
+  s32 TileSuperpositionCount;
+
   random_series Entropy;
   voxel_synthesis_result BakeResult;
 

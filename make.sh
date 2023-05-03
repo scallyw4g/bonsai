@@ -6,7 +6,7 @@ RunPoof=0
 
 BuildExecutables=1
 BuildExamples=1
-BuildDebugSystem=1
+BuildDebugSystem=0
 
 BuildTests=0
 BuildDebugTests=0

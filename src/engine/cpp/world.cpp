@@ -43,10 +43,10 @@ enum tile_option
 // Filp all bits below and including the high bit, then or-in the high bit again
 global_variable u32 TileMaxEntropy = (TileOption_HighestBit-1) | TileOption_HighestBit;
 
-u32
-TileOptionIndex( u32 O )
+link_inline u64
+TileOptionIndex( u64 O )
 {
-  u32 Result = u32_MAX;
+  u64 Result = u64_MAX;
   switch (O)
   {
     InvalidCase(TileOption_None);
@@ -360,15 +360,15 @@ global_variable u32 TileConnectivity[10][6] = {
 #endif
 
 
-link_internal u32
-GetOptionsForDirectionAndChoice(v3i Dir, u32 Choice)
+link_internal u64
+GetOptionsForDirectionAndChoice(v3i Dir, u64 Choice)
 {
-  u32 OptionIndex = u32_MAX;
+  u64 OptionIndex = u64_MAX;
   for (u32 OriginIndex = 0; OriginIndex < 3; ++OriginIndex)
   {
     if (Dir.E[OriginIndex] != 0)
     {
-      Assert(OptionIndex == u32_MAX);
+      Assert(OptionIndex == u64_MAX);
       OptionIndex = OriginIndex;
       if (Dir.E[OriginIndex] < 0)
       {
@@ -376,11 +376,11 @@ GetOptionsForDirectionAndChoice(v3i Dir, u32 Choice)
       }
     }
   }
-  Assert(OptionIndex != u32_MAX);
+  Assert(OptionIndex != u64_MAX);
 
 
-  u32 ChoiceIndex = TileOptionIndex(Choice);
-  u32 Result = TileConnectivity[ChoiceIndex][OptionIndex];
+  u64 ChoiceIndex = TileOptionIndex(Choice);
+  u64 Result = TileConnectivity[ChoiceIndex][OptionIndex];
   Assert(Result);
 
 #if 0
@@ -421,56 +421,67 @@ GetOptionsForDirectionAndChoice(v3i Dir, u32 Choice)
   return Result;
 }
 
-link_internal u32
-UnsetLeastSignificantSetBit(u32 *Input)
-{
-  u32 StartValue = *Input;
-  u32 Cleared = StartValue & (StartValue - 1);
-  *Input = Cleared;
-
-  u32 Result = (StartValue & ~(Cleared));
-  return Result;
-}
-
-link_internal u32
-CountBitsSet_Kernighan(u32 Input)
-{
-  u32 Result = 0;
-  while (Input != 0)
+poof(
+  func gen_bit_operators(T)
   {
-      Input = Input & (Input - 1);
-      Result++;
-  }
-  return Result;
-}
+    link_internal (T.name)
+    UnsetLeastSignificantSetBit((T.name) *Input)
+    {
+      (T.name) StartValue = *Input;
+      (T.name) Cleared = StartValue & (StartValue - 1);
+      *Input = Cleared;
 
-link_internal u32
-GetNthSetBit(u32 Target, u32 NBit)
-{
-  u32 Result = u32_MAX;
-  for (u32 BitIndex = 0; BitIndex < NBit; ++BitIndex)
-  {
-    Result = UnsetLeastSignificantSetBit(&Target);
+      (T.name) Result = (StartValue & ~(Cleared));
+      return Result;
+    }
+
+    link_internal u32
+    CountBitsSet_Kernighan((T.name) Input)
+    {
+      u32 Result = 0;
+      while (Input != 0)
+      {
+          Input = Input & (Input - 1);
+          Result++;
+      }
+      return Result;
+    }
+
+    link_internal (T.name)
+    GetNthSetBit((T.name) Target, (T.name) NBit)
+    {
+      (T.name) Result = (T.name)_MAX;
+      for ((T.name) BitIndex = 0; BitIndex < NBit; ++BitIndex)
+      {
+        Result = UnsetLeastSignificantSetBit(&Target);
+      }
+      return Result;
+    }
   }
-  return Result;
-}
+)
+
+poof(gen_bit_operators(u32))
+#include <generated/gen_bit_operators_unsigned int .h>
+
+poof(gen_bit_operators(u64))
+#include <generated/gen_bit_operators_unsigned long long int .h>
 
 link_internal void
-PropagateChangesTo(u32 PrevTileOptions, v3i Origin, v3i Direction, v3i SuperpositionsShape, u32 *TileSuperpositions)
+PropagateChangesTo(u64 PrevTileOptions, v3i Origin, v3i Direction, v3i SuperpositionsShape, u64 *TileSuperpositions)
 {
   v3i NewP = Origin+Direction;
   s32 NewIndex = TryGetIndex(NewP, SuperpositionsShape);
   if (NewIndex >= 0)
   {
-    u32 *NewTile = TileSuperpositions + NewIndex;
-    u32 NewTileValue = *NewTile; // NOTE(Jesse): For debugging
+    u64 *NewTile = TileSuperpositions + NewIndex;
+    u64 NewTileValue = *NewTile; // NOTE(Jesse): For debugging
 
-    u32 TotalOptionsToPropagate = {};
-    u32 CachedOptions = PrevTileOptions;
-    while (u32 Option = UnsetLeastSignificantSetBit(&CachedOptions))
+    u64 TotalOptionsToPropagate = {};
+    u64 CachedOptions = PrevTileOptions;
+    while (u64 Option = UnsetLeastSignificantSetBit(&CachedOptions))
     {
       Assert(CountBitsSet_Kernighan(Option) == 1);
-      u32 NewOptions = GetOptionsForDirectionAndChoice(Direction, Option);
+      u64 NewOptions = GetOptionsForDirectionAndChoice(Direction, Option);
       TotalOptionsToPropagate |= NewOptions;
     }
 
@@ -491,9 +502,6 @@ PropagateChangesTo(u32 PrevTileOptions, v3i Origin, v3i Direction, v3i Superposi
 }
 
 
-global_variable s32 TileSuperpositionCount = 0;
-global_variable u32 *TileSuperpositions = {};
-global_variable v3i Global_TileSuperpositionsDim = {};
 global_variable v3i Global_TileDim = V3i(8);
 
 link_internal void
@@ -502,11 +510,15 @@ InitializeWorld_WFC(world *World, v3i VisibleRegion, v3i TileDim, memory_arena *
   TIMED_FUNCTION();
 
   v3i TileMinDim = {};
-  Global_TileSuperpositionsDim = VisibleRegion*World->ChunkDim / TileDim;
+
+  v3i TileSuperpositionsDim = VisibleRegion*World->ChunkDim / TileDim;
   Assert(VisibleRegion*World->ChunkDim  % TileDim == V3i(0));
 
-  TileSuperpositionCount = Volume(Global_TileSuperpositionsDim);
-  TileSuperpositions = Allocate(u32, Memory, TileSuperpositionCount);
+  s32 TileSuperpositionCount = Volume(TileSuperpositionsDim);
+  u64 *TileSuperpositions = Allocate(u64, Memory, TileSuperpositionCount);
+
+  World->TileSuperpositionCount = TileSuperpositionCount;
+  World->TileSuperpositions = TileSuperpositions;
 
   for (s32 TileIndex = 0; TileIndex < TileSuperpositionCount; ++TileIndex)
   {
@@ -514,11 +526,11 @@ InitializeWorld_WFC(world *World, v3i VisibleRegion, v3i TileDim, memory_arena *
   }
 
 #if 1
-  for (s32 yTile = TileMinDim.y; yTile < Global_TileSuperpositionsDim.y; ++yTile)
+  for (s32 yTile = TileMinDim.y; yTile < TileSuperpositionsDim.y; ++yTile)
   {
-    for (s32 xTile = TileMinDim.x; xTile < Global_TileSuperpositionsDim.x; ++xTile)
+    for (s32 xTile = TileMinDim.x; xTile < TileSuperpositionsDim.x; ++xTile)
     {
-      s32 TileIndex = GetIndex(xTile, yTile, 0, Global_TileSuperpositionsDim);
+      s32 TileIndex = GetIndex(xTile, yTile, 0, TileSuperpositionsDim);
 
 #if 0
       /* r32 Rnd = RandomBetween(0.f, Series, 1.f); */
@@ -526,12 +538,12 @@ InitializeWorld_WFC(world *World, v3i VisibleRegion, v3i TileDim, memory_arena *
       {
         TileSuperpositions[TileIndex] = TileOption_Stone;
         v3i P = V3i(xTile, yTile, 0);
-        PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 1, 0, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-        PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i(-1, 0, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-        PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 1, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-        PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0,-1, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-        PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0, 1), Global_TileSuperpositionsDim, TileSuperpositions);
-        PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0,-1), Global_TileSuperpositionsDim, TileSuperpositions);
+        PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 1, 0, 0), TileSuperpositionsDim, TileSuperpositions);
+        PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i(-1, 0, 0), TileSuperpositionsDim, TileSuperpositions);
+        PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 1, 0), TileSuperpositionsDim, TileSuperpositions);
+        PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0,-1, 0), TileSuperpositionsDim, TileSuperpositions);
+        PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0, 1), TileSuperpositionsDim, TileSuperpositions);
+        PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0,-1), TileSuperpositionsDim, TileSuperpositions);
       }
 
 
@@ -543,53 +555,53 @@ InitializeWorld_WFC(world *World, v3i VisibleRegion, v3i TileDim, memory_arena *
 #if 0
   {
     v3i P = V3i(4, 4, 1);
-    s32 TileIndex = GetIndex(P, Global_TileSuperpositionsDim);
+    s32 TileIndex = GetIndex(P, TileSuperpositionsDim);
     TileSuperpositions[TileIndex] = TileOption_HouseBase_North;
-    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 1, 0, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i(-1, 0, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 1, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0,-1, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0, 1), Global_TileSuperpositionsDim, TileSuperpositions);
-    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0,-1), Global_TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 1, 0, 0), TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i(-1, 0, 0), TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 1, 0), TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0,-1, 0), TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0, 1), TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0,-1), TileSuperpositionsDim, TileSuperpositions);
   }
   {
     v3i P = V3i(4, 2, 1);
-    s32 TileIndex = GetIndex(P, Global_TileSuperpositionsDim);
+    s32 TileIndex = GetIndex(P, TileSuperpositionsDim);
     TileSuperpositions[TileIndex] = TileOption_HouseBase_South;
-    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 1, 0, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i(-1, 0, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 1, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0,-1, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0, 1), Global_TileSuperpositionsDim, TileSuperpositions);
-    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0,-1), Global_TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 1, 0, 0), TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i(-1, 0, 0), TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 1, 0), TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0,-1, 0), TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0, 1), TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0,-1), TileSuperpositionsDim, TileSuperpositions);
   }
 #endif
 
 #if 0
   {
     v3i P = V3i(4, 4, 2);
-    s32 TileIndex = GetIndex(P, Global_TileSuperpositionsDim);
+    s32 TileIndex = GetIndex(P, TileSuperpositionsDim);
     TileSuperpositions[TileIndex] = TileOption_Stone;
-    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 1, 0, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i(-1, 0, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 1, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0,-1, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0, 1), Global_TileSuperpositionsDim, TileSuperpositions);
-    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0,-1), Global_TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 1, 0, 0), TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i(-1, 0, 0), TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 1, 0), TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0,-1, 0), TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0, 1), TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0,-1), TileSuperpositionsDim, TileSuperpositions);
   }
 #endif
 
 #if 0
   {
     v3i P = V3i(0, 0, 0);
-    s32 TileIndex = GetIndex(P, Global_TileSuperpositionsDim);
+    s32 TileIndex = GetIndex(P, TileSuperpositionsDim);
     TileSuperpositions[TileIndex] = TileOption_HouseBase_South;
-    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 1, 0, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i(-1, 0, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 1, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0,-1, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0, 1), Global_TileSuperpositionsDim, TileSuperpositions);
-    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0,-1), Global_TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 1, 0, 0), TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i(-1, 0, 0), TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 1, 0), TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0,-1, 0), TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0, 1), TileSuperpositionsDim, TileSuperpositions);
+    PropagateChangesTo(TileSuperpositions[TileIndex],  P, V3i( 0, 0,-1), TileSuperpositionsDim, TileSuperpositions);
   }
 #endif
 
@@ -597,17 +609,17 @@ InitializeWorld_WFC(world *World, v3i VisibleRegion, v3i TileDim, memory_arena *
   b32 Continue = True;
   while (Continue)
   {
-    u32 NumRemainingOptions = u32_MAX;
+    u32 NumRemainingOptions = u64_MAX;
     s32 SmallestEntropyIndex = s32_MAX;
 
-    for (s32 zTile = TileMinDim.z; zTile < Global_TileSuperpositionsDim.z; ++zTile)
+    for (s32 zTile = TileMinDim.z; zTile < TileSuperpositionsDim.z; ++zTile)
     {
-      for (s32 yTile = TileMinDim.y; yTile < Global_TileSuperpositionsDim.y; ++yTile)
+      for (s32 yTile = TileMinDim.y; yTile < TileSuperpositionsDim.y; ++yTile)
       {
-        for (s32 xTile = TileMinDim.x; xTile < Global_TileSuperpositionsDim.x; ++xTile)
+        for (s32 xTile = TileMinDim.x; xTile < TileSuperpositionsDim.x; ++xTile)
         {
-          s32 TileIndex = GetIndex(xTile, yTile, zTile, Global_TileSuperpositionsDim);
-          u32 TileOptions = TileSuperpositions[TileIndex];
+          s32 TileIndex = GetIndex(xTile, yTile, zTile, TileSuperpositionsDim);
+          u64 TileOptions = TileSuperpositions[TileIndex];
           u32 BitsSet = CountBitsSet_Kernighan(TileOptions);
 
           // We haven't fully collapsed this tile, and it's got lower entropy
@@ -627,21 +639,21 @@ InitializeWorld_WFC(world *World, v3i VisibleRegion, v3i TileDim, memory_arena *
       // but it does not for (1, 2)
       u32 BitChoice = RandomBetween(1, Series, NumRemainingOptions+1);
 
-      u32 TileChoice = GetNthSetBit(BitChoice, TileSuperpositions[SmallestEntropyIndex]);
+      u64 TileChoice = GetNthSetBit(BitChoice, TileSuperpositions[SmallestEntropyIndex]);
       Assert(CountBitsSet_Kernighan(TileChoice) == 1);
 
       TileSuperpositions[SmallestEntropyIndex] = TileChoice;
 
-      v3i P = V3iFromIndex(SmallestEntropyIndex, Global_TileSuperpositionsDim);
+      v3i P = V3iFromIndex(SmallestEntropyIndex, TileSuperpositionsDim);
 
-      PropagateChangesTo(TileChoice,  P, V3i( 1, 0, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-      PropagateChangesTo(TileChoice,  P, V3i(-1, 0, 0), Global_TileSuperpositionsDim, TileSuperpositions);
+      PropagateChangesTo(TileChoice,  P, V3i( 1, 0, 0), TileSuperpositionsDim, TileSuperpositions);
+      PropagateChangesTo(TileChoice,  P, V3i(-1, 0, 0), TileSuperpositionsDim, TileSuperpositions);
 
-      PropagateChangesTo(TileChoice,  P, V3i( 0, 1, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-      PropagateChangesTo(TileChoice,  P, V3i( 0,-1, 0), Global_TileSuperpositionsDim, TileSuperpositions);
+      PropagateChangesTo(TileChoice,  P, V3i( 0, 1, 0), TileSuperpositionsDim, TileSuperpositions);
+      PropagateChangesTo(TileChoice,  P, V3i( 0,-1, 0), TileSuperpositionsDim, TileSuperpositions);
 
-      PropagateChangesTo(TileChoice,  P, V3i( 0, 0, 1), Global_TileSuperpositionsDim, TileSuperpositions);
-      PropagateChangesTo(TileChoice,  P, V3i( 0, 0,-1), Global_TileSuperpositionsDim, TileSuperpositions);
+      PropagateChangesTo(TileChoice,  P, V3i( 0, 0, 1), TileSuperpositionsDim, TileSuperpositions);
+      PropagateChangesTo(TileChoice,  P, V3i( 0, 0,-1), TileSuperpositionsDim, TileSuperpositions);
     }
     else
     {
@@ -651,24 +663,24 @@ InitializeWorld_WFC(world *World, v3i VisibleRegion, v3i TileDim, memory_arena *
   }
 #endif
 
-    for (s32 zTile = TileMinDim.z; zTile < Global_TileSuperpositionsDim.z; ++zTile)
+    for (s32 zTile = TileMinDim.z; zTile < TileSuperpositionsDim.z; ++zTile)
     {
-      for (s32 yTile = TileMinDim.y; yTile < Global_TileSuperpositionsDim.y; ++yTile)
+      for (s32 yTile = TileMinDim.y; yTile < TileSuperpositionsDim.y; ++yTile)
       {
-        for (s32 xTile = TileMinDim.x; xTile < Global_TileSuperpositionsDim.x; ++xTile)
+        for (s32 xTile = TileMinDim.x; xTile < TileSuperpositionsDim.x; ++xTile)
         {
-          s32 TileIndex = GetIndex(xTile, yTile, zTile, Global_TileSuperpositionsDim);
-          u32 TileOptions = TileSuperpositions[TileIndex];
+          s32 TileIndex = GetIndex(xTile, yTile, zTile, TileSuperpositionsDim);
+          u64 TileOptions = TileSuperpositions[TileIndex];
           u32 BitsSet = CountBitsSet_Kernighan(TileOptions);
 
           // We haven't fully collapsed this tile, and it's got lower entropy
           // than we've seen yet.
-          u32 TileChoice = u32_MAX;
+          u64 TileChoice = u64_MAX;
           if (BitsSet > 1)
           {
             // TODO(Jesse): This should (at least in my head) be able to return (1, N) inclusive
             // but it does not for (1, 2)
-            u32 BitChoice = RandomBetween(1, Series, BitsSet+1);
+            u64 BitChoice = RandomBetween(1, Series, BitsSet+1);
 
             TileChoice = GetNthSetBit(TileOptions, BitChoice);
             Assert(CountBitsSet_Kernighan(TileChoice) == 1);
@@ -680,18 +692,18 @@ InitializeWorld_WFC(world *World, v3i VisibleRegion, v3i TileDim, memory_arena *
             TileChoice = TileOptions;
           }
 
-          Assert(TileChoice != u32_MAX);
+          Assert(TileChoice != u64_MAX);
 
-          v3i P = V3iFromIndex(TileIndex, Global_TileSuperpositionsDim);
+          v3i P = V3iFromIndex(TileIndex, TileSuperpositionsDim);
 
-          PropagateChangesTo(TileChoice,  P, V3i( 1, 0, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-          PropagateChangesTo(TileChoice,  P, V3i(-1, 0, 0), Global_TileSuperpositionsDim, TileSuperpositions);
+          PropagateChangesTo(TileChoice,  P, V3i( 1, 0, 0), TileSuperpositionsDim, TileSuperpositions);
+          PropagateChangesTo(TileChoice,  P, V3i(-1, 0, 0), TileSuperpositionsDim, TileSuperpositions);
 
-          PropagateChangesTo(TileChoice,  P, V3i( 0, 1, 0), Global_TileSuperpositionsDim, TileSuperpositions);
-          PropagateChangesTo(TileChoice,  P, V3i( 0,-1, 0), Global_TileSuperpositionsDim, TileSuperpositions);
+          PropagateChangesTo(TileChoice,  P, V3i( 0, 1, 0), TileSuperpositionsDim, TileSuperpositions);
+          PropagateChangesTo(TileChoice,  P, V3i( 0,-1, 0), TileSuperpositionsDim, TileSuperpositions);
 
-          PropagateChangesTo(TileChoice,  P, V3i( 0, 0, 1), Global_TileSuperpositionsDim, TileSuperpositions);
-          PropagateChangesTo(TileChoice,  P, V3i( 0, 0,-1), Global_TileSuperpositionsDim, TileSuperpositions);
+          PropagateChangesTo(TileChoice,  P, V3i( 0, 0, 1), TileSuperpositionsDim, TileSuperpositions);
+          PropagateChangesTo(TileChoice,  P, V3i( 0, 0,-1), TileSuperpositionsDim, TileSuperpositions);
         }
       }
     }

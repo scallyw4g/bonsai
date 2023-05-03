@@ -305,8 +305,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         // NOTE(Jesse): We really should just be able to check the rule id, but
         // checking the hash value as well ensures that if we have tiles that
         // entirely hang off the edge (and thus are completely 0) get skipped.
-        if (BakeTile->RuleId == HoverTile->RuleId &&
-            BakeTile->HashValue == HoverTile->HashValue)
+        if ( BakeTile->RuleId == HoverTile->RuleId &&
+             BakeTile->HashValue == HoverTile->HashValue )
         {
           entity *E = GameState->BakeEntity;
           Info("HoverTile RuleId(%d) HashValue(%u)", HoverTile->RuleId, HoverTile->HashValue);
@@ -350,9 +350,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   Resources->CameraTargetP = &GameState->CameraTarget->P;
 
   /* GameState->BakeResult = ComputeVoxelSynthesisRules("models/test2.vox"); */
-  GameState->BakeResult = ComputeVoxelSynthesisRules("models/square.vox");
+  /* GameState->BakeResult = ComputeVoxelSynthesisRules("models/square.vox"); */
   /* GameState->BakeResult = ComputeVoxelSynthesisRules("models/square_expanded.vox"); */
-  /* GameState->BakeResult = ComputeVoxelSynthesisRules("models/archway.vox"); */
+  GameState->BakeResult = ComputeVoxelSynthesisRules("models/archway.vox");
 
   memory_arena *TempMemory = AllocateArena();
 
