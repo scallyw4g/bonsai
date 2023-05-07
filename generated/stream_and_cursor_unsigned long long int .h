@@ -1,16 +1,16 @@
-struct u32_cursor
+struct u64_cursor
 {
-  u32 *Start;
+  u64 *Start;
   // TODO(Jesse)(immediate): For the love of fucksakes change these to indices
-  u32 *At;
-  u32 *End;
+  u64 *At;
+  u64 *End;
 };
 
-link_internal u32_cursor
-U32Cursor(umm ElementCount, memory_arena* Memory)
+link_internal u64_cursor
+U64Cursor(umm ElementCount, memory_arena* Memory)
 {
-  u32 *Start = (u32*)PushStruct(Memory, sizeof(u32)*ElementCount, 1, 0);
-  u32_cursor Result = {
+  u64 *Start = (u64*)PushStruct(Memory, sizeof(u64)*ElementCount, 1, 0);
+  u64_cursor Result = {
     .Start = Start,
     .End = Start+ElementCount,
     .At = Start,
@@ -18,46 +18,46 @@ U32Cursor(umm ElementCount, memory_arena* Memory)
   return Result;
 }
 
-link_internal u32
-Get(u32_cursor *Cursor, umm ElementIndex)
+link_internal u64
+Get(u64_cursor *Cursor, umm ElementIndex)
 {
   Assert(ElementIndex < CurrentCount(Cursor));
-  u32 Result = Cursor->Start[ElementIndex];
+  u64 Result = Cursor->Start[ElementIndex];
   return Result;
 }
 
-struct u32_stream_chunk
+struct u64_stream_chunk
 {
-  u32 Element;
-  u32_stream_chunk* Next;
+  u64 Element;
+  u64_stream_chunk* Next;
 };
 
-struct u32_stream
+struct u64_stream
 {
   memory_arena *Memory;
-  u32_stream_chunk* FirstChunk;
-  u32_stream_chunk* LastChunk;
+  u64_stream_chunk* FirstChunk;
+  u64_stream_chunk* LastChunk;
   umm ChunkCount;
 };
 
 link_internal void
-Deallocate(u32_stream *Stream)
+Deallocate(u64_stream *Stream)
 {
   Stream->LastChunk = 0;
   Stream->FirstChunk = 0;
   VaporizeArena(Stream->Memory);
 }
 
-struct u32_iterator
+struct u64_iterator
 {
-  u32_stream* Stream;
-  u32_stream_chunk* At;
+  u64_stream* Stream;
+  u64_stream_chunk* At;
 };
 
-link_internal u32_iterator
-Iterator(u32_stream* Stream)
+link_internal u64_iterator
+Iterator(u64_stream* Stream)
 {
-  u32_iterator Iterator = {
+  u64_iterator Iterator = {
     .Stream = Stream,
     .At = Stream->FirstChunk
   };
@@ -65,28 +65,28 @@ Iterator(u32_stream* Stream)
 }
 
 link_internal b32
-IsValid(u32_iterator* Iter)
+IsValid(u64_iterator* Iter)
 {
   b32 Result = Iter->At != 0;
   return Result;
 }
 
 link_internal void
-Advance(u32_iterator* Iter)
+Advance(u64_iterator* Iter)
 {
   Iter->At = Iter->At->Next;
 }
 
 link_internal b32
-IsLastElement(u32_iterator* Iter)
+IsLastElement(u64_iterator* Iter)
 {
   b32 Result = Iter->At->Next == 0;
   return Result;
 }
 
 
-link_internal u32 *
-Push(u32_stream* Stream, u32 Element)
+link_internal u64 *
+Push(u64_stream* Stream, u64 Element)
 {
   if (Stream->Memory == 0)
   {
@@ -94,7 +94,7 @@ Push(u32_stream* Stream, u32 Element)
   }
 
   /* (Type.name)_stream_chunk* NextChunk = AllocateProtection((Type.name)_stream_chunk*), Stream->Memory, 1, False) */
-  u32_stream_chunk* NextChunk = (u32_stream_chunk*)PushStruct(Stream->Memory, sizeof(u32_stream_chunk), 1, 0);
+  u64_stream_chunk* NextChunk = (u64_stream_chunk*)PushStruct(Stream->Memory, sizeof(u64_stream_chunk), 1, 0);
   NextChunk->Element = Element;
 
   if (!Stream->FirstChunk)
@@ -114,7 +114,7 @@ Push(u32_stream* Stream, u32 Element)
 
   Stream->ChunkCount += 1;
 
-  u32 *Result = &NextChunk->Element;
+  u64 *Result = &NextChunk->Element;
   return Result;
 }
 

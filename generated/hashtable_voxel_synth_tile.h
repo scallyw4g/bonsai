@@ -46,11 +46,10 @@ Insert(voxel_synth_tile_linked_list_node *Node, voxel_synth_tile_hashtable *Tabl
 {
   Assert(Table->Size);
   umm HashValue = Hash(&Node->Element) % Table->Size;
-  voxel_synth_tile_linked_list_node *Bucket = Table->Elements[HashValue];
-  while (Bucket && Bucket->Next) Bucket = Bucket->Next;
-  if (Bucket) { Assert(Bucket->Next == 0); Bucket->Next = Node; }
-  else { Table->Elements[HashValue] = Node; }
-  return &Node->Element;
+  voxel_synth_tile_linked_list_node **Bucket = Table->Elements + HashValue;
+  while (*Bucket) Bucket = &(*Bucket)->Next;
+  *Bucket = Node;
+  return &Bucket[0]->Element;
 }
 
 link_internal voxel_synth_tile*

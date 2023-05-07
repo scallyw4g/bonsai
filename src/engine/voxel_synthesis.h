@@ -128,10 +128,17 @@ GetElement(voxel_synth_tile_hashtable *Hashtable, voxel_synth_tile *Tile)
 
 struct voxel_synthesis_result
 {
+  // This is data that gets baked from the input model
   vox_data VoxData;
   voxel_synth_tile_buffer Tiles;
   tile_ruleset_buffer Rules;
   u64 MaxTileEntropy;
+
+  // This is data used during acutal world generation
+  u64 *TileSuperpositions;
+  v3i TileSuperpositionsDim;
+  u32_cursor EntropyLists[MAX_TILE_RULESETS];
+
 };
 
 link_internal v3i

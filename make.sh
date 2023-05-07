@@ -359,8 +359,8 @@ function RunPoof
 
   ColorizeTitle "Poofing"
 
-  [ -d src/generated ] && rm -Rf src/generated
-  [ -d generated ] && rm -Rf generated
+  # [ -d src/generated ] && rm -Rf src/generated
+  # [ -d generated ] && rm -Rf generated
 
   # RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
   # RunPoofHelper include/bonsai_debug/debug.cpp && echo -e "$Success poofed src/include/bonsai_debug/debug.cpp" &

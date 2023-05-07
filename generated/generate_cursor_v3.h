@@ -18,3 +18,11 @@ V3Cursor(umm ElementCount, memory_arena* Memory)
   return Result;
 }
 
+link_internal v3
+Get(v3_cursor *Cursor, umm ElementIndex)
+{
+  Assert(ElementIndex < CurrentCount(Cursor));
+  v3 Result = Cursor->Start[ElementIndex];
+  return Result;
+}
+

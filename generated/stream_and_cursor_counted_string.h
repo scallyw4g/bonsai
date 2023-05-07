@@ -18,6 +18,14 @@ CountedStringCursor(umm ElementCount, memory_arena* Memory)
   return Result;
 }
 
+link_internal counted_string
+Get(counted_string_cursor *Cursor, umm ElementIndex)
+{
+  Assert(ElementIndex < CurrentCount(Cursor));
+  counted_string Result = Cursor->Start[ElementIndex];
+  return Result;
+}
+
 struct counted_string_stream_chunk
 {
   counted_string Element;

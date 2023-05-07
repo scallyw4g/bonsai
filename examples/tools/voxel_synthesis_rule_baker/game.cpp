@@ -107,7 +107,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
       world_chunk *Chunk = Job->Chunk;
 
-      if (GameState->TileSuperpositions == 0) return;
+      if (GameState->BakeResult.TileSuperpositions == 0) return;
 
       if (ChunkIsGarbage(Chunk))
       {
@@ -134,9 +134,9 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           MinMaxIterator(xTile, yTile, zTile, AbsTileMin, AbsTileMax)
           {
             v3i TileP = V3i(xTile, yTile, zTile);
-            s32 TileIndex = GetIndex(TileP, GameState->TileSuperpositionsDim);
-            Assert(TileIndex < Volume(GameState->TileSuperpositionsDim));
-            u64 TileRule = GameState->TileSuperpositions[TileIndex];
+            s32 TileIndex = GetIndex(TileP, GameState->BakeResult.TileSuperpositionsDim);
+            Assert(TileIndex < Volume(GameState->BakeResult.TileSuperpositionsDim));
+            u64 TileRule = GameState->BakeResult.TileSuperpositions[TileIndex];
 
             if (TileRule != 0)
             {
@@ -331,14 +331,26 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   if (Input->Space.Clicked)
   {
+    u32 TileIndex = u32_MAX;
+    RangeIterator(EntropyListIndex, MAX_TILE_RULESETS)
+    {
+      u32_cursor *EntropyList = GameState->BakeResult.EntropyLists+EntropyListIndex;
+      if (CurrentCount(EntropyList))
+      {
+        // NOTE(Jesse): C++ is so brain damaged it actually can't figure this out.
+        TileIndex = Pop<u32, u32_cursor>(EntropyList);
+        break;
+      }
+    }
+    Assert(TileIndex != u32_MAX);
+
     local_persist random_series Entropy = {5432956432};
-    local_persist s32 TileIndex = 0;
     InitializeWorld_VoxelSynthesis_Partial( World, World->VisibleRegion, Global_TileDim, &Entropy,
                                             GameState->BakeResult.MaxTileEntropy,
-                                            &GameState->BakeResult.Rules,
-                                            GameState->TileSuperpositionsDim,
-                                            GameState->TileSuperpositions,
-                                            TileIndex++);
+                                           &GameState->BakeResult.Rules,
+                                            GameState->BakeResult.TileSuperpositionsDim,
+                                            GameState->BakeResult.TileSuperpositions,
+                                        s32(TileIndex) );
 
     v3i Radius = World->VisibleRegion/2;
     v3i Min = World->Center - Radius;
@@ -505,12 +517,22 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   s32 TileSuperpositionCount = Volume(TileSuperpositionsDim);
   u64 *TileSuperpositions = Allocate(u64, Memory, TileSuperpositionCount);
 
-  GameState->TileSuperpositionsDim = TileSuperpositionsDim;
-  GameState->TileSuperpositions = TileSuperpositions;
+  GameState->BakeResult.TileSuperpositionsDim = TileSuperpositionsDim;
+  GameState->BakeResult.TileSuperpositions = TileSuperpositions;
 
-  for (s32 TileIndex = 0; TileIndex < TileSuperpositionCount; ++TileIndex)
+  u32_cursor *EntropyLists = GameState->BakeResult.EntropyLists;
+  RangeIterator(EntropyListIndex, MAX_TILE_RULESETS)
   {
-    TileSuperpositions[TileIndex] = GameState->BakeResult.MaxTileEntropy;
+    EntropyLists[EntropyListIndex] = U32Cursor(umm(TileSuperpositionCount), Memory);
+  }
+
+  u64 MaxTileEntropy = GameState->BakeResult.MaxTileEntropy;
+  u32 BitCount = CountBitsSet_Kernighan(MaxTileEntropy);
+  RangeIterator(TileIndex, TileSuperpositionCount)
+  {
+    TileSuperpositions[TileIndex] = MaxTileEntropy;
+    u32 EntropyList = Get(EntropyLists, BitCount);
+    Push(EntropyList, TileIndex);
   }
 
 #endif
