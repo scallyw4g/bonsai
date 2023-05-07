@@ -44,6 +44,7 @@ struct voxel_synth_tile
 
   u64 HashValue;
   chunk_data *SrcChunk;
+  voxel *Voxels;
 };
 poof(buffer(voxel_synth_tile))
 #include <generated/buffer_voxel_synth_tile.h>
@@ -84,8 +85,8 @@ Hash(voxel_synth_tile *Tile)
 link_inline u64
 Hash(voxel *V, v3i P)
 {
-  /* u64 Result = u64(P.x + P.y + P.z + V->Flags + V->Color); */
-  u64 Result = u64(V->Flags + V->Color);
+  u64 Result = u64(P.x + P.y + P.z + V->Flags + V->Color);
+  /* u64 Result = u64(V->Flags + V->Color); */
   return Result;
 }
 

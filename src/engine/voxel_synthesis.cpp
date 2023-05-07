@@ -39,11 +39,9 @@ BakeVoxelSynthesisRules(const char* InputVox)
   Info("Synthesizing rules for (%s)", InputVox);
 
   /* vox_data Vox = LoadVoxData(Memory, &Heap, InputVox, Global_TileDim*2, Global_TileDim*2); */
-  vox_data Vox = LoadVoxData(Memory, &Heap, InputVox);
+  vox_data Vox = LoadVoxData(Memory, &Heap, InputVox, {}, {{0, 0, Global_TileDim.z}});
 
-  // TODO(Jesse): This adds an extra chunk around the perimeter even if the dim
-  // directly divides into the TileDim..
-  chunk_dimension ChunkTileDim = V3i(1) + (Vox.ChunkData->Dim/Global_TileDim);
+  chunk_dimension ChunkTileDim = Max(V3i(1), (Vox.ChunkData->Dim/Global_TileDim));
 
   voxel_synth_tile_buffer AllTiles = VoxelSynthTileBuffer(umm(Volume(ChunkTileDim)), Memory);
 
@@ -60,43 +58,67 @@ BakeVoxelSynthesisRules(const char* InputVox)
   // record the RuleId we stored in the original tile.
   voxel_synth_tile_hashtable TileHashtable = Allocate_voxel_synth_tile_hashtable(1024, Memory);
   u32 NextTileId = 0;
+  voxel *TempVoxels = Allocate(voxel, Memory, Volume(Global_TileDim));
+  umm TempVoxelsSizeInBytes = sizeof(voxel)*umm(Volume(Global_TileDim));
+
   DimIterator(xTile, yTile, zTile, ChunkTileDim)
   {
     v3i TileP = V3i(xTile, yTile, zTile);
-    v3i VoxOffset = TileP * Global_TileDim;
+    v3i BaseVoxOffset = TileP * Global_TileDim;
 
     u64 TileHash = {};
 
     // TODO(Jesse): The tiles fit in 16 cache lines, but if we don't copy the
     // memory here we'll take 64 cache misses again each time we iterate over
     // the contents.  Might be worth copying/packing into contiguous buffers..
-    MinDimIterator(xVox, yVox, zVox, VoxOffset, Global_TileDim)
+    MinDimIterator(xVox, yVox, zVox, BaseVoxOffset, Global_TileDim)
     {
       v3i VoxP = V3i(xVox, yVox, zVox);
       s32 VoxIndex = TryGetIndex( VoxP, Vox.ChunkData->Dim);
       if (VoxIndex > -1)
       {
         voxel *V = Vox.ChunkData->Voxels + VoxIndex;
+
+        s32 TmpVoxelsIndex = TryGetIndex( VoxP-BaseVoxOffset, Global_TileDim );
+        TempVoxels[TmpVoxelsIndex] = *V;
+
         if (V->Flags & Voxel_Filled)
         {
           // Mod by the tile dim to normalize to that box
           TileHash += Hash(V, VoxP % Global_TileDim);
         }
       }
+      else
+      {
+        TempVoxels[VoxIndex] = {};
+      }
     }
 
-    s32 BaseVoxIndex = TryGetIndex(VoxOffset, Vox.ChunkData->Dim);
-    if (BaseVoxIndex > -1)
+    s32 BaseVoxIndex = GetIndex(BaseVoxOffset, Vox.ChunkData->Dim);
+    /* if (BaseVoxIndex > -1) */
     {
-      voxel_synth_tile Tile = VoxelSynthTile( 0, u32(BaseVoxIndex), TileHash, Vox.ChunkData);
+      voxel_synth_tile Tile = VoxelSynthTile( u32_MAX, u32(BaseVoxIndex), TileHash, Vox.ChunkData);
       if (voxel_synth_tile *GotTile = GetElement(&TileHashtable, &Tile))
       {
         Assert(GotTile->HashValue == Tile.HashValue);
-        Tile.RuleId = GotTile->RuleId;
+        if (MemoryIsEqual((u8*)TempVoxels, (u8*)GotTile->Voxels, TempVoxelsSizeInBytes))
+        {
+          Info("Got tile hash Match (%d)", Tile.HashValue);
+          Tile.RuleId = GotTile->RuleId;
+        }
+        else
+        {
+          Info("Got tile hash Collision (%d)", Tile.HashValue);
+        }
       }
-      else
+
+      if (Tile.RuleId == u32_MAX)
       {
+        Info("Inserting new Tile (%d)", Tile.HashValue);
         Assert(NextTileId < MAX_TILE_RULESETS); // NOTE(Jesse) For debugging
+        Tile.Voxels = TempVoxels;
+        // TODO(Jesse)(leak, memory): This leaks the last allocation
+        TempVoxels = Allocate(voxel, Memory, Volume(Global_TileDim));
         Tile.RuleId = NextTileId++;
         Insert(Tile, &TileHashtable, Memory);
       }
@@ -118,17 +140,20 @@ BakeVoxelSynthesisRules(const char* InputVox)
     v3i TileP = V3i(xTile, yTile, zTile);
     s32 TileIndex = GetIndex(TileP, ChunkTileDim);
     voxel_synth_tile *Tile = AllTiles.Start + TileIndex;
-    tile_ruleset *ThisTileRuleset = AllRules.Start + Tile->RuleId;
-
+    Assert (Tile->SrcChunk);
     {
-      WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, ChunkTileDim, VoxelRuleDir_PosX);
-      WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, ChunkTileDim, VoxelRuleDir_NegX);
+      tile_ruleset *ThisTileRuleset = AllRules.Start + Tile->RuleId;
 
-      WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, ChunkTileDim, VoxelRuleDir_PosY);
-      WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, ChunkTileDim, VoxelRuleDir_NegY);
+      {
+        WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, ChunkTileDim, VoxelRuleDir_PosX);
+        WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, ChunkTileDim, VoxelRuleDir_NegX);
 
-      WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, ChunkTileDim, VoxelRuleDir_PosZ);
-      WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, ChunkTileDim, VoxelRuleDir_NegZ);
+        WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, ChunkTileDim, VoxelRuleDir_PosY);
+        WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, ChunkTileDim, VoxelRuleDir_NegY);
+
+        WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, ChunkTileDim, VoxelRuleDir_PosZ);
+        WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, ChunkTileDim, VoxelRuleDir_NegZ);
+      }
     }
   }
 
@@ -241,6 +266,7 @@ PropagateChangesTo(u64 PrevTileOptions, v3i PrevTileP, v3i DirOfTravel, v3i Supe
       else
       {
         // Degenerate case
+        *NewTile = 0;
         /* Assert(False); */
       }
     }
@@ -261,6 +287,86 @@ PropagateChangesTo(u64 PrevTileOptions, v3i PrevTileP, v3i DirOfTravel, v3i Supe
   }
 }
 
+link_internal void
+InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i TileDim, random_series *Series,
+                                        u64 MaxTileEntropy,
+                                        tile_ruleset_buffer *Rules,
+                                        v3i TileSuperpositionsDim,
+                                        u64 *TileSuperpositions,
+                                        s32 TileIndex)
+{
+  TIMED_FUNCTION();
+
+  v3i TileMinDim = {};
+
+  auto TileSuperpositionCount = Volume(TileSuperpositionsDim);
+  if (TileIndex >= TileSuperpositionCount) return;
+  /* if (DoIteration == False) return; */
+
+  /* for (local_persist s32 zTile = TileMinDim.z; zTile < TileSuperpositionsDim.z; ++zTile) */
+  /* { */
+  /*   for (local_persist s32 yTile = TileMinDim.y; yTile < TileSuperpositionsDim.y; ++yTile) */
+  /*   { */
+  /*     for (local_persist s32 xTile = TileMinDim.x; xTile < TileSuperpositionsDim.x; ++xTile) */
+      {
+        /* s32 TileIndex = GetIndex(xTile, yTile, zTile, TileSuperpositionsDim); */
+        u64 TileOptions = TileSuperpositions[TileIndex];
+        u32 BitsSet = CountBitsSet_Kernighan(TileOptions);
+
+        DebugLine("TileIndex(%u)", TileIndex);
+
+        // We haven't fully collapsed this tile, and it's got lower entropy
+        // than we've seen yet.
+        u64 TileChoice = u64_MAX;
+        if (BitsSet > 1)
+        {
+          // TODO(Jesse): This should (at least in my head) be able to return (1, N) inclusive
+          // but it does not for (1, 2)
+          u64 BitChoice = RandomBetween(1, Series, BitsSet+1);
+
+          TileChoice = GetNthSetBit(TileOptions, BitChoice);
+          Assert(CountBitsSet_Kernighan(TileChoice) == 1);
+
+          TileSuperpositions[TileIndex] = TileChoice;
+        }
+        else
+        {
+          TileChoice = TileOptions;
+        }
+
+        Assert(TileChoice != u64_MAX);
+
+        v3i P = V3iFromIndex(TileIndex, TileSuperpositionsDim);
+
+        PropagateChangesTo(TileChoice,  P, V3i( 1, 0, 0), TileSuperpositionsDim, TileSuperpositions, Rules);
+        PropagateChangesTo(TileChoice,  P, V3i(-1, 0, 0), TileSuperpositionsDim, TileSuperpositions, Rules);
+
+        PropagateChangesTo(TileChoice,  P, V3i( 0, 1, 0), TileSuperpositionsDim, TileSuperpositions, Rules);
+        PropagateChangesTo(TileChoice,  P, V3i( 0,-1, 0), TileSuperpositionsDim, TileSuperpositions, Rules);
+
+        PropagateChangesTo(TileChoice,  P, V3i( 0, 0, 1), TileSuperpositionsDim, TileSuperpositions, Rules);
+        PropagateChangesTo(TileChoice,  P, V3i( 0, 0,-1), TileSuperpositionsDim, TileSuperpositions, Rules);
+
+        return;
+      }
+    /* } */
+  /* } */
+
+#if 0
+  for (s32 TileIndex = 0; TileIndex < TileSuperpositionCount; ++TileIndex)
+  {
+    if (TileSuperpositions[TileIndex] == 0)
+    {
+      /* SoftError("Degenerate case; Voxel Synthesis failed to solve. TileIndex(%u)/(%u)", TileIndex, TileSuperpositionCount); */
+    }
+    else
+    {
+      DebugChars(" TileIndex(%u)/(%u) BitsSet(%u)(", TileIndex, TileSuperpositionCount, CountBitsSet_Kernighan(TileSuperpositions[TileIndex])); PrintBinary(TileSuperpositions[TileIndex]); DebugLine(")");
+    }
+  }
+#endif
+
+}
 link_internal void
 InitializeWorld_VoxelSynthesis( world *World, v3i VisibleRegion, v3i TileDim, random_series *Series,
                                 u64 MaxTileEntropy,
@@ -288,6 +394,8 @@ InitializeWorld_VoxelSynthesis( world *World, v3i VisibleRegion, v3i TileDim, ra
         s32 TileIndex = GetIndex(xTile, yTile, zTile, TileSuperpositionsDim);
         u64 TileOptions = TileSuperpositions[TileIndex];
         u32 BitsSet = CountBitsSet_Kernighan(TileOptions);
+
+        DebugLine("TileIndex(%u)", TileIndex);
 
         // We haven't fully collapsed this tile, and it's got lower entropy
         // than we've seen yet.
