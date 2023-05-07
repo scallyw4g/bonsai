@@ -725,7 +725,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   AllocateWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 
   random_series WorldEntropy = {54930695483};
-  InitializeWorld_WFC(Resources->World, g_VisibleRegion, Global_TileDim, Memory, &WorldEntropy);
+  InitializeWorld_VoxelSynthesis(Resources->World, g_VisibleRegion, Global_TileDim, Memory, &WorldEntropy);
 
   GameState->Models = AllocateGameModels(GameState, Memory, Heap);
 

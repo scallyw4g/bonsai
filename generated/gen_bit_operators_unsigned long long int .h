@@ -32,3 +32,28 @@ GetNthSetBit(u64 Target, u64 NBit)
   return Result;
 }
 
+link_internal u32
+GetIndexOfNthSetBit(u64 Target, u64 NBit)
+{
+  Assert(NBit > 0);
+
+  u32 Result = u32_MAX;
+  u64 TypeWidth = sizeof(u64)*8;
+  u32 Hits = 0;
+  for (u32 BitIndex = 0; BitIndex < TypeWidth; ++BitIndex)
+  {
+    if (Target & (1<<BitIndex))
+    {
+      ++Hits;
+    }
+    if (Hits == NBit)
+    {
+      Result = BitIndex;
+      break;
+    }
+  }
+  return Result;
+}
+
+
+

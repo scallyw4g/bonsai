@@ -56,6 +56,7 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *
   return Result;
 }
 
+#if 0
 u8
 GetColorForTile(u32 TileType)
 {
@@ -88,6 +89,7 @@ GetColorForTile(u32 TileType)
 
   return BLACK;
 }
+#endif
 
 BONSAI_API_WORKER_THREAD_CALLBACK()
 {

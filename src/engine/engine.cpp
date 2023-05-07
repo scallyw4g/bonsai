@@ -33,3 +33,4 @@
 #include <engine/cpp/asset_loaders.cpp>
 #include <engine/cpp/api.cpp>
 #include <engine/cpp/simulate.cpp>
+#include <engine/voxel_synthesis.cpp>

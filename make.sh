@@ -43,9 +43,9 @@ BONSAI_INTERNAL='-D BONSAI_INTERNAL'
 EXAMPLES_TO_BUILD="
   $EXAMPLES/blank_project
   $EXAMPLES/turn_based
-  $EXAMPLES/wave_function_collapse_terrain
   $EXAMPLES/tools/voxel_synthesis_rule_baker
 "
+  # $EXAMPLES/wave_function_collapse_terrain
 
 EXECUTABLES_TO_BUILD="
   $SRC/game_loader.cpp

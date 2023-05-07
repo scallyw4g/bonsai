@@ -6,265 +6,279 @@
 #include <examples/tools/voxel_synthesis_rule_baker/game_constants.h>
 #include <examples/tools/voxel_synthesis_rule_baker/game_types.h>
 
-#define DimIterator( xArg, yArg, zArg, Dim) \
-  for (s32 zArg = 0; zArg < Dim.z; ++zArg)  \
-  for (s32 yArg = 0; yArg < Dim.y; ++yArg)  \
-  for (s32 xArg = 0; xArg < Dim.x; ++xArg)
-
-#define MinDimIterator( xArg, yArg, zArg, Min, Dim)  \
-  for (s32 zArg = Min.z; zArg < Min.z+Dim.z; ++zArg) \
-  for (s32 yArg = Min.y; yArg < Min.y+Dim.y; ++yArg) \
-  for (s32 xArg = Min.x; xArg < Min.x+Dim.x; ++xArg)
-
-#define MinMaxIterator( xArg, yArg, zArg, Min, Max)  \
-  for (s32 zArg = Min.z; zArg < Max.z; ++zArg)       \
-  for (s32 yArg = Min.y; yArg < Max.y; ++yArg)       \
-  for (s32 xArg = Min.x; xArg < Max.x; ++xArg)
-
-
-#if 0
-// TODO(Jesse)(metaprogramming, ptr_type): Metaprogram this when we can pass
-// poitner types to poof
-// poof( buffer(voxel_synth_tile*) )
-struct voxel_synth_tile_ptr_buffer
+BONSAI_API_WORKER_THREAD_CALLBACK()
 {
-  umm Count;
-  voxel_synth_tile **Elements;
-};
+  world *World = Thread->EngineResources->World;
+  game_state *GameState = Thread->EngineResources->GameState;
 
-link_internal voxel_synth_tile_ptr_buffer
-AllocateBuffer(umm Count, memory_arena *Memory)
-{
-  voxel_synth_tile_ptr_buffer Reuslt =
+  work_queue_entry_type Type = Entry->Type;
+  switch (Type)
   {
-    .Elements = Allocate(voxel_synth_tile*, Count, Memory),
-    .Count = Count,
-  };
-  return Result;
-}
-#endif
+    InvalidCase(type_work_queue_entry_noop);
 
-#define MAX_TILE_RULESETS (64)
-
-
-link_internal v3i
-GetV3iForDir(voxel_rule_direction Dir)
-{
-  v3i Result = {};
-  switch( Dir )
-  {
-    case VoxelRuleDir_PosX:
+    case type_work_queue_entry_init_asset:
     {
-      Result = V3i(1, 0, 0);
+      InvalidCodePath();
     } break;
 
-    case VoxelRuleDir_NegX:
+    case type_work_queue_entry_update_world_region:
     {
-      Result = V3i(-1, 0, 0);
+      work_queue_entry_update_world_region *Job = SafeAccess(work_queue_entry_update_world_region, Entry);
+
+      picked_voxel Location = Job->Location;
+      r32 Radius = Job->Radius;
+
+      DoWorldUpdate(&Thread->EngineResources->Plat->LowPriority, World, Job->ChunkBuffer, Job->ChunkCount, &Location, Job->MinP, Job->MaxP, Job->Op, Job->ColorIndex, Radius, Thread);
     } break;
 
-    case VoxelRuleDir_PosY:
+    case type_work_queue_entry_sim_particle_system:
     {
-      Result = V3i(0, 1, 0);
+      work_queue_entry_sim_particle_system *Job = SafeAccess(work_queue_entry_sim_particle_system, Entry);
+      SimulateParticleSystem(Job);
     } break;
 
-    case VoxelRuleDir_NegY:
+    case type_work_queue_entry_rebuild_mesh:
     {
-      Result = V3i(0, -1, 0);
-    } break;
+      work_queue_entry_rebuild_mesh *Job = SafeAccess(work_queue_entry_rebuild_mesh, Entry);
+      world_chunk *Chunk = Job->Chunk;
+      Assert( IsSet(Chunk->Flags, Chunk_VoxelsInitialized) );
 
-    case VoxelRuleDir_PosZ:
-    {
-      Result = V3i(0, 0, 1);
-    } break;
+      untextured_3d_geometry_buffer *NewMesh = 0;
 
-    case VoxelRuleDir_NegZ:
-    {
-      Result = V3i(0, 0, -1);
-    } break;
-
-    case VoxelRuleDir_Count:
-    {
-      Error("Invalid VoxelRuleDir_Count passed to GetV3iForDir");
-    } break;
-
-    InvalidDefaultCase;
-  }
-  return Result;
-}
-
-link_internal void
-WriteRulesForAdjacentTile(tile_ruleset *ThisTileRules, v3i ThisTileP, voxel_synth_tile_buffer AllTiles, voxel_rule_direction Dir)
-{
-  v3i TestTileP = ThisTileP + GetV3iForDir(Dir); //V3i(1, 0, 0);
-  s32 TestTileIndex = TryGetIndex(TestTileP, Global_TileDim);
-  if (TestTileIndex > -1)
-  {
-    voxel_synth_tile *TestTile = AllTiles.Start + TestTileIndex;
-    ThisTileRules->E[Dir] &= (1 << TestTile->RuleId);
-  }
-}
-
-link_inline u64
-Hash(voxel *V, v3i P)
-{
-  /* u64 Result = u64(P.x + P.y + P.z + V->Flags + V->Color); */
-  u64 Result = u64(V->Flags + V->Color);
-  return Result;
-}
-
-link_internal voxel_synth_tile *
-GetElement(voxel_synth_tile_hashtable *Hashtable, voxel_synth_tile *Tile)
-{
-  voxel_synth_tile *Result = {};
-  voxel_synth_tile_linked_list_node *TileBucket = GetHashBucket(Tile->HashValue, Hashtable);
-
-  while (TileBucket)
-  {
-    if (AreEqual(Tile, &TileBucket->Element)) { Result = &TileBucket->Element; break; }
-    TileBucket = TileBucket->Next;
-  }
-
-  if (TileBucket)
-  {
-    /* Result = &TileBucket->Element; */
-  }
-#if BONSAI_INTERNAL
-  else
-  {
-    for (u32 Index = 0; Index < Hashtable->Size; ++Index)
-    {
-      voxel_synth_tile_linked_list_node *Bucket = GetHashBucket(Index, Hashtable);
-
-      while (Bucket)
+      /* if (Chunk->FilledCount > 0) */
       {
-        Assert(AreEqual(Tile, &Bucket->Element) == False);
-        Assert(Tile->HashValue != Bucket->Element.HashValue);
+        untextured_3d_geometry_buffer *GeneratedMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+        /* MarkBoundaryVoxels( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-2); */
+        /* MarkBoundaryVoxels( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh ); */
+        BuildWorldChunkMeshFromMarkedVoxels_Greedy( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh, Thread->TempMemory);
+        /* BuildWorldChunkMesh(Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh); */
 
-        Bucket = Bucket->Next;
-      }
-    }
-  }
-#endif
+        /* DrawDebugVoxels( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh ); */
 
-  return Result;
-}
-
-link_internal voxel_synthesis_result
-ComputeVoxelSynthesisRules(const char* InputVox)
-{
-  memory_arena *Memory = AllocateArena(Gigabytes(2));
-  heap_allocator Heap = InitHeap(Gigabytes(2));
-
-  /* Global_ThreadStates = Initialize_ThreadLocal_ThreadStates((s32)GetTotalThreadCount(), 0, Memory); */
-  /* SetThreadLocal_ThreadIndex(0); */
-
-  Info("Synthesizing rules for (%s)", InputVox);
-
-  vox_data Vox = LoadVoxData(Memory, &Heap, InputVox); //, Global_ChunkApronMinDim, Global_ChunkApronMaxDim);
-
-  // TODO(Jesse): This adds an extra chunk around the perimeter even if the dim
-  // directly divides into the TileDim..
-  chunk_dimension ChunkTileDim = V3i(1) + (Vox.ChunkData->Dim/Global_TileDim);
-
-  voxel_synth_tile_buffer AllTiles = VoxelSynthTileBuffer(umm(Volume(ChunkTileDim)), Memory);
-
-  // TODO(Jesse): At the moment we know statically that the number of unique
-  // tiles will never exceed 64, so maybe a full blown hashtable is overkill.
-  // A dense list of 64 elements might actually be faster if we just stored a
-  // hash value and pointer in the list, then pointed to the actual structs..
-  //
-  // TODO(Jesse): Tune the hashtable size to the size of the voxel data?
-  //
-  // NOTE(Jesse): Here we use a hashtable to keep track of unique tiles we find
-  // in the input scene.  For every unique tile we find, we increment
-  // NextTileId and add it to the hashtable.  For tiles we've seen already we
-  // record the RuleId we stored in the original tile.
-  voxel_synth_tile_hashtable TileHashtable = Allocate_voxel_synth_tile_hashtable(1024, Memory);
-  u32 NextTileId = 0;
-  DimIterator(xTile, yTile, zTile, ChunkTileDim)
-  {
-    v3i TileP = V3i(xTile, yTile, zTile);
-    v3i VoxOffset = TileP * Global_TileDim;
-
-    u64 TileHash = {};
-
-    // TODO(Jesse): The tiles fit in 16 cache lines, but if we don't copy the
-    // memory here we'll take 64 cache misses again each time we iterate over
-    // the contents.  Might be worth copying/packing into contiguous buffers..
-    MinDimIterator(xVox, yVox, zVox, VoxOffset, Global_TileDim)
-    {
-      v3i VoxP = V3i(xVox, yVox, zVox);
-      s32 VoxIndex = TryGetIndex( VoxP, Vox.ChunkData->Dim);
-      if (VoxIndex > -1)
-      {
-        voxel *V = Vox.ChunkData->Voxels + VoxIndex;
-        if (V->Flags & Voxel_Filled)
+        if (GeneratedMesh->At)
         {
-          // Mod by the tile dim to normalize to that box
-          TileHash += Hash(V, VoxP % Global_TileDim);
+          NewMesh = GeneratedMesh;
+        }
+        else
+        {
+          DeallocateMesh(&GeneratedMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
         }
       }
-    }
 
-    s32 BaseVoxIndex = TryGetIndex(VoxOffset, Vox.ChunkData->Dim);
-    if (BaseVoxIndex > -1)
-    {
-      voxel_synth_tile Tile = VoxelSynthTile( 0, u32(BaseVoxIndex), TileHash, Vox.ChunkData);
-      if (voxel_synth_tile *GotTile = GetElement(&TileHashtable, &Tile))
+      umm Timestamp = NewMesh ? NewMesh->Timestamp : __rdtsc();
+      /* TakeOwnershipSync(&Chunk->Meshes, MeshBit_Main); */
+      auto Replaced = AtomicReplaceMesh(&Chunk->Meshes, MeshBit_Main, NewMesh, Timestamp);
+      if (Replaced) { DeallocateMesh(&Replaced, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
+      /* ReleaseOwnership(&Chunk->Meshes, MeshBit_Main, NewMesh); */
+
+#if 0
       {
-        Assert(GotTile->HashValue == Tile.HashValue);
-        Tile.RuleId = GotTile->RuleId;
+        if (Chunk->FilledCount > 0)
+        {
+          world *World = Thread->EngineResources->World;
+          untextured_3d_geometry_buffer *LodMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+          ComputeLodMesh( Thread, Chunk, World->ChunkDim, Chunk, World->ChunkDim, LodMesh, False);
+
+          if (LodMesh->At)
+          {
+            if ( Chunk->SelectedMeshes & MeshBit_Lod )
+            {
+              untextured_3d_geometry_buffer *OldMesh = (untextured_3d_geometry_buffer*)TakeOwnershipSync((volatile void**)&Chunk->LodMesh);
+              DeallocateMesh(&OldMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+            }
+
+            Assert(Chunk->LodMesh == 0);
+            Replace((volatile void**)&Chunk->LodMesh, (void*)LodMesh);
+            Chunk->SelectedMeshes |= MeshBit_Lod;
+          }
+        }
+        else
+        {
+          Chunk->SelectedMeshes &= (~(u32)MeshBit_Lod);
+        }
+      }
+#endif
+
+      FinalizeChunkInitialization(Chunk);
+    } break;
+
+    case type_work_queue_entry_init_world_chunk:
+    {
+      work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
+      world_chunk *Chunk = Job->Chunk;
+
+      if (GameState->TileSuperpositions == 0) return;
+
+      if (ChunkIsGarbage(Chunk))
+      {
       }
       else
       {
-        Assert(NextTileId < MAX_TILE_RULESETS); // NOTE(Jesse) For debugging
-        Tile.RuleId = NextTileId++;
-        Insert(Tile, &TileHashtable, Memory);
+        if ( NotSet(Chunk->Flags, Chunk_VoxelsInitialized) )
+        {
+          v3i TileDim = Global_TileDim;
+
+          /* v3i AbsTileMaxDim = World->VisibleRegion*World->ChunkDim / TileDim; */
+          Assert((World->VisibleRegion*World->ChunkDim%TileDim) == V3i(0));
+
+          v3i TilesPerWorldChunk = World->ChunkDim / TileDim;
+
+          v3i AbsTileMin = Chunk->WorldP * TilesPerWorldChunk;
+          v3i AbsTileMax = AbsTileMin + TilesPerWorldChunk;
+
+          voxel_synthesis_result *BakeResult = &GameState->BakeResult;
+          auto AllTiles = &BakeResult->Tiles;
+          auto BakeSrcVoxels = BakeResult->VoxData.ChunkData->Voxels;
+          auto BakeSrcVoxelsDim = BakeResult->VoxData.ChunkData->Dim;
+
+          MinMaxIterator(xTile, yTile, zTile, AbsTileMin, AbsTileMax)
+          {
+            v3i TileP = V3i(xTile, yTile, zTile);
+            s32 TileIndex = GetIndex(TileP, GameState->TileSuperpositionsDim);
+            Assert(TileIndex < Volume(GameState->TileSuperpositionsDim));
+            u64 TileRule = GameState->TileSuperpositions[TileIndex];
+
+            if (TileRule != 0)
+            {
+              Assert(CountBitsSet_Kernighan(TileRule) == 1);
+
+              u32 RuleId = GetIndexOfNthSetBit(TileRule, 1);
+              voxel_synth_tile *Match = 0;
+              for (u32 QueryTileIndex = 0; QueryTileIndex < AllTiles->Count; ++QueryTileIndex)
+              {
+                voxel_synth_tile *QueryTile = Get(AllTiles, QueryTileIndex);
+                if (QueryTile->RuleId == RuleId)
+                {
+                  Match = QueryTile;
+                  break;
+                }
+              }
+
+              Assert(Match);
+              Assert(Match->RuleId == RuleId);
+              Assert(TileRule & (1<<RuleId));
+
+              v3i SrcVoxMin = V3iFromIndex(s32(Match->VoxelIndex), Match->SrcChunk->Dim );
+              v3i SrcVoxMax = SrcVoxMin + TileDim;
+
+              /* v3i DestVoxMin = SrcVoxMin % World->ChunkDim; */
+              /* v3i DestVoxMax = DestVoxMin + TileDim; */
+
+              DimIterator(xTileVox, yTileVox, zTileVox, Global_TileDim)
+              {
+                v3i TileVox = V3i(xTileVox, yTileVox, zTileVox);
+                v3i SrcVox = SrcVoxMin + TileVox;
+                s32 SrcVoxIndex = GetIndex(SrcVox, BakeSrcVoxelsDim);
+
+                v3i DestVox = (TileVox+(TileP*Global_TileDim)) % World->ChunkDim;
+                s32 DestVoxIndex = GetIndex(DestVox, World->ChunkDim);
+
+                Chunk->Voxels[DestVoxIndex] = BakeSrcVoxels[SrcVoxIndex];
+
+                Chunk->FilledCount +=
+                  (Chunk->Voxels[DestVoxIndex].Flags&Voxel_Filled) ?
+                  1 :
+                  0 ;
+              }
+
+              /* s32 DestVoxIndex = GetIndex( (TileP*Global_TileDim) % World->ChunkDim, World->ChunkDim); */
+              /* while (CountBitsSet_Kernighan(TileOptions)) */
+              /* { */
+              /*   UnsetLeastSignificantSetBit(&TileOptions); */
+              /*   Chunk->Voxels[DestVoxIndex].Flags = Voxel_Filled; */
+              /*   Chunk->Voxels[DestVoxIndex].Color = (u8)DestVoxIndex; */
+              /*   Chunk->FilledCount++; */
+              /*   DestVoxIndex = (DestVoxIndex + 1); // % Global_TileDim; */
+              /* } */
+
+              /* v3i SrcVoxOffset = TileP * Global_TileDim; */
+              /* DimIterator(xVox, yVox, zVox, Global_TileDim) */
+              /* { */
+              /*   v3i VoxOffset = V3i(xVox, yVox, zVox); */
+              /*   v3i SrcVoxP = VoxOffset + SrcVoxOffset; */
+              /*   s32 SrcVoxIndex = TryGetIndex( SrcVoxP, BakeSrcVoxelsDim); */
+              /*   if (SrcVoxIndex > -1) */
+              /*   { */
+              /*     voxel *V = BakeSrcVoxels + SrcVoxIndex; */
+
+              /*     v3i DestTileP = TileP - TileMin; */
+              /*     v3i DestVoxP = VoxOffset + (DestTileP * Global_TileDim); */
+              /*     s32 DestVoxIndex = GetIndex( DestVoxP, World->ChunkDim); */
+              /*     Chunk->Voxels[DestVoxIndex] = *V; */
+              /*   } */
+              /* } */
+            }
+            else
+            {
+#if 1
+              v3i VoxMin = (V3i(xTile, yTile, zTile)*TileDim) % World->ChunkDim;
+              v3i VoxMax = VoxMin + TileDim;
+              for (s32 zVox = VoxMin.z; zVox < VoxMax.z; ++zVox)
+              {
+                for (s32 yVox = VoxMin.y; yVox < VoxMax.y; ++yVox)
+                {
+                  for (s32 xVox = VoxMin.x; xVox < VoxMax.x; ++xVox)
+                  {
+                    s32 VoxIndex = GetIndex(xVox, yVox, zVox, World->ChunkDim);
+                    Chunk->Voxels[VoxIndex].Flags = Voxel_Filled;
+                    Chunk->Voxels[VoxIndex].Color = RED;
+                    ++Chunk->FilledCount;
+                  }
+                }
+              }
+#endif
+            }
+            /* Info("Tile (%d, %d, %d)(%d)", xTile, yTile, zTile, TileOptions); */
+          }
+
+          MarkBoundaryVoxels_MakeExteriorFaces(Chunk->Voxels, World->ChunkDim, {}, World->ChunkDim);
+
+          ComputeStandingSpots( World->ChunkDim, Chunk, {}, {}, Global_StandingSpotDim,
+                                World->ChunkDim, 0, &Chunk->StandingSpots, Thread->TempMemory);
+
+
+          if ( Chunk->FilledCount > 0)
+          {
+            auto PrimaryMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+            BuildWorldChunkMeshFromMarkedVoxels_Greedy(Chunk->Voxels, World->ChunkDim, {}, World->ChunkDim, PrimaryMesh, Thread->TempMemory);
+            if (PrimaryMesh->At)
+            { Ensure( AtomicReplaceMesh(&Chunk->Meshes, MeshBit_Main, PrimaryMesh, PrimaryMesh->Timestamp) == 0); }
+            else
+            { DeallocateMesh(&PrimaryMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
+          }
+
+        }
       }
 
-      s32 TileIndex = GetIndex(TileP, ChunkTileDim);
-      AllTiles.Start[TileIndex] = Tile;
-    }
-  }
+      FinalizeChunkInitialization(Chunk);
 
-  // NOTE(Jesse): For the moment we're going to encode the tiles as a
-  // u64 bitfield, so we can't generate more than 64 of them.
-  Assert(NextTileId < MAX_TILE_RULESETS);
-  tile_ruleset_buffer AllRules = TileRulesetBuffer(NextTileId, Memory);
+    } break;
 
-  // NOTE(Jesse): Iterate over all the tiles, pick out their corresponding rule
-  // from AllRules and add the connectivity rules for the adjacent tile rule IDs.
-  DimIterator(xTile, yTile, zTile, ChunkTileDim)
-  {
-    v3i TileP = V3i(xTile, yTile, zTile);
-    s32 TileIndex = GetIndex(TileP, ChunkTileDim);
-    voxel_synth_tile *Tile = AllTiles.Start + TileIndex;
-    tile_ruleset *ThisTileRuleset = AllRules.Start + Tile->RuleId;
-
+    case type_work_queue_entry_copy_buffer_ref:
     {
-      WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, VoxelRuleDir_PosX);
-      WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, VoxelRuleDir_NegX);
+      work_queue_entry_copy_buffer_ref *CopyJob = SafeAccess(work_queue_entry_copy_buffer_ref, Entry);
+      DoCopyJob(CopyJob, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+    } break;
 
-      WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, VoxelRuleDir_PosY);
-      WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, VoxelRuleDir_NegY);
+    case type_work_queue_entry_copy_buffer:
+    {
+      volatile work_queue_entry_copy_buffer *CopyJob = SafeAccess(work_queue_entry_copy_buffer, Entry);
+      DoCopyJob(CopyJob, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+    } break;
 
-      WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, VoxelRuleDir_PosZ);
-      WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, VoxelRuleDir_NegZ);
-    }
+    case type_work_queue_entry_copy_buffer_set:
+    {
+      TIMED_BLOCK("Copy Set");
+      volatile work_queue_entry_copy_buffer_set *CopySet = SafeAccess(work_queue_entry_copy_buffer_set, Entry);
+      for (u32 CopyIndex = 0; CopyIndex < CopySet->Count; ++CopyIndex)
+      {
+        volatile work_queue_entry_copy_buffer *CopyJob = CopySet->CopyTargets + CopyIndex;
+        DoCopyJob(CopyJob, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+      }
+      END_BLOCK("Copy Set");
+    } break;
+
   }
-
-  voxel_synthesis_result Result = {
-    .VoxData = Vox,
-    .Tiles = AllTiles,
-    .Rules = AllRules,
-  };
-
-  return Result;
-}
-
-BONSAI_API_WORKER_THREAD_CALLBACK()
-{
 }
 
 BONSAI_API_MAIN_THREAD_CALLBACK()
@@ -296,7 +310,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     if (HoverTile)
     {
       voxel_synth_tile_buffer BakedTiles = GameState->BakeResult.Tiles;
-      /* tile_ruleset_buffer Rules = GameState->BakeResult.Rules; */
+      tile_ruleset_buffer Rules = GameState->BakeResult.Rules;
       /* vox_data *VoxData = &GameState->BakeResult.VoxData; */
       /* chunk_data *ChunkData = VoxData->ChunkData; */
       for (u32 BakedTileIndex = 0; BakedTileIndex < BakedTiles.Count; ++BakedTileIndex)
@@ -305,12 +319,22 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         // NOTE(Jesse): We really should just be able to check the rule id, but
         // checking the hash value as well ensures that if we have tiles that
         // entirely hang off the edge (and thus are completely 0) get skipped.
-        if ( BakeTile->RuleId == HoverTile->RuleId &&
-             BakeTile->HashValue == HoverTile->HashValue )
+        if ( BakeTile->RuleId    == HoverTile->RuleId &&
+             BakeTile->HashValue == HoverTile->HashValue &&
+             BakeTile->SrcChunk  == HoverTile->SrcChunk )
         {
           entity *E = GameState->BakeEntity;
-          Info("HoverTile RuleId(%d) HashValue(%u)", HoverTile->RuleId, HoverTile->HashValue);
-          Info(" BakeTile RuleId(%d) HashValue(%u)", BakeTile->RuleId, BakeTile->HashValue);
+          /* Info("HoverTile RuleId(%d) HashValue(%u)", HoverTile->RuleId, HoverTile->HashValue); */
+          /* Info(" BakeTile RuleId(%d) HashValue(%u)", BakeTile->RuleId, BakeTile->HashValue); */
+
+          tile_ruleset *Rule = Get(&Rules, HoverTile->RuleId);
+
+          DebugChars("+x rule count(%u)(", CountBitsSet_Kernighan(Rule->E[0])); PrintBinary(Rule->E[0]); DebugLine(")");
+          DebugChars("-x rule count(%u)(", CountBitsSet_Kernighan(Rule->E[1])); PrintBinary(Rule->E[1]); DebugLine(")");
+          DebugChars("+y rule count(%u)(", CountBitsSet_Kernighan(Rule->E[2])); PrintBinary(Rule->E[2]); DebugLine(")");
+          DebugChars("-y rule count(%u)(", CountBitsSet_Kernighan(Rule->E[3])); PrintBinary(Rule->E[3]); DebugLine(")");
+          DebugChars("+z rule count(%u)(", CountBitsSet_Kernighan(Rule->E[4])); PrintBinary(Rule->E[4]); DebugLine(")");
+          DebugChars("-z rule count(%u)(", CountBitsSet_Kernighan(Rule->E[5])); PrintBinary(Rule->E[5]); DebugLine(")");
 
           v3i VoxBaseP = V3iFromIndex(s32(BakeTile->VoxelIndex), BakeTile->SrcChunk->Dim);
           v3 EntityBasis = GetRenderP(World->ChunkDim, E, Camera);
@@ -332,7 +356,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   Global_AssetPrefixPath = CSz("examples/voxel_synthesis_rule_baker/assets");
 
-  world_position WorldCenter = {};
+  world_position WorldCenter = {{2,2,2}};
   canonical_position CameraTargetP = {};
 
   StandardCamera(Graphics->Camera, 10000.0f, 1000.0f, CameraTargetP);
@@ -349,10 +373,12 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->CameraTarget->P = Canonical_Position(Voxel_Position(0), {{0,0,0}});
   Resources->CameraTargetP = &GameState->CameraTarget->P;
 
-  /* GameState->BakeResult = ComputeVoxelSynthesisRules("models/test2.vox"); */
-  /* GameState->BakeResult = ComputeVoxelSynthesisRules("models/square.vox"); */
-  /* GameState->BakeResult = ComputeVoxelSynthesisRules("models/square_expanded.vox"); */
-  GameState->BakeResult = ComputeVoxelSynthesisRules("models/archway.vox");
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("models/test2.vox"); */
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("models/square.vox"); */
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("models/happy_square.vox"); */
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("models/square_expanded.vox"); */
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("models/archway.vox"); */
+  GameState->BakeResult = BakeVoxelSynthesisRules("models/archway_with_floor.vox");
 
   memory_arena *TempMemory = AllocateArena();
 
@@ -365,9 +391,14 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->BakeEntity = BakeEntity;
 
   BakeEntity->CollisionVolumeRadius = ChunkData->Dim/2.f;
-  BakeEntity->P = Canonical_Position(V3(0), V3i(-1,0,0));
+  BakeEntity->P = Canonical_Position(World->ChunkDim, V3(-ChunkData->Dim.x-5, 0, 0), V3i(0,0,0));
   AllocateAndBuildMesh(&GameState->BakeResult.VoxData, &BakeEntity->Model, TempMemory, Resources->Memory);
+
+#define DO_WORLD_SYNTHESIS 0
+
+#if !DO_WORLD_SYNTHESIS
   SpawnEntity(BakeEntity);
+#endif
   Info("Drawing (%d) Baked tiles", BakedTiles.Count);
 
   for (u32 RuleIndex = 0; RuleIndex < Rules.Count; ++RuleIndex)
@@ -391,15 +422,34 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
                                                     TempMemory,
                                                     VoxData->Palette );
 
-        TileEntity->P.Offset += V3(s32(RuleIndex)*(Global_TileDim.x+8), 0, 0 );
+        TileEntity->P.Offset += V3(s32(RuleIndex)*(Global_TileDim.x+2), 0, 0 );
         TileEntity->P = Canonicalize(World->ChunkDim, TileEntity->P);
+#if !DO_WORLD_SYNTHESIS
         SpawnEntity(TileEntity);
+#endif
         TileEntity->UserData = (void*)Tile;
         break;
       }
     }
 
   }
+
+#if DO_WORLD_SYNTHESIS
+  v3i TileSuperpositionsDim = World->VisibleRegion*World->ChunkDim / Global_TileDim;
+  Assert(World->VisibleRegion*World->ChunkDim  % Global_TileDim == V3i(0));
+
+  s32 TileSuperpositionCount = Volume(TileSuperpositionsDim);
+  u64 *TileSuperpositions = Allocate(u64, Memory, TileSuperpositionCount);
+
+  GameState->TileSuperpositionsDim = TileSuperpositionsDim;
+  GameState->TileSuperpositions = TileSuperpositions;
+
+  random_series Entropy = {5432956432};
+  InitializeWorld_VoxelSynthesis( World, World->VisibleRegion, Global_TileDim, &Entropy,
+                                  GameState->BakeResult.MaxTileEntropy,
+                                  &GameState->BakeResult.Rules,
+                                  TileSuperpositionsDim, TileSuperpositions);
+#endif
 
 #if 0
   for (u32 SynthTileIndex = 0; SynthTileIndex < BakedTiles.Count; ++SynthTileIndex)
