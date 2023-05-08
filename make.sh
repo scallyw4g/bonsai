@@ -1,8 +1,11 @@
 #! /bin/bash
 
+# TODO(Jesse)(build): Revisit this blog and see if there are some tidbits we can use.
+# http://ptspts.blogspot.com/2013/12/how-to-make-smaller-c-and-c-binaries.html
+
 BUILD_EVERYTHING=0
 
-RunPoof=0
+RunPoof=1
 
 BuildExecutables=1
 BuildExamples=1

@@ -6,6 +6,14 @@ operator==( v3i P1, v3i P2 )
 }
 
 
+// NOTE(Jesse): This is for contaiers that call AreEqual()
+link_internal b32
+AreEqual(v3i V1, v3i V2)
+{
+  b32 Result = V1 == V2;
+  return Result;
+}
+
 // NOTE(Jesse): Can't gen != because the condition welding it together
 // is not &&, it's ||
 //

@@ -329,51 +329,76 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     Canonicalize(World->ChunkDim, GameState->CameraTarget->P);
   }
 
+#define DoEntireWorldGen 0
+
+#if DoEntireWorldGen
+  while (true)
+#else
   if (Input->Space.Clicked)
+#endif
   {
+    local_persist random_series VoxelSynthesisEntropy = {543295643};
+    auto EntropyLists = GameState->BakeResult.EntropyLists;
+
+    // NOTE(Jesse): For now, I never push data onto lists of tiles with 0 entropy (which it is an error to have 0)
+    // or tiles with 1 entropy (which are fully decided)
+    Assert( CurrentCount(EntropyLists+0) == 0);
+    Assert( CurrentCount(EntropyLists+1) == 0);
+
     u32 TileIndex = u32_MAX;
     RangeIterator(EntropyListIndex, MAX_TILE_RULESETS)
     {
-      u32_cursor *EntropyList = GameState->BakeResult.EntropyLists+EntropyListIndex;
-      if (CurrentCount(EntropyList))
+      u32_cursor *EntropyList = EntropyLists+EntropyListIndex;
+      umm EntropyEntryCount = CurrentCount(EntropyList);
+      if (EntropyEntryCount)
       {
-        // NOTE(Jesse): C++ is so brain damaged it actually can't figure this out.
-        TileIndex = Pop<u32, u32_cursor>(EntropyList);
+        /* u32 Index = RandomBetween(0, &VoxelSynthesisEntropy, u32(EntropyEntryCount) ); */
+        /* TileIndex = Get(EntropyList, Index); */
+        /* Ensure( Remove(EntropyList, TileIndex) ); */
+        TileIndex = Pop(EntropyList);
         break;
       }
     }
-    Assert(TileIndex != u32_MAX);
 
-    local_persist random_series Entropy = {5432956432};
-    InitializeWorld_VoxelSynthesis_Partial( World, World->VisibleRegion, Global_TileDim, &Entropy,
+#if DoEntireWorldGen
+    if (TileIndex == u32_MAX) break;
+#endif
+
+    InitializeWorld_VoxelSynthesis_Partial( World, World->VisibleRegion, Global_TileDim, &VoxelSynthesisEntropy,
                                             GameState->BakeResult.MaxTileEntropy,
                                            &GameState->BakeResult.Rules,
                                             GameState->BakeResult.TileSuperpositionsDim,
                                             GameState->BakeResult.TileSuperpositions,
-                                        s32(TileIndex) );
-
-    v3i Radius = World->VisibleRegion/2;
-    v3i Min = World->Center - Radius;
-    v3i Max = World->Center + Radius;
-    for (s32 z = Min.z; z < Max.z; ++ z)
+                                        s32(TileIndex),
+                                            EntropyLists );
+#if !DoEntireWorldGen
     {
-      for (s32 y = Min.y; y < Max.y; ++ y)
+      v3i Radius = World->VisibleRegion/2;
+      v3i Min = World->Center - Radius;
+      v3i Max = World->Center + Radius;
+      for (s32 z = Min.z; z < Max.z; ++ z)
       {
-        for (s32 x = Min.x; x < Max.x; ++ x)
+        for (s32 y = Min.y; y < Max.y; ++ y)
         {
-          world_position P = World_Position(x,y,z);
-          world_chunk *Chunk = 0;
+          for (s32 x = Min.x; x < Max.x; ++ x)
           {
-            TIMED_NAMED_BLOCK("GetWorldChunk");
-            Chunk = GetWorldChunkFromHashtable( World, P, World->VisibleRegion );
-            if (Chunk)
+            world_position P = World_Position(x,y,z);
+            world_chunk *Chunk = 0;
             {
-              FreeWorldChunk(World, Chunk ,  MeshFreelist,  Memory);
+              TIMED_NAMED_BLOCK("GetWorldChunk");
+              Chunk = GetWorldChunkFromHashtable( World, P, World->VisibleRegion );
+              if (Chunk)
+              {
+                FreeWorldChunk(World, Chunk ,  MeshFreelist,  Memory);
+              }
             }
           }
         }
       }
     }
+#endif
+
+
   }
 
   entity *Entity = MousePickEntity(Resources);
@@ -528,11 +553,11 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   u64 MaxTileEntropy = GameState->BakeResult.MaxTileEntropy;
   u32 BitCount = CountBitsSet_Kernighan(MaxTileEntropy);
-  RangeIterator(TileIndex, TileSuperpositionCount)
+  for (s32 TileIndex = TileSuperpositionCount-1; TileIndex > -1; --TileIndex)
   {
     TileSuperpositions[TileIndex] = MaxTileEntropy;
-    u32 EntropyList = Get(EntropyLists, BitCount);
-    Push(EntropyList, TileIndex);
+    u32_cursor *EntropyList = EntropyLists+BitCount;
+    Push(EntropyList, u32(TileIndex));
   }
 
 #endif

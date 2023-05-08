@@ -241,44 +241,64 @@ GetOptionsForDirectionAndFinalChoice(v3i Dir, u64 Choice, tile_ruleset_buffer *R
 }
 
 link_internal void
-PropagateChangesTo(u64 PrevTileOptions, v3i PrevTileP, v3i DirOfTravel, v3i SuperpositionsShape, u64 *TileSuperpositions, tile_ruleset_buffer *Rules)
+PropagateChangesTo(u64 PrevTileOptions, v3i PrevTileP, v3i DirOfTravel, v3i SuperpositionsShape, u64 *TileSuperpositions, tile_ruleset_buffer *Rules, u32_cursor *EntropyLists)
 {
   v3i ThisTileP = PrevTileP+DirOfTravel;
-  s32 NewIndex = TryGetIndex(ThisTileP, SuperpositionsShape);
-  if (NewIndex >= 0)
+  s32 NextTileIndex = TryGetIndex(ThisTileP, SuperpositionsShape);
+  if (NextTileIndex >= 0)
   {
-    u64 *NewTile = TileSuperpositions + NewIndex;
-    u64 NewTileValue = *NewTile; // NOTE(Jesse): For debugging
+    u64 *NextTile = TileSuperpositions + NextTileIndex;
+    u64 NextTileValue = *NextTile;
 
-    u64 NewTileOptions = {};
+    u32 OptionCount = CountBitsSet_Kernighan(NextTileValue);
+    if (OptionCount > 1)
     {
-      u64 CachedOptions = PrevTileOptions;
-      while (u64 Option = UnsetLeastSignificantSetBit(&CachedOptions))
-      {
-        Assert(CountBitsSet_Kernighan(Option) == 1);
-        u64 NewOptions = GetOptionsForDirectionAndFinalChoice(DirOfTravel, Option, Rules);
-        NewTileOptions |= NewOptions;
-      }
-      if (NewTileValue & NewTileOptions)
-      {
-        *NewTile &= NewTileOptions;
-      }
-      else
-      {
-        // Degenerate case
-        *NewTile = 0;
-        /* Assert(False); */
-      }
+      Ensure( Remove(EntropyLists+OptionCount, u32(NextTileIndex)) );
+      Ensure( Push(EntropyLists+OptionCount, u32(NextTileIndex)) );
+      Ensure( Remove(EntropyLists+OptionCount, u32(NextTileIndex)) );
     }
 
-    if ( *NewTile && *NewTile != NewTileValue )
+
+    u64 NewTileOptions = {};
+    u64 CachedOptions = PrevTileOptions;
+    while (u64 Option = UnsetLeastSignificantSetBit(&CachedOptions))
+    {
+      Assert(CountBitsSet_Kernighan(Option) == 1);
+      u64 NewOptions = GetOptionsForDirectionAndFinalChoice(DirOfTravel, Option, Rules);
+      NewTileOptions |= NewOptions;
+    }
+
+    if (NextTileValue & NewTileOptions)
+    {
+      *NextTile &= NewTileOptions;
+      u32 NewOptionCount = CountBitsSet_Kernighan(*NextTile);
+      if (NewOptionCount > 1)
+      {
+        Push(EntropyLists+NewOptionCount, u32(NextTileIndex));
+
+        // TODO(Jesse): This is debug code, remove.
+        Ensure( Remove(EntropyLists+NewOptionCount, u32(NextTileIndex) ) );
+        Push(EntropyLists+NewOptionCount, u32(NextTileIndex));
+
+        Ensure( Remove(EntropyLists+NewOptionCount, u32(NextTileIndex) ) );
+        Push(EntropyLists+NewOptionCount, u32(NextTileIndex));
+      }
+    }
+    else
+    {
+      // Degenerate case
+      *NextTile = 0;
+      /* Assert(False); */
+    }
+
+    if ( *NextTile && *NextTile != NextTileValue )
     {
       for (u32 DirIndex = 0; DirIndex < ArrayCount(AllDirections); ++DirIndex)
       {
         v3i NextDir = AllDirections[DirIndex];
         if (NextDir != DirOfTravel)
         {
-          PropagateChangesTo(NewTileOptions, ThisTileP, NextDir, SuperpositionsShape, TileSuperpositions, Rules);
+          PropagateChangesTo(NewTileOptions, ThisTileP, NextDir, SuperpositionsShape, TileSuperpositions, Rules, EntropyLists);
         }
       }
 
@@ -293,7 +313,8 @@ InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i Til
                                         tile_ruleset_buffer *Rules,
                                         v3i TileSuperpositionsDim,
                                         u64 *TileSuperpositions,
-                                        s32 TileIndex)
+                                        s32 TileIndex,
+                                        u32_cursor *EntropyLists)
 {
   TIMED_FUNCTION();
 
@@ -301,78 +322,52 @@ InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i Til
 
   auto TileSuperpositionCount = Volume(TileSuperpositionsDim);
   if (TileIndex >= TileSuperpositionCount) return;
-  /* if (DoIteration == False) return; */
 
-  /* for (local_persist s32 zTile = TileMinDim.z; zTile < TileSuperpositionsDim.z; ++zTile) */
-  /* { */
-  /*   for (local_persist s32 yTile = TileMinDim.y; yTile < TileSuperpositionsDim.y; ++yTile) */
-  /*   { */
-  /*     for (local_persist s32 xTile = TileMinDim.x; xTile < TileSuperpositionsDim.x; ++xTile) */
-      {
-        /* s32 TileIndex = GetIndex(xTile, yTile, zTile, TileSuperpositionsDim); */
-        u64 TileOptions = TileSuperpositions[TileIndex];
-        u32 BitsSet = CountBitsSet_Kernighan(TileOptions);
+  u64 TileOptions = TileSuperpositions[TileIndex];
+  u32 BitsSet = CountBitsSet_Kernighan(TileOptions);
 
-        DebugLine("TileIndex(%u)", TileIndex);
+  DebugLine("TileIndex(%u)", TileIndex);
 
-        // We haven't fully collapsed this tile, and it's got lower entropy
-        // than we've seen yet.
-        u64 TileChoice = u64_MAX;
-        if (BitsSet > 1)
-        {
-          // TODO(Jesse): This should (at least in my head) be able to return (1, N) inclusive
-          // but it does not for (1, 2)
-          u64 BitChoice = RandomBetween(1, Series, BitsSet+1);
-
-          TileChoice = GetNthSetBit(TileOptions, BitChoice);
-          Assert(CountBitsSet_Kernighan(TileChoice) == 1);
-
-          TileSuperpositions[TileIndex] = TileChoice;
-        }
-        else
-        {
-          TileChoice = TileOptions;
-        }
-
-        Assert(TileChoice != u64_MAX);
-
-        v3i P = V3iFromIndex(TileIndex, TileSuperpositionsDim);
-
-        PropagateChangesTo(TileChoice,  P, V3i( 1, 0, 0), TileSuperpositionsDim, TileSuperpositions, Rules);
-        PropagateChangesTo(TileChoice,  P, V3i(-1, 0, 0), TileSuperpositionsDim, TileSuperpositions, Rules);
-
-        PropagateChangesTo(TileChoice,  P, V3i( 0, 1, 0), TileSuperpositionsDim, TileSuperpositions, Rules);
-        PropagateChangesTo(TileChoice,  P, V3i( 0,-1, 0), TileSuperpositionsDim, TileSuperpositions, Rules);
-
-        PropagateChangesTo(TileChoice,  P, V3i( 0, 0, 1), TileSuperpositionsDim, TileSuperpositions, Rules);
-        PropagateChangesTo(TileChoice,  P, V3i( 0, 0,-1), TileSuperpositionsDim, TileSuperpositions, Rules);
-
-        return;
-      }
-    /* } */
-  /* } */
-
-#if 0
-  for (s32 TileIndex = 0; TileIndex < TileSuperpositionCount; ++TileIndex)
+  // We haven't fully collapsed this tile, and it's got lower entropy
+  // than we've seen yet.
+  u64 TileChoice = u64_MAX;
+  if (BitsSet > 1)
   {
-    if (TileSuperpositions[TileIndex] == 0)
-    {
-      /* SoftError("Degenerate case; Voxel Synthesis failed to solve. TileIndex(%u)/(%u)", TileIndex, TileSuperpositionCount); */
-    }
-    else
-    {
-      DebugChars(" TileIndex(%u)/(%u) BitsSet(%u)(", TileIndex, TileSuperpositionCount, CountBitsSet_Kernighan(TileSuperpositions[TileIndex])); PrintBinary(TileSuperpositions[TileIndex]); DebugLine(")");
-    }
-  }
-#endif
+    // TODO(Jesse): This should (at least in my head) be able to return (1, N) inclusive
+    // but it does not for (1, 2)
+    u64 BitChoice = RandomBetween(1, Series, BitsSet+1);
 
+    TileChoice = GetNthSetBit(TileOptions, BitChoice);
+    Assert(CountBitsSet_Kernighan(TileChoice) == 1);
+
+    TileSuperpositions[TileIndex] = TileChoice;
+  }
+  else
+  {
+    TileChoice = TileOptions;
+  }
+
+  Assert(TileChoice != u64_MAX);
+
+  v3i P = V3iFromIndex(TileIndex, TileSuperpositionsDim);
+
+  PropagateChangesTo(TileChoice,  P, V3i( 1, 0, 0), TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
+  PropagateChangesTo(TileChoice,  P, V3i(-1, 0, 0), TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
+
+  PropagateChangesTo(TileChoice,  P, V3i( 0, 1, 0), TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
+  PropagateChangesTo(TileChoice,  P, V3i( 0,-1, 0), TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
+
+  PropagateChangesTo(TileChoice,  P, V3i( 0, 0, 1), TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
+  PropagateChangesTo(TileChoice,  P, V3i( 0, 0,-1), TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
 }
+
 link_internal void
 InitializeWorld_VoxelSynthesis( world *World, v3i VisibleRegion, v3i TileDim, random_series *Series,
                                 u64 MaxTileEntropy,
                                 tile_ruleset_buffer *Rules,
                                 v3i TileSuperpositionsDim,
-                                u64 *TileSuperpositions )
+                                u64 *TileSuperpositions,
+                                u32_cursor *EntropyLists)
 {
   TIMED_FUNCTION();
 
@@ -420,14 +415,14 @@ InitializeWorld_VoxelSynthesis( world *World, v3i VisibleRegion, v3i TileDim, ra
 
         v3i P = V3iFromIndex(TileIndex, TileSuperpositionsDim);
 
-        PropagateChangesTo(TileChoice,  P, V3i( 1, 0, 0), TileSuperpositionsDim, TileSuperpositions, Rules);
-        PropagateChangesTo(TileChoice,  P, V3i(-1, 0, 0), TileSuperpositionsDim, TileSuperpositions, Rules);
+        PropagateChangesTo(TileChoice,  P, V3i( 1, 0, 0), TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
+        PropagateChangesTo(TileChoice,  P, V3i(-1, 0, 0), TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
 
-        PropagateChangesTo(TileChoice,  P, V3i( 0, 1, 0), TileSuperpositionsDim, TileSuperpositions, Rules);
-        PropagateChangesTo(TileChoice,  P, V3i( 0,-1, 0), TileSuperpositionsDim, TileSuperpositions, Rules);
+        PropagateChangesTo(TileChoice,  P, V3i( 0, 1, 0), TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
+        PropagateChangesTo(TileChoice,  P, V3i( 0,-1, 0), TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
 
-        PropagateChangesTo(TileChoice,  P, V3i( 0, 0, 1), TileSuperpositionsDim, TileSuperpositions, Rules);
-        PropagateChangesTo(TileChoice,  P, V3i( 0, 0,-1), TileSuperpositionsDim, TileSuperpositions, Rules);
+        PropagateChangesTo(TileChoice,  P, V3i( 0, 0, 1), TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
+        PropagateChangesTo(TileChoice,  P, V3i( 0, 0,-1), TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
       }
     }
   }
