@@ -83,12 +83,12 @@ struct work_queue_entry_init_asset
   world_chunk *Chunk;
 };
 
-struct work_queue_entry__align_to_cache_line_helper_struct
-{
+// struct work_queue_entry__align_to_cache_line_helper_struct
+// {
   // NOTE(Jesse): This is just to ensure the union size is a multiple of a
   // cache line
   /* u8 Pad[(CACHE_LINE_SIZE*2)-8]; */
-};
+// };
 
 poof(
   d_union work_queue_entry

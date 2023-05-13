@@ -194,7 +194,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
     s32 bytesRemaining = totalChunkBytes;
 
     int TotalChunkCount = 1; // Sometimes overwritten if theres a 'PACK' chunk
-    int TotalChunksRead = 0;
+    // int TotalChunksRead = 0;
 
     while (bytesRemaining > 0)
     {
@@ -238,7 +238,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
 
         case ID_XYZI:
         {
-          ++TotalChunksRead;
+          // ++TotalChunksRead;
 
           s32 ReportedVoxelCount = ReadXYZIChunk(ModelFile.Handle, &bytesRemaining);
 

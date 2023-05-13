@@ -3440,7 +3440,6 @@ DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 Ch
 
     random_series Entropy = {54392};
 
-    b32 AnyVoxelsModified = False;
     for (s32 zVoxel = s32(ChunkRelRectMin.z); zVoxel < s32(ChunkRelRectMax.z); zVoxel += 1)
     {
       for (s32 yVoxel = s32(ChunkRelRectMin.y); yVoxel < s32(ChunkRelRectMax.y); yVoxel += 1)
@@ -3469,7 +3468,6 @@ DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 Ch
                 if (CopyValue.Flags&VoxelFaceMask)
                 {
                   --Chunk->FilledCount;
-                  AnyVoxelsModified = True;
                   CopyValue.Flags = Voxel_Empty;
                 }
                 CopyValue.Flags |= Voxel_MarkBit;
@@ -3477,7 +3475,7 @@ DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 Ch
 
               case WorldUpdateOperation_Additive:
               {
-                if ( (CopyValue.Flags&Voxel_Filled) == 0 ) { ++Chunk->FilledCount; AnyVoxelsModified = True; }
+                if ( (CopyValue.Flags&Voxel_Filled) == 0 ) { ++Chunk->FilledCount; }
                 CopyValue.Flags = Voxel_Filled;
                 CopyValue.Color = NewColor;
               } break;
@@ -3864,7 +3862,7 @@ RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, 
 
 
   v3 Advance = MaybeRay.Ray.Dir;
-  b32 Hit = False;
+  // b32 Hit = False;
 
   BubbleSort((sort_key_f*)AllChunksBuffer.E, (u32)AllChunksBuffer.At);
 
@@ -3894,7 +3892,7 @@ RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, 
            AtP.y < 0 || AtP.y >= WorldChunkDim.y ||
            AtP.z < 0 || AtP.z >= WorldChunkDim.z )
       {
-        Hit = False;
+        // Hit = False;
         break;
       }
 
@@ -3902,7 +3900,7 @@ RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, 
       voxel_position LocalTestP = Voxel_Position(AtP);
       if (IsFilledInChunk(ClosestChunk, LocalTestP, World->ChunkDim))
       {
-        Hit = True;
+        // Hit = True;
         ClosestChunkIndex = -1;
 
         /* v3 MinP =  V3(ClosestChunk->WorldP * World->ChunkDim); */

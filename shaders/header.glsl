@@ -33,8 +33,9 @@ precision highp sampler3D;
 #define DEBUG_TEXTURE_DIM 512
 
 // Note(Jesse): Must match corresponding C++ define
-#define SCR_WIDTH (1920)
-#define SCR_HEIGHT (1080)
+#define SCREEN_RATIO (1)
+#define SCR_WIDTH (3840/SCREEN_RATIO)
+#define SCR_HEIGHT (2160/SCREEN_RATIO)
 
 #define PoissonDiskSize 16
 vec2 poissonDisk[PoissonDiskSize] = vec2[](
