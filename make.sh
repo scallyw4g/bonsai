@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 
 # TODO(Jesse)(build): Revisit this blog and see if there are some tidbits we can use.
 # http://ptspts.blogspot.com/2013/12/how-to-make-smaller-c-and-c-binaries.html
