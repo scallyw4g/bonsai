@@ -280,7 +280,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
             }
             else
             {
-              BUG("Voxel detected outside the dimention it should be in!");
+              BUG("Voxel detected outside the dimention it should be in while loading (%s)!", filepath);
             }
           }
 

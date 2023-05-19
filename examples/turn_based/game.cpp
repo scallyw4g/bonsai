@@ -32,23 +32,23 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *
   Result[ModelIndex_Enemy_Skeleton_Concubiner]       = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_CONCUBINER.vox", Memory);
   Result[ModelIndex_Enemy_Skeleton_King]             = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_KING.vox", Memory);
 
-  /* Result[ModelIndex_Player_jp]      = LoadVoxModel(Memory, Heap, "models/players/chr_jp.vox", Memory); */
-  /* Result[ModelIndex_Player_bow]     = LoadVoxModel(Memory, Heap, "models/players/chr_bow.vox", Memory); */
-  /* Result[ModelIndex_Player_cat]     = LoadVoxModel(Memory, Heap, "models/players/chr_cat.vox", Memory); */
-  /* Result[ModelIndex_Player_fox]     = LoadVoxModel(Memory, Heap, "models/players/chr_fox.vox", Memory); */
-  /* Result[ModelIndex_Player_gumi]    = LoadVoxModel(Memory, Heap, "models/players/chr_gumi.vox", Memory); */
-  /* Result[ModelIndex_Player_knight]  = LoadVoxModel(Memory, Heap, "models/players/chr_knight.vox", Memory); */
-  /* Result[ModelIndex_Player_man]     = LoadVoxModel(Memory, Heap, "models/players/chr_man.vox", Memory); */
-  /* Result[ModelIndex_Player_mom]     = LoadVoxModel(Memory, Heap, "models/players/chr_mom.vox", Memory); */
-  /* Result[ModelIndex_Player_old]     = LoadVoxModel(Memory, Heap, "models/players/chr_old.vox", Memory); */
-  /* Result[ModelIndex_Player_poem]    = LoadVoxModel(Memory, Heap, "models/players/chr_poem.vox", Memory); */
-  /* Result[ModelIndex_Player_rain]    = LoadVoxModel(Memory, Heap, "models/players/chr_rain.vox", Memory); */
-  /* Result[ModelIndex_Player_sasami]  = LoadVoxModel(Memory, Heap, "models/players/chr_sasami.vox", Memory); */
-  /* Result[ModelIndex_Player_sol]     = LoadVoxModel(Memory, Heap, "models/players/chr_sol.vox", Memory); */
-  /* Result[ModelIndex_Player_sword]   = LoadVoxModel(Memory, Heap, "models/players/chr_sword.vox", Memory); */
-  /* Result[ModelIndex_Player_tale]    = LoadVoxModel(Memory, Heap, "models/players/chr_tale.vox", Memory); */
-  /* Result[ModelIndex_Player_tama]    = LoadVoxModel(Memory, Heap, "models/players/chr_tama.vox", Memory); */
-  /* Result[ModelIndex_Player_tsurugi] = LoadVoxModel(Memory, Heap, "models/players/chr_tsurugi.vox", Memory); */
+  Result[ModelIndex_Player_jp]      = LoadVoxModel(Memory, Heap, "models/players/chr_jp.vox", Memory);
+  Result[ModelIndex_Player_bow]     = LoadVoxModel(Memory, Heap, "models/players/chr_bow.vox", Memory);
+  Result[ModelIndex_Player_cat]     = LoadVoxModel(Memory, Heap, "models/players/chr_cat.vox", Memory);
+  Result[ModelIndex_Player_fox]     = LoadVoxModel(Memory, Heap, "models/players/chr_fox.vox", Memory);
+  Result[ModelIndex_Player_gumi]    = LoadVoxModel(Memory, Heap, "models/players/chr_gumi.vox", Memory);
+  Result[ModelIndex_Player_knight]  = LoadVoxModel(Memory, Heap, "models/players/chr_knight.vox", Memory);
+  Result[ModelIndex_Player_man]     = LoadVoxModel(Memory, Heap, "models/players/chr_man.vox", Memory);
+  Result[ModelIndex_Player_mom]     = LoadVoxModel(Memory, Heap, "models/players/chr_mom.vox", Memory);
+  Result[ModelIndex_Player_old]     = LoadVoxModel(Memory, Heap, "models/players/chr_old.vox", Memory);
+  Result[ModelIndex_Player_poem]    = LoadVoxModel(Memory, Heap, "models/players/chr_poem.vox", Memory);
+  Result[ModelIndex_Player_rain]    = LoadVoxModel(Memory, Heap, "models/players/chr_rain.vox", Memory);
+  Result[ModelIndex_Player_sasami]  = LoadVoxModel(Memory, Heap, "models/players/chr_sasami.vox", Memory);
+  Result[ModelIndex_Player_sol]     = LoadVoxModel(Memory, Heap, "models/players/chr_sol.vox", Memory);
+  Result[ModelIndex_Player_sword]   = LoadVoxModel(Memory, Heap, "models/players/chr_sword.vox", Memory);
+  Result[ModelIndex_Player_tale]    = LoadVoxModel(Memory, Heap, "models/players/chr_tale.vox", Memory);
+  Result[ModelIndex_Player_tama]    = LoadVoxModel(Memory, Heap, "models/players/chr_tama.vox", Memory);
+  Result[ModelIndex_Player_tsurugi] = LoadVoxModel(Memory, Heap, "models/players/chr_tsurugi.vox", Memory);
 
   Result[ModelIndex_Bitty0] = LoadVoxModel(Memory, Heap, "models/splotion_bitty_0.vox", Memory);
   Result[ModelIndex_Bitty1] = LoadVoxModel(Memory, Heap, "models/splotion_bitty_1.vox", Memory);
@@ -753,9 +753,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   Global_AssetPrefixPath = CSz("examples/turn_based/assets");
 
-  world_position WorldCenter = World_Position(2, 2, 2);
+  world_position WorldCenter = World_Position(0);
   /* world_position WorldCenter = {}; */
-  canonical_position PlayerSpawnP = Canonical_Position(Voxel_Position(0), WorldCenter + World_Position(0,0,3));
+  canonical_position PlayerSpawnP = Canonical_Position(Voxel_Position(0), WorldCenter + World_Position(0,0,1));
 
   StandardCamera(Graphics->Camera, 10000.0f, 1000.0f, PlayerSpawnP);
   /* Graphics->Camera->CurrentP.WorldP = World_Position(1, -1, 1); */
@@ -771,26 +771,28 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState->Models = AllocateGameModels(GameState, Memory, Heap);
 
-#if 0
-  u32 PlayerModelIndex = RandomBetween(ModelIndex_FirstPlayerModel, &GameState->Entropy, ModelIndex_LastPlayerModel+1);
+#if 1
+  u32 PlayerModelIndex = RandomBetween(ModelIndex_FirstPlayerModel, &GameState->Entropy, ModelIndex_LastPlayerModel+1u);
   GameState->Player = GetFreeEntity(EntityTable);
   SpawnPlayerLikeEntity(Plat, World, GameState->Models + PlayerModelIndex, GameState->Player, PlayerSpawnP, &GameState->Entropy);
+#endif
 
+#if 1
   u32 EnemyCount = 3;
   v3i HalfVisibleRegion = g_VisibleRegion / 2;
   HalfVisibleRegion.z = 0;
   for (u32 EnemyIndex = 0; EnemyIndex < EnemyCount; ++EnemyIndex)
   {
     world_position WP = World_Position(
-        (s32)RandomBetween(0, &GameState->Entropy, (u32)g_VisibleRegion.x),
-        (s32)RandomBetween(0, &GameState->Entropy, (u32)g_VisibleRegion.y),
+        (s32)RandomBetween(0, &GameState->Entropy, (u32)HalfVisibleRegion.x),
+        (s32)RandomBetween(0, &GameState->Entropy, (u32)HalfVisibleRegion.y),
         1);
 
-    u32 EnemyModelIndex = RandomBetween(ModelIndex_FirstEnemyModel, &GameState->Entropy, ModelIndex_Enemy_Skeleton_AxeArmor+1);
+    u32 EnemyModelIndex = RandomBetween(ModelIndex_FirstEnemyModel, &GameState->Entropy, ModelIndex_Enemy_Skeleton_AxeArmor+1u);
     Assert(EnemyModelIndex >= ModelIndex_FirstEnemyModel);
     Assert(EnemyModelIndex <= ModelIndex_LastEnemyModel);
 
-    auto EnemySpawnP = Canonical_Position(V3(0), WorldCenter + WP - HalfVisibleRegion );
+    auto EnemySpawnP = Canonical_Position(V3(0), WorldCenter + WP );
     auto Enemy = GetFreeEntity(EntityTable);
     Enemy->Update = EnemyUpdate;
     SpawnPlayerLikeEntity(Plat, World, GameState->Models + EnemyModelIndex, Enemy, EnemySpawnP, &GameState->Entropy, 0.35f);
