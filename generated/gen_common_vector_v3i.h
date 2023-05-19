@@ -8,7 +8,7 @@ LengthSq( v3i Vec )
 inline r32
 Length( v3i Vec )
 {
-  r32 Result = (r32)sqrt(LengthSq(Vec));
+  r32 Result = (r32)sqrt((r64)LengthSq(Vec));
   return Result;
 }
 
