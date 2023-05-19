@@ -15,7 +15,6 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *
   // TODO(Jesse)(leak, memory): Pass temp memory to LoadVoxModel
 
   model *Result                                       = Allocate(model, Memory, ModelIndex_Count);
-  /* Result[ModelIndex_Enemy]                         = LoadVoxModel(Memory, Heap, "models/chr_tama.vox", Memory); */
 
   Result[ModelIndex_Enemy_Skeleton_Axe]              = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_AXE.vox", Memory);
   Result[ModelIndex_Enemy_Skeleton_Sword]            = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_SWORD.vox", Memory);
@@ -55,41 +54,6 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *
 
   return Result;
 }
-
-#if 0
-u8
-GetColorForTile(u32 TileType)
-{
-  switch (TileType)
-  {
-    case TileOption_None:
-      return RED;
-
-#if 0
-    case TileOption_HouseBase_North:
-      return GREEN;
-
-    case TileOption_HouseBase_South:
-      return BLUE;
-
-    case TileOption_HouseBase_East:
-    case TileOption_HouseBase_West:
-      return GREY_6;
-
-    case TileOption_HouseBase_Interior:
-      return YELLOW;
-#endif
-
-    case TileOption_Stone:
-      return GREY_2;
-
-    case TileOption_Dirt:
-      return GRASS_GREEN;
-  }
-
-  return BLACK;
-}
-#endif
 
 BONSAI_API_WORKER_THREAD_CALLBACK()
 {
@@ -150,38 +114,8 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       }
 
       umm Timestamp = NewMesh ? NewMesh->Timestamp : __rdtsc();
-      /* TakeOwnershipSync(&Chunk->Meshes, MeshBit_Main); */
       auto Replaced = AtomicReplaceMesh(&Chunk->Meshes, MeshBit_Main, NewMesh, Timestamp);
       if (Replaced) { DeallocateMesh(&Replaced, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
-      /* ReleaseOwnership(&Chunk->Meshes, MeshBit_Main, NewMesh); */
-
-#if 0
-      {
-        if (Chunk->FilledCount > 0)
-        {
-          world *World = Thread->EngineResources->World;
-          untextured_3d_geometry_buffer *LodMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-          ComputeLodMesh( Thread, Chunk, World->ChunkDim, Chunk, World->ChunkDim, LodMesh, False);
-
-          if (LodMesh->At)
-          {
-            if ( Chunk->SelectedMeshes & MeshBit_Lod )
-            {
-              untextured_3d_geometry_buffer *OldMesh = (untextured_3d_geometry_buffer*)TakeOwnershipSync((volatile void**)&Chunk->LodMesh);
-              DeallocateMesh(&OldMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-            }
-
-            Assert(Chunk->LodMesh == 0);
-            Replace((volatile void**)&Chunk->LodMesh, (void*)LodMesh);
-            Chunk->SelectedMeshes |= MeshBit_Lod;
-          }
-        }
-        else
-        {
-          Chunk->SelectedMeshes &= (~(u32)MeshBit_Lod);
-        }
-      }
-#endif
 
       FinalizeChunkInitialization(Chunk);
     } break;
@@ -191,103 +125,12 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
       world_chunk *Chunk = Job->Chunk;
 
-
-#if 0
-      if (ChunkIsGarbage(Chunk))
-      {
-      }
-      else
-      {
-        if ( NotSet(Chunk->Flags, Chunk_VoxelsInitialized) )
-        {
-          // TODO(Jesse): Deduplicate this
-          v3i TileDim = V3i(8);
-
-          v3i AbsTileMaxDim = World->VisibleRegion*World->ChunkDim / TileDim;
-          Assert((World->VisibleRegion*World->ChunkDim%TileDim) == V3i(0));
-
-          v3i TilesPerWorldChunk = World->ChunkDim / TileDim;
-
-          v3i TileMin = (Chunk->WorldP) *TilesPerWorldChunk;
-          v3i TileMax = TileMin + TilesPerWorldChunk;
-
-          for (s32 zTile = TileMin.z; zTile < TileMax.z; ++zTile)
-          {
-            for (s32 yTile = TileMin.y; yTile < TileMax.y; ++yTile)
-            {
-              for (s32 xTile = TileMin.x; xTile < TileMax.x; ++xTile)
-              {
-                s32 TileIndex = GetIndex(xTile, yTile, zTile, AbsTileMaxDim);
-                Assert(TileIndex < TileSuperpositionCount);
-                u32 TileOptions = TileSuperpositions[TileIndex];
-
-                switch (TileOptions)
-                {
-                  /* case TileOption_None: */
-                  case TileOption_Air:
-                  {
-                  } break;
-
-                  case TileOption_None:
-                  case TileOption_HouseBase_North:
-                  case TileOption_HouseBase_South:
-                  case TileOption_HouseBase_East:
-                  case TileOption_HouseBase_West:
-                  case TileOption_HouseBase_Interior:
-                  case TileOption_Dirt:
-                  case TileOption_Stone:
-                  {
-                    u8 Color = GetColorForTile(TileOptions);
-                    v3i VoxMin = (V3i(xTile, yTile, zTile)*TileDim) % World->ChunkDim;
-                    v3i VoxMax = VoxMin + TileDim;
-                    for (s32 zVox = VoxMin.z; zVox < VoxMax.z; ++zVox)
-                    {
-                      for (s32 yVox = VoxMin.y; yVox < VoxMax.y; ++yVox)
-                      {
-                        for (s32 xVox = VoxMin.x; xVox < VoxMax.x; ++xVox)
-                        {
-                          s32 VoxIndex = GetIndex(xVox, yVox, zVox, World->ChunkDim);
-                          Chunk->Voxels[VoxIndex].Flags = Voxel_Filled;
-                          Chunk->Voxels[VoxIndex].Color = Color;
-                          ++Chunk->FilledCount;
-                        }
-                      }
-                    }
-                  } break;
-
-                }
-
-              }
-            }
-          }
-          MarkBoundaryVoxels_MakeExteriorFaces(Chunk->Voxels, World->ChunkDim, {}, World->ChunkDim);
-
-          ComputeStandingSpots( World->ChunkDim, Chunk, {}, {}, Global_StandingSpotDim,
-                                World->ChunkDim, 0, &Chunk->StandingSpots, Thread->TempMemory);
-
-
-          if ( Chunk->FilledCount > 0)
-          {
-            auto PrimaryMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-            BuildWorldChunkMeshFromMarkedVoxels_Greedy(Chunk->Voxels, World->ChunkDim, {}, World->ChunkDim, PrimaryMesh, Thread->TempMemory);
-            if (PrimaryMesh->At)
-            { Ensure( AtomicReplaceMesh(&Chunk->Meshes, MeshBit_Main, PrimaryMesh, PrimaryMesh->Timestamp) == 0); }
-            else
-            { DeallocateMesh(&PrimaryMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
-          }
-
-        }
-      }
-
-#else
-
 #if 1
-          counted_string AssetFilename = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, Thread->TempMemory);
-          native_file AssetFile = OpenFile(AssetFilename, "r+b");
+      counted_string AssetFilename = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, Thread->TempMemory);
+      native_file AssetFile = OpenFile(AssetFilename, "r+b");
 #endif
       {
 
-#if 1
         /* s32 Frequency = 0; */
         /* s32 Amplititude = 0; */
         /* s32 StartingZDepth = 0; */
@@ -314,9 +157,8 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
         /* Chunk->LodMesh_Complete = True; */
         /* Assert( NotSet(Chunk, Chunk_Queued )); */
 
-#endif
       }
-#endif
+
       FinalizeChunkInitialization(Chunk);
 
     } break;
@@ -534,8 +376,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   /* RotP.y = Cos(r32(Plat->GameTime)); */
   /* Player->Rotation = RotatePoint(V3(0.f, -1.f, 0.f), RotP); */
 
-  /* entity *Enemy = GameState->Enemy; */
-
   /* standing_spot_buffer EnemySpots = GetStandingSpotsWithinRadius(World, Enemy->P, EnemyMoveSpeed, GetTranArena()); */
   /* for (u32 SpotIndex = 0; SpotIndex < EnemySpots.Count; ++SpotIndex) */
   /* { */
@@ -567,12 +407,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
                     GetRenderP(World->ChunkDim, VoxelP-Offset, Camera),
                     GetRenderP(World->ChunkDim, VoxelP+V3(1.f)+Offset, Camera),
                     WHITE, 0.05f);
-
-
-    /* if (Input->F8.Clicked) */
-    /* { */
-    /*   DoSplotion(Resources, &Pick, PickCP, 20.f); */
-    /* } */
 
 
     if (Input->Z.Clicked)
@@ -724,25 +558,12 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     Canonicalize(World->ChunkDim, GameState->CameraTarget->P);
   }
 
-  /* if ( IsGrounded(World, Player, World->VisibleRegion) && Hotkeys->Player_Jump ) */
-  /* { */
-  /*   Player->Physics.Force += V3(0.f, 0.f, 0.5f) * Player->Physics.Speed; */
-  /* } */
-
-  /* if (IsGrounded(World, Player, World->VisibleRegion))// && Hotkeys->Player_Jump) */
-  /* { */
-  /*   Player->Physics.Force += V3(0, 0, 1); */
-  /* } */
-
   /* if (Hotkeys->Player_Spawn) */
   /* { */
   /*   Unspawn(Player); */
   /*   SpawnPlayerLikeEntity(Plat, World, GameState->Models, Player,  Canonical_Position(V3(0,0,0), World_Position(0,0,2)), &GameState->Entropy); */
   /*   World->Center = World_Position(0, 0, 2); */
   /* } */
-
-
-  return;
 }
 
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
@@ -754,7 +575,6 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   Global_AssetPrefixPath = CSz("examples/turn_based/assets");
 
   world_position WorldCenter = World_Position(0);
-  /* world_position WorldCenter = {}; */
   canonical_position PlayerSpawnP = Canonical_Position(Voxel_Position(0), WorldCenter + World_Position(0,0,1));
 
   StandardCamera(Graphics->Camera, 10000.0f, 1000.0f, PlayerSpawnP);
@@ -765,9 +585,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   AllocateWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 
-  /* InitializeWorld_WFC(world *World, v3i VisibleRegion, v3i TileDim, memory_arena *Memory, random_series *Series) */
   random_series WorldEntropy = {54930695483};
-  /* InitializeWorld_WFC(Resources->World, g_VisibleRegion, V3i(8), Memory, &WorldEntropy); */
 
   GameState->Models = AllocateGameModels(GameState, Memory, Heap);
 
