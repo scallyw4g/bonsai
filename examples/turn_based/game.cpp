@@ -307,7 +307,7 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
       case 1:
       case 2:
       {
-        DebugLine("move");
+        /* DebugLine("move"); */
         v3 PlayerBaseP = GetSimSpaceBaseP(World, GameState->Player);
         f32 ShortestDistanceToPlayerSq = f32_MAX;
         u32 ClosestTileIndex = u32_MAX;
