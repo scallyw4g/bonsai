@@ -139,7 +139,7 @@ struct voxel_synthesis_result
   // This is data used during acutal world generation
   u64 *TileSuperpositions;
   v3i TileSuperpositionsDim;
-  u32_cursor_staticbuffer EntropyLists; // [MAX_TILE_RULESETS];
+  u32_cursor_staticbuffer EntropyLists;
 
 };
 

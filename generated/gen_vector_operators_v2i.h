@@ -1,3 +1,9 @@
+link_internal void
+DeepCopy(v2i *Src, v2i *Dest)
+{
+  *Dest = *Src;
+}
+
 inline b32
 operator==( v2i P1, v2i P2 )
 {

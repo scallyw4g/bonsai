@@ -18,6 +18,16 @@ U64Cursor(umm ElementCount, memory_arena* Memory)
   return Result;
 }
 
+link_internal u64*
+GetPtr(u64_cursor *Cursor, umm ElementIndex)
+{
+  u64 *Result = {};
+  if (ElementIndex < AtElements(Cursor)) {
+    Result = Cursor->Start+ElementIndex;
+  }
+  return Result;
+}
+
 link_internal u64
 Get(u64_cursor *Cursor, umm ElementIndex)
 {
@@ -82,6 +92,21 @@ Remove(u64_cursor *Cursor, u64 Query)
     }
   }
   return Result;
+}
+
+link_internal void
+DeepCopy(u64_cursor *Src, u64_cursor *Dest)
+{
+  umm SrcAt = AtElements(Src);
+  Assert(SrcAt <= TotalElements(Dest));
+
+  IterateOver(Src, Element, ElementIndex)
+  {
+    DeepCopy(Element, Dest->Start+ElementIndex);
+  }
+
+  Dest->At = Dest->Start+SrcAt;
+  Assert(Dest->At < Dest->End);
 }
 
 struct u64_stream_chunk

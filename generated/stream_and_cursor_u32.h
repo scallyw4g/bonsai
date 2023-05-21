@@ -18,6 +18,16 @@ U32Cursor(umm ElementCount, memory_arena* Memory)
   return Result;
 }
 
+link_internal u32*
+GetPtr(u32_cursor *Cursor, umm ElementIndex)
+{
+  u32 *Result = {};
+  if (ElementIndex < AtElements(Cursor)) {
+    Result = Cursor->Start+ElementIndex;
+  }
+  return Result;
+}
+
 link_internal u32
 Get(u32_cursor *Cursor, umm ElementIndex)
 {
@@ -82,6 +92,21 @@ Remove(u32_cursor *Cursor, u32 Query)
     }
   }
   return Result;
+}
+
+link_internal void
+DeepCopy(u32_cursor *Src, u32_cursor *Dest)
+{
+  umm SrcAt = AtElements(Src);
+  Assert(SrcAt <= TotalElements(Dest));
+
+  IterateOver(Src, Element, ElementIndex)
+  {
+    DeepCopy(Element, Dest->Start+ElementIndex);
+  }
+
+  Dest->At = Dest->Start+SrcAt;
+  Assert(Dest->At < Dest->End);
 }
 
 struct u32_stream_chunk

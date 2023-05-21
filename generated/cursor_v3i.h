@@ -18,6 +18,16 @@ V3iCursor(umm ElementCount, memory_arena* Memory)
   return Result;
 }
 
+link_internal v3i*
+GetPtr(v3i_cursor *Cursor, umm ElementIndex)
+{
+  v3i *Result = {};
+  if (ElementIndex < AtElements(Cursor)) {
+    Result = Cursor->Start+ElementIndex;
+  }
+  return Result;
+}
+
 link_internal v3i
 Get(v3i_cursor *Cursor, umm ElementIndex)
 {
@@ -82,5 +92,20 @@ Remove(v3i_cursor *Cursor, v3i Query)
     }
   }
   return Result;
+}
+
+link_internal void
+DeepCopy(v3i_cursor *Src, v3i_cursor *Dest)
+{
+  umm SrcAt = AtElements(Src);
+  Assert(SrcAt <= TotalElements(Dest));
+
+  IterateOver(Src, Element, ElementIndex)
+  {
+    DeepCopy(Element, Dest->Start+ElementIndex);
+  }
+
+  Dest->At = Dest->Start+SrcAt;
+  Assert(Dest->At < Dest->End);
 }
 

@@ -339,7 +339,15 @@ InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i Til
 
   u64 *TileSuperpositions = Allocate(u64, GetTranArena(), TileSuperpositionCount);
 
-  do 
+  u32_cursor_staticbuffer EntropyLists = {};
+  IterateOver(&EntropyLists, Element, ElementIndex)
+  {
+    *Element = U32Cursor(umm(TileSuperpositionCount), GetTranArena());
+  }
+
+  DeepCopy(EntropyListsStorage, &EntropyLists);
+
+  do
   {
     MemCopy((u8*)TileSuperpositionsStorage, (u8*)TileSuperpositions, (umm)((umm)TileSuperpositionCount*sizeof(u64)));
 
@@ -371,9 +379,12 @@ InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i Til
       Push(InfoCursor, VoxelSynthesisChangePropagationInfo(TileChoice,  P, AllDirections[DirIndex]));
     }
 
-  PropagateChangesTo(InfoCursor, TileSuperpositionsDim, TileSuperpositions, Rules, EntropyListsStorage);
-  /* } while (PropagateChangesTo(InfoCursor, TileSuperpositionsDim, TileSuperpositions, Rules, EntropyListsStorage) == False) ; */
-  } while (False) ;
+  PropagateChangesTo(InfoCursor, TileSuperpositionsDim, TileSuperpositions, Rules, &EntropyLists);
+  /* } while (PropagateChangesTo(InfoCursor, TileSuperpositionsDim, TileSuperpositions, Rules, &EntropyLists) == False) ; */
+
+  } while (False);
+
+  DeepCopy(&EntropyLists, EntropyListsStorage);
 
   MemCopy((u8*)TileSuperpositions, (u8*)TileSuperpositionsStorage, (umm)((umm)TileSuperpositionCount*sizeof(u64)));
 

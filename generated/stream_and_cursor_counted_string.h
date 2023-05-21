@@ -18,6 +18,16 @@ CountedStringCursor(umm ElementCount, memory_arena* Memory)
   return Result;
 }
 
+link_internal counted_string*
+GetPtr(counted_string_cursor *Cursor, umm ElementIndex)
+{
+  counted_string *Result = {};
+  if (ElementIndex < AtElements(Cursor)) {
+    Result = Cursor->Start+ElementIndex;
+  }
+  return Result;
+}
+
 link_internal counted_string
 Get(counted_string_cursor *Cursor, umm ElementIndex)
 {
@@ -82,6 +92,21 @@ Remove(counted_string_cursor *Cursor, counted_string Query)
     }
   }
   return Result;
+}
+
+link_internal void
+DeepCopy(counted_string_cursor *Src, counted_string_cursor *Dest)
+{
+  umm SrcAt = AtElements(Src);
+  Assert(SrcAt <= TotalElements(Dest));
+
+  IterateOver(Src, Element, ElementIndex)
+  {
+    DeepCopy(Element, Dest->Start+ElementIndex);
+  }
+
+  Dest->At = Dest->Start+SrcAt;
+  Assert(Dest->At < Dest->End);
 }
 
 struct counted_string_stream_chunk
