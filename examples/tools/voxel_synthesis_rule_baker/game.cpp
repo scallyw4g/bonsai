@@ -331,6 +331,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
 #define DoEntireWorldGen 0
 
+  auto EntropyLists = GameState->BakeResult.EntropyLists;
 #if DoEntireWorldGen
   while (true)
 #else
@@ -338,7 +339,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 #endif
   {
     local_persist random_series VoxelSynthesisEntropy = {543295643};
-    auto EntropyLists = GameState->BakeResult.EntropyLists;
 
     // NOTE(Jesse): For now, I never push data onto lists of tiles with 0 entropy (which it is an error to have 0)
     // or tiles with 1 entropy (which are fully decided)
@@ -371,7 +371,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
                                             GameState->BakeResult.TileSuperpositions,
                                         s32(TileIndex),
                                             EntropyLists );
-#if !DoEntireWorldGen
+#if DoEntireWorldGen
+#else
     {
       v3i Radius = World->VisibleRegion/2;
       v3i Min = World->Center - Radius;
@@ -400,6 +401,31 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
 
   }
+
+#if DoEntireWorldGen
+#else
+  RangeIterator(EntropyListIndex, MAX_TILE_RULESETS)
+  {
+    u32_cursor *EntropyList = EntropyLists+EntropyListIndex;
+    umm EntropyEntryCount = CurrentCount(EntropyList);
+    if (EntropyEntryCount)
+    {
+      RangeIterator(TileIndexIndex, (s32)EntropyEntryCount)
+      {
+        /* float TileIndex; */
+        s32 TmpTileIndex = (s32)Get(EntropyList, (umm)TileIndexIndex);
+        v3i TileP = V3iFromIndex(TmpTileIndex, GameState->BakeResult.TileSuperpositionsDim);
+        v3i VoxBaseP = TileP * Global_TileDim;
+        aabb TileRect = AABBMinDim(VoxBaseP, Global_TileDim);
+        DEBUG_DrawAABB(&GpuMap->Buffer, TileRect, RED);
+
+        if (TileIndexIndex > 10) break;
+      }
+
+      break;
+    }
+  }
+#endif
 
   entity *Entity = MousePickEntity(Resources);
   if (Entity)
@@ -453,7 +479,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   Global_AssetPrefixPath = CSz("examples/voxel_synthesis_rule_baker/assets");
 
 
-#define DO_WORLD_SYNTHESIS 1
+#define DO_WORLD_SYNTHESIS 0
 
 #if DO_WORLD_SYNTHESIS
   world_position WorldCenter = {{2,2,2}};
@@ -462,7 +488,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 #endif
   canonical_position CameraTargetP = {};
 
-  StandardCamera(Graphics->Camera, 10000.0f, 1000.0f, CameraTargetP);
+  StandardCamera(Graphics->Camera, 10000.0f, 200.0f, CameraTargetP);
 
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
@@ -480,10 +506,11 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/square.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/happy_square.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/square_expanded.vox"); */
-  /* GameState->BakeResult = BakeVoxelSynthesisRules("models/archway.vox"); */
-  GameState->BakeResult = BakeVoxelSynthesisRules("models/archway_with_floor.vox");
+  GameState->BakeResult = BakeVoxelSynthesisRules("models/archway.vox");
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("models/archway_with_floor.vox"); */
 
   memory_arena *TempMemory = AllocateArena();
+  DEBUG_REGISTER_ARENA(TempMemory, ThreadLocal_ThreadIndex);
 
   tile_ruleset_buffer Rules = GameState->BakeResult.Rules;
   voxel_synth_tile_buffer BakedTiles = GameState->BakeResult.Tiles;

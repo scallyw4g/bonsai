@@ -31,6 +31,7 @@ link_internal voxel_synthesis_result
 BakeVoxelSynthesisRules(const char* InputVox)
 {
   memory_arena *Memory = AllocateArena(Gigabytes(2));
+  DEBUG_REGISTER_NAMED_ARENA(Memory, ThreadLocal_ThreadIndex, "VoxelSynthesisArena");
   heap_allocator Heap = InitHeap(Gigabytes(2));
 
   /* Global_ThreadStates = Initialize_ThreadLocal_ThreadStates((s32)GetTotalThreadCount(), 0, Memory); */
