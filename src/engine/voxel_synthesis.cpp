@@ -242,7 +242,7 @@ GetOptionsForDirectionAndFinalChoice(v3i Dir, u64 Choice, tile_ruleset_buffer *R
 }
 
 link_internal b32
-PropagateChangesTo(voxel_synthesis_change_propagation_info_stack *InfoCursor, v3i SuperpositionsShape, u64 *TileSuperpositions, tile_ruleset_buffer *Rules, u32_cursor *EntropyLists)
+PropagateChangesTo(voxel_synthesis_change_propagation_info_stack *InfoCursor, v3i SuperpositionsShape, u64 *TileSuperpositions, tile_ruleset_buffer *Rules, u32_cursor_staticbuffer *EntropyLists)
 {
   b32 Result = True;
 
@@ -270,7 +270,7 @@ PropagateChangesTo(voxel_synthesis_change_propagation_info_stack *InfoCursor, v3
       u32 OptionCount = CountBitsSet_Kernighan(NextTileValue);
       if (OptionCount > 1)
       {
-        Ensure( Remove(EntropyLists+OptionCount, u32(NextTileIndex)) );
+        Ensure( Remove(GetPtr(EntropyLists, OptionCount), u32(NextTileIndex)) );
       }
 
 
@@ -289,7 +289,7 @@ PropagateChangesTo(voxel_synthesis_change_propagation_info_stack *InfoCursor, v3
         u32 NewOptionCount = CountBitsSet_Kernighan(*NextTile);
         if (NewOptionCount > 1)
         {
-          Push(EntropyLists+NewOptionCount, u32(NextTileIndex));
+          Push(GetPtr(EntropyLists,NewOptionCount), u32(NextTileIndex));
         }
       }
       else
@@ -320,9 +320,9 @@ InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i Til
                                         u64 MaxTileEntropy,
                                         tile_ruleset_buffer *Rules,
                                         v3i TileSuperpositionsDim,
-                                        u64 *TileSuperpositions,
+                                        u64 *TileSuperpositionsStorage,
                                         s32 TileIndex,
-                                        u32_cursor *EntropyLists,
+                                        u32_cursor_staticbuffer *EntropyListsStorage,
                                         voxel_synthesis_change_propagation_info_stack *InfoCursor )
 {
   TIMED_FUNCTION();
@@ -332,15 +332,16 @@ InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i Til
   auto TileSuperpositionCount = Volume(TileSuperpositionsDim);
   if (TileIndex >= TileSuperpositionCount) return;
 
-  u64 TileOptions = TileSuperpositions[TileIndex];
+  u64 TileOptions = TileSuperpositionsStorage[TileIndex];
   u32 BitsSet = CountBitsSet_Kernighan(TileOptions);
 
   DebugLine("TileIndex(%u)", TileIndex);
 
-  /* u64 *TmpTileSuperpositions = Allocate(u64, GetTranArena(), TileSuperpositionCount); */
+  u64 *TileSuperpositions = Allocate(u64, GetTranArena(), TileSuperpositionCount);
 
-  /* do */ 
-  /* { */
+  do 
+  {
+    MemCopy((u8*)TileSuperpositionsStorage, (u8*)TileSuperpositions, (umm)((umm)TileSuperpositionCount*sizeof(u64)));
 
     // We haven't fully collapsed this tile, and it's got lower entropy
     // than we've seen yet.
@@ -370,13 +371,11 @@ InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i Til
       Push(InfoCursor, VoxelSynthesisChangePropagationInfo(TileChoice,  P, AllDirections[DirIndex]));
     }
 
-    /* MemCopy((u8*)TileSuperpositions, (u8*)TmpTileSuperpositions, (umm)((umm)TileSuperpositionCount*sizeof(u64))); */
+  PropagateChangesTo(InfoCursor, TileSuperpositionsDim, TileSuperpositions, Rules, EntropyListsStorage);
+  /* } while (PropagateChangesTo(InfoCursor, TileSuperpositionsDim, TileSuperpositions, Rules, EntropyListsStorage) == False) ; */
+  } while (False) ;
 
-    PropagateChangesTo(InfoCursor, TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
-
-  /* } while (PropagateChangesTo(InfoCursor, TileSuperpositionsDim, TmpTileSuperpositions, Rules, EntropyLists) == False) ; */
-
-  /* MemCopy((u8*)TmpTileSuperpositions, (u8*)TileSuperpositions, (umm)((umm)TileSuperpositionCount*sizeof(u64))); */
+  MemCopy((u8*)TileSuperpositions, (u8*)TileSuperpositionsStorage, (umm)((umm)TileSuperpositionCount*sizeof(u64)));
 
 }
 
@@ -386,7 +385,7 @@ InitializeWorld_VoxelSynthesis( world *World, v3i VisibleRegion, v3i TileDim, ra
                                 tile_ruleset_buffer *Rules,
                                 v3i TileSuperpositionsDim,
                                 u64 *TileSuperpositions,
-                                u32_cursor *EntropyLists,
+                                u32_cursor_staticbuffer *EntropyLists,
                                 voxel_synthesis_change_propagation_info_stack *InfoCursor )
 {
   TIMED_FUNCTION();

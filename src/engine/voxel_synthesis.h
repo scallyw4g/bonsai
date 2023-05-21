@@ -28,6 +28,8 @@ CAssert(VoxelRuleDir_Count == 6);
 typedef u64 tile_rule;
 #define MAX_TILE_RULESETS (sizeof(tile_rule)*8)
 
+poof(staticbuffer(u32_cursor, {MAX_TILE_RULESETS}))
+#include <generated/staticbuffer_u32_cursor_ptr_961996651.h>
 
 struct tile_ruleset
 {
@@ -137,7 +139,7 @@ struct voxel_synthesis_result
   // This is data used during acutal world generation
   u64 *TileSuperpositions;
   v3i TileSuperpositionsDim;
-  u32_cursor EntropyLists[MAX_TILE_RULESETS];
+  u32_cursor_staticbuffer EntropyLists; // [MAX_TILE_RULESETS];
 
 };
 

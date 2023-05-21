@@ -331,7 +331,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
 #define DoEntireWorldGen 0
 
-  u32_cursor *EntropyLists = GameState->BakeResult.EntropyLists;
+  u32_cursor_staticbuffer *EntropyLists = &GameState->BakeResult.EntropyLists;
+
 #if DoEntireWorldGen
   while (true)
 #else
@@ -342,13 +343,13 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
     // NOTE(Jesse): For now, I never push data onto lists of tiles with 0 entropy (it is an error to have 0)
     // or tiles with 1 entropy (which are fully decided)
-    Assert( CurrentCount(EntropyLists+0) == 0);
-    Assert( CurrentCount(EntropyLists+1) == 0);
+    Assert( CurrentCount(GetPtr(EntropyLists,0)) == 0);
+    Assert( CurrentCount(GetPtr(EntropyLists,1)) == 0);
 
     u32 TileIndex = u32_MAX;
     RangeIterator(EntropyListIndex, (s32)MAX_TILE_RULESETS)
     {
-      u32_cursor *EntropyList = EntropyLists+EntropyListIndex;
+      u32_cursor *EntropyList = GetPtr(EntropyLists, (u32)EntropyListIndex);
       umm EntropyEntryCount = CurrentCount(EntropyList);
       if (EntropyEntryCount)
       {
@@ -408,7 +409,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 #else
   RangeIterator(EntropyListIndex, (s32)MAX_TILE_RULESETS)
   {
-    u32_cursor *EntropyList = EntropyLists+EntropyListIndex;
+    u32_cursor *EntropyList = GetPtr(EntropyLists, (u32)EntropyListIndex);
     umm EntropyEntryCount = CurrentCount(EntropyList);
     if (EntropyEntryCount)
     {
@@ -578,10 +579,10 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->BakeResult.TileSuperpositionsDim = TileSuperpositionsDim;
   GameState->BakeResult.TileSuperpositions = TileSuperpositions;
 
-  u32_cursor *EntropyLists = GameState->BakeResult.EntropyLists;
+  u32_cursor_staticbuffer *EntropyLists = &GameState->BakeResult.EntropyLists;
   RangeIterator(EntropyListIndex, (s32)MAX_TILE_RULESETS)
   {
-    EntropyLists[EntropyListIndex] = U32Cursor(umm(TileSuperpositionCount), Memory);
+    GetPtr(EntropyLists, u32(EntropyListIndex))[0] = U32Cursor(umm(TileSuperpositionCount), Memory);
   }
 
   u64 MaxTileEntropy = GameState->BakeResult.MaxTileEntropy;
@@ -589,10 +590,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   for (s32 TileIndex = TileSuperpositionCount-1; TileIndex > -1; --TileIndex)
   {
     TileSuperpositions[TileIndex] = MaxTileEntropy;
-    u32_cursor *EntropyList = EntropyLists+BitCount;
+    u32_cursor *EntropyList = GetPtr(EntropyLists, BitCount);
     Push(EntropyList, u32(TileIndex));
   }
-
 #endif
 
 #if 0
