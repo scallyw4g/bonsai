@@ -331,7 +331,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
 #define DoEntireWorldGen 0
 
-  auto EntropyLists = GameState->BakeResult.EntropyLists;
+  u32_cursor *EntropyLists = GameState->BakeResult.EntropyLists;
 #if DoEntireWorldGen
   while (true)
 #else
@@ -340,7 +340,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   {
     local_persist random_series VoxelSynthesisEntropy = {543295643};
 
-    // NOTE(Jesse): For now, I never push data onto lists of tiles with 0 entropy (which it is an error to have 0)
+    // NOTE(Jesse): For now, I never push data onto lists of tiles with 0 entropy (it is an error to have 0)
     // or tiles with 1 entropy (which are fully decided)
     Assert( CurrentCount(EntropyLists+0) == 0);
     Assert( CurrentCount(EntropyLists+1) == 0);
@@ -352,10 +352,9 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       umm EntropyEntryCount = CurrentCount(EntropyList);
       if (EntropyEntryCount)
       {
-        /* u32 Index = RandomBetween(0, &VoxelSynthesisEntropy, u32(EntropyEntryCount) ); */
-        /* TileIndex = Get(EntropyList, Index); */
-        /* Ensure( Remove(EntropyList, TileIndex) ); */
-        TileIndex = Pop(EntropyList);
+        u32 Index = RandomBetween(0, &VoxelSynthesisEntropy, u32(EntropyEntryCount) );
+        TileIndex = Get(EntropyList, Index);
+        Ensure( Remove(EntropyList, TileIndex) );
         break;
       }
     }
@@ -365,7 +364,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 #endif
 
     umm MaxStackDepth = (umm)Volume(GameState->BakeResult.TileSuperpositionsDim);
-    voxel_synthesis_change_propagation_info_cursor InfoCursor = VoxelSynthesisChangePropagationInfoCursor(MaxStackDepth, GetTranArena());
+    voxel_synthesis_change_propagation_info_stack InfoCursor = VoxelSynthesisChangePropagationInfoStack(MaxStackDepth, GetTranArena());
     InitializeWorld_VoxelSynthesis_Partial( World, World->VisibleRegion, Global_TileDim, &VoxelSynthesisEntropy,
                                             GameState->BakeResult.MaxTileEntropy,
                                            &GameState->BakeResult.Rules,

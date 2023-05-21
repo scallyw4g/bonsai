@@ -288,6 +288,6 @@ AreEqual(voxel_synthesis_change_propagation_info O1, voxel_synthesis_change_prop
   return AreEqual(&O1, &O2);
 }
 
-poof(generate_cursor(voxel_synthesis_change_propagation_info))
-#include <generated/generate_cursor_voxel_synthesis_change_propagation_info.h>
+poof(generate_stack(voxel_synthesis_change_propagation_info))
+#include <generated/generate_stack_voxel_synthesis_change_propagation_info.h>
 

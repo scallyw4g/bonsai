@@ -241,11 +241,12 @@ GetOptionsForDirectionAndFinalChoice(v3i Dir, u64 Choice, tile_ruleset_buffer *R
   return Result;
 }
 
-link_internal void
-PropagateChangesTo(voxel_synthesis_change_propagation_info_cursor *InfoCursor, v3i SuperpositionsShape, u64 *TileSuperpositions, tile_ruleset_buffer *Rules, u32_cursor *EntropyLists)
+link_internal b32
+PropagateChangesTo(voxel_synthesis_change_propagation_info_stack *InfoCursor, v3i SuperpositionsShape, u64 *TileSuperpositions, tile_ruleset_buffer *Rules, u32_cursor *EntropyLists)
 {
+  b32 Result = True;
 
-  while (AtElements(InfoCursor))
+  while (InfoCursor->At)
   {
     auto Info = Pop(InfoCursor);
     u64 PrevTileOptions = Info.PrevTileOptions;
@@ -270,8 +271,6 @@ PropagateChangesTo(voxel_synthesis_change_propagation_info_cursor *InfoCursor, v
       if (OptionCount > 1)
       {
         Ensure( Remove(EntropyLists+OptionCount, u32(NextTileIndex)) );
-        Ensure( Push(EntropyLists+OptionCount, u32(NextTileIndex)) );
-        Ensure( Remove(EntropyLists+OptionCount, u32(NextTileIndex)) );
       }
 
 
@@ -291,20 +290,13 @@ PropagateChangesTo(voxel_synthesis_change_propagation_info_cursor *InfoCursor, v
         if (NewOptionCount > 1)
         {
           Push(EntropyLists+NewOptionCount, u32(NextTileIndex));
-
-          // TODO(Jesse): This is debug code, remove.
-          Ensure( Remove(EntropyLists+NewOptionCount, u32(NextTileIndex) ) );
-          Push(EntropyLists+NewOptionCount, u32(NextTileIndex));
-
-          Ensure( Remove(EntropyLists+NewOptionCount, u32(NextTileIndex) ) );
-          Push(EntropyLists+NewOptionCount, u32(NextTileIndex));
         }
       }
       else
       {
-        // Degenerate case
+        // We failed
         *NextTile = 0;
-        /* Assert(False); */
+        Result = False;
       }
 
       if ( *NextTile && *NextTile != NextTileValue )
@@ -318,8 +310,9 @@ PropagateChangesTo(voxel_synthesis_change_propagation_info_cursor *InfoCursor, v
       }
 
     }
-
   }
+
+  return Result;
 }
 
 link_internal void
@@ -330,7 +323,7 @@ InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i Til
                                         u64 *TileSuperpositions,
                                         s32 TileIndex,
                                         u32_cursor *EntropyLists,
-                                        voxel_synthesis_change_propagation_info_cursor *InfoCursor )
+                                        voxel_synthesis_change_propagation_info_stack *InfoCursor )
 {
   TIMED_FUNCTION();
 
@@ -344,35 +337,47 @@ InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i Til
 
   DebugLine("TileIndex(%u)", TileIndex);
 
-  // We haven't fully collapsed this tile, and it's got lower entropy
-  // than we've seen yet.
-  u64 TileChoice = u64_MAX;
-  if (BitsSet > 1)
-  {
-    // TODO(Jesse): This should (at least in my head) be able to return (1, N) inclusive
-    // but it does not for (1, 2)
-    u64 BitChoice = RandomBetween(1, Series, BitsSet+1);
+  /* u64 *TmpTileSuperpositions = Allocate(u64, GetTranArena(), TileSuperpositionCount); */
 
-    TileChoice = GetNthSetBit(TileOptions, BitChoice);
-    Assert(CountBitsSet_Kernighan(TileChoice) == 1);
+  /* do */ 
+  /* { */
 
-    TileSuperpositions[TileIndex] = TileChoice;
-  }
-  else
-  {
-    TileChoice = TileOptions;
-  }
+    // We haven't fully collapsed this tile, and it's got lower entropy
+    // than we've seen yet.
+    u64 TileChoice = u64_MAX;
+    if (BitsSet > 1)
+    {
+      // TODO(Jesse): This should (at least in my head) be able to return (1, N) inclusive
+      // but it does not for (1, 2)
+      u64 BitChoice = RandomBetween(1, Series, BitsSet+1);
 
-  Assert(TileChoice != u64_MAX);
+      TileChoice = GetNthSetBit(TileOptions, BitChoice);
+      Assert(CountBitsSet_Kernighan(TileChoice) == 1);
 
-  v3i P = V3iFromIndex(TileIndex, TileSuperpositionsDim);
+      TileSuperpositions[TileIndex] = TileChoice;
+    }
+    else
+    {
+      TileChoice = TileOptions;
+    }
 
-  RangeIterator(DirIndex, (s32)ArrayCount(AllDirections))
-  {
-    Push(InfoCursor, VoxelSynthesisChangePropagationInfo(TileChoice,  P, AllDirections[DirIndex]));
-  }
+    Assert(TileChoice != u64_MAX);
 
-  PropagateChangesTo(InfoCursor, TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
+    v3i P = V3iFromIndex(TileIndex, TileSuperpositionsDim);
+
+    RangeIterator(DirIndex, (s32)ArrayCount(AllDirections))
+    {
+      Push(InfoCursor, VoxelSynthesisChangePropagationInfo(TileChoice,  P, AllDirections[DirIndex]));
+    }
+
+    /* MemCopy((u8*)TileSuperpositions, (u8*)TmpTileSuperpositions, (umm)((umm)TileSuperpositionCount*sizeof(u64))); */
+
+    PropagateChangesTo(InfoCursor, TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
+
+  /* } while (PropagateChangesTo(InfoCursor, TileSuperpositionsDim, TmpTileSuperpositions, Rules, EntropyLists) == False) ; */
+
+  /* MemCopy((u8*)TmpTileSuperpositions, (u8*)TileSuperpositions, (umm)((umm)TileSuperpositionCount*sizeof(u64))); */
+
 }
 
 link_internal void
@@ -382,7 +387,7 @@ InitializeWorld_VoxelSynthesis( world *World, v3i VisibleRegion, v3i TileDim, ra
                                 v3i TileSuperpositionsDim,
                                 u64 *TileSuperpositions,
                                 u32_cursor *EntropyLists,
-                                voxel_synthesis_change_propagation_info_cursor *InfoCursor )
+                                voxel_synthesis_change_propagation_info_stack *InfoCursor )
 {
   TIMED_FUNCTION();
 
