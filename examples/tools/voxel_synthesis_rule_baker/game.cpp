@@ -366,14 +366,14 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
     umm MaxStackDepth = (umm)Volume(GameState->BakeResult.TileSuperpositionsDim);
     voxel_synthesis_change_propagation_info_stack InfoCursor = VoxelSynthesisChangePropagationInfoStack(MaxStackDepth, GetTranArena());
-    InitializeWorld_VoxelSynthesis_Partial( World, World->VisibleRegion, Global_TileDim, &VoxelSynthesisEntropy,
-                                            GameState->BakeResult.MaxTileEntropy,
-                                           &GameState->BakeResult.Rules,
-                                            GameState->BakeResult.TileSuperpositionsDim,
-                                            GameState->BakeResult.TileSuperpositions,
-                                        s32(TileIndex),
-                                            EntropyLists,
-                                           &InfoCursor);
+    Ensure( InitializeWorld_VoxelSynthesis_Partial( World, World->VisibleRegion, Global_TileDim, &VoxelSynthesisEntropy,
+                                                    GameState->BakeResult.MaxTileEntropy,
+                                                   &GameState->BakeResult.Rules,
+                                                    GameState->BakeResult.TileSuperpositionsDim,
+                                                    GameState->BakeResult.TileSuperpositions,
+                                                s32(TileIndex),
+                                                    EntropyLists,
+                                                   &InfoCursor) );
 #if DoEntireWorldGen
 #else
     {

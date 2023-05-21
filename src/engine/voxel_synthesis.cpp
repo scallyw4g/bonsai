@@ -315,7 +315,7 @@ PropagateChangesTo(voxel_synthesis_change_propagation_info_stack *InfoCursor, v3
   return Result;
 }
 
-link_internal void
+link_internal b32
 InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i TileDim, random_series *Series,
                                         u64 MaxTileEntropy,
                                         tile_ruleset_buffer *Rules,
@@ -327,13 +327,14 @@ InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i Til
 {
   TIMED_FUNCTION();
 
+  b32 Result = True;
+
   v3i TileMinDim = {};
 
   auto TileSuperpositionCount = Volume(TileSuperpositionsDim);
-  if (TileIndex >= TileSuperpositionCount) return;
+  if (TileIndex >= TileSuperpositionCount) return Result;
 
   u64 TileOptions = TileSuperpositionsStorage[TileIndex];
-  u32 BitsSet = CountBitsSet_Kernighan(TileOptions);
 
   DebugLine("TileIndex(%u)", TileIndex);
 
@@ -345,16 +346,16 @@ InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i Til
     *Element = U32Cursor(umm(TileSuperpositionCount), GetTranArena());
   }
 
-  DeepCopy(EntropyListsStorage, &EntropyLists);
-
   do
   {
+    DeepCopy(EntropyListsStorage, &EntropyLists);
     MemCopy((u8*)TileSuperpositionsStorage, (u8*)TileSuperpositions, (umm)((umm)TileSuperpositionCount*sizeof(u64)));
 
     // We haven't fully collapsed this tile, and it's got lower entropy
     // than we've seen yet.
     u64 TileChoice = u64_MAX;
-    if (BitsSet > 1)
+    u32 BitsSet = CountBitsSet_Kernighan(TileOptions);
+    if (BitsSet > 0)
     {
       // TODO(Jesse): This should (at least in my head) be able to return (1, N) inclusive
       // but it does not for (1, 2)
@@ -364,30 +365,38 @@ InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i Til
       Assert(CountBitsSet_Kernighan(TileChoice) == 1);
 
       TileSuperpositions[TileIndex] = TileChoice;
+
+      TileOptions &= (~BitChoice); // Knock out the bit in TileOptions for the next time through
     }
     else
     {
-      TileChoice = TileOptions;
+      // If we get down to 0 bits set in the choice mask we've failed
+      Result = False;
     }
 
-    Assert(TileChoice != u64_MAX);
-
-    v3i P = V3iFromIndex(TileIndex, TileSuperpositionsDim);
-
-    RangeIterator(DirIndex, (s32)ArrayCount(AllDirections))
+    if (Result)
     {
-      Push(InfoCursor, VoxelSynthesisChangePropagationInfo(TileChoice,  P, AllDirections[DirIndex]));
+      Assert(TileChoice != u64_MAX);
+
+      v3i P = V3iFromIndex(TileIndex, TileSuperpositionsDim);
+
+      RangeIterator(DirIndex, (s32)ArrayCount(AllDirections))
+      {
+        Push(InfoCursor, VoxelSynthesisChangePropagationInfo(TileChoice,  P, AllDirections[DirIndex]));
+      }
+    }
+    else
+    {
+      Assert(TileChoice != u64_MAX);
+      break;
     }
 
-  PropagateChangesTo(InfoCursor, TileSuperpositionsDim, TileSuperpositions, Rules, &EntropyLists);
-  /* } while (PropagateChangesTo(InfoCursor, TileSuperpositionsDim, TileSuperpositions, Rules, &EntropyLists) == False) ; */
-
-  } while (False);
+  } while (PropagateChangesTo(InfoCursor, TileSuperpositionsDim, TileSuperpositions, Rules, &EntropyLists) == False) ;
 
   DeepCopy(&EntropyLists, EntropyListsStorage);
-
   MemCopy((u8*)TileSuperpositions, (u8*)TileSuperpositionsStorage, (umm)((umm)TileSuperpositionCount*sizeof(u64)));
 
+  return Result;
 }
 
 link_internal void
@@ -468,295 +477,3 @@ InitializeWorld_VoxelSynthesis( world *World, v3i VisibleRegion, v3i TileDim, ra
   }
 
 }
-
-
-
-// NOTE(Jesse): This is old test code I'm leaving here in case I want to try
-// to get it working for debugging.  Delete it once we've done transitioning
-// to full voxel synthesis
-#if 0
-enum tile_option
-{
-  TileOption_None = 0,
-
-  TileOption_Air    = 1 << 0,
-  TileOption_Dirt   = 1 << 1,
-  TileOption_Stone  = 1 << 2,
-  TileOption_HighestBit = TileOption_Stone,
-
-  /* TileOption_HouseBase_North    = 1 << 3, */
-  /* TileOption_HouseBase_South    = 1 << 4, */
-  /* TileOption_HouseBase_East     = 1 << 5, */
-  /* TileOption_HouseBase_West     = 1 << 6, */
-  /* TileOption_HouseBase_Interior = 1 << 7, */
-  /* TileOption_HighestBit = TileOption_HouseBase_Interior, */
-
-};
-// TODO(Jesse)(metaprogramming): Metaprogram this if I ever hit a bug here..
-//
-// Filp all bits below and including the high bit, then or-in the high bit again
-global_variable u32 TileMaxEntropy = (TileOption_HighestBit-1) | TileOption_HighestBit;
-
-global_variable u32 TileConnectivity[10][6] = {
-
-  // Null tile
-  { TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, },
-
-  //
-  // Air Tiles
-  {
-    TileOption_Air|TileOption_Dirt, //  x
-    TileOption_Air|TileOption_Dirt, //  y
-    TileOption_Air,                 //  z
-
-    TileOption_Air|TileOption_Dirt, // -x
-    TileOption_Air|TileOption_Dirt, // -y
-    TileOption_Air|TileOption_Dirt, // -z
-  },
-
-  // Dirt Tiles
-  {
-    TileOption_Air|TileOption_Dirt|TileOption_Stone, //  x
-    TileOption_Air|TileOption_Dirt|TileOption_Stone, //  y
-    TileOption_Air,    //  z
-
-    TileOption_Air|TileOption_Dirt|TileOption_Stone, // -x
-    TileOption_Air|TileOption_Dirt|TileOption_Stone, // -y
-    TileOption_Stone,                                // -z
-  },
-
-  // Stone
-  {
-    TileOption_Dirt|TileOption_Stone, //  x
-    TileOption_Dirt|TileOption_Stone, //  y
-    TileOption_Dirt|TileOption_Stone, //  z
-
-    TileOption_Dirt|TileOption_Stone, // -x
-    TileOption_Dirt|TileOption_Stone, // -y
-    TileOption_Stone                  // -z
-  },
-};
-
-#if 0
-global_variable u32 TileConnectivity[10][6] = {
-
-  // Null tile
-  { TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, },
-
-  //
-  // Air Tiles
-  {
-    TileOption_Air|TileOption_Dirt|TileOption_HouseBase_Interior, //  x
-    TileOption_Air|TileOption_Dirt|TileOption_HouseBase_Interior, //  y
-    TileOption_Air,                                               //  z
-
-    TileOption_Air|TileOption_Dirt|TileOption_HouseBase_Interior, // -x
-    TileOption_Air|TileOption_Dirt|TileOption_HouseBase_Interior, // -y
-    TileOption_Air|TileOption_Dirt|TileOption_HouseBase_Interior, // -z
-  },
-
-  // Dirt Tiles
-  {
-    TileOption_Air|TileOption_Dirt|TileOption_Stone, //  x
-    TileOption_Air|TileOption_Dirt|TileOption_Stone, //  y
-    TileOption_Air|TileOption_HouseBase_Interior,    //  z
-
-    TileOption_Air|TileOption_Dirt|TileOption_Stone, // -x
-    TileOption_Air|TileOption_Dirt|TileOption_Stone, // -y
-    TileOption_Stone,                                // -z
-  },
-
-  // Stone
-  {
-    TileOption_Dirt|TileOption_Stone, //  x
-    TileOption_Dirt|TileOption_Stone, //  y
-    TileOption_Dirt|TileOption_Stone, //  z
-
-    TileOption_Dirt|TileOption_Stone, // -x
-    TileOption_Dirt|TileOption_Stone, // -y
-    TileOption_Stone                  // -z
-  },
-
-  // NOTE(Jesse) Houses are constructed like this:
-  //
-  // N N N N N N
-  // W         E
-  // W         E
-  // W         E
-  // S S S S S S
-
-#if 1
-  // TileOption_HouseBase_North
-  {
-    TileOption_HouseBase_North|TileOption_Air,  //  x
-    TileOption_Air,  //  y
-    TileOption_Air,  //  z
-
-    TileOption_HouseBase_North|TileOption_Air,  // -x
-    TileOption_HouseBase_Interior, // -y
-    TileOption_Dirt // -z
-  },
-
-  // TileOption_HouseBase_South
-  {
-    TileOption_HouseBase_South|TileOption_Air,    //  x
-    TileOption_HouseBase_Interior, //  y
-    TileOption_Air,  //  z
-
-    TileOption_HouseBase_South|TileOption_Air,  // -x
-    TileOption_Air, // -y
-    TileOption_Dirt // -z
-  },
-  // East
-  { TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, },
-
-  // West
-  { TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, },
-
-  // TileOption_HouseBase_Interior
-  {
-    TileOption_HouseBase_Interior|TileOption_Air,  //  x
-    TileOption_HouseBase_North|TileOption_HouseBase_Interior,  //  y
-    TileOption_Air,  //  z
-    TileOption_HouseBase_Interior|TileOption_Air,  // -x
-    TileOption_HouseBase_South|TileOption_HouseBase_Interior,  // -y
-    TileOption_Dirt // -z
-  },
-
-#else
-  // North
-  { TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, },
-
-  // South
-  { TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, },
-
-  // East
-  { TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, },
-
-  // West
-  { TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, TileOption_None, },
-
-  // TileOption_HouseBase_Interior
-  {
-    TileOption_HouseBase_Interior|TileOption_Air,  //  x
-    TileOption_HouseBase_Interior|TileOption_Air,  //  y
-    TileOption_Air,  //  z
-    TileOption_HouseBase_Interior|TileOption_Air,  // -x
-    TileOption_HouseBase_Interior|TileOption_Air,  // -y
-    TileOption_Dirt // -z
-  },
-#endif
-
-
-#if 0
-  // Air Tiles
-  {
-    TileOption_Air|TileOption_Dirt|
-      TileOption_HouseBase_North|TileOption_HouseBase_South|TileOption_HouseBase_East|TileOption_HouseBase_West, //  x
-
-    TileOption_Air|TileOption_Dirt|
-      TileOption_HouseBase_North|TileOption_HouseBase_South|TileOption_HouseBase_East|TileOption_HouseBase_West, //  y
-
-    TileOption_Air,                 //  z
-
-    TileOption_Air|TileOption_Dirt|
-      TileOption_HouseBase_North|TileOption_HouseBase_South|TileOption_HouseBase_East|TileOption_HouseBase_West, // -x
-
-    TileOption_Air|TileOption_Dirt|
-      TileOption_HouseBase_North|TileOption_HouseBase_South|TileOption_HouseBase_East|TileOption_HouseBase_West, // -y
-
-    TileOption_Air|TileOption_Dirt| // -z
-      TileOption_HouseBase_Interior|TileOption_HouseBase_North|TileOption_HouseBase_South|TileOption_HouseBase_East|TileOption_HouseBase_West,
-  },
-
-  // Dirt Tiles
-  {
-    TileOption_Air|TileOption_Dirt|TileOption_Stone, //  x
-    TileOption_Air|TileOption_Dirt|TileOption_Stone, //  y
-    TileOption_Air|                                  //  z
-      TileOption_HouseBase_Interior|TileOption_HouseBase_North|TileOption_HouseBase_South|TileOption_HouseBase_East|TileOption_HouseBase_West,
-
-    TileOption_Air|TileOption_Dirt|TileOption_Stone, // -x
-    TileOption_Air|TileOption_Dirt|TileOption_Stone, // -y
-    TileOption_Stone,                                // -z
-  },
-
-  // Stone
-  {
-    TileOption_Dirt|TileOption_Stone, //  x
-    TileOption_Dirt|TileOption_Stone, //  y
-    TileOption_Dirt|TileOption_Stone, //  z
-
-    TileOption_Dirt|TileOption_Stone, // -x
-    TileOption_Dirt|TileOption_Stone, // -y
-    TileOption_Stone                  // -z
-  },
-
-
-  // NOTE(Jesse) Houses are constructed like this:
-  //
-  // N N N N N N
-  // W         E
-  // W         E
-  // W         E
-  // S S S S S S
-  // TileOption_HouseBase_North
-  {
-    TileOption_HouseBase_North|TileOption_Air,  //  x
-    TileOption_Air,  //  y
-    TileOption_Air,  //  z
-
-    TileOption_HouseBase_North|TileOption_Air,  // -x
-    TileOption_HouseBase_West|TileOption_HouseBase_East|TileOption_HouseBase_Interior,   // -y
-    TileOption_Dirt // -z
-  },
-
-  // TileOption_HouseBase_South
-  {
-    TileOption_HouseBase_South|TileOption_Air,  //  x
-    TileOption_HouseBase_West|TileOption_HouseBase_East|TileOption_HouseBase_Interior,   // y
-    TileOption_Air,  //  z
-
-    TileOption_HouseBase_South|TileOption_Air,  // -x
-    TileOption_Air,   //  -y
-    TileOption_Dirt // -z
-  },
-
-  // TileOption_HouseBase_East
-  {
-    TileOption_Air,  //  x
-    TileOption_HouseBase_East|TileOption_HouseBase_North,  //  y
-    TileOption_Air,  //  z
-
-    TileOption_HouseBase_Interior,  // -x
-    TileOption_HouseBase_East|TileOption_HouseBase_South,  // -y
-    TileOption_Dirt // -z
-  },
-
-  // TileOption_HouseBase_West
-  {
-    TileOption_HouseBase_Interior, //  x
-    TileOption_HouseBase_West|TileOption_HouseBase_North,  //  y
-    TileOption_Air,  //  z
-
-    TileOption_Air,  // -x
-    TileOption_HouseBase_West|TileOption_HouseBase_South,  //  -y
-    TileOption_Dirt // -z
-  },
-
-  // TileOption_HouseBase_Interior
-  {
-    TileOption_HouseBase_Interior|TileOption_HouseBase_East,  //  x
-    TileOption_HouseBase_Interior|TileOption_HouseBase_North, //  y
-    TileOption_Air,  //  z
-
-    TileOption_HouseBase_Interior|TileOption_HouseBase_West,  //  -x
-    TileOption_HouseBase_Interior|TileOption_HouseBase_South, //  -y
-    TileOption_Dirt // -z
-  },
-#endif
-
-};
-#endif
-
-#endif
