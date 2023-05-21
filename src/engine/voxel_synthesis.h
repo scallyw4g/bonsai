@@ -10,8 +10,6 @@ global_variable v3i AllDirections[] = {
 
 global_variable v3i Global_TileDim = V3i(8);
 
-#define MAX_TILE_RULESETS (64)
-
 enum voxel_rule_direction
 {
   VoxelRuleDir_PosX,
@@ -28,6 +26,8 @@ enum voxel_rule_direction
 CAssert(VoxelRuleDir_Count == 6);
 
 typedef u64 tile_rule;
+#define MAX_TILE_RULESETS (sizeof(tile_rule)*8)
+
 
 struct tile_ruleset
 {
@@ -267,3 +267,27 @@ TileOptionIndex( u64 O )
 
   return Result;
 }
+
+
+struct voxel_synthesis_change_propagation_info
+{
+  u64 PrevTileOptions;
+  v3i PrevTileP;
+  v3i DirOfTravel;
+};
+
+poof(gen_constructor(voxel_synthesis_change_propagation_info))
+#include <generated/gen_constructor_voxel_synthesis_change_propagation_info.h>
+
+poof(are_equal(voxel_synthesis_change_propagation_info))
+#include <generated/are_equal_voxel_synthesis_change_propagation_info.h>
+
+link_internal b32
+AreEqual(voxel_synthesis_change_propagation_info O1, voxel_synthesis_change_propagation_info O2)
+{
+  return AreEqual(&O1, &O2);
+}
+
+poof(generate_cursor(voxel_synthesis_change_propagation_info))
+#include <generated/generate_cursor_voxel_synthesis_change_propagation_info.h>
+

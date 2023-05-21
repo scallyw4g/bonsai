@@ -329,7 +329,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     Canonicalize(World->ChunkDim, GameState->CameraTarget->P);
   }
 
-#define DoEntireWorldGen 0
+#define DoEntireWorldGen 1
 
   auto EntropyLists = GameState->BakeResult.EntropyLists;
 #if DoEntireWorldGen
@@ -346,7 +346,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     Assert( CurrentCount(EntropyLists+1) == 0);
 
     u32 TileIndex = u32_MAX;
-    RangeIterator(EntropyListIndex, MAX_TILE_RULESETS)
+    RangeIterator(EntropyListIndex, (s32)MAX_TILE_RULESETS)
     {
       u32_cursor *EntropyList = EntropyLists+EntropyListIndex;
       umm EntropyEntryCount = CurrentCount(EntropyList);
@@ -364,13 +364,16 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     if (TileIndex == u32_MAX) break;
 #endif
 
+    umm MaxStackDepth = (umm)Volume(GameState->BakeResult.TileSuperpositionsDim);
+    voxel_synthesis_change_propagation_info_cursor InfoCursor = VoxelSynthesisChangePropagationInfoCursor(MaxStackDepth, GetTranArena());
     InitializeWorld_VoxelSynthesis_Partial( World, World->VisibleRegion, Global_TileDim, &VoxelSynthesisEntropy,
                                             GameState->BakeResult.MaxTileEntropy,
                                            &GameState->BakeResult.Rules,
                                             GameState->BakeResult.TileSuperpositionsDim,
                                             GameState->BakeResult.TileSuperpositions,
                                         s32(TileIndex),
-                                            EntropyLists );
+                                            EntropyLists,
+                                           &InfoCursor);
 #if DoEntireWorldGen
 #else
     {
@@ -404,7 +407,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
 #if DoEntireWorldGen
 #else
-  RangeIterator(EntropyListIndex, MAX_TILE_RULESETS)
+  RangeIterator(EntropyListIndex, (s32)MAX_TILE_RULESETS)
   {
     u32_cursor *EntropyList = EntropyLists+EntropyListIndex;
     umm EntropyEntryCount = CurrentCount(EntropyList);
@@ -479,8 +482,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   Global_AssetPrefixPath = CSz("examples/voxel_synthesis_rule_baker/assets");
 
 
-#define DO_WORLD_SYNTHESIS 0
-
+#define DO_WORLD_SYNTHESIS 1
 #if DO_WORLD_SYNTHESIS
   world_position WorldCenter = {{2,2,2}};
 #else
@@ -573,7 +575,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->BakeResult.TileSuperpositions = TileSuperpositions;
 
   u32_cursor *EntropyLists = GameState->BakeResult.EntropyLists;
-  RangeIterator(EntropyListIndex, MAX_TILE_RULESETS)
+  RangeIterator(EntropyListIndex, (s32)MAX_TILE_RULESETS)
   {
     EntropyLists[EntropyListIndex] = U32Cursor(umm(TileSuperpositionCount), Memory);
   }

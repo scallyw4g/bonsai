@@ -242,65 +242,82 @@ GetOptionsForDirectionAndFinalChoice(v3i Dir, u64 Choice, tile_ruleset_buffer *R
 }
 
 link_internal void
-PropagateChangesTo(u64 PrevTileOptions, v3i PrevTileP, v3i DirOfTravel, v3i SuperpositionsShape, u64 *TileSuperpositions, tile_ruleset_buffer *Rules, u32_cursor *EntropyLists)
+PropagateChangesTo(voxel_synthesis_change_propagation_info_cursor *InfoCursor, v3i SuperpositionsShape, u64 *TileSuperpositions, tile_ruleset_buffer *Rules, u32_cursor *EntropyLists)
 {
-  v3i ThisTileP = PrevTileP+DirOfTravel;
-  s32 NextTileIndex = TryGetIndex(ThisTileP, SuperpositionsShape);
-  if (NextTileIndex >= 0)
+
+  while (AtElements(InfoCursor))
   {
-    u64 *NextTile = TileSuperpositions + NextTileIndex;
-    u64 NextTileValue = *NextTile;
+    auto Info = Pop(InfoCursor);
+    u64 PrevTileOptions = Info.PrevTileOptions;
+    v3i PrevTileP       = Info.PrevTileP;
+    v3i DirOfTravel     = Info.DirOfTravel;
 
-    u32 OptionCount = CountBitsSet_Kernighan(NextTileValue);
-    if (OptionCount > 1)
+    v3i ThisTileP = PrevTileP+DirOfTravel;
+
+    if (ThisTileP == V3i(0, 3, 1))
     {
-      Ensure( Remove(EntropyLists+OptionCount, u32(NextTileIndex)) );
-      Ensure( Push(EntropyLists+OptionCount, u32(NextTileIndex)) );
-      Ensure( Remove(EntropyLists+OptionCount, u32(NextTileIndex)) );
+      u8 breakhere =4;
+      breakhere++;
     }
 
-
-    u64 NewTileOptions = {};
-    u64 CachedOptions = PrevTileOptions;
-    while (u64 Option = UnsetLeastSignificantSetBit(&CachedOptions))
+    s32 NextTileIndex = TryGetIndex(ThisTileP, SuperpositionsShape);
+    if (NextTileIndex >= 0)
     {
-      Assert(CountBitsSet_Kernighan(Option) == 1);
-      u64 NewOptions = GetOptionsForDirectionAndFinalChoice(DirOfTravel, Option, Rules);
-      NewTileOptions |= NewOptions;
-    }
+      u64 *NextTile = TileSuperpositions + NextTileIndex;
+      u64 NextTileValue = *NextTile;
 
-    if (NextTileValue & NewTileOptions)
-    {
-      *NextTile &= NewTileOptions;
-      u32 NewOptionCount = CountBitsSet_Kernighan(*NextTile);
-      if (NewOptionCount > 1)
+      u32 OptionCount = CountBitsSet_Kernighan(NextTileValue);
+      if (OptionCount > 1)
       {
-        Push(EntropyLists+NewOptionCount, u32(NextTileIndex));
-
-        // TODO(Jesse): This is debug code, remove.
-        Ensure( Remove(EntropyLists+NewOptionCount, u32(NextTileIndex) ) );
-        Push(EntropyLists+NewOptionCount, u32(NextTileIndex));
-
-        Ensure( Remove(EntropyLists+NewOptionCount, u32(NextTileIndex) ) );
-        Push(EntropyLists+NewOptionCount, u32(NextTileIndex));
+        Ensure( Remove(EntropyLists+OptionCount, u32(NextTileIndex)) );
+        Ensure( Push(EntropyLists+OptionCount, u32(NextTileIndex)) );
+        Ensure( Remove(EntropyLists+OptionCount, u32(NextTileIndex)) );
       }
-    }
-    else
-    {
-      // Degenerate case
-      *NextTile = 0;
-      /* Assert(False); */
-    }
 
-    if ( *NextTile && *NextTile != NextTileValue )
-    {
-      for (u32 DirIndex = 0; DirIndex < ArrayCount(AllDirections); ++DirIndex)
+
+      u64 NewTileOptions = {};
+      u64 CachedOptions = PrevTileOptions;
+      while (u64 Option = UnsetLeastSignificantSetBit(&CachedOptions))
       {
-        v3i NextDir = AllDirections[DirIndex];
-        if (NextDir != DirOfTravel)
+        Assert(CountBitsSet_Kernighan(Option) == 1);
+        u64 NewOptions = GetOptionsForDirectionAndFinalChoice(DirOfTravel, Option, Rules);
+        NewTileOptions |= NewOptions;
+      }
+
+      if (NextTileValue & NewTileOptions)
+      {
+        *NextTile &= NewTileOptions;
+        u32 NewOptionCount = CountBitsSet_Kernighan(*NextTile);
+        if (NewOptionCount > 1)
         {
-          PropagateChangesTo(NewTileOptions, ThisTileP, NextDir, SuperpositionsShape, TileSuperpositions, Rules, EntropyLists);
+          Push(EntropyLists+NewOptionCount, u32(NextTileIndex));
+
+          // TODO(Jesse): This is debug code, remove.
+          Ensure( Remove(EntropyLists+NewOptionCount, u32(NextTileIndex) ) );
+          Push(EntropyLists+NewOptionCount, u32(NextTileIndex));
+
+          Ensure( Remove(EntropyLists+NewOptionCount, u32(NextTileIndex) ) );
+          Push(EntropyLists+NewOptionCount, u32(NextTileIndex));
         }
+      }
+      else
+      {
+        // Degenerate case
+        *NextTile = 0;
+        /* Assert(False); */
+      }
+
+      if ( *NextTile && *NextTile != NextTileValue )
+      {
+        for (u32 DirIndex = 0; DirIndex < ArrayCount(AllDirections); ++DirIndex)
+        {
+          v3i NextDir = AllDirections[DirIndex];
+          if (NextDir != DirOfTravel)
+          {
+            Push(InfoCursor, VoxelSynthesisChangePropagationInfo(NewTileOptions, ThisTileP, NextDir));
+          }
+        }
+
       }
 
     }
@@ -315,7 +332,8 @@ InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i Til
                                         v3i TileSuperpositionsDim,
                                         u64 *TileSuperpositions,
                                         s32 TileIndex,
-                                        u32_cursor *EntropyLists)
+                                        u32_cursor *EntropyLists,
+                                        voxel_synthesis_change_propagation_info_cursor *InfoCursor )
 {
   TIMED_FUNCTION();
 
@@ -352,14 +370,12 @@ InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i Til
 
   v3i P = V3iFromIndex(TileIndex, TileSuperpositionsDim);
 
-  PropagateChangesTo(TileChoice,  P, V3i( 1, 0, 0), TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
-  PropagateChangesTo(TileChoice,  P, V3i(-1, 0, 0), TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
+  RangeIterator(DirIndex, (s32)ArrayCount(AllDirections))
+  {
+    Push(InfoCursor, VoxelSynthesisChangePropagationInfo(TileChoice,  P, AllDirections[DirIndex]));
+  }
 
-  PropagateChangesTo(TileChoice,  P, V3i( 0, 1, 0), TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
-  PropagateChangesTo(TileChoice,  P, V3i( 0,-1, 0), TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
-
-  PropagateChangesTo(TileChoice,  P, V3i( 0, 0, 1), TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
-  PropagateChangesTo(TileChoice,  P, V3i( 0, 0,-1), TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
+  PropagateChangesTo(InfoCursor, TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
 }
 
 link_internal void
@@ -368,7 +384,8 @@ InitializeWorld_VoxelSynthesis( world *World, v3i VisibleRegion, v3i TileDim, ra
                                 tile_ruleset_buffer *Rules,
                                 v3i TileSuperpositionsDim,
                                 u64 *TileSuperpositions,
-                                u32_cursor *EntropyLists)
+                                u32_cursor *EntropyLists,
+                                voxel_synthesis_change_propagation_info_cursor *InfoCursor )
 {
   TIMED_FUNCTION();
 
@@ -416,14 +433,12 @@ InitializeWorld_VoxelSynthesis( world *World, v3i VisibleRegion, v3i TileDim, ra
 
         v3i P = V3iFromIndex(TileIndex, TileSuperpositionsDim);
 
-        PropagateChangesTo(TileChoice,  P, V3i( 1, 0, 0), TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
-        PropagateChangesTo(TileChoice,  P, V3i(-1, 0, 0), TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
+        RangeIterator(DirIndex, (s32)ArrayCount(AllDirections))
+        {
+          Push(InfoCursor, VoxelSynthesisChangePropagationInfo(TileChoice,  P, AllDirections[DirIndex]));
+        }
 
-        PropagateChangesTo(TileChoice,  P, V3i( 0, 1, 0), TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
-        PropagateChangesTo(TileChoice,  P, V3i( 0,-1, 0), TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
-
-        PropagateChangesTo(TileChoice,  P, V3i( 0, 0, 1), TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
-        PropagateChangesTo(TileChoice,  P, V3i( 0, 0,-1), TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
+        PropagateChangesTo(InfoCursor, TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
       }
     }
   }
