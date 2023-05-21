@@ -1,5 +1,5 @@
 //
-// TODO(Jesse): This is complete garbage and needs to be removed asap.
+// TODO(Jesse)(high-priority, getrenderp): This is complete garbage and needs to be removed asap.
 //
 inline v3
 GetRenderP(canonical_position P, camera *Camera, world_position WorldChunkDim)

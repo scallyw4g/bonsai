@@ -254,7 +254,7 @@ PropagateChangesTo(voxel_synthesis_change_propagation_info_cursor *InfoCursor, v
 
     v3i ThisTileP = PrevTileP+DirOfTravel;
 
-    if (ThisTileP == V3i(0, 3, 1))
+    if (PrevTileP == V3i(0, 1, 1) && ThisTileP == V3i(0, 2, 1))
     {
       u8 breakhere =4;
       breakhere++;
@@ -312,10 +312,7 @@ PropagateChangesTo(voxel_synthesis_change_propagation_info_cursor *InfoCursor, v
         for (u32 DirIndex = 0; DirIndex < ArrayCount(AllDirections); ++DirIndex)
         {
           v3i NextDir = AllDirections[DirIndex];
-          if (NextDir != DirOfTravel)
-          {
-            Push(InfoCursor, VoxelSynthesisChangePropagationInfo(NewTileOptions, ThisTileP, NextDir));
-          }
+          Push(InfoCursor, VoxelSynthesisChangePropagationInfo(NewTileOptions, ThisTileP, NextDir));
         }
 
       }

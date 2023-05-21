@@ -329,7 +329,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     Canonicalize(World->ChunkDim, GameState->CameraTarget->P);
   }
 
-#define DoEntireWorldGen 1
+#define DoEntireWorldGen 0
 
   auto EntropyLists = GameState->BakeResult.EntropyLists;
 #if DoEntireWorldGen
@@ -418,8 +418,13 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         /* float TileIndex; */
         s32 TmpTileIndex = (s32)Get(EntropyList, (umm)TileIndexIndex);
         v3i TileP = V3iFromIndex(TmpTileIndex, GameState->BakeResult.TileSuperpositionsDim);
+
         v3i VoxBaseP = TileP * Global_TileDim;
-        aabb TileRect = AABBMinDim(VoxBaseP, Global_TileDim);
+        v3 VoxRenderBaseP = GetRenderP(World->ChunkDim, V3(VoxBaseP), Camera);
+
+        /* aabb TileRect = AABBMinDim(VoxBaseP, Global_TileDim); */
+        aabb TileRect = AABBMinDim(VoxRenderBaseP, Global_TileDim);
+
         DEBUG_DrawAABB(&GpuMap->Buffer, TileRect, RED);
 
         if (TileIndexIndex > 10) break;
@@ -453,12 +458,12 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
           tile_ruleset *Rule = Get(&Rules, HoverTile->RuleId);
 
-          DebugChars(" x rule count(%u)(", CountBitsSet_Kernighan(Rule->E[0])); PrintBinary(Rule->E[0]); DebugLine(")");
-          DebugChars("-x rule count(%u)(", CountBitsSet_Kernighan(Rule->E[1])); PrintBinary(Rule->E[1]); DebugLine(")");
-          DebugChars(" y rule count(%u)(", CountBitsSet_Kernighan(Rule->E[2])); PrintBinary(Rule->E[2]); DebugLine(")");
-          DebugChars("-y rule count(%u)(", CountBitsSet_Kernighan(Rule->E[3])); PrintBinary(Rule->E[3]); DebugLine(")");
-          DebugChars(" z rule count(%u)(", CountBitsSet_Kernighan(Rule->E[4])); PrintBinary(Rule->E[4]); DebugLine(")");
-          DebugChars("-z rule count(%u)(", CountBitsSet_Kernighan(Rule->E[5])); PrintBinary(Rule->E[5]); DebugLine(")");
+          /* DebugChars(" x rule count(%u)(", CountBitsSet_Kernighan(Rule->E[0])); PrintBinary(Rule->E[0]); DebugLine(")"); */
+          /* DebugChars("-x rule count(%u)(", CountBitsSet_Kernighan(Rule->E[1])); PrintBinary(Rule->E[1]); DebugLine(")"); */
+          /* DebugChars(" y rule count(%u)(", CountBitsSet_Kernighan(Rule->E[2])); PrintBinary(Rule->E[2]); DebugLine(")"); */
+          /* DebugChars("-y rule count(%u)(", CountBitsSet_Kernighan(Rule->E[3])); PrintBinary(Rule->E[3]); DebugLine(")"); */
+          /* DebugChars(" z rule count(%u)(", CountBitsSet_Kernighan(Rule->E[4])); PrintBinary(Rule->E[4]); DebugLine(")"); */
+          /* DebugChars("-z rule count(%u)(", CountBitsSet_Kernighan(Rule->E[5])); PrintBinary(Rule->E[5]); DebugLine(")"); */
 
           v3i VoxBaseP = V3iFromIndex(s32(BakeTile->VoxelIndex), BakeTile->SrcChunk->Dim);
           v3 EntityBasis = GetRenderP(World->ChunkDim, E, Camera);
