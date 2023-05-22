@@ -159,9 +159,21 @@ BakeVoxelSynthesisRules(const char* InputVox)
   }
 
   u64 MaxTileEntropy = u64_MAX;
-
   u64 BitsToShiftOff = 64-AllRules.Count;
   MaxTileEntropy = MaxTileEntropy >> BitsToShiftOff;
+
+  BufferIterator(&AllRules, Idx)
+  {
+    tile_ruleset *E = Get(&AllRules, u32(Idx));
+    RangeIterator(RuleIndex, VoxelRuleDir_Count)
+    {
+      if (E->E[RuleIndex] == 0)
+      {
+        E->E[RuleIndex] = MaxTileEntropy;
+      }
+    }
+  }
+
 
   Assert(CountBitsSet_Kernighan(MaxTileEntropy) == AllRules.Count);
   /* Assert( (MaxTileEntropy & (1ull << AllRules.Count)) != 0); */
@@ -366,7 +378,7 @@ InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i Til
 
       TileSuperpositions[TileIndex] = TileChoice;
 
-      TileOptions &= (~BitChoice); // Knock out the bit in TileOptions for the next time through
+      TileOptions &= (~TileChoice); // Knock out the bit in TileOptions for the next time through
     }
     else
     {
@@ -382,12 +394,15 @@ InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i Til
 
       RangeIterator(DirIndex, (s32)ArrayCount(AllDirections))
       {
+        // TODO(Jesse)(speed, perf): Do we really want to look backwards? I
+        // think that might be redundant because we just collapsed that tile ..
+        // but it's probably more robust (use as a check for integrity/errors) ?
         Push(InfoCursor, VoxelSynthesisChangePropagationInfo(TileChoice,  P, AllDirections[DirIndex]));
       }
     }
     else
     {
-      Assert(TileChoice != u64_MAX);
+      Assert(TileChoice == u64_MAX);
       break;
     }
 

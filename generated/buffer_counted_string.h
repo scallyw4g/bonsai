@@ -22,6 +22,13 @@ CountedStringBuffer(umm ElementCount, memory_arena* Memory)
   return Result;
 }
 
+link_inline umm
+CurrentCount(counted_string_buffer *Buf)
+{
+  umm Result = Buf->Count;
+  return Result;
+}
+
 link_inline counted_string *
 Get(counted_string_buffer *Buf, u32 Index)
 {

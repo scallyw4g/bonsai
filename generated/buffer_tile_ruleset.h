@@ -22,6 +22,13 @@ TileRulesetBuffer(umm ElementCount, memory_arena* Memory)
   return Result;
 }
 
+link_inline umm
+CurrentCount(tile_ruleset_buffer *Buf)
+{
+  umm Result = Buf->Count;
+  return Result;
+}
+
 link_inline tile_ruleset *
 Get(tile_ruleset_buffer *Buf, u32 Index)
 {

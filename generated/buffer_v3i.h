@@ -22,6 +22,13 @@ V3iBuffer(umm ElementCount, memory_arena* Memory)
   return Result;
 }
 
+link_inline umm
+CurrentCount(v3i_buffer *Buf)
+{
+  umm Result = Buf->Count;
+  return Result;
+}
+
 link_inline v3i *
 Get(v3i_buffer *Buf, u32 Index)
 {

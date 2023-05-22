@@ -22,6 +22,13 @@ VoxelSynthTileBuffer(umm ElementCount, memory_arena* Memory)
   return Result;
 }
 
+link_inline umm
+CurrentCount(voxel_synth_tile_buffer *Buf)
+{
+  umm Result = Buf->Count;
+  return Result;
+}
+
 link_inline voxel_synth_tile *
 Get(voxel_synth_tile_buffer *Buf, u32 Index)
 {

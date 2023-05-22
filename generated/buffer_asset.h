@@ -22,6 +22,13 @@ AssetBuffer(umm ElementCount, memory_arena* Memory)
   return Result;
 }
 
+link_inline umm
+CurrentCount(asset_buffer *Buf)
+{
+  umm Result = Buf->Count;
+  return Result;
+}
+
 link_inline asset *
 Get(asset_buffer *Buf, u32 Index)
 {

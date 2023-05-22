@@ -22,6 +22,13 @@ U32Buffer(umm ElementCount, memory_arena* Memory)
   return Result;
 }
 
+link_inline umm
+CurrentCount(u32_buffer *Buf)
+{
+  umm Result = Buf->Count;
+  return Result;
+}
+
 link_inline u32 *
 Get(u32_buffer *Buf, u32 Index)
 {

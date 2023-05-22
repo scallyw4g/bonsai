@@ -22,6 +22,13 @@ U64Buffer(umm ElementCount, memory_arena* Memory)
   return Result;
 }
 
+link_inline umm
+CurrentCount(u64_buffer *Buf)
+{
+  umm Result = Buf->Count;
+  return Result;
+}
+
 link_inline u64 *
 Get(u64_buffer *Buf, u32 Index)
 {
