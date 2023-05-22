@@ -369,8 +369,8 @@ GraphicsInit(memory_arena *GraphicsMemory)
 
 #if 1
   // NOTE(Jesse): 32x1024 x2 == 64k at 32bit float
-#define SHADOW_MAP_RESOLUTION_X (32*1024)
-#define SHADOW_MAP_RESOLUTION_Y (32*1024)
+#define SHADOW_MAP_RESOLUTION_X (16*1024)
+#define SHADOW_MAP_RESOLUTION_Y (16*1024)
 
 #define SHADOW_MAP_X 32*32
 #define SHADOW_MAP_Y 32*32

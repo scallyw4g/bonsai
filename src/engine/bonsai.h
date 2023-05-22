@@ -695,10 +695,7 @@ ZeroMesh( untextured_3d_geometry_buffer *Mesh )
 void
 ClearWorldChunk( world_chunk *Chunk )
 {
-  /* ZeroChunk(Chunk); */
-
   Chunk->Flags = {};
-  Chunk->Dim = {};
   Chunk->WorldP = {};
   Chunk->FilledCount = {};
   Chunk->Picked = {};

@@ -5,9 +5,7 @@ enum chunk_flag
   Chunk_Queued            = 1 << 1,
   Chunk_VoxelsInitialized = 1 << 2,
 
-  Chunk_MeshesInitialized = 1 << 3, // This gets unset when we need to regen the meshes
-
-  Chunk_Garbage           = 1 << 5,
+  Chunk_Garbage           = 1 << 3,
 };
 
 enum voxel_flag
@@ -330,7 +328,7 @@ link_internal world_chunk*
 AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension Dim);
 
 link_internal void
-BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, graphics *Graphics, world_position VisibleRegion, heap_allocator *Heap);
+BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, graphics *Graphics, heap_allocator *Heap);
 
 link_internal untextured_3d_geometry_buffer*
 GetMeshForChunk(mesh_freelist* Freelist, memory_arena* PermMemory);

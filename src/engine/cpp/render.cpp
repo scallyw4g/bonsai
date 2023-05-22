@@ -999,6 +999,6 @@ Render_BufferGameGeometry(engine_resources *Resources)
   entity                   **EntityTable  = Resources->EntityTable;
   gpu_mapped_element_buffer *GpuMap       = GetCurrentGpuMap(Graphics);
 
-  BufferWorld(Plat, &GpuMap->Buffer, World, Graphics, Resources->World->VisibleRegion, Heap);
+  BufferWorld(Plat, &GpuMap->Buffer, World, Graphics, Heap);
   BufferEntities( EntityTable, &GpuMap->Buffer, Graphics, World, Plat->dt);
 }

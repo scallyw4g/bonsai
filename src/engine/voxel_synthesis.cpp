@@ -267,11 +267,11 @@ PropagateChangesTo(voxel_synthesis_change_propagation_info_stack *InfoCursor, v3
 
     v3i ThisTileP = PrevTileP+DirOfTravel;
 
-    if (PrevTileP == V3i(0, 1, 1) && ThisTileP == V3i(0, 2, 1))
-    {
-      u8 breakhere =4;
-      breakhere++;
-    }
+    /* if (PrevTileP == V3i(0, 1, 1) && ThisTileP == V3i(0, 2, 1)) */
+    /* { */
+    /*   u8 breakhere =4; */
+    /*   breakhere++; */
+    /* } */
 
     s32 NextTileIndex = TryGetIndex(ThisTileP, SuperpositionsShape);
     if (NextTileIndex >= 0)
@@ -301,7 +301,7 @@ PropagateChangesTo(voxel_synthesis_change_propagation_info_stack *InfoCursor, v3
         u32 NewOptionCount = CountBitsSet_Kernighan(*NextTile);
         if (NewOptionCount > 1)
         {
-          Push(GetPtr(EntropyLists,NewOptionCount), u32(NextTileIndex));
+          Push(GetPtr(EntropyLists, NewOptionCount), u32(NextTileIndex));
         }
       }
       else
@@ -309,12 +309,16 @@ PropagateChangesTo(voxel_synthesis_change_propagation_info_stack *InfoCursor, v3
         // We failed
         *NextTile = 0;
         Result = False;
+        break;
       }
 
       if ( *NextTile && *NextTile != NextTileValue )
       {
         for (u32 DirIndex = 0; DirIndex < ArrayCount(AllDirections); ++DirIndex)
         {
+          // TODO(Jesse)(speed, perf): Do we really want to look backwards? I
+          // think that might be redundant because we just collapsed that tile ..
+          // but it's probably more robust (use as a check for integrity/errors) ?
           v3i NextDir = AllDirections[DirIndex];
           Push(InfoCursor, VoxelSynthesisChangePropagationInfo(NewTileOptions, ThisTileP, NextDir));
         }
@@ -352,15 +356,15 @@ InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i Til
 
   u64 *TileSuperpositions = Allocate(u64, GetTranArena(), TileSuperpositionCount);
 
-  u32_cursor_staticbuffer EntropyLists = {};
-  IterateOver(&EntropyLists, Element, ElementIndex)
+  u32_cursor_staticbuffer LocalEntropyLists = {};
+  IterateOver(&LocalEntropyLists, Element, ElementIndex)
   {
     *Element = U32Cursor(umm(TileSuperpositionCount), GetTranArena());
   }
 
   do
   {
-    DeepCopy(EntropyListsStorage, &EntropyLists);
+    DeepCopy(EntropyListsStorage, &LocalEntropyLists);
     MemCopy((u8*)TileSuperpositionsStorage, (u8*)TileSuperpositions, (umm)((umm)TileSuperpositionCount*sizeof(u64)));
 
     // We haven't fully collapsed this tile, and it's got lower entropy
@@ -394,9 +398,6 @@ InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i Til
 
       RangeIterator(DirIndex, (s32)ArrayCount(AllDirections))
       {
-        // TODO(Jesse)(speed, perf): Do we really want to look backwards? I
-        // think that might be redundant because we just collapsed that tile ..
-        // but it's probably more robust (use as a check for integrity/errors) ?
         Push(InfoCursor, VoxelSynthesisChangePropagationInfo(TileChoice,  P, AllDirections[DirIndex]));
       }
     }
@@ -406,9 +407,9 @@ InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i Til
       break;
     }
 
-  } while (PropagateChangesTo(InfoCursor, TileSuperpositionsDim, TileSuperpositions, Rules, &EntropyLists) == False) ;
+  } while (PropagateChangesTo(InfoCursor, TileSuperpositionsDim, TileSuperpositions, Rules, &LocalEntropyLists) == False) ;
 
-  DeepCopy(&EntropyLists, EntropyListsStorage);
+  DeepCopy(&LocalEntropyLists, EntropyListsStorage);
   MemCopy((u8*)TileSuperpositions, (u8*)TileSuperpositionsStorage, (umm)((umm)TileSuperpositionCount*sizeof(u64)));
 
   return Result;

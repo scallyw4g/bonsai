@@ -39,66 +39,12 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
     case type_work_queue_entry_rebuild_mesh:
     {
+
       work_queue_entry_rebuild_mesh *Job = SafeAccess(work_queue_entry_rebuild_mesh, Entry);
       world_chunk *Chunk = Job->Chunk;
       Assert( IsSet(Chunk->Flags, Chunk_VoxelsInitialized) );
 
-      untextured_3d_geometry_buffer *NewMesh = 0;
-
-      /* if (Chunk->FilledCount > 0) */
-      {
-        untextured_3d_geometry_buffer *GeneratedMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-        /* MarkBoundaryVoxels( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-2); */
-        /* MarkBoundaryVoxels( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh ); */
-        BuildWorldChunkMeshFromMarkedVoxels_Greedy( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh, Thread->TempMemory);
-        /* BuildWorldChunkMesh(Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh); */
-
-        /* DrawDebugVoxels( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh ); */
-
-        if (GeneratedMesh->At)
-        {
-          NewMesh = GeneratedMesh;
-        }
-        else
-        {
-          DeallocateMesh(&GeneratedMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-        }
-      }
-
-      umm Timestamp = NewMesh ? NewMesh->Timestamp : __rdtsc();
-      /* TakeOwnershipSync(&Chunk->Meshes, MeshBit_Main); */
-      auto Replaced = AtomicReplaceMesh(&Chunk->Meshes, MeshBit_Main, NewMesh, Timestamp);
-      if (Replaced) { DeallocateMesh(&Replaced, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
-      /* ReleaseOwnership(&Chunk->Meshes, MeshBit_Main, NewMesh); */
-
-#if 0
-      {
-        if (Chunk->FilledCount > 0)
-        {
-          world *World = Thread->EngineResources->World;
-          untextured_3d_geometry_buffer *LodMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-          ComputeLodMesh( Thread, Chunk, World->ChunkDim, Chunk, World->ChunkDim, LodMesh, False);
-
-          if (LodMesh->At)
-          {
-            if ( Chunk->SelectedMeshes & MeshBit_Lod )
-            {
-              untextured_3d_geometry_buffer *OldMesh = (untextured_3d_geometry_buffer*)TakeOwnershipSync((volatile void**)&Chunk->LodMesh);
-              DeallocateMesh(&OldMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-            }
-
-            Assert(Chunk->LodMesh == 0);
-            Replace((volatile void**)&Chunk->LodMesh, (void*)LodMesh);
-            Chunk->SelectedMeshes |= MeshBit_Lod;
-          }
-        }
-        else
-        {
-          Chunk->SelectedMeshes &= (~(u32)MeshBit_Lod);
-        }
-      }
-#endif
-
+      RebuildWorldChunkMesh(Thread, Chunk);
       FinalizeChunkInitialization(Chunk);
     } break;
 
@@ -161,9 +107,6 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                 v3i SrcVoxMin = V3iFromIndex(s32(Match->VoxelIndex), Match->SrcChunk->Dim );
                 v3i SrcVoxMax = SrcVoxMin + TileDim;
 
-                /* v3i DestVoxMin = SrcVoxMin % World->ChunkDim; */
-                /* v3i DestVoxMax = DestVoxMin + TileDim; */
-
                 DimIterator(xTileVox, yTileVox, zTileVox, Global_TileDim)
                 {
                   v3i TileVox = V3i(xTileVox, yTileVox, zTileVox);
@@ -181,36 +124,12 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                     0 ;
                 }
 
-                /* s32 DestVoxIndex = GetIndex( (TileP*Global_TileDim) % World->ChunkDim, World->ChunkDim); */
-                /* while (CountBitsSet_Kernighan(TileOptions)) */
-                /* { */
-                /*   UnsetLeastSignificantSetBit(&TileOptions); */
-                /*   Chunk->Voxels[DestVoxIndex].Flags = Voxel_Filled; */
-                /*   Chunk->Voxels[DestVoxIndex].Color = (u8)DestVoxIndex; */
-                /*   Chunk->FilledCount++; */
-                /*   DestVoxIndex = (DestVoxIndex + 1); // % Global_TileDim; */
-                /* } */
-
-                /* v3i SrcVoxOffset = TileP * Global_TileDim; */
-                /* DimIterator(xVox, yVox, zVox, Global_TileDim) */
-                /* { */
-                /*   v3i VoxOffset = V3i(xVox, yVox, zVox); */
-                /*   v3i SrcVoxP = VoxOffset + SrcVoxOffset; */
-                /*   s32 SrcVoxIndex = TryGetIndex( SrcVoxP, BakeSrcVoxelsDim); */
-                /*   if (SrcVoxIndex > -1) */
-                /*   { */
-                /*     voxel *V = BakeSrcVoxels + SrcVoxIndex; */
-
-                /*     v3i DestTileP = TileP - TileMin; */
-                /*     v3i DestVoxP = VoxOffset + (DestTileP * Global_TileDim); */
-                /*     s32 DestVoxIndex = GetIndex( DestVoxP, World->ChunkDim); */
-                /*     Chunk->Voxels[DestVoxIndex] = *V; */
-                /*   } */
-                /* } */
               }
               else
               {
 #if 0
+                // NOTE(Jesse): Fills undecided voxels with something to
+                // indicate their level of indecision
                 u32 TotalChoices = CountBitsSet_Kernighan(GameState->BakeResult.MaxTileEntropy);
                 /* r32 Ratio = r32(CountBitsSet_Kernighan(TileRule))/r32(TotalChoices); */
 
@@ -236,11 +155,13 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                   }
                 }
 #endif
+
               }
             }
             else
             {
 #if 1
+              // NOTE(Jesse): Fill error tiles with solid RED
               v3i VoxMin = (V3i(xTile, yTile, zTile)*TileDim) % World->ChunkDim;
               v3i VoxMax = VoxMin + TileDim;
               for (s32 zVox = VoxMin.z; zVox < VoxMax.z; ++zVox)
@@ -261,23 +182,17 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             /* Info("Tile (%d, %d, %d)(%d)", xTile, yTile, zTile, TileOptions); */
           }
 
+          Chunk->Flags = chunk_flag(Chunk->Flags | Chunk_VoxelsInitialized);
+
           MarkBoundaryVoxels_MakeExteriorFaces(Chunk->Voxels, World->ChunkDim, {}, World->ChunkDim);
 
           /* ComputeStandingSpots( World->ChunkDim, Chunk, {}, {}, Global_StandingSpotDim, */
           /*                       World->ChunkDim, 0, &Chunk->StandingSpots, Thread->TempMemory); */
 
 
-          if ( Chunk->FilledCount > 0)
-          {
-            auto PrimaryMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-            BuildWorldChunkMeshFromMarkedVoxels_Greedy(Chunk->Voxels, World->ChunkDim, {}, World->ChunkDim, PrimaryMesh, Thread->TempMemory);
-            if (PrimaryMesh->At)
-            { Ensure( AtomicReplaceMesh(&Chunk->Meshes, MeshBit_Main, PrimaryMesh, PrimaryMesh->Timestamp) == 0); }
-            else
-            { DeallocateMesh(&PrimaryMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
-          }
-
         }
+
+        RebuildWorldChunkMesh(Thread, Chunk);
       }
 
       FinalizeChunkInitialization(Chunk);
@@ -311,6 +226,47 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
   }
 }
 
+link_internal s32
+PickNewTileIndex(u32_cursor_staticbuffer *EntropyLists, random_series *VoxelSynthesisEntropy)
+{
+  s32 TileIndex = s32_MAX;
+  // NOTE(Jesse): For now, I never push data onto lists of tiles with 0 entropy (it is an error to have 0)
+  // or tiles with 1 entropy (which are fully decided)
+  Assert( CurrentCount(GetPtr(EntropyLists,0)) == 0);
+  Assert( CurrentCount(GetPtr(EntropyLists,1)) == 0);
+
+  IterateOver(EntropyLists, EntropyList, Idx)
+  {
+    umm EntropyEntryCount = CurrentCount(EntropyList);
+    if (EntropyEntryCount)
+    {
+      u32 Index = RandomBetween(0, VoxelSynthesisEntropy, u32(EntropyEntryCount) );
+      TileIndex = s32(Get(EntropyList, Index));
+      Ensure( Remove(EntropyList, u32(TileIndex) ) );
+      break;
+    }
+  }
+
+  return TileIndex;
+}
+
+link_internal void
+ResetVoxelSynthesisProgress(u64 MaxTileEntropy, s32 TileSuperpositionCount, u64 *TileSuperpositions, u32_cursor_staticbuffer *EntropyLists)
+{
+  IterateOver(EntropyLists, List, Idx)
+  {
+    List->At = List->Start;
+  }
+
+  u32 MaxBitCount = CountBitsSet_Kernighan(MaxTileEntropy);
+  for (s32 TileIndex = 0; TileIndex < TileSuperpositionCount; ++TileIndex)
+  {
+    TileSuperpositions[TileIndex] = MaxTileEntropy;
+    u32_cursor *EntropyList = GetPtr(EntropyLists, MaxBitCount);
+    Push(EntropyList, u32(TileIndex));
+  }
+}
+
 BONSAI_API_MAIN_THREAD_CALLBACK()
 {
   Assert(ThreadLocal_ThreadIndex == 0);
@@ -331,89 +287,93 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     Canonicalize(World->ChunkDim, GameState->CameraTarget->P);
   }
 
-#define DoEntireWorldGen 0
-
   u32_cursor_staticbuffer *EntropyLists = &GameState->BakeResult.EntropyLists;
+  local_persist random_series VoxelSynthesisEntropy = {543295643};
+  local_persist s32 PrevTileIndex = s32_MAX;
+  local_persist s32 NextTileIndex = PickNewTileIndex(EntropyLists, &VoxelSynthesisEntropy);
+  u32 TilesToCollapsePerFrame = 1;
 
-#if DoEntireWorldGen
-  while (true)
-#else
-  if (Input->Space.Clicked)
-  /* if (Resources->FrameIndex % 10 == 0) */
-  /* if ((false)) */
-#endif
+  /* while (TilesToCollapsePerFrame > 0) */
   {
-    local_persist random_series VoxelSynthesisEntropy = {543295643};
+    /* if (NextTileIndex == s32_MAX) break; */
 
-    // NOTE(Jesse): For now, I never push data onto lists of tiles with 0 entropy (it is an error to have 0)
-    // or tiles with 1 entropy (which are fully decided)
-    Assert( CurrentCount(GetPtr(EntropyLists,0)) == 0);
-    Assert( CurrentCount(GetPtr(EntropyLists,1)) == 0);
+    /* --TilesToCollapsePerFrame; */
 
-    u32 TileIndex = u32_MAX;
-    RangeIterator(EntropyListIndex, (s32)MAX_TILE_RULESETS)
+
+    /* if (Input->Space.Clicked) */
+    if (Resources->FrameIndex % 10 == 0)
     {
-      u32_cursor *EntropyList = GetPtr(EntropyLists, (u32)EntropyListIndex);
-      umm EntropyEntryCount = CurrentCount(EntropyList);
-      if (EntropyEntryCount)
+      s32 TileSuperpositionCount = Volume(GameState->BakeResult.TileSuperpositionsDim);
+      umm MaxStackDepth = (umm)TileSuperpositionCount;
+      voxel_synthesis_change_propagation_info_stack InfoCursor = VoxelSynthesisChangePropagationInfoStack(MaxStackDepth, GetTranArena());
+      if ( InitializeWorld_VoxelSynthesis_Partial( World, World->VisibleRegion, Global_TileDim, &VoxelSynthesisEntropy,
+                                                      GameState->BakeResult.MaxTileEntropy,
+                                                     &GameState->BakeResult.Rules,
+                                                      GameState->BakeResult.TileSuperpositionsDim,
+                                                      GameState->BakeResult.TileSuperpositions,
+                                                      NextTileIndex,
+                                                      EntropyLists,
+                                                     &InfoCursor) == False )
       {
-        u32 Index = RandomBetween(0, &VoxelSynthesisEntropy, u32(EntropyEntryCount) );
-        TileIndex = Get(EntropyList, Index);
-        Ensure( Remove(EntropyList, TileIndex) );
-        break;
+        SoftError("Partial update failed. Restarting..");
+        ResetVoxelSynthesisProgress(GameState->BakeResult.MaxTileEntropy, TileSuperpositionCount, GameState->BakeResult.TileSuperpositions, EntropyLists);
       }
-    }
 
-#if DoEntireWorldGen
-    if (TileIndex == u32_MAX) break;
-#endif
-
-    umm MaxStackDepth = (umm)Volume(GameState->BakeResult.TileSuperpositionsDim);
-    voxel_synthesis_change_propagation_info_stack InfoCursor = VoxelSynthesisChangePropagationInfoStack(MaxStackDepth, GetTranArena());
-    if ( InitializeWorld_VoxelSynthesis_Partial( World, World->VisibleRegion, Global_TileDim, &VoxelSynthesisEntropy,
-                                                    GameState->BakeResult.MaxTileEntropy,
-                                                   &GameState->BakeResult.Rules,
-                                                    GameState->BakeResult.TileSuperpositionsDim,
-                                                    GameState->BakeResult.TileSuperpositions,
-                                                s32(TileIndex),
-                                                    EntropyLists,
-                                                   &InfoCursor) == False )
-    {
-      SoftError("Partial update failed.  That's pretty bad");
-    }
-#if DoEntireWorldGen
-#else
-    {
-      v3i Radius = World->VisibleRegion/2;
-      v3i Min = World->Center - Radius;
-      v3i Max = World->Center + Radius;
-      for (s32 z = Min.z; z < Max.z; ++ z)
+      if (PrevTileIndex != s32_MAX)
       {
-        for (s32 y = Min.y; y < Max.y; ++ y)
+        v3i Radius = World->VisibleRegion/2;
+        v3i Min = World->Center - Radius;
+        v3i Max = World->Center + Radius;
+        for (s32 z = Min.z; z < Max.z; ++ z)
         {
-          for (s32 x = Min.x; x < Max.x; ++ x)
+          for (s32 y = Min.y; y < Max.y; ++ y)
           {
-            world_position P = World_Position(x,y,z);
-            world_chunk *Chunk = 0;
+            for (s32 x = Min.x; x < Max.x; ++ x)
             {
-              TIMED_NAMED_BLOCK("GetWorldChunk");
-              Chunk = GetWorldChunkFromHashtable( World, P, World->VisibleRegion );
-              if (Chunk)
+              world_position P = World_Position(x,y,z);
+              world_chunk *Chunk = 0;
               {
-                FreeWorldChunk(World, Chunk ,  MeshFreelist,  Memory);
+                TIMED_NAMED_BLOCK("GetWorldChunk");
+                Chunk = GetWorldChunkFromHashtable( World, P );
+                if (Chunk && !(Chunk->Flags & Chunk_Queued))
+                {
+                  Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_VoxelsInitialized);
+                  QueueChunkForInit(&Plat->LowPriority, Chunk);
+                }
               }
             }
           }
         }
       }
+
+      PrevTileIndex = NextTileIndex;
+      NextTileIndex = PickNewTileIndex(EntropyLists, &VoxelSynthesisEntropy);
     }
-#endif
-
-
   }
 
-#if DoEntireWorldGen
-#else
+
+
+  if (PrevTileIndex != s32_MAX)
+  {
+    v3i TileP = V3iFromIndex(PrevTileIndex, GameState->BakeResult.TileSuperpositionsDim);
+
+    v3i VoxBaseP = TileP * Global_TileDim;
+    v3 VoxRenderBaseP = GetRenderP(World->ChunkDim, V3(VoxBaseP), Camera);
+    aabb TileRect = AABBMinDim(VoxRenderBaseP, Global_TileDim);
+    DEBUG_DrawAABB(&GpuMap->Buffer, TileRect, GREEN, DEFAULT_LINE_THICKNESS*2.f);
+  }
+
+  if (NextTileIndex != s32_MAX)
+  {
+    v3i TileP = V3iFromIndex(NextTileIndex, GameState->BakeResult.TileSuperpositionsDim);
+
+    v3i VoxBaseP = TileP * Global_TileDim;
+    v3 VoxRenderBaseP = GetRenderP(World->ChunkDim, V3(VoxBaseP), Camera);
+    aabb TileRect = AABBMinDim(VoxRenderBaseP, Global_TileDim);
+    DEBUG_DrawAABB(&GpuMap->Buffer, TileRect, YELLOW, DEFAULT_LINE_THICKNESS*2.f);
+  }
+
+
   RangeIterator(EntropyListIndex, (s32)MAX_TILE_RULESETS)
   {
     u32_cursor *EntropyList = GetPtr(EntropyLists, (u32)EntropyListIndex);
@@ -422,25 +382,17 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     {
       RangeIterator(TileIndexIndex, (s32)EntropyEntryCount)
       {
-        /* float TileIndex; */
         s32 TmpTileIndex = (s32)Get(EntropyList, (umm)TileIndexIndex);
         v3i TileP = V3iFromIndex(TmpTileIndex, GameState->BakeResult.TileSuperpositionsDim);
 
         v3i VoxBaseP = TileP * Global_TileDim;
         v3 VoxRenderBaseP = GetRenderP(World->ChunkDim, V3(VoxBaseP), Camera);
-
-        /* aabb TileRect = AABBMinDim(VoxBaseP, Global_TileDim); */
         aabb TileRect = AABBMinDim(VoxRenderBaseP, Global_TileDim);
-
-        DEBUG_DrawAABB(&GpuMap->Buffer, TileRect, RED);
-
-        /* if (TileIndexIndex > 10) break; */
+        DEBUG_DrawAABB(&GpuMap->Buffer, TileRect, BLUE);
       }
-
-      break;
     }
   }
-#endif
+
 
   entity *Entity = MousePickEntity(Resources);
   if (Entity)
@@ -520,8 +472,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/happy_square.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/square_expanded.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/archway.vox"); */
-  GameState->BakeResult = BakeVoxelSynthesisRules("models/gravel_blocks.vox");
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("models/gravel_blocks.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/archway_with_floor.vox"); */
+  GameState->BakeResult = BakeVoxelSynthesisRules("models/block_farm_degrading.vox");
 
   memory_arena *TempMemory = AllocateArena();
   DEBUG_REGISTER_ARENA(TempMemory, ThreadLocal_ThreadIndex);
@@ -592,14 +545,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
     GetPtr(EntropyLists, u32(EntropyListIndex))[0] = U32Cursor(umm(TileSuperpositionCount), Memory);
   }
 
-  u64 MaxTileEntropy = GameState->BakeResult.MaxTileEntropy;
-  u32 MaxBitCount = CountBitsSet_Kernighan(MaxTileEntropy);
-  for (s32 TileIndex = 0; TileIndex < TileSuperpositionCount; ++TileIndex)
-  {
-    TileSuperpositions[TileIndex] = MaxTileEntropy;
-    u32_cursor *EntropyList = GetPtr(EntropyLists, MaxBitCount);
-    Push(EntropyList, u32(TileIndex));
-  }
+  ResetVoxelSynthesisProgress(GameState->BakeResult.MaxTileEntropy, TileSuperpositionCount, TileSuperpositions, EntropyLists);
 
 #if 0
   // Partially initialize world, if you want

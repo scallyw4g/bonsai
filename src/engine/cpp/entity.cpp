@@ -44,7 +44,7 @@ IsPlayer(entity *Entity)
 }
 
 collision_event
-GetCollision( world *World, canonical_position TestP, v3 CollisionDim, chunk_dimension VisibleRegion)
+GetCollision( world *World, canonical_position TestP, v3 CollisionDim )
 {
   TIMED_FUNCTION();
 
@@ -65,7 +65,7 @@ GetCollision( world *World, canonical_position TestP, v3 CollisionDim, chunk_dim
       for ( int x = MinP.x; x < MaxP.x; x++ )
       {
         canonical_position LoopTestP = Canonicalize( WorldChunkDim, V3(x,y,z), TestP.WorldP );
-        world_chunk *Chunk = GetWorldChunkFromHashtable( World, LoopTestP.WorldP, VisibleRegion);
+        world_chunk *Chunk = GetWorldChunkFromHashtable( World, LoopTestP.WorldP );
 
         if ( !Chunk || IsFilledInChunk(Chunk, Voxel_Position(LoopTestP.Offset), World->ChunkDim) )
         {
@@ -124,7 +124,7 @@ GetCollision(world *World, entity **Entities, entity *Entity)
  * entities are grounded.  Can we do that in a more intelligent way?
  */
 collision_event
-GetCollision(world *World, entity *Entity, chunk_dimension VisibleRegion, v3 Offset = V3(0,0,0) )
+GetCollision(world *World, entity *Entity, v3 Offset = V3(0,0,0) )
 {
   TIMED_FUNCTION();
 
@@ -135,8 +135,7 @@ GetCollision(world *World, entity *Entity, chunk_dimension VisibleRegion, v3 Off
 
   C = GetCollision( World,
       Canonicalize(World->ChunkDim, Entity->P + Offset),
-      Entity->CollisionVolumeRadius*2.0f,
-      VisibleRegion);
+      Entity->CollisionVolumeRadius*2.0f );
 
   return C;
 }
@@ -707,10 +706,10 @@ SpawnPlayerLikeEntity( platform *Plat,
       {
         canonical_position CP = Canonicalize(World->ChunkDim, V3(x, y, z), InitialP.WorldP);
 
-        world_chunk *Chunk = GetWorldChunkFromHashtable( World, CP.WorldP, World->VisibleRegion );
+        world_chunk *Chunk = GetWorldChunkFromHashtable( World, CP.WorldP );
         if (Chunk == 0)
         {
-          Chunk = GetWorldChunkFor(World->Memory, World, CP.WorldP, World->VisibleRegion);
+          Chunk = GetWorldChunkFor(World->Memory, World, CP.WorldP);
           if (Chunk)
           {
             QueueChunkForInit(&Plat->HighPriority, Chunk);
@@ -1040,7 +1039,7 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta, chunk_dimension V
 
         CollisionVolume.E[AxisIndex] = Min(CollisionVolume.E[AxisIndex], 1.f);
 
-        C = GetCollision(World, CollisionBasis, CollisionVolume, VisibleRegion);
+        C = GetCollision(World, CollisionBasis, CollisionVolume );
 
         if ( C.Count > 0 ) //&& C.Chunk && IsSet(C.Chunk, Chunk_VoxelsInitialized) )
         {
@@ -1095,7 +1094,7 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta, chunk_dimension V
 
   Entity->P = Canonicalize(WorldChunkDim, Entity->P);
 
-  collision_event AssertCollision = GetCollision(World, Entity, VisibleRegion);
+  collision_event AssertCollision = GetCollision(World, Entity);
   /* Assert(AssertCollision.Count == 0); */
 
   // Entites that aren't moving can still be positioned outside the world if
@@ -1458,9 +1457,9 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
 }
 
 inline b32
-IsGrounded( world *World, entity *entity, chunk_dimension VisibleRegion)
+IsGrounded( world *World, entity *entity )
 {
-  collision_event c = GetCollision(World, entity, VisibleRegion, V3(0.0f, 0.0f, -0.0001f));
+  collision_event c = GetCollision(World, entity, V3(0.0f, 0.0f, -0.0001f));
   return c.Count > 0;
 }
 
@@ -1576,4 +1575,31 @@ MousePickEntity(engine_resources *Resources)
   }
 
   return Result;
+}
+
+
+link_internal void
+RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk)
+{
+  Assert( IsSet(Chunk->Flags, Chunk_VoxelsInitialized) );
+
+  untextured_3d_geometry_buffer *NewMesh = 0;
+
+  {
+    untextured_3d_geometry_buffer *GeneratedMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+    BuildWorldChunkMeshFromMarkedVoxels_Greedy( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh, Thread->TempMemory);
+
+    if (GeneratedMesh->At)
+    {
+      NewMesh = GeneratedMesh;
+    }
+    else
+    {
+      DeallocateMesh(&GeneratedMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+    }
+  }
+
+  umm Timestamp = NewMesh ? NewMesh->Timestamp : __rdtsc();
+  auto Replaced = AtomicReplaceMesh(&Chunk->Meshes, MeshBit_Main, NewMesh, Timestamp);
+  if (Replaced) { DeallocateMesh(&Replaced, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
 }
