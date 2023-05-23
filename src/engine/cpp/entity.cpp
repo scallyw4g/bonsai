@@ -1568,10 +1568,12 @@ MousePickEntity(engine_resources *Resources)
 
   maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection, Camera, World->ChunkDim);
 
-
   if (MaybeRay.Tag == Maybe_Yes)
   {
-    Result = RayTraceEntityCollision( Resources, &MaybeRay.Ray);
+
+    v3 SimOrigin = GetSimSpaceP(World, Canonical_Position(World->ChunkDim, MaybeRay.Ray.Origin, V3i(0)));
+    ray SimRay = {SimOrigin, MaybeRay.Ray.Dir};
+    Result = RayTraceEntityCollision( Resources, &SimRay );
   }
 
   return Result;

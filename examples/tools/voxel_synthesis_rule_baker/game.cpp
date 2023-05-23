@@ -263,10 +263,12 @@ ResetVoxelSynthesisProgress(u64 MaxTileEntropy, s32 TileSuperpositionCount, u64 
   }
 
   u32 MaxBitCount = CountBitsSet_Kernighan(MaxTileEntropy);
+  u32_cursor *EntropyList = GetPtr(EntropyLists, MaxBitCount);
+  EntropyList->At = EntropyList->Start;
+
   for (s32 TileIndex = 0; TileIndex < TileSuperpositionCount; ++TileIndex)
   {
     TileSuperpositions[TileIndex] = MaxTileEntropy;
-    u32_cursor *EntropyList = GetPtr(EntropyLists, MaxBitCount);
     Push(EntropyList, u32(TileIndex));
   }
 }
@@ -291,11 +293,21 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     Canonicalize(World->ChunkDim, GameState->CameraTarget->P);
   }
 
+  s32 TileSuperpositionCount = Volume(GameState->BakeResult.TileSuperpositionsDim);
   u32_cursor_staticbuffer *EntropyLists = &GameState->BakeResult.EntropyLists;
   local_persist random_series VoxelSynthesisEntropy = {543295643};
   local_persist s32 PrevTileIndex = s32_MAX;
   local_persist s32 NextTileIndex = PickNewTileIndex(EntropyLists, &VoxelSynthesisEntropy);
   u32 TilesToCollapsePerFrame = 1;
+  local_persist b32 Error = False;
+
+  if (Input->Space.Clicked)
+  {
+    Error = False;
+    PrevTileIndex = s32_MAX;
+    ResetVoxelSynthesisProgress(GameState->BakeResult.MaxTileEntropy, TileSuperpositionCount, GameState->BakeResult.TileSuperpositions, EntropyLists);
+    NextTileIndex = PickNewTileIndex(EntropyLists, &VoxelSynthesisEntropy);
+  }
 
   /* while (TilesToCollapsePerFrame > 0) */
   {
@@ -307,7 +319,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     /* if (Input->Space.Clicked) */
     if (Resources->FrameIndex % 10 == 0)
     {
-      s32 TileSuperpositionCount = Volume(GameState->BakeResult.TileSuperpositionsDim);
       umm MaxStackDepth = (umm)TileSuperpositionCount;
       voxel_synthesis_change_propagation_info_stack InfoCursor = VoxelSynthesisChangePropagationInfoStack(MaxStackDepth, GetTranArena());
       if ( InitializeWorld_VoxelSynthesis_Partial( World, World->VisibleRegion, Global_TileDim, &VoxelSynthesisEntropy,
@@ -319,8 +330,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
                                                       EntropyLists,
                                                      &InfoCursor) == False )
       {
-        SoftError("Partial update failed. Restarting..");
-        ResetVoxelSynthesisProgress(GameState->BakeResult.MaxTileEntropy, TileSuperpositionCount, GameState->BakeResult.TileSuperpositions, EntropyLists);
+        SoftError("Partial update failed.");
+        Error = True;
       }
 
       if (PrevTileIndex != s32_MAX)
@@ -353,8 +364,11 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         }
       }
 
-      PrevTileIndex = NextTileIndex;
-      NextTileIndex = PickNewTileIndex(EntropyLists, &VoxelSynthesisEntropy);
+      if (!Error)
+      {
+        PrevTileIndex = NextTileIndex;
+        NextTileIndex = PickNewTileIndex(EntropyLists, &VoxelSynthesisEntropy);
+      }
     }
   }
 
@@ -380,9 +394,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     DEBUG_DrawAABB(&GpuMap->Buffer, TileRect, YELLOW, DEFAULT_LINE_THICKNESS*2.f);
   }
 
-  RangeIterator(EntropyListIndex, (s32)MAX_TILE_RULESETS)
+  IterateOver(EntropyLists, EntropyList, EntropyListIndex)
   {
-    u32_cursor *EntropyList = GetPtr(EntropyLists, (u32)EntropyListIndex);
     umm EntropyEntryCount = CurrentCount(EntropyList);
     if (EntropyEntryCount &&
         EntropyEntryCount < TotalElements(EntropyList)-1) // Hack to stop drawing a screenful of AABBs on the first pass
@@ -391,6 +404,12 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       {
         s32 TmpTileIndex = (s32)Get(EntropyList, (umm)TileIndexIndex);
         v3i TileP = V3iFromIndex(TmpTileIndex, GameState->BakeResult.TileSuperpositionsDim);
+
+        {
+          // DEBUG code
+          u32 BitsSet = CountBitsSet_Kernighan(GameState->BakeResult.TileSuperpositions[TmpTileIndex]);
+          Assert(BitsSet == EntropyListIndex);
+        }
 
         v3i VoxBaseP = TileP * Global_TileDim;
         v3 VoxRenderBaseP = GetRenderP(World->ChunkDim, V3(VoxBaseP), Camera);
@@ -452,15 +471,12 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   Global_AssetPrefixPath = CSz("examples/voxel_synthesis_rule_baker/assets");
 
 
-#define DO_WORLD_SYNTHESIS 1
-#if DO_WORLD_SYNTHESIS
   world_position WorldCenter = {{2,2,2}};
-#else
-  world_position WorldCenter = {{}};
-#endif
-  canonical_position CameraTargetP = {};
+  /* world_position WorldCenter = {{}}; */
 
-  StandardCamera(Graphics->Camera, 10000.0f, 200.0f, CameraTargetP);
+  canonical_position CameraTargetP = Canonical_Position(V3(0), {{4,4,4}});
+
+  StandardCamera(Graphics->Camera, 10000.0f, 700.0f, CameraTargetP);
 
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
@@ -495,12 +511,11 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->BakeEntity = BakeEntity;
 
   BakeEntity->CollisionVolumeRadius = ChunkData->Dim/2.f;
-  BakeEntity->P = Canonical_Position(World->ChunkDim, V3(-ChunkData->Dim.x-5, 0, 0), V3i(0,0,0));
+  BakeEntity->P = Canonical_Position(World->ChunkDim, V3(0), V3i(5,0,0));
   AllocateAndBuildMesh(&GameState->BakeResult.VoxData, &BakeEntity->Model, TempMemory, Resources->Memory);
 
-#if !DO_WORLD_SYNTHESIS
   SpawnEntity(BakeEntity);
-#endif
+
   Info("Drawing (%d) Baked tiles", BakedTiles.Count);
 
   for (u32 RuleIndex = 0; RuleIndex < Rules->Count; ++RuleIndex)
@@ -524,11 +539,19 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
                                                     TempMemory,
                                                     VoxData->Palette );
 
-        TileEntity->P.Offset += V3(s32(RuleIndex)*(Global_TileDim.x+2), 0, 0 );
+        TileEntity->P = BakeEntity->P;
+        TileEntity->P.WorldP += V3i(0, -1, 0);
+
+        auto xRuleMultiplier = RuleIndex % 8;
+        auto yRuleMultiplier = RuleIndex / 8;
+
+        auto xOffset = s32(xRuleMultiplier)*(Global_TileDim.x+2);
+        auto yOffset = -s32(yRuleMultiplier)*(Global_TileDim.x+2);
+
+        TileEntity->P.Offset += V3(xOffset, yOffset, 0);
         TileEntity->P = Canonicalize(World->ChunkDim, TileEntity->P);
-#if !DO_WORLD_SYNTHESIS
         SpawnEntity(TileEntity);
-#endif
+
         TileEntity->UserData = (void*)Tile;
         break;
       }
@@ -536,7 +559,6 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   }
 
-#if DO_WORLD_SYNTHESIS
   v3i TileSuperpositionsDim = World->VisibleRegion*World->ChunkDim / Global_TileDim;
   Assert(World->VisibleRegion*World->ChunkDim  % Global_TileDim == V3i(0));
 
@@ -577,7 +599,6 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 #endif
 
 
-#endif
 
 #if 0
   for (u32 SynthTileIndex = 0; SynthTileIndex < BakedTiles.Count; ++SynthTileIndex)

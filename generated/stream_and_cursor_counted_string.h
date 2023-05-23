@@ -106,7 +106,7 @@ DeepCopy(counted_string_cursor *Src, counted_string_cursor *Dest)
   }
 
   Dest->At = Dest->Start+SrcAt;
-  Assert(Dest->At < Dest->End);
+  Assert(Dest->At <= Dest->End);
 }
 
 struct counted_string_stream_chunk

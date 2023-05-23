@@ -106,7 +106,7 @@ DeepCopy(u64_cursor *Src, u64_cursor *Dest)
   }
 
   Dest->At = Dest->Start+SrcAt;
-  Assert(Dest->At < Dest->End);
+  Assert(Dest->At <= Dest->End);
 }
 
 struct u64_stream_chunk

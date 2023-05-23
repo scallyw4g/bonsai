@@ -106,6 +106,6 @@ DeepCopy(v3_cursor *Src, v3_cursor *Dest)
   }
 
   Dest->At = Dest->Start+SrcAt;
-  Assert(Dest->At < Dest->End);
+  Assert(Dest->At <= Dest->End);
 }
 
