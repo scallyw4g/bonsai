@@ -388,6 +388,8 @@ InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i Til
     {
       // If we get down to 0 bits set in the choice mask we've failed
       Result = False;
+      TileSuperpositions[TileIndex] = 0;
+      break;
     }
 
     if (Result)
@@ -400,11 +402,6 @@ InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i Til
       {
         Push(InfoCursor, VoxelSynthesisChangePropagationInfo(TileChoice,  P, AllDirections[DirIndex]));
       }
-    }
-    else
-    {
-      Assert(TileChoice == u64_MAX);
-      break;
     }
 
   } while (PropagateChangesTo(InfoCursor, TileSuperpositionsDim, TileSuperpositions, Rules, &LocalEntropyLists) == False) ;

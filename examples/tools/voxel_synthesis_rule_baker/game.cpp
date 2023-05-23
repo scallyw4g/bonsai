@@ -90,6 +90,9 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
               {
                 u32 RuleId = GetIndexOfNthSetBit(TileRule, 1);
                 voxel_synth_tile *Match = 0;
+                // TODO(Jesse): I think the RuleId corresponds to the index,
+                // but I can't remember for certain right now.  This might be a
+                // stright array access
                 for (u32 QueryTileIndex = 0; QueryTileIndex < AllTiles->Count; ++QueryTileIndex)
                 {
                   voxel_synth_tile *QueryTile = Get(AllTiles, QueryTileIndex);
@@ -107,6 +110,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                 v3i SrcVoxMin = V3iFromIndex(s32(Match->VoxelIndex), Match->SrcChunk->Dim );
                 v3i SrcVoxMax = SrcVoxMin + TileDim;
 
+                /* Assert(Chunk->FilledCount == 0); */
                 DimIterator(xTileVox, yTileVox, zTileVox, Global_TileDim)
                 {
                   v3i TileVox = V3i(xTileVox, yTileVox, zTileVox);
@@ -179,6 +183,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
               }
 #endif
             }
+
             /* Info("Tile (%d, %d, %d)(%d)", xTile, yTile, zTile, TileOptions); */
           }
 
@@ -188,7 +193,6 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
           /* ComputeStandingSpots( World->ChunkDim, Chunk, {}, {}, Global_StandingSpotDim, */
           /*                       World->ChunkDim, 0, &Chunk->StandingSpots, Thread->TempMemory); */
-
 
         }
 
@@ -338,6 +342,9 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
                 if (Chunk && !(Chunk->Flags & Chunk_Queued))
                 {
                   Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_VoxelsInitialized);
+                  ClearWorldChunk(Chunk);
+                  ZeroMemory( Chunk->Voxels, sizeof(voxel)*umm(Volume(Chunk->Dim)) );
+                  Chunk->WorldP = P;
                   QueueChunkForInit(&Plat->LowPriority, Chunk);
                 }
               }
@@ -373,12 +380,12 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     DEBUG_DrawAABB(&GpuMap->Buffer, TileRect, YELLOW, DEFAULT_LINE_THICKNESS*2.f);
   }
 
-
   RangeIterator(EntropyListIndex, (s32)MAX_TILE_RULESETS)
   {
     u32_cursor *EntropyList = GetPtr(EntropyLists, (u32)EntropyListIndex);
     umm EntropyEntryCount = CurrentCount(EntropyList);
-    if (EntropyEntryCount)
+    if (EntropyEntryCount &&
+        EntropyEntryCount < TotalElements(EntropyList)-1) // Hack to stop drawing a screenful of AABBs on the first pass
     {
       RangeIterator(TileIndexIndex, (s32)EntropyEntryCount)
       {

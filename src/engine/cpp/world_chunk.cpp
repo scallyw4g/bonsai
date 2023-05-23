@@ -230,12 +230,10 @@ GetWorldChunkFor(memory_arena *Storage, world *World, world_position P)
   if (World->FreeChunkCount == 0)
   {
     Result = AllocateAndInsertChunk(Storage, World, P);
-    Assert(Result->Flags == Chunk_Uninitialized);
   }
   else
   {
     Result = World->FreeChunks[--World->FreeChunkCount];
-    Assert(Result->Flags == Chunk_Uninitialized);
   }
 
   if (Result)
@@ -243,13 +241,14 @@ GetWorldChunkFor(memory_arena *Storage, world *World, world_position P)
     Result->WorldP = P;
     Assert(Result->Voxels);
     Assert(Result->Dim == World->ChunkDim);
+    Assert(Result->Flags == Chunk_Uninitialized);
   }
 
   return Result;
 }
 
 link_internal void
-FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, memory_arena* Memory)
+FreeWorldChunk(world *World, world_chunk *Chunk, mesh_freelist* MeshFreelist, memory_arena* Memory)
 {
   TIMED_FUNCTION();
   Assert ( ThreadLocal_ThreadIndex == 0 );
@@ -261,6 +260,8 @@ FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, m
   Assert(World->FreeChunkCount < FREELIST_SIZE);
   Assert(Chunk->Flags == Chunk_Uninitialized);
   World->FreeChunks[World->FreeChunkCount++] = Chunk;
+
+  ZeroMemory( Chunk->Voxels, sizeof(voxel)*umm(Volume(Chunk->Dim)) );
 }
 
 
