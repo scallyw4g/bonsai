@@ -349,24 +349,24 @@ InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i Til
 
   v3i TileMinDim = {};
 
-  auto TileSuperpositionCount = Volume(TileSuperpositionsDim);
-  if (TileIndex >= TileSuperpositionCount) return Result;
+  auto TileSuperpositionsCount = Volume(TileSuperpositionsDim);
+  if (TileIndex >= TileSuperpositionsCount) return Result;
 
   DebugLine("TileIndex(%u)", TileIndex);
 
-  u64 *LocalTileSuperpositions = Allocate(u64, GetTranArena(), TileSuperpositionCount);
+  u64 *LocalTileSuperpositions = Allocate(u64, GetTranArena(), TileSuperpositionsCount);
 
   u32_cursor_staticbuffer LocalEntropyLists = {};
   IterateOver(&LocalEntropyLists, Element, ElementIndex)
   {
-    *Element = U32Cursor(umm(TileSuperpositionCount), GetTranArena());
+    *Element = U32Cursor(umm(TileSuperpositionsCount), GetTranArena());
   }
   u64 TileChoice = u64_MAX;
   u64 TileOptions = TileSuperpositionsStorage[TileIndex];
   do
   {
     DeepCopy(EntropyListsStorage, &LocalEntropyLists);
-    MemCopy((u8*)TileSuperpositionsStorage, (u8*)LocalTileSuperpositions, (umm)((umm)TileSuperpositionCount*sizeof(u64)));
+    MemCopy((u8*)TileSuperpositionsStorage, (u8*)LocalTileSuperpositions, (umm)((umm)TileSuperpositionsCount*sizeof(u64)));
     ChangePropagationInfoStack->At = 0;
 
     // We haven't fully collapsed this tile, and it's got lower entropy
@@ -377,7 +377,7 @@ InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i Til
       u32 BitsSet = CountBitsSet_Kernighan(TileOptions);
       // TODO(Jesse): This should (at least in my head) be able to return (1, N) inclusive
       // but it does not for (1, 2)
-      u64 BitChoice = RandomBetween(1, Series, BitsSet+1);
+      u64 BitChoice = RandomBetween(1u, Series, BitsSet+1u);
 
       TileChoice = GetNthSetBit(TileOptions, BitChoice);
       Assert(CountBitsSet_Kernighan(TileChoice) == 1);
@@ -404,7 +404,7 @@ InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i Til
   {
     Assert(CountBitsSet_Kernighan(TileChoice) == 1);
     DeepCopy(&LocalEntropyLists, EntropyListsStorage);
-    MemCopy((u8*)LocalTileSuperpositions, (u8*)TileSuperpositionsStorage, (umm)((umm)TileSuperpositionCount*sizeof(u64)));
+    MemCopy((u8*)LocalTileSuperpositions, (u8*)TileSuperpositionsStorage, (umm)((umm)TileSuperpositionsCount*sizeof(u64)));
   }
 
   return Result;
@@ -424,9 +424,9 @@ InitializeWorld_VoxelSynthesis( world *World, v3i VisibleRegion, v3i TileDim, ra
 
   v3i TileMinDim = {};
 
-  auto TileSuperpositionCount = Volume(TileSuperpositionsDim);
+  auto TileSuperpositionsCount = Volume(TileSuperpositionsDim);
 
-  for (s32 TileIndex = 0; TileIndex < TileSuperpositionCount; ++TileIndex)
+  for (s32 TileIndex = 0; TileIndex < TileSuperpositionsCount; ++TileIndex)
   {
     TileSuperpositions[TileIndex] = MaxTileEntropy;
   }
@@ -476,15 +476,15 @@ InitializeWorld_VoxelSynthesis( world *World, v3i VisibleRegion, v3i TileDim, ra
     }
   }
 
-  for (s32 TileIndex = 0; TileIndex < TileSuperpositionCount; ++TileIndex)
+  for (s32 TileIndex = 0; TileIndex < TileSuperpositionsCount; ++TileIndex)
   {
     if (TileSuperpositions[TileIndex] == 0)
     {
-      /* SoftError("Degenerate case; Voxel Synthesis failed to solve. TileIndex(%u)/(%u)", TileIndex, TileSuperpositionCount); */
+      /* SoftError("Degenerate case; Voxel Synthesis failed to solve. TileIndex(%u)/(%u)", TileIndex, TileSuperpositionsCount); */
     }
     else
     {
-      DebugChars(" TileIndex(%u)/(%u) BitsSet(%u)(", TileIndex, TileSuperpositionCount, CountBitsSet_Kernighan(TileSuperpositions[TileIndex])); PrintBinary(TileSuperpositions[TileIndex]); DebugLine(")");
+      DebugChars(" TileIndex(%u)/(%u) BitsSet(%u)(", TileIndex, TileSuperpositionsCount, CountBitsSet_Kernighan(TileSuperpositions[TileIndex])); PrintBinary(TileSuperpositions[TileIndex]); DebugLine(")");
     }
   }
 

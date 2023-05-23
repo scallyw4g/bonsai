@@ -590,7 +590,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->Models = AllocateGameModels(GameState, Memory, Heap);
 
 #if 1
-  u32 PlayerModelIndex = RandomBetween(ModelIndex_FirstPlayerModel, &GameState->Entropy, ModelIndex_LastPlayerModel+1u);
+  u32 PlayerModelIndex = RandomBetween( u32(ModelIndex_FirstPlayerModel), &GameState->Entropy, u32(ModelIndex_LastPlayerModel+1));
   GameState->Player = GetFreeEntity(EntityTable);
   SpawnPlayerLikeEntity(Plat, World, GameState->Models + PlayerModelIndex, GameState->Player, PlayerSpawnP, &GameState->Entropy);
 #endif
@@ -602,11 +602,11 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   for (u32 EnemyIndex = 0; EnemyIndex < EnemyCount; ++EnemyIndex)
   {
     world_position WP = World_Position(
-        (s32)RandomBetween(0, &GameState->Entropy, (u32)HalfVisibleRegion.x),
-        (s32)RandomBetween(0, &GameState->Entropy, (u32)HalfVisibleRegion.y),
+        RandomBetween(0, &GameState->Entropy, HalfVisibleRegion.x),
+        RandomBetween(0, &GameState->Entropy, HalfVisibleRegion.y),
         1);
 
-    u32 EnemyModelIndex = RandomBetween(ModelIndex_FirstEnemyModel, &GameState->Entropy, ModelIndex_Enemy_Skeleton_AxeArmor+1u);
+    u32 EnemyModelIndex = RandomBetween( u32(ModelIndex_FirstEnemyModel), &GameState->Entropy, u32(ModelIndex_Enemy_Skeleton_AxeArmor+1));
     Assert(EnemyModelIndex >= ModelIndex_FirstEnemyModel);
     Assert(EnemyModelIndex <= ModelIndex_LastEnemyModel);
 
