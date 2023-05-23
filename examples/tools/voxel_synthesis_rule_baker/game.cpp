@@ -230,24 +230,33 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
   }
 }
 
+/* link_internal s32 */
+/* PushEntropyListValue(u32_cursor_staticbuffer *EntropyLists, random_series *VoxelSynthesisEntropy) */
+/* { */
+/* } */
+
 link_internal s32
 PickNewTileIndex(u32_cursor_staticbuffer *EntropyLists, random_series *VoxelSynthesisEntropy)
 {
   s32 TileIndex = s32_MAX;
   // NOTE(Jesse): For now, I never push data onto lists of tiles with 0 entropy (it is an error to have 0)
   // or tiles with 1 entropy (which are fully decided)
-  Assert( CurrentCount(GetPtr(EntropyLists,0)) == 0);
-  Assert( CurrentCount(GetPtr(EntropyLists,1)) == 0);
+  Assert( CurrentCount(GetPtr(EntropyLists, 0)) == 0);
+  /* Assert( CurrentCount(GetPtr(EntropyLists,1)) == 0); */
 
   IterateOver(EntropyLists, EntropyList, Idx)
   {
-    umm EntropyEntryCount = CurrentCount(EntropyList);
-    if (EntropyEntryCount)
+    if (Idx > 1)
     {
-      u32 Index = RandomBetween(0, VoxelSynthesisEntropy, u32(EntropyEntryCount) );
-      TileIndex = s32(Get(EntropyList, Index));
-      Ensure( Remove(EntropyList, u32(TileIndex) ) );
-      break;
+      umm ListCount = CurrentCount(EntropyList);
+      if (ListCount)
+      {
+        /* u32 ElementIndex = RandomBetween(0, VoxelSynthesisEntropy, u32(ListCount) ); */
+        u32 ElementIndex = 0;
+        TileIndex = s32(Get(EntropyList, ElementIndex));
+        Ensure( Remove(EntropyList, u32(TileIndex) ) );
+        break;
+      }
     }
   }
 
@@ -320,7 +329,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     if (Resources->FrameIndex % 10 == 0)
     {
       umm MaxStackDepth = (umm)TileSuperpositionCount;
-      voxel_synthesis_change_propagation_info_stack InfoCursor = VoxelSynthesisChangePropagationInfoStack(MaxStackDepth, GetTranArena());
+      voxel_synthesis_change_propagation_info_stack ChangePropagationInfoStack = VoxelSynthesisChangePropagationInfoStack(MaxStackDepth, GetTranArena());
       if ( InitializeWorld_VoxelSynthesis_Partial( World, World->VisibleRegion, Global_TileDim, &VoxelSynthesisEntropy,
                                                       GameState->BakeResult.MaxTileEntropy,
                                                      &GameState->BakeResult.Rules,
@@ -328,7 +337,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
                                                       GameState->BakeResult.TileSuperpositions,
                                                       NextTileIndex,
                                                       EntropyLists,
-                                                     &InfoCursor) == False )
+                                                     &ChangePropagationInfoStack) == False )
       {
         SoftError("Partial update failed.");
         Error = True;
@@ -397,7 +406,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   IterateOver(EntropyLists, EntropyList, EntropyListIndex)
   {
     umm EntropyEntryCount = CurrentCount(EntropyList);
-    if (EntropyEntryCount &&
+    if (EntropyListIndex > 1 &&
+        EntropyEntryCount &&
         EntropyEntryCount < TotalElements(EntropyList)-1) // Hack to stop drawing a screenful of AABBs on the first pass
     {
       RangeIterator(TileIndexIndex, (s32)EntropyEntryCount)
@@ -416,6 +426,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         aabb TileRect = AABBMinDim(VoxRenderBaseP, Global_TileDim);
         DEBUG_DrawAABB(&GpuMap->Buffer, TileRect, BLUE);
       }
+
+      break;
     }
   }
 
@@ -576,10 +588,10 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   ResetVoxelSynthesisProgress(GameState->BakeResult.MaxTileEntropy, TileSuperpositionCount, TileSuperpositions, EntropyLists);
 
-#if 0
-  // Partially initialize world, if you want
+#if 1
+  // Seed world
   umm MaxStackDepth = (umm)Volume(TileSuperpositionsDim);
-  voxel_synthesis_change_propagation_info_stack InfoCursor = VoxelSynthesisChangePropagationInfoStack(MaxStackDepth, TempMemory);
+  voxel_synthesis_change_propagation_info_stack ChangePropagationInfoStack = VoxelSynthesisChangePropagationInfoStack(MaxStackDepth, TempMemory);
 
   /* for (s32 yIndex = 0; yIndex < TileSuperpositionsDim.y; ++yIndex) */
   /* for (s32 xIndex = 0; xIndex < TileSuperpositionsDim.x; ++xIndex) */
@@ -591,10 +603,10 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
     Ensure( Remove(GetPtr(EntropyLists, MaxBitCount), u32(TileIndex)) );
     RangeIterator(DirIndex, (s32)ArrayCount(AllDirections))
     {
-      Push(&InfoCursor, VoxelSynthesisChangePropagationInfo(1, TileP, AllDirections[DirIndex]));
+      Push(&ChangePropagationInfoStack, VoxelSynthesisChangePropagationInfo(1, TileP, AllDirections[DirIndex]));
     }
 
-    Ensure(PropagateChangesTo(&InfoCursor, TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists));
+    Ensure(PropagateChangesTo(&ChangePropagationInfoStack, TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists));
   }
 #endif
 
