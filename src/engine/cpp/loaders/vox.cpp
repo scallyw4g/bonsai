@@ -25,7 +25,7 @@ enum Chunk_ID
 };
 
 inline u8
-ReadChar(FILE* File, int* byteCounter)
+ReadChar(FILE* File, s32* byteCounter)
 {
   u8 c;
   ReadBytesIntoBuffer(File, sizeof(u8), &c);
@@ -33,7 +33,7 @@ ReadChar(FILE* File, int* byteCounter)
   return c;
 }
 
-inline int
+inline s32
 ReadInt(FILE* File)
 {
   s32 i;
@@ -41,15 +41,15 @@ ReadInt(FILE* File)
   return i;
 }
 
-inline int
-ReadInt(FILE* File, int* byteCounter)
+inline s32
+ReadInt(FILE* File, s32* byteCounter)
 {
   *byteCounter -= sizeof(s32);
   return ReadInt(File);
 }
 
 link_internal void
-ParseVoxString(FILE* File, int* byteCounter)
+ParseVoxString(FILE* File, s32* byteCounter)
 {
   s32 Count = ReadInt(File, byteCounter);
   Assert(*byteCounter >= Count);
@@ -62,7 +62,7 @@ ParseVoxString(FILE* File, int* byteCounter)
 }
 
 link_internal void
-ParseVoxDict(FILE* File, int* byteCounter)
+ParseVoxDict(FILE* File, s32* byteCounter)
 {
   s32 KVPairCount = ReadInt(File, byteCounter);
   for (s32 Index = 0; Index < KVPairCount; ++Index)
@@ -73,15 +73,15 @@ ParseVoxDict(FILE* File, int* byteCounter)
 }
 
 link_internal void
-ParseVoxRotation(FILE* File, int* byteCounter)
+ParseVoxRotation(FILE* File, s32* byteCounter)
 {
   ReadChar(File, byteCounter);
 }
 
 inline Chunk_ID
-GetHeaderType(FILE* File, int* byteCounter)
+GetHeaderType(FILE* File, s32* byteCounter)
 {
-  int ID = ReadInt(File, byteCounter);
+  s32 ID = ReadInt(File, byteCounter);
 
   /* if ( ID == ID_VOX  || */
   /*      ID == ID_MAIN || */
@@ -115,10 +115,10 @@ ReadVoxChunk(FILE *File)
   return;
 }
 
-inline int
+inline s32
 ReadMainChunk(FILE *File)
 {
-  int ID = ReadInt(File);
+  s32 ID = ReadInt(File);
 
   if ( ID != ID_MAIN )
   {
@@ -126,14 +126,14 @@ ReadMainChunk(FILE *File)
     return 0;
   }
 
-  int selfSize = ReadInt(File);
+  s32 selfSize = ReadInt(File);
   if ( selfSize != 0 ) 
   {
     Error("Invalid Main Chunk");
     return 0;
   }
 
-  int childSize = ReadInt(File);
+  s32 childSize = ReadInt(File);
   if (childSize == 0 )
   {
     Error("Invalid Main Chunk");
@@ -144,36 +144,36 @@ ReadMainChunk(FILE *File)
 }
 
 inline chunk_dimension
-ReadSizeChunk(FILE *File, int* byteCounter)
+ReadSizeChunk(FILE *File, s32* byteCounter)
 {
-  int ChunkContentBytes = ReadInt(File, byteCounter);
-  int ChildChunkCount = ReadInt(File, byteCounter);
+  s32 ChunkContentBytes = ReadInt(File, byteCounter);
+  s32 ChildChunkCount = ReadInt(File, byteCounter);
 
-  int chunkX = ReadInt(File, byteCounter);
-  int chunkY = ReadInt(File, byteCounter);
-  int chunkZ = ReadInt(File, byteCounter);
+  s32 chunkX = ReadInt(File, byteCounter);
+  s32 chunkY = ReadInt(File, byteCounter);
+  s32 chunkZ = ReadInt(File, byteCounter);
 
   chunk_dimension Result = Chunk_Dimension(chunkX, chunkY, chunkZ);
   return Result;
 }
 
-inline int
-ReadPackChunk(FILE *File, int* byteCounter)
+inline s32
+ReadPackChunk(FILE *File, s32* byteCounter)
 {
-  int ChunkContentBytes = ReadInt(File, byteCounter);
-  int ChildChunkCount = ReadInt(File, byteCounter);
+  s32 ChunkContentBytes = ReadInt(File, byteCounter);
+  s32 ChildChunkCount = ReadInt(File, byteCounter);
 
-  int TotalChunkCount = ReadInt(File, byteCounter);
+  s32 TotalChunkCount = ReadInt(File, byteCounter);
   return TotalChunkCount;
 }
 
-inline int
-ReadXYZIChunk(FILE *File, int* byteCounter)
+inline s32
+ReadXYZIChunk(FILE *File, s32* byteCounter)
 {
-  int ChunkContentBytes = ReadInt(File, byteCounter);
-  int ChildChunkCount = ReadInt(File, byteCounter);
+  s32 ChunkContentBytes = ReadInt(File, byteCounter);
+  s32 ChildChunkCount = ReadInt(File, byteCounter);
 
-  int nVoxels = ReadInt(File, byteCounter);
+  s32 nVoxels = ReadInt(File, byteCounter);
   return nVoxels;
 }
 
@@ -193,8 +193,8 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
     s32 totalChunkBytes = ReadMainChunk(ModelFile.Handle);
     s32 bytesRemaining = totalChunkBytes;
 
-    int TotalChunkCount = 1; // Sometimes overwritten if theres a 'PACK' chunk
-    // int TotalChunksRead = 0;
+    s32 TotalChunkCount = 1; // Sometimes overwritten if theres a 'PACK' chunk
+    // s32 TotalChunksRead = 0;
 
     while (bytesRemaining > 0)
     {
@@ -203,8 +203,8 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
       {
         case ID_RGBA:
         {
-          int ChunkContentBytes = ReadInt(ModelFile.Handle, &bytesRemaining);
-          int ChildChunkCount = ReadInt(ModelFile.Handle, &bytesRemaining);
+          s32 ChunkContentBytes = ReadInt(ModelFile.Handle, &bytesRemaining);
+          s32 ChildChunkCount = ReadInt(ModelFile.Handle, &bytesRemaining);
 
           Assert(ChunkContentBytes == 256*4);
           Assert(ChildChunkCount == 0);
@@ -293,7 +293,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
           Result.ChunkData = AllocateChunkData(WorldStorage, ModelDim);
           Result.ChunkData->Dim = ModelDim;
 
-          for( int VoxelCacheIndex = 0;
+          for( s32 VoxelCacheIndex = 0;
                VoxelCacheIndex < ActualVoxelCount;
                ++VoxelCacheIndex)
           {
@@ -312,10 +312,10 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
 
         case ID_nTRN:
         {
-          int ChunkContentBytes = ReadInt(ModelFile.Handle, &bytesRemaining);
-          int ChildChunkCount = ReadInt(ModelFile.Handle, &bytesRemaining);
+          s32 ChunkContentBytes = ReadInt(ModelFile.Handle, &bytesRemaining);
+          s32 ChildChunkCount = ReadInt(ModelFile.Handle, &bytesRemaining);
 
-          int NodeId = ReadInt(ModelFile.Handle, &bytesRemaining);
+          s32 NodeId = ReadInt(ModelFile.Handle, &bytesRemaining);
 
           // Transform node chunk
           ParseVoxDict(ModelFile.Handle, &bytesRemaining);
@@ -340,8 +340,8 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
         case ID_nSHP:
         case ID_nGRP:
         {
-          int ChunkContentBytes = ReadInt(ModelFile.Handle, &bytesRemaining);
-          int ChildChunkCount = ReadInt(ModelFile.Handle, &bytesRemaining);
+          s32 ChunkContentBytes = ReadInt(ModelFile.Handle, &bytesRemaining);
+          s32 ChildChunkCount = ReadInt(ModelFile.Handle, &bytesRemaining);
 
           for (s32 ByteIndex = 0; ByteIndex < ChunkContentBytes; ++ByteIndex)
           {

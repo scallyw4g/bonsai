@@ -15,14 +15,17 @@ PrintBinary(u64 E)
 }
 
 link_internal void
-WriteRulesForAdjacentTile(tile_ruleset *ThisTileRules, v3i ThisTileP, voxel_synth_tile_buffer AllTiles, v3i AllTilesDim, voxel_rule_direction Dir)
+WriteRulesForAdjacentTile(tile_ruleset *ThisTileRules, v3i ThisTileP, voxel_synth_tile_buffer AllTiles, v3i AllTilesDim, voxel_rule_direction Dir, u64 MaxTileEntropy)
 {
   v3i TestTileP = ThisTileP + GetV3iForDir(Dir); //V3i(1, 0, 0);
   s32 TestTileIndex = TryGetIndex(TestTileP, AllTilesDim);
   if (TestTileIndex > -1)
   {
     voxel_synth_tile *TestTile = AllTiles.Start + TestTileIndex;
-    ThisTileRules->E[Dir] |= (1 << TestTile->RuleId);
+    u64 Rule = (1ull << TestTile->RuleId);
+    Assert(Rule <= MaxTileEntropy);
+    ThisTileRules->E[Dir] |= Rule;
+    Assert(ThisTileRules->E[Dir] <= MaxTileEntropy);
   }
 }
 
@@ -134,6 +137,10 @@ BakeVoxelSynthesisRules(const char* InputVox)
   Assert(NextTileId < MAX_TILE_RULESETS);
   tile_ruleset_buffer AllRules = TileRulesetBuffer(NextTileId, Memory);
 
+  u64 MaxTileEntropy = u64_MAX;
+  u64 BitsToShiftOff = 64-AllRules.Count;
+  MaxTileEntropy = MaxTileEntropy >> BitsToShiftOff;
+
   // NOTE(Jesse): Iterate over all the tiles, pick out their corresponding rule
   // from AllRules and add the connectivity rules for the adjacent tile rule IDs.
   DimIterator(xTile, yTile, zTile, ChunkTileDim)
@@ -146,21 +153,17 @@ BakeVoxelSynthesisRules(const char* InputVox)
       tile_ruleset *ThisTileRuleset = AllRules.Start + Tile->RuleId;
 
       {
-        WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, ChunkTileDim, VoxelRuleDir_PosX);
-        WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, ChunkTileDim, VoxelRuleDir_NegX);
+        WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, ChunkTileDim, VoxelRuleDir_PosX, MaxTileEntropy);
+        WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, ChunkTileDim, VoxelRuleDir_NegX, MaxTileEntropy);
 
-        WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, ChunkTileDim, VoxelRuleDir_PosY);
-        WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, ChunkTileDim, VoxelRuleDir_NegY);
+        WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, ChunkTileDim, VoxelRuleDir_PosY, MaxTileEntropy);
+        WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, ChunkTileDim, VoxelRuleDir_NegY, MaxTileEntropy);
 
-        WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, ChunkTileDim, VoxelRuleDir_PosZ);
-        WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, ChunkTileDim, VoxelRuleDir_NegZ);
+        WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, ChunkTileDim, VoxelRuleDir_PosZ, MaxTileEntropy);
+        WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, ChunkTileDim, VoxelRuleDir_NegZ, MaxTileEntropy);
       }
     }
   }
-
-  u64 MaxTileEntropy = u64_MAX;
-  u64 BitsToShiftOff = 64-AllRules.Count;
-  MaxTileEntropy = MaxTileEntropy >> BitsToShiftOff;
 
 #if 0
   BufferIterator(&AllRules, Idx)
@@ -256,7 +259,7 @@ GetOptionsForDirectionAndFinalChoice(v3i Dir, u64 Choice, tile_ruleset_buffer *R
 }
 
 link_internal b32
-PropagateChangesTo(voxel_synthesis_change_propagation_info_stack *ChangePropagationInfoStack, v3i SuperpositionsShape, u64 *TileSuperpositions, tile_ruleset_buffer *Rules, u32_cursor_staticbuffer *EntropyLists)
+PropagateChangesTo(voxel_synthesis_change_propagation_info_stack *ChangePropagationInfoStack, v3i SuperpositionsShape, u64 *TileSuperpositions, tile_ruleset_buffer *Rules, u32_cursor_staticbuffer *EntropyLists, u64 MaxTileEntropy)
 {
   b32 Result = True;
 
@@ -291,9 +294,12 @@ PropagateChangesTo(voxel_synthesis_change_propagation_info_stack *ChangePropagat
       u64 CachedOptions = PrevTileOptions;
       while (u64 Option = UnsetLeastSignificantSetBit(&CachedOptions))
       {
+        Assert(Option <= MaxTileEntropy);
         Assert(CountBitsSet_Kernighan(Option) == 1);
         u64 NewOptions = GetOptionsForDirectionAndFinalChoice(DirOfTravel, Option, Rules);
+        Assert(NewOptions <= MaxTileEntropy);
         NextTileOptions |= NewOptions;
+        Assert(NextTileOptions <= MaxTileEntropy);
       }
 
       if (NextTileStartingValue & NextTileOptions)
@@ -335,17 +341,23 @@ PropagateChangesTo(voxel_synthesis_change_propagation_info_stack *ChangePropagat
 }
 
 link_internal b32
-InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i TileDim, random_series *Series,
-                                        u64 MaxTileEntropy,
-                                        tile_ruleset_buffer *Rules,
-                                        v3i TileSuperpositionsDim,
-                                        u64 *TileSuperpositionsStorage,
+InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
+                                        world *World,
+                                        v3i TileDim,
+                                        random_series *Series,
                                         s32 TileIndex,
-                                        u32_cursor_staticbuffer *EntropyListsStorage,
                                         voxel_synthesis_change_propagation_info_stack *ChangePropagationInfoStack )
 {
   TIMED_FUNCTION();
   b32 Result = True;
+
+  v3i VisibleRegion = World->VisibleRegion;
+
+  tile_ruleset_buffer *Rules            = &BakeResult->Rules;
+  u64 MaxTileEntropy                    =  BakeResult->MaxTileEntropy;
+  v3i TileSuperpositionsDim             =  BakeResult->TileSuperpositionsDim;
+  u64 *TileSuperpositionsStorage        =  BakeResult->TileSuperpositions;
+  u32_cursor_staticbuffer *EntropyListsStorage = &BakeResult->EntropyLists;
 
   v3i TileMinDim = {};
 
@@ -398,7 +410,7 @@ InitializeWorld_VoxelSynthesis_Partial( world *World, v3i VisibleRegion, v3i Til
       break;
     }
 
-  } while (PropagateChangesTo(ChangePropagationInfoStack, TileSuperpositionsDim, LocalTileSuperpositions, Rules, &LocalEntropyLists) == False);
+  } while (PropagateChangesTo(ChangePropagationInfoStack, TileSuperpositionsDim, LocalTileSuperpositions, Rules, &LocalEntropyLists, BakeResult->MaxTileEntropy) == False);
 
   if (Result)
   {
