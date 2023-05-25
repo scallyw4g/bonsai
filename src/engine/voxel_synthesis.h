@@ -130,6 +130,9 @@ GetElement(voxel_synth_tile_hashtable *Hashtable, voxel_synth_tile *Tile)
 
 struct voxel_synthesis_result
 {
+  // Was the baking successful?
+  u32 Errors;
+
   // This is data that gets baked from the input model
   vox_data VoxData;
   voxel_synth_tile_buffer Tiles;

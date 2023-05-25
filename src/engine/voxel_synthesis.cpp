@@ -43,7 +43,12 @@ BakeVoxelSynthesisRules(const char* InputVox)
   Info("Synthesizing rules for (%s)", InputVox);
 
   /* vox_data Vox = LoadVoxData(Memory, &Heap, InputVox, Global_TileDim*2, Global_TileDim*2); */
-  vox_data Vox = LoadVoxData(Memory, &Heap, InputVox, {}, {{0, 0, Global_TileDim.z}});
+  vox_data Vox = LoadVoxData(Memory, &Heap, InputVox, {}, {{0, 0, Global_TileDim.z+6}});
+
+  Assert(Vox.ChunkData->Dim.x % Global_TileDim.x == 0);
+  Assert(Vox.ChunkData->Dim.y % Global_TileDim.y == 0);
+  Assert(Vox.ChunkData->Dim.z % Global_TileDim.z == 0);
+
 
   chunk_dimension ChunkTileDim = Max(V3i(1), (Vox.ChunkData->Dim/Global_TileDim));
 
@@ -165,20 +170,6 @@ BakeVoxelSynthesisRules(const char* InputVox)
     }
   }
 
-#if 0
-  BufferIterator(&AllRules, Idx)
-  {
-    tile_ruleset *E = Get(&AllRules, u32(Idx));
-    RangeIterator(RuleIndex, VoxelRuleDir_Count)
-    {
-      if (E->E[RuleIndex] == 0)
-      {
-        E->E[RuleIndex] = MaxTileEntropy;
-      }
-    }
-  }
-#endif
-
 
   Assert(CountBitsSet_Kernighan(MaxTileEntropy) == AllRules.Count);
   /* Assert( (MaxTileEntropy & (1ull << AllRules.Count)) != 0); */
@@ -190,6 +181,20 @@ BakeVoxelSynthesisRules(const char* InputVox)
     .Rules = AllRules,
     .MaxTileEntropy = MaxTileEntropy,
   };
+
+#if 1
+  BufferIterator(&AllRules, Idx)
+  {
+    tile_ruleset *E = Get(&AllRules, u32(Idx));
+    RangeIterator(RuleIndex, VoxelRuleDir_Count)
+    {
+      if (E->E[RuleIndex] == 0)
+      {
+        Result.Errors++;
+      }
+    }
+  }
+#endif
 
   return Result;
 }

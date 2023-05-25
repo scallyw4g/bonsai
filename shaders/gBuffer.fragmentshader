@@ -73,14 +73,14 @@ void main()
 
   vec4 FinalColor = MaterialColor;
 
-#if 0
-  vec3 NormFix = vec3(0.99999999f) - abs(gNormal);
-
+#if 1
   {
-    float t1 = ModThresh(abs(gPosition.xyz)*NormFix 0.03f, 1.0f);
+    vec3 NormFix = vec3(0.99999999f) - abs(gNormal);
+
+    float t1 = ModThresh(abs(gPosition.xyz)*NormFix, 0.03f, 1.0f);
     v3 Mix1 = mix(FinalColor.xyz, FinalColor.xyz*2.f, t1);
 
-    float t2 = ModThresh(abs(gPosition.xyz)*NormFix, 0.10f, 32.0f);
+    float t2 = ModThresh(abs(gPosition.xyz)*NormFix, 0.10f, 8.0f);
     v3 Mix2 = mix(FinalColor.xyz, v3(0.0f), t2);
 
     if (t1 > t2)
@@ -96,7 +96,6 @@ void main()
   /* FinalColor.xyz = abs(gNormal); */
   /* FinalColor.xyz = abs(gPosition.xyz*0.01f); */
   /* FinalColor.xyz = vec3(abs(gPosition.w)); */
-
 #endif
 
   gColor = FinalColor;
