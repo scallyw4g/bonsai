@@ -768,6 +768,18 @@ GetIndex(v3 Offset, chunk_dimension Dim)
   return Index;
 }
 
+inline s32
+GetIndexUnsafe(s32 X, s32 Y, s32 Z, chunk_dimension Dim)
+{
+  s32 Result = X +
+              (Y*Dim.x) +
+              (Z*Dim.x*Dim.y);
+
+  Assert(Result >= 0);
+  return Result;
+}
+
+
 inline voxel_position
 V3iFromIndex(s32 Index, chunk_dimension Dim)
 {

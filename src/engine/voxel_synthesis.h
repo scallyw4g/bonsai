@@ -72,7 +72,6 @@ VoxelSynthTile( u32 RuleId , u32 VoxelIndex , u64 HashValue , chunk_data *SrcChu
 link_internal u64
 AreEqual(voxel_synth_tile *T0, voxel_synth_tile *T1)
 {
-  // TODO(Jesse): Compare the actual voxel data!
   u64 Result = T0->HashValue == T1->HashValue;
   return Result;
 }
@@ -87,7 +86,8 @@ Hash(voxel_synth_tile *Tile)
 link_inline u64
 Hash(voxel *V, v3i P)
 {
-  u64 Result = u64(P.x + P.y + P.z + V->Flags + V->Color);
+  // Air voxels don't contribute to the hash, which is why we do the multiply
+  u64 Result = u64(P.x + P.y + P.z + V->Flags + V->Color) * (V->Flags & Voxel_Filled);
   /* u64 Result = u64(V->Flags + V->Color); */
   return Result;
 }

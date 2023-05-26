@@ -244,8 +244,8 @@ function BuildAllClang
 }
 
 function BuildAllEMCC {
-  which emcc > /dev/null
-  [ $? -ne 0 ] && echo -e "Please install emcc" && exit 1
+  which emcc > /dev/null 2&> 1
+  [ $? -ne 0 ] && echo -e "$Error Please install emcc" && exit 1
 
   emcc                              \
     -s WASM=1                       \

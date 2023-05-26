@@ -43,7 +43,7 @@ BakeVoxelSynthesisRules(const char* InputVox)
   Info("Synthesizing rules for (%s)", InputVox);
 
   /* vox_data Vox = LoadVoxData(Memory, &Heap, InputVox, Global_TileDim*2, Global_TileDim*2); */
-  vox_data Vox = LoadVoxData(Memory, &Heap, InputVox, {}, {{0, 0, Global_TileDim.z+6}});
+  vox_data Vox = LoadVoxData(Memory, &Heap, InputVox, VoxLoaderClipBehavior_NoClipping, {}, {{0, 0, Global_TileDim.z}});
 
   Assert(Vox.ChunkData->Dim.x % Global_TileDim.x == 0);
   Assert(Vox.ChunkData->Dim.y % Global_TileDim.y == 0);
@@ -77,64 +77,66 @@ BakeVoxelSynthesisRules(const char* InputVox)
 
     u64 TileHash = {};
 
-    // TODO(Jesse): The tiles fit in 16 cache lines, but if we don't copy the
-    // memory here we'll take 64 cache misses again each time we iterate over
-    // the contents.  Might be worth copying/packing into contiguous buffers..
     MinDimIterator(xVox, yVox, zVox, BaseVoxOffset, Global_TileDim)
     {
-      v3i VoxP = V3i(xVox, yVox, zVox);
-      s32 VoxIndex = TryGetIndex( VoxP, Vox.ChunkData->Dim);
-      if (VoxIndex > -1)
+      v3i ChunkVoxP = V3i(xVox, yVox, zVox);
+      v3i TileVoxP = ChunkVoxP-BaseVoxOffset;
+      s32 TmpVoxelsIndex = GetIndex( TileVoxP, Global_TileDim );
+      s32 ChunkVoxIndex = TryGetIndex( ChunkVoxP, Vox.ChunkData->Dim);
+      if (ChunkVoxIndex > -1)
       {
-        voxel *V = Vox.ChunkData->Voxels + VoxIndex;
-
-        s32 TmpVoxelsIndex = TryGetIndex( VoxP-BaseVoxOffset, Global_TileDim );
+        voxel *V = Vox.ChunkData->Voxels + ChunkVoxIndex;
+        TileHash += Hash(V, TileVoxP);
         TempVoxels[TmpVoxelsIndex] = *V;
-
-        if (V->Flags & Voxel_Filled)
-        {
-          // Mod by the tile dim to normalize to that box
-          TileHash += Hash(V, VoxP % Global_TileDim);
-        }
       }
       else
       {
-        TempVoxels[VoxIndex] = {};
+        TempVoxels[TmpVoxelsIndex] = {};
       }
     }
 
     s32 BaseVoxIndex = GetIndex(BaseVoxOffset, Vox.ChunkData->Dim);
-    /* if (BaseVoxIndex > -1) */
+    voxel_synth_tile Tile = VoxelSynthTile( u32_MAX, u32(BaseVoxIndex), TileHash, Vox.ChunkData);
+    voxel_synth_tile *GotTile = GetElement(&TileHashtable, &Tile);
+    if (GotTile)
     {
-      voxel_synth_tile Tile = VoxelSynthTile( u32_MAX, u32(BaseVoxIndex), TileHash, Vox.ChunkData);
-      if (voxel_synth_tile *GotTile = GetElement(&TileHashtable, &Tile))
+      Assert(GotTile->HashValue == Tile.HashValue);
+      if (MemoryIsEqual((u8*)TempVoxels, (u8*)GotTile->Voxels, TempVoxelsSizeInBytes))
       {
-        Assert(GotTile->HashValue == Tile.HashValue);
-        if (MemoryIsEqual((u8*)TempVoxels, (u8*)GotTile->Voxels, TempVoxelsSizeInBytes))
-        {
-          Info("Got tile hash Match (%d)", Tile.HashValue);
-          Tile.RuleId = GotTile->RuleId;
-        }
-        else
-        {
-          Info("Got tile hash Collision (%d)", Tile.HashValue);
-        }
+        Info("Got tile hash Match (%d)", Tile.HashValue);
+        Tile.RuleId = GotTile->RuleId;
       }
-
-      if (Tile.RuleId == u32_MAX)
+      else
       {
-        Info("Inserting new Tile (%d)", Tile.HashValue);
-        Assert(NextTileId < MAX_TILE_RULESETS); // NOTE(Jesse) For debugging
-        Tile.Voxels = TempVoxels;
-        // TODO(Jesse)(leak, memory): This leaks the last allocation
-        TempVoxels = Allocate(voxel, Memory, Volume(Global_TileDim));
-        Tile.RuleId = NextTileId++;
-        Insert(Tile, &TileHashtable, Memory);
+        Info("Got tile hash Collision (%d)", Tile.HashValue);
       }
-
-      s32 TileIndex = GetIndex(TileP, ChunkTileDim);
-      AllTiles.Start[TileIndex] = Tile;
     }
+
+    if (Tile.RuleId == u32_MAX)
+    {
+      Info("Inserting new Tile (%d)", Tile.HashValue);
+
+      Assert(NextTileId < MAX_TILE_RULESETS); // NOTE(Jesse) For debugging
+      Tile.Voxels = TempVoxels;
+
+      // TODO(Jesse)(leak, memory): This leaks the last allocation
+      TempVoxels = Allocate(voxel, Memory, Volume(Global_TileDim));
+
+      if (NextTileId == 5 || NextTileId == 6 || NextTileId == 7)
+      {
+        if (GotTile)
+        {
+        b32 thing = MemoryIsEqual((u8*)Tile.Voxels, (u8*)GotTile->Voxels, TempVoxelsSizeInBytes);
+        }
+        /* RuntimeBreak(); */
+      }
+
+      Tile.RuleId = NextTileId++;
+      Insert(Tile, &TileHashtable, Memory);
+    }
+
+    s32 TileIndex = GetIndex(TileP, ChunkTileDim);
+    AllTiles.Start[TileIndex] = Tile;
   }
 
   // NOTE(Jesse): For the moment we're going to encode the tiles as a

@@ -177,8 +177,14 @@ ReadXYZIChunk(FILE *File, s32* byteCounter)
   return nVoxels;
 }
 
+enum vox_loader_clip_behavior
+{
+  VoxLoaderClipBehavior_ClipToVoxels,
+  VoxLoaderClipBehavior_NoClipping,
+};
+
 vox_data
-LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepath, chunk_dimension HalfApronMin = {}, chunk_dimension HalfApronMax = {})
+LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepath, vox_loader_clip_behavior ClipBehavior, chunk_dimension HalfApronMin = {}, chunk_dimension HalfApronMax = {})
 {
   vox_data Result = {};
   chunk_dimension ReportedDim = {};
@@ -284,11 +290,27 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
             }
           }
 
-          s32 IndexToPosition = 1;  // max(X,Y,Z) are indicies, convert to positions
-          chunk_dimension Max = Chunk_Dimension(maxX+IndexToPosition, maxY+IndexToPosition, maxZ+IndexToPosition);
-          chunk_dimension Min = Chunk_Dimension(minX, minY, minZ);
+          chunk_dimension Max = {};
+          chunk_dimension Min = {};
+          chunk_dimension ModelDim = {};
+          switch (ClipBehavior)
+          {
+            case VoxLoaderClipBehavior_ClipToVoxels:
+            {
+              InvalidCodePath();
+              s32 IndexToPosition = 1;  // max(X,Y,Z) are indicies, convert to positions
+              Max = Chunk_Dimension(maxX+IndexToPosition, maxY+IndexToPosition, maxZ+IndexToPosition);
+              Min = Chunk_Dimension(minX, minY, minZ);
+              ModelDim = Max - Min + HalfApronMin + HalfApronMax;
+            } break;
 
-          chunk_dimension ModelDim = Max - Min + HalfApronMin + HalfApronMax;
+            case VoxLoaderClipBehavior_NoClipping:
+            {
+              ModelDim = ReportedDim + HalfApronMin + HalfApronMax;
+            } break;
+          }
+
+
 
           Result.ChunkData = AllocateChunkData(WorldStorage, ModelDim);
           Result.ChunkData->Dim = ModelDim;
@@ -395,7 +417,7 @@ LoadVoxModel(memory_arena *PermMemory, heap_allocator *Heap, char const *filepat
   TIMED_FUNCTION();
 
   model Result = {};
-  vox_data Vox = LoadVoxData(PermMemory, Heap, filepath);
+  vox_data Vox = LoadVoxData(PermMemory, Heap, filepath, VoxLoaderClipBehavior_NoClipping );
   AllocateAndBuildMesh(&Vox, &Result, TempMemory, PermMemory );
 
   return Result;
