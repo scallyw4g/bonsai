@@ -36,14 +36,21 @@ global_variable tile_rule_id InvalidTileRuleId = { .PageIndex = u8_MAX, .Bit = u
 poof(gen_default_equality_operator(tile_rule_id))
 #include <generated/gen_default_equality_operator_tile_rule_id.h>
 
-#define MAX_TILE_RULE_PAGES 2
+typedef u64 tile_rule_page_type;
+
+#define BITS_PER_TILE_RULE_PAGE (sizeof(tile_rule_page_type)*8)
+
+#define TILE_RULE_PAGE_COUNT (2)
 struct tile_rule
 {
-  u64 Pages[MAX_TILE_RULE_PAGES];
+  tile_rule_page_type Pages[TILE_RULE_PAGE_COUNT];
 };
 
-#define MAX_TILE_RULESETS (sizeof(tile_rule)*8)
+/* poof(staticbuffer(tile_rule_page_type, {MAX_TILE_RULESETS})) */
 
+
+// TODO(Jesse): This constraint is now artificial.  It should be a runtime-sized buffer
+#define MAX_TILE_RULESETS (BITS_PER_TILE_RULE_PAGE)
 poof(staticbuffer(u32_cursor, {MAX_TILE_RULESETS}))
 #include <generated/staticbuffer_u32_cursor_ptr_961996651.h>
 
@@ -58,8 +65,8 @@ poof(buffer(tile_ruleset));
 link_internal tile_ruleset *
 Get(tile_ruleset_buffer *Buf, tile_rule_id *Id)
 {
-  tile_ruleset *Result = {};
-  NotImplemented;
+  u32 Index = Id->PageIndex*BITS_PER_TILE_RULE_PAGE + GetIndexOfSingleSetBit(Id->Bit);
+  tile_ruleset *Result = Get(Buf, Index);
   return Result;
 }
 
@@ -246,7 +253,18 @@ link_internal tile_rule_id
 GetRuleId(tile_rule *Rule)
 {
   tile_rule_id Result = {};
-  NotImplemented;
+  RangeIterator(Idx, TILE_RULE_PAGE_COUNT)
+  {
+    tile_rule_page_type Page = Rule->Pages[Idx];
+    if (Page)
+    {
+      // TODO(Jesse): Take this assert out and break instead.  Just doing this
+      // for now as a sanity check
+      Assert(Result.Bit == 0);
+      Result.PageIndex = SafeTruncateU8(Idx);
+      Result.Bit = Page;
+    }
+  }
   return Result;
 }
 
@@ -254,86 +272,155 @@ link_internal tile_rule_id
 GetRuleIdFromIndex(u32 Index)
 {
   tile_rule_id Result = {};
-  NotImplemented;
+  Result.PageIndex = SafeTruncateU8( u32(Index/BITS_PER_TILE_RULE_PAGE) );
+  Result.Bit = (1ull << (Index % BITS_PER_TILE_RULE_PAGE) );
+  return Result;
+}
+
+link_internal u32
+GetIndexFromRuleId(tile_rule_id *Id)
+{
+  u32 Result = Id->PageIndex*BITS_PER_TILE_RULE_PAGE;
+  Result += GetIndexOfSingleSetBit(Id->Bit);
   return Result;
 }
 
 link_internal tile_ruleset *
-GetRuleset(tile_ruleset_buffer *Rules, tile_rule_id *RuleId)
+GetRuleset(tile_ruleset_buffer *Rules, tile_rule_id *Id)
 {
-  tile_ruleset *Result = {};
-  NotImplemented;
+  u32 Index = GetIndexFromRuleId(Id);
+  tile_ruleset *Result = Get(Rules, Index);
   return Result;
 }
 
+// Returns True if any bits match
 link_internal b32
-ContainsAnyOf(tile_rule *Dest, tile_rule *Src)
+AndTogether(tile_rule *T1, tile_rule *T2, tile_rule *Dest)
 {
-  b32 Result = 0;
-  NotImplemented;
-  return Result;
+  tile_rule_page_type Aggregate = {};
+  RangeIterator(Idx, TILE_RULE_PAGE_COUNT)
+  {
+    tile_rule_page_type Page1 = T1->Pages[Idx];
+    tile_rule_page_type Page2 = T2->Pages[Idx];
+
+    Dest->Pages[Idx]  = (Page1 & Page2);
+    Aggregate        |= (Page1 & Page2);
+  }
+  return (Aggregate != 0);
 }
 
 link_internal tile_rule
-AndTogether(tile_rule *Dest, tile_rule *Src)
+OrTogether(tile_rule *T1, tile_rule *T2)
 {
   tile_rule Result = {};
-  NotImplemented;
-  return Result;
-}
-
-link_internal tile_rule
-OrTogether(tile_rule *Dest, tile_rule *Src)
-{
-  tile_rule Result = {};
-  NotImplemented;
+  RangeIterator(Idx, TILE_RULE_PAGE_COUNT)
+  {
+    tile_rule_page_type Page1 = T1->Pages[Idx];
+    tile_rule_page_type Page2 = T2->Pages[Idx];
+    Result.Pages[Idx]  = (Page1 | Page2);
+  }
   return Result;
 }
 
 link_internal void
 Clear(tile_rule *Rule)
 {
-  NotImplemented;
+  ZeroMemory(Rule->Pages, TILE_RULE_PAGE_COUNT*sizeof(tile_rule_page_type));
 }
 
 link_internal u32
 CountOptions(tile_rule *Rule)
 {
   u32 Result = 0;
-  NotImplemented;
+  RangeIterator(Idx, TILE_RULE_PAGE_COUNT)
+  {
+    Result += CountBitsSet_Kernighan(Rule->Pages[Idx]);
+  }
   return Result;
 }
 
-link_internal u32
+link_internal void
 UnsetRule(tile_rule *Dest, tile_rule *Src)
 {
   Assert(CountOptions(Src) == 1);
-  u32 Result = 0;
-  NotImplemented;
-  return Result;
+  RangeIterator(Idx, TILE_RULE_PAGE_COUNT)
+  {
+    if (Src->Pages[Idx])
+    {
+      Assert(Dest->Pages[Idx] & Src->Pages[Idx]);
+      Dest->Pages[Idx] &=  (~Src->Pages[Idx]);
+    }
+  }
+}
+
+link_internal void
+UnsetRule(tile_rule *Dest, tile_rule_id *Src)
+{
+  Assert(CountBitsSet_Kernighan(Src->Bit) == 1);
+  Assert(Dest->Pages[Src->PageIndex] & Src->Bit);
+         Dest->Pages[Src->PageIndex] &=  (~Src->Bit);
+}
+
+link_internal void
+SetNthOption(tile_rule *Rule, s32 N)
+{
+  tile_rule_id Id = GetRuleIdFromIndex(u32(N));
+  Rule->Pages[Id.PageIndex] |= Id.Bit;
 }
 
 link_internal tile_rule
 GetNthOption(tile_rule *Rule, u32 N)
 {
   tile_rule Result = {};
-  NotImplemented;
+
+  u32 LeftToScan = N;
+  RangeIterator(Idx, TILE_RULE_PAGE_COUNT)
+  {
+    tile_rule_page_type Page = Rule->Pages[Idx];
+    u32 BitsSet = CountBitsSet_Kernighan(Page);
+    if (BitsSet >= LeftToScan)
+    {
+      Result.Pages[Idx] = GetNthSetBit(Page, LeftToScan);
+      Assert(CountBitsSet_Kernighan(Result.Pages[Idx]) == 1);
+      break;
+    }
+    else
+    {
+      LeftToScan -= BitsSet;
+    }
+  }
+
   return Result;
 }
 
 link_internal b32
 UnsetLeastSignificantOption(tile_rule *Rule, tile_rule_id *OutResult)
 {
-  b32 Result = 0;
-  NotImplemented;
+  b32 Result = False;
+  RangeIterator(Idx, TILE_RULE_PAGE_COUNT)
+  {
+    tile_rule_page_type *Page = Rule->Pages+Idx;
+    if (*Page)
+    {
+      OutResult->PageIndex = SafeTruncateU8(Idx);
+      OutResult->Bit = UnsetLeastSignificantSetBit(Page);
+      Result = True;
+      break;
+    }
+  }
   return Result;
 }
 
 link_internal b32
 operator==(tile_rule R1, tile_rule R2)
 {
-  b32 Result = 0;
-  NotImplemented;
+  b32 Result = True;
+  RangeIterator(Idx, TILE_RULE_PAGE_COUNT)
+  {
+    tile_rule_page_type Page1 = R1.Pages[Idx];
+    tile_rule_page_type Page2 = R2.Pages[Idx];
+    Result &= (Page1 == Page2);
+  }
   return Result;
 }
 
@@ -343,14 +430,4 @@ operator!=(tile_rule R1, tile_rule R2)
   b32 Result = !(R1 == R2);
   return Result;
 }
-
-/* // TODO(Jesse): Change the input param to a ptr. */
-/* // Not sure this is necessary anymore.. */
-/* link_internal b32 */
-/* CountBitsSet_Kernighan(tile_rule Rule) */
-/* { */
-/*   b32 Result = 0; */
-/*   NotImplemented; */
-/*   return Result; */
-/* } */
 

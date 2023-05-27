@@ -340,8 +340,9 @@ function RunPoofHelper {
 
 
 
+   # --log-level LogLevel_Debug                                                                                  \
+   #
   poof                                                                                                         \
-   --log-level LogLevel_Debug                                                                                  \
    -I src/                                                                                                     \
    -I include/                                                                                                 \
    -D _M_X64                                                                                                   \

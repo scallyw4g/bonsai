@@ -22,7 +22,7 @@ CountBitsSet_Kernighan(u64 Input)
 }
 
 link_internal u64
-GetNthSetBit(u64 Target, u64 NBit)
+GetNthSetBit(u64 Target, u32 NBit)
 {
   u64 Result = u32_MAX;
   for (u64 BitIndex = 0; BitIndex < NBit; ++BitIndex)
