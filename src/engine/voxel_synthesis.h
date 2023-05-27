@@ -25,7 +25,23 @@ enum voxel_rule_direction
 };
 CAssert(VoxelRuleDir_Count == 6);
 
-typedef u64 tile_rule;
+struct tile_rule_id
+{
+  u8 PageIndex;
+  u64 Bit;
+};
+
+global_variable tile_rule_id InvalidTileRuleId = { .PageIndex = u8_MAX, .Bit = u64_MAX };
+
+poof(gen_default_equality_operator(tile_rule_id))
+#include <generated/gen_default_equality_operator_tile_rule_id.h>
+
+#define MAX_TILE_RULE_PAGES 2
+struct tile_rule
+{
+  u64 Pages[MAX_TILE_RULE_PAGES];
+};
+
 #define MAX_TILE_RULESETS (sizeof(tile_rule)*8)
 
 poof(staticbuffer(u32_cursor, {MAX_TILE_RULESETS}))
@@ -39,9 +55,17 @@ struct tile_ruleset
 poof(buffer(tile_ruleset));
 #include <generated/buffer_tile_ruleset.h>
 
+link_internal tile_ruleset *
+Get(tile_ruleset_buffer *Buf, tile_rule_id *Id)
+{
+  tile_ruleset *Result = {};
+  NotImplemented;
+  return Result;
+}
+
 struct voxel_synth_tile
 {
-  u32 RuleId;
+  tile_rule_id RuleId;
   u32 VoxelIndex;
 
   u64 HashValue;
@@ -57,7 +81,7 @@ poof(buffer(voxel_synth_tile))
 /* #include <generated/gen_constructor_voxel_synth_tile.h> */
 
 link_internal voxel_synth_tile
-VoxelSynthTile( u32 RuleId , u32 VoxelIndex , u64 HashValue , chunk_data *SrcChunk  )
+VoxelSynthTile( tile_rule_id RuleId , u32 VoxelIndex , u64 HashValue , chunk_data *SrcChunk  )
 {
   voxel_synth_tile Reuslt = {
     .RuleId = RuleId,
@@ -137,10 +161,10 @@ struct voxel_synthesis_result
   vox_data VoxData;
   voxel_synth_tile_buffer Tiles;
   tile_ruleset_buffer Rules;
-  u64 MaxTileEntropy;
+  tile_rule MaxTileEntropy;
 
   // This is data used during acutal world generation
-  u64 *TileSuperpositions;
+  tile_rule *TileSuperpositions;
   v3i TileSuperpositionsDim;
   u32_cursor_staticbuffer EntropyLists;
 
@@ -194,89 +218,10 @@ GetV3iForDir(voxel_rule_direction Dir)
   return Result;
 }
 
-// TODO(Jesse): This is probably _hella_ braindead, but I couldn't think of a
-// clever way of doing this, so I used a vim macro ;)
-link_inline u64
-TileOptionIndex( u64 O )
-{
-  u64 Result = {};
-
-  switch (O)
-  {
-    case (1llu <<  0): { Result =  0; break; }
-    case (1llu <<  1): { Result =  1; break; }
-    case (1llu <<  2): { Result =  2; break; }
-    case (1llu <<  3): { Result =  3; break; }
-    case (1llu <<  4): { Result =  4; break; }
-    case (1llu <<  5): { Result =  5; break; }
-    case (1llu <<  6): { Result =  6; break; }
-    case (1llu <<  7): { Result =  7; break; }
-    case (1llu <<  8): { Result =  8; break; }
-    case (1llu <<  9): { Result =  9; break; }
-    case (1llu << 10): { Result = 10; break; }
-    case (1llu << 11): { Result = 11; break; }
-    case (1llu << 12): { Result = 12; break; }
-    case (1llu << 13): { Result = 13; break; }
-    case (1llu << 14): { Result = 14; break; }
-    case (1llu << 15): { Result = 15; break; }
-    case (1llu << 16): { Result = 16; break; }
-    case (1llu << 17): { Result = 17; break; }
-    case (1llu << 18): { Result = 18; break; }
-    case (1llu << 19): { Result = 19; break; }
-    case (1llu << 20): { Result = 20; break; }
-    case (1llu << 21): { Result = 21; break; }
-    case (1llu << 22): { Result = 22; break; }
-    case (1llu << 23): { Result = 23; break; }
-    case (1llu << 24): { Result = 24; break; }
-    case (1llu << 25): { Result = 25; break; }
-    case (1llu << 26): { Result = 26; break; }
-    case (1llu << 27): { Result = 27; break; }
-    case (1llu << 28): { Result = 28; break; }
-    case (1llu << 29): { Result = 29; break; }
-    case (1llu << 30): { Result = 30; break; }
-    case (1llu << 31): { Result = 31; break; }
-    case (1llu << 32): { Result = 32; break; }
-    case (1llu << 33): { Result = 33; break; }
-    case (1llu << 34): { Result = 34; break; }
-    case (1llu << 35): { Result = 35; break; }
-    case (1llu << 36): { Result = 36; break; }
-    case (1llu << 37): { Result = 37; break; }
-    case (1llu << 38): { Result = 38; break; }
-    case (1llu << 39): { Result = 39; break; }
-    case (1llu << 40): { Result = 40; break; }
-    case (1llu << 41): { Result = 41; break; }
-    case (1llu << 42): { Result = 42; break; }
-    case (1llu << 43): { Result = 43; break; }
-    case (1llu << 44): { Result = 44; break; }
-    case (1llu << 45): { Result = 45; break; }
-    case (1llu << 46): { Result = 46; break; }
-    case (1llu << 47): { Result = 47; break; }
-    case (1llu << 48): { Result = 48; break; }
-    case (1llu << 49): { Result = 49; break; }
-    case (1llu << 50): { Result = 50; break; }
-    case (1llu << 51): { Result = 51; break; }
-    case (1llu << 52): { Result = 52; break; }
-    case (1llu << 53): { Result = 53; break; }
-    case (1llu << 54): { Result = 54; break; }
-    case (1llu << 55): { Result = 55; break; }
-    case (1llu << 56): { Result = 56; break; }
-    case (1llu << 57): { Result = 57; break; }
-    case (1llu << 58): { Result = 58; break; }
-    case (1llu << 59): { Result = 59; break; }
-    case (1llu << 60): { Result = 60; break; }
-    case (1llu << 61): { Result = 61; break; }
-    case (1llu << 62): { Result = 62; break; }
-    case (1llu << 63): { Result = 63; break; }
-    default: { Error("TileOptionIndex was passed an option value with more than one bit set! (%lu)", O); }
-  }
-
-  return Result;
-}
-
 
 struct voxel_synthesis_change_propagation_info
 {
-  u64 PrevTileOptions;
+  tile_rule PrevTileOptions;
   v3i PrevTileP;
   v3i DirOfTravel;
 };
@@ -295,4 +240,117 @@ AreEqual(voxel_synthesis_change_propagation_info O1, voxel_synthesis_change_prop
 
 poof(generate_stack(voxel_synthesis_change_propagation_info))
 #include <generated/generate_stack_voxel_synthesis_change_propagation_info.h>
+
+
+link_internal tile_rule_id
+GetRuleId(tile_rule *Rule)
+{
+  tile_rule_id Result = {};
+  NotImplemented;
+  return Result;
+}
+
+link_internal tile_rule_id
+GetRuleIdFromIndex(u32 Index)
+{
+  tile_rule_id Result = {};
+  NotImplemented;
+  return Result;
+}
+
+link_internal tile_ruleset *
+GetRuleset(tile_ruleset_buffer *Rules, tile_rule_id *RuleId)
+{
+  tile_ruleset *Result = {};
+  NotImplemented;
+  return Result;
+}
+
+link_internal b32
+ContainsAnyOf(tile_rule *Dest, tile_rule *Src)
+{
+  b32 Result = 0;
+  NotImplemented;
+  return Result;
+}
+
+link_internal tile_rule
+AndTogether(tile_rule *Dest, tile_rule *Src)
+{
+  tile_rule Result = {};
+  NotImplemented;
+  return Result;
+}
+
+link_internal tile_rule
+OrTogether(tile_rule *Dest, tile_rule *Src)
+{
+  tile_rule Result = {};
+  NotImplemented;
+  return Result;
+}
+
+link_internal void
+Clear(tile_rule *Rule)
+{
+  NotImplemented;
+}
+
+link_internal u32
+CountOptions(tile_rule *Rule)
+{
+  u32 Result = 0;
+  NotImplemented;
+  return Result;
+}
+
+link_internal u32
+UnsetRule(tile_rule *Dest, tile_rule *Src)
+{
+  Assert(CountOptions(Src) == 1);
+  u32 Result = 0;
+  NotImplemented;
+  return Result;
+}
+
+link_internal tile_rule
+GetNthOption(tile_rule *Rule, u32 N)
+{
+  tile_rule Result = {};
+  NotImplemented;
+  return Result;
+}
+
+link_internal b32
+UnsetLeastSignificantOption(tile_rule *Rule, tile_rule_id *OutResult)
+{
+  b32 Result = 0;
+  NotImplemented;
+  return Result;
+}
+
+link_internal b32
+operator==(tile_rule R1, tile_rule R2)
+{
+  b32 Result = 0;
+  NotImplemented;
+  return Result;
+}
+
+link_internal b32
+operator!=(tile_rule R1, tile_rule R2)
+{
+  b32 Result = !(R1 == R2);
+  return Result;
+}
+
+/* // TODO(Jesse): Change the input param to a ptr. */
+/* // Not sure this is necessary anymore.. */
+/* link_internal b32 */
+/* CountBitsSet_Kernighan(tile_rule Rule) */
+/* { */
+/*   b32 Result = 0; */
+/*   NotImplemented; */
+/*   return Result; */
+/* } */
 

@@ -82,13 +82,14 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             v3i TileP = V3i(xTile, yTile, zTile);
             s32 TileIndex = GetIndex(TileP, GameState->BakeResult.TileSuperpositionsDim);
             Assert(TileIndex < Volume(GameState->BakeResult.TileSuperpositionsDim));
-            u64 TileRule = GameState->BakeResult.TileSuperpositions[TileIndex];
+            tile_rule TileRule = GameState->BakeResult.TileSuperpositions[TileIndex];
 
-            if (TileRule != 0)
+            u32 TileOptionsCount = CountOptions(&TileRule);
+            if (TileOptionsCount)
             {
-              if (CountBitsSet_Kernighan(TileRule) == 1)
+              if (TileOptionsCount == 1)
               {
-                u32 RuleId = GetIndexOfNthSetBit(TileRule, 1);
+                tile_rule_id RuleId = GetRuleId(&TileRule);
                 voxel_synth_tile *Match = 0;
                 // TODO(Jesse): I think the RuleId corresponds to the index,
                 // but I can't remember for certain right now.  This might be a
@@ -105,7 +106,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
                 Assert(Match);
                 Assert(Match->RuleId == RuleId);
-                Assert(TileRule & (1<<RuleId));
+                /* Assert(TileRule & (1<<RuleId)); */
 
                 v3i SrcVoxMin = V3iFromIndex(s32(Match->VoxelIndex), Match->SrcChunk->Dim );
                 v3i SrcVoxMax = SrcVoxMin + TileDim;
@@ -282,9 +283,9 @@ PickNewTileIndex(u32_cursor_staticbuffer *EntropyLists, random_series *VoxelSynt
 link_internal s32
 ResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeResult, random_series *Entropy, memory_arena *TempMemory)
 {
-  u64 MaxTileEntropy                    = BakeResult->MaxTileEntropy;
-  v3i TileSuperpositionsDim             = BakeResult->TileSuperpositionsDim;
-  u64 *TileSuperpositions               = BakeResult->TileSuperpositions;
+  tile_rule MaxTileEntropy              =  BakeResult->MaxTileEntropy;
+  v3i TileSuperpositionsDim             =  BakeResult->TileSuperpositionsDim;
+  tile_rule *TileSuperpositions         =  BakeResult->TileSuperpositions;
   u32_cursor_staticbuffer *EntropyLists = &BakeResult->EntropyLists;
 
   s32 TileSuperpositionsCount = Volume(TileSuperpositionsDim);
@@ -293,7 +294,7 @@ ResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeResult, ra
     List->At = List->Start;
   }
 
-  u32 MaxBitCount = CountBitsSet_Kernighan(MaxTileEntropy);
+  u32 MaxBitCount = CountOptions(&MaxTileEntropy);
   u32_cursor *EntropyList = GetPtr(EntropyLists, MaxBitCount);
   EntropyList->At = EntropyList->Start;
 
@@ -452,7 +453,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
           {
             // DEBUG code
-            u32 BitsSet = CountBitsSet_Kernighan(BakeResult->TileSuperpositions[TmpTileIndex]);
+            u32 BitsSet = CountOptions(&BakeResult->TileSuperpositions[TmpTileIndex]);
             Assert(BitsSet == EntropyListIndex);
           }
 
@@ -495,7 +496,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           /* DebugChars(" z rule count(%u)(", CountBitsSet_Kernighan(Rule->E[4])); PrintBinary(Rule->E[4]); DebugLine(")"); */
           /* DebugChars("-z rule count(%u)(", CountBitsSet_Kernighan(Rule->E[5])); PrintBinary(Rule->E[5]); DebugLine(")"); */
 
-          tile_ruleset *Rule = Get(&Rules, HoverTile->RuleId);
+          tile_ruleset *Rule = Get(&Rules, &HoverTile->RuleId);
 
           v3i VoxBaseP = V3iFromIndex(s32(BakeTile->VoxelIndex), BakeTile->SrcChunk->Dim);
           v3 EntityBasis = GetRenderP(World->ChunkDim, E, Camera);
@@ -553,7 +554,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   memory_arena *TempMemory = AllocateArena();
   DEBUG_REGISTER_ARENA(TempMemory, ThreadLocal_ThreadIndex);
 
-  tile_ruleset_buffer *Rules         = &GameState->BakeResult.Rules;
+  tile_ruleset_buffer *Rulesets     = &GameState->BakeResult.Rules;
   voxel_synth_tile_buffer BakedTiles =  GameState->BakeResult.Tiles;
   vox_data *VoxData                  = &GameState->BakeResult.VoxData;
   chunk_data *ChunkData              =  VoxData->ChunkData;
@@ -569,12 +570,14 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   Info("Drawing (%d) Baked tiles", BakedTiles.Count);
 
-  for (u32 RuleIndex = 0; RuleIndex < Rules->Count; ++RuleIndex)
+  for (u32 RuleIndex = 0; RuleIndex < Rulesets->Count; ++RuleIndex)
   {
+    /* tile_ruleset *Ruleset = Get(Rulesets, RuleIndex); */
+    tile_rule_id RuleId = GetRuleIdFromIndex(RuleIndex);
     for (u32 SynthTileIndex = 0; SynthTileIndex < BakedTiles.Count; ++SynthTileIndex)
     {
       voxel_synth_tile *Tile = Get(&BakedTiles, SynthTileIndex);
-      if (RuleIndex == Tile->RuleId)
+      if (RuleId == Tile->RuleId)
       {
         v3i VoxOffset = V3iFromIndex(s32(Tile->VoxelIndex), ChunkData->Dim);
 
@@ -586,7 +589,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
         BuildWorldChunkMeshFromMarkedVoxels_Greedy( ChunkData->Voxels, ChunkData->Dim,
                                                     VoxOffset, VoxOffset+Global_TileDim,
-                                                    &TileEntity->Model.Mesh,
+                                                   &TileEntity->Model.Mesh,
                                                     TempMemory,
                                                     VoxData->Palette );
 
@@ -614,7 +617,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   Assert(World->VisibleRegion*World->ChunkDim  % Global_TileDim == V3i(0));
 
   s32 TileSuperpositionsCount = Volume(TileSuperpositionsDim);
-  u64 *TileSuperpositions = Allocate(u64, Memory, TileSuperpositionsCount);
+  tile_rule *TileSuperpositions = Allocate(tile_rule, Memory, TileSuperpositionsCount);
 
   GameState->BakeResult.TileSuperpositionsDim = TileSuperpositionsDim;
   GameState->BakeResult.TileSuperpositions    = TileSuperpositions;

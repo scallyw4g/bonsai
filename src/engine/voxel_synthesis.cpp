@@ -15,20 +15,17 @@ PrintBinary(u64 E)
 }
 
 link_internal void
-WriteRulesForAdjacentTile(tile_ruleset *ThisTileRules, v3i ThisTileP, voxel_synth_tile_buffer AllTiles, v3i AllTilesDim, voxel_rule_direction Dir, u64 MaxTileEntropy)
+WriteRulesForAdjacentTile(tile_ruleset *ThisTileRules, v3i ThisTileP, voxel_synth_tile_buffer AllTiles, v3i AllTilesDim, voxel_rule_direction Dir, tile_rule MaxTileEntropy)
 {
   v3i TestTileP = ThisTileP + GetV3iForDir(Dir); //V3i(1, 0, 0);
   s32 TestTileIndex = TryGetIndex(TestTileP, AllTilesDim);
   if (TestTileIndex > -1)
   {
     voxel_synth_tile *TestTile = AllTiles.Start + TestTileIndex;
-    u64 Rule = (1ull << TestTile->RuleId);
-    Assert(Rule <= MaxTileEntropy);
-    ThisTileRules->E[Dir] |= Rule;
-    Assert(ThisTileRules->E[Dir] <= MaxTileEntropy);
+    ThisTileRules->E[Dir].Pages[TestTile->RuleId.PageIndex] |= TestTile->RuleId.Bit;
+    /* Assert(ThisTileRules->E[Dir].Pages[TestTile->RuleId.PageIndex] <= MaxTileEntropy.Pages[TestTile->RuleId.PageIndex] ); */
   }
 }
-
 
 link_internal voxel_synthesis_result
 BakeVoxelSynthesisRules(const char* InputVox)
@@ -63,10 +60,12 @@ BakeVoxelSynthesisRules(const char* InputVox)
   //
   // NOTE(Jesse): Here we use a hashtable to keep track of unique tiles we find
   // in the input scene.  For every unique tile we find, we increment
-  // NextTileId and add it to the hashtable.  For tiles we've seen already we
-  // record the RuleId we stored in the original tile.
+  // CurrentBitIndex and add it to the hashtable.  For tiles we've seen already
+  // we record the RuleId we stored in the original tile.  CurrentPageIndex tracks
+  // how many pages of 64 bit values we've filled up so far
   voxel_synth_tile_hashtable TileHashtable = Allocate_voxel_synth_tile_hashtable(1024, Memory);
-  u32 NextTileId = 0;
+  u32 CurrentPageIndex = 0;
+  u32 CurrentBitIndex = 0;
   voxel *TempVoxels = Allocate(voxel, Memory, Volume(Global_TileDim));
   umm TempVoxelsSizeInBytes = sizeof(voxel)*umm(Volume(Global_TileDim));
 
@@ -96,7 +95,7 @@ BakeVoxelSynthesisRules(const char* InputVox)
     }
 
     s32 BaseVoxIndex = GetIndex(BaseVoxOffset, Vox.ChunkData->Dim);
-    voxel_synth_tile Tile = VoxelSynthTile( u32_MAX, u32(BaseVoxIndex), TileHash, Vox.ChunkData);
+    voxel_synth_tile Tile = VoxelSynthTile( InvalidTileRuleId, u32(BaseVoxIndex), TileHash, Vox.ChunkData);
     voxel_synth_tile *GotTile = GetElement(&TileHashtable, &Tile);
     if (GotTile)
     {
@@ -112,26 +111,26 @@ BakeVoxelSynthesisRules(const char* InputVox)
       }
     }
 
-    if (Tile.RuleId == u32_MAX)
+    if (Tile.RuleId == InvalidTileRuleId)
     {
       Info("Inserting new Tile (%d)", Tile.HashValue);
 
-      Assert(NextTileId < MAX_TILE_RULESETS); // NOTE(Jesse) For debugging
       Tile.Voxels = TempVoxels;
 
       // TODO(Jesse)(leak, memory): This leaks the last allocation
       TempVoxels = Allocate(voxel, Memory, Volume(Global_TileDim));
 
-      if (NextTileId == 5 || NextTileId == 6 || NextTileId == 7)
+      if (CurrentBitIndex == sizeof(Tile.RuleId.Bit)*8)
       {
-        if (GotTile)
-        {
-        b32 thing = MemoryIsEqual((u8*)Tile.Voxels, (u8*)GotTile->Voxels, TempVoxelsSizeInBytes);
-        }
-        /* RuntimeBreak(); */
+        CurrentPageIndex++;
+        CurrentBitIndex = 0;
       }
 
-      Tile.RuleId = NextTileId++;
+      Tile.RuleId.PageIndex = SafeTruncateU8(CurrentPageIndex);
+      Tile.RuleId.Bit = (1ull << CurrentBitIndex);
+
+      CurrentBitIndex++;
+
       Insert(Tile, &TileHashtable, Memory);
     }
 
@@ -139,14 +138,15 @@ BakeVoxelSynthesisRules(const char* InputVox)
     AllTiles.Start[TileIndex] = Tile;
   }
 
-  // NOTE(Jesse): For the moment we're going to encode the tiles as a
-  // u64 bitfield, so we can't generate more than 64 of them.
-  Assert(NextTileId < MAX_TILE_RULESETS);
-  tile_ruleset_buffer AllRules = TileRulesetBuffer(NextTileId, Memory);
+  // The sub should be safe because we always increment immediately after resetting this.
+  Assert(CurrentBitIndex > 0);
+  umm TotalRuleCount = CurrentPageIndex*64 + CurrentBitIndex-1;
+  tile_ruleset_buffer AllRules = TileRulesetBuffer(TotalRuleCount, Memory);
 
-  u64 MaxTileEntropy = u64_MAX;
-  u64 BitsToShiftOff = 64-AllRules.Count;
-  MaxTileEntropy = MaxTileEntropy >> BitsToShiftOff;
+  tile_rule MaxTileEntropy = {}; //u64_MAX;
+  NotImplemented;
+  /* u64 BitsToShiftOff = 64-AllRules.Count; */
+  /* MaxTileEntropy = MaxTileEntropy >> BitsToShiftOff; */
 
   // NOTE(Jesse): Iterate over all the tiles, pick out their corresponding rule
   // from AllRules and add the connectivity rules for the adjacent tile rule IDs.
@@ -157,7 +157,7 @@ BakeVoxelSynthesisRules(const char* InputVox)
     voxel_synth_tile *Tile = AllTiles.Start + TileIndex;
     Assert (Tile->SrcChunk);
     {
-      tile_ruleset *ThisTileRuleset = AllRules.Start + Tile->RuleId;
+      tile_ruleset *ThisTileRuleset = GetRuleset(&AllRules, &Tile->RuleId);
 
       {
         WriteRulesForAdjacentTile(ThisTileRuleset, TileP, AllTiles, ChunkTileDim, VoxelRuleDir_PosX, MaxTileEntropy);
@@ -173,7 +173,7 @@ BakeVoxelSynthesisRules(const char* InputVox)
   }
 
 
-  Assert(CountBitsSet_Kernighan(MaxTileEntropy) == AllRules.Count);
+  Assert(CountOptions(&MaxTileEntropy) == AllRules.Count);
   /* Assert( (MaxTileEntropy & (1ull << AllRules.Count)) != 0); */
   /* Assert( (MaxTileEntropy & (2ull << (AllRules.Count))) == 0); */
 
@@ -190,10 +190,12 @@ BakeVoxelSynthesisRules(const char* InputVox)
     tile_ruleset *E = Get(&AllRules, u32(Idx));
     RangeIterator(RuleIndex, VoxelRuleDir_Count)
     {
-      if (E->E[RuleIndex] == 0)
+      u64 Aggregate = {};
+      RangeIterator(PageIndex, MAX_TILE_RULE_PAGES)
       {
-        Result.Errors++;
+        Aggregate |= E->E[RuleIndex].Pages[PageIndex];
       }
+      if (Aggregate == 0) Result.Errors++;
     }
   }
 #endif
@@ -201,81 +203,47 @@ BakeVoxelSynthesisRules(const char* InputVox)
   return Result;
 }
 
-link_internal u64
-GetOptionsForDirectionAndFinalChoice(v3i Dir, u64 Choice, tile_ruleset_buffer *Rules)
+link_internal tile_rule
+GetOptionsForDirectionAndFinalChoice(v3i DirVector, tile_rule_id *Choice, tile_ruleset_buffer *Rules)
 {
-  u64 OptionIndex = u64_MAX;
-  for (u32 DirIndex = 0; DirIndex < 3; ++DirIndex)
+  u64 DirIndex = u64_MAX;
+  for (u32 VectorIndex = 0; VectorIndex < 3; ++VectorIndex)
   {
-    if (Dir.E[DirIndex] != 0)
+    if (DirVector.E[VectorIndex] != 0)
     {
-      Assert(OptionIndex == u64_MAX);
-      OptionIndex = DirIndex*2;
-      if (Dir.E[DirIndex] < 0)
+      Assert(DirIndex == u64_MAX);
+      DirIndex = DirIndex*2;
+      if (DirVector.E[VectorIndex] < 0)
       {
-        OptionIndex++;
+        DirIndex++;
       }
     }
   }
-  Assert(OptionIndex < VoxelRuleDir_Count);
-  Assert(Dir == AllDirections[OptionIndex]);
+  Assert(DirIndex < VoxelRuleDir_Count);
+  Assert(DirVector == AllDirections[DirIndex]);
 
 
-  u64 ChoiceIndex = TileOptionIndex(Choice);
-  tile_ruleset *Rule = Get(Rules, u32(ChoiceIndex));
-  u64 Result = Rule->E[OptionIndex];
+  /* u32 ChoiceIndex = GetIndexOfSingleSetBit(Choice); */
+  tile_ruleset *Rule = GetRuleset(Rules, Choice);
+  tile_rule Result = Rule->E[DirIndex];
 
-  Assert(Result);
-
-#if 0
-  switch (Choice)
-  {
-    InvalidCase(TileOption_None);
-
-    case TileOption_Air:
-    {
-      if (Dir == V3i(0, 0, 1))
-      {
-        Assert(OptionIndex == 2);
-        Assert(Result == TileOption_Air);
-      }
-      else if (Dir == V3i(0, 0, -1))
-      {
-        Assert(OptionIndex == 5);
-        Assert(Result == (TileOption_Air|TileOption_Dirt));
-      }
-    } break;
-
-    case TileOption_Dirt:
-    {
-      if (Dir == V3i(0, 0, 1))
-      {
-        Assert(OptionIndex == 2);
-        Assert(Result == (TileOption_Air|TileOption_Dirt) );
-      }
-      else if (Dir == V3i(0, 0, -1))
-      {
-        Assert(OptionIndex == 5);
-        Assert(Result == TileOption_Dirt);
-      }
-    } break;
-  }
-#endif
+  /* Assert(Result); */
 
   return Result;
 }
 
 link_internal b32
-PropagateChangesTo(voxel_synthesis_change_propagation_info_stack *ChangePropagationInfoStack, v3i SuperpositionsShape, u64 *TileSuperpositions, tile_ruleset_buffer *Rules, u32_cursor_staticbuffer *EntropyLists, u64 MaxTileEntropy)
+PropagateChangesTo(voxel_synthesis_change_propagation_info_stack *ChangePropagationInfoStack, v3i SuperpositionsShape, tile_rule *TileSuperpositions, tile_ruleset_buffer *Rules, u32_cursor_staticbuffer *EntropyLists) //, u64 MaxTileEntropy)
 {
   b32 Result = True;
 
   while (ChangePropagationInfoStack->At)
   {
-    auto Info = Pop(ChangePropagationInfoStack);
-    u64 PrevTileOptions = Info.PrevTileOptions;
-    v3i PrevTileP       = Info.PrevTileP;
-    v3i DirOfTravel     = Info.DirOfTravel;
+    voxel_synthesis_change_propagation_info Info = Pop(ChangePropagationInfoStack);
+
+    tile_rule PrevTileOptions = Info.PrevTileOptions;
+    v3i PrevTileP             = Info.PrevTileP;
+    v3i DirOfTravel           = Info.DirOfTravel;
 
     v3i ThisTileP = PrevTileP+DirOfTravel;
 
@@ -288,45 +256,48 @@ PropagateChangesTo(voxel_synthesis_change_propagation_info_stack *ChangePropagat
     s32 NextTileIndex = TryGetIndex(ThisTileP, SuperpositionsShape);
     if (NextTileIndex >= 0)
     {
-      u64 *NextTile = TileSuperpositions + NextTileIndex;
-      u64 NextTileStartingValue = *NextTile;
+      tile_rule *NextTile = TileSuperpositions + NextTileIndex;
+      tile_rule NextTileStartingValue = *NextTile;
 
-      u32 OptionCount = CountBitsSet_Kernighan(NextTileStartingValue);
+      u32 OptionCount = CountOptions(&NextTileStartingValue);
       if (OptionCount > 0)
       {
         Ensure( Remove(GetPtr(EntropyLists, OptionCount), u32(NextTileIndex)) );
       }
 
-      u64 NextTileOptions = {};
-      u64 CachedOptions = PrevTileOptions;
-      while (u64 Option = UnsetLeastSignificantSetBit(&CachedOptions))
+      tile_rule NextTileOptions = {};
+      tile_rule CachedOptions = PrevTileOptions;
+      tile_rule_id Option = {};
+      while (UnsetLeastSignificantOption(&CachedOptions, &Option))
       {
-        Assert(Option <= MaxTileEntropy);
-        Assert(CountBitsSet_Kernighan(Option) == 1);
-        u64 NewOptions = GetOptionsForDirectionAndFinalChoice(DirOfTravel, Option, Rules);
-        Assert(NewOptions <= MaxTileEntropy);
-        NextTileOptions |= NewOptions;
-        Assert(NextTileOptions <= MaxTileEntropy);
+        /* Assert(Option <= MaxTileEntropy); */
+        Assert(CountBitsSet_Kernighan(Option.Bit) == 1);
+
+        tile_rule NewOptions = GetOptionsForDirectionAndFinalChoice(DirOfTravel, &Option, Rules);
+        /* Assert(NewOptions <= MaxTileEntropy); */
+
+        OrTogether(&NextTileOptions, &NewOptions);
+        /* Assert(NextTileOptions <= MaxTileEntropy); */
       }
 
-      if (NextTileStartingValue & NextTileOptions)
+      if (ContainsAnyOf(&NextTileStartingValue, &NextTileOptions))
       {
-        *NextTile &= NextTileOptions;
-        u32 NewOptionCount = CountBitsSet_Kernighan(*NextTile);
-        Assert((NewOptionCount > 0));
+        *NextTile = AndTogether(NextTile, &NextTileOptions);
+        u32 NewOptionCount = CountOptions(NextTile);
+        Assert(NewOptionCount > 0);
         Push(GetPtr(EntropyLists, NewOptionCount), u32(NextTileIndex));
       }
       else
       {
         // We failed
-        *NextTile = 0;
+        Clear(NextTile);
         Result = False;
         break;
       }
 
       if ( *NextTile != NextTileStartingValue )
       {
-        Assert(*NextTile);
+        Assert(CountOptions(NextTile) != 0);
         for (u32 DirIndex = 0; DirIndex < ArrayCount(AllDirections); ++DirIndex)
         {
           // TODO(Jesse)(speed, perf): Do we really want to look backwards? I
@@ -360,10 +331,10 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
 
   v3i VisibleRegion = World->VisibleRegion;
 
-  tile_ruleset_buffer *Rules            = &BakeResult->Rules;
-  u64 MaxTileEntropy                    =  BakeResult->MaxTileEntropy;
-  v3i TileSuperpositionsDim             =  BakeResult->TileSuperpositionsDim;
-  u64 *TileSuperpositionsStorage        =  BakeResult->TileSuperpositions;
+  tile_ruleset_buffer *Rules                   = &BakeResult->Rules;
+  tile_rule MaxTileEntropy                     =  BakeResult->MaxTileEntropy;
+  v3i TileSuperpositionsDim                    =  BakeResult->TileSuperpositionsDim;
+  tile_rule *TileSuperpositionsStorage         =  BakeResult->TileSuperpositions;
   u32_cursor_staticbuffer *EntropyListsStorage = &BakeResult->EntropyLists;
 
   v3i TileMinDim = {};
@@ -373,36 +344,33 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
 
   DebugLine("TileIndex(%u)", TileIndex);
 
-  u64 *LocalTileSuperpositions = Allocate(u64, GetTranArena(), TileSuperpositionsCount);
+  tile_rule *LocalTileSuperpositions = Allocate(tile_rule, GetTranArena(), TileSuperpositionsCount);
 
   u32_cursor_staticbuffer LocalEntropyLists = {};
   IterateOver(&LocalEntropyLists, Element, ElementIndex)
   {
     *Element = U32Cursor(umm(TileSuperpositionsCount), GetTranArena());
   }
-  u64 TileChoice = u64_MAX;
-  u64 TileOptions = TileSuperpositionsStorage[TileIndex];
+  tile_rule TileChoice = {};
+  tile_rule TileOptions = TileSuperpositionsStorage[TileIndex];
   do
   {
     DeepCopy(EntropyListsStorage, &LocalEntropyLists);
     MemCopy((u8*)TileSuperpositionsStorage, (u8*)LocalTileSuperpositions, (umm)((umm)TileSuperpositionsCount*sizeof(u64)));
     ChangePropagationInfoStack->At = 0;
 
-    // We haven't fully collapsed this tile, and it's got lower entropy
-    // than we've seen yet.
-    TileChoice = u64_MAX;
-    if (TileOptions)
+    u32 OptionCount = CountOptions(&TileOptions);
+    if (OptionCount)
     {
-      u32 BitsSet = CountBitsSet_Kernighan(TileOptions);
       // TODO(Jesse): This should (at least in my head) be able to return (1, N) inclusive
       // but it does not for (1, 2)
-      u64 BitChoice = RandomBetween(1u, Series, BitsSet+1u);
+      u32 BitChoice = RandomBetween(1u, Series, OptionCount+1u);
 
-      TileChoice = GetNthSetBit(TileOptions, BitChoice);
-      Assert(CountBitsSet_Kernighan(TileChoice) == 1);
+      TileChoice = GetNthOption(&TileOptions, BitChoice);
+      Assert(CountOptions(&TileChoice) == 1);
 
       LocalTileSuperpositions[TileIndex] = TileChoice;
-      TileOptions &= (~TileChoice); // Knock out the bit in TileOptions for the next time through
+      UnsetRule(&TileOptions, &TileChoice);
       Push( GetPtr(&LocalEntropyLists, 1), u32(TileIndex) );
 
       v3i P = V3iFromIndex(TileIndex, TileSuperpositionsDim);
@@ -417,11 +385,11 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
       break;
     }
 
-  } while (PropagateChangesTo(ChangePropagationInfoStack, TileSuperpositionsDim, LocalTileSuperpositions, Rules, &LocalEntropyLists, BakeResult->MaxTileEntropy) == False);
+  } while (PropagateChangesTo(ChangePropagationInfoStack, TileSuperpositionsDim, LocalTileSuperpositions, Rules, &LocalEntropyLists) == False);
 
   if (Result)
   {
-    Assert(CountBitsSet_Kernighan(TileChoice) == 1);
+    Assert(CountOptions(&TileChoice) == 1);
     DeepCopy(&LocalEntropyLists, EntropyListsStorage);
     MemCopy((u8*)LocalTileSuperpositions, (u8*)TileSuperpositionsStorage, (umm)((umm)TileSuperpositionsCount*sizeof(u64)));
   }
