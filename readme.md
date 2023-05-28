@@ -1,8 +1,7 @@
 # Welcome to Bonsai!
 
-Bonsai is a 3D voxel-based engine built with the intention of writing
-fast-paced arcade style games.
-
+Bonsai is a 3D voxel-based engine built with the intention of writing both
+fast-paced arcade games and tile/turn-based RPGs
 
 
 ## Renderer Features
@@ -15,25 +14,30 @@ fast-paced arcade style games.
 ## Engine Features
 
 * General Purpose Thread Queue
-* Gameplay Recording/Playback
-* Hot Code Reloading
-* Particle System
+<!-- * Gameplay Recording/Playback -->
+* Game Code Hot Reload
+* Particles
 * Entity System
-* Asset Loader
+* Collision
+* Primitive Physics
+* Various Asset Loaders
+* Several Terrain Generators
+* Primitive UI framework
 
 ## Performance Profiler Features
 
+* Manual Instrumentation
 * Memory allocation tracking
-* Call graph tracking per frame (routine % of frame, CPU cycles, # of calls)
-* Works across all threads
+* Call graph tracking per frame
+* Context Switch Information on Windows
 
 # Wishlist
-
 
 -------------------------------------------------------------------------------
 ## Renderer
 
 [ ] TAA
+
 [ ] Transparency : https://www.jcgt.org/published/0002/02/09/paper.pdf
 
 -------------------------------------------------------------------------------
@@ -57,7 +61,7 @@ Ensure you have an OpenGL driver, X11 and clang
 ### Common
 
 ```
-git clone --recursive https://github.com/jjbandit/bonsai bonsai && cd bonsai
+git clone --recursive https://github.com/scallyw4g/bonsai bonsai && cd bonsai
 ./scripts/make.sh
 ```
 
@@ -65,6 +69,6 @@ git clone --recursive https://github.com/jjbandit/bonsai bonsai && cd bonsai
 Bonsai requires clang and bash to build on Windows.  git-bash should do the trick.
 
 ```
-git clone --recursive https://github.com/jjbandit/bonsai bonsai && cd bonsai
+git clone --recursive https://github.com/scallyw4g/bonsai bonsai && cd bonsai
 ./scripts/make.sh
 ```
