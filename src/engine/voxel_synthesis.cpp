@@ -67,7 +67,7 @@ BakeVoxelSynthesisRules(const char* InputVox)
   u32 CurrentPageIndex = 0;
   u32 CurrentBitIndex = 0;
   voxel *TempVoxels = Allocate(voxel, Memory, Volume(Global_TileDim));
-  umm TempVoxelsSizeInBytes = sizeof(voxel)*umm(Volume(Global_TileDim));
+  /* umm TempVoxelsSizeInBytes = sizeof(voxel)*umm(Volume(Global_TileDim)); */
 
   DimIterator(xTile, yTile, zTile, ChunkTileDim)
   {
@@ -95,27 +95,20 @@ BakeVoxelSynthesisRules(const char* InputVox)
     }
 
     s32 BaseVoxIndex = GetIndex(BaseVoxOffset, Vox.ChunkData->Dim);
-    voxel_synth_tile Tile = VoxelSynthTile( InvalidTileRuleId, u32(BaseVoxIndex), TileHash, Vox.ChunkData);
+    voxel_synth_tile Tile = VoxelSynthTile( InvalidTileRuleId, u32(BaseVoxIndex), TileHash, Vox.ChunkData, TempVoxels);
+
     voxel_synth_tile *GotTile = GetElement(&TileHashtable, &Tile);
     if (GotTile)
     {
       Assert(GotTile->HashValue == Tile.HashValue);
-      if (MemoryIsEqual((u8*)TempVoxels, (u8*)GotTile->Voxels, TempVoxelsSizeInBytes))
-      {
-        /* Info("Got tile hash Match (%d)", Tile.HashValue); */
-        Tile.RuleId = GotTile->RuleId;
-      }
-      else
-      {
-        /* Info("Got tile hash Collision (%d)", Tile.HashValue); */
-      }
+      /* Info("Got tile hash Match (%d)", Tile.HashValue); */
+      Tile.RuleId = GotTile->RuleId;
     }
 
     if (Tile.RuleId == InvalidTileRuleId)
     {
       /* Info("Inserting new Tile (%d)", Tile.HashValue); */
-
-      Tile.Voxels = TempVoxels;
+      /* Tile.Voxels = TempVoxels; */
 
       // TODO(Jesse)(leak, memory): This leaks the last allocation
       TempVoxels = Allocate(voxel, Memory, Volume(Global_TileDim));
@@ -228,8 +221,6 @@ GetOptionsForDirectionAndFinalChoice(v3i DirVector, tile_rule_id *Choice, tile_r
   u32 ChoiceIndex = GetIndexFromRuleId(Choice);
   tile_ruleset *Rule = Get(Rules, ChoiceIndex);
   tile_rule Result = Rule->E[DirIndex];
-
-  /* Assert(Result); */
 
   return Result;
 }
@@ -403,84 +394,3 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
 
   return Result;
 }
-
-#if 0
-link_internal void
-InitializeWorld_VoxelSynthesis( world *World, v3i VisibleRegion, v3i TileDim, random_series *Series,
-                                u64 MaxTileEntropy,
-                                tile_ruleset_buffer *Rules,
-                                v3i TileSuperpositionsDim,
-                                u64 *TileSuperpositions,
-                                u32_cursor_staticbuffer *EntropyLists,
-                                voxel_synthesis_change_propagation_info_stack *ChangePropagationInfoStack )
-{
-  TIMED_FUNCTION();
-
-  v3i TileMinDim = {};
-
-  auto TileSuperpositionsCount = Volume(TileSuperpositionsDim);
-
-  for (s32 TileIndex = 0; TileIndex < TileSuperpositionsCount; ++TileIndex)
-  {
-    TileSuperpositions[TileIndex] = MaxTileEntropy;
-  }
-
-  for (s32 zTile = TileMinDim.z; zTile < TileSuperpositionsDim.z; ++zTile)
-  {
-    for (s32 yTile = TileMinDim.y; yTile < TileSuperpositionsDim.y; ++yTile)
-    {
-      for (s32 xTile = TileMinDim.x; xTile < TileSuperpositionsDim.x; ++xTile)
-      {
-        s32 TileIndex = GetIndex(xTile, yTile, zTile, TileSuperpositionsDim);
-        u64 TileOptions = TileSuperpositions[TileIndex];
-        u32 BitsSet = CountBitsSet_Kernighan(TileOptions);
-
-        DebugLine("TileIndex(%u)", TileIndex);
-
-        // We haven't fully collapsed this tile, and it's got lower entropy
-        // than we've seen yet.
-        u64 TileChoice = u64_MAX;
-        if (BitsSet > 1)
-        {
-          // TODO(Jesse): This should (at least in my head) be able to return (1, N) inclusive
-          // but it does not for (1, 2)
-          u64 BitChoice = RandomBetween(1, Series, BitsSet+1);
-
-          TileChoice = GetNthSetBit(TileOptions, BitChoice);
-          Assert(CountBitsSet_Kernighan(TileChoice) == 1);
-
-          TileSuperpositions[TileIndex] = TileChoice;
-        }
-        else
-        {
-          TileChoice = TileOptions;
-        }
-
-        Assert(TileChoice != u64_MAX);
-
-        v3i P = V3iFromIndex(TileIndex, TileSuperpositionsDim);
-
-        RangeIterator(DirIndex, (s32)ArrayCount(AllDirections))
-        {
-          Push(ChangePropagationInfoStack, VoxelSynthesisChangePropagationInfo(TileChoice,  P, AllDirections[DirIndex]));
-        }
-
-        PropagateChangesTo(ChangePropagationInfoStack, TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
-      }
-    }
-  }
-
-  for (s32 TileIndex = 0; TileIndex < TileSuperpositionsCount; ++TileIndex)
-  {
-    if (TileSuperpositions[TileIndex] == 0)
-    {
-      /* SoftError("Degenerate case; Voxel Synthesis failed to solve. TileIndex(%u)/(%u)", TileIndex, TileSuperpositionsCount); */
-    }
-    else
-    {
-      DebugChars(" TileIndex(%u)/(%u) BitsSet(%u)(", TileIndex, TileSuperpositionsCount, CountBitsSet_Kernighan(TileSuperpositions[TileIndex])); PrintBinary(TileSuperpositions[TileIndex]); DebugLine(")");
-    }
-  }
-
-}
-#endif

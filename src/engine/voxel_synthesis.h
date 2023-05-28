@@ -88,13 +88,14 @@ poof(buffer(voxel_synth_tile))
 /* #include <generated/gen_constructor_voxel_synth_tile.h> */
 
 link_internal voxel_synth_tile
-VoxelSynthTile( tile_rule_id RuleId , u32 VoxelIndex , u64 HashValue , chunk_data *SrcChunk  )
+VoxelSynthTile( tile_rule_id RuleId, u32 VoxelIndex, u64 HashValue, chunk_data *SrcChunk, voxel *Voxels )
 {
   voxel_synth_tile Reuslt = {
     .RuleId = RuleId,
     .VoxelIndex = VoxelIndex,
     .HashValue = HashValue,
-    .SrcChunk = SrcChunk // TODO(Jesse): Only store this once, instead of on every tile.. duh.
+    .SrcChunk = SrcChunk, // TODO(Jesse): Only store this once, instead of on every tile.. duh.
+    .Voxels = Voxels
   };
   return Reuslt;
 }
@@ -103,7 +104,15 @@ VoxelSynthTile( tile_rule_id RuleId , u32 VoxelIndex , u64 HashValue , chunk_dat
 link_internal u64
 AreEqual(voxel_synth_tile *T0, voxel_synth_tile *T1)
 {
-  u64 Result = T0->HashValue == T1->HashValue;
+  u64 Result = False;
+  if (T0->HashValue == T1->HashValue)
+  {
+    umm TempVoxelsSizeInBytes = sizeof(voxel)*umm(Volume(Global_TileDim));
+    if (MemoryIsEqual((u8*)T0->Voxels, (u8*)T1->Voxels, TempVoxelsSizeInBytes))
+    {
+      Result = True;
+    }
+  }
   return Result;
 }
 
@@ -129,14 +138,15 @@ poof( hashtable(voxel_synth_tile) )
 
   // TODO(Jesse): Put this in the hashtable impl
 link_internal voxel_synth_tile *
-GetElement(voxel_synth_tile_hashtable *Hashtable, voxel_synth_tile *Tile)
+GetElement(voxel_synth_tile_hashtable *Hashtable, voxel_synth_tile *Query)
 {
   voxel_synth_tile *Result = {};
-  voxel_synth_tile_linked_list_node *TileBucket = GetHashBucket(Tile->HashValue, Hashtable);
+  voxel_synth_tile_linked_list_node *TileBucket = GetHashBucket(Query->HashValue, Hashtable);
 
   while (TileBucket)
   {
-    if (AreEqual(Tile, &TileBucket->Element)) { Result = &TileBucket->Element; break; }
+    voxel_synth_tile *Candidate = &TileBucket->Element;
+    if (AreEqual(Query, Candidate)) { Result = Candidate; break; }
     TileBucket = TileBucket->Next;
   }
 
@@ -149,7 +159,7 @@ GetElement(voxel_synth_tile_hashtable *Hashtable, voxel_synth_tile *Tile)
 
       while (Bucket)
       {
-        Assert(AreEqual(Tile, &Bucket->Element) == False);
+        Assert(AreEqual(Query, &Bucket->Element) == False);
         Bucket = Bucket->Next;
       }
     }

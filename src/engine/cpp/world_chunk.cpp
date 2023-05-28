@@ -1063,6 +1063,98 @@ DoZStepping(voxel *Voxels, v3i SrcChunkDim, v3i SrcP, voxel_flag Face, u8 Color)
 }
 
 link_internal void
+BuildWorldChunkMesh_DebugVoxels( voxel *Voxels,
+                                            chunk_dimension SrcChunkDim,
+
+                                            chunk_dimension SrcChunkMin,
+                                            chunk_dimension SrcChunkMax,
+
+                                            untextured_3d_geometry_buffer *DestGeometry,
+                                            memory_arena *TempMemory,
+                                            v4* ColorPallette = DefaultPalette )
+{
+  TIMED_FUNCTION();
+
+  /* Assert(IsSet(SrcChunk, Chunk_VoxelsInitialized)); */
+  /* Assert(IsSet(DestChunk, Chunk_VoxelsInitialized)); */
+
+  voxel_position rightVoxel;
+  voxel_position leftVoxel;
+  voxel_position topVoxel;
+  voxel_position botVoxel;
+  voxel_position frontVoxel;
+  voxel_position backVoxel;
+
+  s32 rightVoxelReadIndex;
+  s32 leftVoxelReadIndex;
+  s32 topVoxelReadIndex;
+  s32 botVoxelReadIndex;
+  s32 frontVoxelReadIndex;
+  s32 backVoxelReadIndex;
+
+  v3 VertexData[VERTS_PER_FACE];
+  v4 FaceColors[VERTS_PER_FACE];
+
+  auto SrcMinP = SrcChunkMin;
+  auto MaxDim = Min(SrcChunkDim, SrcChunkMax); // SrcChunkMin+DestChunkDim+1
+
+  auto TmpDim = MaxDim-SrcMinP;
+  u32  TmpVol = u32(Volume(TmpDim));
+
+  u32 TmpIndex = 0;
+  for ( s32 zIndex = 0; zIndex < TmpDim.z ; ++zIndex )
+  {
+    for ( s32 yIndex = 0; yIndex < TmpDim.y ; ++yIndex )
+    {
+      for ( s32 xIndex = 0; xIndex < TmpDim.x ; ++xIndex )
+      {
+        voxel_position SrcP = SrcMinP + Voxel_Position(xIndex, yIndex, zIndex);
+        s32 SrcIndex = GetIndex(SrcP, SrcChunkDim);
+        Assert(TmpIndex < TmpVol);
+        voxel *Voxel = Voxels+SrcIndex;
+        if (Voxel->Flags & Voxel_Filled)
+        {
+          v3 DestP = V3(xIndex, yIndex, zIndex);
+          v3 Diameter = V3(0.25f);
+
+          FillColorArray(Voxel->Color, FaceColors, ColorPallette, VERTS_PER_FACE);
+
+          {
+            RightFaceVertexData( DestP, Diameter, VertexData);
+            BufferVertsDirect(DestGeometry, 6, VertexData, RightFaceNormalData, FaceColors);
+          }
+          {
+            LeftFaceVertexData( DestP, Diameter, VertexData);
+            BufferVertsDirect(DestGeometry, 6, VertexData, LeftFaceNormalData, FaceColors);
+          }
+          {
+            BottomFaceVertexData( DestP, Diameter, VertexData);
+            BufferVertsDirect(DestGeometry, 6, VertexData, BottomFaceNormalData, FaceColors);
+          }
+          {
+            TopFaceVertexData( DestP, Diameter, VertexData);
+            BufferVertsDirect(DestGeometry, 6, VertexData, TopFaceNormalData, FaceColors);
+          }
+          {
+            FrontFaceVertexData( DestP, Diameter, VertexData);
+            BufferVertsDirect(DestGeometry, 6, VertexData, FrontFaceNormalData, FaceColors);
+          }
+          {
+            BackFaceVertexData( DestP, Diameter, VertexData);
+            BufferVertsDirect(DestGeometry, 6, VertexData, BackFaceNormalData, FaceColors);
+          }
+        }
+        TmpIndex++;
+      }
+    }
+  }
+
+  Assert(TmpIndex == TmpVol);
+
+  DestGeometry->Timestamp = __rdtsc();
+}
+
+link_internal void
 BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
                                             chunk_dimension SrcChunkDim,
 

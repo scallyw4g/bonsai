@@ -468,33 +468,43 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     }
   }
 
-
   entity *Entity = MousePickEntity(Resources);
+
+  local_persist entity *MousePickedEntities[2] = {};
+  if (Input->LMB.Clicked && !Entity) { MousePickedEntities[0] = {}; MousePickedEntities[1] = {};}
+
+  if (MousePickedEntities[0]) { DrawEntityCollisionVolume(MousePickedEntities[0], &GpuMap->Buffer, Graphics, World->ChunkDim, ORANGE, 0.2f ); }
+  if (MousePickedEntities[1]) { DrawEntityCollisionVolume(MousePickedEntities[1], &GpuMap->Buffer, Graphics, World->ChunkDim, ORANGE, 0.2f ); }
+
+  if (Input->Enter.Clicked && MousePickedEntities[0] && MousePickedEntities[1])
+  {
+    voxel_synth_tile *Tile0 = (voxel_synth_tile*)MousePickedEntities[0]->UserData;
+    voxel_synth_tile *Tile1 = (voxel_synth_tile*)MousePickedEntities[1]->UserData;
+  }
+
   if (Entity)
   {
-    DrawEntityCollisionVolume(Entity, &GpuMap->Buffer, Graphics, World->ChunkDim, BLACK, 0.2f );
+    if (Input->LMB.Clicked)
+    {
+      if (MousePickedEntities[0] == 0) { MousePickedEntities[0] = Entity; }
+      else                             { MousePickedEntities[1] = Entity; } 
+    }
+
+    if      (Entity == MousePickedEntities[0]) { DrawEntityCollisionVolume(Entity, &GpuMap->Buffer, Graphics, World->ChunkDim, LIGHT_ORANGE, 0.3f ); }
+    else if (Entity == MousePickedEntities[1]) { DrawEntityCollisionVolume(Entity, &GpuMap->Buffer, Graphics, World->ChunkDim, LIGHT_ORANGE, 0.3f ); }
+    else                                       { DrawEntityCollisionVolume(Entity, &GpuMap->Buffer, Graphics, World->ChunkDim, BLACK,        0.3f ); }
 
     voxel_synth_tile *HoverTile = (voxel_synth_tile*)Entity->UserData;
     if (HoverTile)
     {
       voxel_synth_tile_buffer BakedTiles = BakeResult->Tiles;
       tile_ruleset_buffer Rules = BakeResult->Rules;
-      /* vox_data *VoxData = &BakeResult->VoxData; */
-      /* chunk_data *ChunkData = VoxData->ChunkData; */
       for (u32 BakedTileIndex = 0; BakedTileIndex < BakedTiles.Count; ++BakedTileIndex)
       {
         voxel_synth_tile *BakeTile = BakedTiles.Start+BakedTileIndex;
         if ( BakeTile->RuleId == HoverTile->RuleId )
         {
           entity *E = GameState->BakeEntity;
-          /* Info("HoverTile RuleId(%d) HashValue(%u)", HoverTile->RuleId, HoverTile->HashValue); */
-          /* Info(" BakeTile RuleId(%d) HashValue(%u)", BakeTile->RuleId, BakeTile->HashValue); */
-          /* DebugChars(" x rule count(%u)(", CountBitsSet_Kernighan(Rule->E[0])); PrintBinary(Rule->E[0]); DebugLine(")"); */
-          /* DebugChars("-x rule count(%u)(", CountBitsSet_Kernighan(Rule->E[1])); PrintBinary(Rule->E[1]); DebugLine(")"); */
-          /* DebugChars(" y rule count(%u)(", CountBitsSet_Kernighan(Rule->E[2])); PrintBinary(Rule->E[2]); DebugLine(")"); */
-          /* DebugChars("-y rule count(%u)(", CountBitsSet_Kernighan(Rule->E[3])); PrintBinary(Rule->E[3]); DebugLine(")"); */
-          /* DebugChars(" z rule count(%u)(", CountBitsSet_Kernighan(Rule->E[4])); PrintBinary(Rule->E[4]); DebugLine(")"); */
-          /* DebugChars("-z rule count(%u)(", CountBitsSet_Kernighan(Rule->E[5])); PrintBinary(Rule->E[5]); DebugLine(")"); */
 
           tile_ruleset *Rule = Get(&Rules, &HoverTile->RuleId);
 
@@ -549,15 +559,16 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/block_farm_degrading.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/grassy_block.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/grassy_block_2.vox"); */
-  GameState->BakeResult = BakeVoxelSynthesisRules("models/simple_grass.vox");
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("models/simple_grass.vox"); */
+  GameState->BakeResult = BakeVoxelSynthesisRules("models/pipes.vox");
 
   memory_arena *TempMemory = AllocateArena();
   DEBUG_REGISTER_ARENA(TempMemory, ThreadLocal_ThreadIndex);
 
-  tile_ruleset_buffer *Rulesets     = &GameState->BakeResult.Rules;
-  voxel_synth_tile_buffer BakedTiles =  GameState->BakeResult.Tiles;
-  vox_data *VoxData                  = &GameState->BakeResult.VoxData;
-  chunk_data *ChunkData              =  VoxData->ChunkData;
+  tile_ruleset_buffer    *Rulesets   = &GameState->BakeResult.Rules;
+  voxel_synth_tile_buffer BakedTiles = GameState->BakeResult.Tiles;
+  vox_data               *VoxData    = &GameState->BakeResult.VoxData;
+  chunk_data             *ChunkData  = VoxData->ChunkData;
 
   entity *BakeEntity = GetFreeEntity(EntityTable);
   GameState->BakeEntity = BakeEntity;
@@ -585,13 +596,22 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
         TileEntity->CollisionVolumeRadius = V3(Global_TileDim/2);
 
         // TODO(Jesse)(memory, heap, mesh)
-        AllocateMesh( &TileEntity->Model.Mesh, u32(Kilobytes(4)), Memory);
+        AllocateMesh( &TileEntity->Model.Mesh, u32(Kilobytes(18)), Memory);
 
-        BuildWorldChunkMeshFromMarkedVoxels_Greedy( ChunkData->Voxels, ChunkData->Dim,
+        BuildWorldChunkMeshFromMarkedVoxels_Greedy( ChunkData->Voxels,
+                                                    ChunkData->Dim,
                                                     VoxOffset, VoxOffset+Global_TileDim,
                                                    &TileEntity->Model.Mesh,
                                                     TempMemory,
                                                     VoxData->Palette );
+
+        /* BuildWorldChunkMesh_DebugVoxels( ChunkData->Voxels, */
+        /*                                  ChunkData->Dim, */
+        /*                                  VoxOffset, */
+        /*                                  VoxOffset+Global_TileDim, */
+        /*                                 &TileEntity->Model.Mesh, */
+        /*                                  TempMemory, */
+        /*                                  VoxData->Palette ); */
 
         TileEntity->P = BakeEntity->P;
         TileEntity->P.WorldP += V3i(0, -1, 0);
