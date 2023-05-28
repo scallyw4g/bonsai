@@ -1,13 +1,13 @@
 struct u32_cursor_staticbuffer
 {
-  u32_cursor Start[MAX_TILE_RULESETS];
+  u32_cursor Start[TILE_RULESETS_COUNT];
 };
 
 link_inline u32_cursor*
 GetPtr(u32_cursor_staticbuffer *Buf, umm Index)
 {
   u32_cursor *Result = {};
-  if ( Index < umm(MAX_TILE_RULESETS) )
+  if ( Index < umm(TILE_RULESETS_COUNT) )
   {
     Result = Buf->Start+Index;
   }
@@ -18,7 +18,7 @@ link_inline u32_cursor
 Get(u32_cursor_staticbuffer *Buf, umm Index)
 {
   Assert(Index >= 0);
-  Assert(Index < umm(MAX_TILE_RULESETS));
+  Assert(Index < umm(TILE_RULESETS_COUNT));
   u32_cursor Result = Buf->Start[Index];
   return Result;
 }
@@ -26,13 +26,13 @@ Get(u32_cursor_staticbuffer *Buf, umm Index)
 link_internal umm
 AtElements(u32_cursor_staticbuffer *Buf)
 {
-  return MAX_TILE_RULESETS;
+  return TILE_RULESETS_COUNT;
 }
 
 link_internal umm
 TotalElements(u32_cursor_staticbuffer *Buf)
 {
-  return MAX_TILE_RULESETS;
+  return TILE_RULESETS_COUNT;
 }
 
 link_internal void

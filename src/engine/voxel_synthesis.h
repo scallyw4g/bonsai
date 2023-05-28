@@ -40,18 +40,18 @@ typedef u64 tile_rule_page_type;
 
 #define BITS_PER_TILE_RULE_PAGE (sizeof(tile_rule_page_type)*8)
 
-#define TILE_RULE_PAGE_COUNT (3)
+#define TILE_RULE_PAGE_COUNT (4)
 struct tile_rule
 {
   tile_rule_page_type Pages[TILE_RULE_PAGE_COUNT];
 };
 
-/* poof(staticbuffer(tile_rule_page_type, {MAX_TILE_RULESETS})) */
+/* poof(staticbuffer(tile_rule_page_type, {TILE_RULESETS_COUNT})) */
 
 
 // TODO(Jesse): This constraint is now artificial.  It should be a runtime-sized buffer
-#define MAX_TILE_RULESETS (BITS_PER_TILE_RULE_PAGE)
-poof(staticbuffer(u32_cursor, {MAX_TILE_RULESETS}))
+#define TILE_RULESETS_COUNT (BITS_PER_TILE_RULE_PAGE*TILE_RULE_PAGE_COUNT)
+poof(staticbuffer(u32_cursor, {TILE_RULESETS_COUNT}))
 #include <generated/staticbuffer_u32_cursor_ptr_961996651.h>
 
 struct tile_ruleset

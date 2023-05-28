@@ -560,7 +560,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/grassy_block.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/grassy_block_2.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/simple_grass.vox"); */
-  GameState->BakeResult = BakeVoxelSynthesisRules("models/pipes.vox");
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("models/pipes.vox"); */
+  GameState->BakeResult = BakeVoxelSynthesisRules("models/random_squares.vox");
 
   memory_arena *TempMemory = AllocateArena();
   DEBUG_REGISTER_ARENA(TempMemory, ThreadLocal_ThreadIndex);
@@ -643,7 +644,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->BakeResult.TileSuperpositions    = TileSuperpositions;
 
   u32_cursor_staticbuffer *EntropyLists = &GameState->BakeResult.EntropyLists;
-  RangeIterator(EntropyListIndex, (s32)MAX_TILE_RULESETS)
+  RangeIterator(EntropyListIndex, (s32)TILE_RULESETS_COUNT)
   {
     GetPtr(EntropyLists, u32(EntropyListIndex))[0] = U32Cursor(umm(TileSuperpositionsCount), Memory);
   }
