@@ -40,7 +40,7 @@ typedef u64 tile_rule_page_type;
 
 #define BITS_PER_TILE_RULE_PAGE (sizeof(tile_rule_page_type)*8)
 
-#define TILE_RULE_PAGE_COUNT (2)
+#define TILE_RULE_PAGE_COUNT (3)
 struct tile_rule
 {
   tile_rule_page_type Pages[TILE_RULE_PAGE_COUNT];

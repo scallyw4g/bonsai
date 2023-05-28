@@ -548,8 +548,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/archway_with_floor.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/block_farm_degrading.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/grassy_block.vox"); */
-  GameState->BakeResult = BakeVoxelSynthesisRules("models/grassy_block_2.vox");
-  /* GameState->BakeResult = BakeVoxelSynthesisRules("models/simple_grass.vox"); */
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("models/grassy_block_2.vox"); */
+  GameState->BakeResult = BakeVoxelSynthesisRules("models/simple_grass.vox");
 
   memory_arena *TempMemory = AllocateArena();
   DEBUG_REGISTER_ARENA(TempMemory, ThreadLocal_ThreadIndex);
