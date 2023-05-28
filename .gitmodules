@@ -1,12 +1,9 @@
-[submodule "src/poof"]
-	path = src/poof
-	url = git@github.com:scallyw4g/poof
 [submodule "include/bonsai_debug"]
 	path = include/bonsai_debug
-	url = git@github.com:scallyw4g/bonsai_debug
+	url = ../bonsai_debug.git
 [submodule "include/bonsai_stdlib"]
 	path = include/bonsai_stdlib
-	url = git@github.com:scallyw4g/bonsai_stdlib
+	url = ../bonsai_stdlib.git
 [submodule "scripts"]
 	path = scripts
-	url = git@github.com:scallyw4g/bonsai_build_scripts
+	url = ../bonsai_build_scripts.git
