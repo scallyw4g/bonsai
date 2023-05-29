@@ -184,10 +184,10 @@ enum vox_loader_clip_behavior
 };
 
 vox_data
-LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepath, vox_loader_clip_behavior ClipBehavior, chunk_dimension HalfApronMin = {}, chunk_dimension HalfApronMax = {})
+LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepath, vox_loader_clip_behavior ClipBehavior, v3i HalfApronMin = {}, v3i HalfApronMax = {}, v3i ModDim = {})
 {
   vox_data Result = {};
-  chunk_dimension ReportedDim = {};
+  v3i ReportedDim = {};
 
   native_file ModelFile = OpenFile(filepath, "r+b");
 
@@ -290,17 +290,16 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
             }
           }
 
-          chunk_dimension Max = {};
-          chunk_dimension Min = {};
-          chunk_dimension ModelDim = {};
+          v3i Max = {};
+          v3i Min = {};
+          v3i ModelDim = {};
           switch (ClipBehavior)
           {
             case VoxLoaderClipBehavior_ClipToVoxels:
             {
-              InvalidCodePath();
               s32 IndexToPosition = 1;  // max(X,Y,Z) are indicies, convert to positions
-              Max = Chunk_Dimension(maxX+IndexToPosition, maxY+IndexToPosition, maxZ+IndexToPosition);
-              Min = Chunk_Dimension(minX, minY, minZ);
+              Max = V3i(maxX+IndexToPosition, maxY+IndexToPosition, maxZ+IndexToPosition);
+              Min = V3i(minX, minY, minZ);
               ModelDim = Max - Min + HalfApronMin + HalfApronMax;
             } break;
 
@@ -310,6 +309,12 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
             } break;
           }
 
+          if (ModDim.x || ModDim.y || ModDim.z)
+          {
+            v3i Fixup = ModDim - (ModelDim % ModDim);
+            ModelDim += Fixup;
+            Assert(ModelDim % ModDim == V3i(0));
+          }
 
 
           Result.ChunkData = AllocateChunkData(WorldStorage, ModelDim);

@@ -28,7 +28,7 @@ WriteRulesForAdjacentTile(tile_ruleset *ThisTileRules, v3i ThisTileP, voxel_synt
 }
 
 link_internal voxel_synthesis_result
-BakeVoxelSynthesisRules(const char* InputVox)
+BakeVoxelSynthesisRules(const char* InputVox, chunk_dimension VisibleRegion, chunk_dimension WorldChunkDim)
 {
   memory_arena *Memory = AllocateArena(Gigabytes(2));
   DEBUG_REGISTER_NAMED_ARENA(Memory, ThreadLocal_ThreadIndex, "VoxelSynthesisArena");
@@ -40,7 +40,20 @@ BakeVoxelSynthesisRules(const char* InputVox)
   Info("Synthesizing rules for (%s)", InputVox);
 
   /* vox_data Vox = LoadVoxData(Memory, &Heap, InputVox, Global_TileDim*2, Global_TileDim*2); */
-  vox_data Vox = LoadVoxData(Memory, &Heap, InputVox, VoxLoaderClipBehavior_NoClipping, {}, {{0, 0, Global_TileDim.z}});
+  vox_data Vox = LoadVoxData(Memory, &Heap, InputVox, VoxLoaderClipBehavior_ClipToVoxels, {{Global_TileDim.x*2, Global_TileDim.y*2, Global_TileDim.z*3}}, {{Global_TileDim.x*2, Global_TileDim.y*2, Global_TileDim.z}}, Global_TileDim);
+
+  v3i ModelDim = Vox.ChunkData->Dim;
+
+  v3i FillDim = ModelDim;
+  FillDim.z = Global_TileDim.z*3;
+  DimIterator(xIndex, yIndex, zIndex, FillDim)
+  {
+    s32 VIndex = GetIndex(xIndex, yIndex, zIndex, ModelDim);
+    Vox.ChunkData->Voxels[VIndex].Flags = Voxel_Filled;
+    Vox.ChunkData->Voxels[VIndex].Color = GRASS_GREEN;
+  }
+
+  MarkBoundaryVoxels_NoExteriorFaces(Vox.ChunkData->Voxels, Vox.ChunkData->Dim, {}, Vox.ChunkData->Dim);
 
   Assert(Vox.ChunkData->Dim.x % Global_TileDim.x == 0);
   Assert(Vox.ChunkData->Dim.y % Global_TileDim.y == 0);
@@ -116,6 +129,7 @@ BakeVoxelSynthesisRules(const char* InputVox)
       if (CurrentBitIndex == sizeof(Tile.RuleId.Bit)*8)
       {
         CurrentPageIndex++;
+        Assert(CurrentPageIndex < TILE_RULE_PAGE_COUNT);
         CurrentBitIndex = 0;
       }
 
@@ -228,10 +242,13 @@ GetOptionsForDirectionAndFinalChoice(v3i DirVector, tile_rule_id *Choice, tile_r
 link_internal b32
 PropagateChangesTo(voxel_synthesis_change_propagation_info_stack *ChangePropagationInfoStack, v3i SuperpositionsShape, tile_rule *TileSuperpositions, tile_ruleset_buffer *Rules, u32_cursor_staticbuffer *EntropyLists) //, u64 MaxTileEntropy)
 {
+  TIMED_FUNCTION();
   b32 Result = True;
 
   while (ChangePropagationInfoStack->At)
   {
+    debug_timed_function BlockTimer("InnerLoop");
+
     voxel_synthesis_change_propagation_info Info = Pop(ChangePropagationInfoStack);
 
     tile_rule PrevTileOptions = Info.PrevTileOptions;
@@ -346,13 +363,20 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
   tile_rule TileOptions = TileSuperpositionsStorage[TileIndex];
   do
   {
-    DeepCopy(EntropyListsStorage, &LocalEntropyLists);
+    {
+      TIMED_NAMED_BLOCK("EntropyListDeepCopy");
+      DeepCopy(EntropyListsStorage, &LocalEntropyLists);
+    }
 
     // TODO(Jesse): Make sure this can't fuck up when we change tile_rule to a pointer.
     // Already had 1 bug because of it.  It's also duplicated
     //
     // @memcopy_tile_superpositions
-    MemCopy((u8*)TileSuperpositionsStorage, (u8*)LocalTileSuperpositions, (umm)((umm)TileSuperpositionsCount*sizeof(tile_rule)));
+    {
+      TIMED_NAMED_BLOCK("MemCopy TileSuperpositionsStorage");
+      MemCopy((u8*)TileSuperpositionsStorage, (u8*)LocalTileSuperpositions, (umm)((umm)TileSuperpositionsCount*sizeof(tile_rule)));
+    }
+
     ChangePropagationInfoStack->At = 0;
 
     u32 OptionCount = CountOptions(&TileOptions);

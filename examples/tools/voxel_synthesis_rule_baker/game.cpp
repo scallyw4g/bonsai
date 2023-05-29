@@ -362,7 +362,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     }
 
 
-    if (Resources->FrameIndex % 5 == 0)
+    if (Error == False && Resources->FrameIndex % 5 == 0)
     {
       umm MaxStackDepth = (umm)TileSuperpositionsCount;
       voxel_synthesis_change_propagation_info_stack ChangePropagationInfoStack = VoxelSynthesisChangePropagationInfoStack(MaxStackDepth, GetTranArena());
@@ -561,7 +561,26 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/grassy_block_2.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/simple_grass.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/pipes.vox"); */
-  GameState->BakeResult = BakeVoxelSynthesisRules("models/random_squares.vox");
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("models/random_squares.vox"); */
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("models/AncientTemple.vox"); */
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu1.vox"); */
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu2.vox"); */
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu3.vox", g_VisibleRegion, WORLD_CHUNK_DIM); */
+
+  // GOOD
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu4.vox", g_VisibleRegion, WORLD_CHUNK_DIM); */
+  GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu5.vox", g_VisibleRegion, WORLD_CHUNK_DIM);
+
+  // Castle
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu10.vox", g_VisibleRegion, WORLD_CHUNK_DIM); */
+
+
+  // TOO MANY OPTIONS
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu6.vox", g_VisibleRegion, WORLD_CHUNK_DIM); */
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu7.vox", g_VisibleRegion, WORLD_CHUNK_DIM); */
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu8.vox", g_VisibleRegion, WORLD_CHUNK_DIM); */
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu9.vox", g_VisibleRegion, WORLD_CHUNK_DIM); */
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu16.vox", g_VisibleRegion, WORLD_CHUNK_DIM); */
 
   memory_arena *TempMemory = AllocateArena();
   DEBUG_REGISTER_ARENA(TempMemory, ThreadLocal_ThreadIndex);
