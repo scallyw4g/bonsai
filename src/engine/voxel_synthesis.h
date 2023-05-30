@@ -103,15 +103,20 @@ VoxelSynthTile( tile_rule_id RuleId, u32 VoxelIndex, u64 HashValue, chunk_data *
 link_internal u64
 AreEqual(voxel_synth_tile *T0, voxel_synth_tile *T1)
 {
-  u64 Result = False;
-  if (T0->HashValue == T1->HashValue)
+  u64 Result = T0->HashValue == T1->HashValue;
+  if (Result)
   {
-    umm TempVoxelsSizeInBytes = sizeof(voxel)*umm(Volume(Global_TileDim));
-    if (MemoryIsEqual((u8*)T0->Voxels, (u8*)T1->Voxels, TempVoxelsSizeInBytes))
+    /* umm TempVoxelsSizeInBytes = sizeof(voxel)*umm(Volume(Global_TileDim)); */
+    DimIterator(xIndex, yIndex, zIndex, Global_TileDim)
     {
-      Result = True;
+      auto i = GetIndex(xIndex, yIndex, zIndex, Global_TileDim);
+
+      Result &= (T0->Voxels[i].Flags&Voxel_Filled) == (T1->Voxels[i].Flags&Voxel_Filled) &&
+                             (T0->Voxels[i].Color) == (T1->Voxels[i].Color) ;
+      if (!Result) break;
     }
   }
+
   return Result;
 }
 
@@ -126,7 +131,10 @@ link_inline u64
 Hash(voxel *V, v3i P)
 {
   // Air voxels don't contribute to the hash, which is why we do the multiply
-  u64 Result = u64(P.x + P.y + P.z + V->Flags + V->Color) * (V->Flags & Voxel_Filled);
+  //
+  // Also not hashing all the flags because we actually don't care about
+  // which faces are exposed, just if the voxel is filled or not
+  u64 Result = u64(P.x + P.y + P.z + V->Color) * (V->Flags & Voxel_Filled);
   /* u64 Result = u64(V->Flags + V->Color); */
   return Result;
 }
@@ -150,8 +158,9 @@ GetElement(voxel_synth_tile_hashtable *Hashtable, voxel_synth_tile *Query)
   }
 
 #if BONSAI_INTERNAL
-  if (TileBucket == 0)
+  if (Result == 0)
   {
+    Assert(TileBucket==0);
     for (u32 Index = 0; Index < Hashtable->Size; ++Index)
     {
       voxel_synth_tile_linked_list_node *Bucket = GetHashBucket(Index, Hashtable);
