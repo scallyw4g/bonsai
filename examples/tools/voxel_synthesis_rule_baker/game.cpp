@@ -234,7 +234,8 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 link_internal s32
 PickNewTileIndex(u32_cursor_staticbuffer *EntropyLists, random_series *VoxelSynthesisEntropy, s32 LastTileIndex, v3i TileSuperpositionsDim)
 {
-  s32 Result = s32_MAX;
+#define TILE_INDEX_GENERATION_COMPLETE (s32_MAX)
+  s32 Result = TILE_INDEX_GENERATION_COMPLETE;
   // NOTE(Jesse): For now, I never push data onto lists of tiles with 0 entropy (it is an error to have 0)
   // or tiles with 1 entropy (which are fully decided)
   Assert( CurrentCount(GetPtr(EntropyLists, 0)) == 0);
@@ -243,7 +244,7 @@ PickNewTileIndex(u32_cursor_staticbuffer *EntropyLists, random_series *VoxelSynt
   auto LastTileP = V3(V3iFromIndex(LastTileIndex, TileSuperpositionsDim));
 
   r32 ClosestDistanceSq = f32_MAX;
-  s32 ClosestTileIndex = s32_MAX;
+  s32 ClosestTileIndex = TILE_INDEX_GENERATION_COMPLETE;
   /* IterateOverBackwards(EntropyLists, EntropyList, ListIdx) */
   IterateOver(EntropyLists, EntropyList, ListIdx)
   {
@@ -266,7 +267,7 @@ PickNewTileIndex(u32_cursor_staticbuffer *EntropyLists, random_series *VoxelSynt
         }
 
         Info("Chose new tile from EntropyIndex (%d)", ListIdx);
-        Assert(ClosestTileIndex < s32_MAX);
+        Assert(ClosestTileIndex < TILE_INDEX_GENERATION_COMPLETE);
         Ensure( Remove(EntropyList, u32(ClosestTileIndex) ) );
         Result = ClosestTileIndex;
         break;
@@ -275,9 +276,79 @@ PickNewTileIndex(u32_cursor_staticbuffer *EntropyLists, random_series *VoxelSynt
     }
   }
 
-  // If the lists are all empty, we return s32_MAX
+  // If the lists are all empty, we return TILE_INDEX_GENERATION_COMPLETE
   /* Assert(Result < Volume(TileSuperpositionsDim)); */
   return Result;
+}
+
+link_internal void
+PartiallyResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeResult, v3i ResetRadius, s32 IndexToReset, random_series *Entropy, memory_arena *TempMemory)
+{
+  tile_ruleset_buffer     *Rules                 = &BakeResult->Rules;
+  tile_rule                MaxTileEntropy        =  BakeResult->MaxTileEntropy;
+  v3i                      TileSuperpositionsDim =  BakeResult->TileSuperpositionsDim;
+  tile_rule               *TileSuperpositions    =  BakeResult->TileSuperpositions;
+  u32_cursor_staticbuffer *EntropyLists          = &BakeResult->EntropyLists;
+  s32 TileSuperpositionsCount                    =  Volume(TileSuperpositionsDim);
+
+  u32 MaxTileOptions = CountOptions(&MaxTileEntropy);
+
+  v3i ResetP = V3iFromIndex(IndexToReset, TileSuperpositionsDim);
+
+  tile_rule *RuleToReset = TileSuperpositions + IndexToReset;
+  u32 OptionCountToReset = CountOptions(RuleToReset);
+  Assert (OptionCountToReset);
+  Ensure( Push(GetPtr(EntropyLists, OptionCountToReset), u32(IndexToReset)) );
+
+  MinMaxIterator(xIndex, yIndex, zIndex, ResetP-ResetRadius, ResetP+ResetRadius)
+  {
+    v3i P = V3i(xIndex, yIndex, zIndex);
+    s32 TileIndex = TryGetIndex(P, TileSuperpositionsDim);
+    if (TileIndex > -1)
+    {
+      tile_rule *Rule = TileSuperpositions + TileIndex;
+      u32 OptionCount = CountOptions(Rule);
+      if (OptionCount)
+      {
+        Ensure( Remove(GetPtr(EntropyLists, OptionCount), u32(TileIndex)) );
+
+        *Rule = MaxTileEntropy;
+        Ensure( Push(GetPtr(EntropyLists, MaxTileOptions), u32(TileIndex)) );
+      }
+    }
+  }
+
+  umm MaxStackDepth = umm(TileSuperpositionsCount);
+  voxel_synthesis_change_propagation_info_stack ChangePropagationInfoStack = VoxelSynthesisChangePropagationInfoStack(MaxStackDepth, TempMemory);
+
+  do
+  {
+    ChangePropagationInfoStack.At = 0;
+
+    v3i PropagationRadius = ResetRadius+V3i(1);
+    MinMaxIterator(xIndex, yIndex, zIndex, ResetP-PropagationRadius, ResetP+PropagationRadius)
+    {
+      v3i P = V3i(xIndex, yIndex, zIndex);
+      s32 TileIndex = TryGetIndex(P, TileSuperpositionsDim);
+      if (TileIndex > -1)
+      {
+        tile_rule *Rule = TileSuperpositions + TileIndex;
+        if (CountOptions(Rule) != MaxTileOptions)
+        {
+          for (u32 DirIndex = 0; DirIndex < ArrayCount(AllDirections); ++DirIndex)
+          {
+            v3i NextDir = AllDirections[DirIndex];
+            Push(&ChangePropagationInfoStack, VoxelSynthesisChangePropagationInfo(*Rule, P, NextDir));
+          }
+        }
+      }
+    }
+
+    s32 PropResult = PropagateChangesTo(&ChangePropagationInfoStack, TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
+    if ((PropResult == 0 || PropResult == -1))
+      break;
+
+  } while (true);
 }
 
 link_internal s32
@@ -294,8 +365,8 @@ ResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeResult, ra
     List->At = List->Start;
   }
 
-  u32 MaxBitCount = CountOptions(&MaxTileEntropy);
-  u32_cursor *EntropyList = GetPtr(EntropyLists, MaxBitCount);
+  u32 MaxTileOptions = CountOptions(&MaxTileEntropy);
+  u32_cursor *EntropyList = GetPtr(EntropyLists, MaxTileOptions);
   EntropyList->At = EntropyList->Start;
 
   for (s32 TileIndex = 0; TileIndex < TileSuperpositionsCount; ++TileIndex)
@@ -305,15 +376,22 @@ ResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeResult, ra
   }
 
   // Seed world
+  //
   umm MaxStackDepth = umm(TileSuperpositionsCount);
   voxel_synthesis_change_propagation_info_stack ChangePropagationInfoStack = VoxelSynthesisChangePropagationInfoStack(MaxStackDepth, TempMemory);
+
   v3i TileP = RandomV3i(Entropy, TileSuperpositionsDim);
   TileP.z = 8;
   s32 TileIndex = GetIndex(TileP, TileSuperpositionsDim);
-  /* s32 TileIndex = RandomBetween(0, Entropy, TileSuperpositionsCount); */
-  /* s32 BitIndex = RandomBetween(0, Entropy, s32(CountBitsSet_Kernighan(MaxTileEntropy))); */
 
-  Ensure( Remove(GetPtr(EntropyLists, MaxBitCount), u32(TileIndex)) );
+  for (u32 DirIndex = 0; DirIndex < ArrayCount(AllDirections); ++DirIndex)
+  {
+    v3i NextDir = AllDirections[DirIndex];
+    auto Rule = TileSuperpositions + TileIndex;
+    Push(&ChangePropagationInfoStack, VoxelSynthesisChangePropagationInfo(*Rule, TileP, NextDir));
+  }
+
+  Ensure( Remove(GetPtr(EntropyLists, MaxTileOptions), u32(TileIndex)) );
   Ensure( InitializeWorld_VoxelSynthesis_Partial( BakeResult, World, Global_TileDim, Entropy, TileIndex, &ChangePropagationInfoStack ) );
 
   return TileIndex;
@@ -351,6 +429,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     local_persist s32 NextTileIndex = PickNewTileIndex(EntropyLists, &VoxelSynthesisEntropy, 0, BakeResult->TileSuperpositionsDim);
 
     u32 TilesToCollapsePerFrame = 1;
+    local_persist b32 FatalError = False;
+    local_persist b32 ErrorLastFrame = False;
     local_persist b32 Error = False;
 
 
@@ -362,8 +442,11 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     }
 
 
-    if (Error == False && Resources->FrameIndex % 5 == 0)
+    local_persist f32 SinceLast = 0.f;
+    SinceLast += Plat->dt;
+    if (Error == False && SinceLast > 0.1f)
     {
+      SinceLast = 0.0f;
       umm MaxStackDepth = (umm)TileSuperpositionsCount;
       voxel_synthesis_change_propagation_info_stack ChangePropagationInfoStack = VoxelSynthesisChangePropagationInfoStack(MaxStackDepth, GetTranArena());
       if ( InitializeWorld_VoxelSynthesis_Partial(  BakeResult, World,
@@ -376,7 +459,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         Error = True;
       }
 
-      if (PrevTileIndex != s32_MAX)
+      if (PrevTileIndex != TILE_INDEX_GENERATION_COMPLETE)
       {
         v3i Radius = World->VisibleRegion/2;
         v3i Min = World->Center - Radius;
@@ -406,9 +489,32 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         }
       }
 
-      if (!Error)
+      v3i ResetRadius = V3i(2);
+      if (ErrorLastFrame)
       {
-        if (NextTileIndex != s32_MAX && PrevTileIndex != s32_MAX)
+        ResetRadius = V3i(4);
+      }
+
+      if (Error)
+      {
+        if (ErrorLastFrame)
+        {
+          Error = True;
+          ErrorLastFrame = True;
+          FatalError = True;
+        }
+        else
+        {
+          ErrorLastFrame = True;
+          Error = False;
+          PartiallyResetVoxelSynthesisProgress(World, BakeResult, ResetRadius, NextTileIndex, &VoxelSynthesisEntropy, GetTranArena());
+        }
+
+      }
+      else
+      {
+        ErrorLastFrame = False;
+        if (NextTileIndex != TILE_INDEX_GENERATION_COMPLETE && PrevTileIndex != TILE_INDEX_GENERATION_COMPLETE)
         {
           PrevTileIndex = NextTileIndex;
           NextTileIndex = PickNewTileIndex(EntropyLists, &VoxelSynthesisEntropy, OriginTileIndex, BakeResult->TileSuperpositionsDim);
@@ -418,7 +524,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
 
 
-    if (PrevTileIndex != s32_MAX)
+    if (PrevTileIndex != TILE_INDEX_GENERATION_COMPLETE)
     {
       v3i TileP = V3iFromIndex(PrevTileIndex, BakeResult->TileSuperpositionsDim);
 
@@ -428,7 +534,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       DEBUG_DrawAABB(&GpuMap->Buffer, TileRect, GREEN, DEFAULT_LINE_THICKNESS*2.f);
     }
 
-    if (NextTileIndex != s32_MAX)
+    if (NextTileIndex != TILE_INDEX_GENERATION_COMPLETE)
     {
       v3i TileP = V3iFromIndex(NextTileIndex, BakeResult->TileSuperpositionsDim);
 
@@ -563,15 +669,16 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/pipes.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/random_squares.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/AncientTemple.vox"); */
-  /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu1.vox"); */
-  /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu2.vox"); */
+
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu1.vox", g_VisibleRegion, WORLD_CHUNK_DIM); */
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu2.vox", g_VisibleRegion, WORLD_CHUNK_DIM); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu3.vox", g_VisibleRegion, WORLD_CHUNK_DIM); */
 
   // GOOD
   /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu4.vox", g_VisibleRegion, WORLD_CHUNK_DIM); */
   GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu5.vox", g_VisibleRegion, WORLD_CHUNK_DIM);
 
-  // Castle
+  /* // Castle */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu10.vox", g_VisibleRegion, WORLD_CHUNK_DIM); */
 
 

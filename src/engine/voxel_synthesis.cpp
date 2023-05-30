@@ -239,11 +239,16 @@ GetOptionsForDirectionAndFinalChoice(v3i DirVector, tile_rule_id *Choice, tile_r
   return Result;
 }
 
-link_internal b32
-PropagateChangesTo(voxel_synthesis_change_propagation_info_stack *ChangePropagationInfoStack, v3i SuperpositionsShape, tile_rule *TileSuperpositions, tile_ruleset_buffer *Rules, u32_cursor_staticbuffer *EntropyLists) //, u64 MaxTileEntropy)
+link_internal s32
+PropagateChangesTo( voxel_synthesis_change_propagation_info_stack *ChangePropagationInfoStack,
+                    v3i SuperpositionsShape,
+                    tile_rule *TileSuperpositions,
+                    tile_ruleset_buffer *Rules,
+                    u32_cursor_staticbuffer *EntropyLists )
 {
+
   TIMED_FUNCTION();
-  b32 Result = True;
+  s32 ChangesPropagated = 0;
 
   while (ChangePropagationInfoStack->At)
   {
@@ -263,7 +268,7 @@ PropagateChangesTo(voxel_synthesis_change_propagation_info_stack *ChangePropagat
       tile_rule *NextTile = TileSuperpositions + NextTileIndex;
 
       tile_rule NextTileStartingValue = *NextTile;
-      Assert(CountOptions(&NextTileStartingValue) > 0);
+      /* Assert(CountOptions(&NextTileStartingValue) > 0); */
 
       u32 OptionCount = CountOptions(NextTile);
       if (OptionCount > 0)
@@ -300,7 +305,7 @@ PropagateChangesTo(voxel_synthesis_change_propagation_info_stack *ChangePropagat
       {
         // We failed
         Clear(NextTile);
-        Result = False;
+        ChangesPropagated = -1;
         break;
       }
 
@@ -308,6 +313,7 @@ PropagateChangesTo(voxel_synthesis_change_propagation_info_stack *ChangePropagat
       // such that we don't have to the NextTileStartingValue
       if ( *NextTile != NextTileStartingValue )
       {
+        ++ChangesPropagated;
         Assert(CountOptions(NextTile) != 0);
         for (u32 DirIndex = 0; DirIndex < ArrayCount(AllDirections); ++DirIndex)
         {
@@ -323,7 +329,7 @@ PropagateChangesTo(voxel_synthesis_change_propagation_info_stack *ChangePropagat
     }
   }
 
-  return Result;
+  return ChangesPropagated;
 }
 
 link_internal b32
@@ -405,7 +411,7 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
       break;
     }
 
-  } while (PropagateChangesTo(ChangePropagationInfoStack, TileSuperpositionsDim, LocalTileSuperpositions, Rules, &LocalEntropyLists) == False);
+  } while (PropagateChangesTo(ChangePropagationInfoStack, TileSuperpositionsDim, LocalTileSuperpositions, Rules, &LocalEntropyLists) == -1);
 
   if (Result)
   {

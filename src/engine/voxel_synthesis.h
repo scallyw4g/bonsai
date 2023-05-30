@@ -7,7 +7,6 @@ global_variable v3i AllDirections[] = {
   V3i( 0, 0,-1),
 };
 
-
 global_variable v3i Global_TileDim = V3i(8);
 
 enum voxel_rule_direction
