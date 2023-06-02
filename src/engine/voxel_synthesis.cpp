@@ -28,7 +28,7 @@ WriteRulesForAdjacentTile(tile_ruleset *ThisTileRules, v3i ThisTileP, voxel_synt
 }
 
 link_internal voxel_synthesis_result
-BakeVoxelSynthesisRules(const char* InputVox, chunk_dimension VisibleRegion, chunk_dimension WorldChunkDim)
+BakeVoxelSynthesisRules(const char* InputVox)
 {
   memory_arena *Memory = AllocateArena(Gigabytes(2));
   DEBUG_REGISTER_NAMED_ARENA(Memory, ThreadLocal_ThreadIndex, "VoxelSynthesisArena");
@@ -268,13 +268,17 @@ PropagateChangesTo( voxel_synthesis_change_propagation_info_stack *ChangePropaga
       tile_rule *NextTile = TileSuperpositions + NextTileIndex;
 
       tile_rule NextTileStartingValue = *NextTile;
+
+      // NOTE(Jesse): This should hold true, but fires when we've got a bug.
+      // We also draw buggy tiles filled with bright red, which is pretty obvious
       /* Assert(CountOptions(&NextTileStartingValue) > 0); */
 
-      u32 OptionCount = CountOptions(NextTile);
-      if (OptionCount > 0)
-      {
-        Ensure( Remove(GetPtr(EntropyLists, OptionCount), u32(NextTileIndex)) );
-      }
+      /* u32 OptionCount = CountOptions(NextTile); */
+      /* if (OptionCount > 0) */
+      /* { */
+        /* Ensure( Remove(GetPtr(EntropyLists, OptionCount), u32(NextTileIndex)) ); */
+        RemoveEntropyListEntry(EntropyLists, NextTile, NextTileIndex, TileSuperpositions);
+      /* } */
 
       tile_rule NextTileOptions = {};
       tile_rule CachedOptions = PrevTileOptions;
@@ -288,6 +292,7 @@ PropagateChangesTo( voxel_synthesis_change_propagation_info_stack *ChangePropaga
         tile_rule_id Option = {};
         UnsetLeastSignificantOption(&CachedOptions, &Option);
         Assert(CountBitsSet_Kernighan(Option.Bit) == 1);
+
         tile_rule NewOptions = GetOptionsForDirectionAndFinalChoice(DirOfTravel, &Option, Rules);
         NextTileOptions = OrTogether(&NextTileOptions, &NewOptions);
       }
@@ -299,7 +304,8 @@ PropagateChangesTo( voxel_synthesis_change_propagation_info_stack *ChangePropaga
         *NextTile = AndResult;
         u32 NewOptionCount = CountOptions(NextTile);
         Assert(NewOptionCount > 0);
-        Push(GetPtr(EntropyLists, NewOptionCount), u32(NextTileIndex));
+        /* Push(GetPtr(EntropyLists, NewOptionCount), u32(NextTileIndex)); */
+        PushEntropyListEntry(EntropyLists, NextTile, NextTileIndex, TileSuperpositions);
       }
       else
       {
@@ -318,7 +324,7 @@ PropagateChangesTo( voxel_synthesis_change_propagation_info_stack *ChangePropaga
         for (u32 DirIndex = 0; DirIndex < ArrayCount(AllDirections); ++DirIndex)
         {
           v3i NextDir = AllDirections[DirIndex];
-          if (NextDir != -1*DirOfTravel)
+          /* if (NextDir != -1*DirOfTravel) */
           {
             Push(ChangePropagationInfoStack, VoxelSynthesisChangePropagationInfo(NextTileOptions, ThisTileP, NextDir));
           }
@@ -356,7 +362,7 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
   auto TileSuperpositionsCount = Volume(TileSuperpositionsDim);
   if (TileIndex >= TileSuperpositionsCount) return Result;
 
-  DebugLine("TileIndex(%u)", TileIndex);
+  /* DebugLine("TileIndex(%u)", TileIndex); */
 
   tile_rule *LocalTileSuperpositions = Allocate(tile_rule, GetTranArena(), TileSuperpositionsCount);
 
@@ -365,8 +371,17 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
   {
     *Element = U32Cursor(umm(TileSuperpositionsCount), GetTranArena());
   }
+
   tile_rule TileChoice = {};
+  //
+  // NOTE(Jesse): We have to copy this value onto the stack!
   tile_rule TileOptions = TileSuperpositionsStorage[TileIndex];
+  u32 StartingTileOptionsCount = CountOptions(&TileOptions);
+
+  Ensure(FindListContaining(EntropyListsStorage, u32(TileIndex)) != u32_MAX);
+  /* RemoveEntropyListEntry(EntropyListsStorage, &TileOptions, TileIndex, TileSuperpositionsStorage); */
+  /* PushEntropyListEntry(EntropyListsStorage, &TileOptions, TileIndex, TileSuperpositionsStorage); */
+
   do
   {
     {
@@ -383,11 +398,15 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
       MemCopy((u8*)TileSuperpositionsStorage, (u8*)LocalTileSuperpositions, (umm)((umm)TileSuperpositionsCount*sizeof(tile_rule)));
     }
 
+    /* SanityCheckEntropyLists(&LocalEntropyLists, LocalTileSuperpositions, TileSuperpositionsDim); */
+    /* SanityCheckEntropyLists(EntropyListsStorage, TileSuperpositionsStorage, TileSuperpositionsDim); */
+
     ChangePropagationInfoStack->At = 0;
 
     u32 OptionCount = CountOptions(&TileOptions);
     if (OptionCount)
     {
+
       // TODO(Jesse): This should (at least in my head) be able to return (1, N) inclusive
       // but it does not for (1, 2)
       u32 BitChoice = RandomBetween(1u, Series, OptionCount+1u);
@@ -397,13 +416,20 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
 
       LocalTileSuperpositions[TileIndex] = TileChoice;
       UnsetRule(&TileOptions, &TileChoice);
-      Push( GetPtr(&LocalEntropyLists, 1), u32(TileIndex) );
+
+      // TODO(Jesse): This can happen outside the loop
+      Ensure( Remove( GetPtr(&LocalEntropyLists, StartingTileOptionsCount), u32(TileIndex) ));
+
+      Ensure( Push( GetPtr(&LocalEntropyLists, 1), u32(TileIndex) ));
 
       v3i P = V3iFromIndex(TileIndex, TileSuperpositionsDim);
       RangeIterator(DirIndex, (s32)ArrayCount(AllDirections))
       {
         Push(ChangePropagationInfoStack, VoxelSynthesisChangePropagationInfo(TileChoice,  P, AllDirections[DirIndex]));
       }
+
+      /* SanityCheckEntropyLists(&LocalEntropyLists, LocalTileSuperpositions, TileSuperpositionsDim); */
+      /* SanityCheckEntropyLists(EntropyListsStorage, TileSuperpositionsStorage, TileSuperpositionsDim); */
     }
     else
     {
@@ -413,6 +439,7 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
 
   } while (PropagateChangesTo(ChangePropagationInfoStack, TileSuperpositionsDim, LocalTileSuperpositions, Rules, &LocalEntropyLists) == -1);
 
+  /* SanityCheckEntropyLists(EntropyListsStorage, TileSuperpositionsStorage, TileSuperpositionsDim); */
   if (Result)
   {
     Assert(CountOptions(&TileChoice) == 1);
@@ -422,5 +449,6 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
     MemCopy((u8*)LocalTileSuperpositions, (u8*)TileSuperpositionsStorage, (umm)((umm)TileSuperpositionsCount*sizeof(tile_rule)));
   }
 
+  SanityCheckEntropyLists(EntropyListsStorage, TileSuperpositionsStorage, TileSuperpositionsDim);
   return Result;
 }

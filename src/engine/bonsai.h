@@ -783,17 +783,18 @@ GetIndexUnsafe(s32 X, s32 Y, s32 Z, chunk_dimension Dim)
 inline voxel_position
 V3iFromIndex(s32 Index, chunk_dimension Dim)
 {
- int x = Index % Dim.x;
- int y = (Index/Dim.x) % Dim.y;
- int z = Index / (Dim.x*Dim.y);
+  Assert(Index >= 0);
+  int x = Index % Dim.x;
+  int y = (Index/Dim.x) % Dim.y;
+  int z = Index / (Dim.x*Dim.y);
 
- // TODO(Jesse): Should this acutally not be strictly less than ..?
- Assert(x <= Dim.x);
- Assert(y <= Dim.y);
- Assert(z <= Dim.z);
+  // TODO(Jesse): Should this acutally not be strictly less than ..?
+  Assert(x < Dim.x);
+  Assert(y < Dim.y);
+  Assert(z < Dim.z);
 
- voxel_position Result = Voxel_Position(x,y,z);
- return Result;
+  voxel_position Result = Voxel_Position(x,y,z);
+  return Result;
 }
 
 inline voxel_position

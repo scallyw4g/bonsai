@@ -185,6 +185,7 @@ PlatformInit(platform *Plat, memory_arena *Memory)
 
   u32 LogicalCoreCount = PlatformGetLogicalCoreCount();
   u32 WorkerThreadCount = GetWorkerThreadCount();
+  s32 TotalThreadCount  = (s32)GetTotalThreadCount();
   Info("Detected %u Logical cores, creating %u threads", LogicalCoreCount, WorkerThreadCount);
 
   /* Plat->QueueSemaphore = CreateSemaphore(); */
@@ -192,7 +193,7 @@ PlatformInit(platform *Plat, memory_arena *Memory)
   InitQueue(&Plat->LowPriority, Plat->Memory); //, &Plat->QueueSemaphore);
   InitQueue(&Plat->HighPriority, Plat->Memory); //, &Plat->QueueSemaphore);
 
-  Plat->Threads = Allocate(thread_startup_params, Plat->Memory, WorkerThreadCount);
+  Plat->Threads = Allocate(thread_startup_params, Plat->Memory, TotalThreadCount);
 
 #if BONSAI_NETWORK_IMPLEMENTATION
   Plat->ServerState = ServerInit(GameMemory);

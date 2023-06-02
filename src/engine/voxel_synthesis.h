@@ -111,8 +111,14 @@ AreEqual(voxel_synth_tile *T0, voxel_synth_tile *T1)
     {
       auto i = GetIndex(xIndex, yIndex, zIndex, Global_TileDim);
 
-      Result &= (T0->Voxels[i].Flags&Voxel_Filled) == (T1->Voxels[i].Flags&Voxel_Filled) &&
-                             (T0->Voxels[i].Color) == (T1->Voxels[i].Color) ;
+      Result &=
+#if VOXEL_FACE_FLAGS_CONTRIBUTE_TO_HASH
+                      (T0->Voxels[i].Flags) == (T1->Voxels[i].Flags) &&
+#else
+        (T0->Voxels[i].Flags&Voxel_Filled) == (T1->Voxels[i].Flags&Voxel_Filled) &&
+#endif
+                     (T0->Voxels[i].Color) == (T1->Voxels[i].Color);
+
       if (!Result) break;
     }
   }
@@ -127,14 +133,19 @@ Hash(voxel_synth_tile *Tile)
   return Result;
 }
 
+#define VOXEL_FACE_FLAGS_CONTRIBUTE_TO_HASH (1)
+
 link_inline u64
 Hash(voxel *V, v3i P)
 {
   // Air voxels don't contribute to the hash, which is why we do the multiply
   //
-  // Also not hashing all the flags because we actually don't care about
-  // which faces are exposed, just if the voxel is filled or not
+#if VOXEL_FACE_FLAGS_CONTRIBUTE_TO_HASH
+  u64 Result = u64(P.x + P.y + P.z + V->Flags + V->Color) * (V->Flags & Voxel_Filled);
+#else
   u64 Result = u64(P.x + P.y + P.z + V->Color) * (V->Flags & Voxel_Filled);
+#endif
+
   /* u64 Result = u64(V->Flags + V->Color); */
   return Result;
 }
@@ -449,3 +460,84 @@ operator!=(tile_rule R1, tile_rule R2)
   return Result;
 }
 
+
+
+link_internal u32
+FindListContaining(u32_cursor_staticbuffer *EntropyLists, u32 QueryIndex)
+{
+  u32 Result = u32_MAX;
+
+  IterateOver(EntropyLists, EntropyList, EntropyListIndex)
+  {
+    IterateOver(EntropyList, TileIndex, EntropyIndex)
+    {
+      if (*TileIndex == QueryIndex)
+      {
+        // NOTE(Jesse): Wrote this as a debugging function so I'm not breaking out
+        Assert(Result == u32_MAX);
+        Result = u32(EntropyListIndex);
+      }
+    }
+  }
+
+  return Result;
+}
+
+link_internal void
+SanityCheckEntropyLists(u32_cursor_staticbuffer *EntropyLists, tile_rule *TileSuperpositions, v3i TileSuperpositionsDim)
+{
+#if 0
+  s32 TileSuperpositionsCount = Volume(TileSuperpositionsDim);
+
+  // NOTE(Jesse): This ensures we have no duplicates.
+  RangeIterator(TileIndex, TileSuperpositionsCount)
+  {
+    tile_rule *Tile = TileSuperpositions + TileIndex;
+    u32 ListIndex = FindListContaining(EntropyLists, u32(TileIndex));
+
+    u32 BitsSet = CountOptions(Tile);
+    Assert(ListIndex == BitsSet);
+  }
+#endif
+
+#if 0
+  IterateOver(EntropyLists, EntropyList, EntropyListIndex)
+  {
+    IterateOver(EntropyList, TileIndex, EntropyIndex)
+    {
+      tile_rule *Rule = TileSuperpositions+*TileIndex;
+      u32 BitsSet = CountOptions(Rule);
+      Assert(BitsSet == EntropyListIndex);
+    }
+  }
+#endif
+
+}
+
+link_internal void
+PushEntropyListEntry(u32_cursor_staticbuffer *EntropyLists, tile_rule *Rule, s32 TileIndex, tile_rule *TileSuperpositions)
+{
+  /* SanityCheckEntropyLists(EntropyLists, TileSuperpositions); */
+  u32 OptionCount = CountOptions(Rule);
+  Assert(Rule == (TileSuperpositions+TileIndex));
+
+  if (OptionCount)
+  {
+    Ensure( Push(GetPtr(EntropyLists, OptionCount), u32(TileIndex)) );
+  }
+  /* SanityCheckEntropyLists(EntropyLists, TileSuperpositions); */
+}
+
+link_internal void
+RemoveEntropyListEntry(u32_cursor_staticbuffer *EntropyLists, tile_rule *Rule, s32 TileIndex, tile_rule *TileSuperpositions)
+{
+  /* SanityCheckEntropyLists(EntropyLists, TileSuperpositions); */
+  u32 OptionCount = CountOptions(Rule);
+  Assert(Rule == (TileSuperpositions+TileIndex));
+
+  if (OptionCount)
+  {
+    Ensure( Remove(GetPtr(EntropyLists, OptionCount), u32(TileIndex)) );
+  }
+  /* SanityCheckEntropyLists(EntropyLists, TileSuperpositions); */
+}
