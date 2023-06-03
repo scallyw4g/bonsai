@@ -21,7 +21,7 @@ MakeDebugLibRelease=0
 . scripts/preamble.sh
 . scripts/setup_for_cxx.sh
 
-# OPTIMIZATION_LEVEL="-O0"
+OPTIMIZATION_LEVEL="-O2"
 EMCC=0
 
 

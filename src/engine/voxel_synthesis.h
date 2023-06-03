@@ -486,6 +486,8 @@ FindListContaining(u32_cursor_staticbuffer *EntropyLists, u32 QueryIndex)
 link_internal void
 SanityCheckEntropyLists(u32_cursor_staticbuffer *EntropyLists, tile_rule *TileSuperpositions, v3i TileSuperpositionsDim)
 {
+  TIMED_FUNCTION();
+
 #if 0
   s32 TileSuperpositionsCount = Volume(TileSuperpositionsDim);
 
@@ -521,7 +523,7 @@ PushEntropyListEntry(u32_cursor_staticbuffer *EntropyLists, tile_rule *Rule, s32
   u32 OptionCount = CountOptions(Rule);
   Assert(Rule == (TileSuperpositions+TileIndex));
 
-  if (OptionCount)
+  /* if (OptionCount) */
   {
     Ensure( Push(GetPtr(EntropyLists, OptionCount), u32(TileIndex)) );
   }
@@ -535,7 +537,7 @@ RemoveEntropyListEntry(u32_cursor_staticbuffer *EntropyLists, tile_rule *Rule, s
   u32 OptionCount = CountOptions(Rule);
   Assert(Rule == (TileSuperpositions+TileIndex));
 
-  if (OptionCount)
+  /* if (OptionCount) */
   {
     Ensure( Remove(GetPtr(EntropyLists, OptionCount), u32(TileIndex)) );
   }

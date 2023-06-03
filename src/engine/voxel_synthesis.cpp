@@ -262,71 +262,69 @@ PropagateChangesTo( voxel_synthesis_change_propagation_info_stack *ChangePropaga
 
     v3i ThisTileP = PrevTileP+DirOfTravel;
 
-    s32 NextTileIndex = TryGetIndex(ThisTileP, SuperpositionsShape);
-    if (NextTileIndex >= 0)
+    s32 ThisTileIndex = TryGetIndex(ThisTileP, SuperpositionsShape);
+    if (ThisTileIndex >= 0)
     {
-      tile_rule *NextTile = TileSuperpositions + NextTileIndex;
-
-      tile_rule NextTileStartingValue = *NextTile;
+      tile_rule *ThisTile = TileSuperpositions + ThisTileIndex;
+      tile_rule ThisTileStartingValue = *ThisTile;
 
       // NOTE(Jesse): This should hold true, but fires when we've got a bug.
       // We also draw buggy tiles filled with bright red, which is pretty obvious
-      /* Assert(CountOptions(&NextTileStartingValue) > 0); */
+      /* Assert(CountOptions(&ThisTileStartingValue) > 0); */
 
-      /* u32 OptionCount = CountOptions(NextTile); */
+      /* u32 OptionCount = CountOptions(ThisTile); */
       /* if (OptionCount > 0) */
       /* { */
-        /* Ensure( Remove(GetPtr(EntropyLists, OptionCount), u32(NextTileIndex)) ); */
-        RemoveEntropyListEntry(EntropyLists, NextTile, NextTileIndex, TileSuperpositions);
+        /* Ensure( Remove(GetPtr(EntropyLists, OptionCount), u32(ThisTileIndex)) ); */
+        RemoveEntropyListEntry(EntropyLists, ThisTile, ThisTileIndex, TileSuperpositions);
       /* } */
 
-      tile_rule NextTileOptions = {};
-      tile_rule CachedOptions = PrevTileOptions;
+      tile_rule OptionsToPropagate = {};
+      tile_rule CachedPrevTileOptions = PrevTileOptions;
 
-      u32 TotalOptions = CountOptions(&CachedOptions);
-      u32 OptionsRemaining = TotalOptions;
-      while (OptionsRemaining)
+      u32 TotalPrevOptions = CountOptions(&CachedPrevTileOptions);
+      u32 PrevOptionsRemaining = TotalPrevOptions;
+      while (PrevOptionsRemaining)
       {
-        --OptionsRemaining;
+        --PrevOptionsRemaining;
 
         tile_rule_id Option = {};
-        UnsetLeastSignificantOption(&CachedOptions, &Option);
+        UnsetLeastSignificantOption(&CachedPrevTileOptions, &Option);
         Assert(CountBitsSet_Kernighan(Option.Bit) == 1);
 
         tile_rule NewOptions = GetOptionsForDirectionAndFinalChoice(DirOfTravel, &Option, Rules);
-        NextTileOptions = OrTogether(&NextTileOptions, &NewOptions);
+        OptionsToPropagate = OrTogether(&OptionsToPropagate, &NewOptions);
       }
 
       tile_rule AndResult = {};
-      if (AndTogether(NextTile, &NextTileOptions, &AndResult))
+      if (AndTogether(ThisTile, &OptionsToPropagate, &AndResult))
       {
         Assert(CountOptions(&AndResult) > 0);
-        *NextTile = AndResult;
-        u32 NewOptionCount = CountOptions(NextTile);
+        *ThisTile = AndResult;
+        u32 NewOptionCount = CountOptions(ThisTile);
         Assert(NewOptionCount > 0);
-        /* Push(GetPtr(EntropyLists, NewOptionCount), u32(NextTileIndex)); */
-        PushEntropyListEntry(EntropyLists, NextTile, NextTileIndex, TileSuperpositions);
+        /* Push(GetPtr(EntropyLists, NewOptionCount), u32(ThisTileIndex)); */
+        PushEntropyListEntry(EntropyLists, ThisTile, ThisTileIndex, TileSuperpositions);
       }
       else
       {
         // We failed
-        Clear(NextTile);
+        Clear(ThisTile);
+        PushEntropyListEntry(EntropyLists, ThisTile, ThisTileIndex, TileSuperpositions);
         ChangesPropagated = -1;
         break;
       }
 
-      // TODO(Jesse): This branch should go into the "AndTogether" true branch
-      // such that we don't have to the NextTileStartingValue
-      if ( *NextTile != NextTileStartingValue )
+      if ( *ThisTile != ThisTileStartingValue )
       {
         ++ChangesPropagated;
-        Assert(CountOptions(NextTile) != 0);
-        for (u32 DirIndex = 0; DirIndex < ArrayCount(AllDirections); ++DirIndex)
+        Assert(CountOptions(ThisTile) != 0);
+        for (u32 DirIndex = 0; DirIndex < VoxelRuleDir_Count; ++DirIndex)
         {
           v3i NextDir = AllDirections[DirIndex];
           /* if (NextDir != -1*DirOfTravel) */
           {
-            Push(ChangePropagationInfoStack, VoxelSynthesisChangePropagationInfo(NextTileOptions, ThisTileP, NextDir));
+            Push(ChangePropagationInfoStack, VoxelSynthesisChangePropagationInfo(OptionsToPropagate, ThisTileP, NextDir));
           }
         }
 
@@ -406,7 +404,6 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
     u32 OptionCount = CountOptions(&TileOptions);
     if (OptionCount)
     {
-
       // TODO(Jesse): This should (at least in my head) be able to return (1, N) inclusive
       // but it does not for (1, 2)
       u32 BitChoice = RandomBetween(1u, Series, OptionCount+1u);
@@ -419,11 +416,10 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
 
       // TODO(Jesse): This can happen outside the loop
       Ensure( Remove( GetPtr(&LocalEntropyLists, StartingTileOptionsCount), u32(TileIndex) ));
-
       Ensure( Push( GetPtr(&LocalEntropyLists, 1), u32(TileIndex) ));
 
       v3i P = V3iFromIndex(TileIndex, TileSuperpositionsDim);
-      RangeIterator(DirIndex, (s32)ArrayCount(AllDirections))
+      RangeIterator(DirIndex, VoxelRuleDir_Count)
       {
         Push(ChangePropagationInfoStack, VoxelSynthesisChangePropagationInfo(TileChoice,  P, AllDirections[DirIndex]));
       }
@@ -437,7 +433,37 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
       break;
     }
 
-  } while (PropagateChangesTo(ChangePropagationInfoStack, TileSuperpositionsDim, LocalTileSuperpositions, Rules, &LocalEntropyLists) == -1);
+    s32 Changes = PropagateChangesTo(ChangePropagationInfoStack, TileSuperpositionsDim, LocalTileSuperpositions, Rules, &LocalEntropyLists);
+    if (Changes > -1)
+    {
+      Assert(ChangePropagationInfoStack->At == 0);
+
+#if 0
+      // Debug code
+      {
+        v3i P = V3iFromIndex(TileIndex, TileSuperpositionsDim);
+        MinMaxIterator(xIndex, yIndex, zIndex, P-V3i(2), P+V3i(2))
+        {
+          v3i DebugTileP = V3i(xIndex, yIndex, zIndex);
+          s32 DebugTileIndex = TryGetIndex(DebugTileP, TileSuperpositionsDim);
+          if (DebugTileIndex > -1)
+          {
+            auto DebugTile = LocalTileSuperpositions + DebugTileIndex;
+            /* RangeIterator(DirIndex, VoxelRuleDir_Count) */
+            /* { */
+            /*   Push(ChangePropagationInfoStack, VoxelSynthesisChangePropagationInfo(*DebugTile, DebugTileP, AllDirections[DirIndex])); */
+            /* } */
+            /* s32 Inner = PropagateChangesTo(ChangePropagationInfoStack, TileSuperpositionsDim, LocalTileSuperpositions, Rules, &LocalEntropyLists); */
+            /* Assert(Inner == 0);; */
+          }
+        }
+      }
+#endif
+
+      break;
+    }
+
+  } while (true);
 
   /* SanityCheckEntropyLists(EntropyListsStorage, TileSuperpositionsStorage, TileSuperpositionsDim); */
   if (Result)
