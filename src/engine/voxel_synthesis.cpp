@@ -324,7 +324,7 @@ PropagateChangesTo( voxel_synthesis_change_propagation_info_stack *ChangePropaga
           v3i NextDir = AllDirections[DirIndex];
           /* if (NextDir != -1*DirOfTravel) */
           {
-            Push(ChangePropagationInfoStack, VoxelSynthesisChangePropagationInfo(OptionsToPropagate, ThisTileP, NextDir));
+            Push(ChangePropagationInfoStack, VoxelSynthesisChangePropagationInfo(*ThisTile, ThisTileP, NextDir));
           }
         }
 
