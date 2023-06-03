@@ -300,28 +300,28 @@ PartiallyResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeR
   u32 OptionCountToReset = CountOptions(RuleToReset);
   Assert (OptionCountToReset);
 
-  /* Ensure( Push(GetPtr(EntropyLists, OptionCountToReset), u32(IndexToReset)) ); */
-  /* PushEntropyListEntry(EntropyLists, RuleToReset, IndexToReset, TileSuperpositions); */
+  Ensure( Push(GetPtr(EntropyLists, OptionCountToReset), u32(IndexToReset)) );
+  PushEntropyListEntry(EntropyLists, RuleToReset, IndexToReset, TileSuperpositions);
 
-  /* MinMaxIterator(xIndex, yIndex, zIndex, ResetP-ResetRadius, ResetP+ResetRadius) */
-  /* { */
-  /*   v3i P = V3i(xIndex, yIndex, zIndex); */
-  /*   s32 TileIndex = TryGetIndex(P, TileSuperpositionsDim); */
-  /*   if (TileIndex > -1) */
-  /*   { */
-  /*     tile_rule *Rule = TileSuperpositions + TileIndex; */
-  /*     /1* u32 OptionCount = CountOptions(Rule); *1/ */
-  /*     /1* if (OptionCount) *1/ */
-  /*     { */
-  /*       RemoveEntropyListEntry(EntropyLists, Rule, TileIndex, TileSuperpositions); */
-  /*       /1* Ensure( Remove(GetPtr(EntropyLists, OptionCount), u32(TileIndex)) ); *1/ */
+  MinMaxIterator(xIndex, yIndex, zIndex, ResetP-ResetRadius, ResetP+ResetRadius)
+  {
+    v3i P = V3i(xIndex, yIndex, zIndex);
+    s32 TileIndex = TryGetIndex(P, TileSuperpositionsDim);
+    if (TileIndex > -1)
+    {
+      tile_rule *Rule = TileSuperpositions + TileIndex;
+      /* u32 OptionCount = CountOptions(Rule); */
+      /* if (OptionCount) */
+      {
+        RemoveEntropyListEntry(EntropyLists, Rule, TileIndex, TileSuperpositions);
+        /* Ensure( Remove(GetPtr(EntropyLists, OptionCount), u32(TileIndex)) ); */
 
-  /*       *Rule = MaxTileEntropy; */
-  /*       PushEntropyListEntry(EntropyLists, Rule, TileIndex, TileSuperpositions); */
-  /*       /1* Ensure( Push(GetPtr(EntropyLists, MaxTileOptions), u32(TileIndex)) ); *1/ */
-  /*     } */
-  /*   } */
-  /* } */
+        *Rule = MaxTileEntropy;
+        PushEntropyListEntry(EntropyLists, Rule, TileIndex, TileSuperpositions);
+        /* Ensure( Push(GetPtr(EntropyLists, MaxTileOptions), u32(TileIndex)) ); */
+      }
+    }
+  }
 
   voxel_synthesis_change_propagation_info_stack ChangePropagationInfoStack = VoxelSynthesisChangePropagationInfoStack(MaxStackDepth, TempMemory);
 
@@ -506,10 +506,10 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         }
       }
 
-      v3i ResetRadius = V3i(4);
+      v3i ResetRadius = V3i(8);
       if (ErrorLastFrame)
       {
-        ResetRadius = V3i(8);
+        ResetRadius = V3i(12);
       }
 
       if (Error)
@@ -709,7 +709,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/grassy_block.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/grassy_block_2.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/simple_grass.vox"); */
-  GameState->BakeResult = BakeVoxelSynthesisRules("models/pipes.vox");
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("models/pipes.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/random_squares.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/AncientTemple.vox"); */
 
@@ -719,7 +719,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   // GOOD
   /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu4.vox"); */
-  /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu5.vox"); */
+  GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu5.vox");
 
   /* // Castle */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu10.vox"); */
