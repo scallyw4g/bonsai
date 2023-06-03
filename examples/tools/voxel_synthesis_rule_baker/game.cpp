@@ -74,15 +74,14 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
           voxel_synthesis_result *BakeResult = &GameState->BakeResult;
           auto AllTiles = &BakeResult->Tiles;
-          auto BakeSrcVoxels = BakeResult->VoxData.ChunkData->Voxels;
-          auto BakeSrcVoxelsDim = BakeResult->VoxData.ChunkData->Dim;
+          /* auto BakeSrcVoxels = BakeResult->VoxData.ChunkData->Voxels; */
+          /* auto BakeSrcVoxelsDim = BakeResult->VoxData.ChunkData->Dim; */
 
           MinMaxIterator(xTile, yTile, zTile, AbsTileMin, AbsTileMax)
           {
             v3i TileP = V3i(xTile, yTile, zTile);
-            s32 TileIndex = GetIndex(TileP, GameState->BakeResult.TileSuperpositionsDim);
-            Assert(TileIndex < Volume(GameState->BakeResult.TileSuperpositionsDim));
-            tile_rule TileRule = GameState->BakeResult.TileSuperpositions[TileIndex];
+            s32 TileIndex = GetIndex(TileP, BakeResult->TileSuperpositionsDim);
+            tile_rule TileRule = BakeResult->TileSuperpositions[TileIndex];
 
             u32 TileOptionsCount = CountOptions(&TileRule);
             if (TileOptionsCount)
@@ -110,20 +109,21 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                   Assert(Match->RuleId == RuleId);
                   /* Assert(TileRule & (1<<RuleId)); */
 
-                  v3i SrcVoxMin = V3iFromIndex(s32(Match->VoxelIndex), Match->SrcChunk->Dim );
-                  v3i SrcVoxMax = SrcVoxMin + TileDim;
+                  /* v3i SrcVoxMin = V3iFromIndex(s32(Match->VoxelIndex), Match->SrcChunk->Dim ); */
+                  /* v3i SrcVoxMax = SrcVoxMin + TileDim; */
 
                   /* Assert(Chunk->FilledCount == 0); */
                   DimIterator(xTileVox, yTileVox, zTileVox, Global_TileDim)
                   {
                     v3i TileVox = V3i(xTileVox, yTileVox, zTileVox);
-                    v3i SrcVox = SrcVoxMin + TileVox;
-                    s32 SrcVoxIndex = GetIndex(SrcVox, BakeSrcVoxelsDim);
+                    /* v3i SrcVox = SrcVoxMin + TileVox; */
+                    /* s32 SrcVoxIndex = GetIndex(SrcVox, BakeSrcVoxelsDim); */
+                    s32 SrcVoxIndex = GetIndex(TileVox, Global_TileDim);
 
                     v3i DestVox = (TileVox+(TileP*Global_TileDim)) % World->ChunkDim;
                     s32 DestVoxIndex = GetIndex(DestVox, World->ChunkDim);
 
-                    Chunk->Voxels[DestVoxIndex] = BakeSrcVoxels[SrcVoxIndex];
+                    Chunk->Voxels[DestVoxIndex] = Match->Voxels[SrcVoxIndex];
 
                     Chunk->FilledCount +=
                       (Chunk->Voxels[DestVoxIndex].Flags&Voxel_Filled) ?
@@ -133,6 +133,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                 }
                 else
                 {
+#if 1
                   // NOTE(Jesse): Marks the null tiles
                   Assert(TileOptionsCount == 1);
                   Assert((TileRule.Pages[0]&1) == 1);
@@ -146,7 +147,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                     Chunk->FilledCount = 1;
                   }
                 }
-
+#endif
               }
               else
               {
@@ -299,6 +300,22 @@ PickNewTileIndex(u32_cursor_staticbuffer *EntropyLists, random_series *VoxelSynt
   return Result;
 }
 
+link_internal tile_rule
+GetDefaultValueForTile(v3i TileP, v3i TileSuperpositionsDim, tile_rule MaxTileEntropy)
+{
+  tile_rule Result = MaxTileEntropy;
+  if ( TileP.x == 0 ||
+       TileP.y == 0 ||
+       TileP.z == 0 ||
+       TileP.x == TileSuperpositionsDim.x-1 ||
+       TileP.y == TileSuperpositionsDim.y-1 ||
+       TileP.z == TileSuperpositionsDim.z-1 )
+  {
+    Result = NullTileRule;
+  }
+  return Result;
+}
+
 link_internal s32
 PartiallyResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeResult, v3i ResetRadius, s32 IndexToReset, umm MaxStackDepth, random_series *Entropy, memory_arena *TempMemory)
 {
@@ -334,7 +351,7 @@ PartiallyResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeR
         RemoveEntropyListEntry(EntropyLists, Rule, TileIndex, TileSuperpositions);
         /* Ensure( Remove(GetPtr(EntropyLists, OptionCount), u32(TileIndex)) ); */
 
-        *Rule = MaxTileEntropy;
+        *Rule = GetDefaultValueForTile(P, TileSuperpositionsDim, MaxTileEntropy);
         PushEntropyListEntry(EntropyLists, Rule, TileIndex, TileSuperpositions);
         /* Ensure( Push(GetPtr(EntropyLists, MaxTileOptions), u32(TileIndex)) ); */
       }
@@ -402,8 +419,11 @@ ResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeResult, ra
 
   for (s32 TileIndex = 0; TileIndex < TileSuperpositionsCount; ++TileIndex)
   {
-    TileSuperpositions[TileIndex] = MaxTileEntropy;
-    Push(EntropyList, u32(TileIndex));
+    auto Tile = TileSuperpositions+TileIndex;
+    auto P = V3iFromIndex(TileIndex, TileSuperpositionsDim);
+
+    *Tile = GetDefaultValueForTile(P, TileSuperpositionsDim, MaxTileEntropy);
+    PushEntropyListEntry(EntropyLists, Tile, TileIndex, TileSuperpositions);
   }
   SanityCheckEntropyLists(EntropyLists, TileSuperpositions, TileSuperpositionsDim);
 
@@ -426,7 +446,6 @@ ResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeResult, ra
       tile_rule *Tile = TileSuperpositions+TileIndex;
 
       Ensure( Remove( GetPtr(EntropyLists, CountOptions(Tile)), u32(TileIndex) ));
-      *Tile = NullTileRule;
       Assert(CountOptions(Tile) == 1);
       Ensure( Push( GetPtr(EntropyLists, 1), u32(TileIndex) ));
 
@@ -733,7 +752,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   Global_AssetPrefixPath = CSz("examples/voxel_synthesis_rule_baker/assets");
 
 
-  world_position WorldCenter = {{2,2,2}};
+  /* world_position WorldCenter = {{2,2,2}}; */
+  world_position WorldCenter = g_VisibleRegion/2;
   /* world_position WorldCenter = {{}}; */
 
   /* canonical_position CameraTargetP = Canonical_Position(V3(0), {{4,4,4}}); */
@@ -764,7 +784,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/grassy_block.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/grassy_block_2.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/simple_grass.vox"); */
-  /* GameState->BakeResult = BakeVoxelSynthesisRules("models/pipes.vox"); */
+  GameState->BakeResult = BakeVoxelSynthesisRules("models/pipes.vox");
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/random_squares.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/AncientTemple.vox"); */
 
@@ -774,7 +794,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   // GOOD
   /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu4.vox"); */
-  GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu5.vox");
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu5.vox"); */
 
   /* // Castle */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu10.vox"); */
@@ -799,7 +819,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->BakeEntity = BakeEntity;
 
   BakeEntity->CollisionVolumeRadius = ChunkData->Dim/2.f;
-  BakeEntity->P = Canonical_Position(World->ChunkDim, V3(0), V3i(5,0,0));
+  BakeEntity->P = Canonical_Position(World->ChunkDim, V3(-ChunkData->Dim.x-8, 0, 0), V3i(0));
   AllocateAndBuildMesh(&GameState->BakeResult.VoxData, &BakeEntity->Model, TempMemory, Resources->Memory);
 
   SpawnEntity(BakeEntity);

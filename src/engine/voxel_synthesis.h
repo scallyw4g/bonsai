@@ -46,6 +46,7 @@ struct tile_rule
 };
 
 global_variable tile_rule NullTileRule = { .Pages[0] = 1 };
+/* global_variable tile_rule Global_MaxTileEntropy = {}; */
 
 /* poof(staticbuffer(tile_rule_page_type, {TILE_RULESETS_COUNT})) */
 
