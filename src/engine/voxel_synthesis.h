@@ -45,6 +45,8 @@ struct tile_rule
   tile_rule_page_type Pages[TILE_RULE_PAGE_COUNT];
 };
 
+global_variable tile_rule NullTileRule = { .Pages[0] = 1 };
+
 /* poof(staticbuffer(tile_rule_page_type, {TILE_RULESETS_COUNT})) */
 
 
@@ -206,6 +208,7 @@ struct voxel_synthesis_result
 
 };
 
+// TODO(Jesse): Rewrite this in terms of AllDirections
 link_internal v3i
 GetV3iForDir(voxel_rule_direction Dir)
 {
@@ -251,6 +254,40 @@ GetV3iForDir(voxel_rule_direction Dir)
   }
 
   Assert(Result == AllDirections[Dir]);
+  return Result;
+}
+
+link_internal voxel_rule_direction
+GetOppositeDir(voxel_rule_direction Dir)
+{
+  voxel_rule_direction Result = {};
+  switch( Dir )
+  {
+    case VoxelRuleDir_PosX:
+    case VoxelRuleDir_PosY:
+    case VoxelRuleDir_PosZ:
+    {
+      Result = voxel_rule_direction(Dir+1);
+    } break;
+
+    case VoxelRuleDir_NegX:
+    case VoxelRuleDir_NegY:
+    case VoxelRuleDir_NegZ:
+    {
+      Result = voxel_rule_direction(Dir-1);
+    } break;
+
+    case VoxelRuleDir_Count:
+    {
+      Error("Invalid VoxelRuleDir_Count passed to GetOppositeDir");
+    } break;
+
+    InvalidDefaultCase;
+  }
+
+  Assert(Result > voxel_rule_direction(-1));
+  Assert(Result < VoxelRuleDir_Count);
+
   return Result;
 }
 
@@ -486,9 +523,9 @@ FindListContaining(u32_cursor_staticbuffer *EntropyLists, u32 QueryIndex)
 link_internal void
 SanityCheckEntropyLists(u32_cursor_staticbuffer *EntropyLists, tile_rule *TileSuperpositions, v3i TileSuperpositionsDim)
 {
+#if 0
   TIMED_FUNCTION();
 
-#if 0
   s32 TileSuperpositionsCount = Volume(TileSuperpositionsDim);
 
   // NOTE(Jesse): This ensures we have no duplicates.

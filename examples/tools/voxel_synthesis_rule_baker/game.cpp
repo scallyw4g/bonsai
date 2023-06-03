@@ -104,29 +104,47 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                   }
                 }
 
-                Assert(Match);
-                Assert(Match->RuleId == RuleId);
-                /* Assert(TileRule & (1<<RuleId)); */
-
-                v3i SrcVoxMin = V3iFromIndex(s32(Match->VoxelIndex), Match->SrcChunk->Dim );
-                v3i SrcVoxMax = SrcVoxMin + TileDim;
-
-                /* Assert(Chunk->FilledCount == 0); */
-                DimIterator(xTileVox, yTileVox, zTileVox, Global_TileDim)
+                if (Match)
                 {
-                  v3i TileVox = V3i(xTileVox, yTileVox, zTileVox);
-                  v3i SrcVox = SrcVoxMin + TileVox;
-                  s32 SrcVoxIndex = GetIndex(SrcVox, BakeSrcVoxelsDim);
+                  Assert(Match);
+                  Assert(Match->RuleId == RuleId);
+                  /* Assert(TileRule & (1<<RuleId)); */
 
-                  v3i DestVox = (TileVox+(TileP*Global_TileDim)) % World->ChunkDim;
-                  s32 DestVoxIndex = GetIndex(DestVox, World->ChunkDim);
+                  v3i SrcVoxMin = V3iFromIndex(s32(Match->VoxelIndex), Match->SrcChunk->Dim );
+                  v3i SrcVoxMax = SrcVoxMin + TileDim;
 
-                  Chunk->Voxels[DestVoxIndex] = BakeSrcVoxels[SrcVoxIndex];
+                  /* Assert(Chunk->FilledCount == 0); */
+                  DimIterator(xTileVox, yTileVox, zTileVox, Global_TileDim)
+                  {
+                    v3i TileVox = V3i(xTileVox, yTileVox, zTileVox);
+                    v3i SrcVox = SrcVoxMin + TileVox;
+                    s32 SrcVoxIndex = GetIndex(SrcVox, BakeSrcVoxelsDim);
 
-                  Chunk->FilledCount +=
-                    (Chunk->Voxels[DestVoxIndex].Flags&Voxel_Filled) ?
-                    1 :
-                    0 ;
+                    v3i DestVox = (TileVox+(TileP*Global_TileDim)) % World->ChunkDim;
+                    s32 DestVoxIndex = GetIndex(DestVox, World->ChunkDim);
+
+                    Chunk->Voxels[DestVoxIndex] = BakeSrcVoxels[SrcVoxIndex];
+
+                    Chunk->FilledCount +=
+                      (Chunk->Voxels[DestVoxIndex].Flags&Voxel_Filled) ?
+                      1 :
+                      0 ;
+                  }
+                }
+                else
+                {
+                  // NOTE(Jesse): Marks the null tiles
+                  Assert(TileOptionsCount == 1);
+                  Assert((TileRule.Pages[0]&1) == 1);
+                  /* DimIterator(xTileVox, yTileVox, zTileVox, Global_TileDim) */
+                  {
+                    v3i TileVox = V3i(0, 0, 0);
+
+                    v3i DestVox = (TileVox+(TileP*Global_TileDim)) % World->ChunkDim;
+                    s32 DestVoxIndex = GetIndex(DestVox, World->ChunkDim);
+                    Chunk->Voxels[DestVoxIndex] = { .Flags = Voxel_Filled, .Color = RED };
+                    Chunk->FilledCount = 1;
+                  }
                 }
 
               }
@@ -338,6 +356,9 @@ PartiallyResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeR
       if (TileIndex > -1)
       {
         tile_rule *Rule = TileSuperpositions + TileIndex;
+
+        // TODO(Jesse): Call this here instead?
+        // InitializeChangePropagationStack(ChangePropagationInfoStack, TileSuperpositionsDim,  TileIndex, TileChoice);
         /* if (CountOptions(Rule) != MaxTileOptions) */
         {
           for (u32 DirIndex = 0; DirIndex < ArrayCount(AllDirections); ++DirIndex)
@@ -363,6 +384,7 @@ PartiallyResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeR
 link_internal s32
 ResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeResult, random_series *Entropy, memory_arena *TempMemory)
 {
+  tile_ruleset_buffer     *Rules                 = &BakeResult->Rules;
   tile_rule MaxTileEntropy              =  BakeResult->MaxTileEntropy;
   v3i TileSuperpositionsDim             =  BakeResult->TileSuperpositionsDim;
   tile_rule *TileSuperpositions         =  BakeResult->TileSuperpositions;
@@ -385,10 +407,43 @@ ResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeResult, ra
   }
   SanityCheckEntropyLists(EntropyLists, TileSuperpositions, TileSuperpositionsDim);
 
-  // Seed world
-  //
   umm MaxStackDepth = umm(TileSuperpositionsCount) * 6;
   voxel_synthesis_change_propagation_info_stack ChangePropagationInfoStack = VoxelSynthesisChangePropagationInfoStack(MaxStackDepth, TempMemory);
+
+  // Set exterior tiles to the null tile
+  //
+  DimIterator(xTile, yTile, zTile, TileSuperpositionsDim)
+  {
+    if ( xTile == 0 ||
+         yTile == 0 ||
+         zTile == 0 ||
+         xTile == TileSuperpositionsDim.x-1 ||
+         yTile == TileSuperpositionsDim.y-1 ||
+         zTile == TileSuperpositionsDim.z-1 )
+    {
+      v3i TileP = V3i(xTile, yTile, zTile);
+      s32 TileIndex = GetIndex(TileP, TileSuperpositionsDim);
+      tile_rule *Tile = TileSuperpositions+TileIndex;
+
+      Ensure( Remove( GetPtr(EntropyLists, CountOptions(Tile)), u32(TileIndex) ));
+      *Tile = NullTileRule;
+      Assert(CountOptions(Tile) == 1);
+      Ensure( Push( GetPtr(EntropyLists, 1), u32(TileIndex) ));
+
+      for (u32 DirIndex = 0; DirIndex < ArrayCount(AllDirections); ++DirIndex)
+      {
+        v3i NextDir = AllDirections[DirIndex];
+        auto Rule = TileSuperpositions + TileIndex;
+        Push(&ChangePropagationInfoStack, VoxelSynthesisChangePropagationInfo(*Rule, TileP, NextDir));
+      }
+    }
+  }
+  s32 Changes = PropagateChangesTo(&ChangePropagationInfoStack, TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
+  Assert(Changes != -1);
+
+
+  // Seed world
+  //
 
   v3i TileP = RandomV3i(Entropy, TileSuperpositionsDim);
   TileP.z = 8;
@@ -633,7 +688,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       if (Input->LMB.Clicked)
       {
         if (MousePickedEntities[0] == 0) { MousePickedEntities[0] = HoverEntity; }
-        else                             { MousePickedEntities[1] = HoverEntity; } 
+        else                             { MousePickedEntities[1] = HoverEntity; }
       }
 
       if      (HoverEntity == MousePickedEntities[0]) { DrawEntityCollisionVolume(HoverEntity, &GpuMap->Buffer, Graphics, World->ChunkDim, LIGHT_ORANGE, 0.3f ); }
@@ -644,7 +699,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   {
     voxel_synth_tile *HoverTile = HoverEntity
-      ? (voxel_synth_tile*)HoverEntity->UserData 
+      ? (voxel_synth_tile*)HoverEntity->UserData
       : 0;
 
     v3 EntityBasis = GetRenderP(World->ChunkDim, BakeEntity, Camera);
@@ -755,7 +810,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   {
     /* tile_ruleset *Ruleset = Get(Rulesets, RuleIndex); */
     tile_rule_id RuleId = GetRuleIdFromIndex(RuleIndex);
-    for (u32 SynthTileIndex = 0; SynthTileIndex < BakedTiles.Count; ++SynthTileIndex)
+    for (u32 SynthTileIndex = 1; SynthTileIndex < BakedTiles.Count; ++SynthTileIndex)
     {
       voxel_synth_tile *Tile = Get(&BakedTiles, SynthTileIndex);
       if (RuleId == Tile->RuleId)

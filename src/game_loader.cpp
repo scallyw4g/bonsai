@@ -340,7 +340,7 @@ main( s32 ArgCount, const char ** Args )
   return True;
 #endif
 
-  const char* GameLibName = "./bin/asset_picker_loadable" PLATFORM_RUNTIME_LIB_EXTENSION;
+  const char* GameLibName = "./bin/blank_project" PLATFORM_RUNTIME_LIB_EXTENSION;
   switch (ArgCount)
   {
     case 1: {} break;
