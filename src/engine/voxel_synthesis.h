@@ -521,63 +521,61 @@ FindListContaining(u32_cursor_staticbuffer *EntropyLists, u32 QueryIndex)
   return Result;
 }
 
-link_internal void
+link_internal s32
 SanityCheckEntropyLists(u32_cursor_staticbuffer *EntropyLists, tile_rule *TileSuperpositions, v3i TileSuperpositionsDim)
 {
+  s32 Result = 0;
 #if 0
   TIMED_FUNCTION();
 
-  s32 TileSuperpositionsCount = Volume(TileSuperpositionsDim);
-
-  // NOTE(Jesse): This ensures we have no duplicates.
-  RangeIterator(TileIndex, TileSuperpositionsCount)
-  {
-    tile_rule *Tile = TileSuperpositions + TileIndex;
-    u32 ListIndex = FindListContaining(EntropyLists, u32(TileIndex));
-
-    u32 BitsSet = CountOptions(Tile);
-    Assert(ListIndex == BitsSet);
-  }
-#endif
-
-#if 0
   IterateOver(EntropyLists, EntropyList, EntropyListIndex)
   {
     IterateOver(EntropyList, TileIndex, EntropyIndex)
     {
       tile_rule *Rule = TileSuperpositions+*TileIndex;
       u32 BitsSet = CountOptions(Rule);
-      Assert(BitsSet == EntropyListIndex);
+      if (BitsSet != EntropyListIndex) { ++Result; };
     }
   }
 #endif
+  return Result;
+}
 
+link_internal s32
+SanityCheckEntropyListsSlow(u32_cursor_staticbuffer *EntropyLists, tile_rule *TileSuperpositions, v3i TileSuperpositionsDim)
+{
+  s32 Result = 0;
+#if 0
+  TIMED_FUNCTION();
+
+  // NOTE(Jesse): This ensures we have no duplicates.  It's n^n time complexity; very slow
+  //
+  s32 TileSuperpositionsCount = Volume(TileSuperpositionsDim);
+  RangeIterator(TileIndex, TileSuperpositionsCount)
+  {
+    tile_rule *Tile = TileSuperpositions + TileIndex;
+    u32 ListIndex = FindListContaining(EntropyLists, u32(TileIndex));
+
+    u32 BitsSet = CountOptions(Tile);
+    if (ListIndex != BitsSet) { ++Result; }
+  }
+
+#endif
+  return Result;
 }
 
 link_internal void
 PushEntropyListEntry(u32_cursor_staticbuffer *EntropyLists, tile_rule *Rule, s32 TileIndex, tile_rule *TileSuperpositions)
 {
-  /* SanityCheckEntropyLists(EntropyLists, TileSuperpositions); */
   u32 OptionCount = CountOptions(Rule);
   Assert(Rule == (TileSuperpositions+TileIndex));
-
-  /* if (OptionCount) */
-  {
-    Ensure( Push(GetPtr(EntropyLists, OptionCount), u32(TileIndex)) );
-  }
-  /* SanityCheckEntropyLists(EntropyLists, TileSuperpositions); */
+  Ensure( Push(GetPtr(EntropyLists, OptionCount), u32(TileIndex)) );
 }
 
 link_internal void
 RemoveEntropyListEntry(u32_cursor_staticbuffer *EntropyLists, tile_rule *Rule, s32 TileIndex, tile_rule *TileSuperpositions)
 {
-  /* SanityCheckEntropyLists(EntropyLists, TileSuperpositions); */
   u32 OptionCount = CountOptions(Rule);
   Assert(Rule == (TileSuperpositions+TileIndex));
-
-  /* if (OptionCount) */
-  {
-    Ensure( Remove(GetPtr(EntropyLists, OptionCount), u32(TileIndex)) );
-  }
-  /* SanityCheckEntropyLists(EntropyLists, TileSuperpositions); */
+  Ensure( Remove(GetPtr(EntropyLists, OptionCount), u32(TileIndex)) );
 }

@@ -438,9 +438,6 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
       MemCopy((u8*)TileSuperpositionsStorage, (u8*)LocalTileSuperpositions, (umm)((umm)TileSuperpositionsCount*sizeof(tile_rule)));
     }
 
-    /* SanityCheckEntropyLists(&LocalEntropyLists, LocalTileSuperpositions, TileSuperpositionsDim); */
-    /* SanityCheckEntropyLists(EntropyListsStorage, TileSuperpositionsStorage, TileSuperpositionsDim); */
-
     ChangePropagationInfoStack->At = 0;
 
     u32 OptionCount = CountOptions(&TileOptions);
@@ -474,8 +471,6 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
 
       InitializeChangePropagationStack(ChangePropagationInfoStack, TileSuperpositionsDim,  TileIndex, TileChoice);
 
-      /* SanityCheckEntropyLists(&LocalEntropyLists, LocalTileSuperpositions, TileSuperpositionsDim); */
-      /* SanityCheckEntropyLists(EntropyListsStorage, TileSuperpositionsStorage, TileSuperpositionsDim); */
       s32 Changes = PropagateChangesTo(ChangePropagationInfoStack, TileSuperpositionsDim, LocalTileSuperpositions, Rules, &LocalEntropyLists);
 
       if (Changes > -1)
@@ -525,7 +520,6 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
 
   } while (true);
 
-  /* SanityCheckEntropyLists(EntropyListsStorage, TileSuperpositionsStorage, TileSuperpositionsDim); */
   if (Result)
   {
     Assert(CountOptions(&TileChoice) == 1);

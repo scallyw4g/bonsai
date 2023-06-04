@@ -133,7 +133,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                 }
                 else
                 {
-#if 1
+#if 0
                   // NOTE(Jesse): Marks the null tiles
                   Assert(TileOptionsCount == 1);
                   Assert((TileRule.Pages[0]&1) == 1);
@@ -146,8 +146,8 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                     Chunk->Voxels[DestVoxIndex] = { .Flags = Voxel_Filled, .Color = RED };
                     Chunk->FilledCount = 1;
                   }
-                }
 #endif
+                }
               }
               else
               {
@@ -335,8 +335,8 @@ PartiallyResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeR
   u32 OptionCountToReset = CountOptions(RuleToReset);
   Assert (OptionCountToReset);
 
-  Ensure( Push(GetPtr(EntropyLists, OptionCountToReset), u32(IndexToReset)) );
-  PushEntropyListEntry(EntropyLists, RuleToReset, IndexToReset, TileSuperpositions);
+  /* Ensure( Push(GetPtr(EntropyLists, OptionCountToReset), u32(IndexToReset)) ); */
+  /* PushEntropyListEntry(EntropyLists, RuleToReset, IndexToReset, TileSuperpositions); */
 
   MinMaxIterator(xIndex, yIndex, zIndex, ResetP-ResetRadius, ResetP+ResetRadius)
   {
@@ -354,6 +354,13 @@ PartiallyResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeR
         *Rule = GetDefaultValueForTile(P, TileSuperpositionsDim, MaxTileEntropy);
         PushEntropyListEntry(EntropyLists, Rule, TileIndex, TileSuperpositions);
         /* Ensure( Push(GetPtr(EntropyLists, MaxTileOptions), u32(TileIndex)) ); */
+#if 0
+        if (SanityCheckEntropyLists(EntropyLists, TileSuperpositions, TileSuperpositionsDim) > 0)
+        {
+          s32 SecondSanityCheck = SanityCheckEntropyListsSlow(EntropyLists, TileSuperpositions, TileSuperpositionsDim);
+          Ensure(SecondSanityCheck == 0);
+        }
+#endif
       }
     }
   }
@@ -393,8 +400,10 @@ PartiallyResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeR
     if (PropagationResult == 0 || PropagationResult == -1)
       break;
 
+    SanityCheckEntropyLists(EntropyLists, TileSuperpositions, TileSuperpositionsDim);
   } while (true);
 
+  SanityCheckEntropyLists(EntropyLists, TileSuperpositions, TileSuperpositionsDim);
   return PropagationResult;
 }
 
@@ -475,8 +484,6 @@ ResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeResult, ra
     Push(&ChangePropagationInfoStack, VoxelSynthesisChangePropagationInfo(*Rule, TileP, NextDir));
   }
 
-  /* Ensure( Remove(GetPtr(EntropyLists, MaxTileOptions), u32(TileIndex)) ); */
-  /* SanityCheckEntropyLists(EntropyLists, TileSuperpositions, TileSuperpositionsDim); */
   Ensure( InitializeWorld_VoxelSynthesis_Partial( BakeResult, World, Global_TileDim, Entropy, TileIndex, &ChangePropagationInfoStack ) );
   SanityCheckEntropyLists(EntropyLists, TileSuperpositions, TileSuperpositionsDim);
 
@@ -599,10 +606,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         {
           ErrorLastFrame = True;
           Error = False;
-          if (PartiallyResetVoxelSynthesisProgress(World, BakeResult, ResetRadius, NextTileIndex, MaxStackDepth, &VoxelSynthesisEntropy, GetTranArena()) == -1)
-          {
-            FatalError = True;
-          }
+          s32 ResetCode = PartiallyResetVoxelSynthesisProgress(World, BakeResult, ResetRadius, NextTileIndex, MaxStackDepth, &VoxelSynthesisEntropy, GetTranArena());
+          if (ResetCode == -1) { FatalError = True; }
         }
 
 #else
@@ -626,15 +631,14 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     }
 
 
-    SanityCheckEntropyLists(EntropyLists, TileSuperpositions, TileSuperpositionsDim);
 
+    SanityCheckEntropyLists(EntropyLists, TileSuperpositions, TileSuperpositionsDim);
     if (NextTileIndex != TILE_INDEX_GENERATION_COMPLETE)
     {
       v3i ResetRadius = V3i(4);
       /* PartiallyResetVoxelSynthesisProgress(World, BakeResult, ResetRadius, NextTileIndex, MaxStackDepth, &VoxelSynthesisEntropy, GetTranArena()); */
     }
 
-    SanityCheckEntropyLists(EntropyLists, TileSuperpositions, TileSuperpositionsDim);
     if (PrevTileIndex != TILE_INDEX_GENERATION_COMPLETE)
     {
       v3i TileP = V3iFromIndex(PrevTileIndex, BakeResult->TileSuperpositionsDim);
@@ -677,7 +681,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           v3i VoxBaseP = TileP * Global_TileDim;
           v3 VoxRenderBaseP = GetRenderP(World->ChunkDim, V3(VoxBaseP), Camera);
           aabb TileRect = AABBMinDim(VoxRenderBaseP, Global_TileDim);
-          DEBUG_DrawAABB(&GpuMap->Buffer, TileRect, BLUE);
+          /* DEBUG_DrawAABB(&GpuMap->Buffer, TileRect, BLUE); */
         }
 
         break;
@@ -850,10 +854,11 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
         /*                                             TempMemory, */
         /*                                             VoxData->Palette ); */
 
-        BuildWorldChunkMeshFromMarkedVoxels_Naieve( ChunkData->Voxels,
+        BuildWorldChunkMeshFromMarkedVoxels_Greedy( ChunkData->Voxels,
                                                     ChunkData->Dim,
                                                     VoxOffset, VoxOffset+Global_TileDim,
                                                    &TileEntity->Model.Mesh,
+                                                    GetTranArena(),
                                                     VoxData->Palette );
 
 

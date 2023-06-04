@@ -1590,8 +1590,7 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk)
   {
     untextured_3d_geometry_buffer *GeneratedMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
 
-    // nocheckin
-    BuildWorldChunkMeshFromMarkedVoxels_Naieve( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh);
+    BuildWorldChunkMeshFromMarkedVoxels_Greedy( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh, GetTranArena() );
 
     if (GeneratedMesh->At)
     {
