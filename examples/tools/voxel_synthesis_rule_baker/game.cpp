@@ -526,13 +526,12 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
     u32 TilesToCollapsePerFrame = 1;
     local_persist b32 FatalError = False;
-    local_persist b32 ErrorLastFrame = False;
-    local_persist b32 Error = False;
+    local_persist u32 ErrorsHit = False;
 
 
     if (Input->Space.Clicked)
     {
-      Error = False;
+      ErrorsHit = 0;
       OriginTileIndex = ResetVoxelSynthesisProgress(World, BakeResult, &VoxelSynthesisEntropy, GetTranArena());;
       NextTileIndex = PickNewTileIndex(EntropyLists, &VoxelSynthesisEntropy, OriginTileIndex, BakeResult->TileSuperpositionsDim);
       SanityCheckEntropyLists(EntropyLists, TileSuperpositions, TileSuperpositionsDim);
@@ -549,87 +548,62 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
                                                     Global_TileDim,
                                                    &VoxelSynthesisEntropy,
                                                     NextTileIndex,
-                                                   &ChangePropagationInfoStack) == False )
+                                                   &ChangePropagationInfoStack) )
       {
-        /* SoftError("Partial update failed."); */
-        Error = True;
-      }
-
-      SanityCheckEntropyLists(EntropyLists, TileSuperpositions, TileSuperpositionsDim);
-
-      if (PrevTileIndex != TILE_INDEX_GENERATION_COMPLETE)
-      {
-        v3i Radius = World->VisibleRegion/2;
-        v3i Min = World->Center - Radius;
-        v3i Max = World->Center + Radius;
-        for (s32 z = Min.z; z < Max.z; ++ z)
-        {
-          for (s32 y = Min.y; y < Max.y; ++ y)
-          {
-            for (s32 x = Min.x; x < Max.x; ++ x)
-            {
-              world_position P = World_Position(x,y,z);
-              world_chunk *Chunk = 0;
-              {
-                TIMED_NAMED_BLOCK("GetWorldChunk");
-                Chunk = GetWorldChunkFromHashtable( World, P );
-                if (Chunk && !(Chunk->Flags & Chunk_Queued))
-                {
-                  Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_VoxelsInitialized);
-                  ClearWorldChunk(Chunk);
-                  ZeroMemory( Chunk->Voxels, sizeof(voxel)*umm(Volume(Chunk->Dim)) );
-                  Chunk->WorldP = P;
-                  QueueChunkForInit(&Plat->LowPriority, Chunk);
-                }
-              }
-            }
-          }
-        }
-      }
-
-      v3i ResetRadius = V3i(8);
-      if (ErrorLastFrame)
-      {
-        ResetRadius = V3i(12);
-      }
-
-      if (Error)
-      {
-#if 1
-        if (ErrorLastFrame)
-        {
-          Error = True;
-          ErrorLastFrame = True;
-          FatalError = True;
-        }
-        else
-        {
-          ErrorLastFrame = True;
-          Error = False;
-          s32 ResetCode = PartiallyResetVoxelSynthesisProgress(World, BakeResult, ResetRadius, NextTileIndex, MaxStackDepth, &VoxelSynthesisEntropy, GetTranArena());
-          if (ResetCode == -1) { FatalError = True; }
-        }
-
-#else
-        OriginTileIndex = ResetVoxelSynthesisProgress(World, BakeResult, &VoxelSynthesisEntropy, GetTranArena());;
-        NextTileIndex = PickNewTileIndex(EntropyLists, &VoxelSynthesisEntropy, OriginTileIndex, BakeResult->TileSuperpositionsDim);
-        Error = False;
-        ErrorLastFrame = False;
-
-#endif
-
-      }
-      else
-      {
-        ErrorLastFrame = False;
+        ErrorsHit = 0;
         if (NextTileIndex != TILE_INDEX_GENERATION_COMPLETE && PrevTileIndex != TILE_INDEX_GENERATION_COMPLETE)
         {
           PrevTileIndex = NextTileIndex;
           NextTileIndex = PickNewTileIndex(EntropyLists, &VoxelSynthesisEntropy, OriginTileIndex, BakeResult->TileSuperpositionsDim);
         }
       }
+      else
+      {
+        v3i ResetRadius = V3i(8);
+        if (ErrorsHit) { ResetRadius = V3i(12); }
+
+        /* SoftError("Partial update failed."); */
+
+        s32 ResetCode = PartiallyResetVoxelSynthesisProgress(World, BakeResult, ResetRadius, NextTileIndex, MaxStackDepth, &VoxelSynthesisEntropy, GetTranArena());
+
+        if (ErrorsHit > 2) { FatalError = True; }
+        ++ErrorsHit;
+      }
+
+      SanityCheckEntropyLists(EntropyLists, TileSuperpositions, TileSuperpositionsDim);
     }
 
+
+
+    if (PrevTileIndex != TILE_INDEX_GENERATION_COMPLETE)
+    {
+      v3i Radius = World->VisibleRegion/2;
+      v3i Min = World->Center - Radius;
+      v3i Max = World->Center + Radius;
+      for (s32 z = Min.z; z < Max.z; ++ z)
+      {
+        for (s32 y = Min.y; y < Max.y; ++ y)
+        {
+          for (s32 x = Min.x; x < Max.x; ++ x)
+          {
+            world_position P = World_Position(x,y,z);
+            world_chunk *Chunk = 0;
+            {
+              TIMED_NAMED_BLOCK("GetWorldChunk");
+              Chunk = GetWorldChunkFromHashtable( World, P );
+              if (Chunk && !(Chunk->Flags & Chunk_Queued))
+              {
+                Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_VoxelsInitialized);
+                ClearWorldChunk(Chunk);
+                ZeroMemory( Chunk->Voxels, sizeof(voxel)*umm(Volume(Chunk->Dim)) );
+                Chunk->WorldP = P;
+                QueueChunkForInit(&Plat->LowPriority, Chunk);
+              }
+            }
+          }
+        }
+      }
+    }
 
 
     SanityCheckEntropyLists(EntropyLists, TileSuperpositions, TileSuperpositionsDim);
@@ -656,7 +630,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       v3i VoxBaseP = TileP * Global_TileDim;
       v3 VoxRenderBaseP = GetRenderP(World->ChunkDim, V3(VoxBaseP), Camera);
       aabb TileRect = AABBMinDim(VoxRenderBaseP, Global_TileDim);
-      u8 Color = Error ? RED : YELLOW;
+      u8 Color = ErrorsHit > 0 ? RED : YELLOW;
       DEBUG_DrawAABB(&GpuMap->Buffer, TileRect, Color, DEFAULT_LINE_THICKNESS*2.f);
     }
 
@@ -788,13 +762,13 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/grassy_block.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/grassy_block_2.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/simple_grass.vox"); */
-  GameState->BakeResult = BakeVoxelSynthesisRules("models/pipes.vox");
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("models/pipes.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/random_squares.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/AncientTemple.vox"); */
 
   /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu1.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu2.vox"); */
-  /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu3.vox"); */
+  GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu3.vox");
 
   // GOOD
   /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu4.vox"); */
