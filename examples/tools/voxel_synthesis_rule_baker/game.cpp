@@ -317,7 +317,7 @@ GetDefaultValueForTile(v3i TileP, v3i TileSuperpositionsDim, tile_rule MaxTileEn
 }
 
 link_internal s32
-PartiallyResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeResult, v3i ResetRadius, s32 IndexToReset, umm MaxStackDepth, random_series *Entropy, memory_arena *TempMemory)
+PartiallyResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeResult, v3i ResetMin, v3i ResetMax, umm MaxStackDepth, random_series *Entropy, memory_arena *TempMemory)
 {
   tile_ruleset_buffer     *Rules                 = &BakeResult->Rules;
   u32_cursor_staticbuffer *EntropyLists          = &BakeResult->EntropyLists;
@@ -329,38 +329,22 @@ PartiallyResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeR
 
   u32 MaxTileOptions = CountOptions(&MaxTileEntropy);
 
-  v3i ResetP = V3iFromIndex(IndexToReset, TileSuperpositionsDim);
+  /* tile_rule *RuleToReset = TileSuperpositions + IndexToReset; */
+  /* u32 OptionCountToReset = CountOptions(RuleToReset); */
+  /* Assert (OptionCountToReset); */
 
-  tile_rule *RuleToReset = TileSuperpositions + IndexToReset;
-  u32 OptionCountToReset = CountOptions(RuleToReset);
-  Assert (OptionCountToReset);
-
-  /* Ensure( Push(GetPtr(EntropyLists, OptionCountToReset), u32(IndexToReset)) ); */
-  /* PushEntropyListEntry(EntropyLists, RuleToReset, IndexToReset, TileSuperpositions); */
-
-  MinMaxIterator(xIndex, yIndex, zIndex, ResetP-ResetRadius, ResetP+ResetRadius)
+  MinMaxIterator(xIndex, yIndex, zIndex, ResetMin, ResetMax)
   {
     v3i P = V3i(xIndex, yIndex, zIndex);
     s32 TileIndex = TryGetIndex(P, TileSuperpositionsDim);
     if (TileIndex > -1)
     {
       tile_rule *Rule = TileSuperpositions + TileIndex;
-      /* u32 OptionCount = CountOptions(Rule); */
-      /* if (OptionCount) */
       {
         RemoveEntropyListEntry(EntropyLists, Rule, TileIndex, TileSuperpositions);
-        /* Ensure( Remove(GetPtr(EntropyLists, OptionCount), u32(TileIndex)) ); */
 
         *Rule = GetDefaultValueForTile(P, TileSuperpositionsDim, MaxTileEntropy);
         PushEntropyListEntry(EntropyLists, Rule, TileIndex, TileSuperpositions);
-        /* Ensure( Push(GetPtr(EntropyLists, MaxTileOptions), u32(TileIndex)) ); */
-#if 0
-        if (SanityCheckEntropyLists(EntropyLists, TileSuperpositions, TileSuperpositionsDim) > 0)
-        {
-          s32 SecondSanityCheck = SanityCheckEntropyListsSlow(EntropyLists, TileSuperpositions, TileSuperpositionsDim);
-          Ensure(SecondSanityCheck == 0);
-        }
-#endif
       }
     }
   }
@@ -370,8 +354,7 @@ PartiallyResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeR
   do
   {
     ResetChangePropagationStack(&ChangePropagationInfoStack);
-    v3i PropagationRadius = ResetRadius+V3i(1);
-    MinMaxIterator(xIndex, yIndex, zIndex, ResetP-PropagationRadius, ResetP+PropagationRadius)
+    MinMaxIterator(xIndex, yIndex, zIndex, ResetMin-1, ResetMax+1)
     {
       v3i P = V3i(xIndex, yIndex, zIndex);
       s32 TileIndex = TryGetIndex(P, TileSuperpositionsDim);
@@ -421,43 +404,9 @@ ResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeResult, ra
 
     *Tile = GetDefaultValueForTile(P, TileSuperpositionsDim, MaxTileEntropy);
     PushEntropyListEntry(EntropyLists, Tile, TileIndex, TileSuperpositions);
-    if (*Tile == NullTileRule)
-    {
-      PushDirectionsOntoStackForTile(&ChangePropagationInfoStack, TileSuperpositionsDim, TileIndex, Tile);
-    }
+    if (*Tile == NullTileRule) { PushDirectionsOntoStackForTile(&ChangePropagationInfoStack, TileSuperpositionsDim, TileIndex, Tile); }
   }
   SanityCheckEntropyLists(EntropyLists, TileSuperpositions, TileSuperpositionsDim);
-
-  // Set exterior tiles to the null tile
-  //
-#if 0
-  DimIterator(xTile, yTile, zTile, TileSuperpositionsDim)
-  {
-    if ( xTile == 0 ||
-         yTile == 0 ||
-         zTile == 0 ||
-         xTile == TileSuperpositionsDim.x-1 ||
-         yTile == TileSuperpositionsDim.y-1 ||
-         zTile == TileSuperpositionsDim.z-1 )
-    {
-      v3i TileP = V3i(xTile, yTile, zTile);
-      s32 TileIndex = GetIndex(TileP, TileSuperpositionsDim);
-      tile_rule *Tile = TileSuperpositions+TileIndex;
-
-      Ensure( Remove( GetPtr(EntropyLists, CountOptions(Tile)), u32(TileIndex) ));
-      Assert(CountOptions(Tile) == 1);
-      Ensure( Push( GetPtr(EntropyLists, 1), u32(TileIndex) ));
-
-      PushDirectionsOntoStackForTile(ChangePropagationInfoStack, TileSuperpositionsDim, TileIndex, Tile);
-      /* for (u32 DirIndex = 0; DirIndex < ArrayCount(AllDirections); ++DirIndex) */
-      /* { */
-      /*   v3i NextDir = AllDirections[DirIndex]; */
-      /*   auto Rule = TileSuperpositions + TileIndex; */
-      /*   Push(&ChangePropagationInfoStack, VoxelSynthesisChangePropagationInfo(*Rule, TileP, NextDir)); */
-      /* } */
-    }
-  }
-#endif
 
   s32 Changes = PropagateChangesTo(&ChangePropagationInfoStack, TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
   Assert(Changes != -1);
@@ -465,7 +414,6 @@ ResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeResult, ra
 
   // Seed world
   //
-
   v3i TileP = RandomV3i(Entropy, TileSuperpositionsDim);
   TileP.z = 8;
   s32 TileIndex = GetIndex(TileP, TileSuperpositionsDim);
@@ -555,7 +503,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         v3i ResetRadius = V3i(8);
         if (ErrorsHit) { ResetRadius = V3i(12); }
 
-        s32 ResetCode = PartiallyResetVoxelSynthesisProgress(World, BakeResult, ResetRadius, NextTileIndex, MaxStackDepth, &VoxelSynthesisEntropy, GetTranArena());
+        v3i TileP = V3iFromIndex(NextTileIndex, TileSuperpositionsDim);
+        s32 ResetCode = PartiallyResetVoxelSynthesisProgress(World, BakeResult, TileP-ResetRadius, TileP+ResetRadius, MaxStackDepth, &VoxelSynthesisEntropy, GetTranArena());
 
         if (ErrorsHit > 2) { FatalError = True; }
         ++ErrorsHit;
@@ -726,7 +675,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* world_position WorldCenter = {{}}; */
 
   /* canonical_position CameraTargetP = Canonical_Position(V3(0), {{4,4,4}}); */
-  canonical_position CameraTargetP = {};
+  /* canonical_position CameraTargetP = {}; */
+  canonical_position CameraTargetP = Canonical_Position(V3(0), WorldCenter);
 
   StandardCamera(Graphics->Camera, 10000.0f, 1500.0f, CameraTargetP);
 
