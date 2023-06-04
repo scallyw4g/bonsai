@@ -366,32 +366,17 @@ PartiallyResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeR
   }
 
   voxel_synthesis_change_propagation_info_stack ChangePropagationInfoStack = VoxelSynthesisChangePropagationInfoStack(MaxStackDepth, TempMemory);
-
   s32 PropagationResult;
   do
   {
-    ChangePropagationInfoStack.At = 0;
-
+    ResetChangePropagationStack(&ChangePropagationInfoStack);
     v3i PropagationRadius = ResetRadius+V3i(1);
     MinMaxIterator(xIndex, yIndex, zIndex, ResetP-PropagationRadius, ResetP+PropagationRadius)
     {
       v3i P = V3i(xIndex, yIndex, zIndex);
       s32 TileIndex = TryGetIndex(P, TileSuperpositionsDim);
-      if (TileIndex > -1)
-      {
-        tile_rule *Rule = TileSuperpositions + TileIndex;
-
-        // TODO(Jesse): Call this here instead?
-        // InitializeChangePropagationStack(ChangePropagationInfoStack, TileSuperpositionsDim,  TileIndex, TileChoice);
-        /* if (CountOptions(Rule) != MaxTileOptions) */
-        {
-          for (u32 DirIndex = 0; DirIndex < ArrayCount(AllDirections); ++DirIndex)
-          {
-            v3i NextDir = AllDirections[DirIndex];
-            Push(&ChangePropagationInfoStack, VoxelSynthesisChangePropagationInfo(*Rule, P, NextDir));
-          }
-        }
-      }
+      auto Tile = TileSuperpositions+TileIndex;
+      if (TileIndex > -1) { PushDirectionsOntoStackForTile(&ChangePropagationInfoStack, TileSuperpositionsDim,  TileIndex, Tile); }
     }
 
     PropagationResult = PropagateChangesTo(&ChangePropagationInfoStack, TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
@@ -426,6 +411,9 @@ ResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeResult, ra
   u32_cursor *EntropyList = GetPtr(EntropyLists, MaxTileOptions);
   EntropyList->At = EntropyList->Start;
 
+  umm MaxStackDepth = umm(TileSuperpositionsCount) * 6;
+  voxel_synthesis_change_propagation_info_stack ChangePropagationInfoStack = VoxelSynthesisChangePropagationInfoStack(MaxStackDepth, TempMemory);
+
   for (s32 TileIndex = 0; TileIndex < TileSuperpositionsCount; ++TileIndex)
   {
     auto Tile = TileSuperpositions+TileIndex;
@@ -433,14 +421,16 @@ ResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeResult, ra
 
     *Tile = GetDefaultValueForTile(P, TileSuperpositionsDim, MaxTileEntropy);
     PushEntropyListEntry(EntropyLists, Tile, TileIndex, TileSuperpositions);
+    if (*Tile == NullTileRule)
+    {
+      PushDirectionsOntoStackForTile(&ChangePropagationInfoStack, TileSuperpositionsDim, TileIndex, Tile);
+    }
   }
   SanityCheckEntropyLists(EntropyLists, TileSuperpositions, TileSuperpositionsDim);
 
-  umm MaxStackDepth = umm(TileSuperpositionsCount) * 6;
-  voxel_synthesis_change_propagation_info_stack ChangePropagationInfoStack = VoxelSynthesisChangePropagationInfoStack(MaxStackDepth, TempMemory);
-
   // Set exterior tiles to the null tile
   //
+#if 0
   DimIterator(xTile, yTile, zTile, TileSuperpositionsDim)
   {
     if ( xTile == 0 ||
@@ -458,14 +448,17 @@ ResetVoxelSynthesisProgress(world *World, voxel_synthesis_result *BakeResult, ra
       Assert(CountOptions(Tile) == 1);
       Ensure( Push( GetPtr(EntropyLists, 1), u32(TileIndex) ));
 
-      for (u32 DirIndex = 0; DirIndex < ArrayCount(AllDirections); ++DirIndex)
-      {
-        v3i NextDir = AllDirections[DirIndex];
-        auto Rule = TileSuperpositions + TileIndex;
-        Push(&ChangePropagationInfoStack, VoxelSynthesisChangePropagationInfo(*Rule, TileP, NextDir));
-      }
+      PushDirectionsOntoStackForTile(ChangePropagationInfoStack, TileSuperpositionsDim, TileIndex, Tile);
+      /* for (u32 DirIndex = 0; DirIndex < ArrayCount(AllDirections); ++DirIndex) */
+      /* { */
+      /*   v3i NextDir = AllDirections[DirIndex]; */
+      /*   auto Rule = TileSuperpositions + TileIndex; */
+      /*   Push(&ChangePropagationInfoStack, VoxelSynthesisChangePropagationInfo(*Rule, TileP, NextDir)); */
+      /* } */
     }
   }
+#endif
+
   s32 Changes = PropagateChangesTo(&ChangePropagationInfoStack, TileSuperpositionsDim, TileSuperpositions, Rules, EntropyLists);
   Assert(Changes != -1);
 
