@@ -294,7 +294,7 @@ PropagateChangesTo( voxel_synthesis_change_propagation_info_stack *ChangePropaga
     v3i ThisTileP = PrevTileP+DirOfTravel;
 
     ChangePropagationInfoStack->Min = Min(ThisTileP, ChangePropagationInfoStack->Min);
-    ChangePropagationInfoStack->Max = Max(ThisTileP, ChangePropagationInfoStack->Min);
+    ChangePropagationInfoStack->Max = Max(ThisTileP, ChangePropagationInfoStack->Max);
 
     s32 ThisTileIndex = TryGetIndex(ThisTileP, SuperpositionsShape);
     if (ThisTileIndex >= 0)
@@ -341,6 +341,7 @@ PropagateChangesTo( voxel_synthesis_change_propagation_info_stack *ChangePropaga
         Clear(ThisTile);
         PushEntropyListEntry(EntropyLists, ThisTile, ThisTileIndex, TileSuperpositions);
         ChangesPropagated = -1;
+
         break;
       }
 
@@ -429,6 +430,7 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
   /* RemoveEntropyListEntry(EntropyListsStorage, &RunningOptionTotal, TileIndex, TileSuperpositionsStorage); */
   /* PushEntropyListEntry(EntropyListsStorage, &RunningOptionTotal, TileIndex, TileSuperpositionsStorage); */
 
+  InitializeChangePropagationStack(ChangePropagationInfoStack, TileSuperpositionsDim, TileIndex, &TileChoice);
   u32 OptionCountThisIteration = CountOptions(&RunningOptionTotal);
   do
   {
@@ -469,7 +471,9 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
 
       Ensure( Push( GetPtr(&LocalEntropyLists, 1), u32(TileIndex) ));
 
-      InitializeChangePropagationStack(ChangePropagationInfoStack, TileSuperpositionsDim, TileIndex, &TileChoice);
+      // NOTE(Jesse): Intentionally doing this manually so we preserve the Min/Max values
+      ChangePropagationInfoStack->At = 0;
+      PushDirectionsOntoStackForTile(ChangePropagationInfoStack, TileSuperpositionsDim, TileIndex, &TileChoice);
       s32 Changes = PropagateChangesTo(ChangePropagationInfoStack, TileSuperpositionsDim, LocalTileSuperpositions, Rules, &LocalEntropyLists);
 
       if (Changes > -1)
