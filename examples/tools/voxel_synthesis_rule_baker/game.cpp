@@ -562,8 +562,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         v3i ResetRadius = V3i(8);
         if (ErrorsHit) { ResetRadius = V3i(12); }
 
-        /* SoftError("Partial update failed."); */
-
         s32 ResetCode = PartiallyResetVoxelSynthesisProgress(World, BakeResult, ResetRadius, NextTileIndex, MaxStackDepth, &VoxelSynthesisEntropy, GetTranArena());
 
         if (ErrorsHit > 2) { FatalError = True; }

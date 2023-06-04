@@ -445,21 +445,13 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
     {
       // TODO(Jesse): This should (at least in my head) be able to return (1, N) inclusive
       // but it does not for (1, 2)
-      // NOTE(Jesse): Never choose the null tile, at index 1
-      u32 MinBit = 1;
-      if ( (TileOptions.Pages[0]&1) && OptionCount > 1 ) ++MinBit;
-
-      u32 BitChoice = RandomBetween(MinBit, Series, OptionCount+1u);
-      if ( (TileOptions.Pages[0]&1) && OptionCount > 1 ) { Assert(BitChoice > 1); }
-
-      // NOTE(Jesse): If the tile can connect to the null tile, make correct the bit choice for that bit being set
+      u32 BitChoice = RandomBetween(1u, Series, OptionCount+1u);
 
       TileChoice = GetNthOption(&TileOptions, BitChoice);
       Assert(CountOptions(&TileChoice) == 1);
-      if (OptionCount > 1)
-      {
-        Assert((TileChoice.Pages[0] & 1) == 0);
-      }
+
+      // NOTE(Jesse): Make sure we never choose the null tile
+      if (OptionCount > 1) { Assert((TileChoice.Pages[0] & 1) == 0); }
 
       LocalTileSuperpositions[TileIndex] = TileChoice;
       UnsetRule(&TileOptions, &TileChoice);
