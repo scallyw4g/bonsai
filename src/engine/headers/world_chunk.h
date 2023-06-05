@@ -209,6 +209,11 @@ Volume(world_chunk* Chunk)
   return Result;
 }
 
+enum world_flag
+{
+  WorldFlag_WorldCenterFollowsPlayer = (1 << 0),
+};
+
 struct world
 {
   u32 HashSize;
@@ -225,6 +230,7 @@ struct world
 
   memory_arena* Memory;
 
+  world_flag Flags;
 };
 
 struct standing_spot

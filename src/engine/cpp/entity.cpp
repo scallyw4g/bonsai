@@ -1050,10 +1050,33 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta, chunk_dimension V
           /* Entity->Physics.Velocity.E[AxisIndex] = 0.f; */
           Entity->Physics.Delta.E[AxisIndex] = 0;
 
-#if 1
+#if 0
           Entity->P.Offset.E[AxisIndex] -= StepDelta.E[AxisIndex];
           Entity->P = Canonicalize(WorldChunkDim, Entity->P);
 #else
+          // NOTE(Jesse): This is actually fundamentally broken.  The issue I
+          // thought of is that if you snap and add an epsilon you can get into
+          // a situation where the collision volume should exactly fit into a
+          // space, but you offset it to interpenetrate with the world.
+          //
+          // I actually observed this happening in practice (I think).
+          //
+          // I didn't want to FAF with the collision so I turned it off, but
+          // that caused other problems, so I'm turning it back on.
+          //
+          // One idea could be, if the collision fails, try again with half the
+          // distance.  This is still pretty miserable at high speeds (you'd
+          // stop a half a voxel short of your intended collision at >
+          // 1vox/frame) but we could also reverse direction again, halfing the
+          // distance again, till we get to some min threshold.  That sounds
+          // pretty expensive so maybe not the best algorithm, but I think it
+          // would at least work reliably, which would be a step in the right
+          // direction.  Pun intended ;)
+          //
+          // Side-note, there _should_ be a pretty straight-forward closed form
+          // solution to this.  I really don't know why it's so hard for me to
+          // get it right..
+          //
           Entity->P.Offset.E[AxisIndex] -= StepDelta.E[AxisIndex];
           if (StepDelta.E[AxisIndex] > 0)
           {
@@ -1066,14 +1089,14 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta, chunk_dimension V
 
           if (StepDelta.E[AxisIndex] < 0)
           {
-#if 1
+#if 0
             Entity->P.Offset.E[AxisIndex] = Truncate(Entity->P.Offset.E[AxisIndex] += 1.0f);
 #else
             Entity->P.WorldP.E[AxisIndex] = C.MaxP.WorldP.E[AxisIndex];
             Entity->P.Offset.E[AxisIndex] = C.MaxP.Offset.E[AxisIndex];
-            /* Entity->P.Offset.E[AxisIndex] += 1.0f; */
+            Entity->P.Offset.E[AxisIndex] += 1.0f;
             /* Truncate(Entity->P.Offset.E[AxisIndex]);// += 1.0f; */
-            Entity->P.Offset.E[AxisIndex] += 1.001f;
+            /* Entity->P.Offset.E[AxisIndex] += 1.001f; */
             /* Entity->P.Offset.E[AxisIndex] ++; */
             /* Entity->P.Offset.E[AxisIndex] = Truncate(Entity->P.Offset.E[AxisIndex] += 1.0f); */
 #endif
@@ -1242,8 +1265,11 @@ SimulatePlayer(world* World, entity *Player, camera* Camera, hotkeys *Hotkeys, r
     world_position OriginalPlayerP = Player->P.WorldP;
     MoveEntityInWorld( World, Player, Player->Physics.Delta, VisibleRegion);
 
-    /* world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP ); */
-    /* UpdateVisibleRegion(World, WorldDisp); */
+    if (World->Flags & WorldFlag_WorldCenterFollowsPlayer)
+    {
+      world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP );
+      UpdateVisibleRegion(World, WorldDisp);
+    }
 
 #if 0
     Player->FireCooldown -= dt;
@@ -1459,7 +1485,7 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
 inline b32
 IsGrounded( world *World, entity *entity )
 {
-  collision_event c = GetCollision(World, entity, V3(0.0f, 0.0f, -0.0001f));
+  collision_event c = GetCollision(World, entity, V3(0.0f, 0.0f, -0.01f));
   return c.Count > 0;
 }
 
