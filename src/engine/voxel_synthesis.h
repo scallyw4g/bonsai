@@ -191,22 +191,22 @@ GetElement(voxel_synth_tile_hashtable *Hashtable, voxel_synth_tile *Query)
   return Result;
 }
 
+struct voxel_synthesis_gen_info
+{
+  tile_rule *TileSuperpositions;
+  u32_cursor_staticbuffer EntropyLists;
+};
+
 struct voxel_synthesis_result
 {
-  // Was the baking successful?
-  u32 Errors;
+  u32 Errors; // Was the baking successful?
 
   // This is data that gets baked from the input model
   vox_data VoxData;
   voxel_synth_tile_buffer Tiles;
   tile_ruleset_buffer Rules;
   tile_rule MaxTileEntropy;
-
-  // This is data used during acutal world generation
-  tile_rule *TileSuperpositions;
   v3i TileSuperpositionsDim;
-  u32_cursor_staticbuffer EntropyLists;
-
 };
 
 // TODO(Jesse): Rewrite this in terms of AllDirections

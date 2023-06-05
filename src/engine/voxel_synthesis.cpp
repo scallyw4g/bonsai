@@ -388,7 +388,7 @@ InitializeChangePropagationStack(voxel_synthesis_change_propagation_info_stack *
 
 link_internal b32
 InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
-                                        world *World,
+                                        voxel_synthesis_gen_info *GenInfo,
                                         v3i TileDim,
                                         random_series *Series,
                                         s32 TileIndex,
@@ -397,13 +397,13 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
   TIMED_FUNCTION();
   b32 Result = True;
 
-  v3i VisibleRegion = World->VisibleRegion;
+  /* v3i VisibleRegion = World->VisibleRegion; */
 
   tile_ruleset_buffer *Rules                   = &BakeResult->Rules;
-  tile_rule MaxTileEntropy                     =  BakeResult->MaxTileEntropy;
+  /* tile_rule MaxTileEntropy                     =  BakeResult->MaxTileEntropy; */
   v3i TileSuperpositionsDim                    =  BakeResult->TileSuperpositionsDim;
-  tile_rule *TileSuperpositionsStorage         =  BakeResult->TileSuperpositions;
-  u32_cursor_staticbuffer *EntropyListsStorage = &BakeResult->EntropyLists;
+  tile_rule *TileSuperpositionsStorage         =  GenInfo->TileSuperpositions;
+  u32_cursor_staticbuffer *EntropyListsStorage = &GenInfo->EntropyLists;
 
   v3i TileMinDim = {};
 
