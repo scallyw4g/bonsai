@@ -1265,6 +1265,9 @@ SimulatePlayer(world* World, entity *Player, camera* Camera, hotkeys *Hotkeys, r
     world_position OriginalPlayerP = Player->P.WorldP;
     MoveEntityInWorld( World, Player, Player->Physics.Delta, VisibleRegion);
 
+    // TODO(Jesse): Have an optional entity on the world (or somewhere) that 
+    // usercode can set, that way this code can go outside the SimulatePlayer
+    // function.. cause this is not really where it belongs
     if (World->Flags & WorldFlag_WorldCenterFollowsPlayer)
     {
       world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP );

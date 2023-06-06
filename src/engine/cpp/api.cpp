@@ -61,6 +61,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   Resources->FrameIndex += 1;
 
+  // Must come before UNPACK_ENGINE_RESOURCES such that we unpack the correct GpuMap
   graphics *G = Resources->Graphics;
   G->GpuBufferWriteIndex = (Resources->FrameIndex) % 2;
 
@@ -70,8 +71,6 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   MapGpuElementBuffer(GpuMap);
 
-  /* DEBUG_VALUE(GpuMap); */
-  /* MapGpuElementBuffer(GpuMap); */
   ClearFramebuffers(Graphics);
 
 #if DEBUG_DRAW_WORLD_AXIES
@@ -107,12 +106,20 @@ Bonsai_FrameEnd(engine_resources *Resources)
 
   Bonsai_SimulateEntitiesAndWorld(Resources);
 
+  // NOTE(Jesse): This has to come after the entities simulate, and before the draw
+  // We have to 
+  {
+    v2 MouseDelta = GetMouseDelta(Plat);
+    input* GameInput = &Plat->Input;
+    auto TargetP = Resources->CameraTargetP ? *Resources->CameraTargetP : Canonical_Position(0);
+    UpdateGameCamera(MouseDelta, GameInput, TargetP, Camera, World->ChunkDim);
+    Resources->Graphics->gBuffer->ViewProjection =
+      ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
+      ViewMatrix(World->ChunkDim, Camera);
+  }
+
   Render_BufferGameGeometry(Resources);
   UnsignalFutex(&Resources->Plat->HighPriorityModeFutex);
-
-  Resources->Graphics->gBuffer->ViewProjection =
-    ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
-    ViewMatrix(World->ChunkDim, Camera);
 
 #if DEBUG_SYSTEM_API
   Debug_DoWorldChunkPicking(Resources);
@@ -145,7 +152,7 @@ Bonsai_Render(engine_resources *Resources)
   RenderAoTexture(AoGroup);
   DrawGBufferToFullscreenQuad(Plat, Graphics);
 
-  Debug_DrawTextureToDebugQuad( &Graphics->SG->DebugTextureShader );
+  /* Debug_DrawTextureToDebugQuad( &Graphics->SG->DebugTextureShader ); */
   /* Debug_DrawTextureToDebugQuad(&AoGroup->DebugSsaoShader); */
   /* Debug_DrawTextureToDebugQuad(&Graphics->gBuffer->DebugColorShader); */
   /* Debug_DrawTextureToDebugQuad(&Graphics->gBuffer->DebugPositionShader); */

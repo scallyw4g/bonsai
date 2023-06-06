@@ -5,6 +5,8 @@ enum chunk_flag
   Chunk_Queued            = 1 << 1,
   Chunk_VoxelsInitialized = 1 << 2,
 
+  // This is an optimization to tell the thread queue to not initialize chunks
+  // we've already moved away from.
   Chunk_Garbage           = 1 << 3,
 };
 

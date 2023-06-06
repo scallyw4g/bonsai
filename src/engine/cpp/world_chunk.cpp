@@ -4281,7 +4281,7 @@ DrawPickedChunks(renderer_2d* Group, render_entity_to_texture_group *PickedChunk
   PushWindowEnd(Group, &ListingWindow);
 #endif
 
-#if 1
+#if 0
   if (HotChunk)
   {
     MapGpuElementBuffer(&PickedChunksRenderGroup->GameGeo);

@@ -361,11 +361,11 @@ GraphicsInit(memory_arena *GraphicsMemory)
   AllocateGpuElementBuffer(Result->GpuBuffers + 0, (u32)Megabytes(8));
   AllocateGpuElementBuffer(Result->GpuBuffers + 1, (u32)Megabytes(8));
 
-  MapGpuElementBuffer(Result->GpuBuffers+0);
-  FlushBuffersToCard(Result->GpuBuffers+0);
+  /* MapGpuElementBuffer(Result->GpuBuffers+0); */
+  /* FlushBuffersToCard(Result->GpuBuffers+0); */
 
-  MapGpuElementBuffer(Result->GpuBuffers+1);
-  FlushBuffersToCard(Result->GpuBuffers+1);
+  /* MapGpuElementBuffer(Result->GpuBuffers+1); */
+  /* FlushBuffersToCard(Result->GpuBuffers+1); */
 
 #if 1
   // NOTE(Jesse): 32x1024 x2 == 64k at 32bit float

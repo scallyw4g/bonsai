@@ -394,6 +394,7 @@ main( s32 ArgCount, const char ** Args )
     /* CSwitchEventsPerFrame = 0; */
     /* DebugLine("%u", CSwitchEventsThisFrame); */
 
+    TIMED_BLOCK("Frame Preamble");
 
     ResetInputForFrameStart(&Plat.Input, &Hotkeys);
 
@@ -402,8 +403,6 @@ main( s32 ArgCount, const char ** Args )
       Warn("DT exceeded 100ms, truncating to 33.33ms");
       Plat.dt = 0.03333f;
     }
-
-    TIMED_BLOCK("Frame Preamble");
 
     v2 LastMouseP = Plat.MouseP;
     while ( ProcessOsMessages(&Os, &Plat) );
