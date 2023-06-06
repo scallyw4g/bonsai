@@ -21,7 +21,7 @@ MakeDebugLibRelease=0
 . scripts/preamble.sh
 . scripts/setup_for_cxx.sh
 
-OPTIMIZATION_LEVEL="-O2"
+# OPTIMIZATION_LEVEL="-O2"
 EMCC=0
 
 
@@ -39,10 +39,10 @@ BONSAI_INTERNAL='-D BONSAI_INTERNAL'
 
 
 
-  # $EXAMPLES/asset_picker
   # $EXAMPLES/tile_gen
 
 EXAMPLES_TO_BUILD="
+  $EXAMPLES/asset_picker
   $EXAMPLES/blank_project
   $EXAMPLES/turn_based
   $EXAMPLES/tools/voxel_synthesis_rule_baker

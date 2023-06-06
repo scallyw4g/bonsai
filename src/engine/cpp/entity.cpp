@@ -282,10 +282,10 @@ SpawnEntity(
 {
   TIMED_FUNCTION();
 
+  Entity->Type = Type;
+
   if (Model)
     Entity->Model = *Model;
-
-  Entity->Type = Type;
 
   if (Physics)
     Entity->Physics = *Physics;
@@ -739,6 +739,64 @@ SpawnPlayerLikeEntity( platform *Plat,
   return;
 }
 
+void
+SpawnStaticEntity( platform *Plat,
+                   world *World,
+                   model* Model,
+                   entity *Player,
+                   canonical_position InitialP,
+                   random_series* Entropy,
+
+                   r32 Scale = 1.0f )
+{
+  v3 CollisionVolumeRadius = {};
+
+  // 0.5f is to shrink to a radius, instead of dim
+  if (Model) { CollisionVolumeRadius = Model->Dim * Scale * 0.5f; }
+
+#if 0
+  for (s32 z = -1; z < (s32)CollisionVolumeRadius.z; ++ z)
+  {
+    for (s32 y = -1; y < (s32)CollisionVolumeRadius.y; ++ y)
+    {
+      for (s32 x = -1; x < (s32)CollisionVolumeRadius.x; ++ x)
+      {
+        canonical_position CP = Canonicalize(World->ChunkDim, V3(x, y, z), InitialP.WorldP);
+
+        world_chunk *Chunk = GetWorldChunkFromHashtable( World, CP.WorldP );
+        if (Chunk == 0)
+        {
+          Chunk = GetWorldChunkFor(World->Memory, World, CP.WorldP);
+          if (Chunk)
+          {
+            QueueChunkForInit(&Plat->HighPriority, Chunk);
+          }
+        }
+      }
+    }
+  }
+#endif
+
+  physics *Physics = 0;
+  SpawnEntity(
+      Player,
+      Model,
+      EntityType_Static,
+
+      Physics,
+
+      &InitialP,
+      CollisionVolumeRadius,
+
+      Scale,
+      0,
+      0
+    );
+
+  /* WaitForWorkerThreads(&Plat->HighPriorityWorkerCount); */
+
+  return;
+}
 void
 EntityWorldCollision(world *World, entity *Entity, collision_event *Event, chunk_dimension VisibleRegion)
 {
@@ -1317,10 +1375,7 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
     if (!Spawned(Entity))
         continue;
 
-    if (Entity->Update)
-    {
-      Entity->Update(Resources, Entity);
-    }
+    if (Entity->Update) { Entity->Update(Resources, Entity); }
 
     switch (Entity->Type)
     {

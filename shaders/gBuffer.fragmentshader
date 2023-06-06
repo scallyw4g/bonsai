@@ -73,7 +73,7 @@ void main()
 
   vec4 FinalColor = MaterialColor;
 
-#if 1
+#if 0
   {
     vec3 NormFix = vec3(0.99999999f) - abs(gNormal);
 
