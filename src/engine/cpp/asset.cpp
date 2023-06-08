@@ -203,7 +203,11 @@ DeserializeMesh(native_file *File, world_chunk_file_header *Header, untextured_3
   Assert(NormalElementSize == (u32)sizeof(v3));
   ReadBytesIntoBuffer(File, NormalElementSize*TotalElements, (u8*)Result->Normals);
 
+  #ifdef __APPLE__
+  Result->Timestamp = __builtin_readcyclecounter();;
+  #else
   Result->Timestamp = __rdtsc();
+  #endif
 
   return Result;
 }

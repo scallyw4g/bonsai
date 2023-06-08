@@ -1602,7 +1602,12 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk)
     }
   }
 
+  #ifdef __APPLE__
+  umm Timestamp = NewMesh ? NewMesh->Timestamp : __builtin_readcyclecounter();
+  #else
   umm Timestamp = NewMesh ? NewMesh->Timestamp : __rdtsc();
+  #endif
+
   auto Replaced = AtomicReplaceMesh(&Chunk->Meshes, MeshBit_Main, NewMesh, Timestamp);
   if (Replaced) { DeallocateMesh(&Replaced, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
 }
