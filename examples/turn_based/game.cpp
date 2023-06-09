@@ -150,13 +150,8 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                                          &AssetFile,
                                          Frequency,
                                          Amplititude,
-                                         StartingZDepth );
-
-        FullBarrier;
-
-        /* Chunk->LodMesh_Complete = True; */
-        /* Assert( NotSet(Chunk, Chunk_Queued )); */
-
+                                         StartingZDepth,
+                                         ChunkInitFlag_ComputeStandingSpots );
       }
 
       FinalizeChunkInitialization(Chunk);

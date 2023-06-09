@@ -2896,8 +2896,16 @@ ClearChunkVoxels(voxel *Voxels, chunk_dimension Dim)
 #endif
 }
 
+enum chunk_init_flags
+{
+  ChunkInitFlag_Noop = 0,
+
+  ChunkInitFlag_ComputeStandingSpots = (1 << 0),
+  ChunkInitFlag_GenLODMesh           = (1 << 1),
+};
+
 link_internal void
-InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChunk, chunk_dimension WorldChunkDim, native_file *AssetFile, s32 Frequency, s32 Amplititude, s32 zMin)
+InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChunk, chunk_dimension WorldChunkDim, native_file *AssetFile, s32 Frequency, s32 Amplititude, s32 zMin, chunk_init_flags Flags)
 {
   TIMED_FUNCTION();
 
@@ -2926,7 +2934,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
                                                 WorldChunkDim );
 
 
-  if (AssetFile->Handle)
+  if (AssetFile && AssetFile->Handle)
   {
     world_chunk *AssetChunk = AllocateWorldChunk(Thread->TempMemory, {}, WorldChunkDim+Global_ChunkApronDim);
     DeserializeChunk(AssetFile, AssetChunk, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
@@ -2957,30 +2965,20 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
 
 
-  /* voxel_position_stream StandingSpots = {}; */
-#if 1
-  DebugMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-  ComputeStandingSpots( SynChunkDim, SyntheticChunk, {{1,1,0}}, {{0,0,1}}, Global_StandingSpotDim,
-                        WorldChunkDim, DebugMesh, &DestChunk->StandingSpots,
-                        Thread->TempMemory);
-#endif
-
-  u32 StandingSpotCount = (u32)AtElements(&DestChunk->StandingSpots);
-  for (u32 SpotIndex = 0; SpotIndex < StandingSpotCount; ++SpotIndex)
+  if (Flags & ChunkInitFlag_ComputeStandingSpots)
   {
-    v3i *Spot = DestChunk->StandingSpots.Start + SpotIndex;
-    DrawStandingSpot(DebugMesh, V3(*Spot), V3(Global_StandingSpotDim));
+    ComputeStandingSpots( SynChunkDim, SyntheticChunk, {{1,1,0}}, {{0,0,1}}, Global_StandingSpotDim,
+                          WorldChunkDim, 0, &DestChunk->StandingSpots,
+                          Thread->TempMemory);
   }
 
-  if (SyntheticChunkSum)  // Compute 0th LOD
+  if (SyntheticChunkSum && (Flags & ChunkInitFlag_GenLODMesh) )  // Compute 0th LOD
   {
-#if 0
     LodMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
     ComputeLodMesh( Thread,
                     DestChunk, WorldChunkDim,
                     SyntheticChunk, SynChunkDim,
                     LodMesh, True);
-#endif
 
 #if 0
     LodMesh->At = 0;

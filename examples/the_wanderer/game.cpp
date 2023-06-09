@@ -58,7 +58,8 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                                          &DummyAsset,
                                          Frequency,
                                          Amplititude,
-                                         StartingZDepth );
+                                         StartingZDepth,
+                                         ChunkInitFlag_Noop );
       }
 
       FinalizeChunkInitialization(Chunk);

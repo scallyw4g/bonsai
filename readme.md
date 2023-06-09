@@ -58,26 +58,4 @@ compiler, and a few appropriate system headers.
 
 # Building
 
-NOTE: The officially supported compiler is clang-15.  Different versions may
-work, but may also emit warnings, or errors.  If the following instructions do
-not work for you, by all means open an issue and I will do what I can to assist.
-
-## On Windows:
-Bonsai requires `clang` and a unix-like shell to build on Windows.  Installing `git-bash` usually works for me.
-
-## On Linux:
-Ensure you have an OpenGL driver, GL headers, X11 headers, and clang
-
-### Ubuntu
-`sudo apt install freeglut3-dev libx11-dev clang-15`
-
-### Archlinux
-`sudo pacman -S freeglut libx11`
-
-### Common
-
-```
-git clone --recursive https://github.com/scallyw4g/bonsai bonsai && cd bonsai
-./scripts/make.sh
-```
-
+See the docs on the [build process](docs/01_build_process.md).

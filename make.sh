@@ -7,12 +7,12 @@ BUILD_EVERYTHING=0
 
 RunPoof=0
 
-BuildExecutables=1
-BuildExamples=1
-BuildDebugSystem=1
+BuildExecutables=0
+BuildExamples=0
+BuildDebugSystem=0
 
 BuildTests=0
-BuildDebugTests=0
+BuildDebugOnlyTests=0
 
 RunTests=0
 
@@ -21,7 +21,7 @@ MakeDebugLibRelease=0
 . scripts/preamble.sh
 . scripts/setup_for_cxx.sh
 
-OPTIMIZATION_LEVEL="-O2"
+OPTIMIZATION_LEVEL=""
 EMCC=0
 
 
@@ -37,18 +37,19 @@ BIN_TEST="$BIN/tests"
 
 BONSAI_INTERNAL='-D BONSAI_INTERNAL'
 
+# $EXAMPLES/tile_gen
 
+EXAMPLES_TO_BUILD=""
 
-  # $EXAMPLES/tile_gen
-
-EXAMPLES_TO_BUILD="
+BUNDLED_EXAMPLES="
   $EXAMPLES/asset_picker
   $EXAMPLES/blank_project
   $EXAMPLES/turn_based
   $EXAMPLES/tools/voxel_synthesis_rule_baker
   $EXAMPLES/the_wanderer
 "
-  # $EXAMPLES/wave_function_collapse_terrain
+# $EXAMPLES/wave_function_collapse_terrain
+
 
 EXECUTABLES_TO_BUILD="
   $SRC/game_loader.cpp
@@ -117,7 +118,7 @@ function BuildExecutables
   done
 }
 
-function BuildDebugTests
+function BuildDebugOnlyTests
 {
   echo ""
   ColorizeTitle "Debug Tests"
@@ -215,7 +216,7 @@ function BuildExamples
   done
 }
 
-function BuildAllClang
+function BuildWithClang
 {
   which clang++ > /dev/null
   [ $? -ne 0 ] && echo -e "Please install clang++" && exit 1
@@ -223,11 +224,11 @@ function BuildAllClang
   echo -e ""
   echo -e "$Delimeter"
 
-  [[ $BuildExecutables == 1 || $BUILD_EVERYTHING == 1 ]] && BuildExecutables
-  [[ $BuildDebugTests == 1  || $BUILD_EVERYTHING == 1 ]] && BuildDebugTests
-  [[ $BuildTests == 1       || $BUILD_EVERYTHING == 1 ]] && BuildTests
-  [[ $BuildDebugSystem == 1 || $BUILD_EVERYTHING == 1 ]] && BuildDebugSystem
-  [[ $BuildExamples == 1    || $BUILD_EVERYTHING == 1 ]] && BuildExamples
+  [[ $BuildExecutables == 1     || $BUILD_EVERYTHING == 1 ]] && BuildExecutables
+  [[ $BuildDebugOnlyTests == 1  || $BUILD_EVERYTHING == 1 ]] && BuildDebugOnlyTests
+  [[ $BuildTests == 1           || $BUILD_EVERYTHING == 1 ]] && BuildTests
+  [[ $BuildDebugSystem == 1     || $BUILD_EVERYTHING == 1 ]] && BuildDebugSystem
+  [[ $BuildExamples == 1        || $BUILD_EVERYTHING == 1 ]] && BuildExamples
 
   echo -e ""
   echo -e "$Delimeter"
@@ -243,35 +244,35 @@ function BuildAllClang
   echo -e ""
 }
 
-function BuildAllEMCC {
+function BuildWithEMCC {
   which emcc > /dev/null 2&> 1
   [ $? -ne 0 ] && echo -e "$Error Please install emcc" && exit 1
 
-  emcc                              \
-    -s WASM=1                       \
-    -s LLD_REPORT_UNDEFINED         \
-    -s FULL_ES3=1                   \
-    -s ALLOW_MEMORY_GROWTH=1        \
-    -s ASSERTIONS=1                 \
-    -s DEMANGLE_SUPPORT=1           \
-    -std=c++17                      \
-    -Wno-c99-designator             \
-    -Wno-reorder-init-list          \
-    -ferror-limit=2000              \
-    -fno-exceptions                 \
-    -O2                             \
-    -g4                             \
-    --source-map-base /             \
-    --emrun                         \
-    -msse                           \
-    -msimd128                       \
-    -DEMCC=1                        \
-    -DWASM=1                        \
-    $BONSAI_INTERNAL \
-    -I src                          \
-    -I src/bonsai_debug             \
-    -I examples                     \
-    src/game_loader.cpp                \
+  emcc                       \
+    -s WASM=1                \
+    -s LLD_REPORT_UNDEFINED  \
+    -s FULL_ES3=1            \
+    -s ALLOW_MEMORY_GROWTH=1 \
+    -s ASSERTIONS=1          \
+    -s DEMANGLE_SUPPORT=1    \
+    -std=c++17               \
+    -Wno-c99-designator      \
+    -Wno-reorder-init-list   \
+    -ferror-limit=2000       \
+    -fno-exceptions          \
+    -O2                      \
+    -g4                      \
+    --source-map-base /      \
+    --emrun                  \
+    -msse                    \
+    -msimd128                \
+    -DEMCC=1                 \
+    -DWASM=1                 \
+    $BONSAI_INTERNAL         \
+    -I src                   \
+    -I src/bonsai_debug      \
+    -I examples              \
+    src/game_loader.cpp      \
     -o bin/wasm/platform.html
 
     # --embed-file shaders     \
@@ -308,9 +309,9 @@ function RunEntireBuild {
   fi
 
   if [ $EMCC == 1 ]; then
-    BuildAllEMCC
+    BuildWithEMCC
   else
-    BuildAllClang
+    BuildWithClang
   fi
 
   if [ $RunTests == 1 ]; then
@@ -409,5 +410,91 @@ TESTS_TO_BUILD="
 #   $TESTS/file.cpp
 #   "
 # fi
+
+
+if [ $# -eq 0 ]; then
+  BuildExecutables=1
+  BuildDebugSystem=1
+
+  BuildExamples=1
+  EXAMPLES_TO_BUILD=$BUNDLED_EXAMPLES
+
+  OPTIMIZATION_LEVEL="-O2"
+fi
+
+while (( "$#" )); do
+  CliArg=$1
+  echo $CliArg
+
+  case $CliArg in
+
+    "BuildExecutables")
+      BuildExecutables=1
+    ;;
+
+    "BuildDebugOnlyTests")
+      BuildDebugOnlyTests=1
+    ;;
+
+    "BuildTests")
+      BuildTests=1
+    ;;
+
+    "BuildDebugSystem")
+      BuildDebugSystem=1
+    ;;
+
+    "BuildBundledExamples")
+      BuildExamples=1
+      for ex in $BUNDLED_EXAMPLES; do
+        EXAMPLES_TO_BUILD="$EXAMPLES_TO_BUILD $ex"
+      done
+    ;;
+
+    "MakeDebugLibRelease")
+      MakeDebugLibRelease=1
+    ;;
+
+    "RunTests")
+      RunTests=1
+    ;;
+
+    "RunPoof")
+      RunPoof=1
+    ;;
+
+    "BuildWithEMCC")
+      BuildWithEMCC=1
+    ;;
+
+    "BuildSingleExample")
+      BuildExamples=1
+      EXAMPLES_TO_BUILD="$EXAMPLES_TO_BUILD $2"
+      shift
+    ;;
+
+    "-Od")
+      OPTIMIZATION_LEVEL="-Od"
+    ;;
+
+    "-O0")
+      OPTIMIZATION_LEVEL="-O0"
+    ;;
+
+    "-O1")
+      OPTIMIZATION_LEVEL="-O1"
+    ;;
+
+    "-O2")
+      OPTIMIZATION_LEVEL="-O2"
+    ;;
+
+    *)
+      echo "Unrecognized Build Option ($CliArg), exiting." && exit 1
+    ;;
+  esac
+
+  shift
+done
 
 time RunEntireBuild
