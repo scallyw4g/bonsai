@@ -51,7 +51,6 @@ ThreadMain(void *Input)
 
   DEBUG_REGISTER_THREAD(ThreadParams);
 
-
   if (ThreadParams->InitProc) { ThreadParams->InitProc(Global_ThreadStates, ThreadParams->ThreadIndex); }
 
   while (FutexNotSignaled(ThreadParams->WorkerThreadsExitFutex))

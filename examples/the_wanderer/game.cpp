@@ -24,10 +24,6 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
     case type_work_queue_entry_sim_particle_system:
     case type_work_queue_entry_update_world_region:
     case type_work_queue_entry_rebuild_mesh: 
-    {
-      NotImplemented;
-    } break;
-
     case type_work_queue_entry_init_asset:
     {
       NotImplemented;

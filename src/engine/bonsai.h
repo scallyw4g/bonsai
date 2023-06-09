@@ -242,8 +242,6 @@ struct particle
   v3 Velocity;
   v3 Offset;
 
-  /* physics Physics; */
-
   u8 Color;
   r32 RemainingLifespan;
 };
