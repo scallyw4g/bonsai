@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-./make.sh              \
-  BuildExecutables     \
-  BuildBundledExamples \
-  BuildDebugSystem     \
-  BuildSingleExample  examples/custom
+# ./make.sh              \
+#   BuildExecutables     \
+#   BuildBundledExamples \
+#   BuildDebugSystem
+
+./make.sh BuildTests
