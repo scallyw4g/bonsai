@@ -56,7 +56,7 @@ struct engine_resources
   /* world_position *VisibleRegion; */
 
   // TODO(Jesse): Put this on the camera?
-  canonical_position *CameraTargetP;
+  entity *CameraTargetEntity;
 
   mesh_freelist MeshFreelist;
 

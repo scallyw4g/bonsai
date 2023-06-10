@@ -108,14 +108,19 @@ Bonsai_FrameEnd(engine_resources *Resources)
 
   // NOTE(Jesse): This has to come after the entities simulate, and before the draw
   // We have to 
+  auto CameraTargetP = Resources->CameraTargetEntity ? Resources->CameraTargetEntity->P : Canonical_Position(0);
   {
     v2 MouseDelta = GetMouseDelta(Plat);
     input* GameInput = &Plat->Input;
-    auto TargetP = Resources->CameraTargetP ? *Resources->CameraTargetP : Canonical_Position(0);
-    UpdateGameCamera(MouseDelta, GameInput, TargetP, Camera, World->ChunkDim);
+    UpdateGameCamera(MouseDelta, GameInput, CameraTargetP, Camera, World->ChunkDim);
     Resources->Graphics->gBuffer->ViewProjection =
       ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
       ViewMatrix(World->ChunkDim, Camera);
+  }
+
+  if (World->Flags & WorldFlag_WorldCenterFollowsCameraTarget)
+  {
+    World->Center = CameraTargetP.WorldP;
   }
 
   Render_BufferGameGeometry(Resources);

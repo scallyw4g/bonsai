@@ -105,11 +105,6 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 // game.  In this example, the definition is in `examples/blank_project/game_types.h`
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 {
-  game_state *GameStateAllocation = Allocate(game_state, Resources->Memory, 1);
-  GameStateAllocation->Entropy.Seed = DEBUG_NOISE_SEED;
-  Resources->GameState = GameStateAllocation;
-
-
   // NOTE(Jesse): This is a convenience macro for unpacking all the information
   // the engine passes around.  It nominally reduces the amount of typing you have to do.
   //
@@ -120,18 +115,20 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   Global_AssetPrefixPath = CSz("examples/blank_project/assets");
 
   world_position WorldCenter = {};
-  canonical_position CameraTarget = {};
+  canonical_position CameraTargetP = {};
 
-  StandardCamera(Graphics->Camera, 10000.0f, 1000.0f, CameraTarget);
+  StandardCamera(Graphics->Camera, 10000.0f, 1000.0f, CameraTargetP);
 
   AllocateWorld(World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 
-  GameState->CameraTarget = GetFreeEntity(EntityTable);
-  SpawnEntity( 0, GameState->CameraTarget, EntityType_Default, ModelIndex_None);
+  World->Flags = WorldFlag_WorldCenterFollowsCameraTarget;
 
-  GameState->CameraTarget->P = Canonical_Position(WORLD_CHUNK_DIM/2, g_VisibleRegion/2);
-  Resources->CameraTargetP = &GameState->CameraTarget->P;
+  entity *CameraTarget = GetFreeEntity(EntityTable);
+  SpawnEntity( 0, CameraTarget, EntityType_Default, ModelIndex_None);
 
+  Resources->CameraTargetEntity = CameraTarget;
+
+  GameState = Allocate(game_state, Resources->Memory, 1);
   return GameState;
 }
 
@@ -143,4 +140,20 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Resources);
+
+  f32 dt = Plat->dt;
+
+  // Update camera position
+  if (Input->W.Pressed || Input->S.Pressed || Input->A.Pressed || Input->D.Pressed)
+  {
+    v3 Offset = GetCameraRelativeInput(Hotkeys, Camera);
+
+    // Constrain the camera update to the XY plane
+    Offset.z = 0;
+    Offset = Normalize(Offset, 1.f);
+
+    Resources->CameraTargetEntity->P.Offset += Offset;
+    Canonicalize(World, &Resources->CameraTargetEntity->P);
+  }
+
 }
