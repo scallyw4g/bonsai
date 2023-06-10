@@ -100,8 +100,10 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 #if 1
   float Interval = 1.f;
 
-  debug_global float TimeToWait = Interval;
-  TimeToWait -= Plat->dt;
+  debug_global float BoostInterval = Interval;
+  debug_global float JumpInterval = Interval;
+  JumpInterval -= Plat->dt;
+  BoostInterval -= Plat->dt;
 
   Player->Physics.Speed = 60.f;
   Player->Physics.Mass = 20.f;
@@ -109,11 +111,17 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 #if 1
   Player->Physics.Force += V3(20.f, 0.0f, 0.0f) * Plat->dt;
 
-  if (TimeToWait < 0.f && IsGrounded( World, Player ) )
+  if (JumpInterval < 0.f && IsGrounded( World, Player ) )
   {
-    Player->Physics.Force += V3(250.f, 0.0f, 0.0f);
     Player->Physics.Force += V3(0.f, 0.f, 20.f);
-    TimeToWait += Interval;
+    JumpInterval += Interval;
+    BoostInterval = Interval/2.f;
+  }
+
+  if (BoostInterval < 0)
+  {
+    BoostInterval = 100000.f;
+    Player->Physics.Force += V3(250.f, 0.0f, 0.0f);
   }
 
   if (Hotkeys->Player_Jump)
