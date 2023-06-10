@@ -126,7 +126,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   entity *CameraTarget = GetFreeEntity(EntityTable);
   SpawnEntity( 0, CameraTarget, EntityType_Default, ModelIndex_None);
 
-  Resources->CameraTargetEntity = CameraTarget;
+  Resources->CameraTarget = CameraTarget;
 
   GameState = Allocate(game_state, Resources->Memory, 1);
   return GameState;
@@ -152,8 +152,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     Offset.z = 0;
     Offset = Normalize(Offset, 1.f);
 
-    Resources->CameraTargetEntity->P.Offset += Offset;
-    Canonicalize(World, &Resources->CameraTargetEntity->P);
+    Resources->CameraTarget->P.Offset += Offset;
   }
 
 }

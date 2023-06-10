@@ -156,7 +156,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
                          Canonical_Position(Voxel_Position(0), WorldCenter),
                          &GameState->Entropy );
 
-  Resources->CameraTargetP = &GameState->Player->P;
+  Resources->CameraTarget = GameState->Player;
 
   StandardCamera(Graphics->Camera, 10000.0f, 2000.0f, GameState->Player->P);
 

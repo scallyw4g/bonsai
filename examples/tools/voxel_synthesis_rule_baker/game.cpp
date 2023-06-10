@@ -480,17 +480,16 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  /* CameraFollowEntity(); */
-
   if (Hotkeys)
   {
     r32 CameraSpeed = 125.f;
     v3 CameraDelta = (GetCameraRelativeInput(Hotkeys, Camera));
+
     CameraDelta.z = 0.f;
     CameraDelta = Normalize(CameraDelta) * CameraSpeed * Plat->dt;
 
     GameState->CameraTarget->P.Offset += CameraDelta;
-    Canonicalize(World->ChunkDim, GameState->CameraTarget->P);
+    /* Canonicalize(World->ChunkDim, GameState->CameraTarget->P); */
   }
 
   v3i TileSuperpositionsDim = GameState->BakeResult.TileSuperpositionsDim;
@@ -776,8 +775,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState->CameraTarget = GetFreeEntity(EntityTable);
   SpawnEntity(GameState->CameraTarget);
-  GameState->CameraTarget->P = Canonical_Position(Voxel_Position(0), {{0,0,0}});
-  Resources->CameraTargetP = &GameState->CameraTarget->P;
+
+  Resources->CameraTarget = GameState->CameraTarget;
 
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/test2.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/square.vox"); */
@@ -883,7 +882,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
         auto yOffset = -s32(yRuleMultiplier)*(Global_TileDim.x+2);
 
         TileEntity->P.Offset += V3(xOffset, yOffset, 0);
-        TileEntity->P = Canonicalize(World->ChunkDim, TileEntity->P);
+        /* TileEntity->P = Canonicalize(World->ChunkDim, TileEntity->P); */
         SpawnEntity(TileEntity);
 
         TileEntity->UserData = (void*)Tile;

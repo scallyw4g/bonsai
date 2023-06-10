@@ -55,8 +55,7 @@ struct engine_resources
   // TODO(Jesse): Formalize this
   /* world_position *VisibleRegion; */
 
-  // TODO(Jesse): Put this on the camera?
-  entity *CameraTargetEntity;
+  entity *CameraTarget;
 
   mesh_freelist MeshFreelist;
 

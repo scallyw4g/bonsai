@@ -546,11 +546,12 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   {
     r32 CameraSpeed = 125.f;
     v3 CameraDelta = (GetCameraRelativeInput(Hotkeys, Camera));
+
     CameraDelta.z = 0.f;
     CameraDelta = Normalize(CameraDelta) * CameraSpeed * Plat->dt;
 
     GameState->CameraTarget->P.Offset += CameraDelta;
-    Canonicalize(World->ChunkDim, GameState->CameraTarget->P);
+    /* Canonicalize(World->ChunkDim, GameState->CameraTarget->P); */
   }
 
   /* if (Hotkeys->Player_Spawn) */
@@ -619,7 +620,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState->CameraTarget->P = Canonical_Position(Voxel_Position(0), {{2,2,0}});
 
-  Resources->CameraTargetP = &GameState->CameraTarget->P;
+  Resources->CameraTarget = GameState->CameraTarget;
 
   return GameState;
 }

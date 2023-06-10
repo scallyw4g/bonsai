@@ -52,7 +52,9 @@ GetCollision( world *World, canonical_position TestP, v3 CollisionDim )
 
   chunk_dimension WorldChunkDim = World->ChunkDim;
 
-  // TODO(Jesse): Probably just assert this is true
+  Assert( IsCanonical(WorldChunkDim, TestP) );
+
+  // TODO(Jesse): Remove if that ^ assert doesn't fire
   TestP = Canonicalize(WorldChunkDim, TestP);
 
   voxel_position MinP = Voxel_Position(TestP.Offset);
@@ -698,11 +700,11 @@ SpawnPlayerLikeEntity( platform *Plat,
     CollisionVolumeRadius = Model->Dim * Scale * 0.5f; // 0.5f is to shrink to a radius, instead of dim
   }
 
-  for (s32 z = -1; z < (s32)CollisionVolumeRadius.z; ++ z)
+  for (s32 z = -1; z < (s32)(CollisionVolumeRadius.z*2.f); ++ z)
   {
-    for (s32 y = -1; y < (s32)CollisionVolumeRadius.y; ++ y)
+    for (s32 y = -1; y < (s32)(CollisionVolumeRadius.y*2.f); ++ y)
     {
-      for (s32 x = -1; x < (s32)CollisionVolumeRadius.x; ++ x)
+      for (s32 x = -1; x < (s32)(CollisionVolumeRadius.x*2.f); ++ x)
       {
         canonical_position CP = Canonicalize(World->ChunkDim, V3(x, y, z), InitialP.WorldP);
 
@@ -1367,6 +1369,8 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
         continue;
 
     if (Entity->Update) { Entity->Update(Resources, Entity); }
+
+    Entity->P = Canonicalize(Resources->World, Entity->P);
 
     switch (Entity->Type)
     {

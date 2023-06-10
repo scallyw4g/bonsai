@@ -263,6 +263,21 @@ Canonicalize( world *World, canonical_position CP )
   return Result;
 }
 
+inline b32
+IsCanonical( world *World, canonical_position CP )
+{
+  b32 Result = CP.Offset < V3(World->ChunkDim);
+  return Result;
+}
+
+inline b32
+IsCanonical( v3i WorldChunkDim, canonical_position CP )
+{
+  b32 Result = CP.Offset < V3(WorldChunkDim);
+  return Result;
+}
+
+
 poof(buffer(standing_spot))
 #include <generated/buffer_standing_spot.h>
 

@@ -108,7 +108,7 @@ Bonsai_FrameEnd(engine_resources *Resources)
 
   // NOTE(Jesse): This has to come after the entities simulate, and before the draw
   // We have to 
-  auto CameraTargetP = Resources->CameraTargetEntity ? Resources->CameraTargetEntity->P : Canonical_Position(0);
+  auto CameraTargetP = Resources->CameraTarget ? Resources->CameraTarget->P : Canonical_Position(0);
   {
     v2 MouseDelta = GetMouseDelta(Plat);
     input* GameInput = &Plat->Input;
