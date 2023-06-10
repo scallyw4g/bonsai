@@ -114,7 +114,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   if (JumpInterval < 0.f && IsGrounded( World, Player ) )
   {
     Player->Physics.Force += V3(0.f, 0.f, 20.f);
-    JumpInterval += Interval;
+    JumpInterval = Interval;
     BoostInterval = Interval/2.f;
   }
 
