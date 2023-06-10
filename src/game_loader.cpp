@@ -315,7 +315,8 @@ main( s32 ArgCount, const char ** Args )
   EngineResources.DebugState = Global_DebugStatePointer;
 
   heap_allocator DebugHeap = InitHeap(Megabytes(128));
-  GetDebugState()->InitializeRenderSystem(&DebugHeap);
+  memory_arena *Arena = AllocateArena();
+  GetDebugState()->InitializeRenderSystem(&DebugHeap, Arena);
 #endif
 
 

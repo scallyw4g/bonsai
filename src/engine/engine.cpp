@@ -31,6 +31,12 @@
 #include <engine/cpp/physics.cpp>
 #include <engine/cpp/entity.cpp>
 #include <engine/cpp/asset_loaders.cpp>
+
+#if PLATFORM_GL_IMPLEMENTATIONS
+#include <engine/cpp/debug_visualize.cpp>
+#endif
+
 #include <engine/cpp/api.cpp>
 #include <engine/cpp/simulate.cpp>
 #include <engine/voxel_synthesis.cpp>
+

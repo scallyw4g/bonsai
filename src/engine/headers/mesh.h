@@ -19,6 +19,10 @@ struct free_mesh
 
 struct mesh_freelist
 {
+#if BONSAI_INTERNAL
+  bonsai_futex DebugFutex;
+#endif
+
   volatile free_mesh* FirstFree;
   volatile free_mesh* Containers;
 };

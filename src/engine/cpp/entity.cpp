@@ -55,7 +55,7 @@ GetCollision( world *World, canonical_position TestP, v3 CollisionDim )
   Assert( IsCanonical(WorldChunkDim, TestP) );
 
   // TODO(Jesse): Remove if that ^ assert doesn't fire
-  TestP = Canonicalize(WorldChunkDim, TestP);
+  /* TestP = Canonicalize(WorldChunkDim, TestP); */
 
   voxel_position MinP = Voxel_Position(TestP.Offset);
   voxel_position MaxP = Voxel_Position(Ceil(TestP.Offset + CollisionDim));
@@ -1099,7 +1099,7 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta, chunk_dimension V
 
         CollisionVolume.E[AxisIndex] = Min(CollisionVolume.E[AxisIndex], 1.f);
 
-        C = GetCollision(World, CollisionBasis, CollisionVolume );
+        C = GetCollision(World, CollisionBasis, CollisionVolume);
 
         if ( C.Count > 0 ) //&& C.Chunk && IsSet(C.Chunk, Chunk_VoxelsInitialized) )
         {

@@ -233,7 +233,16 @@ GetWorldChunkFor(memory_arena *Storage, world *World, world_position P)
   }
   else
   {
-    Result = World->FreeChunks[--World->FreeChunkCount];
+    world_chunk *Chunk = World->FreeChunks[--World->FreeChunkCount];
+    if (InsertChunkIntoWorld(World, Chunk))
+    {
+      Result = Chunk;
+    }
+    else
+    {
+      Leak("Unable to insert chunk into world. Leaking chunk, call FreeWorldChunk here");
+      /* FreeWorldChunk(World, Chunk, Storage, Resources->MeshFreelist); */
+    }
   }
 
   if (Result)
@@ -1689,6 +1698,9 @@ InitializeWorldChunkPlane(world_chunk *DestChunk, chunk_dimension WorldChunkDim,
 link_internal untextured_3d_geometry_buffer*
 GetMeshForChunk(mesh_freelist* Freelist, memory_arena* PermMemory)
 {
+#if BONSAI_INTERNAL
+  AcquireFutex(&Freelist->DebugFutex);
+#endif
   free_mesh* MeshContainer = Unlink_TS(&Freelist->FirstFree);
   untextured_3d_geometry_buffer* Result = 0;
 
@@ -1707,6 +1719,9 @@ GetMeshForChunk(mesh_freelist* Freelist, memory_arena* PermMemory)
     Assert(Result);
   }
 
+#if BONSAI_INTERNAL
+  ReleaseFutex(&Freelist->DebugFutex);
+#endif
   return Result;
 }
 
@@ -2959,7 +2974,6 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
   if ( DestChunk->FilledCount > 0) // && DestChunk->FilledCount < (u32)Volume(WorldChunkDim))
   {
     PrimaryMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-    /* BuildWorldChunkMesh(SyntheticChunk->Voxels, SynChunkDim, Global_ChunkApronDim, Global_ChunkApronDim+WorldChunkDim, PrimaryMesh); */
     BuildWorldChunkMeshFromMarkedVoxels_Greedy(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim, PrimaryMesh, Thread->TempMemory);
   }
 
@@ -2972,22 +2986,13 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
                           Thread->TempMemory);
   }
 
-  if (SyntheticChunkSum && (Flags & ChunkInitFlag_GenLODMesh) )  // Compute 0th LOD
+  if (SyntheticChunkSum && (Flags & ChunkInitFlag_GenLODMesh) )
   {
     LodMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
     ComputeLodMesh( Thread,
                     DestChunk, WorldChunkDim,
                     SyntheticChunk, SynChunkDim,
                     LodMesh, True);
-
-#if 0
-    LodMesh->At = 0;
-    ComputeLodMesh( Thread,
-                    DestChunk, WorldChunkDim,
-                    SyntheticChunk, SynChunkDim,
-                    LodMesh, False);
-#endif
-
   }
 
   FullBarrier;
@@ -2996,7 +3001,6 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
   {
     if (PrimaryMesh->At)
     { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Main, PrimaryMesh, PrimaryMesh->Timestamp) == 0); }
-      /* DestChunk->Mesh = PrimaryMesh; FullBarrier; DestChunk->SelectedMeshes |= MeshIndex_Main; } */
     else
     { DeallocateMesh(&PrimaryMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
   }
@@ -3005,7 +3009,6 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
   {
     if (LodMesh->At)
     { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Lod, LodMesh, LodMesh->Timestamp) == 0); }
-    /* { DestChunk->LodMesh = LodMesh; FullBarrier; DestChunk->SelectedMeshes |= MeshIndex_Lod; } */
     else
     { DeallocateMesh(&LodMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
   }
@@ -3014,7 +3017,6 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
   {
     if (DebugMesh->At)
     { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Debug, DebugMesh, DebugMesh->Timestamp) == 0); }
-    /* { DestChunk->DebugMesh = DebugMesh; FullBarrier; DestChunk->SelectedMeshes |= MeshIndex_Debug; } */
     else
     { DeallocateMesh(&DebugMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
   }

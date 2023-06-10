@@ -8,7 +8,7 @@
 #define WORLD_Z V3(0,0,1)
 
 /* #define WORLD_HASH_SIZE (Kilobytes(3)) // TODO(Jesse): Should this be dynamic? */
-#define FREELIST_SIZE (Kilobytes(64))
+#define FREELIST_SIZE (Kilobytes(1))
 
 #define NOISE_FREQUENCY (100L)
 

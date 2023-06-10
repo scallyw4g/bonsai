@@ -438,6 +438,10 @@ AllocateMesh(memory_arena* Arena, u32 NumVerts)
 link_internal void
 DeallocateMesh(untextured_3d_geometry_buffer** Mesh, mesh_freelist* MeshFreelist, memory_arena* Memory)
 {
+#if BONSAI_INTERNAL
+  AcquireFutex(&MeshFreelist->DebugFutex);
+#endif
+
   Assert(Mesh && *Mesh);
 
   free_mesh* Container = Unlink_TS(&MeshFreelist->Containers);
@@ -449,6 +453,10 @@ DeallocateMesh(untextured_3d_geometry_buffer** Mesh, mesh_freelist* MeshFreelist
   *Mesh = 0;
 
   Link_TS(&MeshFreelist->FirstFree, Container);
+
+#if BONSAI_INTERNAL
+  ReleaseFutex(&MeshFreelist->DebugFutex);
+#endif
 }
 
 link_internal void

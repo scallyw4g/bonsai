@@ -44,7 +44,7 @@ Bonsai_Init(engine_resources *Resources)
   if (!Resources->Graphics) { Error("Initializing Graphics"); return False; }
 
   memory_arena *GraphicsMemory2D = AllocateArena();
-  InitRenderer2D(&Resources->GameUiRenderer, &Resources->Heap, GraphicsMemory2D);
+  InitRenderer2D(&Resources->GameUiRenderer, &Resources->Heap, GraphicsMemory2D, &Resources->Plat->MouseP, &Resources->Plat->MouseDP, &Resources->Plat->Input);
 
   Resources->EntityTable = AllocateEntityTable(BonsaiInitArena, TOTAL_ENTITY_COUNT);
 
@@ -63,7 +63,8 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   // Must come before UNPACK_ENGINE_RESOURCES such that we unpack the correct GpuMap
   graphics *G = Resources->Graphics;
-  G->GpuBufferWriteIndex = (Resources->FrameIndex) % 2;
+  G->GpuBufferWriteIndex = 0;
+  /* G->GpuBufferWriteIndex = (Resources->FrameIndex) % 2; */
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
@@ -141,16 +142,17 @@ Bonsai_Render(engine_resources *Resources)
 {
   TIMED_FUNCTION();
 
-  platform *Plat            = Resources->Plat;
-  graphics        *Graphics = Resources->Graphics;
-  ao_render_group *AoGroup  = Graphics->AoGroup;
-  shadow_render_group *SG   = Graphics->SG;
-  gpu_mapped_element_buffer *GpuMap = GetCurrentGpuMap(Graphics);
+  UNPACK_ENGINE_RESOURCES(Resources);
+
+  ao_render_group     *AoGroup = Graphics->AoGroup;
+  shadow_render_group *SG      = Graphics->SG;
 
   r32 MappedGameTime = Plat->GameTime / 18.0f;
+  /* r32 MappedGameTime = Plat->GameTime; */
 
   SG->Sun.Position.x = Sin(MappedGameTime);
   SG->Sun.Position.y = Cos(MappedGameTime);
+  SG->Sun.Position.z = Cos(MappedGameTime)*0.7f + 1.3f;
 
   RenderGBuffer(GpuMap, Graphics);
   RenderShadowMap(GpuMap, Graphics);
@@ -168,8 +170,11 @@ Bonsai_Render(engine_resources *Resources)
   GL.DisableVertexAttribArray(1);
   GL.DisableVertexAttribArray(2);
 
+  /* DebugVisualize(GameUi, &Resources->MeshFreelist); */
+  /* DebugVisualize(GameUi, Resources->World->FreeChunks, (s32)Resources->World->FreeChunkCount); */
+
   Resources->GameUiRenderer.ScreenDim = V2(Plat->WindowWidth, Plat->WindowHeight);
-  FlushCommandBuffer(&Resources->GameUiRenderer, Resources->GameUiRenderer.CommandBuffer);
+  FlushCommandBuffer(GameUi, GameUi->CommandBuffer);
 
   b32 Result = True;
   return Result;

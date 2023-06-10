@@ -263,17 +263,19 @@ Canonicalize( world *World, canonical_position CP )
   return Result;
 }
 
+// NOTE(Jesse): Technically, these should always be strictly less than the chunkdim,
+// but because of float-ness we can actually hit directly on it.
 inline b32
 IsCanonical( world *World, canonical_position CP )
 {
-  b32 Result = CP.Offset < V3(World->ChunkDim);
+  b32 Result = CP.Offset <= V3(World->ChunkDim);
   return Result;
 }
 
 inline b32
 IsCanonical( v3i WorldChunkDim, canonical_position CP )
 {
-  b32 Result = CP.Offset < V3(WorldChunkDim);
+  b32 Result = CP.Offset <= V3(WorldChunkDim);
   return Result;
 }
 

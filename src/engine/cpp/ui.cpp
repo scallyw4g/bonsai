@@ -470,7 +470,6 @@ BufferTexturedQuad(renderer_2d *Group,
     case ClipStatus_NoClipping:
     case ClipStatus_PartialClipping:
     {
-
       BufferQuadDirect(Geo, Result.ClippedMin, Result.ClippedMax-Result.ClippedMin, Z, Group->ScreenDim);
       BufferQuadUVs(Geo, UV, TextureSlice);
       BufferColors(Group, Geo, Color);
