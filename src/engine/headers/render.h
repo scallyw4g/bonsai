@@ -145,7 +145,7 @@ Perspective(radians FOV, v2 WindowDim, r32 NearClip, r32 FarClip)
 //     0   0 1/d -c/(d*e)
 #endif
 
-  r32 FocalLength = (r32)tan(FOV / 2.0f);
+  r32 FocalLength = (r32)tan(r64(FOV) / 2.0);
   r32 Aspect = WindowDim.x/WindowDim.y;
 
   r32 a = 1.0f/(Aspect*FocalLength);

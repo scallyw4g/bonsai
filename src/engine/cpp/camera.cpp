@@ -31,7 +31,7 @@ UpdateCameraP(canonical_position NewTarget, camera *Camera, chunk_dimension Worl
   // Frustum computation
   //
   v3 FrustLength = V3(0.0f,0.0f, Camera->Frust.farClip);
-  v3 FarHeight = ( V3( 0.0f, ((Camera->Frust.farClip - Camera->Frust.nearClip)/(r32)cos(Camera->Frust.FOV/2.0f)) * (r32)sin(Camera->Frust.FOV/2.0f), 0.0f));
+  v3 FarHeight = ( V3( 0.0f, ((Camera->Frust.farClip - Camera->Frust.nearClip)/Cos(Camera->Frust.FOV/2.0f)) * Sin(Camera->Frust.FOV/2.0f), 0.0f));
   v3 FarWidth = V3( FarHeight.y, 0.0f, 0.0f);
 
   v3 MaxMax = FrustLength + FarHeight + FarWidth;

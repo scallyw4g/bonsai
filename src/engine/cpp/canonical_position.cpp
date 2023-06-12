@@ -2,7 +2,7 @@ inline r32
 Length( canonical_position P, chunk_dimension WorldChunkDim)
 {
   v3 Offset = P.Offset + (P.WorldP * WorldChunkDim);
-  r32 Result = (r32)sqrt(LengthSq(Offset));
+  r32 Result = (r32)sqrt(r64(LengthSq(Offset)));
   return Result;
 }
 

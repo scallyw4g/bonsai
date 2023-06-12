@@ -158,6 +158,13 @@ HasMesh(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
   return Result;
 }
 
+enum chunk_init_flags
+{
+  ChunkInitFlag_Noop = 0,
+
+  ChunkInitFlag_ComputeStandingSpots = (1 << 0),
+  ChunkInitFlag_GenLODMesh           = (1 << 1),
+};
 
 #define WORLD_CHUNK_STANDING_SPOT_COUNT (32)
 

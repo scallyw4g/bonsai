@@ -700,6 +700,7 @@ ClearWorldChunk( world_chunk *Chunk )
   Chunk->PointsToLeaveRemaining = {};
   Chunk->TriCount = {};
   Chunk->EdgeBoundaryVoxelCount = {};
+  Chunk->StandingSpots.At = Chunk->StandingSpots.Start;
 }
 
 inline s32

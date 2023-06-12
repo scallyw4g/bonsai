@@ -1,4 +1,30 @@
 link_internal void
+ClearChunkVoxels(voxel *Voxels, chunk_dimension Dim)
+{
+#if 0
+    // Don't blow out the Flags for this chunk or risk assertions on other
+    // threads that rely on that flag being set for every item on the queue
+    ZeroChunk(DestChunk, Volume(WorldChunkDim));
+#else
+
+#if 0
+    // TODO(Jesse): Use vector'd clear
+    for ( s32 VoxelIndex = 0;
+          VoxelIndex < ;
+          ++VoxelIndex)
+    {
+      voxel *Voxel = Voxels[VoxelIndex];
+      Voxel->Flags = Voxel_Empty;
+      Voxel->Color = 0;
+    }
+#else
+    ZeroMemory(Voxels, (u64)Volume(Dim)*sizeof(voxel));
+#endif
+
+#endif
+}
+
+link_internal void
 UnSetMeshBit(world_chunk *Chunk, world_chunk_mesh_bitfield MeshBit)
 {
   // TODO(Jesse): Actually assert this?
@@ -87,10 +113,7 @@ link_internal void
 AllocateWorldChunk(world_chunk *Result, memory_arena *Storage, world_position WorldP, chunk_dimension Dim)
 {
   u32 MaxLodMeshVerts = POINT_BUFFER_SIZE*3;
-  /* CAssert(sizeof(world_chunk) == CACHE_LINE_SIZE); */
 
-  // FIXME(Jesse): The *2048 is an unnecessary debugging crutch .. take it out
-  /* Result->LodMesh     = AllocateMesh(Storage, MaxLodMeshVerts*2048); */
   Result->Voxels      = AllocateVoxels(Storage, Dim);
   Result->WorldP      = WorldP;
 
@@ -100,14 +123,6 @@ AllocateWorldChunk(world_chunk *Result, memory_arena *Storage, world_position Wo
   Result->DimZ = SafeTruncateU8(Dim.z);
 
   Result->StandingSpots = V3iCursor(WORLD_CHUNK_STANDING_SPOT_COUNT, Storage);
-
-  /* Result->CurrentTriangles = AllocateCurrentTriangles(2*4096, Storage); */
-  /* Result->CurrentTriangles->SurfacePoints = AllocateAlignedProtection(boundary_voxels, Storage, 1, 64, False); */
-
-  // TODO(Jesse, id: 133, tags: allocation, not_implemented): Allocate in a more sensible way?
-  /* Result->CurrentTriangles->SurfacePoints->Points = AllocateAlignedProtection(voxel_position, Storage, Volume(WorldChunkDim), 64, False); */
-
-  /* SeedTriangulation(Result->CurrentTriangles, Storage); */
 }
 
 link_internal world_chunk*
@@ -484,35 +499,54 @@ CopyChunkOffset(world_chunk *Src, voxel_position SrcChunkDim, world_chunk *Dest,
 
 }
 
-link_internal void
-InitChunkPlane(s32 zIndex, world_chunk *Chunk, chunk_dimension ChunkDim, u8 Color )
+link_internal u32
+Noise_Flat( perlin_noise *Noise,
+            world_chunk *Chunk,
+            chunk_dimension Dim,
+            chunk_dimension SrcToDest,
+            u8 ColorIndex,
+            s32 Frequency,
+            s32 Amplitude,
+            s64 zMin,
+            chunk_dimension WorldChunkDim,
+            void *Ignored )
 {
-  for ( s32 z = 0; z < ChunkDim.z; ++ z)
+  u32 Result = 0;
+  for ( s32 z = 0; z < Dim.z; ++ z)
   {
-    for ( s32 y = 0; y < ChunkDim.y; ++ y)
+    s64 WorldZ = z - zMin - SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z);
+    for ( s32 y = 0; y < Dim.y; ++ y)
     {
-      for ( s32 x = 0; x < ChunkDim.x; ++ x)
+      for ( s32 x = 0; x < Dim.x; ++ x)
       {
-        if (z == zIndex)
+        if (WorldZ < zMin)
         {
-          s32 Index = GetIndex(Voxel_Position(x,y,z), ChunkDim);
+          s32 Index = GetIndex(Voxel_Position(x,y,z), Dim);
           Chunk->Voxels[Index].Flags = Voxel_Filled;
-          Chunk->Voxels[Index].Color = Color;
+          Chunk->Voxels[Index].Color = ColorIndex;
+          ++Result;
         }
       }
     }
   }
 
-  return;
+  return Result;;
 }
 
 link_internal u32
-InitChunkPerlinPlane( perlin_noise *Noise,
-                      world_chunk *Chunk, chunk_dimension Dim, chunk_dimension SrcToDest,
-                      u8 ColorIndex, s32 Frequency, s32 Amplitude, s64 zMin,
-                      chunk_dimension WorldChunkDim)
+Noise_FBM2D( perlin_noise *Noise,
+             world_chunk *Chunk,
+             chunk_dimension Dim,
+             chunk_dimension SrcToDest,
+             u8 ColorIndex,
+             s32 Frequency,
+             s32 Amplitude,
+             s64 zMin,
+             chunk_dimension WorldChunkDim,
+             void *OctaveCount )
 {
   TIMED_FUNCTION();
+  Assert(Frequency != INT_MIN);
 
   u32 ChunkSum = 0;
 
@@ -534,34 +568,79 @@ InitChunkPerlinPlane( perlin_noise *Noise,
     return ChunkSum;
 
   Frequency = Max(Frequency, 1);
+  Assert(Frequency != INT_MIN);
 
+  u32 Octaves = *(u32*)OctaveCount;
   for ( s32 z = 0; z < Dim.z; ++ z)
   {
+    s64 WorldZ = z - SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z);
+    s64 WorldZBiased = WorldZ - zMin;
     for ( s32 y = 0; y < Dim.y; ++ y)
     {
       for ( s32 x = 0; x < Dim.x; ++ x)
       {
+        r32 NoiseValue = 0.f;
         s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
         Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
         Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
 
-        double InX = ((double)x + SrcToDest.x + ( (double)WorldChunkDim.x*(double)Chunk->WorldP.x))/Frequency;
-        double InY = ((double)y + SrcToDest.y + ( (double)WorldChunkDim.y*(double)Chunk->WorldP.y))/Frequency;
-        /* double InZ = ((double)z + ( (double)WorldChunkDim.z*(double)Chunk->WorldP.z))/Frequency; */
-        double InZ = 1.0;
+        Assert(Frequency != INT_MIN);
+        s32 InteriorFreq = Frequency;
+        s32 InteriorAmp = Amplitude;
+        for (u32 OctaveIndex = 0; OctaveIndex < Octaves; ++OctaveIndex)
+        {
 
+          f32 InX = SafeDivide0((x + SrcToDest.x + ( WorldChunkDim.x*Chunk->WorldP.x)), f32(InteriorFreq));
+          f32 InY = SafeDivide0((y + SrcToDest.y + ( WorldChunkDim.y*Chunk->WorldP.y)), f32(InteriorFreq));
+          f32 InZ = SafeDivide0((z + SrcToDest.z + ( WorldChunkDim.z*Chunk->WorldP.z)), f32(InteriorFreq));
+          /* f32 InZ = 1.0; */
 
-        s64 WorldZ = z - SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z);
-        /* r64 zSlicesAt = SafeDivide0(1.0, (r64)Amplitude) * (r64)WorldZ; */
+          r32 Warp = 0.f;
+          /* r32 Warp = Noise->noise(InX, InY, InZ)*3.f; */
+          /* r32 Warp = Noise->noise(InX, InY, InZ)*r32(OctaveIndex); */
+          /* r32 Warp2 = Noise->noise(InX, InY+Warp, InZ)*8.f; */
 
-        r64 NoiseValue = Noise->noise(InX, InY, InZ);
-        s32 zValue = s32(zMin) + (s32)Abs( (r64)(NoiseValue*(r64)Amplitude) );
+          r32 N = PerlinNoise(InX+Warp, InY+Warp, InZ+Warp);
+          /* r32 N = Noise->noise(Warp, Warp, Warp); */
+          Assert(N <= 1.05f);
+          Assert(N > -1.05f);
+          /* r32 NoiseValue = Noise->noise(InX, InY, InZ); */
 
-        b32 NoiseChoice = WorldZ < zValue;
-        Assert(NoiseChoice == 0 || NoiseChoice == 1);
+          /* b32 NoiseChoice = IsUnderground && NoiseValue > 0.20f; */
+          s32 zValue = (s32)Abs( (N*InteriorAmp) );
+
+          b32 IsUnderground =  zValue < WorldZBiased;
+          /* b32 NoiseChoice = IsUnderground && N > 0.5f; */
+          b32 NoiseChoice = IsUnderground;
+
+          /* if (NoiseChoice) */
+          {
+            NoiseValue += N*(r32(OctaveIndex+1));
+            NoiseValue += N*InteriorAmp;
+            /* NoiseValue += N; */
+          }
+
+          InteriorAmp = Max(1, InteriorAmp/2);
+          InteriorFreq = Max(1, InteriorFreq/2);
+        }
+
+        /* NoiseValue /= r32(Octaves+Octaves); */
+        /* Assert(NoiseValue <= 1.10f); */
+
+        /* b32 NoiseChoice = NoiseValue > 0.5f;; */
+        /* b32 NoiseChoice = NoiseValue > r32(Amplitude); //0.5f;; */
+        b32 NoiseChoice = r64(NoiseValue) > r64(WorldZBiased);
+
+        u8 ThisColor = ColorIndex;
+        s32 WaterThreshold = 0;
+        if (NoiseChoice == False && WorldZ < WaterThreshold)
+        {
+          NoiseChoice = True;
+          ThisColor = BLUE;
+        }
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*NoiseChoice));
-        Chunk->Voxels[VoxIndex].Color = ColorIndex*u8(NoiseChoice);
+        Chunk->Voxels[VoxIndex].Color = ThisColor*u8(NoiseChoice);
         ChunkSum += NoiseChoice;
 
         Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
@@ -581,10 +660,40 @@ InitChunkPerlinPlane( perlin_noise *Noise,
   return ChunkSum;
 }
 
-link_internal void
-InitChunkPerlin(perlin_noise *Noise, world_chunk *Chunk, chunk_dimension Dim, u8 ColorIndex, chunk_dimension WorldChunkDim)
+link_internal u32
+Noise_Perlin2D( perlin_noise *Noise,
+                world_chunk *Chunk,
+                chunk_dimension Dim,
+                chunk_dimension SrcToDest,
+                u8 ColorIndex,
+                s32 Frequency,
+                s32 Amplitude,
+                s64 zMin,
+                chunk_dimension WorldChunkDim,
+                void *UserData )
 {
   TIMED_FUNCTION();
+
+  u32 OctaveCount = 1;
+  u32 SyntheticChunkSum = Noise_FBM2D( Noise, Chunk, Dim, SrcToDest, ColorIndex, Frequency, Amplitude, zMin, WorldChunkDim, (void*)&OctaveCount);
+  return SyntheticChunkSum;
+}
+
+link_internal u32
+Noise_Perlin3D( perlin_noise *Noise,
+                world_chunk *Chunk,
+                chunk_dimension Dim,
+                chunk_dimension SrcToDest,
+                u8 ColorIndex,
+                s32 Frequency,
+                s32 Amplitude,
+                s64 zMin,
+                chunk_dimension WorldChunkDim,
+                void* Ignored)
+{
+  TIMED_FUNCTION();
+
+  u32 Result = 0;
 
   Assert(Chunk);
 
@@ -599,11 +708,11 @@ InitChunkPerlin(perlin_noise *Noise, world_chunk *Chunk, chunk_dimension Dim, u8
 
         Assert( NotSet(&Chunk->Voxels[i], Voxel_Filled) );
 
-        double InX = ((double)x + ( (double)WorldChunkDim.x*(double)Chunk->WorldP.x))/NOISE_FREQUENCY;
-        double InY = ((double)y + ( (double)WorldChunkDim.y*(double)Chunk->WorldP.y))/NOISE_FREQUENCY;
-        double InZ = ((double)z + ( (double)WorldChunkDim.z*(double)Chunk->WorldP.z))/NOISE_FREQUENCY;
+        f32 InX = ((f32)x + ( (f32)WorldChunkDim.x*(f32)Chunk->WorldP.x))/NOISE_FREQUENCY;
+        f32 InY = ((f32)y + ( (f32)WorldChunkDim.y*(f32)Chunk->WorldP.y))/NOISE_FREQUENCY;
+        f32 InZ = ((f32)z + ( (f32)WorldChunkDim.z*(f32)Chunk->WorldP.z))/NOISE_FREQUENCY;
 
-        r32 noiseValue = (r32)Noise->noise(InX, InY, InZ);
+        r32 noiseValue = PerlinNoise(InX, InY, InZ);
 
         s32 NoiseChoice = Floori(noiseValue + 0.5f);
 
@@ -615,6 +724,7 @@ InitChunkPerlin(perlin_noise *Noise, world_chunk *Chunk, chunk_dimension Dim, u8
         {
           Chunk->Voxels[i].Color = ColorIndex;
           Assert( IsSet(&Chunk->Voxels[i], Voxel_Filled) );
+          ++Result;
         }
         else
         {
@@ -625,8 +735,11 @@ InitChunkPerlin(perlin_noise *Noise, world_chunk *Chunk, chunk_dimension Dim, u8
     }
   }
 
-  return;
+  return Result;
 }
+
+typedef u32 (*chunk_init_callback)( perlin_noise *Noise, world_chunk *Chunk, chunk_dimension Dim, chunk_dimension SrcToDest, u8 ColorIndex, s32 Frequency, s32 Amplitude, s64 zMin, chunk_dimension WorldChunkDim, void* UserData);
+
 
 link_internal void
 MarkBoundaryVoxels_MakeExteriorFaces( voxel *Voxels,
@@ -1597,7 +1710,6 @@ BuildWorldChunkMesh( world *World,
     }
   }
 }
-#endif
 
 link_internal void
 InitializeWorldChunkPerlin( perlin_noise *Noise,
@@ -1632,7 +1744,7 @@ InitializeWorldChunkPerlin( perlin_noise *Noise,
 
   world_chunk *SyntheticChunk = AllocateWorldChunk(TempMemory, SynChunkP, SynChunkDim );
 
-  InitChunkPerlin(Noise, SyntheticChunk, SynChunkDim, GRASS_GREEN, WorldChunkDim);
+  Noise_Perlin3D(Noise, SyntheticChunk, SynChunkDim, V3i(0), GRASS_GREEN, 0, 0, 0, WorldChunkDim, 0);
   CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Voxel_Position(1));
 
   FullBarrier;
@@ -1680,7 +1792,7 @@ InitializeWorldChunkPlane(world_chunk *DestChunk, chunk_dimension WorldChunkDim,
 
   world_chunk *SyntheticChunk = AllocateWorldChunk(TempMemory, SynChunkP, SynChunkDim );
 
-  InitChunkPlane(1, SyntheticChunk, SynChunkDim, GRASS_GREEN);
+  Noise_Flat(0, SyntheticChunk, SynChunkDim, V3i(0), GRASS_GREEN, 0, 0, 0, WorldChunkDim, 0);
   CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Voxel_Position(1));
 
   FullBarrier;
@@ -1694,6 +1806,7 @@ InitializeWorldChunkPlane(world_chunk *DestChunk, chunk_dimension WorldChunkDim,
 
   return;
 }
+#endif
 
 link_internal untextured_3d_geometry_buffer*
 GetMeshForChunk(mesh_freelist* Freelist, memory_arena* PermMemory)
@@ -1715,7 +1828,7 @@ GetMeshForChunk(mesh_freelist* Freelist, memory_arena* PermMemory)
   }
   else
   {
-    Result = AllocateMesh(PermMemory, (u32)Kilobytes(64*2));
+    Result = AllocateMesh(PermMemory, (u32)Kilobytes(64));
     Assert(Result);
   }
 
@@ -2882,42 +2995,7 @@ ComputeLodMesh( thread_local_state *Thread,
       FullBarrier;
     }
 #endif
-
 }
-
-link_internal void
-ClearChunkVoxels(voxel *Voxels, chunk_dimension Dim)
-{
-#if 0
-    // Don't blow out the Flags for this chunk or risk assertions on other
-    // threads that rely on that flag being set for every item on the queue
-    ZeroChunk(DestChunk, Volume(WorldChunkDim));
-#else
-
-#if 0
-    // TODO(Jesse): Use vector'd clear
-    for ( s32 VoxelIndex = 0;
-          VoxelIndex < ;
-          ++VoxelIndex)
-    {
-      voxel *Voxel = Voxels[VoxelIndex];
-      Voxel->Flags = Voxel_Empty;
-      Voxel->Color = 0;
-    }
-#else
-    ZeroMemory(Voxels, (u64)Volume(Dim)*sizeof(voxel));
-#endif
-
-#endif
-}
-
-enum chunk_init_flags
-{
-  ChunkInitFlag_Noop = 0,
-
-  ChunkInitFlag_ComputeStandingSpots = (1 << 0),
-  ChunkInitFlag_GenLODMesh           = (1 << 1),
-};
 
 link_internal void
 InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChunk, chunk_dimension WorldChunkDim, native_file *AssetFile, s32 Frequency, s32 Amplititude, s32 zMin, chunk_init_flags Flags)
@@ -2943,11 +3021,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
   world_chunk *SyntheticChunk = AllocateWorldChunk(Thread->TempMemory, SynChunkP, SynChunkDim );
 
-  u32 SyntheticChunkSum = InitChunkPerlinPlane( Thread->PerlinNoise,
-                                                SyntheticChunk, SynChunkDim, Global_ChunkApronMinDim,
-                                                GRASS_GREEN, Frequency, Amplititude, zMin,
-                                                WorldChunkDim );
-
+  u32 SyntheticChunkSum = Noise_Perlin2D( Thread->PerlinNoise, SyntheticChunk, SynChunkDim, Global_ChunkApronMinDim, GRASS_GREEN, Frequency, Amplititude, zMin, WorldChunkDim, 0);
 
   if (AssetFile && AssetFile->Handle)
   {
@@ -4337,5 +4411,113 @@ DrawPickedChunks(renderer_2d* Group, render_entity_to_texture_group *PickedChunk
   return HotChunk;
 }
 #endif // DEBUG_SYSTEM_API
+
+link_internal void
+InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *Thread, world_chunk *DestChunk, chunk_dimension WorldChunkDim, native_file *AssetFile, s32 Frequency, s32 Amplititude, s32 zMin, chunk_init_flags Flags, void* UserData)
+{
+  TIMED_FUNCTION();
+
+  // @runtime_assert_chunk_aprons_are_valid
+  Assert(Global_ChunkApronDim.x == Global_ChunkApronMinDim.x + Global_ChunkApronMaxDim.x);
+  Assert(Global_ChunkApronDim.y == Global_ChunkApronMinDim.y + Global_ChunkApronMaxDim.y);
+  Assert(Global_ChunkApronDim.z == Global_ChunkApronMinDim.z + Global_ChunkApronMaxDim.z);
+
+  Assert(!ChunkIsGarbage(DestChunk));
+
+  // TODO(Jesse): Pretty sure this is unnecessary
+  ClearChunkVoxels(DestChunk->Voxels, DestChunk->Dim);
+
+  untextured_3d_geometry_buffer* PrimaryMesh = 0;
+  untextured_3d_geometry_buffer* LodMesh = 0;
+  untextured_3d_geometry_buffer* DebugMesh = 0;
+
+  chunk_dimension SynChunkDim = WorldChunkDim + Global_ChunkApronDim;
+  chunk_dimension SynChunkP = DestChunk->WorldP;
+
+  world_chunk *SyntheticChunk = AllocateWorldChunk(Thread->TempMemory, SynChunkP, SynChunkDim );
+
+  u32 SyntheticChunkSum = NoiseCallback( Thread->PerlinNoise,
+                                         SyntheticChunk, SynChunkDim, Global_ChunkApronMinDim,
+                                         GRASS_GREEN, Frequency, Amplititude, zMin,
+                                         WorldChunkDim, UserData );
+
+
+  if (AssetFile && AssetFile->Handle)
+  {
+    world_chunk *AssetChunk = AllocateWorldChunk(Thread->TempMemory, {}, WorldChunkDim+Global_ChunkApronDim);
+    DeserializeChunk(AssetFile, AssetChunk, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+    CloseFile(AssetFile);
+    Assert(AssetChunk->Dim == SynChunkDim);
+    MergeChunksOffset(AssetChunk, SyntheticChunk, {});
+    /* MergeChunksOffset(AssetChunk, SyntheticChunk, Global_HalfChunkApronDim); */
+  }
+
+
+  MarkBoundaryVoxels_NoExteriorFaces(SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
+
+  CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Global_ChunkApronMinDim);
+
+  FullBarrier;
+
+  SetFlag(DestChunk, Chunk_VoxelsInitialized);
+  SetFlag(SyntheticChunk, Chunk_VoxelsInitialized);
+
+  // NOTE(Jesse): A fully filled chunk can still have boundary voxels on its
+  // exterior edge, so that does not preclude it from going through BuildWorldChunkMesh
+  if ( DestChunk->FilledCount > 0) // && DestChunk->FilledCount < (u32)Volume(WorldChunkDim))
+  {
+    PrimaryMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+    BuildWorldChunkMeshFromMarkedVoxels_Greedy(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim, PrimaryMesh, Thread->TempMemory);
+  }
+
+
+
+  if (Flags & ChunkInitFlag_ComputeStandingSpots)
+  {
+    ComputeStandingSpots( SynChunkDim, SyntheticChunk, {{1,1,0}}, {{0,0,1}}, Global_StandingSpotDim,
+                          WorldChunkDim, 0, &DestChunk->StandingSpots,
+                          Thread->TempMemory);
+  }
+
+  if (SyntheticChunkSum && (Flags & ChunkInitFlag_GenLODMesh) )
+  {
+    LodMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+    ComputeLodMesh( Thread,
+                    DestChunk, WorldChunkDim,
+                    SyntheticChunk, SynChunkDim,
+                    LodMesh, True);
+  }
+
+  FullBarrier;
+
+  if (PrimaryMesh)
+  {
+    if (PrimaryMesh->At)
+    { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Main, PrimaryMesh, PrimaryMesh->Timestamp) == 0); }
+    else
+    { DeallocateMesh(&PrimaryMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
+  }
+
+  if (LodMesh)
+  {
+    if (LodMesh->At)
+    { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Lod, LodMesh, LodMesh->Timestamp) == 0); }
+    else
+    { DeallocateMesh(&LodMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
+  }
+
+  if (DebugMesh)
+  {
+    if (DebugMesh->At)
+    { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Debug, DebugMesh, DebugMesh->Timestamp) == 0); }
+    else
+    { DeallocateMesh(&DebugMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
+  }
+
+
+  FinalizeChunkInitialization(DestChunk);
+
+  return;
+}
 
 #endif // PLATFORM_GL_IMPLEMENTATIONS
