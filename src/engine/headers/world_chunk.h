@@ -163,7 +163,8 @@ enum chunk_init_flags
   ChunkInitFlag_Noop = 0,
 
   ChunkInitFlag_ComputeStandingSpots = (1 << 0),
-  ChunkInitFlag_GenLODMesh           = (1 << 1),
+  ChunkInitFlag_GenSmoothLODs        = (1 << 1),
+  ChunkInitFlag_GenMipMapLODs        = (1 << 2),
 };
 
 #define WORLD_CHUNK_STANDING_SPOT_COUNT (32)

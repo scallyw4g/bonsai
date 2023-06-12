@@ -486,7 +486,6 @@ main( s32 ArgCount, const char ** Args )
     Ensure( EngineApi.FrameEnd(&EngineResources) );
 
     DrainQueue(&Plat.HighPriority, &MainThread,GameApi.WorkerMain);
-
     WaitForWorkerThreads(&Plat.HighPriorityWorkerCount);
 
     Ensure( EngineApi.Render(&EngineResources) );

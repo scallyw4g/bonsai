@@ -107,6 +107,12 @@ CustomTerrainExample( perlin_noise *Noise,
 
         u8 ThisColor = ColorIndex;
 
+        s32 SnowThreshold = 100;
+        if (NoiseChoice == True && WorldZ > SnowThreshold)
+        {
+          ThisColor = WHITE;
+        }
+
         s32 SandThreshold = 3;
         if (NoiseChoice == True && WorldZ < SandThreshold)
         {
@@ -190,7 +196,9 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
            s32 StartingZDepth = -200;
            u32 Octaves = 4;
            /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
-           chunk_init_flags InitFlags = ChunkInitFlag_Noop;
+           /* chunk_init_flags InitFlags = ChunkInitFlag_GenLODMesh; */
+           /* chunk_init_flags InitFlags = ChunkInitFlag_GenLODMesh; */
+           chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs;
            InitializeChunkWithNoise( CustomTerrainExample, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, (void*)&Octaves);
          }
 
@@ -314,16 +322,22 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   f32 dt = Plat->dt;
   f32 Speed = 80.f;
 
-  // Update camera position
-  if (Input->W.Pressed || Input->S.Pressed || Input->A.Pressed || Input->D.Pressed)
+  v3 Offset = GetCameraRelativeInput(Hotkeys, Camera);
+
+  // Constrain the camera update to the XY plane
+  Offset.z = 0;
+
+  if (Input->E.Pressed)
   {
-    v3 Offset = GetCameraRelativeInput(Hotkeys, Camera);
-
-    // Constrain the camera update to the XY plane
-    Offset.z = 0;
-    Offset = Normalize(Offset, 1.f);
-
-    Resources->CameraTarget->P.Offset += Offset * dt * Speed;
+    Offset.z += 1.f;
   }
+
+  if (Input->Q.Pressed)
+  {
+    Offset.z -= 1.f;
+  }
+
+  Offset = Normalize(Offset);
+  Resources->CameraTarget->P.Offset += Offset * dt * Speed;
 
 }
