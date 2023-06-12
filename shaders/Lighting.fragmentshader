@@ -74,6 +74,7 @@ void main()
   vec3 ToneMapped;
   vec3 KeyLightContrib = vec3(0.f);
   vec3 BackLightContrib = vec3(0.f);
+  vec3 CameraToFrag = normalize(FragPosition.xyz - CameraP); // TODO(Jesse): Pass this to the lighting calc that needs it
 
   r32 DiscardThresh = f32_MAX;
   if (FragPosition.x == DiscardThresh)
@@ -168,7 +169,7 @@ void main()
     float acneBias = 0.0001f; // Fix acne
 
     vec4 FragPShadowSpace = ShadowMVP * vec4(FragPosition.xyz, 1.f);
-    float FragDepth = FragPShadowSpace.z - acneBias; //*FragPShadowSpace.w;;
+    float FragDepth = FragPShadowSpace.z - acneBias;
     /* OutColor = vec4(FragDepth, FragDepth, FragDepth, 1.f); */
     /* OutColor = FragPShadowSpace; */
     /* return; */
@@ -220,24 +221,35 @@ void main()
     /* OutColor = vec4(ShadowVisibility, 1.f); */
     /* return; */
 
+    /*
+     *  Fog
+     */
+    // TODO(Jesse): Can do squared?
+    float DistanceToFrag = distance(CameraP, FragPosition.xyz);
+    float MaxFogDist = 2500.f;
+
+    float FogContrib = clamp( DistanceToFrag / MaxFogDist, 0.f, 1.f);
+    v3 FogColor = V3(0.01f, 0.04f, 0.22f);
+    v3 Fog = FogContrib * FogColor;
 
     /*
      *  Tone-mapping && gamma correction
      */
     vec3 TotalLight = (KeyLightContrib*ShadowVisibility) +
                       (BlurredAO*(PointLightsContrib+BackLightContrib)) +
-                      (BlurredAO*AmbientLight*0.1f);
+                      (BlurredAO*AmbientLight*0.1f) +
+                      Fog;
 
     // Reinhard tone mapping
     ToneMapped = TotalLight / (TotalLight + vec3(1.0f));
   }
 
-  vec3 CameraToFrag = normalize(FragPosition.xyz - CameraP);
-  /* float Shine = clamp(pow(dot(SunPosition, CameraToFrag), 2.f), 0.f, 1.f); */
   float Shine = 0.f;
+  /* Shine = clamp(pow(dot(SunPosition, CameraToFrag), 2.f), 0.f, 1.f); */
 
   // Gamma correction
   OutColor = vec4(pow(ToneMapped, vec3(1.0f / gamma)), 1.0f) + Shine;
   // OutColor = vec4(ToneMapped, 1.f);
+  /* OutColor = vec4(FogContrib, FogContrib, FogContrib, 1.f) * vec4(FogColor, 1.f); */
   /* OutColor = vec4(KeyLightContrib, 1.f); */
 }
