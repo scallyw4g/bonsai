@@ -101,7 +101,7 @@ void main()
       vec3 LightToFrag = -FragToLight;
 
       float LightAtt = Global_LightPower;
-      BackLightContrib = DiffuseLightingCalc(0.25f*LightAtt, Diffuse, LightToFrag, FragNormal, CameraP);
+      BackLightContrib = DiffuseLightingCalc(0.10f*LightAtt, Diffuse, LightToFrag, FragNormal, CameraP);
       KeyLightContrib = DiffuseLightingCalc(LightAtt, Diffuse, FragToLight, FragNormal, CameraP);
       /* KeyLightContrib += SpecLightingCalc(LightAtt, Diffuse, FragToLight, FragPosition, FragNormal, CameraP); */
     }
@@ -224,8 +224,9 @@ void main()
     /*
      *  Tone-mapping && gamma correction
      */
-    vec3 TotalLight = KeyLightContrib*ShadowVisibility +
-                      (BlurredAO * (PointLightsContrib+AmbientLight+BackLightContrib) );
+    vec3 TotalLight = (KeyLightContrib*ShadowVisibility) +
+                      (BlurredAO*(PointLightsContrib+BackLightContrib)) +
+                      (BlurredAO*AmbientLight*0.1f);
 
     // Reinhard tone mapping
     ToneMapped = TotalLight / (TotalLight + vec3(1.0f));
