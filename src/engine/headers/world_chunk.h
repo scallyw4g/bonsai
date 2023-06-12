@@ -298,6 +298,14 @@ poof(generate_stream_compact(standing_spot))
 #include <generated/generate_stream_compact_standing_spot.h>
 
 link_internal v3
+GetSimSpaceP(world *World, world_position P)
+{
+  v3i CenterToP = P - World->Center;
+  v3 Result = V3(CenterToP*World->ChunkDim);
+  return Result;
+}
+
+link_internal v3
 GetSimSpaceP(world *World, canonical_position P)
 {
   canonical_position WorldCenter = Canonical_Position(V3(0), World->Center);

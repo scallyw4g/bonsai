@@ -3443,6 +3443,19 @@ BufferWorld( platform* Plat,
 
         if (Chunk)
         {
+          auto CameraP = GetSimSpaceP(World, Graphics->Camera->CurrentP);
+          auto ChunkP = GetSimSpaceP(World, Chunk->WorldP);
+
+          auto MeshBit = MeshBit_Main;
+          if (DistanceSq(CameraP, ChunkP) > Square(25*32))
+          {
+            MeshBit = MeshBit_Lod;
+          }
+
+          auto CopyJob = WorkQueueEntryCopyBufferRef(&Chunk->Meshes, MeshBit, Dest, Chunk->WorldP, Graphics->Camera, World->ChunkDim);
+          auto Entry = WorkQueueEntry(&CopyJob);
+          PushWorkQueueEntry(&Plat->HighPriority, &Entry);
+
           /* if (Chunk->SelectedMeshes & MeshIndex_Main) */
           {
             Assert(Dest->End);
@@ -3453,11 +3466,6 @@ BufferWorld( platform* Plat,
             /* Replace((volatile void**)&Chunk->Mesh, (void*)Mesh); */
 
             /* if (Chunk->Meshes.MeshMask & MeshBit_Main) */
-            {
-              auto CopyJob = WorkQueueEntryCopyBufferRef(&Chunk->Meshes, MeshBit_Lod, Dest, Chunk->WorldP, Graphics->Camera, World->ChunkDim);
-              auto Entry = WorkQueueEntry(&CopyJob);
-              PushWorkQueueEntry(&Plat->HighPriority, &Entry);
-            }
 #if 0
             if (Count < Kilobytes(16))
             {
