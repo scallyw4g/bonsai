@@ -1,6 +1,6 @@
 
 link_internal void
-UpdateCameraP(canonical_position NewTarget, camera *Camera, chunk_dimension WorldChunkDim)
+UpdateCameraP(world *World, canonical_position NewTarget, camera *Camera)
 {
   TIMED_FUNCTION();
   if (Camera->DistanceFromTarget < 0.1f)
@@ -19,18 +19,18 @@ UpdateCameraP(canonical_position NewTarget, camera *Camera, chunk_dimension Worl
 
   Camera->ViewingTarget = NewTarget;
 
-  Camera->TargetP = Canonicalize(WorldChunkDim, NewTarget - (Camera->Front*Camera->DistanceFromTarget));
-  Camera->CurrentP = Lerp(0.25f, Camera->CurrentP, Camera->TargetP, WorldChunkDim);
-  /* Camera->CurrentP = Canonicalize(WorldChunkDim, Camera->CurrentP); */
+  Camera->TargetP = Canonicalize(World->ChunkDim, NewTarget - (Camera->Front*Camera->DistanceFromTarget));
+  Camera->CurrentP = Lerp(0.25f, Camera->CurrentP, Camera->TargetP, World->ChunkDim);
+  /* Camera->CurrentP = Canonicalize(World->ChunkDim, Camera->CurrentP); */
 
-  Camera->RenderSpacePosition = GetRenderP(WorldChunkDim, Camera->CurrentP, Camera);
+  Camera->RenderSpacePosition = GetRenderP(World->ChunkDim, Camera->CurrentP, Camera);
 
 #if 1
 
   //
   // Frustum computation
   //
-  v3 FrustLength = V3(0.0f,0.0f, Camera->Frust.farClip);
+  v3 FrustLength = V3(0.0f, 0.0f, Camera->Frust.farClip);
   v3 FarHeight = ( V3( 0.0f, ((Camera->Frust.farClip - Camera->Frust.nearClip)/Cos(Camera->Frust.FOV/2.0f)) * Sin(Camera->Frust.FOV/2.0f), 0.0f));
   v3 FarWidth = V3( FarHeight.y, 0.0f, 0.0f);
 
@@ -56,12 +56,12 @@ UpdateCameraP(canonical_position NewTarget, camera *Camera, chunk_dimension Worl
   MinMin = Rotate(MinMin, FinalRotation);
   MinMax = Rotate(MinMax, FinalRotation);
 
-  v3 CameraRenderP = GetRenderP(WorldChunkDim, Camera->CurrentP, Camera);
+  v3 CameraSimP = GetSimSpaceP(World, Camera->CurrentP);
 
-  plane Top(CameraRenderP,   Normalize(Cross(MaxMax, MaxMin)));
-  plane Bot(CameraRenderP,   Normalize(Cross(MinMin, MinMax)));
-  plane Left(CameraRenderP,  Normalize(Cross(MinMax, MaxMax)));
-  plane Right(CameraRenderP, Normalize(Cross(MaxMin, MinMin)));
+  plane Top(CameraSimP,   Normalize(Cross(MaxMax, MaxMin)));
+  plane Bot(CameraSimP,   Normalize(Cross(MinMin, MinMax)));
+  plane Left(CameraSimP,  Normalize(Cross(MinMax, MaxMax)));
+  plane Right(CameraSimP, Normalize(Cross(MaxMin, MinMin)));
 
   Camera->Frust.Top = Top;
   Camera->Frust.Bot = Bot;
@@ -87,15 +87,8 @@ GetMouseDelta(platform *Plat)
 }
 
 link_internal void
-UpdateGameCamera(v2 MouseDelta, input *Input, canonical_position NewTarget, camera* Camera, chunk_dimension WorldChunkDim)
+UpdateGameCamera(world *World, v2 MouseDelta, input *Input, canonical_position NewTarget, camera* Camera)
 {
-  // NOTE(Jesse): I changed this to a pointer such that we didn't have to know
-  // the size of camera structs in the debug system, but I didn't bother to
-  // allocate the actual struct.  If this is crashing just allocate a camera at
-  // startup.
-  //
-  // @allocate_camera_at_startup
-  Assert(Camera);
 
   if (Input)
   {
@@ -108,11 +101,38 @@ UpdateGameCamera(v2 MouseDelta, input *Input, canonical_position NewTarget, came
 
     if (Input->RMB.Pressed)
     {
-      Camera->DistanceFromTarget += MouseDelta.y*300.0f;
+      Camera->DistanceFromTarget += MouseDelta.y*Camera->DistanceFromTarget;
     }
   }
 
-  UpdateCameraP(NewTarget, Camera, WorldChunkDim);
+  UpdateCameraP(World, NewTarget, Camera);
   return;
 }
+
+inline bool
+IsInFrustum(world *World, camera *Camera, canonical_position P)
+{
+  bool Result = true;
+
+  v3 TestP = GetSimSpaceP(World, P);
+
+  // This says if we're on the back-side of the plane by more than the dim of a
+  // world chunk, we're outside the frustum
+  Result &= (DistanceToPlane(&Camera->Frust.Top, TestP)   < -1*World->ChunkDim.y);
+  Result &= (DistanceToPlane(&Camera->Frust.Bot, TestP)   < -1*World->ChunkDim.y);
+  Result &= (DistanceToPlane(&Camera->Frust.Left, TestP)  < -1*World->ChunkDim.x);
+  Result &= (DistanceToPlane(&Camera->Frust.Right, TestP) < -1*World->ChunkDim.x);
+
+  return Result;
+}
+
+inline bool
+IsInFrustum( world *World, camera *Camera, world_chunk *Chunk )
+{
+  v3 ChunkMid = World->ChunkDim/2.0f;
+  canonical_position P1 = Canonical_Position(  ChunkMid, Chunk->WorldP );
+  bool Result = IsInFrustum(World, Camera, P1 );
+  return Result;
+}
+
 

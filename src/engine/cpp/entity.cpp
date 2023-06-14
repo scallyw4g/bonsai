@@ -217,7 +217,7 @@ AllocateEntityTable(memory_arena* Memory, u32 Count)
 }
 
 void
-SpawnEntity( model *GameModels, entity *Entity, entity_type Type, model_index ModelIndex)
+SpawnEntity( entity *Entity, entity_type Type, model *GameModels, model_index ModelIndex)
 {
   // These are mutually exclusive, so checking both is redundant, but that
   // could change in the future
@@ -231,7 +231,14 @@ SpawnEntity( model *GameModels, entity *Entity, entity_type Type, model_index Mo
 
   if (ModelIndex)
   {
-    Entity->Model = GameModels[ModelIndex];
+    if (GameModels)
+    {
+      Entity->Model = GameModels[ModelIndex];
+    }
+    else
+    {
+      Error("Asked for a model at (%S), but didn't recieve a models poitner!", ToString(ModelIndex) );
+    }
   }
 
 #if 0
@@ -263,7 +270,7 @@ SpawnEntity( model *GameModels, entity *Entity, entity_type Type, model_index Mo
 link_internal void
 SpawnEntity(entity *Entity)
 {
-  SpawnEntity(0, Entity, EntityType_Default, ModelIndex_None);
+  SpawnEntity(Entity, EntityType_Default, 0, ModelIndex_None);
 }
 
 void

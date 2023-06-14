@@ -391,7 +391,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
     Error("Couldn't read model file '%s' .", filepath);
   }
 
-  MarkBoundaryVoxels_NoExteriorFaces( Result.ChunkData->Voxels, Result.ChunkData->Dim, {}, Result.ChunkData->Dim);
+  MarkBoundaryVoxels_MakeExteriorFaces( Result.ChunkData->Voxels, Result.ChunkData->Dim, {}, Result.ChunkData->Dim);
 
   if (Result.Palette == 0)
   {

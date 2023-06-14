@@ -76,3 +76,22 @@ GetCameraRelativeInput(hotkeys *Hotkeys, camera *Camera)
   return UpdateDir;
 }
 
+inline r32
+DistanceToPlane(plane *Plane, v3 P)
+{
+  r32 x = Plane->P.x;
+  r32 y = Plane->P.y;
+  r32 z = Plane->P.z;
+
+  r32 a = Plane->Normal.x;
+  r32 b = Plane->Normal.y;
+  r32 c = Plane->Normal.z;
+
+  r32 d = Plane->d;
+  Assert(a*x + b*y + c*z + d == 0);
+
+  r32 Distance = a*P.x + b*P.y + c*P.z + d;
+  return Distance;
+}
+
+

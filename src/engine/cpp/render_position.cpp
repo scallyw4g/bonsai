@@ -78,14 +78,6 @@ LookAt(v3 P, v3 Target, v3 Up)
 inline m4
 ViewMatrix(chunk_dimension WorldChunkDim, camera *Camera)
 {
-  // NOTE(Jesse): I changed this to a pointer such that we didn't have to know
-  // the size of camera structs in the debug system, but I didn't bother to
-  // allocate the actual struct.  If this is crashing just allocate a camera at
-  // startup.
-  //
-  // @allocate_camera_at_startup
-  Assert(Camera);
-
   m4 Result = LookAt(
     GetRenderP(WorldChunkDim, Camera->CurrentP, Camera),
     GetRenderP(WorldChunkDim, Camera->ViewingTarget, Camera),

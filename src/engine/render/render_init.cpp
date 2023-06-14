@@ -299,14 +299,6 @@ InitializeShadowGroup(shadow_render_group *SG, memory_arena *GraphicsMemory, v2i
 void
 StandardCamera(camera* Camera, float FarClip, float DistanceFromTarget, canonical_position InitialTarget)
 {
-  // NOTE(Jesse): I changed this to a pointer such that we didn't have to know
-  // the size of camera structs in the debug system, but I didn't bother to
-  // allocate the actual struct.  If this is crashing just allocate a camera at
-  // startup.
-  //
-  // @allocate_camera_at_startup
-  Assert(Camera);
-
   Clear(Camera);
 
   Camera->Frust.farClip = FarClip;
@@ -327,7 +319,9 @@ StandardCamera(camera* Camera, float FarClip, float DistanceFromTarget, canonica
   /*     Camera, */
   /*     WorldChunkDim); */
 
-  UpdateGameCamera({}, {}, InitialTarget, Camera, {{32, 32, 32}});
+  /* input *Input = 0; */
+  /* v2 MouseDelta = {}; */
+  /* UpdateGameCamera(World, MouseDelta, Input, InitialTarget, Camera); */
 
   return;
 }
@@ -419,11 +413,11 @@ GraphicsInit(memory_arena *GraphicsMemory)
   { // To keep these here or not to keep these here..
 #if BONSAI_INTERNAL
 #if 1
-    gBuffer->DebugColorShader    = MakeSimpleTextureShader(gBuffer->Textures->Color    , GraphicsMemory);
-    gBuffer->DebugNormalShader   = MakeSimpleTextureShader(gBuffer->Textures->Normal   , GraphicsMemory);
-    gBuffer->DebugPositionShader = MakeSimpleTextureShader(gBuffer->Textures->Position , GraphicsMemory);
-    AoGroup->DebugSsaoShader            = MakeSimpleTextureShader(AoGroup->Texture            , GraphicsMemory);
-    SG->DebugTextureShader              = MakeSimpleTextureShader(SG->ShadowMap               , GraphicsMemory);
+    gBuffer->DebugColorShader    = MakeSimpleTextureShader(gBuffer->Textures->Color,    GraphicsMemory);
+    gBuffer->DebugNormalShader   = MakeSimpleTextureShader(gBuffer->Textures->Normal,   GraphicsMemory);
+    gBuffer->DebugPositionShader = MakeSimpleTextureShader(gBuffer->Textures->Position, GraphicsMemory);
+    AoGroup->DebugSsaoShader     = MakeSimpleTextureShader(AoGroup->Texture,            GraphicsMemory);
+    SG->DebugTextureShader       = MakeSimpleTextureShader(SG->ShadowMap,               GraphicsMemory);
 #endif
 #endif
   }

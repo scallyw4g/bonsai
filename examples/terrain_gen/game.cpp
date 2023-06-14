@@ -7,6 +7,49 @@
 #include <game_types.h>
 
 link_internal u32
+Checkerboard( perlin_noise *Noise,
+              world_chunk *Chunk,
+              chunk_dimension Dim,
+
+              chunk_dimension SrcToDest,
+
+              u8 ColorIndex,
+              s32 Frequency,
+              s32 Amplitude,
+              s64 zMin,
+
+              chunk_dimension WorldChunkDim,
+              void *Ignored )
+{
+  u32 Result = 0;
+
+  auto AbsX = Abs(Chunk->WorldP.x);
+  auto AbsY = Abs(Chunk->WorldP.y);
+  if ( AbsX % 2 == 0 && AbsY % 2 == 1) { ColorIndex = RED; }
+  if ( AbsX % 2 == 1 && AbsY % 2 == 0) { ColorIndex = BLUE; }
+
+  for ( s32 z = 0; z < Dim.z; ++ z)
+  {
+    s64 WorldZ = z - zMin - SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z);
+    for ( s32 y = 0; y < Dim.y; ++ y)
+    {
+      for ( s32 x = 0; x < Dim.x; ++ x)
+      {
+        if (WorldZ < zMin)
+        {
+          s32 Index = GetIndex(Voxel_Position(x,y,z), Dim);
+          Chunk->Voxels[Index].Flags = Voxel_Filled;
+          Chunk->Voxels[Index].Color = ColorIndex;
+          ++Result;
+        }
+      }
+    }
+  }
+
+  return Result;;
+}
+
+link_internal u32
 CustomTerrainExample( perlin_noise *Noise,
                       world_chunk *Chunk,
                       chunk_dimension Dim,
@@ -190,17 +233,24 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
        {
 
          {
-           // Custom params
+           // Custom FBM noise example generating simple game-world-like terrain
            s32 Frequency = 300;
            s32 Amplititude = 220;
            s32 StartingZDepth = -200;
            u32 Octaves = 4;
            /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
-           /* chunk_init_flags InitFlags = ChunkInitFlag_GenLODMesh; */
-           /* chunk_init_flags InitFlags = ChunkInitFlag_GenLODMesh; */
            chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs;
            InitializeChunkWithNoise( CustomTerrainExample, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, (void*)&Octaves);
          }
+
+         /* { */
+         /*   // Custom flat noise function that produces a checkerboard */
+         /*   s32 Frequency = 0; */
+         /*   s32 Amplititude = 0; */
+         /*   s32 StartingZDepth = -1; */
+         /*   chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
+         /*   InitializeChunkWithNoise( Checkerboard, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, 0); */
+         /* } */
 
          /* { */
          /*   // FBM params */
@@ -272,25 +322,11 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
   }
 }
 
-// NOTE(Jesse): This gets called once on the main thread at engine startup.
-// This is a bare-bones example of the code you'll need to spawn a camera,
-// and spawn an entity for it to follow.
-//
-// The movement code for the entity is left as an excercise for the reader and
-// should be implemented in the main thread callback.
-//
-// This function must return a pointer to a GameState struct, as defined by the
-// game.  In this example, the definition is in `examples/blank_project/game_types.h`
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 {
-  // NOTE(Jesse): This is a convenience macro for unpacking all the information
-  // the engine passes around.  It nominally reduces the amount of typing you have to do.
-  //
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  // NOTE(Jesse): Update this path if you copy this project to your new project path
-  //
-  Global_AssetPrefixPath = CSz("examples/blank_project/assets");
+  Global_AssetPrefixPath = CSz("examples/terrain_gen/assets");
 
   world_position WorldCenter = {};
   canonical_position CameraTargetP = {};
@@ -302,7 +338,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   World->Flags = WorldFlag_WorldCenterFollowsCameraTarget;
 
   entity *CameraTarget = GetFreeEntity(EntityTable);
-  SpawnEntity( 0, CameraTarget, EntityType_Default, ModelIndex_None);
+  SpawnEntity( CameraTarget );
 
   Resources->CameraTarget = CameraTarget;
 
@@ -310,8 +346,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   return GameState;
 }
 
-// NOTE(Jesse): This is the main game loop.  Put your game update logic here!
-//
+
 BONSAI_API_MAIN_THREAD_CALLBACK()
 {
   Assert(ThreadLocal_ThreadIndex == 0);
@@ -319,25 +354,17 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Resources);
 
+  /* DrawFrustum(World, Graphics, Camera); */
+
   f32 dt = Plat->dt;
   f32 Speed = 80.f;
 
   v3 Offset = GetCameraRelativeInput(Hotkeys, Camera);
+  Offset.z = 0; // Constraint to XY plane
 
-  // Constrain the camera update to the XY plane
-  Offset.z = 0;
-
-  if (Input->E.Pressed)
-  {
-    Offset.z += 1.f;
-  }
-
-  if (Input->Q.Pressed)
-  {
-    Offset.z -= 1.f;
-  }
+  if (Input->E.Pressed) { Offset.z += 1.f; }
+  if (Input->Q.Pressed) { Offset.z -= 1.f; }
 
   Offset = Normalize(Offset);
   Resources->CameraTarget->P.Offset += Offset * dt * Speed;
-
 }

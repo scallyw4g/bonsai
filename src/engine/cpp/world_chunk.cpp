@@ -503,11 +503,14 @@ link_internal u32
 Noise_Flat( perlin_noise *Noise,
             world_chunk *Chunk,
             chunk_dimension Dim,
+
             chunk_dimension SrcToDest,
+
             u8 ColorIndex,
             s32 Frequency,
             s32 Amplitude,
             s64 zMin,
+
             chunk_dimension WorldChunkDim,
             void *Ignored )
 {
@@ -1199,9 +1202,9 @@ BuildWorldChunkMesh_DebugVoxels( voxel *Voxels,
   auto MaxDim = Min(SrcChunkDim, SrcChunkMax); // SrcChunkMin+DestChunkDim+1
 
   auto TmpDim = MaxDim-SrcMinP;
-  u32  TmpVol = u32(Volume(TmpDim));
+  s32  TmpVol = s32(Volume(TmpDim));
 
-  u32 TmpIndex = 0;
+  s32 TmpIndex = 0;
   for ( s32 zIndex = 0; zIndex < TmpDim.z ; ++zIndex )
   {
     for ( s32 yIndex = 0; yIndex < TmpDim.y ; ++yIndex )
@@ -1386,8 +1389,8 @@ link_internal void
 BuildMipMesh( voxel *Voxels,
               chunk_dimension VoxDim,
 
-              chunk_dimension SrcChunkMin,
-              chunk_dimension SrcChunkMax,
+              chunk_dimension InnerMin,
+              chunk_dimension InnerMax,
 
               untextured_3d_geometry_buffer *DestGeometry,
               memory_arena *TempMemory,
@@ -1397,6 +1400,8 @@ BuildMipMesh( voxel *Voxels,
 
   /* Assert(IsSet(SrcChunk, Chunk_VoxelsInitialized)); */
   /* Assert(IsSet(DestChunk, Chunk_VoxelsInitialized)); */
+
+  /* Assert(InnerMin-InnerMax */
 
   voxel_position rightVoxel;
   voxel_position leftVoxel;
@@ -1416,43 +1421,96 @@ BuildMipMesh( voxel *Voxels,
   v3 VertexData[VERTS_PER_FACE];
   v4 FaceColors[VERTS_PER_FACE];
 
-  auto SrcMinP = SrcChunkMin;
-  auto MaxDim = Min(VoxDim, SrcChunkMax); // SrcChunkMin+DestChunkDim+1
+  Assert(VoxDim >= InnerMax);
 
   s32 MipLevel = 2;
-  auto TmpDim = (MaxDim-SrcMinP)/MipLevel;
+  v3i InnerDim = InnerMax - InnerMin;
+  auto TmpDim = 2+ InnerDim/MipLevel;
 
-  u32 TmpVol = u32(Volume(TmpDim));
+  s32 TmpVol = s32(Volume(TmpDim));
   auto TempVoxels = Allocate(voxel, TempMemory, TmpVol);
 
-  u32 TmpIndex = 0;
-  for ( s32 zIndex = 0; zIndex < TmpDim.z ; zIndex++ )
+#if 0
+  s32 TmpIndex = 0;
+  for ( s32 zIndex = InnerMin.z-1; zIndex < InnerMax.z+1; zIndex = InnerMax.z )
   {
-    for ( s32 yIndex = 0; yIndex < TmpDim.y ; yIndex++ )
+    for ( s32 yIndex = InnerMin.y-1; yIndex < InnerMax.y+1; yIndex += InnerMax.y )
     {
-      for ( s32 xIndex = 0; xIndex < TmpDim.x ; xIndex++ )
+      for ( s32 xIndex = InnerMin.x-1; xIndex < InnerMax.x+1; xIndex += InnerMax.x )
       {
-        voxel_position SrcP = SrcMinP + Voxel_Position(xIndex*MipLevel, yIndex*MipLevel, zIndex*MipLevel);
-        s32 SrcIndex = GetIndex(SrcP, VoxDim);
-        Assert(TmpIndex < TmpVol);
-        TempVoxels[TmpIndex] = Voxels[SrcIndex];
-        TmpIndex++;
+
+        voxel Aggregate = { .Flags = Voxel_Filled, .Color = GRASS_GREEN, };
+        for (s32 MipIndex = 0; MipIndex < MipLevel; ++MipIndex)
+        {
+          v3i SrcP = V3i(xIndex+MipIndex, yIndex+MipIndex, zIndex+MipIndex);
+          s32 SrcIndex = TryGetIndex(SrcP, VoxDim);
+          if (SrcIndex > -1)
+          {
+            if ( (Voxels[SrcIndex].Flags&Voxel_Filled) == 0 )
+            {
+              Aggregate.Flags = 0;
+            }
+          }
+        }
+
+        v3i TmpP = V3i(xIndex, yIndex, zIndex)/MipLevel;
+        TmpIndex = GetIndex(TmpP, TmpDim);
+        TempVoxels[TmpIndex] = Aggregate;
+
+        /* TmpIndex++; */
+        /* Assert(TmpIndex <= TmpVol); */
       }
     }
   }
-  MarkBoundaryVoxels_NoExteriorFaces( TempVoxels, TmpDim, {}, TmpDim );
   Assert(TmpIndex == TmpVol);
+#endif
 
-  for ( s32 z = 0; z < TmpDim.z ; z++ )
+
+  /* s32 TmpIndex = 0; */
+  for ( s32 zIndex = InnerMin.z; zIndex < InnerMax.z; zIndex += MipLevel )
   {
-    for ( s32 y = 0; y < TmpDim.y ; y++ )
+    for ( s32 yIndex = InnerMin.y; yIndex < InnerMax.y; yIndex += MipLevel )
     {
-      for ( s32 x = 0; x < TmpDim.x ; x++ )
+      for ( s32 xIndex = InnerMin.x; xIndex < InnerMax.x; xIndex += MipLevel )
+      {
+
+        voxel Aggregate = {};
+        for (s32 MipIndex = 0; MipIndex < MipLevel; ++MipIndex)
+        {
+          v3i SrcP = V3i(xIndex+MipIndex, yIndex+MipIndex, zIndex+MipIndex);
+          s32 SrcIndex = TryGetIndex(SrcP, VoxDim);
+          if (SrcIndex > -1)
+          {
+            if ( (Voxels[SrcIndex].Flags & Voxel_Filled) )
+            {
+              Aggregate.Flags = Voxel_Filled;
+              Aggregate.Color = Voxels[SrcIndex].Color;
+            }
+          }
+        }
+
+        v3i TmpP = 1+ V3i(xIndex, yIndex, zIndex)/MipLevel;
+
+        s32 ThisTmpIndex = GetIndex(TmpP, TmpDim);
+        TempVoxels[ThisTmpIndex] = Aggregate;
+      }
+    }
+  }
+
+  MarkBoundaryVoxels_NoExteriorFaces( TempVoxels, TmpDim, {}, TmpDim );
+
+
+  for ( s32 z = 1; z < TmpDim.z-1; z++ )
+  {
+    for ( s32 y = 1; y < TmpDim.y-1; y++ )
+    {
+      for ( s32 x = 1; x < TmpDim.x-1; x++ )
       {
         voxel_position TmpVoxP = Voxel_Position(x,y,z);
         s32 Index = GetIndex(TmpVoxP, TmpDim);
         voxel *Voxel = TempVoxels + Index;
 
+        voxel_position ActualP = TmpVoxP-1;
         /* u8 C =  ((Voxel->Color + RandomU32(&ColorEntropy)) & 0xFF); */
         u8 C = Voxel->Color;
 
@@ -1462,38 +1520,38 @@ BuildMipMesh( voxel *Voxels,
         if (Voxel->Flags & Voxel_RightFace)
         {
           v3 Dim = DoXStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_RightFace, Voxel->Color);
-          RightFaceVertexData( V3(TmpVoxP)*MipLevel, Dim*MipLevel, VertexData);
+          RightFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, RightFaceNormalData, FaceColors);
         }
         if (Voxel->Flags & Voxel_LeftFace)
         {
           v3 Dim = DoXStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_LeftFace, Voxel->Color);
-          LeftFaceVertexData( V3(TmpVoxP)*MipLevel, Dim*MipLevel, VertexData);
+          LeftFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, LeftFaceNormalData, FaceColors);
         }
         if (Voxel->Flags & Voxel_BottomFace)
         {
           v3 Dim = DoZStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_BottomFace, Voxel->Color);
-          BottomFaceVertexData( V3(TmpVoxP)*MipLevel, Dim*MipLevel, VertexData);
+          BottomFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, BottomFaceNormalData, FaceColors);
         }
 
         if (Voxel->Flags & Voxel_TopFace)
         {
           v3 Dim = DoZStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_TopFace, Voxel->Color);
-          TopFaceVertexData( V3(TmpVoxP)*MipLevel, Dim*MipLevel, VertexData);
+          TopFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, TopFaceNormalData, FaceColors);
         }
         if (Voxel->Flags & Voxel_FrontFace)
         {
           v3 Dim = DoYStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_FrontFace, Voxel->Color);
-          FrontFaceVertexData( V3(TmpVoxP)*MipLevel, Dim*MipLevel, VertexData);
+          FrontFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, FrontFaceNormalData, FaceColors);
         }
         if (Voxel->Flags & Voxel_BackFace)
         {
           v3 Dim = DoYStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_BackFace, Voxel->Color);
-          BackFaceVertexData( V3(TmpVoxP)*MipLevel, Dim*MipLevel, VertexData);
+          BackFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, BackFaceNormalData, FaceColors);
         }
       }
@@ -3096,7 +3154,7 @@ ComputeLodMesh( thread_local_state *Thread,
 #endif
 }
 
-#if 0
+#if 1
 link_internal void
 InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChunk, chunk_dimension WorldChunkDim, native_file *AssetFile, s32 Frequency, s32 Amplititude, s32 zMin, chunk_init_flags Flags)
 {
@@ -3441,69 +3499,83 @@ BufferWorld( platform* Plat,
 #endif
 
 
+        camera *Camera = Graphics->Camera;
+
+
         if (Chunk)
         {
-          auto CameraP = GetSimSpaceP(World, Graphics->Camera->CurrentP);
-          auto ChunkP = GetSimSpaceP(World, Chunk->WorldP);
-
-          auto MeshBit = MeshBit_Main;
-          if (DistanceSq(CameraP, ChunkP) > Square(25*32))
+          /* if (IsInFrustum(World, Camera, Chunk)) */
           {
-            MeshBit = MeshBit_Lod;
-          }
+            v3 CameraP = GetSimSpaceP(World, Camera->CurrentP);
+            v3 ChunkP = GetSimSpaceP(World, Chunk->WorldP);
 
-          auto CopyJob = WorkQueueEntryCopyBufferRef(&Chunk->Meshes, MeshBit, Dest, Chunk->WorldP, Graphics->Camera, World->ChunkDim);
-          auto Entry = WorkQueueEntry(&CopyJob);
-          PushWorkQueueEntry(&Plat->HighPriority, &Entry);
-
-          /* if (Chunk->SelectedMeshes & MeshIndex_Main) */
-          {
-            Assert(Dest->End);
-            /* untextured_3d_geometry_buffer *Mesh = (untextured_3d_geometry_buffer *)TakeOwnershipSync((volatile void**)&Chunk->Mesh); */
-            /* untextured_3d_geometry_buffer *Mesh = GetMeshFor(&Chunk->Meshes, MeshBit_Main); */
-            /* u32 Count = Mesh->At; */
-            /* ReplaceMesh(Chunk, MeshBit_Main, Mesh); */
-            /* Replace((volatile void**)&Chunk->Mesh, (void*)Mesh); */
-
-            /* if (Chunk->Meshes.MeshMask & MeshBit_Main) */
-#if 0
-            if (Count < Kilobytes(16))
+            auto MeshBit = MeshBit_None;
+            if (HasMesh(&Chunk->Meshes, MeshBit_Main))
             {
-              PushCopyJob(&Plat->HighPriority, &CopySet, &CopyJob);
+              MeshBit = MeshBit_Main;
             }
-            else
+
+            if (HasMesh(&Chunk->Meshes, MeshBit_Lod) && DistanceSq(CameraP, ChunkP) > Square(25*32))
             {
+              MeshBit = MeshBit_Lod;
+            }
+
+            if (MeshBit != MeshBit_None)
+            {
+              auto CopyJob = WorkQueueEntryCopyBufferRef(&Chunk->Meshes, MeshBit, Dest, Chunk->WorldP, Graphics->Camera, World->ChunkDim);
               auto Entry = WorkQueueEntry(&CopyJob);
               PushWorkQueueEntry(&Plat->HighPriority, &Entry);
             }
+
+            /* if (Chunk->SelectedMeshes & MeshIndex_Main) */
+            {
+              Assert(Dest->End);
+              /* untextured_3d_geometry_buffer *Mesh = (untextured_3d_geometry_buffer *)TakeOwnershipSync((volatile void**)&Chunk->Mesh); */
+              /* untextured_3d_geometry_buffer *Mesh = GetMeshFor(&Chunk->Meshes, MeshBit_Main); */
+              /* u32 Count = Mesh->At; */
+              /* ReplaceMesh(Chunk, MeshBit_Main, Mesh); */
+              /* Replace((volatile void**)&Chunk->Mesh, (void*)Mesh); */
+
+              /* if (Chunk->Meshes.MeshMask & MeshBit_Main) */
+#if 0
+              if (Count < Kilobytes(16))
+              {
+                PushCopyJob(&Plat->HighPriority, &CopySet, &CopyJob);
+              }
+              else
+              {
+                auto Entry = WorkQueueEntry(&CopyJob);
+                PushWorkQueueEntry(&Plat->HighPriority, &Entry);
+              }
 #endif
-          }
+            }
 
 #if 0
-          if (Chunk->SelectedMeshes & MeshIndex_Lod)
-          {
-            work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer(&Chunk->LodMesh, Dest, Chunk->WorldP, Graphics->Camera, World->ChunkDim);
-            PushCopyJob(&Plat->HighPriority, &CopySet, &CopyJob);
-          }
+            if (Chunk->SelectedMeshes & MeshIndex_Lod)
+            {
+              work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer(&Chunk->LodMesh, Dest, Chunk->WorldP, Graphics->Camera, World->ChunkDim);
+              PushCopyJob(&Plat->HighPriority, &CopySet, &CopyJob);
+            }
 
-          if (Chunk->SelectedMeshes & MeshIndex_Debug)
-          {
-            work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer(&Chunk->DebugMesh, Dest, Chunk->WorldP, Graphics->Camera, World->ChunkDim);
-            PushCopyJob(&Plat->HighPriority, &CopySet, &CopyJob);
-          }
+            if (Chunk->SelectedMeshes & MeshIndex_Debug)
+            {
+              work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer(&Chunk->DebugMesh, Dest, Chunk->WorldP, Graphics->Camera, World->ChunkDim);
+              PushCopyJob(&Plat->HighPriority, &CopySet, &CopyJob);
+            }
 #endif
 
 #if 1
-          umm StandingSpotCount = AtElements(&Chunk->StandingSpots);
-          /* DebugLine("drawing (%u) standing spots", StandingSpotCount); */
-          for (u32 SpotIndex = 0; SpotIndex < StandingSpotCount; ++SpotIndex)
-          {
-            v3i *Spot = Chunk->StandingSpots.Start + SpotIndex;
-            v3 RenderSpot = GetRenderP(World->ChunkDim, Canonical_Position(*Spot, Chunk->WorldP), Graphics->Camera);
-            DrawStandingSpot(Dest, RenderSpot, V3(Global_StandingSpotDim));
-          }
+            umm StandingSpotCount = AtElements(&Chunk->StandingSpots);
+            /* DebugLine("drawing (%u) standing spots", StandingSpotCount); */
+            for (u32 SpotIndex = 0; SpotIndex < StandingSpotCount; ++SpotIndex)
+            {
+              v3i *Spot = Chunk->StandingSpots.Start + SpotIndex;
+              v3 RenderSpot = GetRenderP(World->ChunkDim, Canonical_Position(*Spot, Chunk->WorldP), Graphics->Camera);
+              DrawStandingSpot(Dest, RenderSpot, V3(Global_StandingSpotDim));
+            }
 #endif
 
+          }
         }
         else
         {
@@ -4382,7 +4454,9 @@ PushChunkView(renderer_2d* Group, world_chunk* Chunk, window_layout* Window)
   input* WindowInput = 0;
   if (Pressed(Group, &ViewportButton)) { WindowInput = Group->Input; }
 
-  UpdateGameCamera( -0.005f*(*Group->MouseDP), WindowInput, Canonical_Position(0), DebugState->PickedChunksRenderGroup.Camera, Chunk_Dimension(32,32,8));
+  // TODO(Jesse): This is pretty wack..
+  world World = {};
+  UpdateGameCamera(&World, -0.005f*(*Group->MouseDP), WindowInput, Canonical_Position(0), DebugState->PickedChunksRenderGroup.Camera);
 }
 
 link_internal void
@@ -4600,7 +4674,7 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
   if (SyntheticChunkSum && (Flags & ChunkInitFlag_GenMipMapLODs) )
   {
     LodMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-    BuildMipMesh(SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim, LodMesh, Thread->TempMemory);
+    BuildMipMesh(SyntheticChunk->Voxels, SynChunkDim, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, LodMesh, Thread->TempMemory);
   }
 
   FullBarrier;
@@ -4635,4 +4709,4 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
   return;
 }
 
-#endif // PLATFORM_GL_IMPLEMENTATIONS
+#endif // PLATFORM_GL_IMPLEMENTATIONa

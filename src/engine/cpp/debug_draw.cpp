@@ -97,7 +97,6 @@ DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh,
         FaceColors);
   }
 
-#define VERTS_PER_LINE (18)
   u32 VertsBuffered = Mesh->At - MeshStartingAt;
   Assert(VertsBuffered == VERTS_PER_LINE);
 

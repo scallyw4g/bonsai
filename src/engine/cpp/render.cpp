@@ -278,41 +278,6 @@ IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
   return (idx/(int)ChunkDim.x) % (int)ChunkDim.y == 0;
 }
 
-#if 0
-inline r32
-DistanceToPlane(plane *Plane, v3 P)
-{
-  r32 x = Plane->P.x;
-  r32 y = Plane->P.y;
-  r32 z = Plane->P.z;
-
-  r32 a = Plane->Normal.x;
-  r32 b = Plane->Normal.y;
-  r32 c = Plane->Normal.z;
-
-  r32 d = Plane->d;
-  Assert(a*x + b*y + c*z + d == 0);
-
-  r32 Distance = a*P.x + b*P.y + c*P.z + d;
-  return Distance;
-}
-
-inline bool
-IsInfrustum(chunk_dimension WorldChunkDim, camera *Camera, canonical_position P)
-{
-  bool Result = true;
-
-  v3 TestP = GetRenderP(WorldChunkDim, P, Camera);
-
-  Result &= (DistanceToPlane(&Camera->Frust.Top, TestP)   > -1*WorldChunkDim.y);
-  Result &= (DistanceToPlane(&Camera->Frust.Bot, TestP)   > -1*WorldChunkDim.y);
-  Result &= (DistanceToPlane(&Camera->Frust.Left, TestP)  > -1*WorldChunkDim.x);
-  Result &= (DistanceToPlane(&Camera->Frust.Right, TestP) > -1*WorldChunkDim.x);
-
-  return Result;
-}
-#endif
-
 inline voxel_position
 Clamp01( voxel_position V )
 {
@@ -390,14 +355,6 @@ BuildExteriorBoundaryVoxels( world_chunk *chunk, chunk_dimension Dim, world_chun
   return;
 }
 
-inline bool
-IsInfrustum( chunk_dimension WorldChunkDim, camera *Camera, world_chunk *Chunk )
-{
-  v3 ChunkMid = WorldChunkDim/2.0f;
-  canonical_position P1 = Canonical_Position(  ChunkMid, Chunk->WorldP );
-  bool Result = IsInfrustum(WorldChunkDim, Camera, P1 );
-  return Result;
-}
 #endif
 
 inline void
@@ -1001,4 +958,17 @@ Render_BufferGameGeometry(engine_resources *Resources)
 
   BufferWorld(Plat, &GpuMap->Buffer, World, Graphics, Heap);
   BufferEntities( EntityTable, &GpuMap->Buffer, Graphics, World, Plat->dt);
+}
+
+link_internal void
+DrawFrustum(world *World, graphics *Graphics, camera *Camera)
+{
+  auto *GpuBuffer = &GetCurrentGpuMap(Graphics)->Buffer;
+  auto Dest = ReserveBufferSpace(GpuBuffer, VERTS_PER_LINE*4);
+
+  v3 SimSpaceP = GetSimSpaceP(World, Camera->CurrentP);
+  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Top.Normal*5.f), RED, 0.2f );
+  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Bot.Normal*5.f), BLUE, 0.2f );
+  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Left.Normal*5.f), GREEN, 0.2f );
+  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Right.Normal*5.f), YELLOW, 0.2f );
 }

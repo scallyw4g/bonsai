@@ -113,7 +113,7 @@ Bonsai_FrameEnd(engine_resources *Resources)
   {
     v2 MouseDelta = GetMouseDelta(Plat);
     input* GameInput = &Plat->Input;
-    UpdateGameCamera(MouseDelta, GameInput, CameraTargetP, Camera, World->ChunkDim);
+    UpdateGameCamera(World, MouseDelta, GameInput, CameraTargetP, Camera);
     Resources->Graphics->gBuffer->ViewProjection =
       ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
       ViewMatrix(World->ChunkDim, Camera);

@@ -183,21 +183,16 @@ Rads(degrees Degrees)
 inline m4
 ProjectionMatrix(camera *Camera, r32 WindowWidth, r32 WindowHeight)
 {
-  // NOTE(Jesse): I changed this to a pointer such that we didn't have to know
-  // the size of camera structs in the debug system, but I didn't bother to
-  // allocate the actual struct.  If this is crashing just allocate a camera at
-  // startup.
-  //
-  // @allocate_camera_at_startup
-  Assert(Camera);
-
   m4 Result = Perspective( Rads(Camera->Frust.FOV),
-                                          V2(WindowWidth, WindowHeight),
-                                          Camera->Frust.nearClip,
-                                          Camera->Frust.farClip);
+                                V2(WindowWidth, WindowHeight),
+                                Camera->Frust.nearClip,
+                                Camera->Frust.farClip);
 
   return Result;
 }
 
 untextured_3d_geometry_buffer
 ReserveBufferSpace(untextured_3d_geometry_buffer* Reservation, u32 ElementsToReserve);
+
+link_internal gpu_mapped_element_buffer *
+GetCurrentGpuMap(graphics *Graphics);

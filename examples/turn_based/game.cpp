@@ -251,13 +251,13 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
 #if 1
   {
     entity *E = GetFreeEntity(EntityTable);
-    SpawnEntity( 0, E, EntityType_ParticleSystem, ModelIndex_None);
+    SpawnEntity( E, EntityType_ParticleSystem, 0, ModelIndex_None);
     E->P = PickCP + V3(0.5f);
     SpawnExplosion(E, &Global_GameEntropy, {}, Radius);
   }
   {
     entity *E = GetFreeEntity(EntityTable);
-    SpawnEntity( 0, E, EntityType_ParticleSystem, ModelIndex_None);
+    SpawnEntity( E, EntityType_ParticleSystem, 0, ModelIndex_None);
     E->P = PickCP + V3(0.5f);
     SpawnSmoke(E, &Global_GameEntropy, {}, Radius);
   }
@@ -268,7 +268,7 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
   for (u32 BittyIndex = 0; BittyIndex < MaxBitties; ++BittyIndex)
   {
     entity *E = GetFreeEntity(EntityTable);
-    SpawnEntity( GameState->Models , E, EntityType_ParticleSystem, (model_index)(ModelIndex_Bitty0 + (BittyIndex % 2)) );
+    SpawnEntity( E, EntityType_ParticleSystem, GameState->Models, (model_index)(ModelIndex_Bitty0 + (BittyIndex % 2)) );
     E->Physics.Speed = 1.f;
 
     E->Rotation = RandomRotation(&Global_GameEntropy);
@@ -616,7 +616,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
 
   GameState->CameraTarget = GetFreeEntity(EntityTable);
-  SpawnEntity( 0, GameState->CameraTarget, EntityType_Default, ModelIndex_None);
+  SpawnEntity( GameState->CameraTarget, EntityType_Default, 0, ModelIndex_None);
 
   GameState->CameraTarget->P = Canonical_Position(Voxel_Position(0), {{2,2,0}});
 

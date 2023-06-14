@@ -47,17 +47,19 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
        }
        else
        {
-        s32 Frequency = 50;
-        s32 Amplititude = 15;
-        s32 StartingZDepth = -5;
-        InitializeWorldChunkPerlinPlane( Thread,
-                                         Chunk,
-                                         Chunk->Dim,
-                                         0,
-                                         Frequency,
-                                         Amplititude,
-                                         StartingZDepth,
-                                         ChunkInitFlag_Noop );
+         // NOTE(Jesse): For more examples of builtin noise functions, see the 
+         // terrain_gen example
+         s32 Frequency = 50;
+         s32 Amplititude = 15;
+         s32 StartingZDepth = -5;
+         InitializeWorldChunkPerlinPlane( Thread,
+                                          Chunk,
+                                          Chunk->Dim,
+                                          0,
+                                          Frequency,
+                                          Amplititude,
+                                          StartingZDepth,
+                                          ChunkInitFlag_Noop );
 
        }
 
@@ -124,7 +126,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   World->Flags = WorldFlag_WorldCenterFollowsCameraTarget;
 
   entity *CameraTarget = GetFreeEntity(EntityTable);
-  SpawnEntity( 0, CameraTarget, EntityType_Default, ModelIndex_None);
+  SpawnEntity(CameraTarget);
 
   Resources->CameraTarget = CameraTarget;
 

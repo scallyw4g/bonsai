@@ -101,6 +101,8 @@ struct chunk_data
 
 enum world_chunk_mesh_index
 {
+  MeshIndex_None,
+
   MeshIndex_Main,
   MeshIndex_Lod,
   MeshIndex_Debug,
@@ -110,6 +112,8 @@ enum world_chunk_mesh_index
 
 enum world_chunk_mesh_bitfield
 {
+  MeshBit_None  = 0,
+
   MeshBit_Main  = (1 << MeshIndex_Main),
   MeshBit_Lod   = (1 << MeshIndex_Lod),
   MeshBit_Debug = (1 << MeshIndex_Debug),
@@ -122,6 +126,11 @@ ToIndex(world_chunk_mesh_bitfield Bit)
 {
   switch (Bit)
   {
+    case MeshBit_None:
+    {
+      return MeshIndex_None;
+    } break;
+
     case MeshBit_Main:
     {
       return MeshIndex_Main;

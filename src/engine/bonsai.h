@@ -213,6 +213,9 @@ enum model_index
 
   ModelIndex_Count,
 };
+poof(string_and_value_tables(model_index))
+#include <generated/string_and_value_tables_model_index.h>
+
 
 struct model
 {
