@@ -10,10 +10,10 @@
 
 # ./make.sh RunPoof
 
-./make.sh
+# ./make.sh
 
-# OPT="-O2"
-# ./make.sh $OPT \
-#     BuildSingleExample examples/terrain_gen \
-#     BuildDebugSystem
+OPT="-O2"
+./make.sh $OPT \
+    BuildSingleExample examples/terrain_gen \
+    BuildDebugSystem
 
