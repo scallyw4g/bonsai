@@ -221,6 +221,7 @@ void main()
     /* OutColor = vec4(ShadowVisibility, 1.f); */
     /* return; */
 
+#if 0
     /*
      *  Fog
      */
@@ -231,6 +232,9 @@ void main()
     float FogContrib = clamp( DistanceToFrag / MaxFogDist, 0.f, 1.f);
     v3 FogColor = V3(0.01f, 0.04f, 0.22f);
     v3 Fog = FogContrib * FogColor;
+#else
+    v3 Fog = V3(0);
+#endif
 
     /*
      *  Tone-mapping && gamma correction
