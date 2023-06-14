@@ -886,6 +886,14 @@ Contains( voxel_position Dim, voxel_position P )
 }
 
 inline b32
+IsInsideRange( v3i Min, v3i P, v3i Max)
+{
+  b32 Result = ( P.x >= Min.x && P.y >= Min.y && P.z >= Min.z &&
+                 P.x <  Max.x && P.y <  Max.y && P.z <  Max.z );
+  return Result;
+}
+
+inline b32
 IsInsideDim( voxel_position Dim, voxel_position P )
 {
   b32 Result = Contains(Dim, P);

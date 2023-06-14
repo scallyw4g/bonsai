@@ -232,26 +232,26 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
        else
        {
 
-         /* { */
-         /*   // Custom FBM noise example generating simple game-world-like terrain */
-         /*   s32 Frequency = 300; */
-         /*   s32 Amplititude = 220; */
-         /*   s32 StartingZDepth = -200; */
-         /*   u32 Octaves = 4; */
-         /*   /1* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; *1/ */
-         /*   chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
-         /*   InitializeChunkWithNoise( CustomTerrainExample, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, (void*)&Octaves); */
-         /* } */
-
          {
-           // Custom flat noise function that produces a checkerboard
-           s32 Frequency = 0;
-           s32 Amplititude = 0;
-           s32 StartingZDepth = -1;
-           chunk_init_flags InitFlags = ChunkInitFlag_Noop;
-           /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
-           InitializeChunkWithNoise( Checkerboard, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, 0);
+           // Custom FBM noise example generating simple game-world-like terrain
+           s32 Frequency = 300;
+           s32 Amplititude = 220;
+           s32 StartingZDepth = -200;
+           u32 Octaves = 4;
+           /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
+           chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs;
+           InitializeChunkWithNoise( CustomTerrainExample, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, (void*)&Octaves);
          }
+
+         /* { */
+         /*   // Custom flat noise function that produces a checkerboard */
+         /*   s32 Frequency = 0; */
+         /*   s32 Amplititude = 0; */
+         /*   s32 StartingZDepth = -1; */
+         /*   chunk_init_flags InitFlags = ChunkInitFlag_Noop; */
+         /*   /1* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; *1/ */
+         /*   InitializeChunkWithNoise( Checkerboard, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, 0); */
+         /* } */
 
          /* { */
          /*   // FBM params */

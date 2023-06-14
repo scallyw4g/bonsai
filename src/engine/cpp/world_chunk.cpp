@@ -1430,61 +1430,83 @@ BuildMipMesh( voxel *Voxels,
   s32 TmpVol = s32(Volume(TmpDim));
   auto TempVoxels = Allocate(voxel, TempMemory, TmpVol);
 
-#if 0
-  s32 TmpIndex = 0;
-  for ( s32 zIndex = InnerMin.z-1; zIndex < InnerMax.z+1; zIndex = InnerMax.z )
-  {
-    for ( s32 yIndex = InnerMin.y-1; yIndex < InnerMax.y+1; yIndex += InnerMax.y )
-    {
-      for ( s32 xIndex = InnerMin.x-1; xIndex < InnerMax.x+1; xIndex += InnerMax.x )
-      {
 
-        voxel Aggregate = { .Flags = Voxel_Filled, .Color = GRASS_GREEN, };
-        for (s32 MipIndex = 0; MipIndex < MipLevel; ++MipIndex)
+  DimIterator(tX, tY, tZ, TmpDim)
+  {
+    s32 FilterIndex = GetIndex(tX, tY, tZ, TmpDim);
+    TempVoxels[FilterIndex].Flags = Voxel_Filled;
+  }
+
+
+#if 1
+  for ( s32 zIndex = 0; zIndex < VoxDim.z; zIndex ++ )
+  {
+    for ( s32 yIndex = 0; yIndex < VoxDim.y; yIndex ++ )
+    {
+      for ( s32 xIndex = 0; xIndex < VoxDim.x; xIndex ++ )
+      {
+        v3i BaseP = V3i(xIndex, yIndex, zIndex);
+        v3i FilterP = (BaseP+1)/MipLevel;
+
+        // NOTE(Jesse): We constrain the filter output to be one filter cell 
+        // larger than the inner dim on each side, but the whole input could be
+        // larger than that still.  At the moment it is in Z only.
+        s32 FilterIndex = TryGetIndex(FilterP, TmpDim);
+        if (FilterIndex > -1)
         {
-          v3i SrcP = V3i(xIndex+MipIndex, yIndex+MipIndex, zIndex+MipIndex);
-          s32 SrcIndex = TryGetIndex(SrcP, VoxDim);
-          if (SrcIndex > -1)
+          for (s32 MipIndex = 0; MipIndex < MipLevel; ++MipIndex)
           {
-            if ( (Voxels[SrcIndex].Flags&Voxel_Filled) == 0 )
+            for (s32 DirIndex = 0; DirIndex < 3; ++DirIndex)
             {
-              Aggregate.Flags = 0;
+              v3i Dir = {};
+              Dir.E[DirIndex] = MipIndex;
+
+              v3i SrcP = BaseP + Dir;
+
+              // Skip voxels contributing to the inner range
+              if (IsInsideRange(InnerMin, SrcP, InnerMax)) continue;
+
+              s32 SrcIndex = TryGetIndex(SrcP, VoxDim);
+              if (SrcIndex > -1)
+              {
+                TempVoxels[FilterIndex].Flags &= Voxels[SrcIndex].Flags;
+              }
             }
           }
         }
 
-        v3i TmpP = V3i(xIndex, yIndex, zIndex)/MipLevel;
-        TmpIndex = GetIndex(TmpP, TmpDim);
-        TempVoxels[TmpIndex] = Aggregate;
 
-        /* TmpIndex++; */
-        /* Assert(TmpIndex <= TmpVol); */
       }
     }
   }
-  Assert(TmpIndex == TmpVol);
 #endif
 
 
-  /* s32 TmpIndex = 0; */
   for ( s32 zIndex = InnerMin.z; zIndex < InnerMax.z; zIndex += MipLevel )
   {
     for ( s32 yIndex = InnerMin.y; yIndex < InnerMax.y; yIndex += MipLevel )
     {
       for ( s32 xIndex = InnerMin.x; xIndex < InnerMax.x; xIndex += MipLevel )
       {
+        v3i BaseP = V3i(xIndex, yIndex, zIndex);
 
         voxel Aggregate = {};
         for (s32 MipIndex = 0; MipIndex < MipLevel; ++MipIndex)
         {
-          v3i SrcP = V3i(xIndex+MipIndex, yIndex+MipIndex, zIndex+MipIndex);
-          s32 SrcIndex = TryGetIndex(SrcP, VoxDim);
-          if (SrcIndex > -1)
+          for (s32 DirIndex = 0; DirIndex < 3; ++DirIndex)
           {
-            if ( (Voxels[SrcIndex].Flags & Voxel_Filled) )
+            v3i Dir = {};
+            Dir.E[DirIndex] = MipLevel;
+
+            v3i SrcP = BaseP + Dir;
+            s32 SrcIndex = TryGetIndex(SrcP, VoxDim);
+            if (SrcIndex > -1)
             {
-              Aggregate.Flags = Voxel_Filled;
-              Aggregate.Color = Voxels[SrcIndex].Color;
+              if ( (Voxels[SrcIndex].Flags & Voxel_Filled) )
+              {
+                Aggregate.Flags = Voxel_Filled;
+                Aggregate.Color = Voxels[SrcIndex].Color;
+              }
             }
           }
         }
@@ -1985,7 +2007,8 @@ GetMeshForChunk(mesh_freelist* Freelist, memory_arena* PermMemory)
   }
   else
   {
-    Result = AllocateMesh(PermMemory, (u32)Kilobytes(64));
+    u32 Elements = 3*(32*32) * VERTS_PER_VOXEL; // 3*(voxels per slice) * verts per voxel
+    Result = AllocateMesh(PermMemory, (u32)Elements);
     Assert(Result);
   }
 
