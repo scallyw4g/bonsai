@@ -12,8 +12,10 @@
 
 # ./make.sh
 
-OPT="-O2"
-./make.sh $OPT \
-    BuildSingleExample examples/terrain_gen \
-    BuildDebugSystem
+./make.sh BuildAll -O0
+
+# OPT="-O2"
+# ./make.sh $OPT \
+#     BuildSingleExample examples/terrain_gen \
+#     BuildDebugSystem
 

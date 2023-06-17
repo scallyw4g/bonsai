@@ -9,7 +9,7 @@
 #define WORLD_Z V3(0,0,1)
 
 /* #define WORLD_HASH_SIZE (Kilobytes(3)) // TODO(Jesse): Should this be dynamic? */
-#define FREELIST_SIZE (Kilobytes(2))
+#define FREELIST_SIZE (Kilobytes(4))
 
 #define NOISE_FREQUENCY (100L)
 
@@ -33,6 +33,7 @@
 #define DEBUG_WORLD_GENERATION        0
 #define DEBUG_HIGHLIGHT_VOID_CHUNKS   0
 #define DEBUG_DRAW_WORLD_AXIES        1
+#define DEBUG_DRAW_FRUSTUM_AT_ORIGIN  0
 #define DEBUG_PARTICLE_EFFECTS        1
 
 #define ENEMY_MODEL      MODELS_PATH "/tie-fighter.vox"

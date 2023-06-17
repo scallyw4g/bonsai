@@ -2007,7 +2007,7 @@ GetMeshForChunk(mesh_freelist* Freelist, memory_arena* PermMemory)
   }
   else
   {
-    u32 Elements = 2*(32*32) * VERTS_PER_VOXEL; // 2*(voxels per slice) * verts per voxel
+    u32 Elements = (32*32) * VERTS_PER_VOXEL; // 2*(voxels per slice) * verts per voxel
     Result = AllocateMesh(PermMemory, (u32)Elements);
     Assert(Result);
   }

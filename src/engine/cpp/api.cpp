@@ -106,10 +106,19 @@ Bonsai_FrameEnd(engine_resources *Resources)
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  Bonsai_SimulateEntitiesAndWorld(Resources);
+#if 0 // DEBUG_SYSTEM_API
+  if (GetDebugState()->UiGroup.PressedInteractionId != StringHash("GameViewport"))
+  {
+    GameInput = 0;
+  }
+#endif
 
-  // NOTE(Jesse): This has to come after the entities simulate, and before the draw
-  // We have to 
+  SimulateEntities(Resources, Plat->dt, World->VisibleRegion, &GpuMap->Buffer, &Plat->HighPriority);
+  /* DispatchSimulateParticleSystemJobs(&Plat->HighPriority, EntityTable, World->ChunkDim, &GpuMap->Buffer, Graphics, Plat->dt); */
+
+  // NOTE(Jesse): This has to come after the entities simulate, and before the
+  // draw; we have to update the camera target p before we do the camera update
+  //
   auto CameraTargetP = Resources->CameraTarget ? Resources->CameraTarget->P : Canonical_Position(0);
   {
     v2 MouseDelta = GetMouseDelta(Plat);
@@ -125,7 +134,9 @@ Bonsai_FrameEnd(engine_resources *Resources)
     World->Center = CameraTargetP.WorldP;
   }
 
-  Render_BufferGameGeometry(Resources);
+  BufferWorld(Plat, &GpuMap->Buffer, World, Graphics, Heap);
+  BufferEntities( EntityTable, &GpuMap->Buffer, Graphics, World, Plat->dt);
+
   UnsignalFutex(&Resources->Plat->HighPriorityModeFutex);
 
 #if DEBUG_SYSTEM_API

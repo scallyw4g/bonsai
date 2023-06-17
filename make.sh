@@ -428,16 +428,20 @@ while (( "$#" )); do
 
   case $CliArg in
 
+    "BuildAll")
+      BuildExamples=1
+      BuildExecutables=1
+      BuildDebugSystem=1
+      # BuildTests=1
+      # BuildDebugOnlyTests=1
+
+      for ex in $BUNDLED_EXAMPLES; do
+        EXAMPLES_TO_BUILD="$EXAMPLES_TO_BUILD $ex"
+      done
+    ;;
+
     "BuildExecutables")
       BuildExecutables=1
-    ;;
-
-    "BuildDebugOnlyTests")
-      BuildDebugOnlyTests=1
-    ;;
-
-    "BuildTests")
-      BuildTests=1
     ;;
 
     "BuildDebugSystem")
@@ -449,6 +453,14 @@ while (( "$#" )); do
       for ex in $BUNDLED_EXAMPLES; do
         EXAMPLES_TO_BUILD="$EXAMPLES_TO_BUILD $ex"
       done
+    ;;
+
+    "BuildTests")
+      BuildTests=1
+    ;;
+
+    "BuildDebugOnlyTests")
+      BuildDebugOnlyTests=1
     ;;
 
     "MakeDebugLibRelease")

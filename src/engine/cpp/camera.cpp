@@ -62,15 +62,17 @@ UpdateCameraP(world *World, canonical_position NewTarget, camera *Camera)
   MinMin = Normalize(Rotate(MinMin, FinalRotation));
   MinMax = Normalize(Rotate(MinMax, FinalRotation));
 
+#if DEBUG_DRAW_FRUSTUM_AT_ORIGIN
   {
     auto Resources = GetEngineResources();
     auto *GpuBuffer = &GetCurrentGpuMap(Resources->Graphics)->Buffer;
     auto Dest = ReserveBufferSpace(GpuBuffer, VERTS_PER_LINE*4);
-    DEBUG_DrawLine(&Dest, line(V3(0), MaxMax), RED, 0.2f );
-    DEBUG_DrawLine(&Dest, line(V3(0), MaxMin), BLUE, 0.2f );
-    DEBUG_DrawLine(&Dest, line(V3(0), MinMax), GREEN, 0.2f );
-    DEBUG_DrawLine(&Dest, line(V3(0), MinMin), YELLOW, 0.2f );
+    DEBUG_DrawLine(&Dest, line(V3(0), MaxMax*40), RED, 0.2f );
+    DEBUG_DrawLine(&Dest, line(V3(0), MaxMin*40), BLUE, 0.2f );
+    DEBUG_DrawLine(&Dest, line(V3(0), MinMax*40), GREEN, 0.2f );
+    DEBUG_DrawLine(&Dest, line(V3(0), MinMin*40), YELLOW, 0.2f );
   }
+#endif
 
   v3 CameraSimP = GetSimSpaceP(World, Camera->CurrentP);
 

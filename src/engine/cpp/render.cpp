@@ -945,20 +945,17 @@ BufferEntities( entity **EntityTable, untextured_3d_geometry_buffer* Dest,
   return;
 }
 
-link_internal void
-Render_BufferGameGeometry(engine_resources *Resources)
-{
-  platform                  *Plat         = Resources->Plat;
-  graphics                  *Graphics     = Resources->Graphics;
-  world                     *World        = Resources->World;
-  memory_arena              *Memory       = Resources->Memory;
-  heap_allocator            *Heap         = &Resources->Heap;
-  entity                   **EntityTable  = Resources->EntityTable;
-  gpu_mapped_element_buffer *GpuMap       = GetCurrentGpuMap(Graphics);
-
-  BufferWorld(Plat, &GpuMap->Buffer, World, Graphics, Heap);
-  BufferEntities( EntityTable, &GpuMap->Buffer, Graphics, World, Plat->dt);
-}
+/* link_internal void */
+/* Render_BufferGameGeometry(engine_resources *Resources) */
+/* { */
+/*   platform                  *Plat         = Resources->Plat; */
+/*   graphics                  *Graphics     = Resources->Graphics; */
+/*   world                     *World        = Resources->World; */
+/*   memory_arena              *Memory       = Resources->Memory; */
+/*   heap_allocator            *Heap         = &Resources->Heap; */
+/*   entity                   **EntityTable  = Resources->EntityTable; */
+/*   gpu_mapped_element_buffer *GpuMap       = GetCurrentGpuMap(Graphics); */
+/* } */
 
 link_internal void
 DrawFrustum(world *World, graphics *Graphics, camera *Camera)
