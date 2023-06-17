@@ -275,7 +275,7 @@ PropagateChangesTo( voxel_synthesis_change_propagation_info_stack *ChangePropaga
                     v3i SuperpositionsShape,
                     tile_rule *TileSuperpositions,
                     tile_ruleset_buffer *Rules,
-                    u32_cursor_staticbuffer *EntropyLists )
+                    entropy_lists *EntropyLists )
 {
 
   TIMED_FUNCTION();
@@ -403,7 +403,7 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
   /* tile_rule MaxTileEntropy                     =  BakeResult->MaxTileEntropy; */
   v3i TileSuperpositionsDim                    =  BakeResult->TileSuperpositionsDim;
   tile_rule *TileSuperpositionsStorage         =  GenInfo->TileSuperpositions;
-  u32_cursor_staticbuffer *EntropyListsStorage = &GenInfo->EntropyLists;
+  entropy_lists *EntropyListsStorage = &GenInfo->EntropyLists;
 
   v3i TileMinDim = {};
 
@@ -414,7 +414,7 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
 
   tile_rule *LocalTileSuperpositions = Allocate(tile_rule, GetTranArena(), TileSuperpositionsCount);
 
-  u32_cursor_staticbuffer LocalEntropyLists = {};
+  entropy_lists LocalEntropyLists = {};
   IterateOver(&LocalEntropyLists, Element, ElementIndex)
   {
     *Element = U32Cursor(umm(TileSuperpositionsCount), GetTranArena());

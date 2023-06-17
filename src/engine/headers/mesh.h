@@ -1,3 +1,5 @@
+#define ELEMENTS_PER_TEMP_MESH ((32*32) * VERTS_PER_VOXEL)
+
 struct loaded_collada_mesh
 {
   untextured_3d_geometry_buffer Mesh;
@@ -25,6 +27,16 @@ struct mesh_freelist
 
   volatile free_mesh* FirstFree;
   volatile free_mesh* Containers;
+};
+
+poof( staticbuffer(mesh_freelist, {4}, {tiered_mesh_freelist}) )
+#include <generated/staticbuffer_mesh_freelist_688856407_369370484.h>
+
+struct tiered_freelist
+{
+  u32 ListCount;
+
+  mesh_freelist Lists[];
 };
 
 inline void

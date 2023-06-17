@@ -1987,6 +1987,49 @@ InitializeWorldChunkPlane(world_chunk *DestChunk, chunk_dimension WorldChunkDim,
 }
 #endif
 
+
+link_internal untextured_3d_geometry_buffer*
+AllocateTempMesh(memory_arena* TempMemory)
+{
+  untextured_3d_geometry_buffer* Result = AllocateMesh(TempMemory, ELEMENTS_PER_TEMP_MESH);
+  return Result;
+}
+
+#if 1
+link_internal untextured_3d_geometry_buffer*
+GetPermMeshForChunk(mesh_freelist* Freelist, untextured_3d_geometry_buffer *TempMesh, memory_arena* PermMemory)
+{
+  NotImplemented;
+
+#if BONSAI_INTERNAL
+  AcquireFutex(&Freelist->DebugFutex);
+#endif
+  free_mesh* MeshContainer = Unlink_TS(&Freelist->FirstFree);
+  untextured_3d_geometry_buffer* Result = 0;
+
+  if (MeshContainer)
+  {
+    Result = MeshContainer->Mesh;
+    Assert(Result);
+
+    MeshContainer->Mesh = 0;
+    FullBarrier;
+    Link_TS(&Freelist->Containers, MeshContainer);
+  }
+  else
+  {
+    u32 Elements = ELEMENTS_PER_TEMP_MESH;
+    Result = AllocateMesh(PermMemory, (u32)Elements);
+    Assert(Result);
+  }
+
+#if BONSAI_INTERNAL
+  ReleaseFutex(&Freelist->DebugFutex);
+#endif
+  return Result;
+}
+#endif
+
 link_internal untextured_3d_geometry_buffer*
 GetMeshForChunk(mesh_freelist* Freelist, memory_arena* PermMemory)
 {
@@ -2007,7 +2050,7 @@ GetMeshForChunk(mesh_freelist* Freelist, memory_arena* PermMemory)
   }
   else
   {
-    u32 Elements = (32*32) * VERTS_PER_VOXEL; // 2*(voxels per slice) * verts per voxel
+    u32 Elements = ELEMENTS_PER_TEMP_MESH;
     Result = AllocateMesh(PermMemory, (u32)Elements);
     Assert(Result);
   }
@@ -3228,8 +3271,11 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
   // exterior edge, so that does not preclude it from going through BuildWorldChunkMesh
   if ( DestChunk->FilledCount > 0) // && DestChunk->FilledCount < (u32)Volume(WorldChunkDim))
   {
-    PrimaryMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-    BuildWorldChunkMeshFromMarkedVoxels_Greedy(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim, PrimaryMesh, Thread->TempMemory);
+    untextured_3d_geometry_buffer *TempMesh = AllocateTempMesh(Thread->TempMemory);
+    /* PrimaryMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory); */
+    BuildWorldChunkMeshFromMarkedVoxels_Greedy(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim, TempMesh, Thread->TempMemory);
+
+    GetPermMeshForChunk(&Thread->EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
   }
 
 

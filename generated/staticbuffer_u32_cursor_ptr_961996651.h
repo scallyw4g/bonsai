@@ -1,10 +1,12 @@
-struct u32_cursor_staticbuffer
+// @bind staticbuffer_type_name 
+
+struct entropy_lists
 {
   u32_cursor Start[TILE_RULESETS_COUNT];
 };
 
 link_inline u32_cursor*
-GetPtr(u32_cursor_staticbuffer *Buf, umm Index)
+GetPtr( entropy_lists *Buf, umm Index)
 {
   u32_cursor *Result = {};
   if ( Index < umm(TILE_RULESETS_COUNT) )
@@ -15,7 +17,7 @@ GetPtr(u32_cursor_staticbuffer *Buf, umm Index)
 }
 
 link_inline u32_cursor
-Get(u32_cursor_staticbuffer *Buf, umm Index)
+Get( entropy_lists *Buf, umm Index)
 {
   Assert(Index >= 0);
   Assert(Index < umm(TILE_RULESETS_COUNT));
@@ -24,19 +26,19 @@ Get(u32_cursor_staticbuffer *Buf, umm Index)
 }
 
 link_internal umm
-AtElements(u32_cursor_staticbuffer *Buf)
+AtElements( entropy_lists  *Buf)
 {
   return TILE_RULESETS_COUNT;
 }
 
 link_internal umm
-TotalElements(u32_cursor_staticbuffer *Buf)
+TotalElements( entropy_lists *Buf)
 {
   return TILE_RULESETS_COUNT;
 }
 
 link_internal void
-DeepCopy(u32_cursor_staticbuffer *Src, u32_cursor_staticbuffer *Dest)
+DeepCopy( entropy_lists *Src, entropy_lists *Dest)
 {
   Assert(TotalElements(Src) <= TotalElements(Dest));
   IterateOver(Src, Element, ElementIndex)

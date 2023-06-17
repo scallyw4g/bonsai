@@ -252,7 +252,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 }
 
 link_internal s32
-PickNewTileIndex(u32_cursor_staticbuffer *EntropyLists, random_series *VoxelSynthesisEntropy, s32 LastTileIndex, v3i TileSuperpositionsDim)
+PickNewTileIndex(entropy_lists *EntropyLists, random_series *VoxelSynthesisEntropy, s32 LastTileIndex, v3i TileSuperpositionsDim)
 {
 #define TILE_INDEX_GENERATION_COMPLETE (s32_MAX)
   s32 Result = TILE_INDEX_GENERATION_COMPLETE;
@@ -338,7 +338,7 @@ PartiallyResetVoxelSynthesisProgress( world *World,
   Assert(ChangePropagationInfoStack->At == 0);
 
   tile_ruleset_buffer     *Rules                 = &BakeResult->Rules;
-  u32_cursor_staticbuffer *EntropyLists          = &BakeResult->EntropyLists;
+  entropy_lists *EntropyLists          = &BakeResult->EntropyLists;
   tile_rule                MaxTileEntropy        =  BakeResult->MaxTileEntropy;
 
   tile_rule *TileSuperpositions      = BakeResult->TileSuperpositions;
@@ -405,7 +405,7 @@ PropagateInitialState(world *World, voxel_synthesis_result *BakeResult, voxel_sy
   v3i TileSuperpositionsDim             =  BakeResult->TileSuperpositionsDim;
 
   tile_rule *TileSuperpositions         =  InitInfo->TileSuperpositions;
-  u32_cursor_staticbuffer *EntropyLists = &InitInfo->EntropyLists;
+  entropy_lists *EntropyLists = &InitInfo->EntropyLists;
 
   s32 TileSuperpositionsCount = Volume(TileSuperpositionsDim);
   IterateOver(EntropyLists, List, Idx) { Assert(List->At = List->Start); }
@@ -442,7 +442,7 @@ InitializeWorkingStateFromBakeResult( world *World,
 {
   /* v3i TileSuperpositionsDim             =  BakeResult->TileSuperpositionsDim; */
   tile_rule *TileSuperpositions         =  GenInfo->TileSuperpositions;
-  u32_cursor_staticbuffer *EntropyLists = &GenInfo->EntropyLists;
+  entropy_lists *EntropyLists = &GenInfo->EntropyLists;
 
 
   {
@@ -498,7 +498,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   voxel_synthesis_gen_info *GenInfo = &GameState->GenInfo;
   voxel_synthesis_gen_info *InitInfo = &GameState->InitInfo;
 
-  u32_cursor_staticbuffer *EntropyLists = &GenInfo->EntropyLists;
+  entropy_lists *EntropyLists = &GenInfo->EntropyLists;
   tile_rule *TileSuperpositions         =  GenInfo->TileSuperpositions;
 
   local_persist random_series VoxelSynthesisEntropy = {543295643};
@@ -903,7 +903,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   // Initialize EntropyLists
   {
-    u32_cursor_staticbuffer *EntropyLists = &GameState->InitInfo.EntropyLists;
+    entropy_lists *EntropyLists = &GameState->InitInfo.EntropyLists;
     RangeIterator(EntropyListIndex, (s32)TILE_RULESETS_COUNT)
     {
       GetPtr(EntropyLists, u32(EntropyListIndex))[0] = U32Cursor(umm(TileSuperpositionsCount), Memory);
@@ -911,7 +911,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   }
 
   {
-    u32_cursor_staticbuffer *EntropyLists = &GameState->GenInfo.EntropyLists;
+    entropy_lists *EntropyLists = &GameState->GenInfo.EntropyLists;
     RangeIterator(EntropyListIndex, (s32)TILE_RULESETS_COUNT)
     {
       GetPtr(EntropyLists, u32(EntropyListIndex))[0] = U32Cursor(umm(TileSuperpositionsCount), Memory);

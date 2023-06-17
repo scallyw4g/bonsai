@@ -53,7 +53,7 @@ global_variable tile_rule NullTileRule = { .Pages[0] = 1 };
 
 // TODO(Jesse): This constraint is now artificial.  It should be a runtime-sized buffer
 #define TILE_RULESETS_COUNT (BITS_PER_TILE_RULE_PAGE*TILE_RULE_PAGE_COUNT)
-poof(staticbuffer(u32_cursor, {TILE_RULESETS_COUNT}))
+poof(staticbuffer(u32_cursor, {TILE_RULESETS_COUNT}, {entropy_lists} ))
 #include <generated/staticbuffer_u32_cursor_ptr_961996651.h>
 
 struct tile_ruleset
@@ -194,7 +194,7 @@ GetElement(voxel_synth_tile_hashtable *Hashtable, voxel_synth_tile *Query)
 struct voxel_synthesis_gen_info
 {
   tile_rule *TileSuperpositions;
-  u32_cursor_staticbuffer EntropyLists;
+  entropy_lists EntropyLists;
 };
 
 struct voxel_synthesis_result
@@ -501,7 +501,7 @@ operator!=(tile_rule R1, tile_rule R2)
 
 
 link_internal u32
-FindListContaining(u32_cursor_staticbuffer *EntropyLists, u32 QueryIndex)
+FindListContaining(entropy_lists *EntropyLists, u32 QueryIndex)
 {
   u32 Result = u32_MAX;
 
@@ -522,7 +522,7 @@ FindListContaining(u32_cursor_staticbuffer *EntropyLists, u32 QueryIndex)
 }
 
 link_internal s32
-SanityCheckEntropyLists(u32_cursor_staticbuffer *EntropyLists, tile_rule *TileSuperpositions, v3i TileSuperpositionsDim)
+SanityCheckEntropyLists(entropy_lists *EntropyLists, tile_rule *TileSuperpositions, v3i TileSuperpositionsDim)
 {
   s32 Result = 0;
 #if 0
@@ -542,7 +542,7 @@ SanityCheckEntropyLists(u32_cursor_staticbuffer *EntropyLists, tile_rule *TileSu
 }
 
 link_internal s32
-SanityCheckEntropyListsSlow(u32_cursor_staticbuffer *EntropyLists, tile_rule *TileSuperpositions, v3i TileSuperpositionsDim)
+SanityCheckEntropyListsSlow(entropy_lists *EntropyLists, tile_rule *TileSuperpositions, v3i TileSuperpositionsDim)
 {
   s32 Result = 0;
 #if 0
@@ -565,7 +565,7 @@ SanityCheckEntropyListsSlow(u32_cursor_staticbuffer *EntropyLists, tile_rule *Ti
 }
 
 link_internal void
-PushEntropyListEntry(u32_cursor_staticbuffer *EntropyLists, tile_rule *Rule, s32 TileIndex, tile_rule *TileSuperpositions)
+PushEntropyListEntry(entropy_lists *EntropyLists, tile_rule *Rule, s32 TileIndex, tile_rule *TileSuperpositions)
 {
   u32 OptionCount = CountOptions(Rule);
   Assert(Rule == (TileSuperpositions+TileIndex));
@@ -573,7 +573,7 @@ PushEntropyListEntry(u32_cursor_staticbuffer *EntropyLists, tile_rule *Rule, s32
 }
 
 link_internal void
-RemoveEntropyListEntry(u32_cursor_staticbuffer *EntropyLists, tile_rule *Rule, s32 TileIndex, tile_rule *TileSuperpositions)
+RemoveEntropyListEntry(entropy_lists *EntropyLists, tile_rule *Rule, s32 TileIndex, tile_rule *TileSuperpositions)
 {
   u32 OptionCount = CountOptions(Rule);
   Assert(Rule == (TileSuperpositions+TileIndex));
