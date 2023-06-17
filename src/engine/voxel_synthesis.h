@@ -56,6 +56,8 @@ global_variable tile_rule NullTileRule = { .Pages[0] = 1 };
 poof(staticbuffer(u32_cursor, {TILE_RULESETS_COUNT}, {entropy_lists} ))
 #include <generated/staticbuffer_u32_cursor_ptr_961996651.h>
 
+poof(deep_copy(entropy_lists))
+
 struct tile_ruleset
 {
   tile_rule E[VoxelRuleDir_Count];

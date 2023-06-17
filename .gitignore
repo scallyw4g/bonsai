@@ -17,3 +17,5 @@ build/*
 bin/
 tmp/
 breakpoints
+
+.vscode/*

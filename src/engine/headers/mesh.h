@@ -30,7 +30,7 @@ struct mesh_freelist
 };
 
 poof( staticbuffer(mesh_freelist, {4}, {tiered_mesh_freelist}) )
-#include <generated/staticbuffer_mesh_freelist_688856407_369370484.h>
+#include <generated/tiered_mesh_freelist.h>
 
 struct tiered_freelist
 {

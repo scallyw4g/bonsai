@@ -1999,8 +1999,6 @@ AllocateTempMesh(memory_arena* TempMemory)
 link_internal untextured_3d_geometry_buffer*
 GetPermMeshForChunk(mesh_freelist* Freelist, untextured_3d_geometry_buffer *TempMesh, memory_arena* PermMemory)
 {
-  NotImplemented;
-
 #if BONSAI_INTERNAL
   AcquireFutex(&Freelist->DebugFutex);
 #endif
@@ -3221,6 +3219,8 @@ ComputeLodMesh( thread_local_state *Thread,
 }
 
 #if 1
+// nocommit remove this
+//
 link_internal void
 InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChunk, chunk_dimension WorldChunkDim, native_file *AssetFile, s32 Frequency, s32 Amplititude, s32 zMin, chunk_init_flags Flags)
 {
@@ -4718,8 +4718,10 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
   // exterior edge, so that does not preclude it from going through BuildWorldChunkMesh
   if ( DestChunk->FilledCount > 0) // && DestChunk->FilledCount < (u32)Volume(WorldChunkDim))
   {
-    PrimaryMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-    BuildWorldChunkMeshFromMarkedVoxels_Greedy(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim, PrimaryMesh, Thread->TempMemory);
+    untextured_3d_geometry_buffer *TempMesh = AllocateTempMesh(Thread->TempMemory);
+    BuildWorldChunkMeshFromMarkedVoxels_Greedy(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim, TempMesh, Thread->TempMemory);
+
+    GetPermMeshForChunk(&Thread->EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
   }
 
 
