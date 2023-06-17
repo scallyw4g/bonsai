@@ -3272,10 +3272,10 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
   if ( DestChunk->FilledCount > 0) // && DestChunk->FilledCount < (u32)Volume(WorldChunkDim))
   {
     untextured_3d_geometry_buffer *TempMesh = AllocateTempMesh(Thread->TempMemory);
-    /* PrimaryMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory); */
     BuildWorldChunkMeshFromMarkedVoxels_Greedy(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim, TempMesh, Thread->TempMemory);
 
-    GetPermMeshForChunk(&Thread->EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
+    PrimaryMesh = GetPermMeshForChunk(&Thread->EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
+    DeepCopy(TempMesh, PrimaryMesh);
   }
 
 
@@ -4721,7 +4721,8 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
     untextured_3d_geometry_buffer *TempMesh = AllocateTempMesh(Thread->TempMemory);
     BuildWorldChunkMeshFromMarkedVoxels_Greedy(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim, TempMesh, Thread->TempMemory);
 
-    GetPermMeshForChunk(&Thread->EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
+    PrimaryMesh = GetPermMeshForChunk(&Thread->EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
+    DeepCopy(TempMesh, PrimaryMesh);
   }
 
 
