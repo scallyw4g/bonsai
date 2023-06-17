@@ -3527,7 +3527,7 @@ BufferWorld( platform* Plat,
 
         if (Chunk)
         {
-          if (!IsInFrustum(World, Camera, Chunk))
+          if (IsInFrustum(World, Camera, Chunk))
           {
             v3 CameraP = GetSimSpaceP(World, Camera->CurrentP);
             v3 ChunkP = GetSimSpaceP(World, Chunk->WorldP);
@@ -3538,10 +3538,10 @@ BufferWorld( platform* Plat,
               MeshBit = MeshBit_Main;
             }
 
-            /* if (HasMesh(&Chunk->Meshes, MeshBit_Lod) && DistanceSq(CameraP, ChunkP) > Square(25*32)) */
-            /* { */
-            /*   MeshBit = MeshBit_Lod; */
-            /* } */
+            if (HasMesh(&Chunk->Meshes, MeshBit_Lod) && DistanceSq(CameraP, ChunkP) > Square(25*32))
+            {
+              MeshBit = MeshBit_Lod;
+            }
 
             if (MeshBit != MeshBit_None)
             {
