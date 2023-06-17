@@ -15,7 +15,7 @@ UpdateCameraP(world *World, canonical_position NewTarget, camera *Camera)
   Camera->Front = Normalize(V3(Px, Py, Pz));
 
   Camera->Right = Normalize(Cross(V3(0,0,1), Camera->Front));
-  Camera->Up = V3(0,0,1); // Normalize(Cross(Camera->Front, Camera->Right));
+  Camera->Up = Normalize(Cross(Camera->Front, Camera->Right));
 
   Camera->ViewingTarget = NewTarget;
 
@@ -34,10 +34,10 @@ UpdateCameraP(world *World, canonical_position NewTarget, camera *Camera)
   v3 FarHeight = ( V3( 0.0f, ((Camera->Frust.farClip - Camera->Frust.nearClip)/Cos(Camera->Frust.FOV/2.0f)) * Sin(Camera->Frust.FOV/2.0f), 0.0f));
   v3 FarWidth = V3( FarHeight.y, 0.0f, 0.0f);
 
-  v3 MaxMax = FrustLength + FarHeight + FarWidth;
-  v3 MaxMin = FrustLength + FarHeight - FarWidth;
-  v3 MinMax = FrustLength - FarHeight + FarWidth;
-  v3 MinMin = FrustLength - FarHeight - FarWidth;
+  v3 MaxMax = Normalize(FrustLength + FarHeight + FarWidth);
+  v3 MaxMin = Normalize(FrustLength + FarHeight - FarWidth);
+  v3 MinMax = Normalize(FrustLength - FarHeight + FarWidth);
+  v3 MinMin = Normalize(FrustLength - FarHeight - FarWidth);
 
   v3 Front = V3(0,0,1);
   v3 Target = Camera->Front;
@@ -46,15 +46,31 @@ UpdateCameraP(world *World, canonical_position NewTarget, camera *Camera)
 
   // We've got to correct the rotation so it ends pointing the frustum in the cameras 'up' direction
   v3 UpVec = V3(0, 1, 0);
+  /* v3 UpVec = Camera->Up; */
   v3 RotatedUp = Rotate(UpVec, GrossRotation);
   Quaternion DesiredUp = RotatePoint(RotatedUp, Camera->Up);
 
   Quaternion FinalRotation = DesiredUp * GrossRotation;
 
-  MaxMin = Rotate(MaxMin, FinalRotation);
-  MaxMax = Rotate(MaxMax, FinalRotation);
-  MinMin = Rotate(MinMin, FinalRotation);
-  MinMax = Rotate(MinMax, FinalRotation);
+  /* MaxMin = Normalize(Rotate(MaxMin, GrossRotation)); */
+  /* MaxMax = Normalize(Rotate(MaxMax, GrossRotation)); */
+  /* MinMin = Normalize(Rotate(MinMin, GrossRotation)); */
+  /* MinMax = Normalize(Rotate(MinMax, GrossRotation)); */
+
+  MaxMin = Normalize(Rotate(MaxMin, FinalRotation));
+  MaxMax = Normalize(Rotate(MaxMax, FinalRotation));
+  MinMin = Normalize(Rotate(MinMin, FinalRotation));
+  MinMax = Normalize(Rotate(MinMax, FinalRotation));
+
+  {
+    auto Resources = GetEngineResources();
+    auto *GpuBuffer = &GetCurrentGpuMap(Resources->Graphics)->Buffer;
+    auto Dest = ReserveBufferSpace(GpuBuffer, VERTS_PER_LINE*4);
+    DEBUG_DrawLine(&Dest, line(V3(0), MaxMax), RED, 0.2f );
+    DEBUG_DrawLine(&Dest, line(V3(0), MaxMin), BLUE, 0.2f );
+    DEBUG_DrawLine(&Dest, line(V3(0), MinMax), GREEN, 0.2f );
+    DEBUG_DrawLine(&Dest, line(V3(0), MinMin), YELLOW, 0.2f );
+  }
 
   v3 CameraSimP = GetSimSpaceP(World, Camera->CurrentP);
 
@@ -118,10 +134,15 @@ IsInFrustum(world *World, camera *Camera, canonical_position P)
 
   // This says if we're on the back-side of the plane by more than the dim of a
   // world chunk, we're outside the frustum
-  Result &= (DistanceToPlane(&Camera->Frust.Top, TestP)   < -1*World->ChunkDim.y);
-  Result &= (DistanceToPlane(&Camera->Frust.Bot, TestP)   < -1*World->ChunkDim.y);
-  Result &= (DistanceToPlane(&Camera->Frust.Left, TestP)  < -1*World->ChunkDim.x);
-  Result &= (DistanceToPlane(&Camera->Frust.Right, TestP) < -1*World->ChunkDim.x);
+  /* Result &= (DistanceToPlane(&Camera->Frust.Top, TestP)   < -1*World->ChunkDim.y); */
+  /* Result &= (DistanceToPlane(&Camera->Frust.Bot, TestP)   < -1*World->ChunkDim.y); */
+  /* Result &= (DistanceToPlane(&Camera->Frust.Left, TestP)  < -1*World->ChunkDim.x); */
+  /* Result &= (DistanceToPlane(&Camera->Frust.Right, TestP) < -1*World->ChunkDim.x); */
+
+  Result &= (DistanceToPlane(&Camera->Frust.Top, TestP)   < 0);
+  Result &= (DistanceToPlane(&Camera->Frust.Bot, TestP)   < 0);
+  Result &= (DistanceToPlane(&Camera->Frust.Left, TestP)  < 0);
+  Result &= (DistanceToPlane(&Camera->Frust.Right, TestP) < 0);
 
   return Result;
 }
@@ -130,8 +151,8 @@ inline bool
 IsInFrustum( world *World, camera *Camera, world_chunk *Chunk )
 {
   v3 ChunkMid = World->ChunkDim/2.0f;
-  canonical_position P1 = Canonical_Position(  ChunkMid, Chunk->WorldP );
-  bool Result = IsInFrustum(World, Camera, P1 );
+  canonical_position P1 = Canonical_Position(ChunkMid, Chunk->WorldP );
+  bool Result = IsInFrustum(World, Camera, P1);
   return Result;
 }
 

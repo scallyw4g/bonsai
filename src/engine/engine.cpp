@@ -1,6 +1,9 @@
+#if PLATFORM_GL_IMPLEMENTATIONS
+#include <engine/cpp/debug_draw.cpp>
+#endif
+
 #include <engine/cpp/game_api.cpp>
 #include <engine/cpp/asset.cpp>
-#include <engine/cpp/render_position.cpp> // TODO(Jesse): Move into PLATFORM_GL_IMPLEMENTATIONS block?
 #include <engine/cpp/canonical_position.cpp>
 #include <engine/cpp/chunk.cpp>
 #include <engine/cpp/thread.cpp>
@@ -8,12 +11,8 @@
 #include <engine/cpp/mesh.cpp>
 #include <engine/cpp/work_queue.cpp>
 #include <engine/cpp/triangle.cpp>
+
 #include <engine/cpp/camera.cpp>
-
-#if PLATFORM_GL_IMPLEMENTATIONS
-#include <engine/cpp/debug_draw.cpp>
-#endif
-
 #include <engine/cpp/lod.cpp>
 
 #if PLATFORM_GL_IMPLEMENTATIONS

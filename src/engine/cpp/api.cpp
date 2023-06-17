@@ -10,6 +10,7 @@ Bonsai_OnLibraryLoad(engine_resources *Resources)
 #endif
 
   Global_ThreadStates = Resources->ThreadStates;
+  Global_EngineResources = Resources;
 
   // We should only ever call this from the main thread, and this sets our
   // thread index such that the game doesn't have to worry about doing it.

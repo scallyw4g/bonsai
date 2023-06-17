@@ -65,6 +65,16 @@ struct engine_resources
   debug_state *DebugState;
 };
 
+global_variable engine_resources *Global_EngineResources;
+
+
+link_internal engine_resources *
+GetEngineResources()
+{
+  Assert(Global_EngineResources);
+  return Global_EngineResources;
+}
+
 #define UNPACK_ENGINE_RESOURCES(Res)                                      \
   platform                  *Plat          =  Res->Plat;            \
   world                     *World         =  Res->World;           \
@@ -113,41 +123,6 @@ struct game_mode
   r64 TimeRunning;
 };
 
-enum entity_state
-{
-  EntityState_Free        = 0,
-  EntityState_Spawned     = 1 << 0,
-  EntityState_Destroyed   = 1 << 1,
-  EntityState_Reserved    = 1 << 2,
-};
-
-enum entity_type
-{
-  EntityType_None             = 0,
-
-  EntityType_Player           = 1 << 0,
-  EntityType_Enemy            = 1 << 1,
-  EntityType_EnemyProjectile  = 1 << 2,
-  EntityType_PlayerProjectile = 1 << 3,
-  EntityType_Loot             = 1 << 4,
-  EntityType_PlayerProton     = 1 << 5,
-  EntityType_ParticleSystem   = 1 << 6,
-
-  EntityType_Static           = 1 << 7,
-
-  EntityType_Default           = 1 << 8, // Nothing special about it, just needed an entity
-};
-
-global_variable const entity_type ENTITY_TYPES = (entity_type)
-  ( EntityType_Player           |
-    EntityType_Enemy            |
-    EntityType_EnemyProjectile  |
-    EntityType_PlayerProjectile |
-    EntityType_Loot             |
-    EntityType_PlayerProton     |
-    EntityType_ParticleSystem
-   );
-
 enum collision_type
 {
   Collision_Player_Enemy            = EntityType_Player | EntityType_Enemy,
@@ -158,84 +133,6 @@ enum collision_type
   Collision_Enemy_PlayerProton      = EntityType_Enemy  | EntityType_PlayerProton,
   Collision_Enemy_EnemyProjectile   = EntityType_Enemy  | EntityType_EnemyProjectile,
   Collision_Enemy_Enemy             = EntityType_Enemy,
-};
-
-enum model_index
-{
-  ModelIndex_None,
-
-  ModelIndex_Enemy_Skeleton_Axe,
-  ModelIndex_Enemy_Skeleton_Sword,
-  ModelIndex_Enemy_Skeleton_Lasher,
-  ModelIndex_Enemy_Skeleton_Archer,
-  ModelIndex_Enemy_Skeleton_Spear,
-  ModelIndex_Enemy_Skeleton_AxeArmor,
-  ModelIndex_Enemy_Skeleton_Hounds,
-  ModelIndex_Enemy_Skeleton_Horserider,
-  ModelIndex_Enemy_Skeleton_Horsebanner,
-  ModelIndex_Enemy_Skeleton_Shaman,
-  ModelIndex_Enemy_Skeleton_Champion,
-  ModelIndex_Enemy_Skeleton_ChampionChampion,
-  ModelIndex_Enemy_Skeleton_Concubiner,
-  ModelIndex_Enemy_Skeleton_King,
-
-  ModelIndex_FirstEnemyModel = ModelIndex_Enemy_Skeleton_Axe,
-  ModelIndex_LastEnemyModel = ModelIndex_Enemy_Skeleton_King,
-
-  ModelIndex_Player_jp,
-  ModelIndex_Player_bow,
-  ModelIndex_Player_cat,
-  ModelIndex_Player_fox,
-  ModelIndex_Player_gumi,
-  ModelIndex_Player_knight,
-  ModelIndex_Player_man,
-  ModelIndex_Player_mom,
-  ModelIndex_Player_old,
-  ModelIndex_Player_poem,
-  ModelIndex_Player_rain,
-  ModelIndex_Player_sasami,
-  ModelIndex_Player_sol,
-  ModelIndex_Player_sword,
-  ModelIndex_Player_tale,
-  ModelIndex_Player_tama,
-  ModelIndex_Player_tsurugi,
-
-  ModelIndex_FirstPlayerModel = ModelIndex_Player_jp,
-  ModelIndex_LastPlayerModel = ModelIndex_Player_tsurugi,
-
-  ModelIndex_Loot,
-  ModelIndex_Projectile,
-  ModelIndex_Proton,
-  ModelIndex_Bitty0,
-  ModelIndex_Bitty1,
-
-  ModelIndex_Level,
-
-  ModelIndex_Count,
-};
-poof(string_and_value_tables(model_index))
-#include <generated/string_and_value_tables_model_index.h>
-
-
-struct model
-{
-  untextured_3d_geometry_buffer Mesh;
-  chunk_dimension Dim;
-  animation Animation;
-
-  /* v4 *Palette; // Optional */
-};
-
-struct physics
-{
-  v3 Velocity;
-  v3 Force;
-  v3 Delta;
-
-  /* v3 Drag; */
-  r32 Mass;
-
-  r32 Speed;
 };
 
 struct particle
@@ -291,37 +188,6 @@ struct particle_system
 
   r32 ElapsedSinceLastEmission;
   particle Particles[PARTICLES_PER_SYSTEM];
-};
-
-struct entity;
-typedef void (*update_callback)(engine_resources *, entity *);
-
-struct entity
-{
-  model Model;
-  v3 CollisionVolumeRadius;
-
-  particle_system* Emitter;
-
-  physics Physics;
-
-  canonical_position P;
-
-  Quaternion Rotation;
-
-  entity_state State;
-  entity_type Type;
-
-  r32 Scale;
-
-   // TODO(Jesse, id: 86, tags: memory_consumption, entity): Unneeded for projectiles. factor out of here?
-  r32 RateOfFire;
-  r32 FireCooldown;
-
-  s32 Health;
-
-  update_callback Update;
-  void* UserData;
 };
 
 struct frame_event

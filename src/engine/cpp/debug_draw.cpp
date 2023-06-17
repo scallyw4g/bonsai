@@ -1,17 +1,6 @@
 
 
 inline void
-DEBUG_DrawLine_Aligned( untextured_3d_geometry_buffer *Mesh,
-                        v3 P1, v3 P2, u32 ColorIndex, r32 Thickness )
-{
-  v3 Radius = (P2-P1)/2.f;
-  v3 Center = P1 + Radius;
-
-  v3 DrawDim = Max(Abs(Radius*2.f), V3(Thickness));
-  DrawVoxel(Mesh, Center, ColorIndex, DrawDim);
-}
-
-inline void
 DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh,
                 v3 P1, v3 P2, u32 ColorIndex, r32 Thickness )
 {
