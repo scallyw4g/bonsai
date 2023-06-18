@@ -28,10 +28,10 @@ struct mesh_freelist
   volatile free_mesh* Containers;
 };
 
-#define ELEMENTS_PER_TEMP_MESH    (WORLD_CHUNK_MESH_MIN_SIZE*4)
-#define WORLD_CHUNK_MESH_MIN_SIZE (1024*8)
+#define TIERED_MESH_FREELIST_MAX_ELEMENTS (16)
+#define ELEMENTS_PER_TEMP_MESH    (WORLD_CHUNK_MESH_MIN_SIZE*TIERED_MESH_FREELIST_MAX_ELEMENTS)
+#define WORLD_CHUNK_MESH_MIN_SIZE (1024)
 
-#define TIERED_MESH_FREELIST_MAX_ELEMENTS (4)
 
 
 poof( staticbuffer(mesh_freelist, {TIERED_MESH_FREELIST_MAX_ELEMENTS}, {tiered_mesh_freelist}) )
