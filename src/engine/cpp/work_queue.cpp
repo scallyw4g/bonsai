@@ -171,7 +171,7 @@ Replace(volatile void** Dest, void* Element)
 }
 
 link_internal void
-DoCopyJob(work_queue_entry_copy_buffer_ref *Job, mesh_freelist* MeshFreelist, memory_arena* PermMemory)
+DoCopyJob(work_queue_entry_copy_buffer_ref *Job, tiered_mesh_freelist* MeshFreelist, memory_arena* PermMemory)
 {
   untextured_3d_geometry_buffer *Src = TakeOwnershipSync(Job->Buf, Job->MeshBit);
 
@@ -186,7 +186,7 @@ DoCopyJob(work_queue_entry_copy_buffer_ref *Job, mesh_freelist* MeshFreelist, me
 }
 
 link_internal void
-DoCopyJob(volatile work_queue_entry_copy_buffer *Job, mesh_freelist* MeshFreelist, memory_arena* PermMemory)
+DoCopyJob(volatile work_queue_entry_copy_buffer *Job, tiered_mesh_freelist* MeshFreelist, memory_arena* PermMemory)
 {
   // NOTE(Jesse): This code is broken .. use copy_buffer_ref instead
   InvalidCodePath();

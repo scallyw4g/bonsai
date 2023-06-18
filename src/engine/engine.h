@@ -12,9 +12,6 @@
 #include <engine/headers/render.h>
 #endif
 
-#include <engine/headers/world_chunk.h>
-#include <engine/headers/asset.h>
-#include <engine/headers/work_queue.h>
 
 #if PLATFORM_GL_IMPLEMENTATIONS
 #include <engine/headers/graphics.h>
@@ -22,6 +19,9 @@
 
 #include <engine/headers/voxel_face.h>
 #include <engine/headers/mesh.h>
+#include <engine/headers/world_chunk.h>
+#include <engine/headers/work_queue.h>
+#include <engine/headers/asset.h>
 #include <engine/headers/animation.h>
 #include <engine/headers/model.h>
 #include <engine/headers/entity.h>

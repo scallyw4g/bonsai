@@ -1,5 +1,3 @@
-#define ELEMENTS_PER_TEMP_MESH ((32*32) * VERTS_PER_VOXEL)
-
 struct loaded_collada_mesh
 {
   untextured_3d_geometry_buffer Mesh;
@@ -23,21 +21,39 @@ struct mesh_freelist
 {
 #if BONSAI_INTERNAL
   bonsai_futex DebugFutex;
+  u32 MeshSize;
 #endif
 
   volatile free_mesh* FirstFree;
   volatile free_mesh* Containers;
 };
 
-poof( staticbuffer(mesh_freelist, {4}, {tiered_mesh_freelist}) )
+#define ELEMENTS_PER_TEMP_MESH    (WORLD_CHUNK_MESH_MIN_SIZE*4)
+#define WORLD_CHUNK_MESH_MIN_SIZE (1024*8)
+
+#define TIERED_MESH_FREELIST_MAX_ELEMENTS (4)
+
+
+poof( staticbuffer(mesh_freelist, {TIERED_MESH_FREELIST_MAX_ELEMENTS}, {tiered_mesh_freelist}) )
 #include <generated/tiered_mesh_freelist.h>
 
-struct tiered_freelist
+link_internal mesh_freelist *
+TryGetTierForSize(tiered_mesh_freelist *TieredFreelist, u32 Size)
 {
-  u32 ListCount;
+  mesh_freelist *Result = {};
 
-  mesh_freelist Lists[];
-};
+  // NOTE(Jesse): So we include the 1*minsize in the 0th bucket, 2*minsize in 1th bucket, etc
+  if (Size % WORLD_CHUNK_MESH_MIN_SIZE == 0) { Size = Size-1; }
+
+  u32 Index = Size/WORLD_CHUNK_MESH_MIN_SIZE;
+  if (Index < TIERED_MESH_FREELIST_MAX_ELEMENTS)
+  {
+    Result = TieredFreelist->Start + Index;
+    if (Result->MeshSize) { Assert(Result->MeshSize >= Size); }
+  }
+
+  return Result;
+}
 
 inline void
 BufferVertsDirect(

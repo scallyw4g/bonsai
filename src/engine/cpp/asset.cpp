@@ -267,7 +267,7 @@ ReadWorldChunkVersion(native_file *AssetFile )
 }
 
 link_internal void
-DeserializeChunk(native_file *AssetFile, world_chunk *Result, mesh_freelist *MeshFreelist, memory_arena *PermMemory)
+DeserializeChunk(native_file *AssetFile, world_chunk *Result, tiered_mesh_freelist *MeshFreelist, memory_arena *PermMemory)
 {
   world_chunk_file_header Header = {}; //ReadWorldChunkFileHeader(&AssetFile);
   Header.Version = ReadWorldChunkVersion(AssetFile);
@@ -331,9 +331,9 @@ DeserializeChunk(native_file *AssetFile, world_chunk *Result, mesh_freelist *Mes
 
   if (MeshFreelist && Header.MeshElementCount)
   {
-    /* Result->SelectedMeshes |= MeshBit_Main; */
-    /* Result->Mesh = GetMeshForChunk(MeshFreelist, PermMemory); */
-    untextured_3d_geometry_buffer *Mesh = GetMeshForChunk(MeshFreelist, PermMemory);
+    u32 TotalElements = u32(Header.MeshElementCount);
+    untextured_3d_geometry_buffer *Mesh = GetPermMeshForChunk(MeshFreelist, TotalElements, PermMemory);
+
     DeserializeMesh(AssetFile, &Header, Mesh);
     Ensure( AtomicReplaceMesh(&Result->Meshes, MeshBit_Main, Mesh, Mesh->Timestamp) == 0);
   }

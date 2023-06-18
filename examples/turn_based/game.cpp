@@ -89,35 +89,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
     {
       work_queue_entry_rebuild_mesh *Job = SafeAccess(work_queue_entry_rebuild_mesh, Entry);
       world_chunk *Chunk = Job->Chunk;
-      Assert( IsSet(Chunk->Flags, Chunk_VoxelsInitialized) );
-
-      untextured_3d_geometry_buffer *NewMesh = 0;
-
-      /* if (Chunk->FilledCount > 0) */
-      {
-        untextured_3d_geometry_buffer *GeneratedMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-        /* MarkBoundaryVoxels( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-2); */
-        /* MarkBoundaryVoxels( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh ); */
-        BuildWorldChunkMeshFromMarkedVoxels_Greedy( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh, Thread->TempMemory);
-        /* BuildWorldChunkMesh(Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh); */
-
-        /* DrawDebugVoxels( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh ); */
-
-        if (GeneratedMesh->At)
-        {
-          NewMesh = GeneratedMesh;
-        }
-        else
-        {
-          DeallocateMesh(&GeneratedMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-        }
-      }
-
-      umm Timestamp = NewMesh ? NewMesh->Timestamp : __rdtsc();
-      auto Replaced = AtomicReplaceMesh(&Chunk->Meshes, MeshBit_Main, NewMesh, Timestamp);
-      if (Replaced) { DeallocateMesh(&Replaced, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
-
-      FinalizeChunkInitialization(Chunk);
+      RebuildWorldChunkMesh(Thread, Chunk);
     } break;
 
     case type_work_queue_entry_init_world_chunk:

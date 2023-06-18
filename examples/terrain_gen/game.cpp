@@ -240,6 +240,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
            u32 Octaves = 4;
            /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
            chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs;
+           /* chunk_init_flags InitFlags = ChunkInitFlag_Noop; */
            InitializeChunkWithNoise( CustomTerrainExample, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, (void*)&Octaves);
          }
 

@@ -118,21 +118,28 @@ AllocateMesh(memory_arena* Arena, u32 NumVerts)
 }
 
 link_internal void
-DeallocateMesh(untextured_3d_geometry_buffer** Mesh, mesh_freelist* MeshFreelist, memory_arena* Memory)
+DeallocateMesh(untextured_3d_geometry_buffer* Mesh, mesh_freelist *MeshFreelist, memory_arena* Memory)
 {
+  Assert(Mesh);
+
 #if BONSAI_INTERNAL
+  if (MeshFreelist->MeshSize == 0)
+  {
+    MeshFreelist->MeshSize = Mesh->End;
+  }
+  else
+  {
+    Assert(MeshFreelist->MeshSize == Mesh->End);
+  }
+
   AcquireFutex(&MeshFreelist->DebugFutex);
 #endif
 
-  Assert(Mesh && *Mesh);
+  Mesh->At = 0;
 
   free_mesh* Container = Unlink_TS(&MeshFreelist->Containers);
   if (!Container) { Container = Allocate(free_mesh, Memory, 1); }
-
-  Container->Mesh = *Mesh;
-
-  (*Mesh)->At = 0;
-  *Mesh = 0;
+  Container->Mesh = Mesh;
 
   Link_TS(&MeshFreelist->FirstFree, Container);
 
@@ -142,11 +149,29 @@ DeallocateMesh(untextured_3d_geometry_buffer** Mesh, mesh_freelist* MeshFreelist
 }
 
 link_internal void
-DeallocateMeshes(threadsafe_geometry_buffer *Buf, mesh_freelist* MeshFreelist, memory_arena* Memory)
+DeallocateMesh(untextured_3d_geometry_buffer* Mesh, tiered_mesh_freelist* MeshFreelist, memory_arena* Memory)
 {
-  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Main, 0, __rdtsc()) )  { DeallocateMesh(&Mesh, MeshFreelist, Memory); }
-  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod, 0, __rdtsc()) )   { DeallocateMesh(&Mesh, MeshFreelist, Memory); }
-  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Debug, 0, __rdtsc()) ) { DeallocateMesh(&Mesh, MeshFreelist, Memory); }
+  mesh_freelist *Freelist = TryGetTierForSize(MeshFreelist, Mesh->End);
+  if (Freelist)
+  {
+    u32 Tier = 1+ (Mesh->End/WORLD_CHUNK_MESH_MIN_SIZE);
+    u32 Size = Tier*WORLD_CHUNK_MESH_MIN_SIZE;
+
+    DeallocateMesh(Mesh, Freelist, Memory);
+  }
+  else
+  {
+    Leak("Large mesh detected!");
+  }
+}
+
+
+link_internal void
+DeallocateMeshes(threadsafe_geometry_buffer *Buf, tiered_mesh_freelist* MeshFreelist, memory_arena* Memory)
+{
+  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Main,  0, __rdtsc()) ) { DeallocateMesh(Mesh, MeshFreelist, Memory); }
+  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod,   0, __rdtsc()) ) { DeallocateMesh(Mesh, MeshFreelist, Memory); }
+  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Debug, 0, __rdtsc()) ) { DeallocateMesh(Mesh, MeshFreelist, Memory); }
 
   Buf->MeshMask = 0;
 }

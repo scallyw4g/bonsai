@@ -1666,29 +1666,3 @@ MousePickEntity(engine_resources *Resources)
 }
 
 
-link_internal void
-RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk)
-{
-  Assert( IsSet(Chunk->Flags, Chunk_VoxelsInitialized) );
-
-  untextured_3d_geometry_buffer *NewMesh = 0;
-
-  {
-    untextured_3d_geometry_buffer *GeneratedMesh = GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-
-    BuildWorldChunkMeshFromMarkedVoxels_Greedy( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, GeneratedMesh, GetTranArena() );
-
-    if (GeneratedMesh->At)
-    {
-      NewMesh = GeneratedMesh;
-    }
-    else
-    {
-      DeallocateMesh(&GeneratedMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-    }
-  }
-
-  umm Timestamp = NewMesh ? NewMesh->Timestamp : __rdtsc();
-  auto Replaced = AtomicReplaceMesh(&Chunk->Meshes, MeshBit_Main, NewMesh, Timestamp);
-  if (Replaced) { DeallocateMesh(&Replaced, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
-}

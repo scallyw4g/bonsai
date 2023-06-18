@@ -57,7 +57,7 @@ struct engine_resources
 
   entity *CameraTarget;
 
-  mesh_freelist MeshFreelist;
+  tiered_mesh_freelist MeshFreelist;
 
   renderer_2d GameUiRenderer;
 
@@ -84,7 +84,7 @@ GetEngineResources()
   entity                   **EntityTable   =  Res->EntityTable;     \
   hotkeys                   *Hotkeys       =  Res->Hotkeys;         \
   engine_debug              *EngineDebug   = &Res->EngineDebug;     \
-  mesh_freelist             *MeshFreelist  = &Res->MeshFreelist;    \
+  tiered_mesh_freelist      *MeshFreelist  = &Res->MeshFreelist;    \
   input                     *Input         = &Res->Plat->Input;     \
   graphics                  *Graphics      =  Res->Graphics;        \
   renderer_2d               *GameUi        = &Res->GameUiRenderer;  \

@@ -13,6 +13,7 @@
 # ./make.sh
 
 ./make.sh BuildAll -O0
+# ./make.sh BuildAll -O2
 
 # OPT="-O2"
 # ./make.sh $OPT \

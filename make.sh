@@ -47,6 +47,7 @@ BUNDLED_EXAMPLES="
   $EXAMPLES/turn_based
   $EXAMPLES/tools/voxel_synthesis_rule_baker
   $EXAMPLES/the_wanderer
+  $EXAMPLES/terrain_gen
 "
 # $EXAMPLES/wave_function_collapse_terrain
 
