@@ -119,8 +119,8 @@ AllocateWorldChunk(world_chunk *Result, memory_arena *Storage, world_position Wo
 {
   u32 MaxLodMeshVerts = POINT_BUFFER_SIZE*3;
 
-  Result->Voxels      = AllocateVoxels(Storage, Dim);
-  Result->WorldP      = WorldP;
+  Result->Voxels = AllocateVoxels(Storage, Dim);
+  Result->WorldP = WorldP;
 
   Result->Dim  = Dim;
   Result->DimX = SafeTruncateU8(Dim.x);
@@ -204,6 +204,7 @@ InsertChunkIntoWorld(world_chunk **WorldChunkHash, world_chunk *Chunk, chunk_dim
 link_internal b32
 InsertChunkIntoWorld(world *World, world_chunk *Chunk)
 {
+  TIMED_FUNCTION();
   b32 Result = InsertChunkIntoWorld(World->ChunkHash, Chunk, World->VisibleRegion, World->HashSize);
   return Result;
 }
@@ -254,6 +255,8 @@ GetWorldChunkFor(memory_arena *Storage, world *World, world_position P)
   else
   {
     world_chunk *Chunk = World->FreeChunks[--World->FreeChunkCount];
+    Chunk->WorldP = P;
+
     if (InsertChunkIntoWorld(World, Chunk))
     {
       Result = Chunk;
@@ -3342,7 +3345,7 @@ BufferWorld( platform* Plat,
         {
           Chunk = GetWorldChunkFor(World->Memory, World, P);
           if (Chunk)
-          { QueueChunkForInit(&Plat->LowPriority, Chunk); }
+          { QueueChunkForInit(&Plat->LowPriority, Chunk);  }
           else
           { InvalidCodePath(); }
         }

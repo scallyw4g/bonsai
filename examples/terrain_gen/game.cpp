@@ -111,9 +111,11 @@ CustomTerrainExample( perlin_noise *Noise,
           f32 InZ = SafeDivide0((z + SrcToDest.z + ( WorldChunkDim.z*Chunk->WorldP.z)), f32(InteriorFreq));
           /* f32 InZ = 1.0; */
 
+          r32 WarpFactor = 4.f;
+
           r32 Warp = 0.f;
-          /* Warp = Noise->noise(InX, InY, InZ)*3.f; */
-          /* Warp = Noise->noise(InX, InY, InZ)*r32(OctaveIndex); */
+          Warp = PerlinNoise(InX, InY, InZ)*WarpFactor;
+          /* Warp = PerlinNoise(InX, InY, InZ)*r32(OctaveIndex); */
           /* Warp2 = Noise->noise(InX, InY+Warp, InZ)*8.f; */
 
           r32 N = PerlinNoise(InX+Warp, InY+Warp, InZ+Warp);

@@ -65,7 +65,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
   // Must come before UNPACK_ENGINE_RESOURCES such that we unpack the correct GpuMap
   graphics *G = Resources->Graphics;
   G->GpuBufferWriteIndex = 0;
-  /* G->GpuBufferWriteIndex = (Resources->FrameIndex) % 2; */
+  G->GpuBufferWriteIndex = (Resources->FrameIndex) % 2;
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
