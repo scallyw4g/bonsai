@@ -556,7 +556,7 @@ Noise_FBM2D( perlin_noise *Noise,
              void *OctaveCount )
 {
   TIMED_FUNCTION();
-  Assert(Frequency != INT_MIN);
+  Assert(Frequency != s32_MIN);
 
   u32 ChunkSum = 0;
 
@@ -578,7 +578,7 @@ Noise_FBM2D( perlin_noise *Noise,
     return ChunkSum;
 
   Frequency = Max(Frequency, 1);
-  Assert(Frequency != INT_MIN);
+  Assert(Frequency != s32_MIN);
 
   u32 Octaves = *(u32*)OctaveCount;
   for ( s32 z = 0; z < Dim.z; ++ z)
@@ -594,7 +594,7 @@ Noise_FBM2D( perlin_noise *Noise,
         Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
         Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
 
-        Assert(Frequency != INT_MIN);
+        Assert(Frequency != s32_MIN);
         s32 InteriorFreq = Frequency;
         s32 InteriorAmp = Amplitude;
         for (u32 OctaveIndex = 0; OctaveIndex < Octaves; ++OctaveIndex)
