@@ -7,14 +7,19 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build:
-
+  build-linux:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
     - name: Install Deps
       run: sudo apt install freeglut3-dev libx11-dev clang-15
+    - name: Build
+      run: ./make.sh
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
     - name: Build
       run: ./make.sh
 
