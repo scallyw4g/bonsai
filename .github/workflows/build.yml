@@ -1,0 +1,20 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "jesse/feature/test-ci-cd" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install Deps
+      run: sudo apt install freeglut3-dev libx11-dev clang-15
+    - name: Build
+      run: ./make.sh
+
