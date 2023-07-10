@@ -21,6 +21,10 @@ jobs:
   build-windows:
     runs-on: windows-latest
     steps:
+    - name: Set up MinGW
+      uses: egor-tensin/setup-mingw@v2
+      with:
+        platform: x64
     - uses: actions/checkout@v3
     - name: Checkout submodules
       run: git submodule update --init --recursive
