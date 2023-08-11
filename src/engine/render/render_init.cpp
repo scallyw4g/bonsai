@@ -365,6 +365,8 @@ GraphicsInit(memory_arena *GraphicsMemory)
   // NOTE(Jesse): 32x1024 x2 == 64k at 32bit float
 #define SHADOW_MAP_RESOLUTION_X (16*1024)
 #define SHADOW_MAP_RESOLUTION_Y (16*1024)
+/* #define SHADOW_MAP_RESOLUTION_X (2*1024) */
+/* #define SHADOW_MAP_RESOLUTION_Y (2*1024) */
 
 #define SHADOW_MAP_X 32*32
 #define SHADOW_MAP_Y 32*32
@@ -375,8 +377,6 @@ GraphicsInit(memory_arena *GraphicsMemory)
   shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1);
   if (!InitializeShadowGroup(SG, GraphicsMemory, V2i(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y)))
   {
-    // TODO(Jesse): Figure why we're failing to do this!
-    /* Error("Initializing Shadow Buffer"); return False; */
     SoftError("Initializing Shadow Buffer");// return False;
   }
 #endif

@@ -25,6 +25,7 @@ int AoBlurSize = 4; // size of AO noise texture
 float BlurredAO = 0.0f;
 
 
+// NOTE(Jesse): Better shader noise function for when I need it : https://www.shadertoy.com/view/4djSRW
 
 // NOTE(Jesse): These are done, leaving here for posterity for a bit.
 // DONE(Jesse): Tune the sun color & ambient light color to be orange/teal

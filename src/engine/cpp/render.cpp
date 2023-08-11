@@ -165,7 +165,7 @@ DEBUG_CopyTextureToMemory(texture *Texture)
 #if 1
 #if 1
 inline m4
-GetShadowMapMVP(light *Sun)
+GetShadowMapMVP(light *Sun, v3 FrustumCenter)
 {
   // Compute the MVP matrix from the light's point of view
   /* v3 Translate = GetRenderP(Camera->Target, Camera); */
@@ -178,7 +178,7 @@ GetShadowMapMVP(light *Sun)
   v3 Right = Cross( Front, V3(0,1,0) );
   v3 Up = Cross(Right, Front);
 
-  v3 Target = V3(0);
+  v3 Target = FrustumCenter;
   m4 depthViewMatrix =  LookAt(Sun->Position, Target, Up);
 
   return depthProjectionMatrix * depthViewMatrix;
@@ -198,7 +198,8 @@ RenderShadowMap(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
 
   SetViewport(V2(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y));
 
-  SG->MVP = GetShadowMapMVP(&SG->Sun);
+  v3 FrustCenter = GetFrustumCenter(Graphics->Camera);
+  SG->MVP = GetShadowMapMVP(&SG->Sun, FrustCenter);
   GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]);
 
   Draw(GpuMap->Buffer.At);

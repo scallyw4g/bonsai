@@ -1,6 +1,6 @@
 #define PLATFORM_GL_IMPLEMENTATIONS 1
 #define BONSAI_DEBUG_SYSTEM_API 1
-
+fda
 #include <bonsai_types.h>
 
 #include <examples/tools/voxel_synthesis_rule_baker/game_constants.h>

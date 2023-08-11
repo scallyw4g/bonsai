@@ -208,6 +208,20 @@ struct world_chunk
 /* CAssert(sizeof(world_chunk) == CACHE_LINE_SIZE); */
 #pragma pack(pop)
 
+struct octave
+{
+  v3 Freq;
+  r32 Amp;
+  v3 WarpStrength;
+};
+
+struct octave_buffer
+{
+  u32 Count;
+  octave *Octaves;
+};
+
+
 struct picked_world_chunk
 {
   world_chunk *Chunk;

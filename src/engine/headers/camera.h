@@ -94,4 +94,10 @@ DistanceToPlane(plane *Plane, v3 P)
   return Distance;
 }
 
+link_internal v3
+GetFrustumCenter(camera *Camera)
+{
+  v3 Result = {};
 
+  return Result;
+}

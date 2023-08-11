@@ -47,6 +47,15 @@ compiler, and a few appropriate system headers.
 
 [ ] Transparency : https://www.jcgt.org/published/0002/02/09/paper.pdf
 
+[ ] Shader noise : 
+
+-------------------------------------------------------------------------------
+## Terrain Generation
+
+[ ] Erosion simulation : https://inria.hal.science/hal-01262376/document
+https://xing-mei.github.io/files/erosion.pdf
+https://nickmcd.me/2020/04/15/procedural-hydrology/
+
 -------------------------------------------------------------------------------
 ## Sound
 
