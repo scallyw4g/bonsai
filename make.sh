@@ -51,6 +51,58 @@ BUNDLED_EXAMPLES="
 "
 # $EXAMPLES/wave_function_collapse_terrain
 
+declare -a build_job_pids
+declare -a build_job_names
+
+# Call like: addPid "job name" <pid>
+addPid() {
+    local name=$1
+    local pid=$2
+    # echo "$name -- $pid"
+    build_job_pids=(${build_job_pids[@]} $pid)
+    build_job_names=(${build_job_names[@]} $name)
+}
+
+waitOnPids() {
+    while [ ${#build_job_pids[@]} -ne 0 ]; do
+        # echo "Waiting for pids: ${build_job_pids[@]}"
+        local range=$(eval echo {0..$((${#build_job_pids[@]}-1))})
+        local i
+        for i in $range; do
+            if ! kill -0 ${build_job_pids[$i]} 2> /dev/null; then
+
+                exit_code=0
+                wait ${build_job_pids[$i]} || exit_code=$?
+
+                if [ $exit_code -eq 0 ]; then
+                  echo -e "$Success ${build_job_pids[$i]} ${build_job_names[$i]} (exited $exit_code)"
+                else
+                  echo -e "$Failed ${build_job_pids[$i]} ${build_job_names[$i]} (exited $exit_code)"
+                  exit 1
+                fi
+
+                unset build_job_pids[$i]
+            fi
+        done
+        build_job_pids=("${build_job_pids[@]}") # Expunge nulls created by unset.
+        sleep 0.25
+    done
+}
+
+# waitOnPids() {
+#     EXIT_CODE=0
+#     for job in "${build_job_pids[@]}"; do
+#        name="${build_job_names[@]}"
+#        CODE=0;
+#        wait ${job} || CODE=$?
+#        if [[ "${CODE}" == "0" ]]; then
+#          echo -e "$Success $name : ${job}"
+#        else
+#            echo "At least one test failed with exit code => ${CODE}" ;
+#            EXIT_CODE=1;
+#        fi
+#    done
+#  }
 
 EXECUTABLES_TO_BUILD="
   $SRC/game_loader.cpp
@@ -78,7 +130,7 @@ function MakeDebugLibRelease
   BuildDebugSystem
   [ $? -ne 0 ] && exit 1
 
-  wait
+  waitOnPids
   sync
 
   echo "#pragma once"                             >  $DEBUG_LIB_RELEASE_DIR/api.h
@@ -113,9 +165,12 @@ function BuildExecutables
       $PLATFORM_INCLUDE_DIRS                         \
       -I "$ROOT"                                     \
       -I "$SRC"                                      \
-      -I "$INCLUDE"                             \
+      -I "$INCLUDE"                                  \
       -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
-      $executable && echo -e "$Success $executable" &
+      $executable &
+
+    addPid "$executable" $!
+
   done
 }
 
@@ -128,7 +183,7 @@ function BuildDebugOnlyTests
     echo -e "$Building $executable"
     clang++                                          \
       $CXX_OPTIONS                                   \
-      $BONSAI_INTERNAL \
+      $BONSAI_INTERNAL                               \
       $PLATFORM_CXX_OPTIONS                          \
       $PLATFORM_LINKER_OPTIONS                       \
       $PLATFORM_DEFINES                              \
@@ -136,7 +191,10 @@ function BuildDebugOnlyTests
       -I "$ROOT"                                     \
       -I"$SRC"                                       \
       -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
-      $executable && echo -e "$Success $executable" &
+      $executable &
+
+    addPid "$executable" $!
+
   done
 }
 
@@ -150,16 +208,17 @@ function BuildTests
     clang++                                          \
       $OPTIMIZATION_LEVEL                            \
       $CXX_OPTIONS                                   \
-      $BONSAI_INTERNAL \
+      $BONSAI_INTERNAL                               \
       $PLATFORM_CXX_OPTIONS                          \
       $PLATFORM_LINKER_OPTIONS                       \
       $PLATFORM_DEFINES                              \
       $PLATFORM_INCLUDE_DIRS                         \
       -I "$ROOT"                                     \
       -I "$SRC"                                      \
-      -I "$INCLUDE"                              \
+      -I "$INCLUDE"                                  \
       -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
-      $executable && echo -e "$Success $executable" &
+      $executable &
+    addPid "$executable" $!
   done
 }
 
@@ -170,23 +229,22 @@ function BuildDebugSystem
   DEBUG_SRC_FILE="$INCLUDE/bonsai_debug/debug.cpp"
   output_basename="$BIN/lib_debug_system"
   echo -e "$Building $DEBUG_SRC_FILE"
-  clang++                                                                           \
-    $OPTIMIZATION_LEVEL                                                             \
-    $CXX_OPTIONS                                                                    \
-    $BONSAI_INTERNAL                                                                \
-    $PLATFORM_CXX_OPTIONS                                                           \
-    $PLATFORM_LINKER_OPTIONS                                                        \
-    $PLATFORM_DEFINES                                                               \
-    $PLATFORM_INCLUDE_DIRS                                                          \
-    $SHARED_LIBRARY_FLAGS                                                           \
-    -I "$ROOT"                                                                      \
-    -I "$SRC"                                                                       \
-    -I "$INCLUDE"                                                                   \
-    -o $output_basename                                                             \
-    "$DEBUG_SRC_FILE" &&                                                            \
-    mv "$output_basename" "$output_basename""_loadable""$PLATFORM_LIB_EXTENSION" && \
-    sync && \
-    echo -e "$Success $output_basename" &
+  clang++                    \
+    $OPTIMIZATION_LEVEL      \
+    $CXX_OPTIONS             \
+    $BONSAI_INTERNAL         \
+    $PLATFORM_CXX_OPTIONS    \
+    $PLATFORM_LINKER_OPTIONS \
+    $PLATFORM_DEFINES        \
+    $PLATFORM_INCLUDE_DIRS   \
+    $SHARED_LIBRARY_FLAGS    \
+    -I "$ROOT"               \
+    -I "$SRC"                \
+    -I "$INCLUDE"            \
+    -o $output_basename      \
+    "$DEBUG_SRC_FILE" &&     \
+    mv "$output_basename" "$output_basename""_loadable""$PLATFORM_LIB_EXTENSION" &
+  addPid "$executable" $!
 }
 
 function BuildExamples
@@ -196,24 +254,24 @@ function BuildExamples
   for executable in $EXAMPLES_TO_BUILD; do
     echo -e "$Building $executable"
     SetOutputBinaryPathBasename "$executable" "$BIN"
-    clang++                                                                           \
-      -D DEBUG_SYSTEM_API=1 \
-      $OPTIMIZATION_LEVEL                                                             \
-      $CXX_OPTIONS                                                                    \
-      $BONSAI_INTERNAL                                                                \
-      $PLATFORM_CXX_OPTIONS                                                           \
-      $PLATFORM_LINKER_OPTIONS                                                        \
-      $PLATFORM_DEFINES                                                               \
-      $PLATFORM_INCLUDE_DIRS                                                          \
-      $SHARED_LIBRARY_FLAGS                                                           \
-      -I "$ROOT"                                                                      \
-      -I "$INCLUDE"                                                                   \
-      -I "$SRC"                                                                       \
-      -I "$executable"                                                                \
-      -o "$output_basename"                                                           \
-      "$executable/game.cpp" &&                                                       \
-      mv "$output_basename" "$output_basename""_loadable""$PLATFORM_LIB_EXTENSION" && \
-      echo -e "$Success $executable" &
+    clang++                     \
+      -D DEBUG_SYSTEM_API=1     \
+      $OPTIMIZATION_LEVEL       \
+      $CXX_OPTIONS              \
+      $BONSAI_INTERNAL          \
+      $PLATFORM_CXX_OPTIONS     \
+      $PLATFORM_LINKER_OPTIONS  \
+      $PLATFORM_DEFINES         \
+      $PLATFORM_INCLUDE_DIRS    \
+      $SHARED_LIBRARY_FLAGS     \
+      -I "$ROOT"                \
+      -I "$INCLUDE"             \
+      -I "$SRC"                 \
+      -I "$executable"          \
+      -o "$output_basename"     \
+      "$executable/game.cpp" && \
+      mv "$output_basename" "$output_basename""_loadable""$PLATFORM_LIB_EXTENSION" &
+    addPid "$executable" $!
   done
 }
 
@@ -236,7 +294,8 @@ function BuildWithClang
   echo -e ""
   ColorizeTitle "Complete"
 
-  wait
+  waitOnPids
+  sync
 
   echo -e ""
   echo -e "$Delimeter"
@@ -278,7 +337,6 @@ function BuildWithEMCC {
 
     # --embed-file shaders     \
     # --embed-file models      \
-
 }
 
 
@@ -349,7 +407,7 @@ function RunPoofHelper {
    -I include/                                                                                                 \
    -D _M_X64                                                                                                   \
    -D _M_CEE                                                                                                   \
-   -D POOF_PREPROCESSOR \
+   -D POOF_PREPROCESSOR                                                                                        \
    $PLATFORM_DEFINES                                                                                           \
    $BONSAI_INTERNAL                                                                                            \
    -o generated                                                                                                \
@@ -369,17 +427,30 @@ function RunPoof
   # [ -d generated ] && rm -Rf generated
 
   RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
+  addPid "" $!
+
   # RunPoofHelper include/bonsai_debug/debug.cpp && echo -e "$Success poofed src/include/bonsai_debug/debug.cpp" &
+  # addPid "" $!
+
   # RunPoofHelper examples/asset_picker/game.cpp && echo -e "$Success poofed examples/asset_picker/game.cpp" &
+  # addPid "" $!
+
   # RunPoofHelper examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &
+  # addPid "" $!
+
   # RunPoofHelper examples/turn_based/game.cpp && echo -e "$Success poofed examples/turn_based/game.cpp" &
+  # addPid "" $!
+
   RunPoofHelper examples/tools/voxel_synthesis_rule_baker/game.cpp && echo -e "$Success poofed examples/tools/voxel_synthesis_rule_baker/game.cpp" &
+  addPid "" $!
 
   # RunPoofHelper src/tools/asset_packer.cpp && echo -e "$Success poofed src/tools/asset_packer.cpp" &
+  # addPid "" $!
+
   # RunPoofHelper src/tools/voxel_synthesis_rule_baker.cpp && echo -e "$Success poofed src/tools/voxel_synthesis_rule_baker.cpp" &
+  # addPid "" $!
 
-
-  wait
+  waitOnPids
   sync
 
   [ -d tmp ] && rmdir tmp
