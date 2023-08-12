@@ -180,12 +180,12 @@ CustomTerrainExample( perlin_noise *Noise,
           ThisColor = YELLOW;
         }
 
-        /* s32 WaterThreshold = 0; */
-        /* if (NoiseChoice == False && WorldZ < WaterThreshold) */
-        /* { */
-        /*   NoiseChoice = True; */
-        /*   ThisColor = BLUE; */
-        /* } */
+        s32 WaterThreshold = 0;
+        if (NoiseChoice == False && WorldZ < WaterThreshold)
+        {
+          NoiseChoice = True;
+          ThisColor = BLUE;
+        }
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*NoiseChoice));
         Chunk->Voxels[VoxIndex].Color = ThisColor*u8(NoiseChoice);
@@ -255,13 +255,14 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
            s32 Frequency = 300;
            s32 Amplititude = 220;
            s32 StartingZDepth = -600;
-           u32 OctaveCount = 2;
+           u32 OctaveCount = 3;
 
            octave_buffer OctaveBuf = { OctaveCount, {} };
            OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
 
-           OctaveBuf.Octaves[0] = {V3(250), 300, V3(1)};
+           OctaveBuf.Octaves[0] = {V3(800, 800, 300), 350, V3(1)};
            OctaveBuf.Octaves[1] = {V3(35, 35, 500), 450, V3(2.f)};
+           OctaveBuf.Octaves[2] = {V3(500, 500, 20), 200, V3(2.f)};
            /* OctaveBuf.Octaves[2] = {75, 60, 1}; */
            /* OctaveBuf.Octaves[3] = {37, 30, 0}; */
 
