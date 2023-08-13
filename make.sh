@@ -45,6 +45,7 @@ BUNDLED_EXAMPLES="
   $EXAMPLES/asset_picker
   $EXAMPLES/blank_project
   $EXAMPLES/turn_based
+  $EXAMPLES/turn_based2
   $EXAMPLES/tools/voxel_synthesis_rule_baker
   $EXAMPLES/the_wanderer
   $EXAMPLES/terrain_gen
@@ -88,21 +89,6 @@ waitOnPids() {
         sleep 0.25
     done
 }
-
-# waitOnPids() {
-#     EXIT_CODE=0
-#     for job in "${build_job_pids[@]}"; do
-#        name="${build_job_names[@]}"
-#        CODE=0;
-#        wait ${job} || CODE=$?
-#        if [[ "${CODE}" == "0" ]]; then
-#          echo -e "$Success $name : ${job}"
-#        else
-#            echo "At least one test failed with exit code => ${CODE}" ;
-#            EXIT_CODE=1;
-#        fi
-#    done
-#  }
 
 EXECUTABLES_TO_BUILD="
   $SRC/game_loader.cpp

@@ -20,3 +20,8 @@ OPT="-O2"
     BuildSingleExample examples/terrain_gen \
     BuildDebugSystem
 
+
+# OPT="-O2"
+# ./make.sh $OPT \
+#     BuildSingleExample examples/turn_based2
+

@@ -3637,7 +3637,6 @@ DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 Ch
 
   // DEBUG CODE
 #define DEBUG_VIEW_WORLD_UPDATE 0
-
 #if DEBUG_VIEW_WORLD_UPDATE
   // TODO(Jesse): Need to copy the voxels because the Greedy thing blows away
   // the face flags as it does the traversal.
@@ -4400,10 +4399,9 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
     /* MergeChunksOffset(AssetChunk, SyntheticChunk, Global_HalfChunkApronDim); */
   }
 
-
-  MarkBoundaryVoxels_NoExteriorFaces(SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
-
   CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Global_ChunkApronMinDim);
+
+  MarkBoundaryVoxels_NoExteriorFaces(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim);
 
   FullBarrier;
 

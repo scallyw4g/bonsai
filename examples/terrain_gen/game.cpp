@@ -55,36 +55,19 @@ CustomTerrainExample( perlin_noise *Noise,
                       chunk_dimension Dim,
                       chunk_dimension SrcToDest,
                       u8 ColorIndex,
-                      s32 Frequency,
-                      s32 Amplitude,
+
+                      s32 IgnoredFrequency,
+                      s32 IgnoredAmplitude,
+
                       s64 zMin,
                       chunk_dimension WorldChunkDim,
                       void *OctavesIn )
 {
   TIMED_FUNCTION();
-  Assert(Frequency != s32_MIN);
-
   u32 ChunkSum = 0;
 
   s32 MinZ = Chunk->WorldP.z*WorldChunkDim.z;
   s32 MaxZ = MinZ+WorldChunkDim.z ;
-
-  if (MaxZ < -Amplitude)
-  {
-    s32 MaxIndex = Volume(Dim);
-    for ( s32 VoxIndex = 0; VoxIndex < MaxIndex; ++VoxIndex)
-    {
-      Chunk->Voxels[VoxIndex].Flags = Voxel_Filled;
-      Chunk->Voxels[VoxIndex].Color = ColorIndex;
-    }
-    return (u32)MaxIndex;
-  }
-
-  if (MinZ > Amplitude)
-    return ChunkSum;
-
-  Frequency = Max(Frequency, 1);
-  Assert(Frequency != s32_MIN);
 
   octave_buffer *OctaveBuf = (octave_buffer*)OctavesIn;
   u32 OctaveCount = OctaveBuf->Count;
@@ -99,14 +82,11 @@ CustomTerrainExample( perlin_noise *Noise,
       for ( s32 x = 0; x < Dim.x; ++ x)
       {
         s64 WorldX = x - SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x);
-        r32 NoiseValue = 0.f;
         s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
         Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
         Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
 
-        Assert(Frequency != s32_MIN);
-
-        s32 Amp2 = Amplitude*2;
+        r32 NoiseValue = 0.f;
         for (u32 OctaveIndex = 0; OctaveIndex < OctaveCount; ++OctaveIndex)
         {
           octave *Octave = OctaveBuf->Octaves+OctaveIndex;
@@ -114,56 +94,21 @@ CustomTerrainExample( perlin_noise *Noise,
           v3 InteriorFreq = Octave->Freq;
           r32 InteriorAmp = Octave->Amp;
 
-          /* r32 WarpFactor = 3.f; */
-
           f32 InX = SafeDivide0((x + SrcToDest.x + ( WorldChunkDim.x*Chunk->WorldP.x)), InteriorFreq.x);
           f32 InY = SafeDivide0((y + SrcToDest.y + ( WorldChunkDim.y*Chunk->WorldP.y)), InteriorFreq.y);
           f32 InZ = SafeDivide0((z + SrcToDest.z + ( WorldChunkDim.z*Chunk->WorldP.z)), InteriorFreq.z);
-          /* f32 InZ = 1.0; */
-
 
           r32 Warp = PerlinNoise(InX, InY, InZ);
-          v3 WarpFactor = Octave->WarpStrength*Warp;
-          /* Warp = PerlinNoise(InX, InY, InZ) * r32(1.f/(OctaveIndex+1)); */
-          /* Warp = PerlinNoise(InX, InY, InZ); */
+          v3 WarpFactor = Warp*Octave->WarpStrength;
 
-          /* r32 N = PerlinNoise(InX, InY, InZ); */
-          /* r32 N = PerlinNoise(InX, InY+Warp, InZ); */
           r32 N = PerlinNoise(InX+WarpFactor.x, InY+WarpFactor.y, InZ+WarpFactor.z);
-          /* r32 N = PerlinNoise(Warp, Warp, Warp); */
-
-          r32 N2 = PerlinNoise(InX, InY, InZ);
 
           Assert(N <= 1.05f);
           Assert(N > -1.05f);
 
-          Assert(N2 <= 1.05f);
-          Assert(N2 > -1.05f);
-
-          /* b32 NoiseChoice = IsUnderground && NoiseValue > 0.20f; */
-          /* s32 zValue = (s32)Abs( (N*InteriorAmp) ); */
-          /* s32 zValue = (s32)Abs( (N*InteriorAmp) + (N2*Amp2) ); */
-          /* s32 zValue =  s32(N*InteriorAmp) + s32(N2*Amplitude*Amplitude); */
-          s32 zValue =  s32(N*InteriorAmp);
-
-          /* b32 IsUnderground =  zValue < WorldZBiased; */
-          /* b32 NoiseChoice = IsUnderground && N > 0.5f; */
-          /* b32 NoiseChoice = IsUnderground; */
-
-          /* if (NoiseChoice) */
-          {
-            NoiseValue += N*InteriorAmp;
-          }
-
-          /* InteriorAmp = Max(1, InteriorAmp/2); */
-          /* InteriorFreq = Max(1, InteriorFreq/2); */
+          NoiseValue += (N*InteriorAmp) / OctaveCount;
         }
 
-        /* NoiseValue /= r32(Octaves+Octaves); */
-        /* Assert(NoiseValue <= 1.10f); */
-
-        /* b32 NoiseChoice = NoiseValue > 0.5f;; */
-        /* b32 NoiseChoice = NoiseValue > r32(Amplitude); //0.5f;; */
         b32 NoiseChoice = r64(NoiseValue) > r64(WorldZBiased);
 
         u8 ThisColor = ColorIndex;
@@ -180,12 +125,12 @@ CustomTerrainExample( perlin_noise *Noise,
           ThisColor = YELLOW;
         }
 
-        s32 WaterThreshold = 0;
-        if (NoiseChoice == False && WorldZ < WaterThreshold)
-        {
-          NoiseChoice = True;
-          ThisColor = BLUE;
-        }
+        /* s32 WaterThreshold = 0; */
+        /* if (NoiseChoice == False && WorldZ < WaterThreshold) */
+        /* { */
+        /*   NoiseChoice = True; */
+        /*   ThisColor = BLUE; */
+        /* } */
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*NoiseChoice));
         Chunk->Voxels[VoxIndex].Color = ThisColor*u8(NoiseChoice);
@@ -252,17 +197,17 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
          {
            // Custom FBM noise example generating simple game-world-like terrain
-           s32 Frequency = 300;
-           s32 Amplititude = 220;
-           s32 StartingZDepth = -600;
-           u32 OctaveCount = 3;
+           s32 Frequency = 0; // Ignored
+           s32 Amplititude = 0; // Ignored
+           s32 StartingZDepth = -200;
+           u32 OctaveCount = 2;
 
            octave_buffer OctaveBuf = { OctaveCount, {} };
            OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
 
            OctaveBuf.Octaves[0] = {V3(800, 800, 300), 350, V3(1)};
-           OctaveBuf.Octaves[1] = {V3(35, 35, 500), 450, V3(2.f)};
-           OctaveBuf.Octaves[2] = {V3(500, 500, 20), 200, V3(2.f)};
+           OctaveBuf.Octaves[1] = {V3(35, 35, 50), 50, V3(3.f)};
+           /* OctaveBuf.Octaves[2] = {V3(500, 500, 20), 200, V3(2.f)}; */
            /* OctaveBuf.Octaves[2] = {75, 60, 1}; */
            /* OctaveBuf.Octaves[3] = {37, 30, 0}; */
 
@@ -273,15 +218,15 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
            InitializeChunkWithNoise( CustomTerrainExample, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, (void*)&OctaveBuf);
          }
 
-         /* { */
-         /*   // Custom flat noise function that produces a checkerboard */
-         /*   s32 Frequency = 0; */
-         /*   s32 Amplititude = 0; */
-         /*   s32 StartingZDepth = -1; */
-         /*   chunk_init_flags InitFlags = ChunkInitFlag_Noop; */
-         /*   /1* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; *1/ */
-         /*   InitializeChunkWithNoise( Checkerboard, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, 0); */
-         /* } */
+/*          { */
+/*            // Custom flat noise function that produces a checkerboard */
+/*            s32 Frequency = 0; */
+/*            s32 Amplititude = 0; */
+/*            s32 StartingZDepth = -1; */
+/*            chunk_init_flags InitFlags = ChunkInitFlag_Noop; */
+/*            /1* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; *1/ */
+/*            InitializeChunkWithNoise( Checkerboard, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, 0); */
+/*          } */
 
          /* { */
          /*   // FBM params */
