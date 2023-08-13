@@ -3317,41 +3317,6 @@ WorkQueueEntryCopyBufferRef(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bi
   return Result;
 }
 
-link_internal work_queue_entry_copy_buffer
-WorkQueueEntryCopyBuffer(untextured_3d_geometry_buffer **Src, untextured_3d_geometry_buffer* Dest, world_position ChunkP, camera* Camera, chunk_dimension WorldChunkDim)
-{
-  TIMED_FUNCTION();
-
-  /* untextured_3d_geometry_buffer *SrcBuffer = (untextured_3d_geometry_buffer *)TakeOwnershipSync((volatile void**)Src); */
-  /* u32 Count = SrcBuffer->At; */
-  /* Replace((volatile void**)Src, (void*)SrcBuffer); */
-
-  /* untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Dest, Count); */
-
-  work_queue_entry_copy_buffer Result = {};
-  Result.Src = Src;
-  Result.Dest = Dest;
-  Result.Basis = GetRenderP(WorldChunkDim, ChunkP, Camera);
-
-  /* Assert(CopyDest.At == 0); */
-  /* Assert(CopyDest.End == Count); */
-
-  return Result;
-}
-
-inline void
-QueueChunkMeshForCopy(work_queue *Queue, untextured_3d_geometry_buffer **Src, untextured_3d_geometry_buffer* Dest, world_position ChunkP, camera* Camera, chunk_dimension WorldChunkDim)
-{
-  work_queue_entry Entry = {
-    .Type = type_work_queue_entry_copy_buffer,
-    .work_queue_entry_copy_buffer = WorkQueueEntryCopyBuffer(Src, Dest, ChunkP, Camera, WorldChunkDim),
-  };
-
-  PushWorkQueueEntry(Queue, &Entry);
-
-  return;
-}
-
 link_internal void
 BufferWorld( platform* Plat,
              untextured_3d_geometry_buffer* Dest,

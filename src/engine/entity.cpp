@@ -1,5 +1,3 @@
-#define PARTICLE_SYSTEM_EMIT_FOREVER (f32_MAX)
-
 inline void
 Deactivate(particle_system *System)
 {

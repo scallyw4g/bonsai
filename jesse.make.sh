@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# ./make.sh RunPoof
+# [ $? -ne 0 ] && exit 1
+
 # ./make.sh -O2 BuildSingleExample examples/blank_project
 # ./make.sh -O2 BuildSingleExample examples/the_wanderer
 # ./make.sh BuildSingleExample examples/the_wanderer
@@ -8,7 +11,6 @@
 
 # ./make.sh BuildTests
 
-# ./make.sh RunPoof
 
 # ./make.sh
 

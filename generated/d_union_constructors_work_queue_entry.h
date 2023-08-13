@@ -8,11 +8,11 @@ WorkQueueEntry(work_queue_entry_init_world_chunk A)
   return Reuslt;
 }
 link_internal work_queue_entry
-WorkQueueEntry(work_queue_entry_copy_buffer A)
+WorkQueueEntry(work_queue_entry_copy_buffer_ref A)
 {
   work_queue_entry Reuslt = {
-    .Type = type_work_queue_entry_copy_buffer,
-    .work_queue_entry_copy_buffer = A
+    .Type = type_work_queue_entry_copy_buffer_ref,
+    .work_queue_entry_copy_buffer_ref = A
   };
   return Reuslt;
 }
@@ -22,15 +22,6 @@ WorkQueueEntry(work_queue_entry_copy_buffer_set A)
   work_queue_entry Reuslt = {
     .Type = type_work_queue_entry_copy_buffer_set,
     .work_queue_entry_copy_buffer_set = A
-  };
-  return Reuslt;
-}
-link_internal work_queue_entry
-WorkQueueEntry(work_queue_entry_copy_buffer_ref A)
-{
-  work_queue_entry Reuslt = {
-    .Type = type_work_queue_entry_copy_buffer_ref,
-    .work_queue_entry_copy_buffer_ref = A
   };
   return Reuslt;
 }

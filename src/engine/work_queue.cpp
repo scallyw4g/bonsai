@@ -45,18 +45,6 @@ PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
   /* WakeThread( Queue->GlobalQueueSemaphore ); */
 }
 
-// TODO(Jesse): Generate these
-link_internal work_queue_entry
-WorkQueueEntry(work_queue_entry_copy_buffer *Job)
-{
-  work_queue_entry Result = {
-    .Type = type_work_queue_entry_copy_buffer,
-    .work_queue_entry_copy_buffer = *Job,
-  };
-
-  return Result;
-}
-
 link_internal work_queue_entry
 WorkQueueEntry(work_queue_entry_copy_buffer_ref *Job)
 {
@@ -80,7 +68,7 @@ WorkQueueEntry(work_queue_entry_copy_buffer_set *Job)
 }
 
 link_internal void
-PushCopyJob(work_queue *Queue, work_queue_entry_copy_buffer_set *Set, work_queue_entry_copy_buffer *Job)
+PushCopyJob(work_queue *Queue, work_queue_entry_copy_buffer_set *Set, work_queue_entry_copy_buffer_ref *Job)
 {
   TIMED_FUNCTION();
 
@@ -135,29 +123,4 @@ DoCopyJob(work_queue_entry_copy_buffer_ref *Job, tiered_mesh_freelist* MeshFreel
 
   }
   ReleaseOwnership(Job->Buf, Job->MeshBit, Src);
-}
-
-// nocheckin remove
-link_internal void
-DoCopyJob(volatile work_queue_entry_copy_buffer *Job, tiered_mesh_freelist* MeshFreelist, memory_arena* PermMemory)
-{
-  // NOTE(Jesse): This code is broken .. use copy_buffer_ref instead
-  InvalidCodePath();
-
-#if 0
-  /* untextured_3d_geometry_buffer* Src = Job->Src; */
-  untextured_3d_geometry_buffer *Dest = Job->Dest;
-
-  /* untextured_3d_geometry_buffer *SrcBuffer = (untextured_3d_geometry_buffer *)TakeOwnershipSync((volatile void**)Src); */
-  /* Replace((volatile void**)Src, (void*)SrcBuffer); */
-
-
-  untextured_3d_geometry_buffer *Src = TakeOwnershipSync(Job->Src, );
-  untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Dest, Src->At);
-  /* umm Count = Min(Src->At, &CopyDest->End); */
-  v3 Basis = *(v3*)&Job->Basis;
-  BufferVertsChecked( Src, &CopyDest, Basis, V3(1.0f));
-
-  Ensure( AtomicCompareExchange((volatile void**)Job->Src, Src, 0) );
-#endif
 }

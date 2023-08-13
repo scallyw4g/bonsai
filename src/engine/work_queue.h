@@ -7,13 +7,6 @@ struct work_queue_entry_copy_buffer_ref
   v3 Basis;
 };
 
-struct work_queue_entry_copy_buffer
-{
-  untextured_3d_geometry_buffer **Src;
-  untextured_3d_geometry_buffer *Dest;
-  v3 Basis;
-};
-
 struct particle_system;
 struct work_queue_entry_sim_particle_system
 {
@@ -42,7 +35,7 @@ WorkQueueEntrySimParticleSystem( particle_system *System, untextured_3d_geometry
 struct work_queue_entry_copy_buffer_set
 {
   u32 Count;
-  work_queue_entry_copy_buffer CopyTargets[WORK_QUEUE_MAX_COPY_TARGETS];
+  work_queue_entry_copy_buffer_ref CopyTargets[WORK_QUEUE_MAX_COPY_TARGETS];
 };
 
 struct world_chunk;
@@ -94,7 +87,7 @@ poof(
   d_union work_queue_entry
   {
     work_queue_entry_init_world_chunk
-    work_queue_entry_copy_buffer
+    /* work_queue_entry_copy_buffer */
     work_queue_entry_copy_buffer_set
     work_queue_entry_copy_buffer_ref
     work_queue_entry_init_asset

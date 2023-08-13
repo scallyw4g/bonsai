@@ -57,6 +57,7 @@ poof(staticbuffer(u32_cursor, {TILE_RULESETS_COUNT}, {entropy_lists} ))
 #include <generated/staticbuffer_u32_cursor_ptr_961996651.h>
 
 poof(deep_copy(entropy_lists))
+#include <generated/deep_copy_entropy_lists.h>
 
 struct tile_ruleset
 {
