@@ -1,3 +1,4 @@
+#define DEFAULT_LINE_THICKNESS (0.1f)
 
 debug_global float
 g_quad_vertex_buffer_data[] =

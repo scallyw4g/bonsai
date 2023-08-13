@@ -1,5 +1,3 @@
-
-
 inline void
 DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh,
                 v3 P1, v3 P2, u32 ColorIndex, r32 Thickness )
@@ -129,7 +127,6 @@ DEBUG_DrawLine(untextured_3d_geometry_buffer *Mesh, line Line, u32 ColorIndex, r
   return;
 }
 
-#define DEFAULT_LINE_THICKNESS (0.1f)
 void
 DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, v3 MinP, v3 MaxP, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {

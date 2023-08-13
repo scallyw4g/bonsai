@@ -20,6 +20,7 @@
 
 #include <engine/render/render_init.cpp>
 #include <engine/render/render_utils.cpp>
+#include <engine/render/entity.cpp>
 #include <engine/render.cpp> // TODO(Jesse): Probably time to split this up?
 #endif
 

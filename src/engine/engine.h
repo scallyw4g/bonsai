@@ -10,11 +10,8 @@
 
 #if PLATFORM_GL_IMPLEMENTATIONS
 #include <engine/render.h>
-#endif
-
-
-#if PLATFORM_GL_IMPLEMENTATIONS
 #include <engine/graphics.h>
+#include <engine/light.h>
 #endif
 
 #include <engine/voxel_face.h>
@@ -24,10 +21,11 @@
 #include <engine/asset.h>
 #include <engine/animation.h>
 #include <engine/model.h>
+#include <engine/particle.h>
 #include <engine/entity.h>
 #include <engine/triangle.h>
 #include <engine/render_position.h> // TODO(Jesse): Move into PLATFORM_GL_IMPLEMENTATIONS block?
 #include <engine/simulate.h>
-#include <engine/bonsai.h> // TODO(Jesse, id: 90, tags: cleanup): Redistribute this
+#include <engine/bonsai.h> // TODO(Jesse, id: 90, tags: cleanup): Redistribute this nocheckin
 #include <engine/voxel_synthesis.h>
 

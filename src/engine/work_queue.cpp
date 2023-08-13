@@ -97,13 +97,6 @@ PushCopyJob(work_queue *Queue, work_queue_entry_copy_buffer_set *Set, work_queue
 
 }
 
-/* link_internal untextured_3d_geometry_buffer* */
-/* TryTakeOwnership(volatile untextured_3d_geometry_buffer ** Src) */
-/* { */
-/*   untextured_3d_geometry_buffer *Result = (untextured_3d_geometry_buffer*)AtomicExchange((volatile void**)Src, (void*)0); */
-/*   return Result; */
-/* } */
-
 link_internal untextured_3d_geometry_buffer *
 TakeOwnershipSync(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
 {
@@ -114,55 +107,14 @@ TakeOwnershipSync(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bitfield Mes
 
   untextured_3d_geometry_buffer *Result = (untextured_3d_geometry_buffer *)Buf->E[ToIndex(MeshBit)];
   return Result;
-
-#if 0
-  while (Result == 0)
-  {
-    if (Buf->MeshMask & MeshBit)
-    {
-      Result = TryTakeOwnership(&Buf->E[ToIndex(MeshBit)]);
-    }
-    else
-    {
-      break;
-    }
-  }
-
-  if (Result)
-  {
-    Assert(Buf->MeshMask & MeshBit);
-  }
-  else
-  {
-    // NOTE(Jesse): This doesn't _strictly_ have to be true, but it would be
-    // very unlikely to happen at the moment I added it, and I just wanted to
-    // make sure it didn't fire.  Remove it
-    Assert((Buf->MeshMask&MeshBit) == 0);
-  }
-  return Result;
-#endif
 }
 
 link_internal void
 ReleaseOwnership(threadsafe_geometry_buffer *Src, world_chunk_mesh_bitfield MeshBit, untextured_3d_geometry_buffer *Buf)
 {
   if (Buf) { Assert(Src->MeshMask & MeshBit); }
-
-  // NOTE(Jesse): This is a dumb assertion; the buffer we're replacing depends on so many things it's difficult to pass it in here
-/* #if BONSAI_INTERNAL */
-/*   untextured_3d_geometry_buffer *OldMesh = (untextured_3d_geometry_buffer *)AtomicWrite((volatile void**)&Src->E[ToIndex(MeshBit)], (void*)Buf); */
-/*   Assert(OldMesh == Buf); */
-/* #endif */
-
   ReleaseFutex(&Src->Futexes[ToIndex(MeshBit)]);
 }
-
-/* link_internal untextured_3d_geometry_buffer * */
-/* GetMeshFor(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bitfield MeshBit) */
-/* { */
-/*   auto Result = TakeOwnershipSync(Buf, MeshBit); */
-/*   return Result; */
-/* } */
 
 link_internal void
 Replace(volatile void** Dest, void* Element)
@@ -185,6 +137,7 @@ DoCopyJob(work_queue_entry_copy_buffer_ref *Job, tiered_mesh_freelist* MeshFreel
   ReleaseOwnership(Job->Buf, Job->MeshBit, Src);
 }
 
+// nocheckin remove
 link_internal void
 DoCopyJob(volatile work_queue_entry_copy_buffer *Job, tiered_mesh_freelist* MeshFreelist, memory_arena* PermMemory)
 {

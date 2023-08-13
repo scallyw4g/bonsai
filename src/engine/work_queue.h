@@ -105,6 +105,7 @@ poof(
 )
 #include <generated/d_union_work_queue_entry.h>
 
+// nocheckin
 // TODO(Jesse): Turn this on
 /* CAssert(sizeof(work_queue_entry) % CACHE_LINE_SIZE == 0); */
 

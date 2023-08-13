@@ -75,19 +75,25 @@ GetEngineResources()
   return Global_EngineResources;
 }
 
-#define UNPACK_ENGINE_RESOURCES(Res)                                      \
-  platform                  *Plat          =  Res->Plat;            \
-  world                     *World         =  Res->World;           \
-  game_state                *GameState     =  Res->GameState;       \
-  memory_arena              *Memory        =  Res->Memory;          \
-  heap_allocator            *Heap          = &Res->Heap;            \
-  entity                   **EntityTable   =  Res->EntityTable;     \
-  hotkeys                   *Hotkeys       =  Res->Hotkeys;         \
-  engine_debug              *EngineDebug   = &Res->EngineDebug;     \
-  tiered_mesh_freelist      *MeshFreelist  = &Res->MeshFreelist;    \
-  input                     *Input         = &Res->Plat->Input;     \
-  graphics                  *Graphics      =  Res->Graphics;        \
-  renderer_2d               *GameUi        = &Res->GameUiRenderer;  \
+#define UNPACK_ENGINE_RESOURCES(Res) \
+  UNPACK_DATA_RESOURCES(Res)         \
+  UNPACK_GRAPHICS_RESOURCES(Res)
+
+#define UNPACK_DATA_RESOURCES(Res)                               \
+  platform                  *Plat          =  Res->Plat;         \
+  world                     *World         =  Res->World;        \
+  game_state                *GameState     =  Res->GameState;    \
+  memory_arena              *Memory        =  Res->Memory;       \
+  heap_allocator            *Heap          = &Res->Heap;         \
+  entity                   **EntityTable   =  Res->EntityTable;  \
+  hotkeys                   *Hotkeys       =  Res->Hotkeys;      \
+  engine_debug              *EngineDebug   = &Res->EngineDebug;  \
+  tiered_mesh_freelist      *MeshFreelist  = &Res->MeshFreelist; \
+  input                     *Input         = &Res->Plat->Input;
+
+#define UNPACK_GRAPHICS_RESOURCES(Res)                                    \
+  graphics                  *Graphics      =  Res->Graphics;              \
+  renderer_2d               *GameUi        = &Res->GameUiRenderer;        \
   gpu_mapped_element_buffer *GpuMap        =  GetCurrentGpuMap(Graphics); \
   g_buffer_render_group     *gBuffer       =  Graphics->gBuffer;          \
   camera                    *Camera        =  Graphics->Camera;

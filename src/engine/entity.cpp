@@ -1,4 +1,4 @@
-#define PARTICLE_SYSTEM_EMIT_FOREVER f32_MAX
+#define PARTICLE_SYSTEM_EMIT_FOREVER (f32_MAX)
 
 inline void
 Deactivate(particle_system *System)
@@ -1293,21 +1293,6 @@ ShouldEmit(particle_system *System)
   return Result;
 }
 
-void
-DoLight(game_lights *Lights, v3 Position, v3 Color)
-{
-  Assert(Lights->Count < MAX_LIGHTS);
-
-  if (Lights->Count < MAX_LIGHTS)
-  {
-    light *Light = Lights->Lights + Lights->Count++;
-    Light->Position = Position;
-    Light->Color = Color;
-  }
-
- return;
-}
-
 link_internal void
 SimulateParticle(particle_system *System, particle *Particle, r32 dt, v3 EntityDelta)
 {
@@ -1320,7 +1305,7 @@ SimulateParticle(particle_system *System, particle *Particle, r32 dt, v3 EntityD
 }
 
 void
-SimulatePlayer(world* World, entity *Player, camera* Camera, hotkeys *Hotkeys, r32 dt, chunk_dimension VisibleRegion)
+SimulatePlayer(world* World, entity *Player, hotkeys *Hotkeys, r32 dt, chunk_dimension VisibleRegion)
 {
   TIMED_FUNCTION();
 
@@ -1331,28 +1316,6 @@ SimulatePlayer(world* World, entity *Player, camera* Camera, hotkeys *Hotkeys, r
 
     world_position OriginalPlayerP = Player->P.WorldP;
     MoveEntityInWorld( World, Player, Player->Physics.Delta, VisibleRegion);
-
-#if 0
-    Player->FireCooldown -= dt;
-
-    // Regular Fire
-    if ( Hotkeys->Player_Fire && (Player->FireCooldown < 0) )
-    {
-      canonical_position SpawnP = Canonicalize(Player->P + V3(0, 0, 2));
-      v3 InitialProjVelocity = PROJECTILE_SPEED * (Normalize(V3(Camera->Front.x, Camera->Front.y, 0.25f) ));
-      entity *Projectile = SpawnProjectile(GameState, &SpawnP, InitialProjVelocity, EntityType_PlayerProjectile);
-      SpawnFire(Projectile, &GameState->Entropy, V3(0));
-      Player->FireCooldown = Player->RateOfFire;
-    }
-
-    // Proton Torpedo!!
-    if ( Hotkeys->Player_Proton && (Player->FireCooldown < 0) )
-    {
-      SpawnProjectile(GameState, &Player->P, V3(0,1,0), EntityType_PlayerProton);
-      Player->FireCooldown = Player->RateOfFire;
-    }
-#endif
-
   }
 
   return;
@@ -1364,7 +1327,7 @@ void
 SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleRegion, untextured_3d_geometry_buffer *Dest, work_queue *Queue)
 {
   TIMED_FUNCTION();
-  UNPACK_ENGINE_RESOURCES(Resources);
+  UNPACK_DATA_RESOURCES(Resources);
 
   for ( s32 EntityIndex = 0;
         EntityIndex < TOTAL_ENTITY_COUNT;
@@ -1417,7 +1380,7 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
 
       case EntityType_Player:
       {
-        SimulatePlayer(World, Entity, Camera, Hotkeys, dt, VisibleRegion);
+        SimulatePlayer(World, Entity, Hotkeys, dt, VisibleRegion);
       } break;
 
       case EntityType_Default:
@@ -1434,10 +1397,11 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
     {
       auto EntityDelta = Entity->Physics.Delta;
 
-      v3 RenderSpaceP  = GetRenderP(Entity->P, Camera, World->ChunkDim);
-      auto Job = WorkQueueEntry(System, Dest, EntityDelta, RenderSpaceP, dt);
+      // nocheckin
+      /* v3 RenderSpaceP  = GetRenderP(Entity->P, Camera, World->ChunkDim); */
+      /* auto Job = WorkQueueEntry(System, Dest, EntityDelta, RenderSpaceP, dt); */
       /* SimulateParticleSystem(&Job.work_queue_entry_sim_particle_system); */
-      PushWorkQueueEntry(Queue, &Job);
+      /* PushWorkQueueEntry(Queue, &Job); */
     }
   }
 
@@ -1637,32 +1601,9 @@ GetEntitiesIntersectingRay(world *World, entity **EntityTable, ray *Ray)
 }
 
 link_internal entity *
-RayTraceEntityCollision(engine_resources *Resources, ray *Ray )
+RayTraceEntityCollision(engine_resources *Resources, ray *Ray)
 {
   entity *Result = GetEntitiesIntersectingRay(Resources->World, Resources->EntityTable, Ray);
   return Result;
 }
-
-
-link_internal entity *
-MousePickEntity(engine_resources *Resources)
-{
-  TIMED_FUNCTION();
-  UNPACK_ENGINE_RESOURCES(Resources);
-
-  entity *Result = {};
-
-  maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection, Camera, World->ChunkDim);
-
-  if (MaybeRay.Tag == Maybe_Yes)
-  {
-
-    v3 SimOrigin = GetSimSpaceP(World, Canonical_Position(World->ChunkDim, MaybeRay.Ray.Origin, V3i(0)));
-    ray SimRay = {SimOrigin, MaybeRay.Ray.Dir};
-    Result = RayTraceEntityCollision( Resources, &SimRay );
-  }
-
-  return Result;
-}
-
 

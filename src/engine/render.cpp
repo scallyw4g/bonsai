@@ -1,28 +1,4 @@
 
-
-
-link_internal void
-DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, v3 RenderSpot_MinP, v3 TileDim, u32 ColorIndex = BLUE, r32 Thickness = DEFAULT_LINE_THICKNESS)
-{
-#if 0
-  untextured_3d_geometry_buffer AABBDest = ReserveBufferSpace(Mesh, VERTS_PER_VOXEL);
-  auto MinP = RenderSpot_MinP - Thickness;
-  DrawVoxel_MinDim(&AABBDest, MinP, ColorIndex, TileDim + (Thickness*2.f));
-#else
-  v3 HalfTileDim = TileDim/2.f;
-  v3 QuarterTileDim = HalfTileDim/2.f;
-
-  untextured_3d_geometry_buffer AABBDest = ReserveBufferSpace(Mesh, VERTS_PER_VOXEL);
-
-  auto MinP = RenderSpot_MinP-Thickness+V3(QuarterTileDim.xy,0.f)+V3(0,0,2);
-  DrawVoxel_MinDim(&AABBDest, MinP, ColorIndex, HalfTileDim + Thickness*2.f);
-
-  /* DEBUG_DrawAABB( &AABBDest, */
-  /*                 AABBMinDim( , TileDrawDim), */
-  /*                 ColorIndex, Thickness); */
-#endif
-}
-
 link_internal maybe_ray
 ComputeRayFromCursor(platform *Plat, m4* ViewProjection, camera *Camera, v3i WorldChunkDim)
 {
@@ -896,40 +872,6 @@ BufferEntity( untextured_3d_geometry_buffer* Dest, entity *Entity, animation *An
   return;
 }
 
-untextured_3d_geometry_buffer
-ReserveBufferSpace(untextured_3d_geometry_buffer* Reservation, u32 ElementsToReserve)
-{
-  TIMED_FUNCTION();
-  Assert(ElementsToReserve);
-
-  untextured_3d_geometry_buffer Result = {};
-
-  for (;;)
-  {
-    umm ReservationAt = Reservation->At;
-    umm ReservationRequest = ReservationAt + ElementsToReserve;
-    if (ReservationRequest < Reservation->End)
-    {
-      if ( AtomicCompareExchange(&Reservation->At, (u32)ReservationRequest, (u32)ReservationAt) )
-      {
-        Result.Verts = Reservation->Verts + ReservationAt;
-        Result.Colors = Reservation->Colors + ReservationAt;
-        Result.Normals = Reservation->Normals + ReservationAt;
-        Result.End = ElementsToReserve;
-
-        break;
-      }
-    }
-    else
-    {
-      Warn("Failed to reserve buffer space");
-      break;
-    }
-  }
-
-  return Result;
-}
-
 link_internal void
 BufferEntities( entity **EntityTable, untextured_3d_geometry_buffer* Dest,
                 graphics *Graphics, world *World, r32 dt)
@@ -970,3 +912,26 @@ DrawFrustum(world *World, graphics *Graphics, camera *Camera)
   DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Left.Normal*5.f), GREEN, 0.2f );
   DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Right.Normal*5.f), YELLOW, 0.2f );
 }
+
+link_internal void
+DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, v3 RenderSpot_MinP, v3 TileDim, u32 ColorIndex = BLUE, r32 Thickness = DEFAULT_LINE_THICKNESS)
+{
+#if 0
+  untextured_3d_geometry_buffer AABBDest = ReserveBufferSpace(Mesh, VERTS_PER_VOXEL);
+  auto MinP = RenderSpot_MinP - Thickness;
+  DrawVoxel_MinDim(&AABBDest, MinP, ColorIndex, TileDim + (Thickness*2.f));
+#else
+  v3 HalfTileDim = TileDim/2.f;
+  v3 QuarterTileDim = HalfTileDim/2.f;
+
+  untextured_3d_geometry_buffer AABBDest = ReserveBufferSpace(Mesh, VERTS_PER_VOXEL);
+
+  auto MinP = RenderSpot_MinP-Thickness+V3(QuarterTileDim.xy,0.f)+V3(0,0,2);
+  DrawVoxel_MinDim(&AABBDest, MinP, ColorIndex, HalfTileDim + Thickness*2.f);
+
+  /* DEBUG_DrawAABB( &AABBDest, */
+  /*                 AABBMinDim( , TileDrawDim), */
+  /*                 ColorIndex, Thickness); */
+#endif
+}
+

@@ -514,12 +514,13 @@ Noise_Flat( perlin_noise *Noise,
             chunk_dimension SrcToDest,
 
             u8 ColorIndex,
-            s32 Frequency,
-            s32 Amplitude,
-            s64 zMin,
+            s32 Ignored0,
+            s32 Ignored1,
 
+            s64 zMin,
             chunk_dimension WorldChunkDim,
-            void *Ignored )
+
+            void *Ignored3 )
 {
   u32 Result = 0;
   for ( s32 z = 0; z < Dim.z; ++ z)
@@ -2711,7 +2712,10 @@ ComputeStandingSpots( v3i SrcChunkDim,
           if (IsValidForDestChunk(DestSpot, DestChunkDim))
           {
             Push(DestSpot, DestStandingSpots);
+
+#if PLATFORM_GL_IMPLEMENTATIONa
             if (DebugMesh) { DrawStandingSpot(DebugMesh, V3(DestSpot), V3(TileDim)); }
+#endif
           }
           zIndex += TileDim.z;
         }
@@ -2836,7 +2840,7 @@ ComputeLodMesh( thread_local_state *Thread,
 #endif
 #endif
 
-      DEBUG_DrawLine(LodMesh, V3(FoundCenterPoint), V3(FoundCenterPoint)+(Normal*10.0f), RED, 0.2f);
+      /* DEBUG_DrawLine(LodMesh, V3(FoundCenterPoint), V3(FoundCenterPoint)+(Normal*10.0f), RED, 0.2f); */
 
 #if 1
       {
@@ -3111,6 +3115,170 @@ QueueChunkForMeshRebuild(work_queue *Queue, world_chunk *Chunk)
   return;
 }
 
+link_internal void
+InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *Thread, world_chunk *DestChunk, chunk_dimension WorldChunkDim, native_file *AssetFile, s32 Frequency, s32 Amplititude, s32 zMin, chunk_init_flags Flags, void* UserData)
+{
+  TIMED_FUNCTION();
+
+  // @runtime_assert_chunk_aprons_are_valid
+  Assert(Global_ChunkApronDim.x == Global_ChunkApronMinDim.x + Global_ChunkApronMaxDim.x);
+  Assert(Global_ChunkApronDim.y == Global_ChunkApronMinDim.y + Global_ChunkApronMaxDim.y);
+  Assert(Global_ChunkApronDim.z == Global_ChunkApronMinDim.z + Global_ChunkApronMaxDim.z);
+
+  Assert(!ChunkIsGarbage(DestChunk));
+
+  // TODO(Jesse): Pretty sure this is unnecessary
+  ClearChunkVoxels(DestChunk->Voxels, DestChunk->Dim);
+
+  untextured_3d_geometry_buffer* PrimaryMesh = 0;
+  untextured_3d_geometry_buffer* LodMesh = 0;
+  untextured_3d_geometry_buffer* DebugMesh = 0;
+
+  chunk_dimension SynChunkDim = WorldChunkDim + Global_ChunkApronDim;
+  chunk_dimension SynChunkP = DestChunk->WorldP;
+
+  world_chunk *SyntheticChunk = AllocateWorldChunk(Thread->TempMemory, SynChunkP, SynChunkDim );
+
+  u32 SyntheticChunkSum = NoiseCallback( Thread->PerlinNoise,
+                                         SyntheticChunk, SynChunkDim, Global_ChunkApronMinDim,
+                                         GRASS_GREEN, Frequency, Amplititude, zMin,
+                                         WorldChunkDim, UserData );
+
+
+  if (AssetFile && AssetFile->Handle)
+  {
+    world_chunk *AssetChunk = AllocateWorldChunk(Thread->TempMemory, {}, WorldChunkDim+Global_ChunkApronDim);
+
+    DeserializeChunk(AssetFile, AssetChunk, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+    CloseFile(AssetFile);
+    Assert(AssetChunk->Dim == SynChunkDim);
+    MergeChunksOffset(AssetChunk, SyntheticChunk, {});
+    /* MergeChunksOffset(AssetChunk, SyntheticChunk, Global_HalfChunkApronDim); */
+  }
+
+  MarkBoundaryVoxels_NoExteriorFaces(SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
+
+  CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Global_ChunkApronMinDim);
+
+  // NOTE(Jesse): You can use this for debug, but it doesn't work if you change it to NoExteriorFaces
+  /* MarkBoundaryVoxels_MakeExteriorFaces(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim); */
+
+
+  FullBarrier;
+
+  SetFlag(DestChunk, Chunk_VoxelsInitialized);
+  SetFlag(SyntheticChunk, Chunk_VoxelsInitialized);
+
+  // NOTE(Jesse): A fully filled chunk can still have boundary voxels on its
+  // exterior edge, so that does not preclude it from going through BuildWorldChunkMesh
+  if ( DestChunk->FilledCount > 0) // && DestChunk->FilledCount < (u32)Volume(WorldChunkDim))
+  {
+    untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
+    BuildWorldChunkMeshFromMarkedVoxels_Greedy(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim, TempMesh, Thread->TempMemory);
+
+    if (TempMesh->At)
+    {
+      PrimaryMesh = GetPermMeshForChunk(&Thread->EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
+      DeepCopy(TempMesh, PrimaryMesh);
+    }
+  }
+
+
+
+  if (Flags & ChunkInitFlag_ComputeStandingSpots)
+  {
+    ComputeStandingSpots( SynChunkDim, SyntheticChunk, {{1,1,0}}, {{0,0,1}}, Global_StandingSpotDim,
+                          WorldChunkDim, 0, &DestChunk->StandingSpots,
+                          Thread->TempMemory);
+  }
+
+  if (SyntheticChunkSum && (Flags & ChunkInitFlag_GenSmoothLODs) )
+  {
+    untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
+    ComputeLodMesh( Thread, DestChunk, WorldChunkDim, SyntheticChunk, SynChunkDim, TempMesh, True);
+
+    if (TempMesh->At)
+    {
+      LodMesh = GetPermMeshForChunk(&Thread->EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
+      DeepCopy(TempMesh, LodMesh);
+    }
+  }
+
+  if (SyntheticChunkSum && (Flags & ChunkInitFlag_GenMipMapLODs) )
+  {
+    untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
+    BuildMipMesh(SyntheticChunk->Voxels, SynChunkDim, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, TempMesh, Thread->TempMemory);
+    if (TempMesh->At)
+    {
+      LodMesh = GetPermMeshForChunk(&Thread->EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
+      DeepCopy(TempMesh, LodMesh);
+    }
+  }
+
+  FullBarrier;
+
+  if (PrimaryMesh)
+  {
+    if (PrimaryMesh->At)
+    { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Main, PrimaryMesh, PrimaryMesh->Timestamp) == 0); }
+    else
+    { DeallocateMesh(PrimaryMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
+  }
+
+  if (LodMesh)
+  {
+    if (LodMesh->At)
+    { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Lod, LodMesh, LodMesh->Timestamp) == 0); }
+    else
+    { DeallocateMesh(LodMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
+  }
+
+  if (DebugMesh)
+  {
+    if (DebugMesh->At)
+    { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Debug, DebugMesh, DebugMesh->Timestamp) == 0); }
+    else
+    { DeallocateMesh(DebugMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
+  }
+
+
+  FinalizeChunkInitialization(DestChunk);
+
+  return;
+}
+
+// TODO(Jesse): Probably remove this globally
+link_internal void
+InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChunk, chunk_dimension WorldChunkDim, native_file *AssetFile, s32 Frequency, s32 Amplititude, s32 zMin, chunk_init_flags Flags)
+{
+  InitializeChunkWithNoise( Noise_Perlin2D, Thread, DestChunk, DestChunk->Dim, AssetFile, Frequency, Amplititude, zMin, Flags, 0);
+}
+
+link_internal void
+RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk)
+{
+  Assert( IsSet(Chunk->Flags, Chunk_VoxelsInitialized) );
+
+  untextured_3d_geometry_buffer *NewMesh = 0;
+
+  {
+    untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
+    BuildWorldChunkMeshFromMarkedVoxels_Greedy( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, TempMesh, GetTranArena() );
+
+    if (TempMesh->At)
+    {
+      NewMesh = GetPermMeshForChunk(&Thread->EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
+      DeepCopy(TempMesh, NewMesh);
+    }
+  }
+
+  umm Timestamp = NewMesh ? NewMesh->Timestamp : __rdtsc();
+  untextured_3d_geometry_buffer *Replaced = AtomicReplaceMesh(&Chunk->Meshes, MeshBit_Main, NewMesh, Timestamp);
+  if (Replaced) { DeallocateMesh(Replaced, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
+}
+
+// nochecking Move as much out of this block as possible.  Only the last few of
+// the things in this block are actually related to drawing
 #if PLATFORM_GL_IMPLEMENTATIONS
 link_internal work_queue_entry_rebuild_mesh
 WorkQueueEntryRebuildMesh(world_chunk *Chunk)
@@ -4122,7 +4290,6 @@ MousePickVoxel(engine_resources *Resources)
 }
 
 #if DEBUG_SYSTEM_API
-
 link_internal void
 Debug_DoWorldChunkPicking(engine_resources *Resources)
 {
@@ -4357,167 +4524,5 @@ DrawPickedChunks(renderer_2d* Group, render_entity_to_texture_group *PickedChunk
   return HotChunk;
 }
 #endif // DEBUG_SYSTEM_API
-
-link_internal void
-InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *Thread, world_chunk *DestChunk, chunk_dimension WorldChunkDim, native_file *AssetFile, s32 Frequency, s32 Amplititude, s32 zMin, chunk_init_flags Flags, void* UserData)
-{
-  TIMED_FUNCTION();
-
-  // @runtime_assert_chunk_aprons_are_valid
-  Assert(Global_ChunkApronDim.x == Global_ChunkApronMinDim.x + Global_ChunkApronMaxDim.x);
-  Assert(Global_ChunkApronDim.y == Global_ChunkApronMinDim.y + Global_ChunkApronMaxDim.y);
-  Assert(Global_ChunkApronDim.z == Global_ChunkApronMinDim.z + Global_ChunkApronMaxDim.z);
-
-  Assert(!ChunkIsGarbage(DestChunk));
-
-  // TODO(Jesse): Pretty sure this is unnecessary
-  ClearChunkVoxels(DestChunk->Voxels, DestChunk->Dim);
-
-  untextured_3d_geometry_buffer* PrimaryMesh = 0;
-  untextured_3d_geometry_buffer* LodMesh = 0;
-  untextured_3d_geometry_buffer* DebugMesh = 0;
-
-  chunk_dimension SynChunkDim = WorldChunkDim + Global_ChunkApronDim;
-  chunk_dimension SynChunkP = DestChunk->WorldP;
-
-  world_chunk *SyntheticChunk = AllocateWorldChunk(Thread->TempMemory, SynChunkP, SynChunkDim );
-
-  u32 SyntheticChunkSum = NoiseCallback( Thread->PerlinNoise,
-                                         SyntheticChunk, SynChunkDim, Global_ChunkApronMinDim,
-                                         GRASS_GREEN, Frequency, Amplititude, zMin,
-                                         WorldChunkDim, UserData );
-
-
-  if (AssetFile && AssetFile->Handle)
-  {
-    world_chunk *AssetChunk = AllocateWorldChunk(Thread->TempMemory, {}, WorldChunkDim+Global_ChunkApronDim);
-
-    DeserializeChunk(AssetFile, AssetChunk, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-    CloseFile(AssetFile);
-    Assert(AssetChunk->Dim == SynChunkDim);
-    MergeChunksOffset(AssetChunk, SyntheticChunk, {});
-    /* MergeChunksOffset(AssetChunk, SyntheticChunk, Global_HalfChunkApronDim); */
-  }
-
-  MarkBoundaryVoxels_NoExteriorFaces(SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
-
-  CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Global_ChunkApronMinDim);
-
-  // NOTE(Jesse): You can use this for debug, but it doesn't work if you change it to NoExteriorFaces
-  /* MarkBoundaryVoxels_MakeExteriorFaces(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim); */
-
-
-  FullBarrier;
-
-  SetFlag(DestChunk, Chunk_VoxelsInitialized);
-  SetFlag(SyntheticChunk, Chunk_VoxelsInitialized);
-
-  // NOTE(Jesse): A fully filled chunk can still have boundary voxels on its
-  // exterior edge, so that does not preclude it from going through BuildWorldChunkMesh
-  if ( DestChunk->FilledCount > 0) // && DestChunk->FilledCount < (u32)Volume(WorldChunkDim))
-  {
-    untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
-    BuildWorldChunkMeshFromMarkedVoxels_Greedy(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim, TempMesh, Thread->TempMemory);
-
-    if (TempMesh->At)
-    {
-      PrimaryMesh = GetPermMeshForChunk(&Thread->EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
-      DeepCopy(TempMesh, PrimaryMesh);
-    }
-  }
-
-
-
-  if (Flags & ChunkInitFlag_ComputeStandingSpots)
-  {
-    ComputeStandingSpots( SynChunkDim, SyntheticChunk, {{1,1,0}}, {{0,0,1}}, Global_StandingSpotDim,
-                          WorldChunkDim, 0, &DestChunk->StandingSpots,
-                          Thread->TempMemory);
-  }
-
-  if (SyntheticChunkSum && (Flags & ChunkInitFlag_GenSmoothLODs) )
-  {
-    untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
-    ComputeLodMesh( Thread, DestChunk, WorldChunkDim, SyntheticChunk, SynChunkDim, TempMesh, True);
-
-    if (TempMesh->At)
-    {
-      LodMesh = GetPermMeshForChunk(&Thread->EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
-      DeepCopy(TempMesh, LodMesh);
-    }
-  }
-
-  if (SyntheticChunkSum && (Flags & ChunkInitFlag_GenMipMapLODs) )
-  {
-    untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
-    BuildMipMesh(SyntheticChunk->Voxels, SynChunkDim, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, TempMesh, Thread->TempMemory);
-    if (TempMesh->At)
-    {
-      LodMesh = GetPermMeshForChunk(&Thread->EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
-      DeepCopy(TempMesh, LodMesh);
-    }
-  }
-
-  FullBarrier;
-
-  if (PrimaryMesh)
-  {
-    if (PrimaryMesh->At)
-    { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Main, PrimaryMesh, PrimaryMesh->Timestamp) == 0); }
-    else
-    { DeallocateMesh(PrimaryMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
-  }
-
-  if (LodMesh)
-  {
-    if (LodMesh->At)
-    { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Lod, LodMesh, LodMesh->Timestamp) == 0); }
-    else
-    { DeallocateMesh(LodMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
-  }
-
-  if (DebugMesh)
-  {
-    if (DebugMesh->At)
-    { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Debug, DebugMesh, DebugMesh->Timestamp) == 0); }
-    else
-    { DeallocateMesh(DebugMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
-  }
-
-
-  FinalizeChunkInitialization(DestChunk);
-
-  return;
-}
-
-// TODO(Jesse): Probably remove this globally
-link_internal void
-InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChunk, chunk_dimension WorldChunkDim, native_file *AssetFile, s32 Frequency, s32 Amplititude, s32 zMin, chunk_init_flags Flags)
-{
-  InitializeChunkWithNoise( Noise_Perlin2D, Thread, DestChunk, DestChunk->Dim, AssetFile, Frequency, Amplititude, zMin, Flags, 0);
-}
-
-link_internal void
-RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk)
-{
-  Assert( IsSet(Chunk->Flags, Chunk_VoxelsInitialized) );
-
-  untextured_3d_geometry_buffer *NewMesh = 0;
-
-  {
-    untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
-    BuildWorldChunkMeshFromMarkedVoxels_Greedy( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, TempMesh, GetTranArena() );
-
-    if (TempMesh->At)
-    {
-      NewMesh = GetPermMeshForChunk(&Thread->EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
-      DeepCopy(TempMesh, NewMesh);
-    }
-  }
-
-  umm Timestamp = NewMesh ? NewMesh->Timestamp : __rdtsc();
-  untextured_3d_geometry_buffer *Replaced = AtomicReplaceMesh(&Chunk->Meshes, MeshBit_Main, NewMesh, Timestamp);
-  if (Replaced) { DeallocateMesh(Replaced, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
-}
 
 #endif // PLATFORM_GL_IMPLEMENTATIONa

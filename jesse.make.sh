@@ -6,7 +6,7 @@
 #
 # ./make.sh BuildSingleExample examples/perlin_terrain_gen
 
-# ./make.sh BuildTests
+./make.sh BuildTests
 
 # ./make.sh RunPoof
 
@@ -14,7 +14,7 @@
 
 
 # ./make.sh MakeDebugLibRelease
-./make.sh BuildExecutables
+# ./make.sh BuildExecutables
 
 # ./make.sh BuildAll -O0
 # ./make.sh BuildAll -O2
