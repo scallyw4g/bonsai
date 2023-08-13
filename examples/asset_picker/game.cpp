@@ -41,7 +41,8 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
   work_queue_entry_type Type = Entry->Type;
   switch (Type)
   {
-    case type_work_queue_entry_noop: { InvalidCodePath(); } break;
+    InvalidCase(type_work_queue_entry_noop);
+    InvalidCase(type_work_queue_entry__align_to_cache_line_helper);
 
     case type_work_queue_entry_init_asset:
     case type_work_queue_entry_rebuild_mesh:

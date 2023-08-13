@@ -19,7 +19,8 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 {
   switch (Entry->Type)
   {
-    case type_work_queue_entry_noop: { InvalidCodePath(); } break;
+    InvalidCase(type_work_queue_entry_noop);
+    InvalidCase(type_work_queue_entry__align_to_cache_line_helper);
 
     case type_work_queue_entry_sim_particle_system:
     case type_work_queue_entry_update_world_region:

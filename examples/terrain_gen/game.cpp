@@ -172,10 +172,11 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 {
   switch (Entry->Type)
   {
-    // NOTE(Jesse): A noop entry is a bug; InvalidCodePath() crashes the process
+    // NOTE(Jesse): A noop entry is a bug; InvalidCase() crashes the process
     // in debug mode, and does nothing in release mode (in the hopes we handle
     // whatever else happens gracefully).
-    case type_work_queue_entry_noop: { InvalidCodePath(); } break;
+    InvalidCase(type_work_queue_entry_noop);
+    InvalidCase(type_work_queue_entry__align_to_cache_line_helper);
 
     case type_work_queue_entry_update_world_region:
     case type_work_queue_entry_rebuild_mesh:

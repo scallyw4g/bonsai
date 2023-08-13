@@ -8,6 +8,7 @@ enum work_queue_entry_type
   type_work_queue_entry_update_world_region,
   type_work_queue_entry_rebuild_mesh,
   type_work_queue_entry_sim_particle_system,
+  type_work_queue_entry__align_to_cache_line_helper,
 };
 
 struct work_queue_entry
@@ -23,6 +24,7 @@ struct work_queue_entry
     struct work_queue_entry_update_world_region work_queue_entry_update_world_region;
     struct work_queue_entry_rebuild_mesh work_queue_entry_rebuild_mesh;
     struct work_queue_entry_sim_particle_system work_queue_entry_sim_particle_system;
+    struct work_queue_entry__align_to_cache_line_helper work_queue_entry__align_to_cache_line_helper;
   };
 };
 

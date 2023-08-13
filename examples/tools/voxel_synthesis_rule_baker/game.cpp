@@ -14,6 +14,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
   switch (Type)
   {
     InvalidCase(type_work_queue_entry_noop);
+    InvalidCase(type_work_queue_entry__align_to_cache_line_helper);
 
     case type_work_queue_entry_init_asset:
     {
