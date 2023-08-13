@@ -83,18 +83,21 @@ waitOnPids() {
                 fi
 
                 unset build_job_pids[$i]
+                unset build_job_names[$i]
             fi
         done
-        build_job_pids=("${build_job_pids[@]}") # Expunge nulls created by unset.
+         # Expunge nulls created by unset.
+        build_job_pids=("${build_job_pids[@]}")
+        build_job_names=("${build_job_names[@]}")
         sleep 0.25
     done
 }
 
 EXECUTABLES_TO_BUILD="
   $SRC/game_loader.cpp
+  $SRC/font/ttf.cpp
+  $SRC/tools/asset_packer.cpp
 "
-  # $SRC/tools/asset_packer.cpp
-  # $SRC/font/ttf.cpp
   # $SRC/net/server.cpp
 
 
