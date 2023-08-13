@@ -1,9 +1,9 @@
+#define BONSAI_ENGINE 1
 // TODO(Jesse): Why would we ever build the engine _without_ the GL implementations?
 
 #include <engine/api.h>
 #include <engine/headers/thread.h>
 #include <engine/constants.h>
-#include <engine/headers/colors.h>
 #include <engine/headers/canonical_position.h>
 #include <engine/headers/physics.h>
 #include <engine/headers/camera.h>

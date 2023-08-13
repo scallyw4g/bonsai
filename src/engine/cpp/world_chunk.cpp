@@ -4399,9 +4399,13 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
     /* MergeChunksOffset(AssetChunk, SyntheticChunk, Global_HalfChunkApronDim); */
   }
 
+  MarkBoundaryVoxels_NoExteriorFaces(SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
+
   CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Global_ChunkApronMinDim);
 
-  MarkBoundaryVoxels_NoExteriorFaces(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim);
+  // NOTE(Jesse): You can use this for debug, but it doesn't work if you change it to NoExteriorFaces
+  /* MarkBoundaryVoxels_MakeExteriorFaces(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim); */
+
 
   FullBarrier;
 

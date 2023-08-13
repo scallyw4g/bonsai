@@ -24,7 +24,6 @@
 #include <engine/cpp/render.cpp> // TODO(Jesse): Probably time to split this up?
 #endif
 
-#include <engine/cpp/ui.cpp>
 #include <engine/cpp/world_chunk.cpp>
 #include <engine/cpp/world.cpp>
 #include <engine/cpp/physics.cpp>
