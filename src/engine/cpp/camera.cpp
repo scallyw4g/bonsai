@@ -107,7 +107,6 @@ GetMouseDelta(platform *Plat)
 link_internal void
 UpdateGameCamera(world *World, v2 MouseDelta, input *Input, canonical_position NewTarget, camera* Camera)
 {
-
   if (Input)
   {
     if (Input->LMB.Pressed)
@@ -121,6 +120,13 @@ UpdateGameCamera(world *World, v2 MouseDelta, input *Input, canonical_position N
     {
       Camera->DistanceFromTarget += MouseDelta.y*Camera->DistanceFromTarget;
     }
+
+    if (Input->MouseWheelDelta)
+    {
+      Camera->DistanceFromTarget += Input->MouseWheelDelta*Camera->DistanceFromTarget;
+    }
+
+    Camera->DistanceFromTarget = ClampMin(Camera->DistanceFromTarget, 15.f);
   }
 
   UpdateCameraP(World, NewTarget, Camera);
