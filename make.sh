@@ -446,18 +446,18 @@ function RunPoof
 
 TESTS_TO_BUILD="
   $TESTS/chunk.cpp
+  $TESTS/ui_command_buffer.cpp
+  $TESTS/m4.cpp
+  $TESTS/colladaloader.cpp
+  $TESTS/test_bitmap.cpp
+  $TESTS/bonsai_string.cpp
+  $TESTS/objloader.cpp
+  $TESTS/callgraph.cpp
+  $TESTS/heap_allocation.cpp
+  $TESTS/rng.cpp
+  $TESTS/file.cpp
 "
 
-#   $TESTS/ui_command_buffer.cpp
-#   $TESTS/m4.cpp
-#   $TESTS/colladaloader.cpp
-#   $TESTS/test_bitmap.cpp
-#   $TESTS/bonsai_string.cpp
-#   $TESTS/objloader.cpp
-#   $TESTS/callgraph.cpp
-#   $TESTS/heap_allocation.cpp
-#   $TESTS/rng.cpp
-#   $TESTS/file.cpp
 
 # if [[ $BUILD_EVERYTHING == 0 ]]; then
 #   TESTS_TO_BUILD="
@@ -476,7 +476,7 @@ BuildAll() {
   BuildExamples=1
   BuildExecutables=1
   BuildDebugSystem=1
-  # BuildTests=1
+  BuildTests=1
   # BuildDebugOnlyTests=1
 
   for ex in $BUNDLED_EXAMPLES; do
