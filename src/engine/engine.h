@@ -2,32 +2,32 @@
 // TODO(Jesse): Why would we ever build the engine _without_ the GL implementations?
 
 #include <engine/api.h>
-#include <engine/headers/thread.h>
+#include <engine/thread.h>
 #include <engine/constants.h>
-#include <engine/headers/canonical_position.h>
-#include <engine/headers/physics.h>
-#include <engine/headers/camera.h>
+#include <engine/canonical_position.h>
+#include <engine/physics.h>
+#include <engine/camera.h>
 
 #if PLATFORM_GL_IMPLEMENTATIONS
-#include <engine/headers/render.h>
+#include <engine/render.h>
 #endif
 
 
 #if PLATFORM_GL_IMPLEMENTATIONS
-#include <engine/headers/graphics.h>
+#include <engine/graphics.h>
 #endif
 
-#include <engine/headers/voxel_face.h>
-#include <engine/headers/mesh.h>
-#include <engine/headers/world_chunk.h>
-#include <engine/headers/work_queue.h>
-#include <engine/headers/asset.h>
-#include <engine/headers/animation.h>
-#include <engine/headers/model.h>
-#include <engine/headers/entity.h>
-#include <engine/headers/triangle.h>
-#include <engine/headers/render_position.h> // TODO(Jesse): Move into PLATFORM_GL_IMPLEMENTATIONS block?
-#include <engine/headers/simulate.h>
+#include <engine/voxel_face.h>
+#include <engine/mesh.h>
+#include <engine/world_chunk.h>
+#include <engine/work_queue.h>
+#include <engine/asset.h>
+#include <engine/animation.h>
+#include <engine/model.h>
+#include <engine/entity.h>
+#include <engine/triangle.h>
+#include <engine/render_position.h> // TODO(Jesse): Move into PLATFORM_GL_IMPLEMENTATIONS block?
+#include <engine/simulate.h>
 #include <engine/bonsai.h> // TODO(Jesse, id: 90, tags: cleanup): Redistribute this
 #include <engine/voxel_synthesis.h>
 

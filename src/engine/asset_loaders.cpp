@@ -1,6 +1,6 @@
-#include <engine/cpp/loaders/vox.cpp>
-#include <engine/cpp/loaders/obj.cpp>
-#include <engine/cpp/loaders/collada.cpp>
+#include <engine/loaders/vox.cpp>
+#include <engine/loaders/obj.cpp>
+#include <engine/loaders/collada.cpp>
 
 #if 0
 link_internal world_chunk
