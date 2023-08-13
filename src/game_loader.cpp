@@ -15,7 +15,7 @@ global_variable s64 LastDebugLibTime;
 
 #include <sys/stat.h>
 
-#include <bonsai_debug/headers/win32_pmc.cpp>
+/* #include <bonsai_debug/headers/win32_pmc.cpp> */
 
 typedef struct stat bonsai_stat;
 

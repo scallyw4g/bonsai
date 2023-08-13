@@ -12,6 +12,9 @@
 
 # ./make.sh
 
+
+./make.sh MakeDebugLibRelease
+
 # ./make.sh BuildAll -O0
 # ./make.sh BuildAll -O2
 
@@ -20,8 +23,9 @@
 #     BuildSingleExample examples/terrain_gen \
 #     BuildDebugSystem
 
+# ./make.sh BuildDebugSystem
 
-OPT="-O2"
-./make.sh $OPT \
-    BuildSingleExample examples/turn_based2
+# OPT="-O2"
+# ./make.sh $OPT \
+#     BuildSingleExample examples/turn_based2
 

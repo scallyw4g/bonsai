@@ -111,24 +111,22 @@ function MakeDebugLibRelease
   [ -d $DEBUG_LIB_RELEASE_DIR ] && rm -Rf $DEBUG_LIB_RELEASE_DIR
   mkdir -p $DEBUG_LIB_RELEASE_DIR
 
-  sync
-
+  # OPTIMIZATION_LEVEL="-O2"
   BuildDebugSystem
-  [ $? -ne 0 ] && exit 1
+
+  echo "#pragma once"                         >  $DEBUG_LIB_RELEASE_DIR/api.h
+  cat include/bonsai_debug/src/public.h       >> $DEBUG_LIB_RELEASE_DIR/api.h
+  cat include/bonsai_stdlib/src/primitives.h  >> $DEBUG_LIB_RELEASE_DIR/api.h
+  cat include/bonsai_debug/src/api.h          >> $DEBUG_LIB_RELEASE_DIR/api.h
+
+  cp texture_atlas_0.bmp $DEBUG_LIB_RELEASE_DIR
+  cp -R shaders $DEBUG_LIB_RELEASE_DIR
 
   waitOnPids
   sync
 
-  echo "#pragma once"                             >  $DEBUG_LIB_RELEASE_DIR/api.h
-  cat include/bonsai_debug/headers/public.h       >> $DEBUG_LIB_RELEASE_DIR/api.h
-  cat include/bonsai_stdlib/headers/primitives.h  >> $DEBUG_LIB_RELEASE_DIR/api.h
-  cat include/bonsai_debug/headers/api.h          >> $DEBUG_LIB_RELEASE_DIR/api.h
-
-  sync
-
-  cp texture_atlas_0.bmp $DEBUG_LIB_RELEASE_DIR
-  cp -R shaders $DEBUG_LIB_RELEASE_DIR
-  cp "$BIN/lib_debug_system""$PLATFORM_LIB_EXTENSION" $DEBUG_LIB_RELEASE_DIR/lib_debug_system"$PLATFORM_LIB_EXTENSION"
+  cp "$BIN/lib_debug_system_loadable""$PLATFORM_LIB_EXTENSION" \
+    $DEBUG_LIB_RELEASE_DIR/lib_debug_system"$PLATFORM_LIB_EXTENSION"
 
   sync
 }
@@ -470,14 +468,22 @@ TESTS_TO_BUILD="
 # fi
 
 
-if [ $# -eq 0 ]; then
-  BuildExecutables=1
-  BuildDebugSystem=1
+BuildAll() {
 
   BuildExamples=1
-  EXAMPLES_TO_BUILD=$BUNDLED_EXAMPLES
+  BuildExecutables=1
+  BuildDebugSystem=1
+  # BuildTests=1
+  # BuildDebugOnlyTests=1
 
+  for ex in $BUNDLED_EXAMPLES; do
+    EXAMPLES_TO_BUILD="$EXAMPLES_TO_BUILD $ex"
+  done
+}
+
+if [ $# -eq 0 ]; then
   OPTIMIZATION_LEVEL="-O2"
+  BuildAll
 fi
 
 while (( "$#" )); do
@@ -487,15 +493,7 @@ while (( "$#" )); do
   case $CliArg in
 
     "BuildAll")
-      BuildExamples=1
-      BuildExecutables=1
-      BuildDebugSystem=1
-      # BuildTests=1
-      # BuildDebugOnlyTests=1
-
-      for ex in $BUNDLED_EXAMPLES; do
-        EXAMPLES_TO_BUILD="$EXAMPLES_TO_BUILD $ex"
-      done
+      BuildAll
     ;;
 
     "BuildExecutables")
