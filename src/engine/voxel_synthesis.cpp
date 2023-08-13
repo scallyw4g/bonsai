@@ -283,7 +283,7 @@ PropagateChangesTo( voxel_synthesis_change_propagation_info_stack *ChangePropaga
 
   while (ChangePropagationInfoStack->At)
   {
-    debug_timed_function BlockTimer("InnerLoop");
+    TIMED_NAMED_BLOCK("InnerLoop");
 
     voxel_synthesis_change_propagation_info Info = Pop(ChangePropagationInfoStack);
 

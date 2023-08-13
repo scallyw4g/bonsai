@@ -36,7 +36,7 @@ s32 main(s32 ArgCount, const char **Args)
 
 
   /* vox_data Vox = LoadVoxData(Memory, &Heap, "../voxel-model/vox/monument/monu3.vox", Global_HalfChunkApronDim); */
-  vox_data Vox = LoadVoxData(Memory, &Heap, InputVox, Global_ChunkApronMinDim, Global_ChunkApronMaxDim);
+  vox_data Vox = LoadVoxData(Memory, &Heap, InputVox, VoxLoaderClipBehavior_ClipToVoxels, Global_ChunkApronMinDim, Global_ChunkApronMaxDim);
   /* vox_data Vox = LoadVoxData(Memory, &Heap, "models/AncientTemple.vox"); */
 
   chunk_dimension ModelDim = Vox.ChunkData->Dim;

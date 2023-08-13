@@ -13,7 +13,8 @@
 # ./make.sh
 
 
-./make.sh MakeDebugLibRelease
+# ./make.sh MakeDebugLibRelease
+./make.sh BuildExecutables
 
 # ./make.sh BuildAll -O0
 # ./make.sh BuildAll -O2

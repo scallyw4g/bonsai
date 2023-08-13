@@ -404,7 +404,7 @@ ParseGlyph(u8_stream *Stream, memory_arena *Arena)
     s16 xMax = ReadS16(Stream);
     s16 yMax = ReadS16(Stream);
 
-    Glyph.MinP = { xMin, yMin };
+    Glyph.MinP = {{ xMin, yMin }};
 
     Glyph.EmSpaceDim.x = xMax - xMin + 1; // Add one to put from 0-based to 1-based
     Glyph.EmSpaceDim.y = yMax - yMin + 1; // coordinate system
@@ -988,7 +988,7 @@ main()
   {
     u8_stream HeadStream = U8_Stream(Font.head);
     Font.HeadTable = ParseHeadTable(&HeadStream, PermArena);
-    v2i FontMaxEmDim = { Font.HeadTable->xMax - Font.HeadTable->xMin, Font.HeadTable->yMax - Font.HeadTable->yMin };
+    v2i FontMaxEmDim = {{ Font.HeadTable->xMax - Font.HeadTable->xMin, Font.HeadTable->yMax - Font.HeadTable->yMin }};
     v2i FontMinGlyphP = V2i(Font.HeadTable->xMin, Font.HeadTable->yMin);
 
     v2i GlyphSize = V2i(32, 32);
