@@ -1,4 +1,6 @@
 #define PLATFORM_GL_IMPLEMENTATIONS 1
+
+// NOTE(Jesse): This includes implementations for performace profiling and debug tracing
 #define DEBUG_SYSTEM_API 1
 
 #include <bonsai_types.h>

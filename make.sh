@@ -176,7 +176,8 @@ function BuildDebugOnlyTests
       $PLATFORM_DEFINES                              \
       $PLATFORM_INCLUDE_DIRS                         \
       -I "$ROOT"                                     \
-      -I"$SRC"                                       \
+      -I "$SRC"                                      \
+      -I "$INCLUDE"                                  \
       -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
       $executable &
 
@@ -458,26 +459,18 @@ TESTS_TO_BUILD="
   $TESTS/file.cpp
 "
 
-
-# if [[ $BUILD_EVERYTHING == 0 ]]; then
-#   TESTS_TO_BUILD="
-#   $TESTS/bonsai_string.cpp
-#   $TESTS/objloader.cpp
-#   $TESTS/callgraph.cpp
-#   $TESTS/heap_allocation.cpp
-#   $TESTS/rng.cpp
-#   $TESTS/file.cpp
-#   "
-# fi
-
-
 BuildAll() {
 
   BuildExamples=1
   BuildExecutables=1
   BuildDebugSystem=1
   BuildTests=1
-  # BuildDebugOnlyTests=1
+
+  # NOTE(Jesse): These only build on linux.  I'm honestly not sure if it's
+  # worth getting them to build on Windows
+  if [ $Platform == "Linux" ]; then
+    BuildDebugOnlyTests=1
+  fi
 
   for ex in $BUNDLED_EXAMPLES; do
     EXAMPLES_TO_BUILD="$EXAMPLES_TO_BUILD $ex"
