@@ -289,7 +289,7 @@ GetOppositeDir(voxel_rule_direction Dir)
     InvalidDefaultCase;
   }
 
-  Assert(Result > voxel_rule_direction(-1));
+  Assert(Result >= 0);
   Assert(Result < VoxelRuleDir_Count);
 
   return Result;
