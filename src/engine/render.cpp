@@ -341,16 +341,15 @@ ClearFramebuffers(graphics *Graphics)
   GL.ClearColor(f32_MAX, f32_MAX, f32_MAX, f32_MAX);
   GL.ClearDepth(f64_MAX);
 
-#if DEBUG_SYSTEM_API
-#if DEBUG_SYSTEM_INTERNAL_BUILD
-  GetDebugState()->ClearFramebuffers(&GetDebugState()->PickedChunksRenderGroup);
-#else
-  if (GetDebugState()) GetDebugState()->ClearFramebuffers(&GetDebugState()->PickedChunksRenderGroup);
-#endif
-
+/* #if DEBUG_SYSTEM_API */
+/* #if DEBUG_SYSTEM_INTERNAL_BUILD */
+/*   GetDebugState()->ClearFramebuffers(); */
+/* #else */
+/*   if (GetDebugState()) GetDebugState()->ClearFramebuffers(); */
+/* #endif */
   /* GL.BindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID); */
   /* GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
-#endif
+/* #endif */
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName);
   GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

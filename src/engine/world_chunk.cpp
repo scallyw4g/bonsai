@@ -4292,7 +4292,7 @@ Debug_DoWorldChunkPicking(engine_resources *Resources)
 struct renderer_2d;
 
 link_internal void
-PushChunkView(renderer_2d* Group, world_chunk* Chunk, window_layout* Window)
+PushChunkView(renderer_2d* Group, world_chunk* Chunk, window_layout* Window, render_entity_to_texture_group *PickedChunksRenderGroup)
 {
   debug_state* DebugState = GetDebugState();
   PushWindowStart(Group, Window);
@@ -4351,7 +4351,7 @@ PushChunkView(renderer_2d* Group, world_chunk* Chunk, window_layout* Window)
 
   // TODO(Jesse): This is pretty wack..
   world World = {};
-  UpdateGameCamera(&World, -0.005f*(*Group->MouseDP), WindowInput, Canonical_Position(0), DebugState->PickedChunksRenderGroup.Camera);
+  UpdateGameCamera(&World, -0.005f*(*Group->MouseDP), WindowInput, Canonical_Position(0), PickedChunksRenderGroup->Camera);
 }
 
 link_internal void

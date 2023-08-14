@@ -14,19 +14,18 @@
 
 # ./make.sh MakeDebugLibRelease
 
+# ./make.sh BuildTests
 # ./make.sh BuildExecutables
 # ./make.sh BuildDebugSystem
-./make.sh BuildBundledExamples
+# ./make.sh BuildBundledExamples
 
-# ./make.sh BuildAll -O0
+./make.sh BuildAll -O0
 # ./make.sh BuildAll -O2
 
 # OPT="-O2"
 # ./make.sh $OPT \
 #     BuildSingleExample examples/terrain_gen \
 #     BuildDebugSystem
-
-# ./make.sh BuildDebugSystem
 
 # OPT="-O2"
 # ./make.sh $OPT \

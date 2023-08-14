@@ -76,9 +76,9 @@ waitOnPids() {
                 wait ${build_job_pids[$i]} || exit_code=$?
 
                 if [ $exit_code -eq 0 ]; then
-                  echo -e "$Success ${build_job_pids[$i]} ${build_job_names[$i]} (exited $exit_code)"
+                  echo -e "$Success ${build_job_names[$i]}"
                 else
-                  echo -e "$Failed ${build_job_pids[$i]} ${build_job_names[$i]} (exited $exit_code)"
+                  echo -e "$Failed ${build_job_names[$i]}"
                   exit 1
                 fi
 

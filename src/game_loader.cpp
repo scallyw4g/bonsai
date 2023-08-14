@@ -492,7 +492,7 @@ main( s32 ArgCount, const char ** Args )
 
     // NOTE(Jesse): DEBUG_FRAME_END must come after the game geometry has rendered so the
     // alpha-blended text works properly
-    DEBUG_FRAME_END(&Plat.MouseP, &Plat.MouseDP, V2(Plat.WindowWidth, Plat.WindowHeight), &Plat.Input, Plat.dt, &EngineResources.EngineDebug.PickedChunks);
+    DEBUG_FRAME_END(&Plat.MouseP, &Plat.MouseDP, V2(Plat.WindowWidth, Plat.WindowHeight), &Plat.Input, Plat.dt, &EngineResources.EngineDebug.PickedChunks, 0);
 
     BonsaiSwapBuffers(EngineResources.Os);
 
