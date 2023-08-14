@@ -128,7 +128,7 @@ HoodooTerrain( perlin_noise *Noise,
 
           NoiseValue += (N*OctaveAmplitude) / 1+OctaveIndex;
 
-          /* if (Sin(InX) > 0.8f) */
+          /* if (OctaveIndex == 1) */
           {
              octave HoodooOctaves[2] = {
                {V3(15, 15, 300), 80, V3(1.f)},

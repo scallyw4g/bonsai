@@ -19,7 +19,7 @@
 # ./make.sh BuildDebugSystem
 # ./make.sh BuildBundledExamples
 
-./make.sh BuildAll -O0
+# ./make.sh BuildAll -O0
 # ./make.sh BuildAll -O2
 
 # OPT="-O2"
@@ -27,7 +27,7 @@
 #     BuildSingleExample examples/terrain_gen \
 #     BuildDebugSystem
 
-# OPT="-O2"
-# ./make.sh $OPT \
-#     BuildSingleExample examples/turn_based2
+OPT="-O2"
+./make.sh $OPT \
+    BuildSingleExample examples/turn_based2
 
