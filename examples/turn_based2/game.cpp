@@ -7,49 +7,6 @@
 #include <game_types.h>
 
 link_internal u32
-Checkerboard( perlin_noise *Noise,
-              world_chunk *Chunk,
-              chunk_dimension Dim,
-
-              chunk_dimension SrcToDest,
-
-              u8 ColorIndex,
-              s32 Frequency,
-              s32 Amplitude,
-              s64 zMin,
-
-              chunk_dimension WorldChunkDim,
-              void *Ignored )
-{
-  u32 Result = 0;
-
-  auto AbsX = Abs(Chunk->WorldP.x);
-  auto AbsY = Abs(Chunk->WorldP.y);
-  if ( AbsX % 2 == 0 && AbsY % 2 == 1) { ColorIndex = RED; }
-  if ( AbsX % 2 == 1 && AbsY % 2 == 0) { ColorIndex = BLUE; }
-
-  for ( s32 z = 0; z < Dim.z; ++ z)
-  {
-    s64 WorldZ = z - zMin - SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z);
-    for ( s32 y = 0; y < Dim.y; ++ y)
-    {
-      for ( s32 x = 0; x < Dim.x; ++ x)
-      {
-        if (WorldZ < zMin)
-        {
-          s32 Index = GetIndex(Voxel_Position(x,y,z), Dim);
-          Chunk->Voxels[Index].Flags = Voxel_Filled;
-          Chunk->Voxels[Index].Color = ColorIndex;
-          ++Result;
-        }
-      }
-    }
-  }
-
-  return Result;;
-}
-
-link_internal u32
 HoodooTerrain( perlin_noise *Noise,
                       world_chunk *Chunk,
                       chunk_dimension Dim,
@@ -87,6 +44,7 @@ HoodooTerrain( perlin_noise *Noise,
         Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
 
         s32 Amp2 = Amplitude*2;
+        r32 HighestNoise = 0.f;
         for (u32 OctaveIndex = 0; OctaveIndex < OctaveCount; ++OctaveIndex)
         {
           octave *Octave = OctaveBuf->Octaves+OctaveIndex;
@@ -126,42 +84,12 @@ HoodooTerrain( perlin_noise *Noise,
           /* s32 zValue =  s32(N*OctaveAmplitude) + s32(N2*Amplitude*Amplitude); */
           /* s32 zValue = s32(N*OctaveAmplitude); */
 
-          NoiseValue += (N*OctaveAmplitude) / 1+OctaveIndex;
+          r32 NoiseContrib = (N*OctaveAmplitude) / 1+OctaveIndex;
+          NoiseValue += NoiseContrib;
+
+          HighestNoise = Max(HighestNoise, N);
 
           /* if (OctaveIndex == 1) */
-          {
-             octave HoodooOctaves[2] = {
-               {V3(15, 15, 300), 80, V3(1.f)},
-               {V3(50, 50, 4),   20, V3(1.f)},
-             };
-
-
-             RangeIterator(HoodooOctaveIndex, (s32)ArrayCount(HoodooOctaves))
-             {
-               octave HoodooOctave = HoodooOctaves[HoodooOctaveIndex];
-               f32 OctaveX = SafeDivide0((x + SrcToDest.x + ( WorldChunkDim.x*Chunk->WorldP.x)), HoodooOctave.Freq.x);
-               f32 OctaveY = SafeDivide0((y + SrcToDest.y + ( WorldChunkDim.y*Chunk->WorldP.y)), HoodooOctave.Freq.y);
-               f32 OctaveZ = SafeDivide0((z + SrcToDest.z + ( WorldChunkDim.z*Chunk->WorldP.z)), HoodooOctave.Freq.z);
-
-               r32 N2 = PerlinNoise(OctaveX, OctaveY, OctaveZ);
-
-               /* NoiseValue += N2*HoodooOctave.Amp * ((Sin(InX)+Cos(InY))/2.f); */
-               /* NoiseValue += N2*HoodooOctave.Amp * Pow((Sin(InX) + Cos(InY))/20, 3); */
-
-               // Pretty good hoodoos
-               /* NoiseValue += Pow(ClampMin(N2 * Sin(InX)+Cos(InY)-0.95f, 0.f), 3) * HoodooOctave.Amp; */
-
-               // Better Hoodoos
-               /* NoiseValue += Pow(ClampMin(N2 * Sin(InX*17)+Cos(InY*17)-0.9f, 0.f), 4) * HoodooOctave.Amp; */
-               /* NoiseValue += Pow(ClampMin(N2 * ((Sin(InX*17)+Cos(InY*3))-0.9f), 0.f), 4) * HoodooOctave.Amp; */
-
-               // Hoodoos along ridges
-               /* NoiseValue += Pow(ClampMin(N2 * N, 0.f), 4) * HoodooOctave.Amp; */
-
-               NoiseValue += Pow(ClampMin(N2 * N, 0.f), 4) * HoodooOctave.Amp;
-
-             }
-          }
 
           /* b32 IsUnderground =  zValue < WorldZBiased; */
           /* b32 NoiseChoice = IsUnderground && N > 0.5f; */
@@ -175,6 +103,39 @@ HoodooTerrain( perlin_noise *Noise,
 
           /* OctaveAmplitude = Max(1, OctaveAmplitude/2); */
           /* OctaveFrequency = Max(1, OctaveFrequency/2); */
+        }
+
+        {
+           octave HoodooOctaves[2] = {
+             {V3(15, 15, 300), 60, V3(1.f)},
+             {V3(50, 50, 3),   18, V3(1.f)},
+           };
+
+
+           RangeIterator(HoodooOctaveIndex, (s32)ArrayCount(HoodooOctaves))
+           {
+             octave HoodooOctave = HoodooOctaves[HoodooOctaveIndex];
+             f32 OctaveX = SafeDivide0((x + SrcToDest.x + ( WorldChunkDim.x*Chunk->WorldP.x)), HoodooOctave.Freq.x);
+             f32 OctaveY = SafeDivide0((y + SrcToDest.y + ( WorldChunkDim.y*Chunk->WorldP.y)), HoodooOctave.Freq.y);
+             f32 OctaveZ = SafeDivide0((z + SrcToDest.z + ( WorldChunkDim.z*Chunk->WorldP.z)), HoodooOctave.Freq.z);
+
+             r32 N2 = PerlinNoise(OctaveX, OctaveY, OctaveZ);
+
+             /* NoiseValue += N2*HoodooOctave.Amp * ((Sin(InX)+Cos(InY))/2.f); */
+             /* NoiseValue += N2*HoodooOctave.Amp * Pow((Sin(InX) + Cos(InY))/20, 3); */
+
+             // Pretty good hoodoos
+             /* NoiseValue += Pow(ClampMin(N2 * Sin(InX)+Cos(InY)-0.95f, 0.f), 3) * HoodooOctave.Amp; */
+
+             // Better Hoodoos
+             /* NoiseValue += Pow(ClampMin(N2 * Sin(InX*17)+Cos(InY*17)-0.9f, 0.f), 4) * HoodooOctave.Amp; */
+             /* NoiseValue += Pow(ClampMin(N2 * ((Sin(InX*17)+Cos(InY*3))-0.9f), 0.f), 4) * HoodooOctave.Amp; */
+
+             // Hoodoos along ridges
+             /* NoiseValue += Pow(ClampMin(N2 * N, 0.f), 4) * HoodooOctave.Amp; */
+
+             NoiseValue += Pow(ClampMin(N2*HighestNoise, 0.f), 4) * HoodooOctave.Amp;
+           }
         }
 
 
@@ -280,12 +241,8 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
            OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
 
            OctaveBuf.Octaves[0] = {V3(350, 150, 50), 50, V3(1.f)};
-           OctaveBuf.Octaves[1] = {V3(100, 150, 35),   20, V3(1.f)};
-           /* OctaveBuf.Octaves[2] = {V3(150, 150, 1500),     400, V3(1.f)}; */
-           /* OctaveBuf.Octaves[2] = {V3(500, 500, 20),  300, V3(1.f)}; */
-           /* OctaveBuf.Octaves[2] = {75, 60, 1}; */
-           /* OctaveBuf.Octaves[3] = {37, 30, 0}; */
-
+           OctaveBuf.Octaves[1] = {V3(120, 60, 35),  15, V3(1.f)};
+           /* OctaveBuf.Octaves[1] = {V3(90,  60, 35),  25, V3(1.f)}; */
 
            /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
            chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs;
