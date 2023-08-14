@@ -1,10 +1,10 @@
-name: C/C++ CI
+name: CI
 
 on:
   push:
-    branches: [ "jesse/feature/test-ci-cd" ]
+    branches: [ "master", "develop" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "develop" ]
 
 jobs:
   build-linux:
