@@ -56,7 +56,6 @@ struct engine_api
   bonsai_engine_callback Render;
 };
 
-#if PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS
 link_internal b32
 InitializeEngineApi(engine_api *EngineApi, shared_lib GameLib)
 {
@@ -81,4 +80,3 @@ InitializeGameApi(game_api *GameApi, shared_lib GameLib)
   b32 Result = GameApi->GameMain != 0;
   return Result;
 }
-#endif
