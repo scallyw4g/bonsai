@@ -258,7 +258,7 @@ InitGbufferRenderGroup( g_buffer_render_group *gBuffer, memory_arena *GraphicsMe
 }
 
 link_internal b32
-InitializeShadowGroup(shadow_render_group *SG, memory_arena *GraphicsMemory, v2i ShadowMapResolution)
+InitializeShadowRenderGroup(shadow_render_group *SG, memory_arena *GraphicsMemory, v2i ShadowMapResolution)
 {
   // The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
   GL.GenFramebuffers(1, &SG->FramebufferName);
@@ -368,14 +368,18 @@ GraphicsInit(memory_arena *GraphicsMemory)
 /* #define SHADOW_MAP_RESOLUTION_X (2*1024) */
 /* #define SHADOW_MAP_RESOLUTION_Y (2*1024) */
 
-#define SHADOW_MAP_X 32*32
-#define SHADOW_MAP_Y 32*32
+#define SHADOW_MAP_X 1024
+#define SHADOW_MAP_Y 1024
+#define SHADOW_MAP_Z_MIN -1024
+#define SHADOW_MAP_Z_MAX  1024
 
-#define SHADOW_MAP_Z_MIN -32*32
-#define SHADOW_MAP_Z_MAX  32*32
+/* #define SHADOW_MAP_X 512 */
+/* #define SHADOW_MAP_Y 512 */
+/* #define SHADOW_MAP_Z_MIN -512 */
+/* #define SHADOW_MAP_Z_MAX  512 */
 
   shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1);
-  if (!InitializeShadowGroup(SG, GraphicsMemory, V2i(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y)))
+  if (!InitializeShadowRenderGroup(SG, GraphicsMemory, V2i(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y)))
   {
     SoftError("Initializing Shadow Buffer");// return False;
   }

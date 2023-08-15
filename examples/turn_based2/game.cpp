@@ -244,9 +244,9 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
            OctaveBuf.Octaves[1] = {V3(120, 60, 35),  15, V3(1.f)};
            /* OctaveBuf.Octaves[1] = {V3(90,  60, 35),  25, V3(1.f)}; */
 
-           /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
-           chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs;
            /* chunk_init_flags InitFlags = ChunkInitFlag_Noop; */
+           chunk_init_flags InitFlags    = ChunkInitFlag_GenMipMapLODs;
+           /* chunk_init_flags InitFlags = chunk_init_flags(ChunkInitFlag_ComputeStandingSpots | ChunkInitFlag_GenMipMapLODs); */
            InitializeChunkWithNoise( HoodooTerrain, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, (void*)&OctaveBuf);
          }
 
@@ -369,4 +369,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   Offset = Normalize(Offset);
   Resources->CameraTarget->P.Offset += Offset * dt * Speed;
+
+  v3 EmissionColor = Normalize(V3(3,1,0));
+  DoLight(Graphics->Lights, V3(0), EmissionColor);
 }

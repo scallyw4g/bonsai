@@ -3175,6 +3175,7 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
   {
     untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
     BuildWorldChunkMeshFromMarkedVoxels_Greedy(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim, TempMesh, Thread->TempMemory);
+    /* BuildWorldChunkMeshFromMarkedVoxels_Naieve(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim, TempMesh); */
 
     if (TempMesh->At)
     {
