@@ -1433,20 +1433,25 @@ BuildMipMesh( voxel *Voxels,
 
   s32 MipLevel = 2;
   v3i InnerDim = InnerMax - InnerMin;
-  auto TmpDim = 2+ InnerDim/MipLevel;
 
-  s32 TmpVol = s32(Volume(TmpDim));
-  auto TempVoxels = Allocate(voxel, TempMemory, TmpVol);
+  // Filter is 1 larger on each dim than the Src needs such that we can filter
+  // voxels on the exterior down to an additional cell
+  auto FilterDim = 2+ InnerDim/MipLevel;
+
+  s32 FilterVoxelCount = s32(Volume(FilterDim));
+  auto FilterVoxels = Allocate(voxel, TempMemory, FilterVoxelCount);
 
 
-  DimIterator(tX, tY, tZ, TmpDim)
+  DimIterator(tX, tY, tZ, FilterDim)
   {
-    s32 FilterIndex = GetIndex(tX, tY, tZ, TmpDim);
-    TempVoxels[FilterIndex].Flags = Voxel_Filled;
+    s32 FilterIndex = GetIndex(tX, tY, tZ, FilterDim);
+    FilterVoxels[FilterIndex].Flags = Voxel_Filled;
   }
 
 
 #if 1
+  // Filter Src voxels on the exterior edge down to _all_ the exterior filter cells
+  //
   for ( s32 zIndex = 0; zIndex < VoxDim.z; zIndex ++ )
   {
     for ( s32 yIndex = 0; yIndex < VoxDim.y; yIndex ++ )
@@ -1454,12 +1459,14 @@ BuildMipMesh( voxel *Voxels,
       for ( s32 xIndex = 0; xIndex < VoxDim.x; xIndex ++ )
       {
         v3i BaseP = V3i(xIndex, yIndex, zIndex);
+
+        // TODO(Jesse): Why would this be +1? nocheckin
         v3i FilterP = (BaseP+1)/MipLevel;
 
         // NOTE(Jesse): We constrain the filter output to be one filter cell 
         // larger than the inner dim on each side, but the whole input could be
         // larger than that still.  At the moment it is in Z only.
-        s32 FilterIndex = TryGetIndex(FilterP, TmpDim);
+        s32 FilterIndex = TryGetIndex(FilterP, FilterDim);
         if (FilterIndex > -1)
         {
           for (s32 MipIndex = 0; MipIndex < MipLevel; ++MipIndex)
@@ -1477,7 +1484,9 @@ BuildMipMesh( voxel *Voxels,
               s32 SrcIndex = TryGetIndex(SrcP, VoxDim);
               if (SrcIndex > -1)
               {
-                TempVoxels[FilterIndex].Flags &= Voxels[SrcIndex].Flags;
+
+                // FilterVoxels have the Filled flag set; don't carry forward the Src face flags
+                FilterVoxels[FilterIndex].Flags &= Voxels[SrcIndex].Flags;
               }
             }
           }
@@ -1490,6 +1499,7 @@ BuildMipMesh( voxel *Voxels,
 #endif
 
 
+  // Filter src voxels on the interior down to their target filter cell
   for ( s32 zIndex = InnerMin.z; zIndex < InnerMax.z; zIndex += MipLevel )
   {
     for ( s32 yIndex = InnerMin.y; yIndex < InnerMax.y; yIndex += MipLevel )
@@ -1521,24 +1531,24 @@ BuildMipMesh( voxel *Voxels,
 
         v3i TmpP = 1+ V3i(xIndex, yIndex, zIndex)/MipLevel;
 
-        s32 ThisTmpIndex = GetIndex(TmpP, TmpDim);
-        TempVoxels[ThisTmpIndex] = Aggregate;
+        s32 ThisTmpIndex = GetIndex(TmpP, FilterDim);
+        FilterVoxels[ThisTmpIndex] = Aggregate;
       }
     }
   }
 
-  MarkBoundaryVoxels_NoExteriorFaces( TempVoxels, TmpDim, {}, TmpDim );
+  MarkBoundaryVoxels_NoExteriorFaces( FilterVoxels, FilterDim, InnerMin, InnerMax );
 
 
-  for ( s32 z = 1; z < TmpDim.z-1; z++ )
+  for ( s32 z = 1; z < FilterDim.z-1; z++ )
   {
-    for ( s32 y = 1; y < TmpDim.y-1; y++ )
+    for ( s32 y = 1; y < FilterDim.y-1; y++ )
     {
-      for ( s32 x = 1; x < TmpDim.x-1; x++ )
+      for ( s32 x = 1; x < FilterDim.x-1; x++ )
       {
         voxel_position TmpVoxP = Voxel_Position(x,y,z);
-        s32 Index = GetIndex(TmpVoxP, TmpDim);
-        voxel *Voxel = TempVoxels + Index;
+        s32 Index = GetIndex(TmpVoxP, FilterDim);
+        voxel *Voxel = FilterVoxels + Index;
 
         voxel_position ActualP = TmpVoxP-1;
         /* u8 C =  ((Voxel->Color + RandomU32(&ColorEntropy)) & 0xFF); */
@@ -1549,38 +1559,38 @@ BuildMipMesh( voxel *Voxels,
 
         if (Voxel->Flags & Voxel_RightFace)
         {
-          v3 Dim = DoXStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_RightFace, Voxel->Color);
+          v3 Dim = DoXStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_RightFace, Voxel->Color);
           RightFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, RightFaceNormalData, FaceColors);
         }
         if (Voxel->Flags & Voxel_LeftFace)
         {
-          v3 Dim = DoXStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_LeftFace, Voxel->Color);
+          v3 Dim = DoXStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_LeftFace, Voxel->Color);
           LeftFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, LeftFaceNormalData, FaceColors);
         }
         if (Voxel->Flags & Voxel_BottomFace)
         {
-          v3 Dim = DoZStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_BottomFace, Voxel->Color);
+          v3 Dim = DoZStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_BottomFace, Voxel->Color);
           BottomFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, BottomFaceNormalData, FaceColors);
         }
 
         if (Voxel->Flags & Voxel_TopFace)
         {
-          v3 Dim = DoZStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_TopFace, Voxel->Color);
+          v3 Dim = DoZStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_TopFace, Voxel->Color);
           TopFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, TopFaceNormalData, FaceColors);
         }
         if (Voxel->Flags & Voxel_FrontFace)
         {
-          v3 Dim = DoYStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_FrontFace, Voxel->Color);
+          v3 Dim = DoYStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_FrontFace, Voxel->Color);
           FrontFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, FrontFaceNormalData, FaceColors);
         }
         if (Voxel->Flags & Voxel_BackFace)
         {
-          v3 Dim = DoYStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_BackFace, Voxel->Color);
+          v3 Dim = DoYStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_BackFace, Voxel->Color);
           BackFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, BackFaceNormalData, FaceColors);
         }
