@@ -1432,6 +1432,8 @@ BuildMipMesh( voxel *Voxels,
   Assert(VoxDim >= InnerMax);
 
   s32 MipLevel = 2;
+  /* s32 MipLevel = 4; */
+  /* s32 MipLevel = 8; */
   v3i InnerDim = InnerMax - InnerMin;
 
   // Filter is 1 larger on each dim than the Src needs such that we can filter
@@ -1460,10 +1462,11 @@ BuildMipMesh( voxel *Voxels,
       {
         v3i BaseP = V3i(xIndex, yIndex, zIndex);
 
-        // TODO(Jesse): Why would this be +1? nocheckin
-        v3i FilterP = (BaseP+1)/MipLevel;
+        // NOTE(Jesse): This has a +(MipLevel-1) because the Src voxels
+        // absolute positions don't line up with the filter.
+        v3i FilterP = (BaseP+(MipLevel-1))/MipLevel;
 
-        // NOTE(Jesse): We constrain the filter output to be one filter cell 
+        // NOTE(Jesse): We constrain the filter output to be one filter cell
         // larger than the inner dim on each side, but the whole input could be
         // larger than that still.  At the moment it is in Z only.
         s32 FilterIndex = TryGetIndex(FilterP, FilterDim);
