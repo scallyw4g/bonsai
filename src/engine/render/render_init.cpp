@@ -43,6 +43,14 @@ AllocateAndInitSsaoNoise(ao_render_group *AoGroup, memory_arena *GraphicsMemory)
   return SsaoNoiseTexture;
 }
 
+link_internal lighting_render_group
+MakeLightingRenderGroup()
+{
+  lighting_render_group Result = {};
+
+  return Result;
+}
+
 shader
 MakeLightingShader( memory_arena *GraphicsMemory,
                     g_buffer_textures *gTextures,
@@ -327,9 +335,9 @@ StandardCamera(camera* Camera, float FarClip, float DistanceFromTarget, canonica
 }
 
 game_lights *
-LightingInit(memory_arena *GraphicsMemory)
+LightingInit(game_lights *Lights, memory_arena *GraphicsMemory)
 {
-  game_lights *Lights = Allocate(game_lights, GraphicsMemory, 1);
+  /* game_lights *Lights = Allocate(game_lights, GraphicsMemory, 1); */
   Lights->Lights      = Allocate(light, GraphicsMemory, MAX_LIGHTS);
 
   Lights->ColorTex    = MakeTexture_RGB(V2i(MAX_LIGHTS, 1), 0, GraphicsMemory);
@@ -341,13 +349,21 @@ LightingInit(memory_arena *GraphicsMemory)
   return Lights;
 }
 
+link_internal b32
+InitializeLightingRenderGroup(lighting_render_group *Lighting, memory_arena *GraphicsMemory)
+{
+  b32 Result = True;
+
+  LightingInit(&Lighting->Lights, GraphicsMemory);
+
+  return Result;
+}
+
 graphics *
 GraphicsInit(memory_arena *GraphicsMemory)
 {
   graphics *Result = Allocate(graphics, GraphicsMemory, 1);
   Result->Memory = GraphicsMemory;
-
-  Result->Lights = LightingInit(GraphicsMemory);
 
   Result->Camera = Allocate(camera, GraphicsMemory, 1);
   StandardCamera(Result->Camera, 1000.f, 600.f, {});
@@ -378,6 +394,12 @@ GraphicsInit(memory_arena *GraphicsMemory)
 /* #define SHADOW_MAP_Z_MIN -512 */
 /* #define SHADOW_MAP_Z_MAX  512 */
 
+  lighting_render_group *Lighting = Allocate(lighting_render_group, GraphicsMemory, 1);
+  if (!InitializeLightingRenderGroup(Lighting, GraphicsMemory))
+  {
+    Error("Initializing Lighting Group");
+  }
+
   shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1);
   if (!InitializeShadowRenderGroup(SG, GraphicsMemory, V2i(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y)))
   {
@@ -402,7 +424,7 @@ GraphicsInit(memory_arena *GraphicsMemory)
 
   gBuffer->LightingShader =
     MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap,
-                       AoGroup->Texture, &SG->MVP, Result->Lights, Result->Camera,
+                       AoGroup->Texture, &SG->MVP, &Lighting->Lights, Result->Camera,
                        &SG->Sun.Position, &SG->Sun.Color);
 
   gBuffer->gBufferShader =
@@ -431,6 +453,7 @@ GraphicsInit(memory_arena *GraphicsMemory)
 
   AssertNoGlErrors;
 
+  Result->Lighting = Lighting;
   Result->SG = SG;
   Result->AoGroup = AoGroup;
   Result->gBuffer = gBuffer;

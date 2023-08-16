@@ -371,5 +371,5 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   Resources->CameraTarget->P.Offset += Offset * dt * Speed;
 
   v3 EmissionColor = Normalize(V3(3,1,0));
-  DoLight(Graphics->Lights, V3(0), EmissionColor);
+  DoLight(&Lighting->Lights, V3(0), EmissionColor);
 }

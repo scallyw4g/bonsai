@@ -104,7 +104,7 @@ DrawGBufferToFullscreenQuad( platform *Plat, graphics *Graphics )
 
   GL.UseProgram(Graphics->gBuffer->LightingShader.ID);
 
-  UpdateLightingTextures(Graphics->Lights);
+  UpdateLightingTextures(&Graphics->Lighting->Lights);
   Graphics->SG->MVP = NdcToScreenSpace * Graphics->SG->MVP;
 
   BindShaderUniforms(&Graphics->gBuffer->LightingShader);

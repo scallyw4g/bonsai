@@ -91,7 +91,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
   }
 #endif
 
-  Graphics->Lights->Count = 0;
+  Graphics->Lighting->Lights.Count = 0;
 
   b32 Result = True;
   return Result;
@@ -169,6 +169,7 @@ Bonsai_Render(engine_resources *Resources)
   RenderGBuffer(GpuMap, Graphics);
   RenderShadowMap(GpuMap, Graphics);
   RenderAoTexture(AoGroup);
+
   DrawGBufferToFullscreenQuad(Plat, Graphics);
 
   /* Debug_DrawTextureToDebugQuad( &Graphics->SG->DebugTextureShader ); */

@@ -11,23 +11,6 @@ g_quad_vertex_buffer_data[] =
    1.0f,  1.0f, 1.0f,
 };
 
-struct light
-{
-  v3 Position;
-  v3 Color;
-};
-
-struct game_lights
-{
-  texture *ColorTex;
-  texture *PositionTex;
-
-  r32 IndexToUV;
-
-  s32 Count; // Must be signed because of the shader
-  light *Lights;
-};
-
 struct RenderBasis
 {
   m4 ModelMatrix;
@@ -71,20 +54,6 @@ struct g_buffer_render_group
   shader gBufferShader;
 
   m4 ViewProjection;
-};
-
-struct shadow_render_group
-{
-  u32 FramebufferName;
-  s32 MVP_ID;
-
-  shader DebugTextureShader;
-  shader DepthShader;
-
-  m4 MVP;
-
-  texture *ShadowMap;
-  light Sun;
 };
 
 untextured_3d_geometry_buffer

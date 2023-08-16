@@ -9,9 +9,9 @@
 #include <engine/camera.h>
 
 #if PLATFORM_GL_IMPLEMENTATIONS
+#include <engine/light.h>
 #include <engine/render.h>
 #include <engine/graphics.h>
-#include <engine/light.h>
 #endif
 
 #include <engine/voxel_face.h>
