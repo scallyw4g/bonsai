@@ -52,6 +52,49 @@ MakeLightingRenderGroup()
 }
 
 shader
+MakeCompositeShader( memory_arena *GraphicsMemory,
+                     g_buffer_textures *gTextures,
+                     texture *ShadowMap,
+                     texture *Ssao,
+                     texture *LuminanceTex,
+                     m4 *ShadowMVP,
+                     camera *Camera )
+                     
+{
+  shader Shader = LoadShaders( CSz("composite.vertexshader"), CSz("composite.fragmentshader") );
+
+  shader_uniform **Current = &Shader.FirstUniform;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, gTextures->Color, "gColor");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, gTextures->Normal, "gNormal");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, gTextures->Position, "gPosition");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, ShadowMap, "shadowMap");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, Ssao, "Ssao");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, LuminanceTex, "LuminanceTex");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, Camera, "CameraP");
+  Current = &(*Current)->Next;
+
+  AssertNoGlErrors;
+
+  return Shader;
+}
+
+shader
 MakeLightingShader( memory_arena *GraphicsMemory,
                     g_buffer_textures *gTextures,
                     texture *ShadowMap,
@@ -334,30 +377,37 @@ StandardCamera(camera* Camera, float FarClip, float DistanceFromTarget, canonica
   return;
 }
 
-game_lights *
-LightingInit(game_lights *Lights, memory_arena *GraphicsMemory)
+#if 0
+link_internal b32
+InitializeLightingRenderGroup(lighting_render_group *Lighting, memory_arena *GraphicsMemory)
 {
-  /* game_lights *Lights = Allocate(game_lights, GraphicsMemory, 1); */
-  Lights->Lights      = Allocate(light, GraphicsMemory, MAX_LIGHTS);
+  game_lights *Lights = &Lighting->Lights;
 
+  // NOTE(Jesse): The lights positions and colors are passed to the GPU in textures, the old-school way.
   Lights->ColorTex    = MakeTexture_RGB(V2i(MAX_LIGHTS, 1), 0, GraphicsMemory);
   Lights->PositionTex = MakeTexture_RGB(V2i(MAX_LIGHTS, 1), 0, GraphicsMemory);
   AssertNoGlErrors;
 
   Lights->IndexToUV = 1.0f / MAX_LIGHTS;
 
-  return Lights;
-}
+  Lighting->Shader =
+    MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap,
+                       AoGroup->Texture, &SG->MVP, &Lighting->Lights, Result->Camera,
+                       &SG->Sun.Position, &SG->Sun.Color);
 
-link_internal b32
-InitializeLightingRenderGroup(lighting_render_group *Lighting, memory_arena *GraphicsMemory)
-{
-  b32 Result = True;
 
-  LightingInit(&Lighting->Lights, GraphicsMemory);
+  // NOTE(Jesse): This is used for bloom
+  Lighting->LuminanceFBO = GenFramebuffer();
+  Lighting->LuminanceTex = MakeTexture_RGB( V2i(LUMINANCE_MAP_RESOLUTION_X, LUMINANCE_MAP_RESOLUTION_Y), 0, GraphicsMemory);
 
+  GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->LuminanceFBO.ID);
+  FramebufferTexture(&Lighting->LuminanceFBO, Lighting->LuminanceTex);
+  SetDrawBuffers(&Lighting->LuminanceFBO);
+
+  b32 Result = CheckAndClearFramebuffer();
   return Result;
 }
+#endif
 
 graphics *
 GraphicsInit(memory_arena *GraphicsMemory)
@@ -371,41 +421,6 @@ GraphicsInit(memory_arena *GraphicsMemory)
   AllocateGpuElementBuffer(Result->GpuBuffers + 0, (u32)Megabytes(32));
   AllocateGpuElementBuffer(Result->GpuBuffers + 1, (u32)Megabytes(32));
 
-  /* MapGpuElementBuffer(Result->GpuBuffers+0); */
-  /* FlushBuffersToCard(Result->GpuBuffers+0); */
-
-  /* MapGpuElementBuffer(Result->GpuBuffers+1); */
-  /* FlushBuffersToCard(Result->GpuBuffers+1); */
-
-#if 1
-  // NOTE(Jesse): 32x1024 x2 == 64k at 32bit float
-#define SHADOW_MAP_RESOLUTION_X (16*1024)
-#define SHADOW_MAP_RESOLUTION_Y (16*1024)
-/* #define SHADOW_MAP_RESOLUTION_X (2*1024) */
-/* #define SHADOW_MAP_RESOLUTION_Y (2*1024) */
-
-#define SHADOW_MAP_X 1024
-#define SHADOW_MAP_Y 1024
-#define SHADOW_MAP_Z_MIN -1024
-#define SHADOW_MAP_Z_MAX  1024
-
-/* #define SHADOW_MAP_X 512 */
-/* #define SHADOW_MAP_Y 512 */
-/* #define SHADOW_MAP_Z_MIN -512 */
-/* #define SHADOW_MAP_Z_MAX  512 */
-
-  lighting_render_group *Lighting = Allocate(lighting_render_group, GraphicsMemory, 1);
-  if (!InitializeLightingRenderGroup(Lighting, GraphicsMemory))
-  {
-    Error("Initializing Lighting Group");
-  }
-
-  shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1);
-  if (!InitializeShadowRenderGroup(SG, GraphicsMemory, V2i(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y)))
-  {
-    SoftError("Initializing Shadow Buffer");// return False;
-  }
-#endif
 
   g_buffer_render_group *gBuffer = CreateGbuffer(GraphicsMemory);
   if (!InitGbufferRenderGroup(gBuffer, GraphicsMemory))
@@ -413,6 +428,11 @@ GraphicsInit(memory_arena *GraphicsMemory)
     Error("Initializing g_buffer_render_group"); return False;
   }
 
+  shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1);
+  if (!InitializeShadowRenderGroup(SG, GraphicsMemory, V2i(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y)))
+  {
+    SoftError("Initializing Shadow Buffer");// return False;
+  }
 
   ao_render_group *AoGroup = CreateAoRenderGroup(GraphicsMemory);
   if (!InitAoRenderGroup(AoGroup, GraphicsMemory))
@@ -420,12 +440,54 @@ GraphicsInit(memory_arena *GraphicsMemory)
     Error("Initializing ao_render_group"); return False;
   }
 
-  texture *SsaoNoiseTexture = AllocateAndInitSsaoNoise(AoGroup, GraphicsMemory);
+  lighting_render_group *Lighting = Allocate(lighting_render_group, GraphicsMemory, 1);
+#if 0
+  if (!InitializeLightingRenderGroup(Lighting, GraphicsMemory))
+  {
+    Error("Initializing Lighting Group");
+  }
+#endif
 
-  gBuffer->LightingShader =
-    MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap,
-                       AoGroup->Texture, &SG->MVP, &Lighting->Lights, Result->Camera,
-                       &SG->Sun.Position, &SG->Sun.Color);
+  // Initialize the lighting group
+  {
+    game_lights *Lights = &Lighting->Lights;
+    Lights->Lights = Allocate(light, GraphicsMemory, MAX_LIGHTS);
+
+    // NOTE(Jesse): The lights positions and colors are passed to the GPU in textures, the old-school way.
+    Lights->ColorTex    = MakeTexture_RGB(V2i(MAX_LIGHTS, 1), 0, GraphicsMemory);
+    Lights->PositionTex = MakeTexture_RGB(V2i(MAX_LIGHTS, 1), 0, GraphicsMemory);
+    AssertNoGlErrors;
+
+    Lights->IndexToUV = 1.0f / MAX_LIGHTS;
+
+    Lighting->Shader =
+      MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap,
+                         AoGroup->Texture, &SG->MVP, &Lighting->Lights, Result->Camera,
+                         &SG->Sun.Position, &SG->Sun.Color);
+
+
+    // NOTE(Jesse): This is used for bloom
+    Lighting->LuminanceFBO = GenFramebuffer();
+    Lighting->LuminanceTex = MakeTexture_RGB( V2i(LUMINANCE_MAP_RESOLUTION_X, LUMINANCE_MAP_RESOLUTION_Y), 0, GraphicsMemory);
+
+    Lighting->DebugLuminanceShader = MakeSimpleTextureShader(Lighting->LuminanceTex, GraphicsMemory);
+
+    GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->LuminanceFBO.ID);
+    FramebufferTexture(&Lighting->LuminanceFBO, Lighting->LuminanceTex);
+    SetDrawBuffers(&Lighting->LuminanceFBO);
+
+    if (CheckAndClearFramebuffer() == False)
+    {
+      Error("Initializing Lighting Group");
+    }
+  }
+
+  // Initialize the composite group
+  {
+    Result->CompositeGroup.Shader = MakeCompositeShader( GraphicsMemory, gBuffer->Textures, SG->ShadowMap, AoGroup->Texture, Lighting->LuminanceTex, &SG->MVP, Result->Camera);
+  }
+
+  texture *SsaoNoiseTexture = AllocateAndInitSsaoNoise(AoGroup, GraphicsMemory);
 
   gBuffer->gBufferShader =
     CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection, Result->Camera);

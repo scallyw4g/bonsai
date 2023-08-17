@@ -32,6 +32,12 @@ struct shadow_render_group
 struct lighting_render_group
 {
   game_lights Lights;
+
+  framebuffer LuminanceFBO;
+  texture *LuminanceTex;
+
+  shader Shader;
+  shader DebugLuminanceShader;
 };
 
 void
@@ -48,4 +54,24 @@ DoLight(game_lights *Lights, v3 Position, v3 Color)
 
  return;
 }
+
+#define LUMINANCE_MAP_RESOLUTION_X (SCR_WIDTH)
+#define LUMINANCE_MAP_RESOLUTION_Y (SCR_HEIGHT)
+
+// TODO(Jesse): Make a shadow.h ?
+// NOTE(Jesse): 32x1024 x2 == 64k at 32bit float
+#define SHADOW_MAP_RESOLUTION_X (16*1024)
+#define SHADOW_MAP_RESOLUTION_Y (16*1024)
+/* #define SHADOW_MAP_RESOLUTION_X (2*1024) */
+/* #define SHADOW_MAP_RESOLUTION_Y (2*1024) */
+
+#define SHADOW_MAP_X 1024
+#define SHADOW_MAP_Y 1024
+#define SHADOW_MAP_Z_MIN -1024
+#define SHADOW_MAP_Z_MAX  1024
+
+/* #define SHADOW_MAP_X 512 */
+/* #define SHADOW_MAP_Y 512 */
+/* #define SHADOW_MAP_Z_MIN -512 */
+/* #define SHADOW_MAP_Z_MAX  512 */
 

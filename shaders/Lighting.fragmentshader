@@ -1,6 +1,6 @@
 
 in vec2 gBufferUV;
-out vec4 OutColor;
+layout (location = 0) out vec4 OutColor;
 
 
 uniform sampler2D gColor;
@@ -75,23 +75,24 @@ void main()
   ivec2 texelCoord = ivec2(gBufferUV*gBufferTextureDim);
   vec4 FragPosition = texelFetch(gPosition, texelCoord, 0);
 
-  vec3 ToneMapped;
   vec3 KeyLightContrib = vec3(0.f);
   vec3 BackLightContrib = vec3(0.f);
   vec3 CameraToFrag = normalize(FragPosition.xyz - CameraP); // TODO(Jesse): Pass this to the lighting calc that needs it
 
-  vec3 Diffuse = texelFetch(gColor, texelCoord, 0).rgb;
+  /* vec3 Diffuse = texelFetch(gColor, texelCoord, 0).rgb; */
+  vec3 Diffuse = vec3(1.f);
   vec3 FragNormal = texelFetch(gNormal, texelCoord, 0).rgb;
   /* vec3 FragNormal   = texture(gNormal, gBufferUV).rgb; */
 
   vec3 ShadowVisibility = vec3(1.0f);
 
-  r32 DiscardThresh = f32_MAX;
-  if (FragPosition.x == DiscardThresh)
-  {
-    ToneMapped = V3(0.2f, 0.2f, 0.2f);
-  }
-  else
+  vec3 TotalLight = vec3(0.f);
+  /* r32 DiscardThresh = f32_MAX; */
+  /* if (FragPosition.x == DiscardThresh) */
+  /* { */
+  /*   TotalLight = vec3(1.f); */
+  /* } */
+  /* else */
   {
     /* OutColor = V4(FragPosition, 1.f); */
     /* return; */
@@ -227,7 +228,7 @@ void main()
     /* OutColor = vec4(ShadowVisibility, 1.f); */
     /* return; */
 
-#if 1
+#if 0
     /*
      *  Fog
      */
@@ -246,10 +247,10 @@ void main()
      *  Tone-mapping && gamma correction
      */
 
-    vec3 TotalLight = (KeyLightContrib*ShadowVisibility) +
-                      (PointLightsContrib) +
-                      (BlurredAO*BackLightContrib) +
-                      Fog;
+    TotalLight = (KeyLightContrib*ShadowVisibility) +
+                 (BackLightContrib*BlurredAO) +
+                 (PointLightsContrib) +
+                 Fog;
 
     /* vec3 TotalLight = (KeyLightContrib) + */
     /*                   (PointLightsContrib) + */
@@ -257,8 +258,6 @@ void main()
     /*                   Fog; */
 
 
-    // Reinhard tone mapping
-    ToneMapped = TotalLight / (TotalLight + vec3(1.0f));
   }
 
   float Shine = 0.f;
@@ -270,10 +269,12 @@ void main()
   /* OutColor = vec4(KeyLightContrib*10.f, 1.f); */
 
   /* OutColor = vec4( (KeyLightContrib*ShadowVisibility*100.f), 1.f); */
-  /* OutColor = vec4( (ShadowVisibility*100.f), 1.f); */
+  /* OutColor = vec4( (ShadowVisibility), 1.f); */
   /* OutColor = vec4(FogContrib, FogContrib, FogContrib, 1.f) * vec4(FogColor, 1.f); */
   /* OutColor = vec4(ToneMapped, 1.f); */
+  /* OutColor = vec4(1.f, 0.f, 0.f, 1.f); */
+  OutColor = vec4(TotalLight, 1.f);
 
   // Gamma correction
-  OutColor = vec4(pow(ToneMapped, vec3(1.0f / gamma)), 1.0f) + Shine;
+  /* OutColor = vec4(pow(ToneMapped, vec3(1.0f / gamma)), 1.0f) + Shine; */
 }

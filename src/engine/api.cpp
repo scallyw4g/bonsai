@@ -166,13 +166,19 @@ Bonsai_Render(engine_resources *Resources)
   SG->Sun.Position.y = Cos(MappedGameTime);
   SG->Sun.Position.z = Cos(MappedGameTime)*0.7f + 1.3f;
 
+  // NOTE(Jesse): GBuffer and ShadowMap must be rendered in series because they
+  // both do operate on the total scene geometry The rest of the render passes
+  // operate on the textures they create and only render a quad.
   RenderGBuffer(GpuMap, Graphics);
   RenderShadowMap(GpuMap, Graphics);
+
+  RenderLuminanceTexture(GpuMap, Lighting, Graphics);
   RenderAoTexture(AoGroup);
 
-  DrawGBufferToFullscreenQuad(Plat, Graphics);
+  CompositeAndDisplay(Plat, Graphics);
 
-  /* Debug_DrawTextureToDebugQuad( &Graphics->SG->DebugTextureShader ); */
+  Debug_DrawTextureToDebugQuad(&Graphics->Lighting->DebugLuminanceShader);
+  /* Debug_DrawTextureToDebugQuad(&Graphics->SG->DebugTextureShader); */
   /* Debug_DrawTextureToDebugQuad(&AoGroup->DebugSsaoShader); */
   /* Debug_DrawTextureToDebugQuad(&Graphics->gBuffer->DebugColorShader); */
   /* Debug_DrawTextureToDebugQuad(&Graphics->gBuffer->DebugPositionShader); */

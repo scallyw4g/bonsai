@@ -50,7 +50,7 @@ struct g_buffer_render_group
   shader DebugNormalShader;
   shader DebugPositionShader;
 
-  shader LightingShader;
+  /* shader LightingShader; */
   shader gBufferShader;
 
   m4 ViewProjection;
