@@ -182,6 +182,58 @@ CreateAoRenderGroup(memory_arena *Mem)
   return Result;
 }
 
+link_internal gaussian_render_group
+MakeGaussianBlurRenderGroup(memory_arena *GraphicsMemory)
+{
+  gaussian_render_group Result = {};
+  /* unsigned int pingpongFBO[2]; */
+  /* unsigned int pingPongTexture[2]; */
+
+  Result.Shader = LoadShaders(CSz("Passthrough.vertexshader"), CSz("Gaussian.fragmentshader"));
+
+  Result.FBOs[0] = GenFramebuffer();
+  Result.FBOs[1] = GenFramebuffer();
+
+  for (s32 Index = 0; Index < 2; ++Index)
+  {
+    GL.BindFramebuffer(GL_FRAMEBUFFER, Result.FBOs[Index].ID);
+
+    Result.Textures[Index] = GenTexture(V2i(SCR_WIDTH, SCR_HEIGHT), GraphicsMemory);
+    GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, 0);
+
+    FramebufferTexture(&Result.FBOs[Index], Result.Textures[Index]);
+
+    Ensure(CheckAndClearFramebuffer());
+  }
+
+  Result.DebugTextureShader0 = MakeSimpleTextureShader(Result.Textures[0], GraphicsMemory);
+  Result.DebugTextureShader1 = MakeSimpleTextureShader(Result.Textures[1], GraphicsMemory);
+
+  /* shader_uniform **Current = &Result.Shader.FirstUniform; */
+  /* *Current = GetUniform(GraphicsMemory, &Result.Shader, 0, "SrcTexture"); */
+  /* Current = &(*Current)->Next; */
+
+  /* /1* glGenFramebuffers(2, Result.pingpongFBO); *1/ */
+  /* glGenTextures(2, Result.pingPongTexture); */
+
+  /* for (unsigned int i = 0; i < 2; i++) */
+  /* { */
+  /*   glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[i]); */
+  /*   glBindTexture(GL_TEXTURE_2D, Group.pingPongTexture[i]); */
+  /*   glTexImage2D( */
+  /*       GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL */
+  /*   ); */
+  /*   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); */
+  /*   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); */
+  /*   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); */
+  /*   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); */
+  /*   glFramebufferTexture2D( */
+  /*       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, Group.pingPongTexture[i], 0 */
+  /*   ); */
+  /* } */
+  return Result;
+}
+
 g_buffer_render_group *
 CreateGbuffer(memory_arena *Memory)
 {
@@ -485,6 +537,11 @@ GraphicsInit(memory_arena *GraphicsMemory)
   // Initialize the composite group
   {
     Result->CompositeGroup.Shader = MakeCompositeShader( GraphicsMemory, gBuffer->Textures, SG->ShadowMap, AoGroup->Texture, Lighting->LuminanceTex, &SG->MVP, Result->Camera);
+  }
+
+  // Initialize the gaussian blur render group
+  {
+    Result->Gaussian = MakeGaussianBlurRenderGroup(GraphicsMemory);
   }
 
   texture *SsaoNoiseTexture = AllocateAndInitSsaoNoise(AoGroup, GraphicsMemory);

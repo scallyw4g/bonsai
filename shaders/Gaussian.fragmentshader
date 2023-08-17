@@ -1,0 +1,43 @@
+// NOTE(Jesse): Ripped from here : https://learnopengl.com/Advanced-Lighting/Bloom
+//
+// There are some more resources linked from that page that might be useful
+//
+// https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
+// https://kalogirou.net/2006/05/20/how-to-do-good-bloom-for-hdr-rendering/
+
+in vec2 UV;
+out vec4 FragColor;
+
+uniform sampler2D SrcImage;
+
+uniform bool horizontal;
+
+float weight[5] = float[] (0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216);
+
+void main()
+{
+    vec2 tex_offset = 1.f / vec2(textureSize(SrcImage, 0)); // gets size of single texel
+    vec3 result = texture(SrcImage, UV).rgb * weight[0];
+    if(horizontal)
+    {
+        for(int i = 1; i < 5; ++i)
+        {
+            result += texture(SrcImage, UV + vec2(tex_offset.x * float(i), 0.0)).rgb * weight[i];
+            result += texture(SrcImage, UV - vec2(tex_offset.x * float(i), 0.0)).rgb * weight[i];
+        }
+    }
+    else
+    {
+        for(int i = 1; i < 5; ++i)
+        {
+            result += texture(SrcImage, UV + vec2(0.0, tex_offset.y * float(i))).rgb * weight[i];
+            result += texture(SrcImage, UV - vec2(0.0, tex_offset.y * float(i))).rgb * weight[i];
+        }
+    }
+    FragColor = vec4(result, 1.0);
+
+    /* FragColor = vec4(1.f, 0.f, 0.f, 1.0); */
+    /* FragColor = vec4(UV, 0.f, 1.f); */
+    /* vec3 Texel = texture(SrcImage, UV).rgb; */
+    /* FragColor = vec4(Texel, 1.0); */
+}

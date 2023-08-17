@@ -53,7 +53,7 @@ link_internal void
 Debug_DrawTextureToDebugQuad( shader *DebugShader )
 {
   GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
-  SetViewport(V2(256));
+  SetViewport(V2(256)*2);
 
   GL.UseProgram(DebugShader->ID);
   BindShaderUniforms(DebugShader);
@@ -165,6 +165,55 @@ RenderLuminanceTexture(gpu_mapped_element_buffer *GpuMap, lighting_render_group 
   AssertNoGlErrors;
 }
 
+link_internal void
+GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *DestFBO)
+{
+  bool horizontal = true, first_iteration = true;
+  u32 amount = 50;
+  /* u32 amount = 1; */
+
+  UseShader(&Group->Shader);
+
+  for (u32 i = 0; i < amount; i++)
+  {
+    b32 last_iteration = (i == amount-1);
+
+    if (last_iteration)
+    {
+      GL.BindFramebuffer(GL_FRAMEBUFFER, DestFBO->ID);
+    }
+    else
+    {
+      GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBOs[horizontal].ID);
+    }
+
+
+    BindUniform(&Group->Shader, CSz("horizontal"), horizontal);
+
+    texture *Tex;
+    if (first_iteration)
+    {
+      Tex = TexIn;
+    }
+    else
+    {
+      Tex = Group->Textures[!horizontal];
+    }
+
+
+
+    /* GL.BindTexture( GL_TEXTURE_2D, Tex->ID ); */
+    BindUniform(&Group->Shader, CSz("SrcImage"), Tex, 0);
+
+    RenderQuad();
+
+    horizontal = !horizontal;
+    if (first_iteration) first_iteration = false;
+  }
+
+  GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 link_internal gpu_mapped_element_buffer *
 GetCurrentGpuMap(graphics *Graphics)
 {
@@ -271,6 +320,12 @@ ClearFramebuffers(graphics *Graphics)
 
   /* glBindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName); */
   /* glClear(GL_DEPTH_BUFFER_BIT); */
+
+  for (s32 Index = 0; Index < 2; ++Index)
+  {
+    GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Gaussian.FBOs[Index].ID);
+    GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  }
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
   GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
