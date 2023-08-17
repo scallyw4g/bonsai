@@ -93,7 +93,7 @@ GetEngineResources()
 
 #define UNPACK_GRAPHICS_RESOURCES(Res)                                    \
   graphics                  *Graphics      =  Res->Graphics;              \
-  lighting_render_group     *Lighting      =  Graphics->Lighting;         \
+  lighting_render_group     *Lighting      = &Graphics->Lighting;         \
   renderer_2d               *GameUi        = &Res->GameUiRenderer;        \
   gpu_mapped_element_buffer *GpuMap        =  GetCurrentGpuMap(Graphics); \
   g_buffer_render_group     *gBuffer       =  Graphics->gBuffer;          \

@@ -56,10 +56,10 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
                      g_buffer_textures *gTextures,
                      texture *ShadowMap,
                      texture *Ssao,
-                     texture *LuminanceTex,
+                     texture *BloomTex,
+                     texture *LightingTex,
                      m4 *ShadowMVP,
                      camera *Camera )
-                     
 {
   shader Shader = LoadShaders( CSz("composite.vertexshader"), CSz("composite.fragmentshader") );
 
@@ -80,7 +80,10 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
   *Current = GetUniform(GraphicsMemory, &Shader, Ssao, "Ssao");
   Current = &(*Current)->Next;
 
-  *Current = GetUniform(GraphicsMemory, &Shader, LuminanceTex, "LuminanceTex");
+  *Current = GetUniform(GraphicsMemory, &Shader, BloomTex, "BloomTex");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, BloomTex, "LightingTex");
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
@@ -399,36 +402,6 @@ InitializeShadowRenderGroup(shadow_render_group *SG, memory_arena *GraphicsMemor
   return true;
 }
 
-void
-StandardCamera(camera* Camera, float FarClip, float DistanceFromTarget, canonical_position InitialTarget)
-{
-  Clear(Camera);
-
-  Camera->Frust.farClip = FarClip;
-  Camera->Frust.nearClip = 1.0f;
-  Camera->Frust.width = 30.0f;
-  Camera->Frust.FOV = 45.0f;
-
-  Camera->Up = WORLD_Z;
-  Camera->Right = WORLD_X;
-
-  Camera->Pitch = PI32 - (PI32*0.25f);
-  Camera->Yaw = PI32*0.15f;
-
-  Camera->DistanceFromTarget = DistanceFromTarget;
-
-  /* UpdateCameraP( */
-  /*     Canonical_Position(Voxel_Position(1,1,1), World_Position(0,0,0)), */
-  /*     Camera, */
-  /*     WorldChunkDim); */
-
-  /* input *Input = 0; */
-  /* v2 MouseDelta = {}; */
-  /* UpdateGameCamera(World, MouseDelta, Input, InitialTarget, Camera); */
-
-  return;
-}
-
 #if 0
 link_internal b32
 InitializeLightingRenderGroup(lighting_render_group *Lighting, memory_arena *GraphicsMemory)
@@ -449,12 +422,12 @@ InitializeLightingRenderGroup(lighting_render_group *Lighting, memory_arena *Gra
 
 
   // NOTE(Jesse): This is used for bloom
-  Lighting->LuminanceFBO = GenFramebuffer();
-  Lighting->LuminanceTex = MakeTexture_RGB( V2i(LUMINANCE_MAP_RESOLUTION_X, LUMINANCE_MAP_RESOLUTION_Y), 0, GraphicsMemory);
+  Lighting->FBO = GenFramebuffer();
+  Lighting->BloomTex = MakeTexture_RGB( V2i(LUMINANCE_MAP_RESOLUTION_X, LUMINANCE_MAP_RESOLUTION_Y), 0, GraphicsMemory);
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->LuminanceFBO.ID);
-  FramebufferTexture(&Lighting->LuminanceFBO, Lighting->LuminanceTex);
-  SetDrawBuffers(&Lighting->LuminanceFBO);
+  GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->FBO.ID);
+  FramebufferTexture(&Lighting->FBO, Lighting->BloomTex);
+  SetDrawBuffers(&Lighting->FBO);
 
   b32 Result = CheckAndClearFramebuffer();
   return Result;
@@ -492,7 +465,7 @@ GraphicsInit(memory_arena *GraphicsMemory)
     Error("Initializing ao_render_group"); return False;
   }
 
-  lighting_render_group *Lighting = Allocate(lighting_render_group, GraphicsMemory, 1);
+  lighting_render_group *Lighting = &Result->Lighting;
 #if 0
   if (!InitializeLightingRenderGroup(Lighting, GraphicsMemory))
   {
@@ -519,24 +492,41 @@ GraphicsInit(memory_arena *GraphicsMemory)
 
 
     // NOTE(Jesse): This is used for bloom
-    Lighting->LuminanceFBO = GenFramebuffer();
-    Lighting->LuminanceTex = MakeTexture_RGB( V2i(LUMINANCE_MAP_RESOLUTION_X, LUMINANCE_MAP_RESOLUTION_Y), 0, GraphicsMemory);
+    Lighting->FBO = GenFramebuffer();
+    Lighting->LightingTex = MakeTexture_RGB( V2i(LUMINANCE_MAP_RESOLUTION_X, LUMINANCE_MAP_RESOLUTION_Y), 0, GraphicsMemory);
+    Lighting->BloomTex    = MakeTexture_RGB( V2i(LUMINANCE_MAP_RESOLUTION_X, LUMINANCE_MAP_RESOLUTION_Y), 0, GraphicsMemory);
 
-    Lighting->DebugLuminanceShader = MakeSimpleTextureShader(Lighting->LuminanceTex, GraphicsMemory);
+    Lighting->DebugBloomShader    = MakeSimpleTextureShader(Lighting->BloomTex, GraphicsMemory);
+    Lighting->DebugLightingShader = MakeSimpleTextureShader(Lighting->LightingTex, GraphicsMemory);
 
-    GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->LuminanceFBO.ID);
-    FramebufferTexture(&Lighting->LuminanceFBO, Lighting->LuminanceTex);
-    SetDrawBuffers(&Lighting->LuminanceFBO);
+    GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->FBO.ID);
+    FramebufferTexture(&Lighting->FBO, Lighting->LightingTex);
+    FramebufferTexture(&Lighting->FBO, Lighting->BloomTex);
+
+    SetDrawBuffers(&Lighting->FBO);
 
     if (CheckAndClearFramebuffer() == False)
     {
       Error("Initializing Lighting Group");
     }
+
+    Lighting->BloomTextureFBO = GenFramebuffer();
+
+    GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->BloomTextureFBO.ID);
+    GL.BindTexture(GL_TEXTURE_2D, Lighting->BloomTex->ID);
+    FramebufferTexture(&Lighting->BloomTextureFBO, Lighting->BloomTex);
+    SetDrawBuffers(&Lighting->BloomTextureFBO);
+
+    if (CheckAndClearFramebuffer() == False)
+    {
+      Error("Initializing Lighting Group");
+    }
+
   }
 
   // Initialize the composite group
   {
-    Result->CompositeGroup.Shader = MakeCompositeShader( GraphicsMemory, gBuffer->Textures, SG->ShadowMap, AoGroup->Texture, Lighting->LuminanceTex, &SG->MVP, Result->Camera);
+    Result->CompositeGroup.Shader = MakeCompositeShader( GraphicsMemory, gBuffer->Textures, SG->ShadowMap, AoGroup->Texture, Lighting->LightingTex, Lighting->BloomTex, &SG->MVP, Result->Camera);
   }
 
   // Initialize the gaussian blur render group
@@ -572,7 +562,6 @@ GraphicsInit(memory_arena *GraphicsMemory)
 
   AssertNoGlErrors;
 
-  Result->Lighting = Lighting;
   Result->SG = SG;
   Result->AoGroup = AoGroup;
   Result->gBuffer = gBuffer;

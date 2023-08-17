@@ -1,4 +1,3 @@
-
 link_internal void
 UpdateCameraP(world *World, canonical_position NewTarget, camera *Camera)
 {

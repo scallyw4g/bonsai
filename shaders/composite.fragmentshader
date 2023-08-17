@@ -7,7 +7,8 @@ uniform sampler2D gColor;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 
-uniform sampler2D LuminanceTex;
+uniform sampler2D BloomTex;
+uniform sampler2D LightingTex;
 uniform sampler2D shadowMap;
 uniform sampler2D Ssao;
 
@@ -30,10 +31,11 @@ void main()
 
   vec3 ToneMapped;
 
-  vec3 Diffuse = texelFetch(gColor, texelCoord, 0).rgb;
-  vec3 FragNormal = texelFetch(gNormal, texelCoord, 0).rgb;
-  /* vec3 FragNormal   = texture(gNormal, gBufferUV).rgb; */
-  vec3 Luminance   = texture(LuminanceTex, gBufferUV).rgb;
+  vec3 Diffuse       = texelFetch(gColor, texelCoord, 0).rgb;
+  vec3 FragNormal    = texelFetch(gNormal, texelCoord, 0).rgb;
+  /* vec3 FragNormal = texture(gNormal, gBufferUV).rgb; */
+  vec3 Lighting      = texture(LightingTex, gBufferUV).rgb;
+  vec3 Bloom         = texture(BloomTex, gBufferUV).rgb;
 
 #if USE_SSAO_SHADER
   vec2 texelSize = 1.0 / vec2(textureSize(Ssao, 0));
@@ -76,7 +78,7 @@ void main()
    *  Tone-mapping && gamma correction
    */
 
-  vec3 TotalLight = (Diffuse * Luminance);
+  vec3 TotalLight = (Diffuse * Lighting) + Bloom;
 
   // Reinhard tone mapping
   ToneMapped = TotalLight / (TotalLight + vec3(1.0f));
@@ -89,7 +91,8 @@ void main()
   /* OutColor = vec4( (ShadowVisibility*100.f), 1.f); */
   /* OutColor = vec4(FogContrib, FogContrib, FogContrib, 1.f) * vec4(FogColor, 1.f); */
   /* OutColor = vec4(ToneMapped, 1.f); */
-  /* OutColor = vec4(Luminance, 1.f); */
+  /* OutColor = vec4(Lighting, 1.f); */
+  /* OutColor = vec4(Bloom, 1.f); */
 
   // Gamma correction
   OutColor = vec4(pow(ToneMapped, vec3(1.0f / gamma)), 1.0f);

@@ -22,8 +22,8 @@ struct graphics
   g_buffer_render_group  *gBuffer;
   ao_render_group        *AoGroup;
   shadow_render_group    *SG;
-  lighting_render_group  *Lighting;
 
+  lighting_render_group  Lighting;
   gaussian_render_group  Gaussian;
   composite_render_group CompositeGroup;
 

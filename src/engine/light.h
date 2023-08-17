@@ -33,11 +33,20 @@ struct lighting_render_group
 {
   game_lights Lights;
 
-  framebuffer LuminanceFBO;
-  texture *LuminanceTex;
+  // This has both the Lighting and Bloom textures attached
+  framebuffer FBO;
+
+  // NOTE(Jesse): This is an FBO with only the Bloom texture attached; for
+  // writing the final result of the gaussian blur to
+  framebuffer BloomTextureFBO;
+
+  texture *LightingTex;
+  texture *BloomTex;
 
   shader Shader;
-  shader DebugLuminanceShader;
+
+  shader DebugBloomShader;
+  shader DebugLightingShader;
 };
 
 void

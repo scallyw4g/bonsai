@@ -1,6 +1,7 @@
 
 in vec2 gBufferUV;
 layout (location = 0) out vec4 OutColor;
+layout (location = 1) out vec3 BloomColor;
 
 
 uniform sampler2D gColor;
@@ -79,8 +80,8 @@ void main()
   vec3 BackLightContrib = vec3(0.f);
   vec3 CameraToFrag = normalize(FragPosition.xyz - CameraP); // TODO(Jesse): Pass this to the lighting calc that needs it
 
-  /* vec3 Diffuse = texelFetch(gColor, texelCoord, 0).rgb; */
-  vec3 Diffuse = vec3(1.f);
+  vec3 Diffuse = texelFetch(gColor, texelCoord, 0).rgb;
+  /* vec3 Diffuse = vec3(1.f); */
   vec3 FragNormal = texelFetch(gNormal, texelCoord, 0).rgb;
   /* vec3 FragNormal   = texture(gNormal, gBufferUV).rgb; */
 
@@ -136,14 +137,17 @@ void main()
       float LightAtt = 1.0f/(Distance*Distance);
 
       vec3 reflectionVector = reflect(FragToLight, FragNormal);
-      vec3 FragToCamera = normalize(FragPosition.xyz - CameraP);
-      float cosAngle = max(0.0, dot(FragToCamera, reflectionVector));
+      vec3 CameraToFrag = normalize(FragPosition.xyz - CameraP);
+      float cosAngle = max(0.f, dot(CameraToFrag, reflectionVector));
       float SpecularPower = pow(cosAngle, materialShininess);
 
       vec3 DirectLight = (Diffuse + LightColor) * LightCosTheta * LightAtt;
-      vec3 SpecularLight = (Diffuse + LightColor) * SpecularPower * LightAtt;
+      vec3 SpecularLight = vec3(0.f);
+
+      if (LightCosTheta > 0.f) SpecularLight = (Diffuse + LightColor) * SpecularPower * LightAtt;
 
       PointLightsContrib += DirectLight + SpecularLight;
+      /* PointLightsContrib += SpecularLight; */
     }
 #endif
 
@@ -274,6 +278,15 @@ void main()
   /* OutColor = vec4(ToneMapped, 1.f); */
   /* OutColor = vec4(1.f, 0.f, 0.f, 1.f); */
   OutColor = vec4(TotalLight, 1.f);
+
+  if (length(TotalLight) > 0.7f)
+  {
+    BloomColor = TotalLight * Diffuse;
+  }
+  else
+  {
+    BloomColor = vec3(1.f);
+  }
 
   // Gamma correction
   /* OutColor = vec4(pow(ToneMapped, vec3(1.0f / gamma)), 1.0f) + Shine; */

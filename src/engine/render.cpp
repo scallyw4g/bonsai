@@ -150,12 +150,13 @@ RenderLuminanceTexture(gpu_mapped_element_buffer *GpuMap, lighting_render_group 
 {
   SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
 
-  UpdateLightingTextures(&Graphics->Lighting->Lights);
+  UpdateLightingTextures(&Graphics->Lighting.Lights);
 
   // TODO(Jesse): Explain this.
   Graphics->SG->MVP = NdcToScreenSpace * Graphics->SG->MVP;
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->LuminanceFBO.ID);
+  GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->FBO.ID);
+  /* GL.SetDrawBuffers(); */
 
   UseShader(&Lighting->Shader);
 
@@ -169,7 +170,7 @@ link_internal void
 GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *DestFBO)
 {
   bool horizontal = true, first_iteration = true;
-  u32 amount = 50;
+  u32 amount = 25;
   /* u32 amount = 1; */
 
   UseShader(&Group->Shader);
@@ -187,7 +188,6 @@ GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *D
       GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBOs[horizontal].ID);
     }
 
-
     BindUniform(&Group->Shader, CSz("horizontal"), horizontal);
 
     texture *Tex;
@@ -199,8 +199,6 @@ GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *D
     {
       Tex = Group->Textures[!horizontal];
     }
-
-
 
     /* GL.BindTexture( GL_TEXTURE_2D, Tex->ID ); */
     BindUniform(&Group->Shader, CSz("SrcImage"), Tex, 0);
@@ -315,7 +313,7 @@ ClearFramebuffers(graphics *Graphics)
   GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->gBuffer->FBO.ID);
   GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Lighting->LuminanceFBO.ID);
+  GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Lighting.FBO.ID);
   GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   /* glBindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName); */
