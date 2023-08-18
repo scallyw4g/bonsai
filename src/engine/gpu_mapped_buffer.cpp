@@ -27,7 +27,7 @@ FlushBuffersToCard(gpu_mapped_element_buffer* GpuMap)
 
   if (BufferUnmapped == False) { Error("glUnmapBuffer Failed"); }
 
-  GL.BindBuffer(GL_ARRAY_BUFFER, 0);
+  /* GL.BindBuffer(GL_ARRAY_BUFFER, 0); */
 
   return;
 }

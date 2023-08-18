@@ -127,8 +127,6 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                                          ChunkInitFlag_ComputeStandingSpots );
       }
 
-      FinalizeChunkInitialization(Chunk);
-
     } break;
 
     case type_work_queue_entry_copy_buffer_ref:
@@ -175,7 +173,29 @@ enum player_action
 poof(generate_string_table(player_action))
 #include <generated/generate_string_table_player_action.h>
 
-void
+link_internal void
+DoBittyLight(engine_resources *Resources, entity *E)
+{
+  UNPACK_ENGINE_RESOURCES(Resources);
+
+  v3 P = GetRenderP(World->ChunkDim, E, Camera) + V3(0.f, 0.f, 0.1f);
+
+  r32 Intensity = Max(0.f, E->Emitter->RemainingLifespan / E->Emitter->EmissionLifespan);
+  DoLight(&Lighting->Lights, P, V3(0.77f, 0.42f, 0.03f)*Intensity );
+}
+
+link_internal void
+DoSplosionLight(engine_resources *Resources, entity *E)
+{
+  UNPACK_ENGINE_RESOURCES(Resources);
+
+  v3 P = GetRenderP(World->ChunkDim, E, Camera) + V3(0.f, 0.f, 0.1f);
+
+  r32 Intensity = Max(0.f, E->Emitter->RemainingLifespan / E->Emitter->EmissionLifespan);
+  DoLight(&Lighting->Lights, P, V3(0.97f, 0.32f, 0.03f)*Intensity );
+}
+
+link_internal void
 DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position PickCP, f32 Radius, memory_arena *TempMemory)
 {
   UNPACK_ENGINE_RESOURCES(Resources);
@@ -206,7 +226,7 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
     t = Clamp01(t);
 
 
-    v3 MaxPower = V3(15.f, 15.f, 3.f) * Radius;
+    v3 MaxPower = V3(25.f, 25.f, 4.f) * Radius;
     v3 Power = Lerp(t, MaxPower, V3(0) );
 
     /* DebugLine("t(%f) Power(%f,%f,%f)", t, Power.x, Power.y, Power.z); */
@@ -220,6 +240,7 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
     entity *E = GetFreeEntity(EntityTable);
     SpawnEntity( E, EntityType_ParticleSystem, 0, ModelIndex_None);
     E->P = PickCP + V3(0.5f);
+    E->Update = DoSplosionLight;
     SpawnExplosion(E, &Global_GameEntropy, {}, Radius);
   }
   {
@@ -248,6 +269,9 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
     E->Physics.Force.z = Abs(E->Physics.Force.z) * 0.25f;
     E->P = PickCP + (Rnd*Radius) + V3(0.f, 0.f, 2.0f);
     E->P.Offset.z = PickCP.Offset.z + 2.f;
+
+    E->Update = DoBittyLight;
+
     SpawnSplotionBitty(E, &Global_GameEntropy, {}, .1f);
   }
 #endif

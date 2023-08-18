@@ -15,11 +15,30 @@
 //
 //                   back
 
+/* global_variable v3 ShimmerFix = {}; */
+/* global_variable f32 ShimmerStrength = 0.0005f; */
+/* global_variable f32 ShimmerStrength = -0.0005f; */
+global_variable f32 ShimmerStrength = 0.f;
+global_variable v3 ShimmerFix = {{ShimmerStrength, ShimmerStrength, ShimmerStrength}};
+
+global_variable v3 TopPlane  = {{ 1.f, 1.f, 0.f }};
+global_variable v3 BotPlane  = {{ 1.f, 1.f, 0.f }};
+
+global_variable v3 LeftPlane  = {{ 0.f, 1.f, 1.f }};
+global_variable v3 RightPlane = {{ 0.f, 1.f, 1.f }};
+
+global_variable v3 FrontPlane = {{ 1.f, 0.f, 1.f }};
+global_variable v3 BackPlane  = {{ 1.f, 0.f, 1.f }};
+
 
 inline void
 RightFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
-  v3 MaxP = MinP + Diameter;
+  v3 MaxP = MinP + Diameter + (ShimmerFix*RightPlane);
+  MinP -= ShimmerFix;
+
+  /* Round(MaxP); */
+  /* Round(MinP); */
 
   //  0    1
   //
@@ -49,7 +68,11 @@ global_variable v3 RightFaceNormalData[] =
 inline void
 LeftFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
-  v3 MaxP = MinP + Diameter;
+  v3 MaxP = MinP + Diameter + (ShimmerFix*LeftPlane);
+  MinP -= ShimmerFix;
+
+  /* Round(MaxP); */
+  /* Round(MinP); */
 
   //  0    1
   //
@@ -79,7 +102,11 @@ global_variable v3 LeftFaceNormalData[] =
 inline void
 BackFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
-  v3 MaxP = MinP + Diameter;
+  v3 MaxP = MinP + Diameter + (ShimmerFix*BackPlane);
+  MinP -= ShimmerFix;
+
+  /* Round(MaxP); */
+  /* Round(MinP); */
 
   //  0    3
   //
@@ -109,7 +136,11 @@ global_variable v3 BackFaceNormalData[] =
 inline void
 FrontFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
-  v3 MaxP = MinP + Diameter;
+  v3 MaxP = MinP + Diameter + (ShimmerFix*FrontPlane);
+  MinP -= ShimmerFix;
+
+  /* Round(MaxP); */
+  /* Round(MinP); */
 
   //  7    4
   //
@@ -140,7 +171,11 @@ global_variable v3 FrontFaceNormalData[] =
 inline void
 TopFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
-  v3 MaxP = MinP + Diameter;
+  v3 MaxP = MinP + Diameter + (ShimmerFix*TopPlane);
+  MinP -= ShimmerFix;
+
+  /* Round(MaxP); */
+  /* Round(MinP); */
 
   //  4    7
   //
@@ -172,13 +207,19 @@ inline void
 BottomFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
   /* TIMED_FUNCTION(); */
+  v3 MaxP = MinP + Diameter + (ShimmerFix*BotPlane);
+  MinP -= ShimmerFix;
+
+  /* Round(MaxP); */
+  /* Round(MinP); */
+
   r32 Temp[] = {
-    MinP.x + Diameter.x , MinP.y              , MinP.z ,
-    MinP.x              , MinP.y              , MinP.z ,
-    MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z ,
-    MinP.x              , MinP.y + Diameter.y , MinP.z ,
-    MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z ,
-    MinP.x              , MinP.y              , MinP.z ,
+    MaxP.x , MinP.y , MinP.z ,
+    MinP.x , MinP.y , MinP.z ,
+    MaxP.x , MaxP.y , MinP.z ,
+    MinP.x , MaxP.y , MinP.z ,
+    MaxP.x , MaxP.y , MinP.z ,
+    MinP.x , MinP.y , MinP.z ,
   };
 
   MemCopy((u8*)Temp, (u8*)Result, sizeof(Temp));

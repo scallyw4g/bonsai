@@ -19,7 +19,7 @@
 # ./make.sh BuildDebugSystem
 # ./make.sh BuildBundledExamples
 
-./make.sh BuildAll -O0
+# ./make.sh BuildAll -O0
 # ./make.sh BuildAll -O2
 
 # OPT="-O2"
@@ -28,6 +28,8 @@
 #     BuildDebugSystem
 
 # OPT="-O2"
-# ./make.sh $OPT \
-#     BuildSingleExample examples/turn_based2
+./make.sh $OPT \
+    BuildExecutables \
+    BuildSingleExample examples/turn_based \
+    BuildSingleExample examples/turn_based2
 

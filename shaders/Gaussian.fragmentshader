@@ -1,0 +1,75 @@
+// NOTE(Jesse): Ripped from here : https://learnopengl.com/Advanced-Lighting/Bloom
+//
+// There are some more resources linked from that page that might be useful
+// https://kalogirou.net/2006/05/20/how-to-do-good-bloom-for-hdr-rendering/
+
+in vec2 UV;
+out vec4 FragColor;
+
+uniform sampler2D SrcImage;
+
+uniform bool horizontal;
+
+#if 0
+
+#define FILTER_LENGTH (5)
+float weight[FILTER_LENGTH] = float[] (0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216);
+/* float weight[FILTER_LENGTH] = float[] (0.03825501, 0.02979303, 0.01807039, 0.00853585, 0.00314016); */
+
+void main()
+{
+    vec2 tex_offset = 1.f / vec2(textureSize(SrcImage, 0)); // gets size of single texel
+    vec3 result = texture(SrcImage, UV).rgb * weight[0];
+    if(horizontal)
+    {
+        for(int i = 1; i < FILTER_LENGTH; ++i)
+        {
+            result += texture(SrcImage, UV + vec2(tex_offset.x * float(i), 0.0)).rgb * weight[i];
+            result += texture(SrcImage, UV - vec2(tex_offset.x * float(i), 0.0)).rgb * weight[i];
+        }
+    }
+    else
+    {
+        for(int i = 1; i < FILTER_LENGTH; ++i)
+        {
+            result += texture(SrcImage, UV + vec2(0.0, tex_offset.y * float(i))).rgb * weight[i];
+            result += texture(SrcImage, UV - vec2(0.0, tex_offset.y * float(i))).rgb * weight[i];
+        }
+    }
+    FragColor = vec4(result, 1.0);
+}
+
+#else
+
+// Implementation taking advantage of bilinear sampling
+//
+// https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
+
+float offset[3] = float[](0.0, 1.3846153846, 3.2307692308);
+float weight[3] = float[](0.2270270270, 0.3162162162, 0.0702702703);
+
+vec4 C;
+
+void main(void) {
+
+    C = texture(SrcImage, UV) * weight[0];
+
+  if(horizontal)
+  {
+    for (int i=1; i<3; i++) {
+      C += texture(SrcImage, UV + vec2(offset[i], 0.f) / float(SCR_WIDTH)) * weight[i];
+      C += texture(SrcImage, UV - vec2(offset[i], 0.f) / float(SCR_WIDTH)) * weight[i];
+    }
+  }
+  else
+  {
+    for (int i=1; i<3; i++) {
+      C += texture(SrcImage, UV + vec2(0.f, offset[i]) / float(SCR_HEIGHT)) * weight[i];
+      C += texture(SrcImage, UV - vec2(0.f, offset[i]) / float(SCR_HEIGHT)) * weight[i];
+    }
+  }
+
+  FragColor = C;
+}
+
+#endif

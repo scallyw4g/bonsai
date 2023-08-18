@@ -93,6 +93,7 @@ GetEngineResources()
 
 #define UNPACK_GRAPHICS_RESOURCES(Res)                                    \
   graphics                  *Graphics      =  Res->Graphics;              \
+  lighting_render_group     *Lighting      = &Graphics->Lighting;         \
   renderer_2d               *GameUi        = &Res->GameUiRenderer;        \
   gpu_mapped_element_buffer *GpuMap        =  GetCurrentGpuMap(Graphics); \
   g_buffer_render_group     *gBuffer       =  Graphics->gBuffer;          \
@@ -172,13 +173,16 @@ struct particle_system
   particle_spawn_type SpawnType;
 
   r32 Drag;
+
   r32 EmissionLifespan; // How long the system emits for
+  r32 RemainingLifespan;
 
   u32 ActiveParticles;
 
   r32 LifespanMod;
   r32 ParticleLifespan; // How long an individual particle lasts
   r32 ParticlesPerSecond;
+  r32 ParticleLightEmission; // Are particles emissive?
 
   v3 ParticleStartingDim;
   f32 ParticleEndingDim;
@@ -421,7 +425,7 @@ Spawned(entity *Entity)
 inline b32
 Active(particle_system *System)
 {
-  b32 Result = (System->EmissionLifespan > 0) || (System->ActiveParticles > 0);
+  b32 Result = (System->RemainingLifespan > 0.f) || (System->ActiveParticles > 0);
   return Result;
 }
 

@@ -368,6 +368,30 @@ GetSimSpaceAABB(world *World, world_chunk *Chunk)
   return Result;
 }
 
+inline bool
+IsRightChunkBoundary( chunk_dimension ChunkDim, int idx )
+{
+  return (idx+1) % (int)ChunkDim.x == 0;
+}
+
+inline bool
+IsLeftChunkBoundary( chunk_dimension ChunkDim, int idx )
+{
+  return (idx) % (int)ChunkDim.x == 0;
+}
+
+inline bool
+IsTopChunkBoundary( chunk_dimension ChunkDim, int idx )
+{
+  return ((idx/(int)ChunkDim.x)+1) % (int)ChunkDim.y == 0;
+}
+
+inline bool
+IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
+{
+  return (idx/(int)ChunkDim.x) % (int)ChunkDim.y == 0;
+}
+
 global_variable v3i Global_StandingSpotDim = V3i(8,8,3);
 global_variable v3 Global_StandingSpotHalfDim = Global_StandingSpotDim/2.f;
 
