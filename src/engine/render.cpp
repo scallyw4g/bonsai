@@ -170,7 +170,7 @@ link_internal void
 GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *DestFBO)
 {
   bool horizontal = true, first_iteration = true;
-  u32 amount = 25;
+  u32 amount = 10;
   /* u32 amount = 1; */
 
   UseShader(&Group->Shader);

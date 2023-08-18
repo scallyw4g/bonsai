@@ -79,9 +79,14 @@ void main()
    */
 
   vec3 TotalLight = (Diffuse * Lighting) + Bloom;
+  /* vec3 TotalLight = (Diffuse * Lighting) * 2.f; */
 
-  // Reinhard tone mapping
-  ToneMapped = TotalLight / (TotalLight + vec3(1.0f));
+  // Reinhard tone mapping (pretty bad)
+  /* ToneMapped = TotalLight / (TotalLight + vec3(1.0f)); */
+
+  float Exposure = 2.f;
+  // tone mapping from https://learnopengl.com/Advanced-Lighting/Bloom
+  ToneMapped = vec3(1.0) - exp(-TotalLight * Exposure);
 
   /* OutColor = vec4(Diffuse, 1.f); */
   /* OutColor = vec4(abs(FragNormal), 1.f); */

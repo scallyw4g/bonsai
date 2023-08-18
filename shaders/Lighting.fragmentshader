@@ -40,8 +40,8 @@ float BlurredAO = 0.0f;
 /* vec3 SunColor = vec3(1,1,1); */
 /* float Global_LightPower = 0.0005f; // 0.005 == dusk */
 /* float Global_LightPower = 0.005f; // 1.000 == full sun */
-/* float Global_LightPower = 0.05f; */
-float Global_LightPower = 0.5f;
+float Global_LightPower = 0.05f;
+/* float Global_LightPower = 0.5f; */
 vec3 AmbientLightColor = V3(0.25, 0.4, 0.7);
 /* float Global_LightPower = 1.0f; // 1.0 == full sun */
 
