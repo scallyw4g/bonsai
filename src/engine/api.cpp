@@ -161,10 +161,51 @@ Bonsai_Render(engine_resources *Resources)
 
   r32 MappedGameTime = Plat->GameTime / 18.0f;
   /* r32 MappedGameTime = Plat->GameTime; */
+  /* r32 MappedGameTime = Plat->GameTime/2.f; */
+
+  /* r32 tDaytime = (Cos(MappedGameTime) + 1.f) / 2.f; */
+  r32 tDaytime = Cos(MappedGameTime);
+  r32 tPostApex = Sin(MappedGameTime);
+
+  f32 SunIntensity = 1.f;
+  f32 MoonIntensity = 0.01f;
+
+  f32 DawnIntensity = 0.5f;
+  f32 DuskIntensity = 0.1f;
+
+  v3 DawnColor = Normalize(V3(0.3f, 0.2f, 0.2f)) * DawnIntensity;
+  v3 SunColor  = Normalize(V3(0.2f, 0.2f, 0.3f)) * SunIntensity;
+  v3 DuskColor = Normalize(V3(0.4f, 0.2f, 0.2f)) * DuskIntensity;
+  v3 MoonColor = Normalize(V3(0.2f, 0.2f, 0.5f)) * MoonIntensity;
+
+  if (tDaytime > 0.f)
+  {
+    if (tPostApex > 0.f)
+    {
+      SG->Sun.Color = Lerp(tDaytime, DuskColor, SunColor);
+    }
+    else
+    {
+      SG->Sun.Color = Lerp(tDaytime, DawnColor, SunColor);
+    }
+  }
+  else
+  {
+    /* SG->Sun.Color = V3(0.15f); */
+    if (tPostApex > 0.f)
+    {
+      SG->Sun.Color = Lerp(Abs(tDaytime), DuskColor, MoonColor);
+    }
+    else
+    {
+      SG->Sun.Color = Lerp(Abs(tDaytime), DawnColor, MoonColor);
+    }
+  }
 
   SG->Sun.Position.x = Sin(MappedGameTime);
-  SG->Sun.Position.y = Cos(MappedGameTime);
-  SG->Sun.Position.z = Cos(MappedGameTime)*0.7f + 1.3f;
+  SG->Sun.Position.y = tDaytime;
+  SG->Sun.Position.z = tDaytime*0.7f + 1.3f;
+
 
   // NOTE(Jesse): GBuffer and ShadowMap must be rendered in series because they
   // both do operate on the total scene geometry The rest of the render passes
