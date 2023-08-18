@@ -120,9 +120,7 @@ void main()
 
     vec3 PointLightsContrib = V3(0.f);
 #if 1
-    for ( s32 LightIndex = 0;
-          LightIndex < LightCount;
-          ++LightIndex)
+    for ( s32 LightIndex = 0; LightIndex < LightCount; ++LightIndex )
     {
       ivec2 LightUV = ivec2(LightIndex, 0);
 
@@ -141,10 +139,10 @@ void main()
       float cosAngle = max(0.f, dot(CameraToFrag, reflectionVector));
       float SpecularPower = pow(cosAngle, materialShininess);
 
-      vec3 DirectLight = (Diffuse + LightColor) * LightCosTheta * LightAtt;
+      vec3 DirectLight = LightColor * LightCosTheta * LightAtt;
       vec3 SpecularLight = vec3(0.f);
 
-      if (LightCosTheta > 0.f) SpecularLight = (Diffuse + LightColor) * SpecularPower * LightAtt;
+      if (LightCosTheta > 0.f) SpecularLight = LightColor * SpecularPower * LightAtt;
 
       PointLightsContrib += DirectLight + SpecularLight;
       /* PointLightsContrib += SpecularLight; */
