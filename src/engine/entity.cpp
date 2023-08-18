@@ -446,46 +446,15 @@ SpawnProjectile(entity** EntityTable,
 void
 UnspawnParticleSystem(particle_system *System)
 {
-  System->EmissionLifespan = 0.f;
+  System->RemainingLifespan = 0.f;
 }
 
-#if 0
+#if 1
 void
-SpawnParticleSystem(particle_system *System, particle_system_init_params *Params)
+SpawnParticleSystem(particle_system *System)
 {
   Assert(Inactive(System));
-
-  /* poof( */
-  /*   func (particle_system_init_params TParams) */
-  /*   { */
-  /*     TParams.map_members (M) */
-  /*     { */
-  /*       System->(M.name) = Params->(M.name); */
-  /*     } */
-  /*   } */
-  /* ) */
-
-  System->SpawnRegion = Params->SpawnRegion;
-  System->SystemMovementCoefficient = Params->SystemMovementCoefficient;
-
-  System->EmissionLifespan = Params->EmissionLifespan;
-  System->ParticlesPerSecond = Params->ParticlesPerSecond;
-
-  System->LifespanMod = Params->LifespanMod;
-  System->ParticleLifespan = Params->ParticleLifespan;
-
-  System->ParticleTurbMin = Params->ParticleTurbMin;
-  System->ParticleTurbMax = Params->ParticleTurbMax;
-
-  System->ParticleStartingDim = Params->ParticleStartingDim;
-
-  System->Entropy = Params->Entropy;
-  System->Drag = Params->Drag;
-  System->SpawnType = Params->SpawnType;
-
-  MemCopy( (u8*)&Params->Colors, (u8*)&System->Colors, sizeof(System->Colors) );
-
-  return;
+  System->RemainingLifespan = System->EmissionLifespan;
 }
 #endif
 
@@ -551,8 +520,11 @@ SpawnSplotionBitty(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius
 
   System->SpawnRegion = aabb(Offset, V3(Radius) );
 
-  System->EmissionLifespan = 1.0f;
+  /* System->EmissionLifespan = 1.0f; */
+  /* System->EmissionLifespan = 5.0f; */
+  /* System->EmissionLifespan = 15.0f; */
   /* System->EmissionLifespan = 0.23f; */
+  System->EmissionLifespan = 0.65f;
   System->LifespanMod = 0.25f;
   System->ParticleLifespan = 0.25f;
   System->ParticlesPerSecond = 20.0f;
@@ -567,7 +539,7 @@ SpawnSplotionBitty(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius
   System->SystemMovementCoefficient = 1.f;
   /* System->Drag = 11.0f; */
 
-  /* SpawnParticleSystem(Entity->Emitter, &Params); */
+  SpawnParticleSystem(Entity->Emitter);
 
   return;
 }
@@ -602,6 +574,10 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius)
   System->ParticleLifespan = 0.15f;
   System->ParticlesPerSecond = 500.0f*Radius;
 
+  // Fire particles are emissive
+
+  System->ParticleLightEmission = 4.f;
+
   /* System->Physics.Speed = 2; */
   /* System->Physics.Drag = V3(2.2f); */
   /* System->Physics.Mass = 3.0f; */
@@ -620,7 +596,7 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius)
   System->SystemMovementCoefficient = 0.1f;
   System->Drag = 11.0f;
 
-  /* SpawnParticleSystem(Entity->Emitter, &Params); */
+  SpawnParticleSystem(Entity->Emitter);
 
   return;
 }
@@ -676,7 +652,7 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim)
 
   System->SystemMovementCoefficient = 0.1f;
 
-  /* SpawnParticleSystem(Entity->Emitter, &Params); */
+  SpawnParticleSystem(Entity->Emitter);
 
   return;
 }
@@ -1341,14 +1317,14 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
 {
   TIMED_FUNCTION();
 
-  auto System      = Job->System;
+  particle_system *System      = Job->System;
   auto EntityDelta = Job->EntityDelta;
   auto dt          = Job->dt;
   v3 RenderSpaceP  = Job->RenderSpaceP;
 
-  if (System->EmissionLifespan < PARTICLE_SYSTEM_EMIT_FOREVER)
+  if (System->RemainingLifespan < PARTICLE_SYSTEM_EMIT_FOREVER)
   {
-    System->EmissionLifespan -= dt;
+    System->RemainingLifespan -= dt;
   }
 
   System->ElapsedSinceLastEmission += dt;
@@ -1357,7 +1333,7 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
 
   r32 SpawnInterval = 1.f/System->ParticlesPerSecond;
 
-  if (System->EmissionLifespan > 0)
+  if (System->RemainingLifespan > 0)
   {
     for (u32 SpawnIndex = 0; SpawnIndex < SpawnCount; ++SpawnIndex)
     {
@@ -1388,8 +1364,7 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
         u8 ColorIndex = (u8)((Particle->RemainingLifespan / MaxParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
         Assert(ColorIndex >= 0 && ColorIndex < PARTICLE_SYSTEM_COLOR_COUNT);
 
-        DrawVoxel( &Dest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 3.0f );
-
+        DrawVoxel( &Dest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, System->ParticleLightEmission);
 #if 0
         v3 EmissionColor = Normalize(V3(3,1,0));
         if (RandomUnilateral(&System->Entropy) > 0.99f)

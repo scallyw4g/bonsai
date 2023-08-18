@@ -56,8 +56,8 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
                      g_buffer_textures *gTextures,
                      texture *ShadowMap,
                      texture *Ssao,
-                     texture *BloomTex,
                      texture *LightingTex,
+                     texture *BloomTex,
                      m4 *ShadowMVP,
                      camera *Camera )
 {
@@ -83,7 +83,7 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
   *Current = GetUniform(GraphicsMemory, &Shader, BloomTex, "BloomTex");
   Current = &(*Current)->Next;
 
-  *Current = GetUniform(GraphicsMemory, &Shader, BloomTex, "LightingTex");
+  *Current = GetUniform(GraphicsMemory, &Shader, LightingTex, "LightingTex");
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
@@ -373,7 +373,7 @@ InitializeShadowRenderGroup(shadow_render_group *SG, memory_arena *GraphicsMemor
   GL.BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
 
   SG->Sun.Position = Normalize(V3(0,0,1));
-  /* SG->Sun->Color = Color; */
+  SG->Sun.Color = Normalize(V3(0.2f, 0.2f, 0.5f));
 
   SG->ShadowMap = MakeDepthTexture(ShadowMapResolution, GraphicsMemory);
 

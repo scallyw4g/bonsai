@@ -1,6 +1,6 @@
 
 in vec2 gBufferUV;
-layout (location = 0) out vec4 OutColor;
+layout (location = 0) out vec4 LightColor;
 layout (location = 1) out vec3 BloomColor;
 
 
@@ -18,6 +18,7 @@ uniform sampler2D LightPositions;
 
 uniform mat4 ShadowMVP;
 
+/* uniform float SunIntensity; */
 uniform vec3 SunPosition;
 uniform vec3 SunColor;
 uniform vec3 CameraP;
@@ -36,14 +37,16 @@ float BlurredAO = 0.0f;
 //
 // https://www.youtube.com/watch?v=-pdSjBPH3zM
 //
-/* vec3 SunPosition = vec3(0.5f, -1.0f, 0.5f); */
-/* vec3 SunColor = vec3(1,1,1); */
-/* float Global_LightPower = 0.0005f; // 0.005 == dusk */
-/* float Global_LightPower = 0.005f; // 1.000 == full sun */
-float Global_LightPower = 0.05f;
-/* float Global_LightPower = 0.5f; */
-vec3 AmbientLightColor = V3(0.25, 0.4, 0.7);
-/* float Global_LightPower = 1.0f; // 1.0 == full sun */
+
+// SunIntensity : 1.00f Full Sun
+// SunIntensity : 0.05f Dusk
+// SunIntensity : 0.005f Moonlight
+
+/* float SunIntensity = 0.0005f;
+/* float SunIntensity = 0.005f; */
+/* float SunIntensity = 0.05f; */
+float SunIntensity = 0.5f;
+/* float SunIntensity = 1.0f; */
 
 // Tuning
   float gamma = 2.2f;
@@ -57,15 +60,15 @@ vec3 SpecLightingCalc(float AttenuationFactor, vec3 DiffuseColor, vec3 FragToLig
   vec3 FragToCamera = normalize(FragPosition - CameraP);
   float cosAngle = max(0.0, dot(FragToCamera, reflectionVector));
   float SpecularPower = pow(cosAngle, materialShininess);
-  vec3 SpecularLight = DiffuseColor * SpecularPower; // * AttenuationFactor;
+  vec3 SpecularLight = DiffuseColor * SpecularPower;
 
   return SpecularLight;
 }
 
-vec3 DiffuseLightingCalc(float AttenuationFactor, vec3 DiffuseColor, vec3 FragToLight, vec3 FragNormal, vec3 CameraP)
+vec3 DiffuseLightingCalc(float AttenuationFactor, vec3 DiffuseColor, vec3 LightColor, vec3 FragToLight, vec3 FragNormal, vec3 CameraP)
 {
   float LightCosTheta = clamp( dot( FragNormal, FragToLight), 0.0f, 1.0f);
-  vec3 DirectLight = (DiffuseColor + SunColor) * LightCosTheta * AttenuationFactor;
+  vec3 DirectLight = DiffuseColor * LightColor * LightCosTheta * AttenuationFactor;
   return DirectLight;
 }
 
@@ -82,6 +85,11 @@ void main()
 
   vec3 Diffuse = texelFetch(gColor, texelCoord, 0).rgb;
   /* vec3 Diffuse = vec3(1.f); */
+
+  float Emission = texelFetch(gColor, texelCoord, 0).a;
+
+  /* Diffuse *= Emission; */
+
   vec3 FragNormal = texelFetch(gNormal, texelCoord, 0).rgb;
   /* vec3 FragNormal   = texture(gNormal, gBufferUV).rgb; */
 
@@ -95,25 +103,21 @@ void main()
   /* } */
   /* else */
   {
-    /* OutColor = V4(FragPosition, 1.f); */
+    /* LightColor = V4(FragPosition, 1.f); */
     /* return; */
 
 
-    /* vec3 Diffuse = texelFetch(gColor, texelCoord, 0).rgb; */
     float Emission = texelFetch(gColor, texelCoord, 0).a;
-    /* vec3 Diffuse      = texture(gColor, gBufferUV).rgb; */
-    /* float Emission    = texture(gColor, gBufferUV).a; */
-
-    /* vec3 AmbientLight = AmbientLightColor * Diffuse * Global_LightPower*0.1f * Emission; */
 
     {
       vec3 FragToLight = normalize(SunPosition);
       vec3 LightToFrag = -FragToLight;
 
-      float LightAtt = Global_LightPower;
-      BackLightContrib = DiffuseLightingCalc(0.15f*LightAtt, Diffuse, LightToFrag, FragNormal, CameraP);
-      KeyLightContrib = DiffuseLightingCalc(LightAtt, Diffuse, FragToLight, FragNormal, CameraP);
+      float LightAtt = SunIntensity;
+      KeyLightContrib = DiffuseLightingCalc(LightAtt, Diffuse, SunColor, FragToLight, FragNormal, CameraP);
       /* KeyLightContrib += SpecLightingCalc(LightAtt, Diffuse, FragToLight, FragPosition, FragNormal, CameraP); */
+
+      BackLightContrib = DiffuseLightingCalc(LightAtt, Diffuse, 0.15f*SunColor, LightToFrag, FragNormal, CameraP);
     }
 
 
@@ -139,7 +143,7 @@ void main()
       float cosAngle = max(0.f, dot(CameraToFrag, reflectionVector));
       float SpecularPower = pow(cosAngle, materialShininess);
 
-      vec3 DirectLight = LightColor * LightCosTheta * LightAtt;
+      vec3 DirectLight = Diffuse * LightColor * LightCosTheta * LightAtt;
       vec3 SpecularLight = vec3(0.f);
 
       if (LightCosTheta > 0.f) SpecularLight = LightColor * SpecularPower * LightAtt;
@@ -179,8 +183,8 @@ void main()
 
     vec4 FragPShadowSpace = ShadowMVP * vec4(FragPosition.xyz, 1.f);
     float FragDepth = FragPShadowSpace.z - acneBias;
-    /* OutColor = vec4(FragDepth, FragDepth, FragDepth, 1.f); */
-    /* OutColor = FragPShadowSpace; */
+    /* LightColor = vec4(FragDepth, FragDepth, FragDepth, 1.f); */
+    /* LightColor = FragPShadowSpace; */
     /* return; */
 
 
@@ -221,13 +225,13 @@ void main()
     if ( FragDepth > ShadowSampleDepth ) { ShadowVisibility -= sampleVis; }
 #endif
 
-    /* OutColor = vec4(vec3(FragDepth < ShadowSampleDepth ), 1.f); */
+    /* LightColor = vec4(vec3(FragDepth < ShadowSampleDepth ), 1.f); */
     /* return; */
 
 #endif
 
-    /* ShadowVisibility = max(ShadowVisibility, vec3(Global_LightPower)); */
-    /* OutColor = vec4(ShadowVisibility, 1.f); */
+    /* ShadowVisibility = max(ShadowVisibility, vec3(SunIntensity)); */
+    /* LightColor = vec4(ShadowVisibility, 1.f); */
     /* return; */
 
 #if 0
@@ -253,12 +257,17 @@ void main()
                  (BackLightContrib*BlurredAO) +
                  (PointLightsContrib) +
                  Fog;
+                 /* Emission * Diffuse + */
+
+    /* if (Emission > 1.f) */
+    /* { */
+    /*   TotalLight += Emission*Diffuse; */
+    /* } */
 
     /* vec3 TotalLight = (KeyLightContrib) + */
     /*                   (PointLightsContrib) + */
     /*                   (BlurredAO*BackLightContrib) + */
     /*                   Fog; */
-
 
   }
 
@@ -266,26 +275,19 @@ void main()
   /* Shine = clamp(pow(dot(SunPosition, CameraToFrag), 2.f), 0.f, 1.f); */
 
 
-  /* OutColor = vec4(Diffuse, 1.f); */
-  /* OutColor = vec4(abs(FragNormal), 1.f); */
-  /* OutColor = vec4(KeyLightContrib*10.f, 1.f); */
+  /* LightColor = vec4(Diffuse, 1.f); */
+  /* LightColor = vec4(abs(FragNormal), 1.f); */
+  /* LightColor = vec4(KeyLightContrib*10.f, 1.f); */
 
-  /* OutColor = vec4( (KeyLightContrib*ShadowVisibility*100.f), 1.f); */
-  /* OutColor = vec4( (ShadowVisibility), 1.f); */
-  /* OutColor = vec4(FogContrib, FogContrib, FogContrib, 1.f) * vec4(FogColor, 1.f); */
-  /* OutColor = vec4(ToneMapped, 1.f); */
-  /* OutColor = vec4(1.f, 0.f, 0.f, 1.f); */
-  OutColor = vec4(TotalLight, 1.f);
+  /* LightColor = vec4( (KeyLightContrib*ShadowVisibility*100.f), 1.f); */
+  /* LightColor = vec4( (ShadowVisibility), 1.f); */
+  /* LightColor = vec4(FogContrib, FogContrib, FogContrib, 1.f) * vec4(FogColor, 1.f); */
+  /* LightColor = vec4(LightColor, 1.f); */
+  /* LightColor = vec4(1.f, 0.f, 0.f, 1.f); */
+  LightColor = vec4(TotalLight, 1.f);
 
-  if (length(TotalLight) > 0.7f)
-  {
-    BloomColor = TotalLight * Diffuse;
-  }
-  else
-  {
-    BloomColor = vec3(1.f);
-  }
+  BloomColor = TotalLight + (Emission*Diffuse);
 
-  // Gamma correction
-  /* OutColor = vec4(pow(ToneMapped, vec3(1.0f / gamma)), 1.0f) + Shine; */
+  /* LightColor = vec4(Emission, Emission, Emission, 1.f);; */
+  /* BloomColor = vec3(Emission, Emission, Emission); */
 }

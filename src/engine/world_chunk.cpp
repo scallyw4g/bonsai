@@ -3188,8 +3188,8 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
   if ( DestChunk->FilledCount > 0) // && DestChunk->FilledCount < (u32)Volume(WorldChunkDim))
   {
     untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
-    BuildWorldChunkMeshFromMarkedVoxels_Greedy(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim, TempMesh, Thread->TempMemory);
-    /* BuildWorldChunkMeshFromMarkedVoxels_Naieve(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim, TempMesh); */
+    /* BuildWorldChunkMeshFromMarkedVoxels_Greedy(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim, TempMesh, Thread->TempMemory); */
+    BuildWorldChunkMeshFromMarkedVoxels_Naieve(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim, TempMesh);
 
     if (TempMesh->At)
     {

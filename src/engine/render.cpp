@@ -302,20 +302,21 @@ inline void
 ClearFramebuffers(graphics *Graphics)
 {
   TIMED_FUNCTION();
-  GL.ClearColor(f32_MAX, f32_MAX, f32_MAX, f32_MAX);
-  GL.ClearDepth(f64_MAX);
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName);
+  GL.ClearDepth(1.0); // NOTE(Jesse): Depth 1.0 is the furthest from the camera
+
+  GL.ClearColor(0.f, 0.f, 0.f, 1.f);
+
+  GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->gBuffer->FBO.ID);
   GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  // FIXME(Jesse): This is taking _forever_ on Linux (GLES) .. does it take
-  // forever on other Linux systems?
-  GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->gBuffer->FBO.ID);
+  GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName);
   GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Lighting.FBO.ID);
   GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+  // TODO(Jesse): Why exactly would this not be necessary?
   /* glBindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName); */
   /* glClear(GL_DEPTH_BUFFER_BIT); */
 
@@ -650,7 +651,7 @@ void
 DrawParticle(untextured_3d_geometry_buffer *Source, untextured_3d_geometry_buffer *Dest, u8 ColorIndex)
 {
   v4 FaceColors[VERTS_PER_FACE];
-  FillColorArray(ColorIndex, FaceColors, DefaultPalette, VERTS_PER_FACE);
+  FillColorArray(ColorIndex, FaceColors, DefaultPalette, VERTS_PER_FACE, 2.f);
   BufferVertsChecked( Source, Dest );
   return;
 }
