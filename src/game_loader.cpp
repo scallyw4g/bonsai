@@ -489,9 +489,16 @@ main( s32 ArgCount, const char ** Args )
 
     Ensure( EngineApi.Render(&EngineResources) );
 
-    // NOTE(Jesse): DEBUG_FRAME_END must come after the game geometry has rendered so the
-    // alpha-blended text works properly
+    // NOTE(Jesse): DEBUG_FRAME_END must come after the game geometry has
+    // rendered so the alpha-blended text works properly
     DEBUG_FRAME_END(&Plat.MouseP, &Plat.MouseDP, V2(Plat.WindowWidth, Plat.WindowHeight), &Plat.Input, Plat.dt, &EngineResources.EngineDebug.PickedChunks, 0);
+
+    DoEngineDebugMenu();
+
+    // NOTE(Jesse): This should probably render the last such that we can
+    // capture all the debug tracking info we want to
+    EngineResources.GameUiRenderer.ScreenDim = V2(Plat.WindowWidth, Plat.WindowHeight);
+    FlushCommandBuffer(&EngineResources.GameUiRenderer, EngineResources.GameUiRenderer.CommandBuffer);
 
     BonsaiSwapBuffers(EngineResources.Os);
 

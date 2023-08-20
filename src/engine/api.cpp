@@ -239,9 +239,6 @@ Bonsai_Render(engine_resources *Resources)
   /* DebugVisualize(GameUi, &Resources->MeshFreelist); */
   /* DebugVisualize(GameUi, Resources->World->FreeChunks, (s32)Resources->World->FreeChunkCount); */
 
-  Resources->GameUiRenderer.ScreenDim = V2(Plat->WindowWidth, Plat->WindowHeight);
-  FlushCommandBuffer(GameUi, GameUi->CommandBuffer);
-
   b32 Result = True;
   return Result;
 }

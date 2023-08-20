@@ -1,5 +1,3 @@
-#if PLATFORM_GL_IMPLEMENTATIONS
-
 link_internal void
 DebugVisualize(renderer_2d *Renderer, mesh_freelist *Freelist)
 {
@@ -79,4 +77,7 @@ DebugVisualize(renderer_2d *Renderer, world_chunk **FreeChunks, s32 FreeChunkCou
   PushWindowEnd(Renderer, Window);
 }
 
-#endif
+link_internal void
+DoEngineDebugMenu()
+{
+}
