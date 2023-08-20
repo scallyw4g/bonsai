@@ -495,6 +495,8 @@ main( s32 ArgCount, const char ** Args )
 
     BonsaiSwapBuffers(EngineResources.Os);
 
+    thread_local_state *TLS = GetThreadLocalState(ThreadLocal_ThreadIndex);
+    Ensure( RewindArena(TLS->TempMemory) );
     Ensure( RewindArena(TranArena) );
 
     r32 CurrentMS = (r32)GetHighPrecisionClock();
