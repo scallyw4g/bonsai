@@ -476,7 +476,6 @@ main( s32 ArgCount, const char ** Args )
     /*   if (IsDisconnected(&Plat.Network)) { ConnectToServer(&Plat.Network); } */
     /* END_BLOCK("Network Ops"); */
 
-    /* TIMED_BLOCK(" -- Frame --"); */
     Ensure( EngineApi.FrameBegin(&EngineResources) );
 
     TIMED_BLOCK("GameMain");

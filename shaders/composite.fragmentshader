@@ -29,13 +29,39 @@ void main()
 
   vec2 gBufferTextureDim = vec2(SCR_WIDTH, SCR_HEIGHT);
   ivec2 texelCoord = ivec2(gBufferUV*gBufferTextureDim);
-  vec4 FragPosition = texelFetch(gPosition, texelCoord, 0);
+
+  vec2 gBufferTexelStep = 1.0 / vec2(SCR_WIDTH, SCR_HEIGHT);
+
+  vec3 FragNormal = texture(gNormal, gBufferUV).rgb;
 
   /* vec3 Diffuse       = texelFetch(gColor, texelCoord, 0).rgb; */
-  /* vec3 FragNormal    = texelFetch(gNormal, texelCoord, 0).rgb; */
-  /* vec3 FragNormal = texture(gNormal, gBufferUV).rgb; */
   vec3 Lighting      = texture(LightingTex, gBufferUV).rgb;
   vec3 Bloom         = texture(BloomTex, gBufferUV).rgb;
+
+
+  // Super-poor ultra-jank not-good very-bad AA
+  // NOTE(Jesse): Unfortunately, this can't go in the lighting shader to save
+  // the FragNormal texture lookup here.  Reason being is that we're blending
+  // the lit pixel values, which aren't available in the lighting shader (obviously).
+  {
+    vec3 xNextFragNormal = texture(gNormal, gBufferUV+ vec2(gBufferTexelStep.x, 0) ).rgb;
+    if ( abs(dot(FragNormal, xNextFragNormal)) < 0.5f )
+    {
+      Lighting += texture(LightingTex, gBufferUV + vec2(gBufferTexelStep.x, 0) ).rgb;
+      Lighting/=2.f;
+    }
+
+    vec3 yNextFragNormal = texture(gNormal, gBufferUV+ vec2(0, gBufferTexelStep.y) ).rgb;
+    if ( abs(dot(FragNormal, yNextFragNormal)) < 0.5f )
+    {
+      Lighting += texture(LightingTex, gBufferUV + vec2(0, gBufferTexelStep.y) ).rgb;
+      Lighting/=2.f;
+    }
+  }
+
+
+
+  vec4 FragPosition = texelFetch(gPosition, texelCoord, 0);
 
 #if USE_SSAO_SHADER
   vec2 texelSize = 1.0 / vec2(textureSize(Ssao, 0));
