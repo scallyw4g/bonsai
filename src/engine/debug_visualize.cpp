@@ -77,7 +77,3 @@ DebugVisualize(renderer_2d *Renderer, world_chunk **FreeChunks, s32 FreeChunkCou
   PushWindowEnd(Renderer, Window);
 }
 
-link_internal void
-DoEngineDebugMenu()
-{
-}

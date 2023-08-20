@@ -59,7 +59,8 @@ struct engine_resources
 
   tiered_mesh_freelist MeshFreelist;
 
-  renderer_2d GameUiRenderer;
+  // TODO(Jesse): Put this in Graphics?
+  renderer_2d GameUi;
 
   engine_debug EngineDebug;
   debug_state *DebugState;
@@ -94,7 +95,7 @@ GetEngineResources()
 #define UNPACK_GRAPHICS_RESOURCES(Res)                                    \
   graphics                  *Graphics      =  Res->Graphics;              \
   lighting_render_group     *Lighting      = &Graphics->Lighting;         \
-  renderer_2d               *GameUi        = &Res->GameUiRenderer;        \
+  renderer_2d               *GameUi        = &Res->GameUi;        \
   gpu_mapped_element_buffer *GpuMap        =  GetCurrentGpuMap(Graphics); \
   g_buffer_render_group     *gBuffer       =  Graphics->gBuffer;          \
   camera                    *Camera        =  Graphics->Camera;

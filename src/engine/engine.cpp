@@ -25,9 +25,11 @@
 #include <engine/render/render_utils.cpp>
 #include <engine/render.cpp> // TODO(Jesse): Probably time to split this up?
 #include <engine/render/entity.cpp>
-#include <engine/debug_visualize.cpp>
 #endif
 
+// Facilities for debugging the engine
+#include <engine/debug_visualize.cpp>
+#include <engine/debug.cpp>
 #include <engine/api.cpp>
 #include <engine/simulate.cpp>
 #include <engine/voxel_synthesis.cpp>

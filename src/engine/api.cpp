@@ -45,7 +45,7 @@ Bonsai_Init(engine_resources *Resources)
   if (!Resources->Graphics) { Error("Initializing Graphics"); return False; }
 
   memory_arena *GraphicsMemory2D = AllocateArena();
-  InitRenderer2D(&Resources->GameUiRenderer, &Resources->Heap, GraphicsMemory2D, &Resources->Plat->MouseP, &Resources->Plat->MouseDP, &Resources->Plat->Input);
+  InitRenderer2D(&Resources->GameUi, &Resources->Heap, GraphicsMemory2D, &Resources->Plat->MouseP, &Resources->Plat->MouseDP, &Resources->Plat->Input);
 
   Resources->EntityTable = AllocateEntityTable(BonsaiInitArena, TOTAL_ENTITY_COUNT);
 
@@ -238,6 +238,16 @@ Bonsai_Render(engine_resources *Resources)
 
   /* DebugVisualize(GameUi, &Resources->MeshFreelist); */
   /* DebugVisualize(GameUi, Resources->World->FreeChunks, (s32)Resources->World->FreeChunkCount); */
+
+
+  {
+    DoEngineDebugMenu(GameUi);
+
+    // NOTE(Jesse): This should probably render the last such that we can
+    // capture all the debug tracking info we want to
+    GameUi->ScreenDim = V2(Plat->WindowWidth, Plat->WindowHeight);
+    FlushCommandBuffer(GameUi, GameUi->CommandBuffer);
+  }
 
   b32 Result = True;
   return Result;

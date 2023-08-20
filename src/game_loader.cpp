@@ -313,12 +313,7 @@ main( s32 ArgCount, const char ** Args )
   Assert(DebugLib);
   Assert(Global_DebugStatePointer);
   EngineResources.DebugState = Global_DebugStatePointer;
-
-  heap_allocator DebugHeap = InitHeap(Megabytes(128));
-  memory_arena *Arena = AllocateArena();
-  GetDebugState()->InitializeRenderSystem(&DebugHeap, Arena);
 #endif
-
 
   memory_arena *PlatMemory = AllocateArena();
   memory_arena *GameMemory = AllocateArena();
@@ -367,6 +362,11 @@ main( s32 ArgCount, const char ** Args )
 
   Ensure( EngineApi.OnLibraryLoad(&EngineResources) );
   Ensure( EngineApi.Init(&EngineResources) );
+
+
+#if DEBUG_SYSTEM_API
+  GetDebugState()->SetRenderer(&EngineResources.GameUi);
+#endif
 
   if (GameApi.WorkerMain)
   {
@@ -492,13 +492,6 @@ main( s32 ArgCount, const char ** Args )
     // NOTE(Jesse): DEBUG_FRAME_END must come after the game geometry has
     // rendered so the alpha-blended text works properly
     DEBUG_FRAME_END(&Plat.MouseP, &Plat.MouseDP, V2(Plat.WindowWidth, Plat.WindowHeight), &Plat.Input, Plat.dt, &EngineResources.EngineDebug.PickedChunks, 0);
-
-    DoEngineDebugMenu();
-
-    // NOTE(Jesse): This should probably render the last such that we can
-    // capture all the debug tracking info we want to
-    EngineResources.GameUiRenderer.ScreenDim = V2(Plat.WindowWidth, Plat.WindowHeight);
-    FlushCommandBuffer(&EngineResources.GameUiRenderer, EngineResources.GameUiRenderer.CommandBuffer);
 
     BonsaiSwapBuffers(EngineResources.Os);
 
