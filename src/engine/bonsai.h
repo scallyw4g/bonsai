@@ -5,35 +5,6 @@ struct world;
 struct heap_allocator;
 struct entity;
 
-#define MAX_PICKED_WORLD_CHUNKS (64)
-
-// TODO(Jesse)(metaprogramming, ptr): Once poof can accept pointer types we can generate this struct
-/* poof(static_buffer(world_chunk*, 64)) */
-/* #include <generated/buffer_world_chunk.h> */
-struct picked_world_chunk_static_buffer
-{
-  picked_world_chunk E[MAX_PICKED_WORLD_CHUNKS];
-  u64 At;
-};
-
-struct engine_debug
-{
-  picked_world_chunk_static_buffer PickedChunks;
-  texture_cursor Textures;
-};
-
-link_internal void
-Push(picked_world_chunk_static_buffer *Buf, world_chunk *Chunk, r32 t)
-{
-  if (Buf->At < MAX_PICKED_WORLD_CHUNKS)
-  {
-    Buf->E[Buf->At].Chunk = Chunk;
-    Buf->E[Buf->At].tChunk = t;
-
-    ++Buf->At;
-  }
-}
-
 struct engine_resources
 {
   os         *Os;
@@ -63,10 +34,14 @@ struct engine_resources
   // TODO(Jesse): Put this in Graphics?
   renderer_2d GameUi;
 
-  engine_debug EngineDebug;
   debug_state *DebugState;
+
+#if PLATFORM_GL_IMPLEMENTATIONS
+  engine_debug EngineDebug;
+#endif
 };
 
+// TODO(Jesse): Should this actually be a thing?
 global_variable engine_resources *Global_EngineResources;
 
 

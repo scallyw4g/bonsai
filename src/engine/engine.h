@@ -1,5 +1,6 @@
 #define BONSAI_ENGINE 1
-// TODO(Jesse): Why would we ever build the engine _without_ the GL implementations?
+
+#include <engine/debug.h>
 
 #include <engine/api.h>
 #include <engine/thread.h>

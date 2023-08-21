@@ -1,4 +1,3 @@
-
 struct ui_element_toggle_button
 {
   counted_string Text;
