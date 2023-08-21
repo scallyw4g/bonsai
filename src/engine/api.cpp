@@ -24,6 +24,7 @@ link_export b32
 Bonsai_Init(engine_resources *Resources)
 {
   TIMED_FUNCTION();
+  platform *Plat = Resources->Plat;
 
   b32 Result = True;
 
@@ -45,7 +46,7 @@ Bonsai_Init(engine_resources *Resources)
   if (!Resources->Graphics) { Error("Initializing Graphics"); return False; }
 
   memory_arena *GraphicsMemory2D = AllocateArena();
-  InitRenderer2D(&Resources->GameUi, &Resources->Heap, GraphicsMemory2D, &Resources->Plat->MouseP, &Resources->Plat->MouseDP, &Resources->Plat->Input);
+  InitRenderer2D(&Resources->GameUi, &Resources->Heap, GraphicsMemory2D, &Plat->MouseP, &Plat->MouseDP, &Plat->ScreenDim, &Plat->Input);
 
   Resources->EntityTable = AllocateEntityTable(BonsaiInitArena, TOTAL_ENTITY_COUNT);
 
@@ -83,6 +84,8 @@ Bonsai_FrameBegin(engine_resources *Resources)
     DEBUG_DrawLine_Aligned(&CopyDest, V3(0,0,0), V3(0, 0, 10000), BLUE, 0.15f );
   }
 #endif
+
+  UiFrameBegin(&Resources->GameUi);
 
 #if 0 // DEBUG_SYSTEM_API
   if (GetDebugState()->UiGroup.PressedInteractionId != StringHash("GameViewport"))
@@ -241,12 +244,12 @@ Bonsai_Render(engine_resources *Resources)
 
 
   {
-    DoEngineDebugMenu(GameUi);
+    /* DoEngineDebugMenu(GameUi); */
 
     // NOTE(Jesse): This should probably render the last such that we can
     // capture all the debug tracking info we want to
-    GameUi->ScreenDim = V2(Plat->WindowWidth, Plat->WindowHeight);
-    FlushCommandBuffer(GameUi, GameUi->CommandBuffer);
+    /* GameUi->ScreenDim = V2(Plat->WindowWidth, Plat->WindowHeight); */
+    /* FlushCommandBuffer(GameUi, GameUi->CommandBuffer); */
   }
 
   b32 Result = True;

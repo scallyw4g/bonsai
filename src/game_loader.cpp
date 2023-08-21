@@ -308,6 +308,8 @@ main( s32 ArgCount, const char ** Args )
   if (!OpenAndInitializeWindow(&Os, &Plat, VSyncFrames)) { Error("Initializing Window :( "); return 1; }
   Assert(Os.GlContext);
 
+  Ensure( InitializeOpenglFunctions() );
+
 #if DEBUG_SYSTEM_API
   shared_lib DebugLib = InitializeBonsaiDebug("./bin/lib_debug_system_loadable" PLATFORM_RUNTIME_LIB_EXTENSION, Global_ThreadStates);
   Assert(DebugLib);
@@ -407,8 +409,12 @@ main( s32 ArgCount, const char ** Args )
     v2 LastMouseP = Plat.MouseP;
     while ( ProcessOsMessages(&Os, &Plat) );
     Plat.MouseDP = LastMouseP - Plat.MouseP;
+    Plat.ScreenDim = V2(Plat.WindowWidth, Plat.WindowHeight);
 
     BindHotkeysToInput(&Hotkeys, &Plat.Input);
+
+    // NOTE(Jesse): Must come after input has been processed
+    UiFrameBegin(&EngineResources.GameUi);
 
     DEBUG_FRAME_BEGIN(Hotkeys.Debug_ToggleMenu, Hotkeys.Debug_ToggleProfiling);
 
@@ -489,9 +495,13 @@ main( s32 ArgCount, const char ** Args )
 
     Ensure( EngineApi.Render(&EngineResources) );
 
-    // NOTE(Jesse): DEBUG_FRAME_END must come after the game geometry has
-    // rendered so the alpha-blended text works properly
-    DEBUG_FRAME_END(&Plat.MouseP, &Plat.MouseDP, V2(Plat.WindowWidth, Plat.WindowHeight), &Plat.Input, Plat.dt, &EngineResources.EngineDebug.PickedChunks, 0);
+    DEBUG_FRAME_END(Plat.dt);
+
+    DoEngineDebugMenu(&EngineResources.GameUi);
+
+    // NOTE(Jesse): UiFrameEnd must come after the game geometry has rendered
+    // so the alpha-blended text works properly
+    UiFrameEnd(&EngineResources.GameUi);
 
     BonsaiSwapBuffers(EngineResources.Os);
 

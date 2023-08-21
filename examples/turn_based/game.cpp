@@ -521,15 +521,16 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   }
 
-  PushForceAdvance(GameUi, V2(0, 128));
+  local_persist window_layout ActionsWindow = {};
+  PushBorderlessWindowStart(GameUi, &ActionsWindow, V2(0, 128));
   for (u32 ActionIndex = 0; ActionIndex < PlayerAction_Count; ++ActionIndex)
   {
     ui_style *Style = ActionIndex == SelectedAction ? &DefaultSelectedStyle : &DefaultStyle;
     PushTableStart(GameUi);
       PushColumn(GameUi, ToString((player_action)ActionIndex), Style);
-      PushNewRow(GameUi);
     PushTableEnd(GameUi);
   }
+  PushWindowEnd(GameUi, &ActionsWindow);
 
 
   /* CameraFollowEntity(Hotkeys, Camera, GameState->CameraTarget); */
