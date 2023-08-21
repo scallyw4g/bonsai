@@ -497,7 +497,7 @@ main( s32 ArgCount, const char ** Args )
 
     DEBUG_FRAME_END(Plat.dt);
 
-    DoEngineDebugMenu(&EngineResources.GameUi);
+    DoEngineDebugMenu(&EngineResources.GameUi, &EngineResources.EngineDebug);
 
     // NOTE(Jesse): UiFrameEnd must come after the game geometry has rendered
     // so the alpha-blended text works properly

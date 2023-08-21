@@ -19,6 +19,7 @@ struct picked_world_chunk_static_buffer
 struct engine_debug
 {
   picked_world_chunk_static_buffer PickedChunks;
+  texture_cursor Textures;
 };
 
 link_internal void
