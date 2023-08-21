@@ -16,6 +16,7 @@ compiler, and a few appropriate system headers.
 
 * Deferred Shading
 * HDR Lighting
+* Lighting Bloom
 * Shadow Mapping
 * Screen Space Ambient Occlusion
 
