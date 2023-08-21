@@ -1,4 +1,3 @@
-#define PLATFORM_GL_IMPLEMENTATIONS 1
 #define PLATFORM_WINDOW_IMPLEMENTATIONS 1
 
 #define DEBUG_SYSTEM_API 1
@@ -497,7 +496,7 @@ main( s32 ArgCount, const char ** Args )
 
     DEBUG_FRAME_END(Plat.dt);
 
-    DoEngineDebugMenu(&EngineResources.GameUi, &EngineResources.EngineDebug);
+    DoEngineDebugMenu(&EngineResources.GameUi, 0, &EngineResources.EngineDebug);
 
     // NOTE(Jesse): UiFrameEnd must come after the game geometry has rendered
     // so the alpha-blended text works properly

@@ -5,9 +5,9 @@
 
 # ./make.sh -O2 BuildSingleExample examples/blank_project
 # ./make.sh -O2 BuildSingleExample examples/the_wanderer
-# ./make.sh BuildSingleExample examples/the_wanderer
+# ./make.sh     BuildSingleExample examples/the_wanderer
 
-./make.sh BuildTests
+# ./make.sh BuildTests
 
 
 # ./make.sh
@@ -28,9 +28,10 @@
 #     BuildDebugSystem
 
 # OPT="-O2"
-# ./make.sh $OPT \
-#     BuildDebugSystem \
-#     BuildExecutables \
-#     BuildSingleExample examples/turn_based \
-#     BuildSingleExample examples/turn_based2
+./make.sh $OPT \
+  BuildTests \
+  BuildDebugSystem \
+  BuildExecutables \
+  BuildSingleExample examples/turn_based \
+  BuildSingleExample examples/turn_based2
 

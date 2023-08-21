@@ -1,4 +1,3 @@
-#define PLATFORM_GL_IMPLEMENTATIONS 1
 #include <bonsai_types.h>
 
 

@@ -14,8 +14,16 @@ struct gaussian_render_group
   shader DebugTextureShader1;
 };
 
+struct render_settings
+{
+  b32 Headless;
+  b32 UseSsao;
+};
+
 struct graphics
 {
+  render_settings Settings;
+
   camera *Camera;
 
   // TODO(Jesse): None of these need to be pointers..

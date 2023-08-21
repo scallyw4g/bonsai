@@ -62,7 +62,7 @@ main(s32 ArgCount, const char** Args)
   v2 MouseP = {}, MouseDP = {}, ScreenDim = {};
   input Input = {};
 
-  InitRenderer2D(&Renderer, &Heap, &Arena, &MouseP, &MouseDP, &ScreenDim, &Input);
+  InitRenderer2D(&Renderer, &Heap, &Arena, &MouseP, &MouseDP, &ScreenDim, &Input, True);
 
   local_persist window_layout Window = WindowLayout("TestWindow", V2(0));
 

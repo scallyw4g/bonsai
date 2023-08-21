@@ -2727,9 +2727,7 @@ ComputeStandingSpots( v3i SrcChunkDim,
           {
             Push(DestSpot, DestStandingSpots);
 
-#if PLATFORM_GL_IMPLEMENTATIONa
-            if (DebugMesh) { DrawStandingSpot(DebugMesh, V3(DestSpot), V3(TileDim)); }
-#endif
+            /* if (DebugMesh) { DrawStandingSpot(DebugMesh, V3(DestSpot), V3(TileDim)); } */
           }
           zIndex += TileDim.z;
         }
@@ -3294,7 +3292,6 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk)
 
 // nochecking Move as much out of this block as possible.  Only the last few of
 // the things in this block are actually related to drawing
-#if PLATFORM_GL_IMPLEMENTATIONS
 link_internal work_queue_entry_rebuild_mesh
 WorkQueueEntryRebuildMesh(world_chunk *Chunk)
 {
@@ -4560,5 +4557,3 @@ DrawPickedChunks(renderer_2d* Group, render_entity_to_texture_group *PickedChunk
   return HotChunk;
 }
 #endif // DEBUG_SYSTEM_API
-
-#endif // PLATFORM_GL_IMPLEMENTATIONa

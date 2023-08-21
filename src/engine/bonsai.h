@@ -36,9 +36,7 @@ struct engine_resources
 
   debug_state *DebugState;
 
-#if PLATFORM_GL_IMPLEMENTATIONS
   engine_debug EngineDebug;
-#endif
 };
 
 // TODO(Jesse): Should this actually be a thing?

@@ -44,12 +44,12 @@ ToggledOn(ui_element_toggle_button_group *Group, cs ButtonName)
 }
 
 link_internal void
-DoEngineDebugMenu(renderer_2d *Ui, engine_debug *EngineDebug)
+DoEngineDebugMenu(renderer_2d *Ui, render_settings *RenderSettings, engine_debug *EngineDebug)
 {
   local_persist ui_element_toggle_button Buttons[] = {
     {CSz("World Chunks"), False},
     {CSz("Textures"), False},
-    {CSz("Baz"), False},
+    {CSz("RenderSettings"), False},
   };
 
   ui_element_toggle_button_group ButtonGroup = {
@@ -66,6 +66,7 @@ DoEngineDebugMenu(renderer_2d *Ui, engine_debug *EngineDebug)
     PushWindowEnd(Ui, &WorldChunkWindow);
   }
 
+#if 0
   if (ToggledOn(&ButtonGroup, CSz("Textures")))
   {
     local_persist window_layout TexturesWindow = WindowLayout("Textures", DefaultWindowBasis(*Ui->ScreenDim));
@@ -73,11 +74,24 @@ DoEngineDebugMenu(renderer_2d *Ui, engine_debug *EngineDebug)
 
     IterateOver(&EngineDebug->Textures, Texture, TextureIndex)
     {
-      PushTexturedQuad(Ui, DebugTextureArraySlice_Viewport, V2(120), zDepth_Text);
+      PushTexturedQuad(Ui, DebugTextureArraySlice_Font, V2(120), zDepth_Text);
     }
 
     PushWindowEnd(Ui, &TexturesWindow);
   }
+#endif
 
+#if 1
+  if (ToggledOn(&ButtonGroup, CSz("RenderSettings")))
+  {
+    local_persist window_layout RenderSettingsWindow = WindowLayout("RenderSettings", DefaultWindowBasis(*Ui->ScreenDim));
+    PushWindowStart(Ui, &RenderSettingsWindow);
+
+    /* DebugValue(Ui, &); */
+
+
+    PushWindowEnd(Ui, &RenderSettingsWindow);
+  }
+#endif
 
 }

@@ -1,7 +1,3 @@
-#ifndef PLATFORM_GL_IMPLEMENTATIONS
-#error "Requires PLATFORM_GL_IMPLEMENTATIONS"
-#endif
-
 poof(gen_shader_uniform_push(camera));
 #include <generated/gen_shader_uniform_push_camera.h>
 

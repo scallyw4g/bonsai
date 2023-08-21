@@ -11,13 +11,6 @@ g_quad_vertex_buffer_data[] =
    1.0f,  1.0f, 1.0f,
 };
 
-struct RenderBasis
-{
-  m4 ModelMatrix;
-  m4 ViewMatrix;
-  m4 ProjectionMatrix;
-};
-
 #define SSAO_KERNEL_SIZE 32
 struct ao_render_group
 {

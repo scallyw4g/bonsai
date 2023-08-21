@@ -1,6 +1,3 @@
-#if PLATFORM_GL_IMPLEMENTATIONS
-
-
 link_export b32
 Bonsai_OnLibraryLoad(engine_resources *Resources)
 {
@@ -255,5 +252,3 @@ Bonsai_Render(engine_resources *Resources)
   b32 Result = True;
   return Result;
 }
-
-#endif
