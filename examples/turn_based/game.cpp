@@ -98,20 +98,10 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
       world_chunk *Chunk = Job->Chunk;
 
-#if 1
       counted_string AssetFilename = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, Thread->TempMemory);
       native_file AssetFile = OpenFile(AssetFilename, "r+b");
-#endif
+
       {
-
-        /* s32 Frequency = 0; */
-        /* s32 Amplititude = 0; */
-        /* s32 StartingZDepth = 0; */
-
-        /* s32 Frequency = 50; */
-        /* s32 Amplititude = 50; */
-        /* s32 StartingZDepth = -40; // TODO(Jesse): Figure out why this isn't doing anything */
-
         s32 Frequency = 50;
         s32 Amplititude = 15;
         s32 StartingZDepth = -5;
@@ -532,8 +522,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   }
   PushWindowEnd(GameUi, &ActionsWindow);
 
-
-  /* CameraFollowEntity(Hotkeys, Camera, GameState->CameraTarget); */
   if (Hotkeys)
   {
     r32 CameraSpeed = 125.f;
@@ -543,15 +531,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     CameraDelta = Normalize(CameraDelta) * CameraSpeed * Plat->dt;
 
     GameState->CameraTarget->P.Offset += CameraDelta;
-    /* Canonicalize(World->ChunkDim, GameState->CameraTarget->P); */
   }
-
-  /* if (Hotkeys->Player_Spawn) */
-  /* { */
-  /*   Unspawn(Player); */
-  /*   SpawnPlayerLikeEntity(Plat, World, GameState->Models, Player,  Canonical_Position(V3(0,0,0), World_Position(0,0,2)), &GameState->Entropy); */
-  /*   World->Center = World_Position(0, 0, 2); */
-  /* } */
 }
 
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
