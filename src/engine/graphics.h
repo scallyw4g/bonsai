@@ -17,7 +17,10 @@ struct gaussian_render_group
 struct render_settings
 {
   b32 Headless;
+
   b32 UseSsao;
+  b32 UseShadowMapping;
+  b32 UseLightingBloom;
 };
 
 struct graphics

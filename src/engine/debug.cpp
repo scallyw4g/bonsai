@@ -58,40 +58,31 @@ DebugValue_(renderer_2d *Ui, r32 *Value, const char* Name)
 link_internal void
 DebugValue_(renderer_2d *Ui, bool *Value, const char* Name)
 {
-  PushTableStart(Ui);
+  if (Button(Ui, CS(Name), (umm)Value ^ (umm)"toggle" )) { *Value = !(*Value); }
 
-    if (Button(Ui, CS(Name), (umm)Value ^ (umm)"toggle" )) { *Value = !(*Value); }
-    counted_string Display = CSz("False");
-    if (*Value) { Display = CSz("True"); }
+  counted_string Display = *Value ? CSz("True") : CSz("False");
+  Text(Ui, Display);
 
-    Text(Ui, Display);
-
-    PushNewRow(Ui);
-  PushTableEnd(Ui);
+  PushNewRow(Ui);
 }
 
 link_internal void
 DebugValue_(renderer_2d *Ui, u32 *Value, const char* Name)
 {
-  PushTableStart(Ui);
-    PushColumn(Ui, CS(Name));
+  PushColumn(Ui, CS(Name));
 
-    if (Button(Ui, CSz("-"), (umm)Value ^ (umm)"decrement" )) { *Value = *Value - 1; }
-    PushColumn(Ui, CS(*Value));
-    if (Button(Ui, CSz("+"), (umm)Value ^ (umm)"increment" )) { *Value = *Value + 1; }
-
-    PushNewRow(Ui);
-  PushTableEnd(Ui);
+  if (Button(Ui, CSz("-"), (umm)Value ^ (umm)"decrement" )) { *Value = *Value - 1; }
+  PushColumn(Ui, CS(*Value));
+  if (Button(Ui, CSz("+"), (umm)Value ^ (umm)"increment" )) { *Value = *Value + 1; }
+  PushNewRow(Ui);
 }
 
 link_internal void
 DebugValue_(renderer_2d *Ui, u64 *Value, const char* Name)
 {
-  PushTableStart(Ui);
-    PushColumn(Ui, CS(Name));
-    PushColumn(Ui, CS(*Value));
-    PushNewRow(Ui);
-  PushTableEnd(Ui);
+  PushColumn(Ui, CS(Name));
+  PushColumn(Ui, CS(*Value));
+  PushNewRow(Ui);
 }
 
 
@@ -141,7 +132,13 @@ DoEngineDebugMenu(renderer_2d *Ui, render_settings *Settings, engine_debug *Engi
     local_persist window_layout RenderSettingsWindow = WindowLayout("RenderSettings", DefaultWindowBasis(*Ui->ScreenDim));
     PushWindowStart(Ui, &RenderSettingsWindow);
 
-    DebugValue(Ui, &Settings->UseSsao);
+      PushTableStart(Ui);
+
+        DebugValue(Ui, &Settings->UseSsao);
+        DebugValue(Ui, &Settings->UseShadowMapping);
+        DebugValue(Ui, &Settings->UseLightingBloom);
+
+      PushTableEnd(Ui);
 
     PushWindowEnd(Ui, &RenderSettingsWindow);
   }
