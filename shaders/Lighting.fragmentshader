@@ -3,13 +3,11 @@ in vec2 gBufferUV;
 layout (location = 0) out vec4 LightColor;
 layout (location = 1) out vec3 BloomColor;
 
-
 uniform sampler2D gColor;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D shadowMap;
 uniform sampler2D Ssao;
-
 
 uniform s32 LightCount;
 uniform r32 LightIndexToUV;
@@ -18,10 +16,13 @@ uniform sampler2D LightPositions;
 
 uniform mat4 ShadowMVP;
 
-/* uniform float SunIntensity; */
 uniform vec3 SunPosition;
 uniform vec3 SunColor;
 uniform vec3 CameraP;
+
+uniform bool UseSsao;
+uniform bool UseShadowMapping;
+uniform bool UseLightingBloom;
 
 int AoBlurSize = 4; // size of AO noise texture
 float BlurredAO = 0.0f;
@@ -83,10 +84,10 @@ void main()
   vec3 BackLightContrib = vec3(0.f);
   vec3 CameraToFrag = normalize(FragPosition.xyz - CameraP); // TODO(Jesse): Pass this to the lighting calc that needs it
 
-  vec3 Diffuse = texelFetch(gColor, texelCoord, 0).rgb;
-  /* vec3 Diffuse = vec3(1.f); */
+  vec4 gColorTexel = texelFetch(gColor, texelCoord, 0);
 
-  float Emission = texelFetch(gColor, texelCoord, 0).a;
+  vec3 Diffuse = gColorTexel.rgb;
+  float Emission = gColorTexel.a;
 
   /* Diffuse *= Emission; */
 
@@ -123,7 +124,6 @@ void main()
 
 
     vec3 PointLightsContrib = V3(0.f);
-#if 1
     for ( s32 LightIndex = 0; LightIndex < LightCount; ++LightIndex )
     {
       ivec2 LightUV = ivec2(LightIndex, 0);
@@ -151,84 +151,87 @@ void main()
       PointLightsContrib += DirectLight + SpecularLight;
       /* PointLightsContrib += SpecularLight; */
     }
-#endif
 
-#if USE_SSAO_SHADER
-    vec2 texelSize = 1.0 / vec2(textureSize(Ssao, 0));
-    float AccumAO = 0.0;
+    if (UseSsao)
+    {
+      vec2 texelSize = 1.0 / vec2(textureSize(Ssao, 0));
+      float AccumAO = 0.0;
 
-    vec2 hlim = vec2(float(-AoBlurSize) * 0.5 + 0.5);
+      vec2 hlim = vec2(float(-AoBlurSize) * 0.5 + 0.5);
 
-    for (int i = 0; i < AoBlurSize; ++i) {
-       for (int j = 0; j < AoBlurSize; ++j) {
-          vec2 TexOffset = (hlim + vec2(float(i), float(j))) * texelSize;
-          AccumAO += texture(Ssao, gBufferUV + TexOffset).r;
-       }
+      for (int i = 0; i < AoBlurSize; ++i) {
+         for (int j = 0; j < AoBlurSize; ++j) {
+            vec2 TexOffset = (hlim + vec2(float(i), float(j))) * texelSize;
+            AccumAO += texture(Ssao, gBufferUV + TexOffset).r;
+         }
+      }
+
+      BlurredAO = AccumAO / float(AoBlurSize * AoBlurSize);
     }
-
-    BlurredAO = AccumAO / float(AoBlurSize * AoBlurSize);
-#else
-    BlurredAO = 1.0f;
-#endif
+    else
+    {
+      BlurredAO = 1.0f;
+    }
 
 
     vec3 sampleVis = vec3(1.0f/5.f);
     /* vec3 sampleVis = vec3(1.f/7.f); */
 
-#if USE_SHADOW_MAPPING
-    /*
-     *  Shadow Mapping
-     */
-    float acneBias = 0.0001f; // Fix acne
+    if (UseShadowMapping)
+    {
+      /*
+       *  Shadow Mapping
+       */
+      float acneBias = 0.0001f; // Fix acne
 
-    vec4 FragPShadowSpace = ShadowMVP * vec4(FragPosition.xyz, 1.f);
-    float FragDepth = FragPShadowSpace.z - acneBias;
-    /* LightColor = vec4(FragDepth, FragDepth, FragDepth, 1.f); */
-    /* LightColor = FragPShadowSpace; */
-    /* return; */
+      vec4 FragPShadowSpace = ShadowMVP * vec4(FragPosition.xyz, 1.f);
+      float FragDepth = FragPShadowSpace.z - acneBias;
+      /* LightColor = vec4(FragDepth, FragDepth, FragDepth, 1.f); */
+      /* LightColor = FragPShadowSpace; */
+      /* return; */
 
 
-    v2 ShadowMapUVStep = vec2(1.f)/vec2(float(SHADOW_MAP_RESOLUTION_X), float(SHADOW_MAP_RESOLUTION_Y));
+      v2 ShadowMapUVStep = vec2(1.f)/vec2(float(SHADOW_MAP_RESOLUTION_X), float(SHADOW_MAP_RESOLUTION_Y));
 
-    float ShadowSampleDepth = texture(shadowMap, FragPShadowSpace.xy ).x + acneBias;
-    if ( FragDepth > ShadowSampleDepth ) { ShadowVisibility -= vec3(1.f); }
+      float ShadowSampleDepth = texture(shadowMap, FragPShadowSpace.xy ).x + acneBias;
+      if ( FragDepth > ShadowSampleDepth ) { ShadowVisibility -= vec3(1.f); }
 
-    // NOTE(Jesse): This is misguided.  The correct thing to do is to write
-    // shadow information to a buffer, then sample that buffer using a box filter
-    // (or some other blur function).  The reason to do it that way instead of
-    // directly here is that for each sample you take here, you'd have to
-    // recompute the actual shadow map value at the sample pos, which would be
-    // much too expensive even at small sample rates.
-    //
-    // I'm going to leave this here, but it causes flashing when the sun rotates
-    // such that the number of samples this hits true branches for change for the
-    // whole scene.
-    //
-    // Might be fine if the sun location was a fixed point, but that seems lame.
-    //
+      // NOTE(Jesse): This is misguided.  The correct thing to do is to write
+      // shadow information to a buffer, then sample that buffer using a box filter
+      // (or some other blur function).  The reason to do it that way instead of
+      // directly here is that for each sample you take here, you'd have to
+      // recompute the actual shadow map value at the sample pos, which would be
+      // much too expensive even at small sample rates.
+      //
+      // I'm going to leave this here, but it causes flashing when the sun rotates
+      // such that the number of samples this hits true branches for change for the
+      // whole scene.
+      //
+      // Might be fine if the sun location was a fixed point, but that seems lame.
+      //
 #if 0
-    // TODO(Jesse): Does this produce better results using texelFetch?
-    vec2 Mapped = vec2(FragPShadowSpace.xy + vec2(ShadowMapUVStep.x, 0.f));
-    ShadowSampleDepth = texture(shadowMap, Mapped).x + acneBias;
-    if ( FragDepth > ShadowSampleDepth ) { ShadowVisibility -= sampleVis; }
+      // TODO(Jesse): Does this produce better results using texelFetch?
+      vec2 Mapped = vec2(FragPShadowSpace.xy + vec2(ShadowMapUVStep.x, 0.f));
+      ShadowSampleDepth = texture(shadowMap, Mapped).x + acneBias;
+      if ( FragDepth > ShadowSampleDepth ) { ShadowVisibility -= sampleVis; }
 
-    Mapped = vec2(FragPShadowSpace.xy + vec2(-ShadowMapUVStep.x, 0.f));
-    ShadowSampleDepth = texture(shadowMap, Mapped).x + acneBias;
-    if ( FragDepth > ShadowSampleDepth ) { ShadowVisibility -= sampleVis; }
+      Mapped = vec2(FragPShadowSpace.xy + vec2(-ShadowMapUVStep.x, 0.f));
+      ShadowSampleDepth = texture(shadowMap, Mapped).x + acneBias;
+      if ( FragDepth > ShadowSampleDepth ) { ShadowVisibility -= sampleVis; }
 
-    Mapped = vec2(FragPShadowSpace.xy + vec2(0.f, ShadowMapUVStep.y));
-    ShadowSampleDepth = texture(shadowMap, Mapped).x + acneBias;
-    if ( FragDepth > ShadowSampleDepth ) { ShadowVisibility -= sampleVis; }
+      Mapped = vec2(FragPShadowSpace.xy + vec2(0.f, ShadowMapUVStep.y));
+      ShadowSampleDepth = texture(shadowMap, Mapped).x + acneBias;
+      if ( FragDepth > ShadowSampleDepth ) { ShadowVisibility -= sampleVis; }
 
-    Mapped = vec2(FragPShadowSpace.xy + vec2(0.f, -ShadowMapUVStep.y));
-    ShadowSampleDepth = texture(shadowMap, Mapped).x + acneBias;
-    if ( FragDepth > ShadowSampleDepth ) { ShadowVisibility -= sampleVis; }
+      Mapped = vec2(FragPShadowSpace.xy + vec2(0.f, -ShadowMapUVStep.y));
+      ShadowSampleDepth = texture(shadowMap, Mapped).x + acneBias;
+      if ( FragDepth > ShadowSampleDepth ) { ShadowVisibility -= sampleVis; }
 #endif
 
-    /* LightColor = vec4(vec3(FragDepth < ShadowSampleDepth ), 1.f); */
-    /* return; */
+      /* LightColor = vec4(vec3(FragDepth < ShadowSampleDepth ), 1.f); */
+      /* return; */
 
-#endif
+    }
 
     /* ShadowVisibility = max(ShadowVisibility, vec3(SunIntensity)); */
     /* LightColor = vec4(ShadowVisibility, 1.f); */
@@ -284,9 +287,14 @@ void main()
   /* LightColor = vec4(FogContrib, FogContrib, FogContrib, 1.f) * vec4(FogColor, 1.f); */
   /* LightColor = vec4(LightColor, 1.f); */
   /* LightColor = vec4(1.f, 0.f, 0.f, 1.f); */
-  LightColor = vec4(TotalLight, 1.f);
+  /* LightColor = vec4(0.f); */
 
-  BloomColor = TotalLight + (Emission*Diffuse);
+  LightColor = vec4(TotalLight, 1.f);
+  if (UseLightingBloom) { BloomColor = TotalLight + (Emission*Diffuse); }
+
+  /* if (UseLightingBloom) LightColor.r = 1.f; */
+  /* if (UseShadowMapping) LightColor.b = 1.f; */
+  /* if (UseSsao) LightColor.g = 1.f; */
 
   /* LightColor = vec4(Emission, Emission, Emission, 1.f);; */
   /* BloomColor = vec3(Emission, Emission, Emission); */

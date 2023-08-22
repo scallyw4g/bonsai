@@ -56,9 +56,9 @@ DebugValue_(renderer_2d *Ui, r32 *Value, const char* Name)
 }
 
 link_internal void
-DebugValue_(renderer_2d *Ui, bool *Value, const char* Name)
+DebugValue_(renderer_2d *Ui, b8 *Value, const char* Name)
 {
-  if (Button(Ui, CS(Name), (umm)Value ^ (umm)"toggle" )) { *Value = !(*Value); }
+  if (Button(Ui, CS(Name), (umm)Value + (umm)"toggle" )) { *Value = !(*Value); }
 
   counted_string Display = *Value ? CSz("True") : CSz("False");
   Text(Ui, Display);
@@ -71,9 +71,9 @@ DebugValue_(renderer_2d *Ui, u32 *Value, const char* Name)
 {
   PushColumn(Ui, CS(Name));
 
-  if (Button(Ui, CSz("-"), (umm)Value ^ (umm)"decrement" )) { *Value = *Value - 1; }
+  if (Button(Ui, CSz("-"), (umm)Value + (umm)"decrement" )) { *Value = *Value - 1; }
   PushColumn(Ui, CS(*Value));
-  if (Button(Ui, CSz("+"), (umm)Value ^ (umm)"increment" )) { *Value = *Value + 1; }
+  if (Button(Ui, CSz("+"), (umm)Value + (umm)"increment" )) { *Value = *Value + 1; }
   PushNewRow(Ui);
 }
 
@@ -134,9 +134,9 @@ DoEngineDebugMenu(renderer_2d *Ui, render_settings *Settings, engine_debug *Engi
 
       PushTableStart(Ui);
 
-        DebugValue(Ui, &Settings->UseSsao);
-        DebugValue(Ui, &Settings->UseShadowMapping);
-        DebugValue(Ui, &Settings->UseLightingBloom);
+        DebugValue(Ui, (b8*)&Settings->UseSsao);
+        DebugValue(Ui, (b8*)&Settings->UseShadowMapping);
+        DebugValue(Ui, (b8*)&Settings->UseLightingBloom);
 
       PushTableEnd(Ui);
 

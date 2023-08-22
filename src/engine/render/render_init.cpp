@@ -106,7 +106,11 @@ MakeLightingShader( memory_arena *GraphicsMemory,
                     game_lights *Lights,
                     camera *Camera,
                     v3 *SunPosition,
-                    v3 *SunColor )
+                    v3 *SunColor,
+                    b32 *UseSsao,
+                    b32 *UseShadowMapping,
+                    b32 *UseLightingBloom
+                  )
 {
   shader Shader = LoadShaders( CSz("Lighting.vertexshader"), CSz("Lighting.fragmentshader") );
 
@@ -121,14 +125,20 @@ MakeLightingShader( memory_arena *GraphicsMemory,
   *Current = GetUniform(GraphicsMemory, &Shader, gTextures->Position, "gPosition");
   Current = &(*Current)->Next;
 
-  *Current = GetUniform(GraphicsMemory, &Shader, ShadowMap, "shadowMap");
-  Current = &(*Current)->Next;
+  /* if (UseShadowMapping) */
+  {
+    *Current = GetUniform(GraphicsMemory, &Shader, ShadowMap, "shadowMap");
+    Current = &(*Current)->Next;
 
-  *Current = GetUniform(GraphicsMemory, &Shader, Ssao, "Ssao");
-  Current = &(*Current)->Next;
+    *Current = GetUniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
+    Current = &(*Current)->Next;
+  }
 
-  *Current = GetUniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
-  Current = &(*Current)->Next;
+  /* if (UseSsao) */
+  {
+    *Current = GetUniform(GraphicsMemory, &Shader, Ssao, "Ssao");
+    Current = &(*Current)->Next;
+  }
 
   *Current = GetUniform(GraphicsMemory, &Shader, Lights->ColorTex, "LightColors");
   Current = &(*Current)->Next;
@@ -149,6 +159,15 @@ MakeLightingShader( memory_arena *GraphicsMemory,
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, SunColor, "SunColor");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, (u32*)UseSsao, "UseSsao");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, (u32*)UseShadowMapping, "UseShadowMapping");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, (u32*)UseLightingBloom, "UseLightingBloom");
   Current = &(*Current)->Next;
 
   AssertNoGlErrors;
@@ -488,7 +507,8 @@ GraphicsInit(memory_arena *GraphicsMemory)
     Lighting->Shader =
       MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap,
                          AoGroup->Texture, &SG->MVP, &Lighting->Lights, Result->Camera,
-                         &SG->Sun.Position, &SG->Sun.Color);
+                         &SG->Sun.Position, &SG->Sun.Color,
+                         &Result->Settings.UseSsao, &Result->Settings.UseShadowMapping, &Result->Settings.UseLightingBloom);
 
 
     // NOTE(Jesse): This is used for bloom
