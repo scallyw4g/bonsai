@@ -43,8 +43,47 @@ ToggledOn(ui_element_toggle_button_group *Group, cs ButtonName)
   return Result;
 }
 
+#define DebugValue(Ui, Value) DebugValue_(Ui, Value, STRINGIZE(Value))
+
 link_internal void
-DoEngineDebugMenu(renderer_2d *Ui, render_settings *RenderSettings, engine_debug *EngineDebug)
+DebugValue_(renderer_2d *Ui, r32 *Value, const char* Name)
+{
+  PushTableStart(Ui);
+    PushColumn(Ui, CS(Name));
+    PushColumn(Ui, CS(*Value));
+    PushNewRow(Ui);
+  PushTableEnd(Ui);
+}
+
+link_internal void
+DebugValue_(renderer_2d *Ui, u32 *Value, const char* Name)
+{
+  PushTableStart(Ui);
+    PushColumn(Ui, CS(Name));
+
+    if (Button(Ui, CSz("-"), (umm)Value ^ (umm)"decrement" )) { *Value = *Value - 1; }
+    PushColumn(Ui, CS(*Value));
+    if (Button(Ui, CSz("+"), (umm)Value ^ (umm)"increment" )) { *Value = *Value + 1; }
+
+    PushNewRow(Ui);
+  PushTableEnd(Ui);
+}
+
+link_internal void
+DebugValue_(renderer_2d *Ui, u64 *Value, const char* Name)
+{
+  PushTableStart(Ui);
+    PushColumn(Ui, CS(Name));
+    PushColumn(Ui, CS(*Value));
+    PushNewRow(Ui);
+  PushTableEnd(Ui);
+}
+
+
+
+
+link_internal void
+DoEngineDebugMenu(renderer_2d *Ui, render_settings *Settings, engine_debug *EngineDebug)
 {
   local_persist ui_element_toggle_button Buttons[] = {
     {CSz("World Chunks"), False},
@@ -87,8 +126,7 @@ DoEngineDebugMenu(renderer_2d *Ui, render_settings *RenderSettings, engine_debug
     local_persist window_layout RenderSettingsWindow = WindowLayout("RenderSettings", DefaultWindowBasis(*Ui->ScreenDim));
     PushWindowStart(Ui, &RenderSettingsWindow);
 
-    /* DebugValue(Ui, &); */
-
+    DebugValue(Ui, &Settings->UseSsao);
 
     PushWindowEnd(Ui, &RenderSettingsWindow);
   }
