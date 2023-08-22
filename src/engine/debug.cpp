@@ -56,6 +56,21 @@ DebugValue_(renderer_2d *Ui, r32 *Value, const char* Name)
 }
 
 link_internal void
+DebugValue_(renderer_2d *Ui, bool *Value, const char* Name)
+{
+  PushTableStart(Ui);
+
+    if (Button(Ui, CS(Name), (umm)Value ^ (umm)"toggle" )) { *Value = !(*Value); }
+    counted_string Display = CSz("False");
+    if (*Value) { Display = CSz("True"); }
+
+    Text(Ui, Display);
+
+    PushNewRow(Ui);
+  PushTableEnd(Ui);
+}
+
+link_internal void
 DebugValue_(renderer_2d *Ui, u32 *Value, const char* Name)
 {
   PushTableStart(Ui);
@@ -102,7 +117,7 @@ DoEngineDebugMenu(renderer_2d *Ui, render_settings *Settings, engine_debug *Engi
   {
     local_persist window_layout WorldChunkWindow = WindowLayout("World Chunks", DefaultWindowBasis(*Ui->ScreenDim));
     PushWindowStart(Ui, &WorldChunkWindow);
-    PushWindowEnd(Ui, &WorldChunkWindow);
+    PushWindowEnd(Ui,   &WorldChunkWindow);
   }
 
 #if 0
