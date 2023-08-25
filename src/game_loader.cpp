@@ -349,6 +349,7 @@ main( s32 ArgCount, const char ** Args )
     default: { Error("Invalid number of arguments"); }
   }
 
+
   LibIsNew(GameLibName, &LastGameLibTime); // Hack to initialize the lib timer statics
   LibIsNew(DEFAULT_DEBUG_LIB, &LastDebugLibTime);
 

@@ -291,6 +291,7 @@ void main()
 
   LightColor = vec4(TotalLight, 1.f);
   if (UseLightingBloom) { BloomColor = TotalLight + (Emission*Diffuse); }
+  /* else { BloomColor = vec3(0.0f, 0.0f, 0.0f); } */
 
   /* if (UseLightingBloom) LightColor.r = 1.f; */
   /* if (UseShadowMapping) LightColor.b = 1.f; */

@@ -12,9 +12,9 @@ uniform sampler2D LightingTex;
 uniform sampler2D shadowMap;
 uniform sampler2D Ssao;
 
-
 uniform mat4 ShadowMVP;
 uniform vec3 CameraP;
+uniform bool UseLightingBloom;
 
 int AoBlurSize = 4; // size of AO noise texture
 float BlurredAO = 0.0f;
@@ -34,12 +34,15 @@ void main()
 
   vec3 FragNormal = texture(gNormal, gBufferUV).rgb;
 
-  /* vec3 Diffuse       = texelFetch(gColor, texelCoord, 0).rgb; */
-  vec3 Lighting      = texture(LightingTex, gBufferUV).rgb;
-  vec3 Bloom         = texture(BloomTex, gBufferUV).rgb;
+  /* vec3 Diffuse  = texelFetch(gColor, texelCoord, 0).rgb; */
+  vec3 Lighting = texture(LightingTex, gBufferUV).rgb;
+
+  v3 Bloom = vec3(0.0f, 0.0f, 0.0f);
+  if (UseLightingBloom) { Bloom = texture(BloomTex, gBufferUV).rgb; }
 
 
   // Super-poor ultra-jank not-good very-bad AA
+  //
   // NOTE(Jesse): Unfortunately, this can't go in the lighting shader to save
   // the FragNormal texture lookup here.  Reason being is that we're blending
   // the lit pixel values, which aren't available in the lighting shader (obviously).

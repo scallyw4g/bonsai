@@ -217,13 +217,13 @@ Bonsai_Render(engine_resources *Resources)
   RenderAoTexture(AoGroup);
 
   /* GaussianBlurTexture(&Graphics->Gaussian, AoGroup->Texture); */
-  GaussianBlurTexture(&Graphics->Gaussian, Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomTextureFBO);
+  if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomTextureFBO); }
 
   CompositeAndDisplay(Plat, Graphics);
 
   /* Debug_DrawTextureToDebugQuad(&Graphics->Gaussian.DebugTextureShader1); */
   /* Debug_DrawTextureToDebugQuad(&Graphics->Gaussian.DebugTextureShader0); */
-  Debug_DrawTextureToDebugQuad(&Graphics->Lighting.DebugBloomShader);
+  /* Debug_DrawTextureToDebugQuad(&Graphics->Lighting.DebugBloomShader); */
   /* Debug_DrawTextureToDebugQuad(&Graphics->Lighting.DebugLightingShader); */
   /* Debug_DrawTextureToDebugQuad(&Graphics->SG->DebugTextureShader); */
   /* Debug_DrawTextureToDebugQuad(&AoGroup->DebugSsaoShader); */

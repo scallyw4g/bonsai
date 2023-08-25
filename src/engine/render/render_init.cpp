@@ -59,7 +59,9 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
                      texture *LightingTex,
                      texture *BloomTex,
                      m4 *ShadowMVP,
-                     camera *Camera )
+                     camera *Camera,
+                     b32 *UseLightingBloom
+                   )
 {
   shader Shader = LoadShaders( CSz("composite.vertexshader"), CSz("composite.fragmentshader") );
 
@@ -81,6 +83,9 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, BloomTex, "BloomTex");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, (u32*)UseLightingBloom, "UseLightingBloom");
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, LightingTex, "LightingTex");
@@ -546,7 +551,7 @@ GraphicsInit(memory_arena *GraphicsMemory)
 
   // Initialize the composite group
   {
-    Result->CompositeGroup.Shader = MakeCompositeShader( GraphicsMemory, gBuffer->Textures, SG->ShadowMap, AoGroup->Texture, Lighting->LightingTex, Lighting->BloomTex, &SG->MVP, Result->Camera);
+    Result->CompositeGroup.Shader = MakeCompositeShader( GraphicsMemory, gBuffer->Textures, SG->ShadowMap, AoGroup->Texture, Lighting->LightingTex, Lighting->BloomTex, &SG->MVP, Result->Camera, &Result->Settings.UseLightingBloom);
   }
 
   // Initialize the gaussian blur render group

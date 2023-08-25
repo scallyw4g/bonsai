@@ -129,7 +129,8 @@ DoEngineDebugMenu(renderer_2d *Ui, render_settings *Settings, engine_debug *Engi
 #if 1
   if (ToggledOn(&ButtonGroup, CSz("RenderSettings")))
   {
-    local_persist window_layout RenderSettingsWindow = WindowLayout("RenderSettings", DefaultWindowBasis(*Ui->ScreenDim));
+    v2 WindowDim = {{1200.f, 250.f}};
+    local_persist window_layout RenderSettingsWindow = WindowLayout("RenderSettings", DefaultWindowBasis(*Ui->ScreenDim, WindowDim), WindowDim);
     PushWindowStart(Ui, &RenderSettingsWindow);
 
       PushTableStart(Ui);
@@ -137,6 +138,8 @@ DoEngineDebugMenu(renderer_2d *Ui, render_settings *Settings, engine_debug *Engi
         DebugValue(Ui, (b8*)&Settings->UseSsao);
         DebugValue(Ui, (b8*)&Settings->UseShadowMapping);
         DebugValue(Ui, (b8*)&Settings->UseLightingBloom);
+
+        // TODO(Jesse): Make a slider for exposure, time of day
 
       PushTableEnd(Ui);
 
