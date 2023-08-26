@@ -17,6 +17,7 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *
 
 BONSAI_API_WORKER_THREAD_CALLBACK()
 {
+  if (ThreadLocal_ThreadIndex == -1) { SetThreadLocal_ThreadIndex(Thread->Index); }
   switch (Entry->Type)
   {
     InvalidCase(type_work_queue_entry_noop);
@@ -101,22 +102,22 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   BoostInterval -= Plat->dt;
 
   Player->Physics.Speed = 60.f;
-  Player->Physics.Mass = 20.f;
+  Player->Physics.Mass = 27.f;
 
 #if 1
   Player->Physics.Force += V3(20.f, 0.0f, 0.0f) * Plat->dt;
 
   if (JumpInterval < 0.f && IsGrounded( World, Player ) )
   {
-    Player->Physics.Force += V3(0.f, 0.f, 20.f);
+    Player->Physics.Force += V3(0.f, 0.f, 25.f);
     JumpInterval = Interval;
-    BoostInterval = Interval/2.f;
+    BoostInterval = Interval/4.f;
   }
 
   if (BoostInterval < 0)
   {
     BoostInterval = 100000.f;
-    Player->Physics.Force += V3(250.f, 0.0f, 0.0f);
+    Player->Physics.Force += V3(300.f, 0.0f, 0.0f);
   }
 
   if (Hotkeys->Player_Jump)
