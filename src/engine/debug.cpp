@@ -44,6 +44,7 @@ ToggledOn(ui_element_toggle_button_group *Group, cs ButtonName)
 }
 
 #define DebugValue(Ui, Value) DebugValue_(Ui, Value, STRINGIZE(Value))
+#define DebugSlider(Ui, Value, Min, Max) DebugSlider_(Ui, Value, STRINGIZE(Value), Min, Max)
 
 link_internal void
 DebugValue_(renderer_2d *Ui, r32 *Value, const char* Name)
@@ -86,11 +87,24 @@ DebugValue_(renderer_2d *Ui, u64 *Value, const char* Name)
 }
 
 
+link_internal void
+DebugSlider_(renderer_2d *Ui, r32 *Value, const char* Name, r32 Min, r32 Max)
+{
+  PushTableStart(Ui);
+    PushColumn(Ui, CS(Name));
+    PushColumn(Ui, CS(*Value));
+    PushNewRow(Ui);
+  PushTableEnd(Ui);
+}
+
+
+
 
 
 link_internal void
-DoEngineDebugMenu(renderer_2d *Ui, render_settings *Settings, engine_debug *EngineDebug)
+DoEngineDebugMenu(graphics *Graphics, renderer_2d *Ui, engine_debug *EngineDebug)
 {
+
   local_persist ui_element_toggle_button Buttons[] = {
     {CSz("World Chunks"), False},
     {CSz("Textures"), False},
@@ -131,6 +145,8 @@ DoEngineDebugMenu(renderer_2d *Ui, render_settings *Settings, engine_debug *Engi
   {
     v2 WindowDim = {{1200.f, 250.f}};
     local_persist window_layout RenderSettingsWindow = WindowLayout("RenderSettings", DefaultWindowBasis(*Ui->ScreenDim, WindowDim), WindowDim);
+
+    render_settings *Settings = &Graphics->Settings;
     PushWindowStart(Ui, &RenderSettingsWindow);
 
       PushTableStart(Ui);
@@ -140,6 +156,8 @@ DoEngineDebugMenu(renderer_2d *Ui, render_settings *Settings, engine_debug *Engi
         DebugValue(Ui, (b8*)&Settings->UseLightingBloom);
 
         // TODO(Jesse): Make a slider for exposure, time of day
+
+        DebugSlider(Ui, &Graphics->Exposure, 0.0f, 10.f);
 
       PushTableEnd(Ui);
 

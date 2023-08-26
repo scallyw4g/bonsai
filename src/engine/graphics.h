@@ -28,6 +28,7 @@ struct graphics
   render_settings Settings;
 
   camera *Camera;
+  r32 Exposure;
 
   // TODO(Jesse): None of these need to be pointers..
   g_buffer_render_group  *gBuffer;

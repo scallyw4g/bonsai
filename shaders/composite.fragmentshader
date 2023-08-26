@@ -15,13 +15,7 @@ uniform sampler2D Ssao;
 uniform mat4 ShadowMVP;
 uniform vec3 CameraP;
 uniform bool UseLightingBloom;
-
-int AoBlurSize = 4; // size of AO noise texture
-float BlurredAO = 0.0f;
-
-// Tuning
-  float gamma = 2.2f;
-//
+uniform float Exposure;
 
 void main()
 {
@@ -66,42 +60,8 @@ void main()
 
   vec4 FragPosition = texelFetch(gPosition, texelCoord, 0);
 
-#if USE_SSAO_SHADER
-  vec2 texelSize = 1.0 / vec2(textureSize(Ssao, 0));
-  float AccumAO = 0.0;
-
-  vec2 hlim = vec2(float(-AoBlurSize) * 0.5 + 0.5);
-
-  for (int i = 0; i < AoBlurSize; ++i) {
-     for (int j = 0; j < AoBlurSize; ++j) {
-        vec2 TexOffset = (hlim + vec2(float(i), float(j))) * texelSize;
-        AccumAO += texture(Ssao, gBufferUV + TexOffset).r;
-     }
-  }
-
-  BlurredAO = AccumAO / float(AoBlurSize * AoBlurSize);
-#else
-  BlurredAO = 1.0f;
-#endif
-
-
   vec3 sampleVis = vec3(1.0f/5.f);
   /* vec3 sampleVis = vec3(1.f/7.f); */
-
-#if 1
-  /*
-   *  Fog
-   */
-  // TODO(Jesse): Can do squared?
-  float DistanceToFrag = distance(CameraP, FragPosition.xyz);
-  float MaxFogDist = 4500.f;
-
-  float FogContrib = clamp( DistanceToFrag / MaxFogDist, 0.f, 1.f);
-  v3 FogColor = V3(0.01f, 0.04f, 0.20f);
-  v3 Fog = FogContrib * FogColor;
-#else
-  v3 Fog = V3(0);
-#endif
 
   /*
    *  Tone-mapping && gamma correction
@@ -115,7 +75,6 @@ void main()
 
   // Somewhat better than Reinhard
   // Tone mapping from https://learnopengl.com/Advanced-Lighting/Bloom
-  float Exposure = 2.f;
   ToneMapped = vec3(1.0) - exp(-TotalLight * Exposure);
 
   /* OutColor = vec4(Diffuse, 1.f); */
@@ -130,5 +89,6 @@ void main()
   /* OutColor = vec4(Bloom, 1.f); */
 
   // Gamma correction
+  float gamma = 2.2f;
   OutColor = vec4(pow(ToneMapped, vec3(1.0f / gamma)), 1.0f);
 }

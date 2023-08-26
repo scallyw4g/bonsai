@@ -60,6 +60,7 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
                      texture *BloomTex,
                      m4 *ShadowMVP,
                      camera *Camera,
+                     r32 *Exposure,
                      b32 *UseLightingBloom
                    )
 {
@@ -97,6 +98,9 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
   *Current = GetUniform(GraphicsMemory, &Shader, Camera, "CameraP");
   Current = &(*Current)->Next;
 
+  *Current = GetUniform(GraphicsMemory, &Shader, Exposure, "Exposure");
+  Current = &(*Current)->Next;
+
   AssertNoGlErrors;
 
   return Shader;
@@ -130,20 +134,14 @@ MakeLightingShader( memory_arena *GraphicsMemory,
   *Current = GetUniform(GraphicsMemory, &Shader, gTextures->Position, "gPosition");
   Current = &(*Current)->Next;
 
-  /* if (UseShadowMapping) */
-  {
-    *Current = GetUniform(GraphicsMemory, &Shader, ShadowMap, "shadowMap");
-    Current = &(*Current)->Next;
+  *Current = GetUniform(GraphicsMemory, &Shader, ShadowMap, "shadowMap");
+  Current = &(*Current)->Next;
 
-    *Current = GetUniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
-    Current = &(*Current)->Next;
-  }
+  *Current = GetUniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
+  Current = &(*Current)->Next;
 
-  /* if (UseSsao) */
-  {
-    *Current = GetUniform(GraphicsMemory, &Shader, Ssao, "Ssao");
-    Current = &(*Current)->Next;
-  }
+  *Current = GetUniform(GraphicsMemory, &Shader, Ssao, "Ssao");
+  Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, Lights->ColorTex, "LightColors");
   Current = &(*Current)->Next;
@@ -464,6 +462,7 @@ GraphicsInit(memory_arena *GraphicsMemory)
   graphics *Result = Allocate(graphics, GraphicsMemory, 1);
   Result->Memory = GraphicsMemory;
 
+  Result->Exposure = 1.f;
   Result->Camera = Allocate(camera, GraphicsMemory, 1);
   StandardCamera(Result->Camera, 1000.f, 600.f, {});
 
@@ -551,7 +550,9 @@ GraphicsInit(memory_arena *GraphicsMemory)
 
   // Initialize the composite group
   {
-    Result->CompositeGroup.Shader = MakeCompositeShader( GraphicsMemory, gBuffer->Textures, SG->ShadowMap, AoGroup->Texture, Lighting->LightingTex, Lighting->BloomTex, &SG->MVP, Result->Camera, &Result->Settings.UseLightingBloom);
+    Result->CompositeGroup.Shader = MakeCompositeShader( GraphicsMemory,
+        gBuffer->Textures, SG->ShadowMap, AoGroup->Texture, Lighting->LightingTex, Lighting->BloomTex,
+        &SG->MVP, Result->Camera, &Result->Exposure, &Result->Settings.UseLightingBloom);
   }
 
   // Initialize the gaussian blur render group
