@@ -8,6 +8,15 @@
 global_variable v3
 Global_EntityFireballOffset = V3(7.0f, -.75f, 4.5f);
 
+enum game_entity_type
+{
+  GameEntityType_Unknown,
+
+  GameEntityType_Enemy,
+  GameEntityType_Splosion,
+  GameEntityType_Bitty,
+};
+
 model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *Heap)
 {
@@ -166,28 +175,6 @@ poof(generate_string_table(player_action))
 #include <generated/generate_string_table_player_action.h>
 
 link_internal void
-DoBittyLight(engine_resources *Resources, entity *E)
-{
-  UNPACK_ENGINE_RESOURCES(Resources);
-
-  v3 P = GetRenderP(World->ChunkDim, E, Camera) + V3(0.f, 0.f, 0.1f);
-
-  r32 Intensity = Max(0.f, E->Emitter->RemainingLifespan / E->Emitter->EmissionLifespan);
-  DoLight(&Lighting->Lights, P, V3(0.77f, 0.42f, 0.03f)*Intensity );
-}
-
-link_internal void
-DoSplosionLight(engine_resources *Resources, entity *E)
-{
-  UNPACK_ENGINE_RESOURCES(Resources);
-
-  v3 P = GetRenderP(World->ChunkDim, E, Camera) + V3(0.f, 0.f, 0.1f);
-
-  r32 Intensity = Max(0.f, E->Emitter->RemainingLifespan / E->Emitter->EmissionLifespan);
-  DoLight(&Lighting->Lights, P, V3(0.97f, 0.32f, 0.03f)*Intensity );
-}
-
-link_internal void
 DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position PickCP, f32 Radius, memory_arena *TempMemory)
 {
   UNPACK_ENGINE_RESOURCES(Resources);
@@ -232,7 +219,7 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
     entity *E = GetFreeEntity(EntityTable);
     SpawnEntity( E, EntityType_ParticleSystem, 0, ModelIndex_None);
     E->P = PickCP + V3(0.5f);
-    /* E->Update = DoSplosionLight; */
+    E->UserData = (void*)GameEntityType_Splosion;
     SpawnExplosion(E, &Global_GameEntropy, {}, Radius);
   }
   {
@@ -262,6 +249,7 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
     E->P = PickCP + (Rnd*Radius) + V3(0.f, 0.f, 2.0f);
     E->P.Offset.z = PickCP.Offset.z + 2.f;
 
+    E->UserData = (void*)GameEntityType_Bitty;
     /* E->Update = DoBittyLight; */
 
     SpawnSplotionBitty(E, &Global_GameEntropy, {}, .1f);
@@ -343,6 +331,34 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
 void
 GameEntityUpdate(engine_resources *Engine, entity *Entity )
 {
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  game_entity_type Type = *((game_entity_type*)&Entity->UserData);
+
+  switch (Type)
+  {
+    case GameEntityType_Unknown: {} break;;
+    case GameEntityType_Enemy: { EnemyUpdate(Engine, Entity); } break;
+
+    case GameEntityType_Splosion:
+    case GameEntityType_Bitty:
+    {
+      v3 Color = {};
+      switch (Type)
+      {
+        case GameEntityType_Splosion:
+          Color = V3(0.97f, 0.32f, 0.03f)*70.f; break;
+        case GameEntityType_Bitty:
+          Color = V3(0.97f, 0.42f, 0.03f)*0.2f; break;
+
+        InvalidDefaultCase;
+      }
+
+      v3 P = GetRenderP(World->ChunkDim, Entity, Camera) + V3(0.f, 0.f, 0.1f);
+      r32 Intensity = Max(0.f, Entity->Emitter->RemainingLifespan / Entity->Emitter->EmissionLifespan);
+      DoLight(&Lighting->Lights, P, Color*Intensity );
+    } break;
+  }
 }
 
 BONSAI_API_MAIN_THREAD_CALLBACK()
@@ -586,7 +602,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
     auto EnemySpawnP = Canonical_Position(V3(0), WorldCenter + WP );
     auto Enemy = GetFreeEntity(EntityTable);
     /* Enemy->Update = EnemyUpdate; */
-    Enemy->UserData = (void*)1;
+    Enemy->UserData = (void*)GameEntityType_Enemy;
     SpawnPlayerLikeEntity(Plat, World, GameState->Models + EnemyModelIndex, Enemy, EnemySpawnP, &GameState->Entropy, 0.35f);
   }
 #endif

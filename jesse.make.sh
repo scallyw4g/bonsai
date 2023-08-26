@@ -29,10 +29,10 @@
 
 # OPT="-O2"
 ./make.sh $OPT \
-  BuildSingleExample examples/the_wanderer \
+  BuildSingleExample examples/turn_based \
   # BuildExecutables \
   # BuildDebugSystem \
   # BuildTests \
-  # BuildSingleExample examples/turn_based \
   # BuildSingleExample examples/turn_based2
+  # BuildSingleExample examples/the_wanderer \
 
