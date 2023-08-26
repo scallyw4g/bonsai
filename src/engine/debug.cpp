@@ -126,6 +126,7 @@ DoEngineDebugMenu(graphics *Graphics, renderer_2d *Ui, engine_debug *EngineDebug
     {CSz("World Chunks"), False},
     {CSz("Textures"), False},
     {CSz("RenderSettings"), False},
+    {CSz("DebugValues"), False},
   };
 
   ui_element_toggle_button_group ButtonGroup = {
@@ -157,7 +158,6 @@ DoEngineDebugMenu(graphics *Graphics, renderer_2d *Ui, engine_debug *EngineDebug
   }
 #endif
 
-#if 1
   if (ToggledOn(&ButtonGroup, CSz("RenderSettings")))
   {
     v2 WindowDim = {{1200.f, 250.f}};
@@ -181,6 +181,22 @@ DoEngineDebugMenu(graphics *Graphics, renderer_2d *Ui, engine_debug *EngineDebug
 
     PushWindowEnd(Ui, &RenderSettingsWindow);
   }
-#endif
+
+  if (ToggledOn(&ButtonGroup, CSz("DebugValues")))
+  {
+    v2 WindowDim = {{1200.f, 250.f}};
+    local_persist window_layout DebugValuesWindow = WindowLayout("Debug Values", DefaultWindowBasis(*Ui->ScreenDim, WindowDim), WindowDim);
+
+    render_settings *Settings = &Graphics->Settings;
+    PushWindowStart(Ui, &DebugValuesWindow);
+      PushTableStart(Ui);
+
+        DebugValue(Ui, &EngineDebug->DrawEntityCollisionVolumes);
+        DebugValue(Ui, &EngineDebug->DrawWorldAxies);
+        DebugValue(Ui, &EngineDebug->DrawWorldAxies);
+
+      PushTableEnd(Ui);
+    PushWindowEnd(Ui, &DebugValuesWindow);
+  }
 
 }

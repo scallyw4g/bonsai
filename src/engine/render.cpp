@@ -675,9 +675,10 @@ BufferEntity( untextured_3d_geometry_buffer* Dest, entity *Entity, animation *An
 
   if (Spawned(Entity))
   {
-#if DEBUG_DRAW_COLLISION_VOLUMES
-    DrawEntityCollisionVolume(Entity, Dest, Graphics, WorldChunkDim);
-#endif
+    if (GetEngineDebug()->DrawEntityCollisionVolumes)
+    {
+      DrawEntityCollisionVolume(Entity, Dest, Graphics, WorldChunkDim);
+    }
 
     v3 AnimationOffset = {};
     if (Animation)

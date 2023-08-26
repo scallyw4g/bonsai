@@ -50,6 +50,12 @@ GetEngineResources()
   return Global_EngineResources;
 }
 
+link_internal engine_debug *
+GetEngineDebug()
+{
+  return &Global_EngineResources->EngineDebug;
+}
+
 #define UNPACK_ENGINE_RESOURCES(Res) \
   UNPACK_DATA_RESOURCES(Res)         \
   UNPACK_GRAPHICS_RESOURCES(Res)

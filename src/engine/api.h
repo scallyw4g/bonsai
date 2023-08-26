@@ -52,6 +52,7 @@ struct engine_api
   bonsai_engine_callback Init;
 
   bonsai_engine_callback FrameBegin;
+  bonsai_engine_callback SimulateAndBufferGeometry;
   bonsai_engine_callback FrameEnd;
   bonsai_engine_callback Render;
 };
@@ -59,11 +60,12 @@ struct engine_api
 link_internal b32
 InitializeEngineApi(engine_api *EngineApi, shared_lib GameLib)
 {
-  EngineApi->OnLibraryLoad = (bonsai_engine_callback)GetProcFromLib(GameLib, STRINGIZE(Bonsai_OnLibraryLoad) );
-  EngineApi->Init          = (bonsai_engine_callback)GetProcFromLib(GameLib, STRINGIZE(Bonsai_Init) );
-  EngineApi->FrameBegin    = (bonsai_engine_callback)GetProcFromLib(GameLib, STRINGIZE(Bonsai_FrameBegin) );
-  EngineApi->FrameEnd      = (bonsai_engine_callback)GetProcFromLib(GameLib, STRINGIZE(Bonsai_FrameEnd) );
-  EngineApi->Render        = (bonsai_engine_callback)GetProcFromLib(GameLib, STRINGIZE(Bonsai_Render) );
+  EngineApi->OnLibraryLoad             = (bonsai_engine_callback)GetProcFromLib(GameLib, STRINGIZE(Bonsai_OnLibraryLoad) );
+  EngineApi->Init                      = (bonsai_engine_callback)GetProcFromLib(GameLib, STRINGIZE(Bonsai_Init) );
+  EngineApi->SimulateAndBufferGeometry = (bonsai_engine_callback)GetProcFromLib(GameLib, STRINGIZE(Bonsai_SimulateAndBufferGeometry) );
+  EngineApi->FrameBegin                = (bonsai_engine_callback)GetProcFromLib(GameLib, STRINGIZE(Bonsai_FrameBegin) );
+  EngineApi->FrameEnd                  = (bonsai_engine_callback)GetProcFromLib(GameLib, STRINGIZE(Bonsai_FrameEnd) );
+  EngineApi->Render                    = (bonsai_engine_callback)GetProcFromLib(GameLib, STRINGIZE(Bonsai_Render) );
 
   b32 Result = EngineApi->OnLibraryLoad && EngineApi->Init && EngineApi->FrameBegin && EngineApi->FrameEnd && EngineApi->Render;
   return Result;

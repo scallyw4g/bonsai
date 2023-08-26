@@ -43,6 +43,9 @@ struct engine_debug
   picked_world_chunk_static_buffer PickedChunks;
   texture_cursor Textures;
 
-  b32 TriggerRuntimeBreak;
+  b8 DrawEntityCollisionVolumes;
+  b8 DrawWorldAxies;
+
+  b8 TriggerRuntimeBreak;
 };
 

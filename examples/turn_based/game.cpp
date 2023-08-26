@@ -56,6 +56,9 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *
 
 BONSAI_API_WORKER_THREAD_CALLBACK()
 {
+  /* Assert(Thread->Index > 0); */
+  if (ThreadLocal_ThreadIndex == -1) { SetThreadLocal_ThreadIndex(Thread->Index); }
+
   world *World = Thread->EngineResources->World;
 
   work_queue_entry_type Type = Entry->Type;
@@ -229,7 +232,7 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
     entity *E = GetFreeEntity(EntityTable);
     SpawnEntity( E, EntityType_ParticleSystem, 0, ModelIndex_None);
     E->P = PickCP + V3(0.5f);
-    E->Update = DoSplosionLight;
+    /* E->Update = DoSplosionLight; */
     SpawnExplosion(E, &Global_GameEntropy, {}, Radius);
   }
   {
@@ -259,7 +262,7 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
     E->P = PickCP + (Rnd*Radius) + V3(0.f, 0.f, 2.0f);
     E->P.Offset.z = PickCP.Offset.z + 2.f;
 
-    E->Update = DoBittyLight;
+    /* E->Update = DoBittyLight; */
 
     SpawnSplotionBitty(E, &Global_GameEntropy, {}, .1f);
   }
@@ -337,6 +340,11 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
   }
 }
 
+void
+GameEntityUpdate(engine_resources *Engine, entity *Entity )
+{
+}
+
 BONSAI_API_MAIN_THREAD_CALLBACK()
 {
   Assert(ThreadLocal_ThreadIndex == 0);
@@ -358,8 +366,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   /*   v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera); */
   /*   DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_LINE_THICKNESS*3.f); */
   /* } */
-
-
 
   picked_voxel Pick = MousePickVoxel(Resources);
 
@@ -579,7 +585,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
     auto EnemySpawnP = Canonical_Position(V3(0), WorldCenter + WP );
     auto Enemy = GetFreeEntity(EntityTable);
-    Enemy->Update = EnemyUpdate;
+    /* Enemy->Update = EnemyUpdate; */
+    Enemy->UserData = (void*)1;
     SpawnPlayerLikeEntity(Plat, World, GameState->Models + EnemyModelIndex, Enemy, EnemySpawnP, &GameState->Entropy, 0.35f);
   }
 #endif
@@ -599,5 +606,5 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
 {
   Global_ThreadStates = AllThreads;
-  SetThreadLocal_ThreadIndex(ThreadIndex);
+  /* SetThreadLocal_ThreadIndex(ThreadIndex); */
 }

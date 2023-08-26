@@ -73,14 +73,13 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   ClearFramebuffers(Graphics);
 
-#if DEBUG_DRAW_WORLD_AXIES
+  if (GetEngineDebug()->DrawWorldAxies)
   {
     untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL*3);
     DEBUG_DrawLine_Aligned(&CopyDest, V3(0,0,0), V3(10000, 0, 0), RED, 0.15f );
     DEBUG_DrawLine_Aligned(&CopyDest, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.15f );
     DEBUG_DrawLine_Aligned(&CopyDest, V3(0,0,0), V3(0, 0, 10000), BLUE, 0.15f );
   }
-#endif
 
   UiFrameBegin(&Resources->GameUi);
 
@@ -99,6 +98,16 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
 link_export b32
 Bonsai_FrameEnd(engine_resources *Resources)
+{
+  DoEngineDebugMenu(Resources->Graphics, &Resources->GameUi, &Resources->EngineDebug);
+  UiFrameEnd(&Resources->GameUi);
+
+  b32 Result = True;
+  return Result;
+}
+
+link_export b32
+Bonsai_SimulateAndBufferGeometry(engine_resources *Resources)
 {
   TIMED_FUNCTION();
 
