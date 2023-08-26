@@ -49,11 +49,9 @@ ToggledOn(ui_element_toggle_button_group *Group, cs ButtonName)
 link_internal void
 DebugValue_(renderer_2d *Ui, r32 *Value, const char* Name)
 {
-  PushTableStart(Ui);
-    PushColumn(Ui, CS(Name));
-    PushColumn(Ui, CS(*Value));
-    PushNewRow(Ui);
-  PushTableEnd(Ui);
+  PushColumn(Ui, CS(Name));
+  PushColumn(Ui, CS(*Value));
+  PushNewRow(Ui);
 }
 
 link_internal void
@@ -81,9 +79,11 @@ DebugValue_(renderer_2d *Ui, u32 *Value, const char* Name)
 link_internal void
 DebugValue_(renderer_2d *Ui, u64 *Value, const char* Name)
 {
-  PushColumn(Ui, CS(Name));
-  PushColumn(Ui, CS(*Value));
-  PushNewRow(Ui);
+  PushTableStart(Ui);
+    PushColumn(Ui, CS(Name));
+    PushColumn(Ui, CS(*Value));
+    PushNewRow(Ui);
+  PushTableEnd(Ui);
 }
 
 
@@ -172,7 +172,7 @@ DoEngineDebugMenu(graphics *Graphics, renderer_2d *Ui, engine_debug *EngineDebug
         DebugValue(Ui, (b8*)&Settings->UseShadowMapping);
         DebugValue(Ui, (b8*)&Settings->UseLightingBloom);
 
-        // TODO(Jesse): Make a slider for exposure, time of day
+        // TODO(Jesse): Make a slider for time of day
 
         DebugSlider(Ui, &Graphics->Exposure, 0.0f, 5.f);
 

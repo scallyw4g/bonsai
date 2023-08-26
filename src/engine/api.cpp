@@ -67,6 +67,8 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
+  if (Input->F12.Pressed) { EngineDebug->TriggerRuntimeBreak = True; }
+
   World->ChunkHash = CurrentWorldHashtable(Resources);
 
   MapGpuElementBuffer(GpuMap);
@@ -120,10 +122,20 @@ Bonsai_FrameEnd(engine_resources *Resources)
   // draw; we have to update the camera target p before we do the camera update
   //
   auto CameraTargetP = Resources->CameraTarget ? Resources->CameraTarget->P : Canonical_Position(0);
+
+
   {
+    // TODO(Jesse)(immediate): Why TF does this not work?
+    DebugValue(GameUi, (u32*)&GameUi->Pressed.ID);
+
+    input *InputForCamera = 0;
+    if (UiCapturedMouseInput(GameUi) == False)
+    {
+      InputForCamera = &Plat->Input;
+    }
+
     v2 MouseDelta = GetMouseDelta(Plat);
-    input* GameInput = &Plat->Input;
-    UpdateGameCamera(World, MouseDelta, GameInput, CameraTargetP, Camera);
+    UpdateGameCamera(World, MouseDelta, InputForCamera, CameraTargetP, Camera);
     Resources->Graphics->gBuffer->ViewProjection =
       ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
       ViewMatrix(World->ChunkDim, Camera);
