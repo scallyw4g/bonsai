@@ -56,6 +56,7 @@ LoadObj(memory_arena *PermMem, heap_allocator *Heap, const char * FilePath)
   u8_stream BinaryStream = U8_StreamFromFile(FilePath, PermMem);
   if (!BinaryStream.Start) { model M = {}; return M; }
 
+  memory_arena *TranArena = GetTranArena();
   ansi_stream Stream = AnsiStream(&BinaryStream);
   mesh_metadata Stats = GetObjMetadata(Stream, TranArena);
 

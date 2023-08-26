@@ -420,6 +420,7 @@ main(s32 ArgCount, const char** Args)
 
   TestTrim();
 
+  memory_arena *TranArena = AllocateArena();
   TestToCapitalCase(TranArena);
 
   {

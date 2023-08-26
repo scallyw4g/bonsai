@@ -29,9 +29,9 @@
 
 # OPT="-O2"
 ./make.sh $OPT \
-  BuildTests \
-  BuildDebugSystem \
-  BuildExecutables \
   BuildSingleExample examples/turn_based \
+  BuildExecutables \
+  BuildDebugSystem \
+  BuildTests \
   BuildSingleExample examples/turn_based2
 

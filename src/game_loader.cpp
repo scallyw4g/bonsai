@@ -323,8 +323,6 @@ main( s32 ArgCount, const char ** Args )
   DEBUG_REGISTER_ARENA(PlatMemory, 0);
   DEBUG_REGISTER_ARENA(&BootstrapArena, 0);
 
-  DEBUG_REGISTER_NAMED_ARENA(TranArena, 0, "game_loader TranArena");
-
   PlatformInit(&Plat, PlatMemory);
 
 #if BONSAI_INTERNAL
@@ -507,7 +505,6 @@ main( s32 ArgCount, const char ** Args )
 
     thread_local_state *TLS = GetThreadLocalState(ThreadLocal_ThreadIndex);
     Ensure( RewindArena(TLS->TempMemory) );
-    Ensure( RewindArena(TranArena) );
 
     r32 CurrentMS = (r32)GetHighPrecisionClock();
     RealDt = (CurrentMS - LastMs)/1000.0f;

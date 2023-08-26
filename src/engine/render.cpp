@@ -21,8 +21,8 @@ void
 UpdateLightingTextures(game_lights *Lights)
 {
   // TODO(Jesse, id: 120, tags: allocation, speed): Allocate lights such that this swizzle is unneeded
-  v3 *PosData = AllocateProtection(v3, TranArena, MAX_LIGHTS, False);
-  v3 *ColorData = AllocateProtection(v3, TranArena, MAX_LIGHTS, False);
+  v3 *PosData = AllocateProtection(v3, GetTranArena(), MAX_LIGHTS, False);
+  v3 *ColorData = AllocateProtection(v3, GetTranArena(), MAX_LIGHTS, False);
 
   for (s32 LightIndex = 0;
       LightIndex < Lights->Count;

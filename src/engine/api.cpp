@@ -25,8 +25,6 @@ Bonsai_Init(engine_resources *Resources)
 
   b32 Result = True;
 
-  DEBUG_REGISTER_NAMED_ARENA(TranArena, 0, "game_lib TranArena");
-
   memory_arena *BonsaiInitArena = AllocateArena(Megabytes(256));;
   DEBUG_REGISTER_ARENA(BonsaiInitArena, 0);
 
@@ -125,9 +123,6 @@ Bonsai_FrameEnd(engine_resources *Resources)
 
 
   {
-    // TODO(Jesse)(immediate): Why TF does this not work?
-    DebugValue(GameUi, (u32*)&GameUi->Pressed.ID);
-
     input *InputForCamera = 0;
     if (UiCapturedMouseInput(GameUi) == False)
     {
@@ -154,8 +149,6 @@ Bonsai_FrameEnd(engine_resources *Resources)
 #if DEBUG_SYSTEM_API
   Debug_DoWorldChunkPicking(Resources);
 #endif
-
-  RewindArena(TranArena);
 
   b32 Result = True;
   return Result;

@@ -167,6 +167,7 @@ DoEngineDebugMenu(graphics *Graphics, renderer_2d *Ui, engine_debug *EngineDebug
     PushWindowStart(Ui, &RenderSettingsWindow);
 
       PushTableStart(Ui);
+        /* DebugValue(Ui, &Ui->Pressed.ID); */
 
         DebugValue(Ui, (b8*)&Settings->UseSsao);
         DebugValue(Ui, (b8*)&Settings->UseShadowMapping);

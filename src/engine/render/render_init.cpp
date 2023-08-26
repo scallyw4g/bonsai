@@ -273,7 +273,7 @@ CreateGbuffer(memory_arena *Memory)
 void
 SetDrawBuffers(framebuffer *FBO)
 {
-  u32 *Attachments = Allocate(u32, TranArena, FBO->Attachments);
+  u32 *Attachments = Allocate(u32, GetTranArena(), FBO->Attachments);
   for (u32 AttIndex = 0; AttIndex < FBO->Attachments; ++AttIndex)
   {
     Attachments[AttIndex] =  GL_COLOR_ATTACHMENT0 + AttIndex;

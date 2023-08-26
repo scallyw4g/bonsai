@@ -129,6 +129,7 @@ LoadMeshData(xml_token_stream* XmlTokens, counted_string* GeometryId, memory_are
 xml_tag*
 ParseKeyframesForAxis(xml_token_stream* XmlTokens, char Axis, xml_tag** TimeTag, counted_string* GeometryName)
 {
+  memory_arena *TranArena = GetTranArena();
   counted_string xChannelSelector = FormatCountedString(TranArena, CSz("library_animations channel:target=%.*s/location.%c"), GeometryName->Count, GeometryName->Start, Axis);
   xml_tag* xChannel = GetFirstMatchingTag(XmlTokens, &xChannelSelector);
   counted_string* xChannelId = GetPropertyValue(xChannel, CS("source"));
@@ -205,7 +206,7 @@ LoadCollada(memory_arena *Memory, heap_allocator *Heap, const char * FilePath)
 
       Assert(GeometryName && GeometryId);
 
-      loaded_collada_mesh ColladaMesh = LoadMeshData(&XmlTokens, GeometryId, TranArena, Heap);
+      loaded_collada_mesh ColladaMesh = LoadMeshData(&XmlTokens, GeometryId, GetTranArena(), Heap);
       Result.Mesh = ColladaMesh.Mesh;
       Result.Dim = Voxel_Position(ColladaMesh.Dim);
 
