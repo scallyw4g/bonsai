@@ -93,6 +93,23 @@ DebugSlider_(renderer_2d *Ui, r32 *Value, const char* Name, r32 Min, r32 Max)
   PushTableStart(Ui);
     PushColumn(Ui, CS(Name));
     PushColumn(Ui, CS(*Value));
+
+    auto Range = Max-Min;
+    r32 PercFilled = ((*Value)-Min)/Range;
+
+    r32 Width = 125.f;
+    interactable_handle BargraphButton = PushButtonStart(Ui, (umm)(umm("DebugSlider") ^ umm(Value)) );
+      PushBargraph(Ui, PercFilled, V3(0.75f), V3(0.4f), Width);
+    PushButtonEnd(Ui);
+
+    v2 Offset = {};
+    if (Pressed(Ui, &BargraphButton, &Offset))
+    {
+      r32 NewPerc = Clamp01(Offset.x / Width);
+      r32 NewValue = (Range*NewPerc) + Min;
+      *Value = NewValue;
+    }
+
     PushNewRow(Ui);
   PushTableEnd(Ui);
 }
@@ -157,7 +174,7 @@ DoEngineDebugMenu(graphics *Graphics, renderer_2d *Ui, engine_debug *EngineDebug
 
         // TODO(Jesse): Make a slider for exposure, time of day
 
-        DebugSlider(Ui, &Graphics->Exposure, 0.0f, 10.f);
+        DebugSlider(Ui, &Graphics->Exposure, 0.0f, 5.f);
 
       PushTableEnd(Ui);
 
