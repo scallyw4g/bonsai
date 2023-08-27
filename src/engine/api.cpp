@@ -314,6 +314,12 @@ WorkerThreadDefaultImplementations(BONSAI_API_WORKER_THREAD_CALLBACK_PARAMS)
       counted_string AssetFilename = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, Thread->TempMemory);
       native_file AssetFile = OpenFile(AssetFilename, "r+b");
 
+      if (ChunkIsGarbage(Chunk))
+      {
+         // NOTE(Jesse): This is an optimization; the engine marks chunks that
+         // have moved outside of the visible region as garbage.
+      }
+      else
       {
         s32 Frequency = 50;
         s32 Amplititude = 15;
