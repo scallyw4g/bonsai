@@ -18,6 +18,8 @@ struct render_settings
 {
   b32 Headless;
 
+  // NOTE(Jesse): These have to be 32bit because they get passed to shaders
+  // and the shader system is too dumb to handle 8bit values
   b32 UseSsao;
   b32 UseShadowMapping;
   b32 UseLightingBloom;

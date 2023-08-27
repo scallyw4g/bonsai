@@ -99,7 +99,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
 link_export b32
 Bonsai_FrameEnd(engine_resources *Resources)
 {
-  DoEngineDebugMenu(Resources->Graphics, &Resources->GameUi, &Resources->EngineDebug);
+  DoEngineDebugMenu(Resources);
   UiFrameEnd(&Resources->GameUi);
 
   b32 Result = True;
@@ -316,8 +316,9 @@ WorkerThreadDefaultImplementations(BONSAI_API_WORKER_THREAD_CALLBACK_PARAMS)
 
       if (ChunkIsGarbage(Chunk))
       {
-         // NOTE(Jesse): This is an optimization; the engine marks chunks that
-         // have moved outside of the visible region as garbage.
+        // NOTE(Jesse): This is an optimization; the engine marks chunks that
+        // have moved outside of the visible region as garbage.
+        Chunk->Flags = Chunk_Uninitialized;
       }
       else
       {

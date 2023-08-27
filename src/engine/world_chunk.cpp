@@ -387,7 +387,7 @@ CollectUnusedChunks(engine_resources *Engine, tiered_mesh_freelist* MeshFreelist
       {
         world_position ChunkP = Chunk->WorldP;
 
-        if ( ChunkP >= Min && ChunkP < Max )
+        if ( ChunkP >= Min && ChunkP <= Max )
         {
           InsertChunkIntoWorld(NextWorldHash, Chunk, World->VisibleRegion, World->HashSize);
         }
@@ -3435,6 +3435,16 @@ BufferWorld( platform* Plat,
 
         if (Chunk)
         {
+
+          engine_debug *EngineDebug = GetEngineDebug();
+          if (Chunk == EngineDebug->PickedChunk)
+          {
+            u8 Color = EngineDebug->PickedChunkState == PickedChunkState_None ? GREEN : YELLOW;
+
+            untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(Dest, VERTS_PER_AABB);
+            DEBUG_DrawChunkAABB( &Mesh, Graphics, EngineDebug->PickedChunk, EngineDebug->PickedChunk->Dim, Color );
+          }
+
           if (IsInFrustum(World, Camera, Chunk))
           {
             v3 CameraP = GetSimSpaceP(World, Camera->CurrentP);
@@ -4021,7 +4031,7 @@ GetChunksIntersectingRay(world *World, ray *Ray, picked_world_chunk_static_buffe
           {
             if ( AllChunksBuffer ) { Push(AllChunksBuffer, Chunk, tChunk); }
 
-            if (tChunk < tChunkMin)
+            if (Chunk->FilledCount && tChunk < tChunkMin)
             {
               ClosestChunk = Chunk;
               tChunkMin = tChunk;

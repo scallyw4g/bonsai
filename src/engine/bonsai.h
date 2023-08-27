@@ -24,9 +24,6 @@ struct engine_resources
 
   u64 FrameIndex;
 
-  // TODO(Jesse): Formalize this
-  /* world_position *VisibleRegion; */
-
   entity *CameraTarget;
 
   tiered_mesh_freelist MeshFreelist;

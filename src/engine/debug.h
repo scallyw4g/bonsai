@@ -38,6 +38,12 @@ Push(picked_world_chunk_static_buffer *Buf, world_chunk *Chunk, r32 t)
   }
 }
 
+enum pick_chunk_state
+{
+  PickedChunkState_None,
+  PickedChunkState_Hover,
+};
+
 struct engine_debug
 {
   picked_world_chunk_static_buffer PickedChunks;
@@ -47,5 +53,8 @@ struct engine_debug
   b8 DrawWorldAxies;
 
   b8 TriggerRuntimeBreak;
+
+  u8 PickedChunkState;
+  world_chunk *PickedChunk;
 };
 

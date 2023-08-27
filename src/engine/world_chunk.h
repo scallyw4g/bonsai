@@ -10,6 +10,21 @@ enum chunk_flag
   Chunk_Garbage           = 1 << 3,
 };
 
+// TODO(Jesse): Metaprogram me!
+link_internal cs
+ToString(chunk_flag Flag)
+{
+  switch(Flag)
+  {
+    case Chunk_Uninitialized: { return CSz("Chunk_Uninitialized"); }
+    case Chunk_Queued: { return CSz("Chunk_Queued"); };
+    case Chunk_VoxelsInitialized: { return CSz("Chunk_VoxelsInitialized"); };
+    case Chunk_Garbage: { return CSz("Chunk_Garbage"); };
+
+    InvalidDefaultCase;
+  }
+}
+
 enum voxel_flag
 {
   Voxel_Empty      =      0,

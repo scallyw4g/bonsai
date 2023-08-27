@@ -65,6 +65,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     World->Center = World_Position(0, 0, 0);
   }
 
+
 #endif
 }
 

@@ -66,6 +66,17 @@ DebugValue_(renderer_2d *Ui, b8 *Value, const char* Name)
 }
 
 link_internal void
+DebugValue_(renderer_2d *Ui, s32 *Value, const char* Name)
+{
+  PushColumn(Ui, CS(Name));
+
+  if (Button(Ui, CSz("-"), (umm)Value + (umm)"decrement" )) { *Value = *Value - 1; }
+  PushColumn(Ui, CS(*Value));
+  if (Button(Ui, CSz("+"), (umm)Value + (umm)"increment" )) { *Value = *Value + 1; }
+  PushNewRow(Ui);
+}
+
+link_internal void
 DebugValue_(renderer_2d *Ui, u32 *Value, const char* Name)
 {
   PushColumn(Ui, CS(Name));
@@ -115,12 +126,59 @@ DebugSlider_(renderer_2d *Ui, r32 *Value, const char* Name, r32 Min, r32 Max)
 }
 
 
+link_internal void
+DebugValue_(renderer_2d *Ui, world_position *Value, const char* Name)
+{
+  Text(Ui, CS(Name));
+  PushNewRow(Ui);
+
+  DebugValue(Ui, &Value->x);
+  DebugValue(Ui, &Value->y);
+  DebugValue(Ui, &Value->z);
+}
+
+link_internal void
+DebugChunkUi(engine_resources *Engine, cs Name, world_chunk *Value)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+  auto Ui = GameUi;
+
+  Text(Ui, Name);
+  PushNewRow(Ui);
+
+  world_position WorldP = Value->WorldP;
+  DebugValue(Ui, &WorldP);
+
+  if (WorldP != Value->WorldP)
+  {
+    EngineDebug->PickedChunk = GetWorldChunkFromHashtable(World, WorldP);
+  }
+
+  world_chunk *Chunk = EngineDebug->PickedChunk;
+
+  auto Flags = Value->Flags;
+
+  Text(Ui, CSz("Flags : "));
+  Text(Ui, CS(Flags));
+  Text(Ui, CSz(" ("));
+
+  while (u32 Flag = UnsetLeastSignificantSetBit((u32*)&Flags))
+  {
+    Text(Ui, ToString((chunk_flag)Flag));
+    if (Flags != 0) { Text(Ui, CSz("|")); }
+  }
+  Text(Ui, CSz(")"));
+}
+
 
 
 
 link_internal void
-DoEngineDebugMenu(graphics *Graphics, renderer_2d *Ui, engine_debug *EngineDebug)
+DoEngineDebugMenu(engine_resources *Engine)
 {
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  auto Ui = GameUi;
 
   local_persist ui_element_toggle_button Buttons[] = {
     {CSz("World Chunks"), False},
@@ -138,9 +196,30 @@ DoEngineDebugMenu(graphics *Graphics, renderer_2d *Ui, engine_debug *EngineDebug
 
   if (ToggledOn(&ButtonGroup, CSz("World Chunks")))
   {
-    local_persist window_layout WorldChunkWindow = WindowLayout("World Chunks", DefaultWindowBasis(*Ui->ScreenDim));
+    v2 WindowDim = {{1200.f, 250.f}};
+    local_persist window_layout WorldChunkWindow = WindowLayout("World Chunks", DefaultWindowBasis(*Ui->ScreenDim, WindowDim), WindowDim);
     PushWindowStart(Ui, &WorldChunkWindow);
-    PushWindowEnd(Ui,   &WorldChunkWindow);
+
+    if (Button(Ui, CSz("Pick"), (umm)"Pick"))
+    {
+      EngineDebug->PickedChunkState = PickedChunkState_Hover;
+    }
+    PushNewRow(Ui);
+
+    if (EngineDebug->PickedChunkState == PickedChunkState_Hover)
+    {
+      picked_world_chunk_static_buffer AllChunksBuffer = {};
+      EngineDebug->PickedChunk = GetChunksFromMouseP(Engine, &AllChunksBuffer);
+
+      if (Input->LMB.Clicked) { EngineDebug->PickedChunkState = PickedChunkState_None; }
+    }
+
+    if (EngineDebug->PickedChunk)
+    {
+      DebugChunkUi(Engine, CSz("PickedChunk"), EngineDebug->PickedChunk );
+    }
+
+    PushWindowEnd(Ui, &WorldChunkWindow);
   }
 
 #if 0
@@ -193,10 +272,8 @@ DoEngineDebugMenu(graphics *Graphics, renderer_2d *Ui, engine_debug *EngineDebug
 
         DebugValue(Ui, &EngineDebug->DrawEntityCollisionVolumes);
         DebugValue(Ui, &EngineDebug->DrawWorldAxies);
-        DebugValue(Ui, &EngineDebug->DrawWorldAxies);
 
       PushTableEnd(Ui);
     PushWindowEnd(Ui, &DebugValuesWindow);
   }
-
 }
