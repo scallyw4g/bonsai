@@ -30,7 +30,7 @@
 # OPT="-O2"
 ./make.sh $OPT \
   BuildSingleExample examples/turn_based \
-  # BuildExecutables \
+  BuildExecutables \
   # BuildDebugSystem \
   # BuildTests \
   # BuildSingleExample examples/turn_based2

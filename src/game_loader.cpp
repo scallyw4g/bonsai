@@ -49,7 +49,7 @@ ThreadMain(void *Input)
 
   DEBUG_REGISTER_THREAD(ThreadParams);
 
-  if (ThreadParams->InitProc) { ThreadParams->InitProc(Global_ThreadStates, ThreadParams->ThreadIndex); }
+  if (ThreadParams->GameApi->WorkerInit) { ThreadParams->GameApi->WorkerInit(Global_ThreadStates, ThreadParams->ThreadIndex); }
 
   while (FutexNotSignaled(ThreadParams->WorkerThreadsExitFutex))
   {
@@ -80,8 +80,10 @@ ThreadMain(void *Input)
 
     WaitOnFutex(ThreadParams->WorkerThreadsSuspendFutex);
 
+    ThreadParams->EngineApi->WorkerInit(ThreadParams->EngineResources, ThreadParams->ThreadIndex);
+
     AtomicIncrement(ThreadParams->HighPriorityWorkerCount);
-    DrainQueue( ThreadParams->HighPriority, Thread, ThreadParams->GameWorkerThreadCallback );
+    DrainQueue( ThreadParams->HighPriority, Thread, ThreadParams->GameApi );
     AtomicDecrement(ThreadParams->HighPriorityWorkerCount);
 
 #if 1
@@ -123,7 +125,9 @@ ThreadMain(void *Input)
       if ( Exchanged )
       {
         volatile work_queue_entry *Entry = LowPriority->Entries+DequeueIndex;
-        ThreadParams->GameWorkerThreadCallback(Entry, Thread);
+
+        HandleJob(Entry, Thread, ThreadParams->GameApi);
+
         Ensure( RewindArena(Thread->TempMemory) );
       }
     }
@@ -135,7 +139,7 @@ ThreadMain(void *Input)
 }
 
 link_internal void
-LaunchWorkerThreads(platform *Plat, engine_resources *EngineResources, bonsai_worker_thread_init_callback WorkerThreadInit, bonsai_worker_thread_callback WorkerThreadCallback)
+LaunchWorkerThreads(platform *Plat, engine_resources *EngineResources, engine_api *EngineApi, game_api *GameApi)
 {
   s32 TotalThreadCount  = (s32)GetTotalThreadCount();
 
@@ -158,9 +162,10 @@ LaunchWorkerThreads(platform *Plat, engine_resources *EngineResources, bonsai_wo
     Params->ThreadIndex = ThreadIndex;
     Params->HighPriority = &Plat->HighPriority;
     Params->LowPriority = &Plat->LowPriority;
-    Params->InitProc = WorkerThreadInit;
-    Params->GameWorkerThreadCallback = WorkerThreadCallback;
+
     Params->EngineResources = EngineResources;
+    Params->GameApi = GameApi;
+    Params->EngineApi = EngineApi;
 
     Params->HighPriorityWorkerCount = &Plat->HighPriorityWorkerCount;
 
@@ -366,7 +371,7 @@ main( s32 ArgCount, const char ** Args )
   GetDebugState()->SetRenderer(&EngineResources.GameUi);
 #endif
 
-  if (GameApi.WorkerMain) { LaunchWorkerThreads(&Plat, &EngineResources, GameApi.WorkerInit, GameApi.WorkerMain); }
+  LaunchWorkerThreads(&Plat, &EngineResources, &EngineApi, &GameApi);
 
   thread_local_state MainThread = DefaultThreadLocalState(&EngineResources, 0);
 
@@ -416,11 +421,6 @@ main( s32 ArgCount, const char ** Args )
     {
       Info("Reloading Game Lib");
 
-      // NOTE(Jesse): We actually have to shut down the worker threads because
-      // the game callback code gets unmapped, which is basically welded into
-      // the thread.
-      /* SignalAndWaitForWorkers(&Plat.WorkerThreadsExitFutex); */
-      /* UnsignalFutex(&Plat.WorkerThreadsExitFutex); */
       SignalAndWaitForWorkers(&Plat.WorkerThreadsSuspendFutex);
 
       CloseLibrary(GameLib);
@@ -428,16 +428,6 @@ main( s32 ArgCount, const char ** Args )
 
       Ensure(InitializeEngineApi(&EngineApi, GameLib));
       Ensure(InitializeGameApi(&GameApi, GameLib));
-
-      if (GameApi.WorkerMain)
-      {
-        for ( s32 ThreadIndex = 1; ThreadIndex < s32(GetTotalThreadCount()); ++ThreadIndex )
-        {
-          thread_startup_params *ThreadParams = Plat.Threads + ThreadIndex;
-          ThreadParams->GameWorkerThreadCallback = GameApi.WorkerMain;
-        }
-      }
-      /* if (GameApi.WorkerMain) { LaunchWorkerThreads(&Plat, &EngineResources, GameApi.WorkerInit, GameApi.WorkerMain); } */
 
       Ensure( EngineApi.OnLibraryLoad(&EngineResources) );
 
@@ -499,7 +489,7 @@ main( s32 ArgCount, const char ** Args )
 
     EngineApi.SimulateAndBufferGeometry(&EngineResources);
 
-    DrainQueue(&Plat.HighPriority, &MainThread,GameApi.WorkerMain);
+    DrainQueue(&Plat.HighPriority, &MainThread, &GameApi);
     WaitForWorkerThreads(&Plat.HighPriorityWorkerCount);
 
     EngineApi.Render(&EngineResources);

@@ -266,3 +266,94 @@ Bonsai_Render(engine_resources *Resources)
   b32 Result = True;
   return Result;
 }
+
+link_internal void
+WorkerThreadDefaultImplementations(BONSAI_API_WORKER_THREAD_CALLBACK_PARAMS)
+{
+  world *World = Thread->EngineResources->World;
+
+  work_queue_entry_type Type = Entry->Type;
+  switch (Type)
+  {
+    InvalidCase(type_work_queue_entry_noop);
+    InvalidCase(type_work_queue_entry__align_to_cache_line_helper);
+
+    case type_work_queue_entry_init_asset:
+    {
+      InvalidCodePath();
+    } break;
+
+    case type_work_queue_entry_update_world_region:
+    {
+      work_queue_entry_update_world_region *Job = SafeAccess(work_queue_entry_update_world_region, Entry);
+
+      picked_voxel Location = Job->Location;
+      r32 Radius = Job->Radius;
+
+      DoWorldUpdate(&Thread->EngineResources->Plat->LowPriority, World, Job->ChunkBuffer, Job->ChunkCount, &Location, Job->MinP, Job->MaxP, Job->Op, Job->ColorIndex, Radius, Thread);
+    } break;
+
+    case type_work_queue_entry_sim_particle_system:
+    {
+      work_queue_entry_sim_particle_system *Job = SafeAccess(work_queue_entry_sim_particle_system, Entry);
+      SimulateParticleSystem(Job);
+    } break;
+
+    case type_work_queue_entry_rebuild_mesh:
+    {
+      work_queue_entry_rebuild_mesh *Job = SafeAccess(work_queue_entry_rebuild_mesh, Entry);
+      world_chunk *Chunk = Job->Chunk;
+      RebuildWorldChunkMesh(Thread, Chunk);
+    } break;
+
+    case type_work_queue_entry_init_world_chunk:
+    {
+      work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
+      world_chunk *Chunk = Job->Chunk;
+
+      counted_string AssetFilename = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, Thread->TempMemory);
+      native_file AssetFile = OpenFile(AssetFilename, "r+b");
+
+      {
+        s32 Frequency = 50;
+        s32 Amplititude = 15;
+        s32 StartingZDepth = -5;
+
+        Assert(Chunk->Dim == World->ChunkDim);
+        InitializeWorldChunkPerlinPlane( Thread,
+                                         Chunk,
+                                         Chunk->Dim,
+                                         &AssetFile,
+                                         Frequency,
+                                         Amplititude,
+                                         StartingZDepth,
+                                         ChunkInitFlag_ComputeStandingSpots );
+      }
+
+    } break;
+
+    case type_work_queue_entry_copy_buffer_ref:
+    {
+      work_queue_entry_copy_buffer_ref *CopyJob = SafeAccess(work_queue_entry_copy_buffer_ref, Entry);
+      DoCopyJob(CopyJob, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+    } break;
+
+    case type_work_queue_entry_copy_buffer_set:
+    {
+      TIMED_BLOCK("Copy Set");
+      volatile work_queue_entry_copy_buffer_set *CopySet = SafeAccess(work_queue_entry_copy_buffer_set, Entry);
+      for (u32 CopyIndex = 0; CopyIndex < CopySet->Count; ++CopyIndex)
+      {
+        work_queue_entry_copy_buffer_ref *CopyJob = (work_queue_entry_copy_buffer_ref *)CopySet->CopyTargets + CopyIndex;
+        DoCopyJob(CopyJob, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+      }
+      END_BLOCK("Copy Set");
+    } break;
+  }
+}
+
+link_export void
+WorkerInit(engine_resources *Engine, s32 ThreadIndex)
+{
+  if (ThreadLocal_ThreadIndex == -1) { SetThreadLocal_ThreadIndex(ThreadIndex); }
+}
