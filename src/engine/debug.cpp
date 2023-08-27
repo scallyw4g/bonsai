@@ -1,3 +1,17 @@
+
+link_internal engine_debug *
+GetEngineDebug()
+{
+  return &Global_EngineResources->EngineDebug;
+}
+
+ui_debug *
+GetUiDebug()
+{
+  return &Global_EngineResources->EngineDebug.UiDebug;
+}
+
+
 struct ui_element_toggle_button
 {
   counted_string Text;
@@ -185,7 +199,7 @@ DoEngineDebugMenu(engine_resources *Engine)
     {CSz("WorldChunks"), False},
     {CSz("Textures"), False},
     {CSz("RenderSettings"), False},
-    {CSz("DebugValues"), False},
+    {CSz("EngineDebug"), False},
   };
 
   ui_element_toggle_button_group ButtonGroup = {
@@ -215,7 +229,7 @@ DoEngineDebugMenu(engine_resources *Engine)
       if (Hover(Ui, &ColorPickerButton))
       {
         v3 BorderColor = V3(0.5f, 0.5f, 0.1f);
-        PushBorder(Ui, RectMinMax(Ui->Hover.MinP+Padding.xy, Ui->Hover.MinP+QuadDim), BorderColor);
+        PushBorder(Ui, RectMinMax(Ui->Hover.MinP+Padding.xy, Ui->Hover.MinP+Padding.xy+QuadDim), BorderColor);
       }
 
       if ( (ColorIndex+1) % 8 == 0 ) { PushNewRow(Ui); }
@@ -292,19 +306,23 @@ DoEngineDebugMenu(engine_resources *Engine)
     PushWindowEnd(Ui, &RenderSettingsWindow);
   }
 
-  if (ToggledOn(&ButtonGroup, CSz("DebugValues")))
+  if (ToggledOn(&ButtonGroup, CSz("EngineDebug")))
   {
     v2 WindowDim = {{1200.f, 250.f}};
-    local_persist window_layout DebugValuesWindow = WindowLayout("Debug Values", DefaultWindowBasis(*Ui->ScreenDim, WindowDim), WindowDim);
+    local_persist window_layout Window = WindowLayout("Engine Debug", DefaultWindowBasis(*Ui->ScreenDim, WindowDim), WindowDim);
 
     render_settings *Settings = &Graphics->Settings;
-    PushWindowStart(Ui, &DebugValuesWindow);
+    PushWindowStart(Ui, &Window);
       PushTableStart(Ui);
 
         DebugValue(Ui, &EngineDebug->DrawEntityCollisionVolumes);
         DebugValue(Ui, &EngineDebug->DrawWorldAxies);
 
+        DebugValue(Ui, &EngineDebug->UiDebug.OutlineUiValues);
+        DebugValue(Ui, &EngineDebug->UiDebug.OutlineUiButtons);
+        DebugValue(Ui, &EngineDebug->UiDebug.OutlineUiTables);
+
       PushTableEnd(Ui);
-    PushWindowEnd(Ui, &DebugValuesWindow);
+    PushWindowEnd(Ui, &Window);
   }
 }

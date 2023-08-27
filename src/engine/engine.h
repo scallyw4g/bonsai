@@ -15,6 +15,9 @@
 
 #include <engine/voxel_face.h>
 #include <engine/mesh.h>
+
+#include <engine/resources.h>
+
 #include <engine/world_chunk.h>
 #include <engine/work_queue.h>
 #include <engine/asset.h>

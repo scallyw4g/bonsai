@@ -5,6 +5,7 @@ struct world_chunk;
 struct heap_allocator;
 struct entity;
 
+
 struct picked_world_chunk
 {
   world_chunk *Chunk;
@@ -49,6 +50,8 @@ struct engine_debug
   picked_world_chunk_static_buffer PickedChunks;
   texture_cursor Textures;
 
+  ui_debug UiDebug;
+
   b8 DrawEntityCollisionVolumes;
   b8 DrawWorldAxies;
 
@@ -58,3 +61,5 @@ struct engine_debug
   world_chunk *PickedChunk;
 };
 
+
+link_internal engine_debug* GetEngineDebug();
