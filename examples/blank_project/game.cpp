@@ -6,21 +6,18 @@
 #include <game_constants.h>
 #include <game_types.h>
 
-// NOTE(Jesse): This function gets called for each worker thread at engine
-// startup, but not the main thread!
+// NOTE(Jesse): This is an optional function that gets called for each worker
+// thread at engine startup, but not the main thread!
 BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
 {
   Global_ThreadStates = AllThreads;
   SetThreadLocal_ThreadIndex(ThreadIndex);
 }
 
-// NOTE(Jesse): This is the worker thread loop.  These are a few default
-// implementations of functions for copying data around in the engine.
-//
-// TODO(Jesse): Make these jobs opt-in, such that game code doesn't have to
-// care about these unless it wants to.  Most of these jobs will never have a
-// custom implementation in games until way into development, if ever.
-//
+// NOTE(Jesse): This is an optional function that you may use to override
+// default implementations of the following jobs.  The init_world_chunk may be
+// of particular interest and several example implementations can be found in
+// the terrain_gen example.  If you handle a job, return True, otherwise return False.
 BONSAI_API_WORKER_THREAD_CALLBACK()
 {
   switch (Entry->Type)
@@ -37,61 +34,13 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
     case type_work_queue_entry_update_world_region:
     case type_work_queue_entry_rebuild_mesh:
     case type_work_queue_entry_init_asset:
-    {
-      NotImplemented;
-    } break;
-
     case type_work_queue_entry_init_world_chunk:
-     {
-       volatile work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
-       world_chunk *Chunk = Job->Chunk;
-
-       if (ChunkIsGarbage(Chunk))
-       {
-       }
-       else
-       {
-         // NOTE(Jesse): For more examples of builtin noise functions, see the 
-         // terrain_gen example
-         s32 Frequency = 50;
-         s32 Amplititude = 15;
-         s32 StartingZDepth = -5;
-         InitializeWorldChunkPerlinPlane( Thread,
-                                          Chunk,
-                                          Chunk->Dim,
-                                          0,
-                                          Frequency,
-                                          Amplititude,
-                                          StartingZDepth,
-                                          ChunkInitFlag_Noop );
-
-       }
-
-       FinalizeChunkInitialization(Chunk);
-     } break;
-
     case type_work_queue_entry_copy_buffer_ref:
-    {
-      work_queue_entry_copy_buffer_ref *CopyJob = SafeAccess(work_queue_entry_copy_buffer_ref, Entry);
-      DoCopyJob(CopyJob, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-    } break;
-
     case type_work_queue_entry_copy_buffer_set:
-    {
-      volatile work_queue_entry_copy_buffer_set *CopySet = SafeAccess(work_queue_entry_copy_buffer_set, Entry);
-      RangeIterator(CopyIndex, (s32)CopySet->Count)
-      {
-        work_queue_entry_copy_buffer_ref *CopyJob = (work_queue_entry_copy_buffer_ref *)CopySet->CopyTargets + CopyIndex;
-        DoCopyJob(CopyJob, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-      }
-    } break;
-
-    case type_work_queue_entry_sim_particle_system:
-    {
-      work_queue_entry_sim_particle_system *Job = SafeAccess(work_queue_entry_sim_particle_system, Entry);
-      SimulateParticleSystem(Job);
-    } break;
+    case type_work_queue_entry_sim_particle_system: {} break;
   }
+
+  return False;
 }
 
 // NOTE(Jesse): This gets called once on the main thread at engine startup.

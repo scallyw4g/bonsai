@@ -6,6 +6,7 @@
 
 BONSAI_API_WORKER_THREAD_CALLBACK()
 {
+  b32 Result = True;
   world *World = Thread->EngineResources->World;
   game_state *GameState = Thread->EngineResources->GameState;
 
@@ -15,30 +16,10 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
     InvalidCase(type_work_queue_entry_noop);
     InvalidCase(type_work_queue_entry__align_to_cache_line_helper);
 
-    case type_work_queue_entry_init_asset:
-    {
-      InvalidCodePath();
-    } break;
-
-    case type_work_queue_entry_update_world_region:
-    {
-      work_queue_entry_update_world_region *Job = SafeAccess(work_queue_entry_update_world_region, Entry);
-
-      picked_voxel Location = Job->Location;
-      r32 Radius = Job->Radius;
-
-      DoWorldUpdate(&Thread->EngineResources->Plat->LowPriority, World, Job->ChunkBuffer, Job->ChunkCount, &Location, Job->MinP, Job->MaxP, Job->Op, Job->ColorIndex, Radius, Thread);
-    } break;
-
-    case type_work_queue_entry_sim_particle_system:
-    {
-      work_queue_entry_sim_particle_system *Job = SafeAccess(work_queue_entry_sim_particle_system, Entry);
-      SimulateParticleSystem(Job);
-    } break;
+    default: { Result = False; } break;
 
     case type_work_queue_entry_rebuild_mesh:
     {
-
       work_queue_entry_rebuild_mesh *Job = SafeAccess(work_queue_entry_rebuild_mesh, Entry);
       world_chunk *Chunk = Job->Chunk;
       Assert( IsSet(Chunk->Flags, Chunk_VoxelsInitialized) );
@@ -52,7 +33,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
       world_chunk *Chunk = Job->Chunk;
 
-      if (GameState->GenInfo.TileSuperpositions == 0) return;
+      if (GameState->GenInfo.TileSuperpositions == 0) break;
 
       if (ChunkIsGarbage(Chunk))
       {
@@ -223,25 +204,9 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
     } break;
 
-    case type_work_queue_entry_copy_buffer_ref:
-    {
-      work_queue_entry_copy_buffer_ref *CopyJob = SafeAccess(work_queue_entry_copy_buffer_ref, Entry);
-      DoCopyJob(CopyJob, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-    } break;
-
-    case type_work_queue_entry_copy_buffer_set:
-    {
-      TIMED_BLOCK("Copy Set");
-      volatile work_queue_entry_copy_buffer_set *CopySet = SafeAccess(work_queue_entry_copy_buffer_set, Entry);
-      for (u32 CopyIndex = 0; CopyIndex < CopySet->Count; ++CopyIndex)
-      {
-        work_queue_entry_copy_buffer_ref *CopyJob = (work_queue_entry_copy_buffer_ref *)CopySet->CopyTargets + CopyIndex;
-        DoCopyJob(CopyJob, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-      }
-      END_BLOCK("Copy Set");
-    } break;
-
   }
+
+  return Result;
 }
 
 link_internal s32
