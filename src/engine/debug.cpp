@@ -178,10 +178,11 @@ DoEngineDebugMenu(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  auto Ui = GameUi;
+  renderer_2d *Ui = GameUi;
 
   local_persist ui_element_toggle_button Buttons[] = {
-    {CSz("World Chunks"), False},
+    {CSz("Edit"), False},
+    {CSz("WorldChunks"), False},
     {CSz("Textures"), False},
     {CSz("RenderSettings"), False},
     {CSz("DebugValues"), False},
@@ -194,7 +195,37 @@ DoEngineDebugMenu(engine_resources *Engine)
 
   DrawToggleButtonGroup(Ui, &ButtonGroup);
 
-  if (ToggledOn(&ButtonGroup, CSz("World Chunks")))
+  if (ToggledOn(&ButtonGroup, CSz("Edit")))
+  {
+    v2 WindowDim = {{1200.f, 250.f}};
+    local_persist window_layout Window = WindowLayout("Edit", DefaultWindowBasis(*Ui->ScreenDim, WindowDim), WindowDim);
+    PushWindowStart(Ui, &Window);
+
+    RangeIterator(ColorIndex, s32(u8_MAX)+1 )
+    {
+      v3 Color = GetColorData(DefaultPalette, u32(ColorIndex)).rgb;
+      ui_style Style = UiStyleFromLightestColor(Color);
+
+      v2 QuadDim = V2(20);
+      v4 Padding = V4(5);
+      interactable_handle ColorPickerButton = PushButtonStart(Ui, (umm)"ColorPicker" + (umm)ColorIndex);
+        PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, Padding );
+      PushButtonEnd(Ui);
+
+      if (Hover(Ui, &ColorPickerButton))
+      {
+        v3 BorderColor = V3(0.5f, 0.5f, 0.1f);
+        PushBorder(Ui, RectMinMax(Ui->Hover.MinP+Padding.xy, Ui->Hover.MinP+QuadDim), BorderColor);
+      }
+
+      if ( (ColorIndex+1) % 8 == 0 ) { PushNewRow(Ui); }
+    }
+
+    PushWindowEnd(Ui, &Window);
+
+  }
+
+  if (ToggledOn(&ButtonGroup, CSz("WorldChunks")))
   {
     v2 WindowDim = {{1200.f, 250.f}};
     local_persist window_layout WorldChunkWindow = WindowLayout("World Chunks", DefaultWindowBasis(*Ui->ScreenDim, WindowDim), WindowDim);
@@ -240,7 +271,7 @@ DoEngineDebugMenu(engine_resources *Engine)
   if (ToggledOn(&ButtonGroup, CSz("RenderSettings")))
   {
     v2 WindowDim = {{1200.f, 250.f}};
-    local_persist window_layout RenderSettingsWindow = WindowLayout("RenderSettings", DefaultWindowBasis(*Ui->ScreenDim, WindowDim), WindowDim);
+    local_persist window_layout RenderSettingsWindow = WindowLayout("Render Settings", DefaultWindowBasis(*Ui->ScreenDim, WindowDim), WindowDim);
 
     render_settings *Settings = &Graphics->Settings;
     PushWindowStart(Ui, &RenderSettingsWindow);
