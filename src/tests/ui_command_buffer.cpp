@@ -1,12 +1,9 @@
-#define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
-#define DEBUG_SYSTEM_API 1
 
-#include <bonsai_debug/debug.cpp>
+#include <bonsai_types.h>
 #include <bonsai_stdlib/test/utils.h>
 
-
 link_internal void
-TestTable(debug_ui_render_group* Group)
+TestTable(renderer_2d* Group)
 {
   PushTableStart(Group);
   for (u32 Index = 0;
@@ -57,21 +54,26 @@ main(s32 ArgCount, const char** Args)
 {
   TestSuiteBegin("ui_command_buffer", ArgCount, Args);
 
-  memory_arena Arena           = {};
-  debug_ui_render_group* Group = Allocate(debug_ui_render_group, &Arena, 1);
-  Group->CommandBuffer         = Allocate(ui_render_command_buffer, &Arena, 1);
-  Group->Input                 = Allocate(input, &Arena, 1);;
-  Group->MouseP                = Allocate(v2, &Arena, 1);;
+  memory_arena Arena = {};
+  heap_allocator Heap = InitHeap(Megabytes(128));
+
+  renderer_2d Renderer = {};
+
+  v2 MouseP = {}, MouseDP = {}, ScreenDim = {};
+  input Input = {};
+
+  InitRenderer2D(&Renderer, &Heap, &Arena, &MouseP, &MouseDP, &ScreenDim, &Input, True);
 
   local_persist window_layout Window = WindowLayout("TestWindow", V2(0));
 
-  PushWindowStart(Group, &Window);
-    TestTable(Group);
-  PushWindowEnd(Group, &Window);
-  FlushCommandBuffer(Group, Group->CommandBuffer);
+  PushWindowStart(&Renderer, &Window);
+    TestTable(&Renderer);
+  PushWindowEnd(&Renderer, &Window);
 
-  TestTable(Group);
-  FlushCommandBuffer(Group, Group->CommandBuffer);
+  FlushCommandBuffer(&Renderer, Renderer.CommandBuffer);
+
+  TestTable(&Renderer);
+  FlushCommandBuffer(&Renderer, Renderer.CommandBuffer);
 
   TestSuiteEnd();
 }

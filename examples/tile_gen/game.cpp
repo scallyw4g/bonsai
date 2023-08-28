@@ -1,4 +1,4 @@
-#define PLATFORM_GL_IMPLEMENTATIONS 1
+#define DEBUG_SYSTEM_API 1
 
 #include <bonsai_types.h>
 
@@ -16,61 +16,6 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *
   /* Result[ModelIndex_Proton] = LoadVoxModel(Memory, Heap, PROJECTILE_MODEL); */
 
   return Result;
-}
-
-BONSAI_API_WORKER_THREAD_CALLBACK()
-{
-  Assert(ThreadLocal_ThreadIndex);
-
-  switch (Entry->Type)
-  {
-    case type_work_queue_entry_noop: { InvalidCodePath(); } break;
-
-    case type_work_queue_entry_init_asset:
-    {
-      NotImplemented;
-    } break;
-
-    case type_work_queue_entry_init_world_chunk:
-    {
-      volatile work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
-      world_chunk *Chunk = Job->Chunk;
-      s32 Frequency = 200;
-      s32 Amplititude = 250;
-      s32 StartingZDepth = -150;
-      InitializeWorldChunkPerlinPlane( Thread,
-                                       Chunk,
-                                       WORLD_CHUNK_DIM,
-                                       Frequency,
-                                       Amplititude,
-                                       StartingZDepth );
-
-      FullBarrier;
-
-      Assert( NotSet(Chunk, Chunk_Queued ));
-    } break;
-
-    case type_work_queue_entry_copy_buffer:
-    {
-      volatile work_queue_entry_copy_buffer *CopyJob = SafeAccess(work_queue_entry_copy_buffer, Entry);
-      DoCopyJob(CopyJob, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-    } break;
-
-    case type_work_queue_entry_copy_buffer_set:
-    {
-      TIMED_BLOCK("Copy Set");
-      volatile work_queue_entry_copy_buffer_set *CopySet = SafeAccess(work_queue_entry_copy_buffer_set, Entry);
-      for (u32 CopyIndex = 0; CopyIndex < CopySet->Count; ++CopyIndex)
-      {
-        volatile work_queue_entry_copy_buffer *CopyJob = &CopySet->CopyTargets[CopyIndex];
-        DoCopyJob(CopyJob, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-      }
-      END_BLOCK("Copy Set");
-    } break;
-
-  }
-
-  return;
 }
 
 BONSAI_API_MAIN_THREAD_CALLBACK()

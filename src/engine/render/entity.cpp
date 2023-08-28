@@ -19,6 +19,9 @@ MousePickEntity(engine_resources *Resources)
   return Result;
 }
 
+// An optional function the game can choose to implement if they want to do a custom entity update.
+void GameEntityUpdate(engine_resources *, entity *) __attribute__((weak));
+
 // NOTE(Jesse): Once we draw entities & chunks in a more real way this should
 // be able to be moved back into the regular entity.cpp
 void
@@ -37,7 +40,7 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
     if (!Spawned(Entity))
         continue;
 
-    if (Entity->Update) { Entity->Update(Resources, Entity); }
+    if (Entity->UserData && GameEntityUpdate) { GameEntityUpdate(Resources, Entity); }
 
     Entity->P = Canonicalize(Resources->World, Entity->P);
 
@@ -98,7 +101,7 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
 
       v3 RenderSpaceP  = GetRenderP(Entity->P, Camera, World->ChunkDim);
       auto Job = WorkQueueEntry(System, Dest, EntityDelta, RenderSpaceP, dt);
-      SimulateParticleSystem(&Job.work_queue_entry_sim_particle_system);
+      /* SimulateParticleSystem(&Job.work_queue_entry_sim_particle_system); */
       PushWorkQueueEntry(Queue, &Job);
     }
   }

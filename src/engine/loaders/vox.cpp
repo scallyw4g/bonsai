@@ -258,7 +258,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
           s32 minY = s32_MAX;
           s32 minZ = s32_MAX;
 
-          // TODO(Jesse)(calloc, memory): WTF is calloc doing in here?!
+          // TODO(Jesse)(immediate, calloc, memory): WTF is calloc doing in here?!
           boundary_voxel *LocalVoxelCache = (boundary_voxel *)calloc((umm)ReportedVoxelCount, sizeof(boundary_voxel) );
           for( s32 VoxelCacheIndex = 0;
                VoxelCacheIndex < ReportedVoxelCount;

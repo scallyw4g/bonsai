@@ -1,5 +1,5 @@
-#define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
 #define DEBUG_SYSTEM_API 1
+#define DEBUG_SYSTEM_LOADER_API 1
 
 #include <bonsai_types.h>
 #include <bonsai_stdlib/test/utils.h>
@@ -29,17 +29,7 @@ main(s32 ArgCount, const char** Args)
 {
   TestSuiteBegin("callgraph", ArgCount, Args);
 
-  // @bootstrap-debug-system
-  shared_lib DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
-  if (!DebugLib) { Error("Loading DebugLib :( "); return False; }
-
-  init_debug_system_proc InitDebugSystem = (init_debug_system_proc)GetProcFromLib(DebugLib, DebugLibName_InitDebugSystem);
-  if (!InitDebugSystem) { Error("Retreiving InitDebugSystem from Debug Lib :( "); return False; }
-
-  GetDebugState = InitDebugSystem(0);
-
-  debug_state* DebugState = GetDebugState();
-  DebugState->DebugDoScopeProfiling = True;
+  shared_lib DebugLib = InitializeBonsaiDebug("./bin/lib_debug_system_loadable" PLATFORM_RUNTIME_LIB_EXTENSION, 0);
 
   TIMED_FUNCTION();
 

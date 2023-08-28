@@ -3,8 +3,10 @@ struct game_state;
 
 struct thread_startup_params
 {
-  bonsai_worker_thread_init_callback InitProc;
-  bonsai_worker_thread_callback GameWorkerThreadCallback;
+  engine_api *EngineApi;
+  game_api   *GameApi;
+  /* bonsai_worker_thread_init_callback InitProc; */
+  /* bonsai_worker_thread_callback GameWorkerThreadCallback; */
 
   engine_resources *EngineResources;
 

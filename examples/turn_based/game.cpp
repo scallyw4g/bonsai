@@ -1,4 +1,3 @@
-#define PLATFORM_GL_IMPLEMENTATIONS 1
 #define DEBUG_SYSTEM_API 1
 
 #include <bonsai_types.h>
@@ -8,6 +7,15 @@
 
 global_variable v3
 Global_EntityFireballOffset = V3(7.0f, -.75f, 4.5f);
+
+enum game_entity_type
+{
+  GameEntityType_Unknown,
+
+  GameEntityType_Enemy,
+  GameEntityType_Splosion,
+  GameEntityType_Bitty,
+};
 
 model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *Heap)
@@ -55,103 +63,6 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *
   return Result;
 }
 
-BONSAI_API_WORKER_THREAD_CALLBACK()
-{
-  world *World = Thread->EngineResources->World;
-
-  work_queue_entry_type Type = Entry->Type;
-  switch (Type)
-  {
-    InvalidCase(type_work_queue_entry_noop);
-    InvalidCase(type_work_queue_entry__align_to_cache_line_helper);
-
-    case type_work_queue_entry_init_asset:
-    {
-      InvalidCodePath();
-    } break;
-
-    case type_work_queue_entry_update_world_region:
-    {
-      work_queue_entry_update_world_region *Job = SafeAccess(work_queue_entry_update_world_region, Entry);
-
-      picked_voxel Location = Job->Location;
-      r32 Radius = Job->Radius;
-
-      DoWorldUpdate(&Thread->EngineResources->Plat->LowPriority, World, Job->ChunkBuffer, Job->ChunkCount, &Location, Job->MinP, Job->MaxP, Job->Op, Job->ColorIndex, Radius, Thread);
-    } break;
-
-    case type_work_queue_entry_sim_particle_system:
-    {
-      work_queue_entry_sim_particle_system *Job = SafeAccess(work_queue_entry_sim_particle_system, Entry);
-      SimulateParticleSystem(Job);
-    } break;
-
-    case type_work_queue_entry_rebuild_mesh:
-    {
-      work_queue_entry_rebuild_mesh *Job = SafeAccess(work_queue_entry_rebuild_mesh, Entry);
-      world_chunk *Chunk = Job->Chunk;
-      RebuildWorldChunkMesh(Thread, Chunk);
-    } break;
-
-    case type_work_queue_entry_init_world_chunk:
-    {
-      work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
-      world_chunk *Chunk = Job->Chunk;
-
-#if 1
-      counted_string AssetFilename = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, Thread->TempMemory);
-      native_file AssetFile = OpenFile(AssetFilename, "r+b");
-#endif
-      {
-
-        /* s32 Frequency = 0; */
-        /* s32 Amplititude = 0; */
-        /* s32 StartingZDepth = 0; */
-
-        /* s32 Frequency = 50; */
-        /* s32 Amplititude = 50; */
-        /* s32 StartingZDepth = -40; // TODO(Jesse): Figure out why this isn't doing anything */
-
-        s32 Frequency = 50;
-        s32 Amplititude = 15;
-        s32 StartingZDepth = -5;
-
-        Assert(Chunk->Dim == World->ChunkDim);
-        InitializeWorldChunkPerlinPlane( Thread,
-                                         Chunk,
-                                         Chunk->Dim,
-                                         &AssetFile,
-                                         Frequency,
-                                         Amplititude,
-                                         StartingZDepth,
-                                         ChunkInitFlag_ComputeStandingSpots );
-      }
-
-      FinalizeChunkInitialization(Chunk);
-
-    } break;
-
-    case type_work_queue_entry_copy_buffer_ref:
-    {
-      work_queue_entry_copy_buffer_ref *CopyJob = SafeAccess(work_queue_entry_copy_buffer_ref, Entry);
-      DoCopyJob(CopyJob, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-    } break;
-
-    case type_work_queue_entry_copy_buffer_set:
-    {
-      TIMED_BLOCK("Copy Set");
-      volatile work_queue_entry_copy_buffer_set *CopySet = SafeAccess(work_queue_entry_copy_buffer_set, Entry);
-      for (u32 CopyIndex = 0; CopyIndex < CopySet->Count; ++CopyIndex)
-      {
-        work_queue_entry_copy_buffer_ref *CopyJob = (work_queue_entry_copy_buffer_ref *)CopySet->CopyTargets + CopyIndex;
-        DoCopyJob(CopyJob, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-      }
-      END_BLOCK("Copy Set");
-    } break;
-
-  }
-}
-
 global_variable random_series Global_GameEntropy = {543232654};
 
 link_internal canonical_position
@@ -175,7 +86,7 @@ enum player_action
 poof(generate_string_table(player_action))
 #include <generated/generate_string_table_player_action.h>
 
-void
+link_internal void
 DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position PickCP, f32 Radius, memory_arena *TempMemory)
 {
   UNPACK_ENGINE_RESOURCES(Resources);
@@ -206,7 +117,7 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
     t = Clamp01(t);
 
 
-    v3 MaxPower = V3(15.f, 15.f, 3.f) * Radius;
+    v3 MaxPower = V3(25.f, 25.f, 4.f) * Radius;
     v3 Power = Lerp(t, MaxPower, V3(0) );
 
     /* DebugLine("t(%f) Power(%f,%f,%f)", t, Power.x, Power.y, Power.z); */
@@ -220,6 +131,7 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
     entity *E = GetFreeEntity(EntityTable);
     SpawnEntity( E, EntityType_ParticleSystem, 0, ModelIndex_None);
     E->P = PickCP + V3(0.5f);
+    E->UserData = (void*)GameEntityType_Splosion;
     SpawnExplosion(E, &Global_GameEntropy, {}, Radius);
   }
   {
@@ -248,6 +160,10 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
     E->Physics.Force.z = Abs(E->Physics.Force.z) * 0.25f;
     E->P = PickCP + (Rnd*Radius) + V3(0.f, 0.f, 2.0f);
     E->P.Offset.z = PickCP.Offset.z + 2.f;
+
+    E->UserData = (void*)GameEntityType_Bitty;
+    /* E->Update = DoBittyLight; */
+
     SpawnSplotionBitty(E, &Global_GameEntropy, {}, .1f);
   }
 #endif
@@ -324,6 +240,39 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
   }
 }
 
+void
+GameEntityUpdate(engine_resources *Engine, entity *Entity )
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  game_entity_type Type = *((game_entity_type*)&Entity->UserData);
+
+  switch (Type)
+  {
+    case GameEntityType_Unknown: {} break;;
+    case GameEntityType_Enemy: { EnemyUpdate(Engine, Entity); } break;
+
+    case GameEntityType_Splosion:
+    case GameEntityType_Bitty:
+    {
+      v3 Color = {};
+      switch (Type)
+      {
+        case GameEntityType_Splosion:
+          Color = V3(0.97f, 0.32f, 0.03f)*70.f; break;
+        case GameEntityType_Bitty:
+          Color = V3(0.97f, 0.42f, 0.03f)*0.2f; break;
+
+        InvalidDefaultCase;
+      }
+
+      v3 P = GetRenderP(World->ChunkDim, Entity, Camera) + V3(0.f, 0.f, 0.1f);
+      r32 Intensity = Max(0.f, Entity->Emitter->RemainingLifespan / Entity->Emitter->EmissionLifespan);
+      DoLight(&Lighting->Lights, P, Color*Intensity );
+    } break;
+  }
+}
+
 BONSAI_API_MAIN_THREAD_CALLBACK()
 {
   Assert(ThreadLocal_ThreadIndex == 0);
@@ -346,9 +295,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   /*   DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_LINE_THICKNESS*3.f); */
   /* } */
 
-
-
-  picked_voxel Pick = MousePickVoxel(Resources);
+  picked_voxel Pick = Resources->MousedOverVoxel;
 
   local_persist player_action SelectedAction = {};
   local_persist u32 PlayerChargeLevel = {};
@@ -497,18 +444,17 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   }
 
-  PushForceAdvance(GameUi, V2(0, 128));
+  local_persist window_layout ActionsWindow = {};
+  PushBorderlessWindowStart(Ui, &ActionsWindow, V2(0, 128));
   for (u32 ActionIndex = 0; ActionIndex < PlayerAction_Count; ++ActionIndex)
   {
     ui_style *Style = ActionIndex == SelectedAction ? &DefaultSelectedStyle : &DefaultStyle;
-    PushTableStart(GameUi);
-      PushColumn(GameUi, ToString((player_action)ActionIndex), Style);
-      PushNewRow(GameUi);
-    PushTableEnd(GameUi);
+    PushTableStart(Ui);
+      PushColumn(Ui, ToString((player_action)ActionIndex), Style);
+    PushTableEnd(Ui);
   }
+  PushWindowEnd(Ui, &ActionsWindow);
 
-
-  /* CameraFollowEntity(Hotkeys, Camera, GameState->CameraTarget); */
   if (Hotkeys)
   {
     r32 CameraSpeed = 125.f;
@@ -518,15 +464,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     CameraDelta = Normalize(CameraDelta) * CameraSpeed * Plat->dt;
 
     GameState->CameraTarget->P.Offset += CameraDelta;
-    /* Canonicalize(World->ChunkDim, GameState->CameraTarget->P); */
   }
-
-  /* if (Hotkeys->Player_Spawn) */
-  /* { */
-  /*   Unspawn(Player); */
-  /*   SpawnPlayerLikeEntity(Plat, World, GameState->Models, Player,  Canonical_Position(V3(0,0,0), World_Position(0,0,2)), &GameState->Entropy); */
-  /*   World->Center = World_Position(0, 0, 2); */
-  /* } */
 }
 
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
@@ -575,7 +513,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
     auto EnemySpawnP = Canonical_Position(V3(0), WorldCenter + WP );
     auto Enemy = GetFreeEntity(EntityTable);
-    Enemy->Update = EnemyUpdate;
+    Enemy->UserData = (void*)GameEntityType_Enemy;
     SpawnPlayerLikeEntity(Plat, World, GameState->Models + EnemyModelIndex, Enemy, EnemySpawnP, &GameState->Entropy, 0.35f);
   }
 #endif
@@ -595,5 +533,4 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
 {
   Global_ThreadStates = AllThreads;
-  SetThreadLocal_ThreadIndex(ThreadIndex);
 }

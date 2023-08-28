@@ -9,23 +9,6 @@ global_variable m4 NdcToScreenSpace =
   V4(0.5, 0.5, 0.5, 1.0)
 };
 
-v3
-Unproject(v2 ScreenP, r32 ClipZDepth, v2 ScreenDim, m4 *InvViewProj)
-{
-  TIMED_FUNCTION();
-
-  Assert(ClipZDepth <= 1.0f);
-  Assert(ClipZDepth >= 0.0f);
-
-  v4 ClipCoords = (2.0f * V4(V3(ScreenP / ScreenDim, ClipZDepth), 1.0f)) -1.0f;
-  ClipCoords.y *= -1;
-
-  v4 WorldSpace = TransformColumnMajor(*InvViewProj, ClipCoords);
-  v3 Result = WorldSpace.xyz / WorldSpace.w;
-
-  return Result;
-}
-
 void
 Init_Global_QuadVertexBuffer()
 {

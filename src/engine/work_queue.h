@@ -125,12 +125,26 @@ WorkQueueEntry( particle_system *System, untextured_3d_geometry_buffer *Dest, v3
 
 
 
+link_internal void
+HandleJob(volatile work_queue_entry *Entry, thread_local_state *Thread, game_api *GameApi)
+{
+  if ( GameApi->WorkerMain &&
+       GameApi->WorkerMain(Entry, Thread))
+  {
+    // Game exported a WorkerMain, and it handled the job
+  }
+  else
+  {
+    WorkerThreadDefaultImplementations(Entry, Thread);
+  }
+}
+
 
 // TODO(Jesse): This should be able to go into the stdlib at this point.
 // Probably time to move it there.  AFAIK the only thinig that has to move with
 // it is this bonsai_worker_thread_callback thingy.
 link_internal void
-DrainQueue(work_queue* Queue, thread_local_state* Thread, bonsai_worker_thread_callback GameWorkerThreadCallback)
+DrainQueue(work_queue* Queue, thread_local_state* Thread, game_api *GameApi)
 {
   TIMED_FUNCTION();
 
@@ -151,7 +165,8 @@ DrainQueue(work_queue* Queue, thread_local_state* Thread, bonsai_worker_thread_c
     if ( Exchanged )
     {
       volatile work_queue_entry* Entry = Queue->Entries + DequeueIndex;
-      GameWorkerThreadCallback(Entry, Thread);
+      /* GameWorkerThreadCallback(Entry, Thread); */
+      HandleJob(Entry, Thread, GameApi);
     }
   }
 }

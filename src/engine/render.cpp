@@ -1,34 +1,3 @@
-
-link_internal maybe_ray
-ComputeRayFromCursor(platform *Plat, m4* ViewProjection, camera *Camera, v3i WorldChunkDim)
-{
-  maybe_ray Result = {};
-
-  m4 InverseViewProjection = {};
-  b32 Inverted = Inverse((r32*)ViewProjection, (r32*)&InverseViewProjection);
-  if (Inverted)
-  {
-    v3 MouseMinWorldP = Unproject( Plat->MouseP,
-                                   0.0f,
-                                   V2(Plat->WindowWidth, Plat->WindowHeight),
-                                   &InverseViewProjection);
-
-    v3 MouseMaxWorldP = Unproject( Plat->MouseP,
-                                   1.0f,
-                                   V2(Plat->WindowWidth, Plat->WindowHeight),
-                                   &InverseViewProjection);
-
-    v3 RayDirection = Normalize(MouseMaxWorldP - MouseMinWorldP);
-
-    v3 CameraOffset = Camera->ViewingTarget.Offset + V3(Camera->ViewingTarget.WorldP * WorldChunkDim);
-    /* v3 CameraOffset = V3(0); */
-    Result.Ray = { .Origin = MouseMinWorldP + CameraOffset, .Dir = RayDirection };
-    Result.Tag = Maybe_Yes;
-  }
-
-  return Result;
-}
-
 void
 RenderAoTexture(ao_render_group *AoGroup)
 {
@@ -52,8 +21,8 @@ void
 UpdateLightingTextures(game_lights *Lights)
 {
   // TODO(Jesse, id: 120, tags: allocation, speed): Allocate lights such that this swizzle is unneeded
-  v3 *PosData = AllocateProtection(v3, TranArena, MAX_LIGHTS, False);
-  v3 *ColorData = AllocateProtection(v3, TranArena, MAX_LIGHTS, False);
+  v3 *PosData = AllocateProtection(v3, GetTranArena(), MAX_LIGHTS, False);
+  v3 *ColorData = AllocateProtection(v3, GetTranArena(), MAX_LIGHTS, False);
 
   for (s32 LightIndex = 0;
       LightIndex < Lights->Count;
@@ -84,7 +53,7 @@ link_internal void
 Debug_DrawTextureToDebugQuad( shader *DebugShader )
 {
   GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
-  SetViewport(V2(256));
+  SetViewport(V2(256)*2);
 
   GL.UseProgram(DebugShader->ID);
   BindShaderUniforms(DebugShader);
@@ -96,50 +65,6 @@ Debug_DrawTextureToDebugQuad( shader *DebugShader )
   return;
 }
 
-link_internal void
-DrawGBufferToFullscreenQuad( platform *Plat, graphics *Graphics )
-{
-  GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
-  SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
-
-  GL.UseProgram(Graphics->gBuffer->LightingShader.ID);
-
-  UpdateLightingTextures(Graphics->Lights);
-  Graphics->SG->MVP = NdcToScreenSpace * Graphics->SG->MVP;
-
-  BindShaderUniforms(&Graphics->gBuffer->LightingShader);
-
-  RenderQuad();
-
-  AssertNoGlErrors;
-
-  return;
-}
-
-link_internal gpu_mapped_element_buffer *
-GetCurrentGpuMap(graphics *Graphics)
-{
-  gpu_mapped_element_buffer* GpuMap = Graphics->GpuBuffers + Graphics->GpuBufferWriteIndex;
-  return GpuMap;
-}
-
-#if 0
-void
-DEBUG_CopyTextureToMemory(texture *Texture)
-{
-  glBindTexture(GL_TEXTURE_2D, Texture->ID);
-  glPixelStorei(GL_PACK_ALIGNMENT, 1);
-  u8 *raw_img = (u8*)calloc(sizeof(u8), Texture->Dim.x * Texture->Dim.y * 4);
-  glGetTexImage(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, raw_img);
-  //glGetTexImage(GL_TEXTURE_2D, 0, GL_BGRA, GL_UNSIGNED_BYTE, raw_img);
-  AssertNoGlErrors;
-  free(raw_img);
-  return;
-}
-#endif
-
-#if 1
-#if 1
 inline m4
 GetShadowMapMVP(light *Sun, v3 FrustumCenter)
 {
@@ -159,8 +84,6 @@ GetShadowMapMVP(light *Sun, v3 FrustumCenter)
 
   return depthProjectionMatrix * depthViewMatrix;
 }
-#endif
-
 
 link_internal void
 RenderShadowMap(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
@@ -184,21 +107,20 @@ RenderShadowMap(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
 
   return;
 }
-#endif
 
 link_internal void
 RenderGBuffer(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
 {
   TIMED_FUNCTION();
 
-  auto RG = Graphics->gBuffer;
+  auto GBufferRenderGroup = Graphics->gBuffer;
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, RG->FBO.ID);
-  GL.UseProgram(RG->gBufferShader.ID);
+  GL.BindFramebuffer(GL_FRAMEBUFFER, GBufferRenderGroup->FBO.ID);
+  GL.UseProgram(GBufferRenderGroup->gBufferShader.ID);
 
   SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
 
-  BindShaderUniforms(&RG->gBufferShader);
+  BindShaderUniforms(&GBufferRenderGroup->gBufferShader);
 
   FlushBuffersToCard(GpuMap);
   Draw(GpuMap->Buffer.At);
@@ -209,66 +131,108 @@ RenderGBuffer(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
 }
 
 link_internal void
-RenderPostBuffer(post_processing_group *PostGroup, untextured_3d_geometry_buffer *Mesh)
+CompositeAndDisplay( platform *Plat, graphics *Graphics )
 {
-  GL.BindFramebuffer(GL_FRAMEBUFFER, PostGroup->FBO.ID);
-  GL.UseProgram(PostGroup->Shader.ID);
+  GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
+  SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
 
+  UseShader(&Graphics->CompositeGroup.Shader);
+
+  RenderQuad();
+
+  AssertNoGlErrors;
+
+  return;
+}
+
+link_internal void
+RenderLuminanceTexture(gpu_mapped_element_buffer *GpuMap, lighting_render_group *Lighting, graphics *Graphics)
+{
   SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
 
-  BindShaderUniforms(&PostGroup->Shader);
+  UpdateLightingTextures(&Graphics->Lighting.Lights);
 
-  TIMED_BLOCK("PostBuffer - Bind and buffer data");
-    u32 AttributeIndex = 0;
-    BufferVertsToCard(PostGroup->VertexBuffer, Mesh, &AttributeIndex);
-    BufferColorsToCard(PostGroup->ColorBuffer, Mesh, &AttributeIndex);
-  END_BLOCK("PostBuffer - Bind and buffer data");
+  // TODO(Jesse): Explain this.
+  Graphics->SG->MVP = NdcToScreenSpace * Graphics->SG->MVP;
 
-  Draw(Mesh->At);
-  Mesh->At = 0;
+  GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->FBO.ID);
+  /* GL.SetDrawBuffers(); */
 
-  GL.DisableVertexAttribArray(0);
-  GL.DisableVertexAttribArray(1);
+  UseShader(&Lighting->Shader);
+
+  RenderQuad();
+  /* Draw(GpuMap->Buffer.At); */
+
+  AssertNoGlErrors;
 }
 
-inline bool
-IsRightChunkBoundary( chunk_dimension ChunkDim, int idx )
+link_internal void
+GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *DestFBO)
 {
-  return (idx+1) % (int)ChunkDim.x == 0;
+  bool horizontal = true, first_iteration = true;
+  u32 amount = 10;
+  /* u32 amount = 1; */
+
+  UseShader(&Group->Shader);
+
+  for (u32 i = 0; i < amount; i++)
+  {
+    b32 last_iteration = (i == amount-1);
+
+    if (last_iteration)
+    {
+      GL.BindFramebuffer(GL_FRAMEBUFFER, DestFBO->ID);
+    }
+    else
+    {
+      GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBOs[horizontal].ID);
+    }
+
+    BindUniform(&Group->Shader, CSz("horizontal"), horizontal);
+
+    texture *Tex;
+    if (first_iteration)
+    {
+      Tex = TexIn;
+    }
+    else
+    {
+      Tex = Group->Textures[!horizontal];
+    }
+
+    /* GL.BindTexture( GL_TEXTURE_2D, Tex->ID ); */
+    BindUniform(&Group->Shader, CSz("SrcImage"), Tex, 0);
+
+    RenderQuad();
+
+    horizontal = !horizontal;
+    if (first_iteration) first_iteration = false;
+  }
+
+  GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-inline bool
-IsLeftChunkBoundary( chunk_dimension ChunkDim, int idx )
+link_internal gpu_mapped_element_buffer *
+GetCurrentGpuMap(graphics *Graphics)
 {
-  return (idx) % (int)ChunkDim.x == 0;
+  gpu_mapped_element_buffer* GpuMap = Graphics->GpuBuffers + Graphics->GpuBufferWriteIndex;
+  return GpuMap;
 }
 
-inline bool
-IsTopChunkBoundary( chunk_dimension ChunkDim, int idx )
+#if 0
+void
+DEBUG_CopyTextureToMemory(texture *Texture)
 {
-  return ((idx/(int)ChunkDim.x)+1) % (int)ChunkDim.y == 0;
+  glBindTexture(GL_TEXTURE_2D, Texture->ID);
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+  u8 *raw_img = (u8*)calloc(sizeof(u8), Texture->Dim.x * Texture->Dim.y * 4);
+  glGetTexImage(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, raw_img);
+  //glGetTexImage(GL_TEXTURE_2D, 0, GL_BGRA, GL_UNSIGNED_BYTE, raw_img);
+  AssertNoGlErrors;
+  free(raw_img);
+  return;
 }
-
-inline bool
-IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
-{
-  return (idx/(int)ChunkDim.x) % (int)ChunkDim.y == 0;
-}
-
-inline voxel_position
-Clamp01( voxel_position V )
-{
-  voxel_position Result = V;
-  if (Result.x < 0) Result.x = 0;
-  if (Result.y < 0) Result.y = 0;
-  if (Result.z < 0) Result.z = 0;
-
-  if (Result.x > 1) Result.x = 1;
-  if (Result.y > 1) Result.y = 1;
-  if (Result.z > 1) Result.z = 1;
-
-  return Result;
-}
+#endif
 
 #if 0
 void
@@ -338,30 +302,29 @@ inline void
 ClearFramebuffers(graphics *Graphics)
 {
   TIMED_FUNCTION();
-  GL.ClearColor(f32_MAX, f32_MAX, f32_MAX, f32_MAX);
-  GL.ClearDepth(f64_MAX);
 
-#if DEBUG_SYSTEM_API
-#if DEBUG_SYSTEM_INTERNAL_BUILD
-  GetDebugState()->ClearFramebuffers(&GetDebugState()->PickedChunksRenderGroup);
-#else
-  if (GetDebugState()) GetDebugState()->ClearFramebuffers(&GetDebugState()->PickedChunksRenderGroup);
-#endif
+  GL.ClearDepth(1.0); // NOTE(Jesse): Depth 1.0 is the furthest from the camera
 
-  /* GL.BindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID); */
-  /* GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
-#endif
+  GL.ClearColor(0.f, 0.f, 0.f, 1.f);
+
+  GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->gBuffer->FBO.ID);
+  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName);
   GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  // FIXME(Jesse): This is taking _forever_ on Linux (GLES) .. does it take
-  // forever on other Linux systems?
-  GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->gBuffer->FBO.ID);
+  GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Lighting.FBO.ID);
   GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+  // TODO(Jesse): Why exactly would this not be necessary?
   /* glBindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName); */
   /* glClear(GL_DEPTH_BUFFER_BIT); */
+
+  for (s32 Index = 0; Index < 2; ++Index)
+  {
+    GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Gaussian.FBOs[Index].ID);
+    GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  }
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
   GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -369,110 +332,10 @@ ClearFramebuffers(graphics *Graphics)
   return;
 }
 
-void
-BufferChunkMesh(graphics *Graphics, untextured_3d_geometry_buffer *Dest, untextured_3d_geometry_buffer *Src,
-                chunk_dimension WorldChunkDim, world_position WorldP, r32 Scale = 1.0f, v3 Offset = V3(0), Quaternion Rot = {})
-{
-  /* TIMED_FUNCTION(); */
-
-  if (!Src || Src->At == 0)
-    return;
-
-#if DEBUG_CHUNK_AABB
-  DEBUG_DrawChunkAABB(Dest, Graphics, WorldP, WorldChunkDim, PINK, 0.1f);
-#endif
-
-  v3 ModelBasisP =
-    GetRenderP( WorldChunkDim, Canonical_Position(Offset, WorldP), Graphics->Camera);
-
-  auto CopyBuffer = ReserveBufferSpace( Dest, Src->At);
-  if (Length(Rot.xyz) == 0.f)
-  {
-    BufferVertsChecked(&CopyBuffer, Src->At,
-                       Src->Verts, Src->Normals, Src->Colors,
-                       ModelBasisP, V3(Scale));
-  }
-  else
-  {
-
-    BufferVertsChecked(&CopyBuffer, Src->At,
-                       Src->Verts, Src->Normals, Src->Colors,
-                       ModelBasisP, V3(Scale), Rot);
-  }
-
-  return;
-}
-
-#if 0
-line
-FindIntersectingLine(
-  world_chunk *Chunk,
-  voxel_position OffsetVector,
-  int FirstFilledIndex)
-{
-  voxel_position MinP = Chunk->Data->BoundaryVoxels[FirstFilledIndex].Offset;
-  voxel_position MaxP = MinP;
-
-  int CurrentMaxLen = 0;
-  int CurrentMinLen = 0;
-
-  for (int VoxelIndex = FirstFilledIndex;
-      VoxelIndex < Chunk->Data->BoundaryVoxelCount;
-      ++ VoxelIndex)
-  {
-    voxel_position P  = Chunk->Data->BoundaryVoxels[VoxelIndex].Offset;
-
-    s32 OriginToP = LengthSq(P);
-
-    // Max
-    if ( OriginToP > CurrentMaxLen )
-    {
-      MaxP = P + 1;
-      CurrentMaxLen = OriginToP;
-    }
-
-    // Min
-    if ( OriginToP < CurrentMinLen )
-    {
-      MinP = P;
-      CurrentMinLen = OriginToP;
-    }
-
-  }
-
-  line Result(MinP, MaxP);
-
-  return Result;
-}
-#endif
-
-#if 0
-inline void
-SetupAndBuildExteriorBoundary(
-  world *World,
-  world_chunk *Chunk,
-  voxel_position OffsetVector,
-  chunk_flag Flag)
-{
-  if ( IsSet(Chunk, Flag ) )
-  {
-    world_chunk *Neighbor = GetWorldChunk( World, Chunk->WorldP + OffsetVector );
-
-    if ( Neighbor && IsSet( Neighbor, Chunk_VoxelsInitialized) )
-    {
-      UnSetFlag( Chunk, Flag );
-      BuildExteriorBoundaryVoxels( Chunk, World->ChunkDim, Neighbor, OffsetVector);
-    }
-  }
-
-}
-#endif
-
 #if 0
 aabb
 FindBoundaryVoxelsAABB(chunk_data *Chunk, chunk_dimension Dim)
 {
-
   chunk_dimension MinP = Dim;
   chunk_dimension MaxP = {};
 
@@ -775,49 +638,6 @@ TraverseSurfaceToBoundary( world *World, world_chunk *Chunk, voxel_position Star
   return CurrentP;
 }
 
-// NOTE(Jesse): Pretty sure this function can be deleted
-#if 0
-link_internal world_chunk* GetWorldChunk( world *World, world_position P, chunk_dimension VisibleRegion);
-
-b32
-CanBuildWorldChunkBoundary(world *World, world_chunk *Chunk, chunk_dimension VisibleRegion)
-{
-  // FIXME(Jesse): This is _real_ bad for the cache!
-  b32 Result = True;
-
-  world_position ChunkP = Chunk->WorldP;
-
-
-  world_position Left  = ChunkP - Voxel_Position(1, 0, 0);
-  world_position Right = ChunkP + Voxel_Position(1, 0, 0);
-  world_position Top   = ChunkP + Voxel_Position(0, 1, 0);
-  world_position Bot   = ChunkP - Voxel_Position(0, 1, 0);
-  world_position Front = ChunkP + Voxel_Position(0, 0, 1);
-  world_position Back  = ChunkP - Voxel_Position(0, 0, 1);
-
-  // We could try bailing early to save the cache sometimes
-  world_chunk *TestChunk = GetWorldChunk( World, Left , VisibleRegion);
-  Result &= TestChunk && IsSet(TestChunk, Chunk_VoxelsInitialized);
-
-  TestChunk = GetWorldChunk( World, Right, VisibleRegion );
-  Result &= TestChunk && IsSet(TestChunk, Chunk_VoxelsInitialized);
-
-  TestChunk = GetWorldChunk( World, Top, VisibleRegion );
-  Result &= TestChunk && IsSet(TestChunk, Chunk_VoxelsInitialized);
-
-  TestChunk = GetWorldChunk( World, Bot, VisibleRegion );
-  Result &= TestChunk && IsSet(TestChunk, Chunk_VoxelsInitialized);
-
-  TestChunk = GetWorldChunk( World, Front, VisibleRegion );
-  Result &= TestChunk && IsSet(TestChunk, Chunk_VoxelsInitialized);
-
-  TestChunk = GetWorldChunk( World, Back, VisibleRegion );
-  Result &= TestChunk && IsSet(TestChunk, Chunk_VoxelsInitialized);
-
-  return Result;
-}
-#endif
-
 void
 DrawFolie(untextured_3d_geometry_buffer *Mesh, aabb *AABB)
 {
@@ -831,7 +651,7 @@ void
 DrawParticle(untextured_3d_geometry_buffer *Source, untextured_3d_geometry_buffer *Dest, u8 ColorIndex)
 {
   v4 FaceColors[VERTS_PER_FACE];
-  FillColorArray(ColorIndex, FaceColors, DefaultPalette, VERTS_PER_FACE);
+  FillColorArray(ColorIndex, FaceColors, DefaultPalette, VERTS_PER_FACE, 2.f);
   BufferVertsChecked( Source, Dest );
   return;
 }
@@ -855,9 +675,10 @@ BufferEntity( untextured_3d_geometry_buffer* Dest, entity *Entity, animation *An
 
   if (Spawned(Entity))
   {
-#if DEBUG_DRAW_COLLISION_VOLUMES
-    DrawEntityCollisionVolume(Entity, Dest, Graphics, WorldChunkDim);
-#endif
+    if (GetEngineDebug()->DrawEntityCollisionVolumes)
+    {
+      DrawEntityCollisionVolume(Entity, Dest, Graphics, WorldChunkDim);
+    }
 
     v3 AnimationOffset = {};
     if (Animation)
@@ -888,18 +709,6 @@ BufferEntities( entity **EntityTable, untextured_3d_geometry_buffer* Dest,
   return;
 }
 
-/* link_internal void */
-/* Render_BufferGameGeometry(engine_resources *Resources) */
-/* { */
-/*   platform                  *Plat         = Resources->Plat; */
-/*   graphics                  *Graphics     = Resources->Graphics; */
-/*   world                     *World        = Resources->World; */
-/*   memory_arena              *Memory       = Resources->Memory; */
-/*   heap_allocator            *Heap         = &Resources->Heap; */
-/*   entity                   **EntityTable  = Resources->EntityTable; */
-/*   gpu_mapped_element_buffer *GpuMap       = GetCurrentGpuMap(Graphics); */
-/* } */
-
 link_internal void
 DrawFrustum(world *World, graphics *Graphics, camera *Camera)
 {
@@ -911,27 +720,5 @@ DrawFrustum(world *World, graphics *Graphics, camera *Camera)
   DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Bot.Normal*5.f), BLUE, 0.2f );
   DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Left.Normal*5.f), GREEN, 0.2f );
   DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Right.Normal*5.f), YELLOW, 0.2f );
-}
-
-link_internal void
-DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, v3 RenderSpot_MinP, v3 TileDim, u32 ColorIndex = BLUE, r32 Thickness = DEFAULT_LINE_THICKNESS)
-{
-#if 0
-  untextured_3d_geometry_buffer AABBDest = ReserveBufferSpace(Mesh, VERTS_PER_VOXEL);
-  auto MinP = RenderSpot_MinP - Thickness;
-  DrawVoxel_MinDim(&AABBDest, MinP, ColorIndex, TileDim + (Thickness*2.f));
-#else
-  v3 HalfTileDim = TileDim/2.f;
-  v3 QuarterTileDim = HalfTileDim/2.f;
-
-  untextured_3d_geometry_buffer AABBDest = ReserveBufferSpace(Mesh, VERTS_PER_VOXEL);
-
-  auto MinP = RenderSpot_MinP-Thickness+V3(QuarterTileDim.xy,0.f)+V3(0,0,2);
-  DrawVoxel_MinDim(&AABBDest, MinP, ColorIndex, HalfTileDim + Thickness*2.f);
-
-  /* DEBUG_DrawAABB( &AABBDest, */
-  /*                 AABBMinDim( , TileDrawDim), */
-  /*                 ColorIndex, Thickness); */
-#endif
 }
 

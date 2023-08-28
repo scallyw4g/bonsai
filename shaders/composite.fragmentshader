@@ -1,0 +1,94 @@
+
+in vec2 gBufferUV;
+out vec4 OutColor;
+
+
+uniform sampler2D gColor;
+uniform sampler2D gPosition;
+uniform sampler2D gNormal;
+
+uniform sampler2D BloomTex;
+uniform sampler2D LightingTex;
+uniform sampler2D shadowMap;
+uniform sampler2D Ssao;
+
+uniform mat4 ShadowMVP;
+uniform vec3 CameraP;
+uniform bool UseLightingBloom;
+uniform float Exposure;
+
+void main()
+{
+  vec3 ToneMapped;
+
+  vec2 gBufferTextureDim = vec2(SCR_WIDTH, SCR_HEIGHT);
+  ivec2 texelCoord = ivec2(gBufferUV*gBufferTextureDim);
+
+  vec2 gBufferTexelStep = 1.0 / vec2(SCR_WIDTH, SCR_HEIGHT);
+
+  vec3 FragNormal = texture(gNormal, gBufferUV).rgb;
+
+  /* vec3 Diffuse  = texelFetch(gColor, texelCoord, 0).rgb; */
+  vec3 Lighting = texture(LightingTex, gBufferUV).rgb;
+
+  v3 Bloom = vec3(0.0f, 0.0f, 0.0f);
+  if (UseLightingBloom) { Bloom = texture(BloomTex, gBufferUV).rgb; }
+
+
+  // Super-poor ultra-jank not-good very-bad AA
+  //
+  // NOTE(Jesse): Unfortunately, this can't go in the lighting shader to save
+  // the FragNormal texture lookup here.  Reason being is that we're blending
+  // the lit pixel values, which aren't available in the lighting shader (obviously).
+  {
+    vec3 xNextFragNormal = texture(gNormal, gBufferUV+ vec2(gBufferTexelStep.x, 0) ).rgb;
+    if ( abs(dot(FragNormal, xNextFragNormal)) < 0.5f )
+    {
+      Lighting += texture(LightingTex, gBufferUV + vec2(gBufferTexelStep.x, 0) ).rgb;
+      Lighting/=2.f;
+    }
+
+    vec3 yNextFragNormal = texture(gNormal, gBufferUV+ vec2(0, gBufferTexelStep.y) ).rgb;
+    if ( abs(dot(FragNormal, yNextFragNormal)) < 0.5f )
+    {
+      Lighting += texture(LightingTex, gBufferUV + vec2(0, gBufferTexelStep.y) ).rgb;
+      Lighting/=2.f;
+    }
+  }
+
+
+
+  vec4 FragPosition = texelFetch(gPosition, texelCoord, 0);
+
+  vec3 sampleVis = vec3(1.0f/5.f);
+  /* vec3 sampleVis = vec3(1.f/7.f); */
+
+  /*
+   *  Tone-mapping && gamma correction
+   */
+
+  vec3 TotalLight = Lighting + 0.1f*Bloom;
+  /* vec3 TotalLight = (Diffuse * Lighting) * 2.f; */
+
+  // Reinhard tone mapping (pretty bad)
+  /* ToneMapped = TotalLight / (TotalLight + vec3(1.0f)); */
+
+  // Somewhat better than Reinhard
+  // Tone mapping from https://learnopengl.com/Advanced-Lighting/Bloom
+  ToneMapped = vec3(1.0) - exp(-TotalLight * Exposure);
+
+  /* OutColor = vec4(Diffuse, 1.f); */
+  /* OutColor = vec4(abs(FragNormal), 1.f); */
+  /* OutColor = vec4(KeyLightContrib*10.f, 1.f); */
+
+  /* OutColor = vec4( (KeyLightContrib*ShadowVisibility*100.f), 1.f); */
+  /* OutColor = vec4( (ShadowVisibility*100.f), 1.f); */
+  /* OutColor = vec4(FogContrib, FogContrib, FogContrib, 1.f) * vec4(FogColor, 1.f); */
+  /* OutColor = vec4(ToneMapped, 1.f); */
+  /* OutColor = vec4(Lighting, 1.f); */
+  /* OutColor = vec4(Bloom, 1.f); */
+
+  // Gamma correction
+  float gamma = 2.2f;
+  OutColor = vec4(pow(ToneMapped, vec3(1.0f / gamma)), 1.0f);
+}

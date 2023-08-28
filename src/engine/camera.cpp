@@ -1,4 +1,3 @@
-
 link_internal void
 UpdateCameraP(world *World, canonical_position NewTarget, camera *Camera)
 {
@@ -164,4 +163,51 @@ IsInFrustum( world *World, camera *Camera, world_chunk *Chunk )
   return Result;
 }
 
+v3
+Unproject(v2 ScreenP, r32 ClipZDepth, v2 ScreenDim, m4 *InvViewProj)
+{
+  TIMED_FUNCTION();
+
+  Assert(ClipZDepth <= 1.0f);
+  Assert(ClipZDepth >= 0.0f);
+
+  v4 ClipCoords = (2.0f * V4(V3(ScreenP / ScreenDim, ClipZDepth), 1.0f)) -1.0f;
+  ClipCoords.y *= -1;
+
+  v4 WorldSpace = TransformColumnMajor(*InvViewProj, ClipCoords);
+  v3 Result = WorldSpace.xyz / WorldSpace.w;
+
+  return Result;
+}
+
+// TODO(Jesse): Not sure where this goes.. maybe here?
+link_internal maybe_ray
+ComputeRayFromCursor(platform *Plat, m4* ViewProjection, camera *Camera, v3i WorldChunkDim)
+{
+  maybe_ray Result = {};
+
+  m4 InverseViewProjection = {};
+  b32 Inverted = Inverse((r32*)ViewProjection, (r32*)&InverseViewProjection);
+  if (Inverted)
+  {
+    v3 MouseMinWorldP = Unproject( Plat->MouseP,
+                                   0.0f,
+                                   V2(Plat->WindowWidth, Plat->WindowHeight),
+                                   &InverseViewProjection);
+
+    v3 MouseMaxWorldP = Unproject( Plat->MouseP,
+                                   1.0f,
+                                   V2(Plat->WindowWidth, Plat->WindowHeight),
+                                   &InverseViewProjection);
+
+    v3 RayDirection = Normalize(MouseMaxWorldP - MouseMinWorldP);
+
+    v3 CameraOffset = Camera->ViewingTarget.Offset + V3(Camera->ViewingTarget.WorldP * WorldChunkDim);
+    /* v3 CameraOffset = V3(0); */
+    Result.Ray = { .Origin = MouseMinWorldP + CameraOffset, .Dir = RayDirection };
+    Result.Tag = Maybe_Yes;
+  }
+
+  return Result;
+}
 

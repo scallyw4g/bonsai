@@ -1,5 +1,4 @@
-#define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
-#define PLATFORM_GL_IMPLEMENTATIONS 1
+#define PLATFORM_WINDOW_IMPLEMENTATIONS 1
 
 #define DEBUG_SYSTEM_API 1
 #define DEBUG_SYSTEM_LOADER_API 1
@@ -43,15 +42,14 @@ ThreadMain(void *Input)
   thread_startup_params *ThreadParams = (thread_startup_params *)Input;
   /* thread_local_state *Thread = ThreadParams->ThreadLocalState; */
 
-  bonsai_worker_thread_callback GameWorkerThreadCallback = ThreadParams->GameWorkerThreadCallback;
-
   SetThreadLocal_ThreadIndex(ThreadParams->ThreadIndex);
   thread_local_state *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
+  Thread->Index = ThreadParams->ThreadIndex;
   /* Assert(Thread == ThreadParams->ThreadLocalState); */
 
   DEBUG_REGISTER_THREAD(ThreadParams);
 
-  if (ThreadParams->InitProc) { ThreadParams->InitProc(Global_ThreadStates, ThreadParams->ThreadIndex); }
+  if (ThreadParams->GameApi->WorkerInit) { ThreadParams->GameApi->WorkerInit(Global_ThreadStates, ThreadParams->ThreadIndex); }
 
   while (FutexNotSignaled(ThreadParams->WorkerThreadsExitFutex))
   {
@@ -82,8 +80,10 @@ ThreadMain(void *Input)
 
     WaitOnFutex(ThreadParams->WorkerThreadsSuspendFutex);
 
+    ThreadParams->EngineApi->WorkerInit(ThreadParams->EngineResources, ThreadParams->ThreadIndex);
+
     AtomicIncrement(ThreadParams->HighPriorityWorkerCount);
-    DrainQueue( ThreadParams->HighPriority, Thread, GameWorkerThreadCallback );
+    DrainQueue( ThreadParams->HighPriority, Thread, ThreadParams->GameApi );
     AtomicDecrement(ThreadParams->HighPriorityWorkerCount);
 
 #if 1
@@ -125,7 +125,9 @@ ThreadMain(void *Input)
       if ( Exchanged )
       {
         volatile work_queue_entry *Entry = LowPriority->Entries+DequeueIndex;
-        GameWorkerThreadCallback(Entry, Thread);
+
+        HandleJob(Entry, Thread, ThreadParams->GameApi);
+
         Ensure( RewindArena(Thread->TempMemory) );
       }
     }
@@ -137,33 +139,33 @@ ThreadMain(void *Input)
 }
 
 link_internal void
-LaunchWorkerThreads(platform *Plat, engine_resources *EngineResources, bonsai_worker_thread_init_callback WorkerThreadInit, bonsai_worker_thread_callback WorkerThreadCallback)
+LaunchWorkerThreads(platform *Plat, engine_resources *EngineResources, engine_api *EngineApi, game_api *GameApi)
 {
   s32 TotalThreadCount  = (s32)GetTotalThreadCount();
 
 #if 0
   Global_ThreadStates = AllocateAligned(thread_local_state, EngineResources->Plat->Memory, TotalThreadCount, CACHE_LINE_SIZE);
 
-  for ( s32 ThreadIndex = 0;
-            ThreadIndex < TotalThreadCount;
-          ++ThreadIndex )
+  for ( s32 ThreadIndex = 0; ThreadIndex < TotalThreadCount; ++ThreadIndex )
   {
     Global_ThreadStates[ThreadIndex] = DefaultThreadLocalState(EngineResources, ThreadIndex);
   }
 #endif
 
   // This loop is for worker threads; it's skipping thread index 0, the main thread
-  for ( s32 ThreadIndex = 1;
-            ThreadIndex < TotalThreadCount;
-          ++ThreadIndex )
+  for ( s32 ThreadIndex = 1; ThreadIndex < TotalThreadCount; ++ThreadIndex )
   {
+    /* thread_local_state *TLS = GetThreadLocalState(ThreadIndex); */
+    /* Tls->Index = ThreadIndex; */
+
     thread_startup_params *Params = &Plat->Threads[ThreadIndex];
     Params->ThreadIndex = ThreadIndex;
     Params->HighPriority = &Plat->HighPriority;
     Params->LowPriority = &Plat->LowPriority;
-    Params->InitProc = WorkerThreadInit;
-    Params->GameWorkerThreadCallback = WorkerThreadCallback;
+
     Params->EngineResources = EngineResources;
+    Params->GameApi = GameApi;
+    Params->EngineApi = EngineApi;
 
     Params->HighPriorityWorkerCount = &Plat->HighPriorityWorkerCount;
 
@@ -308,17 +310,14 @@ main( s32 ArgCount, const char ** Args )
   if (!OpenAndInitializeWindow(&Os, &Plat, VSyncFrames)) { Error("Initializing Window :( "); return 1; }
   Assert(Os.GlContext);
 
+  Ensure( InitializeOpenglFunctions() );
+
 #if DEBUG_SYSTEM_API
   shared_lib DebugLib = InitializeBonsaiDebug("./bin/lib_debug_system_loadable" PLATFORM_RUNTIME_LIB_EXTENSION, Global_ThreadStates);
   Assert(DebugLib);
   Assert(Global_DebugStatePointer);
   EngineResources.DebugState = Global_DebugStatePointer;
-
-  heap_allocator DebugHeap = InitHeap(Megabytes(128));
-  memory_arena *Arena = AllocateArena();
-  GetDebugState()->InitializeRenderSystem(&DebugHeap, Arena);
 #endif
-
 
   memory_arena *PlatMemory = AllocateArena();
   memory_arena *GameMemory = AllocateArena();
@@ -326,8 +325,6 @@ main( s32 ArgCount, const char ** Args )
   DEBUG_REGISTER_ARENA(GameMemory, 0);
   DEBUG_REGISTER_ARENA(PlatMemory, 0);
   DEBUG_REGISTER_ARENA(&BootstrapArena, 0);
-
-  DEBUG_REGISTER_NAMED_ARENA(TranArena, 0, "game_loader TranArena");
 
   PlatformInit(&Plat, PlatMemory);
 
@@ -353,6 +350,7 @@ main( s32 ArgCount, const char ** Args )
     default: { Error("Invalid number of arguments"); }
   }
 
+
   LibIsNew(GameLibName, &LastGameLibTime); // Hack to initialize the lib timer statics
   LibIsNew(DEFAULT_DEBUG_LIB, &LastDebugLibTime);
 
@@ -368,10 +366,12 @@ main( s32 ArgCount, const char ** Args )
   Ensure( EngineApi.OnLibraryLoad(&EngineResources) );
   Ensure( EngineApi.Init(&EngineResources) );
 
-  if (GameApi.WorkerMain)
-  {
-    LaunchWorkerThreads(&Plat, &EngineResources, GameApi.WorkerInit, GameApi.WorkerMain);
-  }
+
+#if DEBUG_SYSTEM_API
+  GetDebugState()->SetRenderer(&EngineResources.Ui);
+#endif
+
+  LaunchWorkerThreads(&Plat, &EngineResources, &EngineApi, &GameApi);
 
   thread_local_state MainThread = DefaultThreadLocalState(&EngineResources, 0);
 
@@ -407,8 +407,12 @@ main( s32 ArgCount, const char ** Args )
     v2 LastMouseP = Plat.MouseP;
     while ( ProcessOsMessages(&Os, &Plat) );
     Plat.MouseDP = LastMouseP - Plat.MouseP;
+    Plat.ScreenDim = V2(Plat.WindowWidth, Plat.WindowHeight);
 
     BindHotkeysToInput(&Hotkeys, &Plat.Input);
+
+    // NOTE(Jesse): Must come after input has been processed
+    UiFrameBegin(&EngineResources.Ui);
 
     DEBUG_FRAME_BEGIN(Hotkeys.Debug_ToggleMenu, Hotkeys.Debug_ToggleProfiling);
 
@@ -416,6 +420,7 @@ main( s32 ArgCount, const char ** Args )
     if ( LibIsNew(GameLibName, &LastGameLibTime) )
     {
       Info("Reloading Game Lib");
+
       SignalAndWaitForWorkers(&Plat.WorkerThreadsSuspendFutex);
 
       CloseLibrary(GameLib);
@@ -476,27 +481,29 @@ main( s32 ArgCount, const char ** Args )
     /*   if (IsDisconnected(&Plat.Network)) { ConnectToServer(&Plat.Network); } */
     /* END_BLOCK("Network Ops"); */
 
-    /* TIMED_BLOCK(" -- Frame --"); */
-    Ensure( EngineApi.FrameBegin(&EngineResources) );
+    EngineApi.FrameBegin(&EngineResources);
 
     TIMED_BLOCK("GameMain");
       GameApi.GameMain(&EngineResources, &MainThread);
     END_BLOCK("GameMain");
 
-    Ensure( EngineApi.FrameEnd(&EngineResources) );
+    EngineApi.SimulateAndBufferGeometry(&EngineResources);
 
-    DrainQueue(&Plat.HighPriority, &MainThread,GameApi.WorkerMain);
+    DrainQueue(&Plat.HighPriority, &MainThread, &GameApi);
     WaitForWorkerThreads(&Plat.HighPriorityWorkerCount);
 
-    Ensure( EngineApi.Render(&EngineResources) );
+    EngineApi.Render(&EngineResources);
 
-    // NOTE(Jesse): DEBUG_FRAME_END must come after the game geometry has rendered so the
-    // alpha-blended text works properly
-    DEBUG_FRAME_END(&Plat.MouseP, &Plat.MouseDP, V2(Plat.WindowWidth, Plat.WindowHeight), &Plat.Input, Plat.dt, &EngineResources.EngineDebug.PickedChunks);
+    DEBUG_FRAME_END(Plat.dt);
+
+    // NOTE(Jesse): FrameEnd must come after the game geometry has rendered so
+    // the alpha-blended text works properly
+    EngineApi.FrameEnd(&EngineResources);
 
     BonsaiSwapBuffers(EngineResources.Os);
 
-    Ensure( RewindArena(TranArena) );
+    thread_local_state *TLS = GetThreadLocalState(ThreadLocal_ThreadIndex);
+    Ensure( RewindArena(TLS->TempMemory) );
 
     r32 CurrentMS = (r32)GetHighPrecisionClock();
     RealDt = (CurrentMS - LastMs)/1000.0f;

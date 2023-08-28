@@ -61,6 +61,6 @@ struct entity
 
   s32 Health;
 
-  update_callback Update;
+  /* update_callback Update; */
   void* UserData;
 };

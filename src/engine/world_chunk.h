@@ -10,6 +10,21 @@ enum chunk_flag
   Chunk_Garbage           = 1 << 3,
 };
 
+// TODO(Jesse): Metaprogram me!
+link_internal cs
+ToString(chunk_flag Flag)
+{
+  switch(Flag)
+  {
+    case Chunk_Uninitialized: { return CSz("Chunk_Uninitialized"); }
+    case Chunk_Queued: { return CSz("Chunk_Queued"); };
+    case Chunk_VoxelsInitialized: { return CSz("Chunk_VoxelsInitialized"); };
+    case Chunk_Garbage: { return CSz("Chunk_Garbage"); };
+
+    InvalidDefaultCase;
+  }
+}
+
 enum voxel_flag
 {
   Voxel_Empty      =      0,
@@ -221,19 +236,6 @@ struct octave_buffer
   octave *Octaves;
 };
 
-
-struct picked_world_chunk
-{
-  world_chunk *Chunk;
-  r32 tChunk; // f32_MAX indicates not picked
-};
-
-struct picked_voxel
-{
-  picked_world_chunk PickedChunk;
-  v3 VoxelRelP; // Relative to origin of chunk
-};
-
 link_internal u32
 Volume(world_chunk* Chunk)
 {
@@ -366,6 +368,30 @@ GetSimSpaceAABB(world *World, world_chunk *Chunk)
   v3 SimSpaceMin = GetSimSpaceP(World, Chunk);
   aabb Result = AABBMinDim(SimSpaceMin, V3(World->ChunkDim) );
   return Result;
+}
+
+inline bool
+IsRightChunkBoundary( chunk_dimension ChunkDim, int idx )
+{
+  return (idx+1) % (int)ChunkDim.x == 0;
+}
+
+inline bool
+IsLeftChunkBoundary( chunk_dimension ChunkDim, int idx )
+{
+  return (idx) % (int)ChunkDim.x == 0;
+}
+
+inline bool
+IsTopChunkBoundary( chunk_dimension ChunkDim, int idx )
+{
+  return ((idx/(int)ChunkDim.x)+1) % (int)ChunkDim.y == 0;
+}
+
+inline bool
+IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
+{
+  return (idx/(int)ChunkDim.x) % (int)ChunkDim.y == 0;
 }
 
 global_variable v3i Global_StandingSpotDim = V3i(8,8,3);

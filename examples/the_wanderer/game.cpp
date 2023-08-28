@@ -1,4 +1,4 @@
-#define PLATFORM_GL_IMPLEMENTATIONS 1
+#define DEBUG_SYSTEM_API 1
 
 #include <bonsai_types.h>
 
@@ -13,75 +13,6 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *
   /* Result[ModelIndex_Proton] = LoadVoxModel(Memory, Heap, PROJECTILE_MODEL); */
 
   return Result;
-}
-
-BONSAI_API_WORKER_THREAD_CALLBACK()
-{
-  switch (Entry->Type)
-  {
-    InvalidCase(type_work_queue_entry_noop);
-    InvalidCase(type_work_queue_entry__align_to_cache_line_helper);
-
-    case type_work_queue_entry_sim_particle_system:
-    case type_work_queue_entry_update_world_region:
-    case type_work_queue_entry_rebuild_mesh: 
-    case type_work_queue_entry_init_asset:
-    {
-      NotImplemented;
-    } break;
-
-    case type_work_queue_entry_copy_buffer_ref:
-    {
-      work_queue_entry_copy_buffer_ref *CopyJob = SafeAccess(work_queue_entry_copy_buffer_ref, Entry);
-      DoCopyJob(CopyJob, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-    } break;
-
-    case type_work_queue_entry_init_world_chunk:
-    {
-      volatile work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
-      world_chunk *Chunk = Job->Chunk;
-
-      if (ChunkIsGarbage(Chunk))
-      {
-      }
-      else
-      {
-        s32 Frequency = 100;
-        /* s32 Amplititude = 25; */
-        /* s32 Amplititude = 150; */
-        s32 Amplititude = 50;
-        s32 StartingZDepth = -1 * WORLD_CHUNK_DIM.z;
-
-        native_file DummyAsset = {};
-        InitializeWorldChunkPerlinPlane( Thread,
-                                         Chunk,
-                                         WORLD_CHUNK_DIM,
-                                         &DummyAsset,
-                                         Frequency,
-                                         Amplititude,
-                                         StartingZDepth,
-                                         ChunkInitFlag_Noop );
-      }
-
-      FinalizeChunkInitialization(Chunk);
-      Assert( NotSet(Chunk, Chunk_Queued ));
-    } break;
-
-    case type_work_queue_entry_copy_buffer_set:
-    {
-      TIMED_BLOCK("Copy Set");
-      volatile work_queue_entry_copy_buffer_set *CopySet = SafeAccess(work_queue_entry_copy_buffer_set, Entry);
-      for (u32 CopyIndex = 0; CopyIndex < CopySet->Count; ++CopyIndex)
-      {
-        work_queue_entry_copy_buffer_ref *CopyJob = (work_queue_entry_copy_buffer_ref *)CopySet->CopyTargets + CopyIndex;
-        DoCopyJob(CopyJob, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-      }
-      END_BLOCK("Copy Set");
-    } break;
-
-  }
-
-  return;
 }
 
 BONSAI_API_MAIN_THREAD_CALLBACK()
@@ -101,22 +32,22 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   BoostInterval -= Plat->dt;
 
   Player->Physics.Speed = 60.f;
-  Player->Physics.Mass = 20.f;
+  Player->Physics.Mass = 27.f;
 
 #if 1
   Player->Physics.Force += V3(20.f, 0.0f, 0.0f) * Plat->dt;
 
   if (JumpInterval < 0.f && IsGrounded( World, Player ) )
   {
-    Player->Physics.Force += V3(0.f, 0.f, 20.f);
+    Player->Physics.Force += V3(0.f, 0.f, 25.f);
     JumpInterval = Interval;
-    BoostInterval = Interval/2.f;
+    BoostInterval = Interval/4.f;
   }
 
   if (BoostInterval < 0)
   {
     BoostInterval = 100000.f;
-    Player->Physics.Force += V3(250.f, 0.0f, 0.0f);
+    Player->Physics.Force += V3(300.f, 0.0f, 0.0f);
   }
 
   if (Hotkeys->Player_Jump)
@@ -133,6 +64,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     SpawnPlayerLikeEntity(Plat, World, GameState->Models, Player, Canonical_Position(V3(0,0,0), World_Position(0,0,0)), &GameState->Entropy);
     World->Center = World_Position(0, 0, 0);
   }
+
 
 #endif
 }

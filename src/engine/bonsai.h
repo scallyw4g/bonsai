@@ -5,102 +5,6 @@ struct world;
 struct heap_allocator;
 struct entity;
 
-#define MAX_PICKED_WORLD_CHUNKS (64)
-
-// TODO(Jesse)(metaprogramming, ptr): Once poof can accept pointer types we can generate this struct
-/* poof(static_buffer(world_chunk*, 64)) */
-/* #include <generated/buffer_world_chunk.h> */
-struct picked_world_chunk_static_buffer
-{
-  picked_world_chunk E[MAX_PICKED_WORLD_CHUNKS];
-  u64 At;
-};
-
-struct engine_debug
-{
-  picked_world_chunk_static_buffer PickedChunks;
-};
-
-link_internal void
-Push(picked_world_chunk_static_buffer *Buf, world_chunk *Chunk, r32 t)
-{
-  if (Buf->At < MAX_PICKED_WORLD_CHUNKS)
-  {
-    Buf->E[Buf->At].Chunk = Chunk;
-    Buf->E[Buf->At].tChunk = t;
-
-    ++Buf->At;
-  }
-}
-
-struct engine_resources
-{
-  os         *Os;
-  platform   *Plat;
-  graphics   *Graphics;
-  hotkeys    *Hotkeys;
-
-  world      *World;
-  game_state *GameState;
-
-  thread_local_state *ThreadStates;
-
-  heap_allocator Heap;
-  memory_arena *Memory;
-
-  entity **EntityTable;
-
-  u64 FrameIndex;
-
-  // TODO(Jesse): Formalize this
-  /* world_position *VisibleRegion; */
-
-  entity *CameraTarget;
-
-  tiered_mesh_freelist MeshFreelist;
-
-  renderer_2d GameUiRenderer;
-
-  engine_debug EngineDebug;
-  debug_state *DebugState;
-};
-
-global_variable engine_resources *Global_EngineResources;
-
-
-link_internal engine_resources *
-GetEngineResources()
-{
-  Assert(Global_EngineResources);
-  return Global_EngineResources;
-}
-
-#define UNPACK_ENGINE_RESOURCES(Res) \
-  UNPACK_DATA_RESOURCES(Res)         \
-  UNPACK_GRAPHICS_RESOURCES(Res)
-
-#define UNPACK_DATA_RESOURCES(Res)                               \
-  platform                  *Plat          =  Res->Plat;         \
-  world                     *World         =  Res->World;        \
-  game_state                *GameState     =  Res->GameState;    \
-  memory_arena              *Memory        =  Res->Memory;       \
-  heap_allocator            *Heap          = &Res->Heap;         \
-  entity                   **EntityTable   =  Res->EntityTable;  \
-  hotkeys                   *Hotkeys       =  Res->Hotkeys;      \
-  engine_debug              *EngineDebug   = &Res->EngineDebug;  \
-  tiered_mesh_freelist      *MeshFreelist  = &Res->MeshFreelist; \
-  input                     *Input         = &Res->Plat->Input;
-
-#define UNPACK_GRAPHICS_RESOURCES(Res)                                    \
-  graphics                  *Graphics      =  Res->Graphics;              \
-  renderer_2d               *GameUi        = &Res->GameUiRenderer;        \
-  gpu_mapped_element_buffer *GpuMap        =  GetCurrentGpuMap(Graphics); \
-  g_buffer_render_group     *gBuffer       =  Graphics->gBuffer;          \
-  camera                    *Camera        =  Graphics->Camera;
-
-
-
-
 
 
 
@@ -172,13 +76,16 @@ struct particle_system
   particle_spawn_type SpawnType;
 
   r32 Drag;
+
   r32 EmissionLifespan; // How long the system emits for
+  r32 RemainingLifespan;
 
   u32 ActiveParticles;
 
   r32 LifespanMod;
   r32 ParticleLifespan; // How long an individual particle lasts
   r32 ParticlesPerSecond;
+  r32 ParticleLightEmission; // Are particles emissive?
 
   v3 ParticleStartingDim;
   f32 ParticleEndingDim;
@@ -421,7 +328,7 @@ Spawned(entity *Entity)
 inline b32
 Active(particle_system *System)
 {
-  b32 Result = (System->EmissionLifespan > 0) || (System->ActiveParticles > 0);
+  b32 Result = (System->RemainingLifespan > 0.f) || (System->ActiveParticles > 0);
   return Result;
 }
 

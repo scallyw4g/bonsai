@@ -76,9 +76,9 @@ waitOnPids() {
                 wait ${build_job_pids[$i]} || exit_code=$?
 
                 if [ $exit_code -eq 0 ]; then
-                  echo -e "$Success ${build_job_pids[$i]} ${build_job_names[$i]} (exited $exit_code)"
+                  echo -e "$Success ${build_job_names[$i]}"
                 else
-                  echo -e "$Failed ${build_job_pids[$i]} ${build_job_names[$i]} (exited $exit_code)"
+                  echo -e "$Failed ${build_job_names[$i]}"
                   exit 1
                 fi
 
@@ -176,7 +176,8 @@ function BuildDebugOnlyTests
       $PLATFORM_DEFINES                              \
       $PLATFORM_INCLUDE_DIRS                         \
       -I "$ROOT"                                     \
-      -I"$SRC"                                       \
+      -I "$SRC"                                      \
+      -I "$INCLUDE"                                  \
       -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
       $executable &
 
@@ -416,8 +417,8 @@ function RunPoof
   RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
   addPid "" $!
 
-  # RunPoofHelper include/bonsai_debug/debug.cpp && echo -e "$Success poofed src/include/bonsai_debug/debug.cpp" &
-  # addPid "" $!
+  RunPoofHelper include/bonsai_debug/debug.cpp && echo -e "$Success poofed src/include/bonsai_debug/debug.cpp" &
+  addPid "" $!
 
   # RunPoofHelper examples/asset_picker/game.cpp && echo -e "$Success poofed examples/asset_picker/game.cpp" &
   # addPid "" $!
@@ -425,11 +426,14 @@ function RunPoof
   # RunPoofHelper examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &
   # addPid "" $!
 
+  RunPoofHelper examples/turn_based/game.cpp && echo -e "$Success poofed examples/turn_based/game.cpp" &
+  addPid "" $!
+
   # RunPoofHelper examples/turn_based/game.cpp && echo -e "$Success poofed examples/turn_based/game.cpp" &
   # addPid "" $!
 
-  RunPoofHelper examples/tools/voxel_synthesis_rule_baker/game.cpp && echo -e "$Success poofed examples/tools/voxel_synthesis_rule_baker/game.cpp" &
-  addPid "" $!
+  # RunPoofHelper examples/tools/voxel_synthesis_rule_baker/game.cpp && echo -e "$Success poofed examples/tools/voxel_synthesis_rule_baker/game.cpp" &
+  # addPid "" $!
 
   # RunPoofHelper src/tools/asset_packer.cpp && echo -e "$Success poofed src/tools/asset_packer.cpp" &
   # addPid "" $!
@@ -446,38 +450,30 @@ function RunPoof
 
 TESTS_TO_BUILD="
   $TESTS/chunk.cpp
+  $TESTS/ui_command_buffer.cpp
+  $TESTS/m4.cpp
+  $TESTS/colladaloader.cpp
+  $TESTS/test_bitmap.cpp
+  $TESTS/bonsai_string.cpp
+  $TESTS/objloader.cpp
+  $TESTS/callgraph.cpp
+  $TESTS/heap_allocation.cpp
+  $TESTS/rng.cpp
+  $TESTS/file.cpp
 "
-
-#   $TESTS/ui_command_buffer.cpp
-#   $TESTS/m4.cpp
-#   $TESTS/colladaloader.cpp
-#   $TESTS/test_bitmap.cpp
-#   $TESTS/bonsai_string.cpp
-#   $TESTS/objloader.cpp
-#   $TESTS/callgraph.cpp
-#   $TESTS/heap_allocation.cpp
-#   $TESTS/rng.cpp
-#   $TESTS/file.cpp
-
-# if [[ $BUILD_EVERYTHING == 0 ]]; then
-#   TESTS_TO_BUILD="
-#   $TESTS/bonsai_string.cpp
-#   $TESTS/objloader.cpp
-#   $TESTS/callgraph.cpp
-#   $TESTS/heap_allocation.cpp
-#   $TESTS/rng.cpp
-#   $TESTS/file.cpp
-#   "
-# fi
-
 
 BuildAll() {
 
   BuildExamples=1
   BuildExecutables=1
   BuildDebugSystem=1
-  # BuildTests=1
-  # BuildDebugOnlyTests=1
+  BuildTests=1
+
+  # NOTE(Jesse): These only build on linux.  I'm honestly not sure if it's
+  # worth getting them to build on Windows
+  if [ $Platform == "Linux" ]; then
+    BuildDebugOnlyTests=1
+  fi
 
   for ex in $BUNDLED_EXAMPLES; do
     EXAMPLES_TO_BUILD="$EXAMPLES_TO_BUILD $ex"

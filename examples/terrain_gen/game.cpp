@@ -1,4 +1,3 @@
-#define PLATFORM_GL_IMPLEMENTATIONS 1
 #define DEBUG_SYSTEM_API 1
 
 #include <bonsai_types.h>
@@ -161,136 +160,107 @@ BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
   SetThreadLocal_ThreadIndex(ThreadIndex);
 }
 
-// NOTE(Jesse): This is the worker thread loop.  These are a few default
-// implementations of functions for copying data around in the engine.
-//
-// TODO(Jesse): Make these jobs opt-in, such that game code doesn't have to
-// care about these unless it wants to.  Most of these jobs will never have a
-// custom implementation in games until way into development, if ever.
+// NOTE(Jesse): This is the worker thread loop.  Your game can choose to provide
+// implementations for the thread jobs.  If you handle a job, return True, and
+// if you want the engine to handle it, return False.
 //
 BONSAI_API_WORKER_THREAD_CALLBACK()
 {
+  b32 Result = True;
   switch (Entry->Type)
   {
-    // NOTE(Jesse): A noop entry is a bug; InvalidCase() crashes the process
-    // in debug mode, and does nothing in release mode (in the hopes we handle
-    // whatever else happens gracefully).
-    InvalidCase(type_work_queue_entry_noop);
-    InvalidCase(type_work_queue_entry__align_to_cache_line_helper);
+    default: { Result = False; } break;
 
-    case type_work_queue_entry_update_world_region:
-    case type_work_queue_entry_rebuild_mesh:
-    case type_work_queue_entry_init_asset:
-    {
-      NotImplemented;
-    } break;
-
+    // NOTE(Jesse): Here we're going to provide an implementation for
+    // initializing a world chunk.
     case type_work_queue_entry_init_world_chunk:
-     {
-       volatile work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
-       world_chunk *Chunk = Job->Chunk;
-
-       if (ChunkIsGarbage(Chunk))
-       {
-       }
-       else
-       {
-
-         {
-           // Custom FBM noise example generating simple game-world-like terrain
-           s32 Frequency = 0; // Ignored
-           s32 Amplititude = 0; // Ignored
-           s32 StartingZDepth = -200;
-           u32 OctaveCount = 2;
-
-           octave_buffer OctaveBuf = { OctaveCount, {} };
-           OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
-
-           OctaveBuf.Octaves[0] = {V3(800, 800, 300), 350, V3(1)};
-           OctaveBuf.Octaves[1] = {V3(35, 35, 50), 50, V3(3.f)};
-           /* OctaveBuf.Octaves[2] = {V3(500, 500, 20), 200, V3(2.f)}; */
-           /* OctaveBuf.Octaves[2] = {75, 60, 1}; */
-           /* OctaveBuf.Octaves[3] = {37, 30, 0}; */
-
-
-           /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
-           chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs;
-           /* chunk_init_flags InitFlags = ChunkInitFlag_Noop; */
-           InitializeChunkWithNoise( CustomTerrainExample, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, (void*)&OctaveBuf);
-         }
-
-/*          { */
-/*            // Custom flat noise function that produces a checkerboard */
-/*            s32 Frequency = 0; */
-/*            s32 Amplititude = 0; */
-/*            s32 StartingZDepth = -1; */
-/*            chunk_init_flags InitFlags = ChunkInitFlag_Noop; */
-/*            /1* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; *1/ */
-/*            InitializeChunkWithNoise( Checkerboard, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, 0); */
-/*          } */
-
-         /* { */
-         /*   // FBM params */
-         /*   s32 Frequency = 300; */
-         /*   s32 Amplititude = 220; */
-         /*   s32 StartingZDepth = -200; */
-         /*   u32 Octaves = 4; */
-         /*   /1* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; *1/ */
-         /*   chunk_init_flags InitFlags = ChunkInitFlag_Noop; */
-         /*   InitializeChunkWithNoise( Noise_FBM2D, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, (void*)&Octaves); */
-         /* } */
-
-         /* { */
-         /*   // Perlin 2D Params */
-         /*   s32 Frequency = 100; */
-         /*   s32 Amplititude = 25; */
-         /*   s32 StartingZDepth = 0; */
-         /*   InitializeChunkWithNoise( Noise_Perlin2D, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, ChunkInitFlag_Noop, 0); */
-         /* } */
-
-         /* { */
-         /*   // Perlin 3D Params */
-         /*   s32 Frequency = 100; */
-         /*   s32 Amplititude = 25; */
-         /*   s32 StartingZDepth = 0; */
-         /*   InitializeChunkWithNoise( Noise_Perlin3D, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, ChunkInitFlag_Noop, 0); */
-         /* } */
-
-         /* { */
-         /*   // Flat Params */
-         /*   s32 Frequency = 100; */
-         /*   s32 Amplititude = 25; */
-         /*   s32 StartingZDepth = -1; */
-         /*   InitializeChunkWithNoise( Noise_Flat, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, ChunkInitFlag_Noop, 0); */
-         /* } */
-
-       }
-
-       FinalizeChunkInitialization(Chunk);
-     } break;
-
-    case type_work_queue_entry_copy_buffer_ref:
     {
-      work_queue_entry_copy_buffer_ref *CopyJob = SafeAccess(work_queue_entry_copy_buffer_ref, Entry);
-      DoCopyJob(CopyJob, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
-    } break;
+      volatile work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
+      world_chunk *Chunk = Job->Chunk;
 
-    case type_work_queue_entry_copy_buffer_set:
-    {
-      volatile work_queue_entry_copy_buffer_set *CopySet = SafeAccess(work_queue_entry_copy_buffer_set, Entry);
-      RangeIterator(CopyIndex, (s32)CopySet->Count)
+      if (ChunkIsGarbage(Chunk))
       {
-        work_queue_entry_copy_buffer_ref *CopyJob = (work_queue_entry_copy_buffer_ref *)CopySet->CopyTargets + CopyIndex;
-        DoCopyJob(CopyJob, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+         // NOTE(Jesse): This is an optimization; the engine marks chunks that
+         // have moved outside of the visible region as garbage.
       }
-    } break;
+      else
+      {
 
-    case type_work_queue_entry_sim_particle_system:
-    {
-      work_queue_entry_sim_particle_system *Job = SafeAccess(work_queue_entry_sim_particle_system, Entry);
-      SimulateParticleSystem(Job);
+        {
+          // Custom FBM noise example generating simple game-world-like terrain
+          s32 Frequency = 0; // Ignored
+          s32 Amplititude = 0; // Ignored
+          s32 StartingZDepth = -200;
+          u32 OctaveCount = 2;
+
+          octave_buffer OctaveBuf = { OctaveCount, {} };
+          OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
+
+          OctaveBuf.Octaves[0] = {V3(800, 800, 300), 350, V3(1)};
+          OctaveBuf.Octaves[1] = {V3(35, 35, 50), 50, V3(3.f)};
+          /* OctaveBuf.Octaves[2] = {V3(500, 500, 20), 200, V3(2.f)}; */
+          /* OctaveBuf.Octaves[2] = {75, 60, 1}; */
+          /* OctaveBuf.Octaves[3] = {37, 30, 0}; */
+
+
+          /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
+          chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs;
+          /* chunk_init_flags InitFlags = ChunkInitFlag_Noop; */
+          InitializeChunkWithNoise( CustomTerrainExample, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, (void*)&OctaveBuf);
+        }
+
+        /* { */
+        /*   // Custom flat noise function that produces a checkerboard */
+        /*   s32 Frequency = 0; */
+        /*   s32 Amplititude = 0; */
+        /*   s32 StartingZDepth = -1; */
+        /*   chunk_init_flags InitFlags = ChunkInitFlag_Noop; */
+        /*   /1* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; *1/ */
+        /*   InitializeChunkWithNoise( Checkerboard, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, 0); */
+        /* } */
+
+        /* { */
+        /*   // FBM params */
+        /*   s32 Frequency = 300; */
+        /*   s32 Amplititude = 220; */
+        /*   s32 StartingZDepth = -200; */
+        /*   u32 Octaves = 4; */
+        /*   /1* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; *1/ */
+        /*   chunk_init_flags InitFlags = ChunkInitFlag_Noop; */
+        /*   InitializeChunkWithNoise( Noise_FBM2D, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, (void*)&Octaves); */
+        /* } */
+
+        /* { */
+        /*   // Perlin 2D Params */
+        /*   s32 Frequency = 100; */
+        /*   s32 Amplititude = 25; */
+        /*   s32 StartingZDepth = 0; */
+        /*   InitializeChunkWithNoise( Noise_Perlin2D, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, ChunkInitFlag_Noop, 0); */
+        /* } */
+
+        /* { */
+        /*   // Perlin 3D Params */
+        /*   s32 Frequency = 100; */
+        /*   s32 Amplititude = 25; */
+        /*   s32 StartingZDepth = 0; */
+        /*   InitializeChunkWithNoise( Noise_Perlin3D, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, ChunkInitFlag_Noop, 0); */
+        /* } */
+
+        /* { */
+        /*   // Flat Params */
+        /*   s32 Frequency = 100; */
+        /*   s32 Amplititude = 25; */
+        /*   s32 StartingZDepth = -1; */
+        /*   InitializeChunkWithNoise( Noise_Flat, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, ChunkInitFlag_Noop, 0); */
+        /* } */
+
+      }
+
+      FinalizeChunkInitialization(Chunk);
     } break;
   }
+
+  return Result;
 }
 
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
