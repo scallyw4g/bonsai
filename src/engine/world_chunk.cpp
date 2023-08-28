@@ -4312,6 +4312,15 @@ GetVoxelPointer(picked_voxel *Pick)
   return Result;
 }
 
+link_internal v3
+GetAbsoluteP(picked_voxel *Pick)
+{
+  world_chunk *Chunk = Pick->PickedChunk.Chunk;
+  v3 MinP =  V3(Chunk->WorldP * Chunk->Dim);
+  v3 VoxelP = MinP + Truncate(Pick->VoxelRelP);
+  return VoxelP;
+}
+
 void
 BufferChunkMesh(graphics *Graphics, untextured_3d_geometry_buffer *Dest, untextured_3d_geometry_buffer *Src,
                 chunk_dimension WorldChunkDim, world_position WorldP, r32 Scale = 1.0f, v3 Offset = V3(0), Quaternion Rot = {})

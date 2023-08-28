@@ -95,6 +95,8 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   Graphics->Lighting.Lights.Count = 0;
 
+  /* DoEngineDebugMenu(Resources); */
+
   b32 Result = True;
   return Result;
 }

@@ -174,11 +174,11 @@ DoEngineDebugMenu(engine_resources *Engine)
   UNPACK_ENGINE_RESOURCES(Engine);
 
   local_persist ui_element_toggle_button Buttons[] = {
-    {CSz("Edit"), False},
-    {CSz("WorldChunks"), False},
-    {CSz("Textures"), False},
-    {CSz("RenderSettings"), False},
-    {CSz("EngineDebug"), False},
+    {CSz("Edit"),            False, False},
+    {CSz("WorldChunks"),     False, False},
+    {CSz("Textures"),        False, False},
+    {CSz("RenderSettings"),  False, False},
+    {CSz("EngineDebug"),     False, False},
   };
 
   ui_element_toggle_button_group ButtonGroup = {

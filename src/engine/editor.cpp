@@ -56,10 +56,10 @@ DoLevelEditor(engine_resources *Engine)
 
 
   local_persist ui_element_toggle_button Buttons[] = {
-    {CSz("Select"),  False},
-    {CSz("Add"),     False},
-    {CSz("Remove"),  False},
-    {CSz("Paint"),   False},
+    {CSz("Select"),  False,False},
+    {CSz("Add"),     False,False},
+    {CSz("Remove"),  False,False},
+    {CSz("Paint"),   False,False},
   };
 
   ui_element_toggle_button_group ButtonGroup = {
@@ -72,8 +72,57 @@ DoLevelEditor(engine_resources *Engine)
     DrawToggleButtonGroup(Ui, &ButtonGroup);
   PushTableEnd(Ui);
 
+  if (Clicked(&ButtonGroup, CSz("Select")))
+  {
+    Editor->SelectRegionCleared = True;
+  }
+
   if (ToggledOn(&ButtonGroup, CSz("Select")))
   {
+    if (Input->LMB.Pressed)
+    {
+      if (Editor->SelectRegionCleared)
+      {
+        Editor->SelectionRegionMin = Engine->MousedOverVoxel;
+        Editor->SelectRegionCleared = False;
+
+
+        if (Editor->SelectionRegionMin.PickedChunk.tChunk != f32_MAX)
+        {
+          v3 MinP = GetAbsoluteP(&Editor->SelectionRegionMin);
+          v3 MaxP = MinP+1.f;
+
+          untextured_3d_geometry_buffer OutlineAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
+          v3 Offset = V3(0.001f);
+          DEBUG_DrawAABB( &OutlineAABB,
+                          GetRenderP(World->ChunkDim, MinP-Offset, Camera),
+                          GetRenderP(World->ChunkDim, MinP+V3(1.f)+Offset, Camera),
+                          RED, 0.08f);
+        }
+
+
+      }
+      else
+      {
+        Editor->SelectionRegionMax = Engine->MousedOverVoxel;
+
+        if ( Editor->SelectionRegionMin.PickedChunk.tChunk != f32_MAX &&
+             Editor->SelectionRegionMax.PickedChunk.tChunk != f32_MAX )
+        {
+          v3 MinP = GetAbsoluteP(&Editor->SelectionRegionMin);
+          v3 MaxP = GetAbsoluteP(&Editor->SelectionRegionMax);
+
+          untextured_3d_geometry_buffer OutlineAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
+          v3 Offset = V3(0.001f);
+          DEBUG_DrawAABB( &OutlineAABB,
+                          GetRenderP(World->ChunkDim, MinP-Offset, Camera),
+                          GetRenderP(World->ChunkDim, MaxP+Offset, Camera),
+                          RED, 0.08f);
+        }
+
+      }
+
+    }
   }
 
   if (ToggledOn(&ButtonGroup, CSz("Add")))

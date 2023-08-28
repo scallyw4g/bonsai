@@ -302,13 +302,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   if (Pick.PickedChunk.tChunk != f32_MAX)
   {
-    world_chunk *ClosestChunk = Pick.PickedChunk.Chunk;
-    v3 MinP =  V3(ClosestChunk->WorldP * World->ChunkDim);
-    v3 VoxelP = MinP + Truncate(Pick.VoxelRelP);
-
-    canonical_position PickCP = Canonical_Position(Pick.VoxelRelP, ClosestChunk->WorldP);
-
-    v3 CursorSimP = GetSimSpaceP(World, PickCP);
+    v3 VoxelP = GetAbsoluteP(&Pick);
 
     untextured_3d_geometry_buffer OutlineAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
     v3 Offset = V3(0.001f);
@@ -317,6 +311,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
                     GetRenderP(World->ChunkDim, VoxelP+V3(1.f)+Offset, Camera),
                     WHITE, 0.05f);
 
+    world_chunk *ClosestChunk = Pick.PickedChunk.Chunk;
+    canonical_position PickCP = Canonical_Position(Pick.VoxelRelP, ClosestChunk->WorldP);
 
     if (Input->Z.Clicked)
     {
@@ -370,6 +366,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
         f32 PlayerMoveSpeed = 13.f;
         standing_spot_buffer PlayerSpots = GetStandingSpotsWithinRadius(World, PlayerBaseP, PlayerMoveSpeed, GetTranArena());
+        v3 CursorSimP = GetSimSpaceP(World, PickCP);
+
         for (u32 SpotIndex = 0; SpotIndex < PlayerSpots.Count; ++SpotIndex)
         {
           standing_spot *Spot = PlayerSpots.Start + SpotIndex;
