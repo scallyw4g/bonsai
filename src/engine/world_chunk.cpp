@@ -4297,6 +4297,21 @@ MousePickVoxel(engine_resources *Resources)
   return Result;
 }
 
+link_internal voxel *
+GetVoxelPointer(picked_voxel *Pick)
+{
+  voxel *Result = 0;
+
+  if (Pick->PickedChunk.tChunk != f32_MAX)
+  {
+    world_chunk *Chunk = Pick->PickedChunk.Chunk;
+    s32 Index = GetIndex(V3i(Pick->VoxelRelP), Chunk->Dim);
+    Result = Chunk->Voxels + Index;
+  }
+
+  return Result;
+}
+
 void
 BufferChunkMesh(graphics *Graphics, untextured_3d_geometry_buffer *Dest, untextured_3d_geometry_buffer *Src,
                 chunk_dimension WorldChunkDim, world_position WorldP, r32 Scale = 1.0f, v3 Offset = V3(0), Quaternion Rot = {})

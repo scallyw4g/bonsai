@@ -1,5 +1,6 @@
 #define MAX_PICKED_WORLD_CHUNKS (64)
 
+
 struct world;
 struct world_chunk;
 struct heap_allocator;
@@ -17,6 +18,7 @@ struct picked_voxel
   picked_world_chunk PickedChunk;
   v3 VoxelRelP; // Relative to origin of chunk
 };
+
 
 // TODO(Jesse)(metaprogramming, ptr): Once poof can accept pointer types we can generate this struct
 /* poof(static_buffer(world_chunk*, 64)) */

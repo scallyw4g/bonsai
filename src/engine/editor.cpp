@@ -9,6 +9,52 @@ DoLevelEditor(engine_resources *Engine)
   local_persist window_layout Window = WindowLayout("Edit", DefaultWindowBasis(*Ui->ScreenDim, WindowDim), WindowDim);
   PushWindowStart(Ui, &Window);
 
+  ui_element_reference ColorTable = PushTableStart(Ui);
+    RangeIterator(ColorIndex, s32(u8_MAX)+1 )
+    {
+      v3 Color = GetColorData(DefaultPalette, u32(ColorIndex)).rgb;
+      ui_style Style = FlatUiStyle(Color);
+
+      v2 QuadDim = V2(22);
+      v4 Padding = V4(1);
+
+      interactable_handle ColorPickerButton = PushButtonStart(Ui, (umm)"ColorPicker" ^ (umm)(ColorIndex+12657674));
+        PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, Padding );
+      PushButtonEnd(Ui);
+
+
+
+      r32 BorderDim = -1.f;
+      v3 BorderColor = V3(0.f);
+      if (Hover(Ui, &ColorPickerButton))
+      {
+        TriggeredRuntimeBreak(&Input->F12.Clicked);
+
+        BorderColor = V3(0.7f);
+        PushBorder(Ui, RectMinMax(Ui->Hover.MinP+Padding.xy, Ui->Hover.MinP+Padding.xy+QuadDim), BorderColor, V4(BorderDim));
+      }
+
+      if (Clicked(Ui, &ColorPickerButton))
+      {
+        BorderColor = V3(1.0f);
+        PushBorder(Ui, RectMinMax(Ui->Hover.MinP+Padding.xy, Ui->Hover.MinP+Padding.xy+QuadDim), BorderColor, V4(BorderDim));
+
+        Engine->Editor.SelectedColorSquare = Ui->Clicked;
+        Engine->Editor.SelectedColorIndex = ColorIndex;
+      }
+
+      if (Engine->Editor.SelectedColorIndex == ColorIndex)
+      {
+        v3 SelectedBorderColor = V3(0.9f);
+        PushBorder(Ui, RectMinMax(Engine->Editor.SelectedColorSquare.MinP+Padding.xy, Engine->Editor.SelectedColorSquare.MinP+Padding.xy+QuadDim), SelectedBorderColor, V4(BorderDim));
+      }
+
+      if ( (ColorIndex+1) % 8 == 0 ) { PushNewRow(Ui); }
+    }
+  PushTableEnd(Ui);
+
+
+
   local_persist ui_element_toggle_button Buttons[] = {
     {CSz("Select"),  False},
     {CSz("Add"),     False},
@@ -19,57 +65,38 @@ DoLevelEditor(engine_resources *Engine)
   ui_element_toggle_button_group ButtonGroup = {
     .Buttons = Buttons,
     .Count = ArrayCount(Buttons),
-    .Flags = ToggleButtonGroupFlags_RadioButtons,
+    .Flags = ui_element_toggle_button_group_flags(ToggleButtonGroupFlags_RadioButtons | ToggleButtonGroupFlags_DrawVertical),
   };
 
-  DrawToggleButtonGroup(Ui, &ButtonGroup);
-  PushNewRow(Ui);
+  PushTableStart(Ui, Position_RightOf, ColorTable);
+    DrawToggleButtonGroup(Ui, &ButtonGroup);
+  PushTableEnd(Ui);
 
   if (ToggledOn(&ButtonGroup, CSz("Select")))
   {
   }
 
-  RangeIterator(ColorIndex, s32(u8_MAX)+1 )
+  if (ToggledOn(&ButtonGroup, CSz("Add")))
   {
-    v3 Color = GetColorData(DefaultPalette, u32(ColorIndex)).rgb;
-    ui_style Style = FlatUiStyle(Color);
-
-    v2 QuadDim = V2(22);
-    v4 Padding = V4(1);
-
-    interactable_handle ColorPickerButton = PushButtonStart(Ui, (umm)"ColorPicker" + (umm)ColorIndex);
-      PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, Padding );
-    PushButtonEnd(Ui);
-
-
-
-    r32 BorderDim = -1.f;
-    v3 BorderColor = V3(0.f);
-    if (Hover(Ui, &ColorPickerButton)) { BorderColor = V3(0.7f); }
-
-    if (Clicked(Ui, &ColorPickerButton))
-    {
-      BorderColor = V3(1.0f);
-      Engine->Editor.SelectedColor = Ui->Clicked;
-      Engine->Editor.SelectedColorIndex = ColorIndex;
-    }
-
-    if (LengthSq(BorderColor) > 0.f)
-    {
-      PushBorder(Ui, RectMinMax(Ui->Hover.MinP+Padding.xy, Ui->Hover.MinP+Padding.xy+QuadDim), BorderColor, V4(BorderDim));
-    }
-
-
-    if (Engine->Editor.SelectedColorIndex == ColorIndex)
-    {
-      v3 SelectedBorderColor = V3(0.9f);
-      PushBorder(Ui, RectMinMax(Engine->Editor.SelectedColor.MinP+Padding.xy, Engine->Editor.SelectedColor.MinP+Padding.xy+QuadDim), SelectedBorderColor, V4(BorderDim));
-    }
-
-    if ( (ColorIndex+1) % 8 == 0 ) { PushNewRow(Ui); }
   }
 
+  if (ToggledOn(&ButtonGroup, CSz("Remove")))
+  {
+  }
 
+  if (ToggledOn(&ButtonGroup, CSz("Paint")))
+  {
+    if (Input->LMB.Pressed)
+    {
+      voxel *V = GetVoxelPointer(&Engine->MousedOverVoxel);
+
+      if (V)
+      {
+        V->Color = SafeTruncateU8(Engine->Editor.SelectedColorIndex);
+        QueueChunkForMeshRebuild(&Plat->HighPriority, Engine->MousedOverVoxel.PickedChunk.Chunk);
+      }
+    }
+  }
 
   if (Input->LMB.Clicked)
   {
@@ -84,6 +111,8 @@ DoLevelEditor(engine_resources *Engine)
         } break;
     }
   }
+
+
 
 
 

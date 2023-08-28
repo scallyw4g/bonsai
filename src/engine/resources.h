@@ -22,7 +22,7 @@ struct level_editor
 {
   level_edit_mode Mode;
 
-  interactable SelectedColor;
+  interactable SelectedColorSquare;
   s32 SelectedColorIndex;
 };
 

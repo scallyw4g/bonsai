@@ -12,7 +12,6 @@ GetUiDebug()
 }
 
 
-
 #define DebugValue(Ui, Value) DebugValue_(Ui, Value, STRINGIZE(Value))
 #define DebugSlider(Ui, Value, Min, Max) DebugSlider_(Ui, Value, STRINGIZE(Value), Min, Max)
 
@@ -278,7 +277,7 @@ DoEngineDebugMenu(engine_resources *Engine)
         DebugValue(Ui, &EngineDebug->UiDebug.OutlineUiTables);
 
         DebugValue(Ui, &Engine->Editor.SelectedColorIndex);
-        DebugUi(Engine, CSz("Selected Color"), &Engine->Editor.SelectedColor);
+        DebugUi(Engine, CSz("Selected Color"), &Engine->Editor.SelectedColorSquare);
 
       PushTableEnd(Ui);
     PushWindowEnd(Ui, &Window);
