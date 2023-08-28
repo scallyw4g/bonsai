@@ -83,6 +83,9 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   UiFrameBegin(&Resources->GameUi);
 
+
+  Resources->MousedOverVoxel = MousePickVoxel(Resources);
+
 #if 0 // DEBUG_SYSTEM_API
   if (GetDebugState()->UiGroup.PressedInteractionId != StringHash("GameViewport"))
   {

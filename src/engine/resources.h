@@ -45,6 +45,7 @@ struct engine_resources
   engine_debug EngineDebug;
 
   level_editor Editor;
+  picked_voxel MousedOverVoxel;
 };
 
 // TODO(Jesse): Should this actually be a thing?

@@ -23,6 +23,7 @@
 #include <engine/render.cpp> // TODO(Jesse): Probably time to split this up?
 #include <engine/render/entity.cpp>
 
+#include <engine/editor.cpp>
 #include <engine/debug_visualize.cpp>
 #include <engine/debug.cpp>
 #include <engine/api.cpp>
