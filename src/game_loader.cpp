@@ -41,6 +41,7 @@ ThreadMain(void *Input)
 {
   thread_startup_params *ThreadParams = (thread_startup_params *)Input;
 
+  SetThreadLocal_ThreadIndex(ThreadParams->ThreadIndex);
   ThreadParams->EngineApi->WorkerInit(ThreadParams->EngineResources, ThreadParams);
 
   thread_local_state *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
