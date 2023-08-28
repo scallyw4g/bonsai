@@ -95,7 +95,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   Graphics->Lighting.Lights.Count = 0;
 
-  /* DoEngineDebugMenu(Resources); */
+  DoEngineDebugMenu(Resources);
 
   b32 Result = True;
   return Result;
@@ -104,7 +104,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
 link_export b32
 Bonsai_FrameEnd(engine_resources *Resources)
 {
-  DoEngineDebugMenu(Resources);
+  /* DoEngineDebugMenu(Resources); */
   UiFrameEnd(&Resources->Ui);
 
   b32 Result = True;

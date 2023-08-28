@@ -31,7 +31,7 @@
 ./make.sh $OPT \
   BuildExecutables \
   BuildSingleExample examples/turn_based \
-  # BuildDebugSystem \
+  BuildDebugSystem \
   # BuildTests \
   # BuildSingleExample examples/the_wanderer \
   # BuildSingleExample examples/turn_based2
