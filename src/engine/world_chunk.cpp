@@ -3435,7 +3435,6 @@ BufferWorld( platform* Plat,
 
         if (Chunk)
         {
-
           engine_debug *EngineDebug = GetEngineDebug();
           if (Chunk == EngineDebug->PickedChunk)
           {

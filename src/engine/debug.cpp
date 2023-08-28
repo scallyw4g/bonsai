@@ -69,6 +69,15 @@ DebugValue_(renderer_2d *Ui, r32 *Value, const char* Name)
 }
 
 link_internal void
+DebugValue_(renderer_2d *Ui, v2 *Value, const char* Name)
+{
+  PushColumn(Ui, CS(Name));
+  PushColumn(Ui, CS(Value->x));
+  PushColumn(Ui, CS(Value->y));
+  PushNewRow(Ui);
+}
+
+link_internal void
 DebugValue_(renderer_2d *Ui, b8 *Value, const char* Name)
 {
   if (Button(Ui, CS(Name), (umm)Value + (umm)"toggle" )) { *Value = !(*Value); }
@@ -152,7 +161,7 @@ DebugValue_(renderer_2d *Ui, world_position *Value, const char* Name)
 }
 
 link_internal void
-DebugChunkUi(engine_resources *Engine, cs Name, world_chunk *Value)
+DebugUi(engine_resources *Engine, cs Name, world_chunk *Value)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
   auto Ui = GameUi;
@@ -184,6 +193,26 @@ DebugChunkUi(engine_resources *Engine, cs Name, world_chunk *Value)
   Text(Ui, CSz(")"));
 }
 
+link_internal void
+DebugUi(engine_resources *Engine, cs Name, window_layout *Value)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+  renderer_2d *Ui = GameUi;
+
+  Text(Ui, Name);
+  Text(Ui, Value->Title);
+}
+
+link_internal void
+DebugUi(engine_resources *Engine, cs Name, interactable *Value)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+  renderer_2d *Ui = GameUi;
+
+  DebugValue(Ui, &Value->ID);
+  DebugValue(Ui, &Value->MinP);
+  DebugValue(Ui, &Value->MaxP);
+}
 
 
 
@@ -211,25 +240,48 @@ DoEngineDebugMenu(engine_resources *Engine)
 
   if (ToggledOn(&ButtonGroup, CSz("Edit")))
   {
-    v2 WindowDim = {{1200.f, 250.f}};
+    v2 WindowDim = {{250.f, 1200.f}};
     local_persist window_layout Window = WindowLayout("Edit", DefaultWindowBasis(*Ui->ScreenDim, WindowDim), WindowDim);
     PushWindowStart(Ui, &Window);
 
     RangeIterator(ColorIndex, s32(u8_MAX)+1 )
     {
       v3 Color = GetColorData(DefaultPalette, u32(ColorIndex)).rgb;
-      ui_style Style = UiStyleFromLightestColor(Color);
+      ui_style Style = FlatUiStyle(Color);
 
-      v2 QuadDim = V2(20);
-      v4 Padding = V4(5);
+      v2 QuadDim = V2(22);
+      v4 Padding = V4(1);
+
       interactable_handle ColorPickerButton = PushButtonStart(Ui, (umm)"ColorPicker" + (umm)ColorIndex);
         PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, Padding );
       PushButtonEnd(Ui);
 
+
+
+      r32 BorderDim = -1.f;
+      v3 BorderColor = V3(0.f);
       if (Hover(Ui, &ColorPickerButton))
       {
-        v3 BorderColor = V3(0.5f, 0.5f, 0.1f);
-        PushBorder(Ui, RectMinMax(Ui->Hover.MinP+Padding.xy, Ui->Hover.MinP+Padding.xy+QuadDim), BorderColor);
+        BorderColor = V3(0.7f);
+      }
+
+      if (Pressed(Ui, &ColorPickerButton))
+      {
+        BorderColor = V3(1.0f);
+        Engine->Editor.SelectedColor = Ui->Pressed;
+        Engine->Editor.SelectedColorIndex = ColorIndex;
+      }
+
+      if (LengthSq(BorderColor) > 0.f)
+      {
+        PushBorder(Ui, RectMinMax(Ui->Hover.MinP+Padding.xy, Ui->Hover.MinP+Padding.xy+QuadDim), BorderColor, V4(BorderDim));
+      }
+
+
+      if (Engine->Editor.SelectedColorIndex == ColorIndex)
+      {
+        v3 SelectedBorderColor = V3(0.9f);
+        PushBorder(Ui, RectMinMax(Engine->Editor.SelectedColor.MinP+Padding.xy, Engine->Editor.SelectedColor.MinP+Padding.xy+QuadDim), SelectedBorderColor, V4(BorderDim));
       }
 
       if ( (ColorIndex+1) % 8 == 0 ) { PushNewRow(Ui); }
@@ -261,7 +313,7 @@ DoEngineDebugMenu(engine_resources *Engine)
 
     if (EngineDebug->PickedChunk)
     {
-      DebugChunkUi(Engine, CSz("PickedChunk"), EngineDebug->PickedChunk );
+      DebugUi(Engine, CSz("PickedChunk"), EngineDebug->PickedChunk );
     }
 
     PushWindowEnd(Ui, &WorldChunkWindow);
@@ -321,6 +373,9 @@ DoEngineDebugMenu(engine_resources *Engine)
         DebugValue(Ui, &EngineDebug->UiDebug.OutlineUiValues);
         DebugValue(Ui, &EngineDebug->UiDebug.OutlineUiButtons);
         DebugValue(Ui, &EngineDebug->UiDebug.OutlineUiTables);
+
+        DebugValue(Ui, &Engine->Editor.SelectedColorIndex);
+        DebugUi(Engine, CSz("Selected Color"), &Engine->Editor.SelectedColor);
 
       PushTableEnd(Ui);
     PushWindowEnd(Ui, &Window);

@@ -8,6 +8,11 @@ struct entity;
 
 
 
+struct level_editor
+{
+  interactable SelectedColor;
+  s32 SelectedColorIndex;
+};
 
 struct engine_resources
 {
@@ -38,6 +43,8 @@ struct engine_resources
   debug_state *DebugState;
 
   engine_debug EngineDebug;
+
+  level_editor Editor;
 };
 
 // TODO(Jesse): Should this actually be a thing?
