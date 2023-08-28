@@ -368,7 +368,7 @@ main( s32 ArgCount, const char ** Args )
 
 
 #if DEBUG_SYSTEM_API
-  GetDebugState()->SetRenderer(&EngineResources.GameUi);
+  GetDebugState()->SetRenderer(&EngineResources.Ui);
 #endif
 
   LaunchWorkerThreads(&Plat, &EngineResources, &EngineApi, &GameApi);
@@ -412,7 +412,7 @@ main( s32 ArgCount, const char ** Args )
     BindHotkeysToInput(&Hotkeys, &Plat.Input);
 
     // NOTE(Jesse): Must come after input has been processed
-    UiFrameBegin(&EngineResources.GameUi);
+    UiFrameBegin(&EngineResources.Ui);
 
     DEBUG_FRAME_BEGIN(Hotkeys.Debug_ToggleMenu, Hotkeys.Debug_ToggleProfiling);
 

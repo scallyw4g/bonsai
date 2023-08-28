@@ -445,15 +445,15 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   }
 
   local_persist window_layout ActionsWindow = {};
-  PushBorderlessWindowStart(GameUi, &ActionsWindow, V2(0, 128));
+  PushBorderlessWindowStart(Ui, &ActionsWindow, V2(0, 128));
   for (u32 ActionIndex = 0; ActionIndex < PlayerAction_Count; ++ActionIndex)
   {
     ui_style *Style = ActionIndex == SelectedAction ? &DefaultSelectedStyle : &DefaultStyle;
-    PushTableStart(GameUi);
-      PushColumn(GameUi, ToString((player_action)ActionIndex), Style);
-    PushTableEnd(GameUi);
+    PushTableStart(Ui);
+      PushColumn(Ui, ToString((player_action)ActionIndex), Style);
+    PushTableEnd(Ui);
   }
-  PushWindowEnd(GameUi, &ActionsWindow);
+  PushWindowEnd(Ui, &ActionsWindow);
 
   if (Hotkeys)
   {

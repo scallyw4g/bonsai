@@ -41,7 +41,7 @@ Bonsai_Init(engine_resources *Resources)
   if (!Resources->Graphics) { Error("Initializing Graphics"); return False; }
 
   memory_arena *GraphicsMemory2D = AllocateArena();
-  InitRenderer2D(&Resources->GameUi, &Resources->Heap, GraphicsMemory2D, &Plat->MouseP, &Plat->MouseDP, &Plat->ScreenDim, &Plat->Input);
+  InitRenderer2D(&Resources->Ui, &Resources->Heap, GraphicsMemory2D, &Plat->MouseP, &Plat->MouseDP, &Plat->ScreenDim, &Plat->Input);
 
   Resources->EntityTable = AllocateEntityTable(BonsaiInitArena, TOTAL_ENTITY_COUNT);
 
@@ -81,7 +81,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
     DEBUG_DrawLine_Aligned(&CopyDest, V3(0,0,0), V3(0, 0, 10000), BLUE, 0.15f );
   }
 
-  UiFrameBegin(&Resources->GameUi);
+  UiFrameBegin(&Resources->Ui);
 
 
   Resources->MousedOverVoxel = MousePickVoxel(Resources);
@@ -103,7 +103,7 @@ link_export b32
 Bonsai_FrameEnd(engine_resources *Resources)
 {
   DoEngineDebugMenu(Resources);
-  UiFrameEnd(&Resources->GameUi);
+  UiFrameEnd(&Resources->Ui);
 
   b32 Result = True;
   return Result;
@@ -136,7 +136,7 @@ Bonsai_SimulateAndBufferGeometry(engine_resources *Resources)
 
   {
     input *InputForCamera = 0;
-    if (UiCapturedMouseInput(GameUi) == False)
+    if (UiCapturedMouseInput(Ui) == False)
     {
       InputForCamera = &Plat->Input;
     }
@@ -253,17 +253,17 @@ Bonsai_Render(engine_resources *Resources)
   GL.DisableVertexAttribArray(1);
   GL.DisableVertexAttribArray(2);
 
-  /* DebugVisualize(GameUi, &Resources->MeshFreelist); */
-  /* DebugVisualize(GameUi, Resources->World->FreeChunks, (s32)Resources->World->FreeChunkCount); */
+  /* DebugVisualize(Ui, &Resources->MeshFreelist); */
+  /* DebugVisualize(Ui, Resources->World->FreeChunks, (s32)Resources->World->FreeChunkCount); */
 
 
   {
-    /* DoEngineDebugMenu(GameUi); */
+    /* DoEngineDebugMenu(Ui); */
 
     // NOTE(Jesse): This should probably render the last such that we can
     // capture all the debug tracking info we want to
-    /* GameUi->ScreenDim = V2(Plat->WindowWidth, Plat->WindowHeight); */
-    /* FlushCommandBuffer(GameUi, GameUi->CommandBuffer); */
+    /* Ui->ScreenDim = V2(Plat->WindowWidth, Plat->WindowHeight); */
+    /* FlushCommandBuffer(Ui, Ui->CommandBuffer); */
   }
 
   b32 Result = True;

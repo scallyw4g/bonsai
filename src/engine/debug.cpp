@@ -164,7 +164,6 @@ link_internal void
 DebugUi(engine_resources *Engine, cs Name, world_chunk *Value)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
-  auto Ui = GameUi;
 
   Text(Ui, Name);
   PushNewRow(Ui);
@@ -197,7 +196,6 @@ link_internal void
 DebugUi(engine_resources *Engine, cs Name, window_layout *Value)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
-  renderer_2d *Ui = GameUi;
 
   Text(Ui, Name);
   Text(Ui, Value->Title);
@@ -207,7 +205,6 @@ link_internal void
 DebugUi(engine_resources *Engine, cs Name, interactable *Value)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
-  renderer_2d *Ui = GameUi;
 
   DebugValue(Ui, &Value->ID);
   DebugValue(Ui, &Value->MinP);
@@ -220,8 +217,6 @@ link_internal void
 DoEngineDebugMenu(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
-
-  renderer_2d *Ui = GameUi;
 
   local_persist ui_element_toggle_button Buttons[] = {
     {CSz("Edit"), False},
