@@ -8,8 +8,20 @@ struct entity;
 
 
 
+enum level_edit_mode
+{
+  LevelEditMode_None,
+
+  LevelEditMode_Select,
+  LevelEditMode_Add,
+  LevelEditMode_Remove,
+  LevelEditMode_Paint,
+};
+
 struct level_editor
 {
+  level_edit_mode Mode;
+
   interactable SelectedColor;
   s32 SelectedColorIndex;
 };
@@ -73,7 +85,8 @@ GetEngineResources()
   hotkeys                   *Hotkeys       =  Res->Hotkeys;      \
   engine_debug              *EngineDebug   = &Res->EngineDebug;  \
   tiered_mesh_freelist      *MeshFreelist  = &Res->MeshFreelist; \
-  input                     *Input         = &Res->Plat->Input;
+  input                     *Input         = &Res->Plat->Input;  \
+  level_editor              *Editor        = &Res->Editor;       \
 
 #define UNPACK_GRAPHICS_RESOURCES(Res)                                    \
   graphics                  *Graphics      =  Res->Graphics;              \
@@ -81,5 +94,5 @@ GetEngineResources()
   renderer_2d               *Ui            = &Res->Ui;                    \
   gpu_mapped_element_buffer *GpuMap        =  GetCurrentGpuMap(Graphics); \
   g_buffer_render_group     *gBuffer       =  Graphics->gBuffer;          \
-  camera                    *Camera        =  Graphics->Camera;
+  camera                    *Camera        =  Graphics->Camera;           \
 

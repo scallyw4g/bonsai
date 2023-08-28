@@ -12,50 +12,6 @@ GetUiDebug()
 }
 
 
-struct ui_element_toggle_button
-{
-  counted_string Text;
-  b32 On;
-};
-
-struct ui_element_toggle_button_group
-{
-  ui_element_toggle_button *Buttons;
-  s32 Count;
-};
-
-global_variable v4 DefaultToggleButtonPadding = V4(15,0,15,0);
-
-link_internal void
-DrawToggleButtonGroup(renderer_2d *Ui, ui_element_toggle_button_group *Group)
-{
-  RangeIterator(ButtonIndex, Group->Count)
-  {
-    ui_element_toggle_button *UiButton = Group->Buttons + ButtonIndex;
-
-    ui_style *Style = (UiButton->On) ? &DefaultSelectedStyle : &DefaultStyle;
-    if (Button(Ui, UiButton->Text, (umm)UiButton->Text.Start, Style, DefaultToggleButtonPadding))
-    {
-      UiButton->On = !UiButton->On;
-    }
-  }
-}
-
-link_internal b32
-ToggledOn(ui_element_toggle_button_group *Group, cs ButtonName)
-{
-  b32 Result = False;
-  RangeIterator(ButtonIndex, Group->Count)
-  {
-    auto Button = Group->Buttons + ButtonIndex;
-    if (StringsMatch(Button->Text, ButtonName))
-    {
-      Result = Button->On;
-      break;
-    }
-  }
-  return Result;
-}
 
 #define DebugValue(Ui, Value) DebugValue_(Ui, Value, STRINGIZE(Value))
 #define DebugSlider(Ui, Value, Min, Max) DebugSlider_(Ui, Value, STRINGIZE(Value), Min, Max)
