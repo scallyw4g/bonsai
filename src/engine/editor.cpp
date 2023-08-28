@@ -86,7 +86,6 @@ DoLevelEditor(engine_resources *Engine)
         Editor->SelectionRegionMin = Engine->MousedOverVoxel;
         Editor->SelectRegionCleared = False;
 
-
         if (Editor->SelectionRegionMin.PickedChunk.tChunk != f32_MAX)
         {
           v3 MinP = GetAbsoluteP(&Editor->SelectionRegionMin);

@@ -5,8 +5,6 @@ struct thread_startup_params
 {
   engine_api *EngineApi;
   game_api   *GameApi;
-  /* bonsai_worker_thread_init_callback InitProc; */
-  /* bonsai_worker_thread_callback GameWorkerThreadCallback; */
 
   engine_resources *EngineResources;
 
@@ -20,7 +18,5 @@ struct thread_startup_params
   work_queue *HighPriority;
 
   volatile s32 ThreadIndex;
-  /* volatile u32 ThreadId; */
-  /* volatile thread_handle ThreadHandle; */
 };
 

@@ -36,7 +36,7 @@ typedef bool        (*bonsai_worker_thread_callback)    (BONSAI_API_WORKER_THREA
 typedef game_state* (*bonsai_main_thread_init_callback) (BONSAI_API_MAIN_THREAD_INIT_CALLBACK_PARAMS);
 
 typedef b32 (*bonsai_engine_callback)(engine_resources*);
-typedef b32 (*bonsai_engine_init_callback)(engine_resources*, s32);
+typedef b32 (*bonsai_engine_init_callback)(engine_resources*, thread_startup_params*);
 
 struct game_api
 {

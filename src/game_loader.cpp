@@ -40,14 +40,12 @@ link_internal THREAD_MAIN_RETURN
 ThreadMain(void *Input)
 {
   thread_startup_params *ThreadParams = (thread_startup_params *)Input;
-  /* thread_local_state *Thread = ThreadParams->ThreadLocalState; */
 
-  SetThreadLocal_ThreadIndex(ThreadParams->ThreadIndex);
+  ThreadParams->EngineApi->WorkerInit(ThreadParams->EngineResources, ThreadParams);
+
   thread_local_state *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
   Thread->Index = ThreadParams->ThreadIndex;
-  /* Assert(Thread == ThreadParams->ThreadLocalState); */
 
-  DEBUG_REGISTER_THREAD(ThreadParams);
 
   if (ThreadParams->GameApi->WorkerInit) { ThreadParams->GameApi->WorkerInit(Global_ThreadStates, ThreadParams->ThreadIndex); }
 
@@ -80,7 +78,9 @@ ThreadMain(void *Input)
 
     WaitOnFutex(ThreadParams->WorkerThreadsSuspendFutex);
 
-    ThreadParams->EngineApi->WorkerInit(ThreadParams->EngineResources, ThreadParams->ThreadIndex);
+    // NOTE(Jesse): This is here to ensure the game lib (and, by extesion, the debug lib)
+    // has ThreadLocal_ThreadIndex set.  This is super annoying and I want a better solution.
+    ThreadParams->EngineApi->WorkerInit(ThreadParams->EngineResources, ThreadParams);
 
     AtomicIncrement(ThreadParams->HighPriorityWorkerCount);
     DrainQueue( ThreadParams->HighPriority, Thread, ThreadParams->GameApi );
@@ -432,7 +432,7 @@ main( s32 ArgCount, const char ** Args )
       Ensure( EngineApi.OnLibraryLoad(&EngineResources) );
 
       UnsignalFutex(&Plat.WorkerThreadsSuspendFutex);
-      Info("Reload Success");
+      Info("Game Reload Success");
     }
 
 #if DEBUG_SYSTEM_API
@@ -443,17 +443,10 @@ main( s32 ArgCount, const char ** Args )
       debug_state *Cached = Global_DebugStatePointer;
       Global_DebugStatePointer = 0;
 
-      // NOTE(Jesse): We hold pointers to static strings in the first debug_lib
-      // we allocate, so we can't unload.  TBD if we care about copying them.. but we might.
-      //
-      // We also allocate debug_profile_scopes from it, which we'd have to do
-      // elsewhere .. somehow.. I think..
-      //
-      /* CloseLibrary(DebugLib); */
-
+      CloseLibrary(DebugLib);
       DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
-      bonsai_debug_api DebugApi = {};
 
+      bonsai_debug_api DebugApi = {};
       if (DebugLib)
       {
         if (InitializeBootstrapDebugApi(DebugLib, &DebugApi))
@@ -468,6 +461,7 @@ main( s32 ArgCount, const char ** Args )
       Global_DebugStatePointer = Cached;
 
       UnsignalFutex(&Plat.WorkerThreadsSuspendFutex);
+      Info("Debug lib Reload Success");
     }
 #endif // DEBUG_SYSTEM_API
 
