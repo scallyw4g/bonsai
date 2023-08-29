@@ -116,8 +116,6 @@ struct chunk_data
 
 enum world_chunk_mesh_index
 {
-  MeshIndex_None,
-
   MeshIndex_Main,
   MeshIndex_Lod,
   MeshIndex_Debug,
@@ -141,10 +139,7 @@ ToIndex(world_chunk_mesh_bitfield Bit)
 {
   switch (Bit)
   {
-    case MeshBit_None:
-    {
-      return MeshIndex_None;
-    } break;
+    InvalidCase(MeshBit_None);
 
     case MeshBit_Main:
     {
@@ -166,6 +161,8 @@ ToIndex(world_chunk_mesh_bitfield Bit)
       return MeshIndex_Count;
     } break;
   }
+
+  return MeshIndex_Count;
 }
 
 struct threadsafe_geometry_buffer

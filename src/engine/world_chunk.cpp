@@ -3762,17 +3762,13 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
                 case WorldUpdateOperation_Subtractive:
                 {
-                  if (CopyValue.Flags & VoxelFaceMask)
-                  {
-                    --Chunk->FilledCount;
-                    CopyValue.Flags = Voxel_Empty;
-                  }
-                  CopyValue.Flags |= Voxel_MarkBit;
+                  if (CopyValue.Flags & Voxel_Filled) { --Chunk->FilledCount; }
+                  CopyValue.Flags = Voxel_Empty;
                 } break;
 
                 case WorldUpdateOperation_Additive:
                 {
-                  if ( (CopyValue.Flags&Voxel_Filled) == 0 ) { ++Chunk->FilledCount; }
+                  if ( (CopyValue.Flags & Voxel_Filled) == 0 ) { ++Chunk->FilledCount; }
                   CopyValue.Flags = Voxel_Filled;
                   CopyValue.Color = NewColor;
                 } break;
@@ -3798,7 +3794,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   // NOTE(Jesse): We can actually do the entire dim here, but it's probably
   // better (faster) to just do what we actually need to
   MarkBoundaryVoxels_NoExteriorFaces( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-1, &Entropy, GREY_5, GREY_7);
-  /* MarkBoundaryVoxels( CopiedVoxels, QueryDim, {}, QueryDim); */
+  /* MarkBoundaryVoxels_MakeExteriorFaces( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-1); */
 
 
   for (u32 ChunkIndex = 0; ChunkIndex < ChunkCount; ++ChunkIndex)

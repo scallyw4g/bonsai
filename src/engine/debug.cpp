@@ -116,6 +116,46 @@ DebugValue_(renderer_2d *Ui, world_position *Value, const char* Name)
 }
 
 link_internal void
+DebugUi(engine_resources *Engine, cs Name, untextured_3d_geometry_buffer *Value)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  Text(Ui, Name);
+  if (Value)
+  {
+    PushColumn(Ui, CS("Verts : "));
+    PushColumn(Ui, CS((u64)Value->Verts));
+    PushNewRow(Ui);
+
+    PushColumn(Ui, CS("Colors : "));
+    PushColumn(Ui, CS((u64)Value->Colors));
+    PushNewRow(Ui);
+
+    PushColumn(Ui, CS("Normals : "));
+    PushColumn(Ui, CS((u64)Value->Normals));
+    PushNewRow(Ui);
+
+    PushColumn(Ui, CS("End : "));
+    PushColumn(Ui, CS(Value->End));
+    PushNewRow(Ui);
+
+    PushColumn(Ui, CS("At : "));
+    PushColumn(Ui, CS(Value->At));
+    PushNewRow(Ui);
+
+    PushColumn(Ui, CS("Timestamp : "));
+    PushColumn(Ui, CS(Value->Timestamp));
+    PushNewRow(Ui);
+  }
+  else
+  {
+    Text(Ui, CSz(" 0"));
+    PushNewRow(Ui);
+  }
+  PushNewRow(Ui);
+}
+
+link_internal void
 DebugUi(engine_resources *Engine, cs Name, world_chunk *Value)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -133,18 +173,29 @@ DebugUi(engine_resources *Engine, cs Name, world_chunk *Value)
 
   world_chunk *Chunk = EngineDebug->PickedChunk;
 
-  auto Flags = Value->Flags;
-
-  Text(Ui, CSz("Flags : "));
-  Text(Ui, CS(Flags));
-  Text(Ui, CSz(" ("));
-
-  while (u32 Flag = UnsetLeastSignificantSetBit((u32*)&Flags))
+  if (Chunk)
   {
-    Text(Ui, ToString((chunk_flag)Flag));
-    if (Flags != 0) { Text(Ui, CSz("|")); }
+    auto Flags = Value->Flags;
+
+    RangeIterator(MeshIndex, MeshIndex_Count)
+    {
+      world_chunk_mesh_bitfield Bit  = world_chunk_mesh_bitfield(1 << MeshIndex);
+      untextured_3d_geometry_buffer *Mesh = TakeOwnershipSync(&Chunk->Meshes,  Bit);
+      DebugUi(Engine, CSz("Mesh"), Mesh);
+      ReleaseOwnership(&Chunk->Meshes, Bit, Mesh);
+    }
+
+    Text(Ui, CSz("Flags : "));
+    Text(Ui, CS(Flags));
+    Text(Ui, CSz(" ("));
+
+    while (u32 Flag = UnsetLeastSignificantSetBit((u32*)&Flags))
+    {
+      Text(Ui, ToString((chunk_flag)Flag));
+      if (Flags != 0) { Text(Ui, CSz("|")); }
+    }
+    Text(Ui, CSz(")"));
   }
-  Text(Ui, CSz(")"));
 }
 
 link_internal void
@@ -199,24 +250,23 @@ DoEngineDebugMenu(engine_resources *Engine)
     local_persist window_layout WorldChunkWindow = WindowLayout("World Chunks", DefaultWindowBasis(*Ui->ScreenDim, WindowDim), WindowDim);
     PushWindowStart(Ui, &WorldChunkWindow);
 
-    if (Button(Ui, CSz("Pick"), (umm)"Pick"))
-    {
-      EngineDebug->PickedChunkState = PickedChunkState_Hover;
-    }
-    PushNewRow(Ui);
+      if ( Clicked(&ButtonGroup, CSz("WorldChunks")) ||
+           Button(Ui, CSz("PickNewChunk"), (umm)"Pick" ^ (umm)"WorldChunks") )
+      {
+        EngineDebug->PickedChunkState = PickedChunkState_Hover;
+      }
+      PushNewRow(Ui);
 
-    if (EngineDebug->PickedChunkState == PickedChunkState_Hover)
-    {
-      picked_world_chunk_static_buffer AllChunksBuffer = {};
-      EngineDebug->PickedChunk = GetChunksFromMouseP(Engine, &AllChunksBuffer);
+      if (EngineDebug->PickedChunkState == PickedChunkState_Hover)
+      {
+        EngineDebug->PickedChunk = Engine->MousedOverVoxel.PickedChunk.Chunk;
+        if (Input->LMB.Clicked) { EngineDebug->PickedChunkState = PickedChunkState_None; }
+      }
 
-      if (Input->LMB.Clicked) { EngineDebug->PickedChunkState = PickedChunkState_None; }
-    }
-
-    if (EngineDebug->PickedChunk)
-    {
-      DebugUi(Engine, CSz("PickedChunk"), EngineDebug->PickedChunk );
-    }
+      if (EngineDebug->PickedChunk)
+      {
+        DebugUi(Engine, CSz("PickedChunk"), EngineDebug->PickedChunk );
+      }
 
     PushWindowEnd(Ui, &WorldChunkWindow);
   }
