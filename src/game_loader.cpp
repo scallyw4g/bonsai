@@ -415,7 +415,7 @@ main( s32 ArgCount, const char ** Args )
     // NOTE(Jesse): Must come after input has been processed
     UiFrameBegin(&EngineResources.Ui);
 
-    DEBUG_FRAME_BEGIN(Hotkeys.Debug_ToggleMenu, Hotkeys.Debug_ToggleProfiling);
+    DEBUG_FRAME_BEGIN(&EngineResources.Ui, Plat.dt, Hotkeys.Debug_ToggleMenu, Hotkeys.Debug_ToggleProfiling);
 
 #if !EMCC
     if ( LibIsNew(GameLibName, &LastGameLibTime) )
@@ -478,18 +478,18 @@ main( s32 ArgCount, const char ** Args )
 
     EngineApi.FrameBegin(&EngineResources);
 
-    TIMED_BLOCK("GameMain");
-      GameApi.GameMain(&EngineResources, &MainThread);
-    END_BLOCK("GameMain");
+      TIMED_BLOCK("GameMain");
+        GameApi.GameMain(&EngineResources, &MainThread);
+      END_BLOCK("GameMain");
 
-    EngineApi.SimulateAndBufferGeometry(&EngineResources);
+      EngineApi.SimulateAndBufferGeometry(&EngineResources);
 
-    DrainQueue(&Plat.HighPriority, &MainThread, &GameApi);
-    WaitForWorkerThreads(&Plat.HighPriorityWorkerCount);
+      DrainQueue(&Plat.HighPriority, &MainThread, &GameApi);
+      WaitForWorkerThreads(&Plat.HighPriorityWorkerCount);
 
-    EngineApi.Render(&EngineResources);
+      EngineApi.Render(&EngineResources);
 
-    DEBUG_FRAME_END(Plat.dt);
+      DEBUG_FRAME_END(Plat.dt);
 
     // NOTE(Jesse): FrameEnd must come after the game geometry has rendered so
     // the alpha-blended text works properly

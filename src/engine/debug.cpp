@@ -173,8 +173,6 @@ DoEngineDebugMenu(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  PushNewRow(Ui);
-
   local_persist ui_element_toggle_button Buttons[] = {
     {CSz("Edit"),            False, False},
     {CSz("WorldChunks"),     False, False},
