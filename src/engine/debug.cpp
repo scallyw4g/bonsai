@@ -188,13 +188,27 @@ DebugUi(engine_resources *Engine, cs Name, world_chunk *Value)
     Text(Ui, CSz("Flags : "));
     Text(Ui, CS(Flags));
     Text(Ui, CSz(" ("));
-
     while (u32 Flag = UnsetLeastSignificantSetBit((u32*)&Flags))
     {
       Text(Ui, ToString((chunk_flag)Flag));
       if (Flags != 0) { Text(Ui, CSz("|")); }
     }
     Text(Ui, CSz(")"));
+    PushNewRow(Ui);
+
+    Text(Ui, CSz("FilledCount : "));
+    Text(Ui, CS(Chunk->FilledCount));
+    PushNewRow(Ui);
+
+    Text(Ui, CSz("Picked : "));
+    Text(Ui, CS(Chunk->Picked));
+    PushNewRow(Ui);
+
+    Text(Ui, CSz("DrawBoundingVoxels : "));
+    Text(Ui, CS(Chunk->DrawBoundingVoxels));
+    PushNewRow(Ui);
+
+
   }
 }
 
@@ -246,14 +260,18 @@ DoEngineDebugMenu(engine_resources *Engine)
 
   if (ToggledOn(&ButtonGroup, CSz("WorldChunks")))
   {
-    v2 WindowDim = {{1200.f, 250.f}};
-    local_persist window_layout WorldChunkWindow = WindowLayout("World Chunks", DefaultWindowBasis(*Ui->ScreenDim, WindowDim), WindowDim);
+    v2 WindowDim = {{650.f, 950.f}};
+    local_persist window_layout WorldChunkWindow = WindowLayout("World Chunks", AlignRightWindowBasis(*Ui->ScreenDim, WindowDim), WindowDim);
     PushWindowStart(Ui, &WorldChunkWindow);
 
       if ( Clicked(&ButtonGroup, CSz("WorldChunks")) ||
            Button(Ui, CSz("PickNewChunk"), (umm)"Pick" ^ (umm)"WorldChunks") )
       {
         EngineDebug->PickedChunkState = PickedChunkState_Hover;
+      }
+      if (Button(Ui, CSz("RebuildMesh"), (umm)"RebuildMesh" ^ (umm)"WorldChunks"))
+      {
+        QueueChunkForMeshRebuild(&Plat->LowPriority, EngineDebug->PickedChunk);
       }
       PushNewRow(Ui);
 
