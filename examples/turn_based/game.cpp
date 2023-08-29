@@ -91,7 +91,7 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
 {
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  QueueWorldUpdateForRegion(Plat, World, Pick, WorldUpdateOperation_Subtractive, DARK_GREY, Radius, Resources->Memory);
+  QueueWorldUpdateForRegion(Plat, World, Pick, WorldUpdateOperation_Subtractive, WorldUpdateOperationShape_Sphere, DARK_GREY, Radius, Resources->Memory);
 
 #if 1
   v3 SplosionSimP = GetSimSpaceP(World, PickCP);
@@ -312,7 +312,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
                     WHITE, 0.05f);
 
     world_chunk *ClosestChunk = Pick.PickedChunk.Chunk;
-    canonical_position PickCP = Canonical_Position(Pick.VoxelRelP, ClosestChunk->WorldP);
+    canonical_position PickCP = Canonical_Position(Pick.Picks[PickedVoxel_FirstFilled], ClosestChunk->WorldP);
 
     if (Input->Z.Clicked)
     {
@@ -476,7 +476,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   world_position WorldCenter = World_Position(0);
   canonical_position PlayerSpawnP = Canonical_Position(Voxel_Position(0), WorldCenter + World_Position(0,0,1));
 
-  StandardCamera(Graphics->Camera, 10000.0f, 1000.0f, PlayerSpawnP);
+  StandardCamera(Graphics->Camera, 10000.0f, 500.0f, PlayerSpawnP);
   /* Graphics->Camera->CurrentP.WorldP = World_Position(1, -1, 1); */
   /* Graphics->Camera->CurrentP.Offset = V3(1, -1, 1); */
 

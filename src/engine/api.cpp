@@ -291,11 +291,7 @@ WorkerThreadDefaultImplementations(BONSAI_API_WORKER_THREAD_CALLBACK_PARAMS)
     case type_work_queue_entry_update_world_region:
     {
       work_queue_entry_update_world_region *Job = SafeAccess(work_queue_entry_update_world_region, Entry);
-
-      picked_voxel Location = Job->Location;
-      r32 Radius = Job->Radius;
-
-      DoWorldUpdate(&Thread->EngineResources->Plat->LowPriority, World, Job->ChunkBuffer, Job->ChunkCount, &Location, Job->MinP, Job->MaxP, Job->Op, Job->ColorIndex, Radius, Thread);
+      DoWorldUpdate(&Thread->EngineResources->Plat->LowPriority, World, Thread, Job);
     } break;
 
     case type_work_queue_entry_sim_particle_system:

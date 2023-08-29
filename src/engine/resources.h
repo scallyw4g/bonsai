@@ -25,9 +25,8 @@ struct level_editor
   interactable SelectedColorSquare;
   s32 SelectedColorIndex;
 
-  b32 SelectRegionCleared;
-  picked_voxel SelectionRegionMin;
-  picked_voxel SelectionRegionMax;
+  u32 SelectPendingClicks;
+  picked_voxel SelectionRegion[2];
 };
 
 struct engine_resources

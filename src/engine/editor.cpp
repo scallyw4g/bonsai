@@ -57,6 +57,7 @@ DoLevelEditor(engine_resources *Engine)
 
   local_persist ui_element_toggle_button Buttons[] = {
     {CSz("Select"),  False,False},
+    {CSz("Fill"),    False,False},
     {CSz("Add"),     False,False},
     {CSz("Remove"),  False,False},
     {CSz("Paint"),   False,False},
@@ -70,60 +71,80 @@ DoLevelEditor(engine_resources *Engine)
 
   DrawToggleButtonGroup(Ui, &ButtonGroup, Position_RightOf, ColorTable);
 
-  if (Clicked(&ButtonGroup, CSz("Select")))
+  if ( Editor->SelectionRegion[0].PickedChunk.Chunk )
   {
-    Editor->SelectRegionCleared = True;
+    v3 P0 = GetAbsoluteP(&Editor->SelectionRegion[0]);
+    v3 P1 = P0;
+
+    r32 Thickness = 0.075f;
+    u8 Color = WHITE;
+    if (Editor->SelectionRegion[1].PickedChunk.Chunk)
+    {
+      P1 = GetAbsoluteP(&Editor->SelectionRegion[1]);
+
+      Thickness = 0.15f;
+      u8 Green = WHITE;
+    }
+    else
+    {
+      P1 = GetAbsoluteP(&Engine->MousedOverVoxel);
+    }
+
+    v3 MinP = Min(P0, P1);
+    v3 MaxP = Max(P0, P1) + V3(1);
+
+    untextured_3d_geometry_buffer OutlineAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
+    v3 Offset = V3(0.001f);
+    DEBUG_DrawAABB( &OutlineAABB,
+                    GetRenderP(World->ChunkDim, MinP-Offset, Camera),
+                    GetRenderP(World->ChunkDim, MaxP+Offset, Camera),
+                    Color, Thickness);
   }
+
 
   if (ToggledOn(&ButtonGroup, CSz("Select")))
   {
-    if (Input->LMB.Pressed)
+    if (Input->LMB.Clicked)
     {
-      if (Editor->SelectRegionCleared)
+      switch (Editor->SelectPendingClicks)
       {
-        Editor->SelectionRegionMin = Engine->MousedOverVoxel;
-        Editor->SelectRegionCleared = False;
-
-        if (Editor->SelectionRegionMin.PickedChunk.tChunk != f32_MAX)
+        case 2:
         {
-          v3 MinP = GetAbsoluteP(&Editor->SelectionRegionMin);
-          v3 MaxP = MinP+1.f;
+          Editor->SelectPendingClicks -= 1;
+          Editor->SelectionRegion[0] = Engine->MousedOverVoxel;
+        } break;
 
-          untextured_3d_geometry_buffer OutlineAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
-          v3 Offset = V3(0.001f);
-          DEBUG_DrawAABB( &OutlineAABB,
-                          GetRenderP(World->ChunkDim, MinP-Offset, Camera),
-                          GetRenderP(World->ChunkDim, MinP+V3(1.f)+Offset, Camera),
-                          RED, 0.08f);
-        }
-
-
-      }
-      else
-      {
-        Editor->SelectionRegionMax = Engine->MousedOverVoxel;
-
-        if ( Editor->SelectionRegionMin.PickedChunk.tChunk != f32_MAX &&
-             Editor->SelectionRegionMax.PickedChunk.tChunk != f32_MAX )
+        case 1:
         {
-          v3 MinP = GetAbsoluteP(&Editor->SelectionRegionMin);
-          v3 MaxP = GetAbsoluteP(&Editor->SelectionRegionMax);
-
-          untextured_3d_geometry_buffer OutlineAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
-          v3 Offset = V3(0.001f);
-          DEBUG_DrawAABB( &OutlineAABB,
-                          GetRenderP(World->ChunkDim, MinP-Offset, Camera),
-                          GetRenderP(World->ChunkDim, MaxP+Offset, Camera),
-                          RED, 0.08f);
-        }
-
+          Editor->SelectPendingClicks -= 1;
+          Editor->SelectionRegion[1] = Engine->MousedOverVoxel;
+        } break;
       }
 
     }
+
   }
+
+  if (Clicked(&ButtonGroup, CSz("Select")))
+  {
+    Editor->SelectPendingClicks = 2;
+    Editor->SelectionRegion[0] = {};
+    Editor->SelectionRegion[1] = {};
+  }
+
 
   if (ToggledOn(&ButtonGroup, CSz("Add")))
   {
+    if (Input->LMB.Clicked)
+    {
+      voxel *V = GetVoxelPointer(&Engine->MousedOverVoxel, PickedVoxel_LastEmpty);
+
+      if (V)
+      {
+        V->Flags = Voxel_Filled;
+        QueueChunkForMeshRebuild(&Plat->HighPriority, Engine->MousedOverVoxel.PickedChunk.Chunk);
+      }
+    }
   }
 
   if (ToggledOn(&ButtonGroup, CSz("Remove")))
@@ -134,7 +155,7 @@ DoLevelEditor(engine_resources *Engine)
   {
     if (Input->LMB.Pressed)
     {
-      voxel *V = GetVoxelPointer(&Engine->MousedOverVoxel);
+      voxel *V = GetVoxelPointer(&Engine->MousedOverVoxel, PickedVoxel_FirstFilled);
 
       if (V)
       {

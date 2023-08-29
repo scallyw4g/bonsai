@@ -3300,11 +3300,12 @@ WorkQueueEntryRebuildMesh(world_chunk *Chunk)
 }
 
 link_internal work_queue_entry_update_world_region
-WorkQueueEntryUpdateWorldRegion(world_update_operation Op, u8 ColorIndex, picked_voxel *Location, f32 Radius, canonical_position MinP, canonical_position MaxP, world_chunk** ChunkBuffer, u32 ChunkCount)
+WorkQueueEntryUpdateWorldRegion(world_update_operation Op, world_update_operation_shape Shape, u8 ColorIndex, picked_voxel *Location, f32 Radius, canonical_position MinP, canonical_position MaxP, world_chunk** ChunkBuffer, u32 ChunkCount)
 {
   work_queue_entry_update_world_region Result =
   {
     .Op = Op,
+    .Shape = Shape,
     .ColorIndex = ColorIndex,
     .Location = *Location,
     .Radius = Radius,
@@ -3539,7 +3540,7 @@ BufferWorld( platform* Plat,
 }
 
 link_internal void
-QueueWorldUpdateForRegion(platform *Plat, world *World, picked_voxel *Location, world_update_operation Op, u8 ColorIndex, f32 Radius, memory_arena *Memory)
+QueueWorldUpdateForRegion(platform *Plat, world *World, picked_voxel *Location, world_update_operation Op, world_update_operation_shape Shape, u8 ColorIndex, f32 Radius, memory_arena *Memory)
 {
   TIMED_FUNCTION();
 
@@ -3597,7 +3598,7 @@ QueueWorldUpdateForRegion(platform *Plat, world *World, picked_voxel *Location, 
 
   work_queue_entry Entry = {
     .Type = type_work_queue_entry_update_world_region,
-    .work_queue_entry_update_world_region = WorkQueueEntryUpdateWorldRegion(Op, ColorIndex, Location, Radius, MinP, MaxP, Buffer, ChunkIndex),
+    .work_queue_entry_update_world_region = WorkQueueEntryUpdateWorldRegion(Op, Shape, ColorIndex, Location, Radius, MinP, MaxP, Buffer, ChunkIndex),
   };
   PushWorkQueueEntry(&Plat->LowPriority, &Entry);
 }
@@ -3619,11 +3620,19 @@ MapIntoQueryBox(v3 SimSpaceVoxP, v3 SimSpaceQueryMinP, voxel_position SimSpaceQu
 }
 
 link_internal void
-DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 ChunkCount,
-              picked_voxel *Location, canonical_position MinP, canonical_position MaxP,
-              world_update_operation Op, u8 NewColor, f32 Radius, thread_local_state *Thread)
+DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_queue_entry_update_world_region *Job)
 {
   TIMED_FUNCTION();
+
+  f32 Radius                         = Job->Radius;
+  u8 NewColor                        = Job->ColorIndex;
+  world_update_operation_shape Shape = Job->Shape;
+  world_update_operation Op          = Job->Op;
+  canonical_position MaxP            = Job->MaxP;
+  canonical_position MinP            = Job->MinP;
+  picked_voxel *Location             = &Job->Location;
+  u32 ChunkCount                     = Job->ChunkCount;
+  world_chunk **ChunkBuffer          = Job->ChunkBuffer;
 
   auto SimSpaceMin = GetSimSpaceP(World, MinP);
   auto SimSpaceMax = GetSimSpaceP(World, MaxP);
@@ -3686,68 +3695,69 @@ DoWorldUpdate(work_queue *Queue, world *World, world_chunk **ChunkBuffer, u32 Ch
 
           voxel CopyValue = *V;
 
-          // TODO(Jesse): This routine maybe should be split into multiple
-          // routines that have this logic welded into them ..?
-          if (LengthSq(SimSpaceVoxPExact - LocationSimSpace) < Square(Radius))
+          switch (Shape)
           {
-            /* CopyValue.Flags &= Voxel_MarkBit; */
-            switch(Op)
+            InvalidCase(WorldUpdateOperationShape_None);
+
+            case WorldUpdateOperationShape_Sphere:
             {
-              InvalidCase(WorldUpdateOperation_None);
-
-              case WorldUpdateOperation_Subtractive:
-              {
-                if (CopyValue.Flags&VoxelFaceMask)
-                {
-                  --Chunk->FilledCount;
-                  CopyValue.Flags = Voxel_Empty;
-                }
-                CopyValue.Flags |= Voxel_MarkBit;
-              } break;
-
-              case WorldUpdateOperation_Additive:
-              {
-                if ( (CopyValue.Flags&Voxel_Filled) == 0 ) { ++Chunk->FilledCount; }
-                CopyValue.Flags = Voxel_Filled;
-                CopyValue.Color = NewColor;
-              } break;
-            }
-
-          }
-          else if (LengthSq(SimSpaceVoxPExact - LocationSimSpace) < Square(Radius+1.f))
-          {
-            switch(Op)
-            {
-              InvalidCase(WorldUpdateOperation_None);
-
-              case WorldUpdateOperation_Subtractive:
+              // TODO(Jesse): This routine maybe should be split into multiple
+              // routines that have this logic welded into them ..?
+              if (LengthSq(SimSpaceVoxPExact - LocationSimSpace) < Square(Radius))
               {
                 /* CopyValue.Flags &= Voxel_MarkBit; */
-                if (CopyValue.Flags&VoxelFaceMask)
+                switch(Op)
                 {
-                  CopyValue.Color = GREY_8;
-                }
-                else
-                {
-                  CopyValue.Flags |= Voxel_MarkBit;
-                }
-                /* else */
-                /* { */
-                /*   if (RandomUnilateral(&Entropy) > 0.25) */
-                /*   { */
-                /*     CopyValue.Color = NewColor; */
-                /*   } */
-                /*   else */
-                /*   { */
-                /*     CopyValue.Color = DARK_DARK_GREY; */
-                /*   } */
-                /* } */
-              } break;
+                  InvalidCase(WorldUpdateOperation_None);
 
-              case WorldUpdateOperation_Additive:
+                  case WorldUpdateOperation_Subtractive:
+                  {
+                    if (CopyValue.Flags&VoxelFaceMask)
+                    {
+                      --Chunk->FilledCount;
+                      CopyValue.Flags = Voxel_Empty;
+                    }
+                    CopyValue.Flags |= Voxel_MarkBit;
+                  } break;
+
+                  case WorldUpdateOperation_Additive:
+                  {
+                    if ( (CopyValue.Flags&Voxel_Filled) == 0 ) { ++Chunk->FilledCount; }
+                    CopyValue.Flags = Voxel_Filled;
+                    CopyValue.Color = NewColor;
+                  } break;
+                }
+
+              }
+              else if (LengthSq(SimSpaceVoxPExact - LocationSimSpace) < Square(Radius+1.f))
               {
-              } break;
-            }
+                switch(Op)
+                {
+                  InvalidCase(WorldUpdateOperation_None);
+
+                  case WorldUpdateOperation_Subtractive:
+                  {
+                    if (CopyValue.Flags&VoxelFaceMask)
+                    {
+                      CopyValue.Color = GREY_8;
+                    }
+                    else
+                    {
+                      CopyValue.Flags |= Voxel_MarkBit;
+                    }
+                  } break;
+
+                  case WorldUpdateOperation_Additive:
+                  {
+                  } break;
+                }
+              }
+            } break;
+
+            case WorldUpdateOperationShape_Rect:
+            {
+            } break;
+
           }
 
 
@@ -4138,9 +4148,13 @@ RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, 
 
         Result.PickedChunk.tChunk = tChunk;
         Result.PickedChunk.Chunk = ClosestChunk;
-        Result.VoxelRelP = AtP;
+        Result.Picks[PickedVoxel_FirstFilled] = AtP;
 
         break;
+      }
+      else
+      {
+        Result.Picks[PickedVoxel_LastEmpty] = AtP;
       }
 
       AtP.E[AxisIndex] += Advance.E[AxisIndex];
@@ -4224,7 +4238,7 @@ MousePickVoxel(engine_resources *Resources)
     {
       world_chunk *ClosestChunk = Result.PickedChunk.Chunk;
       v3 MinP =  V3(ClosestChunk->WorldP * World->ChunkDim);
-      v3 VoxelP = MinP + Truncate(Result.VoxelRelP);
+      v3 VoxelP = MinP + Truncate(Result.Picks[PickedVoxel_FirstFilled]);
 
       untextured_3d_geometry_buffer OutlineAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
       v3 Offset = V3(0.001f);
@@ -4241,7 +4255,7 @@ MousePickVoxel(engine_resources *Resources)
         v3i *Spot = ClosestChunk->StandingSpots.Start + StandingSpotIndex;
 
         aabb SpotRect = AABBMinMax(V3(*Spot), V3(*Spot+Global_StandingSpotDim));
-        if (IsInside(SpotRect, Truncate(Result.VoxelRelP)))
+        if (IsInside(SpotRect, Truncate(Result.Picks[PickedVoxel_FirstFilled])))
         {
           /* untextured_3d_geometry_buffer SpotAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB); */
           v3 RenderP = GetRenderP(World->ChunkDim, MinP+V3(*Spot), Camera);
@@ -4269,7 +4283,7 @@ MousePickVoxel(engine_resources *Resources)
     if (Picked)
     {
       v3 MinP =  V3(PickedVoxel.PickedChunk.Chunk->WorldP * World->ChunkDim);
-      v3 VoxelP = MinP + Truncate(PickedVoxel.VoxelRelP);
+      v3 VoxelP = MinP + Truncate(PickedVoxel.Picks[PickedVoxel_FirstFilled]);
 
       untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
       DrawVoxel( &VoxelMesh, GetRenderP(World->ChunkDim, VoxelP+V3(.5f), Camera), V4(1,0,0,1), V3(1.05f) );
@@ -4283,7 +4297,7 @@ MousePickVoxel(engine_resources *Resources)
     if (Hotkeys->Debug_Action_ComputeStandingSpot)
     {
       /* v3i TileChunkOffset = (V3i(xIndex, yTile, zTile) * (TileChunkDim-1));// + V3(1); */
-      v3i TileChunkOffset = Voxel_Position(PickedVoxel.VoxelRelP);
+      v3i TileChunkOffset = Voxel_Position(PickedVoxel.Picks[PickedVoxel_FirstFilled]);
       v3i TileChunkDim = Chunk_Dimension(8, 8, 2);
       /* boundary_voxels* TempBoundingPoints = AllocateBoundaryVoxels((u32)Volume(TileChunkDim), TranArena); */
       standing_spot Spot = ComputeStandingSpotFor8x8x2_V2(PickedVoxel.PickedChunk.Chunk->Voxels, World->ChunkDim, TileChunkOffset, TileChunkDim); //, TempBoundingPoints);
@@ -4298,14 +4312,14 @@ MousePickVoxel(engine_resources *Resources)
 }
 
 link_internal voxel *
-GetVoxelPointer(picked_voxel *Pick)
+GetVoxelPointer(picked_voxel *Pick, picked_voxel_position Pos)
 {
   voxel *Result = 0;
 
   if (Pick->PickedChunk.tChunk != f32_MAX)
   {
     world_chunk *Chunk = Pick->PickedChunk.Chunk;
-    s32 Index = GetIndex(V3i(Pick->VoxelRelP), Chunk->Dim);
+    s32 Index = GetIndex(V3i(Pick->Picks[Pos]), Chunk->Dim);
     Result = Chunk->Voxels + Index;
   }
 
@@ -4317,7 +4331,7 @@ GetAbsoluteP(picked_voxel *Pick)
 {
   world_chunk *Chunk = Pick->PickedChunk.Chunk;
   v3 MinP =  V3(Chunk->WorldP * Chunk->Dim);
-  v3 VoxelP = MinP + Truncate(Pick->VoxelRelP);
+  v3 VoxelP = MinP + Truncate(Pick->Picks[PickedVoxel_FirstFilled]);
   return VoxelP;
 }
 

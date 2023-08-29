@@ -52,6 +52,13 @@ struct work_queue_entry_rebuild_mesh
   world_chunk *Chunk;
 };
 
+enum world_update_operation_shape
+{
+  WorldUpdateOperationShape_None,
+  WorldUpdateOperationShape_Sphere,
+  WorldUpdateOperationShape_Rect,
+};
+
 enum world_update_operation
 {
   WorldUpdateOperation_None,
@@ -62,10 +69,11 @@ enum world_update_operation
 struct work_queue_entry_update_world_region
 {
   world_update_operation Op;
-  u8 ColorIndex;
+  world_update_operation_shape Shape;
 
   picked_voxel Location;
   f32 Radius;
+  u8 ColorIndex;
 
   canonical_position MinP;
   canonical_position MaxP;

@@ -285,7 +285,7 @@ StandingSpot(v3 Offset, world_position WP)
 inline canonical_position
 Canonical_Position(picked_voxel *V)
 {
-  canonical_position Result = Canonical_Position(V->VoxelRelP, V->PickedChunk.Chunk->WorldP);
+  canonical_position Result = Canonical_Position(V->Picks[PickedVoxel_FirstFilled], V->PickedChunk.Chunk->WorldP);
   return Result;
 }
 

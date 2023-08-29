@@ -13,10 +13,19 @@ struct picked_world_chunk
   r32 tChunk; // f32_MAX indicates not picked
 };
 
+enum picked_voxel_position
+{
+  PickedVoxel_LastEmpty,
+  PickedVoxel_FirstFilled,
+  PickedVoxel_Count,
+};
+
 struct picked_voxel
 {
   picked_world_chunk PickedChunk;
-  v3 VoxelRelP; // Relative to origin of chunk
+
+  // Relative to origin of chunk
+  v3 Picks[PickedVoxel_Count]; // use picked_voxel_position to index into this
 };
 
 
