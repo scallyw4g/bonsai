@@ -5,6 +5,8 @@ struct canonical_position
   world_position WorldP;
 };
 
+typedef canonical_position cp;
+
 inline canonical_position
 Canonical_Position(s32 I)
 {

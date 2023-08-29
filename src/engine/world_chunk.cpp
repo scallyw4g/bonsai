@@ -101,7 +101,6 @@ FinalizeChunkInitialization(world_chunk *Chunk)
 
   /* UnSetFlag(Chunk, Chunk_Garbage); */
   UnSetFlag(&Chunk->Flags, Chunk_Queued);
-
   SetFlag(&Chunk->Flags, Chunk_VoxelsInitialized);
 }
 
@@ -3288,6 +3287,7 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk)
   umm Timestamp = NewMesh ? NewMesh->Timestamp : __rdtsc();
   untextured_3d_geometry_buffer *Replaced = AtomicReplaceMesh(&Chunk->Meshes, MeshBit_Main, NewMesh, Timestamp);
   if (Replaced) { DeallocateMesh(Replaced, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
+  FinalizeChunkInitialization(Chunk);
 }
 
 // nochecking Move as much out of this block as possible.  Only the last few of
@@ -3540,16 +3540,18 @@ BufferWorld( platform* Plat,
 }
 
 link_internal void
-QueueWorldUpdateForRegion(platform *Plat, world *World, picked_voxel *Location, world_update_operation Op, world_update_operation_shape Shape, u8 ColorIndex, f32 Radius, memory_arena *Memory)
+QueueWorldUpdateForRegion(platform *Plat, world *World, picked_voxel *Location, cp P0, cp P1, world_update_operation Op, world_update_operation_shape Shape, u8 ColorIndex, f32 Radius, memory_arena *Memory)
 {
   TIMED_FUNCTION();
 
-  canonical_position P = Canonical_Position(Location);
+  v3 P0Sim = GetSimSpaceP(World, P0);
+  v3 P1Sim = GetSimSpaceP(World, P1);
 
-  auto MinPCoarse = Canonicalize(World, P-V3(Radius+1.f) - V3(Global_ChunkApronMinDim));
+  v3 MinP0 = Min(P0Sim, P1Sim);
+  v3 MaxP0 = Max(P0Sim, P1Sim);
 
-  // TODO(Jesse): I think because we're eventually comparing MaxP with <= the +2 here can be a +1 ..?
-  auto MaxPCoarse = Canonicalize(World, P+V3(Radius+2.f) + V3(Global_ChunkApronMaxDim));
+  cp MinPCoarse = Canonical_Position(World->ChunkDim, MinP0, World->Center);
+  cp MaxPCoarse = Canonical_Position(World->ChunkDim, MaxP0, World->Center);
 
   // These value align the min/max positions to StandingSpot boundaries in global space
   auto MinPFixup = V3i(MinPCoarse.Offset) % V3i(Global_StandingSpotDim.xy, 1);
@@ -3600,7 +3602,7 @@ QueueWorldUpdateForRegion(platform *Plat, world *World, picked_voxel *Location, 
     .Type = type_work_queue_entry_update_world_region,
     .work_queue_entry_update_world_region = WorkQueueEntryUpdateWorldRegion(Op, Shape, ColorIndex, Location, Radius, MinP, MaxP, Buffer, ChunkIndex),
   };
-  PushWorkQueueEntry(&Plat->LowPriority, &Entry);
+  PushWorkQueueEntry(&Plat->HighPriority, &Entry);
 }
 
 link_internal u32
@@ -3634,17 +3636,12 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   u32 ChunkCount                     = Job->ChunkCount;
   world_chunk **ChunkBuffer          = Job->ChunkBuffer;
 
-  auto SimSpaceMin = GetSimSpaceP(World, MinP);
-  auto SimSpaceMax = GetSimSpaceP(World, MaxP);
+  auto P0 = GetSimSpaceP(World, MinP);
+  auto P1 = GetSimSpaceP(World, MaxP);
+  auto SimSpaceMin = Min(P0, P1); 
+  auto SimSpaceMax = Max(P0, P1);
 
   rect3i SimSpaceQueryAABB = Rect3iMinMax( V3i(SimSpaceMin), V3i(SimSpaceMax));
-
-  canonical_position P = Canonical_Position(Location);
-  auto LocationSimSpace = GetSimSpaceP(World, P);
-
-  /* rect3i SimSpaceQueryAABB = Rect3iMinMax( V3i(SimSpaceMin), V3i(SimSpaceMax)); */
-  /* rect3i SimSpaceQueryAABB = Rect3iMinMax( V3i(LocationSimSpace - Radius) - MinPFixup, */
-  /*                                          V3i(LocationSimSpace + Radius) + MaxPFixup ); */
 
   voxel_position QueryDim = GetDim(SimSpaceQueryAABB);
 
@@ -3701,6 +3698,9 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
             case WorldUpdateOperationShape_Sphere:
             {
+              canonical_position P = Canonical_Position(Location);
+              auto LocationSimSpace = GetSimSpaceP(World, P);
+
               // TODO(Jesse): This routine maybe should be split into multiple
               // routines that have this logic welded into them ..?
               if (LengthSq(SimSpaceVoxPExact - LocationSimSpace) < Square(Radius))
@@ -3756,6 +3756,27 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
             case WorldUpdateOperationShape_Rect:
             {
+              switch(Op)
+              {
+                InvalidCase(WorldUpdateOperation_None);
+
+                case WorldUpdateOperation_Subtractive:
+                {
+                  if (CopyValue.Flags & VoxelFaceMask)
+                  {
+                    --Chunk->FilledCount;
+                    CopyValue.Flags = Voxel_Empty;
+                  }
+                  CopyValue.Flags |= Voxel_MarkBit;
+                } break;
+
+                case WorldUpdateOperation_Additive:
+                {
+                  if ( (CopyValue.Flags&Voxel_Filled) == 0 ) { ++Chunk->FilledCount; }
+                  CopyValue.Flags = Voxel_Filled;
+                  CopyValue.Color = NewColor;
+                } break;
+              }
             } break;
 
           }

@@ -137,13 +137,10 @@ DoLevelEditor(engine_resources *Engine)
   {
     if (Input->LMB.Clicked)
     {
-      voxel *V = GetVoxelPointer(&Engine->MousedOverVoxel, PickedVoxel_LastEmpty);
+      cp MinP = Canonical_Position(&Editor->SelectionRegion[0]);
+      cp MaxP = Canonical_Position(&Editor->SelectionRegion[1]);
 
-      if (V)
-      {
-        V->Flags = Voxel_Filled;
-        QueueChunkForMeshRebuild(&Plat->HighPriority, Engine->MousedOverVoxel.PickedChunk.Chunk);
-      }
+      QueueWorldUpdateForRegion(Plat, World, &Editor->SelectionRegion[0], MinP, MaxP, WorldUpdateOperation_Additive, WorldUpdateOperationShape_Rect, DARK_GREY, 0.f, Engine->Memory);
     }
   }
 

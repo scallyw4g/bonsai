@@ -197,28 +197,35 @@ Bonsai_Render(engine_resources *Resources)
   v3 DuskColor = Normalize(V3(0.4f, 0.2f, 0.2f)) * DuskIntensity;
   v3 MoonColor = Normalize(V3(0.2f, 0.2f, 0.5f)) * MoonIntensity;
 
-  if (tDaytime > 0.f)
+  if (Graphics->Settings.DoDayNightCycle)
   {
-    if (tPostApex > 0.f)
+    if (tDaytime > 0.f)
     {
-      SG->Sun.Color = Lerp(tDaytime, DuskColor, SunColor);
+      if (tPostApex > 0.f)
+      {
+        SG->Sun.Color = Lerp(tDaytime, DuskColor, SunColor);
+      }
+      else
+      {
+        SG->Sun.Color = Lerp(tDaytime, DawnColor, SunColor);
+      }
     }
     else
     {
-      SG->Sun.Color = Lerp(tDaytime, DawnColor, SunColor);
+      /* SG->Sun.Color = V3(0.15f); */
+      if (tPostApex > 0.f)
+      {
+        SG->Sun.Color = Lerp(Abs(tDaytime), DuskColor, MoonColor);
+      }
+      else
+      {
+        SG->Sun.Color = Lerp(Abs(tDaytime), DawnColor, MoonColor);
+      }
     }
   }
   else
   {
-    /* SG->Sun.Color = V3(0.15f); */
-    if (tPostApex > 0.f)
-    {
-      SG->Sun.Color = Lerp(Abs(tDaytime), DuskColor, MoonColor);
-    }
-    else
-    {
-      SG->Sun.Color = Lerp(Abs(tDaytime), DawnColor, MoonColor);
-    }
+    SG->Sun.Color = SunColor;
   }
 
   SG->Sun.Position.x = Sin(MappedGameTime);

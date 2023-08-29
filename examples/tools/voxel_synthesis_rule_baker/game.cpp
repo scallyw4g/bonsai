@@ -25,7 +25,6 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       Assert( IsSet(Chunk->Flags, Chunk_VoxelsInitialized) );
 
       RebuildWorldChunkMesh(Thread, Chunk);
-      FinalizeChunkInitialization(Chunk);
     } break;
 
     case type_work_queue_entry_init_world_chunk:
