@@ -22,15 +22,15 @@ compiler, and a few appropriate system headers.
 
 ## Engine Features
 
-* General Purpose Thread Queue
-* Game Code Hot Reload
+* Hot Code Reload
+* MT Job System
+* Entities
 * Particles
-* Entity System
 * Collision
+* UI Framework
+* Asset Loaders
+* Terrain Generators
 * Primitive Physics
-* Various Asset Loaders
-* Several Terrain Generators
-* Primitive UI framework
 
 ## Performance Profiler Features
 
@@ -39,23 +39,24 @@ compiler, and a few appropriate system headers.
 * Call graph tracking per frame
 * Context Switch & Physical Core tracking on Windows
 
-# Feature Wishlist
+# Wishlist
 
 -------------------------------------------------------------------------------
 ## Renderer
 
-[ ] TAA
-
 [ ] Transparency : https://www.jcgt.org/published/0002/02/09/paper.pdf
 
-[ ] Shader noise : 
+[ ] SSR : https://lettier.github.io/3d-game-shaders-for-beginners/screen-space-reflection.html
+
+[ ] TAA?
 
 -------------------------------------------------------------------------------
 ## Terrain Generation
 
-[ ] Erosion simulation : https://inria.hal.science/hal-01262376/document
-https://xing-mei.github.io/files/erosion.pdf
-https://nickmcd.me/2020/04/15/procedural-hydrology/
+[ ] Erosion simulation
+* https://inria.hal.science/hal-01262376/document
+* https://xing-mei.github.io/files/erosion.pdf
+* https://nickmcd.me/2020/04/15/procedural-hydrology/
 
 -------------------------------------------------------------------------------
 ## Sound
