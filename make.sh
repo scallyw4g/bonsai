@@ -232,7 +232,7 @@ function BuildDebugSystem
     -o $output_basename      \
     "$DEBUG_SRC_FILE" &&     \
     mv "$output_basename" "$output_basename""_loadable""$PLATFORM_LIB_EXTENSION" &
-  addPid "$executable" $!
+  addPid "$output_basename" $!
 }
 
 function BuildExamples
