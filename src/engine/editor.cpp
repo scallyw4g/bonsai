@@ -5,7 +5,7 @@ DoLevelEditor(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  v2 WindowDim = {{250.f, 1200.f}};
+  v2 WindowDim = {{325.f, 1200.f}};
   local_persist window_layout Window = WindowLayout("Edit", DefaultWindowBasis(*Ui->ScreenDim, WindowDim), WindowDim);
   PushWindowStart(Ui, &Window);
 
@@ -68,9 +68,7 @@ DoLevelEditor(engine_resources *Engine)
     .Flags = ui_element_toggle_button_group_flags(ToggleButtonGroupFlags_RadioButtons | ToggleButtonGroupFlags_DrawVertical),
   };
 
-  PushTableStart(Ui, Position_RightOf, ColorTable);
-    DrawToggleButtonGroup(Ui, &ButtonGroup);
-  PushTableEnd(Ui);
+  DrawToggleButtonGroup(Ui, &ButtonGroup, Position_RightOf, ColorTable);
 
   if (Clicked(&ButtonGroup, CSz("Select")))
   {
