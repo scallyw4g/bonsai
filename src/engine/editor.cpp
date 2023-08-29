@@ -137,10 +137,20 @@ DoLevelEditor(engine_resources *Engine)
   {
     if (Input->LMB.Clicked)
     {
-      cp MinP = Canonical_Position(&Editor->SelectionRegion[0]);
-      cp MaxP = Canonical_Position(&Editor->SelectionRegion[1]);
+      cp P0 = Canonical_Position(&Editor->SelectionRegion[0]);
+      cp P1 = Canonical_Position(&Editor->SelectionRegion[1]);
 
-      QueueWorldUpdateForRegion(Plat, World, &Editor->SelectionRegion[0], MinP, MaxP, WorldUpdateOperation_Additive, WorldUpdateOperationShape_Rect, DARK_GREY, 0.f, Engine->Memory);
+      v3 P0Sim = GetSimSpaceP(World, P0);
+      v3 P1Sim = GetSimSpaceP(World, P1);
+
+      v3 P1ToP0Rad = (P0Sim - P1Sim)/2.f;
+
+      v3 Center = P1Sim + P1ToP0Rad;
+
+      v3 MinP = Min(P0Sim, P1Sim);
+      v3 MaxP = Max(P0Sim, P1Sim);
+
+      QueueWorldUpdateForRegion(Plat, World, Center, MinP, MaxP, WorldUpdateOperation_Additive, WorldUpdateOperationShape_Rect, DARK_GREY, 0.f, Engine->Memory);
     }
   }
 
@@ -157,7 +167,7 @@ DoLevelEditor(engine_resources *Engine)
       if (V)
       {
         V->Color = SafeTruncateU8(Engine->Editor.SelectedColorIndex);
-        QueueChunkForMeshRebuild(&Plat->HighPriority, Engine->MousedOverVoxel.PickedChunk.Chunk);
+        QueueChunkForMeshRebuild(&Plat->LowPriority, Engine->MousedOverVoxel.PickedChunk.Chunk);
       }
     }
   }
