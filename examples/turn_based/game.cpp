@@ -91,12 +91,12 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
 {
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  cp P = Canonical_Position(Pick);
-  cp MinPCoarse = Canonicalize(World, P-V3(Radius+1.f) - V3(Global_ChunkApronMinDim));
-  // TODO(Jesse): I think because we're eventually comparing MaxP with <= the +2 here can be a +1 ..?
-  cp MaxPCoarse = Canonicalize(World, P+V3(Radius+2.f) + V3(Global_ChunkApronMaxDim));
-
-  QueueWorldUpdateForRegion(Resources, Pick, MinPCoarse, MaxPCoarse, WorldUpdateOperation_Subtractive, WorldUpdateOperationShape_Sphere, DARK_GREY, Radius, Resources->Memory);
+  world_update_op_shape Shape = {
+    .Type = type_world_update_op_shape_params_sphere,
+    .world_update_op_shape_params_sphere.Radius = Radius,
+    .world_update_op_shape_params_sphere.Location = *Pick,
+  };
+  QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Subtractive, &Shape, DARK_GREY, Radius, Resources->Memory);
   /* QueueWorldUpdateForRegion(Resources, Pick, MinPCoarse, MaxPCoarse, WorldUpdateOperation_Additive, WorldUpdateOperationShape_Sphere, DARK_GREY, Radius, Resources->Memory); */
 
 #if 1

@@ -52,27 +52,52 @@ struct work_queue_entry_rebuild_mesh
   world_chunk *Chunk;
 };
 
-enum world_update_operation_shape
+
+
+
+
+enum world_update_op_shape_type
 {
-  WorldUpdateOperationShape_None,
-  WorldUpdateOperationShape_Sphere,
-  WorldUpdateOperationShape_Rect,
+  type_world_update_op_shape_params_noop,
+  type_world_update_op_shape_params_sphere,
+  type_world_update_op_shape_params_rect
 };
 
-enum world_update_operation
+struct world_update_op_shape_params_sphere
 {
-  WorldUpdateOperation_None,
-  WorldUpdateOperation_Additive,
-  WorldUpdateOperation_Subtractive,
+  picked_voxel Location;
+  f32 Radius;
 };
+
+struct world_update_op_shape_params_rect
+{
+  /* rect3 UpdateBounds; */
+  cp P0;
+  cp P1;
+};
+
+struct world_update_op_shape
+{
+  world_update_op_shape_type Type;
+  union {
+    world_update_op_shape_params_sphere world_update_op_shape_params_sphere;
+    world_update_op_shape_params_rect world_update_op_shape_params_rect;
+  };
+};
+
+enum world_update_op_mode
+{
+  WorldUpdateOperationMode_None,
+  WorldUpdateOperationMode_Additive,
+  WorldUpdateOperationMode_Subtractive,
+};
+
 
 struct work_queue_entry_update_world_region
 {
-  world_update_operation Op;
-  world_update_operation_shape Shape;
+  world_update_op_mode Mode;
+  world_update_op_shape Shape;
 
-  picked_voxel Location;
-  f32 Radius;
   u8 ColorIndex;
 
   canonical_position MinP;
@@ -80,6 +105,7 @@ struct work_queue_entry_update_world_region
 
   world_chunk **ChunkBuffer;
   u32 ChunkCount;
+
 };
 
 struct work_queue_entry_init_asset

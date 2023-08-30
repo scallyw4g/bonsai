@@ -144,7 +144,12 @@ DoLevelEditor(engine_resources *Engine)
       cp P1 = Canonical_Position(&Editor->SelectionRegion[1]);
 
       picked_voxel Ignored = {};
-      QueueWorldUpdateForRegion(Engine, &Ignored, P0, P1, WorldUpdateOperation_Additive, WorldUpdateOperationShape_Rect, DARK_GREY, 0.f, Engine->Memory);
+      world_update_op_shape Shape = {
+        .Type = type_world_update_op_shape_params_rect,
+        .world_update_op_shape_params_rect.P0 = P0,
+        .world_update_op_shape_params_rect.P1 = P1,
+      };
+      QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, SafeTruncateU8(Editor->SelectedColorIndex), 0.f, Engine->Memory);
     }
   }
 
