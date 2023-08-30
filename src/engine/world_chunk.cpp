@@ -3540,9 +3540,21 @@ BufferWorld( platform* Plat,
 }
 
 link_internal void
-QueueWorldUpdateForRegion(platform *Plat, world *World, picked_voxel *Location, cp P0, cp P1, world_update_operation Op, world_update_operation_shape Shape, u8 ColorIndex, f32 Radius, memory_arena *Memory)
+QueueWorldUpdateForRegion(engine_resources *Engine, picked_voxel *Location, cp P0, cp P1, world_update_operation Op, world_update_operation_shape Shape, u8 ColorIndex, f32 Radius, memory_arena *Memory)
 {
   TIMED_FUNCTION();
+
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+/*       v3 P0Sim = GetSimSpaceP(World, P0); */
+/*       v3 P1Sim = GetSimSpaceP(World, P1); */
+
+/*       v3 P1ToP0Rad = (P0Sim - P1Sim)/2.f; */
+
+/*       v3 Center = P1Sim + P1ToP0Rad; */
+
+/*       v3 MinP = Min(P0Sim, P1Sim); */
+/*       v3 MaxP = Max(P0Sim, P1Sim); */
 
   v3 P0Sim = GetSimSpaceP(World, P0);
   v3 P1Sim = GetSimSpaceP(World, P1);
@@ -3550,8 +3562,14 @@ QueueWorldUpdateForRegion(platform *Plat, world *World, picked_voxel *Location, 
   v3 MinP0 = Min(P0Sim, P1Sim);
   v3 MaxP0 = Max(P0Sim, P1Sim);
 
-  cp MinPCoarse = Canonical_Position(World->ChunkDim, MinP0, World->Center);
-  cp MaxPCoarse = Canonical_Position(World->ChunkDim, MaxP0, World->Center);
+  /* cp MinPCoarse_ = Canonical_Position(World->ChunkDim, MinP0, World->Center); */
+  /* cp MaxPCoarse_ = Canonical_Position(World->ChunkDim, MaxP0, World->Center); */
+
+  /* cp MinPCoarse = Canonical_Position(World->ChunkDim, MinP0, World->Center); */
+  /* cp MaxPCoarse = Canonical_Position(World->ChunkDim, MaxP0, World->Center); */
+
+  cp MinPCoarse = SimSpaceToCanonical(World, MinP0);
+  cp MaxPCoarse = SimSpaceToCanonical(World, MaxP0);
 
   // These value align the min/max positions to StandingSpot boundaries in global space
   auto MinPFixup = V3i(MinPCoarse.Offset) % V3i(Global_StandingSpotDim.xy, 1);
@@ -3572,6 +3590,11 @@ QueueWorldUpdateForRegion(platform *Plat, world *World, picked_voxel *Location, 
   Assert(u32(MaxP.Offset.x) % u32(Global_StandingSpotDim.x) == 0 );
   Assert(u32(MaxP.Offset.y) % u32(Global_StandingSpotDim.y) == 0 );
 
+  {
+    r32 Thickness = 0.15f;
+    DEBUG_HighlightVoxel(Engine, MinP, BLUE, Thickness);
+    DEBUG_HighlightVoxel(Engine, MaxP, RED, Thickness);
+  }
 
   /* world_position Delta = Max(MaxP.WorldP - MinP.WorldP, World_Position(1)); */
   world_position Delta = MaxP.WorldP - MinP.WorldP + 1;
@@ -3795,6 +3818,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   // better (faster) to just do what we actually need to
   MarkBoundaryVoxels_NoExteriorFaces( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-1, &Entropy, GREY_5, GREY_7);
   /* MarkBoundaryVoxels_MakeExteriorFaces( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-1); */
+  /* MarkBoundaryVoxels_MakeExteriorFaces( CopiedVoxels, QueryDim, {}, QueryDim); */
 
 
   for (u32 ChunkIndex = 0; ChunkIndex < ChunkCount; ++ChunkIndex)

@@ -36,8 +36,7 @@ Canonicalize( world *World, canonical_position *P)
 link_internal cp
 SimSpaceToCanonical( world *World, v3 P )
 {
-  v3 Offset = P % V3(World->ChunkDim);
-  v3i ChunkOffset = V3i(P) / World->ChunkDim;
-  return Canonical_Position(Offset, World->Center + ChunkOffset);
+  cp Result = Canonical_Position(World->ChunkDim, P, World->Center);
+  return Result;
 }
 

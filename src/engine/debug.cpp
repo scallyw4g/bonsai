@@ -315,6 +315,9 @@ DoEngineDebugMenu(engine_resources *Engine)
       PushTableStart(Ui);
         /* DebugValue(Ui, &Ui->Pressed.ID); */
 
+        DebugValue(Ui, (b8*)&Settings->DoDayNightCycle);
+        PushNewRow(Ui);
+
         DebugValue(Ui, (b8*)&Settings->UseSsao);
         DebugValue(Ui, (b8*)&Settings->UseShadowMapping);
         DebugValue(Ui, (b8*)&Settings->UseLightingBloom);
@@ -337,12 +340,14 @@ DoEngineDebugMenu(engine_resources *Engine)
     PushWindowStart(Ui, &Window);
       PushTableStart(Ui);
 
+
         DebugValue(Ui, &EngineDebug->DrawEntityCollisionVolumes);
         DebugValue(Ui, &EngineDebug->DrawWorldAxies);
 
         DebugValue(Ui, &EngineDebug->UiDebug.OutlineUiValues);
         DebugValue(Ui, &EngineDebug->UiDebug.OutlineUiButtons);
         DebugValue(Ui, &EngineDebug->UiDebug.OutlineUiTables);
+
 
         DebugValue(Ui, &Engine->Editor.SelectedColorIndex);
         DebugUi(Engine, CSz("Selected Color"), &Engine->Editor.SelectedColorSquare);

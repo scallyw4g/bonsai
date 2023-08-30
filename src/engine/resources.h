@@ -82,7 +82,6 @@ GetEngineResources()
   platform                  *Plat          =  Res->Plat;         \
   world                     *World         =  Res->World;        \
   game_state                *GameState     =  Res->GameState;    \
-  memory_arena              *Memory        =  Res->Memory;       \
   heap_allocator            *Heap          = &Res->Heap;         \
   entity                   **EntityTable   =  Res->EntityTable;  \
   hotkeys                   *Hotkeys       =  Res->Hotkeys;      \

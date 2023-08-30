@@ -96,8 +96,8 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
   // TODO(Jesse): I think because we're eventually comparing MaxP with <= the +2 here can be a +1 ..?
   cp MaxPCoarse = Canonicalize(World, P+V3(Radius+2.f) + V3(Global_ChunkApronMaxDim));
 
-  /* QueueWorldUpdateForRegion(Resources, Pick, MinPCoarse, MaxPCoarse, WorldUpdateOperation_Subtractive, WorldUpdateOperationShape_Sphere, DARK_GREY, Radius, Resources->Memory); */
-  QueueWorldUpdateForRegion(Resources, Pick, MinPCoarse, MaxPCoarse, WorldUpdateOperation_Additive, WorldUpdateOperationShape_Sphere, DARK_GREY, Radius, Resources->Memory);
+  QueueWorldUpdateForRegion(Resources, Pick, MinPCoarse, MaxPCoarse, WorldUpdateOperation_Subtractive, WorldUpdateOperationShape_Sphere, DARK_GREY, Radius, Resources->Memory);
+  /* QueueWorldUpdateForRegion(Resources, Pick, MinPCoarse, MaxPCoarse, WorldUpdateOperation_Additive, WorldUpdateOperationShape_Sphere, DARK_GREY, Radius, Resources->Memory); */
 
 #if 1
   v3 SplosionSimP = GetSimSpaceP(World, PickCP);

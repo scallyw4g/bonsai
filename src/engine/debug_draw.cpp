@@ -221,6 +221,22 @@ DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, rect3i Rect, u32 ColorIndex,
   DEBUG_DrawAABB( Mesh, V3(Rect.Min), V3(Rect.Max), ColorIndex, Thickness );
 }
 
+link_internal void
+DEBUG_HighlightVoxel(untextured_3d_geometry_buffer *Mesh, world *World, camera *Camera, cp P, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
+{
+  r32 Offset = 0.1f;
+  v3 P0 = GetRenderP(World->ChunkDim, P, Camera) - Offset;
+  DEBUG_DrawAABB( Mesh, P0, P0 + V3(1), ColorIndex, Thickness );
+}
+
+link_internal void
+DEBUG_HighlightVoxel(engine_resources *Engine, cp P, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+  untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
+  DEBUG_HighlightVoxel( &Mesh, World, Camera, P, ColorIndex, Thickness );
+
+}
 
 link_internal void
 DEBUG_DrawChunkAABB( untextured_3d_geometry_buffer *Mesh, graphics *Graphics, world_position WorldP,
