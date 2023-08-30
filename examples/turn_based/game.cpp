@@ -96,7 +96,7 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
     .world_update_op_shape_params_sphere.Radius = Radius,
     .world_update_op_shape_params_sphere.Location = *Pick,
   };
-  QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Subtractive, &Shape, DARK_GREY, Radius, Resources->Memory);
+  QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Subtractive, &Shape, DARK_GREY, Resources->Memory);
   /* QueueWorldUpdateForRegion(Resources, Pick, MinPCoarse, MaxPCoarse, WorldUpdateOperation_Additive, WorldUpdateOperationShape_Sphere, DARK_GREY, Radius, Resources->Memory); */
 
 #if 1

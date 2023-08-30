@@ -49,6 +49,7 @@ compiler, and a few appropriate system headers.
 [ ] SSR : https://lettier.github.io/3d-game-shaders-for-beginners/screen-space-reflection.html
 
 [ ] TAA?
+[ ] FXAA : http://blog.simonrodriguez.fr/articles/2016/07/implementing_fxaa.html
 
 -------------------------------------------------------------------------------
 ## Terrain Generation

@@ -642,17 +642,17 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim)
   r32 xyTurb = 4.f*Dim;
   /* r32 xyTurb = 2.5f; */
   /* r32 xyTurb = 0.0f; */
-  System->ParticleTurbMin = V3(-xyTurb, -xyTurb, 20.0f*Dim);
-  System->ParticleTurbMax = V3(xyTurb, xyTurb, 35.0f*Dim);
+  System->ParticleTurbMin = V3(-xyTurb, -xyTurb, 20.0f + (0.3f*Dim) );
+  System->ParticleTurbMax = V3(xyTurb, xyTurb, 35.0f + (0.75f*Dim) );
 
   /* System->Physics.Velocity = V3(0.0f, 0.0f, 9.0f); */
 
-  System->ParticleStartingDim = V3(0.9f)*Dim;
-  System->ParticleEndingDim = 0.1f*Dim;
+  System->ParticleStartingDim = V3(0.9f) + (0.25f*Dim);
+  System->ParticleEndingDim = 0.1f + (0.1f*Dim);
 
   System->SystemMovementCoefficient = 0.1f;
 
-  SpawnParticleSystem(Entity->Emitter);
+  if (Inactive(System)) { SpawnParticleSystem(System); }
 
   return;
 }

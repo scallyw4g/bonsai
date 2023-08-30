@@ -135,22 +135,24 @@ DoLevelEditor(engine_resources *Engine)
     Editor->SelectionRegion[1] = {};
   }
 
-
-  if (ToggledOn(&ButtonGroup, CSz("Add")))
+  if (ToggledOn(&ButtonGroup, CSz("Fill")))
   {
     if (Input->LMB.Clicked)
     {
       cp P0 = Canonical_Position(&Editor->SelectionRegion[0]);
       cp P1 = Canonical_Position(&Editor->SelectionRegion[1]);
 
-      picked_voxel Ignored = {};
       world_update_op_shape Shape = {
         .Type = type_world_update_op_shape_params_rect,
         .world_update_op_shape_params_rect.P0 = P0,
         .world_update_op_shape_params_rect.P1 = P1,
       };
-      QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, SafeTruncateU8(Editor->SelectedColorIndex), 0.f, Engine->Memory);
+      QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, SafeTruncateU8(Editor->SelectedColorIndex), Engine->Memory);
     }
+  }
+
+  if (ToggledOn(&ButtonGroup, CSz("Add")))
+  {
   }
 
   if (ToggledOn(&ButtonGroup, CSz("Remove")))

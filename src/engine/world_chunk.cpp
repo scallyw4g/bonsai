@@ -3538,7 +3538,7 @@ BufferWorld( platform* Plat,
 }
 
 link_internal void
-QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, world_update_op_shape *Shape, u8 ColorIndex, f32 Radius, memory_arena *Memory)
+QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, world_update_op_shape *Shape, u8 ColorIndex, memory_arena *Memory)
 {
   TIMED_FUNCTION();
 
@@ -3555,9 +3555,9 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
       world_update_op_shape_params_sphere *ShapeSphere = SafeCast(world_update_op_shape_params_sphere, Shape);
       cp P = Canonical_Position(&ShapeSphere->Location);
 
-      MinPCoarse = Canonicalize(World, P-V3(Radius+1.f) - V3(Global_ChunkApronMinDim));
+      MinPCoarse = Canonicalize(World, P-V3(ShapeSphere->Radius+1.f) - V3(Global_ChunkApronMinDim));
       // TODO(Jesse): I think because we're eventually comparing MaxP with <= the +2 here can be a +1 ..?
-      MaxPCoarse = Canonicalize(World, P+V3(Radius+2.f) + V3(Global_ChunkApronMaxDim));
+      MaxPCoarse = Canonicalize(World, P+V3(ShapeSphere->Radius+2.f) + V3(Global_ChunkApronMaxDim));
     } break;
 
     case type_world_update_op_shape_params_rect:
@@ -3570,8 +3570,8 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
       v3 MinP0 = Min(P0Sim, P1Sim);
       v3 MaxP0 = Max(P0Sim, P1Sim);
 
-      MinPCoarse = SimSpaceToCanonical(World, MinP0) - V3(1) - V3(Global_ChunkApronMaxDim);
-      MaxPCoarse = SimSpaceToCanonical(World, MaxP0) + V3(2) + V3(Global_ChunkApronMaxDim);
+      MinPCoarse = SimSpaceToCanonical(World, MinP0 - V3(1) - V3(Global_ChunkApronMinDim));
+      MaxPCoarse = SimSpaceToCanonical(World, MaxP0 + V3(2) + V3(Global_ChunkApronMaxDim));
     } break;
   }
 
@@ -3789,7 +3789,10 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
               v3i P1SS = V3i(GetSimSpaceP(World, Rect->P1));
 
               v3i MinSS = Min(P0SS, P1SS);
-              v3i MaxSS = Max(P0SS, P1SS) + V3(1);
+              v3i MaxSS = Max(P0SS, P1SS);
+
+              MinSS += ClampNegative(GetSign(MinSS));
+              MaxSS += Clamp01(GetSign(MaxSS));
 
               rect3i SSRect = {MinSS, MaxSS};
               if (Contains(SSRect, SimSpaceVoxPExact))
@@ -3912,7 +3915,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   untextured_3d_geometry_buffer *DebugMesh = {};
 #endif
 
-  voxel_position_cursor StandingSpots = V3iCursor(8*WORLD_CHUNK_STANDING_SPOT_COUNT, Thread->TempMemory);
+  voxel_position_cursor StandingSpots = V3iCursor(ChunkCount*WORLD_CHUNK_STANDING_SPOT_COUNT, Thread->TempMemory);
 
   ComputeStandingSpots( QueryDim, CopiedVoxels, {},
                         {}, Global_StandingSpotDim,
