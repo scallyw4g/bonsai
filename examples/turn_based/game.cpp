@@ -96,7 +96,8 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
   // TODO(Jesse): I think because we're eventually comparing MaxP with <= the +2 here can be a +1 ..?
   cp MaxPCoarse = Canonicalize(World, P+V3(Radius+2.f) + V3(Global_ChunkApronMaxDim));
 
-  QueueWorldUpdateForRegion(Plat, World, Pick, MinPCoarse, MaxPCoarse, WorldUpdateOperation_Subtractive, WorldUpdateOperationShape_Sphere, DARK_GREY, Radius, Resources->Memory);
+  /* QueueWorldUpdateForRegion(Resources, Pick, MinPCoarse, MaxPCoarse, WorldUpdateOperation_Subtractive, WorldUpdateOperationShape_Sphere, DARK_GREY, Radius, Resources->Memory); */
+  QueueWorldUpdateForRegion(Resources, Pick, MinPCoarse, MaxPCoarse, WorldUpdateOperation_Additive, WorldUpdateOperationShape_Sphere, DARK_GREY, Radius, Resources->Memory);
 
 #if 1
   v3 SplosionSimP = GetSimSpaceP(World, PickCP);
@@ -252,12 +253,14 @@ GameEntityUpdate(engine_resources *Engine, entity *Entity )
 
   game_entity_type Type = *((game_entity_type*)&Entity->UserData);
 
+  // Bitty offset, gets overridden by the Splosion case.  Janky af.  @offset-jank-fallthrough
+  v3 Offset = V3(0.f, 0.f, 0.2f);
   switch (Type)
   {
     case GameEntityType_Unknown: {} break;;
     case GameEntityType_Enemy: { EnemyUpdate(Engine, Entity); } break;
 
-    case GameEntityType_Splosion:
+    case GameEntityType_Splosion: { Offset = V3(0.f, 0.f, 2.5f); } _FALLTHROUGH; // @offset-jank-fallthrough
     case GameEntityType_Bitty:
     {
       v3 Color = {};
@@ -271,7 +274,7 @@ GameEntityUpdate(engine_resources *Engine, entity *Entity )
         InvalidDefaultCase;
       }
 
-      v3 P = GetRenderP(World->ChunkDim, Entity, Camera) + V3(0.f, 0.f, 0.1f);
+      v3 P = GetRenderP(World->ChunkDim, Entity, Camera) + Offset;
       r32 Intensity = Max(0.f, Entity->Emitter->RemainingLifespan / Entity->Emitter->EmissionLifespan);
       DoLight(&Lighting->Lights, P, Color*Intensity );
     } break;
@@ -308,13 +311,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   if (Pick.PickedChunk.tChunk != f32_MAX)
   {
     v3 VoxelP = GetAbsoluteP(&Pick);
-
-    untextured_3d_geometry_buffer OutlineAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
-    v3 Offset = V3(0.001f);
-    DEBUG_DrawAABB( &OutlineAABB,
-                    GetRenderP(World->ChunkDim, VoxelP-Offset, Camera),
-                    GetRenderP(World->ChunkDim, VoxelP+V3(1.f)+Offset, Camera),
-                    WHITE, 0.05f);
 
     world_chunk *ClosestChunk = Pick.PickedChunk.Chunk;
     canonical_position PickCP = Canonical_Position(Pick.Picks[PickedVoxel_FirstFilled], ClosestChunk->WorldP);
@@ -416,11 +412,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       {
         if (PlayerChargeLevel)
         {
-          OutlineAABB.At = 0;
-          DEBUG_DrawAABB( &OutlineAABB,
-                          GetRenderP(World->ChunkDim, VoxelP-Offset, Camera),
-                          GetRenderP(World->ChunkDim, VoxelP+V3(1.f)+Offset, Camera),
-                          RED, 0.15f);
           if (Input->LMB.Clicked)
           {
             DoSplotion(Resources, &Pick, PickCP, 2.f + r32(PlayerChargeLevel)*2.f, GetTranArena());
@@ -491,7 +482,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   random_series WorldEntropy = {54930695483};
 
-  GameState->Models = AllocateGameModels(GameState, Memory, Heap);
+  GameState->Models = AllocateGameModels(GameState, Resources->Memory, Heap);
 
 #if 1
   u32 PlayerModelIndex = RandomBetween( u32(ModelIndex_FirstPlayerModel), &GameState->Entropy, u32(ModelIndex_LastPlayerModel+1));
