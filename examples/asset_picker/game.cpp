@@ -59,7 +59,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   AllocateWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 
-  GameState->Models = AllocateGameModels(GameState, Memory, Heap);
+  GameState->Models = AllocateGameModels(GameState, Resources->Memory, Heap);
 
   GameState->Player = GetFreeEntity(EntityTable);
   SpawnStaticEntity(Plat, World, GameState->Models + ModelIndex_Level, GameState->Player, PlayerSpawnP, &GameState->Entropy);

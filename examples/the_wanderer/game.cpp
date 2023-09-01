@@ -77,7 +77,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
-  GameState->Models = AllocateGameModels(GameState, Memory, Heap);
+  GameState->Models = AllocateGameModels(GameState, Resources->Memory, Heap);
 
   world_position WorldCenter = World_Position(0, 0, 0);
   AllocateWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);

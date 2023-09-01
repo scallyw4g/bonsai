@@ -804,7 +804,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
         TileEntity->CollisionVolumeRadius = V3(Global_TileDim/2);
 
         // TODO(Jesse)(memory, heap, mesh)
-        AllocateMesh( &TileEntity->Model.Mesh, u32(Kilobytes(18)), Memory);
+        AllocateMesh( &TileEntity->Model.Mesh, u32(Kilobytes(18)), Resources->Memory);
 
         /* BuildWorldChunkMeshFromMarkedVoxels_Greedy( ChunkData->Voxels, */
         /*                                             ChunkData->Dim, */
@@ -848,6 +848,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
     }
 
   }
+
+  memory_arena *Memory = Resources->Memory;
 
   v3i TileSuperpositionsDim = World->VisibleRegion*World->ChunkDim / Global_TileDim;
   Assert(World->VisibleRegion*World->ChunkDim  % Global_TileDim == V3i(0));

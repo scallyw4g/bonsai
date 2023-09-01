@@ -7,6 +7,7 @@ DoLevelEditor(engine_resources *Engine)
 
   v2 WindowDim = {{325.f, 1200.f}};
   local_persist window_layout Window = WindowLayout("Edit", DefaultWindowBasis(*Ui->ScreenDim, WindowDim), WindowDim);
+
   PushWindowStart(Ui, &Window);
 
   ui_element_reference ColorTable = PushTableStart(Ui);
