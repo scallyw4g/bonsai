@@ -48,7 +48,7 @@ GetObjMetadata(ansi_stream Cursor, memory_arena *Memory)
  * Note that triangulating a mesh with bent normals at export time (in blender)
  * seems to not re-bend the triangulated normals and everything looks borked.
  */
-model
+link_internal model
 LoadObj(memory_arena *PermMem, heap_allocator *Heap, const char * FilePath)
 {
   Info("Loading .obj file : %s \n", FilePath);
@@ -148,6 +148,9 @@ LoadObj(memory_arena *PermMem, heap_allocator *Heap, const char * FilePath)
   untextured_3d_geometry_buffer Mesh = {};
   AllocateMesh(&Mesh, Stats.FaceCount*3, Heap);
 
+  v3 MinV = V3(f32_MAX);
+  v3 MaxV = V3(f32_MIN);
+
   u32 VertCount = (u32)AtElements(&VertIndicies);
   for( u32 Index = 0;
        Index < VertCount;
@@ -158,6 +161,9 @@ LoadObj(memory_arena *PermMem, heap_allocator *Heap, const char * FilePath)
 
     v3 Vertex = TempVerts.Start[vIndex];
     v3 Normal = TempNormals.Start[nIndex];
+
+    MinV = Min(Vertex, MinV);
+    MaxV = Max(Vertex, MaxV);
 
     Mesh.Verts[Mesh.At] = Vertex;
     Mesh.Normals[Mesh.At] = Normal;
@@ -170,6 +176,7 @@ LoadObj(memory_arena *PermMem, heap_allocator *Heap, const char * FilePath)
 
   model Result = {};
   Result.Mesh = Mesh;
+  Result.Dim = V3i(MaxV-MinV)+1;
 
   return Result;
 }
