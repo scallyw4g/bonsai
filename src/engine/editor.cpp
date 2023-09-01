@@ -57,11 +57,11 @@ DoLevelEditor(engine_resources *Engine)
 
 
   local_persist ui_element_toggle_button Buttons[] = {
-    {CSz("Select"),  False,False},
-    {CSz("Fill"),    False,False},
-    {CSz("Add"),     False,False},
-    {CSz("Remove"),  False,False},
-    {CSz("Paint"),   False,False},
+    {CSz("Select"), False, False},
+    {CSz("Fill"),   False, False},
+    {CSz("Add"),    False, False},
+    {CSz("Remove"), False, False},
+    {CSz("Paint"),  False, False},
   };
 
   ui_element_toggle_button_group ButtonGroup = {
@@ -124,7 +124,6 @@ DoLevelEditor(engine_resources *Engine)
           Editor->SelectionRegion[1] = Engine->MousedOverVoxel;
         } break;
       }
-
     }
 
   }
@@ -154,10 +153,32 @@ DoLevelEditor(engine_resources *Engine)
 
   if (ToggledOn(&ButtonGroup, CSz("Add")))
   {
+    if (Input->LMB.Clicked)
+    {
+      cp P0 = Canonical_Position(&Engine->MousedOverVoxel);
+
+      world_update_op_shape Shape = {
+        .Type = type_world_update_op_shape_params_rect,
+        .world_update_op_shape_params_rect.P0 = P0,
+        .world_update_op_shape_params_rect.P1 = P0,
+      };
+      QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, SafeTruncateU8(Editor->SelectedColorIndex), Engine->Memory);
+    }
   }
 
   if (ToggledOn(&ButtonGroup, CSz("Remove")))
   {
+    if (Input->LMB.Clicked)
+    {
+      cp P0 = Canonical_Position(&Engine->MousedOverVoxel);
+
+      world_update_op_shape Shape = {
+        .Type = type_world_update_op_shape_params_rect,
+        .world_update_op_shape_params_rect.P0 = P0,
+        .world_update_op_shape_params_rect.P1 = P0,
+      };
+      QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Subtractive, &Shape, SafeTruncateU8(Editor->SelectedColorIndex), Engine->Memory);
+    }
   }
 
   if (ToggledOn(&ButtonGroup, CSz("Paint")))
@@ -183,8 +204,8 @@ DoLevelEditor(engine_resources *Engine)
       case LevelEditMode_Add:
       case LevelEditMode_Remove:
       case LevelEditMode_Paint:
-        {
-        } break;
+      {
+      } break;
     }
   }
 

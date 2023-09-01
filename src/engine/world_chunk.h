@@ -25,6 +25,9 @@ ToString(chunk_flag Flag)
   }
 }
 
+// If we make a mapping between these bit-flags and another face_index enum we
+// could delete a bit of code.
+// @duplicate_face_index_enum
 enum voxel_flag
 {
   Voxel_Empty      =      0,

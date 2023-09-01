@@ -9,6 +9,8 @@ global_variable v3i AllDirections[] = {
 
 global_variable v3i Global_TileDim = V3i(8);
 
+// NOTE(Jesse): This is more-or-less duplicated in the face_index enum.  Coalesce them?
+// @duplicate_face_index_enum
 enum voxel_rule_direction
 {
   VoxelRuleDir_PosX,
