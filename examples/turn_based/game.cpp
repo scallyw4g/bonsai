@@ -260,7 +260,7 @@ GameEntityUpdate(engine_resources *Engine, entity *Entity )
     case GameEntityType_Unknown: {} break;;
     case GameEntityType_Enemy: { EnemyUpdate(Engine, Entity); } break;
 
-    case GameEntityType_Splosion: { Offset = V3(0.f, 0.f, 2.5f); } _FALLTHROUGH; // @offset-jank-fallthrough
+    case GameEntityType_Splosion: { Offset = V3(0.f, 0.f, 2.5f); } [[fallthrough]]; // @offset-jank-fallthrough
     case GameEntityType_Bitty:
     {
       v3 Color = {};
