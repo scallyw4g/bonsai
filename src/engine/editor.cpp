@@ -99,39 +99,92 @@ DoLevelEditor(engine_resources *Engine)
 
     if ( Editor->SelectionRegion[0].PickedChunk.Chunk )
     {
-      v3 P0 = GetAbsoluteP(&Editor->SelectionRegion[0]);
+      v3 P0 = GetSimSpaceP(World, &Editor->SelectionRegion[0]);
       v3 P1 = P0;
 
       r32 Thickness = 0.15f;
-      u8 Color = WHITE;
       if (Editor->SelectionRegion[1].PickedChunk.Chunk)
       {
-        P1 = GetAbsoluteP(&Editor->SelectionRegion[1]);
+        P1 = GetSimSpaceP(World, &Editor->SelectionRegion[1]);
 
         Thickness = 0.25f;
-        u8 Green = WHITE;
       }
       else
       {
         if (Engine->MousedOverVoxel.PickedChunk.Chunk)
         {
-          P1 = GetAbsoluteP(&Engine->MousedOverVoxel);
+          P1 = GetSimSpaceP(World, &Engine->MousedOverVoxel);
         }
       }
 
       v3 MinP = Min(P0, P1);
       v3 MaxP = Max(P0, P1) + V3(1);
 
+      u8 BaseColor = WHITE;
       maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection, Camera, World->ChunkDim);
       if (MaybeRay.Tag == Maybe_Yes)
       {
-        aabb SelectionAABB = AABBMinMax(P0, P1);
+        aabb SelectionAABB = AABBMinMax(MinP, MaxP);
         aabb_intersect_result AABBTest = Intersect(SelectionAABB, &MaybeRay.Ray);
         PushColumn(Ui, CS(AABBTest.Face));
         PushNewRow(Ui);
         if (AABBTest.Face)
         {
-          Color = GREEN;
+          /* r32 InsetWidth = 0.25f; */
+          r32 InsetWidth = 0.f;
+          u8 HiColor = GREEN;
+          switch (AABBTest.Face)
+          {
+            InvalidCase(FaceIndex_None);
+
+            case FaceIndex_Top:
+            {
+              v3 HighlightInset = V3(InsetWidth, InsetWidth, 0.f);
+              v3 MinHiP = MinP + (SelectionAABB.Radius*V3(0.f, 0.f, 2.f)) + HighlightInset;
+              v3 MaxHiP = MaxP - HighlightInset;
+              DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, Thickness*1.2f );
+            } break;
+
+            case FaceIndex_Bot:
+            {
+              v3 HighlightInset = V3(InsetWidth, InsetWidth, 0.f);
+              v3 MinHiP = MinP + HighlightInset;
+              v3 MaxHiP = MaxP - (SelectionAABB.Radius*V3(0.f, 0.f, 2.f)) - HighlightInset;
+              DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, Thickness*1.2f );
+            } break;
+
+            case FaceIndex_Left:
+            {
+              v3 HighlightInset = V3(0.f, InsetWidth, InsetWidth);
+              v3 MinHiP = MinP + HighlightInset;
+              v3 MaxHiP = MaxP - (SelectionAABB.Radius*V3(2.f, 0.f, 0.f)) - HighlightInset;
+              DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, Thickness*1.2f );
+            } break;
+
+            case FaceIndex_Right:
+            {
+              v3 HighlightInset = V3(0.f, InsetWidth, InsetWidth);
+              v3 MinHiP = MinP + (SelectionAABB.Radius*V3(2.f, 0.f, 0.f)) + HighlightInset;
+              v3 MaxHiP = MaxP - HighlightInset;
+              DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, Thickness*1.2f );
+            } break;
+
+            case FaceIndex_Front:
+            {
+              v3 HighlightInset = V3(InsetWidth, 0.f, InsetWidth);
+              v3 MinHiP = MinP + HighlightInset;
+              v3 MaxHiP = MaxP -(SelectionAABB.Radius*V3(0.f, 2.f, 0.f)) - HighlightInset;
+              DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, Thickness*1.2f );
+            } break;
+
+            case FaceIndex_Back:
+            {
+              v3 HighlightInset = V3(InsetWidth, 0.f, InsetWidth);
+              v3 MinHiP = MinP + (SelectionAABB.Radius*V3(0.f, 2.f, 0.f)) + HighlightInset;
+              v3 MaxHiP = MaxP - HighlightInset;
+              DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, Thickness*1.2f );
+            } break;
+          }
         }
       }
 
@@ -140,7 +193,7 @@ DoLevelEditor(engine_resources *Engine)
       DEBUG_DrawAABB( &OutlineAABB,
                       GetRenderP(World->ChunkDim, MinP-Offset, Camera),
                       GetRenderP(World->ChunkDim, MaxP+Offset, Camera),
-                      Color, Thickness);
+                      BaseColor, Thickness);
     }
 
 

@@ -206,6 +206,26 @@ DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, v3 MinP, v3 MaxP, u32 ColorI
   return;
 }
 
+void
+DEBUG_DrawSimSpaceAABB(engine_resources *Engine, v3 MinP, v3 MaxP, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  v3 P0 = GetRenderP(World->ChunkDim, MinP, Camera);
+  v3 P1 = GetRenderP(World->ChunkDim, MaxP, Camera);
+
+  untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
+  DEBUG_DrawAABB(&Mesh, P0, P1, ColorIndex, Thickness);
+}
+
+void
+DEBUG_DrawAABB(engine_resources *Engine, v3 MinP, v3 MaxP, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+  untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
+  DEBUG_DrawAABB(&Mesh, MinP, MaxP, ColorIndex, Thickness);
+}
+
 link_internal void
 DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, aabb Rect, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {

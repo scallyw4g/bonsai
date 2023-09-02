@@ -339,6 +339,13 @@ GetSimSpaceP(world *World, canonical_position P)
   return Result;
 }
 
+link_internal v3
+GetSimSpaceP(world *World, picked_voxel *P)
+{
+  v3 Result = GetSimSpaceP(World, Canonical_Position(P));
+  return Result;
+}
+
 link_internal v3i
 GetSimSpacePi(world *World, world_chunk *Chunk)
 {

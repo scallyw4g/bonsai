@@ -639,15 +639,6 @@ TraverseSurfaceToBoundary( world *World, world_chunk *Chunk, voxel_position Star
 }
 
 void
-DrawFolie(untextured_3d_geometry_buffer *Mesh, aabb *AABB)
-{
-  v3 RenderP = AABB->Center;
-  DrawVoxel( Mesh, RenderP, GREY, AABB->Radius*2);
-
-  return;
-}
-
-void
 DrawParticle(untextured_3d_geometry_buffer *Source, untextured_3d_geometry_buffer *Dest, u8 ColorIndex)
 {
   v4 FaceColors[VERTS_PER_FACE];

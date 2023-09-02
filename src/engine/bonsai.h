@@ -632,7 +632,7 @@ GetAbsoluteP( world_position P, chunk_dimension WorldChunkDim)
   return Result;
 }
 
-// FIXME(Jesse): this is misguided for-sure.  Will certainly fail when entities
+// TODO(Jesse): this is misguided for-sure.  Will certainly fail when entities
 // are far from the origin due to floating point percision issues.  Change
 // to a view-space computation.
 inline v3
