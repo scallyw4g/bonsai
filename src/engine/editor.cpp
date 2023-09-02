@@ -99,19 +99,14 @@ DoLevelEditor(engine_resources *Engine)
 
     if ( Editor->SelectionRegion[0].PickedChunk.Chunk )
     {
-      cp CP0 = Canonical_Position(&Editor->SelectionRegion[0]);
-      v3 P0 = GetRenderP(World->ChunkDim, CP0, Camera);
-
-      cp CP1 = CP0;
+      v3 P0 = GetAbsoluteP(&Editor->SelectionRegion[0]);
       v3 P1 = P0;
 
-
-      r32 Thickness = 0.075f;
+      r32 Thickness = 0.15f;
+      u8 Color = WHITE;
       if (Editor->SelectionRegion[1].PickedChunk.Chunk)
       {
-        CP1 = Canonical_Position(&Editor->SelectionRegion[1]);
-        P1 = GetRenderP(World->ChunkDim, CP1, Camera);
-        aabb SelectionAABB = AABBMinMax(P0, P1);
+        P1 = GetAbsoluteP(&Editor->SelectionRegion[1]);
 
         Thickness = 0.25f;
         u8 Green = WHITE;
@@ -120,32 +115,32 @@ DoLevelEditor(engine_resources *Engine)
       {
         if (Engine->MousedOverVoxel.PickedChunk.Chunk)
         {
-          CP1 = Canonical_Position(&Engine->MousedOverVoxel);
-          P1 = GetRenderP(World->ChunkDim, CP1, Camera);
+          P1 = GetAbsoluteP(&Engine->MousedOverVoxel);
         }
       }
 
       v3 MinP = Min(P0, P1);
       v3 MaxP = Max(P0, P1) + V3(1);
 
-      u8 SelectionBoxColor = WHITE;
-      aabb SelectionAABB = AABBMinMax(MinP, MaxP);
-
       maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection, Camera, World->ChunkDim);
       if (MaybeRay.Tag == Maybe_Yes)
       {
+        aabb SelectionAABB = AABBMinMax(P0, P1);
         aabb_intersect_result AABBTest = Intersect(SelectionAABB, &MaybeRay.Ray);
         PushColumn(Ui, CS(AABBTest.Face));
         PushNewRow(Ui);
-
         if (AABBTest.Face)
         {
-          SelectionBoxColor = GREEN;
+          Color = GREEN;
         }
       }
 
       untextured_3d_geometry_buffer OutlineAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
-      DEBUG_DrawAABB( &OutlineAABB, SelectionAABB, SelectionBoxColor, Thickness);
+      v3 Offset = V3(0.001f);
+      DEBUG_DrawAABB( &OutlineAABB,
+                      GetRenderP(World->ChunkDim, MinP-Offset, Camera),
+                      GetRenderP(World->ChunkDim, MaxP+Offset, Camera),
+                      Color, Thickness);
     }
 
 
