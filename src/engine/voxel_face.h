@@ -18,6 +18,7 @@
 /* global_variable v3 ShimmerFix = {}; */
 /* global_variable f32 ShimmerStrength = 0.0005f; */
 /* global_variable f32 ShimmerStrength = -0.0005f; */
+// TODO(Jesse): Remove this
 global_variable f32 ShimmerStrength = 0.f;
 global_variable v3 ShimmerFix = {{ShimmerStrength, ShimmerStrength, ShimmerStrength}};
 

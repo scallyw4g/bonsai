@@ -4096,9 +4096,10 @@ GetChunksIntersectingRay(world *World, ray *Ray, picked_world_chunk_static_buffe
         {
           aabb ChunkAABB = AABBMinDim( V3(World->ChunkDim*Chunk->WorldP), V3(World->ChunkDim) );
 
-          r32 tChunk = Intersect(ChunkAABB, Ray);
-          if ( tChunk != f32_MAX )
+          aabb_intersect_result IntersectResult = Intersect(ChunkAABB, Ray);
+          if ( IntersectResult.Face != FaceIndex_None )
           {
+            r32 tChunk = IntersectResult.t;
             if ( AllChunksBuffer ) { Push(AllChunksBuffer, Chunk, tChunk); }
 
             if (Chunk->FilledCount && tChunk < tChunkMin)

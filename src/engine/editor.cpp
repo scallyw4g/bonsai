@@ -171,11 +171,12 @@ DoLevelEditor(engine_resources *Engine)
     if (Input->LMB.Clicked)
     {
       cp P0 = Canonical_Position(&Engine->MousedOverVoxel);
+      cp P1 = Canonical_Position(&Editor->SelectionRegion[1]);
 
       world_update_op_shape Shape = {
         .Type = type_world_update_op_shape_params_rect,
         .world_update_op_shape_params_rect.P0 = P0,
-        .world_update_op_shape_params_rect.P1 = P0,
+        .world_update_op_shape_params_rect.P1 = P1,
       };
       QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Subtractive, &Shape, SafeTruncateU8(Editor->SelectedColorIndex), Engine->Memory);
     }

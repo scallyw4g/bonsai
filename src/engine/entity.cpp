@@ -1466,7 +1466,7 @@ link_internal b32
 Intersect(world *World, ray *Ray, entity *Entity)
 {
   aabb EntityAABB = GetSimSpaceAABB(World, Entity);
-  b32 Result = (Intersect(EntityAABB, Ray) != f32_MAX);
+  b32 Result = (Intersect(EntityAABB, Ray).Face != FaceIndex_None);
   return Result;
 }
 
