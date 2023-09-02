@@ -265,11 +265,11 @@ DoEngineDebugMenu(engine_resources *Engine)
     PushWindowStart(Ui, &WorldChunkWindow);
 
       if ( Clicked(&ButtonGroup, CSz("WorldChunks")) ||
-           Button(Ui, CSz("PickNewChunk"), (umm)"Pick" ^ (umm)"WorldChunks") )
+           Button(Ui, CSz("PickNewChunk"), (umm)"Pick"^(umm)"WorldChunks") )
       {
         EngineDebug->PickedChunkState = PickedChunkState_Hover;
       }
-      if (Button(Ui, CSz("RebuildMesh"), (umm)"RebuildMesh" ^ (umm)"WorldChunks"))
+      if (Button(Ui, CSz("RebuildMesh"), (umm)"RebuildMesh"^(umm)"WorldChunks"))
       {
         QueueChunkForMeshRebuild(&Plat->LowPriority, EngineDebug->PickedChunk);
       }
