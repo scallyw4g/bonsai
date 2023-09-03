@@ -60,7 +60,7 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *
   Result[ModelIndex_Bitty0] = LoadVoxModel(Memory, Heap, "models/splotion_bitty_0.vox", Memory);
   Result[ModelIndex_Bitty1] = LoadVoxModel(Memory, Heap, "models/splotion_bitty_1.vox", Memory);
 
-  Result[ModelIndex_FirstPlayerModel] = LoadObj(Memory, Heap, "models/test/nature_pack.obj");
+  /* Result[ModelIndex_FirstPlayerModel] = LoadObj(Memory, Heap, "models/test/nature_pack.obj"); */
 
   return Result;
 }
@@ -488,7 +488,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
 #if 1
   /* u32 PlayerModelIndex = RandomBetween( u32(ModelIndex_FirstPlayerModel), &GameState->Entropy, u32(ModelIndex_LastPlayerModel+1)); */
-  u32 PlayerModelIndex = ModelIndex_FirstPlayerModel;
+  /* u32 PlayerModelIndex = ModelIndex_FirstPlayerModel; */
+  u32 PlayerModelIndex = ModelIndex_Player_old;
   GameState->Player = GetFreeEntity(EntityTable);
   SpawnPlayerLikeEntity(Plat, World, GameState->Models + PlayerModelIndex, GameState->Player, PlayerSpawnP, &GameState->Entropy);
 #endif
