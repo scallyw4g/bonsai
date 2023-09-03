@@ -1,32 +1,4 @@
 
-
-link_internal maybe_v3
-GetIntersectionForSelectionEditorFace(engine_resources *Engine, v3 PlaneBaseP, face_index Face, ray *MouseRay)
-{
-  UNPACK_ENGINE_RESOURCES(Engine);
-
-  v3 Normal = NormalForFace(Face);
-  v3 PerpN  = Cross(Normal, Camera->Front);
-  v3 PlaneN = Cross(Normal, PerpN);
-
-  /* auto Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_LINE*3); */
-
-  /* v3 BaseP = GetRenderP(Engine, MaxP); */
-  /* DEBUG_DrawVectorAt(&Mesh, BaseP, Normal *10.f, BLUE,  0.5); */
-  /* DEBUG_DrawVectorAt(&Mesh, BaseP, PerpN  *10.f, GREEN, 0.5); */
-  /* DEBUG_DrawVectorAt(&Mesh, BaseP, PlaneN *10.f, RED, 0.5); */
-
-  maybe_v3 Result = {};
-
-
-  f32 tRay = {};
-  Result.Tag = (maybe_tag)Intersect(PlaneN, PlaneBaseP, MouseRay->Origin, MouseRay->Dir, &tRay);
-  Result.V3 = MouseRay->Origin + (MouseRay->Dir*tRay);
-  DEBUG_HighlightVoxel(Engine, Result.V3, RED);
-
-  return Result;
-}
-
 link_internal void
 DoLevelEditor(engine_resources *Engine)
 {
@@ -156,13 +128,14 @@ DoLevelEditor(engine_resources *Engine)
         aabb_intersect_result AABBTest = Intersect(SelectionAABB, &Ray);
         PushColumn(Ui, CS(AABBTest.Face));
         PushNewRow(Ui);
-        if (AABBTest.Face)
+        face_index Face = AABBTest.Face;
+        if (Face)
         {
           /* r32 InsetWidth = 0.25f; */
           r32 InsetWidth  = 0.f;
           r32 HiThickness = Thickness*1.2f;
           u8  HiColor     = GREEN;
-          switch (AABBTest.Face)
+          switch (Face)
           {
             InvalidCase(FaceIndex_None);
 
@@ -219,33 +192,51 @@ DoLevelEditor(engine_resources *Engine)
           if (Input->Shift.Pressed && Input->LMB.Clicked)
           {
             v3 PlaneBaseP = Ray.Origin + (AABBTest.t*Ray.Dir);
-            Editor->SelectionClickedFace = AABBTest.Face;
+            Editor->SelectionClickedFace = Face;
             Editor->SelectionClickedP[0] = PlaneBaseP;
             Editor->SelectionFacePendingClicks = 1;
           }
         }
 
 
+        if (Editor->SelectionFacePendingClicks == 1)
         {
-          if (Editor->SelectionFacePendingClicks == 1)
+          v3 Normal = NormalForFace(Editor->SelectionClickedFace);
+          v3 PerpN  = Cross(Normal, Camera->Front);
+          v3 PlaneN = Cross(Normal, PerpN);
+
+          f32 tRay = {};
+          if (Intersect(PlaneN, Editor->SelectionClickedP[0], Ray.Origin, Ray.Dir, &tRay))
           {
-            maybe_v3 Maybe = GetIntersectionForSelectionEditorFace(Engine, Editor->SelectionClickedP[0], Editor->SelectionClickedFace, &Ray);
-            if (Maybe.Tag == Maybe_Yes)
+            v3 PlaneIntersect = Ray.Origin + (Ray.Dir*tRay);
+            DEBUG_HighlightVoxel(Engine, PlaneIntersect, RED);
+            if (Input->LMB.Pressed)
             {
-              if (Input->LMB.Pressed)
-              {
-                Editor->SelectionClickedP[1] = Maybe.V3;
-              }
-              else
-              {
-                Editor->SelectionFacePendingClicks = 0;
-              }
+              Editor->SelectionClickedP[1] = PlaneIntersect;
+            }
+            else
+            {
+              Editor->SelectionFacePendingClicks = 0;
             }
           }
         }
 
-        DEBUG_HighlightVoxel(Engine, Editor->SelectionClickedP[0], RED);
-        DEBUG_HighlightVoxel(Engine, Editor->SelectionClickedP[1], BLUE);
+        if (Editor->SelectionClickedFace)
+        {
+          v3 Normal = NormalForFace(Editor->SelectionClickedFace);
+          DEBUG_HighlightVoxel(Engine, Editor->SelectionClickedP[0], RED);
+          DEBUG_HighlightVoxel(Engine, Editor->SelectionClickedP[1], BLUE);
+          DEBUG_DrawSimSpaceVectorAt(Engine,
+              Editor->SelectionClickedP[0],
+              Abs(Normal)*(Editor->SelectionClickedP[1] - Editor->SelectionClickedP[0]) , GREEN);
+
+          /* GetModifiedSelectionAABB(); */
+        }
+      }
+
+      if (Editor->SelectionFacePendingClicks == 0)
+      {
+        // Make new dim permanent
       }
 
       untextured_3d_geometry_buffer OutlineAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);

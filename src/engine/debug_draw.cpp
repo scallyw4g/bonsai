@@ -114,7 +114,17 @@ DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh, v3 P1, v3 P2, u32 ColorInde
 }
 
 inline void
-DEBUG_DrawVectorAt(untextured_3d_geometry_buffer *Mesh, v3 Offset, v3 Vector, u32 ColorIndex, r32 Thickness )
+DEBUG_DrawSimSpaceVectorAt(engine_resources *Engine, v3 SimP, v3 Vector, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+  untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_LINE);
+
+  v3 Offset = GetRenderP(Engine, SimP);
+  DEBUG_DrawLine(&Mesh, Offset, Vector + Offset, ColorIndex, Thickness );
+}
+
+inline void
+DEBUG_DrawVectorAt(untextured_3d_geometry_buffer *Mesh, v3 Offset, v3 Vector, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {
   DEBUG_DrawLine(Mesh, Offset, Vector + Offset, ColorIndex, Thickness );
 }
