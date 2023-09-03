@@ -1,11 +1,11 @@
 
 
 link_internal maybe_v3
-GetIntersectionForSelectionEditorFace(engine_resources *Engine, aabb_intersect_result *SelectionIntersection, ray *MouseRay)
+GetIntersectionForSelectionEditorFace(engine_resources *Engine, v3 PlaneBaseP, face_index Face, ray *MouseRay)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  v3 Normal = NormalForFace(SelectionIntersection->Face);
+  v3 Normal = NormalForFace(Face);
   v3 PerpN  = Cross(Normal, Camera->Front);
   v3 PlaneN = Cross(Normal, PerpN);
 
@@ -18,10 +18,9 @@ GetIntersectionForSelectionEditorFace(engine_resources *Engine, aabb_intersect_r
 
   maybe_v3 Result = {};
 
-  v3 BaseP = GetRenderP(Engine, MouseRay->Origin + (SelectionIntersection->t*MouseRay->Dir));
 
   f32 tRay = {};
-  Result.Tag = (maybe_tag)Intersect(PlaneN, BaseP, MouseRay->Origin, MouseRay->Dir, &tRay);
+  Result.Tag = (maybe_tag)Intersect(PlaneN, PlaneBaseP, MouseRay->Origin, MouseRay->Dir, &tRay);
   Result.V3 = MouseRay->Origin + (MouseRay->Dir*tRay);
   DEBUG_HighlightVoxel(Engine, Result.V3, RED);
 
@@ -217,27 +216,36 @@ DoLevelEditor(engine_resources *Engine)
           }
 
 
-          if (Input->Shift.Pressed)
+          if (Input->Shift.Pressed && Input->LMB.Clicked)
           {
-            maybe_v3 Maybe = GetIntersectionForSelectionEditorFace(Engine, &AABBTest, &Ray);
+            v3 PlaneBaseP = Ray.Origin + (AABBTest.t*Ray.Dir);
+            Editor->SelectionClickedFace = AABBTest.Face;
+            Editor->SelectionClickedP[0] = PlaneBaseP;
+            Editor->SelectionFacePendingClicks = 1;
+          }
+        }
+
+
+        {
+          if (Editor->SelectionFacePendingClicks == 1)
+          {
+            maybe_v3 Maybe = GetIntersectionForSelectionEditorFace(Engine, Editor->SelectionClickedP[0], Editor->SelectionClickedFace, &Ray);
             if (Maybe.Tag == Maybe_Yes)
             {
-              if (Input->LMB.Clicked)
+              if (Input->LMB.Pressed)
               {
-                Editor->SelectionClickedFace = AABBTest.Face;
-                Editor->SelectionClickedP = Maybe.V3;
+                Editor->SelectionClickedP[1] = Maybe.V3;
+              }
+              else
+              {
+                Editor->SelectionFacePendingClicks = 0;
               }
             }
           }
         }
 
-
-        if (Input->LMB.Pressed)
-        {
-          if (Editor->SelectionClickedFace)
-          {
-          }
-        }
+        DEBUG_HighlightVoxel(Engine, Editor->SelectionClickedP[0], RED);
+        DEBUG_HighlightVoxel(Engine, Editor->SelectionClickedP[1], BLUE);
       }
 
       untextured_3d_geometry_buffer OutlineAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);

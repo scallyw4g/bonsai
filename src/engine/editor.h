@@ -19,8 +19,9 @@ struct level_editor
   u32 SelectPendingClicks;
   picked_voxel SelectionRegion[2];
 
+  u32 SelectionFacePendingClicks;
   face_index SelectionClickedFace;
-  v3 SelectionClickedP;
+  v3 SelectionClickedP[2];
 };
 
 struct maybe_v3
