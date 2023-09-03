@@ -1,6 +1,5 @@
 inline void
-DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh,
-                v3 P1, v3 P2, u32 ColorIndex, r32 Thickness )
+DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh, v3 P1, v3 P2, u32 ColorIndex, r32 Thickness )
 {
   // 2 verts per line, 3 r32s per vert
 
@@ -8,13 +7,13 @@ DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh,
 
   v3 localNormalData[] =
   {
-    {{0, 0, 0}},
-    {{0, 0, 0}},
-    {{0, 0, 0}},
+    {{1, 0, 0}},
+    {{1, 0, 0}},
+    {{1, 0, 0}},
 
-    {{0, 0, 0}},
-    {{0, 0, 0}},
-    {{0, 0, 0}},
+    {{1, 0, 0}},
+    {{1, 0, 0}},
+    {{1, 0, 0}},
   };
 
   /* P1.x = P1.x - (Thickness/2.0f); */
