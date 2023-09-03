@@ -1,5 +1,33 @@
 
 
+link_internal maybe_v3
+GetIntersectionForSelectionEditorFace(engine_resources *Engine, aabb_intersect_result *SelectionIntersection, ray *MouseRay)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  v3 Normal = NormalForFace(SelectionIntersection->Face);
+  v3 PerpN  = Cross(Normal, Camera->Front);
+  v3 PlaneN = Cross(Normal, PerpN);
+
+  /* auto Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_LINE*3); */
+
+  /* v3 BaseP = GetRenderP(Engine, MaxP); */
+  /* DEBUG_DrawVectorAt(&Mesh, BaseP, Normal *10.f, BLUE,  0.5); */
+  /* DEBUG_DrawVectorAt(&Mesh, BaseP, PerpN  *10.f, GREEN, 0.5); */
+  /* DEBUG_DrawVectorAt(&Mesh, BaseP, PlaneN *10.f, RED, 0.5); */
+
+  maybe_v3 Result = {};
+
+  v3 BaseP = GetRenderP(Engine, MouseRay->Origin + (SelectionIntersection->t*MouseRay->Dir));
+
+  f32 tRay = {};
+  Result.Tag = (maybe_tag)Intersect(PlaneN, BaseP, MouseRay->Origin, MouseRay->Dir, &tRay);
+  Result.V3 = MouseRay->Origin + (MouseRay->Dir*tRay);
+  DEBUG_HighlightVoxel(Engine, Result.V3, RED);
+
+  return Result;
+}
+
 link_internal void
 DoLevelEditor(engine_resources *Engine)
 {
@@ -188,28 +216,26 @@ DoLevelEditor(engine_resources *Engine)
             } break;
           }
 
-          v3 Normal = NormalForFace(AABBTest.Face);
 
           if (Input->Shift.Pressed)
           {
-            v3 PerpN = Cross(Normal, Camera->Front);
-            v3 PlaneN = Cross(Normal, PerpN);
-
-            auto Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_LINE*3);
-
-            v3 BaseP = GetRenderP(Engine, MaxP);
-            DEBUG_DrawVectorAt(&Mesh, BaseP, Normal *10.f, BLUE,  0.5);
-            DEBUG_DrawVectorAt(&Mesh, BaseP, PerpN  *10.f, GREEN, 0.5);
-            DEBUG_DrawVectorAt(&Mesh, BaseP, PlaneN *10.f, RED, 0.5);
-
-            f32 tRay = {};
-            if (Intersect(PlaneN, BaseP, Ray.Origin, Ray.Dir, &tRay))
+            maybe_v3 Maybe = GetIntersectionForSelectionEditorFace(Engine, &AABBTest, &Ray);
+            if (Maybe.Tag == Maybe_Yes)
             {
-              v3 IntersectP = Ray.Origin + (Ray.Dir*tRay);
-              DEBUG_HighlightVoxel(Engine, IntersectP, RED);
-
-
+              if (Input->LMB.Clicked)
+              {
+                Editor->SelectionClickedFace = AABBTest.Face;
+                Editor->SelectionClickedP = Maybe.V3;
+              }
             }
+          }
+        }
+
+
+        if (Input->LMB.Pressed)
+        {
+          if (Editor->SelectionClickedFace)
+          {
           }
         }
       }

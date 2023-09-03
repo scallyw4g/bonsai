@@ -120,11 +120,3 @@ Intersect(v3 PlaneNormal, v3 PlaneOrigin, v3 RayOrigin, v3 RayDir, f32 *tRay)
 
   return Result;
 }
-/* // TODO(Jesse): Remove this? */
-/* link_internal f32 */
-/* Intersect(aabb AABB, ray Ray) */
-/* { */
-/*   f32 Result = Intersect(AABB, &Ray); */
-/*   return Result; */
-/* } */
-

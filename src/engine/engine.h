@@ -17,6 +17,7 @@
 #include <engine/ray.h>
 #include <engine/mesh.h>
 
+#include <engine/editor.h>
 #include <engine/resources.h>
 
 #include <engine/world_chunk.h>
