@@ -198,3 +198,4 @@ operator-(canonical_position P1, canonical_position P2)
   return Result;
 }
 
+link_internal cp SimSpaceToCanonical( world *World, v3 P );

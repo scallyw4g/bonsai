@@ -124,8 +124,9 @@ DoLevelEditor(engine_resources *Engine)
       maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection, Camera, World->ChunkDim);
       if (MaybeRay.Tag == Maybe_Yes)
       {
+        ray Ray = MaybeRay.Ray;
         aabb SelectionAABB = AABBMinMax(MinP, MaxP);
-        aabb_intersect_result AABBTest = Intersect(SelectionAABB, &MaybeRay.Ray);
+        aabb_intersect_result AABBTest = Intersect(SelectionAABB, &Ray);
         PushColumn(Ui, CS(AABBTest.Face));
         PushNewRow(Ui);
         if (AABBTest.Face)
@@ -191,13 +192,24 @@ DoLevelEditor(engine_resources *Engine)
 
           if (Input->Shift.Pressed)
           {
-            v3 PerpN = Perp(Normal);
+            v3 PerpN = Cross(Normal, Camera->Front);
+            v3 PlaneN = Cross(Normal, PerpN);
 
-            auto Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_LINE*2);
+            auto Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_LINE*3);
 
             v3 BaseP = GetRenderP(Engine, MaxP);
-            DEBUG_DrawVectorAt(&Mesh, BaseP, Normal*100.f, BLUE,  0.5);
-            DEBUG_DrawVectorAt(&Mesh, BaseP, PerpN *100.f, GREEN, 0.5);
+            DEBUG_DrawVectorAt(&Mesh, BaseP, Normal *10.f, BLUE,  0.5);
+            DEBUG_DrawVectorAt(&Mesh, BaseP, PerpN  *10.f, GREEN, 0.5);
+            DEBUG_DrawVectorAt(&Mesh, BaseP, PlaneN *10.f, RED, 0.5);
+
+            f32 tRay = {};
+            if (Intersect(PlaneN, BaseP, Ray.Origin, Ray.Dir, &tRay))
+            {
+              v3 IntersectP = Ray.Origin + (Ray.Dir*tRay);
+              DEBUG_HighlightVoxel(Engine, IntersectP, RED);
+
+
+            }
           }
         }
       }

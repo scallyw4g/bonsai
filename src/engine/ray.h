@@ -104,6 +104,22 @@ Intersect(aabb AABB, ray *Ray)
   return {Face, tmin};
 }
 
+
+// https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection.html
+link_internal b32
+Intersect(v3 PlaneNormal, v3 PlaneOrigin, v3 RayOrigin, v3 RayDir, f32 *tRay)
+{
+  b32 Result = False;
+
+  f32 denom = Abs(Dot(PlaneNormal, RayDir));
+  if (denom > 1e-6f) {
+      v3 RayOriginToPlaneOrigin = PlaneOrigin - RayOrigin;
+      *tRay = Abs(Dot(RayOriginToPlaneOrigin, PlaneNormal) / denom); 
+      Result = (*tRay >= 0.f);
+  }
+
+  return Result;
+}
 /* // TODO(Jesse): Remove this? */
 /* link_internal f32 */
 /* Intersect(aabb AABB, ray Ray) */

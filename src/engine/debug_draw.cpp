@@ -258,6 +258,13 @@ DEBUG_HighlightVoxel(engine_resources *Engine, cp P, u32 ColorIndex, r32 Thickne
 }
 
 link_internal void
+DEBUG_HighlightVoxel(engine_resources *Engine, v3 SimP, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
+{
+  cp P = SimSpaceToCanonical(Engine->World, SimP);
+  DEBUG_HighlightVoxel(Engine, P, ColorIndex, Thickness);
+}
+
+link_internal void
 DEBUG_DrawChunkAABB( untextured_3d_geometry_buffer *Mesh, graphics *Graphics, world_position WorldP,
                      chunk_dimension WorldChunkDim, u32 ColorIndex , r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
