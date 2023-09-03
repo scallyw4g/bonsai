@@ -80,44 +80,43 @@ DoLevelEditor(engine_resources *Engine)
   {
     if (Input->LMB.Clicked)
     {
-      switch (Editor->SelectPendingClicks)
+      // TODO(Jesse): This can be a totally collapsed by using SelectionClicks as the index
+      switch (Editor->SelectionClicks)
       {
-        case 2:
+        case 0:
         {
-          Editor->SelectPendingClicks -= 1;
-          Editor->SelectionRegion[0] = Engine->MousedOverVoxel;
+          Editor->SelectionClicks += 1;
+          Editor->SelectionRegion[0] = GetSimSpaceP(World, &Engine->MousedOverVoxel);
         } break;
 
         case 1:
         {
-          Editor->SelectPendingClicks -= 1;
-          Editor->SelectionRegion[1] = Engine->MousedOverVoxel;
+          Editor->SelectionClicks += 1;
+          Editor->SelectionRegion[1] = GetSimSpaceP(World, &Engine->MousedOverVoxel);
         } break;
       }
     }
+  }
 
-    if ( Editor->SelectionRegion[0].PickedChunk.Chunk )
+  {
+    if (Editor->SelectionClicks)
     {
-      v3 P0 = GetSimSpaceP(World, &Editor->SelectionRegion[0]);
-      v3 P1 = P0;
+      v3 P0 = Editor->SelectionRegion[0];
+      v3 P1 = Editor->SelectionRegion[1];
 
-      r32 Thickness = 0.15f;
-      if (Editor->SelectionRegion[1].PickedChunk.Chunk)
-      {
-        P1 = GetSimSpaceP(World, &Editor->SelectionRegion[1]);
-
-        Thickness = 0.25f;
-      }
+      r32 Thickness = 0.10f;
+      if (Editor->SelectionClicks == 2) { Thickness = 0.20f; }
       else
       {
+        // NOTE(Jesse): Only update P1 if we haven't done 2 clicks
         if (Engine->MousedOverVoxel.PickedChunk.Chunk)
         {
           P1 = GetSimSpaceP(World, &Engine->MousedOverVoxel);
         }
       }
 
-      v3 MinP = Min(P0, P1);
-      v3 MaxP = Max(P0, P1) + V3(1);
+      v3 MinP = Floor(Min(P0, P1));
+      v3 MaxP = Floor(Max(P0, P1) + V3(1));
 
       u8 BaseColor = WHITE;
       maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection, Camera, World->ChunkDim);
@@ -165,8 +164,7 @@ DoLevelEditor(engine_resources *Engine)
 
             case FaceIndex_Right:
             {
-              v3 HighlightInset = V3(0.f, InsetWidth, InsetWidth);
-              v3 MinHiP = MinP + (SelectionAABB.Radius*V3(2.f, 0.f, 0.f)) + HighlightInset;
+              v3 HighlightInset = V3(0.f, InsetWidth, InsetWidth); v3 MinHiP = MinP + (SelectionAABB.Radius*V3(2.f, 0.f, 0.f)) + HighlightInset;
               v3 MaxHiP = MaxP - HighlightInset;
               DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
             } break;
@@ -251,15 +249,15 @@ DoLevelEditor(engine_resources *Engine)
 
 
 
-    if (Input->Shift.Pressed && Editor->SelectPendingClicks == 0 && Input->LMB.Pressed)
-    {
-    }
+    /* if (Input->Shift.Pressed && Editor->SelectionClicks == 0 && Input->LMB.Pressed) */
+    /* { */
+    /* } */
 
   }
 
   if (Clicked(&ButtonGroup, CSz("Select")))
   {
-    Editor->SelectPendingClicks = 2;
+    Editor->SelectionClicks = 0;
     Editor->SelectionRegion[0] = {};
     Editor->SelectionRegion[1] = {};
   }
@@ -268,13 +266,10 @@ DoLevelEditor(engine_resources *Engine)
   {
     if (Input->LMB.Clicked)
     {
-      cp P0 = Canonical_Position(&Editor->SelectionRegion[0]);
-      cp P1 = Canonical_Position(&Editor->SelectionRegion[1]);
-
       world_update_op_shape Shape = {
         .Type = type_world_update_op_shape_params_rect,
-        .world_update_op_shape_params_rect.P0 = P0,
-        .world_update_op_shape_params_rect.P1 = P1,
+        .world_update_op_shape_params_rect.P0 = Editor->SelectionRegion[0],
+        .world_update_op_shape_params_rect.P1 = Editor->SelectionRegion[1],
       };
       QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, SafeTruncateU8(Editor->SelectedColorIndex), Engine->Memory);
     }
@@ -284,7 +279,7 @@ DoLevelEditor(engine_resources *Engine)
   {
     if (Input->LMB.Clicked)
     {
-      cp P0 = Canonical_Position(&Engine->MousedOverVoxel);
+      v3 P0 = GetSimSpaceP(World, &Engine->MousedOverVoxel);
 
       world_update_op_shape Shape = {
         .Type = type_world_update_op_shape_params_rect,
@@ -300,13 +295,13 @@ DoLevelEditor(engine_resources *Engine)
     if (Input->LMB.Clicked)
     {
       /* cp P0 = Canonical_Position(&Engine->MousedOverVoxel); */
-      cp P0 = Canonical_Position(&Editor->SelectionRegion[0]);
-      cp P1 = Canonical_Position(&Editor->SelectionRegion[1]);
+      /* cp P0 = Canonical_Position(&Editor->SelectionRegion[0]); */
+      /* cp P1 = Canonical_Position(&Editor->SelectionRegion[1]); */
 
       world_update_op_shape Shape = {
         .Type = type_world_update_op_shape_params_rect,
-        .world_update_op_shape_params_rect.P0 = P0,
-        .world_update_op_shape_params_rect.P1 = P1,
+        .world_update_op_shape_params_rect.P0 = Editor->SelectionRegion[0],
+        .world_update_op_shape_params_rect.P1 = Editor->SelectionRegion[1],
       };
       QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Subtractive, &Shape, SafeTruncateU8(Editor->SelectedColorIndex), Engine->Memory);
     }

@@ -3564,11 +3564,11 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
     {
       world_update_op_shape_params_rect *ShapeRect = SafeCast(world_update_op_shape_params_rect, Shape);
 
-      v3 P0Sim = GetSimSpaceP(World, ShapeRect->P0);
-      v3 P1Sim = GetSimSpaceP(World, ShapeRect->P1);
+      /* v3 P0Sim = GetSimSpaceP(World, ShapeRect->P0); */
+      /* v3 P1Sim = GetSimSpaceP(World, ShapeRect->P1); */
 
-      v3 MinP0 = Min(P0Sim, P1Sim);
-      v3 MaxP0 = Max(P0Sim, P1Sim);
+      v3 MinP0 = Min(ShapeRect->P0, ShapeRect->P1);
+      v3 MaxP0 = Max(ShapeRect->P0, ShapeRect->P1);
 
       MinPCoarse = SimSpaceToCanonical(World, MinP0 - V3(1) - V3(Global_ChunkApronMinDim));
       MaxPCoarse = SimSpaceToCanonical(World, MaxP0 + V3(2) + V3(Global_ChunkApronMaxDim));
@@ -3785,8 +3785,9 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
             {
               world_update_op_shape_params_rect *Rect = SafeCast(world_update_op_shape_params_rect, &Shape);
 
-              v3i P0SS = V3i(GetSimSpaceP(World, Rect->P0));
-              v3i P1SS = V3i(GetSimSpaceP(World, Rect->P1));
+              // NOTE(Jesse): These _should_ already be min/maxed, so we can change these to asserts.
+              v3i P0SS = V3i(Rect->P0);
+              v3i P1SS = V3i(Rect->P1);
 
               v3i MinSS = Min(P0SS, P1SS);
               v3i MaxSS = Max(P0SS, P1SS);

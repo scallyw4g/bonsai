@@ -16,8 +16,8 @@ struct level_editor
   interactable SelectedColorSquare;
   s32 SelectedColorIndex;
 
-  u32 SelectPendingClicks;
-  picked_voxel SelectionRegion[2];
+  u32 SelectionClicks;
+  v3 SelectionRegion[2];
 
   u32 SelectionFacePendingClicks;
   face_index SelectionClickedFace;

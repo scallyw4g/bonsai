@@ -72,8 +72,9 @@ struct world_update_op_shape_params_sphere
 struct world_update_op_shape_params_rect
 {
   /* rect3 UpdateBounds; */
-  cp P0;
-  cp P1;
+  // NOTE(Jesse): These are in sim space
+  v3 P0;
+  v3 P1;
 };
 
 struct world_update_op_shape
