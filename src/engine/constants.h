@@ -1,7 +1,7 @@
 // 6 verticies per face, 6 faces per voxel
 #define VERTS_PER_FACE (6)
 #define VERTS_PER_VOXEL (VERTS_PER_FACE*6)
-#define VERTS_PER_PARTICLE VERTS_PER_VOXEL
+#define VERTS_PER_PARTICLE (VERTS_PER_VOXEL)
 #define VERTS_PER_LINE (18)
 
 

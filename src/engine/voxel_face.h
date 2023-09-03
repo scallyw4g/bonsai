@@ -32,6 +32,20 @@ global_variable v3 FrontPlane = {{ 1.f, 0.f, 1.f }};
 global_variable v3 BackPlane  = {{ 1.f, 0.f, 1.f }};
 
 
+enum face_index
+{
+  FaceIndex_None,
+
+  FaceIndex_Left,
+  FaceIndex_Right,
+  FaceIndex_Front,
+  FaceIndex_Back,
+  FaceIndex_Top,
+  FaceIndex_Bot,
+};
+
+
+
 inline void
 RightFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
@@ -238,4 +252,50 @@ global_variable v3 BottomFaceNormalData[] =
   {{0, 0, -1}},
   {{0, 0, -1}},
 };
+
+
+
+
+link_internal v3
+NormalForFace(face_index Face)
+{
+  v3 Result;
+  switch (Face)
+  {
+    InvalidCase(FaceIndex_None);
+
+    case FaceIndex_Top:
+    {
+      Result = V3(0, 0, 1);
+    } break;
+
+    case FaceIndex_Bot:
+    {
+      Result = V3(0, 0, -1);
+    } break;
+
+    case FaceIndex_Left:
+    {
+      Result = V3(-1, 0, 0);
+    } break;
+
+    case FaceIndex_Right:
+    {
+      Result = V3(1, 0, 0);
+    } break;
+
+    case FaceIndex_Front:
+    {
+      Result = V3(0, 1, 0);
+    } break;
+
+    case FaceIndex_Back:
+    {
+      Result = V3(0, -1, 0);
+    } break;
+  }
+
+  return Result;
+}
+
 

@@ -131,8 +131,9 @@ DoLevelEditor(engine_resources *Engine)
         if (AABBTest.Face)
         {
           /* r32 InsetWidth = 0.25f; */
-          r32 InsetWidth = 0.f;
-          u8 HiColor = GREEN;
+          r32 InsetWidth  = 0.f;
+          r32 HiThickness = Thickness*1.2f;
+          u8  HiColor     = GREEN;
           switch (AABBTest.Face)
           {
             InvalidCase(FaceIndex_None);
@@ -142,7 +143,7 @@ DoLevelEditor(engine_resources *Engine)
               v3 HighlightInset = V3(InsetWidth, InsetWidth, 0.f);
               v3 MinHiP = MinP + (SelectionAABB.Radius*V3(0.f, 0.f, 2.f)) + HighlightInset;
               v3 MaxHiP = MaxP - HighlightInset;
-              DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, Thickness*1.2f );
+              DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
             } break;
 
             case FaceIndex_Bot:
@@ -150,7 +151,7 @@ DoLevelEditor(engine_resources *Engine)
               v3 HighlightInset = V3(InsetWidth, InsetWidth, 0.f);
               v3 MinHiP = MinP + HighlightInset;
               v3 MaxHiP = MaxP - (SelectionAABB.Radius*V3(0.f, 0.f, 2.f)) - HighlightInset;
-              DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, Thickness*1.2f );
+              DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
             } break;
 
             case FaceIndex_Left:
@@ -158,7 +159,7 @@ DoLevelEditor(engine_resources *Engine)
               v3 HighlightInset = V3(0.f, InsetWidth, InsetWidth);
               v3 MinHiP = MinP + HighlightInset;
               v3 MaxHiP = MaxP - (SelectionAABB.Radius*V3(2.f, 0.f, 0.f)) - HighlightInset;
-              DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, Thickness*1.2f );
+              DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
             } break;
 
             case FaceIndex_Right:
@@ -166,7 +167,7 @@ DoLevelEditor(engine_resources *Engine)
               v3 HighlightInset = V3(0.f, InsetWidth, InsetWidth);
               v3 MinHiP = MinP + (SelectionAABB.Radius*V3(2.f, 0.f, 0.f)) + HighlightInset;
               v3 MaxHiP = MaxP - HighlightInset;
-              DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, Thickness*1.2f );
+              DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
             } break;
 
             case FaceIndex_Front:
@@ -174,7 +175,7 @@ DoLevelEditor(engine_resources *Engine)
               v3 HighlightInset = V3(InsetWidth, 0.f, InsetWidth);
               v3 MinHiP = MinP + HighlightInset;
               v3 MaxHiP = MaxP -(SelectionAABB.Radius*V3(0.f, 2.f, 0.f)) - HighlightInset;
-              DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, Thickness*1.2f );
+              DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
             } break;
 
             case FaceIndex_Back:
@@ -182,8 +183,21 @@ DoLevelEditor(engine_resources *Engine)
               v3 HighlightInset = V3(InsetWidth, 0.f, InsetWidth);
               v3 MinHiP = MinP + (SelectionAABB.Radius*V3(0.f, 2.f, 0.f)) + HighlightInset;
               v3 MaxHiP = MaxP - HighlightInset;
-              DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, Thickness*1.2f );
+              DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
             } break;
+          }
+
+          v3 Normal = NormalForFace(AABBTest.Face);
+
+          if (Input->Shift.Pressed)
+          {
+            v3 PerpN = Perp(Normal);
+
+            auto Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_LINE*2);
+
+            v3 BaseP = GetRenderP(Engine, MaxP);
+            DEBUG_DrawVectorAt(&Mesh, BaseP, Normal*100.f, BLUE,  0.5);
+            DEBUG_DrawVectorAt(&Mesh, BaseP, PerpN *100.f, GREEN, 0.5);
           }
         }
       }

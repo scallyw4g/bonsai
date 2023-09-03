@@ -14,6 +14,7 @@
 #include <engine/graphics.h>
 
 #include <engine/voxel_face.h>
+#include <engine/ray.h>
 #include <engine/mesh.h>
 
 #include <engine/resources.h>
