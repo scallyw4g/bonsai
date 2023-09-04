@@ -3792,8 +3792,8 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
               v3i MinSS = Min(P0SS, P1SS);
               v3i MaxSS = Max(P0SS, P1SS);
 
-              MinSS += ClampNegative(GetSign(MinSS));
-              MaxSS += Clamp01(GetSign(MaxSS));
+              /* MinSS += ClampNegative(GetSign(MinSS)); */
+              /* MaxSS += 1; */
 
               rect3i SSRect = {MinSS, MaxSS};
               if (Contains(SSRect, SimSpaceVoxPExact))

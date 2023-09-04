@@ -1,4 +1,70 @@
 
+/* link_internal rect3i */
+/* GetModifiedSelectionAABB(v3 *SelectionRegion, v3 UpdateVector, face_index Face) */
+/* { */
+/*   rect3i Result = { */
+/*     .Min = V3i(SelectionRegion[0]), */
+/*     .Max = V3i(SelectionRegion[1]), */
+/*   }; */
+
+/*   switch (Face) */
+/*   { */
+/*     InvalidCase(FaceIndex_None); */
+
+/*     case FaceIndex_Top: */
+/*     { */
+
+/*     } break; */
+
+/*     case FaceIndex_Bot: */
+/*     { */
+/*     } break; */
+
+/*     case FaceIndex_Left: */
+/*     { */
+/*     } break; */
+
+/*     case FaceIndex_Right: */
+/*     { */
+/*     } break; */
+
+/*     case FaceIndex_Front: */
+/*     { */
+/*     } break; */
+
+/*     case FaceIndex_Back: */
+/*     { */
+/*     } break; */
+/*   } */
+
+/*   return Result; */
+/* } */
+
+/* link_internal void */
+/* UpdateSelectedRegion(v3 *SelectionRegion, v3 P) */
+/* { */
+/*   auto P0 = SelectionRegion[0]; */
+/*   auto P1 = SelectionRegion[1]; */
+
+/*   SelectionRegion[0] = Floor(Min(P0, P)); */
+/*   SelectionRegion[1] = Floor(Max(P1, P)); */
+/* } */
+
+link_internal v3
+GetMin(v3 *SelectionRegion)
+{
+  v3 Result = Min(SelectionRegion[0], SelectionRegion[1]);
+  return Result;
+}
+
+link_internal v3
+GetMax(v3 *SelectionRegion)
+{
+  v3 Result = Max(SelectionRegion[0], SelectionRegion[1]) + 1;
+  return Result;
+}
+
+
 link_internal void
 DoLevelEditor(engine_resources *Engine)
 {
@@ -86,13 +152,15 @@ DoLevelEditor(engine_resources *Engine)
         case 0:
         {
           Editor->SelectionClicks += 1;
-          Editor->SelectionRegion[0] = GetSimSpaceP(World, &Engine->MousedOverVoxel);
+          auto MouseP = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel));
+
+          Editor->SelectionRegion[0] = MouseP;
+          Editor->SelectionRegion[1] = MouseP;
         } break;
 
         case 1:
         {
           Editor->SelectionClicks += 1;
-          Editor->SelectionRegion[1] = GetSimSpaceP(World, &Engine->MousedOverVoxel);
         } break;
       }
     }
@@ -101,22 +169,21 @@ DoLevelEditor(engine_resources *Engine)
   {
     if (Editor->SelectionClicks)
     {
-      v3 P0 = Editor->SelectionRegion[0];
-      v3 P1 = Editor->SelectionRegion[1];
 
       r32 Thickness = 0.10f;
-      if (Editor->SelectionClicks == 2) { Thickness = 0.20f; }
-      else
+
+      if (Editor->SelectionClicks < 2)
       {
-        // NOTE(Jesse): Only update P1 if we haven't done 2 clicks
         if (Engine->MousedOverVoxel.PickedChunk.Chunk)
         {
-          P1 = GetSimSpaceP(World, &Engine->MousedOverVoxel);
+          auto MouseP = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel));
+          Editor->SelectionRegion[1] = MouseP;
         }
       }
+      else { Thickness = 0.20f; }
 
-      v3 MinP = Floor(Min(P0, P1));
-      v3 MaxP = Floor(Max(P0, P1) + V3(1));
+      v3 MinP = GetMin(Editor->SelectionRegion);
+      v3 MaxP = GetMax(Editor->SelectionRegion);
 
       u8 BaseColor = WHITE;
       maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection, Camera, World->ChunkDim);
@@ -221,14 +288,12 @@ DoLevelEditor(engine_resources *Engine)
 
         if (Editor->SelectionClickedFace)
         {
-          v3 Normal = NormalForFace(Editor->SelectionClickedFace);
           DEBUG_HighlightVoxel(Engine, Editor->SelectionClickedP[0], RED);
           DEBUG_HighlightVoxel(Engine, Editor->SelectionClickedP[1], BLUE);
-          DEBUG_DrawSimSpaceVectorAt(Engine,
-              Editor->SelectionClickedP[0],
-              Abs(Normal)*(Editor->SelectionClickedP[1] - Editor->SelectionClickedP[0]) , GREEN);
 
-          /* GetModifiedSelectionAABB(); */
+          v3 Normal = NormalForFace(Editor->SelectionClickedFace);
+          v3 UpdateVector = Abs(Normal)*(Editor->SelectionClickedP[1] - Editor->SelectionClickedP[0]);
+          DEBUG_DrawSimSpaceVectorAt(Engine, Editor->SelectionClickedP[0], UpdateVector, GREEN);
         }
       }
 
@@ -268,8 +333,8 @@ DoLevelEditor(engine_resources *Engine)
     {
       world_update_op_shape Shape = {
         .Type = type_world_update_op_shape_params_rect,
-        .world_update_op_shape_params_rect.P0 = Editor->SelectionRegion[0],
-        .world_update_op_shape_params_rect.P1 = Editor->SelectionRegion[1],
+        .world_update_op_shape_params_rect.P0 = GetMin(Editor->SelectionRegion),
+        .world_update_op_shape_params_rect.P1 = GetMax(Editor->SelectionRegion),
       };
       QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, SafeTruncateU8(Editor->SelectedColorIndex), Engine->Memory);
     }
@@ -279,14 +344,17 @@ DoLevelEditor(engine_resources *Engine)
   {
     if (Input->LMB.Clicked)
     {
-      v3 P0 = GetSimSpaceP(World, &Engine->MousedOverVoxel);
+      if (Engine->MousedOverVoxel.PickedChunk.Chunk)
+      {
+        v3 P0 = GetSimSpaceP(World, &Engine->MousedOverVoxel);
 
-      world_update_op_shape Shape = {
-        .Type = type_world_update_op_shape_params_rect,
-        .world_update_op_shape_params_rect.P0 = P0,
-        .world_update_op_shape_params_rect.P1 = P0,
-      };
-      QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, SafeTruncateU8(Editor->SelectedColorIndex), Engine->Memory);
+        world_update_op_shape Shape = {
+          .Type = type_world_update_op_shape_params_rect,
+          .world_update_op_shape_params_rect.P0 = P0,
+          .world_update_op_shape_params_rect.P1 = P0,
+        };
+        QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, SafeTruncateU8(Editor->SelectedColorIndex), Engine->Memory);
+      }
     }
   }
 
@@ -300,8 +368,8 @@ DoLevelEditor(engine_resources *Engine)
 
       world_update_op_shape Shape = {
         .Type = type_world_update_op_shape_params_rect,
-        .world_update_op_shape_params_rect.P0 = Editor->SelectionRegion[0],
-        .world_update_op_shape_params_rect.P1 = Editor->SelectionRegion[1],
+        .world_update_op_shape_params_rect.P0 = GetMin(Editor->SelectionRegion),
+        .world_update_op_shape_params_rect.P1 = GetMax(Editor->SelectionRegion),
       };
       QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Subtractive, &Shape, SafeTruncateU8(Editor->SelectedColorIndex), Engine->Memory);
     }

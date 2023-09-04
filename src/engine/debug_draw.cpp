@@ -245,10 +245,19 @@ DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, aabb Rect, u32 ColorIndex, r
 }
 
 link_internal void
-DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, rect3i Rect, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
+DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, rect3i *Rect, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {
-  DEBUG_DrawAABB( Mesh, V3(Rect.Min), V3(Rect.Max), ColorIndex, Thickness );
+  DEBUG_DrawAABB( Mesh, V3(Rect->Min), V3(Rect->Max), ColorIndex, Thickness );
 }
+
+void
+DEBUG_DrawAABB(engine_resources *Engine, rect3i *Rect, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+  untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
+  DEBUG_DrawAABB(&Mesh, Rect, ColorIndex, Thickness);
+}
+
 
 link_internal void
 DEBUG_HighlightVoxel(untextured_3d_geometry_buffer *Mesh, world *World, camera *Camera, cp P, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
