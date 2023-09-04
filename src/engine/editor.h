@@ -19,9 +19,9 @@ struct level_editor
   u32 SelectionClicks;
   v3 SelectionRegion[2];
 
-  u32 SelectionFacePendingClicks;
-  face_index SelectionClickedFace;
-  v3 SelectionClickedP[2];
+  // Recorded when shift-clicking on the selection to manipulate it
+  face_index SelectionShiftClickedFace;
+  v3 SelectionShiftClickedP[2];
 };
 
 struct maybe_v3

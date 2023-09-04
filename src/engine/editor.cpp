@@ -1,4 +1,46 @@
 
+link_internal rect3i
+ModifySelectionAABB(v3 *SelectionRegion, v3 UpdateVector, face_index Face)
+{
+  rect3i Result = {
+    .Min = V3i(SelectionRegion[0]),
+    .Max = V3i(SelectionRegion[1]),
+  };
+
+  switch (Face)
+  {
+    InvalidCase(FaceIndex_None);
+
+    case FaceIndex_Top:
+    {
+      Result.Max += V3i(0, 0, (s32)Floorf(UpdateVector.z+1.f) );
+    } break;
+
+    case FaceIndex_Bot:
+    {
+    } break;
+
+    case FaceIndex_Left:
+    {
+    } break;
+
+    case FaceIndex_Right:
+    {
+    } break;
+
+    case FaceIndex_Front:
+    {
+    } break;
+
+    case FaceIndex_Back:
+    {
+    } break;
+  }
+
+  return Result;
+}
+
+
 link_internal v3
 GetMin(v3 *SelectionRegion)
 {
@@ -95,6 +137,7 @@ DoLevelEditor(engine_resources *Engine)
   {
     if (Input->LMB.Clicked)
     {
+      // TODO(Jesse): This can be a totally collapsed by using SelectionClicks as the index
       switch (Editor->SelectionClicks)
       {
         case 0:
@@ -109,6 +152,12 @@ DoLevelEditor(engine_resources *Engine)
         case 1:
         {
           Editor->SelectionClicks += 1;
+
+          v3 P0 = Editor->SelectionRegion[0];
+          v3 P1 = Editor->SelectionRegion[1];
+
+          Editor->SelectionRegion[0] = Min(P0, P1);
+          Editor->SelectionRegion[1] = Max(P0, P1);
         } break;
       }
     }
@@ -117,6 +166,7 @@ DoLevelEditor(engine_resources *Engine)
   {
     if (Editor->SelectionClicks)
     {
+
       r32 Thickness = 0.10f;
 
       if (Editor->SelectionClicks < 2)
@@ -204,50 +254,59 @@ DoLevelEditor(engine_resources *Engine)
           if (Input->Shift.Pressed && Input->LMB.Clicked)
           {
             v3 PlaneBaseP = Ray.Origin + (AABBTest.t*Ray.Dir);
-            Editor->SelectionClickedFace = Face;
-            Editor->SelectionClickedP[0] = PlaneBaseP;
-            Editor->SelectionFacePendingClicks = 1;
+            Editor->SelectionShiftClickedFace = Face;
+            Editor->SelectionShiftClickedP[0] = PlaneBaseP;
           }
         }
 
+        /* if (Editor->SelectionShiftClickedFace && */ 
+        /* { */
+        /* } */
 
-        if (Editor->SelectionFacePendingClicks == 1)
+        if (Editor->SelectionShiftClickedFace)
         {
-          v3 Normal = NormalForFace(Editor->SelectionClickedFace);
+          v3 Normal = NormalForFace(Editor->SelectionShiftClickedFace);
           v3 PerpN  = Cross(Normal, Camera->Front);
           v3 PlaneN = Cross(Normal, PerpN);
 
           f32 tRay = {};
-          if (Intersect(PlaneN, Editor->SelectionClickedP[0], Ray.Origin, Ray.Dir, &tRay))
+          if (Intersect(PlaneN, Editor->SelectionShiftClickedP[0], Ray.Origin, Ray.Dir, &tRay))
           {
             v3 PlaneIntersect = Ray.Origin + (Ray.Dir*tRay);
             DEBUG_HighlightVoxel(Engine, PlaneIntersect, RED);
             if (Input->LMB.Pressed)
             {
-              Editor->SelectionClickedP[1] = PlaneIntersect;
-            }
-            else
-            {
-              Editor->SelectionFacePendingClicks = 0;
+              Editor->SelectionShiftClickedP[1] = PlaneIntersect;
             }
           }
-        }
 
-        if (Editor->SelectionClickedFace)
-        {
-          DEBUG_HighlightVoxel(Engine, Editor->SelectionClickedP[0], RED);
-          DEBUG_HighlightVoxel(Engine, Editor->SelectionClickedP[1], BLUE);
+          DEBUG_HighlightVoxel(Engine, Editor->SelectionShiftClickedP[0], RED);
+          DEBUG_HighlightVoxel(Engine, Editor->SelectionShiftClickedP[1], BLUE);
 
-          v3 Normal = NormalForFace(Editor->SelectionClickedFace);
-          v3 UpdateVector = Abs(Normal)*(Editor->SelectionClickedP[1] - Editor->SelectionClickedP[0]);
-          DEBUG_DrawSimSpaceVectorAt(Engine, Editor->SelectionClickedP[0], UpdateVector, GREEN);
+          /* v3 Normal = NormalForFace(Editor->SelectionShiftClickedFace); */
+          v3 UpdateVector = Abs(Normal)*(Editor->SelectionShiftClickedP[1] - Editor->SelectionShiftClickedP[0]);
+          DEBUG_DrawSimSpaceVectorAt(Engine, Editor->SelectionShiftClickedP[0], UpdateVector, GREEN);
+
+          rect3i NewDims = ModifySelectionAABB(Editor->SelectionRegion, UpdateVector, Editor->SelectionShiftClickedFace);
+          /* if (Editor->SelectionFacePendingClicks == 1) */
+          {
+
+            v3 P0 = GetRenderP(Engine, V3(NewDims.Min));
+            v3 P1 = GetRenderP(Engine, V3(NewDims.Max)) + 1;
+            DEBUG_DrawAABB(Engine, P0, P1, WHITE, 0.1f);
+          }
+
+          if (!Input->LMB.Pressed)
+          {
+            Editor->SelectionShiftClickedFace = FaceIndex_None;
+
+            // Make new dim permanent
+            Editor->SelectionRegion[0] = V3(NewDims.Min);
+            Editor->SelectionRegion[1] = V3(NewDims.Max);
+          }
         }
       }
 
-      if (Editor->SelectionFacePendingClicks == 0)
-      {
-        // Make new dim permanent
-      }
 
       untextured_3d_geometry_buffer OutlineAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
       v3 Offset = V3(0.001f);
