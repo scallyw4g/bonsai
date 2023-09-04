@@ -62,13 +62,13 @@ Intersect(aabb AABB, ray *Ray)
   r32 tymin = (AABBMin.y - Ray->Origin.y) / Ray->Dir.y;
   r32 tymax = (AABBMax.y - Ray->Origin.y) / Ray->Dir.y;
 
-  face_index yFace = FaceIndex_Front;
+  face_index yFace = FaceIndex_Back;
   if (tymin > tymax)
   {
     r32 temp = tymin;
     tymin = tymax;
     tymax = temp;
-    yFace = FaceIndex_Back;
+    yFace = FaceIndex_Front;
   }
 
   if ((tmin > tymax) || (tymin > tmax))

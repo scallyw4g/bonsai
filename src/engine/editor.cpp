@@ -18,22 +18,27 @@ ModifySelectionAABB(v3 *SelectionRegion, v3 UpdateVector, face_index Face)
 
     case FaceIndex_Bot:
     {
+      Result.Min += V3i(0, 0, (s32)Floorf(UpdateVector.z+1.f) );
     } break;
 
     case FaceIndex_Left:
     {
+      Result.Min += V3i((s32)Floorf(UpdateVector.x+1.f), 0, 0 );
     } break;
 
     case FaceIndex_Right:
     {
+      Result.Max += V3i((s32)Floorf(UpdateVector.x+1.f), 0, 0 );
     } break;
 
     case FaceIndex_Front:
     {
+      Result.Max += V3i(0, (s32)Floorf(UpdateVector.y+1.f), 0 );
     } break;
 
     case FaceIndex_Back:
     {
+      Result.Min += V3i(0, (s32)Floorf(UpdateVector.y+1.f), 0 );
     } break;
   }
 
@@ -188,10 +193,13 @@ DoLevelEditor(engine_resources *Engine)
       {
         ray Ray = MaybeRay.Ray;
         aabb SelectionAABB = AABBMinMax(MinP, MaxP);
+
         aabb_intersect_result AABBTest = Intersect(SelectionAABB, &Ray);
-        PushColumn(Ui, CS(AABBTest.Face));
-        PushNewRow(Ui);
         face_index Face = AABBTest.Face;
+        /* face_index Face = FaceIndex_Top; //AABBTest.Face; */
+
+        PushColumn(Ui, CS(Face));
+        PushNewRow(Ui);
         if (Face)
         {
           /* r32 InsetWidth = 0.25f; */
@@ -233,15 +241,15 @@ DoLevelEditor(engine_resources *Engine)
               DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
             } break;
 
-            case FaceIndex_Front:
+            case FaceIndex_Back:
             {
               v3 HighlightInset = V3(InsetWidth, 0.f, InsetWidth);
               v3 MinHiP = MinP + HighlightInset;
-              v3 MaxHiP = MaxP -(SelectionAABB.Radius*V3(0.f, 2.f, 0.f)) - HighlightInset;
+              v3 MaxHiP = MaxP - (SelectionAABB.Radius*V3(0.f, 2.f, 0.f)) - HighlightInset;
               DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
             } break;
 
-            case FaceIndex_Back:
+            case FaceIndex_Front:
             {
               v3 HighlightInset = V3(InsetWidth, 0.f, InsetWidth);
               v3 MinHiP = MinP + (SelectionAABB.Radius*V3(0.f, 2.f, 0.f)) + HighlightInset;
