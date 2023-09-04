@@ -1,55 +1,4 @@
 
-/* link_internal rect3i */
-/* GetModifiedSelectionAABB(v3 *SelectionRegion, v3 UpdateVector, face_index Face) */
-/* { */
-/*   rect3i Result = { */
-/*     .Min = V3i(SelectionRegion[0]), */
-/*     .Max = V3i(SelectionRegion[1]), */
-/*   }; */
-
-/*   switch (Face) */
-/*   { */
-/*     InvalidCase(FaceIndex_None); */
-
-/*     case FaceIndex_Top: */
-/*     { */
-
-/*     } break; */
-
-/*     case FaceIndex_Bot: */
-/*     { */
-/*     } break; */
-
-/*     case FaceIndex_Left: */
-/*     { */
-/*     } break; */
-
-/*     case FaceIndex_Right: */
-/*     { */
-/*     } break; */
-
-/*     case FaceIndex_Front: */
-/*     { */
-/*     } break; */
-
-/*     case FaceIndex_Back: */
-/*     { */
-/*     } break; */
-/*   } */
-
-/*   return Result; */
-/* } */
-
-/* link_internal void */
-/* UpdateSelectedRegion(v3 *SelectionRegion, v3 P) */
-/* { */
-/*   auto P0 = SelectionRegion[0]; */
-/*   auto P1 = SelectionRegion[1]; */
-
-/*   SelectionRegion[0] = Floor(Min(P0, P)); */
-/*   SelectionRegion[1] = Floor(Max(P1, P)); */
-/* } */
-
 link_internal v3
 GetMin(v3 *SelectionRegion)
 {
@@ -146,7 +95,6 @@ DoLevelEditor(engine_resources *Engine)
   {
     if (Input->LMB.Clicked)
     {
-      // TODO(Jesse): This can be a totally collapsed by using SelectionClicks as the index
       switch (Editor->SelectionClicks)
       {
         case 0:
@@ -169,7 +117,6 @@ DoLevelEditor(engine_resources *Engine)
   {
     if (Editor->SelectionClicks)
     {
-
       r32 Thickness = 0.10f;
 
       if (Editor->SelectionClicks < 2)
@@ -310,14 +257,6 @@ DoLevelEditor(engine_resources *Engine)
                       BaseColor, Thickness);
     }
 
-
-
-
-
-    /* if (Input->Shift.Pressed && Editor->SelectionClicks == 0 && Input->LMB.Pressed) */
-    /* { */
-    /* } */
-
   }
 
   if (Clicked(&ButtonGroup, CSz("Select")))
@@ -362,10 +301,6 @@ DoLevelEditor(engine_resources *Engine)
   {
     if (Input->LMB.Clicked)
     {
-      /* cp P0 = Canonical_Position(&Engine->MousedOverVoxel); */
-      /* cp P0 = Canonical_Position(&Editor->SelectionRegion[0]); */
-      /* cp P1 = Canonical_Position(&Editor->SelectionRegion[1]); */
-
       world_update_op_shape Shape = {
         .Type = type_world_update_op_shape_params_rect,
         .world_update_op_shape_params_rect.P0 = GetMin(Editor->SelectionRegion),
