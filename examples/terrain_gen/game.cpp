@@ -152,14 +152,6 @@ CustomTerrainExample( perlin_noise *Noise,
   return ChunkSum;
 }
 
-// NOTE(Jesse): This function gets called for each worker thread at engine
-// startup, but not the main thread!
-BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
-{
-  Global_ThreadStates = AllThreads;
-  SetThreadLocal_ThreadIndex(ThreadIndex);
-}
-
 // NOTE(Jesse): This is the worker thread loop.  Your game can choose to provide
 // implementations for the thread jobs.  If you handle a job, return True, and
 // if you want the engine to handle it, return False.

@@ -188,13 +188,6 @@ HoodooTerrain( perlin_noise *Noise,
   return ChunkSum;
 }
 
-
-BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
-{
-  Global_ThreadStates = AllThreads;
-  SetThreadLocal_ThreadIndex(ThreadIndex);
-}
-
 BONSAI_API_WORKER_THREAD_CALLBACK()
 {
   b32 Result = True;

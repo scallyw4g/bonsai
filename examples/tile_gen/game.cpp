@@ -73,9 +73,3 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   return GameState;
 }
-
-BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
-{
-  Global_ThreadStates = AllThreads;
-  SetThreadLocal_ThreadIndex(ThreadIndex);
-}

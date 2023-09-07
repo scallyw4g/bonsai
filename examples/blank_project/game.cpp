@@ -10,8 +10,6 @@
 // thread at engine startup, but not the main thread!
 BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
 {
-  Global_ThreadStates = AllThreads;
-  SetThreadLocal_ThreadIndex(ThreadIndex);
 }
 
 // NOTE(Jesse): This is an optional function that you may use to override
