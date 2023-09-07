@@ -95,7 +95,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   Graphics->Lighting.Lights.Count = 0;
 
-  DoEngineDebugMenu(Resources);
+  DoEngineDebug(Resources);
 
   b32 Result = True;
   return Result;
@@ -104,7 +104,6 @@ Bonsai_FrameBegin(engine_resources *Resources)
 link_export b32
 Bonsai_FrameEnd(engine_resources *Resources)
 {
-  /* DoEngineDebugMenu(Resources); */
   UiFrameEnd(&Resources->Ui);
 
   b32 Result = True;
@@ -264,16 +263,6 @@ Bonsai_Render(engine_resources *Resources)
 
   /* DebugVisualize(Ui, &Resources->MeshFreelist); */
   /* DebugVisualize(Ui, Resources->World->FreeChunks, (s32)Resources->World->FreeChunkCount); */
-
-
-  {
-    /* DoEngineDebugMenu(Ui); */
-
-    // NOTE(Jesse): This should probably render the last such that we can
-    // capture all the debug tracking info we want to
-    /* Ui->ScreenDim = V2(Plat->WindowWidth, Plat->WindowHeight); */
-    /* FlushCommandBuffer(Ui, Ui->CommandBuffer); */
-  }
 
   b32 Result = True;
   return Result;

@@ -30,3 +30,11 @@ struct maybe_v3
   v3 V3;
 };
 
+
+enum selection_mode
+{
+  SelectionMode_Noop,
+
+  SelectionMode_Resize,
+  SelectionMode_Translate,
+};

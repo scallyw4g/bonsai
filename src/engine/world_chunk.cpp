@@ -3594,11 +3594,11 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
   Assert(u32(MaxP.Offset.x) % u32(Global_StandingSpotDim.x) == 0 );
   Assert(u32(MaxP.Offset.y) % u32(Global_StandingSpotDim.y) == 0 );
 
-  {
-    r32 Thickness = 0.15f;
-    DEBUG_HighlightVoxel(Engine, MinP, BLUE, Thickness);
-    DEBUG_HighlightVoxel(Engine, MaxP, RED, Thickness);
-  }
+  /* { */
+  /*   r32 Thickness = 0.15f; */
+  /*   DEBUG_HighlightVoxel(Engine, MinP, BLUE, Thickness); */
+  /*   DEBUG_HighlightVoxel(Engine, MaxP, RED, Thickness); */
+  /* } */
 
   /* world_position Delta = Max(MaxP.WorldP - MinP.WorldP, World_Position(1)); */
   world_position Delta = MaxP.WorldP - MinP.WorldP + 1;
@@ -4303,13 +4303,6 @@ MousePickVoxel(engine_resources *Resources)
       v3 MinP =  V3(ClosestChunk->WorldP * World->ChunkDim);
       v3 VoxelP = MinP + Truncate(Result.Picks[PickedVoxel_FirstFilled]);
 
-      untextured_3d_geometry_buffer OutlineAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
-      v3 Offset = V3(0.001f);
-      DEBUG_DrawAABB( &OutlineAABB,
-                      GetRenderP(World->ChunkDim, VoxelP-Offset, Camera),
-                      GetRenderP(World->ChunkDim, VoxelP+V3(1.f)+Offset, Camera),
-                      WHITE, 0.05f);
-
       // Highlight standing spot we're hovering over
       for (u32 StandingSpotIndex = 0;
                StandingSpotIndex < AtElements(&ClosestChunk->StandingSpots);
@@ -4343,6 +4336,8 @@ MousePickVoxel(engine_resources *Resources)
 #endif
     }
 
+#if 0
+    // NOTE(Jesse): This is using absolute space coordinate nonsense
     if (Picked)
     {
       v3 MinP =  V3(PickedVoxel.PickedChunk.Chunk->WorldP * World->ChunkDim);
@@ -4354,8 +4349,8 @@ MousePickVoxel(engine_resources *Resources)
       untextured_3d_geometry_buffer ChunkAABBMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
       auto ChunkAABB = AABBMinDim( GetRenderP(World->ChunkDim, MinP, Camera), V3(World->ChunkDim));
       DEBUG_DrawAABB(&ChunkAABBMesh, ChunkAABB, RED);
-
     }
+#endif
 
     if (Hotkeys->Debug_Action_ComputeStandingSpot)
     {

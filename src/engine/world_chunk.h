@@ -283,9 +283,9 @@ StandingSpot(v3 Offset, world_position WP)
 }
 
 inline canonical_position
-Canonical_Position(picked_voxel *V)
+Canonical_Position(picked_voxel *V, picked_voxel_position Pos = PickedVoxel_FirstFilled)
 {
-  canonical_position Result = Canonical_Position(V->Picks[PickedVoxel_FirstFilled], V->PickedChunk.Chunk->WorldP);
+  canonical_position Result = Canonical_Position(V->Picks[Pos], V->PickedChunk.Chunk->WorldP);
   return Result;
 }
 
@@ -340,9 +340,9 @@ GetSimSpaceP(world *World, canonical_position P)
 }
 
 link_internal v3
-GetSimSpaceP(world *World, picked_voxel *P)
+GetSimSpaceP(world *World, picked_voxel *P, picked_voxel_position Pos = PickedVoxel_FirstFilled)
 {
-  v3 Result = GetSimSpaceP(World, Canonical_Position(P));
+  v3 Result = GetSimSpaceP(World, Canonical_Position(P, Pos));
   return Result;
 }
 

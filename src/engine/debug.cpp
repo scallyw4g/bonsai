@@ -226,6 +226,7 @@ DebugUi(engine_resources *Engine, cs Name, interactable *Value)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
+  Text(Ui, Name);
   DebugValue(Ui, &Value->ID);
   DebugValue(Ui, &Value->MinP);
   DebugValue(Ui, &Value->MaxP);
@@ -234,7 +235,7 @@ DebugUi(engine_resources *Engine, cs Name, interactable *Value)
 
 
 link_internal void
-DoEngineDebugMenu(engine_resources *Engine)
+DoEngineDebug(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -355,4 +356,5 @@ DoEngineDebugMenu(engine_resources *Engine)
       PushTableEnd(Ui);
     PushWindowEnd(Ui, &Window);
   }
+
 }

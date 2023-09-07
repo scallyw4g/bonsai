@@ -1,6 +1,6 @@
 
 link_internal rect3i
-ModifySelectionAABB(v3 *SelectionRegion, v3 UpdateVector, face_index Face)
+ModifySelectionAABB(v3 *SelectionRegion, v3 UpdateVector, face_index Face, selection_mode Mode)
 {
   rect3i Result = {
     .Min = V3i(SelectionRegion[0]),
@@ -14,31 +14,55 @@ ModifySelectionAABB(v3 *SelectionRegion, v3 UpdateVector, face_index Face)
     case FaceIndex_Top:
     {
       Result.Max += V3i(0, 0, (s32)Floorf(UpdateVector.z+1.f) );
+      if (Mode == SelectionMode_Translate)
+      {
+        Result.Min += V3i(0, 0, (s32)Floorf(UpdateVector.z+1.f) );
+      }
     } break;
 
     case FaceIndex_Bot:
     {
       Result.Min += V3i(0, 0, (s32)Floorf(UpdateVector.z+1.f) );
+      if (Mode == SelectionMode_Translate)
+      {
+        Result.Max += V3i(0, 0, (s32)Floorf(UpdateVector.z+1.f) );
+      }
     } break;
 
     case FaceIndex_Left:
     {
       Result.Min += V3i((s32)Floorf(UpdateVector.x+1.f), 0, 0 );
+      if (Mode == SelectionMode_Translate)
+      {
+        Result.Max += V3i((s32)Floorf(UpdateVector.x+1.f), 0, 0 );
+      }
     } break;
 
     case FaceIndex_Right:
     {
       Result.Max += V3i((s32)Floorf(UpdateVector.x+1.f), 0, 0 );
+      if (Mode == SelectionMode_Translate)
+      {
+        Result.Min += V3i((s32)Floorf(UpdateVector.x+1.f), 0, 0 );
+      }
     } break;
 
     case FaceIndex_Front:
     {
       Result.Max += V3i(0, (s32)Floorf(UpdateVector.y+1.f), 0 );
+      if (Mode == SelectionMode_Translate)
+      {
+        Result.Min += V3i(0, (s32)Floorf(UpdateVector.y+1.f), 0 );
+      }
     } break;
 
     case FaceIndex_Back:
     {
       Result.Min += V3i(0, (s32)Floorf(UpdateVector.y+1.f), 0 );
+      if (Mode == SelectionMode_Translate)
+      {
+        Result.Max += V3i(0, (s32)Floorf(UpdateVector.y+1.f), 0 );
+      }
     } break;
   }
 
@@ -102,7 +126,7 @@ DoLevelEditor(engine_resources *Engine)
         PushBorder(Ui, RectMinMax(Ui->Hover.MinP+Padding.xy, Ui->Hover.MinP+Padding.xy+QuadDim), BorderColor, V4(BorderDim));
 
         Engine->Editor.SelectedColorSquare = Ui->Clicked;
-        Engine->Editor.SelectedColorIndex = ColorIndex;
+        Engine->Editor.SelectedColorIndex  = ColorIndex;
       }
 
       if (Engine->Editor.SelectedColorIndex == ColorIndex)
@@ -142,7 +166,6 @@ DoLevelEditor(engine_resources *Engine)
   {
     if (Input->LMB.Clicked)
     {
-      // TODO(Jesse): This can be a totally collapsed by using SelectionClicks as the index
       switch (Editor->SelectionClicks)
       {
         case 0:
@@ -168,163 +191,167 @@ DoLevelEditor(engine_resources *Engine)
     }
   }
 
+  if (Editor->SelectionClicks)
   {
-    if (Editor->SelectionClicks)
+
+    r32 Thickness = 0.10f;
+
+    if (Editor->SelectionClicks < 2)
     {
-
-      r32 Thickness = 0.10f;
-
-      if (Editor->SelectionClicks < 2)
+      if (Engine->MousedOverVoxel.PickedChunk.Chunk)
       {
-        if (Engine->MousedOverVoxel.PickedChunk.Chunk)
-        {
-          auto MouseP = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel));
-          Editor->SelectionRegion[1] = MouseP;
-        }
+        auto MouseP = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel));
+        Editor->SelectionRegion[1] = MouseP;
       }
-      else { Thickness = 0.20f; }
+    }
+    else { Thickness = 0.20f; }
 
-      v3 MinP = GetMin(Editor->SelectionRegion);
-      v3 MaxP = GetMax(Editor->SelectionRegion);
+    v3 SelectionMinP = GetMin(Editor->SelectionRegion);
+    v3 SelectionMaxP = GetMax(Editor->SelectionRegion);
 
-      u8 BaseColor = WHITE;
-      maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection, Camera, World->ChunkDim);
-      if (MaybeRay.Tag == Maybe_Yes)
+    u8 BaseColor = WHITE;
+    maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection, Camera, World->ChunkDim);
+    if (MaybeRay.Tag == Maybe_Yes)
+    {
+      ray Ray = MaybeRay.Ray;
+      aabb SelectionAABB = AABBMinMax(SelectionMinP, SelectionMaxP);
+
+      aabb_intersect_result AABBTest = Intersect(SelectionAABB, &Ray);
+      face_index Face = AABBTest.Face;
+
+      PushColumn(Ui, CS(Face));
+      PushNewRow(Ui);
+      if (Face)
       {
-        ray Ray = MaybeRay.Ray;
-        aabb SelectionAABB = AABBMinMax(MinP, MaxP);
-
-        aabb_intersect_result AABBTest = Intersect(SelectionAABB, &Ray);
-        face_index Face = AABBTest.Face;
-        /* face_index Face = FaceIndex_Top; //AABBTest.Face; */
-
-        PushColumn(Ui, CS(Face));
-        PushNewRow(Ui);
-        if (Face)
+        /* r32 InsetWidth = 0.25f; */
+        r32 InsetWidth  = 0.f;
+        r32 HiThickness = Thickness*1.2f;
+        u8  HiColor     = GREEN;
+        switch (Face)
         {
-          /* r32 InsetWidth = 0.25f; */
-          r32 InsetWidth  = 0.f;
-          r32 HiThickness = Thickness*1.2f;
-          u8  HiColor     = GREEN;
-          switch (Face)
+          InvalidCase(FaceIndex_None);
+
+          case FaceIndex_Top:
           {
-            InvalidCase(FaceIndex_None);
+            v3 HighlightInset = V3(InsetWidth, InsetWidth, 0.f);
+            v3 MinHiP = SelectionMinP + (SelectionAABB.Radius*V3(0.f, 0.f, 2.f)) + HighlightInset;
+            v3 MaxHiP = SelectionMaxP - HighlightInset;
+            DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
+          } break;
 
-            case FaceIndex_Top:
-            {
-              v3 HighlightInset = V3(InsetWidth, InsetWidth, 0.f);
-              v3 MinHiP = MinP + (SelectionAABB.Radius*V3(0.f, 0.f, 2.f)) + HighlightInset;
-              v3 MaxHiP = MaxP - HighlightInset;
-              DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
-            } break;
-
-            case FaceIndex_Bot:
-            {
-              v3 HighlightInset = V3(InsetWidth, InsetWidth, 0.f);
-              v3 MinHiP = MinP + HighlightInset;
-              v3 MaxHiP = MaxP - (SelectionAABB.Radius*V3(0.f, 0.f, 2.f)) - HighlightInset;
-              DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
-            } break;
-
-            case FaceIndex_Left:
-            {
-              v3 HighlightInset = V3(0.f, InsetWidth, InsetWidth);
-              v3 MinHiP = MinP + HighlightInset;
-              v3 MaxHiP = MaxP - (SelectionAABB.Radius*V3(2.f, 0.f, 0.f)) - HighlightInset;
-              DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
-            } break;
-
-            case FaceIndex_Right:
-            {
-              v3 HighlightInset = V3(0.f, InsetWidth, InsetWidth); v3 MinHiP = MinP + (SelectionAABB.Radius*V3(2.f, 0.f, 0.f)) + HighlightInset;
-              v3 MaxHiP = MaxP - HighlightInset;
-              DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
-            } break;
-
-            case FaceIndex_Back:
-            {
-              v3 HighlightInset = V3(InsetWidth, 0.f, InsetWidth);
-              v3 MinHiP = MinP + HighlightInset;
-              v3 MaxHiP = MaxP - (SelectionAABB.Radius*V3(0.f, 2.f, 0.f)) - HighlightInset;
-              DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
-            } break;
-
-            case FaceIndex_Front:
-            {
-              v3 HighlightInset = V3(InsetWidth, 0.f, InsetWidth);
-              v3 MinHiP = MinP + (SelectionAABB.Radius*V3(0.f, 2.f, 0.f)) + HighlightInset;
-              v3 MaxHiP = MaxP - HighlightInset;
-              DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
-            } break;
-          }
-
-
-          if (Input->Shift.Pressed && Input->LMB.Clicked)
+          case FaceIndex_Bot:
           {
-            v3 PlaneBaseP = Ray.Origin + (AABBTest.t*Ray.Dir);
-            Editor->SelectionShiftClickedFace = Face;
-            Editor->SelectionShiftClickedP[0] = PlaneBaseP;
-          }
+            v3 HighlightInset = V3(InsetWidth, InsetWidth, 0.f);
+            v3 MinHiP = SelectionMinP + HighlightInset;
+            v3 MaxHiP = SelectionMaxP - (SelectionAABB.Radius*V3(0.f, 0.f, 2.f)) - HighlightInset;
+            DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
+          } break;
+
+          case FaceIndex_Left:
+          {
+            v3 HighlightInset = V3(0.f, InsetWidth, InsetWidth);
+            v3 MinHiP = SelectionMinP + HighlightInset;
+            v3 MaxHiP = SelectionMaxP - (SelectionAABB.Radius*V3(2.f, 0.f, 0.f)) - HighlightInset;
+            DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
+          } break;
+
+          case FaceIndex_Right:
+          {
+            v3 HighlightInset = V3(0.f, InsetWidth, InsetWidth); v3 MinHiP = SelectionMinP + (SelectionAABB.Radius*V3(2.f, 0.f, 0.f)) + HighlightInset;
+            v3 MaxHiP = SelectionMaxP - HighlightInset;
+            DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
+          } break;
+
+          case FaceIndex_Back:
+          {
+            v3 HighlightInset = V3(InsetWidth, 0.f, InsetWidth);
+            v3 MinHiP = SelectionMinP + HighlightInset;
+            v3 MaxHiP = SelectionMaxP - (SelectionAABB.Radius*V3(0.f, 2.f, 0.f)) - HighlightInset;
+            DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
+          } break;
+
+          case FaceIndex_Front:
+          {
+            v3 HighlightInset = V3(InsetWidth, 0.f, InsetWidth);
+            v3 MinHiP = SelectionMinP + (SelectionAABB.Radius*V3(0.f, 2.f, 0.f)) + HighlightInset;
+            v3 MaxHiP = SelectionMaxP - HighlightInset;
+            DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
+          } break;
         }
 
-        /* if (Editor->SelectionShiftClickedFace && */ 
-        /* { */
-        /* } */
 
-        if (Editor->SelectionShiftClickedFace)
+        if (Input->Shift.Pressed && Input->LMB.Clicked)
         {
-          v3 Normal = NormalForFace(Editor->SelectionShiftClickedFace);
-          v3 PerpN  = Cross(Normal, Camera->Front);
-          v3 PlaneN = Cross(Normal, PerpN);
-
-          f32 tRay = {};
-          if (Intersect(PlaneN, Editor->SelectionShiftClickedP[0], Ray.Origin, Ray.Dir, &tRay))
-          {
-            v3 PlaneIntersect = Ray.Origin + (Ray.Dir*tRay);
-            DEBUG_HighlightVoxel(Engine, PlaneIntersect, RED);
-            if (Input->LMB.Pressed)
-            {
-              Editor->SelectionShiftClickedP[1] = PlaneIntersect;
-            }
-          }
-
-          DEBUG_HighlightVoxel(Engine, Editor->SelectionShiftClickedP[0], RED);
-          DEBUG_HighlightVoxel(Engine, Editor->SelectionShiftClickedP[1], BLUE);
-
-          /* v3 Normal = NormalForFace(Editor->SelectionShiftClickedFace); */
-          v3 UpdateVector = Abs(Normal)*(Editor->SelectionShiftClickedP[1] - Editor->SelectionShiftClickedP[0]);
-          DEBUG_DrawSimSpaceVectorAt(Engine, Editor->SelectionShiftClickedP[0], UpdateVector, GREEN);
-
-          rect3i NewDims = ModifySelectionAABB(Editor->SelectionRegion, UpdateVector, Editor->SelectionShiftClickedFace);
-          /* if (Editor->SelectionFacePendingClicks == 1) */
-          {
-
-            v3 P0 = GetRenderP(Engine, V3(NewDims.Min));
-            v3 P1 = GetRenderP(Engine, V3(NewDims.Max)) + 1;
-            DEBUG_DrawAABB(Engine, P0, P1, WHITE, 0.1f);
-          }
-
-          if (!Input->LMB.Pressed)
-          {
-            Editor->SelectionShiftClickedFace = FaceIndex_None;
-
-            // Make new dim permanent
-            Editor->SelectionRegion[0] = V3(NewDims.Min);
-            Editor->SelectionRegion[1] = V3(NewDims.Max);
-          }
+          v3 PlaneBaseP = Ray.Origin + (AABBTest.t*Ray.Dir);
+          Editor->SelectionShiftClickedFace = Face;
+          Editor->SelectionShiftClickedP[0] = PlaneBaseP;
         }
       }
 
+      if (Editor->SelectionShiftClickedFace)
+      {
+        v3 Normal = NormalForFace(Editor->SelectionShiftClickedFace);
+        v3 PerpN  = Cross(Normal, Camera->Front);
+        v3 PlaneN = Cross(Normal, PerpN);
 
-      untextured_3d_geometry_buffer OutlineAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
-      v3 Offset = V3(0.001f);
-      DEBUG_DrawAABB( &OutlineAABB,
-                      GetRenderP(World->ChunkDim, MinP-Offset, Camera),
-                      GetRenderP(World->ChunkDim, MaxP+Offset, Camera),
-                      BaseColor, Thickness);
+        f32 tRay = {};
+        if (Intersect(PlaneN, Editor->SelectionShiftClickedP[0], Ray.Origin, Ray.Dir, &tRay))
+        {
+          v3 PlaneIntersect = Ray.Origin + (Ray.Dir*tRay);
+          DEBUG_HighlightVoxel(Engine, PlaneIntersect, RED);
+          if (Input->LMB.Pressed)
+          {
+            Editor->SelectionShiftClickedP[1] = PlaneIntersect;
+          }
+        }
+
+        DEBUG_HighlightVoxel(Engine, Editor->SelectionShiftClickedP[0], RED);
+        DEBUG_HighlightVoxel(Engine, Editor->SelectionShiftClickedP[1], BLUE);
+
+        v3 UpdateVector = Abs(Normal)*(Editor->SelectionShiftClickedP[1] - Editor->SelectionShiftClickedP[0]);
+        DEBUG_DrawSimSpaceVectorAt(Engine, Editor->SelectionShiftClickedP[0], UpdateVector, GREEN);
+
+        rect3i NewDims;
+        if (Input->Shift.Pressed)
+        {
+          if (Input->Ctrl.Pressed)
+          {
+            NewDims = ModifySelectionAABB(Editor->SelectionRegion, UpdateVector, Editor->SelectionShiftClickedFace, SelectionMode_Translate);
+          }
+          else
+          {
+            NewDims = ModifySelectionAABB(Editor->SelectionRegion, UpdateVector, Editor->SelectionShiftClickedFace, SelectionMode_Resize);
+          }
+        }
+
+        // Draw selection modification region
+        //
+        v3 P0 = GetRenderP(Engine, V3(NewDims.Min));
+        v3 P1 = GetRenderP(Engine, V3(NewDims.Max)) + 1;
+        DEBUG_DrawAABB(Engine, P0, P1, WHITE, 0.1f);
+
+        if (!Input->LMB.Pressed)
+        {
+          Editor->SelectionShiftClickedFace = FaceIndex_None;
+
+          // Make new dim permanent
+          Editor->SelectionRegion[0] = V3(NewDims.Min);
+          Editor->SelectionRegion[1] = V3(NewDims.Max);
+        }
+      }
     }
 
+
+    // Draw selection box
+    //
+    untextured_3d_geometry_buffer OutlineAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
+    v3 Offset = V3(0.001f);
+    DEBUG_DrawAABB( &OutlineAABB,
+                    GetRenderP(World->ChunkDim, SelectionMinP-Offset, Camera),
+                    GetRenderP(World->ChunkDim, SelectionMaxP+Offset, Camera),
+                    BaseColor, Thickness);
   }
+
 
   if (Clicked(&ButtonGroup, CSz("Select")))
   {
@@ -346,18 +373,20 @@ DoLevelEditor(engine_resources *Engine)
     }
   }
 
+  picked_voxel_position MouseVoxelPos = PickedVoxel_FirstFilled;
   if (ToggledOn(&ButtonGroup, CSz("Add")))
   {
+    MouseVoxelPos = PickedVoxel_LastEmpty;
     if (Input->LMB.Clicked)
     {
       if (Engine->MousedOverVoxel.PickedChunk.Chunk)
       {
-        v3 P0 = GetSimSpaceP(World, &Engine->MousedOverVoxel);
+        v3 P0 = GetSimSpaceP(World, &Engine->MousedOverVoxel, PickedVoxel_LastEmpty);
 
         world_update_op_shape Shape = {
           .Type = type_world_update_op_shape_params_rect,
           .world_update_op_shape_params_rect.P0 = P0,
-          .world_update_op_shape_params_rect.P1 = P0,
+          .world_update_op_shape_params_rect.P1 = P0+1,
         };
         QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, SafeTruncateU8(Editor->SelectedColorIndex), Engine->Memory);
       }
@@ -405,10 +434,17 @@ DoLevelEditor(engine_resources *Engine)
     }
   }
 
-
-
-
-
   PushWindowEnd(Ui, &Window);
+
+
+
+  //
+  // Highlight moused over voxel
+  //
+  if (Engine->MousedOverVoxel.PickedChunk.Chunk)
+  {
+    v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel, MouseVoxelPos));
+    DEBUG_HighlightVoxel( Engine, SimP, WHITE, 0.05f);
+  }
 
 }
