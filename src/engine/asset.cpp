@@ -356,7 +356,6 @@ DeserializeChunk(native_file *AssetFile, world_chunk *Result, tiered_mesh_freeli
     umm ByteCount = SpotElementSize*TotalElements;
     ReadBytesIntoBuffer(AssetFile, ByteCount, (u8*)Result->StandingSpots.Start);
   }
-
 }
 
 link_internal b32
@@ -394,6 +393,111 @@ SerializeChunk(world_chunk *Chunk, counted_string AssetPath)
   }
 
   CloseFile(&File);
+
+  return Result;
+}
+
+link_internal asset *
+GetAssetSlot(engine_resources *Engine)
+{
+  s32 LRUAssetIndex = 0;
+  u64 LRUFrameIndex = u32_MAX;
+  RangeIterator(AssetIndex, ASSET_TABLE_COUNT)
+  {
+    asset *Asset = Engine->AssetTable + AssetIndex;
+
+    if ( (Asset->LoadState == AssetLoadState_Loaded ||
+          Asset->LoadState == AssetLoadState_Unloaded) &&
+        Asset->LRUFrameIndex < LRUFrameIndex)
+    {
+      LRUFrameIndex = Asset->LRUFrameIndex;
+      LRUAssetIndex = AssetIndex;
+    }
+  }
+
+  asset *Result = Engine->AssetTable+LRUAssetIndex;
+  Clear(Result);
+
+  return Result;
+}
+
+link_internal void
+QueueAssetForLoad(work_queue *Queue, asset *Asset)
+{
+  Assert(Asset->LoadState == AssetLoadState_Unloaded);
+  Asset->LoadState = AssetLoadState_Queued;
+
+  work_queue_entry_init_asset AssetJob = {
+    .Asset = Asset
+  };
+
+  auto Job = WorkQueueEntry(AssetJob);
+  PushWorkQueueEntry(Queue, &Job);
+}
+
+link_internal void
+InitAsset(asset *Asset, thread_local_state *Thread)
+{
+  Assert(Asset->LoadState == AssetLoadState_Queued);
+  Asset->LoadState = AssetLoadState_Loading;
+
+/*   native_file AssetFile = OpenFile(&Asset->FileNode); */
+
+  cs Ext = Extension(Asset->FileNode.Name);
+
+  string_builder Builder = {};
+
+  Append(&Builder, Asset->FileNode.Dir);
+  Append(&Builder, CSz("/"));
+  Append(&Builder, Asset->FileNode.Name);
+
+  cs AssetFilepath = Finalize(&Builder, Thread->TempMemory, True);
+  if ( AreEqual(Ext, CSz("vox")) )
+  {
+    Asset->Model = LoadVoxModel(Thread->PermMemory, 0, AssetFilepath.Start, Thread->TempMemory);
+  }
+  else if ( AreEqual(Ext, CSz("obj")) )
+  {
+    NotImplemented;
+  }
+  else
+  {
+    SoftError("Unsupported file format while initializing asset.");
+  }
+
+  Asset->LoadState = AssetLoadState_Loaded;
+}
+
+
+link_internal asset *
+GetAsset(engine_resources *Engine, file_traversal_node *FileNode)
+{
+  asset *Result = {};
+  RangeIterator(AssetIndex, ASSET_TABLE_COUNT)
+  {
+    asset *Query = Engine->AssetTable + AssetIndex;
+    if (AreEqual(FileNode, &Query->FileNode))
+    {
+      Result = Query;
+      break;
+    }
+  }
+
+  if (Result)
+  {
+    Assert(Result->LoadState);
+  }
+  else
+  {
+    Result = GetAssetSlot(Engine);
+    Result->FileNode = *FileNode;
+
+    QueueAssetForLoad(&Engine->Plat->LowPriority, Result);
+  }
+
+
+  Assert(Result);
+  Result->LRUFrameIndex = Engine->FrameIndex;
 
   return Result;
 }

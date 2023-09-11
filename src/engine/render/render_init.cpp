@@ -595,3 +595,23 @@ GraphicsInit(memory_arena *GraphicsMemory)
   return Result;
 }
 
+link_internal void
+InitRenderToTextureGroup(render_entity_to_texture_group *Group, v2i TextureSize, memory_arena *Memory)
+{
+  AllocateGpuElementBuffer(&Group->GameGeo, (u32)Megabytes(4));
+
+  Group->Texture = GenTexture(TextureSize, Memory);
+
+  Group->GameGeoFBO = GenFramebuffer();
+  GL.BindFramebuffer(GL_FRAMEBUFFER, Group->GameGeoFBO.ID);
+
+  FramebufferTexture(&Group->GameGeoFBO, Group->Texture);
+  SetDrawBuffers(&Group->GameGeoFBO);
+
+  Group->GameGeoShader = MakeRenderToTextureShader(Memory, &Group->ViewProjection);
+
+  Group->Camera = Allocate(camera, Memory, 1);
+  StandardCamera(Group->Camera, 10000.0f, 100.0f, {});
+
+  /* Ensure(CheckAndClearFramebuffer()); */
+}

@@ -45,6 +45,8 @@ Bonsai_Init(engine_resources *Resources)
 
   Resources->EntityTable = AllocateEntityTable(BonsaiInitArena, TOTAL_ENTITY_COUNT);
 
+  InitRenderToTextureGroup(&Resources->RTTGroup, V2i(512), Resources->Memory);
+
   return Result;
 }
 
@@ -281,7 +283,8 @@ WorkerThreadDefaultImplementations(BONSAI_API_WORKER_THREAD_CALLBACK_PARAMS)
 
     case type_work_queue_entry_init_asset:
     {
-      InvalidCodePath();
+      work_queue_entry_init_asset *Job = SafeAccess(work_queue_entry_init_asset, Entry);
+      InitAsset(Job->Asset, Thread);
     } break;
 
     case type_work_queue_entry_update_world_region:

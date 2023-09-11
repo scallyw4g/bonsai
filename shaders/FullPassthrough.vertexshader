@@ -1,0 +1,12 @@
+layout(location = 0) in vec3 VertPos;
+layout(location = 1) in vec2 VertUV;
+layout(location = 2) in vec3 VertColor;
+
+out vec2 UV;
+out vec3 Color;
+
+void main(){
+  UV = VertUV;
+  Color = VertColor;
+  gl_Position = vec4(VertPos, 1);
+}

@@ -19,6 +19,7 @@ struct work_queue_entry_sim_particle_system
   v3 RenderSpaceP;
   r32 dt;
 };
+// TODO(Jesse)(poof): Make poof able to generate this!
 /* poof(gen_constructor(work_queue_entry_sim_particle_system)) */
 
 link_internal work_queue_entry_sim_particle_system
@@ -109,9 +110,10 @@ struct work_queue_entry_update_world_region
 
 };
 
+struct asset;
 struct work_queue_entry_init_asset
 {
-  world_chunk *Chunk;
+  asset *Asset;
 };
 
 struct work_queue_entry__align_to_cache_line_helper
@@ -215,3 +217,5 @@ TakeOwnershipSync(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bitfield Mes
 link_internal void
 ReleaseOwnership(threadsafe_geometry_buffer *Src, world_chunk_mesh_bitfield MeshBit, untextured_3d_geometry_buffer *Buf);
 
+link_internal void
+PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry);

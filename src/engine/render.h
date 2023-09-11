@@ -1,16 +1,5 @@
 #define DEFAULT_LINE_THICKNESS (0.1f)
 
-debug_global float
-g_quad_vertex_buffer_data[] =
-{
-  -1.0f, -1.0f, 1.0f,
-   1.0f, -1.0f, 1.0f,
-  -1.0f,  1.0f, 1.0f,
-  -1.0f,  1.0f, 1.0f,
-   1.0f, -1.0f, 1.0f,
-   1.0f,  1.0f, 1.0f,
-};
-
 #define SSAO_KERNEL_SIZE 32
 struct ao_render_group
 {

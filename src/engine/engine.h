@@ -18,13 +18,15 @@
 #include <engine/mesh.h>
 
 #include <engine/editor.h>
-#include <engine/resources.h>
 
 #include <engine/world_chunk.h>
 #include <engine/work_queue.h>
-#include <engine/asset.h>
+
 #include <engine/animation.h>
 #include <engine/model.h>
+#include <engine/asset.h>
+
+#include <engine/resources.h>
 #include <engine/particle.h>
 #include <engine/entity.h>
 #include <engine/triangle.h>

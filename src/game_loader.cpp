@@ -250,6 +250,25 @@ void Debug_EndAndReportPMCMonitoring(pmc_kernel_session *Session)
 }
 #endif
 
+link_internal void
+PrintFiles(file_traversal_node *Node)
+{
+  switch (Node->Type)
+  {
+    InvalidCase(FileTraversalType_None);
+
+    case FileTraversalType_File:
+    {
+      DebugLine("File (%S)(%S)", Node->Dir, Node->Name);
+    } break;
+
+    case FileTraversalType_Dir:
+    {
+      DebugLine("Dir  (%S)(%S)", Node->Dir, Node->Name);
+    } break;
+  }
+}
+
 s32
 main( s32 ArgCount, const char ** Args )
 {
@@ -328,6 +347,8 @@ main( s32 ArgCount, const char ** Args )
   DEBUG_REGISTER_ARENA(&BootstrapArena, 0);
 
   PlatformInit(&Plat, PlatMemory);
+
+  /* PlatformTraverseDirectoryTree(CSz("models"), PrintFiles); */
 
 #if BONSAI_INTERNAL
   // debug_recording_state *Debug_RecordingState = Allocate(debug_recording_state, GameMemory, 1);

@@ -97,10 +97,32 @@ struct world_chunk_file_header_v2
 
 typedef world_chunk_file_header_v2 world_chunk_file_header;
 
+enum asset_load_state
+{
+  AssetLoadState_Unloaded,
+
+  // TODO(Jesse): Might not need two states for Queued and Loading
+  AssetLoadState_Queued,
+  AssetLoadState_Loading,
+
+  AssetLoadState_Loaded,
+};
+
 struct asset
 {
+  asset_load_state LoadState;
+
+  // At 120fps we get 9k hours worth of frames in a u32.. should be enough.
+  // 9k hours == 385 days
+  //
+  // TODO(Jesse)(frame-index): Should this just be 32-bit?
+  u64 LRUFrameIndex;
+
   chunk_data *Data;
-  untextured_3d_geometry_buffer *Mesh;
+  /* untextured_3d_geometry_buffer *Mesh; */
+  model Model;
+
+  file_traversal_node FileNode;
 };
 
 poof(buffer(asset))
@@ -120,3 +142,5 @@ struct vox_data
   v4 *Palette;
 };
 
+link_internal model
+LoadVoxModel(memory_arena *PermMemory, heap_allocator *Heap, char const *filepath, memory_arena *TempMemory);

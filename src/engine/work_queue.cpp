@@ -9,7 +9,7 @@ InitQueue(work_queue* Queue, memory_arena* Memory) //, semaphore* Semaphore)
   InitializeFutex(&Queue->EnqueueFutex);
 }
 
-void
+link_internal void
 PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
 {
   TIMED_FUNCTION();

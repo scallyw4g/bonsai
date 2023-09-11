@@ -70,6 +70,8 @@ struct engine_debug
 
   u8 PickedChunkState;
   world_chunk *PickedChunk;
+
+  file_traversal_node SelectedAsset;
 };
 
 

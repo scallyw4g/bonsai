@@ -32,7 +32,7 @@ FlushBuffersToCard(gpu_mapped_element_buffer* GpuMap)
   return;
 }
 
-void
+link_internal untextured_3d_geometry_buffer *
 MapGpuElementBuffer(gpu_mapped_element_buffer *GpuMap)
 {
   TIMED_FUNCTION();
@@ -65,7 +65,7 @@ MapGpuElementBuffer(gpu_mapped_element_buffer *GpuMap)
 
   GL.BindBuffer(GL_ARRAY_BUFFER, 0);
 
-  return;
+  return &GpuMap->Buffer;
 }
 
 void

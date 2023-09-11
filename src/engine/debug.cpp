@@ -233,6 +233,65 @@ DebugUi(engine_resources *Engine, cs Name, interactable *Value)
 }
 
 
+link_internal void
+DebugFileNodeView(file_traversal_node *Node)
+{
+  engine_resources *Engine = GetEngineResources();
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  switch (Node->Type)
+  {
+    InvalidCase(FileTraversalType_None);
+
+    case FileTraversalType_File:
+    {
+      interactable_handle FileButton = PushButtonStart(Ui, umm("DebugFileNodeView") ^ umm(Node->Name.Start) );
+        /* Text(Ui, CSz("   ")); */
+        /* Text(Ui, Node->Dir); */
+        /* Text(Ui, CSz("/")); */
+        Text(Ui, Node->Name);
+        PushNewRow(Ui);
+      PushButtonEnd(Ui);
+
+      if (Clicked(Ui, &FileButton)) { EngineDebug->SelectedAsset = *Node; }
+    } break;
+
+    case FileTraversalType_Dir:
+    {
+      Text(Ui, CSz(" + "));
+      Text(Ui, Node->Name);
+      PushNewRow(Ui);
+    } break;
+  }
+}
+
+link_internal void
+RenderToTexture(world *World, render_entity_to_texture_group *RTTGroup, untextured_3d_geometry_buffer *Src)
+{
+  v3 Basis = {}; //-0.5f*V3(World->ChunkDim);
+
+  texture *Tex = RTTGroup->Texture;
+
+  MapGpuElementBuffer(&RTTGroup->GameGeo);
+  untextured_3d_geometry_buffer* Dest = &RTTGroup->GameGeo.Buffer;
+
+  GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->GameGeoFBO.ID);
+    BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
+  FlushBuffersToCard(&RTTGroup->GameGeo);
+
+  RTTGroup->ViewProjection =
+    ProjectionMatrix(RTTGroup->Camera, Tex->Dim.x, Tex->Dim.y) *
+    ViewMatrix(World->ChunkDim, RTTGroup->Camera);
+
+  GL.UseProgram(RTTGroup->GameGeoShader.ID);
+
+  SetViewport(V2(Tex->Dim));
+
+  BindShaderUniforms(&RTTGroup->GameGeoShader);
+
+  Draw(RTTGroup->GameGeo.Buffer.At);
+  RTTGroup->GameGeo.Buffer.At = 0;
+}
 
 link_internal void
 DoEngineDebug(engine_resources *Engine)
@@ -241,6 +300,7 @@ DoEngineDebug(engine_resources *Engine)
 
   local_persist ui_element_toggle_button Buttons[] = {
     {CSz("Edit"),            False, False},
+    {CSz("Assets"),          False, False},
     {CSz("WorldChunks"),     False, False},
     {CSz("Textures"),        False, False},
     {CSz("RenderSettings"),  False, False},
@@ -341,7 +401,6 @@ DoEngineDebug(engine_resources *Engine)
     PushWindowStart(Ui, &Window);
       PushTableStart(Ui);
 
-
         DebugValue(Ui, &EngineDebug->DrawEntityCollisionVolumes);
         DebugValue(Ui, &EngineDebug->DrawWorldAxies);
 
@@ -349,12 +408,44 @@ DoEngineDebug(engine_resources *Engine)
         DebugValue(Ui, &EngineDebug->UiDebug.OutlineUiButtons);
         DebugValue(Ui, &EngineDebug->UiDebug.OutlineUiTables);
 
-
         DebugValue(Ui, &Engine->Editor.SelectedColorIndex);
         DebugUi(Engine, CSz("Selected Color"), &Engine->Editor.SelectedColorSquare);
 
       PushTableEnd(Ui);
     PushWindowEnd(Ui, &Window);
+  }
+
+
+  if (ToggledOn(&ButtonGroup, CSz("Assets")))
+  {
+    v2 WindowDim = {{1200.f, 250.f}};
+    local_persist window_layout Window = WindowLayout("Assets", DefaultWindowBasis(*Ui->ScreenDim, WindowDim), WindowDim);
+
+    render_settings *Settings = &Graphics->Settings;
+    PushWindowStart(Ui, &Window);
+      PlatformTraverseDirectoryTree(CSz("models"), DebugFileNodeView);
+    PushWindowEnd(Ui, &Window);
+
+    if (EngineDebug->SelectedAsset.Type)
+    {
+      local_persist window_layout AssetViewWindow = WindowLayout("Asset View", DefaultWindowBasis(*Ui->ScreenDim, WindowDim) + V2(WindowDim.x, 0), WindowDim);
+      PushWindowStart(Ui, &AssetViewWindow);
+
+      asset *Asset = GetAsset(Engine, &EngineDebug->SelectedAsset);
+
+      if (Asset->LoadState == AssetLoadState_Loaded)
+      {
+        RenderToTexture(Engine->World, &Engine->RTTGroup, &Asset->Model.Mesh);
+      }
+
+      /* DrawTexturedQuad(&Ui->TexturedQuadShader, Engine->RTTGroup.Texture); */
+      /* PushTexturedQuad(Ui, Engine->RTTGroup.Texture, V2(Engine->RTTGroup.Texture->Dim), zDepth_Text); */
+
+      /* PushTexturedQuad(Ui, gBuffer->Textures->Normal, V2(256), zDepth_Text); */
+      PushTexturedQuad(Ui, gBuffer->Textures->Color, V2(256), zDepth_Text);
+
+      PushWindowEnd(Ui, &AssetViewWindow);
+    }
   }
 
 }

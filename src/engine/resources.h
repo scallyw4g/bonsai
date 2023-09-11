@@ -8,6 +8,7 @@ struct entity;
 
 
 
+#define ASSET_TABLE_COUNT (128)
 struct engine_resources
 {
   os         *Os;
@@ -24,12 +25,21 @@ struct engine_resources
   memory_arena *Memory;
 
   entity **EntityTable;
+  asset    AssetTable[ASSET_TABLE_COUNT];
 
+  // At 120fps we get 9k hours worth of frames in a u32.. should be enough.
+  // 9k hours == 385 days
+  //
+  // TODO(Jesse)(frame-index): Should this just be 32-bit?
   u64 FrameIndex;
 
   entity *CameraTarget;
 
   tiered_mesh_freelist MeshFreelist;
+
+  //
+  // NOTE(Jesse): This is kinda-sorta all debug stuff
+  //
 
   // TODO(Jesse): Put this in Graphics?
   renderer_2d Ui;
@@ -40,6 +50,8 @@ struct engine_resources
 
   level_editor Editor;
   picked_voxel MousedOverVoxel;
+
+  render_entity_to_texture_group RTTGroup;
 };
 
 // TODO(Jesse): Should this actually be a thing?
