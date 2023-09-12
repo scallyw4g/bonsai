@@ -219,8 +219,11 @@ DebugUi(engine_resources *Engine, cs Name, window_layout *Value)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  Text(Ui, Name);
-  Text(Ui, Value->Title);
+  StartColumn(Ui);
+    Text(Ui, Name);
+    Text(Ui, Value->Title);
+  EndColumn(Ui);
+  PushNewRow(Ui);
 }
 
 link_internal void
@@ -228,7 +231,8 @@ DebugUi(engine_resources *Engine, cs Name, interactable *Value)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  Text(Ui, Name);
+  PushColumn(Ui, Name);
+  PushNewRow(Ui);
   DebugValue(Ui, &Value->ID);
   DebugValue(Ui, &Value->MinP);
   DebugValue(Ui, &Value->MaxP);
@@ -443,8 +447,9 @@ DoEngineDebug(engine_resources *Engine)
       /* DrawTexturedQuad(&Ui->TexturedQuadShader, Engine->RTTGroup.Texture); */
       /* PushTexturedQuad(Ui, Engine->RTTGroup.Texture, V2(Engine->RTTGroup.Texture->Dim), zDepth_Text); */
 
-      /* PushTexturedQuad(Ui, gBuffer->Textures->Normal, V2(256), zDepth_Text); */
+      PushTexturedQuad(Ui, gBuffer->Textures->Normal, V2(256), zDepth_Text);
       PushTexturedQuad(Ui, gBuffer->Textures->Color, V2(256), zDepth_Text);
+      PushTexturedQuad(Ui, gBuffer->Textures->Position, V2(256), zDepth_Text);
 
       PushWindowEnd(Ui, &AssetViewWindow);
     }

@@ -422,7 +422,7 @@ LoadVoxModel(memory_arena *PermMemory, heap_allocator *Heap, char const *filepat
   TIMED_FUNCTION();
 
   model Result = {};
-  vox_data Vox = LoadVoxData(PermMemory, Heap, filepath, VoxLoaderClipBehavior_NoClipping );
+  vox_data Vox = LoadVoxData(PermMemory, Heap, filepath, VoxLoaderClipBehavior_ClipToVoxels);
   AllocateAndBuildMesh(&Vox, &Result, TempMemory, PermMemory );
 
   return Result;

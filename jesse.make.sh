@@ -27,12 +27,12 @@
 #     BuildDebugSystem
 
 # OPT="-O2"
-# ./make.sh $OPT \
-#   BuildDebugSystem \
-#   BuildExecutables \
-#   BuildSingleExample examples/turn_based \
+./make.sh $OPT \
+  BuildDebugSystem \
+  BuildExecutables \
+  BuildSingleExample examples/turn_based \
   # BuildTests \
   # BuildSingleExample examples/the_wanderer \
   # BuildSingleExample examples/turn_based2
 
-./make.sh -O0 BuildAll
+# ./make.sh -O0 BuildAll
