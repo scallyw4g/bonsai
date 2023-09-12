@@ -2,12 +2,14 @@
 link_internal engine_debug *
 GetEngineDebug()
 {
+  Assert(Global_EngineResources);
   return &Global_EngineResources->EngineDebug;
 }
 
 ui_debug *
 GetUiDebug()
 {
+  Assert(Global_EngineResources);
   return &Global_EngineResources->EngineDebug.UiDebug;
 }
 

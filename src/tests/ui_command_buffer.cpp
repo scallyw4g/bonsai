@@ -54,6 +54,10 @@ main(s32 ArgCount, const char** Args)
 {
   TestSuiteBegin("ui_command_buffer", ArgCount, Args);
 
+  // NOTE(Jesse): Sorry for this...
+  engine_resources Engine = {};
+  Global_EngineResources = &Engine;
+
   memory_arena Arena = {};
   heap_allocator Heap = InitHeap(Megabytes(128));
 
@@ -70,10 +74,16 @@ main(s32 ArgCount, const char** Args)
     TestTable(&Renderer);
   PushWindowEnd(&Renderer, &Window);
 
-  FlushCommandBuffer(&Renderer, Renderer.CommandBuffer);
+  layout DefaultLayout = {};
+  DefaultLayout.DrawBounds = InvertedInfinityRectangle();
+  render_state RenderState = { .Layout = &DefaultLayout, .ClipRect = DISABLE_CLIPPING };
+
+  /* DrawUi(renderer_2d *Group, ui_render_command_buffer *CommandBuffer) */
+  /* FlushCommandBuffer(renderer_2d *Group, render_state *RenderState, ui_render_command_buffer *CommandBuffer, layout *DefaultLayout) */
+  FlushCommandBuffer(&Renderer, &RenderState, Renderer.CommandBuffer, &DefaultLayout);
 
   TestTable(&Renderer);
-  FlushCommandBuffer(&Renderer, Renderer.CommandBuffer);
+  FlushCommandBuffer(&Renderer, &RenderState, Renderer.CommandBuffer, &DefaultLayout);
 
   TestSuiteEnd();
 }
