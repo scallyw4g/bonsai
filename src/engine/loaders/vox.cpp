@@ -183,7 +183,7 @@ enum vox_loader_clip_behavior
   VoxLoaderClipBehavior_NoClipping,
 };
 
-vox_data
+link_internal vox_data
 LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepath, vox_loader_clip_behavior ClipBehavior, v3i HalfApronMin = {}, v3i HalfApronMax = {}, v3i ModDim = {})
 {
   vox_data Result = {};
@@ -202,7 +202,8 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
     s32 TotalChunkCount = 1; // Sometimes overwritten if theres a 'PACK' chunk
     // s32 TotalChunksRead = 0;
 
-    while (bytesRemaining > 0)
+    b32 Error = False;
+    while (Error == False && bytesRemaining > 0)
     {
       Chunk_ID CurrentId = GetHeaderType(ModelFile.Handle, &bytesRemaining);
       switch ( CurrentId )
@@ -258,8 +259,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
           s32 minY = s32_MAX;
           s32 minZ = s32_MAX;
 
-          // TODO(Jesse)(immediate, calloc, memory): WTF is calloc doing in here?!
-          boundary_voxel *LocalVoxelCache = (boundary_voxel *)calloc((umm)ReportedVoxelCount, sizeof(boundary_voxel) );
+          boundary_voxel *LocalVoxelCache = Allocate(boundary_voxel, GetTranArena(), (umm)ReportedVoxelCount);
           for( s32 VoxelCacheIndex = 0;
                VoxelCacheIndex < ReportedVoxelCount;
                ++VoxelCacheIndex)
@@ -287,8 +287,13 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
             else
             {
               BUG("Voxel detected outside the dimention it should be in while loading (%s)!", filepath);
+              Error = True;
+              Assert(Result.ChunkData == 0);
+              break;
             }
           }
+
+          if (Error) break;
 
           v3i Max = {};
           v3i Min = {};
@@ -329,8 +334,6 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
             s32 Index = GetIndex(Voxel->Offset, ModelDim);
             Result.ChunkData->Voxels[Index] = Voxel->V;
           }
-
-          free(LocalVoxelCache);
 
           FullBarrier;
 
@@ -382,7 +385,15 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
       }
     }
 
-    Assert(bytesRemaining == 0);
+    if (Error == False)
+    {
+      Assert(bytesRemaining == 0);
+      MarkBoundaryVoxels_MakeExteriorFaces( Result.ChunkData->Voxels, Result.ChunkData->Dim, {}, Result.ChunkData->Dim);
+    }
+    else
+    {
+      Assert(Result.ChunkData == 0);
+    }
 
     CloseFile(&ModelFile);
   }
@@ -390,8 +401,6 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
   {
     Error("Couldn't read model file '%s' .", filepath);
   }
-
-  MarkBoundaryVoxels_MakeExteriorFaces( Result.ChunkData->Voxels, Result.ChunkData->Dim, {}, Result.ChunkData->Dim);
 
   if (Result.Palette == 0)
   {
@@ -416,14 +425,20 @@ AllocateAndBuildMesh(vox_data *Vox, model *DestModel, memory_arena *TempMemory, 
   // TODO(Jesse): Roll back what memory we don't use here.. or maybe allocate the initial buffer with temp and copy to perm?
 }
 
-link_internal model
+link_internal maybe_model
 LoadVoxModel(memory_arena *PermMemory, heap_allocator *Heap, char const *filepath, memory_arena *TempMemory)
 {
   TIMED_FUNCTION();
 
-  model Result = {};
+  maybe_model Result = {};
+
   vox_data Vox = LoadVoxData(PermMemory, Heap, filepath, VoxLoaderClipBehavior_ClipToVoxels);
-  AllocateAndBuildMesh(&Vox, &Result, TempMemory, PermMemory );
+
+  if (Vox.ChunkData)
+  {
+    Result.Tag = Maybe_Yes;
+    AllocateAndBuildMesh(&Vox, &Result.Model, TempMemory, PermMemory );
+  }
 
   return Result;
 }

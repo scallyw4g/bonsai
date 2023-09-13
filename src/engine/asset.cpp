@@ -454,18 +454,28 @@ InitAsset(asset *Asset, thread_local_state *Thread)
   cs AssetFilepath = Finalize(&Builder, Thread->TempMemory, True);
   if ( AreEqual(Ext, CSz("vox")) )
   {
-    Asset->Model = LoadVoxModel(Thread->PermMemory, 0, AssetFilepath.Start, Thread->TempMemory);
+    maybe_model Maybe = LoadVoxModel(Thread->PermMemory, 0, AssetFilepath.Start, Thread->TempMemory);
+    if (Maybe.Tag == Maybe_Yes)
+    {
+      Asset->Model = Maybe.Model;
+      FullBarrier;
+      Asset->LoadState = AssetLoadState_Loaded;
+    }
+    else
+    {
+      Asset->LoadState = AssetLoadState_Error;
+    }
   }
   else if ( AreEqual(Ext, CSz("obj")) )
   {
-    NotImplemented;
+    Asset->LoadState = AssetLoadState_Error;
   }
   else
   {
     SoftError("Unsupported file format while initializing asset.");
+    Asset->LoadState = AssetLoadState_Error;
   }
 
-  Asset->LoadState = AssetLoadState_Loaded;
 }
 
 

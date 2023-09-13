@@ -313,6 +313,11 @@ DoEngineDebug(engine_resources *Engine)
     {CSz("EngineDebug"),     False, False},
   };
 
+  /* for (u32 Index = 0; Index < Megabytes(1); Index++) */
+  /* { */
+  /*   Text(Ui, CSz("FooText")); */
+  /* } */
+
   ui_element_toggle_button_group ButtonGroup = {
     .Buttons = Buttons,
     .Count = ArrayCount(Buttons),
@@ -439,17 +444,35 @@ DoEngineDebug(engine_resources *Engine)
 
       asset *Asset = GetAsset(Engine, &EngineDebug->SelectedAsset);
 
-      if (Asset->LoadState == AssetLoadState_Loaded)
+      switch (Asset->LoadState)
       {
-        RenderToTexture(Engine->World, &Engine->RTTGroup, &Asset->Model.Mesh);
+        case AssetLoadState_Loaded:
+        {
+          RenderToTexture(Engine->World, &Engine->RTTGroup, &Asset->Model.Mesh);
+
+          PushTexturedQuad(Ui, Engine->RTTGroup.Texture, V2(256), zDepth_Text);
+          PushTexturedQuad(Ui, gBuffer->Textures->Normal, V2(256), zDepth_Text);
+          PushTexturedQuad(Ui, gBuffer->Textures->Color, V2(256), zDepth_Text);
+          PushTexturedQuad(Ui, gBuffer->Textures->Position, V2(256), zDepth_Text);
+        } break;
+
+
+        case AssetLoadState_Queued:
+        case AssetLoadState_Loading:
+        {
+          Text(Ui, CSz("Loading Asset"));
+        } break;
+
+        case AssetLoadState_Unloaded:
+        {
+          Text(Ui, CSz("Not Loading Asset .. ?"));
+        } break;
+
+        case AssetLoadState_Error:
+        {
+          Text(Ui, CSz("Error Loading Asset :("));
+        } break;
       }
-
-      /* DrawTexturedQuad(&Ui->TexturedQuadShader, Engine->RTTGroup.Texture); */
-      /* PushTexturedQuad(Ui, Engine->RTTGroup.Texture, V2(Engine->RTTGroup.Texture->Dim), zDepth_Text); */
-
-      PushTexturedQuad(Ui, gBuffer->Textures->Normal, V2(256), zDepth_Text);
-      PushTexturedQuad(Ui, gBuffer->Textures->Color, V2(256), zDepth_Text);
-      PushTexturedQuad(Ui, gBuffer->Textures->Position, V2(256), zDepth_Text);
 
       PushWindowEnd(Ui, &AssetViewWindow);
     }

@@ -65,4 +65,8 @@ struct model
   /* v4 *Palette; // Optional */
 };
 
-
+struct maybe_model
+{
+  maybe_tag Tag;
+  model Model;
+};

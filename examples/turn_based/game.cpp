@@ -24,41 +24,41 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *
 
   model *Result                                       = Allocate(model, Memory, ModelIndex_Count);
 
-  Result[ModelIndex_Enemy_Skeleton_Axe]              = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_AXE.vox", Memory);
-  Result[ModelIndex_Enemy_Skeleton_Sword]            = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_SWORD.vox", Memory);
-  Result[ModelIndex_Enemy_Skeleton_Lasher]           = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_LASHER.vox", Memory);
-  Result[ModelIndex_Enemy_Skeleton_Archer]           = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_ARCHER.vox", Memory);
-  Result[ModelIndex_Enemy_Skeleton_Spear]            = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_SPEAR.vox", Memory);
-  Result[ModelIndex_Enemy_Skeleton_AxeArmor]         = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_AXE_ARMOR.vox", Memory);
-  Result[ModelIndex_Enemy_Skeleton_Hounds]           = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_HOUNDS.vox", Memory);
-  Result[ModelIndex_Enemy_Skeleton_Horserider]       = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_HORSERIDER.vox", Memory);
-  Result[ModelIndex_Enemy_Skeleton_Horsebanner]      = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_HORSE_BANNER.vox", Memory);
-  Result[ModelIndex_Enemy_Skeleton_Shaman]           = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_SHAMAN.vox", Memory);
-  /* Result[ModelIndex_Enemy_Skeleton_Champion]         = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_CHAMPION.vox", Memory); */
-  Result[ModelIndex_Enemy_Skeleton_ChampionChampion] = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_CHAMPION_CATAPHRACT.vox", Memory);
-  Result[ModelIndex_Enemy_Skeleton_Concubiner]       = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_CONCUBINER.vox", Memory);
-  Result[ModelIndex_Enemy_Skeleton_King]             = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_KING.vox", Memory);
+  Result[ModelIndex_Enemy_Skeleton_Axe]              = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_AXE.vox", Memory).Model;
+  Result[ModelIndex_Enemy_Skeleton_Sword]            = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_SWORD.vox", Memory).Model;
+  Result[ModelIndex_Enemy_Skeleton_Lasher]           = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_LASHER.vox", Memory).Model;
+  Result[ModelIndex_Enemy_Skeleton_Archer]           = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_ARCHER.vox", Memory).Model;
+  Result[ModelIndex_Enemy_Skeleton_Spear]            = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_SPEAR.vox", Memory).Model;
+  Result[ModelIndex_Enemy_Skeleton_AxeArmor]         = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_AXE_ARMOR.vox", Memory).Model;
+  Result[ModelIndex_Enemy_Skeleton_Hounds]           = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_HOUNDS.vox", Memory).Model;
+  Result[ModelIndex_Enemy_Skeleton_Horserider]       = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_HORSERIDER.vox", Memory).Model;
+  Result[ModelIndex_Enemy_Skeleton_Horsebanner]      = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_HORSE_BANNER.vox", Memory).Model;
+  Result[ModelIndex_Enemy_Skeleton_Shaman]           = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_SHAMAN.vox", Memory).Model;
+  /* Result[ModelIndex_Enemy_Skeleton_Champion]         = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_CHAMPION.vox", Memory).Model; */
+  Result[ModelIndex_Enemy_Skeleton_ChampionChampion] = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_CHAMPION_CATAPHRACT.vox", Memory).Model;
+  Result[ModelIndex_Enemy_Skeleton_Concubiner]       = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_CONCUBINER.vox", Memory).Model;
+  Result[ModelIndex_Enemy_Skeleton_King]             = LoadVoxModel(Memory, Heap, "models/skeletons/SKELLINGTON_KING.vox", Memory).Model;
 
-  Result[ModelIndex_Player_jp]      = LoadVoxModel(Memory, Heap, "models/players/chr_jp.vox", Memory);
-  Result[ModelIndex_Player_bow]     = LoadVoxModel(Memory, Heap, "models/players/chr_bow.vox", Memory);
-  Result[ModelIndex_Player_cat]     = LoadVoxModel(Memory, Heap, "models/players/chr_cat.vox", Memory);
-  Result[ModelIndex_Player_fox]     = LoadVoxModel(Memory, Heap, "models/players/chr_fox.vox", Memory);
-  Result[ModelIndex_Player_gumi]    = LoadVoxModel(Memory, Heap, "models/players/chr_gumi.vox", Memory);
-  Result[ModelIndex_Player_knight]  = LoadVoxModel(Memory, Heap, "models/players/chr_knight.vox", Memory);
-  Result[ModelIndex_Player_man]     = LoadVoxModel(Memory, Heap, "models/players/chr_man.vox", Memory);
-  Result[ModelIndex_Player_mom]     = LoadVoxModel(Memory, Heap, "models/players/chr_mom.vox", Memory);
-  Result[ModelIndex_Player_old]     = LoadVoxModel(Memory, Heap, "models/players/chr_old.vox", Memory);
-  Result[ModelIndex_Player_poem]    = LoadVoxModel(Memory, Heap, "models/players/chr_poem.vox", Memory);
-  Result[ModelIndex_Player_rain]    = LoadVoxModel(Memory, Heap, "models/players/chr_rain.vox", Memory);
-  Result[ModelIndex_Player_sasami]  = LoadVoxModel(Memory, Heap, "models/players/chr_sasami.vox", Memory);
-  Result[ModelIndex_Player_sol]     = LoadVoxModel(Memory, Heap, "models/players/chr_sol.vox", Memory);
-  Result[ModelIndex_Player_sword]   = LoadVoxModel(Memory, Heap, "models/players/chr_sword.vox", Memory);
-  Result[ModelIndex_Player_tale]    = LoadVoxModel(Memory, Heap, "models/players/chr_tale.vox", Memory);
-  Result[ModelIndex_Player_tama]    = LoadVoxModel(Memory, Heap, "models/players/chr_tama.vox", Memory);
-  Result[ModelIndex_Player_tsurugi] = LoadVoxModel(Memory, Heap, "models/players/chr_tsurugi.vox", Memory);
+  Result[ModelIndex_Player_jp]      = LoadVoxModel(Memory, Heap, "models/players/chr_jp.vox", Memory).Model;
+  Result[ModelIndex_Player_bow]     = LoadVoxModel(Memory, Heap, "models/players/chr_bow.vox", Memory).Model;
+  Result[ModelIndex_Player_cat]     = LoadVoxModel(Memory, Heap, "models/players/chr_cat.vox", Memory).Model;
+  Result[ModelIndex_Player_fox]     = LoadVoxModel(Memory, Heap, "models/players/chr_fox.vox", Memory).Model;
+  Result[ModelIndex_Player_gumi]    = LoadVoxModel(Memory, Heap, "models/players/chr_gumi.vox", Memory).Model;
+  Result[ModelIndex_Player_knight]  = LoadVoxModel(Memory, Heap, "models/players/chr_knight.vox", Memory).Model;
+  Result[ModelIndex_Player_man]     = LoadVoxModel(Memory, Heap, "models/players/chr_man.vox", Memory).Model;
+  Result[ModelIndex_Player_mom]     = LoadVoxModel(Memory, Heap, "models/players/chr_mom.vox", Memory).Model;
+  Result[ModelIndex_Player_old]     = LoadVoxModel(Memory, Heap, "models/players/chr_old.vox", Memory).Model;
+  Result[ModelIndex_Player_poem]    = LoadVoxModel(Memory, Heap, "models/players/chr_poem.vox", Memory).Model;
+  Result[ModelIndex_Player_rain]    = LoadVoxModel(Memory, Heap, "models/players/chr_rain.vox", Memory).Model;
+  Result[ModelIndex_Player_sasami]  = LoadVoxModel(Memory, Heap, "models/players/chr_sasami.vox", Memory).Model;
+  Result[ModelIndex_Player_sol]     = LoadVoxModel(Memory, Heap, "models/players/chr_sol.vox", Memory).Model;
+  Result[ModelIndex_Player_sword]   = LoadVoxModel(Memory, Heap, "models/players/chr_sword.vox", Memory).Model;
+  Result[ModelIndex_Player_tale]    = LoadVoxModel(Memory, Heap, "models/players/chr_tale.vox", Memory).Model;
+  Result[ModelIndex_Player_tama]    = LoadVoxModel(Memory, Heap, "models/players/chr_tama.vox", Memory).Model;
+  Result[ModelIndex_Player_tsurugi] = LoadVoxModel(Memory, Heap, "models/players/chr_tsurugi.vox", Memory).Model;
 
-  Result[ModelIndex_Bitty0] = LoadVoxModel(Memory, Heap, "models/splotion_bitty_0.vox", Memory);
-  Result[ModelIndex_Bitty1] = LoadVoxModel(Memory, Heap, "models/splotion_bitty_1.vox", Memory);
+  Result[ModelIndex_Bitty0] = LoadVoxModel(Memory, Heap, "models/splotion_bitty_0.vox", Memory).Model;
+  Result[ModelIndex_Bitty1] = LoadVoxModel(Memory, Heap, "models/splotion_bitty_1.vox", Memory).Model;
 
   /* Result[ModelIndex_FirstPlayerModel] = LoadObj(Memory, Heap, "models/test/nature_pack.obj"); */
 

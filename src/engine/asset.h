@@ -106,6 +106,7 @@ enum asset_load_state
   AssetLoadState_Loading,
 
   AssetLoadState_Loaded,
+  AssetLoadState_Error,
 };
 
 struct asset
@@ -142,5 +143,5 @@ struct vox_data
   v4 *Palette;
 };
 
-link_internal model
+link_internal maybe_model
 LoadVoxModel(memory_arena *PermMemory, heap_allocator *Heap, char const *filepath, memory_arena *TempMemory);
