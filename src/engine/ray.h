@@ -12,12 +12,6 @@ ray Ray(v3 Origin, v3 Dir)
   return Result;
 }
 
-enum maybe_tag
-{
-  Maybe_No,
-  Maybe_Yes,
-};
-
 struct maybe_ray
 {
   maybe_tag Tag;
