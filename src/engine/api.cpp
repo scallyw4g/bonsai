@@ -45,7 +45,7 @@ Bonsai_Init(engine_resources *Resources)
 
   Resources->EntityTable = AllocateEntityTable(BonsaiInitArena, TOTAL_ENTITY_COUNT);
 
-  InitRenderToTextureGroup(&Resources->RTTGroup, V2i(512), Resources->Memory);
+  InitRenderToTextureGroup(&Resources->RTTGroup, V2i(256), GraphicsMemory2D);
 
   return Result;
 }
@@ -73,7 +73,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   MapGpuElementBuffer(GpuMap);
 
-  ClearFramebuffers(Graphics);
+  ClearFramebuffers(Graphics, &Resources->RTTGroup);
 
   if (GetEngineDebug()->DrawWorldAxies)
   {
@@ -257,6 +257,7 @@ Bonsai_Render(engine_resources *Resources)
   /* Debug_DrawTextureToDebugQuad(&Graphics->gBuffer->DebugColorShader); */
   /* Debug_DrawTextureToDebugQuad(&Graphics->gBuffer->DebugPositionShader); */
   /* Debug_DrawTextureToDebugQuad(&Graphics->gBuffer->DebugNormalShader); */
+  Debug_DrawTextureToDebugQuad(&Resources->RTTGroup.DebugShader);
 
   GpuMap->Buffer.At = 0;
   GL.DisableVertexAttribArray(0);

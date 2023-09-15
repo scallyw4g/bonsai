@@ -148,3 +148,4 @@ ReserveBufferSpace(untextured_3d_geometry_buffer* Reservation, u32 ElementsToRes
 
 link_internal gpu_mapped_element_buffer *
 GetCurrentGpuMap(graphics *Graphics);
+

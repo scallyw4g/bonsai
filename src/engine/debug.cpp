@@ -272,31 +272,41 @@ DebugFileNodeView(file_traversal_node *Node)
 }
 
 link_internal void
-RenderToTexture(world *World, render_entity_to_texture_group *RTTGroup, untextured_3d_geometry_buffer *Src)
+RenderToTexture(engine_resources *Engine, untextured_3d_geometry_buffer *Src)
 {
+  auto World    = Engine->World;
+  auto RTTGroup = &Engine->RTTGroup;
   v3 Basis = {}; //-0.5f*V3(World->ChunkDim);
 
-  texture *Tex = RTTGroup->Texture;
+  // GL stuff
+  {
+    texture *Tex = RTTGroup->Texture;
 
-  MapGpuElementBuffer(&RTTGroup->GameGeo);
-  untextured_3d_geometry_buffer* Dest = &RTTGroup->GameGeo.Buffer;
+    GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID);
+    /* GL.BindTexture(GL_FRAMEBUFFER, RTTGroup->Texture.ID); */
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->GameGeoFBO.ID);
+    SetViewport(Engine->Plat->ScreenDim);
+
+    RTTGroup->ViewProjection =
+      ProjectionMatrix(RTTGroup->Camera, Tex->Dim.x, Tex->Dim.y) *
+      ViewMatrix(World->ChunkDim, RTTGroup->Camera);
+
+    GL.UseProgram(RTTGroup->Shader.ID);
+
+    BindShaderUniforms(&RTTGroup->Shader);
+  }
+
+  // Geometry stuff
+  {
+    MapGpuElementBuffer(&RTTGroup->GeoBuffer);
+    untextured_3d_geometry_buffer* Dest = &RTTGroup->GeoBuffer.Buffer;
+
     BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
-  FlushBuffersToCard(&RTTGroup->GameGeo);
+    FlushBuffersToCard(&RTTGroup->GeoBuffer);
+  }
 
-  RTTGroup->ViewProjection =
-    ProjectionMatrix(RTTGroup->Camera, Tex->Dim.x, Tex->Dim.y) *
-    ViewMatrix(World->ChunkDim, RTTGroup->Camera);
-
-  GL.UseProgram(RTTGroup->GameGeoShader.ID);
-
-  SetViewport(V2(Tex->Dim));
-
-  BindShaderUniforms(&RTTGroup->GameGeoShader);
-
-  Draw(RTTGroup->GameGeo.Buffer.At);
-  RTTGroup->GameGeo.Buffer.At = 0;
+  Draw(RTTGroup->GeoBuffer.Buffer.At);
+  RTTGroup->GeoBuffer.Buffer.At = 0;
 }
 
 link_internal void
@@ -426,6 +436,7 @@ DoEngineDebug(engine_resources *Engine)
     PushWindowEnd(Ui, &Window);
   }
 
+  /* Debug_DrawTextureToDebugQuad(&Engine->RTTGroup.DebugShader); */
 
   if (ToggledOn(&ButtonGroup, CSz("Assets")))
   {
@@ -448,7 +459,9 @@ DoEngineDebug(engine_resources *Engine)
       {
         case AssetLoadState_Loaded:
         {
-          RenderToTexture(Engine->World, &Engine->RTTGroup, &Asset->Model.Mesh);
+          RenderToTexture(Engine, &Asset->Model.Mesh);
+
+          /* Engine->CameraTarget->Model = Asset->Model; */
 
           PushTexturedQuad(Ui, Engine->RTTGroup.Texture, V2(256), zDepth_Text);
           PushTexturedQuad(Ui, gBuffer->Textures->Normal, V2(256), zDepth_Text);

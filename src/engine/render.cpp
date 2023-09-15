@@ -299,13 +299,14 @@ BuildExteriorBoundaryVoxels( world_chunk *chunk, chunk_dimension Dim, world_chun
 #endif
 
 inline void
-ClearFramebuffers(graphics *Graphics)
+ClearFramebuffers(graphics *Graphics, render_entity_to_texture_group *RTTGroup)
 {
   TIMED_FUNCTION();
 
-  GL.ClearDepth(1.0); // NOTE(Jesse): Depth 1.0 is the furthest from the camera
+  SetDefaultFramebufferClearColors();
 
-  GL.ClearColor(0.f, 0.f, 0.f, 1.f);
+  /* GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID); */
+  /* GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->gBuffer->FBO.ID);
   GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

@@ -598,20 +598,32 @@ GraphicsInit(memory_arena *GraphicsMemory)
 link_internal void
 InitRenderToTextureGroup(render_entity_to_texture_group *Group, v2i TextureSize, memory_arena *Memory)
 {
-  AllocateGpuElementBuffer(&Group->GameGeo, (u32)Megabytes(4));
+  // TODO(Jesse): Can this not re-use the gpu-map in the 3D renderer?
+  AllocateGpuElementBuffer(&Group->GeoBuffer, (u32)Megabytes(1));
+
+  Group->FBO = GenFramebuffer();
+  GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
+
+  s32 ImageSize = 4*Volume(TextureSize);
+  f32 *Image = Allocate(f32, Memory, ImageSize);
+
+  for (s32 PixIndex = 0; PixIndex < ImageSize; PixIndex += 4)
+  {
+    Image[PixIndex] = 255.f;
+  }
 
   Group->Texture = GenTexture(TextureSize, Memory);
+  GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, Image);
 
-  Group->GameGeoFBO = GenFramebuffer();
-  GL.BindFramebuffer(GL_FRAMEBUFFER, Group->GameGeoFBO.ID);
+  FramebufferTexture(&Group->FBO, Group->Texture);
+  SetDrawBuffers(&Group->FBO);
 
-  FramebufferTexture(&Group->GameGeoFBO, Group->Texture);
-  SetDrawBuffers(&Group->GameGeoFBO);
-
-  Group->GameGeoShader = MakeRenderToTextureShader(Memory, &Group->ViewProjection);
+  Group->Shader = MakeRenderToTextureShader(Memory, &Group->ViewProjection);
 
   Group->Camera = Allocate(camera, Memory, 1);
   StandardCamera(Group->Camera, 10000.0f, 100.0f, {});
+
+  Group->DebugShader = MakeSimpleTextureShader(Group->Texture, Memory);
 
   /* Ensure(CheckAndClearFramebuffer()); */
 }

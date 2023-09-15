@@ -1,3 +1,4 @@
+ /* out vec4 TargetTexture; */
 layout (location = 0) out vec4 TargetTexture;
 
 in vec4 Color;
@@ -10,7 +11,8 @@ void main()
 
   float cosTheta = max(0.25f, dot(Normal, SunP));
 
-  TargetTexture.xyz = Color.xyz * cosTheta;
+  TargetTexture.rgb = vec3(1, 1, 1);
+  /* TargetTexture.rgb = Color.xyz * cosTheta; */
   TargetTexture.a = 1.f;
 }
 
