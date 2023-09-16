@@ -31,7 +31,7 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *
   /* Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "../voxel-model/vox/monument/monu10.vox"); */
   /* Result[ModelIndex_Player] = LoadWorldChunk(Memory, Heap, "assets/world_chunk_1_0_0"); */
 
-  Result[ModelIndex_Level] = LoadVoxModel(Memory, Heap, "models/trees/lanterns.vox", GetTranArena());
+  Result[ModelIndex_Level] = LoadVoxModel(Memory, Heap, "models/trees/lanterns.vox", GetTranArena()).Model;
 
   return Result;
 }

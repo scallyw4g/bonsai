@@ -9,7 +9,7 @@ model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *Heap)
 {
   model *Result = Allocate(model, Memory, ModelIndex_Count);
-  Result[ModelIndex_Player_jp] = LoadVoxModel(Memory, Heap, "models/players/chr_rain.vox", GetTranArena());
+  Result[ModelIndex_Player_jp] = LoadVoxModel(Memory, Heap, "models/players/chr_rain.vox", GetTranArena()).Model;
   /* Result[ModelIndex_Proton] = LoadVoxModel(Memory, Heap, PROJECTILE_MODEL); */
 
   return Result;
