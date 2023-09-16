@@ -348,8 +348,6 @@ main( s32 ArgCount, const char ** Args )
 
   PlatformInit(&Plat, PlatMemory);
 
-  /* PlatformTraverseDirectoryTree(CSz("models"), PrintFiles); */
-
 #if BONSAI_INTERNAL
   // debug_recording_state *Debug_RecordingState = Allocate(debug_recording_state, GameMemory, 1);
   // AllocateAndInitializeArena(&Debug_RecordingState->RecordedMainMemory, Gigabytes(3));
@@ -410,7 +408,7 @@ main( s32 ArgCount, const char ** Args )
 
   r32 LastMs = 0;
   r32 RealDt = 0;
-  while ( Os.ContinueRunning )
+  while (Plat.Input.Escape.Clicked == False)
   {
     /* u32 CSwitchEventsThisFrame = CSwitchEventsPerFrame; */
     /* CSwitchEventsPerFrame = 0; */

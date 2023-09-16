@@ -1,9 +1,0 @@
-out vec3 Color;
-
-in vec3 VertexColor;
-
-void main()
-{
-  Color = VertexColor;
-}
-

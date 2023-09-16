@@ -214,7 +214,7 @@ MakeGaussianBlurRenderGroup(memory_arena *GraphicsMemory)
   /* unsigned int pingpongFBO[2]; */
   /* unsigned int pingPongTexture[2]; */
 
-  Result.Shader = LoadShaders(CSz("Passthrough.vertexshader"), CSz("Gaussian.fragmentshader"));
+  Result.Shader = LoadShaders(CSz("include/bonsai_stdlib/Passthrough.vertexshader"), CSz("Gaussian.fragmentshader"));
 
   Result.FBOs[0] = GenFramebuffer();
   Result.FBOs[1] = GenFramebuffer();
@@ -308,7 +308,7 @@ shader
 MakeSsaoShader(memory_arena *GraphicsMemory, g_buffer_textures *gTextures,
     texture *SsaoNoiseTexture, v3 *SsaoNoiseTile, m4 *ViewProjection)
 {
-  shader Shader = LoadShaders( CSz("Passthrough.vertexshader"), CSz("Ao.fragmentshader") );
+  shader Shader = LoadShaders( CSz("include/bonsai_stdlib/Passthrough.vertexshader"), CSz("Ao.fragmentshader") );
 
   shader_uniform **Current = &Shader.FirstUniform;
 
