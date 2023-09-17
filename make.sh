@@ -29,7 +29,7 @@ EMCC=0
 # ROOT="$(pwd)"
 ROOT="."
 SRC="$ROOT/src"
-INCLUDE="$ROOT/include"
+INCLUDE="$ROOT/external"
 EXAMPLES="$ROOT/examples"
 TESTS="$SRC/tests"
 BIN="$ROOT/bin"
@@ -118,9 +118,9 @@ function MakeDebugLibRelease
   BuildDebugSystem
 
   echo "#pragma once"                         >  $DEBUG_LIB_RELEASE_DIR/api.h
-  cat include/bonsai_debug/src/public.h       >> $DEBUG_LIB_RELEASE_DIR/api.h
-  cat include/bonsai_stdlib/src/primitives.h  >> $DEBUG_LIB_RELEASE_DIR/api.h
-  cat include/bonsai_debug/src/api.h          >> $DEBUG_LIB_RELEASE_DIR/api.h
+  cat external/bonsai_debug/src/public.h       >> $DEBUG_LIB_RELEASE_DIR/api.h
+  cat external/bonsai_stdlib/src/primitives.h  >> $DEBUG_LIB_RELEASE_DIR/api.h
+  cat external/bonsai_debug/src/api.h          >> $DEBUG_LIB_RELEASE_DIR/api.h
 
   cp texture_atlas_0.bmp $DEBUG_LIB_RELEASE_DIR
   cp -R shaders $DEBUG_LIB_RELEASE_DIR
@@ -368,7 +368,7 @@ function RunEntireBuild {
 }
 
 
-# --log-level LogLevel_Debug -I src/ -I include/ -I "C:/Program Files/LLVM/lib/clang/11.0.0/include" -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/include" -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/atlmfc/include" -I "C:/Program Files (x86)/Windows Kits/10/Include/10.0.18362.0/ucrt" -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/shared" -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/um" -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/winrt" -D BONSAI_WIN32 -D BONSAI_INTERNAL -o generated src/game_loader.cpp
+# --log-level LogLevel_Debug -I src/ -I external/ -I "C:/Program Files/LLVM/lib/clang/11.0.0/include" -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/include" -I "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/atlmfc/include" -I "C:/Program Files (x86)/Windows Kits/10/Include/10.0.18362.0/ucrt" -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/shared" -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/um" -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/winrt" -D BONSAI_WIN32 -D BONSAI_INTERNAL -o generated src/game_loader.cpp
 
 function RunPoofHelper {
 
@@ -392,7 +392,7 @@ function RunPoofHelper {
    #
   poof                                                                                                         \
    -I src/                                                                                                     \
-   -I include/                                                                                                 \
+   -I external/                                                                                                 \
    -D _M_X64                                                                                                   \
    -D _M_CEE                                                                                                   \
    -D POOF_PREPROCESSOR                                                                                        \
@@ -417,7 +417,7 @@ function RunPoof
   RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
   addPid "" $!
 
-  # RunPoofHelper include/bonsai_debug/debug.cpp && echo -e "$Success poofed src/include/bonsai_debug/debug.cpp" &
+  # RunPoofHelper external/bonsai_debug/debug.cpp && echo -e "$Success poofed src/external/bonsai_debug/debug.cpp" &
   # addPid "" $!
 
   # RunPoofHelper examples/asset_picker/game.cpp && echo -e "$Success poofed examples/asset_picker/game.cpp" &
