@@ -64,7 +64,7 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
                      b32 *UseLightingBloom
                    )
 {
-  shader Shader = LoadShaders( CSz("composite.vertexshader"), CSz("composite.fragmentshader") );
+  shader Shader = LoadShaders( CSz(BONSAI_SHADER_PATH "composite.vertexshader"), CSz(BONSAI_SHADER_PATH "composite.fragmentshader") );
 
   shader_uniform **Current = &Shader.FirstUniform;
 
@@ -121,7 +121,7 @@ MakeLightingShader( memory_arena *GraphicsMemory,
                     b32 *UseLightingBloom
                   )
 {
-  shader Shader = LoadShaders( CSz("Lighting.vertexshader"), CSz("Lighting.fragmentshader") );
+  shader Shader = LoadShaders( CSz(BONSAI_SHADER_PATH "Lighting.vertexshader"), CSz(BONSAI_SHADER_PATH "Lighting.fragmentshader") );
 
   shader_uniform **Current = &Shader.FirstUniform;
 
@@ -214,7 +214,7 @@ MakeGaussianBlurRenderGroup(memory_arena *GraphicsMemory)
   /* unsigned int pingpongFBO[2]; */
   /* unsigned int pingPongTexture[2]; */
 
-  Result.Shader = LoadShaders(CSz("include/bonsai_stdlib/Passthrough.vertexshader"), CSz("Gaussian.fragmentshader"));
+  Result.Shader = LoadShaders(CSz(STDLIB_SHADER_PATH "Passthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "Gaussian.fragmentshader"));
 
   Result.FBOs[0] = GenFramebuffer();
   Result.FBOs[1] = GenFramebuffer();
@@ -285,7 +285,7 @@ SetDrawBuffers(framebuffer *FBO)
 shader
 CreateGbufferShader(memory_arena *GraphicsMemory, m4 *ViewProjection, camera *Camera)
 {
-  shader Shader = LoadShaders( CSz("gBuffer.vertexshader"), CSz("gBuffer.fragmentshader") );
+  shader Shader = LoadShaders( CSz(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSz(BONSAI_SHADER_PATH "gBuffer.fragmentshader") );
 
   shader_uniform **Current = &Shader.FirstUniform;
 
@@ -308,7 +308,7 @@ shader
 MakeSsaoShader(memory_arena *GraphicsMemory, g_buffer_textures *gTextures,
     texture *SsaoNoiseTexture, v3 *SsaoNoiseTile, m4 *ViewProjection)
 {
-  shader Shader = LoadShaders( CSz("include/bonsai_stdlib/Passthrough.vertexshader"), CSz("Ao.fragmentshader") );
+  shader Shader = LoadShaders( CSz(STDLIB_SHADER_PATH "Passthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "Ao.fragmentshader") );
 
   shader_uniform **Current = &Shader.FirstUniform;
 
@@ -410,7 +410,7 @@ InitializeShadowRenderGroup(shadow_render_group *SG, memory_arena *GraphicsMemor
   // For debug-only visualization of this texture
   /* SG->DebugTextureShader = MakeSimpleTextureShader(SG->ShadowMap, GraphicsMemory); */
 
-  SG->DepthShader = LoadShaders( CSz("DepthRTT.vertexshader"), CSz("DepthRTT.fragmentshader") );
+  SG->DepthShader = LoadShaders( CSz(BONSAI_SHADER_PATH "DepthRTT.vertexshader"), CSz(BONSAI_SHADER_PATH "DepthRTT.fragmentshader") );
   SG->MVP_ID = GetShaderUniform(&SG->DepthShader, "depthMVP");
 
   AssertNoGlErrors;
