@@ -11,15 +11,17 @@ struct entity;
 #define ASSET_TABLE_COUNT (128)
 struct engine_resources
 {
-  os         *Os;
-  platform   *Plat;
-  graphics   *Graphics;
-  hotkeys    *Hotkeys;
+  // Stdlib
+  os                 *Os;
+  platform           *Plat;
+  thread_local_state *ThreadStates;
+  renderer_2d         Ui; // TODO(Jesse): Is this actually, truly stdlib?
 
+  // Engine
+  hotkeys    *Hotkeys;
   world      *World;
   game_state *GameState;
-
-  thread_local_state *ThreadStates;
+  graphics   *Graphics;
 
   heap_allocator Heap;
   memory_arena *Memory;
@@ -40,9 +42,6 @@ struct engine_resources
   //
   // NOTE(Jesse): This is kinda-sorta all debug stuff
   //
-
-  // TODO(Jesse): Put this in Graphics?
-  renderer_2d Ui;
 
   debug_state *DebugState;
 

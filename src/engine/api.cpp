@@ -271,8 +271,8 @@ Bonsai_Render(engine_resources *Resources)
   return Result;
 }
 
-link_internal void
-WorkerThreadDefaultImplementations(BONSAI_API_WORKER_THREAD_CALLBACK_PARAMS)
+link_weak void
+WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_PARAMS)
 {
   world *World = Thread->EngineResources->World;
 

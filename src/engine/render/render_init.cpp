@@ -604,6 +604,7 @@ InitRenderToTextureGroup(render_entity_to_texture_group *Group, v2i TextureSize,
   Group->FBO = GenFramebuffer();
   GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
 
+#if 0
   s32 ImageSize = 4*Volume(TextureSize);
   f32 *Image = Allocate(f32, Memory, ImageSize);
 
@@ -611,6 +612,9 @@ InitRenderToTextureGroup(render_entity_to_texture_group *Group, v2i TextureSize,
   {
     Image[PixIndex] = 255.f;
   }
+#else
+  f32 *Image = 0;
+#endif
 
   Group->Texture = GenTexture(TextureSize, Memory);
   GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, Image);
@@ -625,5 +629,5 @@ InitRenderToTextureGroup(render_entity_to_texture_group *Group, v2i TextureSize,
 
   Group->DebugShader = MakeSimpleTextureShader(Group->Texture, Memory);
 
-  /* Ensure(CheckAndClearFramebuffer()); */
+  Ensure(CheckAndClearFramebuffer());
 }

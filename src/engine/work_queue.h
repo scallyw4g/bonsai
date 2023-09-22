@@ -170,9 +170,9 @@ HandleJob(volatile work_queue_entry *Entry, thread_local_state *Thread, game_api
   {
     // Game exported a WorkerMain, and it handled the job
   }
-  else
+  else if (WorkerThread_ApplicationDefaultImplementation)
   {
-    WorkerThreadDefaultImplementations(Entry, Thread);
+    WorkerThread_ApplicationDefaultImplementation(Entry, Thread);
   }
 }
 

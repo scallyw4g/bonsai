@@ -66,6 +66,10 @@ compiler, and a few appropriate system headers.
 
 [ ] Do sound :'D
 
+-------------------------------------------------------------------------------
+## RNG
+
+[ ] Better low-discrepency sequences : https://blog.demofox.org/2017/05/29/when-random-numbers-are-too-random-low-discrepancy-sequences/
 
 
 # Building
