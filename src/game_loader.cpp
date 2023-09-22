@@ -37,30 +37,6 @@ LibIsNew(const char *LibPath, s64 *LastLibTime)
   return Result;
 }
 
-link_internal void
-PlatformInit(platform *Plat, memory_arena *Memory)
-{
-  Plat->Memory = Memory;
-
-  u32 LogicalCoreCount = PlatformGetLogicalCoreCount();
-  u32 WorkerThreadCount = GetWorkerThreadCount();
-  s32 TotalThreadCount  = (s32)GetTotalThreadCount();
-  Info("Detected %u Logical cores, creating %u threads", LogicalCoreCount, WorkerThreadCount);
-
-  /* Plat->QueueSemaphore = CreateSemaphore(); */
-
-  InitQueue(&Plat->LowPriority, Plat->Memory); //, &Plat->QueueSemaphore);
-  InitQueue(&Plat->HighPriority, Plat->Memory); //, &Plat->QueueSemaphore);
-
-  Plat->Threads = Allocate(thread_startup_params, Plat->Memory, TotalThreadCount);
-
-#if BONSAI_NETWORK_IMPLEMENTATION
-  Plat->ServerState = ServerInit(GameMemory);
-#endif
-
-  return;
-}
-
 
 #if 0
 void
@@ -129,10 +105,6 @@ PrintFiles(file_traversal_node *Node)
 s32
 main( s32 ArgCount, const char ** Args )
 {
-  SetThreadLocal_ThreadIndex(0);
-
-  Info("Initializing Bonsai");
-
 #if 0
   /* for (const auto& pmc : query_available_pmc()) { */
   /*     std::wcout << pmc.Name << "(" << pmc.native_source << ")" << std::endl; */
@@ -174,20 +146,15 @@ main( s32 ArgCount, const char ** Args )
   engine_resources EngineResources = {};
   hotkeys Hotkeys = {};
 
-  memory_arena BootstrapArena = {};
-
   EngineResources.Plat = &Plat;
   EngineResources.Os = &Os;
   EngineResources.Hotkeys = &Hotkeys;
-  EngineResources.ThreadStates = Initialize_ThreadLocal_ThreadStates((s32)GetTotalThreadCount(), &EngineResources, &BootstrapArena);
+   /* Initialize_ThreadLocal_ThreadStates((s32)GetTotalThreadCount(), &EngineResources, &BootstrapArena); */
 
-  Global_ThreadStates = EngineResources.ThreadStates;
+  memory_arena BootstrapArena = {};
+  Ensure( InitializeBonsaiStdlib(bonsai_init_flags(BonsaiInit_LaunchThreadPool|BonsaiInit_OpenWindow), &Os, &Plat, &EngineResources, &BootstrapArena) );
 
-  s32 VSyncFrames = 0;
-  if (!OpenAndInitializeWindow(&Os, &Plat, VSyncFrames)) { Error("Initializing Window :( "); return 1; }
-  Assert(Os.GlContext);
-
-  Ensure( InitializeOpenglFunctions() );
+  EngineResources.ThreadStates = Global_ThreadStates;
 
 #if DEBUG_SYSTEM_API
   shared_lib DebugLib = InitializeBonsaiDebug("./bin/lib_debug_system_loadable" PLATFORM_RUNTIME_LIB_EXTENSION, Global_ThreadStates);
@@ -203,7 +170,8 @@ main( s32 ArgCount, const char ** Args )
   DEBUG_REGISTER_ARENA(PlatMemory, 0);
   DEBUG_REGISTER_ARENA(&BootstrapArena, 0);
 
-  PlatformInit(&Plat, PlatMemory);
+  InitQueue(&Plat.HighPriority, PlatMemory);
+  InitQueue(&Plat.LowPriority, PlatMemory);
 
 #if BONSAI_INTERNAL
   // debug_recording_state *Debug_RecordingState = Allocate(debug_recording_state, GameMemory, 1);
