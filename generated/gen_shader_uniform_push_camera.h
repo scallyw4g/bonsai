@@ -2,7 +2,7 @@ shader_uniform *
 PushShaderUniform( memory_arena *Mem, const char *Name, camera *Value)
 {
   shader_uniform *Uniform = PushShaderUniform(Mem, Name);
-  Uniform->Type = EngineShaderUniform_Camera;
+  Uniform->Type = ShaderUniform_Camera;
   Uniform->Camera = Value;
   return Uniform;
 }

@@ -18,6 +18,7 @@ enum ui_render_command_type
   type_ui_render_command_new_row,
   type_ui_render_command_table_end,
   type_ui_render_command_reset_draw_bounds,
+  type_ui_render_command_force_update_basis,
 };
 
 struct ui_render_command
@@ -39,6 +40,7 @@ struct ui_render_command
     struct ui_render_command_untextured_quad_at ui_render_command_untextured_quad_at;
     struct ui_render_command_border ui_render_command_border;
     struct ui_render_command_force_advance ui_render_command_force_advance;
+    struct ui_render_command_force_update_basis ui_render_command_force_update_basis;
   };
 };
 

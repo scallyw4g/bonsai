@@ -14,14 +14,14 @@ BindEngineUniform(shader_uniform *Uniform)
 
   switch(Uniform->Type)
   {
-    case EngineShaderUniform_Light:
+    case ShaderUniform_Light:
     {
       TIMED_BLOCK("ShaderUniform_Light");
       GL.Uniform3fv(Uniform->ID, 1, &Uniform->Light->Position.E[0]);
       END_BLOCK();
     } break;
 
-    case EngineShaderUniform_Camera:
+    case ShaderUniform_Camera:
     {
       TIMED_BLOCK("ShaderUniform_Camera");
       GL.Uniform3fv(Uniform->ID, 1, &Uniform->Camera->RenderSpacePosition.E[0]);
