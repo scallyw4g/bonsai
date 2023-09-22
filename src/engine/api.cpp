@@ -360,12 +360,14 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
   }
 }
 
-link_export void
-WorkerInit(engine_resources *Engine, thread_startup_params *StartupParams)
+void
+WorkerThread_BeforeJobStart(thread_startup_params *StartupParams)
 {
   if (ThreadLocal_ThreadIndex == -1) { SetThreadLocal_ThreadIndex(StartupParams->ThreadIndex); }
+
 #if DEBUG_SYSTEM_API 
   Assert(GetDebugState());
 #endif
+
   DEBUG_REGISTER_THREAD(StartupParams);
 }

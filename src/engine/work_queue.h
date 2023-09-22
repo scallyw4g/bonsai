@@ -163,7 +163,7 @@ WorkQueueEntry( particle_system *System, untextured_3d_geometry_buffer *Dest, v3
 
 
 link_internal void
-HandleJob(volatile work_queue_entry *Entry, thread_local_state *Thread, game_api *GameApi)
+HandleJob(volatile work_queue_entry *Entry, thread_local_state *Thread, application_api *GameApi)
 {
   if ( GameApi->WorkerMain &&
        GameApi->WorkerMain(Entry, Thread))
@@ -177,37 +177,6 @@ HandleJob(volatile work_queue_entry *Entry, thread_local_state *Thread, game_api
 }
 
 
-// TODO(Jesse): This should be able to go into the stdlib at this point.
-// Probably time to move it there.  AFAIK the only thinig that has to move with
-// it is this bonsai_worker_thread_callback thingy.
-link_internal void
-DrainQueue(work_queue* Queue, thread_local_state* Thread, game_api *GameApi)
-{
-  TIMED_FUNCTION();
-
-  for (;;)
-  {
-    WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
-
-    // NOTE(Jesse): Must read and comared DequeueIndex instead of calling QueueIsEmpty
-    u32 DequeueIndex = Queue->DequeueIndex;
-    if (DequeueIndex == Queue->EnqueueIndex)
-    {
-      break;
-    }
-
-    b32 Exchanged = AtomicCompareExchange( &Queue->DequeueIndex,
-                                           GetNextQueueIndex(DequeueIndex),
-                                           DequeueIndex );
-    if ( Exchanged )
-    {
-      volatile work_queue_entry* Entry = Queue->Entries + DequeueIndex;
-      /* GameWorkerThreadCallback(Entry, Thread); */
-      HandleJob(Entry, Thread, GameApi);
-    }
-  }
-}
-
 /* link_internal untextured_3d_geometry_buffer * */
 /* GetMeshFor(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bitfield MeshBit); */
 
@@ -216,6 +185,3 @@ TakeOwnershipSync(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bitfield Mes
 
 link_internal void
 ReleaseOwnership(threadsafe_geometry_buffer *Src, world_chunk_mesh_bitfield MeshBit, untextured_3d_geometry_buffer *Buf);
-
-link_internal void
-PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry);

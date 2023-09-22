@@ -29,3 +29,4 @@
 #include <engine/simulate.cpp>
 #include <engine/voxel_synthesis.cpp>
 
+#include <bonsai_stdlib/src/work_queue.cpp>

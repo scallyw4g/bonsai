@@ -20,7 +20,7 @@ MousePickEntity(engine_resources *Resources)
 }
 
 // An optional function the game can choose to implement if they want to do a custom entity update.
-void GameEntityUpdate(engine_resources *, entity *) __attribute__((weak));
+link_weak void GameEntityUpdate(engine_resources *, entity *);
 
 // NOTE(Jesse): Once we draw entities & chunks in a more real way this should
 // be able to be moved back into the regular entity.cpp
