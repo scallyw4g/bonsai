@@ -19,8 +19,8 @@ UpdateCameraP(world *World, canonical_position NewTarget, camera *Camera)
   Camera->ViewingTarget = NewTarget;
 
   Camera->TargetP = Canonicalize(World->ChunkDim, NewTarget - (Camera->Front*Camera->DistanceFromTarget));
-  Camera->CurrentP = Lerp(0.25f, Camera->CurrentP, Camera->TargetP, World->ChunkDim);
-  /* Camera->CurrentP = Canonicalize(World->ChunkDim, Camera->CurrentP); */
+  Camera->CurrentP = Lerp(0.35f, Camera->CurrentP, Camera->TargetP, World->ChunkDim);
+  Camera->CurrentP = Canonicalize(World->ChunkDim, Camera->CurrentP);
 
   Camera->RenderSpacePosition = GetRenderP(World->ChunkDim, Camera->CurrentP, Camera);
 
@@ -127,6 +127,12 @@ UpdateGameCamera(world *World, v2 MouseDelta, input *Input, canonical_position N
 
     Camera->DistanceFromTarget = ClampMin(Camera->DistanceFromTarget, 15.f);
   }
+  else
+  {
+  }
+
+  Info("%f, %f, %f", double(NewTarget.Offset.x), double(NewTarget.Offset.y), double(NewTarget.Offset.z));
+  Info("%u, %u, %u", NewTarget.WorldP.x, NewTarget.WorldP.y, NewTarget.WorldP.z);
 
   UpdateCameraP(World, NewTarget, Camera);
   return;

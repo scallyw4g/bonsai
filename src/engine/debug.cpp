@@ -272,11 +272,16 @@ DebugFileNodeView(file_traversal_node *Node)
 }
 
 link_internal void
-RenderToTexture(engine_resources *Engine, untextured_3d_geometry_buffer *Src)
+RenderToTexture(engine_resources *Engine, untextured_3d_geometry_buffer *Src, v3 Offset)
 {
   auto World    = Engine->World;
   auto RTTGroup = &Engine->RTTGroup;
-  v3 Basis = {}; //-0.5f*V3(World->ChunkDim);
+
+  UpdateGameCamera(World, {}, 0, {}, RTTGroup->Camera);
+
+
+  /* v3 SimCameraP = GetSimSpaceP(World, Camera->CurrentP); */
+  /* v3 SimCameraTargetP = GetSimSpaceP(World, CameraTarget); */
 
   // GL stuff
   {
@@ -288,9 +293,26 @@ RenderToTexture(engine_resources *Engine, untextured_3d_geometry_buffer *Src)
 
     SetViewport(V2(Tex->Dim));
 
+#if 1
+    auto Camera = RTTGroup->Camera;
+#else
+    camera *Camera = Engine->Graphics->Camera;
+#endif
+
+    Camera->DistanceFromTarget = Length(Offset) * 10.f;
+
     RTTGroup->ViewProjection =
-      ProjectionMatrix(RTTGroup->Camera, Tex->Dim.x, Tex->Dim.y) *
-      ViewMatrix(World->ChunkDim, RTTGroup->Camera);
+      /* Translate( GetRenderP(World->ChunkDim, Camera->CurrentP, Camera) ) * */
+      /* Translate( GetSimSpaceP(World, CameraTarget) ) * */
+      /* Translate( V3(-10) ) * */
+      ProjectionMatrix(Camera, Tex->Dim.x, Tex->Dim.y) *
+      ViewMatrix(World->ChunkDim, Camera)
+      /* + Translate2(V3(-0.01f, 0.f, 0.f)) */
+      /* * Translate( V3(-10) ) */
+      /* Translate( GetSimSpaceP(World, Camera->CurrentP) ); */
+      ;
+
+    /* GetSimSpaceP(World); */
 
     BindShaderUniforms(&RTTGroup->Shader);
   }
@@ -300,16 +322,13 @@ RenderToTexture(engine_resources *Engine, untextured_3d_geometry_buffer *Src)
     MapGpuElementBuffer(&RTTGroup->GeoBuffer);
     untextured_3d_geometry_buffer* Dest = &RTTGroup->GeoBuffer.Buffer;
 
+    v3 Basis = Offset;
     BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
     FlushBuffersToCard(&RTTGroup->GeoBuffer);
   }
 
-  GL.Disable(GL_CULL_FACE);
-  GL.Disable(GL_DEPTH_TEST);
   Draw(RTTGroup->GeoBuffer.Buffer.At);
   RTTGroup->GeoBuffer.Buffer.At = 0;
-  GL.Enable(GL_DEPTH_TEST);
-  GL.Enable(GL_CULL_FACE);
 }
 
 link_internal void
@@ -466,16 +485,9 @@ DoEngineDebug(engine_resources *Engine)
       {
         case AssetLoadState_Loaded:
         {
-          /* RenderToTexture(Engine, &Asset->Model.Mesh); */
-
-          /* Engine->CameraTarget->Model = Asset->Model; */
-
+          RenderToTexture(Engine, &Asset->Model.Mesh, Asset->Model.Dim/-2.f);
           PushTexturedQuad(Ui, Engine->RTTGroup.Texture, V2(256), zDepth_Text);
-          PushTexturedQuad(Ui, gBuffer->Textures->Normal, V2(256), zDepth_Text);
-          PushTexturedQuad(Ui, gBuffer->Textures->Color, V2(256), zDepth_Text);
-          PushTexturedQuad(Ui, gBuffer->Textures->Position, V2(256), zDepth_Text);
         } break;
-
 
         case AssetLoadState_Queued:
         case AssetLoadState_Loading:

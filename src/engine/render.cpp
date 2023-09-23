@@ -53,7 +53,7 @@ link_internal void
 Debug_DrawTextureToDebugQuad( shader *DebugShader )
 {
   GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
-  SetViewport(V2(256)*2);
+  SetViewport(V2(256));
 
   GL.UseProgram(DebugShader->ID);
   BindShaderUniforms(DebugShader);
