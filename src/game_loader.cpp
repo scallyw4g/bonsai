@@ -216,7 +216,7 @@ main( s32 ArgCount, const char ** Args )
   GetDebugState()->SetRenderer(&EngineResources.Ui);
 #endif
 
-  LaunchWorkerThreads(&Plat, &EngineResources, &EngineApi, &GameApi);
+  LaunchWorkerThreads(&Plat, &EngineResources, &GameApi);
 
   thread_local_state MainThread = DefaultThreadLocalState(&EngineResources, 0);
 
