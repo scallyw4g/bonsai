@@ -71,9 +71,18 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   World->ChunkHash = CurrentWorldHashtable(Resources);
 
-  MapGpuElementBuffer(GpuMap);
-
   ClearFramebuffers(Graphics, &Resources->RTTGroup);
+
+  if (EngineDebug->SelectedAsset.Type)
+  {
+    asset *Asset = GetAsset(Resources, &EngineDebug->SelectedAsset);
+    if (Asset->LoadState == AssetLoadState_Loaded)
+    {
+      RenderToTexture(Resources, &Asset->Model.Mesh);
+    }
+  }
+
+  MapGpuElementBuffer(GpuMap);
 
   if (GetEngineDebug()->DrawWorldAxies)
   {
@@ -263,6 +272,7 @@ Bonsai_Render(engine_resources *Resources)
   GL.DisableVertexAttribArray(0);
   GL.DisableVertexAttribArray(1);
   GL.DisableVertexAttribArray(2);
+
 
   /* DebugVisualize(Ui, &Resources->MeshFreelist); */
   /* DebugVisualize(Ui, Resources->World->FreeChunks, (s32)Resources->World->FreeChunkCount); */

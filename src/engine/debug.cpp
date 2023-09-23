@@ -283,7 +283,6 @@ RenderToTexture(engine_resources *Engine, untextured_3d_geometry_buffer *Src)
     texture *Tex = RTTGroup->Texture;
 
     GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID);
-    GL.Disable(GL_DEPTH_TEST);
     /* GL.BindTexture(GL_FRAMEBUFFER, RTTGroup->Texture->ID); */
 
     GL.UseProgram(RTTGroup->Shader.ID);
@@ -292,6 +291,7 @@ RenderToTexture(engine_resources *Engine, untextured_3d_geometry_buffer *Src)
 
     RTTGroup->ViewProjection =
       ProjectionMatrix(Engine->Graphics->Camera, Tex->Dim.x, Tex->Dim.y) *
+      /* ProjectionMatrix(RTTGroup->Camera, Tex->Dim.x, Tex->Dim.y) * */
       ViewMatrix(World->ChunkDim, Engine->Graphics->Camera);
 
     BindShaderUniforms(&RTTGroup->Shader);
@@ -306,9 +306,12 @@ RenderToTexture(engine_resources *Engine, untextured_3d_geometry_buffer *Src)
     FlushBuffersToCard(&RTTGroup->GeoBuffer);
   }
 
+  GL.Disable(GL_CULL_FACE);
+  GL.Disable(GL_DEPTH_TEST);
   Draw(RTTGroup->GeoBuffer.Buffer.At);
   RTTGroup->GeoBuffer.Buffer.At = 0;
   GL.Enable(GL_DEPTH_TEST);
+  GL.Enable(GL_CULL_FACE);
 }
 
 link_internal void
@@ -442,8 +445,8 @@ DoEngineDebug(engine_resources *Engine)
 
   if (ToggledOn(&ButtonGroup, CSz("Assets")))
   {
-    v2 WindowDim = {{1200.f, 250.f}};
-    local_persist window_layout Window = WindowLayout("Assets", DefaultWindowBasis(*Ui->ScreenDim, WindowDim), WindowDim);
+    v2 AssetListWindowDim = {{350.f, 250.f}};
+    local_persist window_layout Window = WindowLayout("Assets", DefaultWindowBasis(*Ui->ScreenDim, AssetListWindowDim), AssetListWindowDim);
 
     render_settings *Settings = &Graphics->Settings;
     PushWindowStart(Ui, &Window);
@@ -452,16 +455,20 @@ DoEngineDebug(engine_resources *Engine)
 
     if (EngineDebug->SelectedAsset.Type)
     {
-      local_persist window_layout AssetViewWindow = WindowLayout("Asset View", DefaultWindowBasis(*Ui->ScreenDim, WindowDim) + V2(WindowDim.x, 0), WindowDim);
+      v2 AssetDetailWindowDim = {{400.f, 400.f}};
+      local_persist window_layout AssetViewWindow = WindowLayout("Asset View", DefaultWindowBasis(*Ui->ScreenDim, AssetDetailWindowDim) + V2(AssetDetailWindowDim.x, 0), AssetDetailWindowDim);
       PushWindowStart(Ui, &AssetViewWindow);
 
       asset *Asset = GetAsset(Engine, &EngineDebug->SelectedAsset);
+
+      PushColumn(Ui, Asset->FileNode.Name);
+      PushNewRow(Ui);
 
       switch (Asset->LoadState)
       {
         case AssetLoadState_Loaded:
         {
-          RenderToTexture(Engine, &Asset->Model.Mesh);
+          /* RenderToTexture(Engine, &Asset->Model.Mesh); */
 
           /* Engine->CameraTarget->Model = Asset->Model; */
 

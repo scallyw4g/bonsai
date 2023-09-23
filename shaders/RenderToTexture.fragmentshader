@@ -11,8 +11,8 @@ void main()
 
   float cosTheta = max(0.25f, dot(Normal, SunP));
 
-  TargetTexture.rgb = vec3(1, 1, 1);
-  /* TargetTexture.rgb = Color.xyz * cosTheta; */
+  /* TargetTexture.rgb = vec3(1, 1, 1); */
+  TargetTexture.rgb = Color.xyz * cosTheta;
   TargetTexture.a = 1.f;
 }
 

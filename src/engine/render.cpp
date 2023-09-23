@@ -305,8 +305,8 @@ ClearFramebuffers(graphics *Graphics, render_entity_to_texture_group *RTTGroup)
 
   SetDefaultFramebufferClearColors();
 
-  /* GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID); */
-  /* GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
+  GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID);
+  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->gBuffer->FBO.ID);
   GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
