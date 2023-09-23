@@ -283,16 +283,14 @@ RenderToTexture(engine_resources *Engine, untextured_3d_geometry_buffer *Src)
     texture *Tex = RTTGroup->Texture;
 
     GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID);
-    /* GL.BindTexture(GL_FRAMEBUFFER, RTTGroup->Texture->ID); */
 
     GL.UseProgram(RTTGroup->Shader.ID);
 
-    SetViewport(Engine->Plat->ScreenDim);
+    SetViewport(V2(Tex->Dim));
 
     RTTGroup->ViewProjection =
-      ProjectionMatrix(Engine->Graphics->Camera, Tex->Dim.x, Tex->Dim.y) *
-      /* ProjectionMatrix(RTTGroup->Camera, Tex->Dim.x, Tex->Dim.y) * */
-      ViewMatrix(World->ChunkDim, Engine->Graphics->Camera);
+      ProjectionMatrix(RTTGroup->Camera, Tex->Dim.x, Tex->Dim.y) *
+      ViewMatrix(World->ChunkDim, RTTGroup->Camera);
 
     BindShaderUniforms(&RTTGroup->Shader);
   }

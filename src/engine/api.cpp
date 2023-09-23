@@ -78,6 +78,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
     asset *Asset = GetAsset(Resources, &EngineDebug->SelectedAsset);
     if (Asset->LoadState == AssetLoadState_Loaded)
     {
+      UpdateGameCamera(World, {}, 0, Canonical_Position(V3(Asset->Model.Dim/2), V3i(0)), Resources->RTTGroup.Camera);
       RenderToTexture(Resources, &Asset->Model.Mesh);
     }
   }
