@@ -619,6 +619,9 @@ InitRenderToTextureGroup(render_entity_to_texture_group *Group, v2i TextureSize,
   Group->Texture = GenTexture(TextureSize, Memory);
   GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, Image);
 
+  texture *DepthTexture = MakeDepthTexture( TextureSize, Memory );
+  FramebufferDepthTexture(DepthTexture);
+
   FramebufferTexture(&Group->FBO, Group->Texture);
   SetDrawBuffers(&Group->FBO);
 
