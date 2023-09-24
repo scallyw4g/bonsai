@@ -110,6 +110,7 @@ UpdateGameCamera(world *World, v2 MouseDelta, input *Input, canonical_position N
   {
     if (Input->LMB.Pressed)
     {
+      // TODO(Jesse): Make these vary by DistanceFromTarget, such that the mouse feels the same amount of sensitive zoomed in as out.
       Camera->Yaw += MouseDelta.x;
       Camera->Pitch += MouseDelta.y;
       Camera->Pitch = ClampBetween(0.0, Camera->Pitch, PI32);
@@ -125,7 +126,8 @@ UpdateGameCamera(world *World, v2 MouseDelta, input *Input, canonical_position N
       Camera->DistanceFromTarget += Input->MouseWheelDelta*Camera->DistanceFromTarget;
     }
 
-    Camera->DistanceFromTarget = ClampMin(Camera->DistanceFromTarget, 15.f);
+    Camera->DistanceFromTarget = ClampMin(Camera->DistanceFromTarget, Camera->Frust.nearClip);
+    Camera->DistanceFromTarget = ClampMax(Camera->DistanceFromTarget, Camera->Frust.farClip);
   }
 
   /* Info("%f, %f, %f", double(NewTarget.Offset.x), double(NewTarget.Offset.y), double(NewTarget.Offset.z)); */
