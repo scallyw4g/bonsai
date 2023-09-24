@@ -131,3 +131,6 @@ GetFrustumCenter(camera *Camera)
   // TODO(Jesse): Implement me!
   return Result;
 }
+
+inline v2
+GetMouseDelta(platform *Plat);

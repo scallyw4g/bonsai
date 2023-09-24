@@ -67,6 +67,7 @@ struct engine_debug
   b8 DrawWorldAxies;
 
   b8 TriggerRuntimeBreak;
+  b8 ResetAssetNodeView;
 
   u8 PickedChunkState;
   world_chunk *PickedChunk;

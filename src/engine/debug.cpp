@@ -259,7 +259,7 @@ DebugFileNodeView(file_traversal_node *Node)
         PushNewRow(Ui);
       PushButtonEnd(Ui);
 
-      if (Clicked(Ui, &FileButton)) { EngineDebug->SelectedAsset = *Node; }
+      if (Clicked(Ui, &FileButton)) { EngineDebug->ResetAssetNodeView = True; EngineDebug->SelectedAsset = *Node; }
     } break;
 
     case FileTraversalType_Dir:
@@ -277,12 +277,6 @@ RenderToTexture(engine_resources *Engine, untextured_3d_geometry_buffer *Src, v3
   auto World    = Engine->World;
   auto RTTGroup = &Engine->RTTGroup;
 
-  UpdateGameCamera(World, {}, 0, {}, RTTGroup->Camera);
-
-
-  /* v3 SimCameraP = GetSimSpaceP(World, Camera->CurrentP); */
-  /* v3 SimCameraTargetP = GetSimSpaceP(World, CameraTarget); */
-
   // GL stuff
   {
     texture *Tex = RTTGroup->Texture;
@@ -299,8 +293,6 @@ RenderToTexture(engine_resources *Engine, untextured_3d_geometry_buffer *Src, v3
     camera *Camera = Engine->Graphics->Camera;
 #endif
 
-    Camera->DistanceFromTarget = Length(Offset) * 10.f;
-
     RTTGroup->ViewProjection =
       /* Translate( GetRenderP(World->ChunkDim, Camera->CurrentP, Camera) ) * */
       /* Translate( GetSimSpaceP(World, CameraTarget) ) * */
@@ -311,8 +303,6 @@ RenderToTexture(engine_resources *Engine, untextured_3d_geometry_buffer *Src, v3
       /* * Translate( V3(-10) ) */
       /* Translate( GetSimSpaceP(World, Camera->CurrentP) ); */
       ;
-
-    /* GetSimSpaceP(World); */
 
     BindShaderUniforms(&RTTGroup->Shader);
   }
@@ -327,6 +317,7 @@ RenderToTexture(engine_resources *Engine, untextured_3d_geometry_buffer *Src, v3
     FlushBuffersToCard(&RTTGroup->GeoBuffer);
   }
 
+  GL.Enable(GL_DEPTH_TEST);
   Draw(RTTGroup->GeoBuffer.Buffer.At);
   RTTGroup->GeoBuffer.Buffer.At = 0;
 }
@@ -485,8 +476,22 @@ DoEngineDebug(engine_resources *Engine)
       {
         case AssetLoadState_Loaded:
         {
-          RenderToTexture(Engine, &Asset->Model.Mesh, Asset->Model.Dim/-2.f);
-          PushTexturedQuad(Ui, Engine->RTTGroup.Texture, V2(256), zDepth_Text);
+          v3 Offset = Asset->Model.Dim/-2.f;
+          RenderToTexture(Engine, &Asset->Model.Mesh, Offset);
+
+          interactable_handle B = PushButtonStart(Ui, umm("asset_texture_viewport") );
+            PushTexturedQuad(Ui, Engine->RTTGroup.Texture, V2(Engine->RTTGroup.Texture->Dim), zDepth_Text);
+          PushButtonEnd(Ui);
+
+          if (EngineDebug->ResetAssetNodeView)
+          {
+            Engine->RTTGroup.Camera->DistanceFromTarget = Length(Offset) * 10.f;
+            EngineDebug->ResetAssetNodeView = False;
+          }
+
+          v2 MouseDP = {};
+          if (Pressed(Ui, &B)) { MouseDP = GetMouseDelta(Plat); }
+          UpdateGameCamera(World, MouseDP, Input, {}, Engine->RTTGroup.Camera);
         } break;
 
         case AssetLoadState_Queued:

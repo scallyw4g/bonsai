@@ -127,12 +127,9 @@ UpdateGameCamera(world *World, v2 MouseDelta, input *Input, canonical_position N
 
     Camera->DistanceFromTarget = ClampMin(Camera->DistanceFromTarget, 15.f);
   }
-  else
-  {
-  }
 
-  Info("%f, %f, %f", double(NewTarget.Offset.x), double(NewTarget.Offset.y), double(NewTarget.Offset.z));
-  Info("%u, %u, %u", NewTarget.WorldP.x, NewTarget.WorldP.y, NewTarget.WorldP.z);
+  /* Info("%f, %f, %f", double(NewTarget.Offset.x), double(NewTarget.Offset.y), double(NewTarget.Offset.z)); */
+  /* Info("%u, %u, %u", NewTarget.WorldP.x, NewTarget.WorldP.y, NewTarget.WorldP.z); */
 
   UpdateCameraP(World, NewTarget, Camera);
   return;
