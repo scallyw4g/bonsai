@@ -3545,7 +3545,9 @@ BufferWorld( platform* Plat,
 link_internal v3i
 ChunkCountForDim(v3i Dim, v3i ChunkDim)
 {
-  v3i Result = Max(V3i(1), Dim/ChunkDim);
+  v3i Fixup = Min(V3i(1), Dim % ChunkDim);
+
+  v3i Result = (Dim/ChunkDim) + Fixup;
   return Result;
 }
 
@@ -3568,6 +3570,8 @@ BlitAssetIntoWorld(engine_resources *Engine, asset *Asset, cp Origin, memory_are
 
   // TODO(Jesse): Need to account for model offset in its chunk here.
   chunk_dimension ChunkCounts = ChunkCountForDim(ModelDim + Origin.Offset, World->ChunkDim);
+
+  DebugLine("%d %d %d", ChunkCounts.x, ChunkCounts.y, ChunkCounts.z);
 
   DimIterator(xChunk, yChunk, zChunk, ChunkCounts)
   {
