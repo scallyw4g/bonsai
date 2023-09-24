@@ -3566,27 +3566,23 @@ BlitAssetIntoWorld(engine_resources *Engine, asset *Asset, cp Origin, memory_are
     .Voxels = VoxData->Voxels,
   };
 
-  /* s32 xChunkCount = 1 + (ModelDim.x / WorldChunkDim.x); */
-  /* s32 yChunkCount = 1 + (ModelDim.y / WorldChunkDim.y); */
-  /* s32 zChunkCount = 1 + (ModelDim.z / WorldChunkDim.z); */
-
   // TODO(Jesse): Need to account for model offset in its chunk here.
-  chunk_dimension ChunkCounts = ChunkCountForDim(ModelDim, World->ChunkDim);
+  chunk_dimension ChunkCounts = ChunkCountForDim(ModelDim + Origin.Offset, World->ChunkDim);
 
-  DimIterator(zChunk, yChunk, xChunk, ChunkCounts)
+  DimIterator(xChunk, yChunk, zChunk, ChunkCounts)
   {
-    v3i SrcWorldOffset = V3i(xChunk, yChunk, zChunk);
-    v3i P = Origin.WorldP + SrcWorldOffset;
-    world_chunk *DestChunk = GetWorldChunkFromHashtable(World, P);
+    v3i SrcWorldP = V3i(xChunk, yChunk, zChunk);
+
+    v3i DestWorldP = Origin.WorldP + SrcWorldP;
+    world_chunk *DestChunk = GetWorldChunkFromHashtable(World, DestWorldP);
     if (DestChunk)
     {
       Assert(DestChunk->Flags == Chunk_VoxelsInitialized);
 
-      v3i SrcVoxelsOffset = (SrcWorldOffset*World->ChunkDim);
+      v3i SrcVoxelsOffset = (SrcWorldP*World->ChunkDim) - V3i(Origin.Offset);
 
       CopyChunkOffset(&SrcChunk, SrcChunk.Dim, DestChunk, World->ChunkDim, SrcVoxelsOffset);
 
-      MarkBoundaryVoxels_NoExteriorFaces(DestChunk->Voxels, DestChunk->Dim, {}, DestChunk->Dim);
       QueueChunkForMeshRebuild(&Engine->Plat->LowPriority, DestChunk);
     }
   }
