@@ -60,8 +60,10 @@ struct work_queue_entry_rebuild_mesh
 enum world_update_op_shape_type
 {
   type_world_update_op_shape_params_noop,
+
   type_world_update_op_shape_params_sphere,
-  type_world_update_op_shape_params_rect
+  type_world_update_op_shape_params_rect,
+  type_world_update_op_shape_params_asset,
 };
 
 struct world_update_op_shape_params_sphere
@@ -72,10 +74,15 @@ struct world_update_op_shape_params_sphere
 
 struct world_update_op_shape_params_rect
 {
-  /* rect3 UpdateBounds; */
   // NOTE(Jesse): These are in sim space
   v3 P0;
   v3 P1;
+};
+
+struct asset;
+struct world_update_op_shape_params_asset
+{
+  asset *Asset;
 };
 
 struct world_update_op_shape
@@ -84,6 +91,7 @@ struct world_update_op_shape
   union {
     world_update_op_shape_params_sphere world_update_op_shape_params_sphere;
     world_update_op_shape_params_rect world_update_op_shape_params_rect;
+    world_update_op_shape_params_asset world_update_op_shape_params_asset;
   };
 };
 

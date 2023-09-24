@@ -481,10 +481,15 @@ MergeChunksOffset(world_chunk *Src, world_chunk *Dest, voxel_position Offset)
 }
 
 link_internal void
-CopyChunkOffset(world_chunk *Src, voxel_position SrcChunkDim, world_chunk *Dest, voxel_position DestChunkDim, voxel_position Offset)
+CopyChunkOffset(world_chunk *Src, voxel_position SrcChunkDim, world_chunk *Dest, voxel_position DestChunkDim, voxel_position SrcOffset)
 {
   TIMED_FUNCTION();
-  Assert(Dest->FilledCount == 0);
+
+  Assert(Src->Dim == SrcChunkDim);
+  Assert(Dest->Dim == DestChunkDim);
+
+  // This happens when we blit an asset into the world
+  /* Assert(Dest->FilledCount == 0); */
 
   for ( s32 z = 0; z < DestChunkDim.z; ++ z)
   {
@@ -492,7 +497,7 @@ CopyChunkOffset(world_chunk *Src, voxel_position SrcChunkDim, world_chunk *Dest,
     {
       for ( s32 x = 0; x < DestChunkDim.x; ++ x)
       {
-        s32 SrcIndex = TryGetIndex(Voxel_Position(x,y,z) + Offset, SrcChunkDim);
+        s32 SrcIndex = TryGetIndex(Voxel_Position(x,y,z) + SrcOffset, SrcChunkDim);
         if (SrcIndex > -1)
         {
           s32 DestIndex = GetIndex(Voxel_Position(x,y,z), DestChunkDim);
@@ -3537,6 +3542,57 @@ BufferWorld( platform* Plat,
   return;
 }
 
+link_internal v3i
+ChunkCountForDim(v3i Dim, v3i ChunkDim)
+{
+  v3i Result = Max(V3i(1), Dim/ChunkDim);
+  return Result;
+}
+
+link_internal void
+BlitAssetIntoWorld(engine_resources *Engine, asset *Asset, cp Origin, memory_arena *Memory)
+{
+  world *World = Engine->World;
+
+  Assert(Asset->LoadState == AssetLoadState_Loaded);
+
+  chunk_data *VoxData = Asset->Model.Vox.ChunkData;
+
+  chunk_dimension ModelDim = Asset->Model.Dim;
+
+  world_chunk SrcChunk = {
+    .Flags = VoxData->Flags,
+    .Dim = VoxData->Dim,
+    .Voxels = VoxData->Voxels,
+  };
+
+  /* s32 xChunkCount = 1 + (ModelDim.x / WorldChunkDim.x); */
+  /* s32 yChunkCount = 1 + (ModelDim.y / WorldChunkDim.y); */
+  /* s32 zChunkCount = 1 + (ModelDim.z / WorldChunkDim.z); */
+
+  // TODO(Jesse): Need to account for model offset in its chunk here.
+  chunk_dimension ChunkCounts = ChunkCountForDim(ModelDim, World->ChunkDim);
+
+  DimIterator(zChunk, yChunk, xChunk, ChunkCounts)
+  {
+    v3i SrcWorldOffset = V3i(xChunk, yChunk, zChunk);
+    v3i P = Origin.WorldP + SrcWorldOffset;
+    world_chunk *DestChunk = GetWorldChunkFromHashtable(World, P);
+    if (DestChunk)
+    {
+      Assert(DestChunk->Flags == Chunk_VoxelsInitialized);
+
+      v3i SrcVoxelsOffset = (SrcWorldOffset*World->ChunkDim);
+
+      CopyChunkOffset(&SrcChunk, SrcChunk.Dim, DestChunk, World->ChunkDim, SrcVoxelsOffset);
+
+      MarkBoundaryVoxels_NoExteriorFaces(DestChunk->Voxels, DestChunk->Dim, {}, DestChunk->Dim);
+      QueueChunkForMeshRebuild(&Engine->Plat->LowPriority, DestChunk);
+    }
+  }
+
+}
+
 link_internal void
 QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, world_update_op_shape *Shape, u8 ColorIndex, memory_arena *Memory)
 {
@@ -3572,6 +3628,11 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
 
       MinPCoarse = SimSpaceToCanonical(World, MinP0 - V3(1) - V3(Global_ChunkApronMinDim));
       MaxPCoarse = SimSpaceToCanonical(World, MaxP0 + V3(2) + V3(Global_ChunkApronMaxDim));
+    } break;
+
+    case type_world_update_op_shape_params_asset:
+    {
+      NotImplemented;
     } break;
   }
 
@@ -3816,6 +3877,11 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
                   } break;
                 }
               }
+            } break;
+
+            case type_world_update_op_shape_params_asset:
+            {
+              NotImplemented;
             } break;
 
           }

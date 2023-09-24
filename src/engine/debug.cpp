@@ -492,6 +492,14 @@ DoEngineDebug(engine_resources *Engine)
           v2 MouseDP = {};
           if (Pressed(Ui, &B)) { MouseDP = GetMouseDelta(Plat); }
           UpdateGameCamera(World, MouseDP, Input, {}, Engine->RTTGroup.Camera);
+
+          if (UiCapturedMouseInput(Ui) == False && Input->LMB.Clicked)
+          {
+            cp Origin = Canonical_Position(&Engine->MousedOverVoxel);
+            BlitAssetIntoWorld(Engine, Asset, Origin, World->Memory);
+            /* QueueWorldUpdate(); */
+          }
+
         } break;
 
         case AssetLoadState_Queued:

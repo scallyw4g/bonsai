@@ -56,13 +56,20 @@ poof(string_and_value_tables(model_index))
 #include <generated/string_and_value_tables_model_index.h>
 
 
+// Used when loading .vox files
+struct vox_data
+{
+  chunk_data *ChunkData;
+  v4 *Palette;
+};
+
 struct model
 {
+  vox_data Vox;
+
   untextured_3d_geometry_buffer Mesh;
   chunk_dimension Dim;
   animation Animation;
-
-  /* v4 *Palette; // Optional */
 };
 
 struct maybe_model

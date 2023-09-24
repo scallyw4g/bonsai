@@ -119,8 +119,6 @@ struct asset
   // TODO(Jesse)(frame-index): Should this just be 32-bit?
   u64 LRUFrameIndex;
 
-  chunk_data *Data;
-  /* untextured_3d_geometry_buffer *Mesh; */
   model Model;
 
   file_traversal_node FileNode;
@@ -135,13 +133,6 @@ GetAssetFilenameFor(counted_string AssetPath, world_position WorldP, memory_aren
   counted_string Result = FormatCountedString(Memory, CSz("%S/world_chunk_%d_%d_%d"), AssetPath, WorldP.x, WorldP.y, WorldP.z);
   return Result;
 }
-
-// Used when loading .vox files
-struct vox_data
-{
-  chunk_data *ChunkData;
-  v4 *Palette;
-};
 
 link_internal maybe_model
 LoadVoxModel(memory_arena *PermMemory, heap_allocator *Heap, char const *filepath, memory_arena *TempMemory);

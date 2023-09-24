@@ -441,8 +441,6 @@ InitAsset(asset *Asset, thread_local_state *Thread)
   Assert(Asset->LoadState == AssetLoadState_Queued);
   Asset->LoadState = AssetLoadState_Loading;
 
-/*   native_file AssetFile = OpenFile(&Asset->FileNode); */
-
   cs Ext = Extension(Asset->FileNode.Name);
 
   string_builder Builder = {};

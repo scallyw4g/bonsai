@@ -437,6 +437,7 @@ LoadVoxModel(memory_arena *PermMemory, heap_allocator *Heap, char const *filepat
   if (Vox.ChunkData)
   {
     Result.Tag = Maybe_Yes;
+    Result.Model.Vox = Vox;
     AllocateAndBuildMesh(&Vox, &Result.Model, TempMemory, PermMemory );
   }
 
