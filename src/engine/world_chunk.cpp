@@ -472,12 +472,13 @@ MergeChunksOffset(world_chunk *Src, world_chunk *Dest, voxel_position Offset)
           // At the moment at least, I'm running under the assumption that the
           // dest chunk will be ready for the face mask computation to be run
           /* Assert((SrcV->Flags & VoxelFaceMask) == 0); */
-          Assert((DestV->Flags & VoxelFaceMask) == 0);
+          //
+          // UPDATE(Jesse): When doing a blit into world, this is no longer true
+          /* Assert((DestV->Flags & VoxelFaceMask) == 0); */
         }
       }
     }
   }
-
 }
 
 link_internal void
@@ -3552,7 +3553,7 @@ ChunkCountForDim(v3i Dim, v3i ChunkDim)
 }
 
 link_internal void
-BlitAssetIntoWorld(engine_resources *Engine, asset *Asset, cp Origin, memory_arena *Memory)
+BlitAssetIntoWorld(engine_resources *Engine, asset *Asset, cp Origin)
 {
   world *World = Engine->World;
 
@@ -3585,7 +3586,11 @@ BlitAssetIntoWorld(engine_resources *Engine, asset *Asset, cp Origin, memory_are
 
       v3i SrcVoxelsOffset = (SrcWorldP*World->ChunkDim) - V3i(Origin.Offset);
 
-      CopyChunkOffset(&SrcChunk, SrcChunk.Dim, DestChunk, World->ChunkDim, SrcVoxelsOffset);
+      MergeChunksOffset(&SrcChunk, DestChunk, SrcVoxelsOffset);
+
+      // NOTE(Jesse): We have to either call MarkBoundaryVoxels_??? here or somehow infer
+      // what the face values are in the Merge routine
+      NotImplemented;
 
       QueueChunkForMeshRebuild(&Engine->Plat->LowPriority, DestChunk);
     }
@@ -3608,7 +3613,7 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
 
     case type_world_update_op_shape_params_sphere:
     {
-      world_update_op_shape_params_sphere *ShapeSphere = SafeCast(world_update_op_shape_params_sphere, Shape);
+      auto *ShapeSphere = SafeCast(world_update_op_shape_params_sphere, Shape);
       cp P = Canonical_Position(&ShapeSphere->Location);
 
       MinPCoarse = Canonicalize(World, P-V3(ShapeSphere->Radius+1.f) - V3(Global_ChunkApronMinDim));
@@ -3618,10 +3623,7 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
 
     case type_world_update_op_shape_params_rect:
     {
-      world_update_op_shape_params_rect *ShapeRect = SafeCast(world_update_op_shape_params_rect, Shape);
-
-      /* v3 P0Sim = GetSimSpaceP(World, ShapeRect->P0); */
-      /* v3 P1Sim = GetSimSpaceP(World, ShapeRect->P1); */
+      auto *ShapeRect = SafeCast(world_update_op_shape_params_rect, Shape);
 
       v3 MinP0 = Min(ShapeRect->P0, ShapeRect->P1);
       v3 MaxP0 = Max(ShapeRect->P0, ShapeRect->P1);
@@ -3632,7 +3634,13 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
 
     case type_world_update_op_shape_params_asset:
     {
-      NotImplemented;
+      auto *ShapeAsset = SafeCast(world_update_op_shape_params_asset, Shape);
+
+      v3 MinSimP = GetSimSpaceP(World, ShapeAsset->Origin);
+      v3 MaxSimP = MinSimP + ShapeAsset->Asset->Model.Dim;
+
+      MinPCoarse = SimSpaceToCanonical(World, MinSimP-1);
+      MaxPCoarse = SimSpaceToCanonical(World, MaxSimP+2);
     } break;
   }
 
@@ -3881,7 +3889,21 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
             case type_world_update_op_shape_params_asset:
             {
-              NotImplemented;
+              world_update_op_shape_params_asset *AssetJob = SafeCast(world_update_op_shape_params_asset, &Shape);
+              asset *Asset = AssetJob->Asset;
+              /* BlitAssetIntoWorld(Engine, Asset, Origin, Memory); */
+
+              v3 AssetOriginP = GetSimSpaceP(World, AssetJob->Origin);
+
+              v3i OriginToCurrentVoxP = SimSpaceVoxPExact - AssetOriginP;
+
+              /* s32 AssetVoxelIndex = GetIndex(OriginToCurrentVoxP, Asset->Model.Dim); */
+              /* if (AssetVoxelIndex != -1) */
+              {
+                voxel *AssetV = TryGetVoxel(Asset->Model.Vox.ChunkData, OriginToCurrentVoxP);
+                if (AssetV && (AssetV->Flags&Voxel_Filled)) { CopyValue = *AssetV; }
+              }
+
             } break;
 
           }
@@ -4328,12 +4350,12 @@ RayTraceCollision(world_chunk *Chunk, chunk_dimension Dim, v3 StartingP, v3 Ray,
   return Voxel_Position(Result);
 }
 
-link_internal picked_voxel
+link_internal maybe_picked_voxel
 MousePickVoxel(engine_resources *Resources)
 {
   TIMED_FUNCTION();
 
-  picked_voxel Result = { .PickedChunk.tChunk = f32_MAX};
+  maybe_picked_voxel Result = {};
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
@@ -4361,13 +4383,14 @@ MousePickVoxel(engine_resources *Resources)
 
 #if 1
 
-    Result = RayTraceCollision( Resources, Camera->CurrentP, MaybeRay.Ray.Dir);
+    auto RayResult = RayTraceCollision( Resources, Camera->CurrentP, MaybeRay.Ray.Dir);
 
-    if (Result.PickedChunk.tChunk != f32_MAX)
+    if (RayResult.PickedChunk.tChunk != f32_MAX)
     {
-      world_chunk *ClosestChunk = Result.PickedChunk.Chunk;
+
+      world_chunk *ClosestChunk = RayResult.PickedChunk.Chunk;
       v3 MinP =  V3(ClosestChunk->WorldP * World->ChunkDim);
-      v3 VoxelP = MinP + Truncate(Result.Picks[PickedVoxel_FirstFilled]);
+      v3 VoxelP = MinP + Truncate(RayResult.Picks[PickedVoxel_FirstFilled]);
 
       // Highlight standing spot we're hovering over
       for (u32 StandingSpotIndex = 0;
@@ -4377,7 +4400,7 @@ MousePickVoxel(engine_resources *Resources)
         v3i *Spot = ClosestChunk->StandingSpots.Start + StandingSpotIndex;
 
         aabb SpotRect = AABBMinMax(V3(*Spot), V3(*Spot+Global_StandingSpotDim));
-        if (IsInside(SpotRect, Truncate(Result.Picks[PickedVoxel_FirstFilled])))
+        if (IsInside(SpotRect, Truncate(RayResult.Picks[PickedVoxel_FirstFilled])))
         {
           /* untextured_3d_geometry_buffer SpotAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB); */
           v3 RenderP = GetRenderP(World->ChunkDim, MinP+V3(*Spot), Camera);
@@ -4385,14 +4408,16 @@ MousePickVoxel(engine_resources *Resources)
         }
       }
 
+      Result.Tag = Maybe_Yes;
+      Result.Value = RayResult;
     }
 
     local_persist b32 Picked = False;
     local_persist picked_voxel PickedVoxel;
     if (Hotkeys->Debug_PickChunks_Voxel)
     {
-      Picked = (Result.PickedChunk.tChunk != f32_MAX);
-      PickedVoxel = Result;
+      Picked = Result.Tag;
+      PickedVoxel = Result.Value;
 
 #if DEBUG_SYSTEM_API
       if (Picked)
@@ -4426,8 +4451,6 @@ MousePickVoxel(engine_resources *Resources)
       /* boundary_voxels* TempBoundingPoints = AllocateBoundaryVoxels((u32)Volume(TileChunkDim), TranArena); */
       standing_spot Spot = ComputeStandingSpotFor8x8x2_V2(PickedVoxel.PickedChunk.Chunk->Voxels, World->ChunkDim, TileChunkOffset, TileChunkDim); //, TempBoundingPoints);
     }
-
-
 
 #endif
   }
