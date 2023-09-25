@@ -46,6 +46,23 @@ TryGetTierForSize(tiered_mesh_freelist *TieredFreelist, u32 Size)
   return Result;
 }
 
+link_internal void
+MarkBufferForGrowth(untextured_2d_geometry_buffer *Dest)
+{
+  NotImplemented;
+}
+
+link_internal void
+MarkBufferForGrowth(untextured_3d_geometry_buffer *Dest)
+{
+  auto ToMark = Dest;
+  if (Dest->Parent) ToMark = Dest->Parent;
+
+  // @single_parent_chain_link_untextured_3d
+  Assert(ToMark->Parent == 0);
+  ToMark->BufferNeedsToGrow = True;
+}
+
 inline void
 BufferVertsDirect(
     untextured_2d_geometry_buffer *Dest,
@@ -54,18 +71,18 @@ BufferVertsDirect(
   )
 {
   TIMED_FUNCTION();
-  if (!BufferHasRoomFor(Dest, NumVerts))
+
+  if (BufferHasRoomFor(Dest, NumVerts))
   {
-    Assert(false);
-    Error("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1);
-    return;
+    MemCopy((u8*)&Dest->Verts[Dest->At],  (u8*)Positions,                sizeof(*Positions)*NumVerts );
+    MemCopy((u8*)Colors,                  (u8*)&Dest->Colors[Dest->At],  sizeof(*Colors)*NumVerts );
+    Dest->At += NumVerts;
   }
-
-  MemCopy((u8*)&Dest->Verts[Dest->At],  (u8*)Positions,                sizeof(*Positions)*NumVerts );
-  MemCopy((u8*)Colors,                  (u8*)&Dest->Colors[Dest->At],  sizeof(*Colors)*NumVerts );
-  Dest->At += NumVerts;
-
-  return;
+  else
+  {
+    SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1);
+    MarkBufferForGrowth(Dest);
+  }
 }
 
 inline void
@@ -76,18 +93,19 @@ BufferVertsDirect(
   )
 {
   TIMED_FUNCTION();
-  if (!BufferHasRoomFor(Dest, NumVerts))
+  if (BufferHasRoomFor(Dest, NumVerts))
   {
-    Assert(false);
-    Error("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End -1);
-    return;
+    MemCopy((u8*)Positions,  (u8*)&Dest->Verts[Dest->At]  ,  sizeof(*Positions)*NumVerts );
+    MemCopy((u8*)Normals,    (u8*)&Dest->Normals[Dest->At],  sizeof(*Normals)*NumVerts );
+    MemCopy((u8*)Colors,     (u8*)&Dest->Colors[Dest->At] ,  sizeof(*Colors)*NumVerts );
+
+    Dest->At += NumVerts;
   }
-
-  MemCopy((u8*)Positions,  (u8*)&Dest->Verts[Dest->At]  ,  sizeof(*Positions)*NumVerts );
-  MemCopy((u8*)Normals,    (u8*)&Dest->Normals[Dest->At],  sizeof(*Normals)*NumVerts );
-  MemCopy((u8*)Colors,     (u8*)&Dest->Colors[Dest->At] ,  sizeof(*Colors)*NumVerts );
-
-  Dest->At += NumVerts;
+  else
+  {
+    MarkBufferForGrowth(Dest);
+    SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End -1);
+  }
 }
 
 inline void
@@ -216,24 +234,22 @@ BufferVertsChecked(
   )
 {
   TIMED_FUNCTION();
-  if (!BufferHasRoomFor(Dest, NumVerts))
+  if (BufferHasRoomFor(Dest, NumVerts))
   {
-    Assert(false);
-    Error("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1);
-    return;
+    BufferVertsDirect(Dest->Verts + Dest->At,
+                      Dest->Normals + Dest->At,
+                      Dest->Colors + Dest->At,
+                      NumVerts,
+                      VertsPositions, Normals, VertColors,
+                      Offset, Scale, Rot);
+
+    Dest->At += NumVerts;
   }
-
-  BufferVertsDirect(Dest->Verts + Dest->At,
-                    Dest->Normals + Dest->At,
-                    Dest->Colors + Dest->At,
-                    NumVerts,
-                    VertsPositions, Normals, VertColors,
-                    Offset, Scale, Rot);
-
-  Dest->At += NumVerts;
-
-
-  return;
+  else
+  {
+    MarkBufferForGrowth(Dest);
+    SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1);
+  }
 }
 
 inline void
@@ -246,24 +262,22 @@ BufferVertsDirect(
   )
 {
   TIMED_FUNCTION();
-  if (!BufferHasRoomFor(Dest, NumVerts))
+  if (BufferHasRoomFor(Dest, NumVerts))
   {
-    Assert(false);
-    Error("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1);
-    return;
+    BufferVertsDirect(Dest->Verts + Dest->At,
+                      Dest->Normals + Dest->At,
+                      Dest->Colors + Dest->At,
+                      NumVerts,
+                      VertsPositions, Normals, VertColors,
+                      Offset, Scale);
+
+    Dest->At += NumVerts;
   }
-
-  BufferVertsDirect(Dest->Verts + Dest->At,
-                    Dest->Normals + Dest->At,
-                    Dest->Colors + Dest->At,
-                    NumVerts,
-                    VertsPositions, Normals, VertColors,
-                    Offset, Scale);
-
-  Dest->At += NumVerts;
-
-
-  return;
+  else
+  {
+    MarkBufferForGrowth(Dest);
+    Error("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1);
+  }
 }
 
 inline void
@@ -307,6 +321,7 @@ BufferVertsChecked(
 {
   TIMED_FUNCTION();
 
+  umm NumVerts = Src->End - Src->At;
   if (Dest->At + Src->At <= Dest->End)
   {
 
@@ -321,8 +336,8 @@ BufferVertsChecked(
   }
   else
   {
-    Assert(False);
-    Error("Ran out of memory on untextured_3d_geometry_buffer");
+    MarkBufferForGrowth(Dest);
+    SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1);
     /* PlatformDebugStacktrace(); */
   }
 }
@@ -338,27 +353,14 @@ BufferVertsChecked(
 {
   TIMED_FUNCTION();
 
-  if (!BufferHasRoomFor(Target, NumVerts))
+  if (BufferHasRoomFor(Target, NumVerts))
   {
-    Error("Ran ouf of space buffering verts");
-#if 0
-    u32 VertsRemaining = Target->End - Target->At;
-    u32 Pad = VertsRemaining % 3;
-    u32 PushVerts = VertsRemaining - Pad;
-    BufferVertsChecked( Target, Graphics, PushVerts, Positions, Normals, Colors, Offset, Scale);
-
-    Positions += PushVerts;
-    Normals += PushVerts;
-    Colors += PushVerts;
-
-    RenderGBuffer(Target, Graphics);
-
-    BufferVertsChecked(Target, Graphics, NumVerts-PushVerts, Positions, Normals, Colors, Offset, Scale);
-#endif
+    BufferVertsDirect( Target, NumVerts, Positions, Normals, Colors, Offset, Scale);
   }
   else
   {
-    BufferVertsDirect( Target, NumVerts, Positions, Normals, Colors, Offset, Scale);
+    MarkBufferForGrowth(Target);
+    SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Target->At, Target->End-1);
   }
 
   return;

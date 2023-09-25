@@ -32,10 +32,53 @@ FlushBuffersToCard(gpu_mapped_element_buffer* GpuMap)
   return;
 }
 
+void
+AllocateGpuElementBuffer(gpu_mapped_element_buffer *GpuMap, u32 ElementCount)
+{
+  u32 v3Size = sizeof(v3)*ElementCount;
+  u32 v4Size = sizeof(v4)*ElementCount;
+
+  GL.GenBuffers(3, &GpuMap->VertexHandle);
+
+  GL.BindBuffer(GL_ARRAY_BUFFER, GpuMap->VertexHandle);
+  GL.BufferData(GL_ARRAY_BUFFER, v3Size, 0, GL_STATIC_DRAW);
+
+  GL.BindBuffer(GL_ARRAY_BUFFER, GpuMap->NormalHandle);
+  GL.BufferData(GL_ARRAY_BUFFER, v3Size, 0, GL_STATIC_DRAW);
+
+  GL.BindBuffer(GL_ARRAY_BUFFER, GpuMap->ColorHandle);
+  GL.BufferData(GL_ARRAY_BUFFER, v4Size, 0, GL_STATIC_DRAW);
+
+  GL.BindBuffer(GL_ARRAY_BUFFER, 0);
+
+  GpuMap->Buffer.End = ElementCount;
+}
+
+link_internal void 
+DeallocateGpuElementBuffer(gpu_mapped_element_buffer *Buf)
+{
+  GL.DeleteBuffers(3, &Buf->VertexHandle);
+}
+
+// NOTE(Jesse): Chosen at random.  Is there some sensible tradeoff to be made here?
+#define GPU_MAP_BUFFER_ATOM_SIZE (Kilobytes(64))
+
 link_internal untextured_3d_geometry_buffer *
 MapGpuElementBuffer(gpu_mapped_element_buffer *GpuMap)
 {
   TIMED_FUNCTION();
+
+  Assert(GpuMap->Buffer.Parent == False);
+  if (GpuMap->Buffer.BufferNeedsToGrow)
+  {
+    GpuMap->Buffer.BufferNeedsToGrow = False;
+
+    GpuMap->Buffer.End += GPU_MAP_BUFFER_ATOM_SIZE;
+    DeallocateGpuElementBuffer(GpuMap);
+    AllocateGpuElementBuffer(GpuMap, GpuMap->Buffer.End);
+  }
+
+
   u32 ElementCount = GpuMap->Buffer.End;
 
   u32 v3Size = sizeof(v3)*ElementCount;
@@ -66,27 +109,5 @@ MapGpuElementBuffer(gpu_mapped_element_buffer *GpuMap)
   GL.BindBuffer(GL_ARRAY_BUFFER, 0);
 
   return &GpuMap->Buffer;
-}
-
-void
-AllocateGpuElementBuffer(gpu_mapped_element_buffer *GpuMap, u32 ElementCount)
-{
-  u32 v3Size = sizeof(v3)*ElementCount;
-  u32 v4Size = sizeof(v4)*ElementCount;
-
-  GL.GenBuffers(3, &GpuMap->VertexHandle);
-
-  GL.BindBuffer(GL_ARRAY_BUFFER, GpuMap->VertexHandle);
-  GL.BufferData(GL_ARRAY_BUFFER, v3Size, 0, GL_STATIC_DRAW);
-
-  GL.BindBuffer(GL_ARRAY_BUFFER, GpuMap->NormalHandle);
-  GL.BufferData(GL_ARRAY_BUFFER, v3Size, 0, GL_STATIC_DRAW);
-
-  GL.BindBuffer(GL_ARRAY_BUFFER, GpuMap->ColorHandle);
-  GL.BufferData(GL_ARRAY_BUFFER, v4Size, 0, GL_STATIC_DRAW);
-
-  GL.BindBuffer(GL_ARRAY_BUFFER, 0);
-
-  GpuMap->Buffer.End = ElementCount;
 }
 
