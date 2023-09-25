@@ -338,7 +338,6 @@ BufferVertsChecked(
   {
     MarkBufferForGrowth(Dest);
     SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1);
-    /* PlatformDebugStacktrace(); */
   }
 }
 
