@@ -28,6 +28,11 @@ struct picked_voxel
   v3 Picks[PickedVoxel_Count]; // use picked_voxel_position to index into this
 };
 
+struct maybe_picked_voxel
+{
+  maybe_tag Tag;
+  picked_voxel Value;
+};
 
 // TODO(Jesse)(metaprogramming, ptr): Once poof can accept pointer types we can generate this struct
 /* poof(static_buffer(world_chunk*, 64)) */

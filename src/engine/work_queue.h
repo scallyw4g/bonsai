@@ -83,6 +83,7 @@ struct asset;
 struct world_update_op_shape_params_asset
 {
   asset *Asset;
+  cp Origin;
 };
 
 struct world_update_op_shape

@@ -23,8 +23,8 @@ struct engine_resources
   game_state *GameState;
   graphics   *Graphics;
 
-  heap_allocator Heap;
-  memory_arena *Memory;
+  heap_allocator  Heap;
+  memory_arena   *Memory;
 
   entity **EntityTable;
   asset    AssetTable[ASSET_TABLE_COUNT];
@@ -48,7 +48,7 @@ struct engine_resources
   engine_debug EngineDebug;
 
   level_editor Editor;
-  picked_voxel MousedOverVoxel;
+  maybe_picked_voxel MousedOverVoxel;
 
   render_entity_to_texture_group RTTGroup;
 };

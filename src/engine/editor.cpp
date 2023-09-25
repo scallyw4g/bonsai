@@ -170,11 +170,14 @@ DoLevelEditor(engine_resources *Engine)
       {
         case 0:
         {
-          Editor->SelectionClicks += 1;
-          auto MouseP = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel));
+          if (Engine->MousedOverVoxel.Tag)
+          {
+            Editor->SelectionClicks += 1;
+            auto MouseP = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel.Value));
 
-          Editor->SelectionRegion[0] = MouseP;
-          Editor->SelectionRegion[1] = MouseP;
+            Editor->SelectionRegion[0] = MouseP;
+            Editor->SelectionRegion[1] = MouseP;
+          }
         } break;
 
         case 1:
@@ -198,9 +201,9 @@ DoLevelEditor(engine_resources *Engine)
 
     if (Editor->SelectionClicks < 2)
     {
-      if (Engine->MousedOverVoxel.PickedChunk.Chunk)
+      if (Engine->MousedOverVoxel.Tag)
       {
-        auto MouseP = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel));
+        auto MouseP = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel.Value));
         Editor->SelectionRegion[1] = MouseP;
       }
     }
@@ -379,9 +382,9 @@ DoLevelEditor(engine_resources *Engine)
     MouseVoxelPos = PickedVoxel_LastEmpty;
     if (Input->LMB.Clicked)
     {
-      if (Engine->MousedOverVoxel.PickedChunk.Chunk)
+      if (Engine->MousedOverVoxel.Tag)
       {
-        v3 P0 = GetSimSpaceP(World, &Engine->MousedOverVoxel, PickedVoxel_LastEmpty);
+        v3 P0 = GetSimSpaceP(World, &Engine->MousedOverVoxel.Value, PickedVoxel_LastEmpty);
 
         world_update_op_shape Shape = {
           .Type = type_world_update_op_shape_params_rect,
@@ -410,12 +413,15 @@ DoLevelEditor(engine_resources *Engine)
   {
     if (Input->LMB.Pressed)
     {
-      voxel *V = GetVoxelPointer(&Engine->MousedOverVoxel, PickedVoxel_FirstFilled);
-
-      if (V)
+      if (Engine->MousedOverVoxel.Tag)
       {
-        V->Color = SafeTruncateU8(Engine->Editor.SelectedColorIndex);
-        QueueChunkForMeshRebuild(&Plat->LowPriority, Engine->MousedOverVoxel.PickedChunk.Chunk);
+        voxel *V = GetVoxelPointer(&Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled);
+
+        if (V)
+        {
+          V->Color = SafeTruncateU8(Engine->Editor.SelectedColorIndex);
+          QueueChunkForMeshRebuild(&Plat->LowPriority, Engine->MousedOverVoxel.Value.PickedChunk.Chunk);
+        }
       }
     }
   }
@@ -441,9 +447,9 @@ DoLevelEditor(engine_resources *Engine)
   //
   // Highlight moused over voxel
   //
-  if (Engine->MousedOverVoxel.PickedChunk.Chunk)
+  if (Engine->MousedOverVoxel.Tag)
   {
-    v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel, MouseVoxelPos));
+    v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, MouseVoxelPos));
     DEBUG_HighlightVoxel( Engine, SimP, WHITE, 0.05f);
   }
 

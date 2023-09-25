@@ -305,13 +305,13 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   /*   DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_LINE_THICKNESS*3.f); */
   /* } */
 
-  picked_voxel Pick = Resources->MousedOverVoxel;
 
   local_persist player_action SelectedAction = {};
   local_persist u32 PlayerChargeLevel = {};
 
-  if (Pick.PickedChunk.tChunk != f32_MAX)
+  if (Resources->MousedOverVoxel.Tag)
   {
+    picked_voxel Pick = Resources->MousedOverVoxel.Value;
     v3 VoxelP = GetAbsoluteP(&Pick);
 
     world_chunk *ClosestChunk = Pick.PickedChunk.Chunk;

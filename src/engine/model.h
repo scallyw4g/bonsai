@@ -72,6 +72,15 @@ struct model
   animation Animation;
 };
 
+link_internal voxel *
+TryGetVoxel(chunk_data *ChunkData, v3i P)
+{
+  voxel *Result = 0;
+  s32 Index = TryGetIndex(P, ChunkData->Dim);
+  if (Index > -1) { Result = ChunkData->Voxels + Index; }
+  return Result;
+}
+
 struct maybe_model
 {
   maybe_tag Tag;

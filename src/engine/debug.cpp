@@ -372,8 +372,11 @@ DoEngineDebug(engine_resources *Engine)
 
       if (EngineDebug->PickedChunkState == PickedChunkState_Hover)
       {
-        EngineDebug->PickedChunk = Engine->MousedOverVoxel.PickedChunk.Chunk;
-        if (Input->LMB.Clicked) { EngineDebug->PickedChunkState = PickedChunkState_None; }
+        if (Engine->MousedOverVoxel.Tag)
+        {
+          EngineDebug->PickedChunk = Engine->MousedOverVoxel.Value.PickedChunk.Chunk;
+          if (Input->LMB.Clicked) { EngineDebug->PickedChunkState = PickedChunkState_None; }
+        }
       }
 
       if (EngineDebug->PickedChunk)
@@ -453,7 +456,7 @@ DoEngineDebug(engine_resources *Engine)
 
   if (ToggledOn(&ButtonGroup, CSz("Assets")))
   {
-    v2 AssetListWindowDim = {{350.f, 250.f}};
+    v2 AssetListWindowDim = {{350.f, 1200.f}};
     local_persist window_layout Window = WindowLayout("Assets", DefaultWindowBasis(*Ui->ScreenDim, AssetListWindowDim), AssetListWindowDim);
 
     render_settings *Settings = &Graphics->Settings;
@@ -464,7 +467,7 @@ DoEngineDebug(engine_resources *Engine)
     if (EngineDebug->SelectedAsset.Type)
     {
       v2 AssetDetailWindowDim = {{400.f, 400.f}};
-      local_persist window_layout AssetViewWindow = WindowLayout("Asset View", DefaultWindowBasis(*Ui->ScreenDim, AssetDetailWindowDim) + V2(AssetDetailWindowDim.x, 0), AssetDetailWindowDim);
+      local_persist window_layout AssetViewWindow = WindowLayout("Asset View", DefaultWindowBasis(*Ui->ScreenDim, AssetDetailWindowDim) + V2(AssetDetailWindowDim.x + DefaultWindowSideOffset, 0), AssetDetailWindowDim);
       PushWindowStart(Ui, &AssetViewWindow);
 
       asset *Asset = GetAsset(Engine, &EngineDebug->SelectedAsset);
@@ -485,7 +488,7 @@ DoEngineDebug(engine_resources *Engine)
 
           if (EngineDebug->ResetAssetNodeView)
           {
-            Engine->RTTGroup.Camera->DistanceFromTarget = Length(Offset) * 10.f;
+            Engine->RTTGroup.Camera->DistanceFromTarget = Length(Offset) * 8.f;
             EngineDebug->ResetAssetNodeView = False;
           }
 
@@ -495,8 +498,23 @@ DoEngineDebug(engine_resources *Engine)
 
           if (UiCapturedMouseInput(Ui) == False && Input->Space.Clicked)
           {
-            cp Origin = Canonical_Position(&Engine->MousedOverVoxel);
-            BlitAssetIntoWorld(Engine, Asset, Origin, World->Memory);
+            if (Engine->MousedOverVoxel.Tag)
+            {
+              cp Origin = Canonical_Position(&Engine->MousedOverVoxel.Value);
+              world_update_op_shape_params_asset AssetUpdateShape =
+              {
+                Asset,
+                Origin
+              };
+
+              world_update_op_shape Shape =
+              {
+                type_world_update_op_shape_params_asset,
+                .world_update_op_shape_params_asset = AssetUpdateShape,
+              };
+
+              QueueWorldUpdateForRegion(Engine, {}, &Shape, {}, World->Memory);
+            }
           }
 
         } break;
