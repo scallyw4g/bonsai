@@ -3334,21 +3334,27 @@ WorkQueueEntryCopyBufferRef(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bi
   return Result;
 }
 
+
+#define DEFAULT_STANDING_SPOT_THICKNESS (0.1f)
 link_internal void
-DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, v3 RenderSpot_MinP, v3 TileDim, u32 ColorIndex = BLUE, r32 Thickness = DEFAULT_LINE_THICKNESS)
+DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, v3 RenderSpot_MinP, v3 TileDim, u32 ColorIndex = BLUE, r32 Thickness = DEFAULT_STANDING_SPOT_THICKNESS)
 {
 #if 0
   untextured_3d_geometry_buffer AABBDest = ReserveBufferSpace(Mesh, VERTS_PER_VOXEL);
   auto MinP = RenderSpot_MinP - Thickness;
   DrawVoxel_MinDim(&AABBDest, MinP, ColorIndex, TileDim + (Thickness*2.f));
 #else
-  v3 HalfTileDim = TileDim/2.f;
-  v3 QuarterTileDim = HalfTileDim/2.f;
+
+  v3 TileDrawDim = TileDim/8.f;
+  v3 TileDrawPad = (TileDim-TileDrawDim)/2.f;
+
+  /* v3 HalfTileDim = TileDim/2.f; */
+  /* v3 QuarterTileDim = HalfTileDim/2.f; */
 
   untextured_3d_geometry_buffer AABBDest = ReserveBufferSpace(Mesh, VERTS_PER_VOXEL);
 
-  auto MinP = RenderSpot_MinP-Thickness+V3(QuarterTileDim.xy,0.f)+V3(0,0,2);
-  DrawVoxel_MinDim(&AABBDest, MinP, ColorIndex, HalfTileDim + Thickness*2.f);
+  auto MinP = RenderSpot_MinP-Thickness+V3(TileDrawPad.xy,0.f)+V3(0.f, 0.f, TileDim.z + 0.5f);
+  DrawVoxel_MinDim(&AABBDest, MinP, ColorIndex, TileDrawDim + Thickness*2.f);
 
   /* DEBUG_DrawAABB( &AABBDest, */
   /*                 AABBMinDim( , TileDrawDim), */
@@ -4041,7 +4047,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
       voxel_position QueryRelChunkSpot = ChunkSimSpot - SimSpaceQueryMinP;
 
       {
-        /* DrawStandingSpot(Mesh, V3(QueryRelChunkSpot), V3(Global_StandingSpotDim), TEAL, DEFAULT_LINE_THICKNESS*1.5f); */
+        /* DrawStandingSpot(Mesh, V3(QueryRelChunkSpot), V3(Global_StandingSpotDim), TEAL, DEFAULT_STANDING_SPOT_THICKNESS*1.5f); */
       }
 
       auto SimSpaceSpotUnion = Union(&SimSpotAABB, &SimSpaceQueryAABB);
@@ -4054,14 +4060,14 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
         /* DebugLine("Dropping StandingSpot(%d,%d,%d)", ChunkSpot.x, ChunkSpot.y, ChunkSpot.z); */
         /* DrawVoxel_MinDim(Mesh, V3(QueryRelUnion), ORANGE, V3(SimSpaceUnionDim), DEFAULT_LINE_THICKNESS*2.f); */
 #if DEBUG_VIEW_WORLD_UPDATE
-        DrawStandingSpot(DebugMesh, V3(QueryRelChunkSpot), V3(Global_StandingSpotDim), RED, DEFAULT_LINE_THICKNESS*2.f);
+        DrawStandingSpot(DebugMesh, V3(QueryRelChunkSpot), V3(Global_StandingSpotDim), RED, DEFAULT_STANDING_SPOT_THICKNESS*2.f);
 #endif
       }
       else
       {
         /* DebugLine("Keeping StandingSpot(%d,%d,%d)", ChunkSpot.x, ChunkSpot.y, ChunkSpot.z); */
 #if DEBUG_VIEW_WORLD_UPDATE
-        DrawStandingSpot(DebugMesh, V3(QueryRelChunkSpot), V3(Global_StandingSpotDim), GREEN, DEFAULT_LINE_THICKNESS*2.f);
+        DrawStandingSpot(DebugMesh, V3(QueryRelChunkSpot), V3(Global_StandingSpotDim), GREEN, DEFAULT_STANDING_SPOT_THICKNESS*2.f);
 #endif
         ++StandingSpotIndex;
       }
@@ -4092,7 +4098,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
       if (!Skip)
       {
 #if DEBUG_VIEW_WORLD_UPDATE
-        DrawStandingSpot(Mesh, V3(QueryRelSpot), V3(Global_StandingSpotDim), TEAL, DEFAULT_LINE_THICKNESS*1.5f);
+        DrawStandingSpot(Mesh, V3(QueryRelSpot), V3(Global_StandingSpotDim), TEAL, DEFAULT_STANDING_SPOT_THICKNESS*1.5f);
 #endif
         if ( Contains(SimSpaceChunkAABB, SimSpot) )
         {
@@ -4404,7 +4410,7 @@ MousePickVoxel(engine_resources *Resources)
         {
           /* untextured_3d_geometry_buffer SpotAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB); */
           v3 RenderP = GetRenderP(World->ChunkDim, MinP+V3(*Spot), Camera);
-          DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_LINE_THICKNESS+0.01f);
+          DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_STANDING_SPOT_THICKNESS+0.01f);
         }
       }
 
