@@ -19,6 +19,9 @@ Ensure you have an OpenGL driver, GL headers, X11 headers, and clang
 ### Archlinux
 `sudo pacman -S freeglut libx11 clang` # NOTE(Jesse): Not sure how to specifically install clang 15 on Arch
 
+### RHEL
+`sudo yum install libX11-devel.x86_64 mesa-libGL-devel.x86_64 clang.x86_64` # NOTE(Jesse): On RHEL 8.8 Clang-15 is the default, YMMV on other versions
+
 ### Common
 
 ```
