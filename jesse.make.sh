@@ -31,8 +31,8 @@
   BuildDebugSystem \
   BuildExecutables \
   BuildSingleExample examples/turn_based \
+  BuildSingleExample examples/the_wanderer \
   # BuildTests \
-  # BuildSingleExample examples/the_wanderer \
   # BuildSingleExample examples/turn_based2
 
 # ./make.sh -O0 BuildAll
