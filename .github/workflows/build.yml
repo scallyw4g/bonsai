@@ -7,7 +7,7 @@ on:
     branches: [ "master", "develop" ]
 
 jobs:
- build-ubuntu-20:
+  build-ubuntu-20:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
