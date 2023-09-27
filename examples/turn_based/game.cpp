@@ -89,6 +89,22 @@ poof(generate_string_table(player_action))
 #include <generated/generate_string_table_player_action.h>
 
 link_internal void
+DoIceBlock( engine_resources *Resources, picked_voxel *Pick, canonical_position PickCP, f32 Radius, memory_arena *TempMemory)
+{
+  v3 SimSpaceMinCenterP = GetSimSpaceP(Resources->World, PickCP);
+
+  v3 MinP = SimSpaceMinCenterP - V3(Radius, Radius, 0.f);
+  v3 MaxP = SimSpaceMinCenterP + V3(Radius, Radius, 3.f*Radius);
+
+  world_update_op_shape Shape = {
+    .Type = type_world_update_op_shape_params_rect,
+    .world_update_op_shape_params_rect.P0 = MinP,
+    .world_update_op_shape_params_rect.P1 = MaxP,
+  };
+  QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Additive, &Shape, ICE_BLUE, Resources->Memory);
+}
+
+link_internal void
 DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position PickCP, f32 Radius, memory_arena *TempMemory)
 {
   UNPACK_ENGINE_RESOURCES(Resources);
@@ -193,6 +209,11 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
       case 1:
       case 2:
       {
+
+        /* if (GetCollision()) */
+        /* { */
+        /* } */
+
         /* DebugLine("move"); */
         v3 PlayerBaseP = GetSimSpaceBaseP(World, GameState->Player);
         f32 ShortestDistanceToPlayerSq = f32_MAX;
@@ -210,7 +231,7 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
         {
           standing_spot *Spot = Spots.Start + SpotIndex;
           v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
-          DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_LINE_THICKNESS*3.f);
+          DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_STANDING_SPOT_THICKNESS*3.f);
 
           v3 SpotSimP = GetSimSpaceP(World, Spot->P);
           r32 ThisDist = DistanceSq(SpotSimP, PlayerBaseP);
@@ -302,7 +323,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   /* { */
   /*   standing_spot *Spot = EnemySpots.Start + SpotIndex; */
   /*   v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera); */
-  /*   DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_LINE_THICKNESS*3.f); */
+  /*   DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_STANDING_SPOT_THICKNESS*3.f); */
   /* } */
 
 
@@ -339,17 +360,17 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
     if (Input->R.Clicked)
     {
-      DoSplotion(Resources, &Pick, PickCP, 4.f, GetTranArena());
+      DoIceBlock(Resources, &Pick, PickCP, 4.f, GetTranArena());
     }
 
     if (Input->T.Clicked)
     {
-      DoSplotion(Resources, &Pick, PickCP, 6.f, GetTranArena());
+      DoIceBlock(Resources, &Pick, PickCP, 6.f, GetTranArena());
     }
 
     if (Input->Y.Clicked)
     {
-      DoSplotion(Resources, &Pick, PickCP, 8.f, GetTranArena());
+      DoIceBlock(Resources, &Pick, PickCP, 8.f, GetTranArena());
     }
 
 
@@ -380,7 +401,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           aabb SpotSimAABB = AABBMinDim(SpotSimP, Global_StandingSpotDim);
           if (IsInside(SpotSimAABB, CursorSimP))
           {
-            DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), TEAL, DEFAULT_LINE_THICKNESS*3.f);
+            DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), TEAL, DEFAULT_STANDING_SPOT_THICKNESS*3.f);
 
             if (Input->LMB.Clicked)
             {
@@ -394,7 +415,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           }
           else
           {
-            DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), GREEN, DEFAULT_LINE_THICKNESS*3.f);
+            DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), GREEN, DEFAULT_STANDING_SPOT_THICKNESS*3.f);
           }
         }
 

@@ -61,7 +61,12 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   if (Hotkeys->Player_Spawn)
   {
     Unspawn(Player);
-    SpawnPlayerLikeEntity(Plat, World, GameState->Models, Player, Canonical_Position(V3(0,0,0), World_Position(0,0,0)), &GameState->Entropy);
+    SpawnPlayerLikeEntity( Plat,
+                           World,
+                           GameState->Models+ModelIndex_Player_jp,
+                           GameState->Player,
+                           Canonical_Position(Voxel_Position(0), World->Center + V3i(0,0,1)),
+                           &GameState->Entropy );
     World->Center = World_Position(0, 0, 0);
   }
 
@@ -88,7 +93,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
                          World,
                          GameState->Models+ModelIndex_Player_jp,
                          GameState->Player,
-                         Canonical_Position(Voxel_Position(0), WorldCenter),
+                         Canonical_Position(Voxel_Position(0), WorldCenter + V3i(0,0,1)),
                          &GameState->Entropy );
 
   Resources->CameraTarget = GameState->Player;
