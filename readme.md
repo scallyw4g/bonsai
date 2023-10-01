@@ -67,10 +67,11 @@ compiler, and a few appropriate system headers.
 [ ] Do sound :'D
 
 -------------------------------------------------------------------------------
-## RNG
+## Datastructures
 
 [ ] Better low-discrepency sequences : https://blog.demofox.org/2017/05/29/when-random-numbers-are-too-random-low-discrepancy-sequences/
 
+[ ] Hash-trie as alternative to a table : https://nullprogram.com/blog/2023/09/30/
 
 # Building
 
