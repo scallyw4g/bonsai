@@ -45,8 +45,6 @@ Bonsai_Init(engine_resources *Resources)
 
   Resources->EntityTable = AllocateEntityTable(BonsaiInitArena, TOTAL_ENTITY_COUNT);
 
-  InitRenderToTextureGroup(&Resources->RTTGroup, V2i(256), GraphicsMemory2D);
-
   return Result;
 }
 
@@ -84,6 +82,8 @@ Bonsai_FrameBegin(engine_resources *Resources)
   }
 
   MapGpuElementBuffer(GpuMap);
+
+  MapGpuElementBuffer(&Graphics->Transparency.GeoBuffer);
 
   if (GetEngineDebug()->DrawWorldAxies)
   {
@@ -168,7 +168,9 @@ Bonsai_SimulateAndBufferGeometry(engine_resources *Resources)
   }
 
   BufferWorld(Plat, &GpuMap->Buffer, World, Graphics, Heap);
-  BufferEntities( EntityTable, &GpuMap->Buffer, Graphics, World, Plat->dt);
+  /* BufferEntities( EntityTable, &GpuMap->Buffer, Graphics, World, Plat->dt); */
+
+  BufferEntities( EntityTable, &Graphics->Transparency.GeoBuffer.Buffer, Graphics, World, Plat->dt);
 
   UnsignalFutex(&Resources->Plat->HighPriorityModeFutex);
 
@@ -246,13 +248,16 @@ Bonsai_Render(engine_resources *Resources)
 
 
   // NOTE(Jesse): GBuffer and ShadowMap must be rendered in series because they
-  // both do operate on the total scene geometry The rest of the render passes
+  // both do operate on the total scene geometry. The rest of the render passes
   // operate on the textures they create and only render a quad.
   RenderGBuffer(GpuMap, Graphics);
   RenderShadowMap(GpuMap, Graphics);
 
+  RenderTransparencyBuffers(&Graphics->Transparency);
+
   RenderLuminanceTexture(GpuMap, Lighting, Graphics);
-  RenderAoTexture(AoGroup);
+
+  if (Graphics->Settings.UseSsao) { RenderAoTexture(AoGroup); }
 
   /* GaussianBlurTexture(&Graphics->Gaussian, AoGroup->Texture); */
   if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomTextureFBO); }

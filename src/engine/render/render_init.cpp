@@ -58,6 +58,10 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
                      texture *Ssao,
                      texture *LightingTex,
                      texture *BloomTex,
+
+                     texture *TransparencyAccum,
+                     texture *TransparencyCount,
+
                      m4 *ShadowMVP,
                      camera *Camera,
                      r32 *Exposure,
@@ -84,6 +88,12 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, BloomTex, "BloomTex");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, TransparencyAccum, "TransparencyAccum");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, TransparencyCount, "TransparencyCount");
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, (u32*)UseLightingBloom, "UseLightingBloom");
@@ -456,6 +466,100 @@ InitializeLightingRenderGroup(lighting_render_group *Lighting, memory_arena *Gra
 }
 #endif
 
+link_internal void
+InitRenderToTextureGroup(render_entity_to_texture_group *Group, v2i TextureSize, memory_arena *Memory)
+{
+  // TODO(Jesse): Can this not re-use the gpu-map in the 3D renderer?
+  AllocateGpuElementBuffer(&Group->GeoBuffer, (u32)Megabytes(1));
+
+  Group->FBO = GenFramebuffer();
+  GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
+
+#if 0
+  s32 ImageSize = 4*Volume(TextureSize);
+  f32 *Image = Allocate(f32, Memory, ImageSize);
+
+  for (s32 PixIndex = 0; PixIndex < ImageSize; PixIndex += 4)
+  {
+    Image[PixIndex] = 255.f;
+  }
+#else
+  f32 *Image = 0;
+#endif
+
+  Group->Texture = GenTexture(TextureSize, Memory);
+  GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, Image);
+
+  texture *DepthTexture = MakeDepthTexture( TextureSize, Memory );
+  FramebufferDepthTexture(DepthTexture);
+
+  FramebufferTexture(&Group->FBO, Group->Texture);
+  SetDrawBuffers(&Group->FBO);
+
+  Group->Shader = MakeRenderToTextureShader(Memory, &Group->ViewProjection);
+
+  Group->Camera = Allocate(camera, Memory, 1);
+  StandardCamera(Group->Camera, 10000.0f, 100.0f, {});
+
+  Group->DebugShader = MakeSimpleTextureShader(Group->Texture, Memory);
+
+  Ensure(CheckAndClearFramebuffer());
+}
+
+link_internal shader
+MakeTransparencyShader(m4 *ViewProjection, texture *T0, texture *T1, memory_arena *Memory)
+{
+  shader Shader = LoadShaders( CSz(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSz(BONSAI_SHADER_PATH "3DTransparency.fragmentshader") );
+
+  shader_uniform **Current = &Shader.FirstUniform;
+
+  *Current = GetUniform(Memory, &Shader, ViewProjection, "ViewProjection");
+  Current = &(*Current)->Next;
+
+  return Shader;
+}
+
+link_internal void
+InitTransparencyRenderGroup(transparency_render_group *Group, v2i TextureSize, m4 *ViewProjection, memory_arena *Memory)
+{
+  AllocateGpuElementBuffer(&Group->GeoBuffer, (u32)Megabytes(1));
+
+  Group->FBO = GenFramebuffer();
+  GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
+
+#if 0
+  s32 ImageSize = 4*Volume(TextureSize);
+  f32 *Image = Allocate(f32, Memory, ImageSize);
+
+  for (s32 PixIndex = 0; PixIndex < ImageSize; PixIndex += 4)
+  {
+    Image[PixIndex] = 255.f;
+  }
+#else
+  f32 *Image = 0;
+#endif
+
+  Group->Texture0 = GenTexture(TextureSize, Memory);
+  GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, Image);
+
+  Group->Texture1 = GenTexture(TextureSize, Memory);
+  GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, Image);
+
+  texture *DepthTexture = MakeDepthTexture( TextureSize, Memory );
+  FramebufferDepthTexture(DepthTexture);
+
+  Assert(ViewProjection);
+  Group->ViewProjection = ViewProjection;
+
+  FramebufferTexture(&Group->FBO, Group->Texture0);
+  FramebufferTexture(&Group->FBO, Group->Texture1);
+  SetDrawBuffers(&Group->FBO);
+
+  Group->Shader = MakeTransparencyShader(Group->ViewProjection, Group->Texture0, Group->Texture1, Memory);
+
+  Ensure( CheckAndClearFramebuffer() );
+}
+
 graphics *
 GraphicsInit(memory_arena *GraphicsMemory)
 {
@@ -548,12 +652,13 @@ GraphicsInit(memory_arena *GraphicsMemory)
 
   }
 
-  // Initialize the composite group
+  // TODO(Jesse): Move RTTGroup onto graphics?
   {
-    Result->CompositeGroup.Shader = MakeCompositeShader( GraphicsMemory,
-        gBuffer->Textures, SG->ShadowMap, AoGroup->Texture, Lighting->LightingTex, Lighting->BloomTex,
-        &SG->MVP, Result->Camera, &Result->Exposure, &Result->Settings.UseLightingBloom);
+    engine_resources *Resources = GetEngineResources();
+    InitRenderToTextureGroup(&Resources->RTTGroup, V2i(256), GraphicsMemory);
   }
+
+  InitTransparencyRenderGroup(&Result->Transparency, V2i(SCR_WIDTH, SCR_HEIGHT), &gBuffer->ViewProjection, GraphicsMemory);
 
   // Initialize the gaussian blur render group
   {
@@ -583,6 +688,14 @@ GraphicsInit(memory_arena *GraphicsMemory)
 #endif
   }
 
+  // Initialize the composite group
+  {
+    Result->CompositeGroup.Shader = MakeCompositeShader( GraphicsMemory,
+        gBuffer->Textures, SG->ShadowMap, AoGroup->Texture, Lighting->LightingTex, Lighting->BloomTex,
+        Result->Transparency.Texture0, Result->Transparency.Texture1, 
+        &SG->MVP, Result->Camera, &Result->Exposure, &Result->Settings.UseLightingBloom);
+  }
+
   GL.Enable(GL_CULL_FACE);
   GL.CullFace(GL_BACK);
 
@@ -593,44 +706,4 @@ GraphicsInit(memory_arena *GraphicsMemory)
   Result->gBuffer = gBuffer;
 
   return Result;
-}
-
-link_internal void
-InitRenderToTextureGroup(render_entity_to_texture_group *Group, v2i TextureSize, memory_arena *Memory)
-{
-  // TODO(Jesse): Can this not re-use the gpu-map in the 3D renderer?
-  AllocateGpuElementBuffer(&Group->GeoBuffer, (u32)Megabytes(1));
-
-  Group->FBO = GenFramebuffer();
-  GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
-
-#if 0
-  s32 ImageSize = 4*Volume(TextureSize);
-  f32 *Image = Allocate(f32, Memory, ImageSize);
-
-  for (s32 PixIndex = 0; PixIndex < ImageSize; PixIndex += 4)
-  {
-    Image[PixIndex] = 255.f;
-  }
-#else
-  f32 *Image = 0;
-#endif
-
-  Group->Texture = GenTexture(TextureSize, Memory);
-  GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, Image);
-
-  texture *DepthTexture = MakeDepthTexture( TextureSize, Memory );
-  FramebufferDepthTexture(DepthTexture);
-
-  FramebufferTexture(&Group->FBO, Group->Texture);
-  SetDrawBuffers(&Group->FBO);
-
-  Group->Shader = MakeRenderToTextureShader(Memory, &Group->ViewProjection);
-
-  Group->Camera = Allocate(camera, Memory, 1);
-  StandardCamera(Group->Camera, 10000.0f, 100.0f, {});
-
-  Group->DebugShader = MakeSimpleTextureShader(Group->Texture, Memory);
-
-  Ensure(CheckAndClearFramebuffer());
 }

@@ -12,6 +12,9 @@ uniform sampler2D LightingTex;
 uniform sampler2D shadowMap;
 uniform sampler2D Ssao;
 
+uniform sampler2D TransparencyAccum;
+uniform sampler2D TransparencyCount;
+
 uniform mat4 ShadowMVP;
 uniform vec3 CameraP;
 uniform bool UseLightingBloom;
@@ -25,6 +28,9 @@ void main()
   ivec2 texelCoord = ivec2(gBufferUV*gBufferTextureDim);
 
   vec2 gBufferTexelStep = 1.0 / vec2(SCR_WIDTH, SCR_HEIGHT);
+
+  vec3 PixTranspAccum = texture(TransparencyAccum, gBufferUV).rgb;
+  vec3 PixTranspCount = max(V3(1), texture(TransparencyAccum, gBufferUV).rgb);
 
   vec3 FragNormal = texture(gNormal, gBufferUV).rgb;
 
@@ -67,7 +73,7 @@ void main()
    *  Tone-mapping && gamma correction
    */
 
-  vec3 TotalLight = Lighting + 0.1f*Bloom;
+  vec3 TotalLight = Lighting + 0.1f*Bloom + (PixTranspAccum/PixTranspCount);
   /* vec3 TotalLight = (Diffuse * Lighting) * 2.f; */
 
   // Reinhard tone mapping (pretty bad)

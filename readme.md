@@ -73,6 +73,8 @@ compiler, and a few appropriate system headers.
 
 [ ] Hash-trie as alternative to a table : https://nullprogram.com/blog/2023/09/30/
 
+[ ] Octree ? https://graphics.tudelft.nl/Publications-new/2020/CBE20/ModifyingCompressedVoxels-main.pdf
+
 # Building
 
 See the docs on the [build process](docs/01_build_process.md).

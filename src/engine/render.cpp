@@ -317,6 +317,9 @@ ClearFramebuffers(graphics *Graphics, render_entity_to_texture_group *RTTGroup)
   GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Lighting.FBO.ID);
   GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+  GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Transparency.FBO.ID);
+  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
   // TODO(Jesse): Why exactly would this not be necessary?
   /* glBindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName); */
   /* glClear(GL_DEPTH_BUFFER_BIT); */
@@ -714,3 +717,21 @@ DrawFrustum(world *World, graphics *Graphics, camera *Camera)
   DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Right.Normal*5.f), YELLOW, 0.2f );
 }
 
+link_internal void
+RenderTransparencyBuffers(transparency_render_group *Group)
+{
+  GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
+
+  UseShader(&Group->Shader);
+
+  GL.Enable(GL_BLEND);
+  GL.BlendFunc(GL_ONE, GL_ONE);
+
+  SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
+
+  FlushBuffersToCard(&Group->GeoBuffer);
+  Draw(Group->GeoBuffer.Buffer.At);
+
+  GL.Disable(GL_BLEND);
+  Group->GeoBuffer.Buffer.At = 0;
+}

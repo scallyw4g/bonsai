@@ -387,16 +387,19 @@ DoEngineDebug(engine_resources *Engine)
     PushWindowEnd(Ui, &WorldChunkWindow);
   }
 
-#if 0
+#if 1
   if (ToggledOn(&ButtonGroup, CSz("Textures")))
   {
     local_persist window_layout TexturesWindow = WindowLayout("Textures", DefaultWindowBasis(*Ui->ScreenDim));
     PushWindowStart(Ui, &TexturesWindow);
 
-    IterateOver(&EngineDebug->Textures, Texture, TextureIndex)
-    {
-      PushTexturedQuad(Ui, DebugTextureArraySlice_Font, V2(120), zDepth_Text);
-    }
+    PushTexturedQuad(Ui, Graphics->Transparency.Texture0, V2(256), zDepth_Text);
+
+    PushTexturedQuad(Ui, Graphics->Transparency.Texture1, V2(256), zDepth_Text);
+    /* IterateOver(&EngineDebug->Textures, Texture, TextureIndex) */
+    /* { */
+    /*   PushTexturedQuad(Ui, DebugTextureArraySlice_Font, V2(120), zDepth_Text); */
+    /* } */
 
     PushWindowEnd(Ui, &TexturesWindow);
   }
