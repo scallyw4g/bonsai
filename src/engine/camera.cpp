@@ -123,7 +123,7 @@ UpdateGameCamera(world *World, v2 MouseDelta, input *Input, canonical_position N
 
     if (Input->MouseWheelDelta)
     {
-      Camera->DistanceFromTarget += Input->MouseWheelDelta*Camera->DistanceFromTarget;
+      Camera->DistanceFromTarget += (Input->MouseWheelDelta*Camera->DistanceFromTarget) / 200.f;
     }
 
     Camera->DistanceFromTarget = ClampMin(Camera->DistanceFromTarget, Camera->Frust.nearClip);
