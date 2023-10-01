@@ -5,6 +5,23 @@
 #include <game_constants.h>
 #include <game_types.h>
 
+
+#define SHORT_SKIPS 1
+
+link_internal float Interval = 3.f;
+
+#if SHORT_SKIPS
+link_internal v3 Impulse = V3(20.f, 0.0f, 0.0f);
+link_internal v3 BoostForce = V3(30.f, 0.0f, 0.0f);
+link_internal v3 JumpForce = V3(0.f, 0.f, 10.f);
+#else
+link_internal v3 Impulse = V3(20.f, 0.0f, 0.0f);
+link_internal v3 BoostForce = V3(300.f, 0.0f, 0.0f);
+link_internal v3 JumpForce = V3(0.f, 0.f, 025.f);
+#endif
+
+
+
 model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *Heap)
 {
@@ -24,30 +41,28 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   entity *Player = GameState->Player;
 
 #if 1
-  float Interval = 1.f;
 
-  debug_global float BoostInterval = Interval;
   debug_global float JumpInterval = Interval;
   JumpInterval -= Plat->dt;
-  BoostInterval -= Plat->dt;
 
   Player->Physics.Speed = 60.f;
   Player->Physics.Mass = 27.f;
 
 #if 1
-  Player->Physics.Force += V3(20.f, 0.0f, 0.0f) * Plat->dt;
+  Player->Physics.Force += Impulse * Plat->dt;
 
+  debug_global b32 DoBoost;
   if (JumpInterval < 0.f && IsGrounded( World, Player ) )
   {
-    Player->Physics.Force += V3(0.f, 0.f, 25.f);
+    Player->Physics.Force += JumpForce;
     JumpInterval = Interval;
-    BoostInterval = Interval/4.f;
+    DoBoost = True;
   }
 
-  if (BoostInterval < 0)
+  if (DoBoost && Player->Physics.Velocity.z < 0.f )
   {
-    BoostInterval = 100000.f;
-    Player->Physics.Force += V3(300.f, 0.0f, 0.0f);
+    DoBoost = False;
+    Player->Physics.Force += BoostForce;
   }
 
   if (Hotkeys->Player_Jump)

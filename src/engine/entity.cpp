@@ -1055,14 +1055,16 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta, chunk_dimension V
   collision_event C = {};
   v3 Remaining = GrossDelta;
 
+  v3 CollisionVolumeInit = Entity->CollisionVolumeRadius*2.0f;
+  C = GetCollision(World, Entity->P, CollisionVolumeInit);
+  if (C.Count) { return; }
+
   while (LengthSq(Remaining) > 0)
   {
     v3 StepDelta = ClampBetween(-1.0f, Remaining, 1.0f);
     Remaining -= StepDelta;
 
-    for ( u32 AxisIndex = 0;
-              AxisIndex < 3;
-            ++AxisIndex )
+    RangeIterator(AxisIndex, 3)
     {
       if (StepDelta.E[AxisIndex] != 0.0f)
       {
@@ -1071,18 +1073,20 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta, chunk_dimension V
 
         canonical_position CollisionBasis = Entity->P;
 
-        v3 CollisionVolume = Entity->CollisionVolumeRadius*2.0f;
-        if (StepDelta.E[AxisIndex] > 0.f) // We're going in the positive direction
+        // Compute the 1-wide slice in the direction we're moving
         {
-          CollisionBasis.Offset.E[AxisIndex] += Truncate(CollisionVolume.E[AxisIndex]);
-          CollisionBasis = Canonicalize(WorldChunkDim, CollisionBasis);
+          v3 CollisionVolume = Entity->CollisionVolumeRadius*2.0f;
+          if (StepDelta.E[AxisIndex] > 0.f) // We're going in the positive direction
+          {
+            CollisionBasis.Offset.E[AxisIndex] += Truncate(CollisionVolume.E[AxisIndex]);
+            CollisionBasis = Canonicalize(WorldChunkDim, CollisionBasis);
+          }
+          CollisionVolume.E[AxisIndex] = Min(CollisionVolume.E[AxisIndex], 1.f);
+
+          C = GetCollision(World, CollisionBasis, CollisionVolume);
         }
 
-        CollisionVolume.E[AxisIndex] = Min(CollisionVolume.E[AxisIndex], 1.f);
-
-        C = GetCollision(World, CollisionBasis, CollisionVolume);
-
-        if ( C.Count > 0 ) //&& C.Chunk && IsSet(C.Chunk, Chunk_VoxelsInitialized) )
+        if ( C.Count > 0 )
         {
           // TODO(Jesse): Parameterize by adding something to physics struct
           /* Entity->Physics.Velocity.E[AxisIndex] *= -0.25f; */

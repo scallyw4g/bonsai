@@ -3337,7 +3337,7 @@ WorkQueueEntryCopyBufferRef(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bi
 
 #define DEFAULT_STANDING_SPOT_THICKNESS (0.1f)
 link_internal void
-DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, v3 RenderSpot_MinP, v3 TileDim, u32 ColorIndex = BLUE, r32 Thickness = DEFAULT_STANDING_SPOT_THICKNESS)
+DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, v3 RenderSpot_MinP, v3 TileDim, u32 ColorIndex = STANDING_SPOT_DEFAULT_COLOR, r32 Thickness = DEFAULT_STANDING_SPOT_THICKNESS)
 {
 #if 0
   untextured_3d_geometry_buffer AABBDest = ReserveBufferSpace(Mesh, VERTS_PER_VOXEL);
