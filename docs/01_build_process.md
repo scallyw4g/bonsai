@@ -8,7 +8,13 @@ work, but may also emit warnings, or errors.  If the following instructions do
 not work for you, by all means open an issue and I will do what I can to assist.
 
 ## On Windows:
-Bonsai requires `clang` and a unix-like shell to build on Windows.  Installing `git-bash` usually works for me.
+Bonsai requires `clang` and a unix-like shell to build on Windows.
+
+Install Visual Studio (make sure to install Visual C++ compiler) : https://visualstudio.microsoft.com/
+
+Install MinGW & Clang from https://winlibs.com/ : [64-bit w/ Clang-16 Installer Download](https://github.com/brechtsanders/winlibs_mingw/releases/download/13.2.0mcf-16.0.6-11.0.1-ucrt-r2/winlibs-x86_64-mcf-seh-gcc-13.2.0-llvm-16.0.6-mingw-w64ucrt-11.0.1-r2.zip)
+
+If you have a 3D accelerator (GPU), install the driver.
 
 ## On Linux:
 Ensure you have an OpenGL driver, GL headers, X11 headers, and clang
