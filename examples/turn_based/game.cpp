@@ -156,13 +156,13 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
     SpawnEntity( E, EntityType_ParticleSystem, 0, ModelIndex_None);
     E->P = PickCP + V3(0.5f);
     E->UserData = (void*)GameEntityType_Splosion;
-    SpawnExplosion(E, &Global_GameEntropy, {}, Radius);
+    SpawnExplosion(E, &Global_GameEntropy, {}, Radius, &Graphics->Transparency.GeoBuffer.Buffer);
   }
   {
     entity *E = GetFreeEntity(EntityTable);
     SpawnEntity( E, EntityType_ParticleSystem, 0, ModelIndex_None);
     E->P = PickCP + V3(0.5f);
-    SpawnSmoke(E, &Global_GameEntropy, {}, Radius);
+    SpawnSmoke(E, &Global_GameEntropy, {}, Radius, &Graphics->Transparency.GeoBuffer.Buffer);
   }
 #endif
 
@@ -188,7 +188,7 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
     E->UserData = (void*)GameEntityType_Bitty;
     /* E->Update = DoBittyLight; */
 
-    SpawnSplotionBitty(E, &Global_GameEntropy, {}, .1f);
+    SpawnSplotionBitty(E, &Global_GameEntropy, {}, .1f, &Graphics->Transparency.GeoBuffer.Buffer);
   }
 #endif
 }
@@ -360,17 +360,20 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
     if (Input->R.Clicked)
     {
-      DoIceBlock(Resources, &Pick, PickCP, 4.f, GetTranArena());
+      DoSplotion(Resources, &Pick, PickCP, 4.f, GetTranArena());
+      /* DoIceBlock(Resources, &Pick, PickCP, 4.f, GetTranArena()); */
     }
 
     if (Input->T.Clicked)
     {
-      DoIceBlock(Resources, &Pick, PickCP, 6.f, GetTranArena());
+      DoSplotion(Resources, &Pick, PickCP, 6.f, GetTranArena());
+      /* DoIceBlock(Resources, &Pick, PickCP, 6.f, GetTranArena()); */
     }
 
     if (Input->Y.Clicked)
     {
-      DoIceBlock(Resources, &Pick, PickCP, 8.f, GetTranArena());
+      DoSplotion(Resources, &Pick, PickCP, 8.f, GetTranArena());
+      /* DoIceBlock(Resources, &Pick, PickCP, 8.f, GetTranArena()); */
     }
 
 
@@ -526,9 +529,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
         RandomBetween(0, &GameState->Entropy, HalfVisibleRegion.y),
         1);
 
-    u32 EnemyModelIndex = RandomBetween( u32(ModelIndex_FirstEnemyModel), &GameState->Entropy, u32(ModelIndex_Enemy_Skeleton_AxeArmor+1));
-    Assert(EnemyModelIndex >= ModelIndex_FirstEnemyModel);
-    Assert(EnemyModelIndex <= ModelIndex_LastEnemyModel);
+    u32 EnemyModelIndex = RandomBetween( u32(ModelIndex_Enemy_Skeleton_Axe), &GameState->Entropy, u32(ModelIndex_Enemy_Skeleton_King+1));
+    /* Assert(EnemyModelIndex >= ModelIndex_FirstEnemyModel); */
+    /* Assert(EnemyModelIndex <= ModelIndex_LastEnemyModel); */
 
     auto EnemySpawnP = Canonical_Position(V3(0), WorldCenter + WP );
     auto Enemy = GetFreeEntity(EntityTable);

@@ -8,7 +8,7 @@
 /*   } */
 /* } */
 link_internal void
-DeepCopy(entropy_lists *Src, entropy_lists *Dest)
+DeepCopy(u32_cursor *Src, u32_cursor *Dest)
 {
   umm SrcAt = AtElements(Src);
   Assert(SrcAt <= TotalElements(Dest));

@@ -18,8 +18,8 @@ enum model_index
   ModelIndex_Enemy_Skeleton_Concubiner,
   ModelIndex_Enemy_Skeleton_King,
 
-  ModelIndex_FirstEnemyModel = ModelIndex_Enemy_Skeleton_Axe,
-  ModelIndex_LastEnemyModel = ModelIndex_Enemy_Skeleton_King,
+  /* ModelIndex_FirstEnemyModel = ModelIndex_Enemy_Skeleton_Axe, */
+  /* ModelIndex_LastEnemyModel = ModelIndex_Enemy_Skeleton_King, */
 
   ModelIndex_Player_jp,
   ModelIndex_Player_bow,
@@ -39,8 +39,8 @@ enum model_index
   ModelIndex_Player_tama,
   ModelIndex_Player_tsurugi,
 
-  ModelIndex_FirstPlayerModel = ModelIndex_Player_jp,
-  ModelIndex_LastPlayerModel = ModelIndex_Player_tsurugi,
+  /* ModelIndex_FirstPlayerModel = ModelIndex_Player_jp, */
+  /* ModelIndex_LastPlayerModel = ModelIndex_Player_tsurugi, */
 
   ModelIndex_Loot,
   ModelIndex_Projectile,

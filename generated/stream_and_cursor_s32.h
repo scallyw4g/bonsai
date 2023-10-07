@@ -1,17 +1,17 @@
-struct counted_string_cursor
+struct s32_cursor
 {
-  counted_string *Start;
+  s32 *Start;
   // TODO(Jesse)(immediate): For the love of fucksakes change these to indices
-  counted_string *At;
-  counted_string *End;
+  s32 *At;
+  s32 *End;
 };
 
 
-link_internal counted_string_cursor
-CountedStringCursor(umm ElementCount, memory_arena* Memory)
+link_internal s32_cursor
+S32Cursor(umm ElementCount, memory_arena* Memory)
 {
-  counted_string *Start = (counted_string*)PushStruct(Memory, sizeof(counted_string)*ElementCount, 1, 0);
-  counted_string_cursor Result = {
+  s32 *Start = (s32*)PushStruct(Memory, sizeof(s32)*ElementCount, 1, 0);
+  s32_cursor Result = {
     .Start = Start,
     .End = Start+ElementCount,
     .At = Start,
@@ -19,36 +19,36 @@ CountedStringCursor(umm ElementCount, memory_arena* Memory)
   return Result;
 }
 
-link_internal counted_string*
-GetPtr(counted_string_cursor *Cursor, umm ElementIndex)
+link_internal s32*
+GetPtr(s32_cursor *Cursor, umm ElementIndex)
 {
-  counted_string *Result = {};
+  s32 *Result = {};
   if (ElementIndex < AtElements(Cursor)) {
     Result = Cursor->Start+ElementIndex;
   }
   return Result;
 }
 
-link_internal counted_string*
-GetPtrUnsafe(counted_string_cursor *Cursor, umm ElementIndex)
+link_internal s32*
+GetPtrUnsafe(s32_cursor *Cursor, umm ElementIndex)
 {
-  counted_string *Result = {};
+  s32 *Result = {};
   if (ElementIndex < TotalElements(Cursor)) {
     Result = Cursor->Start+ElementIndex;
   }
   return Result;
 }
 
-link_internal counted_string
-Get(counted_string_cursor *Cursor, umm ElementIndex)
+link_internal s32
+Get(s32_cursor *Cursor, umm ElementIndex)
 {
   Assert(ElementIndex < CurrentCount(Cursor));
-  counted_string Result = Cursor->Start[ElementIndex];
+  s32 Result = Cursor->Start[ElementIndex];
   return Result;
 }
 
 link_internal void
-Set(counted_string_cursor *Cursor, umm ElementIndex, counted_string Element)
+Set(s32_cursor *Cursor, umm ElementIndex, s32 Element)
 {
   umm CurrentElementCount = CurrentCount(Cursor);
   Assert (ElementIndex <= CurrentElementCount);
@@ -60,50 +60,50 @@ Set(counted_string_cursor *Cursor, umm ElementIndex, counted_string Element)
   }
 }
 
-link_internal counted_string*
-Advance(counted_string_cursor *Cursor)
+link_internal s32*
+Advance(s32_cursor *Cursor)
 {
-  counted_string * Result = {};
+  s32 * Result = {};
   if ( Cursor->At < Cursor->End ) { Result = Cursor->At++; }
   return Result;
 }
 
-link_internal counted_string *
-Push(counted_string_cursor *Cursor, counted_string Element)
+link_internal s32 *
+Push(s32_cursor *Cursor, s32 Element)
 {
   Assert( Cursor->At < Cursor->End );
-  counted_string *Result = Cursor->At;
+  s32 *Result = Cursor->At;
   *Cursor->At++ = Element;
   return Result;
 }
 
-link_internal counted_string
-Pop(counted_string_cursor *Cursor)
+link_internal s32
+Pop(s32_cursor *Cursor)
 {
   Assert( Cursor->At > Cursor->Start );
-  counted_string Result = Cursor->At[-1];
+  s32 Result = Cursor->At[-1];
   Cursor->At--;
   return Result;
 }
 
 link_internal s32
-LastIndex(counted_string_cursor *Cursor)
+LastIndex(s32_cursor *Cursor)
 {
   s32 Result = s32(CurrentCount(Cursor))-1;
   return Result;
 }
 
 link_internal b32
-Remove(counted_string_cursor *Cursor, counted_string Query)
+Remove(s32_cursor *Cursor, s32 Query)
 {
   b32 Result = False;
   CursorIterator(ElementIndex, Cursor)
   {
-    counted_string Element = Get(Cursor, ElementIndex);
+    s32 Element = Get(Cursor, ElementIndex);
     if (AreEqual(Element, Query))
     {
       b32 IsLastIndex = LastIndex(Cursor) == s32(ElementIndex);
-      counted_string Tmp = Pop(Cursor);
+      s32 Tmp = Pop(Cursor);
 
       if (IsLastIndex) { Assert(AreEqual(Tmp, Query)); }
       else { Set(Cursor, ElementIndex, Tmp); }
@@ -115,14 +115,14 @@ Remove(counted_string_cursor *Cursor, counted_string Query)
 
 
 link_internal b32
-ResizeCursor(counted_string_cursor *Cursor, umm Count, memory_arena *Memory)
+ResizeCursor(s32_cursor *Cursor, umm Count, memory_arena *Memory)
 {
   umm CurrentSize = TotalSize(Cursor);
 
   TruncateToElementCount(Cursor, Count);
   umm NewSize = TotalSize(Cursor);
 
-  Assert(NewSize/sizeof(counted_string) == Count);
+  Assert(NewSize/sizeof(s32) == Count);
 
   /* Info("Attempting to reallocate CurrentSize(%u), NewSize(%u)", CurrentSize, NewSize); */
   Ensure(Reallocate((u8*)Cursor->Start, Memory, CurrentSize, NewSize));
@@ -130,7 +130,7 @@ ResizeCursor(counted_string_cursor *Cursor, umm Count, memory_arena *Memory)
 }
 
 link_internal void
-Unshift( counted_string_cursor *C )
+Unshift( s32_cursor *C )
 {
   umm Count = TotalElements(C);
   for (umm Index = 1; Index < Count; ++Index)
@@ -140,38 +140,38 @@ Unshift( counted_string_cursor *C )
 }
 
 
-struct counted_string_stream_chunk
+struct s32_stream_chunk
 {
-  counted_string Element;
-  counted_string_stream_chunk* Next;
+  s32 Element;
+  s32_stream_chunk* Next;
 };
 
-struct counted_string_stream
+struct s32_stream
 {
   memory_arena *Memory;
-  counted_string_stream_chunk* FirstChunk;
-  counted_string_stream_chunk* LastChunk;
+  s32_stream_chunk* FirstChunk;
+  s32_stream_chunk* LastChunk;
   umm ChunkCount;
 };
 
 link_internal void
-Deallocate(counted_string_stream *Stream)
+Deallocate(s32_stream *Stream)
 {
   Stream->LastChunk = 0;
   Stream->FirstChunk = 0;
   VaporizeArena(Stream->Memory);
 }
 
-struct counted_string_iterator
+struct s32_iterator
 {
-  counted_string_stream* Stream;
-  counted_string_stream_chunk* At;
+  s32_stream* Stream;
+  s32_stream_chunk* At;
 };
 
-link_internal counted_string_iterator
-Iterator(counted_string_stream* Stream)
+link_internal s32_iterator
+Iterator(s32_stream* Stream)
 {
-  counted_string_iterator Iterator = {
+  s32_iterator Iterator = {
     .Stream = Stream,
     .At = Stream->FirstChunk
   };
@@ -179,28 +179,28 @@ Iterator(counted_string_stream* Stream)
 }
 
 link_internal b32
-IsValid(counted_string_iterator* Iter)
+IsValid(s32_iterator* Iter)
 {
   b32 Result = Iter->At != 0;
   return Result;
 }
 
 link_internal void
-Advance(counted_string_iterator* Iter)
+Advance(s32_iterator* Iter)
 {
   Iter->At = Iter->At->Next;
 }
 
 link_internal b32
-IsLastElement(counted_string_iterator* Iter)
+IsLastElement(s32_iterator* Iter)
 {
   b32 Result = Iter->At->Next == 0;
   return Result;
 }
 
 
-link_internal counted_string *
-Push(counted_string_stream* Stream, counted_string Element)
+link_internal s32 *
+Push(s32_stream* Stream, s32 Element)
 {
   if (Stream->Memory == 0)
   {
@@ -208,7 +208,7 @@ Push(counted_string_stream* Stream, counted_string Element)
   }
 
   /* (Type.name)_stream_chunk* NextChunk = AllocateProtection((Type.name)_stream_chunk*), Stream->Memory, 1, False) */
-  counted_string_stream_chunk* NextChunk = (counted_string_stream_chunk*)PushStruct(Stream->Memory, sizeof(counted_string_stream_chunk), 1, 0);
+  s32_stream_chunk* NextChunk = (s32_stream_chunk*)PushStruct(Stream->Memory, sizeof(s32_stream_chunk), 1, 0);
   NextChunk->Element = Element;
 
   if (!Stream->FirstChunk)
@@ -228,7 +228,7 @@ Push(counted_string_stream* Stream, counted_string Element)
 
   Stream->ChunkCount += 1;
 
-  counted_string *Result = &NextChunk->Element;
+  s32 *Result = &NextChunk->Element;
   return Result;
 }
 

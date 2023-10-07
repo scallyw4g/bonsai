@@ -29,11 +29,19 @@ CurrentCount(c_token_buffer *Buf)
   return Result;
 }
 
+// TODO(Jesse): Collapse these duplicates
 link_inline c_token *
-Get(c_token_buffer *Buf, u32 Index)
+GetPtr(c_token_buffer *Buf, u32 Index)
 {
   Assert(Index < Buf->Count);
   c_token *Result = Buf->Start + Index;
+  return Result;
+}
+
+link_inline c_token *
+Get(c_token_buffer *Buf, u32 Index)
+{
+  c_token *Result = GetPtr(Buf, Index);
   return Result;
 }
 

@@ -29,11 +29,19 @@ CurrentCount(standing_spot_buffer *Buf)
   return Result;
 }
 
+// TODO(Jesse): Collapse these duplicates
 link_inline standing_spot *
-Get(standing_spot_buffer *Buf, u32 Index)
+GetPtr(standing_spot_buffer *Buf, u32 Index)
 {
   Assert(Index < Buf->Count);
   standing_spot *Result = Buf->Start + Index;
+  return Result;
+}
+
+link_inline standing_spot *
+Get(standing_spot_buffer *Buf, u32 Index)
+{
+  standing_spot *Result = GetPtr(Buf, Index);
   return Result;
 }
 

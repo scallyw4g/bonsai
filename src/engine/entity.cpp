@@ -453,13 +453,14 @@ UnspawnParticleSystem(particle_system *System)
 void
 SpawnParticleSystem(particle_system *System)
 {
+  Assert(System->Dest);
   Assert(Inactive(System));
   System->RemainingLifespan = System->EmissionLifespan;
 }
 #endif
 
 void
-SpawnSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius)
+SpawnSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, untextured_3d_geometry_buffer *Dest)
 {
   particle_system *System = Entity->Emitter;
 
@@ -497,13 +498,15 @@ SpawnSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius)
   System->SystemMovementCoefficient = 0.1f;
   System->Drag = 2.f;
 
+  System->Dest = Dest;
+
   /* SpawnParticleSystem(Entity->Emitter, &Params); */
 
   return;
 }
 
 void
-SpawnSplotionBitty(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius)
+SpawnSplotionBitty(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, untextured_3d_geometry_buffer *Dest)
 {
   particle_system *System = Entity->Emitter;
 
@@ -539,13 +542,15 @@ SpawnSplotionBitty(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius
   System->SystemMovementCoefficient = 1.f;
   /* System->Drag = 11.0f; */
 
+  System->Dest = Dest;
+
   SpawnParticleSystem(Entity->Emitter);
 
   return;
 }
 
 void
-SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius)
+SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, untextured_3d_geometry_buffer *Dest)
 {
   particle_system *System = Entity->Emitter;
 
@@ -595,6 +600,8 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius)
 
   System->SystemMovementCoefficient = 0.1f;
   System->Drag = 11.0f;
+
+  System->Dest = Dest;
 
   SpawnParticleSystem(Entity->Emitter);
 
@@ -1321,10 +1328,10 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
 {
   TIMED_FUNCTION();
 
-  particle_system *System      = Job->System;
-  auto EntityDelta = Job->EntityDelta;
-  auto dt          = Job->dt;
-  v3 RenderSpaceP  = Job->RenderSpaceP;
+  particle_system *System = Job->System;
+  auto EntityDelta        = Job->EntityDelta;
+  auto dt                 = Job->dt;
+  v3 RenderSpaceP         = Job->RenderSpaceP;
 
   if (System->RemainingLifespan < PARTICLE_SYSTEM_EMIT_FOREVER)
   {
@@ -1351,7 +1358,7 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
 
   if (System->ActiveParticles)
   {
-    auto Dest = ReserveBufferSpace(Job->Dest, System->ActiveParticles*VERTS_PER_PARTICLE);
+    auto Dest = ReserveBufferSpace(System->Dest, System->ActiveParticles*VERTS_PER_PARTICLE);
     for ( u32 ParticleIndex = 0;
           ParticleIndex < System->ActiveParticles;
           )

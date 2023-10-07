@@ -6,6 +6,7 @@ struct parser_cursor
   parser *End;
 };
 
+
 link_internal parser_cursor
 ParserCursor(umm ElementCount, memory_arena* Memory)
 {
@@ -23,6 +24,16 @@ GetPtr(parser_cursor *Cursor, umm ElementIndex)
 {
   parser *Result = {};
   if (ElementIndex < AtElements(Cursor)) {
+    Result = Cursor->Start+ElementIndex;
+  }
+  return Result;
+}
+
+link_internal parser*
+GetPtrUnsafe(parser_cursor *Cursor, umm ElementIndex)
+{
+  parser *Result = {};
+  if (ElementIndex < TotalElements(Cursor)) {
     Result = Cursor->Start+ElementIndex;
   }
   return Result;
@@ -47,6 +58,14 @@ Set(parser_cursor *Cursor, umm ElementIndex, parser Element)
   {
     Cursor->At++;
   }
+}
+
+link_internal parser*
+Advance(parser_cursor *Cursor)
+{
+  parser * Result = {};
+  if ( Cursor->At < Cursor->End ) { Result = Cursor->At++; }
+  return Result;
 }
 
 link_internal parser *
@@ -93,5 +112,32 @@ Remove(parser_cursor *Cursor, parser Query)
   }
   return Result;
 }
+
+
+link_internal b32
+ResizeCursor(parser_cursor *Cursor, umm Count, memory_arena *Memory)
+{
+  umm CurrentSize = TotalSize(Cursor);
+
+  TruncateToElementCount(Cursor, Count);
+  umm NewSize = TotalSize(Cursor);
+
+  Assert(NewSize/sizeof(parser) == Count);
+
+  /* Info("Attempting to reallocate CurrentSize(%u), NewSize(%u)", CurrentSize, NewSize); */
+  Ensure(Reallocate((u8*)Cursor->Start, Memory, CurrentSize, NewSize));
+  return 0;
+}
+
+link_internal void
+Unshift( parser_cursor *C )
+{
+  umm Count = TotalElements(C);
+  for (umm Index = 1; Index < Count; ++Index)
+  {
+    C->Start[Index-1] = C->Start[Index];
+  }
+}
+
 
 

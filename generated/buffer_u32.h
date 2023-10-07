@@ -29,11 +29,19 @@ CurrentCount(u32_buffer *Buf)
   return Result;
 }
 
+// TODO(Jesse): Collapse these duplicates
 link_inline u32 *
-Get(u32_buffer *Buf, u32 Index)
+GetPtr(u32_buffer *Buf, u32 Index)
 {
   Assert(Index < Buf->Count);
   u32 *Result = Buf->Start + Index;
+  return Result;
+}
+
+link_inline u32 *
+Get(u32_buffer *Buf, u32 Index)
+{
+  u32 *Result = GetPtr(Buf, Index);
   return Result;
 }
 

@@ -15,10 +15,10 @@ enum ui_render_command_type
   type_ui_render_command_untextured_quad_at,
   type_ui_render_command_border,
   type_ui_render_command_force_advance,
+  type_ui_render_command_force_update_basis,
   type_ui_render_command_new_row,
   type_ui_render_command_table_end,
   type_ui_render_command_reset_draw_bounds,
-  type_ui_render_command_force_update_basis,
 };
 
 struct ui_render_command

@@ -1,5 +1,3 @@
-// @bind staticbuffer_type_name 
-
 struct entropy_lists
 {
   u32_cursor Start[TILE_RULESETS_COUNT];
@@ -36,3 +34,6 @@ TotalElements( entropy_lists *Buf)
 {
   return TILE_RULESETS_COUNT;
 }
+
+
+

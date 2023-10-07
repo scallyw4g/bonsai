@@ -48,6 +48,8 @@ compiler, and a few appropriate system headers.
 
 [ ] SSR : https://lettier.github.io/3d-game-shaders-for-beginners/screen-space-reflection.html
 
+[ ] Screen-space lines : https://mattdesl.svbtle.com/drawing-lines-is-hard
+
 [ ] TAA?
 [ ] FXAA : http://blog.simonrodriguez.fr/articles/2016/07/implementing_fxaa.html
 

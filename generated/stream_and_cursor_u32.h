@@ -6,6 +6,7 @@ struct u32_cursor
   u32 *End;
 };
 
+
 link_internal u32_cursor
 U32Cursor(umm ElementCount, memory_arena* Memory)
 {
@@ -23,6 +24,16 @@ GetPtr(u32_cursor *Cursor, umm ElementIndex)
 {
   u32 *Result = {};
   if (ElementIndex < AtElements(Cursor)) {
+    Result = Cursor->Start+ElementIndex;
+  }
+  return Result;
+}
+
+link_internal u32*
+GetPtrUnsafe(u32_cursor *Cursor, umm ElementIndex)
+{
+  u32 *Result = {};
+  if (ElementIndex < TotalElements(Cursor)) {
     Result = Cursor->Start+ElementIndex;
   }
   return Result;
@@ -47,6 +58,14 @@ Set(u32_cursor *Cursor, umm ElementIndex, u32 Element)
   {
     Cursor->At++;
   }
+}
+
+link_internal u32*
+Advance(u32_cursor *Cursor)
+{
+  u32 * Result = {};
+  if ( Cursor->At < Cursor->End ) { Result = Cursor->At++; }
+  return Result;
 }
 
 link_internal u32 *
@@ -94,20 +113,32 @@ Remove(u32_cursor *Cursor, u32 Query)
   return Result;
 }
 
-link_internal void
-DeepCopy(u32_cursor *Src, u32_cursor *Dest)
+
+link_internal b32
+ResizeCursor(u32_cursor *Cursor, umm Count, memory_arena *Memory)
 {
-  umm SrcAt = AtElements(Src);
-  Assert(SrcAt <= TotalElements(Dest));
+  umm CurrentSize = TotalSize(Cursor);
 
-  IterateOver(Src, Element, ElementIndex)
-  {
-    DeepCopy(Element, Dest->Start+ElementIndex);
-  }
+  TruncateToElementCount(Cursor, Count);
+  umm NewSize = TotalSize(Cursor);
 
-  Dest->At = Dest->Start+SrcAt;
-  Assert(Dest->At <= Dest->End);
+  Assert(NewSize/sizeof(u32) == Count);
+
+  /* Info("Attempting to reallocate CurrentSize(%u), NewSize(%u)", CurrentSize, NewSize); */
+  Ensure(Reallocate((u8*)Cursor->Start, Memory, CurrentSize, NewSize));
+  return 0;
 }
+
+link_internal void
+Unshift( u32_cursor *C )
+{
+  umm Count = TotalElements(C);
+  for (umm Index = 1; Index < Count; ++Index)
+  {
+    C->Start[Index-1] = C->Start[Index];
+  }
+}
+
 
 struct u32_stream_chunk
 {

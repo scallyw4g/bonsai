@@ -58,8 +58,20 @@ global_variable tile_rule NullTileRule = { .Pages[0] = 1 };
 poof(staticbuffer(u32_cursor, {TILE_RULESETS_COUNT}, {entropy_lists} ))
 #include <generated/staticbuffer_u32_cursor_ptr_961996651.h>
 
-poof(deep_copy(entropy_lists))
-#include <generated/deep_copy_entropy_lists.h>
+/* poof(deep_copy(entropy_lists)) */
+/* #include <generated/deep_copy_entropy_lists.h> */
+
+link_internal void
+DeepCopy(entropy_lists *Src, entropy_lists *Dest)
+{
+  umm SrcAt = AtElements(Src);
+  Assert(SrcAt <= TotalElements(Dest));
+
+  IterateOver(Src, Element, ElementIndex)
+  {
+    DeepCopy(Element, Dest->Start+ElementIndex);
+  }
+}
 
 struct tile_ruleset
 {
@@ -317,8 +329,8 @@ AreEqual(voxel_synthesis_change_propagation_info O1, voxel_synthesis_change_prop
   return AreEqual(&O1, &O2);
 }
 
-poof(generate_stack(voxel_synthesis_change_propagation_info))
-#include <generated/generate_stack_voxel_synthesis_change_propagation_info.h>
+poof(generate_stack(voxel_synthesis_change_propagation_info, {v3i Min, Max;} ))
+#include <generated/generate_stack_voxel_synthesis_change_propagation_info_803395170.h>
 
 
 link_internal tile_rule_id

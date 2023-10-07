@@ -29,11 +29,19 @@ CurrentCount(voxel_synth_tile_buffer *Buf)
   return Result;
 }
 
+// TODO(Jesse): Collapse these duplicates
 link_inline voxel_synth_tile *
-Get(voxel_synth_tile_buffer *Buf, u32 Index)
+GetPtr(voxel_synth_tile_buffer *Buf, u32 Index)
 {
   Assert(Index < Buf->Count);
   voxel_synth_tile *Result = Buf->Start + Index;
+  return Result;
+}
+
+link_inline voxel_synth_tile *
+Get(voxel_synth_tile_buffer *Buf, u32 Index)
+{
+  voxel_synth_tile *Result = GetPtr(Buf, Index);
   return Result;
 }
 

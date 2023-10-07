@@ -29,11 +29,19 @@ CurrentCount(v3i_buffer *Buf)
   return Result;
 }
 
+// TODO(Jesse): Collapse these duplicates
 link_inline v3i *
-Get(v3i_buffer *Buf, u32 Index)
+GetPtr(v3i_buffer *Buf, u32 Index)
 {
   Assert(Index < Buf->Count);
   v3i *Result = Buf->Start + Index;
+  return Result;
+}
+
+link_inline v3i *
+Get(v3i_buffer *Buf, u32 Index)
+{
+  v3i *Result = GetPtr(Buf, Index);
   return Result;
 }
 

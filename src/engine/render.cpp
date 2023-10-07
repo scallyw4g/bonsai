@@ -726,6 +726,7 @@ RenderTransparencyBuffers(transparency_render_group *Group)
 
   GL.Enable(GL_BLEND);
   GL.BlendFunc(GL_ONE, GL_ONE);
+  GL.Disable(GL_CULL_FACE);
 
   SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
 
@@ -733,5 +734,7 @@ RenderTransparencyBuffers(transparency_render_group *Group)
   Draw(Group->GeoBuffer.Buffer.At);
 
   GL.Disable(GL_BLEND);
+  GL.Enable(GL_CULL_FACE);
+
   Group->GeoBuffer.Buffer.At = 0;
 }

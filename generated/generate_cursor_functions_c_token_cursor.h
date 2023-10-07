@@ -120,4 +120,14 @@ ResizeCursor(c_token_cursor *Cursor, umm Count, memory_arena *Memory)
   return 0;
 }
 
+link_internal void
+Unshift( c_token_cursor *C )
+{
+  umm Count = TotalElements(C);
+  for (umm Index = 1; Index < Count; ++Index)
+  {
+    C->Start[Index-1] = C->Start[Index];
+  }
+}
+
 

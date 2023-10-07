@@ -29,11 +29,19 @@ CurrentCount(asset_buffer *Buf)
   return Result;
 }
 
+// TODO(Jesse): Collapse these duplicates
 link_inline asset *
-Get(asset_buffer *Buf, u32 Index)
+GetPtr(asset_buffer *Buf, u32 Index)
 {
   Assert(Index < Buf->Count);
   asset *Result = Buf->Start + Index;
+  return Result;
+}
+
+link_inline asset *
+Get(asset_buffer *Buf, u32 Index)
+{
+  asset *Result = GetPtr(Buf, Index);
   return Result;
 }
 

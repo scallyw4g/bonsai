@@ -29,11 +29,19 @@ CurrentCount(tile_ruleset_buffer *Buf)
   return Result;
 }
 
+// TODO(Jesse): Collapse these duplicates
 link_inline tile_ruleset *
-Get(tile_ruleset_buffer *Buf, u32 Index)
+GetPtr(tile_ruleset_buffer *Buf, u32 Index)
 {
   Assert(Index < Buf->Count);
   tile_ruleset *Result = Buf->Start + Index;
+  return Result;
+}
+
+link_inline tile_ruleset *
+Get(tile_ruleset_buffer *Buf, u32 Index)
+{
+  tile_ruleset *Result = GetPtr(Buf, Index);
   return Result;
 }
 

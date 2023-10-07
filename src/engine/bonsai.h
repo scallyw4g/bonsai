@@ -101,6 +101,8 @@ struct particle_system
 
   r32 ElapsedSinceLastEmission;
   particle Particles[PARTICLES_PER_SYSTEM];
+
+  untextured_3d_geometry_buffer *Dest;
 };
 
 struct frame_event

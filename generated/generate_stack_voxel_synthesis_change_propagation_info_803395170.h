@@ -3,7 +3,7 @@ struct voxel_synthesis_change_propagation_info_stack
   voxel_synthesis_change_propagation_info *Start;
   umm At;
   umm End;
-  v3i MinP; v3i MaxP
+  v3i Min, Max;
 };
 
 link_internal voxel_synthesis_change_propagation_info_stack

@@ -67,8 +67,6 @@ ModelIndex(counted_string S)
   if (StringsMatch(S, CSz("ModelIndex_Enemy_Skeleton_ChampionChampion"))) { return ModelIndex_Enemy_Skeleton_ChampionChampion; }
   if (StringsMatch(S, CSz("ModelIndex_Enemy_Skeleton_Concubiner"))) { return ModelIndex_Enemy_Skeleton_Concubiner; }
   if (StringsMatch(S, CSz("ModelIndex_Enemy_Skeleton_King"))) { return ModelIndex_Enemy_Skeleton_King; }
-  if (StringsMatch(S, CSz("ModelIndex_FirstEnemyModel"))) { return ModelIndex_FirstEnemyModel; }
-  if (StringsMatch(S, CSz("ModelIndex_LastEnemyModel"))) { return ModelIndex_LastEnemyModel; }
   if (StringsMatch(S, CSz("ModelIndex_Player_jp"))) { return ModelIndex_Player_jp; }
   if (StringsMatch(S, CSz("ModelIndex_Player_bow"))) { return ModelIndex_Player_bow; }
   if (StringsMatch(S, CSz("ModelIndex_Player_cat"))) { return ModelIndex_Player_cat; }
@@ -86,8 +84,6 @@ ModelIndex(counted_string S)
   if (StringsMatch(S, CSz("ModelIndex_Player_tale"))) { return ModelIndex_Player_tale; }
   if (StringsMatch(S, CSz("ModelIndex_Player_tama"))) { return ModelIndex_Player_tama; }
   if (StringsMatch(S, CSz("ModelIndex_Player_tsurugi"))) { return ModelIndex_Player_tsurugi; }
-  if (StringsMatch(S, CSz("ModelIndex_FirstPlayerModel"))) { return ModelIndex_FirstPlayerModel; }
-  if (StringsMatch(S, CSz("ModelIndex_LastPlayerModel"))) { return ModelIndex_LastPlayerModel; }
   if (StringsMatch(S, CSz("ModelIndex_Loot"))) { return ModelIndex_Loot; }
   if (StringsMatch(S, CSz("ModelIndex_Projectile"))) { return ModelIndex_Projectile; }
   if (StringsMatch(S, CSz("ModelIndex_Proton"))) { return ModelIndex_Proton; }
