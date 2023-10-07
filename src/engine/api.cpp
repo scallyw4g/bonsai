@@ -21,6 +21,7 @@ link_export b32
 Bonsai_Init(engine_resources *Resources)
 {
   TIMED_FUNCTION();
+
   platform *Plat = Resources->Plat;
 
   b32 Result = True;

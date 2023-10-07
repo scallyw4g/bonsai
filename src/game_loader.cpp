@@ -155,20 +155,24 @@ main( s32 ArgCount, const char ** Args )
   const char* GameLibName = "./bin/blank_project_loadable" PLATFORM_RUNTIME_LIB_EXTENSION;
   switch (ArgCount)
   {
-    case 1: {} break;
-
-    case 2:
-    {
-      GameLibName = Args[1];
-    } break;
-
-    default: { Error("Invalid number of arguments"); }
+    case 1:  {} break;
+    case 2:  { GameLibName = Args[1]; } break;
+    default: { Error("Invalid number of arguments"); } break;
   }
 
 
-  shared_lib GameLib = {};
-  application_api GameApi = {};
-  engine_api EngineApi = {};
+  // First we load DLLs and initialize API structs.  We have to do this first
+  // because InitializeBonsaiStdlib requires that we pass the GameApi so it can
+  // kick off the worker threads.
+  //
+
+  bonsai_debug_system DebugSystem = {};
+  /* shared_lib DebugLib = {}; */
+  /* bonsai_debug_api DebugApi  = {}; */
+
+  shared_lib GameLib  = {};
+  application_api  GameApi   = {};
+  engine_api       EngineApi = {};
   {
     LibIsNew(GameLibName, &LastGameLibTime); // Hack to initialize the lib timer statics
     LibIsNew(DEFAULT_DEBUG_LIB, &LastDebugLibTime);
@@ -176,53 +180,43 @@ main( s32 ArgCount, const char ** Args )
     GameLib = OpenLibrary(GameLibName);
     if (!GameLib) { Error("Loading GameLib :( "); return 1; }
 
-    GameApi = {};
     if (!InitializeGameApi(&GameApi, GameLib)) { Error("Initializing GameApi :( "); return 1; }
 
-    EngineApi = {};
     if (!InitializeEngineApi(&EngineApi, GameLib)) { Error("Initializing EngineApi :( "); return 1; }
-
-    Ensure( EngineApi.OnLibraryLoad(&EngineResources) );
-    Ensure( EngineApi.Init(&EngineResources) );
   }
 
   memory_arena BootstrapArena = {};
-  Ensure( InitializeBonsaiStdlib(bonsai_init_flags(BonsaiInit_LaunchThreadPool|BonsaiInit_OpenWindow), &GameApi, &Os, &Plat, &EngineResources, &BootstrapArena) );
-
-  EngineResources.ThreadStates = Global_ThreadStates;
-
-#if DEBUG_SYSTEM_API
-  shared_lib DebugLib = InitializeBonsaiDebug("./bin/lib_debug_system_loadable" PLATFORM_RUNTIME_LIB_EXTENSION, Global_ThreadStates);
-  Assert(DebugLib);
-  Assert(Global_DebugStatePointer);
-  EngineResources.DebugState = Global_DebugStatePointer;
-#endif
-
   memory_arena *PlatMemory = AllocateArena();
   memory_arena *GameMemory = AllocateArena();
 
-  DEBUG_REGISTER_ARENA(GameMemory, 0);
-  DEBUG_REGISTER_ARENA(PlatMemory, 0);
-  DEBUG_REGISTER_ARENA(&BootstrapArena, 0);
+  Ensure( InitializeBonsaiStdlib( bonsai_init_flags(BonsaiInit_LaunchThreadPool|BonsaiInit_OpenWindow|BonsaiInit_InitDebugSystem),
+                                  &GameApi,
+                                  &DebugSystem,
+                                  &Os,
+                                  &Plat,
+                                  &EngineResources,
+                                  &BootstrapArena) );
+
+
+  EngineResources.ThreadStates = Global_ThreadStates;
+
+
+  Ensure( EngineApi.OnLibraryLoad(&EngineResources) );
+  Ensure( EngineApi.Init(&EngineResources) ); // <-- EngineResources now initialized
 
   InitQueue(&Plat.HighPriority, PlatMemory);
   InitQueue(&Plat.LowPriority, PlatMemory);
-
-#if BONSAI_INTERNAL
-  // debug_recording_state *Debug_RecordingState = Allocate(debug_recording_state, GameMemory, 1);
-  // AllocateAndInitializeArena(&Debug_RecordingState->RecordedMainMemory, Gigabytes(3));
-#endif
-
-#if EMCC ///////////////////////////////////// EMCC SHOULD COMPILE AND RUN CORRECTLY UP TO HERE
-  return True;
-#endif
-
 
 #if DEBUG_SYSTEM_API
   GetDebugState()->SetRenderer(&EngineResources.Ui);
 #endif
 
-  LaunchWorkerThreads(&Plat, &EngineResources, &GameApi);
+  DEBUG_REGISTER_ARENA(GameMemory, 0);
+  DEBUG_REGISTER_ARENA(PlatMemory, 0);
+  DEBUG_REGISTER_ARENA(&BootstrapArena, 0);
+
+
+  /* LaunchWorkerThreads(&Plat, &EngineResources, &GameApi); */
 
   thread_local_state MainThread = DefaultThreadLocalState(&EngineResources, 0);
 
@@ -294,15 +288,14 @@ main( s32 ArgCount, const char ** Args )
       debug_state *Cached = Global_DebugStatePointer;
       Global_DebugStatePointer = 0;
 
-      CloseLibrary(DebugLib);
-      DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
+      CloseLibrary(DebugSystem.Lib);
+      DebugSystem.Lib = OpenLibrary(DEFAULT_DEBUG_LIB);
 
-      bonsai_debug_api DebugApi = {};
-      if (DebugLib)
+      if (DebugSystem.Lib)
       {
-        if (InitializeBootstrapDebugApi(DebugLib, &DebugApi))
+        if (InitializeBootstrapDebugApi(DebugSystem.Lib, &DebugSystem.Api))
         {
-          DebugApi.BonsaiDebug_OnLoad(Cached, Global_ThreadStates);
+          DebugSystem.Api.BonsaiDebug_OnLoad(Cached, Global_ThreadStates);
           Ensure( EngineApi.OnLibraryLoad(&EngineResources) );
         }
         else { Error("Initializing DebugLib API"); }
