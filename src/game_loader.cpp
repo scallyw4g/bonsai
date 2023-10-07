@@ -151,8 +151,43 @@ main( s32 ArgCount, const char ** Args )
   EngineResources.Hotkeys = &Hotkeys;
    /* Initialize_ThreadLocal_ThreadStates((s32)GetTotalThreadCount(), &EngineResources, &BootstrapArena); */
 
+
+  const char* GameLibName = "./bin/blank_project_loadable" PLATFORM_RUNTIME_LIB_EXTENSION;
+  switch (ArgCount)
+  {
+    case 1: {} break;
+
+    case 2:
+    {
+      GameLibName = Args[1];
+    } break;
+
+    default: { Error("Invalid number of arguments"); }
+  }
+
+
+  shared_lib GameLib = {};
+  application_api GameApi = {};
+  engine_api EngineApi = {};
+  {
+    LibIsNew(GameLibName, &LastGameLibTime); // Hack to initialize the lib timer statics
+    LibIsNew(DEFAULT_DEBUG_LIB, &LastDebugLibTime);
+
+    GameLib = OpenLibrary(GameLibName);
+    if (!GameLib) { Error("Loading GameLib :( "); return 1; }
+
+    GameApi = {};
+    if (!InitializeGameApi(&GameApi, GameLib)) { Error("Initializing GameApi :( "); return 1; }
+
+    EngineApi = {};
+    if (!InitializeEngineApi(&EngineApi, GameLib)) { Error("Initializing EngineApi :( "); return 1; }
+
+    Ensure( EngineApi.OnLibraryLoad(&EngineResources) );
+    Ensure( EngineApi.Init(&EngineResources) );
+  }
+
   memory_arena BootstrapArena = {};
-  Ensure( InitializeBonsaiStdlib(bonsai_init_flags(BonsaiInit_LaunchThreadPool|BonsaiInit_OpenWindow), &Os, &Plat, &EngineResources, &BootstrapArena) );
+  Ensure( InitializeBonsaiStdlib(bonsai_init_flags(BonsaiInit_LaunchThreadPool|BonsaiInit_OpenWindow), &GameApi, &Os, &Plat, &EngineResources, &BootstrapArena) );
 
   EngineResources.ThreadStates = Global_ThreadStates;
 
@@ -181,35 +216,6 @@ main( s32 ArgCount, const char ** Args )
 #if EMCC ///////////////////////////////////// EMCC SHOULD COMPILE AND RUN CORRECTLY UP TO HERE
   return True;
 #endif
-
-  const char* GameLibName = "./bin/blank_project_loadable" PLATFORM_RUNTIME_LIB_EXTENSION;
-  switch (ArgCount)
-  {
-    case 1: {} break;
-
-    case 2:
-    {
-      GameLibName = Args[1];
-    } break;
-
-    default: { Error("Invalid number of arguments"); }
-  }
-
-
-  LibIsNew(GameLibName, &LastGameLibTime); // Hack to initialize the lib timer statics
-  LibIsNew(DEFAULT_DEBUG_LIB, &LastDebugLibTime);
-
-  shared_lib GameLib = OpenLibrary(GameLibName);
-  if (!GameLib) { Error("Loading GameLib :( "); return 1; }
-
-  application_api GameApi = {};
-  if (!InitializeGameApi(&GameApi, GameLib)) { Error("Initializing GameApi :( "); return 1; }
-
-  engine_api EngineApi = {};
-  if (!InitializeEngineApi(&EngineApi, GameLib)) { Error("Initializing EngineApi :( "); return 1; }
-
-  Ensure( EngineApi.OnLibraryLoad(&EngineResources) );
-  Ensure( EngineApi.Init(&EngineResources) );
 
 
 #if DEBUG_SYSTEM_API
