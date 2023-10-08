@@ -36,6 +36,7 @@ jobs:
       uses: egor-tensin/setup-mingw@v2
       with:
         platform: x64
+        version: 12.2.0
     - uses: actions/checkout@v3
     - name: Checkout submodules
       run: git submodule update --init --recursive
