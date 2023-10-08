@@ -7,8 +7,9 @@
 BONSAI_API_WORKER_THREAD_CALLBACK()
 {
   b32 Result = True;
-  world *World = Thread->EngineResources->World;
-  game_state *GameState = Thread->EngineResources->GameState;
+  engine_resources *EngineResources = GetEngineResources();
+  world *World = EngineResources->World;
+  game_state *GameState = EngineResources->GameState;
 
   work_queue_entry_type Type = Entry->Type;
   switch (Type)

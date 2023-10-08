@@ -3137,6 +3137,8 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
 {
   TIMED_FUNCTION();
 
+  engine_resources *EngineResources = GetEngineResources();
+
   // @runtime_assert_chunk_aprons_are_valid
   Assert(Global_ChunkApronDim.x == Global_ChunkApronMinDim.x + Global_ChunkApronMaxDim.x);
   Assert(Global_ChunkApronDim.y == Global_ChunkApronMinDim.y + Global_ChunkApronMaxDim.y);
@@ -3166,7 +3168,7 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
   {
     world_chunk *AssetChunk = AllocateWorldChunk(Thread->TempMemory, {}, WorldChunkDim+Global_ChunkApronDim);
 
-    DeserializeChunk(AssetFile, AssetChunk, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+    DeserializeChunk(AssetFile, AssetChunk, &EngineResources->MeshFreelist, Thread->PermMemory);
     CloseFile(AssetFile);
     Assert(AssetChunk->Dim == SynChunkDim);
     MergeChunksOffset(AssetChunk, SyntheticChunk, {});
@@ -3196,7 +3198,7 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
 
     if (TempMesh->At)
     {
-      PrimaryMesh = GetPermMeshForChunk(&Thread->EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
+      PrimaryMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
       DeepCopy(TempMesh, PrimaryMesh);
     }
   }
@@ -3217,7 +3219,7 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
 
     if (TempMesh->At)
     {
-      LodMesh = GetPermMeshForChunk(&Thread->EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
+      LodMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
       DeepCopy(TempMesh, LodMesh);
     }
   }
@@ -3228,7 +3230,7 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
     BuildMipMesh(SyntheticChunk->Voxels, SynChunkDim, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, TempMesh, Thread->TempMemory);
     if (TempMesh->At)
     {
-      LodMesh = GetPermMeshForChunk(&Thread->EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
+      LodMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
       DeepCopy(TempMesh, LodMesh);
     }
   }
@@ -3240,7 +3242,7 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
     if (PrimaryMesh->At)
     { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Main, PrimaryMesh, PrimaryMesh->Timestamp) == 0); }
     else
-    { DeallocateMesh(PrimaryMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
+    { DeallocateMesh(PrimaryMesh, &EngineResources->MeshFreelist, Thread->PermMemory); }
   }
 
   if (LodMesh)
@@ -3248,7 +3250,7 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
     if (LodMesh->At)
     { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Lod, LodMesh, LodMesh->Timestamp) == 0); }
     else
-    { DeallocateMesh(LodMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
+    { DeallocateMesh(LodMesh, &EngineResources->MeshFreelist, Thread->PermMemory); }
   }
 
   if (DebugMesh)
@@ -3256,7 +3258,7 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
     if (DebugMesh->At)
     { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Debug, DebugMesh, DebugMesh->Timestamp) == 0); }
     else
-    { DeallocateMesh(DebugMesh, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
+    { DeallocateMesh(DebugMesh, &EngineResources->MeshFreelist, Thread->PermMemory); }
   }
 
 
@@ -3275,6 +3277,8 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 link_internal void
 RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk)
 {
+  engine_resources *EngineResources = GetEngineResources();
+
   Assert( IsSet(Chunk->Flags, Chunk_VoxelsInitialized) );
 
   untextured_3d_geometry_buffer *NewMesh = 0;
@@ -3285,14 +3289,14 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk)
 
     if (TempMesh->At)
     {
-      NewMesh = GetPermMeshForChunk(&Thread->EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
+      NewMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
       DeepCopy(TempMesh, NewMesh);
     }
   }
 
   umm Timestamp = NewMesh ? NewMesh->Timestamp : __rdtsc();
   untextured_3d_geometry_buffer *Replaced = AtomicReplaceMesh(&Chunk->Meshes, MeshBit_Main, NewMesh, Timestamp);
-  if (Replaced) { DeallocateMesh(Replaced, &Thread->EngineResources->MeshFreelist, Thread->PermMemory); }
+  if (Replaced) { DeallocateMesh(Replaced, &EngineResources->MeshFreelist, Thread->PermMemory); }
   FinalizeChunkInitialization(Chunk);
 }
 
@@ -3598,7 +3602,7 @@ BlitAssetIntoWorld(engine_resources *Engine, asset *Asset, cp Origin)
       // what the face values are in the Merge routine
       NotImplemented;
 
-      QueueChunkForMeshRebuild(&Engine->Plat->LowPriority, DestChunk);
+      QueueChunkForMeshRebuild(&Engine->Stdlib.Plat.LowPriority, DestChunk);
     }
   }
 
@@ -3985,7 +3989,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   NotImplemented;
 
   auto DebugMesh = AllocateMesh(Thread->PermMemory, (u32)Kilobytes(64*32));
-  // GetMeshForChunk(&Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+  // GetMeshForChunk(&EngineResources->MeshFreelist, Thread->PermMemory);
   BuildWorldChunkMeshFromMarkedVoxels_Greedy( CopiedVoxels, QueryDim, {}, QueryDim, DebugMesh );
 
   /* aabb QueryAABB = AABBMinMax( {}, V3i(7.f + Radius*2.f) ); */

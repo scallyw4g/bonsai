@@ -6,7 +6,7 @@
 void
 TestChunkCopy(memory_arena *Memory)
 {
-  thread_local_state MainThread = DefaultThreadLocalState(0, 0);
+  thread_local_state MainThread = DefaultThreadLocalState(0);
 
   chunk_dimension DestChunkDim = Chunk_Dimension(8);
   world_position  DestChunkP = World_Position(0);

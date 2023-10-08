@@ -117,6 +117,7 @@ inline void
 DEBUG_DrawSimSpaceVectorAt(engine_resources *Engine, v3 SimP, v3 Vector, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {
   UNPACK_ENGINE_RESOURCES(Engine);
+
   untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_LINE);
 
   v3 Offset = GetRenderP(Engine, SimP);

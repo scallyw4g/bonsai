@@ -141,16 +141,7 @@ main( s32 ArgCount, const char ** Args )
   /* Info("Found Bonsai Root : %S", CS(GetCwd()) ); */
 
 #if 1
-  platform Plat = {};
-  os Os         = {};
   engine_resources EngineResources = {};
-  hotkeys Hotkeys = {};
-
-  EngineResources.Plat = &Plat;
-  EngineResources.Os = &Os;
-  EngineResources.Hotkeys = &Hotkeys;
-   /* Initialize_ThreadLocal_ThreadStates((s32)GetTotalThreadCount(), &EngineResources, &BootstrapArena); */
-
 
   const char* GameLibName = "./bin/blank_project_loadable" PLATFORM_RUNTIME_LIB_EXTENSION;
   switch (ArgCount)
@@ -165,11 +156,6 @@ main( s32 ArgCount, const char ** Args )
   // because InitializeBonsaiStdlib requires that we pass the GameApi so it can
   // kick off the worker threads.
   //
-
-  bonsai_debug_system DebugSystem = {};
-  /* shared_lib DebugLib = {}; */
-  /* bonsai_debug_api DebugApi  = {}; */
-
   shared_lib GameLib  = {};
   application_api  GameApi   = {};
   engine_api       EngineApi = {};
@@ -186,40 +172,44 @@ main( s32 ArgCount, const char ** Args )
   }
 
   memory_arena BootstrapArena = {};
-  memory_arena *PlatMemory = AllocateArena();
   memory_arena *GameMemory = AllocateArena();
 
   Ensure( InitializeBonsaiStdlib( bonsai_init_flags(BonsaiInit_LaunchThreadPool|BonsaiInit_OpenWindow|BonsaiInit_InitDebugSystem),
                                   &GameApi,
-                                  &DebugSystem,
-                                  &Os,
-                                  &Plat,
-                                  &EngineResources,
+                                  &EngineResources.Stdlib,
                                   &BootstrapArena) );
 
 
   EngineResources.DebugState = Global_DebugStatePointer;
-  EngineResources.ThreadStates = Global_ThreadStates;
 
+  Assert(EngineResources.Stdlib.ThreadStates);
+  Assert(Global_ThreadStates);
+
+
+  Global_EngineResources = &EngineResources;
 
   Ensure( EngineApi.OnLibraryLoad(&EngineResources) );
-  Ensure( EngineApi.Init(&EngineResources) ); // <-- EngineResources now initialized
-
-  InitQueue(&Plat.HighPriority, PlatMemory);
-  InitQueue(&Plat.LowPriority, PlatMemory);
+  Ensure( Bonsai_Init(&EngineResources) ); // <-- EngineResources now initialized
 
 #if DEBUG_SYSTEM_API
   GetDebugState()->SetRenderer(&EngineResources.Ui);
 #endif
 
+  UNPACK_STDLIB(&EngineResources.Stdlib);
+
+  memory_arena *WorkQueueMemory = AllocateArena();
+  InitQueue(&Plat->HighPriority, WorkQueueMemory);
+  InitQueue(&Plat->LowPriority, WorkQueueMemory);
+
+
   DEBUG_REGISTER_ARENA(GameMemory, 0);
-  DEBUG_REGISTER_ARENA(PlatMemory, 0);
+  DEBUG_REGISTER_ARENA(WorkQueueMemory, 0);
   DEBUG_REGISTER_ARENA(&BootstrapArena, 0);
 
 
   /* LaunchWorkerThreads(&Plat, &EngineResources, &GameApi); */
 
-  thread_local_state MainThread = DefaultThreadLocalState(&EngineResources, 0);
+  thread_local_state MainThread = DefaultThreadLocalState(0);
 
   if (GameApi.GameInit)
   {
@@ -234,7 +224,7 @@ main( s32 ArgCount, const char ** Args )
 
   r32 LastMs = 0;
   r32 RealDt = 0;
-  while (Plat.Input.Escape.Clicked == False)
+  while (Plat->Input.Escape.Clicked == False)
   {
     /* u32 CSwitchEventsThisFrame = CSwitchEventsPerFrame; */
     /* CSwitchEventsPerFrame = 0; */
@@ -242,32 +232,32 @@ main( s32 ArgCount, const char ** Args )
 
     TIMED_BLOCK("Frame Preamble");
 
-    ResetInputForFrameStart(&Plat.Input, &Hotkeys);
+    ResetInputForFrameStart(&Plat->Input, &EngineResources.Hotkeys);
 
-    if (Plat.dt > 0.1f)
+    if (Plat->dt > 0.1f)
     {
       Warn("DT exceeded 100ms, truncating to 33.33ms");
-      Plat.dt = 0.03333f;
+      Plat->dt = 0.03333f;
     }
 
-    v2 LastMouseP = Plat.MouseP;
-    while ( ProcessOsMessages(&Os, &Plat) );
-    Plat.MouseDP = LastMouseP - Plat.MouseP;
-    Plat.ScreenDim = V2(Plat.WindowWidth, Plat.WindowHeight);
+    v2 LastMouseP = Plat->MouseP;
+    while ( ProcessOsMessages(Os, Plat) );
+    Plat->MouseDP = LastMouseP - Plat->MouseP;
+    Plat->ScreenDim = V2(Plat->WindowWidth, Plat->WindowHeight);
 
-    BindHotkeysToInput(&Hotkeys, &Plat.Input);
+    BindHotkeysToInput(&EngineResources.Hotkeys, &Plat->Input);
 
     // NOTE(Jesse): Must come after input has been processed
     UiFrameBegin(&EngineResources.Ui);
 
-    DEBUG_FRAME_BEGIN(&EngineResources.Ui, Plat.dt, Hotkeys.Debug_ToggleMenu, Hotkeys.Debug_ToggleProfiling);
+    DEBUG_FRAME_BEGIN(&EngineResources.Ui, Plat->dt, EngineResources.Hotkeys.Debug_ToggleMenu, EngineResources.Hotkeys.Debug_ToggleProfiling);
 
 #if !EMCC
     if ( LibIsNew(GameLibName, &LastGameLibTime) )
     {
       Info("Reloading Game Lib");
 
-      SignalAndWaitForWorkers(&Plat.WorkerThreadsSuspendFutex);
+      SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
 
       CloseLibrary(GameLib);
       GameLib = OpenLibrary(GameLibName);
@@ -277,26 +267,27 @@ main( s32 ArgCount, const char ** Args )
 
       Ensure( EngineApi.OnLibraryLoad(&EngineResources) );
 
-      UnsignalFutex(&Plat.WorkerThreadsSuspendFutex);
+      UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
       Info("Game Reload Success");
     }
 
 #if DEBUG_SYSTEM_API
     if ( LibIsNew(DEFAULT_DEBUG_LIB, &LastDebugLibTime) )
     {
-      SignalAndWaitForWorkers(&Plat.WorkerThreadsSuspendFutex);
+      SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
 
       debug_state *Cached = Global_DebugStatePointer;
       Global_DebugStatePointer = 0;
 
-      CloseLibrary(DebugSystem.Lib);
-      DebugSystem.Lib = OpenLibrary(DEFAULT_DEBUG_LIB);
+      auto DebugSystem = &EngineResources.Stdlib.DebugSystem;
+      CloseLibrary(DebugSystem->Lib);
+      DebugSystem->Lib = OpenLibrary(DEFAULT_DEBUG_LIB);
 
-      if (DebugSystem.Lib)
+      if (DebugSystem->Lib)
       {
-        if (InitializeBootstrapDebugApi(DebugSystem.Lib, &DebugSystem.Api))
+        if (InitializeBootstrapDebugApi(DebugSystem->Lib, &DebugSystem->Api))
         {
-          DebugSystem.Api.BonsaiDebug_OnLoad(Cached, Global_ThreadStates);
+          DebugSystem->Api.BonsaiDebug_OnLoad(Cached, Global_ThreadStates);
           Ensure( EngineApi.OnLibraryLoad(&EngineResources) );
         }
         else { Error("Initializing DebugLib API"); }
@@ -305,7 +296,7 @@ main( s32 ArgCount, const char ** Args )
 
       Global_DebugStatePointer = Cached;
 
-      UnsignalFutex(&Plat.WorkerThreadsSuspendFutex);
+      UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
       Info("Debug lib Reload Success");
     }
 #endif // DEBUG_SYSTEM_API
@@ -317,7 +308,7 @@ main( s32 ArgCount, const char ** Args )
     END_BLOCK("Frame Preamble");
 
     /* TIMED_BLOCK("Network Ops"); */
-    /*   if (IsDisconnected(&Plat.Network)) { ConnectToServer(&Plat.Network); } */
+    /*   if (IsDisconnected(&Plat->Network)) { ConnectToServer(&Plat->Network); } */
     /* END_BLOCK("Network Ops"); */
 
     EngineApi.FrameBegin(&EngineResources);
@@ -328,18 +319,18 @@ main( s32 ArgCount, const char ** Args )
 
       EngineApi.SimulateAndBufferGeometry(&EngineResources);
 
-      DrainQueue(&Plat.HighPriority, &MainThread, &GameApi);
-      WaitForWorkerThreads(&Plat.HighPriorityWorkerCount);
+      DrainQueue(&Plat->HighPriority, &MainThread, &GameApi);
+      WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
 
       EngineApi.Render(&EngineResources);
 
-      DEBUG_FRAME_END(Plat.dt);
+      DEBUG_FRAME_END(Plat->dt);
 
     // NOTE(Jesse): FrameEnd must come after the game geometry has rendered so
     // the alpha-blended text works properly
     EngineApi.FrameEnd(&EngineResources);
 
-    BonsaiSwapBuffers(EngineResources.Os);
+    BonsaiSwapBuffers(&EngineResources.Stdlib.Os);
 
     thread_local_state *TLS = GetThreadLocalState(ThreadLocal_ThreadIndex);
     Ensure( RewindArena(TLS->TempMemory) );
@@ -347,8 +338,8 @@ main( s32 ArgCount, const char ** Args )
     r32 CurrentMS = (r32)GetHighPrecisionClock();
     RealDt = (CurrentMS - LastMs)/1000.0f;
     LastMs = CurrentMS;
-    Plat.dt = RealDt;
-    Plat.GameTime += RealDt;
+    Plat->dt = RealDt;
+    Plat->GameTime += RealDt;
 
     MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(RealDt);
   }
@@ -377,10 +368,10 @@ main( s32 ArgCount, const char ** Args )
 
   Info("Shutting Down");
 
-  SignalAndWaitForWorkers(&Plat.WorkerThreadsExitFutex);
-  UnsignalFutex(&Plat.WorkerThreadsExitFutex);
+  SignalAndWaitForWorkers(&Plat->WorkerThreadsExitFutex);
+  UnsignalFutex(&Plat->WorkerThreadsExitFutex);
 
-  Terminate(&Os, &Plat);
+  Terminate(Os, Plat);
 
   Info("Exiting");
 

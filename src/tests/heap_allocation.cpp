@@ -20,8 +20,8 @@ main(s32 ArgCount, const char** Args)
   u8* ShouldBeNull = HeapAllocate(&Heap, Megabytes(1));
   TestThat(ShouldBeNull == 0);
 
-  HeapDeallocate(First);
-  HeapDeallocate(Second);
+  HeapDeallocate(&Heap, First);
+  HeapDeallocate(&Heap, Second);
 
 
   TestSuiteEnd();

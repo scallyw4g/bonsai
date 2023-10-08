@@ -12,7 +12,7 @@ s32 main(s32 ArgCount, const char **Args)
   memory_arena *Memory = AllocateArena(Gigabytes(2));
   heap_allocator Heap = InitHeap(Gigabytes(2));
 
-  Global_ThreadStates = Initialize_ThreadLocal_ThreadStates((s32)GetTotalThreadCount(), 0, Memory);
+  Global_ThreadStates = Initialize_ThreadLocal_ThreadStates((s32)GetTotalThreadCount(), Memory);
   SetThreadLocal_ThreadIndex(0);
 
   if (ArgCount < 3)

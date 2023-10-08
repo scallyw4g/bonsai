@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-./make.sh RunPoof
-[ $? -ne 0 ] && exit 1
+# ./make.sh RunPoof
+# [ $? -ne 0 ] && exit 1
 
 # exit 0
 
@@ -28,14 +28,14 @@
 #     BuildSingleExample examples/terrain_gen \
 #     BuildDebugSystem
 
-# OPT="-O2"
-./make.sh $OPT \
-  BuildSingleExample examples/blank_project \
-  BuildSingleExample examples/the_wanderer \
-  BuildSingleExample examples/turn_based \
-  BuildExecutables \
-  BuildDebugSystem \
-  # BuildTests \
-  # BuildSingleExample examples/turn_based2
+# # OPT="-O2"
+# ./make.sh $OPT \
+#   BuildSingleExample examples/blank_project \
+#   BuildSingleExample examples/the_wanderer \
+#   BuildSingleExample examples/turn_based \
+#   BuildExecutables \
+#   BuildDebugSystem \
+#   # BuildTests \
+#   # BuildSingleExample examples/turn_based2
 
-# ./make.sh -O0 BuildAll
+./make.sh -O0 BuildAll

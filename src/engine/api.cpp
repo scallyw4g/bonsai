@@ -6,7 +6,7 @@ Bonsai_OnLibraryLoad(engine_resources *Resources)
   Global_DebugStatePointer = Resources->DebugState;
 #endif
 
-  Global_ThreadStates = Resources->ThreadStates;
+  Global_ThreadStates = Resources->Stdlib.ThreadStates;
   Global_EngineResources = Resources;
 
   // We should only ever call this from the main thread, and this sets our
@@ -22,7 +22,7 @@ Bonsai_Init(engine_resources *Resources)
 {
   TIMED_FUNCTION();
 
-  platform *Plat = Resources->Plat;
+  platform *Plat = &Resources->Stdlib.Plat;
 
   b32 Result = True;
 
@@ -128,7 +128,7 @@ Bonsai_SimulateAndBufferGeometry(engine_resources *Resources)
 {
   TIMED_FUNCTION();
 
-  SignalFutex(&Resources->Plat->HighPriorityModeFutex);
+  SignalFutex(&Resources->Stdlib.Plat.HighPriorityModeFutex);
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
@@ -173,7 +173,7 @@ Bonsai_SimulateAndBufferGeometry(engine_resources *Resources)
 
   BufferEntities( EntityTable, &Graphics->Transparency.GeoBuffer.Buffer, Graphics, World, Plat->dt);
 
-  UnsignalFutex(&Resources->Plat->HighPriorityModeFutex);
+  UnsignalFutex(&Resources->Stdlib.Plat.HighPriorityModeFutex);
 
 #if DEBUG_SYSTEM_API
   Debug_DoWorldChunkPicking(Resources);
@@ -292,7 +292,8 @@ Bonsai_Render(engine_resources *Resources)
 link_weak void
 WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_PARAMS)
 {
-  world *World = Thread->EngineResources->World;
+  engine_resources *EngineResources = GetEngineResources();
+  world *World = EngineResources->World;
 
   work_queue_entry_type Type = Entry->Type;
   switch (Type)
@@ -309,7 +310,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
     case type_work_queue_entry_update_world_region:
     {
       work_queue_entry_update_world_region *Job = SafeAccess(work_queue_entry_update_world_region, Entry);
-      DoWorldUpdate(&Thread->EngineResources->Plat->LowPriority, World, Thread, Job);
+      DoWorldUpdate(&EngineResources->Stdlib.Plat.LowPriority, World, Thread, Job);
     } break;
 
     case type_work_queue_entry_sim_particle_system:
@@ -361,7 +362,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
     case type_work_queue_entry_copy_buffer_ref:
     {
       work_queue_entry_copy_buffer_ref *CopyJob = SafeAccess(work_queue_entry_copy_buffer_ref, Entry);
-      DoCopyJob(CopyJob, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+      DoCopyJob(CopyJob, &EngineResources->MeshFreelist, Thread->PermMemory);
     } break;
 
     case type_work_queue_entry_copy_buffer_set:
@@ -371,7 +372,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       for (u32 CopyIndex = 0; CopyIndex < CopySet->Count; ++CopyIndex)
       {
         work_queue_entry_copy_buffer_ref *CopyJob = (work_queue_entry_copy_buffer_ref *)CopySet->CopyTargets + CopyIndex;
-        DoCopyJob(CopyJob, &Thread->EngineResources->MeshFreelist, Thread->PermMemory);
+        DoCopyJob(CopyJob, &EngineResources->MeshFreelist, Thread->PermMemory);
       }
       END_BLOCK("Copy Set");
     } break;

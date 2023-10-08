@@ -12,13 +12,11 @@ struct entity;
 struct engine_resources
 {
   // Stdlib
-  os                 *Os;
-  platform           *Plat;
-  thread_local_state *ThreadStates;
-  renderer_2d         Ui; // TODO(Jesse): Is this actually, truly stdlib?
+  bonsai_stdlib Stdlib;
+  renderer_2d   Ui; // TODO(Jesse): Is this actually, truly stdlib?
 
   // Engine
-  hotkeys    *Hotkeys;
+  hotkeys    Hotkeys;
   world      *World;
   game_state *GameState;
   graphics   *Graphics;
@@ -69,15 +67,15 @@ GetEngineResources()
   UNPACK_GRAPHICS_RESOURCES(Res)
 
 #define UNPACK_DATA_RESOURCES(Res)                               \
-  platform                  *Plat          =  Res->Plat;         \
+  platform                  *Plat          = &(Res)->Stdlib.Plat;  \
   world                     *World         =  Res->World;        \
   game_state                *GameState     =  Res->GameState;    \
   heap_allocator            *Heap          = &Res->Heap;         \
   entity                   **EntityTable   =  Res->EntityTable;  \
-  hotkeys                   *Hotkeys       =  Res->Hotkeys;      \
+  hotkeys                   *Hotkeys       = &Res->Hotkeys;      \
   engine_debug              *EngineDebug   = &Res->EngineDebug;  \
   tiered_mesh_freelist      *MeshFreelist  = &Res->MeshFreelist; \
-  input                     *Input         = &Res->Plat->Input;  \
+  input                     *Input         = &Res->Stdlib.Plat.Input;  \
   level_editor              *Editor        = &Res->Editor;       \
 
 #define UNPACK_GRAPHICS_RESOURCES(Res)                                    \

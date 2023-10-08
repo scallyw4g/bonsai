@@ -501,7 +501,7 @@ GetAsset(engine_resources *Engine, file_traversal_node *FileNode)
     Result = GetAssetSlot(Engine);
     Result->FileNode = *FileNode;
 
-    QueueAssetForLoad(&Engine->Plat->LowPriority, Result);
+    QueueAssetForLoad(&Engine->Stdlib.Plat.LowPriority, Result);
   }
 
 
