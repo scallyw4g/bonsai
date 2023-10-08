@@ -198,6 +198,7 @@ main( s32 ArgCount, const char ** Args )
                                   &BootstrapArena) );
 
 
+  EngineResources.DebugState = Global_DebugStatePointer;
   EngineResources.ThreadStates = Global_ThreadStates;
 
 
