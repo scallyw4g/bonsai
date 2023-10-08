@@ -37,12 +37,10 @@ Bonsai_Init(engine_resources *Resources)
   Resources->World = Allocate(world, BonsaiInitArena, 1);
   if (!Resources->World) { Error("Allocating World"); return False; }
 
-  memory_arena *GraphicsMemory = AllocateArena();
-  Resources->Graphics = GraphicsInit(GraphicsMemory);
+  Resources->Graphics = GraphicsInit(AllocateArena());
   if (!Resources->Graphics) { Error("Initializing Graphics"); return False; }
 
-  memory_arena *GraphicsMemory2D = AllocateArena();
-  InitRenderer2D(&Resources->Ui, &Resources->Heap, GraphicsMemory2D, &Plat->MouseP, &Plat->MouseDP, &Plat->ScreenDim, &Plat->Input);
+  InitRenderer2D(&Resources->Ui, &Resources->Heap, AllocateArena(), &Plat->MouseP, &Plat->MouseDP, &Plat->ScreenDim, &Plat->Input);
 
   Resources->EntityTable = AllocateEntityTable(BonsaiInitArena, TOTAL_ENTITY_COUNT);
 

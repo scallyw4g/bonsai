@@ -20,6 +20,7 @@ struct g_buffer_textures
   texture *Color;
   texture *Normal;
   texture *Position;
+  texture *Depth;
 };
 
 struct g_buffer_render_group
@@ -28,9 +29,9 @@ struct g_buffer_render_group
 
   g_buffer_textures *Textures;
 
-  shader DebugColorShader;
-  shader DebugNormalShader;
-  shader DebugPositionShader;
+  /* shader DebugColorShader; */
+  /* shader DebugNormalShader; */
+  /* shader DebugPositionShader; */
 
   /* shader LightingShader; */
   shader gBufferShader;

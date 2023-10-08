@@ -374,7 +374,7 @@ InitGbufferRenderGroup( g_buffer_render_group *gBuffer, memory_arena *GraphicsMe
   GL.BindFramebuffer(GL_FRAMEBUFFER, gBuffer->FBO.ID);
 
   gBuffer->Textures = Allocate(g_buffer_textures, GraphicsMemory, 1);
-  gBuffer->Textures->Color    = MakeTexture_RGBA( ScreenDim, (v4*)0, GraphicsMemory);
+  gBuffer->Textures->Color = MakeTexture_RGBA( ScreenDim, (v4*)0, GraphicsMemory);
 
   // FIXME(Jesse): This makes GL 3 fail on the FRAMEBUFFER_COMPLETE check
   // if it's an RGB texture.  We only need three channels for normal so this
@@ -388,8 +388,8 @@ InitGbufferRenderGroup( g_buffer_render_group *gBuffer, memory_arena *GraphicsMe
   FramebufferTexture(&gBuffer->FBO, gBuffer->Textures->Position);
   SetDrawBuffers(&gBuffer->FBO);
 
-  texture *DepthTexture    = MakeDepthTexture( ScreenDim, GraphicsMemory );
-  FramebufferDepthTexture(DepthTexture);
+  gBuffer->Textures->Depth = MakeDepthTexture( ScreenDim, GraphicsMemory );
+  FramebufferDepthTexture(gBuffer->Textures->Depth);
 
   b32 Result = CheckAndClearFramebuffer();
   return Result;
@@ -520,7 +520,7 @@ MakeTransparencyShader(m4 *ViewProjection, texture *T0, texture *T1, memory_aren
 }
 
 link_internal void
-InitTransparencyRenderGroup(transparency_render_group *Group, v2i TextureSize, m4 *ViewProjection, memory_arena *Memory)
+InitTransparencyRenderGroup(transparency_render_group *Group, v2i TextureSize, m4 *ViewProjection, texture *DepthTexture, memory_arena *Memory)
 {
   AllocateGpuElementBuffer(&Group->GeoBuffer, (u32)Megabytes(1));
 
@@ -545,7 +545,7 @@ InitTransparencyRenderGroup(transparency_render_group *Group, v2i TextureSize, m
   Group->Texture1 = GenTexture(TextureSize, Memory);
   GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, Image);
 
-  texture *DepthTexture = MakeDepthTexture( TextureSize, Memory );
+  /* texture *DepthTexture = MakeDepthTexture( TextureSize, Memory ); */
   FramebufferDepthTexture(DepthTexture);
 
   Assert(ViewProjection);
@@ -658,7 +658,7 @@ GraphicsInit(memory_arena *GraphicsMemory)
     InitRenderToTextureGroup(&Resources->RTTGroup, V2i(256), GraphicsMemory);
   }
 
-  InitTransparencyRenderGroup(&Result->Transparency, V2i(SCR_WIDTH, SCR_HEIGHT), &gBuffer->ViewProjection, GraphicsMemory);
+  InitTransparencyRenderGroup(&Result->Transparency, V2i(SCR_WIDTH, SCR_HEIGHT), &gBuffer->ViewProjection, gBuffer->Textures->Depth, GraphicsMemory);
 
   // Initialize the gaussian blur render group
   {
@@ -678,7 +678,7 @@ GraphicsInit(memory_arena *GraphicsMemory)
 
   { // To keep these here or not to keep these here..
 #if BONSAI_INTERNAL
-#if 1
+#if 0
     gBuffer->DebugColorShader    = MakeSimpleTextureShader(gBuffer->Textures->Color,    GraphicsMemory);
     gBuffer->DebugNormalShader   = MakeSimpleTextureShader(gBuffer->Textures->Normal,   GraphicsMemory);
     gBuffer->DebugPositionShader = MakeSimpleTextureShader(gBuffer->Textures->Position, GraphicsMemory);
