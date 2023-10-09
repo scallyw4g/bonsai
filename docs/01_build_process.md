@@ -11,6 +11,7 @@ not work for you, by all means open an issue and I will do what I can to assist.
 Bonsai requires `clang` and a unix-like shell to build on Windows.
 
 Install Visual Studio (make sure to install Visual C++ compiler) : https://visualstudio.microsoft.com/
+This is for a few required CRT headers that make using `clang` plug-and-play.
 
 Install MinGW & Clang from https://winlibs.com/ : [64-bit w/ Clang-16 Installer Download](https://github.com/brechtsanders/winlibs_mingw/releases/download/13.2.0mcf-16.0.6-11.0.1-ucrt-r2/winlibs-x86_64-mcf-seh-gcc-13.2.0-llvm-16.0.6-mingw-w64ucrt-11.0.1-r2.zip)
 
