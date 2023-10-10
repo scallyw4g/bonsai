@@ -4,7 +4,9 @@ struct v3i_cursor
   // TODO(Jesse)(immediate): For the love of fucksakes change these to indices
   v3i *At;
   v3i *End;
+  OWNED_BY_THREAD_MEMBER();
 };
+
 
 
 link_internal v3i_cursor
@@ -15,6 +17,7 @@ V3iCursor(umm ElementCount, memory_arena* Memory)
     .Start = Start,
     .End = Start+ElementCount,
     .At = Start,
+    .OwnedByThread = ThreadLocal_ThreadIndex,
   };
   return Result;
 }
@@ -22,6 +25,8 @@ V3iCursor(umm ElementCount, memory_arena* Memory)
 link_internal v3i*
 GetPtr(v3i_cursor *Cursor, umm ElementIndex)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   v3i *Result = {};
   if (ElementIndex < AtElements(Cursor)) {
     Result = Cursor->Start+ElementIndex;
@@ -32,6 +37,8 @@ GetPtr(v3i_cursor *Cursor, umm ElementIndex)
 link_internal v3i*
 GetPtrUnsafe(v3i_cursor *Cursor, umm ElementIndex)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   v3i *Result = {};
   if (ElementIndex < TotalElements(Cursor)) {
     Result = Cursor->Start+ElementIndex;
@@ -42,6 +49,8 @@ GetPtrUnsafe(v3i_cursor *Cursor, umm ElementIndex)
 link_internal v3i
 Get(v3i_cursor *Cursor, umm ElementIndex)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   Assert(ElementIndex < CurrentCount(Cursor));
   v3i Result = Cursor->Start[ElementIndex];
   return Result;
@@ -50,6 +59,8 @@ Get(v3i_cursor *Cursor, umm ElementIndex)
 link_internal void
 Set(v3i_cursor *Cursor, umm ElementIndex, v3i Element)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   umm CurrentElementCount = CurrentCount(Cursor);
   Assert (ElementIndex <= CurrentElementCount);
 
@@ -63,6 +74,8 @@ Set(v3i_cursor *Cursor, umm ElementIndex, v3i Element)
 link_internal v3i*
 Advance(v3i_cursor *Cursor)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   v3i * Result = {};
   if ( Cursor->At < Cursor->End ) { Result = Cursor->At++; }
   return Result;
@@ -71,6 +84,8 @@ Advance(v3i_cursor *Cursor)
 link_internal v3i *
 Push(v3i_cursor *Cursor, v3i Element)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   Assert( Cursor->At < Cursor->End );
   v3i *Result = Cursor->At;
   *Cursor->At++ = Element;
@@ -80,6 +95,8 @@ Push(v3i_cursor *Cursor, v3i Element)
 link_internal v3i
 Pop(v3i_cursor *Cursor)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   Assert( Cursor->At > Cursor->Start );
   v3i Result = Cursor->At[-1];
   Cursor->At--;
@@ -89,6 +106,8 @@ Pop(v3i_cursor *Cursor)
 link_internal s32
 LastIndex(v3i_cursor *Cursor)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   s32 Result = s32(CurrentCount(Cursor))-1;
   return Result;
 }
@@ -96,6 +115,8 @@ LastIndex(v3i_cursor *Cursor)
 link_internal b32
 Remove(v3i_cursor *Cursor, v3i Query)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   b32 Result = False;
   CursorIterator(ElementIndex, Cursor)
   {
@@ -117,6 +138,8 @@ Remove(v3i_cursor *Cursor, v3i Query)
 link_internal b32
 ResizeCursor(v3i_cursor *Cursor, umm Count, memory_arena *Memory)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   umm CurrentSize = TotalSize(Cursor);
 
   TruncateToElementCount(Cursor, Count);
@@ -130,12 +153,14 @@ ResizeCursor(v3i_cursor *Cursor, umm Count, memory_arena *Memory)
 }
 
 link_internal void
-Unshift( v3i_cursor *C )
+Unshift( v3i_cursor *Cursor )
 {
-  umm Count = TotalElements(C);
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
+  umm Count = TotalElements(Cursor);
   for (umm Index = 1; Index < Count; ++Index)
   {
-    C->Start[Index-1] = C->Start[Index];
+    Cursor->Start[Index-1] = Cursor->Start[Index];
   }
 }
 

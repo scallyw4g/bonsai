@@ -1,6 +1,8 @@
 maybe_ui_toggle
 GetById( ui_toggle_hashtable *Table, umm Id )
 {
+  ENSURE_OWNED_BY_THREAD(Table);
+
   maybe_ui_toggle Result = {};
 
   auto *Bucket = GetHashBucket(umm(Hash(&Id)), Table);

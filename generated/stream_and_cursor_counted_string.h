@@ -4,7 +4,9 @@ struct counted_string_cursor
   // TODO(Jesse)(immediate): For the love of fucksakes change these to indices
   counted_string *At;
   counted_string *End;
+  OWNED_BY_THREAD_MEMBER();
 };
+
 
 
 link_internal counted_string_cursor
@@ -15,6 +17,7 @@ CountedStringCursor(umm ElementCount, memory_arena* Memory)
     .Start = Start,
     .End = Start+ElementCount,
     .At = Start,
+    .OwnedByThread = ThreadLocal_ThreadIndex,
   };
   return Result;
 }
@@ -22,6 +25,8 @@ CountedStringCursor(umm ElementCount, memory_arena* Memory)
 link_internal counted_string*
 GetPtr(counted_string_cursor *Cursor, umm ElementIndex)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   counted_string *Result = {};
   if (ElementIndex < AtElements(Cursor)) {
     Result = Cursor->Start+ElementIndex;
@@ -32,6 +37,8 @@ GetPtr(counted_string_cursor *Cursor, umm ElementIndex)
 link_internal counted_string*
 GetPtrUnsafe(counted_string_cursor *Cursor, umm ElementIndex)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   counted_string *Result = {};
   if (ElementIndex < TotalElements(Cursor)) {
     Result = Cursor->Start+ElementIndex;
@@ -42,6 +49,8 @@ GetPtrUnsafe(counted_string_cursor *Cursor, umm ElementIndex)
 link_internal counted_string
 Get(counted_string_cursor *Cursor, umm ElementIndex)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   Assert(ElementIndex < CurrentCount(Cursor));
   counted_string Result = Cursor->Start[ElementIndex];
   return Result;
@@ -50,6 +59,8 @@ Get(counted_string_cursor *Cursor, umm ElementIndex)
 link_internal void
 Set(counted_string_cursor *Cursor, umm ElementIndex, counted_string Element)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   umm CurrentElementCount = CurrentCount(Cursor);
   Assert (ElementIndex <= CurrentElementCount);
 
@@ -63,6 +74,8 @@ Set(counted_string_cursor *Cursor, umm ElementIndex, counted_string Element)
 link_internal counted_string*
 Advance(counted_string_cursor *Cursor)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   counted_string * Result = {};
   if ( Cursor->At < Cursor->End ) { Result = Cursor->At++; }
   return Result;
@@ -71,6 +84,8 @@ Advance(counted_string_cursor *Cursor)
 link_internal counted_string *
 Push(counted_string_cursor *Cursor, counted_string Element)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   Assert( Cursor->At < Cursor->End );
   counted_string *Result = Cursor->At;
   *Cursor->At++ = Element;
@@ -80,6 +95,8 @@ Push(counted_string_cursor *Cursor, counted_string Element)
 link_internal counted_string
 Pop(counted_string_cursor *Cursor)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   Assert( Cursor->At > Cursor->Start );
   counted_string Result = Cursor->At[-1];
   Cursor->At--;
@@ -89,6 +106,8 @@ Pop(counted_string_cursor *Cursor)
 link_internal s32
 LastIndex(counted_string_cursor *Cursor)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   s32 Result = s32(CurrentCount(Cursor))-1;
   return Result;
 }
@@ -96,6 +115,8 @@ LastIndex(counted_string_cursor *Cursor)
 link_internal b32
 Remove(counted_string_cursor *Cursor, counted_string Query)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   b32 Result = False;
   CursorIterator(ElementIndex, Cursor)
   {
@@ -117,6 +138,8 @@ Remove(counted_string_cursor *Cursor, counted_string Query)
 link_internal b32
 ResizeCursor(counted_string_cursor *Cursor, umm Count, memory_arena *Memory)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   umm CurrentSize = TotalSize(Cursor);
 
   TruncateToElementCount(Cursor, Count);
@@ -130,12 +153,14 @@ ResizeCursor(counted_string_cursor *Cursor, umm Count, memory_arena *Memory)
 }
 
 link_internal void
-Unshift( counted_string_cursor *C )
+Unshift( counted_string_cursor *Cursor )
 {
-  umm Count = TotalElements(C);
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
+  umm Count = TotalElements(Cursor);
   for (umm Index = 1; Index < Count; ++Index)
   {
-    C->Start[Index-1] = C->Start[Index];
+    Cursor->Start[Index-1] = Cursor->Start[Index];
   }
 }
 

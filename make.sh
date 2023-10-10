@@ -20,6 +20,7 @@ MakeDebugLibRelease=0
 
 . scripts/preamble.sh
 . scripts/setup_for_cxx.sh
+. external/bonsai_debug/make.sh
 
 OPTIMIZATION_LEVEL=""
 EMCC=0

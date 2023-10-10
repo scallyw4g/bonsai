@@ -4,7 +4,9 @@ struct u64_cursor
   // TODO(Jesse)(immediate): For the love of fucksakes change these to indices
   u64 *At;
   u64 *End;
+  OWNED_BY_THREAD_MEMBER();
 };
+
 
 
 link_internal u64_cursor
@@ -15,6 +17,7 @@ U64Cursor(umm ElementCount, memory_arena* Memory)
     .Start = Start,
     .End = Start+ElementCount,
     .At = Start,
+    .OwnedByThread = ThreadLocal_ThreadIndex,
   };
   return Result;
 }
@@ -22,6 +25,8 @@ U64Cursor(umm ElementCount, memory_arena* Memory)
 link_internal u64*
 GetPtr(u64_cursor *Cursor, umm ElementIndex)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   u64 *Result = {};
   if (ElementIndex < AtElements(Cursor)) {
     Result = Cursor->Start+ElementIndex;
@@ -32,6 +37,8 @@ GetPtr(u64_cursor *Cursor, umm ElementIndex)
 link_internal u64*
 GetPtrUnsafe(u64_cursor *Cursor, umm ElementIndex)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   u64 *Result = {};
   if (ElementIndex < TotalElements(Cursor)) {
     Result = Cursor->Start+ElementIndex;
@@ -42,6 +49,8 @@ GetPtrUnsafe(u64_cursor *Cursor, umm ElementIndex)
 link_internal u64
 Get(u64_cursor *Cursor, umm ElementIndex)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   Assert(ElementIndex < CurrentCount(Cursor));
   u64 Result = Cursor->Start[ElementIndex];
   return Result;
@@ -50,6 +59,8 @@ Get(u64_cursor *Cursor, umm ElementIndex)
 link_internal void
 Set(u64_cursor *Cursor, umm ElementIndex, u64 Element)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   umm CurrentElementCount = CurrentCount(Cursor);
   Assert (ElementIndex <= CurrentElementCount);
 
@@ -63,6 +74,8 @@ Set(u64_cursor *Cursor, umm ElementIndex, u64 Element)
 link_internal u64*
 Advance(u64_cursor *Cursor)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   u64 * Result = {};
   if ( Cursor->At < Cursor->End ) { Result = Cursor->At++; }
   return Result;
@@ -71,6 +84,8 @@ Advance(u64_cursor *Cursor)
 link_internal u64 *
 Push(u64_cursor *Cursor, u64 Element)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   Assert( Cursor->At < Cursor->End );
   u64 *Result = Cursor->At;
   *Cursor->At++ = Element;
@@ -80,6 +95,8 @@ Push(u64_cursor *Cursor, u64 Element)
 link_internal u64
 Pop(u64_cursor *Cursor)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   Assert( Cursor->At > Cursor->Start );
   u64 Result = Cursor->At[-1];
   Cursor->At--;
@@ -89,6 +106,8 @@ Pop(u64_cursor *Cursor)
 link_internal s32
 LastIndex(u64_cursor *Cursor)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   s32 Result = s32(CurrentCount(Cursor))-1;
   return Result;
 }
@@ -96,6 +115,8 @@ LastIndex(u64_cursor *Cursor)
 link_internal b32
 Remove(u64_cursor *Cursor, u64 Query)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   b32 Result = False;
   CursorIterator(ElementIndex, Cursor)
   {
@@ -117,6 +138,8 @@ Remove(u64_cursor *Cursor, u64 Query)
 link_internal b32
 ResizeCursor(u64_cursor *Cursor, umm Count, memory_arena *Memory)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   umm CurrentSize = TotalSize(Cursor);
 
   TruncateToElementCount(Cursor, Count);
@@ -130,12 +153,14 @@ ResizeCursor(u64_cursor *Cursor, umm Count, memory_arena *Memory)
 }
 
 link_internal void
-Unshift( u64_cursor *C )
+Unshift( u64_cursor *Cursor )
 {
-  umm Count = TotalElements(C);
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
+  umm Count = TotalElements(Cursor);
   for (umm Index = 1; Index < Count; ++Index)
   {
-    C->Start[Index-1] = C->Start[Index];
+    Cursor->Start[Index-1] = Cursor->Start[Index];
   }
 }
 

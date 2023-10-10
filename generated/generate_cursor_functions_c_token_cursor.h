@@ -1,3 +1,4 @@
+
 link_internal c_token_cursor
 CTokenCursor(umm ElementCount, memory_arena* Memory)
 {
@@ -6,6 +7,7 @@ CTokenCursor(umm ElementCount, memory_arena* Memory)
     .Start = Start,
     .End = Start+ElementCount,
     .At = Start,
+    .OwnedByThread = ThreadLocal_ThreadIndex,
   };
   return Result;
 }
@@ -13,6 +15,8 @@ CTokenCursor(umm ElementCount, memory_arena* Memory)
 link_internal c_token*
 GetPtr(c_token_cursor *Cursor, umm ElementIndex)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   c_token *Result = {};
   if (ElementIndex < AtElements(Cursor)) {
     Result = Cursor->Start+ElementIndex;
@@ -23,6 +27,8 @@ GetPtr(c_token_cursor *Cursor, umm ElementIndex)
 link_internal c_token*
 GetPtrUnsafe(c_token_cursor *Cursor, umm ElementIndex)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   c_token *Result = {};
   if (ElementIndex < TotalElements(Cursor)) {
     Result = Cursor->Start+ElementIndex;
@@ -33,6 +39,8 @@ GetPtrUnsafe(c_token_cursor *Cursor, umm ElementIndex)
 link_internal c_token
 Get(c_token_cursor *Cursor, umm ElementIndex)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   Assert(ElementIndex < CurrentCount(Cursor));
   c_token Result = Cursor->Start[ElementIndex];
   return Result;
@@ -41,6 +49,8 @@ Get(c_token_cursor *Cursor, umm ElementIndex)
 link_internal void
 Set(c_token_cursor *Cursor, umm ElementIndex, c_token Element)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   umm CurrentElementCount = CurrentCount(Cursor);
   Assert (ElementIndex <= CurrentElementCount);
 
@@ -54,6 +64,8 @@ Set(c_token_cursor *Cursor, umm ElementIndex, c_token Element)
 link_internal c_token*
 Advance(c_token_cursor *Cursor)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   c_token * Result = {};
   if ( Cursor->At < Cursor->End ) { Result = Cursor->At++; }
   return Result;
@@ -62,6 +74,8 @@ Advance(c_token_cursor *Cursor)
 link_internal c_token *
 Push(c_token_cursor *Cursor, c_token Element)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   Assert( Cursor->At < Cursor->End );
   c_token *Result = Cursor->At;
   *Cursor->At++ = Element;
@@ -71,6 +85,8 @@ Push(c_token_cursor *Cursor, c_token Element)
 link_internal c_token
 Pop(c_token_cursor *Cursor)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   Assert( Cursor->At > Cursor->Start );
   c_token Result = Cursor->At[-1];
   Cursor->At--;
@@ -80,6 +96,8 @@ Pop(c_token_cursor *Cursor)
 link_internal s32
 LastIndex(c_token_cursor *Cursor)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   s32 Result = s32(CurrentCount(Cursor))-1;
   return Result;
 }
@@ -87,6 +105,8 @@ LastIndex(c_token_cursor *Cursor)
 link_internal b32
 Remove(c_token_cursor *Cursor, c_token Query)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   b32 Result = False;
   CursorIterator(ElementIndex, Cursor)
   {
@@ -108,6 +128,8 @@ Remove(c_token_cursor *Cursor, c_token Query)
 link_internal b32
 ResizeCursor(c_token_cursor *Cursor, umm Count, memory_arena *Memory)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   umm CurrentSize = TotalSize(Cursor);
 
   TruncateToElementCount(Cursor, Count);
@@ -121,12 +143,14 @@ ResizeCursor(c_token_cursor *Cursor, umm Count, memory_arena *Memory)
 }
 
 link_internal void
-Unshift( c_token_cursor *C )
+Unshift( c_token_cursor *Cursor )
 {
-  umm Count = TotalElements(C);
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
+  umm Count = TotalElements(Cursor);
   for (umm Index = 1; Index < Count; ++Index)
   {
-    C->Start[Index-1] = C->Start[Index];
+    Cursor->Start[Index-1] = Cursor->Start[Index];
   }
 }
 

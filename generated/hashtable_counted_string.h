@@ -8,7 +8,9 @@ struct counted_string_hashtable
 {
   umm Size;
   counted_string_linked_list_node **Elements;
+  OWNED_BY_THREAD_MEMBER();
 };
+
 link_internal counted_string_linked_list_node *
 Allocate_counted_string_linked_list_node(memory_arena *Memory)
 {
@@ -19,15 +21,19 @@ Allocate_counted_string_linked_list_node(memory_arena *Memory)
 link_internal counted_string_hashtable
 Allocate_counted_string_hashtable(umm ElementCount, memory_arena *Memory)
 {
-  counted_string_hashtable Result = {};
-  Result.Elements = Allocate( counted_string_linked_list_node*, Memory, ElementCount);
-  Result.Size = ElementCount;
+  counted_string_hashtable Result = {
+    .Elements = Allocate( counted_string_linked_list_node*, Memory, ElementCount),
+    .Size = ElementCount,
+    OWNED_BY_THREAD_MEMBER_INIT(),
+  };
   return Result;
 }
 
 link_internal counted_string_linked_list_node *
 GetHashBucket(umm HashValue, counted_string_hashtable *Table)
 {
+  ENSURE_OWNED_BY_THREAD(Table);
+
   Assert(Table->Size);
   counted_string_linked_list_node *Result = Table->Elements[HashValue % Table->Size];
   return Result;
@@ -36,6 +42,8 @@ GetHashBucket(umm HashValue, counted_string_hashtable *Table)
 link_internal counted_string *
 GetFirstAtBucket(umm HashValue, counted_string_hashtable *Table)
 {
+  ENSURE_OWNED_BY_THREAD(Table);
+
   counted_string_linked_list_node *Bucket = GetHashBucket(HashValue, Table);
   counted_string *Result = &Bucket->Element;
   return Result;
@@ -44,6 +52,8 @@ GetFirstAtBucket(umm HashValue, counted_string_hashtable *Table)
 link_internal counted_string *
 Insert(counted_string_linked_list_node *Node, counted_string_hashtable *Table)
 {
+  ENSURE_OWNED_BY_THREAD(Table);
+
   Assert(Table->Size);
   umm HashValue = Hash(&Node->Element) % Table->Size;
   counted_string_linked_list_node **Bucket = Table->Elements + HashValue;
@@ -55,6 +65,8 @@ Insert(counted_string_linked_list_node *Node, counted_string_hashtable *Table)
 link_internal counted_string*
 Insert(counted_string Element, counted_string_hashtable *Table, memory_arena *Memory)
 {
+  ENSURE_OWNED_BY_THREAD(Table);
+
   counted_string_linked_list_node *Bucket = Allocate_counted_string_linked_list_node(Memory);
   Bucket->Element = Element;
   Insert(Bucket, Table);

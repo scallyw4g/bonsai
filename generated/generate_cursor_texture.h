@@ -4,7 +4,9 @@ struct texture_cursor
   // TODO(Jesse)(immediate): For the love of fucksakes change these to indices
   texture *At;
   texture *End;
+  OWNED_BY_THREAD_MEMBER();
 };
+
 
 
 link_internal texture_cursor
@@ -15,6 +17,7 @@ TextureCursor(umm ElementCount, memory_arena* Memory)
     .Start = Start,
     .End = Start+ElementCount,
     .At = Start,
+    .OwnedByThread = ThreadLocal_ThreadIndex,
   };
   return Result;
 }
@@ -22,6 +25,8 @@ TextureCursor(umm ElementCount, memory_arena* Memory)
 link_internal texture*
 GetPtr(texture_cursor *Cursor, umm ElementIndex)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   texture *Result = {};
   if (ElementIndex < AtElements(Cursor)) {
     Result = Cursor->Start+ElementIndex;
@@ -32,6 +37,8 @@ GetPtr(texture_cursor *Cursor, umm ElementIndex)
 link_internal texture*
 GetPtrUnsafe(texture_cursor *Cursor, umm ElementIndex)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   texture *Result = {};
   if (ElementIndex < TotalElements(Cursor)) {
     Result = Cursor->Start+ElementIndex;
@@ -42,6 +49,8 @@ GetPtrUnsafe(texture_cursor *Cursor, umm ElementIndex)
 link_internal texture
 Get(texture_cursor *Cursor, umm ElementIndex)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   Assert(ElementIndex < CurrentCount(Cursor));
   texture Result = Cursor->Start[ElementIndex];
   return Result;
@@ -50,6 +59,8 @@ Get(texture_cursor *Cursor, umm ElementIndex)
 link_internal void
 Set(texture_cursor *Cursor, umm ElementIndex, texture Element)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   umm CurrentElementCount = CurrentCount(Cursor);
   Assert (ElementIndex <= CurrentElementCount);
 
@@ -63,6 +74,8 @@ Set(texture_cursor *Cursor, umm ElementIndex, texture Element)
 link_internal texture*
 Advance(texture_cursor *Cursor)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   texture * Result = {};
   if ( Cursor->At < Cursor->End ) { Result = Cursor->At++; }
   return Result;
@@ -71,6 +84,8 @@ Advance(texture_cursor *Cursor)
 link_internal texture *
 Push(texture_cursor *Cursor, texture Element)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   Assert( Cursor->At < Cursor->End );
   texture *Result = Cursor->At;
   *Cursor->At++ = Element;
@@ -80,6 +95,8 @@ Push(texture_cursor *Cursor, texture Element)
 link_internal texture
 Pop(texture_cursor *Cursor)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   Assert( Cursor->At > Cursor->Start );
   texture Result = Cursor->At[-1];
   Cursor->At--;
@@ -89,6 +106,8 @@ Pop(texture_cursor *Cursor)
 link_internal s32
 LastIndex(texture_cursor *Cursor)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   s32 Result = s32(CurrentCount(Cursor))-1;
   return Result;
 }
@@ -96,6 +115,8 @@ LastIndex(texture_cursor *Cursor)
 link_internal b32
 Remove(texture_cursor *Cursor, texture Query)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   b32 Result = False;
   CursorIterator(ElementIndex, Cursor)
   {
@@ -117,6 +138,8 @@ Remove(texture_cursor *Cursor, texture Query)
 link_internal b32
 ResizeCursor(texture_cursor *Cursor, umm Count, memory_arena *Memory)
 {
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
   umm CurrentSize = TotalSize(Cursor);
 
   TruncateToElementCount(Cursor, Count);
@@ -130,12 +153,14 @@ ResizeCursor(texture_cursor *Cursor, umm Count, memory_arena *Memory)
 }
 
 link_internal void
-Unshift( texture_cursor *C )
+Unshift( texture_cursor *Cursor )
 {
-  umm Count = TotalElements(C);
+  ENSURE_OWNED_BY_THREAD(Cursor);
+
+  umm Count = TotalElements(Cursor);
   for (umm Index = 1; Index < Count; ++Index)
   {
-    C->Start[Index-1] = C->Start[Index];
+    Cursor->Start[Index-1] = Cursor->Start[Index];
   }
 }
 
