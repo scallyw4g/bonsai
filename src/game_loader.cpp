@@ -156,7 +156,7 @@ main( s32 ArgCount, const char ** Args )
   // because InitializeBonsaiStdlib requires that we pass the GameApi so it can
   // kick off the worker threads.
   //
-  shared_lib GameLib  = {};
+  shared_lib       GameLib   = {};
   application_api  GameApi   = {};
   engine_api       EngineApi = {};
   {
