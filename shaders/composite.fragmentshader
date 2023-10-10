@@ -3,14 +3,14 @@ in vec2 gBufferUV;
 out vec4 OutColor;
 
 
-uniform sampler2D gColor;
+/* uniform sampler2D gColor; */
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 
 uniform sampler2D BloomTex;
 uniform sampler2D LightingTex;
-uniform sampler2D shadowMap;
-uniform sampler2D Ssao;
+/* uniform sampler2D shadowMap; */
+/* uniform sampler2D Ssao; */
 
 uniform sampler2D TransparencyAccum;
 uniform sampler2D TransparencyCount;
@@ -30,7 +30,7 @@ void main()
   vec2 gBufferTexelStep = 1.0 / vec2(SCR_WIDTH, SCR_HEIGHT);
 
   vec4 PixTranspAccum = texture(TransparencyAccum, gBufferUV);
-  float PixTranspCount = max(1.f, texture(TransparencyAccum, gBufferUV).r);
+  float PixTranspCount = max(1.f, texture(TransparencyCount, gBufferUV).r);
 
   vec3 FragNormal = texture(gNormal, gBufferUV).rgb;
 
@@ -72,8 +72,10 @@ void main()
   /*
    *  Tone-mapping && gamma correction
    */
-  vec4 TransparencyContrib = vec4(PixTranspAccum.rgb / max(PixTranspAccum.a, 0.0001), pow( max(0.0, 1.0 - PixTranspAccum.a / PixTranspCount), PixTranspCount));
-  /* vec4 TransparencyContrib = vec4(PixTranspAccum.rgb * PixTranspAccum.a, 1.f); */
+  vec3 TransparencyRGB = PixTranspAccum.rgb / PixTranspCount;
+  float TransparencyA = PixTranspAccum.a / PixTranspCount;
+
+  vec3 TransparencyContrib =  TransparencyRGB * TransparencyA;
 
   vec3 TotalLight = Lighting + 0.1f*Bloom + TransparencyContrib.rgb;
   /* vec3 TotalLight = (Diffuse * Lighting) * 2.f; */

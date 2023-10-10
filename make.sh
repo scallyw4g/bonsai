@@ -52,47 +52,6 @@ BUNDLED_EXAMPLES="
 "
 # $EXAMPLES/wave_function_collapse_terrain
 
-declare -a build_job_pids
-declare -a build_job_names
-
-# Call like: addPid "job name" <pid>
-addPid() {
-    local name=$1
-    local pid=$2
-    # echo "$name -- $pid"
-    build_job_pids=(${build_job_pids[@]} $pid)
-    build_job_names=(${build_job_names[@]} $name)
-}
-
-waitOnPids() {
-    while [ ${#build_job_pids[@]} -ne 0 ]; do
-        # echo "Waiting for pids: ${build_job_pids[@]}"
-        local range=$(eval echo {0..$((${#build_job_pids[@]}-1))})
-        local i
-        for i in $range; do
-            if ! kill -0 ${build_job_pids[$i]} 2> /dev/null; then
-
-                exit_code=0
-                wait ${build_job_pids[$i]} || exit_code=$?
-
-                if [ $exit_code -eq 0 ]; then
-                  echo -e "$Success ${build_job_names[$i]}"
-                else
-                  echo -e "$Failed ${build_job_names[$i]}"
-                  exit 1
-                fi
-
-                unset build_job_pids[$i]
-                unset build_job_names[$i]
-            fi
-        done
-         # Expunge nulls created by unset.
-        build_job_pids=("${build_job_pids[@]}")
-        build_job_names=("${build_job_names[@]}")
-        sleep 0.25
-    done
-}
-
 EXECUTABLES_TO_BUILD="
   $SRC/game_loader.cpp
   $SRC/font/ttf.cpp
@@ -125,7 +84,7 @@ function MakeDebugLibRelease
   cp texture_atlas_0.bmp $DEBUG_LIB_RELEASE_DIR
   cp -R shaders $DEBUG_LIB_RELEASE_DIR
 
-  waitOnPids
+  WaitForTrackedPids
   sync
 
   cp "$BIN/lib_debug_system_loadable""$PLATFORM_LIB_EXTENSION" \
@@ -156,7 +115,7 @@ function BuildExecutables
       -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
       $executable &
 
-    addPid "$executable" $!
+    TrackPid "$executable" $!
 
   done
 }
@@ -181,7 +140,7 @@ function BuildDebugOnlyTests
       -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
       $executable &
 
-    addPid "$executable" $!
+    TrackPid "$executable" $!
 
   done
 }
@@ -206,7 +165,7 @@ function BuildTests
       -I "$INCLUDE"                                  \
       -o "$output_basename""$PLATFORM_EXE_EXTENSION" \
       $executable &
-    addPid "$executable" $!
+    TrackPid "$executable" $!
   done
 }
 
@@ -232,7 +191,7 @@ function BuildDebugSystem
     -o $output_basename      \
     "$DEBUG_SRC_FILE" &&     \
     mv "$output_basename" "$output_basename""_loadable""$PLATFORM_LIB_EXTENSION" &
-  addPid "$output_basename" $!
+  TrackPid "$output_basename" $!
 }
 
 function BuildExamples
@@ -259,7 +218,7 @@ function BuildExamples
       -o "$output_basename"     \
       "$executable/game.cpp" && \
       mv "$output_basename" "$output_basename""_loadable""$PLATFORM_LIB_EXTENSION" &
-    addPid "$executable" $!
+    TrackPid "$executable" $!
   done
 }
 
@@ -282,7 +241,7 @@ function BuildWithClang
   echo -e ""
   ColorizeTitle "Complete"
 
-  waitOnPids
+  WaitForTrackedPids
   sync
 
   echo -e ""
@@ -415,33 +374,33 @@ function RunPoof
   # [ -d generated ] && rm -Rf generated
 
   RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
-  addPid "" $!
+  TrackPid "" $!
 
   # RunPoofHelper external/bonsai_debug/debug.cpp && echo -e "$Success poofed src/external/bonsai_debug/debug.cpp" &
-  # addPid "" $!
+  # TrackPid "" $!
 
   # RunPoofHelper examples/asset_picker/game.cpp && echo -e "$Success poofed examples/asset_picker/game.cpp" &
-  # addPid "" $!
+  # TrackPid "" $!
 
   # RunPoofHelper examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &
-  # addPid "" $!
+  # TrackPid "" $!
 
   # RunPoofHelper examples/turn_based/game.cpp && echo -e "$Success poofed examples/turn_based/game.cpp" &
-  # addPid "" $!
+  # TrackPid "" $!
 
   # RunPoofHelper examples/turn_based/game.cpp && echo -e "$Success poofed examples/turn_based/game.cpp" &
-  # addPid "" $!
+  # TrackPid "" $!
 
   # RunPoofHelper examples/tools/voxel_synthesis_rule_baker/game.cpp && echo -e "$Success poofed examples/tools/voxel_synthesis_rule_baker/game.cpp" &
-  # addPid "" $!
+  # TrackPid "" $!
 
   # RunPoofHelper src/tools/asset_packer.cpp && echo -e "$Success poofed src/tools/asset_packer.cpp" &
-  # addPid "" $!
+  # TrackPid "" $!
 
   # RunPoofHelper src/tools/voxel_synthesis_rule_baker.cpp && echo -e "$Success poofed src/tools/voxel_synthesis_rule_baker.cpp" &
-  # addPid "" $!
+   "" $!
 
-  waitOnPids
+  WaitForTrackedPids
   sync
 
   [ -d tmp ] && rmdir tmp

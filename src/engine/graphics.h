@@ -21,6 +21,7 @@ struct transparency_render_group
   shader                     Shader;
   texture                   *Texture0;
   texture                   *Texture1;
+  texture                   *Depth;
   m4                        *ViewProjection;
 };
 

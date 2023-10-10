@@ -581,7 +581,7 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, un
 
   // Fire particles are emissive
 
-  System->ParticleLightEmission = 4.f;
+  System->ParticleLightEmission = 0.0f;
 
   /* System->Physics.Speed = 2; */
   /* System->Physics.Drag = V3(2.2f); */

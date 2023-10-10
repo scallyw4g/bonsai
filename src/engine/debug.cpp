@@ -390,12 +390,24 @@ DoEngineDebug(engine_resources *Engine)
 #if 1
   if (ToggledOn(&ButtonGroup, CSz("Textures")))
   {
-    local_persist window_layout TexturesWindow = WindowLayout("Textures", DefaultWindowBasis(*Ui->ScreenDim));
+    local_persist window_layout TexturesWindow = WindowLayout("Textures", DefaultWindowBasis(*Ui->ScreenDim, V2(1700, 450)));
     PushWindowStart(Ui, &TexturesWindow);
 
-    PushTexturedQuad(Ui, Graphics->Transparency.Texture0, V2(256), zDepth_Text);
+    s32 xAdvance = 15;
 
-    PushTexturedQuad(Ui, Graphics->Transparency.Texture1, V2(256), zDepth_Text);
+    PushTexturedQuad(Ui, Graphics->Transparency.Texture0, V2(400), zDepth_Text);
+    PushForceAdvance(Ui, V2(xAdvance, 0));
+
+    PushTexturedQuad(Ui, Graphics->Transparency.Texture1, V2(400), zDepth_Text);
+    PushForceAdvance(Ui, V2(xAdvance, 0));
+
+    PushTexturedQuad(Ui, Graphics->Transparency.Depth, V2(400), zDepth_Text, True);
+    PushForceAdvance(Ui, V2(xAdvance, 0));
+
+    PushTexturedQuad(Ui, Graphics->gBuffer->Textures->Depth, V2(400), zDepth_Text, True);
+    PushForceAdvance(Ui, V2(xAdvance, 0));
+
+
     /* IterateOver(&EngineDebug->Textures, Texture, TextureIndex) */
     /* { */
     /*   PushTexturedQuad(Ui, DebugTextureArraySlice_Font, V2(120), zDepth_Text); */

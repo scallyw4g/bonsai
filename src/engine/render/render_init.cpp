@@ -72,20 +72,20 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
 
   shader_uniform **Current = &Shader.FirstUniform;
 
-  *Current = GetUniform(GraphicsMemory, &Shader, gTextures->Color, "gColor");
-  Current = &(*Current)->Next;
+  /* *Current = GetUniform(GraphicsMemory, &Shader, gTextures->Color, "gColor"); */
+  /* Current = &(*Current)->Next; */
 
   *Current = GetUniform(GraphicsMemory, &Shader, gTextures->Normal, "gNormal");
   Current = &(*Current)->Next;
 
-  *Current = GetUniform(GraphicsMemory, &Shader, gTextures->Position, "gPosition");
-  Current = &(*Current)->Next;
+  /* *Current = GetUniform(GraphicsMemory, &Shader, gTextures->Position, "gPosition"); */
+  /* Current = &(*Current)->Next; */
 
-  *Current = GetUniform(GraphicsMemory, &Shader, ShadowMap, "shadowMap");
-  Current = &(*Current)->Next;
+  /* *Current = GetUniform(GraphicsMemory, &Shader, ShadowMap, "shadowMap"); */
+  /* Current = &(*Current)->Next; */
 
-  *Current = GetUniform(GraphicsMemory, &Shader, Ssao, "Ssao");
-  Current = &(*Current)->Next;
+  /* *Current = GetUniform(GraphicsMemory, &Shader, Ssao, "Ssao"); */
+  /* Current = &(*Current)->Next; */
 
   *Current = GetUniform(GraphicsMemory, &Shader, BloomTex, "BloomTex");
   Current = &(*Current)->Next;
@@ -102,11 +102,11 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
   *Current = GetUniform(GraphicsMemory, &Shader, LightingTex, "LightingTex");
   Current = &(*Current)->Next;
 
-  *Current = GetUniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
-  Current = &(*Current)->Next;
+  /* *Current = GetUniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP"); */
+  /* Current = &(*Current)->Next; */
 
-  *Current = GetUniform(GraphicsMemory, &Shader, Camera, "CameraP");
-  Current = &(*Current)->Next;
+  /* *Current = GetUniform(GraphicsMemory, &Shader, Camera, "CameraP"); */
+  /* Current = &(*Current)->Next; */
 
   *Current = GetUniform(GraphicsMemory, &Shader, Exposure, "Exposure");
   Current = &(*Current)->Next;
@@ -507,7 +507,7 @@ InitRenderToTextureGroup(render_entity_to_texture_group *Group, v2i TextureSize,
 }
 
 link_internal shader
-MakeTransparencyShader(m4 *ViewProjection, texture *T0, texture *T1, memory_arena *Memory)
+MakeTransparencyShader(m4 *ViewProjection, texture *gBufferDepthTexture, texture *T0, texture *T1, memory_arena *Memory)
 {
   shader Shader = LoadShaders( CSz(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSz(BONSAI_SHADER_PATH "3DTransparency.fragmentshader") );
 
@@ -516,11 +516,14 @@ MakeTransparencyShader(m4 *ViewProjection, texture *T0, texture *T1, memory_aren
   *Current = GetUniform(Memory, &Shader, ViewProjection, "ViewProjection");
   Current = &(*Current)->Next;
 
+  *Current = GetUniform(Memory, &Shader, gBufferDepthTexture, "gBufferDepthTexture");
+  Current = &(*Current)->Next;
+
   return Shader;
 }
 
 link_internal void
-InitTransparencyRenderGroup(transparency_render_group *Group, v2i TextureSize, m4 *ViewProjection, texture *DepthTexture, memory_arena *Memory)
+InitTransparencyRenderGroup(transparency_render_group *Group, v2i TextureSize, m4 *ViewProjection, texture *gBufferDepthTexture, memory_arena *Memory)
 {
   AllocateGpuElementBuffer(&Group->GeoBuffer, (u32)Megabytes(1));
 
@@ -545,8 +548,8 @@ InitTransparencyRenderGroup(transparency_render_group *Group, v2i TextureSize, m
   Group->Texture1 = GenTexture(TextureSize, Memory);
   GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, Image);
 
-  /* texture *DepthTexture = MakeDepthTexture( TextureSize, Memory ); */
-  FramebufferDepthTexture(DepthTexture);
+  Group->Depth = MakeDepthTexture(TextureSize, Memory);
+  FramebufferDepthTexture(Group->Depth);
 
   Assert(ViewProjection);
   Group->ViewProjection = ViewProjection;
@@ -555,7 +558,7 @@ InitTransparencyRenderGroup(transparency_render_group *Group, v2i TextureSize, m
   FramebufferTexture(&Group->FBO, Group->Texture1);
   SetDrawBuffers(&Group->FBO);
 
-  Group->Shader = MakeTransparencyShader(Group->ViewProjection, Group->Texture0, Group->Texture1, Memory);
+  Group->Shader = MakeTransparencyShader(Group->ViewProjection, gBufferDepthTexture, Group->Texture0, Group->Texture1, Memory);
 
   Ensure( CheckAndClearFramebuffer() );
 }
@@ -658,7 +661,7 @@ GraphicsInit(memory_arena *GraphicsMemory)
     InitRenderToTextureGroup(&Resources->RTTGroup, V2i(256), GraphicsMemory);
   }
 
-  InitTransparencyRenderGroup(&Result->Transparency, V2i(SCR_WIDTH, SCR_HEIGHT), &gBuffer->ViewProjection, gBuffer->Textures->Depth, GraphicsMemory);
+  InitTransparencyRenderGroup(&Result->Transparency, V2i(SCR_WIDTH, SCR_HEIGHT), &gBuffer->ViewProjection, gBuffer->Textures->Color, GraphicsMemory);
 
   // Initialize the gaussian blur render group
   {
