@@ -223,7 +223,6 @@ main( s32 ArgCount, const char ** Args )
    */
 
   r32 LastMs = 0;
-  r32 RealDt = 0;
   while (Plat->Input.Escape.Clicked == False)
   {
     /* u32 CSwitchEventsThisFrame = CSwitchEventsPerFrame; */
@@ -336,7 +335,7 @@ main( s32 ArgCount, const char ** Args )
     Ensure( RewindArena(TLS->TempMemory) );
 
     r32 CurrentMS = (r32)GetHighPrecisionClock();
-    RealDt = (CurrentMS - LastMs)/1000.0f;
+    r32 RealDt = (CurrentMS - LastMs)/1000.0f;
     LastMs = CurrentMS;
     Plat->dt = RealDt;
     Plat->GameTime += RealDt;
