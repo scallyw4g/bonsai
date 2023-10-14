@@ -23,23 +23,29 @@ V3iBuffer(umm ElementCount, memory_arena* Memory)
 }
 
 link_inline umm
+AtElements(v3i_buffer *Buf)
+{
+  umm Result = Buf->Count;
+  return Result;
+}
+
+link_inline umm
 CurrentCount(v3i_buffer *Buf)
 {
   umm Result = Buf->Count;
   return Result;
 }
 
-// TODO(Jesse): Collapse these duplicates
 link_inline v3i *
-GetPtr(v3i_buffer *Buf, u32 Index)
+GetPtr(v3i_buffer *Buf, umm Index)
 {
-  Assert(Index < Buf->Count);
-  v3i *Result = Buf->Start + Index;
+  v3i *Result = 0;
+  if (Index < Buf->Count) { Result = Buf->Start + Index; }
   return Result;
 }
 
 link_inline v3i *
-Get(v3i_buffer *Buf, u32 Index)
+Get(v3i_buffer *Buf, umm Index)
 {
   v3i *Result = GetPtr(Buf, Index);
   return Result;

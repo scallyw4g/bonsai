@@ -23,23 +23,29 @@ U32Buffer(umm ElementCount, memory_arena* Memory)
 }
 
 link_inline umm
+AtElements(u32_buffer *Buf)
+{
+  umm Result = Buf->Count;
+  return Result;
+}
+
+link_inline umm
 CurrentCount(u32_buffer *Buf)
 {
   umm Result = Buf->Count;
   return Result;
 }
 
-// TODO(Jesse): Collapse these duplicates
 link_inline u32 *
-GetPtr(u32_buffer *Buf, u32 Index)
+GetPtr(u32_buffer *Buf, umm Index)
 {
-  Assert(Index < Buf->Count);
-  u32 *Result = Buf->Start + Index;
+  u32 *Result = 0;
+  if (Index < Buf->Count) { Result = Buf->Start + Index; }
   return Result;
 }
 
 link_inline u32 *
-Get(u32_buffer *Buf, u32 Index)
+Get(u32_buffer *Buf, umm Index)
 {
   u32 *Result = GetPtr(Buf, Index);
   return Result;

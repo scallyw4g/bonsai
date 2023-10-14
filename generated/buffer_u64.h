@@ -23,23 +23,29 @@ U64Buffer(umm ElementCount, memory_arena* Memory)
 }
 
 link_inline umm
+AtElements(u64_buffer *Buf)
+{
+  umm Result = Buf->Count;
+  return Result;
+}
+
+link_inline umm
 CurrentCount(u64_buffer *Buf)
 {
   umm Result = Buf->Count;
   return Result;
 }
 
-// TODO(Jesse): Collapse these duplicates
 link_inline u64 *
-GetPtr(u64_buffer *Buf, u32 Index)
+GetPtr(u64_buffer *Buf, umm Index)
 {
-  Assert(Index < Buf->Count);
-  u64 *Result = Buf->Start + Index;
+  u64 *Result = 0;
+  if (Index < Buf->Count) { Result = Buf->Start + Index; }
   return Result;
 }
 
 link_inline u64 *
-Get(u64_buffer *Buf, u32 Index)
+Get(u64_buffer *Buf, umm Index)
 {
   u64 *Result = GetPtr(Buf, Index);
   return Result;

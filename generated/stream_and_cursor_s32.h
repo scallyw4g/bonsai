@@ -4,7 +4,7 @@ struct s32_cursor
   // TODO(Jesse)(immediate): For the love of fucksakes change these to indices
   s32 *At;
   s32 *End;
-  OWNED_BY_THREAD_MEMBER();
+  /* OWNED_BY_THREAD_MEMBER(); */
 };
 
 
@@ -17,7 +17,7 @@ S32Cursor(umm ElementCount, memory_arena* Memory)
     .Start = Start,
     .End = Start+ElementCount,
     .At = Start,
-    .OwnedByThread = ThreadLocal_ThreadIndex,
+    /* OWNED_BY_THREAD_MEMBER_INIT() */
   };
   return Result;
 }
@@ -25,31 +25,27 @@ S32Cursor(umm ElementCount, memory_arena* Memory)
 link_internal s32*
 GetPtr(s32_cursor *Cursor, umm ElementIndex)
 {
-  ENSURE_OWNED_BY_THREAD(Cursor);
+  /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   s32 *Result = {};
-  if (ElementIndex < AtElements(Cursor)) {
-    Result = Cursor->Start+ElementIndex;
-  }
+  if (ElementIndex < AtElements(Cursor)) { Result = Cursor->Start+ElementIndex; }
   return Result;
 }
 
 link_internal s32*
 GetPtrUnsafe(s32_cursor *Cursor, umm ElementIndex)
 {
-  ENSURE_OWNED_BY_THREAD(Cursor);
+  /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
-  s32 *Result = {};
-  if (ElementIndex < TotalElements(Cursor)) {
-    Result = Cursor->Start+ElementIndex;
-  }
+  Assert(ElementIndex < TotalElements(Cursor));
+  s32 *Result = Cursor->Start+ElementIndex;
   return Result;
 }
 
 link_internal s32
 Get(s32_cursor *Cursor, umm ElementIndex)
 {
-  ENSURE_OWNED_BY_THREAD(Cursor);
+  /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   Assert(ElementIndex < CurrentCount(Cursor));
   s32 Result = Cursor->Start[ElementIndex];
@@ -59,7 +55,7 @@ Get(s32_cursor *Cursor, umm ElementIndex)
 link_internal void
 Set(s32_cursor *Cursor, umm ElementIndex, s32 Element)
 {
-  ENSURE_OWNED_BY_THREAD(Cursor);
+  /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   umm CurrentElementCount = CurrentCount(Cursor);
   Assert (ElementIndex <= CurrentElementCount);
@@ -74,7 +70,7 @@ Set(s32_cursor *Cursor, umm ElementIndex, s32 Element)
 link_internal s32*
 Advance(s32_cursor *Cursor)
 {
-  ENSURE_OWNED_BY_THREAD(Cursor);
+  /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   s32 * Result = {};
   if ( Cursor->At < Cursor->End ) { Result = Cursor->At++; }
@@ -84,7 +80,7 @@ Advance(s32_cursor *Cursor)
 link_internal s32 *
 Push(s32_cursor *Cursor, s32 Element)
 {
-  ENSURE_OWNED_BY_THREAD(Cursor);
+  /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   Assert( Cursor->At < Cursor->End );
   s32 *Result = Cursor->At;
@@ -95,7 +91,7 @@ Push(s32_cursor *Cursor, s32 Element)
 link_internal s32
 Pop(s32_cursor *Cursor)
 {
-  ENSURE_OWNED_BY_THREAD(Cursor);
+  /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   Assert( Cursor->At > Cursor->Start );
   s32 Result = Cursor->At[-1];
@@ -106,7 +102,7 @@ Pop(s32_cursor *Cursor)
 link_internal s32
 LastIndex(s32_cursor *Cursor)
 {
-  ENSURE_OWNED_BY_THREAD(Cursor);
+  /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   s32 Result = s32(CurrentCount(Cursor))-1;
   return Result;
@@ -115,7 +111,7 @@ LastIndex(s32_cursor *Cursor)
 link_internal b32
 Remove(s32_cursor *Cursor, s32 Query)
 {
-  ENSURE_OWNED_BY_THREAD(Cursor);
+  /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   b32 Result = False;
   CursorIterator(ElementIndex, Cursor)
@@ -138,7 +134,7 @@ Remove(s32_cursor *Cursor, s32 Query)
 link_internal b32
 ResizeCursor(s32_cursor *Cursor, umm Count, memory_arena *Memory)
 {
-  ENSURE_OWNED_BY_THREAD(Cursor);
+  /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   umm CurrentSize = TotalSize(Cursor);
 
@@ -155,7 +151,7 @@ ResizeCursor(s32_cursor *Cursor, umm Count, memory_arena *Memory)
 link_internal void
 Unshift( s32_cursor *Cursor )
 {
-  ENSURE_OWNED_BY_THREAD(Cursor);
+  /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   umm Count = TotalElements(Cursor);
   for (umm Index = 1; Index < Count; ++Index)

@@ -286,7 +286,7 @@ main( s32 ArgCount, const char ** Args )
       {
         if (InitializeBootstrapDebugApi(DebugSystem->Lib, &DebugSystem->Api))
         {
-          DebugSystem->Api.BonsaiDebug_OnLoad(Cached, Global_ThreadStates);
+          DebugSystem->Api.BonsaiDebug_OnLoad(Cached, Global_ThreadStates, BONSAI_INTERNAL);
           Ensure( EngineApi.OnLibraryLoad(&EngineResources) );
         }
         else { Error("Initializing DebugLib API"); }

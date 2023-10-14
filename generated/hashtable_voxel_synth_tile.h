@@ -8,7 +8,7 @@ struct voxel_synth_tile_hashtable
 {
   umm Size;
   voxel_synth_tile_linked_list_node **Elements;
-  OWNED_BY_THREAD_MEMBER();
+  /* OWNED_BY_THREAD_MEMBER() */
 };
 
 link_internal voxel_synth_tile_linked_list_node *
@@ -24,7 +24,7 @@ Allocate_voxel_synth_tile_hashtable(umm ElementCount, memory_arena *Memory)
   voxel_synth_tile_hashtable Result = {
     .Elements = Allocate( voxel_synth_tile_linked_list_node*, Memory, ElementCount),
     .Size = ElementCount,
-    OWNED_BY_THREAD_MEMBER_INIT(),
+    /* OWNED_BY_THREAD_MEMBER_INIT() */
   };
   return Result;
 }
@@ -32,7 +32,7 @@ Allocate_voxel_synth_tile_hashtable(umm ElementCount, memory_arena *Memory)
 link_internal voxel_synth_tile_linked_list_node *
 GetHashBucket(umm HashValue, voxel_synth_tile_hashtable *Table)
 {
-  ENSURE_OWNED_BY_THREAD(Table);
+  /* ENSURE_OWNED_BY_THREAD(Table); */
 
   Assert(Table->Size);
   voxel_synth_tile_linked_list_node *Result = Table->Elements[HashValue % Table->Size];
@@ -42,7 +42,7 @@ GetHashBucket(umm HashValue, voxel_synth_tile_hashtable *Table)
 link_internal voxel_synth_tile *
 GetFirstAtBucket(umm HashValue, voxel_synth_tile_hashtable *Table)
 {
-  ENSURE_OWNED_BY_THREAD(Table);
+  /* ENSURE_OWNED_BY_THREAD(Table); */
 
   voxel_synth_tile_linked_list_node *Bucket = GetHashBucket(HashValue, Table);
   voxel_synth_tile *Result = &Bucket->Element;
@@ -52,7 +52,7 @@ GetFirstAtBucket(umm HashValue, voxel_synth_tile_hashtable *Table)
 link_internal voxel_synth_tile *
 Insert(voxel_synth_tile_linked_list_node *Node, voxel_synth_tile_hashtable *Table)
 {
-  ENSURE_OWNED_BY_THREAD(Table);
+  /* ENSURE_OWNED_BY_THREAD(Table); */
 
   Assert(Table->Size);
   umm HashValue = Hash(&Node->Element) % Table->Size;
@@ -65,7 +65,7 @@ Insert(voxel_synth_tile_linked_list_node *Node, voxel_synth_tile_hashtable *Tabl
 link_internal voxel_synth_tile*
 Insert(voxel_synth_tile Element, voxel_synth_tile_hashtable *Table, memory_arena *Memory)
 {
-  ENSURE_OWNED_BY_THREAD(Table);
+  /* ENSURE_OWNED_BY_THREAD(Table); */
 
   voxel_synth_tile_linked_list_node *Bucket = Allocate_voxel_synth_tile_linked_list_node(Memory);
   Bucket->Element = Element;

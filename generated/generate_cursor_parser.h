@@ -4,7 +4,7 @@ struct parser_cursor
   // TODO(Jesse)(immediate): For the love of fucksakes change these to indices
   parser *At;
   parser *End;
-  OWNED_BY_THREAD_MEMBER();
+  /* OWNED_BY_THREAD_MEMBER(); */
 };
 
 
@@ -17,7 +17,7 @@ ParserCursor(umm ElementCount, memory_arena* Memory)
     .Start = Start,
     .End = Start+ElementCount,
     .At = Start,
-    .OwnedByThread = ThreadLocal_ThreadIndex,
+    /* OWNED_BY_THREAD_MEMBER_INIT() */
   };
   return Result;
 }
@@ -25,31 +25,27 @@ ParserCursor(umm ElementCount, memory_arena* Memory)
 link_internal parser*
 GetPtr(parser_cursor *Cursor, umm ElementIndex)
 {
-  ENSURE_OWNED_BY_THREAD(Cursor);
+  /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   parser *Result = {};
-  if (ElementIndex < AtElements(Cursor)) {
-    Result = Cursor->Start+ElementIndex;
-  }
+  if (ElementIndex < AtElements(Cursor)) { Result = Cursor->Start+ElementIndex; }
   return Result;
 }
 
 link_internal parser*
 GetPtrUnsafe(parser_cursor *Cursor, umm ElementIndex)
 {
-  ENSURE_OWNED_BY_THREAD(Cursor);
+  /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
-  parser *Result = {};
-  if (ElementIndex < TotalElements(Cursor)) {
-    Result = Cursor->Start+ElementIndex;
-  }
+  Assert(ElementIndex < TotalElements(Cursor));
+  parser *Result = Cursor->Start+ElementIndex;
   return Result;
 }
 
 link_internal parser
 Get(parser_cursor *Cursor, umm ElementIndex)
 {
-  ENSURE_OWNED_BY_THREAD(Cursor);
+  /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   Assert(ElementIndex < CurrentCount(Cursor));
   parser Result = Cursor->Start[ElementIndex];
@@ -59,7 +55,7 @@ Get(parser_cursor *Cursor, umm ElementIndex)
 link_internal void
 Set(parser_cursor *Cursor, umm ElementIndex, parser Element)
 {
-  ENSURE_OWNED_BY_THREAD(Cursor);
+  /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   umm CurrentElementCount = CurrentCount(Cursor);
   Assert (ElementIndex <= CurrentElementCount);
@@ -74,7 +70,7 @@ Set(parser_cursor *Cursor, umm ElementIndex, parser Element)
 link_internal parser*
 Advance(parser_cursor *Cursor)
 {
-  ENSURE_OWNED_BY_THREAD(Cursor);
+  /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   parser * Result = {};
   if ( Cursor->At < Cursor->End ) { Result = Cursor->At++; }
@@ -84,7 +80,7 @@ Advance(parser_cursor *Cursor)
 link_internal parser *
 Push(parser_cursor *Cursor, parser Element)
 {
-  ENSURE_OWNED_BY_THREAD(Cursor);
+  /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   Assert( Cursor->At < Cursor->End );
   parser *Result = Cursor->At;
@@ -95,7 +91,7 @@ Push(parser_cursor *Cursor, parser Element)
 link_internal parser
 Pop(parser_cursor *Cursor)
 {
-  ENSURE_OWNED_BY_THREAD(Cursor);
+  /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   Assert( Cursor->At > Cursor->Start );
   parser Result = Cursor->At[-1];
@@ -106,7 +102,7 @@ Pop(parser_cursor *Cursor)
 link_internal s32
 LastIndex(parser_cursor *Cursor)
 {
-  ENSURE_OWNED_BY_THREAD(Cursor);
+  /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   s32 Result = s32(CurrentCount(Cursor))-1;
   return Result;
@@ -115,7 +111,7 @@ LastIndex(parser_cursor *Cursor)
 link_internal b32
 Remove(parser_cursor *Cursor, parser Query)
 {
-  ENSURE_OWNED_BY_THREAD(Cursor);
+  /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   b32 Result = False;
   CursorIterator(ElementIndex, Cursor)
@@ -138,7 +134,7 @@ Remove(parser_cursor *Cursor, parser Query)
 link_internal b32
 ResizeCursor(parser_cursor *Cursor, umm Count, memory_arena *Memory)
 {
-  ENSURE_OWNED_BY_THREAD(Cursor);
+  /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   umm CurrentSize = TotalSize(Cursor);
 
@@ -155,7 +151,7 @@ ResizeCursor(parser_cursor *Cursor, umm Count, memory_arena *Memory)
 link_internal void
 Unshift( parser_cursor *Cursor )
 {
-  ENSURE_OWNED_BY_THREAD(Cursor);
+  /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   umm Count = TotalElements(Cursor);
   for (umm Index = 1; Index < Count; ++Index)

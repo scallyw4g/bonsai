@@ -23,23 +23,29 @@ CTokenBuffer(umm ElementCount, memory_arena* Memory)
 }
 
 link_inline umm
+AtElements(c_token_buffer *Buf)
+{
+  umm Result = Buf->Count;
+  return Result;
+}
+
+link_inline umm
 CurrentCount(c_token_buffer *Buf)
 {
   umm Result = Buf->Count;
   return Result;
 }
 
-// TODO(Jesse): Collapse these duplicates
 link_inline c_token *
-GetPtr(c_token_buffer *Buf, u32 Index)
+GetPtr(c_token_buffer *Buf, umm Index)
 {
-  Assert(Index < Buf->Count);
-  c_token *Result = Buf->Start + Index;
+  c_token *Result = 0;
+  if (Index < Buf->Count) { Result = Buf->Start + Index; }
   return Result;
 }
 
 link_inline c_token *
-Get(c_token_buffer *Buf, u32 Index)
+Get(c_token_buffer *Buf, umm Index)
 {
   c_token *Result = GetPtr(Buf, Index);
   return Result;

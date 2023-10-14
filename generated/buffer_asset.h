@@ -23,23 +23,29 @@ AssetBuffer(umm ElementCount, memory_arena* Memory)
 }
 
 link_inline umm
+AtElements(asset_buffer *Buf)
+{
+  umm Result = Buf->Count;
+  return Result;
+}
+
+link_inline umm
 CurrentCount(asset_buffer *Buf)
 {
   umm Result = Buf->Count;
   return Result;
 }
 
-// TODO(Jesse): Collapse these duplicates
 link_inline asset *
-GetPtr(asset_buffer *Buf, u32 Index)
+GetPtr(asset_buffer *Buf, umm Index)
 {
-  Assert(Index < Buf->Count);
-  asset *Result = Buf->Start + Index;
+  asset *Result = 0;
+  if (Index < Buf->Count) { Result = Buf->Start + Index; }
   return Result;
 }
 
 link_inline asset *
-Get(asset_buffer *Buf, u32 Index)
+Get(asset_buffer *Buf, umm Index)
 {
   asset *Result = GetPtr(Buf, Index);
   return Result;

@@ -23,23 +23,29 @@ CountedStringBuffer(umm ElementCount, memory_arena* Memory)
 }
 
 link_inline umm
+AtElements(counted_string_buffer *Buf)
+{
+  umm Result = Buf->Count;
+  return Result;
+}
+
+link_inline umm
 CurrentCount(counted_string_buffer *Buf)
 {
   umm Result = Buf->Count;
   return Result;
 }
 
-// TODO(Jesse): Collapse these duplicates
 link_inline counted_string *
-GetPtr(counted_string_buffer *Buf, u32 Index)
+GetPtr(counted_string_buffer *Buf, umm Index)
 {
-  Assert(Index < Buf->Count);
-  counted_string *Result = Buf->Start + Index;
+  counted_string *Result = 0;
+  if (Index < Buf->Count) { Result = Buf->Start + Index; }
   return Result;
 }
 
 link_inline counted_string *
-Get(counted_string_buffer *Buf, u32 Index)
+Get(counted_string_buffer *Buf, umm Index)
 {
   counted_string *Result = GetPtr(Buf, Index);
   return Result;

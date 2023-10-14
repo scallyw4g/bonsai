@@ -23,23 +23,29 @@ VoxelSynthTileBuffer(umm ElementCount, memory_arena* Memory)
 }
 
 link_inline umm
+AtElements(voxel_synth_tile_buffer *Buf)
+{
+  umm Result = Buf->Count;
+  return Result;
+}
+
+link_inline umm
 CurrentCount(voxel_synth_tile_buffer *Buf)
 {
   umm Result = Buf->Count;
   return Result;
 }
 
-// TODO(Jesse): Collapse these duplicates
 link_inline voxel_synth_tile *
-GetPtr(voxel_synth_tile_buffer *Buf, u32 Index)
+GetPtr(voxel_synth_tile_buffer *Buf, umm Index)
 {
-  Assert(Index < Buf->Count);
-  voxel_synth_tile *Result = Buf->Start + Index;
+  voxel_synth_tile *Result = 0;
+  if (Index < Buf->Count) { Result = Buf->Start + Index; }
   return Result;
 }
 
 link_inline voxel_synth_tile *
-Get(voxel_synth_tile_buffer *Buf, u32 Index)
+Get(voxel_synth_tile_buffer *Buf, umm Index)
 {
   voxel_synth_tile *Result = GetPtr(Buf, Index);
   return Result;
