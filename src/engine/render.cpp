@@ -724,10 +724,10 @@ RenderTransparencyBuffers(transparency_render_group *Group)
 
   UseShader(&Group->Shader);
 
-  GL.Disable(GL_BLEND);
-  /* GL.Enable(GL_BLEND); */
-  /* GL.BlendFunc(GL_ONE, GL_ONE); */
+  GL.Enable(GL_BLEND);
+  GL.BlendFunc(GL_ONE, GL_ONE);
   GL.Disable(GL_CULL_FACE);
+  /* GL.DepthFunc(GL_LEQUAL); */
   /* GL.DepthFunc(GL_ALWAYS); */
 
   SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
@@ -735,8 +735,8 @@ RenderTransparencyBuffers(transparency_render_group *Group)
   FlushBuffersToCard(&Group->GeoBuffer);
   Draw(Group->GeoBuffer.Buffer.At);
 
-  GL.Disable(GL_BLEND);
-  GL.Enable(GL_CULL_FACE);
+  /* GL.Disable(GL_BLEND); */
+  /* GL.Enable(GL_CULL_FACE); */
   /* GL.DepthFunc(GL_LEQUAL); */
 
   Group->GeoBuffer.Buffer.At = 0;

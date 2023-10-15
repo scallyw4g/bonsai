@@ -20,6 +20,14 @@ uniform vec3 CameraP;
 uniform bool UseLightingBloom;
 uniform float Exposure;
 
+v3 BravoilMyersWeightedAverage(v3 ColorSum, float AlphaSum, float SumCount)
+{
+  v3 ColorResult = ColorSum/max(AlphaSum, 0.00001f);
+  float AlphaResult = pow(max(0.0, 1.0-(AlphaSum/SumCount)), SumCount);
+  return ColorResult * AlphaResult;
+
+}
+
 void main()
 {
   vec3 ToneMapped;
@@ -72,10 +80,10 @@ void main()
   /*
    *  Tone-mapping && gamma correction
    */
-  vec3 TransparencyRGB = PixTranspAccum.rgb / PixTranspCount;
-  float TransparencyA = PixTranspAccum.a / PixTranspCount;
+  /* vec3 TransparencyRGB = PixTranspAccum.rgb / PixTranspCount; */
+  /* float TransparencyA = PixTranspAccum.a / PixTranspCount; */
 
-  vec3 TransparencyContrib =  TransparencyRGB * TransparencyA;
+  vec3 TransparencyContrib = BravoilMyersWeightedAverage(PixTranspAccum.rgb, PixTranspAccum.a, PixTranspCount);
 
   vec3 TotalLight = Lighting + 0.1f*Bloom + TransparencyContrib.rgb;
   /* vec3 TotalLight = (Diffuse * Lighting) * 2.f; */
@@ -102,3 +110,4 @@ void main()
   float gamma = 2.2f;
   OutColor = vec4(pow(ToneMapped, vec3(1.0f / gamma)), 1.0f);
 }
+

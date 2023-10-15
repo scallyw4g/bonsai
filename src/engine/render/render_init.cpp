@@ -507,7 +507,7 @@ InitRenderToTextureGroup(render_entity_to_texture_group *Group, v2i TextureSize,
 }
 
 link_internal shader
-MakeTransparencyShader(m4 *ViewProjection, texture *gBufferDepthTexture, texture *T0, texture *T1, memory_arena *Memory)
+MakeTransparencyShader(m4 *ViewProjection, texture *gBufferDepthTexture, memory_arena *Memory)
 {
   shader Shader = LoadShaders( CSz(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSz(BONSAI_SHADER_PATH "3DTransparency.fragmentshader") );
 
@@ -548,17 +548,17 @@ InitTransparencyRenderGroup(transparency_render_group *Group, v2i TextureSize, m
   Group->Texture1 = GenTexture(TextureSize, Memory);
   GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, Image);
 
-  Group->Depth = MakeDepthTexture(TextureSize, Memory);
-  FramebufferDepthTexture(Group->Depth);
+  /* Group->Depth = MakeDepthTexture(TextureSize, Memory); */
 
   Assert(ViewProjection);
   Group->ViewProjection = ViewProjection;
 
   FramebufferTexture(&Group->FBO, Group->Texture0);
   FramebufferTexture(&Group->FBO, Group->Texture1);
+  /* FramebufferDepthTexture(Group->Depth); */
   SetDrawBuffers(&Group->FBO);
 
-  Group->Shader = MakeTransparencyShader(Group->ViewProjection, gBufferDepthTexture, Group->Texture0, Group->Texture1, Memory);
+  Group->Shader = MakeTransparencyShader(Group->ViewProjection, gBufferDepthTexture, Memory);
 
   Ensure( CheckAndClearFramebuffer() );
 }
@@ -661,7 +661,7 @@ GraphicsInit(memory_arena *GraphicsMemory)
     InitRenderToTextureGroup(&Resources->RTTGroup, V2i(256), GraphicsMemory);
   }
 
-  InitTransparencyRenderGroup(&Result->Transparency, V2i(SCR_WIDTH, SCR_HEIGHT), &gBuffer->ViewProjection, gBuffer->Textures->Color, GraphicsMemory);
+  InitTransparencyRenderGroup(&Result->Transparency, V2i(SCR_WIDTH, SCR_HEIGHT), &gBuffer->ViewProjection, gBuffer->Textures->Depth, GraphicsMemory);
 
   // Initialize the gaussian blur render group
   {
@@ -681,12 +681,12 @@ GraphicsInit(memory_arena *GraphicsMemory)
 
   { // To keep these here or not to keep these here..
 #if BONSAI_INTERNAL
-#if 0
+#if 1
     gBuffer->DebugColorShader    = MakeSimpleTextureShader(gBuffer->Textures->Color,    GraphicsMemory);
-    gBuffer->DebugNormalShader   = MakeSimpleTextureShader(gBuffer->Textures->Normal,   GraphicsMemory);
-    gBuffer->DebugPositionShader = MakeSimpleTextureShader(gBuffer->Textures->Position, GraphicsMemory);
-    AoGroup->DebugSsaoShader     = MakeSimpleTextureShader(AoGroup->Texture,            GraphicsMemory);
-    SG->DebugTextureShader       = MakeSimpleTextureShader(SG->ShadowMap,               GraphicsMemory);
+    /* gBuffer->DebugNormalShader   = MakeSimpleTextureShader(gBuffer->Textures->Normal,   GraphicsMemory); */
+    /* gBuffer->DebugPositionShader = MakeSimpleTextureShader(gBuffer->Textures->Position, GraphicsMemory); */
+    /* AoGroup->DebugSsaoShader     = MakeSimpleTextureShader(AoGroup->Texture,            GraphicsMemory); */
+    /* SG->DebugTextureShader       = MakeSimpleTextureShader(SG->ShadowMap,               GraphicsMemory); */
 #endif
 #endif
   }

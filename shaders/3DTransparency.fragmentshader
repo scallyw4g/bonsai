@@ -12,64 +12,20 @@ layout (location = 1) out vec4 Count;
 float Far = 10000.f;
 float Near = 1.f;
 
-float Linearize(float PixelDepth)
+float Linearize(float FragDepth)
 {
-  float Result = (2.0 * Near) / (Far + Near - PixelDepth * (Far - Near));
+  float Result = (2.0 * Near) / (Far + Near - FragDepth * (Far - Near));
   return Result;
 }
 
 void main()
 {
-  float gBufferDepth = texture(gBufferDepthTexture, gl_FragCoord.xy).r;
-  float PixelDepth = gl_FragCoord.z;
-
-  /* ColorAccumulation = vec4(PixelDepth,gBufferDepth, 0.f, 1.f); */
-  /* ColorAccumulation = vec4(PixelDepth,PixelDepth,PixelDepth, 1.f); */
-
-  Count = vec4(0.f);
-
-  /* if (gBufferDepth > 0.f) */
-  /* { */
-  /*   ColorAccumulation = vec4(1.f, 1.f, 0.f, 1.f); */
-  /* } */
-  /* if (gBufferDepth > 1.f) */
-  /* { */
-  /*   ColorAccumulation = vec4(1.f, 0.f, 0.f, 1.f); */
-  /* } */
-  /* else if (gBufferDepth > 10.f) */
-  /* { */
-  /*   ColorAccumulation = vec4(0.f, 1.f, 0.f, 1.f); */
-  /* } */
-  /* else if (gBufferDepth > 100.f) */
-  /* { */
-  /*   ColorAccumulation = vec4(0.f, 0.f, 1.f, 1.f); */
-  /* } */
-  /* else */
-  /* { */
-  /*   ColorAccumulation = vec4(1.f, 1.f, 1.f, 1.f); */
-  /* } */
-
-  float Value = gBufferDepth;
-  /* float Value = Linearize(gBufferDepth); */
-  /* float Value = Linearize(PixelDepth); */
-  ColorAccumulation = vec4(Value, Value, Value, 1.f);
-
-  return;
-
-#if 0
-  if (PixelDepth < gBufferDepth)
+  v2 UV = gl_FragCoord.xy / V2(SCR_WIDTH, SCR_HEIGHT);
+  float gBufferDepth = texture(gBufferDepthTexture, UV).r;
+  float FragDepth = gl_FragCoord.z;
+  if (FragDepth < gBufferDepth)
   {
-    /* ColorAccumulation = MaterialColor * FragDepth; */
-    /* ColorAccumulation = MaterialColor * PixelDepth; */
-    /* Count = V4(1); */
-
-    Count = V4(1.0f);
-    ColorAccumulation = V4(1.f);
+    ColorAccumulation = MaterialColor;
+    Count = V4(1);
   }
-  else
-  {
-    Count = V4(0.0f);
-    ColorAccumulation = V4(0.f);
-  }
-#endif
 }

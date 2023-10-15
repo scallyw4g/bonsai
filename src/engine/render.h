@@ -29,7 +29,7 @@ struct g_buffer_render_group
 
   g_buffer_textures *Textures;
 
-  /* shader DebugColorShader; */
+  shader DebugColorShader;
   /* shader DebugNormalShader; */
   /* shader DebugPositionShader; */
 

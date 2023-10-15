@@ -252,6 +252,7 @@ Bonsai_Render(engine_resources *Resources)
   RenderGBuffer(GpuMap, Graphics);
   RenderShadowMap(GpuMap, Graphics);
 
+  /* Debug_DrawTextureToDebugQuad(&Graphics->gBuffer->DebugColorShader); */
   RenderTransparencyBuffers(&Graphics->Transparency);
 
   RenderLuminanceTexture(GpuMap, Lighting, Graphics);
@@ -271,6 +272,7 @@ Bonsai_Render(engine_resources *Resources)
   /* Debug_DrawTextureToDebugQuad(&AoGroup->DebugSsaoShader); */
   /* Debug_DrawTextureToDebugQuad(&Graphics->gBuffer->DebugColorShader); */
   /* Debug_DrawTextureToDebugQuad(&Graphics->gBuffer->DebugPositionShader); */
+  /* Debug_DrawTextureToDebugQuad(&Graphics->gBuffer->DebugNormalShader); */
   /* Debug_DrawTextureToDebugQuad(&Graphics->gBuffer->DebugNormalShader); */
   /* Debug_DrawTextureToDebugQuad(&Resources->RTTGroup.DebugShader); */
 

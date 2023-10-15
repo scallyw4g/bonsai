@@ -3367,11 +3367,11 @@ DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, v3 RenderSpot_MinP, v3 Til
 }
 
 link_internal void
-BufferWorld( platform* Plat,
-             untextured_3d_geometry_buffer* Dest,
-             world* World,
-             graphics *Graphics,
-             heap_allocator *Heap )
+BufferWorld( platform                      *Plat,
+             untextured_3d_geometry_buffer *Dest,
+             world                         *World,
+             graphics                      *Graphics,
+             heap_allocator                *Heap )
 {
   TIMED_FUNCTION();
 
@@ -3526,7 +3526,7 @@ BufferWorld( platform* Plat,
             {
               v3i *Spot = Chunk->StandingSpots.Start + SpotIndex;
               v3 RenderSpot = GetRenderP(World->ChunkDim, Canonical_Position(*Spot, Chunk->WorldP), Graphics->Camera);
-              DrawStandingSpot(Dest, RenderSpot, V3(Global_StandingSpotDim));
+              DrawStandingSpot(&Graphics->Transparency.GeoBuffer.Buffer, RenderSpot, V3(Global_StandingSpotDim));
             }
 #endif
 
