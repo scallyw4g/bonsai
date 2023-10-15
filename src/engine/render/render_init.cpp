@@ -65,7 +65,9 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
                      m4 *ShadowMVP,
                      camera *Camera,
                      r32 *Exposure,
-                     b32 *UseLightingBloom
+                     b32 *UseLightingBloom,
+                     b32 *BravoilMyersOIT,
+                     b32 *BravoilMcGuireOIT
                    )
 {
   shader Shader = LoadShaders( CSz(BONSAI_SHADER_PATH "composite.vertexshader"), CSz(BONSAI_SHADER_PATH "composite.fragmentshader") );
@@ -97,6 +99,12 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, (u32*)UseLightingBloom, "UseLightingBloom");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, (u32*)BravoilMyersOIT, "BravoilMyersOIT");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, (u32*)BravoilMcGuireOIT, "BravoilMcGuireOIT");
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, LightingTex, "LightingTex");
@@ -507,7 +515,7 @@ InitRenderToTextureGroup(render_entity_to_texture_group *Group, v2i TextureSize,
 }
 
 link_internal shader
-MakeTransparencyShader(m4 *ViewProjection, texture *gBufferDepthTexture, memory_arena *Memory)
+MakeTransparencyShader(b32 *BravoilMyersOIT, b32 *BravoilMcGuireOIT, m4 *ViewProjection, texture *gBufferDepthTexture, memory_arena *Memory)
 {
   shader Shader = LoadShaders( CSz(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSz(BONSAI_SHADER_PATH "3DTransparency.fragmentshader") );
 
@@ -519,11 +527,18 @@ MakeTransparencyShader(m4 *ViewProjection, texture *gBufferDepthTexture, memory_
   *Current = GetUniform(Memory, &Shader, gBufferDepthTexture, "gBufferDepthTexture");
   Current = &(*Current)->Next;
 
+  *Current = GetUniform(Memory, &Shader, BravoilMyersOIT, "BravoilMyersOIT");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(Memory, &Shader, BravoilMcGuireOIT, "BravoilMcGuireOIT");
+  Current = &(*Current)->Next;
+
+
   return Shader;
 }
 
 link_internal void
-InitTransparencyRenderGroup(transparency_render_group *Group, v2i TextureSize, m4 *ViewProjection, texture *gBufferDepthTexture, memory_arena *Memory)
+InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group *Group, v2i TextureSize, m4 *ViewProjection, texture *gBufferDepthTexture, memory_arena *Memory)
 {
   AllocateGpuElementBuffer(&Group->GeoBuffer, (u32)Megabytes(1));
 
@@ -558,7 +573,7 @@ InitTransparencyRenderGroup(transparency_render_group *Group, v2i TextureSize, m
   /* FramebufferDepthTexture(Group->Depth); */
   SetDrawBuffers(&Group->FBO);
 
-  Group->Shader = MakeTransparencyShader(Group->ViewProjection, gBufferDepthTexture, Memory);
+  Group->Shader = MakeTransparencyShader(&Settings->BravoilMyersOIT, &Settings->BravoilMcGuireOIT, Group->ViewProjection, gBufferDepthTexture, Memory);
 
   Ensure( CheckAndClearFramebuffer() );
 }
@@ -568,6 +583,8 @@ GraphicsInit(memory_arena *GraphicsMemory)
 {
   graphics *Result = Allocate(graphics, GraphicsMemory, 1);
   Result->Memory = GraphicsMemory;
+
+  Result->Settings.BravoilMyersOIT = True;
 
   Result->Exposure = 1.f;
   Result->Camera = Allocate(camera, GraphicsMemory, 1);
@@ -661,7 +678,7 @@ GraphicsInit(memory_arena *GraphicsMemory)
     InitRenderToTextureGroup(&Resources->RTTGroup, V2i(256), GraphicsMemory);
   }
 
-  InitTransparencyRenderGroup(&Result->Transparency, V2i(SCR_WIDTH, SCR_HEIGHT), &gBuffer->ViewProjection, gBuffer->Textures->Depth, GraphicsMemory);
+  InitTransparencyRenderGroup(&Result->Settings, &Result->Transparency, V2i(SCR_WIDTH, SCR_HEIGHT), &gBuffer->ViewProjection, gBuffer->Textures->Depth, GraphicsMemory);
 
   // Initialize the gaussian blur render group
   {
@@ -682,7 +699,7 @@ GraphicsInit(memory_arena *GraphicsMemory)
   { // To keep these here or not to keep these here..
 #if BONSAI_INTERNAL
 #if 1
-    gBuffer->DebugColorShader    = MakeSimpleTextureShader(gBuffer->Textures->Color,    GraphicsMemory);
+    /* gBuffer->DebugColorShader    = MakeSimpleTextureShader(gBuffer->Textures->Color,    GraphicsMemory); */
     /* gBuffer->DebugNormalShader   = MakeSimpleTextureShader(gBuffer->Textures->Normal,   GraphicsMemory); */
     /* gBuffer->DebugPositionShader = MakeSimpleTextureShader(gBuffer->Textures->Position, GraphicsMemory); */
     /* AoGroup->DebugSsaoShader     = MakeSimpleTextureShader(AoGroup->Texture,            GraphicsMemory); */
@@ -696,7 +713,7 @@ GraphicsInit(memory_arena *GraphicsMemory)
     Result->CompositeGroup.Shader = MakeCompositeShader( GraphicsMemory,
         gBuffer->Textures, SG->ShadowMap, AoGroup->Texture, Lighting->LightingTex, Lighting->BloomTex,
         Result->Transparency.Texture0, Result->Transparency.Texture1, 
-        &SG->MVP, Result->Camera, &Result->Exposure, &Result->Settings.UseLightingBloom);
+        &SG->MVP, Result->Camera, &Result->Exposure, &Result->Settings.UseLightingBloom, &Result->Settings.BravoilMyersOIT, &Result->Settings.BravoilMcGuireOIT);
   }
 
   GL.Enable(GL_CULL_FACE);

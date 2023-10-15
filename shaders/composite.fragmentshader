@@ -12,20 +12,30 @@ uniform sampler2D LightingTex;
 /* uniform sampler2D shadowMap; */
 /* uniform sampler2D Ssao; */
 
-uniform sampler2D TransparencyAccum;
-uniform sampler2D TransparencyCount;
-
 uniform mat4 ShadowMVP;
 uniform vec3 CameraP;
+
 uniform bool UseLightingBloom;
+
+uniform sampler2D TransparencyAccum;
+uniform sampler2D TransparencyCount;
+uniform bool BravoilMyersOIT;
+uniform bool BravoilMcGuireOIT;
+
 uniform float Exposure;
 
-v3 BravoilMyersWeightedAverage(v3 ColorSum, float AlphaSum, float SumCount)
+v4 BravoilMyersWeightedAverage(v4 Accum, float Count)
 {
-  v3 ColorResult = ColorSum/max(AlphaSum, 0.00001f);
-  float AlphaResult = pow(max(0.0, 1.0-(AlphaSum/SumCount)), SumCount);
-  return ColorResult * AlphaResult;
+  v3 ColorResult = Accum.rgb/max(Accum.a, 0.00001f);
+  float AlphaResult = pow(max(0.0, 1.0-(Accum.a/Count)), Count);
+  return v4(ColorResult, AlphaResult);
 
+}
+
+v4 BravoilMcGuireDepthWeights(v4 Accum, float Count)
+{
+  v3 ColorResult = (Accum.rgb / clamp(Accum.a, 1e-4, 5e4));
+  return v4(ColorResult, Count);
 }
 
 void main()
@@ -37,8 +47,8 @@ void main()
 
   vec2 gBufferTexelStep = 1.0 / vec2(SCR_WIDTH, SCR_HEIGHT);
 
-  vec4 PixTranspAccum = texture(TransparencyAccum, gBufferUV);
-  float PixTranspCount = max(1.f, texture(TransparencyCount, gBufferUV).r);
+  vec4 AccumTex = texture(TransparencyAccum, gBufferUV);
+  float AccumCountTex = max(1.f, texture(TransparencyCount, gBufferUV).r);
 
   vec3 FragNormal = texture(gNormal, gBufferUV).rgb;
 
@@ -80,12 +90,21 @@ void main()
   /*
    *  Tone-mapping && gamma correction
    */
-  /* vec3 TransparencyRGB = PixTranspAccum.rgb / PixTranspCount; */
-  /* float TransparencyA = PixTranspAccum.a / PixTranspCount; */
+  /* vec3 TransparencyRGB = AccumTex.rgb / AccumCountTex; */
+  /* float TransparencyA = AccumTex.a / AccumCountTex; */
 
-  vec3 TransparencyContrib = BravoilMyersWeightedAverage(PixTranspAccum.rgb, PixTranspAccum.a, PixTranspCount);
+  v4 TransparencyContrib = v4(0,0,0,0);
+  if (BravoilMyersOIT)
+  {
+    TransparencyContrib = BravoilMyersWeightedAverage(AccumTex, AccumCountTex);
+  }
 
-  vec3 TotalLight = Lighting + 0.1f*Bloom + TransparencyContrib.rgb;
+  if (BravoilMcGuireOIT)
+  {
+    TransparencyContrib = BravoilMcGuireDepthWeights(AccumTex, AccumCountTex);
+  }
+
+  vec3 TotalLight = Lighting + 0.1f*Bloom + (TransparencyContrib.rgb * TransparencyContrib.a);
   /* vec3 TotalLight = (Diffuse * Lighting) * 2.f; */
 
   // Reinhard tone mapping (pretty bad)

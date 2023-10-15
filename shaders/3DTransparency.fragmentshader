@@ -5,6 +5,9 @@ in vec4 MaterialColor;
 
 uniform sampler2D gBufferDepthTexture;
 
+uniform bool BravoilMyersOIT;
+uniform bool BravoilMcGuireOIT;
+
 layout (location = 0) out vec4 ColorAccumulation;
 layout (location = 1) out vec4 Count;
 
@@ -18,6 +21,33 @@ float Linearize(float FragDepth)
   return Result;
 }
 
+float zDivPow(float z, float denom, float power)
+{
+  return pow(z/denom, power);
+}
+
+float W0(float Depth, float Alpha)
+{
+  float absZ = abs(Depth);
+  float denom = 10e-5 + zDivPow(absZ, 5.f, 2.f) + zDivPow(absZ, 200.f, 6.f);
+  return Alpha * ( max(10e-2, min(30e3, 10.f / denom )) );
+}
+
+float W1(float Depth, float Alpha)
+{
+  float absZ = abs(Depth);
+  float denom = 10e-5 + zDivPow(absZ, 10.f, 3.f) + zDivPow(absZ, 200.f, 6.f);
+  return Alpha * ( max(10e-2, min(30e3, 10.f / denom )) );
+}
+
+float W2(float Depth, float Alpha)
+{
+  float absZ = abs(Depth);
+  float denom = 10e-5 + zDivPow(absZ, 200.f, 4.f);
+  return Alpha * ( max(10e-2, min(30e3, 0.03f / denom )) );
+}
+
+
 void main()
 {
   v2 UV = gl_FragCoord.xy / V2(SCR_WIDTH, SCR_HEIGHT);
@@ -25,7 +55,16 @@ void main()
   float FragDepth = gl_FragCoord.z;
   if (FragDepth < gBufferDepth)
   {
-    ColorAccumulation = MaterialColor;
-    Count = V4(1);
+    if (BravoilMyersOIT)
+    {
+      ColorAccumulation = MaterialColor;
+      Count = V4(1);
+    }
+
+    if (BravoilMcGuireOIT)
+    {
+      ColorAccumulation = MaterialColor * W0(FragDepth, Linearize(MaterialColor.a));
+      Count = v4(MaterialColor.a);
+    }
   }
 }

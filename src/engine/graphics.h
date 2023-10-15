@@ -36,6 +36,9 @@ struct render_settings
   b32 UseSsao;
   b32 UseShadowMapping;
   b32 UseLightingBloom;
+
+  b32 BravoilMyersOIT;
+  b32 BravoilMcGuireOIT;
 };
 
 struct graphics

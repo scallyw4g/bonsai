@@ -435,6 +435,9 @@ DoEngineDebug(engine_resources *Engine)
         DebugValue(Ui, (b8*)&Settings->UseShadowMapping);
         DebugValue(Ui, (b8*)&Settings->UseLightingBloom);
 
+        DebugValue(Ui, (b8*)&Settings->BravoilMyersOIT);
+        DebugValue(Ui, (b8*)&Settings->BravoilMcGuireOIT);
+
         // TODO(Jesse): Make a slider for time of day
 
         DebugSlider(Ui, &Graphics->Exposure, 0.0f, 5.f);
