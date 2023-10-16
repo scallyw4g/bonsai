@@ -26,7 +26,21 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 }
 
 
-global_variable random_series Global_EmitterEntropy = {59406535723431};
+
+link_internal void
+SpawnFireEmitters(entity_block_array *Entities)
+{
+  local_persist random_series EmitterEntropy = {59406535723431};
+
+  LinkedListIter(&Entities->First, Block)
+  {
+    IterateOver(Block, Entity, Index)
+    {
+      SpawnFire(Entity, &EmitterEntropy, {}, 1.f + Index);
+    }
+  }
+}
+
 
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 {
@@ -52,30 +66,28 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
     entity *FireEmitter = GetFreeEntity(EntityTable);
     FireEmitter->P.Offset += V3(-8, 0, 8);
     SpawnEntity(FireEmitter);
-    SpawnFire(FireEmitter, &Global_EmitterEntropy, {}, 1.f);
     Push(&GameState->FireEmitters, FireEmitter);
   }
   {
     entity *FireEmitter = GetFreeEntity(EntityTable);
     FireEmitter->P.Offset += V3(0, 0, 8);
     SpawnEntity(FireEmitter);
-    SpawnFire(FireEmitter, &Global_EmitterEntropy, {}, 2.f);
     Push(&GameState->FireEmitters, FireEmitter);
   }
   {
     entity *FireEmitter = GetFreeEntity(EntityTable);
     FireEmitter->P.Offset += V3(8, 0, 8);
     SpawnEntity(FireEmitter);
-    SpawnFire(FireEmitter, &Global_EmitterEntropy, {}, 4.f);
     Push(&GameState->FireEmitters, FireEmitter);
   }
   {
     entity *FireEmitter = GetFreeEntity(EntityTable);
     FireEmitter->P.Offset += V3(16, 0, 8);
     SpawnEntity(FireEmitter);
-    SpawnFire(FireEmitter, &Global_EmitterEntropy, {}, 6.f);
     Push(&GameState->FireEmitters, FireEmitter);
   }
+
+  SpawnFireEmitters(&GameState->FireEmitters);
 
   return GameState;
 }
@@ -83,14 +95,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 BONSAI_API_ON_LIBRARY_RELOAD()
 {
   UNPACK_ENGINE_RESOURCES(Resources);
-
-  LinkedListIter(&GameState->FireEmitters.First, Block)
-  {
-    IterateOver(Block, Entity, Index)
-    {
-      SpawnFire(Entity, &Global_EmitterEntropy, {}, 1.f + Index);
-    }
-  }
+  SpawnFireEmitters(&GameState->FireEmitters);
 }
 
 BONSAI_API_MAIN_THREAD_CALLBACK()
