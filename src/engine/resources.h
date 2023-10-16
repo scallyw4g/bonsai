@@ -33,7 +33,7 @@ struct engine_resources
   // TODO(Jesse)(frame-index): Should this just be 32-bit?
   u64 FrameIndex;
 
-  entity *CameraTarget;
+  entity *CameraGhost;
 
   tiered_mesh_freelist MeshFreelist;
 

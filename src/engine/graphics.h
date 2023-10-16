@@ -16,7 +16,7 @@ struct gaussian_render_group
 
 struct transparency_render_group
 {
-  gpu_mapped_element_buffer  GeoBuffer;
+  gpu_mapped_element_buffer  GpuBuffer;
   framebuffer                FBO;
   shader                     Shader;
   texture                   *Texture0;

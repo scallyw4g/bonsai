@@ -1,3 +1,4 @@
+
 link_export b32
 Bonsai_OnLibraryLoad(engine_resources *Resources)
 {
@@ -82,7 +83,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   MapGpuElementBuffer(GpuMap);
 
-  MapGpuElementBuffer(&Graphics->Transparency.GeoBuffer);
+  MapGpuElementBuffer(&Graphics->Transparency.GpuBuffer);
 
   if (GetEngineDebug()->DrawWorldAxies)
   {
@@ -137,13 +138,13 @@ Bonsai_SimulateAndBufferGeometry(engine_resources *Resources)
   }
 #endif
 
-  SimulateEntities(Resources, Plat->dt, World->VisibleRegion, &GpuMap->Buffer, &Plat->HighPriority);
+  SimulateEntities(Resources, Plat->dt, World->VisibleRegion, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, &Plat->HighPriority);
   /* DispatchSimulateParticleSystemJobs(&Plat->HighPriority, EntityTable, World->ChunkDim, &GpuMap->Buffer, Graphics, Plat->dt); */
 
   // NOTE(Jesse): This has to come after the entities simulate, and before the
   // draw; we have to update the camera target p before we do the camera update
   //
-  auto CameraTargetP = Resources->CameraTarget ? Resources->CameraTarget->P : Canonical_Position(0);
+  auto CameraTargetP = Resources->CameraGhost ? Resources->CameraGhost->P : Canonical_Position(0);
 
 
   {
@@ -167,9 +168,9 @@ Bonsai_SimulateAndBufferGeometry(engine_resources *Resources)
   }
 
   BufferWorld(Plat, &GpuMap->Buffer, World, Graphics, Heap);
-  /* BufferEntities( EntityTable, &GpuMap->Buffer, Graphics, World, Plat->dt); */
 
-  BufferEntities( EntityTable, &Graphics->Transparency.GeoBuffer.Buffer, Graphics, World, Plat->dt);
+  BufferEntities( EntityTable, &GpuMap->Buffer, Graphics, World, Plat->dt);
+  /* BufferEntities( EntityTable, &Graphics->Transparency.GpuBuffer.Buffer, Graphics, World, Plat->dt); */
 
   UnsignalFutex(&Resources->Stdlib.Plat.HighPriorityModeFutex);
 

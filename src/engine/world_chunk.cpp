@@ -3519,7 +3519,7 @@ BufferWorld( platform                      *Plat,
             }
 #endif
 
-#if 1
+#if 0
             umm StandingSpotCount = AtElements(&Chunk->StandingSpots);
             /* DebugLine("drawing (%u) standing spots", StandingSpotCount); */
             for (u32 SpotIndex = 0; SpotIndex < StandingSpotCount; ++SpotIndex)

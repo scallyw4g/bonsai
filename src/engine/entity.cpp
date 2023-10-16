@@ -453,7 +453,7 @@ UnspawnParticleSystem(particle_system *System)
 void
 SpawnParticleSystem(particle_system *System)
 {
-  Assert(System->Dest);
+  /* Assert(System->Dest); */
   Assert(Inactive(System));
   System->RemainingLifespan = System->EmissionLifespan;
 }
@@ -498,7 +498,7 @@ SpawnSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, untext
   System->SystemMovementCoefficient = 0.1f;
   System->Drag = 2.f;
 
-  System->Dest = Dest;
+  /* System->Dest = Dest; */
 
   /* SpawnParticleSystem(Entity->Emitter, &Params); */
 
@@ -542,7 +542,7 @@ SpawnSplotionBitty(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius
   System->SystemMovementCoefficient = 1.f;
   /* System->Drag = 11.0f; */
 
-  System->Dest = Dest;
+  /* System->Dest = Dest; */
 
   SpawnParticleSystem(Entity->Emitter);
 
@@ -601,7 +601,7 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, un
   System->SystemMovementCoefficient = 0.1f;
   System->Drag = 11.0f;
 
-  System->Dest = Dest;
+  /* System->Dest = Dest; */
 
   SpawnParticleSystem(Entity->Emitter);
 
@@ -621,18 +621,18 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim)
 
   System->Entropy.Seed = RandomU32(Entropy);
 
-  System->Colors[0] = BLACK;
-  System->Colors[1] = DARK_DARK_RED;
-  System->Colors[2] = DARK_RED;
-  System->Colors[3] = DARK_ORANGE;
-  System->Colors[4] = YELLOW;
-  System->Colors[5] = WHITE;
+  /* System->Colors[0] = BLACK; */
+  /* System->Colors[1] = DARK_DARK_RED; */
+  /* System->Colors[2] = DARK_RED; */
+  /* System->Colors[3] = DARK_ORANGE; */
+  /* System->Colors[4] = YELLOW; */
+  /* System->Colors[5] = WHITE; */
 
-  /* System->Colors[1] = (u8)RandomU32(Entropy); */
-  /* System->Colors[2] = (u8)RandomU32(Entropy); */
-  /* System->Colors[3] = (u8)RandomU32(Entropy); */
-  /* System->Colors[4] = (u8)RandomU32(Entropy); */
-  /* System->Colors[5] = (u8)RandomU32(Entropy); */
+  System->Colors[1] = (u8)RandomU32(Entropy);
+  System->Colors[2] = (u8)RandomU32(Entropy);
+  System->Colors[3] = (u8)RandomU32(Entropy);
+  System->Colors[4] = (u8)RandomU32(Entropy);
+  System->Colors[5] = (u8)RandomU32(Entropy);
 
 
   System->SpawnRegion = aabb(Offset, V3(0.16f)*Dim);
@@ -640,17 +640,17 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim)
   System->EmissionLifespan = PARTICLE_SYSTEM_EMIT_FOREVER;
   System->LifespanMod = 0.07f;
   System->ParticleLifespan = 0.25f;
-  System->ParticlesPerSecond = 150.0f;
+  System->ParticlesPerSecond = 100*Dim;
 
   /* System->Physics.Speed = 1; */
   /* System->Physics.Drag = V3(2.2f); */
   /* System->Physics.Mass = 6.0f; */
 
-  r32 xyTurb = 4.f*Dim;
+  r32 xyTurb = 1.f + 2.f*Dim;
   /* r32 xyTurb = 2.5f; */
   /* r32 xyTurb = 0.0f; */
   System->ParticleTurbMin = V3(-xyTurb, -xyTurb, 20.0f + (0.3f*Dim) );
-  System->ParticleTurbMax = V3(xyTurb, xyTurb, 35.0f + (0.75f*Dim) );
+  System->ParticleTurbMax = V3(xyTurb, xyTurb, 35.0f + (0.85f*Dim) );
 
   /* System->Physics.Velocity = V3(0.0f, 0.0f, 9.0f); */
 
@@ -1358,7 +1358,7 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
 
   if (System->ActiveParticles)
   {
-    auto Dest = ReserveBufferSpace(System->Dest, System->ActiveParticles*VERTS_PER_PARTICLE);
+    auto Dest = ReserveBufferSpace(Job->Dest, System->ActiveParticles*VERTS_PER_PARTICLE);
     for ( u32 ParticleIndex = 0;
           ParticleIndex < System->ActiveParticles;
           )

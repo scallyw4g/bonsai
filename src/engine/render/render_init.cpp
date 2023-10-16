@@ -540,7 +540,7 @@ MakeTransparencyShader(b32 *BravoilMyersOIT, b32 *BravoilMcGuireOIT, m4 *ViewPro
 link_internal void
 InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group *Group, v2i TextureSize, m4 *ViewProjection, texture *gBufferDepthTexture, memory_arena *Memory)
 {
-  AllocateGpuElementBuffer(&Group->GeoBuffer, (u32)Megabytes(1));
+  AllocateGpuElementBuffer(&Group->GpuBuffer, (u32)Megabytes(1));
 
   Group->FBO = GenFramebuffer();
   GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);

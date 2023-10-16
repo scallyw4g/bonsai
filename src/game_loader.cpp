@@ -265,6 +265,7 @@ main( s32 ArgCount, const char ** Args )
       Ensure(InitializeGameApi(&GameApi, GameLib));
 
       Ensure( EngineApi.OnLibraryLoad(&EngineResources) );
+      GameApi.OnLibraryLoad(&EngineResources, &MainThread);
 
       UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
       Info("Game Reload Success");

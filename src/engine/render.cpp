@@ -732,12 +732,12 @@ RenderTransparencyBuffers(transparency_render_group *Group)
 
   SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
 
-  FlushBuffersToCard(&Group->GeoBuffer);
-  Draw(Group->GeoBuffer.Buffer.At);
+  FlushBuffersToCard(&Group->GpuBuffer);
+  Draw(Group->GpuBuffer.Buffer.At);
 
   GL.Disable(GL_BLEND);
   GL.Enable(GL_CULL_FACE);
   /* GL.DepthFunc(GL_LEQUAL); */
 
-  Group->GeoBuffer.Buffer.At = 0;
+  Group->GpuBuffer.Buffer.At = 0;
 }

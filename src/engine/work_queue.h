@@ -14,7 +14,7 @@ struct particle_system;
 struct work_queue_entry_sim_particle_system
 {
   particle_system *System;
-  /* untextured_3d_geometry_buffer *Dest; */
+  untextured_3d_geometry_buffer *Dest;
   v3 EntityDelta;
   v3 RenderSpaceP;
   r32 dt;
@@ -27,7 +27,7 @@ WorkQueueEntrySimParticleSystem( particle_system *System, untextured_3d_geometry
 {
   work_queue_entry_sim_particle_system Result = {
     .System = System,
-    /* .Dest = Dest, */
+    .Dest = Dest,
     .EntityDelta = EntityDelta,
     .RenderSpaceP = RenderSpaceP,
     .dt = dt,

@@ -64,3 +64,6 @@ struct entity
   /* update_callback Update; */
   void* UserData;
 };
+
+poof( block_array(entity, {4}) )
+#include <generated/block_array_entity_688856407.h>

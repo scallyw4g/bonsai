@@ -83,9 +83,10 @@ struct particle_system
   u32 ActiveParticles;
 
   r32 LifespanMod;
-  r32 ParticleLifespan; // How long an individual particle lasts
+  r32 ParticleLifespan;      // How long an individual particle lasts
   r32 ParticlesPerSecond;
   r32 ParticleLightEmission; // Are particles emissive?
+  r32 ParticleTransparency;  // Are particles transparent?
 
   v3 ParticleStartingDim;
   f32 ParticleEndingDim;
@@ -102,7 +103,7 @@ struct particle_system
   r32 ElapsedSinceLastEmission;
   particle Particles[PARTICLES_PER_SYSTEM];
 
-  untextured_3d_geometry_buffer *Dest;
+  /* untextured_3d_geometry_buffer *Dest; */
 };
 
 struct frame_event

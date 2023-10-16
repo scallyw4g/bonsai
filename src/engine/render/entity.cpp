@@ -25,7 +25,7 @@ link_weak void GameEntityUpdate(engine_resources *, entity *);
 // NOTE(Jesse): Once we draw entities & chunks in a more real way this should
 // be able to be moved back into the regular entity.cpp
 void
-SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleRegion, untextured_3d_geometry_buffer *Dest, work_queue *Queue)
+SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleRegion, untextured_3d_geometry_buffer *SolidGeo, untextured_3d_geometry_buffer *TransparentGeo, work_queue *Queue)
 {
   TIMED_FUNCTION();
   UNPACK_DATA_RESOURCES(Resources);
@@ -100,6 +100,8 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
       auto EntityDelta = Entity->Physics.Delta;
 
       v3 RenderSpaceP  = GetRenderP(Entity->P, Camera, World->ChunkDim);
+
+      auto Dest = System->ParticleTransparency > 0.f ? TransparentGeo : SolidGeo;
       auto Job = WorkQueueEntry(System, Dest, EntityDelta, RenderSpaceP, dt);
       /* SimulateParticleSystem(&Job.work_queue_entry_sim_particle_system); */
       PushWorkQueueEntry(Queue, &Job);
