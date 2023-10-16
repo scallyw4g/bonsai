@@ -617,36 +617,37 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim)
 
   System->SpawnType = ParticleSpawnType_Random;
 
-  System->Drag = 6.0f;
+  System->Drag = 5.0f;
 
   System->Entropy.Seed = RandomU32(Entropy);
 
-  /* System->Colors[0] = BLACK; */
-  /* System->Colors[1] = DARK_DARK_RED; */
-  /* System->Colors[2] = DARK_RED; */
-  /* System->Colors[3] = DARK_ORANGE; */
-  /* System->Colors[4] = YELLOW; */
-  /* System->Colors[5] = WHITE; */
+  System->Colors[0] = GREY_7;
+  System->Colors[1] = DARK_DARK_RED;
+  System->Colors[2] = DARK_RED;
+  System->Colors[3] = DARK_ORANGE;
+  System->Colors[4] = YELLOW;
+  System->Colors[5] = WHITE;
 
-  System->Colors[1] = (u8)RandomU32(Entropy);
-  System->Colors[2] = (u8)RandomU32(Entropy);
-  System->Colors[3] = (u8)RandomU32(Entropy);
-  System->Colors[4] = (u8)RandomU32(Entropy);
-  System->Colors[5] = (u8)RandomU32(Entropy);
+  /* System->Colors[1] = (u8)RandomU32(Entropy); */
+  /* System->Colors[2] = (u8)RandomU32(Entropy); */
+  /* System->Colors[3] = (u8)RandomU32(Entropy); */
+  /* System->Colors[4] = (u8)RandomU32(Entropy); */
+  /* System->Colors[5] = (u8)RandomU32(Entropy); */
 
 
-  System->SpawnRegion = aabb(Offset, V3(0.16f)*Dim);
+  System->SpawnRegion = aabb(Offset, V3(0.16f, 0.16f, 0.02f)*Dim);
 
   System->EmissionLifespan = PARTICLE_SYSTEM_EMIT_FOREVER;
   System->LifespanMod = 0.07f;
   System->ParticleLifespan = 0.25f;
-  System->ParticlesPerSecond = 100*Dim;
+  System->ParticlesPerSecond = 25 + 25*Dim;
 
   /* System->Physics.Speed = 1; */
   /* System->Physics.Drag = V3(2.2f); */
   /* System->Physics.Mass = 6.0f; */
 
-  r32 xyTurb = 1.f + 2.f*Dim;
+  r32 xyTurb = Dim;
+  /* r32 xyTurb = 1.f + 2.f*Dim; */
   /* r32 xyTurb = 2.5f; */
   /* r32 xyTurb = 0.0f; */
   System->ParticleTurbMin = V3(-xyTurb, -xyTurb, 20.0f + (0.3f*Dim) );
@@ -654,8 +655,8 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim)
 
   /* System->Physics.Velocity = V3(0.0f, 0.0f, 9.0f); */
 
-  System->ParticleStartingDim = V3(0.9f) + (0.25f*Dim);
-  System->ParticleEndingDim = 0.1f + (0.1f*Dim);
+  System->ParticleStartingDim = V3(0.9f) + (0.20f*Dim);
+  System->ParticleEndingDim = 0.1f + (0.1f*(Dim/2.f));
 
   System->SystemMovementCoefficient = 0.1f;
 
@@ -1369,7 +1370,10 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
       {
         v3 MinDiameter = System->ParticleStartingDim * System->ParticleEndingDim;
         r32 MaxParticleLifespan = (System->ParticleLifespan+System->LifespanMod);
-        r32 t = (Particle->RemainingLifespan / MaxParticleLifespan);
+
+        // NOTE(Jesse): We clamp because when reloading the game lib you can
+        // change the particle parameters which can cause this to exceed 1.0
+        r32 t = Clamp01((Particle->RemainingLifespan / MaxParticleLifespan));
         v3 Diameter = Lerp(t, MinDiameter, System->ParticleStartingDim);
 
         u8 ColorIndex = (u8)((Particle->RemainingLifespan / MaxParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
