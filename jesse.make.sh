@@ -28,11 +28,11 @@
 #     BuildSingleExample examples/terrain_gen \
 #     BuildDebugSystem
 
-# # OPT="-O2"
+# OPT="-O2"
 ./make.sh $OPT \
   BuildSingleExample examples/transparency \
   BuildExecutables \
-  # BuildDebugSystem \
+  BuildDebugSystem \
   # BuildSingleExample examples/blank_project \
   # BuildSingleExample examples/the_wanderer \
   # BuildSingleExample examples/turn_based \

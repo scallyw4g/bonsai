@@ -14,7 +14,9 @@ struct particle_system;
 struct work_queue_entry_sim_particle_system
 {
   particle_system *System;
-  untextured_3d_geometry_buffer *Dest;
+  untextured_3d_geometry_buffer *TranspDest;
+  untextured_3d_geometry_buffer *EmissiveDest;
+  untextured_3d_geometry_buffer *SolidDest;
   v3 EntityDelta;
   v3 RenderSpaceP;
   r32 dt;
@@ -23,11 +25,21 @@ struct work_queue_entry_sim_particle_system
 /* poof(gen_constructor(work_queue_entry_sim_particle_system)) */
 
 link_internal work_queue_entry_sim_particle_system
-WorkQueueEntrySimParticleSystem( particle_system *System, untextured_3d_geometry_buffer *Dest, v3 EntityDelta, v3 RenderSpaceP, r32 dt)
+WorkQueueEntrySimParticleSystem( particle_system *System, v3 EntityDelta, v3 RenderSpaceP, r32 dt)
 {
+  UNPACK_ENGINE_RESOURCES( GetEngineResources() );
+
+  untextured_3d_geometry_buffer *TranspDest = &Graphics->Transparency.GpuBuffer.Buffer;
+  untextured_3d_geometry_buffer *EmissiveDest = &GpuMap->Buffer;
+  untextured_3d_geometry_buffer *SolidDest = &GpuMap->Buffer;
+
   work_queue_entry_sim_particle_system Result = {
     .System = System,
-    .Dest = Dest,
+
+    .TranspDest = TranspDest,
+    .EmissiveDest = EmissiveDest,
+    .SolidDest = SolidDest,
+
     .EntityDelta = EntityDelta,
     .RenderSpaceP = RenderSpaceP,
     .dt = dt,
@@ -163,9 +175,9 @@ poof(d_union_constructors(work_queue_entry))
 
 // TODO(Jesse): Gen this from the constructors generator
 link_internal work_queue_entry
-WorkQueueEntry( particle_system *System, untextured_3d_geometry_buffer *Dest, v3 EntityDelta, v3 RenderSpaceP, r32 dt)
+WorkQueueEntry( particle_system *System, v3 EntityDelta, v3 RenderSpaceP, r32 dt)
 {
-  work_queue_entry Result = WorkQueueEntry(WorkQueueEntrySimParticleSystem(System, Dest, EntityDelta, RenderSpaceP, dt));
+  work_queue_entry Result = WorkQueueEntry(WorkQueueEntrySimParticleSystem(System, EntityDelta, RenderSpaceP, dt));
   return Result;
 }
 

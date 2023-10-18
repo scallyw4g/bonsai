@@ -621,18 +621,28 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim)
 
   System->Entropy.Seed = RandomU32(Entropy);
 
-  System->Colors[0] = GREY_7;
-  System->Colors[1] = DARK_DARK_RED;
-  System->Colors[2] = DARK_RED;
-  System->Colors[3] = DARK_ORANGE;
-  System->Colors[4] = YELLOW;
-  System->Colors[5] = WHITE;
+  System->ParticleLightEmission = 0.f;
+  System->ParticleTransparency = 0.f;
 
-  /* System->Colors[1] = (u8)RandomU32(Entropy); */
-  /* System->Colors[2] = (u8)RandomU32(Entropy); */
-  /* System->Colors[3] = (u8)RandomU32(Entropy); */
-  /* System->Colors[4] = (u8)RandomU32(Entropy); */
-  /* System->Colors[5] = (u8)RandomU32(Entropy); */
+  System->ParticleLightEmission = 1.f + Dim;
+
+  /* System->ParticleTransparency = 10.0f; */
+  /* System->ParticleTransparency = 0.25f; */
+  /* System->ParticleTransparency = 0.1f; */
+
+
+  /* System->Colors[0] = GREY_7; */
+  /* System->Colors[1] = DARK_DARK_RED; */
+  /* System->Colors[2] = DARK_RED; */
+  /* System->Colors[3] = DARK_ORANGE; */
+  /* System->Colors[4] = YELLOW; */
+  /* System->Colors[5] = WHITE; */
+
+  System->Colors[1] = (u8)RandomU32(Entropy);
+  System->Colors[2] = (u8)RandomU32(Entropy);
+  System->Colors[3] = (u8)RandomU32(Entropy);
+  System->Colors[4] = (u8)RandomU32(Entropy);
+  System->Colors[5] = (u8)RandomU32(Entropy);
 
 
   System->SpawnRegion = aabb(Offset, V3(0.16f, 0.16f, 0.02f)*Dim);
@@ -1359,7 +1369,28 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
 
   if (System->ActiveParticles)
   {
-    auto Dest = ReserveBufferSpace(Job->Dest, System->ActiveParticles*VERTS_PER_PARTICLE);
+    untextured_3d_geometry_buffer TranspDest   = {};
+    untextured_3d_geometry_buffer SolidDest    = {};
+    untextured_3d_geometry_buffer EmissiveDest = {};
+
+    if (System->ParticleTransparency > 0.f)
+    {
+      TranspDest = ReserveBufferSpace(Job->TranspDest, System->ActiveParticles*VERTS_PER_PARTICLE);
+    }
+
+    if (System->ParticleLightEmission > 0.f)
+    {
+      EmissiveDest = ReserveBufferSpace(Job->EmissiveDest, System->ActiveParticles*VERTS_PER_PARTICLE);
+    }
+
+    if (System->ParticleTransparency <= 0.f && System->ParticleLightEmission <= 0.f)
+    {
+      SolidDest = ReserveBufferSpace(Job->SolidDest, System->ActiveParticles*VERTS_PER_PARTICLE);
+    }
+
+
+    /* auto Dest = ReserveBufferSpace(Job->Dest, System->ActiveParticles*VERTS_PER_PARTICLE); */
+
     for ( u32 ParticleIndex = 0;
           ParticleIndex < System->ActiveParticles;
           )
@@ -1379,7 +1410,12 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
         u8 ColorIndex = (u8)((Particle->RemainingLifespan / MaxParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
         Assert(ColorIndex >= 0 && ColorIndex < PARTICLE_SYSTEM_COLOR_COUNT);
 
-        DrawVoxel( &Dest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, System->ParticleLightEmission);
+        /* DrawVoxel( &Dest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, System->ParticleLightEmission, System->ParticleTransparency); */
+
+        if (System->ParticleTransparency > 0.f)  { DrawVoxel( &TranspDest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, System->ParticleTransparency); }
+        if (System->ParticleLightEmission > 0.f) { DrawVoxel( &EmissiveDest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, System->ParticleLightEmission); }
+        if (System->ParticleTransparency <= 0.f && System->ParticleLightEmission <= 0.f) { DrawVoxel( &SolidDest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 0.f); }
+
 #if 0
         v3 EmissionColor = Normalize(V3(3,1,0));
         if (RandomUnilateral(&System->Entropy) > 0.99f)
