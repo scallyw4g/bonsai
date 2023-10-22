@@ -85,7 +85,7 @@ struct particle_system
   r32 LifespanMod;
   r32 ParticleLifespan;      // How long an individual particle lasts
   r32 ParticlesPerSecond;
-  r32 ParticleLightEmission; // Are particles emissive?
+  r32 ParticleLightEmission; // Are particles emissive? Value is rounded up to 1.f.  Values greater than 1.f contribute to emission
   r32 ParticleTransparency;  // Are particles transparent?
 
   v3 ParticleStartingDim;

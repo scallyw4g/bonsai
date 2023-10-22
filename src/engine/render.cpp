@@ -156,12 +156,17 @@ RenderLuminanceTexture(gpu_mapped_element_buffer *GpuMap, lighting_render_group 
   Graphics->SG->MVP = NdcToScreenSpace * Graphics->SG->MVP;
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->FBO.ID);
-  /* GL.SetDrawBuffers(); */
 
-  UseShader(&Lighting->Shader);
+  {
+    UseShader(&Lighting->Shader);
+    RenderQuad();
+  }
 
-  RenderQuad();
-  /* Draw(GpuMap->Buffer.At); */
+  /* { */
+  /*   UseShader(&Bloom->Shader); */
+    /* FlushBuffersToCard(&Bloom->GpuBuffer); */
+  /*   Draw(Bloom->GpuBuffer.Buffer.At); */
+  /* } */
 
   AssertNoGlErrors;
 }

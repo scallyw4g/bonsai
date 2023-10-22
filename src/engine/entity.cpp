@@ -624,11 +624,12 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim)
   System->ParticleLightEmission = 0.f;
   System->ParticleTransparency = 0.f;
 
-  System->ParticleLightEmission = 1.f + Dim;
+  /* System->ParticleLightEmission = 1.f + Dim; */
+  System->ParticleLightEmission = 1.f; //1.f + Dim;
 
   /* System->ParticleTransparency = 10.0f; */
   /* System->ParticleTransparency = 0.25f; */
-  /* System->ParticleTransparency = 0.1f; */
+  System->ParticleTransparency = 0.5f;
 
 
   /* System->Colors[0] = GREY_7; */
@@ -1378,12 +1379,7 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
       TranspDest = ReserveBufferSpace(Job->TranspDest, System->ActiveParticles*VERTS_PER_PARTICLE);
     }
 
-    if (System->ParticleLightEmission > 0.f)
-    {
-      EmissiveDest = ReserveBufferSpace(Job->EmissiveDest, System->ActiveParticles*VERTS_PER_PARTICLE);
-    }
-
-    if (System->ParticleTransparency <= 0.f && System->ParticleLightEmission <= 0.f)
+    if (System->ParticleTransparency <= 0.f)
     {
       SolidDest = ReserveBufferSpace(Job->SolidDest, System->ActiveParticles*VERTS_PER_PARTICLE);
     }
@@ -1410,10 +1406,7 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
         u8 ColorIndex = (u8)((Particle->RemainingLifespan / MaxParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
         Assert(ColorIndex >= 0 && ColorIndex < PARTICLE_SYSTEM_COLOR_COUNT);
 
-        /* DrawVoxel( &Dest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, System->ParticleLightEmission, System->ParticleTransparency); */
-
-        if (System->ParticleTransparency > 0.f)  { DrawVoxel( &TranspDest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, System->ParticleTransparency); }
-        if (System->ParticleLightEmission > 0.f) { DrawVoxel( &EmissiveDest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, System->ParticleLightEmission); }
+        if (System->ParticleTransparency > 0.f)  { DrawVoxel( &TranspDest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, System->ParticleTransparency * Min(System->ParticleLightEmission, 1.f) ); }
         if (System->ParticleTransparency <= 0.f && System->ParticleLightEmission <= 0.f) { DrawVoxel( &SolidDest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 0.f); }
 
 #if 0

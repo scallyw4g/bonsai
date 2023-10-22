@@ -14,6 +14,11 @@ uniform r32 LightIndexToUV;
 uniform sampler2D LightColors;
 uniform sampler2D LightPositions;
 
+uniform sampler2D TransparencyAccum;
+uniform sampler2D TransparencyCount;
+uniform bool BravoilMyersOIT;
+uniform bool BravoilMcGuireOIT;
+
 uniform mat4 ShadowMVP;
 
 uniform vec3 SunPosition;
@@ -79,6 +84,9 @@ void main()
   vec2 gBufferTextureDim = vec2(SCR_WIDTH, SCR_HEIGHT);
   ivec2 texelCoord = ivec2(gBufferUV*gBufferTextureDim);
   vec4 FragPosition = texelFetch(gPosition, texelCoord, 0);
+
+  vec4 AccumTex = texture(TransparencyAccum, gBufferUV);
+  float AccumCountTex = max(1.f, texture(TransparencyCount, gBufferUV).r);
 
   vec3 KeyLightContrib = vec3(0.f);
   vec3 BackLightContrib = vec3(0.f);
@@ -290,7 +298,15 @@ void main()
   /* LightColor = vec4(0.f); */
 
   LightColor = vec4(TotalLight, 1.f);
-  if (UseLightingBloom) { BloomColor = TotalLight + (Emission*Diffuse); }
+  if (UseLightingBloom)
+  {
+    v4 TransparencyContrib = V4(0.f);
+
+    if (BravoilMyersOIT) { TransparencyContrib = BravoilMyersWeightedAverage(AccumTex, AccumCountTex); }
+    if (BravoilMcGuireOIT) { TransparencyContrib = BravoilMcGuireDepthWeights(AccumTex, AccumCountTex); }
+
+    BloomColor = TotalLight + (Emission*Diffuse) + TransparencyContrib.rgb * TransparencyContrib.a;
+  }
   /* else { BloomColor = vec3(0.0f, 0.0f, 0.0f); } */
 
   /* if (UseLightingBloom) LightColor.r = 1.f; */

@@ -83,6 +83,8 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   MapGpuElementBuffer(GpuMap);
 
+  /* MapGpuElementBuffer(&Graphics->Bloom.GpuBuffer); */
+
   MapGpuElementBuffer(&Graphics->Transparency.GpuBuffer);
 
   if (GetEngineDebug()->DrawWorldAxies)
@@ -256,6 +258,7 @@ Bonsai_Render(engine_resources *Resources)
   /* Debug_DrawTextureToDebugQuad(&Graphics->gBuffer->DebugColorShader); */
   RenderTransparencyBuffers(&Graphics->Transparency);
 
+  /* RenderLuminanceTexture(GpuMap, Lighting, &Graphics->Bloom, Graphics); */
   RenderLuminanceTexture(GpuMap, Lighting, Graphics);
 
   if (Graphics->Settings.UseSsao) { RenderAoTexture(AoGroup); }

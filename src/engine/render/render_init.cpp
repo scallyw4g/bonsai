@@ -129,11 +129,18 @@ MakeLightingShader( memory_arena *GraphicsMemory,
                     g_buffer_textures *gTextures,
                     texture *ShadowMap,
                     texture *Ssao,
+
+                    texture *Transparency0,
+                    texture *Transparency1,
+                    b32 *BravoilMyersOIT,
+                    b32 *BravoilMcGuireOIT,
+
                     m4 *ShadowMVP,
                     game_lights *Lights,
                     camera *Camera,
                     v3 *SunPosition,
                     v3 *SunColor,
+
                     b32 *UseSsao,
                     b32 *UseShadowMapping,
                     b32 *UseLightingBloom
@@ -155,10 +162,22 @@ MakeLightingShader( memory_arena *GraphicsMemory,
   *Current = GetUniform(GraphicsMemory, &Shader, ShadowMap, "shadowMap");
   Current = &(*Current)->Next;
 
-  *Current = GetUniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
+  *Current = GetUniform(GraphicsMemory, &Shader, Ssao, "Ssao");
   Current = &(*Current)->Next;
 
-  *Current = GetUniform(GraphicsMemory, &Shader, Ssao, "Ssao");
+  *Current = GetUniform(GraphicsMemory, &Shader, Transparency0, "TransparencyAccum");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, Transparency1, "TransparencyCount");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, BravoilMyersOIT, "BravoilMyersOIT");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, BravoilMcGuireOIT, "BravoilMcGuireOIT");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, Lights->ColorTex, "LightColors");
@@ -578,6 +597,19 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
   Ensure( CheckAndClearFramebuffer() );
 }
 
+link_internal void
+InitBloomRenderGroup(bloom_render_group *Group, m4 *ViewProjection, memory_arena *Memory)
+{
+  AllocateGpuElementBuffer(&Group->GpuBuffer, (u32)Megabytes(1));
+
+  Group->Shader = LoadShaders( CSz(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSz(BONSAI_SHADER_PATH "Bloom.fragmentshader") );
+
+  shader_uniform **Current = &Group->Shader.FirstUniform;
+
+  *Current = GetUniform(Memory, &Group->Shader, ViewProjection, "ViewProjection");
+  Current = &(*Current)->Next;
+}
+
 graphics *
 GraphicsInit(memory_arena *GraphicsMemory)
 {
@@ -620,6 +652,9 @@ GraphicsInit(memory_arena *GraphicsMemory)
   }
 #endif
 
+
+  InitTransparencyRenderGroup(&Result->Settings, &Result->Transparency, V2i(SCR_WIDTH, SCR_HEIGHT), &gBuffer->ViewProjection, gBuffer->Textures->Depth, GraphicsMemory);
+
   // Initialize the lighting group
   {
     game_lights *Lights = &Lighting->Lights;
@@ -633,10 +668,23 @@ GraphicsInit(memory_arena *GraphicsMemory)
     Lights->IndexToUV = 1.0f / MAX_LIGHTS;
 
     Lighting->Shader =
-      MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap,
-                         AoGroup->Texture, &SG->MVP, &Lighting->Lights, Result->Camera,
+      MakeLightingShader( GraphicsMemory,
+
+                          gBuffer->Textures, SG->ShadowMap, AoGroup->Texture,
+
+                          Result->Transparency.Texture0,
+                          Result->Transparency.Texture1,
+                         &Result->Settings.BravoilMyersOIT,
+                         &Result->Settings.BravoilMcGuireOIT,
+
+
+                         &SG->MVP, &Lighting->Lights, Result->Camera,
                          &SG->Sun.Position, &SG->Sun.Color,
-                         &Result->Settings.UseSsao, &Result->Settings.UseShadowMapping, &Result->Settings.UseLightingBloom);
+
+                         &Result->Settings.UseSsao,
+                         &Result->Settings.UseShadowMapping,
+                         &Result->Settings.UseLightingBloom
+                        );
 
 
     // NOTE(Jesse): This is used for bloom
@@ -678,7 +726,7 @@ GraphicsInit(memory_arena *GraphicsMemory)
     InitRenderToTextureGroup(&Resources->RTTGroup, V2i(256), GraphicsMemory);
   }
 
-  InitTransparencyRenderGroup(&Result->Settings, &Result->Transparency, V2i(SCR_WIDTH, SCR_HEIGHT), &gBuffer->ViewProjection, gBuffer->Textures->Depth, GraphicsMemory);
+  /* InitBloomRenderGroup(&Result->Bloom, &gBuffer->ViewProjection, GraphicsMemory); */
 
   // Initialize the gaussian blur render group
   {

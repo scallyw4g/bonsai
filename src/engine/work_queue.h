@@ -15,7 +15,7 @@ struct work_queue_entry_sim_particle_system
 {
   particle_system *System;
   untextured_3d_geometry_buffer *TranspDest;
-  untextured_3d_geometry_buffer *EmissiveDest;
+  /* untextured_3d_geometry_buffer *EmissiveDest; */
   untextured_3d_geometry_buffer *SolidDest;
   v3 EntityDelta;
   v3 RenderSpaceP;
@@ -30,14 +30,14 @@ WorkQueueEntrySimParticleSystem( particle_system *System, v3 EntityDelta, v3 Ren
   UNPACK_ENGINE_RESOURCES( GetEngineResources() );
 
   untextured_3d_geometry_buffer *TranspDest = &Graphics->Transparency.GpuBuffer.Buffer;
-  untextured_3d_geometry_buffer *EmissiveDest = &GpuMap->Buffer;
+  /* untextured_3d_geometry_buffer *EmissiveDest = &Graphics->Bloom.GpuBuffer.Buffer; */
   untextured_3d_geometry_buffer *SolidDest = &GpuMap->Buffer;
 
   work_queue_entry_sim_particle_system Result = {
     .System = System,
 
     .TranspDest = TranspDest,
-    .EmissiveDest = EmissiveDest,
+    /* .EmissiveDest = EmissiveDest, */
     .SolidDest = SolidDest,
 
     .EntityDelta = EntityDelta,

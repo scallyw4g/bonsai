@@ -395,17 +395,34 @@ DoEngineDebug(engine_resources *Engine)
 
     s32 xAdvance = 15;
 
-    PushTexturedQuad(Ui, Graphics->Transparency.Texture0, V2(400), zDepth_Text);
-    PushForceAdvance(Ui, V2(xAdvance, 0));
+    PushTableStart(Ui);
+      PushColumn(Ui, CSz("Transparency Texture0"));
+      PushColumn(Ui, CSz("Transparency Texture1"));
+      PushColumn(Ui, CSz("Transparency Depth"));
+      PushColumn(Ui, CSz("gBuffer Depth "));
+      PushNewRow(Ui);
 
-    PushTexturedQuad(Ui, Graphics->Transparency.Texture1, V2(400), zDepth_Text);
-    PushForceAdvance(Ui, V2(xAdvance, 0));
+      
+      StartColumn(Ui);
+        PushTexturedQuad(Ui, Graphics->Transparency.Texture0, V2(400), zDepth_Text);
+        PushForceAdvance(Ui, V2(xAdvance, 0));
+      EndColumn(Ui);
 
-    PushTexturedQuad(Ui, Graphics->Transparency.Depth, V2(400), zDepth_Text, True);
-    PushForceAdvance(Ui, V2(xAdvance, 0));
+      StartColumn(Ui);
+        PushTexturedQuad(Ui, Graphics->Transparency.Texture1, V2(400), zDepth_Text);
+        PushForceAdvance(Ui, V2(xAdvance, 0));
+      EndColumn(Ui);
 
-    PushTexturedQuad(Ui, Graphics->gBuffer->Textures->Depth, V2(400), zDepth_Text, True);
-    PushForceAdvance(Ui, V2(xAdvance, 0));
+      StartColumn(Ui);
+        PushTexturedQuad(Ui, Graphics->Transparency.Depth, V2(400), zDepth_Text, True);
+        PushForceAdvance(Ui, V2(xAdvance, 0));
+      EndColumn(Ui);
+
+      StartColumn(Ui);
+        PushTexturedQuad(Ui, Graphics->gBuffer->Textures->Depth, V2(400), zDepth_Text, True);
+        PushForceAdvance(Ui, V2(xAdvance, 0));
+      EndColumn(Ui);
+    PushTableEnd(Ui);
 
 
     /* IterateOver(&EngineDebug->Textures, Texture, TextureIndex) */
