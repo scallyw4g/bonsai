@@ -125,4 +125,16 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     Resources->CameraGhost->P.Offset += Offset;
   }
 
+  random_series TmpSeries = {8095432};
+  LinkedListIter(&GameState->FireEmitters.First, Block)
+  {
+    IterateOver(Block, Entity, EIndex)
+    {
+      /* RangeIterator(LightIndex, 2) */
+      {
+        /* DoLight(&Graphics->Lighting.Lights, GetSimSpaceP(World, Entity->P), RandomV3(&TmpSeries)); */
+      }
+    }
+  }
+
 }

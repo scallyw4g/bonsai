@@ -79,7 +79,7 @@ void main()
   /* vec3 TransparencyRGB = AccumTex.rgb / AccumCountTex; */
   /* float TransparencyA = AccumTex.a / AccumCountTex; */
 
-  v4 TransparencyContrib = v4(0,0,0,0);
+  v3 TransparencyContrib = v3(0,0,0);
   if (BravoilMyersOIT)
   {
     TransparencyContrib = BravoilMyersWeightedAverage(AccumTex, AccumCountTex);
@@ -90,7 +90,11 @@ void main()
     TransparencyContrib = BravoilMcGuireDepthWeights(AccumTex, AccumCountTex);
   }
 
-  vec3 TotalLight = Lighting + 0.1f*Bloom + (TransparencyContrib.rgb * TransparencyContrib.a);
+  vec3 TotalLight = Lighting + TransparencyContrib;
+
+  if (UseLightingBloom) { TotalLight += 0.5f*Bloom; }
+
+  /* vec3 TotalLight = Lighting + 0.15f*Bloom + (TransparencyContrib.rgb * TransparencyContrib.a); */
   /* vec3 TotalLight = (Diffuse * Lighting) * 2.f; */
 
   // Reinhard tone mapping (pretty bad)

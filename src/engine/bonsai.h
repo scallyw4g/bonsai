@@ -52,6 +52,7 @@ struct particle
   v3 Offset;
 
   u8 Color;
+  b8 IsLight;
   r32 RemainingLifespan;
 };
 
@@ -63,9 +64,6 @@ enum particle_spawn_type
   ParticleSpawnType_Expanding, // Spawn velocity pointing away from center of spawn region
   ParticleSpawnType_Contracting, // Spawn velocity pointing towards center of spawn region
 };
-
-// TODO(Jesse)(metaprogramming): Make a struct paste thing such that we can
-// just splat the init params into here
 
 #define PARTICLE_SYSTEM_COLOR_COUNT 6
 #define PARTICLES_PER_SYSTEM   (4096)
@@ -85,7 +83,16 @@ struct particle_system
   r32 LifespanMod;
   r32 ParticleLifespan;      // How long an individual particle lasts
   r32 ParticlesPerSecond;
-  r32 ParticleLightEmission; // Are particles emissive? Value is rounded up to 1.f.  Values greater than 1.f contribute to emission
+
+  // Are particles emissive?
+  // Value is rounded up to 1.f.  Values greater than 1.f contribute to emission
+  // which is accumulated into the bloom texuture
+  r32 ParticleLightEmission;
+
+  // Chance to emit a light-emitting particle that's treated as a point light
+  // and accumulated into the lighting buffer
+  r32 ParticleLightEmissionChance; // 0.f - 1.f (no chance - always emit)
+
   r32 ParticleTransparency;  // Are particles transparent?
 
   v3 ParticleStartingDim;

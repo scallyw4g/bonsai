@@ -53,10 +53,12 @@ void
 DoLight(game_lights *Lights, v3 Position, v3 Color)
 {
   Assert(Lights->Count < MAX_LIGHTS);
+  u32 ThisLightIndex = AtomicIncrement((volatile u32 *)&Lights->Count) - 1;
+  Assert(Lights->Count < MAX_LIGHTS);
 
-  if (Lights->Count < MAX_LIGHTS)
+  if (ThisLightIndex < MAX_LIGHTS)
   {
-    light *Light = Lights->Lights + Lights->Count++;
+    light *Light = Lights->Lights + ThisLightIndex;
     Light->Position = Position;
     Light->Color = Color;
   }

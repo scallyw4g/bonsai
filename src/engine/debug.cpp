@@ -396,13 +396,14 @@ DoEngineDebug(engine_resources *Engine)
     s32 xAdvance = 15;
 
     PushTableStart(Ui);
+
       PushColumn(Ui, CSz("Transparency Texture0"));
       PushColumn(Ui, CSz("Transparency Texture1"));
       PushColumn(Ui, CSz("Transparency Depth"));
-      PushColumn(Ui, CSz("gBuffer Depth "));
+      PushColumn(Ui, CSz("Lighting"));
+      PushColumn(Ui, CSz("Bloom"));
       PushNewRow(Ui);
 
-      
       StartColumn(Ui);
         PushTexturedQuad(Ui, Graphics->Transparency.Texture0, V2(400), zDepth_Text);
         PushForceAdvance(Ui, V2(xAdvance, 0));
@@ -419,9 +420,45 @@ DoEngineDebug(engine_resources *Engine)
       EndColumn(Ui);
 
       StartColumn(Ui);
+        PushTexturedQuad(Ui, Graphics->Lighting.LightingTex, V2(400), zDepth_Text);
+        PushForceAdvance(Ui, V2(xAdvance, 0));
+      EndColumn(Ui);
+
+      StartColumn(Ui);
+        PushTexturedQuad(Ui, Graphics->Lighting.BloomTex, V2(400), zDepth_Text);
+        PushForceAdvance(Ui, V2(xAdvance, 0));
+      EndColumn(Ui);
+      PushNewRow(Ui);
+
+      PushColumn(Ui, CSz("gBuffer Albedo"));
+      PushColumn(Ui, CSz("gBuffer Normal"));
+      PushColumn(Ui, CSz("gBuffer Position"));
+      PushColumn(Ui, CSz("gBuffer Depth "));
+      PushNewRow(Ui);
+
+      StartColumn(Ui);
+        PushTexturedQuad(Ui, Graphics->gBuffer->Textures->Color, V2(400), zDepth_Text);
+        PushForceAdvance(Ui, V2(xAdvance, 0));
+      EndColumn(Ui);
+
+      StartColumn(Ui);
+        PushTexturedQuad(Ui, Graphics->gBuffer->Textures->Normal, V2(400), zDepth_Text);
+        PushForceAdvance(Ui, V2(xAdvance, 0));
+      EndColumn(Ui);
+
+      StartColumn(Ui);
+        PushTexturedQuad(Ui, Graphics->gBuffer->Textures->Position, V2(400), zDepth_Text);
+        PushForceAdvance(Ui, V2(xAdvance, 0));
+      EndColumn(Ui);
+
+      StartColumn(Ui);
         PushTexturedQuad(Ui, Graphics->gBuffer->Textures->Depth, V2(400), zDepth_Text, True);
         PushForceAdvance(Ui, V2(xAdvance, 0));
       EndColumn(Ui);
+      PushNewRow(Ui);
+
+
+
     PushTableEnd(Ui);
 
 

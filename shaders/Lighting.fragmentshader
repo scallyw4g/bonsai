@@ -116,7 +116,7 @@ void main()
     /* return; */
 
 
-    float Emission = texelFetch(gColor, texelCoord, 0).a;
+    /* float Emission = clamp(0.f, 1.f, texelFetch(gColor, texelCoord, 0).a); */
 
     {
       vec3 FragToLight = normalize(SunPosition);
@@ -300,12 +300,12 @@ void main()
   LightColor = vec4(TotalLight, 1.f);
   if (UseLightingBloom)
   {
-    v4 TransparencyContrib = V4(0.f);
+    v3 TransparencyContrib = v3(0.f, 0.f, 0.f);
 
-    if (BravoilMyersOIT) { TransparencyContrib = BravoilMyersWeightedAverage(AccumTex, AccumCountTex); }
+    if (BravoilMyersOIT)   { TransparencyContrib = BravoilMyersWeightedAverage(AccumTex, AccumCountTex); }
     if (BravoilMcGuireOIT) { TransparencyContrib = BravoilMcGuireDepthWeights(AccumTex, AccumCountTex); }
 
-    BloomColor = TotalLight + (Emission*Diffuse) + TransparencyContrib.rgb * TransparencyContrib.a;
+    BloomColor = TotalLight + (Emission*Diffuse) + TransparencyContrib;
   }
   /* else { BloomColor = vec3(0.0f, 0.0f, 0.0f); } */
 

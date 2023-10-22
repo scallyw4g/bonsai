@@ -621,29 +621,36 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim)
 
   System->Entropy.Seed = RandomU32(Entropy);
 
-  System->ParticleLightEmission = 0.f;
-  System->ParticleTransparency = 0.f;
+  /* System->ParticleLightEmissionChance = 0.0; */
+  System->ParticleLightEmissionChance = 0.40f;
 
   /* System->ParticleLightEmission = 1.f + Dim; */
-  System->ParticleLightEmission = 1.f; //1.f + Dim;
+  System->ParticleLightEmission = 2.0f;
 
   /* System->ParticleTransparency = 10.0f; */
   /* System->ParticleTransparency = 0.25f; */
-  System->ParticleTransparency = 0.5f;
+  /* System->ParticleTransparency = 0.1f; */
+  System->ParticleTransparency = 0.2f;
 
 
-  /* System->Colors[0] = GREY_7; */
-  /* System->Colors[1] = DARK_DARK_RED; */
-  /* System->Colors[2] = DARK_RED; */
-  /* System->Colors[3] = DARK_ORANGE; */
-  /* System->Colors[4] = YELLOW; */
+  System->Colors[0] = GREY_6;
+  System->Colors[1] = DARK_DARK_RED;
+  System->Colors[2] = DARK_RED;
+  System->Colors[3] = DARK_ORANGE;
+  System->Colors[4] = YELLOW;
+  System->Colors[5] = LIGHT_LIGHT_YELLOW;
   /* System->Colors[5] = WHITE; */
 
-  System->Colors[1] = (u8)RandomU32(Entropy);
-  System->Colors[2] = (u8)RandomU32(Entropy);
-  System->Colors[3] = (u8)RandomU32(Entropy);
-  System->Colors[4] = (u8)RandomU32(Entropy);
-  System->Colors[5] = (u8)RandomU32(Entropy);
+  /* (u8)RandomU32(Entropy); */
+  /* (u8)RandomU32(Entropy); */
+  /* (u8)RandomU32(Entropy); */
+
+  /* System->Colors[0] = (u8)RandomU32(Entropy); */
+  /* System->Colors[1] = (u8)RandomU32(Entropy); */
+  /* System->Colors[2] = (u8)RandomU32(Entropy); */
+  /* System->Colors[3] = (u8)RandomU32(Entropy); */
+  /* System->Colors[4] = (u8)RandomU32(Entropy); */
+  /* System->Colors[5] = (u8)RandomU32(Entropy); */
 
 
   System->SpawnRegion = aabb(Offset, V3(0.16f, 0.16f, 0.02f)*Dim);
@@ -1234,6 +1241,7 @@ SpawnParticle(particle_system *System)
 {
   particle *Particle = &System->Particles[System->ActiveParticles++];
   Assert(System->ActiveParticles < PARTICLES_PER_SYSTEM);
+  Clear(Particle);
 
   r32 X = RandomBilateral(&System->Entropy);
   r32 Y = RandomBilateral(&System->Entropy);
@@ -1247,6 +1255,11 @@ SpawnParticle(particle_system *System)
 
   v3 TurbMin = System->ParticleTurbMin;
   v3 TurbMax = System->ParticleTurbMax;
+
+  if (System->ParticleLightEmission > 0.f && RandomUnilateral(&System->Entropy) > 1.f-System->ParticleLightEmissionChance)
+  {
+    Particle->IsLight = True;
+  }
 
   switch(System->SpawnType)
   {
@@ -1406,14 +1419,15 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
         u8 ColorIndex = (u8)((Particle->RemainingLifespan / MaxParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
         Assert(ColorIndex >= 0 && ColorIndex < PARTICLE_SYSTEM_COLOR_COUNT);
 
-        if (System->ParticleTransparency > 0.f)  { DrawVoxel( &TranspDest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, System->ParticleTransparency * Min(System->ParticleLightEmission, 1.f) ); }
+        if (System->ParticleTransparency > 0.f)  { DrawVoxel( &TranspDest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, System->ParticleTransparency * Max(System->ParticleLightEmission, 1.f) ); }
         if (System->ParticleTransparency <= 0.f && System->ParticleLightEmission <= 0.f) { DrawVoxel( &SolidDest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 0.f); }
 
-#if 0
-        v3 EmissionColor = Normalize(V3(3,1,0));
-        if (RandomUnilateral(&System->Entropy) > 0.99f)
+#if 1
+        if (Particle->IsLight)
         {
-          DoLight(Graphics->Lights, RenderSpaceP + Particle->Offset, EmissionColor);
+          v3 EmissionColor = GetColorData(DefaultPalette, System->Colors[ColorIndex]).rgb;
+          engine_resources *Engine = GetEngineResources();
+          DoLight(&Engine->Graphics->Lighting.Lights, RenderSpaceP + Particle->Offset, EmissionColor);
         }
 #endif
       }

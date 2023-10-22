@@ -152,11 +152,19 @@ link_internal void
 Unshift( counted_string_cursor *Cursor )
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
-
-  umm Count = TotalElements(Cursor);
-  for (umm Index = 1; Index < Count; ++Index)
+  umm Count = AtElements(Cursor);
+  if (Count)
   {
-    Cursor->Start[Index-1] = Cursor->Start[Index];
+    for (umm Index = 1; Index < Count; ++Index)
+    {
+      Cursor->Start[Index-1] = Cursor->Start[Index];
+    }
+
+    // NOTE(Jesse): This is actually correct, even though it doesn't look
+    // like it at first glance.  At is OnePastLast, so decrementing and
+    // then clearing overwrites the last value that was set.
+    Cursor->At--;
+    *Cursor->At = {};
   }
 }
 
