@@ -156,13 +156,13 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
     SpawnEntity( E, EntityType_ParticleSystem, 0, ModelIndex_None);
     E->P = PickCP + V3(0.5f);
     E->UserData = (void*)GameEntityType_Splosion;
-    SpawnExplosion(E, &Global_GameEntropy, {}, Radius, &Graphics->Transparency.GeoBuffer.Buffer);
+    SpawnExplosion(E, &Global_GameEntropy, {}, Radius, &Graphics->Transparency.GpuBuffer.Buffer);
   }
   {
     entity *E = GetFreeEntity(EntityTable);
     SpawnEntity( E, EntityType_ParticleSystem, 0, ModelIndex_None);
     E->P = PickCP + V3(0.5f);
-    SpawnSmoke(E, &Global_GameEntropy, {}, Radius, &Graphics->Transparency.GeoBuffer.Buffer);
+    SpawnSmoke(E, &Global_GameEntropy, {}, Radius, &Graphics->Transparency.GpuBuffer.Buffer);
   }
 #endif
 
@@ -188,7 +188,7 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
     E->UserData = (void*)GameEntityType_Bitty;
     /* E->Update = DoBittyLight; */
 
-    SpawnSplotionBitty(E, &Global_GameEntropy, {}, .1f, &Graphics->Transparency.GeoBuffer.Buffer);
+    SpawnSplotionBitty(E, &Global_GameEntropy, {}, .1f, &Graphics->Transparency.GpuBuffer.Buffer);
   }
 #endif
 }
@@ -483,7 +483,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     CameraDelta.z = 0.f;
     CameraDelta = Normalize(CameraDelta) * CameraSpeed * Plat->dt;
 
-    GameState->CameraTarget->P.Offset += CameraDelta;
+    GameState->CameraGhost->P.Offset += CameraDelta;
   }
 }
 
@@ -542,12 +542,12 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
 
-  GameState->CameraTarget = GetFreeEntity(EntityTable);
-  SpawnEntity( GameState->CameraTarget, EntityType_Default, 0, ModelIndex_None);
+  GameState->CameraGhost = GetFreeEntity(EntityTable);
+  SpawnEntity( GameState->CameraGhost, EntityType_Default, 0, ModelIndex_None);
 
-  GameState->CameraTarget->P = Canonical_Position(Voxel_Position(0), {{2,2,0}});
+  GameState->CameraGhost->P = Canonical_Position(Voxel_Position(0), {{2,2,0}});
 
-  Resources->CameraTarget = GameState->CameraTarget;
+  Resources->CameraGhost = GameState->CameraGhost;
 
   return GameState;
 }

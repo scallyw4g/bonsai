@@ -70,10 +70,10 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   World->Flags = WorldFlag_WorldCenterFollowsCameraTarget;
 
-  entity *CameraTarget = GetFreeEntity(EntityTable);
-  SpawnEntity(CameraTarget);
+  entity *CameraGhost = GetFreeEntity(EntityTable);
+  SpawnEntity(CameraGhost);
 
-  Resources->CameraTarget = CameraTarget;
+  Resources->CameraGhost = CameraGhost;
 
   GameState = Allocate(game_state, Resources->Memory, 1);
   return GameState;
@@ -99,7 +99,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     Offset.z = 0;
     Offset = Normalize(Offset, 1.f);
 
-    Resources->CameraTarget->P.Offset += Offset;
+    Resources->CameraGhost->P.Offset += Offset;
   }
 
 }

@@ -64,6 +64,12 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   {
     entity *FireEmitter = GetFreeEntity(EntityTable);
+    FireEmitter->P.Offset += V3(-16, 0, 8);
+    SpawnEntity(FireEmitter);
+    Push(&GameState->FireEmitters, FireEmitter);
+  }
+  {
+    entity *FireEmitter = GetFreeEntity(EntityTable);
     FireEmitter->P.Offset += V3(-8, 0, 8);
     SpawnEntity(FireEmitter);
     Push(&GameState->FireEmitters, FireEmitter);

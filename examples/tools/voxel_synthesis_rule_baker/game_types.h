@@ -9,7 +9,7 @@ struct game_state
 
   entity *BakeEntity; // Entity that has the original mesh attached to it.
 
-  entity *CameraTarget;
+  entity *CameraGhost;
 
 #if DEBUG_SYSTEM_API
   get_debug_state_proc GetDebugState;

@@ -446,8 +446,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     CameraDelta.z = 0.f;
     CameraDelta = Normalize(CameraDelta) * CameraSpeed * Plat->dt;
 
-    GameState->CameraTarget->P.Offset += CameraDelta;
-    /* Canonicalize(World->ChunkDim, GameState->CameraTarget->P); */
+    GameState->CameraGhost->P.Offset += CameraDelta;
+    /* Canonicalize(World->ChunkDim, GameState->CameraGhost->P); */
   }
 
   v3i TileSuperpositionsDim = GameState->BakeResult.TileSuperpositionsDim;
@@ -731,10 +731,10 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   random_series WorldEntropy = {54930695483};
   WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
 
-  GameState->CameraTarget = GetFreeEntity(EntityTable);
-  SpawnEntity(GameState->CameraTarget);
+  GameState->CameraGhost = GetFreeEntity(EntityTable);
+  SpawnEntity(GameState->CameraGhost);
 
-  Resources->CameraTarget = GameState->CameraTarget;
+  Resources->CameraGhost = GameState->CameraGhost;
 
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/test2.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/square.vox"); */

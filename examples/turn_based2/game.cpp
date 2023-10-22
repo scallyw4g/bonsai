@@ -249,10 +249,10 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   World->Flags = WorldFlag_WorldCenterFollowsCameraTarget;
 
-  entity *CameraTarget = GetFreeEntity(EntityTable);
-  SpawnEntity( CameraTarget );
+  entity *CameraGhost = GetFreeEntity(EntityTable);
+  SpawnEntity( CameraGhost );
 
-  Resources->CameraTarget = CameraTarget;
+  Resources->CameraGhost = CameraGhost;
 
   GameState = Allocate(game_state, Resources->Memory, 1);
   return GameState;
@@ -278,7 +278,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   if (Input->Q.Pressed) { Offset.z -= 1.f; }
 
   Offset = Normalize(Offset);
-  Resources->CameraTarget->P.Offset += Offset * dt * Speed;
+  Resources->CameraGhost->P.Offset += Offset * dt * Speed;
 
   v3 EmissionColor = Normalize(V3(3.f, 4.f, 0.1f)) * 5.f;
   DoLight(&Lighting->Lights, V3(0.5f), EmissionColor);

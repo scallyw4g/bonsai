@@ -13,7 +13,9 @@ struct game_state
   event_queue EventQueue;
 
   entity *Player;
-  entity *CameraTarget;
+
+  // TODO(Jesse): Use the one on the engine_resources
+  entity *CameraGhost;
 
   b32 DidPlayerAction;
 
