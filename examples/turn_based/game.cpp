@@ -167,7 +167,7 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
 #endif
 
 #if 1
-  u32 MaxBitties = 4*u32(Radius);
+  u32 MaxBitties = 2*u32(Radius);
   for (u32 BittyIndex = 0; BittyIndex < MaxBitties; ++BittyIndex)
   {
     entity *E = GetFreeEntity(EntityTable);
@@ -184,6 +184,8 @@ DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position 
     E->Physics.Force.z = Abs(E->Physics.Force.z) * 0.25f;
     E->P = PickCP + (Rnd*Radius) + V3(0.f, 0.f, 2.0f);
     E->P.Offset.z = PickCP.Offset.z + 2.f;
+
+    if (GetCollision(World, E).Count) { Unspawn(E); continue; }
 
     E->UserData = (void*)GameEntityType_Bitty;
     /* E->Update = DoBittyLight; */
@@ -298,7 +300,7 @@ GameEntityUpdate(engine_resources *Engine, entity *Entity )
       }
 
       v3 P = GetRenderP(World->ChunkDim, Entity, Camera) + Offset;
-      r32 Intensity = Max(0.f, Entity->Emitter->RemainingLifespan / Entity->Emitter->EmissionLifespan);
+      r32 Intensity = Max(0.f, RemainingLifespan(Entity->Emitter) / Entity->Emitter->EmissionLifespan);
       DoLight(&Lighting->Lights, P, Color*Intensity );
     } break;
   }

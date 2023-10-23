@@ -75,8 +75,10 @@ struct particle_system
 
   r32 Drag;
 
+  r32 Lifetime;  // Time since spawned
+
+  r32 EmissionDelay;    // How long the system waits to before starting to emit
   r32 EmissionLifespan; // How long the system emits for
-  r32 RemainingLifespan;
 
   u32 ActiveParticles;
 
@@ -93,9 +95,11 @@ struct particle_system
   // and accumulated into the lighting buffer
   r32 ParticleLightEmissionChance; // 0.f - 1.f (no chance - always emit)
 
-  r32 ParticleTransparency;  // Are particles transparent?
+  // 0.f is ignored, f32_MIN is fully transparent, 1.f is opaque
+  r32 ParticleStartingTransparency;
+  r32 ParticleEndingTransparency; // Can be 0.f
 
-  v3 ParticleStartingDim;
+  v3  ParticleStartingDim;
   f32 ParticleEndingDim;
 
   v3 ParticleTurbMin;
@@ -335,14 +339,21 @@ Spawned(entity *Entity)
   return Result;
 }
 
-inline b32
-Active(particle_system *System)
+inline r32
+RemainingLifespan(particle_system *System)
 {
-  b32 Result = (System->RemainingLifespan > 0.f) || (System->ActiveParticles > 0);
+  r32 Result = (System->EmissionDelay + System->EmissionLifespan) - System->Lifetime;
   return Result;
 }
 
 inline b32
+Active(particle_system *System)
+{
+  b32 Result = (System->Lifetime < (System->EmissionDelay + System->EmissionLifespan)) || (System->ActiveParticles > 0);
+  return Result;
+}
+
+link_internal b32
 Inactive(particle_system *System)
 {
   b32 Result = !Active(System);

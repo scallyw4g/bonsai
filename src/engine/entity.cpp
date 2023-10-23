@@ -446,7 +446,8 @@ SpawnProjectile(entity** EntityTable,
 void
 UnspawnParticleSystem(particle_system *System)
 {
-  System->RemainingLifespan = 0.f;
+  Clear(System);
+  /* System->RemainingLifespan = 0.f; */
 }
 
 #if 1
@@ -454,8 +455,8 @@ void
 SpawnParticleSystem(particle_system *System)
 {
   /* Assert(System->Dest); */
-  Assert(Inactive(System));
-  System->RemainingLifespan = System->EmissionLifespan;
+  /* Assert(Inactive(System)); */
+  /* System->RemainingLifespan = System->EmissionLifespan; */
 }
 #endif
 
@@ -475,24 +476,29 @@ SpawnSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, untext
   System->Colors[4] = GREY_6;
   System->Colors[5] = GREY_8;
 
-  System->SpawnRegion = aabb(Offset, V3(Radius, Radius, Radius) * 0.25f );
+  System->SpawnRegion = aabb(Offset, V3(Radius, Radius, Radius*0.5f)*0.75f);
 
-  System->EmissionLifespan = 0.25f;
-  System->LifespanMod = 0.75f;
-  System->ParticleLifespan = 0.5f;
-  System->ParticlesPerSecond = 80.0f*Radius;
+  System->EmissionDelay = 0.25f;
+
+  System->EmissionLifespan = 0.1f;
+  System->LifespanMod = 2.0f;
+  System->ParticleLifespan = 0.1f;
+  System->ParticlesPerSecond = 100.0f*Radius;
 
   /* System->Physics.Speed = 2; */
   /* System->Physics.Drag = V3(2.2f); */
   /* System->Physics.Mass = 3.0f; */
 
+  System->ParticleStartingTransparency = 0.2f;
+  System->ParticleEndingTransparency = 0.f;
+
   r32 TurbMin = 1.5f*Radius;
-  r32 TurbMax = 3.f*Radius;
+  r32 TurbMax = 2.2f*Radius;
 
   System->ParticleTurbMin = V3(TurbMin);
   System->ParticleTurbMax = V3(TurbMax);
 
-  System->ParticleStartingDim = V3(0.10f, 0.10f, 0.06f) * Radius;
+  System->ParticleStartingDim = V3(0.2f, 0.2f, 0.2f) * Radius * 0.85f;
   System->ParticleEndingDim = 2.5f;
 
   System->SystemMovementCoefficient = 0.1f;
@@ -500,7 +506,7 @@ SpawnSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, untext
 
   /* System->Dest = Dest; */
 
-  /* SpawnParticleSystem(Entity->Emitter, &Params); */
+  SpawnParticleSystem(Entity->Emitter);
 
   return;
 }
@@ -518,17 +524,19 @@ SpawnSplotionBitty(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius
   System->Colors[1] = GREY_1;
   System->Colors[2] = GREY_2;
   System->Colors[3] = GREY_3;
-  System->Colors[4] = GREY_5;
-  System->Colors[5] = RED;
+  System->Colors[4] = GREY_4;
+  System->Colors[5] = GREY_5;
 
   System->SpawnRegion = aabb(Offset, V3(Radius) );
+
+  System->ParticleStartingTransparency = 0.5f;
 
   /* System->EmissionLifespan = 1.0f; */
   /* System->EmissionLifespan = 5.0f; */
   /* System->EmissionLifespan = 15.0f; */
   /* System->EmissionLifespan = 0.23f; */
-  System->EmissionLifespan = 0.65f;
-  System->LifespanMod = 0.25f;
+  System->EmissionLifespan = 1.f;
+  System->LifespanMod = 0.5f;
   System->ParticleLifespan = 0.25f;
   System->ParticlesPerSecond = 20.0f;
   /* System->ParticlesPerSecond = 0.0f; */
@@ -571,13 +579,18 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, un
   /* System->Colors[4] = (u8)RandomU32(Entropy); */
   /* System->Colors[5] = (u8)RandomU32(Entropy); */
 
+  System->ParticleStartingTransparency = 0.4f;
+  System->ParticleEndingTransparency = 0.4f;
 
-  System->SpawnRegion = aabb(Offset, V3(Radius*0.10f) );
+  System->ParticleLightEmission = 1.2f;
+  System->ParticleLightEmissionChance = 0.40f;
 
-  System->EmissionLifespan = 0.25f;
-  System->LifespanMod = 0.15f;
+  System->SpawnRegion = aabb(Offset, V3(Radius*0.20f) );
+
+  System->EmissionLifespan = 0.15f;
+  System->LifespanMod = 0.25f;
   System->ParticleLifespan = 0.15f;
-  System->ParticlesPerSecond = 500.0f*Radius;
+  System->ParticlesPerSecond = 600.0f*Radius;
 
   // Fire particles are emissive
 
@@ -627,10 +640,10 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim)
   /* System->ParticleLightEmission = 1.f + Dim; */
   System->ParticleLightEmission = 2.0f;
 
-  /* System->ParticleTransparency = 10.0f; */
-  /* System->ParticleTransparency = 0.25f; */
-  /* System->ParticleTransparency = 0.1f; */
-  System->ParticleTransparency = 0.2f;
+  /* System->ParticleStartingTransparency = 10.0f; */
+  /* System->ParticleStartingTransparency = 0.25f; */
+  /* System->ParticleStartingTransparency = 0.1f; */
+  System->ParticleStartingTransparency = 0.2f;
 
 
   System->Colors[0] = GREY_6;
@@ -1358,90 +1371,94 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
   auto dt                 = Job->dt;
   v3 RenderSpaceP         = Job->RenderSpaceP;
 
-  if (System->RemainingLifespan < PARTICLE_SYSTEM_EMIT_FOREVER)
+
+
+  if (System->EmissionLifespan < PARTICLE_SYSTEM_EMIT_FOREVER)
   {
-    System->RemainingLifespan -= dt;
+    System->Lifetime += dt;
   }
 
-  System->ElapsedSinceLastEmission += dt;
-
-  u32 SpawnCount = (u32)(System->ElapsedSinceLastEmission * System->ParticlesPerSecond);
-
-  r32 SpawnInterval = 1.f/System->ParticlesPerSecond;
-
-  if (System->RemainingLifespan > 0)
+  if (System->Lifetime > System->EmissionDelay)
   {
-    for (u32 SpawnIndex = 0; SpawnIndex < SpawnCount; ++SpawnIndex)
+    System->ElapsedSinceLastEmission += dt;
+
+    u32 SpawnCount = (u32)(System->ElapsedSinceLastEmission * System->ParticlesPerSecond);
+
+    r32 SpawnInterval = 1.f/System->ParticlesPerSecond;
+
+    if (System->Lifetime < System->EmissionDelay + System->EmissionLifespan)
     {
-      /* particle *Particle = System->Particles + System->ActiveParticles + SpawnIndex; */
-      particle *Particle = SpawnParticle(System);
-      SimulateParticle(System, Particle, SpawnIndex*SpawnInterval, EntityDelta);
-    }
-  }
-
-  System->ElapsedSinceLastEmission -= (r32)SpawnCount*SpawnInterval;
-
-  if (System->ActiveParticles)
-  {
-    untextured_3d_geometry_buffer TranspDest   = {};
-    untextured_3d_geometry_buffer SolidDest    = {};
-    untextured_3d_geometry_buffer EmissiveDest = {};
-
-    if (System->ParticleTransparency > 0.f)
-    {
-      TranspDest = ReserveBufferSpace(Job->TranspDest, System->ActiveParticles*VERTS_PER_PARTICLE);
-    }
-
-    if (System->ParticleTransparency <= 0.f)
-    {
-      SolidDest = ReserveBufferSpace(Job->SolidDest, System->ActiveParticles*VERTS_PER_PARTICLE);
-    }
-
-
-    /* auto Dest = ReserveBufferSpace(Job->Dest, System->ActiveParticles*VERTS_PER_PARTICLE); */
-
-    for ( u32 ParticleIndex = 0;
-          ParticleIndex < System->ActiveParticles;
-          )
-    {
-      particle *Particle = &System->Particles[ParticleIndex];
-
-      if (Particle->RemainingLifespan > 0.f)
+      for (u32 SpawnIndex = 0; SpawnIndex < SpawnCount; ++SpawnIndex)
       {
-        v3 MinDiameter = System->ParticleStartingDim * System->ParticleEndingDim;
-        r32 MaxParticleLifespan = (System->ParticleLifespan+System->LifespanMod);
-
-        // NOTE(Jesse): We clamp because when reloading the game lib you can
-        // change the particle parameters which can cause this to exceed 1.0
-        r32 t = Clamp01((Particle->RemainingLifespan / MaxParticleLifespan));
-        v3 Diameter = Lerp(t, MinDiameter, System->ParticleStartingDim);
-
-        u8 ColorIndex = (u8)((Particle->RemainingLifespan / MaxParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
-        Assert(ColorIndex >= 0 && ColorIndex < PARTICLE_SYSTEM_COLOR_COUNT);
-
-        if (System->ParticleTransparency > 0.f)  { DrawVoxel( &TranspDest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, System->ParticleTransparency * Max(System->ParticleLightEmission, 1.f) ); }
-        if (System->ParticleTransparency <= 0.f && System->ParticleLightEmission <= 0.f) { DrawVoxel( &SolidDest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 0.f); }
-
-#if 1
-        if (Particle->IsLight)
-        {
-          v3 EmissionColor = GetColorData(DefaultPalette, System->Colors[ColorIndex]).rgb;
-          engine_resources *Engine = GetEngineResources();
-          DoLight(&Engine->Graphics->Lighting.Lights, RenderSpaceP + Particle->Offset, EmissionColor);
-        }
-#endif
+        /* particle *Particle = System->Particles + System->ActiveParticles + SpawnIndex; */
+        particle *Particle = SpawnParticle(System);
+        SimulateParticle(System, Particle, SpawnIndex*SpawnInterval, EntityDelta);
       }
+    }
 
-      SimulateParticle(System, Particle, dt, EntityDelta);
-      if ( Particle->RemainingLifespan < 0)
+    System->ElapsedSinceLastEmission -= (r32)SpawnCount*SpawnInterval;
+
+    if (System->ActiveParticles)
+    {
+      untextured_3d_geometry_buffer TranspDest   = {};
+      untextured_3d_geometry_buffer SolidDest    = {};
+
+      if (System->ParticleStartingTransparency > 0.f)
       {
-        // Swap out last partcile for the current partcile and decrement
-        particle *SwapParticle = &System->Particles[--System->ActiveParticles];
-        *Particle = *SwapParticle;
+        TranspDest = ReserveBufferSpace(Job->TranspDest, System->ActiveParticles*VERTS_PER_PARTICLE);
       }
       else
       {
-        ++ParticleIndex;
+        SolidDest = ReserveBufferSpace(Job->SolidDest, System->ActiveParticles*VERTS_PER_PARTICLE);
+      }
+
+
+      /* auto Dest = ReserveBufferSpace(Job->Dest, System->ActiveParticles*VERTS_PER_PARTICLE); */
+
+      for ( u32 ParticleIndex = 0;
+            ParticleIndex < System->ActiveParticles;
+            )
+      {
+        particle *Particle = &System->Particles[ParticleIndex];
+
+        if (Particle->RemainingLifespan > 0.f)
+        {
+          v3 MinDiameter = System->ParticleStartingDim * System->ParticleEndingDim;
+          r32 MaxParticleLifespan = (System->ParticleLifespan+System->LifespanMod);
+
+          // NOTE(Jesse): We clamp because when reloading the game lib you can
+          // change the particle parameters which can cause this to exceed 1.0
+          r32 t = Clamp01((Particle->RemainingLifespan / MaxParticleLifespan));
+          v3 Diameter = Lerp(t, MinDiameter, System->ParticleStartingDim);
+
+          u8 ColorIndex = (u8)((Particle->RemainingLifespan / MaxParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
+          Assert(ColorIndex >= 0 && ColorIndex < PARTICLE_SYSTEM_COLOR_COUNT);
+
+          r32 Transparency = Lerp(t, System->ParticleEndingTransparency, System->ParticleStartingTransparency);
+          if (System->ParticleStartingTransparency > 0.f)  { DrawVoxel( &TranspDest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, Transparency * Max(System->ParticleLightEmission, 1.f) ); }
+          if (System->ParticleStartingTransparency <= 0.f && System->ParticleLightEmission <= 0.f) { DrawVoxel( &SolidDest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 0.f); }
+
+#if 1
+          if (Particle->IsLight)
+          {
+            v3 EmissionColor = GetColorData(DefaultPalette, System->Colors[ColorIndex]).rgb;
+            engine_resources *Engine = GetEngineResources();
+            DoLight(&Engine->Graphics->Lighting.Lights, RenderSpaceP + Particle->Offset, EmissionColor);
+          }
+#endif
+        }
+
+        SimulateParticle(System, Particle, dt, EntityDelta);
+        if ( Particle->RemainingLifespan < 0)
+        {
+          // Swap out last partcile for the current partcile and decrement
+          particle *SwapParticle = &System->Particles[--System->ActiveParticles];
+          *Particle = *SwapParticle;
+        }
+        else
+        {
+          ++ParticleIndex;
+        }
       }
     }
   }

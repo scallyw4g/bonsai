@@ -31,11 +31,11 @@
 # OPT="-O2"
 ./make.sh $OPT \
   BuildSingleExample examples/transparency \
+  BuildSingleExample examples/turn_based \
   BuildExecutables \
   BuildDebugSystem \
   # BuildSingleExample examples/blank_project \
   # BuildSingleExample examples/the_wanderer \
-  # BuildSingleExample examples/turn_based \
 #   # BuildTests \
 #   # BuildSingleExample examples/turn_based2
 

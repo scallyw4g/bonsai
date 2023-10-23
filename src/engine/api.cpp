@@ -31,7 +31,7 @@ Bonsai_Init(engine_resources *Resources)
   DEBUG_REGISTER_ARENA(BonsaiInitArena, 0);
 
   Resources->Memory = BonsaiInitArena;
-  Resources->Heap = InitHeap(Gigabytes(4));
+  Resources->Heap = InitHeap(Gigabytes(2));
 
   Init_Global_QuadVertexBuffer();
 

@@ -141,7 +141,8 @@ main( s32 ArgCount, const char ** Args )
   /* Info("Found Bonsai Root : %S", CS(GetCwd()) ); */
 
 #if 1
-  engine_resources EngineResources = {};
+  engine_resources EngineResources_ = {};
+  engine_resources *EngineResources = &EngineResources_;
 
   const char* GameLibName = "./bin/blank_project_loadable" PLATFORM_RUNTIME_LIB_EXTENSION;
   switch (ArgCount)
@@ -176,26 +177,26 @@ main( s32 ArgCount, const char ** Args )
 
   Ensure( InitializeBonsaiStdlib( bonsai_init_flags(BonsaiInit_LaunchThreadPool|BonsaiInit_OpenWindow|BonsaiInit_InitDebugSystem),
                                   &GameApi,
-                                  &EngineResources.Stdlib,
+                                  &EngineResources->Stdlib,
                                   &BootstrapArena) );
 
 
-  EngineResources.DebugState = Global_DebugStatePointer;
+  EngineResources->DebugState = Global_DebugStatePointer;
 
-  Assert(EngineResources.Stdlib.ThreadStates);
+  Assert(EngineResources->Stdlib.ThreadStates);
   Assert(Global_ThreadStates);
 
 
-  Global_EngineResources = &EngineResources;
+  Global_EngineResources = EngineResources;
 
-  Ensure( EngineApi.OnLibraryLoad(&EngineResources) );
-  Ensure( Bonsai_Init(&EngineResources) ); // <-- EngineResources now initialized
+  Ensure( EngineApi.OnLibraryLoad(EngineResources) );
+  Ensure( Bonsai_Init(EngineResources) ); // <-- EngineResources now initialized
 
 #if DEBUG_SYSTEM_API
-  GetDebugState()->SetRenderer(&EngineResources.Ui);
+  GetDebugState()->SetRenderer(&EngineResources->Ui);
 #endif
 
-  UNPACK_STDLIB(&EngineResources.Stdlib);
+  UNPACK_STDLIB(&EngineResources->Stdlib);
 
   memory_arena *WorkQueueMemory = AllocateArena();
   InitQueue(&Plat->HighPriority, WorkQueueMemory);
@@ -207,14 +208,14 @@ main( s32 ArgCount, const char ** Args )
   DEBUG_REGISTER_ARENA(&BootstrapArena, 0);
 
 
-  /* LaunchWorkerThreads(&Plat, &EngineResources, &GameApi); */
+  /* LaunchWorkerThreads(&Plat, EngineResources, &GameApi); */
 
   thread_local_state MainThread = DefaultThreadLocalState(0);
 
   if (GameApi.GameInit)
   {
-    EngineResources.GameState = GameApi.GameInit(&EngineResources, &MainThread);
-    if (!EngineResources.GameState) { Error("Initializing Game :( "); return 1; }
+    EngineResources->GameState = GameApi.GameInit(EngineResources, &MainThread);
+    if (!EngineResources->GameState) { Error("Initializing Game :( "); return 1; }
   }
 
 
@@ -231,7 +232,7 @@ main( s32 ArgCount, const char ** Args )
 
     TIMED_BLOCK("Frame Preamble");
 
-    ResetInputForFrameStart(&Plat->Input, &EngineResources.Hotkeys);
+    ResetInputForFrameStart(&Plat->Input, &EngineResources->Hotkeys);
 
     if (Plat->dt > 0.1f)
     {
@@ -244,12 +245,12 @@ main( s32 ArgCount, const char ** Args )
     Plat->MouseDP = LastMouseP - Plat->MouseP;
     Plat->ScreenDim = V2(Plat->WindowWidth, Plat->WindowHeight);
 
-    BindHotkeysToInput(&EngineResources.Hotkeys, &Plat->Input);
+    BindHotkeysToInput(&EngineResources->Hotkeys, &Plat->Input);
 
     // NOTE(Jesse): Must come after input has been processed
-    UiFrameBegin(&EngineResources.Ui);
+    UiFrameBegin(&EngineResources->Ui);
 
-    DEBUG_FRAME_BEGIN(&EngineResources.Ui, Plat->dt, EngineResources.Hotkeys.Debug_ToggleMenu, EngineResources.Hotkeys.Debug_ToggleProfiling);
+    DEBUG_FRAME_BEGIN(&EngineResources->Ui, Plat->dt, EngineResources->Hotkeys.Debug_ToggleMenu, EngineResources->Hotkeys.Debug_ToggleProfiling);
 
 #if !EMCC
     if ( LibIsNew(GameLibName, &LastGameLibTime) )
@@ -264,8 +265,8 @@ main( s32 ArgCount, const char ** Args )
       Ensure(InitializeEngineApi(&EngineApi, GameLib));
       Ensure(InitializeGameApi(&GameApi, GameLib));
 
-      Ensure( EngineApi.OnLibraryLoad(&EngineResources) );
-      GameApi.OnLibraryLoad(&EngineResources, &MainThread);
+      Ensure( EngineApi.OnLibraryLoad(EngineResources) );
+      if (GameApi.OnLibraryLoad) { GameApi.OnLibraryLoad(EngineResources, &MainThread); }
 
       UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
       Info("Game Reload Success");
@@ -279,7 +280,7 @@ main( s32 ArgCount, const char ** Args )
       debug_state *Cached = Global_DebugStatePointer;
       Global_DebugStatePointer = 0;
 
-      auto DebugSystem = &EngineResources.Stdlib.DebugSystem;
+      auto DebugSystem = &EngineResources->Stdlib.DebugSystem;
       CloseLibrary(DebugSystem->Lib);
       DebugSystem->Lib = OpenLibrary(DEFAULT_DEBUG_LIB);
 
@@ -288,7 +289,7 @@ main( s32 ArgCount, const char ** Args )
         if (InitializeBootstrapDebugApi(DebugSystem->Lib, &DebugSystem->Api))
         {
           DebugSystem->Api.BonsaiDebug_OnLoad(Cached, Global_ThreadStates, BONSAI_INTERNAL);
-          Ensure( EngineApi.OnLibraryLoad(&EngineResources) );
+          Ensure( EngineApi.OnLibraryLoad(EngineResources) );
         }
         else { Error("Initializing DebugLib API"); }
       }
@@ -311,26 +312,26 @@ main( s32 ArgCount, const char ** Args )
     /*   if (IsDisconnected(&Plat->Network)) { ConnectToServer(&Plat->Network); } */
     /* END_BLOCK("Network Ops"); */
 
-    EngineApi.FrameBegin(&EngineResources);
+    EngineApi.FrameBegin(EngineResources);
 
       TIMED_BLOCK("GameMain");
-        GameApi.GameMain(&EngineResources, &MainThread);
+        GameApi.GameMain(EngineResources, &MainThread);
       END_BLOCK("GameMain");
 
-      EngineApi.SimulateAndBufferGeometry(&EngineResources);
+      EngineApi.SimulateAndBufferGeometry(EngineResources);
 
       DrainQueue(&Plat->HighPriority, &MainThread, &GameApi);
       WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
 
-      EngineApi.Render(&EngineResources);
+      EngineApi.Render(EngineResources);
 
       DEBUG_FRAME_END(Plat->dt);
 
     // NOTE(Jesse): FrameEnd must come after the game geometry has rendered so
     // the alpha-blended text works properly
-    EngineApi.FrameEnd(&EngineResources);
+    EngineApi.FrameEnd(EngineResources);
 
-    BonsaiSwapBuffers(&EngineResources.Stdlib.Os);
+    BonsaiSwapBuffers(&EngineResources->Stdlib.Os);
 
     thread_local_state *TLS = GetThreadLocalState(ThreadLocal_ThreadIndex);
     Ensure( RewindArena(TLS->TempMemory) );

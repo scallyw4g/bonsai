@@ -101,9 +101,9 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
 
       v3 RenderSpaceP  = GetRenderP(Entity->P, Camera, World->ChunkDim);
 
-      auto Dest = System->ParticleTransparency > 0.f ? TransparentGeo : SolidGeo;
-      auto Job = WorkQueueEntry(System, EntityDelta, RenderSpaceP, dt);
+      /* auto Dest = System->ParticleStartingTransparency > 0.f ? TransparentGeo : SolidGeo; */
       /* SimulateParticleSystem(&Job.work_queue_entry_sim_particle_system); */
+      auto Job = WorkQueueEntry(System, EntityDelta, RenderSpaceP, dt);
       PushWorkQueueEntry(Queue, &Job);
     }
   }
