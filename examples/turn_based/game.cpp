@@ -8,14 +8,13 @@
 global_variable v3
 Global_EntityFireballOffset = V3(7.0f, -.75f, 4.5f);
 
-enum game_entity_type
-{
-  GameEntityType_Unknown,
-
-  GameEntityType_Enemy,
-  GameEntityType_Splosion,
-  GameEntityType_Bitty,
-};
+/* enum game_entity_type */
+/* { */
+/*   GameEntityType_Unknown, */
+/*   GameEntityType_Enemy, */
+/*   GameEntityType_Splosion, */
+/*   GameEntityType_Bitty, */
+/* }; */
 
 model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *Heap)
@@ -87,113 +86,6 @@ enum player_action
 };
 poof(generate_string_table(player_action))
 #include <generated/generate_string_table_player_action.h>
-
-link_internal void
-DoIceBlock( engine_resources *Resources, picked_voxel *Pick, canonical_position PickCP, f32 Radius, memory_arena *TempMemory)
-{
-  v3 SimSpaceMinCenterP = GetSimSpaceP(Resources->World, PickCP);
-
-  v3 MinP = SimSpaceMinCenterP - V3(Radius, Radius, 0.f);
-  v3 MaxP = SimSpaceMinCenterP + V3(Radius, Radius, 3.f*Radius);
-
-  world_update_op_shape Shape = {
-    .Type = type_world_update_op_shape_params_rect,
-    .world_update_op_shape_params_rect.P0 = MinP,
-    .world_update_op_shape_params_rect.P1 = MaxP,
-  };
-  QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Additive, &Shape, ICE_BLUE, Resources->Memory);
-}
-
-link_internal void
-DoSplotion( engine_resources *Resources, picked_voxel *Pick, canonical_position PickCP, f32 Radius, memory_arena *TempMemory)
-{
-  UNPACK_ENGINE_RESOURCES(Resources);
-
-  world_update_op_shape Shape = {
-    .Type = type_world_update_op_shape_params_sphere,
-    .world_update_op_shape_params_sphere.Radius = Radius,
-    .world_update_op_shape_params_sphere.Location = *Pick,
-  };
-  QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Subtractive, &Shape, DARK_GREY, Resources->Memory);
-  /* QueueWorldUpdateForRegion(Resources, Pick, MinPCoarse, MaxPCoarse, WorldUpdateOperation_Additive, WorldUpdateOperationShape_Sphere, DARK_GREY, Radius, Resources->Memory); */
-
-#if 1
-  v3 SplosionSimP = GetSimSpaceP(World, PickCP);
-
-  sphere Explosion = Sphere(SplosionSimP, Radius);
-  u32_buffer Hits = GatherEntitiesIntersecting(World, EntityTable, &Explosion, TempMemory);
-
-  for (u32 HitIndex = 0; HitIndex < Hits.Count; ++HitIndex)
-  {
-    u32 EntityIndex = Hits.Start[HitIndex];
-    entity *HitEntity = EntityTable[EntityIndex];
-
-    v3 ESimP = GetSimSpaceP(World, HitEntity->P);
-    v3 EntityCenterP = GetSimSpaceCenterP(HitEntity, ESimP);
-
-    aabb EntityAABB = GetSimSpaceAABB(World, HitEntity);
-    v3 ClosestEntityPToSplosion = ClipPToAABB(&EntityAABB, Explosion.P);
-
-    v3 SplosionToClosestEntityP = ClosestEntityPToSplosion - SplosionSimP;
-    v3 SplosionToEntityCenter = EntityCenterP - SplosionSimP;
-
-    r32 t = SafeDivide0(Length(SplosionToClosestEntityP), Radius);
-    t = Clamp01(t);
-
-
-    v3 MaxPower = V3(25.f, 25.f, 4.f) * Radius;
-    v3 Power = Lerp(t, MaxPower, V3(0) );
-
-    /* DebugLine("t(%f) Power(%f,%f,%f)", t, Power.x, Power.y, Power.z); */
-
-    HitEntity->Physics.Force += Normalize(SplosionToEntityCenter) * Power;
-  }
-#endif
-
-#if 1
-  {
-    entity *E = GetFreeEntity(EntityTable);
-    SpawnEntity( E, EntityType_ParticleSystem, 0, ModelIndex_None);
-    E->P = PickCP + V3(0.5f);
-    E->UserData = (void*)GameEntityType_Splosion;
-    SpawnExplosion(E, &Global_GameEntropy, {}, Radius, &Graphics->Transparency.GpuBuffer.Buffer);
-  }
-  {
-    entity *E = GetFreeEntity(EntityTable);
-    SpawnEntity( E, EntityType_ParticleSystem, 0, ModelIndex_None);
-    E->P = PickCP + V3(0.5f);
-    SpawnSmoke(E, &Global_GameEntropy, {}, Radius, &Graphics->Transparency.GpuBuffer.Buffer);
-  }
-#endif
-
-#if 1
-  u32 MaxBitties = 2*u32(Radius);
-  for (u32 BittyIndex = 0; BittyIndex < MaxBitties; ++BittyIndex)
-  {
-    entity *E = GetFreeEntity(EntityTable);
-    SpawnEntity( E, EntityType_ParticleSystem, GameState->Models, (model_index)(ModelIndex_Bitty0 + (BittyIndex % 2)) );
-    E->Physics.Speed = 1.f;
-
-    E->Rotation = RandomRotation(&Global_GameEntropy);
-    E->Scale = 0.3f;
-    E->CollisionVolumeRadius = V3(.1f);
-
-    v3 Rnd = RandomV3Bilateral(&Global_GameEntropy);
-    E->Physics.Mass = 25.f;
-    E->Physics.Force += Rnd*150.f*Radius;
-    E->Physics.Force.z = Abs(E->Physics.Force.z) * 0.25f;
-    E->P = PickCP + (Rnd*Radius) + V3(0.f, 0.f, 2.0f);
-    E->P.Offset.z = PickCP.Offset.z + 2.f;
-
-    if (GetCollision(World, E).Count) { Unspawn(E); continue; }
-
-    E->UserData = (void*)GameEntityType_Bitty;
-    /* E->Update = DoBittyLight; */
-
-    SpawnSplotionBitty(E, &Global_GameEntropy, {}, .1f, &Graphics->Transparency.GpuBuffer.Buffer);
-  }
-#endif
-}
 
 void
 EnemyUpdate(engine_resources *Engine, entity *Enemy)
@@ -271,40 +163,40 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
   }
 }
 
-void
-GameEntityUpdate(engine_resources *Engine, entity *Entity )
-{
-  UNPACK_ENGINE_RESOURCES(Engine);
+/* void */
+/* GameEntityUpdate(engine_resources *Engine, entity *Entity ) */
+/* { */
+/*   UNPACK_ENGINE_RESOURCES(Engine); */
 
-  game_entity_type Type = *((game_entity_type*)&Entity->UserData);
+/*   game_entity_type Type = *((game_entity_type*)&Entity->UserData); */
 
-  // Bitty offset, gets overridden by the Splosion case.  Janky af.  @offset-jank-fallthrough
-  v3 Offset = V3(0.f, 0.f, 0.2f);
-  switch (Type)
-  {
-    case GameEntityType_Unknown: {} break;;
-    case GameEntityType_Enemy: { EnemyUpdate(Engine, Entity); } break;
+/*   // Bitty offset, gets overridden by the Splosion case.  Janky af.  @offset-jank-fallthrough */
+/*   v3 Offset = V3(0.f, 0.f, 0.2f); */
+/*   switch (Type) */
+/*   { */
+/*     case GameEntityType_Unknown: {} break;; */
+/*     case GameEntityType_Enemy: { EnemyUpdate(Engine, Entity); } break; */
 
-    case GameEntityType_Splosion: { Offset = V3(0.f, 0.f, 2.5f); } [[fallthrough]]; // @offset-jank-fallthrough
-    case GameEntityType_Bitty:
-    {
-      v3 Color = {};
-      switch (Type)
-      {
-        case GameEntityType_Splosion:
-          Color = V3(0.97f, 0.32f, 0.03f)*70.f; break;
-        case GameEntityType_Bitty:
-          Color = V3(0.97f, 0.42f, 0.03f)*0.2f; break;
+/*     case GameEntityType_Splosion: { Offset = V3(0.f, 0.f, 2.5f); } [[fallthrough]]; // @offset-jank-fallthrough */
+/*     case GameEntityType_Bitty: */
+/*     { */
+/*       v3 Color = {}; */
+/*       switch (Type) */
+/*       { */
+/*         case GameEntityType_Splosion: */
+/*           Color = V3(0.97f, 0.32f, 0.03f)*70.f; break; */
+/*         case GameEntityType_Bitty: */
+/*           Color = V3(0.97f, 0.42f, 0.03f)*0.2f; break; */
 
-        InvalidDefaultCase;
-      }
+/*         InvalidDefaultCase; */
+/*       } */
 
-      v3 P = GetRenderP(World->ChunkDim, Entity, Camera) + Offset;
-      r32 Intensity = Max(0.f, RemainingLifespan(Entity->Emitter) / Entity->Emitter->EmissionLifespan);
-      DoLight(&Lighting->Lights, P, Color*Intensity );
-    } break;
-  }
-}
+/*       v3 P = GetRenderP(World->ChunkDim, Entity, Camera) + Offset; */
+/*       r32 Intensity = Max(0.f, RemainingLifespan(Entity->Emitter) / Entity->Emitter->EmissionLifespan); */
+/*       DoLight(&Lighting->Lights, P, Color*Intensity ); */
+/*     } break; */
+/*   } */
+/* } */
 
 BONSAI_API_MAIN_THREAD_CALLBACK()
 {
@@ -362,19 +254,19 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
     if (Input->R.Clicked)
     {
-      DoSplotion(Resources, &Pick, PickCP, 4.f, GetTranArena());
+      DoSplotion(Resources, PickCP, 4.f, &Global_GameEntropy, GetTranArena());
       /* DoIceBlock(Resources, &Pick, PickCP, 4.f, GetTranArena()); */
     }
 
     if (Input->T.Clicked)
     {
-      DoSplotion(Resources, &Pick, PickCP, 6.f, GetTranArena());
+      DoSplotion(Resources, PickCP, 6.f, &Global_GameEntropy, GetTranArena());
       /* DoIceBlock(Resources, &Pick, PickCP, 6.f, GetTranArena()); */
     }
 
     if (Input->Y.Clicked)
     {
-      DoSplotion(Resources, &Pick, PickCP, 8.f, GetTranArena());
+      DoSplotion(Resources, PickCP, 8.f,  &Global_GameEntropy,GetTranArena());
       /* DoIceBlock(Resources, &Pick, PickCP, 8.f, GetTranArena()); */
     }
 
@@ -442,7 +334,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         {
           if (Input->LMB.Clicked)
           {
-            DoSplotion(Resources, &Pick, PickCP, 2.f + r32(PlayerChargeLevel)*2.f, GetTranArena());
+            DoSplotion(Resources, PickCP, 2.f + r32(PlayerChargeLevel)*2.f, &Global_GameEntropy, GetTranArena());
             PlayerChargeLevel = 0.f;
             Deactivate(Player->Emitter);
             GameState->DidPlayerAction = True;
@@ -537,7 +429,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
     auto EnemySpawnP = Canonical_Position(V3(0), WorldCenter + WP );
     auto Enemy = GetFreeEntity(EntityTable);
-    Enemy->UserData = (void*)GameEntityType_Enemy;
+    /* Enemy->UserData = (void*)GameEntityType_Enemy; */
     SpawnPlayerLikeEntity(Plat, World, GameState->Models + EnemyModelIndex, Enemy, EnemySpawnP, &GameState->Entropy, 0.35f);
   }
 #endif

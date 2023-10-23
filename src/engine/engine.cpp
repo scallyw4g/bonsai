@@ -29,4 +29,6 @@
 #include <engine/simulate.cpp>
 #include <engine/voxel_synthesis.cpp>
 
+#include <engine/game_effects.cpp>
+
 #include <bonsai_stdlib/src/work_queue.cpp>

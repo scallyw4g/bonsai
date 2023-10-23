@@ -3624,7 +3624,7 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
     case type_world_update_op_shape_params_sphere:
     {
       auto *ShapeSphere = SafeCast(world_update_op_shape_params_sphere, Shape);
-      cp P = Canonical_Position(&ShapeSphere->Location);
+      cp P = ShapeSphere->Location;
 
       MinPCoarse = Canonicalize(World, P-V3(ShapeSphere->Radius+1.f) - V3(Global_ChunkApronMinDim));
       // TODO(Jesse): I think because we're eventually comparing MaxP with <= the +2 here can be a +1 ..?
@@ -3704,11 +3704,15 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
     }
   }
 
-  work_queue_entry Entry = {
-    .Type = type_work_queue_entry_update_world_region,
-    .work_queue_entry_update_world_region = WorkQueueEntryUpdateWorldRegion(Mode, Shape, ColorIndex, MinP, MaxP, Buffer, ChunkIndex),
-  };
-  PushWorkQueueEntry(&Plat->LowPriority, &Entry);
+  // NOTE(Jesse): If none of the world chunks were in the hashtable yet we get ChunkCount == 0
+  if (ChunkIndex > 0)
+  {
+    work_queue_entry Entry = {
+      .Type = type_work_queue_entry_update_world_region,
+      .work_queue_entry_update_world_region = WorkQueueEntryUpdateWorldRegion(Mode, Shape, ColorIndex, MinP, MaxP, Buffer, ChunkIndex),
+    };
+    PushWorkQueueEntry(&Plat->LowPriority, &Entry);
+  }
 }
 
 link_internal u32
@@ -3804,7 +3808,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
             {
               world_update_op_shape_params_sphere *Sphere = SafeCast(world_update_op_shape_params_sphere, &Shape);
 
-              canonical_position P = Canonical_Position(&Sphere->Location);
+              canonical_position P = Sphere->Location;
               auto LocationSimSpace = GetSimSpaceP(World, P);
 
               // TODO(Jesse): This routine maybe should be split into multiple
@@ -4120,7 +4124,6 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
     /* QueueChunkForMeshRebuild(Queue, Chunk); */
     QueueChunkForMeshRebuild(Queue, Chunk);
   }
-
 }
 
 link_internal standing_spot_buffer

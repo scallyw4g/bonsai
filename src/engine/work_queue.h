@@ -80,7 +80,7 @@ enum world_update_op_shape_type
 
 struct world_update_op_shape_params_sphere
 {
-  picked_voxel Location;
+  canonical_position Location;
   f32 Radius;
 };
 
