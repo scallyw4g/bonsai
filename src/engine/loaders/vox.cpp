@@ -326,13 +326,16 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
           Result.ChunkData->Dim = ModelDim;
 
           for( s32 VoxelCacheIndex = 0;
-               VoxelCacheIndex < ActualVoxelCount;
-               ++VoxelCacheIndex)
+                   VoxelCacheIndex < ActualVoxelCount;
+                 ++VoxelCacheIndex)
           {
             boundary_voxel *Voxel = &LocalVoxelCache[VoxelCacheIndex];
             Voxel->Offset = Voxel->Offset - Min + HalfApronMin;
             s32 Index = GetIndex(Voxel->Offset, ModelDim);
             Result.ChunkData->Voxels[Index] = Voxel->V;
+            Result.ChunkData->Voxels[Index].Transparency = 0xff;
+
+            Result.ChunkData->VoxelLighting[Index] = VoxelLighting(0xff);
           }
 
           FullBarrier;

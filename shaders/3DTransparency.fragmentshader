@@ -12,8 +12,8 @@ layout (location = 0) out vec4 ColorAccumulation;
 layout (location = 1) out vec4 Count;
 
 
-float Far = 10000.f;
-float Near = 1.f;
+float Far = 5000.f;
+float Near = 0.25f;
 
 float Linearize(float FragDepth)
 {

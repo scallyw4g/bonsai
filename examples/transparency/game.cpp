@@ -32,13 +32,13 @@ SpawnSplosionEmitters(entity_block_array *Entities)
 {
   local_persist random_series EmitterEntropy = {59406535723431};
 
-  r32 Radius = 2.f;
+  r32 Radius = 4.f;
   LinkedListIter(&Entities->First, Block)
   {
     IterateOver(Block, Entity, Index)
     {
       DoSplotion( GetEngineResources(), Entity->P, Radius, &EmitterEntropy, GetTranArena());
-      Radius += 2.0f;
+      Radius += 1.0f;
     }
   }
 }
@@ -131,7 +131,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     Resources->CameraGhost->P.Offset += Offset;
   }
 
-  r32 LastSplosionThresh = 2.5f;
+  r32 LastSplosionThresh = 4.0f;
   if (SinceLastSplosion > LastSplosionThresh)
   {
     SpawnSplosionEmitters(&GameState->SplosionEmitters);

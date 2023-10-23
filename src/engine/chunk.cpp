@@ -8,6 +8,7 @@ AllocateChunkData(memory_arena *Storage, chunk_dimension Dim)
 
   s32 Vol = Volume(Dim);
   if (Vol) { Result->Voxels = AllocateAlignedProtection(voxel, Storage , Vol, CACHE_LINE_SIZE, false); }
+  if (Vol) { Result->VoxelLighting = AllocateAlignedProtection(voxel_lighting, Storage , Vol, CACHE_LINE_SIZE, false); }
 
   /* ZeroChunk(Result); */
 

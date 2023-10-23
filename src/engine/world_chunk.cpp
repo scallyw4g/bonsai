@@ -736,6 +736,40 @@ Noise_Perlin3D( perlin_noise *Noise,
 typedef u32 (*chunk_init_callback)( perlin_noise *Noise, world_chunk *Chunk, chunk_dimension Dim, chunk_dimension SrcToDest, u8 ColorIndex, s32 Frequency, s32 Amplitude, s64 zMin, chunk_dimension WorldChunkDim, void* UserData);
 
 
+link_internal b32
+IsDifferentTransparency(voxel *Voxels, s32 SrcIndex, v3i DestP, v3i SrcChunkDim)
+{
+  s32 DestIndex = GetIndex(DestP, SrcChunkDim);
+  voxel *SrcVox = Voxels+SrcIndex;
+  voxel *DstVox = Voxels+SrcIndex;
+
+  b32 Result = False;
+  if (SrcVox->Transparency)
+  {
+    if (DstVox->Transparency)
+    {
+      Result = False;
+    }
+    else
+    {
+      Result = True;
+    }
+  }
+  else
+  {
+    if (DstVox->Transparency)
+    {
+      Result = True;
+    }
+    else
+    {
+      Result = False;
+    }
+  }
+
+  return Result;
+}
+
 link_internal void
 MarkBoundaryVoxels_MakeExteriorFaces( voxel *Voxels,
                                       chunk_dimension SrcChunkDim,
@@ -757,8 +791,9 @@ MarkBoundaryVoxels_MakeExteriorFaces( voxel *Voxels,
       for ( s32 x = MinDim.x; x < MaxDim.x ; ++x )
       {
         voxel_position DestP  = Voxel_Position(x,y,z);
+        s32 SrcIndex = GetIndex(DestP, SrcChunkDim);
 
-        voxel *Voxel = Voxels + GetIndex(DestP, SrcChunkDim);
+        voxel *Voxel = Voxels + SrcIndex;
 
         if (IsFilled(Voxel))
         {
@@ -772,27 +807,27 @@ MarkBoundaryVoxels_MakeExteriorFaces( voxel *Voxels,
           voxel_position backVoxel  = DestP - Voxel_Position(0, 1, 0);
 
 
-          if ( !IsInsideDim( SrcChunkDim, rightVoxel) || NotFilled( Voxels, rightVoxel, SrcChunkDim) )
+          if ( !IsInsideDim( SrcChunkDim, rightVoxel) || NotFilled( Voxels, rightVoxel, SrcChunkDim) || IsDifferentTransparency( Voxels, SrcIndex, rightVoxel, SrcChunkDim) )
           {
             Voxel->Flags |= Voxel_RightFace;
           }
-          if ( !IsInsideDim( SrcChunkDim, leftVoxel) || NotFilled( Voxels, leftVoxel, SrcChunkDim) )
+          if ( !IsInsideDim( SrcChunkDim, leftVoxel)  || NotFilled( Voxels, leftVoxel, SrcChunkDim)  || IsDifferentTransparency( Voxels, SrcIndex, leftVoxel, SrcChunkDim) )
           {
             Voxel->Flags |= Voxel_LeftFace;
           }
-          if ( !IsInsideDim( SrcChunkDim, botVoxel) || NotFilled( Voxels, botVoxel, SrcChunkDim) )
+          if ( !IsInsideDim( SrcChunkDim, botVoxel)   || NotFilled( Voxels, botVoxel, SrcChunkDim)   || IsDifferentTransparency( Voxels, SrcIndex, botVoxel, SrcChunkDim) )
           {
             Voxel->Flags |= Voxel_BottomFace;
           }
-          if ( !IsInsideDim( SrcChunkDim, topVoxel) || NotFilled( Voxels, topVoxel, SrcChunkDim) )
+          if ( !IsInsideDim( SrcChunkDim, topVoxel)   || NotFilled( Voxels, topVoxel, SrcChunkDim)   || IsDifferentTransparency( Voxels, SrcIndex, topVoxel, SrcChunkDim) )
           {
             Voxel->Flags |= Voxel_TopFace;
           }
-          if ( !IsInsideDim( SrcChunkDim, frontVoxel) || NotFilled( Voxels, frontVoxel, SrcChunkDim) )
+          if ( !IsInsideDim( SrcChunkDim, frontVoxel) || NotFilled( Voxels, frontVoxel, SrcChunkDim) || IsDifferentTransparency( Voxels, SrcIndex, frontVoxel, SrcChunkDim) )
           {
             Voxel->Flags |= Voxel_FrontFace;
           }
-          if ( !IsInsideDim( SrcChunkDim, backVoxel) || NotFilled( Voxels, backVoxel, SrcChunkDim) )
+          if ( !IsInsideDim( SrcChunkDim, backVoxel)  || NotFilled( Voxels, backVoxel, SrcChunkDim)  || IsDifferentTransparency( Voxels, SrcIndex, backVoxel, SrcChunkDim) )
           {
             Voxel->Flags |= Voxel_BackFace;
           }
@@ -826,8 +861,9 @@ MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
       for ( s32 x = MinDim.x; x < MaxDim.x ; ++x )
       {
         voxel_position DestP  = Voxel_Position(x,y,z);
+        s32 SrcIndex = GetIndex(DestP, SrcChunkDim);
 
-        voxel *Voxel = Voxels + GetIndex(DestP, SrcChunkDim);
+        voxel *Voxel = Voxels + SrcIndex;
 
         b32 WasExteriorVoxel = (Voxel->Flags & VoxelFaceMask) != 0;
         b32 WasMarked = (Voxel->Flags & Voxel_MarkBit) != 0;
@@ -843,27 +879,27 @@ MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
           voxel_position backVoxel  = DestP - Voxel_Position(0, 1, 0);
 
 
-          if ( IsInsideDim( SrcChunkDim, rightVoxel) && NotFilled( Voxels, rightVoxel, SrcChunkDim) )
+          if ( IsInsideDim( SrcChunkDim, rightVoxel) && (NotFilled( Voxels, rightVoxel, SrcChunkDim) || IsDifferentTransparency( Voxels, SrcIndex, rightVoxel, SrcChunkDim)) )
           {
             Voxel->Flags |= Voxel_RightFace;
           }
-          if ( IsInsideDim( SrcChunkDim, leftVoxel) && NotFilled( Voxels, leftVoxel, SrcChunkDim) )
+          if ( IsInsideDim( SrcChunkDim, leftVoxel)  && (NotFilled( Voxels, leftVoxel, SrcChunkDim) || IsDifferentTransparency( Voxels, SrcIndex, leftVoxel, SrcChunkDim)) )
           {
             Voxel->Flags |= Voxel_LeftFace;
           }
-          if ( IsInsideDim( SrcChunkDim, botVoxel) && NotFilled( Voxels, botVoxel, SrcChunkDim) )
+          if ( IsInsideDim( SrcChunkDim, botVoxel)   && (NotFilled( Voxels, botVoxel, SrcChunkDim) || IsDifferentTransparency( Voxels, SrcIndex, botVoxel, SrcChunkDim)) )
           {
             Voxel->Flags |= Voxel_BottomFace;
           }
-          if ( IsInsideDim( SrcChunkDim, topVoxel) && NotFilled( Voxels, topVoxel, SrcChunkDim) )
+          if ( IsInsideDim( SrcChunkDim, topVoxel)   && (NotFilled( Voxels, topVoxel, SrcChunkDim) || IsDifferentTransparency( Voxels, SrcIndex, topVoxel, SrcChunkDim)) )
           {
             Voxel->Flags |= Voxel_TopFace;
           }
-          if ( IsInsideDim( SrcChunkDim, frontVoxel) && NotFilled( Voxels, frontVoxel, SrcChunkDim) )
+          if ( IsInsideDim( SrcChunkDim, frontVoxel) && (NotFilled( Voxels, frontVoxel, SrcChunkDim) || IsDifferentTransparency( Voxels, SrcIndex, frontVoxel, SrcChunkDim)) )
           {
             Voxel->Flags |= Voxel_FrontFace;
           }
-          if ( IsInsideDim( SrcChunkDim, backVoxel) && NotFilled( Voxels, backVoxel, SrcChunkDim) )
+          if ( IsInsideDim( SrcChunkDim, backVoxel)  && (NotFilled( Voxels, backVoxel, SrcChunkDim) || IsDifferentTransparency( Voxels, SrcIndex, backVoxel, SrcChunkDim)) )
           {
             Voxel->Flags |= Voxel_BackFace;
           }
@@ -1029,58 +1065,6 @@ Step(voxel *Voxels, v3i SrcDim, v3i StepDir, v3i StepShape, v3i *AtP, voxel_flag
   return Result;
 }
 
-#if 0
-link_internal v3i
-GetFaceDim(voxel *Voxels, v3i SrcDim, v3i SrcP, voxel_flag FaceFlag, u8 ColorIndex)
-{
-  Assert((FaceFlag&VoxelFaceMask) > 0);
-
-  v3i AtP = SrcP;
-
-  b32 DidStepX = False;
-  while (Step(Voxels, SrcDim, {{1, 0, 0}}, &AtP, FaceFlag, ColorIndex ))
-  {
-    DidStepX = True;
-  }
-
-  while (Step(Voxels, SrcDim, {{-1, 0, 0}}, &AtP, FaceFlag, ColorIndex ))
-  {
-    DidStepX = True;
-  }
-
-  b32 DidStepY = False;
-  while (Step(Voxels, SrcDim, {{0, 1, 0}}, &AtP, FaceFlag, ColorIndex ))
-  {
-    DidStepY = True;
-  }
-
-  while (Step(Voxels, SrcDim, {{0, -1, 0}}, &AtP, FaceFlag, ColorIndex ))
-  {
-    DidStepY = True;
-  }
-
-  if (! (DidStepX && DidStepY) )
-  {
-    while (Step(Voxels, SrcDim, {{0, 0, 1}}, &AtP, FaceFlag, ColorIndex ))
-    {
-    }
-
-    while (Step(Voxels, SrcDim, {{0, 0, -1}}, &AtP, FaceFlag, ColorIndex ))
-    {
-    }
-  }
-
-
-  v3i Result = AtP - SrcP;
-
-  // NOTE(Jesse): Two dimensions have to be set, one has to be 0
-  Assert(Result.x == 0 || Result.y == 0 || Result.z == 0);
-
-  return Result;
-}
-#endif
-
-
 global_variable random_series ColorEntropy = {33453};
 
 link_internal v3
@@ -1179,6 +1163,7 @@ DoZStepping(voxel *Voxels, v3i SrcChunkDim, v3i SrcP, voxel_flag Face, u8 Color)
   return Result;
 }
 
+#if 0
 link_internal void
 BuildWorldChunkMesh_DebugVoxels( voxel *Voxels,
                                             chunk_dimension SrcChunkDim,
@@ -1270,6 +1255,7 @@ BuildWorldChunkMesh_DebugVoxels( voxel *Voxels,
 
   DestGeometry->Timestamp = __rdtsc();
 }
+#endif
 
 link_internal void
 BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
@@ -1701,6 +1687,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve( voxel *Voxels,
   DestGeometry->Timestamp = __rdtsc();
 }
 
+#if 0
 link_internal void
 BuildWorldChunkMesh_Direct( voxel *Voxels,
                             chunk_dimension VoxDim,
@@ -1815,6 +1802,7 @@ BuildWorldChunkMesh_Direct( voxel *Voxels,
 
   DestGeometry->Timestamp = __rdtsc();
 }
+#endif
 
 link_internal untextured_3d_geometry_buffer*
 AllocateTempWorldChunkMesh(memory_arena* TempMemory)
@@ -3763,7 +3751,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
   voxel *CopiedVoxels = Allocate(voxel, Thread->PermMemory, TotalVoxels);
 
-  voxel UnsetVoxel = { 0xff, 0xff };
+  voxel UnsetVoxel = { 0xff, 0xff, 0xff };
   for (u32 VoxelIndex = 0; VoxelIndex < TotalVoxels; ++VoxelIndex) { CopiedVoxels[VoxelIndex] = UnsetVoxel; }
 
   v3i SimSpaceQueryMinP = SimSpaceQueryAABB.Min;

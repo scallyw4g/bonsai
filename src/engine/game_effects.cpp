@@ -15,8 +15,8 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim)
   /* System->ParticleLightEmission = 1.f + Dim; */
   System->ParticleLightEmission = 2.0f;
 
-  System->ParticleStartingTransparency = 0.2f;
-  System->ParticleEndingTransparency = 0.2f;
+  System->ParticleStartingTransparency = 0.25f;
+  System->ParticleEndingTransparency = 0.25f;
 
 
   System->Colors[0] = GREY_6;
@@ -44,7 +44,7 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim)
 
   System->EmissionLifespan = PARTICLE_SYSTEM_EMIT_FOREVER;
 
-  System->LifespanMod = 0.07f;
+  System->LifespanMod = 0.17f;
   System->ParticleLifespan = 0.25f;
   System->ParticlesPerSecond = 25 + 25*Dim;
 
@@ -101,8 +101,8 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, un
 
   System->SpawnRegion = aabb(Offset, V3(Radius*0.20f) );
 
-  System->EmissionLifespan = 0.15f;
-  System->LifespanMod = 0.25f;
+  System->EmissionLifespan = 0.20f;
+  System->LifespanMod = 0.5f;
   System->ParticleLifespan = 0.15f;
   System->ParticlesPerSecond = 600.0f*Radius;
 
@@ -156,7 +156,7 @@ SpawnSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, untext
   System->EmissionDelay = 0.25f;
 
   System->EmissionLifespan = 0.1f;
-  System->LifespanMod = 2.0f;
+  System->LifespanMod = 3.5f;
   System->ParticleLifespan = 0.1f;
   System->ParticlesPerSecond = 100.0f*Radius;
 
@@ -168,7 +168,7 @@ SpawnSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, untext
   System->ParticleEndingTransparency = 0.f;
 
   r32 TurbMin = 1.5f*Radius;
-  r32 TurbMax = 2.2f*Radius;
+  r32 TurbMax = 2.0f*Radius;
 
   System->ParticleTurbMin = V3(TurbMin);
   System->ParticleTurbMax = V3(TurbMax);

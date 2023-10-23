@@ -54,13 +54,16 @@ struct voxel
 {
   u8 Flags;
   u8 Color;
+  u8 Transparency;
 };
 
 struct voxel_lighting
 {
-  u8 Transparency;
   u8 Emission;
 };
+
+poof(gen_constructor(voxel_lighting))
+#include <generated/gen_constructor_voxel_lighting.h>
 
 #if 0
 link_internal b32
