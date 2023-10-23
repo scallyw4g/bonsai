@@ -56,6 +56,12 @@ struct voxel
   u8 Color;
 };
 
+struct voxel_lighting
+{
+  u8 Transparency;
+  u8 Emission;
+};
+
 #if 0
 link_internal b32
 IsValid(voxel *V)
@@ -115,6 +121,7 @@ struct chunk_data
   chunk_flag Flags;
   chunk_dimension Dim; // TODO(Jesse): can be 3x u8 instead of 3x s32
   voxel *Voxels;
+  voxel_lighting *VoxelLighting;
 };
 
 enum world_chunk_mesh_index
@@ -193,13 +200,42 @@ enum chunk_init_flags
 
 #define WORLD_CHUNK_STANDING_SPOT_COUNT (32)
 
+poof(
+    func use_struct(struct_type)
+    {
+      union
+      {
+        struct_type.name struct_type.name.to_capital_case
+
+        struct
+        {
+          struct_type.map_members (m)
+          {
+            m.type m.name
+          }
+        };
+      };
+    }
+)
+
 #pragma pack(push, 1)
 struct current_triangles;
 struct world_chunk
 {
-  chunk_flag Flags;
-  chunk_dimension Dim; // TODO(Jesse): can be 3x u8 instead of 3x s32
-  voxel *Voxels;
+  /* poof( use_struct(chunk_data) ) */
+
+  union
+  {
+    chunk_data ChunkData;
+
+    struct
+    {
+      chunk_flag Flags;
+      chunk_dimension Dim; // TODO(Jesse): can be 3x u8 instead of 3x s32
+      voxel *Voxels;
+      voxel_lighting *VoxelLighting;
+    };
+  };
 
   threadsafe_geometry_buffer Meshes;
   voxel_position_cursor StandingSpots;
