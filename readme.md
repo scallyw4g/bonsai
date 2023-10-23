@@ -3,8 +3,8 @@
 Bonsai is a 3D voxel-based engine built with the intention of writing both
 fast-paced arcade games and tile/turn-based RPGs
 
-Bonsai is has no dependencies that I didn't write completely from scratch.  The
-one external dependency is the C runtime library for startup, and a small
+Bonsai, and nearly all it's dependencies, are written completely from scratch.
+The one external dependency is the C runtime library for startup, and a small
 handful of trig functions (sin, cos, atan2).  I have a back-burner task to
 remove the CRT entirely, though it's unclear when/if I'll get around to it.
 
@@ -16,17 +16,18 @@ compiler, and a few appropriate system headers.
 
 * Deferred Shading
 * HDR Lighting
+* Order-independant Transparency
 * Lighting Bloom
 * Shadow Mapping
 * Screen Space Ambient Occlusion
 
 ## Engine Features
 
-* Hot Code Reload
+* Hot Code Reloading
 * MT Job System
 * Entities
-* Particles
 * Collision
+* Transparent & Emissive Particles
 * UI Framework
 * Asset Loaders
 * Terrain Generators
@@ -35,9 +36,10 @@ compiler, and a few appropriate system headers.
 ## Performance Profiler Features
 
 * Manual Instrumentation
-* Memory allocation tracking
-* Call graph tracking per frame
-* Context Switch & Physical Core tracking on Windows
+* Memory allocation tracing
+* Per frame call-graph tracing
+* Context Switches (windows only)
+* Physical Core  (windows only)
 
 # Wishlist
 
