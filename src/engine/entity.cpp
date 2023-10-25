@@ -1196,7 +1196,8 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
           Assert(ColorIndex >= 0 && ColorIndex < PARTICLE_SYSTEM_COLOR_COUNT);
 
           r32 Transparency = Lerp(t, System->ParticleEndingTransparency, System->ParticleStartingTransparency);
-          if (System->ParticleStartingTransparency > 0.f)  { DrawVoxel( &TranspDest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, Transparency * Max(System->ParticleLightEmission, 1.f) ); }
+          if (System->ParticleStartingTransparency > 0.f)  { DrawVoxel( &TranspDest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, Transparency  ); }
+          /* if (System->ParticleStartingTransparency > 0.f)  { DrawVoxel( &TranspDest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, Transparency * Max(System->ParticleLightEmission, 1.f) ); } */
           if (System->ParticleStartingTransparency <= 0.f && System->ParticleLightEmission <= 0.f) { DrawVoxel( &SolidDest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 0.f); }
 
 #if 1

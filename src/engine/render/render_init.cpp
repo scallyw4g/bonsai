@@ -130,8 +130,8 @@ MakeLightingShader( memory_arena *GraphicsMemory,
                     texture *ShadowMap,
                     texture *Ssao,
 
-                    texture *Transparency0,
-                    texture *Transparency1,
+                    texture *AccumTex,
+                    texture *CountTex,
                     b32 *BravoilMyersOIT,
                     b32 *BravoilMcGuireOIT,
 
@@ -165,10 +165,10 @@ MakeLightingShader( memory_arena *GraphicsMemory,
   *Current = GetUniform(GraphicsMemory, &Shader, Ssao, "Ssao");
   Current = &(*Current)->Next;
 
-  *Current = GetUniform(GraphicsMemory, &Shader, Transparency0, "TransparencyAccum");
+  *Current = GetUniform(GraphicsMemory, &Shader, AccumTex, "TransparencyAccum");
   Current = &(*Current)->Next;
 
-  *Current = GetUniform(GraphicsMemory, &Shader, Transparency1, "TransparencyCount");
+  *Current = GetUniform(GraphicsMemory, &Shader, CountTex, "TransparencyCount");
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, BravoilMyersOIT, "BravoilMyersOIT");

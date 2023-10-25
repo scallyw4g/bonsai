@@ -1,6 +1,6 @@
 
 in vec2 gBufferUV;
-layout (location = 0) out vec4 LightColor;
+layout (location = 0) out vec4 out_LightColor;
 layout (location = 1) out vec3 BloomColor;
 
 uniform sampler2D gColor;
@@ -86,7 +86,7 @@ void main()
   vec4 FragPosition = texelFetch(gPosition, texelCoord, 0);
 
   vec4 AccumTex = texture(TransparencyAccum, gBufferUV);
-  float AccumCountTex = max(1.f, texture(TransparencyCount, gBufferUV).r);
+  float AccumCountTex = texture(TransparencyCount, gBufferUV).r;
 
   vec3 KeyLightContrib = vec3(0.f);
   vec3 BackLightContrib = vec3(0.f);
@@ -112,7 +112,7 @@ void main()
   /* } */
   /* else */
   {
-    /* LightColor = V4(FragPosition, 1.f); */
+    /* out_LightColor = V4(FragPosition, 1.f); */
     /* return; */
 
 
@@ -194,8 +194,8 @@ void main()
 
       vec4 FragPShadowSpace = ShadowMVP * vec4(FragPosition.xyz, 1.f);
       float FragDepth = FragPShadowSpace.z - acneBias;
-      /* LightColor = vec4(FragDepth, FragDepth, FragDepth, 1.f); */
-      /* LightColor = FragPShadowSpace; */
+      /* out_LightColor = vec4(FragDepth, FragDepth, FragDepth, 1.f); */
+      /* out_LightColor = FragPShadowSpace; */
       /* return; */
 
 
@@ -236,13 +236,13 @@ void main()
       if ( FragDepth > ShadowSampleDepth ) { ShadowVisibility -= sampleVis; }
 #endif
 
-      /* LightColor = vec4(vec3(FragDepth < ShadowSampleDepth ), 1.f); */
+      /* out_LightColor = vec4(vec3(FragDepth < ShadowSampleDepth ), 1.f); */
       /* return; */
 
     }
 
     /* ShadowVisibility = max(ShadowVisibility, vec3(SunIntensity)); */
-    /* LightColor = vec4(ShadowVisibility, 1.f); */
+    /* out_LightColor = vec4(ShadowVisibility, 1.f); */
     /* return; */
 
 #if 0
@@ -286,33 +286,46 @@ void main()
   /* Shine = clamp(pow(dot(SunPosition, CameraToFrag), 2.f), 0.f, 1.f); */
 
 
-  /* LightColor = vec4(Diffuse, 1.f); */
-  /* LightColor = vec4(abs(FragNormal), 1.f); */
-  /* LightColor = vec4(KeyLightContrib*10.f, 1.f); */
+  /* out_LightColor = vec4(Diffuse, 1.f); */
+  /* out_LightColor = vec4(abs(FragNormal), 1.f); */
+  /* out_LightColor = vec4(KeyLightContrib*10.f, 1.f); */
 
-  /* LightColor = vec4( (KeyLightContrib*ShadowVisibility*100.f), 1.f); */
-  /* LightColor = vec4( (ShadowVisibility), 1.f); */
-  /* LightColor = vec4(FogContrib, FogContrib, FogContrib, 1.f) * vec4(FogColor, 1.f); */
-  /* LightColor = vec4(LightColor, 1.f); */
-  /* LightColor = vec4(1.f, 0.f, 0.f, 1.f); */
-  /* LightColor = vec4(0.f); */
+  /* out_LightColor = vec4( (KeyLightContrib*ShadowVisibility*100.f), 1.f); */
+  /* out_LightColor = vec4( (ShadowVisibility), 1.f); */
+  /* out_LightColor = vec4(FogContrib, FogContrib, FogContrib, 1.f) * vec4(FogColor, 1.f); */
+  /* out_LightColor = vec4(out_LightColor, 1.f); */
+  /* out_LightColor = vec4(1.f, 0.f, 0.f, 1.f); */
+  /* out_LightColor = vec4(0.f); */
+  v4 TransparencyContrib = v4(0.f, 0.f, 0.f, 1.f);
 
-  LightColor = vec4(TotalLight, 1.f);
-  if (UseLightingBloom)
+  if (BravoilMyersOIT)
   {
-    v4 TransparencyContrib = v4(0.f, 0.f, 0.f, 0.f);
-
-    if (BravoilMyersOIT)   { TransparencyContrib = BravoilMyersWeightedAverage(AccumTex, AccumCountTex); }
-    if (BravoilMcGuireOIT) { TransparencyContrib = BravoilMcGuireDepthWeights(AccumTex, AccumCountTex); }
-
-    BloomColor = TotalLight + (Emission*Diffuse) + TransparencyContrib.rgb;
+    TransparencyContrib = BravoilMyersWeightedAverage(AccumTex, AccumCountTex);
+    out_LightColor = vec4(TotalLight+TransparencyContrib.rgb, 1.f);
+    /* out_LightColor = v4(TotalLight, 1.f); */
   }
+
+  if (BravoilMcGuireOIT)
+  {
+    float Revealage = clamp(AccumCountTex, 0.f, 1.f);
+    float Coverage = 1.f-Revealage;
+    v3 ColorResult = (AccumTex.rgb / clamp(AccumTex.a, 1e-4, 5e4));
+    /* TransparencyContrib = V4(ColorResult, 1.f); */
+    /* TransparencyContrib = BravoilMcGuireDepthWeights(AccumTex, AccumCountTex); */
+
+    /* out_LightColor = vec4(Revealage, 0.f, 0.f, 1.f); */
+    out_LightColor = vec4( TotalLight + ColorResult*Coverage, 1.f);
+  }
+
+
+  if (UseLightingBloom) { BloomColor = TotalLight + (Emission*Diffuse) + TransparencyContrib.rgb; }
+
   /* else { BloomColor = vec3(0.0f, 0.0f, 0.0f); } */
 
-  /* if (UseLightingBloom) LightColor.r = 1.f; */
-  /* if (UseShadowMapping) LightColor.b = 1.f; */
-  /* if (UseSsao) LightColor.g = 1.f; */
+  /* if (UseLightingBloom) out_LightColor.r = 1.f; */
+  /* if (UseShadowMapping) out_LightColor.b = 1.f; */
+  /* if (UseSsao) out_LightColor.g = 1.f; */
 
-  /* LightColor = vec4(Emission, Emission, Emission, 1.f);; */
+  /* out_LightColor = vec4(Emission, Emission, Emission, 1.f);; */
   /* BloomColor = vec3(Emission, Emission, Emission); */
 }

@@ -151,6 +151,7 @@ CompositeAndDisplay( platform *Plat, graphics *Graphics )
   return;
 }
 
+// Does lighting on gBuffer textures.  Also composites transparent surfaces
 link_internal void
 RenderLuminanceTexture(gpu_mapped_element_buffer *GpuMap, lighting_render_group *Lighting, graphics *Graphics)
 {
@@ -161,7 +162,12 @@ RenderLuminanceTexture(gpu_mapped_element_buffer *GpuMap, lighting_render_group 
   // TODO(Jesse): Explain this.
   Graphics->SG->MVP = NdcToScreenSpace * Graphics->SG->MVP;
 
+  /* GL.Enable(GL_BLEND); */
+  /* GL.BlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA); */
+
   GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->FBO.ID);
+
+/*   GL.Disable(GL_BLEND); */
 
   {
     UseShader(&Lighting->Shader);

@@ -80,12 +80,12 @@ void main()
   /* float TransparencyA = AccumTex.a / AccumCountTex; */
 
   v4 TransparencyContrib = v4(0,0,0,0);
-  if (BravoilMyersOIT) { TransparencyContrib = BravoilMyersWeightedAverage(AccumTex, AccumCountTex); }
-  if (BravoilMcGuireOIT) { TransparencyContrib = BravoilMcGuireDepthWeights(AccumTex, AccumCountTex); }
+  /* if (BravoilMyersOIT) { TransparencyContrib = BravoilMyersWeightedAverage(AccumTex, AccumCountTex); } */
+  /* if (BravoilMcGuireOIT) { TransparencyContrib = BravoilMcGuireDepthWeights(AccumTex, AccumCountTex); } */
 
   vec3 TotalLight = Lighting + TransparencyContrib.rgb;
 
-  if (UseLightingBloom) { TotalLight += 0.5f*Bloom; }
+  if (UseLightingBloom) { TotalLight += 0.35f*Bloom; }
 
   /* vec3 TotalLight = Lighting + 0.15f*Bloom + (TransparencyContrib.rgb * TransparencyContrib.a); */
   /* vec3 TotalLight = (Diffuse * Lighting) * 2.f; */

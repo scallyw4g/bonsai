@@ -255,10 +255,7 @@ Bonsai_Render(engine_resources *Resources)
   RenderGBuffer(GpuMap, Graphics);
   RenderShadowMap(GpuMap, Graphics);
 
-  /* Debug_DrawTextureToDebugQuad(&Graphics->gBuffer->DebugColorShader); */
   RenderTransparencyBuffers(&Graphics->Settings, &Graphics->Transparency);
-
-  /* RenderLuminanceTexture(GpuMap, Lighting, &Graphics->Bloom, Graphics); */
   RenderLuminanceTexture(GpuMap, Lighting, Graphics);
 
   if (Graphics->Settings.UseSsao) { RenderAoTexture(AoGroup); }
