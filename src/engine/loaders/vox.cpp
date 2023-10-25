@@ -422,9 +422,10 @@ AllocateAndBuildMesh(vox_data *Vox, model *DestModel, memory_arena *TempMemory, 
   // TODO(Jesse): This wastes a shit-ton of memory.  Should probably have a way
   // of realloc-ing, or sum up how much memory we'll need first?
   AllocateMesh(&DestModel->Mesh, 6*VERTS_PER_FACE*(u32)Volume(DestModel->Dim), PermMemory);
+  AllocateMesh(&DestModel->TransparentMesh, 6*VERTS_PER_FACE*(u32)Volume(DestModel->Dim), PermMemory);
   /* DestModel->Mesh = GetMeshForChunk(); */
 
-  BuildWorldChunkMeshFromMarkedVoxels_Greedy(Vox, &DestModel->Mesh, TempMemory);
+  BuildWorldChunkMeshFromMarkedVoxels_Greedy(Vox, &DestModel->Mesh, &DestModel->TransparentMesh, TempMemory);
   // TODO(Jesse): Roll back what memory we don't use here.. or maybe allocate the initial buffer with temp and copy to perm?
 }
 

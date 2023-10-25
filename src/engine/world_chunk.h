@@ -132,6 +132,7 @@ enum world_chunk_mesh_index
   MeshIndex_Main,
   MeshIndex_Lod,
   MeshIndex_Debug,
+  MeshIndex_Transparency,
 
   MeshIndex_Count,
 };
@@ -140,12 +141,19 @@ enum world_chunk_mesh_bitfield
 {
   MeshBit_None  = 0,
 
-  MeshBit_Main  = (1 << MeshIndex_Main),
-  MeshBit_Lod   = (1 << MeshIndex_Lod),
-  MeshBit_Debug = (1 << MeshIndex_Debug),
+  MeshBit_Main         = (1 << MeshIndex_Main),
+  MeshBit_Lod          = (1 << MeshIndex_Lod),
+  MeshBit_Debug        = (1 << MeshIndex_Debug),
+  MeshBit_Transparency = (1 << MeshIndex_Transparency),
 
   MeshBit_Count  = (1 << MeshIndex_Count),
 };
+
+poof(generate_string_table(world_chunk_mesh_bitfield))
+#include <generated/generate_string_table_world_chunk_mesh_bitfield.h>
+
+poof(generate_string_table(world_chunk_mesh_index))
+#include <generated/generate_string_table_world_chunk_mesh_index.h>
 
 world_chunk_mesh_index
 ToIndex(world_chunk_mesh_bitfield Bit)
@@ -168,6 +176,12 @@ ToIndex(world_chunk_mesh_bitfield Bit)
     {
       return MeshIndex_Debug;
     } break;
+
+    case MeshBit_Transparency:
+    {
+      return MeshIndex_Transparency;
+    } break;
+
 
     case MeshBit_Count:
     {

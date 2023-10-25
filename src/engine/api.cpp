@@ -171,7 +171,7 @@ Bonsai_SimulateAndBufferGeometry(engine_resources *Resources)
 
   BufferWorld(Plat, &GpuMap->Buffer, World, Graphics, Heap);
 
-  BufferEntities( EntityTable, &GpuMap->Buffer, Graphics, World, Plat->dt);
+  BufferEntities( EntityTable, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, Graphics, World, Plat->dt);
   /* BufferEntities( EntityTable, &Graphics->Transparency.GpuBuffer.Buffer, Graphics, World, Plat->dt); */
 
   UnsignalFutex(&Resources->Stdlib.Plat.HighPriorityModeFutex);
