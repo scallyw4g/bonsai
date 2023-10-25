@@ -300,8 +300,18 @@ void main()
 
   if (BravoilMyersOIT)
   {
-    TransparencyContrib = BravoilMyersWeightedAverage(AccumTex, AccumCountTex);
-    out_LightColor = vec4(TotalLight+TransparencyContrib.rgb, 1.f);
+    /* TransparencyContrib = BravoilMyersWeightedAverage(AccumTex, AccumCountTex); */
+
+    float Count = max(1.f, AccumCountTex);
+
+    // Have to clamp because this is > 1.f for emissive surfaces, which breaks the following equation
+    float Alpha = clamp(AccumTex.a, 0.f, 1.f);
+
+    v3 ColorResult = AccumTex.rgb/max(AccumTex.a, 0.00001f);
+
+    float AlphaResult = pow(max(0.0, 1.0-(Alpha/Count)), Count);
+    out_LightColor = V4(TotalLight + v3(ColorResult * AlphaResult), 1.f);
+    /* out_LightColor = vec4(TotalLight+TransparencyContrib.rgb, 1.f); */
     /* out_LightColor = v4(TotalLight, 1.f); */
   }
 
@@ -309,11 +319,14 @@ void main()
   {
     float Revealage = clamp(AccumCountTex, 0.f, 1.f);
     float Coverage = 1.f-Revealage;
+    /* float Coverage = Revealage; */
     v3 ColorResult = (AccumTex.rgb / clamp(AccumTex.a, 1e-4, 5e4));
     /* TransparencyContrib = V4(ColorResult, 1.f); */
     /* TransparencyContrib = BravoilMcGuireDepthWeights(AccumTex, AccumCountTex); */
 
     /* out_LightColor = vec4(Revealage, 0.f, 0.f, 1.f); */
+    /* out_LightColor = vec4( TotalLight + ColorResult, 1.f); */
+    /* out_LightColor = vec4( TotalLight + ColorResult*Coverage, 1.f); */
     out_LightColor = vec4( TotalLight + ColorResult*Coverage, 1.f);
   }
 

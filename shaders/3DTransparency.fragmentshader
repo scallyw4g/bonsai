@@ -48,9 +48,10 @@ float Cube(float A)
   return A*A*A;
 }
 
+// Eq11
 float RandomFuncFromPaper(float FragDepth)
 {
-  float Result = (2.0 * Near) / (Far + Near - FragDepth * (Far - Near));
+  float Result = ((Near*Far) / FragDepth-Far) / (Near-Far);
   return Result;
 }
 
@@ -77,11 +78,27 @@ void main()
 
     if (BravoilMcGuireOIT)
     {
-      r32 Coverage = MaterialColor.a;
-      /* ColorAccumulation = MaterialColor * Eq7(Linearize(FragDepth, 500.f, 0.1f), Coverage); */
-      /* ColorAccumulation = MaterialColor * Eq7(FragDepth, Coverage); */
-      ColorAccumulation = MaterialColor * Linearize(FragDepth, 500.f, 0.1f);
-      Count = v4(Coverage);
+      r32 Alpha = MaterialColor.a;
+
+      /* ColorAccumulation = MaterialColor * Eq7(Linearize(FragDepth, 500.f, 0.1f), Alpha); */
+      /* ColorAccumulation = MaterialColor * Eq7(FragDepth, Alpha); */
+      /* ColorAccumulation.rgb = MaterialColor.rgb * Linearize(FragDepth, 800.f, 0.1f); */
+
+      float DepthAtten = Linearize(FragDepth, 500.f, 0.1f);
+      /* float DepthAtten = Eq7(Linearize(FragDepth, 500.f, 0.1f), Alpha); */
+      /* float DepthAtten = Eq7(FragDepth, Alpha); */
+
+      ColorAccumulation.rgb = MaterialColor.rgb * Alpha;
+      /* ColorAccumulation.a   = Alpha; */
+      ColorAccumulation.a   = Alpha * DepthAtten;
+
+      /* ColorAccumulation = MaterialColor * FragDepth; */
+      /* ColorAccumulation = MaterialColor * Eq10(FragDepth, Alpha); */
+
+      /* Count = -v4(1.f-Alpha); */
+      Count = -V4(Alpha);
+      /* Count = -V4(ColorAccumulation.a); */
+      /* Count = -V4(1.f-(Alpha*DepthAtten)); */
     }
   }
 }

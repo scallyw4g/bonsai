@@ -15,8 +15,8 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim)
   /* System->ParticleLightEmission = 1.f + Dim; */
   System->ParticleLightEmission = 2.0f;
 
-  System->ParticleStartingTransparency = 0.25f;
-  System->ParticleEndingTransparency = 0.25f;
+  System->ParticleStartingTransparency = 0.35f;
+  System->ParticleEndingTransparency = 0.05f;
 
 
   System->Colors[0] = GREY_6;
@@ -145,26 +145,26 @@ SpawnSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, untext
   System->Entropy.Seed = RandomU32(Entropy);
 
   System->Colors[0] = GREY_0;
-  System->Colors[1] = GREY_1;
-  System->Colors[2] = GREY_2;
-  System->Colors[3] = GREY_4;
-  System->Colors[4] = GREY_6;
-  System->Colors[5] = GREY_8;
+  System->Colors[1] = GREY_0;
+  System->Colors[2] = GREY_0;
+  System->Colors[3] = GREY_0;
+  System->Colors[4] = GREY_0;
+  System->Colors[5] = GREY_0;
 
   System->SpawnRegion = aabb(Offset, V3(Radius, Radius, Radius*0.5f)*0.75f);
 
   System->EmissionDelay = 0.25f;
 
-  System->EmissionLifespan = 0.1f;
-  System->LifespanMod = 3.5f;
-  System->ParticleLifespan = 0.1f;
+  System->EmissionLifespan = 0.2f;
+  System->LifespanMod = 2.5f;
+  System->ParticleLifespan = 0.5f;
   System->ParticlesPerSecond = 100.0f*Radius;
 
   /* System->Physics.Speed = 2; */
   /* System->Physics.Drag = V3(2.2f); */
   /* System->Physics.Mass = 3.0f; */
 
-  System->ParticleStartingTransparency = 1.0f;
+  System->ParticleStartingTransparency = 0.15f;
   System->ParticleEndingTransparency = 0.f;
 
   r32 TurbMin = 1.5f*Radius;
@@ -185,6 +185,49 @@ SpawnSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, untext
 
   return;
 }
+
+link_internal void
+SpawnPersistantSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius)
+{
+  particle_system *System = Entity->Emitter;
+
+  System->SpawnType = ParticleSpawnType_Expanding;
+
+  System->Entropy.Seed = RandomU32(Entropy);
+
+  System->Colors[0] = GREY_0;
+  System->Colors[1] = GREY_0;
+  System->Colors[2] = GREY_0;
+  System->Colors[3] = GREY_0;
+  System->Colors[4] = GREY_0;
+  System->Colors[5] = GREY_0;
+
+  System->SpawnRegion = aabb(Offset, V3(Radius, Radius, Radius*0.5f)*0.75f);
+
+  System->EmissionLifespan = f32_MAX;
+
+  System->LifespanMod = 5.f;
+  System->ParticleLifespan = 2.5f;
+  System->ParticlesPerSecond = Radius;
+
+  System->ParticleStartingTransparency = 0.25f;
+  System->ParticleEndingTransparency = 0.f;
+
+  /* r32 TurbMin = 1.5f*Radius; */
+  /* r32 TurbMax = 2.0f*Radius; */
+
+  System->ParticleTurbMin = V3(-Radius, -Radius, Radius*0.2f);
+  System->ParticleTurbMax = V3(Radius);
+
+  System->ParticleStartingDim = V3(Radius, Radius, Radius*0.5f)*0.5f;
+  System->ParticleEndingDim = Radius;
+
+  System->SystemMovementCoefficient = 0.1f;
+  System->Drag = 2.f;
+
+  SpawnParticleSystem(Entity->Emitter);
+}
+
 void
 SpawnSplotionBitty(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, untextured_3d_geometry_buffer *Dest)
 {

@@ -44,6 +44,22 @@ SpawnSplosionEmitters(entity_block_array *Entities)
 }
 
 link_internal void
+SpawnPersistentSmokeEmitters(entity_block_array *Entities)
+{
+  local_persist random_series EmitterEntropy = {59406535723431};
+
+  r32 Radius = 1.0f;
+  LinkedListIter(&Entities->First, Block)
+  {
+    IterateOver(Block, Entity, Index)
+    {
+      SpawnPersistantSmoke(Entity, &EmitterEntropy, {}, Radius);
+      Radius += 1.0f;
+    }
+  }
+}
+
+link_internal void
 SpawnFireEmitters(entity_block_array *Entities)
 {
   local_persist random_series EmitterEntropy = {59406535723431};
@@ -92,11 +108,26 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState = Allocate(game_state, Resources->Memory, 1);
 
-  SpawnLineOfEntities(EntityTable, &GameState->FireEmitters, V3(-32, 0, 8), V3(16, 0, 0), 4);
-  SpawnFireEmitters(&GameState->FireEmitters);
+  s32 EmitterCount = 6;
+  v3 xStride = V3(24, 0, 0);
 
-  SpawnLineOfEntities(EntityTable, &GameState->SplosionEmitters, V3(-32, 16, 4), V3(16, 0, 0), 4);
-  SpawnSplosionEmitters(&GameState->SplosionEmitters);
+  {
+    s32 yAt = 0;
+    SpawnLineOfEntities(EntityTable, &GameState->FireEmitters,     V3(-32, yAt, 8), xStride, EmitterCount);
+    SpawnFireEmitters(&GameState->FireEmitters);
+  }
+
+  {
+    s32 yAt = 16;
+    SpawnLineOfEntities(EntityTable, &GameState->SplosionEmitters, V3(-32, yAt, 4), xStride, EmitterCount);
+    SpawnSplosionEmitters(&GameState->SplosionEmitters);
+  }
+
+  {
+    s32 yAt = -16;
+    SpawnLineOfEntities(EntityTable, &GameState->PersistantSmokeEmitters, V3(-32, yAt, 4), xStride, EmitterCount);
+    SpawnPersistentSmokeEmitters(&GameState->PersistantSmokeEmitters);
+  }
 
   return GameState;
 }

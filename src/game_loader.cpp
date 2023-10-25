@@ -231,6 +231,8 @@ main( s32 ArgCount, const char ** Args )
     Plat->MouseDP = LastMouseP - Plat->MouseP;
     Plat->ScreenDim = V2(Plat->WindowWidth, Plat->WindowHeight);
 
+    /* Plat->dt *= 0.2f; */
+
     BindHotkeysToInput(&EngineResources->Hotkeys, &Plat->Input);
 
     // NOTE(Jesse): Must come after input has been processed

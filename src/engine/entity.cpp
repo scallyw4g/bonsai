@@ -1190,12 +1190,15 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
           // NOTE(Jesse): We clamp because when reloading the game lib you can
           // change the particle parameters which can cause this to exceed 1.0
           r32 t = Clamp01((Particle->RemainingLifespan / MaxParticleLifespan));
+
           v3 Diameter = Lerp(t, MinDiameter, System->ParticleStartingDim);
+          /* v3 Diameter = System->ParticleStartingDim; */
 
           u8 ColorIndex = (u8)((Particle->RemainingLifespan / MaxParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
           Assert(ColorIndex >= 0 && ColorIndex < PARTICLE_SYSTEM_COLOR_COUNT);
 
           r32 Transparency = Lerp(t, System->ParticleEndingTransparency, System->ParticleStartingTransparency);
+          /* r32 Transparency = System->ParticleStartingTransparency; */
           if (System->ParticleStartingTransparency > 0.f)  { DrawVoxel( &TranspDest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, Transparency  ); }
           /* if (System->ParticleStartingTransparency > 0.f)  { DrawVoxel( &TranspDest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, Transparency * Max(System->ParticleLightEmission, 1.f) ); } */
           if (System->ParticleStartingTransparency <= 0.f && System->ParticleLightEmission <= 0.f) { DrawVoxel( &SolidDest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 0.f); }
