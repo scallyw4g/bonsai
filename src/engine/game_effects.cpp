@@ -16,10 +16,11 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim)
   System->ParticleLightEmission = 2.0f;
 
   System->ParticleStartingTransparency = 0.35f;
-  System->ParticleEndingTransparency = 0.05f;
+  System->ParticleEndingTransparency = 0.35f;
 
 
-  System->Colors[0] = GREY_6;
+  /* System->Colors[0] = BLACK; */
+  System->Colors[0] = DARK_DARK_RED;
   System->Colors[1] = DARK_DARK_RED;
   System->Colors[2] = DARK_RED;
   System->Colors[3] = DARK_ORANGE;
@@ -210,7 +211,7 @@ SpawnPersistantSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radi
   System->ParticleLifespan = 2.5f;
   System->ParticlesPerSecond = Radius;
 
-  System->ParticleStartingTransparency = 0.25f;
+  System->ParticleStartingTransparency = 0.1f;
   System->ParticleEndingTransparency = 0.f;
 
   /* r32 TurbMin = 1.5f*Radius; */
