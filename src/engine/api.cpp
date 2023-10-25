@@ -2,7 +2,11 @@
 link_export b32
 Bonsai_OnLibraryLoad(engine_resources *Resources)
 {
-  b32 Result = InitializeOpenglFunctions();
+  // We should only ever call this from the main thread, and this sets our
+  // thread index such that the game doesn't have to worry about doing it.
+  if (ThreadLocal_ThreadIndex == -1) { SetThreadLocal_ThreadIndex(0); }
+  else { Assert(ThreadLocal_ThreadIndex == 0); }
+
 #if DEBUG_SYSTEM_API
   Global_DebugStatePointer = Resources->DebugState;
 #endif
@@ -10,11 +14,7 @@ Bonsai_OnLibraryLoad(engine_resources *Resources)
   Global_ThreadStates = Resources->Stdlib.ThreadStates;
   Global_EngineResources = Resources;
 
-  // We should only ever call this from the main thread, and this sets our
-  // thread index such that the game doesn't have to worry about doing it.
-  if (ThreadLocal_ThreadIndex == -1) { SetThreadLocal_ThreadIndex(0); }
-  else { Assert(ThreadLocal_ThreadIndex == 0); }
-
+  b32 Result = InitializeOpenglFunctions();
   return Result;
 }
 
@@ -256,7 +256,7 @@ Bonsai_Render(engine_resources *Resources)
   RenderShadowMap(GpuMap, Graphics);
 
   /* Debug_DrawTextureToDebugQuad(&Graphics->gBuffer->DebugColorShader); */
-  RenderTransparencyBuffers(&Graphics->Transparency);
+  RenderTransparencyBuffers(&Graphics->Settings, &Graphics->Transparency);
 
   /* RenderLuminanceTexture(GpuMap, Lighting, &Graphics->Bloom, Graphics); */
   RenderLuminanceTexture(GpuMap, Lighting, Graphics);

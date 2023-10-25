@@ -757,26 +757,49 @@ DrawFrustum(world *World, graphics *Graphics, camera *Camera)
 }
 
 link_internal void
-RenderTransparencyBuffers(transparency_render_group *Group)
+RenderTransparencyBuffers(render_settings *Settings, transparency_render_group *Group)
 {
   GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
 
   UseShader(&Group->Shader);
 
-  GL.Enable(GL_BLEND);
-  GL.BlendFunc(GL_ONE, GL_ONE);
-  GL.Disable(GL_CULL_FACE);
-  /* GL.DepthFunc(GL_LEQUAL); */
-  /* GL.DepthFunc(GL_ALWAYS); */
+  if (Settings->BravoilMcGuireOIT)
+  {
+    FlushBuffersToCard(&Group->GpuBuffer);
 
-  SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
+    SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
+    GL.Disable(GL_CULL_FACE);
 
-  FlushBuffersToCard(&Group->GpuBuffer);
-  Draw(Group->GpuBuffer.Buffer.At);
+    GL.Enable(GL_BLEND);
 
-  GL.Disable(GL_BLEND);
-  GL.Enable(GL_CULL_FACE);
-  /* GL.DepthFunc(GL_LEQUAL); */
+    // TODO(Jesse): The portable version requires changing the shader a bit
+    /* GL.BlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA); */
+
+    GL.BlendFunci(0, GL_ONE, GL_ONE);
+    GL.BlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+
+    Draw(Group->GpuBuffer.Buffer.At);
+
+    GL.Disable(GL_BLEND);
+    GL.Enable(GL_CULL_FACE);
+  }
+  else
+  {
+    GL.Enable(GL_BLEND);
+    GL.BlendFunc(GL_ONE, GL_ONE);
+    GL.Disable(GL_CULL_FACE);
+    /* GL.DepthFunc(GL_LEQUAL); */
+    /* GL.DepthFunc(GL_ALWAYS); */
+
+    SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
+
+    FlushBuffersToCard(&Group->GpuBuffer);
+    Draw(Group->GpuBuffer.Buffer.At);
+
+    GL.Disable(GL_BLEND);
+    GL.Enable(GL_CULL_FACE);
+    /* GL.DepthFunc(GL_LEQUAL); */
+  }
 
   Group->GpuBuffer.Buffer.At = 0;
 }
