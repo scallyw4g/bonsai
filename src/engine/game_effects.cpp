@@ -213,7 +213,7 @@ SpawnPersistantSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radi
   System->ParticleLifespan = 2.5f;
   System->ParticlesPerSecond = Radius;
 
-  System->ParticleStartingTransparency = 1.0f;
+  System->ParticleStartingTransparency = 0.25f;
   System->ParticleEndingTransparency = 0.f;
 
   /* r32 TurbMin = 1.5f*Radius; */

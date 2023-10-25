@@ -71,16 +71,17 @@ vec3 SpecLightingCalc(float AttenuationFactor, vec3 DiffuseColor, vec3 FragToLig
   return SpecularLight;
 }
 
-vec3 DiffuseLightingCalc(float AttenuationFactor, vec3 DiffuseColor, vec3 LightColor, vec3 FragToLight, vec3 FragNormal, vec3 CameraP)
+vec3 LightingCalc(float AttenuationFactor, vec3 LightColor, vec3 FragToLight, vec3 FragNormal, vec3 CameraP)
 {
   float LightCosTheta = clamp( dot( FragNormal, FragToLight), 0.0f, 1.0f);
-  vec3 DirectLight = DiffuseColor * LightColor * LightCosTheta * AttenuationFactor;
+  vec3 DirectLight = LightColor * LightCosTheta * AttenuationFactor;
   return DirectLight;
 }
 
 
 void main()
 {
+
   vec2 gBufferTextureDim = vec2(SCR_WIDTH, SCR_HEIGHT);
   ivec2 texelCoord = ivec2(gBufferUV*gBufferTextureDim);
   vec4 FragPosition = texelFetch(gPosition, texelCoord, 0);
@@ -88,8 +89,10 @@ void main()
   vec4 AccumTex = texture(TransparencyAccum, gBufferUV);
   float AccumCountTex = texture(TransparencyCount, gBufferUV).r;
 
-  vec3 KeyLightContrib = vec3(0.f);
-  vec3 BackLightContrib = vec3(0.f);
+  vec3 KeyLightContrib = V3(0.f);
+  vec3 BackLightContrib = V3(0.f);
+  vec3 PointLightsContrib = V3(0.f);
+
   vec3 CameraToFrag = normalize(FragPosition.xyz - CameraP); // TODO(Jesse): Pass this to the lighting calc that needs it
 
   vec4 gColorTexel = texelFetch(gColor, texelCoord, 0);
@@ -123,15 +126,14 @@ void main()
       vec3 LightToFrag = -FragToLight;
 
       float LightAtt = SunIntensity;
-      KeyLightContrib = DiffuseLightingCalc(LightAtt, Diffuse, SunColor, FragToLight, FragNormal, CameraP);
+      KeyLightContrib = LightingCalc(LightAtt, SunColor, FragToLight, FragNormal, CameraP);
       /* KeyLightContrib += SpecLightingCalc(LightAtt, Diffuse, FragToLight, FragPosition, FragNormal, CameraP); */
 
-      BackLightContrib = DiffuseLightingCalc(LightAtt, Diffuse, 0.15f*SunColor, LightToFrag, FragNormal, CameraP);
+      BackLightContrib = LightingCalc(LightAtt, 0.15f*SunColor, LightToFrag, FragNormal, CameraP);
     }
 
 
 
-    vec3 PointLightsContrib = V3(0.f);
     for ( s32 LightIndex = 0; LightIndex < LightCount; ++LightIndex )
     {
       ivec2 LightUV = ivec2(LightIndex, 0);
@@ -264,8 +266,8 @@ void main()
      *  Tone-mapping && gamma correction
      */
 
-    TotalLight = (KeyLightContrib*ShadowVisibility) +
-                 (BackLightContrib*BlurredAO) +
+    TotalLight = (Diffuse*KeyLightContrib*ShadowVisibility) +
+                 (Diffuse*BackLightContrib*BlurredAO) +
                  (PointLightsContrib*BlurredAO) +
                  Fog;
                  /* Emission * Diffuse + */
@@ -321,12 +323,14 @@ void main()
     float Coverage = 1.f-Revealage;
     /* float Coverage = Revealage; */
     v3 Trans = (AccumTex.rgb / clamp(AccumTex.a, 1e-4, 5e4)) * Coverage;
-    
+
     /* TransparencyContrib = V4(ColorResult, 1.f); */
     /* TransparencyContrib = BravoilMcGuireDepthWeights(AccumTex, AccumCountTex); */
 
+
+    float LightTransmission = length(KeyLightContrib + BackLightContrib + PointLightsContrib);
     /* out_LightColor = vec4(Revealage, 0.f, 0.f, 1.f); */
-    out_LightColor = vec4( TotalLight + Trans, 1.f);
+    out_LightColor = vec4( TotalLight + Trans*LightTransmission , 1.f);
     /* out_LightColor = vec4( TotalLight + ColorResult*Coverage, 1.f); */
     /* out_LightColor = vec4( TotalLight + ColorResult*Coverage, 1.f); */
   }
