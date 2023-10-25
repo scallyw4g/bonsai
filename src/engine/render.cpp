@@ -136,7 +136,13 @@ CompositeAndDisplay( platform *Plat, graphics *Graphics )
   GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
   SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
 
+  GL.Enable(GL_BLEND);
+  GL.BlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
+
   UseShader(&Graphics->CompositeGroup.Shader);
+
+  GL.Disable(GL_BLEND);
+
 
   RenderQuad();
 
@@ -323,9 +329,6 @@ ClearFramebuffers(graphics *Graphics, render_entity_to_texture_group *RTTGroup)
   GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Lighting.FBO.ID);
   GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Transparency.FBO.ID);
-  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
   // TODO(Jesse): Why exactly would this not be necessary?
   /* glBindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName); */
   /* glClear(GL_DEPTH_BUFFER_BIT); */
@@ -338,6 +341,36 @@ ClearFramebuffers(graphics *Graphics, render_entity_to_texture_group *RTTGroup)
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
   GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+  if (Graphics->Settings.BravoilMcGuireOIT)
+  {
+    GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Transparency.FBO.ID);
+
+    {
+      u32 Attachments = GL_COLOR_ATTACHMENT0;
+      GL.DrawBuffers(1, &Attachments);
+      GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+
+    {
+      u32 Attachments = GL_COLOR_ATTACHMENT0 + 1;
+      GL.DrawBuffers(1, &Attachments);
+      GL.ClearColor(1.f, 0.f, 0.f, 1.f);
+      GL.Clear(GL_COLOR_BUFFER_BIT);
+    }
+
+    {
+      // Reset draw buffers
+      SetDrawBuffers(&Graphics->Transparency.FBO);
+    }
+  }
+  else
+  {
+    GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Transparency.FBO.ID);
+    GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  }
+
 
   return;
 }
@@ -666,13 +699,12 @@ DrawEntityCollisionVolume(entity *Entity, untextured_3d_geometry_buffer *Dest, g
 }
 
 void
-BufferEntity( untextured_3d_geometry_buffer* Dest, entity *Entity, animation *Animation, graphics *Graphics, chunk_dimension WorldChunkDim, r32 dt)
+BufferEntity(
+    untextured_3d_geometry_buffer* Dest,
+    untextured_3d_geometry_buffer* TransparentDest,
+    entity *Entity, animation *Animation, graphics *Graphics, chunk_dimension WorldChunkDim, r32 dt)
 {
   TIMED_FUNCTION();
-  // Debug light code
-  /* v3 LightP = GetRenderP(world, Entity->P + Entity->Model.Dim/2); */
-  /* glUniform3fv(RG->LightPID, 1, &LightP[0]); */
-  //
 
   if (Spawned(Entity))
   {
@@ -689,13 +721,14 @@ BufferEntity( untextured_3d_geometry_buffer* Dest, entity *Entity, animation *An
     }
 
     BufferChunkMesh(Graphics, Dest, &Entity->Model.Mesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Entity->P.Offset + AnimationOffset, Entity->Rotation);
+    BufferChunkMesh(Graphics, TransparentDest, &Entity->Model.TransparentMesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Entity->P.Offset + AnimationOffset, Entity->Rotation);
   }
 
   return;
 }
 
 link_internal void
-BufferEntities( entity **EntityTable, untextured_3d_geometry_buffer* Dest,
+BufferEntities( entity **EntityTable, untextured_3d_geometry_buffer* Dest, untextured_3d_geometry_buffer* TransparencyDest,
                 graphics *Graphics, world *World, r32 dt)
 {
   TIMED_FUNCTION();
@@ -704,7 +737,7 @@ BufferEntities( entity **EntityTable, untextured_3d_geometry_buffer* Dest,
         ++EntityIndex)
   {
     entity *Entity = EntityTable[EntityIndex];
-    BufferEntity( Dest, Entity, 0, Graphics, World->ChunkDim, dt);
+    BufferEntity( Dest, TransparencyDest, Entity, 0, Graphics, World->ChunkDim, dt);
   }
 
   return;

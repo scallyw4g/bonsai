@@ -576,19 +576,21 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
   f32 *Image = 0;
 #endif
 
-  Group->Texture0 = GenTexture(TextureSize, Memory);
+  Group->AccumTex = GenTexture(TextureSize, Memory);
   GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, Image);
 
-  Group->Texture1 = GenTexture(TextureSize, Memory);
-  GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, Image);
+  Group->RevealTex = GenTexture(TextureSize, Memory);
+  GL.TexImage2D( GL_TEXTURE_2D, 0, GL_R32F, TextureSize.x, TextureSize.y, 0, GL_RED, GL_FLOAT, Image);
 
   /* Group->Depth = MakeDepthTexture(TextureSize, Memory); */
 
   Assert(ViewProjection);
   Group->ViewProjection = ViewProjection;
 
-  FramebufferTexture(&Group->FBO, Group->Texture0);
-  FramebufferTexture(&Group->FBO, Group->Texture1);
+  // NOTE(Jesse): These have to be bound in this order because they're cleared
+  // in this order (and the Reveal tex is special-case cleared to 1.f instead of 0.f)
+  FramebufferTexture(&Group->FBO, Group->AccumTex);
+  FramebufferTexture(&Group->FBO, Group->RevealTex);
   /* FramebufferDepthTexture(Group->Depth); */
   SetDrawBuffers(&Group->FBO);
 
@@ -672,8 +674,8 @@ GraphicsInit(memory_arena *GraphicsMemory)
 
                           gBuffer->Textures, SG->ShadowMap, AoGroup->Texture,
 
-                          Result->Transparency.Texture0,
-                          Result->Transparency.Texture1,
+                          Result->Transparency.AccumTex,
+                          Result->Transparency.RevealTex,
                          &Result->Settings.BravoilMyersOIT,
                          &Result->Settings.BravoilMcGuireOIT,
 
@@ -760,7 +762,7 @@ GraphicsInit(memory_arena *GraphicsMemory)
   {
     Result->CompositeGroup.Shader = MakeCompositeShader( GraphicsMemory,
         gBuffer->Textures, SG->ShadowMap, AoGroup->Texture, Lighting->LightingTex, Lighting->BloomTex,
-        Result->Transparency.Texture0, Result->Transparency.Texture1, 
+        Result->Transparency.AccumTex, Result->Transparency.RevealTex, 
         &SG->MVP, Result->Camera, &Result->Exposure, &Result->Settings.UseLightingBloom, &Result->Settings.BravoilMyersOIT, &Result->Settings.BravoilMcGuireOIT);
   }
 

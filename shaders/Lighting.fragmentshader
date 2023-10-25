@@ -266,7 +266,7 @@ void main()
 
     TotalLight = (KeyLightContrib*ShadowVisibility) +
                  (BackLightContrib*BlurredAO) +
-                 (PointLightsContrib) +
+                 (PointLightsContrib*BlurredAO) +
                  Fog;
                  /* Emission * Diffuse + */
 
@@ -300,12 +300,12 @@ void main()
   LightColor = vec4(TotalLight, 1.f);
   if (UseLightingBloom)
   {
-    v3 TransparencyContrib = v3(0.f, 0.f, 0.f);
+    v4 TransparencyContrib = v4(0.f, 0.f, 0.f, 0.f);
 
     if (BravoilMyersOIT)   { TransparencyContrib = BravoilMyersWeightedAverage(AccumTex, AccumCountTex); }
     if (BravoilMcGuireOIT) { TransparencyContrib = BravoilMcGuireDepthWeights(AccumTex, AccumCountTex); }
 
-    BloomColor = TotalLight + (Emission*Diffuse) + TransparencyContrib;
+    BloomColor = TotalLight + (Emission*Diffuse) + TransparencyContrib.rgb;
   }
   /* else { BloomColor = vec3(0.0f, 0.0f, 0.0f); } */
 

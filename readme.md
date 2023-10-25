@@ -80,6 +80,8 @@ compiler, and a few appropriate system headers.
 
 [ ] Octree ? https://graphics.tudelft.nl/Publications-new/2020/CBE20/ModifyingCompressedVoxels-main.pdf
 
+[ ] Better floating-point rng : https://www.corsix.org/content/higher-quality-random-floats
+
 # Building
 
 See the docs on the [build process](docs/01_build_process.md).

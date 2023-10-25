@@ -19,8 +19,8 @@ struct transparency_render_group
   gpu_mapped_element_buffer  GpuBuffer;
   framebuffer                FBO;
   shader                     Shader;
-  texture                   *Texture0;
-  texture                   *Texture1;
+  texture                   *AccumTex;
+  texture                   *RevealTex;
   texture                   *Depth;
   m4                        *ViewProjection;
 };

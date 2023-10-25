@@ -122,7 +122,9 @@ DebugUi(engine_resources *Engine, cs Name, untextured_3d_geometry_buffer *Value)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
+  PushNewRow(Ui);
   Text(Ui, Name);
+  PushNewRow(Ui);
   if (Value)
   {
     PushColumn(Ui, CS("Verts : "));
@@ -183,7 +185,7 @@ DebugUi(engine_resources *Engine, cs Name, world_chunk *Value)
     {
       world_chunk_mesh_bitfield Bit  = world_chunk_mesh_bitfield(1 << MeshIndex);
       untextured_3d_geometry_buffer *Mesh = TakeOwnershipSync(&Chunk->Meshes,  Bit);
-      DebugUi(Engine, CSz("Mesh"), Mesh);
+      DebugUi(Engine, ToString(Bit), Mesh);
       ReleaseOwnership(&Chunk->Meshes, Bit, Mesh);
     }
 
@@ -364,6 +366,7 @@ DoEngineDebug(engine_resources *Engine)
       {
         EngineDebug->PickedChunkState = PickedChunkState_Hover;
       }
+
       if (Button(Ui, CSz("RebuildMesh"), (umm)"RebuildMesh"^(umm)"WorldChunks"))
       {
         QueueChunkForMeshRebuild(&Plat->LowPriority, EngineDebug->PickedChunk);
@@ -397,20 +400,20 @@ DoEngineDebug(engine_resources *Engine)
 
     PushTableStart(Ui);
 
-      PushColumn(Ui, CSz("Transparency Texture0"));
-      PushColumn(Ui, CSz("Transparency Texture1"));
+      PushColumn(Ui, CSz("Transparency AccumTex"));
+      PushColumn(Ui, CSz("Transparency RevealTex"));
       PushColumn(Ui, CSz("Transparency Depth"));
       PushColumn(Ui, CSz("Lighting"));
       PushColumn(Ui, CSz("Bloom"));
       PushNewRow(Ui);
 
       StartColumn(Ui);
-        PushTexturedQuad(Ui, Graphics->Transparency.Texture0, V2(400), zDepth_Text);
+        PushTexturedQuad(Ui, Graphics->Transparency.AccumTex, V2(400), zDepth_Text);
         PushForceAdvance(Ui, V2(xAdvance, 0));
       EndColumn(Ui);
 
       StartColumn(Ui);
-        PushTexturedQuad(Ui, Graphics->Transparency.Texture1, V2(400), zDepth_Text);
+        PushTexturedQuad(Ui, Graphics->Transparency.RevealTex, V2(400), zDepth_Text);
         PushForceAdvance(Ui, V2(xAdvance, 0));
       EndColumn(Ui);
 

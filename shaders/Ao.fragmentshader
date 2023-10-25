@@ -21,7 +21,6 @@ uniform mat4 ViewProjection;
 
 void main()
 {
-#if USE_SSAO_SHADER
   vec3  FragNormal   = texture(gNormal,   UV).rgb; // modelspace
   vec3  FragPosition = texture(gPosition, UV).rgb; // worldspace
   float FragDepth    = texture(gPosition, UV).w;   // Linear
@@ -88,8 +87,4 @@ void main()
   }
 
   Output = AO;
-#else
-  Output = 1.0f;
-#endif
-
 }

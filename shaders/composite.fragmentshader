@@ -79,18 +79,11 @@ void main()
   /* vec3 TransparencyRGB = AccumTex.rgb / AccumCountTex; */
   /* float TransparencyA = AccumTex.a / AccumCountTex; */
 
-  v3 TransparencyContrib = v3(0,0,0);
-  if (BravoilMyersOIT)
-  {
-    TransparencyContrib = BravoilMyersWeightedAverage(AccumTex, AccumCountTex);
-  }
+  v4 TransparencyContrib = v4(0,0,0,0);
+  if (BravoilMyersOIT) { TransparencyContrib = BravoilMyersWeightedAverage(AccumTex, AccumCountTex); }
+  if (BravoilMcGuireOIT) { TransparencyContrib = BravoilMcGuireDepthWeights(AccumTex, AccumCountTex); }
 
-  if (BravoilMcGuireOIT)
-  {
-    TransparencyContrib = BravoilMcGuireDepthWeights(AccumTex, AccumCountTex);
-  }
-
-  vec3 TotalLight = Lighting + TransparencyContrib;
+  vec3 TotalLight = Lighting + TransparencyContrib.rgb;
 
   if (UseLightingBloom) { TotalLight += 0.5f*Bloom; }
 
@@ -117,6 +110,6 @@ void main()
 
   // Gamma correction
   float gamma = 2.2f;
-  OutColor = vec4(pow(ToneMapped, vec3(1.0f / gamma)), 1.0f);
+  OutColor = vec4(pow(ToneMapped, vec3(1.0f / gamma)), TransparencyContrib.a);
 }
 
