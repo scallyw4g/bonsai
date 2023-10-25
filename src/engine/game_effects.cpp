@@ -1,5 +1,5 @@
 void
-SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim)
+SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim, b32 Colorful = False)
 {
   particle_system *System = Entity->Emitter;
 
@@ -19,25 +19,27 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim)
   System->ParticleEndingTransparency = 0.35f;
 
 
-  /* System->Colors[0] = BLACK; */
-  System->Colors[0] = DARK_DARK_RED;
-  System->Colors[1] = DARK_DARK_RED;
-  System->Colors[2] = DARK_RED;
-  System->Colors[3] = DARK_ORANGE;
-  System->Colors[4] = YELLOW;
-  System->Colors[5] = LIGHT_LIGHT_YELLOW;
-  /* System->Colors[5] = WHITE; */
-
-  /* (u8)RandomU32(Entropy); */
-  /* (u8)RandomU32(Entropy); */
-  /* (u8)RandomU32(Entropy); */
-
-  /* System->Colors[0] = (u8)RandomU32(Entropy); */
-  /* System->Colors[1] = (u8)RandomU32(Entropy); */
-  /* System->Colors[2] = (u8)RandomU32(Entropy); */
-  /* System->Colors[3] = (u8)RandomU32(Entropy); */
-  /* System->Colors[4] = (u8)RandomU32(Entropy); */
-  /* System->Colors[5] = (u8)RandomU32(Entropy); */
+  if (Colorful)
+  {
+    System->Colors[0] = (u8)RandomU32(Entropy);
+    System->Colors[1] = (u8)RandomU32(Entropy);
+    System->Colors[2] = (u8)RandomU32(Entropy);
+    System->Colors[3] = (u8)RandomU32(Entropy);
+    System->Colors[4] = (u8)RandomU32(Entropy);
+    System->Colors[5] = (u8)RandomU32(Entropy);
+  }
+  else
+  {
+    /* System->Colors[0] = BLACK; */
+    System->Colors[0] = GREY_7;
+    /* System->Colors[0] = DARK_DARK_RED; */
+    System->Colors[1] = DARK_DARK_RED;
+    System->Colors[2] = DARK_RED;
+    System->Colors[3] = DARK_ORANGE;
+    System->Colors[4] = YELLOW;
+    System->Colors[5] = LIGHT_LIGHT_YELLOW;
+    /* System->Colors[5] = WHITE; */
+  }
 
 
   System->SpawnRegion = aabb(Offset, V3(0.16f, 0.16f, 0.02f)*Dim);
@@ -211,7 +213,7 @@ SpawnPersistantSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radi
   System->ParticleLifespan = 2.5f;
   System->ParticlesPerSecond = Radius;
 
-  System->ParticleStartingTransparency = 0.1f;
+  System->ParticleStartingTransparency = 1.0f;
   System->ParticleEndingTransparency = 0.f;
 
   /* r32 TurbMin = 1.5f*Radius; */

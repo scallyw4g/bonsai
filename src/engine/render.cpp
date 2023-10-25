@@ -783,8 +783,8 @@ RenderTransparencyBuffers(render_settings *Settings, transparency_render_group *
     /* GL.BlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA); */
 
     GL.BlendFunci(0, GL_ONE, GL_ONE);
-    GL.BlendFunci(1, GL_ONE, GL_ONE);
-    /* GL.BlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA); */
+    /* GL.BlendFunci(1, GL_ONE, GL_ONE); */
+    GL.BlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
     /* GL.BlendFunci(1, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); */
 
     Draw(Group->GpuBuffer.Buffer.At);

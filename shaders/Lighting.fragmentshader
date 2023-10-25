@@ -317,17 +317,18 @@ void main()
 
   if (BravoilMcGuireOIT)
   {
-    /* float Revealage = clamp(AccumCountTex, 0.f, 1.f); */
-    /* float Coverage = 1.f-Revealage; */
+    float Revealage = clamp(AccumCountTex, 0.f, 1.f);
+    float Coverage = 1.f-Revealage;
     /* float Coverage = Revealage; */
-    v3 ColorResult = (AccumTex.rgb / clamp(AccumTex.a, 1e-4, 5e4));
+    v3 Trans = (AccumTex.rgb / clamp(AccumTex.a, 1e-4, 5e4)) * Coverage;
+    
     /* TransparencyContrib = V4(ColorResult, 1.f); */
     /* TransparencyContrib = BravoilMcGuireDepthWeights(AccumTex, AccumCountTex); */
 
     /* out_LightColor = vec4(Revealage, 0.f, 0.f, 1.f); */
-    /* out_LightColor = vec4( TotalLight + ColorResult, 1.f); */
+    out_LightColor = vec4( TotalLight + Trans, 1.f);
     /* out_LightColor = vec4( TotalLight + ColorResult*Coverage, 1.f); */
-    out_LightColor = vec4( TotalLight + ColorResult, 1.f);
+    /* out_LightColor = vec4( TotalLight + ColorResult*Coverage, 1.f); */
   }
 
 

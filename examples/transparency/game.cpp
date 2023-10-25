@@ -60,7 +60,7 @@ SpawnPersistentSmokeEmitters(entity_block_array *Entities)
 }
 
 link_internal void
-SpawnFireEmitters(entity_block_array *Entities)
+SpawnFireEmitters(entity_block_array *Entities, b32 Colorful = False)
 {
   local_persist random_series EmitterEntropy = {59406535723431};
 
@@ -69,7 +69,7 @@ SpawnFireEmitters(entity_block_array *Entities)
   {
     IterateOver(Block, Entity, Index)
     {
-      SpawnFire(Entity, &EmitterEntropy, {}, Radius);
+      SpawnFire(Entity, &EmitterEntropy, {}, Radius, Colorful);
       Radius += 1.0f;
     }
   }
@@ -111,6 +111,19 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   s32 EmitterCount = 6;
   v3 xStride = V3(24, 0, 0);
 
+
+  {
+    s32 yAt = -32;
+    SpawnLineOfEntities(EntityTable, &GameState->ColorFireEmitters, V3(-32, yAt, 8), xStride, EmitterCount);
+    SpawnFireEmitters(&GameState->ColorFireEmitters, True);
+  }
+
+  {
+    s32 yAt = -16;
+    SpawnLineOfEntities(EntityTable, &GameState->PersistantSmokeEmitters, V3(-32, yAt, 4), xStride, EmitterCount);
+    SpawnPersistentSmokeEmitters(&GameState->PersistantSmokeEmitters);
+  }
+
   {
     s32 yAt = 0;
     SpawnLineOfEntities(EntityTable, &GameState->FireEmitters,     V3(-32, yAt, 8), xStride, EmitterCount);
@@ -121,12 +134,6 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
     s32 yAt = 16;
     SpawnLineOfEntities(EntityTable, &GameState->SplosionEmitters, V3(-32, yAt, 4), xStride, EmitterCount);
     SpawnSplosionEmitters(&GameState->SplosionEmitters);
-  }
-
-  {
-    s32 yAt = -16;
-    SpawnLineOfEntities(EntityTable, &GameState->PersistantSmokeEmitters, V3(-32, yAt, 4), xStride, EmitterCount);
-    SpawnPersistentSmokeEmitters(&GameState->PersistantSmokeEmitters);
   }
 
   return GameState;

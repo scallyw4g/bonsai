@@ -88,7 +88,7 @@ void main()
       /* float DepthAtten = Eq7(Linearize(FragDepth, 500.f, 0.1f), Alpha); */
       /* float DepthAtten = Eq7(FragDepth, Alpha); */
 
-      ColorAccumulation.rgb = MaterialColor.rgb * Alpha;
+      ColorAccumulation.rgb = MaterialColor.rgb * DepthAtten * Alpha;
       /* ColorAccumulation.a   = Alpha; */
       ColorAccumulation.a   = Alpha * DepthAtten;
 
@@ -96,7 +96,7 @@ void main()
       /* ColorAccumulation = MaterialColor * Eq10(FragDepth, Alpha); */
 
       /* Count = -v4(1.f-Alpha); */
-      Count = -V4(Alpha);
+      Count = V4(Alpha);
       /* Count = -V4(ColorAccumulation.a); */
       /* Count = -V4(1.f-(Alpha*DepthAtten)); */
     }
