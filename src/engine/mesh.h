@@ -47,20 +47,20 @@ TryGetTierForSize(tiered_mesh_freelist *TieredFreelist, u32 Size)
 }
 
 link_internal void
-MarkBufferForGrowth(untextured_2d_geometry_buffer *Dest)
+MarkBufferForGrowth(untextured_2d_geometry_buffer *Dest, umm Grow)
 {
   NotImplemented;
 }
 
 link_internal void
-MarkBufferForGrowth(untextured_3d_geometry_buffer *Dest)
+MarkBufferForGrowth(untextured_3d_geometry_buffer *Dest, umm Grow)
 {
   auto ToMark = Dest;
   if (Dest->Parent) ToMark = Dest->Parent;
 
   // @single_parent_chain_link_untextured_3d
   Assert(ToMark->Parent == 0);
-  ToMark->BufferNeedsToGrow = True;
+  ToMark->BufferNeedsToGrow += Grow;
 }
 
 inline void
@@ -81,7 +81,7 @@ BufferVertsDirect(
   else
   {
     SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1);
-    MarkBufferForGrowth(Dest);
+    MarkBufferForGrowth(Dest, NumVerts);
   }
 }
 
@@ -103,7 +103,7 @@ BufferVertsDirect(
   }
   else
   {
-    MarkBufferForGrowth(Dest);
+    MarkBufferForGrowth(Dest, NumVerts);
     SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End -1);
   }
 }
@@ -247,7 +247,7 @@ BufferVertsChecked(
   }
   else
   {
-    MarkBufferForGrowth(Dest);
+    MarkBufferForGrowth(Dest, NumVerts);
     SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1);
   }
 }
@@ -275,7 +275,7 @@ BufferVertsDirect(
   }
   else
   {
-    MarkBufferForGrowth(Dest);
+    MarkBufferForGrowth(Dest, NumVerts);
     Error("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1);
   }
 }
@@ -336,7 +336,7 @@ BufferVertsChecked(
   }
   else
   {
-    MarkBufferForGrowth(Dest);
+    MarkBufferForGrowth(Dest, Src->At);
     SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1);
   }
 }
@@ -358,7 +358,7 @@ BufferVertsChecked(
   }
   else
   {
-    MarkBufferForGrowth(Target);
+    MarkBufferForGrowth(Target, NumVerts);
     SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Target->At, Target->End-1);
   }
 

@@ -71,11 +71,11 @@ MapGpuElementBuffer(gpu_mapped_element_buffer *GpuMap)
   Assert(GpuMap->Buffer.Parent == False);
   if (GpuMap->Buffer.BufferNeedsToGrow)
   {
-    GpuMap->Buffer.BufferNeedsToGrow = False;
-
-    GpuMap->Buffer.End += GPU_MAP_BUFFER_ATOM_SIZE;
+    GpuMap->Buffer.End += GpuMap->Buffer.BufferNeedsToGrow;
     DeallocateGpuElementBuffer(GpuMap);
     AllocateGpuElementBuffer(GpuMap, GpuMap->Buffer.End);
+
+    GpuMap->Buffer.BufferNeedsToGrow = 0;
   }
 
 
