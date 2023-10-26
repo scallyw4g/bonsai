@@ -1,6 +1,6 @@
 // TODO(Jesse): Delete this func in favor of BuildWorldChunkMesh
-void
-BuildEntityMesh(chunk_data *Chunk, untextured_3d_geometry_buffer* Mesh, v4 *ColorPalette, chunk_dimension Dim)
+link_internal void
+BuildEntityMesh(chunk_data *Chunk, untextured_3d_geometry_buffer* Mesh, v3 *ColorPalette, chunk_dimension Dim)
 {
   for ( int z = 0; z < Dim.z ; ++z )
   {
@@ -21,9 +21,10 @@ BuildEntityMesh(chunk_data *Chunk, untextured_3d_geometry_buffer* Mesh, v4 *Colo
         v3 Diameter = V3(1.0f);
         v3 VertexData[6];
 
-        v4 FaceColors[VERTS_PER_FACE];
+        v3 FaceColors[VERTS_PER_FACE];
         FillColorArray(Voxel->Color, FaceColors, ColorPalette, VERTS_PER_FACE);
 
+        v2 TransEmissArray[VERTS_PER_FACE] = {};
 
         voxel_position rightVoxel = LocalVoxelP + Voxel_Position(1, 0, 0);
         voxel_position leftVoxel = LocalVoxelP - Voxel_Position(1, 0, 0);
@@ -40,32 +41,32 @@ BuildEntityMesh(chunk_data *Chunk, untextured_3d_geometry_buffer* Mesh, v4 *Colo
         if ( (!IsInsideDim(Dim, rightVoxel)) || NotFilled( Chunk->Voxels, rightVoxel, Dim))
         {
           RightFaceVertexData( VP, Diameter, VertexData);
-          BufferVertsDirect(Mesh, 6, VertexData, RightFaceNormalData, FaceColors);
+          BufferVertsDirect(Mesh, 6, VertexData, RightFaceNormalData, FaceColors, TransEmissArray);
         }
         if ( (!IsInsideDim( Dim, leftVoxel  )) || NotFilled( Chunk->Voxels, leftVoxel, Dim))
         {
           LeftFaceVertexData( VP, Diameter, VertexData);
-          BufferVertsDirect(Mesh, 6, VertexData, LeftFaceNormalData, FaceColors);
+          BufferVertsDirect(Mesh, 6, VertexData, LeftFaceNormalData, FaceColors, TransEmissArray);
         }
         if ( (!IsInsideDim( Dim, botVoxel   )) || NotFilled( Chunk->Voxels, botVoxel, Dim))
         {
           BottomFaceVertexData( VP, Diameter, VertexData);
-          BufferVertsDirect(Mesh, 6, VertexData, BottomFaceNormalData, FaceColors);
+          BufferVertsDirect(Mesh, 6, VertexData, BottomFaceNormalData, FaceColors, TransEmissArray);
         }
         if ( (!IsInsideDim( Dim, topVoxel   )) || NotFilled( Chunk->Voxels, topVoxel, Dim))
         {
           TopFaceVertexData( VP, Diameter, VertexData);
-          BufferVertsDirect(Mesh, 6, VertexData, TopFaceNormalData, FaceColors);
+          BufferVertsDirect(Mesh, 6, VertexData, TopFaceNormalData, FaceColors, TransEmissArray);
         }
         if ( (!IsInsideDim( Dim, frontVoxel )) || NotFilled( Chunk->Voxels, frontVoxel, Dim))
         {
           FrontFaceVertexData( VP, Diameter, VertexData);
-          BufferVertsDirect(Mesh, 6, VertexData, FrontFaceNormalData, FaceColors);
+          BufferVertsDirect(Mesh, 6, VertexData, FrontFaceNormalData, FaceColors, TransEmissArray);
         }
         if ( (!IsInsideDim( Dim, backVoxel  )) || NotFilled( Chunk->Voxels, backVoxel, Dim))
         {
           BackFaceVertexData( VP, Diameter, VertexData);
-          BufferVertsDirect(Mesh, 6, VertexData, BackFaceNormalData, FaceColors);
+          BufferVertsDirect(Mesh, 6, VertexData, BackFaceNormalData, FaceColors, TransEmissArray);
         }
 
       }
@@ -76,9 +77,10 @@ BuildEntityMesh(chunk_data *Chunk, untextured_3d_geometry_buffer* Mesh, v4 *Colo
 void
 AllocateMesh(untextured_3d_geometry_buffer *Mesh, u32 NumVerts, memory_arena *Memory)
 {
-  Mesh->Verts   = AllocateAlignedProtection(v3, Memory, NumVerts, CACHE_LINE_SIZE, False);
-  Mesh->Normals = AllocateAlignedProtection(v3, Memory, NumVerts, CACHE_LINE_SIZE, False);
-  Mesh->Colors  = AllocateAlignedProtection(v4, Memory, NumVerts, CACHE_LINE_SIZE, False);
+  Mesh->Verts      = AllocateAlignedProtection(v3, Memory, NumVerts, CACHE_LINE_SIZE, False);
+  Mesh->Normals    = AllocateAlignedProtection(v3, Memory, NumVerts, CACHE_LINE_SIZE, False);
+  Mesh->Colors     = AllocateAlignedProtection(v3, Memory, NumVerts, CACHE_LINE_SIZE, False);
+  Mesh->TransEmiss = AllocateAlignedProtection(v2, Memory, NumVerts, CACHE_LINE_SIZE, False);
 
   Mesh->End = NumVerts;
   Mesh->At = 0;
@@ -90,9 +92,10 @@ AllocateMesh(untextured_3d_geometry_buffer *Mesh, u32 NumVerts, memory_arena *Me
 void
 AllocateMesh(untextured_3d_geometry_buffer *Mesh, u32 NumVerts, heap_allocator *Heap)
 {
-  Mesh->Verts   = (v3*)HeapAllocate(Heap, sizeof(v3)*NumVerts);
-  Mesh->Normals = (v3*)HeapAllocate(Heap, sizeof(v3)*NumVerts);
-  Mesh->Colors  = (v4*)HeapAllocate(Heap, sizeof(v4)*NumVerts);
+  Mesh->Verts       = (v3*)HeapAllocate(Heap, sizeof(v3)*NumVerts);
+  Mesh->Normals     = (v3*)HeapAllocate(Heap, sizeof(v3)*NumVerts);
+  Mesh->Colors      = (v3*)HeapAllocate(Heap, sizeof(v4)*NumVerts);
+  Mesh->TransEmiss  = (v2*)HeapAllocate(Heap, sizeof(v2)*NumVerts);
 
   Mesh->End = NumVerts;
   Mesh->At = 0;

@@ -1199,14 +1199,14 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
 
           r32 Transparency = Lerp(t, System->ParticleEndingTransparency, System->ParticleStartingTransparency);
           /* r32 Transparency = System->ParticleStartingTransparency; */
-          if (System->ParticleStartingTransparency > 0.f)  { DrawVoxel( &TranspDest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, Transparency  ); }
-          /* if (System->ParticleStartingTransparency > 0.f)  { DrawVoxel( &TranspDest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, Transparency * Max(System->ParticleLightEmission, 1.f) ); } */
-          if (System->ParticleStartingTransparency <= 0.f && System->ParticleLightEmission <= 0.f) { DrawVoxel( &SolidDest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 0.f); }
+
+          auto Dest = System->ParticleStartingTransparency > 0.f ? &TranspDest : &SolidDest;
+          DrawVoxel( Dest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, V2(Transparency, System->ParticleLightEmission) );
 
 #if 1
           if (Particle->IsLight)
           {
-            v3 EmissionColor = GetColorData(DefaultPalette, System->Colors[ColorIndex]).rgb;
+            v3 EmissionColor = GetColorData(DefaultPalette, System->Colors[ColorIndex]);
             engine_resources *Engine = GetEngineResources();
             DoLight(&Engine->Graphics->Lighting.Lights, RenderSpaceP + Particle->Offset, EmissionColor);
           }

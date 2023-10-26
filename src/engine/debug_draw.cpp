@@ -19,8 +19,10 @@ DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh, v3 P1, v3 P2, u32 ColorInde
   /* P1.x = P1.x - (Thickness/2.0f); */
   /* P2.x = P2.x - (Thickness/2.0f); */
 
-  v4 FaceColors[VERTS_PER_FACE];
+  v3 FaceColors[VERTS_PER_FACE];
   FillColorArray(ColorIndex, FaceColors, DefaultPalette, VERTS_PER_FACE);
+
+  v2 TransEmiss[VERTS_PER_FACE] = {};
 
   r32 HalfThickness = Thickness/2.f;
   {
@@ -36,11 +38,7 @@ DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh, v3 P1, v3 P2, u32 ColorInde
     };
 
 
-    BufferVertsChecked(Mesh,
-        6,
-        localVertexData,
-        localNormalData,
-        FaceColors);
+    BufferVertsChecked(Mesh, 6, localVertexData, localNormalData, FaceColors, TransEmiss);
   }
 
   {
@@ -56,11 +54,7 @@ DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh, v3 P1, v3 P2, u32 ColorInde
     };
 
 
-    BufferVertsChecked(Mesh,
-        6,
-        localVertexData,
-        localNormalData,
-        FaceColors);
+    BufferVertsChecked(Mesh, 6, localVertexData, localNormalData, FaceColors, TransEmiss);
   }
 
   {
@@ -76,11 +70,7 @@ DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh, v3 P1, v3 P2, u32 ColorInde
     };
 
 
-    BufferVertsChecked(Mesh,
-        6,
-        localVertexData,
-        localNormalData,
-        FaceColors);
+    BufferVertsChecked(Mesh, 6, localVertexData, localNormalData, FaceColors, TransEmiss);
   }
 
   u32 VertsBuffered = Mesh->At - MeshStartingAt;

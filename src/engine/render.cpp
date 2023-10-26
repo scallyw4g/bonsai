@@ -690,8 +690,8 @@ TraverseSurfaceToBoundary( world *World, world_chunk *Chunk, voxel_position Star
 void
 DrawParticle(untextured_3d_geometry_buffer *Source, untextured_3d_geometry_buffer *Dest, u8 ColorIndex)
 {
-  v4 FaceColors[VERTS_PER_FACE];
-  FillColorArray(ColorIndex, FaceColors, DefaultPalette, VERTS_PER_FACE, 2.f);
+  v3 FaceColors[VERTS_PER_FACE];
+  FillColorArray(ColorIndex, FaceColors, DefaultPalette, VERTS_PER_FACE);
   BufferVertsChecked( Source, Dest );
   return;
 }

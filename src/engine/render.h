@@ -40,12 +40,13 @@ struct g_buffer_render_group
 };
 
 untextured_3d_geometry_buffer
-Untextured3dGeometryBuffer(v3* Verts, v4* Colors, v3* Normals, u32 Count)
+Untextured3dGeometryBuffer(v3* Verts, v3* Colors, v3* Normals, v2 *TransEmiss, u32 Count)
 {
   untextured_3d_geometry_buffer Result = {};
   Result.Verts = Verts;
   Result.Colors = Colors;
   Result.Normals = Normals;
+  Result.TransEmiss = TransEmiss;
   Result.At = Count;
 
   return Result;

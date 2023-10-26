@@ -80,16 +80,12 @@ BufferTriangle(untextured_3d_geometry_buffer* Dest, triangle* Triangle, v3 Norma
   VertBuffer[1] = V3(Triangle->Points[1]);
   VertBuffer[2] = V3(Triangle->Points[2]);
 
-  v4 FaceColors[VERTS_PER_FACE];
+  v3 FaceColors[VERTS_PER_FACE];
   FillColorArray(ColorIndex, FaceColors, DefaultPalette, VERTS_PER_FACE);
 
-  BufferVertsChecked(
-    Dest,
-    3,
-    VertBuffer,
-    NormalBuffer,
-    FaceColors);
+  v2 TransEmiss[VERTS_PER_FACE] = {};
 
+  BufferVertsChecked( Dest, 3, VertBuffer, NormalBuffer, FaceColors, TransEmiss);
 }
 
 inline void
@@ -101,16 +97,12 @@ BufferTriangle(untextured_3d_geometry_buffer *Mesh, v3 *Verts, v3 Normal, u32 Co
   // TODO(Jesse, id: 139, tags: robustness, speed): Is this necessary to avoid some pointer aliasing bug?
   MemCopy((u8*)Verts, (u8*)VertBuffer, 9 * sizeof(r32) );
 
-  v4 FaceColors[VERTS_PER_FACE];
+  v3 FaceColors[VERTS_PER_FACE];
   FillColorArray(ColorIndex, FaceColors, DefaultPalette, VERTS_PER_FACE);
 
-  BufferVertsChecked(
-    Mesh,
-    3,
-    VertBuffer,
-    NormalBuffer,
-    FaceColors);
+  v2 TransEmiss[VERTS_PER_FACE] = {};
 
+  BufferVertsChecked( Mesh, 3, VertBuffer, NormalBuffer, FaceColors, TransEmiss);
 }
 
 #if 0

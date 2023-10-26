@@ -217,7 +217,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
           Assert(ChildChunkCount == 0);
 
           /* Result.Palette = (v4*)HeapAllocate(Heap, 256); */
-          Result.Palette = Allocate(v4, WorldStorage, 256);
+          Result.Palette = Allocate(v3, WorldStorage, 256);
 
           for (u32 PaletteIndex = 0; PaletteIndex < 256; ++PaletteIndex)
           {
@@ -228,7 +228,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
             Result.Palette[PaletteIndex].r = R;
             Result.Palette[PaletteIndex].g = G;
             Result.Palette[PaletteIndex].b = B;
-            Result.Palette[PaletteIndex].a = A;
+            /* Result.Palette[PaletteIndex].a = A; */
           }
 
         } break;

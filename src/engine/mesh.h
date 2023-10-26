@@ -89,15 +89,16 @@ inline void
 BufferVertsDirect(
     untextured_3d_geometry_buffer *Dest,
     u32 NumVerts,
-    v3 *Positions, v3 *Normals, v4 *Colors
+    v3 *Positions, v3 *Normals, v3 *Colors, v2 *TransEmiss
   )
 {
   TIMED_FUNCTION();
   if (BufferHasRoomFor(Dest, NumVerts))
   {
-    MemCopy((u8*)Positions,  (u8*)&Dest->Verts[Dest->At]  ,  sizeof(*Positions)*NumVerts );
-    MemCopy((u8*)Normals,    (u8*)&Dest->Normals[Dest->At],  sizeof(*Normals)*NumVerts );
-    MemCopy((u8*)Colors,     (u8*)&Dest->Colors[Dest->At] ,  sizeof(*Colors)*NumVerts );
+    MemCopy((u8*)Positions,  (u8*)&Dest->Verts[Dest->At],      sizeof(*Positions)*NumVerts );
+    MemCopy((u8*)Normals,    (u8*)&Dest->Normals[Dest->At],    sizeof(*Normals)*NumVerts );
+    MemCopy((u8*)Colors,     (u8*)&Dest->Colors[Dest->At],     sizeof(*Colors)*NumVerts );
+    MemCopy((u8*)TransEmiss, (u8*)&Dest->TransEmiss[Dest->At], sizeof(*TransEmiss)*NumVerts );
 
     Dest->At += NumVerts;
   }
@@ -110,9 +111,9 @@ BufferVertsDirect(
 
 inline void
 BufferVertsDirect(
-    v3 *DestVerts, v3 *DestNormals, v4 *DestColors,
+    v3 *DestVerts, v3 *DestNormals, v3 *DestColors, v2 *DestTransEmiss,
     u32 NumVerts,
-    v3 *SrcVerts, v3 *SrcNormals, v4 *SrcVertColors,
+    v3 *SrcVerts, v3 *SrcNormals, v3 *SrcVertColors, v2 *SrcTransEmiss,
     v3 Offset,
     v3 Scale,
     Quaternion Rot
@@ -125,8 +126,9 @@ BufferVertsDirect(
 
   Assert(NumVerts % 3 == 0);
 
-  MemCopy((u8*)SrcNormals,     (u8*)DestNormals,  sizeof(*SrcNormals)*NumVerts );
-  MemCopy((u8*)SrcVertColors,  (u8*)DestColors,   sizeof(*SrcVertColors)*NumVerts );
+  MemCopy((u8*)SrcNormals,     (u8*)DestNormals,    sizeof(*SrcNormals)*NumVerts );
+  MemCopy((u8*)SrcVertColors,  (u8*)DestColors,     sizeof(*SrcVertColors)*NumVerts );
+  MemCopy((u8*)SrcTransEmiss,  (u8*)DestTransEmiss, sizeof(*SrcTransEmiss)*NumVerts );
 
   /* v3 HalfOffset = Offset*0.5f; */
   for ( u32 VertIndex = 0;
@@ -168,9 +170,9 @@ BufferVertsDirect(
 }
 inline void
 BufferVertsDirect(
-    v3 *DestVerts, v3 *DestNormals, v4 *DestColors,
+    v3 *DestVerts, v3 *DestNormals, v3 *DestColors, v2 *DestTransEmiss,
     u32 NumVerts,
-    v3 *SrcVerts, v3 *SrcNormals, v4 *SrcVertColors,
+    v3 *SrcVerts, v3 *SrcNormals, v3 *SrcVertColors, v2 *SrcTransEmiss,
     v3 Offset,
     v3 Scale
   )
@@ -227,7 +229,7 @@ inline void
 BufferVertsChecked(
     untextured_3d_geometry_buffer *Dest,
     u32 NumVerts,
-    v3 *VertsPositions, v3 *Normals, v4 *VertColors,
+    v3 *VertsPositions, v3 *Normals, v3 *VertColors, v2 *TransEmiss,
     v3 Offset,
     v3 Scale,
     Quaternion Rot
@@ -239,8 +241,9 @@ BufferVertsChecked(
     BufferVertsDirect(Dest->Verts + Dest->At,
                       Dest->Normals + Dest->At,
                       Dest->Colors + Dest->At,
+                      Dest->TransEmiss + Dest->At,
                       NumVerts,
-                      VertsPositions, Normals, VertColors,
+                      VertsPositions, Normals, VertColors, TransEmiss,
                       Offset, Scale, Rot);
 
     Dest->At += NumVerts;
@@ -256,7 +259,7 @@ inline void
 BufferVertsDirect(
     untextured_3d_geometry_buffer *Dest,
     u32 NumVerts,
-    v3 *VertsPositions, v3 *Normals, v4 *VertColors,
+    v3 *VertsPositions, v3 *Normals, v3 *VertColors, v2 *TransEmiss,
     v3 Offset,
     v3 Scale
   )
@@ -267,8 +270,9 @@ BufferVertsDirect(
     BufferVertsDirect(Dest->Verts + Dest->At,
                       Dest->Normals + Dest->At,
                       Dest->Colors + Dest->At,
+                      Dest->TransEmiss + Dest->At,
                       NumVerts,
-                      VertsPositions, Normals, VertColors,
+                      VertsPositions, Normals, VertColors, TransEmiss,
                       Offset, Scale);
 
     Dest->At += NumVerts;
@@ -297,8 +301,9 @@ BufferVertsCounted(
     BufferVertsDirect(Dest->Verts + Dest->At,
                       Dest->Normals + Dest->At,
                       Dest->Colors + Dest->At,
+                      Dest->TransEmiss + Dest->At,
                       Src->At,
-                      Src->Verts, Src->Normals, Src->Colors,
+                      Src->Verts, Src->Normals, Src->Colors, Src->TransEmiss,
                       Offset, Scale);
 
     Dest->At += Src->At;
@@ -328,8 +333,9 @@ BufferVertsChecked(
     BufferVertsDirect(Dest->Verts + Dest->At,
                       Dest->Normals + Dest->At,
                       Dest->Colors + Dest->At,
+                      Dest->TransEmiss + Dest->At,
                       Src->At,
-                      Src->Verts, Src->Normals, Src->Colors,
+                      Src->Verts, Src->Normals, Src->Colors, Src->TransEmiss,
                       Offset, Scale);
 
     Dest->At += Src->At;
@@ -345,7 +351,7 @@ inline void
 BufferVertsChecked(
     untextured_3d_geometry_buffer *Target,
     u32 NumVerts,
-    v3* Positions, v3* Normals, v4* Colors, 
+    v3 *Positions, v3 *Normals, v3 *Colors, v2 *TransEmiss,
     v3 Offset = V3(0),
     v3 Scale = V3(1)
   )
@@ -354,7 +360,7 @@ BufferVertsChecked(
 
   if (BufferHasRoomFor(Target, NumVerts))
   {
-    BufferVertsDirect( Target, NumVerts, Positions, Normals, Colors, Offset, Scale);
+    BufferVertsDirect( Target, NumVerts, Positions, Normals, Colors,TransEmiss, Offset, Scale);
   }
   else
   {
@@ -367,69 +373,75 @@ BufferVertsChecked(
 
 
 inline void
-DrawVoxel( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelCenter, v4 Color, v3 Diameter)
+DrawVoxel( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelCenter, v3 Color, v3 Diameter, v2 TransEmiss)
 {
   /* TIMED_FUNCTION(); */
 
   v3 VertexData[6];
 
-  v4 FaceColors[VERTS_PER_FACE];
+  v3 FaceColors[VERTS_PER_FACE];
   FillColorArray(Color, FaceColors, VERTS_PER_FACE);
+
+  v2 TransEmissArray[VERTS_PER_FACE];
+  FillArray(TransEmiss, TransEmissArray, VERTS_PER_FACE);
 
   v3 MinP = RenderP_VoxelCenter - (Diameter*0.5);
 
   RightFaceVertexData( MinP, Diameter, VertexData);
-  BufferVertsChecked(Mesh, 6, VertexData, RightFaceNormalData, FaceColors);
+  BufferVertsChecked(Mesh, 6, VertexData, RightFaceNormalData, FaceColors, TransEmissArray);
 
   LeftFaceVertexData( MinP, Diameter, VertexData);
-  BufferVertsChecked(Mesh, 6, VertexData, LeftFaceNormalData, FaceColors);
+  BufferVertsChecked(Mesh, 6, VertexData, LeftFaceNormalData, FaceColors, TransEmissArray);
 
   BottomFaceVertexData( MinP, Diameter, VertexData);
-  BufferVertsChecked(Mesh, 6, VertexData, BottomFaceNormalData, FaceColors);
+  BufferVertsChecked(Mesh, 6, VertexData, BottomFaceNormalData, FaceColors, TransEmissArray);
 
   TopFaceVertexData( MinP, Diameter, VertexData);
-  BufferVertsChecked(Mesh, 6, VertexData, TopFaceNormalData, FaceColors);
+  BufferVertsChecked(Mesh, 6, VertexData, TopFaceNormalData, FaceColors, TransEmissArray);
 
   FrontFaceVertexData( MinP, Diameter, VertexData);
-  BufferVertsChecked(Mesh, 6, VertexData, FrontFaceNormalData, FaceColors);
+  BufferVertsChecked(Mesh, 6, VertexData, FrontFaceNormalData, FaceColors, TransEmissArray);
 
   BackFaceVertexData( MinP, Diameter, VertexData);
-  BufferVertsChecked(Mesh, 6, VertexData, BackFaceNormalData, FaceColors);
+  BufferVertsChecked(Mesh, 6, VertexData, BackFaceNormalData, FaceColors, TransEmissArray);
 }
 
 inline void
-DrawVoxel_CenterDim( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelCenter, v4 Color, v3 Diameter)
+DrawVoxel_CenterDim( untextured_3d_geometry_buffer *Mesh,
+                     v3 RenderP_VoxelCenter, v3 Color, v3 Diameter, v2 TransEmiss = V2(0.f, 0.f))
 {
-  DrawVoxel(Mesh, RenderP_VoxelCenter, Color, Diameter);
+  DrawVoxel(Mesh, RenderP_VoxelCenter, Color, Diameter, TransEmiss);
 }
 
 inline void
-DrawVoxel_CenterDim( untextured_3d_geometry_buffer *Mesh, v3i RenderP_VoxelCenter, v4 Color, v3 Diameter)
+DrawVoxel_CenterDim( untextured_3d_geometry_buffer *Mesh,
+                     v3i RenderP_VoxelCenter, v3 Color, v3 Diameter, v2 TransEmiss = V2(0.f, 0.f))
 {
-  DrawVoxel(Mesh, V3(RenderP_VoxelCenter), Color, Diameter);
+  DrawVoxel(Mesh, V3(RenderP_VoxelCenter), Color, Diameter, TransEmiss);
 }
 
 inline void
 DrawVoxel( untextured_3d_geometry_buffer *Mesh,
-           v3 RenderP_VoxelCenter, u32 ColorIndex, v3 Diameter,
-           r32 ExtraChannel = 0.0f)
+           v3 RenderP_VoxelCenter, u32 ColorIndex, v3 Diameter, v2 TransEmiss = V2(0.f, 0.f))
 {
-  v4 Color = GetColorData(DefaultPalette, ColorIndex, ExtraChannel);
-  DrawVoxel(Mesh, RenderP_VoxelCenter, Color, Diameter);
+  v3 Color = GetColorData(DefaultPalette, ColorIndex);
+  DrawVoxel(Mesh, RenderP_VoxelCenter, Color, Diameter, TransEmiss);
 }
 
 inline void
-DrawVoxel_MinDim( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelMin, v4 Color, v3 Diameter, r32 ExtraChannel = 0.0f)
+DrawVoxel_MinDim( untextured_3d_geometry_buffer *Mesh,
+                  v3 RenderP_VoxelMin, v3 Color, v3 Diameter, v2 TransEmiss = V2(0.f, 0.f))
 {
   v3 HalfDim = Diameter/2.f;
   v3 VoxelCenter = RenderP_VoxelMin + HalfDim;
-  DrawVoxel(Mesh, VoxelCenter, Color, Diameter);
+  DrawVoxel(Mesh, VoxelCenter, Color, Diameter, TransEmiss);
 }
 
 inline void
-DrawVoxel_MinDim( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelMin, u32 ColorIndex, v3 Diameter, r32 ExtraChannel = 0.0f)
+DrawVoxel_MinDim( untextured_3d_geometry_buffer *Mesh,
+                  v3 RenderP_VoxelMin, u32 ColorIndex, v3 Diameter, v2 TransEmiss = V2(0.f, 0.f))
 {
-  v4 Color = GetColorData(DefaultPalette, ColorIndex, ExtraChannel);
+  v3 Color = GetColorData(DefaultPalette, ColorIndex);
   DrawVoxel_MinDim(Mesh, RenderP_VoxelMin, Color, Diameter);
 }
 

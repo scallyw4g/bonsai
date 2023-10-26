@@ -22,8 +22,16 @@ FlushBuffersToCard(gpu_mapped_element_buffer* GpuMap)
   GL.BindBuffer(GL_ARRAY_BUFFER, GpuMap->ColorHandle);
   BufferUnmapped &= GL.UnmapBuffer(GL_ARRAY_BUFFER);
   GpuMap->Buffer.Colors = 0;
-  GL.VertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  GL.VertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
   AssertNoGlErrors;
+
+  GL.EnableVertexAttribArray(3);
+  GL.BindBuffer(GL_ARRAY_BUFFER, GpuMap->TransEmissHandle);
+  BufferUnmapped &= GL.UnmapBuffer(GL_ARRAY_BUFFER);
+  GpuMap->Buffer.TransEmiss = 0;
+  GL.VertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  AssertNoGlErrors;
+
 
   if (BufferUnmapped == False) { Error("glUnmapBuffer Failed"); }
 
@@ -35,10 +43,10 @@ FlushBuffersToCard(gpu_mapped_element_buffer* GpuMap)
 void
 AllocateGpuElementBuffer(gpu_mapped_element_buffer *GpuMap, u32 ElementCount)
 {
+  u32 v2Size = sizeof(v2)*ElementCount;
   u32 v3Size = sizeof(v3)*ElementCount;
-  u32 v4Size = sizeof(v4)*ElementCount;
 
-  GL.GenBuffers(3, &GpuMap->VertexHandle);
+  GL.GenBuffers(4, &GpuMap->VertexHandle);
 
   GL.BindBuffer(GL_ARRAY_BUFFER, GpuMap->VertexHandle);
   GL.BufferData(GL_ARRAY_BUFFER, v3Size, 0, GL_STATIC_DRAW);
@@ -47,7 +55,10 @@ AllocateGpuElementBuffer(gpu_mapped_element_buffer *GpuMap, u32 ElementCount)
   GL.BufferData(GL_ARRAY_BUFFER, v3Size, 0, GL_STATIC_DRAW);
 
   GL.BindBuffer(GL_ARRAY_BUFFER, GpuMap->ColorHandle);
-  GL.BufferData(GL_ARRAY_BUFFER, v4Size, 0, GL_STATIC_DRAW);
+  GL.BufferData(GL_ARRAY_BUFFER, v3Size, 0, GL_STATIC_DRAW);
+
+  GL.BindBuffer(GL_ARRAY_BUFFER, GpuMap->TransEmissHandle);
+  GL.BufferData(GL_ARRAY_BUFFER, v2Size, 0, GL_STATIC_DRAW);
 
   GL.BindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -57,11 +68,8 @@ AllocateGpuElementBuffer(gpu_mapped_element_buffer *GpuMap, u32 ElementCount)
 link_internal void 
 DeallocateGpuElementBuffer(gpu_mapped_element_buffer *Buf)
 {
-  GL.DeleteBuffers(3, &Buf->VertexHandle);
+  GL.DeleteBuffers(4, &Buf->VertexHandle);
 }
-
-// NOTE(Jesse): Chosen at random.  Is there some sensible tradeoff to be made here?
-#define GPU_MAP_BUFFER_ATOM_SIZE (Kilobytes(64))
 
 link_internal untextured_3d_geometry_buffer *
 MapGpuElementBuffer(gpu_mapped_element_buffer *GpuMap)
@@ -74,15 +82,14 @@ MapGpuElementBuffer(gpu_mapped_element_buffer *GpuMap)
     GpuMap->Buffer.End += GpuMap->Buffer.BufferNeedsToGrow;
     DeallocateGpuElementBuffer(GpuMap);
     AllocateGpuElementBuffer(GpuMap, GpuMap->Buffer.End);
-
     GpuMap->Buffer.BufferNeedsToGrow = 0;
   }
 
 
   u32 ElementCount = GpuMap->Buffer.End;
 
+  u32 v2Size = sizeof(v2)*ElementCount;
   u32 v3Size = sizeof(v3)*ElementCount;
-  u32 v4Size = sizeof(v4)*ElementCount;
 
   GL.EnableVertexAttribArray(0);
   GL.BindBuffer(GL_ARRAY_BUFFER, GpuMap->VertexHandle);
@@ -98,13 +105,20 @@ MapGpuElementBuffer(gpu_mapped_element_buffer *GpuMap)
 
   GL.EnableVertexAttribArray(2);
   GL.BindBuffer(GL_ARRAY_BUFFER, GpuMap->ColorHandle);
-  GpuMap->Buffer.Colors = (v4*)GL.MapBufferRange(GL_ARRAY_BUFFER, 0, v4Size, GL_MAP_WRITE_BIT);
-  GL.VertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  GpuMap->Buffer.Colors = (v3*)GL.MapBufferRange(GL_ARRAY_BUFFER, 0, v3Size, GL_MAP_WRITE_BIT);
+  GL.VertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
   AssertNoGlErrors;
 
-  if (!GpuMap->Buffer.Verts)   { Error("Allocating gpu_mapped_element_buffer::Verts"); }
-  if (!GpuMap->Buffer.Normals) { Error("Allocating gpu_mapped_element_buffer::Normals"); }
-  if (!GpuMap->Buffer.Colors)  { Error("Allocating gpu_mapped_element_buffer::Colors"); }
+  GL.EnableVertexAttribArray(3);
+  GL.BindBuffer(GL_ARRAY_BUFFER, GpuMap->TransEmissHandle);
+  GpuMap->Buffer.TransEmiss = (v2*)GL.MapBufferRange(GL_ARRAY_BUFFER, 0, v2Size, GL_MAP_WRITE_BIT);
+  GL.VertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  AssertNoGlErrors;
+
+  if (!GpuMap->Buffer.Verts)      { Error("Allocating gpu_mapped_element_buffer::Verts"); }
+  if (!GpuMap->Buffer.Normals)    { Error("Allocating gpu_mapped_element_buffer::Normals"); }
+  if (!GpuMap->Buffer.Colors)     { Error("Allocating gpu_mapped_element_buffer::Colors"); }
+  if (!GpuMap->Buffer.TransEmiss) { Error("Allocating gpu_mapped_element_buffer::TransEmiss"); }
 
   GL.BindBuffer(GL_ARRAY_BUFFER, 0);
 

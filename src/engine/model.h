@@ -60,7 +60,7 @@ poof(string_and_value_tables(model_index))
 struct vox_data
 {
   chunk_data *ChunkData;
-  v4 *Palette;
+  v3 *Palette;
 };
 
 struct model

@@ -62,7 +62,7 @@ s32 main(s32 ArgCount, const char **Args)
     world_chunk *Chunk = Chunks + ChunkIndex;
     Chunk->Flags = Chunk_VoxelsInitialized;
 
-    v4 *Palette = Vox.Palette ? Vox.Palette : DefaultPalette;
+    v3 *Palette = Vox.Palette ? Vox.Palette : DefaultPalette;
     if (Vox.Palette == 0) { Warn("No Palette found, using default"); }
 
     chunk_dimension SrcChunkOffset = Global_ChunkApronMinDim + (Chunk->WorldP * WorldChunkDim);
