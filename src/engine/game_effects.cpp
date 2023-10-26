@@ -13,10 +13,10 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim, b32 Colorf
   System->ParticleLightEmissionChance = 0.40f;
 
   /* System->ParticleLightEmission = 1.f + Dim; */
-  System->ParticleLightEmission = 2.0f;
+  System->ParticleLightEmission = 3.0f;
 
-  System->ParticleStartingTransparency = 0.35f;
-  System->ParticleEndingTransparency = 0.35f;
+  System->ParticleStartingTransparency = 0.4f;
+  System->ParticleEndingTransparency = 0.55f;
 
 
   if (Colorful)
@@ -100,7 +100,8 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, un
   System->ParticleEndingTransparency = 0.4f;
 
   System->ParticleLightEmission = 1.2f;
-  System->ParticleLightEmissionChance = 0.40f;
+  System->ParticleLightEmissionChance = 0.80f;
+  /* System->ParticleLightEmission = 3.0f; */
 
   System->SpawnRegion = aabb(Offset, V3(Radius*0.20f) );
 
