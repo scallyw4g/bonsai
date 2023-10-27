@@ -3667,6 +3667,17 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
 
   cp MinPCoarse = {};
   cp MaxPCoarse = {};
+
+  // NOTE(Jesse): We have to expand by at least two in either direction because
+  // we need at least one additional voxel to tell if we have a solid face, and
+  // another one after that in case the last one on the exterior edge is
+  // transparent and the next one is solid
+  //
+  // I can't remember why the MaxPStroke has to be one more, and I actually
+  // think that it might not .
+  f32 MinPStroke = 2.f;
+  f32 MaxPStroke = 3.f;
+
   switch (Shape->Type)
   {
     InvalidCase(type_world_update_op_shape_params_noop);
@@ -3676,9 +3687,8 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
       auto *ShapeSphere = SafeCast(world_update_op_shape_params_sphere, Shape);
       cp P = ShapeSphere->Location;
 
-      MinPCoarse = Canonicalize(World, P-V3(ShapeSphere->Radius+1.f) - V3(Global_ChunkApronMinDim));
-      // TODO(Jesse): I think because we're eventually comparing MaxP with <= the +2 here can be a +1 ..?
-      MaxPCoarse = Canonicalize(World, P+V3(ShapeSphere->Radius+2.f) + V3(Global_ChunkApronMaxDim));
+      MinPCoarse = Canonicalize(World, P-V3(ShapeSphere->Radius+MinPStroke) - V3(Global_ChunkApronMinDim));
+      MaxPCoarse = Canonicalize(World, P+V3(ShapeSphere->Radius+MaxPStroke) + V3(Global_ChunkApronMaxDim));
     } break;
 
     case type_world_update_op_shape_params_rect:
@@ -3688,8 +3698,8 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
       v3 MinP0 = Min(ShapeRect->P0, ShapeRect->P1);
       v3 MaxP0 = Max(ShapeRect->P0, ShapeRect->P1);
 
-      MinPCoarse = SimSpaceToCanonical(World, MinP0 - V3(1) - V3(Global_ChunkApronMinDim));
-      MaxPCoarse = SimSpaceToCanonical(World, MaxP0 + V3(2) + V3(Global_ChunkApronMaxDim));
+      MinPCoarse = SimSpaceToCanonical(World, MinP0 - V3(MinPStroke) - V3(Global_ChunkApronMinDim));
+      MaxPCoarse = SimSpaceToCanonical(World, MaxP0 + V3(MaxPStroke) + V3(Global_ChunkApronMaxDim));
     } break;
 
     case type_world_update_op_shape_params_asset:
@@ -3699,8 +3709,8 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
       v3 MinSimP = GetSimSpaceP(World, ShapeAsset->Origin);
       v3 MaxSimP = MinSimP + ShapeAsset->Asset->Model.Dim;
 
-      MinPCoarse = SimSpaceToCanonical(World, MinSimP-1);
-      MaxPCoarse = SimSpaceToCanonical(World, MaxSimP+2);
+      MinPCoarse = SimSpaceToCanonical(World, MinSimP-MinPStroke);
+      MaxPCoarse = SimSpaceToCanonical(World, MaxSimP+MaxPStroke);
     } break;
   }
 
@@ -3988,10 +3998,10 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   random_series Entropy = {43246};
   // NOTE(Jesse): We can actually do the entire dim here, but it's probably
   // better (faster) to just do what we actually need to
-  /* MarkBoundaryVoxels_NoExteriorFaces( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-1, &Entropy, GREY_5, GREY_7); */
+  MarkBoundaryVoxels_NoExteriorFaces( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-1, &Entropy, GREY_5, GREY_7);
   /* MarkBoundaryVoxels_NoExteriorFaces( CopiedVoxels, QueryDim, {}, QueryDim, &Entropy, GREY_5, GREY_7); */
   /* MarkBoundaryVoxels_MakeExteriorFaces( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-1); */
-  MarkBoundaryVoxels_MakeExteriorFaces( CopiedVoxels, QueryDim, {}, QueryDim);
+  /* MarkBoundaryVoxels_MakeExteriorFaces( CopiedVoxels, QueryDim, {}, QueryDim); */
 
 
   for (u32 ChunkIndex = 0; ChunkIndex < ChunkCount; ++ChunkIndex)
