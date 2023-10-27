@@ -322,9 +322,10 @@ void main()
 
   if (BravoilMcGuireOIT)
   {
-    float Revealage = clamp(TransAccumCount, 0.f, 1.f);
-    float Coverage = 1.f-Revealage;
-    TransparencyContrib = (TransAccum.rgb / clamp(TransAccum.a, 1e-4, 5e4)); // * Coverage;
+    float Coverage = clamp(TransAccumCount, 0.f, 1.f);
+    /* float Coverage = Revealage; */
+    TransparencyContrib = (TransAccum.rgb / clamp(TransAccum.a, 1e-4, 5e4));
+    /* TransparencyContrib = (TransAccum.rgb / clamp(TransAccum.a, 1e-4, 5e4)) * Coverage; */
 
     float LightTransmission = length(KeyLightContrib + BackLightContrib + PointLightsContrib + AmbientLightContrib);
     float LightEmission = TransAccumEmission;

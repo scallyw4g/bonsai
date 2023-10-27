@@ -29,7 +29,7 @@ texture *
 AllocateAndInitSsaoNoise(ao_render_group *AoGroup, memory_arena *GraphicsMemory)
 {
   v2i SsaoNoiseDim = V2i(4,4);
-  random_series SsaoEntropy;
+  random_series SsaoEntropy = {453265436};
 
   AoGroup->NoiseTile = V3(SCR_WIDTH/SsaoNoiseDim.x, SCR_HEIGHT/SsaoNoiseDim.y, 1);
 
