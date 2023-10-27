@@ -4,13 +4,12 @@ Bonsai is a 3D voxel-based engine built with the intention of writing both
 fast-paced arcade games and tile/turn-based RPGs
 
 Bonsai, and nearly all it's dependencies, are written completely from scratch.
-The one external dependency is the C runtime library for startup, and a small
+One external dependency is the C runtime library for startup, and a small
 handful of trig functions (sin, cos, atan2).  I have a back-burner task to
 remove the CRT entirely, though it's unclear when/if I'll get around to it.
 
 The only requirements to build and run Bonsai are an OpenGL 3.3+ driver, C++
 compiler, and a few appropriate system headers.
-
 
 ## Renderer Features
 
@@ -41,6 +40,12 @@ compiler, and a few appropriate system headers.
 * Context Switches (windows only)
 * Physical Core  (windows only)
 
+# Getting Started
+
+## Building
+
+See the docs on the [build process](docs/01_build_process.md).
+
 # Wishlist
 
 -------------------------------------------------------------------------------
@@ -55,6 +60,8 @@ compiler, and a few appropriate system headers.
 [ ] TAA?
 
 [ ] FXAA : http://blog.simonrodriguez.fr/articles/2016/07/implementing_fxaa.html
+
+[ ] Water : https://www.youtube.com/watch?v=5yhDb9dzJ58
 
 -------------------------------------------------------------------------------
 ## Terrain Generation
@@ -81,7 +88,3 @@ compiler, and a few appropriate system headers.
 [ ] Octree ? https://graphics.tudelft.nl/Publications-new/2020/CBE20/ModifyingCompressedVoxels-main.pdf
 
 [ ] Better floating-point rng : https://www.corsix.org/content/higher-quality-random-floats
-
-# Building
-
-See the docs on the [build process](docs/01_build_process.md).
