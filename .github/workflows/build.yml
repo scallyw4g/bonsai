@@ -14,7 +14,7 @@ jobs:
     - name: Checkout submodules
       run: git submodule update --init --recursive
     - name: Install Deps
-      run: sudo apt update && sudo apt install freeglut3-dev libx11-dev clang-15
+      run: sudo apt update && sudo apt install freeglut3-dev libx11-dev clang
     - name: Build
       run: ./make.sh
       
