@@ -105,10 +105,10 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, un
 
   System->SpawnRegion = aabb(Offset, V3(Radius*0.20f) );
 
-  System->EmissionLifespan = 0.20f;
+  System->EmissionLifespan = 0.12f;
   System->LifespanMod = 0.5f;
   System->ParticleLifespan = 0.15f;
-  System->ParticlesPerSecond = 600.0f*Radius;
+  System->ParticlesPerSecond = 500.0f*Radius;
 
   // Fire particles are emissive
 
