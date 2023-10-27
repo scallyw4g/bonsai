@@ -818,6 +818,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
                                                     ChunkData->Dim,
                                                     VoxOffset, VoxOffset+Global_TileDim,
                                                    &TileEntity->Model.Mesh,
+                                                   &TileEntity->Model.TransparentMesh,
                                                     GetTranArena(),
                                                     VoxData->Palette );
 

@@ -333,7 +333,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
             Voxel->Offset = Voxel->Offset - Min + HalfApronMin;
             s32 Index = GetIndex(Voxel->Offset, ModelDim);
             Result.ChunkData->Voxels[Index] = Voxel->V;
-            Result.ChunkData->Voxels[Index].Transparency = 0xff;
+            Result.ChunkData->Voxels[Index].Transparency = 1;
 
             Result.ChunkData->VoxelLighting[Index] = VoxelLighting(0xff);
           }

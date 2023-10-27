@@ -32,10 +32,10 @@
 ./make.sh $OPT \
   BuildSingleExample examples/transparency \
   BuildSingleExample examples/turn_based \
+  BuildSingleExample examples/the_wanderer \
   BuildExecutables \
   BuildDebugSystem \
   # BuildSingleExample examples/blank_project \
-  # BuildSingleExample examples/the_wanderer \
 #   # BuildTests \
 #   # BuildSingleExample examples/turn_based2
 

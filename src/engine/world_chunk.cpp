@@ -1336,7 +1336,18 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
         // TODO(Jesse): This copy could be avoided in multiple ways, and should be.
         FillColorArray(C, FaceColors, ColorPallette, VERTS_PER_FACE);
 
-        auto Dest = Voxel->Transparency ? DestTransparentGeometry : DestGeometry;
+        untextured_3d_geometry_buffer *Dest = {};
+        if (Voxel->Transparency)
+        {
+          Dest = DestTransparentGeometry;
+          FillArray(V2(1.f, 0.f), TransEmiss, VERTS_PER_FACE);
+        }
+        else
+        {
+          Dest = DestGeometry;
+          FillArray({}, TransEmiss, VERTS_PER_FACE);
+        }
+
         if (Voxel->Flags & Voxel_RightFace)
         {
           v3 Dim = DoXStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_RightFace, Voxel->Color);
