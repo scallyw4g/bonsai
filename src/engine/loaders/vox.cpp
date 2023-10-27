@@ -325,6 +325,8 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
           Result.ChunkData = AllocateChunkData(WorldStorage, ModelDim);
           Result.ChunkData->Dim = ModelDim;
 
+          global_variable random_series TMP = {54235432543};
+
           for( s32 VoxelCacheIndex = 0;
                    VoxelCacheIndex < ActualVoxelCount;
                  ++VoxelCacheIndex)
@@ -333,7 +335,9 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
             Voxel->Offset = Voxel->Offset - Min + HalfApronMin;
             s32 Index = GetIndex(Voxel->Offset, ModelDim);
             Result.ChunkData->Voxels[Index] = Voxel->V;
-            Result.ChunkData->Voxels[Index].Transparency = 1;
+
+            /* if (RandomUnilateral(&TMP) > 0.5f) { Result.ChunkData->Voxels[Index].Transparency = 128; } */
+            Result.ChunkData->Voxels[Index].Transparency = 128;
 
             Result.ChunkData->VoxelLighting[Index] = VoxelLighting(0xff);
           }

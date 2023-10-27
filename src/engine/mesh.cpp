@@ -1,3 +1,4 @@
+#if 0
 // TODO(Jesse): Delete this func in favor of BuildWorldChunkMesh
 link_internal void
 BuildEntityMesh(chunk_data *Chunk, untextured_3d_geometry_buffer* Mesh, v3 *ColorPalette, chunk_dimension Dim)
@@ -21,10 +22,12 @@ BuildEntityMesh(chunk_data *Chunk, untextured_3d_geometry_buffer* Mesh, v3 *Colo
         v3 Diameter = V3(1.0f);
         v3 VertexData[6];
 
-        v3 FaceColors[VERTS_PER_FACE];
-        FillColorArray(Voxel->Color, FaceColors, ColorPalette, VERTS_PER_FACE);
+        /* v3 FaceColors[VERTS_PER_FACE]; */
+        /* FillColorArray(Voxel->Color, FaceColors, ColorPalette, VERTS_PER_FACE); */
 
-        v2 TransEmissArray[VERTS_PER_FACE] = {};
+        v3 Color = GetColorData(ColorPalette, Voxel->Color);
+        vertex_material Materials[VERTS_PER_FACE];
+        FillArray(VertexMaterial(Color, 0.f, 0.f), Materials, VERTS_PER_FACE);
 
         voxel_position rightVoxel = LocalVoxelP + Voxel_Position(1, 0, 0);
         voxel_position leftVoxel = LocalVoxelP - Voxel_Position(1, 0, 0);
@@ -73,14 +76,14 @@ BuildEntityMesh(chunk_data *Chunk, untextured_3d_geometry_buffer* Mesh, v3 *Colo
     }
   }
 }
+#endif
 
 void
 AllocateMesh(untextured_3d_geometry_buffer *Mesh, u32 NumVerts, memory_arena *Memory)
 {
   Mesh->Verts      = AllocateAlignedProtection(v3, Memory, NumVerts, CACHE_LINE_SIZE, False);
   Mesh->Normals    = AllocateAlignedProtection(v3, Memory, NumVerts, CACHE_LINE_SIZE, False);
-  Mesh->Colors     = AllocateAlignedProtection(v3, Memory, NumVerts, CACHE_LINE_SIZE, False);
-  Mesh->TransEmiss = AllocateAlignedProtection(v2, Memory, NumVerts, CACHE_LINE_SIZE, False);
+  Mesh->Mat        = AllocateAlignedProtection(matl, Memory, NumVerts, CACHE_LINE_SIZE, False);
 
   Mesh->End = NumVerts;
   Mesh->At = 0;
@@ -94,8 +97,7 @@ AllocateMesh(untextured_3d_geometry_buffer *Mesh, u32 NumVerts, heap_allocator *
 {
   Mesh->Verts       = (v3*)HeapAllocate(Heap, sizeof(v3)*NumVerts);
   Mesh->Normals     = (v3*)HeapAllocate(Heap, sizeof(v3)*NumVerts);
-  Mesh->Colors      = (v3*)HeapAllocate(Heap, sizeof(v4)*NumVerts);
-  Mesh->TransEmiss  = (v2*)HeapAllocate(Heap, sizeof(v2)*NumVerts);
+  Mesh->Mat         = (matl*)HeapAllocate(Heap, sizeof(matl)*NumVerts);
 
   Mesh->End = NumVerts;
   Mesh->At = 0;

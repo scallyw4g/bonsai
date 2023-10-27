@@ -25,6 +25,32 @@ MakeWorldChunkFileHeader_v2(world_chunk *Chunk)
 
   return Result;
 }
+
+link_internal world_chunk_file_header_v3
+MakeWorldChunkFileHeader_v3(world_chunk *Chunk)
+{
+  world_chunk_file_header_v3 Result = {};
+
+  Result.WHNK = WorldChunkFileTag_WHNK;
+  Result.Version = 3;
+  Result.Checksum = 0xdeadbeef;
+
+  Result.VoxelElementCount        = Volume(Chunk);
+  Result.StandingSpotElementCount = (u32)AtElements(&Chunk->StandingSpots);
+
+  if (HasMesh(&Chunk->Meshes, MeshBit_Main))
+  {
+    Result.MeshElementCount       = Chunk->Meshes.E[MeshIndex_Main]->At;
+  }
+
+  Result.VertexElementSize        = (u32)sizeof(v3);
+  Result.NormalElementSize        = (u32)sizeof(v3);
+  Result.MaterialElementSize      = (u32)sizeof(vertex_material);
+  Result.StandingSpotElementSize  = (u32)sizeof(v3i);
+  Result.VoxelElementSize         = (u32)sizeof(voxel);
+
+  return Result;
+}
 link_internal world_chunk_file_header_v1
 MakeWorldChunkFileHeader_v1(world_chunk *Chunk)
 {
@@ -73,7 +99,7 @@ GetSizeRequirements(untextured_3d_geometry_buffer *Mesh)
 #endif
 
 link_internal b32
-SerializeMesh(native_file *File, untextured_3d_geometry_buffer *Mesh, world_chunk_file_header_v2 *FileHeader)
+SerializeMesh(native_file *File, untextured_3d_geometry_buffer *Mesh, world_chunk_file_header_v3 *FileHeader)
 {
   b32 Result = True;
 
@@ -84,8 +110,8 @@ SerializeMesh(native_file *File, untextured_3d_geometry_buffer *Mesh, world_chun
     u32 VertElementSize = FileHeader->VertexElementSize;
     u64 VertByteCount = VertElementSize * TotalElements;
 
-    u32 ColorElementSize = FileHeader->ColorElementSize;
-    u64 ColorByteCount = ColorElementSize * TotalElements;
+    u32 ColorElementSize = FileHeader->MaterialElementSize;
+    u64 MatlByteCount = ColorElementSize * TotalElements;
 
     u32 NormalElementSize = FileHeader->NormalElementSize;
     u64 NormalByteCount = NormalElementSize * TotalElements;
@@ -94,9 +120,9 @@ SerializeMesh(native_file *File, untextured_3d_geometry_buffer *Mesh, world_chun
     Result &= WriteToFile(File, Tag);
     Result &= WriteToFile(File, (u8*)Mesh->Verts, VertByteCount);
 
-    Tag = WorldChunkFileTag_COLO;
+    Tag = WorldChunkFileTag_MATL;
     Result &= WriteToFile(File, Tag);
-    Result &= WriteToFile(File, (u8*)Mesh->Colors, ColorByteCount);
+    Result &= WriteToFile(File, (u8*)Mesh->Mat, MatlByteCount);
 
     Tag = WorldChunkFileTag_NORM;
     Result &= WriteToFile(File, Tag);
@@ -106,9 +132,11 @@ SerializeMesh(native_file *File, untextured_3d_geometry_buffer *Mesh, world_chun
   return Result;
 }
 
+#if 0
 link_internal b32
 SerializeMesh(native_file *File, untextured_3d_geometry_buffer *Mesh, world_chunk_file_header_v1 *FileHeader)
 {
+  NotImplemented;
   b32 Result = True;
 
   u64 TotalElements = FileHeader->MeshElementCount;
@@ -130,7 +158,7 @@ SerializeMesh(native_file *File, untextured_3d_geometry_buffer *Mesh, world_chun
 
     Tag = WorldChunkFileTag_COLO;
     Result &= WriteToFile(File, Tag);
-    Result &= WriteToFile(File, (u8*)Mesh->Colors, ColorByteCount);
+    Result &= WriteToFile(File, (u8*)Mesh->Mat, MatlByteCount);
 
     Tag = WorldChunkFileTag_NORM;
     Result &= WriteToFile(File, Tag);
@@ -139,6 +167,7 @@ SerializeMesh(native_file *File, untextured_3d_geometry_buffer *Mesh, world_chun
 
   return Result;
 }
+#endif
 
 #if 0
 link_internal void*
@@ -167,7 +196,7 @@ Read_u32(native_file *File)
 }
 
 link_internal untextured_3d_geometry_buffer*
-DeserializeMesh(native_file *File, world_chunk_file_header *Header, untextured_3d_geometry_buffer *Result)
+DeserializeMesh(native_file *File, world_chunk_file_header_v2 *Header, untextured_3d_geometry_buffer *Result)
 {
   u64 TotalElements = Header->MeshElementCount;
 
@@ -189,10 +218,56 @@ DeserializeMesh(native_file *File, world_chunk_file_header *Header, untextured_3
   // Color data
   Tag = Read_u32(File);
   Assert(Tag == WorldChunkFileTag_COLO);
+  
+
+  // TODO(Jesse): Copy into temp buffer and scatter to material props
+  NotImplemented;
 
   u32 ColorElementSize = Header->ColorElementSize;
   Assert(ColorElementSize == (u32)sizeof(v4));
-  ReadBytesIntoBuffer(File, ColorElementSize*TotalElements, (u8*)Result->Colors);
+  /* ReadBytesIntoBuffer(File, ColorElementSize*TotalElements, (u8*)Result->Colors); */
+
+  //
+  // Normal data
+  Tag = Read_u32(File);
+  Assert(Tag == WorldChunkFileTag_NORM);
+
+  u32 NormalElementSize = Header->NormalElementSize;
+  Assert(NormalElementSize == (u32)sizeof(v3));
+  ReadBytesIntoBuffer(File, NormalElementSize*TotalElements, (u8*)Result->Normals);
+
+  Result->Timestamp = __rdtsc();
+
+  return Result;
+}
+
+link_internal untextured_3d_geometry_buffer*
+DeserializeMesh(native_file *File, world_chunk_file_header *Header, untextured_3d_geometry_buffer *Result)
+{
+  u64 TotalElements = Header->MeshElementCount;
+
+  Assert(Result->At == 0);
+  Assert(TotalElements < Result->End);
+  Result->At = (u32)TotalElements;
+
+  //
+  // Vertex data
+  //
+  u32 Tag = Read_u32(File);
+  Assert(Tag ==  WorldChunkFileTag_VERT);
+
+  u32 VertElementSize = Header->VertexElementSize;
+  Assert(VertElementSize == (u32)sizeof(v3));
+  ReadBytesIntoBuffer(File, VertElementSize*TotalElements, (u8*)Result->Verts);
+
+  //
+  // Color data
+  Tag = Read_u32(File);
+  Assert(Tag == WorldChunkFileTag_MATL);
+
+  u32 MaterialElementSize = Header->MaterialElementSize;
+  Assert(MaterialElementSize == (u32)sizeof(vertex_material));
+  ReadBytesIntoBuffer(File, MaterialElementSize*TotalElements, (u8*)Result->Mat);
 
   //
   // Normal data
@@ -288,9 +363,12 @@ DeserializeChunk(native_file *AssetFile, world_chunk *Result, tiered_mesh_freeli
 
       Header.MeshElementCount = v1Header.MeshElementCount;
 
-      Header.VertexElementSize = SafeTruncateU8(v1Header.VertexElementSize);
-      Header.ColorElementSize = SafeTruncateU8(v1Header.ColorElementSize);
-      Header.NormalElementSize = SafeTruncateU8(v1Header.NormalElementSize);
+      Header.VertexElementSize   = SafeTruncateU8(v1Header.VertexElementSize);
+
+      NotImplemented; // TODO(Jesse): What do we do when we remove a member??
+      /* Header.MaterialElementSize = SafeTruncateU8(v1Header.ColorElementSize); */
+
+      Header.NormalElementSize   = SafeTruncateU8(v1Header.NormalElementSize);
     } break;
 
     case 2:
@@ -307,11 +385,19 @@ DeserializeChunk(native_file *AssetFile, world_chunk *Result, tiered_mesh_freeli
       Header.MeshElementCount = v2Header.MeshElementCount;
 
       Header.VertexElementSize = v2Header.VertexElementSize;
-      Header.ColorElementSize = v2Header.ColorElementSize;
+
+      NotImplemented; // TODO(Jesse): What do we do when we remove a member??
+      /* Header.ColorElementSize = v2Header.ColorElementSize; */
+
       Header.NormalElementSize = v2Header.NormalElementSize;
       Header.StandingSpotElementSize = v2Header.StandingSpotElementSize;
 
       Header.VoxelElementSize = v2Header.VoxelElementSize;
+    } break;
+
+    case 3:
+    {
+      NotImplemented;
     } break;
 
     default:
@@ -368,7 +454,7 @@ SerializeChunk(world_chunk *Chunk, counted_string AssetPath)
 
   native_file File = OpenFile(Filename, "w+b");
 
-  world_chunk_file_header_v2 FileHeader = MakeWorldChunkFileHeader_v2(Chunk);
+  world_chunk_file_header_v3 FileHeader = MakeWorldChunkFileHeader_v3(Chunk);
 
   Result &= WriteToFile(&File, (u8*)&FileHeader, sizeof(FileHeader));
 

@@ -743,6 +743,9 @@ IsDifferentTransparency(voxel *Voxels, s32 SrcIndex, v3i DestP, v3i SrcChunkDim)
   voxel *SrcVox = Voxels+SrcIndex;
   voxel *DstVox = Voxels+DestIndex;
 
+#if 0
+  b32 Result = True;
+#else
   b32 Result = False;
   if (SrcVox->Transparency)
   {
@@ -752,7 +755,7 @@ IsDifferentTransparency(voxel *Voxels, s32 SrcIndex, v3i DestP, v3i SrcChunkDim)
     }
     else
     {
-      Result = True;
+      Result = False;
     }
   }
   else
@@ -766,6 +769,7 @@ IsDifferentTransparency(voxel *Voxels, s32 SrcIndex, v3i DestP, v3i SrcChunkDim)
       Result = False;
     }
   }
+#endif
 
   return Result;
 }
@@ -958,10 +962,9 @@ DrawDebugVoxels( voxel *Voxels,
   /* random_series ColorEntropy = {33453}; */
 
 
-  v3 Diameter = V3(1.0f);
-  v3 VertexData[VERTS_PER_FACE];
-  v3 FaceColors[VERTS_PER_FACE];
-  v2 TransEmiss[VERTS_PER_FACE];
+  v3   Diameter = V3(1.0f);
+  v3   VertexData[VERTS_PER_FACE];
+  matl Materials[VERTS_PER_FACE];
 
   auto MinDim = SrcChunkMin;
   auto MaxDim = Min(SrcChunkDim, SrcChunkMax); // SrcChunkMin+DestChunkDim+1
@@ -975,48 +978,39 @@ DrawDebugVoxels( voxel *Voxels,
         s32 Index = GetIndex(DestP, SrcChunkDim);
         voxel *Voxel = Voxels + Index;
 
-#if 0
-        FillColorArray(RED, FaceColors, DefaultPalette, VERTS_PER_FACE);
-        if (Voxel->Flags & Voxel_Filled)
-        {
-          TopFaceVertexData( V3(DestP-SrcChunkMin), V3(0.25f), VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, RightFaceNormalData, FaceColors);
-          /* DrawVoxel( DestGeometry, V3(x,y,z), V4(1,0,0,1), V3(.1f)); */
-        }
-#endif
-
         // TODO(Jesse): This copy could be avoided in multiple ways, and should be.
-        FillColorArray(Voxel->Color, FaceColors, DefaultPalette, VERTS_PER_FACE);
+        v3 Color = GetColorData(DefaultPalette, Voxel->Color);
+        FillArray(VertexMaterial(Color, 0.f, 0.f), Materials, VERTS_PER_FACE);
 
         if (Voxel->Flags & Voxel_RightFace)
         {
           RightFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, RightFaceNormalData, FaceColors, TransEmiss);
+          BufferVertsDirect(DestGeometry, 6, VertexData, RightFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_LeftFace)
         {
           LeftFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, LeftFaceNormalData, FaceColors, TransEmiss);
+          BufferVertsDirect(DestGeometry, 6, VertexData, LeftFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_BottomFace)
         {
           BottomFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, BottomFaceNormalData, FaceColors, TransEmiss);
+          BufferVertsDirect(DestGeometry, 6, VertexData, BottomFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_TopFace)
         {
           TopFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, TopFaceNormalData, FaceColors, TransEmiss);
+          BufferVertsDirect(DestGeometry, 6, VertexData, TopFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_FrontFace)
         {
           FrontFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, FrontFaceNormalData, FaceColors, TransEmiss);
+          BufferVertsDirect(DestGeometry, 6, VertexData, FrontFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_BackFace)
         {
           BackFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, BackFaceNormalData, FaceColors, TransEmiss);
+          BufferVertsDirect(DestGeometry, 6, VertexData, BackFaceNormalData, Materials);
         }
       }
     }
@@ -1196,7 +1190,8 @@ BuildWorldChunkMesh_DebugVoxels( voxel *Voxels,
   s32 backVoxelReadIndex;
 
   v3 VertexData[VERTS_PER_FACE];
-  v4 FaceColors[VERTS_PER_FACE];
+  /* v4 FaceColors[VERTS_PER_FACE]; */
+  matl Materials[VERTS_PER_FACE];
 
   auto SrcMinP = SrcChunkMin;
   auto MaxDim = Min(SrcChunkDim, SrcChunkMax); // SrcChunkMin+DestChunkDim+1
@@ -1224,27 +1219,27 @@ BuildWorldChunkMesh_DebugVoxels( voxel *Voxels,
 
           {
             RightFaceVertexData( DestP, Diameter, VertexData);
-            BufferVertsDirect(DestGeometry, 6, VertexData, RightFaceNormalData, FaceColors);
+            BufferVertsDirect(DestGeometry, 6, VertexData, RightFaceNormalData, Materials);
           }
           {
             LeftFaceVertexData( DestP, Diameter, VertexData);
-            BufferVertsDirect(DestGeometry, 6, VertexData, LeftFaceNormalData, FaceColors);
+            BufferVertsDirect(DestGeometry, 6, VertexData, LeftFaceNormalData, Materials);
           }
           {
             BottomFaceVertexData( DestP, Diameter, VertexData);
-            BufferVertsDirect(DestGeometry, 6, VertexData, BottomFaceNormalData, FaceColors);
+            BufferVertsDirect(DestGeometry, 6, VertexData, BottomFaceNormalData, Materials);
           }
           {
             TopFaceVertexData( DestP, Diameter, VertexData);
-            BufferVertsDirect(DestGeometry, 6, VertexData, TopFaceNormalData, FaceColors);
+            BufferVertsDirect(DestGeometry, 6, VertexData, TopFaceNormalData, Materials);
           }
           {
             FrontFaceVertexData( DestP, Diameter, VertexData);
-            BufferVertsDirect(DestGeometry, 6, VertexData, FrontFaceNormalData, FaceColors);
+            BufferVertsDirect(DestGeometry, 6, VertexData, FrontFaceNormalData, Materials);
           }
           {
             BackFaceVertexData( DestP, Diameter, VertexData);
-            BufferVertsDirect(DestGeometry, 6, VertexData, BackFaceNormalData, FaceColors);
+            BufferVertsDirect(DestGeometry, 6, VertexData, BackFaceNormalData, Materials);
           }
         }
         TmpIndex++;
@@ -1291,8 +1286,9 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
 
 
   v3 VertexData[VERTS_PER_FACE];
-  v3 FaceColors[VERTS_PER_FACE];
-  v2 TransEmiss[VERTS_PER_FACE];
+  /* v3 FaceColors[VERTS_PER_FACE]; */
+  /* v2 TransEmiss[VERTS_PER_FACE]; */
+  matl Materials[VERTS_PER_FACE];
 
   auto SrcMinP = SrcChunkMin;
   auto MaxDim = Min(SrcChunkDim, SrcChunkMax); // SrcChunkMin+DestChunkDim+1
@@ -1331,59 +1327,55 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
         voxel *Voxel = TempVoxels + Index;
 
         /* u8 C =  ((Voxel->Color + RandomU32(&ColorEntropy)) & 0xFF); */
-        u8 C = Voxel->Color;
+        /* u8 C = Voxel->Color; */
 
         // TODO(Jesse): This copy could be avoided in multiple ways, and should be.
-        FillColorArray(C, FaceColors, ColorPallette, VERTS_PER_FACE);
+        /* FillColorArray(C, FaceColors, ColorPallette, VERTS_PER_FACE); */
+
+
+        v3 Color = GetColorData(ColorPallette, Voxel->Color);
+        f32 Trans = (f32)Voxel->Transparency / 255.f;
+        FillArray(VertexMaterial(Color, Trans, 0.f), Materials, VERTS_PER_FACE);
 
         untextured_3d_geometry_buffer *Dest = {};
-        if (Voxel->Transparency)
-        {
-          Dest = DestTransparentGeometry;
-          FillArray(V2(1.f, 0.f), TransEmiss, VERTS_PER_FACE);
-        }
-        else
-        {
-          Dest = DestGeometry;
-          FillArray({}, TransEmiss, VERTS_PER_FACE);
-        }
+        if (Voxel->Transparency) { Dest = DestTransparentGeometry; } else { Dest = DestGeometry; }
 
         if (Voxel->Flags & Voxel_RightFace)
         {
           v3 Dim = DoXStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_RightFace, Voxel->Color);
           RightFaceVertexData( V3(TmpVoxP), Dim, VertexData);
-          BufferVertsDirect(Dest, 6, VertexData, RightFaceNormalData, FaceColors, TransEmiss);
+          BufferVertsDirect(Dest, 6, VertexData, RightFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_LeftFace)
         {
           v3 Dim = DoXStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_LeftFace, Voxel->Color);
           LeftFaceVertexData( V3(TmpVoxP), Dim, VertexData);
-          BufferVertsDirect(Dest, 6, VertexData, LeftFaceNormalData, FaceColors, TransEmiss);
+          BufferVertsDirect(Dest, 6, VertexData, LeftFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_BottomFace)
         {
           v3 Dim = DoZStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_BottomFace, Voxel->Color);
           BottomFaceVertexData( V3(TmpVoxP), Dim, VertexData);
-          BufferVertsDirect(Dest, 6, VertexData, BottomFaceNormalData, FaceColors, TransEmiss);
+          BufferVertsDirect(Dest, 6, VertexData, BottomFaceNormalData, Materials);
         }
 
         if (Voxel->Flags & Voxel_TopFace)
         {
           v3 Dim = DoZStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_TopFace, Voxel->Color);
           TopFaceVertexData( V3(TmpVoxP), Dim, VertexData);
-          BufferVertsDirect(Dest, 6, VertexData, TopFaceNormalData, FaceColors, TransEmiss);
+          BufferVertsDirect(Dest, 6, VertexData, TopFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_FrontFace)
         {
           v3 Dim = DoYStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_FrontFace, Voxel->Color);
           FrontFaceVertexData( V3(TmpVoxP), Dim, VertexData);
-          BufferVertsDirect(Dest, 6, VertexData, FrontFaceNormalData, FaceColors, TransEmiss);
+          BufferVertsDirect(Dest, 6, VertexData, FrontFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_BackFace)
         {
           v3 Dim = DoYStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_BackFace, Voxel->Color);
           BackFaceVertexData( V3(TmpVoxP), Dim, VertexData);
-          BufferVertsDirect(Dest, 6, VertexData, BackFaceNormalData, FaceColors, TransEmiss);
+          BufferVertsDirect(Dest, 6, VertexData, BackFaceNormalData, Materials);
         }
       }
     }
@@ -1436,8 +1428,9 @@ BuildMipMesh( voxel *Voxels,
 
 
   v3 VertexData[VERTS_PER_FACE];
-  v3 FaceColors[VERTS_PER_FACE];
-  v2 TransEmiss[VERTS_PER_FACE];
+  /* v3 FaceColors[VERTS_PER_FACE]; */
+  /* v2 TransEmiss[VERTS_PER_FACE]; */
+  matl Materials[VERTS_PER_FACE];
 
   Assert(VoxDim >= InnerMax);
 
@@ -1565,47 +1558,51 @@ BuildMipMesh( voxel *Voxels,
 
         voxel_position ActualP = TmpVoxP-1;
         /* u8 C =  ((Voxel->Color + RandomU32(&ColorEntropy)) & 0xFF); */
-        u8 C = Voxel->Color;
+        /* u8 C = Voxel->Color; */
 
         // TODO(Jesse): This copy could be avoided in multiple ways, and should be.
-        FillColorArray(C, FaceColors, ColorPallette, VERTS_PER_FACE);
+        /* FillColorArray(C, FaceColors, ColorPallette, VERTS_PER_FACE); */
+
+        v3 Color = GetColorData(ColorPallette, Voxel->Color);
+        f32 Trans = (f32)Voxel->Transparency / 255.f;
+        FillArray(VertexMaterial(Color, Trans, 0.f), Materials, VERTS_PER_FACE);
 
         if (Voxel->Flags & Voxel_RightFace)
         {
           v3 Dim = DoXStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_RightFace, Voxel->Color);
           RightFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, RightFaceNormalData, FaceColors, TransEmiss);
+          BufferVertsDirect(DestGeometry, 6, VertexData, RightFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_LeftFace)
         {
           v3 Dim = DoXStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_LeftFace, Voxel->Color);
           LeftFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, LeftFaceNormalData, FaceColors, TransEmiss);
+          BufferVertsDirect(DestGeometry, 6, VertexData, LeftFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_BottomFace)
         {
           v3 Dim = DoZStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_BottomFace, Voxel->Color);
           BottomFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, BottomFaceNormalData, FaceColors, TransEmiss);
+          BufferVertsDirect(DestGeometry, 6, VertexData, BottomFaceNormalData, Materials);
         }
 
         if (Voxel->Flags & Voxel_TopFace)
         {
           v3 Dim = DoZStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_TopFace, Voxel->Color);
           TopFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, TopFaceNormalData, FaceColors, TransEmiss);
+          BufferVertsDirect(DestGeometry, 6, VertexData, TopFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_FrontFace)
         {
           v3 Dim = DoYStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_FrontFace, Voxel->Color);
           FrontFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, FrontFaceNormalData, FaceColors, TransEmiss);
+          BufferVertsDirect(DestGeometry, 6, VertexData, FrontFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_BackFace)
         {
           v3 Dim = DoYStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_BackFace, Voxel->Color);
           BackFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, BackFaceNormalData, FaceColors, TransEmiss);
+          BufferVertsDirect(DestGeometry, 6, VertexData, BackFaceNormalData, Materials);
         }
       }
     }
@@ -1651,8 +1648,9 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve( voxel *Voxels,
 
   v3 Diameter = V3(1.0f);
   v3 VertexData[VERTS_PER_FACE];
-  v3 FaceColors[VERTS_PER_FACE];
-  v2 TransEmiss[VERTS_PER_FACE] = {};
+  /* v3 FaceColors[VERTS_PER_FACE]; */
+  /* v2 TransEmiss[VERTS_PER_FACE] = {}; */
+  matl Materials[VERTS_PER_FACE];
 
   auto MinDim = SrcChunkMin;
   auto MaxDim = Min(VoxDim, SrcChunkMax); // SrcChunkMin+DestChunkDim+1
@@ -1667,37 +1665,41 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve( voxel *Voxels,
         voxel *Voxel = Voxels + Index;
 
         // TODO(Jesse): This copy could be avoided in multiple ways, and should be.
-        FillColorArray(Voxel->Color, FaceColors, ColorPallette, VERTS_PER_FACE);
+        /* FillColorArray(Voxel->Color, FaceColors, ColorPallette, VERTS_PER_FACE); */
+
+        v3 Color = GetColorData(ColorPallette, Voxel->Color);
+        f32 Trans = (f32)Voxel->Transparency / 255.f;
+        FillArray(VertexMaterial(Color, Trans, 0.f), Materials, VERTS_PER_FACE);
 
         if (Voxel->Flags & Voxel_RightFace)
         {
           RightFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, RightFaceNormalData, FaceColors, TransEmiss);
+          BufferVertsDirect(DestGeometry, 6, VertexData, RightFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_LeftFace)
         {
           LeftFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, LeftFaceNormalData, FaceColors, TransEmiss);
+          BufferVertsDirect(DestGeometry, 6, VertexData, LeftFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_BottomFace)
         {
           BottomFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, BottomFaceNormalData, FaceColors, TransEmiss);
+          BufferVertsDirect(DestGeometry, 6, VertexData, BottomFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_TopFace)
         {
           TopFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, TopFaceNormalData, FaceColors, TransEmiss);
+          BufferVertsDirect(DestGeometry, 6, VertexData, TopFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_FrontFace)
         {
           FrontFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, FrontFaceNormalData, FaceColors, TransEmiss);
+          BufferVertsDirect(DestGeometry, 6, VertexData, FrontFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_BackFace)
         {
           BackFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, BackFaceNormalData, FaceColors, TransEmiss);
+          BufferVertsDirect(DestGeometry, 6, VertexData, BackFaceNormalData, Materials);
         }
       }
     }
@@ -1788,32 +1790,32 @@ BuildWorldChunkMesh_Direct( voxel *Voxels,
         if ( !IsInsideDim( VoxDim, rightVoxel) || NotFilled( Voxels, rightVoxel, VoxDim) )
         {
           RightFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, RightFaceNormalData, FaceColors);
+          BufferVertsDirect(DestGeometry, 6, VertexData, RightFaceNormalData, Materials);
         }
         if ( !IsInsideDim( VoxDim, leftVoxel) || NotFilled( Voxels, leftVoxel, VoxDim) )
         {
           LeftFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, LeftFaceNormalData, FaceColors);
+          BufferVertsDirect(DestGeometry, 6, VertexData, LeftFaceNormalData, Materials);
         }
         if ( !IsInsideDim( VoxDim, botVoxel) || NotFilled( Voxels, botVoxel, VoxDim) )
         {
           BottomFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, BottomFaceNormalData, FaceColors);
+          BufferVertsDirect(DestGeometry, 6, VertexData, BottomFaceNormalData, Materials);
         }
         if ( !IsInsideDim( VoxDim, topVoxel) || NotFilled( Voxels, topVoxel, VoxDim) )
         {
           TopFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, TopFaceNormalData, FaceColors);
+          BufferVertsDirect(DestGeometry, 6, VertexData, TopFaceNormalData, Materials);
         }
         if ( !IsInsideDim( VoxDim, frontVoxel) || NotFilled( Voxels, frontVoxel, VoxDim) )
         {
           FrontFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, FrontFaceNormalData, FaceColors);
+          BufferVertsDirect(DestGeometry, 6, VertexData, FrontFaceNormalData, Materials);
         }
         if ( !IsInsideDim( VoxDim, backVoxel) || NotFilled( Voxels, backVoxel, VoxDim) )
         {
           BackFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, BackFaceNormalData, FaceColors);
+          BufferVertsDirect(DestGeometry, 6, VertexData, BackFaceNormalData, Materials);
         }
       }
     }
@@ -3986,10 +3988,10 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   random_series Entropy = {43246};
   // NOTE(Jesse): We can actually do the entire dim here, but it's probably
   // better (faster) to just do what we actually need to
-  MarkBoundaryVoxels_NoExteriorFaces( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-1, &Entropy, GREY_5, GREY_7);
+  /* MarkBoundaryVoxels_NoExteriorFaces( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-1, &Entropy, GREY_5, GREY_7); */
   /* MarkBoundaryVoxels_NoExteriorFaces( CopiedVoxels, QueryDim, {}, QueryDim, &Entropy, GREY_5, GREY_7); */
   /* MarkBoundaryVoxels_MakeExteriorFaces( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-1); */
-  /* MarkBoundaryVoxels_MakeExteriorFaces( CopiedVoxels, QueryDim, {}, QueryDim); */
+  MarkBoundaryVoxels_MakeExteriorFaces( CopiedVoxels, QueryDim, {}, QueryDim);
 
 
   for (u32 ChunkIndex = 0; ChunkIndex < ChunkCount; ++ChunkIndex)
@@ -4565,14 +4567,14 @@ BufferChunkMesh( graphics *Graphics,
   if (Length(Rot.xyz) == 0.f)
   {
     BufferVertsChecked(&CopyBuffer, Src->At,
-                       Src->Verts, Src->Normals, Src->Colors, Src->TransEmiss,
+                       Src->Verts, Src->Normals, Src->Mat,
                        ModelBasisP, V3(Scale));
   }
   else
   {
 
     BufferVertsChecked(&CopyBuffer, Src->At,
-                       Src->Verts, Src->Normals, Src->Colors, Src->TransEmiss,
+                       Src->Verts, Src->Normals, Src->Mat,
                        ModelBasisP, V3(Scale), Rot);
   }
 }

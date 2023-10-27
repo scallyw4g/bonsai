@@ -1,7 +1,8 @@
 
-in vec3 vertexP_worldspace;
-in vec3 vertexN_worldspace;
-in vec4 MaterialColor;
+in v3 vertexP_worldspace;
+in v3 vertexN_worldspace;
+in v3 MaterialColor;
+in v2 TransEmiss;
 
 layout (location = 0) out vec4 gColor;
 layout (location = 1) out vec3 gNormal;
@@ -71,7 +72,7 @@ void main()
   gPosition.w = Linearize(gl_FragCoord.z); // Depth
   gNormal = vertexN_worldspace;
 
-  vec4 FinalColor = MaterialColor;
+  vec4 FinalColor = vec4(MaterialColor, 1.f);
 
 #if 0
   {

@@ -131,8 +131,8 @@ DebugUi(engine_resources *Engine, cs Name, untextured_3d_geometry_buffer *Value)
     PushColumn(Ui, CS((u64)Value->Verts));
     PushNewRow(Ui);
 
-    PushColumn(Ui, CS("Colors : "));
-    PushColumn(Ui, CS((u64)Value->Colors));
+    PushColumn(Ui, CS("Mats : "));
+    PushColumn(Ui, CS((u64)Value->Mat));
     PushNewRow(Ui);
 
     PushColumn(Ui, CS("Normals : "));

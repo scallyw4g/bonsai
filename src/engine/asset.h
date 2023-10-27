@@ -50,11 +50,15 @@ enum world_chunk_file_tag
   WorldChunkFileTag_VOXD = 'DXOV', // Voxel data
 
   WorldChunkFileTag_VERT = 'TREV', // Vertex data
-  WorldChunkFileTag_COLO = 'OLOC', // Color data
   WorldChunkFileTag_NORM = 'MRON', // Normal data
+
+  WorldChunkFileTag_COLO = 'OLOC', // Color data @@ DEPRECATED @@
 
   // v2
   WorldChunkFileTag_SPOT = 'TOPS', // Standing spots
+
+  // v3
+  WorldChunkFileTag_MATL = 'LTAM', // Material data
 };
 
 struct world_chunk_file_header_v1
@@ -93,9 +97,29 @@ struct world_chunk_file_header_v2
   u8 VoxelElementSize;
   u8 pad[3];
 };
+
+struct world_chunk_file_header_v3
+{
+  u32 WHNK; // WorldChunkFileTag_WHNK
+  u32 Version = 3;
+  u64 Checksum;
+
+  u32 VoxelElementCount;
+  u32 StandingSpotElementCount;
+
+  u64 MeshElementCount;
+
+  u8 VertexElementSize;
+  u8 NormalElementSize;
+  u8 MaterialElementSize;
+  u8 StandingSpotElementSize;
+
+  u8 VoxelElementSize;
+  u8 pad[3];
+};
 #pragma pack(pop)
 
-typedef world_chunk_file_header_v2 world_chunk_file_header;
+typedef world_chunk_file_header_v3 world_chunk_file_header;
 
 enum asset_load_state
 {
