@@ -99,8 +99,8 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, un
   System->ParticleStartingTransparency = 0.4f;
   System->ParticleEndingTransparency = 0.4f;
 
-  System->ParticleLightEmission = 1.2f;
-  System->ParticleLightEmissionChance = 0.80f;
+  /* System->ParticleLightEmission = 1.2f; */
+  System->ParticleLightEmissionChance = 0.05f;
   System->ParticleLightEmission = 0.1f;
 
   System->SpawnRegion = aabb(Offset, V3(Radius*0.20f) );
@@ -112,7 +112,7 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, un
 
   // Fire particles are emissive
 
-  System->ParticleLightEmission = 0.0f;
+  /* System->ParticleLightEmission = 0.0f; */
 
   /* System->Physics.Speed = 2; */
   /* System->Physics.Drag = V3(2.2f); */

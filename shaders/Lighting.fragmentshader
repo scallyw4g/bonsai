@@ -336,6 +336,7 @@ void main()
     /* return; */
 
     TransparencyContrib *= max(LightTransmission, LightEmission);
+    /* TransparencyContrib *= LightEmission; */
 
     /* out_LightColor = vec4( TotalLight + TransparencyContrib*LightTransmission, 1.f); */
     /* out_LightColor = vec4(Revealage, 0.f, 0.f, 1.f); */

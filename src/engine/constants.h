@@ -42,6 +42,4 @@
 
 #define TOTAL_ENTITY_COUNT     (1024*2)
 
-// THIS MUST MATCH THE DEFINE IN header.glsl
-// Also must be a power of two
-#define MAX_LIGHTS 1024
+#define MAX_LIGHTS (1024*2)

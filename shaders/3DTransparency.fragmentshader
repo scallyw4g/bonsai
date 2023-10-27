@@ -109,7 +109,7 @@ void main()
       /* Count = V4(0.f, 0.f, 0.f, Alpha); */
       /* Count = V4(0.f, 0.f, 0.f, Alpha); */
       Count.r = Alpha;
-      Count.g = Emission;
+      Count.g = Emission * Alpha;
       /* Count = V4(Alpha, Emission, 0.f 0.f); */
       /* Count = -V4(ColorAccumulation.a); */
       /* Count = -V4(1.f-(Alpha*DepthAtten)); */
