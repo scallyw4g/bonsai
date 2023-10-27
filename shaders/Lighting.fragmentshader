@@ -86,8 +86,9 @@ void main()
   ivec2 texelCoord = ivec2(gBufferUV*gBufferTextureDim);
   vec4 FragPosition = texelFetch(gPosition, texelCoord, 0);
 
-  vec4 AccumTex = texture(TransparencyAccum, gBufferUV);
-  float AccumCountTex = texture(TransparencyCount, gBufferUV).r;
+  vec4 TransAccum = texture(TransparencyAccum, gBufferUV);
+  float TransAccumCount = texture(TransparencyCount, gBufferUV).r;
+  float TransAccumEmission = texture(TransparencyCount, gBufferUV).g;
 
   vec3 AmbientLightContrib = SunColor*0.06f;
   vec3 KeyLightContrib     = V3(0.f);
@@ -99,7 +100,7 @@ void main()
   vec4 gColorTexel = texelFetch(gColor, texelCoord, 0);
 
   vec3 Diffuse = gColorTexel.rgb;
-  float Emission = gColorTexel.a;
+  /* float Emission = gColorTexel.a; */
 
   /* Diffuse *= Emission; */
 
@@ -304,14 +305,14 @@ void main()
 
   if (BravoilMyersOIT)
   {
-    /* TransparencyContrib = BravoilMyersWeightedAverage(AccumTex, AccumCountTex); */
+    /* TransparencyContrib = BravoilMyersWeightedAverage(TransAccum, TransAccumCount); */
 
-    float Count = max(1.f, AccumCountTex);
+    float Count = max(1.f, TransAccumCount);
 
     // Have to clamp because this is > 1.f for emissive surfaces, which breaks the following equation
-    float Alpha = clamp(AccumTex.a, 0.f, 1.f);
+    float Alpha = clamp(TransAccum.a, 0.f, 1.f);
 
-    v3 ColorResult = AccumTex.rgb/max(AccumTex.a, 0.00001f);
+    v3 ColorResult = TransAccum.rgb/max(TransAccum.a, 0.00001f);
     float AlphaResult = pow(max(0.0, 1.0-(Alpha/Count)), Count);
 
     TransparencyContrib = v3(ColorResult * AlphaResult);
@@ -321,13 +322,20 @@ void main()
 
   if (BravoilMcGuireOIT)
   {
-    float Revealage = clamp(AccumCountTex, 0.f, 1.f);
+    float Revealage = clamp(TransAccumCount, 0.f, 1.f);
     float Coverage = 1.f-Revealage;
-    TransparencyContrib = (AccumTex.rgb / clamp(AccumTex.a, 1e-4, 5e4)) * Coverage;
+    TransparencyContrib = (TransAccum.rgb / clamp(TransAccum.a, 1e-4, 5e4)); // * Coverage;
 
     float LightTransmission = length(KeyLightContrib + BackLightContrib + PointLightsContrib + AmbientLightContrib);
+    float LightEmission = TransAccumEmission;
 
-    TransparencyContrib *= LightTransmission;
+    /* out_LightColor = V4(TransAccumEmission, 0.f, 0.f, 1.f); */
+    /* out_LightColor = V4(LightTransmission, 0.f, 0.f, 1.f); */
+    /* out_LightColor = V4(LightEmission, 0.f, 0.f, 1.f); */
+    /* out_LightColor = V4(max(LightTransmission, LightEmission), 0.f, 0.f, 1.f); */
+    /* return; */
+
+    TransparencyContrib *= max(LightTransmission, LightEmission);
 
     /* out_LightColor = vec4( TotalLight + TransparencyContrib*LightTransmission, 1.f); */
     /* out_LightColor = vec4(Revealage, 0.f, 0.f, 1.f); */
@@ -336,10 +344,11 @@ void main()
   }
 
   out_LightColor = V4(TotalLight + TransparencyContrib, 1.f);
+  /* out_LightColor = V4(Emission, 0.f, 0.f, 1.f); */
+  /* return; */
 
 
-
-  if (UseLightingBloom) { BloomColor = TotalLight + (Emission*Diffuse) + TransparencyContrib.rgb; }
+  if (UseLightingBloom) { BloomColor = TotalLight + TransparencyContrib.rgb; }
 
   /* else { BloomColor = vec3(0.0f, 0.0f, 0.0f); } */
 

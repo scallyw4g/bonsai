@@ -1,7 +1,8 @@
 
-in vec3 vertexP_worldspace;
-in vec3 vertexN_worldspace;
-in vec4 MaterialColor;
+in vec3 WorldP;
+in vec3 Normal;
+in vec3 MaterialColor;
+in vec2 TransEmiss;
 
 uniform sampler2D gBufferDepthTexture;
 
@@ -9,7 +10,7 @@ uniform bool BravoilMyersOIT;
 uniform bool BravoilMcGuireOIT;
 
 layout (location = 0) out vec4 ColorAccumulation;
-layout (location = 1) out vec4 Count;
+layout (location = 1) out vec2 Count;
 
 
 float Far = 5000.f;
@@ -68,18 +69,25 @@ void main()
   float gBufferDepth = texture(gBufferDepthTexture, UV).r;
   float FragDepth = gl_FragCoord.z;
 
+  float Alpha    = TransEmiss.x;
+  float Emission = TransEmiss.y;
+  /* ColorAccumulation = v4(Alpha, Emission, 0.f, 1.f); */
+  /* ColorAccumulation = v4(WorldP, 1.f); */
+  /* ColorAccumulation = v4(Normal, 1.f); */
+  /* ColorAccumulation = v4(MaterialColor, 1.f); */
+  /* Count = V4(Alpha); */
+  /* return; */
+
   if (FragDepth < gBufferDepth)
   {
     if (BravoilMyersOIT)
     {
-      ColorAccumulation = MaterialColor * MaterialColor.a;
-      Count = V4(1);
+      ColorAccumulation = v4(MaterialColor * Alpha, Alpha);
+      Count = V2(1.f);
     }
 
     if (BravoilMcGuireOIT)
     {
-      r32 Alpha = MaterialColor.a;
-
       /* ColorAccumulation = MaterialColor * Eq7(Linearize(FragDepth, 500.f, 0.1f), Alpha); */
       /* ColorAccumulation = MaterialColor * Eq7(FragDepth, Alpha); */
       /* ColorAccumulation.rgb = MaterialColor.rgb * Linearize(FragDepth, 800.f, 0.1f); */
@@ -90,7 +98,7 @@ void main()
 
       float AttenuatedAlpha = Alpha * DepthAtten;
 
-      ColorAccumulation.rgb = MaterialColor.rgb * Alpha;
+      ColorAccumulation.rgb = MaterialColor * Alpha;
       /* ColorAccumulation.rgb = MaterialColor.rgb * AttenuatedAlpha; */
       ColorAccumulation.a   = AttenuatedAlpha;
 
@@ -98,7 +106,11 @@ void main()
       /* ColorAccumulation = MaterialColor * Eq10(FragDepth, Alpha); */
 
       /* Count = -v4(1.f-Alpha); */
-      Count = V4(Alpha);
+      /* Count = V4(0.f, 0.f, 0.f, Alpha); */
+      /* Count = V4(0.f, 0.f, 0.f, Alpha); */
+      Count.r = Alpha;
+      Count.g = Emission;
+      /* Count = V4(Alpha, Emission, 0.f 0.f); */
       /* Count = -V4(ColorAccumulation.a); */
       /* Count = -V4(1.f-(Alpha*DepthAtten)); */
     }

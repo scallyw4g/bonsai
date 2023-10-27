@@ -73,7 +73,7 @@ DoCopyJob(work_queue_entry_copy_buffer_ref *Job, tiered_mesh_freelist* MeshFreel
     untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Job->Dest, Src->At);
     v3 Basis = Job->Basis;
     BufferVertsChecked( Src, &CopyDest, Basis, V3(1.0f));
-
   }
+
   ReleaseOwnership(Job->Buf, Job->MeshBit, Src);
 }

@@ -353,6 +353,9 @@ ClearFramebuffers(graphics *Graphics, render_entity_to_texture_group *RTTGroup)
   {
     GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Transparency.FBO.ID);
 
+#if 1
+    GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+#else
     {
       u32 Attachments = GL_COLOR_ATTACHMENT0;
       GL.DrawBuffers(1, &Attachments);
@@ -362,7 +365,7 @@ ClearFramebuffers(graphics *Graphics, render_entity_to_texture_group *RTTGroup)
     {
       u32 Attachments = GL_COLOR_ATTACHMENT0 + 1;
       GL.DrawBuffers(1, &Attachments);
-      GL.ClearColor(1.f, 0.f, 0.f, 1.f);
+      GL.ClearColor(1.f, 1.f, 1.f, 1.f);
       GL.Clear(GL_COLOR_BUFFER_BIT);
     }
 
@@ -370,6 +373,7 @@ ClearFramebuffers(graphics *Graphics, render_entity_to_texture_group *RTTGroup)
       // Reset draw buffers
       SetDrawBuffers(&Graphics->Transparency.FBO);
     }
+#endif
   }
   else
   {
@@ -783,8 +787,8 @@ RenderTransparencyBuffers(render_settings *Settings, transparency_render_group *
     /* GL.BlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA); */
 
     GL.BlendFunci(0, GL_ONE, GL_ONE);
-    /* GL.BlendFunci(1, GL_ONE, GL_ONE); */
-    GL.BlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+    GL.BlendFunci(1, GL_ONE, GL_ONE);
+    /* GL.BlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA); */
     /* GL.BlendFunci(1, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); */
 
     Draw(Group->GpuBuffer.Buffer.At);

@@ -63,6 +63,7 @@ MarkBufferForGrowth(untextured_3d_geometry_buffer *Dest, umm Grow)
   ToMark->BufferNeedsToGrow += Grow;
 }
 
+#if 0
 inline void
 BufferVertsDirect(
     untextured_2d_geometry_buffer *Dest,
@@ -76,6 +77,7 @@ BufferVertsDirect(
   {
     MemCopy((u8*)&Dest->Verts[Dest->At],  (u8*)Positions,                sizeof(*Positions)*NumVerts );
     MemCopy((u8*)Colors,                  (u8*)&Dest->Colors[Dest->At],  sizeof(*Colors)*NumVerts );
+    MemCopy((u8*)Colors,                  (u8*)&Dest->Colors[Dest->At],  sizeof(*Colors)*NumVerts );
     Dest->At += NumVerts;
   }
   else
@@ -84,6 +86,7 @@ BufferVertsDirect(
     MarkBufferForGrowth(Dest, NumVerts);
   }
 }
+#endif
 
 inline void
 BufferVertsDirect(
@@ -186,6 +189,7 @@ BufferVertsDirect(
 
   MemCopy((u8*)SrcNormals,     (u8*)DestNormals,  sizeof(*SrcNormals)*NumVerts );
   MemCopy((u8*)SrcVertColors,  (u8*)DestColors,   sizeof(*SrcVertColors)*NumVerts );
+  MemCopy((u8*)SrcTransEmiss,  (u8*)DestTransEmiss, sizeof(*SrcTransEmiss)*NumVerts );
 
   for ( u32 VertIndex = 0;
         VertIndex < NumVerts;

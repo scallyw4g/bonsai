@@ -580,7 +580,7 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
   GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, Image);
 
   Group->RevealTex = GenTexture(TextureSize, Memory);
-  GL.TexImage2D( GL_TEXTURE_2D, 0, GL_R32F, TextureSize.x, TextureSize.y, 0, GL_RED, GL_FLOAT, Image);
+  GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RG32F, TextureSize.x, TextureSize.y, 0, GL_RG, GL_FLOAT, Image);
 
   /* Group->Depth = MakeDepthTexture(TextureSize, Memory); */
 
