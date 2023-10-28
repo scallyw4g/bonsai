@@ -547,6 +547,14 @@ GetVoxel( world_chunk* Chunk, voxel_position VoxelP)
   return Result;
 }
 
+inline voxel
+CopyVoxel( world_chunk* Chunk, voxel_position VoxelP)
+{
+  s32 VoxelIndex = GetIndex(VoxelP, Chunk->Dim);
+  voxel Result = Chunk->Voxels[VoxelIndex];
+  return Result;
+}
+
 inline world_position
 GetAbsoluteP( world_position P, chunk_dimension WorldChunkDim)
 {

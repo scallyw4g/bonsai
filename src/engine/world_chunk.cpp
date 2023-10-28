@@ -3830,12 +3830,12 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
   QueueWorldUpdateForRegion(Engine, Mode, WorldUpdateOperationModeModifier_None, Shape, ColorIndex, Memory);
 }
 
-link_internal u32
+link_internal s32
 MapIntoQueryBox(v3i SimSpaceVoxP, v3i SimSpaceQueryMinP, voxel_position SimSpaceQueryDim)
 {
   auto Rel = SimSpaceVoxP - SimSpaceQueryMinP;
-  auto Result = GetIndex(Rel, SimSpaceQueryDim);
-  return (u32)Result;
+  s32 Result = GetIndex(Rel, SimSpaceQueryDim);
+  return Result;
 }
 
 link_internal u32
@@ -3844,6 +3844,20 @@ MapIntoQueryBox(v3 SimSpaceVoxP, v3 SimSpaceQueryMinP, voxel_position SimSpaceQu
   v3 Rel = SimSpaceVoxP - SimSpaceQueryMinP;
   s32 Result = GetIndex(Rel, SimSpaceQueryDim);
   return (u32)Result;
+}
+
+global_variable voxel g_UnsetVoxel = { 0xff, 0xff, 0xff };
+
+link_internal void
+StoreToContiguousBuffer(v3i SimSpaceChunkMin, v3i SimSpaceQueryMinP, v3i RelVoxP, v3i QueryDim, voxel *CopiedVoxels, voxel CopyValue)
+{
+  v3i SimVoxP = SimSpaceChunkMin + RelVoxP;
+
+  Assert(SimSpaceQueryMinP <= SimVoxP);
+  s32 Index = MapIntoQueryBox(SimVoxP, SimSpaceQueryMinP, QueryDim);
+  Assert(Index < Volume(QueryDim));
+  Assert(CopiedVoxels[Index] == g_UnsetVoxel);
+  CopiedVoxels[Index] = CopyValue;
 }
 
 link_internal void
@@ -3863,25 +3877,22 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
   auto P0 = GetSimSpaceP(World, MinP);
   auto P1 = GetSimSpaceP(World, MaxP);
-  /* auto SimSpaceMin = Min(P0, P1); */ 
+  /* auto SimSpaceMin = Min(P0, P1); */
   /* auto SimSpaceMax = Max(P0, P1); */
 
   rect3i SimSpaceQueryAABB = Rect3iMinMax( V3i(P0), V3i(P1));
 
-  voxel_position QueryDim = GetDim(SimSpaceQueryAABB);
+  v3i CopiedVoxelsDim = GetDim(SimSpaceQueryAABB);
 
-  Assert(QueryDim.x % Global_StandingSpotDim.x == 0);
-  Assert(QueryDim.y % Global_StandingSpotDim.y == 0);
+  Assert(CopiedVoxelsDim.x % Global_StandingSpotDim.x == 0);
+  Assert(CopiedVoxelsDim.y % Global_StandingSpotDim.y == 0);
 
-  s32 TotalVoxels_signed = Volume(SimSpaceQueryAABB);
-  Assert(TotalVoxels_signed > 0);
-
-  u32 TotalVoxels = (u32)TotalVoxels_signed;
+  s32 TotalVoxels = Volume(SimSpaceQueryAABB);
+  Assert(TotalVoxels > 0);
 
   voxel *CopiedVoxels = Allocate(voxel, Thread->PermMemory, TotalVoxels);
 
-  voxel UnsetVoxel = { 0xff, 0xff, 0xff };
-  for (u32 VoxelIndex = 0; VoxelIndex < TotalVoxels; ++VoxelIndex) { CopiedVoxels[VoxelIndex] = UnsetVoxel; }
+  for (s32 VoxelIndex = 0; VoxelIndex < TotalVoxels; ++VoxelIndex) { CopiedVoxels[VoxelIndex] = g_UnsetVoxel; }
 
   v3i SimSpaceQueryMinP = SimSpaceQueryAABB.Min;
 
@@ -3903,182 +3914,169 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
     random_series Entropy = {54392};
 
-    for (s32 zVoxel = s32(ChunkRelRectMin.z); zVoxel < s32(ChunkRelRectMax.z); zVoxel += 1)
+    switch (Shape.Type)
     {
-      for (s32 yVoxel = s32(ChunkRelRectMin.y); yVoxel < s32(ChunkRelRectMax.y); yVoxel += 1)
+      InvalidCase(type_world_update_op_shape_params_noop);
+
+      case type_world_update_op_shape_params_sphere:
       {
-        for (s32 xVoxel = s32(ChunkRelRectMin.x); xVoxel < s32(ChunkRelRectMax.x); xVoxel += 1)
+        world_update_op_shape_params_sphere *Sphere = SafeCast(world_update_op_shape_params_sphere, &Shape);
+
+        canonical_position P = Sphere->Location;
+        auto LocationSimSpace = GetSimSpaceP(World, P);
+
+        switch(Mode)
         {
-          voxel_position RelVoxP = Voxel_Position(s32(xVoxel), s32(yVoxel), s32(zVoxel));
-          voxel *V = GetVoxel(Chunk, RelVoxP);
-          Assert( (V->Flags & Voxel_MarkBit) == 0);
+          InvalidCase(WorldUpdateOperationMode_None);
 
-          v3i SimSpaceVoxPExact = V3i(xVoxel, yVoxel, zVoxel) + SimSpaceChunkMin;
-
-          voxel CopyValue = *V;
-
-          switch (Shape.Type)
+          case WorldUpdateOperationMode_Subtractive:
           {
-            InvalidCase(type_world_update_op_shape_params_noop);
-
-            case type_world_update_op_shape_params_sphere:
+            switch(Modifier)
             {
-              world_update_op_shape_params_sphere *Sphere = SafeCast(world_update_op_shape_params_sphere, &Shape);
-
-              canonical_position P = Sphere->Location;
-              auto LocationSimSpace = GetSimSpaceP(World, P);
-
-              if (LengthSq(SimSpaceVoxPExact - LocationSimSpace) < Square(Sphere->Radius))
+              case WorldUpdateOperationModeModifier_None:
               {
-                switch(Mode)
+                MinMaxIterator(xVoxel, yVoxel, zVoxel, ChunkRelRectMin, ChunkRelRectMax)
                 {
-                  InvalidCase(WorldUpdateOperationMode_None);
-
-                  case WorldUpdateOperationMode_Subtractive:
+                  v3i RelVoxP = V3i(xVoxel, yVoxel, zVoxel);
+                  v3i SimVoxP = (SimSpaceChunkMin+RelVoxP);
+                  voxel V = CopyVoxel(Chunk, RelVoxP);
+                  if (LengthSq( SimVoxP - LocationSimSpace) < Square(Sphere->Radius-1.f))
                   {
-                    switch(Modifier)
-                    {
-                      case WorldUpdateOperationModeModifier_None:
-                      {
-                        if (CopyValue.Flags&Voxel_Filled) { --Chunk->FilledCount; CopyValue.Flags = Voxel_Empty; }
-                      } break;
-
-                      case WorldUpdateOperationModeModifier_Flood:
-                      {
-                        if (LengthSq(SimSpaceVoxPExact - LocationSimSpace) < Square(Sphere->Radius-1.f))
-                        {
-                          if (CopyValue.Flags&VoxelFaceMask) { --Chunk->FilledCount; CopyValue.Flags = Voxel_Empty; }
-                        }
-                        else
-                        {
-                          if (CopyValue.Flags&VoxelFaceMask) { CopyValue.Color = NewColor; }
-                        }
-                        CopyValue.Flags |= Voxel_MarkBit;
-                      } break;
-                    }
-
-                  } break;
-
-                  case WorldUpdateOperationMode_Additive:
-                  {
-                    if ( (CopyValue.Flags&Voxel_Filled) == 0 ) { ++Chunk->FilledCount; }
-                    CopyValue.Flags = Voxel_Filled;
-                    CopyValue.Color = NewColor;
-                  } break;
+                    if (V.Flags&Voxel_Filled) { --Chunk->FilledCount; V.Flags = Voxel_Empty; }
+                  }
+                  StoreToContiguousBuffer(SimSpaceChunkMin, SimSpaceQueryMinP, RelVoxP, CopiedVoxelsDim, CopiedVoxels, V);
                 }
+              } break;
 
-              }
-#if 0
-              /* else if (LengthSq(SimSpaceVoxPExact - LocationSimSpace) < Square(Sphere->Radius+1.f)) */
+              case WorldUpdateOperationModeModifier_Flood:
               {
-                switch(Mode)
+                MinMaxIterator(xVoxel, yVoxel, zVoxel, ChunkRelRectMin, ChunkRelRectMax)
                 {
-                  InvalidCase(WorldUpdateOperationMode_None);
-
-                  case WorldUpdateOperationMode_Subtractive:
+                  v3i RelVoxP = V3i(xVoxel, yVoxel, zVoxel);
+                  v3i SimVoxP = (SimSpaceChunkMin+RelVoxP);
+                  voxel CopyValue = CopyVoxel(Chunk, RelVoxP);
+                  if (LengthSq(SimVoxP - LocationSimSpace) < Square(Sphere->Radius-1.f))
                   {
-                    if (CopyValue.Flags&VoxelFaceMask)
-                    {
-                      CopyValue.Color = GREY_8;
-                    }
-                    else
-                    {
-                      CopyValue.Flags |= Voxel_MarkBit;
-                    }
-                  } break;
-
-                  case WorldUpdateOperationMode_Additive:
+                    if (CopyValue.Flags&VoxelFaceMask) { --Chunk->FilledCount; CopyValue.Flags = Voxel_Empty; }
+                  CopyValue.Flags |= Voxel_MarkBit;
+                  }
+                  else if (LengthSq(SimVoxP - LocationSimSpace) < Square(Sphere->Radius))
                   {
-                  } break;
+                    if (CopyValue.Flags&VoxelFaceMask) { CopyValue.Color = NewColor; }
+                  CopyValue.Flags |= Voxel_MarkBit;
+                  }
+                  StoreToContiguousBuffer(SimSpaceChunkMin, SimSpaceQueryMinP, RelVoxP, CopiedVoxelsDim, CopiedVoxels, CopyValue);
                 }
-              }
-#endif
-            } break;
+              } break;
+            }
 
-            case type_world_update_op_shape_params_rect:
-            {
-              // Not implemented
-              Assert(Modifier == WorldUpdateOperationModeModifier_None);
+          } break;
 
-              world_update_op_shape_params_rect *Rect = SafeCast(world_update_op_shape_params_rect, &Shape);
-
-              // NOTE(Jesse): These _should_ already be min/maxed, so we can change these to asserts.
-              v3i P0SS = V3i(Rect->P0);
-              v3i P1SS = V3i(Rect->P1);
-
-              v3i MinSS = Min(P0SS, P1SS);
-              v3i MaxSS = Max(P0SS, P1SS);
-
-              /* MinSS += ClampNegative(GetSign(MinSS)); */
-              /* MaxSS += 1; */
-
-              rect3i SSRect = {MinSS, MaxSS};
-              if (Contains(SSRect, SimSpaceVoxPExact))
-              {
-                switch(Mode)
-                {
-                  InvalidCase(WorldUpdateOperationMode_None);
-
-                  case WorldUpdateOperationMode_Subtractive:
-                  {
-                    if (CopyValue.Flags & Voxel_Filled) { --Chunk->FilledCount; }
-                    CopyValue.Flags = Voxel_Empty;
-                  } break;
-
-                  case WorldUpdateOperationMode_Additive:
-                  {
-                    if ( (CopyValue.Flags & Voxel_Filled) == 0 ) { ++Chunk->FilledCount; }
-                    CopyValue.Flags = Voxel_Filled;
-                    CopyValue.Color = NewColor;
-                  } break;
-                }
-              }
-            } break;
-
-            case type_world_update_op_shape_params_asset:
-            {
-              // Not implemented
-              Assert(Modifier == WorldUpdateOperationModeModifier_None);
-
-              world_update_op_shape_params_asset *AssetJob = SafeCast(world_update_op_shape_params_asset, &Shape);
-              asset *Asset = AssetJob->Asset;
-              /* BlitAssetIntoWorld(Engine, Asset, Origin, Memory); */
-
-              v3 AssetOriginP = GetSimSpaceP(World, AssetJob->Origin);
-
-              v3i OriginToCurrentVoxP = SimSpaceVoxPExact - AssetOriginP;
-
-              /* s32 AssetVoxelIndex = GetIndex(OriginToCurrentVoxP, Asset->Model.Dim); */
-              /* if (AssetVoxelIndex != -1) */
-              {
-                voxel *AssetV = TryGetVoxel(Asset->Model.Vox.ChunkData, OriginToCurrentVoxP);
-                if (AssetV && (AssetV->Flags&Voxel_Filled)) { CopyValue = *AssetV; }
-              }
-
-            } break;
-
-          }
-
-
-          Assert(SimSpaceQueryMinP <= SimSpaceVoxPExact);
-          u32 Index = MapIntoQueryBox(SimSpaceVoxPExact, SimSpaceQueryMinP, QueryDim);
-          Assert(Index < TotalVoxels);
-          Assert(CopiedVoxels[Index] == UnsetVoxel);
-          CopiedVoxels[Index] = CopyValue;
-          /* Assert(IsValid(CopiedVoxels+Index)); */
+          case WorldUpdateOperationMode_Additive:
+          {
+            NotImplemented;
+            /* if ( (CopyValue.Flags&Voxel_Filled) == 0 ) { ++Chunk->FilledCount; } */
+            /* CopyValue.Flags = Voxel_Filled; */
+            /* CopyValue.Color = NewColor; */
+          } break;
         }
-      }
+      } break;
+
+      case type_world_update_op_shape_params_rect:
+      {
+        // Not implemented
+        Assert(Modifier == WorldUpdateOperationModeModifier_None);
+
+        world_update_op_shape_params_rect *Rect = SafeCast(world_update_op_shape_params_rect, &Shape);
+
+        // NOTE(Jesse): These _should_ already be min/maxed, so we can change these to asserts.
+        v3i P0SS = V3i(Rect->P0);
+        v3i P1SS = V3i(Rect->P1);
+
+        v3i MinSS = Min(P0SS, P1SS);
+        v3i MaxSS = Max(P0SS, P1SS);
+
+        /* MinSS += ClampNegative(GetSign(MinSS)); */
+        /* MaxSS += 1; */
+
+        rect3i SSRect = {MinSS, MaxSS};
+        /* if (Contains(SSRect, SimVoxP)) */
+        {
+          switch(Mode)
+          {
+            InvalidCase(WorldUpdateOperationMode_None);
+
+            case WorldUpdateOperationMode_Subtractive:
+            {
+              MinMaxIterator(xVoxel, yVoxel, zVoxel, ChunkRelRectMin, ChunkRelRectMax)
+              {
+                v3i RelVoxP = V3i(xVoxel, yVoxel, zVoxel);
+                v3i SimVoxP = (SimSpaceChunkMin+RelVoxP);
+                voxel V = CopyVoxel(Chunk, RelVoxP);
+                if (Contains(SSRect, SimVoxP))
+                {
+                  if (V.Flags&Voxel_Filled) { --Chunk->FilledCount; }
+                  V.Flags = Voxel_Empty;
+                }
+                StoreToContiguousBuffer(SimSpaceChunkMin, SimSpaceQueryMinP, RelVoxP, CopiedVoxelsDim, CopiedVoxels, V);
+              }
+            } break;
+
+            case WorldUpdateOperationMode_Additive:
+            {
+              MinMaxIterator(xVoxel, yVoxel, zVoxel, ChunkRelRectMin, ChunkRelRectMax)
+              {
+                v3i RelVoxP = V3i(xVoxel, yVoxel, zVoxel);
+                v3i SimVoxP = (SimSpaceChunkMin+RelVoxP);
+                voxel V = CopyVoxel(Chunk, RelVoxP);
+                if (Contains(SSRect, SimVoxP))
+                {
+                  if ( (V.Flags & Voxel_Filled) == 0 ) { ++Chunk->FilledCount; }
+                  V.Flags = Voxel_Filled;
+                  V.Color = NewColor;
+                }
+                StoreToContiguousBuffer(SimSpaceChunkMin, SimSpaceQueryMinP, RelVoxP, CopiedVoxelsDim, CopiedVoxels, V);
+              }
+            } break;
+          }
+        }
+      } break;
+
+      case type_world_update_op_shape_params_asset:
+      {
+        // Not implemented
+        Assert(Modifier == WorldUpdateOperationModeModifier_None);
+
+        world_update_op_shape_params_asset *AssetJob = SafeCast(world_update_op_shape_params_asset, &Shape);
+        asset *Asset = AssetJob->Asset;
+
+        v3 AssetOriginP = GetSimSpaceP(World, AssetJob->Origin);
+
+        MinMaxIterator(xVoxel, yVoxel, zVoxel, ChunkRelRectMin, ChunkRelRectMax)
+        {
+          v3i RelVoxP = V3i(xVoxel, yVoxel, zVoxel);
+          v3i SimVoxP = (SimSpaceChunkMin+RelVoxP);
+          v3i OriginToCurrentVoxP = SimVoxP - AssetOriginP;
+          voxel V = CopyVoxel(Chunk, RelVoxP);
+          voxel *AssetV = TryGetVoxel(Asset->Model.Vox.ChunkData, OriginToCurrentVoxP);
+          if (AssetV && (AssetV->Flags & Voxel_Filled))
+          {
+            V = *AssetV;
+          }
+          StoreToContiguousBuffer(SimSpaceChunkMin, SimSpaceQueryMinP, RelVoxP, CopiedVoxelsDim, CopiedVoxels, V);
+        }
+
+      } break;
+
     }
   }
 
 
   random_series Entropy = {43246};
-  // NOTE(Jesse): We can actually do the entire dim here, but it's probably
-  // better (faster) to just do what we actually need to
-  MarkBoundaryVoxels_NoExteriorFaces( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-1, &Entropy, GREY_5, GREY_7);
-  /* MarkBoundaryVoxels_NoExteriorFaces( CopiedVoxels, QueryDim, {}, QueryDim, &Entropy, GREY_5, GREY_7); */
-  /* MarkBoundaryVoxels_MakeExteriorFaces( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-1); */
-  /* MarkBoundaryVoxels_MakeExteriorFaces( CopiedVoxels, QueryDim, {}, QueryDim); */
+  MarkBoundaryVoxels_NoExteriorFaces( CopiedVoxels, CopiedVoxelsDim, {{1,1,1}}, CopiedVoxelsDim-1, &Entropy, GREY_5, GREY_7);
+  /* MarkBoundaryVoxels_NoExteriorFaces( CopiedVoxels, CopiedVoxelsDim, {}, CopiedVoxelsDim, &Entropy, GREY_5, GREY_7); */
+  /* MarkBoundaryVoxels_MakeExteriorFaces( CopiedVoxels, CopiedVoxelsDim, {{1,1,1}}, CopiedVoxelsDim-1); */
+  /* MarkBoundaryVoxels_MakeExteriorFaces( CopiedVoxels, CopiedVoxelsDim, {}, CopiedVoxelsDim); */
 
 
   for (u32 ChunkIndex = 0; ChunkIndex < ChunkCount; ++ChunkIndex)
@@ -4105,12 +4103,12 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           voxel_position RelVoxP = Voxel_Position(s32(xVoxel), s32(yVoxel), s32(zVoxel));
           voxel *V = GetVoxel(Chunk, RelVoxP);
 
-          v3i SimSpaceVoxPExact = V3i(xVoxel, yVoxel, zVoxel) + SimSpaceChunkMin;
+          v3i SimVoxP = V3i(xVoxel, yVoxel, zVoxel) + SimSpaceChunkMin;
 
-          Assert(SimSpaceQueryMinP <= SimSpaceVoxPExact);
-          u32 Index = MapIntoQueryBox(SimSpaceVoxPExact, SimSpaceQueryMinP, QueryDim);
+          Assert(SimSpaceQueryMinP <= SimVoxP);
+          s32 Index = MapIntoQueryBox(SimVoxP, SimSpaceQueryMinP, CopiedVoxelsDim);
           Assert(Index < TotalVoxels);
-          Assert(CopiedVoxels[Index] != UnsetVoxel);
+          Assert(CopiedVoxels[Index] != g_UnsetVoxel);
           /* Assert(IsValid(CopiedVoxels+Index)); */
           Assert( (V->Flags & Voxel_MarkBit) == 0);
           *V = CopiedVoxels[Index];
@@ -4127,22 +4125,21 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
 #define DEBUG_VIEW_WORLD_UPDATE 0
 #if DEBUG_VIEW_WORLD_UPDATE
-  // TODO(Jesse): Need to copy the voxels because the Greedy thing blows away
-  // the face flags as it does the traversal.
+
   NotImplemented;
 
   auto DebugMesh = AllocateMesh(Thread->PermMemory, (u32)Kilobytes(64*32));
   // GetMeshForChunk(&EngineResources->MeshFreelist, Thread->PermMemory);
-  BuildWorldChunkMeshFromMarkedVoxels_Greedy( CopiedVoxels, QueryDim, {}, QueryDim, DebugMesh );
-  /* BuildWorldChunkMeshFromMarkedVoxels_Naieve( CopiedVoxels, QueryDim, {}, QueryDim, DebugMesh ); */
+  BuildWorldChunkMeshFromMarkedVoxels_Greedy( CopiedVoxels, CopiedVoxelsDim, {}, CopiedVoxelsDim, DebugMesh );
+  /* BuildWorldChunkMeshFromMarkedVoxels_Naieve( CopiedVoxels, CopiedVoxelsDim, {}, CopiedVoxelsDim, DebugMesh ); */
 
   /* aabb QueryAABB = AABBMinMax( {}, V3i(7.f + Radius*2.f) ); */
 
-  DEBUG_DrawAABB(DebugMesh, AABBMinDim({}, V3(QueryDim)), BLUE);
+  DEBUG_DrawAABB(DebugMesh, AABBMinDim({}, V3(CopiedVoxelsDim)), BLUE);
 
   DEBUG_DrawAABB(DebugMesh, AABBMinDim(V3(-1), V3(2)), PINK);
 
-  world_chunk *TempChunk = AllocateWorldChunk(Thread->PermMemory, MinP.WorldP, QueryDim);
+  world_chunk *TempChunk = AllocateWorldChunk(Thread->PermMemory, MinP.WorldP, CopiedVoxelsDim);
   picked_world_chunk *PickedChunk = Allocate(picked_world_chunk, Thread->PermMemory, 1);
   PickedChunk->Chunk = TempChunk;
 
@@ -4159,9 +4156,9 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   voxel_position_cursor StandingSpots = V3iCursor(ChunkCount*WORLD_CHUNK_STANDING_SPOT_COUNT, Thread->TempMemory);
 
 #if 0
-  ComputeStandingSpots( QueryDim, CopiedVoxels, {},
+  ComputeStandingSpots( CopiedVoxelsDim, CopiedVoxels, {},
                         {}, Global_StandingSpotDim,
-                        QueryDim,
+                        CopiedVoxelsDim,
                         DebugMesh, &StandingSpots, Thread->TempMemory );
 #endif
 

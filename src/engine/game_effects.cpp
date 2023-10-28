@@ -304,6 +304,7 @@ DoSplotion( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
     .world_update_op_shape_params_sphere.Radius = Radius,
     .world_update_op_shape_params_sphere.Location = PickCP,
   };
+  /* QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Subtractive, &Shape, DARK_GREY, Resources->Memory); */
   QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Subtractive, WorldUpdateOperationModeModifier_Flood, &Shape, DARK_GREY, Resources->Memory);
   /* QueueWorldUpdateForRegion(Resources, Pick, MinPCoarse, MaxPCoarse, WorldUpdateOperation_Additive, WorldUpdateOperationShape_Sphere, DARK_GREY, Radius, Resources->Memory); */
 
