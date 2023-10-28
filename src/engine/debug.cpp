@@ -130,7 +130,6 @@ DebugUi(engine_resources *Engine, cs Name, untextured_3d_geometry_buffer *Value)
     cs ButtonName = FSz("%S : 0x%x", Name, Value);
     if (ToggleButton(Ui, Name, ButtonName, umm(Name.Start) ^ umm(Value)))
     {
-      /* PushForceUpdateBasis(Ui, V2(16, 0)); */
       PushNewRow(Ui);
 
       PushTableStart(Ui, {}, {}, {}, &DefaultStyle, V4(32, 0, 0, 0));
@@ -367,8 +366,7 @@ DoEngineDebug(engine_resources *Engine)
 
   if (ToggledOn(&ButtonGroup, CSz("WorldChunks")))
   {
-    v2 WindowDim = {{650.f, 950.f}};
-    local_persist window_layout WorldChunkWindow = WindowLayout("World Chunks", AlignRightWindowBasis(*Ui->ScreenDim, WindowDim), WindowDim);
+    local_persist window_layout WorldChunkWindow = WindowLayout("World Chunks");
     PushWindowStart(Ui, &WorldChunkWindow);
 
       if ( Clicked(&ButtonGroup, CSz("WorldChunks")) ||
@@ -403,7 +401,10 @@ DoEngineDebug(engine_resources *Engine)
 #if 1
   if (ToggledOn(&ButtonGroup, CSz("Textures")))
   {
-    local_persist window_layout TexturesWindow = WindowLayout("Textures", DefaultWindowBasis(*Ui->ScreenDim, V2(1700, 450)));
+    v2 TexDim = V2(400);
+
+    auto Flags = window_layout_flags(WindowLayoutFlag_StartupAlign_Bottom|WindowLayoutFlag_StartupSize_InferWidth);
+    local_persist window_layout TexturesWindow = WindowLayout("Textures", {}, V2(0.f, TexDim.y + 30.f), Flags);
     PushWindowStart(Ui, &TexturesWindow);
 
     s32 xAdvance = 15;
@@ -418,27 +419,27 @@ DoEngineDebug(engine_resources *Engine)
       PushNewRow(Ui);
 
       StartColumn(Ui);
-        PushTexturedQuad(Ui, Graphics->Transparency.AccumTex, V2(400), zDepth_Text);
+        PushTexturedQuad(Ui, Graphics->Transparency.AccumTex, TexDim, zDepth_Text);
         PushForceAdvance(Ui, V2(xAdvance, 0));
       EndColumn(Ui);
 
       StartColumn(Ui);
-        PushTexturedQuad(Ui, Graphics->Transparency.RevealTex, V2(400), zDepth_Text);
+        PushTexturedQuad(Ui, Graphics->Transparency.RevealTex, TexDim, zDepth_Text);
         PushForceAdvance(Ui, V2(xAdvance, 0));
       EndColumn(Ui);
 
       StartColumn(Ui);
-        PushTexturedQuad(Ui, Graphics->Transparency.Depth, V2(400), zDepth_Text, True);
+        PushTexturedQuad(Ui, Graphics->Transparency.Depth, TexDim, zDepth_Text, True);
         PushForceAdvance(Ui, V2(xAdvance, 0));
       EndColumn(Ui);
 
       StartColumn(Ui);
-        PushTexturedQuad(Ui, Graphics->Lighting.LightingTex, V2(400), zDepth_Text);
+        PushTexturedQuad(Ui, Graphics->Lighting.LightingTex, TexDim, zDepth_Text);
         PushForceAdvance(Ui, V2(xAdvance, 0));
       EndColumn(Ui);
 
       StartColumn(Ui);
-        PushTexturedQuad(Ui, Graphics->Lighting.BloomTex, V2(400), zDepth_Text);
+        PushTexturedQuad(Ui, Graphics->Lighting.BloomTex, TexDim, zDepth_Text);
         PushForceAdvance(Ui, V2(xAdvance, 0));
       EndColumn(Ui);
       PushNewRow(Ui);
@@ -450,22 +451,22 @@ DoEngineDebug(engine_resources *Engine)
       PushNewRow(Ui);
 
       StartColumn(Ui);
-        PushTexturedQuad(Ui, Graphics->gBuffer->Textures->Color, V2(400), zDepth_Text);
+        PushTexturedQuad(Ui, Graphics->gBuffer->Textures->Color, TexDim, zDepth_Text);
         PushForceAdvance(Ui, V2(xAdvance, 0));
       EndColumn(Ui);
 
       StartColumn(Ui);
-        PushTexturedQuad(Ui, Graphics->gBuffer->Textures->Normal, V2(400), zDepth_Text);
+        PushTexturedQuad(Ui, Graphics->gBuffer->Textures->Normal, TexDim, zDepth_Text);
         PushForceAdvance(Ui, V2(xAdvance, 0));
       EndColumn(Ui);
 
       StartColumn(Ui);
-        PushTexturedQuad(Ui, Graphics->gBuffer->Textures->Position, V2(400), zDepth_Text);
+        PushTexturedQuad(Ui, Graphics->gBuffer->Textures->Position, TexDim, zDepth_Text);
         PushForceAdvance(Ui, V2(xAdvance, 0));
       EndColumn(Ui);
 
       StartColumn(Ui);
-        PushTexturedQuad(Ui, Graphics->gBuffer->Textures->Depth, V2(400), zDepth_Text, True);
+        PushTexturedQuad(Ui, Graphics->gBuffer->Textures->Depth, TexDim, zDepth_Text, True);
         PushForceAdvance(Ui, V2(xAdvance, 0));
       EndColumn(Ui);
       PushNewRow(Ui);
@@ -487,7 +488,7 @@ DoEngineDebug(engine_resources *Engine)
   if (ToggledOn(&ButtonGroup, CSz("RenderSettings")))
   {
     v2 WindowDim = {{1200.f, 250.f}};
-    local_persist window_layout RenderSettingsWindow = WindowLayout("Render Settings", DefaultWindowBasis(*Ui->ScreenDim, WindowDim), WindowDim);
+    local_persist window_layout RenderSettingsWindow = WindowLayout("Render Settings", WindowLayoutFlag_StartupAlign_Right);
 
     render_settings *Settings = &Graphics->Settings;
     PushWindowStart(Ui, &RenderSettingsWindow);
@@ -517,7 +518,7 @@ DoEngineDebug(engine_resources *Engine)
   if (ToggledOn(&ButtonGroup, CSz("EngineDebug")))
   {
     v2 WindowDim = {{1200.f, 250.f}};
-    local_persist window_layout Window = WindowLayout("Engine Debug", DefaultWindowBasis(*Ui->ScreenDim, WindowDim), WindowDim);
+    local_persist window_layout Window = WindowLayout("Engine Debug", WindowLayoutFlag_StartupAlign_Right);
 
     render_settings *Settings = &Graphics->Settings;
     PushWindowStart(Ui, &Window);
