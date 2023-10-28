@@ -122,40 +122,50 @@ DebugUi(engine_resources *Engine, cs Name, untextured_3d_geometry_buffer *Value)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
+  /* Text(Ui, Name); */
   PushNewRow(Ui);
-  Text(Ui, Name);
-  PushNewRow(Ui);
+
   if (Value)
   {
-    PushColumn(Ui, CS("Verts : "));
-    PushColumn(Ui, CS((u64)Value->Verts));
-    PushNewRow(Ui);
+    cs ButtonName = FSz("%S : 0x%x", Name, Value);
+    if (ToggleButton(Ui, Name, ButtonName, umm(Name.Start) ^ umm(Value)))
+    {
+      /* PushForceUpdateBasis(Ui, V2(16, 0)); */
+      PushNewRow(Ui);
 
-    PushColumn(Ui, CS("Mats : "));
-    PushColumn(Ui, CS((u64)Value->Mat));
-    PushNewRow(Ui);
+      PushTableStart(Ui, {}, {}, {}, &DefaultStyle, V4(32, 0, 0, 0));
+        PushColumn(Ui, CSz("Verts : "));
+        PushColumn(Ui, FSz("0x%x",(u64)Value->Verts));
+        PushNewRow(Ui);
 
-    PushColumn(Ui, CS("Normals : "));
-    PushColumn(Ui, CS((u64)Value->Normals));
-    PushNewRow(Ui);
+        PushColumn(Ui, CSz("Normals : "));
+        PushColumn(Ui, FSz("0x%x", (u64)Value->Normals));
+        PushNewRow(Ui);
 
-    PushColumn(Ui, CS("End : "));
-    PushColumn(Ui, CS(Value->End));
-    PushNewRow(Ui);
+        PushColumn(Ui, CSz("Mats : "));
+        PushColumn(Ui, FSz("0x%x", (u64)Value->Mat));
+        PushNewRow(Ui);
 
-    PushColumn(Ui, CS("At : "));
-    PushColumn(Ui, CS(Value->At));
-    PushNewRow(Ui);
+        PushColumn(Ui, CSz("At : "));
+        PushColumn(Ui, FSz("%u", Value->At));
+        PushNewRow(Ui);
 
-    PushColumn(Ui, CS("Timestamp : "));
-    PushColumn(Ui, CS(Value->Timestamp));
-    PushNewRow(Ui);
+        PushColumn(Ui, CSz("End : "));
+        PushColumn(Ui, FSz("%u", Value->End));
+        PushNewRow(Ui);
+
+        PushColumn(Ui, CSz("Timestamp : "));
+        PushColumn(Ui, FSz("%u", Value->Timestamp));
+      PushTableEnd(Ui);
+      /* PushForceUpdateBasis(Ui, V2(-16, 0)); */
+    }
   }
   else
   {
-    Text(Ui, CSz(" 0"));
-    PushNewRow(Ui);
+    PushColumn(Ui, Name);
+    PushColumn(Ui, CSz(" : null"));
   }
+
   PushNewRow(Ui);
 }
 
