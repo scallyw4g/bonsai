@@ -183,6 +183,9 @@ enum vox_loader_clip_behavior
   VoxLoaderClipBehavior_NoClipping,
 };
 
+
+global_variable random_series TMP = {54235432543};
+
 link_internal vox_data
 LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepath, vox_loader_clip_behavior ClipBehavior, v3i HalfApronMin = {}, v3i HalfApronMax = {}, v3i ModDim = {})
 {
@@ -325,8 +328,6 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
           Result.ChunkData = AllocateChunkData(WorldStorage, ModelDim);
           Result.ChunkData->Dim = ModelDim;
 
-          global_variable random_series TMP = {54235432543};
-
           for( s32 VoxelCacheIndex = 0;
                    VoxelCacheIndex < ActualVoxelCount;
                  ++VoxelCacheIndex)
@@ -334,12 +335,23 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
             boundary_voxel *Voxel = &LocalVoxelCache[VoxelCacheIndex];
             Voxel->Offset = Voxel->Offset - Min + HalfApronMin;
             s32 Index = GetIndex(Voxel->Offset, ModelDim);
+
+            if (Voxel->V.Flags & Voxel_Filled)
+            /* if (Voxel->V.Flags & Voxel_Filled && VoxelCacheIndex == 16) */
+            {
+              if (RandomUnilateral(&TMP) > 0.25f) { Voxel->V.Transparency = 255; }
+              /* Result.ChunkData->Voxels[Index].Transparency = 128; */
+              /* Voxel->V.Transparency = 255; */
+            }
+            else
+            {
+              /* Voxel->V.Transparency = 0; */
+            Assert(Voxel->V.Transparency == 0);
+            }
+            /* Voxel->V.Transparency = 0; */
+
             Result.ChunkData->Voxels[Index] = Voxel->V;
-
-            /* if (RandomUnilateral(&TMP) > 0.5f) { Result.ChunkData->Voxels[Index].Transparency = 128; } */
-            Result.ChunkData->Voxels[Index].Transparency = 128;
-
-            Result.ChunkData->VoxelLighting[Index] = VoxelLighting(0xff);
+            /* Result.ChunkData->VoxelLighting[Index] = VoxelLighting(0xff); */
           }
 
           FullBarrier;
@@ -395,6 +407,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
     if (Error == False)
     {
       Assert(bytesRemaining == 0);
+      /* MarkBoundaryVoxels_NoExteriorFaces( Result.ChunkData->Voxels, Result.ChunkData->Dim, {}, Result.ChunkData->Dim); */
       MarkBoundaryVoxels_MakeExteriorFaces( Result.ChunkData->Voxels, Result.ChunkData->Dim, {}, Result.ChunkData->Dim);
     }
     else

@@ -103,8 +103,8 @@ struct world_update_op_shape
   world_update_op_shape_type Type;
   union {
     world_update_op_shape_params_sphere world_update_op_shape_params_sphere;
-    world_update_op_shape_params_rect world_update_op_shape_params_rect;
-    world_update_op_shape_params_asset world_update_op_shape_params_asset;
+    world_update_op_shape_params_rect   world_update_op_shape_params_rect;
+    world_update_op_shape_params_asset  world_update_op_shape_params_asset;
   };
 };
 
@@ -115,10 +115,18 @@ enum world_update_op_mode
   WorldUpdateOperationMode_Subtractive,
 };
 
+enum world_update_op_mode_modifier
+{
+  WorldUpdateOperationModeModifier_None,
+  WorldUpdateOperationModeModifier_Flood,
+};
+
 
 struct work_queue_entry_update_world_region
 {
-  world_update_op_mode Mode;
+  world_update_op_mode          Mode;
+  world_update_op_mode_modifier Modifier;
+
   world_update_op_shape Shape;
 
   u8 ColorIndex;

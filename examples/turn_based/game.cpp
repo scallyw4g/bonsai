@@ -254,19 +254,19 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
     if (Input->R.Clicked)
     {
-      DoSplotion(Resources, PickCP, 4.f, &Global_GameEntropy, GetTranArena());
+      DoSplotion(Resources, PickCP, 5.f, &Global_GameEntropy, GetTranArena());
       /* DoIceBlock(Resources, &Pick, PickCP, 4.f, GetTranArena()); */
     }
 
     if (Input->T.Clicked)
     {
-      DoSplotion(Resources, PickCP, 6.f, &Global_GameEntropy, GetTranArena());
+      DoSplotion(Resources, PickCP, 7.f, &Global_GameEntropy, GetTranArena());
       /* DoIceBlock(Resources, &Pick, PickCP, 6.f, GetTranArena()); */
     }
 
     if (Input->Y.Clicked)
     {
-      DoSplotion(Resources, PickCP, 8.f,  &Global_GameEntropy,GetTranArena());
+      DoSplotion(Resources, PickCP, 9.f,  &Global_GameEntropy,GetTranArena());
       /* DoIceBlock(Resources, &Pick, PickCP, 8.f, GetTranArena()); */
     }
 

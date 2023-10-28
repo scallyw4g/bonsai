@@ -377,7 +377,10 @@ DoEngineDebug(engine_resources *Engine)
 
       if (Button(Ui, CSz("RebuildMesh"), (umm)"RebuildMesh"^(umm)"WorldChunks"))
       {
-        QueueChunkForMeshRebuild(&Plat->LowPriority, EngineDebug->PickedChunk);
+        world_chunk *PickedChunk = EngineDebug->PickedChunk;
+        MarkBoundaryVoxels_Debug(PickedChunk->Voxels, PickedChunk->Dim);
+        /* MarkBoundaryVoxels_NoExteriorFaces(PickedChunk->Voxels, PickedChunk->Dim, {}, PickedChunk->Dim); */
+        QueueChunkForMeshRebuild(&Plat->LowPriority, PickedChunk);
       }
       PushNewRow(Ui);
 

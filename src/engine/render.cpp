@@ -123,7 +123,10 @@ RenderGBuffer(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
   BindShaderUniforms(&GBufferRenderGroup->gBufferShader);
 
   FlushBuffersToCard(GpuMap);
+
+  GL.Disable(GL_CULL_FACE);
   Draw(GpuMap->Buffer.At);
+  GL.Enable(GL_CULL_FACE);
 
   AssertNoGlErrors;
 

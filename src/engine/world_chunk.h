@@ -110,6 +110,7 @@ struct boundary_voxel
     this->V.Color = w;
 
     this->V.Flags = Voxel_Empty;
+    this->V.Transparency = 0;
   }
 
   boundary_voxel(voxel *V_in, voxel_position Offset_in)
