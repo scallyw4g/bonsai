@@ -3965,15 +3965,46 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
                 case WorldUpdateOperationModeModifier_Flood:
                 {
-                  if (LengthSq(SimSpaceVoxPExact - LocationSimSpace) < Square(Sphere->Radius-1.f))
+                  voxel_stack_element_cursor Stack = VoxelStackElementCursor(umm(TotalVoxels), Thread->TempMemory);
+
+                  Push(&Stack, VoxelStackElement(V3i(LocationSimSpace), VoxelRuleDir_PosX));
+                  Push(&Stack, VoxelStackElement(V3i(LocationSimSpace), VoxelRuleDir_NegX));
+                  Push(&Stack, VoxelStackElement(V3i(LocationSimSpace), VoxelRuleDir_PosY));
+                  Push(&Stack, VoxelStackElement(V3i(LocationSimSpace), VoxelRuleDir_NegY));
+                  Push(&Stack, VoxelStackElement(V3i(LocationSimSpace), VoxelRuleDir_PosZ));
+                  Push(&Stack, VoxelStackElement(V3i(LocationSimSpace), VoxelRuleDir_NegZ));
+
+                  while (AtElements(&Stack))
                   {
-                    if (V->Flags&VoxelFaceMask) { V->Flags = Voxel_Empty; }
+                    voxel_stack_element Element = Pop(&Stack);
+                    v3i Dir = AllDirections[Element.Dir];
+                    {
+                      v3i SimVoxP = Element.VoxSimP + Dir;
+                      v3i RelVoxP = SimVoxP - LocationSimSpace;
+
+                      s32 VoxelIndex = TryGetIndex(RelVoxP, Chunk->Dim);
+
+                      voxel CopyValue = {};
+                      if (VoxelIndex > -1)
+                      {
+                        CopyValue = Chunk->Voxels[VoxelIndex];
+
+                        if (LengthSq(RelVoxP) < Square(Sphere->Radius-1.f))
+                        {
+                          if (CopyValue.Flags&VoxelFaceMask) { --Chunk->FilledCount; CopyValue.Flags = Voxel_Empty; }
+                          CopyValue.Flags |= Voxel_MarkBit;
+                        }
+                        else if (LengthSq(RelVoxP) < Square(Sphere->Radius))
+                        {
+                          if (CopyValue.Flags&VoxelFaceMask) { CopyValue.Color = NewColor; }
+                          CopyValue.Flags |= Voxel_MarkBit;
+                        }
+
+                        StoreToContiguousBuffer(SimSpaceChunkMin, SimSpaceQueryMinP, RelVoxP, CopiedVoxelsDim, CopiedVoxels, CopyValue);
+                      }
+                    }
                   }
-                  else
-                  {
-                    if (V->Flags&VoxelFaceMask) { V->Color = NewColor; }
-                  }
-                  V->Flags |= Voxel_MarkBit;
+
                 } break;
               }
 
