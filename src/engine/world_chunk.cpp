@@ -3915,7 +3915,52 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
           v3i SimSpaceVoxPExact = V3i(xVoxel, yVoxel, zVoxel) + SimSpaceChunkMin;
 
-          voxel CopyValue = *V;
+          Assert(SimSpaceQueryMinP <= SimSpaceVoxPExact);
+          u32 Index = MapIntoQueryBox(SimSpaceVoxPExact, SimSpaceQueryMinP, QueryDim);
+          Assert(Index < TotalVoxels);
+          Assert(CopiedVoxels[Index] == UnsetVoxel);
+          CopiedVoxels[Index] = *V;
+          /* Assert(IsValid(CopiedVoxels+Index)); */
+        }
+      }
+    }
+  }
+
+  DimIterator(xVoxel, yVoxel, zVoxel, QueryDim)
+  {
+#if 0
+    world_chunk *Chunk = ChunkBuffer[ChunkIndex];
+    auto SimSpaceChunkRect = GetSimSpaceAABBi(World, Chunk);
+    auto SimSpaceIntersectionRect = Union(&SimSpaceChunkRect, &SimSpaceQueryAABB);
+
+    auto SimSpaceIntersectionMin = SimSpaceIntersectionRect.Min;
+    auto SimSpaceIntersectionMax = SimSpaceIntersectionRect.Max;
+
+    auto SimSpaceChunkMin = SimSpaceChunkRect.Min;
+    auto SimSpaceChunkMax = SimSpaceChunkRect.Max;
+
+    auto ChunkRelRectMin = SimSpaceIntersectionMin - SimSpaceChunkMin;
+    auto ChunkRelRectMax = SimSpaceIntersectionMax - SimSpaceChunkMin;
+#endif
+
+    random_series Entropy = {54392};
+
+    /* for (s32 zVoxel = s32(ChunkRelRectMin.z); zVoxel < s32(ChunkRelRectMax.z); zVoxel += 1) */
+    {
+      /* for (s32 yVoxel = s32(ChunkRelRectMin.y); yVoxel < s32(ChunkRelRectMax.y); yVoxel += 1) */
+      {
+        /* for (s32 xVoxel = s32(ChunkRelRectMin.x); xVoxel < s32(ChunkRelRectMax.x); xVoxel += 1) */
+        {
+          voxel_position RelVoxP = Voxel_Position(s32(xVoxel), s32(yVoxel), s32(zVoxel));
+          s32 Index = GetIndex(RelVoxP, QueryDim); 
+          voxel *V = CopiedVoxels + Index;
+
+          /* voxel *V = GetVoxel(Chunk, RelVoxP); */
+          Assert( (V->Flags & Voxel_MarkBit) == 0);
+
+          v3i SimSpaceVoxPExact = V3i(xVoxel, yVoxel, zVoxel) + SimSpaceQueryAABB.Min;
+
+          /* voxel CopyValue = *V; */
 
           switch (Shape.Type)
           {
@@ -3940,20 +3985,20 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
                     {
                       case WorldUpdateOperationModeModifier_None:
                       {
-                        if (CopyValue.Flags&Voxel_Filled) { --Chunk->FilledCount; CopyValue.Flags = Voxel_Empty; }
+                        if (V->Flags&Voxel_Filled) { V->Flags = Voxel_Empty; }
                       } break;
 
                       case WorldUpdateOperationModeModifier_Flood:
                       {
                         if (LengthSq(SimSpaceVoxPExact - LocationSimSpace) < Square(Sphere->Radius-1.f))
                         {
-                          if (CopyValue.Flags&VoxelFaceMask) { --Chunk->FilledCount; CopyValue.Flags = Voxel_Empty; }
+                          if (V->Flags&VoxelFaceMask) { V->Flags = Voxel_Empty; }
                         }
                         else
                         {
-                          if (CopyValue.Flags&VoxelFaceMask) { CopyValue.Color = NewColor; }
+                          if (V->Flags&VoxelFaceMask) { V->Color = NewColor; }
                         }
-                        CopyValue.Flags |= Voxel_MarkBit;
+                        V->Flags |= Voxel_MarkBit;
                       } break;
                     }
 
@@ -3961,9 +4006,9 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
                   case WorldUpdateOperationMode_Additive:
                   {
-                    if ( (CopyValue.Flags&Voxel_Filled) == 0 ) { ++Chunk->FilledCount; }
-                    CopyValue.Flags = Voxel_Filled;
-                    CopyValue.Color = NewColor;
+                    if ( (V->Flags&Voxel_Filled) == 0 ) { }
+                    V->Flags = Voxel_Filled;
+                    V->Color = NewColor;
                   } break;
                 }
 
@@ -3977,13 +4022,13 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
                   case WorldUpdateOperationMode_Subtractive:
                   {
-                    if (CopyValue.Flags&VoxelFaceMask)
+                    if (V->Flags&VoxelFaceMask)
                     {
-                      CopyValue.Color = GREY_8;
+                      V->Color = GREY_8;
                     }
                     else
                     {
-                      CopyValue.Flags |= Voxel_MarkBit;
+                      V->Flags |= Voxel_MarkBit;
                     }
                   } break;
 
@@ -4021,15 +4066,15 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
                   case WorldUpdateOperationMode_Subtractive:
                   {
-                    if (CopyValue.Flags & Voxel_Filled) { --Chunk->FilledCount; }
-                    CopyValue.Flags = Voxel_Empty;
+                    if (V->Flags & Voxel_Filled) { }
+                    V->Flags = Voxel_Empty;
                   } break;
 
                   case WorldUpdateOperationMode_Additive:
                   {
-                    if ( (CopyValue.Flags & Voxel_Filled) == 0 ) { ++Chunk->FilledCount; }
-                    CopyValue.Flags = Voxel_Filled;
-                    CopyValue.Color = NewColor;
+                    if ( (V->Flags & Voxel_Filled) == 0 ) { }
+                    V->Flags = Voxel_Filled;
+                    V->Color = NewColor;
                   } break;
                 }
               }
@@ -4052,7 +4097,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
               /* if (AssetVoxelIndex != -1) */
               {
                 voxel *AssetV = TryGetVoxel(Asset->Model.Vox.ChunkData, OriginToCurrentVoxP);
-                if (AssetV && (AssetV->Flags&Voxel_Filled)) { CopyValue = *AssetV; }
+                if (AssetV && (AssetV->Flags&Voxel_Filled)) { *V = *AssetV; }
               }
 
             } break;
@@ -4060,12 +4105,12 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           }
 
 
-          Assert(SimSpaceQueryMinP <= SimSpaceVoxPExact);
-          u32 Index = MapIntoQueryBox(SimSpaceVoxPExact, SimSpaceQueryMinP, QueryDim);
-          Assert(Index < TotalVoxels);
-          Assert(CopiedVoxels[Index] == UnsetVoxel);
-          CopiedVoxels[Index] = CopyValue;
-          /* Assert(IsValid(CopiedVoxels+Index)); */
+          /* Assert(SimSpaceQueryMinP <= SimSpaceVoxPExact); */
+          /* u32 Index = MapIntoQueryBox(SimSpaceVoxPExact, SimSpaceQueryMinP, QueryDim); */
+          /* Assert(Index < TotalVoxels); */
+          /* Assert(CopiedVoxels[Index] == UnsetVoxel); */
+          /* CopiedVoxels[Index] = V-> */
+          /* /1* Assert(IsValid(CopiedVoxels+Index)); *1/ */
         }
       }
     }
