@@ -3920,7 +3920,6 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           Assert(Index < TotalVoxels);
           Assert(CopiedVoxels[Index] == UnsetVoxel);
           CopiedVoxels[Index] = *V;
-          /* Assert(IsValid(CopiedVoxels+Index)); */
         }
       }
     }
@@ -3928,191 +3927,156 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
   DimIterator(xVoxel, yVoxel, zVoxel, QueryDim)
   {
-#if 0
-    world_chunk *Chunk = ChunkBuffer[ChunkIndex];
-    auto SimSpaceChunkRect = GetSimSpaceAABBi(World, Chunk);
-    auto SimSpaceIntersectionRect = Union(&SimSpaceChunkRect, &SimSpaceQueryAABB);
-
-    auto SimSpaceIntersectionMin = SimSpaceIntersectionRect.Min;
-    auto SimSpaceIntersectionMax = SimSpaceIntersectionRect.Max;
-
-    auto SimSpaceChunkMin = SimSpaceChunkRect.Min;
-    auto SimSpaceChunkMax = SimSpaceChunkRect.Max;
-
-    auto ChunkRelRectMin = SimSpaceIntersectionMin - SimSpaceChunkMin;
-    auto ChunkRelRectMax = SimSpaceIntersectionMax - SimSpaceChunkMin;
-#endif
-
     random_series Entropy = {54392};
 
-    /* for (s32 zVoxel = s32(ChunkRelRectMin.z); zVoxel < s32(ChunkRelRectMax.z); zVoxel += 1) */
+    voxel_position RelVoxP = Voxel_Position(s32(xVoxel), s32(yVoxel), s32(zVoxel));
+    s32 Index = GetIndex(RelVoxP, QueryDim); 
+    voxel *V = CopiedVoxels + Index;
+
+    Assert( (V->Flags & Voxel_MarkBit) == 0);
+
+    v3i SimSpaceVoxPExact = V3i(xVoxel, yVoxel, zVoxel) + SimSpaceQueryAABB.Min;
+
+    switch (Shape.Type)
     {
-      /* for (s32 yVoxel = s32(ChunkRelRectMin.y); yVoxel < s32(ChunkRelRectMax.y); yVoxel += 1) */
+      InvalidCase(type_world_update_op_shape_params_noop);
+
+      case type_world_update_op_shape_params_sphere:
       {
-        /* for (s32 xVoxel = s32(ChunkRelRectMin.x); xVoxel < s32(ChunkRelRectMax.x); xVoxel += 1) */
+        world_update_op_shape_params_sphere *Sphere = SafeCast(world_update_op_shape_params_sphere, &Shape);
+
+        canonical_position P = Sphere->Location;
+        auto LocationSimSpace = GetSimSpaceP(World, P);
+
+        if (LengthSq(SimSpaceVoxPExact - LocationSimSpace) < Square(Sphere->Radius))
         {
-          voxel_position RelVoxP = Voxel_Position(s32(xVoxel), s32(yVoxel), s32(zVoxel));
-          s32 Index = GetIndex(RelVoxP, QueryDim); 
-          voxel *V = CopiedVoxels + Index;
-
-          /* voxel *V = GetVoxel(Chunk, RelVoxP); */
-          Assert( (V->Flags & Voxel_MarkBit) == 0);
-
-          v3i SimSpaceVoxPExact = V3i(xVoxel, yVoxel, zVoxel) + SimSpaceQueryAABB.Min;
-
-          /* voxel CopyValue = *V; */
-
-          switch (Shape.Type)
+          switch(Mode)
           {
-            InvalidCase(type_world_update_op_shape_params_noop);
+            InvalidCase(WorldUpdateOperationMode_None);
 
-            case type_world_update_op_shape_params_sphere:
+            case WorldUpdateOperationMode_Subtractive:
             {
-              world_update_op_shape_params_sphere *Sphere = SafeCast(world_update_op_shape_params_sphere, &Shape);
-
-              canonical_position P = Sphere->Location;
-              auto LocationSimSpace = GetSimSpaceP(World, P);
-
-              if (LengthSq(SimSpaceVoxPExact - LocationSimSpace) < Square(Sphere->Radius))
+              switch(Modifier)
               {
-                switch(Mode)
+                case WorldUpdateOperationModeModifier_None:
                 {
-                  InvalidCase(WorldUpdateOperationMode_None);
+                  if (V->Flags&Voxel_Filled) { V->Flags = Voxel_Empty; }
+                } break;
 
-                  case WorldUpdateOperationMode_Subtractive:
-                  {
-                    switch(Modifier)
-                    {
-                      case WorldUpdateOperationModeModifier_None:
-                      {
-                        if (V->Flags&Voxel_Filled) { V->Flags = Voxel_Empty; }
-                      } break;
-
-                      case WorldUpdateOperationModeModifier_Flood:
-                      {
-                        if (LengthSq(SimSpaceVoxPExact - LocationSimSpace) < Square(Sphere->Radius-1.f))
-                        {
-                          if (V->Flags&VoxelFaceMask) { V->Flags = Voxel_Empty; }
-                        }
-                        else
-                        {
-                          if (V->Flags&VoxelFaceMask) { V->Color = NewColor; }
-                        }
-                        V->Flags |= Voxel_MarkBit;
-                      } break;
-                    }
-
-                  } break;
-
-                  case WorldUpdateOperationMode_Additive:
-                  {
-                    if ( (V->Flags&Voxel_Filled) == 0 ) { }
-                    V->Flags = Voxel_Filled;
-                    V->Color = NewColor;
-                  } break;
-                }
-
-              }
-#if 0
-              /* else if (LengthSq(SimSpaceVoxPExact - LocationSimSpace) < Square(Sphere->Radius+1.f)) */
-              {
-                switch(Mode)
+                case WorldUpdateOperationModeModifier_Flood:
                 {
-                  InvalidCase(WorldUpdateOperationMode_None);
-
-                  case WorldUpdateOperationMode_Subtractive:
+                  if (LengthSq(SimSpaceVoxPExact - LocationSimSpace) < Square(Sphere->Radius-1.f))
                   {
-                    if (V->Flags&VoxelFaceMask)
-                    {
-                      V->Color = GREY_8;
-                    }
-                    else
-                    {
-                      V->Flags |= Voxel_MarkBit;
-                    }
-                  } break;
-
-                  case WorldUpdateOperationMode_Additive:
+                    if (V->Flags&VoxelFaceMask) { V->Flags = Voxel_Empty; }
+                  }
+                  else
                   {
-                  } break;
-                }
-              }
-#endif
-            } break;
-
-            case type_world_update_op_shape_params_rect:
-            {
-              // Not implemented
-              Assert(Modifier == WorldUpdateOperationModeModifier_None);
-
-              world_update_op_shape_params_rect *Rect = SafeCast(world_update_op_shape_params_rect, &Shape);
-
-              // NOTE(Jesse): These _should_ already be min/maxed, so we can change these to asserts.
-              v3i P0SS = V3i(Rect->P0);
-              v3i P1SS = V3i(Rect->P1);
-
-              v3i MinSS = Min(P0SS, P1SS);
-              v3i MaxSS = Max(P0SS, P1SS);
-
-              /* MinSS += ClampNegative(GetSign(MinSS)); */
-              /* MaxSS += 1; */
-
-              rect3i SSRect = {MinSS, MaxSS};
-              if (Contains(SSRect, SimSpaceVoxPExact))
-              {
-                switch(Mode)
-                {
-                  InvalidCase(WorldUpdateOperationMode_None);
-
-                  case WorldUpdateOperationMode_Subtractive:
-                  {
-                    if (V->Flags & Voxel_Filled) { }
-                    V->Flags = Voxel_Empty;
-                  } break;
-
-                  case WorldUpdateOperationMode_Additive:
-                  {
-                    if ( (V->Flags & Voxel_Filled) == 0 ) { }
-                    V->Flags = Voxel_Filled;
-                    V->Color = NewColor;
-                  } break;
-                }
-              }
-            } break;
-
-            case type_world_update_op_shape_params_asset:
-            {
-              // Not implemented
-              Assert(Modifier == WorldUpdateOperationModeModifier_None);
-
-              world_update_op_shape_params_asset *AssetJob = SafeCast(world_update_op_shape_params_asset, &Shape);
-              asset *Asset = AssetJob->Asset;
-              /* BlitAssetIntoWorld(Engine, Asset, Origin, Memory); */
-
-              v3 AssetOriginP = GetSimSpaceP(World, AssetJob->Origin);
-
-              v3i OriginToCurrentVoxP = SimSpaceVoxPExact - AssetOriginP;
-
-              /* s32 AssetVoxelIndex = GetIndex(OriginToCurrentVoxP, Asset->Model.Dim); */
-              /* if (AssetVoxelIndex != -1) */
-              {
-                voxel *AssetV = TryGetVoxel(Asset->Model.Vox.ChunkData, OriginToCurrentVoxP);
-                if (AssetV && (AssetV->Flags&Voxel_Filled)) { *V = *AssetV; }
+                    if (V->Flags&VoxelFaceMask) { V->Color = NewColor; }
+                  }
+                  V->Flags |= Voxel_MarkBit;
+                } break;
               }
 
             } break;
 
+            case WorldUpdateOperationMode_Additive:
+            {
+              if ( (V->Flags&Voxel_Filled) == 0 ) { }
+              V->Flags = Voxel_Filled;
+              V->Color = NewColor;
+            } break;
           }
 
-
-          /* Assert(SimSpaceQueryMinP <= SimSpaceVoxPExact); */
-          /* u32 Index = MapIntoQueryBox(SimSpaceVoxPExact, SimSpaceQueryMinP, QueryDim); */
-          /* Assert(Index < TotalVoxels); */
-          /* Assert(CopiedVoxels[Index] == UnsetVoxel); */
-          /* CopiedVoxels[Index] = V-> */
-          /* /1* Assert(IsValid(CopiedVoxels+Index)); *1/ */
         }
-      }
+#if 0
+        /* else if (LengthSq(SimSpaceVoxPExact - LocationSimSpace) < Square(Sphere->Radius+1.f)) */
+        {
+          switch(Mode)
+          {
+            InvalidCase(WorldUpdateOperationMode_None);
+
+            case WorldUpdateOperationMode_Subtractive:
+            {
+              if (V->Flags&VoxelFaceMask)
+              {
+                V->Color = GREY_8;
+              }
+              else
+              {
+                V->Flags |= Voxel_MarkBit;
+              }
+            } break;
+
+            case WorldUpdateOperationMode_Additive:
+            {
+            } break;
+          }
+        }
+#endif
+      } break;
+
+      case type_world_update_op_shape_params_rect:
+      {
+        // Not implemented
+        Assert(Modifier == WorldUpdateOperationModeModifier_None);
+
+        world_update_op_shape_params_rect *Rect = SafeCast(world_update_op_shape_params_rect, &Shape);
+
+        // NOTE(Jesse): These _should_ already be min/maxed, so we can change these to asserts.
+        v3i P0SS = V3i(Rect->P0);
+        v3i P1SS = V3i(Rect->P1);
+
+        v3i MinSS = Min(P0SS, P1SS);
+        v3i MaxSS = Max(P0SS, P1SS);
+
+        /* MinSS += ClampNegative(GetSign(MinSS)); */
+        /* MaxSS += 1; */
+
+        rect3i SSRect = {MinSS, MaxSS};
+        if (Contains(SSRect, SimSpaceVoxPExact))
+        {
+          switch(Mode)
+          {
+            InvalidCase(WorldUpdateOperationMode_None);
+
+            case WorldUpdateOperationMode_Subtractive:
+            {
+              if (V->Flags & Voxel_Filled) { }
+              V->Flags = Voxel_Empty;
+            } break;
+
+            case WorldUpdateOperationMode_Additive:
+            {
+              if ( (V->Flags & Voxel_Filled) == 0 ) { }
+              V->Flags = Voxel_Filled;
+              V->Color = NewColor;
+            } break;
+          }
+        }
+      } break;
+
+      case type_world_update_op_shape_params_asset:
+      {
+        // Not implemented
+        Assert(Modifier == WorldUpdateOperationModeModifier_None);
+
+        world_update_op_shape_params_asset *AssetJob = SafeCast(world_update_op_shape_params_asset, &Shape);
+        asset *Asset = AssetJob->Asset;
+        /* BlitAssetIntoWorld(Engine, Asset, Origin, Memory); */
+
+        v3 AssetOriginP = GetSimSpaceP(World, AssetJob->Origin);
+
+        v3i OriginToCurrentVoxP = SimSpaceVoxPExact - AssetOriginP;
+
+        /* s32 AssetVoxelIndex = GetIndex(OriginToCurrentVoxP, Asset->Model.Dim); */
+        /* if (AssetVoxelIndex != -1) */
+        {
+          voxel *AssetV = TryGetVoxel(Asset->Model.Vox.ChunkData, OriginToCurrentVoxP);
+          if (AssetV && (AssetV->Flags&Voxel_Filled)) { *V = *AssetV; }
+        }
+
+      } break;
+
     }
   }
 
