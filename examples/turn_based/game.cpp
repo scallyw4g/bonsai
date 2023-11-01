@@ -230,7 +230,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     v3 VoxelP = GetAbsoluteP(&Pick);
 
     world_chunk *ClosestChunk = Pick.PickedChunk.Chunk;
-    canonical_position PickCP = Canonical_Position(Pick.Picks[PickedVoxel_FirstFilled], ClosestChunk->WorldP);
+    canonical_position PickCP = Canonical_Position(Pick.Picks[PickedVoxel_LastEmpty], ClosestChunk->WorldP);
 
     if (Input->Z.Clicked)
     {
