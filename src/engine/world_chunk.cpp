@@ -3892,7 +3892,8 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
   rect3i SimSpaceQueryAABB = Rect3iMinMax( V3i(P0), V3i(P1));
 
-  voxel_position QueryDim = GetDim(SimSpaceQueryAABB);
+  v3i QueryDim = GetDim(SimSpaceQueryAABB);
+  v3i SimSpaceQueryDim = QueryDim;
 
   Assert(QueryDim.x % Global_StandingSpotDim.x == 0);
   Assert(QueryDim.y % Global_StandingSpotDim.y == 0);
@@ -3969,9 +3970,10 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
         world_update_op_shape_params_sphere *Sphere = SafeCast(world_update_op_shape_params_sphere, &Shape);
 
         canonical_position P = Sphere->Location;
-        auto LocationSimSpace = GetSimSpaceP(World, P);
+        auto SimSphereP = GetSimSpaceP(World, P);
+        r32 RadiusSquared = Square(Sphere->Radius);
 
-        /* if (LengthSq(SimSpaceVoxPExact - LocationSimSpace) < Square(Sphere->Radius)) */
+        /* if (LengthSq(SimSpaceVoxPExact - SimSphereP) < Square(Sphere->Radius)) */
         {
           switch(Mode)
           {
@@ -3983,7 +3985,17 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
               {
                 case WorldUpdateOperationModeModifier_None:
                 {
-                  if (V->Flags&Voxel_Filled) { V->Flags = Voxel_Empty; }
+                  DimIterator(x, y, z, SimSpaceQueryDim)
+                  {
+                    v3i SimRelVoxP = V3i(x,y,z);
+                    v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
+                    v3i CenterToVoxP = SimVoxP - SimSphereP;
+                    V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
+                    if (LengthSq(CenterToVoxP) < RadiusSquared)
+                    {
+                      V->Flags = Voxel_Empty;
+                    }
+                  }
                 } break;
 
                 case WorldUpdateOperationModeModifier_Flood:
@@ -3991,7 +4003,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
                   // TODO(Jesse): Do we want to try and keep the amount of temp memory to a minimum here?
                   voxel_stack_element_cursor Stack = VoxelStackElementCursor(umm(TotalVoxels*6), Thread->TempMemory);
 
-                  Push(&Stack, VoxelStackElement(V3i(LocationSimSpace), VoxelRuleDir_Count));
+                  Push(&Stack, VoxelStackElement(V3i(SimSphereP), VoxelRuleDir_Count));
                   while (AtElements(&Stack))
                   {
                     voxel_stack_element Element = Pop(&Stack);
@@ -4006,9 +4018,9 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
                       {
                         V = CopiedVoxels+VoxelIndex;
 
-                        v3i CenterToVoxP = SimVoxP - LocationSimSpace;
+                        v3i CenterToVoxP = SimVoxP - SimSphereP;
 
-                        if (LengthSq(CenterToVoxP) < Square(Sphere->Radius))
+                        if (LengthSq(CenterToVoxP) < RadiusSquared)
                         {
                           if ( (V->Flags&Voxel_Filled) == 0 && (V->Flags & Voxel_MarkBit) == 0)
                           {
@@ -4038,7 +4050,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 #if 1
                   u8 NewColorMin = GREY_5;
                   u8 NewColorMax = GREY_8;
-                  Push(&Stack, VoxelStackElement(V3i(LocationSimSpace), VoxelRuleDir_Count));
+                  Push(&Stack, VoxelStackElement(V3i(SimSphereP), VoxelRuleDir_Count));
                   while (AtElements(&Stack))
                   {
                     voxel_stack_element Element = Pop(&Stack);
@@ -4053,7 +4065,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
                       {
                         V = CopiedVoxels+VoxelIndex;
 
-                        v3i CenterToVoxP = SimVoxP - LocationSimSpace;
+                        v3i CenterToVoxP = SimVoxP - SimSphereP;
                         if (LengthSq(CenterToVoxP) < Square(Sphere->Radius-1.f))
                         {
                           if (V->Flags & Voxel_Filled)
@@ -4062,7 +4074,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
                           }
 
                         }
-                        else if (LengthSq(CenterToVoxP) < Square(Sphere->Radius))
+                        else if (LengthSq(CenterToVoxP) < RadiusSquared)
                         {
                           V->Color = NewColorMax;
                         }
@@ -4090,38 +4102,24 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
             case WorldUpdateOperationMode_Additive:
             {
-              if ( (V->Flags&Voxel_Filled) == 0 ) { }
-              V->Flags = Voxel_Filled;
-              V->Color = NewColor;
+              // Not Implemented
+              Assert(Modifier == WorldUpdateOperationModeModifier_None);
+
+              DimIterator(x, y, z, SimSpaceQueryDim)
+              {
+                v3i SimRelVoxP = V3i(x,y,z);
+                v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
+                v3i CenterToVoxP = SimVoxP - SimSphereP;
+                V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
+                if (LengthSq(CenterToVoxP) < RadiusSquared)
+                {
+                  V->Flags = Voxel_Filled;
+                }
+              }
             } break;
           }
 
         }
-#if 0
-        /* else if (LengthSq(SimSpaceVoxPExact - LocationSimSpace) < Square(Sphere->Radius+1.f)) */
-        {
-          switch(Mode)
-          {
-            InvalidCase(WorldUpdateOperationMode_None);
-
-            case WorldUpdateOperationMode_Subtractive:
-            {
-              if (V->Flags&VoxelFaceMask)
-              {
-                V->Color = GREY_8;
-              }
-              else
-              {
-                V->Flags |= Voxel_MarkBit;
-              }
-            } break;
-
-            case WorldUpdateOperationMode_Additive:
-            {
-            } break;
-          }
-        }
-#endif
       } break;
 
       case type_world_update_op_shape_params_rect:
@@ -4276,7 +4274,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   AtomicWrite((volatile void **)&GetDebugState()->PickedChunk, (void*) PickedChunk);
 #endif
 
-  v3 QueryRelLocation = LocationSimSpace - SimSpaceQueryMinP;
+  v3 QueryRelLocation = SimSphereP - SimSpaceQueryMinP;
   DrawVoxel_MinDim(DebugMesh, QueryRelLocation, V4(1,0,0,1), V3(1.f));
 #endif
 
