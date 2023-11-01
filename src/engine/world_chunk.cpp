@@ -4124,8 +4124,6 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
       case type_world_update_op_shape_params_rect:
       {
-        NotImplemented;
-#if 0
         // Not implemented
         Assert(Modifier == WorldUpdateOperationModeModifier_None);
 
@@ -4138,37 +4136,38 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
         v3i MinSS = Min(P0SS, P1SS);
         v3i MaxSS = Max(P0SS, P1SS);
 
-        /* MinSS += ClampNegative(GetSign(MinSS)); */
-        /* MaxSS += 1; */
-
-        rect3i SSRect = {MinSS, MaxSS};
-        if (Contains(SSRect, SimSpaceVoxPExact))
+        voxel NewVoxelValue = {};
+        switch(Mode)
         {
-          switch(Mode)
+          InvalidCase(WorldUpdateOperationMode_None);
+
+          case WorldUpdateOperationMode_Subtractive: {} break;
+
+          case WorldUpdateOperationMode_Additive:
           {
-            InvalidCase(WorldUpdateOperationMode_None);
-
-            case WorldUpdateOperationMode_Subtractive:
+            NewVoxelValue =
             {
-              if (V->Flags & Voxel_Filled) { }
-              V->Flags = Voxel_Empty;
-            } break;
-
-            case WorldUpdateOperationMode_Additive:
-            {
-              if ( (V->Flags & Voxel_Filled) == 0 ) { }
-              V->Flags = Voxel_Filled;
-              V->Color = NewColor;
-            } break;
-          }
+              Voxel_Filled,
+              NewColor,
+              0, // Transparency?
+            };
+          } break;
         }
-#endif
+
+        DimIterator(x, y, z, SimSpaceQueryDim)
+        {
+          v3i SimRelVoxP = V3i(x,y,z);
+          v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
+          V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
+
+          rect3i SSRect = {MinSS, MaxSS};
+          if (Contains(SSRect, SimVoxP)) { *V = NewVoxelValue; }
+        }
+
       } break;
 
       case type_world_update_op_shape_params_asset:
       {
-        NotImplemented;
-#if 0
         // Not implemented
         Assert(Modifier == WorldUpdateOperationModeModifier_None);
 
@@ -4178,16 +4177,21 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
         v3 AssetOriginP = GetSimSpaceP(World, AssetJob->Origin);
 
-        v3i OriginToCurrentVoxP = SimSpaceVoxPExact - AssetOriginP;
-
-        /* s32 AssetVoxelIndex = GetIndex(OriginToCurrentVoxP, Asset->Model.Dim); */
-        /* if (AssetVoxelIndex != -1) */
+        DimIterator(x, y, z, SimSpaceQueryDim)
         {
-          voxel *AssetV = TryGetVoxel(Asset->Model.Vox.ChunkData, OriginToCurrentVoxP);
-          if (AssetV && (AssetV->Flags&Voxel_Filled)) { *V = *AssetV; }
-        }
+          v3i SimRelVoxP = V3i(x,y,z);
+          v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
+          V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
 
-#endif
+
+          /* s32 AssetVoxelIndex = GetIndex(OriginToCurrentVoxP, Asset->Model.Dim); */
+          /* if (AssetVoxelIndex != -1) */
+          {
+            v3i OriginToCurrentVoxP = SimVoxP - AssetOriginP;
+            voxel *AssetV = TryGetVoxel(Asset->Model.Vox.ChunkData, OriginToCurrentVoxP);
+            if (AssetV && (AssetV->Flags&Voxel_Filled)) { *V = *AssetV; }
+          }
+        }
       } break;
 
     }
