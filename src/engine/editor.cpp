@@ -194,9 +194,9 @@ DoLevelEditor(engine_resources *Engine)
     }
   }
 
+  aabb_intersect_result AABBTest = {};
   if (Editor->SelectionClicks)
   {
-
     r32 Thickness = 0.10f;
 
     if (Editor->SelectionClicks < 2)
@@ -213,13 +213,15 @@ DoLevelEditor(engine_resources *Engine)
     v3 SelectionMaxP = GetMax(Editor->SelectionRegion);
 
     u8 BaseColor = WHITE;
+
+
     maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection, Camera, World->ChunkDim);
     if (MaybeRay.Tag == Maybe_Yes)
     {
       ray Ray = MaybeRay.Ray;
       aabb SelectionAABB = AABBMinMax(SelectionMinP, SelectionMaxP);
 
-      aabb_intersect_result AABBTest = Intersect(SelectionAABB, &Ray);
+      AABBTest = Intersect(SelectionAABB, &Ray);
       face_index Face = AABBTest.Face;
 
       PushColumn(Ui, CS(Face));
@@ -365,7 +367,7 @@ DoLevelEditor(engine_resources *Engine)
 
   if (ToggledOn(&ButtonGroup, CSz("Fill")))
   {
-    if (Input->LMB.Clicked)
+    if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
     {
       world_update_op_shape Shape = {
         .Type = type_world_update_op_shape_params_rect,
@@ -373,6 +375,19 @@ DoLevelEditor(engine_resources *Engine)
         .world_update_op_shape_params_rect.P1 = GetMax(Editor->SelectionRegion),
       };
       QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, SafeTruncateU8(Editor->SelectedColorIndex), Engine->Memory);
+    }
+  }
+
+  if (ToggledOn(&ButtonGroup, CSz("Remove")))
+  {
+    if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
+    {
+      world_update_op_shape Shape = {
+        .Type = type_world_update_op_shape_params_rect,
+        .world_update_op_shape_params_rect.P0 = GetMin(Editor->SelectionRegion),
+        .world_update_op_shape_params_rect.P1 = GetMax(Editor->SelectionRegion),
+      };
+      QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Subtractive, &Shape, SafeTruncateU8(Editor->SelectedColorIndex), Engine->Memory);
     }
   }
 
@@ -393,19 +408,6 @@ DoLevelEditor(engine_resources *Engine)
         };
         QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, SafeTruncateU8(Editor->SelectedColorIndex), Engine->Memory);
       }
-    }
-  }
-
-  if (ToggledOn(&ButtonGroup, CSz("Remove")))
-  {
-    if (Input->LMB.Clicked)
-    {
-      world_update_op_shape Shape = {
-        .Type = type_world_update_op_shape_params_rect,
-        .world_update_op_shape_params_rect.P0 = GetMin(Editor->SelectionRegion),
-        .world_update_op_shape_params_rect.P1 = GetMax(Editor->SelectionRegion),
-      };
-      QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Subtractive, &Shape, SafeTruncateU8(Editor->SelectedColorIndex), Engine->Memory);
     }
   }
 

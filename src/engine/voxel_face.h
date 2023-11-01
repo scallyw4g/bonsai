@@ -32,6 +32,7 @@ global_variable v3 FrontPlane = {{ 1.f, 0.f, 1.f }};
 global_variable v3 BackPlane  = {{ 1.f, 0.f, 1.f }};
 
 
+// NOTE(Jesse): This is pretty similar to voxel_rule_direction @duplicate_face_index_enum
 enum face_index
 {
   FaceIndex_None,
