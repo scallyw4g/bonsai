@@ -23,7 +23,6 @@ enum picked_voxel_position
 struct picked_voxel
 {
   picked_world_chunk PickedChunk;
-
   // Relative to origin of chunk
   v3 Picks[PickedVoxel_Count]; // use picked_voxel_position to index into this
 };

@@ -256,9 +256,8 @@ DEBUG_DrawAABB(engine_resources *Engine, rect3i *Rect, u32 ColorIndex, r32 Thick
 link_internal void
 DEBUG_HighlightVoxel(untextured_3d_geometry_buffer *Mesh, world *World, camera *Camera, cp P, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {
-  r32 Offset = 0.1f;
-  v3 P0 = GetRenderP(World->ChunkDim, P, Camera) - Offset;
-  DEBUG_DrawAABB( Mesh, P0, P0 + V3(1), ColorIndex, Thickness );
+  v3 P0 = GetRenderP(World->ChunkDim, P, Camera) - Thickness;
+  DEBUG_DrawAABB( Mesh, P0, P0 + V3(1) + Thickness, ColorIndex, Thickness );
 }
 
 link_internal void

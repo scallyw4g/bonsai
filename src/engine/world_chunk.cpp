@@ -4662,11 +4662,10 @@ MousePickVoxel(engine_resources *Resources)
 
 #if 1
 
-    auto RayResult = RayTraceCollision( Resources, Camera->CurrentP, MaybeRay.Ray.Dir);
+    picked_voxel RayResult = RayTraceCollision( Resources, Camera->CurrentP, MaybeRay.Ray.Dir);
 
     if (RayResult.PickedChunk.tChunk != f32_MAX)
     {
-
       world_chunk *ClosestChunk = RayResult.PickedChunk.Chunk;
       v3 MinP =  V3(ClosestChunk->WorldP * World->ChunkDim);
       v3 VoxelP = MinP + Truncate(RayResult.Picks[PickedVoxel_FirstFilled]);
@@ -4687,7 +4686,7 @@ MousePickVoxel(engine_resources *Resources)
         }
       }
 
-      Result.Tag = Maybe_Yes;
+      Result.Tag   = Maybe_Yes;
       Result.Value = RayResult;
     }
 
@@ -4714,7 +4713,7 @@ MousePickVoxel(engine_resources *Resources)
       v3 VoxelP = MinP + Truncate(PickedVoxel.Picks[PickedVoxel_FirstFilled]);
 
       untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
-      DrawVoxel( &VoxelMesh, GetRenderP(World->ChunkDim, VoxelP+V3(.5f), Camera), V4(1,0,0,1), V3(1.05f) );
+      DrawVoxel( &VoxelMesh, GetRenderP(World->ChunkDim, VoxelP+V3(.5f), Camera), RED, V3(1.05f) );
 
       untextured_3d_geometry_buffer ChunkAABBMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
       auto ChunkAABB = AABBMinDim( GetRenderP(World->ChunkDim, MinP, Camera), V3(World->ChunkDim));
