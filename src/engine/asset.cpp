@@ -445,41 +445,47 @@ DeserializeChunk(native_file *AssetFile, world_chunk *Result, tiered_mesh_freeli
 }
 
 link_internal b32
-SerializeChunk(world_chunk *Chunk, counted_string AssetPath)
+SerializeChunk(world_chunk *Chunk, native_file *File)
 {
   b32 Result = True;
 
-  auto WorldP = Chunk->WorldP;
-  counted_string Filename = GetAssetFilenameFor(AssetPath, WorldP, GetTranArena());
-
-  native_file File = OpenFile(Filename, "w+b");
-
   world_chunk_file_header_v3 FileHeader = MakeWorldChunkFileHeader_v3(Chunk);
 
-  Result &= WriteToFile(&File, (u8*)&FileHeader, sizeof(FileHeader));
+  Result &= WriteToFile(File, (u8*)&FileHeader, sizeof(FileHeader));
 
   {
     u64 VoxByteCount = FileHeader.VoxelElementCount * FileHeader.VoxelElementSize;
 
     u32 Tag = WorldChunkFileTag_VOXD;
-    Result &= WriteToFile(&File, Tag);
-    Result &= WriteToFile(&File, (u8*)Chunk->Voxels, VoxByteCount);
+    Result &= WriteToFile(File, Tag);
+    Result &= WriteToFile(File, (u8*)Chunk->Voxels, VoxByteCount);
   }
 
   auto Mesh = TakeOwnershipSync(&Chunk->Meshes, MeshBit_Main);
-  Result &= SerializeMesh(&File, Mesh, &FileHeader);
+  Result &= SerializeMesh(File, Mesh, &FileHeader);
   ReleaseOwnership(&Chunk->Meshes, MeshBit_Main, Mesh);
 
   {
     DebugLine("Writing (%u) StandingSpots", FileHeader.StandingSpotElementCount);
     u64 StandingSpotByteCount = FileHeader.StandingSpotElementSize * FileHeader.StandingSpotElementCount;
     u32 Tag = WorldChunkFileTag_SPOT;
-    Result &= WriteToFile(&File, Tag);
-    Result &= WriteToFile(&File, (u8*)Chunk->StandingSpots.Start, StandingSpotByteCount);
+    Result &= WriteToFile(File, Tag);
+    Result &= WriteToFile(File, (u8*)Chunk->StandingSpots.Start, StandingSpotByteCount);
   }
 
-  CloseFile(&File);
+  return Result;
+}
 
+link_internal b32
+SerializeChunk(world_chunk *Chunk, counted_string AssetPath)
+{
+
+  auto WorldP = Chunk->WorldP;
+  counted_string Filename = GetAssetFilenameFor(AssetPath, WorldP, GetTranArena());
+
+  native_file File = OpenFile(Filename, "w+b");
+  b32 Result = SerializeChunk(Chunk, &File);
+  CloseFile(&File);
   return Result;
 }
 

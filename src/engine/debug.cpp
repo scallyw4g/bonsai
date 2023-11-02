@@ -334,11 +334,53 @@ RenderToTexture(engine_resources *Engine, untextured_3d_geometry_buffer *Src, v3
 }
 
 link_internal void
+DoLevelWindow(engine_resources *Engine)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  local_persist window_layout Window = WindowLayout("Level");
+
+  PushWindowStart(Ui, &Window);
+
+  PushTableStart(Ui);
+    if (Button(Ui, CSz("Export Level"), umm("export_level_button")))
+    {
+      u32 ChunkCount = 0;
+      RangeIterator(HashIndex, s32(World->HashSize))
+      {
+        if (World->ChunkHash[HashIndex])
+        {
+          ++ChunkCount;
+        }
+      }
+
+      native_file LevelFile = OpenFile("levels/test.level", "w+b");
+
+      level_header Header = {};
+      Header.ChunkCount = ChunkCount;
+
+      WriteToFile(&LevelFile, (u8*)&Header, sizeof(level_header));
+
+      RangeIterator(HashIndex, s32(World->HashSize))
+      {
+        if (world_chunk *Chunk = World->ChunkHash[HashIndex])
+        {
+          SerializeChunk(Chunk, &LevelFile);
+        }
+      }
+    }
+  PushTableEnd(Ui);
+
+  PushWindowEnd(Ui, &Window);
+}
+
+link_internal void
 DoEngineDebug(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
   local_persist ui_element_toggle_button Buttons[] = {
+    {CSz("Level"),           False, False},
     {CSz("Edit"),            False, False},
     {CSz("Assets"),          False, False},
     {CSz("WorldChunks"),     False, False},
@@ -347,17 +389,19 @@ DoEngineDebug(engine_resources *Engine)
     {CSz("EngineDebug"),     False, False},
   };
 
-  /* for (u32 Index = 0; Index < Megabytes(1); Index++) */
-  /* { */
-  /*   Text(Ui, CSz("FooText")); */
-  /* } */
-
   ui_element_toggle_button_group ButtonGroup = {
     .Buttons = Buttons,
     .Count = ArrayCount(Buttons),
   };
 
   DrawToggleButtonGroup(Ui, &ButtonGroup);
+
+
+
+  if (ToggledOn(&ButtonGroup, CSz("Level")))
+  {
+    DoLevelWindow(Engine);
+  }
 
   if (ToggledOn(&ButtonGroup, CSz("Edit")))
   {

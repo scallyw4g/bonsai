@@ -35,3 +35,5 @@
 #include <engine/bonsai.h> // TODO(Jesse, id: 90, tags: cleanup): Redistribute this nocheckin
 #include <engine/voxel_synthesis.h>
 
+#include <engine/level.h>
+

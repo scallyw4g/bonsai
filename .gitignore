@@ -1,4 +1,7 @@
 debug_print/
+levels/
+bin/
+tmp/
 
 .vs
 
@@ -13,8 +16,6 @@ cscope.files
 
 build/*
 
-bin/
-tmp/
 breakpoints
 
 .vscode/*
