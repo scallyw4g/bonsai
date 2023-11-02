@@ -17,126 +17,6 @@ global_variable u32 PackedPink  = PackRGBALinearTo255(Pink  );
 global_variable u32 PackedGreen = PackRGBALinearTo255(Green );
 
 
-inline u8
-ReadU8(u8* Source)
-{
-  u8 Result = Source[0];
-  return Result;
-}
-
-inline s16
-ReadS16(s16* Source)
-{
-  s16 Result = (((u8*)Source)[0]*256) + ((u8*)Source)[1];
-  return Result;
-}
-
-inline s16
-ReadS16(u8* Source)
-{
-  s16 Result = (Source[0]*256) + Source[1];
-  return Result;
-}
-
-inline u16
-ReadU16(u16* Source)
-{
-  u16 Result = (((u8*)Source)[0]*256) + ((u8*)Source)[1];
-  return Result;
-}
-
-inline u16
-ReadU16(u8* Source)
-{
-  u16 Result = (Source[0]*256) + Source[1];
-  return Result;
-}
-
-inline s64
-ReadS64(u8* Source)
-{
-  s64 Result = (s64)( ((u64)Source[0]<<56) + ((u64)Source[1]<<48) + ((u64)Source[2]<<40) + ((u64)Source[3]<<32) + ((u64)Source[4]<<24) + ((u64)Source[5]<<16) + ((u64)Source[6]<<8) + ((u64)Source[7]) );
-  return Result;
-}
-
-inline u32
-ReadU32(u8* Source)
-{
-  u32 Result = (u32)( (Source[0]<<24) + (Source[1]<<16) + (Source[2]<<8) + Source[3] );
-  return Result;
-}
-
-inline u8*
-ReadU8Array(u8_stream *Source, u32 Count)
-{
-  u8 *Result = Source->At;
-  Source->At += Count;
-  Assert(Source->At <= Source->End);
-  return Result;
-}
-
-inline u16*
-ReadU16Array(u8_stream *Source, u32 Count)
-{
-  u16 *Result = (u16*)Source->At;
-  Source->At += sizeof(u16)*Count;
-  Assert(Source->At <= Source->End);
-  return Result;
-}
-
-inline s16*
-ReadS16Array(u8_stream *Source, u32 Count)
-{
-  s16 *Result = (s16*)Source->At;
-  Source->At += sizeof(s16)*Count;
-  Assert(Source->At <= Source->End);
-  return Result;
-}
-
-inline u8
-ReadU8(u8_stream *Source)
-{
-  u8 Result = ReadU8(Source->At);
-  Source->At += sizeof(u8);
-  Assert(Source->At <= Source->End);
-  return Result;
-}
-
-inline s16
-ReadS16(u8_stream *Source)
-{
-  s16 Result = ReadS16(Source->At);
-  Source->At += sizeof(s16);
-  Assert(Source->At <= Source->End);
-  return Result;
-}
-
-inline u16
-ReadU16(u8_stream *Source)
-{
-  u16 Result = ReadU16(Source->At);
-  Source->At += sizeof(u16);
-  Assert(Source->At <= Source->End);
-  return Result;
-}
-
-inline s64
-ReadS64(u8_stream *Source)
-{
-  s64 Result = ReadS64(Source->At);
-  Source->At += sizeof(s64);
-  Assert(Source->At <= Source->End);
-  return Result;
-}
-
-inline u32
-ReadU32(u8_stream *Source)
-{
-  u32 Result = ReadU32(Source->At);
-  Source->At += sizeof(u32);
-  Assert(Source->At <= Source->End);
-  return Result;
-}
 
 struct head_table
 {
@@ -293,10 +173,10 @@ inline font_table*
 ParseFontTable(u8_stream *Source, memory_arena *Arena)
 {
   font_table *Result = Allocate(font_table, Arena, 1);
-  Result->Tag          = ReadU32(Source);
-  Result->Checksum     = ReadU32(Source);
-  Result->Offset       = ReadU32(Source);
-  Result->Length       = ReadU32(Source);
+  Result->Tag          = Read_u32_be(Source);
+  Result->Checksum     = Read_u32_be(Source);
+  Result->Offset       = Read_u32_be(Source);
+  Result->Length       = Read_u32_be(Source);
 
   Result->Data     = Source->Start + Result->Offset;
   Result->HumanTag = HumanTag(Result->Tag, Arena);
@@ -311,7 +191,7 @@ ParseOffsetSubtable(u8_stream *Source, memory_arena* Arena)
 
   offset_subtable Result = {};
 
-  Result.ScalerType = ReadU32(Source);
+  Result.ScalerType = Read_u32_be(Source);
 
   switch (Result.ScalerType)
   {
@@ -331,11 +211,11 @@ ParseOffsetSubtable(u8_stream *Source, memory_arena* Arena)
     InvalidDefaultCase;
   }
 
-  Result.NumTables     = ReadU16(Source);
+  Result.NumTables     = Read_u16_be(Source);
 
-  Result.SearchRange   = ReadU16(Source);
-  Result.EntrySelector = ReadU16(Source);
-  Result.RangeShift    = ReadU16(Source);
+  Result.SearchRange   = Read_u16_be(Source);
+  Result.EntrySelector = Read_u16_be(Source);
+  Result.RangeShift    = Read_u16_be(Source);
 
   return Result;
 }
@@ -349,7 +229,7 @@ CalculateTableChecksum(font_table *Table)
   u32 FourByteChunks = (Table->Length + 3) / 4;
   while (FourByteChunks-- > 0)
   {
-      Sum += ReadU32(TableData);
+      Sum += Read_u32_be(TableData);
       TableData += 4;
   }
 
@@ -392,21 +272,21 @@ ParseGlyph(u8_stream *Stream, memory_arena *Arena)
 {
   simple_glyph Glyph = {};
 
-  Glyph.ContourCount = ReadS16(Stream);
+  Glyph.ContourCount = Read_s16_be(Stream);
   if (Glyph.ContourCount > 0) // We don't support compound glyphs, yet
   {
     Glyph.Contours = Allocate(ttf_contour, Arena, Glyph.ContourCount);
-    s16 xMin = ReadS16(Stream);
-    s16 yMin = ReadS16(Stream);
-    s16 xMax = ReadS16(Stream);
-    s16 yMax = ReadS16(Stream);
+    s16 xMin = Read_s16_be(Stream);
+    s16 yMin = Read_s16_be(Stream);
+    s16 xMax = Read_s16_be(Stream);
+    s16 yMax = Read_s16_be(Stream);
 
     Glyph.MinP = {{ xMin, yMin }};
 
     Glyph.EmSpaceDim.x = xMax - xMin + 1; // Add one to put from 0-based to 1-based
     Glyph.EmSpaceDim.y = yMax - yMin + 1; // coordinate system
 
-    u16 *EndPointsOfContours = ReadU16Array(Stream, (u32)Glyph.ContourCount);
+    u16 *EndPointsOfContours = ReadArray_u16_be(Stream, (u32)Glyph.ContourCount);
 
     u16 NextStart = 0;
     for (u16 ContourIndex = 0;
@@ -414,18 +294,18 @@ ParseGlyph(u8_stream *Stream, memory_arena *Arena)
         ++ContourIndex)
     {
       Glyph.Contours[ContourIndex].StartIndex = NextStart;
-      Glyph.Contours[ContourIndex].EndIndex = ReadU16(EndPointsOfContours + ContourIndex);
+      Glyph.Contours[ContourIndex].EndIndex = Read_u16_be(EndPointsOfContours + ContourIndex);
       NextStart = SafeTruncateToU16(Glyph.Contours[ContourIndex].EndIndex + 1);
     }
 
-    u16 InstructionLength = ReadU16(Stream);
+    u16 InstructionLength = Read_u16_be(Stream);
 
-    /* u8* Instructions = */ ReadU8Array(Stream, InstructionLength);
+    /* u8* Instructions = */ ReadArray_u8_be(Stream, InstructionLength);
 
     u8* Flags = Stream->At;
     u8* FlagsAt = Flags;
 
-    Glyph.VertCount = (s16)(1 + ReadU16(EndPointsOfContours+Glyph.ContourCount-1));
+    Glyph.VertCount = (s16)(1 + Read_u16_be(EndPointsOfContours+Glyph.ContourCount-1));
     Glyph.Verts = Allocate(ttf_vert, Arena, Glyph.VertCount);
 
     s16 RepeatCount = 0;
@@ -463,14 +343,14 @@ ParseGlyph(u8_stream *Stream, memory_arena *Arena)
       ttf_vert *Vert = Glyph.Verts + PointIndex;
       if (Vert->Flags & TTFFlag_ShortX)
       {
-        u16 Delta = ReadU8(&VertStream);
+        u16 Delta = Read_u8_be(&VertStream);
         X += (Vert->Flags & TTFFlag_DualX) ? Delta : -Delta;
       }
       else
       {
         if (!(Vert->Flags & TTFFlag_DualX))
         {
-          X += ReadU16(&VertStream);
+          X += Read_u16_be(&VertStream);
         }
       }
 
@@ -487,14 +367,14 @@ ParseGlyph(u8_stream *Stream, memory_arena *Arena)
       ttf_vert *Vert = Glyph.Verts + PointIndex;
       if (Vert->Flags & TTFFlag_ShortY)
       {
-        u16 Delta = ReadU8(&VertStream);
+        u16 Delta = Read_u8_be(&VertStream);
         Y += (Vert->Flags & TTFFlag_DualY) ? Delta : -Delta;
       }
       else
       {
         if (!(Vert->Flags & TTFFlag_DualY))
         {
-          Y += ReadU16(&VertStream);
+          Y += Read_u16_be(&VertStream);
         }
       }
 
@@ -521,18 +401,18 @@ GetGlyphIdForCharacterCode(u32 UnicodeCodepoint, ttf *Font)
   Assert(Checksum == Cmap->Checksum);
 
   u8_stream CmapStream = U8_Stream(Cmap);
-  u16 TableVersion = ReadU16(&CmapStream);
+  u16 TableVersion = Read_u16_be(&CmapStream);
   Assert(TableVersion == 0);
 
-  u16 NumSubtables = ReadU16(&CmapStream);
+  u16 NumSubtables = Read_u16_be(&CmapStream);
 
   for (u32 SubtableIndex = 0;
       SubtableIndex < NumSubtables;
       ++SubtableIndex)
   {
-    /* u16 PlatformId         = */ ReadU16(&CmapStream);
-    /* u16 PlatformSpecificId = */ ReadU16(&CmapStream);
-    u32 Offset             = ReadU32(&CmapStream);
+    /* u16 PlatformId         = */ Read_u16_be(&CmapStream);
+    /* u16 PlatformSpecificId = */ Read_u16_be(&CmapStream);
+    u32 Offset             = Read_u32_be(&CmapStream);
     u8* Start              = CmapStream.Start + Offset;
 
     u8_stream TableStream = {};
@@ -540,40 +420,40 @@ GetGlyphIdForCharacterCode(u32 UnicodeCodepoint, ttf *Font)
     TableStream.At = Start;
     TableStream.End = Start+4;
 
-    u16 Format = ReadU16(&TableStream);
-    u16 Length = ReadU16(&TableStream);
+    u16 Format = Read_u16_be(&TableStream);
+    u16 Length = Read_u16_be(&TableStream);
 
     TableStream.End = Start+Length;
     if (Format == 4)
     {
-      /* u16 Lang          = */ ReadU16(&TableStream);
-      u16 SegCountX2    = ReadU16(&TableStream);
+      /* u16 Lang          = */ Read_u16_be(&TableStream);
+      u16 SegCountX2    = Read_u16_be(&TableStream);
       u16 SegCount      = SegCountX2/2;
-      /* u16 SearchRange   = */ ReadU16(&TableStream);
-      /* u16 EntrySelector = */ ReadU16(&TableStream);
-      /* u16 RangeShift    = */ ReadU16(&TableStream);
+      /* u16 SearchRange   = */ Read_u16_be(&TableStream);
+      /* u16 EntrySelector = */ Read_u16_be(&TableStream);
+      /* u16 RangeShift    = */ Read_u16_be(&TableStream);
 
-      u16* EndCodes      = ReadU16Array(&TableStream, SegCount);
-      u16 Pad            = ReadU16(&TableStream);
+      u16* EndCodes      = ReadArray_u16_be(&TableStream, SegCount);
+      u16 Pad            = Read_u16_be(&TableStream);
       Assert(Pad==0);
-      u16* StartCodes    = ReadU16Array(&TableStream, SegCount);
-      u16* IdDelta       = ReadU16Array(&TableStream, SegCount);
-      u16* IdRangeOffset = ReadU16Array(&TableStream, SegCount);
+      u16* StartCodes    = ReadArray_u16_be(&TableStream, SegCount);
+      u16* IdDelta       = ReadArray_u16_be(&TableStream, SegCount);
+      u16* IdRangeOffset = ReadArray_u16_be(&TableStream, SegCount);
 
       for (u32 SegIdx = 0;
           SegIdx < SegCount;
           ++SegIdx)
       {
-        u16 StartCode = ReadU16(StartCodes+SegIdx);
-        u16 End = ReadU16(EndCodes+SegIdx);
-        u16 Delta = ReadU16(IdDelta+SegIdx);
-        u16 RangeOffset = ReadU16(IdRangeOffset+SegIdx);
+        u16 StartCode = Read_u16_be(StartCodes+SegIdx);
+        u16 End = Read_u16_be(EndCodes+SegIdx);
+        u16 Delta = Read_u16_be(IdDelta+SegIdx);
+        u16 RangeOffset = Read_u16_be(IdRangeOffset+SegIdx);
 
         if (UnicodeCodepoint >= StartCode && UnicodeCodepoint <= End)
         {
           if (RangeOffset)
           {
-            u16 GlyphIndex = ReadU16( &IdRangeOffset[SegIdx] + RangeOffset / 2 + (UnicodeCodepoint - StartCode) );
+            u16 GlyphIndex = Read_u16_be( &IdRangeOffset[SegIdx] + RangeOffset / 2 + (UnicodeCodepoint - StartCode) );
             u16 Result = GlyphIndex ? GlyphIndex + Delta : GlyphIndex;
             return Result;
           }
@@ -597,28 +477,28 @@ ParseHeadTable(u8_stream *Stream, memory_arena *Arena)
 {
   head_table *Result = Allocate(head_table, Arena, 1);
 
-  Result->Version = ReadU32(Stream);
+  Result->Version = Read_u32_be(Stream);
   Assert(Result->Version == 0x00010000);
 
-  Result->FontRevision       = ReadU32(Stream);
+  Result->FontRevision       = Read_u32_be(Stream);
 
-  Result->ChecksumAdjustment = ReadU32(Stream);
-  Result->MagicNumber        = ReadU32(Stream);
+  Result->ChecksumAdjustment = Read_u32_be(Stream);
+  Result->MagicNumber        = Read_u32_be(Stream);
   Assert(Result->MagicNumber == 0x5F0F3CF5);
 
-  Result->Flags             = ReadU16(Stream);
-  Result->UnitsPerEm        = ReadU16(Stream);
-  Result->Created           = ReadS64(Stream);
-  Result->Modified          = ReadS64(Stream);
-  Result->xMin              = ReadS16(Stream);
-  Result->yMin              = ReadS16(Stream);
-  Result->xMax              = ReadS16(Stream);
-  Result->yMax              = ReadS16(Stream);
-  Result->MacStyle          = ReadU16(Stream);
-  Result->LowestRecPPEM     = ReadU16(Stream);
-  Result->FontDirectionHint = ReadU16(Stream);
-  Result->IndexToLocFormat  = ReadU16(Stream);
-  Result->GlyphDataFormat   = ReadU16(Stream);
+  Result->Flags             = Read_u16_be(Stream);
+  Result->UnitsPerEm        = Read_u16_be(Stream);
+  Result->Created           = Read_s64_be(Stream);
+  Result->Modified          = Read_s64_be(Stream);
+  Result->xMin              = Read_s16_be(Stream);
+  Result->yMin              = Read_s16_be(Stream);
+  Result->xMax              = Read_s16_be(Stream);
+  Result->yMax              = Read_s16_be(Stream);
+  Result->MacStyle          = Read_u16_be(Stream);
+  Result->LowestRecPPEM     = Read_u16_be(Stream);
+  Result->FontDirectionHint = Read_u16_be(Stream);
+  Result->IndexToLocFormat  = Read_u16_be(Stream);
+  Result->GlyphDataFormat   = Read_u16_be(Stream);
 
   Assert(Stream->At == Stream->End);
 
@@ -637,8 +517,8 @@ GetStreamForGlyphIndex(u32 GlyphIndex, ttf *Font)
   if (HeadTable->IndexToLocFormat == SHORT_INDEX_LOCATION_FORMAT)
   {
     u32 GlyphIndexOffset = GlyphIndex * sizeof(u16);
-    u32 StartOffset = ReadU16(Font->loca->Data + GlyphIndexOffset) *2;
-    u32 EndOffset = ReadU16(Font->loca->Data + GlyphIndexOffset + sizeof(u16)) *2;
+    u32 StartOffset = Read_u16_be(Font->loca->Data + GlyphIndexOffset) *2;
+    u32 EndOffset = Read_u16_be(Font->loca->Data + GlyphIndexOffset + sizeof(u16)) *2;
     Assert(StartOffset <= EndOffset);
 
     u8* Start = Font->glyf->Data + StartOffset;
@@ -647,12 +527,12 @@ GetStreamForGlyphIndex(u32 GlyphIndex, ttf *Font)
   }
   else if (HeadTable->IndexToLocFormat == LONG_INDEX_LOCATION_FORMAT)
   {
-    /* u32 FirstOffset = */ ReadU32(Font->loca->Data);
-    /* u32 FirstEndOffset = */ ReadU32(Font->loca->Data+1);
+    /* u32 FirstOffset = */ Read_u32_be(Font->loca->Data);
+    /* u32 FirstEndOffset = */ Read_u32_be(Font->loca->Data+1);
 
 
-    u32 StartOffset = ReadU32(Font->loca->Data+(GlyphIndex*4));
-    u32 EndOffset = ReadU32(Font->loca->Data+(GlyphIndex*4)+4);
+    u32 StartOffset = Read_u32_be(Font->loca->Data+(GlyphIndex*4));
+    u32 EndOffset = Read_u32_be(Font->loca->Data+(GlyphIndex*4)+4);
 
     u8* Start = Font->glyf->Data + StartOffset;
     u8* End = Font->glyf->Data + EndOffset;
