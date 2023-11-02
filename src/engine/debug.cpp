@@ -249,37 +249,39 @@ DebugUi(engine_resources *Engine, cs Name, interactable *Value)
   DebugValue(Ui, &Value->MaxP);
 }
 
-
-link_internal void
-DebugFileNodeView(file_traversal_node *Node)
+link_internal maybe_file_traversal_node
+DrawFileNodes(file_traversal_node Node)
 {
   engine_resources *Engine = GetEngineResources();
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  switch (Node->Type)
+  maybe_file_traversal_node Result = {};
+
+  v4 Pad = V4(10, 0, 10, 0);
+  switch (Node.Type)
   {
     InvalidCase(FileTraversalType_None);
 
     case FileTraversalType_File:
     {
-      interactable_handle FileButton = PushButtonStart(Ui, umm("DebugFileNodeView") ^ umm(Node->Name.Start) );
-        /* Text(Ui, CSz("   ")); */
-        /* Text(Ui, Node->Dir); */
-        /* Text(Ui, CSz("/")); */
-        Text(Ui, Node->Name);
+      interactable_handle FileButton = PushButtonStart(Ui, umm("DrawFileNodes") ^ umm(Node.Name.Start) );
+        PushColumn(Ui, CSz(" "), &DefaultStyle, Pad);
+        PushColumn(Ui, Node.Name);
         PushNewRow(Ui);
       PushButtonEnd(Ui);
 
-      if (Clicked(Ui, &FileButton)) { EngineDebug->ResetAssetNodeView = True; EngineDebug->SelectedAsset = *Node; }
+      if (Clicked(Ui, &FileButton)) { Result.Tag = Maybe_Yes; Result.Value = Node; }
     } break;
 
     case FileTraversalType_Dir:
     {
-      Text(Ui, CSz(" + "));
-      Text(Ui, Node->Name);
+      PushColumn(Ui, CSz("+"), &DefaultStyle, Pad);
+      PushColumn(Ui, Node.Name);
       PushNewRow(Ui);
     } break;
   }
+
+  return Result;
 }
 
 link_internal void
@@ -370,6 +372,37 @@ DoLevelWindow(engine_resources *Engine)
       }
     }
   PushTableEnd(Ui);
+
+  PushTableStart(Ui);
+    maybe_file_traversal_node ClickedNode = PlatformTraverseDirectoryTree(CSz("levels"), DrawFileNodes);
+  PushTableEnd(Ui);
+
+  if (ClickedNode.Tag)
+  {
+    cs Filename = Concat(ClickedNode.Value.Dir, ClickedNode.Value.Name, GetTranArena());
+    u8_stream LevelBytes = U8_StreamFromFile(Filename, GetTranArena());
+
+    if (LevelBytes.Start)
+    {
+      RangeIterator(HashIndex, s32(World->HashSize))
+      {
+        if (world_chunk *Chunk = World->ChunkHash[HashIndex])
+        {
+          FreeWorldChunk(World, Chunk, &Engine->MeshFreelist, World->Memory);
+          World->ChunkHash[HashIndex] = 0;
+        }
+      }
+
+
+      /* u64 Magic = PopU64_be(&LevelBytes); */
+      /* u32 ChunkCount = PopU32(&LevelBytes); */
+
+      /* RangeIterator(ChunkIndex, ChunkCount) */
+      /* { */
+      /* } */
+
+    }
+  }
 
   PushWindowEnd(Ui, &Window);
 }
@@ -594,8 +627,15 @@ DoEngineDebug(engine_resources *Engine)
 
     render_settings *Settings = &Graphics->Settings;
     PushWindowStart(Ui, &Window);
-      PlatformTraverseDirectoryTree(CSz("models"), DebugFileNodeView);
+      maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTree(CSz("models"), DrawFileNodes);
     PushWindowEnd(Ui, &Window);
+
+    if (ClickedFileNode.Tag)
+    {
+      DebugLine("Clicekd2");
+      EngineDebug->ResetAssetNodeView = True;
+      EngineDebug->SelectedAsset = ClickedFileNode.Value;
+    }
 
     if (EngineDebug->SelectedAsset.Type)
     {
@@ -672,5 +712,4 @@ DoEngineDebug(engine_resources *Engine)
       PushWindowEnd(Ui, &AssetViewWindow);
     }
   }
-
 }

@@ -454,5 +454,4 @@ DoLevelEditor(engine_resources *Engine)
     v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, MouseVoxelPos));
     DEBUG_HighlightVoxel( Engine, SimP, WHITE, 0.05f);
   }
-
 }
