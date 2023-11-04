@@ -162,6 +162,8 @@ GetWorldChunkHash(world_position P, chunk_dimension VisibleRegion, u32 WorldHash
 link_internal b32
 InsertChunkIntoWorld(world_chunk **WorldChunkHash, world_chunk *Chunk, chunk_dimension VisibleRegion, u32 WorldHashSize)
 {
+  TIMED_FUNCTION();
+
   b32 Result = True;
   u32 HashIndex = GetWorldChunkHash(Chunk->WorldP, VisibleRegion, WorldHashSize);
   u32 StartingHashIndex = HashIndex;
@@ -192,7 +194,7 @@ InsertChunkIntoWorld(world_chunk **WorldChunkHash, world_chunk *Chunk, chunk_dim
   if (BucketsSkipped > 10)
   {
     world_position P = Chunk->WorldP;
-    Warn("%u Collisions encountered while inserting chunk into world for chunk (%d, %d, %d) with hash value (%u)", BucketsSkipped, P.x, P.y, P.z, StartingHashIndex);
+    /* Warn("%u Collisions encountered while inserting chunk into world for chunk (%d, %d, %d) with hash value (%u)", BucketsSkipped, P.x, P.y, P.z, StartingHashIndex); */
   }
 #endif
 
@@ -204,7 +206,6 @@ InsertChunkIntoWorld(world_chunk **WorldChunkHash, world_chunk *Chunk, chunk_dim
 link_internal b32
 InsertChunkIntoWorld(world *World, world_chunk *Chunk)
 {
-  TIMED_FUNCTION();
   b32 Result = InsertChunkIntoWorld(World->ChunkHash, Chunk, World->VisibleRegion, World->HashSize);
   return Result;
 }
@@ -241,20 +242,33 @@ AllocateAndInsertChunk(memory_arena *Storage, world *World, world_position P)
   return Result;
 }
 
-link_internal world_chunk*
-GetWorldChunkFor(memory_arena *Storage, world *World, world_position P)
+link_internal world_chunk *
+GetFreeWorldChunk(world *World, memory_arena *Storage)
+{
+  world_chunk *Result = {};
+  if (World->FreeChunkCount == 0)
+  {
+    Result = AllocateWorldChunk(Storage, {}, World->ChunkDim);
+    Assert(Result->Flags == Chunk_Uninitialized);
+  }
+  else
+  {
+    Result = World->FreeChunks[--World->FreeChunkCount];
+  }
+
+  return Result;
+}
+
+link_internal world_chunk *
+GetAndInsertFreeWorldChunk(memory_arena *Storage, world *World, world_position P)
 {
   TIMED_FUNCTION();
 
   world_chunk *Result = 0;
 
-  if (World->FreeChunkCount == 0)
+  world_chunk *Chunk = GetFreeWorldChunk(World, Storage);
+  if (Chunk)
   {
-    Result = AllocateAndInsertChunk(Storage, World, P);
-  }
-  else
-  {
-    world_chunk *Chunk = World->FreeChunks[--World->FreeChunkCount];
     Chunk->WorldP = P;
 
     if (InsertChunkIntoWorld(World, Chunk))
@@ -266,11 +280,16 @@ GetWorldChunkFor(memory_arena *Storage, world *World, world_position P)
       Leak("Unable to insert chunk into world. Leaking chunk, call FreeWorldChunk here");
       /* FreeWorldChunk(World, Chunk, Storage, Resources->MeshFreelist); */
     }
+
+  }
+  else
+  {
+    Warn("Unable to allocate world chunk");
   }
 
   if (Result)
   {
-    Result->WorldP = P;
+    Assert(Result->WorldP == P);
     Assert(Result->Voxels);
     Assert(Result->Dim == World->ChunkDim);
     Assert(Result->Flags == Chunk_Uninitialized);
@@ -3221,6 +3240,7 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
                                          WorldChunkDim, UserData );
 
 
+#if 0
   if (AssetFile && AssetFile->Handle)
   {
     world_chunk *AssetChunk = AllocateWorldChunk(Thread->TempMemory, {}, WorldChunkDim+Global_ChunkApronDim);
@@ -3231,6 +3251,7 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
     MergeChunksOffset(AssetChunk, SyntheticChunk, {});
     /* MergeChunksOffset(AssetChunk, SyntheticChunk, Global_HalfChunkApronDim); */
   }
+#endif
 
   MarkBoundaryVoxels_NoExteriorFaces(SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
 
@@ -3633,7 +3654,7 @@ BufferWorld( platform                      *Plat,
         }
         else
         {
-          Chunk = GetWorldChunkFor(World->Memory, World, P);
+          Chunk = GetAndInsertFreeWorldChunk(World->Memory, World, P);
           if (Chunk)
           { QueueChunkForInit(&Plat->LowPriority, Chunk);  }
           else
@@ -4272,7 +4293,10 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   picked_world_chunk *PickedChunk = Allocate(picked_world_chunk, Thread->PermMemory, 1);
   PickedChunk->Chunk = TempChunk;
 
-  AtomicReplaceMesh( &TempChunk->Meshes, MeshBit_Main, DebugMesh, DebugMesh->Timestamp);
+  if (untextured_3d_geometry_buffer *Buf = AtomicReplaceMesh( &TempChunk->Meshes, MeshBit_Main, DebugMesh, DebugMesh->Timestamp))
+  {
+    Leak("Leaking mesh");
+  };
 
 #if DEBUG_SYSTEM_API
   AtomicWrite((volatile void **)&GetDebugState()->PickedChunk, (void*) PickedChunk);

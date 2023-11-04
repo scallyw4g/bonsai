@@ -59,6 +59,7 @@ enum world_chunk_file_tag
 
   // v3
   WorldChunkFileTag_MATL = 'LTAM', // Material data
+  WorldChunkFileTag_END  = ' DNE', // Chunk book-end
 };
 
 struct world_chunk_file_header_v1
@@ -103,6 +104,10 @@ struct world_chunk_file_header_v3
   u32 WHNK; // WorldChunkFileTag_WHNK
   u32 Version = 3;
   u64 Checksum;
+
+  s32 Px;
+  s32 Py;
+  s32 Pz;
 
   u32 VoxelElementCount;
   u32 StandingSpotElementCount;

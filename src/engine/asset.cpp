@@ -38,6 +38,10 @@ MakeWorldChunkFileHeader_v3(world_chunk *Chunk)
   Result.VoxelElementCount        = Volume(Chunk);
   Result.StandingSpotElementCount = (u32)AtElements(&Chunk->StandingSpots);
 
+  Result.Px = Chunk->WorldP.x;
+  Result.Py = Chunk->WorldP.y;
+  Result.Pz = Chunk->WorldP.z;
+
   if (HasMesh(&Chunk->Meshes, MeshBit_Main))
   {
     Result.MeshElementCount       = Chunk->Meshes.E[MeshIndex_Main]->At;
@@ -51,6 +55,7 @@ MakeWorldChunkFileHeader_v3(world_chunk *Chunk)
 
   return Result;
 }
+
 link_internal world_chunk_file_header_v1
 MakeWorldChunkFileHeader_v1(world_chunk *Chunk)
 {
@@ -104,8 +109,8 @@ SerializeMesh(native_file *File, untextured_3d_geometry_buffer *Mesh, world_chun
   b32 Result = True;
 
   u64 TotalElements = FileHeader->MeshElementCount;
+  Assert (TotalElements);
 
-  if (TotalElements)
   {
     u32 VertElementSize = FileHeader->VertexElementSize;
     u64 VertByteCount = VertElementSize * TotalElements;
@@ -179,22 +184,6 @@ ReadBuffer(native_file *File, umm ByteCount, memory_arena *Memory)
 }
 #endif
 
-link_internal u64
-Read_u64(native_file *File)
-{
-  u64 Result = 0;
-  Ensure(ReadBytesIntoBuffer(File, sizeof(u64), (u8*)&Result));
-  return Result;
-}
-
-link_internal u32
-Read_u32(native_file *File)
-{
-  u32 Result = 0;
-  Ensure(ReadBytesIntoBuffer(File, sizeof(u32), (u8*)&Result));
-  return Result;
-}
-
 link_internal untextured_3d_geometry_buffer*
 DeserializeMesh(native_file *File, world_chunk_file_header_v2 *Header, untextured_3d_geometry_buffer *Result)
 {
@@ -242,7 +231,7 @@ DeserializeMesh(native_file *File, world_chunk_file_header_v2 *Header, untexture
 }
 
 link_internal untextured_3d_geometry_buffer*
-DeserializeMesh(native_file *File, world_chunk_file_header *Header, untextured_3d_geometry_buffer *Result)
+DeserializeMesh(u8_cursor *File, world_chunk_file_header *Header, untextured_3d_geometry_buffer *Result)
 {
   u64 TotalElements = Header->MeshElementCount;
 
@@ -286,8 +275,28 @@ DeserializeMesh(native_file *File, world_chunk_file_header *Header, untextured_3
 global_variable counted_string
 Global_AssetPrefixPath = CSz("");
 
+link_internal world_chunk_file_header_v3
+ReadWorldChunkFileHeader_v3(u8_cursor *File)
+{
+  world_chunk_file_header_v3 Result = {};
+  Ensure( ReadBytesIntoBuffer(File, sizeof(Result), (u8*)&Result) );
+
+  Assert( Result.WHNK == WorldChunkFileTag_WHNK );
+  Assert( Result.Version == 3 );
+  Assert( Result.Checksum == 0xdeadbeef );
+
+  Assert( Result.VertexElementSize       == sizeof(v3) );
+  Assert( Result.MaterialElementSize     == sizeof(vertex_material) );
+  Assert( Result.NormalElementSize       == sizeof(v3) );
+  Assert( Result.StandingSpotElementSize == sizeof(voxel_position) );
+  Assert( Result.VoxelElementSize        == sizeof(voxel) );
+
+
+  return Result;
+}
+
 link_internal world_chunk_file_header_v2
-ReadWorldChunkFileHeader_v2(native_file *File)
+ReadWorldChunkFileHeader_v2(u8_cursor *File)
 {
   world_chunk_file_header_v2 Result = {};
 
@@ -307,7 +316,7 @@ ReadWorldChunkFileHeader_v2(native_file *File)
 }
 
 link_internal world_chunk_file_header_v1
-ReadWorldChunkFileHeader_v1(native_file *File)
+ReadWorldChunkFileHeader_v1(u8_stream *File)
 {
   world_chunk_file_header_v1 Result = {};
 
@@ -325,28 +334,156 @@ ReadWorldChunkFileHeader_v1(native_file *File)
   return Result;
 }
 
-link_internal u32
-ReadWorldChunkVersion(native_file *AssetFile )
+link_internal world_chunk_file_header
+ReadWorldChunkFileHeader(u8_stream *File)
 {
-  u32 WHNK = Read_u32(AssetFile);
+  return ReadWorldChunkFileHeader_v3(File);
+}
+
+link_internal u32
+ReadWorldChunkVersion(u8_stream *Cursor )
+{
+  u32 WHNK = Read_u32(Cursor);
   Assert(WHNK == WorldChunkFileTag_WHNK);
 
-  u32 Version = Read_u32(AssetFile);
+  u32 Version = Read_u32(Cursor);
 
   // In V1 of the header the WHNK is 64 bits, so if we get a 0 for the version
   // number it was the second 4 bytes of that field.  This should be removed
   // once we have no v1 chunks left in development
-  if (Version == 0) { Version = Read_u32(AssetFile); }
+  if (Version == 0) { Version = Read_u32(Cursor); }
 
   return Version;
 }
 
 link_internal void
+DeserializeChunk(u8_stream *FileBytes, world_chunk *Result, tiered_mesh_freelist *MeshFreelist, memory_arena *PermMemory)
+{
+  TIMED_FUNCTION();
+
+  world_chunk_file_header Header = ReadWorldChunkFileHeader(FileBytes);
+  Assert(Header.Version == 3);
+
+  Result->WorldP.x = Header.Px;
+  Result->WorldP.y = Header.Py;
+  Result->WorldP.z = Header.Pz;
+  /* Header.Version = ReadWorldChunkVersion(FileBytes); */
+  /* Rewind(FileBytes); */
+
+#if 0
+  switch(Header.Version)
+  {
+    case 1:
+    {
+      world_chunk_file_header_v1 v1Header = ReadWorldChunkFileHeader_v1(FileBytes);
+
+      Header.WHNK = SafeTruncateToU32(v1Header.WHNK); // WorldChunkFileTag_WHNK
+      Header.Version = v1Header.Version;
+      Header.Checksum = v1Header.Checksum;
+
+      Header.VoxelElementCount = v1Header.VoxelElementCount;
+      Header.VoxelElementSize = SafeTruncateU8(v1Header.VoxelElementSize);
+
+      Header.MeshElementCount = v1Header.MeshElementCount;
+
+      Header.VertexElementSize   = SafeTruncateU8(v1Header.VertexElementSize);
+
+      NotImplemented; // TODO(Jesse): What do we do when we remove a member??
+      /* Header.MaterialElementSize = SafeTruncateU8(v1Header.ColorElementSize); */
+
+      Header.NormalElementSize   = SafeTruncateU8(v1Header.NormalElementSize);
+    } break;
+
+    case 2:
+    {
+      world_chunk_file_header_v2 v2Header = ReadWorldChunkFileHeader_v2(FileBytes);
+
+      Header.WHNK = v2Header.WHNK; // WorldChunkFileTag_WHNK
+      Header.Version = v2Header.Version;
+      Header.Checksum = v2Header.Checksum;
+
+      Header.VoxelElementCount = v2Header.VoxelElementCount;
+      Header.StandingSpotElementCount = v2Header.StandingSpotElementCount;
+
+      Header.MeshElementCount = v2Header.MeshElementCount;
+
+      Header.VertexElementSize = v2Header.VertexElementSize;
+
+      NotImplemented; // TODO(Jesse): What do we do when we remove a member??
+      /* Header.ColorElementSize = v2Header.ColorElementSize; */
+
+      Header.NormalElementSize = v2Header.NormalElementSize;
+      Header.StandingSpotElementSize = v2Header.StandingSpotElementSize;
+
+      Header.VoxelElementSize = v2Header.VoxelElementSize;
+    } break;
+
+    case 3:
+    {
+      NotImplemented;
+    } break;
+
+    default:
+    {
+      SoftError("Invalid chunk version encountered (%u)", Header.Version);
+    } break;
+  }
+#endif
+
+  Assert(Header.VoxelElementCount == Volume(Result));
+
+  u32 Tag = Read_u32(FileBytes);
+  Assert( Tag ==  WorldChunkFileTag_VOXD );
+  umm VoxByteCount = Header.VoxelElementCount * Header.VoxelElementSize;
+  ReadBytesIntoBuffer(FileBytes, VoxByteCount, (u8*)Result->Voxels);
+
+  Result->FilledCount = Header.VoxelElementCount;
+
+  if (MeshFreelist && Header.MeshElementCount)
+  {
+    untextured_3d_geometry_buffer *Mesh = GetPermMeshForChunk(MeshFreelist, u32(Header.MeshElementCount), PermMemory);
+    DeserializeMesh(FileBytes, &Header, Mesh);
+
+    untextured_3d_geometry_buffer *Buf = AtomicReplaceMesh(&Result->Meshes, MeshBit_Main, Mesh, Mesh->Timestamp);
+    if (Buf) { Leak("Leaking mesh"); }
+  }
+
+  if (Header.StandingSpotElementCount)
+  {
+    u32 SpotElementSize = Header.StandingSpotElementSize;
+    Assert(SpotElementSize == (u32)sizeof(v3));
+
+    u64 TotalElements = Header.StandingSpotElementCount;
+    /* Result->StandingSpots = V3iCursor(WORLD_CHUNK_STANDING_SPOT_COUNT, PermMemory); */
+    Result->StandingSpots = V3iCursor(TotalElements, PermMemory);
+
+    //
+    // SPOT data
+    //
+    Tag = Read_u32(FileBytes);
+    Assert(Tag ==  WorldChunkFileTag_SPOT);
+
+    umm ByteCount = SpotElementSize*TotalElements;
+    ReadBytesIntoBuffer(FileBytes, ByteCount, (u8*)Result->StandingSpots.Start);
+  }
+
+  /* Tag = Read_u32(FileBytes); */
+  /* Assert(Tag ==  WorldChunkFileTag_END); */
+
+  Result->Flags = Chunk_VoxelsInitialized;
+
+
+
+  DebugLine("Loaded Chunk : P (%u,%u,%u) Standing Spots (%u)", Result->WorldP.x, Result->WorldP.y, Result->WorldP.z, Header.StandingSpotElementCount);
+}
+
+#if 0
+link_internal void
 DeserializeChunk(native_file *AssetFile, world_chunk *Result, tiered_mesh_freelist *MeshFreelist, memory_arena *PermMemory)
 {
   world_chunk_file_header Header = {}; //ReadWorldChunkFileHeader(&AssetFile);
   Header.Version = ReadWorldChunkVersion(AssetFile);
-  Rewind(AssetFile);
+  /* Rewind(AssetFile); */
 
   switch(Header.Version)
   {
@@ -443,6 +580,7 @@ DeserializeChunk(native_file *AssetFile, world_chunk *Result, tiered_mesh_freeli
     ReadBytesIntoBuffer(AssetFile, ByteCount, (u8*)Result->StandingSpots.Start);
   }
 }
+#endif
 
 link_internal b32
 SerializeChunk(world_chunk *Chunk, native_file *File)
@@ -461,10 +599,14 @@ SerializeChunk(world_chunk *Chunk, native_file *File)
     Result &= WriteToFile(File, (u8*)Chunk->Voxels, VoxByteCount);
   }
 
-  auto Mesh = TakeOwnershipSync(&Chunk->Meshes, MeshBit_Main);
-  Result &= SerializeMesh(File, Mesh, &FileHeader);
-  ReleaseOwnership(&Chunk->Meshes, MeshBit_Main, Mesh);
+  if (FileHeader.MeshElementCount)
+  {
+    auto Mesh = TakeOwnershipSync(&Chunk->Meshes, MeshBit_Main);
+    Result &= SerializeMesh(File, Mesh, &FileHeader);
+    ReleaseOwnership(&Chunk->Meshes, MeshBit_Main, Mesh);
+  }
 
+  if (FileHeader.StandingSpotElementCount)
   {
     DebugLine("Writing (%u) StandingSpots", FileHeader.StandingSpotElementCount);
     u64 StandingSpotByteCount = FileHeader.StandingSpotElementSize * FileHeader.StandingSpotElementCount;
@@ -472,6 +614,8 @@ SerializeChunk(world_chunk *Chunk, native_file *File)
     Result &= WriteToFile(File, Tag);
     Result &= WriteToFile(File, (u8*)Chunk->StandingSpots.Start, StandingSpotByteCount);
   }
+
+  /* Result &= WriteToFile(File, (u32)WorldChunkFileTag_END); */
 
   return Result;
 }

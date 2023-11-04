@@ -249,7 +249,7 @@ struct world_chunk
     struct
     {
       chunk_flag Flags;
-      chunk_dimension Dim; // TODO(Jesse): can be 3x u8 instead of 3x s32
+      v3i Dim; // TODO(Jesse): can be 3x u8 instead of 3x s32
       voxel *Voxels;
       voxel_lighting *VoxelLighting;
     };
@@ -258,7 +258,7 @@ struct world_chunk
   threadsafe_geometry_buffer Meshes;
   voxel_position_cursor StandingSpots;
 
-  world_position WorldP;
+  v3i WorldP;
   u32 FilledCount;
   b32 Picked;
   b32 DrawBoundingVoxels;

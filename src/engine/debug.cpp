@@ -370,6 +370,8 @@ DoLevelWindow(engine_resources *Engine)
           SerializeChunk(Chunk, &LevelFile);
         }
       }
+
+      CloseFile(&LevelFile);
     }
   PushTableEnd(Ui);
 
@@ -379,27 +381,40 @@ DoLevelWindow(engine_resources *Engine)
 
   if (ClickedNode.Tag)
   {
-    cs Filename = Concat(ClickedNode.Value.Dir, ClickedNode.Value.Name, GetTranArena());
+    cs Filename = Concat(ClickedNode.Value.Dir, CSz("/"), ClickedNode.Value.Name, GetTranArena());
     u8_stream LevelBytes = U8_StreamFromFile(Filename, GetTranArena());
 
     if (LevelBytes.Start)
     {
+      u32 ChunksFreed = 0;
       RangeIterator(HashIndex, s32(World->HashSize))
       {
         if (world_chunk *Chunk = World->ChunkHash[HashIndex])
         {
           FreeWorldChunk(World, Chunk, &Engine->MeshFreelist, World->Memory);
           World->ChunkHash[HashIndex] = 0;
+          ++ChunksFreed;
         }
       }
 
 
-      /* u64 Magic = PopU64_be(&LevelBytes); */
-      /* u32 ChunkCount = PopU32(&LevelBytes); */
+      level_header LevelHeader = {};
+      ReadBytesIntoBuffer(&LevelBytes, sizeof(level_header), Cast(u8*, &LevelHeader));
 
-      /* RangeIterator(ChunkIndex, ChunkCount) */
-      /* { */
-      /* } */
+      Assert(LevelHeader.MagicNumber == LEVEL_HEADER_MAGIC_NUMBER);
+
+      s32 ChunkCount = Cast(s32, LevelHeader.ChunkCount);
+
+      Info("ChunksFreed (%u) ChunksLoaded (%u)", ChunksFreed, ChunkCount);
+
+      RangeIterator(ChunkIndex, ChunkCount)
+      {
+        world_chunk *Chunk = GetFreeWorldChunk(World, World->Memory);
+        DeserializeChunk(&LevelBytes, Chunk, &Engine->MeshFreelist, World->Memory);
+        InsertChunkIntoWorld(World, Chunk);
+      }
+
+      Assert(LevelBytes.At == LevelBytes.End);
 
     }
   }

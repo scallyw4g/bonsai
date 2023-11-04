@@ -495,7 +495,7 @@ SpawnPlayerLikeEntity( platform *Plat,
         world_chunk *Chunk = GetWorldChunkFromHashtable( World, CP.WorldP );
         if (Chunk == 0)
         {
-          Chunk = GetWorldChunkFor(World->Memory, World, CP.WorldP);
+          Chunk = AllocateAndInsertChunk(World->Memory, World, CP.WorldP);
           if (Chunk)
           {
             QueueChunkForInit(&Plat->HighPriority, Chunk);
