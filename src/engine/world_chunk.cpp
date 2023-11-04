@@ -67,6 +67,7 @@ ReplaceMesh( threadsafe_geometry_buffer *Meshes,
   }
 
   if (Meshes->E[ToIndex(MeshBit)]) { Meshes->MeshMask |= MeshBit; }
+  else                             { Meshes->MeshMask &= ~MeshBit; }
 
   return Result;
 }
@@ -78,8 +79,11 @@ AtomicReplaceMesh( threadsafe_geometry_buffer *Meshes,
                    u64 BufTimestamp )
 {
   TakeOwnershipSync(Meshes, MeshBit);
+
   auto Replace = ReplaceMesh(Meshes, MeshBit, Buf, BufTimestamp);
+
   ReleaseOwnership(Meshes, MeshBit, Buf);
+
   return Replace;
 }
 
@@ -217,26 +221,29 @@ AllocateAndInsertChunk(memory_arena *Storage, world *World, world_position P)
 
   world_chunk *Result = 0;
 
-  world_chunk *Chunk = AllocateWorldChunk(Storage, P, World->ChunkDim);
-  Assert(Chunk->Flags == Chunk_Uninitialized);
-
-  if (Chunk)
+  if (IsInsideVisibleRegion(World, P))
   {
-    if (InsertChunkIntoWorld(World, Chunk))
-    {
-      Result = Chunk;
-    }
-    else
-    {
-      Leak("Unable to insert chunk into world. Leaking chunk, call FreeWorldChunk here");
-      /* FreeWorldChunk(World, Chunk, Storage, Resources->MeshFreelist); */
-    }
-  }
+    world_chunk *Chunk = AllocateWorldChunk(Storage, P, World->ChunkDim);
+    Assert(Chunk->Flags == Chunk_Uninitialized);
 
-  if (Result)
-  {
-    Assert(Result->Voxels);
-    Assert(Result->Dim == World->ChunkDim);
+    if (Chunk)
+    {
+      if (InsertChunkIntoWorld(World, Chunk))
+      {
+        Result = Chunk;
+      }
+      else
+      {
+        Leak("Unable to insert chunk into world. Leaking chunk, call FreeWorldChunk here");
+        /* FreeWorldChunk(World, Chunk, Storage, Resources->MeshFreelist); */
+      }
+    }
+
+    if (Result)
+    {
+      Assert(Result->Voxels);
+      Assert(Result->Dim == World->ChunkDim);
+    }
   }
 
   return Result;
@@ -256,6 +263,8 @@ GetFreeWorldChunk(world *World, memory_arena *Storage)
     Result = World->FreeChunks[--World->FreeChunkCount];
   }
 
+  Assert(Result->Meshes.MeshMask == 0);
+
   return Result;
 }
 
@@ -266,33 +275,37 @@ GetAndInsertFreeWorldChunk(memory_arena *Storage, world *World, world_position P
 
   world_chunk *Result = 0;
 
-  world_chunk *Chunk = GetFreeWorldChunk(World, Storage);
-  if (Chunk)
+  if (IsInsideVisibleRegion(World, P))
   {
-    Chunk->WorldP = P;
-
-    if (InsertChunkIntoWorld(World, Chunk))
+    world_chunk *Chunk = GetFreeWorldChunk(World, Storage);
+    if (Chunk)
     {
-      Result = Chunk;
+      Chunk->WorldP = P;
+
+      if (InsertChunkIntoWorld(World, Chunk))
+      {
+        Result = Chunk;
+      }
+      else
+      {
+        Leak("Unable to insert chunk into world. Leaking chunk, call FreeWorldChunk here");
+        /* FreeWorldChunk(World, Chunk, Storage, Resources->MeshFreelist); */
+      }
+
     }
     else
     {
-      Leak("Unable to insert chunk into world. Leaking chunk, call FreeWorldChunk here");
-      /* FreeWorldChunk(World, Chunk, Storage, Resources->MeshFreelist); */
+      Warn("Unable to allocate world chunk");
     }
 
-  }
-  else
-  {
-    Warn("Unable to allocate world chunk");
-  }
+    if (Result)
+    {
+      Assert(Result->WorldP == P);
+      Assert(Result->Voxels);
+      Assert(Result->Dim == World->ChunkDim);
+      Assert(Result->Flags == Chunk_Uninitialized);
+    }
 
-  if (Result)
-  {
-    Assert(Result->WorldP == P);
-    Assert(Result->Voxels);
-    Assert(Result->Dim == World->ChunkDim);
-    Assert(Result->Flags == Chunk_Uninitialized);
   }
 
   return Result;
@@ -386,9 +399,11 @@ CollectUnusedChunks(engine_resources *Engine, tiered_mesh_freelist* MeshFreelist
   world_position Min = CenterP - Radius;
   world_position Max = CenterP + Radius;
 
+  rect3i VRRect = GetVisibleRegionRect(World);
+
   for (u32 ChunkIndex = 0;
-      ChunkIndex < World->HashSize;
-      ++ChunkIndex)
+           ChunkIndex < World->HashSize;
+         ++ChunkIndex)
   {
     world_chunk **ChunkBucket = CurrentWorldHash + ChunkIndex;
     world_chunk *Chunk = *ChunkBucket;
@@ -405,7 +420,7 @@ CollectUnusedChunks(engine_resources *Engine, tiered_mesh_freelist* MeshFreelist
       {
         world_position ChunkP = Chunk->WorldP;
 
-        if ( ChunkP >= Min && ChunkP <= Max )
+        if (IsInside(ChunkP, VRRect))
         {
           InsertChunkIntoWorld(NextWorldHash, Chunk, World->VisibleRegion, World->HashSize);
         }

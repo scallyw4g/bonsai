@@ -361,6 +361,13 @@ DoLevelWindow(engine_resources *Engine)
       level_header Header = {};
       Header.ChunkCount = ChunkCount;
 
+      Header.WorldFlags    = Cast(u32, World->Flags);
+      Header.WorldCenter   = World->Center;
+      Header.VisibleRegion = World->VisibleRegion;
+
+      Header.Camera = *Graphics->Camera;
+      Header.CameraTarget = Engine->CameraGhost->P;
+
       WriteToFile(&LevelFile, (u8*)&Header, sizeof(level_header));
 
       RangeIterator(HashIndex, s32(World->HashSize))
@@ -401,6 +408,13 @@ DoLevelWindow(engine_resources *Engine)
       level_header LevelHeader = {};
       ReadBytesIntoBuffer(&LevelBytes, sizeof(level_header), Cast(u8*, &LevelHeader));
 
+      *Graphics->Camera      = LevelHeader.Camera;
+      Engine->CameraGhost->P = LevelHeader.CameraTarget;
+
+      /* World->Flags  = Cast(world_flag, LevelHeader.WorldFlags); */
+      World->Center = LevelHeader.WorldCenter;
+      /* World->VisibleRegion = LevelHeader.VisibleRegion; */
+
       Assert(LevelHeader.MagicNumber == LEVEL_HEADER_MAGIC_NUMBER);
 
       s32 ChunkCount = Cast(s32, LevelHeader.ChunkCount);
@@ -411,7 +425,10 @@ DoLevelWindow(engine_resources *Engine)
       {
         world_chunk *Chunk = GetFreeWorldChunk(World, World->Memory);
         DeserializeChunk(&LevelBytes, Chunk, &Engine->MeshFreelist, World->Memory);
-        InsertChunkIntoWorld(World, Chunk);
+        if (IsInsideVisibleRegion(World, Chunk->WorldP))
+        {
+          InsertChunkIntoWorld(World, Chunk);
+        }
       }
 
       Assert(LevelBytes.At == LevelBytes.End);

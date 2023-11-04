@@ -53,7 +53,7 @@ TakeOwnershipSync(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bitfield Mes
 link_internal void
 ReleaseOwnership(threadsafe_geometry_buffer *Src, world_chunk_mesh_bitfield MeshBit, untextured_3d_geometry_buffer *Buf)
 {
-  if (Buf) { Assert(Src->MeshMask & MeshBit); }
+  if (Buf) { Assert(Src->MeshMask & MeshBit);  }
   ReleaseFutex(&Src->Futexes[ToIndex(MeshBit)]);
 }
 

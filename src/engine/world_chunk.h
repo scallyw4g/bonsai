@@ -498,3 +498,22 @@ GetPermMeshForChunk(tiered_mesh_freelist*, u32 , memory_arena* );
 
 /* link_internal untextured_3d_geometry_buffer * */
 /* SetMesh(world_chunk *Chunk, world_chunk_mesh_bitfield MeshBit, mesh_freelist *MeshFreelist, memory_arena *PermMemory); */
+
+link_internal rect3i
+GetVisibleRegionRect(world *World)
+{
+  world_position CenterP = World->Center;
+  chunk_dimension Radius = (World->VisibleRegion/2);
+  world_position Min = CenterP - Radius;
+  world_position Max = CenterP + Radius + 1; // Add one so we can pass to functions that expect an open-interval
+
+  return RectMinMax(Min, Max);
+}
+
+link_internal b32
+IsInsideVisibleRegion(world *World, v3i P)
+{
+  rect3i VRRect = GetVisibleRegionRect(World);
+  b32 Result = IsInside(P, VRRect);
+  return Result;
+}

@@ -34,9 +34,9 @@ struct camera
 {
   frustum Frust;
 
-  canonical_position TargetP;
-  canonical_position CurrentP;
-  canonical_position ViewingTarget; // TODO(Jesse, id: 79, tags: over_allocation, ummmm) : Can this just be a v3?
+  cp TargetP;
+  cp CurrentP;
+  cp ViewingTarget; // TODO(Jesse, id: 79, tags: over_allocation, ummmm) : Can this just be a v3?
 
   v3 RenderSpacePosition;
 

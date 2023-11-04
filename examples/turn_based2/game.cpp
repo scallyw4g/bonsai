@@ -190,6 +190,11 @@ HoodooTerrain( perlin_noise *Noise,
 
 BONSAI_API_WORKER_THREAD_CALLBACK()
 {
+  if (ThreadLocal_ThreadIndex == INVALID_THREAD_LOCAL_THREAD_INDEX)
+  {
+    SetThreadLocal_ThreadIndex(Thread->Index);
+  }
+
   b32 Result = True;
   switch (Entry->Type)
   {

@@ -339,7 +339,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
             if (Voxel->V.Flags & Voxel_Filled)
             /* if (Voxel->V.Flags & Voxel_Filled && VoxelCacheIndex == 16) */
             {
-              if (RandomUnilateral(&TMP) > 0.25f) { Voxel->V.Transparency = 255; }
+              /* if (RandomUnilateral(&TMP) > 0.25f) { Voxel->V.Transparency = 255; } */
               /* Result.ChunkData->Voxels[Index].Transparency = 128; */
               /* Voxel->V.Transparency = 255; */
             }
