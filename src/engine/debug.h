@@ -100,10 +100,10 @@ poof(
       }
     };
 
-    ui_toggle_button_group (EnumVarName)Group = UiToggleButtonGroup(Ui, (EnumVarName)Buttons, ArrayCount((EnumVarName)Buttons), ToggleButtonGroupFlags_RadioButtons);
+    ui_toggle_button_group (EnumVarName)RadioGroup = UiToggleButtonGroup(Ui, (EnumVarName)Buttons, ArrayCount((EnumVarName)Buttons), ToggleButtonGroupFlags_RadioButtons);
 
     /* Assert(CountBitsSet_Kernighan((EnumVarName)Group.ToggleBits) <= 1); */
 
-    enum_t.name EnumVarName = Cast((enum_t.name), (EnumVarName)Group.ToggleBits);
+    enum_t.name EnumVarName = Cast((enum_t.name), (EnumVarName)RadioGroup.ToggleBits);
   }
 )

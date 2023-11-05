@@ -1,17 +1,6 @@
-
-enum level_edit_mode
-{
-  LevelEditMode_None,
-
-  LevelEditMode_Select,
-  LevelEditMode_Add,
-  LevelEditMode_Remove,
-  LevelEditMode_Paint,
-};
-
 struct level_editor
 {
-  level_edit_mode Mode;
+  /* level_edit_mode Mode; */
 
   interactable SelectedColorSquare;
   s32 SelectedColorIndex;
@@ -38,3 +27,17 @@ enum selection_mode
   SelectionMode_Resize,
   SelectionMode_Translate,
 };
+
+enum world_edit_mode
+{
+  WorldEditMode_Select          = (1 << 0),
+  WorldEditMode_FillSelection   = (1 << 1),
+  WorldEditMode_DeleteSelection = (1 << 2),
+
+  WorldEditMode_AddSingle       = (1 << 3),
+  WorldEditMode_RemoveSingle    = (1 << 4),
+  WorldEditMode_PaintSingle     = (1 << 5),
+};
+
+poof(string_and_value_tables(world_edit_mode))
+#include <generated/string_and_value_tables_world_edit_mode.h>
