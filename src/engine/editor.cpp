@@ -141,28 +141,22 @@ DoLevelEditor(engine_resources *Engine)
 
 
 
-  local_persist ui_element_toggle_button Buttons[] = {
-    {CSz("Select"), False, False},
-    {CSz("Fill"),   False, False},
-    {CSz("Add"),    False, False},
-    {CSz("Remove"), False, False},
-    {CSz("Paint"),  False, False},
+  ui_toggle_button_handle Buttons[] = {
+    UiToggle(CSz("Select"), 0),
+    UiToggle(CSz("Fill"),   0),
+    UiToggle(CSz("Add"),    0),
+    UiToggle(CSz("Remove"), 0),
+    UiToggle(CSz("Paint"),  0),
   };
 
-  ui_element_toggle_button_group ButtonGroup = {
-    .Buttons = Buttons,
-    .Count = ArrayCount(Buttons),
-    .Flags = ui_element_toggle_button_group_flags(ToggleButtonGroupFlags_RadioButtons | ToggleButtonGroupFlags_DrawVertical),
-  };
+  ui_toggle_button_group ButtonGroup = UiToggleButtonGroup( Ui,
+                                                            Buttons,
+                                                            ArrayCount(Buttons),
+                                                            ui_toggle_button_group_flags(ToggleButtonGroupFlags_DrawVertical|ToggleButtonGroupFlags_RadioButtons),
+                                                            Position_RightOf,
+                                                            ColorTable);
 
-  DrawToggleButtonGroup(Ui, &ButtonGroup, Position_RightOf, ColorTable);
-
-
-
-
-
-
-  if (ToggledOn(&ButtonGroup, CSz("Select")))
+  if (ToggledOn(Ui, &ButtonGroup, CSz("Select")))
   {
     if (Input->LMB.Clicked)
     {
@@ -365,7 +359,7 @@ DoLevelEditor(engine_resources *Engine)
     Editor->SelectionRegion[1] = {};
   }
 
-  if (ToggledOn(&ButtonGroup, CSz("Fill")))
+  if (ToggledOn(Ui, &ButtonGroup, CSz("Fill")))
   {
     if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
     {
@@ -378,7 +372,7 @@ DoLevelEditor(engine_resources *Engine)
     }
   }
 
-  if (ToggledOn(&ButtonGroup, CSz("Remove")))
+  if (ToggledOn(Ui, &ButtonGroup, CSz("Remove")))
   {
     if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
     {
@@ -392,7 +386,7 @@ DoLevelEditor(engine_resources *Engine)
   }
 
   picked_voxel_position MouseVoxelPos = PickedVoxel_FirstFilled;
-  if (ToggledOn(&ButtonGroup, CSz("Add")))
+  if (ToggledOn(Ui, &ButtonGroup, CSz("Add")))
   {
     MouseVoxelPos = PickedVoxel_LastEmpty;
     if (Input->LMB.Clicked)
@@ -411,7 +405,7 @@ DoLevelEditor(engine_resources *Engine)
     }
   }
 
-  if (ToggledOn(&ButtonGroup, CSz("Paint")))
+  if (ToggledOn(Ui, &ButtonGroup, CSz("Paint")))
   {
     if (Input->LMB.Pressed)
     {

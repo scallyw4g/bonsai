@@ -444,36 +444,29 @@ DoEngineDebug(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  local_persist ui_element_toggle_button Buttons[] = {
-    {CSz("Level"),           False, False},
-    {CSz("Edit"),            False, False},
-    {CSz("Assets"),          False, False},
-    {CSz("WorldChunks"),     False, False},
-    {CSz("Textures"),        False, False},
-    {CSz("RenderSettings"),  False, False},
-    {CSz("EngineDebug"),     False, False},
+  ui_toggle_button_handle Buttons[] = {
+    UiToggle(CSz("Level"),          0),
+    UiToggle(CSz("Edit"),           0),
+    UiToggle(CSz("Assets"),         0),
+    UiToggle(CSz("WorldChunks"),    0),
+    UiToggle(CSz("Textures"),       0),
+    UiToggle(CSz("RenderSettings"), 0),
+    UiToggle(CSz("EngineDebug"),    0),
   };
 
-  ui_element_toggle_button_group ButtonGroup = {
-    .Buttons = Buttons,
-    .Count = ArrayCount(Buttons),
-  };
+  ui_toggle_button_group ButtonGroup = UiToggleButtonGroup(Ui, Buttons, ArrayCount(Buttons));
 
-  DrawToggleButtonGroup(Ui, &ButtonGroup);
-
-
-
-  if (ToggledOn(&ButtonGroup, CSz("Level")))
+  if (ToggledOn(Ui, &ButtonGroup, CSz("Level")))
   {
     DoLevelWindow(Engine);
   }
 
-  if (ToggledOn(&ButtonGroup, CSz("Edit")))
+  if (ToggledOn(Ui, &ButtonGroup, CSz("Edit")))
   {
     DoLevelEditor(Engine);
   }
 
-  if (ToggledOn(&ButtonGroup, CSz("WorldChunks")))
+  if (ToggledOn(Ui, &ButtonGroup, CSz("WorldChunks")))
   {
     local_persist window_layout WorldChunkWindow = WindowLayout("World Chunks");
     PushWindowStart(Ui, &WorldChunkWindow);
@@ -511,7 +504,7 @@ DoEngineDebug(engine_resources *Engine)
   }
 
 #if 1
-  if (ToggledOn(&ButtonGroup, CSz("Textures")))
+  if (ToggledOn(Ui, &ButtonGroup, CSz("Textures")))
   {
     v2 TexDim = V2(400);
 
@@ -597,7 +590,7 @@ DoEngineDebug(engine_resources *Engine)
   }
 #endif
 
-  if (ToggledOn(&ButtonGroup, CSz("RenderSettings")))
+  if (ToggledOn(Ui, &ButtonGroup, CSz("RenderSettings")))
   {
     v2 WindowDim = {{1200.f, 250.f}};
     local_persist window_layout RenderSettingsWindow = WindowLayout("Render Settings", WindowLayoutFlag_StartupAlign_Right);
@@ -627,7 +620,7 @@ DoEngineDebug(engine_resources *Engine)
     PushWindowEnd(Ui, &RenderSettingsWindow);
   }
 
-  if (ToggledOn(&ButtonGroup, CSz("EngineDebug")))
+  if (ToggledOn(Ui, &ButtonGroup, CSz("EngineDebug")))
   {
     v2 WindowDim = {{1200.f, 250.f}};
     local_persist window_layout Window = WindowLayout("Engine Debug", WindowLayoutFlag_StartupAlign_Right);
@@ -652,7 +645,7 @@ DoEngineDebug(engine_resources *Engine)
 
   /* Debug_DrawTextureToDebugQuad(&Engine->RTTGroup.DebugShader); */
 
-  if (ToggledOn(&ButtonGroup, CSz("Assets")))
+  if (ToggledOn(Ui, &ButtonGroup, CSz("Assets")))
   {
     v2 AssetListWindowDim = {{350.f, 1200.f}};
     local_persist window_layout Window = WindowLayout("Assets", DefaultWindowBasis(*Ui->ScreenDim, AssetListWindowDim), AssetListWindowDim);
