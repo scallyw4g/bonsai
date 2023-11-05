@@ -9,7 +9,7 @@ void main()
 {
   vec3 SunP = normalize(V3(1.f, 0.75f, 0.5f));
 
-  float cosTheta = max(0.25f, dot(Normal, SunP));
+  float cosTheta = max(0.5f, dot(Normal, SunP));
 
   /* TargetTexture.rgb = vec3(1, 1, 1); */
   TargetTexture.rgb = Color.xyz * cosTheta;

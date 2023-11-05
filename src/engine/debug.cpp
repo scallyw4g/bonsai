@@ -664,7 +664,6 @@ DoEngineDebug(engine_resources *Engine)
 
     if (ClickedFileNode.Tag)
     {
-      DebugLine("Clicekd2");
       EngineDebug->ResetAssetNodeView = True;
       EngineDebug->SelectedAsset = ClickedFileNode.Value;
     }
@@ -672,7 +671,7 @@ DoEngineDebug(engine_resources *Engine)
     if (EngineDebug->SelectedAsset.Type)
     {
       v2 AssetDetailWindowDim = {{400.f, 400.f}};
-      local_persist window_layout AssetViewWindow = WindowLayout("Asset View", DefaultWindowBasis(*Ui->ScreenDim, AssetDetailWindowDim) + V2(AssetDetailWindowDim.x + DefaultWindowSideOffset, 0), AssetDetailWindowDim);
+      local_persist window_layout AssetViewWindow = WindowLayout("Asset View", {}, AssetDetailWindowDim, window_layout_flags(WindowLayoutFlag_StartupAlign_Right|WindowLayoutFlag_Default));
       PushWindowStart(Ui, &AssetViewWindow);
 
       asset *Asset = GetAsset(Engine, &EngineDebug->SelectedAsset);
@@ -693,7 +692,7 @@ DoEngineDebug(engine_resources *Engine)
 
           if (EngineDebug->ResetAssetNodeView)
           {
-            Engine->RTTGroup.Camera->DistanceFromTarget = Length(Offset) * 8.f;
+            Engine->RTTGroup.Camera->DistanceFromTarget = Length(Offset) * 25.f;
             EngineDebug->ResetAssetNodeView = False;
           }
 
