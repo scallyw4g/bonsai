@@ -1,12 +1,12 @@
-ui_toggle_button_handle ModeButtonsButtons[] =
+ui_toggle_button_handle AssetSpawnModeButtons[] =
 {
   UiToggle(CSz("BlitIntoWorld"), 0),
   UiToggle(CSz("Entity"), 0),
 };
 
-ui_toggle_button_group ModeButtonsGroup = UiToggleButtonGroup(Ui, ModeButtonsButtons, ArrayCount(ModeButtonsButtons), ToggleButtonGroupFlags_RadioButtons);
+ui_toggle_button_group AssetSpawnModeGroup = UiToggleButtonGroup(Ui, AssetSpawnModeButtons, ArrayCount(AssetSpawnModeButtons), ToggleButtonGroupFlags_RadioButtons);
 
-/* Assert(CountBitsSet_Kernighan((GroupName)Group.ToggleBits) <= 1); */
+/* Assert(CountBitsSet_Kernighan((EnumVarName)Group.ToggleBits) <= 1); */
 
-asset_spawn_mode ModeButtons = Cast(asset_spawn_mode, ModeButtonsGroup.ToggleBits);
+asset_spawn_mode AssetSpawnMode = Cast(asset_spawn_mode, AssetSpawnModeGroup.ToggleBits);
 

@@ -668,24 +668,8 @@ DoEngineDebug(engine_resources *Engine)
       PushWindowStart(Ui, &AssetViewWindow);
 
 
-#if 1
-      poof( radio_button_group_for_enum(asset_spawn_mode, {ModeButtons}, {0}) )
+      poof( radio_button_group_for_bitfield_enum(asset_spawn_mode, {AssetSpawnMode}, {0}) )
       #include <generated/radio_button_group_for_enum_asset_spawn_mode_310605315_688856403.h>
-#else
-      {
-        ui_toggle_button_handle ModeButtonsButtons[] =
-        {
-          UiToggle(CSz("AssetSpawnMode_BlitIntoWorld"), 0),
-          UiToggle(CSz("AssetSpawnMode_Entity"), 0),
-        };
-
-        ui_toggle_button_group ModeButtonsGroup = UiToggleButtonGroup(Ui, ModeButtonsButtons, ArrayCount(ModeButtonsButtons), ToggleButtonGroupFlags_RadioButtons);
-
-        Assert(BitsSet(ModeButtonsGroup.ToggleBits) == 1);
-
-        asset_spawn_mode ModeButtons = Cast(asset_spawn_mode, ModeButtonsGroup.ToggleBits)
-      }
-#endif
 
       asset *Asset = GetAsset(Engine, &EngineDebug->SelectedAsset);
 
@@ -718,25 +702,33 @@ DoEngineDebug(engine_resources *Engine)
 
             if (Engine->MousedOverVoxel.Tag)
             {
-              cp Origin = Canonical_Position(&Engine->MousedOverVoxel.Value);
+              cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
               world_update_op_shape_params_asset AssetUpdateShape =
               {
                 Asset,
-                Origin
+                EntityOrigin
               };
 
 
-              /* switch (ModeButtons->Active) */
-              /* { */
-              /* } */
-
-              world_update_op_shape Shape =
+              switch (AssetSpawnMode)
               {
-                type_world_update_op_shape_params_asset,
-                .world_update_op_shape_params_asset = AssetUpdateShape,
-              };
+                case AssetSpawnMode_BlitIntoWorld:
+                {
+                  world_update_op_shape Shape =
+                  {
+                    type_world_update_op_shape_params_asset,
+                    .world_update_op_shape_params_asset = AssetUpdateShape,
+                  };
+                  QueueWorldUpdateForRegion(Engine, {}, &Shape, {}, World->Memory);
+                } break;
 
-              QueueWorldUpdateForRegion(Engine, {}, &Shape, {}, World->Memory);
+                case AssetSpawnMode_Entity:
+                {
+                  entity *E = GetFreeEntity(Engine->EntityTable);
+                  SpawnEntity(E, &Asset->Model, EntityType_Default, 0, &EntityOrigin, Asset->Model.Dim/2.f);
+                } break;
+              }
+
             }
           }
 

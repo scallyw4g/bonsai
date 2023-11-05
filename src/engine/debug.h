@@ -85,14 +85,14 @@ link_internal engine_debug* GetEngineDebug();
 
 enum asset_spawn_mode
 {
-  AssetSpawnMode_BlitIntoWorld,
-  AssetSpawnMode_Entity,
+  AssetSpawnMode_BlitIntoWorld = (1 << 0),
+  AssetSpawnMode_Entity        = (1 << 1),
 };
 
 poof(
-  func radio_button_group_for_enum(enum_t, type_poof_symbol GroupName, type_poof_symbol ModName)
+  func radio_button_group_for_bitfield_enum(enum_t, type_poof_symbol EnumVarName, type_poof_symbol ModName)
   {
-    ui_toggle_button_handle (GroupName)Buttons[] =
+    ui_toggle_button_handle (EnumVarName)Buttons[] =
     {
       enum_t.map(value)
       {
@@ -100,10 +100,10 @@ poof(
       }
     };
 
-    ui_toggle_button_group (GroupName)Group = UiToggleButtonGroup(Ui, (GroupName)Buttons, ArrayCount((GroupName)Buttons), ToggleButtonGroupFlags_RadioButtons);
+    ui_toggle_button_group (EnumVarName)Group = UiToggleButtonGroup(Ui, (EnumVarName)Buttons, ArrayCount((EnumVarName)Buttons), ToggleButtonGroupFlags_RadioButtons);
 
-    /* Assert(CountBitsSet_Kernighan((GroupName)Group.ToggleBits) <= 1); */
+    /* Assert(CountBitsSet_Kernighan((EnumVarName)Group.ToggleBits) <= 1); */
 
-    enum_t.name GroupName = Cast((enum_t.name), (GroupName)Group.ToggleBits);
+    enum_t.name EnumVarName = Cast((enum_t.name), (EnumVarName)Group.ToggleBits);
   }
 )
