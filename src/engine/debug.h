@@ -81,3 +81,29 @@ struct engine_debug
 
 
 link_internal engine_debug* GetEngineDebug();
+
+
+enum asset_spawn_mode
+{
+  AssetSpawnMode_BlitIntoWorld,
+  AssetSpawnMode_Entity,
+};
+
+poof(
+  func radio_button_group_for_enum(enum_t, type_poof_symbol GroupName, type_poof_symbol ModName)
+  {
+    ui_toggle_button_handle (GroupName)Buttons[] =
+    {
+      enum_t.map(value)
+      {
+        UiToggle(CSz("value.name.strip_all_prefix"), ModName),
+      }
+    };
+
+    ui_toggle_button_group (GroupName)Group = UiToggleButtonGroup(Ui, (GroupName)Buttons, ArrayCount((GroupName)Buttons), ToggleButtonGroupFlags_RadioButtons);
+
+    /* Assert(CountBitsSet_Kernighan((GroupName)Group.ToggleBits) <= 1); */
+
+    enum_t.name GroupName = Cast((enum_t.name), (GroupName)Group.ToggleBits);
+  }
+)

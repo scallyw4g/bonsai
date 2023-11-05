@@ -454,24 +454,24 @@ DoEngineDebug(engine_resources *Engine)
     UiToggle(CSz("EngineDebug"),    0),
   };
 
-  ui_toggle_button_group ButtonGroup = UiToggleButtonGroup(Ui, Buttons, ArrayCount(Buttons));
+  ui_toggle_button_group EditorButtonGroup = UiToggleButtonGroup(Ui, Buttons, ArrayCount(Buttons));
 
-  if (ToggledOn(Ui, &ButtonGroup, CSz("Level")))
+  if (ToggledOn(Ui, &EditorButtonGroup, CSz("Level")))
   {
     DoLevelWindow(Engine);
   }
 
-  if (ToggledOn(Ui, &ButtonGroup, CSz("Edit")))
+  if (ToggledOn(Ui, &EditorButtonGroup, CSz("Edit")))
   {
     DoLevelEditor(Engine);
   }
 
-  if (ToggledOn(Ui, &ButtonGroup, CSz("WorldChunks")))
+  if (ToggledOn(Ui, &EditorButtonGroup, CSz("WorldChunks")))
   {
     local_persist window_layout WorldChunkWindow = WindowLayout("World Chunks");
     PushWindowStart(Ui, &WorldChunkWindow);
 
-      if ( Clicked(&ButtonGroup, CSz("WorldChunks")) ||
+      if ( Clicked(&EditorButtonGroup, CSz("WorldChunks")) ||
            Button(Ui, CSz("PickNewChunk"), (umm)"Pick"^(umm)"WorldChunks") )
       {
         EngineDebug->PickedChunkState = PickedChunkState_Hover;
@@ -504,7 +504,7 @@ DoEngineDebug(engine_resources *Engine)
   }
 
 #if 1
-  if (ToggledOn(Ui, &ButtonGroup, CSz("Textures")))
+  if (ToggledOn(Ui, &EditorButtonGroup, CSz("Textures")))
   {
     v2 TexDim = V2(400);
 
@@ -590,7 +590,7 @@ DoEngineDebug(engine_resources *Engine)
   }
 #endif
 
-  if (ToggledOn(Ui, &ButtonGroup, CSz("RenderSettings")))
+  if (ToggledOn(Ui, &EditorButtonGroup, CSz("RenderSettings")))
   {
     v2 WindowDim = {{1200.f, 250.f}};
     local_persist window_layout RenderSettingsWindow = WindowLayout("Render Settings", WindowLayoutFlag_StartupAlign_Right);
@@ -620,7 +620,7 @@ DoEngineDebug(engine_resources *Engine)
     PushWindowEnd(Ui, &RenderSettingsWindow);
   }
 
-  if (ToggledOn(Ui, &ButtonGroup, CSz("EngineDebug")))
+  if (ToggledOn(Ui, &EditorButtonGroup, CSz("EngineDebug")))
   {
     v2 WindowDim = {{1200.f, 250.f}};
     local_persist window_layout Window = WindowLayout("Engine Debug", WindowLayoutFlag_StartupAlign_Right);
@@ -645,7 +645,7 @@ DoEngineDebug(engine_resources *Engine)
 
   /* Debug_DrawTextureToDebugQuad(&Engine->RTTGroup.DebugShader); */
 
-  if (ToggledOn(Ui, &ButtonGroup, CSz("Assets")))
+  if (ToggledOn(Ui, &EditorButtonGroup, CSz("Assets")))
   {
     v2 AssetListWindowDim = {{350.f, 1200.f}};
     local_persist window_layout Window = WindowLayout("Assets", DefaultWindowBasis(*Ui->ScreenDim, AssetListWindowDim), AssetListWindowDim);
@@ -666,6 +666,26 @@ DoEngineDebug(engine_resources *Engine)
       v2 AssetDetailWindowDim = {{400.f, 400.f}};
       local_persist window_layout AssetViewWindow = WindowLayout("Asset View", {}, AssetDetailWindowDim, window_layout_flags(WindowLayoutFlag_StartupAlign_Right|WindowLayoutFlag_Default));
       PushWindowStart(Ui, &AssetViewWindow);
+
+
+#if 1
+      poof( radio_button_group_for_enum(asset_spawn_mode, {ModeButtons}, {0}) )
+      #include <generated/radio_button_group_for_enum_asset_spawn_mode_310605315_688856403.h>
+#else
+      {
+        ui_toggle_button_handle ModeButtonsButtons[] =
+        {
+          UiToggle(CSz("AssetSpawnMode_BlitIntoWorld"), 0),
+          UiToggle(CSz("AssetSpawnMode_Entity"), 0),
+        };
+
+        ui_toggle_button_group ModeButtonsGroup = UiToggleButtonGroup(Ui, ModeButtonsButtons, ArrayCount(ModeButtonsButtons), ToggleButtonGroupFlags_RadioButtons);
+
+        Assert(BitsSet(ModeButtonsGroup.ToggleBits) == 1);
+
+        asset_spawn_mode ModeButtons = Cast(asset_spawn_mode, ModeButtonsGroup.ToggleBits)
+      }
+#endif
 
       asset *Asset = GetAsset(Engine, &EngineDebug->SelectedAsset);
 
@@ -695,6 +715,7 @@ DoEngineDebug(engine_resources *Engine)
 
           if (UiCapturedMouseInput(Ui) == False && Input->Space.Clicked)
           {
+
             if (Engine->MousedOverVoxel.Tag)
             {
               cp Origin = Canonical_Position(&Engine->MousedOverVoxel.Value);
@@ -703,6 +724,11 @@ DoEngineDebug(engine_resources *Engine)
                 Asset,
                 Origin
               };
+
+
+              /* switch (ModeButtons->Active) */
+              /* { */
+              /* } */
 
               world_update_op_shape Shape =
               {
