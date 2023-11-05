@@ -95,6 +95,8 @@ DoLevelEditor(engine_resources *Engine)
 
   PushWindowStart(Ui, &Window);
 
+  ui_toggle_button_group WorldEditModeRadioGroup = RadioButtonGroup_world_edit_mode(Ui, umm("world_edit_mode_radio_group"), ToggleButtonGroupFlags_DrawVertical, {}, {}, {}, &DefaultStyle, V4(0, 0, 0, 16));
+
   ui_element_reference ColorTable = PushTableStart(Ui);
     RangeIterator(ColorIndex, s32(u8_MAX)+1 )
     {
@@ -138,9 +140,6 @@ DoLevelEditor(engine_resources *Engine)
       if ( (ColorIndex+1) % 8 == 0 ) { PushNewRow(Ui); }
     }
   PushTableEnd(Ui);
-
-
-  ui_toggle_button_group WorldEditModeRadioGroup = RadioButtonGroup_world_edit_mode(Ui, umm("world_edit_mode_radio_group"), ToggleButtonGroupFlags_DrawVertical);
 
 
   aabb_intersect_result AABBTest = {};

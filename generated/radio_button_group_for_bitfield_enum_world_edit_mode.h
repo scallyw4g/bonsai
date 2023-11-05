@@ -11,7 +11,7 @@ GetRadioEnum(ui_toggle_button_group *RadioGroup, world_edit_mode *Result)
 }
 
 link_internal ui_toggle_button_group
-RadioButtonGroup_world_edit_mode(renderer_2d *Ui, umm IdModifier, ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
+RadioButtonGroup_world_edit_mode(renderer_2d *Ui, umm IdModifier, ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None, UI_FUNCTION_PROTO_DEFAULTS)
 {
   ui_toggle_button_handle Buttons[] =
   {
@@ -24,7 +24,7 @@ RadioButtonGroup_world_edit_mode(renderer_2d *Ui, umm IdModifier, ui_toggle_butt
   };
 
   ui_toggle_button_group Result = UiToggleButtonGroup(Ui, Buttons, ArrayCount(Buttons),
-    ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_RadioButtons));
+    ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_RadioButtons), UI_FUNCTION_INSTANCE_NAMES);
 
   return Result;
 }

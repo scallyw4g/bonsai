@@ -667,7 +667,7 @@ DoEngineDebug(engine_resources *Engine)
       local_persist window_layout AssetViewWindow = WindowLayout("Asset View", {}, AssetDetailWindowDim, window_layout_flags(WindowLayoutFlag_StartupAlign_Right|WindowLayoutFlag_Default));
       PushWindowStart(Ui, &AssetViewWindow);
 
-      auto RadioGroup = RadioButtonGroup_asset_spawn_mode(Ui, umm("asset_spawn_mode_radio_group"));
+      auto AssetSpawnModeRadioGroup = RadioButtonGroup_asset_spawn_mode(Ui, umm("asset_spawn_mode_radio_group"));
 
       asset *Asset = GetAsset(Engine, &EngineDebug->SelectedAsset);
 
@@ -709,7 +709,7 @@ DoEngineDebug(engine_resources *Engine)
 
 
               asset_spawn_mode AssetSpawnMode = {};
-              GetRadioEnum(&RadioGroup, &AssetSpawnMode);
+              GetRadioEnum(&AssetSpawnModeRadioGroup, &AssetSpawnMode);
               switch (AssetSpawnMode)
               {
                 case AssetSpawnMode_BlitIntoWorld:
