@@ -41,3 +41,6 @@ enum world_edit_mode
 
 poof(string_and_value_tables(world_edit_mode))
 #include <generated/string_and_value_tables_world_edit_mode.h>
+
+poof(radio_button_group_for_bitfield_enum(world_edit_mode));
+#include <generated/radio_button_group_for_bitfield_enum_world_edit_mode.h>

@@ -667,9 +667,7 @@ DoEngineDebug(engine_resources *Engine)
       local_persist window_layout AssetViewWindow = WindowLayout("Asset View", {}, AssetDetailWindowDim, window_layout_flags(WindowLayoutFlag_StartupAlign_Right|WindowLayoutFlag_Default));
       PushWindowStart(Ui, &AssetViewWindow);
 
-
-      poof( radio_button_group_for_bitfield_enum(asset_spawn_mode, {AssetSpawnMode}, {0}) )
-      #include <generated/radio_button_group_for_enum_asset_spawn_mode_310605315_688856403.h>
+      auto RadioGroup = RadioButtonGroup_asset_spawn_mode(Ui, umm("asset_spawn_mode_radio_group"));
 
       asset *Asset = GetAsset(Engine, &EngineDebug->SelectedAsset);
 
@@ -710,6 +708,8 @@ DoEngineDebug(engine_resources *Engine)
               };
 
 
+              asset_spawn_mode AssetSpawnMode = {};
+              GetRadioEnum(&RadioGroup, &AssetSpawnMode);
               switch (AssetSpawnMode)
               {
                 case AssetSpawnMode_BlitIntoWorld:

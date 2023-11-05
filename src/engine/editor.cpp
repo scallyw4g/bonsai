@@ -140,23 +140,7 @@ DoLevelEditor(engine_resources *Engine)
   PushTableEnd(Ui);
 
 
-  poof( radio_button_group_for_bitfield_enum(world_edit_mode, {WorldEditMode}, {0}) )
-#include <generated/radio_button_group_for_bitfield_enum_world_edit_mode_255713291_688856403.h>
-
-
-/*   ui_toggle_button_handle Buttons[] = { */
-/*     UiToggle(CSz("Select"), 0), */
-/*     UiToggle(CSz("Fill"),   0), */
-/*     UiToggle(CSz("Add"),    0), */
-/*     UiToggle(CSz("Remove"), 0), */
-/*     UiToggle(CSz("Paint"),  0), */
-/*   }; */
-/*   ui_toggle_button_group WorldEditModeRadioGroup = UiToggleButtonGroup( Ui, */
-/*                                                             Buttons, */
-/*                                                             ArrayCount(Buttons), */
-/*                                                             ui_toggle_button_group_flags(ToggleButtonGroupFlags_DrawVertical|ToggleButtonGroupFlags_RadioButtons), */
-/*                                                             Position_RightOf, */
-/*                                                             ColorTable); */
+  ui_toggle_button_group WorldEditModeRadioGroup = RadioButtonGroup_world_edit_mode(Ui, umm("world_edit_mode_radio_group"), ToggleButtonGroupFlags_DrawVertical);
 
 
   aabb_intersect_result AABBTest = {};
@@ -330,6 +314,9 @@ DoLevelEditor(engine_resources *Engine)
     Editor->SelectionRegion[0] = {};
     Editor->SelectionRegion[1] = {};
   }
+
+  world_edit_mode WorldEditMode = {};
+  GetRadioEnum(&WorldEditModeRadioGroup, &WorldEditMode);
 
   Info(ToString(WorldEditMode));
 

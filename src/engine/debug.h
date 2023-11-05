@@ -82,6 +82,40 @@ struct engine_debug
 
 link_internal engine_debug* GetEngineDebug();
 
+// , type_poof_symbol EnumVarName, type_poof_symbol ModName, type_poof_symbol ExtraToggleButtonGroupFlags)
+poof(
+  func radio_button_group_for_bitfield_enum(enum_t)
+  {
+    link_internal void
+    GetRadioEnum(ui_toggle_button_group *RadioGroup, enum_t.name *Result)
+    {
+      if (RadioGroup->ToggleBits)
+      {
+        Assert(CountBitsSet_Kernighan(RadioGroup->ToggleBits) == 1);
+        Assert((((enum_t.map(value).sep(|) {value.name})) & RadioGroup->ToggleBits) != 0);
+      }
+
+      *Result = Cast((enum_t.name), RadioGroup->ToggleBits);
+    }
+
+    link_internal ui_toggle_button_group
+    RadioButtonGroup_(enum_t.name)(renderer_2d *Ui, umm IdModifier, ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
+    {
+      ui_toggle_button_handle Buttons[] =
+      {
+        enum_t.map(value)
+        {
+          UiToggle(CSz("value.name.strip_all_prefix"), IdModifier),
+        }
+      };
+
+      ui_toggle_button_group Result = UiToggleButtonGroup(Ui, Buttons, ArrayCount(Buttons),
+                                                          ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_RadioButtons));
+
+      return Result;
+    }
+  }
+)
 
 enum asset_spawn_mode
 {
@@ -89,21 +123,6 @@ enum asset_spawn_mode
   AssetSpawnMode_Entity        = (1 << 1),
 };
 
-poof(
-  func radio_button_group_for_bitfield_enum(enum_t, type_poof_symbol EnumVarName, type_poof_symbol ModName)
-  {
-    ui_toggle_button_handle (EnumVarName)Buttons[] =
-    {
-      enum_t.map(value)
-      {
-        UiToggle(CSz("value.name.strip_all_prefix"), ModName),
-      }
-    };
+poof(radio_button_group_for_bitfield_enum(asset_spawn_mode))
+#include <generated/radio_button_group_for_bitfield_enum_asset_spawn_mode.h>
 
-    ui_toggle_button_group (EnumVarName)RadioGroup = UiToggleButtonGroup(Ui, (EnumVarName)Buttons, ArrayCount((EnumVarName)Buttons), ToggleButtonGroupFlags_RadioButtons);
-
-    /* Assert(CountBitsSet_Kernighan((EnumVarName)Group.ToggleBits) <= 1); */
-
-    enum_t.name EnumVarName = Cast((enum_t.name), (EnumVarName)RadioGroup.ToggleBits);
-  }
-)

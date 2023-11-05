@@ -8,7 +8,11 @@ ui_toggle_button_handle WorldEditModeButtons[] =
   UiToggle(CSz("PaintSingle"), 0),
 };
 
-ui_toggle_button_group WorldEditModeRadioGroup = UiToggleButtonGroup(Ui, WorldEditModeButtons, ArrayCount(WorldEditModeButtons), ToggleButtonGroupFlags_RadioButtons);
+ui_toggle_button_group WorldEditModeRadioGroup =
+UiToggleButtonGroup(Ui,
+  WorldEditModeButtons,
+  ArrayCount(WorldEditModeButtons),
+  ui_toggle_button_group_flags( ToggleButtonGroupFlags_DrawVertical|ToggleButtonGroupFlags_RadioButtons));
 
 /* Assert(CountBitsSet_Kernighan((EnumVarName)Group.ToggleBits) <= 1); */
 
