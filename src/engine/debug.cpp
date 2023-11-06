@@ -1,4 +1,3 @@
-
 link_internal engine_debug *
 GetEngineDebug()
 {
@@ -18,12 +17,29 @@ GetUiDebug()
 #define DebugSlider(Ui, Value, Min, Max) DebugSlider_(Ui, Value, STRINGIZE(Value), Min, Max)
 
 link_internal void
+DebugValue_(renderer_2d *Ui, void *Value, const char* Name)
+{
+  PushColumn(Ui, CS(Name));
+  PushColumn(Ui, FSz("0x%x",umm(Value)));
+  PushNewRow(Ui);
+}
+
+link_internal void
 DebugValue_(renderer_2d *Ui, r32 *Value, const char* Name)
 {
   PushColumn(Ui, CS(Name));
   PushColumn(Ui, CS(*Value));
   PushNewRow(Ui);
 }
+
+link_internal void
+DebugValue_(renderer_2d *Ui, v3 *Value, const char* Name)
+{
+  PushColumn(Ui, CS(Name));
+  PushColumn(Ui, FSz("%.2f %.2f %.2f", double(Value->x), double(Value->y), double(Value->z)));
+  PushNewRow(Ui);
+}
+
 
 link_internal void
 DebugValue_(renderer_2d *Ui, v2 *Value, const char* Name)
@@ -104,6 +120,12 @@ DebugSlider_(renderer_2d *Ui, r32 *Value, const char* Name, r32 Min, r32 Max)
     PushNewRow(Ui);
   PushTableEnd(Ui);
 }
+
+
+
+poof(do_debug_ui_for(entity))
+#include <generated/do_debug_ui_for_entity.h>
+
 
 
 link_internal void
@@ -440,10 +462,43 @@ DoLevelWindow(engine_resources *Engine)
 }
 
 link_internal void
+DoEntityWindow(engine_resources *Engine)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  if (Engine->MaybeMouseRay.Tag)
+  {
+    entity *Entity = GetEntitiesIntersectingRay(World, EntityTable, &Engine->MaybeMouseRay.Ray);
+    if (Entity && Entity != EngineDebug->SelectedEntity)
+    {
+      Assert(Spawned(Entity));
+      DrawEntityCollisionVolume(Entity, &GpuMap->Buffer, Graphics, World->ChunkDim, YELLOW);
+
+      if (Input->LMB.Clicked)
+      {
+        EngineDebug->SelectedEntity = Entity;
+      }
+    }
+  }
+
+  if (EngineDebug->SelectedEntity)
+  {
+    DrawEntityCollisionVolume(EngineDebug->SelectedEntity, &GpuMap->Buffer, Graphics, World->ChunkDim, GREEN);
+
+    local_persist window_layout EntityWindow = WindowLayout("Entity");
+
+    PushWindowStart(Ui, &EntityWindow);
+      DoDebugUiFor(Ui, EngineDebug->SelectedEntity);
+    PushWindowEnd(Ui, &EntityWindow);
+  }
+}
+
+link_internal void
 DoEngineDebug(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
+#if 0
   ui_toggle_button_handle Buttons[] = {
     UiToggle(CSz("Level"),          0),
     UiToggle(CSz("Edit"),           0),
@@ -454,19 +509,33 @@ DoEngineDebug(engine_resources *Engine)
     UiToggle(CSz("EngineDebug"),    0),
   };
 
-  ui_toggle_button_group EditorButtonGroup = UiToggleButtonGroup(Ui, Buttons, ArrayCount(Buttons));
+  ui_toggle_button_handle_buffer ButtonBuffer = {
+    .Start = Buttons,
+    .Count = ArrayCount(Buttons)
+  };
 
-  if (ToggledOn(Ui, &EditorButtonGroup, CSz("Level")))
+  ui_toggle_button_group EditorButtonGroup = UiToggleButtonGroup(Ui, &ButtonBuffer);
+#else
+  ui_toggle_button_group EditorButtonGroup = ToggleButtonGroup_engine_debug_view_mode(Ui, umm("engine_debug_view_mode"));
+#endif
+
+
+  if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_Entities))
+  {
+    DoEntityWindow(Engine);
+  }
+
+  if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_Level))
   {
     DoLevelWindow(Engine);
   }
 
-  if (ToggledOn(Ui, &EditorButtonGroup, CSz("Edit")))
+  if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_WorldEdit))
   {
     DoLevelEditor(Engine);
   }
 
-  if (ToggledOn(Ui, &EditorButtonGroup, CSz("WorldChunks")))
+  if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_WorldChunks))
   {
     local_persist window_layout WorldChunkWindow = WindowLayout("World Chunks");
     PushWindowStart(Ui, &WorldChunkWindow);
@@ -504,7 +573,7 @@ DoEngineDebug(engine_resources *Engine)
   }
 
 #if 1
-  if (ToggledOn(Ui, &EditorButtonGroup, CSz("Textures")))
+  if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_Textures))
   {
     v2 TexDim = V2(400);
 
@@ -590,7 +659,7 @@ DoEngineDebug(engine_resources *Engine)
   }
 #endif
 
-  if (ToggledOn(Ui, &EditorButtonGroup, CSz("RenderSettings")))
+  if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_RenderSettings))
   {
     v2 WindowDim = {{1200.f, 250.f}};
     local_persist window_layout RenderSettingsWindow = WindowLayout("Render Settings", WindowLayoutFlag_StartupAlign_Right);
@@ -620,7 +689,7 @@ DoEngineDebug(engine_resources *Engine)
     PushWindowEnd(Ui, &RenderSettingsWindow);
   }
 
-  if (ToggledOn(Ui, &EditorButtonGroup, CSz("EngineDebug")))
+  if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_EngineDebug))
   {
     v2 WindowDim = {{1200.f, 250.f}};
     local_persist window_layout Window = WindowLayout("Engine Debug", WindowLayoutFlag_StartupAlign_Right);
@@ -645,7 +714,7 @@ DoEngineDebug(engine_resources *Engine)
 
   /* Debug_DrawTextureToDebugQuad(&Engine->RTTGroup.DebugShader); */
 
-  if (ToggledOn(Ui, &EditorButtonGroup, CSz("Assets")))
+  if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_Assets))
   {
     v2 AssetListWindowDim = {{350.f, 1200.f}};
     local_persist window_layout Window = WindowLayout("Assets", DefaultWindowBasis(*Ui->ScreenDim, AssetListWindowDim), AssetListWindowDim);

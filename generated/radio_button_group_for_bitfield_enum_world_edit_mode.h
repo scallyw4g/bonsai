@@ -4,28 +4,56 @@ GetRadioEnum(ui_toggle_button_group *RadioGroup, world_edit_mode *Result)
   if (RadioGroup->ToggleBits)
   {
     Assert(CountBitsSet_Kernighan(RadioGroup->ToggleBits) == 1);
-    Assert(((WorldEditMode_Select|WorldEditMode_FillSelection|WorldEditMode_DeleteSelection|WorldEditMode_AddSingle|WorldEditMode_RemoveSingle|WorldEditMode_PaintSingle) & RadioGroup->ToggleBits) != 0);
+    // NOTE(Jesse): This is better; it asserts that we've actually got a bitfield
+    Assert(((RadioGroup->ToggleBits == WorldEditMode_Select||RadioGroup->ToggleBits == WorldEditMode_FillSelection||RadioGroup->ToggleBits == WorldEditMode_DeleteSelection||RadioGroup->ToggleBits == WorldEditMode_AddSingle||RadioGroup->ToggleBits == WorldEditMode_RemoveSingle||RadioGroup->ToggleBits == WorldEditMode_PaintSingle)));
+    /* Assert((((enum_t.map(value).sep(|) {value.name})) & RadioGroup->ToggleBits) != 0); */
   }
 
   *Result = Cast(world_edit_mode, RadioGroup->ToggleBits);
 }
 
+link_internal b32
+ToggledOn(ui_toggle_button_group *ButtonGroup, world_edit_mode Enum)
+{
+  b32 Result = ButtonGroup->ToggleBits & (1 << Enum);
+  return Result;
+}
+
+// NOTE(Jesse): This could be implemented by reconstructing the button ID
+// but I'm very unsure that's worth it.  Seems like just
+link_internal b32
+Clicked(ui_toggle_button_group *ButtonGroup, world_edit_mode Enum)
+{
+  b32 Result = False;
+  NotImplemented;
+  return Result;
+}
+
 link_internal ui_toggle_button_group
 RadioButtonGroup_world_edit_mode(renderer_2d *Ui, umm IdModifier, ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None, UI_FUNCTION_PROTO_DEFAULTS)
 {
-  ui_toggle_button_handle Buttons[] =
+  cs ButtonNames[] =
   {
-    UiToggle(CSz("Select"), IdModifier),
-    UiToggle(CSz("FillSelection"), IdModifier),
-    UiToggle(CSz("DeleteSelection"), IdModifier),
-    UiToggle(CSz("AddSingle"), IdModifier),
-    UiToggle(CSz("RemoveSingle"), IdModifier),
-    UiToggle(CSz("PaintSingle"), IdModifier),
+    CSz("Select"),
+    CSz("FillSelection"),
+    CSz("DeleteSelection"),
+    CSz("AddSingle"),
+    CSz("RemoveSingle"),
+    CSz("PaintSingle"),
   };
 
-  ui_toggle_button_group Result = UiToggleButtonGroup(Ui, Buttons, ArrayCount(Buttons),
+  u32 ButtonCount = ArrayCount(ButtonNames);
+
+  ui_toggle_button_handle_buffer ButtonBuffer = UiToggleButtonHandleBuffer(ButtonCount, GetTranArena());
+  IterateOver(&ButtonBuffer, Button, ButtonIndex)
+  {
+    *Button = UiToggle(ButtonNames[ButtonIndex], IdModifier+ButtonIndex);
+  }
+
+  ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer,
     ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_RadioButtons), UI_FUNCTION_INSTANCE_NAMES);
 
   return Result;
 }
+
 

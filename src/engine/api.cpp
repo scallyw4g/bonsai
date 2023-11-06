@@ -98,6 +98,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
   UiFrameBegin(&Resources->Ui);
 
 
+  Resources->MaybeMouseRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection, Camera, World->ChunkDim);
   Resources->MousedOverVoxel = MousePickVoxel(Resources);
 
 #if 0 // DEBUG_SYSTEM_API

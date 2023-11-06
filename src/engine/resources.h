@@ -16,7 +16,8 @@ struct engine_resources
   renderer_2d   Ui; // TODO(Jesse): Is this actually, truly stdlib?
 
   // Engine
-  hotkeys    Hotkeys;
+  hotkeys     Hotkeys;
+  maybe_ray   MaybeMouseRay;
   world      *World;
   game_state *GameState;
   graphics   *Graphics;

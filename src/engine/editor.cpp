@@ -306,13 +306,16 @@ DoLevelEditor(engine_resources *Engine)
   }
 
 
+#if 1
   if (Clicked(&WorldEditModeRadioGroup, CSz("Select")))
   {
-    Info("Clicked Select");
     Editor->SelectionClicks = 0;
     Editor->SelectionRegion[0] = {};
     Editor->SelectionRegion[1] = {};
   }
+#else
+  NotImplemented;
+#endif
 
   world_edit_mode WorldEditMode = {};
   GetRadioEnum(&WorldEditModeRadioGroup, &WorldEditMode);

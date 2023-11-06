@@ -4677,8 +4677,7 @@ MousePickVoxel(engine_resources *Resources)
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection, Camera, World->ChunkDim);
-
+  maybe_ray MaybeRay = Resources->MaybeMouseRay;
   if (MaybeRay.Tag == Maybe_Yes)
   {
 
