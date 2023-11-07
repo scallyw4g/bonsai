@@ -38,8 +38,9 @@ ToggleButtonGroup_engine_debug_view_mode(renderer_2d *Ui, umm IdModifier, ui_tog
     *Button = UiToggle(ButtonNames[ButtonIndex], IdModifier+ButtonIndex);
   }
 
-  ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer, ExtraFlags, UI_FUNCTION_INSTANCE_NAMES);
+  ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_None), UI_FUNCTION_INSTANCE_NAMES);
 
   return Result;
 }
+
 

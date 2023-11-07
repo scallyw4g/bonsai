@@ -46,10 +46,10 @@ RadioButtonGroup_asset_spawn_mode(renderer_2d *Ui, umm IdModifier, ui_toggle_but
     *Button = UiToggle(ButtonNames[ButtonIndex], IdModifier+ButtonIndex);
   }
 
-  ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer,
-    ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_RadioButtons), UI_FUNCTION_INSTANCE_NAMES);
+  ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_RadioButtons), UI_FUNCTION_INSTANCE_NAMES);
 
   return Result;
 }
+
 
 

@@ -13,45 +13,51 @@ GetUiDebug()
 }
 
 
-#define DebugValue(Ui, Value) DebugValue_(Ui, Value, STRINGIZE(Value))
+
+
+
+/* #define DoEditorUi(Ui, Value, "Value") DoEditorUi(Ui, Value, STRINGIZE(Value)) */
 #define DebugSlider(Ui, Value, Min, Max) DebugSlider_(Ui, Value, STRINGIZE(Value), Min, Max)
 
+#define EDITOR_UI_FUNCTION_PROTO_DEFAULTS ui_style *Style = &DefaultStyle, v4 Padding = {{5, 2, 5, 2}}, column_render_params ColumnParams = ColumnRenderParam_LeftAlign
+#define EDITOR_UI_FUNCTION_INSTANCE_NAMES Style, Padding, ColumnParams
+
 link_internal void
-DebugValue_(renderer_2d *Ui, void *Value, const char* Name)
+DoEditorUi(renderer_2d *Ui, void *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  PushColumn(Ui, CS(Name));
-  PushColumn(Ui, FSz("0x%x",umm(Value)));
+  PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  PushColumn(Ui, FSz("0x%x",umm(Value)), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
   PushNewRow(Ui);
 }
 
 link_internal void
-DebugValue_(renderer_2d *Ui, r32 *Value, const char* Name)
+DoEditorUi(renderer_2d *Ui, r32 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  PushColumn(Ui, CS(Name));
-  PushColumn(Ui, CS(*Value));
+  PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
   PushNewRow(Ui);
 }
 
 link_internal void
-DebugValue_(renderer_2d *Ui, v3 *Value, const char* Name)
+DoEditorUi(renderer_2d *Ui, v3 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  PushColumn(Ui, CS(Name));
-  PushColumn(Ui, FSz("%.2f %.2f %.2f", double(Value->x), double(Value->y), double(Value->z)));
+  PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  PushColumn(Ui, FSz("%.2f %.2f %.2f", double(Value->x), double(Value->y), double(Value->z)), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
   PushNewRow(Ui);
 }
 
 
 link_internal void
-DebugValue_(renderer_2d *Ui, v2 *Value, const char* Name)
+DoEditorUi(renderer_2d *Ui, v2 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  PushColumn(Ui, CS(Name));
-  PushColumn(Ui, CS(Value->x));
-  PushColumn(Ui, CS(Value->y));
+  PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  PushColumn(Ui, CS(Value->x), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  PushColumn(Ui, CS(Value->y), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
   PushNewRow(Ui);
 }
 
 link_internal void
-DebugValue_(renderer_2d *Ui, b8 *Value, const char* Name)
+DoEditorUi(renderer_2d *Ui, b8 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Button(Ui, CS(Name), (umm)Value + (umm)"toggle" )) { *Value = !(*Value); }
 
@@ -62,7 +68,7 @@ DebugValue_(renderer_2d *Ui, b8 *Value, const char* Name)
 }
 
 link_internal void
-DebugValue_(renderer_2d *Ui, s32 *Value, const char* Name)
+DoEditorUi(renderer_2d *Ui, s32 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   PushColumn(Ui, CS(Name));
 
@@ -73,7 +79,7 @@ DebugValue_(renderer_2d *Ui, s32 *Value, const char* Name)
 }
 
 link_internal void
-DebugValue_(renderer_2d *Ui, u32 *Value, const char* Name)
+DoEditorUi(renderer_2d *Ui, u32 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   PushColumn(Ui, CS(Name));
 
@@ -84,14 +90,37 @@ DebugValue_(renderer_2d *Ui, u32 *Value, const char* Name)
 }
 
 link_internal void
-DebugValue_(renderer_2d *Ui, u64 *Value, const char* Name)
+DoEditorUi(renderer_2d *Ui, u64 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   PushTableStart(Ui);
-    PushColumn(Ui, CS(Name));
-    PushColumn(Ui, CS(*Value));
+    PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushNewRow(Ui);
   PushTableEnd(Ui);
 }
+
+
+
+
+
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, v3i *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+{
+  DoEditorUi(Ui, &Value->x, "x");
+  DoEditorUi(Ui, &Value->y, "y");
+  DoEditorUi(Ui, &Value->z, "z");
+  PushNewRow(Ui);
+}
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, cp *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+{
+  DoEditorUi(Ui, &Value->WorldP, "WorldP");
+  DoEditorUi(Ui, &Value->Offset, "Offset");
+  PushNewRow(Ui);
+}
+
 
 
 link_internal void
@@ -123,21 +152,31 @@ DebugSlider_(renderer_2d *Ui, r32 *Value, const char* Name, r32 Min, r32 Max)
 
 
 
-poof(do_debug_ui_for(entity))
-#include <generated/do_debug_ui_for_entity.h>
+poof(do_editor_ui_for_compound_type(animation))
+#include <generated/do_editor_ui_for_compound_type_animation.h>
+
+poof(do_editor_ui_for_compound_type(untextured_3d_geometry_buffer))
+#include <generated/do_editor_ui_for_compound_type_untextured_3d_geometry_buffer.h>
+
+poof(do_editor_ui_for_compound_type(model))
+#include <generated/do_editor_ui_for_compound_type_model.h>
+
+poof(do_editor_ui_for_compound_type(entity))
+#include <generated/do_editor_ui_for_compound_type_entity.h>
 
 
 
-link_internal void
-DebugValue_(renderer_2d *Ui, world_position *Value, const char* Name)
-{
-  Text(Ui, CS(Name));
-  PushNewRow(Ui);
 
-  DebugValue(Ui, &Value->x);
-  DebugValue(Ui, &Value->y);
-  DebugValue(Ui, &Value->z);
-}
+/* link_internal void */
+/* DoEditorUi(renderer_2d *Ui, world_position *Value, const char* Name) */
+/* { */
+/*   Text(Ui, CS(Name)); */
+/*   PushNewRow(Ui); */
+
+/*   DoEditorUi(Ui, &Value->x, "x"); */
+/*   DoEditorUi(Ui, &Value->y, "y"); */
+/*   DoEditorUi(Ui, &Value->z, "z"); */
+/* } */
 
 link_internal void
 DebugUi(engine_resources *Engine, cs Name, untextured_3d_geometry_buffer *Value)
@@ -199,7 +238,7 @@ DebugUi(engine_resources *Engine, cs Name, world_chunk *Value)
   PushNewRow(Ui);
 
   world_position WorldP = Value->WorldP;
-  DebugValue(Ui, &WorldP);
+  DoEditorUi(Ui, &WorldP, "WorldP");
 
   if (WorldP != Value->WorldP)
   {
@@ -266,9 +305,9 @@ DebugUi(engine_resources *Engine, cs Name, interactable *Value)
 
   PushColumn(Ui, Name);
   PushNewRow(Ui);
-  DebugValue(Ui, &Value->ID);
-  DebugValue(Ui, &Value->MinP);
-  DebugValue(Ui, &Value->MaxP);
+  DoEditorUi(Ui, &Value->ID, "ID");
+  DoEditorUi(Ui, &Value->MinP, "MinP");
+  DoEditorUi(Ui, &Value->MaxP, "MaxP");
 }
 
 link_internal maybe_file_traversal_node
@@ -488,7 +527,7 @@ DoEntityWindow(engine_resources *Engine)
     local_persist window_layout EntityWindow = WindowLayout("Entity");
 
     PushWindowStart(Ui, &EntityWindow);
-      DoDebugUiFor(Ui, EngineDebug->SelectedEntity);
+      DoEditorUi(Ui, EngineDebug->SelectedEntity, "SelectedEntity");
     PushWindowEnd(Ui, &EntityWindow);
   }
 }
@@ -668,17 +707,17 @@ DoEngineDebug(engine_resources *Engine)
     PushWindowStart(Ui, &RenderSettingsWindow);
 
       PushTableStart(Ui);
-        /* DebugValue(Ui, &Ui->Pressed.ID); */
+        /* DoEditorUi(Ui, &Ui->Pressed.ID, "ID"); */
 
-        DebugValue(Ui, (b8*)&Settings->DoDayNightCycle);
+        DoEditorUi(Ui, (b8*)&Settings->DoDayNightCycle, "DoDayNightCycle");
         PushNewRow(Ui);
 
-        DebugValue(Ui, (b8*)&Settings->UseSsao);
-        DebugValue(Ui, (b8*)&Settings->UseShadowMapping);
-        DebugValue(Ui, (b8*)&Settings->UseLightingBloom);
+        DoEditorUi(Ui, (b8*)&Settings->UseSsao, "UseSsao");
+        DoEditorUi(Ui, (b8*)&Settings->UseShadowMapping, "UseShadowMapping");
+        DoEditorUi(Ui, (b8*)&Settings->UseLightingBloom, "UseLightingBloom");
 
-        DebugValue(Ui, (b8*)&Settings->BravoilMyersOIT);
-        DebugValue(Ui, (b8*)&Settings->BravoilMcGuireOIT);
+        DoEditorUi(Ui, (b8*)&Settings->BravoilMyersOIT, "BravoilMyersOIT");
+        DoEditorUi(Ui, (b8*)&Settings->BravoilMcGuireOIT, "BravoilMcGuireOIT");
 
         // TODO(Jesse): Make a slider for time of day
 
@@ -698,14 +737,14 @@ DoEngineDebug(engine_resources *Engine)
     PushWindowStart(Ui, &Window);
       PushTableStart(Ui);
 
-        DebugValue(Ui, &EngineDebug->DrawEntityCollisionVolumes);
-        DebugValue(Ui, &EngineDebug->DrawWorldAxies);
+        DoEditorUi(Ui, &EngineDebug->DrawEntityCollisionVolumes, "DrawEntityCollisionVolumes");
+        DoEditorUi(Ui, &EngineDebug->DrawWorldAxies, "DrawWorldAxies");
 
-        DebugValue(Ui, &EngineDebug->UiDebug.OutlineUiValues);
-        DebugValue(Ui, &EngineDebug->UiDebug.OutlineUiButtons);
-        DebugValue(Ui, &EngineDebug->UiDebug.OutlineUiTables);
+        DoEditorUi(Ui, &EngineDebug->UiDebug.OutlineUiValues, "OutlineUiValues");
+        DoEditorUi(Ui, &EngineDebug->UiDebug.OutlineUiButtons, "OutlineUiButtons");
+        DoEditorUi(Ui, &EngineDebug->UiDebug.OutlineUiTables, "OutlineUiTables");
 
-        DebugValue(Ui, &Engine->Editor.SelectedColorIndex);
+        DoEditorUi(Ui, &Engine->Editor.SelectedColorIndex, "SelectedColorIndex");
         DebugUi(Engine, CSz("Selected Color"), &Engine->Editor.SelectedColorSquare);
 
       PushTableEnd(Ui);

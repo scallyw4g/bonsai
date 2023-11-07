@@ -84,101 +84,65 @@ struct engine_debug
 
 link_internal engine_debug* GetEngineDebug();
 
-#if 1
+poof(
+  func generic_button_group_for_enum(enum_t, type_poof_symbol NamePrefix, type_poof_symbol extra_poof_flags)
+  {
+    link_internal b32
+    ToggledOn(ui_toggle_button_group *ButtonGroup, enum_t.name Enum)
+    {
+      b32 Result = ButtonGroup->ToggleBits & (1 << Enum);
+      return Result;
+    }
+
+    // NOTE(Jesse): This could be implemented by reconstructing the button ID
+    // but I'm very unsure that's worth it.  Seems like just
+    link_internal b32
+    Clicked(ui_toggle_button_group *ButtonGroup, enum_t.name Enum)
+    {
+      b32 Result = False;
+      NotImplemented;
+      return Result;
+    }
+
+    link_internal ui_toggle_button_group
+    (NamePrefix)ButtonGroup_(enum_t.name)(renderer_2d *Ui, umm IdModifier, ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None, UI_FUNCTION_PROTO_DEFAULTS)
+    {
+      cs ButtonNames[] =
+      {
+        enum_t.map(value)
+        {
+          CSz("value.name.strip_all_prefix"),
+        }
+      };
+
+      u32 ButtonCount = ArrayCount(ButtonNames);
+
+      ui_toggle_button_handle_buffer ButtonBuffer = UiToggleButtonHandleBuffer(ButtonCount, GetTranArena());
+      IterateOver(&ButtonBuffer, Button, ButtonIndex)
+      {
+        *Button = UiToggle(ButtonNames[ButtonIndex], IdModifier+ButtonIndex);
+      }
+
+      ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer, ui_toggle_button_group_flags(ExtraFlags(extra_poof_flags)), UI_FUNCTION_INSTANCE_NAMES);
+
+      return Result;
+    }
+  }
+)
+
 poof(
   func toggle_button_group_for_enum(enum_t)
   {
-    link_internal b32
-    ToggledOn(ui_toggle_button_group *ButtonGroup, enum_t.name Enum)
-    {
-      b32 Result = ButtonGroup->ToggleBits & (1 << Enum);
-      return Result;
-    }
-
-    // NOTE(Jesse): This could be implemented by reconstructing the button ID
-    // but I'm very unsure that's worth it.  Seems like just
-    link_internal b32
-    Clicked(ui_toggle_button_group *ButtonGroup, enum_t.name Enum)
-    {
-      b32 Result = False;
-      NotImplemented;
-      return Result;
-    }
-
-    link_internal ui_toggle_button_group
-    ToggleButtonGroup_(enum_t.name)(renderer_2d *Ui, umm IdModifier, ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None, UI_FUNCTION_PROTO_DEFAULTS)
-    {
-      cs ButtonNames[] =
-      {
-        enum_t.map(value)
-        {
-          CSz("value.name.strip_all_prefix"),
-        }
-      };
-
-      u32 ButtonCount = ArrayCount(ButtonNames);
-
-      ui_toggle_button_handle_buffer ButtonBuffer = UiToggleButtonHandleBuffer(ButtonCount, GetTranArena());
-      IterateOver(&ButtonBuffer, Button, ButtonIndex)
-      {
-        *Button = UiToggle(ButtonNames[ButtonIndex], IdModifier+ButtonIndex);
-      }
-
-      ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer, ExtraFlags, UI_FUNCTION_INSTANCE_NAMES);
-
-      return Result;
-    }
+    generic_button_group_for_enum(enum_t, {Toggle}, {|ToggleButtonGroupFlags_None})
   }
 )
 
-// , type_poof_symbol EnumVarName, type_poof_symbol ModName, type_poof_symbol ExtraToggleButtonGroupFlags)
 poof(
   func radio_button_group_for_enum(enum_t)
   {
-    link_internal b32
-    ToggledOn(ui_toggle_button_group *ButtonGroup, enum_t.name Enum)
-    {
-      b32 Result = ButtonGroup->ToggleBits & (1 << Enum);
-      return Result;
-    }
-
-    // NOTE(Jesse): This could be implemented by reconstructing the button ID
-    // but I'm very unsure that's worth it.  Seems like just
-    link_internal b32
-    Clicked(ui_toggle_button_group *ButtonGroup, enum_t.name Enum)
-    {
-      b32 Result = False;
-      NotImplemented;
-      return Result;
-    }
-
-    link_internal ui_toggle_button_group
-    RadioButtonGroup_(enum_t.name)(renderer_2d *Ui, umm IdModifier, ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None, UI_FUNCTION_PROTO_DEFAULTS)
-    {
-      cs ButtonNames[] =
-      {
-        enum_t.map(value)
-        {
-          CSz("value.name.strip_all_prefix"),
-        }
-      };
-
-      u32 ButtonCount = ArrayCount(ButtonNames);
-
-      ui_toggle_button_handle_buffer ButtonBuffer = UiToggleButtonHandleBuffer(ButtonCount, GetTranArena());
-      IterateOver(&ButtonBuffer, Button, ButtonIndex)
-      {
-        *Button = UiToggle(ButtonNames[ButtonIndex], IdModifier+ButtonIndex);
-      }
-
-      ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer,
-                                      ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_RadioButtons), UI_FUNCTION_INSTANCE_NAMES);
-
-      return Result;
-    }
+    generic_button_group_for_enum(enum_t, {Radio}, {|ToggleButtonGroupFlags_RadioButtons})
   }
 )
-#endif
 
 poof(
   func radio_button_group_for_bitfield_enum(enum_t)
@@ -227,16 +191,25 @@ poof(toggle_button_group_for_enum(engine_debug_view_mode))
 #include <generated/toggle_button_group_for_enum_engine_debug_view_mode.h>
 
 poof(
-  func do_debug_ui_for(type)
+  func do_editor_ui_for_compound_type(type)
   {
     link_internal void
-    DoDebugUiFor(renderer_2d *Ui, type.name *Element)
+    DoEditorUi(renderer_2d *Ui, type.name *Element, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
     {
       PushTableStart(Ui);
+      /* ToggleButton(renderer_2d* Group, cs ButtonNameOn, cs ButtonNameOff, umm InteractionId, ui_style* Style = &DefaultStyle, v4 Padding = DefaultButtonPadding, column_render_params ColumnParams = ColumnRenderParam_RightAlign) */
+      if (ToggleButton(Ui, CS(Name), CS(Name), umm(Element) ^ umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+      {
+        PushNewRow(Ui);
         type.map(member)
         {
-          DebugValue(Ui, &Element->(member.name));
+          DoEditorUi(Ui, &Element->(member.name), "member.type member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
         }
+      }
+      else
+      {
+        PushNewRow(Ui);
+      }
       PushTableEnd(Ui);
     }
   }

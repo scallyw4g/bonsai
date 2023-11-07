@@ -69,7 +69,6 @@ ModifySelectionAABB(v3 *SelectionRegion, v3 UpdateVector, face_index Face, selec
   return Result;
 }
 
-
 link_internal v3
 GetMin(v3 *SelectionRegion)
 {
