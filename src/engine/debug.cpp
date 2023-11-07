@@ -19,9 +19,6 @@ GetUiDebug()
 /* #define DoEditorUi(Ui, Value, "Value") DoEditorUi(Ui, Value, STRINGIZE(Value)) */
 #define DebugSlider(Ui, Value, Min, Max) DebugSlider_(Ui, Value, STRINGIZE(Value), Min, Max)
 
-#define EDITOR_UI_FUNCTION_PROTO_DEFAULTS ui_style *Style = &DefaultStyle, v4 Padding = {{5, 2, 5, 2}}, column_render_params ColumnParams = ColumnRenderParam_LeftAlign
-#define EDITOR_UI_FUNCTION_INSTANCE_NAMES Style, Padding, ColumnParams
-
 link_internal void
 DoEditorUi(renderer_2d *Ui, void *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
@@ -50,7 +47,7 @@ DoEditorUi(renderer_2d *Ui, v3 *Value, const char* Name, EDITOR_UI_FUNCTION_PROT
 link_internal void
 DoEditorUi(renderer_2d *Ui, v2 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  PushColumn(Ui, CS(Name),     EDITOR_UI_FUNCTION_INSTANCE_NAMES);
   PushColumn(Ui, CS(Value->x), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
   PushColumn(Ui, CS(Value->y), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
   PushNewRow(Ui);
@@ -59,7 +56,7 @@ DoEditorUi(renderer_2d *Ui, v2 *Value, const char* Name, EDITOR_UI_FUNCTION_PROT
 link_internal void
 DoEditorUi(renderer_2d *Ui, b8 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  if (Button(Ui, CS(Name), (umm)Value + (umm)"toggle" )) { *Value = !(*Value); }
+  if (Button(Ui, CS(Name), (umm)Value + (umm)"toggle", EDITOR_UI_FUNCTION_INSTANCE_NAMES )) { *Value = !(*Value); }
 
   counted_string Display = *Value ? CSz("True") : CSz("False");
   Text(Ui, Display);
@@ -70,7 +67,7 @@ DoEditorUi(renderer_2d *Ui, b8 *Value, const char* Name, EDITOR_UI_FUNCTION_PROT
 link_internal void
 DoEditorUi(renderer_2d *Ui, s32 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  PushColumn(Ui, CS(Name));
+  PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
   if (Button(Ui, CSz("-"), (umm)Value + (umm)"decrement" )) { *Value = *Value - 1; }
   PushColumn(Ui, CS(*Value));
@@ -81,7 +78,7 @@ DoEditorUi(renderer_2d *Ui, s32 *Value, const char* Name, EDITOR_UI_FUNCTION_PRO
 link_internal void
 DoEditorUi(renderer_2d *Ui, u32 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  PushColumn(Ui, CS(Name));
+  PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
   if (Button(Ui, CSz("-"), (umm)Value + (umm)"decrement" )) { *Value = *Value - 1; }
   PushColumn(Ui, CS(*Value));
@@ -92,11 +89,11 @@ DoEditorUi(renderer_2d *Ui, u32 *Value, const char* Name, EDITOR_UI_FUNCTION_PRO
 link_internal void
 DoEditorUi(renderer_2d *Ui, u64 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  PushTableStart(Ui);
+  /* PushTableStart(Ui); */
     PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushNewRow(Ui);
-  PushTableEnd(Ui);
+  /* PushTableEnd(Ui); */
 }
 
 
@@ -193,7 +190,7 @@ DebugUi(engine_resources *Engine, cs Name, untextured_3d_geometry_buffer *Value)
     {
       PushNewRow(Ui);
 
-      PushTableStart(Ui, {}, {}, {}, &DefaultStyle, V4(32, 0, 0, 0));
+      /* PushTableStart(Ui, {}, {}, {}, &DefaultStyle, V4(32, 0, 0, 0)); */
         PushColumn(Ui, CSz("Verts : "));
         PushColumn(Ui, FSz("0x%x",(u64)Value->Verts));
         PushNewRow(Ui);
@@ -216,7 +213,7 @@ DebugUi(engine_resources *Engine, cs Name, untextured_3d_geometry_buffer *Value)
 
         PushColumn(Ui, CSz("Timestamp : "));
         PushColumn(Ui, FSz("%u", Value->Timestamp));
-      PushTableEnd(Ui);
+      /* PushTableEnd(Ui); */
       /* PushForceUpdateBasis(Ui, V2(-16, 0)); */
     }
   }
@@ -527,7 +524,9 @@ DoEntityWindow(engine_resources *Engine)
     local_persist window_layout EntityWindow = WindowLayout("Entity");
 
     PushWindowStart(Ui, &EntityWindow);
-      DoEditorUi(Ui, EngineDebug->SelectedEntity, "SelectedEntity");
+      PushTableStart(Ui);
+        DoEditorUi(Ui, EngineDebug->SelectedEntity, "SelectedEntity");
+      PushTableEnd(Ui);
     PushWindowEnd(Ui, &EntityWindow);
   }
 }

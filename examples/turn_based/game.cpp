@@ -163,40 +163,24 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
   }
 }
 
-/* void */
-/* GameEntityUpdate(engine_resources *Engine, entity *Entity ) */
-/* { */
-/*   UNPACK_ENGINE_RESOURCES(Engine); */
+enum game_entity_type
+{
+  foo
+};
 
-/*   game_entity_type Type = *((game_entity_type*)&Entity->UserData); */
 
-/*   // Bitty offset, gets overridden by the Splosion case.  Janky af.  @offset-jank-fallthrough */
-/*   v3 Offset = V3(0.f, 0.f, 0.2f); */
-/*   switch (Type) */
-/*   { */
-/*     case GameEntityType_Unknown: {} break;; */
-/*     case GameEntityType_Enemy: { EnemyUpdate(Engine, Entity); } break; */
+void
+GameEntityUpdate(engine_resources *Engine, entity *Entity )
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
 
-/*     case GameEntityType_Splosion: { Offset = V3(0.f, 0.f, 2.5f); } [[fallthrough]]; // @offset-jank-fallthrough */
-/*     case GameEntityType_Bitty: */
-/*     { */
-/*       v3 Color = {}; */
-/*       switch (Type) */
-/*       { */
-/*         case GameEntityType_Splosion: */
-/*           Color = V3(0.97f, 0.32f, 0.03f)*70.f; break; */
-/*         case GameEntityType_Bitty: */
-/*           Color = V3(0.97f, 0.42f, 0.03f)*0.2f; break; */
+  game_entity_type Type = ReinterpretCast(game_entity_type, Entity->UserData);
 
-/*         InvalidDefaultCase; */
-/*       } */
-
-/*       v3 P = GetRenderP(World->ChunkDim, Entity, Camera) + Offset; */
-/*       r32 Intensity = Max(0.f, RemainingLifespan(Entity->Emitter) / Entity->Emitter->EmissionLifespan); */
-/*       DoLight(&Lighting->Lights, P, Color*Intensity ); */
-/*     } break; */
-/*   } */
-/* } */
+  switch (Type)
+  {
+    case foo: break;
+  }
+}
 
 BONSAI_API_MAIN_THREAD_CALLBACK()
 {

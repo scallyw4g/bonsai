@@ -23,6 +23,12 @@ enum entity_type
   EntityType_Default           = 1 << 8, // Nothing special about it, just needed an entity
 };
 
+poof(generate_string_table(entity_type))
+#include <generated/generate_string_table_entity_type.h>
+
+poof(do_editor_ui_for_enum(entity_type))
+#include <generated/do_editor_ui_for_enum_entity_type.h>
+
 global_variable const entity_type ENTITY_TYPES = (entity_type)
   ( EntityType_Player           |
     EntityType_Enemy            |

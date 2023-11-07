@@ -1,7 +1,7 @@
 link_internal void
 DoEditorUi(renderer_2d *Ui, entity *Element, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  PushTableStart(Ui);
+  /* PushTableStart(Ui); */
   /* ToggleButton(renderer_2d* Group, cs ButtonNameOn, cs ButtonNameOff, umm InteractionId, ui_style* Style = &DefaultStyle, v4 Padding = DefaultButtonPadding, column_render_params ColumnParams = ColumnRenderParam_RightAlign) */
   if (ToggleButton(Ui, CS(Name), CS(Name), umm(Element) ^ umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
   {
@@ -24,6 +24,6 @@ DoEditorUi(renderer_2d *Ui, entity *Element, const char* Name, EDITOR_UI_FUNCTIO
   {
     PushNewRow(Ui);
   }
-  PushTableEnd(Ui);
+  /* PushTableEnd(Ui); */
 }
 

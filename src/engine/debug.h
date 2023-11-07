@@ -1,5 +1,8 @@
 #define MAX_PICKED_WORLD_CHUNKS (64)
 
+#define EDITOR_UI_FUNCTION_PROTO_DEFAULTS ui_style *Style = &DefaultStyle, v4 Padding = {{5, 2, 5, 2}}, column_render_params ColumnParams = ColumnRenderParam_LeftAlign
+#define EDITOR_UI_FUNCTION_INSTANCE_NAMES Style, Padding, ColumnParams
+
 
 struct world;
 struct world_chunk;
@@ -196,7 +199,7 @@ poof(
     link_internal void
     DoEditorUi(renderer_2d *Ui, type.name *Element, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
     {
-      PushTableStart(Ui);
+      /* PushTableStart(Ui); */
       /* ToggleButton(renderer_2d* Group, cs ButtonNameOn, cs ButtonNameOff, umm InteractionId, ui_style* Style = &DefaultStyle, v4 Padding = DefaultButtonPadding, column_render_params ColumnParams = ColumnRenderParam_RightAlign) */
       if (ToggleButton(Ui, CS(Name), CS(Name), umm(Element) ^ umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
       {
@@ -210,7 +213,43 @@ poof(
       {
         PushNewRow(Ui);
       }
-      PushTableEnd(Ui);
+      /* PushTableEnd(Ui); */
+    }
+  }
+)
+
+poof(
+  func do_editor_ui_for_enum(enum_t)
+  {
+    link_internal void
+    DoEditorUi(renderer_2d *Ui, enum_t.name *Element, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+    {
+      /* PushTableStart(Ui); */
+        PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+        /* PushForceAdvance(Ui, V2(150, 0)); */
+        /* PushForceUpdateBasis(Ui, V2(150, 0)); */
+
+        cs ElementName = ToString(*Element);
+        /* PushTableStart(Ui); */
+          if (ToggleButton(Ui, ElementName, ElementName, umm(Element)^umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+          {
+            PushNewRow(Ui);
+            enum_t.map(value)
+            {
+              PushColumn(Ui, CSz("")); // Skip the first Name column
+              if (Button(Ui, CSz("value.name"), umm(Element)^umm("value.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+              {
+                *Element = value.name;
+              }
+              PushNewRow(Ui);
+            }
+          }
+          else
+          {
+            PushNewRow(Ui);
+          }
+        /* PushTableEnd(Ui); */
+      /* PushTableEnd(Ui); */
     }
   }
 )
