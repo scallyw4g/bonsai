@@ -8,7 +8,7 @@ Global_WorldGravity = V3(0.0f, 0.0f, -9.8f) * GameUnitsToMeters;
 inline void
 PhysicsUpdate(physics *Physics, r32 dt, b32 ApplyGravity = True)
 {
-  if (Physics->Speed > 0.f)
+  /* if (Physics->Speed > 0.f) */
   {
     v3 Gravity = ApplyGravity ? Global_WorldGravity : V3(0);
 

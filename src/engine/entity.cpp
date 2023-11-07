@@ -27,19 +27,12 @@ Unspawn(entity *Entity)
   Entity->Emitter = Emitter;
 }
 
-inline b32
-IsLoot(entity *Entity)
-{
-  b32 Result = Entity->Type == EntityType_Loot;
-  return Result;
-}
-
-inline b32
-IsPlayer(entity *Entity)
-{
-  b32 Result = Entity->Type == EntityType_Player;
-  return Result;
-}
+/* inline b32 */
+/* IsPlayer(entity *Entity) */
+/* { */
+/*   b32 Result = Entity->Type == EntityType_Player; */
+/*   return Result; */
+/* } */
 
 collision_event
 GetCollision( world *World, canonical_position TestP, v3 CollisionDim )
@@ -209,13 +202,14 @@ AllocateEntityTable(memory_arena* Memory, u32 Count)
       ++ EntityIndex)
   {
     Result[EntityIndex] = AllocateEntity(Memory, Chunk_Dimension(0, 0, 0));
+    Result[EntityIndex]->Id = EntityIndex;
   }
 
   return Result;
 }
 
 void
-SpawnEntity( entity *Entity, entity_type Type, model *GameModels, model_index ModelIndex)
+SpawnEntity( entity *Entity, entity_behavior_flags Behavior, model *GameModels, model_index ModelIndex)
 {
   // These are mutually exclusive, so checking both is redundant, but that
   // could change in the future
@@ -224,8 +218,7 @@ SpawnEntity( entity *Entity, entity_type Type, model *GameModels, model_index Mo
   Assert(Entity->State == EntityState_Reserved);
 
   Entity->State = EntityState_Spawned;
-  Entity->Type = Type;
-  Entity->FireCooldown = Entity->RateOfFire;
+  Entity->Behavior = Behavior;
 
   if (ModelIndex)
   {
@@ -239,43 +232,20 @@ SpawnEntity( entity *Entity, entity_type Type, model *GameModels, model_index Mo
     }
   }
 
-#if 0
-  switch (Type)
-  {
-    case EntityType_Player:
-    {
-    } break;
-
-    case EntityType_Enemy:
-    {
-    } break;
-
-    case EntityType_ParticleSystem:
-    {
-    } break;
-
-    case EntityType_Default:
-    {
-    } break;
-
-    InvalidDefaultCase;
-  }
-#endif
-
   return;
 }
 
 link_internal void
 SpawnEntity(entity *Entity)
 {
-  SpawnEntity(Entity, EntityType_Default, 0, ModelIndex_None);
+  SpawnEntity(Entity, EntityBehaviorFlags_None, 0, ModelIndex_None);
 }
 
 void
 SpawnEntity(
     entity *Entity,
     model *Model,
-    entity_type Type,
+    entity_behavior_flags Behavior,
 
     physics *Physics,
 
@@ -289,7 +259,7 @@ SpawnEntity(
 {
   TIMED_FUNCTION();
 
-  Entity->Type = Type;
+  Entity->Behavior = Behavior;
 
   if (Model)
     Entity->Model = *Model;
@@ -305,8 +275,6 @@ SpawnEntity(
   Entity->Rotation = Quaternion(0,0,0,1);
 
   Entity->Scale = Scale;
-  Entity->RateOfFire = RateOfFire;
-  Entity->Health = Health;
 
   Entity->State = EntityState_Spawned;
 
@@ -393,7 +361,7 @@ entity *
 SpawnProjectile(entity** EntityTable,
                 canonical_position *P,
                 v3 Velocity,
-                entity_type ProjectileType
+                entity_behavior_flags Behavior
   )
 {
   entity *Projectile = GetFreeEntity(EntityTable);
@@ -411,7 +379,7 @@ SpawnProjectile(entity** EntityTable,
   SpawnEntity(
     Projectile,
     0,
-    ProjectileType,
+    Behavior,
 
     &Physics,
 
@@ -508,7 +476,7 @@ SpawnPlayerLikeEntity( platform *Plat,
   SpawnEntity(
       Player,
       Model,
-      EntityType_Player,
+      EntityBehaviorFlags_Default,
 
       &Physics,
 
@@ -567,7 +535,7 @@ SpawnStaticEntity( platform *Plat,
   SpawnEntity(
       Player,
       Model,
-      EntityType_Static,
+      EntityBehaviorFlags_None,
 
       Physics,
 
@@ -583,42 +551,13 @@ SpawnStaticEntity( platform *Plat,
 
   return;
 }
-void
-EntityWorldCollision(world *World, entity *Entity, collision_event *Event, chunk_dimension VisibleRegion)
-{
-  Assert(Entity->Type != EntityType_None);
 
-  switch (Entity->Type)
-  {
-    case EntityType_Player:
-    {
+/* void */
+/* EntityWorldCollision(world *World, entity *Entity, collision_event *Event, chunk_dimension VisibleRegion) */
+/* { */
+/* } */
 
-    } break;
-
-    case EntityType_PlayerProjectile:
-    {
-      NotImplemented;
 #if 0
-      if (Event->Chunk)
-      {
-        s32 i = GetIndex(Voxel_Position(Event->CP.Offset), World->ChunkDim);
-        world_chunk *Chunk = Event->Chunk;
-        Chunk->Voxels[i] = {};
-        /* ZeroMesh(&Chunk->Mesh); */
-        // TODO(Jesse, id: 131, tags: not_implemented): This path needs to call CanBuildWorldChunkMesh or something similar
-        /* BuildWorldChunkMesh(World, Chunk, World->ChunkDim, Chunk->Mesh, VisibleRegion); */
-      }
-      Unspawn(Entity);
-#endif
-    } break;
-
-    default:
-    {
-      /* Unspawn(Entity); */
-    } break;
-  }
-}
-
 b32
 EntitiesCanCollide(entity *First, entity *Second)
 {
@@ -640,6 +579,7 @@ EntitiesCanCollide(entity *First, entity *Second)
 
   return Result;
 }
+#endif
 
 #define TOTAL_FRAME_EVENT_COUNT (960)
 inline void
@@ -674,11 +614,11 @@ ProcessCollisionRule(
 
   Assert(First!=Second);
 
+#if 0
   collision_type CollisionType = (collision_type)(First->Type | Second->Type);
 
   switch (CollisionType)
   {
-#if 0
     case Collision_Player_Loot:
     {
       entity *Player = First;
@@ -694,7 +634,6 @@ ProcessCollisionRule(
       Unspawn(Loot);
 
     } break;
-#endif
 
     case Collision_Player_EnemyProjectile:
     case Collision_Player_Enemy:
@@ -744,6 +683,7 @@ ProcessCollisionRule(
 
     default: {} break;
   }
+#endif
 
   return;
 }
@@ -758,11 +698,11 @@ DoEntityCollisions(world *World, entity** EntityTable, entity *Entity)
 
   collision_event Result = {};
   for (s32 EntityIndex = 0;
-      EntityIndex < TOTAL_ENTITY_COUNT;
-      ++EntityIndex)
+           EntityIndex < TOTAL_ENTITY_COUNT;
+         ++EntityIndex)
   {
     entity *TestEntity = EntityTable[EntityIndex];
-    if (Entity != TestEntity)
+    if (Spawned(TestEntity) && Entity != TestEntity)
     {
       if (GetCollision(World, Entity, TestEntity))
       {
@@ -848,7 +788,7 @@ UpdateEntityP(world* World, entity *Entity, v3 Delta)
 }
 
 void
-MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta, chunk_dimension VisibleRegion)
+MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
 {
   TIMED_FUNCTION();
 
@@ -860,7 +800,13 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta, chunk_dimension V
 
   v3 CollisionVolumeInit = Entity->CollisionVolumeRadius*2.0f;
   C = GetCollision(World, Entity->P, CollisionVolumeInit);
-  if (C.Count) { return; }
+
+  if (C.Count)
+  { 
+    Entity->Physics.Velocity = {};
+    Entity->Physics.Delta = {};
+    return;
+  }
 
   while (LengthSq(Remaining) > 0)
   {
@@ -970,8 +916,8 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta, chunk_dimension V
 
   // Entites that aren't moving can still be positioned outside the world if
   // the player moves the world to do so
-  if (AssertCollision.Count)
-    EntityWorldCollision(World, Entity, &C, VisibleRegion);
+  /* if (AssertCollision.Count) */
+    /* EntityWorldCollision(World, Entity, &C, VisibleRegion); */
 
   return;
 }
@@ -1089,23 +1035,6 @@ SimulateParticle(particle_system *System, particle *Particle, r32 dt, v3 EntityD
   Particle->Offset += Delta;
   Particle->Offset -= EntityDelta * System->SystemMovementCoefficient;
   Particle->RemainingLifespan -= dt;
-}
-
-void
-SimulatePlayer(world* World, entity *Player, hotkeys *Hotkeys, r32 dt, chunk_dimension VisibleRegion)
-{
-  TIMED_FUNCTION();
-
-  if (Spawned(Player))
-  {
-    /* DebugLine("force(%d, %d, %d)", Player->Physics.Force.x, Player->Physics.Force.y, Player->Physics.Force.z ); */
-    PhysicsUpdate(&Player->Physics, dt);
-
-    world_position OriginalPlayerP = Player->P.WorldP;
-    MoveEntityInWorld( World, Player, Player->Physics.Delta, VisibleRegion);
-  }
-
-  return;
 }
 
 link_internal void SimulateParticleSystem(work_queue_entry_sim_particle_system *Job);
@@ -1357,75 +1286,50 @@ MousePickEntity(engine_resources *Resources)
 }
 
 // An optional function the game can choose to implement if they want to do a custom entity update.
-link_weak void GameEntityUpdate(engine_resources *, entity *);
+link_weak b32 GameEntityUpdate(engine_resources *, entity *);
 
 // NOTE(Jesse): Once we draw entities & chunks in a more real way this should
 // be able to be moved back into the regular entity.cpp
-void
+link_internal void
 SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleRegion, untextured_3d_geometry_buffer *SolidGeo, untextured_3d_geometry_buffer *TransparentGeo, work_queue *Queue)
 {
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  for ( s32 EntityIndex = 0; EntityIndex < TOTAL_ENTITY_COUNT; ++EntityIndex )
+  RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
   {
     entity *Entity = EntityTable[EntityIndex];
 
     if (!Spawned(Entity))
         continue;
 
-    if (Entity->UserData && GameEntityUpdate) { GameEntityUpdate(Resources, Entity); }
+    if (GameEntityUpdate)
+    {
+      if (GameEntityUpdate(Resources, Entity)) continue;
+    }
 
     Entity->P = Canonicalize(Resources->World, Entity->P);
 
-    switch (Entity->Type)
+    b32 ApplyGravity = ((Entity->Behavior & EntityBehaviorFlags_Gravity) == EntityBehaviorFlags_Gravity);
+    PhysicsUpdate(&Entity->Physics, dt, ApplyGravity);
+
+    if (Entity->Behavior & EntityBehaviorFlags_WorldCollision)
     {
-      case EntityType_None: { InvalidCodePath(); } break;
+      MoveEntityInWorld(World, Entity, Entity->Physics.Delta);
+    }
+    else
+    {
+      Entity->P.Offset += Entity->Physics.Delta;
+      Canonicalize(World, &Entity->P);
+    }
 
-      case EntityType_PlayerProton:
-      case EntityType_Loot:
-      case EntityType_Static:
+    if (Entity->Behavior & EntityBehaviorFlags_EntityCollision)
+    {
+      collision_event C = DoEntityCollisions(World, EntityTable, Entity);
+      if (C.Count)
       {
-      } break;
-
-      case EntityType_Enemy:
-      {
-      } break;
-
-      case EntityType_PlayerProjectile:
-      case EntityType_EnemyProjectile:
-      {
-        PhysicsUpdate(&Entity->Physics, dt);
-        MoveEntityInWorld(World, Entity, Entity->Physics.Delta, VisibleRegion);
-      } break;
-
-      case EntityType_ParticleSystem:
-      {
-        particle_system *System = Entity->Emitter;
-        if (Inactive(System))
-        {
-          Unspawn(Entity);
-        }
-        else
-        {
-          PhysicsUpdate(&Entity->Physics, dt);
-          MoveEntityInWorld(World, Entity, Entity->Physics.Delta, VisibleRegion);
-        }
-
-      } break;
-
-      case EntityType_Player:
-      {
-        SimulatePlayer(World, Entity, Hotkeys, dt, VisibleRegion);
-      } break;
-
-      case EntityType_Default:
-      {
-        /* PhysicsUpdate(&Entity->Physics, dt); */
-        /* MoveEntityInWorld(World, Entity, Entity->Physics.Delta, VisibleRegion); */
-      } break;
-
-      /* default: { InvalidCodePath(); } break; */
+        DebugLine("COLLISION!!");
+      }
     }
 
     particle_system *System = Entity->Emitter;
@@ -1439,6 +1343,10 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
       /* SimulateParticleSystem(&Job.work_queue_entry_sim_particle_system); */
       auto Job = WorkQueueEntry(System, EntityDelta, RenderSpaceP, dt);
       PushWorkQueueEntry(Queue, &Job);
+    }
+    else
+    {
+      if (Entity->Behavior & EntityBehaviorFlags_UnspawnOnParticleSystemTerminate) { Unspawn(Entity); }
     }
   }
 

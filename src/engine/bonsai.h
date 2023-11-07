@@ -33,17 +33,17 @@ struct game_mode
   r64 TimeRunning;
 };
 
-enum collision_type
-{
-  Collision_Player_Enemy            = EntityType_Player | EntityType_Enemy,
-  Collision_Player_EnemyProjectile  = EntityType_Player | EntityType_EnemyProjectile,
-  Collision_Player_PlayerProjectile = EntityType_Player | EntityType_PlayerProjectile,
-  Collision_Player_Loot             = EntityType_Player | EntityType_Loot,
-  Collision_Enemy_PlayerProjectile  = EntityType_Enemy  | EntityType_PlayerProjectile,
-  Collision_Enemy_PlayerProton      = EntityType_Enemy  | EntityType_PlayerProton,
-  Collision_Enemy_EnemyProjectile   = EntityType_Enemy  | EntityType_EnemyProjectile,
-  Collision_Enemy_Enemy             = EntityType_Enemy,
-};
+/* enum collision_type */
+/* { */
+/*   Collision_Player_Enemy            = EntityBehaviorFlags_Player | EntityBehaviorFlags_Enemy, */
+/*   Collision_Player_EnemyProjectile  = EntityBehaviorFlags_Player | EntityBehaviorFlags_EnemyProjectile, */
+/*   Collision_Player_PlayerProjectile = EntityBehaviorFlags_Player | EntityBehaviorFlags_PlayerProjectile, */
+/*   Collision_Player_Loot             = EntityBehaviorFlags_Player | EntityBehaviorFlags_Loot, */
+/*   Collision_Enemy_PlayerProjectile  = EntityBehaviorFlags_Enemy  | EntityBehaviorFlags_PlayerProjectile, */
+/*   Collision_Enemy_PlayerProton      = EntityBehaviorFlags_Enemy  | EntityBehaviorFlags_PlayerProton, */
+/*   Collision_Enemy_EnemyProjectile   = EntityBehaviorFlags_Enemy  | EntityBehaviorFlags_EnemyProjectile, */
+/*   Collision_Enemy_Enemy             = EntityBehaviorFlags_Enemy, */
+/* }; */
 
 struct particle
 {

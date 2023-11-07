@@ -3522,7 +3522,7 @@ BufferWorld( platform                      *Plat,
         world_position P = World_Position(x,y,z);
         world_chunk *Chunk = 0;
         {
-          TIMED_NAMED_BLOCK("GetWorldChunk");
+          TIMED_NAMED_BLOCK("GetWorldChunkFromHashtable");
           Chunk = GetWorldChunkFromHashtable( World, P );
         }
 

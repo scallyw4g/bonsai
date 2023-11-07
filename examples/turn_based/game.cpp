@@ -10,10 +10,10 @@ Global_EntityFireballOffset = V3(7.0f, -.75f, 4.5f);
 
 /* enum game_entity_type */
 /* { */
-/*   GameEntityType_Unknown, */
-/*   GameEntityType_Enemy, */
-/*   GameEntityType_Splosion, */
-/*   GameEntityType_Bitty, */
+/*   GameEntityBehaviorFlags_Unknown, */
+/*   GameEntityBehaviorFlags_Enemy, */
+/*   GameEntityBehaviorFlags_Splosion, */
+/*   GameEntityBehaviorFlags_Bitty, */
 /* }; */
 
 model *
@@ -163,23 +163,38 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
   }
 }
 
-enum game_entity_type
+
+enum entity_type
+#if !POOF_PREPROCESSOR
+ : u32
+#endif
 {
-  foo
+  EntityType_Default,
+
+  EntityType_Enemy,
+  EntityType_Player,
 };
 
+poof(generate_string_table(entity_type))
+#include <generated/generate_string_table_entity_type.h>
+poof(do_editor_ui_for_enum(entity_type))
+#include <generated/do_editor_ui_for_enum_entity_type.h>
 
-void
+link_weak b32
 GameEntityUpdate(engine_resources *Engine, entity *Entity )
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  game_entity_type Type = ReinterpretCast(game_entity_type, Entity->UserData);
+  Assert(Spawned(Entity));
+
+  entity_type Type = Entity->Type;
 
   switch (Type)
   {
-    case foo: break;
+    case EntityType_Enemy: { EnemyUpdate(Engine, Entity); } break;
   }
+
+  return False;
 }
 
 BONSAI_API_MAIN_THREAD_CALLBACK()
@@ -393,6 +408,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* u32 PlayerModelIndex = ModelIndex_FirstPlayerModel; */
   u32 PlayerModelIndex = ModelIndex_Player_old;
   GameState->Player = GetFreeEntity(EntityTable);
+  GameState->Player->Type = EntityType_Player;
   SpawnPlayerLikeEntity(Plat, World, GameState->Models + PlayerModelIndex, GameState->Player, PlayerSpawnP, &GameState->Entropy);
 #endif
 
@@ -413,7 +429,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
     auto EnemySpawnP = Canonical_Position(V3(0), WorldCenter + WP );
     auto Enemy = GetFreeEntity(EntityTable);
-    /* Enemy->UserData = (void*)GameEntityType_Enemy; */
+    /* Enemy->UserData = (void*)GameEntityBehaviorFlags_Enemy; */
     SpawnPlayerLikeEntity(Plat, World, GameState->Models + EnemyModelIndex, Enemy, EnemySpawnP, &GameState->Entropy, 0.35f);
   }
 #endif
@@ -421,7 +437,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
 
   GameState->CameraGhost = GetFreeEntity(EntityTable);
-  SpawnEntity( GameState->CameraGhost, EntityType_Default, 0, ModelIndex_None);
+  SpawnEntity( GameState->CameraGhost, EntityBehaviorFlags_None, 0, ModelIndex_None);
 
   GameState->CameraGhost->P = Canonical_Position(Voxel_Position(0), {{2,2,0}});
 

@@ -149,6 +149,9 @@ DebugSlider_(renderer_2d *Ui, r32 *Value, const char* Name, r32 Min, r32 Max)
 
 
 
+poof(do_editor_ui_for_compound_type(physics))
+#include <generated/do_editor_ui_for_compound_type_physics.h>
+
 poof(do_editor_ui_for_compound_type(animation))
 #include <generated/do_editor_ui_for_compound_type_animation.h>
 
@@ -525,6 +528,10 @@ DoEntityWindow(engine_resources *Engine)
 
     PushWindowStart(Ui, &EntityWindow);
       PushTableStart(Ui);
+        PushColumn(Ui, CSz("EntityIndex"));
+        PushColumn(Ui, CS(EngineDebug->SelectedEntity->Id), &DefaultStyle, {}, ColumnRenderParam_LeftAlign);
+        PushNewRow(Ui);
+
         DoEditorUi(Ui, EngineDebug->SelectedEntity, "SelectedEntity");
       PushTableEnd(Ui);
     PushWindowEnd(Ui, &EntityWindow);
@@ -832,7 +839,7 @@ DoEngineDebug(engine_resources *Engine)
                 case AssetSpawnMode_Entity:
                 {
                   entity *E = GetFreeEntity(Engine->EntityTable);
-                  SpawnEntity(E, &Asset->Model, EntityType_Default, 0, &EntityOrigin, Asset->Model.Dim/2.f);
+                  SpawnEntity(E, &Asset->Model, EntityBehaviorFlags_Default, 0, &EntityOrigin, Asset->Model.Dim/2.f);
                 } break;
               }
 

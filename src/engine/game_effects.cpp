@@ -340,16 +340,18 @@ DoSplotion( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
     HitEntity->Physics.Force += Normalize(SplosionToEntityCenter) * Power;
   }
 
+  entity_behavior_flags SpawnFlags = entity_behavior_flags(EntityBehaviorFlags_Default|EntityBehaviorFlags_UnspawnOnParticleSystemTerminate);
+
   {
     entity *E = GetFreeEntity(EntityTable);
-    SpawnEntity( E, EntityType_ParticleSystem, 0, ModelIndex_None);
+    SpawnEntity( E, SpawnFlags, 0, ModelIndex_None);
     E->P = PickCP + V3(0.5f);
-    /* E->UserData = (void*)GameEntityType_Splosion; */
+    /* E->UserData = (void*)GameEntityBehaviorFlags_Splosion; */
     SpawnExplosion(E, Entropy, {}, Radius, &Graphics->Transparency.GpuBuffer.Buffer);
   }
   {
     entity *E = GetFreeEntity(EntityTable);
-    SpawnEntity( E, EntityType_ParticleSystem, 0, ModelIndex_None);
+    SpawnEntity( E, SpawnFlags, 0, ModelIndex_None);
     E->P = PickCP + V3(0.5f);
     SpawnSmoke(E, Entropy, {}, Radius, &Graphics->Transparency.GpuBuffer.Buffer);
   }
@@ -358,8 +360,8 @@ DoSplotion( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
   for (u32 BittyIndex = 0; BittyIndex < MaxBitties; ++BittyIndex)
   {
     entity *E = GetFreeEntity(EntityTable);
-    SpawnEntity(E, EntityType_ParticleSystem, {}, {});
-    /* SpawnEntity( E, EntityType_ParticleSystem, GameState->Models, (model_index)(ModelIndex_Bitty0 + (BittyIndex % 2)) ); */
+    SpawnEntity(E, SpawnFlags, {}, {});
+    /* SpawnEntity( E, EntityBehaviorFlags_Default, GameState->Models, (model_index)(ModelIndex_Bitty0 + (BittyIndex % 2)) ); */
     E->Physics.Speed = 1.f;
 
     E->Rotation = RandomRotation(Entropy);
@@ -375,7 +377,7 @@ DoSplotion( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
 
     if (GetCollision(World, E).Count) { Unspawn(E); continue; }
 
-    /* E->UserData = (void*)GameEntityType_Bitty; */
+    /* E->UserData = (void*)GameEntityBehaviorFlags_Bitty; */
     /* E->Update = DoBittyLight; */
 
     SpawnSplotionBitty(E, Entropy, {}, .1f, &Graphics->Transparency.GpuBuffer.Buffer);
