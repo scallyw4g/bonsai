@@ -177,6 +177,7 @@ enum entity_type
 
 poof(generate_string_table(entity_type))
 #include <generated/generate_string_table_entity_type.h>
+
 poof(do_editor_ui_for_enum(entity_type))
 #include <generated/do_editor_ui_for_enum_entity_type.h>
 

@@ -8,8 +8,7 @@ enum entity_state
 
 #if !POOF_PREPROCESSOR
 enum entity_type : u32;
-
-link_weak void DoEditorUi(renderer_2d *Ui, entity_type *Element, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS);
+/* link_weak void DoEditorUi(renderer_2d *Ui, entity_type *Element, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS); */
 #endif
 
 enum entity_behavior_flags

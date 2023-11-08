@@ -5,7 +5,7 @@ GetEngineDebug()
   return &Global_EngineResources->EngineDebug;
 }
 
-ui_debug *
+link_weak ui_debug *
 GetUiDebug()
 {
   Assert(Global_EngineResources);
@@ -166,18 +166,6 @@ poof(do_editor_ui_for_compound_type(entity))
 
 
 
-
-/* link_internal void */
-/* DoEditorUi(renderer_2d *Ui, world_position *Value, const char* Name) */
-/* { */
-/*   Text(Ui, CS(Name)); */
-/*   PushNewRow(Ui); */
-
-/*   DoEditorUi(Ui, &Value->x, "x"); */
-/*   DoEditorUi(Ui, &Value->y, "y"); */
-/*   DoEditorUi(Ui, &Value->z, "z"); */
-/* } */
-
 link_internal void
 DebugUi(engine_resources *Engine, cs Name, untextured_3d_geometry_buffer *Value)
 {
@@ -311,89 +299,11 @@ DebugUi(engine_resources *Engine, cs Name, interactable *Value)
 }
 
 link_internal maybe_file_traversal_node
-DrawFileNodes(file_traversal_node Node)
+EngineDrawFileNodesHelper(file_traversal_node Node)
 {
   engine_resources *Engine = GetEngineResources();
-  UNPACK_ENGINE_RESOURCES(Engine);
-
-  maybe_file_traversal_node Result = {};
-
-  v4 Pad = V4(10, 0, 10, 0);
-  switch (Node.Type)
-  {
-    InvalidCase(FileTraversalType_None);
-
-    case FileTraversalType_File:
-    {
-      interactable_handle FileButton = PushButtonStart(Ui, umm("DrawFileNodes") ^ umm(Node.Name.Start) );
-        PushColumn(Ui, CSz(" "), &DefaultStyle, Pad);
-        PushColumn(Ui, Node.Name);
-        PushNewRow(Ui);
-      PushButtonEnd(Ui);
-
-      if (Clicked(Ui, &FileButton)) { Result.Tag = Maybe_Yes; Result.Value = Node; }
-    } break;
-
-    case FileTraversalType_Dir:
-    {
-      PushColumn(Ui, CSz("+"), &DefaultStyle, Pad);
-      PushColumn(Ui, Node.Name);
-      PushNewRow(Ui);
-    } break;
-  }
-
+  maybe_file_traversal_node Result = DrawFileNodes(&Engine->Ui, Node);
   return Result;
-}
-
-link_internal void
-RenderToTexture(engine_resources *Engine, untextured_3d_geometry_buffer *Src, v3 Offset)
-{
-  auto World    = Engine->World;
-  auto RTTGroup = &Engine->RTTGroup;
-
-  // GL stuff
-  {
-    texture *Tex = RTTGroup->Texture;
-
-    GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID);
-
-    GL.UseProgram(RTTGroup->Shader.ID);
-
-    SetViewport(V2(Tex->Dim));
-
-#if 1
-    auto Camera = RTTGroup->Camera;
-#else
-    camera *Camera = Engine->Graphics->Camera;
-#endif
-
-    RTTGroup->ViewProjection =
-      /* Translate( GetRenderP(World->ChunkDim, Camera->CurrentP, Camera) ) * */
-      /* Translate( GetSimSpaceP(World, CameraTarget) ) * */
-      /* Translate( V3(-10) ) * */
-      ProjectionMatrix(Camera, Tex->Dim.x, Tex->Dim.y) *
-      ViewMatrix(World->ChunkDim, Camera)
-      /* + Translate2(V3(-0.01f, 0.f, 0.f)) */
-      /* * Translate( V3(-10) ) */
-      /* Translate( GetSimSpaceP(World, Camera->CurrentP) ); */
-      ;
-
-    BindShaderUniforms(&RTTGroup->Shader);
-  }
-
-  // Geometry stuff
-  {
-    MapGpuElementBuffer(&RTTGroup->GeoBuffer);
-    untextured_3d_geometry_buffer* Dest = &RTTGroup->GeoBuffer.Buffer;
-
-    v3 Basis = Offset;
-    BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
-    FlushBuffersToCard(&RTTGroup->GeoBuffer);
-  }
-
-  GL.Enable(GL_DEPTH_TEST);
-  Draw(RTTGroup->GeoBuffer.Buffer.At);
-  RTTGroup->GeoBuffer.Buffer.At = 0;
 }
 
 link_internal void
@@ -444,7 +354,7 @@ DoLevelWindow(engine_resources *Engine)
   PushTableEnd(Ui);
 
   PushTableStart(Ui);
-    maybe_file_traversal_node ClickedNode = PlatformTraverseDirectoryTree(CSz("levels"), DrawFileNodes);
+    maybe_file_traversal_node ClickedNode = PlatformTraverseDirectoryTree(CSz("levels"), EngineDrawFileNodesHelper);
   PushTableEnd(Ui);
 
   if (ClickedNode.Tag)
@@ -766,7 +676,7 @@ DoEngineDebug(engine_resources *Engine)
 
     render_settings *Settings = &Graphics->Settings;
     PushWindowStart(Ui, &Window);
-      maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTree(CSz("models"), DrawFileNodes);
+      maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTree(CSz("models"), EngineDrawFileNodesHelper);
     PushWindowEnd(Ui, &Window);
 
     if (ClickedFileNode.Tag)

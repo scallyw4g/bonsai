@@ -820,3 +820,55 @@ RenderTransparencyBuffers(render_settings *Settings, transparency_render_group *
 
   Group->GpuBuffer.Buffer.At = 0;
 }
+
+link_internal void
+RenderToTexture(engine_resources *Engine, untextured_3d_geometry_buffer *Src, v3 Offset)
+{
+  auto World    = Engine->World;
+  auto RTTGroup = &Engine->RTTGroup;
+
+  // GL stuff
+  {
+    texture *Tex = RTTGroup->Texture;
+
+    GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID);
+
+    GL.UseProgram(RTTGroup->Shader.ID);
+
+    SetViewport(V2(Tex->Dim));
+
+#if 1
+    auto Camera = RTTGroup->Camera;
+#else
+    camera *Camera = Engine->Graphics->Camera;
+#endif
+
+    RTTGroup->ViewProjection =
+      /* Translate( GetRenderP(World->ChunkDim, Camera->CurrentP, Camera) ) * */
+      /* Translate( GetSimSpaceP(World, CameraTarget) ) * */
+      /* Translate( V3(-10) ) * */
+      ProjectionMatrix(Camera, Tex->Dim.x, Tex->Dim.y) *
+      ViewMatrix(World->ChunkDim, Camera)
+      /* + Translate2(V3(-0.01f, 0.f, 0.f)) */
+      /* * Translate( V3(-10) ) */
+      /* Translate( GetSimSpaceP(World, Camera->CurrentP) ); */
+      ;
+
+    BindShaderUniforms(&RTTGroup->Shader);
+  }
+
+  // Geometry stuff
+  {
+    MapGpuElementBuffer(&RTTGroup->GeoBuffer);
+    untextured_3d_geometry_buffer* Dest = &RTTGroup->GeoBuffer.Buffer;
+
+    v3 Basis = Offset;
+    BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
+    FlushBuffersToCard(&RTTGroup->GeoBuffer);
+  }
+
+  GL.Enable(GL_DEPTH_TEST);
+  Draw(RTTGroup->GeoBuffer.Buffer.At);
+  RTTGroup->GeoBuffer.Buffer.At = 0;
+}
+

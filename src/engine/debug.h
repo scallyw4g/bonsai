@@ -86,7 +86,7 @@ struct engine_debug
 };
 
 
-link_internal engine_debug* GetEngineDebug();
+
 
 poof(
   func generic_button_group_for_enum(enum_t, type_poof_symbol NamePrefix, type_poof_symbol extra_poof_flags)
@@ -255,3 +255,4 @@ poof(
   }
 )
 
+link_internal engine_debug * GetEngineDebug();
