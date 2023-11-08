@@ -1,4 +1,5 @@
 #define DEBUG_SYSTEM_API 1
+#define DO_EDITOR_UI_FOR_ENTITY_TYPE 1
 
 #include <bonsai_types.h>
 
@@ -6,17 +7,9 @@
 #include <game_types.h>
 
 global_variable v3
-Global_EntityFireballOffset = V3(7.0f, -.75f, 4.5f);
+Global_EntityFireballOffset = V3(7.0f, -1.75f, 4.5f);
 
-/* enum game_entity_type */
-/* { */
-/*   GameEntityBehaviorFlags_Unknown, */
-/*   GameEntityBehaviorFlags_Enemy, */
-/*   GameEntityBehaviorFlags_Splosion, */
-/*   GameEntityBehaviorFlags_Bitty, */
-/* }; */
-
-model *
+link_internal model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *Heap)
 {
   // TODO(Jesse)(leak, memory): Pass temp memory to LoadVoxModel
@@ -87,7 +80,7 @@ enum player_action
 poof(generate_string_table(player_action))
 #include <generated/generate_string_table_player_action.h>
 
-void
+link_internal void
 EnemyUpdate(engine_resources *Engine, entity *Enemy)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -438,7 +431,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
 
   GameState->CameraGhost = GetFreeEntity(EntityTable);
-  SpawnEntity( GameState->CameraGhost, EntityBehaviorFlags_None, 0, ModelIndex_None);
+  SpawnEntity( GameState->CameraGhost );
 
   GameState->CameraGhost->P = Canonical_Position(Voxel_Position(0), {{2,2,0}});
 

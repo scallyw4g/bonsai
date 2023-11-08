@@ -147,6 +147,10 @@ DebugSlider_(renderer_2d *Ui, r32 *Value, const char* Name, r32 Min, r32 Max)
   PushTableEnd(Ui);
 }
 
+#if DO_EDITOR_UI_FOR_ENTITY_TYPE
+link_internal void
+DoEditorUi(renderer_2d *Ui, entity_type *Element, const char* Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS);
+#endif
 
 
 poof(do_editor_ui_for_compound_type(physics))
