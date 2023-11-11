@@ -747,7 +747,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/grassy_block.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/grassy_block_2.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/simple_grass.vox"); */
-  GameState->BakeResult = BakeVoxelSynthesisRules("models/pipes.vox");
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("models/pipes.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/random_squares.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/AncientTemple.vox"); */
 
@@ -757,7 +757,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu3.vox"); */
 
   // GOOD
-  /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu4.vox"); */
+  GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu4.vox");
   /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu5.vox"); */
 
   // Castle
@@ -784,6 +784,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   BakeEntity->CollisionVolumeRadius = ChunkData->Dim/2.f;
   BakeEntity->P = Canonical_Position(World->ChunkDim, V3(-ChunkData->Dim.x-8, 0, 0), V3i(0));
+  BakeEntity->Model = Allocate(model, Resources->Memory, 1);
+
   AllocateAndBuildMesh(&GameState->BakeResult.VoxData, BakeEntity->Model, TempMemory, Resources->Memory);
 
   SpawnEntity(BakeEntity);

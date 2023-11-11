@@ -29,16 +29,17 @@
 #     BuildSingleExample examples/terrain_gen \
 #     BuildDebugSystem
 
-# OPT="-O2"
+OPT="-O2"
 
-# ./make.sh $OPT \
-#   BuildSingleExample examples/turn_based \
-#   BuildExecutables \
-  # BuildSingleExample examples/transparency \
+./make.sh $OPT \
+  BuildSingleExample examples/turn_based \
+  BuildExecutables \
+  BuildSingleExample examples/transparency \
+  # BuildSingleExample tools/voxel_synthesis_rule_baker \
   # BuildSingleExample examples/the_wanderer \
   # BuildDebugSystem \
   # BuildSingleExample examples/blank_project \
 #   # BuildTests \
 #   # BuildSingleExample examples/turn_based2
 
-./make.sh $OPT BuildAll
+# ./make.sh $OPT BuildAll

@@ -49,15 +49,15 @@ poof(do_editor_ui_for_enum(entity_behavior_flags))
 struct entity
 {
   umm Id;
-  physics Physics;
 
   cp P;
-  v3 CollisionVolumeRadius;
   Quaternion Rotation;
   r32 Scale;
 
+  v3 CollisionVolumeRadius;
+  physics Physics;
 
-  model *Model;
+  model           *Model;
   particle_system *Emitter;
 
   entity_state          State;

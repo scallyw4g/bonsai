@@ -186,7 +186,7 @@ AllocateEntity(memory_arena *Memory, chunk_dimension ModelDim)
 {
   entity *Entity = Allocate(entity, Memory, 1);
   Entity->Emitter = Allocate(particle_system, Memory, 1);
-  /* Entity->Model = Allocate(model, Memory, 1); */
+  Entity->Model = Allocate(model, Memory, 1);
   /* Entity->Model->Dim = ModelDim; */
 
   Entity->Scale = 1.0f;
@@ -200,7 +200,7 @@ AllocateEntityTable(memory_arena* Memory, u32 Count)
   entity** Result = Allocate(entity*, Memory, Count);
   for (u32 EntityIndex = 0;
            EntityIndex < Count;
-        ++ EntityIndex)
+         ++EntityIndex)
   {
     Result[EntityIndex] = AllocateEntity(Memory, Chunk_Dimension(0, 0, 0));
     Result[EntityIndex]->Id = EntityIndex;
