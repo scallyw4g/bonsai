@@ -3,8 +3,7 @@ Serialize(native_file *File, v4 *Element)
 {
   b32 Result = WriteToFile(File, Cast(u8*, Element), sizeof(v4));
 
-  u64 Tag = LEVEL_FILE_OBJECT_DELIM;
-  Ensure( Serialize(File, &Tag) );
+  MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
 
@@ -15,8 +14,7 @@ Deserialize(u8_stream *Bytes, v4* Element, memory_arena *Ignored)
   Bytes->At += sizeof(v4);
   Assert(Bytes->At <= Bytes->End);
 
-  u64 Tag = Read_u64(Bytes);
-  Ensure( Tag == LEVEL_FILE_OBJECT_DELIM );
+  MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return True;
 }
 

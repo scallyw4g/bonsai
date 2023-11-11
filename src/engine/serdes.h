@@ -1,5 +1,16 @@
-#define LEVEL_HEADER_MAGIC_NUMBER (0x6969696942042042)
-#define LEVEL_FILE_OBJECT_DELIM   (0xFCACFCACFCACFCAC)
+#define LEVEL_HEADER_MAGIC_NUMBER     (0x6969696942042042)
+#define LEVEL_FILE_DEBUG_OBJECT_DELIM (0xFCACFCACFCACFCAC)
+
+#define LEVEL_FILE_DEBUG_MODE (0)
+
+#if LEVEL_FILE_DEBUG_MODE
+       
+#define MAYBE_WRITE_DEBUG_OBJECT_DELIM() { u64 Tag = LEVEL_FILE_DEBUG_OBJECT_DELIM; Ensure( Serialize(File, &Tag) ); }
+#define MAYBE_READ_DEBUG_OBJECT_DELIM() { u64 Tag = Read_u64(Bytes); Ensure( Tag == LEVEL_FILE_DEBUG_OBJECT_DELIM ); }
+#else
+#define MAYBE_WRITE_DEBUG_OBJECT_DELIM(...)
+#define MAYBE_READ_DEBUG_OBJECT_DELIM(...)
+#endif
 
 poof(
   func serialize_vector(type)
@@ -9,8 +20,7 @@ poof(
     {
       b32 Result = WriteToFile(File, Cast(u8*, Element), sizeof((type.name)));
 
-      u64 Tag = LEVEL_FILE_OBJECT_DELIM;
-      Ensure( Serialize(File, &Tag) );
+      MAYBE_WRITE_DEBUG_OBJECT_DELIM();
       return Result;
     }
   }
@@ -26,8 +36,7 @@ poof(
       Bytes->At += sizeof((type.name));
       Assert(Bytes->At <= Bytes->End);
 
-      u64 Tag = Read_u64(Bytes);
-      Ensure( Tag == LEVEL_FILE_OBJECT_DELIM );
+      MAYBE_WRITE_DEBUG_OBJECT_DELIM();
       return True;
     }
   }
@@ -70,8 +79,7 @@ poof(
         }
       }
 
-      u64 Tag = LEVEL_FILE_OBJECT_DELIM;
-      Ensure( Serialize(File, &Tag) );
+      MAYBE_WRITE_DEBUG_OBJECT_DELIM();
       return Result;
     }
   }
@@ -120,8 +128,7 @@ poof(
         }
       }
 
-      u64 Tag = Read_u64(Bytes);
-      Ensure( Tag == LEVEL_FILE_OBJECT_DELIM );
+      MAYBE_READ_DEBUG_OBJECT_DELIM();
       return Result;
     }
   }

@@ -354,7 +354,7 @@ DoLevelWindow(engine_resources *Engine)
 
       WriteToFile(&LevelFile, (u8*)&Header, sizeof(level_header));
 
-      u64 Delimeter = LEVEL_FILE_OBJECT_DELIM;
+      u64 Delimeter = LEVEL_FILE_DEBUG_OBJECT_DELIM;
       RangeIterator(HashIndex, s32(World->HashSize))
       {
         if (world_chunk *Chunk = World->ChunkHash[HashIndex])
@@ -413,7 +413,6 @@ DoLevelWindow(engine_resources *Engine)
 
         /* World->Flags  = Cast(world_flag, LevelHeader.WorldFlags); */
         World->Center = LevelHeader.WorldCenter;
-      /* if (LevelHeader.MagicNumber == LEVEL_FILE_OBJECT_DELIM) */
         /* World->VisibleRegion = LevelHeader.VisibleRegion; */
 
         s32 ChunkCount = Cast(s32, LevelHeader.ChunkCount);
@@ -424,7 +423,6 @@ DoLevelWindow(engine_resources *Engine)
         {
           world_chunk *Chunk = GetFreeWorldChunk(World, World->Memory);
           DeserializeChunk(&LevelBytes, Chunk, &Engine->MeshFreelist, World->Memory);
-          /* Ensure(Read_u64(&LevelBytes) == LEVEL_FILE_OBJECT_DELIM); */
 
           if (IsInsideVisibleRegion(World, Chunk->WorldP))
           {
@@ -436,12 +434,11 @@ DoLevelWindow(engine_resources *Engine)
 
         RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT) { Unspawn(EntityTable[EntityIndex]); }
 
-        Ensure(Read_u64(&LevelBytes) == LEVEL_FILE_OBJECT_DELIM);
+        Ensure(Read_u64(&LevelBytes) == LEVEL_FILE_DEBUG_OBJECT_DELIM);
 
         RangeIterator(EntityIndex, EntityCount)
         {
           Deserialize(&LevelBytes, EntityTable[EntityIndex], Thread->PermMemory);
-          /* Ensure(Read_u64(&LevelBytes) == LEVEL_FILE_OBJECT_DELIM); */
         }
 
         Assert(LevelBytes.At == LevelBytes.End);

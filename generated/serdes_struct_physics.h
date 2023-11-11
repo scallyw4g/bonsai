@@ -24,8 +24,7 @@ Serialize(native_file *File, physics *Element)
 
   
 
-  u64 Tag = LEVEL_FILE_OBJECT_DELIM;
-  Ensure( Serialize(File, &Tag) );
+  MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
 
@@ -56,8 +55,7 @@ Deserialize(u8_stream *Bytes, physics *Element, memory_arena *Memory)
 
   
 
-  u64 Tag = Read_u64(Bytes);
-  Ensure( Tag == LEVEL_FILE_OBJECT_DELIM );
+  MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;
 }
 
