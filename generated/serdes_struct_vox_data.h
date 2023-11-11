@@ -1,18 +1,16 @@
 link_internal b32
 Serialize(native_file *File, vox_data *Element)
 {
-  chunk_data *ChunkDataPrevValue = Element->ChunkData;
-  if (Element->ChunkData) { Element->ChunkData = Cast(chunk_data*, 0x1); }
+  u64 PointerTrue = True; 
+  u64 PointerFalse = False; 
 
-  v3 *PalettePrevValue = Element->Palette;
-  if (Element->Palette) { Element->Palette = Cast(v3*, 0x1); }
+  b32 Result = True;
 
+  if (Element->ChunkData) { Result &= WriteToFile(File, Cast(u8*, &PointerTrue), sizeof(PointerTrue)); }
+  else                        { Result &= WriteToFile(File, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
-  b32 Result = WriteToFile(File, Cast(u8*, Element), sizeof(vox_data));
-
-  Element->ChunkData = ChunkDataPrevValue;
-
-  Element->Palette = PalettePrevValue;
+  if (Element->Palette) { Result &= WriteToFile(File, Cast(u8*, &PointerTrue), sizeof(PointerTrue)); }
+  else                        { Result &= WriteToFile(File, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
 
   if (Element->ChunkData) { Result &= Serialize(File, Element->ChunkData); }
@@ -20,26 +18,37 @@ Serialize(native_file *File, vox_data *Element)
   if (Element->Palette) { Result &= Serialize(File, Element->Palette); }
 
 
+  u64 Tag = LEVEL_FILE_OBJECT_DELIM;
+  Ensure( Serialize(File, &Tag) );
   return Result;
 }
 
-link_internal vox_data *
-Deserialize_vox_data(u8_stream *Bytes)
+link_internal b32
+Deserialize(u8_stream *Bytes, vox_data *Element, memory_arena *Memory)
 {
-  vox_data *Result = Cast(vox_data*, Bytes->At);
-  Bytes->At += sizeof(vox_data);
-  Assert(Bytes->At <= Bytes->End);
+  b32 Result = True;
+  b64 HadChunkDataPointer = Read_u64(Bytes);
+  Assert(HadChunkDataPointer < 2); // Should be 0 or 1
 
-  if (Result->ChunkData)
+  b64 HadPalettePointer = Read_u64(Bytes);
+  Assert(HadPalettePointer < 2); // Should be 0 or 1
+
+
+  if (HadChunkDataPointer)
   {
-    Result->ChunkData = Deserialize_chunk_data(Bytes);
+    if (Element->ChunkData == 0) { Element->ChunkData = Allocate(chunk_data, Memory, 1); }
+    Result &= Deserialize(Bytes, Element->ChunkData, Memory);
   }
 
-  if (Result->Palette)
+  if (HadPalettePointer)
   {
-    Result->Palette = Deserialize_v3(Bytes);
+    if (Element->Palette == 0) { Element->Palette = Allocate(v3, Memory, 1); }
+    Result &= Deserialize(Bytes, Element->Palette, Memory);
   }
 
+
+  u64 Tag = Read_u64(Bytes);
+  Ensure( Tag == LEVEL_FILE_OBJECT_DELIM );
   return Result;
 }
 

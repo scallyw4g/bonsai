@@ -354,18 +354,26 @@ DoLevelWindow(engine_resources *Engine)
 
       WriteToFile(&LevelFile, (u8*)&Header, sizeof(level_header));
 
+      u64 Delimeter = LEVEL_FILE_OBJECT_DELIM;
       RangeIterator(HashIndex, s32(World->HashSize))
       {
         if (world_chunk *Chunk = World->ChunkHash[HashIndex])
         {
           SerializeChunk(Chunk, &LevelFile);
+          /* Ensure(Serialize(&LevelFile, &Delimeter)); */
         }
       }
+
+      Ensure(Serialize(&LevelFile, &Delimeter));
 
       RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
       {
         entity *E = EntityTable[EntityIndex];
-        if (Spawned(E)) { Serialize(&LevelFile, E); }
+        if (Spawned(E))
+        {
+          Serialize(&LevelFile, E);
+          /* Ensure(Serialize(&LevelFile, &Delimeter)); */
+        }
       }
 
       CloseFile(&LevelFile);
@@ -384,54 +392,65 @@ DoLevelWindow(engine_resources *Engine)
 
     if (LevelBytes.Start)
     {
-      u32 ChunksFreed = 0;
-      RangeIterator(HashIndex, s32(World->HashSize))
-      {
-        if (world_chunk *Chunk = World->ChunkHash[HashIndex])
-        {
-          FreeWorldChunk(World, Chunk, &Engine->MeshFreelist, World->Memory);
-          World->ChunkHash[HashIndex] = 0;
-          ++ChunksFreed;
-        }
-      }
-
-
       level_header LevelHeader = {};
       ReadBytesIntoBuffer(&LevelBytes, sizeof(level_header), Cast(u8*, &LevelHeader));
 
-      *Graphics->Camera      = LevelHeader.Camera;
-      Engine->CameraGhost->P = LevelHeader.CameraTarget;
-
-      /* World->Flags  = Cast(world_flag, LevelHeader.WorldFlags); */
-      World->Center = LevelHeader.WorldCenter;
-      /* World->VisibleRegion = LevelHeader.VisibleRegion; */
-
-      Assert(LevelHeader.MagicNumber == LEVEL_HEADER_MAGIC_NUMBER);
-
-      s32 ChunkCount = Cast(s32, LevelHeader.ChunkCount);
-
-      Info("ChunksFreed (%u) ChunksLoaded (%u)", ChunksFreed, ChunkCount);
-
-      RangeIterator(ChunkIndex, ChunkCount)
+      if (LevelHeader.MagicNumber == LEVEL_HEADER_MAGIC_NUMBER)
       {
-        world_chunk *Chunk = GetFreeWorldChunk(World, World->Memory);
-        DeserializeChunk(&LevelBytes, Chunk, &Engine->MeshFreelist, World->Memory);
-        if (IsInsideVisibleRegion(World, Chunk->WorldP))
+        u32 ChunksFreed = 0;
+        RangeIterator(HashIndex, s32(World->HashSize))
         {
-          InsertChunkIntoWorld(World, Chunk);
+          if (world_chunk *Chunk = World->ChunkHash[HashIndex])
+          {
+            FreeWorldChunk(World, Chunk, &Engine->MeshFreelist, World->Memory);
+            World->ChunkHash[HashIndex] = 0;
+            ++ChunksFreed;
+          }
         }
+
+        *Graphics->Camera      = LevelHeader.Camera;
+        Engine->CameraGhost->P = LevelHeader.CameraTarget;
+
+        /* World->Flags  = Cast(world_flag, LevelHeader.WorldFlags); */
+        World->Center = LevelHeader.WorldCenter;
+      /* if (LevelHeader.MagicNumber == LEVEL_FILE_OBJECT_DELIM) */
+        /* World->VisibleRegion = LevelHeader.VisibleRegion; */
+
+        s32 ChunkCount = Cast(s32, LevelHeader.ChunkCount);
+
+        Info("ChunksFreed (%u) ChunksLoaded (%u)", ChunksFreed, ChunkCount);
+
+        RangeIterator(ChunkIndex, ChunkCount)
+        {
+          world_chunk *Chunk = GetFreeWorldChunk(World, World->Memory);
+          DeserializeChunk(&LevelBytes, Chunk, &Engine->MeshFreelist, World->Memory);
+          /* Ensure(Read_u64(&LevelBytes) == LEVEL_FILE_OBJECT_DELIM); */
+
+          if (IsInsideVisibleRegion(World, Chunk->WorldP))
+          {
+            InsertChunkIntoWorld(World, Chunk);
+          }
+        }
+
+        s32 EntityCount = Cast(s32, LevelHeader.EntityCount);
+
+        RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT) { Unspawn(EntityTable[EntityIndex]); }
+
+        Ensure(Read_u64(&LevelBytes) == LEVEL_FILE_OBJECT_DELIM);
+
+        RangeIterator(EntityIndex, EntityCount)
+        {
+          Deserialize(&LevelBytes, EntityTable[EntityIndex], Thread->PermMemory);
+          /* Ensure(Read_u64(&LevelBytes) == LEVEL_FILE_OBJECT_DELIM); */
+        }
+
+        Assert(LevelBytes.At == LevelBytes.End);
       }
-
-      s32 EntityCount = Cast(s32, LevelHeader.EntityCount);
-
-      RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT) { Unspawn(EntityTable[EntityIndex]); }
-
-      RangeIterator(EntityIndex, EntityCount)
+      else
       {
-        *EntityTable[EntityIndex] = *Deserialize_entity(&LevelBytes);
+        SoftError("Could not load corrupt level file");
       }
 
-      Assert(LevelBytes.At == LevelBytes.End);
     }
   }
 

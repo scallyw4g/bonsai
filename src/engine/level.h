@@ -1,4 +1,3 @@
-#define LEVEL_HEADER_MAGIC_NUMBER (0x6969696942042042)
 
 
 #pragma pack(push, 1)

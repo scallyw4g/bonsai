@@ -2,16 +2,22 @@ link_internal b32
 Serialize(native_file *File, v3 *Element)
 {
   b32 Result = WriteToFile(File, Cast(u8*, Element), sizeof(v3));
+
+  u64 Tag = LEVEL_FILE_OBJECT_DELIM;
+  Ensure( Serialize(File, &Tag) );
   return Result;
 }
 
-link_internal v3 *
-Deserialize_v3(u8_stream *Bytes)
+link_internal b32
+Deserialize(u8_stream *Bytes, v3* Element, memory_arena *Ignored)
 {
-  v3 *Result = Cast(v3*, Bytes->At);
+  *Element = *Cast(v3*, Bytes->At);
   Bytes->At += sizeof(v3);
   Assert(Bytes->At <= Bytes->End);
-  return Result;
+
+  u64 Tag = Read_u64(Bytes);
+  Ensure( Tag == LEVEL_FILE_OBJECT_DELIM );
+  return True;
 }
 
 

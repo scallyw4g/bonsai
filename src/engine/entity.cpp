@@ -199,8 +199,8 @@ AllocateEntityTable(memory_arena* Memory, u32 Count)
 {
   entity** Result = Allocate(entity*, Memory, Count);
   for (u32 EntityIndex = 0;
-      EntityIndex < Count;
-      ++ EntityIndex)
+           EntityIndex < Count;
+        ++ EntityIndex)
   {
     Result[EntityIndex] = AllocateEntity(Memory, Chunk_Dimension(0, 0, 0));
     Result[EntityIndex]->Id = EntityIndex;

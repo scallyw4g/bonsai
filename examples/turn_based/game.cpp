@@ -181,7 +181,7 @@ GameEntityUpdate(engine_resources *Engine, entity *Entity )
 
   Assert(Spawned(Entity));
 
-  entity_type Type = Entity->Type;
+  entity_type Type = Cast(entity_type, Entity->UserType);
 
   switch (Type)
   {
@@ -404,7 +404,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* u32 PlayerModelIndex = ModelIndex_FirstPlayerModel; */
   u32 PlayerModelIndex = ModelIndex_Player_old;
   GameState->Player = GetFreeEntity(EntityTable);
-  GameState->Player->Type = EntityType_Player;
+  GameState->Player->UserType = Cast(u32, EntityType_Player);
   SpawnPlayerLikeEntity(Plat, World, GameState->Models + PlayerModelIndex, GameState->Player, PlayerSpawnP, &GameState->Entropy);
 #endif
 

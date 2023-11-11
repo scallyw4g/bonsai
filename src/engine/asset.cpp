@@ -104,12 +104,13 @@ GetSizeRequirements(untextured_3d_geometry_buffer *Mesh)
 #endif
 
 link_internal b32
-Serialize(native_file *File, untextured_3d_geometry_buffer *Mesh)
+SerializeMeshData(native_file *File, untextured_3d_geometry_buffer *Mesh)
 {
   b32 Result = True;
 #if 1
 
   umm TotalElements = umm(Mesh->At);
+
   umm VertByteCount = TotalElements*sizeof(v3);
   umm MatlByteCount = TotalElements*sizeof(vertex_material);
   umm NormalByteCount = TotalElements*sizeof(v3);
@@ -133,7 +134,7 @@ Serialize(native_file *File, untextured_3d_geometry_buffer *Mesh)
 link_internal b32
 SerializeMesh(native_file *File, untextured_3d_geometry_buffer *Mesh)
 {
-  b32 Result = Serialize(File, Mesh);
+  b32 Result = SerializeMeshData(File, Mesh);
   return Result;
 }
 
@@ -476,7 +477,7 @@ DeserializeChunk(u8_stream *FileBytes, world_chunk *Result, tiered_mesh_freelist
 
 
 
-  DebugLine("Loaded Chunk : P (%u,%u,%u) Standing Spots (%u)", Result->WorldP.x, Result->WorldP.y, Result->WorldP.z, Header.StandingSpotElementCount);
+  DebugLine("Loaded Chunk : P (%d,%d,%d) Standing Spots (%d)", Result->WorldP.x, Result->WorldP.y, Result->WorldP.z, Header.StandingSpotElementCount);
 }
 
 #if 0

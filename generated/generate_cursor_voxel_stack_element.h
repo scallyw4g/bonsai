@@ -37,8 +37,8 @@ GetPtrUnsafe(voxel_stack_element_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
-  Assert(ElementIndex < TotalElements(Cursor));
-  voxel_stack_element *Result = Cursor->Start+ElementIndex;
+  voxel_stack_element *Result = {};
+  if (ElementIndex < TotalElements(Cursor)) { Result = Cursor->Start+ElementIndex; }
   return Result;
 }
 

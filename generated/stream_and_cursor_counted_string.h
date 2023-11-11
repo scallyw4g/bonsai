@@ -37,8 +37,8 @@ GetPtrUnsafe(counted_string_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
-  Assert(ElementIndex < TotalElements(Cursor));
-  counted_string *Result = Cursor->Start+ElementIndex;
+  counted_string *Result = {};
+  if (ElementIndex < TotalElements(Cursor)) { Result = Cursor->Start+ElementIndex; }
   return Result;
 }
 

@@ -37,8 +37,8 @@ GetPtrUnsafe(v3i_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
-  Assert(ElementIndex < TotalElements(Cursor));
-  v3i *Result = Cursor->Start+ElementIndex;
+  v3i *Result = {};
+  if (ElementIndex < TotalElements(Cursor)) { Result = Cursor->Start+ElementIndex; }
   return Result;
 }
 

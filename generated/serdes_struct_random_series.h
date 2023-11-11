@@ -1,15 +1,12 @@
 link_internal b32
-Serialize(native_file *File, keyframe *Element)
+Serialize(native_file *File, random_series *Element)
 {
   u64 PointerTrue = True; 
   u64 PointerFalse = False; 
 
   b32 Result = True;
 
-  Result &= Serialize(File, &Element->tEnd);
-
-
-  Result &= Serialize(File, &Element->Value);
+  Result &= Serialize(File, &Element->Seed);
 
 
 
@@ -21,14 +18,10 @@ Serialize(native_file *File, keyframe *Element)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, keyframe *Element, memory_arena *Memory)
+Deserialize(u8_stream *Bytes, random_series *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  Result &= Deserialize(Bytes, &Element->tEnd);
-
-
-
-  Result &= Deserialize(Bytes, &Element->Value);
+  Result &= Deserialize(Bytes, &Element->Seed);
 
 
 

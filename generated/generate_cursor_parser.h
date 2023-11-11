@@ -37,8 +37,8 @@ GetPtrUnsafe(parser_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
-  Assert(ElementIndex < TotalElements(Cursor));
-  parser *Result = Cursor->Start+ElementIndex;
+  parser *Result = {};
+  if (ElementIndex < TotalElements(Cursor)) { Result = Cursor->Start+ElementIndex; }
   return Result;
 }
 

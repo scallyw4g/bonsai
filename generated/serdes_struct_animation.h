@@ -1,23 +1,29 @@
 link_internal b32
 Serialize(native_file *File, animation *Element)
 {
-  keyframe *xKeyframesPrevValue = Element->xKeyframes;
-  if (Element->xKeyframes) { Element->xKeyframes = Cast(keyframe*, 0x1); }
+  u64 PointerMark = True; 
+  b32 Result = True;
 
-  keyframe *yKeyframesPrevValue = Element->yKeyframes;
-  if (Element->yKeyframes) { Element->yKeyframes = Cast(keyframe*, 0x1); }
-
-  keyframe *zKeyframesPrevValue = Element->zKeyframes;
-  if (Element->zKeyframes) { Element->zKeyframes = Cast(keyframe*, 0x1); }
+  Result &= Serialize(File, &Element->t);
 
 
-  b32 Result = WriteToFile(File, Cast(u8*, Element), sizeof(animation));
+  Result &= Serialize(File, &Element->tEnd);
 
-  Element->xKeyframes = xKeyframesPrevValue;
 
-  Element->yKeyframes = yKeyframesPrevValue;
+  Result &= Serialize(File, &Element->xKeyframeCount);
 
-  Element->zKeyframes = zKeyframesPrevValue;
+
+  if (Element->xKeyframes) { Result &= WriteToFile(File, Cast(u8*, &PointerMark), sizeof(PointerMark)); }
+
+  Result &= Serialize(File, &Element->yKeyframeCount);
+
+
+  if (Element->yKeyframes) { Result &= WriteToFile(File, Cast(u8*, &PointerMark), sizeof(PointerMark)); }
+
+  Result &= Serialize(File, &Element->zKeyframeCount);
+
+
+  if (Element->zKeyframes) { Result &= WriteToFile(File, Cast(u8*, &PointerMark), sizeof(PointerMark)); }
 
 
   if (Element->xKeyframes) { Result &= Serialize(File, Element->xKeyframes); }
@@ -26,30 +32,56 @@ Serialize(native_file *File, animation *Element)
 
   if (Element->zKeyframes) { Result &= Serialize(File, Element->zKeyframes); }
 
-
   return Result;
 }
 
-link_internal animation *
-Deserialize_animation(u8_stream *Bytes)
+link_internal b32
+Deserialize(u8_stream *Bytes, animation *Element, memory_arena *Memory)
 {
-  animation *Result = Cast(animation*, Bytes->At);
-  Bytes->At += sizeof(animation);
-  Assert(Bytes->At <= Bytes->End);
+  b32 Result = True;
+  Result &= Deserialize(Bytes, &Element->t);
 
-  if (Result->xKeyframes)
+
+
+  Result &= Deserialize(Bytes, &Element->tEnd);
+
+
+
+  Result &= Deserialize(Bytes, &Element->xKeyframeCount);
+
+
+
+  b64 HadxKeyframesPointer = Read_u64(Bytes);
+
+  Result &= Deserialize(Bytes, &Element->yKeyframeCount);
+
+
+
+  b64 HadyKeyframesPointer = Read_u64(Bytes);
+
+  Result &= Deserialize(Bytes, &Element->zKeyframeCount);
+
+
+
+  b64 HadzKeyframesPointer = Read_u64(Bytes);
+
+
+  if (HadxKeyframesPointer)
   {
-    Result->xKeyframes = Deserialize_keyframe(Bytes);
+    if (Element->xKeyframes == 0) { Element->xKeyframes = Allocate(keyframe, Memory, 1); }
+    Result &= Deserialize(Bytes, Element->xKeyframes, Memory);
   }
 
-  if (Result->yKeyframes)
+  if (HadyKeyframesPointer)
   {
-    Result->yKeyframes = Deserialize_keyframe(Bytes);
+    if (Element->yKeyframes == 0) { Element->yKeyframes = Allocate(keyframe, Memory, 1); }
+    Result &= Deserialize(Bytes, Element->yKeyframes, Memory);
   }
 
-  if (Result->zKeyframes)
+  if (HadzKeyframesPointer)
   {
-    Result->zKeyframes = Deserialize_keyframe(Bytes);
+    if (Element->zKeyframes == 0) { Element->zKeyframes = Allocate(keyframe, Memory, 1); }
+    Result &= Deserialize(Bytes, Element->zKeyframes, Memory);
   }
 
   return Result;

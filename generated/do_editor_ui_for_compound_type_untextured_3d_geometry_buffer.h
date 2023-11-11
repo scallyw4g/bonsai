@@ -10,9 +10,6 @@ DoEditorUi(renderer_2d *Ui, untextured_3d_geometry_buffer *Element, const char* 
     DoEditorUi(Ui, &Element->Mat, "vertex_material Mat", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     DoEditorUi(Ui, &Element->End, "u32 End", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     DoEditorUi(Ui, &Element->At, "u32 At", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-    DoEditorUi(Ui, &Element->Timestamp, "u64 Timestamp", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-    DoEditorUi(Ui, &Element->Parent, "untextured_3d_geometry_buffer Parent", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-    DoEditorUi(Ui, &Element->BufferNeedsToGrow, "umm BufferNeedsToGrow", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
   }
   else
   {
