@@ -112,10 +112,21 @@ struct particle_system
   u8 Colors[PARTICLE_SYSTEM_COLOR_COUNT];
 
   r32 ElapsedSinceLastEmission;
+
+#if !POOF_PREPROCESSOR
   particle Particles[PARTICLES_PER_SYSTEM];
+#endif
 
   /* untextured_3d_geometry_buffer *Dest; */
 };
+
+poof(serdes_struct(particle_system))
+#include <generated/serdes_struct_particle_system.h>
+
+/* poof(serialize_struct(particle_system)) */
+/* #include <generated/serialize_struct_particle_system.h> */
+/* poof(deserialize_struct(particle_system)) */
+/* #include <generated/deserialize_struct_particle_system.h> */
 
 struct frame_event
 {

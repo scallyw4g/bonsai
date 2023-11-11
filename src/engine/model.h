@@ -69,8 +69,8 @@ struct model
 
   untextured_3d_geometry_buffer Mesh;
   untextured_3d_geometry_buffer TransparentMesh;
-  chunk_dimension Dim;
   animation Animation;
+  v3i Dim;
 };
 
 link_internal voxel *

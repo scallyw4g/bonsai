@@ -123,8 +123,8 @@ struct boundary_voxel
 struct chunk_data
 {
   chunk_flag Flags;
-  chunk_dimension Dim; // TODO(Jesse): can be 3x u8 instead of 3x s32
-  voxel *Voxels;
+  v3i Dim;       // TODO(Jesse): can (should?) be 3x u8 instead of 3x s32
+  voxel          *Voxels;
   voxel_lighting *VoxelLighting;
 };
 

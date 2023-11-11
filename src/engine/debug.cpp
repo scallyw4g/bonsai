@@ -343,6 +343,15 @@ DoLevelWindow(engine_resources *Engine)
       Header.Camera = *Graphics->Camera;
       Header.CameraTarget = Engine->CameraGhost->P;
 
+      u32 EntityCount = 0;
+      RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
+      {
+        entity *E = EntityTable[EntityIndex];
+        if (Spawned(E)) { ++EntityCount; }
+      }
+      Header.EntityCount = EntityCount;
+
+
       WriteToFile(&LevelFile, (u8*)&Header, sizeof(level_header));
 
       RangeIterator(HashIndex, s32(World->HashSize))
@@ -351,6 +360,12 @@ DoLevelWindow(engine_resources *Engine)
         {
           SerializeChunk(Chunk, &LevelFile);
         }
+      }
+
+      RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
+      {
+        entity *E = EntityTable[EntityIndex];
+        if (Spawned(E)) { Serialize(&LevelFile, E); }
       }
 
       CloseFile(&LevelFile);
@@ -364,7 +379,8 @@ DoLevelWindow(engine_resources *Engine)
   if (ClickedNode.Tag)
   {
     cs Filename = Concat(ClickedNode.Value.Dir, CSz("/"), ClickedNode.Value.Name, GetTranArena());
-    u8_stream LevelBytes = U8_StreamFromFile(Filename, GetTranArena());
+    thread_local_state *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
+    u8_stream LevelBytes = U8_StreamFromFile(Filename, Thread->PermMemory);
 
     if (LevelBytes.Start)
     {
@@ -406,8 +422,16 @@ DoLevelWindow(engine_resources *Engine)
         }
       }
 
-      Assert(LevelBytes.At == LevelBytes.End);
+      s32 EntityCount = Cast(s32, LevelHeader.EntityCount);
 
+      RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT) { Unspawn(EntityTable[EntityIndex]); }
+
+      RangeIterator(EntityIndex, EntityCount)
+      {
+        *EntityTable[EntityIndex] = *Deserialize_entity(&LevelBytes);
+      }
+
+      Assert(LevelBytes.At == LevelBytes.End);
     }
   }
 

@@ -185,7 +185,9 @@ GameEntityUpdate(engine_resources *Engine, entity *Entity )
 
   switch (Type)
   {
-    case EntityType_Enemy: { EnemyUpdate(Engine, Entity); } break;
+    case EntityType_Player:  {} break;
+    case EntityType_Default: {} break;
+    case EntityType_Enemy:   { EnemyUpdate(Engine, Entity); } break;
   }
 
   return False;

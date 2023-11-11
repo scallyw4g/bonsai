@@ -733,8 +733,11 @@ BufferEntity(
       AnimationOffset = GetInterpolatedPosition(Animation);
     }
 
-    BufferChunkMesh(Graphics, Dest, &Entity->Model.Mesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Entity->P.Offset + AnimationOffset, Entity->Rotation);
-    BufferChunkMesh(Graphics, TransparentDest, &Entity->Model.TransparentMesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Entity->P.Offset + AnimationOffset, Entity->Rotation);
+    if (Entity->Model)
+    {
+      BufferChunkMesh(Graphics, Dest, &Entity->Model->Mesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Entity->P.Offset + AnimationOffset, Entity->Rotation);
+      BufferChunkMesh(Graphics, TransparentDest, &Entity->Model->TransparentMesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Entity->P.Offset + AnimationOffset, Entity->Rotation);
+    }
   }
 
   return;

@@ -1,5 +1,6 @@
 #define BONSAI_ENGINE 1
 
+#include <engine/serdes.h>
 #include <engine/debug.h>
 
 #include <engine/api.h>

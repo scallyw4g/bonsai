@@ -104,38 +104,40 @@ GetSizeRequirements(untextured_3d_geometry_buffer *Mesh)
 #endif
 
 link_internal b32
-SerializeMesh(native_file *File, untextured_3d_geometry_buffer *Mesh, world_chunk_file_header_v3 *FileHeader)
+Serialize(native_file *File, untextured_3d_geometry_buffer *Mesh)
 {
   b32 Result = True;
+#if 1
 
-  u64 TotalElements = FileHeader->MeshElementCount;
-  Assert (TotalElements);
+  umm TotalElements = umm(Mesh->At);
+  umm VertByteCount = TotalElements*sizeof(v3);
+  umm MatlByteCount = TotalElements*sizeof(vertex_material);
+  umm NormalByteCount = TotalElements*sizeof(v3);
 
-  {
-    u32 VertElementSize = FileHeader->VertexElementSize;
-    u64 VertByteCount = VertElementSize * TotalElements;
+  u32 Tag = WorldChunkFileTag_VERT;
+  Result &= WriteToFile(File, Tag);
+  Result &= WriteToFile(File, (u8*)Mesh->Verts, VertByteCount);
 
-    u32 ColorElementSize = FileHeader->MaterialElementSize;
-    u64 MatlByteCount = ColorElementSize * TotalElements;
+  Tag = WorldChunkFileTag_MATL;
+  Result &= WriteToFile(File, Tag);
+  Result &= WriteToFile(File, (u8*)Mesh->Mat, MatlByteCount);
 
-    u32 NormalElementSize = FileHeader->NormalElementSize;
-    u64 NormalByteCount = NormalElementSize * TotalElements;
-
-    u32 Tag = WorldChunkFileTag_VERT;
-    Result &= WriteToFile(File, Tag);
-    Result &= WriteToFile(File, (u8*)Mesh->Verts, VertByteCount);
-
-    Tag = WorldChunkFileTag_MATL;
-    Result &= WriteToFile(File, Tag);
-    Result &= WriteToFile(File, (u8*)Mesh->Mat, MatlByteCount);
-
-    Tag = WorldChunkFileTag_NORM;
-    Result &= WriteToFile(File, Tag);
-    Result &= WriteToFile(File, (u8*)Mesh->Normals, NormalByteCount);
-  }
+  Tag = WorldChunkFileTag_NORM;
+  Result &= WriteToFile(File, Tag);
+  Result &= WriteToFile(File, (u8*)Mesh->Normals, NormalByteCount);
+#endif
 
   return Result;
 }
+
+link_internal b32
+SerializeMesh(native_file *File, untextured_3d_geometry_buffer *Mesh)
+{
+  b32 Result = Serialize(File, Mesh);
+  return Result;
+}
+
+
 
 #if 0
 link_internal b32
@@ -602,7 +604,7 @@ SerializeChunk(world_chunk *Chunk, native_file *File)
   if (FileHeader.MeshElementCount)
   {
     auto Mesh = TakeOwnershipSync(&Chunk->Meshes, MeshBit_Main);
-    Result &= SerializeMesh(File, Mesh, &FileHeader);
+    Result &= SerializeMesh(File, Mesh);
     ReleaseOwnership(&Chunk->Meshes, MeshBit_Main, Mesh);
   }
 

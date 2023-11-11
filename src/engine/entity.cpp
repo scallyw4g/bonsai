@@ -186,7 +186,8 @@ AllocateEntity(memory_arena *Memory, chunk_dimension ModelDim)
 {
   entity *Entity = Allocate(entity, Memory, 1);
   Entity->Emitter = Allocate(particle_system, Memory, 1);
-  Entity->Model.Dim = ModelDim;
+  /* Entity->Model = Allocate(model, Memory, 1); */
+  /* Entity->Model->Dim = ModelDim; */
 
   Entity->Scale = 1.0f;
 
@@ -224,7 +225,7 @@ SpawnEntity( entity *Entity, entity_behavior_flags Behavior, model *GameModels, 
   {
     if (GameModels)
     {
-      Entity->Model = GameModels[ModelIndex];
+      Entity->Model = GameModels + ModelIndex;
     }
     else
     {
@@ -261,14 +262,9 @@ SpawnEntity(
 
   Entity->Behavior = Behavior;
 
-  if (Model)
-    Entity->Model = *Model;
-
-  if (Physics)
-    Entity->Physics = *Physics;
-
-  if (InitialP)
-    Entity->P = *InitialP;
+  if (Model) Entity->Model = Model;
+  if (Physics) Entity->Physics = *Physics;
+  if (InitialP) Entity->P = *InitialP;
 
   Entity->CollisionVolumeRadius = CollisionVolumeRadius;
 
