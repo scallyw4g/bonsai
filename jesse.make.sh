@@ -31,9 +31,9 @@
 
 # OPT="-O2"
 
-./make.sh $OPT \
-  BuildSingleExample examples/turn_based \
-  BuildExecutables \
+# ./make.sh $OPT \
+#   BuildSingleExample examples/turn_based \
+#   BuildExecutables \
   # BuildSingleExample examples/transparency \
   # BuildSingleExample examples/the_wanderer \
   # BuildDebugSystem \
@@ -41,4 +41,4 @@
 #   # BuildTests \
 #   # BuildSingleExample examples/turn_based2
 
-# ./make.sh $OPT BuildAll
+./make.sh $OPT BuildAll

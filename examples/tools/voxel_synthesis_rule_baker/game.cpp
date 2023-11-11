@@ -784,7 +784,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   BakeEntity->CollisionVolumeRadius = ChunkData->Dim/2.f;
   BakeEntity->P = Canonical_Position(World->ChunkDim, V3(-ChunkData->Dim.x-8, 0, 0), V3i(0));
-  AllocateAndBuildMesh(&GameState->BakeResult.VoxData, &BakeEntity->Model, TempMemory, Resources->Memory);
+  AllocateAndBuildMesh(&GameState->BakeResult.VoxData, BakeEntity->Model, TempMemory, Resources->Memory);
 
   SpawnEntity(BakeEntity);
 
@@ -805,7 +805,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
         TileEntity->CollisionVolumeRadius = V3(Global_TileDim/2);
 
         // TODO(Jesse)(memory, heap, mesh)
-        AllocateMesh( &TileEntity->Model.Mesh, u32(Kilobytes(18)), Resources->Memory);
+        AllocateMesh( &TileEntity->Model->Mesh, u32(Kilobytes(18)), Resources->Memory);
 
         /* BuildWorldChunkMeshFromMarkedVoxels_Greedy( ChunkData->Voxels, */
         /*                                             ChunkData->Dim, */
@@ -817,8 +817,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
         BuildWorldChunkMeshFromMarkedVoxels_Greedy( ChunkData->Voxels,
                                                     ChunkData->Dim,
                                                     VoxOffset, VoxOffset+Global_TileDim,
-                                                   &TileEntity->Model.Mesh,
-                                                   &TileEntity->Model.TransparentMesh,
+                                                   &TileEntity->Model->Mesh,
+                                                   &TileEntity->Model->TransparentMesh,
                                                     GetTranArena(),
                                                     VoxData->Palette );
 
@@ -844,7 +844,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
         /* TileEntity->P = Canonicalize(World->ChunkDim, TileEntity->P); */
         SpawnEntity(TileEntity);
 
-        TileEntity->UserData = (void*)Tile;
+        TileEntity->UserData = umm(Tile);
         break;
       }
     }
