@@ -8,6 +8,8 @@ out vec3 vertexN_worldspace;
 out vec3 MaterialColor;
 out vec2 TransEmiss;
 
+uniform vec3 OffsetOfWorldCenterToGrid;
+uniform vec3 CameraToWorld;
 uniform mat4 ViewProjection;
 uniform mat4 Model;
 

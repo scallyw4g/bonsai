@@ -9,7 +9,9 @@ Serialize(native_file *File, aabb *Element)
   Result &= Serialize(File, &Element->Center);
 
 
+
   Result &= Serialize(File, &Element->Radius);
+
 
 
 
@@ -28,7 +30,9 @@ Deserialize(u8_stream *Bytes, aabb *Element, memory_arena *Memory)
 
 
 
+
   Result &= Deserialize(Bytes, &Element->Radius, Memory);
+
 
 
 

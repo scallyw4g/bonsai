@@ -46,6 +46,9 @@ struct render_settings
 
   b32 BravoilMyersOIT;
   b32 BravoilMcGuireOIT;
+
+  r32 MajorGridDim;
+  v3 OffsetOfWorldCenterToGrid; // NOTE(Jesse): Computed
 };
 
 struct graphics

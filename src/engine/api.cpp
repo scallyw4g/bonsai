@@ -250,6 +250,11 @@ Bonsai_Render(engine_resources *Resources)
   SG->Sun.Position.z = tDaytime*0.7f + 1.3f;
 
 
+  v3 CameraTargetSimP = GetSimSpaceP(World, Resources->CameraGhost);
+  Graphics->Settings.OffsetOfWorldCenterToGrid.x = fmodf(CameraTargetSimP.x, Graphics->Settings.MajorGridDim);
+  Graphics->Settings.OffsetOfWorldCenterToGrid.y = fmodf(CameraTargetSimP.y, Graphics->Settings.MajorGridDim);
+  Graphics->Settings.OffsetOfWorldCenterToGrid.z = fmodf(CameraTargetSimP.z, Graphics->Settings.MajorGridDim);
+
   // NOTE(Jesse): GBuffer and ShadowMap must be rendered in series because they
   // both do operate on the total scene geometry. The rest of the render passes
   // operate on the textures they create and only render a quad.

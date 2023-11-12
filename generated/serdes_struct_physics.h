@@ -9,16 +9,21 @@ Serialize(native_file *File, physics *Element)
   Result &= Serialize(File, &Element->Velocity);
 
 
+
   Result &= Serialize(File, &Element->Force);
+
 
 
   Result &= Serialize(File, &Element->Delta);
 
 
+
   Result &= Serialize(File, &Element->Mass);
 
 
+
   Result &= Serialize(File, &Element->Speed);
+
 
 
 
@@ -36,7 +41,9 @@ Deserialize(u8_stream *Bytes, physics *Element, memory_arena *Memory)
 
 
 
+
   Result &= Deserialize(Bytes, &Element->Force, Memory);
+
 
 
 
@@ -44,11 +51,14 @@ Deserialize(u8_stream *Bytes, physics *Element, memory_arena *Memory)
 
 
 
+
   Result &= Deserialize(Bytes, &Element->Mass);
 
 
 
+
   Result &= Deserialize(Bytes, &Element->Speed);
+
 
 
 

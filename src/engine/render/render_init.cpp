@@ -320,7 +320,7 @@ SetDrawBuffers(framebuffer *FBO)
 }
 
 shader
-CreateGbufferShader(memory_arena *GraphicsMemory, m4 *ViewProjection, camera *Camera)
+CreateGbufferShader(graphics *Graphics, memory_arena *GraphicsMemory, m4 *ViewProjection, camera *Camera)
 {
   shader Shader = LoadShaders( CSz(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSz(BONSAI_SHADER_PATH "gBuffer.fragmentshader") );
 
@@ -336,6 +336,15 @@ CreateGbufferShader(memory_arena *GraphicsMemory, m4 *ViewProjection, camera *Ca
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, &Camera->Frust.nearClip, "NearClip");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, &Camera->RenderSpacePosition, "CameraToWorld");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, &Graphics->Settings.OffsetOfWorldCenterToGrid, "OffsetOfWorldCenterToGrid");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, &Graphics->Settings.MajorGridDim, "MajorGridDim");
   Current = &(*Current)->Next;
 
   return Shader;
@@ -619,6 +628,8 @@ GraphicsInit(memory_arena *GraphicsMemory)
   Result->Memory = GraphicsMemory;
 
   Result->Settings.BravoilMyersOIT = True;
+  Result->Settings.BravoilMcGuireOIT = True;
+  Result->Settings.MajorGridDim = 8.f;
 
   Result->Exposure = 1.f;
   Result->Camera = Allocate(camera, GraphicsMemory, 1);
@@ -738,7 +749,7 @@ GraphicsInit(memory_arena *GraphicsMemory)
   texture *SsaoNoiseTexture = AllocateAndInitSsaoNoise(AoGroup, GraphicsMemory);
 
   gBuffer->gBufferShader =
-    CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection, Result->Camera);
+    CreateGbufferShader(Result, GraphicsMemory, &gBuffer->ViewProjection, Result->Camera);
 
   AoGroup->Shader =
     MakeSsaoShader(GraphicsMemory, gBuffer->Textures, SsaoNoiseTexture,

@@ -9,64 +9,88 @@ Serialize(native_file *File, particle_system *Element)
   Result &= Serialize(File, &Element->Entropy);
 
 
+
   Result &= Serialize(File, (u32*)&Element->SpawnType);
 
 
   Result &= Serialize(File, &Element->Drag);
 
 
+
   Result &= Serialize(File, &Element->Lifetime);
+
 
 
   Result &= Serialize(File, &Element->EmissionDelay);
 
 
+
   Result &= Serialize(File, &Element->EmissionLifespan);
+
 
 
   Result &= Serialize(File, &Element->ActiveParticles);
 
 
+
   Result &= Serialize(File, &Element->LifespanMod);
+
 
 
   Result &= Serialize(File, &Element->ParticleLifespan);
 
 
+
   Result &= Serialize(File, &Element->ParticlesPerSecond);
+
 
 
   Result &= Serialize(File, &Element->ParticleLightEmission);
 
 
+
   Result &= Serialize(File, &Element->ParticleLightEmissionChance);
+
 
 
   Result &= Serialize(File, &Element->ParticleStartingTransparency);
 
 
+
   Result &= Serialize(File, &Element->ParticleEndingTransparency);
+
 
 
   Result &= Serialize(File, &Element->ParticleStartingDim);
 
 
+
   Result &= Serialize(File, &Element->ParticleEndingDim);
+
 
 
   Result &= Serialize(File, &Element->ParticleTurbMin);
 
 
+
   Result &= Serialize(File, &Element->ParticleTurbMax);
+
 
 
   Result &= Serialize(File, &Element->SpawnRegion);
 
 
+
   Result &= Serialize(File, &Element->SystemMovementCoefficient);
 
 
+
   Result &= Serialize(File, &Element->ElapsedSinceLastEmission);
+
+
+
+  Result &= SerializeArray(File, Element->Colors, 6);
+
 
 
 
@@ -84,6 +108,7 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
 
 
 
+
   Element->SpawnType = Cast(particle_spawn_type, Read_u32(Bytes));
 
 
@@ -91,7 +116,9 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
 
 
 
+
   Result &= Deserialize(Bytes, &Element->Lifetime);
+
 
 
 
@@ -99,7 +126,9 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
 
 
 
+
   Result &= Deserialize(Bytes, &Element->EmissionLifespan);
+
 
 
 
@@ -107,7 +136,9 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
 
 
 
+
   Result &= Deserialize(Bytes, &Element->LifespanMod);
+
 
 
 
@@ -115,7 +146,9 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
 
 
 
+
   Result &= Deserialize(Bytes, &Element->ParticlesPerSecond);
+
 
 
 
@@ -123,7 +156,9 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
 
 
 
+
   Result &= Deserialize(Bytes, &Element->ParticleLightEmissionChance);
+
 
 
 
@@ -131,7 +166,9 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
 
 
 
+
   Result &= Deserialize(Bytes, &Element->ParticleEndingTransparency);
+
 
 
 
@@ -139,7 +176,9 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
 
 
 
+
   Result &= Deserialize(Bytes, &Element->ParticleEndingDim);
+
 
 
 
@@ -147,7 +186,9 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
 
 
 
+
   Result &= Deserialize(Bytes, &Element->ParticleTurbMax, Memory);
+
 
 
 
@@ -155,11 +196,21 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
 
 
 
+
   Result &= Deserialize(Bytes, &Element->SystemMovementCoefficient);
 
 
 
+
   Result &= Deserialize(Bytes, &Element->ElapsedSinceLastEmission);
+
+
+
+
+  RangeIterator(ElementIndex, 6)
+  {
+    Result &= Deserialize(Bytes, &Element->Colors[ElementIndex]);
+  }
 
 
 

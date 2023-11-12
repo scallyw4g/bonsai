@@ -168,7 +168,7 @@ SpawnSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, untext
   /* System->Physics.Drag = V3(2.2f); */
   /* System->Physics.Mass = 3.0f; */
 
-  System->ParticleStartingTransparency = 0.15f;
+  System->ParticleStartingTransparency = 0.35f;
   System->ParticleEndingTransparency = 0.f;
 
   r32 TurbMin = 1.5f*Radius;

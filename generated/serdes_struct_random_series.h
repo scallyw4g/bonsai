@@ -10,6 +10,7 @@ Serialize(native_file *File, random_series *Element)
 
 
 
+
   
 
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -21,6 +22,7 @@ Deserialize(u8_stream *Bytes, random_series *Element, memory_arena *Memory)
 {
   b32 Result = True;
   Result &= Deserialize(Bytes, &Element->Seed);
+
 
 
 

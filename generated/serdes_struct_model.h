@@ -9,16 +9,21 @@ Serialize(native_file *File, model *Element)
   Result &= Serialize(File, &Element->Vox);
 
 
+
   Result &= Serialize(File, &Element->Mesh);
+
 
 
   Result &= Serialize(File, &Element->TransparentMesh);
 
 
+
   Result &= Serialize(File, &Element->Animation);
 
 
+
   Result &= Serialize(File, &Element->Dim);
+
 
 
 
@@ -36,7 +41,9 @@ Deserialize(u8_stream *Bytes, model *Element, memory_arena *Memory)
 
 
 
+
   Result &= Deserialize(Bytes, &Element->Mesh, Memory);
+
 
 
 
@@ -44,11 +51,14 @@ Deserialize(u8_stream *Bytes, model *Element, memory_arena *Memory)
 
 
 
+
   Result &= Deserialize(Bytes, &Element->Animation, Memory);
 
 
 
+
   Result &= Deserialize(Bytes, &Element->Dim, Memory);
+
 
 
 

@@ -1,7 +1,7 @@
 #define LEVEL_HEADER_MAGIC_NUMBER     (0x6969696942042042)
 #define LEVEL_FILE_DEBUG_OBJECT_DELIM (0xFCACFCACFCACFCAC)
 
-#define LEVEL_FILE_DEBUG_MODE (0)
+#define LEVEL_FILE_DEBUG_MODE (1)
 
 #if LEVEL_FILE_DEBUG_MODE
        
@@ -36,7 +36,7 @@ poof(
       Bytes->At += sizeof((type.name));
       Assert(Bytes->At <= Bytes->End);
 
-      MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+      MAYBE_READ_DEBUG_OBJECT_DELIM();
       return True;
     }
   }
@@ -66,7 +66,13 @@ poof(
             Result &= Serialize(File, (u32*)&Element->(member.name));
           }
           {
-            Result &= Serialize(File, &Element->(member.name));
+            member.is_array?
+            {
+              Result &= SerializeArray(File, Element->(member.name), member.array);
+            }
+            {
+              Result &= Serialize(File, &Element->(member.name));
+            }
           }
         }
       }
@@ -105,12 +111,21 @@ poof(
             Element->(member.name) = Cast((member.type), Read_u32(Bytes));
           }
           {
-            member.is_primitive?
+            member.is_array?
             {
-              Result &= Deserialize(Bytes, &Element->(member.name));
+              RangeIterator(ElementIndex, member.array)
+              {
+                Result &= Deserialize(Bytes, &Element->(member.name)[ElementIndex]);
+              }
             }
             {
-              Result &= Deserialize(Bytes, &Element->(member.name), Memory);
+              member.is_primitive?
+              {
+                Result &= Deserialize(Bytes, &Element->(member.name));
+              }
+              {
+                Result &= Deserialize(Bytes, &Element->(member.name), Memory);
+              }
             }
           }
         }
@@ -201,20 +216,22 @@ poof(
     list.map(type)
     {
       link_internal b32
-      Serialize(native_file *File, (type.name) *Element)
+      Serialize(native_file *File, (type.name) *Element, memory_arena *Ignored = 0)
       {
         b32 Result = WriteToFile(File, Cast(u8*, Element), sizeof((type.name)));
         return Result;
       }
 
       link_internal b32
-      Deserialize(u8_stream *Bytes, (type.name)* Element)
+      Deserialize(u8_stream *Bytes, (type.name)* Element, memory_arena *Ignored = 0)
       {
         *Element = *Cast((type.name)*, Bytes->At);
         Bytes->At += sizeof((type.name));
         Assert(Bytes->At <= Bytes->End);
         return True;
       }
+
+      serdes_array(type)
     }
   }
 )

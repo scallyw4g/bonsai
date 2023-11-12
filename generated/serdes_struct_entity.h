@@ -9,19 +9,25 @@ Serialize(native_file *File, entity *Element)
   Result &= Serialize(File, &Element->Id);
 
 
+
   Result &= Serialize(File, &Element->P);
+
 
 
   Result &= Serialize(File, &Element->Rotation);
 
 
+
   Result &= Serialize(File, &Element->Scale);
+
 
 
   Result &= Serialize(File, &Element->CollisionVolumeRadius);
 
 
+
   Result &= Serialize(File, &Element->Physics);
+
 
 
   if (Element->Model) { Result &= WriteToFile(File, Cast(u8*, &PointerTrue), sizeof(PointerTrue)); }
@@ -39,7 +45,9 @@ Serialize(native_file *File, entity *Element)
   Result &= Serialize(File, &Element->UserType);
 
 
+
   Result &= Serialize(File, &Element->UserData);
+
 
 
 
@@ -61,7 +69,9 @@ Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
 
 
 
+
   Result &= Deserialize(Bytes, &Element->P, Memory);
+
 
 
 
@@ -69,7 +79,9 @@ Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
 
 
 
+
   Result &= Deserialize(Bytes, &Element->Scale);
+
 
 
 
@@ -77,7 +89,9 @@ Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
 
 
 
+
   Result &= Deserialize(Bytes, &Element->Physics, Memory);
+
 
 
 
@@ -97,7 +111,9 @@ Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
 
 
 
+
   Result &= Deserialize(Bytes, &Element->UserData);
+
 
 
 

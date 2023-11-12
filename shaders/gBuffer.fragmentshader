@@ -8,8 +8,11 @@ layout (location = 0) out vec4 gColor;
 layout (location = 1) out vec3 gNormal;
 layout (location = 2) out vec4 gPosition;
 
+uniform vec3 OffsetOfWorldCenterToGrid;
+uniform vec3 CameraToWorld;
 uniform float FarClip;
 uniform float NearClip;
+uniform float MajorGridDim;
 
 float
 Linearize(float Depth)
@@ -74,14 +77,30 @@ void main()
 
   vec4 FinalColor = vec4(MaterialColor, 1.f);
 
-#if 0
+#if 1
+
   {
+    /* vec3 CorrectedPos; */
+    /* CorrectedPos.x =  mod(gPosition.x, 8.f); */
+    /* CorrectedPos.y =  mod(gPosition.y, 8.f); */
+    /* CorrectedPos.z =  mod(gPosition.z, 8.f); */
+
+    /* CorrectedPos.z =  gPosition.z - mod(8.f); */
+
+    /* vec3 CorrectedPos =  gPosition.xyz + (v3(8.f) - mod(CameraToWorld, 8.f)); */
+    /* vec3 CorrectedPos =  mod(gPosition.xyz, 8.f) - mod(CameraToWorld, 8.f); */
+    vec3 CorrectedPos =  mod(gPosition.xyz + OffsetOfWorldCenterToGrid, MajorGridDim);
+
+    /* FinalColor.rgb = CorrectedPos / v3(8.f); */
+    /* FinalColor.rgb += mod(CameraToWorld.xyz, 8.f) / 8.f; */
+
+    /* vec3 CorrectedPos =  gPosition.xyz; */
     vec3 NormFix = vec3(0.99999999f) - abs(gNormal);
 
-    float t1 = ModThresh(abs(gPosition.xyz)*NormFix, 0.03f, 1.0f);
+    float t1 = ModThresh(abs(CorrectedPos.xyz)*NormFix, 0.03f, 1.0f);
     v3 Mix1 = mix(FinalColor.xyz, FinalColor.xyz*2.f, t1);
 
-    float t2 = ModThresh(abs(gPosition.xyz)*NormFix, 0.10f, 8.0f);
+    float t2 = ModThresh(abs(CorrectedPos.xyz)*NormFix, 0.10f, MajorGridDim);
     v3 Mix2 = mix(FinalColor.xyz, v3(0.0f), t2);
 
     if (t1 > t2)
@@ -95,8 +114,8 @@ void main()
   }
 
   /* FinalColor.xyz = abs(gNormal); */
-  /* FinalColor.xyz = abs(gPosition.xyz*0.01f); */
-  /* FinalColor.xyz = vec3(abs(gPosition.w)); */
+  /* FinalColor.xyz = abs(CorrectedPos.xyz*0.01f); */
+  /* FinalColor.xyz = vec3(abs(CorrectedPos.w)); */
 #endif
 
   gColor = FinalColor;

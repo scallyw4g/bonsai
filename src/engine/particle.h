@@ -66,8 +66,9 @@ struct particle_system
 
   r32 ElapsedSinceLastEmission;
 
-#if !POOF_PREPROCESSOR
   u8 Colors[PARTICLE_SYSTEM_COLOR_COUNT];
+
+#if !POOF_PREPROCESSOR
   particle Particles[PARTICLES_PER_SYSTEM];
 #endif
 

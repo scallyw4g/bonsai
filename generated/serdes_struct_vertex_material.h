@@ -9,10 +9,13 @@ Serialize(native_file *File, vertex_material *Element)
   Result &= Serialize(File, &Element->Color);
 
 
+
   Result &= Serialize(File, &Element->Transparency);
 
 
+
   Result &= Serialize(File, &Element->Emission);
+
 
 
 
@@ -30,11 +33,14 @@ Deserialize(u8_stream *Bytes, vertex_material *Element, memory_arena *Memory)
 
 
 
+
   Result &= Deserialize(Bytes, &Element->Transparency);
 
 
 
+
   Result &= Deserialize(Bytes, &Element->Emission);
+
 
 
 

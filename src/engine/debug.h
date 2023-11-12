@@ -206,7 +206,22 @@ poof(
         PushNewRow(Ui);
         type.map(member)
         {
-          DoEditorUi(Ui, &Element->(member.name), "member.type member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+          member.is_array?
+          {
+            RangeIterator(ArrayIndex, member.array)
+            {
+              DoEditorUi(Ui, Element->(member.name)+ArrayIndex, "member.type member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+            }
+          }
+          {
+            member.is_pointer?
+            {
+              DoEditorUi(Ui, Element->(member.name), "member.type member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+            }
+            {
+              DoEditorUi(Ui, &Element->(member.name), "member.type member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+            }
+          }
         }
       }
       else

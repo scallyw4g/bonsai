@@ -76,6 +76,17 @@ DoEditorUi(renderer_2d *Ui, s32 *Value, const char* Name, EDITOR_UI_FUNCTION_PRO
 }
 
 link_internal void
+DoEditorUi(renderer_2d *Ui, u8 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+{
+  PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+  if (Button(Ui, CSz("-"), (umm)Value + (umm)"decrement" )) { *Value = *Value - 1; }
+  PushColumn(Ui, CS(*Value));
+  if (Button(Ui, CSz("+"), (umm)Value + (umm)"increment" )) { *Value = *Value + 1; }
+  PushNewRow(Ui);
+}
+
+link_internal void
 DoEditorUi(renderer_2d *Ui, u32 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
@@ -155,6 +166,12 @@ DoEditorUi(renderer_2d *Ui, entity_type *Element, const char* Name, EDITOR_UI_FU
 
 poof(do_editor_ui_for_compound_type(physics))
 #include <generated/do_editor_ui_for_compound_type_physics.h>
+
+poof(do_editor_ui_for_compound_type(aabb))
+#include <generated/do_editor_ui_for_compound_type_aabb.h>
+
+poof(do_editor_ui_for_compound_type(particle_system))
+#include <generated/do_editor_ui_for_compound_type_particle_system.h>
 
 poof(do_editor_ui_for_compound_type(animation))
 #include <generated/do_editor_ui_for_compound_type_animation.h>
@@ -459,6 +476,23 @@ DoEntityWindow(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
+
+  {
+    local_persist window_layout EntityWindow = WindowLayout("All Entities");
+
+    PushWindowStart(Ui, &EntityWindow);
+      PushTableStart(Ui);
+
+        RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
+        {
+          entity *Entity = EntityTable[EntityIndex];
+          DoEditorUi(Ui, Entity, GetNullTerminated(FSz("E (%d)", EntityIndex)) );
+        }
+      PushTableEnd(Ui);
+
+    PushWindowEnd(Ui, &EntityWindow);
+  }
+
   if (Engine->MaybeMouseRay.Tag)
   {
     entity *Entity = GetEntitiesIntersectingRay(World, EntityTable, &Engine->MaybeMouseRay.Ray);
@@ -473,6 +507,7 @@ DoEntityWindow(engine_resources *Engine)
       }
     }
   }
+
 
   if (EngineDebug->SelectedEntity)
   {
@@ -681,6 +716,7 @@ DoEngineDebug(engine_resources *Engine)
 
         // TODO(Jesse): Make a slider for time of day
 
+        DebugSlider(Ui, &Settings->MajorGridDim, 1.0f, 16.f);
         DebugSlider(Ui, &Graphics->Exposure, 0.0f, 5.f);
 
       PushTableEnd(Ui);

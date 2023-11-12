@@ -19,7 +19,7 @@ UpdateCameraP(world *World, canonical_position NewTarget, camera *Camera)
   Camera->ViewingTarget = NewTarget;
 
   Camera->TargetP = Canonicalize(World->ChunkDim, NewTarget - (Camera->Front*Camera->DistanceFromTarget));
-  Camera->CurrentP = Lerp(0.35f, Camera->CurrentP, Camera->TargetP, World->ChunkDim);
+  Camera->CurrentP = Lerp(0.40f, Camera->CurrentP, Camera->TargetP, World->ChunkDim);
   Camera->CurrentP = Canonicalize(World->ChunkDim, Camera->CurrentP);
 
   Camera->RenderSpacePosition = GetRenderP(World->ChunkDim, Camera->CurrentP, Camera);

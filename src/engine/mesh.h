@@ -134,8 +134,8 @@ BufferVertsDirect(
 
   /* v3 HalfOffset = Offset*0.5f; */
   for ( u32 VertIndex = 0;
-        VertIndex < NumVerts;
-        VertIndex += 3 )
+            VertIndex < NumVerts;
+            VertIndex += 3 )
   {
     v3 VertSrc0 = Rotate(SrcVerts[VertIndex + 0], Rot);
     v3 VertSrc1 = Rotate(SrcVerts[VertIndex + 1], Rot);
@@ -165,11 +165,8 @@ BufferVertsDirect(
     /* DestNormals += 3; */
     /* DestMats += 3; */
   }
-
-
-
-  return;
 }
+
 inline void
 BufferVertsDirect(
     v3 *DestVerts, v3 *DestNormals, vertex_material *DestMats,
