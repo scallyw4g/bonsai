@@ -1,5 +1,5 @@
 link_internal counted_string
-ToString( token_cursor_source Type)
+ToString(token_cursor_source Type)
 {
   counted_string Result = {};
   switch (Type)

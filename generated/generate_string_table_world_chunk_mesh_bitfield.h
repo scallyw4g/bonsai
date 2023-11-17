@@ -1,5 +1,5 @@
 link_internal counted_string
-ToString( world_chunk_mesh_bitfield Type)
+ToString(world_chunk_mesh_bitfield Type)
 {
   counted_string Result = {};
   switch (Type)

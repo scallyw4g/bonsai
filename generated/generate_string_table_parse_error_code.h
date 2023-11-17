@@ -1,5 +1,5 @@
 link_internal counted_string
-ToString( parse_error_code Type)
+ToString(parse_error_code Type)
 {
   counted_string Result = {};
   switch (Type)

@@ -1,5 +1,5 @@
 link_internal counted_string
-ToString( c_token_type Type)
+ToString(c_token_type Type)
 {
   counted_string Result = {};
   switch (Type)

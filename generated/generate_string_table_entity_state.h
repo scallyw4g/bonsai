@@ -1,5 +1,5 @@
 link_internal counted_string
-ToString( entity_state Type)
+ToString(entity_state Type)
 {
   counted_string Result = {};
   switch (Type)

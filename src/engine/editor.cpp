@@ -316,7 +316,7 @@ DoLevelEditor(engine_resources *Engine)
   world_edit_mode WorldEditMode = {};
   GetRadioEnum(&WorldEditModeRadioGroup, &WorldEditMode);
 
-  Info(ToString(WorldEditMode));
+  /* Info("%S", ToString(WorldEditMode)); */
 
   picked_voxel_position HighlightVoxel = PickedVoxel_FirstFilled;
   switch (WorldEditMode)

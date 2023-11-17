@@ -1,5 +1,5 @@
 link_internal counted_string
-ToString( entity_behavior_flags Type)
+ToString(entity_behavior_flags Type)
 {
   counted_string Result = {};
   switch (Type)

@@ -1,5 +1,5 @@
 link_internal counted_string
-ToString( log_level Type)
+ToString(log_level Type)
 {
   counted_string Result = {};
   switch (Type)

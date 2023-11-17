@@ -1,5 +1,5 @@
 link_internal counted_string
-ToString( model_index Type)
+ToString(model_index Type)
 {
   counted_string Result = {};
   switch (Type)

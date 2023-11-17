@@ -1,5 +1,5 @@
 link_internal counted_string
-ToString( world_edit_mode Type)
+ToString(world_edit_mode Type)
 {
   counted_string Result = {};
   switch (Type)

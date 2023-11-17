@@ -1,5 +1,5 @@
 link_internal counted_string
-ToString( text_encoding Type)
+ToString(text_encoding Type)
 {
   counted_string Result = {};
   switch (Type)
