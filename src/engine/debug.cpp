@@ -300,10 +300,10 @@ DebugUi(engine_resources *Engine, cs Name, window_layout *Value)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  StartColumn(Ui);
+  u32 Start = StartColumn(Ui);
     Text(Ui, Name);
     Text(Ui, Value->Title);
-  EndColumn(Ui);
+  EndColumn(Ui, Start);
   PushNewRow(Ui);
 }
 
@@ -626,30 +626,30 @@ DoEngineDebug(engine_resources *Engine)
       PushColumn(Ui, CSz("Bloom"));
       PushNewRow(Ui);
 
-      StartColumn(Ui);
+      u32 Start = StartColumn(Ui);
         PushTexturedQuad(Ui, Graphics->Transparency.AccumTex, TexDim, zDepth_Text);
         PushForceAdvance(Ui, V2(xAdvance, 0));
-      EndColumn(Ui);
+      EndColumn(Ui, Start);
 
-      StartColumn(Ui);
+      Start = StartColumn(Ui);
         PushTexturedQuad(Ui, Graphics->Transparency.RevealTex, TexDim, zDepth_Text);
         PushForceAdvance(Ui, V2(xAdvance, 0));
-      EndColumn(Ui);
+      EndColumn(Ui, Start);
 
-      StartColumn(Ui);
+      Start = StartColumn(Ui);
         PushTexturedQuad(Ui, Graphics->Transparency.Depth, TexDim, zDepth_Text, True);
         PushForceAdvance(Ui, V2(xAdvance, 0));
-      EndColumn(Ui);
+      EndColumn(Ui, Start);
 
-      StartColumn(Ui);
+      Start = StartColumn(Ui);
         PushTexturedQuad(Ui, Graphics->Lighting.LightingTex, TexDim, zDepth_Text);
         PushForceAdvance(Ui, V2(xAdvance, 0));
-      EndColumn(Ui);
+      EndColumn(Ui, Start);
 
-      StartColumn(Ui);
+      Start = StartColumn(Ui);
         PushTexturedQuad(Ui, Graphics->Lighting.BloomTex, TexDim, zDepth_Text);
         PushForceAdvance(Ui, V2(xAdvance, 0));
-      EndColumn(Ui);
+      EndColumn(Ui, Start);
       PushNewRow(Ui);
 
       PushColumn(Ui, CSz("gBuffer Albedo"));
@@ -658,25 +658,25 @@ DoEngineDebug(engine_resources *Engine)
       PushColumn(Ui, CSz("gBuffer Depth "));
       PushNewRow(Ui);
 
-      StartColumn(Ui);
+      Start = StartColumn(Ui);
         PushTexturedQuad(Ui, Graphics->gBuffer->Textures->Color, TexDim, zDepth_Text);
         PushForceAdvance(Ui, V2(xAdvance, 0));
-      EndColumn(Ui);
+      EndColumn(Ui, Start);
 
-      StartColumn(Ui);
+      Start = StartColumn(Ui);
         PushTexturedQuad(Ui, Graphics->gBuffer->Textures->Normal, TexDim, zDepth_Text);
         PushForceAdvance(Ui, V2(xAdvance, 0));
-      EndColumn(Ui);
+      EndColumn(Ui, Start);
 
-      StartColumn(Ui);
+      Start = StartColumn(Ui);
         PushTexturedQuad(Ui, Graphics->gBuffer->Textures->Position, TexDim, zDepth_Text);
         PushForceAdvance(Ui, V2(xAdvance, 0));
-      EndColumn(Ui);
+      EndColumn(Ui, Start);
 
-      StartColumn(Ui);
+      Start = StartColumn(Ui);
         PushTexturedQuad(Ui, Graphics->gBuffer->Textures->Depth, TexDim, zDepth_Text, True);
         PushForceAdvance(Ui, V2(xAdvance, 0));
-      EndColumn(Ui);
+      EndColumn(Ui, Start);
       PushNewRow(Ui);
 
 
@@ -736,9 +736,9 @@ DoEngineDebug(engine_resources *Engine)
         DoEditorUi(Ui, &EngineDebug->DrawEntityCollisionVolumes, "DrawEntityCollisionVolumes");
         DoEditorUi(Ui, &EngineDebug->DrawWorldAxies, "DrawWorldAxies");
 
-        DoEditorUi(Ui, &EngineDebug->UiDebug.OutlineUiValues, "OutlineUiValues");
+        DoEditorUi(Ui, &EngineDebug->UiDebug.OutlineUiValues,  "OutlineUiValues");
         DoEditorUi(Ui, &EngineDebug->UiDebug.OutlineUiButtons, "OutlineUiButtons");
-        DoEditorUi(Ui, &EngineDebug->UiDebug.OutlineUiTables, "OutlineUiTables");
+        DoEditorUi(Ui, &EngineDebug->UiDebug.OutlineUiTables,  "OutlineUiTables");
 
         DoEditorUi(Ui, &Engine->Editor.SelectedColorIndex, "SelectedColorIndex");
         DebugUi(Engine, CSz("Selected Color"), &Engine->Editor.SelectedColorSquare);

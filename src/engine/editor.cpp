@@ -266,6 +266,7 @@ DoLevelEditor(engine_resources *Engine)
         rect3i NewDims;
         if (Input->Shift.Pressed)
         {
+          Ui->RequestedForceCapture = True;
           if (Input->Ctrl.Pressed)
           {
             NewDims = ModifySelectionAABB(Editor->SelectionRegion, UpdateVector, Editor->SelectionShiftClickedFace, SelectionMode_Translate);
