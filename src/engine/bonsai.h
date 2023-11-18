@@ -455,14 +455,6 @@ NotFilled(voxel *Voxels, voxel_position VoxelP, chunk_dimension Dim)
   return Result;
 }
 
-inline voxel*
-GetVoxel( world_chunk* Chunk, voxel_position VoxelP)
-{
-  s32 VoxelIndex = GetIndex(VoxelP, Chunk->Dim);
-  voxel *Result = Chunk->Voxels + VoxelIndex;
-  return Result;
-}
-
 inline world_position
 GetAbsoluteP( world_position P, chunk_dimension WorldChunkDim)
 {

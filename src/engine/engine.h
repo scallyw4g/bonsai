@@ -18,9 +18,8 @@
 #include <engine/ray.h>
 #include <engine/mesh.h>
 
-#include <engine/editor.h>
-
 #include <engine/world_chunk.h>
+#include <engine/editor.h>
 
 #include <engine/animation.h>
 #include <engine/model.h>

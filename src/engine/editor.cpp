@@ -90,7 +90,7 @@ DoLevelEditor(engine_resources *Engine)
   UNPACK_ENGINE_RESOURCES(Engine);
 
   v2 WindowDim = {{325.f, 1200.f}};
-  local_persist window_layout Window = WindowLayout("Edit", DefaultWindowBasis(*Ui->ScreenDim, WindowDim), WindowDim);
+  local_persist window_layout Window = WindowLayout("World Edit", DefaultWindowBasis(*Ui->ScreenDim, WindowDim), WindowDim);
 
   PushWindowStart(Ui, &Window);
 
@@ -349,6 +349,7 @@ DoLevelEditor(engine_resources *Engine)
             Editor->SelectionRegion[0] = Min(P0, P1);
             Editor->SelectionRegion[1] = Max(P0, P1);
           } break;
+
         }
       }
     } break;
@@ -440,12 +441,31 @@ DoLevelEditor(engine_resources *Engine)
 
 
 
+  if (Editor->SelectionClicks == 2)
+  {
+    if (Input->Ctrl.Pressed && Input->C.Clicked)
+    {
+      Editor->CopyRegion = AABBMinMax(Editor->SelectionRegion[0], Editor->SelectionRegion[1]);
+
+      s32 VoxelCount = Volume(GetDim(Editor->CopyRegion));
+
+      Leak("voxel *V = Allocate(voxel, Engine->Memory, VoxelCount)");
+      voxel *V = Allocate(voxel, Engine->Memory, VoxelCount);
+
+      /* GatherVoxelsOverlappingArea(world *World, rect3i AABB, world_chunk_ptr_buffer *ChunkBuffer, voxel *Voxels, s32 VoxelCount) */
+      Leak("");
+      world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, Editor->CopyRegion, Engine->Memory);
+      GatherVoxelsOverlappingArea(World, Rect3i(Editor->CopyRegion), &Chunks, V, VoxelCount);
+    }
+  }
+
+
   //
   // Highlight moused over voxel
   //
   if (Engine->MousedOverVoxel.Tag)
   {
     v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, HighlightVoxel));
-    DEBUG_HighlightVoxel( Engine, SimP, WHITE, 0.05f);
+    DEBUG_HighlightVoxel( Engine, SimP, ORANGE, 0.075f);
   }
 }

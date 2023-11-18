@@ -277,6 +277,11 @@ struct world_chunk
 /* CAssert(sizeof(world_chunk) == CACHE_LINE_SIZE); */
 #pragma pack(pop)
 
+typedef world_chunk* world_chunk_ptr;
+
+poof(buffer(world_chunk_ptr))
+#include <generated/buffer_world_chunk_ptr.h>
+
 struct octave
 {
   v3 Freq;
@@ -496,6 +501,15 @@ GetPermMeshForChunk(mesh_freelist*, u32, memory_arena*);
 link_internal untextured_3d_geometry_buffer*
 GetPermMeshForChunk(tiered_mesh_freelist*, u32 , memory_arena* );
 
+link_internal u32
+MapIntoQueryBox(v3 SimSpaceVoxP, v3 SimSpaceQueryMinP, voxel_position SimSpaceQueryDim);
+
+link_internal u32
+MapIntoQueryBox(v3i SimSpaceVoxP, v3i SimSpaceQueryMinP, voxel_position SimSpaceQueryDim);
+
+link_internal world_chunk*
+GetWorldChunkFromHashtable(world *World, world_position P);
+
 /* link_internal untextured_3d_geometry_buffer * */
 /* SetMesh(world_chunk *Chunk, world_chunk_mesh_bitfield MeshBit, mesh_freelist *MeshFreelist, memory_arena *PermMemory); */
 
@@ -515,5 +529,13 @@ IsInsideVisibleRegion(world *World, v3i P)
 {
   rect3i VRRect = GetVisibleRegionRect(World);
   b32 Result = IsInside(P, VRRect);
+  return Result;
+}
+
+inline voxel*
+GetVoxel(world_chunk* Chunk, voxel_position VoxelP)
+{
+  s32 VoxelIndex = GetIndex(VoxelP, Chunk->Dim);
+  voxel *Result = Chunk->Voxels + VoxelIndex;
   return Result;
 }

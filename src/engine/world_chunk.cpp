@@ -329,7 +329,7 @@ FreeWorldChunk(world *World, world_chunk *Chunk, tiered_mesh_freelist* MeshFreel
 }
 
 link_internal world_chunk*
-GetWorldChunkFromHashtable( world *World, world_position P)
+GetWorldChunkFromHashtable(world *World, world_position P)
 {
   /* TIMED_FUNCTION(); */ // This makes things much slower
 
