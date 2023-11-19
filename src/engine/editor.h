@@ -86,8 +86,6 @@ GatherVoxelsOverlappingArea(world *World, rect3i AABB, world_chunk_ptr_buffer *C
 {
   Assert(Volume(AABB) == VoxelCount);
 
-  /* world_chunk_ptr_buffer ChunkBuffer = GatherChunksOverlappingArea(World, Region); */
-
   v3i QueryDim = GetDim(AABB);
   v3i SimSpaceQueryDim = QueryDim;
 

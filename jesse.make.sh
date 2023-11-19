@@ -32,12 +32,12 @@
 # OPT="-O2"
 
 ./make.sh $OPT \
-  BuildSingleExample examples/turn_based \
   BuildExecutables \
+  BuildSingleExample examples/turn_based \
   BuildSingleExample examples/transparency \
+  BuildDebugSystem \
   # BuildSingleExample tools/voxel_synthesis_rule_baker \
   # BuildSingleExample examples/the_wanderer \
-  # BuildDebugSystem \
   # BuildSingleExample examples/blank_project \
 #   # BuildTests \
 #   # BuildSingleExample examples/turn_based2

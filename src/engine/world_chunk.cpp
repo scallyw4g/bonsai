@@ -3740,7 +3740,6 @@ BlitAssetIntoWorld(engine_resources *Engine, asset *Asset, cp Origin)
       QueueChunkForMeshRebuild(&Engine->Stdlib.Plat.LowPriority, DestChunk);
     }
   }
-
 }
 
 link_internal void
@@ -3785,6 +3784,17 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
 
       MinPCoarse = SimSpaceToCanonical(World, MinP0 - V3(MinPStroke) - V3(Global_ChunkApronMinDim));
       MaxPCoarse = SimSpaceToCanonical(World, MaxP0 + V3(MaxPStroke) + V3(Global_ChunkApronMaxDim));
+    } break;
+
+    case type_world_update_op_shape_params_chunk_data:
+    {
+      auto *ShapeChunk = SafeCast(world_update_op_shape_params_chunk_data, Shape);
+
+      v3 MinSimP = ShapeChunk->SimSpaceOrigin;
+      v3 MaxSimP = MinSimP + ShapeChunk->Data.Dim;
+
+      MinPCoarse = SimSpaceToCanonical(World, MinSimP-MinPStroke);
+      MaxPCoarse = SimSpaceToCanonical(World, MaxSimP+MaxPStroke);
     } break;
 
     case type_world_update_op_shape_params_asset:
@@ -3997,6 +4007,14 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
     /* v3i SimSpaceVoxPExact = V3i(xVoxel, yVoxel, zVoxel) + SimSpaceQueryAABB.Min; */
 
+    // NOTE(Jesse): These are here because they're common across the asset and chunk_data
+    // paths, but there's no way to zero-init them and check if the first one got hit.
+    //
+    // Instead of doing this, we should probably factor the common code into a function
+    // and just call it in each case, without a [[fallthrough]]
+    chunk_data *Data = 0;
+    v3 SimOrigin = {};
+
     switch (Shape.Type)
     {
       InvalidCase(type_world_update_op_shape_params_noop);
@@ -4202,33 +4220,42 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
       } break;
 
-      case type_world_update_op_shape_params_asset:
       {
-        // Not implemented
-        Assert(Modifier == WorldUpdateOperationModeModifier_None);
-
-        world_update_op_shape_params_asset *AssetJob = SafeCast(world_update_op_shape_params_asset, &Shape);
-        asset *Asset = AssetJob->Asset;
-        /* BlitAssetIntoWorld(Engine, Asset, Origin, Memory); */
-
-        v3 AssetOriginP = GetSimSpaceP(World, AssetJob->Origin);
-
-        DimIterator(x, y, z, SimSpaceQueryDim)
+        case type_world_update_op_shape_params_asset:
         {
-          v3i SimRelVoxP = V3i(x,y,z);
-          v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
-          V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
+          Assert(Modifier == WorldUpdateOperationModeModifier_None);
+          world_update_op_shape_params_asset *AssetJob = SafeCast(world_update_op_shape_params_asset, &Shape);
+          asset *Asset = AssetJob->Asset;
+          Data = Asset->Model.Vox.ChunkData;
+          SimOrigin = GetSimSpaceP(World, AssetJob->Origin);
+        } [[fallthrough]];
 
+        case type_world_update_op_shape_params_chunk_data:
+        {
+          // Not implemented
+          Assert(Modifier == WorldUpdateOperationModeModifier_None);
 
-          /* s32 AssetVoxelIndex = GetIndex(OriginToCurrentVoxP, Asset->Model.Dim); */
-          /* if (AssetVoxelIndex != -1) */
+          if (Data == 0)
           {
-            v3i OriginToCurrentVoxP = SimVoxP - AssetOriginP;
-            voxel *AssetV = TryGetVoxel(Asset->Model.Vox.ChunkData, OriginToCurrentVoxP);
-            if (AssetV && (AssetV->Flags&Voxel_Filled)) { *V = *AssetV; }
+            auto *Casted = SafeCast(world_update_op_shape_params_chunk_data, &Shape);
+            Data = &Casted->Data;
+            SimOrigin = Casted->SimSpaceOrigin;
           }
-        }
-      } break;
+
+          DimIterator(x, y, z, SimSpaceQueryDim)
+          {
+            v3i SimRelVoxP = V3i(x,y,z);
+            v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
+            V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
+
+            {
+              v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
+              voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
+              if (AssetV && (AssetV->Flags&Voxel_Filled)) { *V = *AssetV; }
+            }
+          }
+        } break;
+      }
 
     }
   }

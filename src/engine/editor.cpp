@@ -445,17 +445,32 @@ DoLevelEditor(engine_resources *Engine)
   {
     if (Input->Ctrl.Pressed && Input->C.Clicked)
     {
-      Editor->CopyRegion = AABBMinMax(Editor->SelectionRegion[0], Editor->SelectionRegion[1]);
+      Editor->CopyRegion = AABBMinMax(Editor->SelectionRegion[0], Editor->SelectionRegion[1]+1);
+    }
 
-      s32 VoxelCount = Volume(GetDim(Editor->CopyRegion));
-
+    if (Input->Ctrl.Pressed && Input->V.Clicked)
+    {
+      v3 CopyDim = GetDim(Editor->CopyRegion);
+      s32 VoxelCount = Volume(CopyDim);
       Leak("voxel *V = Allocate(voxel, Engine->Memory, VoxelCount)");
       voxel *V = Allocate(voxel, Engine->Memory, VoxelCount);
 
-      /* GatherVoxelsOverlappingArea(world *World, rect3i AABB, world_chunk_ptr_buffer *ChunkBuffer, voxel *Voxels, s32 VoxelCount) */
       Leak("");
       world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, Editor->CopyRegion, Engine->Memory);
       GatherVoxelsOverlappingArea(World, Rect3i(Editor->CopyRegion), &Chunks, V, VoxelCount);
+
+      chunk_data D = {};
+      D.Dim = V3i(CopyDim);
+      D.Voxels = V;
+
+      world_update_op_shape_params_chunk_data ChunkDataShape = { D, Editor->SelectionRegion[0] };
+
+      world_update_op_shape Shape =
+      {
+        type_world_update_op_shape_params_chunk_data,
+        .world_update_op_shape_params_chunk_data = ChunkDataShape,
+      };
+      QueueWorldUpdateForRegion(Engine, {}, &Shape, {}, World->Memory);
     }
   }
 

@@ -811,7 +811,6 @@ DoEngineDebug(engine_resources *Engine)
                 EntityOrigin
               };
 
-
               asset_spawn_mode AssetSpawnMode = {};
               GetRadioEnum(&AssetSpawnModeRadioGroup, &AssetSpawnMode);
               switch (AssetSpawnMode)

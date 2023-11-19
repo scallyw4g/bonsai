@@ -76,6 +76,7 @@ enum world_update_op_shape_type
   type_world_update_op_shape_params_sphere,
   type_world_update_op_shape_params_rect,
   type_world_update_op_shape_params_asset,
+  type_world_update_op_shape_params_chunk_data,
 };
 
 struct world_update_op_shape_params_sphere
@@ -98,13 +99,22 @@ struct world_update_op_shape_params_asset
   cp Origin;
 };
 
+struct world_update_op_shape_params_chunk_data
+{
+  chunk_data Data;
+  v3 SimSpaceOrigin;
+  /* cp Origin; */
+};
+
+
 struct world_update_op_shape
 {
   world_update_op_shape_type Type;
   union {
-    world_update_op_shape_params_sphere world_update_op_shape_params_sphere;
-    world_update_op_shape_params_rect   world_update_op_shape_params_rect;
-    world_update_op_shape_params_asset  world_update_op_shape_params_asset;
+    world_update_op_shape_params_sphere     world_update_op_shape_params_sphere;
+    world_update_op_shape_params_rect       world_update_op_shape_params_rect;
+    world_update_op_shape_params_asset      world_update_op_shape_params_asset;
+    world_update_op_shape_params_chunk_data world_update_op_shape_params_chunk_data;
   };
 };
 
