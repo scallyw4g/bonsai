@@ -158,7 +158,7 @@ poof(
       u32 Index = GetIndexOfNthSetBit(u32(Selection), 1);
 
       ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Index;
-      Ensure(Toggle(RadioGroup->Ui, ToggleHandle));
+      Ensure( ToggleRadioButton(RadioGroup, ToggleHandle) );
     }
 
     link_internal void
