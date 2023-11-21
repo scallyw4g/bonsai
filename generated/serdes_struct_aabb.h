@@ -6,12 +6,11 @@ Serialize(native_file *File, aabb *Element)
 
   b32 Result = True;
 
-  Result &= Serialize(File, &Element->Center);
+  Result &= Serialize(File, &Element->Min);
 
 
 
-  Result &= Serialize(File, &Element->Radius);
-
+  Result &= Serialize(File, &Element->Max);
 
 
 
@@ -26,13 +25,12 @@ link_internal b32
 Deserialize(u8_stream *Bytes, aabb *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  Result &= Deserialize(Bytes, &Element->Center, Memory);
+  Result &= Deserialize(Bytes, &Element->Min, Memory);
 
 
 
 
-  Result &= Deserialize(Bytes, &Element->Radius, Memory);
-
+  Result &= Deserialize(Bytes, &Element->Max, Memory);
 
 
 

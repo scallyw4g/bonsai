@@ -5,6 +5,22 @@ RectMinMax(v2 Min, v2 Max)
   return Result;
 }
 
+link_internal v2
+GetRadius(rect2 *Rect)
+{
+  v2 Dim = Rect->Max - Rect->Min;
+  v2 Result = Dim/2;
+  return Result;
+}
+
+link_internal v2
+GetCenter(rect2 *Rect)
+{
+  v2 Rad = GetRadius(Rect);
+  v2 Result = Rect->Min + Rad;
+  return Result;
+}
+
 link_internal rect2
 RectMinDim(v2 Min, v2 Dim)
 {

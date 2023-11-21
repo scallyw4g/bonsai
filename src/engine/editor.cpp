@@ -172,6 +172,7 @@ DoLevelEditor(engine_resources *Engine)
     {
       ray Ray = MaybeRay.Ray;
 
+      v3 SelectionAABBRadius = GetRadius(&SelectionAABB);
       AABBTest = Intersect(SelectionAABB, &Ray);
       face_index Face = AABBTest.Face;
 
@@ -190,7 +191,7 @@ DoLevelEditor(engine_resources *Engine)
           case FaceIndex_Top:
           {
             v3 HighlightInset = V3(InsetWidth, InsetWidth, 0.f);
-            v3 MinHiP = SelectionMinP + (SelectionAABB.Radius*V3(0.f, 0.f, 2.f)) + HighlightInset;
+            v3 MinHiP = SelectionMinP + (SelectionAABBRadius*V3(0.f, 0.f, 2.f)) + HighlightInset;
             v3 MaxHiP = SelectionMaxP - HighlightInset;
             DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
           } break;
@@ -199,7 +200,7 @@ DoLevelEditor(engine_resources *Engine)
           {
             v3 HighlightInset = V3(InsetWidth, InsetWidth, 0.f);
             v3 MinHiP = SelectionMinP + HighlightInset;
-            v3 MaxHiP = SelectionMaxP - (SelectionAABB.Radius*V3(0.f, 0.f, 2.f)) - HighlightInset;
+            v3 MaxHiP = SelectionMaxP - (SelectionAABBRadius*V3(0.f, 0.f, 2.f)) - HighlightInset;
             DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
           } break;
 
@@ -207,14 +208,14 @@ DoLevelEditor(engine_resources *Engine)
           {
             v3 HighlightInset = V3(0.f, InsetWidth, InsetWidth);
             v3 MinHiP = SelectionMinP + HighlightInset;
-            v3 MaxHiP = SelectionMaxP - (SelectionAABB.Radius*V3(2.f, 0.f, 0.f)) - HighlightInset;
+            v3 MaxHiP = SelectionMaxP - (SelectionAABBRadius*V3(2.f, 0.f, 0.f)) - HighlightInset;
             DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
           } break;
 
           case FaceIndex_Right:
           {
             v3 HighlightInset = V3(0.f, InsetWidth, InsetWidth);
-            v3 MinHiP = SelectionMinP + (SelectionAABB.Radius*V3(2.f, 0.f, 0.f)) + HighlightInset;
+            v3 MinHiP = SelectionMinP + (SelectionAABBRadius*V3(2.f, 0.f, 0.f)) + HighlightInset;
             v3 MaxHiP = SelectionMaxP - HighlightInset;
             DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
           } break;
@@ -223,14 +224,14 @@ DoLevelEditor(engine_resources *Engine)
           {
             v3 HighlightInset = V3(InsetWidth, 0.f, InsetWidth);
             v3 MinHiP = SelectionMinP + HighlightInset;
-            v3 MaxHiP = SelectionMaxP - (SelectionAABB.Radius*V3(0.f, 2.f, 0.f)) - HighlightInset;
+            v3 MaxHiP = SelectionMaxP - (SelectionAABBRadius*V3(0.f, 2.f, 0.f)) - HighlightInset;
             DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
           } break;
 
           case FaceIndex_Front:
           {
             v3 HighlightInset = V3(InsetWidth, 0.f, InsetWidth);
-            v3 MinHiP = SelectionMinP + (SelectionAABB.Radius*V3(0.f, 2.f, 0.f)) + HighlightInset;
+            v3 MinHiP = SelectionMinP + (SelectionAABBRadius*V3(0.f, 2.f, 0.f)) + HighlightInset;
             v3 MaxHiP = SelectionMaxP - HighlightInset;
             DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
           } break;
@@ -341,7 +342,7 @@ DoLevelEditor(engine_resources *Engine)
               /* Editor->SelectionRegion.Min = MouseP; */
 
               auto MouseP = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel.Value));
-              Editor->SelectionRegion.Center = MouseP;
+              Editor->SelectionRegion.Min = MouseP;
             }
           } break;
 

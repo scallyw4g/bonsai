@@ -42,7 +42,7 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim, b32 Colorf
   }
 
 
-  System->SpawnRegion = aabb(Offset, V3(0.16f, 0.16f, 0.02f)*Dim);
+  System->SpawnRegion = RectCenterRad(Offset, V3(0.16f, 0.16f, 0.02f)*Dim);
 
 
   System->EmissionLifespan = PARTICLE_SYSTEM_EMIT_FOREVER;
@@ -103,7 +103,7 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, un
   System->ParticleLightEmissionChance = 0.05f;
   System->ParticleLightEmission = 0.1f;
 
-  System->SpawnRegion = aabb(Offset, V3(Radius*0.20f) );
+  System->SpawnRegion = RectCenterRad(Offset, V3(Radius*0.20f) );
 
   System->EmissionLifespan = 0.12f;
   System->LifespanMod = 0.5f;
@@ -155,7 +155,7 @@ SpawnSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, untext
   System->Colors[4] = GREY_0;
   System->Colors[5] = GREY_0;
 
-  System->SpawnRegion = aabb(Offset, V3(Radius, Radius, Radius*0.5f)*0.75f);
+  System->SpawnRegion = RectCenterRad(Offset, V3(Radius, Radius, Radius*0.5f)*0.75f);
 
   System->EmissionDelay = 0.25f;
 
@@ -206,7 +206,7 @@ SpawnPersistantSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radi
   System->Colors[4] = GREY_0;
   System->Colors[5] = GREY_0;
 
-  System->SpawnRegion = aabb(Offset, V3(Radius, Radius, Radius*0.5f)*0.75f);
+  System->SpawnRegion = RectCenterRad(Offset, V3(Radius, Radius, Radius*0.5f)*0.75f);
 
   System->EmissionLifespan = f32_MAX;
 
@@ -248,7 +248,7 @@ SpawnSplotionBitty(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius
   System->Colors[4] = GREY_4;
   System->Colors[5] = GREY_5;
 
-  System->SpawnRegion = aabb(Offset, V3(Radius) );
+  System->SpawnRegion = RectCenterRad(Offset, V3(Radius) );
 
   System->ParticleStartingTransparency = 0.5f;
 

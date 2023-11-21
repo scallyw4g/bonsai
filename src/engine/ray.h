@@ -34,8 +34,8 @@ struct aabb_intersect_result
 link_internal aabb_intersect_result
 Intersect(aabb AABB, ray *Ray)
 {
-  v3 AABBMin = AABB.Center - AABB.Radius;
-  v3 AABBMax = AABB.Center + AABB.Radius;
+  v3 AABBMin = AABB.Min;
+  v3 AABBMax = AABB.Max;
 
   // Intersection of the the xMin plane
   r32 tmin = (AABBMin.x - Ray->Origin.x) / Ray->Dir.x;

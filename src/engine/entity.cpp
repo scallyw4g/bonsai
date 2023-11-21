@@ -966,11 +966,8 @@ SpawnParticle(particle_system *System)
   r32 Y = RandomBilateral(&System->Entropy);
   r32 Z = RandomBilateral(&System->Entropy);
 
-  // NOTE(Jesse): Normalizing this vector makes the spawn region spherical.
-  // Not sure how we want to control that, but it should probably be parameterized
   v3 Random = Normalize(V3(X,Y,Z));
-
-  Particle->Offset = (Random*System->SpawnRegion.Radius) + System->SpawnRegion.Center;
+  Particle->Offset = Random*GetDim(System->SpawnRegion);
 
   v3 TurbMin = System->ParticleTurbMin;
   v3 TurbMax = System->ParticleTurbMax;

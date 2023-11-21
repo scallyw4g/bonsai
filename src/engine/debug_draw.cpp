@@ -240,8 +240,8 @@ DEBUG_DrawAABB(engine_resources *Engine, v3 MinP, v3 MaxP, u32 ColorIndex, r32 T
 link_internal void
 DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, aabb Rect, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {
-  v3 MinP = Rect.Center - Rect.Radius;
-  v3 MaxP = Rect.Center + Rect.Radius;
+  v3 MinP = Rect.Min;
+  v3 MaxP = Rect.Max;
   DEBUG_DrawAABB( Mesh, MinP, MaxP, ColorIndex, Thickness );
   return;
 }
