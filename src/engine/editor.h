@@ -7,8 +7,10 @@ struct level_editor
 
   u32 SelectionClicks;
 
-  rect3 SelectionRegion;
-  rect3 CopyRegion;
+  cp Click0;
+
+  rect3cp SelectionRegion;
+  rect3cp CopyRegion;
 
   // Recorded when shift-clicking on the selection to manipulate it
   face_index SelectionShiftClickedFace;

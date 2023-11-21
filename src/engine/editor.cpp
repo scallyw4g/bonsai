@@ -146,26 +146,30 @@ DoLevelEditor(engine_resources *Engine)
     {
       if (Engine->MousedOverVoxel.Tag)
       {
-        auto MouseP = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel.Value));
-        Editor->SelectionRegion = AABBMinMax(GetMin(Editor->SelectionRegion), MouseP);
+        auto MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
+        MouseP.Offset = Floor(MouseP.Offset);
+        if (Editor->SelectionClicks == 0) { Editor->Click0 = MouseP; }
 
-        /* auto Radius = Abs(SimMouseP - Editor->SelectionRegion.Center); */
-        /* auto MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value); */
-        /* Editor->SelectionRegion = RectMinMax(Editor->SelectionRegion.Min, MouseP); */
+        cp MinP = Min(Editor->Click0, MouseP);
+        cp MaxP = Max(Editor->Click0, MouseP);
+        /* Assert(MinP <= MaxP); */
+        Editor->SelectionRegion = RectMinMax(MinP, MaxP);
       }
     }
     else { Thickness = 0.20f; }
 
-    /* v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min); */
-    /* v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max); */
+    v3 _SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
+    v3 _SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max) + 1.f;
+    v3 SelectionMinP = Min(_SelectionMinP, _SelectionMaxP);
+    v3 SelectionMaxP = Max(_SelectionMinP, _SelectionMaxP);
     /* cp SelectionMinP = Editor->SelectionRegion.Min; */
     /* cp SelectionMaxP = Editor->SelectionRegion.Max; */
-    v3 SelectionMinP = GetMin(Editor->SelectionRegion);
-    v3 SelectionMaxP = GetMax(Editor->SelectionRegion);
+    /* v3 SelectionMinP = GetMin(Editor->SelectionRegion); */
+    /* v3 SelectionMaxP = GetMax(Editor->SelectionRegion); */
 
     u8 BaseColor = WHITE;
 
-    rect3 SelectionAABB = AABBMinMax(SelectionMinP,SelectionMaxP); //Editor->SelectionRegion;
+    rect3 SelectionAABB = AABBMinMax(SelectionMinP, SelectionMaxP); //Editor->SelectionRegion;
 
     maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection, Camera, World->ChunkDim);
     if (MaybeRay.Tag == Maybe_Yes)
@@ -295,8 +299,8 @@ DoLevelEditor(engine_resources *Engine)
         if (!Input->LMB.Pressed)
         {
           // Make NewDims permanent
-          Editor->SelectionRegion = Rect3(&NewDims);
-          /* Editor->SelectionRegion = Rect3CP(&NewDims); */
+          /* Editor->SelectionRegion = Rect3(&NewDims); */
+          Editor->SelectionRegion = Rect3CP(&NewDims);
           Editor->SelectionShiftClickedFace = FaceIndex_None;
         }
       }
@@ -304,7 +308,13 @@ DoLevelEditor(engine_resources *Engine)
 
     // Draw selection box
     //
-    DEBUG_DrawSimSpaceAABB(Engine, &SelectionAABB, BaseColor, Thickness);
+
+    v3 P0 = GetRenderP(Engine, SelectionAABB.Min);
+    v3 P1 = GetRenderP(Engine, SelectionAABB.Max);
+
+    DEBUG_DrawAABB(Engine, P0, P1, BaseColor, Thickness);
+
+    /* DEBUG_DrawSimSpaceAABB(Engine, &SelectionAABB, BaseColor, Thickness); */
   }
 
 
@@ -338,11 +348,13 @@ DoLevelEditor(engine_resources *Engine)
             if (Engine->MousedOverVoxel.Tag)
             {
               Editor->SelectionClicks += 1;
-              /* auto MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value); */
+              /* auto MouseP = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel.Value)); */
               /* Editor->SelectionRegion.Min = MouseP; */
 
-              auto MouseP = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel.Value));
-              Editor->SelectionRegion.Min = MouseP;
+              auto MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
+              MouseP.Offset = Floor(MouseP.Offset);
+              /* Editor->SelectionRegion.Min = MouseP; */
+              Editor->Click0 = MouseP;
             }
           } break;
 
@@ -361,8 +373,10 @@ DoLevelEditor(engine_resources *Engine)
       {
         world_update_op_shape Shape = {
           .Type = type_world_update_op_shape_params_rect,
-          .world_update_op_shape_params_rect.P0 = GetMin(Editor->SelectionRegion),
-          .world_update_op_shape_params_rect.P1 = GetMax(Editor->SelectionRegion),
+          /* .world_update_op_shape_params_rect.P0 = GetMin(Editor->SelectionRegion), */
+          /* .world_update_op_shape_params_rect.P1 = GetMax(Editor->SelectionRegion), */
+          .world_update_op_shape_params_rect.P0 = Floor(GetSimSpaceP(World, Editor->SelectionRegion.Min)),
+          .world_update_op_shape_params_rect.P1 = Floor(GetSimSpaceP(World, Editor->SelectionRegion.Max)),
           /* .world_update_op_shape_params_rect.Region = Editor->SelectionRegion, */
         };
         QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, SafeTruncateU8(Editor->SelectedColorIndex), Engine->Memory);
@@ -487,6 +501,6 @@ DoLevelEditor(engine_resources *Engine)
   if (Engine->MousedOverVoxel.Tag)
   {
     v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, HighlightVoxel));
-    DEBUG_HighlightVoxel( Engine, SimP, ORANGE, 0.075f);
+    DEBUG_HighlightVoxel( Engine, SimP, RED, 0.075f);
   }
 }

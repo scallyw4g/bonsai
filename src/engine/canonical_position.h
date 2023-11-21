@@ -240,6 +240,7 @@ link_internal rect3cp
 Rect3CP(rect3i *Rect)
 {
   rect3cp Result = {};
+  NotImplemented;
   return Result;
 }
 
@@ -269,6 +270,46 @@ link_internal b32
 IsInside(cp P, rect3cp Rect)
 {
   b32 Result = (P >= Rect.Min && P < Rect.Max);
+  return Result;
+}
+
+link_internal cp
+Max(cp P0, cp P1)
+{
+  cp Result = P0;
+
+  RangeIterator(ElementIndex, 3)
+  {
+    if (P1.WorldP.E[ElementIndex] > P0.WorldP.E[ElementIndex])
+    {
+      Result.WorldP.E[ElementIndex] = P1.WorldP.E[ElementIndex];
+      Result.Offset.E[ElementIndex] = P1.Offset.E[ElementIndex];
+    }
+    else if (P1.WorldP.E[ElementIndex] == P0.WorldP.E[ElementIndex])
+    {
+      Result.Offset.E[ElementIndex] = Max(P0.Offset.E[ElementIndex], P1.Offset.E[ElementIndex]);
+    }
+  }
+  return Result;
+}
+
+link_internal cp
+Min(cp P0, cp P1)
+{
+  cp Result = P0;
+
+  RangeIterator(ElementIndex, 3)
+  {
+    if (P1.WorldP.E[ElementIndex] < P0.WorldP.E[ElementIndex])
+    {
+      Result.WorldP.E[ElementIndex] = P1.WorldP.E[ElementIndex];
+      Result.Offset.E[ElementIndex] = P1.Offset.E[ElementIndex];
+    }
+    else if (P1.WorldP.E[ElementIndex] == P0.WorldP.E[ElementIndex])
+    {
+      Result.Offset.E[ElementIndex] = Min(P0.Offset.E[ElementIndex], P1.Offset.E[ElementIndex]);
+    }
+  }
   return Result;
 }
 
