@@ -6,13 +6,20 @@ struct level_editor
   s32 SelectedColorIndex;
 
   u32 SelectionClicks;
-  v3 SelectionRegion[2];
-  aabb CopyRegion;
+
+  rect3 SelectionRegion;
+  rect3 CopyRegion;
 
   // Recorded when shift-clicking on the selection to manipulate it
   face_index SelectionShiftClickedFace;
   v3 SelectionShiftClickedP[2];
 };
+
+link_internal b32
+SelectionIncomplete(u32 SelectionClicks)
+{
+  return SelectionClicks == 0 || SelectionClicks == 1;
+}
 
 struct maybe_v3
 {

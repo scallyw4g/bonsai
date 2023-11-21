@@ -269,4 +269,10 @@ poof(
   }
 )
 
+link_internal void
+DoEditorUi(renderer_2d *Ui, aabb *Element, const char* Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS);
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, v3i *Element, const char* Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS);
+
 link_internal engine_debug * GetEngineDebug();

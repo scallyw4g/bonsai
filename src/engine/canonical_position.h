@@ -7,6 +7,9 @@ struct canonical_position
 
 typedef canonical_position cp;
 
+
+
+
 inline canonical_position
 Canonical_Position(s32 I)
 {
@@ -191,11 +194,83 @@ inline canonical_position
 operator-(canonical_position P1, canonical_position P2)
 {
   canonical_position Result;
-
   Result.Offset = P1.Offset - P2.Offset;
   Result.WorldP = P1.WorldP - P2.WorldP;
-
   return Result;
 }
+
+inline b32
+operator>(cp P1, cp P2)
+{
+  b32 Result = (P1.WorldP > P2.WorldP) && (P1.Offset > P2.Offset);
+  return Result;
+}
+
+inline b32
+operator<(cp P1, cp P2)
+{
+  b32 Result = (P1.WorldP < P2.WorldP) && (P1.Offset < P2.Offset);
+  return Result;
+}
+
+inline b32
+operator>=(cp P1, cp P2)
+{
+  b32 Result = (P1.WorldP >= P2.WorldP) && (P1.Offset >= P2.Offset);
+  return Result;
+}
+
+inline b32
+operator<=(cp P1, cp P2)
+{
+  b32 Result = (P1.WorldP <= P2.WorldP) && (P1.Offset <= P2.Offset);
+  return Result;
+}
+
+
+
+
+struct rect3cp
+{
+  cp Min;
+  cp Max;
+};
+
+link_internal rect3cp
+Rect3CP(rect3i *Rect)
+{
+  rect3cp Result = {};
+  return Result;
+}
+
+link_internal rect3cp
+Rect3CP(rect3 *Rect)
+{
+  rect3cp Result = {};
+  NotImplemented;
+  return Result;
+}
+
+link_internal rect3cp
+RectMinMax(cp Min, cp Max)
+{
+  rect3cp Result = { .Min = Min, .Max = Max };
+  return Result;
+}
+
+link_internal rect3cp
+RectMinDim(v3i WorldChunkDim, cp Min, v3 Dim)
+{
+  rect3cp Result = { Min, Canonicalize(WorldChunkDim, Min+Dim) };
+  return Result;
+}
+
+link_internal b32
+IsInside(cp P, rect3cp Rect)
+{
+  b32 Result = (P >= Rect.Min && P < Rect.Max);
+  return Result;
+}
+
 
 link_internal cp SimSpaceToCanonical( world *World, v3 P );

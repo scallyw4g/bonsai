@@ -3779,11 +3779,16 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
     {
       auto *ShapeRect = SafeCast(world_update_op_shape_params_rect, Shape);
 
-      v3 MinP0 = Min(ShapeRect->P0, ShapeRect->P1);
-      v3 MaxP0 = Max(ShapeRect->P0, ShapeRect->P1);
+#if 0
+      MinPCoarse = ShapeRect->Region.Min;
+      MaxPCoarse = ShapeRect->Region.Max;
+#else
+      v3 MinP = Min(ShapeRect->P0, ShapeRect->P1);
+      v3 MaxP = Max(ShapeRect->P0, ShapeRect->P1);
 
-      MinPCoarse = SimSpaceToCanonical(World, MinP0 - V3(MinPStroke) - V3(Global_ChunkApronMinDim));
-      MaxPCoarse = SimSpaceToCanonical(World, MaxP0 + V3(MaxPStroke) + V3(Global_ChunkApronMaxDim));
+      MinPCoarse = SimSpaceToCanonical(World, MinP - V3(MinPStroke) - V3(Global_ChunkApronMinDim));
+      MaxPCoarse = SimSpaceToCanonical(World, MaxP + V3(MaxPStroke) + V3(Global_ChunkApronMaxDim));
+#endif
     } break;
 
     case type_world_update_op_shape_params_chunk_data:
@@ -3931,10 +3936,10 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   world_chunk **ChunkBuffer   = Job->ChunkBuffer;
   u32 ChunkCount              = Job->ChunkCount;
 
-  auto P0 = GetSimSpaceP(World, MinP);
-  auto P1 = GetSimSpaceP(World, MaxP);
-  /* auto SimSpaceMin = Min(P0, P1); */ 
-  /* auto SimSpaceMax = Max(P0, P1); */
+  auto _P0 = GetSimSpaceP(World, MinP);
+  auto _P1 = GetSimSpaceP(World, MaxP);
+  auto P0 = Min(_P0, _P1); 
+  auto P1 = Max(_P0, _P1);
 
   rect3i SimSpaceQueryAABB = Rect3iMinMax( V3i(P0), V3i(P1));
 
@@ -4186,6 +4191,8 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
         // NOTE(Jesse): These _should_ already be min/maxed, so we can change these to asserts.
         v3i P0SS = V3i(Rect->P0);
         v3i P1SS = V3i(Rect->P1);
+        /* v3i P0SS = V3i(GetSimSpaceP(World, Rect->Region.Min)); */
+        /* v3i P1SS = V3i(GetSimSpaceP(World, Rect->Region.Max)); */
 
         v3i MinSS = Min(P0SS, P1SS);
         v3i MaxSS = Max(P0SS, P1SS);
@@ -4194,27 +4201,16 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
         switch(Mode)
         {
           InvalidCase(WorldUpdateOperationMode_None);
-
+          case WorldUpdateOperationMode_Additive:    { NewVoxelValue = { Voxel_Filled, NewColor, 0, /* Transparency? */ }; } break;
           case WorldUpdateOperationMode_Subtractive: {} break;
-
-          case WorldUpdateOperationMode_Additive:
-          {
-            NewVoxelValue =
-            {
-              Voxel_Filled,
-              NewColor,
-              0, // Transparency?
-            };
-          } break;
         }
 
+        rect3i SSRect = {MinSS, MaxSS};
         DimIterator(x, y, z, SimSpaceQueryDim)
         {
           v3i SimRelVoxP = V3i(x,y,z);
           v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
           V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
-
-          rect3i SSRect = {MinSS, MaxSS};
           if (Contains(SSRect, SimVoxP)) { *V = NewVoxelValue; }
         }
 

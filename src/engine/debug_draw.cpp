@@ -209,7 +209,7 @@ DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, v3 MinP, v3 MaxP, u32 ColorI
   return;
 }
 
-void
+link_internal void
 DEBUG_DrawSimSpaceAABB(engine_resources *Engine, v3 MinP, v3 MaxP, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -219,6 +219,14 @@ DEBUG_DrawSimSpaceAABB(engine_resources *Engine, v3 MinP, v3 MaxP, u32 ColorInde
 
   untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
   DEBUG_DrawAABB(&Mesh, P0, P1, ColorIndex, Thickness);
+}
+
+void
+DEBUG_DrawSimSpaceAABB(engine_resources *Engine, aabb *AABB, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
+{
+  v3 P0 = GetMin(AABB);
+  v3 P1 = GetMax(AABB);
+  DEBUG_DrawSimSpaceAABB(Engine, P0, P1, ColorIndex, Thickness);
 }
 
 void

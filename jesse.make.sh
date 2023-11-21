@@ -34,11 +34,11 @@
 ./make.sh $OPT \
   BuildExecutables \
   BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
-#   BuildSingleExample examples/turn_based \
-#   BuildSingleExample examples/transparency \
+  BuildSingleExample examples/turn_based \
+  BuildSingleExample examples/transparency \
+  BuildSingleExample examples/blank_project \
 #   BuildDebugSystem \
   # BuildSingleExample examples/the_wanderer \
-  # BuildSingleExample examples/blank_project \
 #   # BuildTests \
 #   # BuildSingleExample examples/turn_based2
 

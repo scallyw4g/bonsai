@@ -392,8 +392,8 @@ GetSimSpaceP(world *World, world_position P)
 link_internal v3
 GetSimSpaceP(world *World, canonical_position P)
 {
-  canonical_position WorldCenter = Canonical_Position(V3(0), World->Center);
-  canonical_position CenterToP = P - WorldCenter;
+  cp WorldCenter = Canonical_Position(V3(0), World->Center);
+  cp CenterToP = P - WorldCenter;
   v3 Result = CenterToP.Offset + (CenterToP.WorldP*World->ChunkDim);
   return Result;
 }
