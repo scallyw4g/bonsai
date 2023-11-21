@@ -7,7 +7,7 @@ struct level_editor
 
   u32 SelectionClicks;
 
-  cp Click0;
+  cp SelectionBase;
 
   rect3cp SelectionRegion;
   rect3cp CopyRegion;

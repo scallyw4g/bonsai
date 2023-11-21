@@ -214,8 +214,8 @@ DEBUG_DrawSimSpaceAABB(engine_resources *Engine, v3 MinP, v3 MaxP, u32 ColorInde
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  v3 P0 = GetRenderP(World->ChunkDim, MinP, Camera);
-  v3 P1 = GetRenderP(World->ChunkDim, MaxP, Camera);
+  v3 P0 = GetRenderP(World->ChunkDim, SimSpaceToCanonical(World, MinP), Camera);
+  v3 P1 = GetRenderP(World->ChunkDim, SimSpaceToCanonical(World, MaxP), Camera);
 
   untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
   DEBUG_DrawAABB(&Mesh, P0, P1, ColorIndex, Thickness);

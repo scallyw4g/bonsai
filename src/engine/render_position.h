@@ -25,6 +25,13 @@ GetRenderP( chunk_dimension WorldChunkDim, v3 Offset, camera *Camera)
 }
 
 inline v3
+GetRenderP( engine_resources *Engine, cp P )
+{
+  v3 Result = GetRenderP(Engine->World->ChunkDim, P, Engine->Graphics->Camera);
+  return Result;
+}
+
+inline v3
 GetRenderP( engine_resources *Engine, v3 Offset )
 {
   v3 Result = GetRenderP(Engine->World->ChunkDim, Offset, Engine->Graphics->Camera);
