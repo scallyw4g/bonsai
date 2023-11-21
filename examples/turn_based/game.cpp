@@ -364,7 +364,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   }
   PushWindowEnd(Ui, &ActionsWindow);
 
-  if (Hotkeys)
+  if (!UiCapturedMouseInput(Ui))
   {
     r32 CameraSpeed = 125.f;
     v3 CameraDelta = (GetCameraRelativeInput(Hotkeys, Camera));

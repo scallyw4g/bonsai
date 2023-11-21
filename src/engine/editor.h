@@ -23,6 +23,14 @@ SelectionIncomplete(u32 SelectionClicks)
   return SelectionClicks == 0 || SelectionClicks == 1;
 }
 
+link_internal void
+ResetSelection(level_editor *Editor)
+{
+  Editor->SelectionClicks = 0;
+  Editor->SelectionBase = {};
+  Editor->SelectionRegion = {};
+}
+
 struct maybe_v3
 {
   maybe_tag Tag;

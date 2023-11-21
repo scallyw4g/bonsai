@@ -82,6 +82,17 @@ GetMax(v3 *SelectionRegion)
 
 
 link_internal void
+DoDeleteRegion(engine_resources *Engine, rect3 *AABB)
+{
+  world_update_op_shape Shape = {
+    .Type = type_world_update_op_shape_params_rect,
+    .world_update_op_shape_params_rect.P0 = AABB->Min,
+    .world_update_op_shape_params_rect.P1 = AABB->Max,
+  };
+  QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Subtractive, &Shape, SafeTruncateU8(Engine->Editor.SelectedColorIndex), Engine->Memory);
+}
+
+link_internal void
 DoLevelEditor(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -295,9 +306,8 @@ DoLevelEditor(engine_resources *Engine)
 
         // Draw selection modification region
         //
-        v3 P0 = GetRenderP(Engine, V3(NewDims.Min));
-        v3 P1 = GetRenderP(Engine, V3(NewDims.Max));
-        DEBUG_DrawAABB(Engine, P0, P1, WHITE, 0.1f);
+        rect3 Draw = Rect3(&NewDims);
+        DEBUG_DrawSimSpaceAABB(Engine, &Draw, GREEN, 0.1f);
 
         if (!Input->LMB.Pressed)
         {
@@ -375,12 +385,7 @@ DoLevelEditor(engine_resources *Engine)
     {
       if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
       {
-        world_update_op_shape Shape = {
-          .Type = type_world_update_op_shape_params_rect,
-          .world_update_op_shape_params_rect.P0 = SelectionAABB.Min,
-          .world_update_op_shape_params_rect.P1 = SelectionAABB.Max,
-        };
-        QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Subtractive, &Shape, SafeTruncateU8(Editor->SelectedColorIndex), Engine->Memory);
+        DoDeleteRegion(Engine, &SelectionAABB);
       }
     } break;
 
@@ -445,12 +450,17 @@ DoLevelEditor(engine_resources *Engine)
 
 
 
+  if (Input->Ctrl.Pressed || Input->Shift.Pressed) { Ui->RequestedForceCapture = True; }
+
+  /* Info("ForceCapture %d", Ui->RequestedForceCapture); */
+
+  if (Input->Ctrl.Pressed && Input->S.Clicked) { ResetSelection(Editor); WorldEditModeRadioGroup.ToggleBits = WorldEditMode_Select; }
+
   if (Editor->SelectionClicks == 2)
   {
-    if (Input->Ctrl.Pressed && Input->C.Clicked)
-    {
-      Editor->CopyRegion = Editor->SelectionRegion;
-    }
+    if (Input->Ctrl.Pressed && Input->D.Clicked) { DoDeleteRegion(Engine, &SelectionAABB); }
+
+    if (Input->Ctrl.Pressed && Input->C.Clicked) { Editor->CopyRegion = Editor->SelectionRegion; }
 
     if (Input->Ctrl.Pressed && Input->V.Clicked)
     {

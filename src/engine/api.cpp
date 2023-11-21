@@ -71,6 +71,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   ClearFramebuffers(Graphics, &Resources->RTTGroup);
 
+  // TODO(Jesse): Is this random leftover debug code that can be removed?
   if (EngineDebug->SelectedAsset.Type)
   {
     asset *Asset = GetAsset(Resources, &EngineDebug->SelectedAsset);
@@ -82,9 +83,6 @@ Bonsai_FrameBegin(engine_resources *Resources)
   }
 
   MapGpuElementBuffer(GpuMap);
-
-  /* MapGpuElementBuffer(&Graphics->Bloom.GpuBuffer); */
-
   MapGpuElementBuffer(&Graphics->Transparency.GpuBuffer);
 
   if (GetEngineDebug()->DrawWorldAxies)
@@ -100,13 +98,6 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   Resources->MaybeMouseRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection, Camera, World->ChunkDim);
   Resources->MousedOverVoxel = MousePickVoxel(Resources);
-
-#if 0 // DEBUG_SYSTEM_API
-  if (GetDebugState()->UiGroup.PressedInteractionId != StringHash("GameViewport"))
-  {
-    GameInput = 0;
-  }
-#endif
 
   Graphics->Lighting.Lights.Count = 0;
 
@@ -152,12 +143,10 @@ Bonsai_SimulateAndBufferGeometry(engine_resources *Resources)
 
   {
     input *InputForCamera = 0;
-    if (UiCapturedMouseInput(Ui) == False)
-    {
-      InputForCamera = &Plat->Input;
-    }
-
     v2 MouseDelta = GetMouseDelta(Plat);
+
+    Info("UiCapturedMouseInput %d", UiCapturedMouseInput(Ui));
+    if (UiCapturedMouseInput(Ui) == False) { InputForCamera = &Plat->Input; }
     UpdateGameCamera(World, MouseDelta, InputForCamera, CameraTargetP, Camera);
 
     Resources->Graphics->gBuffer->ViewProjection =

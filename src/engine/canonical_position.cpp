@@ -44,8 +44,8 @@ link_internal rect3cp
 SimSpaceToCanonical(world *World, rect3i *Rect)
 {
   rect3cp Result = {};
-  Result.Min = Canonical_Position(World->ChunkDim, V3(Rect->Min), {});
-  Result.Max = Canonical_Position(World->ChunkDim, V3(Rect->Max), {});
+  Result.Min = SimSpaceToCanonical(World, V3(Rect->Min));
+  Result.Max = SimSpaceToCanonical(World, V3(Rect->Max));
   return Result;
 }
 
