@@ -302,8 +302,7 @@ DoLevelEditor(engine_resources *Engine)
         if (!Input->LMB.Pressed)
         {
           // Make NewDims permanent
-          /* Editor->SelectionRegion = Rect3(&NewDims); */
-          Editor->SelectionRegion = Rect3CP(&NewDims);
+          Editor->SelectionRegion = SimSpaceToCanonical(World, &NewDims);
           Editor->SelectionShiftClickedFace = FaceIndex_None;
         }
       }

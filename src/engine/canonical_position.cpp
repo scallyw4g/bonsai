@@ -34,9 +34,18 @@ Canonicalize( world *World, canonical_position *P)
 }
 
 link_internal cp
-SimSpaceToCanonical( world *World, v3 P )
+SimSpaceToCanonical(world *World, v3 P)
 {
   cp Result = Canonical_Position(World->ChunkDim, P, World->Center);
+  return Result;
+}
+
+link_internal rect3cp
+SimSpaceToCanonical(world *World, rect3i *Rect)
+{
+  rect3cp Result = {};
+  Result.Min = Canonical_Position(World->ChunkDim, V3(Rect->Min), {});
+  Result.Max = Canonical_Position(World->ChunkDim, V3(Rect->Max), {});
   return Result;
 }
 
