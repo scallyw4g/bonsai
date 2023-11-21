@@ -152,6 +152,16 @@ poof(
   func radio_button_group_for_bitfield_enum(enum_t)
   {
     link_internal void
+    RadioSelect(ui_toggle_button_group *RadioGroup, enum_t.name Selection)
+    {
+      Assert(CountBitsSet_Kernighan(u32(Selection)) == 1);
+      u32 Index = GetIndexOfNthSetBit(u32(Selection), 1);
+
+      ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Index;
+      Ensure(Toggle(RadioGroup->Ui, ToggleHandle));
+    }
+
+    link_internal void
     GetRadioEnum(ui_toggle_button_group *RadioGroup, enum_t.name *Result)
     {
       if (RadioGroup->ToggleBits)

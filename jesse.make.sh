@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# ./make.sh RunPoof
+./make.sh RunPoof
 # exit 1
 # [ $? -ne 0 ] && exit 1
 
@@ -37,7 +37,7 @@
   BuildSingleExample examples/turn_based \
   BuildSingleExample examples/transparency \
   BuildSingleExample examples/blank_project \
-#   BuildDebugSystem \
+  BuildDebugSystem \
   # BuildSingleExample examples/the_wanderer \
 #   # BuildTests \
 #   # BuildSingleExample examples/turn_based2

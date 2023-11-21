@@ -104,13 +104,6 @@ DoLevelEditor(engine_resources *Engine)
 
   ui_toggle_button_group WorldEditModeRadioGroup = RadioButtonGroup_world_edit_mode(Ui, umm("world_edit_mode_radio_group"), ToggleButtonGroupFlags_DrawVertical, {}, {}, {}, &DefaultStyle, V4(0, 0, 0, 16));
 
-  if (Clicked(&WorldEditModeRadioGroup, CSz("Select")))
-  {
-    Editor->SelectionClicks = 0;
-    Editor->SelectionRegion  = {};
-  }
-
-
   ui_element_reference ColorTable = PushTableStart(Ui);
     RangeIterator(ColorIndex, s32(u8_MAX)+1 )
     {
@@ -454,7 +447,9 @@ DoLevelEditor(engine_resources *Engine)
 
   /* Info("ForceCapture %d", Ui->RequestedForceCapture); */
 
-  if (Input->Ctrl.Pressed && Input->S.Clicked) { ResetSelection(Editor); WorldEditModeRadioGroup.ToggleBits = WorldEditMode_Select; }
+  if (Input->Ctrl.Pressed && Input->S.Clicked) { RadioSelect(&WorldEditModeRadioGroup, WorldEditMode_Select); ResetSelection(Editor); }
+
+  if (Clicked(&WorldEditModeRadioGroup, CSz("Select"))) { ResetSelection(Editor); }
 
   if (Editor->SelectionClicks == 2)
   {

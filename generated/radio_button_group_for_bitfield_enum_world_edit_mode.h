@@ -1,4 +1,14 @@
 link_internal void
+RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_mode Selection)
+{
+  Assert(CountBitsSet_Kernighan(u32(Selection)) == 1);
+  u32 Index = GetIndexOfNthSetBit(u32(Selection), 1);
+
+  ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Index;
+  Ensure(Toggle(RadioGroup->Ui, ToggleHandle));
+}
+
+link_internal void
 GetRadioEnum(ui_toggle_button_group *RadioGroup, world_edit_mode *Result)
 {
   if (RadioGroup->ToggleBits)
