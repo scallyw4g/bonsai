@@ -312,8 +312,8 @@ DoLevelEditor(engine_resources *Engine)
     //
 
     u8 BaseColor = WHITE;
-    v3 P0 = GetRenderP(Engine, Editor->SelectionRegion.Min);
-    v3 P1 = GetRenderP(Engine, Editor->SelectionRegion.Max);
+    /* v3 P0 = GetRenderP(Engine, Editor->SelectionRegion.Min); */
+    /* v3 P1 = GetRenderP(Engine, Editor->SelectionRegion.Max); */
     /* DEBUG_DrawAABB(Engine, P0, P1, BaseColor, Thickness); */
 
     DEBUG_DrawSimSpaceAABB(Engine, &SelectionAABB, BaseColor, Thickness);
@@ -343,12 +343,8 @@ DoLevelEditor(engine_resources *Engine)
             if (Engine->MousedOverVoxel.Tag)
             {
               Editor->SelectionClicks += 1;
-              /* auto MouseP = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel.Value)); */
-              /* Editor->SelectionRegion.Min = MouseP; */
-
               auto MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
               MouseP.Offset = Floor(MouseP.Offset);
-              /* Editor->SelectionRegion.Min = MouseP; */
               Editor->SelectionBase = MouseP;
             }
           } break;
@@ -458,28 +454,27 @@ DoLevelEditor(engine_resources *Engine)
 
     if (Input->Ctrl.Pressed && Input->V.Clicked)
     {
-      NotImplemented;
-      /* v3 CopyDim = GetDim(Editor->CopyRegion); */
-      /* s32 VoxelCount = Volume(CopyDim); */
-      /* Leak("voxel *V = Allocate(voxel, Engine->Memory, VoxelCount)"); */
-      /* voxel *V = Allocate(voxel, Engine->Memory, VoxelCount); */
+      v3 CopyDim = GetDim(World, Editor->CopyRegion);
+      s32 VoxelCount = Volume(CopyDim);
+      Leak("voxel *V = Allocate(voxel, Engine->Memory, VoxelCount)");
+      voxel *V = Allocate(voxel, Engine->Memory, VoxelCount);
 
-      /* Leak(""); */
-      /* world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, Editor->CopyRegion, Engine->Memory); */
-      /* GatherVoxelsOverlappingArea(World, Rect3i(Editor->CopyRegion), &Chunks, V, VoxelCount); */
+      Leak("");
+      world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, Editor->CopyRegion, Engine->Memory);
+      GatherVoxelsOverlappingArea(World, GetSimSpaceRect3i(World, Editor->CopyRegion), &Chunks, V, VoxelCount);
 
-      /* chunk_data D = {}; */
-      /* D.Dim = V3i(CopyDim); */
-      /* D.Voxels = V; */
+      chunk_data D = {};
+      D.Dim = V3i(CopyDim);
+      D.Voxels = V;
 
-      /* world_update_op_shape_params_chunk_data ChunkDataShape = { D, GetMin(Editor->SelectionRegion) }; */
+      world_update_op_shape_params_chunk_data ChunkDataShape = { D, GetSimSpaceP(World, Editor->SelectionRegion.Min) };
 
-      /* world_update_op_shape Shape = */
-      /* { */
-      /*   type_world_update_op_shape_params_chunk_data, */
-      /*   .world_update_op_shape_params_chunk_data = ChunkDataShape, */
-      /* }; */
-      /* QueueWorldUpdateForRegion(Engine, {}, &Shape, {}, World->Memory); */
+      world_update_op_shape Shape =
+      {
+        type_world_update_op_shape_params_chunk_data,
+        .world_update_op_shape_params_chunk_data = ChunkDataShape,
+      };
+      QueueWorldUpdateForRegion(Engine, {}, &Shape, {}, World->Memory);
     }
   }
 

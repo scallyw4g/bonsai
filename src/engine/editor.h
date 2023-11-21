@@ -56,10 +56,10 @@ poof(radio_button_group_for_bitfield_enum(world_edit_mode));
 #include <generated/radio_button_group_for_bitfield_enum_world_edit_mode.h>
 
 link_internal world_chunk_ptr_buffer
-GatherChunksOverlappingArea(world *World, aabb Region, memory_arena *Memory)
+GatherChunksOverlappingArea(world *World, rect3cp Region, memory_arena *Memory)
 {
-  auto MinP = Canonicalize(World->ChunkDim, GetMin(Region), {});
-  auto MaxP = Canonicalize(World->ChunkDim, GetMax(Region), {});
+  auto MinP = Region.Min;
+  auto MaxP = Region.Max;
 
   world_position Delta = MaxP.WorldP - MinP.WorldP + 1;
   u32 TotalChunkCount = Abs(Volume(Delta));
@@ -91,14 +91,13 @@ GatherChunksOverlappingArea(world *World, aabb Region, memory_arena *Memory)
 }
 
 link_internal void
-GatherVoxelsOverlappingArea(world *World, rect3i AABB, world_chunk_ptr_buffer *ChunkBuffer, voxel *Voxels, s32 VoxelCount)
+GatherVoxelsOverlappingArea(world *World, rect3i SimSpaceAABB, world_chunk_ptr_buffer *ChunkBuffer, voxel *Voxels, s32 VoxelCount)
 {
-  Assert(Volume(AABB) == VoxelCount);
+  Assert(Volume(SimSpaceAABB) == VoxelCount);
 
-  v3i QueryDim = GetDim(AABB);
-  v3i SimSpaceQueryDim = QueryDim;
+  v3i SimSpaceQueryDim = GetDim(SimSpaceAABB);
 
-  s32 TotalVoxels_signed = Volume(AABB);
+  s32 TotalVoxels_signed = Volume(SimSpaceAABB);
   Assert(TotalVoxels_signed > 0);
 
   u32 TotalVoxels = (u32)TotalVoxels_signed;
@@ -107,13 +106,13 @@ GatherVoxelsOverlappingArea(world *World, rect3i AABB, world_chunk_ptr_buffer *C
   voxel UnsetVoxel = { 0xff, 0xff, 0xff };
   for (u32 VoxelIndex = 0; VoxelIndex < TotalVoxels; ++VoxelIndex) { Voxels[VoxelIndex] = UnsetVoxel; }
 
-  v3i SimSpaceQueryMinP = AABB.Min;
+  v3i SimSpaceQueryMinP = SimSpaceAABB.Min;
 
   for (u32 ChunkIndex = 0; ChunkIndex < ChunkBuffer->Count; ++ChunkIndex)
   {
     world_chunk *Chunk = ChunkBuffer->Start[ChunkIndex];
     auto SimSpaceChunkRect = GetSimSpaceAABBi(World, Chunk);
-    auto SimSpaceIntersectionRect = Union(&SimSpaceChunkRect, &AABB);
+    auto SimSpaceIntersectionRect = Union(&SimSpaceChunkRect, &SimSpaceAABB);
 
     auto SimSpaceIntersectionMin = SimSpaceIntersectionRect.Min;
     auto SimSpaceIntersectionMax = SimSpaceIntersectionRect.Max;
@@ -137,7 +136,7 @@ GatherVoxelsOverlappingArea(world *World, rect3i AABB, world_chunk_ptr_buffer *C
           v3i SimSpaceVoxPExact = V3i(xVoxel, yVoxel, zVoxel) + SimSpaceChunkMin;
 
           Assert(SimSpaceQueryMinP <= SimSpaceVoxPExact);
-          u32 Index = MapIntoQueryBox(SimSpaceVoxPExact, SimSpaceQueryMinP, QueryDim);
+          u32 Index = MapIntoQueryBox(SimSpaceVoxPExact, SimSpaceQueryMinP, SimSpaceQueryDim);
           Assert(Index < TotalVoxels);
           Assert(Voxels[Index] == UnsetVoxel);
           Voxels[Index] = *V;

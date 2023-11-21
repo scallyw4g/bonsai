@@ -266,6 +266,18 @@ RectMinDim(v3i WorldChunkDim, cp Min, v3 Dim)
   return Result;
 }
 
+link_internal v3
+GetSimSpaceP(world *World, canonical_position P);
+
+link_internal v3
+GetDim(world *World, rect3cp Rect)
+{
+  v3 Min = GetSimSpaceP(World, Rect.Min);
+  v3 Max = GetSimSpaceP(World, Rect.Max);
+  v3 Result = Max-Min;
+  return Result;
+}
+
 link_internal b32
 IsInside(cp P, rect3cp Rect)
 {
@@ -310,6 +322,16 @@ Min(cp P0, cp P1)
       Result.Offset.E[ElementIndex] = Min(P0.Offset.E[ElementIndex], P1.Offset.E[ElementIndex]);
     }
   }
+  return Result;
+}
+
+struct world;
+link_internal rect3i
+GetSimSpaceRect3i(world *World, rect3cp Rect)
+{
+  v3i Min = V3i(GetSimSpaceP(World, Rect.Min));
+  v3i Max = V3i(GetSimSpaceP(World, Rect.Max));
+  rect3i Result = Rect3iMinMax(Min, Max);
   return Result;
 }
 
