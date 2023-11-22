@@ -4184,16 +4184,6 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
         world_update_op_shape_params_rect *Rect = SafeCast(world_update_op_shape_params_rect, &Shape);
 
-        // NOTE(Jesse): These _should_ already be min/maxed, so we can change these to asserts.
-        // NOTE(Jesse): These are specifically meant to truncate, not floor
-        v3i P0SS = V3i(Rect->P0);
-        v3i P1SS = V3i(Rect->P1);
-        /* v3i P0SS = V3i(GetSimSpaceP(World, Rect->Region.Min)); */
-        /* v3i P1SS = V3i(GetSimSpaceP(World, Rect->Region.Max)); */
-
-        v3i MinSS = Min(P0SS, P1SS);
-        v3i MaxSS = Max(P0SS, P1SS);
-
         voxel NewVoxelValue = {};
         switch(Mode)
         {
@@ -4202,7 +4192,11 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           case WorldUpdateOperationMode_Subtractive: {} break;
         }
 
-        rect3i SSRect = {MinSS, MaxSS};
+        // NOTE(Jesse): Outside world should have min/max'd these already
+        Assert(Rect->P0 < Rect->P1);
+
+        // NOTE(Jesse): These are specifically meant to truncate, not floor
+        rect3i SSRect = {V3i(Rect->P0), V3i(Rect->P1)};
         DimIterator(x, y, z, SimSpaceQueryDim)
         {
           v3i SimRelVoxP = V3i(x,y,z);
