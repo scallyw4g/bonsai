@@ -42,7 +42,7 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim, b32 Colorf
   }
 
 
-  System->SpawnRegion = RectCenterRad(Offset, V3(0.16f, 0.16f, 0.02f)*Dim);
+  System->SpawnRegion = RectCenterRad(Offset, V3(0.16f, 0.16f, 0.02f)*Dim*0.5f);
 
 
   System->EmissionLifespan = PARTICLE_SYSTEM_EMIT_FOREVER;
@@ -103,7 +103,7 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, un
   System->ParticleLightEmissionChance = 0.05f;
   System->ParticleLightEmission = 0.1f;
 
-  System->SpawnRegion = RectCenterRad(Offset, V3(Radius*0.20f) );
+  System->SpawnRegion = RectCenterRad(Offset, V3(Radius*0.2f) );
 
   System->EmissionLifespan = 0.12f;
   System->LifespanMod = 0.5f;
@@ -155,13 +155,13 @@ SpawnSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, untext
   System->Colors[4] = GREY_0;
   System->Colors[5] = GREY_0;
 
-  System->SpawnRegion = RectCenterRad(Offset, V3(Radius, Radius, Radius*0.5f)*0.75f);
+  System->SpawnRegion = RectCenterRad(Offset, V3(Radius, Radius, Radius*0.5f) * 0.75f);
 
   System->EmissionDelay = 0.25f;
 
   System->EmissionLifespan = 0.2f;
-  System->LifespanMod = 2.5f;
-  System->ParticleLifespan = 0.5f;
+  System->LifespanMod = 3.5f;
+  System->ParticleLifespan = 0.1f;
   System->ParticlesPerSecond = 100.0f*Radius;
 
   /* System->Physics.Speed = 2; */
@@ -177,7 +177,7 @@ SpawnSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, untext
   System->ParticleTurbMin = V3(TurbMin);
   System->ParticleTurbMax = V3(TurbMax);
 
-  System->ParticleStartingDim = V3(0.2f, 0.2f, 0.2f) * Radius * 0.85f;
+  System->ParticleStartingDim = V3(0.5f, 0.5f, 0.5f) * Radius;
   System->ParticleEndingDim = 2.5f;
 
   System->SystemMovementCoefficient = 0.1f;
@@ -341,7 +341,7 @@ DoSplotion( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
     HitEntity->Physics.Force += Normalize(SplosionToEntityCenter) * Power;
   }
 
-  entity_behavior_flags SpawnFlags = entity_behavior_flags(EntityBehaviorFlags_Default|EntityBehaviorFlags_UnspawnOnParticleSystemTerminate);
+  entity_behavior_flags SpawnFlags = EntityBehaviorFlags_UnspawnOnParticleSystemTerminate;
 
   {
     entity *E = GetFreeEntity(EntityTable);
@@ -354,14 +354,15 @@ DoSplotion( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
     entity *E = GetFreeEntity(EntityTable);
     SpawnEntity( E, SpawnFlags, 0, ModelIndex_None);
     E->P = PickCP + V3(0.5f);
-    SpawnSmoke(E, Entropy, {}, Radius, &Graphics->Transparency.GpuBuffer.Buffer);
+    SpawnSmoke(E, Entropy, {}, Radius*0.5f, &Graphics->Transparency.GpuBuffer.Buffer);
   }
 
   u32 MaxBitties = 2*u32(Radius);
   for (u32 BittyIndex = 0; BittyIndex < MaxBitties; ++BittyIndex)
   {
+    entity_behavior_flags BittySpawnFlags = entity_behavior_flags(EntityBehaviorFlags_Default|EntityBehaviorFlags_UnspawnOnParticleSystemTerminate);
     entity *E = GetFreeEntity(EntityTable);
-    SpawnEntity(E, SpawnFlags, {}, {});
+    SpawnEntity(E, BittySpawnFlags, {}, {});
     /* SpawnEntity( E, EntityBehaviorFlags_Default, GameState->Models, (model_index)(ModelIndex_Bitty0 + (BittyIndex % 2)) ); */
     E->Physics.Speed = 1.f;
 
