@@ -3,9 +3,9 @@ RadioSelect(ui_toggle_button_group *RadioGroup, asset_spawn_mode Selection)
 {
   Assert(CountBitsSet_Kernighan(u32(Selection)) == 1);
   u32 Index = GetIndexOfNthSetBit(u32(Selection), 1);
-
   ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Index;
-  Ensure( ToggleRadioButton(RadioGroup, ToggleHandle) );
+  SetRadioButton(RadioGroup, ToggleHandle, True);
+  /* Ensure( ToggleRadioButton(RadioGroup, ToggleHandle) ); */
 }
 
 link_internal void
