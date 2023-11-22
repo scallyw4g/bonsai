@@ -3999,18 +3999,8 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
     }
   }
 
-  /* DimIterator(xVoxel, yVoxel, zVoxel, QueryDim) */
-  {
-    /* random_series Entropy = {54392}; */
-
-    /* voxel_position RelVoxP = Voxel_Position(s32(xVoxel), s32(yVoxel), s32(zVoxel)); */
-    /* s32 Index = GetIndex(RelVoxP, QueryDim); */ 
-    /* voxel *V = CopiedVoxels + Index; */
+  { // NOTE(Jesse): This scope is here just to jump around in my editor
     voxel *V = 0;
-
-    /* Assert( (V->Flags & Voxel_MarkBit) == 0); */
-
-    /* v3i SimSpaceVoxPExact = V3i(xVoxel, yVoxel, zVoxel) + SimSpaceQueryAABB.Min; */
 
     // NOTE(Jesse): These are here because they're common across the asset and chunk_data
     // paths, but there's no way to zero-init them and check if the first one got hit.
@@ -4029,156 +4019,161 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
         world_update_op_shape_params_sphere *Sphere = SafeCast(world_update_op_shape_params_sphere, &Shape);
 
         canonical_position P = Sphere->Location;
-        auto SimSphereP = GetSimSpaceP(World, P);
+        v3i SimSphereP = V3i(Floor(GetSimSpaceP(World, P)));
         r32 RadiusSquared = Square(Sphere->Radius);
 
-        /* if (LengthSq(SimSpaceVoxPExact - SimSphereP) < Square(Sphere->Radius)) */
+        switch(Mode)
         {
-          switch(Mode)
+          InvalidCase(WorldUpdateOperationMode_None);
+
+          case WorldUpdateOperationMode_Subtractive:
           {
-            InvalidCase(WorldUpdateOperationMode_None);
-
-            case WorldUpdateOperationMode_Subtractive:
+            switch(Modifier)
             {
-              switch(Modifier)
+              case WorldUpdateOperationModeModifier_None:
               {
-                case WorldUpdateOperationModeModifier_None:
+                DimIterator(x, y, z, SimSpaceQueryDim)
                 {
-                  DimIterator(x, y, z, SimSpaceQueryDim)
+                  v3i SimRelVoxP = V3i(x,y,z);
+                  v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
+                  v3i CenterToVoxP = SimVoxP - SimSphereP;
+                  V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
+                  if (LengthSq(CenterToVoxP) < RadiusSquared)
                   {
-                    v3i SimRelVoxP = V3i(x,y,z);
-                    v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
-                    v3i CenterToVoxP = SimVoxP - SimSphereP;
-                    V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
-                    if (LengthSq(CenterToVoxP) < RadiusSquared)
-                    {
-                      V->Flags = Voxel_Empty;
-                    }
+                    V->Flags = Voxel_Empty;
                   }
-                } break;
+                }
+              } break;
 
-                case WorldUpdateOperationModeModifier_Flood:
-                {
-                  // TODO(Jesse): Do we want to try and keep the amount of temp memory to a minimum here?
-                  voxel_stack_element_cursor Stack = VoxelStackElementCursor(umm(TotalVoxels*6), Thread->TempMemory);
+              case WorldUpdateOperationModeModifier_Flood:
+              {
+                // TODO(Jesse): Do we want to try and keep the amount of temp memory to a minimum here?
+                voxel_stack_element_cursor Stack = VoxelStackElementCursor(umm(TotalVoxels*6), Thread->TempMemory);
 
-                  Push(&Stack, VoxelStackElement(V3i(SimSphereP), VoxelRuleDir_Count));
-                  while (AtElements(&Stack))
+#if BONSAI_INTERNAL
+                { // NOTE(Jesse): Debug.  Don't rely on the optimizer to remove this in release mode
+                  v3i RelVoxP = SimSphereP - SimSpaceQueryAABB.Min;
+                  s32 VoxelIndex = TryGetIndex(RelVoxP, QueryDim);
+                  if (VoxelIndex > -1)
                   {
-                    voxel_stack_element Element = Pop(&Stack);
-                    v3i Dir = AllDirections[Element.Dir];
-                    {
-                      v3i SimVoxP = Element.VoxSimP + Dir;
-                      v3i RelVoxP = SimVoxP - SimSpaceQueryAABB.Min;
-
-                      s32 VoxelIndex = TryGetIndex(RelVoxP, QueryDim);
-
-                      if (VoxelIndex > -1)
-                      {
-                        V = CopiedVoxels+VoxelIndex;
-
-                        v3i CenterToVoxP = SimVoxP - SimSphereP;
-
-                        if (LengthSq(CenterToVoxP) < RadiusSquared)
-                        {
-                          if ( (V->Flags&Voxel_Filled) == 0 && (V->Flags & Voxel_MarkBit) == 0)
-                          {
-                            Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_PosX));
-                            Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_NegX));
-                            Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_PosY));
-                            Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_NegY));
-                            Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_PosZ));
-                            Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_NegZ));
-                          }
-                        }
-
-
-                        if (LengthSq(CenterToVoxP) < Square(Sphere->Radius-1.f))
-                        {
-                          if (V->Flags & Voxel_Filled)
-                          {
-                            V->Flags = Voxel_Empty;
-                          }
-                        }
-
-                        V->Flags |= Voxel_MarkBit;
-                      }
-                    }
+                    voxel *OriginV  = CopiedVoxels+VoxelIndex;
+                    Assert( (OriginV->Flags&Voxel_Filled) == 0);
                   }
-
-#if 1
-                  u8 NewColorMin = GREY_5;
-                  u8 NewColorMax = GREY_8;
-                  Push(&Stack, VoxelStackElement(V3i(SimSphereP), VoxelRuleDir_Count));
-                  while (AtElements(&Stack))
-                  {
-                    voxel_stack_element Element = Pop(&Stack);
-                    v3i Dir = AllDirections[Element.Dir];
-                    {
-                      v3i SimVoxP = Element.VoxSimP + Dir;
-                      v3i RelVoxP = SimVoxP - SimSpaceQueryAABB.Min;
-
-                      s32 VoxelIndex = TryGetIndex(RelVoxP, QueryDim);
-
-                      if (VoxelIndex > -1)
-                      {
-                        V = CopiedVoxels+VoxelIndex;
-
-                        v3i CenterToVoxP = SimVoxP - SimSphereP;
-                        if (LengthSq(CenterToVoxP) < Square(Sphere->Radius-1.f))
-                        {
-                          if (V->Flags & Voxel_Filled)
-                          {
-                            V->Color = SafeTruncateU8(RandomBetween((u32)NewColorMin, &Entropy, (u32)NewColorMax+1));
-                          }
-
-                        }
-                        else if (LengthSq(CenterToVoxP) < RadiusSquared)
-                        {
-                          V->Color = NewColorMax;
-                        }
-
-                        if ( (V->Flags&Voxel_MarkBit))
-                        {
-                          Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_PosX));
-                          Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_NegX));
-                          Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_PosY));
-                          Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_NegY));
-                          Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_PosZ));
-                          Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_NegZ));
-                        }
-
-                        V->Flags &= ~Voxel_MarkBit;
-                      }
-                    }
-                  }
+                }
 #endif
 
-                } break;
-              }
-
-            } break;
-
-            case WorldUpdateOperationMode_Additive:
-            {
-              // Not Implemented
-              Assert(Modifier == WorldUpdateOperationModeModifier_None);
-
-              DimIterator(x, y, z, SimSpaceQueryDim)
-              {
-                v3i SimRelVoxP = V3i(x,y,z);
-                v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
-                v3i CenterToVoxP = SimVoxP - SimSphereP;
-                V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
-                if (LengthSq(CenterToVoxP) < RadiusSquared)
+                Push(&Stack, VoxelStackElement(SimSphereP, VoxelRuleDir_Count));
+                while (AtElements(&Stack))
                 {
-                  V->Flags = Voxel_Filled;
-                }
-              }
-            } break;
-          }
+                  voxel_stack_element Element = Pop(&Stack);
+                  v3i SimVoxP = Element.VoxSimP + AllDirections[Element.Dir];
+                  v3i RelVoxP = SimVoxP - SimSpaceQueryAABB.Min;
 
+                  s32 VoxelIndex = TryGetIndex(RelVoxP, QueryDim);
+                  if (VoxelIndex > -1)
+                  {
+                    V = CopiedVoxels+VoxelIndex;
+
+                    v3i CenterToVoxP = SimVoxP - SimSphereP;
+
+                    if (LengthSq(CenterToVoxP) < RadiusSquared)
+                    {
+                      if ( (V->Flags&Voxel_Filled) == 0 && (V->Flags & Voxel_MarkBit) == 0)
+                      {
+                        Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_PosX));
+                        Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_NegX));
+                        Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_PosY));
+                        Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_NegY));
+                        Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_PosZ));
+                        Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_NegZ));
+                      }
+                    }
+
+
+                    if (LengthSq(CenterToVoxP) < Square(Sphere->Radius-1.f))
+                    {
+                      if (V->Flags & Voxel_Filled)
+                      {
+                        V->Flags = Voxel_Empty;
+                      }
+                    }
+
+                    V->Flags |= Voxel_MarkBit;
+                  }
+                }
+
+#if 1
+                u8 NewColorMin = GREY_5;
+                u8 NewColorMax = GREY_8;
+                Push(&Stack, VoxelStackElement(SimSphereP, VoxelRuleDir_Count));
+                while (AtElements(&Stack))
+                {
+                  voxel_stack_element Element = Pop(&Stack);
+                  v3i Dir = AllDirections[Element.Dir];
+                  {
+                    v3i SimVoxP = Element.VoxSimP + Dir;
+                    v3i RelVoxP = SimVoxP - SimSpaceQueryAABB.Min;
+
+                    s32 VoxelIndex = TryGetIndex(RelVoxP, QueryDim);
+
+                    if (VoxelIndex > -1)
+                    {
+                      V = CopiedVoxels+VoxelIndex;
+
+                      v3i CenterToVoxP = SimVoxP - SimSphereP;
+                      if (LengthSq(CenterToVoxP) < Square(Sphere->Radius-1.f))
+                      {
+                        if (V->Flags & Voxel_Filled)
+                        {
+                          V->Color = SafeTruncateU8(RandomBetween((u32)NewColorMin, &Entropy, (u32)NewColorMax+1));
+                        }
+
+                      }
+                      else if (LengthSq(CenterToVoxP) < RadiusSquared)
+                      {
+                        V->Color = NewColorMax;
+                      }
+
+                      if ( (V->Flags&Voxel_MarkBit))
+                      {
+                        Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_PosX));
+                        Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_NegX));
+                        Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_PosY));
+                        Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_NegY));
+                        Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_PosZ));
+                        Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_NegZ));
+                      }
+
+                      V->Flags &= ~Voxel_MarkBit;
+                    }
+                  }
+                }
+#endif
+
+              } break;
+            }
+
+          } break;
+
+          case WorldUpdateOperationMode_Additive:
+          {
+            // Not Implemented
+            Assert(Modifier == WorldUpdateOperationModeModifier_None);
+
+            DimIterator(x, y, z, SimSpaceQueryDim)
+            {
+              v3i SimRelVoxP = V3i(x,y,z);
+              v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
+              v3i CenterToVoxP = SimVoxP - SimSphereP;
+              V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
+              if (LengthSq(CenterToVoxP) < RadiusSquared)
+              {
+                V->Flags = Voxel_Filled;
+              }
+            }
+          } break;
         }
+
       } break;
 
       case type_world_update_op_shape_params_rect:
@@ -4340,7 +4335,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   AtomicWrite((volatile void **)&GetDebugState()->PickedChunk, (void*) PickedChunk);
 #endif
 
-  v3 QueryRelLocation = SimSphereP - SimSpaceQueryMinP;
+  v3 QueryRelLocation = V3(SimSphereP) - SimSpaceQueryMinP;
   DrawVoxel_MinDim(DebugMesh, QueryRelLocation, V4(1,0,0,1), V3(1.f));
 #endif
 
@@ -4510,7 +4505,7 @@ GetChunksIntersectingRay(world *World, ray *Ray, picked_world_chunk_static_buffe
   world_position Min = World->Center - Radius;
   world_position Max = World->Center + Radius;
 
-  f32 tChunkMin = f32_MAX;
+  f32 tChunkMin = 0.f;
   for (s32 z = Min.z; z < Max.z; ++ z)
   {
     for (s32 y = Min.y; y < Max.y; ++ y)
@@ -4598,7 +4593,7 @@ RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, 
 
   BubbleSort((sort_key_f*)AllChunksBuffer.E, (u32)AllChunksBuffer.At);
 
-  picked_voxel Result = { .PickedChunk.tChunk =  f32_MAX };
+  picked_voxel Result = {};
   for (s64 ClosestChunkIndex = s64(AllChunksBuffer.At)-1; ClosestChunkIndex > -1; --ClosestChunkIndex)
   {
     r32 tChunk = (r32)AllChunksBuffer.E[ClosestChunkIndex].tChunk;
@@ -4635,18 +4630,15 @@ RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, 
         // Hit = True;
         ClosestChunkIndex = -1;
 
-        /* v3 MinP =  V3(ClosestChunk->WorldP * World->ChunkDim); */
-        /* v3 VoxelP = MinP + Truncate(AtP); */
-
-        Result.PickedChunk.tChunk = tChunk;
-        Result.PickedChunk.Chunk = ClosestChunk;
-        Result.Picks[PickedVoxel_FirstFilled] = AtP;
+        Result.Chunks[PickedVoxel_FirstFilled] = {ClosestChunk, tChunk};
+        Result.Picks[PickedVoxel_FirstFilled] = Canonical_Position(AtP, ClosestChunk->WorldP);
 
         break;
       }
       else
       {
-        Result.Picks[PickedVoxel_LastEmpty] = AtP;
+        Result.Chunks[PickedVoxel_LastEmpty] = {ClosestChunk, tChunk};
+        Result.Picks[PickedVoxel_LastEmpty] = Canonical_Position(AtP, ClosestChunk->WorldP);
       }
 
       AtP.E[AxisIndex] += Advance.E[AxisIndex];
@@ -4725,11 +4717,10 @@ MousePickVoxel(engine_resources *Resources)
 
     picked_voxel RayResult = RayTraceCollision( Resources, Camera->CurrentP, MaybeRay.Ray.Dir);
 
-    if (RayResult.PickedChunk.tChunk != f32_MAX)
+    if (world_chunk *ClosestChunk = RayResult.Chunks[PickedVoxel_FirstFilled].Chunk)
     {
-      world_chunk *ClosestChunk = RayResult.PickedChunk.Chunk;
       v3 MinP =  V3(ClosestChunk->WorldP * World->ChunkDim);
-      v3 VoxelP = MinP + Truncate(RayResult.Picks[PickedVoxel_FirstFilled]);
+      v3 VoxelP = MinP + Truncate(RayResult.Picks[PickedVoxel_FirstFilled].Offset);
 
       // Highlight standing spot we're hovering over
       for (u32 StandingSpotIndex = 0;
@@ -4739,7 +4730,7 @@ MousePickVoxel(engine_resources *Resources)
         v3i *Spot = ClosestChunk->StandingSpots.Start + StandingSpotIndex;
 
         aabb SpotRect = AABBMinMax(V3(*Spot), V3(*Spot+Global_StandingSpotDim));
-        if (IsInside(SpotRect, Truncate(RayResult.Picks[PickedVoxel_FirstFilled])))
+        if (IsInside(SpotRect, Truncate(RayResult.Picks[PickedVoxel_FirstFilled].Offset)))
         {
           /* untextured_3d_geometry_buffer SpotAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB); */
           v3 RenderP = GetRenderP(World->ChunkDim, MinP+V3(*Spot), Camera);
@@ -4761,7 +4752,7 @@ MousePickVoxel(engine_resources *Resources)
 #if DEBUG_SYSTEM_API
       if (Picked)
       {
-        GetDebugState()->PickedChunk = &PickedVoxel.PickedChunk;
+        GetDebugState()->PickedChunk = &PickedVoxel.Chunks[PickedVoxel_FirstFilled];
       }
 #endif
     }
@@ -4785,10 +4776,10 @@ MousePickVoxel(engine_resources *Resources)
     if (Hotkeys->Debug_Action_ComputeStandingSpot)
     {
       /* v3i TileChunkOffset = (V3i(xIndex, yTile, zTile) * (TileChunkDim-1));// + V3(1); */
-      v3i TileChunkOffset = Voxel_Position(PickedVoxel.Picks[PickedVoxel_FirstFilled]);
+      v3i TileChunkOffset = Voxel_Position(PickedVoxel.Picks[PickedVoxel_FirstFilled].Offset);
       v3i TileChunkDim = Chunk_Dimension(8, 8, 2);
       /* boundary_voxels* TempBoundingPoints = AllocateBoundaryVoxels((u32)Volume(TileChunkDim), TranArena); */
-      standing_spot Spot = ComputeStandingSpotFor8x8x2_V2(PickedVoxel.PickedChunk.Chunk->Voxels, World->ChunkDim, TileChunkOffset, TileChunkDim); //, TempBoundingPoints);
+      standing_spot Spot = ComputeStandingSpotFor8x8x2_V2(PickedVoxel.Chunks[PickedVoxel_FirstFilled].Chunk->Voxels, World->ChunkDim, TileChunkOffset, TileChunkDim); //, TempBoundingPoints);
     }
 
 #endif
@@ -4802,10 +4793,10 @@ GetVoxelPointer(picked_voxel *Pick, picked_voxel_position Pos)
 {
   voxel *Result = 0;
 
-  if (Pick->PickedChunk.tChunk != f32_MAX)
+  if (Pick->Chunks[PickedVoxel_FirstFilled].Chunk)
   {
-    world_chunk *Chunk = Pick->PickedChunk.Chunk;
-    s32 Index = GetIndex(V3i(Pick->Picks[Pos]), Chunk->Dim);
+    world_chunk *Chunk = Pick->Chunks[PickedVoxel_FirstFilled].Chunk;
+    s32 Index = GetIndex(V3i(Pick->Picks[Pos].Offset), Chunk->Dim);
     Result = Chunk->Voxels + Index;
   }
 
@@ -4815,9 +4806,9 @@ GetVoxelPointer(picked_voxel *Pick, picked_voxel_position Pos)
 link_internal v3
 GetAbsoluteP(picked_voxel *Pick)
 {
-  world_chunk *Chunk = Pick->PickedChunk.Chunk;
+  world_chunk *Chunk = Pick->Chunks[PickedVoxel_FirstFilled].Chunk;
   v3 MinP =  V3(Chunk->WorldP * Chunk->Dim);
-  v3 VoxelP = MinP + Truncate(Pick->Picks[PickedVoxel_FirstFilled]);
+  v3 VoxelP = MinP + Truncate(Pick->Picks[PickedVoxel_FirstFilled].Offset);
   return VoxelP;
 }
 

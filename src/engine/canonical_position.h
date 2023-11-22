@@ -266,6 +266,7 @@ RectMinDim(v3i WorldChunkDim, cp Min, v3 Dim)
   return Result;
 }
 
+struct world;
 link_internal v3
 GetSimSpaceP(world *World, canonical_position P);
 

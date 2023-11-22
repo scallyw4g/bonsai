@@ -341,10 +341,10 @@ StandingSpot(v3 Offset, world_position WP)
   return Result;
 }
 
-inline canonical_position
+inline cp
 Canonical_Position(picked_voxel *V, picked_voxel_position Pos = PickedVoxel_FirstFilled)
 {
-  canonical_position Result = Canonical_Position(V->Picks[Pos], V->PickedChunk.Chunk->WorldP);
+  cp Result = V->Picks[Pos]; //Canonical_Position(V->Picks[Pos], V->PickedChunk.Chunk->WorldP);
   return Result;
 }
 

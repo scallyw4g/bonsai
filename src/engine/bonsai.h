@@ -93,11 +93,28 @@ struct point_buffer
   voxel_position Max;
 };
 
+
 struct collision_event
 {
   u32 Count;
   canonical_position MinP;
   canonical_position MaxP;
+};
+
+struct entity_entity_collision_event
+{
+  union
+  {
+    collision_event Collision;
+    struct
+    {
+      u32 Count;
+      canonical_position MinP;
+      canonical_position MaxP;
+    };
+  };
+
+  entity *Entity;
 };
 
 inline void

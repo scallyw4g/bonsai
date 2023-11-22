@@ -145,7 +145,7 @@ Bonsai_SimulateAndBufferGeometry(engine_resources *Resources)
     input *InputForCamera = 0;
     v2 MouseDelta = GetMouseDelta(Plat);
 
-    Info("UiCapturedMouseInput %d", UiCapturedMouseInput(Ui));
+    /* Info("UiCapturedMouseInput %d", UiCapturedMouseInput(Ui)); */
     if (UiCapturedMouseInput(Ui) == False) { InputForCamera = &Plat->Input; }
     UpdateGameCamera(World, MouseDelta, InputForCamera, CameraTargetP, Camera);
 

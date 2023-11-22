@@ -1,7 +1,6 @@
 #define BONSAI_ENGINE 1
 
 #include <engine/serdes.h>
-#include <engine/debug.h>
 
 #include <engine/api.h>
 #include <engine/thread.h>
@@ -9,6 +8,8 @@
 #include <engine/canonical_position.h>
 #include <engine/physics.h>
 #include <engine/camera.h>
+
+#include <engine/debug.h>
 
 #include <engine/light.h>
 #include <engine/render.h>

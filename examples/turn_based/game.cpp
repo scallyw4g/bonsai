@@ -140,7 +140,7 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
           UpdateEntityP(World, Enemy, UpdateV);
 
           // Disallow enemies moving onto other entities
-          collision_event EntityCollision = DoEntityCollisions(World, EntityTable, Enemy);
+          collision_event EntityCollision = DoEntityCollisions(World, EntityTable, Enemy).Collision;
           if (EntityCollision.Count) { Enemy->P = EnemyOriginalP; }
         }
 
@@ -224,8 +224,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     picked_voxel Pick = Resources->MousedOverVoxel.Value;
     v3 VoxelP = GetAbsoluteP(&Pick);
 
-    world_chunk *ClosestChunk = Pick.PickedChunk.Chunk;
-    canonical_position PickCP = Canonical_Position(Pick.Picks[PickedVoxel_LastEmpty], ClosestChunk->WorldP);
+    world_chunk *ClosestChunk = Pick.Chunks[PickedVoxel_LastEmpty].Chunk;
+    canonical_position PickCP = Pick.Picks[PickedVoxel_LastEmpty];
 
     if (Input->Z.Clicked)
     {

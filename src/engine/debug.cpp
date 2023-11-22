@@ -593,7 +593,7 @@ DoEngineDebug(engine_resources *Engine)
       {
         if (Engine->MousedOverVoxel.Tag)
         {
-          EngineDebug->PickedChunk = Engine->MousedOverVoxel.Value.PickedChunk.Chunk;
+          EngineDebug->PickedChunk = Engine->MousedOverVoxel.Value.Chunks[PickedVoxel_FirstFilled].Chunk;
           if (Input->LMB.Clicked) { EngineDebug->PickedChunkState = PickedChunkState_None; }
         }
       }

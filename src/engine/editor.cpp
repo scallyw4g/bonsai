@@ -432,7 +432,7 @@ DoLevelEditor(engine_resources *Engine)
           if (V)
           {
             V->Color = SafeTruncateU8(Engine->Editor.SelectedColorIndex);
-            QueueChunkForMeshRebuild(&Plat->LowPriority, Engine->MousedOverVoxel.Value.PickedChunk.Chunk);
+            QueueChunkForMeshRebuild(&Plat->LowPriority, Engine->MousedOverVoxel.Value.Chunks[PickedVoxel_FirstFilled].Chunk);
           }
         }
       }
@@ -489,7 +489,22 @@ DoLevelEditor(engine_resources *Engine)
   //
   if (Engine->MousedOverVoxel.Tag)
   {
-    v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, HighlightVoxel));
-    DEBUG_HighlightVoxel( Engine, SimP, RED, 0.075f);
+#if 1
+    {
+      v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, HighlightVoxel));
+      DEBUG_HighlightVoxel( Engine, SimP, RED, 0.075f);
+    }
+#else
+    {
+      v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled));
+      DEBUG_HighlightVoxel( Engine, SimP, RED, 0.075f);
+    }
+    {
+      v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, PickedVoxel_LastEmpty));
+      DebugLine("%f %f %f", SimP.x, SimP.y, SimP.z);
+
+      DEBUG_HighlightVoxel( Engine, SimP, BLUE, 0.075f);
+    }
+#endif
   }
 }

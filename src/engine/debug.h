@@ -14,7 +14,7 @@ struct entity;
 struct picked_world_chunk
 {
   world_chunk *Chunk;
-  r32 tChunk; // f32_MAX indicates not picked
+  r32 tChunk;
 };
 
 enum picked_voxel_position
@@ -26,9 +26,8 @@ enum picked_voxel_position
 
 struct picked_voxel
 {
-  picked_world_chunk PickedChunk;
-  // Relative to origin of chunk
-  v3 Picks[PickedVoxel_Count]; // use picked_voxel_position to index into this
+  picked_world_chunk Chunks[PickedVoxel_Count];
+  canonical_position Picks[PickedVoxel_Count]; // Technically we can just store the v3 offset, but I'm being lazy
 };
 
 struct maybe_picked_voxel

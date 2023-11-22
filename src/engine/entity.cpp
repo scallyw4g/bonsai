@@ -685,14 +685,14 @@ ProcessCollisionRule(
 }
 
 
-link_internal collision_event
+link_internal entity_entity_collision_event
 DoEntityCollisions(world *World, entity** EntityTable, entity *Entity)
 {
   TIMED_FUNCTION();
 
   Assert(Spawned(Entity));
 
-  collision_event Result = {};
+  entity_entity_collision_event Result = {};
   for (s32 EntityIndex = 0;
            EntityIndex < TOTAL_ENTITY_COUNT;
          ++EntityIndex)
@@ -704,6 +704,8 @@ DoEntityCollisions(world *World, entity** EntityTable, entity *Entity)
       {
         // TODO(Jesse): Should we actually test the overlapping area here?  Probably.
         Result.Count ++;
+        Result.Entity = TestEntity;
+        break;
       }
     }
   }
@@ -1197,6 +1199,7 @@ GetSimSpaceAABB(world *World, entity *Entity)
 {
   v3 SimSpaceP = GetSimSpaceP(World, Entity);
   aabb Result = AABBMinRad(SimSpaceP, Entity->CollisionVolumeRadius);
+  /* DEBUG_DrawSimSpaceAABB(GetEngineResources(), &Result, RED); */
   return Result;
 }
 
@@ -1318,10 +1321,10 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
 
     if (Entity->Behavior & EntityBehaviorFlags_EntityCollision)
     {
-      collision_event C = DoEntityCollisions(World, EntityTable, Entity);
+      entity_entity_collision_event C = DoEntityCollisions(World, EntityTable, Entity);
       if (C.Count)
       {
-        DebugLine("COLLISION!!");
+        /* DebugLine("Entity-entity COLLISION!! %p -> %p", Entity, C.Entity); */
       }
     }
 

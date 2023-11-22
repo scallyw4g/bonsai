@@ -286,11 +286,10 @@ DoIceBlock( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
   v3 MinP = SimSpaceMinCenterP - V3(Radius, Radius, 0.f);
   v3 MaxP = SimSpaceMinCenterP + V3(Radius, Radius, 3.f*Radius);
 
-  NotImplemented;
   world_update_op_shape Shape = {
     .Type = type_world_update_op_shape_params_rect,
-    /* .world_update_op_shape_params_rect.P0 = MinP, */
-    /* .world_update_op_shape_params_rect.P1 = MaxP, */
+    .world_update_op_shape_params_rect.P0 = MinP,
+    .world_update_op_shape_params_rect.P1 = MaxP,
   };
   QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Additive, &Shape, ICE_BLUE, Resources->Memory);
 }
