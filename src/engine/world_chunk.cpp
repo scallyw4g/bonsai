@@ -3941,7 +3941,8 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   auto P0 = Min(_P0, _P1); 
   auto P1 = Max(_P0, _P1);
 
-  rect3i SimSpaceQueryAABB = Rect3iMinMax( V3i(P0), V3i(P1));
+  // NOTE(Jesse): These are meant to truncate instead of floor
+  rect3i SimSpaceQueryAABB = Rect3iMinMax( V3i(P0), V3i(P1) );
 
   v3i QueryDim = GetDim(SimSpaceQueryAABB);
   v3i SimSpaceQueryDim = QueryDim;
@@ -4184,6 +4185,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
         world_update_op_shape_params_rect *Rect = SafeCast(world_update_op_shape_params_rect, &Shape);
 
         // NOTE(Jesse): These _should_ already be min/maxed, so we can change these to asserts.
+        // NOTE(Jesse): These are specifically meant to truncate, not floor
         v3i P0SS = V3i(Rect->P0);
         v3i P1SS = V3i(Rect->P1);
         /* v3i P0SS = V3i(GetSimSpaceP(World, Rect->Region.Min)); */
