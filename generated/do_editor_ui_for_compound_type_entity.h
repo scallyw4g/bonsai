@@ -17,7 +17,7 @@ DoEditorUi(renderer_2d *Ui, entity *Element, const char* Name, EDITOR_UI_FUNCTIO
 
 
     PushNewRow(Ui);
-    DoEditorUi(Ui, &Element->Rotation, "Quaternion Rotation", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    DoEditorUi(Ui, &Element->EulerAngles, "v4 EulerAngles", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 

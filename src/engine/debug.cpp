@@ -114,7 +114,7 @@ DoEditorUi(renderer_2d *Ui, b8 *Value, const char* Name, EDITOR_UI_FUNCTION_PROT
 poof(do_editor_ui_for_scalar_type({s64 u64 s32 u32 s16 u16 s8 u8}));
 #include <generated/do_editor_ui_for_scalar_type_688724926.h>
 
-poof(do_editor_ui_for_vector_type({v3i v3 v2 Quaternion}));
+poof(do_editor_ui_for_vector_type({v4i v4 v3i v3 v2 Quaternion}));
 #include <generated/do_editor_ui_for_vector_type_688873645.h>
 
 link_internal void

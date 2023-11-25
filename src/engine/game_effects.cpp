@@ -365,7 +365,7 @@ DoSplotion( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
     /* SpawnEntity( E, EntityBehaviorFlags_Default, GameState->Models, (model_index)(ModelIndex_Bitty0 + (BittyIndex % 2)) ); */
     E->Physics.Speed = 1.f;
 
-    E->Rotation = RandomRotation(Entropy);
+    E->EulerAngles.xyz = RandomRotation(Entropy);
     E->Scale = 0.3f;
     E->CollisionVolumeRadius = V3(.1f);
 

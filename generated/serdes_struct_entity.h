@@ -14,7 +14,7 @@ Serialize(native_file *File, entity *Element)
 
 
 
-  Result &= Serialize(File, &Element->Rotation);
+  Result &= Serialize(File, &Element->EulerAngles);
 
 
 
@@ -75,7 +75,7 @@ Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
 
 
 
-  Result &= Deserialize(Bytes, &Element->Rotation, Memory);
+  Result &= Deserialize(Bytes, &Element->EulerAngles, Memory);
 
 
 

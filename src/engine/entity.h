@@ -51,7 +51,10 @@ struct entity
   umm Id;
 
   cp P;
-  Quaternion Rotation;
+  // NOTE(Jesse): This is a v4 because it used to be a quaternion, and the
+  // savefiles have magic numbers so they have to deal with elements that are
+  // the same size.  The w coordinate is unused
+  v4 EulerAngles;
   r32 Scale;
 
   v3 CollisionVolumeRadius;

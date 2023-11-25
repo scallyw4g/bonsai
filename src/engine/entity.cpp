@@ -268,10 +268,7 @@ SpawnEntity(
 
   Entity->CollisionVolumeRadius = CollisionVolumeRadius;
 
-  Entity->Rotation = Quaternion(0,0,0,1);
-
   Entity->Scale = Scale;
-
   Entity->State = EntityState_Spawned;
 
   return;

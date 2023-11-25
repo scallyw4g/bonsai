@@ -735,8 +735,8 @@ BufferEntity(
 
     if (Entity->Model)
     {
-      BufferChunkMesh(Graphics, Dest, &Entity->Model->Mesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Entity->P.Offset + AnimationOffset, Entity->Rotation);
-      BufferChunkMesh(Graphics, TransparentDest, &Entity->Model->TransparentMesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Entity->P.Offset + AnimationOffset, Entity->Rotation);
+      BufferChunkMesh(Graphics, Dest, &Entity->Model->Mesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Entity->P.Offset + AnimationOffset, FromEuler(Entity->EulerAngles.xyz));
+      BufferChunkMesh(Graphics, TransparentDest, &Entity->Model->TransparentMesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Entity->P.Offset + AnimationOffset, FromEuler(Entity->EulerAngles.xyz));
     }
   }
 
