@@ -30,6 +30,13 @@ AtElements(c_token_buffer_buffer *Buf)
 }
 
 link_inline umm
+TotalElements(c_token_buffer_buffer *Buf)
+{
+  umm Result = Buf->Count;
+  return Result;
+}
+
+link_inline umm
 CurrentCount(c_token_buffer_buffer *Buf)
 {
   umm Result = Buf->Count;

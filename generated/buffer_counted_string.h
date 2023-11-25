@@ -30,6 +30,13 @@ AtElements(counted_string_buffer *Buf)
 }
 
 link_inline umm
+TotalElements(counted_string_buffer *Buf)
+{
+  umm Result = Buf->Count;
+  return Result;
+}
+
+link_inline umm
 CurrentCount(counted_string_buffer *Buf)
 {
   umm Result = Buf->Count;

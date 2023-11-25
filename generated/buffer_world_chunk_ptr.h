@@ -30,6 +30,13 @@ AtElements(world_chunk_ptr_buffer *Buf)
 }
 
 link_inline umm
+TotalElements(world_chunk_ptr_buffer *Buf)
+{
+  umm Result = Buf->Count;
+  return Result;
+}
+
+link_inline umm
 CurrentCount(world_chunk_ptr_buffer *Buf)
 {
   umm Result = Buf->Count;

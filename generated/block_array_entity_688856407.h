@@ -1,15 +1,18 @@
-struct entity_block_index
-{
-  u32 BlockIndex;
-  u32 ElementIndex;
-};
-
 struct entity_block
 {
+  u32 Index;
   u32 At;
   entity *Elements;
   entity_block *Next;
 };
+
+struct entity_block_array_index
+{
+  void *Block;
+  u32 BlockIndex;
+  u32 ElementIndex;
+};
+
 
 link_internal entity_block*
 Allocate_entity_block(memory_arena *Memory)
@@ -37,6 +40,8 @@ Push(entity_block_array *Array, entity *Element)
   if (Array->Current->At == 4)
   {
     entity_block *Next = Allocate_entity_block(Array->Memory);
+    Next->Index = Array->Current->Index + 1;
+
     Array->Current->Next = Next;
     Array->Current = Next;
     /* Array->At = 0; */
@@ -44,6 +49,81 @@ Push(entity_block_array *Array, entity *Element)
 
   Array->Current->Elements[Array->Current->At++] = *Element;
 }
+
+link_internal entity_block_array_index
+operator++(entity_block_array_index &I0)
+{
+  if (I0.Block)
+  {
+    if (I0.ElementIndex == 4-1)
+    {
+      I0.ElementIndex = 0;
+      I0.BlockIndex++;
+      I0.Block = Cast(entity_block*, I0.Block)->Next;
+    }
+    else
+    {
+      I0.ElementIndex++;
+    }
+  }
+  else
+  {
+    I0.ElementIndex++;
+  }
+  return I0;
+}
+
+link_internal b32
+operator<(entity_block_array_index I0, entity_block_array_index I1)
+{
+  b32 Result = I0.BlockIndex < I1.BlockIndex || (I0.BlockIndex == I1.BlockIndex & I0.ElementIndex < I1.ElementIndex);
+  return Result;
+}
+
+
+link_internal entity_block_array_index
+ZerothIndex(entity_block_array *Arr)
+{
+  entity_block_array_index Result = {};
+  Result.Block = &Arr->First;
+  Assert(Cast(entity_block*, Result.Block)->Index == 0);
+  return Result;
+}
+
+link_internal umm
+TotalElements(entity_block_array *Arr)
+{
+  umm Result = 0;
+  if (Arr->Current)
+  {
+    Result = (Arr->Current->Index * 4) + Arr->Current->At;
+  }
+  return Result;
+}
+
+link_internal entity_block_array_index
+AtElements(entity_block_array *Arr)
+{
+  entity_block_array_index Result = {};
+  if (Arr->Current)
+  {
+    Result.Block = Arr->Current;
+    Result.BlockIndex = Cast(entity_block*, Arr->Current)->Index;
+    Result.ElementIndex = Cast(entity_block*, Arr->Current)->At;
+  }
+  return Result;
+}
+
+link_internal entity *
+GetPtr(entity_block_array *Arr, entity_block_array_index Index)
+{
+  entity *Result = {};
+  if (Index.Block) { Result = Cast(entity_block *, Index.Block)->Elements + Index.ElementIndex; }
+  return Result;
+}
+
+
+
 
 link_internal entity *
 GetPtr(entity_block *Block, umm Index)

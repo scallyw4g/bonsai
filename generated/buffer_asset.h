@@ -30,6 +30,13 @@ AtElements(asset_buffer *Buf)
 }
 
 link_inline umm
+TotalElements(asset_buffer *Buf)
+{
+  umm Result = Buf->Count;
+  return Result;
+}
+
+link_inline umm
 CurrentCount(asset_buffer *Buf)
 {
   umm Result = Buf->Count;

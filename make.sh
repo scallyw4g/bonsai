@@ -18,9 +18,11 @@ RunTests=0
 
 MakeDebugLibRelease=0
 
-. scripts/preamble.sh
-. scripts/setup_for_cxx.sh
+stdlib_build_scripts='external/bonsai_stdlib/scripts'
+. $stdlib_build_scripts/preamble.sh
+. $stdlib_build_scripts/setup_for_cxx.sh
 . external/bonsai_debug/make.sh
+
 
 OPTIMIZATION_LEVEL=""
 EMCC=0
@@ -322,7 +324,7 @@ function RunEntireBuild {
   fi
 
   if [ $RunTests == 1 ]; then
-    ./scripts/run_tests.sh
+    $stdlib_build_scripts/run_tests.sh
   fi
 
 }
@@ -350,15 +352,16 @@ function RunPoofHelper {
 
    # --log-level LogLevel_Debug                                                                                  \
    #
-  poof                                                                                                         \
-   -I src/                                                                                                     \
-   -I external/                                                                                                 \
-   -D _M_X64                                                                                                   \
-   -D _M_CEE                                                                                                   \
-   -D POOF_PREPROCESSOR                                                                                        \
-   $PLATFORM_DEFINES                                                                                           \
-   $BONSAI_INTERNAL                                                                                            \
-   -o generated                                                                                                \
+  poof                    \
+   -D _M_X64              \
+   -D _M_CEE              \
+   -D POOF_PREPROCESSOR   \
+   -D BONSAI_PREPROCESSOR \
+   -I src/                \
+   -I external/           \
+   $PLATFORM_DEFINES      \
+   $BONSAI_INTERNAL       \
+   -o generated           \
    $1
 
 }

@@ -30,6 +30,13 @@ AtElements(v3i_buffer *Buf)
 }
 
 link_inline umm
+TotalElements(v3i_buffer *Buf)
+{
+  umm Result = Buf->Count;
+  return Result;
+}
+
+link_inline umm
 CurrentCount(v3i_buffer *Buf)
 {
   umm Result = Buf->Count;

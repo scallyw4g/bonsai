@@ -156,7 +156,7 @@ poof(
       Assert(CountBitsSet_Kernighan(u32(Selection)) == 1);
       u32 Index = GetIndexOfNthSetBit(u32(Selection), 1);
       ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Index;
-      Ensure( SetRadioButton(RadioGroup, ToggleHandle, True) );
+      SetRadioButton(RadioGroup, ToggleHandle, True);
       /* Ensure( ToggleRadioButton(RadioGroup, ToggleHandle) ); */
     }
 
@@ -210,7 +210,7 @@ poof(
     DoEditorUi(renderer_2d *Ui, type.name *Element, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
     {
       /* PushTableStart(Ui); */
-      if (ToggleButton(Ui, CS(Name), CS(Name), umm(Element) ^ umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+      if (ToggleButton(Ui, FSz("v %s", Name), FSz("> %s", Name), umm(Element) ^ umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
       {
         PushNewRow(Ui);
         type.map(member)
@@ -231,13 +231,14 @@ poof(
               DoEditorUi(Ui, &Element->(member.name), "member.type member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
             }
           }
+
+          PushNewRow(Ui);
         }
       }
       else
       {
         PushNewRow(Ui);
       }
-      /* PushTableEnd(Ui); */
     }
   }
 )

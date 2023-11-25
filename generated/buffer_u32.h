@@ -30,6 +30,13 @@ AtElements(u32_buffer *Buf)
 }
 
 link_inline umm
+TotalElements(u32_buffer *Buf)
+{
+  umm Result = Buf->Count;
+  return Result;
+}
+
+link_inline umm
 CurrentCount(u32_buffer *Buf)
 {
   umm Result = Buf->Count;

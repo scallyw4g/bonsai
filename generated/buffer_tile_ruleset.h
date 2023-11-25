@@ -30,6 +30,13 @@ AtElements(tile_ruleset_buffer *Buf)
 }
 
 link_inline umm
+TotalElements(tile_ruleset_buffer *Buf)
+{
+  umm Result = Buf->Count;
+  return Result;
+}
+
+link_inline umm
 CurrentCount(tile_ruleset_buffer *Buf)
 {
   umm Result = Buf->Count;
