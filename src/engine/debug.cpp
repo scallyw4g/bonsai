@@ -12,6 +12,35 @@ GetUiDebug()
   return &Global_EngineResources->EngineDebug.UiDebug;
 }
 
+link_internal void
+DebugSlider_(renderer_2d *Ui, r32 *Value, const char* Name, r32 Min, r32 Max)
+{
+  u32 Start = StartColumn(Ui);
+    PushTableStart(Ui);
+      PushColumn(Ui, CS(Name));
+      PushColumn(Ui, CS(*Value));
+
+      auto Range = Max-Min;
+      r32 PercFilled = ((*Value)-Min)/Range;
+
+      r32 Width = 125.f;
+      interactable_handle BargraphButton = PushButtonStart(Ui, (umm)(umm("DebugSlider") ^ umm(Value)));
+        PushBargraph(Ui, PercFilled, V3(0.75f), V3(0.4f), Width);
+      PushButtonEnd(Ui);
+
+      v2 Offset = {};
+      if (Pressed(Ui, &BargraphButton, &Offset))
+      {
+        r32 NewPerc = Clamp01(Offset.x / Width);
+        r32 NewValue = (Range*NewPerc) + Min;
+        *Value = NewValue;
+      }
+
+      PushNewRow(Ui);
+    PushTableEnd(Ui);
+  EndColumn(Ui, Start);
+}
+
 
 
 
@@ -32,9 +61,41 @@ link_internal void
 DoEditorUi(renderer_2d *Ui, r32 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-  Value ?
-    PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES) :
+  if (Value)
+  {
+    if (*Value < 2.f)
+    {
+      DebugSlider_(Ui, Value, "", 0.f, 2.f);
+    }
+    else if (*Value < 5.f)
+    {
+      DebugSlider_(Ui, Value, "", 0.f, 5.f);
+    }
+    else if (*Value < 10.f)
+    {
+      DebugSlider_(Ui, Value, "", 0.f, 10.f);
+    }
+    else if (*Value < 50.f)
+    {
+      DebugSlider_(Ui, Value, "", 0.f, 50.f);
+    }
+    else if (*Value < 100.f)
+    {
+      DebugSlider_(Ui, Value, "", 0.f, 100.f);
+    }
+    else if (*Value < 1000.f)
+    {
+      DebugSlider_(Ui, Value, "", 0.f, 1000.f);
+    }
+    else
+    {
+      DebugSlider_(Ui, Value, "", 0.f, *Value*1.2f);
+    }
+  }
+  else
+  {
     PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  }
 }
 
 link_internal void
@@ -75,11 +136,13 @@ DoEditorUi(renderer_2d *Ui, s32 *Value, const char* Name, EDITOR_UI_FUNCTION_PRO
 
   if (Value)
   {
-    PushTableStart(Ui);
-      if (Button(Ui, CSz("-"), (umm)Value + (umm)"decrement" )) { *Value = *Value - 1; }
-      PushColumn(Ui, CS(*Value));
-      if (Button(Ui, CSz("+"), (umm)Value + (umm)"increment" )) { *Value = *Value + 1; }
-    PushTableEnd(Ui);
+    u32 Start = StartColumn(Ui);
+      PushTableStart(Ui);
+        if (Button(Ui, CSz("-"), (umm)Value + (umm)"decrement" )) { *Value = *Value - 1; }
+        PushColumn(Ui, CS(*Value));
+        if (Button(Ui, CSz("+"), (umm)Value + (umm)"increment" )) { *Value = *Value + 1; }
+      PushTableEnd(Ui);
+    EndColumn(Ui, Start);
   }
   else
   {
@@ -94,11 +157,13 @@ DoEditorUi(renderer_2d *Ui, u8 *Value, const char* Name, EDITOR_UI_FUNCTION_PROT
 
   if (Value)
   {
-    PushTableStart(Ui);
-      if (Button(Ui, CSz("-"), (umm)Value + (umm)"decrement" )) { *Value = *Value - 1; }
-      PushColumn(Ui, CS(*Value));
-      if (Button(Ui, CSz("+"), (umm)Value + (umm)"increment" )) { *Value = *Value + 1; }
-    PushTableEnd(Ui);
+    u32 Start = StartColumn(Ui);
+      PushTableStart(Ui);
+        if (Button(Ui, CSz("-"), (umm)Value + (umm)"decrement" )) { *Value = *Value - 1; }
+        PushColumn(Ui, CS(*Value));
+        if (Button(Ui, CSz("+"), (umm)Value + (umm)"increment" )) { *Value = *Value + 1; }
+      PushTableEnd(Ui);
+    EndColumn(Ui, Start);
   }
   else
   {
@@ -113,11 +178,13 @@ DoEditorUi(renderer_2d *Ui, u32 *Value, const char* Name, EDITOR_UI_FUNCTION_PRO
 
   if (Value)
   {
-    PushTableStart(Ui);
-      if (Button(Ui, CSz("-"), (umm)Value + (umm)"decrement" )) { *Value = *Value - 1; }
-      PushColumn(Ui, CS(*Value));
-      if (Button(Ui, CSz("+"), (umm)Value + (umm)"increment" )) { *Value = *Value + 1; }
-    PushTableEnd(Ui);
+    u32 Start = StartColumn(Ui);
+      PushTableStart(Ui);
+        if (Button(Ui, CSz("-"), (umm)Value + (umm)"decrement" )) { *Value = *Value - 1; }
+        PushColumn(Ui, CS(*Value));
+        if (Button(Ui, CSz("+"), (umm)Value + (umm)"increment" )) { *Value = *Value + 1; }
+      PushTableEnd(Ui);
+    EndColumn(Ui, Start);
   }
   else
   {
@@ -132,11 +199,13 @@ DoEditorUi(renderer_2d *Ui, u64 *Value, const char* Name, EDITOR_UI_FUNCTION_PRO
 
   if (Value)
   {
-    PushTableStart(Ui);
-      if (Button(Ui, CSz("-"), (umm)Value + (umm)"decrement" )) { *Value = *Value - 1; }
-      PushColumn(Ui, CS(*Value));
-      if (Button(Ui, CSz("+"), (umm)Value + (umm)"increment" )) { *Value = *Value + 1; }
-    PushTableEnd(Ui);
+    u32 Start = StartColumn(Ui);
+      PushTableStart(Ui);
+        if (Button(Ui, CSz("-"), (umm)Value + (umm)"decrement" )) { *Value = *Value - 1; }
+        PushColumn(Ui, CS(*Value));
+        if (Button(Ui, CSz("+"), (umm)Value + (umm)"increment" )) { *Value = *Value + 1; }
+      PushTableEnd(Ui);
+    EndColumn(Ui, Start);
   }
   else
   {
@@ -150,46 +219,33 @@ DoEditorUi(renderer_2d *Ui, u64 *Value, const char* Name, EDITOR_UI_FUNCTION_PRO
 link_internal void
 DoEditorUi(renderer_2d *Ui, v3i *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  DoEditorUi(Ui, &Value->x, "x");
-  DoEditorUi(Ui, &Value->y, "y");
-  DoEditorUi(Ui, &Value->z, "z");
+  PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+  if (Value)
+  {
+    u32 Start = StartColumn(Ui);
+      PushTableStart(Ui);
+        DoEditorUi(Ui, &Value->x, "x");
+        PushNewRow(Ui);
+        DoEditorUi(Ui, &Value->y, "y");
+        PushNewRow(Ui);
+        DoEditorUi(Ui, &Value->z, "z");
+      PushTableEnd(Ui);
+    EndColumn(Ui, Start);
+  }
 }
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, cp *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
+  /* PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
+
   DoEditorUi(Ui, &Value->WorldP, "WorldP");
+  PushNewRow(Ui);
   DoEditorUi(Ui, &Value->Offset, "Offset");
 }
 
 
-
-link_internal void
-DebugSlider_(renderer_2d *Ui, r32 *Value, const char* Name, r32 Min, r32 Max)
-{
-  PushTableStart(Ui);
-    PushColumn(Ui, CS(Name));
-    PushColumn(Ui, CS(*Value));
-
-    auto Range = Max-Min;
-    r32 PercFilled = ((*Value)-Min)/Range;
-
-    r32 Width = 125.f;
-    interactable_handle BargraphButton = PushButtonStart(Ui, (umm)(umm("DebugSlider") ^ umm(Value)) );
-      PushBargraph(Ui, PercFilled, V3(0.75f), V3(0.4f), Width);
-    PushButtonEnd(Ui);
-
-    v2 Offset = {};
-    if (Pressed(Ui, &BargraphButton, &Offset))
-    {
-      r32 NewPerc = Clamp01(Offset.x / Width);
-      r32 NewValue = (Range*NewPerc) + Min;
-      *Value = NewValue;
-    }
-
-    PushNewRow(Ui);
-  PushTableEnd(Ui);
-}
 
 #if DO_EDITOR_UI_FOR_ENTITY_TYPE
 link_internal void

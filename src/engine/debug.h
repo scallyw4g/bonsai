@@ -212,6 +212,8 @@ poof(
       /* PushTableStart(Ui); */
       if (ToggleButton(Ui, FSz("v %s", Name), FSz("> %s", Name), umm(Element) ^ umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
       {
+        PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+        /* Padding.x += 20.f; */
         PushNewRow(Ui);
         type.map(member)
         {
@@ -234,6 +236,7 @@ poof(
 
           PushNewRow(Ui);
         }
+        PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       }
       else
       {
@@ -249,32 +252,26 @@ poof(
     link_internal void
     DoEditorUi(renderer_2d *Ui, enum_t.name *Element, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
     {
-      /* PushTableStart(Ui); */
-        PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-        /* PushForceAdvance(Ui, V2(150, 0)); */
-        /* PushForceUpdateBasis(Ui, V2(150, 0)); */
+      PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
-        cs ElementName = ToString(*Element);
-        /* PushTableStart(Ui); */
-          if (ToggleButton(Ui, ElementName, ElementName, umm(Element)^umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+      cs ElementName = ToString(*Element);
+      if (ToggleButton(Ui, ElementName, ElementName, umm(Element)^umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+      {
+        PushNewRow(Ui);
+        enum_t.map(value)
+        {
+          PushColumn(Ui, CSz("")); // Skip the first Name column
+          if (Button(Ui, CSz("value.name"), umm(Element)^umm("value.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
           {
-            PushNewRow(Ui);
-            enum_t.map(value)
-            {
-              PushColumn(Ui, CSz("")); // Skip the first Name column
-              if (Button(Ui, CSz("value.name"), umm(Element)^umm("value.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
-              {
-                *Element = value.name;
-              }
-              PushNewRow(Ui);
-            }
+            *Element = value.name;
           }
-          else
-          {
-            PushNewRow(Ui);
-          }
-        /* PushTableEnd(Ui); */
-      /* PushTableEnd(Ui); */
+          PushNewRow(Ui);
+        }
+      }
+      else
+      {
+        PushNewRow(Ui);
+      }
     }
   }
 )

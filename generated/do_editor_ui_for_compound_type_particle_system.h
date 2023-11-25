@@ -4,6 +4,8 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, const char* Name, EDITOR_U
   /* PushTableStart(Ui); */
   if (ToggleButton(Ui, FSz("v %s", Name), FSz("> %s", Name), umm(Element) ^ umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
   {
+    PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+    /* Padding.x += 20.f; */
     PushNewRow(Ui);
     DoEditorUi(Ui, &Element->Entropy, "random_series Entropy", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
@@ -117,6 +119,7 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, const char* Name, EDITOR_U
 
 
     PushNewRow(Ui);
+    PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
   }
   else
   {

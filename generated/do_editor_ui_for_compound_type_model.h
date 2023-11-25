@@ -4,6 +4,8 @@ DoEditorUi(renderer_2d *Ui, model *Element, const char* Name, EDITOR_UI_FUNCTION
   /* PushTableStart(Ui); */
   if (ToggleButton(Ui, FSz("v %s", Name), FSz("> %s", Name), umm(Element) ^ umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
   {
+    PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+    /* Padding.x += 20.f; */
     PushNewRow(Ui);
     DoEditorUi(Ui, &Element->Vox, "vox_data Vox", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
@@ -30,6 +32,7 @@ DoEditorUi(renderer_2d *Ui, model *Element, const char* Name, EDITOR_UI_FUNCTION
 
 
     PushNewRow(Ui);
+    PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
   }
   else
   {

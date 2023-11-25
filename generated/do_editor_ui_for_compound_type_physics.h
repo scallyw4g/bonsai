@@ -4,6 +4,8 @@ DoEditorUi(renderer_2d *Ui, physics *Element, const char* Name, EDITOR_UI_FUNCTI
   /* PushTableStart(Ui); */
   if (ToggleButton(Ui, FSz("v %s", Name), FSz("> %s", Name), umm(Element) ^ umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
   {
+    PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+    /* Padding.x += 20.f; */
     PushNewRow(Ui);
     DoEditorUi(Ui, &Element->Velocity, "v3 Velocity", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
@@ -30,6 +32,7 @@ DoEditorUi(renderer_2d *Ui, physics *Element, const char* Name, EDITOR_UI_FUNCTI
 
 
     PushNewRow(Ui);
+    PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
   }
   else
   {

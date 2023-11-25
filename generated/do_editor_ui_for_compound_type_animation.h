@@ -4,6 +4,8 @@ DoEditorUi(renderer_2d *Ui, animation *Element, const char* Name, EDITOR_UI_FUNC
   /* PushTableStart(Ui); */
   if (ToggleButton(Ui, FSz("v %s", Name), FSz("> %s", Name), umm(Element) ^ umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
   {
+    PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+    /* Padding.x += 20.f; */
     PushNewRow(Ui);
     DoEditorUi(Ui, &Element->t, "r32 t", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
@@ -45,6 +47,7 @@ DoEditorUi(renderer_2d *Ui, animation *Element, const char* Name, EDITOR_UI_FUNC
 
 
     PushNewRow(Ui);
+    PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
   }
   else
   {
