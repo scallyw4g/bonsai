@@ -186,9 +186,14 @@ Unproject(v2 ScreenP, r32 ClipZDepth, v2 ScreenDim, m4 *InvViewProj)
 }
 
 // TODO(Jesse): Not sure where this goes.. maybe here?
+//
+// NOTE(Jesse): Returns a sim-space ray
 link_internal maybe_ray
-ComputeRayFromCursor(platform *Plat, m4* ViewProjection, camera *Camera, v3i WorldChunkDim)
+ComputeRayFromCursor(engine_resources *Engine, m4* ViewProjection, camera *Camera, v3i WorldChunkDim)
 {
+  platform *Plat = &Engine->Stdlib.Plat;
+  world *World = Engine->World;
+
   maybe_ray Result = {};
 
   m4 InverseViewProjection = {};
@@ -207,7 +212,9 @@ ComputeRayFromCursor(platform *Plat, m4* ViewProjection, camera *Camera, v3i Wor
 
     v3 RayDirection = Normalize(MouseMaxWorldP - MouseMinWorldP);
 
-    v3 CameraOffset = Camera->ViewingTarget.Offset + V3(Camera->ViewingTarget.WorldP * WorldChunkDim);
+    /* DEBUG_HighlightVoxel(Engine, Camera->ViewingTarget, RED); */
+    /* v3 CameraOffset = Camera->ViewingTarget.Offset + V3(Camera->ViewingTarget.WorldP * WorldChunkDim); */
+    v3 CameraOffset = GetSimSpaceP(World, Camera->ViewingTarget);
     /* v3 CameraOffset = V3(0); */
     Result.Ray = { .Origin = MouseMinWorldP + CameraOffset, .Dir = RayDirection };
     Result.Tag = Maybe_Yes;

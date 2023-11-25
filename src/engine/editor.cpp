@@ -175,12 +175,12 @@ DoLevelEditor(engine_resources *Engine)
 
     SelectionAABB = AABBMinMax(SelectionMinP, SelectionMaxP);
 
-    maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection, Camera, World->ChunkDim);
+    maybe_ray MaybeRay = ComputeRayFromCursor(Engine, &gBuffer->ViewProjection, Camera, World->ChunkDim);
     if (MaybeRay.Tag == Maybe_Yes)
     {
       ray Ray = MaybeRay.Ray;
 
-      Ray.Origin = GetSimSpaceP(World, Canonical_Position(World->ChunkDim, Ray.Origin, {}));
+      /* Ray.Origin = GetSimSpaceP(World, Canonical_Position(World->ChunkDim, Ray.Origin, {})); */
       AABBTest = Intersect(SelectionAABB, &Ray);
 
       v3 SelectionAABBRadius = GetRadius(&SelectionAABB);

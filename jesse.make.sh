@@ -26,13 +26,13 @@
 
 # OPT="-O2"
 # ./make.sh $OPT \
-#     BuildSingleExample examples/terrain_gen \
 #     BuildDebugSystem
 
 # OPT="-O2"
 
 ./make.sh $OPT \
   BuildExecutables \
+  BuildSingleExample examples/terrain_gen \
   BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
   BuildSingleExample examples/turn_based \
   BuildSingleExample examples/transparency \

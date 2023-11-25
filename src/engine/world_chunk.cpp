@@ -4515,11 +4515,13 @@ GetChunksIntersectingRay(world *World, ray *Ray, picked_world_chunk_static_buffe
 
         if (Chunk)
         {
-          aabb ChunkAABB = AABBMinDim( V3(World->ChunkDim*Chunk->WorldP), V3(World->ChunkDim) );
+          /* aabb ChunkAABB = AABBMinDim( V3(World->ChunkDim*Chunk->WorldP), V3(World->ChunkDim) ); */
+          aabb ChunkAABB = GetSimSpaceAABB(World, Chunk);
 
           aabb_intersect_result IntersectResult = Intersect(ChunkAABB, Ray);
           if ( IntersectResult.Face != FaceIndex_None )
           {
+            /* DEBUG_DrawSimSpaceAABB(GetEngineResources(), &ChunkAABB, RED); */
             r32 tChunk = IntersectResult.t;
             if ( AllChunksBuffer ) { Push(AllChunksBuffer, Chunk, tChunk); }
 
@@ -4538,14 +4540,14 @@ GetChunksIntersectingRay(world *World, ray *Ray, picked_world_chunk_static_buffe
 }
 
 link_internal world_chunk*
-GetChunksFromMouseP(engine_resources *Resources, picked_world_chunk_static_buffer *AllChunksBuffer)
+GetChunksFromMouseP(engine_resources *Engine, picked_world_chunk_static_buffer *AllChunksBuffer)
 {
   if (AllChunksBuffer) { Assert(AllChunksBuffer->At == 0); }
 
-  UNPACK_ENGINE_RESOURCES(Resources);
+  UNPACK_ENGINE_RESOURCES(Engine);
   picked_world_chunk ClosestChunk = {};
 
-  maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection, Camera, World->ChunkDim);
+  maybe_ray MaybeRay = Engine->MaybeMouseRay;
   if (MaybeRay.Tag == Maybe_Yes)
   {
     ClosestChunk = GetChunksIntersectingRay(World, &MaybeRay.Ray, AllChunksBuffer);
@@ -4580,7 +4582,7 @@ RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, 
 
   picked_world_chunk_static_buffer AllChunksBuffer = {};
 
-  maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection, Camera, World->ChunkDim);
+  maybe_ray MaybeRay = ComputeRayFromCursor(Resources, &gBuffer->ViewProjection, Camera, World->ChunkDim);
   if (MaybeRay.Tag == Maybe_Yes) { GetChunksIntersectingRay(World, &MaybeRay.Ray, &AllChunksBuffer); }
 
 
@@ -4606,7 +4608,7 @@ RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, 
 
     v3 StartP = CollisionP + (Advance*0.1f);
 
-    v3 AtP = StartP - (ClosestChunk->WorldP*World->ChunkDim);
+    v3 AtP = StartP - GetSimSpaceP(World, Canonical_Position(V3(0), ClosestChunk->WorldP));
 
     u32 AxisIndex = 0;
     for (;;)

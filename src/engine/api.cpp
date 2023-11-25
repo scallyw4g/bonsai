@@ -96,7 +96,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
   UiFrameBegin(&Resources->Ui);
 
 
-  Resources->MaybeMouseRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection, Camera, World->ChunkDim);
+  Resources->MaybeMouseRay = ComputeRayFromCursor(Resources, &gBuffer->ViewProjection, Camera, World->ChunkDim);
   Resources->MousedOverVoxel = MousePickVoxel(Resources);
 
   Graphics->Lighting.Lights.Count = 0;

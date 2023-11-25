@@ -152,10 +152,12 @@ CustomTerrainExample( perlin_noise *Noise,
   return ChunkSum;
 }
 
-// NOTE(Jesse): This is the worker thread loop.  Your game can choose to provide
-// implementations for the thread jobs.  If you handle a job, return True, and
-// if you want the engine to handle it, return False.
-//
+BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
+{
+  Global_ThreadStates = AllThreads;
+  SetThreadLocal_ThreadIndex(ThreadIndex);
+}
+
 BONSAI_API_WORKER_THREAD_CALLBACK()
 {
   b32 Result = True;
@@ -178,6 +180,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       else
       {
 
+#if 0
         {
           // Custom FBM noise example generating simple game-world-like terrain
           s32 Frequency = 0; // Ignored
@@ -200,51 +203,62 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           /* chunk_init_flags InitFlags = ChunkInitFlag_Noop; */
           InitializeChunkWithNoise( CustomTerrainExample, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, (void*)&OctaveBuf);
         }
+#endif
 
-        /* { */
-        /*   // Custom flat noise function that produces a checkerboard */
-        /*   s32 Frequency = 0; */
-        /*   s32 Amplititude = 0; */
-        /*   s32 StartingZDepth = -1; */
-        /*   chunk_init_flags InitFlags = ChunkInitFlag_Noop; */
-        /*   /1* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; *1/ */
-        /*   InitializeChunkWithNoise( Checkerboard, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, 0); */
-        /* } */
+#if 0
+        {
+          // Custom flat noise function that produces a checkerboard
+          s32 Frequency = 0;
+          s32 Amplititude = 0;
+          s32 StartingZDepth = -1;
+          chunk_init_flags InitFlags = ChunkInitFlag_Noop;
+          /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
+          InitializeChunkWithNoise( Checkerboard, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, 0);
+        }
+#endif
 
-        /* { */
-        /*   // FBM params */
-        /*   s32 Frequency = 300; */
-        /*   s32 Amplititude = 220; */
-        /*   s32 StartingZDepth = -200; */
-        /*   u32 Octaves = 4; */
-        /*   /1* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; *1/ */
-        /*   chunk_init_flags InitFlags = ChunkInitFlag_Noop; */
-        /*   InitializeChunkWithNoise( Noise_FBM2D, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, (void*)&Octaves); */
-        /* } */
+#if 0
+        {
+          // FBM params
+          s32 Frequency = 300;
+          s32 Amplititude = 220;
+          s32 StartingZDepth = -200;
+          u32 Octaves = 4;
+          /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
+          chunk_init_flags InitFlags = ChunkInitFlag_Noop;
+          InitializeChunkWithNoise( Noise_FBM2D, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, (void*)&Octaves);
+        }
+#endif
 
-        /* { */
-        /*   // Perlin 2D Params */
-        /*   s32 Frequency = 100; */
-        /*   s32 Amplititude = 25; */
-        /*   s32 StartingZDepth = 0; */
-        /*   InitializeChunkWithNoise( Noise_Perlin2D, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, ChunkInitFlag_Noop, 0); */
-        /* } */
+#if 1
+        {
+          // Perlin 2D Params
+          s32 Frequency = 100;
+          s32 Amplititude = 5;
+          s32 StartingZDepth = 0;
+          InitializeChunkWithNoise( Noise_Perlin2D, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, ChunkInitFlag_Noop, 0);
+        }
+#endif
 
-        /* { */
-        /*   // Perlin 3D Params */
-        /*   s32 Frequency = 100; */
-        /*   s32 Amplititude = 25; */
-        /*   s32 StartingZDepth = 0; */
-        /*   InitializeChunkWithNoise( Noise_Perlin3D, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, ChunkInitFlag_Noop, 0); */
-        /* } */
+#if 0
+        {
+          // Perlin 3D Params
+          s32 Frequency = 100;
+          s32 Amplititude = 5;
+          s32 StartingZDepth = 0;
+          InitializeChunkWithNoise( Noise_Perlin3D, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, ChunkInitFlag_Noop, 0);
+        }
+#endif
 
-        /* { */
-        /*   // Flat Params */
-        /*   s32 Frequency = 100; */
-        /*   s32 Amplititude = 25; */
-        /*   s32 StartingZDepth = -1; */
-        /*   InitializeChunkWithNoise( Noise_Flat, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, ChunkInitFlag_Noop, 0); */
-        /* } */
+#if 0
+        {
+          // Flat Params
+          s32 Frequency = 100;
+          s32 Amplititude = 25;
+          s32 StartingZDepth = -1;
+          InitializeChunkWithNoise( Noise_Flat, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, ChunkInitFlag_Noop, 0);
+        }
+#endif
 
       }
 

@@ -1244,7 +1244,8 @@ GetEntitiesIntersectingRay(world *World, entity **EntityTable, ray *Ray)
     entity *Entity = EntityTable[EntityIndex];
     if (!Spawned(Entity)) continue;
 
-    if (Intersect(World, Ray, Entity))
+    aabb EntityAABB = GetSimSpaceAABB(World, Entity);
+    if (Intersect(EntityAABB, Ray).Face)
     {
       Result = Entity;
     }
@@ -1268,13 +1269,13 @@ MousePickEntity(engine_resources *Resources)
 
   entity *Result = {};
 
-  maybe_ray MaybeRay = ComputeRayFromCursor(Plat, &gBuffer->ViewProjection, Camera, World->ChunkDim);
+  maybe_ray MaybeRay = ComputeRayFromCursor(Resources, &gBuffer->ViewProjection, Camera, World->ChunkDim);
 
   if (MaybeRay.Tag == Maybe_Yes)
   {
-
-    v3 SimOrigin = GetSimSpaceP(World, Canonical_Position(World->ChunkDim, MaybeRay.Ray.Origin, V3i(0)));
-    ray SimRay = {SimOrigin, MaybeRay.Ray.Dir};
+    /* v3 SimOrigin = GetSimSpaceP(World, Canonical_Position(World->ChunkDim, MaybeRay.Ray.Origin, V3i(0))); */
+    /* ray SimRay = {SimOrigin, MaybeRay.Ray.Dir}; */
+    ray SimRay = MaybeRay.Ray;
     Result = RayTraceEntityCollision( Resources, &SimRay );
   }
 
