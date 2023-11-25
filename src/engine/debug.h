@@ -204,6 +204,65 @@ poof(toggle_button_group_for_enum(engine_debug_view_mode))
 #include <generated/toggle_button_group_for_enum_engine_debug_view_mode.h>
 
 poof(
+  func do_editor_ui_for_vector_type(type_poof_symbol type_list)
+  {
+    type_list.map(type)
+    {
+      link_internal void
+      DoEditorUi(renderer_2d *Ui, type.name *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+      {
+        type.member(0, (E) 
+        {
+          if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+
+          if (Value)
+          {
+            u32 Start = StartColumn(Ui);
+              PushTableStart(Ui);
+                E.map_array(e_index)
+                {
+                  DoEditorUi(Ui, &Value->(E.name)[e_index], 0);
+                  PushNewRow(Ui);
+                }
+              PushTableEnd(Ui);
+            EndColumn(Ui, Start);
+          }
+        })
+      }
+    }
+  }
+)
+
+poof(
+  func do_editor_ui_for_scalar_type(type_poof_symbol type_list)
+  {
+    type_list.map(type)
+    {
+      link_internal void
+      DoEditorUi(renderer_2d *Ui, type.name *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+      {
+        if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+
+        if (Value)
+        {
+          u32 Start = StartColumn(Ui);
+            PushTableStart(Ui);
+              if (Button(Ui, CSz("-"), (umm)Value + (umm)"decrement" )) { *Value = *Value - 1; }
+              PushColumn(Ui, CS(*Value));
+              if (Button(Ui, CSz("+"), (umm)Value + (umm)"increment" )) { *Value = *Value + 1; }
+            PushTableEnd(Ui);
+          EndColumn(Ui, Start);
+        }
+        else
+        {
+          PushColumn(Ui, CSz("(null)"));
+        }
+      }
+    }
+  }
+)
+
+poof(
   func do_editor_ui_for_compound_type(type)
   {
     link_internal void
@@ -252,7 +311,7 @@ poof(
     link_internal void
     DoEditorUi(renderer_2d *Ui, enum_t.name *Element, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
     {
-      PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
       cs ElementName = ToString(*Element);
       if (ToggleButton(Ui, ElementName, ElementName, umm(Element)^umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))

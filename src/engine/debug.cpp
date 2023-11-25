@@ -51,7 +51,7 @@ DebugSlider_(renderer_2d *Ui, r32 *Value, const char* Name, r32 Min, r32 Max)
 link_internal void
 DoEditorUi(renderer_2d *Ui, void *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
   Value ?
     PushColumn(Ui, FSz("0x%x",umm(Value)), EDITOR_UI_FUNCTION_INSTANCE_NAMES) :
     PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
@@ -60,7 +60,7 @@ DoEditorUi(renderer_2d *Ui, void *Value, const char* Name, EDITOR_UI_FUNCTION_PR
 link_internal void
 DoEditorUi(renderer_2d *Ui, r32 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
   if (Value)
   {
     if (*Value < 2.f)
@@ -99,25 +99,6 @@ DoEditorUi(renderer_2d *Ui, r32 *Value, const char* Name, EDITOR_UI_FUNCTION_PRO
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, v3 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
-{
-  PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-  Value ?
-    PushColumn(Ui, FSz("%.2f %.2f %.2f", double(Value->x), double(Value->y), double(Value->z)), EDITOR_UI_FUNCTION_INSTANCE_NAMES) :
-    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-}
-
-
-link_internal void
-DoEditorUi(renderer_2d *Ui, v2 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
-{
-  PushColumn(Ui, CS(Name),     EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-  Value ?
-    PushColumn(Ui, FSz("%.2f %.2f", double(Value->x), double(Value->y), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) :
-    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-}
-
-link_internal void
 DoEditorUi(renderer_2d *Ui, b8 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Button(Ui, CS(Name), (umm)Value + (umm)"toggle", EDITOR_UI_FUNCTION_INSTANCE_NAMES )) { *Value = !(*Value); }
@@ -129,111 +110,12 @@ DoEditorUi(renderer_2d *Ui, b8 *Value, const char* Name, EDITOR_UI_FUNCTION_PROT
   Text(Ui, Display);
 }
 
-link_internal void
-DoEditorUi(renderer_2d *Ui, s32 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
-{
-  PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
-  if (Value)
-  {
-    u32 Start = StartColumn(Ui);
-      PushTableStart(Ui);
-        if (Button(Ui, CSz("-"), (umm)Value + (umm)"decrement" )) { *Value = *Value - 1; }
-        PushColumn(Ui, CS(*Value));
-        if (Button(Ui, CSz("+"), (umm)Value + (umm)"increment" )) { *Value = *Value + 1; }
-      PushTableEnd(Ui);
-    EndColumn(Ui, Start);
-  }
-  else
-  {
-    PushColumn(Ui, CSz("(null)"));
-  }
-}
+poof(do_editor_ui_for_scalar_type({s64 u64 s32 u32 s16 u16 s8 u8}));
+#include <generated/do_editor_ui_for_scalar_type_688724926.h>
 
-link_internal void
-DoEditorUi(renderer_2d *Ui, u8 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
-{
-  PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-  if (Value)
-  {
-    u32 Start = StartColumn(Ui);
-      PushTableStart(Ui);
-        if (Button(Ui, CSz("-"), (umm)Value + (umm)"decrement" )) { *Value = *Value - 1; }
-        PushColumn(Ui, CS(*Value));
-        if (Button(Ui, CSz("+"), (umm)Value + (umm)"increment" )) { *Value = *Value + 1; }
-      PushTableEnd(Ui);
-    EndColumn(Ui, Start);
-  }
-  else
-  {
-    PushColumn(Ui, CSz("(null)"));
-  }
-}
-
-link_internal void
-DoEditorUi(renderer_2d *Ui, u32 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
-{
-  PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-  if (Value)
-  {
-    u32 Start = StartColumn(Ui);
-      PushTableStart(Ui);
-        if (Button(Ui, CSz("-"), (umm)Value + (umm)"decrement" )) { *Value = *Value - 1; }
-        PushColumn(Ui, CS(*Value));
-        if (Button(Ui, CSz("+"), (umm)Value + (umm)"increment" )) { *Value = *Value + 1; }
-      PushTableEnd(Ui);
-    EndColumn(Ui, Start);
-  }
-  else
-  {
-    PushColumn(Ui, CSz("(null)"));
-  }
-}
-
-link_internal void
-DoEditorUi(renderer_2d *Ui, u64 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
-{
-  PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-  if (Value)
-  {
-    u32 Start = StartColumn(Ui);
-      PushTableStart(Ui);
-        if (Button(Ui, CSz("-"), (umm)Value + (umm)"decrement" )) { *Value = *Value - 1; }
-        PushColumn(Ui, CS(*Value));
-        if (Button(Ui, CSz("+"), (umm)Value + (umm)"increment" )) { *Value = *Value + 1; }
-      PushTableEnd(Ui);
-    EndColumn(Ui, Start);
-  }
-  else
-  {
-    PushColumn(Ui, CSz("(null)"));
-  }
-}
-
-
-
-
-link_internal void
-DoEditorUi(renderer_2d *Ui, v3i *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
-{
-  PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-  if (Value)
-  {
-    u32 Start = StartColumn(Ui);
-      PushTableStart(Ui);
-        DoEditorUi(Ui, &Value->x, "x");
-        PushNewRow(Ui);
-        DoEditorUi(Ui, &Value->y, "y");
-        PushNewRow(Ui);
-        DoEditorUi(Ui, &Value->z, "z");
-      PushTableEnd(Ui);
-    EndColumn(Ui, Start);
-  }
-}
+poof(do_editor_ui_for_vector_type({v3i v3 v2 Quaternion}));
+#include <generated/do_editor_ui_for_vector_type_688873645.h>
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, cp *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)

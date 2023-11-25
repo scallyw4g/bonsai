@@ -1,7 +1,7 @@
 link_internal void
 DoEditorUi(renderer_2d *Ui, entity_behavior_flags *Element, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
   cs ElementName = ToString(*Element);
   if (ToggleButton(Ui, ElementName, ElementName, umm(Element)^umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
