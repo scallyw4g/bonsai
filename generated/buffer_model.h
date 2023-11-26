@@ -23,6 +23,13 @@ ModelBuffer(umm ElementCount, memory_arena* Memory)
 }
 
 link_inline umm
+ZerothIndex(model_buffer *Buf)
+{
+  umm Result = 0;
+  return Result;
+}
+
+link_inline umm
 AtElements(model_buffer *Buf)
 {
   umm Result = Buf->Count;

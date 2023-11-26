@@ -23,6 +23,13 @@ StandingSpotBuffer(umm ElementCount, memory_arena* Memory)
 }
 
 link_inline umm
+ZerothIndex(standing_spot_buffer *Buf)
+{
+  umm Result = 0;
+  return Result;
+}
+
+link_inline umm
 AtElements(standing_spot_buffer *Buf)
 {
   umm Result = Buf->Count;

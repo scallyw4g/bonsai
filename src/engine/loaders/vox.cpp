@@ -467,7 +467,7 @@ AllocateAndBuildMesh(vox_data *Vox, model *DestModel, memory_arena *TempMemory, 
 }
 
 link_internal maybe_model_buffer
-LoadVoxModel(memory_arena *PermMemory, heap_allocator *Heap, char const *filepath, memory_arena *TempMemory)
+LoadVoxModels(memory_arena *PermMemory, heap_allocator *Heap, char const *filepath, memory_arena *TempMemory)
 {
   TIMED_FUNCTION();
 

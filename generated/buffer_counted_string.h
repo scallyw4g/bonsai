@@ -23,6 +23,13 @@ CountedStringBuffer(umm ElementCount, memory_arena* Memory)
 }
 
 link_inline umm
+ZerothIndex(counted_string_buffer *Buf)
+{
+  umm Result = 0;
+  return Result;
+}
+
+link_inline umm
 AtElements(counted_string_buffer *Buf)
 {
   umm Result = Buf->Count;

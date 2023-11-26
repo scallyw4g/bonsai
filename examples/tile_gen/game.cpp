@@ -12,8 +12,8 @@ model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *Heap)
 {
   model *Result = Allocate(model, Memory, ModelIndex_Count);
-  Result[ModelIndex_Player] = LoadVoxModel(Memory, Heap, "models/chr_rain.vox");
-  /* Result[ModelIndex_Proton] = LoadVoxModel(Memory, Heap, PROJECTILE_MODEL); */
+  Result[ModelIndex_Player] = LoadVoxModels(Memory, Heap, "models/chr_rain.vox");
+  /* Result[ModelIndex_Proton] = LoadVoxModels(Memory, Heap, PROJECTILE_MODEL); */
 
   return Result;
 }

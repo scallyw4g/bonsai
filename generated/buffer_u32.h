@@ -23,6 +23,13 @@ U32Buffer(umm ElementCount, memory_arena* Memory)
 }
 
 link_inline umm
+ZerothIndex(u32_buffer *Buf)
+{
+  umm Result = 0;
+  return Result;
+}
+
+link_inline umm
 AtElements(u32_buffer *Buf)
 {
   umm Result = Buf->Count;

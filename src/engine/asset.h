@@ -164,6 +164,6 @@ GetAssetFilenameFor(counted_string AssetPath, world_position WorldP, memory_aren
 }
 
 link_internal maybe_model_buffer
-LoadVoxModel(memory_arena *PermMemory, heap_allocator *Heap, char const *filepath, memory_arena *TempMemory);
+LoadVoxModels(memory_arena *PermMemory, heap_allocator *Heap, char const *filepath, memory_arena *TempMemory);
 
 /* link_internal b32 Serialize(native_file *File, untextured_3d_geometry_buffer *Mesh); */
