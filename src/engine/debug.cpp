@@ -1,3 +1,4 @@
+#define UiId(base, mod) umm(umm(base) | ( umm(mod) << 32 ))
 link_internal engine_debug *
 GetEngineDebug()
 {
@@ -15,10 +16,10 @@ GetUiDebug()
 link_internal void
 DebugSlider_(renderer_2d *Ui, r32 *Value, const char* Name, r32 Min, r32 Max)
 {
-  u32 Start = StartColumn(Ui);
-    PushTableStart(Ui);
-      PushColumn(Ui, CS(Name));
-      PushColumn(Ui, CS(*Value));
+  /* u32 Start = StartColumn(Ui); */
+  /*   PushTableStart(Ui); */
+      if (Name) { PushColumn(Ui, CS(Name)); }
+      /* PushColumn(Ui, CS(*Value)); */
 
       auto Range = Max-Min;
       r32 PercFilled = ((*Value)-Min)/Range;
@@ -35,10 +36,8 @@ DebugSlider_(renderer_2d *Ui, r32 *Value, const char* Name, r32 Min, r32 Max)
         r32 NewValue = (Range*NewPerc) + Min;
         *Value = NewValue;
       }
-
-      PushNewRow(Ui);
-    PushTableEnd(Ui);
-  EndColumn(Ui, Start);
+    /* PushTableEnd(Ui); */
+  /* EndColumn(Ui, Start); */
 }
 
 
@@ -61,41 +60,63 @@ link_internal void
 DoEditorUi(renderer_2d *Ui, r32 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
-  if (Value)
-  {
-    if (*Value < 2.f)
-    {
-      DebugSlider_(Ui, Value, "", 0.f, 2.f);
-    }
-    else if (*Value < 5.f)
-    {
-      DebugSlider_(Ui, Value, "", 0.f, 5.f);
-    }
-    else if (*Value < 10.f)
-    {
-      DebugSlider_(Ui, Value, "", 0.f, 10.f);
-    }
-    else if (*Value < 50.f)
-    {
-      DebugSlider_(Ui, Value, "", 0.f, 50.f);
-    }
-    else if (*Value < 100.f)
-    {
-      DebugSlider_(Ui, Value, "", 0.f, 100.f);
-    }
-    else if (*Value < 1000.f)
-    {
-      DebugSlider_(Ui, Value, "", 0.f, 1000.f);
-    }
-    else
-    {
-      DebugSlider_(Ui, Value, "", 0.f, *Value*1.2f);
-    }
-  }
-  else
-  {
-    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-  }
+
+  u32 Start = StartColumn(Ui);
+    PushTableStart(Ui);
+      if (Value)
+      {
+        if (Button(Ui, CSz("-"), UiId(Value, "decrement"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1.f; }
+
+        if (*Value >= 10.f)
+        {
+          PushColumn(Ui, FSz("%.1f", r64(*Value)), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+        }
+        else
+        {
+          PushColumn(Ui, FSz("%.2f", r64(*Value)), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+        }
+
+        if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1.f; }
+#if 1
+          DebugSlider_(Ui, Value, 0, 0.f, 32.f);
+#else
+        if (*Value <= 2.f)
+        {
+          DebugSlider_(Ui, Value, 0, -2.f, 2.f);
+        }
+        else if (*Value >= 2.f && *Value <= 5.f)
+        {
+          DebugSlider_(Ui, Value, 0, 2.f, 5.f);
+        }
+        else if (*Value >= 5.f && *Value <= 10.f)
+        {
+          DebugSlider_(Ui, Value, 0, 5.f, 10.f);
+        }
+        else if (*Value >= 10.f && *Value <= 50.f)
+        {
+          DebugSlider_(Ui, Value, 0, 10.f, 50.f);
+        }
+        else if (*Value >= 50.f && *Value <= 100.f)
+        {
+          DebugSlider_(Ui, Value, 0, 50.f, 100.f);
+        }
+        else if (*Value >= 100.f && *Value <= 1000.f)
+        {
+          DebugSlider_(Ui, Value, 0, 100.f, 1000.f);
+        }
+        else
+        {
+          DebugSlider_(Ui, Value, 0, 1000.f, 10000.f);
+        }
+#endif
+        PushNewRow(Ui);
+      }
+      else
+      {
+        PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      }
+    PushTableEnd(Ui);
+  EndColumn(Ui, Start);
 }
 
 link_internal void
@@ -773,58 +794,66 @@ DoEngineDebug(engine_resources *Engine)
       {
         case AssetLoadState_Loaded:
         {
-          model *Model = &Asset->Models.Start[0];
-          v3 Offset = Model->Dim/-2.f;
-          RenderToTexture(Engine, &Model->Mesh, Offset);
-
-          interactable_handle B = PushButtonStart(Ui, umm("asset_texture_viewport") );
-            PushTexturedQuad(Ui, Engine->RTTGroup.Texture, V2(Engine->RTTGroup.Texture->Dim), zDepth_Text);
-          PushButtonEnd(Ui);
-
-          if (EngineDebug->ResetAssetNodeView)
+          IterateOver(&Asset->Models, Model, ModelIndex)
           {
-            Engine->RTTGroup.Camera->DistanceFromTarget = Length(Offset) * 25.f;
-            EngineDebug->ResetAssetNodeView = False;
-          }
+            /* model *Model = &Asset->Models.Start[0]; */
 
-          v2 MouseDP = {};
-          if (Pressed(Ui, &B)) { MouseDP = GetMouseDelta(Plat); }
-          UpdateGameCamera(World, MouseDP, Input, {}, Engine->RTTGroup.Camera);
-
-          if (UiCapturedMouseInput(Ui) == False && Input->Space.Clicked)
-          {
-
-            if (Engine->MousedOverVoxel.Tag)
+            if (ToggleButton(Ui, CSz("BARRRRRRRR"), CSz("FOOOOOOOO"), umm(Model) ^ umm("model_asset_select_button")))
             {
-              cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
-              world_update_op_shape_params_asset AssetUpdateShape =
-              {
-                Asset,
-                EntityOrigin
-              };
+              v3 Offset = Model->Dim/-2.f;
+              RenderToTexture(Engine, &Model->Mesh, Offset);
 
-              asset_spawn_mode AssetSpawnMode = {};
-              GetRadioEnum(&AssetSpawnModeRadioGroup, &AssetSpawnMode);
-              switch (AssetSpawnMode)
-              {
-                case AssetSpawnMode_BlitIntoWorld:
-                {
-                  world_update_op_shape Shape =
-                  {
-                    type_world_update_op_shape_params_asset,
-                    .world_update_op_shape_params_asset = AssetUpdateShape,
-                  };
-                  QueueWorldUpdateForRegion(Engine, {}, &Shape, {}, World->Memory);
-                } break;
+              interactable_handle B = PushButtonStart(Ui, umm("asset_texture_viewport") );
+                PushTexturedQuad(Ui, Engine->RTTGroup.Texture, V2(Engine->RTTGroup.Texture->Dim), zDepth_Text);
+              PushButtonEnd(Ui);
 
-                case AssetSpawnMode_Entity:
-                {
-                  entity *E = GetFreeEntity(Engine->EntityTable);
-                  SpawnEntity(E, Model, EntityBehaviorFlags_Default, 0, &EntityOrigin, Model->Dim/2.f);
-                } break;
+              if (EngineDebug->ResetAssetNodeView)
+              {
+                Engine->RTTGroup.Camera->DistanceFromTarget = Length(Offset) * 25.f;
+                EngineDebug->ResetAssetNodeView = False;
               }
 
+              v2 MouseDP = {};
+              if (Pressed(Ui, &B)) { MouseDP = GetMouseDelta(Plat); }
+              UpdateGameCamera(World, MouseDP, Input, {}, Engine->RTTGroup.Camera);
+
+              if (UiCapturedMouseInput(Ui) == False && Input->Space.Clicked)
+              {
+
+                if (Engine->MousedOverVoxel.Tag)
+                {
+                  cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
+                  world_update_op_shape_params_asset AssetUpdateShape =
+                  {
+                    Asset,
+                    EntityOrigin
+                  };
+
+                  asset_spawn_mode AssetSpawnMode = {};
+                  GetRadioEnum(&AssetSpawnModeRadioGroup, &AssetSpawnMode);
+                  switch (AssetSpawnMode)
+                  {
+                    case AssetSpawnMode_BlitIntoWorld:
+                    {
+                      world_update_op_shape Shape =
+                      {
+                        type_world_update_op_shape_params_asset,
+                        .world_update_op_shape_params_asset = AssetUpdateShape,
+                      };
+                      QueueWorldUpdateForRegion(Engine, {}, &Shape, {}, World->Memory);
+                    } break;
+
+                    case AssetSpawnMode_Entity:
+                    {
+                      entity *E = GetFreeEntity(Engine->EntityTable);
+                      SpawnEntity(E, Model, EntityBehaviorFlags_Default, 0, &EntityOrigin, Model->Dim/2.f);
+                    } break;
+                  }
+
+                }
+              }
             }
+            PushNewRow(Ui);
           }
 
         } break;
