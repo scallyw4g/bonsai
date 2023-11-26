@@ -13,6 +13,13 @@ struct voxel_stack_element_block_array_index
   u32 ElementIndex;
 };
 
+link_inline umm
+GetIndex(voxel_stack_element_block_array_index *Index)
+{
+  umm Result = Index->ElementIndex + (Index->BlockIndex*32);
+  return Result;
+}
+
 
 link_internal voxel_stack_element_block*
 Allocate_voxel_stack_element_block(memory_arena *Memory)

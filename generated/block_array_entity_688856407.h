@@ -13,6 +13,13 @@ struct entity_block_array_index
   u32 ElementIndex;
 };
 
+link_inline umm
+GetIndex(entity_block_array_index *Index)
+{
+  umm Result = Index->ElementIndex + (Index->BlockIndex*4);
+  return Result;
+}
+
 
 link_internal entity_block*
 Allocate_entity_block(memory_arena *Memory)

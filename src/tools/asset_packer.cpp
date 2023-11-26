@@ -34,8 +34,10 @@ s32 main(s32 ArgCount, const char **Args)
   Info("Packing (%s) -> (%S)", InputVox, OutputPath);
 
 
-  vox_data Vox = LoadVoxData(Memory, &Heap, InputVox, VoxLoaderClipBehavior_ClipToVoxels, Global_ChunkApronMinDim, Global_ChunkApronMaxDim);
+  vox_data_block_array Vox = LoadVoxData(GetTranArena(), Memory, &Heap, InputVox, VoxLoaderClipBehavior_ClipToVoxels, Global_ChunkApronMinDim, Global_ChunkApronMaxDim);
 
+  NotImplemented;
+#if 0
 
   chunk_dimension ModelDim = Vox.ChunkData->Dim;
   s32 xChunkCount = 1 + (ModelDim.x / WorldChunkDim.x);
@@ -86,5 +88,6 @@ s32 main(s32 ArgCount, const char **Args)
     Chunk->WorldP += Origin;
     SerializeChunk(Chunk, OutputPath);
   }
+#endif
 
 }

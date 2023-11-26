@@ -3704,9 +3704,10 @@ BlitAssetIntoWorld(engine_resources *Engine, asset *Asset, cp Origin)
 
   Assert(Asset->LoadState == AssetLoadState_Loaded);
 
-  chunk_data *VoxData = Asset->Model.Vox.ChunkData;
+  Assert(Asset->Models.Count > 0);
+  chunk_data *VoxData = Asset->Models.Start[0].Vox.ChunkData;
 
-  chunk_dimension ModelDim = Asset->Model.Dim;
+  chunk_dimension ModelDim = Asset->Models.Start[0].Dim;
 
   world_chunk SrcChunk = {
     .Flags = VoxData->Flags,
@@ -3807,7 +3808,9 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
       auto *ShapeAsset = SafeCast(world_update_op_shape_params_asset, Shape);
 
       v3 MinSimP = GetSimSpaceP(World, ShapeAsset->Origin);
-      v3 MaxSimP = MinSimP + ShapeAsset->Asset->Model.Dim;
+
+      Assert(ShapeAsset->Asset->Models.Count > 0);
+      v3 MaxSimP = MinSimP + ShapeAsset->Asset->Models.Start[0].Dim;
 
       MinPCoarse = SimSpaceToCanonical(World, MinSimP-MinPStroke);
       MaxPCoarse = SimSpaceToCanonical(World, MaxSimP+MaxPStroke);
@@ -4213,7 +4216,9 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           Assert(Modifier == WorldUpdateOperationModeModifier_None);
           world_update_op_shape_params_asset *AssetJob = SafeCast(world_update_op_shape_params_asset, &Shape);
           asset *Asset = AssetJob->Asset;
-          Data = Asset->Model.Vox.ChunkData;
+
+          Assert(Asset->Models.Count > 0);
+          Data = Asset->Models.Start[0].Vox.ChunkData;
           SimOrigin = GetSimSpaceP(World, AssetJob->Origin);
         } [[fallthrough]];
 

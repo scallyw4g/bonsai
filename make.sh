@@ -353,8 +353,6 @@ function RunPoofHelper {
    # --log-level LogLevel_Debug                                                                                  \
    #
   poof                    \
-   -D _M_X64              \
-   -D _M_CEE              \
    -D POOF_PREPROCESSOR   \
    -D BONSAI_PREPROCESSOR \
    -I src/                \

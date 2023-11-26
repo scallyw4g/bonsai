@@ -24,6 +24,9 @@ enum Chunk_ID
   ID_IMAP = 'PAMI',
 };
 
+poof(generate_string_table(Chunk_ID))
+#include <generated/generate_string_table_Chunk_ID.h>
+
 inline u8
 ReadChar(FILE* File, s32* byteCounter)
 {
@@ -186,14 +189,22 @@ enum vox_loader_clip_behavior
 
 global_variable random_series TMP = {54235432543};
 
-link_internal vox_data
-LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepath, vox_loader_clip_behavior ClipBehavior, v3i HalfApronMin = {}, v3i HalfApronMax = {}, v3i ModDim = {})
+link_internal vox_data_block_array
+LoadVoxData(memory_arena *TempMemory, memory_arena *PermMemory, heap_allocator *Heap, char const *filepath, vox_loader_clip_behavior ClipBehavior, v3i HalfApronMin = {}, v3i HalfApronMax = {}, v3i ModDim = {})
 {
-  vox_data Result = {};
+  vox_data_block_array Result = { {}, {}, TempMemory };
+
   v3i ReportedDim = {};
+
+
+/*   vox_data_buffer_builder Builder = {}; */
+
 
   native_file ModelFile = OpenFile(filepath, "r+b");
 
+
+  vox_data Current = {};
+  v3 *Palette = DefaultPalette;
   if (ModelFile.Handle)
   {
     // Ensure we're dealing with a .vox file
@@ -209,6 +220,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
     while (Error == False && bytesRemaining > 0)
     {
       Chunk_ID CurrentId = GetHeaderType(ModelFile.Handle, &bytesRemaining);
+      DebugLine("%S", ToString(CurrentId));
       switch ( CurrentId )
       {
         case ID_RGBA:
@@ -220,7 +232,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
           Assert(ChildChunkCount == 0);
 
           /* Result.Palette = (v4*)HeapAllocate(Heap, 256); */
-          Result.Palette = Allocate(v3, WorldStorage, 256);
+          Palette = Allocate(v3, PermMemory, 256);
 
           for (u32 PaletteIndex = 0; PaletteIndex < 256; ++PaletteIndex)
           {
@@ -228,10 +240,10 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
             u8 G = ReadChar(ModelFile.Handle, &bytesRemaining);
             u8 B = ReadChar(ModelFile.Handle, &bytesRemaining);
             u8 A = ReadChar(ModelFile.Handle, &bytesRemaining);
-            Result.Palette[PaletteIndex].r = R;
-            Result.Palette[PaletteIndex].g = G;
-            Result.Palette[PaletteIndex].b = B;
-            /* Result.Palette[PaletteIndex].a = A; */
+            Palette[PaletteIndex].r = R;
+            Palette[PaletteIndex].g = G;
+            Palette[PaletteIndex].b = B;
+            /* Current.Palette[PaletteIndex].a = A; */
           }
 
         } break;
@@ -248,6 +260,8 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
 
         case ID_XYZI:
         {
+          Current = {};
+
           // ++TotalChunksRead;
 
           s32 ReportedVoxelCount = ReadXYZIChunk(ModelFile.Handle, &bytesRemaining);
@@ -291,7 +305,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
             {
               BUG("Voxel detected outside the dimention it should be in while loading (%s)!", filepath);
               Error = True;
-              Assert(Result.ChunkData == 0);
+              Assert(Current.ChunkData == 0);
               break;
             }
           }
@@ -325,8 +339,8 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
           }
 
 
-          Result.ChunkData = AllocateChunkData(WorldStorage, ModelDim);
-          Result.ChunkData->Dim = ModelDim;
+          Current.ChunkData = AllocateChunkData(PermMemory, ModelDim);
+          Current.ChunkData->Dim = ModelDim;
 
           for( s32 VoxelCacheIndex = 0;
                    VoxelCacheIndex < ActualVoxelCount;
@@ -340,7 +354,7 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
             /* if (Voxel->V.Flags & Voxel_Filled && VoxelCacheIndex == 16) */
             {
               /* if (RandomUnilateral(&TMP) > 0.25f) { Voxel->V.Transparency = 255; } */
-              /* Result.ChunkData->Voxels[Index].Transparency = 128; */
+              /* Current.ChunkData->Voxels[Index].Transparency = 128; */
               /* Voxel->V.Transparency = 255; */
             }
             else
@@ -350,15 +364,21 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
             }
             /* Voxel->V.Transparency = 0; */
 
-            Result.ChunkData->Voxels[Index] = Voxel->V;
+            Current.ChunkData->Voxels[Index] = Voxel->V;
             /* Result.ChunkData->VoxelLighting[Index] = VoxelLighting(0xff); */
           }
 
           FullBarrier;
 
-          Result.ChunkData->Flags = Chunk_VoxelsInitialized;
+          Current.ChunkData->Flags = Chunk_VoxelsInitialized;
+
+          /* MarkBoundaryVoxels_NoExteriorFaces( Current.ChunkData->Voxels, Current.ChunkData->Dim, {}, Current.ChunkData->Dim); */
+          MarkBoundaryVoxels_MakeExteriorFaces( Current.ChunkData->Voxels, Current.ChunkData->Dim, {}, Current.ChunkData->Dim);
+
+          Push(&Result, &Current);
         } break;
 
+        // Transform node chunk
         case ID_nTRN:
         {
           s32 ChunkContentBytes = ReadInt(ModelFile.Handle, &bytesRemaining);
@@ -381,13 +401,13 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
         } break;
 
         case ID_rOBJ:
+        case ID_nSHP:
+        case ID_nGRP:
         case ID_rCAM:
         case ID_NOTE:
         case ID_IMAP:
         case ID_LAYR:
         case ID_MATL:
-        case ID_nSHP:
-        case ID_nGRP:
         {
           s32 ChunkContentBytes = ReadInt(ModelFile.Handle, &bytesRemaining);
           s32 ChildChunkCount = ReadInt(ModelFile.Handle, &bytesRemaining);
@@ -407,12 +427,11 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
     if (Error == False)
     {
       Assert(bytesRemaining == 0);
-      /* MarkBoundaryVoxels_NoExteriorFaces( Result.ChunkData->Voxels, Result.ChunkData->Dim, {}, Result.ChunkData->Dim); */
-      MarkBoundaryVoxels_MakeExteriorFaces( Result.ChunkData->Voxels, Result.ChunkData->Dim, {}, Result.ChunkData->Dim);
     }
     else
     {
-      Assert(Result.ChunkData == 0);
+      /* Assert(Result.ChunkData == 0); */
+      Assert(False);
     }
 
     CloseFile(&ModelFile);
@@ -422,9 +441,10 @@ LoadVoxData(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepa
     Error("Couldn't read model file '%s' .", filepath);
   }
 
-  if (Result.Palette == 0)
+
+  IterateOver(&Result, Vox, VoxIndex)
   {
-    Result.Palette = DefaultPalette;
+    Vox->Palette = Palette;
   }
 
   return Result;
@@ -446,20 +466,31 @@ AllocateAndBuildMesh(vox_data *Vox, model *DestModel, memory_arena *TempMemory, 
   // TODO(Jesse): Roll back what memory we don't use here.. or maybe allocate the initial buffer with temp and copy to perm?
 }
 
-link_internal maybe_model
+link_internal maybe_model_buffer
 LoadVoxModel(memory_arena *PermMemory, heap_allocator *Heap, char const *filepath, memory_arena *TempMemory)
 {
   TIMED_FUNCTION();
 
-  maybe_model Result = {};
+  maybe_model_buffer Result =  {};
 
-  vox_data Vox = LoadVoxData(PermMemory, Heap, filepath, VoxLoaderClipBehavior_ClipToVoxels);
+  vox_data_block_array VoxArray = LoadVoxData(TempMemory, PermMemory, Heap, filepath, VoxLoaderClipBehavior_ClipToVoxels);
 
-  if (Vox.ChunkData)
+  umm VoxElements = TotalElements(&VoxArray);
+
+  if (VoxElements)
   {
     Result.Tag = Maybe_Yes;
-    Result.Model.Vox = Vox;
-    AllocateAndBuildMesh(&Vox, &Result.Model, TempMemory, PermMemory );
+
+    Result.Value = ModelBuffer(VoxElements, PermMemory);
+    IterateOver(&VoxArray, Vox, VoxIndex)
+    {
+      if (Vox->ChunkData)
+      {
+        model *Model = &Result.Value.Start[GetIndex(&VoxIndex)];
+        Model->Vox = *Vox;
+        AllocateAndBuildMesh(Vox, Model, TempMemory, PermMemory );
+      }
+    }
   }
 
   return Result;

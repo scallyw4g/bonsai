@@ -691,11 +691,11 @@ InitAsset(asset *Asset, thread_local_state *Thread)
   cs AssetFilepath = Finalize(&Builder, Thread->TempMemory, True);
   if ( AreEqual(Ext, CSz("vox")) )
   {
-    maybe_model Maybe = LoadVoxModel(Thread->PermMemory, 0, AssetFilepath.Start, Thread->TempMemory);
+    maybe_model_buffer Maybe = LoadVoxModel(Thread->PermMemory, 0, AssetFilepath.Start, Thread->TempMemory);
 
     if (Maybe.Tag == Maybe_Yes)
     {
-      Asset->Model = Maybe.Model;
+      Asset->Models = Maybe.Value;
       FullBarrier;
       Asset->LoadState = AssetLoadState_Loaded;
     }

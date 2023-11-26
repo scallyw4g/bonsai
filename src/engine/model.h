@@ -73,6 +73,19 @@ struct model
   v3i Dim;
 };
 
+poof(block_array(vox_data, {8}))
+#include <generated/block_array_vox_data_688856411.h>
+
+poof(buffer(model))
+#include <generated/buffer_model.h>
+
+poof(block_array(model, {8}))
+#include <generated/block_array_model_688856411.h>
+
+poof(maybe(model_buffer))
+#include <generated/maybe_model_buffer.h>
+
+
 link_internal voxel *
 TryGetVoxel(chunk_data *ChunkData, v3i P)
 {

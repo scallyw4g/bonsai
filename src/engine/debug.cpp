@@ -773,8 +773,9 @@ DoEngineDebug(engine_resources *Engine)
       {
         case AssetLoadState_Loaded:
         {
-          v3 Offset = Asset->Model.Dim/-2.f;
-          RenderToTexture(Engine, &Asset->Model.Mesh, Offset);
+          model *Model = &Asset->Models.Start[0];
+          v3 Offset = Model->Dim/-2.f;
+          RenderToTexture(Engine, &Model->Mesh, Offset);
 
           interactable_handle B = PushButtonStart(Ui, umm("asset_texture_viewport") );
             PushTexturedQuad(Ui, Engine->RTTGroup.Texture, V2(Engine->RTTGroup.Texture->Dim), zDepth_Text);
@@ -819,7 +820,7 @@ DoEngineDebug(engine_resources *Engine)
                 case AssetSpawnMode_Entity:
                 {
                   entity *E = GetFreeEntity(Engine->EntityTable);
-                  SpawnEntity(E, &Asset->Model, EntityBehaviorFlags_Default, 0, &EntityOrigin, Asset->Model.Dim/2.f);
+                  SpawnEntity(E, Model, EntityBehaviorFlags_Default, 0, &EntityOrigin, Model->Dim/2.f);
                 } break;
               }
 

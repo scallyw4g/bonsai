@@ -140,7 +140,7 @@ enum asset_load_state
 
 struct asset
 {
-  asset_load_state LoadState;
+  volatile asset_load_state LoadState;
 
   // At 120fps we get 9k hours worth of frames in a u32.. should be enough.
   // 9k hours == 385 days
@@ -148,7 +148,7 @@ struct asset
   // TODO(Jesse)(frame-index): Should this just be 32-bit?
   u64 LRUFrameIndex;
 
-  model Model;
+  model_buffer Models;
 
   file_traversal_node FileNode;
 };
@@ -163,7 +163,7 @@ GetAssetFilenameFor(counted_string AssetPath, world_position WorldP, memory_aren
   return Result;
 }
 
-link_internal maybe_model
+link_internal maybe_model_buffer
 LoadVoxModel(memory_arena *PermMemory, heap_allocator *Heap, char const *filepath, memory_arena *TempMemory);
 
 /* link_internal b32 Serialize(native_file *File, untextured_3d_geometry_buffer *Mesh); */
