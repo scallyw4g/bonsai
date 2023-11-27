@@ -526,12 +526,14 @@ InitRenderToTextureGroup(render_entity_to_texture_group *Group, v2i TextureSize,
   texture *Texture = GenTexture(TextureSize, Memory);
   GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, Image);
 
+  // NOTE(Jesse): This has to be attachment0 (first texture thing attached to
+  // framebuffer) because the render code expects it to be.
   Push(&Group->Textures, Texture);
+  FramebufferTexture(&Group->FBO, Texture);
 
   texture *DepthTexture = MakeDepthTexture( TextureSize, Memory );
   FramebufferDepthTexture(DepthTexture);
 
-  FramebufferTexture(&Group->FBO, Texture);
   /* Group->FBO.Attachments++; */
   SetDrawBuffers(&Group->FBO);
 

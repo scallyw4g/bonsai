@@ -858,8 +858,10 @@ RenderToTexture(engine_resources *Engine, texture *Texture, untextured_3d_geomet
       ;
 
     BindShaderUniforms(&RTTGroup->Shader);
-    /* BindUniform(&RTTGroup->Shader, "TargetTexture", Texture, 0); */
+    GL.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, Texture->ID, 0);
+    GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     /* FramebufferTexture(&Engine->RTTGroup.FBO, Texture); */
+    /* Ensure(CheckAndClearFramebuffer()); */
   }
 
   // Geometry stuff

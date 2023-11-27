@@ -1,3 +1,5 @@
+poof(block_array_c(asset_thumbnail, {8}))
+#include <generated/block_array_c_asset_thumbnail_688856411.h>
 
 link_internal rect3i
 ModifySelectionAABB(rect3 *SelectionRegion, v3 UpdateVector, face_index Face, selection_mode Mode)

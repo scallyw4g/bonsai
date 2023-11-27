@@ -4886,6 +4886,7 @@ Debug_DoWorldChunkPicking(engine_resources *Resources)
 // TODO(Jesse): Should be able to remove this?  Soon?
 struct renderer_2d;
 
+#if 0
 link_internal void
 PushChunkView(renderer_2d* Group, world_chunk* Chunk, window_layout* Window, render_entity_to_texture_group *PickedChunksRenderGroup)
 {
@@ -4948,6 +4949,7 @@ PushChunkView(renderer_2d* Group, world_chunk* Chunk, window_layout* Window, ren
   world World = {};
   UpdateGameCamera(&World, -0.005f*(*Group->MouseDP), WindowInput, Canonical_Position(0), PickedChunksRenderGroup->Camera);
 }
+#endif
 
 link_internal void
 PushChunkDetails(renderer_2d* Group, world_chunk* Chunk, window_layout* Window)

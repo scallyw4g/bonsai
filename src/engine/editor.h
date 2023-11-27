@@ -1,3 +1,13 @@
+struct asset_thumbnail
+{
+  texture *Texture;
+  camera  *Camera;
+  m4       ViewProjection;
+};
+
+poof(block_array_h(asset_thumbnail, {8}))
+#include <generated/block_array_h_asset_thumbnail_688856411.h>
+
 struct level_editor
 {
   /* level_edit_mode Mode; */
@@ -16,7 +26,7 @@ struct level_editor
   face_index SelectionShiftClickedFace;
   v3 SelectionShiftClickedP[2];
 
-  /* texture_ptr_block_array AssetThumbnailTextures; */
+  asset_thumbnail_block_array AssetThumbnails;
 };
 
 link_internal b32

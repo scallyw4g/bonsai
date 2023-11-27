@@ -7,7 +7,7 @@ in vec3 Normal;
 
 void main()
 {
-  vec3 SunP = normalize(V3(1.f, 0.75f, 0.5f));
+  vec3 SunP = normalize(V3(-1.f, 0.75f, 0.5f));
 
   float cosTheta = max(0.5f, dot(Normal, SunP));
 

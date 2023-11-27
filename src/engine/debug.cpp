@@ -783,112 +783,118 @@ DoEngineDebug(engine_resources *Engine)
       local_persist window_layout AssetViewWindow = WindowLayout("Asset View", {}, AssetDetailWindowDim, window_layout_flags(WindowLayoutFlag_StartupAlign_Right|WindowLayoutFlag_Default));
       PushWindowStart(Ui, &AssetViewWindow);
 
-      auto AssetSpawnModeRadioGroup = RadioButtonGroup_asset_spawn_mode(Ui, umm("asset_spawn_mode_radio_group"));
 
-      asset *Asset = GetAsset(Engine, &EngineDebug->SelectedAsset);
+      PushTableStart(Ui);
+        auto AssetSpawnModeRadioGroup = RadioButtonGroup_asset_spawn_mode(Ui, umm("asset_spawn_mode_radio_group"));
 
-      PushColumn(Ui, Asset->FileNode.Name);
-      PushNewRow(Ui);
+        asset *Asset = GetAsset(Engine, &EngineDebug->SelectedAsset);
 
-      switch (Asset->LoadState)
-      {
-        case AssetLoadState_Loaded:
+        PushColumn(Ui, Asset->FileNode.Name);
+        PushNewRow(Ui);
+        switch (Asset->LoadState)
         {
-          IterateOver(&Asset->Models, Model, ModelIndex)
+          case AssetLoadState_Loaded:
           {
-            if (ModelIndex > 1) break;
-
-            auto *RTTGroup = &Engine->RTTGroup;
-            /* if (ModelIndex >= TotalElements(&Editor->AssetThumbnailTextures)) */
-            if (ModelIndex >= TotalElements(&RTTGroup->Textures))
+            IterateOver(&Asset->Models, Model, ModelIndex)
             {
-              // TODO(Jesse): Where to allocate these?
-              texture *T = MakeTexture_RGBA(V2i(256), (u32*)0, Engine->Memory);
-              /* Push(&Editor->AssetThumbnailTextures, &T); */
-              Push(&RTTGroup->Textures, T);
-            }
-
-            /* texture *Texture = *GetPtr(&Editor->AssetThumbnailTextures, ModelIndex); */
-            texture *Texture = GetPtr(&RTTGroup->Textures, ModelIndex);
-
-            /* model *Model = &Asset->Models.Start[0]; */
-
-            /* if (ToggleButton(Ui, CSz("BARRRRRRRR"), CSz("FOOOOOOOO"), umm(Model) ^ umm("model_asset_select_button"))) */
-            {
-              v3 Offset = Model->Dim/-2.f;
-              RenderToTexture(Engine, Texture, &Model->Mesh, Offset);
-
-              interactable_handle B = PushButtonStart(Ui, umm("asset_texture_viewport") );
-                PushTexturedQuad(Ui, Texture, V2(Texture->Dim), zDepth_Text);
-              PushButtonEnd(Ui);
-
-              if (EngineDebug->ResetAssetNodeView)
+              auto *RTTGroup = &Engine->RTTGroup;
+              /* if (ModelIndex >= TotalElements(&Editor->AssetThumbnailTextures)) */
+              if (ModelIndex >= TotalElements(&RTTGroup->Textures))
               {
-                Engine->RTTGroup.Camera->DistanceFromTarget = Length(Offset) * 25.f;
-                EngineDebug->ResetAssetNodeView = False;
+                // TODO(Jesse): Where to allocate these?
+                texture *T = MakeTexture_RGBA(V2i(256), (u32*)0, Engine->Memory);
+                /* Push(&Editor->AssetThumbnailTextures, &T); */
+                Push(&RTTGroup->Textures, T);
               }
 
-              v2 MouseDP = {};
-              if (Pressed(Ui, &B)) { MouseDP = GetMouseDelta(Plat); }
-              UpdateGameCamera(World, MouseDP, Input, {}, Engine->RTTGroup.Camera);
+              /* texture *Texture = *GetPtr(&Editor->AssetThumbnailTextures, ModelIndex); */
+              texture *Texture = GetPtr(&RTTGroup->Textures, ModelIndex);
 
-              if (UiCapturedMouseInput(Ui) == False && Input->Space.Clicked)
+              /* model *Model = &Asset->Models.Start[0]; */
+
+              /* if (ToggleButton(Ui, CSz("BARRRRRRRR"), CSz("FOOOOOOOO"), umm(Model) ^ umm("model_asset_select_button"))) */
               {
+                v3 Offset = Model->Dim/-2.f;
+                RenderToTexture(Engine, Texture, &Model->Mesh, Offset);
 
-                if (Engine->MousedOverVoxel.Tag)
+                u32 Index = StartColumn(Ui);
+                  interactable_handle B = PushButtonStart(Ui, umm("asset_texture_viewport") );
+                    PushTexturedQuad(Ui, Texture, V2(Texture->Dim), zDepth_Text);
+                  PushButtonEnd(Ui);
+                  /* PushForceUpdateBasis(Ui, V2(256, 0)); */
+                EndColumn(Ui, Index);
+
+                if (EngineDebug->ResetAssetNodeView)
                 {
-                  cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
-                  world_update_op_shape_params_asset AssetUpdateShape =
-                  {
-                    Asset,
-                    EntityOrigin
-                  };
+                  Engine->RTTGroup.Camera->DistanceFromTarget = Length(Offset) * 25.f;
+                  EngineDebug->ResetAssetNodeView = False;
+                }
 
-                  asset_spawn_mode AssetSpawnMode = {};
-                  GetRadioEnum(&AssetSpawnModeRadioGroup, &AssetSpawnMode);
-                  switch (AssetSpawnMode)
+                v2 MouseDP = {};
+                if (Pressed(Ui, &B)) { MouseDP = GetMouseDelta(Plat); }
+                UpdateGameCamera(World, MouseDP, Input, {}, Engine->RTTGroup.Camera);
+
+                if (UiCapturedMouseInput(Ui) == False && Input->Space.Clicked)
+                {
+
+                  if (Engine->MousedOverVoxel.Tag)
                   {
-                    case AssetSpawnMode_BlitIntoWorld:
+                    cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
+                    world_update_op_shape_params_asset AssetUpdateShape =
                     {
-                      world_update_op_shape Shape =
+                      Asset,
+                      EntityOrigin
+                    };
+
+                    asset_spawn_mode AssetSpawnMode = {};
+                    GetRadioEnum(&AssetSpawnModeRadioGroup, &AssetSpawnMode);
+                    switch (AssetSpawnMode)
+                    {
+                      case AssetSpawnMode_BlitIntoWorld:
                       {
-                        type_world_update_op_shape_params_asset,
-                        .world_update_op_shape_params_asset = AssetUpdateShape,
-                      };
-                      QueueWorldUpdateForRegion(Engine, {}, &Shape, {}, World->Memory);
-                    } break;
+                        world_update_op_shape Shape =
+                        {
+                          type_world_update_op_shape_params_asset,
+                          .world_update_op_shape_params_asset = AssetUpdateShape,
+                        };
+                        QueueWorldUpdateForRegion(Engine, {}, &Shape, {}, World->Memory);
+                      } break;
 
-                    case AssetSpawnMode_Entity:
-                    {
-                      entity *E = GetFreeEntity(Engine->EntityTable);
-                      SpawnEntity(E, Model, EntityBehaviorFlags_Default, 0, &EntityOrigin, Model->Dim/2.f);
-                    } break;
+                      case AssetSpawnMode_Entity:
+                      {
+                        entity *E = GetFreeEntity(Engine->EntityTable);
+                        SpawnEntity(E, Model, EntityBehaviorFlags_Default, 0, &EntityOrigin, Model->Dim/2.f);
+                      } break;
+                    }
+
                   }
-
                 }
               }
+              if ( (ModelIndex+1) % 4 == 0)
+              {
+                PushNewRow(Ui);
+              }
             }
-            PushNewRow(Ui);
-          }
 
-        } break;
+          } break;
 
-        case AssetLoadState_Queued:
-        case AssetLoadState_Loading:
-        {
-          Text(Ui, CSz("Loading Asset"));
-        } break;
+          case AssetLoadState_Queued:
+          case AssetLoadState_Loading:
+          {
+            PushColumn(Ui, CSz("Loading Asset"));
+          } break;
 
-        case AssetLoadState_Unloaded:
-        {
-          Text(Ui, CSz("Not Loading Asset .. ?"));
-        } break;
+          case AssetLoadState_Unloaded:
+          {
+            PushColumn(Ui, CSz("Not Loading Asset .. ?"));
+          } break;
 
-        case AssetLoadState_Error:
-        {
-          Text(Ui, CSz("Error Loading Asset :("));
-        } break;
-      }
+          case AssetLoadState_Error:
+          {
+            PushColumn(Ui, CSz("Error Loading Asset :("));
+          } break;
+        }
+      PushTableEnd(Ui);
 
       PushWindowEnd(Ui, &AssetViewWindow);
     }
