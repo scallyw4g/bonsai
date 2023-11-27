@@ -13,49 +13,12 @@ struct model_block_array_index
   u32 ElementIndex;
 };
 
-link_inline umm
-GetIndex(model_block_array_index *Index)
-{
-  umm Result = Index->ElementIndex + (Index->BlockIndex*8);
-  return Result;
-}
-
-
-link_internal model_block*
-Allocate_model_block(memory_arena *Memory)
-{
-  model_block *Result = Allocate(model_block, Memory, 1);
-  Result->Elements = Allocate(model, Memory, 8);
-  return Result;
-}
-
 struct model_block_array
 {
   model_block First;
   model_block *Current;
-
   memory_arena *Memory;
 };
-
-link_internal void
-Push(model_block_array *Array, model *Element)
-{
-  if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
-
-  if (Array->Current == 0) { Array->First = *Allocate_model_block(Array->Memory); Array->Current = &Array->First; }
-
-  if (Array->Current->At == 8)
-  {
-    model_block *Next = Allocate_model_block(Array->Memory);
-    Next->Index = Array->Current->Index + 1;
-
-    Array->Current->Next = Next;
-    Array->Current = Next;
-    /* Array->At = 0; */
-  }
-
-  Array->Current->Elements[Array->Current->At++] = *Element;
-}
 
 link_internal model_block_array_index
 operator++(model_block_array_index &I0)
@@ -87,6 +50,12 @@ operator<(model_block_array_index I0, model_block_array_index I1)
   return Result;
 }
 
+link_inline umm
+GetIndex(model_block_array_index *Index)
+{
+  umm Result = Index->ElementIndex + (Index->BlockIndex*8);
+  return Result;
+}
 
 link_internal model_block_array_index
 ZerothIndex(model_block_array *Arr)
@@ -129,9 +98,6 @@ GetPtr(model_block_array *Arr, model_block_array_index Index)
   return Result;
 }
 
-
-
-
 link_internal model *
 GetPtr(model_block *Block, umm Index)
 {
@@ -140,10 +106,57 @@ GetPtr(model_block *Block, umm Index)
   return Result;
 }
 
+link_internal model *
+GetPtr(model_block_array *Arr, umm Index)
+{
+  umm BlockIndex = Index / 8;
+  umm ElementIndex = Index % 8;
+
+  umm AtBlock = 0;
+  model_block *Block = &Arr->First;
+  while (AtBlock++ < BlockIndex)
+  {
+    Block = Block->Next;
+  }
+
+  model *Result = Block->Elements+ElementIndex;
+  return Result;
+}
+
+
 link_internal u32
 AtElements(model_block *Block)
 {
   return Block->At;
+}
+
+
+link_internal model_block*
+Allocate_model_block(memory_arena *Memory)
+{
+  model_block *Result = Allocate(model_block, Memory, 1);
+  Result->Elements = Allocate(model, Memory, 8);
+  return Result;
+}
+
+link_internal void
+Push(model_block_array *Array, model *Element)
+{
+  if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
+
+  if (Array->Current == 0) { Array->First = *Allocate_model_block(Array->Memory); Array->Current = &Array->First; }
+
+  if (Array->Current->At == 8)
+  {
+    model_block *Next = Allocate_model_block(Array->Memory);
+    Next->Index = Array->Current->Index + 1;
+
+    Array->Current->Next = Next;
+    Array->Current = Next;
+    /* Array->At = 0; */
+  }
+
+  Array->Current->Elements[Array->Current->At++] = *Element;
 }
 
 

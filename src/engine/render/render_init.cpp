@@ -523,13 +523,16 @@ InitRenderToTextureGroup(render_entity_to_texture_group *Group, v2i TextureSize,
   f32 *Image = 0;
 #endif
 
-  Group->Texture = GenTexture(TextureSize, Memory);
+  texture *Texture = GenTexture(TextureSize, Memory);
   GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, Image);
+
+  Push(&Group->Textures, Texture);
 
   texture *DepthTexture = MakeDepthTexture( TextureSize, Memory );
   FramebufferDepthTexture(DepthTexture);
 
-  FramebufferTexture(&Group->FBO, Group->Texture);
+  FramebufferTexture(&Group->FBO, Texture);
+  /* Group->FBO.Attachments++; */
   SetDrawBuffers(&Group->FBO);
 
   Group->Shader = MakeRenderToTextureShader(Memory, &Group->ViewProjection);
@@ -537,7 +540,7 @@ InitRenderToTextureGroup(render_entity_to_texture_group *Group, v2i TextureSize,
   Group->Camera = Allocate(camera, Memory, 1);
   StandardCamera(Group->Camera, 10000.0f, 100.0f, {});
 
-  Group->DebugShader = MakeSimpleTextureShader(Group->Texture, Memory);
+  /* Group->DebugShader = MakeSimpleTextureShader(Group->Texture, Memory); */
 
   Ensure(CheckAndClearFramebuffer());
 }

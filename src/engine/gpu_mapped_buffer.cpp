@@ -126,9 +126,9 @@ MapGpuElementBuffer(gpu_mapped_element_buffer *GpuMap)
   GL.VertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)12);
   AssertNoGlErrors;
 
-  if (!GpuMap->Buffer.Verts)      { Error("Allocating gpu_mapped_element_buffer::Verts"); }
-  if (!GpuMap->Buffer.Normals)    { Error("Allocating gpu_mapped_element_buffer::Normals"); }
-  if (!GpuMap->Buffer.Mat)        { Error("Allocating gpu_mapped_element_buffer::Mat"); }
+  if (!GpuMap->Buffer.Verts)   { Error("Allocating gpu_mapped_element_buffer::Verts");   }
+  if (!GpuMap->Buffer.Normals) { Error("Allocating gpu_mapped_element_buffer::Normals"); }
+  if (!GpuMap->Buffer.Mat)     { Error("Allocating gpu_mapped_element_buffer::Mat");     }
 
   GL.BindBuffer(GL_ARRAY_BUFFER, 0);
 

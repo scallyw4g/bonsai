@@ -15,6 +15,8 @@ struct level_editor
   // Recorded when shift-clicking on the selection to manipulate it
   face_index SelectionShiftClickedFace;
   v3 SelectionShiftClickedP[2];
+
+  /* texture_ptr_block_array AssetThumbnailTextures; */
 };
 
 link_internal b32

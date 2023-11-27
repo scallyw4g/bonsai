@@ -31,8 +31,8 @@
 # OPT="-O2"
 
 ./make.sh $OPT \
-  BuildExecutables \
   BuildSingleExample examples/blank_project \
+  BuildExecutables \
   # BuildSingleExample examples/terrain_gen \
   # BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
   # BuildSingleExample examples/turn_based \

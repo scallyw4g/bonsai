@@ -40,7 +40,9 @@ TryGetTierForSize(tiered_mesh_freelist *TieredFreelist, u32 Size)
   if (Index < TIERED_MESH_FREELIST_MAX_ELEMENTS)
   {
     Result = TieredFreelist->Start + Index;
+#if BONSAI_INTERNAL
     if (Result->MeshSize) { Assert(Result->MeshSize >= Size); }
+#endif
   }
 
   return Result;

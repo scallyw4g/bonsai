@@ -209,7 +209,7 @@ GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *D
       GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBOs[horizontal].ID);
     }
 
-    BindUniform(&Group->Shader, CSz("horizontal"), horizontal);
+    BindUniform(&Group->Shader, "horizontal", horizontal);
 
     texture *Tex;
     if (first_iteration)
@@ -222,7 +222,7 @@ GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *D
     }
 
     /* GL.BindTexture( GL_TEXTURE_2D, Tex->ID ); */
-    BindUniform(&Group->Shader, CSz("SrcImage"), Tex, 0);
+    BindUniform(&Group->Shader, "SrcImage", Tex, 0);
 
     RenderQuad();
 
@@ -825,20 +825,20 @@ RenderTransparencyBuffers(render_settings *Settings, transparency_render_group *
 }
 
 link_internal void
-RenderToTexture(engine_resources *Engine, untextured_3d_geometry_buffer *Src, v3 Offset)
+RenderToTexture(engine_resources *Engine, texture *Texture, untextured_3d_geometry_buffer *Src, v3 Offset)
 {
   auto World    = Engine->World;
   auto RTTGroup = &Engine->RTTGroup;
 
   // GL stuff
   {
-    texture *Tex = RTTGroup->Texture;
+    /* texture *Tex = RTTGroup->Texture; */
 
     GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID);
 
     GL.UseProgram(RTTGroup->Shader.ID);
 
-    SetViewport(V2(Tex->Dim));
+    SetViewport(V2(Texture->Dim));
 
 #if 1
     auto Camera = RTTGroup->Camera;
@@ -850,7 +850,7 @@ RenderToTexture(engine_resources *Engine, untextured_3d_geometry_buffer *Src, v3
       /* Translate( GetRenderP(World->ChunkDim, Camera->CurrentP, Camera) ) * */
       /* Translate( GetSimSpaceP(World, CameraTarget) ) * */
       /* Translate( V3(-10) ) * */
-      ProjectionMatrix(Camera, Tex->Dim.x, Tex->Dim.y) *
+      ProjectionMatrix(Camera, Texture->Dim.x, Texture->Dim.y) *
       ViewMatrix(World->ChunkDim, Camera)
       /* + Translate2(V3(-0.01f, 0.f, 0.f)) */
       /* * Translate( V3(-10) ) */
@@ -858,6 +858,8 @@ RenderToTexture(engine_resources *Engine, untextured_3d_geometry_buffer *Src, v3
       ;
 
     BindShaderUniforms(&RTTGroup->Shader);
+    /* BindUniform(&RTTGroup->Shader, "TargetTexture", Texture, 0); */
+    /* FramebufferTexture(&Engine->RTTGroup.FBO, Texture); */
   }
 
   // Geometry stuff

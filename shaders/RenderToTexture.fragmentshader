@@ -1,4 +1,4 @@
- out vec4 TargetTexture;
+out vec4 TargetTexture;
 /* layout (location = 0) out vec4 TargetTexture; */
 
 in vec4 Color;

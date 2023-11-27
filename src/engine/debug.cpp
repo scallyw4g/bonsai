@@ -796,15 +796,30 @@ DoEngineDebug(engine_resources *Engine)
         {
           IterateOver(&Asset->Models, Model, ModelIndex)
           {
+            if (ModelIndex > 1) break;
+
+            auto *RTTGroup = &Engine->RTTGroup;
+            /* if (ModelIndex >= TotalElements(&Editor->AssetThumbnailTextures)) */
+            if (ModelIndex >= TotalElements(&RTTGroup->Textures))
+            {
+              // TODO(Jesse): Where to allocate these?
+              texture *T = MakeTexture_RGBA(V2i(256), (u32*)0, Engine->Memory);
+              /* Push(&Editor->AssetThumbnailTextures, &T); */
+              Push(&RTTGroup->Textures, T);
+            }
+
+            /* texture *Texture = *GetPtr(&Editor->AssetThumbnailTextures, ModelIndex); */
+            texture *Texture = GetPtr(&RTTGroup->Textures, ModelIndex);
+
             /* model *Model = &Asset->Models.Start[0]; */
 
-            if (ToggleButton(Ui, CSz("BARRRRRRRR"), CSz("FOOOOOOOO"), umm(Model) ^ umm("model_asset_select_button")))
+            /* if (ToggleButton(Ui, CSz("BARRRRRRRR"), CSz("FOOOOOOOO"), umm(Model) ^ umm("model_asset_select_button"))) */
             {
               v3 Offset = Model->Dim/-2.f;
-              RenderToTexture(Engine, &Model->Mesh, Offset);
+              RenderToTexture(Engine, Texture, &Model->Mesh, Offset);
 
               interactable_handle B = PushButtonStart(Ui, umm("asset_texture_viewport") );
-                PushTexturedQuad(Ui, Engine->RTTGroup.Texture, V2(Engine->RTTGroup.Texture->Dim), zDepth_Text);
+                PushTexturedQuad(Ui, Texture, V2(Texture->Dim), zDepth_Text);
               PushButtonEnd(Ui);
 
               if (EngineDebug->ResetAssetNodeView)

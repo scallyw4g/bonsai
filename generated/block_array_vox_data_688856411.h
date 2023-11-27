@@ -13,49 +13,12 @@ struct vox_data_block_array_index
   u32 ElementIndex;
 };
 
-link_inline umm
-GetIndex(vox_data_block_array_index *Index)
-{
-  umm Result = Index->ElementIndex + (Index->BlockIndex*8);
-  return Result;
-}
-
-
-link_internal vox_data_block*
-Allocate_vox_data_block(memory_arena *Memory)
-{
-  vox_data_block *Result = Allocate(vox_data_block, Memory, 1);
-  Result->Elements = Allocate(vox_data, Memory, 8);
-  return Result;
-}
-
 struct vox_data_block_array
 {
   vox_data_block First;
   vox_data_block *Current;
-
   memory_arena *Memory;
 };
-
-link_internal void
-Push(vox_data_block_array *Array, vox_data *Element)
-{
-  if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
-
-  if (Array->Current == 0) { Array->First = *Allocate_vox_data_block(Array->Memory); Array->Current = &Array->First; }
-
-  if (Array->Current->At == 8)
-  {
-    vox_data_block *Next = Allocate_vox_data_block(Array->Memory);
-    Next->Index = Array->Current->Index + 1;
-
-    Array->Current->Next = Next;
-    Array->Current = Next;
-    /* Array->At = 0; */
-  }
-
-  Array->Current->Elements[Array->Current->At++] = *Element;
-}
 
 link_internal vox_data_block_array_index
 operator++(vox_data_block_array_index &I0)
@@ -87,6 +50,12 @@ operator<(vox_data_block_array_index I0, vox_data_block_array_index I1)
   return Result;
 }
 
+link_inline umm
+GetIndex(vox_data_block_array_index *Index)
+{
+  umm Result = Index->ElementIndex + (Index->BlockIndex*8);
+  return Result;
+}
 
 link_internal vox_data_block_array_index
 ZerothIndex(vox_data_block_array *Arr)
@@ -129,9 +98,6 @@ GetPtr(vox_data_block_array *Arr, vox_data_block_array_index Index)
   return Result;
 }
 
-
-
-
 link_internal vox_data *
 GetPtr(vox_data_block *Block, umm Index)
 {
@@ -140,10 +106,57 @@ GetPtr(vox_data_block *Block, umm Index)
   return Result;
 }
 
+link_internal vox_data *
+GetPtr(vox_data_block_array *Arr, umm Index)
+{
+  umm BlockIndex = Index / 8;
+  umm ElementIndex = Index % 8;
+
+  umm AtBlock = 0;
+  vox_data_block *Block = &Arr->First;
+  while (AtBlock++ < BlockIndex)
+  {
+    Block = Block->Next;
+  }
+
+  vox_data *Result = Block->Elements+ElementIndex;
+  return Result;
+}
+
+
 link_internal u32
 AtElements(vox_data_block *Block)
 {
   return Block->At;
+}
+
+
+link_internal vox_data_block*
+Allocate_vox_data_block(memory_arena *Memory)
+{
+  vox_data_block *Result = Allocate(vox_data_block, Memory, 1);
+  Result->Elements = Allocate(vox_data, Memory, 8);
+  return Result;
+}
+
+link_internal void
+Push(vox_data_block_array *Array, vox_data *Element)
+{
+  if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
+
+  if (Array->Current == 0) { Array->First = *Allocate_vox_data_block(Array->Memory); Array->Current = &Array->First; }
+
+  if (Array->Current->At == 8)
+  {
+    vox_data_block *Next = Allocate_vox_data_block(Array->Memory);
+    Next->Index = Array->Current->Index + 1;
+
+    Array->Current->Next = Next;
+    Array->Current = Next;
+    /* Array->At = 0; */
+  }
+
+  Array->Current->Elements[Array->Current->At++] = *Element;
 }
 
 
