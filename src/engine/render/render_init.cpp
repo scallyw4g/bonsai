@@ -528,19 +528,20 @@ InitRenderToTextureGroup(render_entity_to_texture_group *Group, v2i TextureSize,
 
   // NOTE(Jesse): This has to be attachment0 (first texture thing attached to
   // framebuffer) because the render code expects it to be.
-  Push(&Group->Textures, Texture);
+  /* Push(&Group->Textures, Texture); */
+  Group->FBO.Attachments++;
   FramebufferTexture(&Group->FBO, Texture);
 
   texture *DepthTexture = MakeDepthTexture( TextureSize, Memory );
   FramebufferDepthTexture(DepthTexture);
 
-  /* Group->FBO.Attachments++; */
   SetDrawBuffers(&Group->FBO);
 
-  Group->Shader = MakeRenderToTextureShader(Memory, &Group->ViewProjection);
+  /* Group->Shader = MakeRenderToTextureShader(Memory, &Group->ViewProjection); */
+  Group->Shader = MakeRenderToTextureShader(Memory, 0);
 
-  Group->Camera = Allocate(camera, Memory, 1);
-  StandardCamera(Group->Camera, 10000.0f, 100.0f, {});
+  /* Group->Camera = Allocate(camera, Memory, 1); */
+  /* StandardCamera(Group->Camera, 10000.0f, 100.0f, {}); */
 
   /* Group->DebugShader = MakeSimpleTextureShader(Group->Texture, Memory); */
 

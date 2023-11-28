@@ -799,40 +799,60 @@ DoEngineDebug(engine_resources *Engine)
             {
               auto *RTTGroup = &Engine->RTTGroup;
               /* if (ModelIndex >= TotalElements(&Editor->AssetThumbnailTextures)) */
-              if (ModelIndex >= TotalElements(&RTTGroup->Textures))
+              if (ModelIndex >= TotalElements(&Editor->AssetThumbnails))
               {
                 // TODO(Jesse): Where to allocate these?
                 texture *T = MakeTexture_RGBA(V2i(256), (u32*)0, Engine->Memory);
+
                 /* Push(&Editor->AssetThumbnailTextures, &T); */
-                Push(&RTTGroup->Textures, T);
+                asset_thumbnail Thumb = { T, {} };
+                StandardCamera(&Thumb.Camera, 10000.0f, 100.0f, {});
+
+                Push(&Editor->AssetThumbnails, &Thumb);
               }
 
               /* texture *Texture = *GetPtr(&Editor->AssetThumbnailTextures, ModelIndex); */
-              texture *Texture = GetPtr(&RTTGroup->Textures, ModelIndex);
+              asset_thumbnail *Thumb = GetPtr(&Editor->AssetThumbnails, ModelIndex);
+              texture *Texture = Thumb->Texture;
+              camera  *ThumbCamera  = &Thumb->Camera;
+              /* Info("%p",ThumbCamera); */
 
               /* model *Model = &Asset->Models.Start[0]; */
 
               /* if (ToggleButton(Ui, CSz("BARRRRRRRR"), CSz("FOOOOOOOO"), umm(Model) ^ umm("model_asset_select_button"))) */
               {
-                v3 Offset = Model->Dim/-2.f;
-                RenderToTexture(Engine, Texture, &Model->Mesh, Offset);
-
-                u32 Index = StartColumn(Ui);
-                  interactable_handle B = PushButtonStart(Ui, umm("asset_texture_viewport") );
+                interactable_handle B = PushButtonStart(Ui, UiId(Thumb, "asset_texture_viewport") );
+                  u32 Index = StartColumn(Ui);
+                    if (Model == Editor->SelectedAssetModel)
+                    {
+                      PushRelativeBorder(Ui, V2(256), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f));
+                    }
                     PushTexturedQuad(Ui, Texture, V2(Texture->Dim), zDepth_Text);
-                  PushButtonEnd(Ui);
-                  /* PushForceUpdateBasis(Ui, V2(256, 0)); */
-                EndColumn(Ui, Index);
+                    PushForceAdvance(Ui, V2(8, 0));
+                  EndColumn(Ui, Index);
+                PushButtonEnd(Ui);
 
+                v3 ModelCenterpointOffset = Model->Dim/-2.f;
                 if (EngineDebug->ResetAssetNodeView)
                 {
-                  Engine->RTTGroup.Camera->DistanceFromTarget = Length(Offset) * 25.f;
-                  EngineDebug->ResetAssetNodeView = False;
+                  f32 SmallObjectCorrectionFactor = 350.f/Length(ModelCenterpointOffset);
+                  ThumbCamera->DistanceFromTarget = LengthSq(ModelCenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
+                  UpdateGameCamera(World, {}, 0.f, {}, ThumbCamera, 1.f);
+                  RenderToTexture(Engine, Thumb, &Model->Mesh, ModelCenterpointOffset);
                 }
 
+
                 v2 MouseDP = {};
-                if (Pressed(Ui, &B)) { MouseDP = GetMouseDelta(Plat); }
-                UpdateGameCamera(World, MouseDP, Input, {}, Engine->RTTGroup.Camera);
+                r32 CameraZDelta = {};
+                if (Pressed(Ui, &B))
+                {
+                  Editor->SelectedAssetModel = Model;
+
+                  if (Input->LMB.Pressed) {MouseDP = GetMouseDelta(Plat)*2.f; }
+                  if (Input->RMB.Pressed) { CameraZDelta += GetMouseDelta(Plat).y*2.f; }
+                  UpdateGameCamera(World, MouseDP, CameraZDelta, {}, ThumbCamera, 1.f);
+                  RenderToTexture(Engine, Thumb, &Model->Mesh, ModelCenterpointOffset);
+                }
 
                 if (UiCapturedMouseInput(Ui) == False && Input->Space.Clicked)
                 {
@@ -873,9 +893,11 @@ DoEngineDebug(engine_resources *Engine)
               if ( (ModelIndex+1) % 4 == 0)
               {
                 PushNewRow(Ui);
+                PushForceAdvance(Ui, V2(0, 8));
               }
             }
 
+            if (EngineDebug->ResetAssetNodeView) { EngineDebug->ResetAssetNodeView = False; }
           } break;
 
           case AssetLoadState_Queued:

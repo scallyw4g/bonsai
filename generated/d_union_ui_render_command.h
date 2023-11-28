@@ -13,7 +13,8 @@ enum ui_render_command_type
   type_ui_render_command_textured_quad,
   type_ui_render_command_untextured_quad,
   type_ui_render_command_untextured_quad_at,
-  type_ui_render_command_border,
+  type_ui_render_command_rel_border,
+  type_ui_render_command_abs_border,
   type_ui_render_command_force_advance,
   type_ui_render_command_force_update_basis,
   type_ui_render_command_new_row,
@@ -39,7 +40,8 @@ struct ui_render_command
     struct ui_render_command_textured_quad ui_render_command_textured_quad;
     struct ui_render_command_untextured_quad ui_render_command_untextured_quad;
     struct ui_render_command_untextured_quad_at ui_render_command_untextured_quad_at;
-    struct ui_render_command_border ui_render_command_border;
+    struct ui_render_command_rel_border ui_render_command_rel_border;
+    struct ui_render_command_abs_border ui_render_command_abs_border;
     struct ui_render_command_force_advance ui_render_command_force_advance;
     struct ui_render_command_force_update_basis ui_render_command_force_update_basis;
   };

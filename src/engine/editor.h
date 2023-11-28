@@ -1,8 +1,7 @@
 struct asset_thumbnail
 {
   texture *Texture;
-  camera  *Camera;
-  m4       ViewProjection;
+  camera   Camera;
 };
 
 poof(block_array_h(asset_thumbnail, {8}))
@@ -27,6 +26,7 @@ struct level_editor
   v3 SelectionShiftClickedP[2];
 
   asset_thumbnail_block_array AssetThumbnails;
+  model *SelectedAssetModel;
 };
 
 link_internal b32

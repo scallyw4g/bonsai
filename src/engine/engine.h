@@ -18,13 +18,12 @@
 #include <engine/voxel_face.h>
 #include <engine/ray.h>
 #include <engine/mesh.h>
-
 #include <engine/world_chunk.h>
-#include <engine/editor.h>
-
 #include <engine/animation.h>
 #include <engine/model.h>
 #include <engine/asset.h>
+
+#include <engine/editor.h>
 
 #include <engine/resources.h>
 #include <engine/work_queue.h>

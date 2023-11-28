@@ -50,6 +50,7 @@ struct camera
   v3 Right;
   v3 Up;
 };
+#define DEFAULT_CAMERA_BLENDING (0.35f)
 
 void
 StandardCamera(camera* Camera, float FarClip, float DistanceFromTarget, canonical_position InitialTarget)
