@@ -854,15 +854,15 @@ DoEngineDebug(engine_resources *Engine)
                   RenderToTexture(Engine, Thumb, &Model->Mesh, ModelCenterpointOffset);
                 }
 
-                if (UiCapturedMouseInput(Ui) == False && Input->Space.Clicked)
+                if (Model == Editor->SelectedAssetModel && UiCapturedMouseInput(Ui) == False && Input->Space.Clicked)
                 {
-
                   if (Engine->MousedOverVoxel.Tag)
                   {
                     cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
                     world_update_op_shape_params_asset AssetUpdateShape =
                     {
                       Asset,
+                      ModelIndex,
                       EntityOrigin
                     };
 

@@ -4218,7 +4218,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           asset *Asset = AssetJob->Asset;
 
           Assert(Asset->Models.Count > 0);
-          Data = Asset->Models.Start[0].Vox.ChunkData;
+          Data = Asset->Models.Start[AssetJob->ModelIndex].Vox.ChunkData;
           SimOrigin = GetSimSpaceP(World, AssetJob->Origin);
         } [[fallthrough]];
 
