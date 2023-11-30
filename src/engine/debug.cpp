@@ -510,7 +510,7 @@ DoEntityWindow(engine_resources *Engine)
 
   if (EngineDebug->SelectedEntity)
   {
-    DrawEntityCollisionVolume(EngineDebug->SelectedEntity, &GpuMap->Buffer, Graphics, World->ChunkDim, GREEN);
+    DrawEntityCollisionVolume(EngineDebug->SelectedEntity, &GpuMap->Buffer, Graphics, World->ChunkDim, WHITE);
 
     local_persist window_layout EntityWindow = WindowLayout("Entity");
 
@@ -524,7 +524,21 @@ DoEntityWindow(engine_resources *Engine)
         PushNewRow(Ui);
       PushTableEnd(Ui);
     PushWindowEnd(Ui, &EntityWindow);
+
+
+    aabb EntityAABB = GetSimSpaceAABB(World, EngineDebug->SelectedEntity);
+
+    if (Engine->MaybeMouseRay.Tag)
+    {
+      aabb_intersect_result AABBTest = Intersect(EntityAABB, &Engine->MaybeMouseRay.Ray);
+      if (AABBTest.Face)
+      {
+        HighlightFace(Engine, AABBTest.Face, EntityAABB, 0.f, GREEN, 0.15f);
+      }
+    }
   }
+
+
 }
 
 link_internal void
