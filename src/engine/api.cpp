@@ -93,14 +93,13 @@ Bonsai_FrameBegin(engine_resources *Resources)
     DEBUG_DrawLine_Aligned(&CopyDest, V3(0,0,0), V3(0, 0, 10000), BLUE, 0.15f );
   }
 
-  UiFrameBegin(&Resources->Ui);
-
 
   Resources->MaybeMouseRay = ComputeRayFromCursor(Resources, &gBuffer->ViewProjection, Camera, World->ChunkDim);
   Resources->MousedOverVoxel = MousePickVoxel(Resources);
 
   Graphics->Lighting.Lights.Count = 0;
 
+  UiFrameBegin(&Resources->Ui);
   DoEngineDebug(Resources);
 
   b32 Result = True;
@@ -174,20 +173,10 @@ Bonsai_SimulateAndBufferGeometry(engine_resources *Resources)
   return Result;
 }
 
-link_export b32
-Bonsai_Render(engine_resources *Resources)
+link_internal void
+DoDayNightCycle(graphics *Graphics, r32 MappedGameTime)
 {
-  TIMED_FUNCTION();
-
-  UNPACK_ENGINE_RESOURCES(Resources);
-
-  ao_render_group     *AoGroup = Graphics->AoGroup;
-  shadow_render_group *SG      = Graphics->SG;
-
-  r32 MappedGameTime = Plat->GameTime / 18.0f;
-  /* r32 MappedGameTime = Plat->GameTime; */
-  /* r32 MappedGameTime = Plat->GameTime/2.f; */
-
+  auto SG = Graphics->SG;
   /* r32 tDaytime = (Cos(MappedGameTime) + 1.f) / 2.f; */
   r32 tDaytime = Cos(MappedGameTime);
   r32 tPostApex = Sin(MappedGameTime);
@@ -238,11 +227,30 @@ Bonsai_Render(engine_resources *Resources)
   SG->Sun.Position.y = tDaytime;
   SG->Sun.Position.z = tDaytime*0.7f + 1.3f;
 
+}
+
+link_export b32
+Bonsai_Render(engine_resources *Resources)
+{
+  TIMED_FUNCTION();
+
+  UNPACK_ENGINE_RESOURCES(Resources);
+
+  ao_render_group     *AoGroup = Graphics->AoGroup;
+  shadow_render_group *SG      = Graphics->SG;
+
+  r32 MappedGameTime = Plat->GameTime / 18.0f;
+  /* r32 MappedGameTime = Plat->GameTime; */
+  /* r32 MappedGameTime = Plat->GameTime/2.f; */
+  DoDayNightCycle(Graphics, MappedGameTime);
 
   v3 CameraTargetSimP = GetSimSpaceP(World, Resources->CameraGhost);
   Graphics->Settings.OffsetOfWorldCenterToGrid.x = fmodf(CameraTargetSimP.x, Graphics->Settings.MajorGridDim);
   Graphics->Settings.OffsetOfWorldCenterToGrid.y = fmodf(CameraTargetSimP.y, Graphics->Settings.MajorGridDim);
   Graphics->Settings.OffsetOfWorldCenterToGrid.z = fmodf(CameraTargetSimP.z, Graphics->Settings.MajorGridDim);
+
+  EngineDebug->Render.BytesSolidGeoLastFrame = GpuMap->Buffer.At;
+  EngineDebug->Render.BytesTransGeoLastFrame = Graphics->Transparency.GpuBuffer.Buffer.At;
 
   // NOTE(Jesse): GBuffer and ShadowMap must be rendered in series because they
   // both do operate on the total scene geometry. The rest of the render passes

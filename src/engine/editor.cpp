@@ -13,7 +13,7 @@ ModifySelectionAABB(rect3 *SelectionRegion, v3 UpdateVector, face_index Face, se
     case FaceIndex_Top:
     {
       Result.Max += V3i(0, 0, (s32)Floorf(UpdateVector.z+1.f) );
-      if (Mode == SelectionMode_Translate)
+      if (Mode == SelectionMode_TranslateLinear)
       {
         Result.Min += V3i(0, 0, (s32)Floorf(UpdateVector.z+1.f) );
       }
@@ -22,7 +22,7 @@ ModifySelectionAABB(rect3 *SelectionRegion, v3 UpdateVector, face_index Face, se
     case FaceIndex_Bot:
     {
       Result.Min += V3i(0, 0, (s32)Floorf(UpdateVector.z+1.f) );
-      if (Mode == SelectionMode_Translate)
+      if (Mode == SelectionMode_TranslateLinear)
       {
         Result.Max += V3i(0, 0, (s32)Floorf(UpdateVector.z+1.f) );
       }
@@ -31,7 +31,7 @@ ModifySelectionAABB(rect3 *SelectionRegion, v3 UpdateVector, face_index Face, se
     case FaceIndex_Left:
     {
       Result.Min += V3i((s32)Floorf(UpdateVector.x+1.f), 0, 0 );
-      if (Mode == SelectionMode_Translate)
+      if (Mode == SelectionMode_TranslateLinear)
       {
         Result.Max += V3i((s32)Floorf(UpdateVector.x+1.f), 0, 0 );
       }
@@ -40,7 +40,7 @@ ModifySelectionAABB(rect3 *SelectionRegion, v3 UpdateVector, face_index Face, se
     case FaceIndex_Right:
     {
       Result.Max += V3i((s32)Floorf(UpdateVector.x+1.f), 0, 0 );
-      if (Mode == SelectionMode_Translate)
+      if (Mode == SelectionMode_TranslateLinear)
       {
         Result.Min += V3i((s32)Floorf(UpdateVector.x+1.f), 0, 0 );
       }
@@ -49,7 +49,7 @@ ModifySelectionAABB(rect3 *SelectionRegion, v3 UpdateVector, face_index Face, se
     case FaceIndex_Front:
     {
       Result.Max += V3i(0, (s32)Floorf(UpdateVector.y+1.f), 0 );
-      if (Mode == SelectionMode_Translate)
+      if (Mode == SelectionMode_TranslateLinear)
       {
         Result.Min += V3i(0, (s32)Floorf(UpdateVector.y+1.f), 0 );
       }
@@ -58,7 +58,7 @@ ModifySelectionAABB(rect3 *SelectionRegion, v3 UpdateVector, face_index Face, se
     case FaceIndex_Back:
     {
       Result.Min += V3i(0, (s32)Floorf(UpdateVector.y+1.f), 0 );
-      if (Mode == SelectionMode_Translate)
+      if (Mode == SelectionMode_TranslateLinear)
       {
         Result.Max += V3i(0, (s32)Floorf(UpdateVector.y+1.f), 0 );
       }
@@ -257,6 +257,46 @@ DoLevelEditor(engine_resources *Engine)
           Editor->SelectionShiftClickedFace = Face;
           Editor->SelectionShiftClickedP[0] = PlaneBaseP;
         }
+
+        if (Input->Ctrl.Pressed && Input->LMB.Clicked)
+        {
+          v3 PlaneBaseP = Ray.Origin + (AABBTest.t*Ray.Dir);
+          Editor->SelectionCtrlClickedFace = Face;
+          Editor->SelectionCtrlClickedP[0] = PlaneBaseP;
+        }
+
+      }
+
+      if (Editor->SelectionCtrlClickedFace)
+      {
+        v3 PlaneN = NormalForFace(Editor->SelectionCtrlClickedFace);
+        f32 tRay = {};
+        if (Intersect(PlaneN, Editor->SelectionCtrlClickedP[0], Ray.Origin, Ray.Dir, &tRay))
+        {
+          v3 PlaneIntersect = Ray.Origin + (Ray.Dir*tRay);
+          DEBUG_HighlightVoxel(Engine, PlaneIntersect, RED);
+          if (Input->LMB.Pressed)
+          {
+            Editor->SelectionCtrlClickedP[1] = PlaneIntersect;
+          }
+        }
+        v3 UpdateVector = (Editor->SelectionCtrlClickedP[1] - Editor->SelectionCtrlClickedP[0]);
+
+        {
+          DEBUG_HighlightVoxel(Engine, Editor->SelectionCtrlClickedP[0], RED);
+          DEBUG_HighlightVoxel(Engine, Editor->SelectionCtrlClickedP[1], BLUE);
+          DEBUG_DrawSimSpaceVectorAt(Engine, Editor->SelectionCtrlClickedP[0], UpdateVector, GREEN);
+        }
+
+        /* rect3i NewDims = ModifySelectionAABB(&SelectionAABB, UpdateVector, Editor->SelectionCtrlClickedFace, SelectionMode_TranslateLinear); */
+        rect3i NewDims = Rect3iMinMax(SelectionAABB.Min + UpdateVector, SelectionAABB.Max + UpdateVector);
+
+        if (!Input->LMB.Pressed)
+        {
+          // Make NewDims permanent
+          Editor->SelectionRegion = SimSpaceToCanonical(World, &NewDims);
+          Editor->SelectionCtrlClickedFace = FaceIndex_None;
+        }
       }
 
       if (Editor->SelectionShiftClickedFace)
@@ -291,7 +331,7 @@ DoLevelEditor(engine_resources *Engine)
           Ui->RequestedForceCapture = True;
           if (Input->Ctrl.Pressed)
           {
-            NewDims = ModifySelectionAABB(&SelectionAABB, UpdateVector, Editor->SelectionShiftClickedFace, SelectionMode_Translate);
+            NewDims = ModifySelectionAABB(&SelectionAABB, UpdateVector, Editor->SelectionShiftClickedFace, SelectionMode_TranslateLinear);
           }
           else
           {
@@ -456,6 +496,8 @@ DoLevelEditor(engine_resources *Engine)
   if (Editor->SelectionClicks == 2)
   {
     if (Input->Ctrl.Pressed && Input->D.Clicked) { DoDeleteRegion(Engine, &SelectionAABB); }
+
+    if (Input->Ctrl.Pressed && Input->F.Clicked) { RadioSelect(&WorldEditModeRadioGroup, WorldEditMode_FillSelection); }
 
     if (Input->Ctrl.Pressed && Input->C.Clicked) { Editor->CopyRegion = Editor->SelectionRegion; }
 

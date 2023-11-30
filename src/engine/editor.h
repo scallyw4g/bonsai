@@ -25,6 +25,9 @@ struct level_editor
   face_index SelectionShiftClickedFace;
   v3 SelectionShiftClickedP[2];
 
+  face_index SelectionCtrlClickedFace;
+  v3 SelectionCtrlClickedP[2];
+
   asset_thumbnail_block_array AssetThumbnails;
   model *SelectedAssetModel;
 };
@@ -55,7 +58,7 @@ enum selection_mode
   SelectionMode_Noop,
 
   SelectionMode_Resize,
-  SelectionMode_Translate,
+  SelectionMode_TranslateLinear,
 };
 
 enum world_edit_mode

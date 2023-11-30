@@ -63,12 +63,20 @@ enum pick_chunk_state
   PickedChunkState_Hover,
 };
 
+struct render_debug
+{
+  u32 BytesSolidGeoLastFrame;
+  u32 BytesTransGeoLastFrame;
+};
+
 struct engine_debug
 {
   picked_world_chunk_static_buffer PickedChunks;
   texture_cursor Textures;
 
   ui_debug UiDebug;
+
+  render_debug Render;
 
   b8 DrawEntityCollisionVolumes;
   b8 DrawWorldAxies;

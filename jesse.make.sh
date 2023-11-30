@@ -33,10 +33,10 @@
 ./make.sh $OPT \
   BuildSingleExample examples/blank_project \
   BuildDebugSystem \
+  BuildSingleExample examples/turn_based \
   BuildExecutables \
   # BuildSingleExample examples/terrain_gen \
   # BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
-  # BuildSingleExample examples/turn_based \
   # BuildSingleExample examples/transparency \
   # BuildSingleExample examples/the_wanderer \
 #   # BuildTests \

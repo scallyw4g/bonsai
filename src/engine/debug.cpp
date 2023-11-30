@@ -528,6 +528,26 @@ DoEntityWindow(engine_resources *Engine)
 }
 
 link_internal void
+DoGraphicsDebugWindow(engine_resources *Engine)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  local_persist window_layout Window = WindowLayout("Graphics");
+
+  PushWindowStart(Ui, &Window);
+    PushTableStart(Ui);
+    PushColumn(Ui, CSz("Solid Bytes :"));
+    PushColumn(Ui, CS(EngineDebug->Render.BytesSolidGeoLastFrame));
+    PushNewRow(Ui);
+
+    PushColumn(Ui, CSz("Transp Bytes :"));
+    PushColumn(Ui, CS(EngineDebug->Render.BytesTransGeoLastFrame));
+
+    PushTableEnd(Ui);
+  PushWindowEnd(Ui, &Window);
+}
+
+link_internal void
 DoEngineDebug(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -731,6 +751,8 @@ DoEngineDebug(engine_resources *Engine)
 
   if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_EngineDebug))
   {
+    DoGraphicsDebugWindow(Engine);
+
     v2 WindowDim = {{1200.f, 250.f}};
     local_persist window_layout Window = WindowLayout("Engine Debug", WindowLayoutFlag_StartupAlign_Right);
 
@@ -798,67 +820,75 @@ DoEngineDebug(engine_resources *Engine)
             IterateOver(&Asset->Models, Model, ModelIndex)
             {
               auto *RTTGroup = &Engine->RTTGroup;
-              /* if (ModelIndex >= TotalElements(&Editor->AssetThumbnailTextures)) */
               if (ModelIndex >= TotalElements(&Editor->AssetThumbnails))
               {
                 // TODO(Jesse): Where to allocate these?
                 texture *T = MakeTexture_RGBA(V2i(256), (u32*)0, Engine->Memory);
-
-                /* Push(&Editor->AssetThumbnailTextures, &T); */
                 asset_thumbnail Thumb = { T, {} };
                 StandardCamera(&Thumb.Camera, 10000.0f, 100.0f, {});
 
                 Push(&Editor->AssetThumbnails, &Thumb);
               }
 
-              /* texture *Texture = *GetPtr(&Editor->AssetThumbnailTextures, ModelIndex); */
               asset_thumbnail *Thumb = GetPtr(&Editor->AssetThumbnails, ModelIndex);
               texture *Texture = Thumb->Texture;
               camera  *ThumbCamera  = &Thumb->Camera;
-              /* Info("%p",ThumbCamera); */
 
-              /* model *Model = &Asset->Models.Start[0]; */
+              interactable_handle B = PushButtonStart(Ui, UiId(Thumb, "asset_texture_viewport") );
+                u32 Index = StartColumn(Ui);
+                  if (Model == Editor->SelectedAssetModel) { PushRelativeBorder(Ui, V2(256), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f)); }
+                  PushTexturedQuad(Ui, Texture, V2(Texture->Dim), zDepth_Text);
+                  PushForceAdvance(Ui, V2(8, 0));
+                EndColumn(Ui, Index);
+              PushButtonEnd(Ui);
 
-              /* if (ToggleButton(Ui, CSz("BARRRRRRRR"), CSz("FOOOOOOOO"), umm(Model) ^ umm("model_asset_select_button"))) */
+              v3 ModelCenterpointOffset = Model->Dim/-2.f;
+              if (EngineDebug->ResetAssetNodeView)
               {
-                interactable_handle B = PushButtonStart(Ui, UiId(Thumb, "asset_texture_viewport") );
-                  u32 Index = StartColumn(Ui);
-                    if (Model == Editor->SelectedAssetModel)
-                    {
-                      PushRelativeBorder(Ui, V2(256), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f));
-                    }
-                    PushTexturedQuad(Ui, Texture, V2(Texture->Dim), zDepth_Text);
-                    PushForceAdvance(Ui, V2(8, 0));
-                  EndColumn(Ui, Index);
-                PushButtonEnd(Ui);
+                f32 SmallObjectCorrectionFactor = 350.f/Length(ModelCenterpointOffset);
+                ThumbCamera->DistanceFromTarget = LengthSq(ModelCenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
+                UpdateGameCamera(World, {}, 0.f, {}, ThumbCamera, 1.f);
+                RenderToTexture(Engine, Thumb, &Model->Mesh, ModelCenterpointOffset);
+              }
 
-                v3 ModelCenterpointOffset = Model->Dim/-2.f;
-                if (EngineDebug->ResetAssetNodeView)
+
+              v2 MouseDP = {};
+              r32 CameraZDelta = {};
+              if (Pressed(Ui, &B))
+              {
+                Editor->SelectedAssetModel = Model;
+
+                if (Input->LMB.Pressed) {MouseDP = GetMouseDelta(Plat)*2.f; }
+                if (Input->RMB.Pressed) { CameraZDelta += GetMouseDelta(Plat).y*2.f; }
+                UpdateGameCamera(World, MouseDP, CameraZDelta, {}, ThumbCamera, 1.f);
+                RenderToTexture(Engine, Thumb, &Model->Mesh, ModelCenterpointOffset);
+              }
+
+
+              if ( Engine->MousedOverVoxel.Tag )
+              {
+                cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
+                EntityOrigin.Offset = Round(EntityOrigin.Offset);
+                if ( !UiCapturedMouseInput(Ui) && Model == Editor->SelectedAssetModel )
                 {
-                  f32 SmallObjectCorrectionFactor = 350.f/Length(ModelCenterpointOffset);
-                  ThumbCamera->DistanceFromTarget = LengthSq(ModelCenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
-                  UpdateGameCamera(World, {}, 0.f, {}, ThumbCamera, 1.f);
-                  RenderToTexture(Engine, Thumb, &Model->Mesh, ModelCenterpointOffset);
-                }
 
+                  /* Assert(Model->Mesh.Mat == 0); */
 
-                v2 MouseDP = {};
-                r32 CameraZDelta = {};
-                if (Pressed(Ui, &B))
-                {
-                  Editor->SelectedAssetModel = Model;
+                  RangeIterator_t(u32, ElementIndex, Model->Mesh.At) { Model->Mesh.Mat[ElementIndex].Transparency = 0.5f; }
 
-                  if (Input->LMB.Pressed) {MouseDP = GetMouseDelta(Plat)*2.f; }
-                  if (Input->RMB.Pressed) { CameraZDelta += GetMouseDelta(Plat).y*2.f; }
-                  UpdateGameCamera(World, MouseDP, CameraZDelta, {}, ThumbCamera, 1.f);
-                  RenderToTexture(Engine, Thumb, &Model->Mesh, ModelCenterpointOffset);
-                }
-
-                if (Model == Editor->SelectedAssetModel && UiCapturedMouseInput(Ui) == False && Input->Space.Clicked)
-                {
-                  if (Engine->MousedOverVoxel.Tag)
                   {
-                    cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
+                    untextured_3d_geometry_buffer *Dest = &Graphics->Transparency.GpuBuffer.Buffer;
+                    BufferChunkMesh(Graphics, Dest, &Model->Mesh, World->ChunkDim, EntityOrigin.WorldP, 1.f, EntityOrigin.Offset, Quaternion());
+                  }
+                  {
+                    /* untextured_3d_geometry_buffer *Dest = &GpuMap->Buffer; */
+                    /* BufferChunkMesh(Graphics, Dest, &Model->Mesh, World->ChunkDim, EntityOrigin.WorldP, 1.f, EntityOrigin.Offset, Quaternion()); */
+                  }
+
+                  RangeIterator_t(u32, ElementIndex, Model->Mesh.At) { Model->Mesh.Mat[ElementIndex].Transparency = 0.f; }
+
+                  if ( Input->Space.Clicked )
+                  {
                     world_update_op_shape_params_asset AssetUpdateShape =
                     {
                       Asset,
@@ -886,10 +916,10 @@ DoEngineDebug(engine_resources *Engine)
                         SpawnEntity(E, Model, EntityBehaviorFlags_Default, 0, &EntityOrigin, Model->Dim/2.f);
                       } break;
                     }
-
                   }
                 }
               }
+
               if ( (ModelIndex+1) % 4 == 0)
               {
                 PushNewRow(Ui);
