@@ -2,68 +2,44 @@ poof(block_array_c(asset_thumbnail, {8}))
 #include <generated/block_array_c_asset_thumbnail_688856411.h>
 
 link_internal rect3i
-ModifySelectionAABB(rect3 *SelectionRegion, v3 UpdateVector, face_index Face, selection_mode Mode)
+ModifySelectionAABB(rect3 *SelectionRegion, v3i UpdateVector, face_index Face, selection_mode Mode)
 {
   rect3i Result = Rect3i(SelectionRegion);
 
-  switch (Face)
+  switch (Mode)
   {
-    InvalidCase(FaceIndex_None);
+    InvalidCase(SelectionMode_Noop);
 
-    case FaceIndex_Top:
+    case SelectionMode_Resize:
     {
-      Result.Max += V3i(0, 0, (s32)Floorf(UpdateVector.z+1.f) );
-      if (Mode == SelectionMode_TranslateLinear)
+      switch (Face)
       {
-        Result.Min += V3i(0, 0, (s32)Floorf(UpdateVector.z+1.f) );
+        InvalidCase(FaceIndex_None);
+
+        case FaceIndex_Top:
+        case FaceIndex_Right:
+        case FaceIndex_Front:
+        {
+          Result.Max += UpdateVector;
+        } break;
+
+        case FaceIndex_Bot:
+        case FaceIndex_Back:
+        case FaceIndex_Left:
+        {
+          Result.Min += UpdateVector;
+        } break;
       }
     } break;
 
-    case FaceIndex_Bot:
+    case SelectionMode_TranslateLinear:
+    case SelectionMode_TranslatePlanar:
     {
-      Result.Min += V3i(0, 0, (s32)Floorf(UpdateVector.z+1.f) );
-      if (Mode == SelectionMode_TranslateLinear)
-      {
-        Result.Max += V3i(0, 0, (s32)Floorf(UpdateVector.z+1.f) );
-      }
-    } break;
-
-    case FaceIndex_Left:
-    {
-      Result.Min += V3i((s32)Floorf(UpdateVector.x+1.f), 0, 0 );
-      if (Mode == SelectionMode_TranslateLinear)
-      {
-        Result.Max += V3i((s32)Floorf(UpdateVector.x+1.f), 0, 0 );
-      }
-    } break;
-
-    case FaceIndex_Right:
-    {
-      Result.Max += V3i((s32)Floorf(UpdateVector.x+1.f), 0, 0 );
-      if (Mode == SelectionMode_TranslateLinear)
-      {
-        Result.Min += V3i((s32)Floorf(UpdateVector.x+1.f), 0, 0 );
-      }
-    } break;
-
-    case FaceIndex_Front:
-    {
-      Result.Max += V3i(0, (s32)Floorf(UpdateVector.y+1.f), 0 );
-      if (Mode == SelectionMode_TranslateLinear)
-      {
-        Result.Min += V3i(0, (s32)Floorf(UpdateVector.y+1.f), 0 );
-      }
-    } break;
-
-    case FaceIndex_Back:
-    {
-      Result.Min += V3i(0, (s32)Floorf(UpdateVector.y+1.f), 0 );
-      if (Mode == SelectionMode_TranslateLinear)
-      {
-        Result.Max += V3i(0, (s32)Floorf(UpdateVector.y+1.f), 0 );
-      }
+      Result.Max += UpdateVector;
+      Result.Min += UpdateVector;
     } break;
   }
+
 
   return Result;
 }
@@ -92,6 +68,33 @@ DoDeleteRegion(engine_resources *Engine, rect3 *AABB)
     .world_update_op_shape_params_rect.P1 = AABB->Max,
   };
   QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Subtractive, &Shape, SafeTruncateU8(Engine->Editor.SelectedColorIndex), Engine->Memory);
+}
+
+
+link_internal v3
+ConstrainUpdateVector(v3 UpdateVector, face_index Face, selection_mode SelectionMode)
+{
+  v3 Result = UpdateVector;
+
+  switch (SelectionMode)
+  {
+    case SelectionMode_Noop: { } break;
+
+    case SelectionMode_TranslateLinear:
+    case SelectionMode_Resize:
+    {
+      v3 Constraint = Abs(NormalForFace(Face));
+      Result *= Constraint;
+    } break;
+
+    case SelectionMode_TranslatePlanar:
+    {
+      v3 Constraint = Abs(NormalForFace(Face)-1.f);
+      Result *= Constraint;
+    } break;
+  }
+
+  return Result;
 }
 
 link_internal void
@@ -251,92 +254,76 @@ DoLevelEditor(engine_resources *Engine)
         }
 
 
-        if (Input->Shift.Pressed && Input->LMB.Clicked)
+        if ( (Input->Ctrl.Pressed || Input->Shift.Pressed) && Input->LMB.Clicked)
         {
           v3 PlaneBaseP = Ray.Origin + (AABBTest.t*Ray.Dir);
-          Editor->SelectionShiftClickedFace = Face;
-          Editor->SelectionShiftClickedP[0] = PlaneBaseP;
-        }
-
-        if (Input->Ctrl.Pressed && Input->LMB.Clicked)
-        {
-          v3 PlaneBaseP = Ray.Origin + (AABBTest.t*Ray.Dir);
-          Editor->SelectionCtrlClickedFace = Face;
-          Editor->SelectionCtrlClickedP[0] = PlaneBaseP;
+          Editor->SelectionModClickedFace = Face;
+          Editor->SelectionModClickedP[0] = PlaneBaseP;
         }
 
       }
 
-      if (Editor->SelectionCtrlClickedFace)
+      if (Editor->SelectionModClickedFace)
       {
-        v3 PlaneN = NormalForFace(Editor->SelectionCtrlClickedFace);
+        selection_mode SelectionMode = {};
+        if (Input->Shift.Pressed && Input->Ctrl.Pressed)
+        {
+          SelectionMode = SelectionMode_TranslateLinear;
+        }
+        else if (Input->Shift.Pressed)
+        {
+          SelectionMode = SelectionMode_Resize;
+        }
+        else if (Input->Ctrl.Pressed)
+        {
+          SelectionMode =  SelectionMode_TranslatePlanar;
+        }
+
+        v3 Normal = {};
+        v3 PlaneN = {};
+
+        switch (SelectionMode)
+        {
+          case SelectionMode_Noop: { } break;
+
+          case SelectionMode_TranslateLinear:
+          case SelectionMode_Resize:
+          {
+            Normal   = NormalForFace(Editor->SelectionModClickedFace);
+            v3 PerpN = Cross(Normal, Camera->Front);
+            PlaneN   = Cross(Normal, PerpN);
+          } break;
+
+          case SelectionMode_TranslatePlanar:
+          {
+            Normal = NormalForFace(Editor->SelectionModClickedFace);
+            PlaneN = Normal;
+          } break;
+        }
+
         f32 tRay = {};
-        if (Intersect(PlaneN, Editor->SelectionCtrlClickedP[0], Ray.Origin, Ray.Dir, &tRay))
+        if (Intersect(PlaneN, Editor->SelectionModClickedP[0], Ray.Origin, Ray.Dir, &tRay))
         {
           v3 PlaneIntersect = Ray.Origin + (Ray.Dir*tRay);
           DEBUG_HighlightVoxel(Engine, PlaneIntersect, RED);
           if (Input->LMB.Pressed)
           {
-            Editor->SelectionCtrlClickedP[1] = PlaneIntersect;
-          }
-        }
-        v3 UpdateVector = (Editor->SelectionCtrlClickedP[1] - Editor->SelectionCtrlClickedP[0]);
-
-        {
-          DEBUG_HighlightVoxel(Engine, Editor->SelectionCtrlClickedP[0], RED);
-          DEBUG_HighlightVoxel(Engine, Editor->SelectionCtrlClickedP[1], BLUE);
-          DEBUG_DrawSimSpaceVectorAt(Engine, Editor->SelectionCtrlClickedP[0], UpdateVector, GREEN);
-        }
-
-        /* rect3i NewDims = ModifySelectionAABB(&SelectionAABB, UpdateVector, Editor->SelectionCtrlClickedFace, SelectionMode_TranslateLinear); */
-        rect3i NewDims = Rect3iMinMax(SelectionAABB.Min + UpdateVector, SelectionAABB.Max + UpdateVector);
-
-        if (!Input->LMB.Pressed)
-        {
-          // Make NewDims permanent
-          Editor->SelectionRegion = SimSpaceToCanonical(World, &NewDims);
-          Editor->SelectionCtrlClickedFace = FaceIndex_None;
-        }
-      }
-
-      if (Editor->SelectionShiftClickedFace)
-      {
-        v3 Normal = NormalForFace(Editor->SelectionShiftClickedFace);
-        v3 PerpN  = Cross(Normal, Camera->Front);
-        v3 PlaneN = Cross(Normal, PerpN);
-
-        f32 tRay = {};
-        if (Intersect(PlaneN, Editor->SelectionShiftClickedP[0], Ray.Origin, Ray.Dir, &tRay))
-        {
-          v3 PlaneIntersect = Ray.Origin + (Ray.Dir*tRay);
-          DEBUG_HighlightVoxel(Engine, PlaneIntersect, RED);
-          if (Input->LMB.Pressed)
-          {
-            Editor->SelectionShiftClickedP[1] = PlaneIntersect;
+            Editor->SelectionModClickedP[1] = PlaneIntersect;
           }
         }
 
-        v3 UpdateVector = Abs(Normal)*(Editor->SelectionShiftClickedP[1] - Editor->SelectionShiftClickedP[0]);
+
+        v3 RoughUpdateVector = (Editor->SelectionModClickedP[1] - Editor->SelectionModClickedP[0]);
+
+        v3 UpdateVector = ConstrainUpdateVector(RoughUpdateVector, Editor->SelectionModClickedFace, SelectionMode);
+        rect3i NewDims  = ModifySelectionAABB(&SelectionAABB, V3i(UpdateVector), Editor->SelectionModClickedFace, SelectionMode);
+
+
 
         {
-          DEBUG_HighlightVoxel(Engine, Editor->SelectionShiftClickedP[0], RED);
-          DEBUG_HighlightVoxel(Engine, Editor->SelectionShiftClickedP[1], BLUE);
-          DEBUG_DrawSimSpaceVectorAt(Engine, Editor->SelectionShiftClickedP[0], UpdateVector, GREEN);
-        }
-
-        rect3i NewDims = {};
-
-        if (Input->Shift.Pressed)
-        {
-          Ui->RequestedForceCapture = True;
-          if (Input->Ctrl.Pressed)
-          {
-            NewDims = ModifySelectionAABB(&SelectionAABB, UpdateVector, Editor->SelectionShiftClickedFace, SelectionMode_TranslateLinear);
-          }
-          else
-          {
-            NewDims = ModifySelectionAABB(&SelectionAABB, UpdateVector, Editor->SelectionShiftClickedFace, SelectionMode_Resize);
-          }
+          DEBUG_HighlightVoxel(Engine, Editor->SelectionModClickedP[0], RED);
+          DEBUG_HighlightVoxel(Engine, Editor->SelectionModClickedP[1], BLUE);
+          DEBUG_DrawSimSpaceVectorAt(Engine, Editor->SelectionModClickedP[0], UpdateVector, GREEN);
         }
 
         // Draw selection modification region
@@ -348,7 +335,7 @@ DoLevelEditor(engine_resources *Engine)
         {
           // Make NewDims permanent
           Editor->SelectionRegion = SimSpaceToCanonical(World, &NewDims);
-          Editor->SelectionShiftClickedFace = FaceIndex_None;
+          Editor->SelectionModClickedFace = FaceIndex_None;
         }
       }
     }

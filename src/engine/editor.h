@@ -21,12 +21,9 @@ struct level_editor
   rect3cp SelectionRegion;
   rect3cp CopyRegion;
 
-  // Recorded when shift-clicking on the selection to manipulate it
-  face_index SelectionShiftClickedFace;
-  v3 SelectionShiftClickedP[2];
-
-  face_index SelectionCtrlClickedFace;
-  v3 SelectionCtrlClickedP[2];
+  // Recorded when accel-clicking on the selection to manipulate it
+  face_index SelectionModClickedFace;
+  v3 SelectionModClickedP[2];
 
   asset_thumbnail_block_array AssetThumbnails;
   model *SelectedAssetModel;
@@ -59,6 +56,7 @@ enum selection_mode
 
   SelectionMode_Resize,
   SelectionMode_TranslateLinear,
+  SelectionMode_TranslatePlanar,
 };
 
 enum world_edit_mode
