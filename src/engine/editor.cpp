@@ -156,6 +156,69 @@ HighlightFace(engine_resources *Engine, face_index Face, aabb SelectionAABB, r32
 
 }
 
+link_internal rect3i
+DoSelectonModification( engine_resources *Engine,
+                        ray *MouseRay,
+                        selection_mode SelectionMode,
+                        selection_modification_state *SelectionState,
+                        aabb SelectionAABB )
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+  rect3i Result  = Rect3i(SelectionAABB);
+
+  v3 Normal = {};
+  v3 PlaneN = {};
+
+  switch (SelectionMode)
+  {
+    case SelectionMode_Noop: { return Result; }
+
+    case SelectionMode_TranslateLinear:
+    case SelectionMode_Resize:
+    {
+      Normal   = NormalForFace(SelectionState->ClickedFace);
+      v3 PerpN = Cross(Normal, Camera->Front);
+      PlaneN   = Cross(Normal, PerpN);
+    } break;
+
+    case SelectionMode_TranslatePlanar:
+    {
+      Normal = NormalForFace(SelectionState->ClickedFace);
+      PlaneN = Normal;
+    } break;
+  }
+
+  f32 tRay = {};
+  if (Intersect(PlaneN, SelectionState->ClickedP[0], MouseRay->Origin, MouseRay->Dir, &tRay))
+  {
+    v3 PlaneIntersect = MouseRay->Origin + (MouseRay->Dir*tRay);
+    DEBUG_HighlightVoxel(Engine, PlaneIntersect, RED);
+    if (Input->LMB.Pressed)
+    {
+      SelectionState->ClickedP[1] = PlaneIntersect;
+    }
+  }
+
+
+  v3 RoughUpdateVector = (SelectionState->ClickedP[1] - SelectionState->ClickedP[0]);
+
+  v3 UpdateVector = ConstrainUpdateVector(RoughUpdateVector, SelectionState->ClickedFace, SelectionMode);
+          Result  = ModifySelectionAABB(&SelectionAABB, V3i(UpdateVector), SelectionState->ClickedFace, SelectionMode);
+
+  {
+    DEBUG_HighlightVoxel(Engine, SelectionState->ClickedP[0], RED);
+    DEBUG_HighlightVoxel(Engine, SelectionState->ClickedP[1], BLUE);
+    DEBUG_DrawSimSpaceVectorAt(Engine, SelectionState->ClickedP[0], UpdateVector, GREEN);
+  }
+
+  // Draw selection modification region
+  //
+  rect3 Draw = Rect3(&Result);
+  DEBUG_DrawSimSpaceAABB(Engine, &Draw, GREEN, 0.1f);
+
+  return Result;
+}
+
 link_internal void
 DoLevelEditor(engine_resources *Engine)
 {
@@ -234,10 +297,11 @@ DoLevelEditor(engine_resources *Engine)
     }
     else { Thickness = 0.20f; }
 
-    v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
-    v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
-
-    SelectionAABB = AABBMinMax(SelectionMinP, SelectionMaxP);
+    {
+      v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
+      v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
+      SelectionAABB = AABBMinMax(SelectionMinP, SelectionMaxP);
+    }
 
     maybe_ray MaybeRay = ComputeRayFromCursor(Engine, &gBuffer->ViewProjection, Camera, World->ChunkDim);
     if (MaybeRay.Tag == Maybe_Yes)
@@ -260,16 +324,16 @@ DoLevelEditor(engine_resources *Engine)
 
         HighlightFace(Engine, Face, SelectionAABB, InsetWidth, HiColor, HiThickness);
 
-        if ( (Input->Ctrl.Pressed || Input->Shift.Pressed) && Input->LMB.Clicked)
+        if ( Input->LMB.Clicked && (Input->Ctrl.Pressed || Input->Shift.Pressed) )
         {
           v3 PlaneBaseP = Ray.Origin + (AABBTest.t*Ray.Dir);
-          Editor->SelectionModClickedFace = Face;
-          Editor->SelectionModClickedP[0] = PlaneBaseP;
+          Editor->Selection.ClickedFace = Face;
+          Editor->Selection.ClickedP[0] = PlaneBaseP;
         }
 
       }
 
-      if (Editor->SelectionModClickedFace)
+      if (Editor->Selection.ClickedFace)
       {
         selection_mode SelectionMode = {};
         if (Input->Shift.Pressed && Input->Ctrl.Pressed)
@@ -285,61 +349,13 @@ DoLevelEditor(engine_resources *Engine)
           SelectionMode =  SelectionMode_TranslatePlanar;
         }
 
-        v3 Normal = {};
-        v3 PlaneN = {};
-
-        switch (SelectionMode)
-        {
-          case SelectionMode_Noop: { } break;
-
-          case SelectionMode_TranslateLinear:
-          case SelectionMode_Resize:
-          {
-            Normal   = NormalForFace(Editor->SelectionModClickedFace);
-            v3 PerpN = Cross(Normal, Camera->Front);
-            PlaneN   = Cross(Normal, PerpN);
-          } break;
-
-          case SelectionMode_TranslatePlanar:
-          {
-            Normal = NormalForFace(Editor->SelectionModClickedFace);
-            PlaneN = Normal;
-          } break;
-        }
-
-        f32 tRay = {};
-        if (Intersect(PlaneN, Editor->SelectionModClickedP[0], Ray.Origin, Ray.Dir, &tRay))
-        {
-          v3 PlaneIntersect = Ray.Origin + (Ray.Dir*tRay);
-          DEBUG_HighlightVoxel(Engine, PlaneIntersect, RED);
-          if (Input->LMB.Pressed)
-          {
-            Editor->SelectionModClickedP[1] = PlaneIntersect;
-          }
-        }
-
-
-        v3 RoughUpdateVector = (Editor->SelectionModClickedP[1] - Editor->SelectionModClickedP[0]);
-
-        v3 UpdateVector = ConstrainUpdateVector(RoughUpdateVector, Editor->SelectionModClickedFace, SelectionMode);
-        rect3i NewDims  = ModifySelectionAABB(&SelectionAABB, V3i(UpdateVector), Editor->SelectionModClickedFace, SelectionMode);
-
-        {
-          DEBUG_HighlightVoxel(Engine, Editor->SelectionModClickedP[0], RED);
-          DEBUG_HighlightVoxel(Engine, Editor->SelectionModClickedP[1], BLUE);
-          DEBUG_DrawSimSpaceVectorAt(Engine, Editor->SelectionModClickedP[0], UpdateVector, GREEN);
-        }
-
-        // Draw selection modification region
-        //
-        rect3 Draw = Rect3(&NewDims);
-        DEBUG_DrawSimSpaceAABB(Engine, &Draw, GREEN, 0.1f);
+        rect3i ModifiedSelection = DoSelectonModification(Engine, &Ray, SelectionMode, &Editor->Selection, SelectionAABB);
 
         if (!Input->LMB.Pressed)
         {
-          // Make NewDims permanent
-          Editor->SelectionRegion = SimSpaceToCanonical(World, &NewDims);
-          Editor->SelectionModClickedFace = FaceIndex_None;
+          // Make ModifiedSelection permanent
+          Editor->SelectionRegion = SimSpaceToCanonical(World, &ModifiedSelection);
+          Editor->Selection.ClickedFace = FaceIndex_None;
         }
       }
     }

@@ -7,6 +7,12 @@ struct asset_thumbnail
 poof(block_array_h(asset_thumbnail, {8}))
 #include <generated/block_array_h_asset_thumbnail_688856411.h>
 
+struct selection_modification_state
+{
+  face_index ClickedFace;
+  v3 ClickedP[2];
+};
+
 struct level_editor
 {
   /* level_edit_mode Mode; */
@@ -22,8 +28,8 @@ struct level_editor
   rect3cp CopyRegion;
 
   // Recorded when accel-clicking on the selection to manipulate it
-  face_index SelectionModClickedFace;
-  v3 SelectionModClickedP[2];
+  selection_modification_state Selection;
+  selection_modification_state Entity;
 
   asset_thumbnail_block_array AssetThumbnails;
   model *SelectedAssetModel;

@@ -530,10 +530,48 @@ DoEntityWindow(engine_resources *Engine)
 
     if (Engine->MaybeMouseRay.Tag)
     {
-      aabb_intersect_result AABBTest = Intersect(EntityAABB, &Engine->MaybeMouseRay.Ray);
-      if (AABBTest.Face)
+      ray *Ray = &Engine->MaybeMouseRay.Ray;
+      aabb_intersect_result AABBTest = Intersect(EntityAABB, Ray);
+
+      auto Face = AABBTest.Face;
+      if (Face)
       {
         HighlightFace(Engine, AABBTest.Face, EntityAABB, 0.f, GREEN, 0.15f);
+
+        if ( Input->LMB.Clicked && (Input->Ctrl.Pressed || Input->Shift.Pressed) )
+        {
+          v3 PlaneBaseP = Ray->Origin + (AABBTest.t*Ray->Dir);
+          Editor->Entity.ClickedFace = Face;
+          Editor->Entity.ClickedP[0] = PlaneBaseP;
+        }
+      }
+
+      if (Editor->Entity.ClickedFace)
+      {
+        selection_mode SelectionMode = {};
+        if (Input->Shift.Pressed && Input->Ctrl.Pressed)
+        {
+          SelectionMode = SelectionMode_TranslateLinear;
+        }
+        else if (Input->Ctrl.Pressed)
+        {
+          SelectionMode =  SelectionMode_TranslatePlanar;
+        }
+
+        rect3i ModifiedSelection = DoSelectonModification(Engine, Ray, SelectionMode, &Editor->Entity, EntityAABB);
+
+        if (Input->LMB.Pressed)
+        {
+          Ui->RequestedForceCapture = True;
+        }
+        else
+        {
+          // Make ModifiedSelection permanent
+          cp P = SimSpaceToCanonical(World, V3(ModifiedSelection.Min));
+          EngineDebug->SelectedEntity->P = P;
+          Editor->Entity.ClickedFace = FaceIndex_None;
+        }
+
       }
     }
   }
