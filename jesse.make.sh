@@ -35,9 +35,9 @@
   BuildDebugSystem \
   BuildSingleExample examples/turn_based \
   BuildExecutables \
+  BuildSingleExample examples/transparency \
   # BuildSingleExample examples/terrain_gen \
   # BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
-  # BuildSingleExample examples/transparency \
   # BuildSingleExample examples/the_wanderer \
 #   # BuildTests \
 #   # BuildSingleExample examples/turn_based2

@@ -1116,6 +1116,7 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
           /* v3 Diameter = System->ParticleStartingDim; */
 
           u8 ColorIndex = (u8)((Particle->RemainingLifespan / MaxParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
+          ColorIndex = u8(Min(ColorIndex, PARTICLE_SYSTEM_COLOR_COUNT-1));
           Assert(ColorIndex >= 0 && ColorIndex < PARTICLE_SYSTEM_COLOR_COUNT);
 
           r32 Transparency = Lerp(t, System->ParticleEndingTransparency, System->ParticleStartingTransparency);

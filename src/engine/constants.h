@@ -40,6 +40,6 @@
 #define LOOT_MODEL       MODELS_PATH "/3x3x3.vox"
 #define PROJECTILE_MODEL MODELS_PATH "/3x3x3.vox"
 
-#define TOTAL_ENTITY_COUNT     (32)
+#define TOTAL_ENTITY_COUNT (1024)
 
 #define MAX_LIGHTS (1024*2)
