@@ -384,6 +384,35 @@ DoLevelEditor(engine_resources *Engine)
   picked_voxel_position HighlightVoxel = PickedVoxel_FirstFilled;
   switch (WorldEditMode)
   {
+    case WorldEditMode_BlitEntity:
+    {
+      entity *SelectedEntity = EngineDebug->SelectedEntity;
+      if (SelectedEntity)
+      {
+        aabb EntityAABB = GetSimSpaceAABB(World, SelectedEntity);
+        if (Engine->MaybeMouseRay.Tag)
+        {
+          ray *Ray = &Engine->MaybeMouseRay.Ray;
+          aabb_intersect_result IntersectionResult = Intersect(EntityAABB, Ray);
+          if (Input->LMB.Clicked && IntersectionResult.Face)
+          {
+            world_update_op_shape_params_asset AssetUpdateShape =
+            {
+              SelectedEntity->Model,
+              SelectedEntity->P,
+            };
+
+            world_update_op_shape Shape =
+            {
+              type_world_update_op_shape_params_asset,
+              .world_update_op_shape_params_asset = AssetUpdateShape,
+            };
+            QueueWorldUpdateForRegion(Engine, {}, &Shape, {}, World->Memory);
+          }
+        }
+      }
+    } break;
+
     case WorldEditMode_Select:
     {
       if (Input->LMB.Clicked)

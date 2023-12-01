@@ -943,8 +943,7 @@ DoEngineDebug(engine_resources *Engine)
                   {
                     world_update_op_shape_params_asset AssetUpdateShape =
                     {
-                      Asset,
-                      ModelIndex,
+                      &Asset->Models.Start[ModelIndex],
                       EntityOrigin
                     };
 

@@ -96,8 +96,9 @@ struct world_update_op_shape_params_rect
 struct asset;
 struct world_update_op_shape_params_asset
 {
-  asset *Asset;
-  umm    ModelIndex;
+  /* asset *Asset; */
+  /* umm    ModelIndex; */
+  model *Model;
   cp Origin;
 };
 

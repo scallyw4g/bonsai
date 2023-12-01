@@ -3809,8 +3809,8 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
 
       v3 MinSimP = GetSimSpaceP(World, ShapeAsset->Origin);
 
-      Assert(ShapeAsset->Asset->Models.Count > 0);
-      v3 MaxSimP = MinSimP + ShapeAsset->Asset->Models.Start[0].Dim;
+      /* Assert(ShapeAsset->Models.Count > 0); */
+      v3 MaxSimP = MinSimP + ShapeAsset->Model->Dim;
 
       MinPCoarse = SimSpaceToCanonical(World, MinSimP-MinPStroke);
       MaxPCoarse = SimSpaceToCanonical(World, MaxSimP+MaxPStroke);
@@ -4215,10 +4215,10 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
         {
           Assert(Modifier == WorldUpdateOperationModeModifier_None);
           world_update_op_shape_params_asset *AssetJob = SafeCast(world_update_op_shape_params_asset, &Shape);
-          asset *Asset = AssetJob->Asset;
+          /* asset *Asset = AssetJob->Asset; */
+          /* Assert(Asset->Models.Count > 0); */
 
-          Assert(Asset->Models.Count > 0);
-          Data = Asset->Models.Start[AssetJob->ModelIndex].Vox.ChunkData;
+          Data = AssetJob->Model->Vox.ChunkData;
           SimOrigin = GetSimSpaceP(World, AssetJob->Origin);
         } [[fallthrough]];
 

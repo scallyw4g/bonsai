@@ -74,6 +74,8 @@ enum world_edit_mode
   WorldEditMode_AddSingle       = (1 << 3),
   WorldEditMode_RemoveSingle    = (1 << 4),
   WorldEditMode_PaintSingle     = (1 << 5),
+
+  WorldEditMode_BlitEntity      = (1 << 6),
 };
 
 poof(string_and_value_tables(world_edit_mode))
