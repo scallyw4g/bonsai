@@ -10,11 +10,11 @@ Serialize(native_file *File, voxel *Element)
 
 
 
-  Result &= Serialize(File, &Element->Color);
-
-
-
   Result &= Serialize(File, &Element->Transparency);
+
+
+
+  Result &= Serialize(File, &Element->Color);
 
 
 
@@ -34,12 +34,12 @@ Deserialize(u8_stream *Bytes, voxel *Element, memory_arena *Memory)
 
 
 
-  Result &= Deserialize(Bytes, &Element->Color);
-
-
-
-
   Result &= Deserialize(Bytes, &Element->Transparency);
+
+
+
+
+  Result &= Deserialize(Bytes, &Element->Color);
 
 
 
