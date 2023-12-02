@@ -195,6 +195,7 @@ LoadVoxData(memory_arena *TempMemory, memory_arena *PermMemory, heap_allocator *
   vox_data_block_array Result = { {}, {}, TempMemory };
 
   v3i ReportedDim = {};
+  b32 CustomPalette = False;
 
 
 /*   vox_data_buffer_builder Builder = {}; */
@@ -204,7 +205,6 @@ LoadVoxData(memory_arena *TempMemory, memory_arena *PermMemory, heap_allocator *
 
 
   vox_data Current = {};
-  v3 *Palette = DefaultPalette;
   if (ModelFile.Handle)
   {
     // Ensure we're dealing with a .vox file
@@ -225,26 +225,31 @@ LoadVoxData(memory_arena *TempMemory, memory_arena *PermMemory, heap_allocator *
       {
         case ID_RGBA:
         {
+          CustomPalette = True;
           s32 ChunkContentBytes = ReadInt(ModelFile.Handle, &bytesRemaining);
-          s32 ChildChunkCount = ReadInt(ModelFile.Handle, &bytesRemaining);
+          s32 ChildChunkCount   = ReadInt(ModelFile.Handle, &bytesRemaining);
 
           Assert(ChunkContentBytes == 256*4);
           Assert(ChildChunkCount == 0);
 
           /* Result.Palette = (v4*)HeapAllocate(Heap, 256); */
-          Palette = Allocate(v3, PermMemory, 256);
+          /* Palette = Allocate(v3, PermMemory, 256); */
 
-          for (u32 PaletteIndex = 0; PaletteIndex < 256; ++PaletteIndex)
+          for ( s32 PaletteIndex = Global_ColorPaletteAt;
+                    PaletteIndex < Global_ColorPaletteAt+256;
+                  ++PaletteIndex )
           {
             u8 R = ReadChar(ModelFile.Handle, &bytesRemaining);
             u8 G = ReadChar(ModelFile.Handle, &bytesRemaining);
             u8 B = ReadChar(ModelFile.Handle, &bytesRemaining);
             u8 A = ReadChar(ModelFile.Handle, &bytesRemaining);
-            Palette[PaletteIndex].r = R;
-            Palette[PaletteIndex].g = G;
-            Palette[PaletteIndex].b = B;
+            Global_ColorPalette[PaletteIndex].r = R;
+            Global_ColorPalette[PaletteIndex].g = G;
+            Global_ColorPalette[PaletteIndex].b = B;
             /* Current.Palette[PaletteIndex].a = A; */
+
           }
+          Global_ColorPaletteAt += 256;
 
         } break;
 
@@ -281,10 +286,10 @@ LoadVoxData(memory_arena *TempMemory, memory_arena *PermMemory, heap_allocator *
                VoxelCacheIndex < ReportedVoxelCount;
                ++VoxelCacheIndex)
           {
-            s32 X = (s32)ReadChar(ModelFile.Handle, &bytesRemaining);
-            s32 Y = (s32)ReadChar(ModelFile.Handle, &bytesRemaining);
-            s32 Z = (s32)ReadChar(ModelFile.Handle, &bytesRemaining);
-            u8 W = ReadChar(ModelFile.Handle, &bytesRemaining); // Color
+            s32 X    = (s32)ReadChar(ModelFile.Handle, &bytesRemaining);
+            s32 Y    = (s32)ReadChar(ModelFile.Handle, &bytesRemaining);
+            s32 Z    = (s32)ReadChar(ModelFile.Handle, &bytesRemaining);
+            u8 Color =      ReadChar(ModelFile.Handle, &bytesRemaining);
 
             voxel_position TestP = Voxel_Position(X,Y,Z);
             if (IsInsideDim(ReportedDim, TestP))
@@ -298,7 +303,7 @@ LoadVoxData(memory_arena *TempMemory, memory_arena *PermMemory, heap_allocator *
               minY = Min(TestP.y, minY);
               minZ = Min(TestP.z, minZ);
 
-              LocalVoxelCache[VoxelCacheIndex] = boundary_voxel(TestP.x, TestP.y, TestP.z, W);
+              LocalVoxelCache[VoxelCacheIndex] = boundary_voxel(TestP.x, TestP.y, TestP.z, Color);
               SetFlag(&LocalVoxelCache[VoxelCacheIndex], Voxel_Filled);
             }
             else
@@ -441,10 +446,19 @@ LoadVoxData(memory_arena *TempMemory, memory_arena *PermMemory, heap_allocator *
     Error("Couldn't read model file '%s' .", filepath);
   }
 
-
-  IterateOver(&Result, Vox, VoxIndex)
+  if (CustomPalette)
   {
-    Vox->Palette = Palette;
+    s32 PaletteBase = Global_ColorPaletteAt-256;
+
+    IterateOver(&Result, VoxData, VoxDataIndex)
+    {
+      DimIterator(x, y, z, VoxData->ChunkData->Dim)
+      {
+        s32 Index = GetIndex(x, y, z, VoxData->ChunkData->Dim);
+        VoxData->ChunkData->Voxels[Index].Color += PaletteBase;
+        /* DebugLine("wee %d (%d,%d,%d)", VoxDataIndex, x, y, z ); */
+      }
+    }
   }
 
   return Result;

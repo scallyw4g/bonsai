@@ -25,7 +25,7 @@ BuildEntityMesh(chunk_data *Chunk, untextured_3d_geometry_buffer* Mesh, v3 *Colo
         /* v3 FaceColors[VERTS_PER_FACE]; */
         /* FillColorArray(Voxel->Color, FaceColors, ColorPalette, VERTS_PER_FACE); */
 
-        v3 Color = GetColorData(ColorPalette, Voxel->Color);
+        v3 Color = GetColorData(Voxel->Color);
         vertex_material Materials[VERTS_PER_FACE];
         FillArray(VertexMaterial(Color, 0.f, 0.f), Materials, VERTS_PER_FACE);
 

@@ -1128,7 +1128,7 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
 #if 1
           if (Particle->IsLight)
           {
-            v3 EmissionColor = GetColorData(DefaultPalette, System->Colors[ColorIndex]);
+            v3 EmissionColor = GetColorData(System->Colors[ColorIndex]);
             engine_resources *Engine = GetEngineResources();
             DoLight(&Engine->Graphics->Lighting.Lights, RenderSpaceP + Particle->Offset, EmissionColor);
           }

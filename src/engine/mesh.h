@@ -422,7 +422,7 @@ inline void
 DrawVoxel( untextured_3d_geometry_buffer *Mesh,
            v3 RenderP_VoxelCenter, u32 ColorIndex, v3 Diameter, v2 TransEmiss = V2(0.f, 0.f))
 {
-  v3 Color = GetColorData(DefaultPalette, ColorIndex);
+  v3 Color = GetColorData(ColorIndex);
   DrawVoxel(Mesh, RenderP_VoxelCenter, Color, Diameter, TransEmiss);
 }
 
@@ -439,7 +439,7 @@ inline void
 DrawVoxel_MinDim( untextured_3d_geometry_buffer *Mesh,
                   v3 RenderP_VoxelMin, u32 ColorIndex, v3 Diameter, v2 TransEmiss = V2(0.f, 0.f))
 {
-  v3 Color = GetColorData(DefaultPalette, ColorIndex);
+  v3 Color = GetColorData(ColorIndex);
   DrawVoxel_MinDim(Mesh, RenderP_VoxelMin, Color, Diameter);
 }
 

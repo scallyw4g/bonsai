@@ -820,8 +820,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
                                                     VoxOffset, VoxOffset+Global_TileDim,
                                                    &TileEntity->Model->Mesh,
                                                    &TileEntity->Model->TransparentMesh,
-                                                    GetTranArena(),
-                                                    VoxData->Palette );
+                                                    GetTranArena() );
 
 
         /* BuildWorldChunkMesh_DebugVoxels( ChunkData->Voxels, */

@@ -575,8 +575,6 @@ DoEntityWindow(engine_resources *Engine)
       }
     }
   }
-
-
 }
 
 link_internal void
@@ -788,13 +786,25 @@ DoEngineDebug(engine_resources *Engine)
 
         DoEditorUi(Ui, (b8*)&Settings->BravoilMyersOIT, "BravoilMyersOIT");
         PushNewRow(Ui);
+
         DoEditorUi(Ui, (b8*)&Settings->BravoilMcGuireOIT, "BravoilMcGuireOIT");
+        PushNewRow(Ui);
+
+        DoEditorUi(Ui, (b8*)&Settings->DrawMajorGrid, "DrawMajorGrid");
+        PushNewRow(Ui);
+
+        DoEditorUi(Ui, (b8*)&Settings->DrawMinorGrid, "DrawMinorGrid");
         PushNewRow(Ui);
 
         // TODO(Jesse): Make a slider for time of day
 
         DebugSlider(Ui, &Settings->MajorGridDim, 1.0f, 16.f);
+        PushNewRow(Ui);
+
         DebugSlider(Ui, &Graphics->Exposure, 0.0f, 5.f);
+        PushNewRow(Ui);
+
+
 
       PushTableEnd(Ui);
 

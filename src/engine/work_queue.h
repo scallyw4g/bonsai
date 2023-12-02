@@ -142,7 +142,8 @@ struct work_queue_entry_update_world_region
 
   world_update_op_shape Shape;
 
-  u8 ColorIndex;
+  u16 ColorIndex;
+  u8  Transparency;
 
   canonical_position MinP;
   canonical_position MaxP;

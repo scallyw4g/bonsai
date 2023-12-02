@@ -347,6 +347,12 @@ CreateGbufferShader(graphics *Graphics, memory_arena *GraphicsMemory, m4 *ViewPr
   *Current = GetUniform(GraphicsMemory, &Shader, &Graphics->Settings.MajorGridDim, "MajorGridDim");
   Current = &(*Current)->Next;
 
+  *Current = GetUniform(GraphicsMemory, &Shader, &Graphics->Settings.DrawMajorGrid, "DrawMajorGrid");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, &Graphics->Settings.DrawMinorGrid, "DrawMinorGrid");
+  Current = &(*Current)->Next;
+
   return Shader;
 }
 
@@ -633,11 +639,17 @@ GraphicsInit(memory_arena *GraphicsMemory)
   graphics *Result = Allocate(graphics, GraphicsMemory, 1);
   Result->Memory = GraphicsMemory;
 
-  Result->Settings.BravoilMyersOIT = True;
+  Result->Settings.BravoilMyersOIT   = True;
   Result->Settings.BravoilMcGuireOIT = True;
+
+  Result->Settings.UseShadowMapping = True;
+  Result->Settings.UseLightingBloom = True;
+
+  Result->Settings.DrawMajorGrid = True;
+  Result->Settings.DrawMinorGrid = True;
   Result->Settings.MajorGridDim = 8.f;
 
-  Result->Exposure = 1.f;
+  Result->Exposure = 1.5f;
   Result->Camera = Allocate(camera, GraphicsMemory, 1);
   StandardCamera(Result->Camera, 1000.f, 600.f, {});
 

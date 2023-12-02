@@ -553,7 +553,7 @@ Noise_Flat( perlin_noise *Noise,
 
             chunk_dimension SrcToDest,
 
-            u8 ColorIndex,
+            u16 ColorIndex,
             s32 Ignored0,
             s32 Ignored1,
 
@@ -589,7 +589,7 @@ Noise_FBM2D( perlin_noise *Noise,
              world_chunk *Chunk,
              chunk_dimension Dim,
              chunk_dimension SrcToDest,
-             u8 ColorIndex,
+             u16 ColorIndex,
              s32 Frequency,
              s32 Amplitude,
              s64 zMin,
@@ -666,10 +666,10 @@ Noise_FBM2D( perlin_noise *Noise,
 
         b32 NoiseChoice = r64(NoiseValue) > r64(WorldZBiased);
 
-        u8 ThisColor = ColorIndex;
+        u16 ThisColor = ColorIndex;
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*NoiseChoice));
-        Chunk->Voxels[VoxIndex].Color = ThisColor*u8(NoiseChoice);
+        Chunk->Voxels[VoxIndex].Color = ThisColor*u16(NoiseChoice);
         ChunkSum += NoiseChoice;
 
         Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
@@ -694,7 +694,7 @@ Noise_Perlin2D( perlin_noise *Noise,
                 world_chunk *Chunk,
                 chunk_dimension Dim,
                 chunk_dimension SrcToDest,
-                u8 ColorIndex,
+                u16 ColorIndex,
                 s32 Frequency,
                 s32 Amplitude,
                 s64 zMin,
@@ -713,7 +713,7 @@ Noise_Perlin3D( perlin_noise *Noise,
                 world_chunk *Chunk,
                 chunk_dimension Dim,
                 chunk_dimension SrcToDest,
-                u8 ColorIndex,
+                u16 ColorIndex,
                 s32 Frequency,
                 s32 Amplitude,
                 s64 zMin,
@@ -767,7 +767,7 @@ Noise_Perlin3D( perlin_noise *Noise,
   return Result;
 }
 
-typedef u32 (*chunk_init_callback)( perlin_noise *Noise, world_chunk *Chunk, chunk_dimension Dim, chunk_dimension SrcToDest, u8 ColorIndex, s32 Frequency, s32 Amplitude, s64 zMin, chunk_dimension WorldChunkDim, void* UserData);
+typedef u32 (*chunk_init_callback)( perlin_noise *Noise, world_chunk *Chunk, chunk_dimension Dim, chunk_dimension SrcToDest, u16 ColorIndex, s32 Frequency, s32 Amplitude, s64 zMin, chunk_dimension WorldChunkDim, void* UserData);
 
 
 link_internal b32
@@ -1027,7 +1027,7 @@ DrawDebugVoxels( voxel *Voxels,
         voxel *Voxel = Voxels + Index;
 
         // TODO(Jesse): This copy could be avoided in multiple ways, and should be.
-        v3 Color = GetColorData(DefaultPalette, Voxel->Color);
+        v3 Color = GetColorData(Voxel->Color);
         FillArray(VertexMaterial(Color, 0.f, 0.f), Materials, VERTS_PER_FACE);
 
         if (Voxel->Flags & Voxel_RightFace)
@@ -1097,7 +1097,7 @@ TransparencyIsSimilar(u8 T0, u8 T1)
 }
 
 link_internal b32
-Step(voxel *Voxels, v3i SrcDim, v3i StepDir, v3i StepShape, v3i *AtP, voxel_flag FaceFlag, u8 ColorIndex, u8 Transparency)
+Step(voxel *Voxels, v3i SrcDim, v3i StepDir, v3i StepShape, v3i *AtP, voxel_flag FaceFlag, u16 ColorIndex, u8 Transparency)
 {
   b32 Result = True;
   for ( s32 z = 0; z <= StepShape.z; ++z )
@@ -1140,7 +1140,7 @@ Step(voxel *Voxels, v3i SrcDim, v3i StepDir, v3i StepShape, v3i *AtP, voxel_flag
 global_variable random_series ColorEntropy = {33453};
 
 link_internal v3
-DoXStepping(voxel *Voxels, v3i SrcChunkDim, v3i SrcP, voxel_flag Face, u8 Color, u8 Transparency)
+DoXStepping(voxel *Voxels, v3i SrcChunkDim, v3i SrcP, voxel_flag Face, u16 Color, u8 Transparency)
 {
   v3i AtY = SrcP;
   s32 DidStepY = 0;
@@ -1172,7 +1172,7 @@ DoXStepping(voxel *Voxels, v3i SrcChunkDim, v3i SrcP, voxel_flag Face, u8 Color,
 }
 
 link_internal v3
-DoYStepping(voxel *Voxels, v3i SrcChunkDim, v3i SrcP, voxel_flag Face, u8 Color, u8 Transparency)
+DoYStepping(voxel *Voxels, v3i SrcChunkDim, v3i SrcP, voxel_flag Face, u16 Color, u8 Transparency)
 {
   v3i AtX = SrcP;
   s32 DidStepX = 0;
@@ -1204,7 +1204,7 @@ DoYStepping(voxel *Voxels, v3i SrcChunkDim, v3i SrcP, voxel_flag Face, u8 Color,
 }
 
 link_internal v3
-DoZStepping(voxel *Voxels, v3i SrcChunkDim, v3i SrcP, voxel_flag Face, u8 Color, u8 Transparency)
+DoZStepping(voxel *Voxels, v3i SrcChunkDim, v3i SrcP, voxel_flag Face, u16 Color, u8 Transparency)
 {
   v3i AtX = SrcP;
   s32 DidStepX = 0;
@@ -1245,7 +1245,7 @@ BuildWorldChunkMesh_DebugVoxels( voxel *Voxels,
 
                                             untextured_3d_geometry_buffer *DestGeometry,
                                             memory_arena *TempMemory,
-                                            v4* ColorPallette = DefaultPalette )
+                                            v4* ColorPallette = Global_ColorPalette )
 {
   TIMED_FUNCTION();
 
@@ -1339,8 +1339,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
 
                                             untextured_3d_geometry_buffer *DestGeometry,
                                             untextured_3d_geometry_buffer *DestTransparentGeometry,
-                                            memory_arena *TempMemory,
-                                            v3 *ColorPallette = DefaultPalette )
+                                            memory_arena *TempMemory )
 {
   TIMED_FUNCTION();
 
@@ -1410,7 +1409,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
         /* FillColorArray(C, FaceColors, ColorPallette, VERTS_PER_FACE); */
 
 
-        v3 Color = GetColorData(ColorPallette, Voxel->Color);
+        v3 Color = GetColorData(Voxel->Color);
         f32 Trans = (f32)Voxel->Transparency / 255.f;
         FillArray(VertexMaterial(Color, Trans, 0.f), Materials, VERTS_PER_FACE);
 
@@ -1468,7 +1467,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( vox_data *Vox,
                                             untextured_3d_geometry_buffer *DestTransparentGeometry,
                                             memory_arena *TempMemory)
 {
-  BuildWorldChunkMeshFromMarkedVoxels_Greedy(Vox->ChunkData->Voxels, Vox->ChunkData->Dim, {}, Vox->ChunkData->Dim, DestGeometry, DestTransparentGeometry, TempMemory, Vox->Palette);
+  BuildWorldChunkMeshFromMarkedVoxels_Greedy(Vox->ChunkData->Voxels, Vox->ChunkData->Dim, {}, Vox->ChunkData->Dim, DestGeometry, DestTransparentGeometry, TempMemory );
 }
 
 link_internal void
@@ -1479,8 +1478,7 @@ BuildMipMesh( voxel *Voxels,
               chunk_dimension InnerMax,
 
               untextured_3d_geometry_buffer *DestGeometry,
-              memory_arena *TempMemory,
-              v3 *ColorPallette = DefaultPalette )
+              memory_arena *TempMemory )
 {
   TIMED_FUNCTION();
 
@@ -1640,7 +1638,7 @@ BuildMipMesh( voxel *Voxels,
         // TODO(Jesse): This copy could be avoided in multiple ways, and should be.
         /* FillColorArray(C, FaceColors, ColorPallette, VERTS_PER_FACE); */
 
-        v3 Color = GetColorData(ColorPallette, Voxel->Color);
+        v3 Color = GetColorData(Voxel->Color);
         f32 Trans = (f32)Voxel->Transparency / 255.f;
         FillArray(VertexMaterial(Color, Trans, 0.f), Materials, VERTS_PER_FACE);
 
@@ -1696,8 +1694,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve( voxel *Voxels,
                                             chunk_dimension SrcChunkMax,
 
                                             untextured_3d_geometry_buffer *DestGeometry,
-                                            untextured_3d_geometry_buffer *DestTransparentGeometry,
-                                            v3 *ColorPallette = DefaultPalette )
+                                            untextured_3d_geometry_buffer *DestTransparentGeometry )
 {
   TIMED_FUNCTION();
 
@@ -1745,7 +1742,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve( voxel *Voxels,
         // TODO(Jesse): This copy could be avoided in multiple ways, and should be.
         /* FillColorArray(Voxel->Color, FaceColors, ColorPallette, VERTS_PER_FACE); */
 
-        v3 Color = GetColorData(ColorPallette, Voxel->Color);
+        v3 Color = GetColorData(Voxel->Color);
         f32 Trans = (f32)Voxel->Transparency / 255.f;
         FillArray(VertexMaterial(Color, Trans, 0.f), Materials, VERTS_PER_FACE);
 
@@ -1850,7 +1847,7 @@ BuildWorldChunkMesh_Direct( voxel *Voxels,
         if (NotFilled(Voxel))
           continue;
 
-        FillColorArray(Voxel->Color, FaceColors, DefaultPalette, VERTS_PER_FACE);
+        FillColorArray(Voxel->Color, FaceColors, Global_ColorPalette, VERTS_PER_FACE);
 #if 0
         for (u32 ColorIndex = 0;
             ColorIndex < VERTS_PER_FACE;
@@ -3437,7 +3434,7 @@ WorkQueueEntryRebuildMesh(world_chunk *Chunk)
 }
 
 link_internal work_queue_entry_update_world_region
-WorkQueueEntryUpdateWorldRegion(world_update_op_mode Mode, world_update_op_mode_modifier Modifier, world_update_op_shape *Shape, u8 ColorIndex, canonical_position MinP, canonical_position MaxP, world_chunk** ChunkBuffer, u32 ChunkCount)
+WorkQueueEntryUpdateWorldRegion(world_update_op_mode Mode, world_update_op_mode_modifier Modifier, world_update_op_shape *Shape, u16 ColorIndex, canonical_position MinP, canonical_position MaxP, world_chunk** ChunkBuffer, u32 ChunkCount)
 {
   work_queue_entry_update_world_region Result =
   {
@@ -3581,7 +3578,7 @@ BufferWorld( platform                      *Plat,
           engine_debug *EngineDebug = GetEngineDebug();
           if (Chunk == EngineDebug->PickedChunk)
           {
-            u8 Color = EngineDebug->PickedChunkState == PickedChunkState_None ? GREEN : YELLOW;
+            u16 Color = EngineDebug->PickedChunkState == PickedChunkState_None ? GREEN : YELLOW;
 
             untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(Dest, VERTS_PER_AABB);
             DEBUG_DrawChunkAABB( &Mesh, Graphics, EngineDebug->PickedChunk, EngineDebug->PickedChunk->Dim, Color );
@@ -3744,7 +3741,7 @@ BlitAssetIntoWorld(engine_resources *Engine, asset *Asset, cp Origin)
 }
 
 link_internal void
-QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, world_update_op_mode_modifier Modifier, world_update_op_shape *Shape, u8 ColorIndex, memory_arena *Memory)
+QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, world_update_op_mode_modifier Modifier, world_update_op_shape *Shape, u16 ColorIndex, memory_arena *Memory)
 {
   TIMED_FUNCTION();
 
@@ -3879,7 +3876,7 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
 }
 
 link_internal void
-QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, world_update_op_shape *Shape, u8 ColorIndex, memory_arena *Memory)
+QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, world_update_op_shape *Shape, u16 ColorIndex, memory_arena *Memory)
 {
   QueueWorldUpdateForRegion(Engine, Mode, WorldUpdateOperationModeModifier_None, Shape, ColorIndex, Memory);
 }
@@ -3933,7 +3930,8 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   world_update_op_mode_modifier Modifier = Job->Modifier;
 
   world_update_op_shape Shape = Job->Shape;
-  u8 NewColor                 = Job->ColorIndex;
+  u16 NewColor                = Job->ColorIndex;
+  u8  NewTransparency         = Job->Transparency;
   canonical_position MaxP     = Job->MaxP;
   canonical_position MinP     = Job->MinP;
   world_chunk **ChunkBuffer   = Job->ChunkBuffer;
@@ -3960,7 +3958,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
   voxel *CopiedVoxels = Allocate(voxel, Thread->PermMemory, TotalVoxels);
 
-  voxel UnsetVoxel = { 0xff, 0xff, 0xff };
+  voxel UnsetVoxel = { 0xff, 0xff, 0xffff };
   for (u32 VoxelIndex = 0; VoxelIndex < TotalVoxels; ++VoxelIndex) { CopiedVoxels[VoxelIndex] = UnsetVoxel; }
 
   v3i SimSpaceQueryMinP = SimSpaceQueryAABB.Min;
@@ -4191,7 +4189,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
         switch(Mode)
         {
           InvalidCase(WorldUpdateOperationMode_None);
-          case WorldUpdateOperationMode_Additive:    { NewVoxelValue = { Voxel_Filled, NewColor, 0, /* Transparency? */ }; } break;
+          case WorldUpdateOperationMode_Additive:    { NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor, }; } break;
           case WorldUpdateOperationMode_Subtractive: {} break;
         }
 
@@ -4865,7 +4863,7 @@ Debug_DoWorldChunkPicking(engine_resources *Resources)
     {
       world_chunk *Chunk = AllChunksBuffer->E[ChunkIndex];
       untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
-      u8 Color = LIGHT_GREEN;
+      u16 Color = LIGHT_GREEN;
 
       if (Chunk == GetDebugState()->PickedChunk)
       {

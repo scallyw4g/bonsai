@@ -234,7 +234,7 @@ DoLevelEditor(engine_resources *Engine)
   ui_element_reference ColorTable = PushTableStart(Ui);
     RangeIterator(ColorIndex, s32(u8_MAX)+1 )
     {
-      v3 Color = GetColorData(DefaultPalette, u32(ColorIndex));
+      v3 Color = GetColorData(u32(ColorIndex));
       ui_style Style = FlatUiStyle(Color);
 
       v2 QuadDim = V2(22);

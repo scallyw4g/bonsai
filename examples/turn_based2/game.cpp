@@ -7,15 +7,15 @@
 
 link_internal u32
 HoodooTerrain( perlin_noise *Noise,
-                      world_chunk *Chunk,
-                      chunk_dimension Dim,
-                      chunk_dimension SrcToDest,
-                      u8 ColorIndex,
-                      s32 Frequency,
-                      s32 Amplitude,
-                      s64 zMin,
-                      chunk_dimension WorldChunkDim,
-                      void *BaseNoise )
+               world_chunk *Chunk,
+               chunk_dimension Dim,
+               chunk_dimension SrcToDest,
+               u16 ColorIndex,
+               s32 Frequency,
+               s32 Amplitude,
+               s64 zMin,
+               chunk_dimension WorldChunkDim,
+               void *BaseNoise )
 {
   TIMED_FUNCTION();
 
@@ -146,7 +146,7 @@ HoodooTerrain( perlin_noise *Noise,
         /* b32 NoiseChoice = NoiseValue > r32(Amplitude); //0.5f;; */
         b32 NoiseChoice = r64(NoiseValue) > r64(WorldZBiased);
 
-        u8 ThisColor = ColorIndex;
+        u16 ThisColor = ColorIndex;
 
         s32 SnowThreshold = 100;
         if (NoiseChoice == True && WorldZ > SnowThreshold)
@@ -168,7 +168,7 @@ HoodooTerrain( perlin_noise *Noise,
         /* } */
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*NoiseChoice));
-        Chunk->Voxels[VoxIndex].Color = ThisColor*u8(NoiseChoice);
+        Chunk->Voxels[VoxIndex].Color = ThisColor*u16(NoiseChoice);
         ChunkSum += NoiseChoice;
 
         Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
