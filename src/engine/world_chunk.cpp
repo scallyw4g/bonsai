@@ -3784,6 +3784,9 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
       v3 MinP = Min(ShapeRect->P0, ShapeRect->P1);
       v3 MaxP = Max(ShapeRect->P0, ShapeRect->P1);
 
+      ShapeRect->P0 = MinP;
+      ShapeRect->P1 = MaxP;
+
       MinPCoarse = SimSpaceToCanonical(World, MinP - V3(MinPStroke) - V3(Global_ChunkApronMinDim));
       MaxPCoarse = SimSpaceToCanonical(World, MaxP + V3(MaxPStroke) + V3(Global_ChunkApronMaxDim));
 #endif
