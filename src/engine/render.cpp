@@ -698,7 +698,7 @@ void
 DrawParticle(untextured_3d_geometry_buffer *Source, untextured_3d_geometry_buffer *Dest, u8 ColorIndex)
 {
   v3 FaceColors[VERTS_PER_FACE];
-  FillColorArray(ColorIndex, FaceColors, VERTS_PER_FACE);
+  FillColorArray(GetColorPalette(), ColorIndex, FaceColors, VERTS_PER_FACE);
   BufferVertsChecked( Source, Dest );
   return;
 }

@@ -326,6 +326,8 @@ struct world
   memory_arena* Memory;
 
   world_flag Flags;
+
+  v3_cursor ColorPalette; // u16_max elements according to the color member stored in `voxel`
 };
 
 struct standing_spot

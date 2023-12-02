@@ -231,44 +231,48 @@ DoLevelEditor(engine_resources *Engine)
 
   ui_toggle_button_group WorldEditModeRadioGroup = RadioButtonGroup_world_edit_mode(Ui, umm("world_edit_mode_radio_group"), ToggleButtonGroupFlags_DrawVertical, {}, {}, {}, &DefaultStyle, V4(0, 0, 0, 16));
 
+  v3_cursor *Palette = GetColorPalette();
+  s32 PaletteColors = s32(AtElements(Palette));
+  /* Info("Global_ColorPaletteAt %d", Global_ColorPaletteAt); */
   ui_element_reference ColorTable = PushTableStart(Ui);
-    RangeIterator(ColorIndex, s32(u8_MAX)+1 )
+    RangeIterator(ColorIndex, PaletteColors)
     {
       v3 Color = GetColorData(u32(ColorIndex));
       ui_style Style = FlatUiStyle(Color);
 
       v2 QuadDim = V2(22);
       v4 Padding = V4(1);
+      v3 BorderColor = V3(1.0f);
+
+      if (Engine->Editor.SelectedColorIndex == ColorIndex)
+      {
+        f32 BorderDim = 2.f;
+        PushRelativeBorder(Ui, QuadDim, BorderColor, V4(BorderDim));
+      }
+
+      if (Engine->Editor.HoverColorIndex == ColorIndex)
+      {
+        f32 BorderDim = 1.f;
+        PushRelativeBorder(Ui, QuadDim, BorderColor, V4(BorderDim));
+      }
+
 
       interactable_handle ColorPickerButton = PushButtonStart(Ui, (umm)"ColorPicker" ^ (umm)(ColorIndex+12657674));
         PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, Padding );
       PushButtonEnd(Ui);
 
 
-      r32 BorderDim = -1.f;
-      v3 BorderColor = V3(0.f);
       if (Hover(Ui, &ColorPickerButton))
       {
-        TriggeredRuntimeBreak(&Input->F12.Clicked);
-
-        BorderColor = V3(0.7f);
-        PushBorder(Ui, RectMinMax(Ui->Hover.MinP+Padding.xy, Ui->Hover.MinP+Padding.xy+QuadDim), BorderColor, V4(BorderDim));
+        f32 BorderDim = 1.f;
+        PushRelativeBorder(Ui, V2(-1.f,1.f)*QuadDim, BorderColor, V4(BorderDim));
       }
 
       if (Clicked(Ui, &ColorPickerButton))
       {
-        BorderColor = V3(1.0f);
-        PushBorder(Ui, RectMinMax(Ui->Hover.MinP+Padding.xy, Ui->Hover.MinP+Padding.xy+QuadDim), BorderColor, V4(BorderDim));
-
-        Engine->Editor.SelectedColorSquare = Ui->Clicked;
         Engine->Editor.SelectedColorIndex  = ColorIndex;
       }
 
-      if (Engine->Editor.SelectedColorIndex == ColorIndex)
-      {
-        v3 SelectedBorderColor = V3(0.9f);
-        PushBorder(Ui, RectMinMax(Engine->Editor.SelectedColorSquare.MinP+Padding.xy, Engine->Editor.SelectedColorSquare.MinP+Padding.xy+QuadDim), SelectedBorderColor, V4(BorderDim));
-      }
 
       if ( (ColorIndex+1) % 8 == 0 ) { PushNewRow(Ui); }
     }
@@ -439,6 +443,28 @@ DoLevelEditor(engine_resources *Engine)
       }
     } break;
 
+    case WorldEditMode_Eyedropper:
+    {
+      if (Engine->MousedOverVoxel.Tag)
+      {
+        Editor->SelectionClicks += 1;
+        auto MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
+        voxel *V = GetVoxelPointer(&Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled);
+
+        Engine->Editor.HoverColorIndex = V->Color;
+
+        if (Input->LMB.Clicked)
+        {
+          Info("Selecting Color (%S)", CS(V->Color));
+          Engine->Editor.SelectedColorIndex = V->Color;
+        }
+      }
+      else
+      {
+        Engine->Editor.HoverColorIndex = -1;
+      }
+    } break;
+
     case WorldEditMode_FillSelection:
     {
       if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
@@ -529,11 +555,13 @@ DoLevelEditor(engine_resources *Engine)
 
   if (Clicked(&WorldEditModeRadioGroup, CSz("Select"))) { ResetSelection(Editor); }
 
+  if (Input->Ctrl.Pressed && Input->F.Clicked) { RadioSelect(&WorldEditModeRadioGroup, WorldEditMode_FillSelection); }
+
+  if (Input->Ctrl.Pressed && Input->E.Clicked) { RadioSelect(&WorldEditModeRadioGroup, WorldEditMode_Eyedropper); }
+
   if (Editor->SelectionClicks == 2)
   {
     if (Input->Ctrl.Pressed && Input->D.Clicked) { DoDeleteRegion(Engine, &SelectionAABB); }
-
-    if (Input->Ctrl.Pressed && Input->F.Clicked) { RadioSelect(&WorldEditModeRadioGroup, WorldEditMode_FillSelection); }
 
     if (Input->Ctrl.Pressed && Input->C.Clicked) { Editor->CopyRegion = Editor->SelectionRegion; }
 

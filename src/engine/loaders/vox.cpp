@@ -190,15 +190,12 @@ enum vox_loader_clip_behavior
 global_variable random_series TMP = {54235432543};
 
 link_internal vox_data_block_array
-LoadVoxData(memory_arena *TempMemory, memory_arena *PermMemory, heap_allocator *Heap, char const *filepath, vox_loader_clip_behavior ClipBehavior, v3i HalfApronMin = {}, v3i HalfApronMax = {}, v3i ModDim = {})
+LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *PermMemory, heap_allocator *Heap, char const *filepath, vox_loader_clip_behavior ClipBehavior, v3i HalfApronMin = {}, v3i HalfApronMax = {}, v3i ModDim = {})
 {
   vox_data_block_array Result = { {}, {}, TempMemory };
 
   v3i ReportedDim = {};
   b32 CustomPalette = False;
-
-
-/*   vox_data_buffer_builder Builder = {}; */
 
 
   native_file ModelFile = OpenFile(filepath, "r+b");
@@ -220,7 +217,7 @@ LoadVoxData(memory_arena *TempMemory, memory_arena *PermMemory, heap_allocator *
     while (Error == False && bytesRemaining > 0)
     {
       Chunk_ID CurrentId = GetHeaderType(ModelFile.Handle, &bytesRemaining);
-      DebugLine("%S", ToString(CurrentId));
+      /* DebugLine("%S", ToString(CurrentId)); */
       switch ( CurrentId )
       {
         case ID_RGBA:
@@ -235,22 +232,24 @@ LoadVoxData(memory_arena *TempMemory, memory_arena *PermMemory, heap_allocator *
           /* Result.Palette = (v4*)HeapAllocate(Heap, 256); */
           /* Palette = Allocate(v3, PermMemory, 256); */
 
-          for ( s32 PaletteIndex = Global_ColorPaletteAt;
-                    PaletteIndex < Global_ColorPaletteAt+256;
+          for ( s32 PaletteIndex = 0;
+                    PaletteIndex < 256;
                   ++PaletteIndex )
           {
             u8 R = ReadChar(ModelFile.Handle, &bytesRemaining);
             u8 G = ReadChar(ModelFile.Handle, &bytesRemaining);
             u8 B = ReadChar(ModelFile.Handle, &bytesRemaining);
             u8 A = ReadChar(ModelFile.Handle, &bytesRemaining);
-            Global_ColorPalette[PaletteIndex].r = R;
-            Global_ColorPalette[PaletteIndex].g = G;
-            Global_ColorPalette[PaletteIndex].b = B;
+
+            Push(ColorPalette, V3(R,G,B));
+            /* Global_ColorPalette[PaletteIndex].r = R; */
+            /* Global_ColorPalette[PaletteIndex].g = G; */
+            /* Global_ColorPalette[PaletteIndex].b = B; */
             /* Current.Palette[PaletteIndex].a = A; */
-
           }
-          Global_ColorPaletteAt += 256;
 
+          /* Global_ColorPaletteAt += 256; */
+          Info("ColorPalette->At %d", AtElements(ColorPalette));
         } break;
 
         case ID_PACK:
@@ -422,7 +421,7 @@ LoadVoxData(memory_arena *TempMemory, memory_arena *PermMemory, heap_allocator *
             ReadChar(ModelFile.Handle, &bytesRemaining);
           }
 
-          Info("Skipping unsupported Chunk type (%S) while parsing (%s)", CS((const char*)&CurrentId, 4), filepath);
+          /* Info("Skipping unsupported Chunk type (%S) while parsing (%s)", CS((const char*)&CurrentId, 4), filepath); */
         } break;
 
         InvalidDefaultCase;
@@ -448,7 +447,7 @@ LoadVoxData(memory_arena *TempMemory, memory_arena *PermMemory, heap_allocator *
 
   if (CustomPalette)
   {
-    s32 PaletteBase = Global_ColorPaletteAt-256;
+    s32 PaletteBase = s32(AtElements(ColorPalette))-256;
 
     IterateOver(&Result, VoxData, VoxDataIndex)
     {
@@ -487,7 +486,7 @@ LoadVoxModels(memory_arena *PermMemory, heap_allocator *Heap, char const *filepa
 
   maybe_model_buffer Result =  {};
 
-  vox_data_block_array VoxArray = LoadVoxData(TempMemory, PermMemory, Heap, filepath, VoxLoaderClipBehavior_ClipToVoxels);
+  vox_data_block_array VoxArray = LoadVoxData(GetColorPalette(), TempMemory, PermMemory, Heap, filepath, VoxLoaderClipBehavior_ClipToVoxels);
 
   umm VoxElements = TotalElements(&VoxArray);
 

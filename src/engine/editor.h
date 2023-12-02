@@ -17,8 +17,8 @@ struct level_editor
 {
   /* level_edit_mode Mode; */
 
-  interactable SelectedColorSquare;
   s32 SelectedColorIndex;
+  s32 HoverColorIndex;
 
   u32 SelectionClicks;
 
@@ -71,11 +71,13 @@ enum world_edit_mode
   WorldEditMode_FillSelection   = (1 << 1),
   WorldEditMode_DeleteSelection = (1 << 2),
 
-  WorldEditMode_AddSingle       = (1 << 3),
-  WorldEditMode_RemoveSingle    = (1 << 4),
-  WorldEditMode_PaintSingle     = (1 << 5),
+  WorldEditMode_Eyedropper      = (1 << 3),
 
-  WorldEditMode_BlitEntity      = (1 << 6),
+  WorldEditMode_AddSingle       = (1 << 4),
+  WorldEditMode_RemoveSingle    = (1 << 5),
+  WorldEditMode_PaintSingle     = (1 << 6),
+
+  WorldEditMode_BlitEntity      = (1 << 7),
 };
 
 poof(string_and_value_tables(world_edit_mode))

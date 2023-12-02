@@ -837,7 +837,7 @@ DoEngineDebug(engine_resources *Engine)
         DoEditorUi(Ui, &Engine->Editor.SelectedColorIndex, "SelectedColorIndex");
         PushNewRow(Ui);
 
-        DebugUi(Engine, CSz("Selected Color"), &Engine->Editor.SelectedColorSquare);
+        /* DebugUi(Engine, CSz("Selected Color"), &Engine->Editor.SelectedColorSquare); */
 
       PushTableEnd(Ui);
     PushWindowEnd(Ui, &Window);

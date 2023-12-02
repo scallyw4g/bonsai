@@ -15,6 +15,10 @@
 #include <engine/render.h>
 #include <engine/graphics.h>
 
+struct engine_resources;
+link_internal engine_resources *GetEngineResources();
+
+#include <engine/color.h>
 #include <engine/voxel_face.h>
 #include <engine/ray.h>
 #include <engine/mesh.h>
@@ -26,6 +30,7 @@
 #include <engine/editor.h>
 
 #include <engine/resources.h>
+#include <engine/world.h>
 #include <engine/work_queue.h>
 #include <engine/particle.h>
 #include <engine/entity.h>

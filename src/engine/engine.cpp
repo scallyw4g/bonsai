@@ -1,3 +1,4 @@
+#include <engine/color.cpp>
 #include <engine/debug_draw.cpp>
 
 #include <engine/game_api.cpp>

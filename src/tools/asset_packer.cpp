@@ -34,7 +34,7 @@ s32 main(s32 ArgCount, const char **Args)
   Info("Packing (%s) -> (%S)", InputVox, OutputPath);
 
 
-  vox_data_block_array Vox = LoadVoxData(GetTranArena(), Memory, &Heap, InputVox, VoxLoaderClipBehavior_ClipToVoxels, Global_ChunkApronMinDim, Global_ChunkApronMaxDim);
+  vox_data_block_array Vox = LoadVoxData(GetColorPalette(), GetTranArena(), Memory, &Heap, InputVox, VoxLoaderClipBehavior_ClipToVoxels, Global_ChunkApronMinDim, Global_ChunkApronMaxDim);
 
   NotImplemented;
 #if 0
