@@ -67,7 +67,7 @@ DoDeleteRegion(engine_resources *Engine, rect3 *AABB)
     .world_update_op_shape_params_rect.P0 = AABB->Min,
     .world_update_op_shape_params_rect.P1 = AABB->Max,
   };
-  QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Subtractive, &Shape, SafeTruncateU8(Engine->Editor.SelectedColorIndex), Engine->Memory);
+  QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Subtractive, &Shape, Engine->Editor.SelectedColorIndex, Engine->Memory);
 }
 
 
@@ -235,7 +235,7 @@ DoLevelEditor(engine_resources *Engine)
   s32 PaletteColors = s32(AtElements(Palette));
   /* Info("Global_ColorPaletteAt %d", Global_ColorPaletteAt); */
   ui_element_reference ColorTable = PushTableStart(Ui);
-    RangeIterator(ColorIndex, PaletteColors)
+    RangeIterator_t(u16, ColorIndex, PaletteColors)
     {
       v3 Color = GetColorData(u32(ColorIndex));
       ui_style Style = FlatUiStyle(Color);
@@ -386,161 +386,165 @@ DoLevelEditor(engine_resources *Engine)
   world_edit_mode WorldEditMode = {};
   GetRadioEnum(&WorldEditModeRadioGroup, &WorldEditMode);
   picked_voxel_position HighlightVoxel = PickedVoxel_FirstFilled;
-  switch (WorldEditMode)
-  {
-    case WorldEditMode_BlitEntity:
-    {
-      entity *SelectedEntity = EngineDebug->SelectedEntity;
-      if (SelectedEntity)
-      {
-        aabb EntityAABB = GetSimSpaceAABB(World, SelectedEntity);
-        if (Engine->MaybeMouseRay.Tag)
-        {
-          ray *Ray = &Engine->MaybeMouseRay.Ray;
-          aabb_intersect_result IntersectionResult = Intersect(EntityAABB, Ray);
-          if (Input->LMB.Clicked && IntersectionResult.Face)
-          {
-            world_update_op_shape_params_asset AssetUpdateShape =
-            {
-              SelectedEntity->Model,
-              SelectedEntity->P,
-            };
 
-            world_update_op_shape Shape =
+  if (!UiCapturedMouseInput(Ui))
+  {
+    switch (WorldEditMode)
+    {
+      case WorldEditMode_BlitEntity:
+      {
+        entity *SelectedEntity = EngineDebug->SelectedEntity;
+        if (SelectedEntity)
+        {
+          aabb EntityAABB = GetSimSpaceAABB(World, SelectedEntity);
+          if (Engine->MaybeMouseRay.Tag)
+          {
+            ray *Ray = &Engine->MaybeMouseRay.Ray;
+            aabb_intersect_result IntersectionResult = Intersect(EntityAABB, Ray);
+            if (Input->LMB.Clicked && IntersectionResult.Face)
             {
-              type_world_update_op_shape_params_asset,
-              .world_update_op_shape_params_asset = AssetUpdateShape,
-            };
-            QueueWorldUpdateForRegion(Engine, {}, &Shape, {}, World->Memory);
+              world_update_op_shape_params_asset AssetUpdateShape =
+              {
+                SelectedEntity->Model,
+                SelectedEntity->P,
+              };
+
+              world_update_op_shape Shape =
+              {
+                type_world_update_op_shape_params_asset,
+                .world_update_op_shape_params_asset = AssetUpdateShape,
+              };
+              QueueWorldUpdateForRegion(Engine, {}, &Shape, {}, World->Memory);
+            }
           }
         }
-      }
-    } break;
+      } break;
 
-    case WorldEditMode_Select:
-    {
-      if (Input->LMB.Clicked)
+      case WorldEditMode_Select:
       {
-        switch (Editor->SelectionClicks)
-        {
-          case 0:
-          {
-            if (Engine->MousedOverVoxel.Tag)
-            {
-              Editor->SelectionClicks += 1;
-              auto MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
-              MouseP.Offset = Floor(MouseP.Offset);
-              Editor->SelectionBase = MouseP;
-            }
-          } break;
-
-          case 1:
-          {
-            Editor->SelectionClicks += 1;
-          } break;
-
-        }
-      }
-    } break;
-
-    case WorldEditMode_Eyedropper:
-    {
-      if (Engine->MousedOverVoxel.Tag)
-      {
-        Editor->SelectionClicks += 1;
-        auto MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
-        voxel *V = GetVoxelPointer(&Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled);
-
-        Engine->Editor.HoverColorIndex = V->Color;
-
         if (Input->LMB.Clicked)
         {
-          Info("Selecting Color (%S)", CS(V->Color));
-          Engine->Editor.SelectedColorIndex = V->Color;
-        }
-      }
-      else
-      {
-        Engine->Editor.HoverColorIndex = -1;
-      }
-    } break;
-
-    case WorldEditMode_FillSelection:
-    {
-      if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
-      {
-        world_update_op_shape Shape = {
-          .Type = type_world_update_op_shape_params_rect,
-          .world_update_op_shape_params_rect.P0 = SelectionAABB.Min,
-          .world_update_op_shape_params_rect.P1 = SelectionAABB.Max,
-        };
-        QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, SafeTruncateU8(Editor->SelectedColorIndex), Engine->Memory);
-      }
-    } break;
-
-    case WorldEditMode_DeleteSelection:
-    {
-      if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
-      {
-        DoDeleteRegion(Engine, &SelectionAABB);
-      }
-    } break;
-
-
-    case WorldEditMode_AddSingle:
-    {
-      HighlightVoxel = PickedVoxel_LastEmpty;
-      if (Input->LMB.Clicked)
-      {
-        if (Engine->MousedOverVoxel.Tag)
-        {
-          v3 P0 = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel.Value, HighlightVoxel));
-
-          world_update_op_shape Shape = {
-            .Type = type_world_update_op_shape_params_rect,
-            .world_update_op_shape_params_rect.P0 = P0,
-            .world_update_op_shape_params_rect.P1 = P0+1,
-          };
-          QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, SafeTruncateU8(Editor->SelectedColorIndex), Engine->Memory);
-        }
-      }
-    } break;
-
-    case WorldEditMode_RemoveSingle:
-    {
-      HighlightVoxel = PickedVoxel_FirstFilled;
-      if (Input->LMB.Clicked)
-      {
-        if (Engine->MousedOverVoxel.Tag)
-        {
-          v3 P0 = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel.Value, HighlightVoxel));
-
-          world_update_op_shape Shape = {
-            .Type = type_world_update_op_shape_params_rect,
-            .world_update_op_shape_params_rect.P0 = P0,
-            .world_update_op_shape_params_rect.P1 = P0+1,
-          };
-          QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Subtractive, &Shape, SafeTruncateU8(Editor->SelectedColorIndex), Engine->Memory);
-        }
-      }
-    } break;
-
-    case WorldEditMode_PaintSingle:
-    {
-      if (Input->LMB.Pressed)
-      {
-        if (Engine->MousedOverVoxel.Tag)
-        {
-          voxel *V = GetVoxelPointer(&Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled);
-
-          if (V)
+          switch (Editor->SelectionClicks)
           {
-            V->Color = SafeTruncateU8(Engine->Editor.SelectedColorIndex);
-            QueueChunkForMeshRebuild(&Plat->LowPriority, Engine->MousedOverVoxel.Value.Chunks[PickedVoxel_FirstFilled].Chunk);
+            case 0:
+            {
+              if (Engine->MousedOverVoxel.Tag)
+              {
+                Editor->SelectionClicks += 1;
+                auto MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
+                MouseP.Offset = Floor(MouseP.Offset);
+                Editor->SelectionBase = MouseP;
+              }
+            } break;
+
+            case 1:
+            {
+              Editor->SelectionClicks += 1;
+            } break;
+
           }
         }
-      }
-    } break;
+      } break;
+
+      case WorldEditMode_Eyedropper:
+      {
+        if (Engine->MousedOverVoxel.Tag)
+        {
+          Editor->SelectionClicks += 1;
+          auto MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
+          voxel *V = GetVoxelPointer(&Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled);
+
+          Engine->Editor.HoverColorIndex = V->Color;
+
+          if (Input->LMB.Clicked)
+          {
+            Info("Selecting Color (%S)", CS(V->Color));
+            Engine->Editor.SelectedColorIndex = V->Color;
+          }
+        }
+        else
+        {
+          Engine->Editor.HoverColorIndex = INVALID_COLOR_INDEX;
+        }
+      } break;
+
+      case WorldEditMode_FillSelection:
+      {
+        if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
+        {
+          world_update_op_shape Shape = {
+            .Type = type_world_update_op_shape_params_rect,
+            .world_update_op_shape_params_rect.P0 = SelectionAABB.Min,
+            .world_update_op_shape_params_rect.P1 = SelectionAABB.Max,
+          };
+          QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, Editor->SelectedColorIndex, Engine->Memory);
+        }
+      } break;
+
+      case WorldEditMode_DeleteSelection:
+      {
+        if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
+        {
+          DoDeleteRegion(Engine, &SelectionAABB);
+        }
+      } break;
+
+
+      case WorldEditMode_AddSingle:
+      {
+        HighlightVoxel = PickedVoxel_LastEmpty;
+        if (Input->LMB.Clicked)
+        {
+          if (Engine->MousedOverVoxel.Tag)
+          {
+            v3 P0 = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel.Value, HighlightVoxel));
+
+            world_update_op_shape Shape = {
+              .Type = type_world_update_op_shape_params_rect,
+              .world_update_op_shape_params_rect.P0 = P0,
+              .world_update_op_shape_params_rect.P1 = P0+1,
+            };
+            QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, Editor->SelectedColorIndex, Engine->Memory);
+          }
+        }
+      } break;
+
+      case WorldEditMode_RemoveSingle:
+      {
+        HighlightVoxel = PickedVoxel_FirstFilled;
+        if (Input->LMB.Clicked)
+        {
+          if (Engine->MousedOverVoxel.Tag)
+          {
+            v3 P0 = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel.Value, HighlightVoxel));
+
+            world_update_op_shape Shape = {
+              .Type = type_world_update_op_shape_params_rect,
+              .world_update_op_shape_params_rect.P0 = P0,
+              .world_update_op_shape_params_rect.P1 = P0+1,
+            };
+            QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Subtractive, &Shape, Editor->SelectedColorIndex, Engine->Memory);
+          }
+        }
+      } break;
+
+      case WorldEditMode_PaintSingle:
+      {
+        if (Input->LMB.Pressed)
+        {
+          if (Engine->MousedOverVoxel.Tag)
+          {
+            voxel *V = GetVoxelPointer(&Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled);
+
+            if (V)
+            {
+              V->Color = Engine->Editor.SelectedColorIndex;
+              QueueChunkForMeshRebuild(&Plat->LowPriority, Engine->MousedOverVoxel.Value.Chunks[PickedVoxel_FirstFilled].Chunk);
+            }
+          }
+        }
+      } break;
+    }
   }
 
   PushWindowEnd(Ui, &Window);

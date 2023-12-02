@@ -76,10 +76,10 @@ DoLight(game_lights *Lights, v3 Position, v3 Color)
 /* #define SHADOW_MAP_RESOLUTION_X (2*1024) */
 /* #define SHADOW_MAP_RESOLUTION_Y (2*1024) */
 
-#define SHADOW_MAP_X 1024
-#define SHADOW_MAP_Y 1024
-#define SHADOW_MAP_Z_MIN -1024
-#define SHADOW_MAP_Z_MAX  1024
+#define SHADOW_MAP_X 512
+#define SHADOW_MAP_Y 512
+#define SHADOW_MAP_Z_MIN -512
+#define SHADOW_MAP_Z_MAX  512
 
 /* #define SHADOW_MAP_X 512 */
 /* #define SHADOW_MAP_Y 512 */

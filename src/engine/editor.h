@@ -17,8 +17,8 @@ struct level_editor
 {
   /* level_edit_mode Mode; */
 
-  s32 SelectedColorIndex;
-  s32 HoverColorIndex;
+  u16 SelectedColorIndex;
+  u16 HoverColorIndex;
 
   u32 SelectionClicks;
 

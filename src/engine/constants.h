@@ -10,7 +10,7 @@
 #define WORLD_Z V3(0,0,1)
 
 // NOTE(Jesse): This should probably be dynamic by now..
-#define FREELIST_SIZE (Kilobytes(8))
+#define FREELIST_SIZE (Kilobytes(10))
 
 #define NOISE_FREQUENCY (100L)
 

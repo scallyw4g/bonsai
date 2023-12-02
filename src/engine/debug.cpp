@@ -575,6 +575,11 @@ DoEntityWindow(engine_resources *Engine)
       }
     }
   }
+
+  if (Input->Delete.Clicked && EngineDebug->SelectedEntity)
+  {
+    Unspawn(EngineDebug->SelectedEntity);
+  }
 }
 
 link_internal void
