@@ -29,12 +29,12 @@
 #     BuildDebugSystem
 
 
-OPT="-O2"
-# ./make.sh $OPT \
-  # BuildExecutables \
-  # BuildSingleExample examples/blank_project \
-  # BuildSingleExample examples/terrain_gen \
-  # BuildDebugSystem \
+# OPT="-O2"
+./make.sh $OPT \
+  BuildExecutables \
+  BuildSingleExample examples/blank_project \
+  BuildSingleExample examples/terrain_gen \
+  BuildDebugSystem \
   # BuildSingleExample examples/turn_based \
   # BuildSingleExample examples/transparency \
   # BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
@@ -42,4 +42,4 @@ OPT="-O2"
   # BuildTests \
   # BuildSingleExample examples/turn_based2
 
-./make.sh $OPT BuildAll
+# ./make.sh $OPT BuildAll

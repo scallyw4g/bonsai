@@ -131,7 +131,6 @@ BufferVertsDirect(
 
   Assert(NumVerts % 3 == 0);
 
-  MemCopy((u8*)SrcNormals,     (u8*)DestNormals,  sizeof(*SrcNormals)*NumVerts );
   MemCopy((u8*)SrcMats,        (u8*)DestMats,     sizeof(*SrcMats)*NumVerts );
 
   /* v3 HalfOffset = Offset*0.5f; */
@@ -139,31 +138,44 @@ BufferVertsDirect(
             VertIndex < NumVerts;
             VertIndex += 3 )
   {
-    v3 VertSrc0 = Rotate(SrcVerts[VertIndex + 0], Rot);
-    v3 VertSrc1 = Rotate(SrcVerts[VertIndex + 1], Rot);
-    v3 VertSrc2 = Rotate(SrcVerts[VertIndex + 2], Rot);
+    {
+      v3 N0 = Rotate(SrcNormals[VertIndex + 0], Rot);
+      v3 N1 = Rotate(SrcNormals[VertIndex + 1], Rot);
+      v3 N2 = Rotate(SrcNormals[VertIndex + 2], Rot);
 
-    f32_reg Vert0;
-    f32_reg Vert1;
-    f32_reg Vert2;
+      DestNormals[0] = N0;
+      DestNormals[1] = N1;
+      DestNormals[2] = N2;
 
-    Vert0.Sse = _mm_set_ps(0, VertSrc0.z, VertSrc0.y, VertSrc0.x);
-    Vert1.Sse = _mm_set_ps(0, VertSrc1.z, VertSrc1.y, VertSrc1.x);
-    Vert2.Sse = _mm_set_ps(0, VertSrc2.z, VertSrc2.y, VertSrc2.x);
+      DestNormals += 3;
+    }
+    {
+      v3 VertSrc0 = Rotate(SrcVerts[VertIndex + 0], Rot);
+      v3 VertSrc1 = Rotate(SrcVerts[VertIndex + 1], Rot);
+      v3 VertSrc2 = Rotate(SrcVerts[VertIndex + 2], Rot);
 
-    Vert0.Sse = _mm_add_ps( _mm_mul_ps(Vert0.Sse, mmScale), mmOffset);
-    Vert1.Sse = _mm_add_ps( _mm_mul_ps(Vert1.Sse, mmScale), mmOffset);
-    Vert2.Sse = _mm_add_ps( _mm_mul_ps(Vert2.Sse, mmScale), mmOffset);
+      f32_reg Vert0;
+      f32_reg Vert1;
+      f32_reg Vert2;
 
-    v3 Result0 = {{ Vert0.F[0], Vert0.F[1], Vert0.F[2] }};
-    v3 Result1 = {{ Vert1.F[0], Vert1.F[1], Vert1.F[2] }};
-    v3 Result2 = {{ Vert2.F[0], Vert2.F[1], Vert2.F[2] }};
+      Vert0.Sse = _mm_set_ps(0, VertSrc0.z, VertSrc0.y, VertSrc0.x);
+      Vert1.Sse = _mm_set_ps(0, VertSrc1.z, VertSrc1.y, VertSrc1.x);
+      Vert2.Sse = _mm_set_ps(0, VertSrc2.z, VertSrc2.y, VertSrc2.x);
 
-    DestVerts[0] = Result0;
-    DestVerts[1] = Result1;
-    DestVerts[2] = Result2;
+      Vert0.Sse = _mm_add_ps( _mm_mul_ps(Vert0.Sse, mmScale), mmOffset);
+      Vert1.Sse = _mm_add_ps( _mm_mul_ps(Vert1.Sse, mmScale), mmOffset);
+      Vert2.Sse = _mm_add_ps( _mm_mul_ps(Vert2.Sse, mmScale), mmOffset);
 
-    DestVerts += 3;
+      v3 Result0 = {{ Vert0.F[0], Vert0.F[1], Vert0.F[2] }};
+      v3 Result1 = {{ Vert1.F[0], Vert1.F[1], Vert1.F[2] }};
+      v3 Result2 = {{ Vert2.F[0], Vert2.F[1], Vert2.F[2] }};
+
+      DestVerts[0] = Result0;
+      DestVerts[1] = Result1;
+      DestVerts[2] = Result2;
+
+      DestVerts += 3;
+    }
     /* DestNormals += 3; */
     /* DestMats += 3; */
   }
