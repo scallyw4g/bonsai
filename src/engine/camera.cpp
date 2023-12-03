@@ -1,11 +1,8 @@
 link_internal void
-UpdateCameraP(world *World, canonical_position NewTarget, camera *Camera, r32 Blend = DEFAULT_CAMERA_BLENDING)
+UpdateCameraP(world *World, cp TargetViewP, camera *Camera, r32 Blend = DEFAULT_CAMERA_BLENDING)
 {
   TIMED_FUNCTION();
-  if (Camera->DistanceFromTarget < 0.1f)
-  {
-    Camera->DistanceFromTarget = 0.1f;
-  }
+  if (Camera->DistanceFromTarget < 0.1f) { Camera->DistanceFromTarget = 0.1f; }
 
   r32 Px = Sin(Camera->Yaw);
   r32 Py = Cos(Camera->Yaw);
@@ -16,10 +13,10 @@ UpdateCameraP(world *World, canonical_position NewTarget, camera *Camera, r32 Bl
   Camera->Right = Normalize(Cross(V3(0,0,1), Camera->Front));
   Camera->Up = Normalize(Cross(Camera->Front, Camera->Right));
 
-  Camera->ViewingTarget = NewTarget;
+  /* Camera->ViewingTarget = TargetViewP; */
 
-  Camera->TargetP = Canonicalize(World->ChunkDim, NewTarget - (Camera->Front*Camera->DistanceFromTarget));
-  Camera->CurrentP = Lerp(Blend, Camera->CurrentP, Camera->TargetP, World->ChunkDim);
+  auto NewCameraP = Canonicalize(World->ChunkDim, TargetViewP - (Camera->Front*Camera->DistanceFromTarget));
+  Camera->CurrentP = Lerp(Blend, Camera->CurrentP, NewCameraP, World->ChunkDim);
   Camera->CurrentP = Canonicalize(World->ChunkDim, Camera->CurrentP);
 
   Camera->RenderSpacePosition = GetRenderP(World->ChunkDim, Camera->CurrentP, Camera);
@@ -104,7 +101,7 @@ GetMouseDelta(platform *Plat)
 }
 
 link_internal void
-UpdateGameCamera(world *World, v2 MouseDelta, r32 CameraZoomDelta, canonical_position NewTarget, camera* Camera, r32 Blend = DEFAULT_CAMERA_BLENDING)
+UpdateGameCamera(world *World, v2 MouseDelta, r32 CameraZoomDelta, cp TargetViewP, camera* Camera, r32 Blend = DEFAULT_CAMERA_BLENDING)
 {
   // TODO(Jesse): Make these vary by DistanceFromTarget, such that the mouse feels the same amount of sensitive zoomed in as out.
   Camera->Yaw += MouseDelta.x;
@@ -117,14 +114,14 @@ UpdateGameCamera(world *World, v2 MouseDelta, r32 CameraZoomDelta, canonical_pos
   Camera->DistanceFromTarget = ClampMin(Camera->DistanceFromTarget, Camera->Frust.nearClip);
   Camera->DistanceFromTarget = ClampMax(Camera->DistanceFromTarget, Camera->Frust.farClip);
 
-  /* Info("%f, %f, %f", double(NewTarget.Offset.x), double(NewTarget.Offset.y), double(NewTarget.Offset.z)); */
-  /* Info("%u, %u, %u", NewTarget.WorldP.x, NewTarget.WorldP.y, NewTarget.WorldP.z); */
+  /* Info("%f, %f, %f", double(TargetViewP.Offset.x), double(TargetViewP.Offset.y), double(TargetViewP.Offset.z)); */
+  /* Info("%u, %u, %u", TargetViewP.WorldP.x, TargetViewP.WorldP.y, TargetViewP.WorldP.z); */
 
-  UpdateCameraP(World, NewTarget, Camera, Blend);
+  UpdateCameraP(World, TargetViewP, Camera, Blend);
 }
 
 link_internal void
-UpdateGameCamera(world *World, v2 MouseDelta, input *Input, canonical_position NewTarget, camera* Camera)
+UpdateGameCamera(world *World, v2 MouseDelta, input *Input, canonical_position NewTarget, camera* Camera, r32 Blend = DEFAULT_CAMERA_BLENDING)
 {
   if (Input)
   {
@@ -214,7 +211,7 @@ ComputeRayFromCursor(engine_resources *Engine, m4* ViewProjection, camera *Camer
 
     /* DEBUG_HighlightVoxel(Engine, Camera->ViewingTarget, RED); */
     /* v3 CameraOffset = Camera->ViewingTarget.Offset + V3(Camera->ViewingTarget.WorldP * WorldChunkDim); */
-    v3 CameraOffset = GetSimSpaceP(World, Camera->ViewingTarget);
+    v3 CameraOffset = GetSimSpaceP(World, ComputeTarget(Camera));
     /* v3 CameraOffset = V3(0); */
     Result.Ray = { .Origin = MouseMinWorldP + CameraOffset, .Dir = RayDirection };
     Result.Tag = Maybe_Yes;

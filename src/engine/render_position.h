@@ -1,10 +1,19 @@
 //
 // TODO(Jesse)(high-priority, getrenderp): This is complete garbage and needs to be removed asap.
 //
+#if 1
+
+link_internal cp ComputeTarget(camera *Camera)
+{
+  cp Result = Camera->CurrentP + Camera->Front*Camera->DistanceFromTarget;
+  return Result;
+}
+
 inline v3
 GetRenderP(canonical_position P, camera *Camera, world_position WorldChunkDim)
 {
-  v3 CameraOffset = Camera->ViewingTarget.Offset + (Camera->ViewingTarget.WorldP * WorldChunkDim);
+  cp ViewingTarget = ComputeTarget(Camera);
+  v3 CameraOffset = ViewingTarget.Offset + (ViewingTarget.WorldP * WorldChunkDim);
   v3 Result = P.Offset + (P.WorldP * WorldChunkDim) - CameraOffset;
   return Result;
 }
@@ -68,6 +77,7 @@ GetRenderSpaceAABB(chunk_dimension WorldChunkDim, entity *Entity, camera *Camera
   aabb Result = RectCenterRad(Center, Radius);
   return Result;
 }
+#endif
 
 inline m4
 LookAt(v3 P, v3 Target, v3 Up)
@@ -94,7 +104,7 @@ ViewMatrix(chunk_dimension WorldChunkDim, camera *Camera)
 {
   m4 Result = LookAt(
     GetRenderP(WorldChunkDim, Camera->CurrentP, Camera),
-    GetRenderP(WorldChunkDim, Camera->ViewingTarget, Camera),
+    GetRenderP(WorldChunkDim, ComputeTarget(Camera), Camera),
     Camera->Up
   );
 

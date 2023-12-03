@@ -306,6 +306,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   f32 dt = Plat->dt;
   f32 Speed = 80.f;
 
+#if 0
   v3 Offset = GetCameraRelativeInput(Hotkeys, Camera);
   Offset.z = 0; // Constrain to XY plane
 
@@ -313,5 +314,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   if (Input->Q.Pressed) { Offset.z -= 1.f; }
 
   Offset = Normalize(Offset);
+  /* Camera->ViewingTarget.Offset += Offset; */
   Resources->CameraGhost->P.Offset += Offset * dt * Speed;
+#endif
 }

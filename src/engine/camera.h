@@ -34,9 +34,9 @@ struct camera
 {
   frustum Frust;
 
-  cp TargetP;
+  /* cp TargetP; */
   cp CurrentP;
-  cp ViewingTarget; // TODO(Jesse, id: 79, tags: over_allocation, ummmm) : Can this just be a v3?
+  /* cp ViewingTarget; // TODO(Jesse, id: 79, tags: over_allocation, ummmm) : Can this just be a v3? */
 
   v3 RenderSpacePosition;
 
@@ -50,7 +50,8 @@ struct camera
   v3 Right;
   v3 Up;
 };
-#define DEFAULT_CAMERA_BLENDING (0.35f)
+/* #define DEFAULT_CAMERA_BLENDING (0.35f) */
+#define DEFAULT_CAMERA_BLENDING (1.f)
 
 void
 StandardCamera(camera* Camera, float FarClip, float DistanceFromTarget, canonical_position InitialTarget)

@@ -325,7 +325,7 @@ main( s32 ArgCount, const char ** Args )
     Ensure( RewindArena(TLS->TempMemory) );
 
     r32 CurrentMS = (r32)GetHighPrecisionClock();
-    r32 RealDt = (CurrentMS - LastMs)/1000.0f;
+    r32 RealDt = (CurrentMS - LastMs)/10000.0f;
     LastMs = CurrentMS;
     Plat->dt = RealDt;
     Plat->GameTime += RealDt;

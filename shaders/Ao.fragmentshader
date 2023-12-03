@@ -47,8 +47,8 @@ void main()
   float BiasedFragDepth = FragDepth - Bias;
 
   for ( int KernelIndex = 0;
-        KernelIndex < SSAO_KERNEL_SIZE;
-        ++KernelIndex)
+            KernelIndex < SSAO_KERNEL_SIZE;
+          ++KernelIndex)
   {
     vec3 KernelP = Reorientation * SsaoKernel[KernelIndex];
     vec3 SampleP = KernelP + FragPosition;

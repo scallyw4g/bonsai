@@ -127,7 +127,6 @@ inline void
 DEBUG_DrawLine(untextured_3d_geometry_buffer *Mesh, line Line, u32 ColorIndex, r32 Thickness )
 {
   DEBUG_DrawLine(Mesh, Line.MinP, Line.MaxP, ColorIndex, Thickness);
-  return;
 }
 
 void

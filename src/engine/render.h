@@ -26,16 +26,8 @@ struct g_buffer_textures
 struct g_buffer_render_group
 {
   framebuffer FBO;
-
   g_buffer_textures *Textures;
-
-  shader DebugColorShader;
-  /* shader DebugNormalShader; */
-  /* shader DebugPositionShader; */
-
-  /* shader LightingShader; */
   shader gBufferShader;
-
   m4 ViewProjection;
 };
 

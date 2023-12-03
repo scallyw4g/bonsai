@@ -94,10 +94,43 @@ Bonsai_FrameBegin(engine_resources *Resources)
   }
 
 
+  Graphics->Lighting.Lights.Count = 0;
+
+  {
+    f32 CameraSpeed = 80.f;
+    v3 Offset = GetCameraRelativeInput(Hotkeys, Camera);
+    Offset.z = 0; // Constrain to XY plane
+
+    if (Input->E.Pressed) { Offset.z += 1.f; }
+    if (Input->Q.Pressed) { Offset.z -= 1.f; }
+
+    Offset = Normalize(Offset);
+    /* Camera->ViewingTarget.Offset += Offset; */
+    if (Resources->CameraGhost) { Resources->CameraGhost->P.Offset += Offset * Plat->dt * CameraSpeed; }
+
+    // NOTE(Jesse): This has to come before we draw any of the game geometry.
+    // Specifically, if it comes after we draw bounding boxes for anything
+    // the bounding box lines shift when we move the camera because they're
+    // then a frame late.
+    //
+    cp CameraGhostP = Resources->CameraGhost ? Resources->CameraGhost->P : Canonical_Position(0);
+
+    input *InputForCamera = 0;
+    v2 MouseDelta = GetMouseDelta(Plat);
+
+    /* Info("UiCapturedMouseInput %d", UiCapturedMouseInput(Ui)); */
+    if (UiCapturedMouseInput(Ui) == False) { InputForCamera = &Plat->Input; }
+    UpdateGameCamera(World, MouseDelta, InputForCamera, CameraGhostP, Camera, DEFAULT_CAMERA_BLENDING*Plat->dt);
+
+    Resources->Graphics->gBuffer->ViewProjection =
+      ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
+      ViewMatrix(World->ChunkDim, Camera);
+
+    if (World->Flags & WorldFlag_WorldCenterFollowsCameraTarget) { World->Center = CameraGhostP.WorldP; }
+  }
+
   Resources->MaybeMouseRay = ComputeRayFromCursor(Resources, &gBuffer->ViewProjection, Camera, World->ChunkDim);
   Resources->MousedOverVoxel = MousePickVoxel(Resources);
-
-  Graphics->Lighting.Lights.Count = 0;
 
   UiFrameBegin(&Resources->Ui);
   DoEngineDebug(Resources);
@@ -134,29 +167,7 @@ Bonsai_SimulateAndBufferGeometry(engine_resources *Resources)
   SimulateEntities(Resources, Plat->dt, World->VisibleRegion, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, &Plat->HighPriority);
   /* DispatchSimulateParticleSystemJobs(&Plat->HighPriority, EntityTable, World->ChunkDim, &GpuMap->Buffer, Graphics, Plat->dt); */
 
-  // NOTE(Jesse): This has to come after the entities simulate, and before the
-  // draw; we have to update the camera target p before we do the camera update
-  //
-  auto CameraTargetP = Resources->CameraGhost ? Resources->CameraGhost->P : Canonical_Position(0);
 
-
-  {
-    input *InputForCamera = 0;
-    v2 MouseDelta = GetMouseDelta(Plat);
-
-    /* Info("UiCapturedMouseInput %d", UiCapturedMouseInput(Ui)); */
-    if (UiCapturedMouseInput(Ui) == False) { InputForCamera = &Plat->Input; }
-    UpdateGameCamera(World, MouseDelta, InputForCamera, CameraTargetP, Camera);
-
-    Resources->Graphics->gBuffer->ViewProjection =
-      ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
-      ViewMatrix(World->ChunkDim, Camera);
-  }
-
-  if (World->Flags & WorldFlag_WorldCenterFollowsCameraTarget)
-  {
-    World->Center = CameraTargetP.WorldP;
-  }
 
   BufferWorld(Plat, &GpuMap->Buffer, World, Graphics, Heap);
 
@@ -258,10 +269,13 @@ Bonsai_Render(engine_resources *Resources)
   RenderGBuffer(GpuMap, Graphics);
   RenderShadowMap(GpuMap, Graphics);
 
+  // NOTE(Jesse): I observed the AO lagging a frame behind if this is re-ordered
+  // after the transparency/luminance textures.  I have literally 0 ideas as to
+  // why that would be, but here we are.
+  if (Graphics->Settings.UseSsao) { RenderAoTexture(AoGroup); }
+
   RenderTransparencyBuffers(&Graphics->Settings, &Graphics->Transparency);
   RenderLuminanceTexture(GpuMap, Lighting, Graphics);
-
-  if (Graphics->Settings.UseSsao) { RenderAoTexture(AoGroup); }
 
   /* GaussianBlurTexture(&Graphics->Gaussian, AoGroup->Texture); */
   if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomTextureFBO); }
