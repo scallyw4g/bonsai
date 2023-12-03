@@ -8,7 +8,9 @@ struct entity;
 
 
 
-#define ASSET_TABLE_COUNT (128)
+#define ASSET_TABLE_COUNT (256)
+CAssert(ASSET_TABLE_COUNT < u16_MAX); // NOTE(Jesse): u16_MAX is max_value(asset_handle::index)
+
 struct engine_resources
 {
   // Stdlib
@@ -27,6 +29,8 @@ struct engine_resources
 
   entity **EntityTable;
   asset    AssetTable[ASSET_TABLE_COUNT];
+
+  heap_allocator AssetMemory;
 
   // At 120fps we get 9k hours worth of frames in a u32.. should be enough.
   // 9k hours == 385 days

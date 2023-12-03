@@ -130,17 +130,24 @@ enum asset_load_state
 {
   AssetLoadState_Unloaded,
 
-  // TODO(Jesse): Might not need two states for Queued and Loading
+  // On work queue
   AssetLoadState_Queued,
-  AssetLoadState_Loading,
 
   AssetLoadState_Loaded,
   AssetLoadState_Error,
 };
 
+struct asset_slot
+{
+  u16 Index;        // Physical slot in asset table
+  u16 Generation;   // Monotonically increasing integer to identify the allocation of the asset slot in time
+};
+
+#define INVALID_ASSET_INDEX (u16_MAX)
 struct asset
 {
   volatile asset_load_state LoadState;
+  u16 Generation;
 
   // At 120fps we get 9k hours worth of frames in a u32.. should be enough.
   // 9k hours == 385 days
@@ -153,8 +160,25 @@ struct asset
   file_traversal_node FileNode;
 };
 
+
 poof(buffer(asset))
 #include <generated/buffer_asset.h>
+
+typedef asset* asset_ptr;
+poof(maybe(asset_ptr))
+#include <generated/maybe_asset_ptr.h>
+
+poof(maybe(asset_slot))
+#include <generated/maybe_asset_slot.h>
+
+poof(buffer(asset_slot))
+#include <generated/buffer_asset_slot.h>
+
+struct asset_file
+{
+  file_traversal_node FileNode;
+  asset_slot_buffer AssetSlots;
+};
 
 link_internal counted_string
 GetAssetFilenameFor(counted_string AssetPath, world_position WorldP, memory_arena *Memory)

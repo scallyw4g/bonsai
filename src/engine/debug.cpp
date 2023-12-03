@@ -452,6 +452,8 @@ DoLevelWindow(engine_resources *Engine)
 
         RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT) { Unspawn(EntityTable[EntityIndex]); }
 
+        RangeIterator(AssetIndex, ASSET_TABLE_COUNT) { FreeAsset(Engine, Engine->AssetTable+AssetIndex); }
+
         Ensure(Read_u64(&LevelBytes) == LEVEL_FILE_DEBUG_OBJECT_DELIM);
 
         RangeIterator(EntityIndex, EntityCount)
@@ -614,26 +616,8 @@ DoEngineDebug(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-#if 0
-  ui_toggle_button_handle Buttons[] = {
-    UiToggle(CSz("Level"),          0),
-    UiToggle(CSz("Edit"),           0),
-    UiToggle(CSz("Assets"),         0),
-    UiToggle(CSz("WorldChunks"),    0),
-    UiToggle(CSz("Textures"),       0),
-    UiToggle(CSz("RenderSettings"), 0),
-    UiToggle(CSz("EngineDebug"),    0),
-  };
-
-  ui_toggle_button_handle_buffer ButtonBuffer = {
-    .Start = Buttons,
-    .Count = ArrayCount(Buttons)
-  };
-
-  ui_toggle_button_group EditorButtonGroup = UiToggleButtonGroup(Ui, &ButtonBuffer);
-#else
-  ui_toggle_button_group EditorButtonGroup = ToggleButtonGroup_engine_debug_view_mode(Ui, umm("engine_debug_view_mode"));
-#endif
+  ui_toggle_button_group EditorButtonGroup =
+    ToggleButtonGroup_engine_debug_view_mode(Ui, umm("engine_debug_view_mode"));
 
 
   if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_Entities))
@@ -876,148 +860,153 @@ DoEngineDebug(engine_resources *Engine)
     if (EngineDebug->SelectedAsset.Type)
     {
       v2 AssetDetailWindowDim = {{400.f, 400.f}};
-      local_persist window_layout AssetViewWindow = WindowLayout("Asset View", {}, AssetDetailWindowDim, window_layout_flags(WindowLayoutFlag_StartupAlign_Right|WindowLayoutFlag_Default));
+      local_persist window_layout AssetViewWindow =
+        WindowLayout("Asset View", {}, AssetDetailWindowDim, window_layout_flags(WindowLayoutFlag_StartupAlign_Right|WindowLayoutFlag_Default));
       PushWindowStart(Ui, &AssetViewWindow);
 
 
       PushTableStart(Ui);
         auto AssetSpawnModeRadioGroup = RadioButtonGroup_asset_spawn_mode(Ui, umm("asset_spawn_mode_radio_group"));
 
-        asset *Asset = GetAsset(Engine, &EngineDebug->SelectedAsset);
+        maybe_asset_ptr MaybeAsset = GetAssetPtr(Engine, &EngineDebug->SelectedAsset);
 
-        PushColumn(Ui, Asset->FileNode.Name);
-        PushNewRow(Ui);
-        switch (Asset->LoadState)
+        if (MaybeAsset.Tag)
         {
-          case AssetLoadState_Loaded:
+          asset *Asset = MaybeAsset.Value;
+
+          PushColumn(Ui, Asset->FileNode.Name);
+          PushNewRow(Ui);
+          switch (Asset->LoadState)
           {
-            IterateOver(&Asset->Models, Model, ModelIndex)
+            case AssetLoadState_Loaded:
             {
-              auto *RTTGroup = &Engine->RTTGroup;
-              if (ModelIndex >= TotalElements(&Editor->AssetThumbnails))
+              IterateOver(&Asset->Models, Model, ModelIndex)
               {
-                // TODO(Jesse): Where to allocate these?
-                texture *T = MakeTexture_RGBA(V2i(256), (u32*)0, Engine->Memory);
-                asset_thumbnail Thumb = { T, {} };
-                StandardCamera(&Thumb.Camera, 10000.0f, 100.0f, {});
-
-                Push(&Editor->AssetThumbnails, &Thumb);
-              }
-
-              asset_thumbnail *Thumb = GetPtr(&Editor->AssetThumbnails, ModelIndex);
-              texture *Texture = Thumb->Texture;
-              camera  *ThumbCamera  = &Thumb->Camera;
-
-              interactable_handle B = PushButtonStart(Ui, UiId(Thumb, "asset_texture_viewport") );
-                u32 Index = StartColumn(Ui);
-                  if (Model == Editor->SelectedAssetModel) { PushRelativeBorder(Ui, V2(256), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f)); }
-                  PushTexturedQuad(Ui, Texture, V2(Texture->Dim), zDepth_Text);
-                  PushForceAdvance(Ui, V2(8, 0));
-                EndColumn(Ui, Index);
-              PushButtonEnd(Ui);
-
-              v3 ModelCenterpointOffset = Model->Dim/-2.f;
-              if (EngineDebug->ResetAssetNodeView)
-              {
-                f32 SmallObjectCorrectionFactor = 350.f/Length(ModelCenterpointOffset);
-                ThumbCamera->DistanceFromTarget = LengthSq(ModelCenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
-                UpdateGameCamera(World, {}, 0.f, {}, ThumbCamera, 1.f);
-                RenderToTexture(Engine, Thumb, &Model->Mesh, ModelCenterpointOffset);
-              }
-
-
-              v2 MouseDP = {};
-              r32 CameraZDelta = {};
-              if (Pressed(Ui, &B))
-              {
-                Editor->SelectedAssetModel = Model;
-
-                if (Input->LMB.Pressed) {MouseDP = GetMouseDelta(Plat)*2.f; }
-                if (Input->RMB.Pressed) { CameraZDelta += GetMouseDelta(Plat).y*2.f; }
-                UpdateGameCamera(World, MouseDP, CameraZDelta, {}, ThumbCamera, 1.f);
-                RenderToTexture(Engine, Thumb, &Model->Mesh, ModelCenterpointOffset);
-              }
-
-
-              if ( Engine->MousedOverVoxel.Tag )
-              {
-                cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
-                EntityOrigin.Offset = Round(EntityOrigin.Offset);
-                if ( !UiCapturedMouseInput(Ui) && Model == Editor->SelectedAssetModel )
+                auto *RTTGroup = &Engine->RTTGroup;
+                if (ModelIndex >= TotalElements(&Editor->AssetThumbnails))
                 {
+                  // TODO(Jesse): Where to allocate these?
+                  texture *T = MakeTexture_RGBA(V2i(256), (u32*)0, Engine->Memory);
+                  asset_thumbnail Thumb = { T, {} };
+                  StandardCamera(&Thumb.Camera, 10000.0f, 100.0f, {});
 
-                  /* Assert(Model->Mesh.Mat == 0); */
+                  Push(&Editor->AssetThumbnails, &Thumb);
+                }
 
-                  RangeIterator_t(u32, ElementIndex, Model->Mesh.At) { Model->Mesh.Mat[ElementIndex].Transparency = 0.5f; }
+                asset_thumbnail *Thumb = GetPtr(&Editor->AssetThumbnails, ModelIndex);
+                texture *Texture = Thumb->Texture;
+                camera  *ThumbCamera  = &Thumb->Camera;
 
+                interactable_handle B = PushButtonStart(Ui, UiId(Thumb, "asset_texture_viewport") );
+                  u32 Index = StartColumn(Ui);
+                    if (Model == Editor->SelectedAssetModel) { PushRelativeBorder(Ui, V2(256), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f)); }
+                    PushTexturedQuad(Ui, Texture, V2(Texture->Dim), zDepth_Text);
+                    PushForceAdvance(Ui, V2(8, 0));
+                  EndColumn(Ui, Index);
+                PushButtonEnd(Ui);
+
+                v3 ModelCenterpointOffset = Model->Dim/-2.f;
+                if (EngineDebug->ResetAssetNodeView)
+                {
+                  f32 SmallObjectCorrectionFactor = 350.f/Length(ModelCenterpointOffset);
+                  ThumbCamera->DistanceFromTarget = LengthSq(ModelCenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
+                  UpdateGameCamera(World, {}, 0.f, {}, ThumbCamera, 1.f);
+                  RenderToTexture(Engine, Thumb, &Model->Mesh, ModelCenterpointOffset);
+                }
+
+
+                v2 MouseDP = {};
+                r32 CameraZDelta = {};
+                if (Pressed(Ui, &B))
+                {
+                  Editor->SelectedAssetModel = Model;
+
+                  if (Input->LMB.Pressed) {MouseDP = GetMouseDelta(Plat)*2.f; }
+                  if (Input->RMB.Pressed) { CameraZDelta += GetMouseDelta(Plat).y*2.f; }
+                  UpdateGameCamera(World, MouseDP, CameraZDelta, {}, ThumbCamera, 1.f);
+                  RenderToTexture(Engine, Thumb, &Model->Mesh, ModelCenterpointOffset);
+                }
+
+
+                if ( Engine->MousedOverVoxel.Tag )
+                {
+                  cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
+                  EntityOrigin.Offset = Round(EntityOrigin.Offset);
+                  if ( !UiCapturedMouseInput(Ui) && Model == Editor->SelectedAssetModel )
                   {
-                    untextured_3d_geometry_buffer *Dest = &Graphics->Transparency.GpuBuffer.Buffer;
-                    BufferChunkMesh(Graphics, Dest, &Model->Mesh, World->ChunkDim, EntityOrigin.WorldP, 1.f, EntityOrigin.Offset, Quaternion());
-                  }
-                  {
-                    /* untextured_3d_geometry_buffer *Dest = &GpuMap->Buffer; */
-                    /* BufferChunkMesh(Graphics, Dest, &Model->Mesh, World->ChunkDim, EntityOrigin.WorldP, 1.f, EntityOrigin.Offset, Quaternion()); */
-                  }
 
-                  RangeIterator_t(u32, ElementIndex, Model->Mesh.At) { Model->Mesh.Mat[ElementIndex].Transparency = 0.f; }
+                    /* Assert(Model->Mesh.Mat == 0); */
 
-                  if ( Input->Space.Clicked )
-                  {
-                    world_update_op_shape_params_asset AssetUpdateShape =
+                    RangeIterator_t(u32, ElementIndex, Model->Mesh.At) { Model->Mesh.Mat[ElementIndex].Transparency = 0.5f; }
+
                     {
-                      &Asset->Models.Start[ModelIndex],
-                      EntityOrigin
-                    };
-
-                    asset_spawn_mode AssetSpawnMode = {};
-                    GetRadioEnum(&AssetSpawnModeRadioGroup, &AssetSpawnMode);
-                    switch (AssetSpawnMode)
+                      untextured_3d_geometry_buffer *Dest = &Graphics->Transparency.GpuBuffer.Buffer;
+                      BufferChunkMesh(Graphics, Dest, &Model->Mesh, World->ChunkDim, EntityOrigin.WorldP, 1.f, EntityOrigin.Offset, Quaternion());
+                    }
                     {
-                      case AssetSpawnMode_BlitIntoWorld:
+                      /* untextured_3d_geometry_buffer *Dest = &GpuMap->Buffer; */
+                      /* BufferChunkMesh(Graphics, Dest, &Model->Mesh, World->ChunkDim, EntityOrigin.WorldP, 1.f, EntityOrigin.Offset, Quaternion()); */
+                    }
+
+                    RangeIterator_t(u32, ElementIndex, Model->Mesh.At) { Model->Mesh.Mat[ElementIndex].Transparency = 0.f; }
+
+                    if ( Input->Space.Clicked )
+                    {
+                      world_update_op_shape_params_asset AssetUpdateShape =
                       {
-                        world_update_op_shape Shape =
+                        &Asset->Models.Start[ModelIndex],
+                        EntityOrigin
+                      };
+
+                      asset_spawn_mode AssetSpawnMode = {};
+                      GetRadioEnum(&AssetSpawnModeRadioGroup, &AssetSpawnMode);
+                      switch (AssetSpawnMode)
+                      {
+                        case AssetSpawnMode_BlitIntoWorld:
                         {
-                          type_world_update_op_shape_params_asset,
-                          .world_update_op_shape_params_asset = AssetUpdateShape,
-                        };
-                        QueueWorldUpdateForRegion(Engine, {}, &Shape, {}, World->Memory);
-                      } break;
+                          world_update_op_shape Shape =
+                          {
+                            type_world_update_op_shape_params_asset,
+                            .world_update_op_shape_params_asset = AssetUpdateShape,
+                          };
+                          QueueWorldUpdateForRegion(Engine, {}, &Shape, {}, World->Memory);
+                        } break;
 
-                      case AssetSpawnMode_Entity:
-                      {
-                        entity *E = GetFreeEntity(Engine->EntityTable);
-                        SpawnEntity(E, Model, EntityBehaviorFlags_Default, 0, &EntityOrigin, Model->Dim/2.f);
-                      } break;
+                        case AssetSpawnMode_Entity:
+                        {
+                          entity *E = GetFreeEntity(Engine->EntityTable);
+                          SpawnEntity(E, Model, EntityBehaviorFlags_Default, 0, &EntityOrigin, Model->Dim/2.f);
+                        } break;
+                      }
                     }
                   }
                 }
+
+                if ( (ModelIndex+1) % 4 == 0)
+                {
+                  PushNewRow(Ui);
+                  PushForceAdvance(Ui, V2(0, 8));
+                }
               }
 
-              if ( (ModelIndex+1) % 4 == 0)
-              {
-                PushNewRow(Ui);
-                PushForceAdvance(Ui, V2(0, 8));
-              }
-            }
+              if (EngineDebug->ResetAssetNodeView) { EngineDebug->ResetAssetNodeView = False; }
+            } break;
 
-            if (EngineDebug->ResetAssetNodeView) { EngineDebug->ResetAssetNodeView = False; }
-          } break;
+            case AssetLoadState_Queued:
+            {
+              PushColumn(Ui, CSz("Loading Asset"));
+            } break;
 
-          case AssetLoadState_Queued:
-          case AssetLoadState_Loading:
-          {
-            PushColumn(Ui, CSz("Loading Asset"));
-          } break;
+            case AssetLoadState_Unloaded:
+            {
+              PushColumn(Ui, CSz("Not Loading Asset .. ?"));
+            } break;
 
-          case AssetLoadState_Unloaded:
-          {
-            PushColumn(Ui, CSz("Not Loading Asset .. ?"));
-          } break;
-
-          case AssetLoadState_Error:
-          {
-            PushColumn(Ui, CSz("Error Loading Asset :("));
-          } break;
+            case AssetLoadState_Error:
+            {
+              PushColumn(Ui, CSz("Error Loading Asset :("));
+            } break;
+          }
         }
       PushTableEnd(Ui);
 

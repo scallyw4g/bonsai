@@ -636,26 +636,71 @@ SerializeChunk(world_chunk *Chunk, counted_string AssetPath)
   return Result;
 }
 
-link_internal asset *
-GetAssetSlot(engine_resources *Engine)
+link_internal void
+FreeModelBuffer(heap_allocator *ModelMemory, model_buffer *Models)
 {
-  s32 LRUAssetIndex = 0;
-  u64 LRUFrameIndex = u32_MAX;
-  RangeIterator(AssetIndex, ASSET_TABLE_COUNT)
-  {
-    asset *Asset = Engine->AssetTable + AssetIndex;
+  NotImplemented;
+  /* Leak("Implement model freeing!"); */
+}
 
-    if ( (Asset->LoadState == AssetLoadState_Loaded ||
-          Asset->LoadState == AssetLoadState_Unloaded) &&
-        Asset->LRUFrameIndex < LRUFrameIndex)
+link_internal void
+FreeAsset(engine_resources *Engine, asset *Asset)
+{
+  Assert(Asset->LoadState != AssetLoadState_Queued);
+  u16 Generation = Asset->Generation;
+  FreeModelBuffer(&Engine->AssetMemory, &Asset->Models);
+
+  Clear(Asset);
+  Asset->Generation = Generation + 1;
+}
+
+link_internal maybe_asset_slot
+AllocateAssetSlot(engine_resources *Engine)
+{
+  u16 FinalAssetIndex   = INVALID_ASSET_INDEX;
+
+  u64 LruAssetFrame     = u64_MAX;
+  u16 LruAssetIndex     = INVALID_ASSET_INDEX;
+
+  RangeIterator_t(u16, TestAssetIndex, ASSET_TABLE_COUNT)
+  {
+    asset *Asset = Engine->AssetTable + TestAssetIndex;
+
+    if (Asset->LoadState != AssetLoadState_Queued)
     {
-      LRUFrameIndex = Asset->LRUFrameIndex;
-      LRUAssetIndex = AssetIndex;
+      if (Asset->LRUFrameIndex < LruAssetFrame)
+      {
+        LruAssetFrame = Asset->LRUFrameIndex;
+        LruAssetIndex = TestAssetIndex;
+
+        if (Asset->LoadState == AssetLoadState_Unloaded)
+        {
+          FinalAssetIndex = TestAssetIndex; break;
+        }
+      }
     }
   }
 
-  asset *Result = Engine->AssetTable+LRUAssetIndex;
-  Clear(Result);
+  if (FinalAssetIndex == INVALID_ASSET_INDEX)
+  {
+    if (LruAssetFrame < u64_MAX)
+    {
+      asset *LruAsset = Engine->AssetTable+LruAssetIndex;
+      Assert(LruAsset->LoadState != AssetLoadState_Unloaded);
+      FreeAsset(Engine, LruAsset);
+
+      FinalAssetIndex = LruAssetIndex;
+    }
+  }
+
+  maybe_asset_slot Result = {};
+
+  if (FinalAssetIndex != INVALID_ASSET_INDEX)
+  {
+    asset *Asset = Engine->AssetTable+FinalAssetIndex;
+    Result.Tag = Maybe_Yes;
+    Result.Value = { FinalAssetIndex, ++Asset->Generation };
+  }
 
   return Result;
 }
@@ -678,7 +723,7 @@ link_internal void
 InitAsset(asset *Asset, thread_local_state *Thread)
 {
   Assert(Asset->LoadState == AssetLoadState_Queued);
-  Asset->LoadState = AssetLoadState_Loading;
+  /* Asset->LoadState = AssetLoadState_Loading; */
 
   cs Ext = Extension(Asset->FileNode.Name);
 
@@ -713,39 +758,60 @@ InitAsset(asset *Asset, thread_local_state *Thread)
     SoftError("Unsupported file format while initializing asset.");
     Asset->LoadState = AssetLoadState_Error;
   }
-
 }
 
-
-link_internal asset *
-GetAsset(engine_resources *Engine, file_traversal_node *FileNode)
+link_internal maybe_asset_ptr
+GetAssetPtr(engine_resources *Engine, asset_slot Slot)
 {
-  asset *Result = {};
+  maybe_asset_ptr Result = {};
+
+  asset *Asset = Engine->AssetTable + Slot.Index;
+
+  if (Asset->Generation == Slot.Generation)
+  {
+    Result.Tag = Maybe_Yes;
+    Result.Value = Asset;
+  }
+
+  return Result;
+}
+
+link_internal maybe_asset_ptr
+GetAssetPtr(engine_resources *Engine, file_traversal_node *FileNode)
+{
+  maybe_asset_ptr Result = {};
   RangeIterator(AssetIndex, ASSET_TABLE_COUNT)
   {
     asset *Query = Engine->AssetTable + AssetIndex;
     if (AreEqual(FileNode, &Query->FileNode))
     {
-      Result = Query;
+      Result.Tag = Maybe_Yes;
+      Result.Value = Query;
       break;
     }
   }
 
-  if (Result)
+  if (Result.Tag == Maybe_No)
   {
-    Assert(Result->LoadState);
+    maybe_asset_slot MaybeSlot = AllocateAssetSlot(Engine);
+
+    if (MaybeSlot.Tag)
+    {
+      Result = GetAssetPtr(Engine, MaybeSlot.Value);
+      if (Result.Tag)
+      {
+        Result.Value->FileNode = *FileNode;
+        Result.Value->LRUFrameIndex = Engine->FrameIndex;
+        QueueAssetForLoad(&Engine->Stdlib.Plat.LowPriority, Result.Value);
+      }
+    }
+
   }
   else
   {
-    Result = GetAssetSlot(Engine);
-    Result->FileNode = *FileNode;
-
-    QueueAssetForLoad(&Engine->Stdlib.Plat.LowPriority, Result);
+    Assert(Result.Value->LoadState);
   }
 
-
-  Assert(Result);
-  Result->LRUFrameIndex = Engine->FrameIndex;
 
   return Result;
 }

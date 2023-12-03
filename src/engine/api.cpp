@@ -71,6 +71,8 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   ClearFramebuffers(Graphics, &Resources->RTTGroup);
 
+
+#if 0
   // TODO(Jesse): Is this random leftover debug code that can be removed?
   if (EngineDebug->SelectedAsset.Type)
   {
@@ -81,6 +83,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
       /* RenderToTexture(Resources, &Asset->Model.Mesh); */
     }
   }
+#endif
 
   MapGpuElementBuffer(GpuMap);
   MapGpuElementBuffer(&Graphics->Transparency.GpuBuffer);
