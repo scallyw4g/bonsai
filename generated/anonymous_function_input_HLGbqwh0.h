@@ -10,6 +10,8 @@ Input->Ctrl.Clicked = False;
 
 Input->Alt.Clicked = False;
 
+Input->Delete.Clicked = False;
+
 Input->F12.Clicked = False;
 
 Input->F11.Clicked = False;

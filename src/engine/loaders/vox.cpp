@@ -201,6 +201,8 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
   native_file ModelFile = OpenFile(filepath, "r+b");
 
 
+  s32_cursor ColorIndexBuffer = S32Cursor(256, TempMemory);
+
   vox_data Current = {};
   if (ModelFile.Handle)
   {
@@ -241,7 +243,25 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
             u8 B = ReadChar(ModelFile.Handle, &bytesRemaining);
             u8 A = ReadChar(ModelFile.Handle, &bytesRemaining);
 
-            Push(ColorPalette, V3(R,G,B));
+            v3 ThisColor = V3(R,G,B);
+            s32 Found = -1;
+            {
+              IterateOver(ColorPalette, PaletteColor, ColorIndex)
+              {
+                if (ThisColor == *PaletteColor) { Found = s32(ColorIndex); break; }
+              }
+            }
+
+            if (Found == -1)
+            {
+              s32 ColorIndex = s32(AtElements(ColorPalette));
+              Push(ColorPalette, ThisColor);
+              Push(&ColorIndexBuffer, ColorIndex);
+            }
+            else
+            {
+              Push(&ColorIndexBuffer, Found);
+            }
             /* Global_ColorPalette[PaletteIndex].r = R; */
             /* Global_ColorPalette[PaletteIndex].g = G; */
             /* Global_ColorPalette[PaletteIndex].b = B; */
@@ -447,14 +467,19 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
 
   if (CustomPalette)
   {
-    s32 PaletteBase = s32(AtElements(ColorPalette))-256;
+    /* s32 PaletteBase = s32(AtElements(ColorPalette))-256; */
 
     IterateOver(&Result, VoxData, VoxDataIndex)
     {
       DimIterator(x, y, z, VoxData->ChunkData->Dim)
       {
         s32 Index = GetIndex(x, y, z, VoxData->ChunkData->Dim);
-        VoxData->ChunkData->Voxels[Index].Color += PaletteBase;
+
+        u16 TmpColorIndex = VoxData->ChunkData->Voxels[Index].Color;
+        Assert(TmpColorIndex < 256);
+
+        s32 ColorIndex = ColorIndexBuffer.Start[TmpColorIndex];
+        VoxData->ChunkData->Voxels[Index].Color = SafeTruncateToU16(umm(ColorIndex));
         /* DebugLine("wee %d (%d,%d,%d)", VoxDataIndex, x, y, z ); */
       }
     }

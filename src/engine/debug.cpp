@@ -346,7 +346,7 @@ DoLevelWindow(engine_resources *Engine)
         }
       }
 
-      native_file LevelFile = OpenFile("levels/test.level", "w+b");
+      native_file LevelFile = OpenFile("../bonsai_levels/test.level", "w+b");
 
       level_header Header = {};
       Header.ChunkCount = ChunkCount;
@@ -391,12 +391,15 @@ DoLevelWindow(engine_resources *Engine)
         }
       }
 
+      v3_cursor *Palette = GetColorPalette();
+      Serialize(&LevelFile, Palette);
+
       CloseFile(&LevelFile);
     }
   PushTableEnd(Ui);
 
   PushTableStart(Ui);
-    maybe_file_traversal_node ClickedNode = PlatformTraverseDirectoryTree(CSz("levels"), EngineDrawFileNodesHelper);
+    maybe_file_traversal_node ClickedNode = PlatformTraverseDirectoryTree(CSz("../bonsai_levels"), EngineDrawFileNodesHelper);
   PushTableEnd(Ui);
 
   if (ClickedNode.Tag)
@@ -455,6 +458,10 @@ DoLevelWindow(engine_resources *Engine)
         {
           Deserialize(&LevelBytes, EntityTable[EntityIndex], Thread->PermMemory);
         }
+
+        v3_cursor *Palette = GetColorPalette();
+        Palette->At = Palette->Start;
+        Deserialize(&LevelBytes, Palette, Thread->PermMemory);
 
         Assert(LevelBytes.At == LevelBytes.End);
       }

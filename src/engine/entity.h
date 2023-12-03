@@ -88,6 +88,8 @@ poof(serdes_vector(v3i))
 poof(serdes_primitive({chunk_flag}))
 #include <generated/serdes_primitive_85387614.h>
 
+poof(serdes_cursor(v3))
+#include <generated/serdes_cursor_v3.h>
 
 #if 1
 link_internal b32 Serialize(native_file *File, untextured_3d_geometry_buffer *Data);
