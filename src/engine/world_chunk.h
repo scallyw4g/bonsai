@@ -131,8 +131,12 @@ struct chunk_data
 
 enum world_chunk_mesh_index
 {
-  MeshIndex_Main,
-  MeshIndex_Lod,
+  MeshIndex_Lod0,
+  MeshIndex_Lod1,
+  MeshIndex_Lod2,
+  MeshIndex_Lod3,
+  MeshIndex_Lod4,
+
   MeshIndex_Debug,
   MeshIndex_Transparency,
 
@@ -143,10 +147,14 @@ enum world_chunk_mesh_bitfield
 {
   MeshBit_None  = 0,
 
-  MeshBit_Main         = (1 << MeshIndex_Main),
-  MeshBit_Lod          = (1 << MeshIndex_Lod),
-  MeshBit_Debug        = (1 << MeshIndex_Debug),
-  MeshBit_Transparency = (1 << MeshIndex_Transparency),
+  MeshBit_Lod0          = (1 << MeshIndex_Lod0), // 32
+  MeshBit_Lod1          = (1 << MeshIndex_Lod1), // 16
+  MeshBit_Lod2          = (1 << MeshIndex_Lod2), // 8
+  MeshBit_Lod3          = (1 << MeshIndex_Lod3), // 4
+  MeshBit_Lod4          = (1 << MeshIndex_Lod4), // 2
+
+  /* MeshBit_Debug        = (1 << MeshIndex_Debug), */
+  /* MeshBit_Transparency = (1 << MeshIndex_Transparency), */
 
   MeshBit_Count  = (1 << MeshIndex_Count),
 };
@@ -164,31 +172,14 @@ ToIndex(world_chunk_mesh_bitfield Bit)
   {
     InvalidCase(MeshBit_None);
 
-    case MeshBit_Main:
-    {
-      return MeshIndex_Main;
-    } break;
-
-    case MeshBit_Lod:
-    {
-      return MeshIndex_Lod;
-    } break;
-
-    case MeshBit_Debug:
-    {
-      return MeshIndex_Debug;
-    } break;
-
-    case MeshBit_Transparency:
-    {
-      return MeshIndex_Transparency;
-    } break;
-
-
-    case MeshBit_Count:
-    {
-      return MeshIndex_Count;
-    } break;
+    case MeshBit_Lod0: { return MeshIndex_Lod0; } break;
+    case MeshBit_Lod1: { return MeshIndex_Lod1; } break;
+    case MeshBit_Lod2: { return MeshIndex_Lod2; } break;
+    case MeshBit_Lod3: { return MeshIndex_Lod3; } break;
+    case MeshBit_Lod4: { return MeshIndex_Lod4; } break;
+    /* case MeshBit_Debug:        { return MeshIndex_Debug; } break; */
+    /* case MeshBit_Transparency: { return MeshIndex_Transparency; } break; */
+    case MeshBit_Count:        { return MeshIndex_Count; } break;
   }
 
   return MeshIndex_Count;
@@ -213,8 +204,8 @@ enum chunk_init_flags
   ChunkInitFlag_Noop = 0,
 
   ChunkInitFlag_ComputeStandingSpots = (1 << 0),
-  ChunkInitFlag_GenSmoothLODs        = (1 << 1),
-  ChunkInitFlag_GenMipMapLODs        = (1 << 2),
+  /* ChunkInitFlag_GenSmoothLODs        = (1 << 1), */
+  /* ChunkInitFlag_GenMipMapLODs        = (1 << 2), */
 };
 
 #define WORLD_CHUNK_STANDING_SPOT_COUNT (32)

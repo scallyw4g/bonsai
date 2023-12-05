@@ -3222,7 +3222,19 @@ QueueChunkForMeshRebuild(work_queue *Queue, world_chunk *Chunk)
 }
 
 link_internal void
-InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *Thread, world_chunk *DestChunk, chunk_dimension WorldChunkDim, native_file *AssetFile, s32 Frequency, s32 Amplititude, s32 zMin, chunk_init_flags Flags, void* UserData)
+InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
+                          thread_local_state *Thread,
+                          world_chunk *DestChunk,
+                          chunk_dimension WorldChunkDim,
+                          native_file *AssetFile,
+                          s32 Frequency,
+                          s32 Amplititude,
+                          s32 zMin,
+
+                          world_chunk_mesh_bitfield MeshBit,
+                          chunk_init_flags Flags,
+
+                          void* UserData )
 {
   TIMED_FUNCTION();
 
@@ -3238,10 +3250,10 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
   // TODO(Jesse): Pretty sure this is unnecessary
   ClearChunkVoxels(DestChunk->Voxels, DestChunk->Dim);
 
-  untextured_3d_geometry_buffer* PrimaryMesh = 0;
-  untextured_3d_geometry_buffer* LodMesh = 0;
-  untextured_3d_geometry_buffer* DebugMesh = 0;
-  untextured_3d_geometry_buffer* TransparencyMesh = 0;
+  untextured_3d_geometry_buffer* Mesh = 0;
+  /* untextured_3d_geometry_buffer* LodMesh = 0; */
+  /* untextured_3d_geometry_buffer* DebugMesh = 0; */
+  /* untextured_3d_geometry_buffer* TransparencyMesh = 0; */
 
   chunk_dimension SynChunkDim = WorldChunkDim + Global_ChunkApronDim;
   chunk_dimension SynChunkP = DestChunk->WorldP;
@@ -3291,15 +3303,17 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
 
     if (TempMesh->At)
     {
-      PrimaryMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
-      DeepCopy(TempMesh, PrimaryMesh);
+      Mesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
+      DeepCopy(TempMesh, Mesh);
     }
 
+#if 0
     if (TempTransparentMesh->At)
     {
       TransparencyMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempTransparentMesh, Thread->PermMemory);
       DeepCopy(TempTransparentMesh, TransparencyMesh);
     }
+#endif
   }
 
 
@@ -3311,6 +3325,7 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
                           Thread->TempMemory);
   }
 
+#if 0
   if (SyntheticChunkSum && (Flags & ChunkInitFlag_GenSmoothLODs) )
   {
     untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
@@ -3322,7 +3337,9 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
       DeepCopy(TempMesh, LodMesh);
     }
   }
+#endif
 
+#if 0
   if (SyntheticChunkSum && (Flags & ChunkInitFlag_GenMipMapLODs) )
   {
     untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
@@ -3333,17 +3350,19 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
       DeepCopy(TempMesh, LodMesh);
     }
   }
+#endif
 
   FullBarrier;
 
-  if (PrimaryMesh)
+  if (Mesh)
   {
-    if (PrimaryMesh->At)
-    { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Main, PrimaryMesh, PrimaryMesh->Timestamp) == 0); }
+    if (Mesh->At)
+    { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit, Mesh, Mesh->Timestamp) == 0); }
     else
-    { DeallocateMesh(PrimaryMesh, &EngineResources->MeshFreelist, Thread->PermMemory); }
+    { DeallocateMesh(Mesh, &EngineResources->MeshFreelist, Thread->PermMemory); }
   }
 
+#if 0
   if (LodMesh)
   {
     if (LodMesh->At)
@@ -3367,8 +3386,7 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
     else
     { DeallocateMesh(TransparencyMesh, &EngineResources->MeshFreelist, Thread->PermMemory); }
   }
-
-
+#endif
 
   FinalizeChunkInitialization(DestChunk);
 
@@ -3379,7 +3397,7 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
 link_internal void
 InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChunk, chunk_dimension WorldChunkDim, native_file *AssetFile, s32 Frequency, s32 Amplititude, s32 zMin, chunk_init_flags Flags)
 {
-  InitializeChunkWithNoise( Noise_Perlin2D, Thread, DestChunk, DestChunk->Dim, AssetFile, Frequency, Amplititude, zMin, Flags, 0);
+  InitializeChunkWithNoise( Noise_Perlin2D, Thread, DestChunk, DestChunk->Dim, AssetFile, Frequency, Amplititude, zMin, MeshBit_Lod0, Flags, 0);
 }
 
 link_internal void
@@ -3389,8 +3407,8 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk)
 
   Assert( IsSet(Chunk->Flags, Chunk_VoxelsInitialized) );
 
-  untextured_3d_geometry_buffer *NewMesh = 0;
-  untextured_3d_geometry_buffer *NewTransparentMesh = 0;
+  untextured_3d_geometry_buffer *Mesh = 0;
+  /* untextured_3d_geometry_buffer *NewTransparentMesh = 0; */
 
   {
     untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
@@ -3400,28 +3418,32 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk)
 
     if (TempMesh->At)
     {
-      NewMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
-      DeepCopy(TempMesh, NewMesh);
+      Mesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
+      DeepCopy(TempMesh, Mesh);
     }
 
+#if 0
     if (TempTransparentMesh->At)
     {
       NewTransparentMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempTransparentMesh, Thread->PermMemory);
       DeepCopy(TempTransparentMesh, NewTransparentMesh);
     }
+#endif
   }
 
   {
-    umm Timestamp = NewMesh ? NewMesh->Timestamp : __rdtsc();
-    untextured_3d_geometry_buffer *Replaced = AtomicReplaceMesh(&Chunk->Meshes, MeshBit_Main, NewMesh, Timestamp);
+    umm Timestamp = Mesh ? Mesh->Timestamp : __rdtsc();
+    untextured_3d_geometry_buffer *Replaced = AtomicReplaceMesh(&Chunk->Meshes, MeshBit_Lod0, Mesh, Timestamp);
     if (Replaced) { DeallocateMesh(Replaced, &EngineResources->MeshFreelist, Thread->PermMemory); }
   }
 
+#if 0
   {
     umm Timestamp = NewTransparentMesh ? NewTransparentMesh->Timestamp : __rdtsc();
     untextured_3d_geometry_buffer *Replaced = AtomicReplaceMesh(&Chunk->Meshes, MeshBit_Transparency, NewTransparentMesh, Timestamp);
     if (Replaced) { DeallocateMesh(Replaced, &EngineResources->MeshFreelist, Thread->PermMemory); }
   }
+#endif
 
   FinalizeChunkInitialization(Chunk);
 }
@@ -3592,15 +3614,12 @@ BufferWorld( platform                      *Plat,
             v3 ChunkP = GetSimSpaceP(World, Chunk->WorldP);
 
             auto MeshBit = MeshBit_None;
-            if (HasMesh(&Chunk->Meshes, MeshBit_Main))
-            {
-              MeshBit = MeshBit_Main;
-            }
 
-            if (HasMesh(&Chunk->Meshes, MeshBit_Lod) && DistanceSq(CameraP, ChunkP) > Square(25*40))
-            {
-              MeshBit = MeshBit_Lod;
-            }
+            if (HasMesh(&Chunk->Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; }
+            if (HasMesh(&Chunk->Meshes, MeshBit_Lod1) && DistanceSq(CameraP, ChunkP) > Square(25*32)) { MeshBit = MeshBit_Lod1; }
+            if (HasMesh(&Chunk->Meshes, MeshBit_Lod2) && DistanceSq(CameraP, ChunkP) > Square(50*32)) { MeshBit = MeshBit_Lod2; }
+            if (HasMesh(&Chunk->Meshes, MeshBit_Lod3) && DistanceSq(CameraP, ChunkP) > Square(75*32)) { MeshBit = MeshBit_Lod3; }
+            if (HasMesh(&Chunk->Meshes, MeshBit_Lod4) && DistanceSq(CameraP, ChunkP) > Square(100*32)) { MeshBit = MeshBit_Lod4; }
 
             if (MeshBit != MeshBit_None)
             {
@@ -3609,12 +3628,14 @@ BufferWorld( platform                      *Plat,
               PushWorkQueueEntry(&Plat->HighPriority, &Entry);
             }
 
+#if 0
             if (HasMesh(&Chunk->Meshes, MeshBit_Transparency))
             {
               auto CopyJob = WorkQueueEntryCopyBufferRef(&Chunk->Meshes, MeshBit_Transparency, &Graphics->Transparency.GpuBuffer.Buffer, Chunk->WorldP, Graphics->Camera, World->ChunkDim);
               auto Entry = WorkQueueEntry(&CopyJob);
               PushWorkQueueEntry(&Plat->HighPriority, &Entry);
             }
+#endif
 
             /* if (Chunk->SelectedMeshes & MeshIndex_Main) */
             {

@@ -12,9 +12,9 @@ MakeWorldChunkFileHeader_v2(world_chunk *Chunk)
   Result.VoxelElementCount        = Volume(Chunk);
   Result.StandingSpotElementCount = (u32)AtElements(&Chunk->StandingSpots);
 
-  if (HasMesh(&Chunk->Meshes, MeshBit_Main))
+  if (HasMesh(&Chunk->Meshes, MeshBit_Lod0))
   {
-    Result.MeshElementCount       = Chunk->Meshes.E[MeshIndex_Main]->At;
+    Result.MeshElementCount       = Chunk->Meshes.E[MeshIndex_Lod0]->At;
   }
 
   Result.VertexElementSize        = (u32)sizeof(v3);
@@ -42,9 +42,9 @@ MakeWorldChunkFileHeader_v3(world_chunk *Chunk)
   Result.Py = Chunk->WorldP.y;
   Result.Pz = Chunk->WorldP.z;
 
-  if (HasMesh(&Chunk->Meshes, MeshBit_Main))
+  if (HasMesh(&Chunk->Meshes, MeshBit_Lod0))
   {
-    Result.MeshElementCount       = Chunk->Meshes.E[MeshIndex_Main]->At;
+    Result.MeshElementCount       = Chunk->Meshes.E[MeshIndex_Lod0]->At;
   }
 
   Result.VertexElementSize        = (u32)sizeof(v3);
@@ -68,9 +68,9 @@ MakeWorldChunkFileHeader_v1(world_chunk *Chunk)
   Result.VoxelElementCount = Volume(Chunk);
   Result.VoxelElementSize  = (u32)sizeof(voxel);
 
-  if (HasMesh(&Chunk->Meshes, MeshBit_Main))
+  if (HasMesh(&Chunk->Meshes, MeshBit_Lod0))
   {
-    Result.MeshElementCount = Chunk->Meshes.E[MeshIndex_Main]->At;
+    Result.MeshElementCount = Chunk->Meshes.E[MeshIndex_Lod0]->At;
   }
 
 
@@ -447,7 +447,7 @@ DeserializeChunk(u8_stream *FileBytes, world_chunk *Result, tiered_mesh_freelist
     untextured_3d_geometry_buffer *Mesh = GetPermMeshForChunk(MeshFreelist, u32(Header.MeshElementCount), PermMemory);
     DeserializeMesh(FileBytes, &Header, Mesh);
 
-    untextured_3d_geometry_buffer *Buf = AtomicReplaceMesh(&Result->Meshes, MeshBit_Main, Mesh, Mesh->Timestamp);
+    untextured_3d_geometry_buffer *Buf = AtomicReplaceMesh(&Result->Meshes, MeshBit_Lod0, Mesh, Mesh->Timestamp);
     if (Buf) { Leak("Leaking mesh"); }
   }
 
@@ -561,7 +561,7 @@ DeserializeChunk(native_file *AssetFile, world_chunk *Result, tiered_mesh_freeli
     untextured_3d_geometry_buffer *Mesh = GetPermMeshForChunk(MeshFreelist, TotalElements, PermMemory);
 
     DeserializeMesh(AssetFile, &Header, Mesh);
-    Ensure( AtomicReplaceMesh(&Result->Meshes, MeshBit_Main, Mesh, Mesh->Timestamp) == 0);
+    Ensure( AtomicReplaceMesh(&Result->Meshes, MeshBit_Lod0, Mesh, Mesh->Timestamp) == 0);
   }
 
   if (Header.StandingSpotElementCount)
@@ -604,9 +604,9 @@ SerializeChunk(world_chunk *Chunk, native_file *File)
 
   if (FileHeader.MeshElementCount)
   {
-    auto Mesh = TakeOwnershipSync(&Chunk->Meshes, MeshBit_Main);
+    auto Mesh = TakeOwnershipSync(&Chunk->Meshes, MeshBit_Lod0);
     Result &= SerializeMesh(File, Mesh);
-    ReleaseOwnership(&Chunk->Meshes, MeshBit_Main, Mesh);
+    ReleaseOwnership(&Chunk->Meshes, MeshBit_Lod0, Mesh);
   }
 
   if (FileHeader.StandingSpotElementCount)
