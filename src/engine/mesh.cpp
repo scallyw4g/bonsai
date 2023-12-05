@@ -174,9 +174,10 @@ DeallocateMesh(untextured_3d_geometry_buffer* Mesh, tiered_mesh_freelist* MeshFr
 link_internal void
 DeallocateMeshes(threadsafe_geometry_buffer *Buf, tiered_mesh_freelist* MeshFreelist, memory_arena* Memory)
 {
-  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Main,  0, __rdtsc()) ) { DeallocateMesh(Mesh, MeshFreelist, Memory); }
-  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod,   0, __rdtsc()) ) { DeallocateMesh(Mesh, MeshFreelist, Memory); }
-  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Debug, 0, __rdtsc()) ) { DeallocateMesh(Mesh, MeshFreelist, Memory); }
+  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Main,  0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist, Memory); }
+  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist, Memory); }
+  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Debug, 0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist, Memory); }
+  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Transparency, 0, __rdtsc()) ) { DeallocateMesh(Mesh, MeshFreelist, Memory); }
 
   Buf->MeshMask = 0;
 }

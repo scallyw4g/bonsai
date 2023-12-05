@@ -584,6 +584,8 @@ Noise_Flat( perlin_noise *Noise,
   return Result;;
 }
 
+global_variable random_series GenColorEntropy = {12653763234231};
+
 link_internal u32
 Noise_FBM2D( perlin_noise *Noise,
              world_chunk *Chunk,
@@ -666,7 +668,7 @@ Noise_FBM2D( perlin_noise *Noise,
 
         b32 NoiseChoice = r64(NoiseValue) > r64(WorldZBiased);
 
-        u16 ThisColor = ColorIndex;
+        u16 ThisColor = SafeTruncateToU16(RandomBetween(u32(ColorIndex), &GenColorEntropy, u32(ColorIndex)+2));;
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*NoiseChoice));
         Chunk->Voxels[VoxIndex].Color = ThisColor*u16(NoiseChoice);
@@ -3361,7 +3363,7 @@ InitializeChunkWithNoise(chunk_init_callback NoiseCallback, thread_local_state *
   if (TransparencyMesh)
   {
     if (TransparencyMesh->At)
-    { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Main, TransparencyMesh, TransparencyMesh->Timestamp) == 0); }
+    { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Transparency, TransparencyMesh, TransparencyMesh->Timestamp) == 0); }
     else
     { DeallocateMesh(TransparencyMesh, &EngineResources->MeshFreelist, Thread->PermMemory); }
   }
@@ -3595,7 +3597,7 @@ BufferWorld( platform                      *Plat,
               MeshBit = MeshBit_Main;
             }
 
-            if (HasMesh(&Chunk->Meshes, MeshBit_Lod) && DistanceSq(CameraP, ChunkP) > Square(25*32))
+            if (HasMesh(&Chunk->Meshes, MeshBit_Lod) && DistanceSq(CameraP, ChunkP) > Square(25*40))
             {
               MeshBit = MeshBit_Lod;
             }

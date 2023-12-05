@@ -287,6 +287,7 @@ struct octave
 {
   v3 Freq;
   r32 Amp;
+  r32 Strength;
   v3 WarpStrength;
 };
 

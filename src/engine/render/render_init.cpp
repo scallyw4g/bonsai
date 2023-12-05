@@ -653,8 +653,8 @@ GraphicsInit(memory_arena *GraphicsMemory)
   Result->Camera = Allocate(camera, GraphicsMemory, 1);
   StandardCamera(Result->Camera, 1000.f, 600.f, {});
 
-  AllocateGpuElementBuffer(Result->GpuBuffers + 0, (u32)Kilobytes(256));
-  AllocateGpuElementBuffer(Result->GpuBuffers + 1, (u32)Kilobytes(256));
+  AllocateGpuElementBuffer(Result->GpuBuffers + 0, (u32)Megabytes(8));
+  AllocateGpuElementBuffer(Result->GpuBuffers + 1, (u32)Megabytes(8));
 
 
   g_buffer_render_group *gBuffer = CreateGbuffer(GraphicsMemory);

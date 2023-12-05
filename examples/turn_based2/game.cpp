@@ -106,8 +106,8 @@ HoodooTerrain( perlin_noise *Noise,
 
         {
            octave HoodooOctaves[2] = {
-             {V3(15, 15, 300), 60, V3(1.f)},
-             {V3(50, 50, 3),   18, V3(1.f)},
+             {V3(15, 15, 300), 60, 0.5f, V3(1.f)},
+             {V3(50, 50, 3),   18, 0.5f, V3(1.f)},
            };
 
 
@@ -220,8 +220,8 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           octave_buffer OctaveBuf = { OctaveCount, {} };
           OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
 
-          OctaveBuf.Octaves[0] = {V3(350, 150, 50), 50, V3(1.f)};
-          OctaveBuf.Octaves[1] = {V3(120, 60, 35),  15, V3(1.f)};
+          OctaveBuf.Octaves[0] = {V3(350, 150, 50), 50, 0.5f, V3(1.f)};
+          OctaveBuf.Octaves[1] = {V3(120, 60, 35),  15, 0.5f, V3(1.f)};
           /* OctaveBuf.Octaves[1] = {V3(90,  60, 35),  25, V3(1.f)}; */
 
           /* chunk_init_flags InitFlags = ChunkInitFlag_Noop; */

@@ -639,8 +639,8 @@ SerializeChunk(world_chunk *Chunk, counted_string AssetPath)
 link_internal void
 FreeModelBuffer(heap_allocator *ModelMemory, model_buffer *Models)
 {
-  NotImplemented;
-  /* Leak("Implement model freeing!"); */
+  /* NotImplemented; */
+  Leak("Implement model freeing!");
 }
 
 link_internal void

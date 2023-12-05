@@ -266,6 +266,8 @@ DoLevelEditor(engine_resources *Engine)
       {
         f32 BorderDim = 1.f;
         PushRelativeBorder(Ui, V2(-1.f,1.f)*QuadDim, BorderColor, V4(BorderDim));
+
+        PushTooltip(Ui, CS(ColorIndex));
       }
 
       if (Clicked(Ui, &ColorPickerButton))
