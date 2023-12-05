@@ -139,7 +139,7 @@ Allocate_texture_ptr_block(memory_arena *Memory)
   return Result;
 }
 
-link_internal void
+link_internal texture_ptr *
 Push(texture_ptr_block_array *Array, texture_ptr *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
@@ -156,7 +156,11 @@ Push(texture_ptr_block_array *Array, texture_ptr *Element)
     /* Array->At = 0; */
   }
 
+  texture_ptr *Result = Array->Current->Elements + Array->Current->At;
+
   Array->Current->Elements[Array->Current->At++] = *Element;
+
+  return Result;
 }
 
 

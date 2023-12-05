@@ -139,7 +139,7 @@ Allocate_model_block(memory_arena *Memory)
   return Result;
 }
 
-link_internal void
+link_internal model *
 Push(model_block_array *Array, model *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
@@ -156,7 +156,11 @@ Push(model_block_array *Array, model *Element)
     /* Array->At = 0; */
   }
 
+  model *Result = Array->Current->Elements + Array->Current->At;
+
   Array->Current->Elements[Array->Current->At++] = *Element;
+
+  return Result;
 }
 
 

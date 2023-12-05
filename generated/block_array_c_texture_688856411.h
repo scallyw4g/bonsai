@@ -7,7 +7,7 @@ Allocate_texture_block(memory_arena *Memory)
   return Result;
 }
 
-link_internal void
+link_internal texture *
 Push(texture_block_array *Array, texture *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
@@ -24,6 +24,10 @@ Push(texture_block_array *Array, texture *Element)
     /* Array->At = 0; */
   }
 
+  texture *Result = Array->Current->Elements + Array->Current->At;
+
   Array->Current->Elements[Array->Current->At++] = *Element;
+
+  return Result;
 }
 

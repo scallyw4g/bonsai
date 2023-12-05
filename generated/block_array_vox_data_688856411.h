@@ -139,7 +139,7 @@ Allocate_vox_data_block(memory_arena *Memory)
   return Result;
 }
 
-link_internal void
+link_internal vox_data *
 Push(vox_data_block_array *Array, vox_data *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
@@ -156,7 +156,11 @@ Push(vox_data_block_array *Array, vox_data *Element)
     /* Array->At = 0; */
   }
 
+  vox_data *Result = Array->Current->Elements + Array->Current->At;
+
   Array->Current->Elements[Array->Current->At++] = *Element;
+
+  return Result;
 }
 
 

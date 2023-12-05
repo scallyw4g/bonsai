@@ -139,7 +139,7 @@ Allocate_entity_block(memory_arena *Memory)
   return Result;
 }
 
-link_internal void
+link_internal entity *
 Push(entity_block_array *Array, entity *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
@@ -156,7 +156,11 @@ Push(entity_block_array *Array, entity *Element)
     /* Array->At = 0; */
   }
 
+  entity *Result = Array->Current->Elements + Array->Current->At;
+
   Array->Current->Elements[Array->Current->At++] = *Element;
+
+  return Result;
 }
 
 

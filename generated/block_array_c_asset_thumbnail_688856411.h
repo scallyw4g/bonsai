@@ -7,7 +7,7 @@ Allocate_asset_thumbnail_block(memory_arena *Memory)
   return Result;
 }
 
-link_internal void
+link_internal asset_thumbnail *
 Push(asset_thumbnail_block_array *Array, asset_thumbnail *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
@@ -24,6 +24,10 @@ Push(asset_thumbnail_block_array *Array, asset_thumbnail *Element)
     /* Array->At = 0; */
   }
 
+  asset_thumbnail *Result = Array->Current->Elements + Array->Current->At;
+
   Array->Current->Elements[Array->Current->At++] = *Element;
+
+  return Result;
 }
 

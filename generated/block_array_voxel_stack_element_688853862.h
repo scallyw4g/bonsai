@@ -139,7 +139,7 @@ Allocate_voxel_stack_element_block(memory_arena *Memory)
   return Result;
 }
 
-link_internal void
+link_internal voxel_stack_element *
 Push(voxel_stack_element_block_array *Array, voxel_stack_element *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
@@ -156,7 +156,11 @@ Push(voxel_stack_element_block_array *Array, voxel_stack_element *Element)
     /* Array->At = 0; */
   }
 
+  voxel_stack_element *Result = Array->Current->Elements + Array->Current->At;
+
   Array->Current->Elements[Array->Current->At++] = *Element;
+
+  return Result;
 }
 
 
