@@ -9,8 +9,6 @@ ToString(world_chunk_mesh_index Type)
     case MeshIndex_Lod2: { Result = CSz("MeshIndex_Lod2"); } break;
     case MeshIndex_Lod3: { Result = CSz("MeshIndex_Lod3"); } break;
     case MeshIndex_Lod4: { Result = CSz("MeshIndex_Lod4"); } break;
-    case MeshIndex_Debug: { Result = CSz("MeshIndex_Debug"); } break;
-    case MeshIndex_Transparency: { Result = CSz("MeshIndex_Transparency"); } break;
     case MeshIndex_Count: { Result = CSz("MeshIndex_Count"); } break;
   }
   return Result;

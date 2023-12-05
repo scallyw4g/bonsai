@@ -41,11 +41,8 @@ PushCopyJob(work_queue *Queue, work_queue_entry_copy_buffer_set *Set, work_queue
 link_internal untextured_3d_geometry_buffer *
 TakeOwnershipSync(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
 {
-  TIMED_FUNCTION();
-
-  /* Assert(Buf->Futexes[ToIndex(MeshBit)]); */
+  /* TIMED_FUNCTION(); */
   AcquireFutex(&Buf->Futexes[ToIndex(MeshBit)]);
-
   untextured_3d_geometry_buffer *Result = (untextured_3d_geometry_buffer *)Buf->E[ToIndex(MeshBit)];
   return Result;
 }

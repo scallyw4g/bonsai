@@ -58,11 +58,13 @@ struct world_chunk;
 struct work_queue_entry_init_world_chunk
 {
   world_chunk *Chunk;
+  world_chunk_mesh_bitfield MeshBit;
 };
 
 struct work_queue_entry_rebuild_mesh
 {
   world_chunk *Chunk;
+  world_chunk_mesh_bitfield MeshBit;
 };
 
 

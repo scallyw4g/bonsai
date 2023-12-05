@@ -459,7 +459,7 @@ SpawnPlayerLikeEntity( platform *Plat,
           Chunk = AllocateAndInsertChunk(World->Memory, World, CP.WorldP);
           if (Chunk)
           {
-            QueueChunkForInit(&Plat->HighPriority, Chunk);
+            QueueChunkForInit(&Plat->HighPriority, Chunk, MeshBit_Lod0);
           }
         }
       }

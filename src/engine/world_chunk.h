@@ -129,6 +129,7 @@ struct chunk_data
   voxel_lighting *VoxelLighting;
 };
 
+// NOTE(Jesse): These are literal indices and as such must start at 0
 enum world_chunk_mesh_index
 {
   MeshIndex_Lod0,
@@ -137,8 +138,8 @@ enum world_chunk_mesh_index
   MeshIndex_Lod3,
   MeshIndex_Lod4,
 
-  MeshIndex_Debug,
-  MeshIndex_Transparency,
+  /* MeshIndex_Debug, */
+  /* MeshIndex_Transparency, */
 
   MeshIndex_Count,
 };

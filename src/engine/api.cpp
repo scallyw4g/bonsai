@@ -343,8 +343,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
     case type_work_queue_entry_rebuild_mesh:
     {
       work_queue_entry_rebuild_mesh *Job = SafeAccess(work_queue_entry_rebuild_mesh, Entry);
-      world_chunk *Chunk = Job->Chunk;
-      RebuildWorldChunkMesh(Thread, Chunk);
+      RebuildWorldChunkMesh(Thread, Job->Chunk, Job->MeshBit);
     } break;
 
     case type_work_queue_entry_init_world_chunk:
