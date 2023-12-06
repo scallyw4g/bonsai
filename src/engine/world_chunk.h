@@ -4,6 +4,7 @@ enum chunk_flag
 
   Chunk_Queued            = 1 << 1,
   Chunk_VoxelsInitialized = 1 << 2,
+  Chunk_MeshUploadedToGpu = 1 << 3,
 
   // This is an optimization to tell the thread queue to not initialize chunks
   // we've already moved away from.
@@ -232,11 +233,6 @@ poof(
 #pragma pack(push, 1)
 struct current_triangles;
 
-/* struct free_world_chunk */
-/* { */
-/*   free_world_chunk *Next; */
-/* }; */
-
 struct world_chunk
 {
   /* poof( use_struct(chunk_data) ) */
@@ -272,6 +268,8 @@ struct world_chunk
   u8 DimZ;
   u8 _Pad0;
 
+  gpu_mapped_element_buffer GpuBuffer;
+
   // NOTE(Jesse): Since we waste so much space with padding this thing out we
   // can afford to have a next pointer to keep the freelist
   world_chunk *Next;
@@ -287,8 +285,8 @@ struct world_chunk
 CAssert(sizeof(chunk_data) == 32);
 CAssert(sizeof(threadsafe_geometry_buffer) == 112);
 CAssert(sizeof(voxel_position_cursor) == 24);
-CAssert(sizeof(world_chunk) ==  32 + 112 + 24 + 48 + 40);
-CAssert(sizeof(world_chunk) % CACHE_LINE_SIZE == 0);
+/* CAssert(sizeof(world_chunk) ==  32 + 112 + 24 + 48 + 40); */
+/* CAssert(sizeof(world_chunk) % CACHE_LINE_SIZE == 0); */
 
 typedef world_chunk* world_chunk_ptr;
 
@@ -500,6 +498,9 @@ AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension
 
 link_internal void
 BufferWorld(platform* Plat, untextured_3d_geometry_buffer*, untextured_3d_geometry_buffer*, world* World, graphics *Graphics, heap_allocator *Heap);
+
+link_internal void
+DrawWorld(platform* Plat, untextured_3d_geometry_buffer*, untextured_3d_geometry_buffer*, world* World, graphics *Graphics, heap_allocator *Heap);
 
 link_internal untextured_3d_geometry_buffer*
 GetMeshForChunk(mesh_freelist* Freelist, u32 Mesh, memory_arena* PermMemory);

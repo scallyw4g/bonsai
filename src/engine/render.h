@@ -143,3 +143,8 @@ ReserveBufferSpace(untextured_3d_geometry_buffer* Reservation, u32 ElementsToRes
 link_internal gpu_mapped_element_buffer *
 GetCurrentGpuMap(graphics *Graphics);
 
+link_internal void
+DrawTerrainImmediate(graphics *Graphics, gpu_mapped_element_buffer *GpuBuffer, world_chunk *Chunk);
+
+link_internal void
+CopyToGpuBuffer(untextured_3d_geometry_buffer *Mesh, gpu_mapped_element_buffer *GpuBuffer);

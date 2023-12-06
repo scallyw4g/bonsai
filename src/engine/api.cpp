@@ -170,9 +170,7 @@ Bonsai_SimulateAndBufferGeometry(engine_resources *Resources)
   SimulateEntities(Resources, Plat->dt, World->VisibleRegion, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, &Plat->HighPriority);
   /* DispatchSimulateParticleSystemJobs(&Plat->HighPriority, EntityTable, World->ChunkDim, &GpuMap->Buffer, Graphics, Plat->dt); */
 
-
-
-  BufferWorld(Plat, &GpuMap->Buffer, World, Graphics, Heap);
+  DrawWorld(Plat, &GpuMap->Buffer, World, Graphics, Heap);
 
   BufferEntities( EntityTable, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, Graphics, World, Plat->dt);
   /* BufferEntities( EntityTable, &Graphics->Transparency.GpuBuffer.Buffer, Graphics, World, Plat->dt); */
