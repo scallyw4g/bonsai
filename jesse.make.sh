@@ -34,9 +34,9 @@ OPT="-O2"
   BuildExecutables \
   BuildSingleExample examples/turn_based2 \
   BuildSingleExample examples/terrain_gen \
-  # BuildSingleExample examples/blank_project \
-  # BuildDebugSystem \
-  # BuildSingleExample examples/turn_based \
+  BuildSingleExample examples/blank_project \
+  BuildSingleExample examples/turn_based \
+  BuildDebugSystem \
   # BuildSingleExample examples/transparency \
   # BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
   # BuildSingleExample examples/the_wanderer \

@@ -205,8 +205,8 @@ enum chunk_init_flags
   ChunkInitFlag_Noop = 0,
 
   ChunkInitFlag_ComputeStandingSpots = (1 << 0),
-  /* ChunkInitFlag_GenSmoothLODs        = (1 << 1), */
-  /* ChunkInitFlag_GenMipMapLODs        = (1 << 2), */
+  ChunkInitFlag_GenSmoothLODs        = (1 << 1),
+  ChunkInitFlag_GenMipMapLODs        = (1 << 2),
 };
 
 #define WORLD_CHUNK_STANDING_SPOT_COUNT (32)
@@ -231,6 +231,12 @@ poof(
 
 #pragma pack(push, 1)
 struct current_triangles;
+
+/* struct free_world_chunk */
+/* { */
+/*   free_world_chunk *Next; */
+/* }; */
+
 struct world_chunk
 {
   /* poof( use_struct(chunk_data) ) */
@@ -252,6 +258,7 @@ struct world_chunk
   voxel_position_cursor StandingSpots;
 
   v3i WorldP;
+
   u32 FilledCount;
   b32 Picked;
   b32 DrawBoundingVoxels;
@@ -263,12 +270,25 @@ struct world_chunk
   u8 DimX;
   u8 DimY;
   u8 DimZ;
-  u8 Pad;
+  u8 _Pad0;
+
+  // NOTE(Jesse): Since we waste so much space with padding this thing out we
+  // can afford to have a next pointer to keep the freelist
+  world_chunk *Next;
+  u8 _Pad1[40];
 };
 // TODO(Jesse, id: 87, tags: speed, cache_friendly): Re-enable this
 // @world-chunk-cache-line-size
 /* CAssert(sizeof(world_chunk) == CACHE_LINE_SIZE); */
 #pragma pack(pop)
+
+// TODO(Jesse, id: 87, tags: speed, cache_friendly): Re-enable this
+// @world-chunk-cache-line-size
+CAssert(sizeof(chunk_data) == 32);
+CAssert(sizeof(threadsafe_geometry_buffer) == 112);
+CAssert(sizeof(voxel_position_cursor) == 24);
+CAssert(sizeof(world_chunk) ==  32 + 112 + 24 + 48 + 40);
+CAssert(sizeof(world_chunk) % CACHE_LINE_SIZE == 0);
 
 typedef world_chunk* world_chunk_ptr;
 
@@ -308,8 +328,7 @@ struct world
   world_chunk **ChunkHashMemory[2];
   world_chunk **ChunkHash;
 
-  world_chunk **FreeChunks;
-  umm FreeChunkCount;
+  world_chunk ChunkFreelistSentinal;
 
   v3i Center;
   v3i VisibleRegion; // The number of chunks in xyz we're going to update and render

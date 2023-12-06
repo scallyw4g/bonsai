@@ -249,7 +249,7 @@ void main()
     /* out_LightColor = vec4(ShadowVisibility, 1.f); */
     /* return; */
 
-#if 0
+#if 1
     /*
      *  Fog
      */

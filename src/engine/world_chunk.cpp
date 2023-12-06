@@ -164,7 +164,7 @@ GetWorldChunkHash(world_position P, chunk_dimension VisibleRegion, u32 WorldHash
 link_internal b32
 InsertChunkIntoWorld(world_chunk **WorldChunkHash, world_chunk *Chunk, chunk_dimension VisibleRegion, u32 WorldHashSize)
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
 
   b32 Result = True;
   u32 HashIndex = GetWorldChunkHash(Chunk->WorldP, VisibleRegion, WorldHashSize);
@@ -251,14 +251,18 @@ link_internal world_chunk *
 GetFreeWorldChunk(world *World, memory_arena *Storage)
 {
   world_chunk *Result = {};
-  if (World->FreeChunkCount == 0)
+  if (World->ChunkFreelistSentinal.Next)
   {
-    Result = AllocateWorldChunk(Storage, {}, World->ChunkDim);
-    Assert(Result->Flags == Chunk_Uninitialized);
+    world_chunk *Next = World->ChunkFreelistSentinal.Next;
+    World->ChunkFreelistSentinal.Next = Next->Next;
+    Next->Next = 0;
+
+    Result = (world_chunk*)Next;
   }
   else
   {
-    Result = World->FreeChunks[--World->FreeChunkCount];
+    Result = AllocateWorldChunk(Storage, {}, World->ChunkDim);
+    Assert(Result->Flags == Chunk_Uninitialized);
   }
 
   Assert(Result->Meshes.MeshMask == 0);
@@ -319,9 +323,12 @@ FreeWorldChunk(world *World, world_chunk *Chunk, tiered_mesh_freelist* MeshFreel
   DeallocateMeshes(&Chunk->Meshes, MeshFreelist, Memory);
   ClearWorldChunk(Chunk);
 
-  Assert(World->FreeChunkCount < FREELIST_SIZE);
   Assert(Chunk->Flags == Chunk_Uninitialized);
-  World->FreeChunks[World->FreeChunkCount++] = Chunk;
+  /* World->FreeChunks[World->FreeChunkCount++] = Chunk; */
+
+  world_chunk *Next = World->ChunkFreelistSentinal.Next;
+  World->ChunkFreelistSentinal.Next = Chunk;
+  World->ChunkFreelistSentinal.Next->Next = Next;
 
   ZeroMemory( Chunk->Voxels, sizeof(voxel)*umm(Volume(Chunk->Dim)) );
 }
@@ -3235,6 +3242,10 @@ QueueChunkForMeshRebuild(work_queue *Queue, world_chunk *Chunk, world_chunk_mesh
   return;
 }
 
+/* CopyAndSwapMeshFor() */
+/* { */
+/* } */
+
 link_internal void
 InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
                           thread_local_state *Thread,
@@ -3265,7 +3276,6 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
   ClearChunkVoxels(DestChunk->Voxels, DestChunk->Dim);
 
   untextured_3d_geometry_buffer* Mesh = 0;
-  /* untextured_3d_geometry_buffer* LodMesh = 0; */
   /* untextured_3d_geometry_buffer* DebugMesh = 0; */
   /* untextured_3d_geometry_buffer* TransparencyMesh = 0; */
 
@@ -3317,11 +3327,7 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
     BuildWorldChunkMeshFromMarkedVoxels_Greedy(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim, TempMesh, TempTransparentMesh, Thread->TempMemory);
     /* BuildWorldChunkMeshFromMarkedVoxels_Naieve(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim, TempMesh); */
 
-    if (TempMesh->At)
-    {
-      Mesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
-      DeepCopy(TempMesh, Mesh);
-    }
+    if (TempMesh->At) { Mesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory); DeepCopy(TempMesh, Mesh); }
 
 #if 0
     if (TempTransparentMesh->At)
@@ -3355,15 +3361,49 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
   }
 #endif
 
-#if 0
-  if (SyntheticChunkSum && (Flags & ChunkInitFlag_GenMipMapLODs) )
+#if 1
+  /* if (SyntheticChunkSum && (Flags & ChunkInitFlag_GenMipMapLODs) ) */
   {
     untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
-    BuildMipMesh(SyntheticChunk->Voxels, SynChunkDim, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, TempMesh, Thread->TempMemory);
-    if (TempMesh->At)
-    {
-      LodMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
+
+
+    BuildMipMesh(SyntheticChunk->Voxels, SynChunkDim, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod1, TempMesh, Thread->TempMemory);
+    if (TempMesh->At) 
+    { 
+      untextured_3d_geometry_buffer* LodMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
       DeepCopy(TempMesh, LodMesh);
+      Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Lod1, LodMesh, LodMesh->Timestamp) == 0);
+      TempMesh->At = 0;
+    }
+
+    Assert(TempMesh->At == 0);
+    BuildMipMesh(SyntheticChunk->Voxels, SynChunkDim, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod2, TempMesh, Thread->TempMemory);
+    if (TempMesh->At) 
+    { 
+      untextured_3d_geometry_buffer* LodMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
+      DeepCopy(TempMesh, LodMesh);
+      Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Lod2, LodMesh, LodMesh->Timestamp) == 0);
+      TempMesh->At = 0;
+    }
+
+    Assert(TempMesh->At == 0);
+    BuildMipMesh(SyntheticChunk->Voxels, SynChunkDim, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod3, TempMesh, Thread->TempMemory);
+    if (TempMesh->At) 
+    { 
+      untextured_3d_geometry_buffer* LodMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
+      DeepCopy(TempMesh, LodMesh);
+      Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Lod3, LodMesh, LodMesh->Timestamp) == 0);
+      TempMesh->At = 0;
+    }
+
+    Assert(TempMesh->At == 0);
+    BuildMipMesh(SyntheticChunk->Voxels, SynChunkDim, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod4, TempMesh, Thread->TempMemory);
+    if (TempMesh->At) 
+    { 
+      untextured_3d_geometry_buffer* LodMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
+      DeepCopy(TempMesh, LodMesh);
+      Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Lod4, LodMesh, LodMesh->Timestamp) == 0);
+      TempMesh->At = 0;
     }
   }
 #endif
@@ -3603,158 +3643,138 @@ BufferWorld( platform                      *Plat,
   /* Assert(Min == V3i(0)); */
   /* Assert(Max == V3i(4)); */
 
+  for (s32 x = Min.x; x < Max.x; ++ x)
+  for (s32 y = Min.y; y < Max.y; ++ y)
   for (s32 z = Min.z; z < Max.z; ++ z)
   {
-    for (s32 y = Min.y; y < Max.y; ++ y)
+    world_position P = World_Position(x,y,z);
+    world_chunk *Chunk = 0;
     {
-      for (s32 x = Min.x; x < Max.x; ++ x)
+      /* TIMED_NAMED_BLOCK("GetWorldChunkFromHashtable"); */
+      Chunk = GetWorldChunkFromHashtable( World, P );
+    }
+
+    if (Chunk)
+    {
+      // TODO(Jesse): Move into engine debug
+      DebugHighlightWorldChunkBasedOnState(Graphics, Chunk, Dest);
+
+      camera *Camera = Graphics->Camera;
+      if (IsInFrustum(World, Camera, Chunk))
       {
-        world_position P = World_Position(x,y,z);
-        world_chunk *Chunk = 0;
+        v3 CameraP = GetSimSpaceP(World, Camera->CurrentP);
+        v3 ChunkP = GetSimSpaceP(World, Chunk->WorldP);
+
+        auto MeshBit = MeshBit_None;
+
+        /* if (HasMesh(&Chunk->Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; } */
+        /* if (HasMesh(&Chunk->Meshes, MeshBit_Lod1) && DistanceSq(CameraP, ChunkP) > Square(25*32)) { MeshBit = MeshBit_Lod1; } */
+        /* if (HasMesh(&Chunk->Meshes, MeshBit_Lod2) && DistanceSq(CameraP, ChunkP) > Square(50*32)) { MeshBit = MeshBit_Lod2; } */
+        /* if (HasMesh(&Chunk->Meshes, MeshBit_Lod3) && DistanceSq(CameraP, ChunkP) > Square(75*32)) { MeshBit = MeshBit_Lod3; } */
+        /* if (HasMesh(&Chunk->Meshes, MeshBit_Lod4) && ) { MeshBit = MeshBit_Lod4; } */
+
+        r32 CameraToChunkSquared = DistanceSq(CameraP, ChunkP);
+
+        if (CameraToChunkSquared > Square(100*32))
         {
-          TIMED_NAMED_BLOCK("GetWorldChunkFromHashtable");
-          Chunk = GetWorldChunkFromHashtable( World, P );
+          if (HasMesh(&Chunk->Meshes, MeshBit_Lod4)) { MeshBit = MeshBit_Lod4; }
+          /* else { if (NotSet(Chunk->Flags, Chunk_Queued)) { Info("hi4"); QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk, MeshBit_Lod4); } } */
         }
-
-        if (Chunk)
+        else if (CameraToChunkSquared > Square(75*32))
         {
-          // TODO(Jesse): Move into engine debug
-          DebugHighlightWorldChunkBasedOnState(Graphics, Chunk, Dest);
-
-          camera *Camera = Graphics->Camera;
-          if (IsInFrustum(World, Camera, Chunk))
-          {
-            v3 CameraP = GetSimSpaceP(World, Camera->CurrentP);
-            v3 ChunkP = GetSimSpaceP(World, Chunk->WorldP);
-
-            auto MeshBit = MeshBit_None;
-
-            /* if (HasMesh(&Chunk->Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; } */
-            /* if (HasMesh(&Chunk->Meshes, MeshBit_Lod1) && DistanceSq(CameraP, ChunkP) > Square(25*32)) { MeshBit = MeshBit_Lod1; } */
-            /* if (HasMesh(&Chunk->Meshes, MeshBit_Lod2) && DistanceSq(CameraP, ChunkP) > Square(50*32)) { MeshBit = MeshBit_Lod2; } */
-            /* if (HasMesh(&Chunk->Meshes, MeshBit_Lod3) && DistanceSq(CameraP, ChunkP) > Square(75*32)) { MeshBit = MeshBit_Lod3; } */
-            /* if (HasMesh(&Chunk->Meshes, MeshBit_Lod4) && ) { MeshBit = MeshBit_Lod4; } */
-
-            r32 CameraToChunkSquared = DistanceSq(CameraP, ChunkP);
-
-#if 1
-            if (HasMesh(&Chunk->Meshes, MeshBit_Lod0))
-            {
-              MeshBit = MeshBit_Lod0;
-            }
-            else
-            {
-              if (NotSet(Chunk->Flags, Chunk_Queued)) { Info("hi0"); QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk, MeshBit_Lod0); }
-            }
-
-            if (CameraToChunkSquared > Square(100*32))
-            {
-              if (HasMesh(&Chunk->Meshes, MeshBit_Lod4)) { MeshBit = MeshBit_Lod4; } else {
-                if (NotSet(Chunk->Flags, Chunk_Queued)) { Info("hi4"); QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk, MeshBit_Lod4); }
-              }
-            }
-            else if (CameraToChunkSquared > Square(75*32))
-            {
-              if (HasMesh(&Chunk->Meshes, MeshBit_Lod3)) { MeshBit = MeshBit_Lod3; } else {
-                if (NotSet(Chunk->Flags, Chunk_Queued)) { Info("hi3"); QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk, MeshBit_Lod3); }
-              }
-            }
-            else if (CameraToChunkSquared > Square(50*32))
-            {
-              if (HasMesh(&Chunk->Meshes, MeshBit_Lod2)) { MeshBit = MeshBit_Lod2; } else {
-                if (NotSet(Chunk->Flags, Chunk_Queued)) { Info("hi2"); QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk, MeshBit_Lod2); }
-              }
-            }
-            else if (CameraToChunkSquared > Square(25*32))
-            {
-              if (HasMesh(&Chunk->Meshes, MeshBit_Lod1)) { MeshBit = MeshBit_Lod1; } else {
-                if (NotSet(Chunk->Flags, Chunk_Queued)) { Info("hi1"); QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk, MeshBit_Lod1); }
-              }
-            }
-#else
-            else if (CameraToChunkSquared > Square(75*32))  { if (HasMesh(&Chunk->Meshes, MeshBit_Lod3)) { MeshBit = MeshBit_Lod3; } else { WorkQueueEntryRebuildMesh(Chunk, MeshBit_Lod3); } }
-            else if (CameraToChunkSquared > Square(60*32))  { if (HasMesh(&Chunk->Meshes, MeshBit_Lod2)) { MeshBit = MeshBit_Lod2; } else { WorkQueueEntryRebuildMesh(Chunk, MeshBit_Lod2); } }
-            else if (CameraToChunkSquared > Square(25*32))  { if (HasMesh(&Chunk->Meshes, MeshBit_Lod1)) { MeshBit = MeshBit_Lod1; } else { WorkQueueEntryRebuildMesh(Chunk, MeshBit_Lod1); } }
-            else                                            { if (HasMesh(&Chunk->Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; } else { WorkQueueEntryRebuildMesh(Chunk, MeshBit_Lod0); } }
-#endif
-
-
-
-            if (MeshBit != MeshBit_None)
-            {
-              auto CopyJob = WorkQueueEntryCopyBufferRef(&Chunk->Meshes, MeshBit, Dest, Chunk->WorldP, Graphics->Camera, World->ChunkDim);
-              auto Entry = WorkQueueEntry(&CopyJob);
-              PushWorkQueueEntry(&Plat->HighPriority, &Entry);
-            }
-
-#if 0
-            if (HasMesh(&Chunk->Meshes, MeshBit_Transparency))
-            {
-              auto CopyJob = WorkQueueEntryCopyBufferRef(&Chunk->Meshes, MeshBit_Transparency, &Graphics->Transparency.GpuBuffer.Buffer, Chunk->WorldP, Graphics->Camera, World->ChunkDim);
-              auto Entry = WorkQueueEntry(&CopyJob);
-              PushWorkQueueEntry(&Plat->HighPriority, &Entry);
-            }
-#endif
-
-            /* if (Chunk->SelectedMeshes & MeshIndex_Main) */
-            {
-              Assert(Dest->End);
-              /* untextured_3d_geometry_buffer *Mesh = (untextured_3d_geometry_buffer *)TakeOwnershipSync((volatile void**)&Chunk->Mesh); */
-              /* untextured_3d_geometry_buffer *Mesh = GetMeshFor(&Chunk->Meshes, MeshBit_Main); */
-              /* u32 Count = Mesh->At; */
-              /* ReplaceMesh(Chunk, MeshBit_Main, Mesh); */
-              /* Replace((volatile void**)&Chunk->Mesh, (void*)Mesh); */
-
-              /* if (Chunk->Meshes.MeshMask & MeshBit_Main) */
-#if 0
-              if (Count < Kilobytes(16))
-              {
-                PushCopyJob(&Plat->HighPriority, &CopySet, &CopyJob);
-              }
-              else
-              {
-                auto Entry = WorkQueueEntry(&CopyJob);
-                PushWorkQueueEntry(&Plat->HighPriority, &Entry);
-              }
-#endif
-            }
-
-#if 0
-            if (Chunk->SelectedMeshes & MeshIndex_Lod)
-            {
-              work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer(&Chunk->LodMesh, Dest, Chunk->WorldP, Graphics->Camera, World->ChunkDim);
-              PushCopyJob(&Plat->HighPriority, &CopySet, &CopyJob);
-            }
-
-            if (Chunk->SelectedMeshes & MeshIndex_Debug)
-            {
-              work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer(&Chunk->DebugMesh, Dest, Chunk->WorldP, Graphics->Camera, World->ChunkDim);
-              PushCopyJob(&Plat->HighPriority, &CopySet, &CopyJob);
-            }
-#endif
-
-#if 0
-            umm StandingSpotCount = AtElements(&Chunk->StandingSpots);
-            /* DebugLine("drawing (%u) standing spots", StandingSpotCount); */
-            for (u32 SpotIndex = 0; SpotIndex < StandingSpotCount; ++SpotIndex)
-            {
-              v3i *Spot = Chunk->StandingSpots.Start + SpotIndex;
-              v3 RenderSpot = GetRenderP(World->ChunkDim, Canonical_Position(*Spot, Chunk->WorldP), Graphics->Camera);
-              DrawStandingSpot(&Graphics->Transparency.GeoBuffer.Buffer, RenderSpot, V3(Global_StandingSpotDim));
-            }
-#endif
-
-          }
+          if (HasMesh(&Chunk->Meshes, MeshBit_Lod3)) { MeshBit = MeshBit_Lod3; }
+          /* else { if (NotSet(Chunk->Flags, Chunk_Queued)) { Info("hi3"); QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk, MeshBit_Lod3); } } */
+        }
+        else if (CameraToChunkSquared > Square(50*32))
+        {
+          if (HasMesh(&Chunk->Meshes, MeshBit_Lod2)) { MeshBit = MeshBit_Lod2; }
+          /* else { if (NotSet(Chunk->Flags, Chunk_Queued)) { Info("hi2"); QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk, MeshBit_Lod2); } } */
+        }
+        else if (CameraToChunkSquared > Square(25*32))
+        {
+          if (HasMesh(&Chunk->Meshes, MeshBit_Lod1)) { MeshBit = MeshBit_Lod1; }
+          /* else { if (NotSet(Chunk->Flags, Chunk_Queued)) { Info("hi2"); QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk, MeshBit_Lod2); } } */
         }
         else
         {
-          Chunk = GetAndInsertFreeWorldChunk(World->Memory, World, P);
-          if (Chunk)
-          { QueueChunkForInit(&Plat->LowPriority, Chunk, MeshBit_Lod0);  }
-          else
-          { InvalidCodePath(); }
+         if (HasMesh(&Chunk->Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; }
+         /* else { if (NotSet(Chunk->Flags, Chunk_Queued)) { Info("hi0"); QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk, MeshBit_Lod0); } } */
         }
+
+
+        if (MeshBit != MeshBit_None)
+        {
+          auto CopyJob = WorkQueueEntryCopyBufferRef(&Chunk->Meshes, MeshBit, Dest, Chunk->WorldP, Graphics->Camera, World->ChunkDim);
+          auto Entry = WorkQueueEntry(&CopyJob);
+          PushWorkQueueEntry(&Plat->HighPriority, &Entry);
+        }
+
+#if 0
+        if (HasMesh(&Chunk->Meshes, MeshBit_Transparency))
+        {
+          auto CopyJob = WorkQueueEntryCopyBufferRef(&Chunk->Meshes, MeshBit_Transparency, &Graphics->Transparency.GpuBuffer.Buffer, Chunk->WorldP, Graphics->Camera, World->ChunkDim);
+          auto Entry = WorkQueueEntry(&CopyJob);
+          PushWorkQueueEntry(&Plat->HighPriority, &Entry);
+        }
+#endif
+
+        /* if (Chunk->SelectedMeshes & MeshIndex_Main) */
+        {
+          Assert(Dest->End);
+          /* untextured_3d_geometry_buffer *Mesh = (untextured_3d_geometry_buffer *)TakeOwnershipSync((volatile void**)&Chunk->Mesh); */
+          /* untextured_3d_geometry_buffer *Mesh = GetMeshFor(&Chunk->Meshes, MeshBit_Main); */
+          /* u32 Count = Mesh->At; */
+          /* ReplaceMesh(Chunk, MeshBit_Main, Mesh); */
+          /* Replace((volatile void**)&Chunk->Mesh, (void*)Mesh); */
+
+          /* if (Chunk->Meshes.MeshMask & MeshBit_Main) */
+#if 0
+          if (Count < Kilobytes(16))
+          {
+            PushCopyJob(&Plat->HighPriority, &CopySet, &CopyJob);
+          }
+          else
+          {
+            auto Entry = WorkQueueEntry(&CopyJob);
+            PushWorkQueueEntry(&Plat->HighPriority, &Entry);
+          }
+#endif
+        }
+
+#if 0
+        if (Chunk->SelectedMeshes & MeshIndex_Lod)
+        {
+          work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer(&Chunk->LodMesh, Dest, Chunk->WorldP, Graphics->Camera, World->ChunkDim);
+          PushCopyJob(&Plat->HighPriority, &CopySet, &CopyJob);
+        }
+
+        if (Chunk->SelectedMeshes & MeshIndex_Debug)
+        {
+          work_queue_entry_copy_buffer CopyJob = WorkQueueEntryCopyBuffer(&Chunk->DebugMesh, Dest, Chunk->WorldP, Graphics->Camera, World->ChunkDim);
+          PushCopyJob(&Plat->HighPriority, &CopySet, &CopyJob);
+        }
+#endif
+
+#if 0
+        umm StandingSpotCount = AtElements(&Chunk->StandingSpots);
+        /* DebugLine("drawing (%u) standing spots", StandingSpotCount); */
+        for (u32 SpotIndex = 0; SpotIndex < StandingSpotCount; ++SpotIndex)
+        {
+          v3i *Spot = Chunk->StandingSpots.Start + SpotIndex;
+          v3 RenderSpot = GetRenderP(World->ChunkDim, Canonical_Position(*Spot, Chunk->WorldP), Graphics->Camera);
+          DrawStandingSpot(&Graphics->Transparency.GeoBuffer.Buffer, RenderSpot, V3(Global_StandingSpotDim));
+        }
+#endif
+
       }
+    }
+    else
+    {
+      Chunk = GetAndInsertFreeWorldChunk(World->Memory, World, P);
+      if (Chunk)
+      { QueueChunkForInit(&Plat->LowPriority, Chunk, MeshBit_Lod0);  }
+      else
+      { InvalidCodePath(); }
     }
   }
 

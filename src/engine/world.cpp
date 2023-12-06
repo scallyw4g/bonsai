@@ -12,7 +12,7 @@ AllocateWorld(world* World, world_position Center, voxel_position WorldChunkDim,
   World->ChunkHashMemory[1] = Allocate(world_chunk*, WorldMemory, World->HashSize );
 
   World->ChunkHash = World->ChunkHashMemory[0];
-  World->FreeChunks = Allocate(world_chunk*, WorldMemory, FREELIST_SIZE );
+  /* World->FreeChunks = Allocate(world_chunk*, WorldMemory, FREELIST_SIZE ); */
 
   World->ChunkDim = WorldChunkDim;
   World->VisibleRegion = VisibleRegion;
