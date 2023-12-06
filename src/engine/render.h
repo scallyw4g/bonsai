@@ -148,3 +148,6 @@ DrawTerrainImmediate(graphics *Graphics, gpu_mapped_element_buffer *GpuBuffer, w
 
 link_internal void
 CopyToGpuBuffer(untextured_3d_geometry_buffer *Mesh, gpu_mapped_element_buffer *GpuBuffer);
+
+link_internal void 
+DeallocateGpuElementBuffer(gpu_mapped_element_buffer *Buf);

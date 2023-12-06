@@ -267,6 +267,11 @@ GetFreeWorldChunk(world *World, memory_arena *Storage)
 
   Assert(Result->Meshes.MeshMask == 0);
 
+  RangeIterator(MeshIndex, MeshIndex_Count)
+  {
+    Assert(Result->GpuBuffers[MeshIndex].Buffer.At == 0);
+  }
+
   return Result;
 }
 
@@ -320,15 +325,34 @@ FreeWorldChunk(world *World, world_chunk *Chunk, tiered_mesh_freelist* MeshFreel
   Assert ( ThreadLocal_ThreadIndex == 0 );
   Assert ( NotSet(Chunk, Chunk_Queued) );
 
-  DeallocateMeshes(&Chunk->Meshes, MeshFreelist, Memory);
-  ClearWorldChunk(Chunk);
+  if (Chunk->Flags & Chunk_MeshUploadedToGpu)
+  {
+    RangeIterator(MeshIndex, MeshIndex_Count)
+    {
+      world_chunk_mesh_bitfield MeshBit = world_chunk_mesh_bitfield(1 << MeshIndex);
+      if (HasMesh(&Chunk->Meshes, MeshBit))
+      {
+        DeallocateGpuElementBuffer(&Chunk->GpuBuffers[MeshIndex]);
+      }
+    }
+  }
 
+  DeallocateMeshes(&Chunk->Meshes, MeshFreelist, Memory);
+
+  RangeIterator(MeshIndex, MeshIndex_Count)
+  {
+    Assert(Chunk->GpuBuffers[MeshIndex].Buffer.At == 0);
+  }
+
+
+  ClearWorldChunk(Chunk);
   Assert(Chunk->Flags == Chunk_Uninitialized);
   /* World->FreeChunks[World->FreeChunkCount++] = Chunk; */
 
   world_chunk *Next = World->ChunkFreelistSentinal.Next;
   World->ChunkFreelistSentinal.Next = Chunk;
   World->ChunkFreelistSentinal.Next->Next = Next;
+
 
   ZeroMemory( Chunk->Voxels, sizeof(voxel)*umm(Volume(Chunk->Dim)) );
 }
@@ -3670,6 +3694,8 @@ BufferWorld( platform                      *Plat,
              heap_allocator                *Heap )
 {
   TIMED_FUNCTION();
+  NotImplemented;
+#if 0
 
   work_queue_entry_copy_buffer_set CopySet = {};
 
@@ -3710,7 +3736,7 @@ BufferWorld( platform                      *Plat,
         {
           if (HasMesh(&Chunk->Meshes, MeshBit_Lod0))
           {
-            DrawTerrainImmediate(Graphics, &Chunk->GpuBuffer, Chunk);
+            DrawTerrainImmediate(Graphics, &Chunk->GpuBuffers[], Chunk);
           }
         }
         else
@@ -3754,7 +3780,9 @@ BufferWorld( platform                      *Plat,
   }
 
   return;
+#endif
 }
+
 
 link_internal v3i
 ChunkCountForDim(v3i Dim, v3i ChunkDim)

@@ -977,16 +977,14 @@ CopyBufferIntoBuffer(untextured_3d_geometry_buffer *Src, untextured_3d_geometry_
 link_internal void
 CopyToGpuBuffer(untextured_3d_geometry_buffer *Mesh, gpu_mapped_element_buffer *GpuBuffer)
 {
-  if (GpuBuffer->Buffer.At == 0)
-  {
-    AllocateGpuElementBuffer(GpuBuffer, Mesh->At);
-  }
+  Assert(GpuBuffer->Buffer.At == 0);
+  AllocateGpuElementBuffer(GpuBuffer, Mesh->At);
 
-  if (GpuBuffer->Buffer.At < Mesh->At)
-  {
-    DeallocateGpuElementBuffer(GpuBuffer);
-    AllocateGpuElementBuffer(GpuBuffer, Mesh->At);
-  }
+  /* if (GpuBuffer->Buffer.At < Mesh->At) */
+  /* { */
+  /*   DeallocateGpuElementBuffer(GpuBuffer); */
+  /*   AllocateGpuElementBuffer(GpuBuffer, Mesh->At); */
+  /* } */
 
   untextured_3d_geometry_buffer *Dest = MapGpuElementBuffer(GpuBuffer);
   CopyBufferIntoBuffer(Mesh, Dest);
@@ -1054,19 +1052,48 @@ DrawWorld( platform                      *Plat,
 
         if (Chunk->Flags & Chunk_MeshUploadedToGpu)
         {
-          if (HasMesh(&Chunk->Meshes, MeshBit_Lod0))
+          auto MeshBit = MeshBit_None;
+
+          r32 CameraToChunkSquared = DistanceSq(CameraP, ChunkP);
+          if (CameraToChunkSquared > Square(400*32))
           {
-            DrawTerrainImmediate(Graphics, &Chunk->GpuBuffer, Chunk);
+            if (HasMesh(&Chunk->Meshes, MeshBit_Lod4)) { MeshBit = MeshBit_Lod4; }
+          }
+          else if (CameraToChunkSquared > Square(250*32))
+          {
+            if (HasMesh(&Chunk->Meshes, MeshBit_Lod3)) { MeshBit = MeshBit_Lod3; }
+          }
+          else if (CameraToChunkSquared > Square(150*32))
+          {
+            if (HasMesh(&Chunk->Meshes, MeshBit_Lod2)) { MeshBit = MeshBit_Lod2; }
+          }
+          else if (CameraToChunkSquared > Square(70*32))
+          {
+            if (HasMesh(&Chunk->Meshes, MeshBit_Lod1)) { MeshBit = MeshBit_Lod1; }
+          }
+          else
+          {
+           if (HasMesh(&Chunk->Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; }
+          }
+
+
+          if (MeshBit != MeshBit_None)
+          {
+            DrawTerrainImmediate(Graphics, &Chunk->GpuBuffers[ToIndex(MeshBit)], Chunk);
           }
         }
         else
         {
-          if (HasMesh(&Chunk->Meshes, MeshBit_Lod0))
+          RangeIterator(MeshIndex, MeshIndex_Count)
           {
-            untextured_3d_geometry_buffer *Mesh = TakeOwnershipSync(&Chunk->Meshes, MeshBit_Lod0);
-            CopyToGpuBuffer(Mesh, &Chunk->GpuBuffer);
+            world_chunk_mesh_bitfield MeshBit = world_chunk_mesh_bitfield(1 << MeshIndex);
+            if (HasMesh(&Chunk->Meshes, MeshBit))
+            {
+              untextured_3d_geometry_buffer *Mesh = TakeOwnershipSync(&Chunk->Meshes, MeshBit);
+              CopyToGpuBuffer(Mesh, &Chunk->GpuBuffers[MeshIndex]);
+              ReleaseOwnership(&Chunk->Meshes, MeshBit, Mesh);
+            }
           }
-
           SetBitfield(chunk_flag, Chunk->Flags, Chunk_MeshUploadedToGpu);
         }
 

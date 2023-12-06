@@ -75,7 +75,9 @@ AllocateGpuElementBuffer(gpu_mapped_element_buffer *GpuMap, u32 ElementCount)
 link_internal void 
 DeallocateGpuElementBuffer(gpu_mapped_element_buffer *Buf)
 {
-  GL.DeleteBuffers(4, &Buf->VertexHandle);
+  GL.DeleteBuffers(3, &Buf->VertexHandle);
+
+  Clear(Buf);
 }
 
 link_internal untextured_3d_geometry_buffer *

@@ -251,6 +251,8 @@ struct world_chunk
   };
 
   threadsafe_geometry_buffer Meshes;
+  gpu_mapped_element_buffer  GpuBuffers[MeshIndex_Count];
+
   voxel_position_cursor StandingSpots;
 
   v3i WorldP;
@@ -268,7 +270,6 @@ struct world_chunk
   u8 DimZ;
   u8 _Pad0;
 
-  gpu_mapped_element_buffer GpuBuffer;
 
   // NOTE(Jesse): Since we waste so much space with padding this thing out we
   // can afford to have a next pointer to keep the freelist
