@@ -32,13 +32,6 @@ FlushBuffersToCard(gpu_mapped_element_buffer* GpuMap)
   GL.VertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)12);
   AssertNoGlErrors;
 
-  /* GL.BindBuffer(GL_ARRAY_BUFFER, GpuMap->TransEmissHandle); */
-  /* BufferUnmapped &= GL.UnmapBuffer(GL_ARRAY_BUFFER); */
-  /* GpuMap->Buffer.TransEmiss = 0; */
-  /* GL.VertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, (void*)0); */
-  /* AssertNoGlErrors; */
-
-
   if (BufferUnmapped == False) { Error("glUnmapBuffer Failed"); }
 
   /* GL.BindBuffer(GL_ARRAY_BUFFER, 0); */

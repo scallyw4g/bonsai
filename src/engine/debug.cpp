@@ -722,6 +722,7 @@ DoEngineDebug(engine_resources *Engine)
       PushColumn(Ui, CSz("gBuffer Normal"));
       PushColumn(Ui, CSz("gBuffer Position"));
       PushColumn(Ui, CSz("gBuffer Depth "));
+      PushColumn(Ui, CSz("Shadow Map"));
       PushNewRow(Ui);
 
       Start = StartColumn(Ui);
@@ -743,9 +744,12 @@ DoEngineDebug(engine_resources *Engine)
         PushTexturedQuad(Ui, Graphics->gBuffer->Textures->Depth, TexDim, zDepth_Text, True);
         PushForceAdvance(Ui, V2(xAdvance, 0));
       EndColumn(Ui, Start);
+
+      Start = StartColumn(Ui);
+        PushTexturedQuad(Ui, Graphics->SG->ShadowMap, TexDim, zDepth_Text, True);
+        PushForceAdvance(Ui, V2(xAdvance, 0));
+      EndColumn(Ui, Start);
       PushNewRow(Ui);
-
-
 
     PushTableEnd(Ui);
 

@@ -18,10 +18,13 @@ void main()
   MaterialColor = vertexColor;
   TransEmiss = in_TransEmiss;
 
-  vertexP_worldspace = vec4(Model * vec4(vertexPosition_modelspace, 1)).xyz;
-  vertexN_worldspace = vec4(Model * vec4(vertexNormal_modelspace, 1)).xyz;
+  v4 ModelVertex = Model*vec4(vertexPosition_modelspace, 1);
 
-  gl_Position = ViewProjection * (vec4(vertexPosition_modelspace, 1.f) * Model);
+  vertexP_worldspace = ModelVertex.xyz;
+  vertexN_worldspace = vec4(vec4(vertexNormal_modelspace, 1)).xyz;
+
+  gl_Position =  ViewProjection * ModelVertex;
+  /* gl_Position =  ViewProjection * Model * vec4(vertexPosition_modelspace, 1); */
   /* gl_Position = ViewProjection * VertexP; */
 }
 

@@ -170,8 +170,6 @@ Bonsai_SimulateAndBufferGeometry(engine_resources *Resources)
   SimulateEntities(Resources, Plat->dt, World->VisibleRegion, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, &Plat->HighPriority);
   /* DispatchSimulateParticleSystemJobs(&Plat->HighPriority, EntityTable, World->ChunkDim, &GpuMap->Buffer, Graphics, Plat->dt); */
 
-  DrawWorld(Plat, &GpuMap->Buffer, World, Graphics, Heap);
-
   BufferEntities( EntityTable, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, Graphics, World, Plat->dt);
   /* BufferEntities( EntityTable, &Graphics->Transparency.GpuBuffer.Buffer, Graphics, World, Plat->dt); */
 
@@ -264,6 +262,12 @@ Bonsai_Render(engine_resources *Resources)
   EngineDebug->Render.BytesSolidGeoLastFrame = GpuMap->Buffer.At;
   EngineDebug->Render.BytesTransGeoLastFrame = Graphics->Transparency.GpuBuffer.Buffer.At;
 
+  DrawWorldToGBuffer(Plat, World, Graphics);
+  DrawWorldToShadowMap(Resources);
+
+  // TODO(Jesse): Move into engine debug
+  DebugHighlightWorldChunkBasedOnState(Graphics, EngineDebug->PickedChunk, &GpuMap->Buffer);
+
   // NOTE(Jesse): GBuffer and ShadowMap must be rendered in series because they
   // both do operate on the total scene geometry. The rest of the render passes
   // operate on the textures they create and only render a quad.
@@ -282,18 +286,6 @@ Bonsai_Render(engine_resources *Resources)
   if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomTextureFBO); }
 
   CompositeAndDisplay(Plat, Graphics);
-
-  /* Debug_DrawTextureToDebugQuad(&Graphics->Gaussian.DebugTextureShader1); */
-  /* Debug_DrawTextureToDebugQuad(&Graphics->Gaussian.DebugTextureShader0); */
-  /* Debug_DrawTextureToDebugQuad(&Graphics->Lighting.DebugBloomShader); */
-  /* Debug_DrawTextureToDebugQuad(&Graphics->Lighting.DebugLightingShader); */
-  /* Debug_DrawTextureToDebugQuad(&Graphics->SG->DebugTextureShader); */
-  /* Debug_DrawTextureToDebugQuad(&AoGroup->DebugSsaoShader); */
-  /* Debug_DrawTextureToDebugQuad(&Graphics->gBuffer->DebugColorShader); */
-  /* Debug_DrawTextureToDebugQuad(&Graphics->gBuffer->DebugPositionShader); */
-  /* Debug_DrawTextureToDebugQuad(&Graphics->gBuffer->DebugNormalShader); */
-  /* Debug_DrawTextureToDebugQuad(&Graphics->gBuffer->DebugNormalShader); */
-  /* Debug_DrawTextureToDebugQuad(&Resources->RTTGroup.DebugShader); */
 
   GpuMap->Buffer.At = 0;
   GL.DisableVertexAttribArray(0);

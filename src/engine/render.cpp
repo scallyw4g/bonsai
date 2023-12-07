@@ -76,7 +76,7 @@ GetShadowMapMVP(light *Sun, v3 FrustumCenter)
                                           SHADOW_MAP_Z_MAX);
 
   v3 Front = Normalize(Sun->Position);
-  v3 Right = Cross( Front, V3(0,1,0) );
+  v3 Right = Cross(Front, V3(0,1,0));
   v3 Up = Cross(Right, Front);
 
   v3 Target = FrustumCenter;
@@ -122,6 +122,15 @@ RenderGBuffer(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
 
   BindShaderUniforms(&GBufferRenderGroup->gBufferShader);
 
+  /* m4 M = IdentityMatrix; */
+
+  /* Info("(%f %f %f %f)", M[0][0],M[0][1],M[0][2],M[0][3]); */
+  /* Info("(%f %f %f %f)", M[1][0],M[1][1],M[1][2],M[1][3]); */
+  /* Info("(%f %f %f %f)", M[2][0],M[2][1],M[2][2],M[2][3]); */
+  /* Info("(%f %f %f %f)", M[3][0],M[3][1],M[3][2],M[3][3]); */
+
+  /* BindUniform(&GBufferRenderGroup->gBufferShader, "Model", &M); */
+
   FlushBuffersToCard(GpuMap);
 
   GL.Disable(GL_CULL_FACE);
@@ -129,8 +138,6 @@ RenderGBuffer(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
   GL.Enable(GL_CULL_FACE);
 
   AssertNoGlErrors;
-
-  return;
 }
 
 link_internal void
@@ -941,31 +948,30 @@ RenderToTexture(engine_resources *Engine, texture *Texture, untextured_3d_geomet
 link_internal void
 DrawTerrainImmediate(graphics *Graphics, gpu_mapped_element_buffer *GpuBuffer, world_chunk *Chunk)
 {
-  v3 Basis = GetRenderP(GetEngineResources(), Chunk->WorldP);
-  m4 ModelMatrix = Translate(Basis);
-  BindUniform(&Graphics->gBuffer->gBufferShader, "Model", &ModelMatrix);
+  if (GpuBuffer->Buffer.At)
+  {
+    /* Info("Drawing Chunk at basis (%f %f %f)", r64(Basis.x) , r64(Basis.y) , r64(Basis.z) ); */
 
-  /* Info("Drawing Chunk at basis (%f %f %f)", r64(Basis.x) , r64(Basis.y) , r64(Basis.z) ); */
+    GL.EnableVertexAttribArray(0);
+    GL.BindBuffer(GL_ARRAY_BUFFER, GpuBuffer->VertexHandle);
+    GL.VertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    AssertNoGlErrors;
 
-  GL.EnableVertexAttribArray(0);
-  GL.BindBuffer(GL_ARRAY_BUFFER, GpuBuffer->VertexHandle);
-  GL.VertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-  AssertNoGlErrors;
+    GL.EnableVertexAttribArray(1);
+    GL.BindBuffer(GL_ARRAY_BUFFER, GpuBuffer->NormalHandle);
+    GL.VertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    AssertNoGlErrors;
 
-  GL.EnableVertexAttribArray(1);
-  GL.BindBuffer(GL_ARRAY_BUFFER, GpuBuffer->NormalHandle);
-  GL.VertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-  AssertNoGlErrors;
+    GL.EnableVertexAttribArray(2);
+    GL.EnableVertexAttribArray(3);
+    GL.BindBuffer(GL_ARRAY_BUFFER, GpuBuffer->MatHandle);
+    GL.VertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)0);
+    GL.VertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)12);
+    AssertNoGlErrors;
 
-  GL.EnableVertexAttribArray(2);
-  GL.EnableVertexAttribArray(3);
-  GL.BindBuffer(GL_ARRAY_BUFFER, GpuBuffer->MatHandle);
-  GL.VertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)0);
-  GL.VertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)12);
-  AssertNoGlErrors;
-
-  Assert(GpuBuffer->Buffer.At);
-  Draw(GpuBuffer->Buffer.At);
+    Assert(GpuBuffer->Buffer.At);
+    Draw(GpuBuffer->Buffer.At);
+  }
 }
 
 link_internal void
@@ -993,11 +999,7 @@ CopyToGpuBuffer(untextured_3d_geometry_buffer *Mesh, gpu_mapped_element_buffer *
 
 
 link_internal void
-DrawWorld( platform                      *Plat,
-           untextured_3d_geometry_buffer *Dest,
-           world                         *World,
-           graphics                      *Graphics,
-           heap_allocator                *Heap )
+DrawWorldToGBuffer( platform *Plat, world *World, graphics *Graphics )
 {
   TIMED_FUNCTION();
 
@@ -1041,8 +1043,6 @@ DrawWorld( platform                      *Plat,
       if (Chunk->Flags & Chunk_Queued) { continue; }
       Assert(Chunk->Flags & Chunk_VoxelsInitialized);
 
-      // TODO(Jesse): Move into engine debug
-      DebugHighlightWorldChunkBasedOnState(Graphics, Chunk, Dest);
 
       camera *Camera = Graphics->Camera;
       if (IsInFrustum(World, Camera, Chunk))
@@ -1079,6 +1079,154 @@ DrawWorld( platform                      *Plat,
 
           if (MeshBit != MeshBit_None)
           {
+            v3 Basis = GetRenderP(GetEngineResources(), Chunk->WorldP);
+            m4 ModelMatrix = Translate(Basis);
+            BindUniform(&Graphics->gBuffer->gBufferShader, "Model", &ModelMatrix);
+
+            DrawTerrainImmediate(Graphics, &Chunk->GpuBuffers[ToIndex(MeshBit)], Chunk);
+          }
+        }
+        else
+        {
+          RangeIterator(MeshIndex, MeshIndex_Count)
+          {
+            world_chunk_mesh_bitfield MeshBit = world_chunk_mesh_bitfield(1 << MeshIndex);
+            if (HasMesh(&Chunk->Meshes, MeshBit))
+            {
+              untextured_3d_geometry_buffer *Mesh = TakeOwnershipSync(&Chunk->Meshes, MeshBit);
+              CopyToGpuBuffer(Mesh, &Chunk->GpuBuffers[MeshIndex]);
+              ReleaseOwnership(&Chunk->Meshes, MeshBit, Mesh);
+            }
+          }
+          SetBitfield(chunk_flag, Chunk->Flags, Chunk_MeshUploadedToGpu);
+        }
+
+#if 0
+        umm StandingSpotCount = AtElements(&Chunk->StandingSpots);
+        /* DebugLine("drawing (%u) standing spots", StandingSpotCount); */
+        for (u32 SpotIndex = 0; SpotIndex < StandingSpotCount; ++SpotIndex)
+        {
+          v3i *Spot = Chunk->StandingSpots.Start + SpotIndex;
+          v3 RenderSpot = GetRenderP(World->ChunkDim, Canonical_Position(*Spot, Chunk->WorldP), Graphics->Camera);
+          DrawStandingSpot(&Graphics->Transparency.GeoBuffer.Buffer, RenderSpot, V3(Global_StandingSpotDim));
+        }
+#endif
+
+      }
+    }
+    else
+    {
+      Chunk = GetAndInsertFreeWorldChunk(World->Memory, World, P);
+      if (Chunk)
+      { QueueChunkForInit(&Plat->LowPriority, Chunk, MeshBit_Lod0);  }
+      else
+      { InvalidCodePath(); }
+    }
+  }
+
+  GL.Enable(GL_CULL_FACE);
+
+/*   if (CopySet.Count > 0) */
+/*   { */
+/*     work_queue_entry Entry = WorkQueueEntry(&CopySet); */
+/*     PushWorkQueueEntry(&Plat->HighPriority, &Entry); */
+/*   } */
+
+  return;
+}
+link_internal void
+DrawWorldToShadowMap(engine_resources *Engine)
+{
+  TIMED_FUNCTION();
+
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  /* work_queue_entry_copy_buffer_set CopySet = {}; */
+
+  v3i Radius = World->VisibleRegion/2;
+  v3i Min = World->Center - Radius;
+  v3i Max = World->Center + Radius;
+
+  // NOTE(Jesse): Debug
+  /* Assert(Min == V3i(0)); */
+  /* Assert(Max == V3i(4)); */
+
+
+  shadow_render_group *SG = Graphics->SG;
+
+  GL.BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
+  GL.UseProgram(SG->DepthShader.ID);
+
+  SetViewport(V2(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y));
+
+  v3 FrustCenter = GetFrustumCenter(Graphics->Camera);
+  SG->MVP = GetShadowMapMVP(&SG->Sun, FrustCenter);
+  GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]);
+
+  /* Draw(GpuMap->Buffer.At); */
+
+  GL.Disable(GL_CULL_FACE);
+
+  AssertNoGlErrors;
+
+
+  for (s32 x = Min.x; x < Max.x; ++ x)
+  for (s32 y = Min.y; y < Max.y; ++ y)
+  for (s32 z = Min.z; z < Max.z; ++ z)
+  {
+    world_position P = World_Position(x,y,z);
+    world_chunk *Chunk = 0;
+    {
+      /* TIMED_NAMED_BLOCK("GetWorldChunkFromHashtable"); */
+      Chunk = GetWorldChunkFromHashtable( World, P );
+    }
+
+    if (Chunk)
+    {
+      if (Chunk->Flags & Chunk_Queued) { continue; }
+      Assert(Chunk->Flags & Chunk_VoxelsInitialized);
+
+
+      if (IsInFrustum(World, Camera, Chunk))
+      {
+        v3 CameraP = GetSimSpaceP(World, Camera->CurrentP);
+        v3 ChunkP = GetSimSpaceP(World, Chunk->WorldP);
+
+        if (Chunk->Flags & Chunk_MeshUploadedToGpu)
+        {
+          auto MeshBit = MeshBit_None;
+
+          r32 CameraToChunkSquared = DistanceSq(CameraP, ChunkP);
+          if (CameraToChunkSquared > Square(400*32))
+          {
+            if (HasMesh(&Chunk->Meshes, MeshBit_Lod4)) { MeshBit = MeshBit_Lod4; }
+          }
+          else if (CameraToChunkSquared > Square(250*32))
+          {
+            if (HasMesh(&Chunk->Meshes, MeshBit_Lod3)) { MeshBit = MeshBit_Lod3; }
+          }
+          else if (CameraToChunkSquared > Square(150*32))
+          {
+            if (HasMesh(&Chunk->Meshes, MeshBit_Lod2)) { MeshBit = MeshBit_Lod2; }
+          }
+          else if (CameraToChunkSquared > Square(70*32))
+          {
+            if (HasMesh(&Chunk->Meshes, MeshBit_Lod1)) { MeshBit = MeshBit_Lod1; }
+          }
+          else
+          {
+           if (HasMesh(&Chunk->Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; }
+          }
+
+
+          if (MeshBit != MeshBit_None)
+          {
+            v3 Basis = GetRenderP(GetEngineResources(), Chunk->WorldP);
+            m4 OffsetM = Translate(Basis);
+
+            m4 MVP = SG->MVP * OffsetM;
+            BindUniform(&SG->DepthShader, "depthMVP", &MVP);
+
             DrawTerrainImmediate(Graphics, &Chunk->GpuBuffers[ToIndex(MeshBit)], Chunk);
           }
         }

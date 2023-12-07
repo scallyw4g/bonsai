@@ -3592,8 +3592,9 @@ DebugHighlightWorldChunkBasedOnState(graphics *Graphics, world_chunk *Chunk, unt
 {
 #if 1
   engine_debug *EngineDebug = GetEngineDebug();
-  if (Chunk == EngineDebug->PickedChunk)
+  if (Chunk)
   {
+    Assert (Chunk == EngineDebug->PickedChunk);
     u16 Color = EngineDebug->PickedChunkState == PickedChunkState_None ? GREEN : YELLOW;
 
     untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(Dest, VERTS_PER_AABB);

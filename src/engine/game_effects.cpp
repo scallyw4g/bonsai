@@ -21,12 +21,12 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim, b32 Colorf
 
   if (Colorful)
   {
-    System->Colors[0] = (u8)RandomU32(Entropy);
-    System->Colors[1] = (u8)RandomU32(Entropy);
-    System->Colors[2] = (u8)RandomU32(Entropy);
-    System->Colors[3] = (u8)RandomU32(Entropy);
-    System->Colors[4] = (u8)RandomU32(Entropy);
-    System->Colors[5] = (u8)RandomU32(Entropy);
+    System->Colors[0] = (u8)Clamp(0, RandomU32(Entropy), 254);
+    System->Colors[1] = (u8)Clamp(0, RandomU32(Entropy), 254);
+    System->Colors[2] = (u8)Clamp(0, RandomU32(Entropy), 254);
+    System->Colors[3] = (u8)Clamp(0, RandomU32(Entropy), 254);
+    System->Colors[4] = (u8)Clamp(0, RandomU32(Entropy), 254);
+    System->Colors[5] = (u8)Clamp(0, RandomU32(Entropy), 254);
   }
   else
   {

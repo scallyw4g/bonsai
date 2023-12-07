@@ -44,9 +44,6 @@ Untextured3dGeometryBuffer(v3* Verts, v3* Normals, vertex_material *Mat, u32 Cou
   return Result;
 }
 
-/* TODO(Jesse, id: 84, tags: opengl, completeness, engine): This only gets used
- * when computing the shadow map, so I'm not even sure if it works ATM
- */
 inline m4
 Orthographic( r32 X, r32 Y, r32 Zmin, r32 Zmax)
 {
@@ -60,10 +57,10 @@ Orthographic( r32 X, r32 Y, r32 Zmin, r32 Zmax)
   r32 n = Zmin;
 
   m4 Result = {
-    V4(2/(r-l) , 0       , 0        , -1*((r+l)/(r-l)) ) ,
-    V4(0       , 2/(t-b) , 0        , -1*((t+b)/(t-b)) ) ,
-    V4(0       , 0       , -2/(f-n) , -1*((f+n)/(f-n)) ) ,
-    V4(0       , 0       , 0        , 1)
+    V4(2/(r-l), 0      , 0       , -1*((r+l)/(r-l)) ),
+    V4(0      , 2/(t-b), 0       , -1*((t+b)/(t-b)) ),
+    V4(0      , 0      , -2/(f-n), -1*((f+n)/(f-n)) ),
+    V4(0      , 0      , 0       ,                  1)
   };
 
   return Result;
@@ -95,7 +92,7 @@ Perspective(radians FOV, v2 WindowDim, r32 NearClip, r32 FarClip)
   r32 Aspect = WindowDim.x/WindowDim.y;
 
   r32 a = 1.0f/(Aspect*FocalLength);
-  r32 b = 1.0f/FocalLength ;
+  r32 b = 1.0f/FocalLength;
   r32 c = (-(FarClip+NearClip)) / (FarClip-NearClip);
   r32 d = -1.0f;
   r32 e = (-(2.0f*FarClip*NearClip)) / (FarClip - NearClip);
@@ -122,7 +119,7 @@ Perspective(radians FOV, v2 WindowDim, r32 NearClip, r32 FarClip)
 inline radians
 Rads(degrees Degrees)
 {
-  radians Result = (Degrees/180);
+  radians Result = (Degrees/180.f);
   return Result;
 }
 
