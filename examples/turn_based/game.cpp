@@ -282,18 +282,40 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
         f32 PlayerMoveSpeed = 13.f;
         standing_spot_buffer PlayerSpots = GetStandingSpotsWithinRadius(World, PlayerBaseP, PlayerMoveSpeed, GetTranArena());
+
         v3 CursorSimP = GetSimSpaceP(World, PickCP);
+
+        r32 LowestDistance = r32_MAX;
+        u32 LowestIndex = 0;
 
         for (u32 SpotIndex = 0; SpotIndex < PlayerSpots.Count; ++SpotIndex)
         {
           standing_spot *Spot = PlayerSpots.Start + SpotIndex;
-          v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
 
           v3 SpotSimP = GetSimSpaceP(World, Spot->P);
-          aabb SpotSimAABB = AABBMinDim(SpotSimP, Global_StandingSpotDim);
-          if (IsInside(SpotSimAABB, CursorSimP))
+
+          r32 Len = LengthSq(SpotSimP-CursorSimP);
+          if (Len < LowestDistance)
           {
-            DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), TEAL, DEFAULT_STANDING_SPOT_THICKNESS*3.f);
+            LowestDistance = Len;
+            LowestIndex = SpotIndex;
+          }
+
+          {
+            v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
+            DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), GREEN, DEFAULT_STANDING_SPOT_THICKNESS*3.f);
+          }
+        }
+
+        if (PlayerSpots.Count)
+        {
+          standing_spot *Spot = PlayerSpots.Start + LowestIndex;
+          v3 SpotSimP = GetSimSpaceP(World, Spot->P);
+          /* aabb SpotSimAABB = AABBMinDim(SpotSimP, Global_StandingSpotDim); */
+          /* if (IsInside(SpotSimAABB, CursorSimP)) */
+          {
+            v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
+            DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), TEAL, DEFAULT_STANDING_SPOT_THICKNESS*4.f);
 
             if (Input->LMB.Clicked)
             {
@@ -305,11 +327,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
               UpdateEntityP(World, Player, UpdateV);
             }
           }
-          else
-          {
-            DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), GREEN, DEFAULT_STANDING_SPOT_THICKNESS*3.f);
-          }
         }
+
 
       } break;
 

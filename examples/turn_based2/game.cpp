@@ -285,4 +285,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   v3 EmissionColor = Normalize(V3(3.f, 4.f, 0.1f)) * 5.f;
   DoLight(&Lighting->Lights, V3(0.5f), EmissionColor);
+
+
 }
