@@ -7,32 +7,23 @@ NOTE: The officially supported compiler is clang-15.  Different versions may
 work, but may also emit warnings, or errors.  If the following instructions do
 not work for you, by all means open an issue and I will do what I can to assist.
 
-## On Windows:
-Bonsai requires `clang` and a unix-like shell to build on Windows.  Installing `git-bash` usually works for me.
+## Dependencies
 
-## On Linux:
-Ensure you have an OpenGL driver, GL headers, X11 headers, and clang
+Follow the instructions for fetching dependencies for bonsai_stdlib [https://github.com/scallyw4g/bonsai_stdlib/docs/dependencies.md](https://github.com/scallyw4g/bonsai_stdlib/docs/dependencies.md)
 
-### Ubuntu
-`sudo apt install freeglut3-dev libx11-dev clang-15`
-
-### Archlinux
-`sudo pacman -S freeglut libx11 clang` # NOTE(Jesse): Not sure how to specifically install clang 15 on Arch
-
-### Common
+## Quickstart
 
 ```
 git clone --recursive https://github.com/scallyw4g/bonsai bonsai && cd bonsai
-./scripts/make.sh
+./make.sh
 ```
-
 
 ## Build Options
 
 Envoke the make script from the root directory by typing `./make.sh`
 
-By default, the script is setup to build everything that should build with low
-resistance in release mode.
+By default, the script is configured to build everything that should build with
+low resistance in release mode.
 
 The following options can be appended to the make script to control which targets are built.
 
