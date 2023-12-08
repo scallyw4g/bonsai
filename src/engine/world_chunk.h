@@ -207,7 +207,7 @@ enum chunk_init_flags
 
   ChunkInitFlag_ComputeStandingSpots = (1 << 0),
   ChunkInitFlag_GenSmoothLODs        = (1 << 1),
-  ChunkInitFlag_GenMipMapLODs        = (1 << 2),
+  ChunkInitFlag_GenLODs              = (1 << 2),
 };
 
 #define WORLD_CHUNK_STANDING_SPOT_COUNT (32)
@@ -556,3 +556,6 @@ GetVoxel(world_chunk* Chunk, voxel_position VoxelP)
   voxel *Result = Chunk->Voxels + VoxelIndex;
   return Result;
 }
+
+link_internal void
+RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOffset, v3i MaxOffset, world_chunk_mesh_bitfield MeshBit, untextured_3d_geometry_buffer *TempMesh, memory_arena *TempMem);

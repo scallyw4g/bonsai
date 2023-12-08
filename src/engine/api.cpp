@@ -333,7 +333,8 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
     case type_work_queue_entry_rebuild_mesh:
     {
       work_queue_entry_rebuild_mesh *Job = SafeAccess(work_queue_entry_rebuild_mesh, Entry);
-      RebuildWorldChunkMesh(Thread, Job->Chunk, Job->MeshBit);
+      untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
+      RebuildWorldChunkMesh(Thread, Job->Chunk, {}, Job->Chunk->Dim, Job->MeshBit, TempMesh, Thread->TempMemory);
     } break;
 
     case type_work_queue_entry_init_world_chunk:

@@ -3270,6 +3270,7 @@ QueueChunkForMeshRebuild(work_queue *Queue, world_chunk *Chunk, world_chunk_mesh
 /* { */
 /* } */
 
+
 link_internal void
 InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
                           thread_local_state *Thread,
@@ -3315,20 +3316,6 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
                                          GRASS_GREEN, Frequency, Amplititude, zMin,
                                          WorldChunkDim, UserData );
 
-
-#if 0
-  if (AssetFile && AssetFile->Handle)
-  {
-    world_chunk *AssetChunk = AllocateWorldChunk(Thread->TempMemory, {}, WorldChunkDim+Global_ChunkApronDim);
-
-    DeserializeChunk(AssetFile, AssetChunk, &EngineResources->MeshFreelist, Thread->PermMemory);
-    CloseFile(AssetFile);
-    Assert(AssetChunk->Dim == SynChunkDim);
-    MergeChunksOffset(AssetChunk, SyntheticChunk, {});
-    /* MergeChunksOffset(AssetChunk, SyntheticChunk, Global_HalfChunkApronDim); */
-  }
-#endif
-
   MarkBoundaryVoxels_NoExteriorFaces(SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
 
   CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Global_ChunkApronMinDim);
@@ -3342,6 +3329,7 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
   SetFlag(DestChunk, Chunk_VoxelsInitialized);
   SetFlag(SyntheticChunk, Chunk_VoxelsInitialized);
 
+#if 0
   // NOTE(Jesse): A fully filled chunk can still have boundary voxels on its
   // exterior edge, so that does not preclude it from going through BuildWorldChunkMesh
   if ( DestChunk->FilledCount > 0) // && DestChunk->FilledCount < (u32)Volume(WorldChunkDim))
@@ -3353,14 +3341,13 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
 
     if (TempMesh->At) { Mesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory); DeepCopy(TempMesh, Mesh); }
 
-#if 0
     if (TempTransparentMesh->At)
     {
       TransparencyMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempTransparentMesh, Thread->PermMemory);
       DeepCopy(TempTransparentMesh, TransparencyMesh);
     }
-#endif
   }
+#endif
 
 
 
@@ -3387,52 +3374,29 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
 
 #if 1
   /* if (SyntheticChunkSum && (Flags & ChunkInitFlag_GenMipMapLODs) ) */
+  if (SyntheticChunkSum)
   {
     untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
 
+    RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
+    TempMesh->At = 0;
 
-    BuildMipMesh(SyntheticChunk->Voxels, SynChunkDim, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod1, TempMesh, Thread->TempMemory);
-    if (TempMesh->At) 
-    { 
-      untextured_3d_geometry_buffer* LodMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
-      DeepCopy(TempMesh, LodMesh);
-      Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Lod1, LodMesh, LodMesh->Timestamp) == 0);
-      TempMesh->At = 0;
-    }
+    RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod1, TempMesh, Thread->TempMemory);
+    TempMesh->At = 0;
 
-    Assert(TempMesh->At == 0);
-    BuildMipMesh(SyntheticChunk->Voxels, SynChunkDim, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod2, TempMesh, Thread->TempMemory);
-    if (TempMesh->At) 
-    { 
-      untextured_3d_geometry_buffer* LodMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
-      DeepCopy(TempMesh, LodMesh);
-      Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Lod2, LodMesh, LodMesh->Timestamp) == 0);
-      TempMesh->At = 0;
-    }
+    RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod2, TempMesh, Thread->TempMemory);
+    TempMesh->At = 0;
 
-    Assert(TempMesh->At == 0);
-    BuildMipMesh(SyntheticChunk->Voxels, SynChunkDim, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod3, TempMesh, Thread->TempMemory);
-    if (TempMesh->At) 
-    { 
-      untextured_3d_geometry_buffer* LodMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
-      DeepCopy(TempMesh, LodMesh);
-      Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Lod3, LodMesh, LodMesh->Timestamp) == 0);
-      TempMesh->At = 0;
-    }
+    RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod3, TempMesh, Thread->TempMemory);
+    TempMesh->At = 0;
 
-    Assert(TempMesh->At == 0);
-    BuildMipMesh(SyntheticChunk->Voxels, SynChunkDim, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod4, TempMesh, Thread->TempMemory);
-    if (TempMesh->At) 
-    { 
-      untextured_3d_geometry_buffer* LodMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
-      DeepCopy(TempMesh, LodMesh);
-      Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Lod4, LodMesh, LodMesh->Timestamp) == 0);
-      TempMesh->At = 0;
-    }
+    RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod4, TempMesh, Thread->TempMemory);
+    TempMesh->At = 0;
   }
 #endif
 
   FullBarrier;
+#if 0
 
   if (Mesh)
   {
@@ -3441,36 +3405,13 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
     else
     { DeallocateMesh(Mesh, &EngineResources->MeshFreelist, Thread->PermMemory); }
   }
-
-#if 0
-  if (LodMesh)
-  {
-    if (LodMesh->At)
-    { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Lod, LodMesh, LodMesh->Timestamp) == 0); }
-    else
-    { DeallocateMesh(LodMesh, &EngineResources->MeshFreelist, Thread->PermMemory); }
-  }
-
-  if (DebugMesh)
-  {
-    if (DebugMesh->At)
-    { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Debug, DebugMesh, DebugMesh->Timestamp) == 0); }
-    else
-    { DeallocateMesh(DebugMesh, &EngineResources->MeshFreelist, Thread->PermMemory); }
-  }
-
-  if (TransparencyMesh)
-  {
-    if (TransparencyMesh->At)
-    { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit_Transparency, TransparencyMesh, TransparencyMesh->Timestamp) == 0); }
-    else
-    { DeallocateMesh(TransparencyMesh, &EngineResources->MeshFreelist, Thread->PermMemory); }
-  }
 #endif
 
-  FinalizeChunkInitialization(DestChunk);
+  // NOTE(Jesse): If RebuildWorldChunkMesh took a dest
+  // threadsafe_geometry_buffer this copy could be avoided.
+  DestChunk->Meshes = SyntheticChunk->Meshes;
 
-  return;
+  FinalizeChunkInitialization(DestChunk);
 }
 
 // TODO(Jesse): Probably remove this globally
@@ -3481,30 +3422,25 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 }
 
 link_internal void
-RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, world_chunk_mesh_bitfield MeshBit)
+RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOffset, v3i MaxOffset, world_chunk_mesh_bitfield MeshBit, untextured_3d_geometry_buffer *TempMesh, memory_arena *TempMem)
 {
   engine_resources *EngineResources = GetEngineResources();
-
-  Info("rebuilding");
 
   Assert( IsSet(Chunk->Flags, Chunk_VoxelsInitialized) );
 
   untextured_3d_geometry_buffer *FinalMesh = 0;
-
   {
-    untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
-
     if (MeshBit == MeshBit_Lod0)
     {
-      BuildWorldChunkMeshFromMarkedVoxels_Greedy( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, TempMesh, 0, GetTranArena() );
+      BuildWorldChunkMeshFromMarkedVoxels_Greedy( Chunk->Voxels, Chunk->Dim, MinOffset, MaxOffset, TempMesh, 0, TempMem );
       /* BuildWorldChunkMeshFromMarkedVoxels_Naieve( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, TempMesh, TempTransparentMesh); */
     }
     else
     {
-      BuildMipMesh( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, MeshBit, TempMesh, GetTranArena() );
+      BuildMipMesh( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, MeshBit, TempMesh, TempMem );
     }
 
-    /* if (TempMesh->At) */
+    if (TempMesh->At)
     {
       FinalMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
       DeepCopy(TempMesh, FinalMesh);
@@ -3516,8 +3452,6 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, world_chun
     untextured_3d_geometry_buffer *Replaced = AtomicReplaceMesh(&Chunk->Meshes, MeshBit, FinalMesh, Timestamp);
     if (Replaced) { DeallocateMesh(Replaced, &EngineResources->MeshFreelist, Thread->PermMemory); }
   }
-
-  FinalizeChunkInitialization(Chunk);
 }
 
 // nochecking Move as much out of this block as possible.  Only the last few of
