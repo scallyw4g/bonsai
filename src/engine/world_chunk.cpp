@@ -3308,7 +3308,7 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOff
 
   /* Assert(Chunk->Flags & Chunk_MeshUploadedToGpu); */
   /* if (Chunk->Flags & Chunk_MeshUploadedToGpu) { FreeGpuBuffers(Chunk); } */
-  Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_MeshUploadedToGpu);
+  /* Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_MeshUploadedToGpu); */
 }
 
 link_internal void
@@ -3450,6 +3450,7 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
   // NOTE(Jesse): If RebuildWorldChunkMesh took a dest
   // threadsafe_geometry_buffer this copy could be avoided.
   DestChunk->Meshes = SyntheticChunk->Meshes;
+  DestChunk->Flags = chunk_flag(DestChunk->Flags & ~Chunk_MeshUploadedToGpu);
 
   FinalizeChunkInitialization(DestChunk);
 }

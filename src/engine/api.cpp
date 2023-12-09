@@ -349,6 +349,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
       /* UnsetBitfield(chunk_flag, Chunk->Flags, Chunk_Queued); */
       Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_Queued);
+      Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_MeshUploadedToGpu);
     } break;
 
     case type_work_queue_entry_init_world_chunk:

@@ -1049,7 +1049,36 @@ DrawWorldToGBuffer( platform *Plat, world *World, graphics *Graphics )
         v3 CameraP = GetSimSpaceP(World, Camera->CurrentP);
         v3 ChunkP = GetSimSpaceP(World, Chunk->WorldP);
 
-        if (Chunk->Flags & Chunk_MeshUploadedToGpu)
+        if ( !(Chunk->Flags&Chunk_MeshUploadedToGpu) )
+        {
+          if (Chunk->Flags & Chunk_Queued) { continue; }
+
+          // This is kinda barf.. we'd rather free these when the chunk gets
+          // rebuilt but can't do it from another thread.  Maybe when the chunk
+          // update job gets pushed is more straight-forward?
+          RangeIterator(MeshIndex, MeshIndex_Count)
+          {
+            if (Chunk->GpuBuffers[MeshIndex].VertexHandle)
+            {
+              DeallocateGpuElementBuffer(&Chunk->GpuBuffers[MeshIndex]);
+            }
+          }
+
+          RangeIterator(MeshIndex, MeshIndex_Count)
+          {
+            world_chunk_mesh_bitfield MeshBit = world_chunk_mesh_bitfield(1 << MeshIndex);
+            if (HasMesh(&Chunk->Meshes, MeshBit))
+            {
+              untextured_3d_geometry_buffer *Mesh = TakeOwnershipSync(&Chunk->Meshes, MeshBit);
+              CopyToGpuBuffer(Mesh, &Chunk->GpuBuffers[MeshIndex]);
+              ReleaseOwnership(&Chunk->Meshes, MeshBit, Mesh);
+            }
+          }
+          FullBarrier;
+
+          SetBitfield(chunk_flag, Chunk->Flags, Chunk_MeshUploadedToGpu);
+        }
+
         {
           auto MeshBit = MeshBit_None;
 
@@ -1083,35 +1112,6 @@ DrawWorldToGBuffer( platform *Plat, world *World, graphics *Graphics )
 
             DrawTerrainImmediate(Graphics, &Chunk->GpuBuffers[ToIndex(MeshBit)], Chunk);
           }
-        }
-        else
-        {
-          if (Chunk->Flags & Chunk_Queued) { continue; }
-
-          // This is kinda barf.. we'd rather free these when the chunk gets
-          // rebuilt but can't do it from another thread.  Maybe when the chunk
-          // update job gets pushed is more straight-forward?
-          RangeIterator(MeshIndex, MeshIndex_Count)
-          {
-            if (Chunk->GpuBuffers[MeshIndex].VertexHandle)
-            {
-              DeallocateGpuElementBuffer(&Chunk->GpuBuffers[MeshIndex]);
-            }
-          }
-
-          RangeIterator(MeshIndex, MeshIndex_Count)
-          {
-            world_chunk_mesh_bitfield MeshBit = world_chunk_mesh_bitfield(1 << MeshIndex);
-            if (HasMesh(&Chunk->Meshes, MeshBit))
-            {
-              untextured_3d_geometry_buffer *Mesh = TakeOwnershipSync(&Chunk->Meshes, MeshBit);
-              CopyToGpuBuffer(Mesh, &Chunk->GpuBuffers[MeshIndex]);
-              ReleaseOwnership(&Chunk->Meshes, MeshBit, Mesh);
-            }
-          }
-          FullBarrier;
-
-          SetBitfield(chunk_flag, Chunk->Flags, Chunk_MeshUploadedToGpu);
         }
 
 #if 0

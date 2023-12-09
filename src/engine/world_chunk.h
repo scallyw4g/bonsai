@@ -5,6 +5,7 @@ enum chunk_flag
   Chunk_Queued            = 1 << 0,
   Chunk_VoxelsInitialized = 1 << 1,
   Chunk_MeshUploadedToGpu = 1 << 2,
+  /* Chunk_MeshDirty         = 1 << 3, // Re-upload the */ 
 
   // This is an optimization to tell the thread queue to not initialize chunks
   // we've already moved away from.
