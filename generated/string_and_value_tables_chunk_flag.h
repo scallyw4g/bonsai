@@ -1,0 +1,30 @@
+link_internal counted_string
+ToString(chunk_flag Type)
+{
+  counted_string Result = {};
+  switch (Type)
+  {
+    case Chunk_Uninitialized: { Result = CSz("Chunk_Uninitialized"); } break;
+    case Chunk_Queued: { Result = CSz("Chunk_Queued"); } break;
+    case Chunk_VoxelsInitialized: { Result = CSz("Chunk_VoxelsInitialized"); } break;
+    case Chunk_MeshUploadedToGpu: { Result = CSz("Chunk_MeshUploadedToGpu"); } break;
+    case Chunk_Garbage: { Result = CSz("Chunk_Garbage"); } break;
+  }
+  return Result;
+}
+
+link_internal chunk_flag
+ChunkFlag(counted_string S)
+{
+  chunk_flag Result = {};
+
+  if (StringsMatch(S, CSz("Chunk_Uninitialized"))) { return Chunk_Uninitialized; }
+  if (StringsMatch(S, CSz("Chunk_Queued"))) { return Chunk_Queued; }
+  if (StringsMatch(S, CSz("Chunk_VoxelsInitialized"))) { return Chunk_VoxelsInitialized; }
+  if (StringsMatch(S, CSz("Chunk_MeshUploadedToGpu"))) { return Chunk_MeshUploadedToGpu; }
+  if (StringsMatch(S, CSz("Chunk_Garbage"))) { return Chunk_Garbage; }
+
+  return Result;
+}
+
+
