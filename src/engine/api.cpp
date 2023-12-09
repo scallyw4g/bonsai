@@ -59,9 +59,8 @@ Bonsai_FrameBegin(engine_resources *Resources)
   Resources->FrameIndex += 1;
 
   // Must come before UNPACK_ENGINE_RESOURCES such that we unpack the correct GpuMap
-  graphics *G = Resources->Graphics;
-  G->GpuBufferWriteIndex = 0;
-  G->GpuBufferWriteIndex = (Resources->FrameIndex) % 2;
+  Resources->Graphics->GpuBufferWriteIndex = 0;
+  Resources->Graphics->GpuBufferWriteIndex = (Resources->FrameIndex) % 2;
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
@@ -333,8 +332,23 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
     case type_work_queue_entry_rebuild_mesh:
     {
       work_queue_entry_rebuild_mesh *Job = SafeAccess(work_queue_entry_rebuild_mesh, Entry);
+      world_chunk *Chunk = Job->Chunk;
+
       untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
-      RebuildWorldChunkMesh(Thread, Job->Chunk, {}, Job->Chunk->Dim, Job->MeshBit, TempMesh, Thread->TempMemory);
+
+      RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
+      TempMesh->At = 0;
+      RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod1, TempMesh, Thread->TempMemory);
+      TempMesh->At = 0;
+      RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod2, TempMesh, Thread->TempMemory);
+      TempMesh->At = 0;
+      RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod3, TempMesh, Thread->TempMemory);
+      TempMesh->At = 0;
+      RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod4, TempMesh, Thread->TempMemory);
+      TempMesh->At = 0;
+
+      /* UnsetBitfield(chunk_flag, Chunk->Flags, Chunk_Queued); */
+      Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_Queued);
     } break;
 
     case type_work_queue_entry_init_world_chunk:

@@ -205,6 +205,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
       if (ChunkIsGarbage(Chunk))
       {
+        Chunk->Flags = Chunk_Uninitialized;
       }
       else
       {

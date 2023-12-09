@@ -319,13 +319,9 @@ GetAndInsertFreeWorldChunk(memory_arena *Storage, world *World, world_position P
 }
 
 link_internal void
-FreeWorldChunk(world *World, world_chunk *Chunk, tiered_mesh_freelist* MeshFreelist, memory_arena* Memory)
+FreeGpuBuffers(world_chunk *Chunk)
 {
-  TIMED_FUNCTION();
-  Assert ( ThreadLocal_ThreadIndex == 0 );
-  Assert ( NotSet(Chunk, Chunk_Queued) );
-
-  if (Chunk->Flags & Chunk_MeshUploadedToGpu)
+  Assert(Chunk->Flags & Chunk_MeshUploadedToGpu);
   {
     RangeIterator(MeshIndex, MeshIndex_Count)
     {
@@ -337,12 +333,20 @@ FreeWorldChunk(world *World, world_chunk *Chunk, tiered_mesh_freelist* MeshFreel
     }
   }
 
+}
+
+link_internal void
+FreeWorldChunk(world *World, world_chunk *Chunk, tiered_mesh_freelist* MeshFreelist, memory_arena* Memory)
+{
+  TIMED_FUNCTION();
+  Assert ( ThreadLocal_ThreadIndex == 0 );
+  Assert ( NotSet(Chunk, Chunk_Queued) );
+
   DeallocateMeshes(&Chunk->Meshes, MeshFreelist, Memory);
 
-  RangeIterator(MeshIndex, MeshIndex_Count)
-  {
-    Assert(Chunk->GpuBuffers[MeshIndex].Buffer.At == 0);
-  }
+  if (Chunk->Flags & Chunk_MeshUploadedToGpu) { FreeGpuBuffers(Chunk); }
+
+  RangeIterator(MeshIndex, MeshIndex_Count) { Assert(Chunk->GpuBuffers[MeshIndex].Buffer.At == 0); }
 
 
   ClearWorldChunk(Chunk);
@@ -423,8 +427,12 @@ CollectUnusedChunks(engine_resources *Engine, tiered_mesh_freelist* MeshFreelist
   world_chunk ** CurrentWorldHash = CurrentWorldHashtable(Engine);
   world_chunk ** NextWorldHash = NextWorldHashtable(Engine);
 
+
   world_position CenterP = World->Center;
   chunk_dimension Radius = (VisibleRegion/2);
+
+  Assert(LengthSq(Radius) > 0.f);
+
   world_position Min = CenterP - Radius;
   world_position Max = CenterP + Radius;
 
@@ -439,7 +447,7 @@ CollectUnusedChunks(engine_resources *Engine, tiered_mesh_freelist* MeshFreelist
     *ChunkBucket = 0;
 
 
-    if ( Chunk )
+    if (Chunk)
     {
       if (Chunk->Flags == Chunk_Uninitialized)
       {
@@ -447,9 +455,7 @@ CollectUnusedChunks(engine_resources *Engine, tiered_mesh_freelist* MeshFreelist
       }
       else
       {
-        world_position ChunkP = Chunk->WorldP;
-
-        if (IsInside(ChunkP, VRRect))
+        if (IsInside(Chunk->WorldP, VRRect))
         {
           InsertChunkIntoWorld(NextWorldHash, Chunk, World->VisibleRegion, World->HashSize);
         }
@@ -3243,10 +3249,14 @@ QueueChunkForInit(work_queue *Queue, world_chunk *Chunk, world_chunk_mesh_bitfie
 }
 
 inline void
-QueueChunkForMeshRebuild(work_queue *Queue, world_chunk *Chunk, world_chunk_mesh_bitfield MeshBit)
+QueueChunkForMeshRebuild(work_queue *Queue, world_chunk *Chunk)
 {
   TIMED_FUNCTION();
-  Assert((Chunk->Flags & Chunk_Queued) == 0);
+
+  Assert(Chunk->Flags & Chunk_VoxelsInitialized);
+
+  // TODO(Jesse): Which of these is true?!
+  /* Assert((Chunk->Flags & Chunk_Queued) == 0); */
 
   // NOTE(Jesse): This is legal
   /* Assert( NotSet(Chunk->Flags, Chunk_Queued) ); */
@@ -3257,19 +3267,49 @@ QueueChunkForMeshRebuild(work_queue *Queue, world_chunk *Chunk, world_chunk_mesh
     Entry.Type = type_work_queue_entry_rebuild_mesh;
     work_queue_entry_rebuild_mesh *Job = SafeAccess(work_queue_entry_rebuild_mesh, &Entry);
     Job->Chunk = Chunk;
-    Job->MeshBit = MeshBit;
+    /* Job->MeshBit = MeshBit; */
   }
 
   SetFlag(&Chunk->Flags, Chunk_Queued);
   PushWorkQueueEntry(Queue, &Entry);
-
-  return;
 }
 
-/* CopyAndSwapMeshFor() */
-/* { */
-/* } */
+link_internal void
+RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOffset, v3i MaxOffset, world_chunk_mesh_bitfield MeshBit, untextured_3d_geometry_buffer *TempMesh, memory_arena *TempMem)
+{
+  engine_resources *EngineResources = GetEngineResources();
 
+  Assert( IsSet(Chunk->Flags, Chunk_VoxelsInitialized) );
+
+  untextured_3d_geometry_buffer *FinalMesh = 0;
+  {
+    if (MeshBit == MeshBit_Lod0)
+    {
+      BuildWorldChunkMeshFromMarkedVoxels_Greedy( Chunk->Voxels, Chunk->Dim, MinOffset, MaxOffset, TempMesh, 0, TempMem );
+      /* BuildWorldChunkMeshFromMarkedVoxels_Naieve( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, TempMesh, TempTransparentMesh); */
+    }
+    else
+    {
+      BuildMipMesh( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, MeshBit, TempMesh, TempMem );
+    }
+
+    if (TempMesh->At)
+    {
+      FinalMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
+      DeepCopy(TempMesh, FinalMesh);
+    }
+  }
+
+  {
+    umm Timestamp = FinalMesh ? FinalMesh->Timestamp : __rdtsc();
+    untextured_3d_geometry_buffer *Replaced = AtomicReplaceMesh(&Chunk->Meshes, MeshBit, FinalMesh, Timestamp);
+    if (Replaced) { DeallocateMesh(Replaced, &EngineResources->MeshFreelist, Thread->PermMemory); }
+  }
+
+  /* Assert(Chunk->Flags & Chunk_MeshUploadedToGpu); */
+  /* if (Chunk->Flags & Chunk_MeshUploadedToGpu) { FreeGpuBuffers(Chunk); } */
+  Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_MeshUploadedToGpu);
+}
 
 link_internal void
 InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
@@ -3421,45 +3461,12 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
   InitializeChunkWithNoise( Noise_Perlin2D, Thread, DestChunk, DestChunk->Dim, AssetFile, Frequency, Amplititude, zMin, MeshBit_Lod0, Flags, 0);
 }
 
-link_internal void
-RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOffset, v3i MaxOffset, world_chunk_mesh_bitfield MeshBit, untextured_3d_geometry_buffer *TempMesh, memory_arena *TempMem)
-{
-  engine_resources *EngineResources = GetEngineResources();
-
-  Assert( IsSet(Chunk->Flags, Chunk_VoxelsInitialized) );
-
-  untextured_3d_geometry_buffer *FinalMesh = 0;
-  {
-    if (MeshBit == MeshBit_Lod0)
-    {
-      BuildWorldChunkMeshFromMarkedVoxels_Greedy( Chunk->Voxels, Chunk->Dim, MinOffset, MaxOffset, TempMesh, 0, TempMem );
-      /* BuildWorldChunkMeshFromMarkedVoxels_Naieve( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, TempMesh, TempTransparentMesh); */
-    }
-    else
-    {
-      BuildMipMesh( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, MeshBit, TempMesh, TempMem );
-    }
-
-    if (TempMesh->At)
-    {
-      FinalMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
-      DeepCopy(TempMesh, FinalMesh);
-    }
-  }
-
-  {
-    umm Timestamp = FinalMesh ? FinalMesh->Timestamp : __rdtsc();
-    untextured_3d_geometry_buffer *Replaced = AtomicReplaceMesh(&Chunk->Meshes, MeshBit, FinalMesh, Timestamp);
-    if (Replaced) { DeallocateMesh(Replaced, &EngineResources->MeshFreelist, Thread->PermMemory); }
-  }
-}
-
 // nochecking Move as much out of this block as possible.  Only the last few of
 // the things in this block are actually related to drawing
 link_internal work_queue_entry_rebuild_mesh
-WorkQueueEntryRebuildMesh(world_chunk *Chunk, world_chunk_mesh_bitfield MeshBit)
+WorkQueueEntryRebuildMesh(world_chunk *Chunk) //, world_chunk_mesh_bitfield MeshBit)
 {
-  work_queue_entry_rebuild_mesh Result = { Chunk, MeshBit };
+  work_queue_entry_rebuild_mesh Result = { Chunk };
   return Result;
 }
 
@@ -3769,7 +3776,7 @@ BlitAssetIntoWorld(engine_resources *Engine, asset *Asset, cp Origin)
       // what the face values are in the Merge routine
       NotImplemented;
 
-      QueueChunkForMeshRebuild(&Engine->Stdlib.Plat.LowPriority, DestChunk, MeshBit_Lod0);
+      QueueChunkForMeshRebuild(&Engine->Stdlib.Plat.LowPriority, DestChunk);
     }
   }
 }
@@ -4481,7 +4488,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
     UnSetFlag(&Chunk->Flags, Chunk_Queued);
     /* QueueChunkForInit(Queue, Chunk); */
     /* QueueChunkForMeshRebuild(Queue, Chunk); */
-    QueueChunkForMeshRebuild(Queue, Chunk, MeshBit_Lod0);
+    QueueChunkForMeshRebuild(Queue, Chunk);
   }
 }
 

@@ -541,7 +541,7 @@ DoLevelEditor(engine_resources *Engine)
             if (V)
             {
               V->Color = Engine->Editor.SelectedColorIndex;
-              QueueChunkForMeshRebuild(&Plat->LowPriority, Engine->MousedOverVoxel.Value.Chunks[PickedVoxel_FirstFilled].Chunk, MeshBit_Lod0);
+              QueueChunkForMeshRebuild(&Plat->LowPriority, Engine->MousedOverVoxel.Value.Chunks[PickedVoxel_FirstFilled].Chunk);
             }
           }
         }

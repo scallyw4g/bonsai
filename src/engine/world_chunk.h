@@ -2,29 +2,17 @@ enum chunk_flag
 {
   Chunk_Uninitialized     = 0 << 0,
 
-  Chunk_Queued            = 1 << 1,
-  Chunk_VoxelsInitialized = 1 << 2,
-  Chunk_MeshUploadedToGpu = 1 << 3,
+  Chunk_Queued            = 1 << 0,
+  Chunk_VoxelsInitialized = 1 << 1,
+  Chunk_MeshUploadedToGpu = 1 << 2,
 
   // This is an optimization to tell the thread queue to not initialize chunks
   // we've already moved away from.
   Chunk_Garbage           = 1 << 3,
 };
 
-// TODO(Jesse): Metaprogram me!
-link_internal cs
-ToString(chunk_flag Flag)
-{
-  switch(Flag)
-  {
-    case Chunk_Uninitialized: { return CSz("Chunk_Uninitialized"); }
-    case Chunk_Queued: { return CSz("Chunk_Queued"); };
-    case Chunk_VoxelsInitialized: { return CSz("Chunk_VoxelsInitialized"); };
-    case Chunk_Garbage: { return CSz("Chunk_Garbage"); };
-
-    InvalidDefaultCase;
-  }
-}
+poof(string_and_value_tables(chunk_flag))
+#include <generated/string_and_value_tables_chunk_flag.h>
 
 // If we make a mapping between these bit-flags and another face_index enum we
 // could delete a bit of code.
@@ -556,6 +544,3 @@ GetVoxel(world_chunk* Chunk, voxel_position VoxelP)
   voxel *Result = Chunk->Voxels + VoxelIndex;
   return Result;
 }
-
-link_internal void
-RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOffset, v3i MaxOffset, world_chunk_mesh_bitfield MeshBit, untextured_3d_geometry_buffer *TempMesh, memory_arena *TempMem);

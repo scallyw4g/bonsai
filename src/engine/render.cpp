@@ -1040,9 +1040,8 @@ DrawWorldToGBuffer( platform *Plat, world *World, graphics *Graphics )
 
     if (Chunk)
     {
-      if (Chunk->Flags & Chunk_Queued) { continue; }
-      Assert(Chunk->Flags & Chunk_VoxelsInitialized);
-
+      /* if (Chunk->Flags & Chunk_Queued) { continue; } */
+      /* Assert(Chunk->Flags & Chunk_VoxelsInitialized); */
 
       camera *Camera = Graphics->Camera;
       if (IsInFrustum(World, Camera, Chunk))
@@ -1076,7 +1075,6 @@ DrawWorldToGBuffer( platform *Plat, world *World, graphics *Graphics )
            if (HasMesh(&Chunk->Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; }
           }
 
-
           if (MeshBit != MeshBit_None)
           {
             v3 Basis = GetRenderP(GetEngineResources(), Chunk->WorldP);
@@ -1088,6 +1086,19 @@ DrawWorldToGBuffer( platform *Plat, world *World, graphics *Graphics )
         }
         else
         {
+          if (Chunk->Flags & Chunk_Queued) { continue; }
+
+          // This is kinda barf.. we'd rather free these when the chunk gets
+          // rebuilt but can't do it from another thread.  Maybe when the chunk
+          // update job gets pushed is more straight-forward?
+          RangeIterator(MeshIndex, MeshIndex_Count)
+          {
+            if (Chunk->GpuBuffers[MeshIndex].VertexHandle)
+            {
+              DeallocateGpuElementBuffer(&Chunk->GpuBuffers[MeshIndex]);
+            }
+          }
+
           RangeIterator(MeshIndex, MeshIndex_Count)
           {
             world_chunk_mesh_bitfield MeshBit = world_chunk_mesh_bitfield(1 << MeshIndex);
@@ -1098,6 +1109,8 @@ DrawWorldToGBuffer( platform *Plat, world *World, graphics *Graphics )
               ReleaseOwnership(&Chunk->Meshes, MeshBit, Mesh);
             }
           }
+          FullBarrier;
+
           SetBitfield(chunk_flag, Chunk->Flags, Chunk_MeshUploadedToGpu);
         }
 
@@ -1183,8 +1196,8 @@ DrawWorldToShadowMap(engine_resources *Engine)
 
     if (Chunk)
     {
-      if (Chunk->Flags & Chunk_Queued) { continue; }
-      Assert(Chunk->Flags & Chunk_VoxelsInitialized);
+      /* if (Chunk->Flags & Chunk_Queued) { continue; } */
+      /* Assert(Chunk->Flags & Chunk_VoxelsInitialized); */
 
 
       if (IsInFrustum(World, Camera, Chunk))
@@ -1230,8 +1243,10 @@ DrawWorldToShadowMap(engine_resources *Engine)
             DrawTerrainImmediate(Graphics, &Chunk->GpuBuffers[ToIndex(MeshBit)], Chunk);
           }
         }
+#if 0
         else
         {
+          if (Chunk->Flags & Chunk_Queued) { continue; }
           RangeIterator(MeshIndex, MeshIndex_Count)
           {
             world_chunk_mesh_bitfield MeshBit = world_chunk_mesh_bitfield(1 << MeshIndex);
@@ -1245,6 +1260,7 @@ DrawWorldToShadowMap(engine_resources *Engine)
           SetBitfield(chunk_flag, Chunk->Flags, Chunk_MeshUploadedToGpu);
         }
 
+#endif
 #if 0
         umm StandingSpotCount = AtElements(&Chunk->StandingSpots);
         /* DebugLine("drawing (%u) standing spots", StandingSpotCount); */
