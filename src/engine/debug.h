@@ -247,6 +247,26 @@ poof(
     type_list.map(type)
     {
       link_internal void
+      DoEditorUi(renderer_2d *Ui, volatile type.name *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+      {
+        if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+
+        if (Value)
+        {
+          u32 Start = StartColumn(Ui);
+            PushTableStart(Ui);
+              if (Button(Ui, CSz("-"), (umm)Value + (umm)"decrement" )) { *Value = *Value - 1; }
+              PushColumn(Ui, CS(*Value));
+              if (Button(Ui, CSz("+"), (umm)Value + (umm)"increment" )) { *Value = *Value + 1; }
+            PushTableEnd(Ui);
+          EndColumn(Ui, Start);
+        }
+        else
+        {
+          PushColumn(Ui, CSz("(null)"));
+        }
+      }
+      link_internal void
       DoEditorUi(renderer_2d *Ui, type.name *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
       {
         if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
@@ -297,7 +317,13 @@ poof(
               DoEditorUi(Ui, Element->(member.name), "member.type member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
             }
             {
-              DoEditorUi(Ui, &Element->(member.name), "member.type member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+              member.is_union?
+              {
+                // Select first member in union ..?
+              }
+              {
+                DoEditorUi(Ui, &Element->(member.name), "member.type member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+              }
             }
           }
 

@@ -54,6 +54,7 @@ DoEditorUi(renderer_2d *Ui, void *Value, const char* Name, EDITOR_UI_FUNCTION_PR
   Value ?
     PushColumn(Ui, FSz("0x%x",umm(Value)), EDITOR_UI_FUNCTION_INSTANCE_NAMES) :
     PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  PushNewRow(Ui);
 }
 
 link_internal void
@@ -178,6 +179,16 @@ poof(do_editor_ui_for_compound_type(entity))
 #include <generated/do_editor_ui_for_compound_type_entity.h>
 
 
+poof(do_editor_ui_for_compound_type(gpu_element_buffer_handles))
+#include <generated/do_editor_ui_for_compound_type_gpu_element_buffer_handles.h>
+
+poof(do_editor_ui_for_compound_type(lod_element_buffer))
+#include <generated/do_editor_ui_for_compound_type_lod_element_buffer.h>
+
+poof(do_editor_ui_for_compound_type(world_chunk))
+#include <generated/do_editor_ui_for_compound_type_world_chunk.h>
+
+
 
 link_internal void
 DebugUi(engine_resources *Engine, cs Name, untextured_3d_geometry_buffer *Value)
@@ -273,10 +284,6 @@ DebugUi(engine_resources *Engine, cs Name, world_chunk *Value)
 
     Text(Ui, CSz("FilledCount : "));
     Text(Ui, CS(Chunk->FilledCount));
-    PushNewRow(Ui);
-
-    Text(Ui, CSz("Picked : "));
-    Text(Ui, CS(Chunk->Picked));
     PushNewRow(Ui);
 
     Text(Ui, CSz("DrawBoundingVoxels : "));
@@ -666,7 +673,8 @@ DoEngineDebug(engine_resources *Engine)
 
       if (EngineDebug->PickedChunk)
       {
-        DebugUi(Engine, CSz("PickedChunk"), EngineDebug->PickedChunk );
+        /* DebugUi(Engine, CSz("PickedChunk"), EngineDebug->PickedChunk ); */
+        DoEditorUi(Ui, EngineDebug->PickedChunk, "PickedChunk");
       }
 
     PushWindowEnd(Ui, &WorldChunkWindow);

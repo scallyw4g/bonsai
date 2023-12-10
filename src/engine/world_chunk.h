@@ -4,7 +4,7 @@ enum chunk_flag
 
   Chunk_Queued            = 1 << 0,
   Chunk_VoxelsInitialized = 1 << 1,
-  Chunk_MeshUploadedToGpu = 1 << 2,
+  /* Chunk_MeshUploadedToGpu = 1 << 2, */
   /* Chunk_MeshDirty         = 1 << 3, // Re-upload the */ 
 
   // This is an optimization to tell the thread queue to not initialize chunks
@@ -120,6 +120,7 @@ struct chunk_data
 };
 
 // NOTE(Jesse): These are literal indices and as such must start at 0
+// TODO(Jesse): Rename this to something like mesh_lod_index
 enum world_chunk_mesh_index
 {
   MeshIndex_Lod0,
@@ -134,6 +135,7 @@ enum world_chunk_mesh_index
   MeshIndex_Count,
 };
 
+// TODO(Jesse): Rename this to something like mesh_lod_bitfield
 enum world_chunk_mesh_bitfield
 {
   MeshBit_None  = 0,
@@ -176,12 +178,39 @@ ToIndex(world_chunk_mesh_bitfield Bit)
   return MeshIndex_Count;
 }
 
+struct lod_element_buffer
+{
+  // TODO(Jesse): Remove this
+  volatile u32 MeshMask;
+
+  gpu_element_buffer_handles GpuBufferHandles[MeshIndex_Count];
+
+  // Src meshes, read-only
+  geo_u3d      *E[MeshIndex_Count];
+  bonsai_futex  Locks[MeshIndex_Count];
+};
+
 struct threadsafe_geometry_buffer
 {
   volatile u32 MeshMask;
   volatile untextured_3d_geometry_buffer *E[MeshIndex_Count];
-  bonsai_futex Futexes[MeshIndex_Count];
+  bonsai_futex  Locks[MeshIndex_Count];
 };
+
+link_internal b32
+HasGpuMesh(lod_element_buffer *Meshes, world_chunk_mesh_bitfield MeshBit)
+{
+  b32 Result = (Meshes->GpuBufferHandles[ToIndex(MeshBit)].VertexHandle != 0);
+  return Result;
+}
+
+
+link_internal b32
+HasMesh(lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
+{
+  b32 Result = (Buf->E[ToIndex(MeshBit)] != 0);
+  return Result;
+}
 
 link_internal b32
 HasMesh(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
@@ -239,15 +268,16 @@ struct world_chunk
     };
   };
 
-  threadsafe_geometry_buffer Meshes;
-  gpu_mapped_element_buffer  GpuBuffers[MeshIndex_Count];
+  // TODO(Jesse): This stores pointers that are completely ephemeral and as
+  // such are wasted space.  We could remove those to make this struct 24 bytes
+  // smaller, which is probably pretty worth.
+  lod_element_buffer Meshes;
 
   voxel_position_cursor StandingSpots;
 
   v3i WorldP;
 
   u32 FilledCount;
-  b32 Picked;
   b32 DrawBoundingVoxels;
 
   s32 PointsToLeaveRemaining;
@@ -496,7 +526,13 @@ link_internal untextured_3d_geometry_buffer*
 GetMeshForChunk(mesh_freelist* Freelist, u32 Mesh, memory_arena* PermMemory);
 
 link_internal untextured_3d_geometry_buffer *
+ReplaceMesh(lod_element_buffer *, world_chunk_mesh_bitfield , untextured_3d_geometry_buffer *, u64 );
+
+link_internal untextured_3d_geometry_buffer *
 ReplaceMesh(threadsafe_geometry_buffer *, world_chunk_mesh_bitfield , untextured_3d_geometry_buffer *, u64 );
+
+link_internal untextured_3d_geometry_buffer *
+AtomicReplaceMesh(lod_element_buffer *, world_chunk_mesh_bitfield , untextured_3d_geometry_buffer *, u64 );
 
 link_internal untextured_3d_geometry_buffer *
 AtomicReplaceMesh(threadsafe_geometry_buffer *, world_chunk_mesh_bitfield , untextured_3d_geometry_buffer *, u64 );

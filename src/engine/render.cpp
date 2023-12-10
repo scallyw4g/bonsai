@@ -946,32 +946,26 @@ RenderToTexture(engine_resources *Engine, texture *Texture, untextured_3d_geomet
 #endif
 
 link_internal void
-DrawTerrainImmediate(graphics *Graphics, gpu_mapped_element_buffer *GpuBuffer, world_chunk *Chunk)
+DrawTerrainImmediate(graphics *Graphics, gpu_element_buffer_handles *Handles)
 {
-  if (GpuBuffer->Buffer.At)
-  {
-    /* Info("Drawing Chunk at basis (%f %f %f)", r64(Basis.x) , r64(Basis.y) , r64(Basis.z) ); */
+  GL.EnableVertexAttribArray(0);
+  GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
+  GL.VertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  AssertNoGlErrors;
 
-    GL.EnableVertexAttribArray(0);
-    GL.BindBuffer(GL_ARRAY_BUFFER, GpuBuffer->VertexHandle);
-    GL.VertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-    AssertNoGlErrors;
+  GL.EnableVertexAttribArray(1);
+  GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
+  GL.VertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  AssertNoGlErrors;
 
-    GL.EnableVertexAttribArray(1);
-    GL.BindBuffer(GL_ARRAY_BUFFER, GpuBuffer->NormalHandle);
-    GL.VertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-    AssertNoGlErrors;
+  GL.EnableVertexAttribArray(2);
+  GL.EnableVertexAttribArray(3);
+  GL.BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
+  GL.VertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)0);
+  GL.VertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)12);
+  AssertNoGlErrors;
 
-    GL.EnableVertexAttribArray(2);
-    GL.EnableVertexAttribArray(3);
-    GL.BindBuffer(GL_ARRAY_BUFFER, GpuBuffer->MatHandle);
-    GL.VertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)0);
-    GL.VertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)12);
-    AssertNoGlErrors;
-
-    Assert(GpuBuffer->Buffer.At);
-    Draw(GpuBuffer->Buffer.At);
-  }
+  Draw(Handles->ElementCount);
 }
 
 link_internal void
@@ -980,28 +974,43 @@ CopyBufferIntoBuffer(untextured_3d_geometry_buffer *Src, untextured_3d_geometry_
   BufferVertsChecked(Src, Dest, {}, V3(1.0f));
 }
 
+#if 0
 link_internal void
-CopyToGpuBuffer(untextured_3d_geometry_buffer *Mesh, gpu_mapped_element_buffer *GpuBuffer)
+CopyToGpuBuffer(untextured_3d_geometry_buffer *Mesh, gpu_element_buffer_handles *Handles)
 {
-  Assert(GpuBuffer->Buffer.At == 0);
-  AllocateGpuElementBuffer(GpuBuffer, Mesh->At);
-
-  /* if (GpuBuffer->Buffer.At < Mesh->At) */
-  /* { */
-  /*   DeallocateGpuElementBuffer(GpuBuffer); */
-  /*   AllocateGpuElementBuffer(GpuBuffer, Mesh->At); */
-  /* } */
+  /* Assert(GpuBuffer->Buffer.At == 0); */
+  AllocateGpuElementBuffer(Handles, Mesh->At);
 
   untextured_3d_geometry_buffer *Dest = MapGpuElementBuffer(GpuBuffer);
   CopyBufferIntoBuffer(Mesh, Dest);
   FlushBuffersToCard(GpuBuffer);
 }
+#endif
+
+link_internal void
+CopyToGpuBuffer(untextured_3d_geometry_buffer *Mesh, gpu_mapped_element_buffer *GpuBuffer)
+{
+  GpuBuffer->Buffer = MapGpuElementBuffer(&GpuBuffer->Handles);
+  CopyBufferIntoBuffer(Mesh, &GpuBuffer->Buffer);
+  FlushBuffersToCard(GpuBuffer);
+}
+
+link_internal void
+CopyToGpuBuffer(untextured_3d_geometry_buffer *Mesh, gpu_element_buffer_handles *Handles)
+{
+  untextured_3d_geometry_buffer Dest = MapGpuElementBuffer(Handles);
+  CopyBufferIntoBuffer(Mesh, &Dest);
+  FlushBuffersToCard(Handles);
+}
+
 
 
 link_internal void
-DrawWorldToGBuffer( platform *Plat, world *World, graphics *Graphics )
+DrawWorldToGBuffer(engine_resources *Engine)
 {
   TIMED_FUNCTION();
+
+  UNPACK_ENGINE_RESOURCES(Engine);
 
   /* work_queue_entry_copy_buffer_set CopySet = {}; */
 
@@ -1043,41 +1052,41 @@ DrawWorldToGBuffer( platform *Plat, world *World, graphics *Graphics )
       /* if (Chunk->Flags & Chunk_Queued) { continue; } */
       /* Assert(Chunk->Flags & Chunk_VoxelsInitialized); */
 
-      camera *Camera = Graphics->Camera;
+      /* camera *Camera = Graphics->Camera; */
       if (IsInFrustum(World, Camera, Chunk))
       {
         v3 CameraP = GetSimSpaceP(World, Camera->CurrentP);
         v3 ChunkP = GetSimSpaceP(World, Chunk->WorldP);
 
-        if ( !(Chunk->Flags&Chunk_MeshUploadedToGpu) )
+        if (Chunk->Flags & Chunk_Queued) { continue; }
+
+        // This is kinda barf.. we'd rather free these when the chunk gets
+        // rebuilt but can't do it from another thread.  Maybe when the chunk
+        // update job gets pushed is more straight-forward?
+
+        RangeIterator(MeshIndex, MeshIndex_Count)
         {
-          if (Chunk->Flags & Chunk_Queued) { continue; }
-
-          // This is kinda barf.. we'd rather free these when the chunk gets
-          // rebuilt but can't do it from another thread.  Maybe when the chunk
-          // update job gets pushed is more straight-forward?
-          RangeIterator(MeshIndex, MeshIndex_Count)
+          world_chunk_mesh_bitfield MeshBit = world_chunk_mesh_bitfield(1 << MeshIndex);
+          if (HasMesh(&Chunk->Meshes, MeshBit))
           {
-            if (Chunk->GpuBuffers[MeshIndex].VertexHandle)
-            {
-              DeallocateGpuElementBuffer(&Chunk->GpuBuffers[MeshIndex]);
-            }
-          }
+            gpu_element_buffer_handles *Handles = &Chunk->Meshes.GpuBufferHandles[MeshIndex];
+            MaybeDeallocateGpuElementBuffer(Handles);
 
-          RangeIterator(MeshIndex, MeshIndex_Count)
-          {
-            world_chunk_mesh_bitfield MeshBit = world_chunk_mesh_bitfield(1 << MeshIndex);
-            if (HasMesh(&Chunk->Meshes, MeshBit))
-            {
-              untextured_3d_geometry_buffer *Mesh = TakeOwnershipSync(&Chunk->Meshes, MeshBit);
-              CopyToGpuBuffer(Mesh, &Chunk->GpuBuffers[MeshIndex]);
-              ReleaseOwnership(&Chunk->Meshes, MeshBit, Mesh);
-            }
-          }
-          FullBarrier;
+            /* untextured_3d_geometry_buffer *Mesh = TakeOwnershipSync(&Chunk->Meshes, MeshBit); */
 
-          SetBitfield(chunk_flag, Chunk->Flags, Chunk_MeshUploadedToGpu);
+            untextured_3d_geometry_buffer *Mesh = AtomicReplaceMesh( &Chunk->Meshes, MeshBit, 0, u64_MAX );
+            if (Mesh && Mesh->At)
+            {
+              AllocateGpuElementBuffer(Handles, Mesh->At);
+              CopyToGpuBuffer(Mesh, Handles);
+            }
+
+            DeallocateMesh(Mesh, &Engine->MeshFreelist, Engine->Memory);
+            /* ReleaseOwnership(&Chunk->Meshes, MeshBit, 0); */
+          }
         }
+
+        FullBarrier;
 
         {
           auto MeshBit = MeshBit_None;
@@ -1085,23 +1094,23 @@ DrawWorldToGBuffer( platform *Plat, world *World, graphics *Graphics )
           r32 CameraToChunkSquared = DistanceSq(CameraP, ChunkP);
           if (CameraToChunkSquared > Square(400*32))
           {
-            if (HasMesh(&Chunk->Meshes, MeshBit_Lod4)) { MeshBit = MeshBit_Lod4; }
+            if (HasGpuMesh(&Chunk->Meshes, MeshBit_Lod4)) { MeshBit = MeshBit_Lod4; }
           }
           else if (CameraToChunkSquared > Square(250*32))
           {
-            if (HasMesh(&Chunk->Meshes, MeshBit_Lod3)) { MeshBit = MeshBit_Lod3; }
+            if (HasGpuMesh(&Chunk->Meshes, MeshBit_Lod3)) { MeshBit = MeshBit_Lod3; }
           }
           else if (CameraToChunkSquared > Square(150*32))
           {
-            if (HasMesh(&Chunk->Meshes, MeshBit_Lod2)) { MeshBit = MeshBit_Lod2; }
+            if (HasGpuMesh(&Chunk->Meshes, MeshBit_Lod2)) { MeshBit = MeshBit_Lod2; }
           }
           else if (CameraToChunkSquared > Square(70*32))
           {
-            if (HasMesh(&Chunk->Meshes, MeshBit_Lod1)) { MeshBit = MeshBit_Lod1; }
+            if (HasGpuMesh(&Chunk->Meshes, MeshBit_Lod1)) { MeshBit = MeshBit_Lod1; }
           }
           else
           {
-           if (HasMesh(&Chunk->Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; }
+           if (HasGpuMesh(&Chunk->Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; }
           }
 
           if (MeshBit != MeshBit_None)
@@ -1110,7 +1119,7 @@ DrawWorldToGBuffer( platform *Plat, world *World, graphics *Graphics )
             m4 ModelMatrix = Translate(Basis);
             BindUniform(&Graphics->gBuffer->gBufferShader, "Model", &ModelMatrix);
 
-            DrawTerrainImmediate(Graphics, &Chunk->GpuBuffers[ToIndex(MeshBit)], Chunk);
+            DrawTerrainImmediate(Graphics, &Chunk->Meshes.GpuBufferHandles[ToIndex(MeshBit)]);
           }
         }
 
@@ -1205,30 +1214,30 @@ DrawWorldToShadowMap(engine_resources *Engine)
         v3 CameraP = GetSimSpaceP(World, Camera->CurrentP);
         v3 ChunkP = GetSimSpaceP(World, Chunk->WorldP);
 
-        if (Chunk->Flags & Chunk_MeshUploadedToGpu)
+        /* if (Chunk->Flags & Chunk_MeshUploadedToGpu) */
         {
           auto MeshBit = MeshBit_None;
 
           r32 CameraToChunkSquared = DistanceSq(CameraP, ChunkP);
           if (CameraToChunkSquared > Square(400*32))
           {
-            if (HasMesh(&Chunk->Meshes, MeshBit_Lod4)) { MeshBit = MeshBit_Lod4; }
+            if (HasGpuMesh(&Chunk->Meshes, MeshBit_Lod4)) { MeshBit = MeshBit_Lod4; }
           }
           else if (CameraToChunkSquared > Square(250*32))
           {
-            if (HasMesh(&Chunk->Meshes, MeshBit_Lod3)) { MeshBit = MeshBit_Lod3; }
+            if (HasGpuMesh(&Chunk->Meshes, MeshBit_Lod3)) { MeshBit = MeshBit_Lod3; }
           }
           else if (CameraToChunkSquared > Square(150*32))
           {
-            if (HasMesh(&Chunk->Meshes, MeshBit_Lod2)) { MeshBit = MeshBit_Lod2; }
+            if (HasGpuMesh(&Chunk->Meshes, MeshBit_Lod2)) { MeshBit = MeshBit_Lod2; }
           }
           else if (CameraToChunkSquared > Square(70*32))
           {
-            if (HasMesh(&Chunk->Meshes, MeshBit_Lod1)) { MeshBit = MeshBit_Lod1; }
+            if (HasGpuMesh(&Chunk->Meshes, MeshBit_Lod1)) { MeshBit = MeshBit_Lod1; }
           }
           else
           {
-           if (HasMesh(&Chunk->Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; }
+           if (HasGpuMesh(&Chunk->Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; }
           }
 
 
@@ -1240,7 +1249,7 @@ DrawWorldToShadowMap(engine_resources *Engine)
             m4 MVP = SG->MVP * OffsetM;
             BindUniform(&SG->DepthShader, "depthMVP", &MVP);
 
-            DrawTerrainImmediate(Graphics, &Chunk->GpuBuffers[ToIndex(MeshBit)], Chunk);
+            DrawTerrainImmediate(Graphics, &Chunk->Meshes.GpuBufferHandles[ToIndex(MeshBit)]);
           }
         }
 #if 0

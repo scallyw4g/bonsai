@@ -294,62 +294,6 @@ AllocatePlayer(memory_arena *Memory)
   return Player;
 }
 
-#if 0
-void
-SpawnEnemy(world *World, entity **WorldEntities, entity *Enemy, random_series *EnemyEntropy, model *GameModels)
-{
-  NotImplemented;
-#if DEBUG_PARTICLE_EFFECTS
-  return;
-#endif
-
-  TIMED_FUNCTION();
-  s32 X = (RandomPositiveS32(EnemyEntropy) % VR_X) - (RandomPositiveS32(EnemyEntropy) % VR_X);
-  s32 Y = World->Center.y + (VR_Y / 2) - DEBUG_ENTITY_COLLISION_VOL_RADIUS.y;
-  s32 Z = World->Center.z;
-
-  world_position InitialCenter = World_Position(X, Y, Z);
-
-  s32 OffsetX = (RandomPositiveS32(EnemyEntropy) % CD_X);
-
-  canonical_position InitialP =
-    Canonicalize(World->ChunkDim, Canonical_Position( V3(OffsetX,0,0), InitialCenter));
-
-  physics Physics = {};
-  Physics.Force = V3(0, 0, 0);
-  Physics.Mass = 0.6f;
-  Physics.Speed = 1200;
-  Physics.Drag = 1.2f;
-
-  r32 Scale = 0.5f;
-  r32 RateOfFire = 2.0f;
-  u32 Health = 1;
-
-  SpawnEntity(
-    Enemy,
-    &GameModels[ModelIndex_Enemy],
-    EntityType_Enemy,
-
-    &Physics,
-
-    &InitialP,
-    DEBUG_ENTITY_COLLISION_VOL_RADIUS,
-
-    Scale,
-    RateOfFire,
-    Health);
-
-  Enemy->Model = GameModels[ModelIndex_Enemy];
-
-  // Respawn entity if it collides against the world or current entities
-  if ( GetCollision(World, Enemy).didCollide ||
-       GetCollision(WorldEntities, Enemy, World->ChunkDim)    )
-    SpawnEnemy(World, WorldEntities, Enemy, EnemyEntropy, GameModels);
-
-  return;
-}
-#endif
-
 entity *
 SpawnProjectile(entity** EntityTable,
                 canonical_position *P,

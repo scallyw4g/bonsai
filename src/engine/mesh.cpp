@@ -142,6 +142,7 @@ DeallocateMesh(untextured_3d_geometry_buffer* Mesh, mesh_freelist *MeshFreelist,
 
   Mesh->At = 0;
 
+  // TODO(Jesse): This is some UULLLLLTRRARAAARRR garbage.. kill it.
   free_mesh* Container = Unlink_TS(&MeshFreelist->Containers);
   if (!Container) { Container = Allocate(free_mesh, Memory, 1); }
   Container->Mesh = Mesh;
@@ -170,18 +171,29 @@ DeallocateMesh(untextured_3d_geometry_buffer* Mesh, tiered_mesh_freelist* MeshFr
   }
 }
 
+poof(
+  func deallocate_meshes(type)
+  {
+    link_internal void
+    DeallocateMeshes((type.name) *Buf, tiered_mesh_freelist* MeshFreelist, memory_arena* Memory)
+    {
+      if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod0,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist, Memory); }
+      if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod1,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist, Memory); }
+      if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod2,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist, Memory); }
+      if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod3,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist, Memory); }
+      if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod4,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist, Memory); }
+      /* if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Debug, 0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist, Memory); } */
+      /* if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Transparency, 0, __rdtsc()) ) { DeallocateMesh(Mesh, MeshFreelist, Memory); } */
 
-link_internal void
-DeallocateMeshes(threadsafe_geometry_buffer *Buf, tiered_mesh_freelist* MeshFreelist, memory_arena* Memory)
-{
-  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod0,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist, Memory); }
-  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod1,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist, Memory); }
-  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod2,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist, Memory); }
-  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod3,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist, Memory); }
-  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod4,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist, Memory); }
-  /* if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Debug, 0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist, Memory); } */
-  /* if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Transparency, 0, __rdtsc()) ) { DeallocateMesh(Mesh, MeshFreelist, Memory); } */
+      Buf->MeshMask = 0;
+    }
+  }
+)
 
-  Buf->MeshMask = 0;
-}
+poof(deallocate_meshes(lod_element_buffer))
+#include <generated/deallocate_meshes_lod_element_buffer.h>
+
+poof(deallocate_meshes(threadsafe_geometry_buffer))
+#include <generated/deallocate_meshes_threadsafe_geometry_buffer.h>
+
 

@@ -431,7 +431,6 @@ ClearWorldChunk( world_chunk *Chunk )
   Chunk->Flags = {};
   Chunk->WorldP = {};
   Chunk->FilledCount = {};
-  Chunk->Picked = {};
   Chunk->DrawBoundingVoxels = {};
   Chunk->PointsToLeaveRemaining = {};
   Chunk->TriCount = {};

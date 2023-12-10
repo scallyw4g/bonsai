@@ -224,40 +224,6 @@ Deserialize(u8_stream *Bytes, untextured_3d_geometry_buffer *Data, memory_arena 
 
 
 
-
-#if 0
-link_internal vox_data*
-Deserialize_vox_data(u8_stream *Bytes)
-{
-  vox_data *Result = 0;
-
-  NotImplemented;
-
-  umm ElementCount = Cast(umm, Volume(Result->Dim));
-
-  if (Result->Voxels) { Result->Voxels, DeserializeArray_voxel(Bytes, ElementCount); }
-  if (Result->VoxelLighting) { Result->VoxelLighting, DeserializeArray_voxel_lighting(Bytes, ElementCount); }
-
-  return Result;
-}
-link_internal chunk_data*
-Deserialize_chunk_data(u8_stream *Bytes)
-{
-  chunk_data *Result = 0;
-  NotImplemented;
-  return Result;
-}
-
-link_internal b32
-Deserialize_untextured_3d_geometry_buffer(u8_stream *Bytes, untextured_3d_geometry_buffer *Data)
-{
-  NotImplemented;
-  return 0;
-}
-#endif
-
-
-
 poof(serdes_vector(Quaternion))
 #include <generated/serdes_vector_Quaternion.h>
 

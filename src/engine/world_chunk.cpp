@@ -34,57 +34,6 @@ UnSetMeshBit(world_chunk *Chunk, world_chunk_mesh_bitfield MeshBit)
   Chunk->Meshes.MeshMask = Chunk->Meshes.MeshMask & (~MeshBit);
 }
 
-link_internal untextured_3d_geometry_buffer *
-ReplaceMesh( threadsafe_geometry_buffer *Meshes,
-             world_chunk_mesh_bitfield MeshBit,
-             untextured_3d_geometry_buffer *Buf,
-             u64 BufTimestamp )
-{
-  Assert( Meshes->Futexes[ToIndex(MeshBit)].SignalValue == (u32)ThreadLocal_ThreadIndex );
-  /* if (Buf) { Assert(Buf->At); } */
-
-  untextured_3d_geometry_buffer *Result = {};
-
-  untextured_3d_geometry_buffer *CurrentMesh = (untextured_3d_geometry_buffer*)Meshes->E[ToIndex(MeshBit)];
-
-
-  if (CurrentMesh)
-  {
-    if (CurrentMesh->Timestamp < BufTimestamp)
-    {
-      Meshes->E[ToIndex(MeshBit)] = Buf;
-      Result = CurrentMesh;
-    }
-    else
-    {
-      // NOTE(Jesse): If we don't swap this in, we have to return it so it gets freed
-      Result = Buf;
-    }
-  }
-  else
-  {
-    Meshes->E[ToIndex(MeshBit)] = Buf;
-  }
-
-  if (Meshes->E[ToIndex(MeshBit)]) { Meshes->MeshMask |= MeshBit; }
-  else                             { Meshes->MeshMask &= ~MeshBit; }
-
-  return Result;
-}
-
-link_internal untextured_3d_geometry_buffer *
-AtomicReplaceMesh( threadsafe_geometry_buffer *Meshes,
-                   world_chunk_mesh_bitfield MeshBit,
-                   untextured_3d_geometry_buffer *Buf,
-                   u64 BufTimestamp )
-{
-  TakeOwnershipSync(Meshes, MeshBit);
-  auto Replace = ReplaceMesh(Meshes, MeshBit, Buf, BufTimestamp);
-  ReleaseOwnership(Meshes, MeshBit, Buf);
-
-  return Replace;
-}
-
 #if 0
 link_internal untextured_3d_geometry_buffer *
 SetMesh(world_chunk *Chunk, world_chunk_mesh_bitfield MeshBit, mesh_freelist *MeshFreelist, memory_arena *PermMemory)
@@ -267,11 +216,6 @@ GetFreeWorldChunk(world *World, memory_arena *Storage)
 
   Assert(Result->Meshes.MeshMask == 0);
 
-  RangeIterator(MeshIndex, MeshIndex_Count)
-  {
-    Assert(Result->GpuBuffers[MeshIndex].Buffer.At == 0);
-  }
-
   return Result;
 }
 
@@ -321,18 +265,25 @@ GetAndInsertFreeWorldChunk(memory_arena *Storage, world *World, world_position P
 link_internal void
 FreeGpuBuffers(world_chunk *Chunk)
 {
-  Assert(Chunk->Flags & Chunk_MeshUploadedToGpu);
-  {
-    RangeIterator(MeshIndex, MeshIndex_Count)
-    {
-      world_chunk_mesh_bitfield MeshBit = world_chunk_mesh_bitfield(1 << MeshIndex);
-      if (HasMesh(&Chunk->Meshes, MeshBit))
-      {
-        DeallocateGpuElementBuffer(&Chunk->GpuBuffers[MeshIndex]);
-      }
-    }
-  }
+  NotImplemented;
+  /* Assert(Chunk->Flags & Chunk_MeshUploadedToGpu); */
+  /* { */
+  /*   RangeIterator(MeshIndex, MeshIndex_Count) */
+  /*   { */
+  /*     world_chunk_mesh_bitfield MeshBit = world_chunk_mesh_bitfield(1 << MeshIndex); */
+  /*     if (HasMesh(&Chunk->Meshes, MeshBit)) */
+  /*     { */
+  /*       DeallocateGpuElementBuffer(&Chunk->GpuBuffers[MeshIndex]); */
+  /*     } */
+  /*   } */
+  /* } */
+}
 
+link_internal void
+MaybeDeallocateGpuElementBuffer(gpu_element_buffer_handles *Handles)
+{
+  if (Handles->VertexHandle) { GL.DeleteBuffers(3, &Handles->VertexHandle); Clear(Handles); }
+  Assert(Handles->ElementCount == 0);
 }
 
 link_internal void
@@ -344,10 +295,10 @@ FreeWorldChunk(world *World, world_chunk *Chunk, tiered_mesh_freelist* MeshFreel
 
   DeallocateMeshes(&Chunk->Meshes, MeshFreelist, Memory);
 
-  if (Chunk->Flags & Chunk_MeshUploadedToGpu) { FreeGpuBuffers(Chunk); }
-
-  RangeIterator(MeshIndex, MeshIndex_Count) { Assert(Chunk->GpuBuffers[MeshIndex].Buffer.At == 0); }
-
+  RangeIterator(MeshIndex, MeshIndex_Count)
+  {
+    MaybeDeallocateGpuElementBuffer(&Chunk->Meshes.GpuBufferHandles[MeshIndex]);
+  }
 
   ClearWorldChunk(Chunk);
   Assert(Chunk->Flags == Chunk_Uninitialized);
@@ -3450,7 +3401,7 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
   // NOTE(Jesse): If RebuildWorldChunkMesh took a dest
   // threadsafe_geometry_buffer this copy could be avoided.
   DestChunk->Meshes = SyntheticChunk->Meshes;
-  DestChunk->Flags = chunk_flag(DestChunk->Flags & ~Chunk_MeshUploadedToGpu);
+  /* DestChunk->Flags = chunk_flag(DestChunk->Flags & ~Chunk_MeshUploadedToGpu); */
 
   FinalizeChunkInitialization(DestChunk);
 }

@@ -261,7 +261,7 @@ Bonsai_Render(engine_resources *Resources)
   EngineDebug->Render.BytesSolidGeoLastFrame = GpuMap->Buffer.At;
   EngineDebug->Render.BytesTransGeoLastFrame = Graphics->Transparency.GpuBuffer.Buffer.At;
 
-  DrawWorldToGBuffer(Plat, World, Graphics);
+  DrawWorldToGBuffer(Resources);
   DrawWorldToShadowMap(Resources);
 
   // TODO(Jesse): Move into engine debug
@@ -349,7 +349,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
       /* UnsetBitfield(chunk_flag, Chunk->Flags, Chunk_Queued); */
       Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_Queued);
-      Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_MeshUploadedToGpu);
+      /* Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_MeshUploadedToGpu); */
     } break;
 
     case type_work_queue_entry_init_world_chunk:
