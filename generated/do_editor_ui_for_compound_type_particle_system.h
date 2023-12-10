@@ -11,8 +11,10 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, const char* Name, EDITOR_U
 
 
 
+
     PushNewRow(Ui);
     DoEditorUi(Ui, &Element->SpawnType, "particle_spawn_type SpawnType", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -21,8 +23,10 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, const char* Name, EDITOR_U
 
 
 
+
     PushNewRow(Ui);
     DoEditorUi(Ui, &Element->Lifetime, "r32 Lifetime", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -31,8 +35,10 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, const char* Name, EDITOR_U
 
 
 
+
     PushNewRow(Ui);
     DoEditorUi(Ui, &Element->EmissionLifespan, "r32 EmissionLifespan", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -41,8 +47,10 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, const char* Name, EDITOR_U
 
 
 
+
     PushNewRow(Ui);
     DoEditorUi(Ui, &Element->LifespanMod, "r32 LifespanMod", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -51,8 +59,10 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, const char* Name, EDITOR_U
 
 
 
+
     PushNewRow(Ui);
     DoEditorUi(Ui, &Element->ParticlesPerSecond, "r32 ParticlesPerSecond", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -61,8 +71,10 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, const char* Name, EDITOR_U
 
 
 
+
     PushNewRow(Ui);
     DoEditorUi(Ui, &Element->ParticleLightEmissionChance, "r32 ParticleLightEmissionChance", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -71,13 +83,16 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, const char* Name, EDITOR_U
 
 
 
+
     PushNewRow(Ui);
     DoEditorUi(Ui, &Element->ParticleEndingTransparency, "r32 ParticleEndingTransparency", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
+
     PushNewRow(Ui);
-    DoEditorUi(Ui, &Element->ParticleStartingDim, "v3 ParticleStartingDim", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    // Select first member in union ..?
+
 
 
 
@@ -86,13 +101,16 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, const char* Name, EDITOR_U
 
 
 
-    PushNewRow(Ui);
-    DoEditorUi(Ui, &Element->ParticleTurbMin, "v3 ParticleTurbMin", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
 
     PushNewRow(Ui);
-    DoEditorUi(Ui, &Element->ParticleTurbMax, "v3 ParticleTurbMax", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    // Select first member in union ..?
+
+
+
+
+    PushNewRow(Ui);
+    // Select first member in union ..?
+
 
 
 
@@ -101,13 +119,16 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, const char* Name, EDITOR_U
 
 
 
+
     PushNewRow(Ui);
     DoEditorUi(Ui, &Element->SystemMovementCoefficient, "r32 SystemMovementCoefficient", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
+
     PushNewRow(Ui);
     DoEditorUi(Ui, &Element->ElapsedSinceLastEmission, "r32 ElapsedSinceLastEmission", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 

@@ -11,8 +11,10 @@ DoEditorUi(renderer_2d *Ui, model *Element, const char* Name, EDITOR_UI_FUNCTION
 
 
 
+
     PushNewRow(Ui);
     DoEditorUi(Ui, &Element->Mesh, "untextured_3d_geometry_buffer Mesh", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -21,13 +23,16 @@ DoEditorUi(renderer_2d *Ui, model *Element, const char* Name, EDITOR_UI_FUNCTION
 
 
 
+
     PushNewRow(Ui);
     DoEditorUi(Ui, &Element->Animation, "animation Animation", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
+
     PushNewRow(Ui);
-    DoEditorUi(Ui, &Element->Dim, "v3i Dim", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    // Select first member in union ..?
+
 
 
 

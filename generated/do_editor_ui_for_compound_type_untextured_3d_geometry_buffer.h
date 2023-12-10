@@ -26,8 +26,10 @@ DoEditorUi(renderer_2d *Ui, untextured_3d_geometry_buffer *Element, const char* 
 
 
 
+
     PushNewRow(Ui);
     DoEditorUi(Ui, &Element->At, "u32 At", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 

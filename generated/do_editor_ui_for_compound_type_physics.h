@@ -7,17 +7,20 @@ DoEditorUi(renderer_2d *Ui, physics *Element, const char* Name, EDITOR_UI_FUNCTI
     PushForceUpdateBasis(Ui, V2(20.f, 0.f));
     /* Padding.x += 20.f; */
     PushNewRow(Ui);
-    DoEditorUi(Ui, &Element->Velocity, "v3 Velocity", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    // Select first member in union ..?
 
-
-
-    PushNewRow(Ui);
-    DoEditorUi(Ui, &Element->Force, "v3 Force", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
     PushNewRow(Ui);
-    DoEditorUi(Ui, &Element->Delta, "v3 Delta", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    // Select first member in union ..?
+
+
+
+
+    PushNewRow(Ui);
+    // Select first member in union ..?
+
 
 
 
@@ -26,8 +29,10 @@ DoEditorUi(renderer_2d *Ui, physics *Element, const char* Name, EDITOR_UI_FUNCTI
 
 
 
+
     PushNewRow(Ui);
     DoEditorUi(Ui, &Element->Speed, "r32 Speed", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 

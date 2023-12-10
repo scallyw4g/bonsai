@@ -7,12 +7,14 @@ DoEditorUi(renderer_2d *Ui, aabb *Element, const char* Name, EDITOR_UI_FUNCTION_
     PushForceUpdateBasis(Ui, V2(20.f, 0.f));
     /* Padding.x += 20.f; */
     PushNewRow(Ui);
-    DoEditorUi(Ui, &Element->Min, "v3 Min", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    // Select first member in union ..?
+
 
 
 
     PushNewRow(Ui);
-    DoEditorUi(Ui, &Element->Max, "v3 Max", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    // Select first member in union ..?
+
 
 
 

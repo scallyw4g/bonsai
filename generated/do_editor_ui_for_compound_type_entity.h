@@ -11,13 +11,16 @@ DoEditorUi(renderer_2d *Ui, entity *Element, const char* Name, EDITOR_UI_FUNCTIO
 
 
 
+
     PushNewRow(Ui);
     DoEditorUi(Ui, &Element->P, "cp P", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
+
     PushNewRow(Ui);
-    DoEditorUi(Ui, &Element->EulerAngles, "v4 EulerAngles", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    // Select first member in union ..?
+
 
 
 
@@ -26,13 +29,16 @@ DoEditorUi(renderer_2d *Ui, entity *Element, const char* Name, EDITOR_UI_FUNCTIO
 
 
 
+
     PushNewRow(Ui);
-    DoEditorUi(Ui, &Element->CollisionVolumeRadius, "v3 CollisionVolumeRadius", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    // Select first member in union ..?
+
 
 
 
     PushNewRow(Ui);
     DoEditorUi(Ui, &Element->Physics, "physics Physics", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -51,8 +57,10 @@ DoEditorUi(renderer_2d *Ui, entity *Element, const char* Name, EDITOR_UI_FUNCTIO
 
 
 
+
     PushNewRow(Ui);
     DoEditorUi(Ui, &Element->Behavior, "entity_behavior_flags Behavior", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -61,8 +69,10 @@ DoEditorUi(renderer_2d *Ui, entity *Element, const char* Name, EDITOR_UI_FUNCTIO
 
 
 
+
     PushNewRow(Ui);
     DoEditorUi(Ui, &Element->UserData, "umm UserData", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
