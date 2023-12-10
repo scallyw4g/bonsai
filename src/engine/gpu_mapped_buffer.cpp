@@ -41,7 +41,7 @@ FlushBuffersToCard(gpu_mapped_element_buffer* Buffer)
 {
   TIMED_FUNCTION();
   b32 Result = FlushBuffersToCard(&Buffer->Handles);
-  Clear(&Buffer->Buffer);
+  /* Clear(&Buffer->Buffer); */
   return Result;
 }
 
@@ -130,7 +130,7 @@ MapGpuElementBuffer(gpu_element_buffer_handles *Handles)
   return Result;
 }
 
-link_internal untextured_3d_geometry_buffer *
+link_internal void
 MapGpuElementBuffer(gpu_mapped_element_buffer *GpuMap)
 {
   TIMED_FUNCTION();
@@ -146,7 +146,5 @@ MapGpuElementBuffer(gpu_mapped_element_buffer *GpuMap)
 
 
   GpuMap->Buffer = MapGpuElementBuffer(&GpuMap->Handles);
-
-  return &GpuMap->Buffer;
 }
 

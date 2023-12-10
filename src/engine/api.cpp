@@ -267,11 +267,18 @@ Bonsai_Render(engine_resources *Resources)
   // TODO(Jesse): Move into engine debug
   DebugHighlightWorldChunkBasedOnState(Graphics, EngineDebug->PickedChunk, &GpuMap->Buffer);
 
-  // NOTE(Jesse): GBuffer and ShadowMap must be rendered in series because they
-  // both do operate on the total scene geometry. The rest of the render passes
-  // operate on the textures they create and only render a quad.
-  RenderGBuffer(GpuMap, Graphics);
-  RenderShadowMap(GpuMap, Graphics);
+  Ensure( FlushBuffersToCard(GpuMap) );
+
+  if (GpuMap->Buffer.At)
+  {
+    // NOTE(Jesse): GBuffer and ShadowMap must be rendered in series because they
+    // both do operate on the total scene geometry. The rest of the render passes
+    // operate on the textures they create and only render a quad.
+    RenderGBuffer(GpuMap, Graphics);
+    RenderShadowMap(GpuMap, Graphics);
+  }
+
+  Clear(&GpuMap->Buffer);
 
   // NOTE(Jesse): I observed the AO lagging a frame behind if this is re-ordered
   // after the transparency/luminance textures.  I have literally 0 ideas as to

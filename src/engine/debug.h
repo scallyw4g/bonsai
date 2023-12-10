@@ -67,6 +67,8 @@ struct render_debug
 {
   u32 BytesSolidGeoLastFrame;
   u32 BytesTransGeoLastFrame;
+
+  u32 DrawCallsLastFrame;
 };
 
 struct engine_debug
