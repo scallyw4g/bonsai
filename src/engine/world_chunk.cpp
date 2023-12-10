@@ -1562,7 +1562,6 @@ BuildMipMesh( voxel *Voxels,
               s32 SrcIndex = TryGetIndex(SrcP, VoxDim);
               if (SrcIndex > -1)
               {
-
                 // FilterVoxels have the Filled flag set; don't carry forward the Src face flags
                 FilterVoxels[FilterIndex].Flags &= Voxels[SrcIndex].Flags;
               }
