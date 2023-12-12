@@ -113,13 +113,16 @@ void main()
       t2 = ModThresh(abs(CorrectedPos.xyz)*NormFix, 0.08f, MajorGridDim);
     }
 
+    v3 C0 = FinalColor.xyz;
     if (t1 > t2)
     {
-      FinalColor.xyz = mix(FinalColor.xyz, FinalColor.xyz*2.f, t1);;
+      v3 C1 = 2.f*FinalColor.xyz;
+      FinalColor.xyz = mix(C0, C1, t1);;
     }
     else
     {
-      FinalColor.xyz = mix(FinalColor.xyz, v3(0.0f), t2);
+      v3 C1 = 3.f*(1.f-FinalColor.xyz);
+      FinalColor.xyz = mix(C0, C1, t2);
     }
 
     /* FinalColor.x = float(DrawMajorGrid); */
