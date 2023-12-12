@@ -30,5 +30,6 @@
 #include <engine/voxel_synthesis.cpp>
 
 #include <engine/game_effects.cpp>
+#include <engine/terrain.cpp>
 
 #include <bonsai_stdlib/src/work_queue.cpp>

@@ -369,8 +369,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
       if (ChunkIsGarbage(Chunk))
       {
-        // NOTE(Jesse): This is an optimization; the engine marks chunks that
-        // have moved outside of the visible region as garbage.
+        // NOTE(Jesse): This is an optimization; the engine marks chunks that // have moved outside of the visible region as garbage.
         Chunk->Flags = Chunk_Uninitialized;
       }
       else

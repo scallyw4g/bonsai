@@ -6,51 +6,65 @@
 #include <game_types.h>
 
 
+
+BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
+{
+  Global_ThreadStates = AllThreads;
+  SetThreadLocal_ThreadIndex(ThreadIndex);
+}
+
 BONSAI_API_WORKER_THREAD_CALLBACK()
 {
-  if (ThreadLocal_ThreadIndex == INVALID_THREAD_LOCAL_THREAD_INDEX) { SetThreadLocal_ThreadIndex(Thread->Index); }
-
   b32 Result = True;
   switch (Entry->Type)
   {
     default: { Result = False; } break;
 
+    // NOTE(Jesse): Here we're going to provide an implementation for
+    // initializing a world chunk.
     case type_work_queue_entry_init_world_chunk:
     {
       volatile work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
       world_chunk *Chunk = Job->Chunk;
-      world_chunk_mesh_bitfield MeshBit = Job->MeshBit;
 
       if (ChunkIsGarbage(Chunk))
       {
+        // NOTE(Jesse): This is an optimization; the engine marks chunks that
+        // have moved outside of the visible region as garbage.
         Chunk->Flags = Chunk_Uninitialized;
       }
       else
       {
 
+#if 1
         {
-          s32 Frequency = 300;
-          s32 Amplititude = 220;
-          s32 StartingZDepth = 70;
+          // Custom FBM noise example generating slightly-more-complex game-world-like terrain
+          s32 Frequency = 0; // Ignored
+          s32 Amplititude = 0; // Ignored
+          s32 StartingZDepth = -140;
           u32 OctaveCount = 2;
 
           octave_buffer OctaveBuf = { OctaveCount, {} };
           OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
 
-          OctaveBuf.Octaves[0] = {V3(350, 150, 50), 50, 0.5f, V3(1.f)};
-          OctaveBuf.Octaves[1] = {V3(120, 60, 35),  15, 0.5f, V3(1.f)};
-          /* OctaveBuf.Octaves[1] = {V3(90,  60, 35),  25, V3(1.f)}; */
+          OctaveBuf.Octaves[0] = {V3(400, 400, 150), 350, 0.75f, V3(1)};
+          OctaveBuf.Octaves[1] = {V3(35, 35, 50), 50, 0.2f, V3(2.f)};
+          /* OctaveBuf.Octaves[2] = {V3(500, 500, 20), 200, V3(2.f)}; */
+          /* OctaveBuf.Octaves[2] = {75, 60, 1}; */
+          /* OctaveBuf.Octaves[3] = {37, 30, 0}; */
 
+
+          /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
+          /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
           chunk_init_flags InitFlags = ChunkInitFlag_Noop;
-          /* chunk_init_flags InitFlags    = ChunkInitFlag_GenMipMapLODs; */
-          /* chunk_init_flags InitFlags = chunk_init_flags(ChunkInitFlag_ComputeStandingSpots | ChunkInitFlag_GenMipMapLODs); */
-          InitializeChunkWithNoise( GrassyTerrain, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, MeshBit, InitFlags, (void*)&OctaveBuf);
+          InitializeChunkWithNoise( GrassyTerrain, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
         }
+#endif
+
       }
 
       FinalizeChunkInitialization(Chunk);
     } break;
-
   }
 
   return Result;
@@ -88,6 +102,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  v3 EmissionColor = Normalize(V3(3.f, 4.f, 0.1f)) * 5.f;
-  DoLight(&Lighting->Lights, V3(0.5f), EmissionColor);
+  f32 dt = Plat->dt;
+  f32 Speed = 80.f;
 }
