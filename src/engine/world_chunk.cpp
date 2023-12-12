@@ -1500,16 +1500,11 @@ BuildMipMesh( voxel *Voxels,
   /* v2 TransEmiss[VERTS_PER_FACE]; */
   matl Materials[VERTS_PER_FACE];
 
-  Assert(VoxDim >= InnerMax);
-
   s32 MipLevel = MeshBit;
-  /* s32 MipLevel = 2; */
-  /* s32 MipLevel = 4; */
-  /* s32 MipLevel = 8; */
-
-  Assert(MipLevel == 2 || MipLevel == 4 || MipLevel == 8 || MipLevel == 16);
-
   v3i InnerDim = InnerMax - InnerMin;
+
+  Assert(VoxDim >= InnerMax);
+  Assert(MipLevel == 2 || MipLevel == 4 || MipLevel == 8 || MipLevel == 16);
 
   // Filter is 1 larger on each dim than the Src needs such that we can filter
   // voxels on the exterior down to an additional cell
@@ -1518,7 +1513,6 @@ BuildMipMesh( voxel *Voxels,
   s32 FilterVoxelCount = s32(Volume(FilterDim));
   auto FilterVoxels = Allocate(voxel, TempMemory, FilterVoxelCount);
 
-
   DimIterator(tX, tY, tZ, FilterDim)
   {
     s32 FilterIndex = GetIndex(tX, tY, tZ, FilterDim);
@@ -1526,78 +1520,83 @@ BuildMipMesh( voxel *Voxels,
   }
 
 
-#if 1
   // Filter Src voxels on the exterior edge down to _all_ the exterior filter cells
   //
-  for ( s32 zIndex = 0; zIndex < VoxDim.z; zIndex ++ )
+  for ( s32 zIndex = VoxDim.z; zIndex >= 0; --zIndex )
+  for ( s32 yIndex = 0; yIndex < VoxDim.y; yIndex ++ )
+  for ( s32 xIndex = 0; xIndex < VoxDim.x; xIndex ++ )
   {
-    for ( s32 yIndex = 0; yIndex < VoxDim.y; yIndex ++ )
+    v3i BaseP = V3i(xIndex, yIndex, zIndex);
+
+    // NOTE(Jesse): This has a +(MipLevel-1) because the Src voxels
+    // absolute positions don't line up with the filter.
+    v3i FilterP = (BaseP+(MipLevel-1))/MipLevel;
+
+    // NOTE(Jesse): We constrain the filter output to be one filter cell
+    // larger than the inner dim on each side, but the whole input could be
+    // larger than that still.  At the moment it is in Z only.
+    s32 FilterIndex = TryGetIndex(FilterP, FilterDim);
+    if (FilterIndex > -1)
     {
-      for ( s32 xIndex = 0; xIndex < VoxDim.x; xIndex ++ )
+      for (s32 MipIndex = 0; MipIndex < MipLevel; ++MipIndex)
       {
-        v3i BaseP = V3i(xIndex, yIndex, zIndex);
-
-        // NOTE(Jesse): This has a +(MipLevel-1) because the Src voxels
-        // absolute positions don't line up with the filter.
-        v3i FilterP = (BaseP+(MipLevel-1))/MipLevel;
-
-        // NOTE(Jesse): We constrain the filter output to be one filter cell
-        // larger than the inner dim on each side, but the whole input could be
-        // larger than that still.  At the moment it is in Z only.
-        s32 FilterIndex = TryGetIndex(FilterP, FilterDim);
-        if (FilterIndex > -1)
+        for (s32 DirIndex = 0; DirIndex < 3; ++DirIndex)
         {
-          for (s32 MipIndex = 0; MipIndex < MipLevel; ++MipIndex)
+          v3i Dir = {};
+          Dir.E[DirIndex] = MipIndex;
+
+          v3i SrcP = BaseP + Dir;
+
+          // Skip voxels contributing to the inner range
+          if (IsInsideRange(InnerMin, SrcP, InnerMax)) continue; // Exclusive
+
+          s32 SrcIndex = TryGetIndex(SrcP, VoxDim);
+          if (SrcIndex > -1)
           {
-            for (s32 DirIndex = 0; DirIndex < 3; ++DirIndex)
-            {
-              v3i Dir = {};
-              Dir.E[DirIndex] = MipIndex;
-
-              v3i SrcP = BaseP + Dir;
-
-              // Skip voxels contributing to the inner range
-              if (IsInsideRange(InnerMin, SrcP, InnerMax)) continue;
-
-              s32 SrcIndex = TryGetIndex(SrcP, VoxDim);
-              if (SrcIndex > -1)
-              {
-                // FilterVoxels have the Filled flag set; don't carry forward the Src face flags
-                FilterVoxels[FilterIndex].Flags &= Voxels[SrcIndex].Flags;
-              }
-            }
+            // FilterVoxels have the Filled flag set; don't carry forward the Src face flags
+            FilterVoxels[FilterIndex].Flags &= Voxels[SrcIndex].Flags;
           }
         }
-
-
       }
     }
   }
-#endif
 
 
   // Filter src voxels on the interior down to their target filter cell
-  for ( s32 zIndex = InnerMin.z; zIndex < InnerMax.z; zIndex += MipLevel )
+  for ( s32 zIndex = InnerMax.z; zIndex >= InnerMin.z; zIndex -= MipLevel )
+  for ( s32 yIndex = InnerMin.y; yIndex < InnerMax.y; yIndex += MipLevel )
+  for ( s32 xIndex = InnerMin.x; xIndex < InnerMax.x; xIndex += MipLevel )
   {
-    for ( s32 yIndex = InnerMin.y; yIndex < InnerMax.y; yIndex += MipLevel )
+    v3i BaseP = V3i(xIndex, yIndex, zIndex);
+
+    voxel Aggregate = {};
+    s32 FillCount = 0;
+    for (s32 MipIndex = 0; MipIndex < MipLevel; ++MipIndex)
     {
-      for ( s32 xIndex = InnerMin.x; xIndex < InnerMax.x; xIndex += MipLevel )
+      for (s32 DirIndex = 2; DirIndex >= 0; --DirIndex)
+      /* for (s32 DirIndex = 0; DirIndex < 3; ++DirIndex) */
       {
-        v3i BaseP = V3i(xIndex, yIndex, zIndex);
-
-        voxel Aggregate = {};
-        for (s32 MipIndex = 0; MipIndex < MipLevel; ++MipIndex)
+        v3i Dir = {};
+        if (DirIndex == 2)
         {
-          for (s32 DirIndex = 0; DirIndex < 3; ++DirIndex)
-          {
-            v3i Dir = {};
-            Dir.E[DirIndex] = MipLevel;
+          Dir.E[DirIndex] = -MipIndex;
+        }
+        else
+        {
+          Dir.E[DirIndex] = MipIndex;
+        }
 
-            v3i SrcP = BaseP + Dir;
-            s32 SrcIndex = TryGetIndex(SrcP, VoxDim);
-            if (SrcIndex > -1)
+        v3i SrcP = BaseP + Dir;
+        s32 SrcIndex = TryGetIndex(SrcP, VoxDim);
+        if (SrcIndex > -1)
+        {
+          if ( (Voxels[SrcIndex].Flags & Voxel_Filled) )
+          {
+            ++FillCount;
+
+            if ( (Voxels[SrcIndex].Flags & VoxelFaceMask) )
             {
-              if ( (Voxels[SrcIndex].Flags & Voxel_Filled) )
+              if ((Aggregate.Flags & Voxel_Filled) == 0)
               {
                 Aggregate.Flags = Voxel_Filled;
                 Aggregate.Color = Voxels[SrcIndex].Color;
@@ -1605,14 +1604,32 @@ BuildMipMesh( voxel *Voxels,
             }
           }
         }
-
-        v3i TmpP = 1+ V3i(xIndex, yIndex, zIndex)/MipLevel;
-
-        s32 ThisTmpIndex = GetIndex(TmpP, FilterDim);
-        FilterVoxels[ThisTmpIndex] = Aggregate;
       }
     }
+
+    v3i TmpP = 1+ (BaseP/MipLevel);
+    s32 ThisTmpIndex = GetIndex(TmpP, FilterDim);
+
+    // NOTE(Jesse): Doing a conditional filter on the number of filled
+    // voxels helps with popping quite a bit, but it also has the effect
+    // that we can 'see' through thin surfaces.
+    //
+    // We might be able to fix this by running MarkBoundaryVoxels twice
+    // such that we only consider assigning colors from exterior voxels ..?
+#if 1
+    FilterVoxels[ThisTmpIndex] = Aggregate;
+#else
+    if (FillCount >= ((MipLevel*MipLevel)/2))
+    {
+      FilterVoxels[ThisTmpIndex] = Aggregate;
+    }
+    else
+    {
+      FilterVoxels[ThisTmpIndex] = {};
+    }
+#endif
   }
+
 
   MarkBoundaryVoxels_NoExteriorFaces( FilterVoxels, FilterDim, InnerMin, InnerMax );
 
@@ -1628,14 +1645,10 @@ BuildMipMesh( voxel *Voxels,
         voxel *Voxel = FilterVoxels + Index;
 
         voxel_position ActualP = TmpVoxP-1;
-        /* u8 C =  ((Voxel->Color + RandomU32(&ColorEntropy)) & 0xFF); */
-        /* u8 C = Voxel->Color; */
-
-        // TODO(Jesse): This copy could be avoided in multiple ways, and should be.
-        /* FillColorArray(C, FaceColors, ColorPallette, VERTS_PER_FACE); */
 
         v3 Color = GetColorData(Voxel->Color);
         f32 Trans = (f32)Voxel->Transparency / 255.f;
+        // TODO(Jesse): This copy could be avoided in multiple ways, and should be.
         FillArray(VertexMaterial(Color, Trans, 0.f), Materials, VERTS_PER_FACE);
 
         if (Voxel->Flags & Voxel_RightFace)
@@ -1650,19 +1663,22 @@ BuildMipMesh( voxel *Voxels,
           LeftFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, LeftFaceNormalData, Materials);
         }
+
+
         if (Voxel->Flags & Voxel_BottomFace)
         {
           v3 Dim = DoZStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_BottomFace, Voxel->Color, Voxel->Transparency);
           BottomFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, BottomFaceNormalData, Materials);
         }
-
         if (Voxel->Flags & Voxel_TopFace)
         {
           v3 Dim = DoZStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_TopFace, Voxel->Color, Voxel->Transparency);
           TopFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
           BufferVertsDirect(DestGeometry, 6, VertexData, TopFaceNormalData, Materials);
         }
+
+
         if (Voxel->Flags & Voxel_FrontFace)
         {
           v3 Dim = DoYStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_FrontFace, Voxel->Color, Voxel->Transparency);
@@ -3287,6 +3303,10 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
 
   Assert(!ChunkIsGarbage(DestChunk));
 
+  Assert(MeshBit == MeshBit_Lod0);
+
+
+
   // TODO(Jesse): Pretty sure this is unnecessary
   ClearChunkVoxels(DestChunk->Voxels, DestChunk->Dim);
 
@@ -3294,8 +3314,7 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
   /* untextured_3d_geometry_buffer* DebugMesh = 0; */
   /* untextured_3d_geometry_buffer* TransparencyMesh = 0; */
 
-  s32 LodLevel = ToIndex(MeshBit) + 1;
-  v3i SynChunkDim = (WorldChunkDim + Global_ChunkApronDim) / LodLevel;
+  v3i SynChunkDim = (WorldChunkDim + Global_ChunkApronDim);
   v3i SynChunkP = DestChunk->WorldP;
 
 
@@ -3386,21 +3405,10 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
 #endif
 
   FullBarrier;
-#if 0
 
-  if (Mesh)
-  {
-    if (Mesh->At)
-    { Ensure( AtomicReplaceMesh(&DestChunk->Meshes, MeshBit, Mesh, Mesh->Timestamp) == 0); }
-    else
-    { DeallocateMesh(Mesh, &EngineResources->MeshFreelist, Thread->PermMemory); }
-  }
-#endif
-
-  // NOTE(Jesse): If RebuildWorldChunkMesh took a dest
-  // threadsafe_geometry_buffer this copy could be avoided.
+  // TODO(Jesse): Have to atomic replace these meshes
+  // nocheckin
   DestChunk->Meshes = SyntheticChunk->Meshes;
-  /* DestChunk->Flags = chunk_flag(DestChunk->Flags & ~Chunk_MeshUploadedToGpu); */
 
   FinalizeChunkInitialization(DestChunk);
 }

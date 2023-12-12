@@ -273,6 +273,10 @@ struct world_chunk
   // smaller, which is probably pretty worth.
   lod_element_buffer Meshes;
 
+  /* threadsafe_geometry_buffer TransparentMeshes; */
+  /* gpu_mapped_element_buffer  GpuBuffers[MeshIndex_Count]; */
+
+
   voxel_position_cursor StandingSpots;
 
   v3i WorldP;

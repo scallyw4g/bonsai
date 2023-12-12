@@ -1093,6 +1093,7 @@ DrawWorldToGBuffer(engine_resources *Engine)
           auto MeshBit = MeshBit_None;
 
           r32 CameraToChunkSquared = DistanceSq(CameraP, ChunkP);
+#if 1
           if (CameraToChunkSquared > Square(400*32))
           {
             if (HasGpuMesh(&Chunk->Meshes, MeshBit_Lod4)) { MeshBit = MeshBit_Lod4; }
@@ -1113,6 +1114,13 @@ DrawWorldToGBuffer(engine_resources *Engine)
           {
            if (HasGpuMesh(&Chunk->Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; }
           }
+#else
+          /* if (HasGpuMesh(&Chunk->Meshes, MeshBit_Lod4)) { MeshBit = MeshBit_Lod4; } */
+          /* if (HasGpuMesh(&Chunk->Meshes, MeshBit_Lod3)) { MeshBit = MeshBit_Lod3; } */
+          /* if (HasGpuMesh(&Chunk->Meshes, MeshBit_Lod2)) { MeshBit = MeshBit_Lod2; } */
+          /* if (HasGpuMesh(&Chunk->Meshes, MeshBit_Lod1)) { MeshBit = MeshBit_Lod1; } */
+          if (HasGpuMesh(&Chunk->Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; }
+#endif
 
           if (MeshBit != MeshBit_None)
           {
