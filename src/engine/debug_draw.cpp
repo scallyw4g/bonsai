@@ -113,7 +113,7 @@ DEBUG_DrawSimSpaceVectorAt(engine_resources *Engine, v3 SimP, v3 Vector, u32 Col
 
   untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_LINE);
 
-  v3 Offset = GetRenderP(Engine, SimP);
+  v3 Offset = GetRenderP(Engine, SimSpaceToCanonical(World, SimP));
   DEBUG_DrawLine(&Mesh, Offset, Vector + Offset, ColorIndex, Thickness );
 }
 
@@ -203,9 +203,6 @@ DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, v3 MinP, v3 MaxP, u32 ColorI
   DEBUG_DrawLine_Aligned(Mesh, BotFL, BotFR, ColorIndex, Thickness);
   DEBUG_DrawLine_Aligned(Mesh, BotFL, BotRL, ColorIndex, Thickness);
   DEBUG_DrawLine_Aligned(Mesh, BotFR, BotRR, ColorIndex, Thickness);
-
-
-  return;
 }
 
 link_internal void

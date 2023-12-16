@@ -63,6 +63,10 @@ See the docs on the [build process](docs/01_build_process.md).
 
 [ ] Water : https://www.youtube.com/watch?v=5yhDb9dzJ58
 
+[ ] Fluids : https://andrewkchan.dev/posts/fire.html
+
+[ ] Remove meshing entirely? https://www.youtube.com/watch?v=4xs66m1Of4A
+
 -------------------------------------------------------------------------------
 ## Terrain Generation
 
@@ -73,6 +77,10 @@ See the docs on the [build process](docs/01_build_process.md).
 
 [ ] Better perlin noise (with derivitives!)
 * https://www.scratchapixel.com/lessons/procedural-generation-virtual-worlds/perlin-noise-part-2/perlin-noise-computing-derivatives.html
+
+[ ] Inigo Quilez noise?
+* Value Noise : https://www.shadertoy.com/view/lsf3WH
+* Gradient Noise : https://www.shadertoy.com/view/Xsl3Dl
 
 -------------------------------------------------------------------------------
 ## Sound
@@ -91,3 +99,5 @@ See the docs on the [build process](docs/01_build_process.md).
 [ ] Octree ? https://graphics.tudelft.nl/Publications-new/2020/CBE20/ModifyingCompressedVoxels-main.pdf
 
 [ ] Better floating-point rng : https://www.corsix.org/content/higher-quality-random-floats
+
+[ ] Better greedy meshing? https://www.youtube.com/watch?v=4xs66m1Of4A

@@ -46,6 +46,9 @@ struct voxel
   u8 Flags;
   u8 Transparency;
   u16 Color;
+
+  v3 Derivs;
+  v3 DebugColor;
 };
 
 struct voxel_lighting
@@ -255,18 +258,25 @@ struct world_chunk
 {
   /* poof( use_struct(chunk_data) ) */
 
-  union
-  {
-    chunk_data ChunkData;
+/*   union */
+/*   { */
+/*     chunk_data ChunkData; */
+    /* struct */
+    /* { */
+    /*   chunk_flag Flags; */
+    /*   v3i Dim; // TODO(Jesse): can be 3x u8 instead of 3x s32 */
+    /*   voxel *Voxels; */
+    /*   voxel_lighting *VoxelLighting; */
+    /* }; */
 
-    struct
-    {
+/*   }; */
+
+
       chunk_flag Flags;
       v3i Dim; // TODO(Jesse): can be 3x u8 instead of 3x s32
       voxel *Voxels;
       voxel_lighting *VoxelLighting;
-    };
-  };
+
 
   // TODO(Jesse): This stores pointers that are completely ephemeral and as
   // such are wasted space.  We could remove those to make this struct 24 bytes

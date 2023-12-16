@@ -21,7 +21,6 @@ GetRenderP(canonical_position P, camera *Camera, world_position WorldChunkDim)
 inline v3
 GetRenderP( chunk_dimension WorldChunkDim, canonical_position P, camera *Camera)
 {
-  TIMED_FUNCTION();
   v3 Result = GetRenderP(P, Camera, WorldChunkDim);
   return Result;
 }

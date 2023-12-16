@@ -395,7 +395,7 @@ DrawVoxel( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelCenter, v3 Color
   vertex_material Materials[VERTS_PER_FACE];
   FillArray(VertexMaterial(Color, TransEmiss.E[0], TransEmiss.E[1]), Materials, VERTS_PER_FACE);
 
-  v3 MinP = RenderP_VoxelCenter - (Diameter*0.5);
+  v3 MinP = RenderP_VoxelCenter - (Diameter*0.5f);
 
   RightFaceVertexData( MinP, Diameter, VertexData);
   BufferVertsChecked(Mesh, 6, VertexData, RightFaceNormalData, Materials);
@@ -464,6 +464,6 @@ DEBUG_DrawLine_Aligned( untextured_3d_geometry_buffer *Mesh,
   v3 Center = P1 + Radius;
 
   v3 DrawDim = Max(Abs(Radius*2.f), V3(Thickness));
-  DrawVoxel(Mesh, Center, ColorIndex, DrawDim);
+  DrawVoxel(Mesh, Center, ColorIndex, DrawDim, V2(0.f, 13.f));
 }
 

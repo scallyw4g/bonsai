@@ -29,15 +29,15 @@
 #     BuildDebugSystem
 
 
-# OPT="-O2"
+OPT="-O2"
 ./make.sh $OPT \
   BuildExecutables \
+  BuildDebugSystem \
   BuildSingleExample examples/graveyard \
   BuildSingleExample examples/turn_based2 \
   # BuildSingleExample examples/terrain_gen \
   # BuildSingleExample examples/turn_based \
   # BuildSingleExample examples/transparency \
-  # BuildDebugSystem \
   # BuildSingleExample examples/blank_project \
   # BuildSingleExample examples/transparency \
   # BuildSingleExample examples/tools/voxel_synthesis_rule_baker \

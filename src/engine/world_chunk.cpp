@@ -308,8 +308,7 @@ FreeWorldChunk(world *World, world_chunk *Chunk, tiered_mesh_freelist* MeshFreel
   World->ChunkFreelistSentinal.Next = Chunk;
   World->ChunkFreelistSentinal.Next->Next = Next;
 
-
-  ZeroMemory( Chunk->Voxels, sizeof(voxel)*umm(Volume(Chunk->Dim)) );
+  /* ZeroMemory( Chunk->Voxels, sizeof(voxel)*umm(Volume(Chunk->Dim)) ); */
 }
 
 link_internal world_chunk*
@@ -1396,10 +1395,8 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
         // TODO(Jesse): This copy could be avoided in multiple ways, and should be.
         /* FillColorArray(C, FaceColors, ColorPallette, VERTS_PER_FACE); */
 
-
-        v3 Color = GetColorData(Voxel->Color);
         f32 Trans = (f32)Voxel->Transparency / 255.f;
-        FillArray(VertexMaterial(Color, Trans, 0.f), Materials, VERTS_PER_FACE);
+        FillArray(VertexMaterial(Voxel->DebugColor, Trans, 0.f), Materials, VERTS_PER_FACE);
 
         untextured_3d_geometry_buffer *Dest = {};
         if (Voxel->Transparency) { Dest = DestTransparentGeometry; } else { Dest = DestGeometry; }
@@ -1522,7 +1519,8 @@ BuildMipMesh( voxel *Voxels,
 
   // Filter Src voxels on the exterior edge down to _all_ the exterior filter cells
   //
-  for ( s32 zIndex = VoxDim.z; zIndex >= 0; --zIndex )
+  /* for ( s32 zIndex = VoxDim.z; zIndex >= 0; --zIndex ) */
+  for ( s32 zIndex = 0; zIndex < VoxDim.z; zIndex ++ )
   for ( s32 yIndex = 0; yIndex < VoxDim.y; yIndex ++ )
   for ( s32 xIndex = 0; xIndex < VoxDim.x; xIndex ++ )
   {
@@ -1563,7 +1561,8 @@ BuildMipMesh( voxel *Voxels,
 
 
   // Filter src voxels on the interior down to their target filter cell
-  for ( s32 zIndex = InnerMax.z; zIndex >= InnerMin.z; zIndex -= MipLevel )
+  /* for ( s32 zIndex = InnerMax.z; zIndex >= InnerMin.z; zIndex -= MipLevel ) */
+  for ( s32 zIndex = InnerMin.z; zIndex < InnerMax.z; zIndex += MipLevel )
   for ( s32 yIndex = InnerMin.y; yIndex < InnerMax.y; yIndex += MipLevel )
   for ( s32 xIndex = InnerMin.x; xIndex < InnerMax.x; xIndex += MipLevel )
   {
@@ -3308,7 +3307,7 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
 
 
   // TODO(Jesse): Pretty sure this is unnecessary
-  ClearChunkVoxels(DestChunk->Voxels, DestChunk->Dim);
+  /* ClearChunkVoxels(DestChunk->Voxels, DestChunk->Dim); */
 
   untextured_3d_geometry_buffer* Mesh = 0;
   /* untextured_3d_geometry_buffer* DebugMesh = 0; */
@@ -3320,6 +3319,36 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
 
   world_chunk *SyntheticChunk = AllocateWorldChunk(Thread->TempMemory, SynChunkP, SynChunkDim );
 
+#if 0
+  u32 SyntheticChunkSum = NoiseCallback( Thread->PerlinNoise,
+                                         DestChunk, WorldChunkDim, {},
+                                         GRASS_GREEN, Frequency, Amplititude, zMin,
+                                         WorldChunkDim, UserData );
+
+  MarkBoundaryVoxels_NoExteriorFaces(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim);
+  SetFlag(DestChunk, Chunk_VoxelsInitialized);
+
+  if (SyntheticChunkSum)
+  {
+    untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
+
+    RebuildWorldChunkMesh(Thread, DestChunk, {}, WorldChunkDim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
+    TempMesh->At = 0;
+
+    RebuildWorldChunkMesh(Thread, DestChunk, {}, WorldChunkDim, MeshBit_Lod1, TempMesh, Thread->TempMemory);
+    TempMesh->At = 0;
+
+    RebuildWorldChunkMesh(Thread, DestChunk, {}, WorldChunkDim, MeshBit_Lod2, TempMesh, Thread->TempMemory);
+    TempMesh->At = 0;
+
+    RebuildWorldChunkMesh(Thread, DestChunk, {}, WorldChunkDim, MeshBit_Lod3, TempMesh, Thread->TempMemory);
+    TempMesh->At = 0;
+
+    RebuildWorldChunkMesh(Thread, DestChunk, {}, WorldChunkDim, MeshBit_Lod4, TempMesh, Thread->TempMemory);
+    TempMesh->At = 0;
+  }
+#else
+
   u32 SyntheticChunkSum = NoiseCallback( Thread->PerlinNoise,
                                          SyntheticChunk, SynChunkDim, Global_ChunkApronMinDim,
                                          GRASS_GREEN, Frequency, Amplititude, zMin,
@@ -3328,6 +3357,7 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
   MarkBoundaryVoxels_NoExteriorFaces(SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
 
   CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Global_ChunkApronMinDim);
+#endif
 
   // NOTE(Jesse): You can use this for debug, but it doesn't work if you change it to NoExteriorFaces
   /* MarkBoundaryVoxels_MakeExteriorFaces(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim); */
@@ -3961,7 +3991,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
   voxel *CopiedVoxels = Allocate(voxel, Thread->PermMemory, TotalVoxels);
 
-  voxel UnsetVoxel = { 0xff, 0xff, 0xffff };
+  voxel UnsetVoxel = { 0xff, 0xff, 0xffff, {}, {}};
   for (u32 VoxelIndex = 0; VoxelIndex < TotalVoxels; ++VoxelIndex) { CopiedVoxels[VoxelIndex] = UnsetVoxel; }
 
   v3i SimSpaceQueryMinP = SimSpaceQueryAABB.Min;
@@ -4192,7 +4222,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
         switch(Mode)
         {
           InvalidCase(WorldUpdateOperationMode_None);
-          case WorldUpdateOperationMode_Additive:    { NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor, }; } break;
+          case WorldUpdateOperationMode_Additive:    { NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor, {}, {}}; } break;
           case WorldUpdateOperationMode_Subtractive: {} break;
         }
 
@@ -4799,7 +4829,7 @@ GetVoxelPointer(picked_voxel *Pick, picked_voxel_position Pos)
 
   if (Pick->Chunks[PickedVoxel_FirstFilled].Chunk)
   {
-    world_chunk *Chunk = Pick->Chunks[PickedVoxel_FirstFilled].Chunk;
+    world_chunk *Chunk = Pick->Chunks[Pos].Chunk;
     s32 Index = GetIndex(V3i(Pick->Picks[Pos].Offset), Chunk->Dim);
     Result = Chunk->Voxels + Index;
   }

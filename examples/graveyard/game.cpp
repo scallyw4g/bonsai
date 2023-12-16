@@ -41,14 +41,16 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           // Custom FBM noise example generating slightly-more-complex game-world-like terrain
           s32 Frequency = 0; // Ignored
           s32 Amplititude = 0; // Ignored
-          s32 StartingZDepth = -140;
-          u32 OctaveCount = 2;
+          s32 StartingZDepth = -50;
+          u32 OctaveCount = 1;
 
           octave_buffer OctaveBuf = { OctaveCount, {} };
           OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
 
-          OctaveBuf.Octaves[0] = {V3(400, 400, 150), 350, 0.75f, V3(1)};
-          OctaveBuf.Octaves[1] = {V3(35, 35, 50), 50, 0.2f, V3(2.f)};
+          OctaveBuf.Octaves[0] = {V3(300, 300, 300), 1.f, 1.0f, V3(1)};
+
+          /* OctaveBuf.Octaves[0] = {V3(400, 400, 350), 150, 1.0f, V3(1)}; */
+          /* OctaveBuf.Octaves[1] = {V3(35, 35, 50), 50, 0.2f, V3(2.f)}; */
           /* OctaveBuf.Octaves[2] = {V3(500, 500, 20), 200, V3(2.f)}; */
           /* OctaveBuf.Octaves[2] = {75, 60, 1}; */
           /* OctaveBuf.Octaves[3] = {37, 30, 0}; */

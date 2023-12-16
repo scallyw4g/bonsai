@@ -220,144 +220,119 @@ GrassyTerrain( perlin_noise *Noise,
         Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
 
         r32 NoiseValue = 0.f;
-        for (u32 OctaveIndex = 0; OctaveIndex < OctaveCount; ++OctaveIndex)
-        {
-          octave *Octave = OctaveBuf->Octaves+OctaveIndex;
+        v3 Derivs = V3(0);
+        v3 TerrainNormal = V3(0);
+        /* for (u32 OctaveIndex = 0; OctaveIndex < OctaveCount; ++OctaveIndex) */
+        OctaveCount = 1;
+        /* for (u32 OctaveIndex = 0; OctaveIndex < OctaveCount; ++OctaveIndex) */
+        /* { */
+          /* octave *Octave = OctaveBuf->Octaves+OctaveIndex; */
 
+#if 0
           f32 InX = SafeDivide0((x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)), Octave->Freq.x);
           f32 InY = SafeDivide0((y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y)), Octave->Freq.y);
+          /* f32 InY = 1.f; */
           f32 InZ = SafeDivide0((z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z)), Octave->Freq.z);
+          /* f32 InZ = 1.f; */
+#else
+          /* f32 InX = f32(WorldX); */
+          /* f32 InY = f32(WorldY); */
+          /* f32 InZ = f32(WorldZ); */
 
-          r32 Warp = PerlinNoise(InX, InY, InZ);
-          v3 WarpFactor = Warp*Octave->WarpStrength;
+          /* f32 InX = f32(r64(WorldX)/100.0); */
+          /* f32 InY = f32(r64(WorldY)/100.0); */
+          /* f32 InZ = f32(r64(WorldZ)/100.0); */
 
-          r32 N = PerlinNoise(InX+WarpFactor.x, InY+WarpFactor.y, InZ+WarpFactor.z);
+          f32 InX = f32(x/32.f + (WorldChunkDim.x*Chunk->WorldP.x)/32.f) / 10.f;
+          f32 InY = f32(y/32.f + (WorldChunkDim.y*Chunk->WorldP.y)/32.f) / 10.f;
+          f32 InZ = f32(z/32.f + (WorldChunkDim.z*Chunk->WorldP.z)/32.f) / 10.f;
 
-          Assert(N <= 1.05f);
-          Assert(N > -1.05f);
+          /* f32 InX = f32(x/32.f + (WorldChunkDim.x*Chunk->WorldP.x)/32.f); */
+          /* f32 InY = f32(y/32.f + (WorldChunkDim.y*Chunk->WorldP.y)/32.f); */
+          /* f32 InZ = f32(z/32.f + (WorldChunkDim.z*Chunk->WorldP.z)/32.f); */
 
-          NoiseValue += (N*Octave->Amp)*Octave->Strength;
-        }
+          /* InX = 1.f; */
+          /* InY = 1.f; */
+          /* InZ = 1.f; */
 
-        b32 NoiseChoice = r64(NoiseValue) > r64(WorldZBiased);
+/*           f32 InX = f32(x/32.f + (WorldChunkDim.x*Chunk->WorldP.x)/32.f)/2.f; */
+/*           f32 InY = f32(y/32.f + (WorldChunkDim.y*Chunk->WorldP.y)/32.f)/2.f; */
+/*           f32 InZ = f32(z/32.f + (WorldChunkDim.z*Chunk->WorldP.z)/32.f)/2.f; */
+#endif
+
+          /* r32 Warp = PerlinNoise(InX, InY, InZ); */
+          /* v3 WarpFactor = Warp*Octave->WarpStrength; */
+          v3 WarpFactor = {};
+
+          /* r32 N = IQ_QuinticGradientNoise(V3(InX+WarpFactor.x, InZ+WarpFactor.z, InY+WarpFactor.y)); */
+          /* r32 N = IQ_ValueNoise_AnalyticNormals(InX+WarpFactor.x, InZ+WarpFactor.z, InY+WarpFactor.y,  &Derivs); */
+          /* r32 N = IQ_ValueNoise_AnalyticNormals(InX+WarpFactor.x, InZ+WarpFactor.z, InY+WarpFactor.y,  &Derivs); */
+          /* r32 N = PerlinNoise_Derivitives0(InX+WarpFactor.x, InY+WarpFactor.y, InZ+WarpFactor.z, &Derivs); */
+          r32 N = PerlinNoise_Derivitives1(InX+WarpFactor.x, InY+WarpFactor.y, InZ+WarpFactor.z, &Derivs);
+
+          /* Assert(N <= 1.05f); */
+          /* Assert(N > -1.05f); */
+
+          /* NoiseValue += (N*Octave->Amp)*Octave->Strength; */
+          NoiseValue = N;
+
+          /* break; */
+        /* } */
+
+        Chunk->Voxels[VoxIndex].Derivs = Derivs;
+
+        /* v3 Tangent, Bitangent, Normal; */
+        /* CalculateTBN(Derivs, &Tangent, &Bitangent, &Normal); */
+        /* v3 Normal = Derivs; */
+        v3 Normal = CalcNormal(V3(InX, InY, InZ), PerlinNoise_Derivitives1 );
+
+        /* Chunk->Voxels[VoxIndex].DebugColor = Derivs; */
+        Chunk->Voxels[VoxIndex].DebugColor = Normal;
+
+        /* Info("%f", NoiseValue); */
+        b32 NoiseChoice = r32(NoiseValue) > (-0.15f); //r64(WorldZBiased);
 
         u16 StartColorMin = GREY_4;
         u16 StartColorMax = GREY_6;
-        u16 ThisColor = SafeTruncateToU16(umm(RandomBetween(StartColorMin, &GenColorEntropy, StartColorMax)));
+        /* u16 ThisColor = SafeTruncateToU16(umm(RandomBetween(StartColorMin, &GenColorEntropy, StartColorMax))); */
+        u16 ThisColor = StartColorMin;
 
         u8 ThisTransparency = 0;
 
-        s32 SnowThreshold = 100;
+        s32 SnowThreshold   = 100;
+        s32 SandThreshold   = 3;
+        s32 GravelThreshold = 1;
+        s32 WaterThreshold  = 0;
+
         if (NoiseChoice == True && WorldZ > SnowThreshold)
         {
           ThisColor = WHITE;
         }
 
-        s32 SandThreshold = 3;
         if (NoiseChoice == True && WorldZ < SandThreshold)
         {
           ThisColor = SAND;
         }
 
-        s32 GravelThreshold = 1;
         if (NoiseChoice == True && WorldZ < GravelThreshold)
         {
           ThisColor = GRAVEL;
         }
 
-        s32 WaterThreshold = 0;
         if (NoiseChoice == False && WorldZ < WaterThreshold)
         {
-          NoiseChoice = True;
-          ThisColor = BLUE;
-          ThisTransparency = 255;
+          /* NoiseChoice = True; */
+          /* ThisColor = BLUE; */
+          /* ThisTransparency = 255; */
         }
 
-        s32 Below = TryGetIndex(x, y, z-1, Dim);
-        s32 B0 = TryGetIndex(x+1, y, z-1, Dim);
-        s32 B1 = TryGetIndex(x-1, y, z-1, Dim);
-        s32 B2 = TryGetIndex(x, y+1, z-1, Dim);
-        s32 B3 = TryGetIndex(x, y-1, z-1, Dim);
-
-        u32 CornersFilled = 0;
-        if (B0 > -1) { CornersFilled += (Chunk->Voxels[B0].Flags & Voxel_Filled); }
-        if (B1 > -1) { CornersFilled += (Chunk->Voxels[B1].Flags & Voxel_Filled); }
-        if (B2 > -1) { CornersFilled += (Chunk->Voxels[B2].Flags & Voxel_Filled); }
-        if (B3 > -1) { CornersFilled += (Chunk->Voxels[B3].Flags & Voxel_Filled); }
-
-        if (NoiseChoice == False)
+        /* if (NoiseChoice && ThisColor == StartColorMin) */
+        if (NoiseChoice)
         {
-          /* s32 Above = TryGetIndex(x, y, z+1, Dim); */
-          if (Below > -1)
+          /* if (Dot(TerrainNormal, V3(0, 0, 1)) > 0.5f) */
+          if (Dot(Derivs, V3(0, 0, 1)) > 0.5f)
           {
-            if ( CornersFilled > 3 &&
-                 Chunk->Voxels[Below].Flags & Voxel_Filled &&
-                 Chunk->Voxels[Below].Color >= StartColorMin && Chunk->Voxels[Below].Color <= StartColorMax )
-            {
-              NoiseChoice = True;
-              ThisColor = DIRT;
-            }
-
-            f32 InX = SafeDivide0((x + SrcToDest.x + ( WorldChunkDim.x*Chunk->WorldP.x)), 10.f);
-            f32 InY = SafeDivide0((y + SrcToDest.y + ( WorldChunkDim.y*Chunk->WorldP.y)), 10.f);
-            f32 InZ = SafeDivide0((z + SrcToDest.z + ( WorldChunkDim.z*Chunk->WorldP.z)), 10.f);
-
-            u16 GrassColorMin = GRASS_GREEN;
-            u16 GrassColorMax = GRASS_GREEN+2;
-
-            r32 GrassChance = PerlinNoise(InX, InY, InZ);
-            if (Chunk->Voxels[Below].Flags&Voxel_Filled &&
-                Chunk->Voxels[Below].Color == DIRT)
-            {
-              /* ThisColor = SafeTruncateToU16(umm(RandomBetween(GrassColorMin, &GenColorEntropy, GrassColorMax))); */
-              NoiseChoice = True;
-
-              ThisColor = GrassColorMin;
-              if (GrassChance > 0.45f) { ThisColor = GrassColorMin+1; }
-              if (GrassChance > 0.88f) { ThisColor = GrassColorMin+2; }
-            }
-
-            if (Chunk->Voxels[Below].Flags&Voxel_Filled &&
-                Chunk->Voxels[Below].Color >= GrassColorMin && 
-                Chunk->Voxels[Below].Color <= GrassColorMax )
-            {
-              r32 GrassFilter = RandomUnilateral(&GenColorEntropy);
-              GrassChance = GrassFilter > 0.5f? GrassChance : 0.f;
-              if (GrassChance > 0.70f)
-              {
-                ThisColor = Chunk->Voxels[Below].Color;
-                NoiseChoice = True;
-              }
-              if (GrassChance > 0.997f)
-              {
-                ThisColor = RED;
-              }
-              if (GrassChance > 0.998f)
-              {
-                ThisColor = YELLOW;
-              }
-              if (GrassChance > 0.999f)
-              {
-                ThisColor = PINK;
-              }
-            }
-          }
-        }
-        else // NoiseChoice == True
-        {
-          if (Below > -1)
-          {
-            if (ThisColor == StartColorMin && (Chunk->Voxels[Below].Flags&Voxel_Filled)==0 )
-            {
-              r32 VineChance = RandomUnilateral(&GenColorEntropy);
-              if (CornersFilled <= 2 && VineChance > 0.9f)
-              {
-                ThisColor = GRASS_GREEN;
-                while (RandomUnilateral(&GenColorEntropy) > 0.95f)
-                {
-                }
-              }
-            }
+            ThisColor = DIRT;
           }
         }
 
