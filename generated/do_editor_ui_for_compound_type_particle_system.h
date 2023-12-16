@@ -91,7 +91,10 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, const char* Name, EDITOR_U
 
 
     PushNewRow(Ui);
-    // Select first member in union ..?
+    /* member.member(0, (union_member) { */
+    /* DoEditorUi(Ui, &Element->(union_member.name), "union_member.type union_member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
+    /* }) */
+    DoEditorUi(Ui, &Element->ParticleStartingDim, "v3 ParticleStartingDim", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -103,13 +106,19 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, const char* Name, EDITOR_U
 
 
     PushNewRow(Ui);
-    // Select first member in union ..?
+    /* member.member(0, (union_member) { */
+    /* DoEditorUi(Ui, &Element->(union_member.name), "union_member.type union_member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
+    /* }) */
+    DoEditorUi(Ui, &Element->ParticleTurbMin, "v3 ParticleTurbMin", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
 
     PushNewRow(Ui);
-    // Select first member in union ..?
+    /* member.member(0, (union_member) { */
+    /* DoEditorUi(Ui, &Element->(union_member.name), "union_member.type union_member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
+    /* }) */
+    DoEditorUi(Ui, &Element->ParticleTurbMax, "v3 ParticleTurbMax", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 

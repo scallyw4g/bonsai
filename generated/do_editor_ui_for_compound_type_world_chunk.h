@@ -7,8 +7,27 @@ DoEditorUi(renderer_2d *Ui, world_chunk *Element, const char* Name, EDITOR_UI_FU
     PushForceUpdateBasis(Ui, V2(20.f, 0.f));
     /* Padding.x += 20.f; */
     PushNewRow(Ui);
-    // Select first member in union ..?
+    DoEditorUi(Ui, &Element->Flags, "chunk_flag Flags", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
+
+
+
+    PushNewRow(Ui);
+    /* member.member(0, (union_member) { */
+    /* DoEditorUi(Ui, &Element->(union_member.name), "union_member.type union_member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
+    /* }) */
+    DoEditorUi(Ui, &Element->Dim, "v3i Dim", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+    PushNewRow(Ui);
+    DoEditorUi(Ui, Element->Voxels, "voxel Voxels", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+    PushNewRow(Ui);
+    DoEditorUi(Ui, Element->VoxelLighting, "voxel_lighting VoxelLighting", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -25,7 +44,10 @@ DoEditorUi(renderer_2d *Ui, world_chunk *Element, const char* Name, EDITOR_UI_FU
 
 
     PushNewRow(Ui);
-    // Select first member in union ..?
+    /* member.member(0, (union_member) { */
+    /* DoEditorUi(Ui, &Element->(union_member.name), "union_member.type union_member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
+    /* }) */
+    DoEditorUi(Ui, &Element->WorldP, "v3i WorldP", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 

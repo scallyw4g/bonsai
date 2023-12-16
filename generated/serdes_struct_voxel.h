@@ -18,6 +18,10 @@ Serialize(native_file *File, voxel *Element)
 
 
 
+  Result &= Serialize(File, &Element->Derivs);
+
+
+
 
   
 
@@ -40,6 +44,11 @@ Deserialize(u8_stream *Bytes, voxel *Element, memory_arena *Memory)
 
 
   Result &= Deserialize(Bytes, &Element->Color);
+
+
+
+
+  Result &= Deserialize(Bytes, &Element->Derivs, Memory);
 
 
 

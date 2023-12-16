@@ -19,7 +19,10 @@ DoEditorUi(renderer_2d *Ui, entity *Element, const char* Name, EDITOR_UI_FUNCTIO
 
 
     PushNewRow(Ui);
-    // Select first member in union ..?
+    /* member.member(0, (union_member) { */
+    /* DoEditorUi(Ui, &Element->(union_member.name), "union_member.type union_member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
+    /* }) */
+    DoEditorUi(Ui, &Element->EulerAngles, "v4 EulerAngles", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -31,7 +34,10 @@ DoEditorUi(renderer_2d *Ui, entity *Element, const char* Name, EDITOR_UI_FUNCTIO
 
 
     PushNewRow(Ui);
-    // Select first member in union ..?
+    /* member.member(0, (union_member) { */
+    /* DoEditorUi(Ui, &Element->(union_member.name), "union_member.type union_member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
+    /* }) */
+    DoEditorUi(Ui, &Element->CollisionVolumeRadius, "v3 CollisionVolumeRadius", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
