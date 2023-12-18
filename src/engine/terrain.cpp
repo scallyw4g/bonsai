@@ -284,7 +284,7 @@ GrassyTerrain( perlin_noise *Noise,
         /* v3 Tangent, Bitangent, Normal; */
         /* CalculateTBN(Derivs, &Tangent, &Bitangent, &Normal); */
         /* v3 Normal = Derivs; */
-        v3 Normal = CalcNormal(V3(InX, InY, InZ), PerlinNoise_Derivitives1 );
+        v3 Normal = CalcNormal(V3(InX, InY, InZ), NoiseValue, PerlinNoise_Derivitives1 );
 
         /* Chunk->Voxels[VoxIndex].DebugColor = Derivs; */
         Chunk->Voxels[VoxIndex].DebugColor = Normal;
@@ -330,7 +330,7 @@ GrassyTerrain( perlin_noise *Noise,
         if (NoiseChoice)
         {
           /* if (Dot(TerrainNormal, V3(0, 0, 1)) > 0.5f) */
-          if (Dot(Derivs, V3(0, 0, 1)) > 0.5f)
+          if (Dot(Normal, V3(0, 0, 1)) > 0.65f)
           {
             ThisColor = DIRT;
           }
