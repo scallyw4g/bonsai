@@ -431,14 +431,14 @@ TerracedTerrain( perlin_noise *Noise,
         {
           ThisColor = GRASS_GREEN;
 
-          if (NoiseValue > DirtThresh)
-          {
-            ThisColor = DIRT;
-          }
+          /* if (NoiseValue > DirtThresh) */
+          /* { */
+          /*   ThisColor = DIRT; */
+          /* } */
 
           if (NoiseValue > StoneThresh)
           {
-            ThisColor = STONE;
+            ThisColor = DIRT;
           }
 
 

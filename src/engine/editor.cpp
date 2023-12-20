@@ -550,7 +550,7 @@ DoLevelEditor(engine_resources *Engine)
           SelectionMode =  SelectionMode_TranslatePlanar;
         }
 
-        if (SelectionMode) { Ui->RequestedForceCapture = True;; }
+        /* if (SelectionMode) { Ui->RequestedForceCapture = True; } */
 
         rect3i ModifiedSelection = DoSelectonModification(Engine, &Ray, SelectionMode, &Editor->Selection, SelectionAABB);
 

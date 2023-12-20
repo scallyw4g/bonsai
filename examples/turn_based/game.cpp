@@ -225,13 +225,13 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
         // Custom FBM noise example generating slightly-more-complex game-world-like terrain
         s32 Frequency = 0; // Ignored
         s32 Amplititude = 0; // Ignored
-        s32 StartingZDepth = -100;
+        s32 StartingZDepth = -85;
         u32 OctaveCount = 1;
 
         octave_buffer OctaveBuf = { OctaveCount, {} };
         OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
 
-        OctaveBuf.Octaves[0] = {V3(400, 400, 200), 150, V3(1)};
+        OctaveBuf.Octaves[0] = {V3(400, 400, 180), 150, V3(1)};
         /* OctaveBuf.Octaves[1] = {V3(35, 35, 50),      6, V3(2.f)}; */
         /* OctaveBuf.Octaves[2] = {V3(500, 500, 20), 200, V3(2.f)}; */
         /* OctaveBuf.Octaves[2] = {75, 60, 1}; */
@@ -439,16 +439,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   }
   PushWindowEnd(Ui, &ActionsWindow);
 
-  if (!UiCapturedMouseInput(Ui))
-  {
-    r32 CameraSpeed = 125.f;
-    v3 CameraDelta = (GetCameraRelativeInput(Hotkeys, Camera));
-
-    CameraDelta.z = 0.f;
-    CameraDelta = Normalize(CameraDelta) * CameraSpeed * Plat->dt;
-
-    GameState->CameraGhost->P.Offset += CameraDelta;
-  }
 }
 
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
@@ -459,11 +449,11 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   Global_AssetPrefixPath = CSz("examples/turn_based/assets");
 
-  world_position WorldCenter = World_Position(0);
+  world_position WorldCenter = World_Position(5, -4, 0);
   canonical_position PlayerSpawnP = Canonical_Position(Voxel_Position(0), WorldCenter + World_Position(0,0,1));
 
   StandardCamera(Graphics->Camera, 10000.0f, 500.0f, PlayerSpawnP);
-  /* Graphics->Camera->CurrentP.WorldP = World_Position(1, -1, 1); */
+  /* Graphics->Camera->CurrentP.WorldP = WorldCenter; */
   /* Graphics->Camera->CurrentP.Offset = V3(1, -1, 1); */
 
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;

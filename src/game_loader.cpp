@@ -235,9 +235,6 @@ main( s32 ArgCount, const char ** Args )
 
     BindHotkeysToInput(&EngineResources->Hotkeys, &Plat->Input);
 
-    // NOTE(Jesse): Must come after input has been processed
-    UiFrameBegin(&EngineResources->Ui);
-
     DEBUG_FRAME_BEGIN(&EngineResources->Ui, Plat->dt, EngineResources->Hotkeys.Debug_ToggleMenu, EngineResources->Hotkeys.Debug_ToggleProfiling);
 
 #if !EMCC
