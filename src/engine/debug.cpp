@@ -308,6 +308,7 @@ DoEntityWindow(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
+#if 0
   {
     local_persist window_layout EntityWindow = WindowLayout("All Entities");
 
@@ -324,6 +325,7 @@ DoEntityWindow(engine_resources *Engine)
 
     PushWindowEnd(Ui, &EntityWindow);
   }
+#endif
 
   if (Engine->MaybeMouseRay.Tag)
   {
@@ -347,7 +349,7 @@ DoEntityWindow(engine_resources *Engine)
   {
     DrawEntityCollisionVolume(EngineDebug->SelectedEntity, &GpuMap->Buffer, Graphics, World->ChunkDim, WHITE);
 
-    local_persist window_layout EntityWindow = WindowLayout("Entity");
+    local_persist window_layout EntityWindow = WindowLayout("Entity", WindowLayoutFlag_StartupAlign_Right);
 
     PushWindowStart(Ui, &EntityWindow);
       PushTableStart(Ui);
