@@ -424,19 +424,19 @@ TerracedTerrain( perlin_noise *Noise,
         s32 GravelThreshold = 1;
         s32 WaterThreshold  = 0;
 
-        r32 DirtThresh = r32(WorldZSubZMin) + 2.f;
-        r32 StoneThresh = r32(WorldZSubZMin) + 1.f;
+        r32 StoneThresh = r32(WorldZSubZMin) + 2.f;
+        r32 DirtThresh = r32(WorldZSubZMin) + 1.f;
 
         if (IsFilled)
         {
           ThisColor = GRASS_GREEN;
 
-          if (NoiseValue > StoneThresh)
+          if (NoiseValue > DirtThresh)
           {
             ThisColor = DIRT;
           }
 
-          if (NoiseValue > DirtThresh)
+          if (NoiseValue > StoneThresh)
           {
             ThisColor = STONE;
           }
