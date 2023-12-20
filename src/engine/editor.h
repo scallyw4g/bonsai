@@ -236,15 +236,16 @@ enum world_edit_mode
 {
   WorldEditMode_Select          = (1 << 0),
   WorldEditMode_FillSelection   = (1 << 1),
-  WorldEditMode_DeleteSelection = (1 << 2),
+  WorldEditMode_PaintSelection  = (1 << 2),
+  WorldEditMode_DeleteSelection = (1 << 3),
 
-  WorldEditMode_Eyedropper      = (1 << 3),
+  WorldEditMode_Eyedropper      = (1 << 4),
 
-  WorldEditMode_AddSingle       = (1 << 4),
-  WorldEditMode_RemoveSingle    = (1 << 5),
-  WorldEditMode_PaintSingle     = (1 << 6),
+  WorldEditMode_AddSingle       = (1 << 5),
+  WorldEditMode_RemoveSingle    = (1 << 6),
+  WorldEditMode_PaintSingle     = (1 << 7),
 
-  WorldEditMode_BlitEntity      = (1 << 7),
+  WorldEditMode_BlitEntity      = (1 << 8),
 };
 
 poof(string_and_value_tables(world_edit_mode))

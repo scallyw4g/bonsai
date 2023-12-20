@@ -200,6 +200,7 @@ link_internal rect3i
 ModifySelectionAABB(rect3 *SelectionRegion, v3i UpdateVector, face_index Face, selection_mode Mode)
 {
   rect3i Result = Rect3i(SelectionRegion);
+  Assert(SelectionRegion->Min <= SelectionRegion->Max);
 
   switch (Mode)
   {
@@ -613,7 +614,7 @@ DoLevelEditor(engine_resources *Engine)
                 type_world_update_op_shape_params_asset,
                 .world_update_op_shape_params_asset = AssetUpdateShape,
               };
-              QueueWorldUpdateForRegion(Engine, {}, &Shape, {}, World->Memory);
+              QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, World->Memory);
             }
           }
         }
@@ -664,6 +665,19 @@ DoLevelEditor(engine_resources *Engine)
         else
         {
           Engine->Editor.HoverColorIndex = INVALID_COLOR_INDEX;
+        }
+      } break;
+
+      case WorldEditMode_PaintSelection:
+      {
+        if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
+        {
+          world_update_op_shape Shape = {
+            .Type = type_world_update_op_shape_params_rect,
+            .world_update_op_shape_params_rect.P0 = SelectionAABB.Min,
+            .world_update_op_shape_params_rect.P1 = SelectionAABB.Max,
+          };
+          QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Paint, &Shape, Editor->SelectedColorIndex, Engine->Memory);
         }
       } break;
 

@@ -126,6 +126,7 @@ struct world_update_op_shape
 enum world_update_op_mode
 {
   WorldUpdateOperationMode_None,
+  WorldUpdateOperationMode_Paint,
   WorldUpdateOperationMode_Additive,
   WorldUpdateOperationMode_Subtractive,
 };

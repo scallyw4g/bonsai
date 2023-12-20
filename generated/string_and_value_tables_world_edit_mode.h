@@ -6,6 +6,7 @@ ToString(world_edit_mode Type)
   {
     case WorldEditMode_Select: { Result = CSz("WorldEditMode_Select"); } break;
     case WorldEditMode_FillSelection: { Result = CSz("WorldEditMode_FillSelection"); } break;
+    case WorldEditMode_PaintSelection: { Result = CSz("WorldEditMode_PaintSelection"); } break;
     case WorldEditMode_DeleteSelection: { Result = CSz("WorldEditMode_DeleteSelection"); } break;
     case WorldEditMode_Eyedropper: { Result = CSz("WorldEditMode_Eyedropper"); } break;
     case WorldEditMode_AddSingle: { Result = CSz("WorldEditMode_AddSingle"); } break;
@@ -23,6 +24,7 @@ WorldEditMode(counted_string S)
 
   if (StringsMatch(S, CSz("WorldEditMode_Select"))) { return WorldEditMode_Select; }
   if (StringsMatch(S, CSz("WorldEditMode_FillSelection"))) { return WorldEditMode_FillSelection; }
+  if (StringsMatch(S, CSz("WorldEditMode_PaintSelection"))) { return WorldEditMode_PaintSelection; }
   if (StringsMatch(S, CSz("WorldEditMode_DeleteSelection"))) { return WorldEditMode_DeleteSelection; }
   if (StringsMatch(S, CSz("WorldEditMode_Eyedropper"))) { return WorldEditMode_Eyedropper; }
   if (StringsMatch(S, CSz("WorldEditMode_AddSingle"))) { return WorldEditMode_AddSingle; }

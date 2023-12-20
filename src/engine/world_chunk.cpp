@@ -4136,7 +4136,6 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
                   }
                 }
 
-#if 1
                 u8 NewColorMin = GREY_5;
                 u8 NewColorMax = GREY_8;
                 Push(&Stack, VoxelStackElement(SimSphereP, VoxelRuleDir_Count));
@@ -4182,11 +4181,8 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
                     }
                   }
                 }
-#endif
-
               } break;
             }
-
           } break;
 
           case WorldUpdateOperationMode_Additive:
@@ -4206,8 +4202,32 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
               }
             }
           } break;
-        }
 
+
+          case WorldUpdateOperationMode_Paint:
+          {
+            switch(Modifier)
+            {
+              InvalidCase(WorldUpdateOperationModeModifier_Flood);
+
+              case WorldUpdateOperationModeModifier_None:
+              {
+                DimIterator(x, y, z, SimSpaceQueryDim)
+                {
+                  v3i SimRelVoxP = V3i(x,y,z);
+                  v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
+                  v3i CenterToVoxP = SimVoxP - SimSphereP;
+                  V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
+                  if (LengthSq(CenterToVoxP) < RadiusSquared)
+                  {
+                    if (V->Flags & Voxel_Filled) { V->Color = NewColor; }
+                  }
+                }
+              } break;
+            }
+
+          } break;
+        }
       } break;
 
       case type_world_update_op_shape_params_rect:
@@ -4217,27 +4237,50 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
         world_update_op_shape_params_rect *Rect = SafeCast(world_update_op_shape_params_rect, &Shape);
 
-        voxel NewVoxelValue = {};
-        switch(Mode)
-        {
-          InvalidCase(WorldUpdateOperationMode_None);
-          case WorldUpdateOperationMode_Additive:    { NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor}; } break;
-          case WorldUpdateOperationMode_Subtractive: {} break;
-        }
-
         // NOTE(Jesse): Outside world should have min/max'd these already
         Assert(Rect->P0 < Rect->P1);
 
         // NOTE(Jesse): These are specifically meant to truncate, not floor
         rect3i SSRect = {V3i(Rect->P0), V3i(Rect->P1)};
-        DimIterator(x, y, z, SimSpaceQueryDim)
-        {
-          v3i SimRelVoxP = V3i(x,y,z);
-          v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
-          V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
-          if (Contains(SSRect, SimVoxP)) { *V = NewVoxelValue; }
-        }
 
+        voxel NewVoxelValue = {};
+        switch(Mode)
+        {
+          InvalidCase(WorldUpdateOperationMode_None);
+          case WorldUpdateOperationMode_Additive:
+          {
+            NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor};
+            DimIterator(x, y, z, SimSpaceQueryDim)
+            {
+              v3i SimRelVoxP = V3i(x,y,z);
+              v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
+              V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
+              if (Contains(SSRect, SimVoxP)) { *V = NewVoxelValue; }
+            }
+          } break;
+
+          case WorldUpdateOperationMode_Subtractive:
+          {
+            DimIterator(x, y, z, SimSpaceQueryDim)
+            {
+              v3i SimRelVoxP = V3i(x,y,z);
+              v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
+              V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
+              if (Contains(SSRect, SimVoxP)) { *V = NewVoxelValue; }
+            }
+          } break;
+
+          case WorldUpdateOperationMode_Paint:
+          {
+            DimIterator(x, y, z, SimSpaceQueryDim)
+            {
+              v3i SimRelVoxP = V3i(x,y,z);
+              v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
+              V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
+              if (Contains(SSRect, SimVoxP)) { if (V->Flags & Voxel_Filled) { V->Color = NewColor; } }
+            }
+          } break;
+        }
       } break;
 
       {
@@ -4264,18 +4307,30 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
             SimOrigin = Casted->SimSpaceOrigin;
           }
 
-          DimIterator(x, y, z, SimSpaceQueryDim)
+          switch(Mode)
           {
-            v3i SimRelVoxP = V3i(x,y,z);
-            v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
-            V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
+            InvalidCase(WorldUpdateOperationMode_None);
+            InvalidCase(WorldUpdateOperationMode_Paint);
+            InvalidCase(WorldUpdateOperationMode_Subtractive);
 
+            case WorldUpdateOperationMode_Additive:
             {
-              v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
-              voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
-              if (AssetV && (AssetV->Flags&Voxel_Filled)) { *V = *AssetV; }
-            }
+              DimIterator(x, y, z, SimSpaceQueryDim)
+              {
+                v3i SimRelVoxP = V3i(x,y,z);
+                v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
+                V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
+
+                {
+                  v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
+                  voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
+                  if (AssetV && (AssetV->Flags&Voxel_Filled)) { *V = *AssetV; }
+                }
+              }
+            } break;
           }
+
+
         } break;
       }
 

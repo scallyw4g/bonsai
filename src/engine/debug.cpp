@@ -308,7 +308,6 @@ DoEntityWindow(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-
   {
     local_persist window_layout EntityWindow = WindowLayout("All Entities");
 
@@ -769,12 +768,12 @@ DoEngineDebug(engine_resources *Engine)
                     RangeIterator_t(u32, ElementIndex, Model->Mesh.At) { Model->Mesh.Mat[ElementIndex].Transparency = 0.5f; }
 
                     {
-                      untextured_3d_geometry_buffer *Dest = &Graphics->Transparency.GpuBuffer.Buffer;
-                      BufferChunkMesh(Graphics, Dest, &Model->Mesh, World->ChunkDim, EntityOrigin.WorldP, 1.f, EntityOrigin.Offset, Quaternion());
+                      /* untextured_3d_geometry_buffer *Dest = &Graphics->Transparency.GpuBuffer.Buffer; */
+                      /* BufferChunkMesh(Graphics, Dest, &Model->Mesh, World->ChunkDim, EntityOrigin.WorldP, 1.f, EntityOrigin.Offset, Quaternion()); */
                     }
                     {
-                      /* untextured_3d_geometry_buffer *Dest = &GpuMap->Buffer; */
-                      /* BufferChunkMesh(Graphics, Dest, &Model->Mesh, World->ChunkDim, EntityOrigin.WorldP, 1.f, EntityOrigin.Offset, Quaternion()); */
+                      untextured_3d_geometry_buffer *Dest = &GpuMap->Buffer;
+                      BufferChunkMesh(Graphics, Dest, &Model->Mesh, World->ChunkDim, EntityOrigin.WorldP, 1.f, EntityOrigin.Offset, Quaternion());
                     }
 
                     RangeIterator_t(u32, ElementIndex, Model->Mesh.At) { Model->Mesh.Mat[ElementIndex].Transparency = 0.f; }
