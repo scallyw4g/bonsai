@@ -1178,17 +1178,22 @@ Intersect(world *World, ray *Ray, entity *Entity)
 }
 
 link_internal entity *
-GetEntitiesIntersectingRay(world *World, entity **EntityTable, ray *Ray)
+GetClosestEntityToRay(world *World, entity **EntityTable, ray *Ray)
 {
   entity *Result = {};
-  for ( s32 EntityIndex = 0; EntityIndex < TOTAL_ENTITY_COUNT; ++EntityIndex )
+  r32 tMin = f32_MAX;
+  for ( s32 EntityIndex = 0;
+            EntityIndex < TOTAL_ENTITY_COUNT;
+          ++EntityIndex )
   {
     entity *Entity = EntityTable[EntityIndex];
     if (!Spawned(Entity)) continue;
 
     aabb EntityAABB = GetSimSpaceAABB(World, Entity);
-    if (Intersect(EntityAABB, Ray).Face)
+    aabb_intersect_result I = Intersect(EntityAABB, Ray);
+    if (I.t < tMin)
     {
+      tMin = I.t;
       Result = Entity;
     }
   }
@@ -1199,7 +1204,7 @@ GetEntitiesIntersectingRay(world *World, entity **EntityTable, ray *Ray)
 link_internal entity *
 RayTraceEntityCollision(engine_resources *Resources, ray *Ray)
 {
-  entity *Result = GetEntitiesIntersectingRay(Resources->World, Resources->EntityTable, Ray);
+  entity *Result = GetClosestEntityToRay(Resources->World, Resources->EntityTable, Ray);
   return Result;
 }
 

@@ -42,10 +42,7 @@ MakeWorldChunkFileHeader_v3(world_chunk *Chunk)
   Result.Py = Chunk->WorldP.y;
   Result.Pz = Chunk->WorldP.z;
 
-  if (HasMesh(&Chunk->Meshes, MeshBit_Lod0))
-  {
-    Result.MeshElementCount       = Chunk->Meshes.E[MeshIndex_Lod0]->At;
-  }
+  /* if (HasMesh(&Chunk->Meshes, MeshBit_Lod0)) { Result.MeshElementCount       = Chunk->Meshes.E[MeshIndex_Lod0]->At; } */
 
   Result.VertexElementSize        = (u32)sizeof(v3);
   Result.NormalElementSize        = (u32)sizeof(v3);
@@ -335,15 +332,6 @@ DeserializeChunk(u8_stream *FileBytes, world_chunk *Result, tiered_mesh_freelist
 
   Result->FilledCount = Header.VoxelElementCount;
 
-  if (MeshFreelist && Header.MeshElementCount)
-  {
-    untextured_3d_geometry_buffer *Mesh = GetPermMeshForChunk(MeshFreelist, u32(Header.MeshElementCount), PermMemory);
-    DeserializeMesh(FileBytes, &Header, Mesh);
-
-    untextured_3d_geometry_buffer *Buf = AtomicReplaceMesh(&Result->Meshes, MeshBit_Lod0, Mesh, Mesh->Timestamp);
-    if (Buf) { Leak("Leaking mesh"); }
-  }
-
   if (Header.StandingSpotElementCount)
   {
     u32 SpotElementSize = Header.StandingSpotElementSize;
@@ -390,12 +378,14 @@ SerializeChunk(world_chunk *Chunk, native_file *File)
     Result &= WriteToFile(File, (u8*)Chunk->Voxels, VoxByteCount);
   }
 
+#if 0
   if (FileHeader.MeshElementCount)
   {
     auto Mesh = TakeOwnershipSync(&Chunk->Meshes, MeshBit_Lod0);
     Result &= SerializeMesh(File, Mesh);
     ReleaseOwnership(&Chunk->Meshes, MeshBit_Lod0, Mesh);
   }
+#endif
 
   if (FileHeader.StandingSpotElementCount)
   {

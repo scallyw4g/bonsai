@@ -261,6 +261,7 @@ DoLevelWindow(engine_resources *Engine)
 
           if (IsInsideVisibleRegion(World, Chunk->WorldP))
           {
+            QueueChunkForMeshRebuild(&GetEngineResources()->Stdlib.Plat.LowPriority, Chunk);
             InsertChunkIntoWorld(World, Chunk);
           }
         }
@@ -320,7 +321,9 @@ DoEntityWindow(engine_resources *Engine)
 
   if (Engine->MaybeMouseRay.Tag)
   {
-    entity *Entity = GetEntitiesIntersectingRay(World, EntityTable, &Engine->MaybeMouseRay.Ray);
+    entity *Entity = GetClosestEntityToRay(World, EntityTable, &Engine->MaybeMouseRay.Ray);
+    EngineDebug->HoverEntity = Entity;
+
     if (Entity && Entity != EngineDebug->SelectedEntity)
     {
       Assert(Spawned(Entity));
@@ -402,10 +405,7 @@ DoEntityWindow(engine_resources *Engine)
     }
   }
 
-  if (Input->Delete.Clicked && EngineDebug->SelectedEntity)
-  {
-    Unspawn(EngineDebug->SelectedEntity);
-  }
+  if (Input->Delete.Clicked && EngineDebug->HoverEntity) { Unspawn(EngineDebug->HoverEntity); }
 }
 
 link_internal void

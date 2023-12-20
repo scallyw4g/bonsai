@@ -93,6 +93,7 @@ struct engine_debug
 
   file_traversal_node SelectedAsset;
 
+  entity *HoverEntity;
   entity *SelectedEntity;
 };
 
