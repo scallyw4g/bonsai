@@ -1059,7 +1059,7 @@ DrawWorldToGBuffer(engine_resources *Engine)
         v3 CameraP = GetSimSpaceP(World, Camera->CurrentP);
         v3 ChunkP = GetSimSpaceP(World, Chunk->WorldP);
 
-        if (Chunk->Flags & Chunk_Queued) { continue; }
+        /* if (Chunk->Flags & Chunk_Queued) { continue; } */
 
         // This is kinda barf.. we'd rather free these when the chunk gets
         // rebuilt but can't do it from another thread.  Maybe when the chunk
