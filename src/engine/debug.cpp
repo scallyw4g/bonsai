@@ -227,6 +227,11 @@ DoLevelWindow(engine_resources *Engine)
 
     if (LevelBytes.Start)
     {
+      SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
+
+      CancelAllWorkQueueJobs(Plat, &Plat->HighPriority);
+      CancelAllWorkQueueJobs(Plat, &Plat->LowPriority);
+
       level_header LevelHeader = {};
       ReadBytesIntoBuffer(&LevelBytes, sizeof(level_header), Cast(u8*, &LevelHeader));
 
@@ -284,6 +289,8 @@ DoLevelWindow(engine_resources *Engine)
         Deserialize(&LevelBytes, Palette, Thread->PermMemory);
 
         Assert(LevelBytes.At == LevelBytes.End);
+
+        UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
       }
       else
       {

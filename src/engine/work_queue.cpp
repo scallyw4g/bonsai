@@ -134,3 +134,45 @@ DoCopyJob(work_queue_entry_copy_buffer_ref *Job, tiered_mesh_freelist* MeshFreel
 
   ReleaseOwnership(Job->Buf, Job->MeshBit, Src);
 }
+
+link_internal void
+CancelAllWorkQueueJobs(platform *Plat, work_queue *Queue)
+{
+  Assert(FutexIsSignaled(&Plat->WorkerThreadsSuspendFutex));
+  Assert(Plat->WorkerThreadsSuspendFutex.ThreadsWaiting == GetWorkerThreadCount());
+
+  while (!QueueIsEmpty(Queue))
+  {
+    work_queue_entry *Entry = Cast(work_queue_entry*, Queue->Entries + Queue->DequeueIndex++);
+
+    work_queue_entry_type Type = Entry->Type;
+    switch (Type)
+    {
+      InvalidCase(type_work_queue_entry_noop);
+      InvalidCase(type_work_queue_entry__align_to_cache_line_helper);
+
+      case type_work_queue_entry_copy_buffer_ref:
+      case type_work_queue_entry_copy_buffer_set:
+      case type_work_queue_entry_init_asset:
+      case type_work_queue_entry_update_world_region:
+      case type_work_queue_entry_sim_particle_system:
+      {
+      } break;
+
+      case type_work_queue_entry_rebuild_mesh:
+      {
+        work_queue_entry_rebuild_mesh *Job = SafeAccess(work_queue_entry_rebuild_mesh, Entry);
+        world_chunk *Chunk = Job->Chunk;
+        Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_Queued);
+      } break;
+
+      case type_work_queue_entry_init_world_chunk:
+      {
+        work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
+        world_chunk *Chunk = Job->Chunk;
+        Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_Queued);
+      } break;
+    }
+  }
+
+}
