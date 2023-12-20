@@ -48,9 +48,6 @@ Serialize(native_file *File, entity *Element)
 
   Result &= Serialize(File, &Element->UserData);
 
-
-
-
   if (Element->Model) { Result &= Serialize(File, Element->Model); }
 
   if (Element->Emitter) { Result &= Serialize(File, Element->Emitter); }
@@ -113,10 +110,6 @@ Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
 
 
   Result &= Deserialize(Bytes, &Element->UserData);
-
-
-
-
 
   if (HadModelPointer)
   {

@@ -40,6 +40,3 @@ case type_ui_render_command_untextured_quad_at:
   Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Command->ui_render_command_untextured_quad_at.Layout));
 } break;
 
-
-
-

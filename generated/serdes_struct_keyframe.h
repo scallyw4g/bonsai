@@ -12,9 +12,6 @@ Serialize(native_file *File, keyframe *Element)
 
   Result &= Serialize(File, &Element->Value);
 
-
-
-
   
 
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -31,10 +28,6 @@ Deserialize(u8_stream *Bytes, keyframe *Element, memory_arena *Memory)
 
 
   Result &= Deserialize(Bytes, &Element->Value);
-
-
-
-
 
   
 

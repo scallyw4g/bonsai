@@ -40,6 +40,3 @@ case type_ui_render_command_untextured_quad_at:
   Command->ui_render_command_untextured_quad_at.Layout.DrawBounds = InvertedInfinityRectangle();
 } break;
 
-
-
-

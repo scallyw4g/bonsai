@@ -1396,7 +1396,11 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
         /* FillColorArray(C, FaceColors, ColorPallette, VERTS_PER_FACE); */
 
         f32 Trans = (f32)Voxel->Transparency / 255.f;
-        FillArray(VertexMaterial(Voxel->DebugColor, Trans, 0.f), Materials, VERTS_PER_FACE);
+
+        /* v3 Color = Voxel->DebugColor; */
+        v3 Color = GetColorData(Voxel->Color);
+
+        FillArray(VertexMaterial(Color, Trans, 0.f), Materials, VERTS_PER_FACE);
 
         untextured_3d_geometry_buffer *Dest = {};
         if (Voxel->Transparency) { Dest = DestTransparentGeometry; } else { Dest = DestGeometry; }
@@ -1754,6 +1758,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve( voxel *Voxels,
         /* FillColorArray(Voxel->Color, FaceColors, ColorPallette, VERTS_PER_FACE); */
 
         v3 Color = GetColorData(Voxel->Color);
+        /* v3 Color = Voxel->DebugColor; */
         f32 Trans = (f32)Voxel->Transparency / 255.f;
         FillArray(VertexMaterial(Color, Trans, 0.f), Materials, VERTS_PER_FACE);
 
@@ -3251,7 +3256,7 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOff
     if (MeshBit == MeshBit_Lod0)
     {
       BuildWorldChunkMeshFromMarkedVoxels_Greedy( Chunk->Voxels, Chunk->Dim, MinOffset, MaxOffset, TempMesh, 0, TempMem );
-      /* BuildWorldChunkMeshFromMarkedVoxels_Naieve( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, TempMesh, TempTransparentMesh); */
+      /* BuildWorldChunkMeshFromMarkedVoxels_Naieve( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, TempMesh, 0); */
     }
     else
     {
@@ -3991,7 +3996,8 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
   voxel *CopiedVoxels = Allocate(voxel, Thread->PermMemory, TotalVoxels);
 
-  voxel UnsetVoxel = { 0xff, 0xff, 0xffff, {}, {}};
+  voxel UnsetVoxel = { 0xff, 0xff, 0xffff};
+  /* voxel UnsetVoxel = { 0xff, 0xff, 0xffff, {}, {}}; */
   for (u32 VoxelIndex = 0; VoxelIndex < TotalVoxels; ++VoxelIndex) { CopiedVoxels[VoxelIndex] = UnsetVoxel; }
 
   v3i SimSpaceQueryMinP = SimSpaceQueryAABB.Min;
@@ -4222,7 +4228,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
         switch(Mode)
         {
           InvalidCase(WorldUpdateOperationMode_None);
-          case WorldUpdateOperationMode_Additive:    { NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor, {}, {}}; } break;
+          case WorldUpdateOperationMode_Additive:    { NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor}; } break;
           case WorldUpdateOperationMode_Subtractive: {} break;
         }
 

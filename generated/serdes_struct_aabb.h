@@ -12,9 +12,6 @@ Serialize(native_file *File, aabb *Element)
 
   Result &= Serialize(File, &Element->Max);
 
-
-
-
   
 
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -31,10 +28,6 @@ Deserialize(u8_stream *Bytes, aabb *Element, memory_arena *Memory)
 
 
   Result &= Deserialize(Bytes, &Element->Max, Memory);
-
-
-
-
 
   
 

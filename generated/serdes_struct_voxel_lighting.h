@@ -8,9 +8,6 @@ Serialize(native_file *File, voxel_lighting *Element)
 
   Result &= Serialize(File, &Element->Emission);
 
-
-
-
   
 
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -22,10 +19,6 @@ Deserialize(u8_stream *Bytes, voxel_lighting *Element, memory_arena *Memory)
 {
   b32 Result = True;
   Result &= Deserialize(Bytes, &Element->Emission);
-
-
-
-
 
   
 

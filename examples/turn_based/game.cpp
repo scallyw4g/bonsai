@@ -193,6 +193,62 @@ GameEntityUpdate(engine_resources *Engine, entity *Entity )
   return False;
 }
 
+
+BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
+{
+  Global_ThreadStates = AllThreads;
+  SetThreadLocal_ThreadIndex(ThreadIndex);
+}
+
+BONSAI_API_WORKER_THREAD_CALLBACK()
+{
+  b32 Result = True;
+  switch (Entry->Type)
+  {
+    default: { Result = False; } break;
+
+    // NOTE(Jesse): Here we're going to provide an implementation for
+    // initializing a world chunk.
+    case type_work_queue_entry_init_world_chunk:
+    {
+      volatile work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
+      world_chunk *Chunk = Job->Chunk;
+
+      if (ChunkIsGarbage(Chunk))
+      {
+        // NOTE(Jesse): This is an optimization; the engine marks chunks that
+        // have moved outside of the visible region as garbage.
+        Chunk->Flags = Chunk_Uninitialized;
+      }
+      else
+      {
+        // Custom FBM noise example generating slightly-more-complex game-world-like terrain
+        s32 Frequency = 0; // Ignored
+        s32 Amplititude = 0; // Ignored
+        s32 StartingZDepth = -100;
+        u32 OctaveCount = 1;
+
+        octave_buffer OctaveBuf = { OctaveCount, {} };
+        OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
+
+        OctaveBuf.Octaves[0] = {V3(400, 400, 200), 150, V3(1)};
+        /* OctaveBuf.Octaves[1] = {V3(35, 35, 50),      6, V3(2.f)}; */
+        /* OctaveBuf.Octaves[2] = {V3(500, 500, 20), 200, V3(2.f)}; */
+        /* OctaveBuf.Octaves[2] = {75, 60, 1}; */
+        /* OctaveBuf.Octaves[3] = {37, 30, 0}; */
+
+
+        /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
+        /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
+        chunk_init_flags InitFlags = ChunkInitFlag_Noop;
+        InitializeChunkWithNoise( TerracedTerrain, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
+      }
+    }
+  }
+
+  return Result;
+}
+
 BONSAI_API_MAIN_THREAD_CALLBACK()
 {
   Assert(ThreadLocal_ThreadIndex == 0);

@@ -25,15 +25,6 @@ DoEditorUi(renderer_2d *Ui, voxel *Element, const char* Name, EDITOR_UI_FUNCTION
 
 
     PushNewRow(Ui);
-    /* member.member(0, (union_member) { */
-    /* DoEditorUi(Ui, &Element->(union_member.name), "union_member.type union_member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
-    /* }) */
-    DoEditorUi(Ui, &Element->Derivs, "v3 Derivs", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-    PushNewRow(Ui);
     PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
   }
   else

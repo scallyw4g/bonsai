@@ -39,5 +39,3 @@ DeserializeArray(u8_stream *Bytes, chunk_flag **Dest, umm Count, memory_arena *M
   return True;
 }
 
-
-

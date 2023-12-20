@@ -16,9 +16,6 @@ Serialize(native_file *File, vertex_material *Element)
 
   Result &= Serialize(File, &Element->Emission);
 
-
-
-
   
 
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -40,10 +37,6 @@ Deserialize(u8_stream *Bytes, vertex_material *Element, memory_arena *Memory)
 
 
   Result &= Deserialize(Bytes, &Element->Emission);
-
-
-
-
 
   
 

@@ -24,9 +24,6 @@ Serialize(native_file *File, model *Element)
 
   Result &= Serialize(File, &Element->Dim);
 
-
-
-
   
 
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -58,10 +55,6 @@ Deserialize(u8_stream *Bytes, model *Element, memory_arena *Memory)
 
 
   Result &= Deserialize(Bytes, &Element->Dim, Memory);
-
-
-
-
 
   
 

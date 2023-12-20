@@ -12,9 +12,6 @@ Serialize(native_file *File, canonical_position *Element)
 
   Result &= Serialize(File, &Element->WorldP);
 
-
-
-
   
 
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -31,10 +28,6 @@ Deserialize(u8_stream *Bytes, canonical_position *Element, memory_arena *Memory)
 
 
   Result &= Deserialize(Bytes, &Element->WorldP, Memory);
-
-
-
-
 
   
 

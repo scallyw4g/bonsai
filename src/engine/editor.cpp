@@ -69,6 +69,7 @@ DoEditorUi(renderer_2d *Ui, r32 *Value, const char* Name, EDITOR_UI_FUNCTION_PRO
     PushTableStart(Ui);
       if (Value)
       {
+        /* if (*Value >= 0.f) { PushColumn(Ui, CSz(" ")); } */
         if (Button(Ui, CSz("-"), UiId(Value, "decrement"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1.f; }
 
         if (*Value >= 10.f)
@@ -549,6 +550,8 @@ DoLevelEditor(engine_resources *Engine)
           SelectionMode =  SelectionMode_TranslatePlanar;
         }
 
+        if (SelectionMode) { Ui->RequestedForceCapture = True;; }
+
         rect3i ModifiedSelection = DoSelectonModification(Engine, &Ray, SelectionMode, &Editor->Selection, SelectionAABB);
 
         if (!Input->LMB.Pressed)
@@ -749,7 +752,7 @@ DoLevelEditor(engine_resources *Engine)
 
   if (Input->Ctrl.Pressed || Input->Shift.Pressed) { Ui->RequestedForceCapture = True; }
 
-  /* Info("ForceCapture %d", Ui->RequestedForceCapture); */
+/*   Info("ForceCapture %d", Ui->RequestedForceCapture); */
 
   if (Input->Ctrl.Pressed && Input->S.Clicked) { RadioSelect(&WorldEditModeRadioGroup, WorldEditMode_Select); ResetSelection(Editor); }
 
@@ -797,7 +800,7 @@ DoLevelEditor(engine_resources *Engine)
   //
   if (Engine->MousedOverVoxel.Tag)
   {
-#if 1
+#if 0
     {
       v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, HighlightVoxel));
       DEBUG_HighlightVoxel( Engine, SimP, RED, 0.075f);
@@ -805,15 +808,15 @@ DoLevelEditor(engine_resources *Engine)
       voxel *V = GetVoxelPointer(&Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled);
 
 
-      local_persist window_layout Window = WindowLayout("DEBUG DELETE ME");
+      local_persist window_layout Window = WindowLayout("DEBUG DELETE ME", V2(150.f, 150.f));
       PushWindowStart(Ui, &Window);
 
       v3 Tangent, Bitangent, Normal;
       CalculateTBN(V->Derivs, &Tangent, &Bitangent, &Normal);
 
-      DEBUG_DrawSimSpaceVectorAt(Engine, SimP+V3(0,0,5), Normalize(Tangent)*20.f,     RED, 0.75f);
-      DEBUG_DrawSimSpaceVectorAt(Engine, SimP+V3(0,0,5), Normalize(Bitangent)*20.f, GREEN, 0.75f);
-      DEBUG_DrawSimSpaceVectorAt(Engine, SimP+V3(0,0,5), Normalize(Normal)*20.f,     BLUE, 0.75f);
+      /* DEBUG_DrawSimSpaceVectorAt(Engine, SimP+V3(0,0,5), Normalize(Tangent)*20.f,     RED, 0.75f); */
+      /* DEBUG_DrawSimSpaceVectorAt(Engine, SimP+V3(0,0,5), Normalize(Bitangent)*20.f, GREEN, 0.75f); */
+      /* DEBUG_DrawSimSpaceVectorAt(Engine, SimP+V3(0,0,5), Normalize(Normal)*20.f,     BLUE, 0.75f); */
 
       /* DEBUG_DrawSimSpaceVectorAt(Engine, SimP, Normalize(tangent)*20.f,     RED, 0.75f); */
       /* DEBUG_DrawSimSpaceVectorAt(Engine, SimP, Normalize(bitangent)*20.f, GREEN, 0.75f); */
@@ -825,21 +828,27 @@ DoLevelEditor(engine_resources *Engine)
       /* DEBUG_DrawSimSpaceVectorAt(Engine, SimP, Normalize(V->Derivs)*-20.f, YELLOW, 0.75f); */
 
       DoEditorUi(Ui, &V->Derivs, "derivs");
+      DoEditorUi(Ui, &V->DebugColor, "DebugColor");
+
+      r32 DotP = Dot(V->DebugColor, V3(0,0,1));
+      DoEditorUi(Ui, &DotP, "Dot");
+
+      v3 AbsP = GetAbsoluteP(&Engine->MousedOverVoxel.Value);
+      DoEditorUi(Ui, &AbsP, "AbsP");
 
       PushWindowEnd(Ui, &Window);
 
     }
 #else
-    {
-      v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled));
-      DEBUG_HighlightVoxel( Engine, SimP, RED, 0.075f);
-    }
-    {
-      v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, PickedVoxel_LastEmpty));
-      DebugLine("%f %f %f", SimP.x, SimP.y, SimP.z);
-
-      DEBUG_HighlightVoxel( Engine, SimP, BLUE, 0.075f);
-    }
+    /* { */
+    /*   v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled)); */
+    /*   DEBUG_HighlightVoxel( Engine, SimP, RED, 0.075f); */
+    /* } */
+    /* { */
+    /*   v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, PickedVoxel_LastEmpty)); */
+    /*   DebugLine("%f %f %f", SimP.x, SimP.y, SimP.z); */
+    /*   DEBUG_HighlightVoxel( Engine, SimP, BLUE, 0.075f); */
+    /* } */
 #endif
   }
 }

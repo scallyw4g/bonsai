@@ -47,8 +47,8 @@ struct voxel
   u8 Transparency;
   u16 Color;
 
-  v3 Derivs;
-  v3 DebugColor;
+  /* v3 Derivs; */
+  /* v3 DebugColor; */
 };
 
 struct voxel_lighting
@@ -331,7 +331,7 @@ struct octave
 {
   v3 Freq;
   r32 Amp;
-  r32 Strength;
+
   v3 WarpStrength;
 };
 
