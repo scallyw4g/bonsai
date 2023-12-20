@@ -123,7 +123,6 @@ GetPtr(voxel_stack_element_block_array *Arr, umm Index)
   return Result;
 }
 
-
 link_internal u32
 AtElements(voxel_stack_element_block *Block)
 {

@@ -123,7 +123,6 @@ GetPtr(texture_ptr_block_array *Arr, umm Index)
   return Result;
 }
 
-
 link_internal u32
 AtElements(texture_ptr_block *Block)
 {

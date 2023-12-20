@@ -123,7 +123,6 @@ GetPtr(entity_block_array *Arr, umm Index)
   return Result;
 }
 
-
 link_internal u32
 AtElements(entity_block *Block)
 {

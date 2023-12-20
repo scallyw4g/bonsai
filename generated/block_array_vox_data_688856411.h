@@ -123,7 +123,6 @@ GetPtr(vox_data_block_array *Arr, umm Index)
   return Result;
 }
 
-
 link_internal u32
 AtElements(vox_data_block *Block)
 {

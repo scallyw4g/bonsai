@@ -123,7 +123,6 @@ GetPtr(asset_thumbnail_block_array *Arr, umm Index)
   return Result;
 }
 
-
 link_internal u32
 AtElements(asset_thumbnail_block *Block)
 {
