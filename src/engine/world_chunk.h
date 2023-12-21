@@ -522,6 +522,14 @@ global_variable v3i Global_ChunkApronMaxDim = V3i(1,1,3);
 /* CAssert(Global_ChunkApronDim.y == Global_ChunkApronMinDim.y + Global_ChunkApronMaxDim.y); */
 /* CAssert(Global_ChunkApronDim.z == Global_ChunkApronMinDim.z + Global_ChunkApronMaxDim.z); */
 
+
+link_internal cp
+GetSpotMidpoint(world *World, standing_spot *Spot)
+{
+  cp Result = Canonical_Position(World->ChunkDim, Spot->P.Offset+Global_StandingSpotHalfDim, Spot->P.WorldP);
+  return Result;
+}
+
 struct mesh_freelist;
 
 link_internal void

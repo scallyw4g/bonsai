@@ -66,19 +66,6 @@ MoveToStandingSpot(world *World, canonical_position P)
   return Result;
 }
 
-enum player_action
-{
-  PlayerAction_None,
-
-  PlayerAction_Move,
-  PlayerAction_Charge,
-  PlayerAction_Fire,
-  PlayerAction_Jump,
-
-  PlayerAction_Count,
-};
-poof(generate_string_table(player_action))
-#include <generated/generate_string_table_player_action.h>
 
 link_internal void
 EnemyUpdate(engine_resources *Engine, entity *Enemy)
@@ -108,9 +95,7 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
 
         canonical_position EnemyOriginalP = Enemy->P;
 
-        canonical_position EnemyBaseP = Enemy->P;
-        EnemyBaseP.Offset += Enemy->CollisionVolumeRadius.xy;
-        Canonicalize(World, &EnemyBaseP);
+        canonical_position EnemyBaseP = GetEntityBaseP(World, Enemy);
 
         f32 EnemyMoveSpeed = 8.f;
         standing_spot_buffer Spots = GetStandingSpotsWithinRadius(World, EnemyBaseP, EnemyMoveSpeed, GetTranArena());
@@ -272,9 +257,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   /* } */
 
 
-  local_persist player_action SelectedAction = {};
-  local_persist u32 PlayerChargeLevel = {};
-
   if (Resources->MousedOverVoxel.Tag)
   {
     picked_voxel Pick = Resources->MousedOverVoxel.Value;
@@ -285,24 +267,25 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
     if (Input->Z.Clicked)
     {
-      SelectedAction = PlayerAction_Move;
+      GameState->SelectedAction = PlayerAction_Move;
     }
 
     if (Input->X.Clicked)
     {
-      SelectedAction = PlayerAction_Charge;
+      GameState->SelectedAction = PlayerAction_Charge;
     }
 
     if (Input->C.Clicked)
     {
-      SelectedAction = PlayerAction_Fire;
+      GameState->SelectedAction = PlayerAction_Fire;
     }
 
     if (Input->V.Clicked)
     {
-      SelectedAction = PlayerAction_Jump;
+      GameState->SelectedAction = PlayerAction_Jump;
     }
 
+#if 0
     if (Input->R.Clicked)
     {
       DoSplotion(Resources, PickCP, 5.f, &Global_GameEntropy, GetTranArena());
@@ -320,10 +303,11 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       DoSplotion(Resources, PickCP, 9.f,  &Global_GameEntropy,GetTranArena());
       /* DoIceBlock(Resources, &Pick, PickCP, 8.f, GetTranArena()); */
     }
+#endif
 
 
     GameState->DidPlayerAction = False;
-    switch (SelectedAction)
+    switch (GameState->SelectedAction)
     {
       case PlayerAction_Count:
       case PlayerAction_None:
@@ -332,9 +316,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
       case PlayerAction_Move:
       {
-        canonical_position PlayerBaseP = Player->P;
-        PlayerBaseP.Offset += Player->CollisionVolumeRadius.xy;
-        PlayerBaseP = Canonicalize(World, PlayerBaseP);
+        cp PlayerBaseP = GetEntityBaseP(World, Player);
 
         f32 PlayerMoveSpeed = 13.f;
         standing_spot_buffer PlayerSpots = GetStandingSpotsWithinRadius(World, PlayerBaseP, PlayerMoveSpeed, GetTranArena());
@@ -342,13 +324,13 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         v3 CursorSimP = GetSimSpaceP(World, PickCP);
 
         r32 LowestDistance = r32_MAX;
-        u32 LowestIndex = 0;
+        umm LowestIndex = 0;
 
-        for (u32 SpotIndex = 0; SpotIndex < PlayerSpots.Count; ++SpotIndex)
+        RangeIterator_t(umm, SpotIndex, PlayerSpots.Count)
         {
           standing_spot *Spot = PlayerSpots.Start + SpotIndex;
 
-          v3 SpotSimP = GetSimSpaceP(World, Spot->P);
+          v3 SpotSimP = GetSimSpaceP(World, GetSpotMidpoint(World, Spot));
 
           r32 Len = LengthSq(SpotSimP-CursorSimP);
           if (Len < LowestDistance)
@@ -392,20 +374,20 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       {
         if (Input->LMB.Clicked)
         {
-          ++PlayerChargeLevel;
-          SpawnFire(Player, &GameState->Entropy, Global_EntityFireballOffset, PlayerChargeLevel);
+          ++GameState->PlayerChargeLevel;
+          SpawnFire(Player, &GameState->Entropy, Global_EntityFireballOffset, GameState->PlayerChargeLevel);
           GameState->DidPlayerAction = True;
         }
       } break;
 
       case PlayerAction_Fire:
       {
-        if (PlayerChargeLevel)
+        if (GameState->PlayerChargeLevel)
         {
           if (Input->LMB.Clicked)
           {
-            DoSplotion(Resources, PickCP, 2.f + r32(PlayerChargeLevel)*2.f, &Global_GameEntropy, GetTranArena());
-            PlayerChargeLevel = 0.f;
+            DoSplotion(Resources, PickCP, 2.f + r32(GameState->PlayerChargeLevel)*2.f, &Global_GameEntropy, GetTranArena());
+            GameState->PlayerChargeLevel = 0.f;
             Deactivate(Player->Emitter);
             GameState->DidPlayerAction = True;
           }
@@ -423,16 +405,17 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
     if (GameState->DidPlayerAction)
     {
-      SelectedAction = PlayerAction_None;
+      GameState->SelectedAction = PlayerAction_None;
     }
 
   }
 
   local_persist window_layout ActionsWindow = {};
-  PushBorderlessWindowStart(Ui, &ActionsWindow, V2(0, 128));
+  ActionsWindow.Basis = V2(25, 200);
+  PushBorderlessWindowStart(Ui, &ActionsWindow);
   for (u32 ActionIndex = 0; ActionIndex < PlayerAction_Count; ++ActionIndex)
   {
-    ui_style *Style = ActionIndex == SelectedAction ? &DefaultSelectedStyle : &DefaultStyle;
+    ui_style *Style = ActionIndex == GameState->SelectedAction ? &DefaultSelectedStyle : &DefaultStyle;
     PushTableStart(Ui);
       PushColumn(Ui, ToString((player_action)ActionIndex), Style);
     PushTableEnd(Ui);

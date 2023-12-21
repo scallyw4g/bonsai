@@ -264,3 +264,12 @@ poof(serdes_struct(entity))
 
 poof( block_array(entity, {4}) )
 #include <generated/block_array_entity_688856407.h>
+
+link_internal cp
+GetEntityBaseP(world *World, entity *Entity)
+{
+  cp BaseP = Entity->P;
+  BaseP.Offset += Entity->CollisionVolumeRadius.xy;
+  BaseP = Canonicalize(World, BaseP);
+  return BaseP;
+}
