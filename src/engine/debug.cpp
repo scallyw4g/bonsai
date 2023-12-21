@@ -290,6 +290,9 @@ DoLevelWindow(engine_resources *Engine)
 
         Assert(LevelBytes.At == LevelBytes.End);
 
+        Assert(ThreadLocal_ThreadIndex == 0);
+        if (Engine->GameApi.OnLibraryLoad) { Engine->GameApi.OnLibraryLoad(Engine, GetThreadLocalState(ThreadLocal_ThreadIndex)); }
+
         UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
       }
       else
@@ -425,11 +428,11 @@ DoGraphicsDebugWindow(engine_resources *Engine)
 
   PushWindowStart(Ui, &Window);
     PushTableStart(Ui);
-    PushColumn(Ui, CSz("Solid Bytes :"));
+    PushColumn(Ui, CSz("Immediate Solid Bytes :"));
     PushColumn(Ui, CS(EngineDebug->Render.BytesSolidGeoLastFrame));
     PushNewRow(Ui);
 
-    PushColumn(Ui, CSz("Transp Bytes :"));
+    PushColumn(Ui, CSz("Immediate Transp Bytes :"));
     PushColumn(Ui, CS(EngineDebug->Render.BytesTransGeoLastFrame));
 
     PushTableEnd(Ui);
@@ -799,7 +802,7 @@ DoEngineDebug(engine_resources *Engine)
                             type_world_update_op_shape_params_asset,
                             .world_update_op_shape_params_asset = AssetUpdateShape,
                           };
-                          QueueWorldUpdateForRegion(Engine, {}, &Shape, {}, World->Memory);
+                          QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, World->Memory);
                         } break;
 
                         case AssetSpawnMode_Entity:

@@ -506,3 +506,14 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   return GameState;
 }
+
+BONSAI_API_ON_LIBRARY_RELOAD()
+{
+  Info("ON_LIBRARY_LOAD");
+
+  UNPACK_ENGINE_RESOURCES(Resources);
+
+  GameState->CameraGhost = GetFreeEntity(EntityTable);
+  SpawnEntity( GameState->CameraGhost );
+  Resources->CameraGhost = GameState->CameraGhost;
+}

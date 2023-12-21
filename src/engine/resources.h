@@ -15,7 +15,9 @@ struct engine_resources
 {
   // Stdlib
   bonsai_stdlib Stdlib;
-  renderer_2d   Ui; // TODO(Jesse): Is this actually, truly stdlib?
+  renderer_2d   Ui;
+
+  application_api GameApi;
 
   // Engine
   hotkeys     Hotkeys;

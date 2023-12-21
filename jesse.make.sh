@@ -29,12 +29,12 @@
 #     BuildDebugSystem
 
 
-# OPT="-O2"
+OPT="-O2"
 ./make.sh $OPT \
   BuildExecutables \
   BuildDebugSystem \
   BuildSingleExample examples/turn_based \
-  BuildSingleExample examples/terrain_gen \
+  # BuildSingleExample examples/terrain_gen \
   # BuildSingleExample examples/graveyard \
   # BuildSingleExample examples/turn_based2 \
   # BuildSingleExample examples/transparency \

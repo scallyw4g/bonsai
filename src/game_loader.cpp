@@ -148,7 +148,7 @@ main( s32 ArgCount, const char ** Args )
   // kick off the worker threads.
   //
   shared_lib       GameLib   = {};
-  application_api  GameApi   = {};
+  application_api *GameApi   = &EngineResources->GameApi;
   engine_api       EngineApi = {};
   {
     LibIsNew(GameLibName, &LastGameLibTime); // Hack to initialize the lib timer statics
@@ -157,7 +157,7 @@ main( s32 ArgCount, const char ** Args )
     GameLib = OpenLibrary(GameLibName);
     if (!GameLib) { Error("Loading GameLib :( "); return 1; }
 
-    if (!InitializeGameApi(&GameApi, GameLib)) { Error("Initializing GameApi :( "); return 1; }
+    if (!InitializeGameApi(GameApi, GameLib)) { Error("Initializing GameApi :( "); return 1; }
 
     if (!InitializeEngineApi(&EngineApi, GameLib)) { Error("Initializing EngineApi :( "); return 1; }
   }
@@ -166,7 +166,7 @@ main( s32 ArgCount, const char ** Args )
   memory_arena *GameMemory = AllocateArena();
 
   Ensure( InitializeBonsaiStdlib( bonsai_init_flags(BonsaiInit_LaunchThreadPool|BonsaiInit_OpenWindow|BonsaiInit_InitDebugSystem),
-                                  &GameApi,
+                                  GameApi,
                                   &EngineResources->Stdlib,
                                   &BootstrapArena) );
 
@@ -198,9 +198,9 @@ main( s32 ArgCount, const char ** Args )
 
   thread_local_state MainThread = DefaultThreadLocalState(0);
 
-  if (GameApi.GameInit)
+  if (GameApi->GameInit)
   {
-    EngineResources->GameState = GameApi.GameInit(EngineResources, &MainThread);
+    EngineResources->GameState = GameApi->GameInit(EngineResources, &MainThread);
     if (!EngineResources->GameState) { Error("Initializing Game :( "); return 1; }
   }
 
@@ -248,10 +248,10 @@ main( s32 ArgCount, const char ** Args )
       GameLib = OpenLibrary(GameLibName);
 
       Ensure(InitializeEngineApi(&EngineApi, GameLib));
-      Ensure(InitializeGameApi(&GameApi, GameLib));
+      Ensure(InitializeGameApi(GameApi, GameLib));
 
       Ensure( EngineApi.OnLibraryLoad(EngineResources) );
-      if (GameApi.OnLibraryLoad) { GameApi.OnLibraryLoad(EngineResources, &MainThread); }
+      if (GameApi->OnLibraryLoad) { GameApi->OnLibraryLoad(EngineResources, &MainThread); }
 
       UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
       Info("Game Reload Success");
@@ -300,12 +300,12 @@ main( s32 ArgCount, const char ** Args )
     EngineApi.FrameBegin(EngineResources);
 
       TIMED_BLOCK("GameMain");
-        GameApi.GameMain(EngineResources, &MainThread);
+        GameApi->GameMain(EngineResources, &MainThread);
       END_BLOCK("GameMain");
 
       EngineApi.SimulateAndBufferGeometry(EngineResources);
 
-      DrainQueue(&Plat->HighPriority, &MainThread, &GameApi);
+      DrainQueue(&Plat->HighPriority, &MainThread, GameApi);
       WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
 
       EngineApi.Render(EngineResources);

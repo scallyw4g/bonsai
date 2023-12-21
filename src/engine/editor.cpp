@@ -765,9 +765,6 @@ DoLevelEditor(engine_resources *Engine)
 
 
   if (Input->Ctrl.Pressed || Input->Shift.Pressed) { Ui->RequestedForceCapture = True; }
-
-/*   Info("ForceCapture %d", Ui->RequestedForceCapture); */
-
   if (Input->Ctrl.Pressed && Input->S.Clicked) { RadioSelect(&WorldEditModeRadioGroup, WorldEditMode_Select); ResetSelection(Editor); }
 
   if (Clicked(&WorldEditModeRadioGroup, CSz("Select"))) { ResetSelection(Editor); }
