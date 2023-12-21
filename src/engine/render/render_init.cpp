@@ -564,6 +564,9 @@ MakeTransparencyShader(b32 *BravoilMyersOIT, b32 *BravoilMcGuireOIT, m4 *ViewPro
   *Current = GetUniform(Memory, &Shader, ViewProjection, "ViewProjection");
   Current = &(*Current)->Next;
 
+  *Current = GetUniform(Memory, &Shader, &IdentityMatrix, "Model");
+  Current = &(*Current)->Next;
+
   *Current = GetUniform(Memory, &Shader, gBufferDepthTexture, "gBufferDepthTexture");
   Current = &(*Current)->Next;
 
@@ -774,18 +777,6 @@ GraphicsInit(memory_arena *GraphicsMemory)
                    &AoGroup->NoiseTile, &gBuffer->ViewProjection);
 
   AoGroup->SsaoKernelUniform = GetShaderUniform(&AoGroup->Shader, "SsaoKernel");
-
-  { // To keep these here or not to keep these here..
-#if BONSAI_INTERNAL
-#if 1
-    /* gBuffer->DebugColorShader    = MakeSimpleTextureShader(gBuffer->Textures->Color,    GraphicsMemory); */
-    /* gBuffer->DebugNormalShader   = MakeSimpleTextureShader(gBuffer->Textures->Normal,   GraphicsMemory); */
-    /* gBuffer->DebugPositionShader = MakeSimpleTextureShader(gBuffer->Textures->Position, GraphicsMemory); */
-    /* AoGroup->DebugSsaoShader     = MakeSimpleTextureShader(AoGroup->Texture,            GraphicsMemory); */
-    /* SG->DebugTextureShader       = MakeSimpleTextureShader(SG->ShadowMap,               GraphicsMemory); */
-#endif
-#endif
-  }
 
   // Initialize the composite group
   {
