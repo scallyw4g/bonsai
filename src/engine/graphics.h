@@ -36,7 +36,9 @@ struct render_settings
 {
   b32 Headless;
 
-  b8 DoDayNightCycle;
+  /* b8 DoDayNightCycle; */
+  b8 AutoDayNightCycle;
+  r32 tDay;
 
   // NOTE(Jesse): These have to be 32bit because they get passed to shaders
   // and the shader system is too dumb to handle 8-bit or 1-bit values

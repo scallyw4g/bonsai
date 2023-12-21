@@ -183,25 +183,24 @@ Bonsai_SimulateAndBufferGeometry(engine_resources *Resources)
 }
 
 link_internal void
-DoDayNightCycle(graphics *Graphics, r32 MappedGameTime)
+DoDayNightCycle(graphics *Graphics, r32 tDay)
 {
   auto SG = Graphics->SG;
-  /* r32 tDaytime = (Cos(MappedGameTime) + 1.f) / 2.f; */
-  r32 tDaytime = Cos(MappedGameTime);
-  r32 tPostApex = Sin(MappedGameTime);
+  r32 tDaytime = Cos(tDay);
+  r32 tPostApex = Sin(tDay);
 
   f32 SunIntensity = 1.f;
-  f32 MoonIntensity = 0.01f;
+  f32 MoonIntensity = 0.05f;
 
   f32 DawnIntensity = 0.5f;
-  f32 DuskIntensity = 0.1f;
+  f32 DuskIntensity = 0.25f;
 
   v3 DawnColor = Normalize(V3(0.3f, 0.2f, 0.2f)) * DawnIntensity;
   v3 SunColor  = Normalize(V3(0.2f, 0.2f, 0.3f)) * SunIntensity;
   v3 DuskColor = Normalize(V3(0.4f, 0.2f, 0.2f)) * DuskIntensity;
   v3 MoonColor = Normalize(V3(0.2f, 0.2f, 0.5f)) * MoonIntensity;
 
-  if (Graphics->Settings.DoDayNightCycle)
+  /* if (Graphics->Settings.DoDayNightCycle) */
   {
     if (tDaytime > 0.f)
     {
@@ -227,12 +226,12 @@ DoDayNightCycle(graphics *Graphics, r32 MappedGameTime)
       }
     }
   }
-  else
-  {
-    SG->Sun.Color = SunColor;
-  }
+  /* else */
+  /* { */
+    /* SG->Sun.Color = SunColor; */
+  /* } */
 
-  SG->Sun.Position.x = Sin(MappedGameTime);
+  SG->Sun.Position.x = Sin(tDay);
   SG->Sun.Position.y = tDaytime;
   SG->Sun.Position.z = tDaytime*0.7f + 1.3f;
 
@@ -248,10 +247,8 @@ Bonsai_Render(engine_resources *Resources)
   ao_render_group     *AoGroup = Graphics->AoGroup;
   shadow_render_group *SG      = Graphics->SG;
 
-  r32 MappedGameTime = Plat->GameTime / 18.0f;
-  /* r32 MappedGameTime = Plat->GameTime; */
-  /* r32 MappedGameTime = Plat->GameTime/2.f; */
-  DoDayNightCycle(Graphics, MappedGameTime);
+  if (Graphics->Settings.AutoDayNightCycle) { Graphics->Settings.tDay += Plat->dt/18.0f; }
+  DoDayNightCycle(Graphics, Graphics->Settings.tDay);
 
   v3 CameraTargetSimP = GetSimSpaceP(World, Resources->CameraGhost);
   Graphics->Settings.OffsetOfWorldCenterToGrid.x = fmodf(CameraTargetSimP.x, Graphics->Settings.MajorGridDim);

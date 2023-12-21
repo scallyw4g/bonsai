@@ -603,7 +603,10 @@ DoEngineDebug(engine_resources *Engine)
       PushTableStart(Ui);
         /* DoEditorUi(Ui, &Ui->Pressed.ID, "ID"); */
 
-        DoEditorUi(Ui, (b8*)&Settings->DoDayNightCycle, "DoDayNightCycle");
+        DoEditorUi(Ui, (b8*)&Settings->AutoDayNightCycle, "AutoDayNightCycle");
+        PushNewRow(Ui);
+
+        DebugSlider(Ui, &Settings->tDay, 0.0f, 2.f*PI32);
         PushNewRow(Ui);
 
         DoEditorUi(Ui, (b8*)&Settings->UseSsao, "UseSsao");
