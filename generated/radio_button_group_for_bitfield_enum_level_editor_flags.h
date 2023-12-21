@@ -1,5 +1,5 @@
 link_internal void
-RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_mode Selection)
+RadioSelect(ui_toggle_button_group *RadioGroup, level_editor_flags Selection)
 {
   Assert(CountBitsSet_Kernighan(u32(Selection)) == 1);
   u32 Index = GetIndexOfNthSetBit(u32(Selection), 1);
@@ -9,21 +9,21 @@ RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_mode Selection)
 }
 
 link_internal void
-GetRadioEnum(ui_toggle_button_group *RadioGroup, world_edit_mode *Result)
+GetRadioEnum(ui_toggle_button_group *RadioGroup, level_editor_flags *Result)
 {
   if (RadioGroup->ToggleBits)
   {
     Assert(CountBitsSet_Kernighan(RadioGroup->ToggleBits) == 1);
     // NOTE(Jesse): This is better; it asserts that we've actually got a bitfield
-    Assert(((RadioGroup->ToggleBits == WorldEditMode_Select||RadioGroup->ToggleBits == WorldEditMode_FillSelection||RadioGroup->ToggleBits == WorldEditMode_PaintSelection||RadioGroup->ToggleBits == WorldEditMode_DeleteSelection||RadioGroup->ToggleBits == WorldEditMode_Eyedropper||RadioGroup->ToggleBits == WorldEditMode_AddSingle||RadioGroup->ToggleBits == WorldEditMode_RemoveSingle||RadioGroup->ToggleBits == WorldEditMode_PaintSingle||RadioGroup->ToggleBits == WorldEditMode_BlitEntity||RadioGroup->ToggleBits == WorldEditMode_RecomputeStandingSpots)));
+    Assert(((RadioGroup->ToggleBits == LevelEditorFlags_Noop)));
     /* Assert((((enum_t.map(value).sep(|) {value.name})) & RadioGroup->ToggleBits) != 0); */
   }
 
-  *Result = Cast(world_edit_mode, RadioGroup->ToggleBits);
+  *Result = Cast(level_editor_flags, RadioGroup->ToggleBits);
 }
 
 link_internal b32
-ToggledOn(ui_toggle_button_group *ButtonGroup, world_edit_mode Enum)
+ToggledOn(ui_toggle_button_group *ButtonGroup, level_editor_flags Enum)
 {
   b32 Result = ButtonGroup->ToggleBits & (1 << Enum);
   return Result;
@@ -32,7 +32,7 @@ ToggledOn(ui_toggle_button_group *ButtonGroup, world_edit_mode Enum)
 // NOTE(Jesse): This could be implemented by reconstructing the button ID
 // but I'm very unsure that's worth it.  Seems like just
 link_internal b32
-Clicked(ui_toggle_button_group *ButtonGroup, world_edit_mode Enum)
+Clicked(ui_toggle_button_group *ButtonGroup, level_editor_flags Enum)
 {
   b32 Result = False;
   NotImplemented;
@@ -40,20 +40,12 @@ Clicked(ui_toggle_button_group *ButtonGroup, world_edit_mode Enum)
 }
 
 link_internal ui_toggle_button_group
-RadioButtonGroup_world_edit_mode(renderer_2d *Ui, umm IdModifier, ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None, UI_FUNCTION_PROTO_DEFAULTS)
+RadioButtonGroup_level_editor_flags(renderer_2d *Ui, umm IdModifier, ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None, UI_FUNCTION_PROTO_DEFAULTS)
 {
   cs ButtonNames[] =
   {
-    CSz("Select"),
-    CSz("FillSelection"),
-    CSz("PaintSelection"),
-    CSz("DeleteSelection"),
-    CSz("Eyedropper"),
-    CSz("AddSingle"),
-    CSz("RemoveSingle"),
-    CSz("PaintSingle"),
-    CSz("BlitEntity"),
-    CSz("RecomputeStandingSpots"),
+    CSz("Noop"),
+
   };
 
   u32 ButtonCount = ArrayCount(ButtonNames);

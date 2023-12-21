@@ -497,23 +497,31 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
 
-  GameState->CameraGhost = GetFreeEntity(EntityTable);
-  SpawnEntity( GameState->CameraGhost );
-
-  GameState->CameraGhost->P = Canonical_Position(Voxel_Position(0), {{2,2,0}});
-
-  Resources->CameraGhost = GameState->CameraGhost;
+  Resources->CameraGhost = GetFreeEntity(EntityTable);;
+  SpawnEntity( Resources->CameraGhost );
 
   return GameState;
 }
 
 BONSAI_API_ON_LIBRARY_RELOAD()
 {
-  Info("ON_LIBRARY_LOAD");
+  Info("Game ON_LIBRARY_LOAD");
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  GameState->CameraGhost = GetFreeEntity(EntityTable);
-  SpawnEntity( GameState->CameraGhost );
-  Resources->CameraGhost = GameState->CameraGhost;
+  Resources->CameraGhost = GetFreeEntity(EntityTable);;
+  SpawnEntity( Resources->CameraGhost );
+
+
+  GameState->Player = 0;
+  RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
+  {
+    entity *E = EntityTable[EntityIndex];
+    if (E->UserType == EntityType_Player)
+    {
+      if (GameState->Player) { Warn("Multiple Player entities detected!"); }
+      GameState->Player = E;
+    }
+  }
+
 }

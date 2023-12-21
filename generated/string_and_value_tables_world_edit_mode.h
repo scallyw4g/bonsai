@@ -13,6 +13,7 @@ ToString(world_edit_mode Type)
     case WorldEditMode_RemoveSingle: { Result = CSz("WorldEditMode_RemoveSingle"); } break;
     case WorldEditMode_PaintSingle: { Result = CSz("WorldEditMode_PaintSingle"); } break;
     case WorldEditMode_BlitEntity: { Result = CSz("WorldEditMode_BlitEntity"); } break;
+    case WorldEditMode_RecomputeStandingSpots: { Result = CSz("WorldEditMode_RecomputeStandingSpots"); } break;
   }
   return Result;
 }
@@ -31,6 +32,7 @@ WorldEditMode(counted_string S)
   if (StringsMatch(S, CSz("WorldEditMode_RemoveSingle"))) { return WorldEditMode_RemoveSingle; }
   if (StringsMatch(S, CSz("WorldEditMode_PaintSingle"))) { return WorldEditMode_PaintSingle; }
   if (StringsMatch(S, CSz("WorldEditMode_BlitEntity"))) { return WorldEditMode_BlitEntity; }
+  if (StringsMatch(S, CSz("WorldEditMode_RecomputeStandingSpots"))) { return WorldEditMode_RecomputeStandingSpots; }
 
   return Result;
 }

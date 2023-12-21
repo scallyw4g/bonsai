@@ -180,9 +180,20 @@ struct selection_modification_state
   v3 ClickedP[2];
 };
 
+enum level_editor_flags
+{
+  LevelEditorFlags_Noop                              = (1 << 0),
+  /* LevelEditorFlags_RecomputeStandingSpotsOnLevelLoad = (1 << 1), */
+};
+
+poof(radio_button_group_for_bitfield_enum(level_editor_flags));
+#include <generated/radio_button_group_for_bitfield_enum_level_editor_flags.h>
+
 struct level_editor
 {
   /* level_edit_mode Mode; */
+
+/*   level_editor_flags Flags; */
 
   u16 SelectedColorIndex;
   u16 HoverColorIndex;
@@ -235,6 +246,7 @@ enum selection_mode
 enum world_edit_mode
 {
   WorldEditMode_Select          = (1 << 0),
+
   WorldEditMode_FillSelection   = (1 << 1),
   WorldEditMode_PaintSelection  = (1 << 2),
   WorldEditMode_DeleteSelection = (1 << 3),
@@ -246,6 +258,8 @@ enum world_edit_mode
   WorldEditMode_PaintSingle     = (1 << 7),
 
   WorldEditMode_BlitEntity      = (1 << 8),
+
+  WorldEditMode_RecomputeStandingSpots = (1 << 9),
 };
 
 poof(string_and_value_tables(world_edit_mode))

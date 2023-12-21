@@ -64,6 +64,7 @@ struct work_queue_entry_init_world_chunk
 struct work_queue_entry_rebuild_mesh
 {
   world_chunk *Chunk;
+  chunk_init_flags Flags;
   /* world_chunk_mesh_bitfield MeshBit; */
 };
 
@@ -129,6 +130,9 @@ enum world_update_op_mode
   WorldUpdateOperationMode_Paint,
   WorldUpdateOperationMode_Additive,
   WorldUpdateOperationMode_Subtractive,
+
+  // NOTE(Jesse): This is kind of a hack to skip the update loop and compute standing spots for a given area
+  WorldUpdateOperationMode_RecomputeStandingSpots,
 };
 
 enum world_update_op_mode_modifier

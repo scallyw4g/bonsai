@@ -1132,14 +1132,15 @@ DrawWorldToGBuffer(engine_resources *Engine)
           }
         }
 
-#if 0
+#if 1
         umm StandingSpotCount = AtElements(&Chunk->StandingSpots);
         /* DebugLine("drawing (%u) standing spots", StandingSpotCount); */
         for (u32 SpotIndex = 0; SpotIndex < StandingSpotCount; ++SpotIndex)
         {
           v3i *Spot = Chunk->StandingSpots.Start + SpotIndex;
           v3 RenderSpot = GetRenderP(World->ChunkDim, Canonical_Position(*Spot, Chunk->WorldP), Graphics->Camera);
-          DrawStandingSpot(&Graphics->Transparency.GeoBuffer.Buffer, RenderSpot, V3(Global_StandingSpotDim));
+          /* DrawStandingSpot(&Graphics->Transparency.GeoBuffer.Buffer, RenderSpot, V3(Global_StandingSpotDim)); */
+          DrawStandingSpot(&GpuMap->Buffer, RenderSpot, V3(Global_StandingSpotDim));
         }
 #endif
 

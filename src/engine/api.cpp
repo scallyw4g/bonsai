@@ -351,6 +351,22 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod4, TempMesh, Thread->TempMemory);
       TempMesh->At = 0;
 
+      if (Job->Flags & ChunkInitFlag_ComputeStandingSpots)
+      {
+        ComputeStandingSpots( Chunk->Dim,
+                              Chunk->Voxels,
+                              {},
+
+                              {},
+                              Global_TileDim,
+
+                              Chunk->Dim,
+                              0,
+                              &Chunk->StandingSpots,
+                              /* memory_arena *PermMemory, */
+                              Thread->TempMemory );
+      }
+
       /* UnsetBitfield(chunk_flag, Chunk->Flags, Chunk_Queued); */
       Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_Queued);
       /* Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_MeshUploadedToGpu); */

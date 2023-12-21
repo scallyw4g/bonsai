@@ -1,13 +1,8 @@
 poof(block_array_c(asset_thumbnail, {8}))
 #include <generated/block_array_c_asset_thumbnail_688856411.h>
 
+// TODO(Jesse): Change these to u64 instead of umm
 #define UiId(base, mod) umm(umm(base) | ( umm(mod) << 32 ))
-link_internal engine_debug *
-GetEngineDebug()
-{
-  Assert(Global_EngineResources);
-  return &Global_EngineResources->EngineDebug;
-}
 
 link_weak ui_debug *
 GetUiDebug()
@@ -591,34 +586,6 @@ DoLevelEditor(engine_resources *Engine)
   {
     switch (WorldEditMode)
     {
-      case WorldEditMode_BlitEntity:
-      {
-        entity *SelectedEntity = EngineDebug->SelectedEntity;
-        if (SelectedEntity)
-        {
-          aabb EntityAABB = GetSimSpaceAABB(World, SelectedEntity);
-          if (Engine->MaybeMouseRay.Tag)
-          {
-            ray *Ray = &Engine->MaybeMouseRay.Ray;
-            aabb_intersect_result IntersectionResult = Intersect(EntityAABB, Ray);
-            if (Input->LMB.Clicked && IntersectionResult.Face)
-            {
-              world_update_op_shape_params_asset AssetUpdateShape =
-              {
-                SelectedEntity->Model,
-                SelectedEntity->P,
-              };
-
-              world_update_op_shape Shape =
-              {
-                type_world_update_op_shape_params_asset,
-                .world_update_op_shape_params_asset = AssetUpdateShape,
-              };
-              QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, World->Memory);
-            }
-          }
-        }
-      } break;
 
       case WorldEditMode_Select:
       {
@@ -757,7 +724,50 @@ DoLevelEditor(engine_resources *Engine)
           }
         }
       } break;
+
+      case WorldEditMode_BlitEntity:
+      {
+        entity *SelectedEntity = EngineDebug->SelectedEntity;
+        if (SelectedEntity)
+        {
+          aabb EntityAABB = GetSimSpaceAABB(World, SelectedEntity);
+          if (Engine->MaybeMouseRay.Tag)
+          {
+            ray *Ray = &Engine->MaybeMouseRay.Ray;
+            aabb_intersect_result IntersectionResult = Intersect(EntityAABB, Ray);
+            if (Input->LMB.Clicked && IntersectionResult.Face)
+            {
+              world_update_op_shape_params_asset AssetUpdateShape =
+              {
+                SelectedEntity->Model,
+                SelectedEntity->P,
+              };
+
+              world_update_op_shape Shape =
+              {
+                type_world_update_op_shape_params_asset,
+                .world_update_op_shape_params_asset = AssetUpdateShape,
+              };
+              QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, World->Memory);
+            }
+          }
+        }
+      } break;
+
+      case WorldEditMode_RecomputeStandingSpots:
+      {
+        if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
+        {
+          world_update_op_shape Shape = {
+            .Type = type_world_update_op_shape_params_rect,
+            .world_update_op_shape_params_rect.P0 = SelectionAABB.Min,
+            .world_update_op_shape_params_rect.P1 = SelectionAABB.Max,
+          };
+          QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_RecomputeStandingSpots, &Shape, Editor->SelectedColorIndex, Engine->Memory);
+        }
+      } break;
     }
+
   }
 
   PushWindowEnd(Ui, &Window);

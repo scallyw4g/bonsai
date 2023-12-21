@@ -69,6 +69,20 @@ GetEngineResources()
   return Global_EngineResources;
 }
 
+link_internal engine_debug *
+GetEngineDebug()
+{
+  Assert(Global_EngineResources);
+  return &Global_EngineResources->EngineDebug;
+}
+
+link_internal level_editor *
+GetLevelEditor()
+{
+  Assert(Global_EngineResources);
+  return &Global_EngineResources->Editor;
+}
+
 #define UNPACK_ENGINE_RESOURCES(Res) \
   UNPACK_DATA_RESOURCES(Res)         \
   UNPACK_GRAPHICS_RESOURCES(Res)

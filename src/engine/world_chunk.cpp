@@ -3219,7 +3219,7 @@ QueueChunkForInit(work_queue *Queue, world_chunk *Chunk, world_chunk_mesh_bitfie
 }
 
 inline void
-QueueChunkForMeshRebuild(work_queue *Queue, world_chunk *Chunk)
+QueueChunkForMeshRebuild(work_queue *Queue, world_chunk *Chunk, chunk_init_flags Flags = ChunkInitFlag_Noop)
 {
   TIMED_FUNCTION();
 
@@ -3237,6 +3237,7 @@ QueueChunkForMeshRebuild(work_queue *Queue, world_chunk *Chunk)
     Entry.Type = type_work_queue_entry_rebuild_mesh;
     work_queue_entry_rebuild_mesh *Job = SafeAccess(work_queue_entry_rebuild_mesh, &Entry);
     Job->Chunk = Chunk;
+    Job->Flags = Flags;
     /* Job->MeshBit = MeshBit; */
   }
 
@@ -3269,9 +3270,7 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOff
     if (Replaced) { DeallocateMesh(Replaced, &EngineResources->MeshFreelist, Thread->PermMemory); }
   }
 
-  /* Assert(Chunk->Flags & Chunk_MeshUploadedToGpu); */
-  /* if (Chunk->Flags & Chunk_MeshUploadedToGpu) { FreeGpuBuffers(Chunk); } */
-  /* Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_MeshUploadedToGpu); */
+  // NOTE(Jesse): Chunk flags modified by caller; this routine gets called multiple times pre job
 }
 
 link_internal void
@@ -3438,6 +3437,12 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
   // nocheckin
   DestChunk->Meshes = SyntheticChunk->Meshes;
 
+  /* AtomicReplaceMesh(DestChunk->Meshes, MeshBit_Lod0, SyntheticChunk->Meshes.E[0], SyntheticChunk->Meshes.E[0].Timestamp); */
+  /* AtomicReplaceMesh(DestChunk->Meshes, MeshBit_Lod1, SyntheticChunk->Meshes.E[1], SyntheticChunk->Meshes.E[1].Timestamp); */
+  /* AtomicReplaceMesh(DestChunk->Meshes, MeshBit_Lod2, SyntheticChunk->Meshes.E[2], SyntheticChunk->Meshes.E[2].Timestamp); */
+  /* AtomicReplaceMesh(DestChunk->Meshes, MeshBit_Lod3, SyntheticChunk->Meshes.E[3], SyntheticChunk->Meshes.E[3].Timestamp); */
+  /* AtomicReplaceMesh(DestChunk->Meshes, MeshBit_Lod4, SyntheticChunk->Meshes.E[4], SyntheticChunk->Meshes.E[4].Timestamp); */
+
   FinalizeChunkInitialization(DestChunk);
 }
 
@@ -3451,9 +3456,9 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 // nochecking Move as much out of this block as possible.  Only the last few of
 // the things in this block are actually related to drawing
 link_internal work_queue_entry_rebuild_mesh
-WorkQueueEntryRebuildMesh(world_chunk *Chunk) //, world_chunk_mesh_bitfield MeshBit)
+WorkQueueEntryRebuildMesh(world_chunk *Chunk, chunk_init_flags Flags) //, world_chunk_mesh_bitfield MeshBit)
 {
-  work_queue_entry_rebuild_mesh Result = { Chunk };
+  work_queue_entry_rebuild_mesh Result = { Chunk, Flags };
   return Result;
 }
 
@@ -4060,6 +4065,8 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
         {
           InvalidCase(WorldUpdateOperationMode_None);
 
+          case WorldUpdateOperationMode_RecomputeStandingSpots: {} break;
+
           case WorldUpdateOperationMode_Subtractive:
           {
             switch(Modifier)
@@ -4247,6 +4254,9 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
         switch(Mode)
         {
           InvalidCase(WorldUpdateOperationMode_None);
+
+          case WorldUpdateOperationMode_RecomputeStandingSpots: {} break;
+
           case WorldUpdateOperationMode_Additive:
           {
             NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor};
@@ -4312,6 +4322,10 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
             InvalidCase(WorldUpdateOperationMode_None);
             InvalidCase(WorldUpdateOperationMode_Paint);
             InvalidCase(WorldUpdateOperationMode_Subtractive);
+
+            // TODO(Jesse): Would we ever want this on in this path?
+            InvalidCase(WorldUpdateOperationMode_RecomputeStandingSpots);
+            /* case WorldUpdateOperationMode_RecomputeStandingSpots: {} break; */
 
             case WorldUpdateOperationMode_Additive:
             {
@@ -4427,12 +4441,16 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
   voxel_position_cursor StandingSpots = V3iCursor(ChunkCount*WORLD_CHUNK_STANDING_SPOT_COUNT, Thread->TempMemory);
 
-#if 0
-  ComputeStandingSpots( QueryDim, CopiedVoxels, {},
-                        {}, Global_StandingSpotDim,
-                        QueryDim,
-                        DebugMesh, &StandingSpots, Thread->TempMemory );
-#endif
+  /* if (GetLevelEditor()->Flags & LevelEditorFlags_RecomputeStandingSpotsOnLevelLoad) */
+  {
+    ComputeStandingSpots( QueryDim, CopiedVoxels, {},
+                          {},
+                          Global_StandingSpotDim,
+                          QueryDim,
+                          0,
+                          &StandingSpots, Thread->TempMemory );
+  }
+
 
   FullBarrier;
   for (u32 ChunkIndex = 0; ChunkIndex < ChunkCount; ++ChunkIndex)

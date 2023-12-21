@@ -338,8 +338,9 @@ DeserializeChunk(u8_stream *FileBytes, world_chunk *Result, tiered_mesh_freelist
     Assert(SpotElementSize == (u32)sizeof(v3));
 
     u64 TotalElements = Header.StandingSpotElementCount;
-    /* Result->StandingSpots = V3iCursor(WORLD_CHUNK_STANDING_SPOT_COUNT, PermMemory); */
-    Result->StandingSpots = V3iCursor(TotalElements, PermMemory);
+
+    Result->StandingSpots = V3iCursor(WORLD_CHUNK_STANDING_SPOT_COUNT, PermMemory);
+    /* Result->StandingSpots = V3iCursor(TotalElements, PermMemory); */
 
     //
     // SPOT data
@@ -349,14 +350,13 @@ DeserializeChunk(u8_stream *FileBytes, world_chunk *Result, tiered_mesh_freelist
 
     umm ByteCount = SpotElementSize*TotalElements;
     ReadBytesIntoBuffer(FileBytes, ByteCount, (u8*)Result->StandingSpots.Start);
+    Result->StandingSpots.At = Result->StandingSpots.Start + Header.StandingSpotElementCount;
   }
 
   /* Tag = Read_u32(FileBytes); */
   /* Assert(Tag ==  WorldChunkFileTag_END); */
 
   Result->Flags = Chunk_VoxelsInitialized;
-
-
 
   DebugLine("Loaded Chunk : P (%d,%d,%d) Standing Spots (%d)", Result->WorldP.x, Result->WorldP.y, Result->WorldP.z, Header.StandingSpotElementCount);
 }

@@ -266,7 +266,18 @@ DoLevelWindow(engine_resources *Engine)
 
           if (IsInsideVisibleRegion(World, Chunk->WorldP))
           {
-            QueueChunkForMeshRebuild(&GetEngineResources()->Stdlib.Plat.LowPriority, Chunk);
+            chunk_init_flags Flags = ChunkInitFlag_Noop;
+
+#if 0
+            if (Editor->Flags & LevelEditorFlags_RecomputeStandingSpotsOnLevelLoad)
+            {
+              Chunk->StandingSpots.At = Chunk->StandingSpots.Start;
+              Flags = ChunkInitFlag_ComputeStandingSpots;
+            }
+#endif
+
+            QueueChunkForMeshRebuild(&GetEngineResources()->Stdlib.Plat.LowPriority, Chunk, Flags);
+
             InsertChunkIntoWorld(World, Chunk);
           }
         }
@@ -669,7 +680,9 @@ DoEngineDebug(engine_resources *Engine)
         DoEditorUi(Ui, &Engine->Editor.SelectedColorIndex, "SelectedColorIndex");
         PushNewRow(Ui);
 
-        /* DebugUi(Engine, CSz("Selected Color"), &Engine->Editor.SelectedColorSquare); */
+        /* ui_toggle_button_group LevelEditorFlagsGroup = RadioButtonGroup_level_editor_flags(Ui, UiId(&Engine->Editor.Flags, "level_editor_flags")); */
+        /* GetRadioEnum(&LevelEditorFlagsGroup, &Engine->Editor.Flags); */
+        /* PushNewRow(Ui); */
 
       PushTableEnd(Ui);
     PushWindowEnd(Ui, &Window);

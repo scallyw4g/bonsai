@@ -15,7 +15,7 @@ struct game_state
   entity *Player;
 
   // TODO(Jesse): Use the one on the engine_resources
-  entity *CameraGhost;
+  /* entity *CameraGhost; */
 
   b32 DidPlayerAction;
 
