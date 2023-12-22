@@ -286,27 +286,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       GameState->SelectedAction = PlayerAction_Jump;
     }
 
-#if 0
-    if (Input->R.Clicked)
-    {
-      DoSplotion(Resources, PickCP, 5.f, &Global_GameEntropy, GetTranArena());
-      /* DoIceBlock(Resources, &Pick, PickCP, 4.f, GetTranArena()); */
-    }
-
-    if (Input->T.Clicked)
-    {
-      DoSplotion(Resources, PickCP, 7.f, &Global_GameEntropy, GetTranArena());
-      /* DoIceBlock(Resources, &Pick, PickCP, 6.f, GetTranArena()); */
-    }
-
-    if (Input->Y.Clicked)
-    {
-      DoSplotion(Resources, PickCP, 9.f,  &Global_GameEntropy,GetTranArena());
-      /* DoIceBlock(Resources, &Pick, PickCP, 8.f, GetTranArena()); */
-    }
-#endif
-
-
     GameState->DidPlayerAction = False;
     switch (GameState->SelectedAction)
     {
@@ -350,21 +329,17 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         {
           standing_spot *Spot = PlayerSpots.Start + LowestIndex;
           v3 SpotSimP = GetSimSpaceP(World, Spot->P);
-          /* aabb SpotSimAABB = AABBMinDim(SpotSimP, Global_StandingSpotDim); */
-          /* if (IsInside(SpotSimAABB, CursorSimP)) */
+          v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
+          DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), TEAL, DEFAULT_STANDING_SPOT_THICKNESS*4.f);
+
+          if (Input->LMB.Clicked)
           {
-            v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
-            DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), TEAL, DEFAULT_STANDING_SPOT_THICKNESS*4.f);
+            GameState->DidPlayerAction = True;
 
-            if (Input->LMB.Clicked)
-            {
-              GameState->DidPlayerAction = True;
-
-              v3 PlayerBaseSimP = GetSimSpaceP(World, PlayerBaseP);
-              v3 SpotTopSimP = SpotSimP + V3(Global_StandingSpotHalfDim.xy, Global_StandingSpotDim.z);
-              v3 UpdateV = SpotTopSimP - PlayerBaseSimP + V3(0,0,2);
-              UpdateEntityP(World, Player, UpdateV);
-            }
+            v3 PlayerBaseSimP = GetSimSpaceP(World, PlayerBaseP);
+            v3 SpotTopSimP = SpotSimP + V3(Global_StandingSpotHalfDim.xy, Global_StandingSpotDim.z);
+            v3 UpdateV = SpotTopSimP - PlayerBaseSimP + V3(0,0,2);
+            UpdateEntityP(World, Player, UpdateV);
           }
         }
 
@@ -417,34 +392,25 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
                 file_traversal_node AssetName = {FileTraversalType_File, CSz("models"), AssetNames[BittyIndex]};
                 asset_id AID = AssetId(&AssetName);
 
-                /* maybe_asset_ptr MaybeAsset = GetAssetPtr(Resources, &AID); */
-                /* if (MaybeAsset.Tag) */
-                {
-                  entity *BittyEntity = GetFreeEntity(EntityTable);
-                  /* SpawnEntity(BittyEntity); */
+                entity *BittyEntity = GetFreeEntity(EntityTable);
 
-                  BittyEntity->AssetId = AID;
+                BittyEntity->AssetId = AID;
 
-                  SpawnEntity(BittyEntity, EntityBehaviorFlags_Default, {}, {});
-                  /* SpawnEntity( BittyEntity, EntityBehaviorFlags_Default, GameState->Models, (model_index)(ModelIndex_Bitty0 + (BittyIndex % 2)) ); */
-                  BittyEntity->Physics.Speed = 1.f;
+                SpawnEntity(BittyEntity, EntityBehaviorFlags_Default, {}, {});
+                BittyEntity->Physics.Speed = 1.f;
 
-                  BittyEntity->EulerAngles.z = RandomUnilateral(&Global_GameEntropy)*PI32*2.f;
-                  BittyEntity->Scale = 1.0f;
-                  BittyEntity->CollisionVolumeRadius = V3(.1f);
+                BittyEntity->EulerAngles.z = RandomUnilateral(&Global_GameEntropy)*PI32*2.f;
+                BittyEntity->Scale = 1.0f;
+                BittyEntity->CollisionVolumeRadius = V3(.1f);
 
-                  v3 Rnd = RandomV3Bilateral(&Global_GameEntropy);
-                  BittyEntity->Physics.Mass = 25.f;
-                  BittyEntity->Physics.Force += Rnd*150.f*Radius;
-                  BittyEntity->Physics.Force.z = Abs(BittyEntity->Physics.Force.z) * 0.25f;
-                  BittyEntity->P = PickCP + (Rnd*Radius) + V3(0.f, 0.f, 2.0f);
-                  BittyEntity->P.Offset.z = PickCP.Offset.z + 2.f;
+                v3 Rnd = RandomV3Bilateral(&Global_GameEntropy);
+                BittyEntity->Physics.Mass = 25.f;
+                BittyEntity->Physics.Force += Rnd*150.f*Radius;
+                BittyEntity->Physics.Force.z = Abs(BittyEntity->Physics.Force.z) * 0.25f;
+                BittyEntity->P = PickCP + (Rnd*Radius) + V3(0.f, 0.f, 2.0f);
+                BittyEntity->P.Offset.z = PickCP.Offset.z + 2.f;
 
-                  if (GetCollision(World, BittyEntity).Count) { Unspawn(BittyEntity); continue; }
-
-                  /* SplosionBittyParticleSystem(BittyEntity, Entropy, {}, .1f, &Graphics->Transparency.GpuBuffer.Buffer); */
-                  /* BittyEntity->Physics.Velocity.z = RandomUnilateral(&Global_GameEntropy) * 100.f; */
-                }
+                if (GetCollision(World, BittyEntity).Count) { Unspawn(BittyEntity); continue; }
               }
             }
 
