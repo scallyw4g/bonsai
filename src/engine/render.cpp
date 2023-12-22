@@ -745,9 +745,21 @@ BufferEntity(
       /* BufferChunkMesh(Graphics, TransparentDest, &Entity->Model->Mesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Entity->P.Offset + AnimationOffset, FromEuler(Entity->EulerAngles.xyz)); */
       BufferChunkMesh(Graphics, TransparentDest, &Entity->Model->TransparentMesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Entity->P.Offset + AnimationOffset, FromEuler(Entity->EulerAngles.xyz));
     }
-  }
 
-  return;
+    // TODO(Jesse): Do we bake this into GetAssetPtr?
+    if (Entity->AssetId.FileNode.Type)
+    {
+      maybe_asset_ptr MaybeAsset = GetAssetPtr(GetEngineResources(), &Entity->AssetId);
+      if (MaybeAsset.Tag &&
+          MaybeAsset.Value->LoadState == AssetLoadState_Loaded)
+      {
+        Assert(MaybeAsset.Value->Models.Count);
+        model *Model = MaybeAsset.Value->Models.Start;
+
+        BufferChunkMesh(Graphics, Dest, &Model->Mesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Entity->P.Offset + AnimationOffset, FromEuler(Entity->EulerAngles.xyz));
+      }
+    }
+  }
 }
 
 link_internal void
@@ -762,8 +774,6 @@ BufferEntities( entity **EntityTable, untextured_3d_geometry_buffer* Dest, untex
     entity *Entity = EntityTable[EntityIndex];
     BufferEntity( Dest, TransparencyDest, Entity, 0, Graphics, World->ChunkDim, dt);
   }
-
-  return;
 }
 
 link_internal void

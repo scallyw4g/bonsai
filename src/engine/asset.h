@@ -143,11 +143,26 @@ struct asset_slot
   u16 Generation;   // Monotonically increasing integer to identify the allocation of the asset slot in time
 };
 
+struct asset_id
+{
+  asset_slot Slot;
+  file_traversal_node FileNode;
+};
+
+link_internal asset_id
+AssetId(file_traversal_node *FileNode)
+{
+  asset_id Result = {};
+  Result.FileNode = *FileNode;
+  return Result;
+}
+
 #define INVALID_ASSET_INDEX (u16_MAX)
 struct asset
 {
   volatile asset_load_state LoadState;
-  u16 Generation;
+
+  asset_id Id;
 
   // At 120fps we get 9k hours worth of frames in a u32.. should be enough.
   // 9k hours == 385 days
@@ -156,8 +171,6 @@ struct asset
   u64 LRUFrameIndex;
 
   model_buffer Models;
-
-  file_traversal_node FileNode;
 };
 
 

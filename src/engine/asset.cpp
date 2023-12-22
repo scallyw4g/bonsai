@@ -425,11 +425,11 @@ link_internal void
 FreeAsset(engine_resources *Engine, asset *Asset)
 {
   Assert(Asset->LoadState != AssetLoadState_Queued);
-  u16 Generation = Asset->Generation;
+  u16 Generation = Asset->Id.Slot.Generation;
   FreeModelBuffer(&Engine->AssetMemory, &Asset->Models);
 
   Clear(Asset);
-  Asset->Generation = Generation + 1;
+  Asset->Id.Slot.Generation = Generation + 1;
 }
 
 link_internal maybe_asset_slot
@@ -477,7 +477,7 @@ AllocateAssetSlot(engine_resources *Engine)
   {
     asset *Asset = Engine->AssetTable+FinalAssetIndex;
     Result.Tag = Maybe_Yes;
-    Result.Value = { FinalAssetIndex, ++Asset->Generation };
+    Result.Value = { FinalAssetIndex, ++Asset->Id.Slot.Generation };
   }
 
   return Result;
@@ -503,13 +503,13 @@ InitAsset(asset *Asset, thread_local_state *Thread)
   Assert(Asset->LoadState == AssetLoadState_Queued);
   /* Asset->LoadState = AssetLoadState_Loading; */
 
-  cs Ext = Extension(Asset->FileNode.Name);
+  cs Ext = Extension(Asset->Id.FileNode.Name);
 
   string_builder Builder = {};
 
-  Append(&Builder, Asset->FileNode.Dir);
+  Append(&Builder, Asset->Id.FileNode.Dir);
   Append(&Builder, CSz("/"));
-  Append(&Builder, Asset->FileNode.Name);
+  Append(&Builder, Asset->Id.FileNode.Name);
 
   cs AssetFilepath = Finalize(&Builder, Thread->TempMemory, True);
   if ( AreEqual(Ext, CSz("vox")) )
@@ -543,12 +543,14 @@ GetAssetPtr(engine_resources *Engine, asset_slot Slot)
 {
   maybe_asset_ptr Result = {};
 
-  asset *Asset = Engine->AssetTable + Slot.Index;
-
-  if (Asset->Generation == Slot.Generation)
+  if (Slot.Index || Slot.Generation)
   {
-    Result.Tag = Maybe_Yes;
-    Result.Value = Asset;
+    asset *Asset = Engine->AssetTable + Slot.Index;
+    if (Asset->Id.Slot.Generation == Slot.Generation)
+    {
+      Result.Tag = Maybe_Yes;
+      Result.Value = Asset;
+    }
   }
 
   return Result;
@@ -561,7 +563,7 @@ GetAssetPtr(engine_resources *Engine, file_traversal_node *FileNode)
   RangeIterator(AssetIndex, ASSET_TABLE_COUNT)
   {
     asset *Query = Engine->AssetTable + AssetIndex;
-    if (AreEqual(FileNode, &Query->FileNode))
+    if (AreEqual(FileNode, &Query->Id.FileNode))
     {
       Result.Tag = Maybe_Yes;
       Result.Value = Query;
@@ -578,7 +580,7 @@ GetAssetPtr(engine_resources *Engine, file_traversal_node *FileNode)
       Result = GetAssetPtr(Engine, MaybeSlot.Value);
       if (Result.Tag)
       {
-        Result.Value->FileNode = *FileNode;
+        Result.Value->Id.FileNode = *FileNode;
         Result.Value->LRUFrameIndex = Engine->FrameIndex;
         QueueAssetForLoad(&Engine->Stdlib.Plat.LowPriority, Result.Value);
       }
@@ -594,3 +596,11 @@ GetAssetPtr(engine_resources *Engine, file_traversal_node *FileNode)
   return Result;
 }
 
+
+link_internal maybe_asset_ptr
+GetAssetPtr(engine_resources *Engine, asset_id *AID)
+{
+  maybe_asset_ptr Result = GetAssetPtr(Engine, AID->Slot);
+  if (Result.Tag == Maybe_No) { Result = GetAssetPtr(Engine, &AID->FileNode); }
+  return Result;
+}

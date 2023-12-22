@@ -817,7 +817,7 @@ DoLevelEditor(engine_resources *Engine)
         type_world_update_op_shape_params_chunk_data,
         .world_update_op_shape_params_chunk_data = ChunkDataShape,
       };
-      QueueWorldUpdateForRegion(Engine, {}, &Shape, {}, World->Memory);
+      QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, World->Memory);
     }
   }
 

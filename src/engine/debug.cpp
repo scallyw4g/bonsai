@@ -322,7 +322,7 @@ DoEntityWindow(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-#if 0
+#if 1
   {
     local_persist window_layout EntityWindow = WindowLayout("All Entities");
 
@@ -332,7 +332,7 @@ DoEntityWindow(engine_resources *Engine)
         RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
         {
           entity *Entity = EntityTable[EntityIndex];
-          DoEditorUi(Ui, Entity, GetNullTerminated(FSz("E (%d)", EntityIndex)) );
+          DoEditorUi(Ui, Entity, GetNullTerminated(FSz("(%d)(%S)", EntityIndex, ToString(Entity->State))) );
           PushNewRow(Ui);
         }
       PushTableEnd(Ui);
@@ -723,7 +723,7 @@ DoEngineDebug(engine_resources *Engine)
         {
           asset *Asset = MaybeAsset.Value;
 
-          PushColumn(Ui, Asset->FileNode.Name);
+          PushColumn(Ui, Asset->Id.FileNode.Name);
           PushNewRow(Ui);
           switch (Asset->LoadState)
           {

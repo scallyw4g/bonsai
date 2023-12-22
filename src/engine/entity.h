@@ -60,6 +60,10 @@ struct entity
   v3 CollisionVolumeRadius;
   physics Physics;
 
+#if !POOF_PREPROCESSOR
+  asset_id         AssetId;
+#endif
+
   model           *Model;
   particle_system *Emitter;
 

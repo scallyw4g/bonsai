@@ -1144,7 +1144,7 @@ GetSimSpaceAABB(world *World, entity *Entity)
 }
 
 link_internal u32_buffer
-GatherEntitiesIntersecting(world *World, entity **EntityTable, sphere *S, memory_arena *Memory)
+GatherEntitiesIntersecting(world *World, entity **EntityTable, sphere *SimSpaceSphere, memory_arena *Memory)
 {
   u32_stream Stream = {};
   for (u32 EIndex = 0; EIndex < TOTAL_ENTITY_COUNT; ++EIndex)
@@ -1157,7 +1157,7 @@ GatherEntitiesIntersecting(world *World, entity **EntityTable, sphere *S, memory
       /* v3 ESimP = GetSimSpaceP(World, E->P); */
       /* v3 ESimCenterP = GetSimSpaceCenterP(E, ESimP); */
 
-      if (Intersect(&EntityAABB, S))
+      if (Intersect(&EntityAABB, SimSpaceSphere))
       {
         Push(&Stream, EIndex);
       }

@@ -230,8 +230,8 @@ SpawnPersistantSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radi
   SpawnParticleSystem(Entity->Emitter);
 }
 
-void
-SpawnSplotionBitty(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, untextured_3d_geometry_buffer *Dest)
+link_internal void
+SplosionBittyParticleSystem(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, untextured_3d_geometry_buffer *Dest)
 {
   particle_system *System = Entity->Emitter;
 
@@ -272,8 +272,6 @@ SpawnSplotionBitty(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius
   /* System->Dest = Dest; */
 
   SpawnParticleSystem(Entity->Emitter);
-
-  return;
 }
 
 link_internal void
@@ -376,10 +374,7 @@ DoSplotion( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
 
     if (GetCollision(World, E).Count) { Unspawn(E); continue; }
 
-    /* E->UserData = (void*)GameEntityBehaviorFlags_Bitty; */
-    /* E->Update = DoBittyLight; */
-
-    SpawnSplotionBitty(E, Entropy, {}, .1f, &Graphics->Transparency.GpuBuffer.Buffer);
+    SplosionBittyParticleSystem(E, Entropy, {}, .1f, &Graphics->Transparency.GpuBuffer.Buffer);
   }
 }
 

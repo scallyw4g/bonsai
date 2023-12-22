@@ -2669,11 +2669,17 @@ ComputeStandingSpotFor8x8x2_V2(voxel *Voxels, v3i SrcChunkDim, v3i TileChunkOffs
 
   // NOTE(Jesse): Pseudo-randomly chosen heuristic that produces good results
   // for highly contoured terrain
-  if (StandableCount >= (8*4)-4)
+  /* if (StandableCount >= (8*4)-4) */
+  /* { */
+  /*   Result.CanStand = True; */
+  /* } */
+
+  // NOTE(Jesse): Produces good results for mostly-flat with rocky terrain
+  /* if (StandableCount >= (8*4)+4) */
+  if (StandableCount >= (8*5))
   {
     Result.CanStand = True;
   }
-
 #if 0
   if (TempBoundingPoints->At >= (8*4))
   {
