@@ -70,8 +70,6 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim, b32 Colorf
   System->SystemMovementCoefficient = 0.1f;
 
   if (Inactive(System)) { SpawnParticleSystem(System); }
-
-  return;
 }
 
 void

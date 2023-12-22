@@ -791,7 +791,6 @@ RenderTransparencyBuffers(render_settings *Settings, transparency_render_group *
 
     if (Settings->BravoilMcGuireOIT)
     {
-
       SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
       GL.Disable(GL_CULL_FACE);
 

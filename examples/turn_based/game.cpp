@@ -7,7 +7,8 @@
 #include <game_types.h>
 
 global_variable v3
-Global_EntityFireballOffset = V3(7.0f, -1.75f, 4.5f);
+Global_EntityFireballOffset = V3(0,0,16);
+/* Global_EntityFireballOffset = V3(7.0f, -1.75f, 4.5f); */
 
 link_internal model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *Heap)
@@ -374,9 +375,14 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       {
         if (Input->LMB.Clicked)
         {
-          ++GameState->PlayerChargeLevel;
-          SpawnFire(Player, &GameState->Entropy, Global_EntityFireballOffset, GameState->PlayerChargeLevel);
           GameState->DidPlayerAction = True;
+
+          GameState->PlayerChargeLevel += 2;
+
+          SpawnFire(  Player,
+                     &GameState->Entropy,
+                      Global_EntityFireballOffset + Player->CollisionVolumeRadius.xy,
+                      GameState->PlayerChargeLevel);
         }
       } break;
 
@@ -386,7 +392,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         {
           if (Input->LMB.Clicked)
           {
-            DoSplotion(Resources, PickCP, 2.f + r32(GameState->PlayerChargeLevel)*2.f, &Global_GameEntropy, GetTranArena());
+            r32 Radius = 2.f + r32(GameState->PlayerChargeLevel)*2.f;
+            DoSplotion(Resources, PickCP, Radius, &Global_GameEntropy, GetTranArena());
             GameState->PlayerChargeLevel = 0.f;
             Deactivate(Player->Emitter);
             GameState->DidPlayerAction = True;
@@ -439,11 +446,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* Graphics->Camera->CurrentP.WorldP = WorldCenter; */
   /* Graphics->Camera->CurrentP.Offset = V3(1, -1, 1); */
 
-  GameState->Entropy.Seed = DEBUG_NOISE_SEED;
+  GameState->Entropy = {DEBUG_NOISE_SEED};
 
   AllocateWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
-
-  random_series WorldEntropy = {54930695483};
 
   GameState->Models = AllocateGameModels(GameState, Resources->Memory, Heap);
 

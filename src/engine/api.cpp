@@ -265,6 +265,7 @@ Bonsai_Render(engine_resources *Resources)
   DebugHighlightWorldChunkBasedOnState(Graphics, EngineDebug->PickedChunk, &GpuMap->Buffer);
 
   Ensure( FlushBuffersToCard(GpuMap) );
+  /* Ensure( FlushBuffersToCard(&Graphics->Transparency.GpuBuffer)); */
 
   if (GpuMap->Buffer.At)
   {
@@ -282,13 +283,19 @@ Bonsai_Render(engine_resources *Resources)
   // why that would be, but here we are.
   if (Graphics->Settings.UseSsao) { RenderAoTexture(AoGroup); }
 
-  RenderTransparencyBuffers(&Graphics->Settings, &Graphics->Transparency);
-  RenderLuminanceTexture(GpuMap, Lighting, Graphics);
+  /* FlushBuffersToCard(&Graphics->Transparency.GpuBuffer); */
+  /* if (Graphics->Transparency.GpuBuffer.Buffer.At) */
+  {
+    RenderTransparencyBuffers(&Graphics->Settings, &Graphics->Transparency);
+    RenderLuminanceTexture(GpuMap, Lighting, Graphics);
+  }
+  /* Clear(&Graphics->Transparency.GpuBuffer); */
 
   /* GaussianBlurTexture(&Graphics->Gaussian, AoGroup->Texture); */
   if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomTextureFBO); }
 
   CompositeAndDisplay(Plat, Graphics);
+
 
   GpuMap->Buffer.At = 0;
   GL.DisableVertexAttribArray(0);

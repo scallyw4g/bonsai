@@ -26,16 +26,13 @@ struct game_state
 {
   random_series Entropy;
 
-  model   *Models;
+  model      *Models;
   event_queue EventQueue;
 
   entity *Player;
 
   player_action SelectedAction;
   u32 PlayerChargeLevel;
-
-  // TODO(Jesse): Use the one on the engine_resources
-  /* entity *CameraGhost; */
 
   b32 DidPlayerAction;
 
