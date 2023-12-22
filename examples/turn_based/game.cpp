@@ -378,11 +378,10 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           GameState->DidPlayerAction = True;
 
           GameState->PlayerChargeLevel += 2;
-
-          SpawnFire(  Player,
-                     &GameState->Entropy,
-                      Global_EntityFireballOffset + Player->CollisionVolumeRadius.xy,
-                      GameState->PlayerChargeLevel);
+          SpawnFire( Player,
+                    &GameState->Entropy,
+                     Global_EntityFireballOffset + Player->CollisionVolumeRadius.xy,
+                     GameState->PlayerChargeLevel);
         }
       } break;
 
@@ -392,8 +391,65 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         {
           if (Input->LMB.Clicked)
           {
+            v3 SimP = GetSimSpaceP(World, PickCP);
+
             r32 Radius = 2.f + r32(GameState->PlayerChargeLevel)*2.f;
+            sphere S = {SimP, Radius};
+
+            u32_buffer EntityIndices = GatherEntitiesIntersecting(World, EntityTable, &S, GetTranArena());
+
+            IterateOver(&EntityIndices, EIndex, EIndexIndex)
+            {
+              entity *E = EntityTable[*EIndex];
+              Unspawn(E);
+
+              cs AssetNames[] =
+              {
+                CSz("skele_bitty_0.vox"),
+                CSz("skele_bitty_1.vox"),
+                CSz("skele_bitty_2.vox"),
+              };
+
+              s32 MaxBitties = ArrayCount(AssetNames);
+              RangeIterator(BittyIndex, MaxBitties)
+              {
+                // TODO(Jesse)(leak): This leaks the asset name when the asset is freed
+                file_traversal_node AssetName = {FileTraversalType_File, CSz("models"), AssetNames[BittyIndex]};
+                asset_id AID = AssetId(&AssetName);
+
+                /* maybe_asset_ptr MaybeAsset = GetAssetPtr(Resources, &AID); */
+                /* if (MaybeAsset.Tag) */
+                {
+                  entity *BittyEntity = GetFreeEntity(EntityTable);
+                  /* SpawnEntity(BittyEntity); */
+
+                  BittyEntity->AssetId = AID;
+
+                  SpawnEntity(BittyEntity, EntityBehaviorFlags_Default, {}, {});
+                  /* SpawnEntity( BittyEntity, EntityBehaviorFlags_Default, GameState->Models, (model_index)(ModelIndex_Bitty0 + (BittyIndex % 2)) ); */
+                  BittyEntity->Physics.Speed = 1.f;
+
+                  BittyEntity->EulerAngles.z = RandomUnilateral(&Global_GameEntropy)*PI32*2.f;
+                  BittyEntity->Scale = 1.0f;
+                  BittyEntity->CollisionVolumeRadius = V3(.1f);
+
+                  v3 Rnd = RandomV3Bilateral(&Global_GameEntropy);
+                  BittyEntity->Physics.Mass = 25.f;
+                  BittyEntity->Physics.Force += Rnd*150.f*Radius;
+                  BittyEntity->Physics.Force.z = Abs(BittyEntity->Physics.Force.z) * 0.25f;
+                  BittyEntity->P = PickCP + (Rnd*Radius) + V3(0.f, 0.f, 2.0f);
+                  BittyEntity->P.Offset.z = PickCP.Offset.z + 2.f;
+
+                  if (GetCollision(World, BittyEntity).Count) { Unspawn(BittyEntity); continue; }
+
+                  /* SplosionBittyParticleSystem(BittyEntity, Entropy, {}, .1f, &Graphics->Transparency.GpuBuffer.Buffer); */
+                  /* BittyEntity->Physics.Velocity.z = RandomUnilateral(&Global_GameEntropy) * 100.f; */
+                }
+              }
+            }
+
             DoSplotion(Resources, PickCP, Radius, &Global_GameEntropy, GetTranArena());
+
             GameState->PlayerChargeLevel = 0.f;
             Deactivate(Player->Emitter);
             GameState->DidPlayerAction = True;
@@ -417,9 +473,16 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   }
 
-  local_persist window_layout ActionsWindow = {};
-  ActionsWindow.Basis = V2(25, 200);
+  local_persist window_layout ActionsWindow = WindowLayout("ActionsWindow");
   PushBorderlessWindowStart(Ui, &ActionsWindow);
+
+  v2 WindowDim = GetDim(&ActionsWindow);
+  v2 WindowOffset = V2(Plat->WindowWidth/2.f-(WindowDim.y/2.f), Plat->WindowHeight-WindowDim.y);
+
+  ActionsWindow.Basis = WindowOffset;
+
+  /* Info("%S %.2f %.2f", ActionsWindow.Title, ActionsWindow.MaxClip.x, ActionsWindow.MaxClip.y); */
+
   for (u32 ActionIndex = 0; ActionIndex < PlayerAction_Count; ++ActionIndex)
   {
     ui_style *Style = ActionIndex == GameState->SelectedAction ? &DefaultSelectedStyle : &DefaultStyle;
