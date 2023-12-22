@@ -231,7 +231,11 @@ ModifySelectionAABB(rect3 *SelectionRegion, v3i UpdateVector, face_index Face, s
     } break;
   }
 
+  auto MinP = Min(Result.Min, Result.Max);
+  auto MaxP = Max(Result.Min, Result.Max);
 
+  Result.Min = MinP;
+  Result.Max = MaxP;
   return Result;
 }
 
@@ -406,6 +410,8 @@ DoSelectonModification( engine_resources *Engine,
   //
   rect3 Draw = Rect3(&Result);
   DEBUG_DrawSimSpaceAABB(Engine, &Draw, GREEN, 0.1f);
+
+  Assert(Result.Min <= Result.Max);
 
   return Result;
 }
