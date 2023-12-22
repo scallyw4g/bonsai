@@ -973,8 +973,6 @@ SimulateParticle(particle_system *System, particle *Particle, r32 dt, v3 EntityD
   Particle->RemainingLifespan -= dt;
 }
 
-link_internal void SimulateParticleSystem(work_queue_entry_sim_particle_system *Job);
-
 #if BONSAI_NETWORK_IMPLEMENTATION
 entity *
 GetPlayer(entity **Players, client_state *OurClient)
@@ -1281,7 +1279,7 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
     {
       auto EntityDelta = Entity->Physics.Delta;
 
-      v3 RenderSpaceP  = GetRenderP(Entity->P, Camera, World->ChunkDim);
+      v3 RenderSpaceP  = GetRenderP(Entity->P, Camera, World->ChunkDim) + System->SpawnRegion.Min;
 
       /* auto Dest = System->ParticleStartingTransparency > 0.f ? TransparentGeo : SolidGeo; */
       /* SimulateParticleSystem(&Job.work_queue_entry_sim_particle_system); */
