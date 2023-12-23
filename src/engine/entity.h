@@ -47,6 +47,7 @@ poof(do_editor_ui_for_enum(entity_behavior_flags))
 
 struct collision_event
 {
+  u32 FrameIndex;
   u32 Count;
   canonical_position MinP;
   canonical_position MaxP;
@@ -70,7 +71,7 @@ struct entity
 
 #if !POOF_PREPROCESSOR
   asset_id        AssetId;
-  collision_event WorldCollisionLastFrame;
+  collision_event CollisionLastFrame;
 #endif
 
   model           *Model;

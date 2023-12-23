@@ -159,7 +159,7 @@ FireballUpdate(engine_resources *Engine, entity *Entity)
     Entity->Behavior = entity_behavior_flags(Entity->Behavior & ~EntityBehaviorFlags_Gravity);
   }
 
-  if (Entity->WorldCollisionLastFrame.Count)
+  if (Entity->CollisionLastFrame.Count)
   {
     r32 Radius = 2.f + r32(State->ChargeLevel)*2.f;
     DoSplotion(Engine, Entity->P, Radius, &Global_GameEntropy, GetTranArena());
@@ -447,7 +447,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
             E->Physics = FireballPhysics();
 
-
             E->Behavior = EntityBehaviorFlags_Default;
             E->UserType = EntityType_Fireball;
 
@@ -463,7 +462,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
             v3 TargetP = GetSimSpaceP(World, PickCP);
 
             E->Physics.Velocity = (Normalize(TargetP-EntityP) + V3(0,0,5)) * 10.f;
-
 
             GameState->PlayerChargeLevel = 0;
 

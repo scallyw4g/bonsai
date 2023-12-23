@@ -38,7 +38,7 @@ struct engine_resources
   // 9k hours == 385 days
   //
   // TODO(Jesse)(frame-index): Should this just be 32-bit?
-  u64 FrameIndex;
+  u32 FrameIndex;
 
   entity *CameraGhost;
 

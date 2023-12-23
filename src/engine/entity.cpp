@@ -34,12 +34,13 @@ Unspawn(entity *Entity)
 /*   return Result; */
 /* } */
 
-collision_event
+link_internal collision_event
 GetCollision( world *World, canonical_position TestP, v3 CollisionDim )
 {
   TIMED_FUNCTION();
 
-  collision_event Collision = {};
+  collision_event Result = {};
+  Result.FrameIndex = GetEngineResources()->FrameIndex;
 
   chunk_dimension WorldChunkDim = World->ChunkDim;
 
@@ -62,16 +63,16 @@ GetCollision( world *World, canonical_position TestP, v3 CollisionDim )
 
         if ( !Chunk || IsFilledInChunk(Chunk, Voxel_Position(LoopTestP.Offset), World->ChunkDim) )
         {
-          if (Collision.Count == 0) { Collision.MinP = LoopTestP; }
-          Collision.MaxP = LoopTestP;
-          Collision.Count ++;
+          if (Result.Count == 0) { Result.MinP = LoopTestP; }
+          Result.MaxP = LoopTestP;
+          Result.Count ++;
         }
 
       }
     }
   }
 
-  return Collision;
+  return Result;
 }
 
 link_internal aabb GetSimSpaceAABB(world *World, entity *Entity);
@@ -128,8 +129,6 @@ GetCollision(world *World, entity *Entity, v3 Offset = V3(0,0,0) )
     C = GetCollision( World,
                       Canonicalize(World->ChunkDim, Entity->P + Offset),
                       Entity->CollisionVolumeRadius*2.0f );
-
-    /* Entity->WorldCollisionLastFrame = C; */
   }
 
   return C;
@@ -730,7 +729,7 @@ UpdateEntityP(world* World, entity *Entity, v3 Delta)
   Canonicalize(World, &Entity->P);
 }
 
-void
+link_internal collision_event
 MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
 {
   TIMED_FUNCTION();
@@ -738,125 +737,119 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
   /* DebugLine("GrossDelta (%f %f %f)", GrossDelta.x, GrossDelta.y, GrossDelta.z); */
 
   chunk_dimension WorldChunkDim = World->ChunkDim;
-  collision_event C = {};
   v3 Remaining = GrossDelta;
 
   v3 CollisionVolumeInit = Entity->CollisionVolumeRadius*2.0f;
-  C = GetCollision(World, Entity->P, CollisionVolumeInit);
+  collision_event Result = {};
+  collision_event C      = GetCollision(World, Entity->P, CollisionVolumeInit);
 
-  Entity->WorldCollisionLastFrame = {};
-
+  // NOTE(Jesse): Don't move the entity if it's already stuck in the world
   if (C.Count)
   { 
     Entity->Physics.Velocity = {};
     Entity->Physics.Delta = {};
-
-    Entity->WorldCollisionLastFrame = C;
-
-    return;
+    Result = C;
   }
-
-  while (LengthSq(Remaining) > 0)
+  else
   {
-    v3 StepDelta = ClampBetween(-1.0f, Remaining, 1.0f);
-    Remaining -= StepDelta;
-
-    RangeIterator(AxisIndex, 3)
+    while (LengthSq(Remaining) > 0)
     {
-      if (StepDelta.E[AxisIndex] != 0.0f)
+      v3 StepDelta = ClampBetween(-1.0f, Remaining, 1.0f);
+      Remaining -= StepDelta;
+
+      RangeIterator(AxisIndex, 3)
       {
-        Entity->P.Offset.E[AxisIndex] += StepDelta.E[AxisIndex];
-        Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-
-        canonical_position CollisionBasis = Entity->P;
-
-        // Compute the 1-wide slice in the direction we're moving
+        if (StepDelta.E[AxisIndex] != 0.0f)
         {
-          v3 CollisionVolume = Entity->CollisionVolumeRadius*2.0f;
-          if (StepDelta.E[AxisIndex] > 0.f) // We're going in the positive direction
+          Entity->P.Offset.E[AxisIndex] += StepDelta.E[AxisIndex];
+          Entity->P = Canonicalize(WorldChunkDim, Entity->P);
+
+          canonical_position CollisionBasis = Entity->P;
+
+          // Compute the 1-wide slice in the direction we're moving
           {
-            CollisionBasis.Offset.E[AxisIndex] += Truncate(CollisionVolume.E[AxisIndex]);
-            CollisionBasis = Canonicalize(WorldChunkDim, CollisionBasis);
+            v3 CollisionVolume = Entity->CollisionVolumeRadius*2.0f;
+            if (StepDelta.E[AxisIndex] > 0.f) // We're going in the positive direction
+            {
+              CollisionBasis.Offset.E[AxisIndex] += Truncate(CollisionVolume.E[AxisIndex]);
+              CollisionBasis = Canonicalize(WorldChunkDim, CollisionBasis);
+            }
+            CollisionVolume.E[AxisIndex] = Min(CollisionVolume.E[AxisIndex], 1.f);
+
+            C = GetCollision(World, CollisionBasis, CollisionVolume);
           }
-          CollisionVolume.E[AxisIndex] = Min(CollisionVolume.E[AxisIndex], 1.f);
 
-          C = GetCollision(World, CollisionBasis, CollisionVolume);
-        }
+          if ( C.Count > 0 )
+          {
+            Result = C;
+            // TODO(Jesse): Parameterize by adding something to physics struct
+            /* Entity->Physics.Velocity.E[AxisIndex] *= -0.25f; */
+            Entity->Physics.Velocity.E[AxisIndex] = 0.f;
 
-        if ( C.Count > 0 )
-        {
-          Entity->WorldCollisionLastFrame = C;
-
-          // TODO(Jesse): Parameterize by adding something to physics struct
-          /* Entity->Physics.Velocity.E[AxisIndex] *= -0.25f; */
-          Entity->Physics.Velocity.E[AxisIndex] = 0.f;
-
-          /* Entity->Physics.Velocity.E[AxisIndex] = 0.f; */
-          Entity->Physics.Delta.E[AxisIndex] = 0;
+            /* Entity->Physics.Velocity.E[AxisIndex] = 0.f; */
+            Entity->Physics.Delta.E[AxisIndex] = 0;
 
 #if 0
-          Entity->P.Offset.E[AxisIndex] -= StepDelta.E[AxisIndex];
-          Entity->P = Canonicalize(WorldChunkDim, Entity->P);
+            Entity->P.Offset.E[AxisIndex] -= StepDelta.E[AxisIndex];
+            Entity->P = Canonicalize(WorldChunkDim, Entity->P);
 #else
-          // NOTE(Jesse): This is actually fundamentally broken.  The issue I
-          // thought of is that if you snap and add an epsilon you can get into
-          // a situation where the collision volume should exactly fit into a
-          // space, but you offset it to interpenetrate with the world.
-          //
-          // I actually observed this happening in practice (I think).
-          //
-          // I didn't want to FAF with the collision so I turned it off, but
-          // that caused other problems, so I'm turning it back on.
-          //
-          // One idea could be, if the collision fails, try again with half the
-          // distance.  This is still pretty miserable at high speeds (you'd
-          // stop a half a voxel short of your intended collision at >
-          // 1vox/frame) but we could also reverse direction again, halfing the
-          // distance again, till we get to some min threshold.  That sounds
-          // pretty expensive so maybe not the best algorithm, but I think it
-          // would at least work reliably, which would be a step in the right
-          // direction.  Pun intended ;)
-          //
-          // Side-note, there _should_ be a pretty straight-forward closed form
-          // solution to this.  I really don't know why it's so hard for me to
-          // get it right..
-          //
-          Entity->P.Offset.E[AxisIndex] -= StepDelta.E[AxisIndex];
-          if (StepDelta.E[AxisIndex] > 0)
-          {
-            r32 Max = Entity->P.Offset.E[AxisIndex] + Entity->CollisionVolumeRadius.E[AxisIndex];
+            // NOTE(Jesse): This is actually fundamentally broken.  The issue I
+            // thought of is that if you snap and add an epsilon you can get into
+            // a situation where the collision volume should exactly fit into a
+            // space, but you offset it to interpenetrate with the world.
+            //
+            // I actually observed this happening in practice (I think).
+            //
+            // I didn't want to FAF with the collision so I turned it off, but
+            // that caused other problems, so I'm turning it back on.
+            //
+            // One idea could be, if the collision fails, try again with half the
+            // distance.  This is still pretty miserable at high speeds (you'd
+            // stop a half a voxel short of your intended collision at >
+            // 1vox/frame) but we could also reverse direction again, halfing the
+            // distance again, till we get to some min threshold.  That sounds
+            // pretty expensive so maybe not the best algorithm, but I think it
+            // would at least work reliably, which would be a step in the right
+            // direction.  Pun intended ;)
+            //
+            // Side-note, there _should_ be a pretty straight-forward closed form
+            // solution to this.  I really don't know why it's so hard for me to
+            // get it right..
+            //
+            Entity->P.Offset.E[AxisIndex] -= StepDelta.E[AxisIndex];
+            if (StepDelta.E[AxisIndex] > 0)
+            {
+              r32 Max = Entity->P.Offset.E[AxisIndex] + Entity->CollisionVolumeRadius.E[AxisIndex];
 
-            Entity->P.WorldP.E[AxisIndex] = C.MinP.WorldP.E[AxisIndex];
-            Entity->P.Offset.E[AxisIndex] = C.MinP.Offset.E[AxisIndex];
-            Entity->P.Offset.E[AxisIndex] -= ((Entity->CollisionVolumeRadius.E[AxisIndex]*2.f) + 0.001f);
-          }
+              Entity->P.WorldP.E[AxisIndex] = C.MinP.WorldP.E[AxisIndex];
+              Entity->P.Offset.E[AxisIndex] = C.MinP.Offset.E[AxisIndex];
+              Entity->P.Offset.E[AxisIndex] -= ((Entity->CollisionVolumeRadius.E[AxisIndex]*2.f) + 0.001f);
+            }
 
-          if (StepDelta.E[AxisIndex] < 0)
-          {
+            if (StepDelta.E[AxisIndex] < 0)
+            {
 #if 0
-            Entity->P.Offset.E[AxisIndex] = Truncate(Entity->P.Offset.E[AxisIndex] += 1.0f);
+              Entity->P.Offset.E[AxisIndex] = Truncate(Entity->P.Offset.E[AxisIndex] += 1.0f);
 #else
-            Entity->P.WorldP.E[AxisIndex] = C.MaxP.WorldP.E[AxisIndex];
-            Entity->P.Offset.E[AxisIndex] = C.MaxP.Offset.E[AxisIndex];
-            Entity->P.Offset.E[AxisIndex] += 1.0f;
-            /* Truncate(Entity->P.Offset.E[AxisIndex]);// += 1.0f; */
-            /* Entity->P.Offset.E[AxisIndex] += 1.001f; */
-            /* Entity->P.Offset.E[AxisIndex] ++; */
-            /* Entity->P.Offset.E[AxisIndex] = Truncate(Entity->P.Offset.E[AxisIndex] += 1.0f); */
+              Entity->P.WorldP.E[AxisIndex] = C.MaxP.WorldP.E[AxisIndex];
+              Entity->P.Offset.E[AxisIndex] = C.MaxP.Offset.E[AxisIndex];
+              Entity->P.Offset.E[AxisIndex] += 1.0f;
+              /* Truncate(Entity->P.Offset.E[AxisIndex]);// += 1.0f; */
+              /* Entity->P.Offset.E[AxisIndex] += 1.001f; */
+              /* Entity->P.Offset.E[AxisIndex] ++; */
+              /* Entity->P.Offset.E[AxisIndex] = Truncate(Entity->P.Offset.E[AxisIndex] += 1.0f); */
 #endif
-          }
+            }
 #endif
 
-          Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-          /* EntityWorldCollision(World, Entity, &C, VisibleRegion); */
+            Entity->P = Canonicalize(WorldChunkDim, Entity->P);
+            /* EntityWorldCollision(World, Entity, &C, VisibleRegion); */
+          }
         }
       }
+
+      if (Unspawned(Entity) || Destroyed(Entity)) break;
     }
-
-    if (Unspawned(Entity) || Destroyed(Entity))
-      break;
-
-    /* DoEntityCollisions(GameState, Entity, &GameState->Entropy, GameState->World->ChunkDim); */
   }
 
   Entity->P = Canonicalize(WorldChunkDim, Entity->P);
@@ -869,7 +862,7 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
   /* if (AssertCollision.Count) */
     /* EntityWorldCollision(World, Entity, &C, VisibleRegion); */
 
-  return;
+  return Result;
 }
 
 #if 0
@@ -1253,8 +1246,7 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
   {
     entity *Entity = EntityTable[EntityIndex];
 
-    if (!Spawned(Entity))
-        continue;
+    if (!Spawned(Entity)) continue;
 
     if (GameEntityUpdate)
     {
@@ -1268,7 +1260,11 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
 
     if (Entity->Behavior & EntityBehaviorFlags_WorldCollision)
     {
-      MoveEntityInWorld(World, Entity, Entity->Physics.Delta);
+      collision_event C = MoveEntityInWorld(World, Entity, Entity->Physics.Delta);
+      if (C.Count)
+      {
+        Entity->CollisionLastFrame = C;
+      }
     }
     else
     {
@@ -1281,6 +1277,7 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
       entity_entity_collision_event C = DoEntityCollisions(World, EntityTable, Entity);
       if (C.Count)
       {
+        Entity->CollisionLastFrame = C.Collision;
         /* DebugLine("Entity-entity COLLISION!! %p -> %p", Entity, C.Entity); */
       }
     }

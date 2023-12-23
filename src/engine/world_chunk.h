@@ -307,7 +307,12 @@ struct world_chunk
   // NOTE(Jesse): Since we waste so much space with padding this thing out we
   // can afford to have a next pointer to keep the freelist
   world_chunk *Next;
-  u8 _Pad1[40];
+
+  // NOTE(Jesse): This is a list of all entities overlapping this chunk to be
+  // considered for collision detection.
+  entity *Entities;
+
+  u8 _Pad1[32];
 };
 // TODO(Jesse, id: 87, tags: speed, cache_friendly): Re-enable this
 // @world-chunk-cache-line-size

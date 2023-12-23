@@ -95,11 +95,13 @@ struct point_buffer
 
 struct entity_entity_collision_event
 {
+  // TODO(Jesse)(poof): generate this with 'mixin'
   union
   {
     collision_event Collision;
     struct
     {
+      u32 FrameIndex;
       u32 Count;
       canonical_position MinP;
       canonical_position MaxP;
