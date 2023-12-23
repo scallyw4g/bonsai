@@ -9,7 +9,7 @@ not work for you, by all means open an issue and I will do what I can to assist.
 
 ## Dependencies
 
-Follow the instructions for fetching dependencies for bonsai_stdlib [https://github.com/scallyw4g/bonsai_stdlib/docs/dependencies.md](https://github.com/scallyw4g/bonsai_stdlib/docs/dependencies.md)
+Follow the instructions for fetching dependencies for bonsai_stdlib [https://github.com/scallyw4g/bonsai_stdlib/blob/master/docs/dependencies.md](https://github.com/scallyw4g/bonsai_stdlib/docs/dependencies.md)
 
 ## Quickstart
 
