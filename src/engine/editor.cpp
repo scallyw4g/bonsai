@@ -190,6 +190,16 @@ poof(do_editor_ui_for_compound_type(lod_element_buffer))
 poof(do_editor_ui_for_compound_type(world_chunk))
 #include <generated/do_editor_ui_for_compound_type_world_chunk.h>
 
+poof(do_editor_ui_for_compound_type(render_debug))
+#include <generated/do_editor_ui_for_compound_type_render_debug.h>
+
+poof(do_editor_ui_for_compound_type(ui_debug))
+#include <generated/do_editor_ui_for_compound_type_ui_debug.h>
+
+poof(do_editor_ui_for_compound_type(engine_debug))
+#include <generated/do_editor_ui_for_compound_type_engine_debug.h>
+
+
 
 link_internal rect3i
 ModifySelectionAABB(rect3 *SelectionRegion, v3i UpdateVector, face_index Face, selection_mode Mode)

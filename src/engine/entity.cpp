@@ -425,6 +425,8 @@ SpawnPlayerLikeEntity( platform *Plat,
       Health
     );
 
+  // NOTE(Jesse): Don't do this here because we might spawn lots of these guys
+  // and we don't want to block in between
   /* WaitForWorkerThreads(&Plat->HighPriorityWorkerCount); */
 
   return;

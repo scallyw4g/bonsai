@@ -663,28 +663,8 @@ DoEngineDebug(engine_resources *Engine)
 
     render_settings *Settings = &Graphics->Settings;
     PushWindowStart(Ui, &Window);
-      PushTableStart(Ui);
-
-        DoEditorUi(Ui, &EngineDebug->DrawEntityCollisionVolumes, "DrawEntityCollisionVolumes");
-        PushNewRow(Ui);
-        DoEditorUi(Ui, &EngineDebug->DrawWorldAxies, "DrawWorldAxies");
-        PushNewRow(Ui);
-
-        DoEditorUi(Ui, &EngineDebug->UiDebug.OutlineUiValues,  "OutlineUiValues");
-        PushNewRow(Ui);
-        DoEditorUi(Ui, &EngineDebug->UiDebug.OutlineUiButtons, "OutlineUiButtons");
-        PushNewRow(Ui);
-        DoEditorUi(Ui, &EngineDebug->UiDebug.OutlineUiTables,  "OutlineUiTables");
-        PushNewRow(Ui);
-
-        DoEditorUi(Ui, &Engine->Editor.SelectedColorIndex, "SelectedColorIndex");
-        PushNewRow(Ui);
-
-        /* ui_toggle_button_group LevelEditorFlagsGroup = RadioButtonGroup_level_editor_flags(Ui, UiId(&Engine->Editor.Flags, "level_editor_flags")); */
-        /* GetRadioEnum(&LevelEditorFlagsGroup, &Engine->Editor.Flags); */
-        /* PushNewRow(Ui); */
-
-      PushTableEnd(Ui);
+      DoEditorUi(Ui, &EngineDebug->UiDebug, "UI Debug");
+      DoEditorUi(Ui, &EngineDebug->Render,  "Graphics Debug");
     PushWindowEnd(Ui, &Window);
   }
 

@@ -1,5 +1,5 @@
 link_internal counted_string
-ToString( player_action Type)
+ToString(player_action Type)
 {
   counted_string Result = {};
   switch (Type)
