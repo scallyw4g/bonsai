@@ -251,9 +251,12 @@ poof(
     }
 )
 
-#pragma pack(push, 1)
-struct current_triangles;
 
+typedef entity* entity_ptr;
+poof( block_array(entity_ptr, {8}) )
+#include <generated/block_array_entity_ptr_688856411.h>
+
+#pragma pack(push, 1)
 struct world_chunk
 {
   /* poof( use_struct(chunk_data) ) */
@@ -310,7 +313,7 @@ struct world_chunk
 
   // NOTE(Jesse): This is a list of all entities overlapping this chunk to be
   // considered for collision detection.
-  entity *Entities;
+  entity_ptr_block_array Entities;
 
   u8 _Pad1[32];
 };

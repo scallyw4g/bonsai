@@ -128,7 +128,7 @@ GetCollision(world *World, entity *Entity, v3 Offset = V3(0,0,0) )
   {
     C = GetCollision( World,
                       Canonicalize(World->ChunkDim, Entity->P + Offset),
-                      Entity->CollisionVolumeRadius*2.0f );
+                      Entity->_CollisionVolumeRadius*2.0f );
   }
 
   return C;
@@ -261,13 +261,45 @@ SpawnEntity(
 {
   TIMED_FUNCTION();
 
+  world *World = GetEngineResources()->World;
+
   Entity->Behavior = Behavior;
 
   if (Model) Entity->Model = Model;
   if (Physics) Entity->Physics = *Physics;
-  if (InitialP) Entity->P = *InitialP;
 
-  Entity->CollisionVolumeRadius = CollisionVolumeRadius;
+  if (InitialP)
+  {
+    Entity->P = *InitialP;
+
+    // TODO(Jesse): WTF?
+    for (s32 z = -1; z < (s32)(CollisionVolumeRadius.z*2.f); ++ z)
+    {
+      for (s32 y = -1; y < (s32)(CollisionVolumeRadius.y*2.f); ++ y)
+      {
+        for (s32 x = -1; x < (s32)(CollisionVolumeRadius.x*2.f); ++ x)
+        {
+          canonical_position CP = Canonicalize(World->ChunkDim, V3(x, y, z), InitialP->WorldP);
+
+          world_chunk *Chunk = GetWorldChunkFromHashtable( World, CP.WorldP );
+          if (Chunk == 0)
+          {
+            Chunk = AllocateAndInsertChunk(World->Memory, World, CP.WorldP);
+            if (Chunk)
+            {
+              QueueChunkForInit(&GetEngineResources()->Stdlib.Plat.HighPriority, Chunk, MeshBit_Lod0);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Entity->_CollisionVolumeRadius = CollisionVolumeRadius;
+  InsertEntityIntoChunks(World, Entity, GetTranArena());
+
+  /* UpdateCollisionVolumeRadius(GetEngineResources()->World, Entity, CollisionVolumeRadius, GetTranArena()); */
+  /* Entity->CollisionVolumeRadius = CollisionVolumeRadius; */
 
   Entity->Scale = Scale;
   Entity->State = EntityState_Spawned;
@@ -388,27 +420,6 @@ SpawnPlayerLikeEntity( platform *Plat,
   if (Model)
   {
     CollisionVolumeRadius = Model->Dim * Scale * 0.5f; // 0.5f is to shrink to a radius, instead of dim
-  }
-
-  for (s32 z = -1; z < (s32)(CollisionVolumeRadius.z*2.f); ++ z)
-  {
-    for (s32 y = -1; y < (s32)(CollisionVolumeRadius.y*2.f); ++ y)
-    {
-      for (s32 x = -1; x < (s32)(CollisionVolumeRadius.x*2.f); ++ x)
-      {
-        canonical_position CP = Canonicalize(World->ChunkDim, V3(x, y, z), InitialP.WorldP);
-
-        world_chunk *Chunk = GetWorldChunkFromHashtable( World, CP.WorldP );
-        if (Chunk == 0)
-        {
-          Chunk = AllocateAndInsertChunk(World->Memory, World, CP.WorldP);
-          if (Chunk)
-          {
-            QueueChunkForInit(&Plat->HighPriority, Chunk, MeshBit_Lod0);
-          }
-        }
-      }
-    }
   }
 
   SpawnEntity(
@@ -739,9 +750,16 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
   chunk_dimension WorldChunkDim = World->ChunkDim;
   v3 Remaining = GrossDelta;
 
-  v3 CollisionVolumeInit = Entity->CollisionVolumeRadius*2.0f;
+
+  v3 CollisionVolumeInit = Entity->_CollisionVolumeRadius*2.0f;
   collision_event Result = {};
   collision_event C      = GetCollision(World, Entity->P, CollisionVolumeInit);
+
+
+  memory_arena *Tran = GetTranArena();
+  temp_memory_handle TMH = BeginTemporaryMemory(Tran);
+
+  DropEntityFromOccupiedChunks(World, Entity, Tran);
 
   // NOTE(Jesse): Don't move the entity if it's already stuck in the world
   if (C.Count)
@@ -768,7 +786,7 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
 
           // Compute the 1-wide slice in the direction we're moving
           {
-            v3 CollisionVolume = Entity->CollisionVolumeRadius*2.0f;
+            v3 CollisionVolume = Entity->_CollisionVolumeRadius*2.0f;
             if (StepDelta.E[AxisIndex] > 0.f) // We're going in the positive direction
             {
               CollisionBasis.Offset.E[AxisIndex] += Truncate(CollisionVolume.E[AxisIndex]);
@@ -819,11 +837,11 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
             Entity->P.Offset.E[AxisIndex] -= StepDelta.E[AxisIndex];
             if (StepDelta.E[AxisIndex] > 0)
             {
-              r32 Max = Entity->P.Offset.E[AxisIndex] + Entity->CollisionVolumeRadius.E[AxisIndex];
+              r32 Max = Entity->P.Offset.E[AxisIndex] + Entity->_CollisionVolumeRadius.E[AxisIndex];
 
               Entity->P.WorldP.E[AxisIndex] = C.MinP.WorldP.E[AxisIndex];
               Entity->P.Offset.E[AxisIndex] = C.MinP.Offset.E[AxisIndex];
-              Entity->P.Offset.E[AxisIndex] -= ((Entity->CollisionVolumeRadius.E[AxisIndex]*2.f) + 0.001f);
+              Entity->P.Offset.E[AxisIndex] -= ((Entity->_CollisionVolumeRadius.E[AxisIndex]*2.f) + 0.001f);
             }
 
             if (StepDelta.E[AxisIndex] < 0)
@@ -856,6 +874,10 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
 
   collision_event AssertCollision = GetCollision(World, Entity);
   /* Assert(AssertCollision.Count == 0); */
+
+  InsertEntityIntoChunks(World, Entity, Tran);
+
+  EndTemporaryMemory(&TMH);
 
   // Entites that aren't moving can still be positioned outside the world if
   // the player moves the world to do so
@@ -1112,14 +1134,14 @@ IsGrounded( world *World, entity *entity )
 link_internal v3
 GetSimSpaceCenterP(entity *E, v3 SimSpaceP)
 {
-  v3 Result = SimSpaceP + E->CollisionVolumeRadius;
+  v3 Result = SimSpaceP + E->_CollisionVolumeRadius;
   return Result;
 }
 
 link_internal v3
 GetSimSpaceBaseP(entity *E, v3 SimSpaceP)
 {
-  v3 Result = SimSpaceP + E->CollisionVolumeRadius.xy;
+  v3 Result = SimSpaceP + E->_CollisionVolumeRadius.xy;
   return Result;
 }
 
@@ -1142,7 +1164,7 @@ link_internal aabb
 GetSimSpaceAABB(world *World, entity *Entity)
 {
   v3 SimSpaceP = GetSimSpaceP(World, Entity);
-  aabb Result = AABBMinRad(SimSpaceP, Entity->CollisionVolumeRadius);
+  aabb Result = AABBMinRad(SimSpaceP, Entity->_CollisionVolumeRadius);
   /* DEBUG_DrawSimSpaceAABB(GetEngineResources(), &Result, RED); */
   return Result;
 }

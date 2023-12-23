@@ -201,7 +201,9 @@ FireballUpdate(engine_resources *Engine, entity *Entity)
 
           BittyEntity->EulerAngles.z = RandomUnilateral(&Global_GameEntropy)*PI32*2.f;
           BittyEntity->Scale = 1.0f;
-          BittyEntity->CollisionVolumeRadius = V3(.1f);
+
+          UpdateCollisionVolumeRadius(World, BittyEntity, V3(.1f), GetTranArena());
+          /* BittyEntity->CollisionVolumeRadius = V3(.1f); */
 
           v3 Rnd = RandomV3Bilateral(&Global_GameEntropy);
           BittyEntity->Physics.Mass = 25.f;
@@ -424,7 +426,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           GameState->PlayerChargeLevel += 2;
           SpawnFire( Player,
                     &GameState->Entropy,
-                     Global_EntityFireballOffset + Player->CollisionVolumeRadius.xy,
+                     Global_EntityFireballOffset + Player->_CollisionVolumeRadius.xy,
                      GameState->PlayerChargeLevel);
         }
       } break;
@@ -450,7 +452,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
             E->Behavior = EntityBehaviorFlags_Default;
             E->UserType = EntityType_Fireball;
 
-            E->CollisionVolumeRadius = V3(1); // TODO(Jesse): Should be based on charge level?
+            /* E->CollisionVolumeRadius = V3(1); // TODO(Jesse): Should be based on charge level? */
+            UpdateCollisionVolumeRadius(World, E, V3(1), GetTranArena());
 
             /* fireball_state *FireballState = Allocate(fireball_state, &GameState->Heap, 1); */
             fireball_state *FireballState = (fireball_state*)HeapAllocate(&GameState->Heap, sizeof(fireball_state));

@@ -77,7 +77,7 @@ GetRenderP( chunk_dimension WorldChunkDim, entity *entity, camera *Camera)
 inline aabb
 GetRenderSpaceAABB(chunk_dimension WorldChunkDim, entity *Entity, camera *Camera)
 {
-  v3 Radius = Entity->CollisionVolumeRadius;
+  v3 Radius = Entity->_CollisionVolumeRadius;
   v3 Center = GetRenderP(WorldChunkDim, Entity->P, Camera) + Radius;
 
   aabb Result = RectCenterRad(Center, Radius);

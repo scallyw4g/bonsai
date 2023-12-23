@@ -363,7 +363,7 @@ DoSplotion( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
 
     E->EulerAngles.xyz = RandomRotation(Entropy);
     E->Scale = 0.3f;
-    E->CollisionVolumeRadius = V3(.1f);
+    UpdateCollisionVolumeRadius(World, E, V3(.1f), GetTranArena());
 
     v3 Rnd = RandomV3Bilateral(Entropy);
     E->Physics.Mass = 25.f;
