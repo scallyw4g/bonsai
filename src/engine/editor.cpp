@@ -12,7 +12,7 @@ GetUiDebug()
 }
 
 link_internal void
-DebugSlider_(renderer_2d *Ui, r32 *Value, const char* Name, r32 Min, r32 Max)
+DebugSlider_(renderer_2d *Ui, r32 *Value, cs Name, r32 Min, r32 Max)
 {
   /* u32 Start = StartColumn(Ui); */
   /*   PushTableStart(Ui); */
@@ -43,10 +43,10 @@ DebugSlider_(renderer_2d *Ui, r32 *Value, const char* Name, r32 Min, r32 Max)
 
 
 /* #define DoEditorUi(Ui, Value, "Value") DoEditorUi(Ui, Value, STRINGIZE(Value)) */
-#define DebugSlider(Ui, Value, Min, Max) DebugSlider_(Ui, Value, STRINGIZE(Value), Min, Max)
+#define DebugSlider(Ui, Value, Min, Max) DebugSlider_(Ui, Value, CSz(STRINGIZE(Value)), Min, Max)
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, void *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, void *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
   Value ?
@@ -56,7 +56,7 @@ DoEditorUi(renderer_2d *Ui, void *Value, const char* Name, EDITOR_UI_FUNCTION_PR
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, r32 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, r32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
@@ -78,7 +78,7 @@ DoEditorUi(renderer_2d *Ui, r32 *Value, const char* Name, EDITOR_UI_FUNCTION_PRO
 
         if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1.f; }
 #if 1
-          DebugSlider_(Ui, Value, 0, 0.f, 32.f);
+          DebugSlider_(Ui, Value, {}, 0.f, 32.f);
 #else
         if (*Value <= 2.f)
         {
@@ -120,7 +120,7 @@ DoEditorUi(renderer_2d *Ui, r32 *Value, const char* Name, EDITOR_UI_FUNCTION_PRO
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, b8 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, b8 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Button(Ui, CS(Name), (umm)Value + (umm)"toggle", EDITOR_UI_FUNCTION_INSTANCE_NAMES )) { *Value = !(*Value); }
 
@@ -139,20 +139,20 @@ poof(do_editor_ui_for_vector_type({v4i v4 v3i v3 v2 Quaternion}));
 #include <generated/do_editor_ui_for_vector_type_688873645.h>
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, cp *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, cp *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   /* PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
 
-  DoEditorUi(Ui, &Value->WorldP, "WorldP");
+  DoEditorUi(Ui, &Value->WorldP, CSz("WorldP"));
   PushNewRow(Ui);
-  DoEditorUi(Ui, &Value->Offset, "Offset");
+  DoEditorUi(Ui, &Value->Offset, CSz("Offset"));
 }
 
 
 
 #if DO_EDITOR_UI_FOR_ENTITY_TYPE
 link_internal void
-DoEditorUi(renderer_2d *Ui, entity_type *Element, const char* Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS);
+DoEditorUi(renderer_2d *Ui, entity_type *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS);
 #endif
 
 
@@ -186,6 +186,9 @@ poof(do_editor_ui_for_compound_type(gpu_element_buffer_handles))
 
 poof(do_editor_ui_for_compound_type(lod_element_buffer))
 #include <generated/do_editor_ui_for_compound_type_lod_element_buffer.h>
+
+poof(do_editor_ui_for_container(entity_ptr_block_array))
+#include <generated/do_editor_ui_for_container_entity_ptr_block_array.h>
 
 poof(do_editor_ui_for_compound_type(world_chunk))
 #include <generated/do_editor_ui_for_compound_type_world_chunk.h>

@@ -22,7 +22,7 @@ Serialize(native_file *File, entity *Element)
 
 
 
-  Result &= Serialize(File, &Element->CollisionVolumeRadius);
+  Result &= Serialize(File, &Element->_CollisionVolumeRadius);
 
 
 
@@ -82,7 +82,7 @@ Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
 
 
 
-  Result &= Deserialize(Bytes, &Element->CollisionVolumeRadius, Memory);
+  Result &= Deserialize(Bytes, &Element->_CollisionVolumeRadius, Memory);
 
 
 

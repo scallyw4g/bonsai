@@ -138,6 +138,18 @@ Allocate_voxel_stack_element_block(memory_arena *Memory)
   return Result;
 }
 
+link_internal cs
+CS(voxel_stack_element_block_array_index Index)
+{
+  return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+}
+
+link_internal void
+RemoveUnordered(voxel_stack_element_block_array *Array, voxel_stack_element_block_array_index Index)
+{
+  Leak("RemoveUnordered");
+}
+
 link_internal voxel_stack_element *
 Push(voxel_stack_element_block_array *Array, voxel_stack_element *Element)
 {

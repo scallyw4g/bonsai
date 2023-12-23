@@ -138,6 +138,18 @@ Allocate_vox_data_block(memory_arena *Memory)
   return Result;
 }
 
+link_internal cs
+CS(vox_data_block_array_index Index)
+{
+  return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+}
+
+link_internal void
+RemoveUnordered(vox_data_block_array *Array, vox_data_block_array_index Index)
+{
+  Leak("RemoveUnordered");
+}
+
 link_internal vox_data *
 Push(vox_data_block_array *Array, vox_data *Element)
 {

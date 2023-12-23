@@ -4,7 +4,7 @@ poof(
     type_list.map(type)
     {
       link_internal void
-      DoEditorUi(renderer_2d *Ui, type.name *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+      DoEditorUi(renderer_2d *Ui, type.name *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
       {
         type.member(0, (E) 
         {
@@ -16,7 +16,7 @@ poof(
               PushTableStart(Ui);
                 E.map_array(e_index)
                 {
-                  DoEditorUi(Ui, &Value->(E.name)[e_index], 0);
+                  DoEditorUi(Ui, &Value->(E.name)[e_index], {});
                   PushNewRow(Ui);
                 }
               PushTableEnd(Ui);
@@ -34,7 +34,7 @@ poof(
     type_list.map(type)
     {
       link_internal void
-      DoEditorUi(renderer_2d *Ui, volatile type.name *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+      DoEditorUi(renderer_2d *Ui, volatile type.name *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
       {
         if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
@@ -54,7 +54,7 @@ poof(
         }
       }
       link_internal void
-      DoEditorUi(renderer_2d *Ui, type.name *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+      DoEditorUi(renderer_2d *Ui, type.name *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
       {
         if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
@@ -81,50 +81,58 @@ poof(
   func do_editor_ui_for_compound_type(type)
   {
     link_internal void
-    DoEditorUi(renderer_2d *Ui, type.name *Element, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+    DoEditorUi(renderer_2d *Ui, type.name *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
     {
-      /* PushTableStart(Ui); */
-      if (ToggleButton(Ui, FSz("v %s", Name), FSz("> %s", Name), umm(Element) ^ umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+      if (Element)
       {
-        PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-        /* Padding.x += 20.f; */
-        PushNewRow(Ui);
-        type.map(member)
+        /* PushTableStart(Ui); */
+        if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), umm(Element) ^ umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
         {
-          member.is_array?
+          PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+          /* Padding.x += 20.f; */
+          PushNewRow(Ui);
+          type.map(member)
           {
-            RangeIterator(ArrayIndex, member.array)
+            member.is_array?
             {
-              DoEditorUi(Ui, Element->(member.name)+ArrayIndex, "member.type member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-            }
-          }
-          {
-            member.is_pointer?
-            {
-              DoEditorUi(Ui, Element->(member.name), "member.type member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-            }
-            {
-              member.is_union?
+              RangeIterator(ArrayIndex, member.array)
               {
-                /* member.member(0, (union_member) { */
-                  /* DoEditorUi(Ui, &Element->(union_member.name), "union_member.type union_member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
-                /* }) */
-                DoEditorUi(Ui, &Element->(member.name), "member.type member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-              }
-              {
-                DoEditorUi(Ui, &Element->(member.name), "member.type member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+                DoEditorUi(Ui, Element->(member.name)+ArrayIndex, CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
               }
             }
-          }
+            {
+              member.is_pointer?
+              {
+                DoEditorUi(Ui, Element->(member.name), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+              }
+              {
+                member.is_union?
+                {
+                  /* member.member(0, (union_member) { */
+                    /* DoEditorUi(Ui, &Element->(union_member.name), "union_member.type union_member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
+                  /* }) */
+                  DoEditorUi(Ui, &Element->(member.name), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+                }
+                {
+                  DoEditorUi(Ui, &Element->(member.name), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+                }
+              }
+            }
 
+            PushNewRow(Ui);
+          }
+          PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+        }
+        else
+        {
           PushNewRow(Ui);
         }
-        PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       }
       else
       {
-        PushNewRow(Ui);
+        PushColumn(Ui, FSz("  %S = (null)", Name));
       }
+      
     }
   }
 )
@@ -133,7 +141,7 @@ poof(
   func do_editor_ui_for_enum(enum_t)
   {
     link_internal void
-    DoEditorUi(renderer_2d *Ui, enum_t.name *Element, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+    DoEditorUi(renderer_2d *Ui, enum_t.name *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
     {
       if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
@@ -159,11 +167,35 @@ poof(
   }
 )
 
-link_internal void
-DoEditorUi(renderer_2d *Ui, aabb *Element, const char* Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS);
+poof(
+  func do_editor_ui_for_container(type)
+  {
+    link_internal void
+    DoEditorUi(renderer_2d *Ui, type.name *Container, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+    {
+      if (Container)
+      {
+        if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), umm(Container) ^ umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+        {
+          IterateOver(Container, Element, ElementIndex)
+          {
+            DoEditorUi(Ui, Element, CS(ElementIndex), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+          }
+        }
+      }
+      else
+      {
+        PushColumn(Ui, FSz("  %S = (null)", Name));
+      }
+    }
+  }
+)
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, v3i *Element, const char* Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS);
+DoEditorUi(renderer_2d *Ui, aabb *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS);
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, v3i *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS);
 
 struct asset_thumbnail
 {
@@ -281,7 +313,6 @@ GatherChunksOverlappingArea(world *World, rect3cp Region, memory_arena *Memory)
 
   // NOTE(Jesse): These need to be aligned to the cache line size, so don't use the constructor fn
   Result.Start = AllocateAligned(world_chunk*, Memory, TotalChunkCount, CACHE_LINE_SIZE);
-  Result.Count = TotalChunkCount;
 
   u32 ChunkIndex = 0;
   for (s32 zChunk = MinP.WorldP.z; zChunk <= MaxP.WorldP.z; ++zChunk)
@@ -300,6 +331,8 @@ GatherChunksOverlappingArea(world *World, rect3cp Region, memory_arena *Memory)
       }
     }
   }
+
+  Result.Count = ChunkIndex;
   return Result;
 }
 

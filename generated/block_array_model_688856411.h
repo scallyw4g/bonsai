@@ -138,6 +138,18 @@ Allocate_model_block(memory_arena *Memory)
   return Result;
 }
 
+link_internal cs
+CS(model_block_array_index Index)
+{
+  return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+}
+
+link_internal void
+RemoveUnordered(model_block_array *Array, model_block_array_index Index)
+{
+  Leak("RemoveUnordered");
+}
+
 link_internal model *
 Push(model_block_array *Array, model *Element)
 {

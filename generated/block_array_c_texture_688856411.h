@@ -7,6 +7,18 @@ Allocate_texture_block(memory_arena *Memory)
   return Result;
 }
 
+link_internal cs
+CS(texture_block_array_index Index)
+{
+  return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+}
+
+link_internal void
+RemoveUnordered(texture_block_array *Array, texture_block_array_index Index)
+{
+  Leak("RemoveUnordered");
+}
+
 link_internal texture *
 Push(texture_block_array *Array, texture *Element)
 {

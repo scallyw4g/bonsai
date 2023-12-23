@@ -138,6 +138,18 @@ Allocate_texture_ptr_block(memory_arena *Memory)
   return Result;
 }
 
+link_internal cs
+CS(texture_ptr_block_array_index Index)
+{
+  return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+}
+
+link_internal void
+RemoveUnordered(texture_ptr_block_array *Array, texture_ptr_block_array_index Index)
+{
+  Leak("RemoveUnordered");
+}
+
 link_internal texture_ptr *
 Push(texture_ptr_block_array *Array, texture_ptr *Element)
 {

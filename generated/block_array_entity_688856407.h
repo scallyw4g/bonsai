@@ -138,6 +138,18 @@ Allocate_entity_block(memory_arena *Memory)
   return Result;
 }
 
+link_internal cs
+CS(entity_block_array_index Index)
+{
+  return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+}
+
+link_internal void
+RemoveUnordered(entity_block_array *Array, entity_block_array_index Index)
+{
+  Leak("RemoveUnordered");
+}
+
 link_internal entity *
 Push(entity_block_array *Array, entity *Element)
 {

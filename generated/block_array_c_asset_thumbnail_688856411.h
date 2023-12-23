@@ -7,6 +7,18 @@ Allocate_asset_thumbnail_block(memory_arena *Memory)
   return Result;
 }
 
+link_internal cs
+CS(asset_thumbnail_block_array_index Index)
+{
+  return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+}
+
+link_internal void
+RemoveUnordered(asset_thumbnail_block_array *Array, asset_thumbnail_block_array_index Index)
+{
+  Leak("RemoveUnordered");
+}
+
 link_internal asset_thumbnail *
 Push(asset_thumbnail_block_array *Array, asset_thumbnail *Element)
 {

@@ -60,7 +60,7 @@ DebugUi(engine_resources *Engine, cs Name, world_chunk *Value)
   PushNewRow(Ui);
 
   world_position WorldP = Value->WorldP;
-  DoEditorUi(Ui, &WorldP, "WorldP");
+  DoEditorUi(Ui, &WorldP, CSz("WorldP"));
 
   if (WorldP != Value->WorldP)
   {
@@ -124,13 +124,13 @@ DebugUi(engine_resources *Engine, cs Name, interactable *Value)
   PushColumn(Ui, Name);
   PushNewRow(Ui);
 
-  DoEditorUi(Ui, &Value->ID, "ID");
+  DoEditorUi(Ui, &Value->ID, CSz("ID"));
   PushNewRow(Ui);
 
-  DoEditorUi(Ui, &Value->MinP, "MinP");
+  DoEditorUi(Ui, &Value->MinP, CSz("MinP"));
   PushNewRow(Ui);
 
-  DoEditorUi(Ui, &Value->MaxP, "MaxP");
+  DoEditorUi(Ui, &Value->MaxP, CSz("MaxP"));
   PushNewRow(Ui);
 }
 
@@ -332,7 +332,7 @@ DoEntityWindow(engine_resources *Engine)
         RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
         {
           entity *Entity = EntityTable[EntityIndex];
-          DoEditorUi(Ui, Entity, GetNullTerminated(FSz("(%d)(%S)", EntityIndex, ToString(Entity->State))) );
+          DoEditorUi(Ui, Entity, FSz("(%d)(%S)", EntityIndex, ToString(Entity->State)) );
           PushNewRow(Ui);
         }
       PushTableEnd(Ui);
@@ -371,7 +371,7 @@ DoEntityWindow(engine_resources *Engine)
         PushColumn(Ui, CS(EngineDebug->SelectedEntity->Id), &DefaultStyle, {}, ColumnRenderParam_LeftAlign);
         PushNewRow(Ui);
 
-        DoEditorUi(Ui, EngineDebug->SelectedEntity, "SelectedEntity");
+        DoEditorUi(Ui, EngineDebug->SelectedEntity, CSz("SelectedEntity"));
         PushNewRow(Ui);
       PushTableEnd(Ui);
     PushWindowEnd(Ui, &EntityWindow);
@@ -506,7 +506,7 @@ DoEngineDebug(engine_resources *Engine)
       if (EngineDebug->PickedChunk)
       {
         /* DebugUi(Engine, CSz("PickedChunk"), EngineDebug->PickedChunk ); */
-        DoEditorUi(Ui, EngineDebug->PickedChunk, "PickedChunk");
+        DoEditorUi(Ui, EngineDebug->PickedChunk, CSz("PickedChunk"));
       }
 
     PushWindowEnd(Ui, &WorldChunkWindow);
@@ -612,31 +612,31 @@ DoEngineDebug(engine_resources *Engine)
     PushWindowStart(Ui, &RenderSettingsWindow);
 
       PushTableStart(Ui);
-        /* DoEditorUi(Ui, &Ui->Pressed.ID, "ID"); */
+        /* DoEditorUi(Ui, &Ui->Pressed.ID, CSz("ID")); */
 
-        DoEditorUi(Ui, (b8*)&Settings->AutoDayNightCycle, "AutoDayNightCycle");
+        DoEditorUi(Ui, (b8*)&Settings->AutoDayNightCycle, CSz("AutoDayNightCycle"));
         PushNewRow(Ui);
 
         DebugSlider(Ui, &Settings->tDay, 0.0f, 2.f*PI32);
         PushNewRow(Ui);
 
-        DoEditorUi(Ui, (b8*)&Settings->UseSsao, "UseSsao");
+        DoEditorUi(Ui, (b8*)&Settings->UseSsao, CSz("UseSsao"));
         PushNewRow(Ui);
-        DoEditorUi(Ui, (b8*)&Settings->UseShadowMapping, "UseShadowMapping");
+        DoEditorUi(Ui, (b8*)&Settings->UseShadowMapping, CSz("UseShadowMapping"));
         PushNewRow(Ui);
-        DoEditorUi(Ui, (b8*)&Settings->UseLightingBloom, "UseLightingBloom");
-        PushNewRow(Ui);
-
-        DoEditorUi(Ui, (b8*)&Settings->BravoilMyersOIT, "BravoilMyersOIT");
+        DoEditorUi(Ui, (b8*)&Settings->UseLightingBloom, CSz("UseLightingBloom"));
         PushNewRow(Ui);
 
-        DoEditorUi(Ui, (b8*)&Settings->BravoilMcGuireOIT, "BravoilMcGuireOIT");
+        DoEditorUi(Ui, (b8*)&Settings->BravoilMyersOIT, CSz("BravoilMyersOIT"));
         PushNewRow(Ui);
 
-        DoEditorUi(Ui, (b8*)&Settings->DrawMajorGrid, "DrawMajorGrid");
+        DoEditorUi(Ui, (b8*)&Settings->BravoilMcGuireOIT, CSz("BravoilMcGuireOIT"));
         PushNewRow(Ui);
 
-        DoEditorUi(Ui, (b8*)&Settings->DrawMinorGrid, "DrawMinorGrid");
+        DoEditorUi(Ui, (b8*)&Settings->DrawMajorGrid, CSz("DrawMajorGrid"));
+        PushNewRow(Ui);
+
+        DoEditorUi(Ui, (b8*)&Settings->DrawMinorGrid, CSz("DrawMinorGrid"));
         PushNewRow(Ui);
 
         // TODO(Jesse): Make a slider for time of day
@@ -663,9 +663,9 @@ DoEngineDebug(engine_resources *Engine)
 
     render_settings *Settings = &Graphics->Settings;
     PushWindowStart(Ui, &Window);
-      DoEditorUi(Ui, EngineDebug, "Engine Debug");
-      /* DoEditorUi(Ui, &EngineDebug->UiDebug, "UI Debug"); */
-      /* DoEditorUi(Ui, &EngineDebug->Render,  "Graphics Debug"); */
+      DoEditorUi(Ui, EngineDebug, CSz("Engine Debug"));
+      /* DoEditorUi(Ui, &EngineDebug->UiDebug, CSz("UI Debug")); */
+      /* DoEditorUi(Ui, &EngineDebug->Render,  CSz("Graphics Debug")); */
     PushWindowEnd(Ui, &Window);
   }
 
