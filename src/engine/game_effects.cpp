@@ -67,7 +67,7 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim, b32 Colorf
   System->ParticleStartingDim = V3(0.9f) + (0.20f*Dim);
   System->ParticleEndingDim = 0.1f + (0.1f*(Dim/2.f));
 
-  System->SystemMovementCoefficient = 0.1f;
+  System->SystemMovementCoefficient = 0.25f;
 
   if (Inactive(System)) { SpawnParticleSystem(System); }
 }
