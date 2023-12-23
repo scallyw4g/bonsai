@@ -421,6 +421,7 @@ TESTS_TO_BUILD="
   $TESTS/heap_allocation.cpp
   $TESTS/rng.cpp
   $TESTS/file.cpp
+  $TESTS/sort.cpp
 "
 
 BuildAll() {

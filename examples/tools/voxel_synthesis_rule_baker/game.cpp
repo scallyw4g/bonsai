@@ -19,15 +19,6 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
     default: { Result = False; } break;
 
-    case type_work_queue_entry_rebuild_mesh:
-    {
-      work_queue_entry_rebuild_mesh *Job = SafeAccess(work_queue_entry_rebuild_mesh, Entry);
-      world_chunk *Chunk = Job->Chunk;
-      Assert( IsSet(Chunk->Flags, Chunk_VoxelsInitialized) );
-
-      RebuildWorldChunkMesh(Thread, Chunk);
-    } break;
-
     case type_work_queue_entry_init_world_chunk:
     {
       work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
@@ -198,8 +189,9 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
         }
 
-        RebuildWorldChunkMesh(Thread, Chunk);
       }
+
+      QueueChunkForMeshRebuild(&EngineResources->Stdlib.Plat.HighPriority, Chunk);
 
       FinalizeChunkInitialization(Chunk);
 
@@ -582,7 +574,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
                 ZeroMemory( Chunk->Voxels, sizeof(voxel)*umm(Volume(Chunk->Dim)) );
                 Chunk->WorldP = P;
                 /* QueueChunkForInit(&Plat->HighPriority, Chunk); */
-                QueueChunkForInit(&Plat->LowPriority, Chunk);
+                QueueChunkForInit(&Plat->LowPriority, Chunk, MeshBit_Lod0);
               }
             }
           }

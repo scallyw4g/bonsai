@@ -60,7 +60,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
           /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
           chunk_init_flags InitFlags = ChunkInitFlag_Noop;
-          InitializeChunkWithNoise( GrassyTerrain, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
+          InitializeChunkWithNoise( TerracedTerrain, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
         }
 #endif
 

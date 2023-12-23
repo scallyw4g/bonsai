@@ -10,7 +10,7 @@
 # ./make.sh -O2 BuildSingleExample examples/the_wanderer
 # ./make.sh     BuildSingleExample examples/the_wanderer
 
-# ./make.sh BuildTests
+./make.sh BuildTests
 
 
 
@@ -29,11 +29,11 @@
 #     BuildDebugSystem
 
 
-OPT="-O2"
-./make.sh $OPT \
-  BuildExecutables \
-  BuildDebugSystem \
-  BuildSingleExample examples/turn_based \
+# OPT="-O2"
+# ./make.sh $OPT \
+#   BuildExecutables \
+#   BuildDebugSystem \
+#   BuildSingleExample examples/turn_based \
   # BuildSingleExample examples/terrain_gen \
   # BuildSingleExample examples/graveyard \
   # BuildSingleExample examples/turn_based2 \

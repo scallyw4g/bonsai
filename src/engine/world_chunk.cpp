@@ -3214,7 +3214,7 @@ QueueChunkForInit(work_queue *Queue, world_chunk *Chunk, world_chunk_mesh_bitfie
     Entry.Type = type_work_queue_entry_init_world_chunk;
     work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, &Entry);
     Job->Chunk = Chunk;
-    Job->MeshBit = MeshBit;
+    /* Job->MeshBit = MeshBit; */
   }
 
   Assert( NotSet(Chunk->Flags, Chunk_Queued) );
@@ -3305,7 +3305,7 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
 
   Assert(!ChunkIsGarbage(DestChunk));
 
-  Assert(MeshBit == MeshBit_Lod0);
+  /* Assert(MeshBit == MeshBit_Lod0); */
 
 
 

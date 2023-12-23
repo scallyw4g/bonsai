@@ -19,7 +19,6 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
     {
       volatile work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
       world_chunk *Chunk = Job->Chunk;
-      world_chunk_mesh_bitfield MeshBit = Job->MeshBit;
 
       if (ChunkIsGarbage(Chunk))
       {
@@ -37,14 +36,14 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           octave_buffer OctaveBuf = { OctaveCount, {} };
           OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
 
-          OctaveBuf.Octaves[0] = {V3(350, 150, 50), 50, 0.5f, V3(1.f)};
-          OctaveBuf.Octaves[1] = {V3(120, 60, 35),  15, 0.5f, V3(1.f)};
+          OctaveBuf.Octaves[0] = {V3(350, 150, 50), 25, V3(1.f)};
+          OctaveBuf.Octaves[1] = {V3(120, 60, 35),  7.5, V3(1.f)};
           /* OctaveBuf.Octaves[1] = {V3(90,  60, 35),  25, V3(1.f)}; */
 
           chunk_init_flags InitFlags = ChunkInitFlag_Noop;
           /* chunk_init_flags InitFlags    = ChunkInitFlag_GenMipMapLODs; */
           /* chunk_init_flags InitFlags = chunk_init_flags(ChunkInitFlag_ComputeStandingSpots | ChunkInitFlag_GenMipMapLODs); */
-          InitializeChunkWithNoise( GrassyTerrain, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, MeshBit, InitFlags, (void*)&OctaveBuf);
+          InitializeChunkWithNoise( HoodooTerrain, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
         }
       }
 
