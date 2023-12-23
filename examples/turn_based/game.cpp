@@ -476,12 +476,9 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   PushBorderlessWindowStart(Ui, &ActionsWindow);
 
   v2 WindowDim = GetDim(&ActionsWindow);
-  /* v2 WindowOffset = V2(Plat->WindowWidth/2.f-(WindowDim.y/2.f), Plat->WindowHeight-WindowDim.y); */
-  v2 WindowOffset = V2(Plat->WindowWidth/2.f-(WindowDim.y/2.f), Plat->WindowHeight-WindowDim.y-100.f);
+  v2 WindowOffset = V2(Plat->WindowWidth/2.f-(WindowDim.y/2.f), Plat->WindowHeight-WindowDim.y);
 
   ActionsWindow.Basis = WindowOffset;
-
-  /* Info("%S %.2f %.2f", ActionsWindow.Title, ActionsWindow.MaxClip.x, ActionsWindow.MaxClip.y); */
 
     ui_element_reference ActionTable = PushTableStart(Ui);
       for (u32 ActionIndex = PlayerAction_Move; ActionIndex < PlayerAction_Count; ++ActionIndex)
