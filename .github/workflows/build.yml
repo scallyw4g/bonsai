@@ -1,20 +1,31 @@
-name: C/C++ CI
+name: CI
 
 on:
   push:
-    branches: [ "jesse/feature/test-ci-cd" ]
+    branches: [ "master", "develop" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "develop" ]
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
+  build-ubuntu-20:
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
     - name: Checkout submodules
       run: git submodule update --init --recursive
     - name: Install Deps
-      run: sudo apt install freeglut3-dev libx11-dev clang-15
+      run: sudo apt update && sudo apt install freeglut3-dev libx11-dev clang
+    - name: Build
+      run: ./make.sh
+      
+  build-ubuntu-22:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v3
+    - name: Checkout submodules
+      run: git submodule update --init --recursive
+    - name: Install Deps
+      run: sudo apt update && sudo apt install freeglut3-dev libx11-dev clang-15
     - name: Build
       run: ./make.sh
 
@@ -25,6 +36,7 @@ jobs:
       uses: egor-tensin/setup-mingw@v2
       with:
         platform: x64
+        version: 12.2.0
     - uses: actions/checkout@v3
     - name: Checkout submodules
       run: git submodule update --init --recursive

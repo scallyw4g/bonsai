@@ -10,7 +10,7 @@
 # ./make.sh -O2 BuildSingleExample examples/the_wanderer
 # ./make.sh     BuildSingleExample examples/the_wanderer
 
-./make.sh BuildTests
+# ./make.sh BuildTests
 
 
 
@@ -44,4 +44,4 @@
   # BuildSingleExample examples/the_wanderer \
   # BuildTests \
 
-# ./make.sh $OPT BuildAll
+./make.sh $OPT BuildAll
