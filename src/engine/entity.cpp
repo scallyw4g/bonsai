@@ -123,12 +123,14 @@ GetCollision(world *World, entity *Entity, v3 Offset = V3(0,0,0) )
 
   collision_event C = {};
 
-  if ( !Spawned(Entity) )
-    return C;
+  if (Spawned(Entity))
+  {
+    C = GetCollision( World,
+                      Canonicalize(World->ChunkDim, Entity->P + Offset),
+                      Entity->CollisionVolumeRadius*2.0f );
 
-  C = GetCollision( World,
-      Canonicalize(World->ChunkDim, Entity->P + Offset),
-      Entity->CollisionVolumeRadius*2.0f );
+    /* Entity->WorldCollisionLastFrame = C; */
+  }
 
   return C;
 }
@@ -742,10 +744,15 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
   v3 CollisionVolumeInit = Entity->CollisionVolumeRadius*2.0f;
   C = GetCollision(World, Entity->P, CollisionVolumeInit);
 
+  Entity->WorldCollisionLastFrame = {};
+
   if (C.Count)
   { 
     Entity->Physics.Velocity = {};
     Entity->Physics.Delta = {};
+
+    Entity->WorldCollisionLastFrame = C;
+
     return;
   }
 
@@ -778,6 +785,8 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
 
         if ( C.Count > 0 )
         {
+          Entity->WorldCollisionLastFrame = C;
+
           // TODO(Jesse): Parameterize by adding something to physics struct
           /* Entity->Physics.Velocity.E[AxisIndex] *= -0.25f; */
           Entity->Physics.Velocity.E[AxisIndex] = 0.f;

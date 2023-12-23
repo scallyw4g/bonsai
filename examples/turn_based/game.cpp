@@ -142,6 +142,89 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
   }
 }
 
+#if 0
+            v3 SimP = GetSimSpaceP(World, PickCP);
+
+            r32 Radius = 2.f + r32(GameState->PlayerChargeLevel)*2.f;
+            sphere S = {SimP, Radius};
+
+            u32_buffer EntityIndices = GatherEntitiesIntersecting(World, EntityTable, &S, GetTranArena());
+
+            IterateOver(&EntityIndices, EIndex, EIndexIndex)
+            {
+              entity *E = EntityTable[*EIndex];
+              if (E->UserType == EntityType_Enemy)
+              {
+                Unspawn(E);
+
+                cs AssetNames[] =
+                {
+                  CSz("skele_bitty_0.vox"),
+                  CSz("skele_bitty_1.vox"),
+                  CSz("skele_bitty_2.vox"),
+                };
+
+                s32 MaxBitties = ArrayCount(AssetNames);
+                RangeIterator(BittyIndex, MaxBitties)
+                {
+                  // TODO(Jesse)(leak): This leaks the asset name when the asset is freed
+                  file_traversal_node AssetName = {FileTraversalType_File, CSz("models"), AssetNames[BittyIndex]};
+                  asset_id AID = AssetId(&AssetName);
+
+                  entity *BittyEntity = GetFreeEntity(EntityTable);
+
+                  BittyEntity->AssetId = AID;
+
+                  SpawnEntity(BittyEntity, EntityBehaviorFlags_Default, {}, {});
+                  BittyEntity->Physics.Speed = 1.f;
+
+                  BittyEntity->EulerAngles.z = RandomUnilateral(&Global_GameEntropy)*PI32*2.f;
+                  BittyEntity->Scale = 1.0f;
+                  BittyEntity->CollisionVolumeRadius = V3(.1f);
+
+                  v3 Rnd = RandomV3Bilateral(&Global_GameEntropy);
+                  BittyEntity->Physics.Mass = 25.f;
+                  BittyEntity->Physics.Force += Rnd*150.f*Radius;
+                  BittyEntity->Physics.Force.z = Abs(BittyEntity->Physics.Force.z) * 0.25f;
+                  BittyEntity->P = PickCP + (Rnd*Radius) + V3(0.f, 0.f, 2.0f);
+                  BittyEntity->P.Offset.z = PickCP.Offset.z + 2.f;
+
+                  if (GetCollision(World, BittyEntity).Count) { Unspawn(BittyEntity); continue; }
+                }
+              }
+            }
+
+            DoSplotion(Resources, PickCP, Radius, &Global_GameEntropy, GetTranArena());
+
+            GameState->PlayerChargeLevel = 0.f;
+#endif
+
+link_internal void
+FireballUpdate(engine_resources *Engine, entity *Entity)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  fireball_state *State = (fireball_state*)Entity->UserData;
+
+  if (Engine->GameState->TransitionDuration > 0.35f)
+  {
+    v3 EntityP = GetSimSpaceP(World, Entity);
+    v3 TargetP = GetSimSpaceP(World, State->TargetP);
+
+    Entity->Physics.Velocity = Normalize(TargetP-EntityP)*800.f;
+    Entity->Behavior = entity_behavior_flags(Entity->Behavior & ~EntityBehaviorFlags_Gravity);
+  }
+
+  if (Entity->WorldCollisionLastFrame.Count)
+  {
+    r32 Radius = 2.f + r32(State->ChargeLevel)*2.f;
+    DoSplotion(Engine, Entity->P, Radius, &Global_GameEntropy, GetTranArena());
+
+    HeapDeallocate(&GameState->Heap, (u8*)State);
+    Unspawn(Entity);
+  }
+}
+
 link_weak b32
 GameEntityUpdate(engine_resources *Engine, entity *Entity )
 {
@@ -153,9 +236,11 @@ GameEntityUpdate(engine_resources *Engine, entity *Entity )
 
   switch (Type)
   {
-    case EntityType_Player:  {} break;
-    case EntityType_Default: {} break;
-    case EntityType_Enemy:   { EnemyUpdate(Engine, Entity); } break;
+    case EntityType_Player:   {} break;
+    case EntityType_Default:  {} break;
+    case EntityType_Enemy:    { EnemyUpdate(Engine, Entity); } break;
+
+    case EntityType_Fireball: { ++GameState->FireballsSimulated; FireballUpdate(Engine, Entity); } break;
   }
 
   return False;
@@ -222,8 +307,8 @@ FireballPhysics()
 {
   physics Result = {};
 
-  Result.Mass = 1.f;
-  Result.Speed = 10.f;
+  Result.Mass = 5.f;
+  Result.Speed = 6.f;
 
   return Result;
 }
@@ -261,25 +346,25 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
     if (Input->Z.Clicked)
     {
-      GameState->SelectedAction = PlayerAction_Move;
+      GameState->ProposedAction = PlayerAction_Move;
     }
 
     if (Input->X.Clicked)
     {
-      GameState->SelectedAction = PlayerAction_Charge;
+      GameState->ProposedAction = PlayerAction_Charge;
     }
 
     if (Input->C.Clicked)
     {
-      GameState->SelectedAction = PlayerAction_Fire;
+      GameState->ProposedAction = PlayerAction_Fire;
     }
 
     if (Input->V.Clicked)
     {
-      GameState->SelectedAction = PlayerAction_Jump;
+      GameState->ProposedAction = PlayerAction_Jump;
     }
 
-    switch (GameState->SelectedAction)
+    switch (GameState->ProposedAction)
     {
       InvalidCase(PlayerAction_Count);
 
@@ -353,61 +438,42 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         {
           if (Input->LMB.Clicked)
           {
-            v3 SimP = GetSimSpaceP(World, PickCP);
+            entity *E = GetFreeEntity(EntityTable);
+            SpawnEntity(E);
 
-            r32 Radius = 2.f + r32(GameState->PlayerChargeLevel)*2.f;
-            sphere S = {SimP, Radius};
+            *E->Emitter = *Player->Emitter;
+            E->P = Player->P;
+            E->P += E->Emitter->SpawnRegion.Min;
 
-            u32_buffer EntityIndices = GatherEntitiesIntersecting(World, EntityTable, &S, GetTranArena());
+            E->Emitter->SpawnRegion.Max -= E->Emitter->SpawnRegion.Min;
+            E->Emitter->SpawnRegion.Min = {};
 
-            IterateOver(&EntityIndices, EIndex, EIndexIndex)
-            {
-              entity *E = EntityTable[*EIndex];
-              if (E->UserType == EntityType_Enemy)
-              {
-                Unspawn(E);
+            E->Physics = FireballPhysics();
 
-                cs AssetNames[] =
-                {
-                  CSz("skele_bitty_0.vox"),
-                  CSz("skele_bitty_1.vox"),
-                  CSz("skele_bitty_2.vox"),
-                };
 
-                s32 MaxBitties = ArrayCount(AssetNames);
-                RangeIterator(BittyIndex, MaxBitties)
-                {
-                  // TODO(Jesse)(leak): This leaks the asset name when the asset is freed
-                  file_traversal_node AssetName = {FileTraversalType_File, CSz("models"), AssetNames[BittyIndex]};
-                  asset_id AID = AssetId(&AssetName);
+            E->Behavior = EntityBehaviorFlags_Default;
+            E->UserType = EntityType_Fireball;
 
-                  entity *BittyEntity = GetFreeEntity(EntityTable);
+            E->CollisionVolumeRadius = V3(1); // TODO(Jesse): Should be based on charge level?
 
-                  BittyEntity->AssetId = AID;
+            /* fireball_state *FireballState = Allocate(fireball_state, &GameState->Heap, 1); */
+            fireball_state *FireballState = (fireball_state*)HeapAllocate(&GameState->Heap, sizeof(fireball_state));
 
-                  SpawnEntity(BittyEntity, EntityBehaviorFlags_Default, {}, {});
-                  BittyEntity->Physics.Speed = 1.f;
+            FireballState->ChargeLevel = GameState->PlayerChargeLevel;
+            FireballState->TargetP = PickCP;
 
-                  BittyEntity->EulerAngles.z = RandomUnilateral(&Global_GameEntropy)*PI32*2.f;
-                  BittyEntity->Scale = 1.0f;
-                  BittyEntity->CollisionVolumeRadius = V3(.1f);
+            v3 EntityP = GetSimSpaceP(World, E);
+            v3 TargetP = GetSimSpaceP(World, PickCP);
 
-                  v3 Rnd = RandomV3Bilateral(&Global_GameEntropy);
-                  BittyEntity->Physics.Mass = 25.f;
-                  BittyEntity->Physics.Force += Rnd*150.f*Radius;
-                  BittyEntity->Physics.Force.z = Abs(BittyEntity->Physics.Force.z) * 0.25f;
-                  BittyEntity->P = PickCP + (Rnd*Radius) + V3(0.f, 0.f, 2.0f);
-                  BittyEntity->P.Offset.z = PickCP.Offset.z + 2.f;
+            E->Physics.Velocity = (Normalize(TargetP-EntityP) + V3(0,0,5)) * 10.f;
 
-                  if (GetCollision(World, BittyEntity).Count) { Unspawn(BittyEntity); continue; }
-                }
-              }
-            }
 
-            DoSplotion(Resources, PickCP, Radius, &Global_GameEntropy, GetTranArena());
+            GameState->PlayerChargeLevel = 0;
 
-            GameState->PlayerChargeLevel = 0.f;
+            E->UserData = u64(FireballState);
+
             Deactivate(Player->Emitter);
+
           }
         }
       } break;
@@ -417,22 +483,27 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       } break;
     }
 
+    if ( GameState->TurnMode == TurnMode_Transition &&
+         GameState->FireballsSimulated  == 0 )
+    {
+      GameState->TurnMode = TurnMode_Default;
+    }
+    GameState->FireballsSimulated = 0;
 
-    GameState->PlayerActed = GameState->SelectedAction && Input->LMB.Clicked;
-    Info("PlayerActed(%u)", GameState->PlayerActed);
+
+    GameState->PlayerActed = GameState->ProposedAction && Input->LMB.Clicked;
     if (GameState->PlayerActed)
     {
       GameState->TurnMode = TurnMode_Transition;
       GameState->TransitionDuration = 0.f;
-      /* GameState->SelectedAction = PlayerAction_None; */
     }
 
     if (GameState->TurnMode == TurnMode_Transition)
     {
-      if (GameState->TransitionDuration > 2.f) { GameState->TurnMode = TurnMode_Default; }
+      /* if (GameState->TransitionDuration > 1.2f) { GameState->TurnMode = TurnMode_Default; } */
       GameState->TransitionDuration += Plat->dt;
 
-      switch (GameState->SelectedAction)
+      switch (GameState->ProposedAction)
       {
         InvalidCase(PlayerAction_Count);
 
@@ -448,18 +519,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
         case PlayerAction_Fire:
         {
-          entity *E = GetFreeEntity(EntityTable);
-          SpawnEntity(E);
-
-          *E->Emitter = *Player->Emitter;
-          E->P = Player->P;
-
-          E->Physics = FireballPhysics();
-          E->Physics.Velocity.z = 50.f;
-
-          E->Behavior = EntityBehaviorFlags_Default;
-
-          E->CollisionVolumeRadius = V3(4); // TODO(Jesse): Should be based on charge level?
         } break;
 
         case PlayerAction_Jump:
@@ -467,7 +526,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         } break;
       }
 
-      GameState->SelectedAction = PlayerAction_None;
+      GameState->ProposedAction = PlayerAction_None;
     }
 
   }
@@ -484,7 +543,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       for (u32 ActionIndex = PlayerAction_Move; ActionIndex < PlayerAction_Count; ++ActionIndex)
       {
         PushTableStart(Ui);
-          ui_style *Style = ActionIndex == GameState->SelectedAction ? &DefaultSelectedStyle : &DefaultStyle;
+          ui_style *Style = ActionIndex == GameState->ProposedAction ? &DefaultSelectedStyle : &DefaultStyle;
           PushColumn(Ui, ToString((player_action)ActionIndex), Style);
         PushTableEnd(Ui);
       }
@@ -503,6 +562,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   Resources->GameState = Allocate(game_state, Resources->Memory, 1);
 
   UNPACK_ENGINE_RESOURCES(Resources);
+
+  GameState->Heap = InitHeap(Megabytes(4));
 
   Global_AssetPrefixPath = CSz("examples/turn_based/assets");
 

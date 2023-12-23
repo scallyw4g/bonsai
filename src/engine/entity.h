@@ -44,6 +44,14 @@ poof(do_editor_ui_for_enum(entity_state))
 poof(generate_string_table(entity_behavior_flags))
 #include <generated/generate_string_table_entity_behavior_flags.h>
 poof(do_editor_ui_for_enum(entity_behavior_flags))
+
+struct collision_event
+{
+  u32 Count;
+  canonical_position MinP;
+  canonical_position MaxP;
+};
+
 #include <generated/do_editor_ui_for_enum_entity_behavior_flags.h>
 
 struct entity
@@ -61,7 +69,8 @@ struct entity
   physics Physics;
 
 #if !POOF_PREPROCESSOR
-  asset_id         AssetId;
+  asset_id        AssetId;
+  collision_event WorldCollisionLastFrame;
 #endif
 
   model           *Model;
@@ -71,7 +80,7 @@ struct entity
   entity_behavior_flags Behavior;
 
   u64 UserType;
-  umm UserData;
+  u64 UserData;
 };
 
 poof(serdes_vector(v2))

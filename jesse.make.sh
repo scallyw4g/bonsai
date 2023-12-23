@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-./make.sh RunPoof
-[ $? -ne 0 ] && exit 1
+# ./make.sh RunPoof
+# [ $? -ne 0 ] && exit 1
 # exit 1
 
 # exit 0
@@ -29,7 +29,7 @@
 #     BuildDebugSystem
 
 
-# OPT="-O2"
+OPT="-O2"
 ./make.sh $OPT \
   BuildExecutables \
   BuildDebugSystem \

@@ -663,8 +663,9 @@ DoEngineDebug(engine_resources *Engine)
 
     render_settings *Settings = &Graphics->Settings;
     PushWindowStart(Ui, &Window);
-      DoEditorUi(Ui, &EngineDebug->UiDebug, "UI Debug");
-      DoEditorUi(Ui, &EngineDebug->Render,  "Graphics Debug");
+      DoEditorUi(Ui, EngineDebug, "Engine Debug");
+      /* DoEditorUi(Ui, &EngineDebug->UiDebug, "UI Debug"); */
+      /* DoEditorUi(Ui, &EngineDebug->Render,  "Graphics Debug"); */
     PushWindowEnd(Ui, &Window);
   }
 
