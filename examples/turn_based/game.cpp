@@ -3,8 +3,8 @@
 
 #include <bonsai_types.h>
 
-#include <game_constants.h>
-#include <game_types.h>
+#include "game_constants.h"
+#include "game_types.h"
 
 global_variable v3
 Global_EntityFireballOffset = V3(0,0,16);
@@ -217,6 +217,17 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
   return Result;
 }
 
+link_internal physics
+FireballPhysics()
+{
+  physics Result = {};
+
+  Result.Mass = 1.f;
+  Result.Speed = 10.f;
+
+  return Result;
+}
+
 BONSAI_API_MAIN_THREAD_CALLBACK()
 {
   Assert(ThreadLocal_ThreadIndex == 0);
@@ -268,13 +279,11 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       GameState->SelectedAction = PlayerAction_Jump;
     }
 
-    GameState->PlayerActed = False;
     switch (GameState->SelectedAction)
     {
-      case PlayerAction_Count:
-      case PlayerAction_None:
-      {
-      } break;
+      InvalidCase(PlayerAction_Count);
+
+      case PlayerAction_None: { } break;
 
       case PlayerAction_Move:
       {
@@ -316,8 +325,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
           if (Input->LMB.Clicked)
           {
-            GameState->PlayerActed = True;
-
             v3 PlayerBaseSimP = GetSimSpaceP(World, PlayerBaseP);
             v3 SpotTopSimP = SpotSimP + V3(Global_StandingSpotHalfDim.xy, Global_StandingSpotDim.z);
             v3 UpdateV = SpotTopSimP - PlayerBaseSimP + V3(0,0,2);
@@ -332,8 +339,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       {
         if (Input->LMB.Clicked)
         {
-          GameState->PlayerActed = True;
-
           GameState->PlayerChargeLevel += 2;
           SpawnFire( Player,
                     &GameState->Entropy,
@@ -403,41 +408,66 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
             GameState->PlayerChargeLevel = 0.f;
             Deactivate(Player->Emitter);
-            GameState->PlayerActed = True;
           }
         }
       } break;
 
       case PlayerAction_Jump:
       {
-        if (Input->LMB.Clicked)
-        {
-          GameState->PlayerActed = True;
-        }
       } break;
     }
 
+
+    GameState->PlayerActed = GameState->SelectedAction && Input->LMB.Clicked;
+    Info("PlayerActed(%u)", GameState->PlayerActed);
     if (GameState->PlayerActed)
     {
       GameState->TurnMode = TurnMode_Transition;
       GameState->TransitionDuration = 0.f;
-      GameState->SelectedAction = PlayerAction_None;
+      /* GameState->SelectedAction = PlayerAction_None; */
     }
 
     if (GameState->TurnMode == TurnMode_Transition)
     {
+      if (GameState->TransitionDuration > 2.f) { GameState->TurnMode = TurnMode_Default; }
       GameState->TransitionDuration += Plat->dt;
 
       switch (GameState->SelectedAction)
       {
-        InvalidCase(PlayerAction_None);
         InvalidCase(PlayerAction_Count);
 
-        case PlayerAction_Move: {} break;
-        case PlayerAction_Charge: {} break;
-        case PlayerAction_Fire: {} break;
-        case PlayerAction_Jump: {} break;
+        case PlayerAction_None: {} break;
+
+        case PlayerAction_Move:
+        {
+        } break;
+
+        case PlayerAction_Charge:
+        {
+        } break;
+
+        case PlayerAction_Fire:
+        {
+          entity *E = GetFreeEntity(EntityTable);
+          SpawnEntity(E);
+
+          *E->Emitter = *Player->Emitter;
+          E->P = Player->P;
+
+          E->Physics = FireballPhysics();
+          E->Physics.Velocity.z = 50.f;
+
+          E->Behavior = EntityBehaviorFlags_Default;
+
+          E->CollisionVolumeRadius = V3(4); // TODO(Jesse): Should be based on charge level?
+        } break;
+
+        case PlayerAction_Jump:
+        {
+        } break;
       }
+
+      GameState->SelectedAction = PlayerAction_None;
     }
 
   }
@@ -446,20 +476,29 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   PushBorderlessWindowStart(Ui, &ActionsWindow);
 
   v2 WindowDim = GetDim(&ActionsWindow);
-  v2 WindowOffset = V2(Plat->WindowWidth/2.f-(WindowDim.y/2.f), Plat->WindowHeight-WindowDim.y);
+  /* v2 WindowOffset = V2(Plat->WindowWidth/2.f-(WindowDim.y/2.f), Plat->WindowHeight-WindowDim.y); */
+  v2 WindowOffset = V2(Plat->WindowWidth/2.f-(WindowDim.y/2.f), Plat->WindowHeight-WindowDim.y-100.f);
 
   ActionsWindow.Basis = WindowOffset;
 
   /* Info("%S %.2f %.2f", ActionsWindow.Title, ActionsWindow.MaxClip.x, ActionsWindow.MaxClip.y); */
 
-  for (u32 ActionIndex = 0; ActionIndex < PlayerAction_Count; ++ActionIndex)
-  {
-    ui_style *Style = ActionIndex == GameState->SelectedAction ? &DefaultSelectedStyle : &DefaultStyle;
-    PushTableStart(Ui);
-      PushColumn(Ui, ToString((player_action)ActionIndex), Style);
+    ui_element_reference ActionTable = PushTableStart(Ui);
+      for (u32 ActionIndex = PlayerAction_Move; ActionIndex < PlayerAction_Count; ++ActionIndex)
+      {
+        PushTableStart(Ui);
+          ui_style *Style = ActionIndex == GameState->SelectedAction ? &DefaultSelectedStyle : &DefaultStyle;
+          PushColumn(Ui, ToString((player_action)ActionIndex), Style);
+        PushTableEnd(Ui);
+      }
     PushTableEnd(Ui);
-  }
+
+    PushTableStart(Ui, Position_RightOf, ActionTable);
+      PushColumn(Ui, ToString(GameState->TurnMode));
+    PushTableEnd(Ui);
+
   PushWindowEnd(Ui, &ActionsWindow);
+
 }
 
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
@@ -542,5 +581,4 @@ BONSAI_API_ON_LIBRARY_RELOAD()
       GameState->Player = E;
     }
   }
-
 }
