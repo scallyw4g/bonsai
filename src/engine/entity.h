@@ -127,11 +127,11 @@ DropEntityFromPreviouslyOccupiedChunks(world *World, entity *Entity, memory_aren
 
   if (Chunks.Count)
   {
-    Info("Attempting to drop Entity(%p) from (%d) Chunks", Entity, Chunks.Count);
+    /* Info("Attempting to drop Entity(%p) from (%d) Chunks", Entity, Chunks.Count); */
     RangeIterator_t(umm, ChunkIndex, Chunks.Count)
     {
       world_chunk *Chunk = Chunks.Start[ChunkIndex];
-      Info("Attempting to drop Entity(%p) from Chunk(%p)", Entity, Chunk);
+      /* Info("Attempting to drop Entity(%p) from Chunk(%p)", Entity, Chunk); */
 
       b32 Got = False;
       IterateOver(&Chunk->Entities, TestEntity, TestEntityIndex)
@@ -168,11 +168,11 @@ InsertEntityIntoChunks(world *World, entity *Entity, memory_arena *TempMemory)
   world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, EntityArea, TempMemory);
   if (Chunks.Count)
   {
-    Info("Attempting to insert Entity(%p) into (%d) Chunks", Entity, Chunks.Count);
+    /* Info("Attempting to insert Entity(%p) into (%d) Chunks", Entity, Chunks.Count); */
     RangeIterator_t(umm, ChunkIndex, Chunks.Count)
     {
       world_chunk *Chunk = Chunks.Start[ChunkIndex];
-      Info("Attempting to insert Entity(%p) into Chunk(%p)", Entity, Chunk);
+      /* Info("Attempting to insert Entity(%p) into Chunk(%p)", Entity, Chunk); */
 
       Push(&Chunk->Entities, &Entity);
     }

@@ -793,7 +793,8 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
   {
     while (LengthSq(Remaining) > 0)
     {
-      v3 StepDelta = ClampBetween(-1.0f, Remaining, 1.0f);
+      v3 StepDelta = Min(Normalize(Remaining), Remaining);
+      /* v3 StepDelta = ClampBetween(-1.0f, Remaining, 1.0f); */
       Remaining -= StepDelta;
 
       RangeIterator(AxisIndex, 3)
