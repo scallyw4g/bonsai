@@ -50,6 +50,13 @@ operator<(vox_data_block_array_index I0, vox_data_block_array_index I1)
   return Result;
 }
 
+link_inline vox_data_block *
+GetBlock(vox_data_block_array_index *Index)
+{
+  vox_data_block *Result = Cast(vox_data_block*, Index->Block);
+  return Result;
+}
+
 link_inline umm
 GetIndex(vox_data_block_array_index *Index)
 {
@@ -62,7 +69,7 @@ ZerothIndex(vox_data_block_array *Arr)
 {
   vox_data_block_array_index Result = {};
   Result.Block = &Arr->First;
-  Assert(Cast(vox_data_block*, Result.Block)->Index == 0);
+  Assert(GetBlock(&Result)->Index == 0);
   return Result;
 }
 
@@ -84,8 +91,10 @@ AtElements(vox_data_block_array *Arr)
   if (Arr->Current)
   {
     Result.Block = Arr->Current;
-    Result.BlockIndex = Cast(vox_data_block*, Arr->Current)->Index;
-    Result.ElementIndex = Cast(vox_data_block*, Arr->Current)->At;
+    Result.BlockIndex = Arr->Current->Index;
+    Result.ElementIndex = Arr->Current->At;
+    Assert(Result.ElementIndex);
+    Result.ElementIndex--;
   }
   return Result;
 }
@@ -94,7 +103,7 @@ link_internal vox_data *
 GetPtr(vox_data_block_array *Arr, vox_data_block_array_index Index)
 {
   vox_data *Result = {};
-  if (Index.Block) { Result = Cast(vox_data_block *, Index.Block)->Elements + Index.ElementIndex; }
+  if (Index.Block) { Result = GetBlock(&Index)->Elements + Index.ElementIndex; }
   return Result;
 }
 
@@ -147,7 +156,29 @@ CS(vox_data_block_array_index Index)
 link_internal void
 RemoveUnordered(vox_data_block_array *Array, vox_data_block_array_index Index)
 {
-  Leak("RemoveUnordered");
+  vox_data_block_array_index LastIndex = AtElements(Array);
+
+  vox_data *Element = GetPtr(Array, Index);
+  vox_data *LastElement = GetPtr(Array, LastIndex);
+
+  *Element = *LastElement;
+
+  Assert(Array->Current->At);
+  Array->Current->At -= 1;
+
+  if (Array->Current->At == 0)
+  {
+    // Walk the chain till we get to the second-last one
+    vox_data_block *LastBlock = Cast( vox_data_block *, LastIndex.Block);
+    vox_data_block *Current = &Array->First;
+    while (Current->Next != LastBlock)
+    {
+      Current = Current->Next;
+    }
+
+    Assert(Current->Next == LastBlock);
+    Array->Current = Current;
+  }
 }
 
 link_internal vox_data *
@@ -159,12 +190,19 @@ Push(vox_data_block_array *Array, vox_data *Element)
 
   if (Array->Current->At == 8)
   {
-    vox_data_block *Next = Allocate_vox_data_block(Array->Memory);
-    Next->Index = Array->Current->Index + 1;
+    if (Array->Current->Next)
+    {
+      Array->Current = Array->Current->Next;
+      Assert(Array->Current->At == 0);
+    }
+    else
+    {
+      vox_data_block *Next = Allocate_vox_data_block(Array->Memory);
+      Next->Index = Array->Current->Index + 1;
 
-    Array->Current->Next = Next;
-    Array->Current = Next;
-    /* Array->At = 0; */
+      Array->Current->Next = Next;
+      Array->Current = Next;
+    }
   }
 
   vox_data *Result = Array->Current->Elements + Array->Current->At;

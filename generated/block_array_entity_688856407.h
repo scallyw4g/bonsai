@@ -50,6 +50,13 @@ operator<(entity_block_array_index I0, entity_block_array_index I1)
   return Result;
 }
 
+link_inline entity_block *
+GetBlock(entity_block_array_index *Index)
+{
+  entity_block *Result = Cast(entity_block*, Index->Block);
+  return Result;
+}
+
 link_inline umm
 GetIndex(entity_block_array_index *Index)
 {
@@ -62,7 +69,7 @@ ZerothIndex(entity_block_array *Arr)
 {
   entity_block_array_index Result = {};
   Result.Block = &Arr->First;
-  Assert(Cast(entity_block*, Result.Block)->Index == 0);
+  Assert(GetBlock(&Result)->Index == 0);
   return Result;
 }
 
@@ -84,8 +91,10 @@ AtElements(entity_block_array *Arr)
   if (Arr->Current)
   {
     Result.Block = Arr->Current;
-    Result.BlockIndex = Cast(entity_block*, Arr->Current)->Index;
-    Result.ElementIndex = Cast(entity_block*, Arr->Current)->At;
+    Result.BlockIndex = Arr->Current->Index;
+    Result.ElementIndex = Arr->Current->At;
+    Assert(Result.ElementIndex);
+    Result.ElementIndex--;
   }
   return Result;
 }
@@ -94,7 +103,7 @@ link_internal entity *
 GetPtr(entity_block_array *Arr, entity_block_array_index Index)
 {
   entity *Result = {};
-  if (Index.Block) { Result = Cast(entity_block *, Index.Block)->Elements + Index.ElementIndex; }
+  if (Index.Block) { Result = GetBlock(&Index)->Elements + Index.ElementIndex; }
   return Result;
 }
 
@@ -147,7 +156,29 @@ CS(entity_block_array_index Index)
 link_internal void
 RemoveUnordered(entity_block_array *Array, entity_block_array_index Index)
 {
-  Leak("RemoveUnordered");
+  entity_block_array_index LastIndex = AtElements(Array);
+
+  entity *Element = GetPtr(Array, Index);
+  entity *LastElement = GetPtr(Array, LastIndex);
+
+  *Element = *LastElement;
+
+  Assert(Array->Current->At);
+  Array->Current->At -= 1;
+
+  if (Array->Current->At == 0)
+  {
+    // Walk the chain till we get to the second-last one
+    entity_block *LastBlock = Cast( entity_block *, LastIndex.Block);
+    entity_block *Current = &Array->First;
+    while (Current->Next != LastBlock)
+    {
+      Current = Current->Next;
+    }
+
+    Assert(Current->Next == LastBlock);
+    Array->Current = Current;
+  }
 }
 
 link_internal entity *
@@ -159,12 +190,19 @@ Push(entity_block_array *Array, entity *Element)
 
   if (Array->Current->At == 8)
   {
-    entity_block *Next = Allocate_entity_block(Array->Memory);
-    Next->Index = Array->Current->Index + 1;
+    if (Array->Current->Next)
+    {
+      Array->Current = Array->Current->Next;
+      Assert(Array->Current->At == 0);
+    }
+    else
+    {
+      entity_block *Next = Allocate_entity_block(Array->Memory);
+      Next->Index = Array->Current->Index + 1;
 
-    Array->Current->Next = Next;
-    Array->Current = Next;
-    /* Array->At = 0; */
+      Array->Current->Next = Next;
+      Array->Current = Next;
+    }
   }
 
   entity *Result = Array->Current->Elements + Array->Current->At;

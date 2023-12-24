@@ -16,7 +16,29 @@ CS(asset_thumbnail_block_array_index Index)
 link_internal void
 RemoveUnordered(asset_thumbnail_block_array *Array, asset_thumbnail_block_array_index Index)
 {
-  Leak("RemoveUnordered");
+  asset_thumbnail_block_array_index LastIndex = AtElements(Array);
+
+  asset_thumbnail *Element = GetPtr(Array, Index);
+  asset_thumbnail *LastElement = GetPtr(Array, LastIndex);
+
+  *Element = *LastElement;
+
+  Assert(Array->Current->At);
+  Array->Current->At -= 1;
+
+  if (Array->Current->At == 0)
+  {
+    // Walk the chain till we get to the second-last one
+    asset_thumbnail_block *LastBlock = Cast( asset_thumbnail_block *, LastIndex.Block);
+    asset_thumbnail_block *Current = &Array->First;
+    while (Current->Next != LastBlock)
+    {
+      Current = Current->Next;
+    }
+
+    Assert(Current->Next == LastBlock);
+    Array->Current = Current;
+  }
 }
 
 link_internal asset_thumbnail *
@@ -28,12 +50,19 @@ Push(asset_thumbnail_block_array *Array, asset_thumbnail *Element)
 
   if (Array->Current->At == 8)
   {
-    asset_thumbnail_block *Next = Allocate_asset_thumbnail_block(Array->Memory);
-    Next->Index = Array->Current->Index + 1;
+    if (Array->Current->Next)
+    {
+      Array->Current = Array->Current->Next;
+      Assert(Array->Current->At == 0);
+    }
+    else
+    {
+      asset_thumbnail_block *Next = Allocate_asset_thumbnail_block(Array->Memory);
+      Next->Index = Array->Current->Index + 1;
 
-    Array->Current->Next = Next;
-    Array->Current = Next;
-    /* Array->At = 0; */
+      Array->Current->Next = Next;
+      Array->Current = Next;
+    }
   }
 
   asset_thumbnail *Result = Array->Current->Elements + Array->Current->At;

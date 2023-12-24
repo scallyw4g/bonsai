@@ -1,25 +1,25 @@
 
-link_internal texture_block*
-Allocate_texture_block(memory_arena *Memory)
+link_internal u32_block*
+Allocate_u32_block(memory_arena *Memory)
 {
-  texture_block *Result = Allocate(texture_block, Memory, 1);
-  Result->Elements = Allocate(texture, Memory, 8);
+  u32_block *Result = Allocate(u32_block, Memory, 1);
+  Result->Elements = Allocate(u32, Memory, 8);
   return Result;
 }
 
 link_internal cs
-CS(texture_block_array_index Index)
+CS(u32_block_array_index Index)
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
 }
 
 link_internal void
-RemoveUnordered(texture_block_array *Array, texture_block_array_index Index)
+RemoveUnordered(u32_block_array *Array, u32_block_array_index Index)
 {
-  texture_block_array_index LastIndex = AtElements(Array);
+  u32_block_array_index LastIndex = AtElements(Array);
 
-  texture *Element = GetPtr(Array, Index);
-  texture *LastElement = GetPtr(Array, LastIndex);
+  u32 *Element = GetPtr(Array, Index);
+  u32 *LastElement = GetPtr(Array, LastIndex);
 
   *Element = *LastElement;
 
@@ -29,8 +29,8 @@ RemoveUnordered(texture_block_array *Array, texture_block_array_index Index)
   if (Array->Current->At == 0)
   {
     // Walk the chain till we get to the second-last one
-    texture_block *LastBlock = Cast( texture_block *, LastIndex.Block);
-    texture_block *Current = &Array->First;
+    u32_block *LastBlock = Cast( u32_block *, LastIndex.Block);
+    u32_block *Current = &Array->First;
     while (Current->Next != LastBlock)
     {
       Current = Current->Next;
@@ -41,12 +41,12 @@ RemoveUnordered(texture_block_array *Array, texture_block_array_index Index)
   }
 }
 
-link_internal texture *
-Push(texture_block_array *Array, texture *Element)
+link_internal u32 *
+Push(u32_block_array *Array, u32 *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 
-  if (Array->Current == 0) { Array->First = *Allocate_texture_block(Array->Memory); Array->Current = &Array->First; }
+  if (Array->Current == 0) { Array->First = *Allocate_u32_block(Array->Memory); Array->Current = &Array->First; }
 
   if (Array->Current->At == 8)
   {
@@ -57,7 +57,7 @@ Push(texture_block_array *Array, texture *Element)
     }
     else
     {
-      texture_block *Next = Allocate_texture_block(Array->Memory);
+      u32_block *Next = Allocate_u32_block(Array->Memory);
       Next->Index = Array->Current->Index + 1;
 
       Array->Current->Next = Next;
@@ -65,7 +65,7 @@ Push(texture_block_array *Array, texture *Element)
     }
   }
 
-  texture *Result = Array->Current->Elements + Array->Current->At;
+  u32 *Result = Array->Current->Elements + Array->Current->At;
 
   Array->Current->Elements[Array->Current->At++] = *Element;
 

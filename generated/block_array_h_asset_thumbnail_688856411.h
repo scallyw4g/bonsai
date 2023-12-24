@@ -50,6 +50,13 @@ operator<(asset_thumbnail_block_array_index I0, asset_thumbnail_block_array_inde
   return Result;
 }
 
+link_inline asset_thumbnail_block *
+GetBlock(asset_thumbnail_block_array_index *Index)
+{
+  asset_thumbnail_block *Result = Cast(asset_thumbnail_block*, Index->Block);
+  return Result;
+}
+
 link_inline umm
 GetIndex(asset_thumbnail_block_array_index *Index)
 {
@@ -62,7 +69,7 @@ ZerothIndex(asset_thumbnail_block_array *Arr)
 {
   asset_thumbnail_block_array_index Result = {};
   Result.Block = &Arr->First;
-  Assert(Cast(asset_thumbnail_block*, Result.Block)->Index == 0);
+  Assert(GetBlock(&Result)->Index == 0);
   return Result;
 }
 
@@ -84,8 +91,10 @@ AtElements(asset_thumbnail_block_array *Arr)
   if (Arr->Current)
   {
     Result.Block = Arr->Current;
-    Result.BlockIndex = Cast(asset_thumbnail_block*, Arr->Current)->Index;
-    Result.ElementIndex = Cast(asset_thumbnail_block*, Arr->Current)->At;
+    Result.BlockIndex = Arr->Current->Index;
+    Result.ElementIndex = Arr->Current->At;
+    Assert(Result.ElementIndex);
+    Result.ElementIndex--;
   }
   return Result;
 }
@@ -94,7 +103,7 @@ link_internal asset_thumbnail *
 GetPtr(asset_thumbnail_block_array *Arr, asset_thumbnail_block_array_index Index)
 {
   asset_thumbnail *Result = {};
-  if (Index.Block) { Result = Cast(asset_thumbnail_block *, Index.Block)->Elements + Index.ElementIndex; }
+  if (Index.Block) { Result = GetBlock(&Index)->Elements + Index.ElementIndex; }
   return Result;
 }
 

@@ -375,8 +375,8 @@ function RunPoof
   # [ -d src/generated ] && rm -Rf src/generated
   # [ -d generated ] && rm -Rf generated
 
-  # RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
-  # TrackPid "" $!
+  RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
+  TrackPid "" $!
 
   # RunPoofHelper external/bonsai_debug/debug.cpp && echo -e "$Success poofed src/external/bonsai_debug/debug.cpp" &
   # TrackPid "" $!
@@ -387,8 +387,8 @@ function RunPoof
   # RunPoofHelper examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &
   # TrackPid "" $!
 
-  RunPoofHelper examples/turn_based/game.cpp && echo -e "$Success poofed examples/turn_based/game.cpp" &
-  TrackPid "" $!
+  # RunPoofHelper examples/turn_based/game.cpp && echo -e "$Success poofed examples/turn_based/game.cpp" &
+  # TrackPid "" $!
 
   # RunPoofHelper examples/turn_based2/game.cpp && echo -e "$Success poofed examples/turn_based2/game.cpp" &
   # TrackPid "" $!
@@ -422,6 +422,7 @@ TESTS_TO_BUILD="
   $TESTS/rng.cpp
   $TESTS/file.cpp
   $TESTS/sort.cpp
+  $TESTS/containers/block_array.cpp
 "
 
 BuildAll() {
