@@ -171,10 +171,10 @@ CS(vox_data_block_array_index Index)
 link_internal void
 RemoveUnordered(vox_data_block_array *Array, vox_data_block_array_index Index)
 {
-  vox_data_block_array_index Last = LastIndex(Array);
+  vox_data_block_array_index LastI = LastIndex(Array);
 
   vox_data *Element = GetPtr(Array, Index);
-  vox_data *LastElement = GetPtr(Array, Last);
+  vox_data *LastElement = GetPtr(Array, LastI);
 
   *Element = *LastElement;
 
@@ -185,14 +185,11 @@ RemoveUnordered(vox_data_block_array *Array, vox_data_block_array_index Index)
   {
     // Walk the chain till we get to the second-last one
     vox_data_block *Current = &Array->First;
-    vox_data_block *LastB = GetBlock(&Last);
+    vox_data_block *LastB = GetBlock(&LastI);
 
-    if (Current != &Array->First)
+    while (Current->Next && Current->Next != LastB)
     {
-      while (Current->Next != LastB)
-      {
-        Current = Current->Next;
-      }
+      Current = Current->Next;
     }
 
     Assert(Current->Next == LastB || Current->Next == 0);

@@ -16,10 +16,10 @@ CS(u32_block_array_index Index)
 link_internal void
 RemoveUnordered(u32_block_array *Array, u32_block_array_index Index)
 {
-  u32_block_array_index Last = LastIndex(Array);
+  u32_block_array_index LastI = LastIndex(Array);
 
   u32 *Element = GetPtr(Array, Index);
-  u32 *LastElement = GetPtr(Array, Last);
+  u32 *LastElement = GetPtr(Array, LastI);
 
   *Element = *LastElement;
 
@@ -30,14 +30,11 @@ RemoveUnordered(u32_block_array *Array, u32_block_array_index Index)
   {
     // Walk the chain till we get to the second-last one
     u32_block *Current = &Array->First;
-    u32_block *LastB = GetBlock(&Last);
+    u32_block *LastB = GetBlock(&LastI);
 
-    if (Current != &Array->First)
+    while (Current->Next && Current->Next != LastB)
     {
-      while (Current->Next != LastB)
-      {
-        Current = Current->Next;
-      }
+      Current = Current->Next;
     }
 
     Assert(Current->Next == LastB || Current->Next == 0);

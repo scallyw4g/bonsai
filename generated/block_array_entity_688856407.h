@@ -171,10 +171,10 @@ CS(entity_block_array_index Index)
 link_internal void
 RemoveUnordered(entity_block_array *Array, entity_block_array_index Index)
 {
-  entity_block_array_index Last = LastIndex(Array);
+  entity_block_array_index LastI = LastIndex(Array);
 
   entity *Element = GetPtr(Array, Index);
-  entity *LastElement = GetPtr(Array, Last);
+  entity *LastElement = GetPtr(Array, LastI);
 
   *Element = *LastElement;
 
@@ -185,14 +185,11 @@ RemoveUnordered(entity_block_array *Array, entity_block_array_index Index)
   {
     // Walk the chain till we get to the second-last one
     entity_block *Current = &Array->First;
-    entity_block *LastB = GetBlock(&Last);
+    entity_block *LastB = GetBlock(&LastI);
 
-    if (Current != &Array->First)
+    while (Current->Next && Current->Next != LastB)
     {
-      while (Current->Next != LastB)
-      {
-        Current = Current->Next;
-      }
+      Current = Current->Next;
     }
 
     Assert(Current->Next == LastB || Current->Next == 0);

@@ -171,10 +171,10 @@ CS(voxel_stack_element_block_array_index Index)
 link_internal void
 RemoveUnordered(voxel_stack_element_block_array *Array, voxel_stack_element_block_array_index Index)
 {
-  voxel_stack_element_block_array_index Last = LastIndex(Array);
+  voxel_stack_element_block_array_index LastI = LastIndex(Array);
 
   voxel_stack_element *Element = GetPtr(Array, Index);
-  voxel_stack_element *LastElement = GetPtr(Array, Last);
+  voxel_stack_element *LastElement = GetPtr(Array, LastI);
 
   *Element = *LastElement;
 
@@ -185,14 +185,11 @@ RemoveUnordered(voxel_stack_element_block_array *Array, voxel_stack_element_bloc
   {
     // Walk the chain till we get to the second-last one
     voxel_stack_element_block *Current = &Array->First;
-    voxel_stack_element_block *LastB = GetBlock(&Last);
+    voxel_stack_element_block *LastB = GetBlock(&LastI);
 
-    if (Current != &Array->First)
+    while (Current->Next && Current->Next != LastB)
     {
-      while (Current->Next != LastB)
-      {
-        Current = Current->Next;
-      }
+      Current = Current->Next;
     }
 
     Assert(Current->Next == LastB || Current->Next == 0);

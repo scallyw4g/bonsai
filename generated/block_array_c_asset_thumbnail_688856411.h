@@ -16,10 +16,10 @@ CS(asset_thumbnail_block_array_index Index)
 link_internal void
 RemoveUnordered(asset_thumbnail_block_array *Array, asset_thumbnail_block_array_index Index)
 {
-  asset_thumbnail_block_array_index Last = LastIndex(Array);
+  asset_thumbnail_block_array_index LastI = LastIndex(Array);
 
   asset_thumbnail *Element = GetPtr(Array, Index);
-  asset_thumbnail *LastElement = GetPtr(Array, Last);
+  asset_thumbnail *LastElement = GetPtr(Array, LastI);
 
   *Element = *LastElement;
 
@@ -30,14 +30,11 @@ RemoveUnordered(asset_thumbnail_block_array *Array, asset_thumbnail_block_array_
   {
     // Walk the chain till we get to the second-last one
     asset_thumbnail_block *Current = &Array->First;
-    asset_thumbnail_block *LastB = GetBlock(&Last);
+    asset_thumbnail_block *LastB = GetBlock(&LastI);
 
-    if (Current != &Array->First)
+    while (Current->Next && Current->Next != LastB)
     {
-      while (Current->Next != LastB)
-      {
-        Current = Current->Next;
-      }
+      Current = Current->Next;
     }
 
     Assert(Current->Next == LastB || Current->Next == 0);

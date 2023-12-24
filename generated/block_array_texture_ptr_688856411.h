@@ -171,10 +171,10 @@ CS(texture_ptr_block_array_index Index)
 link_internal void
 RemoveUnordered(texture_ptr_block_array *Array, texture_ptr_block_array_index Index)
 {
-  texture_ptr_block_array_index Last = LastIndex(Array);
+  texture_ptr_block_array_index LastI = LastIndex(Array);
 
   texture_ptr *Element = GetPtr(Array, Index);
-  texture_ptr *LastElement = GetPtr(Array, Last);
+  texture_ptr *LastElement = GetPtr(Array, LastI);
 
   *Element = *LastElement;
 
@@ -185,14 +185,11 @@ RemoveUnordered(texture_ptr_block_array *Array, texture_ptr_block_array_index In
   {
     // Walk the chain till we get to the second-last one
     texture_ptr_block *Current = &Array->First;
-    texture_ptr_block *LastB = GetBlock(&Last);
+    texture_ptr_block *LastB = GetBlock(&LastI);
 
-    if (Current != &Array->First)
+    while (Current->Next && Current->Next != LastB)
     {
-      while (Current->Next != LastB)
-      {
-        Current = Current->Next;
-      }
+      Current = Current->Next;
     }
 
     Assert(Current->Next == LastB || Current->Next == 0);
