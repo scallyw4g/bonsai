@@ -133,8 +133,6 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, un
   /* System->Dest = Dest; */
 
   SpawnParticleSystem(Entity->Emitter);
-
-  return;
 }
 
 void
@@ -181,11 +179,7 @@ SpawnSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, untext
   System->SystemMovementCoefficient = 0.1f;
   System->Drag = 2.f;
 
-  /* System->Dest = Dest; */
-
   SpawnParticleSystem(Entity->Emitter);
-
-  return;
 }
 
 link_internal void
@@ -340,15 +334,15 @@ DoSplotion( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
 
   {
     entity *E = GetFreeEntity(EntityTable);
-    SpawnEntity( E, SpawnFlags, 0, ModelIndex_None);
     E->P = PickCP + V3(0.5f);
+    SpawnEntity( E, SpawnFlags );
     /* E->UserData = (void*)GameEntityBehaviorFlags_Splosion; */
     SpawnExplosion(E, Entropy, {}, Radius, &Graphics->Transparency.GpuBuffer.Buffer);
   }
   {
     entity *E = GetFreeEntity(EntityTable);
-    SpawnEntity( E, SpawnFlags, 0, ModelIndex_None);
     E->P = PickCP + V3(0.5f);
+    SpawnEntity( E, SpawnFlags );
     SpawnSmoke(E, Entropy, {}, Radius*0.5f, &Graphics->Transparency.GpuBuffer.Buffer);
   }
 
@@ -357,13 +351,11 @@ DoSplotion( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
   {
     entity_behavior_flags BittySpawnFlags = entity_behavior_flags(EntityBehaviorFlags_Default|EntityBehaviorFlags_UnspawnOnParticleSystemTerminate);
     entity *E = GetFreeEntity(EntityTable);
-    SpawnEntity(E, BittySpawnFlags, {}, {});
-    /* SpawnEntity( E, EntityBehaviorFlags_Default, GameState->Models, (model_index)(ModelIndex_Bitty0 + (BittyIndex % 2)) ); */
     E->Physics.Speed = 1.f;
 
     E->EulerAngles.xyz = RandomRotation(Entropy);
     E->Scale = 0.3f;
-    UpdateCollisionVolumeRadius(World, E, V3(.1f), GetTranArena());
+    E->_CollisionVolumeRadius = V3(.1f);
 
     v3 Rnd = RandomV3Bilateral(Entropy);
     E->Physics.Mass = 25.f;
@@ -371,6 +363,8 @@ DoSplotion( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
     E->Physics.Force.z = Abs(E->Physics.Force.z) * 0.25f;
     E->P = PickCP + (Rnd*Radius) + V3(0.f, 0.f, 2.0f);
     E->P.Offset.z = PickCP.Offset.z + 2.f;
+
+    SpawnEntity(E, BittySpawnFlags );
 
     if (GetCollision(World, E).Count) { Unspawn(E); continue; }
 

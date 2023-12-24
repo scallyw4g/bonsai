@@ -56,6 +56,14 @@ struct collision_event
   canonical_position MaxP;
 };
 
+struct entity_position_info
+{
+  cp P;
+  v3 _CollisionVolumeRadius;
+  r32 Scale;
+  v4 EulerAngles;
+};
+
 struct entity
 {
   umm Id;
@@ -77,8 +85,9 @@ struct entity
   physics Physics;
 
 #if !POOF_PREPROCESSOR
-  asset_id        AssetId;
-  collision_event CollisionLastFrame;
+  asset_id             AssetId;
+  collision_event      LastResolvedCollision;
+  entity_position_info LastResolvedPosInfo;
 #endif
 
   model           *Model;
@@ -93,52 +102,89 @@ struct entity
 
 
 link_internal void
-DropEntityFromOccupiedChunks(world *World, entity *Entity, memory_arena *TempMemory)
+FinalizeEntityUpdate(entity *Entity)
 {
-  /* if (GetEngineDebug()->SelectedCh */
+  poof( func (entity_position_info Info)
+  {
+    Info.map(member)
+    {
+      Entity->LastResolvedPosInfo.member.name = Entity->member.name;
+    }
+  })
+#include <generated/anonymous_entity_position_info_ynGg9Dhj.h>
+}
+
+link_internal void
+DropEntityFromPreviouslyOccupiedChunks(world *World, entity *Entity, memory_arena *TempMemory)
+{
+  // nocheckin
+  /* Assert(Entity->Behavior & EntityBehaviorFlags_EntityCollision); */
 
   Assert(ThreadLocal_ThreadIndex == 0);
 
-  rect3cp EntityArea = RectMinMax(Entity->P, Canonicalize(World->ChunkDim, Entity->P + Entity->_CollisionVolumeRadius*2.f));
+  rect3cp EntityArea = RectMinMax(Entity->LastResolvedPosInfo.P, Canonicalize(World->ChunkDim, Entity->LastResolvedPosInfo.P + Entity->LastResolvedPosInfo._CollisionVolumeRadius*2.f));
   world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, EntityArea, TempMemory);
 
-  RangeIterator_t(umm, ChunkIndex, Chunks.Count)
+  if (Chunks.Count)
   {
-    world_chunk *Chunk = Chunks.Start[ChunkIndex];
-
-    b32 Got = False;
-    IterateOver(&Chunk->Entities, TestEntity, TestEntityIndex)
+    Info("Attempting to drop Entity(%p) from (%d) Chunks", Entity, Chunks.Count);
+    RangeIterator_t(umm, ChunkIndex, Chunks.Count)
     {
-      if (*TestEntity == Entity)
+      world_chunk *Chunk = Chunks.Start[ChunkIndex];
+      Info("Attempting to drop Entity(%p) from Chunk(%p)", Entity, Chunk);
+
+      b32 Got = False;
+      IterateOver(&Chunk->Entities, TestEntity, TestEntityIndex)
       {
-        RemoveUnordered(&Chunk->Entities, TestEntityIndex);
-        Got = True;
-        break;
+        if (*TestEntity == Entity)
+        {
+          RemoveUnordered(&Chunk->Entities, TestEntityIndex);
+          Got = True;
+          break;
+        }
       }
+      // NOTE(Jesse): This is a bit sketch.  For it to work 100% correctly we
+      // cannot ever have entities that overlap uninitialized bits of the world.
+      //
+      // Currently it cannot be in, because an entity can be spawned outside
+      // the world just fine, then when the visible region moves to enclose the
+      // entity chunks will get initialized, but the entity will never have
+      // been added to the freshly minted chunks.
+      //
+      // We'd have to do some nonsense like check every entity for every chunk
+      // if it overlaps when we insert, which is not a thing.
+      /* Assert(Got); */
     }
-    Assert(Got);
   }
 }
 
 link_internal void
 InsertEntityIntoChunks(world *World, entity *Entity, memory_arena *TempMemory)
 {
-  rect3cp EntityArea = RectMinMax(Entity->P, Canonicalize(World->ChunkDim, Entity->P + Entity->_CollisionVolumeRadius*2.f));
-  world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, EntityArea, TempMemory);
+  // nocheckin
+  /* Assert(Entity->Behavior & EntityBehaviorFlags_EntityCollision); */
 
-  RangeIterator_t(umm, ChunkIndex, Chunks.Count)
+  rect3cp EntityArea = RectMinMax(Entity->LastResolvedPosInfo.P, Canonicalize(World->ChunkDim, Entity->LastResolvedPosInfo.P + Entity->LastResolvedPosInfo._CollisionVolumeRadius*2.f));
+  world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, EntityArea, TempMemory);
+  if (Chunks.Count)
   {
-    world_chunk *Chunk = Chunks.Start[ChunkIndex];
-    Push(&Chunk->Entities, &Entity);
+    Info("Attempting to insert Entity(%p) into (%d) Chunks", Entity, Chunks.Count);
+    RangeIterator_t(umm, ChunkIndex, Chunks.Count)
+    {
+      world_chunk *Chunk = Chunks.Start[ChunkIndex];
+      Info("Attempting to insert Entity(%p) into Chunk(%p)", Entity, Chunk);
+
+      Push(&Chunk->Entities, &Entity);
+    }
   }
 }
 
 link_internal void
 UpdateCollisionVolumeRadius(world *World, entity *Entity, v3 NewRadius, memory_arena *TempMemory)
 {
-  DropEntityFromOccupiedChunks(World, Entity, TempMemory);
+  /* DropEntityFromOccupiedChunks(World, Entity, TempMemory); */
   Entity->_CollisionVolumeRadius = NewRadius;
-  InsertEntityIntoChunks(World, Entity, TempMemory);
+  /* InsertEntityIntoChunks(World, Entity, TempMemory); */
 }
 
 poof(serdes_vector(v2))

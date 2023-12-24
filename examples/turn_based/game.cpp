@@ -144,29 +144,28 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
 
 
 link_internal void
-FireballUpdate(engine_resources *Engine, entity *Entity)
+FireballUpdate(engine_resources *Engine, entity *FireballEntity)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  fireball_state *State = (fireball_state*)Entity->UserData;
+  fireball_state *State = (fireball_state*)FireballEntity->UserData;
 
   if (Engine->GameState->TransitionDuration > 0.45f)
   {
-    v3 EntityP = GetSimSpaceP(World, Entity);
+    v3 EntityP = GetSimSpaceP(World, FireballEntity);
     v3 TargetP = GetSimSpaceP(World, State->TargetP);
 
-    Entity->Physics.Velocity = Normalize(TargetP-EntityP)*700.f;
-    Entity->Behavior = entity_behavior_flags(Entity->Behavior & ~EntityBehaviorFlags_Gravity);
+    FireballEntity->Physics.Velocity = Normalize(TargetP-EntityP)*700.f;
+    FireballEntity->Behavior = entity_behavior_flags(FireballEntity->Behavior & ~EntityBehaviorFlags_Gravity);
   }
 
-  if (Entity->CollisionLastFrame.Count)
+  if (FireballEntity->LastResolvedCollision.Count)
   {
     r32 Radius = 2.f + r32(State->ChargeLevel)*2.f;
-    DoSplotion(Engine, Entity->P, Radius, &Global_GameEntropy, GetTranArena());
+    DoSplotion(Engine, FireballEntity->P, Radius, &Global_GameEntropy, GetTranArena());
 
-    v3 SimP = GetSimSpaceP(World, Entity->P);
+    v3 SimP = GetSimSpaceP(World, FireballEntity->P);
 
-    /* r32 Radius = 2.f + r32(GameState->PlayerChargeLevel)*2.f; */
     sphere S = {SimP, Radius};
 
     u32_buffer EntityIndices = GatherEntitiesIntersecting(World, EntityTable, &S, GetTranArena());
@@ -185,6 +184,7 @@ FireballUpdate(engine_resources *Engine, entity *Entity)
           CSz("skele_bitty_2.vox"),
         };
 
+#if 0
         s32 MaxBitties = ArrayCount(AssetNames);
         RangeIterator(BittyIndex, MaxBitties)
         {
@@ -209,18 +209,18 @@ FireballUpdate(engine_resources *Engine, entity *Entity)
           BittyEntity->Physics.Mass = 25.f;
           BittyEntity->Physics.Force += Rnd*150.f*Radius;
           BittyEntity->Physics.Force.z = Abs(BittyEntity->Physics.Force.z) * 0.25f;
-          BittyEntity->P = Entity->P + (Rnd*Radius) + V3(0.f, 0.f, 2.0f);
-          BittyEntity->P.Offset.z = Entity->P.Offset.z + 2.f;
+          BittyEntity->P = FireballEntity->P + (Rnd*Radius) + V3(0.f, 0.f, 2.0f);
+          BittyEntity->P.Offset.z = FireballEntity->P.Offset.z + 2.f;
 
           if (GetCollision(World, BittyEntity).Count) { Unspawn(BittyEntity); continue; }
         }
+#endif
       }
     }
 
 
     HeapDeallocate(&GameState->Heap, (u8*)State);
-    Unspawn(Entity);
-
+    Unspawn(FireballEntity);
   }
 }
 
@@ -439,22 +439,32 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           {
             entity *E = GetFreeEntity(EntityTable);
 
-            *E->Emitter = *Player->Emitter;
-            E->P = Player->P;
-            E->P += E->Emitter->SpawnRegion.Min;
+            /* E->Physics = FireballPhysics(); */
 
+            /* E->Behavior = EntityBehaviorFlags_Default; */
+            E->UserType = EntityType_Fireball;
+
+            /* E->_CollisionVolumeRadius = V3(1); // TODO(Jesse): Should be based on charge level? */
+            /* UpdateCollisionVolumeRadius(World, E, V3(1), GetTranArena()); */
+
+            physics Physics = FireballPhysics();
+
+            auto CP = Player->P;
+            CP.Offset += Player->Emitter->SpawnRegion.Min;
+            Canonicalize(World, &CP);
+
+            *E->Emitter = *Player->Emitter;
             E->Emitter->SpawnRegion.Max -= E->Emitter->SpawnRegion.Min;
             E->Emitter->SpawnRegion.Min = {};
 
-            E->Physics = FireballPhysics();
-
-            E->Behavior = EntityBehaviorFlags_Default;
-            E->UserType = EntityType_Fireball;
-
-            E->_CollisionVolumeRadius = V3(1); // TODO(Jesse): Should be based on charge level?
-            /* UpdateCollisionVolumeRadius(World, E, V3(1), GetTranArena()); */
-
-            SpawnEntity(E);
+            SpawnEntity(
+              E,
+              0,
+              EntityBehaviorFlags_Default,
+              &Physics,
+              &CP,
+              V3(1)
+            );
 
             /* fireball_state *FireballState = Allocate(fireball_state, &GameState->Heap, 1); */
             fireball_state *FireballState = (fireball_state*)HeapAllocate(&GameState->Heap, sizeof(fireball_state));
@@ -466,6 +476,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
             v3 TargetP = GetSimSpaceP(World, PickCP);
 
             E->Physics.Velocity = (Normalize(TargetP-EntityP) + V3(0,0,3)) * 20.f;
+            /* E->Physics.Velocity = V3(10.f); */
 
             GameState->PlayerChargeLevel = 0;
 
@@ -599,7 +610,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
         RandomBetween(0, &GameState->Entropy, HalfVisibleRegion.y),
         1);
 
-    u32 EnemyModelIndex = RandomBetween( u32(ModelIndex_Enemy_Skeleton_Axe), &GameState->Entropy, u32(ModelIndex_Enemy_Skeleton_King+1));
+    u32 EnemyModelIndex = u32(ModelIndex_Enemy_Skeleton_Axe) + EnemyIndex;
+    /* u32 EnemyModelIndex = RandomBetween( u32(ModelIndex_Enemy_Skeleton_Axe), &GameState->Entropy, u32(ModelIndex_Enemy_Skeleton_King+1)); */
     /* Assert(EnemyModelIndex >= ModelIndex_FirstEnemyModel); */
     /* Assert(EnemyModelIndex <= ModelIndex_LastEnemyModel); */
 

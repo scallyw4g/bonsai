@@ -7,7 +7,7 @@ Deactivate(particle_system *System)
 inline void
 Destroy(entity *Entity)
 {
-  DropEntityFromOccupiedChunks(GetEngineResources()->World, Entity, GetTranArena());
+  DropEntityFromPreviouslyOccupiedChunks(GetEngineResources()->World, Entity, GetTranArena());
 
   Assert( Spawned(Entity) );
   Entity->State = EntityState_Destroyed;
@@ -18,7 +18,7 @@ Destroy(entity *Entity)
 inline void
 Unspawn(entity *Entity)
 {
-  DropEntityFromOccupiedChunks(GetEngineResources()->World, Entity, GetTranArena());
+  DropEntityFromPreviouslyOccupiedChunks(GetEngineResources()->World, Entity, GetTranArena());
 
   Entity->State = EntityState_Free;
   Assert(Entity->Emitter);
@@ -213,16 +213,72 @@ AllocateEntityTable(memory_arena* Memory, u32 Count)
   return Result;
 }
 
-void
-SpawnEntity( entity *Entity, entity_behavior_flags Behavior, model *GameModels, model_index ModelIndex)
+link_internal void
+SpawnEntity(entity *Entity)
 {
+  Info("Spanwing Entity(%p)", Entity);
+  /* if (Entity->Id == 1) RuntimeBreak(); */
+
   // These are mutually exclusive, so checking both is redundant, but that
   // could change in the future
   Assert(Unspawned(Entity));
   Assert(!Destroyed(Entity));
   Assert(Entity->State == EntityState_Reserved);
 
+  if (Entity->Behavior & EntityBehaviorFlags_EntityCollision) { Assert(Volume(Entity->_CollisionVolumeRadius) > 0.f); }
+  if (Entity->Behavior & EntityBehaviorFlags_WorldCollision)  { Assert(Volume(Entity->_CollisionVolumeRadius) > 0.f); }
+
+
+  FinalizeEntityUpdate(Entity);
+
+  world *World = GetEngineResources()->World;
+  {
+    cp MinP = Entity->P;
+    cp MaxP = Canonicalize(World->ChunkDim, MinP.Offset + Entity->_CollisionVolumeRadius*2.f, MinP.WorldP);
+
+    v3i Delta = Max(MaxP.WorldP - MinP.WorldP, V3i(1));
+
+    v3i MinWP = MinP.WorldP;
+    v3i MaxWP = MinWP+Delta;
+
+    for(s32 z = MinWP.z; z < MaxWP.z; ++z)
+    {
+      for(s32 y = MinWP.y; y < MaxWP.y; ++y)
+      {
+        for(s32 x = MinWP.x; x < MaxWP.x; ++x)
+        {
+          /* canonical_position CP = Canonicalize(World->ChunkDim, V3(x, y, z), InitialP->WorldP); */
+          cp CP = Canonical_Position(V3(0), V3i(x,y,z));
+          world_chunk *Chunk = GetWorldChunkFromHashtable( World, CP.WorldP );
+          if (Chunk == 0)
+          {
+            Chunk = AllocateAndInsertChunk(World->Memory, World, CP.WorldP);
+            if (Chunk)
+            {
+              QueueChunkForInit(&GetEngineResources()->Stdlib.Plat.HighPriority, Chunk, MeshBit_Lod0);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  InsertEntityIntoChunks(World, Entity, GetTranArena());
+
   Entity->State = EntityState_Spawned;
+}
+
+link_internal void
+SpawnEntity( entity *Entity, entity_behavior_flags Behavior, model *GameModels, model_index ModelIndex)
+{
+  Deprecated();
+
+  // These are mutually exclusive, so checking both is redundant, but that
+  // could change in the future
+  Assert(Unspawned(Entity));
+  Assert(!Destroyed(Entity));
+  Assert(Entity->State == EntityState_Reserved);
+
   Entity->Behavior = Behavior;
 
   if (ModelIndex)
@@ -237,13 +293,14 @@ SpawnEntity( entity *Entity, entity_behavior_flags Behavior, model *GameModels, 
     }
   }
 
-  return;
+  SpawnEntity(Entity);
 }
 
 link_internal void
-SpawnEntity(entity *Entity)
+SpawnEntity( entity *Entity, entity_behavior_flags Behavior )
 {
-  SpawnEntity(Entity, EntityBehaviorFlags_None, 0, ModelIndex_None);
+  Entity->Behavior = Behavior;
+  SpawnEntity(Entity);
 }
 
 void
@@ -270,51 +327,13 @@ SpawnEntity(
 
   if (Model) Entity->Model = Model;
   if (Physics) Entity->Physics = *Physics;
-
-  if (InitialP)
-  {
-    cp MinP = *InitialP;
-    cp MaxP = Canonicalize(World->ChunkDim, InitialP->Offset + CollisionVolumeRadius*2.f, InitialP->WorldP);
-
-    v3i Delta = Max(MaxP.WorldP - MinP.WorldP, V3i(1));
-
-    v3i MinWP = MinP.WorldP;
-    v3i MaxWP = MinWP+Delta;
-
-    Entity->P = *InitialP;
-
-    for(s32 z = MinWP.z; z < MaxWP.z; ++z)
-    {
-      for(s32 y = MinWP.y; y < MaxWP.y; ++y)
-      {
-        for(s32 x = MinWP.x; x < MaxWP.x; ++x)
-        {
-          /* canonical_position CP = Canonicalize(World->ChunkDim, V3(x, y, z), InitialP->WorldP); */
-          cp CP = Canonical_Position(V3(0), V3i(x,y,z));
-          world_chunk *Chunk = GetWorldChunkFromHashtable( World, CP.WorldP );
-          if (Chunk == 0)
-          {
-            Chunk = AllocateAndInsertChunk(World->Memory, World, CP.WorldP);
-            if (Chunk)
-            {
-              QueueChunkForInit(&GetEngineResources()->Stdlib.Plat.HighPriority, Chunk, MeshBit_Lod0);
-            }
-          }
-        }
-      }
-    }
-  }
+  if (InitialP) Entity->P = *InitialP;
 
   Entity->_CollisionVolumeRadius = CollisionVolumeRadius;
-  InsertEntityIntoChunks(World, Entity, GetTranArena());
-
-  /* UpdateCollisionVolumeRadius(GetEngineResources()->World, Entity, CollisionVolumeRadius, GetTranArena()); */
-  /* Entity->CollisionVolumeRadius = CollisionVolumeRadius; */
 
   Entity->Scale = Scale;
-  Entity->State = EntityState_Spawned;
 
-  return;
+  SpawnEntity(Entity);
 }
 
 entity *
@@ -401,9 +420,6 @@ UnspawnParticleSystem(particle_system *System)
 void
 SpawnParticleSystem(particle_system *System)
 {
-  /* Assert(System->Dest); */
-  /* Assert(Inactive(System)); */
-  /* System->RemainingLifespan = System->EmissionLifespan; */
 }
 #endif
 
@@ -765,10 +781,6 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
   collision_event C      = GetCollision(World, Entity->P, CollisionVolumeInit);
 
 
-  memory_arena *Tran = GetTranArena();
-  temp_memory_handle TMH = BeginTemporaryMemory(Tran);
-
-  DropEntityFromOccupiedChunks(World, Entity, Tran);
 
   // NOTE(Jesse): Don't move the entity if it's already stuck in the world
   if (C.Count)
@@ -883,10 +895,6 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
 
   collision_event AssertCollision = GetCollision(World, Entity);
   /* Assert(AssertCollision.Count == 0); */
-
-  InsertEntityIntoChunks(World, Entity, Tran);
-
-  EndTemporaryMemory(&TMH);
 
   // Entites that aren't moving can still be positioned outside the world if
   // the player moves the world to do so
@@ -1279,58 +1287,63 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
 
     if (!Spawned(Entity)) continue;
 
-    if (GameEntityUpdate)
-    {
-      if (GameEntityUpdate(Resources, Entity)) continue;
-    }
+    b32 DoDefaultUpdate = True;
+    if (GameEntityUpdate) { DoDefaultUpdate = (GameEntityUpdate(Resources, Entity) == False); }
 
     Entity->P = Canonicalize(Resources->World, Entity->P);
 
-    b32 ApplyGravity = ((Entity->Behavior & EntityBehaviorFlags_Gravity) == EntityBehaviorFlags_Gravity);
-    PhysicsUpdate(&Entity->Physics, dt, ApplyGravity);
-
-    if (Entity->Behavior & EntityBehaviorFlags_WorldCollision)
+    if (DoDefaultUpdate)
     {
-      collision_event C = MoveEntityInWorld(World, Entity, Entity->Physics.Delta);
-      if (C.Count)
+      b32 ApplyGravity = ((Entity->Behavior & EntityBehaviorFlags_Gravity) == EntityBehaviorFlags_Gravity);
+      PhysicsUpdate(&Entity->Physics, dt, ApplyGravity);
+
+      if (Entity->Behavior & EntityBehaviorFlags_WorldCollision)
       {
-        Entity->CollisionLastFrame = C;
+        collision_event C = MoveEntityInWorld(World, Entity, Entity->Physics.Delta);
+        if (C.Count)
+        {
+          /* Info("Entity (%p) Id(%u) Collided w/ world!", Entity, Entity->Id); */
+          Entity->LastResolvedCollision = C;
+        }
+      }
+      else
+      {
+        Entity->P.Offset += Entity->Physics.Delta;
+        Canonicalize(World, &Entity->P);
+      }
+
+      if (Entity->Behavior & EntityBehaviorFlags_EntityCollision)
+      {
+        entity_entity_collision_event C = DoEntityCollisions(World, EntityTable, Entity);
+        if (C.Count)
+        {
+          Entity->LastResolvedCollision = C.Collision;
+          /* DebugLine("Entity-entity COLLISION!! %p -> %p", Entity, C.Entity); */
+        }
+      }
+
+      particle_system *System = Entity->Emitter;
+      if (Active(System))
+      {
+        auto EntityDelta = Entity->Physics.Delta;
+
+        v3 RenderSpaceP  = GetRenderP(Entity->P, Camera, World->ChunkDim) + System->SpawnRegion.Min;
+
+        /* auto Dest = System->ParticleStartingTransparency > 0.f ? TransparentGeo : SolidGeo; */
+        /* SimulateParticleSystem(&Job.work_queue_entry_sim_particle_system); */
+        auto Job = WorkQueueEntry(System, EntityDelta, RenderSpaceP, dt);
+        PushWorkQueueEntry(Queue, &Job);
+      }
+      else
+      {
+        if (Entity->Behavior & EntityBehaviorFlags_UnspawnOnParticleSystemTerminate) { Unspawn(Entity); }
       }
     }
-    else
-    {
-      Entity->P.Offset += Entity->Physics.Delta;
-      Canonicalize(World, &Entity->P);
-    }
 
-    if (Entity->Behavior & EntityBehaviorFlags_EntityCollision)
-    {
-      entity_entity_collision_event C = DoEntityCollisions(World, EntityTable, Entity);
-      if (C.Count)
-      {
-        Entity->CollisionLastFrame = C.Collision;
-        /* DebugLine("Entity-entity COLLISION!! %p -> %p", Entity, C.Entity); */
-      }
-    }
 
-    particle_system *System = Entity->Emitter;
-    if (Active(System))
-    {
-      auto EntityDelta = Entity->Physics.Delta;
-
-      v3 RenderSpaceP  = GetRenderP(Entity->P, Camera, World->ChunkDim) + System->SpawnRegion.Min;
-
-      /* auto Dest = System->ParticleStartingTransparency > 0.f ? TransparentGeo : SolidGeo; */
-      /* SimulateParticleSystem(&Job.work_queue_entry_sim_particle_system); */
-      auto Job = WorkQueueEntry(System, EntityDelta, RenderSpaceP, dt);
-      PushWorkQueueEntry(Queue, &Job);
-    }
-    else
-    {
-      if (Entity->Behavior & EntityBehaviorFlags_UnspawnOnParticleSystemTerminate) { Unspawn(Entity); }
-    }
+    DropEntityFromPreviouslyOccupiedChunks(World, Entity, GetTranArena());
+    FinalizeEntityUpdate(Entity);
+    InsertEntityIntoChunks(World, Entity, GetTranArena());
   }
-
-  return;
 }
 

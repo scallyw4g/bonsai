@@ -811,7 +811,7 @@ DoLevelEditor(engine_resources *Engine)
     if (Input->Ctrl.Pressed && Input->V.Clicked)
     {
       v3 CopyDim = GetDim(World, Editor->CopyRegion);
-      s32 VoxelCount = Volume(CopyDim);
+      s32 VoxelCount = s32(Volume(CopyDim));
       Leak("voxel *V = Allocate(voxel, Engine->Memory, VoxelCount)");
       voxel *V = Allocate(voxel, Engine->Memory, VoxelCount);
 
