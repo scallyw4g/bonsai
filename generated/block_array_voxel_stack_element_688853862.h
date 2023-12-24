@@ -85,7 +85,7 @@ TotalElements(voxel_stack_element_block_array *Arr)
 }
 
 link_internal voxel_stack_element_block_array_index
-AtElements(voxel_stack_element_block_array *Arr)
+LastIndex(voxel_stack_element_block_array *Arr)
 {
   voxel_stack_element_block_array_index Result = {};
   if (Arr->Current)
@@ -95,6 +95,21 @@ AtElements(voxel_stack_element_block_array *Arr)
     Result.ElementIndex = Arr->Current->At;
     Assert(Result.ElementIndex);
     Result.ElementIndex--;
+  }
+  return Result;
+}
+
+link_internal voxel_stack_element_block_array_index
+AtElements(voxel_stack_element_block_array *Arr)
+{
+  voxel_stack_element_block_array_index Result = {};
+  if (Arr->Current)
+  {
+    Result.Block = Arr->Current;
+    Result.BlockIndex = Arr->Current->Index;
+    Result.ElementIndex = Arr->Current->At;
+    /* Assert(Result.ElementIndex); */
+    /* Result.ElementIndex--; */
   }
   return Result;
 }
@@ -156,10 +171,10 @@ CS(voxel_stack_element_block_array_index Index)
 link_internal void
 RemoveUnordered(voxel_stack_element_block_array *Array, voxel_stack_element_block_array_index Index)
 {
-  voxel_stack_element_block_array_index LastIndex = AtElements(Array);
+  voxel_stack_element_block_array_index Last = LastIndex(Array);
 
   voxel_stack_element *Element = GetPtr(Array, Index);
-  voxel_stack_element *LastElement = GetPtr(Array, LastIndex);
+  voxel_stack_element *LastElement = GetPtr(Array, Last);
 
   *Element = *LastElement;
 
@@ -169,14 +184,18 @@ RemoveUnordered(voxel_stack_element_block_array *Array, voxel_stack_element_bloc
   if (Array->Current->At == 0)
   {
     // Walk the chain till we get to the second-last one
-    voxel_stack_element_block *LastBlock = Cast( voxel_stack_element_block *, LastIndex.Block);
     voxel_stack_element_block *Current = &Array->First;
-    while (Current->Next != LastBlock)
+    voxel_stack_element_block *LastB = GetBlock(&Last);
+
+    if (Current != &Array->First)
     {
-      Current = Current->Next;
+      while (Current->Next != LastB)
+      {
+        Current = Current->Next;
+      }
     }
 
-    Assert(Current->Next == LastBlock);
+    Assert(Current->Next == LastB || Current->Next == 0);
     Array->Current = Current;
   }
 }

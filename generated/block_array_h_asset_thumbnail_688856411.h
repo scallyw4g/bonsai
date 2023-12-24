@@ -85,7 +85,7 @@ TotalElements(asset_thumbnail_block_array *Arr)
 }
 
 link_internal asset_thumbnail_block_array_index
-AtElements(asset_thumbnail_block_array *Arr)
+LastIndex(asset_thumbnail_block_array *Arr)
 {
   asset_thumbnail_block_array_index Result = {};
   if (Arr->Current)
@@ -95,6 +95,21 @@ AtElements(asset_thumbnail_block_array *Arr)
     Result.ElementIndex = Arr->Current->At;
     Assert(Result.ElementIndex);
     Result.ElementIndex--;
+  }
+  return Result;
+}
+
+link_internal asset_thumbnail_block_array_index
+AtElements(asset_thumbnail_block_array *Arr)
+{
+  asset_thumbnail_block_array_index Result = {};
+  if (Arr->Current)
+  {
+    Result.Block = Arr->Current;
+    Result.BlockIndex = Arr->Current->Index;
+    Result.ElementIndex = Arr->Current->At;
+    /* Assert(Result.ElementIndex); */
+    /* Result.ElementIndex--; */
   }
   return Result;
 }

@@ -95,6 +95,10 @@ struct entity
 link_internal void
 DropEntityFromOccupiedChunks(world *World, entity *Entity, memory_arena *TempMemory)
 {
+  /* if (GetEngineDebug()->SelectedCh */
+
+  Assert(ThreadLocal_ThreadIndex == 0);
+
   rect3cp EntityArea = RectMinMax(Entity->P, Canonicalize(World->ChunkDim, Entity->P + Entity->_CollisionVolumeRadius*2.f));
   world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, EntityArea, TempMemory);
 
@@ -112,7 +116,7 @@ DropEntityFromOccupiedChunks(world *World, entity *Entity, memory_arena *TempMem
         break;
       }
     }
-    /* Assert(Got); */
+    Assert(Got);
   }
 }
 

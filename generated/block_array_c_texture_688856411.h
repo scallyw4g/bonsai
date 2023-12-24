@@ -16,10 +16,10 @@ CS(texture_block_array_index Index)
 link_internal void
 RemoveUnordered(texture_block_array *Array, texture_block_array_index Index)
 {
-  texture_block_array_index LastIndex = AtElements(Array);
+  texture_block_array_index Last = LastIndex(Array);
 
   texture *Element = GetPtr(Array, Index);
-  texture *LastElement = GetPtr(Array, LastIndex);
+  texture *LastElement = GetPtr(Array, Last);
 
   *Element = *LastElement;
 
@@ -29,14 +29,18 @@ RemoveUnordered(texture_block_array *Array, texture_block_array_index Index)
   if (Array->Current->At == 0)
   {
     // Walk the chain till we get to the second-last one
-    texture_block *LastBlock = Cast( texture_block *, LastIndex.Block);
     texture_block *Current = &Array->First;
-    while (Current->Next != LastBlock)
+    texture_block *LastB = GetBlock(&Last);
+
+    if (Current != &Array->First)
     {
-      Current = Current->Next;
+      while (Current->Next != LastB)
+      {
+        Current = Current->Next;
+      }
     }
 
-    Assert(Current->Next == LastBlock);
+    Assert(Current->Next == LastB || Current->Next == 0);
     Array->Current = Current;
   }
 }

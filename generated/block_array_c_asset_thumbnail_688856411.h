@@ -16,10 +16,10 @@ CS(asset_thumbnail_block_array_index Index)
 link_internal void
 RemoveUnordered(asset_thumbnail_block_array *Array, asset_thumbnail_block_array_index Index)
 {
-  asset_thumbnail_block_array_index LastIndex = AtElements(Array);
+  asset_thumbnail_block_array_index Last = LastIndex(Array);
 
   asset_thumbnail *Element = GetPtr(Array, Index);
-  asset_thumbnail *LastElement = GetPtr(Array, LastIndex);
+  asset_thumbnail *LastElement = GetPtr(Array, Last);
 
   *Element = *LastElement;
 
@@ -29,14 +29,18 @@ RemoveUnordered(asset_thumbnail_block_array *Array, asset_thumbnail_block_array_
   if (Array->Current->At == 0)
   {
     // Walk the chain till we get to the second-last one
-    asset_thumbnail_block *LastBlock = Cast( asset_thumbnail_block *, LastIndex.Block);
     asset_thumbnail_block *Current = &Array->First;
-    while (Current->Next != LastBlock)
+    asset_thumbnail_block *LastB = GetBlock(&Last);
+
+    if (Current != &Array->First)
     {
-      Current = Current->Next;
+      while (Current->Next != LastB)
+      {
+        Current = Current->Next;
+      }
     }
 
-    Assert(Current->Next == LastBlock);
+    Assert(Current->Next == LastB || Current->Next == 0);
     Array->Current = Current;
   }
 }

@@ -85,7 +85,7 @@ TotalElements(texture_block_array *Arr)
 }
 
 link_internal texture_block_array_index
-AtElements(texture_block_array *Arr)
+LastIndex(texture_block_array *Arr)
 {
   texture_block_array_index Result = {};
   if (Arr->Current)
@@ -95,6 +95,21 @@ AtElements(texture_block_array *Arr)
     Result.ElementIndex = Arr->Current->At;
     Assert(Result.ElementIndex);
     Result.ElementIndex--;
+  }
+  return Result;
+}
+
+link_internal texture_block_array_index
+AtElements(texture_block_array *Arr)
+{
+  texture_block_array_index Result = {};
+  if (Arr->Current)
+  {
+    Result.Block = Arr->Current;
+    Result.BlockIndex = Arr->Current->Index;
+    Result.ElementIndex = Arr->Current->At;
+    /* Assert(Result.ElementIndex); */
+    /* Result.ElementIndex--; */
   }
   return Result;
 }

@@ -2,12 +2,13 @@ inline void
 Deactivate(particle_system *System)
 {
   Clear(System);
-  return;
 }
 
 inline void
 Destroy(entity *Entity)
 {
+  DropEntityFromOccupiedChunks(GetEngineResources()->World, Entity, GetTranArena());
+
   Assert( Spawned(Entity) );
   Entity->State = EntityState_Destroyed;
   Assert(Entity->Emitter);
@@ -17,6 +18,8 @@ Destroy(entity *Entity)
 inline void
 Unspawn(entity *Entity)
 {
+  DropEntityFromOccupiedChunks(GetEngineResources()->World, Entity, GetTranArena());
+
   Entity->State = EntityState_Free;
   Assert(Entity->Emitter);
   auto Emitter = Entity->Emitter;
@@ -270,17 +273,24 @@ SpawnEntity(
 
   if (InitialP)
   {
+    cp MinP = *InitialP;
+    cp MaxP = Canonicalize(World->ChunkDim, InitialP->Offset + CollisionVolumeRadius*2.f, InitialP->WorldP);
+
+    v3i Delta = Max(MaxP.WorldP - MinP.WorldP, V3i(1));
+
+    v3i MinWP = MinP.WorldP;
+    v3i MaxWP = MinWP+Delta;
+
     Entity->P = *InitialP;
 
-    // TODO(Jesse): WTF?
-    for (s32 z = -1; z < (s32)(CollisionVolumeRadius.z*2.f); ++ z)
+    for(s32 z = MinWP.z; z < MaxWP.z; ++z)
     {
-      for (s32 y = -1; y < (s32)(CollisionVolumeRadius.y*2.f); ++ y)
+      for(s32 y = MinWP.y; y < MaxWP.y; ++y)
       {
-        for (s32 x = -1; x < (s32)(CollisionVolumeRadius.x*2.f); ++ x)
+        for(s32 x = MinWP.x; x < MaxWP.x; ++x)
         {
-          canonical_position CP = Canonicalize(World->ChunkDim, V3(x, y, z), InitialP->WorldP);
-
+          /* canonical_position CP = Canonicalize(World->ChunkDim, V3(x, y, z), InitialP->WorldP); */
+          cp CP = Canonical_Position(V3(0), V3i(x,y,z));
           world_chunk *Chunk = GetWorldChunkFromHashtable( World, CP.WorldP );
           if (Chunk == 0)
           {
@@ -385,7 +395,6 @@ void
 UnspawnParticleSystem(particle_system *System)
 {
   Clear(System);
-  /* System->RemainingLifespan = 0.f; */
 }
 
 #if 1

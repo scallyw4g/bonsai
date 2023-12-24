@@ -150,12 +150,12 @@ FireballUpdate(engine_resources *Engine, entity *Entity)
 
   fireball_state *State = (fireball_state*)Entity->UserData;
 
-  if (Engine->GameState->TransitionDuration > 0.35f)
+  if (Engine->GameState->TransitionDuration > 0.45f)
   {
     v3 EntityP = GetSimSpaceP(World, Entity);
     v3 TargetP = GetSimSpaceP(World, State->TargetP);
 
-    Entity->Physics.Velocity = Normalize(TargetP-EntityP)*800.f;
+    Entity->Physics.Velocity = Normalize(TargetP-EntityP)*700.f;
     Entity->Behavior = entity_behavior_flags(Entity->Behavior & ~EntityBehaviorFlags_Gravity);
   }
 
@@ -438,7 +438,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           if (Input->LMB.Clicked)
           {
             entity *E = GetFreeEntity(EntityTable);
-            SpawnEntity(E);
 
             *E->Emitter = *Player->Emitter;
             E->P = Player->P;
@@ -452,8 +451,10 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
             E->Behavior = EntityBehaviorFlags_Default;
             E->UserType = EntityType_Fireball;
 
-            /* E->CollisionVolumeRadius = V3(1); // TODO(Jesse): Should be based on charge level? */
-            UpdateCollisionVolumeRadius(World, E, V3(1), GetTranArena());
+            E->_CollisionVolumeRadius = V3(1); // TODO(Jesse): Should be based on charge level?
+            /* UpdateCollisionVolumeRadius(World, E, V3(1), GetTranArena()); */
+
+            SpawnEntity(E);
 
             /* fireball_state *FireballState = Allocate(fireball_state, &GameState->Heap, 1); */
             fireball_state *FireballState = (fireball_state*)HeapAllocate(&GameState->Heap, sizeof(fireball_state));
@@ -464,7 +465,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
             v3 EntityP = GetSimSpaceP(World, E);
             v3 TargetP = GetSimSpaceP(World, PickCP);
 
-            E->Physics.Velocity = (Normalize(TargetP-EntityP) + V3(0,0,5)) * 10.f;
+            E->Physics.Velocity = (Normalize(TargetP-EntityP) + V3(0,0,3)) * 20.f;
 
             GameState->PlayerChargeLevel = 0;
 

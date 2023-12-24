@@ -85,7 +85,7 @@ TotalElements(texture_ptr_block_array *Arr)
 }
 
 link_internal texture_ptr_block_array_index
-AtElements(texture_ptr_block_array *Arr)
+LastIndex(texture_ptr_block_array *Arr)
 {
   texture_ptr_block_array_index Result = {};
   if (Arr->Current)
@@ -95,6 +95,21 @@ AtElements(texture_ptr_block_array *Arr)
     Result.ElementIndex = Arr->Current->At;
     Assert(Result.ElementIndex);
     Result.ElementIndex--;
+  }
+  return Result;
+}
+
+link_internal texture_ptr_block_array_index
+AtElements(texture_ptr_block_array *Arr)
+{
+  texture_ptr_block_array_index Result = {};
+  if (Arr->Current)
+  {
+    Result.Block = Arr->Current;
+    Result.BlockIndex = Arr->Current->Index;
+    Result.ElementIndex = Arr->Current->At;
+    /* Assert(Result.ElementIndex); */
+    /* Result.ElementIndex--; */
   }
   return Result;
 }
@@ -156,10 +171,10 @@ CS(texture_ptr_block_array_index Index)
 link_internal void
 RemoveUnordered(texture_ptr_block_array *Array, texture_ptr_block_array_index Index)
 {
-  texture_ptr_block_array_index LastIndex = AtElements(Array);
+  texture_ptr_block_array_index Last = LastIndex(Array);
 
   texture_ptr *Element = GetPtr(Array, Index);
-  texture_ptr *LastElement = GetPtr(Array, LastIndex);
+  texture_ptr *LastElement = GetPtr(Array, Last);
 
   *Element = *LastElement;
 
@@ -169,14 +184,18 @@ RemoveUnordered(texture_ptr_block_array *Array, texture_ptr_block_array_index In
   if (Array->Current->At == 0)
   {
     // Walk the chain till we get to the second-last one
-    texture_ptr_block *LastBlock = Cast( texture_ptr_block *, LastIndex.Block);
     texture_ptr_block *Current = &Array->First;
-    while (Current->Next != LastBlock)
+    texture_ptr_block *LastB = GetBlock(&Last);
+
+    if (Current != &Array->First)
     {
-      Current = Current->Next;
+      while (Current->Next != LastB)
+      {
+        Current = Current->Next;
+      }
     }
 
-    Assert(Current->Next == LastBlock);
+    Assert(Current->Next == LastB || Current->Next == 0);
     Array->Current = Current;
   }
 }

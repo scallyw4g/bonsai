@@ -85,7 +85,7 @@ TotalElements(model_block_array *Arr)
 }
 
 link_internal model_block_array_index
-AtElements(model_block_array *Arr)
+LastIndex(model_block_array *Arr)
 {
   model_block_array_index Result = {};
   if (Arr->Current)
@@ -95,6 +95,21 @@ AtElements(model_block_array *Arr)
     Result.ElementIndex = Arr->Current->At;
     Assert(Result.ElementIndex);
     Result.ElementIndex--;
+  }
+  return Result;
+}
+
+link_internal model_block_array_index
+AtElements(model_block_array *Arr)
+{
+  model_block_array_index Result = {};
+  if (Arr->Current)
+  {
+    Result.Block = Arr->Current;
+    Result.BlockIndex = Arr->Current->Index;
+    Result.ElementIndex = Arr->Current->At;
+    /* Assert(Result.ElementIndex); */
+    /* Result.ElementIndex--; */
   }
   return Result;
 }
@@ -156,10 +171,10 @@ CS(model_block_array_index Index)
 link_internal void
 RemoveUnordered(model_block_array *Array, model_block_array_index Index)
 {
-  model_block_array_index LastIndex = AtElements(Array);
+  model_block_array_index Last = LastIndex(Array);
 
   model *Element = GetPtr(Array, Index);
-  model *LastElement = GetPtr(Array, LastIndex);
+  model *LastElement = GetPtr(Array, Last);
 
   *Element = *LastElement;
 
@@ -169,14 +184,18 @@ RemoveUnordered(model_block_array *Array, model_block_array_index Index)
   if (Array->Current->At == 0)
   {
     // Walk the chain till we get to the second-last one
-    model_block *LastBlock = Cast( model_block *, LastIndex.Block);
     model_block *Current = &Array->First;
-    while (Current->Next != LastBlock)
+    model_block *LastB = GetBlock(&Last);
+
+    if (Current != &Array->First)
     {
-      Current = Current->Next;
+      while (Current->Next != LastB)
+      {
+        Current = Current->Next;
+      }
     }
 
-    Assert(Current->Next == LastBlock);
+    Assert(Current->Next == LastB || Current->Next == 0);
     Array->Current = Current;
   }
 }
