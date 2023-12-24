@@ -293,6 +293,8 @@ FreeWorldChunk(world *World, world_chunk *Chunk, tiered_mesh_freelist* MeshFreel
   Assert ( ThreadLocal_ThreadIndex == 0 );
   Assert ( NotSet(Chunk, Chunk_Queued) );
 
+  if (Chunk->Entities.Memory) { VaporizeArena(Chunk->Entities.Memory); }
+
   DeallocateMeshes(&Chunk->Meshes, MeshFreelist, Memory);
 
   RangeIterator(MeshIndex, MeshIndex_Count)
