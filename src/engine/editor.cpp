@@ -477,7 +477,7 @@ DoLevelEditor(engine_resources *Engine)
         f32 BorderDim = 1.f;
         PushRelativeBorder(Ui, V2(-1.f,1.f)*QuadDim, BorderColor, V4(BorderDim));
 
-        PushTooltip(Ui, CS(ColorIndex));
+        PushTooltip(Ui, FSz("%d (%.2f, %.2f, %.2f)", ColorIndex, r64(Color.x), r64(Color.y), r64(Color.z)) );
       }
 
       if (Clicked(Ui, &ColorPickerButton))
@@ -880,10 +880,10 @@ DoLevelEditor(engine_resources *Engine)
 
     }
 #else
-    /* { */
-    /*   v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled)); */
-    /*   DEBUG_HighlightVoxel( Engine, SimP, RED, 0.075f); */
-    /* } */
+    {
+      v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled));
+      DEBUG_HighlightVoxel( Engine, SimP, RED, 0.075f);
+    }
     /* { */
     /*   v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, PickedVoxel_LastEmpty)); */
     /*   DebugLine("%f %f %f", SimP.x, SimP.y, SimP.z); */

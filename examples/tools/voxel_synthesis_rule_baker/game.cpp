@@ -431,6 +431,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Resources);
 
+#if 0
   if (Hotkeys)
   {
     r32 CameraSpeed = 125.f;
@@ -442,6 +443,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     GameState->CameraGhost->P.Offset += CameraDelta;
     /* Canonicalize(World->ChunkDim, GameState->CameraGhost->P); */
   }
+#endif
 
   v3i TileSuperpositionsDim = GameState->BakeResult.TileSuperpositionsDim;
   s32 TileSuperpositionsCount = Volume(GameState->BakeResult.TileSuperpositionsDim);

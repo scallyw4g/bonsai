@@ -157,6 +157,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   f32 dt = Plat->dt;
 
+#if 0
   // Update camera position
   if (Input->W.Pressed || Input->S.Pressed || Input->A.Pressed || Input->D.Pressed)
   {
@@ -168,6 +169,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
     Resources->CameraGhost->P.Offset += Offset;
   }
+#endif
 
   r32 LastSplosionThresh = 4.0f;
   if (SinceLastSplosion > LastSplosionThresh)

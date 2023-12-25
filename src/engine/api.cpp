@@ -98,6 +98,8 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   Graphics->Lighting.Lights.Count = 0;
 
+  /* Info("UiCapturedMouseInput %d", UiCapturedMouseInput(Ui)); */
+  if (UiCapturedMouseInput(Ui) == False)
   {
     f32 CameraSpeed = 80.f;
     v3 Offset = GetCameraRelativeInput(Hotkeys, Camera);
@@ -120,8 +122,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
     input *InputForCamera = 0;
     v2 MouseDelta = GetMouseDelta(Plat);
 
-    /* Info("UiCapturedMouseInput %d", UiCapturedMouseInput(Ui)); */
-    if (UiCapturedMouseInput(Ui) == False) { InputForCamera = &Plat->Input; }
+    InputForCamera = &Plat->Input;;
     UpdateGameCamera(World, MouseDelta, InputForCamera, CameraGhostP, Camera, DEFAULT_CAMERA_BLENDING*Plat->dt);
 
     Resources->Graphics->gBuffer->ViewProjection =
