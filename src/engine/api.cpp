@@ -98,7 +98,32 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   Graphics->Lighting.Lights.Count = 0;
 
-  /* Info("UiCapturedMouseInput %d", UiCapturedMouseInput(Ui)); */
+  // NOTE(Jesse): This is a little weird in that we're using the ray from last
+  // frame, but we have to update the camera after we do the UI draw in case
+  // the UI captures the input
+  //
+  // @camera-update-ui-update-frame-jank
+  Resources->MaybeMouseRay = ComputeRayFromCursor(Resources, &gBuffer->ViewProjection, Camera, World->ChunkDim);
+  Resources->MousedOverVoxel = MousePickVoxel(Resources);
+
+  UiFrameBegin(&Resources->Ui);
+  DoEngineDebug(Resources);
+
+  // NOTE(Jesse): Has to come after the UI draws such that we don't get a frame
+  // of camera-jank if the UI captures mouse input
+  //
+  // The specific case here is that if the camera updates, then the UI draws,
+  // and we're in paint-single mode (which captures the input) there's a frame
+  // where the camera updates, then freezes, which feels ultra-janky.  Updating
+  // the UI, then the camera, avoids this order-of-operations issue.
+  //
+  // @camera-update-ui-update-frame-jank
+  //
+  // Unfortunately, this actually re-introduces another order-of-operations issue
+  // which I've fixed in the past, which is that the immediate geometry is a
+  // frame late. 
+  //
+  // @immediate-geometry-is-a-frame-late
   if (UiCapturedMouseInput(Ui) == False)
   {
     f32 CameraSpeed = 80.f;
@@ -117,6 +142,11 @@ Bonsai_FrameBegin(engine_resources *Resources)
     // the bounding box lines shift when we move the camera because they're
     // then a frame late.
     //
+    // @immediate-geometry-is-a-frame-late
+    //
+    // UPDATE(Jesse): This bug has been reintroduced because of @camera-update-ui-update-frame-jank
+    // More info and a solution documented at : https://github.com/scallyw4g/bonsai/issues/30
+    //
     cp CameraGhostP = Resources->CameraGhost ? Resources->CameraGhost->P : Canonical_Position(0);
 
     input *InputForCamera = 0;
@@ -132,11 +162,6 @@ Bonsai_FrameBegin(engine_resources *Resources)
     if (World->Flags & WorldFlag_WorldCenterFollowsCameraTarget) { World->Center = CameraGhostP.WorldP; }
   }
 
-  Resources->MaybeMouseRay = ComputeRayFromCursor(Resources, &gBuffer->ViewProjection, Camera, World->ChunkDim);
-  Resources->MousedOverVoxel = MousePickVoxel(Resources);
-
-  UiFrameBegin(&Resources->Ui);
-  DoEngineDebug(Resources);
 
   b32 Result = True;
   return Result;
