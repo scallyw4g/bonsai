@@ -156,7 +156,7 @@ FireballUpdate(engine_resources *Engine, entity *FireballEntity)
   {
     v3 TargetP = GetSimSpaceP(World, State->TargetP);
 
-    FireballEntity->Physics.Velocity = Normalize(TargetP-EntityP)*10000.f;
+    FireballEntity->Physics.Velocity = Normalize(TargetP-EntityP)*800.f;
     /* FireballEntity->Physics.Velocity = Normalize(TargetP-EntityP)*10.f; */
     FireballEntity->Behavior = entity_behavior_flags(FireballEntity->Behavior & ~EntityBehaviorFlags_Gravity);
 

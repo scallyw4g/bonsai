@@ -412,14 +412,14 @@ GetPackedVoxel(int x, int y, int z, int w)
 
 #endif
 
-void
+link_internal void
 ZeroMesh( untextured_3d_geometry_buffer *Mesh )
 {
   Mesh->At = 0;
   return;
 }
 
-void
+link_internal void
 ClearWorldChunk( world_chunk *Chunk )
 {
   Chunk->Flags = {};
@@ -430,6 +430,7 @@ ClearWorldChunk( world_chunk *Chunk )
   Chunk->TriCount = {};
   Chunk->EdgeBoundaryVoxelCount = {};
   Chunk->StandingSpots.At = Chunk->StandingSpots.Start;
+  Chunk->Entities = {};
 }
 
 inline b32
