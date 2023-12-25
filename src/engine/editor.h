@@ -300,6 +300,8 @@ poof(string_and_value_tables(world_edit_mode))
 poof(radio_button_group_for_bitfield_enum(world_edit_mode));
 #include <generated/radio_button_group_for_bitfield_enum_world_edit_mode.h>
 
+// TODO(Jesse): rect3cp should probably be a pointer..?
+//
 link_internal world_chunk_ptr_buffer
 GatherChunksOverlappingArea(world *World, rect3cp Region, memory_arena *Memory)
 {

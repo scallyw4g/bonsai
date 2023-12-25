@@ -4099,7 +4099,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
                 // TODO(Jesse): Do we want to try and keep the amount of temp memory to a minimum here?
                 voxel_stack_element_cursor Stack = VoxelStackElementCursor(umm(TotalVoxels*6), Thread->TempMemory);
 
-#if 0
+#if 1
 #if BONSAI_INTERNAL
 
                 { // NOTE(Jesse): Debug.  Don't rely on the optimizer to remove this in release mode

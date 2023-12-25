@@ -1,10 +1,10 @@
-inline void
+link_internal void
 Deactivate(particle_system *System)
 {
   Clear(System);
 }
 
-inline void
+link_internal void
 Destroy(entity *Entity)
 {
   DropEntityFromPreviouslyOccupiedChunks(GetEngineResources()->World, Entity, GetTranArena());
@@ -15,7 +15,7 @@ Destroy(entity *Entity)
   Deactivate(Entity->Emitter);
 }
 
-inline void
+link_internal void
 Unspawn(entity *Entity)
 {
   DropEntityFromPreviouslyOccupiedChunks(GetEngineResources()->World, Entity, GetTranArena());
@@ -30,27 +30,69 @@ Unspawn(entity *Entity)
   Entity->Emitter = Emitter;
 }
 
-/* inline b32 */
-/* IsPlayer(entity *Entity) */
-/* { */
-/*   b32 Result = Entity->Type == EntityType_Player; */
-/*   return Result; */
-/* } */
+link_internal aabb GetSimSpaceAABB(world *World, entity *Entity);
 
+link_internal b32
+GetCollision(world *World, entity *First, aabb SecondAABB)
+{
+  TIMED_FUNCTION();
+
+  if (Unspawned(First)) return False;
+
+  aabb FirstAABB = GetSimSpaceAABB(World, First);
+
+  b32 Result = Intersect(&FirstAABB, &SecondAABB);
+  return Result;
+}
+
+
+link_internal collision_event
+GetCollision_Entities( world *World, entity *ThisEntity, canonical_position TestP, v3 CollisionDim )
+{
+  TIMED_FUNCTION();
+
+  chunk_dimension WorldChunkDim = World->ChunkDim;
+  Assert( IsCanonical(WorldChunkDim, TestP) );
+
+  rect3cp Area = RectMinDim(World->ChunkDim, TestP, CollisionDim);
+  world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, Area, GetTranArena());
+
+  b32 Hit = False;
+  v3 SimP = GetSimSpaceP(World, TestP);
+  IterateOver(&Chunks, Chunk, ChunkIndex)
+  {
+    IterateOver(&(*Chunk)->Entities, Entity, EntityIndex)
+    {
+      if (*Entity == ThisEntity) continue;
+
+      Hit = GetCollision(World, *Entity, AABBMinDim(SimP, CollisionDim));
+      if (Hit) break;
+    }
+    if (Hit) break;
+  }
+
+  // TODO(Jesse): Fill out min/max P
+  // @entity_collisions_need_min_max_p
+  collision_event Result = {};
+  Result.FrameIndex = GetEngineResources()->FrameIndex;
+  Result.Count = Hit;
+
+  return Result;
+}
+
+// TODO(Jesse)(immediate): THIS IS SO FUCKING GROSS PLEEASE FOR THE LOVE OF GOD
+// REWRITE THIS IN TERMS OF GatherChunksOverlappingArea
+//
 link_internal collision_event
 GetCollision( world *World, canonical_position TestP, v3 CollisionDim )
 {
   TIMED_FUNCTION();
 
-  collision_event Result = {};
-  Result.FrameIndex = GetEngineResources()->FrameIndex;
-
   chunk_dimension WorldChunkDim = World->ChunkDim;
-
   Assert( IsCanonical(WorldChunkDim, TestP) );
 
-  // TODO(Jesse): Remove if that ^ assert doesn't fire
-  /* TestP = Canonicalize(WorldChunkDim, TestP); */
+  collision_event Result = {};
+  Result.FrameIndex = GetEngineResources()->FrameIndex;
 
   voxel_position MinP = Voxel_Position(TestP.Offset);
   voxel_position MaxP = Voxel_Position(Ceil(TestP.Offset + CollisionDim));
@@ -78,12 +120,11 @@ GetCollision( world *World, canonical_position TestP, v3 CollisionDim )
   return Result;
 }
 
-link_internal aabb GetSimSpaceAABB(world *World, entity *Entity);
-
-inline b32
+link_internal b32
 GetCollision(world *World, entity *First, entity *Second)
 {
   TIMED_FUNCTION();
+
   if (Destroyed(First) || Destroyed(Second))
     return False;
 
@@ -97,7 +138,7 @@ GetCollision(world *World, entity *First, entity *Second)
   return Result;
 }
 
-inline b32
+link_internal b32
 GetCollision(world *World, entity **Entities, entity *Entity)
 {
   b32 Result = False;
@@ -137,28 +178,7 @@ GetCollision(world *World, entity *Entity, v3 Offset = V3(0,0,0) )
   return C;
 }
 
-
-#if 0
-inline void
-SpawnLoot(entity *Entity, random_series *Entropy, model *GameModels)
-{
-#define LOOT_CHANCE (1)
-  b32 ShouldSpawnLoot = (RandomU32(Entropy) % LOOT_CHANCE) == 0;
-
-  if (ShouldSpawnLoot)
-  {
-    Entity->State = EntityState_Uninitialized;
-    Entity->Type = EntityType_Loot;
-    Entity->State = EntityState_Spawned;
-    Entity->Physics.Velocity = V3(0,0,0);
-    Entity->Model = GameModels[EntityType_Loot];
-  }
-
-  return;
-}
-#endif
-
-entity *
+link_internal entity *
 GetFreeEntity(entity **EntityTable)
 {
   entity *Result = 0;
@@ -185,7 +205,7 @@ GetFreeEntity(entity **EntityTable)
   return Result;
 }
 
-entity *
+link_internal entity *
 AllocateEntity(memory_arena *Memory, chunk_dimension ModelDim)
 {
   entity *Entity = Allocate(entity, Memory, 1);
@@ -822,6 +842,15 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
             CollisionVolume.E[AxisIndex] = Min(CollisionVolume.E[AxisIndex], 1.f);
 
             C = GetCollision(World, CollisionBasis, CollisionVolume);
+
+            if ( C.Count == 0 &&
+                (Entity->Behavior & EntityBehaviorFlags_EntityCollision) )
+            {
+              // TODO(Jesse): Don't be so braindamaged about this?
+              // @entity_collisions_need_min_max_p
+              C = GetCollision_Entities(World, Entity, CollisionBasis, CollisionVolume);
+              if (C.Count) { Result = C; Remaining = V3(0); Info("Entity Entity Collision (%u)", C.Count); break; }
+            }
           }
 
           if ( C.Count > 0 )
@@ -1305,6 +1334,8 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
       b32 ApplyGravity = ((Entity->Behavior & EntityBehaviorFlags_Gravity) == EntityBehaviorFlags_Gravity);
       PhysicsUpdate(&Entity->Physics, dt, ApplyGravity);
 
+      // NOTE(Jesse): This assert isn't strictly necessary, but we don't support only colliding against entities and not the world at the moment
+      if (Entity->Behavior & EntityBehaviorFlags_EntityCollision) { Assert(Entity->Behavior & EntityBehaviorFlags_WorldCollision); }
       if (Entity->Behavior & EntityBehaviorFlags_WorldCollision)
       {
         collision_event C = MoveEntityInWorld(World, Entity, Entity->Physics.Delta);
@@ -1318,16 +1349,6 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
       {
         Entity->P.Offset += Entity->Physics.Delta;
         Canonicalize(World, &Entity->P);
-      }
-
-      if (Entity->Behavior & EntityBehaviorFlags_EntityCollision)
-      {
-        entity_entity_collision_event C = DoEntityCollisions(World, EntityTable, Entity);
-        if (C.Count)
-        {
-          Entity->LastResolvedCollision = C.Collision;
-          /* DebugLine("Entity-entity COLLISION!! %p -> %p", Entity, C.Entity); */
-        }
       }
 
       particle_system *System = Entity->Emitter;

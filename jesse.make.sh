@@ -31,7 +31,7 @@
 
 # ./make.sh BuildTests
 
-# OPT="-O2"
+OPT="-O2"
 ./make.sh $OPT \
   BuildSingleExample examples/turn_based \
   BuildExecutables \
