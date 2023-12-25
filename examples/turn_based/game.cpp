@@ -150,14 +150,20 @@ FireballUpdate(engine_resources *Engine, entity *FireballEntity)
 
   fireball_state *State = (fireball_state*)FireballEntity->UserData;
 
+  v3 EntityP = GetSimSpaceP(World, FireballEntity);
+
   if (Engine->GameState->TransitionDuration > 0.45f)
   {
-    v3 EntityP = GetSimSpaceP(World, FireballEntity);
     v3 TargetP = GetSimSpaceP(World, State->TargetP);
 
-    FireballEntity->Physics.Velocity = Normalize(TargetP-EntityP)*1000.f;
+    FireballEntity->Physics.Velocity = Normalize(TargetP-EntityP)*10000.f;
+    /* FireballEntity->Physics.Velocity = Normalize(TargetP-EntityP)*10.f; */
     FireballEntity->Behavior = entity_behavior_flags(FireballEntity->Behavior & ~EntityBehaviorFlags_Gravity);
+
   }
+
+  /* DEBUG_DrawSimSpaceVectorAt(Engine, EntityP, FireballEntity->Physics.Velocity*10000, RED); */
+  /* DEBUG_DrawSimSpaceVectorAt(Engine, EntityP, FireballEntity->Physics.Velocity, RED); */
 
   if (FireballEntity->LastResolvedCollision.Count)
   {
@@ -341,7 +347,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     v3 VoxelP = GetAbsoluteP(&Pick);
 
     world_chunk *ClosestChunk = Pick.Chunks[PickedVoxel_LastEmpty].Chunk;
-    canonical_position PickCP = Pick.Picks[PickedVoxel_LastEmpty];
+    canonical_position LastEmptyMouseVoxel = Pick.Picks[PickedVoxel_LastEmpty];
+    canonical_position FirstFilledMouseVoxel = Pick.Picks[PickedVoxel_FirstFilled];
 
     if (Input->Z.Clicked)
     {
@@ -376,7 +383,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         f32 PlayerMoveSpeed = 13.f;
         standing_spot_buffer PlayerSpots = GetStandingSpotsWithinRadius(World, PlayerBaseP, PlayerMoveSpeed, GetTranArena());
 
-        v3 CursorSimP = GetSimSpaceP(World, PickCP);
+        v3 CursorSimP = GetSimSpaceP(World, LastEmptyMouseVoxel);
 
         r32 LowestDistance = r32_MAX;
         umm LowestIndex = 0;
@@ -470,10 +477,10 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
             fireball_state *FireballState = (fireball_state*)HeapAllocate(&GameState->Heap, sizeof(fireball_state));
 
             FireballState->ChargeLevel = GameState->PlayerChargeLevel;
-            FireballState->TargetP = PickCP;
+            FireballState->TargetP = FirstFilledMouseVoxel;
 
             v3 EntityP = GetSimSpaceP(World, E);
-            v3 TargetP = GetSimSpaceP(World, PickCP);
+            v3 TargetP = GetSimSpaceP(World, FireballState->TargetP);
 
             E->Physics.Velocity = (Normalize(TargetP-EntityP) + V3(0,0,3)) * 20.f;
             /* E->Physics.Velocity = V3(10.f); */

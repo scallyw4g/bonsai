@@ -773,13 +773,16 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
   /* DebugLine("GrossDelta (%f %f %f)", GrossDelta.x, GrossDelta.y, GrossDelta.z); */
 
   chunk_dimension WorldChunkDim = World->ChunkDim;
-  v3 Remaining = GrossDelta;
 
 
   v3 CollisionVolumeInit = Entity->_CollisionVolumeRadius*2.0f;
   collision_event Result = {};
   collision_event C      = GetCollision(World, Entity->P, CollisionVolumeInit);
 
+
+  v3 Signs = GetSign(GrossDelta);
+  v3 AbsDelta  = Abs(GrossDelta);
+  v3 Remaining = Abs(GrossDelta);
 
 
   // NOTE(Jesse): Don't move the entity if it's already stuck in the world
@@ -799,8 +802,10 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
 
       RangeIterator(AxisIndex, 3)
       {
-        if (StepDelta.E[AxisIndex] != 0.0f)
+        if (StepDelta.E[AxisIndex] > 0.0f)
         {
+          StepDelta.E[AxisIndex] *= Signs.E[AxisIndex];
+
           Entity->P.Offset.E[AxisIndex] += StepDelta.E[AxisIndex];
           Entity->P = Canonicalize(WorldChunkDim, Entity->P);
 
@@ -829,6 +834,7 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
             /* Entity->Physics.Velocity.E[AxisIndex] = 0.f; */
             Entity->Physics.Delta.E[AxisIndex] = 0;
 
+            Remaining = V3(0);
 #if 0
             Entity->P.Offset.E[AxisIndex] -= StepDelta.E[AxisIndex];
             Entity->P = Canonicalize(WorldChunkDim, Entity->P);
@@ -884,6 +890,7 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
 
             Entity->P = Canonicalize(WorldChunkDim, Entity->P);
             /* EntityWorldCollision(World, Entity, &C, VisibleRegion); */
+
           }
         }
       }
