@@ -733,6 +733,7 @@ DoLevelEditor(engine_resources *Engine)
         {
           if (Engine->MousedOverVoxel.Tag)
           {
+            Ui->RequestedForceCapture = True;;
             voxel *V = GetVoxelPointer(&Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled);
 
             if (V)
