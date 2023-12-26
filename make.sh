@@ -48,7 +48,6 @@ BUNDLED_EXAMPLES="
   $EXAMPLES/asset_picker
   $EXAMPLES/blank_project
   $EXAMPLES/turn_based
-  $EXAMPLES/turn_based2
   $EXAMPLES/tools/voxel_synthesis_rule_baker
   $EXAMPLES/the_wanderer
   $EXAMPLES/terrain_gen
@@ -391,9 +390,6 @@ function RunPoof
   # TrackPid "" $!
 
   # RunPoofHelper examples/turn_based/game.cpp && echo -e "$Success poofed examples/turn_based/game.cpp" &
-  # TrackPid "" $!
-
-  # RunPoofHelper examples/turn_based2/game.cpp && echo -e "$Success poofed examples/turn_based2/game.cpp" &
   # TrackPid "" $!
 
   # RunPoofHelper examples/tools/voxel_synthesis_rule_baker/game.cpp && echo -e "$Success poofed examples/tools/voxel_synthesis_rule_baker/game.cpp" &
