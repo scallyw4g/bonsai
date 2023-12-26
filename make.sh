@@ -48,9 +48,9 @@ BUNDLED_EXAMPLES="
   $EXAMPLES/asset_picker
   $EXAMPLES/blank_project
   $EXAMPLES/turn_based
-  $EXAMPLES/tools/voxel_synthesis_rule_baker
   $EXAMPLES/the_wanderer
   $EXAMPLES/terrain_gen
+  $EXAMPLES/tools/voxel_synthesis_rule_baker
 "
 # $EXAMPLES/wave_function_collapse_terrain
 
@@ -380,8 +380,8 @@ function RunPoof
   # RunPoofHelper external/bonsai_debug/debug.cpp && echo -e "$Success poofed src/external/bonsai_debug/debug.cpp" &
   # TrackPid "" $!
 
-  RunPoofHelper examples/terrain_gen/game.cpp && echo -e "$Success poofed examples/terrain_gen/game.cpp" &
-  TrackPid "" $!
+  # RunPoofHelper examples/terrain_gen/game.cpp && echo -e "$Success poofed examples/terrain_gen/game.cpp" &
+  # TrackPid "" $!
 
   # RunPoofHelper examples/asset_picker/game.cpp && echo -e "$Success poofed examples/asset_picker/game.cpp" &
   # TrackPid "" $!
@@ -392,13 +392,10 @@ function RunPoof
   # RunPoofHelper examples/turn_based/game.cpp && echo -e "$Success poofed examples/turn_based/game.cpp" &
   # TrackPid "" $!
 
-  # RunPoofHelper examples/tools/voxel_synthesis_rule_baker/game.cpp && echo -e "$Success poofed examples/tools/voxel_synthesis_rule_baker/game.cpp" &
-  # TrackPid "" $!
+  RunPoofHelper examples/tools/voxel_synthesis_rule_baker/game.cpp && echo -e "$Success poofed examples/tools/voxel_synthesis_rule_baker/game.cpp" &
+  TrackPid "" $!
 
   # RunPoofHelper src/tools/asset_packer.cpp && echo -e "$Success poofed src/tools/asset_packer.cpp" &
-  # TrackPid "" $!
-
-  # RunPoofHelper src/tools/voxel_synthesis_rule_baker.cpp && echo -e "$Success poofed src/tools/voxel_synthesis_rule_baker.cpp" &
   # TrackPid "" $!
 
   WaitForTrackedPids

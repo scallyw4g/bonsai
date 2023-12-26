@@ -191,9 +191,10 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
       }
 
-      QueueChunkForMeshRebuild(&EngineResources->Stdlib.Plat.HighPriority, Chunk);
 
       FinalizeChunkInitialization(Chunk);
+
+      QueueChunkForMeshRebuild(&EngineResources->Stdlib.Plat.HighPriority, Chunk);
 
     } break;
 
@@ -740,7 +741,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/block_farm_degrading.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/grassy_block.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/grassy_block_2.vox"); */
-  GameState->BakeResult = BakeVoxelSynthesisRules("models/simple_grass.vox");
+  /* GameState->BakeResult = BakeVoxelSynthesisRules("models/simple_grass.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/pipes.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/random_squares.vox"); */
   /* GameState->BakeResult = BakeVoxelSynthesisRules("models/AncientTemple.vox"); */
@@ -752,7 +753,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   // GOOD
   /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu4.vox"); */
-  /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu5.vox"); */
+  GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu5.vox");
 
   // Castle
   /* GameState->BakeResult = BakeVoxelSynthesisRules("../voxel-model/vox/monument/monu10.vox"); */
