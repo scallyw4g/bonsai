@@ -339,8 +339,30 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
             s32 Z    = (s32)ReadChar(ModelFile.Handle, &bytesRemaining);
             u8 Color =      ReadChar(ModelFile.Handle, &bytesRemaining);
 
-            Assert(Color > 0);
-            Color -= 1;
+            // NOTE(Jesse): This is necessary because of a somewhat
+            // questionable decision in the .vox file format .. indices 0->254
+            // are mapped to 1->255 in the color palette, presumably such that
+            // 0 is always black.  I have no idea why the fuck this would be
+            // the way that it is, but.. there you go.
+            //
+            // https://github.com/ephtracy/voxel-model/blob/8044f9eb086216f3485cdaa525a52120d72274e9/MagicaVoxel-file-format-vox.txt#L76C1-L90C1
+            //
+            // Relevant table pasted here for posterity for when that link dies.
+            //
+            // 7. Chunk id 'RGBA' : palette
+            // -------------------------------------------------------------------------------
+            // # Bytes  | Type       | Value
+            // -------------------------------------------------------------------------------
+            // 4 x 256  | int        | (R, G, B, A) : 1 byte for each component
+            //                       | * <NOTICE>
+            //                       | * color [0-254] are mapped to palette index [1-255], e.g : 
+            //                       | 
+            //                       | for ( int i = 0; i <= 254; i++ ) {
+            //                       |     palette[i + 1] = ReadRGBA(); 
+            //                       | }
+            // -------------------------------------------------------------------------------
+            //
+            if (Color > 0) { Color -= 1; }
 
             voxel_position TestP = Voxel_Position(X,Y,Z);
             if (IsInsideDim(ReportedDim, TestP))
