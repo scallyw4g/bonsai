@@ -231,7 +231,6 @@ struct level_editor
   u16 HoverColorIndex;
 
   u32 SelectionClicks;
-
   cp SelectionBase;
 
   rect3cp SelectionRegion;
@@ -257,6 +256,12 @@ ResetSelection(level_editor *Editor)
   Editor->SelectionClicks = 0;
   Editor->SelectionBase = {};
   Editor->SelectionRegion = {};
+}
+
+link_internal void
+ResetSelectionIfIncomplete(level_editor *Editor)
+{
+  if (SelectionIncomplete(Editor->SelectionClicks)) { ResetSelection(Editor); }
 }
 
 struct maybe_v3

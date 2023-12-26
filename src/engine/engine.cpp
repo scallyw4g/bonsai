@@ -12,9 +12,9 @@
 #include <engine/camera.cpp>
 #include <engine/lod.cpp>
 #include <engine/world_chunk.cpp>
-#include <engine/world.cpp>
 #include <engine/physics.cpp>
 #include <engine/entity.cpp>
+#include <engine/world.cpp>
 #include <engine/asset_loaders.cpp>
 
 #include <engine/shader.cpp>

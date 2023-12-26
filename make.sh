@@ -375,11 +375,14 @@ function RunPoof
   # [ -d src/generated ] && rm -Rf src/generated
   # [ -d generated ] && rm -Rf generated
 
-  RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
-  TrackPid "" $!
+  # RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
+  # TrackPid "" $!
 
   # RunPoofHelper external/bonsai_debug/debug.cpp && echo -e "$Success poofed src/external/bonsai_debug/debug.cpp" &
   # TrackPid "" $!
+
+  RunPoofHelper examples/terrain_gen/game.cpp && echo -e "$Success poofed examples/terrain_gen/game.cpp" &
+  TrackPid "" $!
 
   # RunPoofHelper examples/asset_picker/game.cpp && echo -e "$Success poofed examples/asset_picker/game.cpp" &
   # TrackPid "" $!

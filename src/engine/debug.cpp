@@ -227,26 +227,14 @@ DoLevelWindow(engine_resources *Engine)
 
     if (LevelBytes.Start)
     {
-      SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
-
-      CancelAllWorkQueueJobs(Plat, &Plat->HighPriority);
-      CancelAllWorkQueueJobs(Plat, &Plat->LowPriority);
-
       level_header LevelHeader = {};
       ReadBytesIntoBuffer(&LevelBytes, sizeof(level_header), Cast(u8*, &LevelHeader));
 
       if (LevelHeader.MagicNumber == LEVEL_HEADER_MAGIC_NUMBER)
       {
-        u32 ChunksFreed = 0;
-        RangeIterator(HashIndex, s32(World->HashSize))
-        {
-          if (world_chunk *Chunk = World->ChunkHash[HashIndex])
-          {
-            FreeWorldChunk(World, Chunk, &Engine->MeshFreelist, World->Memory);
-            World->ChunkHash[HashIndex] = 0;
-            ++ChunksFreed;
-          }
-        }
+        SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
+
+        HardResetWorld(Engine);
 
         *Graphics->Camera      = LevelHeader.Camera;
         Engine->CameraGhost->P = LevelHeader.CameraTarget;
@@ -256,8 +244,7 @@ DoLevelWindow(engine_resources *Engine)
         /* World->VisibleRegion = LevelHeader.VisibleRegion; */
 
         s32 ChunkCount = Cast(s32, LevelHeader.ChunkCount);
-
-        Info("ChunksFreed (%u) ChunksLoaded (%u)", ChunksFreed, ChunkCount);
+        /* Info("ChunksFreed (%u) ChunksLoaded (%u)", ChunksFreed, ChunkCount); */
 
         RangeIterator(ChunkIndex, ChunkCount)
         {
@@ -282,14 +269,9 @@ DoLevelWindow(engine_resources *Engine)
           }
         }
 
-        s32 EntityCount = Cast(s32, LevelHeader.EntityCount);
-
-        RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT) { Unspawn(EntityTable[EntityIndex]); }
-
-        RangeIterator(AssetIndex, ASSET_TABLE_COUNT) { FreeAsset(Engine, Engine->AssetTable+AssetIndex); }
-
         Ensure(Read_u64(&LevelBytes) == LEVEL_FILE_DEBUG_OBJECT_DELIM);
 
+        s32 EntityCount = Cast(s32, LevelHeader.EntityCount);
         RangeIterator(EntityIndex, EntityCount)
         {
           Deserialize(&LevelBytes, EntityTable[EntityIndex], Thread->PermMemory);
