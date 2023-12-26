@@ -9,7 +9,8 @@ enum terrain_gen_type
   TerrainGenType_FBM2D           = (1 << 4),
   TerrainGenType_TerracedTerrain = (1 << 5),
   TerrainGenType_GrassyIsland    = (1 << 6),
-  TerrainGenType_Warped          = (1 << 7),
+  TerrainGenType_Hoodoo          = (1 << 7),
+  TerrainGenType_Warped          = (1 << 8),
 };
 
 poof(radio_button_group_for_bitfield_enum(terrain_gen_type))

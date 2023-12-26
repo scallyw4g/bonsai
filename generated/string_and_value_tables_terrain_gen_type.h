@@ -11,6 +11,7 @@ ToString(terrain_gen_type Type)
     case TerrainGenType_FBM2D: { Result = CSz("TerrainGenType_FBM2D"); } break;
     case TerrainGenType_TerracedTerrain: { Result = CSz("TerrainGenType_TerracedTerrain"); } break;
     case TerrainGenType_GrassyIsland: { Result = CSz("TerrainGenType_GrassyIsland"); } break;
+    case TerrainGenType_Hoodoo: { Result = CSz("TerrainGenType_Hoodoo"); } break;
     case TerrainGenType_Warped: { Result = CSz("TerrainGenType_Warped"); } break;
   }
   return Result;
@@ -28,6 +29,7 @@ TerrainGenType(counted_string S)
   if (StringsMatch(S, CSz("TerrainGenType_FBM2D"))) { return TerrainGenType_FBM2D; }
   if (StringsMatch(S, CSz("TerrainGenType_TerracedTerrain"))) { return TerrainGenType_TerracedTerrain; }
   if (StringsMatch(S, CSz("TerrainGenType_GrassyIsland"))) { return TerrainGenType_GrassyIsland; }
+  if (StringsMatch(S, CSz("TerrainGenType_Hoodoo"))) { return TerrainGenType_Hoodoo; }
   if (StringsMatch(S, CSz("TerrainGenType_Warped"))) { return TerrainGenType_Warped; }
 
   return Result;
