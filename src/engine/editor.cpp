@@ -1,9 +1,6 @@
 poof(block_array_c(asset_thumbnail, {8}))
 #include <generated/block_array_c_asset_thumbnail_688856411.h>
 
-// TODO(Jesse): Change these to u64 instead of umm
-#define UiId(base, mod) umm(umm(base) | ( umm(mod) << 32 ))
-
 link_weak ui_debug *
 GetUiDebug()
 {
@@ -636,7 +633,6 @@ DoLevelEditor(engine_resources *Engine)
       {
         if (Engine->MousedOverVoxel.Tag)
         {
-          Editor->SelectionClicks += 1;
           auto MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
           voxel *V = GetVoxelPointer(&Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled);
 
@@ -795,13 +791,14 @@ DoLevelEditor(engine_resources *Engine)
 
 
   if (Input->Ctrl.Pressed || Input->Shift.Pressed) { Ui->RequestedForceCapture = True; }
+
   if (Input->Ctrl.Pressed && Input->S.Clicked) { RadioSelect(&WorldEditModeRadioGroup, WorldEditMode_Select); ResetSelection(Editor); }
 
   if (Clicked(&WorldEditModeRadioGroup, CSz("Select"))) { ResetSelection(Editor); }
 
-  if (Input->Ctrl.Pressed && Input->F.Clicked) { RadioSelect(&WorldEditModeRadioGroup, WorldEditMode_FillSelection); }
+  if (Input->Ctrl.Pressed && Input->F.Clicked) { ResetSelectionIfIncomplete(Editor); RadioSelect(&WorldEditModeRadioGroup, WorldEditMode_FillSelection); }
 
-  if (Input->Ctrl.Pressed && Input->E.Clicked) { RadioSelect(&WorldEditModeRadioGroup, WorldEditMode_Eyedropper); }
+  if (Input->Ctrl.Pressed && Input->E.Clicked) { ResetSelectionIfIncomplete(Editor); RadioSelect(&WorldEditModeRadioGroup, WorldEditMode_Eyedropper); }
 
   if (Editor->SelectionClicks == 2)
   {
