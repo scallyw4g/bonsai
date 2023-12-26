@@ -32,10 +32,10 @@
 # ./make.sh BuildTests
 
 # OPT="-O2"
-./make.sh $OPT \
-  BuildSingleExample examples/turn_based \
-  BuildExecutables \
-  BuildDebugSystem \
+# ./make.sh $OPT \
+#   BuildSingleExample examples/turn_based \
+#   BuildExecutables \
+#   BuildDebugSystem \
   # BuildSingleExample examples/terrain_gen \
   # BuildSingleExample examples/graveyard \
   # BuildSingleExample examples/turn_based2 \
@@ -46,4 +46,4 @@
   # BuildSingleExample examples/the_wanderer \
   # BuildTests \
 
-# ./make.sh $OPT BuildAll
+./make.sh $OPT BuildAll
