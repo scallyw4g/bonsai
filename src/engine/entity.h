@@ -104,6 +104,7 @@ struct entity
 link_internal void
 FinalizeEntityUpdate(entity *Entity)
 {
+  Assert(IsCanonical(GetWorld(), Entity->P));
   poof( func (entity_position_info Info)
   {
     Info.map(member)
@@ -164,7 +165,10 @@ InsertEntityIntoChunks(world *World, entity *Entity, memory_arena *TempMemory)
   // nocheckin
   /* Assert(Entity->Behavior & EntityBehaviorFlags_EntityCollision); */
 
-  rect3cp EntityArea = RectMinMax(Entity->LastResolvedPosInfo.P, Canonicalize(World->ChunkDim, Entity->LastResolvedPosInfo.P + Entity->LastResolvedPosInfo._CollisionVolumeRadius*2.f));
+  auto MinP = Entity->LastResolvedPosInfo.P;
+  auto MaxP = Canonicalize(World->ChunkDim, Entity->LastResolvedPosInfo.P + Entity->LastResolvedPosInfo._CollisionVolumeRadius*2.f);
+
+  rect3cp EntityArea = RectMinMax(MinP, MaxP);
   world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, EntityArea, TempMemory);
   if (Chunks.Count)
   {

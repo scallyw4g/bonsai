@@ -248,6 +248,7 @@ SpawnEntity(entity *Entity)
   if (Entity->Behavior & EntityBehaviorFlags_EntityCollision) { Assert(Volume(Entity->_CollisionVolumeRadius) > 0.f); }
   if (Entity->Behavior & EntityBehaviorFlags_WorldCollision)  { Assert(Volume(Entity->_CollisionVolumeRadius) > 0.f); }
 
+  Canonicalize(GetWorld(), &Entity->P);
 
   FinalizeEntityUpdate(Entity);
 
