@@ -76,6 +76,14 @@ GetEngineDebug()
   return &Global_EngineResources->EngineDebug;
 }
 
+link_internal world *
+GetWorld()
+{
+  Assert(Global_EngineResources);
+  return Global_EngineResources->World;
+}
+
+
 link_internal level_editor *
 GetLevelEditor()
 {
