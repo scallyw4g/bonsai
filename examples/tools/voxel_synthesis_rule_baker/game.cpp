@@ -1,8 +1,8 @@
 #define BONSAI_DEBUG_SYSTEM_API 1
 #include <bonsai_types.h>
 
-#include <examples/tools/voxel_synthesis_rule_baker/game_constants.h>
-#include <examples/tools/voxel_synthesis_rule_baker/game_types.h>
+#include "game_constants.h"
+#include "game_types.h"
 
 BONSAI_API_WORKER_THREAD_CALLBACK()
 {
