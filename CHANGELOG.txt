@@ -1,0 +1,28 @@
+* 1.1.0
+
+- Accelerate n^2 entity collision
+
+Entity collision detection has, before now, just done the naieve n-squared thing
+of checking every entity against every other entity.  This worked fine for
+small demos, but as I push further into the relm of 'real games' I needed to
+do entity collision on every step of the movement update (after moving every voxel), 
+which was not going to go well.  Thus, it was time to fix the problem.
+
+The solution I went with, which I've been considering for a while, is to store
+a list of entities in each chunk.  When the entity moves, it first is removed
+from all chunks it currently overlaps, moved, and then added to chunks it
+finally overlaps.  This means we can now collide against entities occuring in
+the local chunks we're overlapping, which is more acceptable than all entities
+all the time.
+
+- Fix two bugs related to high-speed entities colliding against the world
+
+- Fix some bugs in block_array and add test cases
+
+- Fix Camera ghost updating when UI has focus
+
+- Fix UI not capturing input when painting
+
+- Fix bug in .vox palette loading (indexes are 1-based!!)
+
+- Added some screenshots
