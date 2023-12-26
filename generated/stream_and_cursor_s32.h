@@ -108,6 +108,15 @@ LastIndex(s32_cursor *Cursor)
   return Result;
 }
 
+link_internal s32*
+LastElement(s32_cursor *Cursor)
+{
+  s32 *Result = {};
+  s32 I = LastIndex(Cursor);
+  if (I > -1) { Result = Cursor->Start + I; }
+  return Result;
+}
+
 link_internal b32
 Remove(s32_cursor *Cursor, s32 Query)
 {

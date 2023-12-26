@@ -108,6 +108,15 @@ LastIndex(u8_cursor *Cursor)
   return Result;
 }
 
+link_internal u8*
+LastElement(u8_cursor *Cursor)
+{
+  u8 *Result = {};
+  s32 I = LastIndex(Cursor);
+  if (I > -1) { Result = Cursor->Start + I; }
+  return Result;
+}
+
 link_internal b32
 Remove(u8_cursor *Cursor, u8 Query)
 {

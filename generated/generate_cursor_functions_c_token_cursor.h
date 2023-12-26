@@ -98,6 +98,15 @@ LastIndex(c_token_cursor *Cursor)
   return Result;
 }
 
+link_internal c_token*
+LastElement(c_token_cursor *Cursor)
+{
+  c_token *Result = {};
+  s32 I = LastIndex(Cursor);
+  if (I > -1) { Result = Cursor->Start + I; }
+  return Result;
+}
+
 link_internal b32
 Remove(c_token_cursor *Cursor, c_token Query)
 {
