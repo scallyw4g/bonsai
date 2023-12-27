@@ -40,7 +40,10 @@ struct engine_resources
   // TODO(Jesse)(frame-index): Should this just be 32-bit?
   u32 FrameIndex;
 
-  entity *CameraGhost;
+  // NOTE(Jesse): This isn't meant to be manipulated direclty, it's just cached
+  // such that the camera update code can access it easily.  Maybe it should
+  // be per-camera ..?
+  entity *_CameraGhost;
 
   tiered_mesh_freelist MeshFreelist;
 

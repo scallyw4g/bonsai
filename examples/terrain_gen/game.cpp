@@ -564,11 +564,6 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   World->Flags = WorldFlag_WorldCenterFollowsCameraTarget;
 
-  entity *CameraGhost = GetFreeEntity(EntityTable);
-  SpawnEntity( CameraGhost );
-
-  Resources->CameraGhost = CameraGhost;
-
   GameState = Allocate(game_state, Resources->Memory, 1);
   return GameState;
 }
@@ -599,16 +594,4 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     HardResetWorld(Resources);
     UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
   }
-
-#if 0
-  v3 Offset = GetCameraRelativeInput(Hotkeys, Camera);
-  Offset.z = 0; // Constrain to XY plane
-
-  if (Input->E.Pressed) { Offset.z += 1.f; }
-  if (Input->Q.Pressed) { Offset.z -= 1.f; }
-
-  Offset = Normalize(Offset);
-  /* Camera->ViewingTarget.Offset += Offset; */
-  Resources->CameraGhost->P.Offset += Offset * dt * Speed;
-#endif
 }

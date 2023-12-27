@@ -53,4 +53,6 @@ HardResetWorld(engine_resources *Engine)
 
   RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT) { Unspawn(EntityTable[EntityIndex]); }
   RangeIterator(AssetIndex, ASSET_TABLE_COUNT)   { FreeAsset(Engine, Engine->AssetTable+AssetIndex); }
+
+  Engine->_CameraGhost = 0;
 }

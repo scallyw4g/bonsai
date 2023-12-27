@@ -19,6 +19,11 @@ enum entity_behavior_flags
   EntityBehaviorFlags_EntityCollision                  = (1 << 2),
   EntityBehaviorFlags_UnspawnOnParticleSystemTerminate = (1 << 3),
 
+  // NOTE(Jesse): This is more of an engine_entity_type, but I didn't see a
+  // reason to make a whole new thing for that for just one value.  If this
+  // blows out to more than that it might be worth it..
+  EntityBehaviorFlags_CameraGhost                      = (1 << 4),
+
   EntityBehaviorFlags_Default = (EntityBehaviorFlags_Gravity       |
                                  EntityBehaviorFlags_WorldCollision|
                                  EntityBehaviorFlags_EntityCollision),

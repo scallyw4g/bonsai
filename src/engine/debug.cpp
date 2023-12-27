@@ -171,9 +171,7 @@ DoLevelWindow(engine_resources *Engine)
       Header.WorldFlags    = Cast(u32, World->Flags);
       Header.WorldCenter   = World->Center;
       Header.VisibleRegion = World->VisibleRegion;
-
-      Header.Camera = *Graphics->Camera;
-      Header.CameraTarget = Engine->CameraGhost->P;
+      Header.Camera = *Camera;
 
       u32 EntityCount = 0;
       RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
@@ -236,9 +234,6 @@ DoLevelWindow(engine_resources *Engine)
 
         HardResetWorld(Engine);
 
-        *Graphics->Camera      = LevelHeader.Camera;
-        Engine->CameraGhost->P = LevelHeader.CameraTarget;
-
         /* World->Flags  = Cast(world_flag, LevelHeader.WorldFlags); */
         World->Center = LevelHeader.WorldCenter;
         /* World->VisibleRegion = LevelHeader.VisibleRegion; */
@@ -274,8 +269,13 @@ DoLevelWindow(engine_resources *Engine)
         s32 EntityCount = Cast(s32, LevelHeader.EntityCount);
         RangeIterator(EntityIndex, EntityCount)
         {
-          Deserialize(&LevelBytes, EntityTable[EntityIndex], Thread->PermMemory);
+          entity *E = EntityTable[EntityIndex];
+          Deserialize(&LevelBytes, E, Thread->PermMemory);
+
+          /* if (E->Behavior & EntityBehaviorFlags_CameraGhost) { Engine->_CameraGhost = E; } */
         }
+
+        *Graphics->Camera = LevelHeader.Camera;
 
         v3_cursor *Palette = GetColorPalette();
         Palette->At = Palette->Start;

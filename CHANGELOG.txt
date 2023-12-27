@@ -1,3 +1,16 @@
+* 1.1.2
+
+- Remove dead turn_based2 example
+
+- Add HoodooTerrain to terrain_gen
+
+- Change CameraGhost
+
+Game code no longer has to manage allocating and hooking up a CameraGhost
+entity on the engine resources.  Instead, if wanted, it may allocate and set
+the EntityBehaviorFlags_CameraGhost flag on an entity of the games choice.
+
+
 * 1.1.1
 
 - Update terrain_gen example to have a menu to select the type of terrain

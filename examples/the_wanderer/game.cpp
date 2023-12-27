@@ -97,13 +97,14 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
-  GameState->Models = AllocateGameModels(GameState, Resources->Memory, Heap);
-
   world_position WorldCenter = World_Position(0, 0, 0);
   AllocateWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
   Resources->World->Flags = world_flag(Resources->World->Flags|WorldFlag_WorldCenterFollowsCameraTarget);
 
+  GameState->Models = AllocateGameModels(GameState, Resources->Memory, Heap);
+
   GameState->Player = GetFreeEntity(EntityTable);
+
   SpawnPlayerLikeEntity( Plat,
                          World,
                          GameState->Models+ModelIndex_Player_jp,
@@ -111,7 +112,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
                          Canonical_Position(Voxel_Position(0), WorldCenter + V3i(0,0,1)),
                          &GameState->Entropy );
 
-  Resources->CameraGhost = GameState->Player;
+  GameState->Player->Behavior = entity_behavior_flags(GameState->Player->Behavior|EntityBehaviorFlags_CameraGhost);
 
   StandardCamera(Graphics->Camera, 10000.0f, 2000.0f, GameState->Player->P);
 

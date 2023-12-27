@@ -124,7 +124,9 @@ Bonsai_FrameBegin(engine_resources *Resources)
   // frame late. 
   //
   // @immediate-geometry-is-a-frame-late
-  if (UiCapturedMouseInput(Ui) == False)
+  
+  entity *CameraGhost = Resources->_CameraGhost;
+  if (CameraGhost && UiCapturedMouseInput(Ui) == False)
   {
     f32 CameraSpeed = 80.f;
     v3 Offset = GetCameraRelativeInput(Hotkeys, Camera);
@@ -135,7 +137,8 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
     Offset = Normalize(Offset);
     /* Camera->ViewingTarget.Offset += Offset; */
-    if (Resources->CameraGhost) { Resources->CameraGhost->P.Offset += Offset * Plat->dt * CameraSpeed; }
+
+    CameraGhost->P.Offset += Offset * Plat->dt * CameraSpeed;
 
     // NOTE(Jesse): This has to come before we draw any of the game geometry.
     // Specifically, if it comes after we draw bounding boxes for anything
@@ -147,12 +150,12 @@ Bonsai_FrameBegin(engine_resources *Resources)
     // UPDATE(Jesse): This bug has been reintroduced because of @camera-update-ui-update-frame-jank
     // More info and a solution documented at : https://github.com/scallyw4g/bonsai/issues/30
     //
-    cp CameraGhostP = Resources->CameraGhost ? Resources->CameraGhost->P : Canonical_Position(0);
+    cp CameraGhostP = CameraGhost->P;
 
     input *InputForCamera = 0;
     v2 MouseDelta = GetMouseDelta(Plat);
 
-    InputForCamera = &Plat->Input;;
+    InputForCamera = &Plat->Input;
     UpdateGameCamera(World, MouseDelta, InputForCamera, CameraGhostP, Camera, DEFAULT_CAMERA_BLENDING*Plat->dt);
 
     Resources->Graphics->gBuffer->ViewProjection =
@@ -276,10 +279,13 @@ Bonsai_Render(engine_resources *Resources)
   if (Graphics->Settings.AutoDayNightCycle) { Graphics->Settings.tDay += Plat->dt/18.0f; }
   DoDayNightCycle(Graphics, Graphics->Settings.tDay);
 
-  v3 CameraTargetSimP = GetSimSpaceP(World, Resources->CameraGhost);
-  Graphics->Settings.OffsetOfWorldCenterToGrid.x = fmodf(CameraTargetSimP.x, Graphics->Settings.MajorGridDim);
-  Graphics->Settings.OffsetOfWorldCenterToGrid.y = fmodf(CameraTargetSimP.y, Graphics->Settings.MajorGridDim);
-  Graphics->Settings.OffsetOfWorldCenterToGrid.z = fmodf(CameraTargetSimP.z, Graphics->Settings.MajorGridDim);
+  if (Resources->_CameraGhost)
+  {
+    v3 CameraTargetSimP = GetSimSpaceP(World, Resources->_CameraGhost);
+    Graphics->Settings.OffsetOfWorldCenterToGrid.x = fmodf(CameraTargetSimP.x, Graphics->Settings.MajorGridDim);
+    Graphics->Settings.OffsetOfWorldCenterToGrid.y = fmodf(CameraTargetSimP.y, Graphics->Settings.MajorGridDim);
+    Graphics->Settings.OffsetOfWorldCenterToGrid.z = fmodf(CameraTargetSimP.z, Graphics->Settings.MajorGridDim);
+  }
 
   EngineDebug->Render.BytesSolidGeoLastFrame = GpuMap->Buffer.At;
   EngineDebug->Render.BytesTransGeoLastFrame = Graphics->Transparency.GpuBuffer.Buffer.At;

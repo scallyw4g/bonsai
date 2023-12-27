@@ -48,7 +48,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           octave_buffer OctaveBuf = { OctaveCount, {} };
           OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
 
-          OctaveBuf.Octaves[0] = {V3(300, 300, 100), 1.f, 1.0f, V3(1)};
+          OctaveBuf.Octaves[0] = {V3(300, 300, 100), 1.f, V3(1)};
 
           /* OctaveBuf.Octaves[0] = {V3(400, 400, 150), 150, 1.0f, V3(1)}; */
           /* OctaveBuf.Octaves[1] = {V3(35, 35, 50), 50, 0.2f, V3(2.f)}; */
@@ -87,11 +87,6 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   AllocateWorld(World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 
   World->Flags = WorldFlag_WorldCenterFollowsCameraTarget;
-
-  entity *CameraGhost = GetFreeEntity(EntityTable);
-  SpawnEntity( CameraGhost );
-
-  Resources->CameraGhost = CameraGhost;
 
   GameState = Allocate(game_state, Resources->Memory, 1);
   return GameState;

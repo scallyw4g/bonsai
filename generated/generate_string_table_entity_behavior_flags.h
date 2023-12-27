@@ -9,6 +9,7 @@ ToString(entity_behavior_flags Type)
     case EntityBehaviorFlags_WorldCollision: { Result = CSz("EntityBehaviorFlags_WorldCollision"); } break;
     case EntityBehaviorFlags_EntityCollision: { Result = CSz("EntityBehaviorFlags_EntityCollision"); } break;
     case EntityBehaviorFlags_UnspawnOnParticleSystemTerminate: { Result = CSz("EntityBehaviorFlags_UnspawnOnParticleSystemTerminate"); } break;
+    case EntityBehaviorFlags_CameraGhost: { Result = CSz("EntityBehaviorFlags_CameraGhost"); } break;
     case EntityBehaviorFlags_Default: { Result = CSz("EntityBehaviorFlags_Default"); } break;
   }
   return Result;

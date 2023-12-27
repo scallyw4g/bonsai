@@ -38,6 +38,12 @@ DoEditorUi(renderer_2d *Ui, entity_behavior_flags *Element, cs Name, EDITOR_UI_F
     }
     PushNewRow(Ui);
     PushColumn(Ui, CSz("")); // Skip the first Name column
+    if (Button(Ui, CSz("EntityBehaviorFlags_CameraGhost"), umm(Element)^umm("EntityBehaviorFlags_CameraGhost"), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    {
+      *Element = EntityBehaviorFlags_CameraGhost;
+    }
+    PushNewRow(Ui);
+    PushColumn(Ui, CSz("")); // Skip the first Name column
     if (Button(Ui, CSz("EntityBehaviorFlags_Default"), umm(Element)^umm("EntityBehaviorFlags_Default"), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
     {
       *Element = EntityBehaviorFlags_Default;

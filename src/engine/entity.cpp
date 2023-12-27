@@ -377,6 +377,13 @@ AllocatePlayer(memory_arena *Memory)
   return Player;
 }
 
+link_internal void
+SpawnCameraGhost(engine_resources *Engine)
+{
+  Engine->_CameraGhost = GetFreeEntity(Engine->EntityTable);
+  SpawnEntity(Engine->_CameraGhost, EntityBehaviorFlags_CameraGhost);
+}
+
 entity *
 SpawnProjectile(entity** EntityTable,
                 canonical_position *P,
@@ -1325,6 +1332,12 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
 
     if (!Spawned(Entity)) continue;
 
+    if (Entity->Behavior & EntityBehaviorFlags_CameraGhost)
+    {
+      if (Resources->_CameraGhost) { Assert(Resources->_CameraGhost == Entity); }
+      else { Resources->_CameraGhost = Entity; }
+    }
+
     b32 DoDefaultUpdate = True;
     if (GameEntityUpdate) { DoDefaultUpdate = (GameEntityUpdate(Resources, Entity) == False); }
 
@@ -1375,5 +1388,7 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
     FinalizeEntityUpdate(Entity);
     InsertEntityIntoChunks(World, Entity, GetTranArena());
   }
+
+  if (Resources->_CameraGhost == 0) { SpawnCameraGhost(Resources); }
 }
 

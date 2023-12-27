@@ -19,10 +19,10 @@ struct plane
 
 struct frustum
 {
-  float farClip;
-  float nearClip;
-  float width;
-  float FOV;
+  f32 farClip;
+  f32 nearClip;
+  f32 width;
+  f32 FOV;
 
   plane Top;
   plane Bot;
@@ -34,9 +34,7 @@ struct camera
 {
   frustum Frust;
 
-  /* cp TargetP; */
   cp CurrentP;
-  /* cp ViewingTarget; // TODO(Jesse, id: 79, tags: over_allocation, ummmm) : Can this just be a v3? */
 
   v3 RenderSpacePosition;
 
@@ -49,6 +47,10 @@ struct camera
   v3 Front;
   v3 Right;
   v3 Up;
+
+#if !POOF_PREPROCESSOR
+  /* entity *Ghost; */
+#endif
 };
 /* #define DEFAULT_CAMERA_BLENDING (0.35f) */
 #define DEFAULT_CAMERA_BLENDING (1.f)

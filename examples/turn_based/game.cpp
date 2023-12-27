@@ -631,9 +631,6 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
 
-  Resources->CameraGhost = GetFreeEntity(EntityTable);;
-  SpawnEntity( Resources->CameraGhost );
-
   return GameState;
 }
 
@@ -642,10 +639,6 @@ BONSAI_API_ON_LIBRARY_RELOAD()
   Info("Game ON_LIBRARY_LOAD");
 
   UNPACK_ENGINE_RESOURCES(Resources);
-
-  Resources->CameraGhost = GetFreeEntity(EntityTable);;
-  SpawnEntity( Resources->CameraGhost );
-
 
   GameState->Player = 0;
   RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
