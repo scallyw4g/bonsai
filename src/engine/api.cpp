@@ -106,6 +106,36 @@ Bonsai_FrameBegin(engine_resources *Resources)
   Resources->MaybeMouseRay = ComputeRayFromCursor(Resources, &gBuffer->ViewProjection, Camera, World->ChunkDim);
   Resources->MousedOverVoxel = MousePickVoxel(Resources);
 
+  {
+    Resources->ClosestStandingSpotToCursor = {};
+
+    f32 ShortestDistanceToPlayerSq = f32_MAX;
+    umm ClosestTileIndex = umm_MAX;
+    if (Resources->MousedOverVoxel.Tag)
+    {
+      cp MouseVoxelCP = Canonical_Position(&Resources->MousedOverVoxel.Value);
+      v3 MouseVoxelSimP = GetSimSpaceP(World, MouseVoxelCP);
+      standing_spot_buffer Spots = GetStandingSpotsWithinRadius(World, MouseVoxelCP, 8, GetTranArena());
+      IterateOver(&Spots, Spot, SpotIndex)
+      {
+        v3 SpotSimP = GetSimSpaceP(World, Spot->P) + Global_StandingSpotHalfDim;
+        r32 ThisDist = DistanceSq(SpotSimP, MouseVoxelSimP);
+        if (ThisDist < ShortestDistanceToPlayerSq)
+        {
+          ShortestDistanceToPlayerSq = ThisDist;
+          ClosestTileIndex = SpotIndex;
+        }
+      }
+
+      if (ClosestTileIndex < Spots.Count)
+      {
+        Resources->ClosestStandingSpotToCursor.Tag = Maybe_Yes;
+        Resources->ClosestStandingSpotToCursor.Value = Spots.Start[ClosestTileIndex];
+      }
+    }
+
+  }
+
   UiFrameBegin(&Resources->Ui);
   DoEngineDebug(Resources);
 

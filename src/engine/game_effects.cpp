@@ -269,6 +269,21 @@ SplosionBittyParticleSystem(entity *Entity, random_series *Entropy, v3 Offset, r
 }
 
 link_internal void
+DoDig( engine_resources *Resources, canonical_position PickCP, f32 Radius, memory_arena *TempMemory)
+{
+  v3 SimSpaceMinCenterP = GetSimSpaceP(Resources->World, PickCP);
+
+  v3 MinP = SimSpaceMinCenterP - V3(Radius, Radius, Radius);
+  v3 MaxP = SimSpaceMinCenterP + V3(Radius, Radius, Radius);
+
+  world_update_op_shape Shape = {
+    .Type = type_world_update_op_shape_params_rect,
+    .world_update_op_shape_params_rect.P0 = MinP,
+    .world_update_op_shape_params_rect.P1 = MaxP,
+  };
+  QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Subtractive, &Shape, ICE_BLUE, Resources->Memory);
+}
+link_internal void
 DoIceBlock( engine_resources *Resources, canonical_position PickCP, f32 Radius, memory_arena *TempMemory)
 {
   v3 SimSpaceMinCenterP = GetSimSpaceP(Resources->World, PickCP);

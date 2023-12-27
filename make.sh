@@ -377,6 +377,9 @@ function RunPoof
   RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
   TrackPid "" $!
 
+  # RunPoofHelper examples/turn_based/game.cpp && echo -e "$Success poofed examples/turn_based/game.cpp" &
+  # TrackPid "" $!
+
   # RunPoofHelper external/bonsai_debug/debug.cpp && echo -e "$Success poofed src/external/bonsai_debug/debug.cpp" &
   # TrackPid "" $!
 
@@ -387,9 +390,6 @@ function RunPoof
   # TrackPid "" $!
 
   # RunPoofHelper examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &
-  # TrackPid "" $!
-
-  # RunPoofHelper examples/turn_based/game.cpp && echo -e "$Success poofed examples/turn_based/game.cpp" &
   # TrackPid "" $!
 
   # RunPoofHelper examples/tools/voxel_synthesis_rule_baker/game.cpp && echo -e "$Success poofed examples/tools/voxel_synthesis_rule_baker/game.cpp" &

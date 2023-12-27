@@ -33,7 +33,8 @@ enum player_action
   PlayerAction_Move,
   PlayerAction_Charge,
   PlayerAction_Fire,
-  PlayerAction_Jump,
+  PlayerAction_IceBlock,
+  PlayerAction_Dig,
 
   PlayerAction_Count,
 };

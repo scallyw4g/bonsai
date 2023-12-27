@@ -92,7 +92,7 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
         /* DebugLine("move"); */
         v3 PlayerBaseP = GetSimSpaceBaseP(World, GameState->Player);
         f32 ShortestDistanceToPlayerSq = f32_MAX;
-        u32 ClosestTileIndex = u32_MAX;
+        umm ClosestTileIndex = umm_MAX;
 
         canonical_position EnemyOriginalP = Enemy->P;
 
@@ -100,9 +100,8 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
 
         f32 EnemyMoveSpeed = 8.f;
         standing_spot_buffer Spots = GetStandingSpotsWithinRadius(World, EnemyBaseP, EnemyMoveSpeed, GetTranArena());
-        for (u32 SpotIndex = 0; SpotIndex < Spots.Count; ++SpotIndex)
+        IterateOver(&Spots, Spot, SpotIndex)
         {
-          standing_spot *Spot = Spots.Start + SpotIndex;
           v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
           DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_STANDING_SPOT_THICKNESS*3.f);
 
@@ -367,8 +366,14 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
     if (Input->V.Clicked)
     {
-      GameState->ProposedAction = PlayerAction_Jump;
+      GameState->ProposedAction = PlayerAction_IceBlock;
     }
+
+    if (Input->B.Clicked)
+    {
+      GameState->ProposedAction = PlayerAction_Dig;
+    }
+
 
     switch (GameState->ProposedAction)
     {
@@ -446,15 +451,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           {
             entity *E = GetFreeEntity(EntityTable);
 
-            /* E->Physics = FireballPhysics(); */
-
-            /* E->Behavior = EntityBehaviorFlags_Default; */
             E->UserType = EntityType_Fireball;
-
-            /* E->_CollisionVolumeRadius = V3(1); // TODO(Jesse): Should be based on charge level? */
-            /* UpdateCollisionVolumeRadius(World, E, V3(1), GetTranArena()); */
-
-            physics Physics = FireballPhysics();
 
             auto CP = Player->P;
             CP.Offset += Player->Emitter->SpawnRegion.Min;
@@ -464,6 +461,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
             E->Emitter->SpawnRegion.Max -= E->Emitter->SpawnRegion.Min;
             E->Emitter->SpawnRegion.Min = {};
 
+            physics Physics = FireballPhysics();
             SpawnEntity(
               E,
               0,
@@ -495,8 +493,26 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         }
       } break;
 
-      case PlayerAction_Jump:
+      case PlayerAction_Dig:
       {
+        if (Resources->ClosestStandingSpotToCursor.Tag) { DrawStandingSpot(&GpuMap->Buffer, Camera, &Resources->ClosestStandingSpotToCursor.Value, DIRT, 0.5f); }
+
+        if (Input->LMB.Clicked)
+        {
+          cp StandingSpotCenterP = Canonicalize(World, Resources->ClosestStandingSpotToCursor.Value.P + Global_StandingSpotHalfDim);
+          DoDig(Resources, StandingSpotCenterP, 5.f, GetTranArena());
+        }
+      } break;
+
+      case PlayerAction_IceBlock:
+      {
+        if (Resources->ClosestStandingSpotToCursor.Tag) { DrawStandingSpot(&GpuMap->Buffer, Camera, &Resources->ClosestStandingSpotToCursor.Value, BLUE, 0.5f); }
+
+        if (Input->LMB.Clicked)
+        {
+          cp StandingSpotCenterP = Canonicalize(World, Resources->ClosestStandingSpotToCursor.Value.P + Global_StandingSpotHalfDim);
+          DoIceBlock(Resources, StandingSpotCenterP, 4.f, GetTranArena());
+        }
       } break;
     }
 
@@ -520,6 +536,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       /* if (GameState->TransitionDuration > 1.2f) { GameState->TurnMode = TurnMode_Default; } */
       GameState->TransitionDuration += Plat->dt;
 
+#if 0
       switch (GameState->ProposedAction)
       {
         InvalidCase(PlayerAction_Count);
@@ -538,10 +555,15 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         {
         } break;
 
-        case PlayerAction_Jump:
+        case PlayerAction_IceBlock:
+        {
+        } break;
+
+        case PlayerAction_Dig:
         {
         } break;
       }
+#endif
 
       GameState->ProposedAction = PlayerAction_None;
     }

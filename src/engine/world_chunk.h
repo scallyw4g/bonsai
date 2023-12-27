@@ -388,6 +388,9 @@ struct standing_spot
   canonical_position P;
 };
 
+poof(maybe(standing_spot))
+#include <generated/maybe_standing_spot.h>
+
 inline standing_spot
 StandingSpot(v3 Offset, world_position WP)
 {

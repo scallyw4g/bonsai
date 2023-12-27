@@ -57,6 +57,7 @@ struct engine_resources
 
   level_editor Editor;
   maybe_picked_voxel MousedOverVoxel;
+  maybe_standing_spot ClosestStandingSpotToCursor;
 
   render_entity_to_texture_group RTTGroup;
 };

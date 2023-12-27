@@ -3529,6 +3529,13 @@ DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, v3 RenderSpot_MinP, v3 Til
 }
 
 link_internal void
+DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, camera *Camera, standing_spot *Spot, u32 ColorIndex = STANDING_SPOT_DEFAULT_COLOR, r32 Thickness = DEFAULT_STANDING_SPOT_THICKNESS)
+{
+  v3 StandingSpotP = GetRenderP(GetWorld()->ChunkDim, Spot->P, Camera);
+  DrawStandingSpot(Mesh, StandingSpotP, V3(Global_StandingSpotDim), ColorIndex, Thickness);
+}
+
+link_internal void
 DebugHighlightWorldChunkBasedOnState(graphics *Graphics, world_chunk *Chunk, untextured_3d_geometry_buffer *Dest)
 {
 #if 1
@@ -4567,6 +4574,13 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   }
 }
 
+// TODO(Jesse): At the moment all the callsites of this function immediately
+// look for the closest spot to a point .. should we just sort and return the
+// sorted buffer?
+//
+// Alternatively, if sorting the whole array feels meh, we could return the 0th
+// element as closest to another point ..
+//
 link_internal standing_spot_buffer
 GetStandingSpotsWithinRadius(world *World, canonical_position P, r32 Radius, memory_arena *TempMemory)
 {
@@ -4842,6 +4856,7 @@ MousePickVoxel(engine_resources *Resources)
       v3 MinP =  V3(ClosestChunk->WorldP * World->ChunkDim);
       v3 VoxelP = MinP + Truncate(RayResult.Picks[PickedVoxel_FirstFilled].Offset);
 
+#if 0
       // Highlight standing spot we're hovering over
       for (u32 StandingSpotIndex = 0;
                StandingSpotIndex < AtElements(&ClosestChunk->StandingSpots);
@@ -4857,6 +4872,7 @@ MousePickVoxel(engine_resources *Resources)
           DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_STANDING_SPOT_THICKNESS+0.01f);
         }
       }
+#endif
 
       Result.Tag   = Maybe_Yes;
       Result.Value = RayResult;
