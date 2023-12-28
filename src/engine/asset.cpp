@@ -533,7 +533,7 @@ InitAsset(asset *Asset, thread_local_state *Thread)
   }
   else
   {
-    SoftError("Unsupported file format while initializing asset.");
+    SoftError("Unsupported file format while initializing asset (%S).", AssetFilepath);
     Asset->LoadState = AssetLoadState_Error;
   }
 }

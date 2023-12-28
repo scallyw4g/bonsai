@@ -47,7 +47,7 @@ GetCollision(world *World, entity *First, aabb SecondAABB)
 
 
 link_internal collision_event
-GetCollision_Entities( world *World, entity *ThisEntity, canonical_position TestP, v3 CollisionDim )
+GetCollision_Entities( world *World, entity *ThisEntity, cp TestP, v3 CollisionDim )
 {
   TIMED_FUNCTION();
 
@@ -77,6 +77,13 @@ GetCollision_Entities( world *World, entity *ThisEntity, canonical_position Test
   Result.FrameIndex = GetEngineResources()->FrameIndex;
   Result.Count = Hit;
 
+  return Result;
+}
+
+link_internal collision_event
+GetCollision_Entities( world *World, entity *ThisEntity)
+{
+  auto Result = GetCollision_Entities(World, ThisEntity, ThisEntity->P, ThisEntity->_CollisionVolumeRadius*2.f);
   return Result;
 }
 
@@ -161,6 +168,7 @@ GetCollision(world *World, entity **Entities, entity *Entity)
 /* TODO(Jesse, id: 130, tags: be_smarter): This offset is only used to check if
  * entities are grounded.  Can we do that in a more intelligent way?
  */
+// TODO(Jesse): Replace with GetCollision_Entities
 collision_event
 GetCollision(world *World, entity *Entity, v3 Offset = V3(0,0,0) )
 {
@@ -1222,6 +1230,16 @@ GetSimSpaceBaseP(world *World, entity *E)
   return Result;
 }
 
+link_internal r32
+DistanceSqBetweenBasePoints(world *World, entity *E0, entity *E1)
+{
+  v3 Base0 = GetSimSpaceBaseP(World, E0);
+  v3 Base1 = GetSimSpaceBaseP(World, E1);
+
+  r32 Result = DistanceSq(Base0, Base1);
+  return Result;
+}
+
 link_internal aabb
 GetSimSpaceAABB(world *World, entity *Entity)
 {
@@ -1231,6 +1249,7 @@ GetSimSpaceAABB(world *World, entity *Entity)
   return Result;
 }
 
+// TODO(Jesse)(speed): Accelerate this using the entities stored on world chunks!
 link_internal u32_buffer
 GatherEntitiesIntersecting(world *World, entity **EntityTable, sphere *SimSpaceSphere, memory_arena *Memory)
 {
@@ -1241,9 +1260,6 @@ GatherEntitiesIntersecting(world *World, entity **EntityTable, sphere *SimSpaceS
     if (E)
     {
       aabb EntityAABB = GetSimSpaceAABB(World, E);
-
-      /* v3 ESimP = GetSimSpaceP(World, E->P); */
-      /* v3 ESimCenterP = GetSimSpaceCenterP(E, ESimP); */
 
       if (Intersect(&EntityAABB, SimSpaceSphere))
       {
@@ -1263,10 +1279,11 @@ Intersect(world *World, ray *Ray, entity *Entity)
   return Result;
 }
 
-link_internal entity *
+link_internal maybe_entity_ptr
 GetClosestEntityIntersectingRay(world *World, entity **EntityTable, ray *Ray)
 {
-  entity *Result = {};
+  maybe_entity_ptr Result = {};
+
   r32 tMin = f32_MAX;
   for ( s32 EntityIndex = 0;
             EntityIndex < TOTAL_ENTITY_COUNT;
@@ -1280,17 +1297,18 @@ GetClosestEntityIntersectingRay(world *World, entity **EntityTable, ray *Ray)
     if (I.t < tMin)
     {
       tMin = I.t;
-      Result = Entity;
+      Result.Tag = Maybe_Yes;
+      Result.Value = Entity;
     }
   }
 
   return Result;
 }
 
-link_internal entity *
+link_internal maybe_entity_ptr
 RayTraceEntityCollision(engine_resources *Resources, ray *Ray)
 {
-  entity *Result = GetClosestEntityIntersectingRay(Resources->World, Resources->EntityTable, Ray);
+  maybe_entity_ptr Result = GetClosestEntityIntersectingRay(Resources->World, Resources->EntityTable, Ray);
   return Result;
 }
 
@@ -1309,7 +1327,7 @@ MousePickEntity(engine_resources *Resources)
     /* v3 SimOrigin = GetSimSpaceP(World, Canonical_Position(World->ChunkDim, MaybeRay.Ray.Origin, V3i(0))); */
     /* ray SimRay = {SimOrigin, MaybeRay.Ray.Dir}; */
     ray SimRay = MaybeRay.Ray;
-    Result = RayTraceEntityCollision( Resources, &SimRay );
+    Result = RayTraceEntityCollision( Resources, &SimRay ).Value;
   }
 
   return Result;
@@ -1426,3 +1444,5 @@ AStarPathfind(world *World, standing_spot_buffer *Spots, cp CurrentP, cp TargetP
 
   return Result;
 }
+
+

@@ -10,6 +10,9 @@ global_variable v3
 Global_EntityFireballOffset = V3(0,0,16);
 /* Global_EntityFireballOffset = V3(7.0f, -1.75f, 4.5f); */
 
+global_variable f32
+Global_MeleeRange = 10.f;
+
 link_internal model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *Heap)
 {
@@ -88,7 +91,7 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
   u16 StandingSpotColor = YELLOW;
   r32 StandingSpotRadius = DEFAULT_STANDING_SPOT_THICKNESS;
 
-  if (Enemy == Engine->HoverEntity)
+  if (Enemy == Engine->HoverEntity.Value)
   {
     StandingSpotColor = ORANGE;
     StandingSpotRadius *= 2.f;
@@ -143,6 +146,117 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
   }
 }
 
+link_internal void
+DestroyLoot(engine_resources *Engine, entity *Entity)
+{
+  file_traversal_node AssetName = {FileTraversalType_File, CSz("models"), CSz("skull_broken.vox")};
+
+  Entity->AssetId = AssetId(&AssetName);
+  Entity->EulerAngles = V4(0.f, 5.32f, RandomBilateral(&Global_GameEntropy), 0.f);
+
+  Entity->UserType = 0;
+  Entity->Model = 0;
+}
+
+link_internal void
+DestroySkeleton(engine_resources *Engine, entity *Entity, r32 Radius)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  cs AssetNames[] =
+  {
+    CSz("skele_bitty_0.vox"),
+    CSz("skele_bitty_1.vox"),
+    CSz("skele_bitty_2.vox"),
+  };
+
+#if 1
+  s32 MaxBitties = ArrayCount(AssetNames);
+  RangeIterator(BittyIndex, MaxBitties)
+  {
+    // TODO(Jesse)(leak): This leaks the asset name when the asset is freed
+    file_traversal_node AssetName = {FileTraversalType_File, CSz("models"), AssetNames[BittyIndex]};
+    asset_id AID = AssetId(&AssetName);
+
+    entity *BittyEntity = GetFreeEntity(EntityTable);
+
+    BittyEntity->AssetId = AID;
+
+    BittyEntity->Physics.Speed = 1.f;
+
+    BittyEntity->EulerAngles.z = RandomUnilateral(&Global_GameEntropy)*PI32*2.f;
+    BittyEntity->Scale = 1.0f;
+
+    /* UpdateCollisionVolumeRadius(World, BittyEntity, V3(.1f), GetTranArena()); */
+    BittyEntity->_CollisionVolumeRadius = V3(.1f);
+
+    v3 Rnd = RandomV3Bilateral(&Global_GameEntropy);
+    BittyEntity->Physics.Mass = 25.f;
+    BittyEntity->Physics.Force += Rnd*150.f*Radius;
+    BittyEntity->Physics.Force.z = Abs(BittyEntity->Physics.Force.z) * 0.25f;
+    BittyEntity->P = Entity->P + (Rnd*Radius) + V3(0.f, 0.f, 2.0f);
+    BittyEntity->P.Offset.z = Entity->P.Offset.z + 2.f;
+
+    SpawnEntity(BittyEntity, EntityBehaviorFlags_Default);
+
+    /* if (GetCollision(World, BittyEntity).Count) { Unspawn(BittyEntity); continue; } */
+  }
+#endif
+
+
+  file_traversal_node SkullAssetNames[] =
+  {
+    {FileTraversalType_File, CSz("models"), CSz("skull_broken.vox")},
+    {FileTraversalType_File, CSz("models"), CSz("skull.vox")},
+  };
+
+  /* s32 AssetIndex = RandomBetween(0, &Global_GameEntropy, ArrayCount(SkullAssetNames)); */
+  s32 AssetIndex = 1;
+
+  Entity->AssetId = AssetId(&SkullAssetNames[AssetIndex]);
+  Entity->Model = 0;
+  Entity->Physics.Velocity.z += 7.f;
+  Entity->P.Offset.z += 10.f;
+  Entity->UserType = EntityType_Loot;
+
+  if (AssetIndex == 0)
+  {
+    Entity->EulerAngles = V4(0.f, 5.32f, RandomBilateral(&Global_GameEntropy), 0.f);
+  }
+}
+
+link_internal b32
+EffectFireballEntity(engine_resources *Engine, entity *Enemy)
+{
+  b32 Result = False;
+
+  switch (entity_type(Enemy->UserType))
+  {
+    case EntityType_Default: {} break;
+    case EntityType_Player: {} break;
+    case EntityType_Fireball: {} break;
+    case EntityType_Enemy: {Result = True; DestroySkeleton(Engine, Enemy, 5.f);} break;
+    case EntityType_Loot: {Result = True; DestroyLoot(Engine, Enemy);} break;
+  }
+  return Result;
+}
+
+link_internal b32
+EffectSmackEntity(engine_resources *Engine, entity *Enemy)
+{
+  b32 Result = False;
+
+  switch (entity_type(Enemy->UserType))
+  {
+    case EntityType_Default: {} break;
+    case EntityType_Player: {} break;
+    case EntityType_Fireball: {} break;
+    case EntityType_Enemy: {Result = True; DestroySkeleton(Engine, Enemy, 5.f);} break;
+    case EntityType_Loot: {Result = True; DestroyLoot(Engine, Enemy);} break;
+  }
+  
+  return Result;
+}
 
 link_internal void
 FireballUpdate(engine_resources *Engine, entity *FireballEntity)
@@ -180,51 +294,8 @@ FireballUpdate(engine_resources *Engine, entity *FireballEntity)
     IterateOver(&EntityIndices, EIndex, EIndexIndex)
     {
       entity *E = EntityTable[*EIndex];
-      if (E->UserType == EntityType_Enemy)
-      {
-        Unspawn(E);
-
-        cs AssetNames[] =
-        {
-          CSz("skele_bitty_0.vox"),
-          CSz("skele_bitty_1.vox"),
-          CSz("skele_bitty_2.vox"),
-        };
-
-#if 0
-        s32 MaxBitties = ArrayCount(AssetNames);
-        RangeIterator(BittyIndex, MaxBitties)
-        {
-          // TODO(Jesse)(leak): This leaks the asset name when the asset is freed
-          file_traversal_node AssetName = {FileTraversalType_File, CSz("models"), AssetNames[BittyIndex]};
-          asset_id AID = AssetId(&AssetName);
-
-          entity *BittyEntity = GetFreeEntity(EntityTable);
-
-          BittyEntity->AssetId = AID;
-
-          SpawnEntity(BittyEntity, EntityBehaviorFlags_Default, {}, {});
-          BittyEntity->Physics.Speed = 1.f;
-
-          BittyEntity->EulerAngles.z = RandomUnilateral(&Global_GameEntropy)*PI32*2.f;
-          BittyEntity->Scale = 1.0f;
-
-          UpdateCollisionVolumeRadius(World, BittyEntity, V3(.1f), GetTranArena());
-          /* BittyEntity->CollisionVolumeRadius = V3(.1f); */
-
-          v3 Rnd = RandomV3Bilateral(&Global_GameEntropy);
-          BittyEntity->Physics.Mass = 25.f;
-          BittyEntity->Physics.Force += Rnd*150.f*Radius;
-          BittyEntity->Physics.Force.z = Abs(BittyEntity->Physics.Force.z) * 0.25f;
-          BittyEntity->P = FireballEntity->P + (Rnd*Radius) + V3(0.f, 0.f, 2.0f);
-          BittyEntity->P.Offset.z = FireballEntity->P.Offset.z + 2.f;
-
-          if (GetCollision(World, BittyEntity).Count) { Unspawn(BittyEntity); continue; }
-        }
-#endif
-      }
+      EffectFireballEntity(Engine, E);
     }
-
 
     HeapDeallocate(&GameState->Heap, (u8*)State);
     Unspawn(FireballEntity);
@@ -244,6 +315,7 @@ GameEntityUpdate(engine_resources *Engine, entity *Entity )
   {
     case EntityType_Player:   {} break;
     case EntityType_Default:  {} break;
+    case EntityType_Loot:     {} break;
     case EntityType_Enemy:    { EnemyUpdate(Engine, Entity); } break;
 
     case EntityType_Fireball: { ++GameState->FireballsSimulated; FireballUpdate(Engine, Entity); } break;
@@ -319,6 +391,7 @@ FireballPhysics()
   return Result;
 }
 
+
 BONSAI_API_MAIN_THREAD_CALLBACK()
 {
   Assert(ThreadLocal_ThreadIndex == 0);
@@ -327,6 +400,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   UNPACK_ENGINE_RESOURCES(Resources);
 
   entity *Player = GameState->Player;
+
+  GameState->PlayerActed = False;
 
   /* v3 RotP = {}; */
   /* RotP.x = Sin(r32(Plat->GameTime)); */
@@ -376,157 +451,195 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       GameState->ProposedAction = PlayerAction_Dig;
     }
 
-
-    switch (GameState->ProposedAction)
+    if (Input->N.Clicked)
     {
-      InvalidCase(PlayerAction_Count);
-
-      case PlayerAction_None: { } break;
-
-      case PlayerAction_Move:
-      {
-        cp PlayerBaseP = GetEntityBaseP(World, Player);
-
-        f32 PlayerMoveSpeed = 13.f;
-        standing_spot_buffer PlayerSpots = GetStandingSpotsWithinRadius(World, PlayerBaseP, PlayerMoveSpeed, GetTranArena());
-
-        v3 CursorSimP = GetSimSpaceP(World, LastEmptyMouseVoxel);
-
-        r32 LowestDistance = r32_MAX;
-        umm LowestIndex = 0;
-
-        RangeIterator_t(umm, SpotIndex, PlayerSpots.Count)
-        {
-          standing_spot *Spot = PlayerSpots.Start + SpotIndex;
-
-          v3 SpotSimP = GetSimSpaceP(World, GetSpotMidpoint(World, Spot));
-
-          r32 Len = LengthSq(SpotSimP-CursorSimP);
-          if (Len < LowestDistance)
-          {
-            LowestDistance = Len;
-            LowestIndex = SpotIndex;
-          }
-
-          {
-            v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
-            DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), GREEN, DEFAULT_STANDING_SPOT_THICKNESS*3.f);
-          }
-        }
-
-        if (PlayerSpots.Count)
-        {
-          standing_spot *Spot = PlayerSpots.Start + LowestIndex;
-          v3 SpotSimP = GetSimSpaceP(World, Spot->P);
-          v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
-          DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), TEAL, DEFAULT_STANDING_SPOT_THICKNESS*4.f);
-
-          if (Input->LMB.Clicked)
-          {
-            v3 PlayerBaseSimP = GetSimSpaceP(World, PlayerBaseP);
-            v3 SpotTopSimP = SpotSimP + V3(Global_StandingSpotHalfDim.xy, Global_StandingSpotDim.z);
-            v3 UpdateV = SpotTopSimP - PlayerBaseSimP + V3(0,0,2);
-            UpdateEntityP(World, Player, UpdateV);
-          }
-        }
-
-
-      } break;
-
-      case PlayerAction_Charge:
-      {
-        if (Input->LMB.Clicked)
-        {
-          GameState->PlayerChargeLevel += 2;
-          SpawnFire( Player,
-                    &GameState->Entropy,
-                     Global_EntityFireballOffset + Player->_CollisionVolumeRadius.xy,
-                     GameState->PlayerChargeLevel);
-        }
-      } break;
-
-      case PlayerAction_Fire:
-      {
-        if (GameState->PlayerChargeLevel)
-        {
-          if (Input->LMB.Clicked)
-          {
-            entity *E = GetFreeEntity(EntityTable);
-
-            E->UserType = EntityType_Fireball;
-
-            auto CP = Player->P;
-            CP.Offset += Player->Emitter->SpawnRegion.Min;
-            Canonicalize(World, &CP);
-
-            *E->Emitter = *Player->Emitter;
-            E->Emitter->SpawnRegion.Max -= E->Emitter->SpawnRegion.Min;
-            E->Emitter->SpawnRegion.Min = {};
-
-            physics Physics = FireballPhysics();
-            SpawnEntity(
-              E,
-              0,
-              EntityBehaviorFlags_Default,
-              &Physics,
-              &CP,
-              V3(1)
-            );
-
-            /* fireball_state *FireballState = Allocate(fireball_state, &GameState->Heap, 1); */
-            fireball_state *FireballState = (fireball_state*)HeapAllocate(&GameState->Heap, sizeof(fireball_state));
-
-            FireballState->ChargeLevel = GameState->PlayerChargeLevel;
-            FireballState->TargetP = FirstFilledMouseVoxel;
-
-            v3 EntityP = GetSimSpaceP(World, E);
-            v3 TargetP = GetSimSpaceP(World, FireballState->TargetP);
-
-            E->Physics.Velocity = (Normalize(TargetP-EntityP) + V3(0,0,3)) * 20.f;
-            /* E->Physics.Velocity = V3(10.f); */
-
-            GameState->PlayerChargeLevel = 0;
-
-            E->UserData = u64(FireballState);
-
-            Deactivate(Player->Emitter);
-
-          }
-        }
-      } break;
-
-      case PlayerAction_Dig:
-      {
-        if (Resources->ClosestStandingSpotToCursor.Tag) { DrawStandingSpot(&GpuMap->Buffer, Camera, &Resources->ClosestStandingSpotToCursor.Value, DIRT, 0.5f); }
-
-        if (Input->LMB.Clicked)
-        {
-          cp StandingSpotCenterP = Canonicalize(World, Resources->ClosestStandingSpotToCursor.Value.P + Global_StandingSpotHalfDim);
-          DoDig(Resources, StandingSpotCenterP, 5.f, GetTranArena());
-        }
-      } break;
-
-      case PlayerAction_IceBlock:
-      {
-        if (Resources->ClosestStandingSpotToCursor.Tag) { DrawStandingSpot(&GpuMap->Buffer, Camera, &Resources->ClosestStandingSpotToCursor.Value, BLUE, 0.5f); }
-
-        if (Input->LMB.Clicked)
-        {
-          cp StandingSpotCenterP = Canonicalize(World, Resources->ClosestStandingSpotToCursor.Value.P + Global_StandingSpotHalfDim);
-          DoIceBlock(Resources, StandingSpotCenterP, 4.f, GetTranArena());
-        }
-      } break;
+      GameState->ProposedAction = PlayerAction_ShovelSmack;
     }
 
+
+
+    if (GameState->TurnMode == TurnMode_Default)
+    {
+      switch (GameState->ProposedAction)
+      {
+        InvalidCase(PlayerAction_Count);
+
+        case PlayerAction_None: { } break;
+
+        case PlayerAction_Move:
+        {
+          cp PlayerBaseP = GetEntityBaseP(World, Player);
+
+          f32 PlayerMoveSpeed = 13.f;
+          standing_spot_buffer PlayerSpots = GetStandingSpotsWithinRadius(World, PlayerBaseP, PlayerMoveSpeed, GetTranArena());
+
+          v3 CursorSimP = GetSimSpaceP(World, LastEmptyMouseVoxel);
+
+          r32 LowestDistance = r32_MAX;
+          umm LowestIndex = 0;
+
+          RangeIterator_t(umm, SpotIndex, PlayerSpots.Count)
+          {
+            standing_spot *Spot = PlayerSpots.Start + SpotIndex;
+
+            v3 SpotSimP = GetSimSpaceP(World, GetSpotMidpoint(World, Spot));
+
+            r32 Len = LengthSq(SpotSimP-CursorSimP);
+            if (Len < LowestDistance)
+            {
+              LowestDistance = Len;
+              LowestIndex = SpotIndex;
+            }
+
+            {
+              v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
+              DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), GREEN, DEFAULT_STANDING_SPOT_THICKNESS*3.f);
+            }
+          }
+
+          if (PlayerSpots.Count)
+          {
+            standing_spot *Spot = PlayerSpots.Start + LowestIndex;
+            v3 SpotSimP = GetSimSpaceP(World, Spot->P);
+            v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
+            DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), TEAL, DEFAULT_STANDING_SPOT_THICKNESS*4.f);
+
+            if (Input->LMB.Clicked)
+            {
+              GameState->PlayerActed = True;
+
+              v3 PlayerBaseSimP = GetSimSpaceP(World, PlayerBaseP);
+              v3 SpotTopSimP = SpotSimP + V3(Global_StandingSpotHalfDim.xy, Global_StandingSpotDim.z);
+              v3 UpdateV = SpotTopSimP - PlayerBaseSimP + V3(0,0,2);
+              UpdateEntityP(World, Player, UpdateV);
+            }
+          }
+
+
+        } break;
+
+        case PlayerAction_Charge:
+        {
+          if (Input->LMB.Clicked)
+          {
+            GameState->PlayerActed = True;
+
+            GameState->PlayerChargeLevel += 2;
+            SpawnFire( Player,
+                      &GameState->Entropy,
+                       Global_EntityFireballOffset + Player->_CollisionVolumeRadius.xy,
+                       GameState->PlayerChargeLevel);
+          }
+        } break;
+
+        case PlayerAction_Fire:
+        {
+          if (GameState->PlayerChargeLevel)
+          {
+            if (Input->LMB.Clicked)
+            {
+              GameState->PlayerActed = True;
+
+              entity *E = GetFreeEntity(EntityTable);
+
+              E->UserType = EntityType_Fireball;
+
+              auto CP = Player->P;
+              CP.Offset += Player->Emitter->SpawnRegion.Min;
+              Canonicalize(World, &CP);
+
+              *E->Emitter = *Player->Emitter;
+              E->Emitter->SpawnRegion.Max -= E->Emitter->SpawnRegion.Min;
+              E->Emitter->SpawnRegion.Min = {};
+
+              physics Physics = FireballPhysics();
+              SpawnEntity(
+                E,
+                0,
+                EntityBehaviorFlags_Default,
+                &Physics,
+                &CP,
+                V3(1)
+              );
+
+              /* fireball_state *FireballState = Allocate(fireball_state, &GameState->Heap, 1); */
+              fireball_state *FireballState = (fireball_state*)HeapAllocate(&GameState->Heap, sizeof(fireball_state));
+
+              FireballState->ChargeLevel = GameState->PlayerChargeLevel;
+              FireballState->TargetP = FirstFilledMouseVoxel;
+
+              v3 EntityP = GetSimSpaceP(World, E);
+              v3 TargetP = GetSimSpaceP(World, FireballState->TargetP);
+
+              E->Physics.Velocity = (Normalize(TargetP-EntityP) + V3(0,0,3)) * 20.f;
+              /* E->Physics.Velocity = V3(10.f); */
+
+              GameState->PlayerChargeLevel = 0;
+
+              E->UserData = u64(FireballState);
+
+              Deactivate(Player->Emitter);
+
+            }
+          }
+        } break;
+
+        case PlayerAction_Dig:
+        {
+          if (Resources->ClosestStandingSpotToCursor.Tag) { DrawStandingSpot(&GpuMap->Buffer, Camera, &Resources->ClosestStandingSpotToCursor.Value, DIRT, 0.5f); }
+
+          if (Input->LMB.Clicked)
+          {
+            GameState->PlayerActed = True;
+            cp StandingSpotCenterP = Canonicalize(World, Resources->ClosestStandingSpotToCursor.Value.P + Global_StandingSpotHalfDim);
+            DoDig(Resources, StandingSpotCenterP, 5.f, GetTranArena());
+          }
+        } break;
+
+        case PlayerAction_IceBlock:
+        {
+          if (Resources->ClosestStandingSpotToCursor.Tag) { DrawStandingSpot(&GpuMap->Buffer, Camera, &Resources->ClosestStandingSpotToCursor.Value, BLUE, 0.5f); }
+
+          if (Input->LMB.Clicked)
+          {
+            GameState->PlayerActed = True;
+            cp StandingSpotCenterP = Canonicalize(World, Resources->ClosestStandingSpotToCursor.Value.P + Global_StandingSpotHalfDim);
+            DoIceBlock(Resources, StandingSpotCenterP, 4.f, GetTranArena());
+          }
+        } break;
+
+        case PlayerAction_ShovelSmack:
+        {
+          {
+            if (Resources->HoverEntity.Tag)
+            {
+              entity *Enemy = Resources->HoverEntity.Value;
+              {
+                if (DistanceSqBetweenBasePoints(World, Enemy, Player) < Square(Global_MeleeRange))
+                {
+                  HighlightEntity(Resources, Enemy);
+                  if (Input->LMB.Clicked)
+                  {
+                    GameState->PlayerActed = EffectSmackEntity(Resources, Enemy);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (Input->RMB.Clicked) { GameState->ProposedAction = PlayerAction_None; }
+
     if ( GameState->TurnMode == TurnMode_Transition &&
-         GameState->FireballsSimulated  == 0 )
+         GameState->FireballsSimulated == 0 )
     {
       GameState->TurnMode = TurnMode_Default;
     }
     GameState->FireballsSimulated = 0;
 
 
-    GameState->PlayerActed = GameState->ProposedAction && Input->LMB.Clicked;
     if (GameState->PlayerActed)
     {
       GameState->TurnMode = TurnMode_Transition;

@@ -384,6 +384,11 @@ DoSplotion( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
 
     if (GetCollision(World, E).Count) { Unspawn(E); continue; }
 
+    // TODO(Jesse): Pretty sure we're spawning these things inside other entities
+    // which is causing the bitty particles to wigg out, but this didn't fix it .. ?
+    //
+    /* if (GetCollision_Entities(World, E).Count) { Unspawn(E); continue; } */
+
     SplosionBittyParticleSystem(E, Entropy, {}, .1f, &Graphics->Transparency.GpuBuffer.Buffer);
   }
 }

@@ -6,6 +6,7 @@ struct memory_arena;
 struct random_series;
 
 
+
 enum entity_type
 #if !POOF_PREPROCESSOR
  : u32
@@ -13,10 +14,13 @@ enum entity_type
 {
   EntityType_Default,
 
+  // NOTE(Jesse): This list is append-only!
   EntityType_Enemy,
   EntityType_Player,
 
   EntityType_Fireball,
+
+  EntityType_Loot,
 };
 
 poof(generate_string_table(entity_type))
@@ -35,6 +39,7 @@ enum player_action
   PlayerAction_Fire,
   PlayerAction_IceBlock,
   PlayerAction_Dig,
+  PlayerAction_ShovelSmack,
 
   PlayerAction_Count,
 };

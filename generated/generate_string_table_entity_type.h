@@ -8,6 +8,7 @@ ToString(entity_type Type)
     case EntityType_Enemy: { Result = CSz("EntityType_Enemy"); } break;
     case EntityType_Player: { Result = CSz("EntityType_Player"); } break;
     case EntityType_Fireball: { Result = CSz("EntityType_Fireball"); } break;
+    case EntityType_Loot: { Result = CSz("EntityType_Loot"); } break;
   }
   return Result;
 }

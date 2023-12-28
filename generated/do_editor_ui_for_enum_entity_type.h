@@ -31,6 +31,12 @@ DoEditorUi(renderer_2d *Ui, entity_type *Element, cs Name, EDITOR_UI_FUNCTION_PR
       *Element = EntityType_Fireball;
     }
     PushNewRow(Ui);
+    PushColumn(Ui, CSz("")); // Skip the first Name column
+    if (Button(Ui, CSz("EntityType_Loot"), umm(Element)^umm("EntityType_Loot"), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    {
+      *Element = EntityType_Loot;
+    }
+    PushNewRow(Ui);
   }
   else
   {

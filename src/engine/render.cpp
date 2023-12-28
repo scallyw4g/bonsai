@@ -717,6 +717,14 @@ DrawEntityCollisionVolume(entity *Entity, untextured_3d_geometry_buffer *Dest, g
   DEBUG_DrawAABB(&CopyDest, AABB, ColorIndex, Thickness);
 }
 
+link_internal void
+HighlightEntity(engine_resources *Engine, entity *Entity)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  DrawEntityCollisionVolume(Entity, &GpuMap->Buffer, Graphics, World->ChunkDim, YELLOW);
+}
+
 void
 BufferEntity(
     untextured_3d_geometry_buffer* Dest,

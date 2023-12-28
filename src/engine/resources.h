@@ -6,6 +6,10 @@ struct world;
 struct heap_allocator;
 struct entity;
 
+typedef entity* entity_ptr;
+poof(maybe(entity_ptr))
+#include <generated/maybe_entity_ptr.h>
+
 
 
 #define ASSET_TABLE_COUNT (256)
@@ -59,7 +63,7 @@ struct engine_resources
   maybe_picked_voxel MousedOverVoxel;
   maybe_standing_spot ClosestStandingSpotToCursor;
 
-  entity *HoverEntity;
+  maybe_entity_ptr HoverEntity;
 
   render_entity_to_texture_group RTTGroup;
 };

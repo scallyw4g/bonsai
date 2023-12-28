@@ -325,16 +325,19 @@ DoEntityWindow(engine_resources *Engine)
 
   if (Engine->MaybeMouseRay.Tag)
   {
-    entity *Entity = Engine->HoverEntity;
-
-    if (Entity && Entity != EngineDebug->SelectedEntity)
+    if (Engine->HoverEntity.Tag)
     {
-      Assert(Spawned(Entity));
-      DrawEntityCollisionVolume(Entity, &GpuMap->Buffer, Graphics, World->ChunkDim, YELLOW);
+      entity *Entity = Engine->HoverEntity.Value;
 
-      if (Input->LMB.Clicked)
+      if (Entity && Entity != EngineDebug->SelectedEntity)
       {
-        EngineDebug->SelectedEntity = Entity;
+        Assert(Spawned(Entity));
+        DrawEntityCollisionVolume(Entity, &GpuMap->Buffer, Graphics, World->ChunkDim, YELLOW);
+
+        if (Input->LMB.Clicked)
+        {
+          EngineDebug->SelectedEntity = Entity;
+        }
       }
     }
   }
@@ -408,7 +411,7 @@ DoEntityWindow(engine_resources *Engine)
     }
   }
 
-  if (Input->Delete.Clicked && Engine->HoverEntity) { Unspawn(Engine->HoverEntity); }
+  if (Input->Delete.Clicked && Engine->HoverEntity.Tag) { Unspawn(Engine->HoverEntity.Value); }
 }
 
 link_internal void
