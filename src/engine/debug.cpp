@@ -725,7 +725,7 @@ DoEngineDebug(engine_resources *Engine)
                   f32 SmallObjectCorrectionFactor = 350.f/Length(ModelCenterpointOffset);
                   ThumbCamera->DistanceFromTarget = LengthSq(ModelCenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
                   UpdateGameCamera(World, {}, 0.f, {}, ThumbCamera, 1.f);
-                  RenderToTexture(Engine, Thumb, &Model->Mesh, ModelCenterpointOffset);
+                  RenderToTexture(Engine, Thumb, &Model->Mesh, {});
                 }
 
 
@@ -738,7 +738,7 @@ DoEngineDebug(engine_resources *Engine)
                   if (Input->LMB.Pressed) {MouseDP = GetMouseDelta(Plat)*2.f; }
                   if (Input->RMB.Pressed) { CameraZDelta += GetMouseDelta(Plat).y*2.f; }
                   UpdateGameCamera(World, MouseDP, CameraZDelta, {}, ThumbCamera, 1.f);
-                  RenderToTexture(Engine, Thumb, &Model->Mesh, ModelCenterpointOffset);
+                  RenderToTexture(Engine, Thumb, &Model->Mesh, {});
                 }
 
 
@@ -751,25 +751,26 @@ DoEngineDebug(engine_resources *Engine)
 
                     /* Assert(Model->Mesh.Mat == 0); */
 
-                    RangeIterator_t(u32, ElementIndex, Model->Mesh.At) { Model->Mesh.Mat[ElementIndex].Transparency = 0.5f; }
 
+                    v3 AssetHalfDim = V3(Model->Dim)/2.f;
                     {
+                      /* RangeIterator_t(u32, ElementIndex, Model->Mesh.At) { Model->Mesh.Mat[ElementIndex].Transparency = 0.85f; } */
                       /* untextured_3d_geometry_buffer *Dest = &Graphics->Transparency.GpuBuffer.Buffer; */
-                      /* BufferChunkMesh(Graphics, Dest, &Model->Mesh, World->ChunkDim, EntityOrigin.WorldP, 1.f, EntityOrigin.Offset, Quaternion()); */
+                      /* BufferChunkMesh(Graphics, Dest, &Model->Mesh, World->ChunkDim, EntityOrigin.WorldP, 1.f, EntityOrigin.Offset + V3(0.f, 0.f, AssetHalfDim.z), Quaternion()); */
+                      /* RangeIterator_t(u32, ElementIndex, Model->Mesh.At) { Model->Mesh.Mat[ElementIndex].Transparency = 0.f; } */
                     }
                     {
                       untextured_3d_geometry_buffer *Dest = &GpuMap->Buffer;
-                      BufferChunkMesh(Graphics, Dest, &Model->Mesh, World->ChunkDim, EntityOrigin.WorldP, 1.f, EntityOrigin.Offset, Quaternion());
+                      BufferChunkMesh(Graphics, Dest, &Model->Mesh, World->ChunkDim, EntityOrigin.WorldP, 1.f, EntityOrigin.Offset + AssetHalfDim.z - V3(AssetHalfDim.xy, 0.f), Quaternion());
                     }
 
-                    RangeIterator_t(u32, ElementIndex, Model->Mesh.At) { Model->Mesh.Mat[ElementIndex].Transparency = 0.f; }
 
                     if ( Input->Space.Clicked )
                     {
                       world_update_op_shape_params_asset AssetUpdateShape =
                       {
                         &Asset->Models.Start[ModelIndex],
-                        EntityOrigin
+                        Canonicalize(World, EntityOrigin - V3(AssetHalfDim.xy, 0.f))
                       };
 
                       asset_spawn_mode AssetSpawnMode = {};
@@ -789,7 +790,7 @@ DoEngineDebug(engine_resources *Engine)
                         case AssetSpawnMode_Entity:
                         {
                           entity *E = GetFreeEntity(Engine->EntityTable);
-                          SpawnEntity(E, &EngineDebug->SelectedAsset, EntityBehaviorFlags_Default, 0, &EntityOrigin, Model->Dim/2.f);
+                          SpawnEntity(E, &EngineDebug->SelectedAsset, EntityBehaviorFlags_Default, 0, &AssetUpdateShape.Origin, Model->Dim/2.f);
                         } break;
                       }
                     }
