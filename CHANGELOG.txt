@@ -1,14 +1,38 @@
-* 1.1.2
+* 1.2.0
 
-- Remove dead turn_based2 example
+- Remove dead turn_based2 and asset_picker examples
 
 - Add HoodooTerrain to terrain_gen
+
+- Add ser/des for counted_string
+
+- Fix entity models not being rotated correctly
+
+This was happening because entity models were not centered about zero, so when
+rotations were applied they were rotating about their root point (lower-left corner)
+The fix was to center models about zero.
 
 - Change CameraGhost
 
 Game code no longer has to manage allocating and hooking up a CameraGhost
 entity on the engine resources.  Instead, if wanted, it may allocate and set
 the EntityBehaviorFlags_CameraGhost flag on an entity of the games choice.
+
+- Change Entity struct
+
+* Add 'u64 Version'
+* Remove model pointer in favor of using an asset_id
+
+This is a breaking change that better positions us to not making breaking
+changes in the future.  I added a Verson field to entity, which I expect
+should be well more than enough versions.  The plan here is to add a poof
+feature that computes a hash of the types contents and checks that against
+the hash of the currently compiled type.  We should also be able to lean
+on the C type checker once that's done to generate functions that have that
+hash in the name such that we actually know at compile time if we break entity
+loading.
+
+
 
 
 * 1.1.1
