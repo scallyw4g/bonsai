@@ -45,7 +45,6 @@ BONSAI_INTERNAL='-D BONSAI_INTERNAL'
 EXAMPLES_TO_BUILD=""
 
 BUNDLED_EXAMPLES="
-  $EXAMPLES/asset_picker
   $EXAMPLES/blank_project
   $EXAMPLES/turn_based
   $EXAMPLES/the_wanderer
@@ -384,9 +383,6 @@ function RunPoof
   # TrackPid "" $!
 
   # RunPoofHelper examples/terrain_gen/game.cpp && echo -e "$Success poofed examples/terrain_gen/game.cpp" &
-  # TrackPid "" $!
-
-  # RunPoofHelper examples/asset_picker/game.cpp && echo -e "$Success poofed examples/asset_picker/game.cpp" &
   # TrackPid "" $!
 
   # RunPoofHelper examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &

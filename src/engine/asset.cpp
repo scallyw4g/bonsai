@@ -443,6 +443,10 @@ AllocateAssetSlot(engine_resources *Engine)
   RangeIterator_t(u16, TestAssetIndex, ASSET_TABLE_COUNT)
   {
     asset *Asset = Engine->AssetTable + TestAssetIndex;
+    if (Asset->LoadState == AssetLoadState_Unloaded)
+    {
+      FinalAssetIndex = TestAssetIndex; break;
+    }
 
     if (Asset->LoadState != AssetLoadState_Queued)
     {
@@ -450,11 +454,6 @@ AllocateAssetSlot(engine_resources *Engine)
       {
         LruAssetFrame = Asset->LRUFrameIndex;
         LruAssetIndex = TestAssetIndex;
-
-        if (Asset->LoadState == AssetLoadState_Unloaded)
-        {
-          FinalAssetIndex = TestAssetIndex; break;
-        }
       }
     }
   }
@@ -553,6 +552,9 @@ GetAssetPtr(engine_resources *Engine, asset_slot Slot)
     asset *Asset = Engine->AssetTable + Slot.Index;
     if (Asset->Id.Slot.Generation == Slot.Generation)
     {
+      // TODO(Jesse): This should probably be set somewhere else and be an assert ...?
+      Asset->Id.Slot.Index = Slot.Index;
+
       Result.Tag = Maybe_Yes;
       Result.Value = Asset;
     }
@@ -609,3 +611,29 @@ GetAssetPtr(engine_resources *Engine, asset_id *AID)
   if (Result.Tag == Maybe_No) { Result = GetAssetPtr(Engine, &AID->FileNode); }
   return Result;
 }
+
+#if 1
+link_internal maybe_asset_ptr
+NewAssetForGeneratedModel(engine_resources *Engine, model *Model)
+{
+  maybe_asset_ptr Result = {};
+
+  maybe_asset_slot MaybeAssetSlot = AllocateAssetSlot(Engine);
+  if (MaybeAssetSlot.Tag)
+  {
+    Result = GetAssetPtr(Engine, MaybeAssetSlot.Value);
+
+    // NOTE(Jesse): Somewhat questionable...
+    if (Result.Tag)
+    {
+      Result.Value->LoadState = AssetLoadState_Loaded;
+    }
+  }
+  else
+  {
+    SoftError("Unable to allocate asset slot for Model (%p).", Model);
+  }
+
+  return Result;
+}
+#endif

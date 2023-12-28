@@ -758,7 +758,7 @@ BufferEntity(
 #endif
 
     // TODO(Jesse): Do we bake this into GetAssetPtr?
-    if (Entity->AssetId.FileNode.Type)
+    if ( Entity->AssetId.Slot.Generation )
     {
       maybe_asset_ptr MaybeAsset = GetAssetPtr(GetEngineResources(), &Entity->AssetId);
       if (MaybeAsset.Tag &&

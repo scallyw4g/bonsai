@@ -393,6 +393,9 @@ link_internal particle_system * Deserialize_particle_system(u8_stream *Bytes);
 poof(serdes_struct(file_traversal_node))
 #include <generated/serdes_struct_file_traversal_node.h>
 
+poof(serdes_struct(asset_slot))
+#include <generated/serdes_struct_asset_slot.h>
+
 poof(serdes_struct(asset_id))
 #include <generated/serdes_struct_asset_id.h>
 

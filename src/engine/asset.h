@@ -137,6 +137,7 @@ enum asset_load_state
   AssetLoadState_Error,
 };
 
+#define INVALID_ASSET_INDEX (u16_MAX)
 struct asset_slot
 {
   u16 Index;        // Physical slot in asset table
@@ -150,6 +151,9 @@ struct asset_id
 #endif
   file_traversal_node FileNode;
 };
+
+poof(maybe(asset_id))
+#include <generated/maybe_asset_id.h>
 
 link_internal asset_id
 AssetId(file_traversal_node FileNode)
@@ -167,7 +171,6 @@ AssetId(file_traversal_node *FileNode)
   return Result;
 }
 
-#define INVALID_ASSET_INDEX (u16_MAX)
 struct asset
 {
   volatile asset_load_state LoadState;

@@ -183,6 +183,9 @@ poof(do_editor_ui_for_compound_type(model))
 poof(do_editor_ui_for_compound_type(file_traversal_node))
 #include <generated/do_editor_ui_for_compound_type_file_traversal_node.h>
 
+poof(do_editor_ui_for_compound_type(asset_slot))
+#include <generated/do_editor_ui_for_compound_type_asset_slot.h>
+
 poof(do_editor_ui_for_compound_type(asset_id))
 #include <generated/do_editor_ui_for_compound_type_asset_id.h>
 

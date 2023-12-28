@@ -755,16 +755,32 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   vox_data               *VoxData    = &GameState->BakeResult.VoxData;
   chunk_data             *ChunkData  = VoxData->ChunkData;
 
-  entity *BakeEntity = GetFreeEntity(EntityTable);
-  GameState->BakeEntity = BakeEntity;
+  cp BakeEntityP = Canonical_Position(World->ChunkDim, V3(-ChunkData->Dim.x-8, 0, 0), V3i(0));
 
-  BakeEntity->_CollisionVolumeRadius = ChunkData->Dim/2.f;
-  BakeEntity->P = Canonical_Position(World->ChunkDim, V3(-ChunkData->Dim.x-8, 0, 0), V3i(0));
-  BakeEntity->Model = Allocate(model, Resources->Memory, 1);
+  {
+    model *Model = Allocate(model, Resources->Memory, 1);
+    maybe_asset_ptr MaybeAsset = NewAssetForGeneratedModel(Resources, Model);
+    if (MaybeAsset.Tag)
+    {
+      entity *BakeEntity = GetFreeEntity(EntityTable);
+      GameState->BakeEntity = BakeEntity;
 
-  AllocateAndBuildMesh(&GameState->BakeResult.VoxData, BakeEntity->Model, TempMemory, Resources->Memory);
+      BakeEntity->_CollisionVolumeRadius = ChunkData->Dim/2.f;
+      BakeEntity->P = BakeEntityP;
 
-  SpawnEntity(BakeEntity);
+      AllocateAndBuildMesh(&GameState->BakeResult.VoxData, Model, TempMemory, Resources->Memory);
+
+      asset *Asset = MaybeAsset.Value;
+      Asset->LoadState == AssetLoadState_Loaded;
+      Asset->Models.Start = Model;
+      Asset->Models.Count = 1;
+
+      BakeEntity->AssetId = Asset->Id;
+
+      SpawnEntity(BakeEntity);
+    }
+  }
+
 
   Info("Drawing (%d) Baked tiles", BakedTiles.Count);
 
@@ -777,51 +793,65 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
       voxel_synth_tile *Tile = Get(&BakedTiles, SynthTileIndex);
       if (RuleId == Tile->RuleId)
       {
-        v3i VoxOffset = V3iFromIndex(s32(Tile->VoxelIndex), ChunkData->Dim);
-
-        entity *TileEntity = GetFreeEntity(EntityTable);
-        TileEntity->_CollisionVolumeRadius = V3(Global_TileDim/2);
-
+        model *TileModel = Allocate(model, Resources->Memory, 1);
         // TODO(Jesse)(memory, heap, mesh)
-        AllocateMesh( &TileEntity->Model->Mesh, u32(Kilobytes(18)), Resources->Memory);
+        AllocateMesh( &TileModel->Mesh, u32(Kilobytes(18)), Resources->Memory);
 
-        /* BuildWorldChunkMeshFromMarkedVoxels_Greedy( ChunkData->Voxels, */
-        /*                                             ChunkData->Dim, */
-        /*                                             VoxOffset, VoxOffset+Global_TileDim, */
-        /*                                            &TileEntity->Model.Mesh, */
-        /*                                             TempMemory, */
-        /*                                             VoxData->Palette ); */
+        maybe_asset_ptr MaybeAsset = NewAssetForGeneratedModel(Resources, TileModel);
+        if (MaybeAsset.Tag)
+        {
+          asset *Asset = MaybeAsset.Value;
+          Asset->LoadState == AssetLoadState_Loaded;
 
-        BuildWorldChunkMeshFromMarkedVoxels_Greedy( ChunkData->Voxels,
-                                                    ChunkData->Dim,
-                                                    VoxOffset, VoxOffset+Global_TileDim,
-                                                   &TileEntity->Model->Mesh,
-                                                   &TileEntity->Model->TransparentMesh,
-                                                    GetTranArena() );
+          Asset->Models.Start = TileModel;
+          Asset->Models.Count = 1;
+
+          v3i VoxOffset = V3iFromIndex(s32(Tile->VoxelIndex), ChunkData->Dim);
+
+          entity *TileEntity = GetFreeEntity(EntityTable);
+          TileEntity->_CollisionVolumeRadius = V3(Global_TileDim/2);
+
+          TileEntity->AssetId = MaybeAsset.Value->Id;
+
+          /* BuildWorldChunkMeshFromMarkedVoxels_Greedy( ChunkData->Voxels, */
+          /*                                             ChunkData->Dim, */
+          /*                                             VoxOffset, VoxOffset+Global_TileDim, */
+          /*                                            &TileEntity->Model.Mesh, */
+          /*                                             TempMemory, */
+          /*                                             VoxData->Palette ); */
+
+          BuildWorldChunkMeshFromMarkedVoxels_Greedy( ChunkData->Voxels,
+                                                      ChunkData->Dim,
+                                                      VoxOffset, VoxOffset+Global_TileDim,
+                                                     &TileModel->Mesh,
+                                                      0,
+                                                      GetTranArena() );
 
 
-        /* BuildWorldChunkMesh_DebugVoxels( ChunkData->Voxels, */
-        /*                                  ChunkData->Dim, */
-        /*                                  VoxOffset, */
-        /*                                  VoxOffset+Global_TileDim, */
-        /*                                 &TileEntity->Model.Mesh, */
-        /*                                  TempMemory, */
-        /*                                  VoxData->Palette ); */
+          /* BuildWorldChunkMesh_DebugVoxels( ChunkData->Voxels, */
+          /*                                  ChunkData->Dim, */
+          /*                                  VoxOffset, */
+          /*                                  VoxOffset+Global_TileDim, */
+          /*                                 &TileEntity->Model.Mesh, */
+          /*                                  TempMemory, */
+          /*                                  VoxData->Palette ); */
 
-        TileEntity->P = BakeEntity->P;
-        TileEntity->P.WorldP += V3i(0, -1, 0);
+          TileEntity->P = BakeEntityP;
+          TileEntity->P.WorldP += V3i(0, -1, 0);
 
-        auto xRuleMultiplier = RuleIndex % 8;
-        auto yRuleMultiplier = RuleIndex / 8;
+          auto xRuleMultiplier = RuleIndex % 8;
+          auto yRuleMultiplier = RuleIndex / 8;
 
-        auto xOffset = s32(xRuleMultiplier)*(Global_TileDim.x+2);
-        auto yOffset = -s32(yRuleMultiplier)*(Global_TileDim.x+2);
+          auto xOffset = s32(xRuleMultiplier)*(Global_TileDim.x+2);
+          auto yOffset = -s32(yRuleMultiplier)*(Global_TileDim.x+2);
 
-        TileEntity->P.Offset += V3(xOffset, yOffset, 0);
-        /* TileEntity->P = Canonicalize(World->ChunkDim, TileEntity->P); */
-        SpawnEntity(TileEntity);
+          TileEntity->P.Offset += V3(xOffset, yOffset, 0);
+          /* TileEntity->P = Canonicalize(World->ChunkDim, TileEntity->P); */
+          TileEntity->UserData = umm(Tile);
 
-        TileEntity->UserData = umm(Tile);
+          SpawnEntity(TileEntity);
+        }
+
         break;
       }
     }
