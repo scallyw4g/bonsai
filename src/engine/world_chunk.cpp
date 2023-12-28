@@ -1328,7 +1328,11 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
 
                                             untextured_3d_geometry_buffer *DestGeometry,
                                             untextured_3d_geometry_buffer *DestTransparentGeometry,
-                                            memory_arena *TempMemory )
+                                            memory_arena *TempMemory ,
+
+                                            // NOTE(Jesse): This is so we can offset vertices such that we center
+                                            // entity models about 0 and rotation works properly.
+                                            v3 VertexOffset = {})
 {
   TIMED_FUNCTION();
 
@@ -1412,38 +1416,38 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
           if (Voxel->Flags & Voxel_RightFace)
           {
             v3 Dim = DoXStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_RightFace, Voxel->Color, Voxel->Transparency);
-            RightFaceVertexData( V3(TmpVoxP), Dim, VertexData);
+            RightFaceVertexData( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
             BufferVertsDirect(Dest, 6, VertexData, RightFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_LeftFace)
           {
             v3 Dim = DoXStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_LeftFace, Voxel->Color, Voxel->Transparency);
-            LeftFaceVertexData( V3(TmpVoxP), Dim, VertexData);
+            LeftFaceVertexData( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
             BufferVertsDirect(Dest, 6, VertexData, LeftFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_BottomFace)
           {
             v3 Dim = DoZStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_BottomFace, Voxel->Color, Voxel->Transparency);
-            BottomFaceVertexData( V3(TmpVoxP), Dim, VertexData);
+            BottomFaceVertexData( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
             BufferVertsDirect(Dest, 6, VertexData, BottomFaceNormalData, Materials);
           }
 
           if (Voxel->Flags & Voxel_TopFace)
           {
             v3 Dim = DoZStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_TopFace, Voxel->Color, Voxel->Transparency);
-            TopFaceVertexData( V3(TmpVoxP), Dim, VertexData);
+            TopFaceVertexData( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
             BufferVertsDirect(Dest, 6, VertexData, TopFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_FrontFace)
           {
             v3 Dim = DoYStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_FrontFace, Voxel->Color, Voxel->Transparency);
-            FrontFaceVertexData( V3(TmpVoxP), Dim, VertexData);
+            FrontFaceVertexData( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
             BufferVertsDirect(Dest, 6, VertexData, FrontFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_BackFace)
           {
             v3 Dim = DoYStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_BackFace, Voxel->Color, Voxel->Transparency);
-            BackFaceVertexData( V3(TmpVoxP), Dim, VertexData);
+            BackFaceVertexData( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
             BufferVertsDirect(Dest, 6, VertexData, BackFaceNormalData, Materials);
           }
         }
@@ -1459,9 +1463,10 @@ link_internal void
 BuildWorldChunkMeshFromMarkedVoxels_Greedy( vox_data *Vox,
                                             untextured_3d_geometry_buffer *DestGeometry,
                                             untextured_3d_geometry_buffer *DestTransparentGeometry,
-                                            memory_arena *TempMemory)
+                                            memory_arena *TempMemory,
+                                            v3 VertexOffset = {})
 {
-  BuildWorldChunkMeshFromMarkedVoxels_Greedy(Vox->ChunkData->Voxels, Vox->ChunkData->Dim, {}, Vox->ChunkData->Dim, DestGeometry, DestTransparentGeometry, TempMemory );
+  BuildWorldChunkMeshFromMarkedVoxels_Greedy(Vox->ChunkData->Voxels, Vox->ChunkData->Dim, {}, Vox->ChunkData->Dim, DestGeometry, DestTransparentGeometry, TempMemory, VertexOffset);
 }
 
 link_internal void

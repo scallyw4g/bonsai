@@ -749,9 +749,10 @@ BufferEntity(
 
     if (Entity->Model)
     {
-      BufferChunkMesh(Graphics, Dest, &Entity->Model->Mesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Entity->P.Offset + AnimationOffset, FromEuler(Entity->EulerAngles.xyz));
+      v3 Offset = Entity->P.Offset + AnimationOffset + Entity->Scale*(V3(Entity->Model->Dim)/2.f);
+      BufferChunkMesh(Graphics, Dest, &Entity->Model->Mesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Offset, FromEuler(Entity->EulerAngles.xyz));
       /* BufferChunkMesh(Graphics, TransparentDest, &Entity->Model->Mesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Entity->P.Offset + AnimationOffset, FromEuler(Entity->EulerAngles.xyz)); */
-      BufferChunkMesh(Graphics, TransparentDest, &Entity->Model->TransparentMesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Entity->P.Offset + AnimationOffset, FromEuler(Entity->EulerAngles.xyz));
+      BufferChunkMesh(Graphics, TransparentDest, &Entity->Model->TransparentMesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Offset, FromEuler(Entity->EulerAngles.xyz));
     }
 
     // TODO(Jesse): Do we bake this into GetAssetPtr?
@@ -764,7 +765,8 @@ BufferEntity(
         Assert(MaybeAsset.Value->Models.Count);
         model *Model = MaybeAsset.Value->Models.Start;
 
-        BufferChunkMesh(Graphics, Dest, &Model->Mesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Entity->P.Offset + AnimationOffset, FromEuler(Entity->EulerAngles.xyz));
+        v3 Offset = Entity->P.Offset + AnimationOffset + Entity->Scale*(V3(Model->Dim)/2.f);
+        BufferChunkMesh(Graphics, Dest, &Model->Mesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Offset, FromEuler(Entity->EulerAngles.xyz));
       }
     }
   }

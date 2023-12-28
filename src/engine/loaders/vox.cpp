@@ -554,7 +554,7 @@ AllocateAndBuildMesh(vox_data *Vox, model *DestModel, memory_arena *TempMemory, 
   AllocateMesh(&DestModel->TransparentMesh, 6*VERTS_PER_FACE*(u32)Volume(DestModel->Dim), PermMemory);
   /* DestModel->Mesh = GetMeshForChunk(); */
 
-  BuildWorldChunkMeshFromMarkedVoxels_Greedy(Vox, &DestModel->Mesh, &DestModel->TransparentMesh, TempMemory);
+  BuildWorldChunkMeshFromMarkedVoxels_Greedy(Vox, &DestModel->Mesh, &DestModel->TransparentMesh, TempMemory, V3(DestModel->Dim)/-2.f);
   // TODO(Jesse): Roll back what memory we don't use here.. or maybe allocate the initial buffer with temp and copy to perm?
 }
 
