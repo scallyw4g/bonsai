@@ -725,7 +725,7 @@ HighlightEntity(engine_resources *Engine, entity *Entity)
   DrawEntityCollisionVolume(Entity, &GpuMap->Buffer, Graphics, World->ChunkDim, YELLOW);
 }
 
-void
+link_internal void
 BufferEntity(
     untextured_3d_geometry_buffer* Dest,
     untextured_3d_geometry_buffer* TransparentDest,
@@ -747,29 +747,15 @@ BufferEntity(
       AnimationOffset = GetInterpolatedPosition(Animation);
     }
 
-#if 0
-    if (Entity->Model)
+    maybe_asset_ptr MaybeAsset = GetAssetPtr(GetEngineResources(), &Entity->AssetId);
+    if (MaybeAsset.Tag &&
+        MaybeAsset.Value->LoadState == AssetLoadState_Loaded)
     {
-      v3 Offset = Entity->P.Offset + AnimationOffset + Entity->Scale*(V3(Entity->Model->Dim)/2.f);
-      BufferChunkMesh(Graphics, Dest, &Entity->Model->Mesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Offset, FromEuler(Entity->EulerAngles.xyz));
-      /* BufferChunkMesh(Graphics, TransparentDest, &Entity->Model->Mesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Entity->P.Offset + AnimationOffset, FromEuler(Entity->EulerAngles.xyz)); */
-      BufferChunkMesh(Graphics, TransparentDest, &Entity->Model->TransparentMesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Offset, FromEuler(Entity->EulerAngles.xyz));
-    }
-#endif
+      Assert(MaybeAsset.Value->Models.Count == 1);
+      model *Model = MaybeAsset.Value->Models.Start;
 
-    // TODO(Jesse): Do we bake this into GetAssetPtr?
-    if ( Entity->AssetId.Slot.Generation )
-    {
-      maybe_asset_ptr MaybeAsset = GetAssetPtr(GetEngineResources(), &Entity->AssetId);
-      if (MaybeAsset.Tag &&
-          MaybeAsset.Value->LoadState == AssetLoadState_Loaded)
-      {
-        Assert(MaybeAsset.Value->Models.Count);
-        model *Model = MaybeAsset.Value->Models.Start;
-
-        v3 Offset = Entity->P.Offset + AnimationOffset + Entity->Scale*(V3(Model->Dim)/2.f);
-        BufferChunkMesh(Graphics, Dest, &Model->Mesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Offset, FromEuler(Entity->EulerAngles.xyz));
-      }
+      v3 Offset = Entity->P.Offset + AnimationOffset + Entity->Scale*(V3(Model->Dim)/2.f);
+      BufferChunkMesh(Graphics, Dest, &Model->Mesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Offset, FromEuler(Entity->EulerAngles.xyz));
     }
   }
 }

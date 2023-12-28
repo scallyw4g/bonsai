@@ -547,7 +547,7 @@ GetAssetPtr(engine_resources *Engine, asset_slot Slot)
 {
   maybe_asset_ptr Result = {};
 
-  if (Slot.Index || Slot.Generation)
+  if (Slot.Generation)
   {
     asset *Asset = Engine->AssetTable + Slot.Index;
     if (Asset->Id.Slot.Generation == Slot.Generation)
@@ -567,36 +567,40 @@ link_internal maybe_asset_ptr
 GetAssetPtr(engine_resources *Engine, file_traversal_node *FileNode)
 {
   maybe_asset_ptr Result = {};
-  RangeIterator(AssetIndex, ASSET_TABLE_COUNT)
-  {
-    asset *Query = Engine->AssetTable + AssetIndex;
-    if (AreEqual(FileNode, &Query->Id.FileNode))
-    {
-      Result.Tag = Maybe_Yes;
-      Result.Value = Query;
-      break;
-    }
-  }
 
-  if (Result.Tag == Maybe_No)
+  if (FileNode->Dir || FileNode->Name)
   {
-    maybe_asset_slot MaybeSlot = AllocateAssetSlot(Engine);
-
-    if (MaybeSlot.Tag)
+    RangeIterator(AssetIndex, ASSET_TABLE_COUNT)
     {
-      Result = GetAssetPtr(Engine, MaybeSlot.Value);
-      if (Result.Tag)
+      asset *Query = Engine->AssetTable + AssetIndex;
+      if (AreEqual(FileNode, &Query->Id.FileNode))
       {
-        Result.Value->Id.FileNode = *FileNode;
-        Result.Value->LRUFrameIndex = Engine->FrameIndex;
-        QueueAssetForLoad(&Engine->Stdlib.Plat.LowPriority, Result.Value);
+        Result.Tag = Maybe_Yes;
+        Result.Value = Query;
+        break;
       }
     }
 
-  }
-  else
-  {
-    Assert(Result.Value->LoadState);
+    if (Result.Tag == Maybe_No)
+    {
+      maybe_asset_slot MaybeSlot = AllocateAssetSlot(Engine);
+
+      if (MaybeSlot.Tag)
+      {
+        Result = GetAssetPtr(Engine, MaybeSlot.Value);
+        if (Result.Tag)
+        {
+          Result.Value->Id.FileNode = *FileNode;
+          Result.Value->LRUFrameIndex = Engine->FrameIndex;
+          QueueAssetForLoad(&Engine->Stdlib.Plat.LowPriority, Result.Value);
+        }
+      }
+
+    }
+    else
+    {
+      Assert(Result.Value->LoadState);
+    }
   }
 
 
