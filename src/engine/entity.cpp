@@ -1264,7 +1264,7 @@ Intersect(world *World, ray *Ray, entity *Entity)
 }
 
 link_internal entity *
-GetClosestEntityToRay(world *World, entity **EntityTable, ray *Ray)
+GetClosestEntityIntersectingRay(world *World, entity **EntityTable, ray *Ray)
 {
   entity *Result = {};
   r32 tMin = f32_MAX;
@@ -1290,7 +1290,7 @@ GetClosestEntityToRay(world *World, entity **EntityTable, ray *Ray)
 link_internal entity *
 RayTraceEntityCollision(engine_resources *Resources, ray *Ray)
 {
-  entity *Result = GetClosestEntityToRay(Resources->World, Resources->EntityTable, Ray);
+  entity *Result = GetClosestEntityIntersectingRay(Resources->World, Resources->EntityTable, Ray);
   return Result;
 }
 
@@ -1392,3 +1392,37 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
   if (Resources->_CameraGhost == 0) { SpawnCameraGhost(Resources); }
 }
 
+
+link_internal maybe_standing_spot
+AStarPathfind(world *World, standing_spot_buffer *Spots, cp CurrentP, cp TargetP, r32 Movespeed)
+{
+  NotImplemented;
+
+  memory_arena *Temp = GetTranArena();
+  temp_memory_handle TMH = BeginTemporaryMemory(Temp);
+
+  standing_spot_block_array Stack = {};
+  Stack.Memory = Temp;
+
+  standing_spot_buffer HotSpots = GetStandingSpotsWithinRadiusSorted(World, Spots, CurrentP, Movespeed, Temp, Temp);
+
+  IterateOver(&HotSpots, Spot, SpotIndex)
+  {
+    
+  }
+
+
+  maybe_standing_spot Result = {};
+
+#if 0
+  if (Spots->Count)
+  {
+    u32 Index = RandomBetween(0u, &E, u32(Spots->Count));
+
+    Result.Tag = Maybe_Yes;
+    Result.Value = Spots->Start[Index];
+  }
+#endif
+
+  return Result;
+}

@@ -391,6 +391,10 @@ struct standing_spot
 poof(maybe(standing_spot))
 #include <generated/maybe_standing_spot.h>
 
+poof(block_array(standing_spot, {32}))
+#include <generated/block_array_standing_spot_688853862.h>
+
+
 inline standing_spot
 StandingSpot(v3 Offset, world_position WP)
 {
@@ -533,6 +537,20 @@ global_variable v3i Global_ChunkApronMaxDim = V3i(1,1,3);
 /* CAssert(Global_ChunkApronDim.y == Global_ChunkApronMinDim.y + Global_ChunkApronMaxDim.y); */
 /* CAssert(Global_ChunkApronDim.z == Global_ChunkApronMinDim.z + Global_ChunkApronMaxDim.z); */
 
+
+link_internal v3
+GetSimSpaceCenterP(world *World, standing_spot *Spot)
+{
+  v3 Result = GetSimSpaceP(World, Spot->P) + Global_StandingSpotHalfDim;
+  return Result;
+}
+
+link_internal v3
+GetSimSpaceBaseP(world *World, standing_spot *Spot)
+{
+  v3 Result = GetSimSpaceP(World, Spot->P);
+  return Result;
+}
 
 link_internal cp
 GetSpotMidpoint(world *World, standing_spot *Spot)

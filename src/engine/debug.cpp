@@ -325,8 +325,7 @@ DoEntityWindow(engine_resources *Engine)
 
   if (Engine->MaybeMouseRay.Tag)
   {
-    entity *Entity = GetClosestEntityToRay(World, EntityTable, &Engine->MaybeMouseRay.Ray);
-    EngineDebug->HoverEntity = Entity;
+    entity *Entity = Engine->HoverEntity;
 
     if (Entity && Entity != EngineDebug->SelectedEntity)
     {
@@ -409,7 +408,7 @@ DoEntityWindow(engine_resources *Engine)
     }
   }
 
-  if (Input->Delete.Clicked && EngineDebug->HoverEntity) { Unspawn(EngineDebug->HoverEntity); }
+  if (Input->Delete.Clicked && Engine->HoverEntity) { Unspawn(Engine->HoverEntity); }
 }
 
 link_internal void

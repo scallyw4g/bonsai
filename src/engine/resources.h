@@ -59,6 +59,8 @@ struct engine_resources
   maybe_picked_voxel MousedOverVoxel;
   maybe_standing_spot ClosestStandingSpotToCursor;
 
+  entity *HoverEntity;
+
   render_entity_to_texture_group RTTGroup;
 };
 
@@ -99,17 +101,17 @@ GetLevelEditor()
   UNPACK_DATA_RESOURCES(Res)         \
   UNPACK_GRAPHICS_RESOURCES(Res)
 
-#define UNPACK_DATA_RESOURCES(Res)                               \
-  platform                  *Plat          = &(Res)->Stdlib.Plat;  \
-  world                     *World         =  Res->World;        \
-  game_state                *GameState     =  Res->GameState;    \
-  heap_allocator            *Heap          = &Res->Heap;         \
-  entity                   **EntityTable   =  Res->EntityTable;  \
-  hotkeys                   *Hotkeys       = &Res->Hotkeys;      \
-  engine_debug              *EngineDebug   = &Res->EngineDebug;  \
-  tiered_mesh_freelist      *MeshFreelist  = &Res->MeshFreelist; \
-  input                     *Input         = &Res->Stdlib.Plat.Input;  \
-  level_editor              *Editor        = &Res->Editor;       \
+#define UNPACK_DATA_RESOURCES(Res)                                    \
+  platform                  *Plat          = &(Res)->Stdlib.Plat;     \
+  world                     *World         =  Res->World;             \
+  game_state                *GameState     =  Res->GameState;         \
+  heap_allocator            *Heap          = &Res->Heap;              \
+  entity                   **EntityTable   =  Res->EntityTable;       \
+  hotkeys                   *Hotkeys       = &Res->Hotkeys;           \
+  engine_debug              *EngineDebug   = &Res->EngineDebug;       \
+  tiered_mesh_freelist      *MeshFreelist  = &Res->MeshFreelist;      \
+  input                     *Input         = &Res->Stdlib.Plat.Input; \
+  level_editor              *Editor        = &Res->Editor;            \
 
 #define UNPACK_GRAPHICS_RESOURCES(Res)                                    \
   graphics                  *Graphics      =  Res->Graphics;              \

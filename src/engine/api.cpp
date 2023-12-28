@@ -103,8 +103,9 @@ Bonsai_FrameBegin(engine_resources *Resources)
   // the UI captures the input
   //
   // @camera-update-ui-update-frame-jank
-  Resources->MaybeMouseRay = ComputeRayFromCursor(Resources, &gBuffer->ViewProjection, Camera, World->ChunkDim);
+  Resources->MaybeMouseRay   = ComputeRayFromCursor(Resources, &gBuffer->ViewProjection, Camera, World->ChunkDim);
   Resources->MousedOverVoxel = MousePickVoxel(Resources);
+  Resources->HoverEntity     = GetClosestEntityIntersectingRay(World, EntityTable, &Resources->MaybeMouseRay.Ray);
 
   {
     Resources->ClosestStandingSpotToCursor = {};

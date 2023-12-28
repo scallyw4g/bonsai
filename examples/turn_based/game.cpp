@@ -73,70 +73,72 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  /* if (GameState->PlayerActed) */
+  entity *Player = GameState->Player;
+  cp EnemyBaseP  = GetEntityBaseP(World, Enemy);
+  cp PlayerBaseP = GetEntityBaseP(World, Player);
+
+  v3 PlayerBaseSimP = GetSimSpaceP(World, PlayerBaseP);
+  v3 EnemyBaseSimP  = GetSimSpaceP(World, EnemyBaseP);
+
+  /* DEBUG_DrawSimSpaceVectorAt(Engine, EnemyBaseSimP, V3(0, 0, 100), RED, 0.25f); */
+
+  // NOTE(Jesse): Entities embedded in the world cannot act
+  if (GetCollision(World, Enemy).Count) { return; }
+
+  u16 StandingSpotColor = YELLOW;
+  r32 StandingSpotRadius = DEFAULT_STANDING_SPOT_THICKNESS;
+
+  if (Enemy == Engine->HoverEntity)
   {
-    /* u32 EnemyChoice = RandomU32(&Global_GameEntropy) % 4; */
-    u32 EnemyChoice = 0;
+    StandingSpotColor = ORANGE;
+    StandingSpotRadius *= 2.f;
+  }
 
-    switch(EnemyChoice)
+  f32 EnemySightDistance = 60.f;
+  standing_spot_buffer SightedSpots = GetStandingSpotsWithinRadius(World, EnemyBaseP, EnemySightDistance, GetTranArena());
+
+  f32 ShortestDistanceToPlayerSq = f32_MAX;
+  umm ClosestSpotIndex = umm_MAX;
+  IterateOver(&SightedSpots, Spot, SpotIndex)
+  {
+    DrawStandingSpot(&GpuMap->Buffer, Camera, Spot, StandingSpotColor, StandingSpotRadius);
+
+    v3 SpotSimP = GetSimSpaceCenterP(World, Spot);
+    r32 ThisDist = DistanceSq(SpotSimP, PlayerBaseSimP);
+    if (ThisDist < ShortestDistanceToPlayerSq)
     {
-      case 0:
-      case 1:
-      case 2:
-      {
+      ShortestDistanceToPlayerSq = ThisDist;
+      ClosestSpotIndex = SpotIndex;
+    }
+  }
 
-        /* if (GetCollision()) */
-        /* { */
-        /* } */
+  if (LengthSq(PlayerBaseSimP-EnemyBaseSimP) < Square(EnemySightDistance))
+  {
+    /* maybe_standing_spot MaybeSpot = AStarPathfind(&Spots, EnemyBaseP, PlayerBaseP, EnemyMoveSpeed); */
+    /* maybe_standing_spot MaybeSpot = {Maybe_Yes, Spots.Start[ClosestSpotIndex]}; */
+    f32 EnemyMovespeed = 10.f;
 
-        /* DebugLine("move"); */
-        v3 PlayerBaseP = GetSimSpaceBaseP(World, GameState->Player);
-        f32 ShortestDistanceToPlayerSq = f32_MAX;
-        umm ClosestTileIndex = umm_MAX;
+    memory_arena *Temp = GetTranArena();
+    temp_memory_handle TMH = BeginTemporaryMemory(Temp);
 
-        canonical_position EnemyOriginalP = Enemy->P;
+    standing_spot_buffer MoveSpots = GetStandingSpotsWithinRadius(World, &SightedSpots, EnemyBaseP, EnemyMovespeed, Temp, Temp);
+    maybe_standing_spot MaybeSpot = GetClosestToP(World, &MoveSpots, PlayerBaseP);
+    standing_spot *Spot = &MaybeSpot.Value;
 
-        canonical_position EnemyBaseP = GetEntityBaseP(World, Enemy);
+    DrawStandingSpot(&GpuMap->Buffer, Camera, Spot, RED, StandingSpotRadius*2.f);
 
-        f32 EnemyMoveSpeed = 8.f;
-        standing_spot_buffer Spots = GetStandingSpotsWithinRadius(World, EnemyBaseP, EnemyMoveSpeed, GetTranArena());
-        IterateOver(&Spots, Spot, SpotIndex)
-        {
-          v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
-          DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_STANDING_SPOT_THICKNESS*3.f);
+    if (GameState->PlayerActed)
+    {
+      v3 SpotSimP = GetSimSpaceBaseP(World, Spot);
+      v3 SpotTopSimP = SpotSimP + V3(Global_StandingSpotHalfDim.xy, Global_StandingSpotDim.z);
+      v3 UpdateV = SpotTopSimP - EnemyBaseSimP + V3(0,0,3);
 
-          v3 SpotSimP = GetSimSpaceP(World, Spot->P);
-          r32 ThisDist = DistanceSq(SpotSimP, PlayerBaseP);
-          if (ThisDist < ShortestDistanceToPlayerSq)
-          {
-            ShortestDistanceToPlayerSq = ThisDist;
-            ClosestTileIndex = SpotIndex;
-          }
-        }
+      cp EnemyOriginalP = Enemy->P;
+      UpdateEntityP(World, Enemy, UpdateV);
 
-        if (GameState->PlayerActed && ClosestTileIndex < Spots.Count)
-        {
-          standing_spot *Spot = Spots.Start + ClosestTileIndex;
-
-          v3 EnemyBaseSimP = GetSimSpaceP(World, EnemyBaseP);
-          v3 SpotSimP = GetSimSpaceP(World, Spot->P);
-          v3 SpotTopSimP = SpotSimP + V3(Global_StandingSpotHalfDim.xy, Global_StandingSpotDim.z);
-          v3 UpdateV = SpotTopSimP - EnemyBaseSimP + V3(0,0,3);
-          UpdateEntityP(World, Enemy, UpdateV);
-
-          // Disallow enemies moving onto other entities
-          collision_event EntityCollision = DoEntityCollisions(World, EntityTable, Enemy).Collision;
-          if (EntityCollision.Count) { Enemy->P = EnemyOriginalP; }
-        }
-
-      } break;
-
-      case 3:
-      {
-      } break;
-
-
-      InvalidDefaultCase;
+      // Disallow enemies moving onto other entities
+      collision_event EntityCollision = DoEntityCollisions(World, EntityTable, Enemy).Collision;
+      if (EntityCollision.Count) { Enemy->P = EnemyOriginalP; }
     }
   }
 }

@@ -4574,6 +4574,114 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   }
 }
 
+link_internal maybe_standing_spot
+GetClosestToP(world *World, standing_spot_buffer *Spots, cp P)
+{
+  maybe_standing_spot Result = {};
+
+  v3 SimP = GetSimSpaceP(World, P);
+
+  f32 ShortestDistanceToPlayerSq = f32_MAX;
+  IterateOver(Spots, Spot, SpotIndex)
+  {
+    v3 SpotSimP = GetSimSpaceP(World, Spot->P);
+    r32 ThisDist = DistanceSq(SpotSimP, SimP);
+    if (ThisDist < ShortestDistanceToPlayerSq)
+    {
+      ShortestDistanceToPlayerSq = ThisDist;
+
+      Result.Tag = Maybe_Yes;
+      Result.Value = Spots->Start[SpotIndex];
+    }
+  }
+
+  return Result;
+}
+
+link_internal standing_spot_buffer
+GetStandingSpotsWithinRadius(world *World, standing_spot_buffer *Spots, cp P, r32 Radius, memory_arena *Memory, memory_arena *TempMemory)
+{
+  v3 SimP = GetSimSpaceP(World, P);
+
+  standing_spot_buffer UnsortedSpots = StandingSpotBuffer(Spots->Count, TempMemory);
+  /* sort_key_f *SortKeys = Allocate(sort_key_f, TempMemory, Spots->Count); */
+
+  r32 RadSq = Square(Radius);
+  u32 ResultAt = 0;
+  IterateOver(Spots, Spot, SpotIndex)
+  {
+    v3 SpotSimP = GetSimSpaceCenterP(World, Spot);
+    r32 DistSq = DistanceSq(SimP, SpotSimP);
+    if (DistSq <= RadSq)
+    {
+      UnsortedSpots.Start[ResultAt] = *Spot;
+      /* SortKeys[ResultAt] = {SpotIndex, r64(DistSq)}; */
+
+      ResultAt += 1;
+    }
+  }
+
+#if 0
+  BubbleSort(SortKeys, ResultAt);
+
+  standing_spot_buffer Result = StandingSpotBuffer(ResultAt, TempMemory);
+
+  RangeIterator_t(u32, SortIndex, ResultAt)
+  {
+    u64 DestIndex = SortKeys[SortIndex].Index;
+    Result.Start[DestIndex] = UnsortedSpots.Start[SortIndex];
+  }
+#endif
+
+  // TODO(Jesse): Resize the result allocation?
+
+  standing_spot_buffer Result = {UnsortedSpots.Start, ResultAt};
+  return Result;
+}
+
+// TODO(Jesse): We can do this function with only a result buffer but I didn't
+// know how to scatter a buffer into itself without doing some annoying
+// bookkeeping with the sort_key buffer, so I didn't bother for now.
+//
+link_internal standing_spot_buffer
+GetStandingSpotsWithinRadiusSorted(world *World, standing_spot_buffer *Spots, cp P, r32 Radius, memory_arena *Memory, memory_arena *TempMemory)
+{
+  // NOTE(Jesse): This is probably buggy
+  NotImplemented;
+
+  v3 SimP = GetSimSpaceP(World, P);
+
+  standing_spot_buffer UnsortedSpots = StandingSpotBuffer(Spots->Count, TempMemory);
+  sort_key_f *SortKeys = Allocate(sort_key_f, TempMemory, Spots->Count);
+
+  r32 RadSq = Square(Radius);
+  u32 ResultAt = 0;
+  IterateOver(Spots, Spot, SpotIndex)
+  {
+    v3 SpotSimP = GetSimSpaceCenterP(World, Spot);
+    r32 DistSq = DistanceSq(SimP, SpotSimP);
+    if (DistSq <= RadSq)
+    {
+      UnsortedSpots.Start[ResultAt] = *Spot;
+      SortKeys[ResultAt] = {SpotIndex, r64(DistSq)};
+
+      ResultAt += 1;
+    }
+  }
+
+  BubbleSort(SortKeys, ResultAt);
+
+  standing_spot_buffer Result = StandingSpotBuffer(ResultAt, TempMemory);
+
+  RangeIterator_t(u32, SortIndex, ResultAt)
+  {
+    u64 DestIndex = SortKeys[SortIndex].Index;
+    Result.Start[DestIndex] = UnsortedSpots.Start[SortIndex];
+  }
+
+  return Result;
+}
+
 // TODO(Jesse): At the moment all the callsites of this function immediately
 // look for the closest spot to a point .. should we just sort and return the
 // sorted buffer?
@@ -4584,13 +4692,14 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 link_internal standing_spot_buffer
 GetStandingSpotsWithinRadius(world *World, canonical_position P, r32 Radius, memory_arena *TempMemory)
 {
-  auto MinWorldP = P.WorldP - 1;
-  auto MaxWorldP = P.WorldP + 1;
+  auto MinWorldP = Canonicalize(World, P - V3(Radius)).WorldP;
+  auto MaxWorldP = Canonicalize(World, P + V3(Radius)).WorldP;
 
   v3 SimSpaceP = GetSimSpaceP(World, P);
 
 /*   temp_memory_handle TempMemHandle = BeginTemporaryMemory(TempMemory); */
 
+  r32 RadSq = Square(Radius);
   standing_spot_stream StandingSpotStream = {};
 
   for (s32 zWorld = MinWorldP.z; zWorld <= MaxWorldP.z; ++zWorld)
@@ -4604,15 +4713,16 @@ GetStandingSpotsWithinRadius(world *World, canonical_position P, r32 Radius, mem
         {
           for (u32 StandingSpotIndex = 0; StandingSpotIndex < AtElements(&Chunk->StandingSpots); ++StandingSpotIndex)
           {
-            v3i StandingSpot = Chunk->StandingSpots.Start[StandingSpotIndex];
-            v3 SimSpaceStandingSpot = GetSimSpaceP(World, Canonical_Position(StandingSpot, Chunk->WorldP));
-            aabb StandingSpotAABB = AABBMinDim(SimSpaceStandingSpot, Global_StandingSpotDim);
+            standing_spot Spot = {True, {V3(Chunk->StandingSpots.Start[StandingSpotIndex]), Chunk->WorldP}};
 
-            sphere Query = Sphere(SimSpaceP, Radius);
-            /* if ( Abs(LengthSq(SimSpaceP-SimSpaceStandingSpot)) < Square(Radius) ) */
-            if (Intersect(&StandingSpotAABB, &Query))
+            v3 SimSpaceStandingSpot = GetSimSpaceCenterP(World, &Spot);
+            /* DEBUG_DrawSimSpaceVectorAt(GetEngineResources(), SimSpaceStandingSpot, V3(0, 0, 100), RED, 0.25f); */
+            /* aabb StandingSpotAABB = AABBMinDim(SimSpaceStandingSpot, Global_StandingSpotDim); */
+            /* sphere Query = Sphere(SimSpaceP, Radius); */
+            /* if (Intersect(&StandingSpotAABB, &Query)) */
+            if ( DistanceSq(SimSpaceP, SimSpaceStandingSpot) <= RadSq )
             {
-              standing_spot Spot = { .P = Canonical_Position(StandingSpot, Chunk->WorldP), .CanStand = True };
+              /* standing_spot Spot = { .P = Canonical_Position(StandingSpot, Chunk->WorldP), .CanStand = True }; */
               Push(&StandingSpotStream, Spot );
             }
           }

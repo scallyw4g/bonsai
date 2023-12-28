@@ -283,6 +283,7 @@ DoDig( engine_resources *Resources, canonical_position PickCP, f32 Radius, memor
   };
   QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Subtractive, &Shape, ICE_BLUE, Resources->Memory);
 }
+
 link_internal void
 DoIceBlock( engine_resources *Resources, canonical_position PickCP, f32 Radius, memory_arena *TempMemory)
 {
