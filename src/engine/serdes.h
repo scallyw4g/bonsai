@@ -157,13 +157,17 @@ poof(
               }
             }
             {
-              member.is_primitive?
-              {
-                Result &= Deserialize(Bytes, &Element->(member.name));
-              }
-              {
-                Result &= Deserialize(Bytes, &Element->(member.name), Memory);
-              }
+              // NOTE(Jesse): Unfortunately we can't check for primitives because
+              // strings are considered primitive, but need memory to deserialize
+              Result &= Deserialize(Bytes, &Element->(member.name), Memory);
+
+              /* member.is_primitive? */
+              /* { */
+              /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+              /* } */
+              /* { */
+              /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+              /* } */
             }
           }
         }
@@ -261,7 +265,7 @@ poof(
       }
 
       link_internal b32
-      Deserialize(u8_stream *Bytes, (type.name)* Element, memory_arena *Ignored = 0)
+      Deserialize(u8_stream *Bytes, (type.name) *Element, memory_arena *Ignored = 0)
       {
         *Element = *Cast((type.name)*, Bytes->At);
         Bytes->At += sizeof((type.name));
@@ -273,6 +277,33 @@ poof(
     }
   }
 )
+
+
+link_internal b32
+Serialize(native_file *File, cs *Element, memory_arena *Ignored = 0)
+{
+  u64 Count = u64(Element->Count);
+  b32 Result  = WriteToFile(File, Cast(u8*, &Count), sizeof(u64));
+      Result &= WriteToFile(File, Cast(u8*, Element->Start), Element->Count);
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_stream *Bytes, cs *Element, memory_arena *Memory)
+{
+  Element->Count = *Cast(u64*, Bytes->At);
+  Bytes->At += sizeof(u64);
+
+  Element->Start = Allocate(const char, Memory, Element->Count);
+  CopyMemory(Bytes->At, Cast(u8*, Element->Start), Element->Count);
+
+  Bytes->At += Element->Count;
+
+  Assert(Bytes->At <= Bytes->End);
+  return True;
+}
+
+
 
 
 poof(serdes_primitive({u8 s8 u16 s16 u32 s32 u64 s64 b8 r32 r64}))

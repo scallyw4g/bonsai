@@ -13,6 +13,7 @@ Global_EntityFireballOffset = V3(0,0,16);
 global_variable f32
 Global_MeleeRange = 10.f;
 
+#if 0
 link_internal model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *Heap)
 {
@@ -60,6 +61,7 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *
 
   return Result;
 }
+#endif
 
 global_variable random_series Global_GameEntropy = {543232654};
 
@@ -75,6 +77,9 @@ link_internal void
 EnemyUpdate(engine_resources *Engine, entity *Enemy)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
+
+  /* file_traversal_node AssetName = {FileTraversalType_File, CSz("models"), CSz("skele_base.vox")}; */
+  /* Enemy->AssetId = AssetId(&AssetName); */
 
   entity *Player = GameState->Player;
   cp EnemyBaseP  = GetEntityBaseP(World, Enemy);
@@ -155,7 +160,6 @@ DestroyLoot(engine_resources *Engine, entity *Entity)
   Entity->EulerAngles = V4(0.f, 5.32f, RandomBilateral(&Global_GameEntropy), 0.f);
 
   Entity->UserType = 0;
-  Entity->Model = 0;
 }
 
 link_internal void
@@ -214,7 +218,6 @@ DestroySkeleton(engine_resources *Engine, entity *Entity, r32 Radius)
   s32 AssetIndex = 1;
 
   Entity->AssetId = AssetId(&SkullAssetNames[AssetIndex]);
-  Entity->Model = 0;
   Entity->Physics.Velocity.z += 7.f;
   Entity->P.Offset.z += 10.f;
   Entity->UserType = EntityType_Loot;
@@ -400,6 +403,9 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   UNPACK_ENGINE_RESOURCES(Resources);
 
   entity *Player = GameState->Player;
+
+  /* file_traversal_node AssetName = {FileTraversalType_File, CSz("models/players"), CSz("chr_old.vox")}; */
+  /* Player->AssetId = AssetId(&AssetName); */
 
   GameState->PlayerActed = False;
 
@@ -732,7 +738,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   AllocateWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 
-  GameState->Models = AllocateGameModels(GameState, Resources->Memory, Heap);
+  /* GameState->Models = AllocateGameModels(GameState, Resources->Memory, Heap); */
 
 #if 1
   /* u32 PlayerModelIndex = RandomBetween( u32(ModelIndex_FirstPlayerModel), &GameState->Entropy, u32(ModelIndex_LastPlayerModel+1)); */
@@ -740,7 +746,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   u32 PlayerModelIndex = ModelIndex_Player_old;
   GameState->Player = GetFreeEntity(EntityTable);
   GameState->Player->UserType = Cast(u32, EntityType_Player);
-  SpawnPlayerLikeEntity(Plat, World, GameState->Models + PlayerModelIndex, GameState->Player, PlayerSpawnP, &GameState->Entropy);
+
+  asset_id PlayerAsset = AssetId({FileTraversalType_File, CSz("models"), CSz("players/chr_rain.vox")});
+  SpawnPlayerLikeEntity(Plat, World, &PlayerAsset, GameState->Player, PlayerSpawnP, &GameState->Entropy);
 #endif
 
 #if 1
@@ -754,15 +762,16 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
         RandomBetween(0, &GameState->Entropy, HalfVisibleRegion.y),
         1);
 
-    u32 EnemyModelIndex = u32(ModelIndex_Enemy_Skeleton_Axe) + EnemyIndex;
+    /* u32 EnemyModelIndex = u32(ModelIndex_Enemy_Skeleton_Axe) + EnemyIndex; */
     /* u32 EnemyModelIndex = RandomBetween( u32(ModelIndex_Enemy_Skeleton_Axe), &GameState->Entropy, u32(ModelIndex_Enemy_Skeleton_King+1)); */
     /* Assert(EnemyModelIndex >= ModelIndex_FirstEnemyModel); */
     /* Assert(EnemyModelIndex <= ModelIndex_LastEnemyModel); */
+    asset_id EnemyAsset = AssetId({FileTraversalType_File, CSz("models"), CSz("skele_base.vox")});
 
     auto EnemySpawnP = Canonical_Position(V3(0), WorldCenter + WP );
     auto Enemy = GetFreeEntity(EntityTable);
     /* Enemy->UserData = (void*)GameEntityBehaviorFlags_Enemy; */
-    SpawnPlayerLikeEntity(Plat, World, GameState->Models + EnemyModelIndex, Enemy, EnemySpawnP, &GameState->Entropy, 0.35f);
+    SpawnPlayerLikeEntity(Plat, World, &EnemyAsset, Enemy, EnemySpawnP, &GameState->Entropy, 0.35f);
   }
 #endif
 

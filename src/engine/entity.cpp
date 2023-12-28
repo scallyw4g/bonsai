@@ -214,15 +214,14 @@ GetFreeEntity(entity **EntityTable)
 }
 
 link_internal entity *
-AllocateEntity(memory_arena *Memory, chunk_dimension ModelDim)
+AllocateEntity(memory_arena *Memory)
 {
   entity *Entity = Allocate(entity, Memory, 1);
+
+  // TODO(Jesse)(wtf): WTF?
   Entity->Emitter = Allocate(particle_system, Memory, 1);
-  Entity->Model = Allocate(model, Memory, 1);
-  /* Entity->Model->Dim = ModelDim; */
 
   Entity->Scale = 1.0f;
-
   return Entity;
 }
 
@@ -234,7 +233,7 @@ AllocateEntityTable(memory_arena* Memory, u32 Count)
            EntityIndex < Count;
          ++EntityIndex)
   {
-    Result[EntityIndex] = AllocateEntity(Memory, Chunk_Dimension(0, 0, 0));
+    Result[EntityIndex] = AllocateEntity(Memory);
     Result[EntityIndex]->Id = EntityIndex;
   }
 
@@ -297,6 +296,7 @@ SpawnEntity(entity *Entity)
   Entity->State = EntityState_Spawned;
 }
 
+#if 0
 link_internal void
 SpawnEntity( entity *Entity, entity_behavior_flags Behavior, model *GameModels, model_index ModelIndex)
 {
@@ -324,6 +324,7 @@ SpawnEntity( entity *Entity, entity_behavior_flags Behavior, model *GameModels, 
 
   SpawnEntity(Entity);
 }
+#endif
 
 link_internal void
 SpawnEntity( entity *Entity, entity_behavior_flags Behavior )
@@ -335,7 +336,7 @@ SpawnEntity( entity *Entity, entity_behavior_flags Behavior )
 void
 SpawnEntity(
     entity *Entity,
-    model *Model,
+    asset_id *AssetId,
     entity_behavior_flags Behavior,
 
     physics *Physics,
@@ -354,26 +355,15 @@ SpawnEntity(
 
   Entity->Behavior = Behavior;
 
-  if (Model) Entity->Model = Model;
   if (Physics) Entity->Physics = *Physics;
   if (InitialP) Entity->P = *InitialP;
+  if (AssetId) Entity->AssetId = *AssetId;
 
   Entity->_CollisionVolumeRadius = CollisionVolumeRadius;
 
   Entity->Scale = Scale;
 
   SpawnEntity(Entity);
-}
-
-entity *
-AllocateEntity(memory_arena *Memory)
-{
-  entity *Entity = Allocate(entity, Memory, 1);
-  Entity->Emitter = Allocate(particle_system, Memory, 1);
-
-  Entity->Scale = 1.0f;
-
-  return Entity;
 }
 
 entity *
@@ -462,7 +452,7 @@ SpawnParticleSystem(particle_system *System)
 link_internal void
 SpawnPlayerLikeEntity( platform *Plat,
                        world *World,
-                       model* Model,
+                       asset_id* AssetId,
                        entity *Player,
                        canonical_position InitialP,
                        random_series* Entropy,
@@ -478,14 +468,16 @@ SpawnPlayerLikeEntity( platform *Plat,
 
   v3 CollisionVolumeRadius = {};
 
-  if (Model)
+  if (AssetId)
   {
-    CollisionVolumeRadius = Model->Dim * Scale * 0.5f; // 0.5f is to shrink to a radius, instead of dim
+    /* NotImplemented; */
+    CollisionVolumeRadius = V3(1.f);
+    Player->AssetId = *AssetId;
   }
 
   SpawnEntity(
       Player,
-      Model,
+      AssetId,
       EntityBehaviorFlags_Default,
 
       &Physics,
@@ -508,7 +500,7 @@ SpawnPlayerLikeEntity( platform *Plat,
 void
 SpawnStaticEntity( platform *Plat,
                    world *World,
-                   model* Model,
+                   asset_id* AssetId,
                    entity *Player,
                    canonical_position InitialP,
                    random_series* Entropy,
@@ -518,35 +510,12 @@ SpawnStaticEntity( platform *Plat,
   v3 CollisionVolumeRadius = {};
 
   // 0.5f is to shrink to a radius, instead of dim
-  if (Model) { CollisionVolumeRadius = Model->Dim * Scale * 0.5f; }
-
-#if 0
-  for (s32 z = -1; z < (s32)CollisionVolumeRadius.z; ++ z)
-  {
-    for (s32 y = -1; y < (s32)CollisionVolumeRadius.y; ++ y)
-    {
-      for (s32 x = -1; x < (s32)CollisionVolumeRadius.x; ++ x)
-      {
-        canonical_position CP = Canonicalize(World->ChunkDim, V3(x, y, z), InitialP.WorldP);
-
-        world_chunk *Chunk = GetWorldChunkFromHashtable( World, CP.WorldP );
-        if (Chunk == 0)
-        {
-          Chunk = GetWorldChunkFor(World->Memory, World, CP.WorldP);
-          if (Chunk)
-          {
-            QueueChunkForInit(&Plat->HighPriority, Chunk);
-          }
-        }
-      }
-    }
-  }
-#endif
+  if (AssetId) { NotImplemented; } //CollisionVolumeRadius = Model->Dim * Scale * 0.5f; }
 
   physics *Physics = 0;
   SpawnEntity(
       Player,
-      Model,
+      AssetId,
       EntityBehaviorFlags_None,
 
       Physics,
@@ -560,8 +529,6 @@ SpawnStaticEntity( platform *Plat,
     );
 
   /* WaitForWorkerThreads(&Plat->HighPriorityWorkerCount); */
-
-  return;
 }
 
 /* void */

@@ -358,7 +358,7 @@ DeserializeChunk(u8_stream *FileBytes, world_chunk *Result, tiered_mesh_freelist
 
   Result->Flags = Chunk_VoxelsInitialized;
 
-  DebugLine("Loaded Chunk : P (%d,%d,%d) Standing Spots (%d)", Result->WorldP.x, Result->WorldP.y, Result->WorldP.z, Header.StandingSpotElementCount);
+  /* DebugLine("Loaded Chunk : P (%d,%d,%d) Standing Spots (%d)", Result->WorldP.x, Result->WorldP.y, Result->WorldP.z, Header.StandingSpotElementCount); */
 }
 
 link_internal b32
@@ -486,6 +486,8 @@ AllocateAssetSlot(engine_resources *Engine)
 link_internal void
 QueueAssetForLoad(work_queue *Queue, asset *Asset)
 {
+  Asset("Queuing Asset Slot(%d/%d) Filenode(%S/%S)", Asset->Id.Slot.Index, Asset->Id.Slot.Generation, Asset->Id.FileNode.Dir, Asset->Id.FileNode.Name);
+
   Assert(Asset->LoadState == AssetLoadState_Unloaded);
   Asset->LoadState = AssetLoadState_Queued;
 
@@ -512,6 +514,9 @@ InitAsset(asset *Asset, thread_local_state *Thread)
   Append(&Builder, Asset->Id.FileNode.Name);
 
   cs AssetFilepath = Finalize(&Builder, Thread->TempMemory, True);
+
+  Asset("Started Asset Load (%S)", AssetFilepath);
+
   if ( AreEqual(Ext, CSz("vox")) )
   {
     maybe_model_buffer Maybe = LoadVoxModels(Thread->PermMemory, 0, AssetFilepath.Start, Thread->TempMemory);

@@ -6,6 +6,10 @@ Serialize(native_file *File, entity *Element)
 
   b32 Result = True;
 
+  Result &= Serialize(File, &Element->Version);
+
+
+
   Result &= Serialize(File, &Element->Id);
 
 
@@ -30,8 +34,9 @@ Serialize(native_file *File, entity *Element)
 
 
 
-  if (Element->Model) { Result &= WriteToFile(File, Cast(u8*, &PointerTrue), sizeof(PointerTrue)); }
-  else                        { Result &= WriteToFile(File, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
+  Result &= Serialize(File, &Element->AssetId);
+
+
 
   if (Element->Emitter) { Result &= WriteToFile(File, Cast(u8*, &PointerTrue), sizeof(PointerTrue)); }
   else                        { Result &= WriteToFile(File, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
@@ -48,8 +53,6 @@ Serialize(native_file *File, entity *Element)
 
   Result &= Serialize(File, &Element->UserData);
 
-  if (Element->Model) { Result &= Serialize(File, Element->Model); }
-
   if (Element->Emitter) { Result &= Serialize(File, Element->Emitter); }
 
 
@@ -62,38 +65,117 @@ link_internal b32
 Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  Result &= Deserialize(Bytes, &Element->Id);
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->Version, Memory);
+
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
 
 
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->Id, Memory);
 
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->P, Memory);
 
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
 
 
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->EulerAngles, Memory);
 
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
 
 
-  Result &= Deserialize(Bytes, &Element->Scale);
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->Scale, Memory);
+
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
 
 
-
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->_CollisionVolumeRadius, Memory);
 
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
 
 
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Physics, Memory);
 
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
 
 
-  b64 HadModelPointer = Read_u64(Bytes);
-  Assert(HadModelPointer < 2); // Should be 0 or 1
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->AssetId, Memory);
+
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
+
+
 
   b64 HadEmitterPointer = Read_u64(Bytes);
   Assert(HadEmitterPointer < 2); // Should be 0 or 1
@@ -104,18 +186,31 @@ Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
   Element->Behavior = Cast(entity_behavior_flags, Read_u32(Bytes));
 
 
-  Result &= Deserialize(Bytes, &Element->UserType);
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->UserType, Memory);
+
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
 
 
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->UserData, Memory);
 
-  Result &= Deserialize(Bytes, &Element->UserData);
-
-  if (HadModelPointer)
-  {
-    if (Element->Model == 0) { Element->Model = Allocate(model, Memory, 1); }
-    Result &= Deserialize(Bytes, Element->Model, Memory);
-  }
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
   if (HadEmitterPointer)
   {

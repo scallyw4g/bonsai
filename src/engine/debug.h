@@ -1,67 +1,7 @@
-#define MAX_PICKED_WORLD_CHUNKS (64)
-
 #define EDITOR_UI_FUNCTION_PROTO_DEFAULTS  ui_style *Style = &DefaultStyle, v4 Padding = {{5, 2, 5, 2}}, column_render_params ColumnParams = ColumnRenderParam_LeftAlign
 #define EDITOR_UI_FUNCTION_PROTO_ARGUMENTS ui_style *Style,                 v4 Padding,                  column_render_params ColumnParams
 #define EDITOR_UI_FUNCTION_INSTANCE_NAMES            Style,                    Padding,                                       ColumnParams
 
-
-struct world;
-struct world_chunk;
-struct heap_allocator;
-struct entity;
-
-
-struct picked_world_chunk
-{
-  world_chunk *Chunk;
-  r32 tChunk;
-};
-
-enum picked_voxel_position
-{
-  PickedVoxel_LastEmpty,
-  PickedVoxel_FirstFilled,
-  PickedVoxel_Count,
-};
-
-struct picked_voxel
-{
-  picked_world_chunk Chunks[PickedVoxel_Count];
-  canonical_position Picks[PickedVoxel_Count]; // Technically we can just store the v3 offset, but I'm being lazy
-};
-
-struct maybe_picked_voxel
-{
-  maybe_tag Tag;
-  picked_voxel Value;
-};
-
-// TODO(Jesse)(metaprogramming, ptr): Once poof can accept pointer types we can generate this struct
-/* poof(static_buffer(world_chunk*, 64)) */
-/* #include <generated/buffer_world_chunk.h> */
-struct picked_world_chunk_static_buffer
-{
-  picked_world_chunk E[MAX_PICKED_WORLD_CHUNKS];
-  u64 At;
-};
-
-link_internal void
-Push(picked_world_chunk_static_buffer *Buf, world_chunk *Chunk, r32 t)
-{
-  if (Buf->At < MAX_PICKED_WORLD_CHUNKS)
-  {
-    Buf->E[Buf->At].Chunk = Chunk;
-    Buf->E[Buf->At].tChunk = t;
-
-    ++Buf->At;
-  }
-}
-
-enum pick_chunk_state
-{
-  PickedChunkState_None,
-  PickedChunkState_Hover,
-};
 
 struct render_debug
 {
@@ -91,7 +31,7 @@ struct engine_debug
   u8 PickedChunkState;
   world_chunk *PickedChunk;
 
-  file_traversal_node SelectedAsset;
+  asset_id SelectedAsset;
 
   entity *SelectedEntity;
 };

@@ -9,7 +9,13 @@ DoEditorUi(renderer_2d *Ui, entity *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       /* Padding.x += 20.f; */
       PushNewRow(Ui);
-      DoEditorUi(Ui, &Element->Id, CSz("umm Id"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, &Element->Version, CSz("u64 Version"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+      PushNewRow(Ui);
+      DoEditorUi(Ui, &Element->Id, CSz("u64 Id"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -51,7 +57,8 @@ DoEditorUi(renderer_2d *Ui, entity *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
 
 
       PushNewRow(Ui);
-      DoEditorUi(Ui, Element->Model, CSz("model Model"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, &Element->AssetId, CSz("asset_id AssetId"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 

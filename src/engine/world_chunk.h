@@ -1,3 +1,65 @@
+
+struct world;
+struct world_chunk;
+struct heap_allocator;
+struct entity;
+
+
+struct picked_world_chunk
+{
+  world_chunk *Chunk;
+  r32 tChunk;
+};
+
+enum picked_voxel_position
+{
+  PickedVoxel_LastEmpty,
+  PickedVoxel_FirstFilled,
+  PickedVoxel_Count,
+};
+
+struct picked_voxel
+{
+  picked_world_chunk Chunks[PickedVoxel_Count];
+  canonical_position Picks[PickedVoxel_Count]; // Technically we can just store the v3 offset, but I'm being lazy
+};
+
+struct maybe_picked_voxel
+{
+  maybe_tag Tag;
+  picked_voxel Value;
+};
+
+
+// TODO(Jesse): Move this to debug/editor.h?
+// TODO(Jesse)(metaprogramming, ptr): Once poof can accept pointer types we can generate this struct
+/* poof(static_buffer(world_chunk*, 64)) */
+/* #include <generated/buffer_world_chunk.h> */
+#define MAX_PICKED_WORLD_CHUNKS (64)
+struct picked_world_chunk_static_buffer
+{
+  picked_world_chunk E[MAX_PICKED_WORLD_CHUNKS];
+  u64 At;
+};
+
+link_internal void
+Push(picked_world_chunk_static_buffer *Buf, world_chunk *Chunk, r32 t)
+{
+  if (Buf->At < MAX_PICKED_WORLD_CHUNKS)
+  {
+    Buf->E[Buf->At].Chunk = Chunk;
+    Buf->E[Buf->At].tChunk = t;
+
+    ++Buf->At;
+  }
+}
+
+enum pick_chunk_state
+{
+  PickedChunkState_None,
+  PickedChunkState_Hover,
+};
+
 enum chunk_flag
 {
   Chunk_Uninitialized     = 0 << 0,
@@ -252,6 +314,7 @@ poof(
 )
 
 
+struct entity;
 typedef entity* entity_ptr;
 poof( block_array(entity_ptr, {8}) )
 #include <generated/block_array_entity_ptr_688856411.h>

@@ -9,7 +9,6 @@
 #include <engine/physics.h>
 #include <engine/camera.h>
 
-#include <engine/debug.h>
 
 #include <engine/light.h>
 #include <engine/render.h>
@@ -27,6 +26,7 @@ link_internal engine_resources *GetEngineResources();
 #include <engine/model.h>
 #include <engine/asset.h>
 
+#include <engine/debug.h>
 #include <engine/editor.h>
 #include <engine/resources.h>
 

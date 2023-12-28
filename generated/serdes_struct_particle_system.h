@@ -101,106 +101,286 @@ link_internal b32
 Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
 {
   b32 Result = True;
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Entropy, Memory);
 
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
 
 
   Element->SpawnType = Cast(particle_spawn_type, Read_u32(Bytes));
 
 
-  Result &= Deserialize(Bytes, &Element->Drag);
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->Drag, Memory);
+
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
 
 
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->Lifetime, Memory);
 
-  Result &= Deserialize(Bytes, &Element->Lifetime);
-
-
-
-
-  Result &= Deserialize(Bytes, &Element->EmissionDelay);
-
-
-
-
-  Result &= Deserialize(Bytes, &Element->EmissionLifespan);
-
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
 
 
-  Result &= Deserialize(Bytes, &Element->ActiveParticles);
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->EmissionDelay, Memory);
+
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
 
 
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->EmissionLifespan, Memory);
 
-  Result &= Deserialize(Bytes, &Element->LifespanMod);
-
-
-
-
-  Result &= Deserialize(Bytes, &Element->ParticleLifespan);
-
-
-
-
-  Result &= Deserialize(Bytes, &Element->ParticlesPerSecond);
-
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
 
 
-  Result &= Deserialize(Bytes, &Element->ParticleLightEmission);
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->ActiveParticles, Memory);
+
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
 
 
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->LifespanMod, Memory);
 
-  Result &= Deserialize(Bytes, &Element->ParticleLightEmissionChance);
-
-
-
-
-  Result &= Deserialize(Bytes, &Element->ParticleStartingTransparency);
-
-
-
-
-  Result &= Deserialize(Bytes, &Element->ParticleEndingTransparency);
-
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
 
 
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->ParticleLifespan, Memory);
+
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->ParticlesPerSecond, Memory);
+
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->ParticleLightEmission, Memory);
+
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->ParticleLightEmissionChance, Memory);
+
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->ParticleStartingTransparency, Memory);
+
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->ParticleEndingTransparency, Memory);
+
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ParticleStartingDim, Memory);
 
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
 
 
-  Result &= Deserialize(Bytes, &Element->ParticleEndingDim);
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->ParticleEndingDim, Memory);
+
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
 
 
-
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ParticleTurbMin, Memory);
 
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
 
 
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ParticleTurbMax, Memory);
 
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
 
 
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->SpawnRegion, Memory);
 
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
 
 
-  Result &= Deserialize(Bytes, &Element->SystemMovementCoefficient);
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->SystemMovementCoefficient, Memory);
+
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
 
 
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->ElapsedSinceLastEmission, Memory);
 
-  Result &= Deserialize(Bytes, &Element->ElapsedSinceLastEmission);
-
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
 
 

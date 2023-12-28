@@ -29,6 +29,7 @@ enum entity_behavior_flags
                                  EntityBehaviorFlags_EntityCollision),
 };
 
+#if 0
 link_internal b32
 Deserialize(u8_stream *Bytes, void *Data)
 {
@@ -40,6 +41,7 @@ Serialize(native_file *File, void *Data)
 {
   return True;
 }
+#endif
 
 poof(generate_string_table(entity_state))
 #include <generated/generate_string_table_entity_state.h>
@@ -71,7 +73,9 @@ struct entity_position_info
 
 struct entity
 {
-  umm Id;
+  u64 Version;
+
+  u64 Id;
 
   cp P;
   // NOTE(Jesse): This is a v4 because it used to be a quaternion, and the
@@ -89,13 +93,13 @@ struct entity
 
   physics Physics;
 
-#if !POOF_PREPROCESSOR
   asset_id             AssetId;
+
+#if !POOF_PREPROCESSOR
   collision_event      LastResolvedCollision;
   entity_position_info LastResolvedPosInfo;
 #endif
 
-  model           *Model;
   particle_system *Emitter;
 
   entity_state          State;
@@ -224,6 +228,7 @@ link_internal b32 Serialize(native_file *File, untextured_3d_geometry_buffer *Da
 
 poof(serdes_struct(voxel))
 #include <generated/serdes_struct_voxel.h>
+
 poof(serdes_array(voxel))
 #include <generated/serdes_array_voxel.h>
 
@@ -384,6 +389,12 @@ poof(serdes_struct(canonical_position))
 link_internal b32 Serialize(native_file *File, particle_system *Element);
 link_internal b32 Deserialize(u8_stream *Bytes, particle_system*);
 link_internal particle_system * Deserialize_particle_system(u8_stream *Bytes);
+
+poof(serdes_struct(file_traversal_node))
+#include <generated/serdes_struct_file_traversal_node.h>
+
+poof(serdes_struct(asset_id))
+#include <generated/serdes_struct_asset_id.h>
 
 poof(serdes_struct(entity))
 #include <generated/serdes_struct_entity.h>

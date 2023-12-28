@@ -6,7 +6,7 @@ Serialize(native_file *File, u8 *Element, memory_arena *Ignored = 0)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, u8* Element, memory_arena *Ignored = 0)
+Deserialize(u8_stream *Bytes, u8 *Element, memory_arena *Ignored = 0)
 {
   *Element = *Cast(u8*, Bytes->At);
   Bytes->At += sizeof(u8);
@@ -48,7 +48,7 @@ Serialize(native_file *File, s8 *Element, memory_arena *Ignored = 0)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, s8* Element, memory_arena *Ignored = 0)
+Deserialize(u8_stream *Bytes, s8 *Element, memory_arena *Ignored = 0)
 {
   *Element = *Cast(s8*, Bytes->At);
   Bytes->At += sizeof(s8);
@@ -90,7 +90,7 @@ Serialize(native_file *File, u16 *Element, memory_arena *Ignored = 0)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, u16* Element, memory_arena *Ignored = 0)
+Deserialize(u8_stream *Bytes, u16 *Element, memory_arena *Ignored = 0)
 {
   *Element = *Cast(u16*, Bytes->At);
   Bytes->At += sizeof(u16);
@@ -132,7 +132,7 @@ Serialize(native_file *File, s16 *Element, memory_arena *Ignored = 0)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, s16* Element, memory_arena *Ignored = 0)
+Deserialize(u8_stream *Bytes, s16 *Element, memory_arena *Ignored = 0)
 {
   *Element = *Cast(s16*, Bytes->At);
   Bytes->At += sizeof(s16);
@@ -174,7 +174,7 @@ Serialize(native_file *File, u32 *Element, memory_arena *Ignored = 0)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, u32* Element, memory_arena *Ignored = 0)
+Deserialize(u8_stream *Bytes, u32 *Element, memory_arena *Ignored = 0)
 {
   *Element = *Cast(u32*, Bytes->At);
   Bytes->At += sizeof(u32);
@@ -216,7 +216,7 @@ Serialize(native_file *File, s32 *Element, memory_arena *Ignored = 0)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, s32* Element, memory_arena *Ignored = 0)
+Deserialize(u8_stream *Bytes, s32 *Element, memory_arena *Ignored = 0)
 {
   *Element = *Cast(s32*, Bytes->At);
   Bytes->At += sizeof(s32);
@@ -258,7 +258,7 @@ Serialize(native_file *File, u64 *Element, memory_arena *Ignored = 0)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, u64* Element, memory_arena *Ignored = 0)
+Deserialize(u8_stream *Bytes, u64 *Element, memory_arena *Ignored = 0)
 {
   *Element = *Cast(u64*, Bytes->At);
   Bytes->At += sizeof(u64);
@@ -300,7 +300,7 @@ Serialize(native_file *File, s64 *Element, memory_arena *Ignored = 0)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, s64* Element, memory_arena *Ignored = 0)
+Deserialize(u8_stream *Bytes, s64 *Element, memory_arena *Ignored = 0)
 {
   *Element = *Cast(s64*, Bytes->At);
   Bytes->At += sizeof(s64);
@@ -342,7 +342,7 @@ Serialize(native_file *File, b8 *Element, memory_arena *Ignored = 0)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, b8* Element, memory_arena *Ignored = 0)
+Deserialize(u8_stream *Bytes, b8 *Element, memory_arena *Ignored = 0)
 {
   *Element = *Cast(b8*, Bytes->At);
   Bytes->At += sizeof(b8);
@@ -384,7 +384,7 @@ Serialize(native_file *File, r32 *Element, memory_arena *Ignored = 0)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, r32* Element, memory_arena *Ignored = 0)
+Deserialize(u8_stream *Bytes, r32 *Element, memory_arena *Ignored = 0)
 {
   *Element = *Cast(r32*, Bytes->At);
   Bytes->At += sizeof(r32);
@@ -426,7 +426,7 @@ Serialize(native_file *File, r64 *Element, memory_arena *Ignored = 0)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, r64* Element, memory_arena *Ignored = 0)
+Deserialize(u8_stream *Bytes, r64 *Element, memory_arena *Ignored = 0)
 {
   *Element = *Cast(r64*, Bytes->At);
   Bytes->At += sizeof(r64);

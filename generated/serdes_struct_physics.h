@@ -34,27 +34,73 @@ link_internal b32
 Deserialize(u8_stream *Bytes, physics *Element, memory_arena *Memory)
 {
   b32 Result = True;
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Velocity, Memory);
 
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
 
 
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Force, Memory);
 
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
 
 
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Delta, Memory);
 
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
 
 
-  Result &= Deserialize(Bytes, &Element->Mass);
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->Mass, Memory);
+
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
 
 
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->Speed, Memory);
 
-  Result &= Deserialize(Bytes, &Element->Speed);
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
 
   
 

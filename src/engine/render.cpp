@@ -747,6 +747,7 @@ BufferEntity(
       AnimationOffset = GetInterpolatedPosition(Animation);
     }
 
+#if 0
     if (Entity->Model)
     {
       v3 Offset = Entity->P.Offset + AnimationOffset + Entity->Scale*(V3(Entity->Model->Dim)/2.f);
@@ -754,6 +755,7 @@ BufferEntity(
       /* BufferChunkMesh(Graphics, TransparentDest, &Entity->Model->Mesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Entity->P.Offset + AnimationOffset, FromEuler(Entity->EulerAngles.xyz)); */
       BufferChunkMesh(Graphics, TransparentDest, &Entity->Model->TransparentMesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Offset, FromEuler(Entity->EulerAngles.xyz));
     }
+#endif
 
     // TODO(Jesse): Do we bake this into GetAssetPtr?
     if (Entity->AssetId.FileNode.Type)

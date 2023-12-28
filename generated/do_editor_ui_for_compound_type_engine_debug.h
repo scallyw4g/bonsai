@@ -68,7 +68,7 @@ DoEditorUi(renderer_2d *Ui, engine_debug *Element, cs Name, EDITOR_UI_FUNCTION_P
 
 
       PushNewRow(Ui);
-      DoEditorUi(Ui, &Element->SelectedAsset, CSz("file_traversal_node SelectedAsset"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, &Element->SelectedAsset, CSz("asset_id SelectedAsset"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 

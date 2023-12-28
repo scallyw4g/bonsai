@@ -145,9 +145,19 @@ struct asset_slot
 
 struct asset_id
 {
+#if !POOF_PREPROCESSOR
   asset_slot Slot;
+#endif
   file_traversal_node FileNode;
 };
+
+link_internal asset_id
+AssetId(file_traversal_node FileNode)
+{
+  asset_id Result = {};
+  Result.FileNode = FileNode;
+  return Result;
+}
 
 link_internal asset_id
 AssetId(file_traversal_node *FileNode)

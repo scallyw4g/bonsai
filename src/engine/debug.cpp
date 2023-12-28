@@ -668,10 +668,10 @@ DoEngineDebug(engine_resources *Engine)
     if (ClickedFileNode.Tag)
     {
       EngineDebug->ResetAssetNodeView = True;
-      EngineDebug->SelectedAsset = ClickedFileNode.Value;
+      EngineDebug->SelectedAsset = {{}, ClickedFileNode.Value};
     }
 
-    if (EngineDebug->SelectedAsset.Type)
+    if (EngineDebug->SelectedAsset.FileNode.Type)
     {
       v2 AssetDetailWindowDim = {{400.f, 400.f}};
       local_persist window_layout AssetViewWindow =
@@ -789,7 +789,7 @@ DoEngineDebug(engine_resources *Engine)
                         case AssetSpawnMode_Entity:
                         {
                           entity *E = GetFreeEntity(Engine->EntityTable);
-                          SpawnEntity(E, Model, EntityBehaviorFlags_Default, 0, &EntityOrigin, Model->Dim/2.f);
+                          SpawnEntity(E, &EngineDebug->SelectedAsset, EntityBehaviorFlags_Default, 0, &EntityOrigin, Model->Dim/2.f);
                         } break;
                       }
                     }

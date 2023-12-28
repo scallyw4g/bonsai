@@ -136,6 +136,15 @@ poof(do_editor_ui_for_vector_type({v4i v4 v3i v3 v2 Quaternion}));
 #include <generated/do_editor_ui_for_vector_type_688873645.h>
 
 link_internal void
+DoEditorUi(renderer_2d *Ui, cs *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+{
+  PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  Value ?
+    PushColumn(Ui, *Value, EDITOR_UI_FUNCTION_INSTANCE_NAMES) :
+    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+}
+
+link_internal void
 DoEditorUi(renderer_2d *Ui, cp *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   /* PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
@@ -170,6 +179,12 @@ poof(do_editor_ui_for_compound_type(untextured_3d_geometry_buffer))
 
 poof(do_editor_ui_for_compound_type(model))
 #include <generated/do_editor_ui_for_compound_type_model.h>
+
+poof(do_editor_ui_for_compound_type(file_traversal_node))
+#include <generated/do_editor_ui_for_compound_type_file_traversal_node.h>
+
+poof(do_editor_ui_for_compound_type(asset_id))
+#include <generated/do_editor_ui_for_compound_type_asset_id.h>
 
 poof(do_editor_ui_for_compound_type(entity))
 #include <generated/do_editor_ui_for_compound_type_entity.h>
@@ -753,6 +768,8 @@ DoLevelEditor(engine_resources *Engine)
             aabb_intersect_result IntersectionResult = Intersect(EntityAABB, Ray);
             if (Input->LMB.Clicked && IntersectionResult.Face)
             {
+              NotImplemented;
+#if 0
               world_update_op_shape_params_asset AssetUpdateShape =
               {
                 SelectedEntity->Model,
@@ -765,6 +782,7 @@ DoLevelEditor(engine_resources *Engine)
                 .world_update_op_shape_params_asset = AssetUpdateShape,
               };
               QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, World->Memory);
+#endif
             }
           }
         }
