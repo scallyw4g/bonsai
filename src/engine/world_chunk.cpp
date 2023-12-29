@@ -1367,6 +1367,17 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
   u32 TmpVol = u32(Volume(TmpDim));
   auto TempVoxels = Allocate(voxel, TempMemory, TmpVol);
 
+  // NOTE(Jesse): It's necessary to copy the voxel data because the meshing
+  // algorithm unsets the face flags for the voxels instead of marking them
+  // as being processed.  When complete, there should be no face-flags left on
+  // this data. (This is not asserted, but maybe should be?)
+  //
+  // TODO(Jesse): Assert there are no face flags left in this copy at the end of
+  // this process?
+  //
+  // TODO(Jesse): Copy data into here as the algorithm proceedes instead of in
+  // one shot at the start?
+  //
   u32 TmpIndex = 0;
   for ( s32 zIndex = 0; zIndex < TmpDim.z ; ++zIndex )
   {
@@ -1395,15 +1406,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
         s32 Index = GetIndex(TmpVoxP, TmpDim);
         voxel *Voxel = TempVoxels + Index;
 
-        /* u8 C =  ((Voxel->Color + RandomU32(&ColorEntropy)) & 0xFF); */
-        /* u8 C = Voxel->Color; */
-
-        // TODO(Jesse): This copy could be avoided in multiple ways, and should be.
-        /* FillColorArray(C, FaceColors, ColorPallette, VERTS_PER_FACE); */
-
         f32 Trans = (f32)Voxel->Transparency / 255.f;
-
-        /* v3 Color = Voxel->DebugColor; */
         v3 Color = GetColorData(Voxel->Color);
 
         FillArray(VertexMaterial(Color, Trans, 0.f), Materials, VERTS_PER_FACE);
@@ -3601,141 +3604,6 @@ DebugHighlightWorldChunkBasedOnState(graphics *Graphics, world_chunk *Chunk, unt
 #endif
 }
 
-#if 0
-          auto MeshBit = MeshBit_None;
-
-          r32 CameraToChunkSquared = DistanceSq(CameraP, ChunkP);
-          if (CameraToChunkSquared > Square(100*32))
-          {
-            if (HasMesh(&Chunk->Meshes, MeshBit_Lod4)) { MeshBit = MeshBit_Lod4; }
-            /* else { if (NotSet(Chunk->Flags, Chunk_Queued)) { Info("hi4"); QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk, MeshBit_Lod4); } } */
-          }
-          else if (CameraToChunkSquared > Square(75*32))
-          {
-            if (HasMesh(&Chunk->Meshes, MeshBit_Lod3)) { MeshBit = MeshBit_Lod3; }
-            /* else { if (NotSet(Chunk->Flags, Chunk_Queued)) { Info("hi3"); QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk, MeshBit_Lod3); } } */
-          }
-          else if (CameraToChunkSquared > Square(50*32))
-          {
-            if (HasMesh(&Chunk->Meshes, MeshBit_Lod2)) { MeshBit = MeshBit_Lod2; }
-            /* else { if (NotSet(Chunk->Flags, Chunk_Queued)) { Info("hi2"); QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk, MeshBit_Lod2); } } */
-          }
-          else if (CameraToChunkSquared > Square(25*32))
-          {
-            if (HasMesh(&Chunk->Meshes, MeshBit_Lod1)) { MeshBit = MeshBit_Lod1; }
-            /* else { if (NotSet(Chunk->Flags, Chunk_Queued)) { Info("hi2"); QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk, MeshBit_Lod2); } } */
-          }
-          else
-          {
-           if (HasMesh(&Chunk->Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; }
-           /* else { if (NotSet(Chunk->Flags, Chunk_Queued)) { Info("hi0"); QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk, MeshBit_Lod0); } } */
-          }
-
-
-          if (MeshBit != MeshBit_None)
-          {
-            auto CopyJob = WorkQueueEntryCopyBufferRef(&Chunk->Meshes, MeshBit, Dest, Chunk->WorldP, Graphics->Camera, World->ChunkDim);
-            auto Entry = WorkQueueEntry(&CopyJob);
-            PushWorkQueueEntry(&Plat->HighPriority, &Entry);
-          }
-#endif
-
-link_internal void
-BufferWorld( platform                      *Plat,
-             untextured_3d_geometry_buffer *Dest,
-             world                         *World,
-             graphics                      *Graphics,
-             heap_allocator                *Heap )
-{
-  TIMED_FUNCTION();
-  NotImplemented;
-#if 0
-
-  work_queue_entry_copy_buffer_set CopySet = {};
-
-  v3i Radius = World->VisibleRegion/2;
-  v3i Min = World->Center - Radius;
-  v3i Max = World->Center + Radius;
-
-  // NOTE(Jesse): Debug
-  /* Assert(Min == V3i(0)); */
-  /* Assert(Max == V3i(4)); */
-
-  for (s32 x = Min.x; x < Max.x; ++ x)
-  for (s32 y = Min.y; y < Max.y; ++ y)
-  for (s32 z = Min.z; z < Max.z; ++ z)
-  {
-    world_position P = World_Position(x,y,z);
-    world_chunk *Chunk = 0;
-    {
-      /* TIMED_NAMED_BLOCK("GetWorldChunkFromHashtable"); */
-      Chunk = GetWorldChunkFromHashtable( World, P );
-    }
-
-    if (Chunk)
-    {
-      if (Chunk->Flags & Chunk_Queued) { continue; }
-      Assert(Chunk->Flags & Chunk_VoxelsInitialized);
-
-      // TODO(Jesse): Move into engine debug
-      DebugHighlightWorldChunkBasedOnState(Graphics, Chunk, Dest);
-
-      camera *Camera = Graphics->Camera;
-      if (IsInFrustum(World, Camera, Chunk))
-      {
-        v3 CameraP = GetSimSpaceP(World, Camera->CurrentP);
-        v3 ChunkP = GetSimSpaceP(World, Chunk->WorldP);
-
-        if (Chunk->Flags & Chunk_MeshUploadedToGpu)
-        {
-          if (HasMesh(&Chunk->Meshes, MeshBit_Lod0))
-          {
-            DrawTerrainImmediate(Graphics, &Chunk->GpuBuffers[], Chunk);
-          }
-        }
-        else
-        {
-          if (HasMesh(&Chunk->Meshes, MeshBit_Lod0))
-          {
-            untextured_3d_geometry_buffer *Mesh = TakeOwnershipSync(&Chunk->Meshes, MeshBit_Lod0);
-            CopyToGpuBuffer(Mesh, &Chunk->GpuBuffer);
-          }
-
-          SetBitfield(chunk_flag, Chunk->Flags, Chunk_MeshUploadedToGpu);
-        }
-
-#if 0
-        umm StandingSpotCount = AtElements(&Chunk->StandingSpots);
-        /* DebugLine("drawing (%u) standing spots", StandingSpotCount); */
-        for (u32 SpotIndex = 0; SpotIndex < StandingSpotCount; ++SpotIndex)
-        {
-          v3i *Spot = Chunk->StandingSpots.Start + SpotIndex;
-          v3 RenderSpot = GetRenderP(World->ChunkDim, Canonical_Position(*Spot, Chunk->WorldP), Graphics->Camera);
-          DrawStandingSpot(&Graphics->Transparency.GeoBuffer.Buffer, RenderSpot, V3(Global_StandingSpotDim));
-        }
-#endif
-
-      }
-    }
-    else
-    {
-      Chunk = GetAndInsertFreeWorldChunk(World->Memory, World, P);
-      if (Chunk)
-      { QueueChunkForInit(&Plat->LowPriority, Chunk, MeshBit_Lod0);  }
-      else
-      { InvalidCodePath(); }
-    }
-  }
-
-  if (CopySet.Count > 0)
-  {
-    work_queue_entry Entry = WorkQueueEntry(&CopySet);
-    PushWorkQueueEntry(&Plat->HighPriority, &Entry);
-  }
-
-  return;
-#endif
-}
 
 
 link_internal v3i
