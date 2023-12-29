@@ -760,30 +760,37 @@ GraphicsInit(memory_arena *GraphicsMemory)
     InitRenderToTextureGroup(&Resources->RTTGroup, V2i(256), GraphicsMemory);
   }
 
-  /* InitBloomRenderGroup(&Result->Bloom, &gBuffer->ViewProjection, GraphicsMemory); */
-
-  // Initialize the gaussian blur render group
-  {
-    Result->Gaussian = MakeGaussianBlurRenderGroup(GraphicsMemory);
-  }
+  Result->Gaussian          = MakeGaussianBlurRenderGroup(GraphicsMemory);
 
   texture *SsaoNoiseTexture = AllocateAndInitSsaoNoise(AoGroup, GraphicsMemory);
 
   gBuffer->gBufferShader =
     CreateGbufferShader(Result, GraphicsMemory, &gBuffer->ViewProjection, Result->Camera);
 
-  AoGroup->Shader =
-    MakeSsaoShader(GraphicsMemory, gBuffer->Textures, SsaoNoiseTexture,
-                   &AoGroup->NoiseTile, &gBuffer->ViewProjection);
+  AoGroup->Shader = MakeSsaoShader( GraphicsMemory,
+                                    gBuffer->Textures,
+                                    SsaoNoiseTexture,
+                                   &AoGroup->NoiseTile,
+                                   &gBuffer->ViewProjection );
 
   AoGroup->SsaoKernelUniform = GetShaderUniform(&AoGroup->Shader, "SsaoKernel");
 
   // Initialize the composite group
   {
     Result->CompositeGroup.Shader = MakeCompositeShader( GraphicsMemory,
-        gBuffer->Textures, SG->ShadowMap, AoGroup->Texture, Lighting->LightingTex, Lighting->BloomTex,
-        Result->Transparency.AccumTex, Result->Transparency.RevealTex, 
-        &SG->MVP, Result->Camera, &Result->Exposure, &Result->Settings.UseLightingBloom, &Result->Settings.BravoilMyersOIT, &Result->Settings.BravoilMcGuireOIT);
+                                                         gBuffer->Textures,
+                                                         SG->ShadowMap,
+                                                         AoGroup->Texture,
+                                                         Lighting->LightingTex,
+                                                         Lighting->BloomTex,
+                                                         Result->Transparency.AccumTex,
+                                                         Result->Transparency.RevealTex, 
+                                                        &SG->MVP,
+                                                         Result->Camera,
+                                                        &Result->Exposure,
+                                                        &Result->Settings.UseLightingBloom,
+                                                        &Result->Settings.BravoilMyersOIT,
+                                                        &Result->Settings.BravoilMcGuireOIT );
   }
 
   GL.Enable(GL_CULL_FACE);
