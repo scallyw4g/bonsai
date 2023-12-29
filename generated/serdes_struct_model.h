@@ -10,10 +10,6 @@ Serialize(native_file *File, model *Element)
 
 
 
-  Result &= Serialize(File, &Element->Mesh);
-
-
-
   Result &= Serialize(File, &Element->TransparentMesh);
 
 
@@ -37,20 +33,6 @@ Deserialize(u8_stream *Bytes, model *Element, memory_arena *Memory)
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Vox, Memory);
-
-  /* member.is_primitive? */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
-  /* } */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
-  /* } */
-
-
-
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Mesh, Memory);
 
   /* member.is_primitive? */
   /* { */

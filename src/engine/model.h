@@ -66,8 +66,11 @@ struct model
 {
   vox_data Vox;
 
-  /* gpu_mapped_element_buffer MeshBuffer; */
-  untextured_3d_geometry_buffer Mesh;
+#if !POOF_PREPROCESSOR
+  lod_element_buffer Meshes;
+#endif
+
+  /* untextured_3d_geometry_buffer Mesh; */
   untextured_3d_geometry_buffer TransparentMesh;
   animation Animation;
   v3i Dim;

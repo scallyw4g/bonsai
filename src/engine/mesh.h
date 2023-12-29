@@ -1,6 +1,6 @@
 struct loaded_collada_mesh
 {
-  untextured_3d_geometry_buffer Mesh;
+  untextured_3d_geometry_buffer *Mesh;
   v3 Dim;
 };
 

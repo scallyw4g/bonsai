@@ -768,7 +768,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
       BakeEntity->_CollisionVolumeRadius = ChunkData->Dim/2.f;
       BakeEntity->P = BakeEntityP;
 
-      AllocateAndBuildMesh(&GameState->BakeResult.VoxData, Model, TempMemory, Resources->Memory);
+      AllocateAndBuildAsset(&GameState->BakeResult.VoxData, Model, TempMemory, Resources->Memory);
 
       asset *Asset = MaybeAsset.Value;
       Asset->LoadState == AssetLoadState_Loaded;

@@ -725,7 +725,8 @@ DoEngineDebug(engine_resources *Engine)
                   f32 SmallObjectCorrectionFactor = 350.f/Length(ModelCenterpointOffset);
                   ThumbCamera->DistanceFromTarget = LengthSq(ModelCenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
                   UpdateGameCamera(World, {}, 0.f, {}, ThumbCamera, 1.f);
-                  RenderToTexture(Engine, Thumb, &Model->Mesh, {});
+                  NotImplemented;
+                  /* RenderToTexture(Engine, Thumb, &Model->Mesh, {}); */
                 }
 
 
@@ -738,7 +739,8 @@ DoEngineDebug(engine_resources *Engine)
                   if (Input->LMB.Pressed) {MouseDP = GetMouseDelta(Plat)*2.f; }
                   if (Input->RMB.Pressed) { CameraZDelta += GetMouseDelta(Plat).y*2.f; }
                   UpdateGameCamera(World, MouseDP, CameraZDelta, {}, ThumbCamera, 1.f);
-                  RenderToTexture(Engine, Thumb, &Model->Mesh, {});
+                  NotImplemented;
+                  /* RenderToTexture(Engine, Thumb, &Model->Mesh, {}); */
                 }
 
 
@@ -760,8 +762,13 @@ DoEngineDebug(engine_resources *Engine)
                       /* RangeIterator_t(u32, ElementIndex, Model->Mesh.At) { Model->Mesh.Mat[ElementIndex].Transparency = 0.f; } */
                     }
                     {
-                      untextured_3d_geometry_buffer *Dest = &GpuMap->Buffer;
-                      BufferChunkMesh(Graphics, Dest, &Model->Mesh, World->ChunkDim, EntityOrigin.WorldP, 1.f, EntityOrigin.Offset + AssetHalfDim.z - V3(AssetHalfDim.xy, 0.f), Quaternion());
+                      // TODO(Jesse): This is highly questionable ... should we
+                      // cache this and draw it when we're rendering entities?
+                      //
+                      SetupGBufferShader(Graphics);
+                      v3 Basis = {};
+                      DrawLod(GetEngineResources(), &Model->Meshes, 0.f, Basis);
+                      TeardownGBufferShader(Graphics);
                     }
 
 
