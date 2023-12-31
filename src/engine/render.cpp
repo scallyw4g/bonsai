@@ -1010,8 +1010,8 @@ DrawLod(engine_resources *Engine, lod_element_buffer *Meshes, r32 DistanceSquare
   {
     /* m4 ModelMatrix = RotateTransform(RotationEuler); */
     /* m4 ModelMatrix = RotateTransform(RotationQ); */
-    m4 ModelMatrix = Translate(Basis) * ScaleTransform(Scale) * RotateTransform(RotationEuler);
-    /* m4 ModelMatrix = Translate(Basis) * ScaleTransform(Scale) * RotateTransform(RotationQ); */
+    /* m4 ModelMatrix = Translate(Basis) * ScaleTransform(Scale) * RotateTransform(RotationEuler); */
+    m4 ModelMatrix = Translate(Basis) * ScaleTransform(Scale) * RotateTransform(RotationQ);
     /* m4 ModelMatrix = LookAt(V3(0,1,0), RotationEuler*10.f, V3(0,0,1)); */
 
     BindUniform(&Graphics->gBuffer->gBufferShader, "Model", &ModelMatrix);
