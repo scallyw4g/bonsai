@@ -404,6 +404,13 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   entity *Player = GameState->Player;
 
+  Player->EulerAngles.x = Sin(Plat->GameTime) * PI32;
+  Player->EulerAngles.y = Cos(Plat->GameTime*0.25f) * PI32;
+  /* Player->EulerAngles.x = 0.f; */
+  /* Player->EulerAngles.y = 0.f; */
+  /* Player->EulerAngles.z = 0.f; */
+  Player->EulerAngles.z = Sin(Plat->GameTime*0.1f) * PI32;
+
   /* file_traversal_node AssetName = {FileTraversalType_File, CSz("models/players"), CSz("chr_old.vox")}; */
   /* Player->AssetId = AssetId(&AssetName); */
 

@@ -793,33 +793,24 @@ RenderTransparencyBuffers(render_settings *Settings, transparency_render_group *
 }
 
 link_internal void
-RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, untextured_3d_geometry_buffer *Src, v3 Offset)
+SetupRenderToTextureShader(engine_resources *Engine, texture *Texture, camera *Camera)
 {
-  auto World    = Engine->World;
   auto RTTGroup = &Engine->RTTGroup;
 
   // GL stuff
   {
-    texture *Texture = Thumb->Texture;
-
     GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID);
 
     GL.UseProgram(RTTGroup->Shader.ID);
 
     SetViewport(V2(Texture->Dim));
 
-#if 1
-    camera *Camera = &Thumb->Camera;
-#else
-    camera *Camera = Engine->Graphics->Camera;
-#endif
-
     RTTGroup->ViewProjection =
       /* Translate( GetRenderP(World->ChunkDim, Camera->CurrentP, Camera) ) * */
       /* Translate( GetSimSpaceP(World, CameraTarget) ) * */
       /* Translate( V3(-10) ) * */
       ProjectionMatrix(Camera, Texture->Dim.x, Texture->Dim.y) *
-      ViewMatrix(World->ChunkDim, Camera)
+      ViewMatrix(Engine->World->ChunkDim, Camera)
       /* + Translate2(V3(-0.01f, 0.f, 0.f)) */
       /* * Translate( V3(-10) ) */
       /* Translate( GetSimSpaceP(World, Camera->CurrentP) ); */
@@ -831,21 +822,9 @@ RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, untextured_3d_
     GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     /* FramebufferTexture(&Engine->RTTGroup.FBO, Texture); */
     /* Ensure(CheckAndClearFramebuffer()); */
+
+    GL.Enable(GL_DEPTH_TEST);
   }
-
-  // Geometry stuff
-  {
-    MapGpuElementBuffer(&RTTGroup->GeoBuffer);
-    untextured_3d_geometry_buffer* Dest = &RTTGroup->GeoBuffer.Buffer;
-
-    v3 Basis = Offset;
-    BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
-    FlushBuffersToCard(&RTTGroup->GeoBuffer);
-  }
-
-  GL.Enable(GL_DEPTH_TEST);
-  Draw(RTTGroup->GeoBuffer.Buffer.At);
-  RTTGroup->GeoBuffer.Buffer.At = 0;
 }
 
 #if 0
@@ -992,7 +971,7 @@ SyncGpuBuffersImmediate(engine_resources *Engine, lod_element_buffer *Meshes)
 
 
 link_internal void
-DrawLod(engine_resources *Engine, lod_element_buffer *Meshes, r32 DistanceSquared, v3 Basis)
+DrawLod(engine_resources *Engine, lod_element_buffer *Meshes, r32 DistanceSquared, v3 Basis, v3 RotationEuler = V3(0), Quaternion RotationQ = Quaternion(), v3 Scale = V3(1.f))
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -1029,10 +1008,44 @@ DrawLod(engine_resources *Engine, lod_element_buffer *Meshes, r32 DistanceSquare
 
   if (MeshBit != MeshBit_None)
   {
-    m4 ModelMatrix = Translate(Basis);
+    /* m4 ModelMatrix = RotateTransform(RotationEuler); */
+    /* m4 ModelMatrix = RotateTransform(RotationQ); */
+    m4 ModelMatrix = Translate(Basis) * ScaleTransform(Scale) * RotateTransform(RotationEuler);
+    /* m4 ModelMatrix = Translate(Basis) * ScaleTransform(Scale) * RotateTransform(RotationQ); */
+    /* m4 ModelMatrix = LookAt(V3(0,1,0), RotationEuler*10.f, V3(0,0,1)); */
+
     BindUniform(&Graphics->gBuffer->gBufferShader, "Model", &ModelMatrix);
     DrawGpuBufferImmediate(Graphics, &Meshes->GpuBufferHandles[ToIndex(MeshBit)]);
   }
+}
+
+link_internal void
+RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, model *Model, v3 Offset)
+{
+  SetupRenderToTextureShader(Engine, Thumb->Texture, &Thumb->Camera);
+  DrawLod(Engine, &Model->Meshes, 0.f, Offset);
+}
+
+link_internal void
+RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, untextured_3d_geometry_buffer *Src, v3 Offset)
+{
+  SetupRenderToTextureShader(Engine, Thumb->Texture, &Thumb->Camera);
+
+  auto RTTGroup = &Engine->RTTGroup;
+
+  // Geometry stuff
+  {
+    MapGpuElementBuffer(&RTTGroup->GeoBuffer);
+    untextured_3d_geometry_buffer* Dest = &RTTGroup->GeoBuffer.Buffer;
+
+    v3 Basis = Offset;
+    BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
+    FlushBuffersToCard(&RTTGroup->GeoBuffer);
+  }
+
+  GL.Enable(GL_DEPTH_TEST);
+  Draw(RTTGroup->GeoBuffer.Buffer.At);
+  RTTGroup->GeoBuffer.Buffer.At = 0;
 }
 
 link_internal void
@@ -1068,7 +1081,7 @@ DrawEntity(
 
       v3 Offset = AnimationOffset + Entity->Scale*(V3(Model->Dim)/2.f);
       v3 Basis = GetRenderP(GetEngineResources(), Entity->P) + Offset;
-      DrawLod(GetEngineResources(), &Model->Meshes, 0.f, Basis);
+      DrawLod(GetEngineResources(), &Model->Meshes, 0.f, Basis, Entity->EulerAngles.xyz, FromEuler(Entity->EulerAngles.xyz), V3(Entity->Scale));
     }
   }
 }

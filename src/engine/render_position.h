@@ -3,7 +3,8 @@
 //
 #if 1
 
-link_internal cp ComputeTarget(camera *Camera)
+link_internal cp
+ComputeTarget(camera *Camera)
 {
   cp Result = Camera->CurrentP + Camera->Front*Camera->DistanceFromTarget;
   return Result;

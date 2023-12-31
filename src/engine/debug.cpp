@@ -725,8 +725,7 @@ DoEngineDebug(engine_resources *Engine)
                   f32 SmallObjectCorrectionFactor = 350.f/Length(ModelCenterpointOffset);
                   ThumbCamera->DistanceFromTarget = LengthSq(ModelCenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
                   UpdateGameCamera(World, {}, 0.f, {}, ThumbCamera, 1.f);
-                  NotImplemented;
-                  /* RenderToTexture(Engine, Thumb, &Model->Mesh, {}); */
+                  RenderToTexture(Engine, Thumb, Model, {});
                 }
 
 
@@ -739,8 +738,7 @@ DoEngineDebug(engine_resources *Engine)
                   if (Input->LMB.Pressed) {MouseDP = GetMouseDelta(Plat)*2.f; }
                   if (Input->RMB.Pressed) { CameraZDelta += GetMouseDelta(Plat).y*2.f; }
                   UpdateGameCamera(World, MouseDP, CameraZDelta, {}, ThumbCamera, 1.f);
-                  NotImplemented;
-                  /* RenderToTexture(Engine, Thumb, &Model->Mesh, {}); */
+                  RenderToTexture(Engine, Thumb, Model, {});
                 }
 
 
