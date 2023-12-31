@@ -971,7 +971,7 @@ SyncGpuBuffersImmediate(engine_resources *Engine, lod_element_buffer *Meshes)
 
 
 link_internal void
-DrawLod(engine_resources *Engine, lod_element_buffer *Meshes, r32 DistanceSquared, v3 Basis, v3 RotationEuler = V3(0), Quaternion RotationQ = Quaternion(), v3 Scale = V3(1.f))
+DrawLod(engine_resources *Engine, lod_element_buffer *Meshes, r32 DistanceSquared, v3 Basis, Quaternion Rotation = Quaternion(), v3 Scale = V3(1.f))
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -1008,12 +1008,7 @@ DrawLod(engine_resources *Engine, lod_element_buffer *Meshes, r32 DistanceSquare
 
   if (MeshBit != MeshBit_None)
   {
-    /* m4 ModelMatrix = RotateTransform(RotationEuler); */
-    /* m4 ModelMatrix = RotateTransform(RotationQ); */
-    /* m4 ModelMatrix = Translate(Basis) * ScaleTransform(Scale) * RotateTransform(RotationEuler); */
-    m4 ModelMatrix = Translate(Basis) * ScaleTransform(Scale) * RotateTransform(RotationQ);
-    /* m4 ModelMatrix = LookAt(V3(0,1,0), RotationEuler*10.f, V3(0,0,1)); */
-
+    m4 ModelMatrix = Translate(Basis) * ScaleTransform(Scale) * RotateTransform(Rotation);
     BindUniform(&Graphics->gBuffer->gBufferShader, "Model", &ModelMatrix);
     DrawGpuBufferImmediate(Graphics, &Meshes->GpuBufferHandles[ToIndex(MeshBit)]);
   }
@@ -1081,7 +1076,7 @@ DrawEntity(
 
       v3 Offset = AnimationOffset + Entity->Scale*(V3(Model->Dim)/2.f);
       v3 Basis = GetRenderP(GetEngineResources(), Entity->P) + Offset;
-      DrawLod(GetEngineResources(), &Model->Meshes, 0.f, Basis, Entity->EulerAngles.xyz, FromEuler(Entity->EulerAngles.xyz), V3(Entity->Scale));
+      DrawLod(GetEngineResources(), &Model->Meshes, 0.f, Basis, FromEuler(Entity->EulerAngles.xyz), V3(Entity->Scale));
     }
   }
 }
