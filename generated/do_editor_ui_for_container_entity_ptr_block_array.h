@@ -14,6 +14,7 @@ DoEditorUi(renderer_2d *Ui, entity_ptr_block_array *Container, cs Name, EDITOR_U
   else
   {
     PushColumn(Ui, FSz("%S = (null)", Name));
+    PushNewRow(Ui);
   }
 }
 

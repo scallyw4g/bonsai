@@ -43,6 +43,7 @@ DoEditorUi(renderer_2d *Ui, gpu_element_buffer_handles *Element, cs Name, EDITOR
   else
   {
     PushColumn(Ui, FSz("%S = (null)", Name));
+    PushNewRow(Ui);
   }
   
 }

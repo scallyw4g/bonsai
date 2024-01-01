@@ -43,16 +43,6 @@ DebugSlider_(renderer_2d *Ui, r32 *Value, cs Name, r32 Min, r32 Max)
 #define DebugSlider(Ui, Value, Min, Max) DebugSlider_(Ui, Value, CSz(STRINGIZE(Value)), Min, Max)
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, void *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
-{
-  if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
-  Value ?
-    PushColumn(Ui, FSz("0x%x",umm(Value)), EDITOR_UI_FUNCTION_INSTANCE_NAMES) :
-    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-  PushNewRow(Ui);
-}
-
-link_internal void
 DoEditorUi(renderer_2d *Ui, r32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
@@ -161,6 +151,15 @@ link_internal void
 DoEditorUi(renderer_2d *Ui, entity_type *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS);
 #endif
 
+poof(string_and_value_tables(particle_spawn_type))
+#include <generated/string_and_value_tables_particle_spawn_type.h>
+
+poof(string_and_value_tables(file_traversal_type))
+#include <generated/string_and_value_tables_file_traversal_node.h>
+
+
+
+
 
 poof(do_editor_ui_for_compound_type(physics))
 #include <generated/do_editor_ui_for_compound_type_physics.h>
@@ -168,17 +167,64 @@ poof(do_editor_ui_for_compound_type(physics))
 poof(do_editor_ui_for_compound_type(aabb))
 #include <generated/do_editor_ui_for_compound_type_aabb.h>
 
+poof(do_editor_ui_for_compound_type(random_series))
+#include <generated/do_editor_ui_for_compound_type_random_series.h>
+
+poof(do_editor_ui_for_enum(particle_spawn_type))
+#include <generated/do_editor_ui_for_enum_particle_spawn_type.h>
+
 poof(do_editor_ui_for_compound_type(particle_system))
 #include <generated/do_editor_ui_for_compound_type_particle_system.h>
+
+poof(do_editor_ui_for_compound_type(keyframe))
+#include <generated/do_editor_ui_for_compound_type_keyframe.h>
 
 poof(do_editor_ui_for_compound_type(animation))
 #include <generated/do_editor_ui_for_compound_type_animation.h>
 
+poof(do_editor_ui_for_compound_type(vertex_material))
+#include <generated/do_editor_ui_for_compound_type_vertex_material.h>
+
+poof(do_editor_ui_for_compound_type(bonsai_futex))
+#include <generated/do_editor_ui_for_compound_type_bonsai_futex.h>
+
 poof(do_editor_ui_for_compound_type(untextured_3d_geometry_buffer))
 #include <generated/do_editor_ui_for_compound_type_untextured_3d_geometry_buffer.h>
 
+link_internal void
+DoEditorUi(renderer_2d *Ui, geo_u3d **ElementP, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+{
+  if (ElementP)
+  {
+    DoEditorUi(Ui, *ElementP, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  }
+  else
+  {
+    PushColumn(Ui, FSz("%S = (null)", Name));
+    PushNewRow(Ui);
+  }
+}
+
+poof(do_editor_ui_for_enum(chunk_flag))
+#include <generated/do_editor_ui_for_enum_chunk_flag.h>
+
+poof(do_editor_ui_for_compound_type(voxel))
+#include <generated/do_editor_ui_for_compound_type_voxel.h>
+
+poof(do_editor_ui_for_compound_type(voxel_lighting))
+#include <generated/do_editor_ui_for_compound_type_voxel_lighting.h>
+
+poof(do_editor_ui_for_compound_type(chunk_data))
+#include <generated/do_editor_ui_for_compound_type_chunk_data.h>
+
+poof(do_editor_ui_for_compound_type(vox_data))
+#include <generated/do_editor_ui_for_compound_type_vox_data.h>
+
 poof(do_editor_ui_for_compound_type(model))
 #include <generated/do_editor_ui_for_compound_type_model.h>
+
+poof(do_editor_ui_for_enum(file_traversal_type))
+#include <generated/do_editor_ui_for_enum_file_traversal_type.h>
 
 poof(do_editor_ui_for_compound_type(file_traversal_node))
 #include <generated/do_editor_ui_for_compound_type_file_traversal_node.h>
@@ -192,15 +238,22 @@ poof(do_editor_ui_for_compound_type(asset_id))
 poof(do_editor_ui_for_compound_type(entity))
 #include <generated/do_editor_ui_for_compound_type_entity.h>
 
-
-poof(do_editor_ui_for_compound_type(voxel))
-#include <generated/do_editor_ui_for_compound_type_voxel.h>
-
 poof(do_editor_ui_for_compound_type(gpu_element_buffer_handles))
 #include <generated/do_editor_ui_for_compound_type_gpu_element_buffer_handles.h>
 
 poof(do_editor_ui_for_compound_type(lod_element_buffer))
 #include <generated/do_editor_ui_for_compound_type_lod_element_buffer.h>
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, void *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+{
+  if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  Value ?
+    PushColumn(Ui, FSz("0x%x",umm(Value)), EDITOR_UI_FUNCTION_INSTANCE_NAMES) :
+    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  PushNewRow(Ui);
+}
+
 
 poof(do_editor_ui_for_container(entity_ptr_block_array))
 #include <generated/do_editor_ui_for_container_entity_ptr_block_array.h>

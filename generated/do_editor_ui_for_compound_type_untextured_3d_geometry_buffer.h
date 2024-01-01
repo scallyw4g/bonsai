@@ -46,6 +46,7 @@ DoEditorUi(renderer_2d *Ui, untextured_3d_geometry_buffer *Element, cs Name, EDI
   else
   {
     PushColumn(Ui, FSz("%S = (null)", Name));
+    PushNewRow(Ui);
   }
   
 }

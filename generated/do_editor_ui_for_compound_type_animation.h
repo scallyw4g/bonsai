@@ -64,6 +64,7 @@ DoEditorUi(renderer_2d *Ui, animation *Element, cs Name, EDITOR_UI_FUNCTION_PROT
   else
   {
     PushColumn(Ui, FSz("%S = (null)", Name));
+    PushNewRow(Ui);
   }
   
 }

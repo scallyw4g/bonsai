@@ -137,6 +137,7 @@ DoEditorUi(renderer_2d *Ui, world_chunk *Element, cs Name, EDITOR_UI_FUNCTION_PR
   else
   {
     PushColumn(Ui, FSz("%S = (null)", Name));
+    PushNewRow(Ui);
   }
   
 }

@@ -37,6 +37,7 @@ DoEditorUi(renderer_2d *Ui, voxel *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DE
   else
   {
     PushColumn(Ui, FSz("%S = (null)", Name));
+    PushNewRow(Ui);
   }
   
 }

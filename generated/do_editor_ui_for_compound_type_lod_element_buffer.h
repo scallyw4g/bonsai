@@ -24,7 +24,7 @@ DoEditorUi(renderer_2d *Ui, lod_element_buffer *Element, cs Name, EDITOR_UI_FUNC
       PushNewRow(Ui);
       RangeIterator(ArrayIndex, MeshIndex_Count)
       {
-        DoEditorUi(Ui, Element->E+ArrayIndex, CSz("geo_u3d E"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+        DoEditorUi(Ui, Element->E+ArrayIndex, CSz("geo_u3d_ptr E"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
       }
 
 
@@ -46,6 +46,7 @@ DoEditorUi(renderer_2d *Ui, lod_element_buffer *Element, cs Name, EDITOR_UI_FUNC
   else
   {
     PushColumn(Ui, FSz("%S = (null)", Name));
+    PushNewRow(Ui);
   }
   
 }

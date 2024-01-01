@@ -51,6 +51,7 @@ poof(
         else
         {
           PushColumn(Ui, CSz("(null)"));
+          PushNewRow(Ui);
         }
       }
       link_internal void
@@ -71,6 +72,7 @@ poof(
         else
         {
           PushColumn(Ui, CSz("(null)"));
+          PushNewRow(Ui);
         }
       }
     }
@@ -131,6 +133,7 @@ poof(
       else
       {
         PushColumn(Ui, FSz("  %S = (null)", Name));
+        PushNewRow(Ui);
       }
       
     }
@@ -186,6 +189,7 @@ poof(
       else
       {
         PushColumn(Ui, FSz("  %S = (null)", Name));
+        PushNewRow(Ui);
       }
     }
   }

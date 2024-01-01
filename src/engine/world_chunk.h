@@ -251,7 +251,7 @@ struct lod_element_buffer
   gpu_element_buffer_handles GpuBufferHandles[MeshIndex_Count];
 
   // Src meshes, read-only
-  geo_u3d      *E[MeshIndex_Count];
+  geo_u3d_ptr   E[MeshIndex_Count];
   bonsai_futex  Locks[MeshIndex_Count];
 };
 

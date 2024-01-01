@@ -412,11 +412,11 @@ GetPackedVoxel(int x, int y, int z, int w)
 
 #endif
 
+// TODO(Jesse): Delete this
 link_internal void
 ZeroMesh( untextured_3d_geometry_buffer *Mesh )
 {
   Mesh->At = 0;
-  return;
 }
 
 link_internal void

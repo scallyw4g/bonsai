@@ -25,6 +25,7 @@ DoEditorUi(renderer_2d *Ui, asset_id *Element, cs Name, EDITOR_UI_FUNCTION_PROTO
   else
   {
     PushColumn(Ui, FSz("%S = (null)", Name));
+    PushNewRow(Ui);
   }
   
 }

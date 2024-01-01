@@ -1,5 +1,5 @@
 link_internal void
-DoEditorUi(renderer_2d *Ui, ui_debug *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, bonsai_futex *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Element)
   {
@@ -9,25 +9,19 @@ DoEditorUi(renderer_2d *Ui, ui_debug *Element, cs Name, EDITOR_UI_FUNCTION_PROTO
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       /* Padding.x += 20.f; */
       PushNewRow(Ui);
-      DoEditorUi(Ui, &Element->OutlineUiValues, CSz("b8 OutlineUiValues"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, &Element->SignalValue, CSz("u32 SignalValue"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
 
       PushNewRow(Ui);
-      DoEditorUi(Ui, &Element->OutlineUiButtons, CSz("b8 OutlineUiButtons"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, &Element->ThreadsWaiting, CSz("u32 ThreadsWaiting"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
 
       PushNewRow(Ui);
-      DoEditorUi(Ui, &Element->OutlineUiTables, CSz("b8 OutlineUiTables"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-      PushNewRow(Ui);
-      DoEditorUi(Ui, &Element->DebugBreakOnClick, CSz("b8 DebugBreakOnClick"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, &Element->Initialized, CSz("b32 Initialized"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 

@@ -37,6 +37,7 @@ DoEditorUi(renderer_2d *Ui, render_debug *Element, cs Name, EDITOR_UI_FUNCTION_P
   else
   {
     PushColumn(Ui, FSz("%S = (null)", Name));
+    PushNewRow(Ui);
   }
   
 }

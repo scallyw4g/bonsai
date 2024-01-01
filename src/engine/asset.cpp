@@ -618,8 +618,35 @@ GetAssetPtr(engine_resources *Engine, asset_id *AID)
 
 #if 1
 link_internal maybe_asset_ptr
+NewAsset(engine_resources *Engine)
+{
+  maybe_asset_ptr Result = {};
+
+  maybe_asset_slot MaybeAssetSlot = AllocateAssetSlot(Engine);
+  if (MaybeAssetSlot.Tag)
+  {
+    Result = GetAssetPtr(Engine, MaybeAssetSlot.Value);
+
+    // NOTE(Jesse): Somewhat questionable...
+    if (Result.Tag)
+    {
+      Result.Value->LoadState = AssetLoadState_Loaded;
+    }
+  }
+  else
+  {
+    SoftError("Unable to allocate asset slot.");
+  }
+
+  return Result;
+}
+
+link_internal maybe_asset_ptr
 NewAssetForGeneratedModel(engine_resources *Engine, model *Model)
 {
+  // NOTE(Jesse): This is the same as NewAsset so I'm removing it 
+  NotImplemented;
+
   maybe_asset_ptr Result = {};
 
   maybe_asset_slot MaybeAssetSlot = AllocateAssetSlot(Engine);

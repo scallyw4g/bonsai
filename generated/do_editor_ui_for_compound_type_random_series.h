@@ -1,5 +1,5 @@
 link_internal void
-DoEditorUi(renderer_2d *Ui, file_traversal_node *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, random_series *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Element)
   {
@@ -9,19 +9,7 @@ DoEditorUi(renderer_2d *Ui, file_traversal_node *Element, cs Name, EDITOR_UI_FUN
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       /* Padding.x += 20.f; */
       PushNewRow(Ui);
-      DoEditorUi(Ui, &Element->Type, CSz("file_traversal_type Type"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-      PushNewRow(Ui);
-      DoEditorUi(Ui, &Element->Dir, CSz("cs Dir"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-      PushNewRow(Ui);
-      DoEditorUi(Ui, &Element->Name, CSz("cs Name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, &Element->Seed, CSz("u64 Seed"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 

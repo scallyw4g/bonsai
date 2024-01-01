@@ -161,6 +161,7 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, cs Name, EDITOR_UI_FUNCTIO
   else
   {
     PushColumn(Ui, FSz("%S = (null)", Name));
+    PushNewRow(Ui);
   }
   
 }

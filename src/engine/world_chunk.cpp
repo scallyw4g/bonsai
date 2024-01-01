@@ -287,20 +287,11 @@ MaybeDeallocateGpuElementBuffer(gpu_element_buffer_handles *Handles)
 }
 
 link_internal void
-FreeWorldChunk(world *World, world_chunk *Chunk, tiered_mesh_freelist* MeshFreelist, memory_arena* Memory)
+FreeWorldChunk(world *World, world_chunk *Chunk, tiered_mesh_freelist *MeshFreelist, memory_arena* Memory)
 {
   TIMED_FUNCTION();
   Assert ( ThreadLocal_ThreadIndex == 0 );
   Assert ( NotSet(Chunk, Chunk_Queued) );
-
-  if (Chunk->Entities.Memory) { VaporizeArena(Chunk->Entities.Memory); }
-
-  DeallocateMeshes(&Chunk->Meshes, MeshFreelist, Memory);
-
-  RangeIterator(MeshIndex, MeshIndex_Count)
-  {
-    MaybeDeallocateGpuElementBuffer(&Chunk->Meshes.GpuBufferHandles[MeshIndex]);
-  }
 
   ClearWorldChunk(Chunk);
   Assert(Chunk->Flags == Chunk_Uninitialized);
@@ -5202,3 +5193,22 @@ DrawPickedChunks(renderer_2d* Group, render_entity_to_texture_group *PickedChunk
   return HotChunk;
 }
 #endif // DEBUG_SYSTEM_API
+
+link_internal void
+DeallocateWorldChunk( world_chunk *Chunk, tiered_mesh_freelist *MeshFreelist, memory_arena *Memory)
+{
+  Assert ( ThreadLocal_ThreadIndex == 0 );
+  Assert ( NotSet(Chunk, Chunk_Queued) );
+
+  if (Chunk->Entities.Memory) { VaporizeArena(Chunk->Entities.Memory); }
+
+  DeallocateMeshes(&Chunk->Meshes, MeshFreelist, Memory);
+
+  RangeIterator(MeshIndex, MeshIndex_Count)
+  {
+    MaybeDeallocateGpuElementBuffer(&Chunk->Meshes.GpuBufferHandles[MeshIndex]);
+  }
+
+  ClearWorldChunk(Chunk);
+}
+

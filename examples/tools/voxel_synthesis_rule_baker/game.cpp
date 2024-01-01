@@ -180,6 +180,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             /* Info("Tile (%d, %d, %d)(%d)", xTile, yTile, zTile, TileOptions); */
           }
 
+          // TODO(Jesse): Redundant, remove
           Chunk->Flags = chunk_flag(Chunk->Flags | Chunk_VoxelsInitialized);
 
           MarkBoundaryVoxels_MakeExteriorFaces(Chunk->Voxels, World->ChunkDim, {}, World->ChunkDim);
@@ -432,6 +433,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Resources);
 
+  memory_arena *Memory = Resources->Memory;
+
   v3i TileSuperpositionsDim = GameState->BakeResult.TileSuperpositionsDim;
   s32 TileSuperpositionsCount = Volume(GameState->BakeResult.TileSuperpositionsDim);
 
@@ -557,13 +560,9 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
               if (Chunk)
               {
                 if ( Chunk->Flags & Chunk_Queued ) { continue; }
-                /* while ( Chunk->Flags & Chunk_Queued ) { SleepMs(1); } */
-                Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_VoxelsInitialized);
-                ClearWorldChunk(Chunk);
-                ZeroMemory( Chunk->Voxels, sizeof(voxel)*umm(Volume(Chunk->Dim)) );
+                DeallocateWorldChunk(Chunk, MeshFreelist, Memory);
                 Chunk->WorldP = P;
-                /* QueueChunkForInit(&Plat->HighPriority, Chunk); */
-                QueueChunkForInit(&Plat->LowPriority, Chunk, MeshBit_Lod0);
+                QueueChunkForInit(&Plat->HighPriority, Chunk, MeshBit_Lod0);
               }
             }
           }
@@ -758,8 +757,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   cp BakeEntityP = Canonical_Position(World->ChunkDim, V3(-ChunkData->Dim.x-8, 0, 0), V3i(0));
 
   {
-    model *Model = Allocate(model, Resources->Memory, 1);
-    maybe_asset_ptr MaybeAsset = NewAssetForGeneratedModel(Resources, Model);
+    maybe_asset_ptr MaybeAsset = NewAsset(Resources);
     if (MaybeAsset.Tag)
     {
       entity *BakeEntity = GetFreeEntity(EntityTable);
@@ -768,7 +766,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
       BakeEntity->_CollisionVolumeRadius = ChunkData->Dim/2.f;
       BakeEntity->P = BakeEntityP;
 
-      AllocateAndBuildAsset(&GameState->BakeResult.VoxData, Model, TempMemory, Resources->Memory);
+      model *Model = Allocate(model, Resources->Memory, 1);
+      AllocateAndBuildMesh(&GameState->BakeResult.VoxData, Model, TempMemory, Resources->Memory);
 
       asset *Asset = MaybeAsset.Value;
       Asset->LoadState == AssetLoadState_Loaded;
@@ -793,17 +792,17 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
       voxel_synth_tile *Tile = Get(&BakedTiles, SynthTileIndex);
       if (RuleId == Tile->RuleId)
       {
-        model *TileModel = Allocate(model, Resources->Memory, 1);
-        // TODO(Jesse)(memory, heap, mesh)
-        AllocateMesh( &TileModel->Mesh, u32(Kilobytes(18)), Resources->Memory);
-
-        maybe_asset_ptr MaybeAsset = NewAssetForGeneratedModel(Resources, TileModel);
+        maybe_asset_ptr MaybeAsset = NewAsset(Resources);
         if (MaybeAsset.Tag)
         {
           asset *Asset = MaybeAsset.Value;
           Asset->LoadState == AssetLoadState_Loaded;
 
-          Asset->Models.Start = TileModel;
+          model *Model = Allocate(model, Resources->Memory, 1);
+          untextured_3d_geometry_buffer *Mesh = AllocateTempWorldChunkMesh(Resources->Memory);
+          AtomicReplaceMesh(&Model->Meshes, MeshBit_Lod0, Mesh, __rdtsc());
+
+          Asset->Models.Start = Model;
           Asset->Models.Count = 1;
 
           v3i VoxOffset = V3iFromIndex(s32(Tile->VoxelIndex), ChunkData->Dim);
@@ -823,7 +822,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
           BuildWorldChunkMeshFromMarkedVoxels_Greedy( ChunkData->Voxels,
                                                       ChunkData->Dim,
                                                       VoxOffset, VoxOffset+Global_TileDim,
-                                                     &TileModel->Mesh,
+                                                      Model->Meshes.E[0],
                                                       0,
                                                       GetTranArena() );
 
