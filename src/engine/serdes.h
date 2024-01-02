@@ -93,23 +93,28 @@ poof(
 
       type.map(member)
       {
-        member.is_pointer?
+        member.has_tag(no_serialize)?
         {
-          if (Element->(member.name)) { Result &= WriteToFile(File, Cast(u8*, &PointerTrue), sizeof(PointerTrue)); }
-          else                        { Result &= WriteToFile(File, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
         }
         {
-          member.is_enum?
+          member.is_pointer?
           {
-            Result &= Serialize(File, (u32*)&Element->(member.name));
+            if (Element->(member.name)) { Result &= WriteToFile(File, Cast(u8*, &PointerTrue), sizeof(PointerTrue)); }
+            else                        { Result &= WriteToFile(File, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
           }
           {
-            member.is_array?
+            member.is_enum?
             {
-              Result &= SerializeArray(File, Element->(member.name), member.array);
+              Result &= Serialize(File, (u32*)&Element->(member.name));
             }
             {
-              Result &= Serialize(File, &Element->(member.name));
+              member.is_array?
+              {
+                Result &= SerializeArray(File, Element->(member.name), member.array);
+              }
+              {
+                Result &= Serialize(File, &Element->(member.name));
+              }
             }
           }
         }
@@ -138,36 +143,41 @@ poof(
       b32 Result = True;
       type.map(member)
       {
-        member.is_pointer?
+        member.has_tag(no_serialize)?
         {
-          b64 Had(member.name)Pointer = Read_u64(Bytes);
-          Assert(Had(member.name)Pointer < 2); // Should be 0 or 1
         }
         {
-          member.is_enum?
+          member.is_pointer?
           {
-            Element->(member.name) = Cast((member.type), Read_u32(Bytes));
+            b64 Had(member.name)Pointer = Read_u64(Bytes);
+            Assert(Had(member.name)Pointer < 2); // Should be 0 or 1
           }
           {
-            member.is_array?
+            member.is_enum?
             {
-              RangeIterator(ElementIndex, member.array)
-              {
-                Result &= Deserialize(Bytes, &Element->(member.name)[ElementIndex]);
-              }
+              Element->(member.name) = Cast((member.type), Read_u32(Bytes));
             }
             {
-              // NOTE(Jesse): Unfortunately we can't check for primitives because
-              // strings are considered primitive, but need memory to deserialize
-              Result &= Deserialize(Bytes, &Element->(member.name), Memory);
+              member.is_array?
+              {
+                RangeIterator(ElementIndex, member.array)
+                {
+                  Result &= Deserialize(Bytes, &Element->(member.name)[ElementIndex]);
+                }
+              }
+              {
+                // NOTE(Jesse): Unfortunately we can't check for primitives because
+                // strings are considered primitive, but need memory to deserialize
+                Result &= Deserialize(Bytes, &Element->(member.name), Memory);
 
-              /* member.is_primitive? */
-              /* { */
-              /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
-              /* } */
-              /* { */
-              /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
-              /* } */
+                /* member.is_primitive? */
+                /* { */
+                /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+                /* } */
+                /* { */
+                /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+                /* } */
+              }
             }
           }
         }

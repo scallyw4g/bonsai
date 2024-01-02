@@ -37,6 +37,15 @@ TrivialAddRemove()
 
   Push(&Array, &Element);
 
+  {
+    u32 Got = 0;
+    IterateOver(&Array, E, ElementIndex)
+    {
+      ++Got;
+    }
+    TestThat(Got == 1);
+  }
+
   auto Last = LastIndex(&Array);
 
   RemoveUnordered(&Array, Last);

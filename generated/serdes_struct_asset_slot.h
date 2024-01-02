@@ -10,6 +10,7 @@ Serialize(native_file *File, asset_slot *Element)
 
 
 
+
   Result &= Serialize(File, &Element->Generation);
 
   
@@ -33,6 +34,7 @@ Deserialize(u8_stream *Bytes, asset_slot *Element, memory_arena *Memory)
   /* { */
   /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
   /* } */
+
 
 
 

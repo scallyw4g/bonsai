@@ -235,6 +235,12 @@ poof(do_editor_ui_for_compound_type(asset_slot))
 poof(do_editor_ui_for_compound_type(asset_id))
 #include <generated/do_editor_ui_for_compound_type_asset_id.h>
 
+poof(do_editor_ui_for_compound_type(collision_event))
+#include <generated/do_editor_ui_for_compound_type_collision_event.h>
+
+poof(do_editor_ui_for_compound_type(entity_position_info))
+#include <generated/do_editor_ui_for_compound_type_entity_position_info.h>
+
 poof(do_editor_ui_for_compound_type(entity))
 #include <generated/do_editor_ui_for_compound_type_entity.h>
 

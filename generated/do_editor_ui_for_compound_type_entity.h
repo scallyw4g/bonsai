@@ -63,6 +63,18 @@ DoEditorUi(renderer_2d *Ui, entity *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
 
 
       PushNewRow(Ui);
+      DoEditorUi(Ui, &Element->LastResolvedCollision, CSz("collision_event LastResolvedCollision"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+      PushNewRow(Ui);
+      DoEditorUi(Ui, &Element->LastResolvedPosInfo, CSz("entity_position_info LastResolvedPosInfo"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+      PushNewRow(Ui);
       DoEditorUi(Ui, Element->Emitter, CSz("particle_system Emitter"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 

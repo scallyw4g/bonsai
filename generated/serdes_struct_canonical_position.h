@@ -10,6 +10,7 @@ Serialize(native_file *File, canonical_position *Element)
 
 
 
+
   Result &= Serialize(File, &Element->WorldP);
 
   
@@ -33,6 +34,7 @@ Deserialize(u8_stream *Bytes, canonical_position *Element, memory_arena *Memory)
   /* { */
   /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
   /* } */
+
 
 
 

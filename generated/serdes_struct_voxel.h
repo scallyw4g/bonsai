@@ -10,7 +10,9 @@ Serialize(native_file *File, voxel *Element)
 
 
 
+
   Result &= Serialize(File, &Element->Transparency);
+
 
 
 
@@ -40,6 +42,7 @@ Deserialize(u8_stream *Bytes, voxel *Element, memory_arena *Memory)
 
 
 
+
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Transparency, Memory);
@@ -51,6 +54,7 @@ Deserialize(u8_stream *Bytes, voxel *Element, memory_arena *Memory)
   /* { */
   /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
   /* } */
+
 
 
 

@@ -9,7 +9,9 @@ Serialize(native_file *File, file_traversal_node *Element)
   Result &= Serialize(File, (u32*)&Element->Type);
 
 
+
   Result &= Serialize(File, &Element->Dir);
+
 
 
 
@@ -28,6 +30,7 @@ Deserialize(u8_stream *Bytes, file_traversal_node *Element, memory_arena *Memory
   Element->Type = Cast(file_traversal_type, Read_u32(Bytes));
 
 
+
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Dir, Memory);
@@ -39,6 +42,7 @@ Deserialize(u8_stream *Bytes, file_traversal_node *Element, memory_arena *Memory
   /* { */
   /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
   /* } */
+
 
 
 

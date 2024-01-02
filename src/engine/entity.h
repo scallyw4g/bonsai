@@ -95,10 +95,8 @@ struct entity
 
   asset_id             AssetId;
 
-#if !POOF_PREPROCESSOR
-  collision_event      LastResolvedCollision;
-  entity_position_info LastResolvedPosInfo;
-#endif
+  collision_event      LastResolvedCollision; poof(@no_serialize)
+  entity_position_info LastResolvedPosInfo;   poof(@no_serialize)
 
   particle_system *Emitter;
 

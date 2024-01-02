@@ -10,10 +10,13 @@ Serialize(native_file *File, particle_system *Element)
 
 
 
+
   Result &= Serialize(File, (u32*)&Element->SpawnType);
 
 
+
   Result &= Serialize(File, &Element->Drag);
+
 
 
 
@@ -21,7 +24,9 @@ Serialize(native_file *File, particle_system *Element)
 
 
 
+
   Result &= Serialize(File, &Element->EmissionDelay);
+
 
 
 
@@ -29,7 +34,9 @@ Serialize(native_file *File, particle_system *Element)
 
 
 
+
   Result &= Serialize(File, &Element->ActiveParticles);
+
 
 
 
@@ -37,7 +44,9 @@ Serialize(native_file *File, particle_system *Element)
 
 
 
+
   Result &= Serialize(File, &Element->ParticleLifespan);
+
 
 
 
@@ -45,7 +54,9 @@ Serialize(native_file *File, particle_system *Element)
 
 
 
+
   Result &= Serialize(File, &Element->ParticleLightEmission);
+
 
 
 
@@ -53,7 +64,9 @@ Serialize(native_file *File, particle_system *Element)
 
 
 
+
   Result &= Serialize(File, &Element->ParticleStartingTransparency);
+
 
 
 
@@ -61,7 +74,9 @@ Serialize(native_file *File, particle_system *Element)
 
 
 
+
   Result &= Serialize(File, &Element->ParticleStartingDim);
+
 
 
 
@@ -69,7 +84,9 @@ Serialize(native_file *File, particle_system *Element)
 
 
 
+
   Result &= Serialize(File, &Element->ParticleTurbMin);
+
 
 
 
@@ -77,7 +94,9 @@ Serialize(native_file *File, particle_system *Element)
 
 
 
+
   Result &= Serialize(File, &Element->SpawnRegion);
+
 
 
 
@@ -85,7 +104,9 @@ Serialize(native_file *File, particle_system *Element)
 
 
 
+
   Result &= Serialize(File, &Element->ElapsedSinceLastEmission);
+
 
 
 
@@ -115,7 +136,9 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
 
 
 
+
   Element->SpawnType = Cast(particle_spawn_type, Read_u32(Bytes));
+
 
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -129,6 +152,7 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
   /* { */
   /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
   /* } */
+
 
 
 
@@ -146,6 +170,7 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
 
 
 
+
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->EmissionDelay, Memory);
@@ -157,6 +182,7 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
   /* { */
   /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
   /* } */
+
 
 
 
@@ -174,6 +200,7 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
 
 
 
+
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ActiveParticles, Memory);
@@ -185,6 +212,7 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
   /* { */
   /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
   /* } */
+
 
 
 
@@ -202,6 +230,7 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
 
 
 
+
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ParticleLifespan, Memory);
@@ -213,6 +242,7 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
   /* { */
   /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
   /* } */
+
 
 
 
@@ -230,6 +260,7 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
 
 
 
+
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ParticleLightEmission, Memory);
@@ -241,6 +272,7 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
   /* { */
   /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
   /* } */
+
 
 
 
@@ -258,6 +290,7 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
 
 
 
+
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ParticleStartingTransparency, Memory);
@@ -269,6 +302,7 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
   /* { */
   /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
   /* } */
+
 
 
 
@@ -286,6 +320,7 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
 
 
 
+
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ParticleStartingDim, Memory);
@@ -297,6 +332,7 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
   /* { */
   /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
   /* } */
+
 
 
 
@@ -314,6 +350,7 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
 
 
 
+
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ParticleTurbMin, Memory);
@@ -325,6 +362,7 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
   /* { */
   /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
   /* } */
+
 
 
 
@@ -342,6 +380,7 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
 
 
 
+
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->SpawnRegion, Memory);
@@ -353,6 +392,7 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
   /* { */
   /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
   /* } */
+
 
 
 
@@ -370,6 +410,7 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
 
 
 
+
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ElapsedSinceLastEmission, Memory);
@@ -381,6 +422,7 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
   /* { */
   /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
   /* } */
+
 
 
 

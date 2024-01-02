@@ -10,7 +10,9 @@ Serialize(native_file *File, physics *Element)
 
 
 
+
   Result &= Serialize(File, &Element->Force);
+
 
 
 
@@ -18,7 +20,9 @@ Serialize(native_file *File, physics *Element)
 
 
 
+
   Result &= Serialize(File, &Element->Mass);
+
 
 
 
@@ -48,6 +52,7 @@ Deserialize(u8_stream *Bytes, physics *Element, memory_arena *Memory)
 
 
 
+
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Force, Memory);
@@ -59,6 +64,7 @@ Deserialize(u8_stream *Bytes, physics *Element, memory_arena *Memory)
   /* { */
   /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
   /* } */
+
 
 
 
@@ -76,6 +82,7 @@ Deserialize(u8_stream *Bytes, physics *Element, memory_arena *Memory)
 
 
 
+
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Mass, Memory);
@@ -87,6 +94,7 @@ Deserialize(u8_stream *Bytes, physics *Element, memory_arena *Memory)
   /* { */
   /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
   /* } */
+
 
 
 
