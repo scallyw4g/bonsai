@@ -696,6 +696,8 @@ DoEngineDebug(engine_resources *Engine)
             {
               IterateOver(&Asset->Models, Model, ModelIndex)
               {
+                SyncGpuBuffersImmediate(Engine, &Model->Meshes);
+
                 render_entity_to_texture_group *RTTGroup = &Engine->RTTGroup;
                 if (ModelIndex >= TotalElements(&Editor->AssetThumbnails))
                 {
@@ -740,7 +742,6 @@ DoEngineDebug(engine_resources *Engine)
                   UpdateGameCamera(World, MouseDP, CameraZDelta, {}, ThumbCamera, 1.f);
                   RenderToTexture(Engine, Thumb, Model, {});
                 }
-
 
                 if ( Engine->MousedOverVoxel.Tag )
                 {

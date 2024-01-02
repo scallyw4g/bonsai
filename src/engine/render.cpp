@@ -945,6 +945,8 @@ CopyToGpuBuffer(untextured_3d_geometry_buffer *Mesh, gpu_element_buffer_handles 
 link_internal void
 SyncGpuBuffersImmediate(engine_resources *Engine, lod_element_buffer *Meshes)
 {
+  Assert(ThreadLocal_ThreadIndex == 0);
+
   RangeIterator(MeshIndex, MeshIndex_Count)
   {
     world_chunk_mesh_bitfield MeshBit = world_chunk_mesh_bitfield(1 << MeshIndex);
