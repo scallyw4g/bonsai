@@ -348,9 +348,9 @@ function RunPoofHelper {
 
 
 
+   # --log-level LogLevel_Debug                                                                                  \
    #
   poof                    \
-   --log-level LogLevel_Debug                                                                                  \
    -D POOF_PREPROCESSOR   \
    -D BONSAI_PREPROCESSOR \
    -I src/                \
