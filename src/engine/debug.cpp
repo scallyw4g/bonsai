@@ -696,7 +696,7 @@ DoEngineDebug(engine_resources *Engine)
             {
               IterateOver(&Asset->Models, Model, ModelIndex)
               {
-                auto *RTTGroup = &Engine->RTTGroup;
+                render_entity_to_texture_group *RTTGroup = &Engine->RTTGroup;
                 if (ModelIndex >= TotalElements(&Editor->AssetThumbnails))
                 {
                   // TODO(Jesse): Where to allocate these?
@@ -760,11 +760,16 @@ DoEngineDebug(engine_resources *Engine)
                       /* RangeIterator_t(u32, ElementIndex, Model->Mesh.At) { Model->Mesh.Mat[ElementIndex].Transparency = 0.f; } */
                     }
                     {
-                      // TODO(Jesse): This is highly questionable ... should we
-                      // cache this and draw it when we're rendering entities?
+                      // TODO(Jesse): Setting up and tearing down the shader here
+                      // is highly questionable.  We should probably keep a list
+                      // of these guys that need this shader, then when we go
+                      // to use it when drawing entities just draw them then..
+                      //
+                      // That said .. this is just editor code.. so .. meh
                       //
                       SetupGBufferShader(Graphics);
-                      v3 Basis = {};
+                      v3 Basis = GetRenderP(Engine, EntityOrigin) + V3(0.f, 0.f, AssetHalfDim.z);
+                      /* v3 Basis = V3(0,0,20); */
                       DrawLod(GetEngineResources(), &Model->Meshes, 0.f, Basis);
                       TeardownGBufferShader(Graphics);
                     }
