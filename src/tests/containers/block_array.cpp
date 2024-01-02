@@ -95,7 +95,7 @@ TwoBlocksRemoveFromEnd()
 
     RemoveUnordered(&Array, Last);
 
-    TestThat( Array.First.Next == GetBlock(&Last) );
+    TestThat( Array.First.Next == Last.Block );
     TestThat( Array.First.Next == Array.Current );
   }
 
@@ -109,7 +109,6 @@ TwoBlocksRemoveFromEnd()
 
     RemoveUnordered(&Array, Last);
 
-    /* TestThat( Array.First.Next == GetBlock(&Last) ); */
     TestThat( Array.Current == &Array.First);
   }
 
@@ -167,7 +166,7 @@ TwoBlocksRemoveFromFront()
     RemoveUnordered(&Array, I);
 
     auto Last = LastIndex(&Array);
-    TestThat( Array.First.Next == GetBlock(&Last) );
+    TestThat( Array.First.Next == Last.Block );
     TestThat( Array.First.Next == Array.Current );
     TestThat( Array.Current->At == 1 );
   }
