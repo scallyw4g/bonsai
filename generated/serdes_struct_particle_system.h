@@ -112,6 +112,11 @@ Serialize(native_file *File, particle_system *Element)
 
   Result &= SerializeArray(File, Element->Colors, 6);
 
+
+
+
+
+
   
 
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -430,6 +435,11 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
   {
     Result &= Deserialize(Bytes, &Element->Colors[ElementIndex]);
   }
+
+
+
+
+
 
   
 

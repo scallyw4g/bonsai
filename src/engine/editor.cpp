@@ -173,6 +173,9 @@ poof(do_editor_ui_for_compound_type(random_series))
 poof(do_editor_ui_for_enum(particle_spawn_type))
 #include <generated/do_editor_ui_for_enum_particle_spawn_type.h>
 
+poof(do_editor_ui_for_compound_type(particle))
+#include <generated/do_editor_ui_for_compound_type_particle.h>
+
 poof(do_editor_ui_for_compound_type(particle_system))
 #include <generated/do_editor_ui_for_compound_type_particle_system.h>
 
@@ -220,6 +223,12 @@ poof(do_editor_ui_for_compound_type(chunk_data))
 poof(do_editor_ui_for_compound_type(vox_data))
 #include <generated/do_editor_ui_for_compound_type_vox_data.h>
 
+poof(do_editor_ui_for_compound_type(gpu_element_buffer_handles))
+#include <generated/do_editor_ui_for_compound_type_gpu_element_buffer_handles.h>
+
+poof(do_editor_ui_for_compound_type(lod_element_buffer))
+#include <generated/do_editor_ui_for_compound_type_lod_element_buffer.h>
+
 poof(do_editor_ui_for_compound_type(model))
 #include <generated/do_editor_ui_for_compound_type_model.h>
 
@@ -243,12 +252,6 @@ poof(do_editor_ui_for_compound_type(entity_position_info))
 
 poof(do_editor_ui_for_compound_type(entity))
 #include <generated/do_editor_ui_for_compound_type_entity.h>
-
-poof(do_editor_ui_for_compound_type(gpu_element_buffer_handles))
-#include <generated/do_editor_ui_for_compound_type_gpu_element_buffer_handles.h>
-
-poof(do_editor_ui_for_compound_type(lod_element_buffer))
-#include <generated/do_editor_ui_for_compound_type_lod_element_buffer.h>
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, void *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)

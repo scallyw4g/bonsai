@@ -47,10 +47,6 @@ struct camera
   v3 Front;
   v3 Right;
   v3 Up;
-
-#if !POOF_PREPROCESSOR
-  /* entity *Ghost; */
-#endif
 };
 /* #define DEFAULT_CAMERA_BLENDING (0.35f) */
 #define DEFAULT_CAMERA_BLENDING (1.f)

@@ -151,6 +151,13 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, cs Name, EDITOR_UI_FUNCTIO
 
 
       PushNewRow(Ui);
+      RangeIterator(ArrayIndex, (4096))
+      {
+        DoEditorUi(Ui, Element->Particles+ArrayIndex, CSz("particle Particles"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      }
+
+
+      PushNewRow(Ui);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
     }
     else

@@ -146,9 +146,7 @@ struct asset_slot
 
 struct asset_id
 {
-#if !POOF_PREPROCESSOR
-  asset_slot Slot;
-#endif
+  asset_slot Slot; poof(@no_serialize)
   file_traversal_node FileNode;
 };
 

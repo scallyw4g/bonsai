@@ -66,9 +66,7 @@ struct model
 {
   vox_data Vox;
 
-#if !POOF_PREPROCESSOR
-  lod_element_buffer Meshes;
-#endif
+  lod_element_buffer Meshes; poof(@no_serialize)
 
   /* untextured_3d_geometry_buffer Mesh; */
   untextured_3d_geometry_buffer TransparentMesh;

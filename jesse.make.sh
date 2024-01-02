@@ -38,7 +38,7 @@
   BuildSingleExample examples/turn_based \
   BuildExecutables \
   BuildDebugSystem \
-  BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
+  # BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
   # BuildSingleExample examples/the_wanderer \
   # BuildSingleExample examples/graveyard \
   # BuildSingleExample examples/terrain_gen \

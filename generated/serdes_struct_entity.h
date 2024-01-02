@@ -69,6 +69,7 @@ Serialize(native_file *File, entity *Element)
 
 
 
+
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
@@ -241,6 +242,7 @@ Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
     if (Element->Emitter == 0) { Element->Emitter = Allocate(particle_system, Memory, 1); }
     Result &= Deserialize(Bytes, Element->Emitter, Memory);
   }
+
 
 
 

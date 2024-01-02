@@ -122,9 +122,14 @@ poof(
 
       type.map(member)
       {
-        member.is_pointer?
+        member.has_tag(no_serialize)?
         {
-          if (Element->(member.name)) { Result &= Serialize(File, Element->(member.name)); }
+        }
+        {
+          member.is_pointer?
+          {
+            if (Element->(member.name)) { Result &= Serialize(File, Element->(member.name)); }
+          }
         }
       }
 
@@ -187,10 +192,15 @@ poof(
       {
         member.is_pointer?
         {
-          if (Had(member.name)Pointer)
+          member.has_tag(no_serialize)?
           {
-            if (Element->member.name == 0) { Element->member.name = Allocate((member.type), Memory, 1); }
-            Result &= Deserialize(Bytes, Element->(member.name), Memory);
+          }
+          {
+            if (Had(member.name)Pointer)
+            {
+              if (Element->member.name == 0) { Element->member.name = Allocate((member.type), Memory, 1); }
+              Result &= Deserialize(Bytes, Element->(member.name), Memory);
+            }
           }
         }
       }
