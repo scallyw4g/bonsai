@@ -8,7 +8,7 @@ struct texture_block
 
 struct texture_block_array_index
 {
-  void *Block;
+  texture_block *Block;
   u32 BlockIndex;
   u32 ElementIndex;
 };
@@ -29,7 +29,7 @@ operator++(texture_block_array_index &I0)
     {
       I0.ElementIndex = 0;
       I0.BlockIndex++;
-      I0.Block = Cast(texture_block*, I0.Block)->Next;
+      I0.Block = I0.Block->Next;
     }
     else
     {
@@ -50,13 +50,6 @@ operator<(texture_block_array_index I0, texture_block_array_index I1)
   return Result;
 }
 
-link_inline texture_block *
-GetBlock(texture_block_array_index *Index)
-{
-  texture_block *Result = Cast(texture_block*, Index->Block);
-  return Result;
-}
-
 link_inline umm
 GetIndex(texture_block_array_index *Index)
 {
@@ -69,7 +62,7 @@ ZerothIndex(texture_block_array *Arr)
 {
   texture_block_array_index Result = {};
   Result.Block = &Arr->First;
-  Assert(GetBlock(&Result)->Index == 0);
+  Assert(Result.Block->Index == 0);
   return Result;
 }
 
@@ -108,8 +101,6 @@ AtElements(texture_block_array *Arr)
     Result.Block = Arr->Current;
     Result.BlockIndex = Arr->Current->Index;
     Result.ElementIndex = Arr->Current->At;
-    /* Assert(Result.ElementIndex); */
-    /* Result.ElementIndex--; */
   }
   return Result;
 }
@@ -118,7 +109,7 @@ link_internal texture *
 GetPtr(texture_block_array *Arr, texture_block_array_index Index)
 {
   texture *Result = {};
-  if (Index.Block) { Result = GetBlock(&Index)->Elements + Index.ElementIndex; }
+  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
   return Result;
 }
 

@@ -8,7 +8,7 @@ struct vox_data_block
 
 struct vox_data_block_array_index
 {
-  void *Block;
+  vox_data_block *Block;
   u32 BlockIndex;
   u32 ElementIndex;
 };
@@ -29,7 +29,7 @@ operator++(vox_data_block_array_index &I0)
     {
       I0.ElementIndex = 0;
       I0.BlockIndex++;
-      I0.Block = Cast(vox_data_block*, I0.Block)->Next;
+      I0.Block = I0.Block->Next;
     }
     else
     {
@@ -50,13 +50,6 @@ operator<(vox_data_block_array_index I0, vox_data_block_array_index I1)
   return Result;
 }
 
-link_inline vox_data_block *
-GetBlock(vox_data_block_array_index *Index)
-{
-  vox_data_block *Result = Cast(vox_data_block*, Index->Block);
-  return Result;
-}
-
 link_inline umm
 GetIndex(vox_data_block_array_index *Index)
 {
@@ -69,7 +62,7 @@ ZerothIndex(vox_data_block_array *Arr)
 {
   vox_data_block_array_index Result = {};
   Result.Block = &Arr->First;
-  Assert(GetBlock(&Result)->Index == 0);
+  Assert(Result.Block->Index == 0);
   return Result;
 }
 
@@ -108,8 +101,6 @@ AtElements(vox_data_block_array *Arr)
     Result.Block = Arr->Current;
     Result.BlockIndex = Arr->Current->Index;
     Result.ElementIndex = Arr->Current->At;
-    /* Assert(Result.ElementIndex); */
-    /* Result.ElementIndex--; */
   }
   return Result;
 }
@@ -118,7 +109,7 @@ link_internal vox_data *
 GetPtr(vox_data_block_array *Arr, vox_data_block_array_index Index)
 {
   vox_data *Result = {};
-  if (Index.Block) { Result = GetBlock(&Index)->Elements + Index.ElementIndex; }
+  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
   return Result;
 }
 
@@ -185,7 +176,7 @@ RemoveUnordered(vox_data_block_array *Array, vox_data_block_array_index Index)
   {
     // Walk the chain till we get to the second-last one
     vox_data_block *Current = &Array->First;
-    vox_data_block *LastB = GetBlock(&LastI);
+    vox_data_block *LastB = LastI.Block;
 
     while (Current->Next && Current->Next != LastB)
     {

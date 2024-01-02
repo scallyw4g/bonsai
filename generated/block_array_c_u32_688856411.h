@@ -30,7 +30,7 @@ RemoveUnordered(u32_block_array *Array, u32_block_array_index Index)
   {
     // Walk the chain till we get to the second-last one
     u32_block *Current = &Array->First;
-    u32_block *LastB = GetBlock(&LastI);
+    u32_block *LastB = LastI.Block;
 
     while (Current->Next && Current->Next != LastB)
     {

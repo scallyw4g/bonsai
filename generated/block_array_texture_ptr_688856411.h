@@ -8,7 +8,7 @@ struct texture_ptr_block
 
 struct texture_ptr_block_array_index
 {
-  void *Block;
+  texture_ptr_block *Block;
   u32 BlockIndex;
   u32 ElementIndex;
 };
@@ -29,7 +29,7 @@ operator++(texture_ptr_block_array_index &I0)
     {
       I0.ElementIndex = 0;
       I0.BlockIndex++;
-      I0.Block = Cast(texture_ptr_block*, I0.Block)->Next;
+      I0.Block = I0.Block->Next;
     }
     else
     {
@@ -50,13 +50,6 @@ operator<(texture_ptr_block_array_index I0, texture_ptr_block_array_index I1)
   return Result;
 }
 
-link_inline texture_ptr_block *
-GetBlock(texture_ptr_block_array_index *Index)
-{
-  texture_ptr_block *Result = Cast(texture_ptr_block*, Index->Block);
-  return Result;
-}
-
 link_inline umm
 GetIndex(texture_ptr_block_array_index *Index)
 {
@@ -69,7 +62,7 @@ ZerothIndex(texture_ptr_block_array *Arr)
 {
   texture_ptr_block_array_index Result = {};
   Result.Block = &Arr->First;
-  Assert(GetBlock(&Result)->Index == 0);
+  Assert(Result.Block->Index == 0);
   return Result;
 }
 
@@ -108,8 +101,6 @@ AtElements(texture_ptr_block_array *Arr)
     Result.Block = Arr->Current;
     Result.BlockIndex = Arr->Current->Index;
     Result.ElementIndex = Arr->Current->At;
-    /* Assert(Result.ElementIndex); */
-    /* Result.ElementIndex--; */
   }
   return Result;
 }
@@ -118,7 +109,7 @@ link_internal texture_ptr *
 GetPtr(texture_ptr_block_array *Arr, texture_ptr_block_array_index Index)
 {
   texture_ptr *Result = {};
-  if (Index.Block) { Result = GetBlock(&Index)->Elements + Index.ElementIndex; }
+  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
   return Result;
 }
 
@@ -185,7 +176,7 @@ RemoveUnordered(texture_ptr_block_array *Array, texture_ptr_block_array_index In
   {
     // Walk the chain till we get to the second-last one
     texture_ptr_block *Current = &Array->First;
-    texture_ptr_block *LastB = GetBlock(&LastI);
+    texture_ptr_block *LastB = LastI.Block;
 
     while (Current->Next && Current->Next != LastB)
     {

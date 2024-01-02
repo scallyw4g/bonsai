@@ -8,7 +8,7 @@ struct voxel_stack_element_block
 
 struct voxel_stack_element_block_array_index
 {
-  void *Block;
+  voxel_stack_element_block *Block;
   u32 BlockIndex;
   u32 ElementIndex;
 };
@@ -29,7 +29,7 @@ operator++(voxel_stack_element_block_array_index &I0)
     {
       I0.ElementIndex = 0;
       I0.BlockIndex++;
-      I0.Block = Cast(voxel_stack_element_block*, I0.Block)->Next;
+      I0.Block = I0.Block->Next;
     }
     else
     {
@@ -50,13 +50,6 @@ operator<(voxel_stack_element_block_array_index I0, voxel_stack_element_block_ar
   return Result;
 }
 
-link_inline voxel_stack_element_block *
-GetBlock(voxel_stack_element_block_array_index *Index)
-{
-  voxel_stack_element_block *Result = Cast(voxel_stack_element_block*, Index->Block);
-  return Result;
-}
-
 link_inline umm
 GetIndex(voxel_stack_element_block_array_index *Index)
 {
@@ -69,7 +62,7 @@ ZerothIndex(voxel_stack_element_block_array *Arr)
 {
   voxel_stack_element_block_array_index Result = {};
   Result.Block = &Arr->First;
-  Assert(GetBlock(&Result)->Index == 0);
+  Assert(Result.Block->Index == 0);
   return Result;
 }
 
@@ -108,8 +101,6 @@ AtElements(voxel_stack_element_block_array *Arr)
     Result.Block = Arr->Current;
     Result.BlockIndex = Arr->Current->Index;
     Result.ElementIndex = Arr->Current->At;
-    /* Assert(Result.ElementIndex); */
-    /* Result.ElementIndex--; */
   }
   return Result;
 }
@@ -118,7 +109,7 @@ link_internal voxel_stack_element *
 GetPtr(voxel_stack_element_block_array *Arr, voxel_stack_element_block_array_index Index)
 {
   voxel_stack_element *Result = {};
-  if (Index.Block) { Result = GetBlock(&Index)->Elements + Index.ElementIndex; }
+  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
   return Result;
 }
 
@@ -185,7 +176,7 @@ RemoveUnordered(voxel_stack_element_block_array *Array, voxel_stack_element_bloc
   {
     // Walk the chain till we get to the second-last one
     voxel_stack_element_block *Current = &Array->First;
-    voxel_stack_element_block *LastB = GetBlock(&LastI);
+    voxel_stack_element_block *LastB = LastI.Block;
 
     while (Current->Next && Current->Next != LastB)
     {

@@ -30,7 +30,7 @@ RemoveUnordered(texture_block_array *Array, texture_block_array_index Index)
   {
     // Walk the chain till we get to the second-last one
     texture_block *Current = &Array->First;
-    texture_block *LastB = GetBlock(&LastI);
+    texture_block *LastB = LastI.Block;
 
     while (Current->Next && Current->Next != LastB)
     {

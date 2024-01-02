@@ -8,7 +8,7 @@ struct standing_spot_block
 
 struct standing_spot_block_array_index
 {
-  void *Block;
+  standing_spot_block *Block;
   u32 BlockIndex;
   u32 ElementIndex;
 };
@@ -29,7 +29,7 @@ operator++(standing_spot_block_array_index &I0)
     {
       I0.ElementIndex = 0;
       I0.BlockIndex++;
-      I0.Block = Cast(standing_spot_block*, I0.Block)->Next;
+      I0.Block = I0.Block->Next;
     }
     else
     {
@@ -50,13 +50,6 @@ operator<(standing_spot_block_array_index I0, standing_spot_block_array_index I1
   return Result;
 }
 
-link_inline standing_spot_block *
-GetBlock(standing_spot_block_array_index *Index)
-{
-  standing_spot_block *Result = Cast(standing_spot_block*, Index->Block);
-  return Result;
-}
-
 link_inline umm
 GetIndex(standing_spot_block_array_index *Index)
 {
@@ -69,7 +62,7 @@ ZerothIndex(standing_spot_block_array *Arr)
 {
   standing_spot_block_array_index Result = {};
   Result.Block = &Arr->First;
-  Assert(GetBlock(&Result)->Index == 0);
+  Assert(Result.Block->Index == 0);
   return Result;
 }
 
@@ -108,8 +101,6 @@ AtElements(standing_spot_block_array *Arr)
     Result.Block = Arr->Current;
     Result.BlockIndex = Arr->Current->Index;
     Result.ElementIndex = Arr->Current->At;
-    /* Assert(Result.ElementIndex); */
-    /* Result.ElementIndex--; */
   }
   return Result;
 }
@@ -118,7 +109,7 @@ link_internal standing_spot *
 GetPtr(standing_spot_block_array *Arr, standing_spot_block_array_index Index)
 {
   standing_spot *Result = {};
-  if (Index.Block) { Result = GetBlock(&Index)->Elements + Index.ElementIndex; }
+  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
   return Result;
 }
 
@@ -185,7 +176,7 @@ RemoveUnordered(standing_spot_block_array *Array, standing_spot_block_array_inde
   {
     // Walk the chain till we get to the second-last one
     standing_spot_block *Current = &Array->First;
-    standing_spot_block *LastB = GetBlock(&LastI);
+    standing_spot_block *LastB = LastI.Block;
 
     while (Current->Next && Current->Next != LastB)
     {

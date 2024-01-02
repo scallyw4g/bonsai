@@ -30,7 +30,7 @@ RemoveUnordered(asset_thumbnail_block_array *Array, asset_thumbnail_block_array_
   {
     // Walk the chain till we get to the second-last one
     asset_thumbnail_block *Current = &Array->First;
-    asset_thumbnail_block *LastB = GetBlock(&LastI);
+    asset_thumbnail_block *LastB = LastI.Block;
 
     while (Current->Next && Current->Next != LastB)
     {
