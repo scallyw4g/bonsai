@@ -245,7 +245,6 @@ struct level_editor
   selection_modification_state Entity;
 
   asset_thumbnail_block_array AssetThumbnails;
-  model *SelectedAssetModel;
 };
 
 link_internal b32

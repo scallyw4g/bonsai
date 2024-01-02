@@ -1071,8 +1071,10 @@ DrawEntity(
     if (MaybeAsset.Tag &&
         MaybeAsset.Value->LoadState == AssetLoadState_Loaded)
     {
-      Assert(MaybeAsset.Value->Models.Count == 1);
-      model *Model = MaybeAsset.Value->Models.Start;
+      Assert(MaybeAsset.Value->Id.ModelIndex == 0);
+      Assert(umm(Entity->AssetId.ModelIndex) < MaybeAsset.Value->Models.Count);
+
+      model *Model = MaybeAsset.Value->Models.Start + Entity->AssetId.ModelIndex ;
 
       SyncGpuBuffersImmediate(GetEngineResources(), &Model->Meshes);
 

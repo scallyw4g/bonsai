@@ -668,7 +668,7 @@ DoEngineDebug(engine_resources *Engine)
     if (ClickedFileNode.Tag)
     {
       EngineDebug->ResetAssetNodeView = True;
-      EngineDebug->SelectedAsset = {{}, ClickedFileNode.Value};
+      EngineDebug->SelectedAsset = {{}, {}, ClickedFileNode.Value};
     }
 
     if (EngineDebug->SelectedAsset.FileNode.Type)
@@ -715,7 +715,7 @@ DoEngineDebug(engine_resources *Engine)
 
                 interactable_handle B = PushButtonStart(Ui, UiId(Thumb, "asset_texture_viewport") );
                   u32 Index = StartColumn(Ui);
-                    if (Model == Editor->SelectedAssetModel) { PushRelativeBorder(Ui, V2(256), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f)); }
+                    if (s32(ModelIndex) == EngineDebug->SelectedAsset.ModelIndex) { PushRelativeBorder(Ui, V2(256), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f)); }
                     PushTexturedQuad(Ui, Texture, V2(Texture->Dim), zDepth_Text);
                     PushForceAdvance(Ui, V2(8, 0));
                   EndColumn(Ui, Index);
@@ -735,7 +735,7 @@ DoEngineDebug(engine_resources *Engine)
                 r32 CameraZDelta = {};
                 if (Pressed(Ui, &B))
                 {
-                  Editor->SelectedAssetModel = Model;
+                  EngineDebug->SelectedAsset.ModelIndex = s32(ModelIndex);
 
                   if (Input->LMB.Pressed) {MouseDP = GetMouseDelta(Plat)*2.f; }
                   if (Input->RMB.Pressed) { CameraZDelta += GetMouseDelta(Plat).y*2.f; }
@@ -747,7 +747,7 @@ DoEngineDebug(engine_resources *Engine)
                 {
                   cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
                   EntityOrigin.Offset = Round(EntityOrigin.Offset);
-                  if ( !UiCapturedMouseInput(Ui) && Model == Editor->SelectedAssetModel )
+                  if ( !UiCapturedMouseInput(Ui) && s32(ModelIndex) == EngineDebug->SelectedAsset.ModelIndex )
                   {
 
                     /* Assert(Model->Mesh.Mat == 0); */

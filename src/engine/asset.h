@@ -147,6 +147,7 @@ struct asset_slot
 struct asset_id
 {
   asset_slot Slot; poof(@no_serialize)
+  s32 ModelIndex;
   file_traversal_node FileNode;
 };
 
