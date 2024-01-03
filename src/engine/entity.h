@@ -93,7 +93,8 @@ struct entity
 
   physics Physics;
 
-  asset_id             AssetId;
+  asset_id AssetId;
+  u64      ModelIndex;
 
   collision_event      LastResolvedCollision; poof(@no_serialize)
   entity_position_info LastResolvedPosInfo;   poof(@no_serialize)
@@ -391,8 +392,8 @@ link_internal particle_system * Deserialize_particle_system(u8_stream *Bytes);
 poof(serdes_struct(file_traversal_node))
 #include <generated/serdes_struct_file_traversal_node.h>
 
-poof(serdes_struct(asset_slot))
-#include <generated/serdes_struct_asset_slot.h>
+/* poof(serdes_struct(asset_slot)) */
+/* #include <generated/serdes_struct_asset_slot.h> */
 
 poof(serdes_struct(asset_id))
 #include <generated/serdes_struct_asset_id.h>

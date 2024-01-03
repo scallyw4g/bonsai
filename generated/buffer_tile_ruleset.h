@@ -5,7 +5,7 @@ struct tile_ruleset_buffer
 };
 
 link_internal tile_ruleset_buffer
-TileRulesetBuffer(umm ElementCount, memory_arena* Memory)
+TileRulesetBuffer( umm ElementCount, memory_arena* Memory)
 {
   tile_ruleset_buffer Result = {};
 
@@ -64,4 +64,5 @@ Get(tile_ruleset_buffer *Buf, umm Index)
   tile_ruleset *Result = GetPtr(Buf, Index);
   return Result;
 }
+
 

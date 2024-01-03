@@ -5,7 +5,7 @@ struct voxel_synth_tile_buffer
 };
 
 link_internal voxel_synth_tile_buffer
-VoxelSynthTileBuffer(umm ElementCount, memory_arena* Memory)
+VoxelSynthTileBuffer( umm ElementCount, memory_arena* Memory)
 {
   voxel_synth_tile_buffer Result = {};
 
@@ -64,4 +64,5 @@ Get(voxel_synth_tile_buffer *Buf, umm Index)
   voxel_synth_tile *Result = GetPtr(Buf, Index);
   return Result;
 }
+
 

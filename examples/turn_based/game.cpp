@@ -156,7 +156,7 @@ DestroyLoot(engine_resources *Engine, entity *Entity)
 {
   file_traversal_node AssetName = {FileTraversalType_File, CSz("models"), CSz("skull_broken.vox")};
 
-  Entity->AssetId = AssetId(&AssetName);
+  Entity->AssetId = GetOrAllocateAssetId(Engine, &AssetName);
   Entity->EulerAngles = V4(0.f, 5.32f, RandomBilateral(&Global_GameEntropy), 0.f);
 
   Entity->UserType = 0;
@@ -179,12 +179,11 @@ DestroySkeleton(engine_resources *Engine, entity *Entity, r32 Radius)
   RangeIterator(BittyIndex, MaxBitties)
   {
     // TODO(Jesse)(leak): This leaks the asset name when the asset is freed
-    file_traversal_node AssetName = {FileTraversalType_File, CSz("models"), AssetNames[BittyIndex]};
-    asset_id AID = AssetId(&AssetName);
 
     entity *BittyEntity = GetFreeEntity(EntityTable);
 
-    BittyEntity->AssetId = AID;
+    file_traversal_node AssetName = {FileTraversalType_File, CSz("models"), AssetNames[BittyIndex]};
+    BittyEntity->AssetId = GetOrAllocateAssetId(Engine, &AssetName);
 
     BittyEntity->Physics.Speed = 1.f;
 
@@ -217,7 +216,7 @@ DestroySkeleton(engine_resources *Engine, entity *Entity, r32 Radius)
   /* s32 AssetIndex = RandomBetween(0, &Global_GameEntropy, ArrayCount(SkullAssetNames)); */
   s32 AssetIndex = 1;
 
-  Entity->AssetId = AssetId(&SkullAssetNames[AssetIndex]);
+  Entity->AssetId = GetOrAllocateAssetId(Engine, &SkullAssetNames[AssetIndex]);
   Entity->Physics.Velocity.z += 7.f;
   Entity->P.Offset.z += 10.f;
   Entity->UserType = EntityType_Loot;
@@ -757,7 +756,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->Player = GetFreeEntity(EntityTable);
   GameState->Player->UserType = Cast(u32, EntityType_Player);
 
-  asset_id PlayerAsset = AssetId({FileTraversalType_File, CSz("models"), CSz("players/chr_rain.vox")});
+  asset_id PlayerAsset = GetOrAllocateAssetId(Resources, {FileTraversalType_File, CSz("models"), CSz("players/chr_rain.vox")});
   SpawnPlayerLikeEntity(Plat, World, &PlayerAsset, GameState->Player, PlayerSpawnP, &GameState->Entropy);
 #endif
 
@@ -776,7 +775,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
     /* u32 EnemyModelIndex = RandomBetween( u32(ModelIndex_Enemy_Skeleton_Axe), &GameState->Entropy, u32(ModelIndex_Enemy_Skeleton_King+1)); */
     /* Assert(EnemyModelIndex >= ModelIndex_FirstEnemyModel); */
     /* Assert(EnemyModelIndex <= ModelIndex_LastEnemyModel); */
-    asset_id EnemyAsset = AssetId({FileTraversalType_File, CSz("models"), CSz("skele_base.vox")});
+    asset_id EnemyAsset = GetOrAllocateAssetId(Resources, {FileTraversalType_File, CSz("models"), CSz("skele_base.vox")});
 
     auto EnemySpawnP = Canonical_Position(V3(0), WorldCenter + WP );
     auto Enemy = GetFreeEntity(EntityTable);

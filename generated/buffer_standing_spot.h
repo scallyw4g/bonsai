@@ -5,7 +5,7 @@ struct standing_spot_buffer
 };
 
 link_internal standing_spot_buffer
-StandingSpotBuffer(umm ElementCount, memory_arena* Memory)
+StandingSpotBuffer( umm ElementCount, memory_arena* Memory)
 {
   standing_spot_buffer Result = {};
 
@@ -64,4 +64,5 @@ Get(standing_spot_buffer *Buf, umm Index)
   standing_spot *Result = GetPtr(Buf, Index);
   return Result;
 }
+
 

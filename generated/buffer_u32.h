@@ -5,7 +5,7 @@ struct u32_buffer
 };
 
 link_internal u32_buffer
-U32Buffer(umm ElementCount, memory_arena* Memory)
+U32Buffer( umm ElementCount, memory_arena* Memory)
 {
   u32_buffer Result = {};
 
@@ -64,4 +64,5 @@ Get(u32_buffer *Buf, umm Index)
   u32 *Result = GetPtr(Buf, Index);
   return Result;
 }
+
 

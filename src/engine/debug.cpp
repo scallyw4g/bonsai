@@ -657,186 +657,200 @@ DoEngineDebug(engine_resources *Engine)
 
   if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_Assets))
   {
-    v2 AssetListWindowDim = {{350.f, 1200.f}};
-    local_persist window_layout Window = WindowLayout("Assets", DefaultWindowBasis(*Ui->ScreenDim, AssetListWindowDim), AssetListWindowDim);
-
-    render_settings *Settings = &Graphics->Settings;
-    PushWindowStart(Ui, &Window);
-      maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTree(CSz("models"), EngineDrawFileNodesHelper);
-    PushWindowEnd(Ui, &Window);
-
-    if (ClickedFileNode.Tag)
     {
-      EngineDebug->ResetAssetNodeView = True;
-      EngineDebug->SelectedAsset = {{}, {}, ClickedFileNode.Value};
+      local_persist window_layout Window = WindowLayout("Asset Table");
+      PushWindowStart(Ui, &Window);
+
+      AcquireFutex(&Engine->AssetFutex);
+      {
+        RangeIterator(AssetIndex, ASSET_TABLE_COUNT)
+        {
+          asset *Asset = Engine->AssetTable + AssetIndex;
+          DoEditorUi(Ui, Asset, CS(AssetIndex));
+        }
+      }
+      ReleaseFutex(&Engine->AssetFutex);
+
+      PushWindowEnd(Ui, &Window);
     }
 
-    if (EngineDebug->SelectedAsset.FileNode.Type)
     {
-      v2 AssetDetailWindowDim = {{400.f, 400.f}};
-      local_persist window_layout AssetViewWindow =
-        WindowLayout("Asset View", {}, AssetDetailWindowDim, window_layout_flags(WindowLayoutFlag_StartupAlign_Right|WindowLayoutFlag_Default));
-      PushWindowStart(Ui, &AssetViewWindow);
+      v2 AssetListWindowDim = {{350.f, 1200.f}};
+      local_persist window_layout Window = WindowLayout("Disk Assets", DefaultWindowBasis(*Ui->ScreenDim, AssetListWindowDim), AssetListWindowDim);
+
+      render_settings *Settings = &Graphics->Settings;
+      PushWindowStart(Ui, &Window);
+        maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTree(CSz("models"), EngineDrawFileNodesHelper);
+      PushWindowEnd(Ui, &Window);
+
+      if (ClickedFileNode.Tag)
+      {
+        EngineDebug->ResetAssetNodeView = True;
+        EngineDebug->SelectedAsset = GetOrAllocateAssetId(Engine, &ClickedFileNode.Value);
+      }
+
+      if (EngineDebug->SelectedAsset.FileNode.Type)
+      {
+        v2 AssetDetailWindowDim = {{400.f, 400.f}};
+        local_persist window_layout AssetViewWindow =
+          WindowLayout("Asset View", {}, AssetDetailWindowDim, window_layout_flags(WindowLayoutFlag_StartupAlign_Right|WindowLayoutFlag_Default));
+        PushWindowStart(Ui, &AssetViewWindow);
 
 
-      PushTableStart(Ui);
-        auto AssetSpawnModeRadioGroup = RadioButtonGroup_asset_spawn_mode(Ui, umm("asset_spawn_mode_radio_group"));
+        PushTableStart(Ui);
+          auto AssetSpawnModeRadioGroup = RadioButtonGroup_asset_spawn_mode(Ui, umm("asset_spawn_mode_radio_group"));
 
-        maybe_asset_ptr MaybeAsset = GetAssetPtr(Engine, &EngineDebug->SelectedAsset);
+          maybe_asset_ptr MaybeAsset = GetAssetPtr(Engine, &EngineDebug->SelectedAsset);
 
-        if (MaybeAsset.Tag)
-        {
-          asset *Asset = MaybeAsset.Value;
-
-          PushColumn(Ui, Asset->Id.FileNode.Name);
-          PushNewRow(Ui);
-          switch (Asset->LoadState)
+          if (MaybeAsset.Tag)
           {
-            case AssetLoadState_Loaded:
+            asset *Asset = MaybeAsset.Value;
+
+            PushColumn(Ui, Asset->Id.FileNode.Name);
+            PushNewRow(Ui);
+            switch (Asset->LoadState)
             {
-              IterateOver(&Asset->Models, Model, ModelIndex)
+              case AssetLoadState_Unloaded:
+              case AssetLoadState_Allocated:
+              case AssetLoadState_Queued:
+              case AssetLoadState_Error:
               {
-                SyncGpuBuffersImmediate(Engine, &Model->Meshes);
+                PushColumn(Ui, ToString(Asset->LoadState));
+              } break;
 
-                render_entity_to_texture_group *RTTGroup = &Engine->RTTGroup;
-                if (ModelIndex >= TotalElements(&Editor->AssetThumbnails))
+              case AssetLoadState_Loaded:
+              {
+                IterateOver(&Asset->Models, Model, ModelIndex)
                 {
-                  // TODO(Jesse): Where to allocate these?
-                  texture *T = MakeTexture_RGBA(V2i(256), (u32*)0, Engine->Memory);
-                  asset_thumbnail Thumb = { T, {} };
-                  StandardCamera(&Thumb.Camera, 10000.0f, 100.0f, {});
+                  SyncGpuBuffersImmediate(Engine, &Model->Meshes);
 
-                  Push(&Editor->AssetThumbnails, &Thumb);
-                }
-
-                asset_thumbnail *Thumb = GetPtr(&Editor->AssetThumbnails, ModelIndex);
-                texture *Texture = Thumb->Texture;
-                camera  *ThumbCamera  = &Thumb->Camera;
-
-                interactable_handle B = PushButtonStart(Ui, UiId(Thumb, "asset_texture_viewport") );
-                  u32 Index = StartColumn(Ui);
-                    if (s32(ModelIndex) == EngineDebug->SelectedAsset.ModelIndex) { PushRelativeBorder(Ui, V2(256), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f)); }
-                    PushTexturedQuad(Ui, Texture, V2(Texture->Dim), zDepth_Text);
-                    PushForceAdvance(Ui, V2(8, 0));
-                  EndColumn(Ui, Index);
-                PushButtonEnd(Ui);
-
-                v3 ModelCenterpointOffset = Model->Dim/-2.f;
-                if (EngineDebug->ResetAssetNodeView)
-                {
-                  f32 SmallObjectCorrectionFactor = 350.f/Length(ModelCenterpointOffset);
-                  ThumbCamera->DistanceFromTarget = LengthSq(ModelCenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
-                  UpdateGameCamera(World, {}, 0.f, {}, ThumbCamera, 1.f);
-                  RenderToTexture(Engine, Thumb, Model, {});
-                }
-
-
-                v2 MouseDP = {};
-                r32 CameraZDelta = {};
-                if (Pressed(Ui, &B))
-                {
-                  EngineDebug->SelectedAsset.ModelIndex = s32(ModelIndex);
-
-                  if (Input->LMB.Pressed) {MouseDP = GetMouseDelta(Plat)*2.f; }
-                  if (Input->RMB.Pressed) { CameraZDelta += GetMouseDelta(Plat).y*2.f; }
-                  UpdateGameCamera(World, MouseDP, CameraZDelta, {}, ThumbCamera, 1.f);
-                  RenderToTexture(Engine, Thumb, Model, {});
-                }
-
-                if ( Engine->MousedOverVoxel.Tag )
-                {
-                  cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
-                  EntityOrigin.Offset = Round(EntityOrigin.Offset);
-                  if ( !UiCapturedMouseInput(Ui) && s32(ModelIndex) == EngineDebug->SelectedAsset.ModelIndex )
+                  render_entity_to_texture_group *RTTGroup = &Engine->RTTGroup;
+                  if (ModelIndex >= TotalElements(&Editor->AssetThumbnails))
                   {
+                    // TODO(Jesse): Where to allocate these?
+                    texture *T = MakeTexture_RGBA(V2i(256), (u32*)0, Engine->Memory);
+                    asset_thumbnail Thumb = { T, {} };
+                    StandardCamera(&Thumb.Camera, 10000.0f, 100.0f, {});
 
-                    /* Assert(Model->Mesh.Mat == 0); */
+                    Push(&Editor->AssetThumbnails, &Thumb);
+                  }
+
+                  asset_thumbnail *Thumb = GetPtr(&Editor->AssetThumbnails, ModelIndex);
+                  texture *Texture = Thumb->Texture;
+                  camera  *ThumbCamera  = &Thumb->Camera;
+
+                  interactable_handle B = PushButtonStart(Ui, UiId(Thumb, "asset_texture_viewport") );
+                    u32 Index = StartColumn(Ui);
+                      if (ModelIndex == EngineDebug->ModelIndex) { PushRelativeBorder(Ui, V2(256), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f)); }
+                      PushTexturedQuad(Ui, Texture, V2(Texture->Dim), zDepth_Text);
+                      PushForceAdvance(Ui, V2(8, 0));
+                    EndColumn(Ui, Index);
+                  PushButtonEnd(Ui);
+
+                  v3 ModelCenterpointOffset = Model->Dim/-2.f;
+                  if (EngineDebug->ResetAssetNodeView)
+                  {
+                    f32 SmallObjectCorrectionFactor = 350.f/Length(ModelCenterpointOffset);
+                    ThumbCamera->DistanceFromTarget = LengthSq(ModelCenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
+                    UpdateGameCamera(World, {}, 0.f, {}, ThumbCamera, 1.f);
+                    RenderToTexture(Engine, Thumb, Model, {});
+                  }
 
 
-                    v3 AssetHalfDim = V3(Model->Dim)/2.f;
+                  v2 MouseDP = {};
+                  r32 CameraZDelta = {};
+                  if (Pressed(Ui, &B))
+                  {
+                    EngineDebug->ModelIndex = ModelIndex;
+
+                    if (Input->LMB.Pressed) {MouseDP = GetMouseDelta(Plat)*2.f; }
+                    if (Input->RMB.Pressed) { CameraZDelta += GetMouseDelta(Plat).y*2.f; }
+                    UpdateGameCamera(World, MouseDP, CameraZDelta, {}, ThumbCamera, 1.f);
+                    RenderToTexture(Engine, Thumb, Model, {});
+                  }
+
+                  if ( Engine->MousedOverVoxel.Tag )
+                  {
+                    cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
+                    EntityOrigin.Offset = Round(EntityOrigin.Offset);
+                    if ( !UiCapturedMouseInput(Ui) && ModelIndex == EngineDebug->ModelIndex )
                     {
-                      /* RangeIterator_t(u32, ElementIndex, Model->Mesh.At) { Model->Mesh.Mat[ElementIndex].Transparency = 0.85f; } */
-                      /* untextured_3d_geometry_buffer *Dest = &Graphics->Transparency.GpuBuffer.Buffer; */
-                      /* BufferChunkMesh(Graphics, Dest, &Model->Mesh, World->ChunkDim, EntityOrigin.WorldP, 1.f, EntityOrigin.Offset + V3(0.f, 0.f, AssetHalfDim.z), Quaternion()); */
-                      /* RangeIterator_t(u32, ElementIndex, Model->Mesh.At) { Model->Mesh.Mat[ElementIndex].Transparency = 0.f; } */
-                    }
-                    {
-                      // TODO(Jesse): Setting up and tearing down the shader here
-                      // is highly questionable.  We should probably keep a list
-                      // of these guys that need this shader, then when we go
-                      // to use it when drawing entities just draw them then..
-                      //
-                      // That said .. this is just editor code.. so .. meh
-                      //
-                      SetupGBufferShader(Graphics);
-                      v3 Basis = GetRenderP(Engine, EntityOrigin) + V3(0.f, 0.f, AssetHalfDim.z);
-                      /* v3 Basis = V3(0,0,20); */
-                      DrawLod(GetEngineResources(), &Model->Meshes, 0.f, Basis);
-                      TeardownGBufferShader(Graphics);
-                    }
+
+                      /* Assert(Model->Mesh.Mat == 0); */
 
 
-                    if ( Input->Space.Clicked )
-                    {
-                      world_update_op_shape_params_asset AssetUpdateShape =
+                      v3 AssetHalfDim = V3(Model->Dim)/2.f;
                       {
-                        &Asset->Models.Start[ModelIndex],
-                        Canonicalize(World, EntityOrigin - V3(AssetHalfDim.xy, 0.f))
-                      };
-
-                      asset_spawn_mode AssetSpawnMode = {};
-                      GetRadioEnum(&AssetSpawnModeRadioGroup, &AssetSpawnMode);
-                      switch (AssetSpawnMode)
+                        /* RangeIterator_t(u32, ElementIndex, Model->Mesh.At) { Model->Mesh.Mat[ElementIndex].Transparency = 0.85f; } */
+                        /* untextured_3d_geometry_buffer *Dest = &Graphics->Transparency.GpuBuffer.Buffer; */
+                        /* BufferChunkMesh(Graphics, Dest, &Model->Mesh, World->ChunkDim, EntityOrigin.WorldP, 1.f, EntityOrigin.Offset + V3(0.f, 0.f, AssetHalfDim.z), Quaternion()); */
+                        /* RangeIterator_t(u32, ElementIndex, Model->Mesh.At) { Model->Mesh.Mat[ElementIndex].Transparency = 0.f; } */
+                      }
                       {
-                        case AssetSpawnMode_BlitIntoWorld:
+                        // TODO(Jesse): Setting up and tearing down the shader here
+                        // is highly questionable.  We should probably keep a list
+                        // of these guys that need this shader, then when we go
+                        // to use it when drawing entities just draw them then..
+                        //
+                        // That said .. this is just editor code.. so .. meh
+                        //
+                        SetupGBufferShader(Graphics);
+                        v3 Basis = GetRenderP(Engine, EntityOrigin) + V3(0.f, 0.f, AssetHalfDim.z);
+                        /* v3 Basis = V3(0,0,20); */
+                        DrawLod(GetEngineResources(), &Model->Meshes, 0.f, Basis);
+                        TeardownGBufferShader(Graphics);
+                      }
+
+
+                      if ( Input->Space.Clicked )
+                      {
+                        world_update_op_shape_params_asset AssetUpdateShape =
                         {
-                          world_update_op_shape Shape =
+                          EngineDebug->SelectedAsset,
+                          EngineDebug->ModelIndex,
+                          Canonicalize(World, EntityOrigin - V3(AssetHalfDim.xy, 0.f))
+                        };
+
+                        asset_spawn_mode AssetSpawnMode = {};
+                        GetRadioEnum(&AssetSpawnModeRadioGroup, &AssetSpawnMode);
+                        switch (AssetSpawnMode)
+                        {
+                          case AssetSpawnMode_BlitIntoWorld:
                           {
-                            type_world_update_op_shape_params_asset,
-                            .world_update_op_shape_params_asset = AssetUpdateShape,
-                          };
-                          QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, World->Memory);
-                        } break;
+                            world_update_op_shape Shape =
+                            {
+                              type_world_update_op_shape_params_asset,
+                              .world_update_op_shape_params_asset = AssetUpdateShape,
+                            };
+                            QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, World->Memory);
+                          } break;
 
-                        case AssetSpawnMode_Entity:
-                        {
-                          entity *E = GetFreeEntity(Engine->EntityTable);
-                          SpawnEntity(E, &EngineDebug->SelectedAsset, EntityBehaviorFlags_Default, 0, &AssetUpdateShape.Origin, Model->Dim/2.f);
-                        } break;
+                          case AssetSpawnMode_Entity:
+                          {
+                            entity *E = GetFreeEntity(Engine->EntityTable);
+                            SpawnEntity(E, &EngineDebug->SelectedAsset, EntityBehaviorFlags_Default, 0, &AssetUpdateShape.Origin, Model->Dim/2.f);
+                          } break;
+                        }
                       }
                     }
                   }
+
+                  if ( (ModelIndex+1) % 4 == 0)
+                  {
+                    PushNewRow(Ui);
+                    PushForceAdvance(Ui, V2(0, 8));
+                  }
                 }
 
-                if ( (ModelIndex+1) % 4 == 0)
-                {
-                  PushNewRow(Ui);
-                  PushForceAdvance(Ui, V2(0, 8));
-                }
-              }
+                if (EngineDebug->ResetAssetNodeView) { EngineDebug->ResetAssetNodeView = False; }
+              } break;
 
-              if (EngineDebug->ResetAssetNodeView) { EngineDebug->ResetAssetNodeView = False; }
-            } break;
-
-            case AssetLoadState_Queued:
-            {
-              PushColumn(Ui, CSz("Loading Asset"));
-            } break;
-
-            case AssetLoadState_Unloaded:
-            {
-              PushColumn(Ui, CSz("Not Loading Asset .. ?"));
-            } break;
-
-            case AssetLoadState_Error:
-            {
-              PushColumn(Ui, CSz("Error Loading Asset :("));
-            } break;
+            }
           }
-        }
-      PushTableEnd(Ui);
+        PushTableEnd(Ui);
 
-      PushWindowEnd(Ui, &AssetViewWindow);
+        PushWindowEnd(Ui, &AssetViewWindow);
+      }
     }
   }
 }

@@ -28,6 +28,7 @@ Unspawn(entity *Entity)
   Deactivate(Emitter);
 
   Entity->Emitter = Emitter;
+  Entity->AssetId.Index = INVALID_ASSET_INDEX;
 }
 
 link_internal aabb GetSimSpaceAABB(world *World, entity *Entity);
@@ -200,6 +201,7 @@ GetFreeEntity(entity **EntityTable)
     {
       Result = TestEntity;
       Result->State = EntityState_Reserved;
+      Assert(Result->AssetId.Index == INVALID_ASSET_INDEX);
       break;
     }
   }
@@ -222,6 +224,7 @@ AllocateEntity(memory_arena *Memory)
   Entity->Emitter = Allocate(particle_system, Memory, 1);
 
   Entity->Scale = 1.0f;
+  Entity->AssetId.Index = INVALID_ASSET_INDEX;
   return Entity;
 }
 
@@ -470,7 +473,7 @@ SpawnPlayerLikeEntity( platform *Plat,
 
   if (AssetId)
   {
-    /* NotImplemented; */
+    BUG("Spawning player-like entity, defaulting CollisionVolumeRadius to 1.f");
     CollisionVolumeRadius = V3(1.f);
     Player->AssetId = *AssetId;
   }

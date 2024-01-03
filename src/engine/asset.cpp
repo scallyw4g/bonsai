@@ -424,17 +424,53 @@ FreeModelBuffer(heap_allocator *ModelMemory, model_buffer *Models)
 link_internal void
 FreeAsset(engine_resources *Engine, asset *Asset)
 {
-  Assert(Asset->LoadState != AssetLoadState_Queued);
-  u16 Generation = Asset->Id.Slot.Generation;
+  Assert(Asset->LoadState == AssetLoadState_Loaded ||
+         Asset->LoadState == AssetLoadState_Error  );
+
   FreeModelBuffer(&Engine->AssetMemory, &Asset->Models);
 
+  HeapDeallocate(&Engine->AssetMemory, Cast(void*, &Asset->Id.FileNode.Dir));
+  HeapDeallocate(&Engine->AssetMemory, Cast(void*, &Asset->Id.FileNode.Name));
+
   Clear(Asset);
-  Asset->Id.Slot.Generation = Generation + 1;
 }
 
-link_internal maybe_asset_slot
-AllocateAssetSlot(engine_resources *Engine)
+link_internal void
+QueueAssetForLoad(work_queue *Queue, asset *Asset)
 {
+  Asset("Queuing Asset Slot(%d) Filenode(%S/%S)", Asset->Id.Index, Asset->Id.FileNode.Dir, Asset->Id.FileNode.Name);
+
+  Assert(Asset->LoadState == AssetLoadState_Allocated);
+  Asset->LoadState = AssetLoadState_Queued;
+
+  work_queue_entry_init_asset AssetJob = {
+    .Asset = Asset
+  };
+
+  auto Job = WorkQueueEntry(AssetJob);
+  PushWorkQueueEntry(Queue, &Job);
+}
+
+link_internal asset_id
+AllocateAssetId(engine_resources *Engine, file_traversal_node *FileNode, u16 AssetIndex)
+{
+  asset_id Result = {};
+
+  Result.Index = AssetIndex;
+  Result.FileNode = DeepCopy(&Engine->AssetMemory, FileNode);
+
+  return Result;
+}
+
+link_internal maybe_asset_ptr
+AllocateAsset(engine_resources *Engine, file_traversal_node *FileNode, u64 FrameIndex = 0)
+{
+  Assert(FileNode->Type);
+  Assert(FileNode->Dir.Count);
+  Assert(FileNode->Name.Count);
+
+
+  AcquireFutex(&Engine->AssetFutex);
   u16 FinalAssetIndex   = INVALID_ASSET_INDEX;
 
   u64 LruAssetFrame     = u64_MAX;
@@ -463,39 +499,42 @@ AllocateAssetSlot(engine_resources *Engine)
     if (LruAssetFrame < u64_MAX)
     {
       asset *LruAsset = Engine->AssetTable+LruAssetIndex;
-      Assert(LruAsset->LoadState != AssetLoadState_Unloaded);
+      Assert(LruAsset->LoadState == AssetLoadState_Loaded || LruAsset->LoadState == AssetLoadState_Error);
       FreeAsset(Engine, LruAsset);
 
       FinalAssetIndex = LruAssetIndex;
     }
   }
 
-  maybe_asset_slot Result = {};
+  maybe_asset_ptr Result = {};
 
   if (FinalAssetIndex != INVALID_ASSET_INDEX)
   {
     asset *Asset = Engine->AssetTable+FinalAssetIndex;
+    Asset->LoadState = AssetLoadState_Allocated;
+
     Result.Tag = Maybe_Yes;
-    Result.Value = { FinalAssetIndex, ++Asset->Id.Slot.Generation };
+    Result.Value = Asset;
+
+    Asset->Id = AllocateAssetId(Engine, FileNode, FinalAssetIndex);
+  }
+  ReleaseFutex(&Engine->AssetFutex);
+
+
+  if (Result.Tag)
+  {
+    Result.Value->LRUFrameIndex = FrameIndex ? FrameIndex : Engine->FrameIndex;
+    Result.Value->LRUFrameIndex = FrameIndex ? FrameIndex : Engine->FrameIndex;
+    Assert(Result.Value->Id.Index != INVALID_ASSET_INDEX);
+
+    Assert(Result.Value->Id.FileNode.Dir.Start);
+    Assert(Result.Value->Id.FileNode.Name.Start);
+
+    Assert(Result.Value->Id.FileNode.Dir.Start != FileNode->Dir.Start);
+    Assert(Result.Value->Id.FileNode.Name.Start != FileNode->Name.Start);
   }
 
   return Result;
-}
-
-link_internal void
-QueueAssetForLoad(work_queue *Queue, asset *Asset)
-{
-  Asset("Queuing Asset Slot(%d/%d) Filenode(%S/%S)", Asset->Id.Slot.Index, Asset->Id.Slot.Generation, Asset->Id.FileNode.Dir, Asset->Id.FileNode.Name);
-
-  Assert(Asset->LoadState == AssetLoadState_Unloaded);
-  Asset->LoadState = AssetLoadState_Queued;
-
-  work_queue_entry_init_asset AssetJob = {
-    .Asset = Asset
-  };
-
-  auto Job = WorkQueueEntry(AssetJob);
-  PushWorkQueueEntry(Queue, &Job);
 }
 
 link_internal void
@@ -543,45 +582,107 @@ InitAsset(asset *Asset, thread_local_state *Thread)
 }
 
 link_internal maybe_asset_ptr
-GetAssetPtr(engine_resources *Engine, asset_slot Slot)
+GetAssetPtr(engine_resources *Engine, asset_id *AID, u64 FrameIndex = 0)
 {
   maybe_asset_ptr Result = {};
 
-  if (Slot.Generation)
+  if (AID->Index != INVALID_ASSET_INDEX)
   {
-    asset *Asset = Engine->AssetTable + Slot.Index;
-    if (Asset->Id.Slot.Generation == Slot.Generation)
-    {
-      // TODO(Jesse): This should probably be set somewhere else and be an assert ...?
-      Asset->Id.Slot.Index = Slot.Index;
+    AcquireFutex(&Engine->AssetFutex);
 
-      Result.Tag = Maybe_Yes;
-      Result.Value = Asset;
+    asset *Asset = Engine->AssetTable + AID->Index;
+    // TODO(Jesse): This should probably be set somewhere else and be an assert ...?
+    Assert(Asset->Id.Index == AID->Index);
+    Assert(Asset->LoadState != AssetLoadState_Unloaded);
+
+    Asset->LRUFrameIndex = FrameIndex ? FrameIndex : Engine->FrameIndex;
+
+    Result.Tag = Maybe_Yes;
+    Result.Value = Asset;
+
+    ReleaseFutex(&Engine->AssetFutex);
+  }
+  else
+  {
+    if (AID->FileNode.Type)
+    {
+      Result = AllocateAsset(Engine, &AID->FileNode, FrameIndex);
+      if (Result.Tag)
+      {
+        Assert(Result.Value->LoadState == AssetLoadState_Allocated);
+      }
+    }
+  }
+
+  if (Result.Tag)
+  {
+    Assert(Result.Value->Id.Index != INVALID_ASSET_INDEX);
+    if (Result.Value->LoadState == AssetLoadState_Allocated)
+    {
+      QueueAssetForLoad(&Engine->Stdlib.Plat.LowPriority, Result.Value);
     }
   }
 
   return Result;
 }
 
-link_internal maybe_asset_ptr
-GetAssetPtr(engine_resources *Engine, file_traversal_node *FileNode)
+link_internal asset_id
+GetOrAllocateAssetId(engine_resources *Engine, file_traversal_node *FileNode, u64 FrameIndex = 0)
 {
-  maybe_asset_ptr Result = {};
+  asset *Asset  = 0;
 
-  if (FileNode->Dir || FileNode->Name)
+  AcquireFutex(&Engine->AssetFutex);
   {
     RangeIterator(AssetIndex, ASSET_TABLE_COUNT)
     {
       asset *Query = Engine->AssetTable + AssetIndex;
       if (AreEqual(FileNode, &Query->Id.FileNode))
       {
-        Result.Tag = Maybe_Yes;
-        Result.Value = Query;
+        Asset = Query;
         break;
       }
     }
+  }
+  ReleaseFutex(&Engine->AssetFutex);
 
-    if (Result.Tag == Maybe_No)
+  if (Asset == 0)
+  {
+    Asset = AllocateAsset(Engine, FileNode, FrameIndex).Value;
+  }
+
+
+  asset_id Result = {};
+  Result.Index = INVALID_ASSET_INDEX;
+
+  if (Asset)
+  {
+    Result = Asset->Id;
+    Assert(Asset->LoadState != AssetLoadState_Unloaded);
+    Asset->LRUFrameIndex = FrameIndex ? FrameIndex : Engine->FrameIndex;
+  }
+
+  return Result;
+}
+
+link_internal asset_id
+GetOrAllocateAssetId(engine_resources *Engine, file_traversal_node FileNode, u64 FrameIndex = 0)
+{
+  return GetOrAllocateAssetId(Engine, &FileNode, FrameIndex);
+}
+
+
+#if 0
+link_internal maybe_asset_ptr
+GetAssetPtr(engine_resources *Engine, file_traversal_node *FileNode, u64 FrameIndex = 0)
+{
+  maybe_asset_ptr Result = {};
+
+
+  if (FileNode->Dir || FileNode->Name)
+  {
+    maybe_asset_id MaybeId = GetAssetId(FileNode);
+
+    if (Result.Tag)
     {
       maybe_asset_slot MaybeSlot = AllocateAssetSlot(Engine);
 
@@ -590,8 +691,8 @@ GetAssetPtr(engine_resources *Engine, file_traversal_node *FileNode)
         Result = GetAssetPtr(Engine, MaybeSlot.Value);
         if (Result.Tag)
         {
-          Result.Value->Id.FileNode = *FileNode;
-          Result.Value->LRUFrameIndex = Engine->FrameIndex;
+          Result.Value->Id.FileNode = DeepCopy(&Engine->AssetMemory, FileNode);
+          Result.Value->LRUFrameIndex = FrameIndex ? FrameIndex : Engine->FrameIndex;
           QueueAssetForLoad(&Engine->Stdlib.Plat.LowPriority, Result.Value);
         }
       }
@@ -603,20 +704,44 @@ GetAssetPtr(engine_resources *Engine, file_traversal_node *FileNode)
     }
   }
 
-
   return Result;
 }
+#endif
 
-
-link_internal maybe_asset_ptr
-GetAssetPtr(engine_resources *Engine, asset_id *AID)
+link_internal model *
+GetModel(asset *Asset, asset_id *AID, u64 ModelIndex)
 {
-  maybe_asset_ptr Result = GetAssetPtr(Engine, AID->Slot);
-  if (Result.Tag == Maybe_No) { Result = GetAssetPtr(Engine, &AID->FileNode); }
+  Assert(ModelIndex < Asset->Models.Count);
+  Assert(AID->Index == Asset->Id.Index);
+  Assert(AreEqual(&AID->FileNode, &Asset->Id.FileNode));
+
+  model *Result = Asset->Models.Start + ModelIndex;
   return Result;
 }
 
-#if 1
+link_internal asset *
+GetAndLockAssetSync(engine_resources *Engine, asset_id *AID)
+{
+  maybe_asset_ptr Result = GetAssetPtr(Engine, AID, u64_MAX);
+
+  while (Result.Tag == Maybe_No)
+  {
+    SleepMs(1);
+    Result = GetAssetPtr(Engine, AID, u64_MAX);
+  }
+
+  Assert(Result.Value->LRUFrameIndex == u64_MAX);
+  return Result.Value;
+}
+
+link_internal void
+UnlockAsset(engine_resources *Engine, asset *Asset)
+{
+  Assert(Asset->LRUFrameIndex == u64_MAX);
+  Asset->LRUFrameIndex = Engine->FrameIndex;
+}
+
+#if 0
 link_internal maybe_asset_ptr
 NewAsset(engine_resources *Engine)
 {

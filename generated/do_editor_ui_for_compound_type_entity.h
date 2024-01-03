@@ -63,6 +63,12 @@ DoEditorUi(renderer_2d *Ui, entity *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
 
 
       PushNewRow(Ui);
+      DoEditorUi(Ui, &Element->ModelIndex, CSz("u64 ModelIndex"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+      PushNewRow(Ui);
       DoEditorUi(Ui, &Element->LastResolvedCollision, CSz("collision_event LastResolvedCollision"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 

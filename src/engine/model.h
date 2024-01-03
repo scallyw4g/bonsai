@@ -84,7 +84,7 @@ Deserialize(u8_stream *Bytes, gpu_mapped_element_buffer *Element, memory_arena *
 poof(block_array(vox_data, {8}))
 #include <generated/block_array_vox_data_688856411.h>
 
-poof(buffer(model))
+poof(buffer_t(model, u64))
 #include <generated/buffer_model.h>
 
 poof(block_array(model, {8}))

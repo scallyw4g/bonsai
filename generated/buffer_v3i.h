@@ -5,7 +5,7 @@ struct v3i_buffer
 };
 
 link_internal v3i_buffer
-V3iBuffer(umm ElementCount, memory_arena* Memory)
+V3iBuffer( umm ElementCount, memory_arena* Memory)
 {
   v3i_buffer Result = {};
 
@@ -64,4 +64,5 @@ Get(v3i_buffer *Buf, umm Index)
   v3i *Result = GetPtr(Buf, Index);
   return Result;
 }
+
 

@@ -34,8 +34,10 @@ struct engine_resources
   memory_arena   *Memory;
 
   entity **EntityTable;
-  asset    AssetTable[ASSET_TABLE_COUNT];
 
+  // TODO(Jesse): Put on an asset_system struct?
+  asset    AssetTable[ASSET_TABLE_COUNT];
+  bonsai_futex AssetFutex;
   heap_allocator AssetMemory;
 
   // At 120fps we get 9k hours worth of frames in a u32.. should be enough.

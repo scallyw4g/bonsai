@@ -5,7 +5,7 @@ struct u64_buffer
 };
 
 link_internal u64_buffer
-U64Buffer(umm ElementCount, memory_arena* Memory)
+U64Buffer( umm ElementCount, memory_arena* Memory)
 {
   u64_buffer Result = {};
 
@@ -64,4 +64,5 @@ Get(u64_buffer *Buf, umm Index)
   u64 *Result = GetPtr(Buf, Index);
   return Result;
 }
+
 

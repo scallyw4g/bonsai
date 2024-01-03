@@ -5,7 +5,7 @@ struct counted_string_buffer
 };
 
 link_internal counted_string_buffer
-CountedStringBuffer(umm ElementCount, memory_arena* Memory)
+CountedStringBuffer( umm ElementCount, memory_arena* Memory)
 {
   counted_string_buffer Result = {};
 
@@ -64,4 +64,5 @@ Get(counted_string_buffer *Buf, umm Index)
   counted_string *Result = GetPtr(Buf, Index);
   return Result;
 }
+
 

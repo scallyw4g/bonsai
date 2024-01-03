@@ -3739,8 +3739,11 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
 
       v3 MinSimP = GetSimSpaceP(World, ShapeAsset->Origin);
 
-      /* Assert(ShapeAsset->Models.Count > 0); */
-      v3 MaxSimP = MinSimP + ShapeAsset->Model->Dim;
+      asset *Asset = GetAndLockAssetSync(GetEngineResources(), &ShapeAsset->AssetId);
+      model *Model = GetModel(Asset, &ShapeAsset->AssetId, ShapeAsset->ModelIndex);
+      v3 MaxSimP = MinSimP + Model->Dim;
+
+      UnlockAsset(Engine, Asset);
 
       MinPCoarse = SimSpaceToCanonical(World, MinSimP-MinPStroke);
       MaxPCoarse = SimSpaceToCanonical(World, MaxSimP+MaxPStroke);
@@ -3943,6 +3946,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
     //
     // Instead of doing this, we should probably factor the common code into a function
     // and just call it in each case, without a [[fallthrough]]
+    asset *Asset = 0;
     chunk_data *Data = 0;
     v3 SimOrigin = {};
 
@@ -4203,8 +4207,10 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           world_update_op_shape_params_asset *AssetJob = SafeCast(world_update_op_shape_params_asset, &Shape);
           /* asset *Asset = AssetJob->Asset; */
           /* Assert(Asset->Models.Count > 0); */
-
-          Data = AssetJob->Model->Vox.ChunkData;
+          asset_id *AID = &AssetJob->AssetId;
+          Asset = GetAndLockAssetSync(GetEngineResources(), AID);
+          model *Model = GetModel(Asset, AID, AssetJob->ModelIndex);
+          Data = Model->Vox.ChunkData;
           SimOrigin = GetSimSpaceP(World, AssetJob->Origin);
         } [[fallthrough]];
 
@@ -4248,6 +4254,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           }
 
 
+          if (Asset) { UnlockAsset(GetEngineResources(), Asset); Asset = 0; }
         } break;
       }
 

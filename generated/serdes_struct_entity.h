@@ -46,6 +46,11 @@ Serialize(native_file *File, entity *Element)
 
 
 
+  Result &= Serialize(File, &Element->ModelIndex);
+
+
+
+
   if (Element->Emitter) { Result &= WriteToFile(File, Cast(u8*, &PointerTrue), sizeof(PointerTrue)); }
   else                        { Result &= WriteToFile(File, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
@@ -186,6 +191,21 @@ Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->AssetId, Memory);
+
+  /* member.is_primitive? */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
+  /* } */
+  /* { */
+  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
+  /* } */
+
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->ModelIndex, Memory);
 
   /* member.is_primitive? */
   /* { */

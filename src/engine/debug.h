@@ -32,6 +32,7 @@ struct engine_debug
   world_chunk *PickedChunk;
 
   asset_id SelectedAsset;
+  u64 ModelIndex;
 
   entity *SelectedEntity;
 };

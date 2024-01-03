@@ -9,13 +9,7 @@ DoEditorUi(renderer_2d *Ui, asset_id *Element, cs Name, EDITOR_UI_FUNCTION_PROTO
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       /* Padding.x += 20.f; */
       PushNewRow(Ui);
-      DoEditorUi(Ui, &Element->Slot, CSz("asset_slot Slot"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-      PushNewRow(Ui);
-      DoEditorUi(Ui, &Element->ModelIndex, CSz("s32 ModelIndex"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, &Element->Index, CSz("u16 Index"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 

@@ -5,7 +5,7 @@ struct c_token_buffer
 };
 
 link_internal c_token_buffer
-CTokenBuffer(umm ElementCount, memory_arena* Memory)
+CTokenBuffer( umm ElementCount, memory_arena* Memory)
 {
   c_token_buffer Result = {};
 
@@ -64,4 +64,5 @@ Get(c_token_buffer *Buf, umm Index)
   c_token *Result = GetPtr(Buf, Index);
   return Result;
 }
+
 

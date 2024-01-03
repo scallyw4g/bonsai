@@ -1068,13 +1068,12 @@ DrawEntity(
     }
 
     maybe_asset_ptr MaybeAsset = GetAssetPtr(GetEngineResources(), &Entity->AssetId);
-    if (MaybeAsset.Tag &&
-        MaybeAsset.Value->LoadState == AssetLoadState_Loaded)
+    if ( MaybeAsset.Tag &&
+         MaybeAsset.Value->LoadState == AssetLoadState_Loaded )
     {
-      Assert(MaybeAsset.Value->Id.ModelIndex == 0);
-      Assert(umm(Entity->AssetId.ModelIndex) < MaybeAsset.Value->Models.Count);
+      Assert(umm(Entity->ModelIndex) < MaybeAsset.Value->Models.Count);
 
-      model *Model = MaybeAsset.Value->Models.Start + Entity->AssetId.ModelIndex ;
+      model *Model = GetModel(MaybeAsset.Value, &Entity->AssetId, Entity->ModelIndex);
 
       SyncGpuBuffersImmediate(GetEngineResources(), &Model->Meshes);
 

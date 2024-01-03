@@ -74,6 +74,12 @@ DoEditorUi(renderer_2d *Ui, engine_debug *Element, cs Name, EDITOR_UI_FUNCTION_P
 
 
       PushNewRow(Ui);
+      DoEditorUi(Ui, &Element->ModelIndex, CSz("u64 ModelIndex"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+      PushNewRow(Ui);
       DoEditorUi(Ui, Element->SelectedEntity, CSz("entity SelectedEntity"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 

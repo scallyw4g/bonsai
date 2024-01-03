@@ -232,17 +232,24 @@ poof(do_editor_ui_for_compound_type(lod_element_buffer))
 poof(do_editor_ui_for_compound_type(model))
 #include <generated/do_editor_ui_for_compound_type_model.h>
 
+poof(do_editor_ui_for_container(model_buffer))
+#include <generated/do_editor_ui_for_container_model_buffer.h>
+
 poof(do_editor_ui_for_enum(file_traversal_type))
 #include <generated/do_editor_ui_for_enum_file_traversal_type.h>
 
 poof(do_editor_ui_for_compound_type(file_traversal_node))
 #include <generated/do_editor_ui_for_compound_type_file_traversal_node.h>
 
-poof(do_editor_ui_for_compound_type(asset_slot))
-#include <generated/do_editor_ui_for_compound_type_asset_slot.h>
+// NOTE(Jesse): Had to hack this slightly because the asset_load_state on Enitity is marked volatile
+/* poof(do_editor_ui_for_enum(asset_load_state)) */
+#include <generated/do_editor_ui_for_enum_asset_load_state.h>
 
 poof(do_editor_ui_for_compound_type(asset_id))
 #include <generated/do_editor_ui_for_compound_type_asset_id.h>
+
+poof(do_editor_ui_for_compound_type(asset))
+#include <generated/do_editor_ui_for_compound_type_asset.h>
 
 poof(do_editor_ui_for_compound_type(collision_event))
 #include <generated/do_editor_ui_for_compound_type_collision_event.h>
@@ -833,11 +840,11 @@ DoLevelEditor(engine_resources *Engine)
             aabb_intersect_result IntersectionResult = Intersect(EntityAABB, Ray);
             if (Input->LMB.Clicked && IntersectionResult.Face)
             {
-              NotImplemented;
-#if 0
+#if 1
               world_update_op_shape_params_asset AssetUpdateShape =
               {
-                SelectedEntity->Model,
+                SelectedEntity->AssetId,
+                SelectedEntity->ModelIndex,
                 SelectedEntity->P,
               };
 

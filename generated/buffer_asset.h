@@ -5,7 +5,7 @@ struct asset_buffer
 };
 
 link_internal asset_buffer
-AssetBuffer(umm ElementCount, memory_arena* Memory)
+AssetBuffer( umm ElementCount, memory_arena* Memory)
 {
   asset_buffer Result = {};
 
@@ -64,4 +64,5 @@ Get(asset_buffer *Buf, umm Index)
   asset *Result = GetPtr(Buf, Index);
   return Result;
 }
+
 
