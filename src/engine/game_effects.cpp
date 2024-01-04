@@ -369,7 +369,7 @@ DoSplotion( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
     entity *E = GetFreeEntity(EntityTable);
     E->Physics.Speed = 1.f;
 
-    E->EulerAngles.xyz = RandomRotation(Entropy);
+    E->EulerAngles = RandomRotation(Entropy);
     E->Scale = 0.3f;
     E->_CollisionVolumeRadius = V3(.1f);
 

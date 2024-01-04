@@ -1085,7 +1085,7 @@ DrawEntity(
 
         v3 Offset = AnimationOffset + Entity->Scale*(V3(Model->Dim)/2.f);
         v3 Basis = GetRenderP(GetEngineResources(), Entity->P) + Offset;
-        DrawLod(GetEngineResources(), &Model->Meshes, 0.f, Basis, FromEuler(Entity->EulerAngles.xyz), V3(Entity->Scale));
+        DrawLod(GetEngineResources(), &Model->Meshes, 0.f, Basis, FromEuler(Entity->EulerAngles), V3(Entity->Scale));
       }
     }
   }

@@ -157,7 +157,7 @@ DestroyLoot(engine_resources *Engine, entity *Entity)
   file_traversal_node AssetName = {FileTraversalType_File, CSz("models"), CSz("skull_broken.vox")};
 
   Entity->AssetId = GetOrAllocateAssetId(Engine, &AssetName);
-  Entity->EulerAngles = V4(0.f, 5.32f, RandomBilateral(&Global_GameEntropy), 0.f);
+  Entity->EulerAngles = V3(0.f, 5.32f, RandomBilateral(&Global_GameEntropy));
 
   Entity->UserType = 0;
 }
@@ -223,7 +223,7 @@ DestroySkeleton(engine_resources *Engine, entity *Entity, r32 Radius)
 
   if (AssetIndex == 0)
   {
-    Entity->EulerAngles = V4(0.f, 5.32f, RandomBilateral(&Global_GameEntropy), 0.f);
+    Entity->EulerAngles = V3(0.f, 5.32f, RandomBilateral(&Global_GameEntropy));
   }
 }
 

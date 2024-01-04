@@ -236,6 +236,7 @@ DoLevelWindow(engine_resources *Engine)
 
         /* World->Flags  = Cast(world_flag, LevelHeader.WorldFlags); */
         World->Center = LevelHeader.WorldCenter;
+        *Graphics->Camera = LevelHeader.Camera;
         /* World->VisibleRegion = LevelHeader.VisibleRegion; */
 
         s32 ChunkCount = Cast(s32, LevelHeader.ChunkCount);
@@ -266,22 +267,20 @@ DoLevelWindow(engine_resources *Engine)
 
         Ensure(Read_u64(&LevelBytes) == LEVEL_FILE_DEBUG_OBJECT_DELIM);
 
+#if 1
         s32 EntityCount = Cast(s32, LevelHeader.EntityCount);
         RangeIterator(EntityIndex, EntityCount)
         {
           entity *E = EntityTable[EntityIndex];
           Deserialize(&LevelBytes, E, Thread->PermMemory);
-
-          /* if (E->Behavior & EntityBehaviorFlags_CameraGhost) { Engine->_CameraGhost = E; } */
         }
-
-        *Graphics->Camera = LevelHeader.Camera;
 
         v3_cursor *Palette = GetColorPalette();
         Palette->At = Palette->Start;
         Deserialize(&LevelBytes, Palette, Thread->PermMemory);
 
         Assert(LevelBytes.At == LevelBytes.End);
+#endif
 
         Assert(ThreadLocal_ThreadIndex == 0);
         if (Engine->GameApi.OnLibraryLoad) { Engine->GameApi.OnLibraryLoad(Engine, GetThreadLocalState(ThreadLocal_ThreadIndex)); }
