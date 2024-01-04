@@ -75,7 +75,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   if (Hotkeys->Player_Spawn)
   {
-    asset_id Asset = AssetId({FileTraversalType_File, CSz("models"), CSz("players/chr_rain.vox")});
+    asset_id Asset = GetOrAllocateAssetId(Resources, {FileTraversalType_File, CSz("models"), CSz("players/chr_rain.vox")});
 
     Unspawn(Player);
     SpawnPlayerLikeEntity( Plat,
@@ -107,7 +107,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState->Player = GetFreeEntity(EntityTable);
 
-  asset_id Asset = AssetId({FileTraversalType_File, CSz("models"), CSz("players/chr_rain.vox")});
+  asset_id Asset = GetOrAllocateAssetId(Resources, {FileTraversalType_File, CSz("models"), CSz("players/chr_rain.vox")});
   SpawnPlayerLikeEntity( Plat,
                          World,
                          &Asset,

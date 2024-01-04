@@ -757,7 +757,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   cp BakeEntityP = Canonical_Position(World->ChunkDim, V3(-ChunkData->Dim.x-8, 0, 0), V3i(0));
 
   {
-    maybe_asset_ptr MaybeAsset = NewAsset(Resources);
+    maybe_asset_ptr MaybeAsset = AllocateAsset(Resources);
     if (MaybeAsset.Tag)
     {
       entity *BakeEntity = GetFreeEntity(EntityTable);
@@ -770,7 +770,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
       AllocateAndBuildMesh(&GameState->BakeResult.VoxData, Model, TempMemory, Resources->Memory);
 
       asset *Asset = MaybeAsset.Value;
-      Asset->LoadState == AssetLoadState_Loaded;
+      Asset->LoadState = AssetLoadState_Loaded;
       Asset->Models.Start = Model;
       Asset->Models.Count = 1;
 
@@ -792,11 +792,11 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
       voxel_synth_tile *Tile = Get(&BakedTiles, SynthTileIndex);
       if (RuleId == Tile->RuleId)
       {
-        maybe_asset_ptr MaybeAsset = NewAsset(Resources);
+        maybe_asset_ptr MaybeAsset = AllocateAsset(Resources);
         if (MaybeAsset.Tag)
         {
           asset *Asset = MaybeAsset.Value;
-          Asset->LoadState == AssetLoadState_Loaded;
+          Asset->LoadState = AssetLoadState_Loaded;
 
           model *Model = Allocate(model, Resources->Memory, 1);
           untextured_3d_geometry_buffer *Mesh = AllocateTempWorldChunkMesh(Resources->Memory);

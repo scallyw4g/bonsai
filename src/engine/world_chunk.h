@@ -293,7 +293,8 @@ enum chunk_init_flags
   ChunkInitFlag_GenLODs              = (1 << 2),
 };
 
-#define WORLD_CHUNK_STANDING_SPOT_COUNT (32)
+/* #define WORLD_CHUNK_STANDING_SPOT_COUNT (32) */
+#define WORLD_CHUNK_STANDING_SPOT_COUNT (64)
 
 poof(
     func use_struct(struct_type)

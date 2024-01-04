@@ -1068,18 +1068,25 @@ DrawEntity(
     }
 
     maybe_asset_ptr MaybeAsset = GetAssetPtr(GetEngineResources(), &Entity->AssetId);
-    if ( MaybeAsset.Tag &&
-         MaybeAsset.Value->LoadState == AssetLoadState_Loaded )
+    if ( MaybeAsset.Tag )
     {
-      Assert(umm(Entity->ModelIndex) < MaybeAsset.Value->Models.Count);
 
-      model *Model = GetModel(MaybeAsset.Value, &Entity->AssetId, Entity->ModelIndex);
+      if (MaybeAsset.Value->LoadState == AssetLoadState_Allocated )
+      {
+        Assert(MaybeAsset.Value->Id.Index != INVALID_ASSET_INDEX);
+        QueueAssetForLoad(&GetEngineResources()->Stdlib.Plat.LowPriority, MaybeAsset.Value);
+      }
 
-      SyncGpuBuffersImmediate(GetEngineResources(), &Model->Meshes);
+      if (MaybeAsset.Value->LoadState == AssetLoadState_Loaded )
+      {
+        model *Model = GetModel(MaybeAsset.Value, &Entity->AssetId, Entity->ModelIndex);
 
-      v3 Offset = AnimationOffset + Entity->Scale*(V3(Model->Dim)/2.f);
-      v3 Basis = GetRenderP(GetEngineResources(), Entity->P) + Offset;
-      DrawLod(GetEngineResources(), &Model->Meshes, 0.f, Basis, FromEuler(Entity->EulerAngles.xyz), V3(Entity->Scale));
+        SyncGpuBuffersImmediate(GetEngineResources(), &Model->Meshes);
+
+        v3 Offset = AnimationOffset + Entity->Scale*(V3(Model->Dim)/2.f);
+        v3 Basis = GetRenderP(GetEngineResources(), Entity->P) + Offset;
+        DrawLod(GetEngineResources(), &Model->Meshes, 0.f, Basis, FromEuler(Entity->EulerAngles.xyz), V3(Entity->Scale));
+      }
     }
   }
 }

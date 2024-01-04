@@ -1,6 +1,6 @@
 * 1.2.0
 
-- Remove dead turn_based2 and asset_picker examples
+- Remove dead turn_based2, graveyard and asset_picker examples
 
 - Add HoodooTerrain to terrain_gen
 

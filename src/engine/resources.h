@@ -36,6 +36,7 @@ struct engine_resources
   entity **EntityTable;
 
   // TODO(Jesse): Put on an asset_system struct?
+  u64 CurrentUnnamedAssetIndex;
   asset    AssetTable[ASSET_TABLE_COUNT];
   bonsai_futex AssetFutex;
   heap_allocator AssetMemory;

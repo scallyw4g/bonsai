@@ -451,24 +451,12 @@ QueueAssetForLoad(work_queue *Queue, asset *Asset)
   PushWorkQueueEntry(Queue, &Job);
 }
 
-link_internal asset_id
-AllocateAssetId(engine_resources *Engine, file_traversal_node *FileNode, u16 AssetIndex)
-{
-  asset_id Result = {};
-
-  Result.Index = AssetIndex;
-  Result.FileNode = DeepCopy(&Engine->AssetMemory, FileNode);
-
-  return Result;
-}
-
 link_internal maybe_asset_ptr
 AllocateAsset(engine_resources *Engine, file_traversal_node *FileNode, u64 FrameIndex = 0)
 {
   Assert(FileNode->Type);
   Assert(FileNode->Dir.Count);
   Assert(FileNode->Name.Count);
-
 
   AcquireFutex(&Engine->AssetFutex);
   u16 FinalAssetIndex   = INVALID_ASSET_INDEX;
@@ -513,10 +501,11 @@ AllocateAsset(engine_resources *Engine, file_traversal_node *FileNode, u64 Frame
     asset *Asset = Engine->AssetTable+FinalAssetIndex;
     Asset->LoadState = AssetLoadState_Allocated;
 
+    Asset->Id.Index = FinalAssetIndex;
+    Asset->Id.FileNode = DeepCopy(&Engine->AssetMemory, FileNode);
+
     Result.Tag = Maybe_Yes;
     Result.Value = Asset;
-
-    Asset->Id = AllocateAssetId(Engine, FileNode, FinalAssetIndex);
   }
   ReleaseFutex(&Engine->AssetFutex);
 
@@ -534,6 +523,16 @@ AllocateAsset(engine_resources *Engine, file_traversal_node *FileNode, u64 Frame
     Assert(Result.Value->Id.FileNode.Name.Start != FileNode->Name.Start);
   }
 
+  return Result;
+}
+
+link_internal maybe_asset_ptr
+AllocateAsset(engine_resources *Engine, u64 FrameIndex = 0)
+{
+  cs AssetName = CS(Engine->CurrentUnnamedAssetIndex++);
+
+  file_traversal_node FileNode = {FileTraversalType_File, AssetName, AssetName} ;
+  maybe_asset_ptr Result = AllocateAsset(Engine,  &FileNode, FrameIndex);
   return Result;
 }
 
@@ -611,15 +610,6 @@ GetAssetPtr(engine_resources *Engine, asset_id *AID, u64 FrameIndex = 0)
       {
         Assert(Result.Value->LoadState == AssetLoadState_Allocated);
       }
-    }
-  }
-
-  if (Result.Tag)
-  {
-    Assert(Result.Value->Id.Index != INVALID_ASSET_INDEX);
-    if (Result.Value->LoadState == AssetLoadState_Allocated)
-    {
-      QueueAssetForLoad(&Engine->Stdlib.Plat.LowPriority, Result.Value);
     }
   }
 

@@ -52,7 +52,17 @@ HardResetWorld(engine_resources *Engine)
   }
 
   RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT) { Unspawn(EntityTable[EntityIndex]); }
-  RangeIterator(AssetIndex, ASSET_TABLE_COUNT)   { FreeAsset(Engine, Engine->AssetTable+AssetIndex); }
+  RangeIterator(AssetIndex, ASSET_TABLE_COUNT)
+  {
+    asset *Asset = Engine->AssetTable+AssetIndex;
+    if (Asset->LoadState != AssetLoadState_Unloaded)
+    {
+      // NOTE(Jesse): Somewhat of a hack, but we know all work queue jobs have
+      // been cancelled so we can force this.
+      Asset->LoadState = AssetLoadState_Loaded;
+      FreeAsset(Engine, Asset);
+    }
+  }
 
   Engine->_CameraGhost = 0;
 }
