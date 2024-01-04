@@ -50,6 +50,13 @@ operator<(voxel_stack_element_block_array_index I0, voxel_stack_element_block_ar
   return Result;
 }
 
+link_inline voxel_stack_element_block *
+GetBlock(voxel_stack_element_block_array_index *Index)
+{
+  voxel_stack_element_block *Result = Cast(voxel_stack_element_block*, Index->Block);
+  return Result;
+}
+
 link_inline umm
 GetIndex(voxel_stack_element_block_array_index *Index)
 {
@@ -62,7 +69,7 @@ ZerothIndex(voxel_stack_element_block_array *Arr)
 {
   voxel_stack_element_block_array_index Result = {};
   Result.Block = &Arr->First;
-  Assert(Cast(voxel_stack_element_block*, Result.Block)->Index == 0);
+  Assert(GetBlock(&Result)->Index == 0);
   return Result;
 }
 
@@ -78,14 +85,31 @@ TotalElements(voxel_stack_element_block_array *Arr)
 }
 
 link_internal voxel_stack_element_block_array_index
+LastIndex(voxel_stack_element_block_array *Arr)
+{
+  voxel_stack_element_block_array_index Result = {};
+  if (Arr->Current)
+  {
+    Result.Block = Arr->Current;
+    Result.BlockIndex = Arr->Current->Index;
+    Result.ElementIndex = Arr->Current->At;
+    Assert(Result.ElementIndex);
+    Result.ElementIndex--;
+  }
+  return Result;
+}
+
+link_internal voxel_stack_element_block_array_index
 AtElements(voxel_stack_element_block_array *Arr)
 {
   voxel_stack_element_block_array_index Result = {};
   if (Arr->Current)
   {
     Result.Block = Arr->Current;
-    Result.BlockIndex = Cast(voxel_stack_element_block*, Arr->Current)->Index;
-    Result.ElementIndex = Cast(voxel_stack_element_block*, Arr->Current)->At;
+    Result.BlockIndex = Arr->Current->Index;
+    Result.ElementIndex = Arr->Current->At;
+    /* Assert(Result.ElementIndex); */
+    /* Result.ElementIndex--; */
   }
   return Result;
 }
@@ -94,7 +118,7 @@ link_internal voxel_stack_element *
 GetPtr(voxel_stack_element_block_array *Arr, voxel_stack_element_block_array_index Index)
 {
   voxel_stack_element *Result = {};
-  if (Index.Block) { Result = Cast(voxel_stack_element_block *, Index.Block)->Elements + Index.ElementIndex; }
+  if (Index.Block) { Result = GetBlock(&Index)->Elements + Index.ElementIndex; }
   return Result;
 }
 
@@ -138,6 +162,41 @@ Allocate_voxel_stack_element_block(memory_arena *Memory)
   return Result;
 }
 
+link_internal cs
+CS(voxel_stack_element_block_array_index Index)
+{
+  return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+}
+
+link_internal void
+RemoveUnordered(voxel_stack_element_block_array *Array, voxel_stack_element_block_array_index Index)
+{
+  voxel_stack_element_block_array_index LastI = LastIndex(Array);
+
+  voxel_stack_element *Element = GetPtr(Array, Index);
+  voxel_stack_element *LastElement = GetPtr(Array, LastI);
+
+  *Element = *LastElement;
+
+  Assert(Array->Current->At);
+  Array->Current->At -= 1;
+
+  if (Array->Current->At == 0)
+  {
+    // Walk the chain till we get to the second-last one
+    voxel_stack_element_block *Current = &Array->First;
+    voxel_stack_element_block *LastB = GetBlock(&LastI);
+
+    while (Current->Next && Current->Next != LastB)
+    {
+      Current = Current->Next;
+    }
+
+    Assert(Current->Next == LastB || Current->Next == 0);
+    Array->Current = Current;
+  }
+}
+
 link_internal voxel_stack_element *
 Push(voxel_stack_element_block_array *Array, voxel_stack_element *Element)
 {
@@ -147,12 +206,19 @@ Push(voxel_stack_element_block_array *Array, voxel_stack_element *Element)
 
   if (Array->Current->At == 8)
   {
-    voxel_stack_element_block *Next = Allocate_voxel_stack_element_block(Array->Memory);
-    Next->Index = Array->Current->Index + 1;
+    if (Array->Current->Next)
+    {
+      Array->Current = Array->Current->Next;
+      Assert(Array->Current->At == 0);
+    }
+    else
+    {
+      voxel_stack_element_block *Next = Allocate_voxel_stack_element_block(Array->Memory);
+      Next->Index = Array->Current->Index + 1;
 
-    Array->Current->Next = Next;
-    Array->Current = Next;
-    /* Array->At = 0; */
+      Array->Current->Next = Next;
+      Array->Current = Next;
+    }
   }
 
   voxel_stack_element *Result = Array->Current->Elements + Array->Current->At;

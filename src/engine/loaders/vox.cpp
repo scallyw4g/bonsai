@@ -195,7 +195,7 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
   vox_data_block_array Result = { {}, {}, TempMemory };
 
   v3i ReportedDim = {};
-  b32 CustomPalette = False;
+  b32 HadPaletteData = False;
 
 
   native_file ModelFile = OpenFile(filepath, "r+b");
@@ -224,7 +224,7 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
       {
         case ID_RGBA:
         {
-          CustomPalette = True;
+          HadPaletteData = True;
           s32 ChunkContentBytes = ReadInt(ModelFile.Handle, &bytesRemaining);
           s32 ChildChunkCount   = ReadInt(ModelFile.Handle, &bytesRemaining);
 
@@ -246,22 +246,51 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
             v3 ThisColor = V3(R,G,B);
             s32 Found = -1;
             {
-              IterateOver(ColorPalette, PaletteColor, ColorIndex)
+              IterateOver(ColorPalette, QueryColor, QueryColorIndex)
               {
-                if (ThisColor == *PaletteColor) { Found = s32(ColorIndex); break; }
+                if (WithinTolerance(1.01f, ThisColor, *QueryColor))
+                {
+                  Found = s32(QueryColorIndex); 
+                  v3 PaletteColor = GetPaletteData(u32(Found));
+                  Assert(PaletteColor == *QueryColor);
+                  Assert(WithinTolerance(1.01f, ThisColor, PaletteColor));
+                  break;
+                }
               }
             }
 
             if (Found == -1)
             {
-              s32 ColorIndex = s32(AtElements(ColorPalette));
+              s32 NewColorIndex = s32(AtElements(ColorPalette));
+              Assert(NewColorIndex >= 0);
+
               Push(ColorPalette, ThisColor);
-              Push(&ColorIndexBuffer, ColorIndex);
+
+              {
+                v3 *Last = LastElement(ColorPalette);
+                Assert(*Last == ThisColor);
+              }
+
+              Push(&ColorIndexBuffer, NewColorIndex);
+
+              {
+                s32 *I = LastElement(&ColorIndexBuffer);
+                Assert(*I == NewColorIndex);
+                Assert(*I == LastIndex(ColorPalette));
+              }
             }
             else
             {
-              Push(&ColorIndexBuffer, Found);
+              Assert(Found >= 0);
+              s32 *Index = Push(&ColorIndexBuffer, Found);
+
+              {
+                Assert(*Index == Found);
+                v3 QueryColor = GetPaletteData(u32(Found));
+                Assert(WithinTolerance(1.01f, ThisColor, QueryColor));
+              }
             }
+
             /* Global_ColorPalette[PaletteIndex].r = R; */
             /* Global_ColorPalette[PaletteIndex].g = G; */
             /* Global_ColorPalette[PaletteIndex].b = B; */
@@ -302,13 +331,38 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
 
           boundary_voxel *LocalVoxelCache = Allocate(boundary_voxel, GetTranArena(), (umm)ReportedVoxelCount);
           for( s32 VoxelCacheIndex = 0;
-               VoxelCacheIndex < ReportedVoxelCount;
-               ++VoxelCacheIndex)
+                   VoxelCacheIndex < ReportedVoxelCount;
+                 ++VoxelCacheIndex)
           {
             s32 X    = (s32)ReadChar(ModelFile.Handle, &bytesRemaining);
             s32 Y    = (s32)ReadChar(ModelFile.Handle, &bytesRemaining);
             s32 Z    = (s32)ReadChar(ModelFile.Handle, &bytesRemaining);
             u8 Color =      ReadChar(ModelFile.Handle, &bytesRemaining);
+
+            // NOTE(Jesse): This is necessary because of a somewhat
+            // questionable decision in the .vox file format .. indices 0->254
+            // are mapped to 1->255 in the color palette, presumably such that
+            // 0 is always black.  I have no idea why the fuck this would be
+            // the way that it is, but.. there you go.
+            //
+            // https://github.com/ephtracy/voxel-model/blob/8044f9eb086216f3485cdaa525a52120d72274e9/MagicaVoxel-file-format-vox.txt#L76C1-L90C1
+            //
+            // Relevant table pasted here for posterity for when that link dies.
+            //
+            // 7. Chunk id 'RGBA' : palette
+            // -------------------------------------------------------------------------------
+            // # Bytes  | Type       | Value
+            // -------------------------------------------------------------------------------
+            // 4 x 256  | int        | (R, G, B, A) : 1 byte for each component
+            //                       | * <NOTICE>
+            //                       | * color [0-254] are mapped to palette index [1-255], e.g : 
+            //                       | 
+            //                       | for ( int i = 0; i <= 254; i++ ) {
+            //                       |     palette[i + 1] = ReadRGBA(); 
+            //                       | }
+            // -------------------------------------------------------------------------------
+            //
+            if (Color > 0) { Color -= 1; }
 
             voxel_position TestP = Voxel_Position(X,Y,Z);
             if (IsInsideDim(ReportedDim, TestP))
@@ -465,7 +519,7 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
     Error("Couldn't read model file '%s' .", filepath);
   }
 
-  if (CustomPalette)
+  if (HadPaletteData)
   {
     /* s32 PaletteBase = s32(AtElements(ColorPalette))-256; */
 
@@ -475,10 +529,10 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
       {
         s32 Index = GetIndex(x, y, z, VoxData->ChunkData->Dim);
 
-        u16 TmpColorIndex = VoxData->ChunkData->Voxels[Index].Color;
-        Assert(TmpColorIndex < 256);
+        u16 IndexBufferIndex = VoxData->ChunkData->Voxels[Index].Color;
+        Assert(IndexBufferIndex < 256);
 
-        s32 ColorIndex = ColorIndexBuffer.Start[TmpColorIndex];
+        s32 ColorIndex = ColorIndexBuffer.Start[IndexBufferIndex];
         VoxData->ChunkData->Voxels[Index].Color = SafeTruncateToU16(umm(ColorIndex));
         /* DebugLine("wee %d (%d,%d,%d)", VoxDataIndex, x, y, z ); */
       }

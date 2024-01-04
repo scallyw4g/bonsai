@@ -108,6 +108,15 @@ LastIndex(counted_string_cursor *Cursor)
   return Result;
 }
 
+link_internal counted_string*
+LastElement(counted_string_cursor *Cursor)
+{
+  counted_string *Result = {};
+  s32 I = LastIndex(Cursor);
+  if (I > -1) { Result = Cursor->Start + I; }
+  return Result;
+}
+
 link_internal b32
 Remove(counted_string_cursor *Cursor, counted_string Query)
 {

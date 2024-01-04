@@ -28,3 +28,29 @@ AllocateWorld(world* World, world_position Center, voxel_position WorldChunkDim,
   return World;
 }
 
+
+link_internal void
+HardResetWorld(engine_resources *Engine)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  Assert(Plat->WorkerThreadsSuspendFutex.SignalValue != FUTEX_UNSIGNALLED_VALUE);
+  Assert(Plat->WorkerThreadsSuspendFutex.ThreadsWaiting == GetWorkerThreadCount());
+
+  CancelAllWorkQueueJobs(Plat, &Plat->HighPriority);
+  CancelAllWorkQueueJobs(Plat, &Plat->LowPriority);
+
+  u32 ChunksFreed = 0;
+  RangeIterator(HashIndex, s32(World->HashSize))
+  {
+    if (world_chunk *Chunk = World->ChunkHash[HashIndex])
+    {
+      FreeWorldChunk(World, Chunk, &Engine->MeshFreelist, World->Memory);
+      World->ChunkHash[HashIndex] = 0;
+      ++ChunksFreed;
+    }
+  }
+
+  RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT) { Unspawn(EntityTable[EntityIndex]); }
+  RangeIterator(AssetIndex, ASSET_TABLE_COUNT)   { FreeAsset(Engine, Engine->AssetTable+AssetIndex); }
+}

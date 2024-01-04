@@ -50,6 +50,13 @@ operator<(texture_block_array_index I0, texture_block_array_index I1)
   return Result;
 }
 
+link_inline texture_block *
+GetBlock(texture_block_array_index *Index)
+{
+  texture_block *Result = Cast(texture_block*, Index->Block);
+  return Result;
+}
+
 link_inline umm
 GetIndex(texture_block_array_index *Index)
 {
@@ -62,7 +69,7 @@ ZerothIndex(texture_block_array *Arr)
 {
   texture_block_array_index Result = {};
   Result.Block = &Arr->First;
-  Assert(Cast(texture_block*, Result.Block)->Index == 0);
+  Assert(GetBlock(&Result)->Index == 0);
   return Result;
 }
 
@@ -78,14 +85,31 @@ TotalElements(texture_block_array *Arr)
 }
 
 link_internal texture_block_array_index
+LastIndex(texture_block_array *Arr)
+{
+  texture_block_array_index Result = {};
+  if (Arr->Current)
+  {
+    Result.Block = Arr->Current;
+    Result.BlockIndex = Arr->Current->Index;
+    Result.ElementIndex = Arr->Current->At;
+    Assert(Result.ElementIndex);
+    Result.ElementIndex--;
+  }
+  return Result;
+}
+
+link_internal texture_block_array_index
 AtElements(texture_block_array *Arr)
 {
   texture_block_array_index Result = {};
   if (Arr->Current)
   {
     Result.Block = Arr->Current;
-    Result.BlockIndex = Cast(texture_block*, Arr->Current)->Index;
-    Result.ElementIndex = Cast(texture_block*, Arr->Current)->At;
+    Result.BlockIndex = Arr->Current->Index;
+    Result.ElementIndex = Arr->Current->At;
+    /* Assert(Result.ElementIndex); */
+    /* Result.ElementIndex--; */
   }
   return Result;
 }
@@ -94,7 +118,7 @@ link_internal texture *
 GetPtr(texture_block_array *Arr, texture_block_array_index Index)
 {
   texture *Result = {};
-  if (Index.Block) { Result = Cast(texture_block *, Index.Block)->Elements + Index.ElementIndex; }
+  if (Index.Block) { Result = GetBlock(&Index)->Elements + Index.ElementIndex; }
   return Result;
 }
 

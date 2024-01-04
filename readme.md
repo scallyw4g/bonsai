@@ -1,3 +1,5 @@
+![hero_banner](screenshots/5_skele.png)
+
 # Welcome to Bonsai!
 
 Bonsai is a 3D voxel-based engine built with the intention of writing both
@@ -10,6 +12,8 @@ remove the CRT entirely, though it's unclear when/if I'll get around to it.
 
 The only requirements to build and run Bonsai are an OpenGL 3.3+ driver, C++
 compiler, and a few appropriate system headers.
+
+![banner](screenshots/8_skele.png)
 
 ## Renderer Features
 

@@ -1,22 +1,25 @@
-inline void
+link_internal void
 Deactivate(particle_system *System)
 {
   Clear(System);
-  return;
 }
 
-inline void
+link_internal void
 Destroy(entity *Entity)
 {
+  DropEntityFromPreviouslyOccupiedChunks(GetEngineResources()->World, Entity, GetTranArena());
+
   Assert( Spawned(Entity) );
   Entity->State = EntityState_Destroyed;
   Assert(Entity->Emitter);
   Deactivate(Entity->Emitter);
 }
 
-inline void
+link_internal void
 Unspawn(entity *Entity)
 {
+  DropEntityFromPreviouslyOccupiedChunks(GetEngineResources()->World, Entity, GetTranArena());
+
   Entity->State = EntityState_Free;
   Assert(Entity->Emitter);
   auto Emitter = Entity->Emitter;
@@ -27,26 +30,69 @@ Unspawn(entity *Entity)
   Entity->Emitter = Emitter;
 }
 
-/* inline b32 */
-/* IsPlayer(entity *Entity) */
-/* { */
-/*   b32 Result = Entity->Type == EntityType_Player; */
-/*   return Result; */
-/* } */
+link_internal aabb GetSimSpaceAABB(world *World, entity *Entity);
 
-collision_event
+link_internal b32
+GetCollision(world *World, entity *First, aabb SecondAABB)
+{
+  TIMED_FUNCTION();
+
+  if (Unspawned(First)) return False;
+
+  aabb FirstAABB = GetSimSpaceAABB(World, First);
+
+  b32 Result = Intersect(&FirstAABB, &SecondAABB);
+  return Result;
+}
+
+
+link_internal collision_event
+GetCollision_Entities( world *World, entity *ThisEntity, canonical_position TestP, v3 CollisionDim )
+{
+  TIMED_FUNCTION();
+
+  chunk_dimension WorldChunkDim = World->ChunkDim;
+  Assert( IsCanonical(WorldChunkDim, TestP) );
+
+  rect3cp Area = RectMinDim(World->ChunkDim, TestP, CollisionDim);
+  world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, Area, GetTranArena());
+
+  b32 Hit = False;
+  v3 SimP = GetSimSpaceP(World, TestP);
+  IterateOver(&Chunks, Chunk, ChunkIndex)
+  {
+    IterateOver(&(*Chunk)->Entities, Entity, EntityIndex)
+    {
+      if (*Entity == ThisEntity) continue;
+
+      Hit = GetCollision(World, *Entity, AABBMinDim(SimP, CollisionDim));
+      if (Hit) break;
+    }
+    if (Hit) break;
+  }
+
+  // TODO(Jesse): Fill out min/max P
+  // @entity_collisions_need_min_max_p
+  collision_event Result = {};
+  Result.FrameIndex = GetEngineResources()->FrameIndex;
+  Result.Count = Hit;
+
+  return Result;
+}
+
+// TODO(Jesse)(immediate): THIS IS SO FUCKING GROSS PLEEASE FOR THE LOVE OF GOD
+// REWRITE THIS IN TERMS OF GatherChunksOverlappingArea
+//
+link_internal collision_event
 GetCollision( world *World, canonical_position TestP, v3 CollisionDim )
 {
   TIMED_FUNCTION();
 
-  collision_event Collision = {};
-
   chunk_dimension WorldChunkDim = World->ChunkDim;
-
   Assert( IsCanonical(WorldChunkDim, TestP) );
 
-  // TODO(Jesse): Remove if that ^ assert doesn't fire
-  /* TestP = Canonicalize(WorldChunkDim, TestP); */
+  collision_event Result = {};
+  Result.FrameIndex = GetEngineResources()->FrameIndex;
 
   voxel_position MinP = Voxel_Position(TestP.Offset);
   voxel_position MaxP = Voxel_Position(Ceil(TestP.Offset + CollisionDim));
@@ -62,24 +108,23 @@ GetCollision( world *World, canonical_position TestP, v3 CollisionDim )
 
         if ( !Chunk || IsFilledInChunk(Chunk, Voxel_Position(LoopTestP.Offset), World->ChunkDim) )
         {
-          if (Collision.Count == 0) { Collision.MinP = LoopTestP; }
-          Collision.MaxP = LoopTestP;
-          Collision.Count ++;
+          if (Result.Count == 0) { Result.MinP = LoopTestP; }
+          Result.MaxP = LoopTestP;
+          Result.Count ++;
         }
 
       }
     }
   }
 
-  return Collision;
+  return Result;
 }
 
-link_internal aabb GetSimSpaceAABB(world *World, entity *Entity);
-
-inline b32
+link_internal b32
 GetCollision(world *World, entity *First, entity *Second)
 {
   TIMED_FUNCTION();
+
   if (Destroyed(First) || Destroyed(Second))
     return False;
 
@@ -93,7 +138,7 @@ GetCollision(world *World, entity *First, entity *Second)
   return Result;
 }
 
-inline b32
+link_internal b32
 GetCollision(world *World, entity **Entities, entity *Entity)
 {
   b32 Result = False;
@@ -123,38 +168,17 @@ GetCollision(world *World, entity *Entity, v3 Offset = V3(0,0,0) )
 
   collision_event C = {};
 
-  if ( !Spawned(Entity) )
-    return C;
-
-  C = GetCollision( World,
-      Canonicalize(World->ChunkDim, Entity->P + Offset),
-      Entity->CollisionVolumeRadius*2.0f );
+  if (Spawned(Entity))
+  {
+    C = GetCollision( World,
+                      Canonicalize(World->ChunkDim, Entity->P + Offset),
+                      Entity->_CollisionVolumeRadius*2.0f );
+  }
 
   return C;
 }
 
-
-#if 0
-inline void
-SpawnLoot(entity *Entity, random_series *Entropy, model *GameModels)
-{
-#define LOOT_CHANCE (1)
-  b32 ShouldSpawnLoot = (RandomU32(Entropy) % LOOT_CHANCE) == 0;
-
-  if (ShouldSpawnLoot)
-  {
-    Entity->State = EntityState_Uninitialized;
-    Entity->Type = EntityType_Loot;
-    Entity->State = EntityState_Spawned;
-    Entity->Physics.Velocity = V3(0,0,0);
-    Entity->Model = GameModels[EntityType_Loot];
-  }
-
-  return;
-}
-#endif
-
-entity *
+link_internal entity *
 GetFreeEntity(entity **EntityTable)
 {
   entity *Result = 0;
@@ -181,7 +205,7 @@ GetFreeEntity(entity **EntityTable)
   return Result;
 }
 
-entity *
+link_internal entity *
 AllocateEntity(memory_arena *Memory, chunk_dimension ModelDim)
 {
   entity *Entity = Allocate(entity, Memory, 1);
@@ -209,16 +233,73 @@ AllocateEntityTable(memory_arena* Memory, u32 Count)
   return Result;
 }
 
-void
-SpawnEntity( entity *Entity, entity_behavior_flags Behavior, model *GameModels, model_index ModelIndex)
+link_internal void
+SpawnEntity(entity *Entity)
 {
+  Info("Spanwing Entity(%p)", Entity);
+  /* if (Entity->Id == 1) RuntimeBreak(); */
+
   // These are mutually exclusive, so checking both is redundant, but that
   // could change in the future
   Assert(Unspawned(Entity));
   Assert(!Destroyed(Entity));
   Assert(Entity->State == EntityState_Reserved);
 
+  if (Entity->Behavior & EntityBehaviorFlags_EntityCollision) { Assert(Volume(Entity->_CollisionVolumeRadius) > 0.f); }
+  if (Entity->Behavior & EntityBehaviorFlags_WorldCollision)  { Assert(Volume(Entity->_CollisionVolumeRadius) > 0.f); }
+
+  Canonicalize(GetWorld(), &Entity->P);
+
+  FinalizeEntityUpdate(Entity);
+
+  world *World = GetEngineResources()->World;
+  {
+    cp MinP = Entity->P;
+    cp MaxP = Canonicalize(World->ChunkDim, MinP.Offset + Entity->_CollisionVolumeRadius*2.f, MinP.WorldP);
+
+    v3i Delta = Max(MaxP.WorldP - MinP.WorldP, V3i(1));
+
+    v3i MinWP = MinP.WorldP;
+    v3i MaxWP = MinWP+Delta;
+
+    for(s32 z = MinWP.z; z < MaxWP.z; ++z)
+    {
+      for(s32 y = MinWP.y; y < MaxWP.y; ++y)
+      {
+        for(s32 x = MinWP.x; x < MaxWP.x; ++x)
+        {
+          /* canonical_position CP = Canonicalize(World->ChunkDim, V3(x, y, z), InitialP->WorldP); */
+          cp CP = Canonical_Position(V3(0), V3i(x,y,z));
+          world_chunk *Chunk = GetWorldChunkFromHashtable( World, CP.WorldP );
+          if (Chunk == 0)
+          {
+            Chunk = AllocateAndInsertChunk(World->Memory, World, CP.WorldP);
+            if (Chunk)
+            {
+              QueueChunkForInit(&GetEngineResources()->Stdlib.Plat.HighPriority, Chunk, MeshBit_Lod0);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  InsertEntityIntoChunks(World, Entity, GetTranArena());
+
   Entity->State = EntityState_Spawned;
+}
+
+link_internal void
+SpawnEntity( entity *Entity, entity_behavior_flags Behavior, model *GameModels, model_index ModelIndex)
+{
+  Deprecated();
+
+  // These are mutually exclusive, so checking both is redundant, but that
+  // could change in the future
+  Assert(Unspawned(Entity));
+  Assert(!Destroyed(Entity));
+  Assert(Entity->State == EntityState_Reserved);
+
   Entity->Behavior = Behavior;
 
   if (ModelIndex)
@@ -233,13 +314,14 @@ SpawnEntity( entity *Entity, entity_behavior_flags Behavior, model *GameModels, 
     }
   }
 
-  return;
+  SpawnEntity(Entity);
 }
 
 link_internal void
-SpawnEntity(entity *Entity)
+SpawnEntity( entity *Entity, entity_behavior_flags Behavior )
 {
-  SpawnEntity(Entity, EntityBehaviorFlags_None, 0, ModelIndex_None);
+  Entity->Behavior = Behavior;
+  SpawnEntity(Entity);
 }
 
 void
@@ -260,18 +342,19 @@ SpawnEntity(
 {
   TIMED_FUNCTION();
 
+  world *World = GetEngineResources()->World;
+
   Entity->Behavior = Behavior;
 
   if (Model) Entity->Model = Model;
   if (Physics) Entity->Physics = *Physics;
   if (InitialP) Entity->P = *InitialP;
 
-  Entity->CollisionVolumeRadius = CollisionVolumeRadius;
+  Entity->_CollisionVolumeRadius = CollisionVolumeRadius;
 
   Entity->Scale = Scale;
-  Entity->State = EntityState_Spawned;
 
-  return;
+  SpawnEntity(Entity);
 }
 
 entity *
@@ -352,16 +435,12 @@ void
 UnspawnParticleSystem(particle_system *System)
 {
   Clear(System);
-  /* System->RemainingLifespan = 0.f; */
 }
 
 #if 1
 void
 SpawnParticleSystem(particle_system *System)
 {
-  /* Assert(System->Dest); */
-  /* Assert(Inactive(System)); */
-  /* System->RemainingLifespan = System->EmissionLifespan; */
 }
 #endif
 
@@ -387,27 +466,6 @@ SpawnPlayerLikeEntity( platform *Plat,
   if (Model)
   {
     CollisionVolumeRadius = Model->Dim * Scale * 0.5f; // 0.5f is to shrink to a radius, instead of dim
-  }
-
-  for (s32 z = -1; z < (s32)(CollisionVolumeRadius.z*2.f); ++ z)
-  {
-    for (s32 y = -1; y < (s32)(CollisionVolumeRadius.y*2.f); ++ y)
-    {
-      for (s32 x = -1; x < (s32)(CollisionVolumeRadius.x*2.f); ++ x)
-      {
-        canonical_position CP = Canonicalize(World->ChunkDim, V3(x, y, z), InitialP.WorldP);
-
-        world_chunk *Chunk = GetWorldChunkFromHashtable( World, CP.WorldP );
-        if (Chunk == 0)
-        {
-          Chunk = AllocateAndInsertChunk(World->Memory, World, CP.WorldP);
-          if (Chunk)
-          {
-            QueueChunkForInit(&Plat->HighPriority, Chunk, MeshBit_Lod0);
-          }
-        }
-      }
-    }
   }
 
   SpawnEntity(
@@ -728,7 +786,7 @@ UpdateEntityP(world* World, entity *Entity, v3 Delta)
   Canonicalize(World, &Entity->P);
 }
 
-void
+link_internal collision_event
 MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
 {
   TIMED_FUNCTION();
@@ -736,118 +794,139 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
   /* DebugLine("GrossDelta (%f %f %f)", GrossDelta.x, GrossDelta.y, GrossDelta.z); */
 
   chunk_dimension WorldChunkDim = World->ChunkDim;
-  collision_event C = {};
-  v3 Remaining = GrossDelta;
 
-  v3 CollisionVolumeInit = Entity->CollisionVolumeRadius*2.0f;
-  C = GetCollision(World, Entity->P, CollisionVolumeInit);
 
+  v3 CollisionVolumeInit = Entity->_CollisionVolumeRadius*2.0f;
+  collision_event Result = {};
+  collision_event C      = GetCollision(World, Entity->P, CollisionVolumeInit);
+
+
+  v3 Signs = GetSign(GrossDelta);
+  v3 AbsDelta  = Abs(GrossDelta);
+  v3 Remaining = Abs(GrossDelta);
+
+
+  // NOTE(Jesse): Don't move the entity if it's already stuck in the world
   if (C.Count)
   { 
     Entity->Physics.Velocity = {};
     Entity->Physics.Delta = {};
-    return;
+    Result = C;
   }
-
-  while (LengthSq(Remaining) > 0)
+  else
   {
-    v3 StepDelta = ClampBetween(-1.0f, Remaining, 1.0f);
-    Remaining -= StepDelta;
-
-    RangeIterator(AxisIndex, 3)
+    while (LengthSq(Remaining) > 0)
     {
-      if (StepDelta.E[AxisIndex] != 0.0f)
+      v3 StepDelta = Min(Normalize(Remaining), Remaining);
+      /* v3 StepDelta = ClampBetween(-1.0f, Remaining, 1.0f); */
+      Remaining -= StepDelta;
+
+      RangeIterator(AxisIndex, 3)
       {
-        Entity->P.Offset.E[AxisIndex] += StepDelta.E[AxisIndex];
-        Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-
-        canonical_position CollisionBasis = Entity->P;
-
-        // Compute the 1-wide slice in the direction we're moving
+        if (StepDelta.E[AxisIndex] > 0.0f)
         {
-          v3 CollisionVolume = Entity->CollisionVolumeRadius*2.0f;
-          if (StepDelta.E[AxisIndex] > 0.f) // We're going in the positive direction
-          {
-            CollisionBasis.Offset.E[AxisIndex] += Truncate(CollisionVolume.E[AxisIndex]);
-            CollisionBasis = Canonicalize(WorldChunkDim, CollisionBasis);
-          }
-          CollisionVolume.E[AxisIndex] = Min(CollisionVolume.E[AxisIndex], 1.f);
+          StepDelta.E[AxisIndex] *= Signs.E[AxisIndex];
 
-          C = GetCollision(World, CollisionBasis, CollisionVolume);
-        }
-
-        if ( C.Count > 0 )
-        {
-          // TODO(Jesse): Parameterize by adding something to physics struct
-          /* Entity->Physics.Velocity.E[AxisIndex] *= -0.25f; */
-          Entity->Physics.Velocity.E[AxisIndex] = 0.f;
-
-          /* Entity->Physics.Velocity.E[AxisIndex] = 0.f; */
-          Entity->Physics.Delta.E[AxisIndex] = 0;
-
-#if 0
-          Entity->P.Offset.E[AxisIndex] -= StepDelta.E[AxisIndex];
+          Entity->P.Offset.E[AxisIndex] += StepDelta.E[AxisIndex];
           Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-#else
-          // NOTE(Jesse): This is actually fundamentally broken.  The issue I
-          // thought of is that if you snap and add an epsilon you can get into
-          // a situation where the collision volume should exactly fit into a
-          // space, but you offset it to interpenetrate with the world.
-          //
-          // I actually observed this happening in practice (I think).
-          //
-          // I didn't want to FAF with the collision so I turned it off, but
-          // that caused other problems, so I'm turning it back on.
-          //
-          // One idea could be, if the collision fails, try again with half the
-          // distance.  This is still pretty miserable at high speeds (you'd
-          // stop a half a voxel short of your intended collision at >
-          // 1vox/frame) but we could also reverse direction again, halfing the
-          // distance again, till we get to some min threshold.  That sounds
-          // pretty expensive so maybe not the best algorithm, but I think it
-          // would at least work reliably, which would be a step in the right
-          // direction.  Pun intended ;)
-          //
-          // Side-note, there _should_ be a pretty straight-forward closed form
-          // solution to this.  I really don't know why it's so hard for me to
-          // get it right..
-          //
-          Entity->P.Offset.E[AxisIndex] -= StepDelta.E[AxisIndex];
-          if (StepDelta.E[AxisIndex] > 0)
-          {
-            r32 Max = Entity->P.Offset.E[AxisIndex] + Entity->CollisionVolumeRadius.E[AxisIndex];
 
-            Entity->P.WorldP.E[AxisIndex] = C.MinP.WorldP.E[AxisIndex];
-            Entity->P.Offset.E[AxisIndex] = C.MinP.Offset.E[AxisIndex];
-            Entity->P.Offset.E[AxisIndex] -= ((Entity->CollisionVolumeRadius.E[AxisIndex]*2.f) + 0.001f);
+          canonical_position CollisionBasis = Entity->P;
+
+          // Compute the 1-wide slice in the direction we're moving
+          {
+            v3 CollisionVolume = Entity->_CollisionVolumeRadius*2.0f;
+            if (StepDelta.E[AxisIndex] > 0.f) // We're going in the positive direction
+            {
+              CollisionBasis.Offset.E[AxisIndex] += Truncate(CollisionVolume.E[AxisIndex]);
+              CollisionBasis = Canonicalize(WorldChunkDim, CollisionBasis);
+            }
+            CollisionVolume.E[AxisIndex] = Min(CollisionVolume.E[AxisIndex], 1.f);
+
+            C = GetCollision(World, CollisionBasis, CollisionVolume);
+
+            if ( C.Count == 0 &&
+                (Entity->Behavior & EntityBehaviorFlags_EntityCollision) )
+            {
+              // TODO(Jesse): Don't be so braindamaged about this?
+              // @entity_collisions_need_min_max_p
+              C = GetCollision_Entities(World, Entity, CollisionBasis, CollisionVolume);
+              if (C.Count) { Result = C; Remaining = V3(0); Info("Entity Entity Collision (%u)", C.Count); break; }
+            }
           }
 
-          if (StepDelta.E[AxisIndex] < 0)
+          if ( C.Count > 0 )
           {
+            Result = C;
+            // TODO(Jesse): Parameterize by adding something to physics struct
+            /* Entity->Physics.Velocity.E[AxisIndex] *= -0.25f; */
+            Entity->Physics.Velocity.E[AxisIndex] = 0.f;
+
+            /* Entity->Physics.Velocity.E[AxisIndex] = 0.f; */
+            Entity->Physics.Delta.E[AxisIndex] = 0;
+
+            Remaining = V3(0);
 #if 0
-            Entity->P.Offset.E[AxisIndex] = Truncate(Entity->P.Offset.E[AxisIndex] += 1.0f);
+            Entity->P.Offset.E[AxisIndex] -= StepDelta.E[AxisIndex];
+            Entity->P = Canonicalize(WorldChunkDim, Entity->P);
 #else
-            Entity->P.WorldP.E[AxisIndex] = C.MaxP.WorldP.E[AxisIndex];
-            Entity->P.Offset.E[AxisIndex] = C.MaxP.Offset.E[AxisIndex];
-            Entity->P.Offset.E[AxisIndex] += 1.0f;
-            /* Truncate(Entity->P.Offset.E[AxisIndex]);// += 1.0f; */
-            /* Entity->P.Offset.E[AxisIndex] += 1.001f; */
-            /* Entity->P.Offset.E[AxisIndex] ++; */
-            /* Entity->P.Offset.E[AxisIndex] = Truncate(Entity->P.Offset.E[AxisIndex] += 1.0f); */
+            // NOTE(Jesse): This is actually fundamentally broken.  The issue I
+            // thought of is that if you snap and add an epsilon you can get into
+            // a situation where the collision volume should exactly fit into a
+            // space, but you offset it to interpenetrate with the world.
+            //
+            // I actually observed this happening in practice (I think).
+            //
+            // I didn't want to FAF with the collision so I turned it off, but
+            // that caused other problems, so I'm turning it back on.
+            //
+            // One idea could be, if the collision fails, try again with half the
+            // distance.  This is still pretty miserable at high speeds (you'd
+            // stop a half a voxel short of your intended collision at >
+            // 1vox/frame) but we could also reverse direction again, halfing the
+            // distance again, till we get to some min threshold.  That sounds
+            // pretty expensive so maybe not the best algorithm, but I think it
+            // would at least work reliably, which would be a step in the right
+            // direction.  Pun intended ;)
+            //
+            // Side-note, there _should_ be a pretty straight-forward closed form
+            // solution to this.  I really don't know why it's so hard for me to
+            // get it right..
+            //
+            Entity->P.Offset.E[AxisIndex] -= StepDelta.E[AxisIndex];
+            if (StepDelta.E[AxisIndex] > 0)
+            {
+              r32 Max = Entity->P.Offset.E[AxisIndex] + Entity->_CollisionVolumeRadius.E[AxisIndex];
+
+              Entity->P.WorldP.E[AxisIndex] = C.MinP.WorldP.E[AxisIndex];
+              Entity->P.Offset.E[AxisIndex] = C.MinP.Offset.E[AxisIndex];
+              Entity->P.Offset.E[AxisIndex] -= ((Entity->_CollisionVolumeRadius.E[AxisIndex]*2.f) + 0.001f);
+            }
+
+            if (StepDelta.E[AxisIndex] < 0)
+            {
+#if 0
+              Entity->P.Offset.E[AxisIndex] = Truncate(Entity->P.Offset.E[AxisIndex] += 1.0f);
+#else
+              Entity->P.WorldP.E[AxisIndex] = C.MaxP.WorldP.E[AxisIndex];
+              Entity->P.Offset.E[AxisIndex] = C.MaxP.Offset.E[AxisIndex];
+              Entity->P.Offset.E[AxisIndex] += 1.0f;
+              /* Truncate(Entity->P.Offset.E[AxisIndex]);// += 1.0f; */
+              /* Entity->P.Offset.E[AxisIndex] += 1.001f; */
+              /* Entity->P.Offset.E[AxisIndex] ++; */
+              /* Entity->P.Offset.E[AxisIndex] = Truncate(Entity->P.Offset.E[AxisIndex] += 1.0f); */
 #endif
-          }
+            }
 #endif
 
-          Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-          /* EntityWorldCollision(World, Entity, &C, VisibleRegion); */
+            Entity->P = Canonicalize(WorldChunkDim, Entity->P);
+            /* EntityWorldCollision(World, Entity, &C, VisibleRegion); */
+
+          }
         }
       }
+
+      if (Unspawned(Entity) || Destroyed(Entity)) break;
     }
-
-    if (Unspawned(Entity) || Destroyed(Entity))
-      break;
-
-    /* DoEntityCollisions(GameState, Entity, &GameState->Entropy, GameState->World->ChunkDim); */
   }
 
   Entity->P = Canonicalize(WorldChunkDim, Entity->P);
@@ -860,7 +939,7 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
   /* if (AssertCollision.Count) */
     /* EntityWorldCollision(World, Entity, &C, VisibleRegion); */
 
-  return;
+  return Result;
 }
 
 #if 0
@@ -1110,14 +1189,14 @@ IsGrounded( world *World, entity *entity )
 link_internal v3
 GetSimSpaceCenterP(entity *E, v3 SimSpaceP)
 {
-  v3 Result = SimSpaceP + E->CollisionVolumeRadius;
+  v3 Result = SimSpaceP + E->_CollisionVolumeRadius;
   return Result;
 }
 
 link_internal v3
 GetSimSpaceBaseP(entity *E, v3 SimSpaceP)
 {
-  v3 Result = SimSpaceP + E->CollisionVolumeRadius.xy;
+  v3 Result = SimSpaceP + E->_CollisionVolumeRadius.xy;
   return Result;
 }
 
@@ -1140,7 +1219,7 @@ link_internal aabb
 GetSimSpaceAABB(world *World, entity *Entity)
 {
   v3 SimSpaceP = GetSimSpaceP(World, Entity);
-  aabb Result = AABBMinRad(SimSpaceP, Entity->CollisionVolumeRadius);
+  aabb Result = AABBMinRad(SimSpaceP, Entity->_CollisionVolumeRadius);
   /* DEBUG_DrawSimSpaceAABB(GetEngineResources(), &Result, RED); */
   return Result;
 }
@@ -1244,56 +1323,57 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
   {
     entity *Entity = EntityTable[EntityIndex];
 
-    if (!Spawned(Entity))
-        continue;
+    if (!Spawned(Entity)) continue;
 
-    if (GameEntityUpdate)
-    {
-      if (GameEntityUpdate(Resources, Entity)) continue;
-    }
+    b32 DoDefaultUpdate = True;
+    if (GameEntityUpdate) { DoDefaultUpdate = (GameEntityUpdate(Resources, Entity) == False); }
 
     Entity->P = Canonicalize(Resources->World, Entity->P);
 
-    b32 ApplyGravity = ((Entity->Behavior & EntityBehaviorFlags_Gravity) == EntityBehaviorFlags_Gravity);
-    PhysicsUpdate(&Entity->Physics, dt, ApplyGravity);
+    if (DoDefaultUpdate)
+    {
+      b32 ApplyGravity = ((Entity->Behavior & EntityBehaviorFlags_Gravity) == EntityBehaviorFlags_Gravity);
+      PhysicsUpdate(&Entity->Physics, dt, ApplyGravity);
 
-    if (Entity->Behavior & EntityBehaviorFlags_WorldCollision)
-    {
-      MoveEntityInWorld(World, Entity, Entity->Physics.Delta);
-    }
-    else
-    {
-      Entity->P.Offset += Entity->Physics.Delta;
-      Canonicalize(World, &Entity->P);
-    }
-
-    if (Entity->Behavior & EntityBehaviorFlags_EntityCollision)
-    {
-      entity_entity_collision_event C = DoEntityCollisions(World, EntityTable, Entity);
-      if (C.Count)
+      // NOTE(Jesse): This assert isn't strictly necessary, but we don't support only colliding against entities and not the world at the moment
+      if (Entity->Behavior & EntityBehaviorFlags_EntityCollision) { Assert(Entity->Behavior & EntityBehaviorFlags_WorldCollision); }
+      if (Entity->Behavior & EntityBehaviorFlags_WorldCollision)
       {
-        /* DebugLine("Entity-entity COLLISION!! %p -> %p", Entity, C.Entity); */
+        collision_event C = MoveEntityInWorld(World, Entity, Entity->Physics.Delta);
+        if (C.Count)
+        {
+          /* Info("Entity (%p) Id(%u) Collided w/ world!", Entity, Entity->Id); */
+          Entity->LastResolvedCollision = C;
+        }
+      }
+      else
+      {
+        Entity->P.Offset += Entity->Physics.Delta;
+        Canonicalize(World, &Entity->P);
+      }
+
+      particle_system *System = Entity->Emitter;
+      if (Active(System))
+      {
+        auto EntityDelta = Entity->Physics.Delta;
+
+        v3 RenderSpaceP  = GetRenderP(Entity->P, Camera, World->ChunkDim) + System->SpawnRegion.Min;
+
+        /* auto Dest = System->ParticleStartingTransparency > 0.f ? TransparentGeo : SolidGeo; */
+        /* SimulateParticleSystem(&Job.work_queue_entry_sim_particle_system); */
+        auto Job = WorkQueueEntry(System, EntityDelta, RenderSpaceP, dt);
+        PushWorkQueueEntry(Queue, &Job);
+      }
+      else
+      {
+        if (Entity->Behavior & EntityBehaviorFlags_UnspawnOnParticleSystemTerminate) { Unspawn(Entity); }
       }
     }
 
-    particle_system *System = Entity->Emitter;
-    if (Active(System))
-    {
-      auto EntityDelta = Entity->Physics.Delta;
 
-      v3 RenderSpaceP  = GetRenderP(Entity->P, Camera, World->ChunkDim) + System->SpawnRegion.Min;
-
-      /* auto Dest = System->ParticleStartingTransparency > 0.f ? TransparentGeo : SolidGeo; */
-      /* SimulateParticleSystem(&Job.work_queue_entry_sim_particle_system); */
-      auto Job = WorkQueueEntry(System, EntityDelta, RenderSpaceP, dt);
-      PushWorkQueueEntry(Queue, &Job);
-    }
-    else
-    {
-      if (Entity->Behavior & EntityBehaviorFlags_UnspawnOnParticleSystemTerminate) { Unspawn(Entity); }
-    }
+    DropEntityFromPreviouslyOccupiedChunks(World, Entity, GetTranArena());
+    FinalizeEntityUpdate(Entity);
+    InsertEntityIntoChunks(World, Entity, GetTranArena());
   }
-
-  return;
 }
 

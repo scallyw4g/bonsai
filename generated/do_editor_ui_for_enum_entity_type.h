@@ -1,5 +1,5 @@
 link_internal void
-DoEditorUi(renderer_2d *Ui, entity_type *Element, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, entity_type *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
@@ -23,6 +23,12 @@ DoEditorUi(renderer_2d *Ui, entity_type *Element, const char* Name, EDITOR_UI_FU
     if (Button(Ui, CSz("EntityType_Player"), umm(Element)^umm("EntityType_Player"), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
     {
       *Element = EntityType_Player;
+    }
+    PushNewRow(Ui);
+    PushColumn(Ui, CSz("")); // Skip the first Name column
+    if (Button(Ui, CSz("EntityType_Fireball"), umm(Element)^umm("EntityType_Fireball"), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    {
+      *Element = EntityType_Fireball;
     }
     PushNewRow(Ui);
   }

@@ -93,21 +93,15 @@ struct point_buffer
   voxel_position Max;
 };
 
-
-struct collision_event
-{
-  u32 Count;
-  canonical_position MinP;
-  canonical_position MaxP;
-};
-
 struct entity_entity_collision_event
 {
+  // TODO(Jesse)(poof): generate this with 'mixin'
   union
   {
     collision_event Collision;
     struct
     {
+      u32 FrameIndex;
       u32 Count;
       canonical_position MinP;
       canonical_position MaxP;
@@ -418,14 +412,14 @@ GetPackedVoxel(int x, int y, int z, int w)
 
 #endif
 
-void
+link_internal void
 ZeroMesh( untextured_3d_geometry_buffer *Mesh )
 {
   Mesh->At = 0;
   return;
 }
 
-void
+link_internal void
 ClearWorldChunk( world_chunk *Chunk )
 {
   Chunk->Flags = {};
@@ -436,6 +430,7 @@ ClearWorldChunk( world_chunk *Chunk )
   Chunk->TriCount = {};
   Chunk->EdgeBoundaryVoxelCount = {};
   Chunk->StandingSpots.At = Chunk->StandingSpots.Start;
+  Chunk->Entities = {};
 }
 
 inline b32

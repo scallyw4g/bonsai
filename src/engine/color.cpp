@@ -7,11 +7,18 @@ GetColorPalette()
 }
 
 link_internal v3
+GetPaletteData(u32 ColorIndex)
+{
+  v3_cursor *Palette = GetColorPalette();
+  v3 Result = GetPaletteData(Palette, ColorIndex);
+  return Result;
+}
+
+link_internal v3
 GetColorData(u32 ColorIndex)
 {
-  v3_cursor *Palette = &GetEngineResources()->World->ColorPalette;
-  Assert(ColorIndex < AtElements(Palette));
-  v3 Result = Palette->Start[ColorIndex] / 255.f;
+  v3_cursor *Palette = GetColorPalette();
+  v3 Result = GetColorData(Palette, ColorIndex);
   return Result;
 }
 

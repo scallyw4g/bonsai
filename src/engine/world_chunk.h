@@ -251,9 +251,12 @@ poof(
     }
 )
 
-#pragma pack(push, 1)
-struct current_triangles;
 
+typedef entity* entity_ptr;
+poof( block_array(entity_ptr, {8}) )
+#include <generated/block_array_entity_ptr_688856411.h>
+
+#pragma pack(push, 1)
 struct world_chunk
 {
   /* poof( use_struct(chunk_data) ) */
@@ -307,7 +310,12 @@ struct world_chunk
   // NOTE(Jesse): Since we waste so much space with padding this thing out we
   // can afford to have a next pointer to keep the freelist
   world_chunk *Next;
-  u8 _Pad1[40];
+
+  // NOTE(Jesse): This is a list of all entities overlapping this chunk to be
+  // considered for collision detection.
+  entity_ptr_block_array Entities;
+
+  u8 _Pad1[32];
 };
 // TODO(Jesse, id: 87, tags: speed, cache_friendly): Re-enable this
 // @world-chunk-cache-line-size

@@ -108,6 +108,15 @@ LastIndex(voxel_stack_element_cursor *Cursor)
   return Result;
 }
 
+link_internal voxel_stack_element*
+LastElement(voxel_stack_element_cursor *Cursor)
+{
+  voxel_stack_element *Result = {};
+  s32 I = LastIndex(Cursor);
+  if (I > -1) { Result = Cursor->Start + I; }
+  return Result;
+}
+
 link_internal b32
 Remove(voxel_stack_element_cursor *Cursor, voxel_stack_element Query)
 {

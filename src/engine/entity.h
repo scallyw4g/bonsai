@@ -38,13 +38,31 @@ Serialize(native_file *File, void *Data)
 
 poof(generate_string_table(entity_state))
 #include <generated/generate_string_table_entity_state.h>
+
 poof(do_editor_ui_for_enum(entity_state))
 #include <generated/do_editor_ui_for_enum_entity_state.h>
 
 poof(generate_string_table(entity_behavior_flags))
 #include <generated/generate_string_table_entity_behavior_flags.h>
+
 poof(do_editor_ui_for_enum(entity_behavior_flags))
 #include <generated/do_editor_ui_for_enum_entity_behavior_flags.h>
+
+struct collision_event
+{
+  u32 FrameIndex;
+  u32 Count;
+  canonical_position MinP;
+  canonical_position MaxP;
+};
+
+struct entity_position_info
+{
+  cp P;
+  v3 _CollisionVolumeRadius;
+  r32 Scale;
+  v4 EulerAngles;
+};
 
 struct entity
 {
@@ -57,11 +75,19 @@ struct entity
   v4 EulerAngles;
   r32 Scale;
 
-  v3 CollisionVolumeRadius;
+  // NOTE(Jesse): This must be updated with UpdateCollisionVolumeRadius.
+  // Entity pointers are stored on world chunks, which are used during
+  // collision detection.  The chunks to store the entity to are computed using
+  // the CollisionVolumeRadius so if we update it we have to also check if the
+  // number of chunks we're overlapping changed, and update the difference.
+  v3 _CollisionVolumeRadius;
+
   physics Physics;
 
 #if !POOF_PREPROCESSOR
-  asset_id         AssetId;
+  asset_id             AssetId;
+  collision_event      LastResolvedCollision;
+  entity_position_info LastResolvedPosInfo;
 #endif
 
   model           *Model;
@@ -71,8 +97,99 @@ struct entity
   entity_behavior_flags Behavior;
 
   u64 UserType;
-  umm UserData;
+  u64 UserData;
 };
+
+
+link_internal void
+FinalizeEntityUpdate(entity *Entity)
+{
+  Assert(IsCanonical(GetWorld(), Entity->P));
+  poof( func (entity_position_info Info)
+  {
+    Info.map(member)
+    {
+      Entity->LastResolvedPosInfo.member.name = Entity->member.name;
+    }
+  })
+#include <generated/anonymous_entity_position_info_ynGg9Dhj.h>
+}
+
+link_internal void
+DropEntityFromPreviouslyOccupiedChunks(world *World, entity *Entity, memory_arena *TempMemory)
+{
+  // nocheckin
+  /* Assert(Entity->Behavior & EntityBehaviorFlags_EntityCollision); */
+
+  Assert(ThreadLocal_ThreadIndex == 0);
+
+  rect3cp EntityArea = RectMinMax(Entity->LastResolvedPosInfo.P, Canonicalize(World->ChunkDim, Entity->LastResolvedPosInfo.P + Entity->LastResolvedPosInfo._CollisionVolumeRadius*2.f));
+  world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, EntityArea, TempMemory);
+
+  if (Chunks.Count)
+  {
+    /* Info("Attempting to drop Entity(%p) from (%d) Chunks", Entity, Chunks.Count); */
+    RangeIterator_t(umm, ChunkIndex, Chunks.Count)
+    {
+      world_chunk *Chunk = Chunks.Start[ChunkIndex];
+      /* Info("Attempting to drop Entity(%p) from Chunk(%p)", Entity, Chunk); */
+
+      b32 Got = False;
+      IterateOver(&Chunk->Entities, TestEntity, TestEntityIndex)
+      {
+        if (*TestEntity == Entity)
+        {
+          RemoveUnordered(&Chunk->Entities, TestEntityIndex);
+          Got = True;
+          break;
+        }
+      }
+      // NOTE(Jesse): This is a bit sketch.  For it to work 100% correctly we
+      // cannot ever have entities that overlap uninitialized bits of the world.
+      //
+      // Currently it cannot be in, because an entity can be spawned outside
+      // the world just fine, then when the visible region moves to enclose the
+      // entity chunks will get initialized, but the entity will never have
+      // been added to the freshly minted chunks.
+      //
+      // We'd have to do some nonsense like check every entity for every chunk
+      // if it overlaps when we insert, which is not a thing.
+      /* Assert(Got); */
+    }
+  }
+}
+
+link_internal void
+InsertEntityIntoChunks(world *World, entity *Entity, memory_arena *TempMemory)
+{
+  // nocheckin
+  /* Assert(Entity->Behavior & EntityBehaviorFlags_EntityCollision); */
+
+  auto MinP = Entity->LastResolvedPosInfo.P;
+  auto MaxP = Canonicalize(World->ChunkDim, Entity->LastResolvedPosInfo.P + Entity->LastResolvedPosInfo._CollisionVolumeRadius*2.f);
+
+  rect3cp EntityArea = RectMinMax(MinP, MaxP);
+  world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, EntityArea, TempMemory);
+  if (Chunks.Count)
+  {
+    /* Info("Attempting to insert Entity(%p) into (%d) Chunks", Entity, Chunks.Count); */
+    RangeIterator_t(umm, ChunkIndex, Chunks.Count)
+    {
+      world_chunk *Chunk = Chunks.Start[ChunkIndex];
+      /* Info("Attempting to insert Entity(%p) into Chunk(%p)", Entity, Chunk); */
+
+      Push(&Chunk->Entities, &Entity);
+    }
+  }
+}
+
+link_internal void
+UpdateCollisionVolumeRadius(world *World, entity *Entity, v3 NewRadius, memory_arena *TempMemory)
+{
+  /* DropEntityFromOccupiedChunks(World, Entity, TempMemory); */
+  Entity->_CollisionVolumeRadius = NewRadius;
+  /* InsertEntityIntoChunks(World, Entity, TempMemory); */
+}
 
 poof(serdes_vector(v2))
 #include <generated/serdes_vector_v2.h>
@@ -273,7 +390,7 @@ link_internal cp
 GetEntityBaseP(world *World, entity *Entity)
 {
   cp BaseP = Entity->P;
-  BaseP.Offset += Entity->CollisionVolumeRadius.xy;
+  BaseP.Offset += Entity->_CollisionVolumeRadius.xy;
   BaseP = Canonicalize(World, BaseP);
   return BaseP;
 }

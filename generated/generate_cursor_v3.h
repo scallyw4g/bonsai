@@ -108,6 +108,15 @@ LastIndex(v3_cursor *Cursor)
   return Result;
 }
 
+link_internal v3*
+LastElement(v3_cursor *Cursor)
+{
+  v3 *Result = {};
+  s32 I = LastIndex(Cursor);
+  if (I > -1) { Result = Cursor->Start + I; }
+  return Result;
+}
+
 link_internal b32
 Remove(v3_cursor *Cursor, v3 Query)
 {

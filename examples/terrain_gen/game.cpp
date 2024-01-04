@@ -2,17 +2,18 @@
 
 #include <bonsai_types.h>
 
-#include <game_constants.h>
-#include <game_types.h>
+#include "game_constants.h"
+#include "game_types.h"
 
 link_internal u32
 Checkerboard( perlin_noise *Noise,
               world_chunk *Chunk,
-              chunk_dimension Dim,
 
+              chunk_dimension Dim,
               chunk_dimension SrcToDest,
 
-              u8 ColorIndex,
+              u16 ColorIndex,
+
               s32 Frequency,
               s32 Amplitude,
               s64 zMin,
@@ -49,18 +50,18 @@ Checkerboard( perlin_noise *Noise,
 }
 
 link_internal u32
-CustomTerrainExample2( perlin_noise *Noise,
-                       world_chunk *Chunk,
-                       chunk_dimension Dim,
-                       chunk_dimension SrcToDest,
-                       u16 ColorIndex,
+GrassyIslandTerrain( perlin_noise *Noise,
+                     world_chunk *Chunk,
+                     chunk_dimension Dim,
+                     chunk_dimension SrcToDest,
+                     u16 ColorIndex,
 
-                       s32 IgnoredFrequency,
-                       s32 IgnoredAmplitude,
+                     s32 IgnoredFrequency,
+                     s32 IgnoredAmplitude,
 
-                       s64 zMin,
-                       chunk_dimension WorldChunkDim,
-                       void *OctavesIn )
+                     s64 zMin,
+                     chunk_dimension WorldChunkDim,
+                     void *OctavesIn )
 {
   TIMED_FUNCTION();
   u32 ChunkSum = 0;
@@ -255,18 +256,18 @@ CustomTerrainExample2( perlin_noise *Noise,
 }
 
 link_internal u32
-CustomTerrainExample( perlin_noise *Noise,
-                      world_chunk *Chunk,
-                      chunk_dimension Dim,
-                      chunk_dimension SrcToDest,
-                      u8 ColorIndex,
+WarpedTerrain( perlin_noise *Noise,
+               world_chunk *Chunk,
+               chunk_dimension Dim,
+               chunk_dimension SrcToDest,
+               u16 ColorIndex,
 
-                      s32 IgnoredFrequency,
-                      s32 IgnoredAmplitude,
+               s32 IgnoredFrequency,
+               s32 IgnoredAmplitude,
 
-                      s64 zMin,
-                      chunk_dimension WorldChunkDim,
-                      void *OctavesIn )
+               s64 zMin,
+               chunk_dimension WorldChunkDim,
+               void *OctavesIn )
 {
   TIMED_FUNCTION();
   u32 ChunkSum = 0;
@@ -313,8 +314,9 @@ CustomTerrainExample( perlin_noise *Noise,
 
         b32 NoiseChoice = r64(NoiseValue) > r64(WorldZBiased);
 
-        u8 ThisColor = ColorIndex;
+        u16 ThisColor = ColorIndex;
 
+#if 0
         s32 SnowThreshold = 100;
         if (NoiseChoice == True && WorldZ > SnowThreshold)
         {
@@ -327,15 +329,16 @@ CustomTerrainExample( perlin_noise *Noise,
           ThisColor = YELLOW;
         }
 
-        /* s32 WaterThreshold = 0; */
-        /* if (NoiseChoice == False && WorldZ < WaterThreshold) */
-        /* { */
-        /*   NoiseChoice = True; */
-        /*   ThisColor = BLUE; */
-        /* } */
+        s32 WaterThreshold = 0;
+        if (NoiseChoice == False && WorldZ < WaterThreshold)
+        {
+          NoiseChoice = True;
+          ThisColor = BLUE;
+        }
+#endif
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*NoiseChoice));
-        Chunk->Voxels[VoxIndex].Color = ThisColor*u8(NoiseChoice);
+        Chunk->Voxels[VoxIndex].Color = ThisColor*u16(NoiseChoice);
         ChunkSum += NoiseChoice;
 
         Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
@@ -383,138 +386,139 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       }
       else
       {
+        auto GenType = GetEngineResources()->GameState->TerrainGenType;
 
-#if 0
+        auto Ignored = MeshBit_Lod0;
+
+        Info("%S", ToString(GenType));
+        switch (GenType)
         {
-          // Custom FBM noise example generating simple game-world-like terrain
-          s32 Frequency = 0; // Ignored
-          s32 Amplititude = 0; // Ignored
-          s32 StartingZDepth = -200;
-          u32 OctaveCount = 2;
+          case TerrainGenType_Flat:
+          {
+            // Flat Params
+            s32 Frequency = 100;
+            s32 Amplititude = 25;
+            s32 StartingZDepth = -1;
+            InitializeChunkWithNoise( Noise_Flat, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, Ignored, ChunkInitFlag_Noop, 0);
+          } break;
 
-          octave_buffer OctaveBuf = { OctaveCount, {} };
-          OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
+          case TerrainGenType_Checkerboard:
+          {
+            // Custom flat noise function that produces a checkerboard
+            s32 Frequency = 0;
+            s32 Amplititude = 0;
+            s32 StartingZDepth = -1;
+            chunk_init_flags InitFlags = ChunkInitFlag_Noop;
+            /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
+            InitializeChunkWithNoise( Checkerboard, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, Ignored, InitFlags, 0);
+          } break;
 
-          OctaveBuf.Octaves[0] = {V3(800, 800, 300), 350, V3(1)};
-          OctaveBuf.Octaves[1] = {V3(35, 35, 50), 50, V3(3.f)};
-          /* OctaveBuf.Octaves[2] = {V3(500, 500, 20), 200, V3(2.f)}; */
-          /* OctaveBuf.Octaves[2] = {75, 60, 1}; */
-          /* OctaveBuf.Octaves[3] = {37, 30, 0}; */
+          case TerrainGenType_Perlin2D:
+          {
+            // Perlin 2D Params
+            s32 Frequency = 100;
+            s32 Amplititude = 5;
+            s32 StartingZDepth = 0;
+            InitializeChunkWithNoise( Noise_Perlin2D, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, MeshBit_Lod0, ChunkInitFlag_Noop, 0);
+          } break;
+
+          case TerrainGenType_Perlin3D:
+          {
+            // Perlin 3D Params
+            s32 Frequency = 100;
+            s32 Amplititude = 5;
+            s32 StartingZDepth = 0;
+            InitializeChunkWithNoise( Noise_Perlin3D, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, MeshBit_Lod0, ChunkInitFlag_Noop, 0);
+          } break;
 
 
-          /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
-          chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs;
-          /* chunk_init_flags InitFlags = ChunkInitFlag_Noop; */
-          InitializeChunkWithNoise( CustomTerrainExample, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, (void*)&OctaveBuf);
+          case TerrainGenType_FBM2D:
+          {
+            // FBM params
+            s32 Frequency = 300;
+            s32 Amplititude = 220;
+            s32 StartingZDepth = -200;
+            u32 Octaves = 4;
+            /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
+            chunk_init_flags InitFlags = ChunkInitFlag_Noop;
+            InitializeChunkWithNoise( Noise_FBM2D, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, Ignored, InitFlags, (void*)&Octaves);
+          } break;
+
+          case TerrainGenType_TerracedTerrain:
+          {
+            // Custom FBM noise example generating slightly-more-complex game-world-like terrain
+            s32 Frequency = 0; // Ignored
+            s32 Amplititude = 0; // Ignored
+            s32 StartingZDepth = -100;
+            u32 OctaveCount = 1;
+
+            octave_buffer OctaveBuf = { OctaveCount, {} };
+            OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
+
+            OctaveBuf.Octaves[0] = {V3(400, 400, 200), 150, V3(1)};
+            /* OctaveBuf.Octaves[1] = {V3(35, 35, 50),      6, V3(2.f)}; */
+            /* OctaveBuf.Octaves[2] = {V3(500, 500, 20), 200, V3(2.f)}; */
+            /* OctaveBuf.Octaves[2] = {75, 60, 1}; */
+            /* OctaveBuf.Octaves[3] = {37, 30, 0}; */
+
+
+            /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
+            /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
+            chunk_init_flags InitFlags = ChunkInitFlag_Noop;
+            InitializeChunkWithNoise( TerracedTerrain, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
+          } break;
+
+          case TerrainGenType_GrassyIsland:
+          {
+            // Custom FBM noise example generating slightly-more-complex game-world-like terrain
+            s32 Frequency = 0; // Ignored
+            s32 Amplititude = 0; // Ignored
+            s32 StartingZDepth = -140;
+            u32 OctaveCount = 2;
+
+            octave_buffer OctaveBuf = { OctaveCount, {} };
+            OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
+
+            OctaveBuf.Octaves[0] = {V3(800, 800, 300), 275, V3(1)};
+            OctaveBuf.Octaves[1] = {V3(35, 35, 50), 25, V3(2.f)};
+            /* OctaveBuf.Octaves[2] = {V3(500, 500, 20), 200, V3(2.f)}; */
+            /* OctaveBuf.Octaves[2] = {75, 60, 1}; */
+            /* OctaveBuf.Octaves[3] = {37, 30, 0}; */
+
+
+            /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
+            /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
+            chunk_init_flags InitFlags = ChunkInitFlag_Noop;
+            InitializeChunkWithNoise( GrassyIslandTerrain, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
+          } break;
+
+          case TerrainGenType_Warped:
+          {
+            // Custom FBM noise example generating highly domain-warped terrain
+            s32 Frequency = 0; // Ignored
+            s32 Amplititude = 0; // Ignored
+            s32 StartingZDepth = -200;
+            u32 OctaveCount = 2;
+
+            octave_buffer OctaveBuf = { OctaveCount, {} };
+            OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
+
+            OctaveBuf.Octaves[0] = {V3(800, 800, 300), 350, V3(1)};
+            OctaveBuf.Octaves[1] = {V3(35, 35, 50), 20, V3(3.f)};
+            /* OctaveBuf.Octaves[2] = {V3(500, 500, 20), 200, V3(2.f)}; */
+            /* OctaveBuf.Octaves[2] = {V3(500, 500, 20), 200, V3(2.f)}; */
+            /* OctaveBuf.Octaves[2] = {75, 60, 1}; */
+            /* OctaveBuf.Octaves[3] = {37, 30, 0}; */
+
+
+            /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
+            /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
+            chunk_init_flags InitFlags = ChunkInitFlag_Noop;
+            InitializeChunkWithNoise( WarpedTerrain, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, Ignored, InitFlags, (void*)&OctaveBuf);
+          } break;
+
+
         }
-#endif
-
-
-#if 0
-        {
-          // Custom FBM noise example generating slightly-more-complex game-world-like terrain
-          s32 Frequency = 0; // Ignored
-          s32 Amplititude = 0; // Ignored
-          s32 StartingZDepth = -140;
-          u32 OctaveCount = 2;
-
-          octave_buffer OctaveBuf = { OctaveCount, {} };
-          OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
-
-          OctaveBuf.Octaves[0] = {V3(800, 800, 300), 350, 0.75f, V3(1)};
-          OctaveBuf.Octaves[1] = {V3(35, 35, 50), 50, 0.5f, V3(2.f)};
-          /* OctaveBuf.Octaves[2] = {V3(500, 500, 20), 200, V3(2.f)}; */
-          /* OctaveBuf.Octaves[2] = {75, 60, 1}; */
-          /* OctaveBuf.Octaves[3] = {37, 30, 0}; */
-
-
-          /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
-          /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
-          chunk_init_flags InitFlags = ChunkInitFlag_Noop;
-          InitializeChunkWithNoise( CustomTerrainExample2, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
-        }
-#endif
-
-#if 1
-        {
-          // Custom FBM noise example generating slightly-more-complex game-world-like terrain
-          s32 Frequency = 0; // Ignored
-          s32 Amplititude = 0; // Ignored
-          s32 StartingZDepth = -100;
-          u32 OctaveCount = 1;
-
-          octave_buffer OctaveBuf = { OctaveCount, {} };
-          OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
-
-          OctaveBuf.Octaves[0] = {V3(400, 400, 200), 150, V3(1)};
-          /* OctaveBuf.Octaves[1] = {V3(35, 35, 50),      6, V3(2.f)}; */
-          /* OctaveBuf.Octaves[2] = {V3(500, 500, 20), 200, V3(2.f)}; */
-          /* OctaveBuf.Octaves[2] = {75, 60, 1}; */
-          /* OctaveBuf.Octaves[3] = {37, 30, 0}; */
-
-
-          /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
-          /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
-          chunk_init_flags InitFlags = ChunkInitFlag_Noop;
-          InitializeChunkWithNoise( TerracedTerrain, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
-        }
-#endif
-
-
-#if 0
-        {
-          // Custom flat noise function that produces a checkerboard
-          s32 Frequency = 0;
-          s32 Amplititude = 0;
-          s32 StartingZDepth = -1;
-          chunk_init_flags InitFlags = ChunkInitFlag_Noop;
-          /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
-          InitializeChunkWithNoise( Checkerboard, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, 0);
-        }
-#endif
-
-#if 0
-        {
-          // FBM params
-          s32 Frequency = 300;
-          s32 Amplititude = 220;
-          s32 StartingZDepth = -200;
-          u32 Octaves = 4;
-          /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
-          chunk_init_flags InitFlags = ChunkInitFlag_Noop;
-          InitializeChunkWithNoise( Noise_FBM2D, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, InitFlags, (void*)&Octaves);
-        }
-#endif
-
-#if 0
-        {
-          // Perlin 2D Params
-          s32 Frequency = 100;
-          s32 Amplititude = 5;
-          s32 StartingZDepth = 0;
-          InitializeChunkWithNoise( Noise_Perlin2D, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, ChunkInitFlag_Noop, 0);
-        }
-#endif
-
-#if 0
-        {
-          // Perlin 3D Params
-          s32 Frequency = 100;
-          s32 Amplititude = 5;
-          s32 StartingZDepth = 0;
-          InitializeChunkWithNoise( Noise_Perlin3D, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, ChunkInitFlag_Noop, 0);
-        }
-#endif
-
-#if 0
-        {
-          // Flat Params
-          s32 Frequency = 100;
-          s32 Amplititude = 25;
-          s32 StartingZDepth = -1;
-          InitializeChunkWithNoise( Noise_Flat, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, ChunkInitFlag_Noop, 0);
-        }
-#endif
 
       }
 
@@ -561,6 +565,20 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   f32 dt = Plat->dt;
   f32 Speed = 80.f;
+
+  global_variable window_layout Window = WindowLayout("Terrain Gen");
+
+  PushWindowStart(Ui, &Window);
+    ui_toggle_button_group TerrainGenTypeRadio = RadioButtonGroup_terrain_gen_type(Ui, umm("terrain_gen"), ToggleButtonGroupFlags_DrawVertical);
+  PushWindowEnd(Ui, &Window);
+
+  if (TerrainGenTypeRadio.AnyElementClicked)
+  {
+    GetRadioEnum(&TerrainGenTypeRadio, &GameState->TerrainGenType);
+    SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
+    HardResetWorld(Resources);
+    UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
+  }
 
 #if 0
   v3 Offset = GetCameraRelativeInput(Hotkeys, Camera);

@@ -1,5 +1,5 @@
 link_internal void
-DoEditorUi(renderer_2d *Ui, volatile s64 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, volatile s64 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
@@ -19,7 +19,7 @@ DoEditorUi(renderer_2d *Ui, volatile s64 *Value, const char* Name, EDITOR_UI_FUN
   }
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, s64 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, s64 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
@@ -39,7 +39,7 @@ DoEditorUi(renderer_2d *Ui, s64 *Value, const char* Name, EDITOR_UI_FUNCTION_PRO
   }
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, volatile u64 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, volatile u64 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
@@ -59,7 +59,7 @@ DoEditorUi(renderer_2d *Ui, volatile u64 *Value, const char* Name, EDITOR_UI_FUN
   }
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, u64 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, u64 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
@@ -79,7 +79,7 @@ DoEditorUi(renderer_2d *Ui, u64 *Value, const char* Name, EDITOR_UI_FUNCTION_PRO
   }
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, volatile s32 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, volatile s32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
@@ -99,7 +99,7 @@ DoEditorUi(renderer_2d *Ui, volatile s32 *Value, const char* Name, EDITOR_UI_FUN
   }
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, s32 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, s32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
@@ -119,7 +119,7 @@ DoEditorUi(renderer_2d *Ui, s32 *Value, const char* Name, EDITOR_UI_FUNCTION_PRO
   }
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, volatile u32 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, volatile u32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
@@ -139,7 +139,7 @@ DoEditorUi(renderer_2d *Ui, volatile u32 *Value, const char* Name, EDITOR_UI_FUN
   }
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, u32 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, u32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
@@ -159,7 +159,7 @@ DoEditorUi(renderer_2d *Ui, u32 *Value, const char* Name, EDITOR_UI_FUNCTION_PRO
   }
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, volatile s16 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, volatile s16 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
@@ -179,7 +179,7 @@ DoEditorUi(renderer_2d *Ui, volatile s16 *Value, const char* Name, EDITOR_UI_FUN
   }
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, s16 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, s16 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
@@ -199,7 +199,7 @@ DoEditorUi(renderer_2d *Ui, s16 *Value, const char* Name, EDITOR_UI_FUNCTION_PRO
   }
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, volatile u16 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, volatile u16 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
@@ -219,7 +219,7 @@ DoEditorUi(renderer_2d *Ui, volatile u16 *Value, const char* Name, EDITOR_UI_FUN
   }
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, u16 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, u16 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
@@ -239,7 +239,7 @@ DoEditorUi(renderer_2d *Ui, u16 *Value, const char* Name, EDITOR_UI_FUNCTION_PRO
   }
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, volatile s8 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, volatile s8 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
@@ -259,7 +259,7 @@ DoEditorUi(renderer_2d *Ui, volatile s8 *Value, const char* Name, EDITOR_UI_FUNC
   }
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, s8 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, s8 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
@@ -279,7 +279,7 @@ DoEditorUi(renderer_2d *Ui, s8 *Value, const char* Name, EDITOR_UI_FUNCTION_PROT
   }
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, volatile u8 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, volatile u8 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
@@ -299,7 +299,7 @@ DoEditorUi(renderer_2d *Ui, volatile u8 *Value, const char* Name, EDITOR_UI_FUNC
   }
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, u8 *Value, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, u8 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 

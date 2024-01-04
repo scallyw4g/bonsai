@@ -108,6 +108,15 @@ LastIndex(texture_cursor *Cursor)
   return Result;
 }
 
+link_internal texture*
+LastElement(texture_cursor *Cursor)
+{
+  texture *Result = {};
+  s32 I = LastIndex(Cursor);
+  if (I > -1) { Result = Cursor->Start + I; }
+  return Result;
+}
+
 link_internal b32
 Remove(texture_cursor *Cursor, texture Query)
 {

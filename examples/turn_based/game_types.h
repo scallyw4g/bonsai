@@ -15,6 +15,8 @@ enum entity_type
 
   EntityType_Enemy,
   EntityType_Player,
+
+  EntityType_Fireball,
 };
 
 poof(generate_string_table(entity_type))
@@ -50,8 +52,16 @@ enum turn_mode
 poof(generate_string_table(turn_mode))
 #include <generated/generate_string_table_turn_mode.h>
 
+struct fireball_state
+{
+  r32 ChargeLevel;
+  cp TargetP;
+};
+
 struct game_state
 {
+  heap_allocator Heap;
+
   random_series Entropy;
 
   model      *Models;
@@ -59,10 +69,11 @@ struct game_state
 
   entity *Player;
 
-  player_action SelectedAction;
-  u32 PlayerChargeLevel;
-
   b32 PlayerActed;
+  player_action ProposedAction;
+
+  u32 PlayerChargeLevel;
+  u32 FireballsSimulated;
 
   turn_mode TurnMode;
   r32 TransitionDuration;

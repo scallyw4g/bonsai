@@ -431,6 +431,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Resources);
 
+#if 0
   if (Hotkeys)
   {
     r32 CameraSpeed = 125.f;
@@ -442,6 +443,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     GameState->CameraGhost->P.Offset += CameraDelta;
     /* Canonicalize(World->ChunkDim, GameState->CameraGhost->P); */
   }
+#endif
 
   v3i TileSuperpositionsDim = GameState->BakeResult.TileSuperpositionsDim;
   s32 TileSuperpositionsCount = Volume(GameState->BakeResult.TileSuperpositionsDim);
@@ -774,7 +776,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   entity *BakeEntity = GetFreeEntity(EntityTable);
   GameState->BakeEntity = BakeEntity;
 
-  BakeEntity->CollisionVolumeRadius = ChunkData->Dim/2.f;
+  BakeEntity->_CollisionVolumeRadius = ChunkData->Dim/2.f;
   BakeEntity->P = Canonical_Position(World->ChunkDim, V3(-ChunkData->Dim.x-8, 0, 0), V3i(0));
   BakeEntity->Model = Allocate(model, Resources->Memory, 1);
 
@@ -796,7 +798,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
         v3i VoxOffset = V3iFromIndex(s32(Tile->VoxelIndex), ChunkData->Dim);
 
         entity *TileEntity = GetFreeEntity(EntityTable);
-        TileEntity->CollisionVolumeRadius = V3(Global_TileDim/2);
+        TileEntity->_CollisionVolumeRadius = V3(Global_TileDim/2);
 
         // TODO(Jesse)(memory, heap, mesh)
         AllocateMesh( &TileEntity->Model->Mesh, u32(Kilobytes(18)), Resources->Memory);

@@ -108,6 +108,15 @@ LastIndex(parser_cursor *Cursor)
   return Result;
 }
 
+link_internal parser*
+LastElement(parser_cursor *Cursor)
+{
+  parser *Result = {};
+  s32 I = LastIndex(Cursor);
+  if (I > -1) { Result = Cursor->Start + I; }
+  return Result;
+}
+
 link_internal b32
 Remove(parser_cursor *Cursor, parser Query)
 {

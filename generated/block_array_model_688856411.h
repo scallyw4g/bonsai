@@ -50,6 +50,13 @@ operator<(model_block_array_index I0, model_block_array_index I1)
   return Result;
 }
 
+link_inline model_block *
+GetBlock(model_block_array_index *Index)
+{
+  model_block *Result = Cast(model_block*, Index->Block);
+  return Result;
+}
+
 link_inline umm
 GetIndex(model_block_array_index *Index)
 {
@@ -62,7 +69,7 @@ ZerothIndex(model_block_array *Arr)
 {
   model_block_array_index Result = {};
   Result.Block = &Arr->First;
-  Assert(Cast(model_block*, Result.Block)->Index == 0);
+  Assert(GetBlock(&Result)->Index == 0);
   return Result;
 }
 
@@ -78,14 +85,31 @@ TotalElements(model_block_array *Arr)
 }
 
 link_internal model_block_array_index
+LastIndex(model_block_array *Arr)
+{
+  model_block_array_index Result = {};
+  if (Arr->Current)
+  {
+    Result.Block = Arr->Current;
+    Result.BlockIndex = Arr->Current->Index;
+    Result.ElementIndex = Arr->Current->At;
+    Assert(Result.ElementIndex);
+    Result.ElementIndex--;
+  }
+  return Result;
+}
+
+link_internal model_block_array_index
 AtElements(model_block_array *Arr)
 {
   model_block_array_index Result = {};
   if (Arr->Current)
   {
     Result.Block = Arr->Current;
-    Result.BlockIndex = Cast(model_block*, Arr->Current)->Index;
-    Result.ElementIndex = Cast(model_block*, Arr->Current)->At;
+    Result.BlockIndex = Arr->Current->Index;
+    Result.ElementIndex = Arr->Current->At;
+    /* Assert(Result.ElementIndex); */
+    /* Result.ElementIndex--; */
   }
   return Result;
 }
@@ -94,7 +118,7 @@ link_internal model *
 GetPtr(model_block_array *Arr, model_block_array_index Index)
 {
   model *Result = {};
-  if (Index.Block) { Result = Cast(model_block *, Index.Block)->Elements + Index.ElementIndex; }
+  if (Index.Block) { Result = GetBlock(&Index)->Elements + Index.ElementIndex; }
   return Result;
 }
 
@@ -138,6 +162,41 @@ Allocate_model_block(memory_arena *Memory)
   return Result;
 }
 
+link_internal cs
+CS(model_block_array_index Index)
+{
+  return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+}
+
+link_internal void
+RemoveUnordered(model_block_array *Array, model_block_array_index Index)
+{
+  model_block_array_index LastI = LastIndex(Array);
+
+  model *Element = GetPtr(Array, Index);
+  model *LastElement = GetPtr(Array, LastI);
+
+  *Element = *LastElement;
+
+  Assert(Array->Current->At);
+  Array->Current->At -= 1;
+
+  if (Array->Current->At == 0)
+  {
+    // Walk the chain till we get to the second-last one
+    model_block *Current = &Array->First;
+    model_block *LastB = GetBlock(&LastI);
+
+    while (Current->Next && Current->Next != LastB)
+    {
+      Current = Current->Next;
+    }
+
+    Assert(Current->Next == LastB || Current->Next == 0);
+    Array->Current = Current;
+  }
+}
+
 link_internal model *
 Push(model_block_array *Array, model *Element)
 {
@@ -147,12 +206,19 @@ Push(model_block_array *Array, model *Element)
 
   if (Array->Current->At == 8)
   {
-    model_block *Next = Allocate_model_block(Array->Memory);
-    Next->Index = Array->Current->Index + 1;
+    if (Array->Current->Next)
+    {
+      Array->Current = Array->Current->Next;
+      Assert(Array->Current->At == 0);
+    }
+    else
+    {
+      model_block *Next = Allocate_model_block(Array->Memory);
+      Next->Index = Array->Current->Index + 1;
 
-    Array->Current->Next = Next;
-    Array->Current = Next;
-    /* Array->At = 0; */
+      Array->Current->Next = Next;
+      Array->Current = Next;
+    }
   }
 
   model *Result = Array->Current->Elements + Array->Current->At;

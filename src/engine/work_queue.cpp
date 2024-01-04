@@ -174,5 +174,4 @@ CancelAllWorkQueueJobs(platform *Plat, work_queue *Queue)
       } break;
     }
   }
-
 }
