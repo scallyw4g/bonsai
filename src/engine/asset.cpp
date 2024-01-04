@@ -429,8 +429,8 @@ FreeAsset(engine_resources *Engine, asset *Asset)
 
   FreeModelBuffer(&Engine->AssetMemory, &Asset->Models);
 
-  HeapDeallocate(&Engine->AssetMemory, Cast(void*, &Asset->Id.FileNode.Dir));
-  HeapDeallocate(&Engine->AssetMemory, Cast(void*, &Asset->Id.FileNode.Name));
+  HeapDeallocate(&Engine->AssetMemory, Cast(void*, Asset->Id.FileNode.Dir.Start));
+  HeapDeallocate(&Engine->AssetMemory, Cast(void*, Asset->Id.FileNode.Name.Start));
 
   Clear(Asset);
 }
