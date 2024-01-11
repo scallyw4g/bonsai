@@ -3,12 +3,11 @@ DoEditorUi(renderer_2d *Ui, file_traversal_node *Element, cs Name, EDITOR_UI_FUN
 {
   if (Element)
   {
-    /* PushTableStart(Ui); */
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), umm(Element) ^ umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Element, Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
     {
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-      /* Padding.x += 20.f; */
       PushNewRow(Ui);
+
+      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui, &Element->Type, CSz("file_traversal_type Type"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
@@ -27,6 +26,7 @@ DoEditorUi(renderer_2d *Ui, file_traversal_node *Element, cs Name, EDITOR_UI_FUN
 
 
       PushNewRow(Ui);
+
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
     }
     else
@@ -39,6 +39,6 @@ DoEditorUi(renderer_2d *Ui, file_traversal_node *Element, cs Name, EDITOR_UI_FUN
     PushColumn(Ui, FSz("%S = (null)", Name));
     PushNewRow(Ui);
   }
-  
+
 }
 

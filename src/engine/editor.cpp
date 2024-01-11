@@ -109,7 +109,7 @@ DoEditorUi(renderer_2d *Ui, r32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
 link_internal void
 DoEditorUi(renderer_2d *Ui, b8 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  if (Button(Ui, CS(Name), (umm)Value + (umm)"toggle", EDITOR_UI_FUNCTION_INSTANCE_NAMES )) { *Value = !(*Value); }
+  if (Button(Ui, CS(Name), UiId(Value, "toggle"), EDITOR_UI_FUNCTION_INSTANCE_NAMES )) { *Value = !(*Value); }
 
   counted_string Display = Value ?
        *Value ? CSz("True") : CSz("False") :
@@ -140,7 +140,6 @@ DoEditorUi(renderer_2d *Ui, cp *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULT
   /* PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
 
   DoEditorUi(Ui, &Value->WorldP, CSz("WorldP"));
-  PushNewRow(Ui);
   DoEditorUi(Ui, &Value->Offset, CSz("Offset"));
 }
 

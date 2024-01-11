@@ -3,17 +3,17 @@ DoEditorUi(renderer_2d *Ui, vox_data *Element, cs Name, EDITOR_UI_FUNCTION_PROTO
 {
   if (Element)
   {
-    /* PushTableStart(Ui); */
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), umm(Element) ^ umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Element, Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
     {
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-      /* Padding.x += 20.f; */
       PushNewRow(Ui);
+
+      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui, Element->ChunkData, CSz("chunk_data ChunkData"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
       PushNewRow(Ui);
+
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
     }
     else
@@ -26,6 +26,6 @@ DoEditorUi(renderer_2d *Ui, vox_data *Element, cs Name, EDITOR_UI_FUNCTION_PROTO
     PushColumn(Ui, FSz("%S = (null)", Name));
     PushNewRow(Ui);
   }
-  
+
 }
 

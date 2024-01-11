@@ -3,21 +3,17 @@ DoEditorUi(renderer_2d *Ui, world_chunk *Element, cs Name, EDITOR_UI_FUNCTION_PR
 {
   if (Element)
   {
-    /* PushTableStart(Ui); */
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), umm(Element) ^ umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Element, Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
     {
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-      /* Padding.x += 20.f; */
       PushNewRow(Ui);
+
+      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui, &Element->Flags, CSz("chunk_flag Flags"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
 
       PushNewRow(Ui);
-      /* member.member(0, (union_member) { */
-      /* DoEditorUi(Ui, &Element->(union_member.name), "union_member.type union_member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
-      /* }) */
       DoEditorUi(Ui, &Element->Dim, CSz("v3i Dim"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
@@ -46,9 +42,6 @@ DoEditorUi(renderer_2d *Ui, world_chunk *Element, cs Name, EDITOR_UI_FUNCTION_PR
 
 
       PushNewRow(Ui);
-      /* member.member(0, (union_member) { */
-      /* DoEditorUi(Ui, &Element->(union_member.name), "union_member.type union_member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
-      /* }) */
       DoEditorUi(Ui, &Element->WorldP, CSz("v3i WorldP"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
@@ -127,6 +120,7 @@ DoEditorUi(renderer_2d *Ui, world_chunk *Element, cs Name, EDITOR_UI_FUNCTION_PR
 
 
       PushNewRow(Ui);
+
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
     }
     else
@@ -139,6 +133,6 @@ DoEditorUi(renderer_2d *Ui, world_chunk *Element, cs Name, EDITOR_UI_FUNCTION_PR
     PushColumn(Ui, FSz("%S = (null)", Name));
     PushNewRow(Ui);
   }
-  
+
 }
 

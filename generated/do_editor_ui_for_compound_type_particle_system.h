@@ -3,12 +3,11 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, cs Name, EDITOR_UI_FUNCTIO
 {
   if (Element)
   {
-    /* PushTableStart(Ui); */
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), umm(Element) ^ umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Element, Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
     {
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-      /* Padding.x += 20.f; */
       PushNewRow(Ui);
+
+      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui, &Element->Entropy, CSz("random_series Entropy"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
@@ -93,9 +92,6 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, cs Name, EDITOR_UI_FUNCTIO
 
 
       PushNewRow(Ui);
-      /* member.member(0, (union_member) { */
-      /* DoEditorUi(Ui, &Element->(union_member.name), "union_member.type union_member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
-      /* }) */
       DoEditorUi(Ui, &Element->ParticleStartingDim, CSz("v3 ParticleStartingDim"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
@@ -108,18 +104,12 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, cs Name, EDITOR_UI_FUNCTIO
 
 
       PushNewRow(Ui);
-      /* member.member(0, (union_member) { */
-      /* DoEditorUi(Ui, &Element->(union_member.name), "union_member.type union_member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
-      /* }) */
       DoEditorUi(Ui, &Element->ParticleTurbMin, CSz("v3 ParticleTurbMin"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
 
       PushNewRow(Ui);
-      /* member.member(0, (union_member) { */
-      /* DoEditorUi(Ui, &Element->(union_member.name), "union_member.type union_member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
-      /* }) */
       DoEditorUi(Ui, &Element->ParticleTurbMax, CSz("v3 ParticleTurbMax"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
@@ -158,6 +148,7 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, cs Name, EDITOR_UI_FUNCTIO
 
 
       PushNewRow(Ui);
+
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
     }
     else
@@ -170,6 +161,6 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, cs Name, EDITOR_UI_FUNCTIO
     PushColumn(Ui, FSz("%S = (null)", Name));
     PushNewRow(Ui);
   }
-  
+
 }
 

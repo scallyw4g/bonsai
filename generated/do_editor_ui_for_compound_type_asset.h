@@ -3,12 +3,11 @@ DoEditorUi(renderer_2d *Ui, asset *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DE
 {
   if (Element)
   {
-    /* PushTableStart(Ui); */
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), umm(Element) ^ umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Element, Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
     {
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-      /* Padding.x += 20.f; */
       PushNewRow(Ui);
+
+      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui, &Element->LoadState, CSz("asset_load_state LoadState"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
@@ -33,6 +32,7 @@ DoEditorUi(renderer_2d *Ui, asset *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DE
 
 
       PushNewRow(Ui);
+
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
     }
     else
@@ -45,6 +45,6 @@ DoEditorUi(renderer_2d *Ui, asset *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DE
     PushColumn(Ui, FSz("%S = (null)", Name));
     PushNewRow(Ui);
   }
-  
+
 }
 
