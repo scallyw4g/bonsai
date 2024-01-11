@@ -6,7 +6,7 @@
 #if LEVEL_FILE_DEBUG_MODE
        
 #define MAYBE_WRITE_DEBUG_OBJECT_DELIM() { u64 Tag = LEVEL_FILE_DEBUG_OBJECT_DELIM; Ensure( Serialize(File, &Tag) ); }
-#define MAYBE_READ_DEBUG_OBJECT_DELIM() { u64 Tag = Read_u64(Bytes); Ensure( Tag == LEVEL_FILE_DEBUG_OBJECT_DELIM ); }
+#define MAYBE_READ_DEBUG_OBJECT_DELIM() { u64 Tag = Read_u64(Bytes); if ( Tag != LEVEL_FILE_DEBUG_OBJECT_DELIM ) { Result = False; } }
 #else
 #define MAYBE_WRITE_DEBUG_OBJECT_DELIM(...)
 #define MAYBE_READ_DEBUG_OBJECT_DELIM(...)
@@ -74,8 +74,9 @@ poof(
       Bytes->At += sizeof((type.name));
       Assert(Bytes->At <= Bytes->End);
 
+      b32 Result = True;
       MAYBE_READ_DEBUG_OBJECT_DELIM();
-      return True;
+      return Result;
     }
   }
 )

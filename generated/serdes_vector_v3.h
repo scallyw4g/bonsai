@@ -14,8 +14,9 @@ Deserialize(u8_stream *Bytes, v3* Element, memory_arena *Ignored)
   Bytes->At += sizeof(v3);
   Assert(Bytes->At <= Bytes->End);
 
+  b32 Result = True;
   MAYBE_READ_DEBUG_OBJECT_DELIM();
-  return True;
+  return Result;
 }
 
 

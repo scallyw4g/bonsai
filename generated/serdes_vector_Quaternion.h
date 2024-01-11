@@ -14,8 +14,9 @@ Deserialize(u8_stream *Bytes, Quaternion* Element, memory_arena *Ignored)
   Bytes->At += sizeof(Quaternion);
   Assert(Bytes->At <= Bytes->End);
 
+  b32 Result = True;
   MAYBE_READ_DEBUG_OBJECT_DELIM();
-  return True;
+  return Result;
 }
 
 

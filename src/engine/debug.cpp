@@ -272,7 +272,30 @@ DoLevelWindow(engine_resources *Engine)
         RangeIterator(EntityIndex, EntityCount)
         {
           entity *E = EntityTable[EntityIndex];
-          Deserialize(&LevelBytes, E, Thread->PermMemory);
+          /* if (Deserialize(&LevelBytes, E, Thread->PermMemory)) */
+          {
+          }
+          /* else */
+          {
+            entity_1 E1 = {};
+            if (Deserialize(&LevelBytes, &E1, Thread->PermMemory))
+            {
+              Marshal(&E1, E);
+            }
+            else
+            {
+              entity_0 E0 = {};
+              /* if (Deserialize(&LevelBytes, &E0, Thread->PermMemory)) */
+              {
+                /* Marshal(&E0, &E1); */
+                /* Marshal(&E1, E); */
+              }
+              /* else */
+              {
+                // Completely failed deserializing 
+              }
+            }
+          }
         }
 
         v3_cursor *Palette = GetColorPalette();

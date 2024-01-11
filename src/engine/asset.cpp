@@ -580,42 +580,6 @@ InitAsset(asset *Asset, thread_local_state *Thread)
   }
 }
 
-link_internal maybe_asset_ptr
-GetAssetPtr(engine_resources *Engine, asset_id *AID, u64 FrameIndex = 0)
-{
-  maybe_asset_ptr Result = {};
-
-  if (AID->Index != INVALID_ASSET_INDEX)
-  {
-    AcquireFutex(&Engine->AssetFutex);
-
-    asset *Asset = Engine->AssetTable + AID->Index;
-    // TODO(Jesse): This should probably be set somewhere else and be an assert ...?
-    Assert(Asset->Id.Index == AID->Index);
-    Assert(Asset->LoadState != AssetLoadState_Unloaded);
-
-    Asset->LRUFrameIndex = FrameIndex ? FrameIndex : Engine->FrameIndex;
-
-    Result.Tag = Maybe_Yes;
-    Result.Value = Asset;
-
-    ReleaseFutex(&Engine->AssetFutex);
-  }
-  else
-  {
-    if (AID->FileNode.Type)
-    {
-      Result = AllocateAsset(Engine, &AID->FileNode, FrameIndex);
-      if (Result.Tag)
-      {
-        Assert(Result.Value->LoadState == AssetLoadState_Allocated);
-      }
-    }
-  }
-
-  return Result;
-}
-
 link_internal asset_id
 GetOrAllocateAssetId(engine_resources *Engine, file_traversal_node *FileNode, u64 FrameIndex = 0)
 {
@@ -659,6 +623,53 @@ GetOrAllocateAssetId(engine_resources *Engine, file_traversal_node FileNode, u64
 {
   return GetOrAllocateAssetId(Engine, &FileNode, FrameIndex);
 }
+
+link_internal maybe_asset_ptr
+GetAssetPtr(engine_resources *Engine, asset_id *AID, u64 FrameIndex = 0)
+{
+  maybe_asset_ptr Result = {};
+
+  if (AID->Index != INVALID_ASSET_INDEX)
+  {
+    AcquireFutex(&Engine->AssetFutex);
+
+    asset *Asset = Engine->AssetTable + AID->Index;
+
+    Assert(Asset->Id.Index == AID->Index);
+
+    // LoadState must be one of Allocated, Queued, Loaded or Error
+    Assert(Asset->LoadState != AssetLoadState_Unloaded);
+
+    Asset->LRUFrameIndex = FrameIndex ? FrameIndex : Engine->FrameIndex;
+
+    Result.Tag = Maybe_Yes;
+    Result.Value = Asset;
+
+    ReleaseFutex(&Engine->AssetFutex);
+  }
+  else
+  {
+    if (AID->FileNode.Type)
+    {
+      asset_id NewAssetId = GetOrAllocateAssetId(Engine, AID->FileNode, FrameIndex);
+      if (NewAssetId.Index != INVALID_ASSET_INDEX)
+      {
+        Result = GetAssetPtr(Engine, &NewAssetId, FrameIndex);
+      }
+    }
+  }
+
+  if (Result.Tag)
+  {
+    AID->Index = Result.Value->Id.Index;
+    Assert(StringsMatch(AID->FileNode.Dir,  Result.Value->Id.FileNode.Dir));
+    Assert(StringsMatch(AID->FileNode.Name, Result.Value->Id.FileNode.Name));
+    Assert(Result.Value->LoadState);
+  }
+
+  return Result;
+}
+
 
 
 #if 0

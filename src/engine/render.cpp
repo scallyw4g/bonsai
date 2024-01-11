@@ -1071,7 +1071,7 @@ DrawEntity(
     if ( MaybeAsset.Tag )
     {
 
-      if (MaybeAsset.Value->LoadState == AssetLoadState_Allocated )
+      if (MaybeAsset.Value->LoadState == AssetLoadState_Allocated)
       {
         Assert(MaybeAsset.Value->Id.Index != INVALID_ASSET_INDEX);
         QueueAssetForLoad(&GetEngineResources()->Stdlib.Plat.LowPriority, MaybeAsset.Value);

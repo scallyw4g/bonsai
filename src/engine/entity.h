@@ -71,6 +71,7 @@ struct entity_position_info
   v3 EulerAngles;
 };
 
+#define ENTITY_VERSION 2
 struct entity
 {
   u64 Version;
@@ -106,6 +107,67 @@ struct entity
   u64 UserData;
 };
 
+struct entity_1
+{
+  u64 Version;
+
+  u64 Id;
+
+  cp P;
+  // NOTE(Jesse): This is a v4 because it used to be a quaternion, and the
+  // savefiles have magic numbers so they have to deal with elements that are
+  // the same size.  The w coordinate is unused
+  v4 EulerAngles;
+  r32 Scale;
+
+  // NOTE(Jesse): This must be updated with UpdateCollisionVolumeRadius.
+  // Entity pointers are stored on world chunks, which are used during
+  // collision detection.  The chunks to store the entity to are computed using
+  // the CollisionVolumeRadius so if we update it we have to also check if the
+  // number of chunks we're overlapping changed, and update the difference.
+  v3 _CollisionVolumeRadius;
+
+  physics Physics;
+
+  asset_id             AssetId;
+
+#if !POOF_PREPROCESSOR
+  collision_event      LastResolvedCollision;
+  entity_position_info LastResolvedPosInfo;
+#endif
+
+  particle_system *Emitter;
+
+  entity_state          State;
+  entity_behavior_flags Behavior;
+
+  u64 UserType;
+  u64 UserData;
+};
+
+struct entity_0
+{
+  umm Id;
+
+  cp P;
+  // NOTE(Jesse): This is a v4 because it used to be a quaternion, and the
+  // savefiles have magic numbers so they have to deal with elements that are
+  // the same size.  The w coordinate is unused
+  v4 EulerAngles;
+  r32 Scale;
+
+  v3 CollisionVolumeRadius;
+  physics Physics;
+
+  model           *Model;
+  particle_system *Emitter;
+
+  entity_state          State;
+  entity_behavior_flags Behavior;
+
+  u64 UserType;
+  umm UserData;
+};
 
 link_internal void
 FinalizeEntityUpdate(entity *Entity)
@@ -382,11 +444,6 @@ poof(serdes_struct(model))
 poof(serdes_struct(canonical_position))
 #include <generated/serdes_struct_canonical_position.h>
 
-
-link_internal b32 Serialize(native_file *File, particle_system *Element);
-link_internal b32 Deserialize(u8_stream *Bytes, particle_system*);
-link_internal particle_system * Deserialize_particle_system(u8_stream *Bytes);
-
 poof(serdes_struct(file_traversal_node))
 #include <generated/serdes_struct_file_traversal_node.h>
 
@@ -396,8 +453,10 @@ poof(serdes_struct(file_traversal_node))
 poof(serdes_struct(asset_id))
 #include <generated/serdes_struct_asset_id.h>
 
-poof(serdes_struct(entity))
+/* poof(serdes_struct(entity)) */
 #include <generated/serdes_struct_entity.h>
+#include <generated/serdes_struct_entity_1.h>
+#include <generated/serdes_struct_entity_0.h>
 
 poof( block_array(entity, {4}) )
 #include <generated/block_array_entity_688856407.h>
@@ -409,4 +468,31 @@ GetEntityBaseP(world *World, entity *Entity)
   BaseP.Offset += Entity->_CollisionVolumeRadius.xy;
   BaseP = Canonicalize(World, BaseP);
   return BaseP;
+}
+
+
+link_internal void
+Marshal(entity_0 *E0, entity_1 *E1)
+{
+  NotImplemented;
+}
+
+link_internal void
+Marshal(entity_1 *E0, entity *E1)
+{
+  E1->Id = E0->Id;
+  E1->P = E0->P;
+  E1->EulerAngles = E0->EulerAngles.xyz;
+  E1->Scale = E0->Scale;
+  E1->_CollisionVolumeRadius = E0->_CollisionVolumeRadius;
+  E1->Physics = E0->Physics;
+
+  E1->AssetId = E0->AssetId;
+  E1->AssetId.Index = INVALID_ASSET_INDEX;
+
+  E1->Emitter = E0->Emitter;
+  E1->State = E0->State;
+  E1->Behavior = E0->Behavior;
+  E1->UserType = E0->UserType;
+  E1->UserData = E0->UserData;
 }

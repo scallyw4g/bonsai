@@ -33,7 +33,7 @@ DoEditorUi(renderer_2d *Ui, entity_position_info *Element, cs Name, EDITOR_UI_FU
       /* member.member(0, (union_member) { */
       /* DoEditorUi(Ui, &Element->(union_member.name), "union_member.type union_member.name", EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
       /* }) */
-      DoEditorUi(Ui, &Element->EulerAngles, CSz("v4 EulerAngles"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, &Element->EulerAngles, CSz("v3 EulerAngles"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
