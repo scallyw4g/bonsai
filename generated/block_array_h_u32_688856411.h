@@ -15,7 +15,7 @@ struct u32_block_array_index
 
 struct u32_block_array
 {
-  u32_block First;
+  u32_block *First;
   u32_block *Current;
   memory_arena *Memory;
 };
@@ -61,8 +61,8 @@ link_internal u32_block_array_index
 ZerothIndex(u32_block_array *Arr)
 {
   u32_block_array_index Result = {};
-  Result.Block = &Arr->First;
-  Assert(Result.Block->Index == 0);
+  Result.Block = Arr->First;
+  /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
@@ -128,7 +128,7 @@ GetPtr(u32_block_array *Arr, umm Index)
   umm ElementIndex = Index % 8;
 
   umm AtBlock = 0;
-  u32_block *Block = &Arr->First;
+  u32_block *Block = Arr->First;
   while (AtBlock++ < BlockIndex)
   {
     Block = Block->Next;

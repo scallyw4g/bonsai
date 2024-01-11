@@ -15,7 +15,7 @@ struct standing_spot_block_array_index
 
 struct standing_spot_block_array
 {
-  standing_spot_block First;
+  standing_spot_block *First;
   standing_spot_block *Current;
   memory_arena *Memory;
 };
@@ -61,8 +61,8 @@ link_internal standing_spot_block_array_index
 ZerothIndex(standing_spot_block_array *Arr)
 {
   standing_spot_block_array_index Result = {};
-  Result.Block = &Arr->First;
-  Assert(Result.Block->Index == 0);
+  Result.Block = Arr->First;
+  /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
@@ -128,7 +128,7 @@ GetPtr(standing_spot_block_array *Arr, umm Index)
   umm ElementIndex = Index % 8;
 
   umm AtBlock = 0;
-  standing_spot_block *Block = &Arr->First;
+  standing_spot_block *Block = Arr->First;
   while (AtBlock++ < BlockIndex)
   {
     Block = Block->Next;
@@ -175,7 +175,7 @@ RemoveUnordered(standing_spot_block_array *Array, standing_spot_block_array_inde
   if (Array->Current->At == 0)
   {
     // Walk the chain till we get to the second-last one
-    standing_spot_block *Current = &Array->First;
+    standing_spot_block *Current = Array->First;
     standing_spot_block *LastB = LastI.Block;
 
     while (Current->Next && Current->Next != LastB)
@@ -193,7 +193,7 @@ Push(standing_spot_block_array *Array, standing_spot *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 
-  if (Array->Current == 0) { Array->First = *Allocate_standing_spot_block(Array->Memory); Array->Current = &Array->First; }
+  if (Array->First == 0) { Array->First = Allocate_standing_spot_block(Array->Memory); Array->Current = Array->First; }
 
   if (Array->Current->At == 8)
   {

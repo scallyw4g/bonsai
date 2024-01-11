@@ -15,7 +15,7 @@ struct vox_data_block_array_index
 
 struct vox_data_block_array
 {
-  vox_data_block First;
+  vox_data_block *First;
   vox_data_block *Current;
   memory_arena *Memory;
 };
@@ -61,8 +61,8 @@ link_internal vox_data_block_array_index
 ZerothIndex(vox_data_block_array *Arr)
 {
   vox_data_block_array_index Result = {};
-  Result.Block = &Arr->First;
-  Assert(Result.Block->Index == 0);
+  Result.Block = Arr->First;
+  /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
@@ -128,7 +128,7 @@ GetPtr(vox_data_block_array *Arr, umm Index)
   umm ElementIndex = Index % 8;
 
   umm AtBlock = 0;
-  vox_data_block *Block = &Arr->First;
+  vox_data_block *Block = Arr->First;
   while (AtBlock++ < BlockIndex)
   {
     Block = Block->Next;
@@ -175,7 +175,7 @@ RemoveUnordered(vox_data_block_array *Array, vox_data_block_array_index Index)
   if (Array->Current->At == 0)
   {
     // Walk the chain till we get to the second-last one
-    vox_data_block *Current = &Array->First;
+    vox_data_block *Current = Array->First;
     vox_data_block *LastB = LastI.Block;
 
     while (Current->Next && Current->Next != LastB)
@@ -193,7 +193,7 @@ Push(vox_data_block_array *Array, vox_data *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 
-  if (Array->Current == 0) { Array->First = *Allocate_vox_data_block(Array->Memory); Array->Current = &Array->First; }
+  if (Array->First == 0) { Array->First = Allocate_vox_data_block(Array->Memory); Array->Current = Array->First; }
 
   if (Array->Current->At == 8)
   {

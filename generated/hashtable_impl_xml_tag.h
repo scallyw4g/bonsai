@@ -1,4 +1,3 @@
-
 link_internal xml_tag_linked_list_node *
 Allocate_xml_tag_linked_list_node(memory_arena *Memory)
 {
@@ -59,5 +58,66 @@ Insert(xml_tag Element, xml_tag_hashtable *Table, memory_arena *Memory)
   Bucket->Element = Element;
   Insert(Bucket, Table);
   return &Bucket->Element;
+}
+
+//
+// Iterator impl.
+//
+
+struct xml_tag_hashtable_iterator
+{
+  umm HashIndex;
+  xml_tag_hashtable *Table;
+  xml_tag_linked_list_node *Node;
+};
+
+link_internal xml_tag_hashtable_iterator
+operator++( xml_tag_hashtable_iterator &Iterator )
+{
+  if (Iterator.Node)
+  {
+    Iterator.Node = Iterator.Node->Next;
+  }
+  else
+  {
+    Assert (Iterator.HashIndex < Iterator.Table->Size );
+    Iterator.Node = Iterator.Table->Elements[++Iterator.HashIndex];
+  }
+
+  return Iterator;
+}
+
+link_internal b32
+operator<( xml_tag_hashtable_iterator I0, xml_tag_hashtable_iterator I1)
+{
+  b32 Result = I0.HashIndex < I1.HashIndex;
+  return Result;
+}
+
+link_inline xml_tag_hashtable_iterator
+ZerothIndex(xml_tag_hashtable *Hashtable)
+{
+  xml_tag_hashtable_iterator Iterator = {};
+  Iterator.Table = Hashtable;
+  Iterator.Node = Hashtable->Elements[0];
+  return Iterator;
+}
+
+link_inline xml_tag_hashtable_iterator
+AtElements(xml_tag_hashtable *Hashtable)
+{
+  xml_tag_hashtable_iterator Result = { Hashtable->Size, 0, 0 };
+  return Result;
+}
+
+link_inline xml_tag *
+GetPtr(xml_tag_hashtable *Hashtable, xml_tag_hashtable_iterator Iterator)
+{
+  xml_tag *Result = {};
+  if (Iterator.Node)
+  {
+    Result = &Iterator.Node->Element;
+  }
+  return Result;
 }
 

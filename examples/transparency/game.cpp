@@ -1,5 +1,5 @@
 // NOTE(Jesse): This includes implementations for performace profiling and debug tracing
-#define DEBUG_SYSTEM_API 1
+#define BONSAI_DEBUG_SYSTEM_API 1
 
 #include <bonsai_types.h>
 
@@ -33,13 +33,10 @@ SpawnSplosionEmitters(entity_block_array *Entities)
   local_persist random_series EmitterEntropy = {59406535723431};
 
   r32 Radius = 4.f;
-  LinkedListIter(&Entities->First, Block)
+  IterateOver(Entities, Entity, Index)
   {
-    IterateOver(Block, Entity, Index)
-    {
-      DoSplotion( GetEngineResources(), Entity->P, Radius, &EmitterEntropy, GetTranArena());
-      Radius += 1.0f;
-    }
+    DoSplotion( GetEngineResources(), Entity->P, Radius, &EmitterEntropy, GetTranArena());
+    Radius += 1.0f;
   }
 }
 
@@ -49,13 +46,10 @@ SpawnPersistentSmokeEmitters(entity_block_array *Entities)
   local_persist random_series EmitterEntropy = {59406535723431};
 
   r32 Radius = 1.0f;
-  LinkedListIter(&Entities->First, Block)
+  IterateOver(Entities, Entity, Index)
   {
-    IterateOver(Block, Entity, Index)
-    {
-      SpawnPersistantSmoke(Entity, &EmitterEntropy, {}, Radius);
-      Radius += 1.0f;
-    }
+    SpawnPersistantSmoke(Entity, &EmitterEntropy, {}, Radius);
+    Radius += 1.0f;
   }
 }
 
@@ -65,13 +59,10 @@ SpawnFireEmitters(entity_block_array *Entities, b32 Colorful = False)
   local_persist random_series EmitterEntropy = {59406535723431};
 
   r32 Radius = 1.0f;
-  LinkedListIter(&Entities->First, Block)
+  IterateOver(Entities, Entity, Index)
   {
-    IterateOver(Block, Entity, Index)
-    {
-      SpawnFire(Entity, &EmitterEntropy, {}, Radius, Colorful);
-      Radius += 1.0f;
-    }
+    SpawnFire(Entity, &EmitterEntropy, {}, Radius, Colorful);
+    Radius += 1.0f;
   }
 }
 

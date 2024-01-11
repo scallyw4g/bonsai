@@ -10,7 +10,6 @@ struct voxel_synth_tile_hashtable
   voxel_synth_tile_linked_list_node **Elements;
   /* OWNED_BY_THREAD_MEMBER() */
 };
-
 link_internal voxel_synth_tile_linked_list_node *
 Allocate_voxel_synth_tile_linked_list_node(memory_arena *Memory)
 {
@@ -71,5 +70,66 @@ Insert(voxel_synth_tile Element, voxel_synth_tile_hashtable *Table, memory_arena
   Bucket->Element = Element;
   Insert(Bucket, Table);
   return &Bucket->Element;
+}
+
+//
+// Iterator impl.
+//
+
+struct voxel_synth_tile_hashtable_iterator
+{
+  umm HashIndex;
+  voxel_synth_tile_hashtable *Table;
+  voxel_synth_tile_linked_list_node *Node;
+};
+
+link_internal voxel_synth_tile_hashtable_iterator
+operator++( voxel_synth_tile_hashtable_iterator &Iterator )
+{
+  if (Iterator.Node)
+  {
+    Iterator.Node = Iterator.Node->Next;
+  }
+  else
+  {
+    Assert (Iterator.HashIndex < Iterator.Table->Size );
+    Iterator.Node = Iterator.Table->Elements[++Iterator.HashIndex];
+  }
+
+  return Iterator;
+}
+
+link_internal b32
+operator<( voxel_synth_tile_hashtable_iterator I0, voxel_synth_tile_hashtable_iterator I1)
+{
+  b32 Result = I0.HashIndex < I1.HashIndex;
+  return Result;
+}
+
+link_inline voxel_synth_tile_hashtable_iterator
+ZerothIndex(voxel_synth_tile_hashtable *Hashtable)
+{
+  voxel_synth_tile_hashtable_iterator Iterator = {};
+  Iterator.Table = Hashtable;
+  Iterator.Node = Hashtable->Elements[0];
+  return Iterator;
+}
+
+link_inline voxel_synth_tile_hashtable_iterator
+AtElements(voxel_synth_tile_hashtable *Hashtable)
+{
+  voxel_synth_tile_hashtable_iterator Result = { Hashtable->Size, 0, 0 };
+  return Result;
+}
+
+link_inline voxel_synth_tile *
+GetPtr(voxel_synth_tile_hashtable *Hashtable, voxel_synth_tile_hashtable_iterator Iterator)
+{
+  voxel_synth_tile *Result = {};
+  if (Iterator.Node)
+  {
+    Result = &Iterator.Node->Element;
+  }
+  return Result;
 }
  

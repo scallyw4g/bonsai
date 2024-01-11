@@ -1,8 +1,8 @@
 #define PLATFORM_WINDOW_IMPLEMENTATIONS 1
 #define BONSAI_STDLIB_WORK_QUEUE_IMPLEMENTATION 1
 
-#define DEBUG_SYSTEM_API 1
-#define DEBUG_SYSTEM_LOADER_API 1
+#define BONSAI_DEBUG_SYSTEM_API 1
+#define BONSAI_DEBUG_SYSTEM_LOADER_API 1
 
 #include <bonsai_stdlib/bonsai_stdlib.h>
 #include <bonsai_stdlib/bonsai_stdlib.cpp>
@@ -180,7 +180,7 @@ main( s32 ArgCount, const char ** Args )
   Ensure( EngineApi.OnLibraryLoad(EngineResources) );
   Ensure( Bonsai_Init(EngineResources) ); // <-- EngineResources now initialized
 
-#if DEBUG_SYSTEM_API
+#if BONSAI_DEBUG_SYSTEM_API
   GetDebugState()->SetRenderer(&EngineResources->Ui);
 #endif
 
@@ -257,7 +257,7 @@ main( s32 ArgCount, const char ** Args )
       Info("Game Reload Success");
     }
 
-#if DEBUG_SYSTEM_API
+#if BONSAI_DEBUG_SYSTEM_API
     if ( LibIsNew(DEFAULT_DEBUG_LIB, &LastDebugLibTime) )
     {
       SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
@@ -285,7 +285,7 @@ main( s32 ArgCount, const char ** Args )
       UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
       Info("Debug lib Reload Success");
     }
-#endif // DEBUG_SYSTEM_API
+#endif // BONSAI_DEBUG_SYSTEM_API
 
 #endif // EMCC
 

@@ -21,6 +21,7 @@ ToString(parse_error_code Type)
     case ParseErrorCode_InvalidArgumentType: { Result = CSz("ParseErrorCode_InvalidArgumentType"); } break;
     case ParseErrorCode_InvalidArgumentCount: { Result = CSz("ParseErrorCode_InvalidArgumentCount"); } break;
     case ParseErrorCode_InvalidName: { Result = CSz("ParseErrorCode_InvalidName"); } break;
+    case ParseErrorCode_InvalidTag: { Result = CSz("ParseErrorCode_InvalidTag"); } break;
     case ParseErrorCode_InvalidFunction: { Result = CSz("ParseErrorCode_InvalidFunction"); } break;
     case ParseErrorCode_SyntaxError: { Result = CSz("ParseErrorCode_SyntaxError"); } break;
     case ParseErrorCode_NotImplemented: { Result = CSz("ParseErrorCode_NotImplemented"); } break;

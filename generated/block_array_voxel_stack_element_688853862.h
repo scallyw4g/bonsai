@@ -15,7 +15,7 @@ struct voxel_stack_element_block_array_index
 
 struct voxel_stack_element_block_array
 {
-  voxel_stack_element_block First;
+  voxel_stack_element_block *First;
   voxel_stack_element_block *Current;
   memory_arena *Memory;
 };
@@ -61,8 +61,8 @@ link_internal voxel_stack_element_block_array_index
 ZerothIndex(voxel_stack_element_block_array *Arr)
 {
   voxel_stack_element_block_array_index Result = {};
-  Result.Block = &Arr->First;
-  Assert(Result.Block->Index == 0);
+  Result.Block = Arr->First;
+  /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
@@ -128,7 +128,7 @@ GetPtr(voxel_stack_element_block_array *Arr, umm Index)
   umm ElementIndex = Index % 8;
 
   umm AtBlock = 0;
-  voxel_stack_element_block *Block = &Arr->First;
+  voxel_stack_element_block *Block = Arr->First;
   while (AtBlock++ < BlockIndex)
   {
     Block = Block->Next;
@@ -175,7 +175,7 @@ RemoveUnordered(voxel_stack_element_block_array *Array, voxel_stack_element_bloc
   if (Array->Current->At == 0)
   {
     // Walk the chain till we get to the second-last one
-    voxel_stack_element_block *Current = &Array->First;
+    voxel_stack_element_block *Current = Array->First;
     voxel_stack_element_block *LastB = LastI.Block;
 
     while (Current->Next && Current->Next != LastB)
@@ -193,7 +193,7 @@ Push(voxel_stack_element_block_array *Array, voxel_stack_element *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 
-  if (Array->Current == 0) { Array->First = *Allocate_voxel_stack_element_block(Array->Memory); Array->Current = &Array->First; }
+  if (Array->First == 0) { Array->First = Allocate_voxel_stack_element_block(Array->Memory); Array->Current = Array->First; }
 
   if (Array->Current->At == 8)
   {

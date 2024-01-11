@@ -15,7 +15,7 @@ struct texture_block_array_index
 
 struct texture_block_array
 {
-  texture_block First;
+  texture_block *First;
   texture_block *Current;
   memory_arena *Memory;
 };
@@ -61,8 +61,8 @@ link_internal texture_block_array_index
 ZerothIndex(texture_block_array *Arr)
 {
   texture_block_array_index Result = {};
-  Result.Block = &Arr->First;
-  Assert(Result.Block->Index == 0);
+  Result.Block = Arr->First;
+  /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
@@ -128,7 +128,7 @@ GetPtr(texture_block_array *Arr, umm Index)
   umm ElementIndex = Index % 8;
 
   umm AtBlock = 0;
-  texture_block *Block = &Arr->First;
+  texture_block *Block = Arr->First;
   while (AtBlock++ < BlockIndex)
   {
     Block = Block->Next;

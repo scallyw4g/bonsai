@@ -10,7 +10,6 @@ struct parser_hashtable
   parser_linked_list_node **Elements;
   /* OWNED_BY_THREAD_MEMBER() */
 };
-
 link_internal parser_linked_list_node *
 Allocate_parser_linked_list_node(memory_arena *Memory)
 {
@@ -71,5 +70,66 @@ Insert(parser Element, parser_hashtable *Table, memory_arena *Memory)
   Bucket->Element = Element;
   Insert(Bucket, Table);
   return &Bucket->Element;
+}
+
+//
+// Iterator impl.
+//
+
+struct parser_hashtable_iterator
+{
+  umm HashIndex;
+  parser_hashtable *Table;
+  parser_linked_list_node *Node;
+};
+
+link_internal parser_hashtable_iterator
+operator++( parser_hashtable_iterator &Iterator )
+{
+  if (Iterator.Node)
+  {
+    Iterator.Node = Iterator.Node->Next;
+  }
+  else
+  {
+    Assert (Iterator.HashIndex < Iterator.Table->Size );
+    Iterator.Node = Iterator.Table->Elements[++Iterator.HashIndex];
+  }
+
+  return Iterator;
+}
+
+link_internal b32
+operator<( parser_hashtable_iterator I0, parser_hashtable_iterator I1)
+{
+  b32 Result = I0.HashIndex < I1.HashIndex;
+  return Result;
+}
+
+link_inline parser_hashtable_iterator
+ZerothIndex(parser_hashtable *Hashtable)
+{
+  parser_hashtable_iterator Iterator = {};
+  Iterator.Table = Hashtable;
+  Iterator.Node = Hashtable->Elements[0];
+  return Iterator;
+}
+
+link_inline parser_hashtable_iterator
+AtElements(parser_hashtable *Hashtable)
+{
+  parser_hashtable_iterator Result = { Hashtable->Size, 0, 0 };
+  return Result;
+}
+
+link_inline parser *
+GetPtr(parser_hashtable *Hashtable, parser_hashtable_iterator Iterator)
+{
+  parser *Result = {};
+  if (Iterator.Node)
+  {
+    Result = &Iterator.Node->Element;
+  }
+  return Result;
 }
  

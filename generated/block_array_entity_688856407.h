@@ -15,7 +15,7 @@ struct entity_block_array_index
 
 struct entity_block_array
 {
-  entity_block First;
+  entity_block *First;
   entity_block *Current;
   memory_arena *Memory;
 };
@@ -61,8 +61,8 @@ link_internal entity_block_array_index
 ZerothIndex(entity_block_array *Arr)
 {
   entity_block_array_index Result = {};
-  Result.Block = &Arr->First;
-  Assert(Result.Block->Index == 0);
+  Result.Block = Arr->First;
+  /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
@@ -128,7 +128,7 @@ GetPtr(entity_block_array *Arr, umm Index)
   umm ElementIndex = Index % 8;
 
   umm AtBlock = 0;
-  entity_block *Block = &Arr->First;
+  entity_block *Block = Arr->First;
   while (AtBlock++ < BlockIndex)
   {
     Block = Block->Next;
@@ -175,7 +175,7 @@ RemoveUnordered(entity_block_array *Array, entity_block_array_index Index)
   if (Array->Current->At == 0)
   {
     // Walk the chain till we get to the second-last one
-    entity_block *Current = &Array->First;
+    entity_block *Current = Array->First;
     entity_block *LastB = LastI.Block;
 
     while (Current->Next && Current->Next != LastB)
@@ -193,7 +193,7 @@ Push(entity_block_array *Array, entity *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 
-  if (Array->Current == 0) { Array->First = *Allocate_entity_block(Array->Memory); Array->Current = &Array->First; }
+  if (Array->First == 0) { Array->First = Allocate_entity_block(Array->Memory); Array->Current = Array->First; }
 
   if (Array->Current->At == 8)
   {

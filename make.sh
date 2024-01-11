@@ -204,7 +204,7 @@ function BuildExamples
     echo -e "$Building $executable"
     SetOutputBinaryPathBasename "$executable" "$BIN"
     clang++                     \
-      -D DEBUG_SYSTEM_API=1     \
+      -D BONSAI_DEBUG_SYSTEM_API=1 \
       $OPTIMIZATION_LEVEL       \
       $CXX_OPTIONS              \
       $BONSAI_INTERNAL          \

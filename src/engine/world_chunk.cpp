@@ -4341,7 +4341,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
     Leak("Leaking mesh");
   };
 
-#if DEBUG_SYSTEM_API
+#if BONSAI_DEBUG_SYSTEM_API
   AtomicWrite((volatile void **)&GetDebugState()->PickedChunk, (void*) PickedChunk);
 #endif
 
@@ -4884,7 +4884,7 @@ MousePickVoxel(engine_resources *Resources)
       Picked = Result.Tag;
       PickedVoxel = Result.Value;
 
-#if DEBUG_SYSTEM_API
+#if BONSAI_DEBUG_SYSTEM_API
       if (Picked)
       {
         GetDebugState()->PickedChunk = &PickedVoxel.Chunks[PickedVoxel_FirstFilled];
@@ -4981,7 +4981,7 @@ BufferChunkMesh( graphics *Graphics,
   }
 }
 
-#if DEBUG_SYSTEM_API
+#if BONSAI_DEBUG_SYSTEM_API
 link_internal void
 Debug_DoWorldChunkPicking(engine_resources *Resources)
 {
@@ -5217,5 +5217,5 @@ DrawPickedChunks(renderer_2d* Group, render_entity_to_texture_group *PickedChunk
 
   return HotChunk;
 }
-#endif // DEBUG_SYSTEM_API
+#endif // BONSAI_DEBUG_SYSTEM_API
 

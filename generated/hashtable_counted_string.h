@@ -10,7 +10,6 @@ struct counted_string_hashtable
   counted_string_linked_list_node **Elements;
   /* OWNED_BY_THREAD_MEMBER() */
 };
-
 link_internal counted_string_linked_list_node *
 Allocate_counted_string_linked_list_node(memory_arena *Memory)
 {
@@ -71,5 +70,66 @@ Insert(counted_string Element, counted_string_hashtable *Table, memory_arena *Me
   Bucket->Element = Element;
   Insert(Bucket, Table);
   return &Bucket->Element;
+}
+
+//
+// Iterator impl.
+//
+
+struct counted_string_hashtable_iterator
+{
+  umm HashIndex;
+  counted_string_hashtable *Table;
+  counted_string_linked_list_node *Node;
+};
+
+link_internal counted_string_hashtable_iterator
+operator++( counted_string_hashtable_iterator &Iterator )
+{
+  if (Iterator.Node)
+  {
+    Iterator.Node = Iterator.Node->Next;
+  }
+  else
+  {
+    Assert (Iterator.HashIndex < Iterator.Table->Size );
+    Iterator.Node = Iterator.Table->Elements[++Iterator.HashIndex];
+  }
+
+  return Iterator;
+}
+
+link_internal b32
+operator<( counted_string_hashtable_iterator I0, counted_string_hashtable_iterator I1)
+{
+  b32 Result = I0.HashIndex < I1.HashIndex;
+  return Result;
+}
+
+link_inline counted_string_hashtable_iterator
+ZerothIndex(counted_string_hashtable *Hashtable)
+{
+  counted_string_hashtable_iterator Iterator = {};
+  Iterator.Table = Hashtable;
+  Iterator.Node = Hashtable->Elements[0];
+  return Iterator;
+}
+
+link_inline counted_string_hashtable_iterator
+AtElements(counted_string_hashtable *Hashtable)
+{
+  counted_string_hashtable_iterator Result = { Hashtable->Size, 0, 0 };
+  return Result;
+}
+
+link_inline counted_string *
+GetPtr(counted_string_hashtable *Hashtable, counted_string_hashtable_iterator Iterator)
+{
+  counted_string *Result = {};
+  if (Iterator.Node)
+  {
+    Result = &Iterator.Node->Element;
+  }
+  return Result;
 }
  

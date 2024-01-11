@@ -15,7 +15,7 @@ struct asset_thumbnail_block_array_index
 
 struct asset_thumbnail_block_array
 {
-  asset_thumbnail_block First;
+  asset_thumbnail_block *First;
   asset_thumbnail_block *Current;
   memory_arena *Memory;
 };
@@ -61,8 +61,8 @@ link_internal asset_thumbnail_block_array_index
 ZerothIndex(asset_thumbnail_block_array *Arr)
 {
   asset_thumbnail_block_array_index Result = {};
-  Result.Block = &Arr->First;
-  Assert(Result.Block->Index == 0);
+  Result.Block = Arr->First;
+  /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
@@ -128,7 +128,7 @@ GetPtr(asset_thumbnail_block_array *Arr, umm Index)
   umm ElementIndex = Index % 8;
 
   umm AtBlock = 0;
-  asset_thumbnail_block *Block = &Arr->First;
+  asset_thumbnail_block *Block = Arr->First;
   while (AtBlock++ < BlockIndex)
   {
     Block = Block->Next;

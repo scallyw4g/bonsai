@@ -83,9 +83,5 @@ struct game_state
 
   turn_mode TurnMode;
   r32 TransitionDuration;
-
-#if DEBUG_SYSTEM_API
-  get_debug_state_proc GetDebugState;
-#endif
 };
 

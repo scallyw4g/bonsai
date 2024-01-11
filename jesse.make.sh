@@ -34,10 +34,10 @@
 # ./make.sh BuildTests
 
 # OPT="-O2"
-./make.sh $OPT \
-  BuildSingleExample examples/turn_based \
-  BuildExecutables \
-  BuildDebugSystem \
+# ./make.sh $OPT \
+#   BuildSingleExample examples/turn_based \
+#   BuildExecutables \
+#   BuildDebugSystem \
   # BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
   # BuildSingleExample examples/the_wanderer \
   # BuildSingleExample examples/graveyard \
@@ -47,4 +47,4 @@
   # BuildSingleExample examples/transparency \
   # BuildTests \
 
-# ./make.sh $OPT BuildAll
+./make.sh $OPT BuildAll

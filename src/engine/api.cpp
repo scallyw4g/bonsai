@@ -7,7 +7,7 @@ Bonsai_OnLibraryLoad(engine_resources *Resources)
   if (ThreadLocal_ThreadIndex == -1) { SetThreadLocal_ThreadIndex(0); }
   else { Assert(ThreadLocal_ThreadIndex == 0); }
 
-#if DEBUG_SYSTEM_API
+#if BONSAI_DEBUG_SYSTEM_API
   Global_DebugStatePointer = Resources->DebugState;
 #endif
 
@@ -221,7 +221,7 @@ Bonsai_SimulateAndBufferGeometry(engine_resources *Resources)
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
-#if 0 // DEBUG_SYSTEM_API
+#if 0 // BONSAI_DEBUG_SYSTEM_API
   if (GetDebugState()->UiGroup.PressedInteractionId != StringHash("GameViewport"))
   {
     GameInput = 0;
@@ -236,7 +236,7 @@ Bonsai_SimulateAndBufferGeometry(engine_resources *Resources)
 
   UnsignalFutex(&Resources->Stdlib.Plat.HighPriorityModeFutex);
 
-#if DEBUG_SYSTEM_API
+#if BONSAI_DEBUG_SYSTEM_API
   Debug_DoWorldChunkPicking(Resources);
 #endif
 

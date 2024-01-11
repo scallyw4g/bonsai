@@ -268,41 +268,28 @@ DoLevelWindow(engine_resources *Engine)
         Ensure(Read_u64(&LevelBytes) == LEVEL_FILE_DEBUG_OBJECT_DELIM);
 
 #if 1
+        b32 Error = False;
+
         s32 EntityCount = Cast(s32, LevelHeader.EntityCount);
         RangeIterator(EntityIndex, EntityCount)
         {
           entity *E = EntityTable[EntityIndex];
-          /* if (Deserialize(&LevelBytes, E, Thread->PermMemory)) */
+          if (Deserialize(&LevelBytes, E, Thread->PermMemory) == False)
           {
-          }
-          /* else */
-          {
-            entity_1 E1 = {};
-            if (Deserialize(&LevelBytes, &E1, Thread->PermMemory))
-            {
-              Marshal(&E1, E);
-            }
-            else
-            {
-              entity_0 E0 = {};
-              /* if (Deserialize(&LevelBytes, &E0, Thread->PermMemory)) */
-              {
-                /* Marshal(&E0, &E1); */
-                /* Marshal(&E1, E); */
-              }
-              /* else */
-              {
-                // Completely failed deserializing 
-              }
-            }
+            SoftError("Could not deserialize entity (%d), bailing.", EntityIndex);
+            Error = True;
+            break;
           }
         }
 
-        v3_cursor *Palette = GetColorPalette();
-        Palette->At = Palette->Start;
-        Deserialize(&LevelBytes, Palette, Thread->PermMemory);
+        if (Error == False)
+        {
+          v3_cursor *Palette = GetColorPalette();
+          Palette->At = Palette->Start;
+          Deserialize(&LevelBytes, Palette, Thread->PermMemory);
+          Assert(LevelBytes.At == LevelBytes.End);
+        }
 
-        Assert(LevelBytes.At == LevelBytes.End);
 #endif
 
         Assert(ThreadLocal_ThreadIndex == 0);

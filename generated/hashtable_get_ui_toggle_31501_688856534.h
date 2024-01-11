@@ -23,7 +23,5 @@ GetById( ui_toggle_hashtable *Table, umm Id )
   }
 
   return Result;
-
-
 }
 
