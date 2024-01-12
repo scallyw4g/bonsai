@@ -37,7 +37,8 @@ DoEditorUi(renderer_2d *Ui, particle *Element, cs Name, EDITOR_UI_FUNCTION_PROTO
   }
   else
   {
-    PushColumn(Ui, FSz("%S = (null)", Name));
+    PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushNewRow(Ui);
   }
 

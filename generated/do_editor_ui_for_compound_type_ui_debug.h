@@ -29,7 +29,7 @@ DoEditorUi(renderer_2d *Ui, ui_debug *Element, cs Name, EDITOR_UI_FUNCTION_PROTO
 
 
 
-      DoEditorUi(Ui, &Element->DebugBreakOnClick, CSz("b8 DebugBreakOnClick"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, &Element->DebugBreakOnElementClick, CSz("b8 DebugBreakOnElementClick"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
       PushNewRow(Ui);
 
 
@@ -44,7 +44,8 @@ DoEditorUi(renderer_2d *Ui, ui_debug *Element, cs Name, EDITOR_UI_FUNCTION_PROTO
   }
   else
   {
-    PushColumn(Ui, FSz("%S = (null)", Name));
+    PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushNewRow(Ui);
   }
 

@@ -111,11 +111,13 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, cs Name, EDITOR_UI_FUNCTIO
       RangeIterator(ArrayIndex, 6)
       {
         DoEditorUi(Ui, Element->Colors+ArrayIndex, CSz("u8 Colors"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+ PushNewRow(Ui); 
       }
 
       RangeIterator(ArrayIndex, (4096))
       {
         DoEditorUi(Ui, Element->Particles+ArrayIndex, CSz("particle Particles"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+        
       }
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
@@ -125,7 +127,8 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, cs Name, EDITOR_UI_FUNCTIO
   }
   else
   {
-    PushColumn(Ui, FSz("%S = (null)", Name));
+    PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushNewRow(Ui);
   }
 

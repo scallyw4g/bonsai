@@ -19,7 +19,8 @@ DoEditorUi(renderer_2d *Ui, voxel_lighting *Element, cs Name, EDITOR_UI_FUNCTION
   }
   else
   {
-    PushColumn(Ui, FSz("%S = (null)", Name));
+    PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushNewRow(Ui);
   }
 

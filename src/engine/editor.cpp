@@ -11,16 +11,16 @@ GetUiDebug()
 link_internal void
 DebugSlider(renderer_2d *Ui, r32 *Value, cs Name, r32 Min, r32 Max, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  /* u32 Start = StartColumn(Ui); */
-  /*   PushTableStart(Ui); */
-      if (Name) { PushColumn(Ui, CS(Name), Style, Padding, ColumnRenderParam_RightAlign); }
+  u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushTableStart(Ui);
+      if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
       /* PushColumn(Ui, CS(*Value)); */
 
       auto Range = Max-Min;
       r32 PercFilled = ((*Value)-Min)/Range;
 
       r32 Width = 125.f;
-      interactable_handle BargraphButton = PushButtonStart(Ui, (umm)(umm("DebugSlider") ^ umm(Value)));
+      interactable_handle BargraphButton = PushButtonStart(Ui, UiId("DebugSlider", Value));
         PushBargraph(Ui, PercFilled, V3(0.75f), V3(0.4f), Width);
       PushButtonEnd(Ui);
 
@@ -31,21 +31,19 @@ DebugSlider(renderer_2d *Ui, r32 *Value, cs Name, r32 Min, r32 Max, EDITOR_UI_FU
         r32 NewValue = (Range*NewPerc) + Min;
         *Value = NewValue;
       }
-    /* PushTableEnd(Ui); */
-  /* EndColumn(Ui, Start); */
+    PushTableEnd(Ui);
+  EndColumn(Ui, Start);
 }
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, r32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
-  /* else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } */
 
-  u32 Start = StartColumn(Ui);
+  u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushTableStart(Ui);
       if (Value)
       {
-        /* if (*Value >= 0.f) { PushColumn(Ui, CSz(" ")); } */
         if (Button(Ui, CSz("-"), UiId(Value, "decrement"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1.f; }
 
         if (*Value >= 10.f)
@@ -58,39 +56,8 @@ DoEditorUi(renderer_2d *Ui, r32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
         }
 
         if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1.f; }
-#if 1
-          DebugSlider(Ui, Value, {}, 0.f, 32.f, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-          /* PushNewRow(Ui); */
-#else
-        if (*Value <= 2.f)
-        {
-          DebugSlider_(Ui, Value, 0, -2.f, 2.f);
-        }
-        else if (*Value >= 2.f && *Value <= 5.f)
-        {
-          DebugSlider_(Ui, Value, 0, 2.f, 5.f);
-        }
-        else if (*Value >= 5.f && *Value <= 10.f)
-        {
-          DebugSlider_(Ui, Value, 0, 5.f, 10.f);
-        }
-        else if (*Value >= 10.f && *Value <= 50.f)
-        {
-          DebugSlider_(Ui, Value, 0, 10.f, 50.f);
-        }
-        else if (*Value >= 50.f && *Value <= 100.f)
-        {
-          DebugSlider_(Ui, Value, 0, 50.f, 100.f);
-        }
-        else if (*Value >= 100.f && *Value <= 1000.f)
-        {
-          DebugSlider_(Ui, Value, 0, 100.f, 1000.f);
-        }
-        else
-        {
-          DebugSlider_(Ui, Value, 0, 1000.f, 10000.f);
-        }
-#endif
+
+        DebugSlider(Ui, Value, {}, 0.f, 32.f, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
       }
       else
       {
@@ -110,7 +77,7 @@ DoEditorUi(renderer_2d *Ui, b8 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULT
        *Value ? CSz("True") : CSz("False") :
        CSz("(null)");
 
-  PushColumn(Ui, Display);
+  PushColumn(Ui, Display, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 }
 
 
@@ -195,7 +162,8 @@ DoEditorUi(renderer_2d *Ui, geo_u3d **ElementP, cs Name, EDITOR_UI_FUNCTION_PROT
   }
   else
   {
-    PushColumn(Ui, FSz("%S = (null)", Name));
+    PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushNewRow(Ui);
   }
 }
@@ -259,6 +227,7 @@ DoEditorUi(renderer_2d *Ui, void *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAU
   Value ?
     PushColumn(Ui, FSz("0x%x",umm(Value)), EDITOR_UI_FUNCTION_INSTANCE_NAMES) :
     PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  PushNewRow(Ui);
 }
 
 

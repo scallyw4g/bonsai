@@ -6,7 +6,7 @@ DoEditorUi(renderer_2d *Ui, v4i *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
 
   if (Value)
   {
-    u32 Start = StartColumn(Ui);
+    u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushTableStart(Ui);
     DoEditorUi(Ui, &Value->E[0], {});
     DoEditorUi(Ui, &Value->E[1], {});
@@ -28,7 +28,7 @@ DoEditorUi(renderer_2d *Ui, v4 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULT
 
   if (Value)
   {
-    u32 Start = StartColumn(Ui);
+    u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushTableStart(Ui);
     DoEditorUi(Ui, &Value->E[0], {});
     DoEditorUi(Ui, &Value->E[1], {});
@@ -50,7 +50,7 @@ DoEditorUi(renderer_2d *Ui, v3i *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
 
   if (Value)
   {
-    u32 Start = StartColumn(Ui);
+    u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushTableStart(Ui);
     DoEditorUi(Ui, &Value->E[0], {});
     DoEditorUi(Ui, &Value->E[1], {});
@@ -71,7 +71,7 @@ DoEditorUi(renderer_2d *Ui, v3 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULT
 
   if (Value)
   {
-    u32 Start = StartColumn(Ui);
+    u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushTableStart(Ui);
     DoEditorUi(Ui, &Value->E[0], {});
     DoEditorUi(Ui, &Value->E[1], {});
@@ -92,7 +92,7 @@ DoEditorUi(renderer_2d *Ui, v2 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULT
 
   if (Value)
   {
-    u32 Start = StartColumn(Ui);
+    u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushTableStart(Ui);
     DoEditorUi(Ui, &Value->E[0], {});
     DoEditorUi(Ui, &Value->E[1], {});
@@ -112,7 +112,7 @@ DoEditorUi(renderer_2d *Ui, Quaternion *Value, cs Name, EDITOR_UI_FUNCTION_PROTO
 
   if (Value)
   {
-    u32 Start = StartColumn(Ui);
+    u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushTableStart(Ui);
     DoEditorUi(Ui, &Value->E[0], {});
     DoEditorUi(Ui, &Value->E[1], {});

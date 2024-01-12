@@ -90,6 +90,7 @@ DoEditorUi(renderer_2d *Ui, world_chunk *Element, cs Name, EDITOR_UI_FUNCTION_PR
       RangeIterator(ArrayIndex, 32)
       {
         DoEditorUi(Ui, Element->_Pad1+ArrayIndex, CSz("u8 _Pad1"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+ PushNewRow(Ui); 
       }
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
@@ -99,7 +100,8 @@ DoEditorUi(renderer_2d *Ui, world_chunk *Element, cs Name, EDITOR_UI_FUNCTION_PR
   }
   else
   {
-    PushColumn(Ui, FSz("%S = (null)", Name));
+    PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushNewRow(Ui);
   }
 

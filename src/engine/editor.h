@@ -13,7 +13,7 @@ poof(
 
             if (Value)
             {
-              u32 Start = StartColumn(Ui);
+              u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
                 PushTableStart(Ui);
                   E.map_array(e_index)
                   {
@@ -45,18 +45,17 @@ poof(
         if (Value)
         {
           PushDebugCommand(Ui);
-          u32 Start = StartColumn(Ui);
+          u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
             PushTableStart(Ui);
               if (Button(Ui, CSz("-"), UiId(Value, "decrement"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1; }
                   PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
               if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1; }
             PushTableEnd(Ui);
           EndColumn(Ui, Start);
-
         }
         else
         {
-          PushColumn(Ui, CSz("(null)"));
+          PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
           PushNewRow(Ui);
         }
       }
@@ -92,6 +91,7 @@ poof(
                 RangeIterator(ArrayIndex, member.array)
                 {
                   DoEditorUi(Ui, Element->(member.name)+ArrayIndex, CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+                  member.is_primitive?  { PushNewRow(Ui); }
                 }
               }
               {
@@ -119,7 +119,8 @@ poof(
       }
       else
       {
-        PushColumn(Ui, FSz("  %S = (null)", Name));
+        PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+        PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
         PushNewRow(Ui);
       }
 
@@ -167,16 +168,19 @@ poof(
       {
         if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Container, Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
         {
+          PushNewRow(Ui);
           IterateOver(Container, Element, ElementIndex)
           {
             DoEditorUi(Ui, Element, CS(ElementIndex), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+            PushNewRow(Ui);
           }
         }
+        PushNewRow(Ui);
       }
       else
       {
-        PushColumn(Ui, FSz("  %S = (null)", Name));
-        PushNewRow(Ui);
+        PushColumn(Ui, FSz("%S", Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+        PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
       }
     }
   }
