@@ -256,9 +256,6 @@ Bonsai_SimulateAndBufferGeometry(engine_resources *Resources)
   SimulateEntities(Resources, Plat->dt, World->VisibleRegion, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, &Plat->HighPriority);
   /* DispatchSimulateParticleSystemJobs(&Plat->HighPriority, EntityTable, World->ChunkDim, &GpuMap->Buffer, Graphics, Plat->dt); */
 
-  BufferEntities( EntityTable, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, Graphics, World, Plat->dt);
-  /* BufferEntities( EntityTable, &Graphics->Transparency.GpuBuffer.Buffer, Graphics, World, Plat->dt); */
-
   UnsignalFutex(&Resources->Stdlib.Plat.HighPriorityModeFutex);
 
 #if BONSAI_DEBUG_SYSTEM_API
@@ -349,6 +346,7 @@ Bonsai_Render(engine_resources *Resources)
   EngineDebug->Render.BytesTransGeoLastFrame = Graphics->Transparency.GpuBuffer.Buffer.At;
 
   DrawWorldToGBuffer(Resources);
+
   DrawWorldToShadowMap(Resources);
 
   // TODO(Jesse): Move into engine debug
@@ -359,11 +357,9 @@ Bonsai_Render(engine_resources *Resources)
 
   if (GpuMap->Buffer.At)
   {
-    // NOTE(Jesse): GBuffer and ShadowMap must be rendered in series because they
-    // both do operate on the total scene geometry. The rest of the render passes
-    // operate on the textures they create and only render a quad.
-    RenderGBuffer(GpuMap, Graphics);
-    RenderShadowMap(GpuMap, Graphics);
+    RenderImmediateGeometryToGBuffer(GpuMap, Graphics);
+    // Comment this out to not cast shadows from immediate geometry
+    RenderImmediateGeometryToShadowMap(GpuMap, Graphics);
   }
 
   Clear(&GpuMap->Buffer);

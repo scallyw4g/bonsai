@@ -188,8 +188,7 @@ DoEntityWindow(engine_resources *Engine)
         RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
         {
           entity *Entity = EntityTable[EntityIndex];
-          DoEditorUi(Ui, Entity, FSz("(%d)(%S)", EntityIndex, ToString(Entity->State)) );
-          break;
+          DoEditorUi(Ui, Entity, FSz("(%d) (%S) (%S)", EntityIndex, ToString(Entity->State), Entity->AssetId.FileNode.Name) );
         }
       PushTableEnd(Ui);
 
@@ -364,9 +363,8 @@ DoAssetWindow(engine_resources *Engine)
 
     if (EngineDebug->SelectedAsset.FileNode.Type)
     {
-      v2 AssetDetailWindowDim = {{400.f, 400.f}};
       local_persist window_layout AssetViewWindow =
-        WindowLayout("Asset View", {}, AssetDetailWindowDim, window_layout_flags(WindowLayoutFlag_StartupAlign_Right|WindowLayoutFlag_Default));
+        WindowLayout("Asset View", {}, {}, window_layout_flags(WindowLayoutFlag_StartupAlign_Right|WindowLayoutFlag_Default));
       PushWindowStart(Ui, &AssetViewWindow);
 
 
@@ -471,7 +469,7 @@ DoAssetWindow(engine_resources *Engine)
                       SetupGBufferShader(Graphics);
                       v3 Basis = GetRenderP(Engine, EntityOrigin) + V3(0.f, 0.f, AssetHalfDim.z);
                       /* v3 Basis = V3(0,0,20); */
-                      DrawLod(GetEngineResources(), &Model->Meshes, 0.f, Basis);
+                      DrawLod(GetEngineResources(), &Graphics->gBuffer->gBufferShader, &Model->Meshes, 0.f, Basis);
                       TeardownGBufferShader(Graphics);
                     }
 

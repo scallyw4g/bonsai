@@ -20,7 +20,6 @@ struct shadow_render_group
   u32 FramebufferName;
   s32 MVP_ID;
 
-  shader DebugTextureShader;
   shader DepthShader;
 
   m4 MVP;

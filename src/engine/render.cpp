@@ -86,7 +86,7 @@ GetShadowMapMVP(light *Sun, v3 FrustumCenter)
 }
 
 link_internal void
-RenderShadowMap(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
+RenderImmediateGeometryToShadowMap(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
 {
   TIMED_FUNCTION();
 
@@ -101,6 +101,8 @@ RenderShadowMap(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
   SG->MVP = GetShadowMapMVP(&SG->Sun, FrustCenter);
   GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]);
 
+  BindUniform(&SG->DepthShader, "Model", &IdentityMatrix);
+
   Draw(GpuMap->Buffer.At);
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -109,7 +111,7 @@ RenderShadowMap(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
 }
 
 link_internal void
-RenderGBuffer(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
+RenderImmediateGeometryToGBuffer(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
 {
   TIMED_FUNCTION();
 
@@ -973,7 +975,7 @@ SyncGpuBuffersImmediate(engine_resources *Engine, lod_element_buffer *Meshes)
 
 
 link_internal void
-DrawLod(engine_resources *Engine, lod_element_buffer *Meshes, r32 DistanceSquared, v3 Basis, Quaternion Rotation = Quaternion(), v3 Scale = V3(1.f))
+DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r32 DistanceSquared, v3 Basis, Quaternion Rotation = Quaternion(), v3 Scale = V3(1.f))
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -1010,8 +1012,8 @@ DrawLod(engine_resources *Engine, lod_element_buffer *Meshes, r32 DistanceSquare
 
   if (MeshBit != MeshBit_None)
   {
-    m4 ModelMatrix = Translate(Basis) * ScaleTransform(Scale) * RotateTransform(Rotation);
-    BindUniform(&Graphics->gBuffer->gBufferShader, "Model", &ModelMatrix);
+    m4 LocalTransform = Translate(Basis) * ScaleTransform(Scale) * RotateTransform(Rotation);
+    BindUniform(Shader, "Model", &LocalTransform);
     DrawGpuBufferImmediate(Graphics, &Meshes->GpuBufferHandles[ToIndex(MeshBit)]);
   }
 }
@@ -1020,7 +1022,7 @@ link_internal void
 RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, model *Model, v3 Offset)
 {
   SetupRenderToTextureShader(Engine, Thumb->Texture, &Thumb->Camera);
-  DrawLod(Engine, &Model->Meshes, 0.f, Offset);
+  DrawLod(Engine, &Engine->RTTGroup.Shader, &Model->Meshes, 0.f, Offset);
 }
 
 link_internal void
@@ -1047,6 +1049,7 @@ RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, untextured_3d_
 
 link_internal void
 DrawEntity(
+    shader *Shader,
     untextured_3d_geometry_buffer* Dest,
     untextured_3d_geometry_buffer* TransparentDest,
     entity *Entity, animation *Animation, graphics *Graphics, chunk_dimension WorldChunkDim, r32 dt)
@@ -1055,16 +1058,20 @@ DrawEntity(
 
   if (Spawned(Entity))
   {
-    if (GetEngineDebug()->DrawEntityCollisionVolumes)
-    {
-      DrawEntityCollisionVolume(Entity, Dest, Graphics, WorldChunkDim);
-    }
-
+    // gBuffer, once for shadow) so we should move this to the simulation loop
+    // TODO(Jesse): This function gets called twice per frame (once for
     v3 AnimationOffset = {};
-    if (Animation)
     {
-      Animation->t += dt;
-      AnimationOffset = GetInterpolatedPosition(Animation);
+      if (GetEngineDebug()->DrawEntityCollisionVolumes)
+      {
+        DrawEntityCollisionVolume(Entity, Dest, Graphics, WorldChunkDim);
+      }
+
+      if (Animation)
+      {
+        Animation->t += dt;
+        AnimationOffset = GetInterpolatedPosition(Animation);
+      }
     }
 
     maybe_asset_ptr MaybeAsset = GetAssetPtr(GetEngineResources(), &Entity->AssetId);
@@ -1085,7 +1092,7 @@ DrawEntity(
 
         v3 Offset = AnimationOffset + Entity->Scale*(V3(Model->Dim)/2.f);
         v3 Basis = GetRenderP(GetEngineResources(), Entity->P) + Offset;
-        DrawLod(GetEngineResources(), &Model->Meshes, 0.f, Basis, FromEuler(Entity->EulerAngles), V3(Entity->Scale));
+        DrawLod(GetEngineResources(), Shader, &Model->Meshes, 0.f, Basis, FromEuler(Entity->EulerAngles), V3(Entity->Scale));
       }
     }
   }
@@ -1115,8 +1122,26 @@ TeardownGBufferShader(graphics *Graphics)
 }
 
 link_internal void
-BufferEntities( entity **EntityTable, untextured_3d_geometry_buffer* Dest, untextured_3d_geometry_buffer* TransparencyDest,
-                graphics *Graphics, world *World, r32 dt)
+DrawEntities( shader *Shader,
+              entity **EntityTable,
+              untextured_3d_geometry_buffer* Dest,
+              untextured_3d_geometry_buffer* TransparencyDest,
+              graphics *Graphics, world *World, r32 dt)
+{
+  TIMED_FUNCTION();
+
+  RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
+  {
+    entity *Entity = EntityTable[EntityIndex];
+    DrawEntity(Shader,  Dest, TransparencyDest, Entity, 0, Graphics, World->ChunkDim, dt);
+  }
+}
+
+link_internal void
+DrawEntitiesToGBuffer( entity **EntityTable,
+                       untextured_3d_geometry_buffer* Dest,
+                       untextured_3d_geometry_buffer* TransparencyDest,
+                       graphics *Graphics, world *World, r32 dt)
 {
   TIMED_FUNCTION();
 
@@ -1128,11 +1153,7 @@ BufferEntities( entity **EntityTable, untextured_3d_geometry_buffer* Dest, untex
 
   SetupGBufferShader(Graphics);
 
-  RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
-  {
-    entity *Entity = EntityTable[EntityIndex];
-    DrawEntity( Dest, TransparencyDest, Entity, 0, Graphics, World->ChunkDim, dt);
-  }
+  DrawEntities(&Graphics->gBuffer->gBufferShader, EntityTable, Dest, TransparencyDest, Graphics, World, dt);
 
   Graphics->Settings.DrawMajorGrid = OldMajorGrid;
   Graphics->Settings.DrawMinorGrid = OldMinorGrid;
@@ -1187,7 +1208,7 @@ DrawWorldToGBuffer(engine_resources *Engine)
 
         SyncGpuBuffersImmediate(Engine, &Chunk->Meshes);
         v3 Basis = GetRenderP(GetEngineResources(), Chunk->WorldP);
-        DrawLod(Engine, &Chunk->Meshes, 0.f, Basis);
+        DrawLod(Engine, &Graphics->gBuffer->gBufferShader, &Chunk->Meshes, 0.f, Basis);
 
 
 #if 0
@@ -1213,6 +1234,8 @@ DrawWorldToGBuffer(engine_resources *Engine)
       { InvalidCodePath(); }
     }
   }
+
+  DrawEntitiesToGBuffer( EntityTable, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, Graphics, World, Plat->dt);
 
   TeardownGBufferShader(Graphics);
 
@@ -1253,12 +1276,11 @@ DrawWorldToShadowMap(engine_resources *Engine)
   SG->MVP = GetShadowMapMVP(&SG->Sun, FrustCenter);
   GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]);
 
-  /* Draw(GpuMap->Buffer.At); */
-
   GL.Disable(GL_CULL_FACE);
 
-  AssertNoGlErrors;
+  DrawEntities( &SG->DepthShader, EntityTable, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, Graphics, World, Plat->dt);
 
+  AssertNoGlErrors;
 
   for (s32 x = Min.x; x < Max.x; ++ x)
   for (s32 y = Min.y; y < Max.y; ++ y)
@@ -1313,9 +1335,7 @@ DrawWorldToShadowMap(engine_resources *Engine)
           {
             v3 Basis = GetRenderP(GetEngineResources(), Chunk->WorldP);
             m4 OffsetM = Translate(Basis);
-
-            m4 MVP = SG->MVP * OffsetM;
-            BindUniform(&SG->DepthShader, "depthMVP", &MVP);
+            BindUniform(&SG->DepthShader, "Model", &OffsetM);
 
             DrawGpuBufferImmediate(Graphics, &Chunk->Meshes.GpuBufferHandles[ToIndex(MeshBit)]);
           }

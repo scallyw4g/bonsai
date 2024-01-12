@@ -20,7 +20,7 @@ DebugSlider(renderer_2d *Ui, r32 *Value, cs Name, r32 Min, r32 Max, EDITOR_UI_FU
       r32 PercFilled = ((*Value)-Min)/Range;
 
       r32 Width = 125.f;
-      interactable_handle BargraphButton = PushButtonStart(Ui, UiId("DebugSlider", Value));
+      interactable_handle BargraphButton = PushButtonStart(Ui, UiId("debug_slider", Value));
         PushBargraph(Ui, PercFilled, V3(0.75f), V3(0.4f), Width);
       PushButtonEnd(Ui);
 

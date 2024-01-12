@@ -21,7 +21,7 @@ void main()
   v4 ModelVertex = Model*vec4(vertexPosition_modelspace, 1);
 
   vertexP_worldspace = ModelVertex.xyz;
-  vertexN_worldspace = vec4(vec4(vertexNormal_modelspace, 1)).xyz;
+  vertexN_worldspace = vec4(vertexNormal_modelspace, 1).xyz;
 
   gl_Position =  ViewProjection * ModelVertex;
   /* gl_Position =  ViewProjection * Model * vec4(vertexPosition_modelspace, 1); */
