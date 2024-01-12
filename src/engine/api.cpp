@@ -346,7 +346,6 @@ Bonsai_Render(engine_resources *Resources)
   EngineDebug->Render.BytesTransGeoLastFrame = Graphics->Transparency.GpuBuffer.Buffer.At;
 
   DrawWorldToGBuffer(Resources);
-
   DrawWorldToShadowMap(Resources);
 
   // TODO(Jesse): Move into engine debug

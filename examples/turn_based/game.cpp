@@ -78,9 +78,6 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  /* file_traversal_node AssetName = {FileTraversalType_File, CSz("models"), CSz("skele_base.vox")}; */
-  /* Enemy->AssetId = AssetId(&AssetName); */
-
   entity *Player = GameState->Player;
   cp EnemyBaseP  = GetEntityBaseP(World, Enemy);
   cp PlayerBaseP = GetEntityBaseP(World, Player);
@@ -88,7 +85,32 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
   v3 PlayerBaseSimP = GetSimSpaceP(World, PlayerBaseP);
   v3 EnemyBaseSimP  = GetSimSpaceP(World, EnemyBaseP);
 
-  /* DEBUG_DrawSimSpaceVectorAt(Engine, EnemyBaseSimP, V3(0, 0, 100), RED, 0.25f); */
+
+  {
+    v3 EnemyCenterSimP = GetSimSpaceP(World, GetEntityCenterP(World, Enemy));
+    v3 EnemyBaseToCenter = EnemyCenterSimP - EnemyBaseSimP;
+
+    // NOTE(Jesse): This transform doesn't work for scaled entities.
+    Assert(Enemy->Scale == 1.f);
+    m4 Transform = GetTransformMatrix({}, V3(Enemy->Scale), FromEuler(Enemy->EulerAngles));
+
+    v3 Light0Offset = (Transform * (V4(1.5f,  1.5f, 4.5f, 1.f))).xyz;
+    v3 Light1Offset = (Transform * (V4(-1.5f, 1.5f, 4.5f, 1.f))).xyz;
+
+    v3 LightColor = V3(0.03f, 0.001f, 0.005f);
+
+    v3 Light0Sim = EnemyCenterSimP + Light0Offset;
+    v3 Light1Sim = EnemyCenterSimP + Light1Offset;
+
+    /* DEBUG_HighlightVoxel(Engine, Light0Sim, RED); */
+    /* DEBUG_HighlightVoxel(Engine, Light1Sim, RED); */
+
+    cp Light0CP = SimSpaceToCanonical(Engine->World, Light0Sim);
+    cp Light1CP = SimSpaceToCanonical(Engine->World, Light1Sim);
+
+    DoLight(&Lighting->Lights, GetRenderP(Engine, Light0CP), LightColor);
+    DoLight(&Lighting->Lights, GetRenderP(Engine, Light1CP), LightColor);
+  }
 
   // NOTE(Jesse): Entities embedded in the world cannot act
   if (GetCollision(World, Enemy).Count) { return; }

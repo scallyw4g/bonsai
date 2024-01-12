@@ -972,7 +972,20 @@ SyncGpuBuffersImmediate(engine_resources *Engine, lod_element_buffer *Meshes)
   FullBarrier;
 }
 
+link_internal m4
+GetTransformMatrix(v3 Basis, v3 Scale, Quaternion Rotation)
+{
+  m4 Result = Translate(Basis) * ScaleTransform(Scale) * RotateTransform(Rotation) * IdentityMatrix;
+  return Result;
+}
 
+link_internal m4
+GetTransformMatrix(entity *Entity)
+{
+  v3 Basis = GetRenderP(GetEngineResources(), Entity->P);
+  m4 Result = GetTransformMatrix(Basis, V3(Entity->Scale), FromEuler(Entity->EulerAngles));
+  return Result;
+}
 
 link_internal void
 DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r32 DistanceSquared, v3 Basis, Quaternion Rotation = Quaternion(), v3 Scale = V3(1.f))
@@ -1012,7 +1025,7 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
 
   if (MeshBit != MeshBit_None)
   {
-    m4 LocalTransform = Translate(Basis) * ScaleTransform(Scale) * RotateTransform(Rotation);
+    m4 LocalTransform = GetTransformMatrix(Basis, Scale, Rotation);
     BindUniform(Shader, "Model", &LocalTransform);
     DrawGpuBufferImmediate(Graphics, &Meshes->GpuBufferHandles[ToIndex(MeshBit)]);
   }

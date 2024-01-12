@@ -470,6 +470,16 @@ GetEntityBaseP(world *World, entity *Entity)
   return BaseP;
 }
 
+link_internal cp
+GetEntityCenterP(world *World, entity *Entity)
+{
+  cp BaseP = Entity->P;
+  BaseP.Offset += Entity->_CollisionVolumeRadius;
+  BaseP = Canonicalize(World, BaseP);
+  return BaseP;
+}
+
+
 
 link_internal void
 Marshal(entity_0 *E0, entity_1 *E1)
