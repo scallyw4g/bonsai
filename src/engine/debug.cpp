@@ -342,7 +342,24 @@ DoAssetWindow(engine_resources *Engine)
     if (ClickedFileNode.Tag)
     {
       EngineDebug->ResetAssetNodeView = True;
-      EngineDebug->SelectedAsset = GetOrAllocateAssetId(Engine, &ClickedFileNode.Value);
+      maybe_asset_ptr MaybeAsset = GetOrAllocateAsset(Engine, &ClickedFileNode.Value);
+
+      if (MaybeAsset.Tag)
+      {
+        asset *Asset = MaybeAsset.Value;
+
+        EngineDebug->SelectedAsset = Asset->Id;
+
+        // We allocated a new asset, better load it
+        if (Asset->LoadState == AssetLoadState_Allocated )
+        {
+          QueueAssetForLoad(&Plat->LowPriority, Asset);
+        }
+      }
+      else
+      {
+        SoftError("Unable to allocate asset to select!");
+      }
     }
 
     if (EngineDebug->SelectedAsset.FileNode.Type)
@@ -406,6 +423,7 @@ DoAssetWindow(engine_resources *Engine)
                 v3 ModelCenterpointOffset = Model->Dim/-2.f;
                 if (EngineDebug->ResetAssetNodeView)
                 {
+                  AssetViewWindow.Scroll = {};
                   f32 SmallObjectCorrectionFactor = 350.f/Length(ModelCenterpointOffset);
                   ThumbCamera->DistanceFromTarget = LengthSq(ModelCenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
                   UpdateGameCamera(World, {}, 0.f, {}, ThumbCamera, 1.f);

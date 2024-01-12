@@ -580,8 +580,8 @@ InitAsset(asset *Asset, thread_local_state *Thread)
   }
 }
 
-link_internal asset_id
-GetOrAllocateAssetId(engine_resources *Engine, file_traversal_node *FileNode, u64 FrameIndex = 0)
+link_internal maybe_asset_ptr
+GetOrAllocateAsset(engine_resources *Engine, file_traversal_node *FileNode, u64 FrameIndex = 0)
 {
   asset *Asset  = 0;
 
@@ -605,16 +605,31 @@ GetOrAllocateAssetId(engine_resources *Engine, file_traversal_node *FileNode, u6
   }
 
 
-  asset_id Result = {};
-  Result.Index = INVALID_ASSET_INDEX;
+  maybe_asset_ptr Result = {};
 
   if (Asset)
   {
-    Result = Asset->Id;
-    Assert(Asset->LoadState != AssetLoadState_Unloaded);
     Asset->LRUFrameIndex = FrameIndex ? FrameIndex : Engine->FrameIndex;
+    Assert(Asset->LoadState != AssetLoadState_Unloaded);
+
+    Result.Tag = Maybe_Yes;
+    Result.Value = Asset;
   }
 
+  return Result;
+}
+
+link_internal asset_id
+GetOrAllocateAssetId(engine_resources *Engine, file_traversal_node *FileNode, u64 FrameIndex = 0)
+{
+  asset_id Result = {};
+  Result.Index = INVALID_ASSET_INDEX;
+
+  maybe_asset_ptr MaybeAsset = GetOrAllocateAsset(Engine, FileNode, FrameIndex);
+  if (MaybeAsset.Tag)
+  {
+    Result = MaybeAsset.Value->Id;
+  }
   return Result;
 }
 
