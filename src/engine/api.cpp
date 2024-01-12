@@ -139,8 +139,33 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   }
 
-  UiFrameBegin(&Resources->Ui);
+  UiFrameBegin(Ui);
   DoEngineDebug(Resources);
+
+#if 0
+  // NOTE(Jesse): This is a start on debugging some UI layout issues
+  {
+    local_persist window_layout TestWindow = WindowLayout("TestWindow");
+
+    PushWindowStart(Ui, &TestWindow);
+
+    PushTableStart(Ui);
+      PushColumn(Ui, CSz("foo"));
+      PushColumn(Ui, CSz("bar"));
+      PushColumn(Ui, CSz("baz"));
+      PushNewRow(Ui);
+
+      u32 I = StartColumn(Ui);
+        PushTableStart(Ui);
+          PushColumn(Ui, CSz("foo"));
+        PushTableEnd(Ui);
+      EndColumn(Ui, I);
+
+    PushTableEnd(Ui);
+
+    PushWindowEnd(Ui, &TestWindow);
+  }
+#endif
 
   // NOTE(Jesse): Has to come after the UI draws such that we don't get a frame
   // of camera-jank if the UI captures mouse input

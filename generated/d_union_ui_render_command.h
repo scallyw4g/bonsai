@@ -6,6 +6,7 @@ enum ui_render_command_type
   type_ui_render_command_button_start,
   type_ui_render_command_button_end,
   type_ui_render_command_table_start,
+  type_ui_render_command_table_end,
   type_ui_render_command_column_start,
   type_ui_render_command_column_end,
   type_ui_render_command_text,
@@ -18,7 +19,6 @@ enum ui_render_command_type
   type_ui_render_command_force_advance,
   type_ui_render_command_force_update_basis,
   type_ui_render_command_new_row,
-  type_ui_render_command_table_end,
   type_ui_render_command_reset_draw_bounds,
   type_ui_render_command_debug,
 };
@@ -34,6 +34,7 @@ struct ui_render_command
     struct ui_render_command_button_start ui_render_command_button_start;
     struct ui_render_command_button_end ui_render_command_button_end;
     struct ui_render_command_table_start ui_render_command_table_start;
+    struct ui_render_command_table_end ui_render_command_table_end;
     struct ui_render_command_column_start ui_render_command_column_start;
     struct ui_render_command_column_end ui_render_command_column_end;
     struct ui_render_command_text ui_render_command_text;
