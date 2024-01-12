@@ -8,108 +8,79 @@ DoEditorUi(renderer_2d *Ui, entity *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
       PushNewRow(Ui);
 
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      PushTableStart(Ui);
       DoEditorUi(Ui, &Element->Version, CSz("u64 Version"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      /* PushNewRow(Ui); */
 
 
 
-
-      PushNewRow(Ui);
       DoEditorUi(Ui, &Element->Id, CSz("u64 Id"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      /* PushNewRow(Ui); */
 
 
 
-
-      PushNewRow(Ui);
       DoEditorUi(Ui, &Element->P, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
-
-      PushNewRow(Ui);
       DoEditorUi(Ui, &Element->EulerAngles, CSz("v3 EulerAngles"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
-
-      PushNewRow(Ui);
       DoEditorUi(Ui, &Element->Scale, CSz("r32 Scale"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      /* PushNewRow(Ui); */
 
 
 
-
-      PushNewRow(Ui);
       DoEditorUi(Ui, &Element->_CollisionVolumeRadius, CSz("v3 _CollisionVolumeRadius"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
-
-      PushNewRow(Ui);
       DoEditorUi(Ui, &Element->Physics, CSz("physics Physics"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
-
-      PushNewRow(Ui);
       DoEditorUi(Ui, &Element->AssetId, CSz("asset_id AssetId"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
-
-      PushNewRow(Ui);
       DoEditorUi(Ui, &Element->ModelIndex, CSz("u64 ModelIndex"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      /* PushNewRow(Ui); */
 
 
 
-
-      PushNewRow(Ui);
       DoEditorUi(Ui, &Element->LastResolvedCollision, CSz("collision_event LastResolvedCollision"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
-
-      PushNewRow(Ui);
       DoEditorUi(Ui, &Element->LastResolvedPosInfo, CSz("entity_position_info LastResolvedPosInfo"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
-
-      PushNewRow(Ui);
       DoEditorUi(Ui, Element->Emitter, CSz("particle_system Emitter"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
-
-      PushNewRow(Ui);
       DoEditorUi(Ui, &Element->State, CSz("entity_state State"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
-
-      PushNewRow(Ui);
       DoEditorUi(Ui, &Element->Behavior, CSz("entity_behavior_flags Behavior"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
-
-      PushNewRow(Ui);
       DoEditorUi(Ui, &Element->UserType, CSz("u64 UserType"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      /* PushNewRow(Ui); */
 
 
 
-
-      PushNewRow(Ui);
       DoEditorUi(Ui, &Element->UserData, CSz("u64 UserData"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-      PushNewRow(Ui);
+      /* PushNewRow(Ui); */
+      PushTableEnd(Ui);
 
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
     }
-    else
-    {
-      PushNewRow(Ui);
-    }
+
+    PushNewRow(Ui);
   }
   else
   {

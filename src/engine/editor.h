@@ -8,20 +8,23 @@ poof(
       {
         type.member(0, (E) 
         {
-          if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+          /* PushTableStart(Ui); */
+            if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
-          if (Value)
-          {
-            u32 Start = StartColumn(Ui);
-              PushTableStart(Ui);
-                E.map_array(e_index)
-                {
-                  DoEditorUi(Ui, &Value->(E.name)[e_index], {});
-                  PushNewRow(Ui);
-                }
-              PushTableEnd(Ui);
-            EndColumn(Ui, Start);
-          }
+            if (Value)
+            {
+              u32 Start = StartColumn(Ui);
+                PushTableStart(Ui);
+                  E.map_array(e_index)
+                  {
+                    DoEditorUi(Ui, &Value->(E.name)[e_index], {});
+                  }
+                PushTableEnd(Ui);
+                PushNewRow(Ui);
+              EndColumn(Ui, Start);
+            }
+          /* PushTableEnd(Ui); */
+          /* PushNewRow(Ui); */
         })
       }
     }
@@ -36,18 +39,23 @@ poof(
       link_internal void
       DoEditorUi(renderer_2d *Ui, type.name *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
       {
-        if (Name) { PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
-        else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+        if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+        /* else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } */
 
         if (Value)
         {
+          PushDebugCommand(Ui);
           u32 Start = StartColumn(Ui);
             PushTableStart(Ui);
-              if (Button(Ui, CSz("-"), UiId(Value, "decrement"))) { *Value = *Value - 1; }
-              PushColumn(Ui, CS(*Value));
-              if (Button(Ui, CSz("+"), UiId(Value, "increment"))) { *Value = *Value + 1; }
+              if (Button(Ui, CSz("-"), UiId(Value, "decrement"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1; }
+                  PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+              if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1; }
             PushTableEnd(Ui);
           EndColumn(Ui, Start);
+          PushNewRow(Ui);
+
+          /* PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
+
         }
         else
         {
@@ -79,40 +87,39 @@ poof(
           PushNewRow(Ui);
 
           PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-          type.map(member)
-          {
-            member.is_array?
+          PushTableStart(Ui);
+            type.map(member)
             {
-              RangeIterator(ArrayIndex, member.array)
+              member.is_array?
               {
-                DoEditorUi(Ui, Element->(member.name)+ArrayIndex, CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-              }
-            }
-            {
-              member.is_pointer?
-              {
-                DoEditorUi(Ui, Element->(member.name), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-              }
-              {
-                member.is_primitive?
+                RangeIterator(ArrayIndex, member.array)
                 {
-                  DoEditorUi(Ui, &Element->(member.name), CSz("  member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-                }
-                {
-                  DoEditorUi(Ui, &Element->(member.name), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+                  DoEditorUi(Ui, Element->(member.name)+ArrayIndex, CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
                 }
               }
+              {
+                member.is_pointer?
+                {
+                  DoEditorUi(Ui, Element->(member.name), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+                }
+                {
+                  member.is_primitive?
+                  {
+                    DoEditorUi(Ui, &Element->(member.name), CSz("  member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+                    /* PushNewRow(Ui); */
+                  }
+                  {
+                    DoEditorUi(Ui, &Element->(member.name), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+                  }
+                }
+              }
             }
-
-            PushNewRow(Ui);
-          }
+          PushTableEnd(Ui);
 
           PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
         }
-        else
-        {
-          PushNewRow(Ui);
-        }
+
+        PushNewRow(Ui);
       }
       else
       {
@@ -162,7 +169,7 @@ poof(
     {
       if (Container)
       {
-        if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), umm(Container) ^ umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+        if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Container, Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
         {
           IterateOver(Container, Element, ElementIndex)
           {

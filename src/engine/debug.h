@@ -26,6 +26,7 @@ struct engine_debug
 /*   b8 DrawWorldDebugColors; */
 
   b8 TriggerRuntimeBreak;
+
   b8 ResetAssetNodeView;
 
   u8 PickedChunkState;

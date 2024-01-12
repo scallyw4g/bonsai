@@ -8,31 +8,24 @@ DoEditorUi(renderer_2d *Ui, vertex_material *Element, cs Name, EDITOR_UI_FUNCTIO
       PushNewRow(Ui);
 
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      PushTableStart(Ui);
       DoEditorUi(Ui, &Element->Color, CSz("v3 Color"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
-
-      PushNewRow(Ui);
       DoEditorUi(Ui, &Element->Transparency, CSz("f32 Transparency"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      /* PushNewRow(Ui); */
 
 
 
-
-      PushNewRow(Ui);
       DoEditorUi(Ui, &Element->Emission, CSz("f32 Emission"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-      PushNewRow(Ui);
+      /* PushNewRow(Ui); */
+      PushTableEnd(Ui);
 
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
     }
-    else
-    {
-      PushNewRow(Ui);
-    }
+
+    PushNewRow(Ui);
   }
   else
   {

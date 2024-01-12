@@ -1,6 +1,7 @@
 link_internal void
 DoEditorUi(renderer_2d *Ui, v4i *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
+  /* PushTableStart(Ui); */
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
   if (Value)
@@ -8,21 +9,21 @@ DoEditorUi(renderer_2d *Ui, v4i *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
     u32 Start = StartColumn(Ui);
     PushTableStart(Ui);
     DoEditorUi(Ui, &Value->E[0], {});
-    PushNewRow(Ui);
     DoEditorUi(Ui, &Value->E[1], {});
-    PushNewRow(Ui);
     DoEditorUi(Ui, &Value->E[2], {});
-    PushNewRow(Ui);
     DoEditorUi(Ui, &Value->E[3], {});
-    PushNewRow(Ui);
     PushTableEnd(Ui);
+    PushNewRow(Ui);
     EndColumn(Ui, Start);
   }
+  /* PushTableEnd(Ui); */
+  /* PushNewRow(Ui); */
 
 }
 link_internal void
 DoEditorUi(renderer_2d *Ui, v4 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
+  /* PushTableStart(Ui); */
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
   if (Value)
@@ -30,21 +31,21 @@ DoEditorUi(renderer_2d *Ui, v4 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULT
     u32 Start = StartColumn(Ui);
     PushTableStart(Ui);
     DoEditorUi(Ui, &Value->E[0], {});
-    PushNewRow(Ui);
     DoEditorUi(Ui, &Value->E[1], {});
-    PushNewRow(Ui);
     DoEditorUi(Ui, &Value->E[2], {});
-    PushNewRow(Ui);
     DoEditorUi(Ui, &Value->E[3], {});
-    PushNewRow(Ui);
     PushTableEnd(Ui);
+    PushNewRow(Ui);
     EndColumn(Ui, Start);
   }
+  /* PushTableEnd(Ui); */
+  /* PushNewRow(Ui); */
 
 }
 link_internal void
 DoEditorUi(renderer_2d *Ui, v3i *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
+  /* PushTableStart(Ui); */
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
   if (Value)
@@ -52,19 +53,20 @@ DoEditorUi(renderer_2d *Ui, v3i *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
     u32 Start = StartColumn(Ui);
     PushTableStart(Ui);
     DoEditorUi(Ui, &Value->E[0], {});
-    PushNewRow(Ui);
     DoEditorUi(Ui, &Value->E[1], {});
-    PushNewRow(Ui);
     DoEditorUi(Ui, &Value->E[2], {});
-    PushNewRow(Ui);
     PushTableEnd(Ui);
+    PushNewRow(Ui);
     EndColumn(Ui, Start);
   }
+  /* PushTableEnd(Ui); */
+  /* PushNewRow(Ui); */
 
 }
 link_internal void
 DoEditorUi(renderer_2d *Ui, v3 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
+  /* PushTableStart(Ui); */
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
   if (Value)
@@ -72,19 +74,20 @@ DoEditorUi(renderer_2d *Ui, v3 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULT
     u32 Start = StartColumn(Ui);
     PushTableStart(Ui);
     DoEditorUi(Ui, &Value->E[0], {});
-    PushNewRow(Ui);
     DoEditorUi(Ui, &Value->E[1], {});
-    PushNewRow(Ui);
     DoEditorUi(Ui, &Value->E[2], {});
-    PushNewRow(Ui);
     PushTableEnd(Ui);
+    PushNewRow(Ui);
     EndColumn(Ui, Start);
   }
+  /* PushTableEnd(Ui); */
+  /* PushNewRow(Ui); */
 
 }
 link_internal void
 DoEditorUi(renderer_2d *Ui, v2 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
+  /* PushTableStart(Ui); */
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
   if (Value)
@@ -92,17 +95,19 @@ DoEditorUi(renderer_2d *Ui, v2 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULT
     u32 Start = StartColumn(Ui);
     PushTableStart(Ui);
     DoEditorUi(Ui, &Value->E[0], {});
-    PushNewRow(Ui);
     DoEditorUi(Ui, &Value->E[1], {});
-    PushNewRow(Ui);
     PushTableEnd(Ui);
+    PushNewRow(Ui);
     EndColumn(Ui, Start);
   }
+  /* PushTableEnd(Ui); */
+  /* PushNewRow(Ui); */
 
 }
 link_internal void
 DoEditorUi(renderer_2d *Ui, Quaternion *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
+  /* PushTableStart(Ui); */
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
   if (Value)
@@ -110,16 +115,15 @@ DoEditorUi(renderer_2d *Ui, Quaternion *Value, cs Name, EDITOR_UI_FUNCTION_PROTO
     u32 Start = StartColumn(Ui);
     PushTableStart(Ui);
     DoEditorUi(Ui, &Value->E[0], {});
-    PushNewRow(Ui);
     DoEditorUi(Ui, &Value->E[1], {});
-    PushNewRow(Ui);
     DoEditorUi(Ui, &Value->E[2], {});
-    PushNewRow(Ui);
     DoEditorUi(Ui, &Value->E[3], {});
-    PushNewRow(Ui);
     PushTableEnd(Ui);
+    PushNewRow(Ui);
     EndColumn(Ui, Start);
   }
+  /* PushTableEnd(Ui); */
+  /* PushNewRow(Ui); */
 
 }
 

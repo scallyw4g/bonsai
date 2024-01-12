@@ -8,31 +8,25 @@ DoEditorUi(renderer_2d *Ui, render_debug *Element, cs Name, EDITOR_UI_FUNCTION_P
       PushNewRow(Ui);
 
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      PushTableStart(Ui);
       DoEditorUi(Ui, &Element->BytesSolidGeoLastFrame, CSz("u32 BytesSolidGeoLastFrame"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      /* PushNewRow(Ui); */
 
 
 
-
-      PushNewRow(Ui);
       DoEditorUi(Ui, &Element->BytesTransGeoLastFrame, CSz("u32 BytesTransGeoLastFrame"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      /* PushNewRow(Ui); */
 
 
 
-
-      PushNewRow(Ui);
       DoEditorUi(Ui, &Element->DrawCallsLastFrame, CSz("u32 DrawCallsLastFrame"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-      PushNewRow(Ui);
+      /* PushNewRow(Ui); */
+      PushTableEnd(Ui);
 
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
     }
-    else
-    {
-      PushNewRow(Ui);
-    }
+
+    PushNewRow(Ui);
   }
   else
   {

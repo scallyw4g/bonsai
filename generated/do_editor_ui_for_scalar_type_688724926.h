@@ -1,18 +1,23 @@
 link_internal void
 DoEditorUi(renderer_2d *Ui, s64 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  if (Name) { PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
-  else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  /* else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } */
 
   if (Value)
   {
+    PushDebugCommand(Ui);
     u32 Start = StartColumn(Ui);
     PushTableStart(Ui);
-    if (Button(Ui, CSz("-"), UiId(Value, "decrement"))) { *Value = *Value - 1; }
-    PushColumn(Ui, CS(*Value));
-    if (Button(Ui, CSz("+"), UiId(Value, "increment"))) { *Value = *Value + 1; }
+    if (Button(Ui, CSz("-"), UiId(Value, "decrement"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1; }
+    PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
+    PushNewRow(Ui);
+
+    /* PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
+
   }
   else
   {
@@ -30,18 +35,23 @@ DoEditorUi(renderer_2d *Ui, volatile s64 *Value, cs Name, EDITOR_UI_FUNCTION_PRO
 link_internal void
 DoEditorUi(renderer_2d *Ui, u64 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  if (Name) { PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
-  else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  /* else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } */
 
   if (Value)
   {
+    PushDebugCommand(Ui);
     u32 Start = StartColumn(Ui);
     PushTableStart(Ui);
-    if (Button(Ui, CSz("-"), UiId(Value, "decrement"))) { *Value = *Value - 1; }
-    PushColumn(Ui, CS(*Value));
-    if (Button(Ui, CSz("+"), UiId(Value, "increment"))) { *Value = *Value + 1; }
+    if (Button(Ui, CSz("-"), UiId(Value, "decrement"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1; }
+    PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
+    PushNewRow(Ui);
+
+    /* PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
+
   }
   else
   {
@@ -59,18 +69,23 @@ DoEditorUi(renderer_2d *Ui, volatile u64 *Value, cs Name, EDITOR_UI_FUNCTION_PRO
 link_internal void
 DoEditorUi(renderer_2d *Ui, s32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  if (Name) { PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
-  else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  /* else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } */
 
   if (Value)
   {
+    PushDebugCommand(Ui);
     u32 Start = StartColumn(Ui);
     PushTableStart(Ui);
-    if (Button(Ui, CSz("-"), UiId(Value, "decrement"))) { *Value = *Value - 1; }
-    PushColumn(Ui, CS(*Value));
-    if (Button(Ui, CSz("+"), UiId(Value, "increment"))) { *Value = *Value + 1; }
+    if (Button(Ui, CSz("-"), UiId(Value, "decrement"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1; }
+    PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
+    PushNewRow(Ui);
+
+    /* PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
+
   }
   else
   {
@@ -88,18 +103,23 @@ DoEditorUi(renderer_2d *Ui, volatile s32 *Value, cs Name, EDITOR_UI_FUNCTION_PRO
 link_internal void
 DoEditorUi(renderer_2d *Ui, u32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  if (Name) { PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
-  else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  /* else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } */
 
   if (Value)
   {
+    PushDebugCommand(Ui);
     u32 Start = StartColumn(Ui);
     PushTableStart(Ui);
-    if (Button(Ui, CSz("-"), UiId(Value, "decrement"))) { *Value = *Value - 1; }
-    PushColumn(Ui, CS(*Value));
-    if (Button(Ui, CSz("+"), UiId(Value, "increment"))) { *Value = *Value + 1; }
+    if (Button(Ui, CSz("-"), UiId(Value, "decrement"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1; }
+    PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
+    PushNewRow(Ui);
+
+    /* PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
+
   }
   else
   {
@@ -117,18 +137,23 @@ DoEditorUi(renderer_2d *Ui, volatile u32 *Value, cs Name, EDITOR_UI_FUNCTION_PRO
 link_internal void
 DoEditorUi(renderer_2d *Ui, s16 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  if (Name) { PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
-  else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  /* else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } */
 
   if (Value)
   {
+    PushDebugCommand(Ui);
     u32 Start = StartColumn(Ui);
     PushTableStart(Ui);
-    if (Button(Ui, CSz("-"), UiId(Value, "decrement"))) { *Value = *Value - 1; }
-    PushColumn(Ui, CS(*Value));
-    if (Button(Ui, CSz("+"), UiId(Value, "increment"))) { *Value = *Value + 1; }
+    if (Button(Ui, CSz("-"), UiId(Value, "decrement"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1; }
+    PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
+    PushNewRow(Ui);
+
+    /* PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
+
   }
   else
   {
@@ -146,18 +171,23 @@ DoEditorUi(renderer_2d *Ui, volatile s16 *Value, cs Name, EDITOR_UI_FUNCTION_PRO
 link_internal void
 DoEditorUi(renderer_2d *Ui, u16 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  if (Name) { PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
-  else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  /* else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } */
 
   if (Value)
   {
+    PushDebugCommand(Ui);
     u32 Start = StartColumn(Ui);
     PushTableStart(Ui);
-    if (Button(Ui, CSz("-"), UiId(Value, "decrement"))) { *Value = *Value - 1; }
-    PushColumn(Ui, CS(*Value));
-    if (Button(Ui, CSz("+"), UiId(Value, "increment"))) { *Value = *Value + 1; }
+    if (Button(Ui, CSz("-"), UiId(Value, "decrement"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1; }
+    PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
+    PushNewRow(Ui);
+
+    /* PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
+
   }
   else
   {
@@ -175,18 +205,23 @@ DoEditorUi(renderer_2d *Ui, volatile u16 *Value, cs Name, EDITOR_UI_FUNCTION_PRO
 link_internal void
 DoEditorUi(renderer_2d *Ui, s8 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  if (Name) { PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
-  else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  /* else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } */
 
   if (Value)
   {
+    PushDebugCommand(Ui);
     u32 Start = StartColumn(Ui);
     PushTableStart(Ui);
-    if (Button(Ui, CSz("-"), UiId(Value, "decrement"))) { *Value = *Value - 1; }
-    PushColumn(Ui, CS(*Value));
-    if (Button(Ui, CSz("+"), UiId(Value, "increment"))) { *Value = *Value + 1; }
+    if (Button(Ui, CSz("-"), UiId(Value, "decrement"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1; }
+    PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
+    PushNewRow(Ui);
+
+    /* PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
+
   }
   else
   {
@@ -204,18 +239,23 @@ DoEditorUi(renderer_2d *Ui, volatile s8 *Value, cs Name, EDITOR_UI_FUNCTION_PROT
 link_internal void
 DoEditorUi(renderer_2d *Ui, u8 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  if (Name) { PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
-  else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  /* else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } */
 
   if (Value)
   {
+    PushDebugCommand(Ui);
     u32 Start = StartColumn(Ui);
     PushTableStart(Ui);
-    if (Button(Ui, CSz("-"), UiId(Value, "decrement"))) { *Value = *Value - 1; }
-    PushColumn(Ui, CS(*Value));
-    if (Button(Ui, CSz("+"), UiId(Value, "increment"))) { *Value = *Value + 1; }
+    if (Button(Ui, CSz("-"), UiId(Value, "decrement"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1; }
+    PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
+    PushNewRow(Ui);
+
+    /* PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
+
   }
   else
   {

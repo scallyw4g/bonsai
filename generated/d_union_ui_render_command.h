@@ -20,6 +20,7 @@ enum ui_render_command_type
   type_ui_render_command_new_row,
   type_ui_render_command_table_end,
   type_ui_render_command_reset_draw_bounds,
+  type_ui_render_command_debug,
 };
 
 struct ui_render_command

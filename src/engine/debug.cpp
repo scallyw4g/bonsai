@@ -189,7 +189,7 @@ DoEntityWindow(engine_resources *Engine)
         {
           entity *Entity = EntityTable[EntityIndex];
           DoEditorUi(Ui, Entity, FSz("(%d)(%S)", EntityIndex, ToString(Entity->State)) );
-          PushNewRow(Ui);
+          break;
         }
       PushTableEnd(Ui);
 
@@ -293,11 +293,11 @@ DoGraphicsDebugWindow(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  local_persist window_layout Window = WindowLayout("Graphics");
+  local_persist window_layout Window = WindowLayout("Graphics", window_layout_flags(WindowLayoutFlag_StartupAlign_BottomRight|WindowLayoutFlag_DynamicSize|WindowLayoutFlag_StartupSize_Infer) );
 
   PushWindowStart(Ui, &Window);
     PushTableStart(Ui);
-    PushColumn(Ui, CSz("Immediate Solid Bytes :"));
+    PushColumn(Ui, CSz("Immediate  Solid Bytes :"));
     PushColumn(Ui, CS(EngineDebug->Render.BytesSolidGeoLastFrame));
     PushNewRow(Ui);
 
@@ -475,7 +475,7 @@ DoEngineDebug(engine_resources *Engine)
         DoEditorUi(Ui, (b8*)&Settings->AutoDayNightCycle, CSz("AutoDayNightCycle"));
         PushNewRow(Ui);
 
-        DebugSlider(Ui, &Settings->tDay, 0.0f, 2.f*PI32);
+        DebugSlider(Ui, &Settings->tDay, CSz("tDay"), 0.0f, 2.f*PI32);
         PushNewRow(Ui);
 
         DoEditorUi(Ui, (b8*)&Settings->UseSsao, CSz("UseSsao"));
@@ -499,10 +499,10 @@ DoEngineDebug(engine_resources *Engine)
 
         // TODO(Jesse): Make a slider for time of day
 
-        DebugSlider(Ui, &Settings->MajorGridDim, 1.0f, 16.f);
+        DebugSlider(Ui, &Settings->MajorGridDim, CSz("MajorGridDim"), 1.0f, 16.f);
         PushNewRow(Ui);
 
-        DebugSlider(Ui, &Graphics->Exposure, 0.0f, 5.f);
+        DebugSlider(Ui, &Graphics->Exposure, CSz("Exposure"), 0.0f, 5.f);
         PushNewRow(Ui);
 
 
@@ -514,17 +514,19 @@ DoEngineDebug(engine_resources *Engine)
 
   if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_EngineDebug))
   {
-    DoGraphicsDebugWindow(Engine);
-
     v2 WindowDim = {{1200.f, 250.f}};
     local_persist window_layout Window = WindowLayout("Engine Debug", WindowLayoutFlag_StartupAlign_Right);
 
     render_settings *Settings = &Graphics->Settings;
     PushWindowStart(Ui, &Window);
+      PushTableStart(Ui);
       DoEditorUi(Ui, EngineDebug, CSz("Engine Debug"));
+      PushTableEnd(Ui);
       /* DoEditorUi(Ui, &EngineDebug->UiDebug, CSz("UI Debug")); */
       /* DoEditorUi(Ui, &EngineDebug->Render,  CSz("Graphics Debug")); */
     PushWindowEnd(Ui, &Window);
+
+    DoGraphicsDebugWindow(Engine);
   }
 
   /* Debug_DrawTextureToDebugQuad(&Engine->RTTGroup.DebugShader); */

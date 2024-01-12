@@ -8,19 +8,15 @@ DoEditorUi(renderer_2d *Ui, random_series *Element, cs Name, EDITOR_UI_FUNCTION_
       PushNewRow(Ui);
 
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      PushTableStart(Ui);
       DoEditorUi(Ui, &Element->Seed, CSz("u64 Seed"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-      PushNewRow(Ui);
+      /* PushNewRow(Ui); */
+      PushTableEnd(Ui);
 
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
     }
-    else
-    {
-      PushNewRow(Ui);
-    }
+
+    PushNewRow(Ui);
   }
   else
   {

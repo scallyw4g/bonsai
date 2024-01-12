@@ -9,11 +9,11 @@ GetUiDebug()
 }
 
 link_internal void
-DebugSlider_(renderer_2d *Ui, r32 *Value, cs Name, r32 Min, r32 Max)
+DebugSlider(renderer_2d *Ui, r32 *Value, cs Name, r32 Min, r32 Max, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   /* u32 Start = StartColumn(Ui); */
   /*   PushTableStart(Ui); */
-      if (Name) { PushColumn(Ui, CS(Name)); }
+      if (Name) { PushColumn(Ui, CS(Name), Style, Padding, ColumnRenderParam_RightAlign); }
       /* PushColumn(Ui, CS(*Value)); */
 
       auto Range = Max-Min;
@@ -35,17 +35,11 @@ DebugSlider_(renderer_2d *Ui, r32 *Value, cs Name, r32 Min, r32 Max)
   /* EndColumn(Ui, Start); */
 }
 
-
-
-
-
-/* #define DoEditorUi(Ui, Value, "Value") DoEditorUi(Ui, Value, STRINGIZE(Value)) */
-#define DebugSlider(Ui, Value, Min, Max) DebugSlider_(Ui, Value, CSz(STRINGIZE(Value)), Min, Max)
-
 link_internal void
 DoEditorUi(renderer_2d *Ui, r32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  /* else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } */
 
   u32 Start = StartColumn(Ui);
     PushTableStart(Ui);
@@ -65,7 +59,8 @@ DoEditorUi(renderer_2d *Ui, r32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
 
         if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1.f; }
 #if 1
-          DebugSlider_(Ui, Value, {}, 0.f, 32.f);
+          DebugSlider(Ui, Value, {}, 0.f, 32.f, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+          /* PushNewRow(Ui); */
 #else
         if (*Value <= 2.f)
         {
@@ -96,14 +91,15 @@ DoEditorUi(renderer_2d *Ui, r32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
           DebugSlider_(Ui, Value, 0, 1000.f, 10000.f);
         }
 #endif
-        PushNewRow(Ui);
       }
       else
       {
         PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
       }
     PushTableEnd(Ui);
+    /* PushNewRow(Ui); */
   EndColumn(Ui, Start);
+  PushNewRow(Ui);
 }
 
 link_internal void
@@ -115,7 +111,8 @@ DoEditorUi(renderer_2d *Ui, b8 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULT
        *Value ? CSz("True") : CSz("False") :
        CSz("(null)");
 
-  Text(Ui, Display);
+  PushColumn(Ui, Display);
+  PushNewRow(Ui);
 }
 
 
@@ -132,13 +129,12 @@ DoEditorUi(renderer_2d *Ui, cs *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULT
   Value ?
     PushColumn(Ui, *Value, EDITOR_UI_FUNCTION_INSTANCE_NAMES) :
     PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  PushNewRow(Ui);
 }
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, cp *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  /* PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
-
   DoEditorUi(Ui, &Value->WorldP, CSz("WorldP"));
   DoEditorUi(Ui, &Value->Offset, CSz("Offset"));
 }

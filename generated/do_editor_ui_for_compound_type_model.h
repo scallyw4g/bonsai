@@ -8,43 +8,30 @@ DoEditorUi(renderer_2d *Ui, model *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DE
       PushNewRow(Ui);
 
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      PushTableStart(Ui);
       DoEditorUi(Ui, &Element->Vox, CSz("vox_data Vox"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
-
-      PushNewRow(Ui);
       DoEditorUi(Ui, &Element->Meshes, CSz("lod_element_buffer Meshes"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
-
-      PushNewRow(Ui);
       DoEditorUi(Ui, &Element->TransparentMesh, CSz("untextured_3d_geometry_buffer TransparentMesh"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
-
-      PushNewRow(Ui);
       DoEditorUi(Ui, &Element->Animation, CSz("animation Animation"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
-
-      PushNewRow(Ui);
       DoEditorUi(Ui, &Element->Dim, CSz("v3i Dim"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-      PushNewRow(Ui);
+      PushTableEnd(Ui);
 
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
     }
-    else
-    {
-      PushNewRow(Ui);
-    }
+
+    PushNewRow(Ui);
   }
   else
   {

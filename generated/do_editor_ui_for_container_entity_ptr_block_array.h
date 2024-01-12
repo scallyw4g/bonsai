@@ -3,7 +3,7 @@ DoEditorUi(renderer_2d *Ui, entity_ptr_block_array *Container, cs Name, EDITOR_U
 {
   if (Container)
   {
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), umm(Container) ^ umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Container, Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
     {
       IterateOver(Container, Element, ElementIndex)
       {
