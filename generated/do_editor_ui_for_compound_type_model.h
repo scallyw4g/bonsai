@@ -7,8 +7,8 @@ DoEditorUi(renderer_2d *Ui, model *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DE
     {
       PushNewRow(Ui);
 
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       PushTableStart(Ui);
+      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui, &Element->Vox, CSz("vox_data Vox"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
@@ -26,9 +26,8 @@ DoEditorUi(renderer_2d *Ui, model *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DE
 
 
       DoEditorUi(Ui, &Element->Dim, CSz("v3i Dim"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      PushTableEnd(Ui);
-
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+      PushTableEnd(Ui);
     }
 
     PushNewRow(Ui);

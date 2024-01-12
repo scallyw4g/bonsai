@@ -97,9 +97,8 @@ DoEditorUi(renderer_2d *Ui, r32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
         PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
       }
     PushTableEnd(Ui);
-    /* PushNewRow(Ui); */
   EndColumn(Ui, Start);
-  PushNewRow(Ui);
+  /* PushNewRow(Ui); */
 }
 
 link_internal void
@@ -112,7 +111,6 @@ DoEditorUi(renderer_2d *Ui, b8 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULT
        CSz("(null)");
 
   PushColumn(Ui, Display);
-  PushNewRow(Ui);
 }
 
 
@@ -129,14 +127,13 @@ DoEditorUi(renderer_2d *Ui, cs *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULT
   Value ?
     PushColumn(Ui, *Value, EDITOR_UI_FUNCTION_INSTANCE_NAMES) :
     PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-  PushNewRow(Ui);
 }
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, cp *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  DoEditorUi(Ui, &Value->WorldP, CSz("WorldP"));
-  DoEditorUi(Ui, &Value->Offset, CSz("Offset"));
+  DoEditorUi(Ui, &Value->WorldP, CSz("v3i WorldP"));
+  DoEditorUi(Ui, &Value->Offset, CSz("v3 Offset"));
 }
 
 
@@ -262,7 +259,6 @@ DoEditorUi(renderer_2d *Ui, void *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAU
   Value ?
     PushColumn(Ui, FSz("0x%x",umm(Value)), EDITOR_UI_FUNCTION_INSTANCE_NAMES) :
     PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-  PushNewRow(Ui);
 }
 
 

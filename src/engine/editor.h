@@ -20,12 +20,12 @@ poof(
                     DoEditorUi(Ui, &Value->(E.name)[e_index], {});
                   }
                 PushTableEnd(Ui);
-                PushNewRow(Ui);
+                /* PushNewRow(Ui); */
               EndColumn(Ui, Start);
             }
           /* PushTableEnd(Ui); */
-          /* PushNewRow(Ui); */
         })
+        PushNewRow(Ui);
       }
     }
   }
@@ -52,9 +52,6 @@ poof(
               if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1; }
             PushTableEnd(Ui);
           EndColumn(Ui, Start);
-          PushNewRow(Ui);
-
-          /* PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
 
         }
         else
@@ -86,8 +83,8 @@ poof(
         {
           PushNewRow(Ui);
 
-          PushForceUpdateBasis(Ui, V2(20.f, 0.f));
           PushTableStart(Ui);
+          PushForceUpdateBasis(Ui, V2(20.f, 0.f));
             type.map(member)
             {
               member.is_array?
@@ -106,7 +103,7 @@ poof(
                   member.is_primitive?
                   {
                     DoEditorUi(Ui, &Element->(member.name), CSz("  member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-                    /* PushNewRow(Ui); */
+                    PushNewRow(Ui);
                   }
                   {
                     DoEditorUi(Ui, &Element->(member.name), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
@@ -114,9 +111,8 @@ poof(
                 }
               }
             }
-          PushTableEnd(Ui);
-
           PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+          PushTableEnd(Ui);
         }
 
         PushNewRow(Ui);

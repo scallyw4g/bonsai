@@ -7,8 +7,8 @@ DoEditorUi(renderer_2d *Ui, engine_debug *Element, cs Name, EDITOR_UI_FUNCTION_P
     {
       PushNewRow(Ui);
 
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       PushTableStart(Ui);
+      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui, &Element->PickedChunks, CSz("picked_world_chunk_static_buffer PickedChunks"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
@@ -26,27 +26,27 @@ DoEditorUi(renderer_2d *Ui, engine_debug *Element, cs Name, EDITOR_UI_FUNCTION_P
 
 
       DoEditorUi(Ui, &Element->DrawEntityCollisionVolumes, CSz("b8 DrawEntityCollisionVolumes"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      /* PushNewRow(Ui); */
+      PushNewRow(Ui);
 
 
 
       DoEditorUi(Ui, &Element->DrawWorldAxies, CSz("b8 DrawWorldAxies"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      /* PushNewRow(Ui); */
+      PushNewRow(Ui);
 
 
 
       DoEditorUi(Ui, &Element->TriggerRuntimeBreak, CSz("b8 TriggerRuntimeBreak"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      /* PushNewRow(Ui); */
+      PushNewRow(Ui);
 
 
 
       DoEditorUi(Ui, &Element->ResetAssetNodeView, CSz("b8 ResetAssetNodeView"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      /* PushNewRow(Ui); */
+      PushNewRow(Ui);
 
 
 
       DoEditorUi(Ui, &Element->PickedChunkState, CSz("u8 PickedChunkState"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      /* PushNewRow(Ui); */
+      PushNewRow(Ui);
 
 
 
@@ -58,14 +58,13 @@ DoEditorUi(renderer_2d *Ui, engine_debug *Element, cs Name, EDITOR_UI_FUNCTION_P
 
 
       DoEditorUi(Ui, &Element->ModelIndex, CSz("u64 ModelIndex"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      /* PushNewRow(Ui); */
+      PushNewRow(Ui);
 
 
 
       DoEditorUi(Ui, Element->SelectedEntity, CSz("entity SelectedEntity"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      PushTableEnd(Ui);
-
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+      PushTableEnd(Ui);
     }
 
     PushNewRow(Ui);

@@ -7,13 +7,12 @@ DoEditorUi(renderer_2d *Ui, random_series *Element, cs Name, EDITOR_UI_FUNCTION_
     {
       PushNewRow(Ui);
 
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       PushTableStart(Ui);
+      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui, &Element->Seed, CSz("u64 Seed"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      /* PushNewRow(Ui); */
-      PushTableEnd(Ui);
-
+      PushNewRow(Ui);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+      PushTableEnd(Ui);
     }
 
     PushNewRow(Ui);

@@ -7,20 +7,20 @@ DoEditorUi(renderer_2d *Ui, animation *Element, cs Name, EDITOR_UI_FUNCTION_PROT
     {
       PushNewRow(Ui);
 
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       PushTableStart(Ui);
+      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui, &Element->t, CSz("r32 t"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      /* PushNewRow(Ui); */
+      PushNewRow(Ui);
 
 
 
       DoEditorUi(Ui, &Element->tEnd, CSz("r32 tEnd"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      /* PushNewRow(Ui); */
+      PushNewRow(Ui);
 
 
 
       DoEditorUi(Ui, &Element->xKeyframeCount, CSz("u32 xKeyframeCount"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      /* PushNewRow(Ui); */
+      PushNewRow(Ui);
 
 
 
@@ -28,7 +28,7 @@ DoEditorUi(renderer_2d *Ui, animation *Element, cs Name, EDITOR_UI_FUNCTION_PROT
 
 
       DoEditorUi(Ui, &Element->yKeyframeCount, CSz("u32 yKeyframeCount"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      /* PushNewRow(Ui); */
+      PushNewRow(Ui);
 
 
 
@@ -36,14 +36,13 @@ DoEditorUi(renderer_2d *Ui, animation *Element, cs Name, EDITOR_UI_FUNCTION_PROT
 
 
       DoEditorUi(Ui, &Element->zKeyframeCount, CSz("u32 zKeyframeCount"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      /* PushNewRow(Ui); */
+      PushNewRow(Ui);
 
 
 
       DoEditorUi(Ui, Element->zKeyframes, CSz("keyframe zKeyframes"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      PushTableEnd(Ui);
-
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+      PushTableEnd(Ui);
     }
 
     PushNewRow(Ui);

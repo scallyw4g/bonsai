@@ -14,9 +14,6 @@ DoEditorUi(renderer_2d *Ui, s64 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
     if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
-    PushNewRow(Ui);
-
-    /* PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
 
   }
   else
@@ -48,9 +45,6 @@ DoEditorUi(renderer_2d *Ui, u64 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
     if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
-    PushNewRow(Ui);
-
-    /* PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
 
   }
   else
@@ -82,9 +76,6 @@ DoEditorUi(renderer_2d *Ui, s32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
     if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
-    PushNewRow(Ui);
-
-    /* PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
 
   }
   else
@@ -116,9 +107,6 @@ DoEditorUi(renderer_2d *Ui, u32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
     if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
-    PushNewRow(Ui);
-
-    /* PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
 
   }
   else
@@ -150,9 +138,6 @@ DoEditorUi(renderer_2d *Ui, s16 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
     if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
-    PushNewRow(Ui);
-
-    /* PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
 
   }
   else
@@ -184,9 +169,6 @@ DoEditorUi(renderer_2d *Ui, u16 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
     if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
-    PushNewRow(Ui);
-
-    /* PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
 
   }
   else
@@ -218,9 +200,6 @@ DoEditorUi(renderer_2d *Ui, s8 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULT
     if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
-    PushNewRow(Ui);
-
-    /* PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
 
   }
   else
@@ -252,9 +231,6 @@ DoEditorUi(renderer_2d *Ui, u8 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULT
     if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
-    PushNewRow(Ui);
-
-    /* PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
 
   }
   else

@@ -7,8 +7,8 @@ DoEditorUi(renderer_2d *Ui, physics *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_
     {
       PushNewRow(Ui);
 
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       PushTableStart(Ui);
+      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui, &Element->Velocity, CSz("v3 Velocity"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
@@ -22,15 +22,14 @@ DoEditorUi(renderer_2d *Ui, physics *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_
 
 
       DoEditorUi(Ui, &Element->Mass, CSz("r32 Mass"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      /* PushNewRow(Ui); */
+      PushNewRow(Ui);
 
 
 
       DoEditorUi(Ui, &Element->Speed, CSz("r32 Speed"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      /* PushNewRow(Ui); */
-      PushTableEnd(Ui);
-
+      PushNewRow(Ui);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+      PushTableEnd(Ui);
     }
 
     PushNewRow(Ui);

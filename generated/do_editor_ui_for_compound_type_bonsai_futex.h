@@ -7,23 +7,22 @@ DoEditorUi(renderer_2d *Ui, bonsai_futex *Element, cs Name, EDITOR_UI_FUNCTION_P
     {
       PushNewRow(Ui);
 
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       PushTableStart(Ui);
+      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui, &Element->SignalValue, CSz("u32 SignalValue"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      /* PushNewRow(Ui); */
+      PushNewRow(Ui);
 
 
 
       DoEditorUi(Ui, &Element->ThreadsWaiting, CSz("u32 ThreadsWaiting"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      /* PushNewRow(Ui); */
+      PushNewRow(Ui);
 
 
 
       DoEditorUi(Ui, &Element->Initialized, CSz("b32 Initialized"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      /* PushNewRow(Ui); */
-      PushTableEnd(Ui);
-
+      PushNewRow(Ui);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+      PushTableEnd(Ui);
     }
 
     PushNewRow(Ui);

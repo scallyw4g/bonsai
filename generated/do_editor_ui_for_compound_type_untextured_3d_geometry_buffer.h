@@ -7,8 +7,8 @@ DoEditorUi(renderer_2d *Ui, untextured_3d_geometry_buffer *Element, cs Name, EDI
     {
       PushNewRow(Ui);
 
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       PushTableStart(Ui);
+      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui, Element->Verts, CSz("v3 Verts"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
@@ -19,12 +19,12 @@ DoEditorUi(renderer_2d *Ui, untextured_3d_geometry_buffer *Element, cs Name, EDI
 
 
       DoEditorUi(Ui, &Element->End, CSz("u32 End"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      /* PushNewRow(Ui); */
+      PushNewRow(Ui);
 
 
 
       DoEditorUi(Ui, &Element->At, CSz("u32 At"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      /* PushNewRow(Ui); */
+      PushNewRow(Ui);
 
 
 
@@ -32,15 +32,14 @@ DoEditorUi(renderer_2d *Ui, untextured_3d_geometry_buffer *Element, cs Name, EDI
 
 
       DoEditorUi(Ui, &Element->BufferNeedsToGrow, CSz("u32 BufferNeedsToGrow"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      /* PushNewRow(Ui); */
+      PushNewRow(Ui);
 
 
 
       DoEditorUi(Ui, &Element->Timestamp, CSz("u64 Timestamp"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      /* PushNewRow(Ui); */
-      PushTableEnd(Ui);
-
+      PushNewRow(Ui);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+      PushTableEnd(Ui);
     }
 
     PushNewRow(Ui);
