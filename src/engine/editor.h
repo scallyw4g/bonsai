@@ -218,10 +218,6 @@ poof(radio_button_group_for_bitfield_enum(level_editor_flags));
 
 struct level_editor
 {
-  /* level_edit_mode Mode; */
-
-/*   level_editor_flags Flags; */
-
   u16 SelectedColorIndex;
   u16 HoverColorIndex;
 
@@ -263,7 +259,6 @@ struct maybe_v3
   maybe_tag Tag;
   v3 V3;
 };
-
 
 enum selection_mode
 {

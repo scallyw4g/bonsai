@@ -310,7 +310,6 @@ GetMax(v3 *SelectionRegion)
   return Result;
 }
 
-
 link_internal void
 DoDeleteRegion(engine_resources *Engine, rect3 *AABB)
 {
@@ -321,7 +320,6 @@ DoDeleteRegion(engine_resources *Engine, rect3 *AABB)
   };
   QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Subtractive, &Shape, Engine->Editor.SelectedColorIndex, Engine->Memory);
 }
-
 
 link_internal v3
 ConstrainUpdateVector(v3 UpdateVector, face_index Face, selection_mode SelectionMode)
@@ -405,7 +403,6 @@ HighlightFace(engine_resources *Engine, face_index Face, aabb SelectionAABB, r32
       DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
     } break;
   }
-
 }
 
 link_internal rect3i
