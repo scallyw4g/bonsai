@@ -254,3 +254,32 @@ Inverse(r32 m[16], r32 invOut[16])
 
   return True;
 }
+
+link_internal m4
+Inverse(m4 M)
+{
+  m4 Result;
+
+  if (Inverse(M.E[0].E, Result.E[0].E))
+  {
+  }
+  else
+  {
+    SoftError("Unable to invert matrix");
+  }
+
+  return Result;
+}
+
+link_internal m4
+Transpose(m4 M)
+{
+  m4 Result = {
+    V4(M.E[0].E[0], M.E[1].E[0], M.E[2].E[0], M.E[3].E[0] ),
+    V4(M.E[0].E[1], M.E[1].E[1], M.E[2].E[1], M.E[3].E[1] ),
+    V4(M.E[0].E[2], M.E[1].E[2], M.E[2].E[2], M.E[3].E[2] ),
+    V4(M.E[0].E[3], M.E[1].E[3], M.E[2].E[3], M.E[3].E[3] ),
+  };
+
+  return Result;
+}

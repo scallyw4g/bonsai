@@ -101,7 +101,7 @@ RenderImmediateGeometryToShadowMap(gpu_mapped_element_buffer *GpuMap, graphics *
   SG->MVP = GetShadowMapMVP(&SG->Sun, FrustCenter);
   GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]);
 
-  BindUniform(&SG->DepthShader, "Model", &IdentityMatrix);
+  BindUniform(&SG->DepthShader, "ModelMatrix", &IdentityMatrix);
 
   Draw(GpuMap->Buffer.At);
 
@@ -131,7 +131,7 @@ RenderImmediateGeometryToGBuffer(gpu_mapped_element_buffer *GpuMap, graphics *Gr
   /* Info("(%f %f %f %f)", M[2][0],M[2][1],M[2][2],M[2][3]); */
   /* Info("(%f %f %f %f)", M[3][0],M[3][1],M[3][2],M[3][3]); */
 
-  /* BindUniform(&GBufferRenderGroup->gBufferShader, "Model", &M); */
+  /* BindUniform(&GBufferRenderGroup->gBufferShader, "ModelMatrix", &M); */
 
   // TODO(Jesse): Hoist this check out of here
   GL.Disable(GL_CULL_FACE);
@@ -1026,7 +1026,11 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
   if (MeshBit != MeshBit_None)
   {
     m4 LocalTransform = GetTransformMatrix(Basis, Scale, Rotation);
-    BindUniform(Shader, "Model", &LocalTransform);
+
+    m4 NormalMatrix = Transpose(Inverse(LocalTransform));
+
+    BindUniform(Shader, "ModelMatrix", &LocalTransform);
+    BindUniform(Shader, "NormalMatrix", &NormalMatrix);
     DrawGpuBufferImmediate(Graphics, &Meshes->GpuBufferHandles[ToIndex(MeshBit)]);
   }
 }
@@ -1348,7 +1352,7 @@ DrawWorldToShadowMap(engine_resources *Engine)
           {
             v3 Basis = GetRenderP(GetEngineResources(), Chunk->WorldP);
             m4 OffsetM = Translate(Basis);
-            BindUniform(&SG->DepthShader, "Model", &OffsetM);
+            BindUniform(&SG->DepthShader, "ModelMatrix", &OffsetM);
 
             DrawGpuBufferImmediate(Graphics, &Chunk->Meshes.GpuBufferHandles[ToIndex(MeshBit)]);
           }

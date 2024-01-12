@@ -1,10 +1,10 @@
 layout(location = 0) in vec3 vertexPosition_modelspace;
 uniform mat4 depthMVP;
-uniform mat4 Model;
+uniform mat4 ModelMatrix;
 
 void main()
 {
-  gl_Position = depthMVP * Model * vec4(vertexPosition_modelspace, 1);
+  gl_Position = depthMVP * ModelMatrix * vec4(vertexPosition_modelspace, 1);
   /* gl_Position = vec4(0,0,0,0); */
 }
 

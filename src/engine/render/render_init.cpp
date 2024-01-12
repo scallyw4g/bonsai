@@ -329,7 +329,7 @@ CreateGbufferShader(graphics *Graphics, memory_arena *GraphicsMemory, m4 *ViewPr
   *Current = GetUniform(GraphicsMemory, &Shader, ViewProjection, "ViewProjection");
   Current = &(*Current)->Next;
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &IdentityMatrix, "Model");
+  *Current = GetUniform(GraphicsMemory, &Shader, &IdentityMatrix, "ModelMatrix");
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, &Camera->Frust.farClip, "FarClip");
@@ -564,7 +564,7 @@ MakeTransparencyShader(b32 *BravoilMyersOIT, b32 *BravoilMcGuireOIT, m4 *ViewPro
   *Current = GetUniform(Memory, &Shader, ViewProjection, "ViewProjection");
   Current = &(*Current)->Next;
 
-  *Current = GetUniform(Memory, &Shader, &IdentityMatrix, "Model");
+  *Current = GetUniform(Memory, &Shader, &IdentityMatrix, "ModelMatrix");
   Current = &(*Current)->Next;
 
   *Current = GetUniform(Memory, &Shader, gBufferDepthTexture, "gBufferDepthTexture");

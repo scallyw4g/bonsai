@@ -97,7 +97,10 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
     v3 Light0Offset = (Transform * (V4(1.5f,  1.5f, 4.5f, 1.f))).xyz;
     v3 Light1Offset = (Transform * (V4(-1.5f, 1.5f, 4.5f, 1.f))).xyz;
 
-    v3 LightColor = V3(0.03f, 0.001f, 0.005f);
+    v3 LightColor = V3(0.05f, 0.0001f, 0.0001f);
+    /* v3 LightColor = V3(0.035f, 0.001f, 0.001f); */
+    /* v3 LightColor = V3(0.035f, 0.f, 0.02f); */
+    /* v3 LightColor = V3(0.045f, 0.0005f, 0.0025f); */
 
     v3 Light0Sim = EnemyCenterSimP + Light0Offset;
     v3 Light1Sim = EnemyCenterSimP + Light1Offset;
