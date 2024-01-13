@@ -110,7 +110,7 @@ void main()
 
     if (DrawMajorGrid)
     {
-      t2 = ModThresh(abs(CorrectedPos.xyz)*NormFix, 0.08f, MajorGridDim);
+      t2 = ModThresh(abs(CorrectedPos.xyz)*NormFix, 0.05f, MajorGridDim);
     }
 
     v3 C0 = FinalColor.xyz;

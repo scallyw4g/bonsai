@@ -15,7 +15,6 @@ DoLevelWindow(engine_resources *Engine)
   local_persist window_layout Window = WindowLayout("Level");
 
   PushWindowStart(Ui, &Window);
-
   PushTableStart(Ui);
     if (Button(Ui, CSz("Export Level"), umm("export_level_button")))
     {
@@ -77,10 +76,12 @@ DoLevelWindow(engine_resources *Engine)
       CloseFile(&LevelFile);
     }
   PushTableEnd(Ui);
+  PushNewRow(Ui);
 
   PushTableStart(Ui);
     maybe_file_traversal_node ClickedNode = PlatformTraverseDirectoryTree(CSz("../bonsai_levels"), EngineDrawFileNodesHelper);
   PushTableEnd(Ui);
+  PushNewRow(Ui);
 
   if (ClickedNode.Tag)
   {
@@ -168,9 +169,9 @@ DoLevelWindow(engine_resources *Engine)
       }
 
     }
-  }
 
-  PushWindowEnd(Ui, &Window);
+  }
+    PushWindowEnd(Ui, &Window);
 }
 
 link_internal void
@@ -547,7 +548,7 @@ DoEngineDebug(engine_resources *Engine)
 
   if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_WorldEdit))
   {
-    DoLevelEditor(Engine);
+    DoWorldEditor(Engine);
   }
 
   if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_WorldChunks))

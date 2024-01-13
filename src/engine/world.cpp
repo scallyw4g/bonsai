@@ -28,9 +28,14 @@ AllocateWorld(world* World, world_position Center, voxel_position WorldChunkDim,
   return World;
 }
 
+enum hard_reset_flags
+{
+  HardResetFlag_None = 0,
+  HardResetFlag_NoResetCamera = (1 << 0),
+};
 
 link_internal void
-HardResetWorld(engine_resources *Engine)
+HardResetWorld(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag_None)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -51,7 +56,12 @@ HardResetWorld(engine_resources *Engine)
     }
   }
 
-  RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT) { Unspawn(EntityTable[EntityIndex]); }
+  RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
+  {
+    if  ((Flags & HardResetFlag_NoResetCamera) && EntityTable[EntityIndex]->Behavior == EntityBehaviorFlags_CameraGhost) { continue; }
+    Unspawn(EntityTable[EntityIndex]);
+  }
+
   RangeIterator(AssetIndex, ASSET_TABLE_COUNT)
   {
     asset *Asset = Engine->AssetTable+AssetIndex;
@@ -64,5 +74,9 @@ HardResetWorld(engine_resources *Engine)
     }
   }
 
-  Engine->_CameraGhost = 0;
+  if ( (Flags & HardResetFlag_NoResetCamera) == 0)
+  {
+    Assert(Engine->_CameraGhost->State == EntityState_Free);
+    Engine->_CameraGhost = 0;
+  }
 }

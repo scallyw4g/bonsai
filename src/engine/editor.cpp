@@ -87,6 +87,9 @@ poof(do_editor_ui_for_primitive_type({s64 u64 s32 u32 s16 u16 s8 u8}));
 poof(do_editor_ui_for_vector_type({v4i v4 v3i v3 v2 Quaternion}));
 #include <generated/do_editor_ui_for_vector_type_688873645.h>
 
+poof(do_editor_ui_for_container(v3_cursor))
+#include <generated/do_editor_ui_for_container_v3_cursor.h>
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, cs *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
@@ -119,6 +122,9 @@ poof(string_and_value_tables(file_traversal_type))
 
 
 
+
+poof(do_editor_ui_for_compound_type(world))
+#include <generated/do_editor_ui_for_compound_type_world.h>
 
 poof(do_editor_ui_for_compound_type(lighting_settings))
 #include <generated/do_editor_ui_for_compound_type_lighting_settings.h>
@@ -477,15 +483,20 @@ DoSelectonModification( engine_resources *Engine,
 }
 
 link_internal void
-DoLevelEditor(engine_resources *Engine)
+DoWorldEditor(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  /* v2 WindowDim = {{325.f, 1200.f}}; */
-  local_persist window_layout Window = WindowLayout("World Edit");
+  {
+    local_persist window_layout Window = WindowLayout("World", window_layout_flags(WindowLayoutFlag_StartupAlign_Bottom));
+    PushWindowStart(Ui, &Window);
+      DoEditorUi(Ui, World, CSz("World"));
+    PushWindowEnd(Ui, &Window);
+  }
+
+  local_persist window_layout Window = WindowLayout("Edit");
 
   PushWindowStart(Ui, &Window);
-
   ui_toggle_button_group WorldEditModeRadioGroup = RadioButtonGroup_world_edit_mode(Ui, umm("world_edit_mode_radio_group"), ToggleButtonGroupFlags_DrawVertical, {}, {}, {}, &DefaultStyle, V4(0, 0, 0, 16));
 
   v3_cursor *Palette = GetColorPalette();

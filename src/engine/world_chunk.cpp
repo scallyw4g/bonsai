@@ -418,14 +418,14 @@ CollectUnusedChunks(engine_resources *Engine, tiered_mesh_freelist* MeshFreelist
       {
         if (IsInside(Chunk->WorldP, VRRect))
         {
-          InsertChunkIntoWorld(NextWorldHash, Chunk, World->VisibleRegion, World->HashSize);
+          Ensure( InsertChunkIntoWorld(NextWorldHash, Chunk, World->VisibleRegion, World->HashSize) );
         }
         else
         {
           if (Chunk->Flags & Chunk_Queued)
           {
             SetFlag(&Chunk->Flags, Chunk_Garbage);
-            InsertChunkIntoWorld(NextWorldHash, Chunk, World->VisibleRegion, World->HashSize);
+            Ensure( InsertChunkIntoWorld(NextWorldHash, Chunk, World->VisibleRegion, World->HashSize) );
           }
           else
           {

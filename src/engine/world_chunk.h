@@ -428,22 +428,26 @@ enum world_flag
 
 struct world
 {
-  u32 HashSize;
-  world_chunk **ChunkHashMemory[2];
-  world_chunk **ChunkHash;
-
-  world_chunk ChunkFreelistSentinal;
 
   v3i Center;
   v3i VisibleRegion; // The number of chunks in xyz we're going to update and render
 
-  v3i ChunkDim;
+  u32 HashSize;                      poof(@ui_skip)
+  world_chunk **ChunkHashMemory[2];  poof(@ui_skip)
+  world_chunk **ChunkHash;           poof(@ui_skip)
 
-  memory_arena* Memory;
+  world_chunk ChunkFreelistSentinal; poof(@ui_skip)
 
-  world_flag Flags;
+  v3i ChunkDim;                      poof(@ui_skip)
+  memory_arena* Memory;              poof(@ui_skip)
+  world_flag Flags;                  poof(@ui_skip)
 
   v3_cursor ColorPalette; // u16_max elements according to the color member stored in `voxel`
+  // NOTE(Jesse): Couldn't quite figure out how to pass this through the
+  // container ui function.  Going to turn the UI off for now
+  // poof(@ui_value_range(0, 255)) 
+  poof(@ui_skip)
+
 };
 
 struct standing_spot
@@ -686,6 +690,15 @@ IsInsideVisibleRegion(world *World, v3i P)
 {
   rect3i VRRect = GetVisibleRegionRect(World);
   b32 Result = IsInside(P, VRRect);
+  return Result;
+}
+
+inline voxel*
+TryGetVoxel(world_chunk* Chunk, voxel_position VoxelP)
+{
+  voxel *Result = {};
+  s32 VoxelIndex = TryGetIndex(VoxelP, Chunk->Dim);
+  if (VoxelIndex > -1) { Result = Chunk->Voxels + VoxelIndex; }
   return Result;
 }
 
