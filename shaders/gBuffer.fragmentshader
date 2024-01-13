@@ -121,7 +121,7 @@ void main()
     }
     else
     {
-      v3 C1 = 3.5f*(1.f-FinalColor.xyz);
+      v3 C1 = 2.f*(1.f-FinalColor.xyz);
       FinalColor.xyz = mix(C0, C1, t2);
     }
 

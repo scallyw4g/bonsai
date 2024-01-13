@@ -10,31 +10,57 @@ DoEditorUi(renderer_2d *Ui, ui_debug *Element, cs Name, EDITOR_UI_FUNCTION_PROTO
       PushTableStart(Ui);
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui, &Element->OutlineUiValues, CSz("b8 OutlineUiValues"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
       PushNewRow(Ui);
-
-
 
       DoEditorUi(Ui, &Element->OutlineUiButtons, CSz("b8 OutlineUiButtons"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
       PushNewRow(Ui);
-
-
 
       DoEditorUi(Ui, &Element->OutlineUiTables, CSz("b8 OutlineUiTables"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
       PushNewRow(Ui);
-
-
 
       DoEditorUi(Ui, &Element->OutlineUiTableColumns, CSz("b8 OutlineUiTableColumns"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
       PushNewRow(Ui);
-
-
 
       DoEditorUi(Ui, &Element->DebugBreakOnElementClick, CSz("b8 DebugBreakOnElementClick"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
       PushNewRow(Ui);
 
-
-
       DoEditorUi(Ui, &Element->DebugBreakUiCommand, CSz("b8 DebugBreakUiCommand"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
       PushNewRow(Ui);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);

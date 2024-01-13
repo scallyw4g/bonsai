@@ -682,51 +682,11 @@ DoEngineDebug(engine_resources *Engine)
   if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_RenderSettings))
   {
     v2 WindowDim = {{1200.f, 250.f}};
-    local_persist window_layout RenderSettingsWindow = WindowLayout("Render Settings", WindowLayoutFlag_StartupAlign_Right);
+    local_persist window_layout RenderSettingsWindow = WindowLayout("Graphics Settings", WindowLayoutFlag_StartupAlign_Right);
 
     render_settings *Settings = &Graphics->Settings;
     PushWindowStart(Ui, &RenderSettingsWindow);
-
-      PushTableStart(Ui);
-        /* DoEditorUi(Ui, &Ui->Pressed.ID, CSz("ID")); */
-
-        DoEditorUi(Ui, (b8*)&Settings->AutoDayNightCycle, CSz("AutoDayNightCycle"));
-        PushNewRow(Ui);
-
-        DebugSlider(Ui, &Settings->tDay, CSz("tDay"), 0.0f, 2.f*PI32);
-        PushNewRow(Ui);
-
-        DoEditorUi(Ui, (b8*)&Settings->UseSsao, CSz("UseSsao"));
-        PushNewRow(Ui);
-        DoEditorUi(Ui, (b8*)&Settings->UseShadowMapping, CSz("UseShadowMapping"));
-        PushNewRow(Ui);
-        DoEditorUi(Ui, (b8*)&Settings->UseLightingBloom, CSz("UseLightingBloom"));
-        PushNewRow(Ui);
-
-        DoEditorUi(Ui, (b8*)&Settings->BravoilMyersOIT, CSz("BravoilMyersOIT"));
-        PushNewRow(Ui);
-
-        DoEditorUi(Ui, (b8*)&Settings->BravoilMcGuireOIT, CSz("BravoilMcGuireOIT"));
-        PushNewRow(Ui);
-
-        DoEditorUi(Ui, (b8*)&Settings->DrawMajorGrid, CSz("DrawMajorGrid"));
-        PushNewRow(Ui);
-
-        DoEditorUi(Ui, (b8*)&Settings->DrawMinorGrid, CSz("DrawMinorGrid"));
-        PushNewRow(Ui);
-
-        // TODO(Jesse): Make a slider for time of day
-
-        DebugSlider(Ui, &Settings->MajorGridDim, CSz("MajorGridDim"), 1.0f, 16.f);
-        PushNewRow(Ui);
-
-        DebugSlider(Ui, &Graphics->Exposure, CSz("Exposure"), 0.0f, 5.f);
-        PushNewRow(Ui);
-
-
-
-      PushTableEnd(Ui);
-
+      DoEditorUi(Ui, Settings, CSz("Graphics Settings"));
     PushWindowEnd(Ui, &RenderSettingsWindow);
   }
 

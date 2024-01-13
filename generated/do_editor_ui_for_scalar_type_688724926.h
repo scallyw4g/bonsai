@@ -2,11 +2,9 @@ link_internal void
 DoEditorUi(renderer_2d *Ui, s64 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
-  /* else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } */
 
   if (Value)
   {
-    PushDebugCommand(Ui);
     u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Value, "decrement"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1; }
@@ -20,6 +18,7 @@ DoEditorUi(renderer_2d *Ui, s64 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
     PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushNewRow(Ui);
   }
+
 }
 
 link_internal void
@@ -32,11 +31,9 @@ link_internal void
 DoEditorUi(renderer_2d *Ui, u64 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
-  /* else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } */
 
   if (Value)
   {
-    PushDebugCommand(Ui);
     u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Value, "decrement"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1; }
@@ -50,6 +47,7 @@ DoEditorUi(renderer_2d *Ui, u64 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
     PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushNewRow(Ui);
   }
+
 }
 
 link_internal void
@@ -62,11 +60,9 @@ link_internal void
 DoEditorUi(renderer_2d *Ui, s32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
-  /* else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } */
 
   if (Value)
   {
-    PushDebugCommand(Ui);
     u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Value, "decrement"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1; }
@@ -80,6 +76,7 @@ DoEditorUi(renderer_2d *Ui, s32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
     PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushNewRow(Ui);
   }
+
 }
 
 link_internal void
@@ -92,11 +89,9 @@ link_internal void
 DoEditorUi(renderer_2d *Ui, u32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
-  /* else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } */
 
   if (Value)
   {
-    PushDebugCommand(Ui);
     u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Value, "decrement"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1; }
@@ -110,6 +105,7 @@ DoEditorUi(renderer_2d *Ui, u32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
     PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushNewRow(Ui);
   }
+
 }
 
 link_internal void
@@ -122,11 +118,9 @@ link_internal void
 DoEditorUi(renderer_2d *Ui, s16 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
-  /* else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } */
 
   if (Value)
   {
-    PushDebugCommand(Ui);
     u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Value, "decrement"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1; }
@@ -140,6 +134,7 @@ DoEditorUi(renderer_2d *Ui, s16 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
     PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushNewRow(Ui);
   }
+
 }
 
 link_internal void
@@ -152,11 +147,9 @@ link_internal void
 DoEditorUi(renderer_2d *Ui, u16 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
-  /* else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } */
 
   if (Value)
   {
-    PushDebugCommand(Ui);
     u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Value, "decrement"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1; }
@@ -170,6 +163,7 @@ DoEditorUi(renderer_2d *Ui, u16 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
     PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushNewRow(Ui);
   }
+
 }
 
 link_internal void
@@ -182,11 +176,9 @@ link_internal void
 DoEditorUi(renderer_2d *Ui, s8 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
-  /* else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } */
 
   if (Value)
   {
-    PushDebugCommand(Ui);
     u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Value, "decrement"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1; }
@@ -200,6 +192,7 @@ DoEditorUi(renderer_2d *Ui, s8 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULT
     PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushNewRow(Ui);
   }
+
 }
 
 link_internal void
@@ -212,11 +205,9 @@ link_internal void
 DoEditorUi(renderer_2d *Ui, u8 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
-  /* else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } */
 
   if (Value)
   {
-    PushDebugCommand(Ui);
     u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Value, "decrement"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1; }
@@ -230,6 +221,7 @@ DoEditorUi(renderer_2d *Ui, u8 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULT
     PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushNewRow(Ui);
   }
+
 }
 
 link_internal void

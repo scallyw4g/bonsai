@@ -653,6 +653,23 @@ GraphicsInit(memory_arena *GraphicsMemory)
   Result->Settings.MajorGridDim = 8.f;
 
   Result->Exposure = 1.5f;
+
+  {
+    auto *Lighting = &Result->Settings.Lighting;
+
+    Lighting->SunP = V3(-1.f, -1.f, 0.35f);
+
+    Lighting->DawnColor = V3(0.37f, 0.11f, 0.10f);
+    Lighting->SunColor  = V3(0.25f, 0.26f, 0.36f);
+    Lighting->DuskColor = V3(0.13f, 0.12f, 0.14f);
+    Lighting->MoonColor = V3(0.04f, 0.07f, 0.18f);
+
+    Lighting->SunIntensity  = 1.53f;
+    Lighting->MoonIntensity = 0.10f;
+    Lighting->DawnIntensity = 1.f;
+    Lighting->DuskIntensity = 1.f;
+  }
+
   Result->Camera = Allocate(camera, GraphicsMemory, 1);
   StandardCamera(Result->Camera, 1000.f, 600.f, {});
 
@@ -713,7 +730,8 @@ GraphicsInit(memory_arena *GraphicsMemory)
 
 
                          &SG->MVP, &Lighting->Lights, Result->Camera,
-                         &SG->Sun.Position, &SG->Sun.Color,
+                         &Result->Settings.Lighting.SunP,
+                         &Result->Settings.Lighting.CurrentSunColor,
 
                          &Result->Settings.UseSsao,
                          &Result->Settings.UseShadowMapping,

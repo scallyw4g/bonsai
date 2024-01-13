@@ -10,21 +10,39 @@ DoEditorUi(renderer_2d *Ui, gpu_element_buffer_handles *Element, cs Name, EDITOR
       PushTableStart(Ui);
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui, &Element->VertexHandle, CSz("u32 VertexHandle"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
       PushNewRow(Ui);
-
-
 
       DoEditorUi(Ui, &Element->NormalHandle, CSz("u32 NormalHandle"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
       PushNewRow(Ui);
-
-
 
       DoEditorUi(Ui, &Element->MatHandle, CSz("u32 MatHandle"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
       PushNewRow(Ui);
 
-
-
       DoEditorUi(Ui, &Element->ElementCount, CSz("u32 ElementCount"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
       PushNewRow(Ui);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);

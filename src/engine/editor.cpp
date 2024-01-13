@@ -36,7 +36,7 @@ DebugSlider(renderer_2d *Ui, r32 *Value, cs Name, r32 Min, r32 Max, EDITOR_UI_FU
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, r32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, r32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
@@ -57,7 +57,7 @@ DoEditorUi(renderer_2d *Ui, r32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
 
         if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1.f; }
 
-        DebugSlider(Ui, Value, {}, 0.f, 32.f, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+        DebugSlider(Ui, Value, {}, MinValue, MaxValue, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
       }
       else
       {
@@ -81,7 +81,7 @@ DoEditorUi(renderer_2d *Ui, b8 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULT
 }
 
 
-poof(do_editor_ui_for_scalar_type({s64 u64 s32 u32 s16 u16 s8 u8}));
+poof(do_editor_ui_for_primitive_type({s64 u64 s32 u32 s16 u16 s8 u8}));
 #include <generated/do_editor_ui_for_scalar_type_688724926.h>
 
 poof(do_editor_ui_for_vector_type({v4i v4 v3i v3 v2 Quaternion}));
@@ -119,6 +119,12 @@ poof(string_and_value_tables(file_traversal_type))
 
 
 
+
+poof(do_editor_ui_for_compound_type(lighting_settings))
+#include <generated/do_editor_ui_for_compound_type_lighting_settings.h>
+
+poof(do_editor_ui_for_compound_type(render_settings))
+#include <generated/do_editor_ui_for_compound_type_render_settings.h>
 
 poof(do_editor_ui_for_compound_type(physics))
 #include <generated/do_editor_ui_for_compound_type_physics.h>

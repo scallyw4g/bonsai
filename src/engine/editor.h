@@ -1,10 +1,13 @@
+#define EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS r32 MinValue = 0.f, r32 MaxValue = 1.f
+#define EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES MinValue, MaxValue
+
 poof(
   func do_editor_ui_for_vector_type(type_poof_symbol type_list)
   {
     type_list.map(type)
     {
       link_internal void
-      DoEditorUi(renderer_2d *Ui, type.name *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+      DoEditorUi(renderer_2d *Ui, type.name *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
       {
         type.member(0, (E) 
         {
@@ -17,7 +20,7 @@ poof(
                 PushTableStart(Ui);
                   E.map_array(e_index)
                   {
-                    DoEditorUi(Ui, &Value->(E.name)[e_index], {});
+                    DoEditorUi(Ui, (r32*)&Value->(E.name)[e_index], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
                   }
                 PushTableEnd(Ui);
                 /* PushNewRow(Ui); */
@@ -32,7 +35,7 @@ poof(
 )
 
 poof(
-  func do_editor_ui_for_scalar_type(type_poof_symbol type_list)
+  func do_editor_ui_for_primitive_type(type_poof_symbol type_list)
   {
     type_list.map(type)
     {
@@ -40,11 +43,9 @@ poof(
       DoEditorUi(renderer_2d *Ui, type.name *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
       {
         if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
-        /* else      { PushColumn(Ui, CSz(""), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } */
 
         if (Value)
         {
-          PushDebugCommand(Ui);
           u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
             PushTableStart(Ui);
               if (Button(Ui, CSz("-"), UiId(Value, "decrement"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1; }
@@ -58,6 +59,7 @@ poof(
           PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
           PushNewRow(Ui);
         }
+
       }
 
       link_internal void
@@ -86,29 +88,44 @@ poof(
           PushForceUpdateBasis(Ui, V2(20.f, 0.f));
             type.map(member)
             {
-              member.is_array?
+              member.has_tag(ui_skip)?
               {
-                RangeIterator(ArrayIndex, member.array)
-                {
-                  DoEditorUi(Ui, Element->(member.name)+ArrayIndex, CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-                  member.is_primitive?  { PushNewRow(Ui); }
-                }
               }
               {
-                member.is_pointer?
+                member.is_array?
                 {
-                  DoEditorUi(Ui, Element->(member.name), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-                }
-                {
-                  member.is_primitive?
+                  RangeIterator(ArrayIndex, member.array)
                   {
-                    DoEditorUi(Ui, &Element->(member.name), CSz("  member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-                    PushNewRow(Ui);
-                  }
-                  {
-                    DoEditorUi(Ui, &Element->(member.name), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+                    DoEditorUi(Ui, Element->(member.name)+ArrayIndex, CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+                    member.is_primitive?  { PushNewRow(Ui); }
                   }
                 }
+                {
+                  member.is_pointer?
+                  {
+                    DoEditorUi(Ui, Element->(member.name), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+                  }
+                  {
+                    member.has_tag(ui_value_range)?
+                    {
+                      DoEditorUi(Ui, &Element->(member.name), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES, member.tag_value(ui_value_range));
+                    }
+                    {
+                      member.is_type(b32)?
+                      {
+                        DoEditorUi(Ui, Cast(b8*, &Element->(member.name)), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+                      }
+                      {
+                        DoEditorUi(Ui, &Element->(member.name), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+                      }
+                    }
+                  }
+                }
+              }
+
+              member.is_primitive?
+              {
+                PushNewRow(Ui);
               }
             }
           PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
@@ -189,8 +206,8 @@ poof(
 link_internal void
 DoEditorUi(renderer_2d *Ui, aabb *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS);
 
-link_internal void
-DoEditorUi(renderer_2d *Ui, v3i *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS);
+/* link_internal void */
+/* DoEditorUi(renderer_2d *Ui, v3i *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS); */
 
 struct asset_thumbnail
 {

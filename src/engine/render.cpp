@@ -66,7 +66,7 @@ Debug_DrawTextureToDebugQuad( shader *DebugShader )
 }
 
 inline m4
-GetShadowMapMVP(light *Sun, v3 FrustumCenter)
+GetShadowMapMVP(v3 SunP, v3 FrustumCenter)
 {
   // Compute the MVP matrix from the light's point of view
   /* v3 Translate = GetRenderP(Camera->Target, Camera); */
@@ -75,12 +75,12 @@ GetShadowMapMVP(light *Sun, v3 FrustumCenter)
                                           SHADOW_MAP_Z_MIN,
                                           SHADOW_MAP_Z_MAX);
 
-  v3 Front = Normalize(Sun->Position);
+  v3 Front = Normalize(SunP);
   v3 Right = Cross(Front, V3(0,1,0));
   v3 Up = Cross(Right, Front);
 
   v3 Target = FrustumCenter;
-  m4 depthViewMatrix =  LookAt(Sun->Position, Target, Up);
+  m4 depthViewMatrix =  LookAt(SunP, Target, Up);
 
   return depthProjectionMatrix * depthViewMatrix;
 }
@@ -97,8 +97,10 @@ RenderImmediateGeometryToShadowMap(gpu_mapped_element_buffer *GpuMap, graphics *
 
   SetViewport(V2(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y));
 
+  // @duplicate_shadow_map_MVP_calculation
   v3 FrustCenter = GetFrustumCenter(Graphics->Camera);
-  SG->MVP = GetShadowMapMVP(&SG->Sun, FrustCenter);
+  SG->MVP = GetShadowMapMVP(Graphics->Settings.Lighting.SunP, FrustCenter);
+
   GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]);
 
   BindUniform(&SG->DepthShader, "ModelMatrix", &IdentityMatrix);
@@ -1289,8 +1291,11 @@ DrawWorldToShadowMap(engine_resources *Engine)
 
   SetViewport(V2(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y));
 
+  // TODO(Jesse): Duplicate MVP calculation
+  // @duplicate_shadow_map_MVP_calculation
   v3 FrustCenter = GetFrustumCenter(Graphics->Camera);
-  SG->MVP = GetShadowMapMVP(&SG->Sun, FrustCenter);
+  SG->MVP = GetShadowMapMVP(Graphics->Settings.Lighting.SunP, FrustCenter);
+
   GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]);
 
   GL.Disable(GL_CULL_FACE);

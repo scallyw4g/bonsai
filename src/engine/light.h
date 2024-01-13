@@ -25,7 +25,6 @@ struct shadow_render_group
   m4 MVP;
 
   texture *ShadowMap;
-  light Sun;
 };
 
 struct lighting_render_group

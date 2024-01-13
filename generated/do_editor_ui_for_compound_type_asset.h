@@ -13,14 +13,26 @@ DoEditorUi(renderer_2d *Ui, asset *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DE
 
 
 
+
+
+
+      
       DoEditorUi(Ui, &Element->Id, CSz("asset_id Id"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
+
+
+
+      
       DoEditorUi(Ui, &Element->LRUFrameIndex, CSz("u64 LRUFrameIndex"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
       PushNewRow(Ui);
-
-
 
       DoEditorUi(Ui, &Element->Models, CSz("model_buffer Models"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

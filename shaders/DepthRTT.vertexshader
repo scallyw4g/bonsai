@@ -1,6 +1,7 @@
 layout(location = 0) in vec3 vertexPosition_modelspace;
 uniform mat4 depthMVP;
 uniform mat4 ModelMatrix;
+uniform mat4 NormalMatrix;
 
 void main()
 {

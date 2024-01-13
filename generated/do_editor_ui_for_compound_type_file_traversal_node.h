@@ -13,12 +13,26 @@ DoEditorUi(renderer_2d *Ui, file_traversal_node *Element, cs Name, EDITOR_UI_FUN
 
 
 
+
+
+
+      
       DoEditorUi(Ui, &Element->Dir, CSz("cs Dir"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
       PushNewRow(Ui);
 
-
-
       DoEditorUi(Ui, &Element->Name, CSz("cs Name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
       PushNewRow(Ui);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);

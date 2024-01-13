@@ -13,13 +13,24 @@ DoEditorUi(renderer_2d *Ui, chunk_data *Element, cs Name, EDITOR_UI_FUNCTION_PRO
 
 
 
+
+
+
+      
       DoEditorUi(Ui, &Element->Dim, CSz("v3i Dim"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
+
+
+
+      
       DoEditorUi(Ui, Element->Voxels, CSz("voxel Voxels"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
+
+
+      
       DoEditorUi(Ui, Element->VoxelLighting, CSz("voxel_lighting VoxelLighting"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);

@@ -32,13 +32,34 @@ struct bloom_render_group
   shader Shader;
 };
 
+struct lighting_settings
+{
+  b8 AutoDayNightCycle;
+
+  r32 tDay;      poof(@ui_value_range(-PI32, PI32))
+
+  v3 SunP;       poof(@ui_value_range(-1.f, 1.f))
+
+  v3 DawnColor;
+  v3 SunColor;
+  v3 DuskColor;
+  v3 MoonColor;
+
+  f32 SunIntensity;  poof(@ui_value_range(0.f, 3.f))
+  f32 MoonIntensity; poof(@ui_value_range(0.f, 3.f))
+  f32 DawnIntensity; poof(@ui_value_range(0.f, 3.f))
+  f32 DuskIntensity; poof(@ui_value_range(0.f, 3.f))
+
+  // Computed from the above parameters and passed to the shader
+  v3 CurrentSunColor;
+
+  u32 Test;
+};
+
 struct render_settings
 {
-  b32 Headless;
 
-  /* b8 DoDayNightCycle; */
-  b8 AutoDayNightCycle;
-  r32 tDay;
+  lighting_settings Lighting;
 
   // NOTE(Jesse): These have to be 32bit because they get passed to shaders
   // and the shader system is too dumb to handle 8-bit or 1-bit values
@@ -51,8 +72,10 @@ struct render_settings
 
   b32 DrawMajorGrid;
   b32 DrawMinorGrid;
-  r32 MajorGridDim;
-  v3  OffsetOfWorldCenterToGrid;
+  r32 MajorGridDim;   poof(@ui_value_range(0, 32))
+
+  v3 OffsetOfWorldCenterToGrid; poof(@ui_skip)
+  b32 Headless;                 poof(@ui_skip)
 };
 
 struct graphics

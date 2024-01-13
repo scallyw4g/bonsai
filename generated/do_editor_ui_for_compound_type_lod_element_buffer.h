@@ -10,9 +10,13 @@ DoEditorUi(renderer_2d *Ui, lod_element_buffer *Element, cs Name, EDITOR_UI_FUNC
       PushTableStart(Ui);
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui, &Element->MeshMask, CSz("u32 MeshMask"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
       PushNewRow(Ui);
-
-
 
       RangeIterator(ArrayIndex, MeshIndex_Count)
       {
@@ -20,12 +24,18 @@ DoEditorUi(renderer_2d *Ui, lod_element_buffer *Element, cs Name, EDITOR_UI_FUNC
         
       }
 
+
+
+      
       RangeIterator(ArrayIndex, MeshIndex_Count)
       {
         DoEditorUi(Ui, Element->E+ArrayIndex, CSz("geo_u3d_ptr E"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
         
       }
 
+
+
+      
       RangeIterator(ArrayIndex, MeshIndex_Count)
       {
         DoEditorUi(Ui, Element->Locks+ArrayIndex, CSz("bonsai_futex Locks"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);

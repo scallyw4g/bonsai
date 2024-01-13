@@ -13,18 +13,34 @@ DoEditorUi(renderer_2d *Ui, model *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DE
 
 
 
+
+
+
+      
       DoEditorUi(Ui, &Element->Meshes, CSz("lod_element_buffer Meshes"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
+
+
+
+      
       DoEditorUi(Ui, &Element->TransparentMesh, CSz("untextured_3d_geometry_buffer TransparentMesh"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
+
+
+
+      
       DoEditorUi(Ui, &Element->Animation, CSz("animation Animation"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
+
+
+
+      
       DoEditorUi(Ui, &Element->Dim, CSz("v3i Dim"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);

@@ -279,10 +279,12 @@ DoDayNightCycle(graphics *Graphics, r32 tDay)
   f32 DawnIntensity = 0.5f;
   f32 DuskIntensity = 0.25f;
 
-  v3 DawnColor = Normalize(V3(0.3f, 0.2f, 0.2f)) * DawnIntensity;
-  v3 SunColor  = Normalize(V3(0.2f, 0.2f, 0.3f)) * SunIntensity;
-  v3 DuskColor = Normalize(V3(0.4f, 0.2f, 0.2f)) * DuskIntensity;
-  v3 MoonColor = Normalize(V3(0.2f, 0.2f, 0.5f)) * MoonIntensity;
+  lighting_settings *Lighting = &Graphics->Settings.Lighting;
+
+  v3 DawnColor = Normalize(Lighting->DawnColor) * Lighting->DawnIntensity;
+  v3 SunColor  = Normalize(Lighting->SunColor ) * Lighting->SunIntensity;
+  v3 DuskColor = Normalize(Lighting->DuskColor) * Lighting->DuskIntensity;
+  v3 MoonColor = Normalize(Lighting->MoonColor) * Lighting->MoonIntensity;
 
   /* if (Graphics->Settings.DoDayNightCycle) */
   {
@@ -290,11 +292,11 @@ DoDayNightCycle(graphics *Graphics, r32 tDay)
     {
       if (tPostApex > 0.f)
       {
-        SG->Sun.Color = Lerp(tDaytime, DuskColor, SunColor);
+        Lighting->CurrentSunColor = Lerp(tDaytime, DuskColor, SunColor);
       }
       else
       {
-        SG->Sun.Color = Lerp(tDaytime, DawnColor, SunColor);
+        Lighting->CurrentSunColor = Lerp(tDaytime, DawnColor, SunColor);
       }
     }
     else
@@ -302,11 +304,11 @@ DoDayNightCycle(graphics *Graphics, r32 tDay)
       /* SG->Sun.Color = V3(0.15f); */
       if (tPostApex > 0.f)
       {
-        SG->Sun.Color = Lerp(Abs(tDaytime), DuskColor, MoonColor);
+        Lighting->CurrentSunColor = Lerp(Abs(tDaytime), DuskColor, MoonColor);
       }
       else
       {
-        SG->Sun.Color = Lerp(Abs(tDaytime), DawnColor, MoonColor);
+        Lighting->CurrentSunColor = Lerp(Abs(tDaytime), DawnColor, MoonColor);
       }
     }
   }
@@ -315,9 +317,9 @@ DoDayNightCycle(graphics *Graphics, r32 tDay)
     /* SG->Sun.Color = SunColor; */
   /* } */
 
-  SG->Sun.Position.x = Sin(tDay);
-  SG->Sun.Position.y = tDaytime;
-  SG->Sun.Position.z = tDaytime*0.7f + 1.3f;
+  /* SG->Sun.Position.x = Sin(tDay); */
+  /* SG->Sun.Position.y = tDaytime; */
+  /* SG->Sun.Position.z = tDaytime*0.7f + 1.3f; */
 
 }
 
@@ -331,8 +333,8 @@ Bonsai_Render(engine_resources *Resources)
   ao_render_group     *AoGroup = Graphics->AoGroup;
   shadow_render_group *SG      = Graphics->SG;
 
-  if (Graphics->Settings.AutoDayNightCycle) { Graphics->Settings.tDay += Plat->dt/18.0f; }
-  DoDayNightCycle(Graphics, Graphics->Settings.tDay);
+  if (Graphics->Settings.Lighting.AutoDayNightCycle) { Graphics->Settings.Lighting.tDay += Plat->dt/18.0f; }
+  DoDayNightCycle(Graphics, Graphics->Settings.Lighting.tDay);
 
   if (Resources->_CameraGhost)
   {
