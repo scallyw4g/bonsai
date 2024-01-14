@@ -6,7 +6,20 @@ GrowGrass( world_chunk *Chunk, v3i P, r32 NoiseValue, v3i SrcToDest, v3i WorldCh
   s32 z = P.z;
 
 
-  if (x == 0 || y == 0 || x == WorldChunkDim.x+1 || y == WorldChunkDim.y+1) { return; }
+  // NOTE(Jesse): This is pretty henious .. the math to compute GrassAreaX here
+  // (and, actually, maybe most of these calculations to turn positions into floats)
+  // is generating a fucked up index for the voxels along the exterior edge.
+  //
+  // The thing that's wrong is that the 0th still gets the Chunk->WorldP position,
+  // when it should get the previous chunks worldp.  Similar story with the max-edge
+  //
+  // I think this was actually also manifesting when doing mip-meshing, but I
+  // wasn't aware of this tom-fuckery then, and didn't catch it.
+  //
+  // TODO(Jesse): Should go audit the terrain-gen functions and find a better
+  // way of computing these float values.
+  //
+  if (x == 0 || y == 0 || x == Chunk->Dim.x-1 || y == Chunk->Dim.y-1) { return; }
 
   f32 GrassAreaX = (x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / 16.f;
   f32 GrassAreaY = (y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y)) / 16.f;

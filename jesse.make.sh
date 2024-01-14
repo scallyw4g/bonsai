@@ -35,10 +35,10 @@ OPT="-O2"
 
 # OPT="-O2"
 ./make.sh $OPT \
-  BuildSingleExample examples/terrain_gen \
-  # BuildExecutables \
-  # BuildDebugSystem \
-  # BuildSingleExample examples/turn_based \
+  BuildSingleExample examples/turn_based \
+  BuildExecutables \
+  BuildDebugSystem \
+  # BuildSingleExample examples/terrain_gen \
   # BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
   # BuildSingleExample examples/the_wanderer \
   # BuildSingleExample examples/graveyard \

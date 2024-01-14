@@ -736,10 +736,9 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     ui_element_reference ActionTable = PushTableStart(Ui);
       for (u32 ActionIndex = PlayerAction_Move; ActionIndex < PlayerAction_Count; ++ActionIndex)
       {
-        PushTableStart(Ui);
-          ui_style *Style = ActionIndex == GameState->ProposedAction ? &DefaultSelectedStyle : &DefaultStyle;
-          PushColumn(Ui, ToString((player_action)ActionIndex), Style);
-        PushTableEnd(Ui);
+        ui_style *Style = ActionIndex == GameState->ProposedAction ? &DefaultSelectedStyle : &DefaultStyle;
+        PushColumn(Ui, ToString((player_action)ActionIndex), Style);
+        PushNewRow(Ui);
       }
     PushTableEnd(Ui);
 
