@@ -229,6 +229,15 @@ poof(do_editor_ui_for_compound_type(collision_event))
 poof(do_editor_ui_for_compound_type(entity_position_info))
 #include <generated/do_editor_ui_for_compound_type_entity_position_info.h>
 
+// @dirty_entity_P_format_hack
+//
+link_internal void
+DoEditorUi_entity_P(renderer_2d *Ui, entity *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+{
+  DoEditorUi(Ui, &Element->P.WorldP, CSz("WorldP"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  DoEditorUi(Ui, &Element->P.Offset, CSz("Offset"), EDITOR_UI_FUNCTION_INSTANCE_NAMES, 0.f, 32.f);
+}
+
 poof(do_editor_ui_for_compound_type(entity))
 #include <generated/do_editor_ui_for_compound_type_entity.h>
 

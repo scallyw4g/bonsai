@@ -71,6 +71,10 @@ struct entity_position_info
   v3 EulerAngles;
 };
 
+// Game can implement this function to serialize/deserialize their custom entity data.
+link_weak b32 EntityUserDataSerialize(native_file *, entity *);
+link_weak b32 EntityUserDataDeserialize(u8_cursor *, entity *, memory_arena*);
+
 #define ENTITY_VERSION 2
 struct entity
 {
@@ -78,9 +82,16 @@ struct entity
 
   u64 Id;
 
-  cp P;
+  // NOTE(Jesse): This is a pretty dirty hack to get the Offset in CP to have
+  // a custom value range.  I couldn't figure out a better way while thinking about
+  // it for 15 minutes, so I settled on this for now.  Hopefully I figure out
+  // something better soon, cause this is un-tenable for the long-term
+  //
+  // @dirty_entity_P_format_hack
+  //
+  cp P; poof(@custom_ui(DoEditorUi_entity_P(Ui, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)))
 
-  v3 EulerAngles;
+  v3 EulerAngles; poof(@ui_value_range(-180.f, 180.f))
   r32 Scale;
 
   // NOTE(Jesse): This must be updated with UpdateCollisionVolumeRadius.
@@ -104,8 +115,12 @@ struct entity
   entity_behavior_flags Behavior;
 
   u64 UserType;
+
   u64 UserData;
+  poof(  @custom_serialize(  if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(File, Element);})
+         @custom_deserialize(if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, Element, Memory);})  )
 };
+
 
 struct entity_1
 {
@@ -453,7 +468,7 @@ poof(serdes_struct(file_traversal_node))
 poof(serdes_struct(asset_id))
 #include <generated/serdes_struct_asset_id.h>
 
-/* poof(serdes_struct(entity)) */
+poof(serdes_struct(entity))
 #include <generated/serdes_struct_entity.h>
 #include <generated/serdes_struct_entity_1.h>
 #include <generated/serdes_struct_entity_0.h>

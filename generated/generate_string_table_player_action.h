@@ -6,8 +6,8 @@ ToString(player_action Type)
   {
     case PlayerAction_None: { Result = CSz("PlayerAction_None"); } break;
     case PlayerAction_Move: { Result = CSz("PlayerAction_Move"); } break;
-    case PlayerAction_Charge: { Result = CSz("PlayerAction_Charge"); } break;
-    case PlayerAction_Fire: { Result = CSz("PlayerAction_Fire"); } break;
+    case PlayerAction_ChargeFireball: { Result = CSz("PlayerAction_ChargeFireball"); } break;
+    case PlayerAction_Throw: { Result = CSz("PlayerAction_Throw"); } break;
     case PlayerAction_IceBlock: { Result = CSz("PlayerAction_IceBlock"); } break;
     case PlayerAction_Dig: { Result = CSz("PlayerAction_Dig"); } break;
     case PlayerAction_ShovelSmack: { Result = CSz("PlayerAction_ShovelSmack"); } break;

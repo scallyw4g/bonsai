@@ -111,12 +111,18 @@ poof(
                       DoEditorUi(Ui, &Element->(member.name), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES, member.tag_value(ui_value_range));
                     }
                     {
-                      member.is_type(b32)?
+                      member.has_tag(custom_ui)?
                       {
-                        DoEditorUi(Ui, Cast(b8*, &Element->(member.name)), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+                        member.tag_value(custom_ui);
                       }
                       {
-                        DoEditorUi(Ui, &Element->(member.name), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+                        member.is_type(b32)?
+                        {
+                          DoEditorUi(Ui, Cast(b8*, &Element->(member.name)), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+                        }
+                        {
+                          DoEditorUi(Ui, &Element->(member.name), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+                        }
                       }
                     }
                   }

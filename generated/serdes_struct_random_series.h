@@ -22,14 +22,6 @@ Deserialize(u8_stream *Bytes, random_series *Element, memory_arena *Memory)
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Seed, Memory);
 
-  /* member.is_primitive? */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
-  /* } */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
-  /* } */
-
   
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();

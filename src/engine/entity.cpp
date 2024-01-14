@@ -1219,6 +1219,23 @@ GetSimSpaceAABB(world *World, entity *Entity)
   return Result;
 }
 
+inline b32
+Intersect(world *World, entity *First, aabb *Second)
+{
+  aabb Rect = GetSimSpaceAABB(World, First);
+  b32 Result = Intersect(&Rect, Second);
+  return Result;
+}
+
+inline b32
+Intersect(world *World, aabb *First, entity *Second)
+{
+  aabb Rect = GetSimSpaceAABB(World, Second);
+  b32 Result = Intersect(First, &Rect);
+  return Result;
+}
+
+
 // TODO(Jesse)(speed): Accelerate this using the entities stored on world chunks!
 link_internal u32_buffer
 GatherEntitiesIntersecting(world *World, entity **EntityTable, sphere *SimSpaceSphere, memory_arena *Memory)

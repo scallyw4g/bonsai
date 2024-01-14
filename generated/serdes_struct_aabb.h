@@ -11,6 +11,7 @@ Serialize(native_file *File, aabb *Element)
 
 
 
+
   Result &= Serialize(File, &Element->Max);
 
   
@@ -27,13 +28,6 @@ Deserialize(u8_stream *Bytes, aabb *Element, memory_arena *Memory)
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Min, Memory);
 
-  /* member.is_primitive? */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
-  /* } */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
-  /* } */
 
 
 
@@ -41,14 +35,6 @@ Deserialize(u8_stream *Bytes, aabb *Element, memory_arena *Memory)
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Max, Memory);
-
-  /* member.is_primitive? */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
-  /* } */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
-  /* } */
 
   
 

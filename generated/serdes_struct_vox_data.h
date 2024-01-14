@@ -19,7 +19,7 @@ link_internal b32
 Deserialize(u8_stream *Bytes, vox_data *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  b64 HadChunkDataPointer = Read_u64(Bytes);
+ b64 HadChunkDataPointer = Read_u64(Bytes);
   Assert(HadChunkDataPointer < 2); // Should be 0 or 1
 
   if (HadChunkDataPointer)

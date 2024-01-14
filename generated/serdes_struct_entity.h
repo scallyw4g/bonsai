@@ -11,7 +11,9 @@ Serialize(native_file *File, entity *Element)
 
 
 
+
   Result &= Serialize(File, &Element->Id);
+
 
 
 
@@ -21,7 +23,9 @@ Serialize(native_file *File, entity *Element)
 
 
 
+
   Result &= Serialize(File, &Element->EulerAngles);
+
 
 
 
@@ -31,7 +35,9 @@ Serialize(native_file *File, entity *Element)
 
 
 
+
   Result &= Serialize(File, &Element->_CollisionVolumeRadius);
+
 
 
 
@@ -41,7 +47,9 @@ Serialize(native_file *File, entity *Element)
 
 
 
+
   Result &= Serialize(File, &Element->AssetId);
+
 
 
 
@@ -51,15 +59,19 @@ Serialize(native_file *File, entity *Element)
 
 
 
+
   if (Element->Emitter) { Result &= WriteToFile(File, Cast(u8*, &PointerTrue), sizeof(PointerTrue)); }
   else                        { Result &= WriteToFile(File, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
+
 
 
   Result &= Serialize(File, (u32*)&Element->State);
 
 
 
+
   Result &= Serialize(File, (u32*)&Element->Behavior);
+
 
 
 
@@ -68,7 +80,8 @@ Serialize(native_file *File, entity *Element)
 
 
 
-  Result &= Serialize(File, &Element->UserData);
+
+  if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(File, Element);}
 
   if (Element->Emitter) { Result &= Serialize(File, Element->Emitter); }
 
@@ -87,13 +100,6 @@ Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Version, Memory);
 
-  /* member.is_primitive? */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
-  /* } */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
-  /* } */
 
 
 
@@ -102,13 +108,6 @@ Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Id, Memory);
 
-  /* member.is_primitive? */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
-  /* } */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
-  /* } */
 
 
 
@@ -117,13 +116,6 @@ Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->P, Memory);
 
-  /* member.is_primitive? */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
-  /* } */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
-  /* } */
 
 
 
@@ -132,13 +124,6 @@ Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->EulerAngles, Memory);
 
-  /* member.is_primitive? */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
-  /* } */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
-  /* } */
 
 
 
@@ -147,13 +132,6 @@ Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Scale, Memory);
 
-  /* member.is_primitive? */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
-  /* } */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
-  /* } */
 
 
 
@@ -162,13 +140,6 @@ Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->_CollisionVolumeRadius, Memory);
 
-  /* member.is_primitive? */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
-  /* } */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
-  /* } */
 
 
 
@@ -177,13 +148,6 @@ Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Physics, Memory);
 
-  /* member.is_primitive? */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
-  /* } */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
-  /* } */
 
 
 
@@ -192,13 +156,6 @@ Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->AssetId, Memory);
 
-  /* member.is_primitive? */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
-  /* } */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
-  /* } */
 
 
 
@@ -207,22 +164,17 @@ Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ModelIndex, Memory);
 
-  /* member.is_primitive? */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
-  /* } */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
-  /* } */
 
 
 
 
-  b64 HadEmitterPointer = Read_u64(Bytes);
+ b64 HadEmitterPointer = Read_u64(Bytes);
   Assert(HadEmitterPointer < 2); // Should be 0 or 1
 
 
+
   Element->State = Cast(entity_state, Read_u32(Bytes));
+
 
 
 
@@ -230,32 +182,16 @@ Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
 
 
 
+
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->UserType, Memory);
 
-  /* member.is_primitive? */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
-  /* } */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
-  /* } */
 
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->UserData, Memory);
-
-  /* member.is_primitive? */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
-  /* } */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
-  /* } */
+if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, Element, Memory);}
 
   if (HadEmitterPointer)
   {

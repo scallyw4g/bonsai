@@ -35,8 +35,8 @@ enum player_action
 
   // NOTE(Jesse): Move must come first because we start iterating from it.
   PlayerAction_Move,
-  PlayerAction_Charge,
-  PlayerAction_Fire,
+  PlayerAction_ChargeFireball,
+  PlayerAction_Throw,
   PlayerAction_IceBlock,
   PlayerAction_Dig,
   PlayerAction_ShovelSmack,

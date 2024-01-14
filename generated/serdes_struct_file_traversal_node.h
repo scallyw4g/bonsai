@@ -10,7 +10,9 @@ Serialize(native_file *File, file_traversal_node *Element)
 
 
 
+
   Result &= Serialize(File, &Element->Dir);
+
 
 
 
@@ -31,17 +33,11 @@ Deserialize(u8_stream *Bytes, file_traversal_node *Element, memory_arena *Memory
 
 
 
+
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Dir, Memory);
 
-  /* member.is_primitive? */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
-  /* } */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
-  /* } */
 
 
 
@@ -49,14 +45,6 @@ Deserialize(u8_stream *Bytes, file_traversal_node *Element, memory_arena *Memory
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Name, Memory);
-
-  /* member.is_primitive? */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
-  /* } */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
-  /* } */
 
   
 

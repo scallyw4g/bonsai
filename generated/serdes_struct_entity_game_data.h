@@ -1,18 +1,18 @@
 link_internal b32
-Serialize(native_file *File, keyframe *Element)
+Serialize(native_file *File, entity_game_data *Element)
 {
   u64 PointerTrue = True; 
   u64 PointerFalse = False; 
 
   b32 Result = True;
 
-  Result &= Serialize(File, &Element->tEnd);
+  Result &= Serialize(File, &Element->FireballCharges);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Value);
+  Result &= Serialize(File, &Element->IceBlockCharges);
 
   
 
@@ -21,12 +21,12 @@ Serialize(native_file *File, keyframe *Element)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, keyframe *Element, memory_arena *Memory)
+Deserialize(u8_stream *Bytes, entity_game_data *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->tEnd, Memory);
+  Result &= Deserialize(Bytes, &Element->FireballCharges, Memory);
 
 
 
@@ -34,7 +34,7 @@ Deserialize(u8_stream *Bytes, keyframe *Element, memory_arena *Memory)
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Value, Memory);
+  Result &= Deserialize(Bytes, &Element->IceBlockCharges, Memory);
 
   
 

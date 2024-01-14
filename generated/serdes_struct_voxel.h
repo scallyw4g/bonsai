@@ -11,7 +11,9 @@ Serialize(native_file *File, voxel *Element)
 
 
 
+
   Result &= Serialize(File, &Element->Transparency);
+
 
 
 
@@ -32,13 +34,6 @@ Deserialize(u8_stream *Bytes, voxel *Element, memory_arena *Memory)
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Flags, Memory);
 
-  /* member.is_primitive? */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
-  /* } */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
-  /* } */
 
 
 
@@ -47,13 +42,6 @@ Deserialize(u8_stream *Bytes, voxel *Element, memory_arena *Memory)
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Transparency, Memory);
 
-  /* member.is_primitive? */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
-  /* } */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
-  /* } */
 
 
 
@@ -61,14 +49,6 @@ Deserialize(u8_stream *Bytes, voxel *Element, memory_arena *Memory)
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Color, Memory);
-
-  /* member.is_primitive? */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name)); */
-  /* } */
-  /* { */
-  /*   Result &= Deserialize(Bytes, &Element->(member.name), Memory); */
-  /* } */
 
   
 

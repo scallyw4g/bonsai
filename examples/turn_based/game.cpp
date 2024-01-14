@@ -11,7 +11,7 @@ Global_EntityFireballOffset = V3(0,0,16);
 /* Global_EntityFireballOffset = V3(7.0f, -1.75f, 4.5f); */
 
 global_variable f32
-Global_MeleeRange = 10.f;
+Global_MeleeRange = 12.f;
 
 #if 0
 link_internal model *
@@ -419,6 +419,65 @@ FireballPhysics()
 }
 
 
+link_internal b32
+HoldingSomething(entity *Player)
+{
+  /* NotImplemented; */
+  return False;
+}
+
+link_internal b32
+IceBlockCharges(entity *Player)
+{
+  /* NotImplemented; */
+  return False;
+}
+
+link_internal b32
+CanDoAction(entity *Player, player_action Action)
+{
+  b32 Result = False;
+  switch (Action)
+  {
+    InvalidCase(PlayerAction_Count);
+
+    case PlayerAction_None:
+    case PlayerAction_Move:
+    {
+      Result = True;
+    } break;
+
+    case PlayerAction_ChargeFireball:
+    {
+      if (HoldingSomething(Player) == False) { Result = True; }
+    } break;
+
+    case PlayerAction_Throw:
+    {
+      if (HoldingSomething(Player)) { Result = True; }
+    } break;
+
+    case PlayerAction_IceBlock:
+    {
+      if (IceBlockCharges(Player)) { Result = True; }
+    } break;
+
+    case PlayerAction_Dig:
+    {
+      Result = True;
+    } break;
+
+    case PlayerAction_ShovelSmack:
+    {
+      Result = False;
+      /* if (GatherEntitiesIntersecting()) { } */
+    } break;
+
+  }
+
+  return Result;
+}
+
 BONSAI_API_MAIN_THREAD_CALLBACK()
 {
   Assert(ThreadLocal_ThreadIndex == 0);
@@ -473,12 +532,12 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
     if (Input->X.Clicked)
     {
-      GameState->ProposedAction = PlayerAction_Charge;
+      GameState->ProposedAction = PlayerAction_ChargeFireball;
     }
 
     if (Input->C.Clicked)
     {
-      GameState->ProposedAction = PlayerAction_Fire;
+      GameState->ProposedAction = PlayerAction_Throw;
     }
 
     if (Input->V.Clicked)
@@ -558,7 +617,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
         } break;
 
-        case PlayerAction_Charge:
+        case PlayerAction_ChargeFireball:
         {
           if (Input->LMB.Clicked)
           {
@@ -572,7 +631,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           }
         } break;
 
-        case PlayerAction_Fire:
+        case PlayerAction_Throw:
         {
           if (GameState->PlayerChargeLevel)
           {
@@ -653,14 +712,16 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           {
             if (Resources->HoverEntity.Tag)
             {
-              entity *Enemy = Resources->HoverEntity.Value;
+              entity *HoverEnemy = Resources->HoverEntity.Value;
               {
-                if (DistanceSqBetweenBasePoints(World, Enemy, Player) < Square(Global_MeleeRange))
+                aabb PlayerHitArea = GetSimSpaceAABB(World, Player) + V3(Global_MeleeRange);
+
+                if (Intersect(World, HoverEnemy, &PlayerHitArea))
                 {
-                  HighlightEntity(Resources, Enemy);
+                  HighlightEntity(Resources, HoverEnemy);
                   if (Input->LMB.Clicked)
                   {
-                    GameState->PlayerActed = EffectSmackEntity(Resources, Enemy);
+                    GameState->PlayerActed = EffectSmackEntity(Resources, HoverEnemy);
                   }
                 }
               }
@@ -702,11 +763,11 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         {
         } break;
 
-        case PlayerAction_Charge:
+        case PlayerAction_ChargeFireball:
         {
         } break;
 
-        case PlayerAction_Fire:
+        case PlayerAction_Throw:
         {
         } break;
 
@@ -737,7 +798,10 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       for (u32 ActionIndex = PlayerAction_Move; ActionIndex < PlayerAction_Count; ++ActionIndex)
       {
         ui_style *Style = ActionIndex == GameState->ProposedAction ? &DefaultSelectedStyle : &DefaultStyle;
-        PushColumn(Ui, ToString((player_action)ActionIndex), Style);
+        if (CanDoAction(Player, player_action(ActionIndex)))
+        {
+          PushColumn(Ui, ToString((player_action)ActionIndex), Style);
+        }
         PushNewRow(Ui);
       }
     PushTableEnd(Ui);
@@ -748,6 +812,59 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   PushWindowEnd(Ui, &ActionsWindow);
 
+}
+
+struct entity_game_data
+{
+  u32 FireballCharges;
+  u32 IceBlockCharges;
+};
+
+poof(serdes_struct(entity_game_data))
+#include <generated/serdes_struct_entity_game_data.h>
+
+link_weak b32
+EntityUserDataSerialize(native_file *File, entity *Entity)
+{
+  entity_game_data *EGD = Cast(entity_game_data*, Entity->UserData);
+  if (EGD)
+  {
+    u64 T = True;
+    Serialize(File, &T);
+    Serialize(File, EGD);
+  }
+  else
+  {
+    u64 F = False;
+    Serialize(File, &F);
+  }
+  return True;
+}
+
+link_weak b32
+EntityUserDataDeserialize(u8_cursor *Bytes, entity *Entity, memory_arena *Memory)
+{
+  u64 UserData = {};
+  Deserialize(Bytes, &UserData, Memory);
+
+  if(UserData == True)
+  {
+    entity_game_data *GameData = Allocate(entity_game_data, Memory, 1);
+    Deserialize(Bytes, GameData, Memory);
+    Entity->UserData = (u64)GameData;
+  }
+  else
+  {
+    if (UserData != False)
+    {
+      SoftError("Corrupt entity (%p), UserData was (%x), when it should be (1) or (0)!", Entity, UserData);
+      return False;
+    }
+  }
+
+  b32 Result = True;
+  /* MAYBE_READ_DEBUG_OBJECT_DELIM(); */
+  return Result;
 }
 
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
@@ -782,6 +899,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   asset_id PlayerAsset = GetOrAllocateAssetId(Resources, {FileTraversalType_File, CSz("models"), CSz("players/chr_rain.vox")});
   SpawnPlayerLikeEntity(Plat, World, &PlayerAsset, GameState->Player, PlayerSpawnP, &GameState->Entropy);
+
+  /* GameState->Player->UserData = (u64)Allocate(entity_game_data, Memory, 1); */
 #endif
 
 #if 1
