@@ -16,6 +16,7 @@ DoEditorUi(renderer_2d *Ui, entity_position_info *Element, cs Name, EDITOR_UI_FU
 
 
 
+
       
       DoEditorUi(Ui, &Element->_CollisionVolumeRadius, CSz("v3 _CollisionVolumeRadius"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
@@ -24,8 +25,10 @@ DoEditorUi(renderer_2d *Ui, entity_position_info *Element, cs Name, EDITOR_UI_FU
 
 
 
+
       
       DoEditorUi(Ui, &Element->Scale, CSz("r32 Scale"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 

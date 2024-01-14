@@ -16,6 +16,7 @@ DoEditorUi(renderer_2d *Ui, asset_id *Element, cs Name, EDITOR_UI_FUNCTION_PROTO
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->FileNode, CSz("file_traversal_node FileNode"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);

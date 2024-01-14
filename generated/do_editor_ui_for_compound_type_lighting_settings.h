@@ -16,6 +16,7 @@ DoEditorUi(renderer_2d *Ui, lighting_settings *Element, cs Name, EDITOR_UI_FUNCT
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->tDay, CSz("r32 tDay"), EDITOR_UI_FUNCTION_INSTANCE_NAMES,-PI32, PI32);
@@ -40,8 +41,10 @@ DoEditorUi(renderer_2d *Ui, lighting_settings *Element, cs Name, EDITOR_UI_FUNCT
 
 
 
+
       
       DoEditorUi(Ui, &Element->SunColor, CSz("v3 SunColor"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -56,8 +59,10 @@ DoEditorUi(renderer_2d *Ui, lighting_settings *Element, cs Name, EDITOR_UI_FUNCT
 
 
 
+
       
       DoEditorUi(Ui, &Element->MoonColor, CSz("v3 MoonColor"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -104,8 +109,10 @@ DoEditorUi(renderer_2d *Ui, lighting_settings *Element, cs Name, EDITOR_UI_FUNCT
 
 
 
+
       
       DoEditorUi(Ui, &Element->Test, CSz("u32 Test"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 

@@ -16,6 +16,7 @@ DoEditorUi(renderer_2d *Ui, collision_event *Element, cs Name, EDITOR_UI_FUNCTIO
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->Count, CSz("u32 Count"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
@@ -25,9 +26,11 @@ DoEditorUi(renderer_2d *Ui, collision_event *Element, cs Name, EDITOR_UI_FUNCTIO
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->MinP, CSz("canonical_position MinP"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 

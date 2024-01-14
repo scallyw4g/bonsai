@@ -16,8 +16,10 @@ DoEditorUi(renderer_2d *Ui, vertex_material *Element, cs Name, EDITOR_UI_FUNCTIO
 
 
 
+
       
       DoEditorUi(Ui, &Element->Transparency, CSz("f32 Transparency"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -27,6 +29,7 @@ DoEditorUi(renderer_2d *Ui, vertex_material *Element, cs Name, EDITOR_UI_FUNCTIO
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->Emission, CSz("f32 Emission"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 

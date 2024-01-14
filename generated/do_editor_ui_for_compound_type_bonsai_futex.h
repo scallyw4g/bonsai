@@ -16,6 +16,7 @@ DoEditorUi(renderer_2d *Ui, bonsai_futex *Element, cs Name, EDITOR_UI_FUNCTION_P
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->ThreadsWaiting, CSz("u32 ThreadsWaiting"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
@@ -25,9 +26,11 @@ DoEditorUi(renderer_2d *Ui, bonsai_futex *Element, cs Name, EDITOR_UI_FUNCTION_P
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, Cast(b8*, &Element->Initialized), CSz("b32 Initialized"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 

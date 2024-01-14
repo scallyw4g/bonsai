@@ -16,6 +16,7 @@ DoEditorUi(renderer_2d *Ui, render_debug *Element, cs Name, EDITOR_UI_FUNCTION_P
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->BytesTransGeoLastFrame, CSz("u32 BytesTransGeoLastFrame"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
@@ -25,9 +26,11 @@ DoEditorUi(renderer_2d *Ui, render_debug *Element, cs Name, EDITOR_UI_FUNCTION_P
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->DrawCallsLastFrame, CSz("u32 DrawCallsLastFrame"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 

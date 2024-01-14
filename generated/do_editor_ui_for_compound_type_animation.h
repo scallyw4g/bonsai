@@ -16,6 +16,7 @@ DoEditorUi(renderer_2d *Ui, animation *Element, cs Name, EDITOR_UI_FUNCTION_PROT
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->tEnd, CSz("r32 tEnd"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
@@ -25,9 +26,11 @@ DoEditorUi(renderer_2d *Ui, animation *Element, cs Name, EDITOR_UI_FUNCTION_PROT
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->xKeyframeCount, CSz("u32 xKeyframeCount"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -49,6 +52,7 @@ DoEditorUi(renderer_2d *Ui, animation *Element, cs Name, EDITOR_UI_FUNCTION_PROT
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, Element->yKeyframes, CSz("keyframe yKeyframes"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
@@ -58,6 +62,7 @@ DoEditorUi(renderer_2d *Ui, animation *Element, cs Name, EDITOR_UI_FUNCTION_PROT
 
       
       DoEditorUi(Ui, &Element->zKeyframeCount, CSz("u32 zKeyframeCount"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 

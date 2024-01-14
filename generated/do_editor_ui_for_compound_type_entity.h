@@ -16,6 +16,7 @@ DoEditorUi(renderer_2d *Ui, entity *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->Id, CSz("u64 Id"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
@@ -25,9 +26,10 @@ DoEditorUi(renderer_2d *Ui, entity *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
 
 
 
+
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, &Element->P, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+DoEditorUi_entity_P(Ui, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -35,8 +37,7 @@ DoEditorUi(renderer_2d *Ui, entity *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
 
 
       
-      DoEditorUi(Ui, &Element->EulerAngles, CSz("v3 EulerAngles"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
+      DoEditorUi(Ui, &Element->EulerAngles, CSz("v3 EulerAngles"), EDITOR_UI_FUNCTION_INSTANCE_NAMES,-180.f, 180.f);
 
 
 
@@ -44,6 +45,7 @@ DoEditorUi(renderer_2d *Ui, entity *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
 
       
       DoEditorUi(Ui, &Element->Scale, CSz("r32 Scale"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -59,8 +61,10 @@ DoEditorUi(renderer_2d *Ui, entity *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
 
 
 
+
       
       DoEditorUi(Ui, &Element->Physics, CSz("physics Physics"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -75,8 +79,10 @@ DoEditorUi(renderer_2d *Ui, entity *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
 
 
 
+
       
       DoEditorUi(Ui, &Element->ModelIndex, CSz("u64 ModelIndex"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -92,8 +98,10 @@ DoEditorUi(renderer_2d *Ui, entity *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
 
 
 
+
       
       DoEditorUi(Ui, &Element->LastResolvedPosInfo, CSz("entity_position_info LastResolvedPosInfo"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -114,8 +122,10 @@ DoEditorUi(renderer_2d *Ui, entity *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
 
 
 
+
       
       DoEditorUi(Ui, &Element->Behavior, CSz("entity_behavior_flags Behavior"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -130,9 +140,11 @@ DoEditorUi(renderer_2d *Ui, entity *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->UserData, CSz("u64 UserData"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 

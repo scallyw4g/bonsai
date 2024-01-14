@@ -16,6 +16,7 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, cs Name, EDITOR_UI_FUNCTIO
 
 
 
+
       
       DoEditorUi(Ui, &Element->SpawnType, CSz("particle_spawn_type SpawnType"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
@@ -24,8 +25,10 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, cs Name, EDITOR_UI_FUNCTIO
 
 
 
+
       
       DoEditorUi(Ui, &Element->Drag, CSz("r32 Drag"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -41,9 +44,11 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, cs Name, EDITOR_UI_FUNCTIO
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->EmissionDelay, CSz("r32 EmissionDelay"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -59,9 +64,11 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, cs Name, EDITOR_UI_FUNCTIO
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->ActiveParticles, CSz("u32 ActiveParticles"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -77,9 +84,11 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, cs Name, EDITOR_UI_FUNCTIO
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->ParticleLifespan, CSz("r32 ParticleLifespan"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -95,9 +104,11 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, cs Name, EDITOR_UI_FUNCTIO
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->ParticleLightEmission, CSz("r32 ParticleLightEmission"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -113,9 +124,11 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, cs Name, EDITOR_UI_FUNCTIO
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->ParticleStartingTransparency, CSz("r32 ParticleStartingTransparency"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -131,6 +144,7 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, cs Name, EDITOR_UI_FUNCTIO
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->ParticleStartingDim, CSz("v3 ParticleStartingDim"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
@@ -140,8 +154,10 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, cs Name, EDITOR_UI_FUNCTIO
 
 
 
+
       
       DoEditorUi(Ui, &Element->ParticleEndingDim, CSz("f32 ParticleEndingDim"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -157,8 +173,10 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, cs Name, EDITOR_UI_FUNCTIO
 
 
 
+
       
       DoEditorUi(Ui, &Element->ParticleTurbMax, CSz("v3 ParticleTurbMax"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -173,8 +191,10 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, cs Name, EDITOR_UI_FUNCTIO
 
 
 
+
       
       DoEditorUi(Ui, &Element->SystemMovementCoefficient, CSz("r32 SystemMovementCoefficient"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -184,6 +204,7 @@ DoEditorUi(renderer_2d *Ui, particle_system *Element, cs Name, EDITOR_UI_FUNCTIO
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->ElapsedSinceLastEmission, CSz("r32 ElapsedSinceLastEmission"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 

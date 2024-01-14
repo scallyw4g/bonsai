@@ -16,6 +16,7 @@ DoEditorUi(renderer_2d *Ui, asset *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DE
 
 
 
+
       
       DoEditorUi(Ui, &Element->Id, CSz("asset_id Id"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
@@ -24,8 +25,10 @@ DoEditorUi(renderer_2d *Ui, asset *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DE
 
 
 
+
       
       DoEditorUi(Ui, &Element->LRUFrameIndex, CSz("u64 LRUFrameIndex"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 

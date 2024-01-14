@@ -16,8 +16,10 @@ DoEditorUi(renderer_2d *Ui, world *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DE
 
 
 
+
       
       DoEditorUi(Ui, &Element->VisibleRegion, CSz("v3i VisibleRegion"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 

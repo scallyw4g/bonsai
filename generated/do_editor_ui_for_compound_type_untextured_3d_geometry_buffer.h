@@ -34,9 +34,11 @@ DoEditorUi(renderer_2d *Ui, untextured_3d_geometry_buffer *Element, cs Name, EDI
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->At, CSz("u32 At"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -58,9 +60,11 @@ DoEditorUi(renderer_2d *Ui, untextured_3d_geometry_buffer *Element, cs Name, EDI
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->Timestamp, CSz("u64 Timestamp"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 

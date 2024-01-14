@@ -16,9 +16,11 @@ DoEditorUi(renderer_2d *Ui, gpu_element_buffer_handles *Element, cs Name, EDITOR
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->NormalHandle, CSz("u32 NormalHandle"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -34,9 +36,11 @@ DoEditorUi(renderer_2d *Ui, gpu_element_buffer_handles *Element, cs Name, EDITOR
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->ElementCount, CSz("u32 ElementCount"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 

@@ -16,9 +16,11 @@ DoEditorUi(renderer_2d *Ui, keyframe *Element, cs Name, EDITOR_UI_FUNCTION_PROTO
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->Value, CSz("r32 Value"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 

@@ -16,8 +16,10 @@ DoEditorUi(renderer_2d *Ui, world_chunk *Element, cs Name, EDITOR_UI_FUNCTION_PR
 
 
 
+
       
       DoEditorUi(Ui, &Element->Dim, CSz("v3i Dim"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -44,8 +46,10 @@ DoEditorUi(renderer_2d *Ui, world_chunk *Element, cs Name, EDITOR_UI_FUNCTION_PR
 
 
 
+
       
       DoEditorUi(Ui, &Element->StandingSpots, CSz("voxel_position_cursor StandingSpots"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -60,8 +64,10 @@ DoEditorUi(renderer_2d *Ui, world_chunk *Element, cs Name, EDITOR_UI_FUNCTION_PR
 
 
 
+
       
       DoEditorUi(Ui, &Element->FilledCount, CSz("u32 FilledCount"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -77,9 +83,11 @@ DoEditorUi(renderer_2d *Ui, world_chunk *Element, cs Name, EDITOR_UI_FUNCTION_PR
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->PointsToLeaveRemaining, CSz("s32 PointsToLeaveRemaining"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -95,9 +103,11 @@ DoEditorUi(renderer_2d *Ui, world_chunk *Element, cs Name, EDITOR_UI_FUNCTION_PR
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->EdgeBoundaryVoxelCount, CSz("s32 EdgeBoundaryVoxelCount"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -113,9 +123,11 @@ DoEditorUi(renderer_2d *Ui, world_chunk *Element, cs Name, EDITOR_UI_FUNCTION_PR
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->DimY, CSz("u8 DimY"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -131,9 +143,11 @@ DoEditorUi(renderer_2d *Ui, world_chunk *Element, cs Name, EDITOR_UI_FUNCTION_PR
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->_Pad0, CSz("u8 _Pad0"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -149,6 +163,7 @@ DoEditorUi(renderer_2d *Ui, world_chunk *Element, cs Name, EDITOR_UI_FUNCTION_PR
 
       
       DoEditorUi(Ui, &Element->Entities, CSz("entity_ptr_block_array Entities"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 

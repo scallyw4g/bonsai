@@ -16,6 +16,7 @@ DoEditorUi(renderer_2d *Ui, voxel *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DE
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->Transparency, CSz("u8 Transparency"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
@@ -25,9 +26,11 @@ DoEditorUi(renderer_2d *Ui, voxel *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DE
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->Color, CSz("u16 Color"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 

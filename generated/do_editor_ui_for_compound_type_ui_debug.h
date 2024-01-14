@@ -16,9 +16,11 @@ DoEditorUi(renderer_2d *Ui, ui_debug *Element, cs Name, EDITOR_UI_FUNCTION_PROTO
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->OutlineUiButtons, CSz("b8 OutlineUiButtons"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -34,9 +36,11 @@ DoEditorUi(renderer_2d *Ui, ui_debug *Element, cs Name, EDITOR_UI_FUNCTION_PROTO
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->OutlineUiTableColumns, CSz("b8 OutlineUiTableColumns"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -52,9 +56,11 @@ DoEditorUi(renderer_2d *Ui, ui_debug *Element, cs Name, EDITOR_UI_FUNCTION_PROTO
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->DebugBreakUiCommand, CSz("b8 DebugBreakUiCommand"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 

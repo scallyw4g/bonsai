@@ -16,6 +16,7 @@ DoEditorUi(renderer_2d *Ui, random_series *Element, cs Name, EDITOR_UI_FUNCTION_
 
 
 
+
       PushNewRow(Ui);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);

@@ -16,8 +16,10 @@ DoEditorUi(renderer_2d *Ui, engine_debug *Element, cs Name, EDITOR_UI_FUNCTION_P
 
 
 
+
       
       DoEditorUi(Ui, &Element->Textures, CSz("texture_cursor Textures"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -32,6 +34,7 @@ DoEditorUi(renderer_2d *Ui, engine_debug *Element, cs Name, EDITOR_UI_FUNCTION_P
 
 
 
+
       
       DoEditorUi(Ui, &Element->Render, CSz("render_debug Render"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
@@ -40,8 +43,10 @@ DoEditorUi(renderer_2d *Ui, engine_debug *Element, cs Name, EDITOR_UI_FUNCTION_P
 
 
 
+
       
       DoEditorUi(Ui, &Element->DrawEntityCollisionVolumes, CSz("b8 DrawEntityCollisionVolumes"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -57,9 +62,11 @@ DoEditorUi(renderer_2d *Ui, engine_debug *Element, cs Name, EDITOR_UI_FUNCTION_P
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->TriggerRuntimeBreak, CSz("b8 TriggerRuntimeBreak"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -75,9 +82,11 @@ DoEditorUi(renderer_2d *Ui, engine_debug *Element, cs Name, EDITOR_UI_FUNCTION_P
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &Element->PickedChunkState, CSz("u8 PickedChunkState"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -99,8 +108,10 @@ DoEditorUi(renderer_2d *Ui, engine_debug *Element, cs Name, EDITOR_UI_FUNCTION_P
 
 
 
+
       
       DoEditorUi(Ui, &Element->ModelIndex, CSz("u64 ModelIndex"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 

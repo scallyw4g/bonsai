@@ -16,8 +16,10 @@ DoEditorUi(renderer_2d *Ui, render_settings *Element, cs Name, EDITOR_UI_FUNCTIO
 
 
 
+
       
       DoEditorUi(Ui, Cast(b8*, &Element->UseSsao), CSz("b32 UseSsao"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -33,9 +35,11 @@ DoEditorUi(renderer_2d *Ui, render_settings *Element, cs Name, EDITOR_UI_FUNCTIO
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, Cast(b8*, &Element->UseLightingBloom), CSz("b32 UseLightingBloom"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -51,9 +55,11 @@ DoEditorUi(renderer_2d *Ui, render_settings *Element, cs Name, EDITOR_UI_FUNCTIO
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, Cast(b8*, &Element->BravoilMcGuireOIT), CSz("b32 BravoilMcGuireOIT"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
@@ -69,9 +75,11 @@ DoEditorUi(renderer_2d *Ui, render_settings *Element, cs Name, EDITOR_UI_FUNCTIO
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, Cast(b8*, &Element->DrawMinorGrid), CSz("b32 DrawMinorGrid"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
 
 
 
