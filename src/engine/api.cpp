@@ -109,6 +109,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
   Resources->MousedOverVoxel = MousePickVoxel(Resources);
   Resources->HoverEntity     = GetClosestEntityIntersectingRay(World, EntityTable, &Resources->MaybeMouseRay.Ray);
 
+  // Find closest standing spot to cursor
   {
     Resources->ClosestStandingSpotToCursor = {};
 
@@ -136,11 +137,10 @@ Bonsai_FrameBegin(engine_resources *Resources)
         Resources->ClosestStandingSpotToCursor.Value = Spots.Start[ClosestTileIndex];
       }
     }
-
   }
 
-  UiFrameBegin(Ui);
-  DoEngineDebug(Resources);
+  UiFrameBegin(Ui);         // Clear UI interactions
+  DoEngineDebug(Resources); // Do Editor/Debug UI
 
 #if 0
   // NOTE(Jesse): This is a start on debugging some UI layout issues
@@ -167,8 +167,8 @@ Bonsai_FrameBegin(engine_resources *Resources)
   }
 #endif
 
-  // NOTE(Jesse): Has to come after the UI draws such that we don't get a frame
-  // of camera-jank if the UI captures mouse input
+  // NOTE(Jesse): Has to come after the UI happens such that we don't get a
+  // frame of camera-jank if the UI captures mouse input
   //
   // The specific case here is that if the camera updates, then the UI draws,
   // and we're in paint-single mode (which captures the input) there's a frame

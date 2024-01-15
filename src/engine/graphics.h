@@ -82,7 +82,13 @@ struct graphics
 {
   render_settings Settings;
 
+  // Default cameras, game code can do it's own thing if it wants to.
+  camera GameCamera;
+  camera DebugCamera;
+
+  // Pointer to current camera.  Anyone is free to modify this pointer ..?
   camera *Camera;
+
   r32 Exposure;
 
   // TODO(Jesse): None of these need to be pointers..

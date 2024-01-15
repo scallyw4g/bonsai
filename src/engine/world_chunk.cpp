@@ -4829,26 +4829,6 @@ MousePickVoxel(engine_resources *Resources)
   maybe_ray MaybeRay = Resources->MaybeMouseRay;
   if (MaybeRay.Tag == Maybe_Yes)
   {
-
-#if 0
-    auto LineMinP = MaybeRay.Ray.Origin;
-    /* auto LineMinP = MaybeRay.Ray.Origin + V3(0, 1, 0); */
-    auto LineMaxP = MaybeRay.Ray.Origin + (MaybeRay.Ray.Dir * 100.f);
-
-    untextured_3d_geometry_buffer LineMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_LINE);
-    DEBUG_DrawLine(&LineMesh, LineMinP, LineMaxP, 2, 1.f);
-
-/*     DEBUG_VALUE_r32(LineMinP.x); */
-/*     DEBUG_VALUE_r32(LineMinP.y); */
-/*     DEBUG_VALUE_r32(LineMinP.z); */
-
-/*     DEBUG_VALUE_r32(LineMaxP.x); */
-/*     DEBUG_VALUE_r32(LineMaxP.y); */
-/*     DEBUG_VALUE_r32(LineMaxP.z); */
-#endif
-
-#if 1
-
     picked_voxel RayResult = RayTraceCollision( Resources, Camera->CurrentP, MaybeRay.Ray.Dir);
 
     if (world_chunk *ClosestChunk = RayResult.Chunks[PickedVoxel_FirstFilled].Chunk)
@@ -4856,69 +4836,9 @@ MousePickVoxel(engine_resources *Resources)
       v3 MinP =  V3(ClosestChunk->WorldP * World->ChunkDim);
       v3 VoxelP = MinP + Truncate(RayResult.Picks[PickedVoxel_FirstFilled].Offset);
 
-#if 0
-      // Highlight standing spot we're hovering over
-      for (u32 StandingSpotIndex = 0;
-               StandingSpotIndex < AtElements(&ClosestChunk->StandingSpots);
-             ++StandingSpotIndex)
-      {
-        v3i *Spot = ClosestChunk->StandingSpots.Start + StandingSpotIndex;
-
-        aabb SpotRect = AABBMinMax(V3(*Spot), V3(*Spot+Global_StandingSpotDim));
-        if (IsInside(SpotRect, Truncate(RayResult.Picks[PickedVoxel_FirstFilled].Offset)))
-        {
-          /* untextured_3d_geometry_buffer SpotAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB); */
-          v3 RenderP = GetRenderP(World->ChunkDim, MinP+V3(*Spot), Camera);
-          DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_STANDING_SPOT_THICKNESS+0.01f);
-        }
-      }
-#endif
-
       Result.Tag   = Maybe_Yes;
       Result.Value = RayResult;
     }
-
-    local_persist b32 Picked = False;
-    local_persist picked_voxel PickedVoxel;
-    if (Hotkeys->Debug_PickChunks_Voxel)
-    {
-      Picked = Result.Tag;
-      PickedVoxel = Result.Value;
-
-#if BONSAI_DEBUG_SYSTEM_API
-      if (Picked)
-      {
-        GetDebugState()->PickedChunk = &PickedVoxel.Chunks[PickedVoxel_FirstFilled];
-      }
-#endif
-    }
-
-#if 0
-    // NOTE(Jesse): This is using absolute space coordinate nonsense
-    if (Picked)
-    {
-      v3 MinP =  V3(PickedVoxel.PickedChunk.Chunk->WorldP * World->ChunkDim);
-      v3 VoxelP = MinP + Truncate(PickedVoxel.Picks[PickedVoxel_FirstFilled]);
-
-      untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
-      DrawVoxel( &VoxelMesh, GetRenderP(World->ChunkDim, VoxelP+V3(.5f), Camera), RED, V3(1.05f) );
-
-      untextured_3d_geometry_buffer ChunkAABBMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
-      auto ChunkAABB = AABBMinDim( GetRenderP(World->ChunkDim, MinP, Camera), V3(World->ChunkDim));
-      DEBUG_DrawAABB(&ChunkAABBMesh, ChunkAABB, RED);
-    }
-#endif
-
-    if (Hotkeys->Debug_Action_ComputeStandingSpot)
-    {
-      /* v3i TileChunkOffset = (V3i(xIndex, yTile, zTile) * (TileChunkDim-1));// + V3(1); */
-      v3i TileChunkOffset = Voxel_Position(PickedVoxel.Picks[PickedVoxel_FirstFilled].Offset);
-      v3i TileChunkDim = Chunk_Dimension(8, 8, 2);
-      /* boundary_voxels* TempBoundingPoints = AllocateBoundaryVoxels((u32)Volume(TileChunkDim), TranArena); */
-      standing_spot Spot = ComputeStandingSpotFor8x8x2_V2(PickedVoxel.Chunks[PickedVoxel_FirstFilled].Chunk->Voxels, World->ChunkDim, TileChunkOffset, TileChunkDim); //, TempBoundingPoints);
-    }
-
-#endif
   }
 
   return Result;

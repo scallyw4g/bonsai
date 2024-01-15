@@ -652,8 +652,10 @@ GraphicsInit(memory_arena *GraphicsMemory)
     Lighting->DuskIntensity = 1.f;
   }
 
-  Result->Camera = Allocate(camera, GraphicsMemory, 1);
-  StandardCamera(Result->Camera, 1000.f, 600.f, {});
+  StandardCamera(&Result->GameCamera, 1000.f, 600.f, {});
+  StandardCamera(&Result->DebugCamera, 1000.f, 600.f, {});
+
+  Result->Camera = &Result->GameCamera;
 
   AllocateGpuElementBuffer(Result->GpuBuffers + 0, (u32)Megabytes(1));
   AllocateGpuElementBuffer(Result->GpuBuffers + 1, (u32)Megabytes(1));

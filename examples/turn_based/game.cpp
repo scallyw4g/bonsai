@@ -515,23 +515,11 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   memory_arena *GameMemory = &GameState->Memory;
   entity *Player           = GameState->Player;
 
+  // NOTE(Jesse): Crutch for loading savefiles that didn't have this
   if (Player->UserData == 0)
   {
     Player->UserData = Cast(u64, Allocate(entity_game_data, GameMemory, 1));
   }
-
-  /* Player->EulerAngles.x = Sin(Plat->GameTime) * PI32; */
-  /* Player->EulerAngles.x = 0.f; */
-
-  /* Player->EulerAngles.y = Cos(Plat->GameTime*0.25f) * PI32; */
-  /* Player->EulerAngles.y = 0.f; */
-
-  /* Player->EulerAngles.z = Sin(Plat->GameTime*0.5f) * PI32; */
-  /* Player->EulerAngles.z = Sin(Plat->GameTime) * PI32; */
-  /* Player->EulerAngles.z = 0.f; */
-
-  /* file_traversal_node AssetName = {FileTraversalType_File, CSz("models/players"), CSz("chr_old.vox")}; */
-  /* Player->AssetId = AssetId(&AssetName); */
 
   if (GameState->PlayerActed)
   {
@@ -539,20 +527,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   }
 
   GameState->PlayerActed = False;
-
-  /* v3 RotP = {}; */
-  /* RotP.x = Sin(r32(Plat->GameTime)); */
-  /* RotP.y = Cos(r32(Plat->GameTime)); */
-  /* Player->Rotation = RotatePoint(V3(0.f, -1.f, 0.f), RotP); */
-
-  /* standing_spot_buffer EnemySpots = GetStandingSpotsWithinRadius(World, Enemy->P, EnemyMoveSpeed, GetTranArena()); */
-  /* for (u32 SpotIndex = 0; SpotIndex < EnemySpots.Count; ++SpotIndex) */
-  /* { */
-  /*   standing_spot *Spot = EnemySpots.Start + SpotIndex; */
-  /*   v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera); */
-  /*   DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_STANDING_SPOT_THICKNESS*3.f); */
-  /* } */
-
 
   if (Resources->MousedOverVoxel.Tag)
   {
@@ -790,38 +764,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
     if (GameState->TurnMode == TurnMode_Transition)
     {
-      /* if (GameState->TransitionDuration > 1.2f) { GameState->TurnMode = TurnMode_Default; } */
       GameState->TransitionDuration += Plat->dt;
-
-#if 0
-      switch (GameState->ProposedAction)
-      {
-        InvalidCase(PlayerAction_Count);
-
-        case PlayerAction_None: {} break;
-
-        case PlayerAction_Move:
-        {
-        } break;
-
-        case PlayerAction_ChargeFireball:
-        {
-        } break;
-
-        case PlayerAction_Throw:
-        {
-        } break;
-
-        case PlayerAction_IceBlock:
-        {
-        } break;
-
-        case PlayerAction_Dig:
-        {
-        } break;
-      }
-#endif
-
       GameState->ProposedAction = PlayerAction_None;
     }
 
@@ -927,9 +870,6 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   /* GameState->Models = AllocateGameModels(GameState, Resources->Memory, Heap); */
 
-#if 1
-  /* u32 PlayerModelIndex = RandomBetween( u32(ModelIndex_FirstPlayerModel), &GameState->Entropy, u32(ModelIndex_LastPlayerModel+1)); */
-  /* u32 PlayerModelIndex = ModelIndex_FirstPlayerModel; */
   u32 PlayerModelIndex = ModelIndex_Player_old;
   GameState->Player = GetFreeEntity(EntityTable);
   GameState->Player->UserType = Cast(u32, EntityType_Player);
@@ -937,10 +877,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   asset_id PlayerAsset = GetOrAllocateAssetId(Resources, {FileTraversalType_File, CSz("models"), CSz("players/chr_rain.vox")});
   SpawnPlayerLikeEntity(Plat, World, &PlayerAsset, GameState->Player, PlayerSpawnP, &GameState->Entropy);
 
-  /* GameState->Player->UserData = (u64)Allocate(entity_game_data, Memory, 1); */
-#endif
+  GameState->Player->UserData = (u64)Allocate(entity_game_data, Memory, 1);
 
-#if 1
   u32 EnemyCount = 3;
   v3i HalfVisibleRegion = g_VisibleRegion / 2;
   HalfVisibleRegion.z = 0;
@@ -951,18 +889,12 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
         RandomBetween(0, &GameState->Entropy, HalfVisibleRegion.y),
         1);
 
-    /* u32 EnemyModelIndex = u32(ModelIndex_Enemy_Skeleton_Axe) + EnemyIndex; */
-    /* u32 EnemyModelIndex = RandomBetween( u32(ModelIndex_Enemy_Skeleton_Axe), &GameState->Entropy, u32(ModelIndex_Enemy_Skeleton_King+1)); */
-    /* Assert(EnemyModelIndex >= ModelIndex_FirstEnemyModel); */
-    /* Assert(EnemyModelIndex <= ModelIndex_LastEnemyModel); */
     asset_id EnemyAsset = GetOrAllocateAssetId(Resources, {FileTraversalType_File, CSz("models"), CSz("skele_base.vox")});
 
     auto EnemySpawnP = Canonical_Position(V3(0), WorldCenter + WP );
     auto Enemy = GetFreeEntity(EntityTable);
-    /* Enemy->UserData = (void*)GameEntityBehaviorFlags_Enemy; */
-    SpawnPlayerLikeEntity(Plat, World, &EnemyAsset, Enemy, EnemySpawnP, &GameState->Entropy, 0.35f);
+    SpawnPlayerLikeEntity(Plat, World, &EnemyAsset, Enemy, EnemySpawnP, &GameState->Entropy, 1.f);
   }
-#endif
 
   WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
 
