@@ -66,6 +66,7 @@ struct fireball_state
 
 struct game_state
 {
+  memory_arena Memory;
   heap_allocator Heap;
 
   random_series Entropy;
@@ -78,7 +79,6 @@ struct game_state
   b32 PlayerActed;
   player_action ProposedAction;
 
-  u32 PlayerChargeLevel;
   u32 FireballsSimulated;
 
   turn_mode TurnMode;

@@ -13,6 +13,17 @@ Global_EntityFireballOffset = V3(0,0,16);
 global_variable f32
 Global_MeleeRange = 12.f;
 
+
+struct entity_game_data
+{
+  u32 FireballChargeLevel;
+  u32 FireballCharges;
+
+  u32 IceBlockCharges;
+  u32 HoldingItem;
+};
+
+
 #if 0
 link_internal model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *Heap)
@@ -420,17 +431,19 @@ FireballPhysics()
 
 
 link_internal b32
-HoldingSomething(entity *Player)
+HoldingItem(entity *Player)
 {
-  /* NotImplemented; */
-  return False;
+  entity_game_data *GameData = (entity_game_data*)Player->UserData;
+  b32 Result = GameData->HoldingItem != 0;
+  return Result;
 }
 
 link_internal b32
 IceBlockCharges(entity *Player)
 {
-  /* NotImplemented; */
-  return False;
+  entity_game_data *GameData = (entity_game_data*)Player->UserData;
+  b32 Result = GameData->IceBlockCharges != 0;
+  return Result;
 }
 
 link_internal b32
@@ -449,12 +462,12 @@ CanDoAction(entity *Player, player_action Action)
 
     case PlayerAction_ChargeFireball:
     {
-      if (HoldingSomething(Player) == False) { Result = True; }
+      if (HoldingItem(Player) == False) { Result = True; }
     } break;
 
     case PlayerAction_Throw:
     {
-      if (HoldingSomething(Player)) { Result = True; }
+      if (HoldingItem(Player)) { Result = True; }
     } break;
 
     case PlayerAction_IceBlock:
@@ -485,7 +498,13 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  entity *Player = GameState->Player;
+  memory_arena *GameMemory = &GameState->Memory;
+  entity *Player           = GameState->Player;
+
+  if (Player->UserData == 0)
+  {
+    Player->UserData = Cast(u64, Allocate(entity_game_data, GameMemory, 1));
+  }
 
   /* Player->EulerAngles.x = Sin(Plat->GameTime) * PI32; */
   /* Player->EulerAngles.x = 0.f; */
@@ -559,6 +578,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
     if (GameState->TurnMode == TurnMode_Default)
     {
+      entity_game_data *PlayerGameData = Cast(entity_game_data*, Player->UserData);
       switch (GameState->ProposedAction)
       {
         InvalidCase(PlayerAction_Count);
@@ -623,17 +643,18 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           {
             GameState->PlayerActed = True;
 
-            GameState->PlayerChargeLevel += 2;
+            PlayerGameData->HoldingItem = 1;
+            PlayerGameData->FireballChargeLevel += 2;
             SpawnFire( Player,
                       &GameState->Entropy,
                        Global_EntityFireballOffset + Player->_CollisionVolumeRadius.xy,
-                       GameState->PlayerChargeLevel);
+                       PlayerGameData->FireballChargeLevel);
           }
         } break;
 
         case PlayerAction_Throw:
         {
-          if (GameState->PlayerChargeLevel)
+          if (PlayerGameData->FireballChargeLevel)
           {
             if (Input->LMB.Clicked)
             {
@@ -664,7 +685,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
               /* fireball_state *FireballState = Allocate(fireball_state, &GameState->Heap, 1); */
               fireball_state *FireballState = (fireball_state*)HeapAllocate(&GameState->Heap, sizeof(fireball_state));
 
-              FireballState->ChargeLevel = GameState->PlayerChargeLevel;
+              FireballState->ChargeLevel = PlayerGameData->FireballChargeLevel;
               FireballState->TargetP = FirstFilledMouseVoxel;
 
               v3 EntityP = GetSimSpaceP(World, E);
@@ -673,7 +694,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
               E->Physics.Velocity = (Normalize(TargetP-EntityP) + V3(0,0,3)) * 20.f;
               /* E->Physics.Velocity = V3(10.f); */
 
-              GameState->PlayerChargeLevel = 0;
+              PlayerGameData->HoldingItem = 0;
+              PlayerGameData->FireballChargeLevel = 0;
 
               E->UserData = u64(FireballState);
 
@@ -813,12 +835,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   PushWindowEnd(Ui, &ActionsWindow);
 
 }
-
-struct entity_game_data
-{
-  u32 FireballCharges;
-  u32 IceBlockCharges;
-};
 
 poof(serdes_struct(entity_game_data))
 #include <generated/serdes_struct_entity_game_data.h>
