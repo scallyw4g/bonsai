@@ -166,9 +166,22 @@ poof(
         enum_t.map(value)
         {
           PushColumn(Ui, CSz("")); // Skip the first Name column
-          if (Button(Ui, CSz("value.name"), UiId(Element, "enum value.type value.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+          if (Button(Ui, CSz("value.name"), UiId(Element, "enum value.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
           {
-            *Element = value.name;
+            enum_t.has_tag(bitfield)?
+            {
+              if ((*Element & value.name) == value.name)
+              {
+                *Element = enum_t.name(*Element&~value.name);
+              }
+              else
+              {
+                *Element = enum_t.name(*Element|value.name);
+              }
+            }
+            {
+              *Element = value.name;
+            }
           }
           PushNewRow(Ui);
         }

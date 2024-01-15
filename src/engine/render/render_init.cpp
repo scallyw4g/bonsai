@@ -301,7 +301,7 @@ CreateGbuffer(memory_arena *Memory)
 {
   g_buffer_render_group *gBuffer = Allocate(g_buffer_render_group, Memory, 1);
   gBuffer->FBO = GenFramebuffer();
-  gBuffer->ViewProjection = IdentityMatrix;
+  /* gBuffer->ViewProjection = IdentityMatrix; */
   /* gBuffer->MVP = IdentityMatrix; */
 
   return gBuffer;
@@ -588,37 +588,19 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
   Group->FBO = GenFramebuffer();
   GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
 
-#if 0
-  s32 ImageSize = 4*Volume(TextureSize);
-  f32 *Image = Allocate(f32, Memory, ImageSize);
-
-  for (s32 PixIndex = 0; PixIndex < ImageSize; PixIndex += 4)
-  {
-    Image[PixIndex] = 255.f;
-  }
-#else
-  f32 *Image = 0;
-#endif
-
   Group->AccumTex = GenTexture(TextureSize, Memory);
-  GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, Image);
+  GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, 0);
 
   Group->RevealTex = GenTexture(TextureSize, Memory);
-  GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RG32F, TextureSize.x, TextureSize.y, 0, GL_RG, GL_FLOAT, Image);
-
-  /* Group->Depth = MakeDepthTexture(TextureSize, Memory); */
-
-  Assert(ViewProjection);
-  Group->ViewProjection = ViewProjection;
+  GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RG32F, TextureSize.x, TextureSize.y, 0, GL_RG, GL_FLOAT, 0);
 
   // NOTE(Jesse): These have to be bound in this order because they're cleared
   // in this order (and the Reveal tex is special-case cleared to 1.f instead of 0.f)
   FramebufferTexture(&Group->FBO, Group->AccumTex);
   FramebufferTexture(&Group->FBO, Group->RevealTex);
-  /* FramebufferDepthTexture(Group->Depth); */
   SetDrawBuffers(&Group->FBO);
 
-  Group->Shader = MakeTransparencyShader(&Settings->BravoilMyersOIT, &Settings->BravoilMcGuireOIT, Group->ViewProjection, gBufferDepthTexture, Memory);
+  Group->Shader = MakeTransparencyShader(&Settings->BravoilMyersOIT, &Settings->BravoilMcGuireOIT, ViewProjection, gBufferDepthTexture, Memory);
 
   Ensure( CheckAndClearFramebuffer() );
 }

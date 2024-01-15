@@ -194,13 +194,14 @@ GetFreeEntity(entity **EntityTable)
 
   for ( s32 EntityIndex = 0;
         EntityIndex < TOTAL_ENTITY_COUNT;
-        ++EntityIndex )
+      ++EntityIndex )
   {
     entity *TestEntity = EntityTable[EntityIndex];
     if (TestEntity->State == EntityState_Free)
     {
       Result = TestEntity;
       Result->State = EntityState_Reserved;
+      Result->Id = u64(EntityIndex);
       Assert(Result->AssetId.Index == INVALID_ASSET_INDEX);
       break;
     }
@@ -1302,11 +1303,15 @@ RayTraceEntityCollision(engine_resources *Resources, ray *Ray)
 link_internal entity *
 MousePickEntity(engine_resources *Resources)
 {
+  // NOTE(Jesse): This is nearly defunct.  It's only called from game code in once place
+  //
+  NotImplemented;
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Resources);
 
   entity *Result = {};
 
+#if 0
   maybe_ray MaybeRay = ComputeRayFromCursor(Resources, &gBuffer->ViewProjection, Camera, World->ChunkDim);
 
   if (MaybeRay.Tag == Maybe_Yes)
@@ -1316,6 +1321,7 @@ MousePickEntity(engine_resources *Resources)
     ray SimRay = MaybeRay.Ray;
     Result = RayTraceEntityCollision( Resources, &SimRay ).Value;
   }
+#endif
 
   return Result;
 }
@@ -1337,11 +1343,13 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
 
     if (!Spawned(Entity)) continue;
 
+#if 0
     if (Entity->Behavior & EntityBehaviorFlags_CameraGhost)
     {
       if (Resources->_CameraGhost) { Assert(Resources->_CameraGhost == Entity); }
       else { Resources->_CameraGhost = Entity; }
     }
+#endif
 
     b32 DoDefaultUpdate = True;
     if (GameEntityUpdate) { DoDefaultUpdate = (GameEntityUpdate(Resources, Entity) == False); }

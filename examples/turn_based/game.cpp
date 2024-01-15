@@ -156,24 +156,38 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
     }
   }
 
+  memory_arena *Temp = GetTranArena();
+  temp_memory_handle TMH = BeginTemporaryMemory(Temp);
+
+  f32 EnemyMovespeed = 10.f;
+  standing_spot_buffer MoveSpots = GetStandingSpotsWithinRadius(World, &SightedSpots, EnemyBaseP, EnemyMovespeed, Temp, Temp);
+
+  standing_spot *NextSpot =  {};
+
   if (LengthSq(PlayerBaseSimP-EnemyBaseSimP) < Square(EnemySightDistance))
   {
-    /* maybe_standing_spot MaybeSpot = AStarPathfind(&Spots, EnemyBaseP, PlayerBaseP, EnemyMoveSpeed); */
-    /* maybe_standing_spot MaybeSpot = {Maybe_Yes, Spots.Start[ClosestSpotIndex]}; */
-    f32 EnemyMovespeed = 10.f;
-
-    memory_arena *Temp = GetTranArena();
-    temp_memory_handle TMH = BeginTemporaryMemory(Temp);
-
-    standing_spot_buffer MoveSpots = GetStandingSpotsWithinRadius(World, &SightedSpots, EnemyBaseP, EnemyMovespeed, Temp, Temp);
     maybe_standing_spot MaybeSpot = GetClosestToP(World, &MoveSpots, PlayerBaseP);
-    standing_spot *Spot = &MaybeSpot.Value;
+    NextSpot = &MaybeSpot.Value;
+  }
+  else
+  {
+    random_series Entropy = {9490653468579 + u64(GameState->TurnIndex) + Enemy->Id};
+    if (MoveSpots.Count)
+    {
+      u32 NextSpotIndex = RandomBetween(0u, &Entropy, u32(MoveSpots.Count));
+      Assert(NextSpotIndex < MoveSpots.Count);
+      NextSpot = MoveSpots.Start + NextSpotIndex;
+    }
+  }
 
-    DrawStandingSpot(&GpuMap->Buffer, Camera, Spot, RED, StandingSpotRadius*2.f);
+
+  if (NextSpot)
+  {
+    DrawStandingSpot(&GpuMap->Buffer, Camera, NextSpot, RED, StandingSpotRadius*2.f);
 
     if (GameState->PlayerActed)
     {
-      v3 SpotSimP = GetSimSpaceBaseP(World, Spot);
+      v3 SpotSimP = GetSimSpaceBaseP(World, NextSpot);
       v3 SpotTopSimP = SpotSimP + V3(Global_StandingSpotHalfDim.xy, Global_StandingSpotDim.z);
       v3 UpdateV = SpotTopSimP - EnemyBaseSimP + V3(0,0,3);
 
@@ -519,6 +533,11 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   /* file_traversal_node AssetName = {FileTraversalType_File, CSz("models/players"), CSz("chr_old.vox")}; */
   /* Player->AssetId = AssetId(&AssetName); */
 
+  if (GameState->PlayerActed)
+  {
+    GameState->TurnIndex++;
+  }
+
   GameState->PlayerActed = False;
 
   /* v3 RotP = {}; */
@@ -820,10 +839,12 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       for (u32 ActionIndex = PlayerAction_Move; ActionIndex < PlayerAction_Count; ++ActionIndex)
       {
         ui_style *Style = ActionIndex == GameState->ProposedAction ? &DefaultSelectedStyle : &DefaultStyle;
-        if (CanDoAction(Player, player_action(ActionIndex)))
+        if (CanDoAction(Player, player_action(ActionIndex)) == False)
         {
-          PushColumn(Ui, ToString((player_action)ActionIndex), Style);
+          Style = &DefaultDisabledStyle;
         }
+
+        PushColumn(Ui, ToString((player_action)ActionIndex), Style);
         PushNewRow(Ui);
       }
     PushTableEnd(Ui);

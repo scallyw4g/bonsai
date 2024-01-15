@@ -586,6 +586,7 @@ DoWorldEditor(engine_resources *Engine)
       SelectionAABB = AABBMinMax(SelectionMinP, SelectionMaxP);
     }
 
+    // TODO(Jesse): Use pre-computed ray
     maybe_ray MaybeRay = ComputeRayFromCursor(Engine, &gBuffer->ViewProjection, Camera, World->ChunkDim);
     if (MaybeRay.Tag == Maybe_Yes)
     {

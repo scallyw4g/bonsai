@@ -11,7 +11,7 @@ enum entity_type : u32;
 /* link_weak void DoEditorUi(renderer_2d *Ui, entity_type *Element, const char* Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS); */
 #endif
 
-enum entity_behavior_flags
+enum entity_behavior_flags poof(@bitfield)
 {
   EntityBehaviorFlags_None                             =       0,
   EntityBehaviorFlags_Gravity                          = (1 << 0),

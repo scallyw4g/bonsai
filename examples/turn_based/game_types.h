@@ -81,6 +81,7 @@ struct game_state
 
   u32 FireballsSimulated;
 
+  u32 TurnIndex;
   turn_mode TurnMode;
   r32 TransitionDuration;
 };

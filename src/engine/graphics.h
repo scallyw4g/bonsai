@@ -22,7 +22,7 @@ struct transparency_render_group
   texture                   *AccumTex;
   texture                   *RevealTex;
   texture                   *Depth;
-  m4                        *ViewProjection;
+  /* m4                        *ViewProjection; */
 };
 
 struct bloom_render_group

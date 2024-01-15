@@ -238,20 +238,13 @@ Bonsai_FrameEnd(engine_resources *Resources)
 }
 
 link_export b32
-Bonsai_SimulateAndBufferGeometry(engine_resources *Resources)
+Bonsai_Simulate(engine_resources *Resources)
 {
   TIMED_FUNCTION();
 
   SignalFutex(&Resources->Stdlib.Plat.HighPriorityModeFutex);
 
   UNPACK_ENGINE_RESOURCES(Resources);
-
-#if 0 // BONSAI_DEBUG_SYSTEM_API
-  if (GetDebugState()->UiGroup.PressedInteractionId != StringHash("GameViewport"))
-  {
-    GameInput = 0;
-  }
-#endif
 
   SimulateEntities(Resources, Plat->dt, World->VisibleRegion, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, &Plat->HighPriority);
   /* DispatchSimulateParticleSystemJobs(&Plat->HighPriority, EntityTable, World->ChunkDim, &GpuMap->Buffer, Graphics, Plat->dt); */

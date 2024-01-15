@@ -146,6 +146,7 @@ DoLevelWindow(engine_resources *Engine)
             Error = True;
             break;
           }
+          E->Id = u64(EntityIndex); // NOTE(Jesse): Hack.. entities got saved out with 0 indexes..
         }
 
         if (Error == False)

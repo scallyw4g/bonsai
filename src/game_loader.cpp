@@ -303,7 +303,7 @@ main( s32 ArgCount, const char ** Args )
         GameApi->GameMain(EngineResources, &MainThread);
       END_BLOCK("GameMain");
 
-      EngineApi.SimulateAndBufferGeometry(EngineResources);
+      EngineApi.Simulate(EngineResources);
 
       DrainQueue(&Plat->HighPriority, &MainThread, GameApi);
       WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
@@ -314,6 +314,9 @@ main( s32 ArgCount, const char ** Args )
 
     // NOTE(Jesse): FrameEnd must come after the game geometry has rendered so
     // the alpha-blended text works properly
+    //
+    // ATM this only draws the UI.
+    //
     EngineApi.FrameEnd(EngineResources);
 
     BonsaiSwapBuffers(&EngineResources->Stdlib.Os);
