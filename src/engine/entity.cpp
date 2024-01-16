@@ -24,9 +24,12 @@ Unspawn(entity *Entity)
   Assert(Entity->Emitter);
   auto Emitter = Entity->Emitter;
 
+  u32 Index = Entity->Id.Index;
+
   Clear(Entity);
   Deactivate(Emitter);
 
+  Entity->Id.Index = Index;;
   Entity->Emitter = Emitter;
   Entity->AssetId.Index = INVALID_ASSET_INDEX;
 }
