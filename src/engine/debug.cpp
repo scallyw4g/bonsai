@@ -83,6 +83,7 @@ DoLevelWindow(engine_resources *Engine)
   PushTableEnd(Ui);
   PushNewRow(Ui);
 
+  // Import
   if (ClickedNode.Tag)
   {
     cs Filename = Concat(ClickedNode.Value.Dir, CSz("/"), ClickedNode.Value.Name, GetTranArena());
@@ -92,7 +93,7 @@ DoLevelWindow(engine_resources *Engine)
     if (LevelBytes.Start)
     {
       level_header LevelHeader = {};
-      ReadBytesIntoBuffer(&LevelBytes, sizeof(level_header), Cast(u8*, &LevelHeader));
+      Deserialize(&LevelBytes, &LevelHeader, Thread->TempMemory);
 
       if (LevelHeader.MagicNumber == LEVEL_HEADER_MAGIC_NUMBER)
       {
