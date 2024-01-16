@@ -552,11 +552,6 @@ InitRenderToTextureGroup(render_entity_to_texture_group *Group, v2i TextureSize,
   /* Group->Shader = MakeRenderToTextureShader(Memory, &Group->ViewProjection); */
   Group->Shader = MakeRenderToTextureShader(Memory, 0);
 
-  /* Group->Camera = Allocate(camera, Memory, 1); */
-  /* StandardCamera(Group->Camera, 10000.0f, 100.0f, {}); */
-
-  /* Group->DebugShader = MakeSimpleTextureShader(Group->Texture, Memory); */
-
   Ensure(CheckAndClearFramebuffer());
 }
 

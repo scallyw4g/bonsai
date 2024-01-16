@@ -445,6 +445,12 @@ SpawnParticleSystem(particle_system *System)
 {
   // Used to do stuff .. kept here to keep the book-ends intact .. might remove in the future
 }
+/* link_internal void */
+/* SpawnCameraGhost(engine_resources *Engine) */
+/* { */
+/*   Engine->_CameraGhost = GetFreeEntity(Engine->EntityTable); */
+/*   SpawnEntity(Engine->_CameraGhost, EntityBehaviorFlags_CameraGhost); */
+/* } */
 
 link_internal void
 UnspawnParticleSystem(particle_system *System)
@@ -1342,21 +1348,29 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
 
     if (!Spawned(Entity)) continue;
 
-#if 0
-    if (Entity->Behavior & EntityBehaviorFlags_CameraGhost)
-    {
-      if (Resources->_CameraGhost) { Assert(Resources->_CameraGhost == Entity); }
-      else { Resources->_CameraGhost = Entity; }
-    }
-#endif
-
     b32 DoDefaultUpdate = True;
     if (GameEntityUpdate) { DoDefaultUpdate = (GameEntityUpdate(Resources, Entity) == False); }
+
 
     Entity->P = Canonicalize(Resources->World, Entity->P);
 
     if (DoDefaultUpdate)
     {
+
+#if 1
+    if (Entity->Behavior & EntityBehaviorFlags_CameraGhost)
+    {
+      if (Entity->Id == Graphics->Camera->GhostId)
+      {
+        // TODO(Jesse): Do camera update here
+        NotImplemented;
+
+        /* if (Resources->_CameraGhost) { Assert(Resources->_CameraGhost == Entity); } */
+        /* else { Resources->_CameraGhost = Entity; } */
+      }
+    }
+#endif
+
       b32 ApplyGravity = ((Entity->Behavior & EntityBehaviorFlags_Gravity) == EntityBehaviorFlags_Gravity);
       PhysicsUpdate(&Entity->Physics, dt, ApplyGravity);
 
@@ -1400,7 +1414,6 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
     FinalizeEntityUpdate(Entity);
     InsertEntityIntoChunks(World, Entity, GetTranArena());
   }
-
   /* if (Resources->_CameraGhost == 0) { SpawnCameraGhost(Resources); } */
 }
 

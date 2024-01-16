@@ -153,6 +153,19 @@ Bonsai_FrameBegin(engine_resources *Resources)
   }
 #endif
 
+  if (Input->F4.Clicked)
+  {
+    if (Graphics->Camera == &Graphics->GameCamera)
+    {
+      Graphics->Camera = &Graphics->DebugCamera;
+    }
+    else
+    {
+      Graphics->Camera = &Graphics->GameCamera;
+    }
+    Camera = Graphics->Camera;
+  }
+
   // NOTE(Jesse): Has to come after the UI happens such that we don't get a
   // frame of camera-jank if the UI captures mouse input
   //

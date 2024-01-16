@@ -1032,7 +1032,8 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
     m4 NormalMatrix = Transpose(Inverse(LocalTransform));
 
     BindUniform(Shader, "ModelMatrix", &LocalTransform);
-    BindUniform(Shader, "NormalMatrix", &NormalMatrix);
+    TryBindUniform(Shader, "NormalMatrix", &NormalMatrix); // NOTE(Jesse): Not all shaders that use this path draw normals (namely, DepthRTT)
+
     DrawGpuBufferImmediate(Graphics, &Meshes->GpuBufferHandles[ToIndex(MeshBit)]);
   }
 }

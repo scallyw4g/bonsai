@@ -273,6 +273,13 @@ poof(do_editor_ui_for_container(entity_ptr_block_array))
 poof(do_editor_ui_for_compound_type(world_chunk))
 #include <generated/do_editor_ui_for_compound_type_world_chunk.h>
 
+
+poof(do_editor_ui_for_compound_type(camera))
+#include <generated/do_editor_ui_for_compound_type_camera.h>
+
+poof(do_editor_ui_for_compound_type(graphics))
+#include <generated/do_editor_ui_for_compound_type_graphics.h>
+
 poof(do_editor_ui_for_compound_type(render_debug))
 #include <generated/do_editor_ui_for_compound_type_render_debug.h>
 
@@ -282,6 +289,8 @@ poof(do_editor_ui_for_compound_type(ui_debug))
 poof(do_editor_ui_for_compound_type(engine_debug))
 #include <generated/do_editor_ui_for_compound_type_engine_debug.h>
 
+poof(do_editor_ui_for_compound_type(engine_resources))
+#include <generated/do_editor_ui_for_compound_type_engine_resources.h>
 
 
 link_internal rect3i

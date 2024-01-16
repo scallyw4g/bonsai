@@ -244,7 +244,6 @@ void main()
     default: {ToneMapped = vec3(1,0,0);}
   }
 
-
   /* OutColor = vec4(Diffuse, 1.f); */
   /* OutColor = vec4(abs(FragNormal), 1.f); */
   /* OutColor = vec4(KeyLightContrib*10.f, 1.f); */

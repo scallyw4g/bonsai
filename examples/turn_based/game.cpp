@@ -884,6 +884,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   SpawnPlayerLikeEntity(Plat, World, &PlayerAsset, Player, PlayerSpawnP, &GameState->Entropy);
 
   Player->UserData = (u64)Allocate(entity_game_data, Resources->Memory, 1);
+  Graphics->GameCamera.GhostId = Player->Id;
 
   u32 EnemyCount = 3;
   v3i HalfVisibleRegion = g_VisibleRegion / 2;

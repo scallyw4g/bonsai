@@ -692,18 +692,28 @@ DoEngineDebug(engine_resources *Engine)
   if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_EngineDebug))
   {
     v2 WindowDim = {{1200.f, 250.f}};
-    local_persist window_layout Window = WindowLayout("Engine Debug", WindowLayoutFlag_StartupAlign_Right);
 
-    render_settings *Settings = &Graphics->Settings;
-    PushWindowStart(Ui, &Window);
-      PushTableStart(Ui);
-      DoEditorUi(Ui, EngineDebug, CSz("Engine Debug"));
-      PushTableEnd(Ui);
-      /* DoEditorUi(Ui, &EngineDebug->UiDebug, CSz("UI Debug")); */
-      /* DoEditorUi(Ui, &EngineDebug->Render,  CSz("Graphics Debug")); */
-    PushWindowEnd(Ui, &Window);
+    {
+      local_persist window_layout Window = WindowLayout("Engine Debug", WindowLayoutFlag_StartupAlign_Right);
+      PushWindowStart(Ui, &Window);
+        PushTableStart(Ui);
+        DoEditorUi(Ui, EngineDebug, CSz("Engine Debug"));
+        PushTableEnd(Ui);
+        /* DoEditorUi(Ui, &EngineDebug->UiDebug, CSz("UI Debug")); */
+        /* DoEditorUi(Ui, &EngineDebug->Render,  CSz("Graphics Debug")); */
+      PushWindowEnd(Ui, &Window);
+    }
+    {
+      local_persist window_layout Window = WindowLayout("Engine");
+      PushWindowStart(Ui, &Window);
+        PushTableStart(Ui);
+        DoEditorUi(Ui, Engine, CSz("Engine Resources"));
+        PushTableEnd(Ui);
+      PushWindowEnd(Ui, &Window);
+    }
 
     DoGraphicsDebugWindow(Engine);
+
   }
 
   /* Debug_DrawTextureToDebugQuad(&Engine->RTTGroup.DebugShader); */

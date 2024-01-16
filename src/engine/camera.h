@@ -30,6 +30,7 @@ struct frustum
   plane Right;
 };
 
+struct entity;
 struct camera
 {
   frustum Frust;

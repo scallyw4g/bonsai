@@ -14,6 +14,12 @@ Serialize(native_file *File, entity_id *Element)
 
   Result &= Serialize(File, &Element->Generation);
 
+
+
+
+
+
+
   
 
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -35,6 +41,12 @@ Deserialize(u8_stream *Bytes, entity_id *Element, memory_arena *Memory)
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Generation, Memory);
+
+
+
+
+
+
 
   
 
