@@ -1,6 +1,3 @@
-
-
-#pragma pack(push, 1)
 struct level_header
 {
   u64 MagicNumber = LEVEL_HEADER_MAGIC_NUMBER; 
@@ -15,4 +12,3 @@ struct level_header
   camera Camera;
   cp CameraTarget;
 };
-#pragma pack(pop)

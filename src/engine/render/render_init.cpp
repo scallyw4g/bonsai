@@ -640,7 +640,9 @@ GraphicsInit(memory_arena *GraphicsMemory)
   Result->Exposure = 1.5f;
 
   {
-    auto *Lighting = &Result->Settings.Lighting;
+    lighting_settings *Lighting = &Result->Settings.Lighting;
+
+    Lighting->tDay = 0.75f;
 
     Lighting->SunP = V3(-1.f, -1.f, 0.35f);
 
