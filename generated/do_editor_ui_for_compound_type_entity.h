@@ -19,7 +19,7 @@ DoEditorUi(renderer_2d *Ui, entity *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, &Element->Id, CSz("u64 Id"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, &Element->Id, CSz("entity_id Id"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -27,8 +27,7 @@ DoEditorUi(renderer_2d *Ui, entity *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
 
 
 
-      PushNewRow(Ui);
-
+      
 DoEditorUi_entity_P(Ui, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 

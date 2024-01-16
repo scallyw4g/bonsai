@@ -1,3 +1,4 @@
+
 link_internal void
 UpdateCameraP(world *World, cp TargetViewP, camera *Camera, r32 Blend = DEFAULT_CAMERA_BLENDING)
 {
@@ -92,7 +93,7 @@ UpdateCameraP(world *World, cp TargetViewP, camera *Camera, r32 Blend = DEFAULT_
   return;
 }
 
-inline v2
+link_inline v2
 GetMouseDelta(platform *Plat)
 {
   r32 DPToWorldModifier = -0.001f;
@@ -134,7 +135,30 @@ UpdateGameCamera(world *World, v2 MouseDelta, input *Input, canonical_position N
   }
 }
 
-inline bool
+link_internal void
+StandardCamera(camera* Camera, float FarClip, float DistanceFromTarget, canonical_position InitialTarget)
+{
+  Clear(Camera);
+
+  Camera->Frust.farClip = FarClip;
+  Camera->Frust.nearClip = 1.0f;
+  Camera->Frust.width = 30.0f;
+  Camera->Frust.FOV = 45.0f;
+
+  Camera->Up = WORLD_Z;
+  Camera->Right = WORLD_X;
+
+  Camera->Pitch = PI32 - (PI32*0.25f);
+  Camera->Yaw = PI32*0.15f;
+
+  Camera->DistanceFromTarget = DistanceFromTarget;
+
+  input *Input = 0;
+  v2 MouseDelta = {};
+  UpdateGameCamera(GetWorld(), MouseDelta, Input, InitialTarget, Camera);
+}
+
+link_internal bool
 IsInFrustum(world *World, camera *Camera, canonical_position P)
 {
   bool Result = true;
@@ -156,7 +180,7 @@ IsInFrustum(world *World, camera *Camera, canonical_position P)
   return Result;
 }
 
-inline bool
+link_internal bool
 IsInFrustum( world *World, camera *Camera, world_chunk *Chunk )
 {
   v3 ChunkMid = World->ChunkDim/2.0f;
@@ -165,7 +189,7 @@ IsInFrustum( world *World, camera *Camera, world_chunk *Chunk )
   return Result;
 }
 
-v3
+link_internal v3
 Unproject(v2 ScreenP, r32 ClipZDepth, v2 ScreenDim, m4 *InvViewProj)
 {
   TIMED_FUNCTION();
@@ -219,4 +243,3 @@ ComputeRayFromCursor(engine_resources *Engine, m4* ViewProjection, camera *Camer
 
   return Result;
 }
-

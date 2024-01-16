@@ -89,7 +89,9 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  entity *Player = GameState->Player;
+  entity *Player = GetEntity(EntityTable, GameState->PlayerId);
+  Assert(Player);
+
   cp EnemyBaseP  = GetEntityBaseP(World, Enemy);
   cp PlayerBaseP = GetEntityBaseP(World, Player);
 
@@ -171,7 +173,7 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
   }
   else
   {
-    random_series Entropy = {9490653468579 + u64(GameState->TurnIndex) + Enemy->Id};
+    random_series Entropy = {9490653468579 + u64(GameState->TurnIndex) + Enemy->Id.Index};
     if (MoveSpots.Count)
     {
       u32 NextSpotIndex = RandomBetween(0u, &Entropy, u32(MoveSpots.Count));
@@ -230,29 +232,31 @@ DestroySkeleton(engine_resources *Engine, entity *Entity, r32 Radius)
   {
     // TODO(Jesse)(leak): This leaks the asset name when the asset is freed
 
-    entity *BittyEntity = GetFreeEntity(EntityTable);
+    entity *BittyEntity = TryGetFreeEntityPtr(EntityTable);
+    if (BittyIndex)
+    {
+      file_traversal_node AssetName = {FileTraversalType_File, CSz("models"), AssetNames[BittyIndex]};
+      BittyEntity->AssetId = GetOrAllocateAssetId(Engine, &AssetName);
 
-    file_traversal_node AssetName = {FileTraversalType_File, CSz("models"), AssetNames[BittyIndex]};
-    BittyEntity->AssetId = GetOrAllocateAssetId(Engine, &AssetName);
+      BittyEntity->Physics.Speed = 1.f;
 
-    BittyEntity->Physics.Speed = 1.f;
+      BittyEntity->EulerAngles.z = RandomUnilateral(&Global_GameEntropy)*PI32*2.f;
+      BittyEntity->Scale = 1.0f;
 
-    BittyEntity->EulerAngles.z = RandomUnilateral(&Global_GameEntropy)*PI32*2.f;
-    BittyEntity->Scale = 1.0f;
+      /* UpdateCollisionVolumeRadius(World, BittyEntity, V3(.1f), GetTranArena()); */
+      BittyEntity->_CollisionVolumeRadius = V3(.1f);
 
-    /* UpdateCollisionVolumeRadius(World, BittyEntity, V3(.1f), GetTranArena()); */
-    BittyEntity->_CollisionVolumeRadius = V3(.1f);
+      v3 Rnd = RandomV3Bilateral(&Global_GameEntropy);
+      BittyEntity->Physics.Mass = 25.f;
+      BittyEntity->Physics.Force += Rnd*150.f*Radius;
+      BittyEntity->Physics.Force.z = Abs(BittyEntity->Physics.Force.z) * 0.25f;
+      BittyEntity->P = Entity->P + (Rnd*Radius) + V3(0.f, 0.f, 2.0f);
+      BittyEntity->P.Offset.z = Entity->P.Offset.z + 2.f;
 
-    v3 Rnd = RandomV3Bilateral(&Global_GameEntropy);
-    BittyEntity->Physics.Mass = 25.f;
-    BittyEntity->Physics.Force += Rnd*150.f*Radius;
-    BittyEntity->Physics.Force.z = Abs(BittyEntity->Physics.Force.z) * 0.25f;
-    BittyEntity->P = Entity->P + (Rnd*Radius) + V3(0.f, 0.f, 2.0f);
-    BittyEntity->P.Offset.z = Entity->P.Offset.z + 2.f;
+      SpawnEntity(BittyEntity, EntityBehaviorFlags_Default);
 
-    SpawnEntity(BittyEntity, EntityBehaviorFlags_Default);
-
-    /* if (GetCollision(World, BittyEntity).Count) { Unspawn(BittyEntity); continue; } */
+      /* if (GetCollision(World, BittyEntity).Count) { Unspawn(BittyEntity); continue; } */
+    }
   }
 #endif
 
@@ -513,7 +517,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   UNPACK_ENGINE_RESOURCES(Resources);
 
   memory_arena *GameMemory = &GameState->Memory;
-  entity *Player           = GameState->Player;
+  entity *Player           = GetEntity(EntityTable, GameState->PlayerId);
+  Assert(Player);
 
   // NOTE(Jesse): Crutch for loading savefiles that didn't have this
   if (Player->UserData == 0)
@@ -653,7 +658,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
             {
               GameState->PlayerActed = True;
 
-              entity *E = GetFreeEntity(EntityTable);
+              entity *E = TryGetFreeEntityPtr(EntityTable);
+              Assert(E);
 
               E->UserType = EntityType_Fireball;
 
@@ -860,24 +866,24 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   world_position WorldCenter = World_Position(5, -4, 0);
   canonical_position PlayerSpawnP = Canonical_Position(Voxel_Position(0), WorldCenter + World_Position(0,0,1));
 
-  StandardCamera(Graphics->Camera, 10000.0f, 500.0f, PlayerSpawnP);
-  /* Graphics->Camera->CurrentP.WorldP = WorldCenter; */
-  /* Graphics->Camera->CurrentP.Offset = V3(1, -1, 1); */
+  StandardCamera(&Graphics->GameCamera, 10000.0f, 500.0f, PlayerSpawnP);
+  Graphics->GameCamera.GhostId  = GetFreeEntity(EntityTable);
+  Graphics->DebugCamera.GhostId = GetFreeEntity(EntityTable);
 
   GameState->Entropy = {DEBUG_NOISE_SEED};
 
   AllocateWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 
-  /* GameState->Models = AllocateGameModels(GameState, Resources->Memory, Heap); */
-
   u32 PlayerModelIndex = ModelIndex_Player_old;
-  GameState->Player = GetFreeEntity(EntityTable);
-  GameState->Player->UserType = Cast(u32, EntityType_Player);
+  GameState->PlayerId = GetFreeEntity(EntityTable);
+
+  entity *Player = GetEntity(EntityTable, GameState->PlayerId);
+  Player->UserType = Cast(u32, EntityType_Player);
 
   asset_id PlayerAsset = GetOrAllocateAssetId(Resources, {FileTraversalType_File, CSz("models"), CSz("players/chr_rain.vox")});
-  SpawnPlayerLikeEntity(Plat, World, &PlayerAsset, GameState->Player, PlayerSpawnP, &GameState->Entropy);
+  SpawnPlayerLikeEntity(Plat, World, &PlayerAsset, Player, PlayerSpawnP, &GameState->Entropy);
 
-  GameState->Player->UserData = (u64)Allocate(entity_game_data, Resources->Memory, 1);
+  Player->UserData = (u64)Allocate(entity_game_data, Resources->Memory, 1);
 
   u32 EnemyCount = 3;
   v3i HalfVisibleRegion = g_VisibleRegion / 2;
@@ -891,8 +897,10 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
     asset_id EnemyAsset = GetOrAllocateAssetId(Resources, {FileTraversalType_File, CSz("models"), CSz("skele_base.vox")});
 
-    auto EnemySpawnP = Canonical_Position(V3(0), WorldCenter + WP );
-    auto Enemy = GetFreeEntity(EntityTable);
+    cp EnemySpawnP = Canonical_Position(V3(0), WorldCenter + WP );
+    entity *Enemy = TryGetFreeEntityPtr(EntityTable);
+    Assert(Enemy);
+
     SpawnPlayerLikeEntity(Plat, World, &EnemyAsset, Enemy, EnemySpawnP, &GameState->Entropy, 1.f);
   }
 
@@ -907,14 +915,14 @@ BONSAI_API_ON_LIBRARY_RELOAD()
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  GameState->Player = 0;
+  GameState->PlayerId = {};
   RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
   {
     entity *E = EntityTable[EntityIndex];
     if (E->UserType == EntityType_Player)
     {
-      if (GameState->Player) { Warn("Multiple Player entities detected!"); }
-      GameState->Player = E;
+      if (GameState->PlayerId.Generation) { Warn("Multiple Player entities detected!"); }
+      GameState->PlayerId = E->Id;
     }
   }
 }

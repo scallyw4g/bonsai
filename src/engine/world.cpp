@@ -74,9 +74,4 @@ HardResetWorld(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag_
     }
   }
 
-  if ( (Flags & HardResetFlag_NoResetCamera) == 0)
-  {
-    Assert(Engine->_CameraGhost->State == EntityState_Free);
-    Engine->_CameraGhost = 0;
-  }
 }

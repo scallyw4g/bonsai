@@ -123,6 +123,13 @@ poof(string_and_value_tables(tone_mapping_type))
 #include <generated/string_and_value_tables_tone_mapping_type.h>
 
 
+
+poof(do_editor_ui_for_enum(entity_state))
+#include <generated/do_editor_ui_for_enum_entity_state.h>
+
+poof(do_editor_ui_for_enum(entity_behavior_flags))
+#include <generated/do_editor_ui_for_enum_entity_behavior_flags.h>
+
 poof(do_editor_ui_for_enum(tone_mapping_type))
 #include <generated/do_editor_ui_for_enum_tone_mapping_type.h>
 
@@ -242,6 +249,9 @@ DoEditorUi_entity_P(renderer_2d *Ui, entity *Element, cs Name, EDITOR_UI_FUNCTIO
   DoEditorUi(Ui, &Element->P.WorldP, CSz("WorldP"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
   DoEditorUi(Ui, &Element->P.Offset, CSz("Offset"), EDITOR_UI_FUNCTION_INSTANCE_NAMES, 0.f, 32.f);
 }
+
+poof(do_editor_ui_for_compound_type(entity_id))
+#include <generated/do_editor_ui_for_compound_type_entity_id.h>
 
 poof(do_editor_ui_for_compound_type(entity))
 #include <generated/do_editor_ui_for_compound_type_entity.h>
@@ -819,7 +829,7 @@ DoWorldEditor(engine_resources *Engine)
 
       case WorldEditMode_BlitEntity:
       {
-        entity *SelectedEntity = EngineDebug->SelectedEntity;
+        entity *SelectedEntity = GetEntity(EntityTable, EngineDebug->SelectedEntity);
         if (SelectedEntity)
         {
           aabb EntityAABB = GetSimSpaceAABB(World, SelectedEntity);

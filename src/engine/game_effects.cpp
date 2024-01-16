@@ -349,14 +349,18 @@ DoSplotion( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
   entity_behavior_flags SpawnFlags = EntityBehaviorFlags_UnspawnOnParticleSystemTerminate;
 
   {
-    entity *E = GetFreeEntity(EntityTable);
+    entity *E = TryGetFreeEntityPtr(EntityTable);
+    Assert(E);
+
     E->P = PickCP + V3(0.5f);
     SpawnEntity( E, SpawnFlags );
     /* E->UserData = (void*)GameEntityBehaviorFlags_Splosion; */
     SpawnExplosion(E, Entropy, {}, Radius, &Graphics->Transparency.GpuBuffer.Buffer);
   }
   {
-    entity *E = GetFreeEntity(EntityTable);
+    entity *E = TryGetFreeEntityPtr(EntityTable);
+    Assert(E);
+
     E->P = PickCP + V3(0.5f);
     SpawnEntity( E, SpawnFlags );
     SpawnSmoke(E, Entropy, {}, Radius*0.5f, &Graphics->Transparency.GpuBuffer.Buffer);
@@ -366,7 +370,9 @@ DoSplotion( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
   for (u32 BittyIndex = 0; BittyIndex < MaxBitties; ++BittyIndex)
   {
     entity_behavior_flags BittySpawnFlags = entity_behavior_flags(EntityBehaviorFlags_Default|EntityBehaviorFlags_UnspawnOnParticleSystemTerminate);
-    entity *E = GetFreeEntity(EntityTable);
+    entity *E = TryGetFreeEntityPtr(EntityTable);
+    Assert(E);
+
     E->Physics.Speed = 1.f;
 
     E->EulerAngles = RandomRotation(Entropy);

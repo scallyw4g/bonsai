@@ -46,14 +46,8 @@ Serialize(native_file *File, void *Data)
 poof(generate_string_table(entity_state))
 #include <generated/generate_string_table_entity_state.h>
 
-poof(do_editor_ui_for_enum(entity_state))
-#include <generated/do_editor_ui_for_enum_entity_state.h>
-
 poof(generate_string_table(entity_behavior_flags))
 #include <generated/generate_string_table_entity_behavior_flags.h>
-
-poof(do_editor_ui_for_enum(entity_behavior_flags))
-#include <generated/do_editor_ui_for_enum_entity_behavior_flags.h>
 
 struct collision_event
 {
@@ -80,7 +74,7 @@ struct entity
 {
   u64 Version;
 
-  u64 Id;
+  entity_id Id;
 
   // NOTE(Jesse): This is a pretty dirty hack to get the Offset in CP to have
   // a custom value range.  I couldn't figure out a better way while thinking about
@@ -89,7 +83,7 @@ struct entity
   //
   // @dirty_entity_P_format_hack
   //
-  cp P; poof(@custom_ui(DoEditorUi_entity_P(Ui, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)))
+  cp P;           poof(@custom_ui(DoEditorUi_entity_P(Ui, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)))
 
   v3 EulerAngles; poof(@ui_value_range(-180.f, 180.f))
   r32 Scale;
@@ -121,6 +115,95 @@ struct entity
          @custom_deserialize(if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, Element, Memory);})  )
 };
 
+struct entity_3
+{
+  u64 Version;
+
+  entity_id Id;
+
+  // NOTE(Jesse): This is a pretty dirty hack to get the Offset in CP to have
+  // a custom value range.  I couldn't figure out a better way while thinking about
+  // it for 15 minutes, so I settled on this for now.  Hopefully I figure out
+  // something better soon, cause this is un-tenable for the long-term
+  //
+  // @dirty_entity_P_format_hack
+  //
+  cp P;           poof(@custom_ui(DoEditorUi_entity_P(Ui, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)))
+
+  v3 EulerAngles; poof(@ui_value_range(-180.f, 180.f))
+  r32 Scale;
+
+  // NOTE(Jesse): This must be updated with UpdateCollisionVolumeRadius.
+  // Entity pointers are stored on world chunks, which are used during
+  // collision detection.  The chunks to store the entity to are computed using
+  // the CollisionVolumeRadius so if we update it we have to also check if the
+  // number of chunks we're overlapping changed, and update the difference.
+  v3 _CollisionVolumeRadius;
+
+  physics Physics;
+
+  asset_id AssetId;
+  u64      ModelIndex;
+
+  collision_event      LastResolvedCollision; poof(@no_serialize)
+  entity_position_info LastResolvedPosInfo;   poof(@no_serialize)
+
+  particle_system *Emitter;
+
+  entity_state          State;
+  entity_behavior_flags Behavior;
+
+  u64 UserType;
+
+  u64 UserData;
+  poof(  @custom_serialize(  if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(File, Element);})
+         @custom_deserialize(if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, Element, Memory);})  )
+};
+
+struct entity_2
+{
+  u64 Version;
+
+  u64 Id;
+
+  // NOTE(Jesse): This is a pretty dirty hack to get the Offset in CP to have
+  // a custom value range.  I couldn't figure out a better way while thinking about
+  // it for 15 minutes, so I settled on this for now.  Hopefully I figure out
+  // something better soon, cause this is un-tenable for the long-term
+  //
+  // @dirty_entity_P_format_hack
+  //
+  cp P;           poof(@custom_ui(DoEditorUi_entity_P(Ui, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)))
+
+  v3 EulerAngles; poof(@ui_value_range(-180.f, 180.f))
+  r32 Scale;
+
+  // NOTE(Jesse): This must be updated with UpdateCollisionVolumeRadius.
+  // Entity pointers are stored on world chunks, which are used during
+  // collision detection.  The chunks to store the entity to are computed using
+  // the CollisionVolumeRadius so if we update it we have to also check if the
+  // number of chunks we're overlapping changed, and update the difference.
+  v3 _CollisionVolumeRadius;
+
+  physics Physics;
+
+  asset_id AssetId;
+  u64      ModelIndex;
+
+  collision_event      LastResolvedCollision; poof(@no_serialize)
+  entity_position_info LastResolvedPosInfo;   poof(@no_serialize)
+
+  particle_system *Emitter;
+
+  entity_state          State;
+  entity_behavior_flags Behavior;
+
+  u64 UserType;
+
+  u64 UserData;
+  poof(  @custom_serialize(  if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(File, Element);})
+         @custom_deserialize(if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, Element, Memory);})  )
+};
 
 struct entity_1
 {
@@ -314,6 +397,9 @@ poof(serdes_array(voxel_lighting))
 poof(serdes_array(v3))
 #include <generated/serdes_array_v3.h>
 
+poof(serdes_struct(entity_id))
+#include <generated/serdes_struct_entity_id.h>
+
 poof(serdes_struct(vertex_material))
 #include <generated/serdes_struct_vertex_material.h>
 poof(serdes_array(vertex_material))
@@ -503,7 +589,7 @@ Marshal(entity_0 *E0, entity_1 *E1)
 }
 
 link_internal void
-Marshal(entity_1 *E0, entity *E1)
+Marshal(entity_1 *E0, entity_2 *E1)
 {
   E1->Id = E0->Id;
   E1->P = E0->P;

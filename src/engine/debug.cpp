@@ -136,8 +136,8 @@ DoLevelWindow(engine_resources *Engine)
 #if 1
         b32 Error = False;
 
-        s32 EntityCount = Cast(s32, LevelHeader.EntityCount);
-        RangeIterator(EntityIndex, EntityCount)
+        u32 EntityCount = LevelHeader.EntityCount;
+        RangeIterator_t(u32, EntityIndex, EntityCount)
         {
           entity *E = EntityTable[EntityIndex];
           if (Deserialize(&LevelBytes, E, Thread->PermMemory) == False)
@@ -146,7 +146,7 @@ DoLevelWindow(engine_resources *Engine)
             Error = True;
             break;
           }
-          E->Id = u64(EntityIndex); // NOTE(Jesse): Hack.. entities got saved out with 0 indexes..
+          E->Id.Index = EntityIndex; // NOTE(Jesse): Hack.. entities got saved out with 0 indexes..
         }
 
         if (Error == False)
@@ -204,39 +204,35 @@ DoEntityWindow(engine_resources *Engine)
     {
       entity *Entity = Engine->HoverEntity.Value;
 
-      if (Entity && Entity != EngineDebug->SelectedEntity)
+      if (Entity && Entity->Id != EngineDebug->SelectedEntity)
       {
         Assert(Spawned(Entity));
         DrawEntityCollisionVolume(Entity, &GpuMap->Buffer, Graphics, World->ChunkDim, YELLOW);
 
         if (Input->LMB.Clicked)
         {
-          EngineDebug->SelectedEntity = Entity;
+          EngineDebug->SelectedEntity = Entity->Id;
         }
       }
     }
   }
 
-
-  if (EngineDebug->SelectedEntity)
+  entity *SelectedEntity = GetEntity(EntityTable, EngineDebug->SelectedEntity);
+  if (SelectedEntity)
   {
-    DrawEntityCollisionVolume(EngineDebug->SelectedEntity, &GpuMap->Buffer, Graphics, World->ChunkDim, WHITE);
+    DrawEntityCollisionVolume(SelectedEntity, &GpuMap->Buffer, Graphics, World->ChunkDim, WHITE);
 
     local_persist window_layout EntityWindow = WindowLayout("Entity", WindowLayoutFlag_StartupAlign_Right);
 
     PushWindowStart(Ui, &EntityWindow);
       PushTableStart(Ui);
-        PushColumn(Ui, CSz("EntityIndex"));
-        PushColumn(Ui, CS(EngineDebug->SelectedEntity->Id), &DefaultStyle, {}, ColumnRenderParam_LeftAlign);
-        PushNewRow(Ui);
-
-        DoEditorUi(Ui, EngineDebug->SelectedEntity, CSz("SelectedEntity"));
+        DoEditorUi(Ui, SelectedEntity, FSz("SelectedEntity (%d)", SelectedEntity->Id.Index));
         PushNewRow(Ui);
       PushTableEnd(Ui);
     PushWindowEnd(Ui, &EntityWindow);
 
 
-    aabb EntityAABB = GetSimSpaceAABB(World, EngineDebug->SelectedEntity);
+    aabb EntityAABB = GetSimSpaceAABB(World, SelectedEntity);
 
     if (Engine->MaybeMouseRay.Tag)
     {
@@ -278,7 +274,7 @@ DoEntityWindow(engine_resources *Engine)
         {
           // Make ModifiedSelection permanent
           cp P = SimSpaceToCanonical(World, V3(ModifiedSelection.Min));
-          EngineDebug->SelectedEntity->P = P;
+          SelectedEntity->P = P;
           Editor->Entity.ClickedFace = FaceIndex_None;
         }
 
@@ -501,7 +497,8 @@ DoAssetWindow(engine_resources *Engine)
 
                         case AssetSpawnMode_Entity:
                         {
-                          entity *E = GetFreeEntity(Engine->EntityTable);
+                          entity *E = TryGetFreeEntityPtr(Engine->EntityTable);
+                          Assert(E);
                           SpawnEntity(E, &EngineDebug->SelectedAsset, EntityBehaviorFlags_Default, 0, &AssetUpdateShape.Origin, Model->Dim/2.f);
                         } break;
                       }

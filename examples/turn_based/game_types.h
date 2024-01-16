@@ -74,7 +74,7 @@ struct game_state
   model      *Models;
   event_queue EventQueue;
 
-  entity *Player;
+  entity_id PlayerId;
 
   b32 PlayerActed;
   player_action ProposedAction;

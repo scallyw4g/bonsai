@@ -72,20 +72,6 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   ClearFramebuffers(Graphics, &Resources->RTTGroup);
 
-
-#if 0
-  // TODO(Jesse): Is this random leftover debug code that can be removed?
-  if (EngineDebug->SelectedAsset.Type)
-  {
-    asset *Asset = GetAsset(Resources, &EngineDebug->SelectedAsset);
-    if (Asset->LoadState == AssetLoadState_Loaded)
-    {
-      /* UpdateGameCamera(World, {}, 0, Canonical_Position(V3(Asset->Model.Dim/2), V3i(0)), Resources->RTTGroup.Camera); */
-      /* RenderToTexture(Resources, &Asset->Model.Mesh); */
-    }
-  }
-#endif
-
   MapGpuElementBuffer(GpuMap);
   MapGpuElementBuffer(&Graphics->Transparency.GpuBuffer);
 
@@ -182,8 +168,8 @@ Bonsai_FrameBegin(engine_resources *Resources)
   // frame late. 
   //
   // @immediate-geometry-is-a-frame-late
-  
-  entity *CameraGhost = Resources->_CameraGhost;
+
+  entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId);
   if (CameraGhost && UiCapturedMouseInput(Ui) == False)
   {
     f32 CameraSpeed = 80.f;
@@ -216,12 +202,12 @@ Bonsai_FrameBegin(engine_resources *Resources)
     InputForCamera = &Plat->Input;
     UpdateGameCamera(World, MouseDelta, InputForCamera, CameraGhostP, Camera, DEFAULT_CAMERA_BLENDING*Plat->dt);
 
-    Resources->Graphics->gBuffer->ViewProjection =
-      ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
-      ViewMatrix(World->ChunkDim, Camera);
-
     if (World->Flags & WorldFlag_WorldCenterFollowsCameraTarget) { World->Center = CameraGhostP.WorldP; }
   }
+
+  Resources->Graphics->gBuffer->ViewProjection =
+    ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
+    ViewMatrix(World->ChunkDim, Camera);
 
 
   b32 Result = True;
@@ -313,7 +299,6 @@ DoDayNightCycle(graphics *Graphics, r32 tDay)
   /* SG->Sun.Position.x = Sin(tDay); */
   /* SG->Sun.Position.y = tDaytime; */
   /* SG->Sun.Position.z = tDaytime*0.7f + 1.3f; */
-
 }
 
 link_export b32
@@ -329,13 +314,18 @@ Bonsai_Render(engine_resources *Resources)
   if (Graphics->Settings.Lighting.AutoDayNightCycle) { Graphics->Settings.Lighting.tDay += Plat->dt/18.0f; }
   DoDayNightCycle(Graphics, Graphics->Settings.Lighting.tDay);
 
-  if (Resources->_CameraGhost)
+#if 0
+  NotImplemented;
+#else
+  entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId);
+  if (CameraGhost)
   {
-    v3 CameraTargetSimP = GetSimSpaceP(World, Resources->_CameraGhost);
+    v3 CameraTargetSimP = GetSimSpaceP(World, CameraGhost);
     Graphics->Settings.OffsetOfWorldCenterToGrid.x = fmodf(CameraTargetSimP.x, Graphics->Settings.MajorGridDim);
     Graphics->Settings.OffsetOfWorldCenterToGrid.y = fmodf(CameraTargetSimP.y, Graphics->Settings.MajorGridDim);
     Graphics->Settings.OffsetOfWorldCenterToGrid.z = fmodf(CameraTargetSimP.z, Graphics->Settings.MajorGridDim);
   }
+#endif
 
   EngineDebug->Render.BytesSolidGeoLastFrame = GpuMap->Buffer.At;
   EngineDebug->Render.BytesTransGeoLastFrame = Graphics->Transparency.GpuBuffer.Buffer.At;

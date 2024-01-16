@@ -671,6 +671,9 @@ MapIntoQueryBox(v3i SimSpaceVoxP, v3i SimSpaceQueryMinP, voxel_position SimSpace
 link_internal world_chunk*
 GetWorldChunkFromHashtable(world *World, world_position P);
 
+link_internal world_chunk_ptr_buffer
+GatherChunksOverlappingArea(world *World, rect3cp Region, memory_arena *Memory);
+
 /* link_internal untextured_3d_geometry_buffer * */
 /* SetMesh(world_chunk *Chunk, world_chunk_mesh_bitfield MeshBit, mesh_freelist *MeshFreelist, memory_arena *PermMemory); */
 

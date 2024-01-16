@@ -47,39 +47,11 @@ struct camera
   v3 Front;
   v3 Right;
   v3 Up;
+
+  entity_id GhostId;
 };
 /* #define DEFAULT_CAMERA_BLENDING (0.35f) */
 #define DEFAULT_CAMERA_BLENDING (1.f)
-
-void
-StandardCamera(camera* Camera, float FarClip, float DistanceFromTarget, canonical_position InitialTarget)
-{
-  Clear(Camera);
-
-  Camera->Frust.farClip = FarClip;
-  Camera->Frust.nearClip = 1.0f;
-  Camera->Frust.width = 30.0f;
-  Camera->Frust.FOV = 45.0f;
-
-  Camera->Up = WORLD_Z;
-  Camera->Right = WORLD_X;
-
-  Camera->Pitch = PI32 - (PI32*0.25f);
-  Camera->Yaw = PI32*0.15f;
-
-  Camera->DistanceFromTarget = DistanceFromTarget;
-
-  /* UpdateCameraP( */
-  /*     Canonical_Position(Voxel_Position(1,1,1), World_Position(0,0,0)), */
-  /*     Camera, */
-  /*     WorldChunkDim); */
-
-  /* input *Input = 0; */
-  /* v2 MouseDelta = {}; */
-  /* UpdateGameCamera(World, MouseDelta, Input, InitialTarget, Camera); */
-
-  return;
-}
 
 inline v3
 GetCameraRelativeInput(hotkeys *Hotkeys, camera *Camera)
@@ -134,3 +106,7 @@ GetFrustumCenter(camera *Camera)
 
 inline v2
 GetMouseDelta(platform *Plat);
+
+link_internal void
+StandardCamera(camera* Camera, float FarClip, float DistanceFromTarget, canonical_position InitialTarget);
+

@@ -120,7 +120,7 @@ DoEditorUi(renderer_2d *Ui, engine_debug *Element, cs Name, EDITOR_UI_FUNCTION_P
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Element->SelectedEntity, CSz("entity SelectedEntity"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, &Element->SelectedEntity, CSz("entity_id SelectedEntity"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }

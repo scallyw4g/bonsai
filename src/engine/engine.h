@@ -7,9 +7,10 @@
 #include <engine/constants.h>
 #include <engine/canonical_position.h>
 #include <engine/physics.h>
+
+#include <engine/entity_id.h>
+
 #include <engine/camera.h>
-
-
 #include <engine/light.h>
 #include <engine/render.h>
 #include <engine/graphics.h>
@@ -25,20 +26,21 @@ link_internal engine_resources *GetEngineResources();
 #include <engine/animation.h>
 #include <engine/model.h>
 #include <engine/asset.h>
+#include <engine/particle.h>
+#include <engine/world.h>
+#include <engine/entity.h>
 
 #include <engine/debug.h>
 #include <engine/editor.h>
 #include <engine/resources.h>
 
-#include <engine/world.h>
 #include <engine/work_queue.h>
-#include <engine/particle.h>
-#include <engine/entity.h>
 #include <engine/triangle.h>
 #include <engine/render_position.h>
 #include <engine/simulate.h>
 #include <engine/bonsai.h> // TODO(Jesse, id: 90, tags: cleanup): Redistribute this nocheckin
 #include <engine/voxel_synthesis.h>
+
 
 #include <engine/level.h>
 

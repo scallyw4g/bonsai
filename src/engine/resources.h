@@ -50,7 +50,7 @@ struct engine_resources
   // NOTE(Jesse): This isn't meant to be manipulated direclty, it's just cached
   // such that the camera update code can access it easily.  Maybe it should
   // be per-camera ..?
-  entity *_CameraGhost;
+  /* entity *_CameraGhost; */
 
   tiered_mesh_freelist MeshFreelist;
 

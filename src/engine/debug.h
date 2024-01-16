@@ -35,7 +35,7 @@ struct engine_debug
   asset_id SelectedAsset;
   u64 ModelIndex;
 
-  entity *SelectedEntity;
+  entity_id SelectedEntity;
 };
 
 

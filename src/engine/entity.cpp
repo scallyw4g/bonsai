@@ -188,6 +188,66 @@ GetCollision(world *World, entity *Entity, v3 Offset = V3(0,0,0) )
 }
 
 link_internal entity *
+GetEntity(entity **EntityTable, entity_id Id)
+{
+  entity *Result = {};
+
+  // NOTE(Jesse): A Generation of 0 means the entity has never been allocated
+  if (Id.Generation)
+  {
+    entity *E = EntityTable[Id.Index];
+    if (E->Id.Generation == Id.Generation)
+    {
+      Result = E;
+    }
+  }
+
+  return Result;
+}
+
+link_internal entity_id
+GetFreeEntity(entity **EntityTable)
+{
+  entity_id Result = {};
+
+  for ( u32 EntityIndex = 0;
+        EntityIndex < TOTAL_ENTITY_COUNT;
+      ++EntityIndex )
+  {
+    entity *TestEntity = EntityTable[EntityIndex];
+    if (TestEntity->State == EntityState_Free)
+    {
+      TestEntity->State = EntityState_Reserved;
+      TestEntity->Id.Generation += 1;
+
+      Assert(TestEntity->Id.Index == EntityIndex);
+      Assert(TestEntity->AssetId.Index == INVALID_ASSET_INDEX);
+
+      Result = TestEntity->Id;
+      break;
+    }
+  }
+
+  if (Result.Generation)
+  {
+    entity *E = GetEntity(EntityTable, Result);
+    Assert(Unspawned(E));
+    Assert(!Destroyed(E));
+  }
+
+  return Result;
+}
+
+link_internal entity *
+TryGetFreeEntityPtr(entity **EntityTable)
+{
+  entity_id Id = GetFreeEntity(EntityTable);
+  entity *Result = GetEntity(EntityTable, Id);
+  return Result;
+}
+
+#if 0
+link_internal entity *
 GetFreeEntity(entity **EntityTable)
 {
   entity *Result = 0;
@@ -215,6 +275,7 @@ GetFreeEntity(entity **EntityTable)
 
   return Result;
 }
+#endif
 
 link_internal entity *
 AllocateEntity(memory_arena *Memory)
@@ -238,7 +299,7 @@ AllocateEntityTable(memory_arena* Memory, u32 Count)
          ++EntityIndex)
   {
     Result[EntityIndex] = AllocateEntity(Memory);
-    Result[EntityIndex]->Id = EntityIndex;
+    Result[EntityIndex]->Id.Index = EntityIndex;
   }
 
   return Result;
@@ -380,78 +441,16 @@ AllocatePlayer(memory_arena *Memory)
 }
 
 link_internal void
-SpawnCameraGhost(engine_resources *Engine)
+SpawnParticleSystem(particle_system *System)
 {
-  Engine->_CameraGhost = GetFreeEntity(Engine->EntityTable);
-  SpawnEntity(Engine->_CameraGhost, EntityBehaviorFlags_CameraGhost);
+  // Used to do stuff .. kept here to keep the book-ends intact .. might remove in the future
 }
 
-entity *
-SpawnProjectile(entity** EntityTable,
-                canonical_position *P,
-                v3 Velocity,
-                entity_behavior_flags Behavior
-  )
-{
-  entity *Projectile = GetFreeEntity(EntityTable);
-
-  v3 CollisionVolumeRadius = V3(0.25f);
-
-  physics Physics = {};
-  Physics.Velocity = Velocity;
-  Physics.Speed = 60;
-
-  r32 Scale = 1.0f;
-  r32 RateOfFire = 1.0f;
-  s32 Health = 1;
-
-  SpawnEntity(
-    Projectile,
-    0,
-    Behavior,
-
-    &Physics,
-
-    P,
-    CollisionVolumeRadius,
-
-    Scale,
-    RateOfFire,
-    Health);
-
-#if 0
-  switch (ProjectileType)
-  {
-    case EntityType_PlayerProton:
-    {
-      Projectile->Model = GameModels[ModelIndex_Proton];
-    } break;
-
-    case EntityType_PlayerProjectile:
-    case EntityType_EnemyProjectile:
-    {
-      Projectile->Model = GameModels[ModelIndex_Projectile];
-    } break;
-
-    InvalidDefaultCase;
-  }
-#endif
-
-  return Projectile;
-}
-
-void
+link_internal void
 UnspawnParticleSystem(particle_system *System)
 {
   Clear(System);
 }
-
-#if 1
-void
-SpawnParticleSystem(particle_system *System)
-{
-}
-#endif
 
 link_internal void
 SpawnPlayerLikeEntity( platform *Plat,
@@ -1402,7 +1401,7 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
     InsertEntityIntoChunks(World, Entity, GetTranArena());
   }
 
-  if (Resources->_CameraGhost == 0) { SpawnCameraGhost(Resources); }
+  /* if (Resources->_CameraGhost == 0) { SpawnCameraGhost(Resources); } */
 }
 
 
