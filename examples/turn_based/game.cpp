@@ -877,7 +877,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   asset_id PlayerAsset = GetOrAllocateAssetId(Resources, {FileTraversalType_File, CSz("models"), CSz("players/chr_rain.vox")});
   SpawnPlayerLikeEntity(Plat, World, &PlayerAsset, GameState->Player, PlayerSpawnP, &GameState->Entropy);
 
-  GameState->Player->UserData = (u64)Allocate(entity_game_data, Memory, 1);
+  GameState->Player->UserData = (u64)Allocate(entity_game_data, Resources->Memory, 1);
 
   u32 EnemyCount = 3;
   v3i HalfVisibleRegion = g_VisibleRegion / 2;

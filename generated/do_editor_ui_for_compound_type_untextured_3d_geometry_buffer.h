@@ -3,7 +3,7 @@ DoEditorUi(renderer_2d *Ui, untextured_3d_geometry_buffer *Element, cs Name, EDI
 {
   if (Element)
   {
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Element, Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Element, "toggle untextured_3d_geometry_buffer"), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
     {
       PushNewRow(Ui);
 

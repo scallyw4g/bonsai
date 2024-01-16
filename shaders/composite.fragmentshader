@@ -24,6 +24,125 @@ uniform bool BravoilMcGuireOIT;
 
 uniform float Exposure;
 
+uniform int ToneMappingType;
+
+
+
+
+// Minimal implementation of Troy Sobotka's AgX based on
+// 
+// https://github.com/sobotka/AgX
+//
+// using a 6th order polynomial approximation instead
+// of the more complex sigmoid function or lookup table.
+//
+// Some more details here: 
+// https://iolite-engine.com/blog_posts/minimal_agx_implementation
+//
+// Changelog
+// ---------
+// - Added "full round trip" based on Troy's feedback (https://www.shadertoy.com/view/mdcSDH)
+
+// Set to > 0 to show a video instead of the color gradients
+#define SHOW_VIDEO 0
+// 0: Default, 1: Golden, 2: Punchy
+#define AGX_LOOK 2
+
+// AgX
+// ->
+
+// Mean error^2: 3.6705141e-06
+vec3 agxDefaultContrastApprox(vec3 x) {
+  vec3 x2 = x * x;
+  vec3 x4 = x2 * x2;
+
+  return + 15.5     * x4 * x2
+         - 40.14    * x4 * x
+         + 31.96    * x4
+         - 6.868    * x2 * x
+         + 0.4298   * x2
+         + 0.1191   * x
+         - 0.00232;
+}
+
+vec3 agx(vec3 val) {
+  const mat3 agx_mat = mat3(
+    0.842479062253094, 0.0423282422610123, 0.0423756549057051,
+    0.0784335999999992,  0.878468636469772,  0.0784336,
+    0.0792237451477643, 0.0791661274605434, 0.879142973793104);
+    
+  const float min_ev = -12.47393f;
+  const float max_ev = 4.026069f;
+
+  // Input transform
+  val = agx_mat * val;
+  
+  // Log2 space encoding
+  val = clamp(log2(val), min_ev, max_ev);
+  val = (val - min_ev) / (max_ev - min_ev);
+  
+  // Apply sigmoid function approximation
+  val = agxDefaultContrastApprox(val);
+
+  return val;
+}
+
+vec3 agxEotf(vec3 val) {
+  const mat3 agx_mat_inv = mat3(
+    1.19687900512017, -0.0528968517574562, -0.0529716355144438,
+    -0.0980208811401368, 1.15190312990417, -0.0980434501171241,
+    -0.0990297440797205, -0.0989611768448433, 1.15107367264116);
+
+  // Undo input transform
+  val = agx_mat_inv * val;
+
+  // sRGB IEC 61966-2-1 2.2 Exponent Reference EOTF Display
+  //val = pow(val, vec3(2.2));
+
+  return val;
+}
+
+vec3 agxLook(vec3 val) {
+  const vec3 lw = vec3(0.2126, 0.7152, 0.0722);
+  float luma = dot(val, lw);
+
+  // Default
+  vec3 offset = vec3(0.0);
+  vec3 slope = vec3(1.0);
+  vec3 power = vec3(1.0);
+  float sat = 1.0;
+
+#if AGX_LOOK == 1
+  // Golden
+  slope = vec3(1.0, 0.9, 0.5);
+  power = vec3(0.8);
+  sat = 0.8;
+#elif AGX_LOOK == 2
+  // Punchy
+  slope = vec3(1.0);
+  power = vec3(1.35, 1.35, 1.35);
+  sat = 1.4;
+#endif
+
+  // ASC CDL
+  val = pow(val * slope + offset, power);
+  return luma + sat * (val - luma);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void main()
 {
   vec3 ToneMapped;
@@ -90,12 +209,41 @@ void main()
   /* vec3 TotalLight = Lighting + 0.15f*Bloom + (TransparencyContrib.rgb * TransparencyContrib.a); */
   /* vec3 TotalLight = (Diffuse * Lighting) * 2.f; */
 
-  // Reinhard tone mapping (pretty bad)
-  /* ToneMapped = TotalLight / (TotalLight + vec3(1.0f)); */
+  switch (ToneMappingType)
+  {
+    // Reinhard tone mapping, looks pretty bad
+    case 0:
+    {
+      ToneMapped = TotalLight / (TotalLight + vec3(1.0f));
+    } break;
 
-  // Somewhat better than Reinhard
-  // Tone mapping from https://learnopengl.com/Advanced-Lighting/Bloom
-  ToneMapped = vec3(1.0) - exp(-TotalLight * Exposure);
+    // Not sure what this one is called, but it's a bit better, if a bit washed out.
+    //
+    // Tone mapping from https://learnopengl.com/Advanced-Lighting/Bloom
+    //
+    case 1:
+    {
+      ToneMapped = vec3(1.0) - exp(-TotalLight * Exposure);
+    } break;
+
+    //
+    // AGX tone mapping
+    //
+    // This supposedly closely emulates the actual color that gets recorded by
+    // .. some .. film on ahlhlhl
+    // https://github.com/EaryChow/AgX
+    // https://www.shadertoy.com/view/cd3XWr
+    //
+    case 2:
+    {
+      TotalLight = agx(TotalLight);
+      TotalLight = agxLook(TotalLight);
+      ToneMapped = agxEotf(TotalLight);
+    } break;
+
+    default: {ToneMapped = vec3(1,0,0);}
+  }
+
 
   /* OutColor = vec4(Diffuse, 1.f); */
   /* OutColor = vec4(abs(FragNormal), 1.f); */

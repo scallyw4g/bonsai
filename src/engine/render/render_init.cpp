@@ -67,7 +67,9 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
                      r32 *Exposure,
                      b32 *UseLightingBloom,
                      b32 *BravoilMyersOIT,
-                     b32 *BravoilMcGuireOIT
+                     b32 *BravoilMcGuireOIT,
+
+                     tone_mapping_type *ToneMappingType
                    )
 {
   shader Shader = LoadShaders( CSz(BONSAI_SHADER_PATH "composite.vertexshader"), CSz(BONSAI_SHADER_PATH "composite.fragmentshader") );
@@ -118,6 +120,10 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
 
   *Current = GetUniform(GraphicsMemory, &Shader, Exposure, "Exposure");
   Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, (int*)ToneMappingType, "ToneMappingType");
+  Current = &(*Current)->Next;
+
 
   AssertNoGlErrors;
 
@@ -624,6 +630,8 @@ GraphicsInit(memory_arena *GraphicsMemory)
   graphics *Result = Allocate(graphics, GraphicsMemory, 1);
   Result->Memory = GraphicsMemory;
 
+  Result->Settings.ToneMappingType = ToneMappingType_AGX;
+
   Result->Settings.BravoilMyersOIT   = True;
   Result->Settings.BravoilMcGuireOIT = True;
 
@@ -792,7 +800,9 @@ GraphicsInit(memory_arena *GraphicsMemory)
                                                         &Result->Exposure,
                                                         &Result->Settings.UseLightingBloom,
                                                         &Result->Settings.BravoilMyersOIT,
-                                                        &Result->Settings.BravoilMcGuireOIT );
+                                                        &Result->Settings.BravoilMcGuireOIT,
+                                                        &Result->Settings.ToneMappingType
+                                                       );
   }
 
   GL.Enable(GL_CULL_FACE);

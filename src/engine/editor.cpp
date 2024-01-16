@@ -119,7 +119,12 @@ poof(string_and_value_tables(particle_spawn_type))
 poof(string_and_value_tables(file_traversal_type))
 #include <generated/string_and_value_tables_file_traversal_node.h>
 
+poof(string_and_value_tables(tone_mapping_type))
+#include <generated/string_and_value_tables_tone_mapping_type.h>
 
+
+poof(do_editor_ui_for_enum(tone_mapping_type))
+#include <generated/do_editor_ui_for_enum_tone_mapping_type.h>
 
 
 
