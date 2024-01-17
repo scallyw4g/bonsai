@@ -1,15 +1,15 @@
 link_internal void
-DoEditorUi(renderer_2d *Ui, render_settings *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Element)
   {
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Element, "toggle render_settings"), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle render_settings", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
     {
       PushNewRow(Ui);
 
       PushTableStart(Ui);
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-      DoEditorUi(Ui, &Element->Lighting, CSz("lighting_settings Lighting"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->Lighting, CSz("lighting_settings Lighting"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -18,7 +18,7 @@ DoEditorUi(renderer_2d *Ui, render_settings *Element, cs Name, EDITOR_UI_FUNCTIO
 
 
       
-      DoEditorUi(Ui, &Element->ToneMappingType, CSz("tone_mapping_type ToneMappingType"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->ToneMappingType, CSz("tone_mapping_type ToneMappingType"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -27,7 +27,7 @@ DoEditorUi(renderer_2d *Ui, render_settings *Element, cs Name, EDITOR_UI_FUNCTIO
 
 
       
-      DoEditorUi(Ui, Cast(b8*, &Element->UseSsao), CSz("b32 UseSsao"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, Cast(b8*, &Element->UseSsao), CSz("b32 UseSsao"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -37,7 +37,7 @@ DoEditorUi(renderer_2d *Ui, render_settings *Element, cs Name, EDITOR_UI_FUNCTIO
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Cast(b8*, &Element->UseShadowMapping), CSz("b32 UseShadowMapping"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, Cast(b8*, &Element->UseShadowMapping), CSz("b32 UseShadowMapping"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -47,7 +47,7 @@ DoEditorUi(renderer_2d *Ui, render_settings *Element, cs Name, EDITOR_UI_FUNCTIO
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Cast(b8*, &Element->UseLightingBloom), CSz("b32 UseLightingBloom"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, Cast(b8*, &Element->UseLightingBloom), CSz("b32 UseLightingBloom"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -57,7 +57,7 @@ DoEditorUi(renderer_2d *Ui, render_settings *Element, cs Name, EDITOR_UI_FUNCTIO
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Cast(b8*, &Element->BravoilMyersOIT), CSz("b32 BravoilMyersOIT"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, Cast(b8*, &Element->BravoilMyersOIT), CSz("b32 BravoilMyersOIT"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -67,7 +67,7 @@ DoEditorUi(renderer_2d *Ui, render_settings *Element, cs Name, EDITOR_UI_FUNCTIO
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Cast(b8*, &Element->BravoilMcGuireOIT), CSz("b32 BravoilMcGuireOIT"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, Cast(b8*, &Element->BravoilMcGuireOIT), CSz("b32 BravoilMcGuireOIT"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -77,7 +77,7 @@ DoEditorUi(renderer_2d *Ui, render_settings *Element, cs Name, EDITOR_UI_FUNCTIO
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Cast(b8*, &Element->DrawMajorGrid), CSz("b32 DrawMajorGrid"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, Cast(b8*, &Element->DrawMajorGrid), CSz("b32 DrawMajorGrid"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -87,7 +87,7 @@ DoEditorUi(renderer_2d *Ui, render_settings *Element, cs Name, EDITOR_UI_FUNCTIO
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Cast(b8*, &Element->DrawMinorGrid), CSz("b32 DrawMinorGrid"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, Cast(b8*, &Element->DrawMinorGrid), CSz("b32 DrawMinorGrid"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -97,7 +97,7 @@ DoEditorUi(renderer_2d *Ui, render_settings *Element, cs Name, EDITOR_UI_FUNCTIO
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, &Element->MajorGridDim, CSz("r32 MajorGridDim"), EDITOR_UI_FUNCTION_INSTANCE_NAMES,0, 32);
+      DoEditorUi(Ui, Window, &Element->MajorGridDim, CSz("r32 MajorGridDim"), EDITOR_UI_FUNCTION_INSTANCE_NAMES,0, 32);
 
 
 

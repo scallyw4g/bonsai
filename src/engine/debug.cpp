@@ -1,9 +1,9 @@
 
 link_internal maybe_file_traversal_node
-EngineDrawFileNodesHelper(file_traversal_node Node)
+EngineDrawFileNodesHelper(file_traversal_node Node, u64 Window)
 {
   engine_resources *Engine = GetEngineResources();
-  maybe_file_traversal_node Result = DrawFileNodes(&Engine->Ui, Node);
+  maybe_file_traversal_node Result = DrawFileNodes(&Engine->Ui, (window_layout*)Window, Node);
   return Result;
 }
 
@@ -16,7 +16,7 @@ DoLevelWindow(engine_resources *Engine)
 
   PushWindowStart(Ui, &Window);
   PushTableStart(Ui);
-    if (Button(Ui, CSz("Export Level"), umm("export_level_button")))
+    if (Button(Ui, CSz("Export Level"), UiId(&Window, "export_level_button", 0ull)))
     {
       u32 ChunkCount = 0;
       RangeIterator(HashIndex, s32(World->HashSize))
@@ -79,7 +79,7 @@ DoLevelWindow(engine_resources *Engine)
   PushNewRow(Ui);
 
   PushTableStart(Ui);
-    maybe_file_traversal_node ClickedNode = PlatformTraverseDirectoryTree(CSz("../bonsai_levels"), EngineDrawFileNodesHelper);
+    maybe_file_traversal_node ClickedNode = PlatformTraverseDirectoryTree(CSz("../bonsai_levels"), EngineDrawFileNodesHelper, Cast(u64, &Window));
   PushTableEnd(Ui);
   PushNewRow(Ui);
 
@@ -191,7 +191,7 @@ DoEntityWindow(engine_resources *Engine)
         RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
         {
           entity *Entity = EntityTable[EntityIndex];
-          DoEditorUi(Ui, Entity, FSz("(%d) (%S) (%S)", EntityIndex, ToString(Entity->State), Entity->AssetId.FileNode.Name) );
+          DoEditorUi(Ui, &EntityWindow, Entity, FSz("(%d) (%S) (%S)", EntityIndex, ToString(Entity->State), Entity->AssetId.FileNode.Name) );
         }
       PushTableEnd(Ui);
 
@@ -227,7 +227,7 @@ DoEntityWindow(engine_resources *Engine)
 
     PushWindowStart(Ui, &EntityWindow);
       PushTableStart(Ui);
-        DoEditorUi(Ui, SelectedEntity, FSz("SelectedEntity (%d)", SelectedEntity->Id.Index));
+        DoEditorUi(Ui, &EntityWindow, SelectedEntity, FSz("SelectedEntity (%d)", SelectedEntity->Id.Index));
         PushNewRow(Ui);
       PushTableEnd(Ui);
     PushWindowEnd(Ui, &EntityWindow);
@@ -320,7 +320,7 @@ DoAssetWindow(engine_resources *Engine)
       RangeIterator(AssetIndex, ASSET_TABLE_COUNT)
       {
         asset *Asset = Engine->AssetTable + AssetIndex;
-        DoEditorUi(Ui, Asset, CS(AssetIndex));
+        DoEditorUi(Ui, &Window, Asset, CS(AssetIndex));
       }
     }
     ReleaseFutex(&Engine->AssetFutex);
@@ -334,7 +334,7 @@ DoAssetWindow(engine_resources *Engine)
 
     render_settings *Settings = &Graphics->Settings;
     PushWindowStart(Ui, &Window);
-      maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTree(CSz("models"), EngineDrawFileNodesHelper);
+      maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTree(CSz("models"), EngineDrawFileNodesHelper, u64(&Window) );
     PushWindowEnd(Ui, &Window);
 
     if (ClickedFileNode.Tag)
@@ -368,7 +368,7 @@ DoAssetWindow(engine_resources *Engine)
 
 
       PushTableStart(Ui);
-        auto AssetSpawnModeRadioGroup = RadioButtonGroup_asset_spawn_mode(Ui, umm("asset_spawn_mode_radio_group"));
+        auto AssetSpawnModeRadioGroup = RadioButtonGroup_asset_spawn_mode(Ui, &AssetViewWindow, "asset_spawn_mode_radio_group");
 
         maybe_asset_ptr MaybeAsset = GetAssetPtr(Engine, &EngineDebug->SelectedAsset);
 
@@ -409,7 +409,7 @@ DoAssetWindow(engine_resources *Engine)
                 texture *Texture = Thumb->Texture;
                 camera  *ThumbCamera  = &Thumb->Camera;
 
-                interactable_handle B = PushButtonStart(Ui, UiId(Thumb, "asset_texture_viewport") );
+                interactable_handle B = PushButtonStart(Ui, UiId(&AssetViewWindow, "asset_texture_viewport", Thumb) );
                   u32 Index = StartColumn(Ui);
                     if (ModelIndex == EngineDebug->ModelIndex) { PushRelativeBorder(Ui, V2(256), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f)); }
                     PushTexturedQuad(Ui, Texture, V2(Texture->Dim), zDepth_Text);
@@ -532,7 +532,7 @@ DoEngineDebug(engine_resources *Engine)
   UNPACK_ENGINE_RESOURCES(Engine);
 
   ui_toggle_button_group EditorButtonGroup =
-    ToggleButtonGroup_engine_debug_view_mode(Ui, umm("engine_debug_view_mode"));
+    ToggleButtonGroup_engine_debug_view_mode(Ui, 0, "engine_debug_view_mode");
 
 
   if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_Entities))
@@ -556,12 +556,12 @@ DoEngineDebug(engine_resources *Engine)
     PushWindowStart(Ui, &WorldChunkWindow);
 
       if ( Clicked(&EditorButtonGroup, CSz("WorldChunks")) ||
-           Button(Ui, CSz("PickNewChunk"), (umm)"Pick"^(umm)"WorldChunks") )
+           Button(Ui, CSz("PickNewChunk"), UiId(&WorldChunkWindow, "PickWorldChunkButton", 0ull) ) )
       {
         EngineDebug->PickedChunkState = PickedChunkState_Hover;
       }
 
-      if (Button(Ui, CSz("RebuildMesh"), (umm)"RebuildMesh"^(umm)"WorldChunks"))
+      if (Button(Ui, CSz("RebuildMesh"), UiId(&WorldChunkWindow, "RebuildMesh WorldChunkWindow", 0ull)) )
       {
         world_chunk *PickedChunk = EngineDebug->PickedChunk;
         /* MarkBoundaryVoxels_Debug(PickedChunk->Voxels, PickedChunk->Dim); */
@@ -582,7 +582,7 @@ DoEngineDebug(engine_resources *Engine)
       if (EngineDebug->PickedChunk)
       {
         /* DebugUi(Engine, CSz("PickedChunk"), EngineDebug->PickedChunk ); */
-        DoEditorUi(Ui, EngineDebug->PickedChunk, CSz("PickedChunk"));
+        DoEditorUi(Ui, &WorldChunkWindow, EngineDebug->PickedChunk, CSz("PickedChunk"));
       }
 
     PushWindowEnd(Ui, &WorldChunkWindow);
@@ -686,7 +686,7 @@ DoEngineDebug(engine_resources *Engine)
 
     render_settings *Settings = &Graphics->Settings;
     PushWindowStart(Ui, &RenderSettingsWindow);
-      DoEditorUi(Ui, Settings, CSz("Graphics Settings"));
+      DoEditorUi(Ui, &RenderSettingsWindow, Settings, CSz("Graphics Settings"));
     PushWindowEnd(Ui, &RenderSettingsWindow);
   }
 
@@ -698,7 +698,7 @@ DoEngineDebug(engine_resources *Engine)
       local_persist window_layout Window = WindowLayout("Engine Debug", WindowLayoutFlag_StartupAlign_Right);
       PushWindowStart(Ui, &Window);
         PushTableStart(Ui);
-        DoEditorUi(Ui, EngineDebug, CSz("Engine Debug"));
+        DoEditorUi(Ui, &Window, EngineDebug, CSz("Engine Debug"));
         PushTableEnd(Ui);
         /* DoEditorUi(Ui, &EngineDebug->UiDebug, CSz("UI Debug")); */
         /* DoEditorUi(Ui, &EngineDebug->Render,  CSz("Graphics Debug")); */
@@ -708,7 +708,7 @@ DoEngineDebug(engine_resources *Engine)
       local_persist window_layout Window = WindowLayout("Engine");
       PushWindowStart(Ui, &Window);
         PushTableStart(Ui);
-        DoEditorUi(Ui, Engine, CSz("Engine Resources"));
+        DoEditorUi(Ui, &Window, Engine, CSz("Engine Resources"));
         PushTableEnd(Ui);
       PushWindowEnd(Ui, &Window);
     }

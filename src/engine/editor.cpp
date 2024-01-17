@@ -9,7 +9,7 @@ GetUiDebug()
 }
 
 link_internal void
-DebugSlider(renderer_2d *Ui, r32 *Value, cs Name, r32 Min, r32 Max, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min, r32 Max, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushTableStart(Ui);
@@ -20,8 +20,19 @@ DebugSlider(renderer_2d *Ui, r32 *Value, cs Name, r32 Min, r32 Max, EDITOR_UI_FU
       r32 PercFilled = ((*Value)-Min)/Range;
 
       r32 Width = 125.f;
-      interactable_handle BargraphButton = PushButtonStart(Ui, UiId("debug_slider", Value));
-        PushBargraph(Ui, PercFilled, V3(0.75f), V3(0.4f), Width);
+
+      if (Value)
+      {
+        cs ValueText = CS(*Value);
+        v2 TextDim = GetDim(GetDrawBounds(ValueText, &DefaultStyle));
+
+        v2 Offset = V2(Width/2.f-TextDim.x/2.f, 0.f);
+
+        Text(Ui, ValueText, &DefaultStyle, TextRenderParam_NoAdvanceLayout, Offset);
+      }
+
+      interactable_handle BargraphButton = PushButtonStart(Ui, UiId(Window, "debug_slider", Value));
+        PushSliderBar(Ui, PercFilled, DefaultSelectedStyle.Color, V3(0.4f), Width);
       PushButtonEnd(Ui);
 
       v2 Offset = {};
@@ -36,7 +47,7 @@ DebugSlider(renderer_2d *Ui, r32 *Value, cs Name, r32 Min, r32 Max, EDITOR_UI_FU
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, r32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
@@ -44,20 +55,10 @@ DoEditorUi(renderer_2d *Ui, r32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
     PushTableStart(Ui);
       if (Value)
       {
-        if (Button(Ui, CSz("-"), UiId(Value, "decrement"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1.f; }
+        if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1.f; }
+        DebugSlider(Ui, Window, Value, {}, MinValue, MaxValue, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
-        if (*Value >= 10.f)
-        {
-          PushColumn(Ui, FSz("%.1f", r64(*Value)), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-        }
-        else
-        {
-          PushColumn(Ui, FSz("%.2f", r64(*Value)), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-        }
-
-        if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1.f; }
-
-        DebugSlider(Ui, Value, {}, MinValue, MaxValue, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+        if (Button(Ui, CSz("+"), UiId(Window, "increment", Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1.f; }
       }
       else
       {
@@ -69,9 +70,9 @@ DoEditorUi(renderer_2d *Ui, r32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, b8 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  if (Button(Ui, CS(Name), UiId(Value, "toggle"), EDITOR_UI_FUNCTION_INSTANCE_NAMES )) { *Value = !(*Value); }
+  if (Button(Ui, CS(Name), UiId(Window, "toggle", Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES )) { *Value = !(*Value); }
 
   counted_string Display = Value ?
        *Value ? CSz("True") : CSz("False") :
@@ -90,8 +91,23 @@ poof(do_editor_ui_for_vector_type({v4i v4 v3i v3 v2 Quaternion}));
 poof(do_editor_ui_for_container(v3_cursor))
 #include <generated/do_editor_ui_for_container_v3_cursor.h>
 
+poof(do_editor_ui_for_compound_type(ui_id))
+#include <generated/do_editor_ui_for_compound_type_ui_id.h>
+
+poof(do_editor_ui_for_compound_type(ui_toggle))
+#include <generated/do_editor_ui_for_compound_type_ui_toggle.h>
+
+link_internal cs
+CS(ui_toggle_hashtable_iterator &Iter)
+{
+  return CSz("(iterator)");
+}
+
+poof(do_editor_ui_for_container(ui_toggle_hashtable))
+#include <generated/do_editor_ui_for_container_ui_toggle_hashtable.h>
+
 link_internal void
-DoEditorUi(renderer_2d *Ui, cs *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, cs *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
   Value ?
@@ -100,17 +116,15 @@ DoEditorUi(renderer_2d *Ui, cs *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULT
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, cp *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, cp *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  DoEditorUi(Ui, &Value->WorldP, CSz("v3i WorldP"));
-  DoEditorUi(Ui, &Value->Offset, CSz("v3 Offset"));
+  DoEditorUi(Ui, Window, &Value->WorldP, CSz("v3i WorldP"));
+  DoEditorUi(Ui, Window, &Value->Offset, CSz("v3 Offset"));
 }
-
-
 
 #if DO_EDITOR_UI_FOR_ENTITY_TYPE
 link_internal void
-DoEditorUi(renderer_2d *Ui, entity_type *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS);
+DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_type *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS);
 #endif
 
 poof(string_and_value_tables(particle_spawn_type))
@@ -178,11 +192,11 @@ poof(do_editor_ui_for_compound_type(untextured_3d_geometry_buffer))
 #include <generated/do_editor_ui_for_compound_type_untextured_3d_geometry_buffer.h>
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, geo_u3d **ElementP, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, geo_u3d **ElementP, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (ElementP)
   {
-    DoEditorUi(Ui, *ElementP, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    DoEditorUi(Ui, Window, *ElementP, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
   }
   else
   {
@@ -244,10 +258,10 @@ poof(do_editor_ui_for_compound_type(entity_position_info))
 // @dirty_entity_P_format_hack
 //
 link_internal void
-DoEditorUi_entity_P(renderer_2d *Ui, entity *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi_entity_P(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  DoEditorUi(Ui, &Element->P.WorldP, CSz("WorldP"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-  DoEditorUi(Ui, &Element->P.Offset, CSz("Offset"), EDITOR_UI_FUNCTION_INSTANCE_NAMES, 0.f, 32.f);
+  DoEditorUi(Ui, Window, &Element->P.WorldP, CSz("WorldP"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  DoEditorUi(Ui, Window, &Element->P.Offset, CSz("Offset"), EDITOR_UI_FUNCTION_INSTANCE_NAMES, 0.f, 32.f);
 }
 
 poof(do_editor_ui_for_compound_type(entity_id))
@@ -257,7 +271,7 @@ poof(do_editor_ui_for_compound_type(entity))
 #include <generated/do_editor_ui_for_compound_type_entity.h>
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, void *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, void *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
   Value ?
@@ -523,14 +537,14 @@ DoWorldEditor(engine_resources *Engine)
   {
     local_persist window_layout Window = WindowLayout("World", window_layout_flags(WindowLayoutFlag_StartupAlign_Bottom));
     PushWindowStart(Ui, &Window);
-      DoEditorUi(Ui, World, CSz("World"));
+      DoEditorUi(Ui, &Window, World, CSz("World"));
     PushWindowEnd(Ui, &Window);
   }
 
   local_persist window_layout Window = WindowLayout("Edit");
 
   PushWindowStart(Ui, &Window);
-  ui_toggle_button_group WorldEditModeRadioGroup = RadioButtonGroup_world_edit_mode(Ui, umm("world_edit_mode_radio_group"), ToggleButtonGroupFlags_DrawVertical, {}, {}, {}, &DefaultStyle, V4(0, 0, 0, 16));
+  ui_toggle_button_group WorldEditModeRadioGroup = RadioButtonGroup_world_edit_mode(Ui, &Window, "world_edit_mode_radio_group", ToggleButtonGroupFlags_DrawVertical, {}, {}, {}, &DefaultStyle, V4(0, 0, 0, 16));
 
   v3_cursor *Palette = GetColorPalette();
   s32 PaletteColors = s32(AtElements(Palette));
@@ -558,7 +572,7 @@ DoWorldEditor(engine_resources *Engine)
       }
 
 
-      interactable_handle ColorPickerButton = PushButtonStart(Ui, (umm)"ColorPicker" ^ (umm)(ColorIndex+12657674));
+      interactable_handle ColorPickerButton = PushButtonStart(Ui, UiId(&Window, "ColorPicker", Cast(void*, u64(ColorIndex))) );
         PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, Padding );
       PushButtonEnd(Ui);
 

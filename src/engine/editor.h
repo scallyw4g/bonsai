@@ -7,7 +7,7 @@ poof(
     type_list.map(type)
     {
       link_internal void
-      DoEditorUi(renderer_2d *Ui, type.name *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+      DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
       {
         type.member(0, (E) 
         {
@@ -20,7 +20,7 @@ poof(
                 PushTableStart(Ui);
                   E.map_array(e_index)
                   {
-                    DoEditorUi(Ui, &Value->(E.name)[e_index], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+                    DoEditorUi(Ui, Window, &Value->(E.name)[e_index], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
                   }
                 PushTableEnd(Ui);
                 /* PushNewRow(Ui); */
@@ -40,7 +40,7 @@ poof(
     type_list.map(type)
     {
       link_internal void
-      DoEditorUi(renderer_2d *Ui, type.name *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+      DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
       {
         if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
@@ -48,9 +48,9 @@ poof(
         {
           u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
             PushTableStart(Ui);
-              if (Button(Ui, CSz("-"), UiId(Value, "decrement"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1; }
+              if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1; }
                   PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-              if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1; }
+              if (Button(Ui, CSz("+"), UiId(Window, "increment", Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1; }
             PushTableEnd(Ui);
           EndColumn(Ui, Start);
         }
@@ -63,9 +63,9 @@ poof(
       }
 
       link_internal void
-      DoEditorUi(renderer_2d *Ui, volatile type.name *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+      DoEditorUi(renderer_2d *Ui, window_layout *Window, volatile type.name *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
       {
-        DoEditorUi(Ui, ((type.name)*) Value, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+        DoEditorUi(Ui, Window, ((type.name)*) Value, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
       }
 
     }
@@ -76,11 +76,11 @@ poof(
   func do_editor_ui_for_compound_type(type)
   {
     link_internal void
-    DoEditorUi(renderer_2d *Ui, type.name *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+    DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
     {
       if (Element)
       {
-        if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Element, "toggle type.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+        if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle type.name", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
         {
           PushNewRow(Ui);
 
@@ -96,19 +96,19 @@ poof(
                 {
                   RangeIterator(ArrayIndex, member.array)
                   {
-                    DoEditorUi(Ui, Element->(member.name)+ArrayIndex, CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+                    DoEditorUi(Ui, Window, Element->(member.name)+ArrayIndex, CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
                     member.is_primitive?  { PushNewRow(Ui); }
                   }
                 }
                 {
                   member.is_pointer?
                   {
-                    DoEditorUi(Ui, Element->(member.name), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+                    DoEditorUi(Ui, Window, Element->(member.name), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
                   }
                   {
                     member.has_tag(ui_value_range)?
                     {
-                      DoEditorUi(Ui, &Element->(member.name), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES, member.tag_value(ui_value_range));
+                      DoEditorUi(Ui, Window, &Element->(member.name), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES, member.tag_value(ui_value_range));
                     }
                     {
                       member.has_tag(custom_ui)?
@@ -118,10 +118,10 @@ poof(
                       {
                         member.is_type(b32)?
                         {
-                          DoEditorUi(Ui, Cast(b8*, &Element->(member.name)), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+                          DoEditorUi(Ui, Window, Cast(b8*, &Element->(member.name)), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
                         }
                         {
-                          DoEditorUi(Ui, &Element->(member.name), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+                          DoEditorUi(Ui, Window, &Element->(member.name), CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
                         }
                       }
                     }
@@ -155,18 +155,18 @@ poof(
   func do_editor_ui_for_enum(enum_t)
   {
     link_internal void
-    DoEditorUi(renderer_2d *Ui, enum_t.name *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+    DoEditorUi(renderer_2d *Ui, window_layout *Window, enum_t.name *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
     {
       if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
       cs ElementName = ToString(*Element);
-      if (ToggleButton(Ui, ElementName, ElementName, UiId(Element, "enum value.type value.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+      if (ToggleButton(Ui, ElementName, ElementName, UiId(Window, "enum value.type value.name", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
       {
         PushNewRow(Ui);
         enum_t.map(value)
         {
           PushColumn(Ui, CSz("")); // Skip the first Name column
-          if (Button(Ui, CSz("value.name"), UiId(Element, "enum value.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+          if (Button(Ui, CSz("value.name"), UiId(Window, "enum value.name", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
           {
             enum_t.has_tag(bitfield)?
             {
@@ -198,16 +198,16 @@ poof(
   func do_editor_ui_for_container(type)
   {
     link_internal void
-    DoEditorUi(renderer_2d *Ui, type.name *Container, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+    DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Container, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
     {
       if (Container)
       {
-        if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Container, Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+        if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, Name.Start, Container), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
         {
           PushNewRow(Ui);
           IterateOver(Container, Element, ElementIndex)
           {
-            DoEditorUi(Ui, Element, CS(ElementIndex), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+            DoEditorUi(Ui, Window, Element, CS(ElementIndex), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
             PushNewRow(Ui);
           }
         }
@@ -222,8 +222,8 @@ poof(
   }
 )
 
-link_internal void
-DoEditorUi(renderer_2d *Ui, aabb *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS);
+/* link_internal void */
+/* DoEditorUi(renderer_2d *Ui, aabb *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS); */
 
 /* link_internal void */
 /* DoEditorUi(renderer_2d *Ui, v3i *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS); */

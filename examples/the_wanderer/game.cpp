@@ -65,7 +65,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     Player->Physics.Force += BoostForce;
   }
 
-  if (Hotkeys->Player_Jump)
+  if (Input->Space.Clicked)
   {
     Player->Physics.Force += V3(0, 0, 10);
   }
@@ -73,6 +73,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   /* Player->Physics.Force = V3(0, 0, 0); */
 
+#if 0
   if (Hotkeys->Player_Spawn)
   {
     asset_id Asset = GetOrAllocateAssetId(Resources, {FileTraversalType_File, CSz("models"), CSz("players/chr_rain.vox")});
@@ -86,6 +87,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
                            &GameState->Entropy );
     World->Center = World_Position(0, 0, 0);
   }
+#endif
 
 
 #endif
@@ -105,7 +107,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState->Models = AllocateGameModels(GameState, Resources->Memory, Heap);
 
-  GameState->Player = GetFreeEntity(EntityTable);
+  GameState->Player = TryGetFreeEntityPtr(EntityTable);
 
   asset_id Asset = GetOrAllocateAssetId(Resources, {FileTraversalType_File, CSz("models"), CSz("players/chr_rain.vox")});
   SpawnPlayerLikeEntity( Plat,

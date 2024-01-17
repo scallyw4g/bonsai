@@ -69,7 +69,7 @@ struct entity
   //
   // @dirty_entity_P_format_hack
   //
-  cp P;           poof(@custom_ui(DoEditorUi_entity_P(Ui, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)))
+  cp P;           poof(@custom_ui(DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)))
 
   v3 EulerAngles; poof(@ui_value_range(-180.f, 180.f))
   r32 Scale;

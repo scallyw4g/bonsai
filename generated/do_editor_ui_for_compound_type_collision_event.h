@@ -1,15 +1,15 @@
 link_internal void
-DoEditorUi(renderer_2d *Ui, collision_event *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_event *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Element)
   {
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Element, "toggle collision_event"), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle collision_event", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
     {
       PushNewRow(Ui);
 
       PushTableStart(Ui);
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-      DoEditorUi(Ui, &Element->FrameIndex, CSz("u32 FrameIndex"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->FrameIndex, CSz("u32 FrameIndex"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -19,7 +19,7 @@ DoEditorUi(renderer_2d *Ui, collision_event *Element, cs Name, EDITOR_UI_FUNCTIO
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, &Element->Count, CSz("u32 Count"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->Count, CSz("u32 Count"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -29,7 +29,7 @@ DoEditorUi(renderer_2d *Ui, collision_event *Element, cs Name, EDITOR_UI_FUNCTIO
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, &Element->MinP, CSz("canonical_position MinP"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->MinP, CSz("canonical_position MinP"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -38,7 +38,7 @@ DoEditorUi(renderer_2d *Ui, collision_event *Element, cs Name, EDITOR_UI_FUNCTIO
 
 
       
-      DoEditorUi(Ui, &Element->MaxP, CSz("canonical_position MaxP"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->MaxP, CSz("canonical_position MaxP"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }

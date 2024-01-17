@@ -60,7 +60,7 @@ poof(
     }
 
     link_internal ui_toggle_button_group
-    (NamePrefix)ButtonGroup_(enum_t.name)(renderer_2d *Ui, umm IdModifier, ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None, UI_FUNCTION_PROTO_DEFAULTS)
+    (NamePrefix)ButtonGroup_(enum_t.name)(renderer_2d *Ui, window_layout *Window, const char *ToggleGroupIdentifier, ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None, UI_FUNCTION_PROTO_DEFAULTS)
     {
       cs ButtonNames[] =
       {
@@ -75,7 +75,8 @@ poof(
       ui_toggle_button_handle_buffer ButtonBuffer = UiToggleButtonHandleBuffer(ButtonCount, GetTranArena());
       IterateOver(&ButtonBuffer, Button, ButtonIndex)
       {
-        *Button = UiToggle(ButtonNames[ButtonIndex], IdModifier+ButtonIndex);
+        cs Name = ButtonNames[ButtonIndex];
+        *Button = UiToggle(Name, Window, ToggleGroupIdentifier, (void*)Name.Start);
       }
 
       ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer, ui_toggle_button_group_flags(ExtraFlags(extra_poof_flags)), UI_FUNCTION_INSTANCE_NAMES);

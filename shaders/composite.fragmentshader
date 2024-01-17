@@ -46,7 +46,6 @@ uniform int ToneMappingType;
 // Set to > 0 to show a video instead of the color gradients
 #define SHOW_VIDEO 0
 // 0: Default, 1: Golden, 2: Punchy
-#define AGX_LOOK 2
 
 // AgX
 // ->
@@ -70,17 +69,17 @@ vec3 agx(vec3 val) {
     0.842479062253094, 0.0423282422610123, 0.0423756549057051,
     0.0784335999999992,  0.878468636469772,  0.0784336,
     0.0792237451477643, 0.0791661274605434, 0.879142973793104);
-    
+
   const float min_ev = -12.47393f;
   const float max_ev = 4.026069f;
 
   // Input transform
   val = agx_mat * val;
-  
+
   // Log2 space encoding
   val = clamp(log2(val), min_ev, max_ev);
   val = (val - min_ev) / (max_ev - min_ev);
-  
+
   // Apply sigmoid function approximation
   val = agxDefaultContrastApprox(val);
 
@@ -112,17 +111,26 @@ vec3 agxLook(vec3 val) {
   vec3 power = vec3(1.0);
   float sat = 1.0;
 
-#if AGX_LOOK == 1
-  // Golden
-  slope = vec3(1.0, 0.9, 0.5);
-  power = vec3(0.8);
-  sat = 0.8;
-#elif AGX_LOOK == 2
-  // Punchy
-  slope = vec3(1.0);
-  power = vec3(1.35, 1.35, 1.35);
-  sat = 1.4;
-#endif
+  switch (ToneMappingType)
+  {
+    case 3: {} break;
+
+    case 4:
+    {
+      // Golden
+      slope = vec3(1.0, 0.9, 0.5);
+      power = vec3(0.8);
+      sat = 0.8;
+    } break;
+
+    case 5:
+    {
+      // Punchy
+      slope = vec3(1.0);
+      power = vec3(1.35, 1.35, 1.35);
+      sat = 1.4;
+    } break;
+  }
 
   // ASC CDL
   val = pow(val * slope + offset, power);
@@ -214,6 +222,11 @@ void main()
     // Reinhard tone mapping, looks pretty bad
     case 0:
     {
+      ToneMapped = TotalLight;
+    } break;
+
+    case 1:
+    {
       ToneMapped = TotalLight / (TotalLight + vec3(1.0f));
     } break;
 
@@ -221,7 +234,7 @@ void main()
     //
     // Tone mapping from https://learnopengl.com/Advanced-Lighting/Bloom
     //
-    case 1:
+    case 2:
     {
       ToneMapped = vec3(1.0) - exp(-TotalLight * Exposure);
     } break;
@@ -234,7 +247,9 @@ void main()
     // https://github.com/EaryChow/AgX
     // https://www.shadertoy.com/view/cd3XWr
     //
-    case 2:
+    case 3:
+    case 4:
+    case 5:
     {
       TotalLight = agx(TotalLight);
       TotalLight = agxLook(TotalLight);

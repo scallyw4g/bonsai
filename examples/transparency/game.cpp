@@ -71,7 +71,9 @@ SpawnLineOfEntities(entity **EntityTable, entity_block_array *Storage, v3 BaseP,
 {
   RangeIterator(Index, Count)
   {
-    entity *E = GetFreeEntity(EntityTable);
+    entity *E = TryGetFreeEntityPtr(EntityTable);
+    Assert(E);
+
     E->P.Offset = BaseP + (Offset*r32(Index));
     SpawnEntity(E);
     Push(Storage, E);

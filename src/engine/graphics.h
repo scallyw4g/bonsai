@@ -58,9 +58,12 @@ struct lighting_settings
 
 enum tone_mapping_type
 {
+  ToneMappingType_None,
   ToneMappingType_Reinhard,
-  ToneMappingType_RandomLearnOpenglThingIFound,
+  ToneMappingType_Exposure,
   ToneMappingType_AGX,
+  ToneMappingType_AGX_Sepia,
+  ToneMappingType_AGX_Punchy,
 };
 
 struct render_settings

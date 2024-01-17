@@ -1,15 +1,15 @@
 link_internal void
-DoEditorUi(renderer_2d *Ui, lighting_settings *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Element)
   {
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Element, "toggle lighting_settings"), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle lighting_settings", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
     {
       PushNewRow(Ui);
 
       PushTableStart(Ui);
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-      DoEditorUi(Ui, &Element->AutoDayNightCycle, CSz("b8 AutoDayNightCycle"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->AutoDayNightCycle, CSz("b8 AutoDayNightCycle"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -19,7 +19,7 @@ DoEditorUi(renderer_2d *Ui, lighting_settings *Element, cs Name, EDITOR_UI_FUNCT
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, &Element->tDay, CSz("r32 tDay"), EDITOR_UI_FUNCTION_INSTANCE_NAMES,-PI32, PI32);
+      DoEditorUi(Ui, Window, &Element->tDay, CSz("r32 tDay"), EDITOR_UI_FUNCTION_INSTANCE_NAMES,-PI32, PI32);
 
 
 
@@ -27,23 +27,14 @@ DoEditorUi(renderer_2d *Ui, lighting_settings *Element, cs Name, EDITOR_UI_FUNCT
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, &Element->SunP, CSz("v3 SunP"), EDITOR_UI_FUNCTION_INSTANCE_NAMES,-1.f, 1.f);
+      DoEditorUi(Ui, Window, &Element->SunP, CSz("v3 SunP"), EDITOR_UI_FUNCTION_INSTANCE_NAMES,-1.f, 1.f);
 
 
 
 
 
       
-      DoEditorUi(Ui, &Element->DawnColor, CSz("v3 DawnColor"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, &Element->SunColor, CSz("v3 SunColor"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->DawnColor, CSz("v3 DawnColor"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -52,7 +43,7 @@ DoEditorUi(renderer_2d *Ui, lighting_settings *Element, cs Name, EDITOR_UI_FUNCT
 
 
       
-      DoEditorUi(Ui, &Element->DuskColor, CSz("v3 DuskColor"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->SunColor, CSz("v3 SunColor"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -61,7 +52,7 @@ DoEditorUi(renderer_2d *Ui, lighting_settings *Element, cs Name, EDITOR_UI_FUNCT
 
 
       
-      DoEditorUi(Ui, &Element->MoonColor, CSz("v3 MoonColor"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->DuskColor, CSz("v3 DuskColor"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -70,7 +61,16 @@ DoEditorUi(renderer_2d *Ui, lighting_settings *Element, cs Name, EDITOR_UI_FUNCT
 
 
       
-      DoEditorUi(Ui, &Element->SunIntensity, CSz("f32 SunIntensity"), EDITOR_UI_FUNCTION_INSTANCE_NAMES,0.f, 3.f);
+      DoEditorUi(Ui, Window, &Element->MoonColor, CSz("v3 MoonColor"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui, Window, &Element->SunIntensity, CSz("f32 SunIntensity"), EDITOR_UI_FUNCTION_INSTANCE_NAMES,0.f, 3.f);
 
 
 
@@ -78,7 +78,7 @@ DoEditorUi(renderer_2d *Ui, lighting_settings *Element, cs Name, EDITOR_UI_FUNCT
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, &Element->MoonIntensity, CSz("f32 MoonIntensity"), EDITOR_UI_FUNCTION_INSTANCE_NAMES,0.f, 3.f);
+      DoEditorUi(Ui, Window, &Element->MoonIntensity, CSz("f32 MoonIntensity"), EDITOR_UI_FUNCTION_INSTANCE_NAMES,0.f, 3.f);
 
 
 
@@ -86,7 +86,7 @@ DoEditorUi(renderer_2d *Ui, lighting_settings *Element, cs Name, EDITOR_UI_FUNCT
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, &Element->DawnIntensity, CSz("f32 DawnIntensity"), EDITOR_UI_FUNCTION_INSTANCE_NAMES,0.f, 3.f);
+      DoEditorUi(Ui, Window, &Element->DawnIntensity, CSz("f32 DawnIntensity"), EDITOR_UI_FUNCTION_INSTANCE_NAMES,0.f, 3.f);
 
 
 
@@ -94,7 +94,7 @@ DoEditorUi(renderer_2d *Ui, lighting_settings *Element, cs Name, EDITOR_UI_FUNCT
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, &Element->DuskIntensity, CSz("f32 DuskIntensity"), EDITOR_UI_FUNCTION_INSTANCE_NAMES,0.f, 3.f);
+      DoEditorUi(Ui, Window, &Element->DuskIntensity, CSz("f32 DuskIntensity"), EDITOR_UI_FUNCTION_INSTANCE_NAMES,0.f, 3.f);
 
 
 
@@ -102,7 +102,7 @@ DoEditorUi(renderer_2d *Ui, lighting_settings *Element, cs Name, EDITOR_UI_FUNCT
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, &Element->CurrentSunColor, CSz("v3 CurrentSunColor"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->CurrentSunColor, CSz("v3 CurrentSunColor"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -111,7 +111,7 @@ DoEditorUi(renderer_2d *Ui, lighting_settings *Element, cs Name, EDITOR_UI_FUNCT
 
 
       
-      DoEditorUi(Ui, &Element->Test, CSz("u32 Test"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->Test, CSz("u32 Test"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 

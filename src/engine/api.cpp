@@ -128,6 +128,17 @@ Bonsai_FrameBegin(engine_resources *Resources)
   UiFrameBegin(Ui);         // Clear UI interactions
   DoEngineDebug(Resources); // Do Editor/Debug UI
 
+  {
+    local_persist window_layout TestWindow = WindowLayout("TestWindow");
+    PushWindowStart(Ui, &TestWindow);
+
+      PushTableStart(Ui);
+        DoEditorUi(Ui, &TestWindow, &Resources->Ui.ToggleTable, CSz("ToggleTable"));
+      PushTableEnd(Ui);
+
+    PushWindowEnd(Ui, &TestWindow);
+  }
+
 #if 0
   // NOTE(Jesse): This is a start on debugging some UI layout issues
   {

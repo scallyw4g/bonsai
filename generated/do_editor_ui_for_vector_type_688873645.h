@@ -1,5 +1,5 @@
 link_internal void
-DoEditorUi(renderer_2d *Ui, v4i *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, v4i *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   /* PushTableStart(Ui); */
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
@@ -8,10 +8,10 @@ DoEditorUi(renderer_2d *Ui, v4i *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
   {
     u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushTableStart(Ui);
-    DoEditorUi(Ui, &Value->E[0], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, &Value->E[1], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, &Value->E[2], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, &Value->E[3], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[0], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[1], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[2], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[3], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
     EndColumn(Ui, Start);
@@ -21,7 +21,7 @@ DoEditorUi(renderer_2d *Ui, v4i *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
   PushNewRow(Ui);
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, v4 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, v4 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   /* PushTableStart(Ui); */
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
@@ -30,10 +30,10 @@ DoEditorUi(renderer_2d *Ui, v4 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULT
   {
     u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushTableStart(Ui);
-    DoEditorUi(Ui, &Value->E[0], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, &Value->E[1], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, &Value->E[2], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, &Value->E[3], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[0], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[1], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[2], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[3], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
     EndColumn(Ui, Start);
@@ -43,7 +43,7 @@ DoEditorUi(renderer_2d *Ui, v4 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULT
   PushNewRow(Ui);
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, v3i *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, v3i *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   /* PushTableStart(Ui); */
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
@@ -52,9 +52,9 @@ DoEditorUi(renderer_2d *Ui, v3i *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
   {
     u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushTableStart(Ui);
-    DoEditorUi(Ui, &Value->E[0], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, &Value->E[1], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, &Value->E[2], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[0], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[1], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[2], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
     EndColumn(Ui, Start);
@@ -64,7 +64,7 @@ DoEditorUi(renderer_2d *Ui, v3i *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
   PushNewRow(Ui);
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, v3 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, v3 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   /* PushTableStart(Ui); */
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
@@ -73,9 +73,9 @@ DoEditorUi(renderer_2d *Ui, v3 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULT
   {
     u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushTableStart(Ui);
-    DoEditorUi(Ui, &Value->E[0], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, &Value->E[1], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, &Value->E[2], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[0], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[1], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[2], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
     EndColumn(Ui, Start);
@@ -85,7 +85,7 @@ DoEditorUi(renderer_2d *Ui, v3 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULT
   PushNewRow(Ui);
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, v2 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, v2 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   /* PushTableStart(Ui); */
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
@@ -94,8 +94,8 @@ DoEditorUi(renderer_2d *Ui, v2 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULT
   {
     u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushTableStart(Ui);
-    DoEditorUi(Ui, &Value->E[0], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, &Value->E[1], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[0], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[1], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
     EndColumn(Ui, Start);
@@ -105,7 +105,7 @@ DoEditorUi(renderer_2d *Ui, v2 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULT
   PushNewRow(Ui);
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, Quaternion *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, Quaternion *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   /* PushTableStart(Ui); */
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
@@ -114,10 +114,10 @@ DoEditorUi(renderer_2d *Ui, Quaternion *Value, cs Name, EDITOR_UI_FUNCTION_PROTO
   {
     u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushTableStart(Ui);
-    DoEditorUi(Ui, &Value->E[0], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, &Value->E[1], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, &Value->E[2], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, &Value->E[3], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[0], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[1], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[2], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[3], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
     EndColumn(Ui, Start);

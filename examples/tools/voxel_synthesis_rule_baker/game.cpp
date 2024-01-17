@@ -760,7 +760,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
     maybe_asset_ptr MaybeAsset = AllocateAsset(Resources);
     if (MaybeAsset.Tag)
     {
-      entity *BakeEntity = GetFreeEntity(EntityTable);
+      entity *BakeEntity = TryGetFreeEntityPtr(EntityTable);
+      Assert(BakeEntity);
+
       GameState->BakeEntity = BakeEntity;
 
       BakeEntity->_CollisionVolumeRadius = ChunkData->Dim/2.f;
@@ -807,7 +809,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
           v3i VoxOffset = V3iFromIndex(s32(Tile->VoxelIndex), ChunkData->Dim);
 
-          entity *TileEntity = GetFreeEntity(EntityTable);
+          entity *TileEntity = TryGetFreeEntityPtr(EntityTable);
           TileEntity->_CollisionVolumeRadius = V3(Global_TileDim/2);
 
           TileEntity->AssetId = MaybeAsset.Value->Id;

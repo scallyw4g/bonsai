@@ -1,5 +1,5 @@
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, v3_cursor *Container, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle_hashtable *Container, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Container)
   {

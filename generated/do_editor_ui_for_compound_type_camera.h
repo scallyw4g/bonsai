@@ -1,15 +1,15 @@
 link_internal void
-DoEditorUi(renderer_2d *Ui, camera *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Element)
   {
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Element, "toggle camera"), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle camera", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
     {
       PushNewRow(Ui);
 
       PushTableStart(Ui);
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-      DoEditorUi(Ui, &Element->Frust, CSz("frustum Frust"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->Frust, CSz("frustum Frust"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -18,7 +18,7 @@ DoEditorUi(renderer_2d *Ui, camera *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
 
 
       
-      DoEditorUi(Ui, &Element->CurrentP, CSz("cp CurrentP"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->CurrentP, CSz("cp CurrentP"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -27,7 +27,7 @@ DoEditorUi(renderer_2d *Ui, camera *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
 
 
       
-      DoEditorUi(Ui, &Element->RenderSpacePosition, CSz("v3 RenderSpacePosition"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->RenderSpacePosition, CSz("v3 RenderSpacePosition"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -36,7 +36,7 @@ DoEditorUi(renderer_2d *Ui, camera *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
 
 
       
-      DoEditorUi(Ui, &Element->Pitch, CSz("r32 Pitch"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->Pitch, CSz("r32 Pitch"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -46,7 +46,7 @@ DoEditorUi(renderer_2d *Ui, camera *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, &Element->Roll, CSz("r32 Roll"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->Roll, CSz("r32 Roll"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -56,7 +56,7 @@ DoEditorUi(renderer_2d *Ui, camera *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, &Element->Yaw, CSz("r32 Yaw"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->Yaw, CSz("r32 Yaw"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -66,7 +66,7 @@ DoEditorUi(renderer_2d *Ui, camera *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, &Element->DistanceFromTarget, CSz("r32 DistanceFromTarget"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->DistanceFromTarget, CSz("r32 DistanceFromTarget"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -76,7 +76,7 @@ DoEditorUi(renderer_2d *Ui, camera *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, &Element->Front, CSz("v3 Front"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->Front, CSz("v3 Front"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -85,7 +85,7 @@ DoEditorUi(renderer_2d *Ui, camera *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
 
 
       
-      DoEditorUi(Ui, &Element->Right, CSz("v3 Right"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->Right, CSz("v3 Right"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -94,7 +94,7 @@ DoEditorUi(renderer_2d *Ui, camera *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
 
 
       
-      DoEditorUi(Ui, &Element->Up, CSz("v3 Up"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->Up, CSz("v3 Up"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -103,7 +103,7 @@ DoEditorUi(renderer_2d *Ui, camera *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_D
 
 
       
-      DoEditorUi(Ui, &Element->GhostId, CSz("entity_id GhostId"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->GhostId, CSz("entity_id GhostId"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
