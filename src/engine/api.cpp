@@ -128,6 +128,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
   UiFrameBegin(Ui);         // Clear UI interactions
   DoEngineDebug(Resources); // Do Editor/Debug UI
 
+#if 0
   {
     local_persist window_layout TestWindow = WindowLayout("TestWindow");
     PushWindowStart(Ui, &TestWindow);
@@ -138,6 +139,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
     PushWindowEnd(Ui, &TestWindow);
   }
+#endif
 
 #if 0
   // NOTE(Jesse): This is a start on debugging some UI layout issues
@@ -193,6 +195,8 @@ Bonsai_FrameBegin(engine_resources *Resources)
   //
   // @immediate-geometry-is-a-frame-late
 
+  cp CameraTargetP = {};
+
   entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId);
   if (CameraGhost && UiCapturedMouseInput(Ui) == False)
   {
@@ -218,16 +222,16 @@ Bonsai_FrameBegin(engine_resources *Resources)
     // UPDATE(Jesse): This bug has been reintroduced because of @camera-update-ui-update-frame-jank
     // More info and a solution documented at : https://github.com/scallyw4g/bonsai/issues/30
     //
-    cp CameraGhostP = CameraGhost->P;
+    CameraTargetP = CameraGhost->P;
 
-    input *InputForCamera = 0;
-    v2 MouseDelta = GetMouseDelta(Plat);
-
-    InputForCamera = &Plat->Input;
-    UpdateGameCamera(World, MouseDelta, InputForCamera, CameraGhostP, Camera, DEFAULT_CAMERA_BLENDING*Plat->dt);
-
-    if (World->Flags & WorldFlag_WorldCenterFollowsCameraTarget) { World->Center = CameraGhostP.WorldP; }
+    if (World->Flags & WorldFlag_WorldCenterFollowsCameraTarget) { World->Center = CameraGhost->P.WorldP; }
   }
+
+
+  input *InputForCamera = &Plat->Input;
+  v2 MouseDelta = GetMouseDelta(Plat);
+  UpdateGameCamera(World, MouseDelta, InputForCamera, CameraTargetP, Camera, DEFAULT_CAMERA_BLENDING*Plat->dt);
+
 
   Resources->Graphics->gBuffer->ViewProjection =
     ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *

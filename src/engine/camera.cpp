@@ -124,15 +124,17 @@ UpdateGameCamera(world *World, v2 MouseDelta, r32 CameraZoomDelta, cp TargetView
 link_internal void
 UpdateGameCamera(world *World, v2 MouseDelta, input *Input, canonical_position NewTarget, camera* Camera, r32 Blend = DEFAULT_CAMERA_BLENDING)
 {
+  v2 UpdateMouseDelta = {};
+  f32 CameraZoomDelta = {};
   if (Input)
   {
-    v2 UpdateMouseDelta = Input->LMB.Pressed ? MouseDelta : V2(0);
-    f32 CameraZoomDelta = Input->MouseWheelDelta/200.f;
+    UpdateMouseDelta = Input->LMB.Pressed ? MouseDelta : V2(0);
+    CameraZoomDelta = Input->MouseWheelDelta/200.f;
 
     if (Input->RMB.Pressed) { CameraZoomDelta += MouseDelta.y; }
-
-    UpdateGameCamera(World, UpdateMouseDelta, CameraZoomDelta, NewTarget, Camera);
   }
+
+  UpdateGameCamera(World, UpdateMouseDelta, CameraZoomDelta, NewTarget, Camera);
 }
 
 link_internal void
@@ -152,10 +154,6 @@ StandardCamera(camera* Camera, float FarClip, float DistanceFromTarget, canonica
   Camera->Yaw = PI32*0.15f;
 
   Camera->DistanceFromTarget = DistanceFromTarget;
-
-  input *Input = 0;
-  v2 MouseDelta = {};
-  UpdateGameCamera(GetWorld(), MouseDelta, Input, InitialTarget, Camera);
 }
 
 link_internal bool

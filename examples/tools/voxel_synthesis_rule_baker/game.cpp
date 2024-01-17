@@ -628,7 +628,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     }
   }
 
-  entity *HoverEntity = MousePickEntity(Resources);
+  entity *HoverEntity = 0;
+  /* entity *HoverEntity = MousePickEntity(Resources); */
   entity *BakeEntity = GameState->BakeEntity;
 
   local_persist entity *MousePickedEntities[2] = {};
