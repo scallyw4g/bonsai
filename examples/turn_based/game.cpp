@@ -7,8 +7,7 @@
 #include "game_types.h"
 
 global_variable v3
-Global_EntityFireballOffset = V3(0,0,16);
-/* Global_EntityFireballOffset = V3(7.0f, -1.75f, 4.5f); */
+Global_EntityFireballOffset = V3(0,0,18);
 
 global_variable f32
 Global_MeleeRange = 12.f;
@@ -22,57 +21,6 @@ struct entity_game_data
   u32 IceBlockCharges;
   u32 HoldingItem;
 };
-
-
-#if 0
-link_internal model *
-AllocateGameModels(game_state *GameState, memory_arena *Memory, heap_allocator *Heap)
-{
-  // TODO(Jesse)(leak, memory): Pass temp memory to LoadVoxModels
-
-  model *Result                                       = Allocate(model, Memory, ModelIndex_Count);
-
-  Result[ModelIndex_Enemy_Skeleton_Axe]              = LoadVoxModels(Memory, Heap, "models/skeletons/SKELLINGTON_AXE.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Enemy_Skeleton_Sword]            = LoadVoxModels(Memory, Heap, "models/skeletons/SKELLINGTON_SWORD.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Enemy_Skeleton_Lasher]           = LoadVoxModels(Memory, Heap, "models/skeletons/SKELLINGTON_LASHER.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Enemy_Skeleton_Archer]           = LoadVoxModels(Memory, Heap, "models/skeletons/SKELLINGTON_ARCHER.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Enemy_Skeleton_Spear]            = LoadVoxModels(Memory, Heap, "models/skeletons/SKELLINGTON_SPEAR.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Enemy_Skeleton_AxeArmor]         = LoadVoxModels(Memory, Heap, "models/skeletons/SKELLINGTON_AXE_ARMOR.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Enemy_Skeleton_Hounds]           = LoadVoxModels(Memory, Heap, "models/skeletons/SKELLINGTON_HOUNDS.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Enemy_Skeleton_Horserider]       = LoadVoxModels(Memory, Heap, "models/skeletons/SKELLINGTON_HORSERIDER.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Enemy_Skeleton_Horsebanner]      = LoadVoxModels(Memory, Heap, "models/skeletons/SKELLINGTON_HORSE_BANNER.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Enemy_Skeleton_Shaman]           = LoadVoxModels(Memory, Heap, "models/skeletons/SKELLINGTON_SHAMAN.vox", Memory).Value.Start[0];
-  /* Result[ModelIndex_Enemy_Skeleton_Champion]         = LoadVoxModels(Memory, Heap, "models/skeletons/SKELLINGTON_CHAMPION.vox", Memory).Value.Start[0]; */
-  Result[ModelIndex_Enemy_Skeleton_ChampionChampion] = LoadVoxModels(Memory, Heap, "models/skeletons/SKELLINGTON_CHAMPION_CATAPHRACT.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Enemy_Skeleton_Concubiner]       = LoadVoxModels(Memory, Heap, "models/skeletons/SKELLINGTON_CONCUBINER.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Enemy_Skeleton_King]             = LoadVoxModels(Memory, Heap, "models/skeletons/SKELLINGTON_KING.vox", Memory).Value.Start[0];
-
-  Result[ModelIndex_Player_jp]      = LoadVoxModels(Memory, Heap, "models/players/chr_jp.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Player_bow]     = LoadVoxModels(Memory, Heap, "models/players/chr_bow.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Player_cat]     = LoadVoxModels(Memory, Heap, "models/players/chr_cat.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Player_fox]     = LoadVoxModels(Memory, Heap, "models/players/chr_fox.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Player_gumi]    = LoadVoxModels(Memory, Heap, "models/players/chr_gumi.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Player_knight]  = LoadVoxModels(Memory, Heap, "models/players/chr_knight.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Player_man]     = LoadVoxModels(Memory, Heap, "models/players/chr_man.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Player_mom]     = LoadVoxModels(Memory, Heap, "models/players/chr_mom.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Player_old]     = LoadVoxModels(Memory, Heap, "models/players/chr_old.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Player_poem]    = LoadVoxModels(Memory, Heap, "models/players/chr_poem.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Player_rain]    = LoadVoxModels(Memory, Heap, "models/players/chr_rain.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Player_sasami]  = LoadVoxModels(Memory, Heap, "models/players/chr_sasami.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Player_sol]     = LoadVoxModels(Memory, Heap, "models/players/chr_sol.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Player_sword]   = LoadVoxModels(Memory, Heap, "models/players/chr_sword.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Player_tale]    = LoadVoxModels(Memory, Heap, "models/players/chr_tale.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Player_tama]    = LoadVoxModels(Memory, Heap, "models/players/chr_tama.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Player_tsurugi] = LoadVoxModels(Memory, Heap, "models/players/chr_tsurugi.vox", Memory).Value.Start[0];
-
-  Result[ModelIndex_Bitty0] = LoadVoxModels(Memory, Heap, "models/splotion_bitty_0.vox", Memory).Value.Start[0];
-  Result[ModelIndex_Bitty1] = LoadVoxModels(Memory, Heap, "models/splotion_bitty_1.vox", Memory).Value.Start[0];
-
-  /* Result[ModelIndex_FirstPlayerModel] = LoadObj(Memory, Heap, "models/test/nature_pack.obj"); */
-
-  return Result;
-}
-#endif
 
 global_variable random_series Global_GameEntropy = {543232654};
 
