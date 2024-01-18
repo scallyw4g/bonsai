@@ -92,8 +92,12 @@ DoLevelWindow(engine_resources *Engine)
 
     if (LevelBytes.Start)
     {
+      u8 HeaderBytes[256] = {};
+      u8 *HeaderBytesP = HeaderBytes;
       level_header LevelHeader = {};
-      Deserialize(&LevelBytes, &LevelHeader, Thread->TempMemory);
+      Read_bytes(&LevelBytes, &HeaderBytesP, 256);
+
+      CopyMemory(HeaderBytes, (u8*)&LevelHeader, sizeof(level_header));
 
       if (LevelHeader.MagicNumber == LEVEL_HEADER_MAGIC_NUMBER)
       {
@@ -421,6 +425,7 @@ DoAssetWindow(engine_resources *Engine)
                 if (EngineDebug->ResetAssetNodeView)
                 {
                   AssetViewWindow.Scroll = {};
+                  AssetViewWindow.CachedScroll = {};
                   f32 SmallObjectCorrectionFactor = 350.f/Length(ModelCenterpointOffset);
                   ThumbCamera->DistanceFromTarget = LengthSq(ModelCenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
                   UpdateGameCamera(World, {}, 0.f, {}, ThumbCamera, 1.f);
@@ -496,7 +501,7 @@ DoAssetWindow(engine_resources *Engine)
                         {
                           entity *E = TryGetFreeEntityPtr(Engine->EntityTable);
                           Assert(E);
-                          SpawnEntity(E, &EngineDebug->SelectedAsset, EntityBehaviorFlags_Default, 0, &AssetUpdateShape.Origin, Model->Dim/2.f);
+                          SpawnEntity(E, &EngineDebug->SelectedAsset, ModelIndex, EntityBehaviorFlags_Default, 0, &AssetUpdateShape.Origin, Model->Dim/2.f);
                         } break;
                       }
                     }

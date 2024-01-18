@@ -623,6 +623,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
               SpawnEntity(
                 E,
                 0,
+                0,
                 EntityBehaviorFlags_Default,
                 &Physics,
                 &CP,
@@ -827,7 +828,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   Player->UserType = Cast(u32, EntityType_Player);
 
   asset_id PlayerAsset = GetOrAllocateAssetId(Resources, {FileTraversalType_File, CSz("models"), CSz("players/chr_rain.vox")});
-  SpawnPlayerLikeEntity(Plat, World, &PlayerAsset, Player, PlayerSpawnP, &GameState->Entropy);
+  SpawnPlayerLikeEntity(Plat, World, &PlayerAsset, 0, Player, PlayerSpawnP, &GameState->Entropy);
 
   Player->UserData = (u64)Allocate(entity_game_data, Resources->Memory, 1);
   Graphics->GameCamera.GhostId = Player->Id;
@@ -848,7 +849,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
     entity *Enemy = TryGetFreeEntityPtr(EntityTable);
     Assert(Enemy);
 
-    SpawnPlayerLikeEntity(Plat, World, &EnemyAsset, Enemy, EnemySpawnP, &GameState->Entropy, 1.f);
+    SpawnPlayerLikeEntity(Plat, World, &EnemyAsset, 0, Enemy, EnemySpawnP, &GameState->Entropy, 1.f);
   }
 
   WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);

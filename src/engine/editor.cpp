@@ -841,9 +841,9 @@ DoWorldEditor(engine_resources *Engine)
       {
         if (Input->LMB.Pressed)
         {
+          Ui->RequestedForceCapture = True;;
           if (Engine->MousedOverVoxel.Tag)
           {
-            Ui->RequestedForceCapture = True;;
             voxel *V = GetVoxelPointer(&Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled);
 
             if (V)

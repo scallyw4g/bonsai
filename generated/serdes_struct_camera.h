@@ -160,7 +160,7 @@ Deserialize(u8_stream *Bytes, camera *Element, memory_arena *Memory)
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  /* Result &= Deserialize(Bytes, &Element->GhostId, Memory); */
+  Result &= Deserialize(Bytes, &Element->GhostId, Memory);
 
   
 

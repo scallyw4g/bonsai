@@ -122,14 +122,28 @@ UpdateGameCamera(world *World, v2 MouseDelta, r32 CameraZoomDelta, cp TargetView
 }
 
 link_internal void
-UpdateGameCamera(world *World, v2 MouseDelta, input *Input, canonical_position NewTarget, camera* Camera, r32 Blend = DEFAULT_CAMERA_BLENDING)
+UpdateGameCamera( world *World,
+                  v2 MouseDelta,
+                  input *Input,
+                  canonical_position NewTarget,
+                  camera* Camera,
+                  r32 Blend = DEFAULT_CAMERA_BLENDING,
+                  b32 DoPositionDelta = True,
+                  b32 DoZoomDelta = True )
 {
   v2 UpdateMouseDelta = {};
   f32 CameraZoomDelta = {};
-  if (Input)
+  if (Input) // TODO(Jesse): Assert here ..?
   {
-    UpdateMouseDelta = Input->LMB.Pressed ? MouseDelta : V2(0);
-    CameraZoomDelta = Input->MouseWheelDelta/200.f;
+    if (DoPositionDelta)
+    {
+      UpdateMouseDelta = Input->LMB.Pressed ? MouseDelta : V2(0);
+    }
+
+    if (DoZoomDelta)
+    {
+      CameraZoomDelta = Input->MouseWheelDelta/200.f;
+    }
 
     if (Input->RMB.Pressed) { CameraZoomDelta += MouseDelta.y; }
   }

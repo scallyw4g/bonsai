@@ -234,7 +234,7 @@ Bonsai_Simulate(engine_resources *Resources)
   //
 
   cp CameraTargetP = {};
-  input *InputForCamera = {};
+  input *InputForCamera = &Plat->Input;
 
   entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId);
   if (CameraGhost == 0)
@@ -248,13 +248,11 @@ Bonsai_Simulate(engine_resources *Resources)
 
   if (CameraGhost) { CameraTargetP = CameraGhost->P; }
 
-  if (UiCapturedMouseInput(Ui) == False)
-  {
-    InputForCamera = &Plat->Input;
-  }
+  b32 DoPositionDelta = (!UiCapturedMouseInput(Ui) && UiInteractionWasViewport(Ui));
+  b32 DoZoomDelta = UiHoveredMouseInput(Ui) == False;
 
   v2 MouseDelta = GetMouseDelta(Plat);
-  UpdateGameCamera(World, MouseDelta, InputForCamera, CameraTargetP, Camera, DEFAULT_CAMERA_BLENDING*Plat->dt);
+  UpdateGameCamera(World, MouseDelta, InputForCamera, CameraTargetP, Camera, DEFAULT_CAMERA_BLENDING*Plat->dt, DoPositionDelta, DoZoomDelta);
 
   Resources->Graphics->gBuffer->ViewProjection =
     ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *

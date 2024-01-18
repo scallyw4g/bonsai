@@ -405,6 +405,7 @@ void
 SpawnEntity(
     entity *Entity,
     asset_id *AssetId,
+    u64 ModelIndex,
     entity_behavior_flags Behavior,
 
     physics *Physics,
@@ -430,6 +431,8 @@ SpawnEntity(
   Entity->_CollisionVolumeRadius = CollisionVolumeRadius;
 
   Entity->Scale = Scale;
+
+  Entity->ModelIndex = ModelIndex;
 
   SpawnEntity(Entity);
 }
@@ -464,7 +467,8 @@ UnspawnParticleSystem(particle_system *System)
 link_internal void
 SpawnPlayerLikeEntity( platform *Plat,
                        world *World,
-                       asset_id* AssetId,
+                       asset_id *AssetId,
+                       u64 ModelIndex,
                        entity *Player,
                        canonical_position InitialP,
                        random_series* Entropy,
@@ -490,6 +494,7 @@ SpawnPlayerLikeEntity( platform *Plat,
   SpawnEntity(
       Player,
       AssetId,
+      ModelIndex,
       EntityBehaviorFlags_Default,
 
       &Physics,
@@ -512,7 +517,8 @@ SpawnPlayerLikeEntity( platform *Plat,
 void
 SpawnStaticEntity( platform *Plat,
                    world *World,
-                   asset_id* AssetId,
+                   asset_id *AssetId,
+                   u64 ModelIndex,
                    entity *Player,
                    canonical_position InitialP,
                    random_series* Entropy,
@@ -528,6 +534,7 @@ SpawnStaticEntity( platform *Plat,
   SpawnEntity(
       Player,
       AssetId,
+      ModelIndex,
       EntityBehaviorFlags_None,
 
       Physics,
@@ -539,8 +546,6 @@ SpawnStaticEntity( platform *Plat,
       0,
       0
     );
-
-  /* WaitForWorkerThreads(&Plat->HighPriorityWorkerCount); */
 }
 
 /* void */

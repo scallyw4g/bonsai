@@ -617,8 +617,6 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   AllocateWorld(World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 
-  World->Flags = WorldFlag_WorldCenterFollowsCameraTarget;
-
   GameState = Allocate(game_state, Resources->Memory, 1);
 
   GameState->TerrainGenType = TerrainGenType_GrassyTerracedTerrain;
@@ -632,6 +630,12 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Resources);
+
+  entity *Ghost = GetEntity(EntityTable, Camera->GhostId);
+  if (Ghost && Ghost->Id == Resources->Graphics->GameCamera.GhostId)
+  {
+    Ghost->Behavior = entity_behavior_flags(Ghost->Behavior|EntityBehaviorFlags_WorldCenter);
+  }
 
   /* DrawFrustum(World, Graphics, Camera); */
 
