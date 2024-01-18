@@ -166,6 +166,33 @@ Bonsai_FrameBegin(engine_resources *Resources)
   }
 #endif
 
+  b32 Result = True;
+  return Result;
+}
+
+link_export b32
+Bonsai_FrameEnd(engine_resources *Resources)
+{
+  UiFrameEnd(&Resources->Ui);
+
+  b32 Result = True;
+  return Result;
+}
+
+link_export b32
+Bonsai_Simulate(engine_resources *Resources)
+{
+  TIMED_FUNCTION();
+
+  SignalFutex(&Resources->Stdlib.Plat.HighPriorityModeFutex);
+
+  UNPACK_ENGINE_RESOURCES(Resources);
+
+  SimulateEntities(Resources, Plat->dt, World->VisibleRegion, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, &Plat->HighPriority);
+  /* DispatchSimulateParticleSystemJobs(&Plat->HighPriority, EntityTable, World->ChunkDim, &GpuMap->Buffer, Graphics, Plat->dt); */
+
+  UnsignalFutex(&Resources->Stdlib.Plat.HighPriorityModeFutex);
+
   if (Input->F4.Clicked)
   {
     if (Graphics->Camera == &Graphics->GameCamera)
@@ -194,76 +221,46 @@ Bonsai_FrameBegin(engine_resources *Resources)
   // frame late. 
   //
   // @immediate-geometry-is-a-frame-late
+  //
+  // NOTE(Jesse): This has to come before we draw any of the game geometry.
+  // Specifically, if it comes after we draw bounding boxes for anything
+  // the bounding box lines shift when we move the camera because they're
+  // then a frame late.
+  //
+  // @immediate-geometry-is-a-frame-late
+  //
+  // UPDATE(Jesse): This bug has been reintroduced because of @camera-update-ui-update-frame-jank
+  // More info and a solution documented at : https://github.com/scallyw4g/bonsai/issues/30
+  //
 
   cp CameraTargetP = {};
+  input *InputForCamera = {};
 
   entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId);
-  if (CameraGhost && UiCapturedMouseInput(Ui) == False)
+  if (CameraGhost == 0)
   {
-    f32 CameraSpeed = 80.f;
-    v3 Offset = GetCameraRelativeInput(Hotkeys, Camera);
-    Offset.z = 0; // Constrain to XY plane
-
-    if (Input->E.Pressed) { Offset.z += 1.f; }
-    if (Input->Q.Pressed) { Offset.z -= 1.f; }
-
-    Offset = Normalize(Offset);
-    /* Camera->ViewingTarget.Offset += Offset; */
-
-    CameraGhost->P.Offset += Offset * Plat->dt * CameraSpeed;
-
-    // NOTE(Jesse): This has to come before we draw any of the game geometry.
-    // Specifically, if it comes after we draw bounding boxes for anything
-    // the bounding box lines shift when we move the camera because they're
-    // then a frame late.
-    //
-    // @immediate-geometry-is-a-frame-late
-    //
-    // UPDATE(Jesse): This bug has been reintroduced because of @camera-update-ui-update-frame-jank
-    // More info and a solution documented at : https://github.com/scallyw4g/bonsai/issues/30
-    //
-    CameraTargetP = CameraGhost->P;
-
-    if (World->Flags & WorldFlag_WorldCenterFollowsCameraTarget) { World->Center = CameraGhost->P.WorldP; }
+    // Allocate default camera ghost
+    Camera->GhostId = GetFreeEntity(EntityTable);
+    CameraGhost = GetEntity(EntityTable, Camera->GhostId);
+    CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior | EntityBehaviorFlags_DefatulCameraGhostBehavior);
+    SpawnEntity(CameraGhost);
   }
 
+  if (CameraGhost) { CameraTargetP = CameraGhost->P; }
 
-  input *InputForCamera = &Plat->Input;
+  if (UiCapturedMouseInput(Ui) == False)
+  {
+    InputForCamera = &Plat->Input;
+  }
+
   v2 MouseDelta = GetMouseDelta(Plat);
   UpdateGameCamera(World, MouseDelta, InputForCamera, CameraTargetP, Camera, DEFAULT_CAMERA_BLENDING*Plat->dt);
-
 
   Resources->Graphics->gBuffer->ViewProjection =
     ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
     ViewMatrix(World->ChunkDim, Camera);
 
 
-  b32 Result = True;
-  return Result;
-}
-
-link_export b32
-Bonsai_FrameEnd(engine_resources *Resources)
-{
-  UiFrameEnd(&Resources->Ui);
-
-  b32 Result = True;
-  return Result;
-}
-
-link_export b32
-Bonsai_Simulate(engine_resources *Resources)
-{
-  TIMED_FUNCTION();
-
-  SignalFutex(&Resources->Stdlib.Plat.HighPriorityModeFutex);
-
-  UNPACK_ENGINE_RESOURCES(Resources);
-
-  SimulateEntities(Resources, Plat->dt, World->VisibleRegion, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, &Plat->HighPriority);
-  /* DispatchSimulateParticleSystemJobs(&Plat->HighPriority, EntityTable, World->ChunkDim, &GpuMap->Buffer, Graphics, Plat->dt); */
-
-  UnsignalFutex(&Resources->Stdlib.Plat.HighPriorityModeFutex);
 
 #if BONSAI_DEBUG_SYSTEM_API
   Debug_DoWorldChunkPicking(Resources);

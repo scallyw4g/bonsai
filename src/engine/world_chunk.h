@@ -423,7 +423,8 @@ Volume(world_chunk* Chunk)
 
 enum world_flag
 {
-  WorldFlag_WorldCenterFollowsCameraTarget = (1 << 0),
+  WorldFlag_noop,
+  /* WorldFlag_WorldCenterFollowsCameraTarget = (1 << 0), */
 };
 
 struct world

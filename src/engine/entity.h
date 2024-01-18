@@ -22,7 +22,9 @@ enum entity_behavior_flags poof(@bitfield)
   // NOTE(Jesse): This is more of an engine_entity_type, but I didn't see a
   // reason to make a whole new thing for that for just one value.  If this
   // blows out to more than that it might be worth it..
-  EntityBehaviorFlags_CameraGhost                      = (1 << 4),
+  EntityBehaviorFlags_DefatulCameraGhostBehavior       = (1 << 4),
+
+  EntityBehaviorFlags_WorldCenter                      = (1 << 5),
 
   EntityBehaviorFlags_Default = (EntityBehaviorFlags_Gravity       |
                                  EntityBehaviorFlags_WorldCollision|

@@ -867,8 +867,6 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   canonical_position PlayerSpawnP = Canonical_Position(Voxel_Position(0), WorldCenter + World_Position(0,0,1));
 
   StandardCamera(&Graphics->GameCamera, 10000.0f, 500.0f, PlayerSpawnP);
-  Graphics->GameCamera.GhostId  = GetFreeEntity(EntityTable);
-  Graphics->DebugCamera.GhostId = GetFreeEntity(EntityTable);
 
   GameState->Entropy = {DEBUG_NOISE_SEED};
 

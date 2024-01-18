@@ -1360,19 +1360,28 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
     if (DoDefaultUpdate)
     {
 
-#if 1
-    if (Entity->Behavior & EntityBehaviorFlags_CameraGhost)
-    {
-      if (Entity->Id == Graphics->Camera->GhostId)
+      // Update Camera Ghost
+      if (Entity->Behavior & EntityBehaviorFlags_DefatulCameraGhostBehavior)
       {
-        // TODO(Jesse): Do camera update here
-        NotImplemented;
+        if (Entity->Id == Graphics->Camera->GhostId)
+        {
+          if (UiCapturedMouseInput(Ui) == False)
+          {
+            f32 CameraSpeed = 80.f;
+            v3 Offset = GetCameraRelativeInput(Hotkeys, Camera);
+            Offset.z = 0; // Constrain to XY plane
 
-        /* if (Resources->_CameraGhost) { Assert(Resources->_CameraGhost == Entity); } */
-        /* else { Resources->_CameraGhost = Entity; } */
+            if (Input->E.Pressed) { Offset.z += 1.f; }
+            if (Input->Q.Pressed) { Offset.z -= 1.f; }
+
+            Offset = Normalize(Offset);
+            Entity->P.Offset += Offset * Plat->dt * CameraSpeed;
+          }
+
+        }
       }
-    }
-#endif
+
+      if (Entity->Behavior & EntityBehaviorFlags_WorldCenter) { World->Center = Entity->P.WorldP; }
 
       b32 ApplyGravity = ((Entity->Behavior & EntityBehaviorFlags_Gravity) == EntityBehaviorFlags_Gravity);
       PhysicsUpdate(&Entity->Physics, dt, ApplyGravity);
@@ -1417,7 +1426,6 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
     FinalizeEntityUpdate(Entity);
     InsertEntityIntoChunks(World, Entity, GetTranArena());
   }
-  /* if (Resources->_CameraGhost == 0) { SpawnCameraGhost(Resources); } */
 }
 
 

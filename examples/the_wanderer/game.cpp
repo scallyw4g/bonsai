@@ -117,9 +117,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
                          Canonical_Position(Voxel_Position(0), WorldCenter + V3i(0,0,1)),
                          &GameState->Entropy );
 
-  GameState->Player->Behavior = entity_behavior_flags(GameState->Player->Behavior|EntityBehaviorFlags_CameraGhost);
-
   StandardCamera(Graphics->Camera, 10000.0f, 2000.0f, GameState->Player->P);
+  Graphics->Camera->Ghost = GameState->Player->Id;
 
   return GameState;
 }

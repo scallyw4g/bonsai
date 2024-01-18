@@ -78,15 +78,29 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
     }
     PushNewRow(Ui);
     PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("EntityBehaviorFlags_CameraGhost"), UiId(Window, "enum EntityBehaviorFlags_CameraGhost", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (Button(Ui, CSz("EntityBehaviorFlags_DefatulCameraGhostBehavior"), UiId(Window, "enum EntityBehaviorFlags_DefatulCameraGhostBehavior", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
     {
-      if ((*Element & EntityBehaviorFlags_CameraGhost) == EntityBehaviorFlags_CameraGhost)
+      if ((*Element & EntityBehaviorFlags_DefatulCameraGhostBehavior) == EntityBehaviorFlags_DefatulCameraGhostBehavior)
       {
-        *Element = entity_behavior_flags(*Element&~EntityBehaviorFlags_CameraGhost);
+        *Element = entity_behavior_flags(*Element&~EntityBehaviorFlags_DefatulCameraGhostBehavior);
       }
       else
       {
-        *Element = entity_behavior_flags(*Element|EntityBehaviorFlags_CameraGhost);
+        *Element = entity_behavior_flags(*Element|EntityBehaviorFlags_DefatulCameraGhostBehavior);
+      }
+
+    }
+    PushNewRow(Ui);
+    PushColumn(Ui, CSz("")); // Skip the first Name column
+    if (Button(Ui, CSz("EntityBehaviorFlags_WorldCenter"), UiId(Window, "enum EntityBehaviorFlags_WorldCenter", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    {
+      if ((*Element & EntityBehaviorFlags_WorldCenter) == EntityBehaviorFlags_WorldCenter)
+      {
+        *Element = entity_behavior_flags(*Element&~EntityBehaviorFlags_WorldCenter);
+      }
+      else
+      {
+        *Element = entity_behavior_flags(*Element|EntityBehaviorFlags_WorldCenter);
       }
 
     }

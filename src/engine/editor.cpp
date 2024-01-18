@@ -14,7 +14,6 @@ DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min
   u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushTableStart(Ui);
       if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
-      /* PushColumn(Ui, CS(*Value)); */
 
       auto Range = Max-Min;
       r32 PercFilled = ((*Value)-Min)/Range;
@@ -56,8 +55,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, EDITOR_U
       if (Value)
       {
         if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1.f; }
-        DebugSlider(Ui, Window, Value, {}, MinValue, MaxValue, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
+          DebugSlider(Ui, Window, Value, {}, MinValue, MaxValue, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
         if (Button(Ui, CSz("+"), UiId(Window, "increment", Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1.f; }
       }
       else
@@ -66,19 +64,25 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, EDITOR_U
       }
     PushTableEnd(Ui);
   EndColumn(Ui, Start);
-  /* PushNewRow(Ui); */
 }
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  if (Button(Ui, CS(Name), UiId(Window, "toggle", Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES )) { *Value = !(*Value); }
+  interactable_handle ButtonHandle = PushButtonStart(Ui, UiId(Window, "toggle", Value), Style);
 
-  counted_string Display = Value ?
-       *Value ? CSz("True") : CSz("False") :
-       CSz("(null)");
+    PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
-  PushColumn(Ui, Display, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    counted_string Display = Value ?
+         *Value ? CSz("True") : CSz("False") :
+         CSz("(null)");
+
+    PushColumn(Ui, Display, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+  PushButtonEnd(Ui);
+
+  if (Clicked(Ui, &ButtonHandle))
+   { *Value = !(*Value); }
 }
 
 
@@ -707,7 +711,8 @@ DoWorldEditor(engine_resources *Engine)
   GetRadioEnum(&WorldEditModeRadioGroup, &WorldEditMode);
   picked_voxel_position HighlightVoxel = PickedVoxel_FirstFilled;
 
-  if (!UiCapturedMouseInput(Ui))
+  if ( UiCapturedMouseInput(Ui) == False &&
+       UiHoveredMouseInput(Ui)  == False  )
   {
     switch (WorldEditMode)
     {

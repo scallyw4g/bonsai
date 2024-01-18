@@ -444,19 +444,13 @@ DoAssetWindow(engine_resources *Engine)
                 {
                   cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
                   EntityOrigin.Offset = Round(EntityOrigin.Offset);
-                  if ( !UiCapturedMouseInput(Ui) && ModelIndex == EngineDebug->ModelIndex )
+
+                  if ( !UiHoveredMouseInput(Ui) && ModelIndex == EngineDebug->ModelIndex )
                   {
-
-                    /* Assert(Model->Mesh.Mat == 0); */
-
-
                     v3 AssetHalfDim = V3(Model->Dim)/2.f;
-                    {
-                      /* RangeIterator_t(u32, ElementIndex, Model->Mesh.At) { Model->Mesh.Mat[ElementIndex].Transparency = 0.85f; } */
-                      /* untextured_3d_geometry_buffer *Dest = &Graphics->Transparency.GpuBuffer.Buffer; */
-                      /* BufferChunkMesh(Graphics, Dest, &Model->Mesh, World->ChunkDim, EntityOrigin.WorldP, 1.f, EntityOrigin.Offset + V3(0.f, 0.f, AssetHalfDim.z), Quaternion()); */
-                      /* RangeIterator_t(u32, ElementIndex, Model->Mesh.At) { Model->Mesh.Mat[ElementIndex].Transparency = 0.f; } */
-                    }
+
+                    // Draw model marking where the asset will go
+                    //
                     {
                       // TODO(Jesse): Setting up and tearing down the shader here
                       // is highly questionable.  We should probably keep a list
@@ -473,6 +467,8 @@ DoAssetWindow(engine_resources *Engine)
                     }
 
 
+                    // Put asset into world
+                    //
                     if ( Input->Space.Clicked )
                     {
                       world_update_op_shape_params_asset AssetUpdateShape =
