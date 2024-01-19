@@ -68,10 +68,6 @@ enum tone_mapping_type
 
 struct render_settings
 {
-  lighting_settings Lighting;
-
-  tone_mapping_type ToneMappingType;
-
   // NOTE(Jesse): These have to be 32bit because they get passed to shaders
   // and the shader system is too dumb to handle 8-bit or 1-bit values
   b32 UseSsao;
@@ -87,6 +83,11 @@ struct render_settings
 
   v3 OffsetOfWorldCenterToGrid; poof(@ui_skip)
   b32 Headless;                 poof(@ui_skip)
+
+
+  tone_mapping_type ToneMappingType;
+
+  lighting_settings Lighting;
 };
 
 struct graphics

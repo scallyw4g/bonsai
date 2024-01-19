@@ -9,24 +9,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
 
       PushTableStart(Ui);
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-      DoEditorUi(Ui, Window, &Element->Lighting, CSz("lighting_settings Lighting"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->ToneMappingType, CSz("tone_mapping_type ToneMappingType"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
       DoEditorUi(Ui, Window, Cast(b8*, &Element->UseSsao), CSz("b32 UseSsao"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
@@ -108,6 +90,17 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
       
 
       PushNewRow(Ui);
+
+      DoEditorUi(Ui, Window, &Element->ToneMappingType, CSz("tone_mapping_type ToneMappingType"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui, Window, &Element->Lighting, CSz("lighting_settings Lighting"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
