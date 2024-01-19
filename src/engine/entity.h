@@ -41,8 +41,8 @@ struct collision_event
 {
   u32 FrameIndex;
   u32 Count;
-  canonical_position MinP;
-  canonical_position MaxP;
+  cp MinP;
+  cp MaxP;
 };
 
 struct entity_position_info
@@ -344,3 +344,9 @@ UpdateCollisionVolumeRadius(world *World, entity *Entity, v3 NewRadius, memory_a
   Entity->_CollisionVolumeRadius = NewRadius;
   /* InsertEntityIntoChunks(World, Entity, TempMemory); */
 }
+
+link_internal collision_event
+GetCollision( world *World, canonical_position TestP, v3 CollisionDim );
+
+link_internal collision_event
+GetCollision( world *World, aabb SimSpaceCollisionDim );

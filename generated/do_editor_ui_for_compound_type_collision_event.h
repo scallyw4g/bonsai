@@ -29,7 +29,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_event *Element, cs 
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Window, &Element->MinP, CSz("canonical_position MinP"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->MinP, CSz("cp MinP"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -38,7 +38,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_event *Element, cs 
 
 
       
-      DoEditorUi(Ui, Window, &Element->MaxP, CSz("canonical_position MaxP"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->MaxP, CSz("cp MaxP"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }

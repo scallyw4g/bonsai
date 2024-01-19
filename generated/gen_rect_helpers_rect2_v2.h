@@ -5,6 +5,13 @@ RectMinMax(v2 Min, v2 Max)
   return Result;
 }
 
+link_internal rect2
+RectMinRad(v2 Min, v2 Rad)
+{
+  rect2 Result = { .Min = Min, .Max = Min+(Rad*2.f) };
+  return Result;
+}
+
 link_internal v2
 GetRadius(rect2 *Rect)
 {

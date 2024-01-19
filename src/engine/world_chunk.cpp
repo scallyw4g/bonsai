@@ -4586,14 +4586,12 @@ GetStandingSpotsWithinRadiusSorted(world *World, standing_spot_buffer *Spots, cp
 // element as closest to another point ..
 //
 link_internal standing_spot_buffer
-GetStandingSpotsWithinRadius(world *World, canonical_position P, r32 Radius, memory_arena *TempMemory)
+GetStandingSpotsWithinRadius(world *World, canonical_position P, r32 Radius, memory_arena *Memory)
 {
   auto MinWorldP = Canonicalize(World, P - V3(Radius)).WorldP;
   auto MaxWorldP = Canonicalize(World, P + V3(Radius)).WorldP;
 
   v3 SimSpaceP = GetSimSpaceP(World, P);
-
-/*   temp_memory_handle TempMemHandle = BeginTemporaryMemory(TempMemory); */
 
   r32 RadSq = Square(Radius);
   standing_spot_stream StandingSpotStream = {};
@@ -4612,13 +4610,8 @@ GetStandingSpotsWithinRadius(world *World, canonical_position P, r32 Radius, mem
             standing_spot Spot = {True, {V3(Chunk->StandingSpots.Start[StandingSpotIndex]), Chunk->WorldP}};
 
             v3 SimSpaceStandingSpot = GetSimSpaceCenterP(World, &Spot);
-            /* DEBUG_DrawSimSpaceVectorAt(GetEngineResources(), SimSpaceStandingSpot, V3(0, 0, 100), RED, 0.25f); */
-            /* aabb StandingSpotAABB = AABBMinDim(SimSpaceStandingSpot, Global_StandingSpotDim); */
-            /* sphere Query = Sphere(SimSpaceP, Radius); */
-            /* if (Intersect(&StandingSpotAABB, &Query)) */
             if ( DistanceSq(SimSpaceP, SimSpaceStandingSpot) <= RadSq )
             {
-              /* standing_spot Spot = { .P = Canonical_Position(StandingSpot, Chunk->WorldP), .CanStand = True }; */
               Push(&StandingSpotStream, Spot );
             }
           }
@@ -4627,7 +4620,55 @@ GetStandingSpotsWithinRadius(world *World, canonical_position P, r32 Radius, mem
     }
   }
 
-  standing_spot_buffer Result = Compact(&StandingSpotStream, TempMemory);
+  standing_spot_buffer Result = Compact(&StandingSpotStream, Memory);
+  return Result;
+}
+
+global_variable u32
+Global_EntityCanMoveThroughCollisionThresh = 10;
+
+link_internal standing_spot_buffer
+GetStandingSpotsWithinRadius_FilteredByStandable(world *World, canonical_position P, r32 GatherRadius, v3 EntityRadius, memory_arena *Memory)
+{
+  auto MinWorldP = Canonicalize(World, P - V3(GatherRadius)).WorldP;
+  auto MaxWorldP = Canonicalize(World, P + V3(GatherRadius)).WorldP;
+
+  v3 SimSpaceP = GetSimSpaceP(World, P);
+
+  r32 RadSq = Square(GatherRadius);
+  standing_spot_stream StandingSpotStream = {};
+
+  for (s32 zWorld = MinWorldP.z; zWorld <= MaxWorldP.z; ++zWorld)
+  {
+    for (s32 yWorld = MinWorldP.y; yWorld <= MaxWorldP.y; ++yWorld)
+    {
+      for (s32 xWorld = MinWorldP.x; xWorld <= MaxWorldP.x; ++xWorld)
+      {
+        world_chunk *Chunk = GetWorldChunkFromHashtable(World, {{xWorld, yWorld, zWorld}});
+        if (Chunk)
+        {
+          for (u32 StandingSpotIndex = 0; StandingSpotIndex < AtElements(&Chunk->StandingSpots); ++StandingSpotIndex)
+          {
+            standing_spot Spot = {True, {V3(Chunk->StandingSpots.Start[StandingSpotIndex]), Chunk->WorldP}};
+
+            v3 SimSpaceStandingSpot = GetSimSpaceCenterP(World, &Spot);
+            if ( DistanceSq(SimSpaceP, SimSpaceStandingSpot) <= RadSq )
+            {
+              /* v3 SimSpaceStandingSpotMinP = SimSpaceStandingSpot -V3(Global_StandingSpotHalfDim.xy, 0.f) + V3(0.f, 0.f, 1.f) - V3(EntityRadius.xy, 0.f); */
+              v3 SimSpaceStandingSpotMinP = SimSpaceStandingSpot + V3(0.f, 0.f, 1.f) - V3(EntityRadius.xy, 0.f);
+              aabb CanStandRect = RectMinRad(SimSpaceStandingSpotMinP, EntityRadius);
+              if (GetCollision(World, CanStandRect).Count < Global_EntityCanMoveThroughCollisionThresh)
+              {
+                Push(&StandingSpotStream, Spot );
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  standing_spot_buffer Result = Compact(&StandingSpotStream, Memory);
   return Result;
 }
 

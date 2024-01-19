@@ -12,6 +12,9 @@ Global_EntityFireballOffset = V3(0,0,18);
 global_variable f32
 Global_MeleeRange = 12.f;
 
+global_variable f32
+Global_PlayerDigDepth = 3.f;
+
 
 struct entity_game_data
 {
@@ -78,7 +81,7 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
 
 
   // NOTE(Jesse): Entities embedded in the world cannot act
-  if (GetCollision(World, Enemy).Count) { return; }
+  if (GetCollision(World, Enemy).Count > Global_EntityCanMoveThroughCollisionThresh) { return; }
 
   u16 StandingSpotColor = YELLOW;
   r32 StandingSpotRadius = DEFAULT_STANDING_SPOT_THICKNESS;
@@ -90,7 +93,7 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
   }
 
   f32 EnemySightDistance = 60.f;
-  standing_spot_buffer SightedSpots = GetStandingSpotsWithinRadius(World, EnemyBaseP, EnemySightDistance, GetTranArena());
+  standing_spot_buffer SightedSpots = GetStandingSpotsWithinRadius_FilteredByStandable(World, EnemyBaseP, EnemySightDistance, Enemy->_CollisionVolumeRadius, GetTranArena());
 
   f32 ShortestDistanceToPlayerSq = f32_MAX;
   umm ClosestSpotIndex = umm_MAX;
@@ -655,7 +658,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           if (Resources->MousedOverVoxel.Tag)
           {
             cp V = Canonical_Position(&Resources->MousedOverVoxel.Value);
-            V.Offset = RoundToMultiple(V.Offset, V3i(8, 8, 2));
+            V.Offset = RoundToMultiple(V.Offset, V3i(8, 8, s32(Global_PlayerDigDepth)));
             Canonicalize(World, &V);
 
             DrawStandingSpot(&GpuMap->Buffer, Camera, V, DIRT, 0.5f);
@@ -664,7 +667,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
             {
               GameState->PlayerActed = True;
               cp StandingSpotCenterP = Canonicalize(World, V + Global_StandingSpotHalfDim);
-              DoDig(Resources, StandingSpotCenterP, 5.f, 2.f, GetTranArena());
+              DoDig(Resources, StandingSpotCenterP, 5.f, Global_PlayerDigDepth, GetTranArena());
             }
           }
         } break;

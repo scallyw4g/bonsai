@@ -239,7 +239,6 @@ DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, aabb Rect, u32 ColorIndex, r
   v3 MinP = Rect.Min;
   v3 MaxP = Rect.Max;
   DEBUG_DrawAABB( Mesh, MinP, MaxP, ColorIndex, Thickness );
-  return;
 }
 
 link_internal void
@@ -288,7 +287,6 @@ DEBUG_DrawChunkAABB( untextured_3d_geometry_buffer *Mesh, graphics *Graphics, wo
   v3 MaxP = GetRenderP(WorldChunkDim, Canonical_Position(WorldChunkDim, WorldP), Graphics->Camera);
 
   DEBUG_DrawAABB(Mesh, MinP, MaxP, ColorIndex, Thickness);
-  return;
 }
 
 link_internal void
@@ -300,6 +298,22 @@ DEBUG_DrawChunkAABB( untextured_3d_geometry_buffer *Mesh, graphics *Graphics, wo
 
 
   DEBUG_DrawAABB(Mesh, MinP, MaxP, ColorIndex, Thickness);
-  return;
 }
+
+link_internal void
+DEBUG_HighlightChunk(world_chunk *Chunk, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS)
+{
+  UNPACK_ENGINE_RESOURCES(GetEngineResources());
+  auto Buf = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
+  DEBUG_DrawChunkAABB( &Buf, Graphics, Chunk, World->ChunkDim, ColorIndex, Thickness);
+}
+
+link_internal void
+DEBUG_HighlightRegion(rect3cp Range, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS)
+{
+  UNPACK_ENGINE_RESOURCES(GetEngineResources());
+  auto SSRegion = GetSimSpaceAABB(World, Range);
+  DEBUG_DrawSimSpaceAABB(GetEngineResources(), &SSRegion, ColorIndex, Thickness );
+}
+
 

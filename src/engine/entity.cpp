@@ -131,6 +131,76 @@ GetCollision( world *World, canonical_position TestP, v3 CollisionDim )
   return Result;
 }
 
+link_internal collision_event
+GetCollision( world *World, aabb SimSpaceCollisionDim )
+{
+  TIMED_FUNCTION();
+
+  chunk_dimension WorldChunkDim = World->ChunkDim;
+  /* Assert( IsCanonical(WorldChunkDim, TestP) ); */
+
+  collision_event Result = {};
+  Result.MinP = Canonical_Position(V3(f32_MAX), V3i(s32_MAX));
+  Result.MaxP = Canonical_Position(V3(-1.f), V3i(s32_MIN));
+  Result.FrameIndex = GetEngineResources()->FrameIndex;
+
+  cp MinP = SimSpaceToCanonical(World, SimSpaceCollisionDim.Min);
+  cp MaxP = SimSpaceToCanonical(World, SimSpaceCollisionDim.Max);
+  /* voxel_position MinP = Voxel_Position(TestP.Offset); */
+  /* voxel_position MaxP = Voxel_Position(Ceil(TestP.Offset + CollisionDim)); */
+
+  temp_memory_handle TMH = BeginTemporaryMemory(GetTranArena());
+
+  rect3cp CollisionRegion = RectMinMax(MinP, MaxP);
+  world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, CollisionRegion, GetTranArena());
+
+  if (Chunks.Count)
+  {
+    rect3i_buffer Ranges = Rect3iBuffer( Chunks.Count, GetTranArena() );
+
+    auto SimSpaceCollisionRegion = GetSimSpaceRect3i(World, CollisionRegion);
+    GatherRangesOverlapping(World, SimSpaceCollisionRegion, &Chunks, &Ranges);
+
+    IterateOver(&Ranges, Range, RangeIndex)
+    {
+      world_chunk *Chunk = *GetPtr(&Chunks, RangeIndex);
+      /* DEBUG_HighlightChunk(*Chunk, RED); */
+
+#if 0
+      {
+        cp Min = Canonical_Position(Range->Min, Chunk->WorldP);
+        cp Max = Canonical_Position(Range->Max, Chunk->WorldP);
+        Assert(IsCanonical(World, Min));
+        Assert(IsCanonical(World, Max));
+        rect3cp CPRange = RectMinMax(Min, Max);
+        DEBUG_HighlightRegion(CPRange, RED);
+      }
+#endif
+
+      for ( int z = Range->Min.z; z < Range->Max.z; z++ )
+      {
+        for ( int y = Range->Min.y; y < Range->Max.y; y++ )
+        {
+          for ( int x = Range->Min.x; x < Range->Max.x; x++ )
+          {
+            v3i Offset = V3i(x,y,z);
+            s32 Index = GetIndex(Offset, Chunk->Dim);
+            if (Chunk->Voxels[Index].Flags & Voxel_Filled)
+            {
+              cp Hit = {V3(Offset), Chunk->WorldP};
+              /* Assert(Hit > Result.MaxP); */
+              Result.MaxP = Hit;
+              Result.Count ++;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return Result;
+}
+
 link_internal b32
 GetCollision(world *World, entity *First, entity *Second)
 {
