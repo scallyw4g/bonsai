@@ -647,11 +647,11 @@ GraphicsInit(memory_arena *GraphicsMemory)
     Lighting->SunP = V3(-1.f, -1.f, 0.35f);
 
     Lighting->DawnColor = V3(0.37f, 0.11f, 0.10f);
-    Lighting->SunColor  = V3(0.25f, 0.26f, 0.36f);
+    Lighting->SunColor  = V3(0.17f, 0.13f, 0.17f);
     Lighting->DuskColor = V3(0.13f, 0.12f, 0.14f);
     Lighting->MoonColor = V3(0.04f, 0.07f, 0.18f);
 
-    Lighting->SunIntensity  = 1.53f;
+    Lighting->SunIntensity  = 1.22f;
     Lighting->MoonIntensity = 0.10f;
     Lighting->DawnIntensity = 1.f;
     Lighting->DuskIntensity = 1.f;

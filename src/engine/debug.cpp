@@ -46,7 +46,8 @@ DoLevelWindow(engine_resources *Engine)
       Header.EntityCount = EntityCount;
 
 
-      WriteToFile(&LevelFile, (u8*)&Header, sizeof(level_header));
+      Serialize(&LevelFile, &Header);
+      /* WriteToFile(&LevelFile, (u8*)&Header, sizeof(level_header)); */
 
       u64 Delimeter = LEVEL_FILE_DEBUG_OBJECT_DELIM;
       RangeIterator(HashIndex, s32(World->HashSize))
@@ -92,13 +93,8 @@ DoLevelWindow(engine_resources *Engine)
 
     if (LevelBytes.Start)
     {
-      u8 HeaderBytes[256] = {};
-      u8 *HeaderBytesP = HeaderBytes;
       level_header LevelHeader = {};
-      Read_bytes(&LevelBytes, &HeaderBytesP, 256);
-
-      CopyMemory(HeaderBytes, (u8*)&LevelHeader, sizeof(level_header));
-
+      Deserialize(&LevelBytes, &LevelHeader, Thread->PermMemory);
       if (LevelHeader.MagicNumber == LEVEL_HEADER_MAGIC_NUMBER)
       {
         SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);

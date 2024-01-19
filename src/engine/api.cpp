@@ -91,9 +91,18 @@ Bonsai_FrameBegin(engine_resources *Resources)
   // the UI captures the input
   //
   // @camera-update-ui-update-frame-jank
-  Resources->MaybeMouseRay   = ComputeRayFromCursor(Resources, &gBuffer->ViewProjection, Camera, World->ChunkDim);
-  Resources->MousedOverVoxel = MousePickVoxel(Resources);
-  Resources->HoverEntity     = GetClosestEntityIntersectingRay(World, EntityTable, &Resources->MaybeMouseRay.Ray);
+  if (UiHoveredMouseInput(Ui))
+  {
+    Resources->MaybeMouseRay   = {};
+    Resources->MousedOverVoxel = {};
+    Resources->HoverEntity     = {};
+  }
+  else
+  {
+    Resources->MaybeMouseRay   = ComputeRayFromCursor(Resources, &gBuffer->ViewProjection, Camera, World->ChunkDim);
+    Resources->MousedOverVoxel = MousePickVoxel(Resources);
+    Resources->HoverEntity     = GetClosestEntityIntersectingRay(World, EntityTable, &Resources->MaybeMouseRay.Ray);
+  }
 
   // Find closest standing spot to cursor
   {
@@ -314,14 +323,25 @@ DoDayNightCycle(graphics *Graphics, r32 tDay)
       }
     }
   }
-  /* else */
-  /* { */
-    /* SG->Sun.Color = SunColor; */
-  /* } */
 
-  /* SG->Sun.Position.x = Sin(tDay); */
-  /* SG->Sun.Position.y = tDaytime; */
-  /* SG->Sun.Position.z = tDaytime*0.7f + 1.3f; */
+  switch (Graphics->Settings.ToneMappingType)
+  {
+    case ToneMappingType_None:
+    case ToneMappingType_Reinhard:
+    case ToneMappingType_Exposure:
+      { } break;
+
+    case ToneMappingType_AGX:
+    case ToneMappingType_AGX_Sepia:
+    case ToneMappingType_AGX_Punchy:
+    {
+      if (LengthSq(Lighting->CurrentSunColor) > 1.f)
+      {
+        Lighting->CurrentSunColor = Normalize(Lighting->CurrentSunColor);
+      }
+    } break;
+  }
+
 }
 
 link_export b32

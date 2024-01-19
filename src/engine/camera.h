@@ -52,6 +52,7 @@ struct camera
   entity_id GhostId;
 };
 /* #define DEFAULT_CAMERA_BLENDING (0.35f) */
+/* #define DEFAULT_CAMERA_BLENDING (0.5f) */
 #define DEFAULT_CAMERA_BLENDING (1.f)
 
 inline v3

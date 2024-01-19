@@ -98,7 +98,7 @@ struct graphics
   camera DebugCamera;
 
   // Pointer to current camera.  Anyone is free to modify this pointer ..?
-  camera *Camera;
+  camera *Camera; poof(@ui_skip)
 
   r32 Exposure;
 

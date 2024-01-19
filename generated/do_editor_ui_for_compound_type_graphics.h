@@ -36,12 +36,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, E
 
 
       
-      DoEditorUi(Ui, Window, Element->Camera, CSz("camera Camera"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-      
       DoEditorUi(Ui, Window, &Element->Exposure, CSz("r32 Exposure"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
