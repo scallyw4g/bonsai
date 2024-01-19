@@ -95,7 +95,7 @@ DoLevelWindow(engine_resources *Engine)
     {
       level_header LevelHeader = {};
       Deserialize(&LevelBytes, &LevelHeader, Thread->PermMemory);
-      if (LevelHeader.MagicNumber == LEVEL_HEADER_MAGIC_NUMBER)
+      if (LevelHeader.Version == LEVEL_HEADER_VERSION_NUMBER)
       {
         SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
 

@@ -6,7 +6,7 @@ Serialize(native_file *File, level_header *Element)
 
   b32 Result = True;
 
-  Result &= Serialize(File, &Element->MagicNumber);
+  Result &= Serialize(File, &Element->Version);
 
 
 
@@ -62,7 +62,7 @@ Deserialize(u8_stream *Bytes, level_header *Element, memory_arena *Memory)
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->MagicNumber, Memory);
+  Result &= Deserialize(Bytes, &Element->Version, Memory);
 
 
 
