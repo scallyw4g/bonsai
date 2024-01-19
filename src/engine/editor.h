@@ -321,9 +321,10 @@ enum world_edit_mode
   WorldEditMode_RemoveSingle    = (1 << 6),
   WorldEditMode_PaintSingle     = (1 << 7),
 
-  WorldEditMode_BlitEntity      = (1 << 8),
+  WorldEditMode_AssetBrush      = (1 << 8),
+  WorldEditMode_BlitEntity      = (1 << 9),
 
-  WorldEditMode_RecomputeStandingSpots = (1 << 9),
+  WorldEditMode_RecomputeStandingSpots = (1 << 10),
 };
 
 poof(string_and_value_tables(world_edit_mode))

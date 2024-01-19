@@ -515,7 +515,9 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
 
 
-    if (GameState->TurnMode == TurnMode_Default && (Editor->EngineDebugViewModeToggleBits & (1<<EngineDebugViewMode_WorldEdit)) == 0 )
+    b32 WorldEditMode = (Editor->EngineDebugViewModeToggleBits & (1<<EngineDebugViewMode_WorldEdit));
+    if ( GameState->TurnMode == TurnMode_Default &&
+         WorldEditMode == 0 )
     {
       entity_game_data *PlayerGameData = Cast(entity_game_data*, Player->UserData);
       switch (GameState->ProposedAction)
@@ -648,13 +650,22 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
         case PlayerAction_Dig:
         {
-          if (Resources->ClosestStandingSpotToCursor.Tag) { DrawStandingSpot(&GpuMap->Buffer, Camera, &Resources->ClosestStandingSpotToCursor.Value, DIRT, 0.5f); }
+          /* if (Resources->ClosestStandingSpotToCursor.Tag) { DrawStandingSpot(&GpuMap->Buffer, Camera, &Resources->ClosestStandingSpotToCursor.Value, DIRT, 0.5f); } */
 
-          if (Input->LMB.Clicked)
+          if (Resources->MousedOverVoxel.Tag)
           {
-            GameState->PlayerActed = True;
-            cp StandingSpotCenterP = Canonicalize(World, Resources->ClosestStandingSpotToCursor.Value.P + Global_StandingSpotHalfDim);
-            DoDig(Resources, StandingSpotCenterP, 5.f, GetTranArena());
+            cp V = Canonical_Position(&Resources->MousedOverVoxel.Value);
+            V.Offset = RoundToMultiple(V.Offset, V3i(8, 8, 2));
+            Canonicalize(World, &V);
+
+            DrawStandingSpot(&GpuMap->Buffer, Camera, V, DIRT, 0.5f);
+
+            if (Input->LMB.Clicked)
+            {
+              GameState->PlayerActed = True;
+              cp StandingSpotCenterP = Canonicalize(World, V + Global_StandingSpotHalfDim);
+              DoDig(Resources, StandingSpotCenterP, 5.f, 2.f, GetTranArena());
+            }
           }
         } break;
 
@@ -672,20 +683,20 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
         case PlayerAction_ShovelSmack:
         {
+          if (Resources->HoverEntity.Tag)
           {
-            if (Resources->HoverEntity.Tag)
+            entity *HoverEnemy = Resources->HoverEntity.Value;
             {
-              entity *HoverEnemy = Resources->HoverEntity.Value;
-              {
-                aabb PlayerHitArea = GetSimSpaceAABB(World, Player) + V3(Global_MeleeRange);
+              aabb PlayerHitArea = GetSimSpaceAABB(World, Player);
+              PlayerHitArea.Min -= V3(Global_MeleeRange);
+              PlayerHitArea.Max += V3(Global_MeleeRange);
 
-                if (Intersect(World, HoverEnemy, &PlayerHitArea))
+              if (Intersect(World, HoverEnemy, &PlayerHitArea))
+              {
+                HighlightEntity(Resources, HoverEnemy);
+                if (Input->LMB.Clicked)
                 {
-                  HighlightEntity(Resources, HoverEnemy);
-                  if (Input->LMB.Clicked)
-                  {
-                    GameState->PlayerActed = EffectSmackEntity(Resources, HoverEnemy);
-                  }
+                  GameState->PlayerActed = EffectSmackEntity(Resources, HoverEnemy);
                 }
               }
             }

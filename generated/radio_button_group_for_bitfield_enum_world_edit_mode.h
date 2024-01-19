@@ -15,7 +15,7 @@ GetRadioEnum(ui_toggle_button_group *RadioGroup, world_edit_mode *Result)
   {
     Assert(CountBitsSet_Kernighan(RadioGroup->ToggleBits) == 1);
     // NOTE(Jesse): This is better; it asserts that we've actually got a bitfield
-    Assert(((RadioGroup->ToggleBits == WorldEditMode_Select||RadioGroup->ToggleBits == WorldEditMode_FillSelection||RadioGroup->ToggleBits == WorldEditMode_PaintSelection||RadioGroup->ToggleBits == WorldEditMode_DeleteSelection||RadioGroup->ToggleBits == WorldEditMode_Eyedropper||RadioGroup->ToggleBits == WorldEditMode_AddSingle||RadioGroup->ToggleBits == WorldEditMode_RemoveSingle||RadioGroup->ToggleBits == WorldEditMode_PaintSingle||RadioGroup->ToggleBits == WorldEditMode_BlitEntity||RadioGroup->ToggleBits == WorldEditMode_RecomputeStandingSpots)));
+    Assert(((RadioGroup->ToggleBits == WorldEditMode_Select||RadioGroup->ToggleBits == WorldEditMode_FillSelection||RadioGroup->ToggleBits == WorldEditMode_PaintSelection||RadioGroup->ToggleBits == WorldEditMode_DeleteSelection||RadioGroup->ToggleBits == WorldEditMode_Eyedropper||RadioGroup->ToggleBits == WorldEditMode_AddSingle||RadioGroup->ToggleBits == WorldEditMode_RemoveSingle||RadioGroup->ToggleBits == WorldEditMode_PaintSingle||RadioGroup->ToggleBits == WorldEditMode_AssetBrush||RadioGroup->ToggleBits == WorldEditMode_BlitEntity||RadioGroup->ToggleBits == WorldEditMode_RecomputeStandingSpots)));
     /* Assert((((enum_t.map(value).sep(|) {value.name})) & RadioGroup->ToggleBits) != 0); */
   }
 
@@ -52,6 +52,7 @@ RadioButtonGroup_world_edit_mode(renderer_2d *Ui, window_layout *Window, const c
     CSz("AddSingle"),
     CSz("RemoveSingle"),
     CSz("PaintSingle"),
+    CSz("AssetBrush"),
     CSz("BlitEntity"),
     CSz("RecomputeStandingSpots"),
   };

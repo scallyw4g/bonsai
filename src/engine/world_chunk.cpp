@@ -3546,6 +3546,13 @@ DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, v3 RenderSpot_MinP, v3 Til
 }
 
 link_internal void
+DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, camera *Camera, cp CP, u32 ColorIndex = STANDING_SPOT_DEFAULT_COLOR, r32 Thickness = DEFAULT_STANDING_SPOT_THICKNESS)
+{
+  v3 StandingSpotP = GetRenderP(GetWorld()->ChunkDim, CP, Camera);
+  DrawStandingSpot(Mesh, StandingSpotP, V3(Global_StandingSpotDim), ColorIndex, Thickness);
+}
+
+link_internal void
 DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, camera *Camera, standing_spot *Spot, u32 ColorIndex = STANDING_SPOT_DEFAULT_COLOR, r32 Thickness = DEFAULT_STANDING_SPOT_THICKNESS)
 {
   v3 StandingSpotP = GetRenderP(GetWorld()->ChunkDim, Spot->P, Camera);
