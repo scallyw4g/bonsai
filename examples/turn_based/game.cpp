@@ -37,16 +37,8 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  entity *Player = GetEntity(EntityTable, GameState->PlayerId);
-  Assert(Player);
-
   cp EnemyBaseP  = GetEntityBaseP(World, Enemy);
-  cp PlayerBaseP = GetEntityBaseP(World, Player);
-
-  v3 PlayerBaseSimP = GetSimSpaceP(World, PlayerBaseP);
   v3 EnemyBaseSimP  = GetSimSpaceP(World, EnemyBaseP);
-
-
   {
     v3 EnemyCenterSimP = GetSimSpaceP(World, GetEntityCenterP(World, Enemy));
     v3 EnemyBaseToCenter = EnemyCenterSimP - EnemyBaseSimP;
@@ -75,6 +67,15 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
     DoLight(&Lighting->Lights, GetRenderP(Engine, Light0CP), LightColor);
     DoLight(&Lighting->Lights, GetRenderP(Engine, Light1CP), LightColor);
   }
+
+
+  entity *Player = GetEntity(EntityTable, GameState->PlayerId);
+  if (Player == 0) { return; }
+
+  cp PlayerBaseP = GetEntityBaseP(World, Player);
+  v3 PlayerBaseSimP = GetSimSpaceP(World, PlayerBaseP);
+
+
 
   // NOTE(Jesse): Entities embedded in the world cannot act
   if (GetCollision(World, Enemy).Count) { return; }
@@ -357,26 +358,18 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       }
       else
       {
-        // Custom FBM noise example generating slightly-more-complex game-world-like terrain
         s32 Frequency = 0; // Ignored
         s32 Amplititude = 0; // Ignored
-        s32 StartingZDepth = -85;
+        s32 StartingZDepth = -100;
         u32 OctaveCount = 1;
 
         octave_buffer OctaveBuf = { OctaveCount, {} };
         OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
 
-        OctaveBuf.Octaves[0] = {V3(400, 400, 180), 150, V3(1)};
-        /* OctaveBuf.Octaves[1] = {V3(35, 35, 50),      6, V3(2.f)}; */
-        /* OctaveBuf.Octaves[2] = {V3(500, 500, 20), 200, V3(2.f)}; */
-        /* OctaveBuf.Octaves[2] = {75, 60, 1}; */
-        /* OctaveBuf.Octaves[3] = {37, 30, 0}; */
+        OctaveBuf.Octaves[0] = {V3(400, 400, 200), 150, V3(1)};
 
-
-        /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
-        /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
-        chunk_init_flags InitFlags = ChunkInitFlag_Noop;
-        InitializeChunkWithNoise( TerracedTerrain, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
+        chunk_init_flags InitFlags = chunk_init_flags(ChunkInitFlag_ComputeStandingSpots|ChunkInitFlag_GenLODs);
+        InitializeChunkWithNoise( GrassyTerracedTerrain, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
       }
     }
   }
@@ -466,7 +459,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   memory_arena *GameMemory = &GameState->Memory;
   entity *Player           = GetEntity(EntityTable, GameState->PlayerId);
-  Assert(Player);
+  if (Player == 0) { return; }
 
   // NOTE(Jesse): Crutch for loading savefiles that didn't have this
   if (Player->UserData == 0)
@@ -722,7 +715,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       GameState->TransitionDuration += Plat->dt;
       GameState->ProposedAction = PlayerAction_None;
     }
-
   }
 
   local_persist window_layout ActionsWindow = WindowLayout("ActionsWindow");
@@ -736,13 +728,20 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     ui_element_reference ActionTable = PushTableStart(Ui);
       for (u32 ActionIndex = PlayerAction_Move; ActionIndex < PlayerAction_Count; ++ActionIndex)
       {
+        player_action Action = player_action(ActionIndex);
         ui_style *Style = ActionIndex == GameState->ProposedAction ? &DefaultSelectedStyle : &DefaultStyle;
         if (CanDoAction(Player, player_action(ActionIndex)) == False)
         {
           Style = &DefaultDisabledStyle;
         }
 
-        PushColumn(Ui, ToString((player_action)ActionIndex), Style);
+        if (Button(Ui, ToString(Action), UiId(&ActionsWindow, "player_action", ActionIndex), Style))
+        {
+          if (CanDoAction(Player, Action))
+          {
+            GameState->ProposedAction = Action;
+          }
+        }
         PushNewRow(Ui);
       }
     PushTableEnd(Ui);
