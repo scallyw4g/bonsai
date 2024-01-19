@@ -531,6 +531,7 @@ DoEngineDebug(engine_resources *Engine)
   ui_toggle_button_group EditorButtonGroup =
     ToggleButtonGroup_engine_debug_view_mode(Ui, 0, "engine_debug_view_mode");
 
+  Editor->EngineDebugViewModeToggleBits = EditorButtonGroup.ToggleBits;
 
   if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_Entities))
   {

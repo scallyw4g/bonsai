@@ -140,6 +140,8 @@ poof(string_and_value_tables(file_traversal_type))
 poof(string_and_value_tables(tone_mapping_type))
 #include <generated/string_and_value_tables_tone_mapping_type.h>
 
+poof(string_and_value_tables(engine_debug_view_mode))
+#include <generated/string_and_value_tables_engine_debug_view_mode.h>
 
 
 poof(do_editor_ui_for_enum(entity_state))
@@ -306,6 +308,12 @@ poof(do_editor_ui_for_compound_type(ui_debug))
 
 poof(do_editor_ui_for_compound_type(engine_debug))
 #include <generated/do_editor_ui_for_compound_type_engine_debug.h>
+
+poof(do_editor_ui_for_enum(engine_debug_view_mode))
+#include <generated/do_editor_ui_for_enum_engine_debug_view_mode.h>
+
+poof(do_editor_ui_for_compound_type(level_editor))
+#include <generated/do_editor_ui_for_compound_type_level_editor.h>
 
 poof(do_editor_ui_for_compound_type(engine_resources))
 #include <generated/do_editor_ui_for_compound_type_engine_resources.h>

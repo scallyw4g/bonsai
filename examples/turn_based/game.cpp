@@ -515,7 +515,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
 
 
-    if (GameState->TurnMode == TurnMode_Default)
+    if (GameState->TurnMode == TurnMode_Default && (Editor->EngineDebugViewModeToggleBits & (1<<EngineDebugViewMode_WorldEdit)) == 0 )
     {
       entity_game_data *PlayerGameData = Cast(entity_game_data*, Player->UserData);
       switch (GameState->ProposedAction)

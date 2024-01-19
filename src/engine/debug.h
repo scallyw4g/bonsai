@@ -151,6 +151,16 @@ enum engine_debug_view_mode
   EngineDebugViewMode_Textures,
   EngineDebugViewMode_RenderSettings,
   EngineDebugViewMode_EngineDebug,
+
+  // TODO(Jesse): Make these values bitfields?
+  /* EngineDebugViewMode_Level          = (1 << 0), */
+  /* EngineDebugViewMode_WorldEdit      = (1 << 1), */
+  /* EngineDebugViewMode_Entities       = (1 << 2), */
+  /* EngineDebugViewMode_Assets         = (1 << 3), */
+  /* EngineDebugViewMode_WorldChunks    = (1 << 4), */
+  /* EngineDebugViewMode_Textures       = (1 << 5), */
+  /* EngineDebugViewMode_RenderSettings = (1 << 6), */
+  /* EngineDebugViewMode_EngineDebug    = (1 << 7), */
 };
 
 poof(toggle_button_group_for_enum(engine_debug_view_mode))

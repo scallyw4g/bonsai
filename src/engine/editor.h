@@ -254,6 +254,8 @@ poof(radio_button_group_for_bitfield_enum(level_editor_flags));
 
 struct level_editor
 {
+  u64 EngineDebugViewModeToggleBits;
+
   u16 SelectedColorIndex;
   u16 HoverColorIndex;
 
