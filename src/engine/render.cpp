@@ -1181,24 +1181,16 @@ DrawEntitiesToGBuffer( entity **EntityTable,
   TeardownGBufferShader(Graphics);
 }
 
-
 link_internal void
-DrawWorldToGBuffer(engine_resources *Engine)
+DoWorldChunkStuff()
 {
   TIMED_FUNCTION();
 
-  UNPACK_ENGINE_RESOURCES(Engine);
-
-  /* work_queue_entry_copy_buffer_set CopySet = {}; */
+  UNPACK_ENGINE_RESOURCES(GetEngineResources());
 
   v3i Radius = World->VisibleRegion/2;
   v3i Min = World->Center - Radius;
   v3i Max = World->Center + Radius;
-
-  // NOTE(Jesse): Debug
-  /* Assert(Min == V3i(0)); */
-  /* Assert(Max == V3i(4)); */
-
 
   SetupGBufferShader(Graphics);
 
@@ -1207,16 +1199,40 @@ DrawWorldToGBuffer(engine_resources *Engine)
   for (s32 z = Min.z; z < Max.z; ++ z)
   {
     world_position P = World_Position(x,y,z);
-    world_chunk *Chunk = 0;
-    {
-      /* TIMED_NAMED_BLOCK("GetWorldChunkFromHashtable"); */
-      Chunk = GetWorldChunkFromHashtable( World, P );
-    }
-
+    world_chunk *Chunk = GetWorldChunkFromHashtable( World, P );
     if (Chunk)
     {
-      /* Assert(Chunk->Flags & Chunk_VoxelsInitialized); */
+    }
+    else
+    {
+      Chunk = GetAndInsertFreeWorldChunk(World->Memory, World, P);
+      if (Chunk)
+      { QueueChunkForInit(&Plat->LowPriority, Chunk, MeshBit_Lod0);  }
+      else
+      { InvalidCodePath(); }
+    }
+  }
+}
 
+
+link_internal void
+DrawWorldToGBuffer(engine_resources *Engine)
+{
+  TIMED_FUNCTION();
+
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  v3i Radius = World->VisibleRegion/2;
+  v3i Min = World->Center - Radius;
+  v3i Max = World->Center + Radius;
+
+  SetupGBufferShader(Graphics);
+
+  RangeIterator_t(u32, ChunkIndex, World->HashSize)
+  {
+    world_chunk *Chunk = World->ChunkHash[ChunkIndex];
+    if (Chunk)
+    {
       if (IsInFrustum(World, Camera, Chunk))
       {
         v3 CameraP = GetSimSpaceP(World, Camera->CurrentP);
@@ -1229,7 +1245,6 @@ DrawWorldToGBuffer(engine_resources *Engine)
         SyncGpuBuffersImmediate(Engine, &Chunk->Meshes);
         v3 Basis = GetRenderP(GetEngineResources(), Chunk->WorldP);
         DrawLod(Engine, &Graphics->gBuffer->gBufferShader, &Chunk->Meshes, 0.f, Basis);
-
 
 #if 0
         umm StandingSpotCount = AtElements(&Chunk->StandingSpots);
@@ -1245,28 +1260,13 @@ DrawWorldToGBuffer(engine_resources *Engine)
 
       }
     }
-    else
-    {
-      Chunk = GetAndInsertFreeWorldChunk(World->Memory, World, P);
-      if (Chunk)
-      { QueueChunkForInit(&Plat->LowPriority, Chunk, MeshBit_Lod0);  }
-      else
-      { InvalidCodePath(); }
-    }
   }
 
   DrawEntitiesToGBuffer( EntityTable, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, Graphics, World, Plat->dt);
 
   TeardownGBufferShader(Graphics);
-
-/*   if (CopySet.Count > 0) */
-/*   { */
-/*     work_queue_entry Entry = WorkQueueEntry(&CopySet); */
-/*     PushWorkQueueEntry(&Plat->HighPriority, &Entry); */
-/*   } */
-
-  return;
 }
+
 link_internal void
 DrawWorldToShadowMap(engine_resources *Engine)
 {
@@ -1274,16 +1274,9 @@ DrawWorldToShadowMap(engine_resources *Engine)
 
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  /* work_queue_entry_copy_buffer_set CopySet = {}; */
-
   v3i Radius = World->VisibleRegion/2;
   v3i Min = World->Center - Radius;
   v3i Max = World->Center + Radius;
-
-  // NOTE(Jesse): Debug
-  /* Assert(Min == V3i(0)); */
-  /* Assert(Max == V3i(4)); */
-
 
   shadow_render_group *SG = Graphics->SG;
 
@@ -1305,112 +1298,18 @@ DrawWorldToShadowMap(engine_resources *Engine)
 
   AssertNoGlErrors;
 
-  for (s32 x = Min.x; x < Max.x; ++ x)
-  for (s32 y = Min.y; y < Max.y; ++ y)
-  for (s32 z = Min.z; z < Max.z; ++ z)
+  RangeIterator_t(u32, ChunkIndex, World->HashSize)
   {
-    world_position P = World_Position(x,y,z);
-    world_chunk *Chunk = 0;
-    {
-      /* TIMED_NAMED_BLOCK("GetWorldChunkFromHashtable"); */
-      Chunk = GetWorldChunkFromHashtable( World, P );
-    }
-
+    world_chunk *Chunk = World->ChunkHash[ChunkIndex];
     if (Chunk)
     {
-      /* if (Chunk->Flags & Chunk_Queued) { continue; } */
-      /* Assert(Chunk->Flags & Chunk_VoxelsInitialized); */
-
-
       if (IsInFrustum(World, Camera, Chunk))
       {
-        v3 CameraP = GetSimSpaceP(World, Camera->CurrentP);
-        v3 ChunkP = GetSimSpaceP(World, Chunk->WorldP);
-
-        /* if (Chunk->Flags & Chunk_MeshUploadedToGpu) */
-        {
-          auto MeshBit = MeshBit_None;
-
-          r32 CameraToChunkSquared = DistanceSq(CameraP, ChunkP);
-          if (CameraToChunkSquared > Square(400*32))
-          {
-            if (HasGpuMesh(&Chunk->Meshes, MeshBit_Lod4)) { MeshBit = MeshBit_Lod4; }
-          }
-          else if (CameraToChunkSquared > Square(250*32))
-          {
-            if (HasGpuMesh(&Chunk->Meshes, MeshBit_Lod3)) { MeshBit = MeshBit_Lod3; }
-          }
-          else if (CameraToChunkSquared > Square(150*32))
-          {
-            if (HasGpuMesh(&Chunk->Meshes, MeshBit_Lod2)) { MeshBit = MeshBit_Lod2; }
-          }
-          else if (CameraToChunkSquared > Square(70*32))
-          {
-            if (HasGpuMesh(&Chunk->Meshes, MeshBit_Lod1)) { MeshBit = MeshBit_Lod1; }
-          }
-          else
-          {
-           if (HasGpuMesh(&Chunk->Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; }
-          }
-
-
-          if (MeshBit != MeshBit_None)
-          {
-            v3 Basis = GetRenderP(GetEngineResources(), Chunk->WorldP);
-            m4 OffsetM = Translate(Basis);
-            BindUniform(&SG->DepthShader, "ModelMatrix", &OffsetM);
-
-            DrawGpuBufferImmediate(Graphics, &Chunk->Meshes.GpuBufferHandles[ToIndex(MeshBit)]);
-          }
-        }
-#if 0
-        else
-        {
-          if (Chunk->Flags & Chunk_Queued) { continue; }
-          RangeIterator(MeshIndex, MeshIndex_Count)
-          {
-            world_chunk_mesh_bitfield MeshBit = world_chunk_mesh_bitfield(1 << MeshIndex);
-            if (HasMesh(&Chunk->Meshes, MeshBit))
-            {
-              untextured_3d_geometry_buffer *Mesh = TakeOwnershipSync(&Chunk->Meshes, MeshBit);
-              CopyToGpuBuffer(Mesh, &Chunk->GpuBuffers[MeshIndex]);
-              ReleaseOwnership(&Chunk->Meshes, MeshBit, Mesh);
-            }
-          }
-          SetBitfield(chunk_flag, Chunk->Flags, Chunk_MeshUploadedToGpu);
-        }
-
-#endif
-#if 0
-        umm StandingSpotCount = AtElements(&Chunk->StandingSpots);
-        /* DebugLine("drawing (%u) standing spots", StandingSpotCount); */
-        for (u32 SpotIndex = 0; SpotIndex < StandingSpotCount; ++SpotIndex)
-        {
-          v3i *Spot = Chunk->StandingSpots.Start + SpotIndex;
-          v3 RenderSpot = GetRenderP(World->ChunkDim, Canonical_Position(*Spot, Chunk->WorldP), Graphics->Camera);
-          DrawStandingSpot(&Graphics->Transparency.GeoBuffer.Buffer, RenderSpot, V3(Global_StandingSpotDim));
-        }
-#endif
-
+        v3 Basis = GetRenderP(GetEngineResources(), Chunk->WorldP);
+        DrawLod(Engine, &SG->DepthShader, &Chunk->Meshes, 0.f, Basis);
       }
-    }
-    else
-    {
-      Chunk = GetAndInsertFreeWorldChunk(World->Memory, World, P);
-      if (Chunk)
-      { QueueChunkForInit(&Plat->LowPriority, Chunk, MeshBit_Lod0);  }
-      else
-      { InvalidCodePath(); }
     }
   }
 
   GL.Enable(GL_CULL_FACE);
-
-/*   if (CopySet.Count > 0) */
-/*   { */
-/*     work_queue_entry Entry = WorkQueueEntry(&CopySet); */
-/*     PushWorkQueueEntry(&Plat->HighPriority, &Entry); */
-/*   } */
-
-  return;
 }

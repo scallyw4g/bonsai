@@ -55,6 +55,8 @@ Bonsai_FrameBegin(engine_resources *Resources)
 {
   TIMED_FUNCTION();
 
+  DoWorldChunkStuff();
+
   // Must come before we update the frame index
   CollectUnusedChunks(Resources, &Resources->MeshFreelist, Resources->World->Memory, Resources->World->VisibleRegion);
 
@@ -266,7 +268,6 @@ Bonsai_Simulate(engine_resources *Resources)
   Resources->Graphics->gBuffer->ViewProjection =
     ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
     ViewMatrix(World->ChunkDim, Camera);
-
 
 
 #if BONSAI_DEBUG_SYSTEM_API

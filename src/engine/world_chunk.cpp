@@ -4931,8 +4931,7 @@ BufferChunkMesh( graphics *Graphics,
   DEBUG_DrawChunkAABB(Dest, Graphics, WorldP, WorldChunkDim, PINK, 0.1f);
 #endif
 
-  v3 ModelBasisP =
-    GetRenderP( WorldChunkDim, Canonical_Position(Offset, WorldP), Graphics->Camera);
+  v3 ModelBasisP = GetRenderP( WorldChunkDim, Canonical_Position(Offset, WorldP), Graphics->Camera);
 
   auto CopyBuffer = ReserveBufferSpace( Dest, Src->At);
   if (Length(Rot.xyz) == 0.f)

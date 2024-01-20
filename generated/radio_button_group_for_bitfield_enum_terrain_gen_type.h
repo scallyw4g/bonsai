@@ -15,7 +15,7 @@ GetRadioEnum(ui_toggle_button_group *RadioGroup, terrain_gen_type *Result)
   {
     Assert(CountBitsSet_Kernighan(RadioGroup->ToggleBits) == 1);
     // NOTE(Jesse): This is better; it asserts that we've actually got a bitfield
-    Assert(((RadioGroup->ToggleBits == TerrainGenType_Flat||RadioGroup->ToggleBits == TerrainGenType_Checkerboard||RadioGroup->ToggleBits == TerrainGenType_Perlin2D||RadioGroup->ToggleBits == TerrainGenType_Perlin3D||RadioGroup->ToggleBits == TerrainGenType_FBM2D||RadioGroup->ToggleBits == TerrainGenType_TerracedTerrain||RadioGroup->ToggleBits == TerrainGenType_GrassyTerracedTerrain||RadioGroup->ToggleBits == TerrainGenType_GrassyTerracedTerrain2||RadioGroup->ToggleBits == TerrainGenType_GrassyIsland||RadioGroup->ToggleBits == TerrainGenType_Hoodoo||RadioGroup->ToggleBits == TerrainGenType_Warped)));
+    Assert(((RadioGroup->ToggleBits == TerrainGenType_Flat||RadioGroup->ToggleBits == TerrainGenType_Checkerboard||RadioGroup->ToggleBits == TerrainGenType_Perlin2D||RadioGroup->ToggleBits == TerrainGenType_Perlin3D||RadioGroup->ToggleBits == TerrainGenType_FBM2D||RadioGroup->ToggleBits == TerrainGenType_TerracedTerrain||RadioGroup->ToggleBits == TerrainGenType_GrassyTerracedTerrain||RadioGroup->ToggleBits == TerrainGenType_GrassyLargeTerracedTerrain||RadioGroup->ToggleBits == TerrainGenType_GrassyTerracedTerrain2||RadioGroup->ToggleBits == TerrainGenType_GrassyIsland||RadioGroup->ToggleBits == TerrainGenType_Hoodoo||RadioGroup->ToggleBits == TerrainGenType_Warped)));
     /* Assert((((enum_t.map(value).sep(|) {value.name})) & RadioGroup->ToggleBits) != 0); */
   }
 
@@ -51,6 +51,7 @@ RadioButtonGroup_terrain_gen_type(renderer_2d *Ui, window_layout *Window, const 
     CSz("FBM2D"),
     CSz("TerracedTerrain"),
     CSz("GrassyTerracedTerrain"),
+    CSz("GrassyLargeTerracedTerrain"),
     CSz("GrassyTerracedTerrain2"),
     CSz("GrassyIsland"),
     CSz("Hoodoo"),

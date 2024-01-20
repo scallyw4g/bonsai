@@ -700,18 +700,7 @@ DoWorldEditor(engine_resources *Engine)
     //
 
     u8 BaseColor = WHITE;
-    /* v3 P0 = GetRenderP(Engine, Editor->SelectionRegion.Min); */
-    /* v3 P1 = GetRenderP(Engine, Editor->SelectionRegion.Max); */
-    /* DEBUG_DrawAABB(Engine, P0, P1, BaseColor, Thickness); */
-
     DEBUG_DrawSimSpaceAABB(Engine, &SelectionAABB, BaseColor, Thickness);
-  }
-
-
-  {
-    /* DoEditorUi(Ui, &Editor->SelectionRegion, "SelectionRegion", &DefaultStyle, {}, {}); */
-    /* DoEditorUi(Ui, &World->Center,           "WorldCenter",     &DefaultStyle, {}, {}); */
-    /* Info("%S", ToString(WorldEditMode)); */
   }
 
 

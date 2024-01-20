@@ -523,6 +523,32 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             InitializeChunkWithNoise( TerracedTerrain, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
           } break;
 
+          case TerrainGenType_GrassyLargeTerracedTerrain:
+          {
+            // Custom FBM noise example generating slightly-more-complex game-world-like terrain
+            s32 Frequency = 0; // Ignored
+            s32 Amplititude = 0; // Ignored
+            s32 StartingZDepth = -140;
+            u32 OctaveCount = 4;
+
+            octave_buffer OctaveBuf = { OctaveCount, {} };
+            OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
+
+            OctaveBuf.Octaves[0] = {V3(1200, 1200, 900), 500, V3(1)};
+            OctaveBuf.Octaves[1] = {V3(1200, 1200, 900), 500, V3(1)};
+            OctaveBuf.Octaves[2] = {V3(800, 800, 500), 125, V3(1)};
+            OctaveBuf.Octaves[3] = {V3(35, 35, 25), 5, V3(2.f)};
+            /* OctaveBuf.Octaves[2] = {V3(500, 500, 20), 200, V3(2.f)}; */
+            /* OctaveBuf.Octaves[2] = {75, 60, 1}; */
+            /* OctaveBuf.Octaves[3] = {37, 30, 0}; */
+
+
+            /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
+            chunk_init_flags InitFlags = ChunkInitFlag_GenLODs;
+            /* chunk_init_flags InitFlags = ChunkInitFlag_Noop; */
+            InitializeChunkWithNoise( GrassyLargeTerracedTerrain, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
+          } break;
+
           case TerrainGenType_GrassyIsland:
           {
             // Custom FBM noise example generating slightly-more-complex game-world-like terrain

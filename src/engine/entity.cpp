@@ -1242,10 +1242,6 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
     }
   }
 
-#if 0
-  v3 RenderSpaceP = GetRenderP(Entity->P, Graphics->Camera, WorldChunkDim) + System->SpawnRegion.Center;
-  DoLight(Graphics->Lights, RenderSpaceP, 10.0f*EmissionColor);
-#endif
 }
 
 inline b32

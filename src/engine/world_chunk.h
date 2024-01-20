@@ -429,7 +429,6 @@ enum world_flag
 
 struct world
 {
-
   v3i Center;
   v3i VisibleRegion; // The number of chunks in xyz we're going to update and render
 
