@@ -651,36 +651,35 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           }
         } break;
 
+        case PlayerAction_IceBlock:
         case PlayerAction_Dig:
         {
-          /* if (Resources->ClosestStandingSpotToCursor.Tag) { DrawStandingSpot(&GpuMap->Buffer, Camera, &Resources->ClosestStandingSpotToCursor.Value, DIRT, 0.5f); } */
-
           if (Resources->MousedOverVoxel.Tag)
           {
             cp V = Canonical_Position(&Resources->MousedOverVoxel.Value);
             V.Offset = RoundToMultiple(V.Offset, V3i(8, 8, s32(Global_PlayerDigDepth)));
             Canonicalize(World, &V);
 
-            DrawStandingSpot(&GpuMap->Buffer, Camera, V, DIRT, 0.5f);
-
             if (Input->LMB.Clicked)
             {
               GameState->PlayerActed = True;
               cp StandingSpotCenterP = Canonicalize(World, V + Global_StandingSpotHalfDim);
-              DoDig(Resources, StandingSpotCenterP, 5.f, Global_PlayerDigDepth, GetTranArena());
+              switch (GameState->ProposedAction)
+              {
+                case PlayerAction_IceBlock:
+                {
+                  DrawStandingSpot(&GpuMap->Buffer, Camera, V, DIRT, 0.5f);
+                  DoIceBlock(Resources, StandingSpotCenterP, 4.f, GetTranArena());
+                } break;
+                case PlayerAction_Dig:
+                {
+                  DrawStandingSpot(&GpuMap->Buffer, Camera, V, ICE_BLUE, 0.5f);
+                  DoDig(Resources, StandingSpotCenterP, 5.f, Global_PlayerDigDepth, GetTranArena());
+                } break;
+
+                InvalidDefaultCase;
+              }
             }
-          }
-        } break;
-
-        case PlayerAction_IceBlock:
-        {
-          if (Resources->ClosestStandingSpotToCursor.Tag) { DrawStandingSpot(&GpuMap->Buffer, Camera, &Resources->ClosestStandingSpotToCursor.Value, BLUE, 0.5f); }
-
-          if (Input->LMB.Clicked)
-          {
-            GameState->PlayerActed = True;
-            cp StandingSpotCenterP = Canonicalize(World, Resources->ClosestStandingSpotToCursor.Value.P + Global_StandingSpotHalfDim);
-            DoIceBlock(Resources, StandingSpotCenterP, 4.f, GetTranArena());
           }
         } break;
 
@@ -765,7 +764,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     PushTableEnd(Ui);
 
   PushWindowEnd(Ui, &ActionsWindow);
-
 }
 
 poof(serdes_struct(entity_game_data))
