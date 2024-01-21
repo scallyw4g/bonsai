@@ -26,8 +26,8 @@ enum entity_behavior_flags poof(@bitfield)
 
   EntityBehaviorFlags_WorldCenter                      = (1 << 5),
 
-  EntityBehaviorFlags_Default = (EntityBehaviorFlags_Gravity       |
-                                 EntityBehaviorFlags_WorldCollision|
+  EntityBehaviorFlags_Default = (EntityBehaviorFlags_Gravity        |
+                                 EntityBehaviorFlags_WorldCollision |
                                  EntityBehaviorFlags_EntityCollision),
 };
 
