@@ -18,17 +18,19 @@ enum entity_behavior_flags poof(@bitfield)
   EntityBehaviorFlags_WorldCollision                   = (1 << 1),
   EntityBehaviorFlags_EntityCollision                  = (1 << 2),
   EntityBehaviorFlags_UnspawnOnParticleSystemTerminate = (1 << 3),
+  EntityBehaviorFlags_FitCollisionVolumeToModel        = (1 << 4),
 
   // NOTE(Jesse): This is more of an engine_entity_type, but I didn't see a
   // reason to make a whole new thing for that for just one value.  If this
   // blows out to more than that it might be worth it..
-  EntityBehaviorFlags_DefatulCameraGhostBehavior       = (1 << 4),
+  EntityBehaviorFlags_DefatulCameraGhostBehavior       = (1 << 5),
 
-  EntityBehaviorFlags_WorldCenter                      = (1 << 5),
+  EntityBehaviorFlags_WorldCenter                      = (1 << 6),
 
-  EntityBehaviorFlags_Default = (EntityBehaviorFlags_Gravity        |
-                                 EntityBehaviorFlags_WorldCollision |
-                                 EntityBehaviorFlags_EntityCollision),
+  EntityBehaviorFlags_Default = ( EntityBehaviorFlags_Gravity                   |
+                                  EntityBehaviorFlags_WorldCollision            |
+                                  EntityBehaviorFlags_FitCollisionVolumeToModel |
+                                  EntityBehaviorFlags_EntityCollision           ),
 };
 
 poof(generate_string_table(entity_state))

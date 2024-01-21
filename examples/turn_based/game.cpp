@@ -178,56 +178,50 @@ DestroySkeleton(engine_resources *Engine, entity *Entity, r32 Radius)
     CSz("skele_bitty_2.vox"),
   };
 
-#if 1
-  s32 MaxBitties = ArrayCount(AssetNames);
-  RangeIterator(BittyIndex, MaxBitties)
+  u32 MaxBitties = ArrayCount(AssetNames) * 2;
+  RangeIterator_t(u32, BittyIndex, MaxBitties)
   {
-    // TODO(Jesse)(leak): This leaks the asset name when the asset is freed
-
+  // TODO(Jesse)(leak): This leaks the asset name when the asset is freed
     entity *BittyEntity = TryGetFreeEntityPtr(EntityTable);
-    if (BittyIndex)
-    {
-      file_traversal_node AssetName = {FileTraversalType_File, CSz("models"), AssetNames[BittyIndex]};
-      BittyEntity->AssetId = GetOrAllocateAssetId(Engine, &AssetName);
+    file_traversal_node AssetName = {FileTraversalType_File, CSz("models"), AssetNames[BittyIndex%ArrayCount(AssetNames)]};
+    BittyEntity->AssetId = GetOrAllocateAssetId(Engine, &AssetName);
 
-      BittyEntity->Physics.Speed = 1.f;
+    BittyEntity->Physics.Speed = 1.f;
 
-      BittyEntity->EulerAngles.z = RandomUnilateral(&Global_GameEntropy)*PI32*2.f;
-      BittyEntity->Scale = 1.0f;
+    BittyEntity->EulerAngles.z = RandomUnilateral(&Global_GameEntropy)*PI32*2.f;
+    BittyEntity->Scale = 1.0f;
 
-      /* UpdateCollisionVolumeRadius(World, BittyEntity, V3(.1f), GetTranArena()); */
-      BittyEntity->_CollisionVolumeRadius = V3(.1f);
+    /* UpdateCollisionVolumeRadius(World, BittyEntity, V3(.1f), GetTranArena()); */
+    BittyEntity->_CollisionVolumeRadius = V3(.1f);
 
-      v3 Rnd = RandomV3Bilateral(&Global_GameEntropy);
-      BittyEntity->Physics.Mass = 25.f;
-      BittyEntity->Physics.Force += Rnd*150.f*Radius;
-      BittyEntity->Physics.Force.z = Abs(BittyEntity->Physics.Force.z) * 0.25f;
-      BittyEntity->P = Entity->P + (Rnd*Radius) + V3(0.f, 0.f, 2.0f);
-      BittyEntity->P.Offset.z = Entity->P.Offset.z + 2.f;
+    v3 Rnd = RandomV3Bilateral(&Global_GameEntropy);
+    BittyEntity->Physics.Mass = 25.f;
+    BittyEntity->Physics.Force += Rnd*150.f*Radius;
+    BittyEntity->Physics.Force.z = Abs(BittyEntity->Physics.Force.z) * 0.25f;
+    BittyEntity->P = Entity->P + (Rnd*Radius) + V3(0.f, 0.f, 2.0f);
+    BittyEntity->P.Offset.z = Entity->P.Offset.z + 2.f;
 
-      SpawnEntity(BittyEntity, EntityBehaviorFlags_Default);
+    SpawnEntity(BittyEntity, EntityBehaviorFlags_Default);
 
-      /* if (GetCollision(World, BittyEntity).Count) { Unspawn(BittyEntity); continue; } */
-    }
+    /* if (GetCollision(World, BittyEntity).Count) { Unspawn(BittyEntity); continue; } */
   }
-#endif
 
 
   file_traversal_node SkullAssetNames[] =
   {
-    {FileTraversalType_File, CSz("models"), CSz("skull_broken.vox")},
     {FileTraversalType_File, CSz("models"), CSz("skull.vox")},
+    {FileTraversalType_File, CSz("models"), CSz("skull_broken.vox")},
   };
 
   /* s32 AssetIndex = RandomBetween(0, &Global_GameEntropy, ArrayCount(SkullAssetNames)); */
-  s32 AssetIndex = 1;
+  s32 AssetIndex = 0;
 
   Entity->AssetId = GetOrAllocateAssetId(Engine, &SkullAssetNames[AssetIndex]);
-  Entity->Physics.Velocity.z += 7.f;
+  Entity->Physics.Velocity.z += 9.5f;
   Entity->P.Offset.z += 10.f;
   Entity->UserType = EntityType_Loot;
 
-  if (AssetIndex == 0)
+  if (AssetIndex == 1)
   {
     Entity->EulerAngles = V3(0.f, 5.32f, RandomBilateral(&Global_GameEntropy));
   }
@@ -250,17 +244,56 @@ EffectFireballEntity(engine_resources *Engine, entity *Enemy)
 }
 
 link_internal b32
+EffectGrabEntity(engine_resources *Engine, entity *Enemy)
+{
+  b32 Result = False;
+  switch (entity_type(Enemy->UserType))
+  {
+    case EntityType_Default:
+    case EntityType_Player:
+    case EntityType_Fireball:
+    {
+    } break;
+
+    case EntityType_Enemy:
+    {
+      Result = True;
+      DestroySkeleton(Engine, Enemy, 5.f);
+    } break;
+
+    case EntityType_Loot:
+    {
+      Result = True;
+      /* DestroyLoot(Engine, Enemy); */
+    } break;
+  }
+  return Result;
+}
+
+link_internal b32
 EffectSmackEntity(engine_resources *Engine, entity *Enemy)
 {
   b32 Result = False;
 
   switch (entity_type(Enemy->UserType))
   {
-    case EntityType_Default: {} break;
-    case EntityType_Player: {} break;
-    case EntityType_Fireball: {} break;
-    case EntityType_Enemy: {Result = True; DestroySkeleton(Engine, Enemy, 5.f);} break;
-    case EntityType_Loot: {Result = True; DestroyLoot(Engine, Enemy);} break;
+    case EntityType_Default:
+    case EntityType_Player:
+    case EntityType_Fireball:
+    {
+    } break;
+
+    case EntityType_Enemy:
+    {
+      Result = True;
+      DestroySkeleton(Engine, Enemy, 5.f);
+    } break;
+
+    case EntityType_Loot:
+    {
+      Result = True;
+      DestroyLoot(Engine, Enemy);
+    } break;
   }
   
   return Result;
@@ -408,9 +441,61 @@ IceBlockCharges(entity *Player)
   return Result;
 }
 
-link_internal b32
-CanDoAction(entity *Player, player_action Action)
+link_internal u32
+GetColorForAction(player_action Action)
 {
+  u32 Result = 0;
+
+  switch (Action)
+  {
+    InvalidCase(PlayerAction_Count);
+
+    case PlayerAction_None: { } break;
+
+    case PlayerAction_Move:
+    {
+      Result = GREEN;
+    } break;
+
+    case PlayerAction_ChargeFireball:
+    {
+      Result = GREEN;
+    } break;
+
+    case PlayerAction_Throw:
+    {
+      Result = ORANGE;
+    } break;
+
+    case PlayerAction_IceBlock:
+    {
+      Result = ICE_BLUE;
+    } break;
+
+    case PlayerAction_Dig:
+    {
+      Result = DIRT;
+    } break;
+
+    case PlayerAction_Grab:
+    {
+      Result = GREEN;
+    } break;
+
+    case PlayerAction_ShovelSmack:
+    {
+      Result = RED;
+    } break;
+
+  }
+
+  return Result;
+}
+link_internal b32
+CanDoAction(engine_resources *Engine, entity *Player, player_action Action, u32_buffer *MeleeEntities)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
   b32 Result = False;
   switch (Action)
   {
@@ -442,10 +527,28 @@ CanDoAction(entity *Player, player_action Action)
       Result = True;
     } break;
 
+    case PlayerAction_Grab:
+    {
+      RangeIterator_t(umm, EntityIndexIndex, MeleeEntities->Count)
+      {
+        entity *E = EntityTable[MeleeEntities->Start[EntityIndexIndex]];
+        if (E->UserType == EntityType_Loot)
+        {
+          Result = True;
+        }
+      }
+    } break;
+
     case PlayerAction_ShovelSmack:
     {
-      Result = False;
-      /* if (GatherEntitiesIntersecting()) { } */
+      RangeIterator_t(umm, EntityIndexIndex, MeleeEntities->Count)
+      {
+        entity *E = EntityTable[MeleeEntities->Start[EntityIndexIndex]];
+        if (E->UserType == EntityType_Enemy)
+        {
+          Result = True;
+        }
+      }
     } break;
 
   }
@@ -660,6 +763,9 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
             V.Offset = RoundToMultiple(V.Offset, V3i(8, 8, s32(Global_PlayerDigDepth)));
             Canonicalize(World, &V);
 
+            u32 Color = GetColorForAction(GameState->ProposedAction);
+            DrawStandingSpot(&GpuMap->Buffer, Camera, V, Color, 0.5f);
+
             if (Input->LMB.Clicked)
             {
               GameState->PlayerActed = True;
@@ -668,12 +774,11 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
               {
                 case PlayerAction_IceBlock:
                 {
-                  DrawStandingSpot(&GpuMap->Buffer, Camera, V, DIRT, 0.5f);
                   DoIceBlock(Resources, StandingSpotCenterP, 4.f, GetTranArena());
                 } break;
+
                 case PlayerAction_Dig:
                 {
-                  DrawStandingSpot(&GpuMap->Buffer, Camera, V, ICE_BLUE, 0.5f);
                   DoDig(Resources, StandingSpotCenterP, 5.f, Global_PlayerDigDepth, GetTranArena());
                 } break;
 
@@ -683,6 +788,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           }
         } break;
 
+        case PlayerAction_Grab:
         case PlayerAction_ShovelSmack:
         {
           if (Resources->HoverEntity.Tag)
@@ -698,7 +804,19 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
                 HighlightEntity(Resources, HoverEnemy);
                 if (Input->LMB.Clicked)
                 {
-                  GameState->PlayerActed = EffectSmackEntity(Resources, HoverEnemy);
+                  switch (GameState->ProposedAction)
+                  {
+                    InvalidDefaultCase;
+
+                    case PlayerAction_Grab:
+                    {
+                      GameState->PlayerActed = EffectGrabEntity(Resources, HoverEnemy);
+                    } break;
+                    case PlayerAction_ShovelSmack:
+                    {
+                      GameState->PlayerActed = EffectSmackEntity(Resources, HoverEnemy);
+                    } break;
+                  }
                 }
               }
             }
@@ -738,19 +856,32 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   ActionsWindow.Basis = WindowOffset;
 
+  v3 SimPlayerCenter = GetSimSpaceCenterP(World, Player);
+  sphere S = {SimPlayerCenter, Global_MeleeRange};
+  u32_buffer MeleeEntities = GatherEntitiesIntersecting(World, EntityTable, &S, GetTranArena());
+
+/*   RangeIterator_t(umm, EntityIndexIndex, MeleeEntities.Count) */
+/*   { */
+/*     entity *E = EntityTable[MeleeEntities.Start[EntityIndexIndex]]; */
+/*     HighlightEntity(Resources, E); */
+/*   } */
+
+  {
     ui_element_reference ActionTable = PushTableStart(Ui);
       for (u32 ActionIndex = PlayerAction_Move; ActionIndex < PlayerAction_Count; ++ActionIndex)
       {
         player_action Action = player_action(ActionIndex);
         ui_style *Style = ActionIndex == GameState->ProposedAction ? &DefaultSelectedStyle : &DefaultStyle;
-        if (CanDoAction(Player, player_action(ActionIndex)) == False)
+
+        b32 PlayerCanDoThisAction = CanDoAction(Resources, Player, player_action(ActionIndex), &MeleeEntities);
+        if (PlayerCanDoThisAction == False)
         {
           Style = &DefaultDisabledStyle;
         }
 
         if (Button(Ui, ToString(Action), UiId(&ActionsWindow, "player_action", ActionIndex), Style))
         {
-          if (CanDoAction(Player, Action))
+          if (PlayerCanDoThisAction)
           {
             GameState->ProposedAction = Action;
           }
@@ -762,6 +893,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     PushTableStart(Ui, Position_RightOf, ActionTable);
       PushColumn(Ui, ToString(GameState->TurnMode));
     PushTableEnd(Ui);
+  }
 
   PushWindowEnd(Ui, &ActionsWindow);
 }

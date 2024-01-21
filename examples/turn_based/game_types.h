@@ -39,6 +39,7 @@ enum player_action
   PlayerAction_Throw,
   PlayerAction_IceBlock,
   PlayerAction_Dig,
+  PlayerAction_Grab,
   PlayerAction_ShovelSmack,
 
   PlayerAction_Count,

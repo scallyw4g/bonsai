@@ -1252,13 +1252,6 @@ IsGrounded( world *World, entity *entity )
 }
 
 link_internal v3
-GetSimSpaceCenterP(entity *E, v3 SimSpaceP)
-{
-  v3 Result = SimSpaceP + E->_CollisionVolumeRadius;
-  return Result;
-}
-
-link_internal v3
 GetSimSpaceBaseP(entity *E, v3 SimSpaceP)
 {
   v3 Result = SimSpaceP + E->_CollisionVolumeRadius.xy;
@@ -1277,6 +1270,20 @@ GetSimSpaceBaseP(world *World, entity *E)
 {
   v3 SimSpaceP = GetSimSpaceP(World, E);
   v3 Result = GetSimSpaceBaseP(E, SimSpaceP);
+  return Result;
+}
+
+link_internal v3
+GetSimSpaceCenterP(world *World, entity *E)
+{
+  v3 Result = GetSimSpaceP(World, E) + E->_CollisionVolumeRadius;
+  return Result;
+}
+
+link_internal v3
+GetSimSpaceCenterP(entity *E, v3 SimSpaceP)
+{
+  v3 Result = SimSpaceP + E->_CollisionVolumeRadius;
   return Result;
 }
 
@@ -1314,7 +1321,6 @@ Intersect(world *World, aabb *First, entity *Second)
   b32 Result = Intersect(First, &Rect);
   return Result;
 }
-
 
 // TODO(Jesse)(speed): Accelerate this using the entities stored on world chunks!
 link_internal u32_buffer
