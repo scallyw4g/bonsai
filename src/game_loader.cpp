@@ -257,7 +257,7 @@ main( s32 ArgCount, const char ** Args )
       Info("Game Reload Success");
     }
 
-#if BONSAI_DEBUG_SYSTEM_API
+#if 0 // BONSAI_DEBUG_SYSTEM_API
     if ( LibIsNew(DEFAULT_DEBUG_LIB, &LastDebugLibTime) )
     {
       SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);

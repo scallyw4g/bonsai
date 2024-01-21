@@ -146,7 +146,7 @@ GrassyIslandTerrain( perlin_noise *Noise,
         }
 
 #if 1
-        GrowGrass( Chunk, V3i(x,y,z), NoiseValue, SrcToDest, WorldChunkDim, WorldZBiased, &ThisColor, &NoiseChoice );
+        GrowGrass( Chunk, V3i(x,y,z), NoiseValue, 1.f, SrcToDest, WorldChunkDim, WorldZBiased, &ThisColor, &NoiseChoice );
 #else
         s32 Below = TryGetIndex(x, y, z-1, Dim);
         s32 B0 = TryGetIndex(x+1, y, z-1, Dim);
@@ -645,7 +645,16 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState = Allocate(game_state, Resources->Memory, 1);
 
-  GameState->TerrainGenType = TerrainGenType_GrassyTerracedTerrain;
+  /* GameState->TerrainGenType = TerrainGenType_GrassyTerracedTerrain; */
+
+  GameState->TerrainGenType = TerrainGenType_GrassyLargeTerracedTerrain;
+  /* World->Center = V3i(-22, 101, 1); */
+
+  Camera->GhostId = GetFreeEntity(EntityTable);
+  entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId);
+  CameraGhost->P.WorldP = V3i(-22, 101, 1); 
+  SpawnEntity(CameraGhost);
+
   return GameState;
 }
 
@@ -662,8 +671,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   {
     Ghost->Behavior = entity_behavior_flags(Ghost->Behavior|EntityBehaviorFlags_WorldCenter);
   }
-
-  /* DrawFrustum(World, Graphics, Camera); */
 
   f32 dt = Plat->dt;
   f32 Speed = 80.f;
@@ -690,5 +697,21 @@ BONSAI_API_ON_LIBRARY_RELOAD()
   // NOTE(Jesse): Engine suspends workers for us here.
   /* SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex); */
   HardResetWorld(Resources, HardResetFlag_NoResetCamera);
+
+#if 0
+  if (entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId))
+  {
+    CameraGhost->P.WorldP = V3i(-22, 101, 1);
+    SpawnEntity(CameraGhost);
+  }
+  else
+  {
+    Camera->GhostId = GetFreeEntity(EntityTable);
+    CameraGhost = GetEntity(EntityTable, Camera->GhostId);
+    CameraGhost->P.WorldP = V3i(-22, 101, 1); 
+    SpawnEntity(CameraGhost);
+  }
+#endif
+
   /* UnsignalFutex(&Plat->WorkerThreadsSuspendFutex); */
 }

@@ -16,9 +16,15 @@ global_variable chunk_dimension
 /* g_VisibleRegion = Chunk_Dimension(32, 32, 10); */
 g_VisibleRegion = Chunk_Dimension(32, 32, 6);
 /* g_VisibleRegion = Chunk_Dimension(32, 32, 4); */
+/* g_VisibleRegion = Chunk_Dimension(24, 24, 4); */
+/* g_VisibleRegion = Chunk_Dimension(24, 24, 6); */
 /* g_VisibleRegion = Chunk_Dimension(10, 10, 10); */
 
+
+/* global_variable chunk_dimension */
+/* WORLD_CHUNK_DIM = Chunk_Dimension(32, 32, 32); */
+
 global_variable chunk_dimension
-WORLD_CHUNK_DIM = Chunk_Dimension(32, 32, 32);
+WORLD_CHUNK_DIM = Chunk_Dimension(64, 64, 64);
 
 #endif
