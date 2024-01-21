@@ -17,9 +17,11 @@ CAssert(ASSET_TABLE_COUNT < u16_MAX); // NOTE(Jesse): u16_MAX is max_value(asset
 
 struct engine_resources
 {
-  // Stdlib
   bonsai_stdlib Stdlib;
+
+  // TODO(Jesse): Should this go in stdlib?
   renderer_2d   Ui;
+  texture      *UiSpriteTexture;
 
   application_api GameApi;
 
@@ -37,20 +39,11 @@ struct engine_resources
 
   // TODO(Jesse): Put on an asset_system struct?
   u64 CurrentUnnamedAssetIndex;
-  asset    AssetTable[ASSET_TABLE_COUNT];
-  bonsai_futex AssetFutex;
+  asset          AssetTable[ASSET_TABLE_COUNT];
+  bonsai_futex   AssetFutex;
   heap_allocator AssetMemory;
 
-  // At 120fps we get 9k hours worth of frames in a u32.. should be enough.
-  // 9k hours == 385 days
-  //
-  // TODO(Jesse)(frame-index): Should this just be 32-bit?
-  u32 FrameIndex;
-
-  // NOTE(Jesse): This isn't meant to be manipulated direclty, it's just cached
-  // such that the camera update code can access it easily.  Maybe it should
-  // be per-camera ..?
-  /* entity *_CameraGhost; */
+  u32 FrameIndex; // At 120fps we get 9k hours (385 days) of frames in 32bits
 
   tiered_mesh_freelist MeshFreelist;
 

@@ -852,7 +852,9 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   PushBorderlessWindowStart(Ui, &ActionsWindow);
 
   v2 WindowDim = GetDim(&ActionsWindow);
-  v2 WindowOffset = V2(Plat->WindowWidth/2.f-(WindowDim.y/2.f), Plat->WindowHeight-WindowDim.y);
+  /* v2 WindowOffset = V2(Plat->WindowWidth/2.f-(WindowDim.y/2.f), Plat->WindowHeight-WindowDim.y); */
+  v2 WindowOffset = V2(0.f, Plat->WindowHeight-WindowDim.y);
+  /* v2 WindowOffset = {}; */
 
   ActionsWindow.Basis = WindowOffset;
 
@@ -879,20 +881,22 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           Style = &DefaultDisabledStyle;
         }
 
-        if (Button(Ui, ToString(Action), UiId(&ActionsWindow, "player_action", ActionIndex), Style))
-        {
-          if (PlayerCanDoThisAction)
+        u32 Start = StartColumn(Ui);
+          if (Button(Ui, ToString(Action), UiId(&ActionsWindow, "player_action", ActionIndex), Style, DefaultButtonPadding, ColumnRenderParam_LeftAlign))
           {
-            GameState->ProposedAction = Action;
+            if (PlayerCanDoThisAction)
+            {
+              GameState->ProposedAction = Action;
+            }
           }
-        }
-        PushNewRow(Ui);
+          PushTexturedQuadColumn(Ui, Resources->UiSpriteTexture, V2(64,64), zDepth_Text, False, True);
+        EndColumn(Ui, Start);
       }
     PushTableEnd(Ui);
 
-    PushTableStart(Ui, Position_RightOf, ActionTable);
-      PushColumn(Ui, ToString(GameState->TurnMode));
-    PushTableEnd(Ui);
+    /* PushTableStart(Ui, Position_RightOf, ActionTable); */
+    /*   PushColumn(Ui, ToString(GameState->TurnMode)); */
+    /* PushTableEnd(Ui); */
   }
 
   PushWindowEnd(Ui, &ActionsWindow);

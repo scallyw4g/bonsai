@@ -43,7 +43,13 @@ Bonsai_Init(engine_resources *Resources)
   Resources->Graphics = GraphicsInit(AllocateArena());
   if (!Resources->Graphics) { Error("Initializing Graphics"); return False; }
 
-  InitRenderer2D(&Resources->Ui, &Resources->Heap, AllocateArena(), &Plat->MouseP, &Plat->MouseDP, &Plat->ScreenDim, &Plat->Input);
+  {
+    memory_arena *UiMemory = AllocateArena();
+    InitRenderer2D(&Resources->Ui, &Resources->Heap, UiMemory, &Plat->MouseP, &Plat->MouseDP, &Plat->ScreenDim, &Plat->Input);
+    /* Resources->UiSpriteTexture = LoadBitmap("assets/mystic_rpg_icon_pack/Sprites/300%/Tool_6.bmp", UiMemory); */
+    Resources->UiSpriteTexture = LoadBitmap("assets/mystic_rpg_icon_pack/Sprites/300%/Tool_13.bmp", UiMemory);
+    /* Resources->UiSpriteTexture = LoadBitmap("assets/mystic_rpg_icon_pack/Sprites/300%/Tool_20.bmp", UiMemory); */
+  }
 
   Resources->EntityTable = AllocateEntityTable(BonsaiInitArena, TOTAL_ENTITY_COUNT);
 

@@ -27,6 +27,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
+      DoEditorUi(Ui, Window, Element->UiSpriteTexture, CSz("texture UiSpriteTexture"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+      
       DoEditorUi(Ui, Window, &Element->GameApi, CSz("application_api GameApi"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
