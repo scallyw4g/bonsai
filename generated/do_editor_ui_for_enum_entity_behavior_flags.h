@@ -78,6 +78,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
     }
     PushNewRow(Ui);
     PushColumn(Ui, CSz("")); // Skip the first Name column
+    if (Button(Ui, CSz("EntityBehaviorFlags_FitCollisionVolumeToModel"), UiId(Window, "enum EntityBehaviorFlags_FitCollisionVolumeToModel", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    {
+      if ((*Element & EntityBehaviorFlags_FitCollisionVolumeToModel) == EntityBehaviorFlags_FitCollisionVolumeToModel)
+      {
+        *Element = entity_behavior_flags(*Element&~EntityBehaviorFlags_FitCollisionVolumeToModel);
+      }
+      else
+      {
+        *Element = entity_behavior_flags(*Element|EntityBehaviorFlags_FitCollisionVolumeToModel);
+      }
+
+    }
+    PushNewRow(Ui);
+    PushColumn(Ui, CSz("")); // Skip the first Name column
     if (Button(Ui, CSz("EntityBehaviorFlags_DefatulCameraGhostBehavior"), UiId(Window, "enum EntityBehaviorFlags_DefatulCameraGhostBehavior", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
     {
       if ((*Element & EntityBehaviorFlags_DefatulCameraGhostBehavior) == EntityBehaviorFlags_DefatulCameraGhostBehavior)

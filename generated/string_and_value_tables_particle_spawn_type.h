@@ -4,10 +4,12 @@ ToString(particle_spawn_type Type)
   counted_string Result = {};
   switch (Type)
   {
-    case ParticleSpawnType_None: { Result = CSz("ParticleSpawnType_None"); } break;
-    case ParticleSpawnType_Random: { Result = CSz("ParticleSpawnType_Random"); } break;
-    case ParticleSpawnType_Expanding: { Result = CSz("ParticleSpawnType_Expanding"); } break;
-    case ParticleSpawnType_Contracting: { Result = CSz("ParticleSpawnType_Contracting"); } break;
+    case ParticleSpawnType_None: { Result = CSz("None"); } break;
+    case ParticleSpawnType_Random: { Result = CSz("Random"); } break;
+    case ParticleSpawnType_Expanding: { Result = CSz("Expanding"); } break;
+    case ParticleSpawnType_Contracting: { Result = CSz("Contracting"); } break;
+
+    
   }
   return Result;
 }

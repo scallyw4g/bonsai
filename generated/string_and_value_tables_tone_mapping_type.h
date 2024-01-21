@@ -4,12 +4,14 @@ ToString(tone_mapping_type Type)
   counted_string Result = {};
   switch (Type)
   {
-    case ToneMappingType_None: { Result = CSz("ToneMappingType_None"); } break;
-    case ToneMappingType_Reinhard: { Result = CSz("ToneMappingType_Reinhard"); } break;
-    case ToneMappingType_Exposure: { Result = CSz("ToneMappingType_Exposure"); } break;
-    case ToneMappingType_AGX: { Result = CSz("ToneMappingType_AGX"); } break;
-    case ToneMappingType_AGX_Sepia: { Result = CSz("ToneMappingType_AGX_Sepia"); } break;
-    case ToneMappingType_AGX_Punchy: { Result = CSz("ToneMappingType_AGX_Punchy"); } break;
+    case ToneMappingType_None: { Result = CSz("None"); } break;
+    case ToneMappingType_Reinhard: { Result = CSz("Reinhard"); } break;
+    case ToneMappingType_Exposure: { Result = CSz("Exposure"); } break;
+    case ToneMappingType_AGX: { Result = CSz("AGX"); } break;
+    case ToneMappingType_AGX_Sepia: { Result = CSz("Sepia"); } break;
+    case ToneMappingType_AGX_Punchy: { Result = CSz("Punchy"); } break;
+
+    
   }
   return Result;
 }

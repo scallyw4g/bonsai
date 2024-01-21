@@ -4,17 +4,19 @@ ToString(world_edit_mode Type)
   counted_string Result = {};
   switch (Type)
   {
-    case WorldEditMode_Select: { Result = CSz("WorldEditMode_Select"); } break;
-    case WorldEditMode_FillSelection: { Result = CSz("WorldEditMode_FillSelection"); } break;
-    case WorldEditMode_PaintSelection: { Result = CSz("WorldEditMode_PaintSelection"); } break;
-    case WorldEditMode_DeleteSelection: { Result = CSz("WorldEditMode_DeleteSelection"); } break;
-    case WorldEditMode_Eyedropper: { Result = CSz("WorldEditMode_Eyedropper"); } break;
-    case WorldEditMode_AddSingle: { Result = CSz("WorldEditMode_AddSingle"); } break;
-    case WorldEditMode_RemoveSingle: { Result = CSz("WorldEditMode_RemoveSingle"); } break;
-    case WorldEditMode_PaintSingle: { Result = CSz("WorldEditMode_PaintSingle"); } break;
-    case WorldEditMode_AssetBrush: { Result = CSz("WorldEditMode_AssetBrush"); } break;
-    case WorldEditMode_BlitEntity: { Result = CSz("WorldEditMode_BlitEntity"); } break;
-    case WorldEditMode_RecomputeStandingSpots: { Result = CSz("WorldEditMode_RecomputeStandingSpots"); } break;
+    case WorldEditMode_Select: { Result = CSz("Select"); } break;
+    case WorldEditMode_FillSelection: { Result = CSz("FillSelection"); } break;
+    case WorldEditMode_PaintSelection: { Result = CSz("PaintSelection"); } break;
+    case WorldEditMode_DeleteSelection: { Result = CSz("DeleteSelection"); } break;
+    case WorldEditMode_Eyedropper: { Result = CSz("Eyedropper"); } break;
+    case WorldEditMode_AddSingle: { Result = CSz("AddSingle"); } break;
+    case WorldEditMode_RemoveSingle: { Result = CSz("RemoveSingle"); } break;
+    case WorldEditMode_PaintSingle: { Result = CSz("PaintSingle"); } break;
+    case WorldEditMode_AssetBrush: { Result = CSz("AssetBrush"); } break;
+    case WorldEditMode_BlitEntity: { Result = CSz("BlitEntity"); } break;
+    case WorldEditMode_RecomputeStandingSpots: { Result = CSz("RecomputeStandingSpots"); } break;
+
+    
   }
   return Result;
 }

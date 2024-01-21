@@ -4,12 +4,14 @@ ToString(log_level Type)
   counted_string Result = {};
   switch (Type)
   {
-    case LogLevel_Undefined: { Result = CSz("LogLevel_Undefined"); } break;
-    case LogLevel_Verbose: { Result = CSz("LogLevel_Verbose"); } break;
-    case LogLevel_Debug: { Result = CSz("LogLevel_Debug"); } break;
-    case LogLevel_Info: { Result = CSz("LogLevel_Info"); } break;
-    case LogLevel_Error: { Result = CSz("LogLevel_Error"); } break;
-    case LogLevel_Shush: { Result = CSz("LogLevel_Shush"); } break;
+    case LogLevel_Undefined: { Result = CSz("Undefined"); } break;
+    case LogLevel_Verbose: { Result = CSz("Verbose"); } break;
+    case LogLevel_Debug: { Result = CSz("Debug"); } break;
+    case LogLevel_Info: { Result = CSz("Info"); } break;
+    case LogLevel_Error: { Result = CSz("Error"); } break;
+    case LogLevel_Shush: { Result = CSz("Shush"); } break;
+
+    
   }
   return Result;
 }
