@@ -18,7 +18,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
       
-      DoEditorUi(Ui, Window, &Element->Textures, CSz("texture_cursor Textures"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->Textures, CSz("texture_ptr_block_array Textures"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 

@@ -123,26 +123,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Window, &Element->SolidGeoCountLastFrame, CSz("u32 SolidGeoCountLastFrame"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->TextGeoCountLastFrame, CSz("u32 TextGeoCountLastFrame"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
       DoEditorUi(Ui, Window, &Element->Geo, CSz("untextured_2d_geometry_buffer Geo"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
@@ -201,6 +181,26 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
       
+      DoEditorUi(Ui, Window, &Element->SolidGeoCountLastFrame, CSz("u32 SolidGeoCountLastFrame"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui, Window, &Element->TextGeoCountLastFrame, CSz("u32 TextGeoCountLastFrame"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
       DoEditorUi(Ui, Window, Element->ColorPalette, CSz("v3_cursor ColorPalette"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);

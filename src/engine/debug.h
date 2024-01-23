@@ -14,7 +14,7 @@ struct render_debug
 struct engine_debug
 {
   picked_world_chunk_static_buffer PickedChunks;
-  texture_cursor Textures;
+  texture_ptr_block_array Textures;
 
   ui_debug UiDebug;
 
@@ -22,11 +22,7 @@ struct engine_debug
 
   b8 DrawEntityCollisionVolumes;
   b8 DrawWorldAxies;
-
-/*   b8 DrawWorldDebugColors; */
-
   b8 TriggerRuntimeBreak;
-
   b8 ResetAssetNodeView;
 
   u8 PickedChunkState;

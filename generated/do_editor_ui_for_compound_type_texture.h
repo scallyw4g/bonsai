@@ -37,6 +37,36 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ED
 
 
       PushNewRow(Ui);
+
+      DoEditorUi(Ui, Window, &Element->Channels, CSz("u32 Channels"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui, Window, Cast(b8*, &Element->IsDepthTexture), CSz("b32 IsDepthTexture"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui, Window, &Element->DebugName, CSz("cs DebugName"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      PushNewRow(Ui);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }

@@ -88,6 +88,13 @@ GetWorld()
   return Global_EngineResources->World;
 }
 
+link_weak bonsai_stdlib *
+GetStdlib()
+{
+  Assert(Global_EngineResources);
+  return &Global_EngineResources->Stdlib;
+}
+
 
 link_internal level_editor *
 GetLevelEditor()

@@ -48,7 +48,12 @@ Bonsai_Init(engine_resources *Resources)
     InitRenderer2D(&Resources->Ui, &Resources->Heap, UiMemory, &Plat->MouseP, &Plat->MouseDP, &Plat->ScreenDim, &Plat->Input);
     /* Resources->UiSpriteTexture = LoadBitmap("assets/mystic_rpg_icon_pack/Sprites/300%/Tool_6.bmp", UiMemory); */
     /* Resources->UiSpriteTexture = LoadBitmap("assets/mystic_rpg_icon_pack/Sprites/300%/Tool_13.bmp", UiMemory); */
-    Resources->Ui.SpriteTextureArray = LoadBitmapsFromFolder(CSz("assets/mystic_rpg_icon_pack/Sprites/300%"), UiMemory);
+
+    bitmap_block_array Bitmaps = {};
+    LoadBitmapsFromFolder(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/64x64_sprites"), &Bitmaps);
+    LoadBitmapsFromFolder(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/44x44_sprites"), &Bitmaps);
+    Resources->Ui.SpriteTextureArray = CreateTextureArrayFromBitmapArray(&Bitmaps, V2i(64,64), UiMemory);
+
     /* Resources->UiSpriteTexture = LoadBitmap("assets/mystic_rpg_icon_pack/Sprites/300%/Tool_20.bmp", UiMemory); */
     /* Resources->UiSpriteTexture = LoadBitmap("assets/mystic_rpg_icon_pack/Sprites/300%/Inventory_0.bmp", UiMemory); */
     /* Resources->UiSpriteTexture = LoadBitmap("assets/test.bmp", UiMemory); */

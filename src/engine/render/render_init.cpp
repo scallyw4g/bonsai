@@ -39,7 +39,7 @@ AllocateAndInitSsaoNoise(ao_render_group *AoGroup, memory_arena *GraphicsMemory)
   v3 *SsaoNoise = Allocate(v3, GraphicsMemory, 16);
   InitSsaoNoise(SsaoNoise, 16, &SsaoEntropy);
 
-  texture *SsaoNoiseTexture = MakeTexture_RGB(SsaoNoiseDim, SsaoNoise, GraphicsMemory);
+  texture *SsaoNoiseTexture = MakeTexture_RGB(SsaoNoiseDim, SsaoNoise, GraphicsMemory, CSz("SSAONoiseTexture"));
   return SsaoNoiseTexture;
 }
 
@@ -254,8 +254,6 @@ link_internal gaussian_render_group
 MakeGaussianBlurRenderGroup(memory_arena *GraphicsMemory)
 {
   gaussian_render_group Result = {};
-  /* unsigned int pingpongFBO[2]; */
-  /* unsigned int pingPongTexture[2]; */
 
   Result.Shader = LoadShaders(CSz(STDLIB_SHADER_PATH "Passthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "Gaussian.fragmentshader"));
 
@@ -266,7 +264,9 @@ MakeGaussianBlurRenderGroup(memory_arena *GraphicsMemory)
   {
     GL.BindFramebuffer(GL_FRAMEBUFFER, Result.FBOs[Index].ID);
 
-    Result.Textures[Index] = GenTexture(V2i(SCR_WIDTH, SCR_HEIGHT), GraphicsMemory);
+    Result.Textures[Index] = GenTexture(V2i(SCR_WIDTH, SCR_HEIGHT), GraphicsMemory, CSz("GaussianBlur"));
+    Result.Textures[Index]->Channels = 4;
+
     GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, 0);
 
     FramebufferTexture(&Result.FBOs[Index], Result.Textures[Index]);
@@ -277,28 +277,6 @@ MakeGaussianBlurRenderGroup(memory_arena *GraphicsMemory)
   Result.DebugTextureShader0 = MakeSimpleTextureShader(Result.Textures[0], GraphicsMemory);
   Result.DebugTextureShader1 = MakeSimpleTextureShader(Result.Textures[1], GraphicsMemory);
 
-  /* shader_uniform **Current = &Result.Shader.FirstUniform; */
-  /* *Current = GetUniform(GraphicsMemory, &Result.Shader, 0, "SrcTexture"); */
-  /* Current = &(*Current)->Next; */
-
-  /* /1* glGenFramebuffers(2, Result.pingpongFBO); *1/ */
-  /* glGenTextures(2, Result.pingPongTexture); */
-
-  /* for (unsigned int i = 0; i < 2; i++) */
-  /* { */
-  /*   glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[i]); */
-  /*   glBindTexture(GL_TEXTURE_2D, Group.pingPongTexture[i]); */
-  /*   glTexImage2D( */
-  /*       GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL */
-  /*   ); */
-  /*   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); */
-  /*   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); */
-  /*   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); */
-  /*   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); */
-  /*   glFramebufferTexture2D( */
-  /*       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, Group.pingPongTexture[i], 0 */
-  /*   ); */
-  /* } */
   return Result;
 }
 
@@ -401,7 +379,7 @@ InitAoRenderGroup(ao_render_group *AoGroup, memory_arena *GraphicsMemory)
   v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
   AssertNoGlErrors;
 
-  AoGroup->Texture = MakeTexture_SingleChannel( ScreenDim, GraphicsMemory);
+  AoGroup->Texture = MakeTexture_SingleChannel( ScreenDim, GraphicsMemory, CSz("AoTexture"));
 
   FramebufferTexture(&AoGroup->FBO, AoGroup->Texture);
   SetDrawBuffers(&AoGroup->FBO);
@@ -422,21 +400,20 @@ InitGbufferRenderGroup( g_buffer_render_group *gBuffer, memory_arena *GraphicsMe
   GL.BindFramebuffer(GL_FRAMEBUFFER, gBuffer->FBO.ID);
 
   gBuffer->Textures = Allocate(g_buffer_textures, GraphicsMemory, 1);
-  gBuffer->Textures->Color = MakeTexture_RGBA( ScreenDim, (v4*)0, GraphicsMemory);
+  gBuffer->Textures->Color = MakeTexture_RGBA( ScreenDim, (v4*)0, GraphicsMemory, CSz("gBufferColor"));
 
   // FIXME(Jesse): This makes GL 3 fail on the FRAMEBUFFER_COMPLETE check
   // if it's an RGB texture.  We only need three channels for normal so this
   // should probably be an RGB
-  gBuffer->Textures->Normal   = MakeTexture_RGBA( ScreenDim, (v4*)0, GraphicsMemory);
-
-  gBuffer->Textures->Position = MakeTexture_RGBA( ScreenDim, (v4*)0, GraphicsMemory);
+  gBuffer->Textures->Normal   = MakeTexture_RGB( ScreenDim, (v3*)0, GraphicsMemory, CSz("gBufferNormal"));
+  gBuffer->Textures->Position = MakeTexture_RGB( ScreenDim, (v3*)0, GraphicsMemory, CSz("gBufferPosition"));
 
   FramebufferTexture(&gBuffer->FBO, gBuffer->Textures->Color);
   FramebufferTexture(&gBuffer->FBO, gBuffer->Textures->Normal);
   FramebufferTexture(&gBuffer->FBO, gBuffer->Textures->Position);
   SetDrawBuffers(&gBuffer->FBO);
 
-  gBuffer->Textures->Depth = MakeDepthTexture( ScreenDim, GraphicsMemory );
+  gBuffer->Textures->Depth = MakeDepthTexture( ScreenDim, GraphicsMemory, CSz("gBufferDepth") );
   FramebufferDepthTexture(gBuffer->Textures->Depth);
 
   b32 Result = CheckAndClearFramebuffer();
@@ -455,7 +432,7 @@ InitializeShadowRenderGroup(shadow_render_group *SG, memory_arena *GraphicsMemor
   /* SG->Sun.Position = Normalize(V3(0,0,1)); */
   /* SG->Sun.Color = Normalize(V3(0.2f, 0.2f, 0.5f)); */
 
-  SG->ShadowMap = MakeDepthTexture(ShadowMapResolution, GraphicsMemory);
+  SG->ShadowMap = MakeDepthTexture(ShadowMapResolution, GraphicsMemory, CSz("ShadowDepth"));
   FramebufferDepthTexture(SG->ShadowMap);
   /* GL.FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, SG->ShadowMap->ID, 0); */
 
@@ -534,7 +511,9 @@ InitRenderToTextureGroup(render_entity_to_texture_group *Group, v2i TextureSize,
   f32 *Image = 0;
 #endif
 
-  texture *Texture = GenTexture(TextureSize, Memory);
+  texture *Texture = GenTexture(TextureSize, Memory, CSz("RenderToTexture"));
+  Texture->Channels = 4;
+
   GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, Image);
 
   // NOTE(Jesse): This has to be attachment0 (first texture thing attached to
@@ -543,7 +522,7 @@ InitRenderToTextureGroup(render_entity_to_texture_group *Group, v2i TextureSize,
   Group->FBO.Attachments++;
   FramebufferTexture(&Group->FBO, Texture);
 
-  texture *DepthTexture = MakeDepthTexture( TextureSize, Memory );
+  texture *DepthTexture = MakeDepthTexture( TextureSize, Memory, CSz("RenderToTexture Depth"));
   FramebufferDepthTexture(DepthTexture);
 
   SetDrawBuffers(&Group->FBO);
@@ -588,10 +567,12 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
   Group->FBO = GenFramebuffer();
   GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
 
-  Group->AccumTex = GenTexture(TextureSize, Memory);
+  Group->AccumTex = GenTexture(TextureSize, Memory, CSz("Transparency Accum"));
+  Group->AccumTex->Channels = 4;
   GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, 0);
 
-  Group->RevealTex = GenTexture(TextureSize, Memory);
+  Group->RevealTex = GenTexture(TextureSize, Memory, CSz("Transparency Reveal"));
+  Group->RevealTex->Channels = 2;
   GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RG32F, TextureSize.x, TextureSize.y, 0, GL_RG, GL_FLOAT, 0);
 
   // NOTE(Jesse): These have to be bound in this order because they're cleared
@@ -700,8 +681,8 @@ GraphicsInit(memory_arena *GraphicsMemory)
     Lights->Lights = Allocate(light, GraphicsMemory, MAX_LIGHTS);
 
     // NOTE(Jesse): The lights positions and colors are passed to the GPU in textures, the old-school way.
-    Lights->ColorTex    = MakeTexture_RGB(V2i(MAX_LIGHTS, 1), 0, GraphicsMemory);
-    Lights->PositionTex = MakeTexture_RGB(V2i(MAX_LIGHTS, 1), 0, GraphicsMemory);
+    Lights->ColorTex    = MakeTexture_RGB(V2i(MAX_LIGHTS, 1), 0, GraphicsMemory, CSz("Lights::Color"));
+    Lights->PositionTex = MakeTexture_RGB(V2i(MAX_LIGHTS, 1), 0, GraphicsMemory, CSz("Lights::Position"));
     AssertNoGlErrors;
 
     Lights->IndexToUV = 1.0f / MAX_LIGHTS;
@@ -729,8 +710,8 @@ GraphicsInit(memory_arena *GraphicsMemory)
 
     // NOTE(Jesse): This is used for bloom
     Lighting->FBO = GenFramebuffer();
-    Lighting->LightingTex = MakeTexture_RGB( V2i(LUMINANCE_MAP_RESOLUTION_X, LUMINANCE_MAP_RESOLUTION_Y), 0, GraphicsMemory);
-    Lighting->BloomTex    = MakeTexture_RGB( V2i(LUMINANCE_MAP_RESOLUTION_X, LUMINANCE_MAP_RESOLUTION_Y), 0, GraphicsMemory);
+    Lighting->LightingTex = MakeTexture_RGB( V2i(LUMINANCE_MAP_RESOLUTION_X, LUMINANCE_MAP_RESOLUTION_Y), 0, GraphicsMemory, CSz("Lighting"));
+    Lighting->BloomTex    = MakeTexture_RGB( V2i(LUMINANCE_MAP_RESOLUTION_X, LUMINANCE_MAP_RESOLUTION_Y), 0, GraphicsMemory, CSz("Bloom"));
 
     Lighting->DebugBloomShader    = MakeSimpleTextureShader(Lighting->BloomTex, GraphicsMemory);
     Lighting->DebugLightingShader = MakeSimpleTextureShader(Lighting->LightingTex, GraphicsMemory);

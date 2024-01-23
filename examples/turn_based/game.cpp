@@ -836,8 +836,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
 
     if (GameState->PlayerActed)
-    {
-      GameState->TurnMode = TurnMode_Transition;
+    { GameState->TurnMode = TurnMode_Transition;
       GameState->TransitionDuration = 0.f;
     }
 
@@ -889,7 +888,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
               GameState->ProposedAction = Action;
             }
           }
-          PushTexturedQuadColumn(Ui, Resources->Ui.SpriteTextureArray, s32(ActionIndex), V2(256,256), zDepth_Text, False, True);
+          PushTexturedQuadColumn(Ui, Resources->Ui.SpriteTextureArray, s32(ActionIndex), V2(256,256), zDepth_Text);
         EndColumn(Ui, Start);
       }
     PushTableEnd(Ui);

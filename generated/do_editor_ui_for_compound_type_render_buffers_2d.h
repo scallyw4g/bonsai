@@ -45,15 +45,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
 
 
       
-      DoEditorUi(Ui, Window, &Element->Text2DShader, CSz("shader Text2DShader"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
       DoEditorUi(Ui, Window, &Element->TextTextureUniform, CSz("s32 TextTextureUniform"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
@@ -64,16 +55,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Window, &Element->Geo, CSz("textured_2d_geometry_buffer Geo"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->DebugFontTextureShader, CSz("shader DebugFontTextureShader"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->Text2DShader, CSz("shader Text2DShader"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -83,6 +65,15 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
 
       
       DoEditorUi(Ui, Window, &Element->SolidUIShader, CSz("shader SolidUIShader"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui, Window, &Element->Geo, CSz("textured_2d_geometry_buffer Geo"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }

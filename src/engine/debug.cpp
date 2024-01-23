@@ -398,7 +398,7 @@ DoAssetWindow(engine_resources *Engine)
                 if (ModelIndex >= TotalElements(&Editor->AssetThumbnails))
                 {
                   // TODO(Jesse): Where to allocate these?
-                  texture *T = MakeTexture_RGBA(V2i(256), (u32*)0, Engine->Memory);
+                  texture *T = MakeTexture_RGBA(V2i(256), (u32*)0, Engine->Memory, CSz("Thumbnail"));
                   asset_thumbnail Thumb = { T, {} };
                   StandardCamera(&Thumb.Camera, 10000.0f, 100.0f, {});
 
@@ -589,83 +589,69 @@ DoEngineDebug(engine_resources *Engine)
 #if 1
   if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_Textures))
   {
-    v2 TexDim = V2(400);
+    v2 DefaultTextureDim = V2(250);
 
     auto Flags = window_layout_flags(WindowLayoutFlag_StartupAlign_Bottom|WindowLayoutFlag_StartupSize_InferWidth);
-    local_persist window_layout TexturesWindow = WindowLayout("Textures", {}, V2(0.f, TexDim.y + 30.f), Flags);
+    local_persist window_layout TexturesWindow = WindowLayout("Textures", {}, V2(0.f, DefaultTextureDim.y + 30.f), Flags);
     PushWindowStart(Ui, &TexturesWindow);
 
     s32 xAdvance = 15;
 
-    PushTableStart(Ui);
+    s32 AtColumn = 0;
+    IterateOver(&Engine->Stdlib.AllTextures, TexturePtr, TextureIndex)
+    {
+      texture *Texture = *TexturePtr;
 
-      PushColumn(Ui, CSz("Transparency AccumTex"));
-      PushColumn(Ui, CSz("Transparency RevealTex"));
-      PushColumn(Ui, CSz("Transparency Depth"));
-      PushColumn(Ui, CSz("Lighting"));
-      PushColumn(Ui, CSz("Bloom"));
-      PushNewRow(Ui);
+      v2 Dim = Min(V2(Texture->Dim), DefaultTextureDim);
 
-      u32 Start = StartColumn(Ui);
-        PushTexturedQuad(Ui, Graphics->Transparency.AccumTex, TexDim, zDepth_Text);
-        PushForceAdvance(Ui, V2(xAdvance, 0));
-      EndColumn(Ui, Start);
+      PushTableStart(Ui);
 
-      Start = StartColumn(Ui);
-        PushTexturedQuad(Ui, Graphics->Transparency.RevealTex, TexDim, zDepth_Text);
-        PushForceAdvance(Ui, V2(xAdvance, 0));
-      EndColumn(Ui, Start);
+        PushColumn(Ui, Texture->DebugName, ColumnRenderParam_LeftAlign);
+        PushNewRow(Ui);
 
-      Start = StartColumn(Ui);
-        PushTexturedQuad(Ui, Graphics->Transparency.Depth, TexDim, zDepth_Text, True);
-        PushForceAdvance(Ui, V2(xAdvance, 0));
-      EndColumn(Ui, Start);
+        u32 StartOuter = StartColumn(Ui);
+          PushTableStart(Ui);
+              if (Texture->Slices)
+              {
+                RangeIterator_t(u32, SliceIndex, Texture->Slices)
+                {
+                  interactable_handle Button = PushButtonStart(Ui, UiId(&TexturesWindow, u64(Texture), u64(SliceIndex)));
+                    u32 Start = StartColumn(Ui);
+                      PushTexturedQuad(Ui, Texture, s32(SliceIndex), Dim, zDepth_Text);
+                      PushForceAdvance(Ui, V2(xAdvance, 0));
+                    EndColumn(Ui, Start);
+                  PushButtonEnd(Ui);
 
-      Start = StartColumn(Ui);
-        PushTexturedQuad(Ui, Graphics->Lighting.LightingTex, TexDim, zDepth_Text);
-        PushForceAdvance(Ui, V2(xAdvance, 0));
-      EndColumn(Ui, Start);
+                  if ( (SliceIndex+1) % 8 == 0)
+                  {
+                    PushNewRow(Ui);
+                  }
 
-      Start = StartColumn(Ui);
-        PushTexturedQuad(Ui, Graphics->Lighting.BloomTex, TexDim, zDepth_Text);
-        PushForceAdvance(Ui, V2(xAdvance, 0));
-      EndColumn(Ui, Start);
-      PushNewRow(Ui);
+                  if (Hover(Ui, &Button))
+                  {
+                    PushTooltip(Ui, FSz("Slice(%d)/(%d)", SliceIndex, Texture->Slices));
+                  }
+                }
+                PushNewRow(Ui);
 
-      PushColumn(Ui, CSz("gBuffer Albedo"));
-      PushColumn(Ui, CSz("gBuffer Normal"));
-      PushColumn(Ui, CSz("gBuffer Position"));
-      PushColumn(Ui, CSz("gBuffer Depth "));
-      PushColumn(Ui, CSz("Shadow Map"));
-      PushNewRow(Ui);
+              }
+              else
+              {
+                u32 Start = StartColumn(Ui);
+                  PushTexturedQuad(Ui, Texture, Dim, zDepth_Text);
+                  PushForceAdvance(Ui, V2(xAdvance, 0));
+                EndColumn(Ui, Start);
+              }
+          PushTableEnd(Ui);
+        EndColumn(Ui, StartOuter);
 
-      Start = StartColumn(Ui);
-        PushTexturedQuad(Ui, Graphics->gBuffer->Textures->Color, TexDim, zDepth_Text);
-        PushForceAdvance(Ui, V2(xAdvance, 0));
-      EndColumn(Ui, Start);
+      PushTableEnd(Ui);
 
-      Start = StartColumn(Ui);
-        PushTexturedQuad(Ui, Graphics->gBuffer->Textures->Normal, TexDim, zDepth_Text);
-        PushForceAdvance(Ui, V2(xAdvance, 0));
-      EndColumn(Ui, Start);
-
-      Start = StartColumn(Ui);
-        PushTexturedQuad(Ui, Graphics->gBuffer->Textures->Position, TexDim, zDepth_Text);
-        PushForceAdvance(Ui, V2(xAdvance, 0));
-      EndColumn(Ui, Start);
-
-      Start = StartColumn(Ui);
-        PushTexturedQuad(Ui, Graphics->gBuffer->Textures->Depth, TexDim, zDepth_Text, True);
-        PushForceAdvance(Ui, V2(xAdvance, 0));
-      EndColumn(Ui, Start);
-
-      Start = StartColumn(Ui);
-        PushTexturedQuad(Ui, Graphics->SG->ShadowMap, TexDim, zDepth_Text, True);
-        PushForceAdvance(Ui, V2(xAdvance, 0));
-      EndColumn(Ui, Start);
-      PushNewRow(Ui);
-
-    PushTableEnd(Ui);
+      if ( (GetIndex(&TextureIndex)+1) % 6 == 0)
+      {
+        PushNewRow(Ui);
+      }
+    }
 
 
     /* IterateOver(&EngineDebug->Textures, Texture, TextureIndex) */
