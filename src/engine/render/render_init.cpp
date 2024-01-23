@@ -456,7 +456,6 @@ InitializeShadowRenderGroup(shadow_render_group *SG, memory_arena *GraphicsMemor
   /* SG->Sun.Color = Normalize(V3(0.2f, 0.2f, 0.5f)); */
 
   SG->ShadowMap = MakeDepthTexture(ShadowMapResolution, GraphicsMemory);
-
   FramebufferDepthTexture(SG->ShadowMap);
   /* GL.FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, SG->ShadowMap->ID, 0); */
 

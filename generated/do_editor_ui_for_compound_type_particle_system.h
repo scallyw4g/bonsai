@@ -213,21 +213,35 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
       PushNewRow(Ui);
 
-      RangeIterator(ArrayIndex, 6)
+      if (ToggleButton(Ui, CSz("v u8 Colors[6]"), CSz("> u8 Colors[6]"), UiId(Window, "toggle particle_system u8 Colors", Element->Colors), EDITOR_UI_FUNCTION_INSTANCE_NAMES ))
       {
-        DoEditorUi(Ui, Window, Element->Colors+ArrayIndex, CSz("u8 Colors"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+        PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+        PushNewRow(Ui);
+        RangeIterator(ArrayIndex, 6)
+        {
+          DoEditorUi(Ui, Window, Element->Colors+ArrayIndex, FSz("u8 Colors[%d]", ArrayIndex), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
  PushNewRow(Ui); 
+        }
+        PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       }
+      PushNewRow(Ui);
 
 
 
       PushNewRow(Ui);
 
-      RangeIterator(ArrayIndex, (4096))
+      if (ToggleButton(Ui, CSz("v particle Particles[(4096)]"), CSz("> particle Particles[(4096)]"), UiId(Window, "toggle particle_system particle Particles", Element->Particles), EDITOR_UI_FUNCTION_INSTANCE_NAMES ))
       {
-        DoEditorUi(Ui, Window, Element->Particles+ArrayIndex, CSz("particle Particles"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-        
+        PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+        PushNewRow(Ui);
+        RangeIterator(ArrayIndex, (4096))
+        {
+          DoEditorUi(Ui, Window, Element->Particles+ArrayIndex, FSz("particle Particles[%d]", ArrayIndex), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+          
+        }
+        PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       }
+      PushNewRow(Ui);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }

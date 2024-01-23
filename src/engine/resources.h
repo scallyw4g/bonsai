@@ -21,7 +21,6 @@ struct engine_resources
 
   // TODO(Jesse): Should this go in stdlib?
   renderer_2d   Ui;
-  texture      *UiSpriteTexture;
 
   application_api GameApi;
 

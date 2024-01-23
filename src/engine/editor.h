@@ -94,11 +94,18 @@ poof(
               {
                 member.is_array?
                 {
-                  RangeIterator(ArrayIndex, member.array)
+                  if (ToggleButton(Ui, CSz("v member.type member.name[member.array]"), CSz("> member.type member.name[member.array]"), UiId(Window, "toggle type.name member.type member.name", Element->(member.name)), EDITOR_UI_FUNCTION_INSTANCE_NAMES ))
                   {
-                    DoEditorUi(Ui, Window, Element->(member.name)+ArrayIndex, CSz("member.type member.name"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-                    member.is_primitive?  { PushNewRow(Ui); }
+                    PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+                      PushNewRow(Ui);
+                      RangeIterator(ArrayIndex, member.array)
+                      {
+                        DoEditorUi(Ui, Window, Element->(member.name)+ArrayIndex, FSz("member.type member.name[%d]", ArrayIndex), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+                        member.is_primitive?  { PushNewRow(Ui); }
+                      }
+                    PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
                   }
+                  PushNewRow(Ui);
                 }
                 {
                   member.is_pointer?

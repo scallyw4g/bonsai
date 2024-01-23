@@ -297,6 +297,18 @@ poof(do_editor_ui_for_compound_type(world_chunk))
 poof(do_editor_ui_for_compound_type(camera))
 #include <generated/do_editor_ui_for_compound_type_camera.h>
 
+poof(do_editor_ui_for_compound_type(texture))
+#include <generated/do_editor_ui_for_compound_type_texture.h>
+
+poof(do_editor_ui_for_compound_type(shader))
+#include <generated/do_editor_ui_for_compound_type_shader.h>
+
+poof(do_editor_ui_for_compound_type(render_buffers_2d))
+#include <generated/do_editor_ui_for_compound_type_render_buffers_2d.h>
+
+poof(do_editor_ui_for_compound_type(renderer_2d))
+#include <generated/do_editor_ui_for_compound_type_renderer_2d.h>
+
 poof(do_editor_ui_for_compound_type(graphics))
 #include <generated/do_editor_ui_for_compound_type_graphics.h>
 

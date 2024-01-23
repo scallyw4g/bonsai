@@ -100,11 +100,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, E
 
 
       
-      RangeIterator(ArrayIndex, 2)
+      if (ToggleButton(Ui, CSz("v gpu_mapped_element_buffer GpuBuffers[2]"), CSz("> gpu_mapped_element_buffer GpuBuffers[2]"), UiId(Window, "toggle graphics gpu_mapped_element_buffer GpuBuffers", Element->GpuBuffers), EDITOR_UI_FUNCTION_INSTANCE_NAMES ))
       {
-        DoEditorUi(Ui, Window, Element->GpuBuffers+ArrayIndex, CSz("gpu_mapped_element_buffer GpuBuffers"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-        
+        PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+        PushNewRow(Ui);
+        RangeIterator(ArrayIndex, 2)
+        {
+          DoEditorUi(Ui, Window, Element->GpuBuffers+ArrayIndex, FSz("gpu_mapped_element_buffer GpuBuffers[%d]", ArrayIndex), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+          
+        }
+        PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       }
+      PushNewRow(Ui);
 
 
 

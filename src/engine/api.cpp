@@ -47,8 +47,13 @@ Bonsai_Init(engine_resources *Resources)
     memory_arena *UiMemory = AllocateArena();
     InitRenderer2D(&Resources->Ui, &Resources->Heap, UiMemory, &Plat->MouseP, &Plat->MouseDP, &Plat->ScreenDim, &Plat->Input);
     /* Resources->UiSpriteTexture = LoadBitmap("assets/mystic_rpg_icon_pack/Sprites/300%/Tool_6.bmp", UiMemory); */
-    Resources->UiSpriteTexture = LoadBitmap("assets/mystic_rpg_icon_pack/Sprites/300%/Tool_13.bmp", UiMemory);
+    /* Resources->UiSpriteTexture = LoadBitmap("assets/mystic_rpg_icon_pack/Sprites/300%/Tool_13.bmp", UiMemory); */
+    Resources->Ui.SpriteTextureArray = LoadBitmapsFromFolder(CSz("assets/mystic_rpg_icon_pack/Sprites/300%"), UiMemory);
     /* Resources->UiSpriteTexture = LoadBitmap("assets/mystic_rpg_icon_pack/Sprites/300%/Tool_20.bmp", UiMemory); */
+    /* Resources->UiSpriteTexture = LoadBitmap("assets/mystic_rpg_icon_pack/Sprites/300%/Inventory_0.bmp", UiMemory); */
+    /* Resources->UiSpriteTexture = LoadBitmap("assets/test.bmp", UiMemory); */
+    /* Resources->UiSpriteTexture = LoadBitmap("assets/test_1.bmp", UiMemory); */
+    /* Resources->UiSpriteTexture = LoadBitmap("assets/test_2.bmp", UiMemory); */
   }
 
   Resources->EntityTable = AllocateEntityTable(BonsaiInitArena, TOTAL_ENTITY_COUNT);

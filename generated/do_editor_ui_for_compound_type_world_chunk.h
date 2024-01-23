@@ -171,11 +171,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
       
-      RangeIterator(ArrayIndex, 32)
+      if (ToggleButton(Ui, CSz("v u8 _Pad1[32]"), CSz("> u8 _Pad1[32]"), UiId(Window, "toggle world_chunk u8 _Pad1", Element->_Pad1), EDITOR_UI_FUNCTION_INSTANCE_NAMES ))
       {
-        DoEditorUi(Ui, Window, Element->_Pad1+ArrayIndex, CSz("u8 _Pad1"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+        PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+        PushNewRow(Ui);
+        RangeIterator(ArrayIndex, 32)
+        {
+          DoEditorUi(Ui, Window, Element->_Pad1+ArrayIndex, FSz("u8 _Pad1[%d]", ArrayIndex), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
  PushNewRow(Ui); 
+        }
+        PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       }
+      PushNewRow(Ui);
 
 
 

@@ -889,7 +889,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
               GameState->ProposedAction = Action;
             }
           }
-          PushTexturedQuadColumn(Ui, Resources->UiSpriteTexture, V2(64,64), zDepth_Text, False, True);
+          PushTexturedQuadColumn(Ui, Resources->Ui.SpriteTextureArray, s32(ActionIndex), V2(256,256), zDepth_Text, False, True);
         EndColumn(Ui, Start);
       }
     PushTableEnd(Ui);
