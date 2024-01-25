@@ -536,7 +536,7 @@ CanDoAction(engine_resources *Engine, entity *Player, player_action Action, u32_
       RangeIterator_t(umm, EntityIndexIndex, MeleeEntities->Count)
       {
         entity *E = EntityTable[MeleeEntities->Start[EntityIndexIndex]];
-        if (E->UserType == EntityType_Loot)
+        if (E->UserType == EntityType_Loot && E->Id != Player->Carrying)
         {
           Result = True;
         }
@@ -789,10 +789,49 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
             PlayerGameData->HoldingItem = 1;
             PlayerGameData->FireballChargeLevel += 2;
-            SpawnFire( Player,
+
+            entity *E = TryGetFreeEntityPtr(EntityTable); Assert(E);
+            /* E->UserType = EntityType_Fireball; */
+
+            Player->Carrying = E->Id;
+
+            SpawnFire( E,
                       &GameState->Entropy,
                        Global_EntityFireballOffset + Player->_CollisionVolumeRadius.xy,
                        PlayerGameData->FireballChargeLevel);
+
+
+            auto CP = Player->P;
+            CP.Offset += Player->Emitter->SpawnRegion.Min;
+            Canonicalize(World, &CP);
+
+            E->Emitter->SpawnRegion.Max -= E->Emitter->SpawnRegion.Min;
+            E->Emitter->SpawnRegion.Min = {};
+
+            physics Physics = FireballPhysics();
+            SpawnEntity(
+              E,
+              0,
+              0,
+              EntityBehaviorFlags_None,
+              &Physics,
+              &CP,
+              V3(1)
+            );
+
+            /* fireball_state *FireballState = Allocate(fireball_state, &GameState->Heap, 1); */
+            fireball_state *FireballState = (fireball_state*)HeapAllocate(&GameState->Heap, sizeof(fireball_state));
+
+            FireballState->ChargeLevel = 2;
+            FireballState->TargetP = FirstFilledMouseVoxel;
+
+            v3 EntityP = GetSimSpaceP(World, E);
+            v3 TargetP = GetSimSpaceP(World, FireballState->TargetP);
+
+            /* E->Physics.Velocity = (Normalize(TargetP-EntityP) + V3(0,0,3)) * 20.f; */
+            /* E->Physics.Velocity = V3(10.f); */
+
+            E->UserData = u64(FireballState);
           }
         } break;
 
@@ -803,50 +842,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
             if (Input->LMB.Clicked)
             {
               GameState->PlayerActed = True;
-
-              entity *E = TryGetFreeEntityPtr(EntityTable);
-              Assert(E);
-
-              E->UserType = EntityType_Fireball;
-
-              auto CP = Player->P;
-              CP.Offset += Player->Emitter->SpawnRegion.Min;
-              Canonicalize(World, &CP);
-
-              *E->Emitter = *Player->Emitter;
-              E->Emitter->SpawnRegion.Max -= E->Emitter->SpawnRegion.Min;
-              E->Emitter->SpawnRegion.Min = {};
-
-              physics Physics = FireballPhysics();
-              SpawnEntity(
-                E,
-                0,
-                0,
-                EntityBehaviorFlags_Default,
-                &Physics,
-                &CP,
-                V3(1)
-              );
-
-              /* fireball_state *FireballState = Allocate(fireball_state, &GameState->Heap, 1); */
-              fireball_state *FireballState = (fireball_state*)HeapAllocate(&GameState->Heap, sizeof(fireball_state));
-
-              FireballState->ChargeLevel = PlayerGameData->FireballChargeLevel;
-              FireballState->TargetP = FirstFilledMouseVoxel;
-
-              v3 EntityP = GetSimSpaceP(World, E);
-              v3 TargetP = GetSimSpaceP(World, FireballState->TargetP);
-
-              E->Physics.Velocity = (Normalize(TargetP-EntityP) + V3(0,0,3)) * 20.f;
-              /* E->Physics.Velocity = V3(10.f); */
-
-              PlayerGameData->HoldingItem = 0;
-              PlayerGameData->FireballChargeLevel = 0;
-
-              E->UserData = u64(FireballState);
-
-              Deactivate(Player->Emitter);
-
             }
           }
         } break;
