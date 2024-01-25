@@ -34,6 +34,12 @@ MoveToStandingSpot(world *World, canonical_position P)
   return Result;
 }
 
+link_internal entity_aggregate_type
+UserTypeToAggregateType(u64 UserType)
+{
+  entity_aggregate_type Result = ReinterpretCast(entity_aggregate_type, UserType);
+  return Result;
+}
 
 link_internal void
 EnemyUpdate(engine_resources *Engine, entity *Enemy)
@@ -162,7 +168,6 @@ DestroyLoot(engine_resources *Engine, entity *Entity)
 
   Entity->AssetId = GetOrAllocateAssetId(Engine, &AssetName);
   Entity->EulerAngles = V3(0.f, 5.32f, RandomBilateral(&Global_GameEntropy));
-
   Entity->UserType = 0;
 }
 
@@ -227,27 +232,26 @@ DestroySkeleton(engine_resources *Engine, entity *Entity, r32 Radius)
   }
 }
 
-link_internal b32
+
+
+link_internal void
 EffectFireballEntity(engine_resources *Engine, entity *Enemy)
 {
-  b32 Result = False;
-
-  switch (entity_type(Enemy->UserType))
+  switch (ReinterpretCast(entity_aggregate_type, Enemy->UserType).Type)
   {
-    case EntityType_Default: {} break;
-    case EntityType_Player: {} break;
+    case EntityType_Default:  {} break;
+    case EntityType_Player:   {} break;
     case EntityType_Fireball: {} break;
-    case EntityType_Enemy: {Result = True; DestroySkeleton(Engine, Enemy, 5.f);} break;
-    case EntityType_Loot: {Result = True; DestroyLoot(Engine, Enemy);} break;
+    case EntityType_Enemy:    { DestroySkeleton(Engine, Enemy, 5.f); } break;
+    case EntityType_Loot:     { DestroyLoot(Engine, Enemy); } break;
   }
-  return Result;
 }
 
 link_internal b32
 EffectGrabEntity(engine_resources *Engine, entity *Grabber, entity *Grabee)
 {
   b32 Result = False;
-  switch (entity_type(Grabee->UserType))
+  switch (ReinterpretCast(entity_aggregate_type, Grabee->UserType).Type)
   {
     case EntityType_Default:
     case EntityType_Player:
@@ -276,7 +280,7 @@ EffectSmackEntity(engine_resources *Engine, entity *Enemy)
 {
   b32 Result = False;
 
-  switch (entity_type(Enemy->UserType))
+  switch (ReinterpretCast(entity_aggregate_type, Enemy->UserType).Type)
   {
     case EntityType_Default:
     case EntityType_Player:
@@ -296,7 +300,7 @@ EffectSmackEntity(engine_resources *Engine, entity *Enemy)
       DestroyLoot(Engine, Enemy);
     } break;
   }
-  
+
   return Result;
 }
 
@@ -361,15 +365,16 @@ GameEntityUpdate(engine_resources *Engine, entity *Entity )
     Carrying->P = SimSpaceToCanonical(World,  NewP);
   }
 
-  entity_type Type = Cast(entity_type, Entity->UserType);
-  switch (Type)
+  entity_aggregate_type Type = ReinterpretCast(entity_aggregate_type, Entity->UserType);
+  switch (Type.Type)
   {
-    case EntityType_Player:   {} break;
-    case EntityType_Default:  {} break;
-    case EntityType_Loot:     {} break;
-    case EntityType_Enemy:    { EnemyUpdate(Engine, Entity); } break;
+    case EntityType_Player:  {} break;
+    case EntityType_Default: {} break;
+    case EntityType_Loot:    {} break;
+    case EntityType_Enemy:   { EnemyUpdate(Engine, Entity); } break;
 
     case EntityType_Fireball: { ++GameState->FireballsSimulated; FireballUpdate(Engine, Entity); } break;
+    /* case EntityType_Fireball: { ++GameState->FireballsSimulated; FireballUpdate(Engine, Entity); } break; */
   }
 
   return False;
@@ -495,6 +500,7 @@ GetColorForAction(player_action Action)
 
   return Result;
 }
+
 link_internal b32
 CanDoAction(engine_resources *Engine, entity *Player, player_action Action, u32_buffer *MeleeEntities)
 {
@@ -536,7 +542,7 @@ CanDoAction(engine_resources *Engine, entity *Player, player_action Action, u32_
       RangeIterator_t(umm, EntityIndexIndex, MeleeEntities->Count)
       {
         entity *E = EntityTable[MeleeEntities->Start[EntityIndexIndex]];
-        if (E->UserType == EntityType_Loot && E->Id != Player->Carrying)
+        if (UserTypeToAggregateType(E->UserType).Type == EntityType_Loot && E->Id != Player->Carrying)
         {
           Result = True;
         }
@@ -1093,7 +1099,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->PlayerId = GetFreeEntity(EntityTable);
 
   entity *Player = GetEntity(EntityTable, GameState->PlayerId);
-  Player->UserType = Cast(u32, EntityType_Player);
+  Player->UserType = Cast(u64, EntityType_Player);
 
   asset_id PlayerAsset = GetOrAllocateAssetId(Resources, {FileTraversalType_File, CSz("models"), CSz("players/chr_rain.vox")});
   SpawnPlayerLikeEntity(Plat, World, &PlayerAsset, 0, Player, PlayerSpawnP, &GameState->Entropy);
@@ -1135,7 +1141,7 @@ BONSAI_API_ON_LIBRARY_RELOAD()
   RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
   {
     entity *E = EntityTable[EntityIndex];
-    if (E->UserType == EntityType_Player)
+    if (UserTypeToAggregateType(E->UserType).Type == EntityType_Player)
     {
       if (GameState->PlayerId.Generation) { Warn("Multiple Player entities detected!"); }
       GameState->PlayerId = E->Id;

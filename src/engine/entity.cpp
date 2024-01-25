@@ -1520,7 +1520,6 @@ AStarPathfind(world *World, standing_spot_buffer *Spots, cp CurrentP, cp TargetP
 
   IterateOver(&HotSpots, Spot, SpotIndex)
   {
-    
   }
 
 
