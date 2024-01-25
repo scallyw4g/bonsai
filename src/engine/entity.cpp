@@ -1436,7 +1436,6 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
 
     if (DoDefaultUpdate)
     {
-
       // Update Camera Ghost
       if (Entity->Behavior & EntityBehaviorFlags_DefatulCameraGhostBehavior)
       {

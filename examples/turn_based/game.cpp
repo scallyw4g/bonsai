@@ -629,8 +629,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   GameState->PlayerActed = False;
 
   v3 SimPlayerCenter = GetSimSpaceCenterP(World, Player);
-  sphere S = {SimPlayerCenter, Global_MeleeRange};
-  u32_buffer MeleeEntities = GatherEntitiesIntersecting(World, EntityTable, &S, GetTranArena());
+  sphere PlayerMeleeRange = {SimPlayerCenter, Global_MeleeRange};
+  u32_buffer MeleeEntities = GatherEntitiesIntersecting(World, EntityTable, &PlayerMeleeRange, GetTranArena());
 
   if (Input->Z.Clicked)
   {
@@ -707,15 +707,16 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   if (Input->RMB.Clicked) { GameState->ProposedAction = PlayerAction_None; }
 
+  // TODO(Jesse): This is kinda gross and could lead to stuff snapping to origin..
+  cp LastEmptyMouseVoxel = {};
+  cp FirstFilledMouseVoxel = {};
+
   if (Resources->MousedOverVoxel.Tag)
   {
     picked_voxel Pick = Resources->MousedOverVoxel.Value;
-    v3 VoxelP = GetAbsoluteP(&Pick);
-
-    world_chunk *ClosestChunk = Pick.Chunks[PickedVoxel_LastEmpty].Chunk;
-    canonical_position LastEmptyMouseVoxel = Pick.Picks[PickedVoxel_LastEmpty];
-    canonical_position FirstFilledMouseVoxel = Pick.Picks[PickedVoxel_FirstFilled];
-
+    LastEmptyMouseVoxel = Pick.Picks[PickedVoxel_LastEmpty];
+    FirstFilledMouseVoxel = Pick.Picks[PickedVoxel_FirstFilled];
+  }
 
 
     b32 WorldEditMode = (Editor->EngineDebugViewModeToggleBits & (1<<EngineDebugViewMode_WorldEdit));
@@ -731,53 +732,56 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
         case PlayerAction_Move:
         {
-          cp PlayerBaseP = GetEntityBaseP(World, Player);
-
-          f32 PlayerMoveSpeed = 13.f;
-          standing_spot_buffer PlayerSpots = GetStandingSpotsWithinRadius(World, PlayerBaseP, PlayerMoveSpeed, GetTranArena());
-
-          v3 CursorSimP = GetSimSpaceP(World, LastEmptyMouseVoxel);
-
-          r32 LowestDistance = r32_MAX;
-          umm LowestIndex = 0;
-
-          RangeIterator_t(umm, SpotIndex, PlayerSpots.Count)
+          if (Resources->MousedOverVoxel.Tag)
           {
-            standing_spot *Spot = PlayerSpots.Start + SpotIndex;
+            cp PlayerBaseP = GetEntityBaseP(World, Player);
 
-            v3 SpotSimP = GetSimSpaceP(World, GetSpotMidpoint(World, Spot));
+            f32 PlayerMoveSpeed = 13.f;
+            standing_spot_buffer PlayerSpots = GetStandingSpotsWithinRadius(World, PlayerBaseP, PlayerMoveSpeed, GetTranArena());
 
-            r32 Len = LengthSq(SpotSimP-CursorSimP);
-            if (Len < LowestDistance)
+            v3 CursorSimP = GetSimSpaceP(World, LastEmptyMouseVoxel);
+
+            r32 LowestDistance = r32_MAX;
+            umm LowestIndex = 0;
+
+            RangeIterator_t(umm, SpotIndex, PlayerSpots.Count)
             {
-              LowestDistance = Len;
-              LowestIndex = SpotIndex;
+              standing_spot *Spot = PlayerSpots.Start + SpotIndex;
+
+              v3 SpotSimP = GetSimSpaceP(World, GetSpotMidpoint(World, Spot));
+
+              r32 Len = LengthSq(SpotSimP-CursorSimP);
+              if (Len < LowestDistance)
+              {
+                LowestDistance = Len;
+                LowestIndex = SpotIndex;
+              }
+
+              {
+                v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
+                DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), GREEN, DEFAULT_STANDING_SPOT_THICKNESS*3.f);
+              }
             }
 
+            if (PlayerSpots.Count)
             {
+              standing_spot *Spot = PlayerSpots.Start + LowestIndex;
+              v3 SpotSimP = GetSimSpaceP(World, Spot->P);
               v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
-              DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), GREEN, DEFAULT_STANDING_SPOT_THICKNESS*3.f);
+              DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), TEAL, DEFAULT_STANDING_SPOT_THICKNESS*4.f);
+
+              if (Input->LMB.Clicked)
+              {
+                GameState->PlayerActed = True;
+
+                v3 PlayerBaseSimP = GetSimSpaceP(World, PlayerBaseP);
+                v3 SpotTopSimP = SpotSimP + V3(Global_StandingSpotHalfDim.xy, Global_StandingSpotDim.z);
+                v3 UpdateV = SpotTopSimP - PlayerBaseSimP + V3(0,0,2);
+                UpdateEntityP(World, Player, UpdateV);
+              }
             }
+
           }
-
-          if (PlayerSpots.Count)
-          {
-            standing_spot *Spot = PlayerSpots.Start + LowestIndex;
-            v3 SpotSimP = GetSimSpaceP(World, Spot->P);
-            v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
-            DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), TEAL, DEFAULT_STANDING_SPOT_THICKNESS*4.f);
-
-            if (Input->LMB.Clicked)
-            {
-              GameState->PlayerActed = True;
-
-              v3 PlayerBaseSimP = GetSimSpaceP(World, PlayerBaseP);
-              v3 SpotTopSimP = SpotSimP + V3(Global_StandingSpotHalfDim.xy, Global_StandingSpotDim.z);
-              v3 UpdateV = SpotTopSimP - PlayerBaseSimP + V3(0,0,2);
-              UpdateEntityP(World, Player, UpdateV);
-            }
-          }
-
 
         } break;
 
@@ -837,11 +841,23 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
         case PlayerAction_Throw:
         {
-          if (PlayerGameData->FireballChargeLevel)
+          if (Resources->MousedOverVoxel.Tag)
           {
-            if (Input->LMB.Clicked)
+            if (CanDoAction(Resources, Player, GameState->ProposedAction, &MeleeEntities))
             {
-              GameState->PlayerActed = True;
+              if (Input->LMB.Clicked)
+              {
+                entity *Thrown = GetEntity(EntityTable, Player->Carrying);
+                if (Thrown)
+                {
+                  Thrown->Behavior = entity_behavior_flags(Thrown->Behavior|EntityBehaviorFlags_Default);
+                  v3 TargetSimP = GetSimSpaceP(World, FirstFilledMouseVoxel);
+
+                  v3 Direction = Normalize(TargetSimP-SimPlayerCenter);
+                  Thrown->Physics.Velocity = Direction*250.f + V3(0,0,15);;
+                }
+                Player->Carrying = {};
+              }
             }
           }
         } break;
@@ -926,7 +942,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       GameState->TransitionDuration += Plat->dt;
       GameState->ProposedAction = PlayerAction_None;
     }
-  }
 
   local_persist window_layout ActionsWindow = WindowLayout("ActionsWindow");
   PushBorderlessWindowStart(Ui, &ActionsWindow);
