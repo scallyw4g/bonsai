@@ -28,6 +28,8 @@ link_internal engine_resources *GetEngineResources();
 #include <engine/asset.h>
 #include <engine/particle.h>
 #include <engine/world.h>
+
+#include <engine/ui.h>
 #include <engine/entity.h>
 
 #include <engine/debug.h>

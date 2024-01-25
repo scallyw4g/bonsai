@@ -1,5 +1,4 @@
 #define BONSAI_DEBUG_SYSTEM_API 1
-#define DO_EDITOR_UI_FOR_ENTITY_TYPE 1
 
 #include <bonsai_types.h>
 
@@ -16,16 +15,8 @@ global_variable f32
 Global_PlayerDigDepth = 3.f;
 
 
-struct entity_game_data
-{
-  u32 FireballChargeLevel;
-  u32 FireballCharges;
-
-  u32 IceBlockCharges;
-  u32 HoldingItem;
-};
-
 global_variable random_series Global_GameEntropy = {543232654};
+
 
 link_internal canonical_position
 MoveToStandingSpot(world *World, canonical_position P)
@@ -46,6 +37,38 @@ UserTypeToAggregateType(u64 UserType)
 {
   entity_aggregate_type Result = ReinterpretCast(entity_aggregate_type, UserType);
   return Result;
+}
+
+link_weak void
+EntityUserDataEditorUi(renderer_2d *Ui, window_layout *Window, u64 *UserType, u64 *UserData, cs Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS)
+{
+  entity_aggregate_type *AType = UserTypeToAggregateTypePtr(UserType);
+  DoEditorUi(Ui, Window, AType, CSz("entity_aggregate_type UserType"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+  switch (AType->Type)
+  {
+    case EntityType_Player:
+    {
+      entity_game_data *State = Cast(entity_game_data*, *UserData);
+      DoEditorUi(Ui, Window, State, CSz("entity_game_data UserData"));
+    } break;
+
+    case EntityType_Fireball:
+    {
+      fireball_state *State = Cast(fireball_state*, *UserData);
+      DoEditorUi(Ui, Window, State, CSz("fireball_state UserData"));
+    } break;
+
+    case EntityType_Default:
+    case EntityType_Enemy:
+    case EntityType_Loot:
+    case EntityType_ItemSpawn:
+    {
+      Assert(*UserData == 0);
+      /* DoEditorUi(Ui, Window, UserData, CSz("entity_user_data UserData"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
+    } break;
+  }
+
 }
 
 link_internal void
@@ -95,6 +118,8 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
 
   // NOTE(Jesse): Entities embedded in the world cannot act
   if (GetCollision(World, Enemy).Count > Global_EntityCanMoveThroughCollisionThresh) { return; }
+
+
 
   u16 StandingSpotColor = YELLOW;
   r32 StandingSpotRadius = DEFAULT_STANDING_SPOT_THICKNESS;
@@ -251,11 +276,12 @@ EffectFireballEntity(engine_resources *Engine, entity *Enemy)
 {
   switch (ReinterpretCast(entity_aggregate_type, Enemy->UserType).Type)
   {
-    case EntityType_Default:  {} break;
-    case EntityType_Player:   {} break;
-    case EntityType_Fireball: {} break;
-    case EntityType_Enemy:    { DestroySkeleton(Engine, Enemy, 5.f); } break;
-    case EntityType_Loot:     { DestroyLoot(Engine, Enemy); } break;
+    case EntityType_Default:   {} break;
+    case EntityType_Player:    {} break;
+    case EntityType_Fireball:  {} break;
+    case EntityType_Enemy:     { DestroySkeleton(Engine, Enemy, 5.f); } break;
+    case EntityType_Loot:      { DestroyLoot(Engine, Enemy); } break;
+    case EntityType_ItemSpawn: {} break;
   }
 }
 
@@ -269,6 +295,7 @@ EffectProjectileImpact(engine_resources *Engine, entity *Entity)
     case EntityType_Default:
     case EntityType_Player:
     case EntityType_Enemy:
+    case EntityType_ItemSpawn:
     {
     } break;
 
@@ -312,6 +339,7 @@ EffectGrabEntity(engine_resources *Engine, entity *Grabber, entity *Grabee)
     case EntityType_Default:
     case EntityType_Player:
     case EntityType_Fireball:
+    case EntityType_ItemSpawn:
     {
     } break;
 
@@ -341,6 +369,7 @@ EffectSmackEntity(engine_resources *Engine, entity *Enemy)
     case EntityType_Default:
     case EntityType_Player:
     case EntityType_Fireball:
+    case EntityType_ItemSpawn:
     {
     } break;
 
@@ -417,11 +446,12 @@ GameEntityUpdate(engine_resources *Engine, entity *Entity )
     case EntityType_Player:
     case EntityType_Default:
     case EntityType_Loot:
+    case EntityType_ItemSpawn:
     {
     } break;
 
-    case EntityType_Enemy:   { EnemyUpdate(Engine, Entity); } break;
-    case EntityType_Fireball: {  FireballUpdate(Engine, Entity); } break;
+    case EntityType_Enemy:    { EnemyUpdate(Engine, Entity); } break;
+    case EntityType_Fireball: { FireballUpdate(Engine, Entity); } break;
   }
 
   return False;

@@ -19,6 +19,7 @@ enum entity_type
   EntityType_Player,
   EntityType_Fireball,
   EntityType_Loot,
+  EntityType_ItemSpawn,
 };
 
 enum entity_status
@@ -41,8 +42,40 @@ CAssert(sizeof(entity_aggregate_type) == 8); // This has to fit into entity::Use
 poof(generate_string_table(entity_type))
 #include <generated/generate_string_table_entity_type.h>
 
+poof(generate_string_table(entity_status))
+#include <generated/generate_string_table_entity_status.h>
+
 poof(do_editor_ui_for_enum(entity_type))
 #include <generated/do_editor_ui_for_enum_entity_type.h>
+
+poof(do_editor_ui_for_enum(entity_status))
+#include <generated/do_editor_ui_for_enum_entity_status.h>
+
+poof(do_editor_ui_for_compound_type(entity_aggregate_type));
+#include <generated/do_editor_ui_for_compound_type_entity_aggregate_type.h>
+
+
+
+struct entity_game_data
+{
+  u32 FireballChargeLevel;
+  u32 FireballCharges;
+
+  u32 IceBlockCharges;
+  u32 HoldingItem;
+};
+
+poof(do_editor_ui_for_compound_type(entity_game_data))
+#include <generated/do_editor_ui_for_compound_type_entity_game_data.h>
+
+struct fireball_state
+{
+  r32 ChargeLevel;
+  cp TargetP;
+};
+
+poof(do_editor_ui_for_compound_type(fireball_state))
+#include <generated/do_editor_ui_for_compound_type_fireball_state.h>
 
 enum player_action
 {
@@ -88,11 +121,6 @@ enum turn_mode
 poof(generate_string_table(turn_mode))
 #include <generated/generate_string_table_turn_mode.h>
 
-struct fireball_state
-{
-  r32 ChargeLevel;
-  cp TargetP;
-};
 
 struct game_state
 {

@@ -131,8 +131,9 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
 
 
       
-      DoEditorUi(Ui, Window, &Element->UserType, CSz("u64 UserType"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
+  if (EntityUserDataEditorUi) {EntityUserDataEditorUi(Ui, Window, &Element->UserType, &Element->UserData, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);}
+                     else                        {DoEditorUi(Ui, Window, &Element->UserType, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+;
 
 
 
@@ -141,8 +142,8 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Window, &Element->UserData, CSz("u64 UserData"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
+  if (EntityUserDataEditorUi) { /* User took control, skip this because it's intended */ }
+                      else                        {DoEditorUi(Ui, Window, &Element->UserData, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); } ;
 
 
 

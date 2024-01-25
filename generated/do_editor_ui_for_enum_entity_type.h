@@ -42,6 +42,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_type *Element, cs Name
 
     }
     PushNewRow(Ui);
+    PushColumn(Ui, CSz("")); // Skip the first Name column
+    if (Button(Ui, CSz("EntityType_ItemSpawn"), UiId(Window, "enum EntityType_ItemSpawn", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    {
+      *Element = EntityType_ItemSpawn;
+
+    }
+    PushNewRow(Ui);
   }
   else
   {

@@ -59,6 +59,8 @@ struct entity_position_info
 link_weak b32 EntityUserDataSerialize(native_file *, u64 UserType, u64 UserData);
 link_weak b32 EntityUserDataDeserialize(u8_cursor *, u64 *UserType, u64 *UserData, memory_arena*);
 
+link_weak void EntityUserDataEditorUi(renderer_2d *Ui, window_layout *Window, u64 *UserType, u64 *UserData, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS);
+
 #define ENTITY_VERSION (1)
 struct entity
 {
@@ -101,9 +103,18 @@ struct entity
   entity_id Carrying;
 
   u64 UserType;
+  poof( @custom_ui(  if (EntityUserDataEditorUi) {EntityUserDataEditorUi(Ui, Window, &Element->UserType, &Element->UserData, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);}
+                     else                        {DoEditorUi(Ui, Window, &Element->UserType, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+        )
+      )
+
   u64 UserData;
   poof(  @custom_serialize(  if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(File, Element->UserType, Element->UserData);})
-         @custom_deserialize(if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, &Element->UserType, &Element->UserData, Memory);})  )
+         @custom_deserialize(if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, &Element->UserType, &Element->UserData, Memory);})
+
+         @custom_ui(  if (EntityUserDataEditorUi) { /* User took control, skip this because it's intended */ }
+                      else                        {DoEditorUi(Ui, Window, &Element->UserData, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); } )
+  )
 };
 
 struct entity_1
