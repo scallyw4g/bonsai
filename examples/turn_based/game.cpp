@@ -244,10 +244,10 @@ EffectFireballEntity(engine_resources *Engine, entity *Enemy)
 }
 
 link_internal b32
-EffectGrabEntity(engine_resources *Engine, entity *Enemy)
+EffectGrabEntity(engine_resources *Engine, entity *Grabber, entity *Grabee)
 {
   b32 Result = False;
-  switch (entity_type(Enemy->UserType))
+  switch (entity_type(Grabee->UserType))
   {
     case EntityType_Default:
     case EntityType_Player:
@@ -258,13 +258,14 @@ EffectGrabEntity(engine_resources *Engine, entity *Enemy)
     case EntityType_Enemy:
     {
       Result = True;
-      DestroySkeleton(Engine, Enemy, 5.f);
+      DestroySkeleton(Engine, Grabee, 5.f);
     } break;
 
     case EntityType_Loot:
     {
       Result = True;
-      /* DestroyLoot(Engine, Enemy); */
+      /* Grabber->Carrying = Grabee->Id; */
+      /* DestroyLoot(Engine, Grabee); */
     } break;
   }
   return Result;
@@ -472,19 +473,14 @@ GetColorForAction(player_action Action)
       Result = ICE_BLUE;
     } break;
 
-    case PlayerAction_Dig:
+    case PlayerAction_Shovel:
     {
-      Result = DIRT;
+      Result = LIGHT_DIRT;
     } break;
 
     case PlayerAction_Grab:
     {
       Result = GREEN;
-    } break;
-
-    case PlayerAction_ShovelSmack:
-    {
-      Result = RED;
     } break;
 
   }
@@ -522,7 +518,7 @@ CanDoAction(engine_resources *Engine, entity *Player, player_action Action, u32_
       if (IceBlockCharges(Player)) { Result = True; }
     } break;
 
-    case PlayerAction_Dig:
+    case PlayerAction_Shovel:
     {
       Result = True;
     } break;
@@ -539,18 +535,62 @@ CanDoAction(engine_resources *Engine, entity *Player, player_action Action, u32_
       }
     } break;
 
-    case PlayerAction_ShovelSmack:
+  }
+
+  return Result;
+}
+
+link_internal b32
+EntityIsWithinMeleeRangeOf(world *World, entity *E0, entity *E1)
+{
+  b32 Result = False;
+  if (E0 && E1)
+  {
+    aabb E1HitArea = GetSimSpaceAABB(World, E1);
+    E1HitArea.Min -= V3(Global_MeleeRange);
+    E1HitArea.Max += V3(Global_MeleeRange);
+
+    if (Intersect(World, E0, &E1HitArea))
     {
-      RangeIterator_t(umm, EntityIndexIndex, MeleeEntities->Count)
-      {
-        entity *E = EntityTable[MeleeEntities->Start[EntityIndexIndex]];
-        if (E->UserType == EntityType_Enemy)
-        {
-          Result = True;
-        }
-      }
+      Result = True;
+    }
+  }
+  return Result;
+}
+
+link_internal b32
+IsWithinRangeForAction(world *World, entity *Player, cp ActionLocation, player_action Action)
+{
+  b32 Result = False;
+
+  switch (Action)
+  {
+    InvalidCase(PlayerAction_Count);
+
+    case PlayerAction_None:
+    case PlayerAction_Move:
+    case PlayerAction_ChargeFireball:
+    case PlayerAction_Throw:
+    case PlayerAction_Grab:
+    {
+      NotImplemented;
     } break;
 
+
+    case PlayerAction_IceBlock:
+    {
+      Result = True;
+    } break;
+
+    case PlayerAction_Shovel:
+    {
+      v3 SimPlayerP = GetSimSpaceBaseP(World, Player);
+      v3 SimActionP = GetSimSpaceP(World, ActionLocation);
+      if (DistanceSq(SimPlayerP, SimActionP) <= Square(Global_MeleeRange))
+      {
+        Result = True;
+      }
+    } break;
   }
 
   return Result;
@@ -580,6 +620,85 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   GameState->PlayerActed = False;
 
+  v3 SimPlayerCenter = GetSimSpaceCenterP(World, Player);
+  sphere S = {SimPlayerCenter, Global_MeleeRange};
+  u32_buffer MeleeEntities = GatherEntitiesIntersecting(World, EntityTable, &S, GetTranArena());
+
+  if (Input->Z.Clicked)
+  {
+    if (CanDoAction(Resources, Player, PlayerAction_Move, &MeleeEntities))
+    {
+      GameState->ProposedAction = PlayerAction_Move;
+    }
+    else
+    {
+      GameState->ProposedAction = PlayerAction_None;
+    }
+  }
+
+  if (Input->X.Clicked)
+  {
+    if (CanDoAction(Resources, Player, PlayerAction_Shovel, &MeleeEntities))
+    {
+      GameState->ProposedAction = PlayerAction_Shovel;
+    }
+    else
+    {
+      GameState->ProposedAction = PlayerAction_None;
+    }
+  }
+
+  if (Input->C.Clicked)
+  {
+    if (CanDoAction(Resources, Player, PlayerAction_Grab, &MeleeEntities))
+    {
+      GameState->ProposedAction = PlayerAction_Grab;
+    }
+    else
+    {
+      GameState->ProposedAction = PlayerAction_None;
+    }
+  }
+
+  if (Input->V.Clicked)
+  {
+    if (CanDoAction(Resources, Player, PlayerAction_ChargeFireball, &MeleeEntities))
+    {
+      GameState->ProposedAction = PlayerAction_ChargeFireball;
+    }
+    else
+    {
+      GameState->ProposedAction = PlayerAction_None;
+    }
+  }
+
+  if (Input->B.Clicked)
+  {
+    if (CanDoAction(Resources, Player, PlayerAction_IceBlock, &MeleeEntities))
+    {
+      GameState->ProposedAction = PlayerAction_IceBlock;
+    }
+    else
+    {
+      GameState->ProposedAction = PlayerAction_None;
+    }
+  }
+
+  if (Input->N.Clicked)
+  {
+    if (CanDoAction(Resources, Player, PlayerAction_Throw, &MeleeEntities))
+    {
+      GameState->ProposedAction = PlayerAction_Throw;
+    }
+    else
+    {
+      GameState->ProposedAction = PlayerAction_None;
+    }
+  }
+
+
+  if (Input->RMB.Clicked) { GameState->ProposedAction = PlayerAction_None; }
+
   if (Resources->MousedOverVoxel.Tag)
   {
     picked_voxel Pick = Resources->MousedOverVoxel.Value;
@@ -588,36 +707,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     world_chunk *ClosestChunk = Pick.Chunks[PickedVoxel_LastEmpty].Chunk;
     canonical_position LastEmptyMouseVoxel = Pick.Picks[PickedVoxel_LastEmpty];
     canonical_position FirstFilledMouseVoxel = Pick.Picks[PickedVoxel_FirstFilled];
-
-    if (Input->Z.Clicked)
-    {
-      GameState->ProposedAction = PlayerAction_Move;
-    }
-
-    if (Input->X.Clicked)
-    {
-      GameState->ProposedAction = PlayerAction_ChargeFireball;
-    }
-
-    if (Input->C.Clicked)
-    {
-      GameState->ProposedAction = PlayerAction_Throw;
-    }
-
-    if (Input->V.Clicked)
-    {
-      GameState->ProposedAction = PlayerAction_IceBlock;
-    }
-
-    if (Input->B.Clicked)
-    {
-      GameState->ProposedAction = PlayerAction_Dig;
-    }
-
-    if (Input->N.Clicked)
-    {
-      GameState->ProposedAction = PlayerAction_ShovelSmack;
-    }
 
 
 
@@ -755,77 +844,65 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         } break;
 
         case PlayerAction_IceBlock:
-        case PlayerAction_Dig:
+        case PlayerAction_Shovel:
         {
           if (Resources->MousedOverVoxel.Tag)
           {
-            cp V = Canonical_Position(&Resources->MousedOverVoxel.Value);
-            V.Offset = RoundToMultiple(V.Offset, V3i(8, 8, s32(Global_PlayerDigDepth)));
-            Canonicalize(World, &V);
+            cp ActionMinP        = Canonical_Position(&Resources->MousedOverVoxel.Value);
+               ActionMinP.Offset = RoundToMultiple(ActionMinP.Offset, V3i(8, 8, s32(Global_PlayerDigDepth)));
+            Canonicalize(World, &ActionMinP);
 
-            u32 Color = GetColorForAction(GameState->ProposedAction);
-            DrawStandingSpot(&GpuMap->Buffer, Camera, V, Color, 0.5f);
+            cp ActionCenterP = Canonicalize(World, ActionMinP + Global_StandingSpotHalfDim);
 
-            if (Input->LMB.Clicked)
+            if (IsWithinRangeForAction(World, Player, ActionCenterP, GameState->ProposedAction))
             {
-              GameState->PlayerActed = True;
-              cp StandingSpotCenterP = Canonicalize(World, V + Global_StandingSpotHalfDim);
-              switch (GameState->ProposedAction)
+              u32 Color = GetColorForAction(GameState->ProposedAction);
+              DrawStandingSpot(&GpuMap->Buffer, Camera, ActionMinP, Color, 0.5f);
+
+              if (Input->LMB.Clicked)
               {
-                case PlayerAction_IceBlock:
+                GameState->PlayerActed = True;
+                switch (GameState->ProposedAction)
                 {
-                  DoIceBlock(Resources, StandingSpotCenterP, 4.f, GetTranArena());
-                } break;
+                  case PlayerAction_IceBlock:
+                  {
+                    DoIceBlock(Resources, ActionCenterP, 4.f, GetTranArena());
+                  } break;
 
-                case PlayerAction_Dig:
-                {
-                  DoDig(Resources, StandingSpotCenterP, 5.f, Global_PlayerDigDepth, GetTranArena());
-                } break;
+                  case PlayerAction_Shovel:
+                  {
+                    entity *HoverEntity = Resources->HoverEntity.Value;
+                    if (EntityIsWithinMeleeRangeOf(World, HoverEntity, Player))
+                    {
+                      GameState->PlayerActed = EffectSmackEntity(Resources, HoverEntity);
+                    }
+                    else
+                    {
+                      DoDig(Resources, ActionCenterP, 5.f, Global_PlayerDigDepth, GetTranArena());
+                    }
+                  } break;
 
-                InvalidDefaultCase;
+                  InvalidDefaultCase;
+                }
               }
             }
           }
         } break;
 
         case PlayerAction_Grab:
-        case PlayerAction_ShovelSmack:
         {
-          if (Resources->HoverEntity.Tag)
+          entity *HoverEnemy = Resources->HoverEntity.Value;
+          if (EntityIsWithinMeleeRangeOf(World, HoverEnemy, Player))
           {
-            entity *HoverEnemy = Resources->HoverEntity.Value;
+            HighlightEntity(Resources, HoverEnemy);
+            if (Input->LMB.Clicked)
             {
-              aabb PlayerHitArea = GetSimSpaceAABB(World, Player);
-              PlayerHitArea.Min -= V3(Global_MeleeRange);
-              PlayerHitArea.Max += V3(Global_MeleeRange);
-
-              if (Intersect(World, HoverEnemy, &PlayerHitArea))
-              {
-                HighlightEntity(Resources, HoverEnemy);
-                if (Input->LMB.Clicked)
-                {
-                  switch (GameState->ProposedAction)
-                  {
-                    InvalidDefaultCase;
-
-                    case PlayerAction_Grab:
-                    {
-                      GameState->PlayerActed = EffectGrabEntity(Resources, HoverEnemy);
-                    } break;
-                    case PlayerAction_ShovelSmack:
-                    {
-                      GameState->PlayerActed = EffectSmackEntity(Resources, HoverEnemy);
-                    } break;
-                  }
-                }
-              }
+              GameState->PlayerActed = EffectGrabEntity(Resources, Player, HoverEnemy);
             }
           }
         }
       }
     }
-
-    if (Input->RMB.Clicked) { GameState->ProposedAction = PlayerAction_None; }
 
     if ( GameState->TurnMode == TurnMode_Transition &&
          GameState->FireballsSimulated == 0 )
@@ -836,7 +913,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
 
     if (GameState->PlayerActed)
-    { GameState->TurnMode = TurnMode_Transition;
+    {
+      GameState->TurnMode = TurnMode_Transition;
       GameState->TransitionDuration = 0.f;
     }
 
@@ -851,15 +929,11 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   PushBorderlessWindowStart(Ui, &ActionsWindow);
 
   v2 WindowDim = GetDim(&ActionsWindow);
-  /* v2 WindowOffset = V2(Plat->WindowWidth/2.f-(WindowDim.y/2.f), Plat->WindowHeight-WindowDim.y); */
-  v2 WindowOffset = V2(0.f, Plat->WindowHeight-WindowDim.y);
+  v2 WindowOffset = V2(Plat->WindowWidth/2.f-(WindowDim.x/2.f), Plat->WindowHeight-WindowDim.y-25.f);
+  /* v2 WindowOffset = V2(0.f, Plat->WindowHeight-WindowDim.y); */
   /* v2 WindowOffset = {}; */
 
   ActionsWindow.Basis = WindowOffset;
-
-  v3 SimPlayerCenter = GetSimSpaceCenterP(World, Player);
-  sphere S = {SimPlayerCenter, Global_MeleeRange};
-  u32_buffer MeleeEntities = GatherEntitiesIntersecting(World, EntityTable, &S, GetTranArena());
 
 /*   RangeIterator_t(umm, EntityIndexIndex, MeleeEntities.Count) */
 /*   { */
@@ -881,14 +955,45 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         }
 
         u32 Start = StartColumn(Ui);
-          if (Button(Ui, ToString(Action), UiId(&ActionsWindow, "player_action", ActionIndex), Style, DefaultButtonPadding, ColumnRenderParam_LeftAlign))
+
+
+          ui_id ButtonId = UiId(&ActionsWindow, "player_action", ActionIndex);
+          interactable_handle ButtonHandle = {ButtonId};
+
+          v3 Tint =  V3(0.5f);
+
+          if (PlayerCanDoThisAction)
           {
-            if (PlayerCanDoThisAction)
+            Tint = V3(1.f);
+            if (Hover(Ui, &ButtonHandle))
             {
+              Tint = V3(1.1f);
+            }
+
+            if (Clicked(Ui, &ButtonHandle))
+            {
+              Tint = V3(1.25f);
               GameState->ProposedAction = Action;
             }
           }
-          PushTexturedQuadColumn(Ui, Resources->Ui.SpriteTextureArray, s32(ActionIndex), V2(256,256), zDepth_Text);
+
+          v3 BackgroundTint = Tint;
+
+          if (GameState->ProposedAction == ActionIndex)
+          {
+            BackgroundTint.g *= 1.5f;
+          }
+
+          v2 SpriteSize = V2(96);
+
+          PushButtonStart(Ui, ButtonId);
+            PushTexturedQuadColumn(Ui, Resources->Ui.SpriteTextureArray, 0, SpriteSize, zDepth_TitleBar, BackgroundTint, QuadRenderParam_NoAdvance);
+            PushTexturedQuadColumn(Ui, Resources->Ui.SpriteTextureArray, Global_SpriteIndexFromActionIndex[ActionIndex], SpriteSize, zDepth_Text, Tint);
+          PushButtonEnd(Ui);
+
+          PushForceAdvance(Ui, V2(16, 0));
+
+
         EndColumn(Ui, Start);
       }
     PushTableEnd(Ui);
@@ -905,9 +1010,9 @@ poof(serdes_struct(entity_game_data))
 #include <generated/serdes_struct_entity_game_data.h>
 
 link_weak b32
-EntityUserDataSerialize(native_file *File, entity *Entity)
+EntityUserDataSerialize(native_file *File, u64 UserType, u64 UserData)
 {
-  entity_game_data *EGD = Cast(entity_game_data*, Entity->UserData);
+  entity_game_data *EGD = Cast(entity_game_data*, UserData);
   if (EGD)
   {
     u64 T = True;
@@ -923,22 +1028,21 @@ EntityUserDataSerialize(native_file *File, entity *Entity)
 }
 
 link_weak b32
-EntityUserDataDeserialize(u8_cursor *Bytes, entity *Entity, memory_arena *Memory)
+EntityUserDataDeserialize(u8_cursor *Bytes, u64 *UserType, u64 *UserData, memory_arena *Memory)
 {
-  u64 UserData = {};
-  Deserialize(Bytes, &UserData, Memory);
+  Deserialize(Bytes, UserData, Memory);
 
-  if(UserData == True)
+  if(*UserData == True)
   {
     entity_game_data *GameData = Allocate(entity_game_data, Memory, 1);
     Deserialize(Bytes, GameData, Memory);
-    Entity->UserData = (u64)GameData;
+    *UserData = (u64)GameData;
   }
   else
   {
-    if (UserData != False)
+    if (*UserData != False)
     {
-      SoftError("Corrupt entity (%p), UserData was (%x), when it should be (1) or (0)!", Entity, UserData);
+      SoftError("Corrupt entity, UserData was (%x), when it should be (1) or (0)!", *UserData);
       return False;
     }
   }

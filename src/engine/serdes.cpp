@@ -205,9 +205,11 @@ poof(serdes_struct(file_traversal_node))
 poof(serdes_struct(asset_id))
 #include <generated/serdes_struct_asset_id.h>
 
-poof(serdes_struct(entity))
-#include <generated/serdes_struct_entity.h>
+poof(serialize_struct(entity))
+#include <generated/serialize_struct_entity.h>
+poof(serdes_struct(entity_1))
 #include <generated/serdes_struct_entity_1.h>
+poof(serdes_struct(entity_0))
 #include <generated/serdes_struct_entity_0.h>
 
 poof( block_array(entity, {4}) )
@@ -234,11 +236,36 @@ GetEntityCenterP(world *World, entity *Entity)
 
 
 link_internal void
-Marshal(entity_0 *E0, entity_1 *E1)
+Marshal(entity_1 *E1, entity *E)
 {
-  NotImplemented;
+  // NOTE(Jesse): Poor-mans stand-in for deep-comparing the types in poof
+  CAssert(sizeof(entity_1) == sizeof(entity));
+
+  CopyMemory(Cast(u8*, E1), Cast(u8*, E), sizeof(entity));
 }
 
+link_internal void
+Marshal(entity_0 *E0, entity_1 *E1)
+{
+  poof(
+    func (entity_0 e0_t)
+    {
+      e0_t.map_members(member)
+      {
+        member.is_named(Carrying)?
+        {
+          // E0 Doesn't have the Carrying member
+        }
+        {
+          E1->member.name = E0->member.name;
+        }
+      }
+    }
+  )
+#include <generated/anonymous_entity_0_AfIY0cwC.h>
+}
+
+#if 0
 link_internal void
 Marshal(entity_1 *E0, entity_2 *E1)
 {
@@ -258,6 +285,49 @@ Marshal(entity_1 *E0, entity_2 *E1)
   E1->UserType = E0->UserType;
   E1->UserData = E0->UserData;
 }
+#endif
 
 poof(serdes_struct(level_header))
 #include <generated/serdes_struct_level_header.h>
+
+
+link_internal b32
+Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
+{
+  b32 Result = True;
+
+  u64 Version;
+  Result &= Deserialize(Bytes, &Version, Memory);
+
+  if (Result)
+  {
+    switch(Version)
+    {
+      case 0:
+      {
+        entity_0 E0 = {};
+        entity_1 E1 = {};
+        Deserialize(Bytes, &E0, Memory);
+        Marshal(&E0, &E1);
+        Marshal(&E1, Element);
+      } break;
+
+      case 1:
+      {
+        entity_1 E1 = {};
+        Deserialize(Bytes, &E1, Memory);
+        Marshal(&E1, Element);
+      } break;
+
+      default: { SoftError("Could not deserialize entity, got invalid version (%lu)", Version); }
+    }
+
+
+  }
+
+  Element->AssetId.Index = INVALID_ASSET_INDEX;
+
+  return Result;
+}
+
+

@@ -56,13 +56,107 @@ struct entity_position_info
 };
 
 // Game can implement this function to serialize/deserialize their custom entity data.
-link_weak b32 EntityUserDataSerialize(native_file *, entity *);
-link_weak b32 EntityUserDataDeserialize(u8_cursor *, entity *, memory_arena*);
+link_weak b32 EntityUserDataSerialize(native_file *, u64 UserType, u64 UserData);
+link_weak b32 EntityUserDataDeserialize(u8_cursor *, u64 *UserType, u64 *UserData, memory_arena*);
 
-#define ENTITY_VERSION 2
+#define ENTITY_VERSION (1)
 struct entity
 {
-  u64 Version;
+  /* u64 Version; */
+
+  entity_id Id;
+
+  // NOTE(Jesse): This is a pretty dirty hack to get the Offset in CP to have
+  // a custom value range.  I couldn't figure out a better way while thinking about
+  // it for 15 minutes, so I settled on this for now.  Hopefully I figure out
+  // something better soon, cause this is un-tenable for the long-term
+  //
+  // @dirty_entity_P_format_hack
+  //
+  cp P;           poof(@custom_ui(DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)))
+
+  v3 EulerAngles; poof(@ui_value_range(-180.f, 180.f))
+  r32 Scale;
+
+  // NOTE(Jesse): This must be updated with UpdateCollisionVolumeRadius.
+  // Entity pointers are stored on world chunks, which are used during
+  // collision detection.  The chunks to store the entity to are computed using
+  // the CollisionVolumeRadius so if we update it we have to also check if the
+  // number of chunks we're overlapping changed, and update the difference.
+  v3 _CollisionVolumeRadius;
+
+  physics Physics;
+
+  asset_id AssetId;
+  u64      ModelIndex;
+
+  collision_event      LastResolvedCollision; poof(@no_serialize)
+  entity_position_info LastResolvedPosInfo;   poof(@no_serialize)
+
+  particle_system *Emitter;
+
+  entity_state          State;
+  entity_behavior_flags Behavior;
+
+  entity_id Carrying;
+
+  u64 UserType;
+
+  u64 UserData;
+  poof(  @custom_serialize(  if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(File, Element->UserType, Element->UserData);})
+         @custom_deserialize(if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, &Element->UserType, &Element->UserData, Memory);})  )
+};
+
+struct entity_1
+{
+  /* u64 Version; */
+
+  entity_id Id;
+
+  // NOTE(Jesse): This is a pretty dirty hack to get the Offset in CP to have
+  // a custom value range.  I couldn't figure out a better way while thinking about
+  // it for 15 minutes, so I settled on this for now.  Hopefully I figure out
+  // something better soon, cause this is un-tenable for the long-term
+  //
+  // @dirty_entity_P_format_hack
+  //
+  cp P;           poof(@custom_ui(DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)))
+
+  v3 EulerAngles; poof(@ui_value_range(-180.f, 180.f))
+  r32 Scale;
+
+  // NOTE(Jesse): This must be updated with UpdateCollisionVolumeRadius.
+  // Entity pointers are stored on world chunks, which are used during
+  // collision detection.  The chunks to store the entity to are computed using
+  // the CollisionVolumeRadius so if we update it we have to also check if the
+  // number of chunks we're overlapping changed, and update the difference.
+  v3 _CollisionVolumeRadius;
+
+  physics Physics;
+
+  asset_id AssetId;
+  u64      ModelIndex;
+
+  collision_event      LastResolvedCollision; poof(@no_serialize)
+  entity_position_info LastResolvedPosInfo;   poof(@no_serialize)
+
+  particle_system *Emitter;
+
+  entity_state          State;
+  entity_behavior_flags Behavior;
+
+  entity_id Carrying;
+
+  u64 UserType;
+
+  u64 UserData;
+  poof(  @custom_serialize(  if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(File, Element->UserType, Element->UserData);})
+         @custom_deserialize(if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, &Element->UserType, &Element->UserData, Memory);})  )
+};
+
+struct entity_0
+{
+  /* u64 Version; */
 
   entity_id Id;
 
@@ -99,162 +193,9 @@ struct entity
   entity_behavior_flags Behavior;
 
   u64 UserType;
-
   u64 UserData;
-  poof(  @custom_serialize(  if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(File, Element);})
-         @custom_deserialize(if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, Element, Memory);})  )
-};
-
-struct entity_3
-{
-  u64 Version;
-
-  entity_id Id;
-
-  // NOTE(Jesse): This is a pretty dirty hack to get the Offset in CP to have
-  // a custom value range.  I couldn't figure out a better way while thinking about
-  // it for 15 minutes, so I settled on this for now.  Hopefully I figure out
-  // something better soon, cause this is un-tenable for the long-term
-  //
-  // @dirty_entity_P_format_hack
-  //
-  cp P;           poof(@custom_ui(DoEditorUi_entity_P(Ui, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)))
-
-  v3 EulerAngles; poof(@ui_value_range(-180.f, 180.f))
-  r32 Scale;
-
-  // NOTE(Jesse): This must be updated with UpdateCollisionVolumeRadius.
-  // Entity pointers are stored on world chunks, which are used during
-  // collision detection.  The chunks to store the entity to are computed using
-  // the CollisionVolumeRadius so if we update it we have to also check if the
-  // number of chunks we're overlapping changed, and update the difference.
-  v3 _CollisionVolumeRadius;
-
-  physics Physics;
-
-  asset_id AssetId;
-  u64      ModelIndex;
-
-  collision_event      LastResolvedCollision; poof(@no_serialize)
-  entity_position_info LastResolvedPosInfo;   poof(@no_serialize)
-
-  particle_system *Emitter;
-
-  entity_state          State;
-  entity_behavior_flags Behavior;
-
-  u64 UserType;
-
-  u64 UserData;
-  poof(  @custom_serialize(  if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(File, Element);})
-         @custom_deserialize(if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, Element, Memory);})  )
-};
-
-struct entity_2
-{
-  u64 Version;
-
-  u64 Id;
-
-  // NOTE(Jesse): This is a pretty dirty hack to get the Offset in CP to have
-  // a custom value range.  I couldn't figure out a better way while thinking about
-  // it for 15 minutes, so I settled on this for now.  Hopefully I figure out
-  // something better soon, cause this is un-tenable for the long-term
-  //
-  // @dirty_entity_P_format_hack
-  //
-  cp P;           poof(@custom_ui(DoEditorUi_entity_P(Ui, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)))
-
-  v3 EulerAngles; poof(@ui_value_range(-180.f, 180.f))
-  r32 Scale;
-
-  // NOTE(Jesse): This must be updated with UpdateCollisionVolumeRadius.
-  // Entity pointers are stored on world chunks, which are used during
-  // collision detection.  The chunks to store the entity to are computed using
-  // the CollisionVolumeRadius so if we update it we have to also check if the
-  // number of chunks we're overlapping changed, and update the difference.
-  v3 _CollisionVolumeRadius;
-
-  physics Physics;
-
-  asset_id AssetId;
-  u64      ModelIndex;
-
-  collision_event      LastResolvedCollision; poof(@no_serialize)
-  entity_position_info LastResolvedPosInfo;   poof(@no_serialize)
-
-  particle_system *Emitter;
-
-  entity_state          State;
-  entity_behavior_flags Behavior;
-
-  u64 UserType;
-
-  u64 UserData;
-  poof(  @custom_serialize(  if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(File, Element);})
-         @custom_deserialize(if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, Element, Memory);})  )
-};
-
-struct entity_1
-{
-  u64 Version;
-
-  u64 Id;
-
-  cp P;
-  // NOTE(Jesse): This is a v4 because it used to be a quaternion, and the
-  // savefiles have magic numbers so they have to deal with elements that are
-  // the same size.  The w coordinate is unused
-  v4 EulerAngles;
-  r32 Scale;
-
-  // NOTE(Jesse): This must be updated with UpdateCollisionVolumeRadius.
-  // Entity pointers are stored on world chunks, which are used during
-  // collision detection.  The chunks to store the entity to are computed using
-  // the CollisionVolumeRadius so if we update it we have to also check if the
-  // number of chunks we're overlapping changed, and update the difference.
-  v3 _CollisionVolumeRadius;
-
-  physics Physics;
-
-  asset_id             AssetId;
-
-#if !POOF_PREPROCESSOR
-  collision_event      LastResolvedCollision;
-  entity_position_info LastResolvedPosInfo;
-#endif
-
-  particle_system *Emitter;
-
-  entity_state          State;
-  entity_behavior_flags Behavior;
-
-  u64 UserType;
-  u64 UserData;
-};
-
-struct entity_0
-{
-  umm Id;
-
-  cp P;
-  // NOTE(Jesse): This is a v4 because it used to be a quaternion, and the
-  // savefiles have magic numbers so they have to deal with elements that are
-  // the same size.  The w coordinate is unused
-  v4 EulerAngles;
-  r32 Scale;
-
-  v3 CollisionVolumeRadius;
-  physics Physics;
-
-  model           *Model;
-  particle_system *Emitter;
-
-  entity_state          State;
-  entity_behavior_flags Behavior;
-
-  u64 UserType;
-  umm UserData;
+  poof(  @custom_serialize(  if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(File, Element->UserType, Element->UserData);})
+         @custom_deserialize(if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, &Element->UserType, &Element->UserData, Memory);})  )
 };
 
 link_internal void

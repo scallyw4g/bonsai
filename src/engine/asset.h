@@ -144,7 +144,7 @@ poof(generate_string_table(asset_load_state))
 #define INVALID_ASSET_INDEX (u16_MAX)
 struct asset_id
 {
-  u16 Index;  poof(@no_serialize) // Physical slot in asset table.  Can be INVALID_ASSET_INDEX if allocation failed.
+  u16 Index; poof(@no_serialize) // Physical slot in asset table.  Can be INVALID_ASSET_INDEX if allocation failed.
   file_traversal_node FileNode;
 };
 

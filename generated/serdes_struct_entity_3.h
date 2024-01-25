@@ -1,10 +1,16 @@
 link_internal b32
-Serialize(native_file *File, entity_0 *Element)
+Serialize(native_file *File, entity_3 *Element)
 {
   u64 PointerTrue = True; 
   u64 PointerFalse = False; 
 
   b32 Result = True;
+
+  Result &= Serialize(File, &Element->Version);
+
+
+
+
 
   Result &= Serialize(File, &Element->Id);
 
@@ -87,9 +93,17 @@ Serialize(native_file *File, entity_0 *Element)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, entity_0 *Element, memory_arena *Memory)
+Deserialize(u8_stream *Bytes, entity_3 *Element, memory_arena *Memory)
 {
   b32 Result = True;
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->Version, Memory);
+
+
+
+
+
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Id, Memory);

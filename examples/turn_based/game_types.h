@@ -35,14 +35,28 @@ enum player_action
 
   // NOTE(Jesse): Move must come first because we start iterating from it.
   PlayerAction_Move,
-  PlayerAction_ChargeFireball,
-  PlayerAction_Throw,
-  PlayerAction_IceBlock,
-  PlayerAction_Dig,
+  PlayerAction_Shovel,
   PlayerAction_Grab,
-  PlayerAction_ShovelSmack,
+  PlayerAction_ChargeFireball,
+  PlayerAction_IceBlock,
+  PlayerAction_Throw,
 
   PlayerAction_Count,
+};
+
+global_variable s32
+LastBackgroundSprite = 3;
+
+global_variable s32
+Global_SpriteIndexFromActionIndex[PlayerAction_Count] =
+{
+  -1, // TODO(Jesse): What should the invalid marker be?
+  LastBackgroundSprite + 153, // move
+  LastBackgroundSprite + 350, // shovel
+  LastBackgroundSprite + 44, // grab
+  LastBackgroundSprite + 273, // fireball
+  LastBackgroundSprite + 307, // ice
+  LastBackgroundSprite + 256, // thrwo
 };
 
 

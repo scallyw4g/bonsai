@@ -5,7 +5,7 @@
 #if LEVEL_FILE_DEBUG_MODE
        
 #define MAYBE_WRITE_DEBUG_OBJECT_DELIM() { u64 Tag = LEVEL_FILE_DEBUG_OBJECT_DELIM; Ensure( Serialize(File, &Tag) ); }
-#define MAYBE_READ_DEBUG_OBJECT_DELIM() { u64 Tag = Read_u64(Bytes); if ( Tag != LEVEL_FILE_DEBUG_OBJECT_DELIM ) { Result = False; SoftError("Reading Object Delim Failed in file (" __FILE__ ")"); } }
+#define MAYBE_READ_DEBUG_OBJECT_DELIM() { u64 Tag = Read_u64(Bytes); if ( Tag != LEVEL_FILE_DEBUG_OBJECT_DELIM ) { Result = False; SoftError("Reading Object Delim Failed in file (" __FILE__ ":" STRINGIZE(__LINE__) ")"); } }
 #else
 #define MAYBE_WRITE_DEBUG_OBJECT_DELIM(...)
 #define MAYBE_READ_DEBUG_OBJECT_DELIM(...)

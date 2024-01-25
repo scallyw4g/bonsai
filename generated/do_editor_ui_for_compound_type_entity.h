@@ -9,16 +9,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, EDI
 
       PushTableStart(Ui);
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-      DoEditorUi(Ui, Window, &Element->Version, CSz("u64 Version"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
       DoEditorUi(Ui, Window, &Element->Id, CSz("entity_id Id"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
@@ -124,6 +114,15 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
 
       
       DoEditorUi(Ui, Window, &Element->Behavior, CSz("entity_behavior_flags Behavior"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui, Window, &Element->Carrying, CSz("entity_id Carrying"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
