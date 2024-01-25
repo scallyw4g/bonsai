@@ -264,8 +264,8 @@ EffectGrabEntity(engine_resources *Engine, entity *Grabber, entity *Grabee)
     case EntityType_Loot:
     {
       Result = True;
-      /* Grabber->Carrying = Grabee->Id; */
-      /* DestroyLoot(Engine, Grabee); */
+      Grabber->Carrying = Grabee->Id;
+      Grabee->Behavior = entity_behavior_flags(Grabee->Behavior & ~EntityBehaviorFlags_Gravity);
     } break;
   }
   return Result;
@@ -351,8 +351,17 @@ GameEntityUpdate(engine_resources *Engine, entity *Entity )
 
   Assert(Spawned(Entity));
 
-  entity_type Type = Cast(entity_type, Entity->UserType);
+  if (Entity->Carrying)
+  {
+    entity *Carrying = GetEntity(EntityTable, Entity->Carrying);
+    v3 EntitySimP = GetSimSpaceBaseP(World, Entity);
 
+    r32 AnimOffset = Sin(fmodf(Plat->GameTime*2.f, PI32)) + 1.f;
+    v3 NewP = EntitySimP + V3(0.f, 0.f, Entity->_CollisionVolumeRadius.z*2.f + AnimOffset) - V3(Carrying->_CollisionVolumeRadius.xy, 0.f);
+    Carrying->P = SimSpaceToCanonical(World,  NewP);
+  }
+
+  entity_type Type = Cast(entity_type, Entity->UserType);
   switch (Type)
   {
     case EntityType_Player:   {} break;
@@ -429,15 +438,14 @@ FireballPhysics()
 link_internal b32
 HoldingItem(entity *Player)
 {
-  entity_game_data *GameData = (entity_game_data*)Player->UserData;
-  b32 Result = GameData->HoldingItem != 0;
+  b32 Result = Player->Carrying;
   return Result;
 }
 
 link_internal b32
 IceBlockCharges(entity *Player)
 {
-  entity_game_data *GameData = (entity_game_data*)Player->UserData;
+  entity_game_data *GameData = Cast(entity_game_data*, Player->UserData);
   b32 Result = GameData->IceBlockCharges != 0;
   return Result;
 }

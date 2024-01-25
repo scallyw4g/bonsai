@@ -26,7 +26,7 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
 
 
       
-      DoEditorUi(Ui, Window, &Element->EulerAngles, CSz("v3 EulerAngles"), EDITOR_UI_FUNCTION_INSTANCE_NAMES,-180.f, 180.f);
+      DoEditorUi(Ui, Window, &Element->EulerAngles, CSz("v3 EulerAngles"), EDITOR_UI_FUNCTION_INSTANCE_NAMES,-PI32, PI32);
 
 
 

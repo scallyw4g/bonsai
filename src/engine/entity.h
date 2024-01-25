@@ -75,7 +75,7 @@ struct entity
   //
   cp P;           poof(@custom_ui(DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)))
 
-  v3 EulerAngles; poof(@ui_value_range(-180.f, 180.f))
+  v3 EulerAngles; poof(@ui_value_range(-PI32, PI32))
   r32 Scale;
 
   // NOTE(Jesse): This must be updated with UpdateCollisionVolumeRadius.
@@ -101,7 +101,6 @@ struct entity
   entity_id Carrying;
 
   u64 UserType;
-
   u64 UserData;
   poof(  @custom_serialize(  if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(File, Element->UserType, Element->UserData);})
          @custom_deserialize(if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, &Element->UserType, &Element->UserData, Memory);})  )

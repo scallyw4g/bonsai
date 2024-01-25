@@ -25,4 +25,3 @@ operator!=(entity_id &LHS, entity_id &RHS)
   b32 Result = !(LHS == RHS);
   return Result;
 }
-

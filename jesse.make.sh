@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-# OPT="-O2"
+OPT="-O2"
 
-./make.sh RunPoof
-[ $? -ne 0 ] && exit 1
+# ./make.sh RunPoof
+# [ $? -ne 0 ] && exit 1
 # exit 1
 
 # exit 0
@@ -36,8 +36,8 @@
 # OPT="-O2"
 ./make.sh $OPT \
   BuildSingleExample examples/turn_based \
-  BuildExecutables \
-  BuildDebugSystem \
+  # BuildExecutables \
+  # BuildDebugSystem \
   # BuildSingleExample examples/terrain_gen \
   # BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
   # BuildSingleExample examples/the_wanderer \
