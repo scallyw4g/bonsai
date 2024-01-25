@@ -59,11 +59,13 @@ See the docs on the [build process](docs/01_build_process.md).
 -------------------------------------------------------------------------------
 ## Renderer
 
-[ ] Transparency : https://www.jcgt.org/published/0002/02/09/paper.pdf
-
 [ ] SSR : https://lettier.github.io/3d-game-shaders-for-beginners/screen-space-reflection.html
 
 [ ] Screen-space lines : https://mattdesl.svbtle.com/drawing-lines-is-hard
+
+[ ] Better shadows : https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-8-summed-area-variance-shadow-maps
+
+[ ] Motion Blur : https://developer.nvidia.com/gpugems/gpugems3/part-iv-image-effects/chapter-27-motion-blur-post-processing-effect
 
 [ ] TAA?
 
