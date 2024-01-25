@@ -34,6 +34,13 @@ MoveToStandingSpot(world *World, canonical_position P)
   return Result;
 }
 
+link_internal entity_aggregate_type*
+UserTypeToAggregateTypePtr(u64 *UserType)
+{
+  entity_aggregate_type *Result = Cast(entity_aggregate_type*, UserType);
+  return Result;
+}
+
 link_internal entity_aggregate_type
 UserTypeToAggregateType(u64 UserType)
 {
@@ -162,17 +169,7 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
 }
 
 link_internal void
-DestroyLoot(engine_resources *Engine, entity *Entity)
-{
-  file_traversal_node AssetName = {FileTraversalType_File, CSz("models"), CSz("skull_broken.vox")};
-
-  Entity->AssetId = GetOrAllocateAssetId(Engine, &AssetName);
-  Entity->EulerAngles = V3(0.f, 5.32f, RandomBilateral(&Global_GameEntropy));
-  Entity->UserType = 0;
-}
-
-link_internal void
-DestroySkeleton(engine_resources *Engine, entity *Entity, r32 Radius)
+SpawnSkeleBitties(engine_resources *Engine, cp BasisP, u32 BittyCount, r32 Radius) // TODO(Jesse): Make Radius a v3?
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -183,8 +180,7 @@ DestroySkeleton(engine_resources *Engine, entity *Entity, r32 Radius)
     CSz("skele_bitty_2.vox"),
   };
 
-  u32 MaxBitties = ArrayCount(AssetNames) * 2;
-  RangeIterator_t(u32, BittyIndex, MaxBitties)
+  RangeIterator_t(u32, BittyIndex, BittyCount)
   {
   // TODO(Jesse)(leak): This leaks the asset name when the asset is freed
     entity *BittyEntity = TryGetFreeEntityPtr(EntityTable);
@@ -203,15 +199,33 @@ DestroySkeleton(engine_resources *Engine, entity *Entity, r32 Radius)
     BittyEntity->Physics.Mass = 25.f;
     BittyEntity->Physics.Force += Rnd*150.f*Radius;
     BittyEntity->Physics.Force.z = Abs(BittyEntity->Physics.Force.z) * 0.25f;
-    BittyEntity->P = Entity->P + (Rnd*Radius) + V3(0.f, 0.f, 2.0f);
-    BittyEntity->P.Offset.z = Entity->P.Offset.z + 2.f;
+    BittyEntity->P = BasisP + (Rnd*Radius) + V3(0.f, 0.f, 2.0f);
+    BittyEntity->P.Offset.z = BasisP.Offset.z + 2.f;
 
     SpawnEntity(BittyEntity, EntityBehaviorFlags_Default);
 
     /* if (GetCollision(World, BittyEntity).Count) { Unspawn(BittyEntity); continue; } */
   }
+}
 
+link_internal void
+DestroyLoot(engine_resources *Engine, entity *Entity)
+{
+  SpawnSkeleBitties(Engine, Entity->P, 3, 8.f);
 
+  file_traversal_node AssetName = {FileTraversalType_File, CSz("models"), CSz("skull_broken.vox")};
+
+  Entity->AssetId = GetOrAllocateAssetId(Engine, &AssetName);
+  Entity->EulerAngles = V3(0.f, 5.32f, RandomBilateral(&Global_GameEntropy));
+  Entity->UserType = 0;
+}
+
+link_internal void
+DestroySkeleton(engine_resources *Engine, entity *Entity, r32 Radius)
+{
+  SpawnSkeleBitties(Engine, Entity->P, 7, 16.f);
+
+  UNPACK_ENGINE_RESOURCES(Engine);
   file_traversal_node SkullAssetNames[] =
   {
     {FileTraversalType_File, CSz("models"), CSz("skull.vox")},
@@ -232,8 +246,6 @@ DestroySkeleton(engine_resources *Engine, entity *Entity, r32 Radius)
   }
 }
 
-
-
 link_internal void
 EffectFireballEntity(engine_resources *Engine, entity *Enemy)
 {
@@ -244,6 +256,50 @@ EffectFireballEntity(engine_resources *Engine, entity *Enemy)
     case EntityType_Fireball: {} break;
     case EntityType_Enemy:    { DestroySkeleton(Engine, Enemy, 5.f); } break;
     case EntityType_Loot:     { DestroyLoot(Engine, Enemy); } break;
+  }
+}
+
+link_internal void
+EffectProjectileImpact(engine_resources *Engine, entity *Entity)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  switch (ReinterpretCast(entity_aggregate_type, Entity->UserType).Type)
+  {
+    case EntityType_Default:
+    case EntityType_Player:
+    case EntityType_Enemy:
+    {
+    } break;
+
+    case EntityType_Fireball:
+    {
+      Assert (Entity->LastResolvedCollision.Count);
+      fireball_state *State = (fireball_state*)Entity->UserData;
+      r32 Radius = 2.f + r32(State->ChargeLevel)*2.f;
+      DoSplotion(Engine, Entity->P, Radius, &Global_GameEntropy, GetTranArena());
+
+      v3 SimP = GetSimSpaceP(World, Entity->P);
+
+      sphere S = {SimP, Radius};
+      u32_buffer EntityIndices = GatherEntitiesIntersecting(World, EntityTable, &S, GetTranArena());
+
+      IterateOver(&EntityIndices, EIndex, EIndexIndex)
+      {
+        entity *E = EntityTable[*EIndex];
+        EffectFireballEntity(Engine, E);
+      }
+
+      HeapDeallocate(&GameState->Heap, (u8*)State);
+      Unspawn(Entity);
+
+    } break;
+
+    case EntityType_Loot:
+    {
+      Entity->Physics.Velocity *= 0.1f;
+      DestroyLoot(Engine, Entity);
+    } break;
   }
 }
 
@@ -305,47 +361,31 @@ EffectSmackEntity(engine_resources *Engine, entity *Enemy)
 }
 
 link_internal void
-FireballUpdate(engine_resources *Engine, entity *FireballEntity)
+FireballUpdate(engine_resources *Engine, entity *Entity)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  fireball_state *State = (fireball_state*)FireballEntity->UserData;
+  entity_aggregate_type EntityAggregateType = UserTypeToAggregateType(Entity->UserType);
 
-  v3 EntityP = GetSimSpaceP(World, FireballEntity);
-
-  if (Engine->GameState->TransitionDuration > 0.45f)
+  if (EntityAggregateType.Status == EntityStatus_Thrown)
   {
-    v3 TargetP = GetSimSpaceP(World, State->TargetP);
+    ++GameState->FireballsSimulated;
 
-    FireballEntity->Physics.Velocity = Normalize(TargetP-EntityP)*800.f;
-    /* FireballEntity->Physics.Velocity = Normalize(TargetP-EntityP)*10.f; */
-    FireballEntity->Behavior = entity_behavior_flags(FireballEntity->Behavior & ~EntityBehaviorFlags_Gravity);
+    /* if (Engine->GameState->TransitionDuration > 0.45f) */
+    /* { */
+    /*   fireball_state *State = (fireball_state*)Entity->UserData; */
+    /*   v3 TargetP = GetSimSpaceP(World, State->TargetP); */
+    /*   v3 EntityP = GetSimSpaceP(World, Entity); */
 
+    /*   Entity->Physics.Velocity = Normalize(TargetP-EntityP)*800.f; */
+    /*   /1* Entity->Physics.Velocity = Normalize(TargetP-EntityP)*10.f; *1/ */
+    /*   Entity->Behavior = entity_behavior_flags(Entity->Behavior & ~EntityBehaviorFlags_Gravity); */
+    /* } */
   }
 
-  /* DEBUG_DrawSimSpaceVectorAt(Engine, EntityP, FireballEntity->Physics.Velocity*10000, RED); */
-  /* DEBUG_DrawSimSpaceVectorAt(Engine, EntityP, FireballEntity->Physics.Velocity, RED); */
+  /* DEBUG_DrawSimSpaceVectorAt(Engine, EntityP, Entity->Physics.Velocity*10000, RED); */
+  /* DEBUG_DrawSimSpaceVectorAt(Engine, EntityP, Entity->Physics.Velocity, RED); */
 
-  if (FireballEntity->LastResolvedCollision.Count)
-  {
-    r32 Radius = 2.f + r32(State->ChargeLevel)*2.f;
-    DoSplotion(Engine, FireballEntity->P, Radius, &Global_GameEntropy, GetTranArena());
-
-    v3 SimP = GetSimSpaceP(World, FireballEntity->P);
-
-    sphere S = {SimP, Radius};
-
-    u32_buffer EntityIndices = GatherEntitiesIntersecting(World, EntityTable, &S, GetTranArena());
-
-    IterateOver(&EntityIndices, EIndex, EIndexIndex)
-    {
-      entity *E = EntityTable[*EIndex];
-      EffectFireballEntity(Engine, E);
-    }
-
-    HeapDeallocate(&GameState->Heap, (u8*)State);
-    Unspawn(FireballEntity);
-  }
 }
 
 link_weak b32
@@ -365,16 +405,23 @@ GameEntityUpdate(engine_resources *Engine, entity *Entity )
     Carrying->P = SimSpaceToCanonical(World,  NewP);
   }
 
-  entity_aggregate_type Type = ReinterpretCast(entity_aggregate_type, Entity->UserType);
-  switch (Type.Type)
+  entity_aggregate_type EntityAggregateType = UserTypeToAggregateType(Entity->UserType);
+  if ( EntityAggregateType.Status == EntityStatus_Thrown &&
+       EntityCollidedLastFrame(Engine, Entity) )
   {
-    case EntityType_Player:  {} break;
-    case EntityType_Default: {} break;
-    case EntityType_Loot:    {} break;
-    case EntityType_Enemy:   { EnemyUpdate(Engine, Entity); } break;
+    EffectProjectileImpact(Engine, Entity);
+  }
 
-    case EntityType_Fireball: { ++GameState->FireballsSimulated; FireballUpdate(Engine, Entity); } break;
-    /* case EntityType_Fireball: { ++GameState->FireballsSimulated; FireballUpdate(Engine, Entity); } break; */
+  switch (EntityAggregateType.Type)
+  {
+    case EntityType_Player:
+    case EntityType_Default:
+    case EntityType_Loot:
+    {
+    } break;
+
+    case EntityType_Enemy:   { EnemyUpdate(Engine, Entity); } break;
+    case EntityType_Fireball: {  FireballUpdate(Engine, Entity); } break;
   }
 
   return False;
@@ -797,11 +844,11 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           {
             GameState->PlayerActed = True;
 
-            PlayerGameData->HoldingItem = 1;
-            PlayerGameData->FireballChargeLevel += 2;
+            /* PlayerGameData->HoldingItem = 1; */
+            PlayerGameData->FireballChargeLevel = 2;
 
             entity *E = TryGetFreeEntityPtr(EntityTable); Assert(E);
-            /* E->UserType = EntityType_Fireball; */
+            E->UserType = EntityType_Fireball;
 
             Player->Carrying = E->Id;
 
@@ -853,6 +900,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
             {
               if (Input->LMB.Clicked)
               {
+                GameState->PlayerActed = True;
                 entity *Thrown = GetEntity(EntityTable, Player->Carrying);
                 if (Thrown)
                 {
@@ -860,7 +908,10 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
                   v3 TargetSimP = GetSimSpaceP(World, FirstFilledMouseVoxel);
 
                   v3 Direction = Normalize(TargetSimP-SimPlayerCenter);
-                  Thrown->Physics.Velocity = Direction*250.f + V3(0,0,15);;
+                  Thrown->Physics.Velocity = Direction*150.f + V3(0,0,15);;
+
+                  entity_aggregate_type *Aggregate = UserTypeToAggregateTypePtr(&Thrown->UserType);
+                  Aggregate->Status = EntityStatus_Thrown;
                 }
                 Player->Carrying = {};
               }

@@ -1411,6 +1411,14 @@ MousePickEntity(engine_resources *Resources)
   return Result;
 }
 
+link_internal b32
+EntityCollidedLastFrame(engine_resources *Engine, entity *E)
+{
+  b32 Result =  E->LastResolvedCollision.Count &&
+               (E->LastResolvedCollision.FrameIndex == Engine->FrameIndex-1);
+  return Result;
+}
+
 // An optional function the game can choose to implement if they want to do a custom entity update.
 link_weak b32 GameEntityUpdate(engine_resources *, entity *);
 
