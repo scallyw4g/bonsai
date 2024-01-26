@@ -294,6 +294,12 @@ poof(do_editor_ui_for_compound_type(world_chunk))
 #include <generated/do_editor_ui_for_compound_type_world_chunk.h>
 
 
+poof(do_editor_ui_for_compound_type(plane))
+#include <generated/do_editor_ui_for_compound_type_plane.h>
+
+poof(do_editor_ui_for_compound_type(frustum))
+#include <generated/do_editor_ui_for_compound_type_frustum.h>
+
 poof(do_editor_ui_for_compound_type(camera))
 #include <generated/do_editor_ui_for_compound_type_camera.h>
 

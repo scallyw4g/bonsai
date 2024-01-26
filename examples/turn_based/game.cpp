@@ -885,7 +885,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
             SpawnFire( E,
                       &GameState->Entropy,
                        Global_EntityFireballOffset + Player->_CollisionVolumeRadius.xy,
-                       PlayerGameData->FireballChargeLevel);
+                       PlayerGameData->FireballChargeLevel );
 
 
             auto CP = Player->P;
@@ -938,7 +938,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
                   v3 TargetSimP = GetSimSpaceP(World, FirstFilledMouseVoxel);
 
                   v3 Direction = Normalize(TargetSimP-SimPlayerCenter);
-                  Thrown->Physics.Velocity = Direction*150.f + V3(0,0,15);;
+                  Thrown->Physics.Velocity = Direction*250.f + V3(0,0,15);;
 
                   entity_aggregate_type *Aggregate = UserTypeToAggregateTypePtr(&Thrown->UserType);
                   Aggregate->Status = EntityStatus_Thrown;
