@@ -1,3 +1,58 @@
+link_internal bonsai_type_info
+TypeInfo(camera *Ignored)
+{
+  bonsai_type_info Result = {};
+
+  Result.Name = CSz("camera");
+
+  {
+    member_info Member = {CSz("Frust"), CSz("Frust"), 0x31ADBF03};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("CurrentP"), CSz("CurrentP"), 0x22971AC5};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("RenderSpacePosition"), CSz("RenderSpacePosition"), 0x23FB7A7A};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("Pitch"), CSz("Pitch"), 0x2BE48F1B};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("Roll"), CSz("Roll"), 0x29264562};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("Yaw"), CSz("Yaw"), 0x291003B4};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("DistanceFromTarget"), CSz("DistanceFromTarget"), 0xFC20379};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("Front"), CSz("Front"), 0x31A2216C};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("Right"), CSz("Right"), 0x31942685};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("Up"), CSz("Up"), 0x290F205E};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("GhostId"), CSz("GhostId"), 0x179CAD1B};
+    Push(&Result.Members, &Member);
+  }
+
+  return Result;
+}
+
 link_internal b32
 Serialize(native_file *File, camera *Element)
 {
@@ -5,6 +60,8 @@ Serialize(native_file *File, camera *Element)
   u64 PointerFalse = False; 
 
   b32 Result = True;
+
+  
 
   Result &= Serialize(File, &Element->Frust);
 
@@ -74,8 +131,9 @@ Serialize(native_file *File, camera *Element)
   return Result;
 }
 
+
 link_internal b32
-Deserialize(u8_stream *Bytes, camera *Element, memory_arena *Memory)
+DeserializeUnversioned(u8_stream *Bytes, camera *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -163,8 +221,18 @@ Deserialize(u8_stream *Bytes, camera *Element, memory_arena *Memory)
   Result &= Deserialize(Bytes, &Element->GhostId, Memory);
 
   
+  return Result;
+}
 
+link_internal b32
+Deserialize(u8_stream *Bytes, camera *Element, memory_arena *Memory)
+{
+  b32 Result = True;
+
+  Result &= DeserializeUnversioned(Bytes, Element, Memory);
   MAYBE_READ_DEBUG_OBJECT_DELIM();
+
+
   return Result;
 }
 

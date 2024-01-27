@@ -1,3 +1,18 @@
+link_internal bonsai_type_info
+TypeInfo(voxel_lighting *Ignored)
+{
+  bonsai_type_info Result = {};
+
+  Result.Name = CSz("voxel_lighting");
+
+  {
+    member_info Member = {CSz("Emission"), CSz("Emission"), 0x1938DEBC};
+    Push(&Result.Members, &Member);
+  }
+
+  return Result;
+}
+
 link_internal b32
 Serialize(native_file *File, voxel_lighting *Element)
 {
@@ -5,6 +20,8 @@ Serialize(native_file *File, voxel_lighting *Element)
   u64 PointerFalse = False; 
 
   b32 Result = True;
+
+  
 
   Result &= Serialize(File, &Element->Emission);
 
@@ -14,8 +31,9 @@ Serialize(native_file *File, voxel_lighting *Element)
   return Result;
 }
 
+
 link_internal b32
-Deserialize(u8_stream *Bytes, voxel_lighting *Element, memory_arena *Memory)
+DeserializeUnversioned(u8_stream *Bytes, voxel_lighting *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -23,8 +41,18 @@ Deserialize(u8_stream *Bytes, voxel_lighting *Element, memory_arena *Memory)
   Result &= Deserialize(Bytes, &Element->Emission, Memory);
 
   
+  return Result;
+}
 
+link_internal b32
+Deserialize(u8_stream *Bytes, voxel_lighting *Element, memory_arena *Memory)
+{
+  b32 Result = True;
+
+  Result &= DeserializeUnversioned(Bytes, Element, Memory);
   MAYBE_READ_DEBUG_OBJECT_DELIM();
+
+
   return Result;
 }
 

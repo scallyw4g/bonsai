@@ -1,3 +1,106 @@
+link_internal bonsai_type_info
+TypeInfo(particle_system *Ignored)
+{
+  bonsai_type_info Result = {};
+
+  Result.Name = CSz("particle_system");
+
+  {
+    member_info Member = {CSz("Entropy"), CSz("Entropy"), 0x19908EC4};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("SpawnType"), CSz("SpawnType"), 0x196B1D85};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("Drag"), CSz("Drag"), 0x291A717F};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("Lifetime"), CSz("Lifetime"), 0x29BA3789};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("EmissionDelay"), CSz("EmissionDelay"), 0x3393ED36};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("EmissionLifespan"), CSz("EmissionLifespan"), 0x19AAA94C};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("ActiveParticles"), CSz("ActiveParticles"), 0x21FB4F2E};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("LifespanMod"), CSz("LifespanMod"), 0x854C01E};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("ParticleLifespan"), CSz("ParticleLifespan"), 0x3897ADA3};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("ParticlesPerSecond"), CSz("ParticlesPerSecond"), 0x38A35F56};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("ParticleLightEmission"), CSz("ParticleLightEmission"), 0xED1A616};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("ParticleLightEmissionChance"), CSz("ParticleLightEmissionChance"), 0x29B1BD12};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("ParticleStartingTransparency"), CSz("ParticleStartingTransparency"), 0x11C89978};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("ParticleEndingTransparency"), CSz("ParticleEndingTransparency"), 0x4846C5};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("ParticleStartingDim"), CSz("ParticleStartingDim"), 0xFD0A292};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("ParticleEndingDim"), CSz("ParticleEndingDim"), 0x111BC84C};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("ParticleTurbMin"), CSz("ParticleTurbMin"), 0x34C97463};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("ParticleTurbMax"), CSz("ParticleTurbMax"), 0x3372BD06};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("SpawnRegion"), CSz("SpawnRegion"), 0x1BE13FF5};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("SystemMovementCoefficient"), CSz("SystemMovementCoefficient"), 0x8A80525};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("ElapsedSinceLastEmission"), CSz("ElapsedSinceLastEmission"), 0x345D5A75};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("Colors"), CSz("Colors"), 0x37379D40};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("Particles"), CSz("Particles"), 0x27E75E9D};
+    Push(&Result.Members, &Member);
+  }
+
+  return Result;
+}
+
 link_internal b32
 Serialize(native_file *File, particle_system *Element)
 {
@@ -5,6 +108,8 @@ Serialize(native_file *File, particle_system *Element)
   u64 PointerFalse = False; 
 
   b32 Result = True;
+
+  
 
   Result &= Serialize(File, &Element->Entropy);
 
@@ -145,8 +250,9 @@ Serialize(native_file *File, particle_system *Element)
   return Result;
 }
 
+
 link_internal b32
-Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
+DeserializeUnversioned(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -326,8 +432,18 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
 
 
   
+  return Result;
+}
 
+link_internal b32
+Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
+{
+  b32 Result = True;
+
+  Result &= DeserializeUnversioned(Bytes, Element, Memory);
   MAYBE_READ_DEBUG_OBJECT_DELIM();
+
+
   return Result;
 }
 

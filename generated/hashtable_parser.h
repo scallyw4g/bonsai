@@ -62,6 +62,13 @@ Insert(parser_linked_list_node *Node, parser_hashtable *Table)
 }
 
 link_internal parser*
+Upsert(parser Element, parser_hashtable *Table)
+{
+  NotImplemented;
+  return 0;
+}
+
+link_internal parser*
 Insert(parser Element, parser_hashtable *Table, memory_arena *Memory)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */

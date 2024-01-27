@@ -61,8 +61,7 @@ link_weak b32 EntityUserDataDeserialize(u8_cursor *, u64 *UserType, u64 *UserDat
 
 link_weak void EntityUserDataEditorUi(renderer_2d *Ui, window_layout *Window, u64 *UserType, u64 *UserData, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS);
 
-#define ENTITY_VERSION (1)
-struct entity
+struct entity poof(@version(1))
 {
   /* u64 Version; */
 
@@ -100,7 +99,7 @@ struct entity
   entity_state          State;
   entity_behavior_flags Behavior;
 
-  entity_id Carrying;
+  entity_id Carrying; poof(@version(1))
 
   u64 UserType;
   poof(

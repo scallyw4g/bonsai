@@ -178,8 +178,8 @@ poof(serdes_struct(keyframe))
 /* poof(serdes_struct(animation)) */
 /* #include <generated/serdes_struct_animation.h> */
 
-poof(serdes_struct(aabb))
-#include <generated/serdes_struct_aabb.h>
+poof(serdes_struct(rect3))
+#include <generated/serdes_struct_rect3.h>
 
 poof(serdes_struct(random_series))
 #include <generated/serdes_struct_random_series.h>
@@ -205,6 +205,11 @@ poof(serdes_struct(file_traversal_node))
 poof(serdes_struct(asset_id))
 #include <generated/serdes_struct_asset_id.h>
 
+link_internal b32
+DeserializeVersioned(u8_stream *Bytes, entity *Element, bonsai_type_info *TypeInfo, u64 Version, memory_arena *Memory);
+
+poof(deserialize_struct(entity))
+#include <generated/deserialize_struct_entity.h>
 poof(serialize_struct(entity))
 #include <generated/serialize_struct_entity.h>
 poof(serdes_struct(entity_1))
@@ -292,6 +297,43 @@ poof(serdes_struct(level_header))
 
 
 link_internal b32
+DeserializeVersioned(u8_stream *Bytes, entity *Element, bonsai_type_info *TypeInfo, u64 Version, memory_arena *Memory)
+{
+  b32 Result = True;
+
+  if (Result)
+  {
+    switch(Version)
+    {
+      case 0:
+      {
+        entity_0 E0 = {};
+        entity_1 E1 = {};
+        Deserialize(Bytes, &E0, Memory);
+        Marshal(&E0, &E1);
+        Marshal(&E1, Element);
+      } break;
+
+      case 1:
+      {
+        entity_1 E1 = {};
+        Deserialize(Bytes, &E1, Memory);
+        Marshal(&E1, Element);
+      } break;
+
+      default: { SoftError("Could not deserialize entity, got invalid version (%lu)", Version); }
+    }
+
+
+  }
+
+  Element->AssetId.Index = INVALID_ASSET_INDEX;
+
+  return Result;
+}
+
+#if 0
+link_internal b32
 Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
 {
   b32 Result = True;
@@ -329,5 +371,6 @@ Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
 
   return Result;
 }
+#endif
 
 

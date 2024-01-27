@@ -62,6 +62,13 @@ Insert(voxel_synth_tile_linked_list_node *Node, voxel_synth_tile_hashtable *Tabl
 }
 
 link_internal voxel_synth_tile*
+Upsert(voxel_synth_tile Element, voxel_synth_tile_hashtable *Table)
+{
+  NotImplemented;
+  return 0;
+}
+
+link_internal voxel_synth_tile*
 Insert(voxel_synth_tile Element, voxel_synth_tile_hashtable *Table, memory_arena *Memory)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */

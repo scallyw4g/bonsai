@@ -91,12 +91,21 @@ DoLevelWindow(engine_resources *Engine)
     thread_local_state *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
     u8_stream LevelBytes = U8_StreamFromFile(Filename, Thread->PermMemory);
 
+
     if (LevelBytes.Start)
     {
       level_header LevelHeader = {};
       Deserialize(&LevelBytes, &LevelHeader, Thread->PermMemory);
       if (LevelHeader.Version == 0)
       {
+
+        // TODO(Jesse): Read this in from level file
+        {
+          Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(64, Thread->TempMemory);
+          entity *E = 0;
+          Insert(TypeInfo(E), &Global_SerializeTypeTable, Thread->TempMemory);
+        }
+
         SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
 
         HardResetWorld(Engine);

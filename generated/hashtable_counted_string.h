@@ -62,6 +62,13 @@ Insert(counted_string_linked_list_node *Node, counted_string_hashtable *Table)
 }
 
 link_internal counted_string*
+Upsert(counted_string Element, counted_string_hashtable *Table)
+{
+  NotImplemented;
+  return 0;
+}
+
+link_internal counted_string*
 Insert(counted_string Element, counted_string_hashtable *Table, memory_arena *Memory)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */

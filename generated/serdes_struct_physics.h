@@ -1,3 +1,34 @@
+link_internal bonsai_type_info
+TypeInfo(physics *Ignored)
+{
+  bonsai_type_info Result = {};
+
+  Result.Name = CSz("physics");
+
+  {
+    member_info Member = {CSz("Velocity"), CSz("Velocity"), 0x380FA2D0};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("Force"), CSz("Force"), 0x2A7B47CA};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("Delta"), CSz("Delta"), 0x28C00979};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("Mass"), CSz("Mass"), 0x29367621};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("Speed"), CSz("Speed"), 0x2A06DE50};
+    Push(&Result.Members, &Member);
+  }
+
+  return Result;
+}
+
 link_internal b32
 Serialize(native_file *File, physics *Element)
 {
@@ -5,6 +36,8 @@ Serialize(native_file *File, physics *Element)
   u64 PointerFalse = False; 
 
   b32 Result = True;
+
+  
 
   Result &= Serialize(File, &Element->Velocity);
 
@@ -38,8 +71,9 @@ Serialize(native_file *File, physics *Element)
   return Result;
 }
 
+
 link_internal b32
-Deserialize(u8_stream *Bytes, physics *Element, memory_arena *Memory)
+DeserializeUnversioned(u8_stream *Bytes, physics *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -79,8 +113,18 @@ Deserialize(u8_stream *Bytes, physics *Element, memory_arena *Memory)
   Result &= Deserialize(Bytes, &Element->Speed, Memory);
 
   
+  return Result;
+}
 
+link_internal b32
+Deserialize(u8_stream *Bytes, physics *Element, memory_arena *Memory)
+{
+  b32 Result = True;
+
+  Result &= DeserializeUnversioned(Bytes, Element, Memory);
   MAYBE_READ_DEBUG_OBJECT_DELIM();
+
+
   return Result;
 }
 

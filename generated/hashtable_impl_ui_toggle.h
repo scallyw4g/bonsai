@@ -50,6 +50,13 @@ Insert(ui_toggle_linked_list_node *Node, ui_toggle_hashtable *Table)
 }
 
 link_internal ui_toggle*
+Upsert(ui_toggle Element, ui_toggle_hashtable *Table)
+{
+  NotImplemented;
+  return 0;
+}
+
+link_internal ui_toggle*
 Insert(ui_toggle Element, ui_toggle_hashtable *Table, memory_arena *Memory)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */

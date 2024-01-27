@@ -1,16 +1,16 @@
 link_internal bonsai_type_info
-TypeInfo(keyframe *Ignored)
+TypeInfo(rect3 *Ignored)
 {
   bonsai_type_info Result = {};
 
-  Result.Name = CSz("keyframe");
+  Result.Name = CSz("rect3");
 
   {
-    member_info Member = {CSz("tEnd"), CSz("tEnd"), 0x2914265C};
+    member_info Member = {CSz("Min"), CSz("Min"), 0x290FA28F};
     Push(&Result.Members, &Member);
   }
   {
-    member_info Member = {CSz("Value"), CSz("Value"), 0x2AA3E708};
+    member_info Member = {CSz("Max"), CSz("Max"), 0x29100EA1};
     Push(&Result.Members, &Member);
   }
 
@@ -18,7 +18,7 @@ TypeInfo(keyframe *Ignored)
 }
 
 link_internal b32
-Serialize(native_file *File, keyframe *Element)
+Serialize(native_file *File, rect3 *Element)
 {
   u64 PointerTrue = True; 
   u64 PointerFalse = False; 
@@ -27,13 +27,13 @@ Serialize(native_file *File, keyframe *Element)
 
   
 
-  Result &= Serialize(File, &Element->tEnd);
+  Result &= Serialize(File, &Element->Min);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Value);
+  Result &= Serialize(File, &Element->Max);
 
   
 
@@ -43,12 +43,12 @@ Serialize(native_file *File, keyframe *Element)
 
 
 link_internal b32
-DeserializeUnversioned(u8_stream *Bytes, keyframe *Element, memory_arena *Memory)
+DeserializeUnversioned(u8_stream *Bytes, rect3 *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->tEnd, Memory);
+  Result &= Deserialize(Bytes, &Element->Min, Memory);
 
 
 
@@ -56,14 +56,14 @@ DeserializeUnversioned(u8_stream *Bytes, keyframe *Element, memory_arena *Memory
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Value, Memory);
+  Result &= Deserialize(Bytes, &Element->Max, Memory);
 
   
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, keyframe *Element, memory_arena *Memory)
+Deserialize(u8_stream *Bytes, rect3 *Element, memory_arena *Memory)
 {
   b32 Result = True;
 

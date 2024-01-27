@@ -50,6 +50,13 @@ Insert(xml_tag_linked_list_node *Node, xml_tag_hashtable *Table)
 }
 
 link_internal xml_tag*
+Upsert(xml_tag Element, xml_tag_hashtable *Table)
+{
+  NotImplemented;
+  return 0;
+}
+
+link_internal xml_tag*
 Insert(xml_tag Element, xml_tag_hashtable *Table, memory_arena *Memory)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */

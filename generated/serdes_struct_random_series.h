@@ -1,3 +1,18 @@
+link_internal bonsai_type_info
+TypeInfo(random_series *Ignored)
+{
+  bonsai_type_info Result = {};
+
+  Result.Name = CSz("random_series");
+
+  {
+    member_info Member = {CSz("Seed"), CSz("Seed"), 0x2913CA1A};
+    Push(&Result.Members, &Member);
+  }
+
+  return Result;
+}
+
 link_internal b32
 Serialize(native_file *File, random_series *Element)
 {
@@ -5,6 +20,8 @@ Serialize(native_file *File, random_series *Element)
   u64 PointerFalse = False; 
 
   b32 Result = True;
+
+  
 
   Result &= Serialize(File, &Element->Seed);
 
@@ -14,8 +31,9 @@ Serialize(native_file *File, random_series *Element)
   return Result;
 }
 
+
 link_internal b32
-Deserialize(u8_stream *Bytes, random_series *Element, memory_arena *Memory)
+DeserializeUnversioned(u8_stream *Bytes, random_series *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -23,8 +41,18 @@ Deserialize(u8_stream *Bytes, random_series *Element, memory_arena *Memory)
   Result &= Deserialize(Bytes, &Element->Seed, Memory);
 
   
+  return Result;
+}
 
+link_internal b32
+Deserialize(u8_stream *Bytes, random_series *Element, memory_arena *Memory)
+{
+  b32 Result = True;
+
+  Result &= DeserializeUnversioned(Bytes, Element, Memory);
   MAYBE_READ_DEBUG_OBJECT_DELIM();
+
+
   return Result;
 }
 
