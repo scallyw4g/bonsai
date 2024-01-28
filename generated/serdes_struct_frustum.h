@@ -4,6 +4,7 @@ TypeInfo(frustum *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("frustum");
+  Result.Version = 0 ;
 
   {
     member_info Member = {CSz("farClip"), CSz("farClip"), 0x3B1ACDFB};
@@ -100,7 +101,6 @@ Serialize(native_file *File, frustum *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
-
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, frustum *Element, memory_arena *Memory)

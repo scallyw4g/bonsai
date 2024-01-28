@@ -4,6 +4,7 @@ TypeInfo(entity *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("entity");
+  Result.Version =1 ;
 
   {
     member_info Member = {CSz("Id"), CSz("Id"), 0x290F1DD6};

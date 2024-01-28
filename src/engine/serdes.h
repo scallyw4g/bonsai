@@ -85,6 +85,8 @@ struct member_info
   cs Type;
   cs Name;
   u64 Hash;
+
+  /* u32 OffsetOfInBytes; */
 };
 
 poof(block_array(member_info, {8}))
@@ -93,6 +95,10 @@ poof(block_array(member_info, {8}))
 struct bonsai_type_info
 {
   cs Name;
+  u64 Version;
+
+  u32 SizeOfInBytes;
+
   member_info_block_array Members;
 };
 
@@ -126,6 +132,7 @@ poof(
       bonsai_type_info Result = {};
 
       Result.Name = CSz("type.name");
+      Result.Version = type.has_tag(version)? { type.tag_value(version) } { 0 };
 
       type.map(member)
       {
@@ -208,9 +215,34 @@ poof(
 )
 
 poof(
+  func deserialize_versioned_struct(type, type_poof_index version_max)
+  {
+    link_internal b32
+    DeserializeVersioned(u8_stream *Bytes, type.name *Element, bonsai_type_info *TypeInfo, u64 Version, memory_arena *Memory)
+    {
+      Assert(Version <= version_max);
+
+      b32 Result = True;
+
+      version_max.map(this_version)
+      {
+        if (Version == this_version)
+        {
+          (type.name)_(this_version) T(this_version) = {};
+          Result &= Deserialize(Bytes, &T(this_version), Memory);
+          Marshal(&T(this_version), Element);
+        }
+      }
+
+      return Result;
+    }
+  }
+
+)
+
+poof(
   func deserialize_struct(type)
   {
-
     link_internal b32
     DeserializeUnversioned(u8_stream *Bytes, (type.name) *Element, memory_arena *Memory)
     {
@@ -285,9 +317,12 @@ poof(
 
         if (MaybeSerializedType.Tag)
         {
-          u64 VersionNumber;
-          Deserialize(Bytes, &VersionNumber, Memory);
 
+          u64 VersionNumber = 0;
+          if (MaybeSerializedType.Value.Version > 0)
+          {
+            Deserialize(Bytes, &VersionNumber, Memory);
+          }
           Result &= DeserializeVersioned(Bytes, Element, &MaybeSerializedType.Value, VersionNumber, Memory);
         }
         else

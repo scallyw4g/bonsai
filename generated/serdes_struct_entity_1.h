@@ -4,6 +4,7 @@ TypeInfo(entity_1 *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("entity_1");
+  Result.Version = 0 ;
 
   {
     member_info Member = {CSz("Id"), CSz("Id"), 0x290F1DD6};
@@ -168,7 +169,6 @@ Serialize(native_file *File, entity_1 *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
-
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, entity_1 *Element, memory_arena *Memory)

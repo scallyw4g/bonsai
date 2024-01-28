@@ -4,6 +4,7 @@ TypeInfo(asset_id *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("asset_id");
+  Result.Version = 0 ;
 
   {
     member_info Member = {CSz("Index"), CSz("Index"), 0x336ECEB7};
@@ -34,7 +35,6 @@ Serialize(native_file *File, asset_id *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
-
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, asset_id *Element, memory_arena *Memory)

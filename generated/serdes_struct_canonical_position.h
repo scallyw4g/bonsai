@@ -4,6 +4,7 @@ TypeInfo(canonical_position *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("canonical_position");
+  Result.Version = 0 ;
 
   {
     member_info Member = {CSz("Offset"), CSz("Offset"), 0xE759D6C};
@@ -40,7 +41,6 @@ Serialize(native_file *File, canonical_position *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
-
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, canonical_position *Element, memory_arena *Memory)

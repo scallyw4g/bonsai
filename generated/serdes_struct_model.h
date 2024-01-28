@@ -4,6 +4,7 @@ TypeInfo(model *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("model");
+  Result.Version = 0 ;
 
   {
     member_info Member = {CSz("Vox"), CSz("Vox"), 0x29101190};
@@ -64,7 +65,6 @@ Serialize(native_file *File, model *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
-
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, model *Element, memory_arena *Memory)

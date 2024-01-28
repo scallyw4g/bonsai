@@ -4,6 +4,7 @@ TypeInfo(plane *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("plane");
+  Result.Version = 0 ;
 
   {
     member_info Member = {CSz("P"), CSz("P"), 0x290F1D73};
@@ -57,7 +58,6 @@ Serialize(native_file *File, plane *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
-
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, plane *Element, memory_arena *Memory)

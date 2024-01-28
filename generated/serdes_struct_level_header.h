@@ -4,6 +4,7 @@ TypeInfo(level_header *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("level_header");
+  Result.Version = 0 ;
 
   {
     member_info Member = {CSz("Version"), CSz("Version"), 0x9455399};
@@ -100,7 +101,6 @@ Serialize(native_file *File, level_header *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
-
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, level_header *Element, memory_arena *Memory)

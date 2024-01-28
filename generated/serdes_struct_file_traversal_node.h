@@ -4,6 +4,7 @@ TypeInfo(file_traversal_node *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("file_traversal_node");
+  Result.Version = 0 ;
 
   {
     member_info Member = {CSz("Type"), CSz("Type"), 0x29168C7F};
@@ -49,7 +50,6 @@ Serialize(native_file *File, file_traversal_node *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
-
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, file_traversal_node *Element, memory_arena *Memory)

@@ -4,6 +4,7 @@ TypeInfo(random_series *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("random_series");
+  Result.Version = 0 ;
 
   {
     member_info Member = {CSz("Seed"), CSz("Seed"), 0x2913CA1A};
@@ -30,7 +31,6 @@ Serialize(native_file *File, random_series *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
-
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, random_series *Element, memory_arena *Memory)

@@ -4,6 +4,7 @@ TypeInfo(voxel *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("voxel");
+  Result.Version = 0 ;
 
   {
     member_info Member = {CSz("Flags"), CSz("Flags"), 0x31193984};
@@ -50,7 +51,6 @@ Serialize(native_file *File, voxel *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
-
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, voxel *Element, memory_arena *Memory)

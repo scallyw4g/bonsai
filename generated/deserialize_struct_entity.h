@@ -1,4 +1,3 @@
-
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, entity *Element, memory_arena *Memory)
 {
@@ -120,9 +119,12 @@ Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
 
   if (MaybeSerializedType.Tag)
   {
-    u64 VersionNumber;
-    Deserialize(Bytes, &VersionNumber, Memory);
 
+    u64 VersionNumber = 0;
+    if (MaybeSerializedType.Value.Version > 0)
+    {
+      Deserialize(Bytes, &VersionNumber, Memory);
+    }
     Result &= DeserializeVersioned(Bytes, Element, &MaybeSerializedType.Value, VersionNumber, Memory);
   }
   else

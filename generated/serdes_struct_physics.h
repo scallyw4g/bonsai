@@ -4,6 +4,7 @@ TypeInfo(physics *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("physics");
+  Result.Version = 0 ;
 
   {
     member_info Member = {CSz("Velocity"), CSz("Velocity"), 0x380FA2D0};
@@ -70,7 +71,6 @@ Serialize(native_file *File, physics *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
-
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, physics *Element, memory_arena *Memory)

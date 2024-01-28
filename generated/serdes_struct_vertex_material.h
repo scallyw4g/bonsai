@@ -4,6 +4,7 @@ TypeInfo(vertex_material *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("vertex_material");
+  Result.Version = 0 ;
 
   {
     member_info Member = {CSz("Color"), CSz("Color"), 0x30B3790A};
@@ -50,7 +51,6 @@ Serialize(native_file *File, vertex_material *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
-
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, vertex_material *Element, memory_arena *Memory)

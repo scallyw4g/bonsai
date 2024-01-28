@@ -352,6 +352,7 @@ function RunPoofHelper {
    # --log-level LogLevel_Debug                                                                                  \
    #
   poof                    \
+   $COLOR_FLAG \
    -D POOF_PREPROCESSOR   \
    -D BONSAI_PREPROCESSOR \
    -I src/                \

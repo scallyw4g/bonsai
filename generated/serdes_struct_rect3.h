@@ -4,6 +4,7 @@ TypeInfo(rect3 *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("rect3");
+  Result.Version = 0 ;
 
   {
     member_info Member = {CSz("Min"), CSz("Min"), 0x290FA28F};
@@ -40,7 +41,6 @@ Serialize(native_file *File, rect3 *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
-
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, rect3 *Element, memory_arena *Memory)

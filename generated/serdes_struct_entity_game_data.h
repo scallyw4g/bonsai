@@ -4,6 +4,7 @@ TypeInfo(entity_game_data *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("entity_game_data");
+  Result.Version = 0 ;
 
   {
     member_info Member = {CSz("FireballChargeLevel"), CSz("FireballChargeLevel"), 0x14F5CFDE};
@@ -60,7 +61,6 @@ Serialize(native_file *File, entity_game_data *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
-
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, entity_game_data *Element, memory_arena *Memory)

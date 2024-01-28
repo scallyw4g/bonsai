@@ -4,6 +4,7 @@ TypeInfo(camera *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("camera");
+  Result.Version =0 ;
 
   {
     member_info Member = {CSz("Frust"), CSz("Frust"), 0x31ADBF03};
@@ -27,6 +28,18 @@ TypeInfo(camera *Ignored)
   }
   {
     member_info Member = {CSz("Yaw"), CSz("Yaw"), 0x291003B4};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("CurrentPitch"), CSz("CurrentPitch"), 0x16CB61A};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("CurrentRoll"), CSz("CurrentRoll"), 0x1E3774DF};
+    Push(&Result.Members, &Member);
+  }
+  {
+    member_info Member = {CSz("CurrentYaw"), CSz("CurrentYaw"), 0x5A6FD8E};
     Push(&Result.Members, &Member);
   }
   {
@@ -61,7 +74,10 @@ Serialize(native_file *File, camera *Element)
 
   b32 Result = True;
 
-  
+  Upsert(TypeInfo(Element), &Global_SerializeTypeTable);
+  u64 VersionNumber =0;
+  Serialize(File, &VersionNumber);
+
 
   Result &= Serialize(File, &Element->Frust);
 
@@ -99,6 +115,24 @@ Serialize(native_file *File, camera *Element)
 
 
 
+  Result &= Serialize(File, &Element->CurrentPitch);
+
+
+
+
+
+  Result &= Serialize(File, &Element->CurrentRoll);
+
+
+
+
+
+  Result &= Serialize(File, &Element->CurrentYaw);
+
+
+
+
+
   Result &= Serialize(File, &Element->DistanceFromTarget);
 
 
@@ -130,7 +164,6 @@ Serialize(native_file *File, camera *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
-
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, camera *Element, memory_arena *Memory)
@@ -186,6 +219,30 @@ DeserializeUnversioned(u8_stream *Bytes, camera *Element, memory_arena *Memory)
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->CurrentPitch, Memory);
+
+
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->CurrentRoll, Memory);
+
+
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->CurrentYaw, Memory);
+
+
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->DistanceFromTarget, Memory);
 
 
@@ -229,8 +286,23 @@ Deserialize(u8_stream *Bytes, camera *Element, memory_arena *Memory)
 {
   b32 Result = True;
 
-  Result &= DeserializeUnversioned(Bytes, Element, Memory);
-  MAYBE_READ_DEBUG_OBJECT_DELIM();
+  maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("camera"));
+
+  if (MaybeSerializedType.Tag)
+  {
+
+    u64 VersionNumber = 0;
+    if (MaybeSerializedType.Value.Version > 0)
+    {
+      Deserialize(Bytes, &VersionNumber, Memory);
+    }
+    Result &= DeserializeVersioned(Bytes, Element, &MaybeSerializedType.Value, VersionNumber, Memory);
+  }
+  else
+  {
+    Result &= DeserializeUnversioned(Bytes, Element, Memory);
+    MAYBE_READ_DEBUG_OBJECT_DELIM();
+  }
 
 
   return Result;

@@ -4,6 +4,7 @@ TypeInfo(particle_system *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("particle_system");
+  Result.Version = 0 ;
 
   {
     member_info Member = {CSz("Entropy"), CSz("Entropy"), 0x19908EC4};
@@ -249,7 +250,6 @@ Serialize(native_file *File, particle_system *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
-
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)

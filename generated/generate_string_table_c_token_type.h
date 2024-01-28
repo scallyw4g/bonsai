@@ -172,7 +172,7 @@ ToString(c_token_type Type)
     case CT_PreprocessorPragma: { Result = CSz("PreprocessorPragma"); } break;
     case CT_PreprocessorError: { Result = CSz("PreprocessorError"); } break;
     case CT_PreprocessorWarning: { Result = CSz("PreprocessorWarning"); } break;
-    case CT_Preprocessor_VA_ARGS_: { Result = CSz("CT_Preprocessor_VA_ARGS_"); } break;
+    case CT_Preprocessor_VA_ARGS_: { Result = CSz("ARGS_"); } break;
     case CT_Preprocessor_Nuked: { Result = CSz("Nuked"); } break;
     case CT_InsertedCode: { Result = CSz("InsertedCode"); } break;
     case CT_PoofInsertedCode: { Result = CSz("PoofInsertedCode"); } break;

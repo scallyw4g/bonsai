@@ -4,6 +4,7 @@ TypeInfo(vox_data *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("vox_data");
+  Result.Version = 0 ;
 
   {
     member_info Member = {CSz("ChunkData"), CSz("ChunkData"), 0x202AC584};
@@ -31,7 +32,6 @@ Serialize(native_file *File, vox_data *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
-
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, vox_data *Element, memory_arena *Memory)
