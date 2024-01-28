@@ -17,7 +17,7 @@ struct vox_data_block_array
 {
   vox_data_block *First;
   vox_data_block *Current;
-  memory_arena *Memory;
+  memory_arena *Memory; poof(@no_serialize)
 };
 
 link_internal vox_data_block_array_index

@@ -17,7 +17,7 @@ struct entity_block_array
 {
   entity_block *First;
   entity_block *Current;
-  memory_arena *Memory;
+  memory_arena *Memory; poof(@no_serialize)
 };
 
 link_internal entity_block_array_index

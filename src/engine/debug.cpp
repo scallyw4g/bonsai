@@ -91,24 +91,40 @@ DoLevelWindow(engine_resources *Engine)
     thread_local_state *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
     u8_stream LevelBytes = U8_StreamFromFile(Filename, Thread->PermMemory);
 
-    // TODO(Jesse): Read this in from level file
-    {
-      Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(64, Thread->TempMemory);
-      entity *E = 0;
-      Insert(TypeInfo(E), &Global_SerializeTypeTable, Thread->TempMemory);
-
-      camera *C = 0;
-      Insert(TypeInfo(C), &Global_SerializeTypeTable, Thread->TempMemory);
-    }
-
-
+    b32 Error = False;
     if (LevelBytes.Start)
     {
       level_header LevelHeader = {};
-      Deserialize(&LevelBytes, &LevelHeader, Thread->PermMemory);
-      if (LevelHeader.Version == 0)
+      DeserializeVersioned(&LevelBytes, &LevelHeader, 0, 0, Thread->PermMemory);
+      switch(LevelHeader.Version)
       {
+        case 0:
+        {
+          Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(64, Thread->TempMemory);
+          entity *E = 0;
+          Insert(TypeInfo(E), &Global_SerializeTypeTable, Thread->TempMemory);
 
+          camera *C = 0;
+          Insert(TypeInfo(C), &Global_SerializeTypeTable, Thread->TempMemory);
+        } break;
+
+        case 1:
+        {
+          bonsai_type_info_buffer TypeInfoBuffer = {};
+          Deserialize(&LevelBytes, &TypeInfoBuffer, Thread->TempMemory);
+          Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(NextPowerOfTwo(TypeInfoBuffer.Count), Thread->TempMemory);
+
+          IterateOver(&TypeInfoBuffer, TypeInfo, TypeInfoIndex)
+          {
+            Insert(*TypeInfo, &Global_SerializeTypeTable, Thread->TempMemory);
+          }
+        } break;
+
+        default: { Error=True; SoftError("Could not load level file claiming version (%lu), bailing.", LevelHeader.Version); }
+      }
+
+      if (Error == False)
+      {
         SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
 
         HardResetWorld(Engine);
@@ -147,7 +163,6 @@ DoLevelWindow(engine_resources *Engine)
         Ensure(Read_u64(&LevelBytes) == LEVEL_FILE_DEBUG_OBJECT_DELIM);
 
 #if 1
-        b32 Error = False;
 
         u32 EntityCount = LevelHeader.EntityCount;
         RangeIterator_t(u32, EntityIndex, EntityCount)
@@ -176,10 +191,6 @@ DoLevelWindow(engine_resources *Engine)
         if (Engine->GameApi.OnLibraryLoad) { Engine->GameApi.OnLibraryLoad(Engine, GetThreadLocalState(ThreadLocal_ThreadIndex)); }
 
         UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
-      }
-      else
-      {
-        SoftError("Could not load corrupt level file");
       }
 
     }

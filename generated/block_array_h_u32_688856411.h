@@ -17,7 +17,7 @@ struct u32_block_array
 {
   u32_block *First;
   u32_block *Current;
-  memory_arena *Memory;
+  memory_arena *Memory; poof(@no_serialize)
 };
 
 link_internal u32_block_array_index

@@ -6,14 +6,13 @@ TypeInfo(canonical_position *Ignored)
   Result.Name = CSz("canonical_position");
   Result.Version = 0 ;
 
-  {
-    member_info Member = {CSz("Offset"), CSz("Offset"), 0xE759D6C};
-    Push(&Result.Members, &Member);
-  }
-  {
-    member_info Member = {CSz("WorldP"), CSz("WorldP"), 0x33B524C9};
-    Push(&Result.Members, &Member);
-  }
+  /* type.map(member) */
+  /* { */
+  /*   { */
+  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
+  /*     Push(&Result.Members, &Member); */
+  /*   } */
+  /* } */
 
   return Result;
 }
@@ -41,6 +40,9 @@ Serialize(native_file *File, canonical_position *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
+
+link_internal b32
+Deserialize(u8_stream *Bytes, canonical_position *Element, memory_arena *Memory);
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, canonical_position *Element, memory_arena *Memory)

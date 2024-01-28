@@ -5,12 +5,7 @@ DeserializeVersioned(u8_stream *Bytes, camera *Element, bonsai_type_info *TypeIn
 
   b32 Result = True;
 
-  if (Version == 0)
-  {
-    camera_0 T0 = {};
-    Result &= Deserialize(Bytes, &T0, Memory);
-    Marshal(&T0, Element);
-  }
+  
 
   return Result;
 }

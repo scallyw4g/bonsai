@@ -17,7 +17,7 @@ struct member_info_block_array
 {
   member_info_block *First;
   member_info_block *Current;
-  memory_arena *Memory;
+  memory_arena *Memory; poof(@no_serialize)
 };
 
 link_internal member_info_block_array_index

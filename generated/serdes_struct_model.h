@@ -6,26 +6,13 @@ TypeInfo(model *Ignored)
   Result.Name = CSz("model");
   Result.Version = 0 ;
 
-  {
-    member_info Member = {CSz("Vox"), CSz("Vox"), 0x29101190};
-    Push(&Result.Members, &Member);
-  }
-  {
-    member_info Member = {CSz("Meshes"), CSz("Meshes"), 0x310AD0AF};
-    Push(&Result.Members, &Member);
-  }
-  {
-    member_info Member = {CSz("TransparentMesh"), CSz("TransparentMesh"), 0x321C682D};
-    Push(&Result.Members, &Member);
-  }
-  {
-    member_info Member = {CSz("Animation"), CSz("Animation"), 0x34AA15C5};
-    Push(&Result.Members, &Member);
-  }
-  {
-    member_info Member = {CSz("Dim"), CSz("Dim"), 0x290F978D};
-    Push(&Result.Members, &Member);
-  }
+  /* type.map(member) */
+  /* { */
+  /*   { */
+  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
+  /*     Push(&Result.Members, &Member); */
+  /*   } */
+  /* } */
 
   return Result;
 }
@@ -65,6 +52,9 @@ Serialize(native_file *File, model *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
+
+link_internal b32
+Deserialize(u8_stream *Bytes, model *Element, memory_arena *Memory);
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, model *Element, memory_arena *Memory)

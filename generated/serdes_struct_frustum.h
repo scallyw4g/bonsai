@@ -6,38 +6,13 @@ TypeInfo(frustum *Ignored)
   Result.Name = CSz("frustum");
   Result.Version = 0 ;
 
-  {
-    member_info Member = {CSz("farClip"), CSz("farClip"), 0x3B1ACDFB};
-    Push(&Result.Members, &Member);
-  }
-  {
-    member_info Member = {CSz("nearClip"), CSz("nearClip"), 0x2BCE053A};
-    Push(&Result.Members, &Member);
-  }
-  {
-    member_info Member = {CSz("width"), CSz("width"), 0x2FB608A};
-    Push(&Result.Members, &Member);
-  }
-  {
-    member_info Member = {CSz("FOV"), CSz("FOV"), 0x290E95CE};
-    Push(&Result.Members, &Member);
-  }
-  {
-    member_info Member = {CSz("Top"), CSz("Top"), 0x290FB9C6};
-    Push(&Result.Members, &Member);
-  }
-  {
-    member_info Member = {CSz("Bot"), CSz("Bot"), 0x290FE598};
-    Push(&Result.Members, &Member);
-  }
-  {
-    member_info Member = {CSz("Left"), CSz("Left"), 0x29382DDC};
-    Push(&Result.Members, &Member);
-  }
-  {
-    member_info Member = {CSz("Right"), CSz("Right"), 0x31942685};
-    Push(&Result.Members, &Member);
-  }
+  /* type.map(member) */
+  /* { */
+  /*   { */
+  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
+  /*     Push(&Result.Members, &Member); */
+  /*   } */
+  /* } */
 
   return Result;
 }
@@ -101,6 +76,9 @@ Serialize(native_file *File, frustum *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
+
+link_internal b32
+Deserialize(u8_stream *Bytes, frustum *Element, memory_arena *Memory);
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, frustum *Element, memory_arena *Memory)

@@ -6,26 +6,13 @@ TypeInfo(physics *Ignored)
   Result.Name = CSz("physics");
   Result.Version = 0 ;
 
-  {
-    member_info Member = {CSz("Velocity"), CSz("Velocity"), 0x380FA2D0};
-    Push(&Result.Members, &Member);
-  }
-  {
-    member_info Member = {CSz("Force"), CSz("Force"), 0x2A7B47CA};
-    Push(&Result.Members, &Member);
-  }
-  {
-    member_info Member = {CSz("Delta"), CSz("Delta"), 0x28C00979};
-    Push(&Result.Members, &Member);
-  }
-  {
-    member_info Member = {CSz("Mass"), CSz("Mass"), 0x29367621};
-    Push(&Result.Members, &Member);
-  }
-  {
-    member_info Member = {CSz("Speed"), CSz("Speed"), 0x2A06DE50};
-    Push(&Result.Members, &Member);
-  }
+  /* type.map(member) */
+  /* { */
+  /*   { */
+  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
+  /*     Push(&Result.Members, &Member); */
+  /*   } */
+  /* } */
 
   return Result;
 }
@@ -71,6 +58,9 @@ Serialize(native_file *File, physics *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
+
+link_internal b32
+Deserialize(u8_stream *Bytes, physics *Element, memory_arena *Memory);
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, physics *Element, memory_arena *Memory)

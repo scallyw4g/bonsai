@@ -1,13 +1,13 @@
 link_internal b32
-Deserialize(u8_stream *Bytes, camera_0 *Element, memory_arena *Memory);
+Deserialize(u8_stream *Bytes, level_header_1 *Element, memory_arena *Memory);
 
 link_internal b32
-DeserializeUnversioned(u8_stream *Bytes, camera_0 *Element, memory_arena *Memory)
+DeserializeUnversioned(u8_stream *Bytes, level_header_1 *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Frust, Memory);
+  Result &= Deserialize(Bytes, &Element->Version, Memory);
 
 
 
@@ -15,7 +15,7 @@ DeserializeUnversioned(u8_stream *Bytes, camera_0 *Element, memory_arena *Memory
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->CurrentP, Memory);
+  Result &= Deserialize(Bytes, &Element->ChunkCount, Memory);
 
 
 
@@ -23,7 +23,7 @@ DeserializeUnversioned(u8_stream *Bytes, camera_0 *Element, memory_arena *Memory
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->RenderSpacePosition, Memory);
+  Result &= Deserialize(Bytes, &Element->EntityCount, Memory);
 
 
 
@@ -31,7 +31,7 @@ DeserializeUnversioned(u8_stream *Bytes, camera_0 *Element, memory_arena *Memory
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Pitch, Memory);
+  Result &= Deserialize(Bytes, &Element->WorldFlags, Memory);
 
 
 
@@ -39,7 +39,7 @@ DeserializeUnversioned(u8_stream *Bytes, camera_0 *Element, memory_arena *Memory
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Roll, Memory);
+  Result &= Deserialize(Bytes, &Element->WorldCenter, Memory);
 
 
 
@@ -47,7 +47,7 @@ DeserializeUnversioned(u8_stream *Bytes, camera_0 *Element, memory_arena *Memory
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Yaw, Memory);
+  Result &= Deserialize(Bytes, &Element->VisibleRegion, Memory);
 
 
 
@@ -55,7 +55,7 @@ DeserializeUnversioned(u8_stream *Bytes, camera_0 *Element, memory_arena *Memory
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->DistanceFromTarget, Memory);
+  Result &= Deserialize(Bytes, &Element->Camera, Memory);
 
 
 
@@ -63,38 +63,14 @@ DeserializeUnversioned(u8_stream *Bytes, camera_0 *Element, memory_arena *Memory
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Front, Memory);
-
-
-
-
-
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Right, Memory);
-
-
-
-
-
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Up, Memory);
-
-
-
-
-
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->GhostId, Memory);
+  Result &= Deserialize(Bytes, &Element->CameraTarget, Memory);
 
   
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, camera_0 *Element, memory_arena *Memory)
+Deserialize(u8_stream *Bytes, level_header_1 *Element, memory_arena *Memory)
 {
   b32 Result = True;
 

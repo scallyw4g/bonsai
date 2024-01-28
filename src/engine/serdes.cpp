@@ -333,8 +333,56 @@ Marshal(entity_1 *E0, entity_2 *E1)
 }
 #endif
 
-poof(serdes_struct(level_header))
-#include <generated/serdes_struct_level_header.h>
+/* poof(serdes_struct(member_info)) */
+/* #include <generated/serdes_struct_member_info.h> */
+/* poof(serdes_struct(member_info_block)) */
+/* #include <generated/serdes_struct_member_info_block.h> */
+/* poof(serdes_struct(member_info_block_array)) */
+/* #include <generated/serdes_struct_member_info_block_array.h> */
+poof(serdes_struct(bonsai_type_info))
+#include <generated/serdes_struct_bonsai_type_info.h>
+poof(serdes_struct(bonsai_type_info_buffer))
+#include <generated/serdes_struct_bonsai_type_info_buffer.h>
+
+/* poof(serdes_struct(bonsai_type_info_linked_list_node)) */
+/* #include <generated/serdes_struct_bonsai_type_info_linked_list_node.h> */
+/* poof(serdes_struct(bonsai_type_info_hashtable)) */
+/* #include <generated/serdes_struct_bonsai_type_info_hashtable.h> */
+
+/* poof(serdes_struct(level_header)) */
+/* #include <generated/serdes_struct_level_header.h> */
+
+
+link_internal void
+Marshal(level_header_0 *E0, level_header *E1)
+{
+  NotImplemented;
+}
+
+link_internal void
+Marshal(level_header_1 *E0, level_header *E1)
+{
+  NotImplemented;
+}
+
+
+
+poof(deserialize_struct(level_header_0))
+#include <generated/deserialize_struct_level_header_0.h>
+
+poof(deserialize_struct(level_header_1))
+#include <generated/deserialize_struct_level_header_1.h>
+
+poof(deserialize_versioned_struct(level_header, 2))
+#include <generated/deserialize_versioned_struct_level_header_0.h>
+
+poof(deserialize_struct(level_header))
+#include <generated/deserialize_struct_level_header.h>
+
+
+poof(serialize_struct(level_header))
+#include <generated/serialize_struct_level_header.h>
+
 
 
 #if 0

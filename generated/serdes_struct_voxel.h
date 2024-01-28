@@ -6,18 +6,13 @@ TypeInfo(voxel *Ignored)
   Result.Name = CSz("voxel");
   Result.Version = 0 ;
 
-  {
-    member_info Member = {CSz("Flags"), CSz("Flags"), 0x31193984};
-    Push(&Result.Members, &Member);
-  }
-  {
-    member_info Member = {CSz("Transparency"), CSz("Transparency"), 0x1606BB8C};
-    Push(&Result.Members, &Member);
-  }
-  {
-    member_info Member = {CSz("Color"), CSz("Color"), 0x30B3790A};
-    Push(&Result.Members, &Member);
-  }
+  /* type.map(member) */
+  /* { */
+  /*   { */
+  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
+  /*     Push(&Result.Members, &Member); */
+  /*   } */
+  /* } */
 
   return Result;
 }
@@ -51,6 +46,9 @@ Serialize(native_file *File, voxel *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
+
+link_internal b32
+Deserialize(u8_stream *Bytes, voxel *Element, memory_arena *Memory);
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, voxel *Element, memory_arena *Memory)

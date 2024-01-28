@@ -1,4 +1,7 @@
 link_internal b32
+Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory);
+
+link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, entity *Element, memory_arena *Memory)
 {
   b32 Result = True;

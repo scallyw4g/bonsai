@@ -6,14 +6,13 @@ TypeInfo(rect3 *Ignored)
   Result.Name = CSz("rect3");
   Result.Version = 0 ;
 
-  {
-    member_info Member = {CSz("Min"), CSz("Min"), 0x290FA28F};
-    Push(&Result.Members, &Member);
-  }
-  {
-    member_info Member = {CSz("Max"), CSz("Max"), 0x29100EA1};
-    Push(&Result.Members, &Member);
-  }
+  /* type.map(member) */
+  /* { */
+  /*   { */
+  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
+  /*     Push(&Result.Members, &Member); */
+  /*   } */
+  /* } */
 
   return Result;
 }
@@ -41,6 +40,9 @@ Serialize(native_file *File, rect3 *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
+
+link_internal b32
+Deserialize(u8_stream *Bytes, rect3 *Element, memory_arena *Memory);
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, rect3 *Element, memory_arena *Memory)

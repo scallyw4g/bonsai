@@ -17,7 +17,7 @@ struct voxel_stack_element_block_array
 {
   voxel_stack_element_block *First;
   voxel_stack_element_block *Current;
-  memory_arena *Memory;
+  memory_arena *Memory; poof(@no_serialize)
 };
 
 link_internal voxel_stack_element_block_array_index

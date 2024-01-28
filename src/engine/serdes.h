@@ -99,7 +99,7 @@ struct bonsai_type_info
 
   u32 SizeOfInBytes;
 
-  member_info_block_array Members;
+  /* member_info_block_array Members; */
 };
 
 link_internal umm
@@ -109,8 +109,14 @@ Hash(bonsai_type_info *Type)
   return Result;
 }
 
+poof(buffer(bonsai_type_info))
+#include <generated/buffer_bonsai_type_info.h>
+
 poof(hashtable(bonsai_type_info))
 #include <generated/hashtable_bonsai_type_info.h>
+
+poof(hashtable_to_buffer(bonsai_type_info))
+#include <generated/hashtable_to_buffer_bonsai_type_info.h>
 
 poof(maybe(bonsai_type_info))
 #include <generated/maybe_bonsai_type_info.h>
@@ -134,13 +140,13 @@ poof(
       Result.Name = CSz("type.name");
       Result.Version = type.has_tag(version)? { type.tag_value(version) } { 0 };
 
-      type.map(member)
-      {
-        {
-          member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)};
-          Push(&Result.Members, &Member);
-        }
-      }
+      /* type.map(member) */
+      /* { */
+      /*   { */
+      /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
+      /*     Push(&Result.Members, &Member); */
+      /*   } */
+      /* } */
 
       return Result;
     }
@@ -243,6 +249,9 @@ poof(
 poof(
   func deserialize_struct(type)
   {
+    link_internal b32
+    Deserialize(u8_stream *Bytes, (type.name) *Element, memory_arena *Memory);
+
     link_internal b32
     DeserializeUnversioned(u8_stream *Bytes, (type.name) *Element, memory_arena *Memory)
     {

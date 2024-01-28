@@ -17,7 +17,7 @@ struct asset_thumbnail_block_array
 {
   asset_thumbnail_block *First;
   asset_thumbnail_block *Current;
-  memory_arena *Memory;
+  memory_arena *Memory; poof(@no_serialize)
 };
 
 link_internal asset_thumbnail_block_array_index

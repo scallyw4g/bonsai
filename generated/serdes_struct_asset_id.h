@@ -6,14 +6,13 @@ TypeInfo(asset_id *Ignored)
   Result.Name = CSz("asset_id");
   Result.Version = 0 ;
 
-  {
-    member_info Member = {CSz("Index"), CSz("Index"), 0x336ECEB7};
-    Push(&Result.Members, &Member);
-  }
-  {
-    member_info Member = {CSz("FileNode"), CSz("FileNode"), 0x19A3EAED};
-    Push(&Result.Members, &Member);
-  }
+  /* type.map(member) */
+  /* { */
+  /*   { */
+  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
+  /*     Push(&Result.Members, &Member); */
+  /*   } */
+  /* } */
 
   return Result;
 }
@@ -35,6 +34,9 @@ Serialize(native_file *File, asset_id *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
+
+link_internal b32
+Deserialize(u8_stream *Bytes, asset_id *Element, memory_arena *Memory);
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, asset_id *Element, memory_arena *Memory)

@@ -6,22 +6,13 @@ TypeInfo(entity_game_data *Ignored)
   Result.Name = CSz("entity_game_data");
   Result.Version = 0 ;
 
-  {
-    member_info Member = {CSz("FireballChargeLevel"), CSz("FireballChargeLevel"), 0x14F5CFDE};
-    Push(&Result.Members, &Member);
-  }
-  {
-    member_info Member = {CSz("FireballCharges"), CSz("FireballCharges"), 0x25D35A3F};
-    Push(&Result.Members, &Member);
-  }
-  {
-    member_info Member = {CSz("IceBlockCharges"), CSz("IceBlockCharges"), 0x1635CD32};
-    Push(&Result.Members, &Member);
-  }
-  {
-    member_info Member = {CSz("HoldingItem"), CSz("HoldingItem"), 0x12373165};
-    Push(&Result.Members, &Member);
-  }
+  /* type.map(member) */
+  /* { */
+  /*   { */
+  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
+  /*     Push(&Result.Members, &Member); */
+  /*   } */
+  /* } */
 
   return Result;
 }
@@ -61,6 +52,9 @@ Serialize(native_file *File, entity_game_data *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
+
+link_internal b32
+Deserialize(u8_stream *Bytes, entity_game_data *Element, memory_arena *Memory);
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, entity_game_data *Element, memory_arena *Memory)

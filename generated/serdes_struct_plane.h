@@ -6,19 +6,13 @@ TypeInfo(plane *Ignored)
   Result.Name = CSz("plane");
   Result.Version = 0 ;
 
-  {
-    member_info Member = {CSz("P"), CSz("P"), 0x290F1D73};
-    Push(&Result.Members, &Member);
-  }
-  {
-    member_info Member = {CSz("Normal"), CSz("Normal"), 0x3388CFDE};
-    Push(&Result.Members, &Member);
-  }
-  {
-    member_info Member = {CSz("d"), CSz("d"), 0x2};
-    Push(&Result.Members, &Member);
-  }
-
+  /* type.map(member) */
+  /* { */
+  /*   { */
+  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
+  /*     Push(&Result.Members, &Member); */
+  /*   } */
+  /* } */
 
   return Result;
 }
@@ -58,6 +52,9 @@ Serialize(native_file *File, plane *Element)
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
+
+link_internal b32
+Deserialize(u8_stream *Bytes, plane *Element, memory_arena *Memory);
 
 link_internal b32
 DeserializeUnversioned(u8_stream *Bytes, plane *Element, memory_arena *Memory)
