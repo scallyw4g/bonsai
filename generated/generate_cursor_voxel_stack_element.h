@@ -1,3 +1,5 @@
+// src/engine/world_chunk.cpp:0:3862
+
 struct voxel_stack_element_cursor
 {
   voxel_stack_element *Start;

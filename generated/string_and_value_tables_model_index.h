@@ -1,3 +1,5 @@
+// src/engine/model.h:0:55
+
 link_internal counted_string
 ToString(model_index Type)
 {

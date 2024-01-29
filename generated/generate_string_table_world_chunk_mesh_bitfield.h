@@ -1,3 +1,5 @@
+// src/engine/world_chunk.h:0:220
+
 link_internal counted_string
 ToString(world_chunk_mesh_bitfield Type)
 {

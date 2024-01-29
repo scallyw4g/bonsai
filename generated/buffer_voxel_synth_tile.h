@@ -1,3 +1,5 @@
+// src/engine/voxel_synthesis.h:0:102
+
 struct voxel_synth_tile_buffer
 {
   voxel_synth_tile *Start;

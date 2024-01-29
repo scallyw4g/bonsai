@@ -1,3 +1,5 @@
+// src/engine/serdes.h:0:473
+
 link_internal b32
 Serialize(u8_cursor_block_array *Bytes, u8 *Element, memory_arena *Ignored = 0)
 {

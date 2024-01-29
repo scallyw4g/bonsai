@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/counted_string.cpp:0:25
+
 struct counted_string_linked_list_node
 {
   counted_string Element;

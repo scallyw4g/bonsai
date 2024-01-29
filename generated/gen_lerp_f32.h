@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/vector.h:0:707
+
 inline f32
 Lerp(r32 t, f32 P1, f32 P2)
 {

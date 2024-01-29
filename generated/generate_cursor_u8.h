@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/ansi_stream.h:0:3
+
 struct u8_cursor
 {
   u8 *Start;

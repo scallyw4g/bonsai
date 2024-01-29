@@ -1,3 +1,5 @@
+// src/engine/world_chunk.h:0:505
+
 struct standing_spot_buffer
 {
   standing_spot *Start;

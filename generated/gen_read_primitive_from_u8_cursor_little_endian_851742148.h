@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/binary_parser.cpp:0:507
+
 inline s8
 Read_s8(u8 *Source)
 {

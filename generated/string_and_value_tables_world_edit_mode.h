@@ -1,3 +1,5 @@
+// src/engine/editor.h:0:337
+
 link_internal counted_string
 ToString(world_edit_mode Type)
 {

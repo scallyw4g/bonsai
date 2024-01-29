@@ -1,3 +1,5 @@
+// src/engine/model.h:0:84
+
 struct vox_data_block
 {
   u32 Index;

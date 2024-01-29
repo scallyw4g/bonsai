@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/binary_parser.cpp:0:611
+
 link_internal b32
 Write(u8_stream *Dest, s8 *Src)
 {

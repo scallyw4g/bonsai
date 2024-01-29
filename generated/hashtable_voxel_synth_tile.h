@@ -1,3 +1,5 @@
+// src/engine/voxel_synthesis.h:0:175
+
 struct voxel_synth_tile_linked_list_node
 {
   voxel_synth_tile Element;

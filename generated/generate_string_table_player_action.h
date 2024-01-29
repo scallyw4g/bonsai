@@ -1,3 +1,5 @@
+// examples/turn_based/game_types.h:0:111
+
 link_internal counted_string
 ToString(player_action Type)
 {

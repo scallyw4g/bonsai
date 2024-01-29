@@ -1,3 +1,5 @@
+// src/engine/serdes.cpp:0:27
+
 link_internal bonsai_type_info
 TypeInfo(plane *Ignored)
 {

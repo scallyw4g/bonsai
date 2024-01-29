@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/binary_parser.cpp:0:37
+
 struct v3_cursor
 {
   v3 *Start;

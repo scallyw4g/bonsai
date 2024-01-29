@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/vector.cpp:0:8
+
 struct v3i_stream_chunk
 {
   v3i Element;

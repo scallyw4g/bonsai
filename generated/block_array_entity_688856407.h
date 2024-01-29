@@ -1,3 +1,5 @@
+// src/engine/serdes.cpp:0:262
+
 struct entity_block
 {
   u32 Index;

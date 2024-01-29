@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/counted_string.cpp:0:19
+
 struct counted_string_buffer
 {
   counted_string *Start;

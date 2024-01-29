@@ -1,3 +1,5 @@
+// src/engine/editor.h:0:244
+
 struct asset_thumbnail_block
 {
   u32 Index;

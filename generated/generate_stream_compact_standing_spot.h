@@ -1,3 +1,5 @@
+// src/engine/world_chunk.h:0:511
+
 link_internal standing_spot_buffer
 Compact(standing_spot_stream *Stream, memory_arena *PermMemory)
 {

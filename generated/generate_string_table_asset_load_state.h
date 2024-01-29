@@ -1,3 +1,5 @@
+// src/engine/asset.h:0:140
+
 link_internal counted_string
 ToString(asset_load_state Type)
 {

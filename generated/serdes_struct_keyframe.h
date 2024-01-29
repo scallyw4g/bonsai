@@ -1,3 +1,5 @@
+// src/engine/serdes.cpp:0:220
+
 link_internal bonsai_type_info
 TypeInfo(keyframe *Ignored)
 {

@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/bitmap.cpp:0:179
+
 struct bitmap_block
 {
   u32 Index;

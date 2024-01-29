@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/texture_cursor.cpp:0:1
+
 link_internal b32
 AreEqual(texture *Thing1, texture *Thing2)
 {

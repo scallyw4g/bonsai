@@ -1,3 +1,5 @@
+// src/engine/world_chunk.h:0:462
+
 struct standing_spot_block
 {
   u32 Index;

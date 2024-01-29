@@ -1,3 +1,5 @@
+// src/engine/serdes.cpp:0:24
+
 link_internal bonsai_type_info
 TypeInfo(canonical_position *Ignored)
 {

@@ -1,3 +1,5 @@
+// src/engine/model.h:0:87
+
 struct model_buffer
 {
   model *Start;

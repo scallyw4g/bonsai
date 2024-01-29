@@ -1,3 +1,5 @@
+// src/engine/editor.cpp:0:1
+
 
 link_internal asset_thumbnail_block*
 Allocate_asset_thumbnail_block(memory_arena *Memory)

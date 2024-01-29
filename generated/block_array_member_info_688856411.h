@@ -1,3 +1,5 @@
+// src/engine/serdes.h:0:92
+
 struct member_info_block
 {
   u32 Index;

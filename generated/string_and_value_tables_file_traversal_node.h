@@ -1,3 +1,5 @@
+// src/engine/editor.cpp:0:137
+
 link_internal counted_string
 ToString(file_traversal_type Type)
 {

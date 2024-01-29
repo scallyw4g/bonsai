@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/texture.h:0:16
+
 struct texture_ptr_block
 {
   u32 Index;

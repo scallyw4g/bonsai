@@ -1,3 +1,5 @@
+// src/engine/serdes.h:0:115
+
 struct bonsai_type_info_buffer
 {
   bonsai_type_info *Start;

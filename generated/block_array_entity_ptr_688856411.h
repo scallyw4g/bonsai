@@ -1,3 +1,5 @@
+// src/engine/world_chunk.h:0:320
+
 struct entity_ptr_block
 {
   u32 Index;

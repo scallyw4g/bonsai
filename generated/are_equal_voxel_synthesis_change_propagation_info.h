@@ -1,3 +1,5 @@
+// src/engine/voxel_synthesis.h:0:324
+
 link_internal b32
 AreEqual(voxel_synthesis_change_propagation_info *Thing1, voxel_synthesis_change_propagation_info *Thing2)
 {

@@ -1,3 +1,5 @@
+// src/engine/editor.cpp:0:134
+
 link_internal counted_string
 ToString(particle_spawn_type Type)
 {

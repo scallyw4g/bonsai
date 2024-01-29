@@ -1,3 +1,5 @@
+// src/engine/editor.cpp:0:153
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, tone_mapping_type *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {

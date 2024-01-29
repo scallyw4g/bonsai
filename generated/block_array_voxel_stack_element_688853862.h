@@ -1,3 +1,5 @@
+// src/engine/world_chunk.cpp:0:3859
+
 struct voxel_stack_element_block
 {
   u32 Index;

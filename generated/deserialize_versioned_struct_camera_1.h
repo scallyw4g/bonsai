@@ -1,3 +1,5 @@
+// src/engine/serdes.cpp:0:92
+
 link_internal b32
 DeserializeVersioned(u8_cursor *Bytes, camera *Element, bonsai_type_info *TypeInfo, u64 Version, memory_arena *Memory)
 {

@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/binary_parser.cpp:0:546
+
 link_internal bool
 Read_u32(u8_cursor *Cursor, u32 *Dest)
 {

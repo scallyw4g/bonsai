@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/vector.h:0:736
+
 inline v2
 Normalize( v2 Vec, r32 Length)
 {

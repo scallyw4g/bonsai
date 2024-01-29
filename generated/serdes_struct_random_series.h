@@ -1,3 +1,5 @@
+// src/engine/serdes.cpp:0:229
+
 link_internal bonsai_type_info
 TypeInfo(random_series *Ignored)
 {

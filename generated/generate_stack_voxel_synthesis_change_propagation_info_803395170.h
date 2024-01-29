@@ -1,3 +1,5 @@
+// src/engine/voxel_synthesis.h:0:333
+
 struct voxel_synthesis_change_propagation_info_stack
 {
   voxel_synthesis_change_propagation_info *Start;

@@ -1,3 +1,5 @@
+// src/engine/shader.cpp:0:4
+
 shader_uniform *
 PushShaderUniform( memory_arena *Mem, const char *Name, light *Value)
 {

@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/binary_parser.cpp:0:29
+
 link_internal u64_buffer
 Compact(u64_stream *Stream, memory_arena *PermMemory)
 {

@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/vector.cpp:0:2
+
 struct v3i_buffer
 {
   v3i *Start;

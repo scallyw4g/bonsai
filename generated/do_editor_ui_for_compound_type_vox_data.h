@@ -1,3 +1,5 @@
+// src/engine/editor.cpp:0:227
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, vox_data *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {

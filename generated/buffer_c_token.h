@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/c_token.cpp:0:2
+
 struct c_token_buffer
 {
   c_token *Start;

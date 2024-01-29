@@ -1,3 +1,5 @@
+// src/engine/voxel_synthesis.h:0:59
+
 struct entropy_lists
 {
   u32_cursor Start[TILE_RULESETS_COUNT];

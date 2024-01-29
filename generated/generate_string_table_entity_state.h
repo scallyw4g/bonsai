@@ -1,3 +1,5 @@
+// src/engine/entity.h:0:36
+
 link_internal counted_string
 ToString(entity_state Type)
 {

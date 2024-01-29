@@ -1,3 +1,5 @@
+// src/engine/voxel_synthesis.h:0:82
+
 struct tile_ruleset_buffer
 {
   tile_ruleset *Start;

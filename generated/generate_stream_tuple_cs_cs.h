@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/counted_string.cpp:0:31
+
 struct tuple_cs_cs_stream_chunk
 {
   tuple_cs_cs Element;

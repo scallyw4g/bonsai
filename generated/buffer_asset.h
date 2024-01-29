@@ -1,3 +1,5 @@
+// src/engine/asset.h:0:177
+
 struct asset_buffer
 {
   asset *Start;

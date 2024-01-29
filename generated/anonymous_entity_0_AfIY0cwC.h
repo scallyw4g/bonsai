@@ -1,3 +1,5 @@
+// src/engine/serdes.cpp:0:298
+
 E1->Id = E0->Id;
 
 E1->P = E0->P;

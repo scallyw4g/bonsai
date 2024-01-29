@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/c_token.h:0:225
+
 link_internal counted_string
 ToString(c_token_type Type)
 {

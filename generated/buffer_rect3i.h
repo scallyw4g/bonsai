@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/rect.cpp:0:1
+
 struct rect3i_buffer
 {
   rect3i *Start;

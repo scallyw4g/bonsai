@@ -1,3 +1,5 @@
+// src/engine/serdes.cpp:0:9
+
 link_internal b32
 Serialize(u8_cursor_block_array *Bytes, v4 *Element)
 {

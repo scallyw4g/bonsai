@@ -1,3 +1,5 @@
+// src/engine/serdes.h:0:118
+
 struct bonsai_type_info_linked_list_node
 {
   bonsai_type_info Element;

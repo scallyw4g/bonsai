@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/c_parser.h:0:61
+
 link_internal counted_string
 ToString(parse_error_code Type)
 {

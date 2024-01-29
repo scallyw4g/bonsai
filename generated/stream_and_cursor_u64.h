@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/binary_parser.cpp:0:26
+
 struct u64_cursor
 {
   u64 *Start;

@@ -1,3 +1,5 @@
+// src/engine/world_chunk.h:0:399
+
 struct world_chunk_ptr_buffer
 {
   world_chunk_ptr *Start;

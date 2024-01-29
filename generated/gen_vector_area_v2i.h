@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/vector.h:0:724
+
 inline s32
 Area( v2i Vec )
 {

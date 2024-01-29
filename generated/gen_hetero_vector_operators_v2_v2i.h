@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/vector.h:0:215
+
 inline v2
 operator+( v2 P1, v2i P2 )
 {

@@ -1,3 +1,5 @@
+// src/engine/serdes.cpp:0:44
+
 link_internal bonsai_type_info
 TypeInfo(voxel_lighting *Ignored)
 {

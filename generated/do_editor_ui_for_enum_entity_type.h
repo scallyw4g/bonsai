@@ -1,3 +1,5 @@
+// examples/turn_based/game_types.h:0:48
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_type *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
