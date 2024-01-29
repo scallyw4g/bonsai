@@ -30,12 +30,6 @@ Serialize(native_file *File, level_header *Element)
   Serialize(File, &VersionNumber);
 
 
-  Result &= Serialize(File, &Element->Version);
-
-
-
-
-
   Result &= Serialize(File, &Element->ChunkCount);
 
 

@@ -33,7 +33,7 @@ struct frustum
 struct entity;
 
 #if 1
-struct camera poof(@version(0))
+struct camera poof(@version(1))
 {
   frustum Frust;
 
@@ -45,9 +45,9 @@ struct camera poof(@version(0))
   r32 Roll;
   r32 Yaw;
 
-  r32 CurrentPitch; poof(@version(1))
-  r32 CurrentRoll;  poof(@version(1))
-  r32 CurrentYaw;   poof(@version(1))
+  /* r32 CurrentPitch; poof(@version(1)) */
+  /* r32 CurrentRoll;  poof(@version(1)) */
+  /* r32 CurrentYaw;   poof(@version(1)) */
 
   r32 DistanceFromTarget;
 

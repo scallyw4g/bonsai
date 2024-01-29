@@ -1,7 +1,6 @@
 struct level_header poof(@version(2))
 {
-  u64 Version;
-
+  /* u64 Version; */
   bonsai_type_info_hashtable TypeInfoHashtable; poof(@no_serialize)
 
   u32 ChunkCount;
@@ -18,8 +17,7 @@ struct level_header poof(@version(2))
 
 struct level_header_1
 {
-  u64 Version;
-
+  /* u64 Version; */
   bonsai_type_info_hashtable TypeInfoHashtable; poof(@no_serialize)
 
   u32 ChunkCount;
@@ -37,7 +35,7 @@ struct level_header_1
 
 struct level_header_0
 {
-  u64 Version;
+  /* u64 Version; */
   u32 ChunkCount;
   u32 EntityCount;
 

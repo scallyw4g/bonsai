@@ -66,36 +66,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, EDI
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Window, &Element->CurrentPitch, CSz("r32 CurrentPitch"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->CurrentRoll, CSz("r32 CurrentRoll"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->CurrentYaw, CSz("r32 CurrentYaw"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
       DoEditorUi(Ui, Window, &Element->DistanceFromTarget, CSz("r32 DistanceFromTarget"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 

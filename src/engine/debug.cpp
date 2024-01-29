@@ -94,9 +94,10 @@ DoLevelWindow(engine_resources *Engine)
     b32 Error = False;
     if (LevelBytes.Start)
     {
-      level_header LevelHeader = {};
-      DeserializeVersioned(&LevelBytes, &LevelHeader, 0, 0, Thread->PermMemory);
-      switch(LevelHeader.Version)
+      u64 LevelHeaderVersion = {};
+      Deserialize(&LevelBytes, &LevelHeaderVersion, 0);
+
+      switch(LevelHeaderVersion)
       {
         case 0:
         {
@@ -104,8 +105,8 @@ DoLevelWindow(engine_resources *Engine)
           entity *E = 0;
           Insert(TypeInfo(E), &Global_SerializeTypeTable, Thread->TempMemory);
 
-          camera *C = 0;
-          Insert(TypeInfo(C), &Global_SerializeTypeTable, Thread->TempMemory);
+          /* camera *C = 0; */
+          /* Insert(TypeInfo(C), &Global_SerializeTypeTable, Thread->TempMemory); */
         } break;
 
         case 1:
@@ -120,8 +121,11 @@ DoLevelWindow(engine_resources *Engine)
           }
         } break;
 
-        default: { Error=True; SoftError("Could not load level file claiming version (%lu), bailing.", LevelHeader.Version); }
+        default: { Error=True; SoftError("Could not load level file claiming version (%lu), bailing.", LevelHeaderVersion); }
       }
+
+      level_header LevelHeader = {};
+      DeserializeVersioned(&LevelBytes, &LevelHeader, 0, LevelHeaderVersion, Thread->PermMemory);
 
       if (Error == False)
       {

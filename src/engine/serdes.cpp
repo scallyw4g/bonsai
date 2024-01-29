@@ -356,13 +356,25 @@ poof(serdes_struct(bonsai_type_info_buffer))
 link_internal void
 Marshal(level_header_0 *E0, level_header *E1)
 {
-  NotImplemented;
+  E1->ChunkCount = E0->ChunkCount;
+  E1->EntityCount = E0->EntityCount;
+  E1->WorldFlags = E0->WorldFlags;
+  E1->WorldCenter = E0->WorldCenter;
+  E1->VisibleRegion = E0->VisibleRegion;
+  E1->Camera = E0->Camera;
+  E1->CameraTarget = E0->CameraTarget;
 }
 
 link_internal void
 Marshal(level_header_1 *E0, level_header *E1)
 {
-  NotImplemented;
+  E1->ChunkCount = E0->ChunkCount;
+  E1->EntityCount = E0->EntityCount;
+  E1->WorldFlags = E0->WorldFlags;
+  E1->WorldCenter = E0->WorldCenter;
+  E1->VisibleRegion = E0->VisibleRegion;
+  E1->Camera = E0->Camera;
+  E1->CameraTarget = E0->CameraTarget;
 }
 
 

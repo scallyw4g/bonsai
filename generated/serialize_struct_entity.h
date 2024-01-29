@@ -4,7 +4,7 @@ TypeInfo(entity *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("entity");
-  Result.Version =1 ;
+  Result.Version =2 ;
 
   /* type.map(member) */
   /* { */
@@ -26,7 +26,7 @@ Serialize(native_file *File, entity *Element)
   b32 Result = True;
 
   Upsert(TypeInfo(Element), &Global_SerializeTypeTable);
-  u64 VersionNumber =1;
+  u64 VersionNumber =2;
   Serialize(File, &VersionNumber);
 
 
