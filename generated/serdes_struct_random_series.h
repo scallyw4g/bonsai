@@ -18,7 +18,7 @@ TypeInfo(random_series *Ignored)
 }
 
 link_internal b32
-Serialize(native_file *File, random_series *Element)
+Serialize(u8_cursor_block_array *Bytes, random_series *Element)
 {
   u64 PointerTrue = True; 
   u64 PointerFalse = False; 
@@ -27,7 +27,7 @@ Serialize(native_file *File, random_series *Element)
 
   
 
-  Result &= Serialize(File, &Element->Seed);
+  Result &= Serialize(Bytes, &Element->Seed);
 
   
 
@@ -36,10 +36,10 @@ Serialize(native_file *File, random_series *Element)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, random_series *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, random_series *Element, memory_arena *Memory);
 
 link_internal b32
-DeserializeUnversioned(u8_stream *Bytes, random_series *Element, memory_arena *Memory)
+DeserializeUnversioned(u8_cursor *Bytes, random_series *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -51,7 +51,7 @@ DeserializeUnversioned(u8_stream *Bytes, random_series *Element, memory_arena *M
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, random_series *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, random_series *Element, memory_arena *Memory)
 {
   b32 Result = True;
 

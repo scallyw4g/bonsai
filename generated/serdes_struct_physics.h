@@ -18,7 +18,7 @@ TypeInfo(physics *Ignored)
 }
 
 link_internal b32
-Serialize(native_file *File, physics *Element)
+Serialize(u8_cursor_block_array *Bytes, physics *Element)
 {
   u64 PointerTrue = True; 
   u64 PointerFalse = False; 
@@ -27,31 +27,31 @@ Serialize(native_file *File, physics *Element)
 
   
 
-  Result &= Serialize(File, &Element->Velocity);
+  Result &= Serialize(Bytes, &Element->Velocity);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Force);
+  Result &= Serialize(Bytes, &Element->Force);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Delta);
+  Result &= Serialize(Bytes, &Element->Delta);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Mass);
+  Result &= Serialize(Bytes, &Element->Mass);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Speed);
+  Result &= Serialize(Bytes, &Element->Speed);
 
   
 
@@ -60,10 +60,10 @@ Serialize(native_file *File, physics *Element)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, physics *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, physics *Element, memory_arena *Memory);
 
 link_internal b32
-DeserializeUnversioned(u8_stream *Bytes, physics *Element, memory_arena *Memory)
+DeserializeUnversioned(u8_cursor *Bytes, physics *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -107,7 +107,7 @@ DeserializeUnversioned(u8_stream *Bytes, physics *Element, memory_arena *Memory)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, physics *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, physics *Element, memory_arena *Memory)
 {
   b32 Result = True;
 

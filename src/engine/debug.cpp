@@ -14,20 +14,27 @@ DoLevelWindow(engine_resources *Engine)
 
   local_persist window_layout Window = WindowLayout("Level");
 
+  thread_local_state *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
+
   PushWindowStart(Ui, &Window);
   PushTableStart(Ui);
     if (Button(Ui, CSz("Export Level"), UiId(&Window, "export_level_button", 0ull)))
     {
+      Global_SerializeTypeTableArena = AllocateArena();
+      Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(64, Global_SerializeTypeTableArena);
+
       u32 ChunkCount = 0;
       RangeIterator(HashIndex, s32(World->HashSize))
       {
-          if (World->ChunkHash[HashIndex])
+        if (World->ChunkHash[HashIndex])
         {
           ++ChunkCount;
         }
       }
 
-      native_file LevelFile = OpenFile("../bonsai_levels/test.level", "w+b");
+      /* native_file LevelFile = OpenFile("../bonsai_levels/test.level", "w+b"); */
+
+      u8_cursor_block_array OutputStream = {};
 
       level_header Header = {};
       Header.ChunkCount = ChunkCount;
@@ -46,7 +53,7 @@ DoLevelWindow(engine_resources *Engine)
       Header.EntityCount = EntityCount;
 
 
-      Serialize(&LevelFile, &Header);
+      Serialize(&OutputStream, &Header);
       /* WriteToFile(&LevelFile, (u8*)&Header, sizeof(level_header)); */
 
       u64 Delimeter = LEVEL_FILE_DEBUG_OBJECT_DELIM;
@@ -54,27 +61,36 @@ DoLevelWindow(engine_resources *Engine)
       {
         if (world_chunk *Chunk = World->ChunkHash[HashIndex])
         {
-          SerializeChunk(Chunk, &LevelFile);
+          SerializeChunk(Chunk, &OutputStream);
           /* Ensure(Serialize(&LevelFile, &Delimeter)); */
         }
       }
 
-      Ensure(Serialize(&LevelFile, &Delimeter));
+      Ensure(Serialize(&OutputStream, &Delimeter));
+      /* Ensure(Serialize(&LevelFile, &Delimeter)); */
 
       RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
       {
         entity *E = EntityTable[EntityIndex];
         if (Spawned(E))
         {
-          Serialize(&LevelFile, E);
+          Serialize(&OutputStream, E);
+          /* Serialize(&LevelFile, E); */
           /* Ensure(Serialize(&LevelFile, &Delimeter)); */
         }
       }
 
       v3_cursor *Palette = GetColorPalette();
-      Serialize(&LevelFile, Palette);
+      Serialize(&OutputStream, Palette);
+      /* Serialize(&LevelFile, Palette); */
 
+      native_file LevelFile = OpenFile("../bonsai_levels/test.level", "w+b");
+        WriteToFile(&LevelFile, &OutputStream);
       CloseFile(&LevelFile);
+
+      Global_SerializeTypeTable = {};
+      VaporizeArena(Global_SerializeTypeTableArena);
+      Global_SerializeTypeTableArena = 0;
     }
   PushTableEnd(Ui);
   PushNewRow(Ui);
@@ -88,7 +104,6 @@ DoLevelWindow(engine_resources *Engine)
   if (ClickedNode.Tag)
   {
     cs Filename = Concat(ClickedNode.Value.Dir, CSz("/"), ClickedNode.Value.Name, GetTranArena());
-    thread_local_state *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
     u8_stream LevelBytes = U8_StreamFromFile(Filename, Thread->PermMemory);
 
     b32 Error = False;
@@ -97,13 +112,14 @@ DoLevelWindow(engine_resources *Engine)
       u64 LevelHeaderVersion = {};
       Deserialize(&LevelBytes, &LevelHeaderVersion, 0);
 
+      Global_SerializeTypeTableArena = AllocateArena();
       switch(LevelHeaderVersion)
       {
         case 0:
         {
-          Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(64, Thread->TempMemory);
+          Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(64, Global_SerializeTypeTableArena);
           entity *E = 0;
-          Insert(TypeInfo(E), &Global_SerializeTypeTable, Thread->TempMemory);
+          Insert(TypeInfo(E), &Global_SerializeTypeTable, Global_SerializeTypeTableArena);
 
           /* camera *C = 0; */
           /* Insert(TypeInfo(C), &Global_SerializeTypeTable, Thread->TempMemory); */
@@ -113,11 +129,11 @@ DoLevelWindow(engine_resources *Engine)
         {
           bonsai_type_info_buffer TypeInfoBuffer = {};
           Deserialize(&LevelBytes, &TypeInfoBuffer, Thread->TempMemory);
-          Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(NextPowerOfTwo(TypeInfoBuffer.Count), Thread->TempMemory);
+          Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(NextPowerOfTwo(TypeInfoBuffer.Count), Global_SerializeTypeTableArena);
 
           IterateOver(&TypeInfoBuffer, TypeInfo, TypeInfoIndex)
           {
-            Insert(*TypeInfo, &Global_SerializeTypeTable, Thread->TempMemory);
+            Insert(*TypeInfo, &Global_SerializeTypeTable, Global_SerializeTypeTableArena);
           }
         } break;
 
@@ -197,10 +213,13 @@ DoLevelWindow(engine_resources *Engine)
         UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
       }
 
+      Global_SerializeTypeTable = {};
+      VaporizeArena(Global_SerializeTypeTableArena);
+      Global_SerializeTypeTableArena = 0;
     }
 
   }
-    PushWindowEnd(Ui, &Window);
+  PushWindowEnd(Ui, &Window);
 }
 
 link_internal void

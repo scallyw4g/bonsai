@@ -18,7 +18,7 @@ TypeInfo(entity_game_data *Ignored)
 }
 
 link_internal b32
-Serialize(native_file *File, entity_game_data *Element)
+Serialize(u8_cursor_block_array *Bytes, entity_game_data *Element)
 {
   u64 PointerTrue = True; 
   u64 PointerFalse = False; 
@@ -27,25 +27,25 @@ Serialize(native_file *File, entity_game_data *Element)
 
   
 
-  Result &= Serialize(File, &Element->FireballChargeLevel);
+  Result &= Serialize(Bytes, &Element->FireballChargeLevel);
 
 
 
 
 
-  Result &= Serialize(File, &Element->FireballCharges);
+  Result &= Serialize(Bytes, &Element->FireballCharges);
 
 
 
 
 
-  Result &= Serialize(File, &Element->IceBlockCharges);
+  Result &= Serialize(Bytes, &Element->IceBlockCharges);
 
 
 
 
 
-  Result &= Serialize(File, &Element->HoldingItem);
+  Result &= Serialize(Bytes, &Element->HoldingItem);
 
   
 
@@ -54,10 +54,10 @@ Serialize(native_file *File, entity_game_data *Element)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, entity_game_data *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, entity_game_data *Element, memory_arena *Memory);
 
 link_internal b32
-DeserializeUnversioned(u8_stream *Bytes, entity_game_data *Element, memory_arena *Memory)
+DeserializeUnversioned(u8_cursor *Bytes, entity_game_data *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -93,7 +93,7 @@ DeserializeUnversioned(u8_stream *Bytes, entity_game_data *Element, memory_arena
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, entity_game_data *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, entity_game_data *Element, memory_arena *Memory)
 {
   b32 Result = True;
 

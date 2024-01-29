@@ -18,7 +18,7 @@ TypeInfo(vox_data *Ignored)
 }
 
 link_internal b32
-Serialize(native_file *File, vox_data *Element)
+Serialize(u8_cursor_block_array *Bytes, vox_data *Element)
 {
   u64 PointerTrue = True; 
   u64 PointerFalse = False; 
@@ -27,20 +27,20 @@ Serialize(native_file *File, vox_data *Element)
 
   
 
-  if (Element->ChunkData) { Result &= WriteToFile(File, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
-  else                        { Result &= WriteToFile(File, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
+  if (Element->ChunkData) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+  else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
-  if (Element->ChunkData) { Result &= Serialize(File, Element->ChunkData); }
+  if (Element->ChunkData) { Result &= Serialize(Bytes, Element->ChunkData); }
 
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, vox_data *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, vox_data *Element, memory_arena *Memory);
 
 link_internal b32
-DeserializeUnversioned(u8_stream *Bytes, vox_data *Element, memory_arena *Memory)
+DeserializeUnversioned(u8_cursor *Bytes, vox_data *Element, memory_arena *Memory)
 {
   b32 Result = True;
   b64 HadChunkDataPointer = Read_u64(Bytes);
@@ -55,7 +55,7 @@ DeserializeUnversioned(u8_stream *Bytes, vox_data *Element, memory_arena *Memory
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, vox_data *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, vox_data *Element, memory_arena *Memory)
 {
   b32 Result = True;
 

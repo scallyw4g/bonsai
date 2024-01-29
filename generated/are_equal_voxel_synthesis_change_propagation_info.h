@@ -3,7 +3,7 @@ AreEqual(voxel_synthesis_change_propagation_info *Thing1, voxel_synthesis_change
 {
   b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( voxel_synthesis_change_propagation_info ) );
 
-
   return Result;
 }
+
 

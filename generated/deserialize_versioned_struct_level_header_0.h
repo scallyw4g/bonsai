@@ -1,5 +1,5 @@
 link_internal b32
-DeserializeVersioned(u8_stream *Bytes, level_header *Element, bonsai_type_info *TypeInfo, u64 Version, memory_arena *Memory)
+DeserializeVersioned(u8_cursor *Bytes, level_header *Element, bonsai_type_info *TypeInfo, u64 Version, memory_arena *Memory)
 {
   Assert(Version <= 2);
 

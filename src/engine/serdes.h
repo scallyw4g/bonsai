@@ -4,7 +4,7 @@
 
 #if LEVEL_FILE_DEBUG_MODE
        
-#define MAYBE_WRITE_DEBUG_OBJECT_DELIM() { u64 Tag = LEVEL_FILE_DEBUG_OBJECT_DELIM; Ensure( Serialize(File, &Tag) ); }
+#define MAYBE_WRITE_DEBUG_OBJECT_DELIM() { u64 Tag = LEVEL_FILE_DEBUG_OBJECT_DELIM; Ensure( Serialize(Bytes, &Tag) ); }
 #define MAYBE_READ_DEBUG_OBJECT_DELIM() { u64 Tag = Read_u64(Bytes); if ( Tag != LEVEL_FILE_DEBUG_OBJECT_DELIM ) { Result = False; Error("Reading Object Delim Failed in file (" __FILE__ ":" STRINGIZE(__LINE__) ")"); } }
 #else
 #define MAYBE_WRITE_DEBUG_OBJECT_DELIM(...)
@@ -15,14 +15,14 @@ poof(
   func serdes_cursor(type)
   {
     link_internal b32
-    Serialize(native_file *File, (type.name)_cursor* Cursor)
+    Serialize(u8_cursor_block_array *Bytes, (type.name)_cursor* Cursor)
     {
       u64 ElementCount = AtElements(Cursor);
-      b32 Result = WriteToFile(File, ElementCount);
+      b32 Result = Write(Bytes, ElementCount);
 
       RangeIterator_t(u64, EIndex, ElementCount)
       {
-        Result &= Serialize(File, Cursor->Start+EIndex);
+        Result &= Serialize(Bytes, Cursor->Start+EIndex);
       }
 
       MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -30,7 +30,7 @@ poof(
     }
 
     link_internal b32
-    Deserialize(u8_stream *Bytes, (type.name)_cursor* Cursor, memory_arena *Ignored)
+    Deserialize(u8_cursor *Bytes, (type.name)_cursor* Cursor, memory_arena *Ignored)
     {
       u64 ElementCount = Read_u64(Bytes);
 
@@ -53,9 +53,9 @@ poof(
   func serialize_vector(type)
   {
     link_internal b32
-    Serialize(native_file *File, (type.name) *Element)
+    Serialize(u8_cursor_block_array *Bytes, (type.name) *Element)
     {
-      b32 Result = WriteToFile(File, Cast(u8*, Element), sizeof((type.name)));
+      b32 Result = Write(Bytes, Cast(u8*, Element), sizeof((type.name)));
 
       MAYBE_WRITE_DEBUG_OBJECT_DELIM();
       return Result;
@@ -67,7 +67,7 @@ poof(
   func deserialize_vector(type)
   {
     link_internal b32
-    Deserialize(u8_stream *Bytes, (type.name)* Element, memory_arena *Ignored)
+    Deserialize(u8_cursor *Bytes, (type.name)* Element, memory_arena *Ignored)
     {
       *Element = *Cast((type.name)*, Bytes->At);
       Bytes->At += sizeof((type.name));
@@ -102,6 +102,9 @@ struct bonsai_type_info
   /* member_info_block_array Members; */
 };
 
+poof(are_equal(bonsai_type_info))
+#include <generated/are_equal_bonsai_type_info.h>
+
 link_internal umm
 Hash(bonsai_type_info *Type)
 {
@@ -127,6 +130,8 @@ poof(hashtable_get(bonsai_type_info, {cs}, {Name}))
 global_variable bonsai_type_info_hashtable
 Global_SerializeTypeTable;
 
+global_variable memory_arena*
+Global_SerializeTypeTableArena;
 
 
 poof(
@@ -152,7 +157,7 @@ poof(
     }
 
     link_internal b32
-    Serialize(native_file *File, (type.name) *Element)
+    Serialize(u8_cursor_block_array *Bytes, (type.name) *Element)
     {
       u64 PointerTrue = True; 
       u64 PointerFalse = False; 
@@ -161,9 +166,9 @@ poof(
 
       type.has_tag(version)?
       {
-        Upsert(TypeInfo(Element), &Global_SerializeTypeTable);
+        Upsert(TypeInfo(Element), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
         u64 VersionNumber = type.tag_value(version);
-        Serialize(File, &VersionNumber);
+        Serialize(Bytes, &VersionNumber);
       }
 
       type.map(member)
@@ -179,21 +184,21 @@ poof(
           {
             member.is_pointer?
             {
-              if (Element->(member.name)) { Result &= WriteToFile(File, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
-              else                        { Result &= WriteToFile(File, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
+              if (Element->(member.name)) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+              else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
             }
             {
               member.is_enum?
               {
-                Result &= Serialize(File, (u32*)&Element->(member.name));
+                Result &= Serialize(Bytes, (u32*)&Element->(member.name));
               }
               {
                 member.is_array?
                 {
-                  Result &= SerializeArray(File, Element->(member.name), member.array);
+                  Result &= SerializeArray(Bytes, Element->(member.name), member.array);
                 }
                 {
-                  Result &= Serialize(File, &Element->(member.name));
+                  Result &= Serialize(Bytes, &Element->(member.name));
                 }
               }
             }
@@ -209,7 +214,7 @@ poof(
         {
           member.is_pointer?
           {
-            if (Element->(member.name)) { Result &= Serialize(File, Element->(member.name)); }
+            if (Element->(member.name)) { Result &= Serialize(Bytes, Element->(member.name)); }
           }
         }
       }
@@ -224,7 +229,7 @@ poof(
   func deserialize_versioned_struct(type, type_poof_index version_max)
   {
     link_internal b32
-    DeserializeVersioned(u8_stream *Bytes, type.name *Element, bonsai_type_info *TypeInfo, u64 Version, memory_arena *Memory)
+    DeserializeVersioned(u8_cursor *Bytes, type.name *Element, bonsai_type_info *TypeInfo, u64 Version, memory_arena *Memory)
     {
       Assert(Version <= version_max);
 
@@ -250,10 +255,10 @@ poof(
   func deserialize_struct(type)
   {
     link_internal b32
-    Deserialize(u8_stream *Bytes, (type.name) *Element, memory_arena *Memory);
+    Deserialize(u8_cursor *Bytes, (type.name) *Element, memory_arena *Memory);
 
     link_internal b32
-    DeserializeUnversioned(u8_stream *Bytes, (type.name) *Element, memory_arena *Memory)
+    DeserializeUnversioned(u8_cursor *Bytes, (type.name) *Element, memory_arena *Memory)
     {
       b32 Result = True;
       type.map(member)
@@ -316,7 +321,7 @@ poof(
     }
 
     link_internal b32
-    Deserialize(u8_stream *Bytes, (type.name) *Element, memory_arena *Memory)
+    Deserialize(u8_cursor *Bytes, (type.name) *Element, memory_arena *Memory)
     {
       b32 Result = True;
 
@@ -355,13 +360,13 @@ poof(
   func serialize_array(type)
   {
     link_internal b32
-    SerializeArray(native_file *File, (type.name) *Element, umm Count)
+    SerializeArray(u8_cursor_block_array *Bytes, (type.name) *Element, umm Count)
     {
       Assert(Count);
       {
         RangeIterator_t(umm, ElementIndex, Count)
         {
-          Serialize(File, Element+ElementIndex);
+          Serialize(Bytes, Element+ElementIndex);
         }
       }
       return True;
@@ -373,7 +378,7 @@ poof(
   func deserialize_array(type)
   {
     link_internal b32
-    DeserializeArray(u8_stream *Bytes, (type.name) **Dest, umm Count, memory_arena *Memory)
+    DeserializeArray(u8_cursor *Bytes, (type.name) **Dest, umm Count, memory_arena *Memory)
     {
       Assert(Count);
       if (*Dest == 0) { *Dest = Allocate((type.name), Memory, Count); }
@@ -417,14 +422,14 @@ poof(
     list.map(type)
     {
       link_internal b32
-      Serialize(native_file *File, (type.name) *Element, memory_arena *Ignored = 0)
+      Serialize(u8_cursor_block_array *Bytes, (type.name) *Element, memory_arena *Ignored = 0)
       {
-        b32 Result = WriteToFile(File, Cast(u8*, Element), sizeof((type.name)));
+        b32 Result = Write(Bytes, Cast(u8*, Element), sizeof((type.name)));
         return Result;
       }
 
       link_internal b32
-      Deserialize(u8_stream *Bytes, (type.name) *Element, memory_arena *Ignored = 0)
+      Deserialize(u8_cursor *Bytes, (type.name) *Element, memory_arena *Ignored = 0)
       {
         *Element = *Cast((type.name)*, Bytes->At);
         Bytes->At += sizeof((type.name));
@@ -439,16 +444,16 @@ poof(
 
 
 link_internal b32
-Serialize(native_file *File, cs *Element, memory_arena *Ignored = 0)
+Serialize(u8_cursor_block_array *Bytes, cs *Element, memory_arena *Ignored = 0)
 {
   u64 Count = u64(Element->Count);
-  b32 Result  = WriteToFile(File, Cast(u8*, &Count), sizeof(u64));
-      Result &= WriteToFile(File, Cast(u8*, Element->Start), Element->Count);
+  b32 Result  = Write(Bytes, Cast(u8*, &Count), sizeof(u64));
+      Result &= Write(Bytes, Cast(u8*, Element->Start), Element->Count);
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, cs *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, cs *Element, memory_arena *Memory)
 {
   Element->Count = *Cast(u64*, Bytes->At);
   Bytes->At += sizeof(u64);

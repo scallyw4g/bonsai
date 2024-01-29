@@ -18,7 +18,7 @@ TypeInfo(file_traversal_node *Ignored)
 }
 
 link_internal b32
-Serialize(native_file *File, file_traversal_node *Element)
+Serialize(u8_cursor_block_array *Bytes, file_traversal_node *Element)
 {
   u64 PointerTrue = True; 
   u64 PointerFalse = False; 
@@ -27,18 +27,18 @@ Serialize(native_file *File, file_traversal_node *Element)
 
   
 
-  Result &= Serialize(File, (u32*)&Element->Type);
+  Result &= Serialize(Bytes, (u32*)&Element->Type);
 
 
 
 
-  Result &= Serialize(File, &Element->Dir);
+  Result &= Serialize(Bytes, &Element->Dir);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Name);
+  Result &= Serialize(Bytes, &Element->Name);
 
   
 
@@ -47,10 +47,10 @@ Serialize(native_file *File, file_traversal_node *Element)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, file_traversal_node *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, file_traversal_node *Element, memory_arena *Memory);
 
 link_internal b32
-DeserializeUnversioned(u8_stream *Bytes, file_traversal_node *Element, memory_arena *Memory)
+DeserializeUnversioned(u8_cursor *Bytes, file_traversal_node *Element, memory_arena *Memory)
 {
   b32 Result = True;
   Element->Type = Cast(file_traversal_type, Read_u32(Bytes));
@@ -75,7 +75,7 @@ DeserializeUnversioned(u8_stream *Bytes, file_traversal_node *Element, memory_ar
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, file_traversal_node *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, file_traversal_node *Element, memory_arena *Memory)
 {
   b32 Result = True;
 

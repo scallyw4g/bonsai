@@ -18,7 +18,7 @@ TypeInfo(bonsai_type_info_buffer *Ignored)
 }
 
 link_internal b32
-Serialize(native_file *File, bonsai_type_info_buffer *Element)
+Serialize(u8_cursor_block_array *Bytes, bonsai_type_info_buffer *Element)
 {
   u64 PointerTrue = True; 
   u64 PointerFalse = False; 
@@ -27,14 +27,14 @@ Serialize(native_file *File, bonsai_type_info_buffer *Element)
 
   
 
-  if (Element->Start) { Result &= WriteToFile(File, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
-  else                        { Result &= WriteToFile(File, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
+  if (Element->Start) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+  else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
 
 
-  Result &= Serialize(File, &Element->Count);
+  Result &= Serialize(Bytes, &Element->Count);
 
-  if (Element->Start) { Result &= Serialize(File, Element->Start); }
+  if (Element->Start) { Result &= Serialize(Bytes, Element->Start); }
 
 
 
@@ -44,10 +44,10 @@ Serialize(native_file *File, bonsai_type_info_buffer *Element)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, bonsai_type_info_buffer *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, bonsai_type_info_buffer *Element, memory_arena *Memory);
 
 link_internal b32
-DeserializeUnversioned(u8_stream *Bytes, bonsai_type_info_buffer *Element, memory_arena *Memory)
+DeserializeUnversioned(u8_cursor *Bytes, bonsai_type_info_buffer *Element, memory_arena *Memory)
 {
   b32 Result = True;
   b64 HadStartPointer = Read_u64(Bytes);
@@ -71,7 +71,7 @@ DeserializeUnversioned(u8_stream *Bytes, bonsai_type_info_buffer *Element, memor
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, bonsai_type_info_buffer *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, bonsai_type_info_buffer *Element, memory_arena *Memory)
 {
   b32 Result = True;
 

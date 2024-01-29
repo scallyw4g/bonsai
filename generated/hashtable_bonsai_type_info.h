@@ -62,13 +62,6 @@ Insert(bonsai_type_info_linked_list_node *Node, bonsai_type_info_hashtable *Tabl
 }
 
 link_internal bonsai_type_info*
-Upsert(bonsai_type_info Element, bonsai_type_info_hashtable *Table)
-{
-  NotImplemented;
-  return 0;
-}
-
-link_internal bonsai_type_info*
 Insert(bonsai_type_info Element, bonsai_type_info_hashtable *Table, memory_arena *Memory)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
@@ -77,6 +70,29 @@ Insert(bonsai_type_info Element, bonsai_type_info_hashtable *Table, memory_arena
   Bucket->Element = Element;
   Insert(Bucket, Table);
   return &Bucket->Element;
+}
+
+link_internal bonsai_type_info*
+Upsert(bonsai_type_info Element, bonsai_type_info_hashtable *Table, memory_arena *Memory)
+{
+  umm HashValue = Hash(&Element) % Table->Size;
+  bonsai_type_info_linked_list_node **Bucket = Table->Elements + HashValue;
+  while (*Bucket)
+  {
+    if (AreEqual(&Bucket[0]->Element, &Element)) { break; }
+    Bucket = &(*Bucket)->Next;
+  }
+
+  if (*Bucket)
+  {
+    Bucket[0]->Element = Element;
+  }
+  else
+  {
+    Insert(Element, Table, Memory);
+  }
+
+  return &Bucket[0]->Element;
 }
 
 //

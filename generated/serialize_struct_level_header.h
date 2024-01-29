@@ -18,55 +18,55 @@ TypeInfo(level_header *Ignored)
 }
 
 link_internal b32
-Serialize(native_file *File, level_header *Element)
+Serialize(u8_cursor_block_array *Bytes, level_header *Element)
 {
   u64 PointerTrue = True; 
   u64 PointerFalse = False; 
 
   b32 Result = True;
 
-  Upsert(TypeInfo(Element), &Global_SerializeTypeTable);
+  Upsert(TypeInfo(Element), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
   u64 VersionNumber =2;
-  Serialize(File, &VersionNumber);
+  Serialize(Bytes, &VersionNumber);
 
 
-  Result &= Serialize(File, &Element->ChunkCount);
-
-
-
-
-
-  Result &= Serialize(File, &Element->EntityCount);
+  Result &= Serialize(Bytes, &Element->ChunkCount);
 
 
 
 
 
-  Result &= Serialize(File, &Element->WorldFlags);
+  Result &= Serialize(Bytes, &Element->EntityCount);
 
 
 
 
 
-  Result &= Serialize(File, &Element->WorldCenter);
+  Result &= Serialize(Bytes, &Element->WorldFlags);
 
 
 
 
 
-  Result &= Serialize(File, &Element->VisibleRegion);
+  Result &= Serialize(Bytes, &Element->WorldCenter);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Camera);
+  Result &= Serialize(Bytes, &Element->VisibleRegion);
 
 
 
 
 
-  Result &= Serialize(File, &Element->CameraTarget);
+  Result &= Serialize(Bytes, &Element->Camera);
+
+
+
+
+
+  Result &= Serialize(Bytes, &Element->CameraTarget);
 
   
 

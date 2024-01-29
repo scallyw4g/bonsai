@@ -18,7 +18,7 @@ TypeInfo(canonical_position *Ignored)
 }
 
 link_internal b32
-Serialize(native_file *File, canonical_position *Element)
+Serialize(u8_cursor_block_array *Bytes, canonical_position *Element)
 {
   u64 PointerTrue = True; 
   u64 PointerFalse = False; 
@@ -27,13 +27,13 @@ Serialize(native_file *File, canonical_position *Element)
 
   
 
-  Result &= Serialize(File, &Element->Offset);
+  Result &= Serialize(Bytes, &Element->Offset);
 
 
 
 
 
-  Result &= Serialize(File, &Element->WorldP);
+  Result &= Serialize(Bytes, &Element->WorldP);
 
   
 
@@ -42,10 +42,10 @@ Serialize(native_file *File, canonical_position *Element)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, canonical_position *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, canonical_position *Element, memory_arena *Memory);
 
 link_internal b32
-DeserializeUnversioned(u8_stream *Bytes, canonical_position *Element, memory_arena *Memory)
+DeserializeUnversioned(u8_cursor *Bytes, canonical_position *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -65,7 +65,7 @@ DeserializeUnversioned(u8_stream *Bytes, canonical_position *Element, memory_are
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, canonical_position *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, canonical_position *Element, memory_arena *Memory)
 {
   b32 Result = True;
 

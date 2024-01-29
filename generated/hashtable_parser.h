@@ -62,13 +62,6 @@ Insert(parser_linked_list_node *Node, parser_hashtable *Table)
 }
 
 link_internal parser*
-Upsert(parser Element, parser_hashtable *Table)
-{
-  NotImplemented;
-  return 0;
-}
-
-link_internal parser*
 Insert(parser Element, parser_hashtable *Table, memory_arena *Memory)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
@@ -77,6 +70,29 @@ Insert(parser Element, parser_hashtable *Table, memory_arena *Memory)
   Bucket->Element = Element;
   Insert(Bucket, Table);
   return &Bucket->Element;
+}
+
+link_internal parser*
+Upsert(parser Element, parser_hashtable *Table, memory_arena *Memory)
+{
+  umm HashValue = Hash(&Element) % Table->Size;
+  parser_linked_list_node **Bucket = Table->Elements + HashValue;
+  while (*Bucket)
+  {
+    if (AreEqual(&Bucket[0]->Element, &Element)) { break; }
+    Bucket = &(*Bucket)->Next;
+  }
+
+  if (*Bucket)
+  {
+    Bucket[0]->Element = Element;
+  }
+  else
+  {
+    Insert(Element, Table, Memory);
+  }
+
+  return &Bucket[0]->Element;
 }
 
 //

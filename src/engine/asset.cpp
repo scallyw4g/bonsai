@@ -104,7 +104,8 @@ link_internal b32
 SerializeMeshData(native_file *File, untextured_3d_geometry_buffer *Mesh)
 {
   b32 Result = True;
-#if 1
+  NotImplemented;
+#if 0
 
   umm TotalElements = umm(Mesh->At);
 
@@ -362,27 +363,27 @@ DeserializeChunk(u8_stream *FileBytes, world_chunk *Result, tiered_mesh_freelist
 }
 
 link_internal b32
-SerializeChunk(world_chunk *Chunk, native_file *File)
+SerializeChunk(world_chunk *Chunk, u8_cursor_block_array *Bytes)
 {
   b32 Result = True;
 
   world_chunk_file_header_v3 FileHeader = MakeWorldChunkFileHeader_v3(Chunk);
 
-  Result &= WriteToFile(File, (u8*)&FileHeader, sizeof(FileHeader));
+  Result &= Write(Bytes, (u8*)&FileHeader, sizeof(FileHeader));
 
   {
     u64 VoxByteCount = FileHeader.VoxelElementCount * FileHeader.VoxelElementSize;
 
     u32 Tag = WorldChunkFileTag_VOXD;
-    Result &= WriteToFile(File, Tag);
-    Result &= WriteToFile(File, (u8*)Chunk->Voxels, VoxByteCount);
+    Result &= Write(Bytes, Tag);
+    Result &= Write(Bytes, (u8*)Chunk->Voxels, VoxByteCount);
   }
 
 #if 0
   if (FileHeader.MeshElementCount)
   {
     auto Mesh = TakeOwnershipSync(&Chunk->Meshes, MeshBit_Lod0);
-    Result &= SerializeMesh(File, Mesh);
+    Result &= SerializeMesh(Bytes, Mesh);
     ReleaseOwnership(&Chunk->Meshes, MeshBit_Lod0, Mesh);
   }
 #endif
@@ -392,11 +393,11 @@ SerializeChunk(world_chunk *Chunk, native_file *File)
     DebugLine("Writing (%u) StandingSpots", FileHeader.StandingSpotElementCount);
     u64 StandingSpotByteCount = FileHeader.StandingSpotElementSize * FileHeader.StandingSpotElementCount;
     u32 Tag = WorldChunkFileTag_SPOT;
-    Result &= WriteToFile(File, Tag);
-    Result &= WriteToFile(File, (u8*)Chunk->StandingSpots.Start, StandingSpotByteCount);
+    Result &= Write(Bytes, Tag);
+    Result &= Write(Bytes, (u8*)Chunk->StandingSpots.Start, StandingSpotByteCount);
   }
 
-  /* Result &= WriteToFile(File, (u32)WorldChunkFileTag_END); */
+  /* Result &= Write(Bytes, (u32)WorldChunkFileTag_END); */
 
   return Result;
 }
@@ -404,12 +405,14 @@ SerializeChunk(world_chunk *Chunk, native_file *File)
 link_internal b32
 SerializeChunk(world_chunk *Chunk, counted_string AssetPath)
 {
-
   auto WorldP = Chunk->WorldP;
   counted_string Filename = GetAssetFilenameFor(AssetPath, WorldP, GetTranArena());
 
+  u8_cursor_block_array Bytes = {};
+  b32 Result = SerializeChunk(Chunk, &Bytes);
+
   native_file File = OpenFile(Filename, "w+b");
-  b32 Result = SerializeChunk(Chunk, &File);
+    Ensure( WriteToFile(&File, &Bytes) ); // TODO(Jesse)(completeness, error_handling): SoftError here?
   CloseFile(&File);
   return Result;
 }

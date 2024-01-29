@@ -18,7 +18,7 @@ TypeInfo(bonsai_type_info *Ignored)
 }
 
 link_internal b32
-Serialize(native_file *File, bonsai_type_info *Element)
+Serialize(u8_cursor_block_array *Bytes, bonsai_type_info *Element)
 {
   u64 PointerTrue = True; 
   u64 PointerFalse = False; 
@@ -27,19 +27,19 @@ Serialize(native_file *File, bonsai_type_info *Element)
 
   
 
-  Result &= Serialize(File, &Element->Name);
+  Result &= Serialize(Bytes, &Element->Name);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Version);
+  Result &= Serialize(Bytes, &Element->Version);
 
 
 
 
 
-  Result &= Serialize(File, &Element->SizeOfInBytes);
+  Result &= Serialize(Bytes, &Element->SizeOfInBytes);
 
   
 
@@ -48,10 +48,10 @@ Serialize(native_file *File, bonsai_type_info *Element)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, bonsai_type_info *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, bonsai_type_info *Element, memory_arena *Memory);
 
 link_internal b32
-DeserializeUnversioned(u8_stream *Bytes, bonsai_type_info *Element, memory_arena *Memory)
+DeserializeUnversioned(u8_cursor *Bytes, bonsai_type_info *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -79,7 +79,7 @@ DeserializeUnversioned(u8_stream *Bytes, bonsai_type_info *Element, memory_arena
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, bonsai_type_info *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, bonsai_type_info *Element, memory_arena *Memory)
 {
   b32 Result = True;
 

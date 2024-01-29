@@ -1,14 +1,14 @@
 link_internal b32
-Serialize(native_file *File, Quaternion *Element)
+Serialize(u8_cursor_block_array *Bytes, Quaternion *Element)
 {
-  b32 Result = WriteToFile(File, Cast(u8*, Element), sizeof(Quaternion));
+  b32 Result = Write(Bytes, Cast(u8*, Element), sizeof(Quaternion));
 
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, Quaternion* Element, memory_arena *Ignored)
+Deserialize(u8_cursor *Bytes, Quaternion* Element, memory_arena *Ignored)
 {
   *Element = *Cast(Quaternion*, Bytes->At);
   Bytes->At += sizeof(Quaternion);

@@ -18,7 +18,7 @@ TypeInfo(rect3 *Ignored)
 }
 
 link_internal b32
-Serialize(native_file *File, rect3 *Element)
+Serialize(u8_cursor_block_array *Bytes, rect3 *Element)
 {
   u64 PointerTrue = True; 
   u64 PointerFalse = False; 
@@ -27,13 +27,13 @@ Serialize(native_file *File, rect3 *Element)
 
   
 
-  Result &= Serialize(File, &Element->Min);
+  Result &= Serialize(Bytes, &Element->Min);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Max);
+  Result &= Serialize(Bytes, &Element->Max);
 
   
 
@@ -42,10 +42,10 @@ Serialize(native_file *File, rect3 *Element)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, rect3 *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, rect3 *Element, memory_arena *Memory);
 
 link_internal b32
-DeserializeUnversioned(u8_stream *Bytes, rect3 *Element, memory_arena *Memory)
+DeserializeUnversioned(u8_cursor *Bytes, rect3 *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -65,7 +65,7 @@ DeserializeUnversioned(u8_stream *Bytes, rect3 *Element, memory_arena *Memory)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, rect3 *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, rect3 *Element, memory_arena *Memory)
 {
   b32 Result = True;
 

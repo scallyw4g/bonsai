@@ -18,79 +18,79 @@ TypeInfo(camera *Ignored)
 }
 
 link_internal b32
-Serialize(native_file *File, camera *Element)
+Serialize(u8_cursor_block_array *Bytes, camera *Element)
 {
   u64 PointerTrue = True; 
   u64 PointerFalse = False; 
 
   b32 Result = True;
 
-  Upsert(TypeInfo(Element), &Global_SerializeTypeTable);
+  Upsert(TypeInfo(Element), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
   u64 VersionNumber =1;
-  Serialize(File, &VersionNumber);
+  Serialize(Bytes, &VersionNumber);
 
 
-  Result &= Serialize(File, &Element->Frust);
-
-
-
-
-
-  Result &= Serialize(File, &Element->CurrentP);
+  Result &= Serialize(Bytes, &Element->Frust);
 
 
 
 
 
-  Result &= Serialize(File, &Element->RenderSpacePosition);
+  Result &= Serialize(Bytes, &Element->CurrentP);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Pitch);
+  Result &= Serialize(Bytes, &Element->RenderSpacePosition);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Roll);
+  Result &= Serialize(Bytes, &Element->Pitch);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Yaw);
+  Result &= Serialize(Bytes, &Element->Roll);
 
 
 
 
 
-  Result &= Serialize(File, &Element->DistanceFromTarget);
+  Result &= Serialize(Bytes, &Element->Yaw);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Front);
+  Result &= Serialize(Bytes, &Element->DistanceFromTarget);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Right);
+  Result &= Serialize(Bytes, &Element->Front);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Up);
+  Result &= Serialize(Bytes, &Element->Right);
 
 
 
 
 
-  Result &= Serialize(File, &Element->GhostId);
+  Result &= Serialize(Bytes, &Element->Up);
+
+
+
+
+
+  Result &= Serialize(Bytes, &Element->GhostId);
 
   
 
@@ -99,10 +99,10 @@ Serialize(native_file *File, camera *Element)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, camera *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, camera *Element, memory_arena *Memory);
 
 link_internal b32
-DeserializeUnversioned(u8_stream *Bytes, camera *Element, memory_arena *Memory)
+DeserializeUnversioned(u8_cursor *Bytes, camera *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -194,7 +194,7 @@ DeserializeUnversioned(u8_stream *Bytes, camera *Element, memory_arena *Memory)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, camera *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, camera *Element, memory_arena *Memory)
 {
   b32 Result = True;
 

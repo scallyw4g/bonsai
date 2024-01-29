@@ -18,7 +18,7 @@ TypeInfo(asset_id *Ignored)
 }
 
 link_internal b32
-Serialize(native_file *File, asset_id *Element)
+Serialize(u8_cursor_block_array *Bytes, asset_id *Element)
 {
   u64 PointerTrue = True; 
   u64 PointerFalse = False; 
@@ -27,7 +27,7 @@ Serialize(native_file *File, asset_id *Element)
 
   
 
-  Result &= Serialize(File, &Element->FileNode);
+  Result &= Serialize(Bytes, &Element->FileNode);
 
   
 
@@ -36,10 +36,10 @@ Serialize(native_file *File, asset_id *Element)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, asset_id *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, asset_id *Element, memory_arena *Memory);
 
 link_internal b32
-DeserializeUnversioned(u8_stream *Bytes, asset_id *Element, memory_arena *Memory)
+DeserializeUnversioned(u8_cursor *Bytes, asset_id *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -51,7 +51,7 @@ DeserializeUnversioned(u8_stream *Bytes, asset_id *Element, memory_arena *Memory
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, asset_id *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, asset_id *Element, memory_arena *Memory)
 {
   b32 Result = True;
 

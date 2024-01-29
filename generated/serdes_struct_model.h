@@ -18,7 +18,7 @@ TypeInfo(model *Ignored)
 }
 
 link_internal b32
-Serialize(native_file *File, model *Element)
+Serialize(u8_cursor_block_array *Bytes, model *Element)
 {
   u64 PointerTrue = True; 
   u64 PointerFalse = False; 
@@ -27,25 +27,25 @@ Serialize(native_file *File, model *Element)
 
   
 
-  Result &= Serialize(File, &Element->Vox);
+  Result &= Serialize(Bytes, &Element->Vox);
 
 
 
 
 
-  Result &= Serialize(File, &Element->TransparentMesh);
+  Result &= Serialize(Bytes, &Element->TransparentMesh);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Animation);
+  Result &= Serialize(Bytes, &Element->Animation);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Dim);
+  Result &= Serialize(Bytes, &Element->Dim);
 
   
 
@@ -54,10 +54,10 @@ Serialize(native_file *File, model *Element)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, model *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, model *Element, memory_arena *Memory);
 
 link_internal b32
-DeserializeUnversioned(u8_stream *Bytes, model *Element, memory_arena *Memory)
+DeserializeUnversioned(u8_cursor *Bytes, model *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -93,7 +93,7 @@ DeserializeUnversioned(u8_stream *Bytes, model *Element, memory_arena *Memory)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, model *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, model *Element, memory_arena *Memory)
 {
   b32 Result = True;
 

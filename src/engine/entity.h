@@ -56,7 +56,7 @@ struct entity_position_info
 };
 
 // Game can implement this function to serialize/deserialize their custom entity data.
-link_weak b32 EntityUserDataSerialize(native_file *, u64 UserType, u64 UserData);
+link_weak b32 EntityUserDataSerialize(u8_cursor_block_array *, u64 UserType, u64 UserData);
 link_weak b32 EntityUserDataDeserialize(u8_cursor *, u64 *UserType, u64 *UserData, memory_arena*);
 
 link_weak void EntityUserDataEditorUi(renderer_2d *Ui, window_layout *Window, u64 *UserType, u64 *UserData, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS);
@@ -110,7 +110,7 @@ struct entity poof(@version(2))
 
   u64 UserData;
   poof(
-    @custom_serialize(  if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(File, Element->UserType, Element->UserData);})
+    @custom_serialize(  if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(Bytes, Element->UserType, Element->UserData);})
     @custom_deserialize(if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, &Element->UserType, &Element->UserData, Memory);})
 
     @custom_ui(  if (EntityUserDataEditorUi) { /* User took control, skip this because it's intended */ }
@@ -162,7 +162,7 @@ struct entity_1
   u64 UserType;
 
   u64 UserData;
-  poof(  @custom_serialize(  if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(File, Element->UserType, Element->UserData);})
+  poof(  @custom_serialize(  if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(Bytes, Element->UserType, Element->UserData);})
          @custom_deserialize(if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, &Element->UserType, &Element->UserData, Memory);})  )
 };
 
@@ -206,7 +206,7 @@ struct entity_0
 
   u64 UserType;
   u64 UserData;
-  poof(  @custom_serialize(  if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(File, Element->UserType, Element->UserData);})
+  poof(  @custom_serialize(  if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(Bytes, Element->UserType, Element->UserData);})
          @custom_deserialize(if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, &Element->UserType, &Element->UserData, Memory);})  )
 };
 

@@ -50,13 +50,6 @@ Insert(xml_tag_linked_list_node *Node, xml_tag_hashtable *Table)
 }
 
 link_internal xml_tag*
-Upsert(xml_tag Element, xml_tag_hashtable *Table)
-{
-  NotImplemented;
-  return 0;
-}
-
-link_internal xml_tag*
 Insert(xml_tag Element, xml_tag_hashtable *Table, memory_arena *Memory)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
@@ -65,6 +58,29 @@ Insert(xml_tag Element, xml_tag_hashtable *Table, memory_arena *Memory)
   Bucket->Element = Element;
   Insert(Bucket, Table);
   return &Bucket->Element;
+}
+
+link_internal xml_tag*
+Upsert(xml_tag Element, xml_tag_hashtable *Table, memory_arena *Memory)
+{
+  umm HashValue = Hash(&Element) % Table->Size;
+  xml_tag_linked_list_node **Bucket = Table->Elements + HashValue;
+  while (*Bucket)
+  {
+    if (AreEqual(&Bucket[0]->Element, &Element)) { break; }
+    Bucket = &(*Bucket)->Next;
+  }
+
+  if (*Bucket)
+  {
+    Bucket[0]->Element = Element;
+  }
+  else
+  {
+    Insert(Element, Table, Memory);
+  }
+
+  return &Bucket[0]->Element;
 }
 
 //

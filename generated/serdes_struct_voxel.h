@@ -18,7 +18,7 @@ TypeInfo(voxel *Ignored)
 }
 
 link_internal b32
-Serialize(native_file *File, voxel *Element)
+Serialize(u8_cursor_block_array *Bytes, voxel *Element)
 {
   u64 PointerTrue = True; 
   u64 PointerFalse = False; 
@@ -27,19 +27,19 @@ Serialize(native_file *File, voxel *Element)
 
   
 
-  Result &= Serialize(File, &Element->Flags);
+  Result &= Serialize(Bytes, &Element->Flags);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Transparency);
+  Result &= Serialize(Bytes, &Element->Transparency);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Color);
+  Result &= Serialize(Bytes, &Element->Color);
 
   
 
@@ -48,10 +48,10 @@ Serialize(native_file *File, voxel *Element)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, voxel *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, voxel *Element, memory_arena *Memory);
 
 link_internal b32
-DeserializeUnversioned(u8_stream *Bytes, voxel *Element, memory_arena *Memory)
+DeserializeUnversioned(u8_cursor *Bytes, voxel *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -79,7 +79,7 @@ DeserializeUnversioned(u8_stream *Bytes, voxel *Element, memory_arena *Memory)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, voxel *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, voxel *Element, memory_arena *Memory)
 {
   b32 Result = True;
 

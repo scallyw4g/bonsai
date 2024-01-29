@@ -62,13 +62,6 @@ Insert(counted_string_linked_list_node *Node, counted_string_hashtable *Table)
 }
 
 link_internal counted_string*
-Upsert(counted_string Element, counted_string_hashtable *Table)
-{
-  NotImplemented;
-  return 0;
-}
-
-link_internal counted_string*
 Insert(counted_string Element, counted_string_hashtable *Table, memory_arena *Memory)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
@@ -77,6 +70,29 @@ Insert(counted_string Element, counted_string_hashtable *Table, memory_arena *Me
   Bucket->Element = Element;
   Insert(Bucket, Table);
   return &Bucket->Element;
+}
+
+link_internal counted_string*
+Upsert(counted_string Element, counted_string_hashtable *Table, memory_arena *Memory)
+{
+  umm HashValue = Hash(&Element) % Table->Size;
+  counted_string_linked_list_node **Bucket = Table->Elements + HashValue;
+  while (*Bucket)
+  {
+    if (AreEqual(&Bucket[0]->Element, &Element)) { break; }
+    Bucket = &(*Bucket)->Next;
+  }
+
+  if (*Bucket)
+  {
+    Bucket[0]->Element = Element;
+  }
+  else
+  {
+    Insert(Element, Table, Memory);
+  }
+
+  return &Bucket[0]->Element;
 }
 
 //

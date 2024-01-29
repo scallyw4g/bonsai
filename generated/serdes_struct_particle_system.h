@@ -18,7 +18,7 @@ TypeInfo(particle_system *Ignored)
 }
 
 link_internal b32
-Serialize(native_file *File, particle_system *Element)
+Serialize(u8_cursor_block_array *Bytes, particle_system *Element)
 {
   u64 PointerTrue = True; 
   u64 PointerFalse = False; 
@@ -27,132 +27,132 @@ Serialize(native_file *File, particle_system *Element)
 
   
 
-  Result &= Serialize(File, &Element->Entropy);
+  Result &= Serialize(Bytes, &Element->Entropy);
 
 
 
 
 
-  Result &= Serialize(File, (u32*)&Element->SpawnType);
+  Result &= Serialize(Bytes, (u32*)&Element->SpawnType);
 
 
 
 
-  Result &= Serialize(File, &Element->Drag);
+  Result &= Serialize(Bytes, &Element->Drag);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Lifetime);
+  Result &= Serialize(Bytes, &Element->Lifetime);
 
 
 
 
 
-  Result &= Serialize(File, &Element->EmissionDelay);
+  Result &= Serialize(Bytes, &Element->EmissionDelay);
 
 
 
 
 
-  Result &= Serialize(File, &Element->EmissionLifespan);
+  Result &= Serialize(Bytes, &Element->EmissionLifespan);
 
 
 
 
 
-  Result &= Serialize(File, &Element->ActiveParticles);
+  Result &= Serialize(Bytes, &Element->ActiveParticles);
 
 
 
 
 
-  Result &= Serialize(File, &Element->LifespanMod);
+  Result &= Serialize(Bytes, &Element->LifespanMod);
 
 
 
 
 
-  Result &= Serialize(File, &Element->ParticleLifespan);
+  Result &= Serialize(Bytes, &Element->ParticleLifespan);
 
 
 
 
 
-  Result &= Serialize(File, &Element->ParticlesPerSecond);
+  Result &= Serialize(Bytes, &Element->ParticlesPerSecond);
 
 
 
 
 
-  Result &= Serialize(File, &Element->ParticleLightEmission);
+  Result &= Serialize(Bytes, &Element->ParticleLightEmission);
 
 
 
 
 
-  Result &= Serialize(File, &Element->ParticleLightEmissionChance);
+  Result &= Serialize(Bytes, &Element->ParticleLightEmissionChance);
 
 
 
 
 
-  Result &= Serialize(File, &Element->ParticleStartingTransparency);
+  Result &= Serialize(Bytes, &Element->ParticleStartingTransparency);
 
 
 
 
 
-  Result &= Serialize(File, &Element->ParticleEndingTransparency);
+  Result &= Serialize(Bytes, &Element->ParticleEndingTransparency);
 
 
 
 
 
-  Result &= Serialize(File, &Element->ParticleStartingDim);
+  Result &= Serialize(Bytes, &Element->ParticleStartingDim);
 
 
 
 
 
-  Result &= Serialize(File, &Element->ParticleEndingDim);
+  Result &= Serialize(Bytes, &Element->ParticleEndingDim);
 
 
 
 
 
-  Result &= Serialize(File, &Element->ParticleTurbMin);
+  Result &= Serialize(Bytes, &Element->ParticleTurbMin);
 
 
 
 
 
-  Result &= Serialize(File, &Element->ParticleTurbMax);
+  Result &= Serialize(Bytes, &Element->ParticleTurbMax);
 
 
 
 
 
-  Result &= Serialize(File, &Element->SpawnRegion);
+  Result &= Serialize(Bytes, &Element->SpawnRegion);
 
 
 
 
 
-  Result &= Serialize(File, &Element->SystemMovementCoefficient);
+  Result &= Serialize(Bytes, &Element->SystemMovementCoefficient);
 
 
 
 
 
-  Result &= Serialize(File, &Element->ElapsedSinceLastEmission);
+  Result &= Serialize(Bytes, &Element->ElapsedSinceLastEmission);
 
 
 
 
 
-  Result &= SerializeArray(File, Element->Colors, 6);
+  Result &= SerializeArray(Bytes, Element->Colors, 6);
 
 
 
@@ -167,10 +167,10 @@ Serialize(native_file *File, particle_system *Element)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, particle_system *Element, memory_arena *Memory);
 
 link_internal b32
-DeserializeUnversioned(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
+DeserializeUnversioned(u8_cursor *Bytes, particle_system *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -354,7 +354,7 @@ DeserializeUnversioned(u8_stream *Bytes, particle_system *Element, memory_arena 
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, particle_system *Element, memory_arena *Memory)
 {
   b32 Result = True;
 

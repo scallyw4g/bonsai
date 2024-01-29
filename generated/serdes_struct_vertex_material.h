@@ -18,7 +18,7 @@ TypeInfo(vertex_material *Ignored)
 }
 
 link_internal b32
-Serialize(native_file *File, vertex_material *Element)
+Serialize(u8_cursor_block_array *Bytes, vertex_material *Element)
 {
   u64 PointerTrue = True; 
   u64 PointerFalse = False; 
@@ -27,19 +27,19 @@ Serialize(native_file *File, vertex_material *Element)
 
   
 
-  Result &= Serialize(File, &Element->Color);
+  Result &= Serialize(Bytes, &Element->Color);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Transparency);
+  Result &= Serialize(Bytes, &Element->Transparency);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Emission);
+  Result &= Serialize(Bytes, &Element->Emission);
 
   
 
@@ -48,10 +48,10 @@ Serialize(native_file *File, vertex_material *Element)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, vertex_material *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, vertex_material *Element, memory_arena *Memory);
 
 link_internal b32
-DeserializeUnversioned(u8_stream *Bytes, vertex_material *Element, memory_arena *Memory)
+DeserializeUnversioned(u8_cursor *Bytes, vertex_material *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -79,7 +79,7 @@ DeserializeUnversioned(u8_stream *Bytes, vertex_material *Element, memory_arena 
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, vertex_material *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, vertex_material *Element, memory_arena *Memory)
 {
   b32 Result = True;
 

@@ -18,7 +18,7 @@ TypeInfo(frustum *Ignored)
 }
 
 link_internal b32
-Serialize(native_file *File, frustum *Element)
+Serialize(u8_cursor_block_array *Bytes, frustum *Element)
 {
   u64 PointerTrue = True; 
   u64 PointerFalse = False; 
@@ -27,49 +27,49 @@ Serialize(native_file *File, frustum *Element)
 
   
 
-  Result &= Serialize(File, &Element->farClip);
+  Result &= Serialize(Bytes, &Element->farClip);
 
 
 
 
 
-  Result &= Serialize(File, &Element->nearClip);
+  Result &= Serialize(Bytes, &Element->nearClip);
 
 
 
 
 
-  Result &= Serialize(File, &Element->width);
+  Result &= Serialize(Bytes, &Element->width);
 
 
 
 
 
-  Result &= Serialize(File, &Element->FOV);
+  Result &= Serialize(Bytes, &Element->FOV);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Top);
+  Result &= Serialize(Bytes, &Element->Top);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Bot);
+  Result &= Serialize(Bytes, &Element->Bot);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Left);
+  Result &= Serialize(Bytes, &Element->Left);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Right);
+  Result &= Serialize(Bytes, &Element->Right);
 
   
 
@@ -78,10 +78,10 @@ Serialize(native_file *File, frustum *Element)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, frustum *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, frustum *Element, memory_arena *Memory);
 
 link_internal b32
-DeserializeUnversioned(u8_stream *Bytes, frustum *Element, memory_arena *Memory)
+DeserializeUnversioned(u8_cursor *Bytes, frustum *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -149,7 +149,7 @@ DeserializeUnversioned(u8_stream *Bytes, frustum *Element, memory_arena *Memory)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, frustum *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, frustum *Element, memory_arena *Memory)
 {
   b32 Result = True;
 

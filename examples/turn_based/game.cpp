@@ -1115,19 +1115,19 @@ poof(serdes_struct(entity_game_data))
 #include <generated/serdes_struct_entity_game_data.h>
 
 link_weak b32
-EntityUserDataSerialize(native_file *File, u64 UserType, u64 UserData)
+EntityUserDataSerialize(u8_cursor_block_array *Bytes, u64 UserType, u64 UserData)
 {
   entity_game_data *EGD = Cast(entity_game_data*, UserData);
   if (EGD)
   {
     u64 T = True;
-    Serialize(File, &T);
-    Serialize(File, EGD);
+    Serialize(Bytes, &T);
+    Serialize(Bytes, EGD);
   }
   else
   {
     u64 F = False;
-    Serialize(File, &F);
+    Serialize(Bytes, &F);
   }
   return True;
 }

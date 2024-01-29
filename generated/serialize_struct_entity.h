@@ -18,96 +18,96 @@ TypeInfo(entity *Ignored)
 }
 
 link_internal b32
-Serialize(native_file *File, entity *Element)
+Serialize(u8_cursor_block_array *Bytes, entity *Element)
 {
   u64 PointerTrue = True; 
   u64 PointerFalse = False; 
 
   b32 Result = True;
 
-  Upsert(TypeInfo(Element), &Global_SerializeTypeTable);
+  Upsert(TypeInfo(Element), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
   u64 VersionNumber =2;
-  Serialize(File, &VersionNumber);
+  Serialize(Bytes, &VersionNumber);
 
 
-  Result &= Serialize(File, &Element->Id);
+  Result &= Serialize(Bytes, &Element->Id);
 
 
 
 
 
-  Result &= Serialize(File, &Element->P);
+  Result &= Serialize(Bytes, &Element->P);
 
 
 
 
 
-  Result &= Serialize(File, &Element->EulerAngles);
+  Result &= Serialize(Bytes, &Element->EulerAngles);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Scale);
+  Result &= Serialize(Bytes, &Element->Scale);
 
 
 
 
 
-  Result &= Serialize(File, &Element->_CollisionVolumeRadius);
+  Result &= Serialize(Bytes, &Element->_CollisionVolumeRadius);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Physics);
+  Result &= Serialize(Bytes, &Element->Physics);
 
 
 
 
 
-  Result &= Serialize(File, &Element->AssetId);
+  Result &= Serialize(Bytes, &Element->AssetId);
 
 
 
 
 
-  Result &= Serialize(File, &Element->ModelIndex);
+  Result &= Serialize(Bytes, &Element->ModelIndex);
 
 
 
 
 
-  if (Element->Emitter) { Result &= WriteToFile(File, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
-  else                        { Result &= WriteToFile(File, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
+  if (Element->Emitter) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+  else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
 
 
-  Result &= Serialize(File, (u32*)&Element->State);
+  Result &= Serialize(Bytes, (u32*)&Element->State);
 
 
 
 
-  Result &= Serialize(File, (u32*)&Element->Behavior);
+  Result &= Serialize(Bytes, (u32*)&Element->Behavior);
 
 
 
 
-  Result &= Serialize(File, &Element->Carrying);
+  Result &= Serialize(Bytes, &Element->Carrying);
 
 
 
 
 
-  Result &= Serialize(File, &Element->UserType);
+  Result &= Serialize(Bytes, &Element->UserType);
 
 
 
 
 
-  if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(File, Element->UserType, Element->UserData);}
+  if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(Bytes, Element->UserType, Element->UserData);}
 
-  if (Element->Emitter) { Result &= Serialize(File, Element->Emitter); }
+  if (Element->Emitter) { Result &= Serialize(Bytes, Element->Emitter); }
 
 
 

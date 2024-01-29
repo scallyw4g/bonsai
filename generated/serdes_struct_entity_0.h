@@ -18,7 +18,7 @@ TypeInfo(entity_0 *Ignored)
 }
 
 link_internal b32
-Serialize(native_file *File, entity_0 *Element)
+Serialize(u8_cursor_block_array *Bytes, entity_0 *Element)
 {
   u64 PointerTrue = True; 
   u64 PointerFalse = False; 
@@ -27,78 +27,78 @@ Serialize(native_file *File, entity_0 *Element)
 
   
 
-  Result &= Serialize(File, &Element->Id);
+  Result &= Serialize(Bytes, &Element->Id);
 
 
 
 
 
-  Result &= Serialize(File, &Element->P);
+  Result &= Serialize(Bytes, &Element->P);
 
 
 
 
 
-  Result &= Serialize(File, &Element->EulerAngles);
+  Result &= Serialize(Bytes, &Element->EulerAngles);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Scale);
+  Result &= Serialize(Bytes, &Element->Scale);
 
 
 
 
 
-  Result &= Serialize(File, &Element->_CollisionVolumeRadius);
+  Result &= Serialize(Bytes, &Element->_CollisionVolumeRadius);
 
 
 
 
 
-  Result &= Serialize(File, &Element->Physics);
+  Result &= Serialize(Bytes, &Element->Physics);
 
 
 
 
 
-  Result &= Serialize(File, &Element->AssetId);
+  Result &= Serialize(Bytes, &Element->AssetId);
 
 
 
 
 
-  Result &= Serialize(File, &Element->ModelIndex);
+  Result &= Serialize(Bytes, &Element->ModelIndex);
 
 
 
 
 
-  if (Element->Emitter) { Result &= WriteToFile(File, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
-  else                        { Result &= WriteToFile(File, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
+  if (Element->Emitter) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+  else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
 
 
-  Result &= Serialize(File, (u32*)&Element->State);
-
-
-
-
-  Result &= Serialize(File, (u32*)&Element->Behavior);
+  Result &= Serialize(Bytes, (u32*)&Element->State);
 
 
 
 
-  Result &= Serialize(File, &Element->UserType);
+  Result &= Serialize(Bytes, (u32*)&Element->Behavior);
+
+
+
+
+  Result &= Serialize(Bytes, &Element->UserType);
 
 
 
 
 
-  if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(File, Element->UserType, Element->UserData);}
+  if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(Bytes, Element->UserType, Element->UserData);}
 
-  if (Element->Emitter) { Result &= Serialize(File, Element->Emitter); }
+  if (Element->Emitter) { Result &= Serialize(Bytes, Element->Emitter); }
 
 
 
@@ -108,10 +108,10 @@ Serialize(native_file *File, entity_0 *Element)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, entity_0 *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, entity_0 *Element, memory_arena *Memory);
 
 link_internal b32
-DeserializeUnversioned(u8_stream *Bytes, entity_0 *Element, memory_arena *Memory)
+DeserializeUnversioned(u8_cursor *Bytes, entity_0 *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -215,7 +215,7 @@ if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, &Elem
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, entity_0 *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, entity_0 *Element, memory_arena *Memory)
 {
   b32 Result = True;
 

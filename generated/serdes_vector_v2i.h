@@ -1,14 +1,14 @@
 link_internal b32
-Serialize(native_file *File, v2i *Element)
+Serialize(u8_cursor_block_array *Bytes, v2i *Element)
 {
-  b32 Result = WriteToFile(File, Cast(u8*, Element), sizeof(v2i));
+  b32 Result = Write(Bytes, Cast(u8*, Element), sizeof(v2i));
 
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, v2i* Element, memory_arena *Ignored)
+Deserialize(u8_cursor *Bytes, v2i* Element, memory_arena *Ignored)
 {
   *Element = *Cast(v2i*, Bytes->At);
   Bytes->At += sizeof(v2i);

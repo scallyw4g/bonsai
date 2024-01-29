@@ -1,8 +1,8 @@
 link_internal b32
-Deserialize(u8_stream *Bytes, level_header *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory);
 
 link_internal b32
-DeserializeUnversioned(u8_stream *Bytes, level_header *Element, memory_arena *Memory)
+DeserializeUnversioned(u8_cursor *Bytes, level_header *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -62,7 +62,7 @@ DeserializeUnversioned(u8_stream *Bytes, level_header *Element, memory_arena *Me
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, level_header *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory)
 {
   b32 Result = True;
 

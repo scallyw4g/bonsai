@@ -31,7 +31,7 @@ poof(serdes_struct(frustum))
 #include <generated/serdes_struct_frustum.h>
 
 #if 1
-link_internal b32 Serialize(native_file *File, untextured_3d_geometry_buffer *Data);
+link_internal b32 Serialize(u8_cursor_block_array *File, untextured_3d_geometry_buffer *Data);
 #endif
 
 
@@ -102,19 +102,19 @@ poof(serdes_array(vertex_material))
 
 
 link_internal b32
-Serialize(native_file *File, chunk_data *Data)
+Serialize(u8_cursor_block_array *Bytes, chunk_data *Data)
 {
   b32 Result = True;
 
 #if 1
   umm ElementCount = umm(Volume(Data->Dim));
 
-  Result &= WriteToFile(File, Cast(u8*, Data), sizeof(chunk_data));
+  Result &= Write(Bytes, Cast(u8*, Data), sizeof(chunk_data));
 
   if (ElementCount)
   {
-    SerializeArray(File, Data->Voxels, ElementCount);
-    SerializeArray(File, Data->VoxelLighting, ElementCount);
+    SerializeArray(Bytes, Data->Voxels, ElementCount);
+    SerializeArray(Bytes, Data->VoxelLighting, ElementCount);
   }
 #endif
 
@@ -143,8 +143,9 @@ Deserialize(u8_stream *Bytes, chunk_data *Data, memory_arena *Memory)
   return Result;
 }
 
+// TODO(Jesse): Do these for-realz?  Mark @no_serialize?
 link_internal b32
-Serialize(native_file *File, animation *Data)
+Serialize(u8_cursor_block_array *File, animation *Data)
 {
   return True;
 }
@@ -156,12 +157,12 @@ Deserialize(u8_stream *Bytes, animation *Data, memory_arena *Memory)
 }
 
 link_internal b32
-Serialize(native_file *File, untextured_3d_geometry_buffer *Data)
+Serialize(u8_cursor_block_array *File, untextured_3d_geometry_buffer *Data)
 {
   b32 Result = True;
 
 #if 1
-  Result &= WriteToFile(File, Cast(u8*, Data), sizeof(untextured_3d_geometry_buffer));
+  Result &= Write(File, Cast(u8*, Data), sizeof(untextured_3d_geometry_buffer));
 
   umm ElementCount = umm(Data->At);
   if (ElementCount)
