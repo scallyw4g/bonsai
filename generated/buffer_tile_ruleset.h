@@ -2,8 +2,8 @@
 
 struct tile_ruleset_buffer
 {
-  tile_ruleset *Start;
   umm Count;
+  tile_ruleset *Start; poof(@array_length(Element->Count))
 };
 
 link_internal tile_ruleset_buffer

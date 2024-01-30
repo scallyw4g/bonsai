@@ -68,12 +68,10 @@ DoLevelWindow(engine_resources *Engine)
         if (world_chunk *Chunk = World->ChunkHash[HashIndex])
         {
           SerializeChunk(Chunk, &OutputStream);
-          /* Ensure(Serialize(&LevelFile, &Delimeter)); */
         }
       }
 
       Ensure(Serialize(&OutputStream, &Delimeter));
-      /* Ensure(Serialize(&LevelFile, &Delimeter)); */
 
       RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
       {
@@ -81,8 +79,6 @@ DoLevelWindow(engine_resources *Engine)
         if (Spawned(E))
         {
           Serialize(&OutputStream, E);
-          /* Serialize(&LevelFile, E); */
-          /* Ensure(Serialize(&LevelFile, &Delimeter)); */
         }
       }
 
@@ -163,7 +159,7 @@ DoLevelWindow(engine_resources *Engine)
       }
 
       level_header LevelHeader = {};
-      DeserializeVersioned(&LevelBytes, &LevelHeader, 0, LevelHeaderVersion, Thread->PermMemory);
+      Deserialize(&LevelBytes, &LevelHeader, Thread->PermMemory);
 
       if (Error == False)
       {
@@ -202,7 +198,8 @@ DoLevelWindow(engine_resources *Engine)
           }
         }
 
-        Ensure(Read_u64(&LevelBytes) == LEVEL_FILE_DEBUG_OBJECT_DELIM);
+        u64 Delimeter = LEVEL_FILE_DEBUG_OBJECT_DELIM;
+        Ensure(Read_u64(&LevelBytes) == Delimeter);
 
 #if 1
 

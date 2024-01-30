@@ -1,9 +1,9 @@
-// src/engine/serdes.h:115:0
+// src/engine/bonsai_type_info.h:34:0
 
 struct bonsai_type_info_buffer
 {
-  bonsai_type_info *Start;
   umm Count;
+  bonsai_type_info *Start; poof(@array_length(Element->Count))
 };
 
 link_internal bonsai_type_info_buffer

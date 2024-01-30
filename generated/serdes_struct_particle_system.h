@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:232:0
+// src/engine/serdes.cpp:234:0
 
 link_internal bonsai_type_info
 TypeInfo(particle_system *Ignored)
@@ -20,141 +20,146 @@ TypeInfo(particle_system *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, particle_system *Element)
+Serialize(u8_cursor_block_array *Bytes, particle_system *BaseElement, umm Count = 1)
 {
-  u64 PointerTrue = True; 
-  u64 PointerFalse = False; 
+  Assert(Count > 0);
+
+  u64 PointerTrue = True;
+  u64 PointerFalse = False;
 
   b32 Result = True;
 
   
 
-  Result &= Serialize(Bytes, &Element->Entropy);
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    particle_system *Element = BaseElement + ElementIndex;
+    Result &= Serialize(Bytes, &Element->Entropy);
 
 
 
 
 
-  Result &= Serialize(Bytes, (u32*)&Element->SpawnType);
+    Result &= Serialize(Bytes, (u32*)&Element->SpawnType);
 
 
 
 
-  Result &= Serialize(Bytes, &Element->Drag);
+    Result &= Serialize(Bytes, &Element->Drag);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->Lifetime);
+    Result &= Serialize(Bytes, &Element->Lifetime);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->EmissionDelay);
+    Result &= Serialize(Bytes, &Element->EmissionDelay);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->EmissionLifespan);
+    Result &= Serialize(Bytes, &Element->EmissionLifespan);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->ActiveParticles);
+    Result &= Serialize(Bytes, &Element->ActiveParticles);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->LifespanMod);
+    Result &= Serialize(Bytes, &Element->LifespanMod);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->ParticleLifespan);
+    Result &= Serialize(Bytes, &Element->ParticleLifespan);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->ParticlesPerSecond);
+    Result &= Serialize(Bytes, &Element->ParticlesPerSecond);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->ParticleLightEmission);
+    Result &= Serialize(Bytes, &Element->ParticleLightEmission);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->ParticleLightEmissionChance);
+    Result &= Serialize(Bytes, &Element->ParticleLightEmissionChance);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->ParticleStartingTransparency);
+    Result &= Serialize(Bytes, &Element->ParticleStartingTransparency);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->ParticleEndingTransparency);
+    Result &= Serialize(Bytes, &Element->ParticleEndingTransparency);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->ParticleStartingDim);
+    Result &= Serialize(Bytes, &Element->ParticleStartingDim);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->ParticleEndingDim);
+    Result &= Serialize(Bytes, &Element->ParticleEndingDim);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->ParticleTurbMin);
+    Result &= Serialize(Bytes, &Element->ParticleTurbMin);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->ParticleTurbMax);
+    Result &= Serialize(Bytes, &Element->ParticleTurbMax);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->SpawnRegion);
+    Result &= Serialize(Bytes, &Element->SpawnRegion);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->SystemMovementCoefficient);
+    Result &= Serialize(Bytes, &Element->SystemMovementCoefficient);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->ElapsedSinceLastEmission);
+    Result &= Serialize(Bytes, &Element->ElapsedSinceLastEmission);
 
 
 
 
 
-  Result &= SerializeArray(Bytes, Element->Colors, 6);
+    Result &= Serialize(Bytes, Element->Colors, 6);
 
 
 
@@ -162,17 +167,25 @@ Serialize(u8_cursor_block_array *Bytes, particle_system *Element)
 
 
 
-  
+    
 
-  MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+  }
+
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, particle_system *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, particle_system *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
-DeserializeUnversioned(u8_cursor *Bytes, particle_system *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_arena *Memory);
+
+
+
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -352,17 +365,22 @@ DeserializeUnversioned(u8_cursor *Bytes, particle_system *Element, memory_arena 
 
 
   
+
+  MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, particle_system *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, particle_system *Element, memory_arena *Memory, umm Count)
 {
+  Assert(Count > 0);
+
   b32 Result = True;
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
 
-  Result &= DeserializeUnversioned(Bytes, Element, Memory);
-  MAYBE_READ_DEBUG_OBJECT_DELIM();
-
+  }
 
   return Result;
 }

@@ -2,8 +2,8 @@
 
 struct counted_string_buffer
 {
-  counted_string *Start;
   umm Count;
+  counted_string *Start; poof(@array_length(Element->Count))
 };
 
 link_internal counted_string_buffer

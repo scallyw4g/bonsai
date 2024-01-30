@@ -20,70 +20,83 @@ TypeInfo(frustum *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, frustum *Element)
+Serialize(u8_cursor_block_array *Bytes, frustum *BaseElement, umm Count = 1)
 {
-  u64 PointerTrue = True; 
-  u64 PointerFalse = False; 
+  Assert(Count > 0);
+
+  u64 PointerTrue = True;
+  u64 PointerFalse = False;
 
   b32 Result = True;
 
   
 
-  Result &= Serialize(Bytes, &Element->farClip);
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    frustum *Element = BaseElement + ElementIndex;
+    Result &= Serialize(Bytes, &Element->farClip);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->nearClip);
+    Result &= Serialize(Bytes, &Element->nearClip);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->width);
+    Result &= Serialize(Bytes, &Element->width);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->FOV);
+    Result &= Serialize(Bytes, &Element->FOV);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->Top);
+    Result &= Serialize(Bytes, &Element->Top);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->Bot);
+    Result &= Serialize(Bytes, &Element->Bot);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->Left);
+    Result &= Serialize(Bytes, &Element->Left);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->Right);
+    Result &= Serialize(Bytes, &Element->Right);
 
-  
+    
 
-  MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+  }
+
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, frustum *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, frustum *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
-DeserializeUnversioned(u8_cursor *Bytes, frustum *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, frustum *Element, memory_arena *Memory);
+
+
+
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, frustum *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -147,17 +160,22 @@ DeserializeUnversioned(u8_cursor *Bytes, frustum *Element, memory_arena *Memory)
   Result &= Deserialize(Bytes, &Element->Right, Memory);
 
   
+
+  MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, frustum *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, frustum *Element, memory_arena *Memory, umm Count)
 {
+  Assert(Count > 0);
+
   b32 Result = True;
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
 
-  Result &= DeserializeUnversioned(Bytes, Element, Memory);
-  MAYBE_READ_DEBUG_OBJECT_DELIM();
-
+  }
 
   return Result;
 }

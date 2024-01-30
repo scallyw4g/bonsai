@@ -2,8 +2,8 @@
 
 struct voxel_synth_tile_buffer
 {
-  voxel_synth_tile *Start;
   umm Count;
+  voxel_synth_tile *Start; poof(@array_length(Element->Count))
 };
 
 link_internal voxel_synth_tile_buffer

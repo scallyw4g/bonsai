@@ -2,8 +2,8 @@
 
 struct asset_buffer
 {
-  asset *Start;
   umm Count;
+  asset *Start; poof(@array_length(Element->Count))
 };
 
 link_internal asset_buffer

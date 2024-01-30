@@ -2,8 +2,8 @@
 
 struct v3i_buffer
 {
-  v3i *Start;
   umm Count;
+  v3i *Start; poof(@array_length(Element->Count))
 };
 
 link_internal v3i_buffer

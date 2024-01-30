@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:235:0
+// src/engine/serdes.cpp:237:0
 
 link_internal bonsai_type_info
 TypeInfo(vox_data *Ignored)
@@ -20,29 +20,42 @@ TypeInfo(vox_data *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, vox_data *Element)
+Serialize(u8_cursor_block_array *Bytes, vox_data *BaseElement, umm Count = 1)
 {
-  u64 PointerTrue = True; 
-  u64 PointerFalse = False; 
+  Assert(Count > 0);
+
+  u64 PointerTrue = True;
+  u64 PointerFalse = False;
 
   b32 Result = True;
 
   
 
-  if (Element->ChunkData) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
-  else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    vox_data *Element = BaseElement + ElementIndex;
+    if (Element->ChunkData) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+    else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
-  if (Element->ChunkData) { Result &= Serialize(Bytes, Element->ChunkData); }
+    if (Element->ChunkData) { Result &= Serialize(Bytes, Element->ChunkData); }
 
-  MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+  }
+
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, vox_data *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, vox_data *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
-DeserializeUnversioned(u8_cursor *Bytes, vox_data *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, vox_data *Element, memory_arena *Memory);
+
+
+
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, vox_data *Element, memory_arena *Memory)
 {
   b32 Result = True;
   b64 HadChunkDataPointer = Read_u64(Bytes);
@@ -50,20 +63,32 @@ DeserializeUnversioned(u8_cursor *Bytes, vox_data *Element, memory_arena *Memory
 
   if (HadChunkDataPointer)
   {
-    if (Element->ChunkData == 0) { Element->ChunkData = Allocate(chunk_data, Memory, 1); }
-    Result &= Deserialize(Bytes, Element->ChunkData, Memory);
+    umm Count = 1;
+
+
+    if (Element->ChunkData == 0)
+    {
+      Element->ChunkData = Allocate(chunk_data, Memory, Count);
+    }
+
+    Result &= Deserialize(Bytes, Element->ChunkData, Memory, Count);
   }
+
+  MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, vox_data *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, vox_data *Element, memory_arena *Memory, umm Count)
 {
+  Assert(Count > 0);
+
   b32 Result = True;
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
 
-  Result &= DeserializeUnversioned(Bytes, Element, Memory);
-  MAYBE_READ_DEBUG_OBJECT_DELIM();
-
+  }
 
   return Result;
 }

@@ -1,4 +1,4 @@
-// src/engine/serdes.h:92:0
+// src/engine/bonsai_type_info.h:11:0
 
 struct member_info_block
 {

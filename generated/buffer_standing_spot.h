@@ -2,8 +2,8 @@
 
 struct standing_spot_buffer
 {
-  standing_spot *Start;
   umm Count;
+  standing_spot *Start; poof(@array_length(Element->Count))
 };
 
 link_internal standing_spot_buffer

@@ -2,8 +2,8 @@
 
 struct world_chunk_ptr_buffer
 {
-  world_chunk_ptr *Start;
   umm Count;
+  world_chunk_ptr *Start; poof(@array_length(Element->Count))
 };
 
 link_internal world_chunk_ptr_buffer

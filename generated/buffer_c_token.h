@@ -2,8 +2,8 @@
 
 struct c_token_buffer
 {
-  c_token *Start;
   umm Count;
+  c_token *Start; poof(@array_length(Element->Count))
 };
 
 link_internal c_token_buffer

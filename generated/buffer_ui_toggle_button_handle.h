@@ -2,8 +2,8 @@
 
 struct ui_toggle_button_handle_buffer
 {
-  ui_toggle_button_handle *Start;
   umm Count;
+  ui_toggle_button_handle *Start; poof(@array_length(Element->Count))
 };
 
 link_internal ui_toggle_button_handle_buffer

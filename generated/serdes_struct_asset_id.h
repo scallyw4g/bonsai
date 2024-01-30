@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:250:0
+// src/engine/serdes.cpp:252:0
 
 link_internal bonsai_type_info
 TypeInfo(asset_id *Ignored)
@@ -20,28 +20,41 @@ TypeInfo(asset_id *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, asset_id *Element)
+Serialize(u8_cursor_block_array *Bytes, asset_id *BaseElement, umm Count = 1)
 {
-  u64 PointerTrue = True; 
-  u64 PointerFalse = False; 
+  Assert(Count > 0);
+
+  u64 PointerTrue = True;
+  u64 PointerFalse = False;
 
   b32 Result = True;
 
   
 
-  Result &= Serialize(Bytes, &Element->FileNode);
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    asset_id *Element = BaseElement + ElementIndex;
+    Result &= Serialize(Bytes, &Element->FileNode);
 
-  
+    
 
-  MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+  }
+
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, asset_id *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, asset_id *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
-DeserializeUnversioned(u8_cursor *Bytes, asset_id *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, asset_id *Element, memory_arena *Memory);
+
+
+
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, asset_id *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -49,17 +62,22 @@ DeserializeUnversioned(u8_cursor *Bytes, asset_id *Element, memory_arena *Memory
   Result &= Deserialize(Bytes, &Element->FileNode, Memory);
 
   
+
+  MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, asset_id *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, asset_id *Element, memory_arena *Memory, umm Count)
 {
+  Assert(Count > 0);
+
   b32 Result = True;
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
 
-  Result &= DeserializeUnversioned(Bytes, Element, Memory);
-  MAYBE_READ_DEBUG_OBJECT_DELIM();
-
+  }
 
   return Result;
 }

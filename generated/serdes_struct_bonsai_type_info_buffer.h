@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:345:0
+// src/engine/serdes.cpp:366:0
 
 link_internal bonsai_type_info
 TypeInfo(bonsai_type_info_buffer *Ignored)
@@ -20,66 +20,89 @@ TypeInfo(bonsai_type_info_buffer *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, bonsai_type_info_buffer *Element)
+Serialize(u8_cursor_block_array *Bytes, bonsai_type_info_buffer *BaseElement, umm Count = 1)
 {
-  u64 PointerTrue = True; 
-  u64 PointerFalse = False; 
+  Assert(Count > 0);
+
+  u64 PointerTrue = True;
+  u64 PointerFalse = False;
 
   b32 Result = True;
 
   
 
-  if (Element->Start) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
-  else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
-
-
-
-  Result &= Serialize(Bytes, &Element->Count);
-
-  if (Element->Start) { Result &= Serialize(Bytes, Element->Start); }
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    bonsai_type_info_buffer *Element = BaseElement + ElementIndex;
+    Result &= Serialize(Bytes, &Element->Count);
 
 
 
 
-  MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+
+    if (Element->Start) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+    else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
+
+    if (Element->Start) { Result &= Serialize(Bytes, Element->Start,Element->Count ); }
+
+    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+  }
+
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, bonsai_type_info_buffer *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, bonsai_type_info_buffer *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
-DeserializeUnversioned(u8_cursor *Bytes, bonsai_type_info_buffer *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, bonsai_type_info_buffer *Element, memory_arena *Memory);
+
+
+
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, bonsai_type_info_buffer *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  b64 HadStartPointer = Read_u64(Bytes);
-  Assert(HadStartPointer < 2); // Should be 0 or 1
-
-
-
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Count, Memory);
 
+
+
+
+
+  b64 HadStartPointer = Read_u64(Bytes);
+  Assert(HadStartPointer < 2); // Should be 0 or 1
+
   if (HadStartPointer)
   {
-    if (Element->Start == 0) { Element->Start = Allocate(bonsai_type_info, Memory, 1); }
-    Result &= Deserialize(Bytes, Element->Start, Memory);
+    umm Count =Element->Count;
+
+
+    if (Element->Start == 0)
+    {
+      Element->Start = Allocate(bonsai_type_info, Memory, Count);
+    }
+
+    Result &= Deserialize(Bytes, Element->Start, Memory, Count);
   }
 
-
-
+  MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, bonsai_type_info_buffer *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, bonsai_type_info_buffer *Element, memory_arena *Memory, umm Count)
 {
+  Assert(Count > 0);
+
   b32 Result = True;
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
 
-  Result &= DeserializeUnversioned(Bytes, Element, Memory);
-  MAYBE_READ_DEBUG_OBJECT_DELIM();
-
+  }
 
   return Result;
 }

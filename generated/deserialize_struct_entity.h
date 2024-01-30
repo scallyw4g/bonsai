@@ -1,10 +1,44 @@
-// src/engine/serdes.cpp:253:0
+// src/engine/serdes.cpp:304:0
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, entity *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, entity *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
-DeserializeUnversioned(u8_cursor *Bytes, entity *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, entity *Element, memory_arena *Memory);
+
+
+link_internal b32
+DeserializeVersioned(u8_cursor *Bytes, entity *Element, bonsai_type_info *TypeInfo, u64 Version, memory_arena *Memory)
+{
+  Assert(Version <=2);
+
+  b32 Result = True;
+
+  if (Version == 0)
+  {
+    entity_0 T0 = {};
+    Result &= Deserialize(Bytes, &T0, Memory);
+    Marshal(&T0, Element);
+  }
+  if (Version == 1)
+  {
+    entity_1 T1 = {};
+    Result &= Deserialize(Bytes, &T1, Memory);
+    Marshal(&T1, Element);
+  }
+
+
+  if (Version ==2)
+  {
+    Result &= DeserializeCurrentVersion(Bytes, Element, Memory);
+  }
+
+  return Result;
+}
+
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, entity *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -106,38 +140,50 @@ if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, &Elem
 
   if (HadEmitterPointer)
   {
-    if (Element->Emitter == 0) { Element->Emitter = Allocate(particle_system, Memory, 1); }
-    Result &= Deserialize(Bytes, Element->Emitter, Memory);
+    umm Count = 1;
+
+
+    if (Element->Emitter == 0)
+    {
+      Element->Emitter = Allocate(particle_system, Memory, Count);
+    }
+
+    Result &= Deserialize(Bytes, Element->Emitter, Memory, Count);
   }
 
 
 
+
+  MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, entity *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, entity *Element, memory_arena *Memory, umm Count)
 {
+  Assert(Count > 0);
+
   b32 Result = True;
-
-  maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("entity"));
-
-  if (MaybeSerializedType.Tag)
+  RangeIterator_t(umm, ElementIndex, Count)
   {
+    maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("entity"));
 
-    u64 VersionNumber = 0;
-    if (MaybeSerializedType.Value.Version > 0)
+    if (MaybeSerializedType.Tag)
     {
-      Deserialize(Bytes, &VersionNumber, Memory);
-    }
-    Result &= DeserializeVersioned(Bytes, Element, &MaybeSerializedType.Value, VersionNumber, Memory);
-  }
-  else
-  {
-    Result &= DeserializeUnversioned(Bytes, Element, Memory);
-    MAYBE_READ_DEBUG_OBJECT_DELIM();
-  }
 
+      u64 VersionNumber = 0;
+      if (MaybeSerializedType.Value.Version > 0)
+      {
+        Deserialize(Bytes, &VersionNumber, Memory);
+      }
+      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &MaybeSerializedType.Value, VersionNumber, Memory);
+    }
+    else
+    {
+      Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+    }
+
+  }
 
   return Result;
 }

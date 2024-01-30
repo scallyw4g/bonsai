@@ -2,8 +2,8 @@
 
 struct model_buffer
 {
-  model *Start;
   u64 Count;
+  model *Start; poof(@array_length(Element->Count))
 };
 
 link_internal model_buffer

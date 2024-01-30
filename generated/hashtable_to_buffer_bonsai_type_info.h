@@ -1,4 +1,4 @@
-// src/engine/serdes.h:121:0
+// src/engine/bonsai_type_info.h:40:0
 
 bonsai_type_info_buffer
 ToBuffer( bonsai_type_info_hashtable *Table, memory_arena *Memory )

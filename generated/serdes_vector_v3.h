@@ -1,19 +1,21 @@
 // src/engine/serdes.cpp:6:0
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, v3 *Element)
+Serialize(u8_cursor_block_array *Bytes, v3 *Element, umm Count = 1)
 {
-  b32 Result = Write(Bytes, Cast(u8*, Element), sizeof(v3));
+  Assert(Count > 0);
+  b32 Result = Write(Bytes, Cast(u8*, Element), sizeof(v3)*Count);
 
   MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, v3* Element, memory_arena *Ignored)
+Deserialize(u8_cursor *Bytes, v3* Element, memory_arena *Ignored, umm Count = 1)
 {
+  Assert(Count > 0);
   *Element = *Cast(v3*, Bytes->At);
-  Bytes->At += sizeof(v3);
+  Bytes->At += sizeof(v3)*Count;
   Assert(Bytes->At <= Bytes->End);
 
   b32 Result = True;

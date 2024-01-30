@@ -1,4 +1,4 @@
-// src/engine/serdes.h:127:0
+// src/engine/bonsai_type_info.h:46:0
 
 maybe_bonsai_type_info
 GetByName( bonsai_type_info_hashtable *Table, cs Name )

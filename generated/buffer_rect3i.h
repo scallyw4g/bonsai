@@ -2,8 +2,8 @@
 
 struct rect3i_buffer
 {
-  rect3i *Start;
   umm Count;
+  rect3i *Start; poof(@array_length(Element->Count))
 };
 
 link_internal rect3i_buffer

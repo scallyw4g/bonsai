@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:244:0
+// src/engine/serdes.cpp:246:0
 
 link_internal bonsai_type_info
 TypeInfo(file_traversal_node *Ignored)
@@ -20,39 +20,52 @@ TypeInfo(file_traversal_node *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, file_traversal_node *Element)
+Serialize(u8_cursor_block_array *Bytes, file_traversal_node *BaseElement, umm Count = 1)
 {
-  u64 PointerTrue = True; 
-  u64 PointerFalse = False; 
+  Assert(Count > 0);
+
+  u64 PointerTrue = True;
+  u64 PointerFalse = False;
 
   b32 Result = True;
 
   
 
-  Result &= Serialize(Bytes, (u32*)&Element->Type);
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    file_traversal_node *Element = BaseElement + ElementIndex;
+    Result &= Serialize(Bytes, (u32*)&Element->Type);
 
 
 
 
-  Result &= Serialize(Bytes, &Element->Dir);
+    Result &= Serialize(Bytes, &Element->Dir);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->Name);
+    Result &= Serialize(Bytes, &Element->Name);
 
-  
+    
 
-  MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+  }
+
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, file_traversal_node *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, file_traversal_node *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
-DeserializeUnversioned(u8_cursor *Bytes, file_traversal_node *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, file_traversal_node *Element, memory_arena *Memory);
+
+
+
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, file_traversal_node *Element, memory_arena *Memory)
 {
   b32 Result = True;
   Element->Type = Cast(file_traversal_type, Read_u32(Bytes));
@@ -73,17 +86,22 @@ DeserializeUnversioned(u8_cursor *Bytes, file_traversal_node *Element, memory_ar
   Result &= Deserialize(Bytes, &Element->Name, Memory);
 
   
+
+  MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, file_traversal_node *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, file_traversal_node *Element, memory_arena *Memory, umm Count)
 {
+  Assert(Count > 0);
+
   b32 Result = True;
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
 
-  Result &= DeserializeUnversioned(Bytes, Element, Memory);
-  MAYBE_READ_DEBUG_OBJECT_DELIM();
-
+  }
 
   return Result;
 }

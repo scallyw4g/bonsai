@@ -350,7 +350,6 @@ function RunPoofHelper {
 
 
    # --log-level LogLevel_Debug                                                                                  \
-   #
   poof                    \
    $COLOR_FLAG \
    -D POOF_PREPROCESSOR   \

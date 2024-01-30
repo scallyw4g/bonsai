@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:259:0
+// src/engine/serdes.cpp:301:0
 
 link_internal bonsai_type_info
 TypeInfo(entity_0 *Ignored)
@@ -20,79 +20,84 @@ TypeInfo(entity_0 *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, entity_0 *Element)
+Serialize(u8_cursor_block_array *Bytes, entity_0 *BaseElement, umm Count = 1)
 {
-  u64 PointerTrue = True; 
-  u64 PointerFalse = False; 
+  Assert(Count > 0);
+
+  u64 PointerTrue = True;
+  u64 PointerFalse = False;
 
   b32 Result = True;
 
   
 
-  Result &= Serialize(Bytes, &Element->Id);
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    entity_0 *Element = BaseElement + ElementIndex;
+    Result &= Serialize(Bytes, &Element->Id);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->P);
+    Result &= Serialize(Bytes, &Element->P);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->EulerAngles);
+    Result &= Serialize(Bytes, &Element->EulerAngles);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->Scale);
+    Result &= Serialize(Bytes, &Element->Scale);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->_CollisionVolumeRadius);
+    Result &= Serialize(Bytes, &Element->_CollisionVolumeRadius);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->Physics);
+    Result &= Serialize(Bytes, &Element->Physics);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->AssetId);
+    Result &= Serialize(Bytes, &Element->AssetId);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->ModelIndex);
+    Result &= Serialize(Bytes, &Element->ModelIndex);
 
 
 
 
 
-  if (Element->Emitter) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
-  else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
+    if (Element->Emitter) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+    else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
 
 
-  Result &= Serialize(Bytes, (u32*)&Element->State);
-
-
-
-
-  Result &= Serialize(Bytes, (u32*)&Element->Behavior);
+    Result &= Serialize(Bytes, (u32*)&Element->State);
 
 
 
 
-  Result &= Serialize(Bytes, &Element->UserType);
+    Result &= Serialize(Bytes, (u32*)&Element->Behavior);
+
+
+
+
+    Result &= Serialize(Bytes, &Element->UserType);
 
 
 
@@ -100,20 +105,29 @@ Serialize(u8_cursor_block_array *Bytes, entity_0 *Element)
 
   if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(Bytes, Element->UserType, Element->UserData);}
 
-  if (Element->Emitter) { Result &= Serialize(Bytes, Element->Emitter); }
+    if (Element->Emitter) { Result &= Serialize(Bytes, Element->Emitter); }
 
 
 
 
-  MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+
+    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+  }
+
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, entity_0 *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, entity_0 *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
-DeserializeUnversioned(u8_cursor *Bytes, entity_0 *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, entity_0 *Element, memory_arena *Memory);
+
+
+
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, entity_0 *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -207,23 +221,35 @@ if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, &Elem
 
   if (HadEmitterPointer)
   {
-    if (Element->Emitter == 0) { Element->Emitter = Allocate(particle_system, Memory, 1); }
-    Result &= Deserialize(Bytes, Element->Emitter, Memory);
+    umm Count = 1;
+
+
+    if (Element->Emitter == 0)
+    {
+      Element->Emitter = Allocate(particle_system, Memory, Count);
+    }
+
+    Result &= Deserialize(Bytes, Element->Emitter, Memory, Count);
   }
 
 
 
+
+  MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, entity_0 *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, entity_0 *Element, memory_arena *Memory, umm Count)
 {
+  Assert(Count > 0);
+
   b32 Result = True;
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
 
-  Result &= DeserializeUnversioned(Bytes, Element, Memory);
-  MAYBE_READ_DEBUG_OBJECT_DELIM();
-
+  }
 
   return Result;
 }

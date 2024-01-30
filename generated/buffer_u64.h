@@ -2,8 +2,8 @@
 
 struct u64_buffer
 {
-  u64 *Start;
   umm Count;
+  u64 *Start; poof(@array_length(Element->Count))
 };
 
 link_internal u64_buffer

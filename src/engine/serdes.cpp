@@ -38,16 +38,16 @@ link_internal b32 Serialize(u8_cursor_block_array *File, untextured_3d_geometry_
 poof(serdes_struct(voxel))
 #include <generated/serdes_struct_voxel.h>
 
-poof(serdes_array(voxel))
-#include <generated/serdes_array_voxel.h>
+/* poof(serdes_array(voxel)) */
+/* #include <generated/serdes_array_voxel.h> */
 
 poof(serdes_struct(voxel_lighting))
 #include <generated/serdes_struct_voxel_lighting.h>
-poof(serdes_array(voxel_lighting))
-#include <generated/serdes_array_voxel_lighting.h>
+/* poof(serdes_array(voxel_lighting)) */
+/* #include <generated/serdes_array_voxel_lighting.h> */
 
-poof(serdes_array(v3))
-#include <generated/serdes_array_v3.h>
+/* poof(serdes_array(v3)) */
+/* #include <generated/serdes_array_v3.h> */
 
 poof(serdes_struct(entity_id))
 #include <generated/serdes_struct_entity_id.h>
@@ -89,21 +89,22 @@ Marshal(camera_0 *C0, camera *C1)
 #endif
 }
 
-poof(deserialize_versioned_struct(camera, 0))
-#include <generated/deserialize_versioned_struct_camera_1.h>
-
 poof(serdes_struct(camera))
 #include <generated/serdes_struct_camera.h>
 
+/* poof(deserialize_versioned_struct(camera, 0)) */
+/* #include <generated/deserialize_versioned_struct_camera_1.h> */
+
 poof(serdes_struct(vertex_material))
 #include <generated/serdes_struct_vertex_material.h>
-poof(serdes_array(vertex_material))
-#include <generated/serdes_array_vertex_material.h>
+/* poof(serdes_array(vertex_material)) */
+/* #include <generated/serdes_array_vertex_material.h> */
 
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, chunk_data *Data)
+Serialize(u8_cursor_block_array *Bytes, chunk_data *Data, umm Count = 1)
 {
+  Assert(Count == 1);
   b32 Result = True;
 
 #if 1
@@ -113,8 +114,8 @@ Serialize(u8_cursor_block_array *Bytes, chunk_data *Data)
 
   if (ElementCount)
   {
-    SerializeArray(Bytes, Data->Voxels, ElementCount);
-    SerializeArray(Bytes, Data->VoxelLighting, ElementCount);
+    Serialize(Bytes, Data->Voxels, ElementCount);
+    Serialize(Bytes, Data->VoxelLighting, ElementCount);
   }
 #endif
 
@@ -122,8 +123,9 @@ Serialize(u8_cursor_block_array *Bytes, chunk_data *Data)
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, chunk_data *Data, memory_arena *Memory)
+Deserialize(u8_stream *Bytes, chunk_data *Data, memory_arena *Memory, umm Count = 1)
 {
+  Assert(Count == 1);
   b32 Result = True;
 
 #if 1
@@ -135,8 +137,8 @@ Deserialize(u8_stream *Bytes, chunk_data *Data, memory_arena *Memory)
 
   if (ElementCount)
   {
-    Result &= DeserializeArray(Bytes, &Data->Voxels, ElementCount, Memory);
-    Result &= DeserializeArray(Bytes, &Data->VoxelLighting, ElementCount, Memory);
+    Result &= Deserialize(Bytes, Data->Voxels, Memory, ElementCount);
+    Result &= Deserialize(Bytes, Data->VoxelLighting, Memory, ElementCount);
   }
 #endif
 
@@ -157,19 +159,19 @@ Deserialize(u8_stream *Bytes, animation *Data, memory_arena *Memory)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *File, untextured_3d_geometry_buffer *Data)
+Serialize(u8_cursor_block_array *Bytes, untextured_3d_geometry_buffer *Data)
 {
   b32 Result = True;
 
 #if 1
-  Result &= Write(File, Cast(u8*, Data), sizeof(untextured_3d_geometry_buffer));
+  Result &= Write(Bytes, Cast(u8*, Data), sizeof(untextured_3d_geometry_buffer));
 
   umm ElementCount = umm(Data->At);
   if (ElementCount)
   {
-    Result &= SerializeArray(File, Data->Verts, ElementCount);
-    Result &= SerializeArray(File, Data->Normals, ElementCount);
-    Result &= SerializeArray(File, Data->Mat, ElementCount);
+    Result &= Serialize(Bytes, Data->Verts,   ElementCount);
+    Result &= Serialize(Bytes, Data->Normals, ElementCount);
+    Result &= Serialize(Bytes, Data->Mat,     ElementCount);
   }
 #endif
 
@@ -191,9 +193,9 @@ Deserialize(u8_stream *Bytes, untextured_3d_geometry_buffer *Data, memory_arena 
 
   if (ElementCount)
   {
-    Result &= DeserializeArray(Bytes, &Data->Verts, ElementCount, Memory);
-    Result &= DeserializeArray(Bytes, &Data->Normals, ElementCount, Memory);
-    Result &= DeserializeArray(Bytes, &Data->Mat, ElementCount, Memory);
+    Result &= Deserialize(Bytes, Data->Verts,   Memory, ElementCount);
+    Result &= Deserialize(Bytes, Data->Normals, Memory, ElementCount);
+    Result &= Deserialize(Bytes, Data->Mat,     Memory, ElementCount);
   }
 #endif
 
@@ -250,14 +252,62 @@ poof(serdes_struct(file_traversal_node))
 poof(serdes_struct(asset_id))
 #include <generated/serdes_struct_asset_id.h>
 
-poof(deserialize_struct(entity))
-#include <generated/deserialize_struct_entity.h>
-poof(serialize_struct(entity))
-#include <generated/serialize_struct_entity.h>
+
+
+
+link_internal void
+Marshal(entity_1 *E0, entity *E1)
+{
+  E1->Id = E0->Id;
+  E1->P = E0->P;
+  E1->EulerAngles = E0->EulerAngles;
+  E1->Scale = E0->Scale;
+  E1->_CollisionVolumeRadius = E0->_CollisionVolumeRadius;
+  E1->Physics = E0->Physics;
+  E1->AssetId = E0->AssetId;
+  E1->ModelIndex = E0->ModelIndex;
+  E1->LastResolvedCollision = E0->LastResolvedCollision;
+  E1->LastResolvedPosInfo = E0->LastResolvedPosInfo;
+  E1->Emitter = E0->Emitter;
+  E1->State = E0->State;
+  E1->Behavior = E0->Behavior;
+  E1->UserType = E0->UserType;
+  E1->UserData = E0->UserData;
+}
+
+link_internal void
+Marshal(entity_0 *E0, entity *E1)
+{
+  E1->Id = E0->Id;
+  E1->P = E0->P;
+  E1->EulerAngles = E0->EulerAngles;
+  E1->Scale = E0->Scale;
+  E1->_CollisionVolumeRadius = E0->_CollisionVolumeRadius;
+  E1->Physics = E0->Physics;
+  E1->AssetId = E0->AssetId;
+  E1->ModelIndex = E0->ModelIndex;
+  E1->LastResolvedCollision = E0->LastResolvedCollision;
+  E1->LastResolvedPosInfo = E0->LastResolvedPosInfo;
+  E1->Emitter = E0->Emitter;
+  E1->State = E0->State;
+  E1->Behavior = E0->Behavior;
+  E1->UserType = E0->UserType;
+  E1->UserData = E0->UserData;
+}
+
 poof(serdes_struct(entity_1))
 #include <generated/serdes_struct_entity_1.h>
+
 poof(serdes_struct(entity_0))
 #include <generated/serdes_struct_entity_0.h>
+
+poof(deserialize_struct(entity))
+#include <generated/deserialize_struct_entity.h>
+
+poof(serialize_struct(entity))
+#include <generated/serialize_struct_entity.h>
+
+
 
 poof( block_array(entity, {4}) )
 #include <generated/block_array_entity_688856407.h>
@@ -282,35 +332,6 @@ GetEntityCenterP(world *World, entity *Entity)
 
 
 
-link_internal void
-Marshal(entity_1 *E1, entity *E)
-{
-  // NOTE(Jesse): Poor-mans stand-in for deep-comparing the types in poof
-  CAssert(sizeof(entity_1) == sizeof(entity));
-
-  CopyMemory(Cast(u8*, E1), Cast(u8*, E), sizeof(entity));
-}
-
-link_internal void
-Marshal(entity_0 *E0, entity_1 *E1)
-{
-  poof(
-    func (entity_0 e0_t)
-    {
-      e0_t.map_members(member)
-      {
-        member.is_named(Carrying)?
-        {
-          // E0 Doesn't have the Carrying member
-        }
-        {
-          E1->member.name = E0->member.name;
-        }
-      }
-    }
-  )
-#include <generated/anonymous_entity_0_AfIY0cwC.h>
-}
 
 #if 0
 link_internal void
@@ -386,12 +407,8 @@ poof(deserialize_struct(level_header_0))
 poof(deserialize_struct(level_header_1))
 #include <generated/deserialize_struct_level_header_1.h>
 
-poof(deserialize_versioned_struct(level_header, 2))
-#include <generated/deserialize_versioned_struct_level_header_0.h>
-
 poof(deserialize_struct(level_header))
 #include <generated/deserialize_struct_level_header.h>
-
 
 poof(serialize_struct(level_header))
 #include <generated/serialize_struct_level_header.h>
@@ -440,6 +457,7 @@ Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
 #endif
 
 
+#if 0
 link_internal b32
 DeserializeVersioned(u8_stream *Bytes, entity *Element, bonsai_type_info *TypeInfo, u64 Version, memory_arena *Memory)
 {
@@ -475,4 +493,5 @@ DeserializeVersioned(u8_stream *Bytes, entity *Element, bonsai_type_info *TypeIn
 
   return Result;
 }
+#endif
 

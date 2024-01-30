@@ -1,10 +1,16 @@
-// src/engine/serdes.cpp:383:0
+// src/engine/serdes.cpp:404:0
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, level_header_0 *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, level_header_0 *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
-DeserializeUnversioned(u8_cursor *Bytes, level_header_0 *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, level_header_0 *Element, memory_arena *Memory);
+
+
+
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, level_header_0 *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -60,17 +66,22 @@ DeserializeUnversioned(u8_cursor *Bytes, level_header_0 *Element, memory_arena *
   Result &= Deserialize(Bytes, &Element->CameraTarget, Memory);
 
   
+
+  MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, level_header_0 *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, level_header_0 *Element, memory_arena *Memory, umm Count)
 {
+  Assert(Count > 0);
+
   b32 Result = True;
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
 
-  Result &= DeserializeUnversioned(Bytes, Element, Memory);
-  MAYBE_READ_DEBUG_OBJECT_DELIM();
-
+  }
 
   return Result;
 }

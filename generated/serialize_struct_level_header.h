@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:396:0
+// src/engine/serdes.cpp:413:0
 
 link_internal bonsai_type_info
 TypeInfo(level_header *Ignored)
@@ -20,59 +20,66 @@ TypeInfo(level_header *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, level_header *Element)
+Serialize(u8_cursor_block_array *Bytes, level_header *BaseElement, umm Count = 1)
 {
-  u64 PointerTrue = True; 
-  u64 PointerFalse = False; 
+  Assert(Count > 0);
+
+  u64 PointerTrue = True;
+  u64 PointerFalse = False;
 
   b32 Result = True;
 
-  Upsert(TypeInfo(Element), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
+  Upsert(TypeInfo(BaseElement), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
   u64 VersionNumber =2;
   Serialize(Bytes, &VersionNumber);
 
 
-  Result &= Serialize(Bytes, &Element->ChunkCount);
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    level_header *Element = BaseElement + ElementIndex;
+    Result &= Serialize(Bytes, &Element->ChunkCount);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->EntityCount);
+    Result &= Serialize(Bytes, &Element->EntityCount);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->WorldFlags);
+    Result &= Serialize(Bytes, &Element->WorldFlags);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->WorldCenter);
+    Result &= Serialize(Bytes, &Element->WorldCenter);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->VisibleRegion);
+    Result &= Serialize(Bytes, &Element->VisibleRegion);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->Camera);
+    Result &= Serialize(Bytes, &Element->Camera);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->CameraTarget);
+    Result &= Serialize(Bytes, &Element->CameraTarget);
 
-  
+    
 
-  MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+  }
+
   return Result;
 }
 

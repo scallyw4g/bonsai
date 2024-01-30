@@ -20,46 +20,59 @@ TypeInfo(entity_game_data *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, entity_game_data *Element)
+Serialize(u8_cursor_block_array *Bytes, entity_game_data *BaseElement, umm Count = 1)
 {
-  u64 PointerTrue = True; 
-  u64 PointerFalse = False; 
+  Assert(Count > 0);
+
+  u64 PointerTrue = True;
+  u64 PointerFalse = False;
 
   b32 Result = True;
 
   
 
-  Result &= Serialize(Bytes, &Element->FireballChargeLevel);
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    entity_game_data *Element = BaseElement + ElementIndex;
+    Result &= Serialize(Bytes, &Element->FireballChargeLevel);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->FireballCharges);
+    Result &= Serialize(Bytes, &Element->FireballCharges);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->IceBlockCharges);
+    Result &= Serialize(Bytes, &Element->IceBlockCharges);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->HoldingItem);
+    Result &= Serialize(Bytes, &Element->HoldingItem);
 
-  
+    
 
-  MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+  }
+
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, entity_game_data *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, entity_game_data *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
-DeserializeUnversioned(u8_cursor *Bytes, entity_game_data *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, entity_game_data *Element, memory_arena *Memory);
+
+
+
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, entity_game_data *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -91,17 +104,22 @@ DeserializeUnversioned(u8_cursor *Bytes, entity_game_data *Element, memory_arena
   Result &= Deserialize(Bytes, &Element->HoldingItem, Memory);
 
   
+
+  MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, entity_game_data *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, entity_game_data *Element, memory_arena *Memory, umm Count)
 {
+  Assert(Count > 0);
+
   b32 Result = True;
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
 
-  Result &= DeserializeUnversioned(Bytes, Element, Memory);
-  MAYBE_READ_DEBUG_OBJECT_DELIM();
-
+  }
 
   return Result;
 }

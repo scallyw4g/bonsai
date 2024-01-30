@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:255:0
+// src/engine/serdes.cpp:307:0
 
 link_internal bonsai_type_info
 TypeInfo(entity *Ignored)
@@ -20,88 +20,93 @@ TypeInfo(entity *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, entity *Element)
+Serialize(u8_cursor_block_array *Bytes, entity *BaseElement, umm Count = 1)
 {
-  u64 PointerTrue = True; 
-  u64 PointerFalse = False; 
+  Assert(Count > 0);
+
+  u64 PointerTrue = True;
+  u64 PointerFalse = False;
 
   b32 Result = True;
 
-  Upsert(TypeInfo(Element), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
+  Upsert(TypeInfo(BaseElement), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
   u64 VersionNumber =2;
   Serialize(Bytes, &VersionNumber);
 
 
-  Result &= Serialize(Bytes, &Element->Id);
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    entity *Element = BaseElement + ElementIndex;
+    Result &= Serialize(Bytes, &Element->Id);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->P);
+    Result &= Serialize(Bytes, &Element->P);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->EulerAngles);
+    Result &= Serialize(Bytes, &Element->EulerAngles);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->Scale);
+    Result &= Serialize(Bytes, &Element->Scale);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->_CollisionVolumeRadius);
+    Result &= Serialize(Bytes, &Element->_CollisionVolumeRadius);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->Physics);
+    Result &= Serialize(Bytes, &Element->Physics);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->AssetId);
+    Result &= Serialize(Bytes, &Element->AssetId);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->ModelIndex);
+    Result &= Serialize(Bytes, &Element->ModelIndex);
 
 
 
 
 
-  if (Element->Emitter) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
-  else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
+    if (Element->Emitter) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+    else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
 
 
-  Result &= Serialize(Bytes, (u32*)&Element->State);
-
-
-
-
-  Result &= Serialize(Bytes, (u32*)&Element->Behavior);
+    Result &= Serialize(Bytes, (u32*)&Element->State);
 
 
 
 
-  Result &= Serialize(Bytes, &Element->Carrying);
+    Result &= Serialize(Bytes, (u32*)&Element->Behavior);
+
+
+
+
+    Result &= Serialize(Bytes, &Element->Carrying);
 
 
 
 
 
-  Result &= Serialize(Bytes, &Element->UserType);
+    Result &= Serialize(Bytes, &Element->UserType);
 
 
 
@@ -109,12 +114,15 @@ Serialize(u8_cursor_block_array *Bytes, entity *Element)
 
   if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(Bytes, Element->UserType, Element->UserData);}
 
-  if (Element->Emitter) { Result &= Serialize(Bytes, Element->Emitter); }
+    if (Element->Emitter) { Result &= Serialize(Bytes, Element->Emitter); }
 
 
 
 
-  MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+
+    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+  }
+
   return Result;
 }
 

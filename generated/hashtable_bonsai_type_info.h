@@ -1,4 +1,4 @@
-// src/engine/serdes.h:118:0
+// src/engine/bonsai_type_info.h:37:0
 
 struct bonsai_type_info_linked_list_node
 {

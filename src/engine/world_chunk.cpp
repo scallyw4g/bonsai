@@ -4531,7 +4531,7 @@ GetStandingSpotsWithinRadius(world *World, standing_spot_buffer *Spots, cp P, r3
 
   // TODO(Jesse): Resize the result allocation?
 
-  standing_spot_buffer Result = {UnsortedSpots.Start, ResultAt};
+  standing_spot_buffer Result = {ResultAt, UnsortedSpots.Start};
   return Result;
 }
 

@@ -1,5 +1,6 @@
 #define BONSAI_ENGINE 1
 
+#include <engine/bonsai_type_info.h>
 #include <engine/serdes.h>
 
 #include <engine/api.h>
