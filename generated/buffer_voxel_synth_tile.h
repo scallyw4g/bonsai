@@ -1,4 +1,4 @@
-// src/engine/voxel_synthesis.h:0:102
+// src/engine/voxel_synthesis.h:102:0
 
 struct voxel_synth_tile_buffer
 {

@@ -1,4 +1,4 @@
-// src/engine/model.h:0:90
+// src/engine/model.h:90:0
 
 struct model_block
 {
@@ -20,6 +20,7 @@ struct model_block_array
   model_block *First;
   model_block *Current;
   memory_arena *Memory; poof(@no_serialize)
+  
 };
 
 link_internal model_block_array_index

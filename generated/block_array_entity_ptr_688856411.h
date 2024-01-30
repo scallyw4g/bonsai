@@ -1,4 +1,4 @@
-// src/engine/world_chunk.h:0:320
+// src/engine/world_chunk.h:320:0
 
 struct entity_ptr_block
 {
@@ -20,6 +20,7 @@ struct entity_ptr_block_array
   entity_ptr_block *First;
   entity_ptr_block *Current;
   memory_arena *Memory; poof(@no_serialize)
+  
 };
 
 link_internal entity_ptr_block_array_index

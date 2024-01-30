@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/bitmap.cpp:0:179
+// external/bonsai_stdlib/src/bitmap.cpp:179:0
 
 struct bitmap_block
 {
@@ -20,6 +20,7 @@ struct bitmap_block_array
   bitmap_block *First;
   bitmap_block *Current;
   memory_arena *Memory; poof(@no_serialize)
+  
 };
 
 link_internal bitmap_block_array_index

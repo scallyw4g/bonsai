@@ -1,4 +1,4 @@
-// src/engine/entity.h:0:39
+// src/engine/entity.h:39:0
 
 link_internal counted_string
 ToString(entity_behavior_flags Type)

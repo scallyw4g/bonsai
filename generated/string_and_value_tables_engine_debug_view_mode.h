@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:0:143
+// src/engine/editor.cpp:143:0
 
 link_internal counted_string
 ToString(engine_debug_view_mode Type)

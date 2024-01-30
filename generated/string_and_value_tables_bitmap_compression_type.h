@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/bitmap.cpp:0:73
+// external/bonsai_stdlib/src/bitmap.cpp:73:0
 
 link_internal counted_string
 ToString(bitmap_compression_type Type)

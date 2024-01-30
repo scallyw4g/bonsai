@@ -1,4 +1,4 @@
-// src/engine/editor.h:0:244
+// src/engine/editor.h:244:0
 
 struct asset_thumbnail_block
 {
@@ -20,6 +20,7 @@ struct asset_thumbnail_block_array
   asset_thumbnail_block *First;
   asset_thumbnail_block *Current;
   memory_arena *Memory; poof(@no_serialize)
+  
 };
 
 link_internal asset_thumbnail_block_array_index

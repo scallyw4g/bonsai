@@ -1,4 +1,4 @@
-// src/engine/serdes.h:0:92
+// src/engine/serdes.h:92:0
 
 struct member_info_block
 {
@@ -20,6 +20,7 @@ struct member_info_block_array
   member_info_block *First;
   member_info_block *Current;
   memory_arena *Memory; poof(@no_serialize)
+  
 };
 
 link_internal member_info_block_array_index

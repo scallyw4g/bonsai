@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/primitive_containers.h:0:2
+// external/bonsai_stdlib/src/primitive_containers.h:2:0
 
 struct u32_block
 {
@@ -20,6 +20,7 @@ struct u32_block_array
   u32_block *First;
   u32_block *Current;
   memory_arena *Memory; poof(@no_serialize)
+  
 };
 
 link_internal u32_block_array_index

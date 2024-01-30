@@ -1,4 +1,4 @@
-// src/engine/serdes.h:0:124
+// src/engine/serdes.h:124:0
 
 struct maybe_bonsai_type_info
 {

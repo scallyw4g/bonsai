@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/ansi_stream.h:0:6
+// external/bonsai_stdlib/src/ansi_stream.h:6:0
 
 struct u8_cursor_block
 {
@@ -20,6 +20,7 @@ struct u8_cursor_block_array
   u8_cursor_block *First;
   u8_cursor_block *Current;
   memory_arena *Memory; poof(@no_serialize)
+  u64 BlockSize;
 };
 
 link_internal u8_cursor_block_array_index

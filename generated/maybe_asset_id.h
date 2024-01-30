@@ -1,4 +1,4 @@
-// src/engine/asset.h:0:151
+// src/engine/asset.h:151:0
 
 struct maybe_asset_id
 {

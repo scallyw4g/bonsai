@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:0:38
+// src/engine/serdes.cpp:38:0
 
 link_internal bonsai_type_info
 TypeInfo(voxel *Ignored)

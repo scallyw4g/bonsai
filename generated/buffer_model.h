@@ -1,4 +1,4 @@
-// src/engine/model.h:0:87
+// src/engine/model.h:87:0
 
 struct model_buffer
 {

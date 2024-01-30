@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/console_io.h:0:13
+// external/bonsai_stdlib/src/console_io.h:13:0
 
 link_internal counted_string
 ToString(log_level Type)

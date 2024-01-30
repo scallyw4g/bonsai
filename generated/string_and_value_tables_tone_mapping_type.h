@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:0:140
+// src/engine/editor.cpp:140:0
 
 link_internal counted_string
 ToString(tone_mapping_type Type)

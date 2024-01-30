@@ -1,4 +1,4 @@
-// src/engine/world_chunk.h:0:462
+// src/engine/world_chunk.h:462:0
 
 struct standing_spot_block
 {
@@ -20,6 +20,7 @@ struct standing_spot_block_array
   standing_spot_block *First;
   standing_spot_block *Current;
   memory_arena *Memory; poof(@no_serialize)
+  
 };
 
 link_internal standing_spot_block_array_index

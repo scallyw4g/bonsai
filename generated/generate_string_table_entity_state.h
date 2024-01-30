@@ -1,4 +1,4 @@
-// src/engine/entity.h:0:36
+// src/engine/entity.h:36:0
 
 link_internal counted_string
 ToString(entity_state Type)

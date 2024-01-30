@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/texture_cursor.cpp:0:17
+// external/bonsai_stdlib/src/texture_cursor.cpp:17:0
 
 struct texture_cursor
 {

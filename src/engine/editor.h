@@ -241,7 +241,7 @@ struct asset_thumbnail
   camera   Camera;
 };
 
-poof(block_array_h(asset_thumbnail, {8}))
+poof(block_array_h(asset_thumbnail, {8}, {}))
 #include <generated/block_array_h_asset_thumbnail_688856411.h>
 
 struct selection_modification_state

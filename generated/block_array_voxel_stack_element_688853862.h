@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:0:3859
+// src/engine/world_chunk.cpp:3859:0
 
 struct voxel_stack_element_block
 {
@@ -20,6 +20,7 @@ struct voxel_stack_element_block_array
   voxel_stack_element_block *First;
   voxel_stack_element_block *Current;
   memory_arena *Memory; poof(@no_serialize)
+  
 };
 
 link_internal voxel_stack_element_block_array_index

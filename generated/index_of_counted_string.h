@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/counted_string.cpp:0:22
+// external/bonsai_stdlib/src/counted_string.cpp:22:0
 
 link_internal umm
 IndexOf(counted_string_buffer *Buf, counted_string Element)

@@ -1,3 +1,5 @@
+#define LEVEL_FILE_FORMAT_VERSION_NUMBER (1)
+
 struct level_header poof(@version(2))
 {
   /* u64 Version; */

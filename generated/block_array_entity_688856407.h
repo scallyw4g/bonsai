@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:0:262
+// src/engine/serdes.cpp:262:0
 
 struct entity_block
 {
@@ -20,6 +20,7 @@ struct entity_block_array
   entity_block *First;
   entity_block *Current;
   memory_arena *Memory; poof(@no_serialize)
+  
 };
 
 link_internal entity_block_array_index

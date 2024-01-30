@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/ansi_stream.h:0:3
+// external/bonsai_stdlib/src/ansi_stream.h:3:0
 
 struct u8_cursor
 {

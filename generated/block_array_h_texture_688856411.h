@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/texture.h:0:16
+// external/bonsai_stdlib/src/texture.h:16:0
 
 struct texture_ptr_block
 {
@@ -20,6 +20,7 @@ struct texture_ptr_block_array
   texture_ptr_block *First;
   texture_ptr_block *Current;
   memory_arena *Memory; poof(@no_serialize)
+  
 };
 
 link_internal texture_ptr_block_array_index

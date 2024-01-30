@@ -1,4 +1,4 @@
-// examples/turn_based/game_types.h:0:42
+// examples/turn_based/game_types.h:42:0
 
 link_internal counted_string
 ToString(entity_type Type)

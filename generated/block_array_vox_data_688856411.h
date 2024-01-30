@@ -1,4 +1,4 @@
-// src/engine/model.h:0:84
+// src/engine/model.h:84:0
 
 struct vox_data_block
 {
@@ -20,6 +20,7 @@ struct vox_data_block_array
   vox_data_block *First;
   vox_data_block *Current;
   memory_arena *Memory; poof(@no_serialize)
+  
 };
 
 link_internal vox_data_block_array_index

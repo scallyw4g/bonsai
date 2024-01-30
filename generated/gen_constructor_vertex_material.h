@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/mesh.h:0:10
+// external/bonsai_stdlib/src/mesh.h:10:0
 
 link_internal vertex_material
 VertexMaterial( v3 Color , f32 Transparency , f32 Emission  )

@@ -1,4 +1,4 @@
-// src/engine/resources.h:0:10
+// src/engine/resources.h:10:0
 
 struct maybe_entity_ptr
 {

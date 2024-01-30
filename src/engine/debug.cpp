@@ -35,6 +35,12 @@ DoLevelWindow(engine_resources *Engine)
       /* native_file LevelFile = OpenFile("../bonsai_levels/test.level", "w+b"); */
 
       u8_cursor_block_array OutputStream = {};
+      {
+        OutputStream.BlockSize = Megabytes(32);
+        u8_cursor First = U8Cursor(OutputStream.BlockSize, Global_SerializeTypeTableArena);
+        Ensure( Push(&OutputStream, &First) );
+      }
+
 
       level_header Header = {};
       Header.ChunkCount = ChunkCount;
@@ -84,7 +90,23 @@ DoLevelWindow(engine_resources *Engine)
       Serialize(&OutputStream, Palette);
       /* Serialize(&LevelFile, Palette); */
 
+
+      u8_cursor_block_array TypeBufferOutputStream = {};
+      {
+        TypeBufferOutputStream.BlockSize = Megabytes(32);
+
+        u8_cursor First = U8Cursor(TypeBufferOutputStream.BlockSize, Global_SerializeTypeTableArena);
+        Ensure( Push(&TypeBufferOutputStream, &First) );
+
+        bonsai_type_info_buffer TypeBuffer = ToBuffer(&Global_SerializeTypeTable, Global_SerializeTypeTableArena);
+        Serialize(&TypeBufferOutputStream, &TypeBuffer);
+      }
+
+
       native_file LevelFile = OpenFile("../bonsai_levels/test.level", "w+b");
+        u64 FileFormatVersion = LEVEL_FILE_FORMAT_VERSION_NUMBER;
+        WriteToFile(&LevelFile, FileFormatVersion);
+        WriteToFile(&LevelFile, &TypeBufferOutputStream);
         WriteToFile(&LevelFile, &OutputStream);
       CloseFile(&LevelFile);
 
