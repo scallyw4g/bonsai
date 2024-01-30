@@ -214,7 +214,13 @@ poof(
         {
           member.is_pointer?
           {
-            if (Element->(member.name)) { Result &= Serialize(Bytes, Element->(member.name)); }
+            member.has_tag(array_length)?
+            {
+              if (Element->(member.name)) { Result &= SerializeArray(Bytes, Element->(member.name), member.tag_value(array_length) ); }
+            }
+            {
+              if (Element->(member.name)) { Result &= Serialize(Bytes, Element->(member.name)); }
+            }
           }
         }
       }
