@@ -708,6 +708,7 @@ DoEngineDebug(engine_resources *Engine)
                   PushTexturedQuad(Ui, Texture, Dim, zDepth_Text);
                   PushForceAdvance(Ui, V2(xAdvance, 0));
                 EndColumn(Ui, Start);
+                PushNewRow(Ui);
               }
           PushTableEnd(Ui);
         EndColumn(Ui, StartOuter);
