@@ -13,7 +13,7 @@ remove the CRT entirely, though it's unclear when/if I'll get around to it.
 The only requirements to build and run Bonsai are an OpenGL 3.3+ driver, C++
 compiler, and a few appropriate system headers.
 
-![banner](screenshots/8_skele.png)
+![banner](screenshots/dusk_defence.png)
 
 ## Renderer Features
 
@@ -47,6 +47,8 @@ compiler, and a few appropriate system headers.
 * Per frame call-graph tracing
 * Context Switches (windows only)
 * Physical Core  (windows only)
+
+![banner](screenshots/8_skele.png)
 
 # Getting Started
 
