@@ -406,7 +406,9 @@ InitGbufferRenderGroup( g_buffer_render_group *gBuffer, memory_arena *GraphicsMe
   // if it's an RGB texture.  We only need three channels for normal so this
   // should probably be an RGB
   gBuffer->Textures->Normal   = MakeTexture_RGB( ScreenDim, (v3*)0, GraphicsMemory, CSz("gBufferNormal"));
-  gBuffer->Textures->Position = MakeTexture_RGB( ScreenDim, (v3*)0, GraphicsMemory, CSz("gBufferPosition"));
+
+  // NOTE(Jesse): Depth gets stuffed into A value here.
+  gBuffer->Textures->Position = MakeTexture_RGBA( ScreenDim, (v4*)0, GraphicsMemory, CSz("gBufferPosition"));
 
   FramebufferTexture(&gBuffer->FBO, gBuffer->Textures->Color);
   FramebufferTexture(&gBuffer->FBO, gBuffer->Textures->Normal);
