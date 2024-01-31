@@ -188,7 +188,15 @@ DoLevelWindow(engine_resources *Engine)
         /* World->Flags  = Cast(world_flag, LevelHeader.WorldFlags); */
         World->Center = LevelHeader.WorldCenter;
 
-        Graphics->Settings = LevelHeader.RenderSettings;
+        maybe_bonsai_type_info MaybeLevelHeaderTypeInfo = GetByName(&Global_SerializeTypeTable, CSz("level_header"));
+        if (MaybeLevelHeaderTypeInfo.Tag)
+        {
+          if (MaybeLevelHeaderTypeInfo.Value.Version > 2)
+          {
+            Graphics->Settings = LevelHeader.RenderSettings;
+          }
+        }
+
         *Graphics->Camera = LevelHeader.Camera;
         /* World->VisibleRegion = LevelHeader.VisibleRegion; */
 
