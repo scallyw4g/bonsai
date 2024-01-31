@@ -139,8 +139,10 @@ DoLevelWindow(engine_resources *Engine)
           entity *E = 0;
           Insert(TypeInfo(E), &Global_SerializeTypeTable, Global_SerializeTypeTableArena);
 
-          /* camera *C = 0; */
-          /* Insert(TypeInfo(C), &Global_SerializeTypeTable, Thread->TempMemory); */
+          camera *C = 0;
+          auto CameraTypeInfo = TypeInfo(C);
+          CameraTypeInfo.Version = 0;
+          Insert(CameraTypeInfo, &Global_SerializeTypeTable, Global_SerializeTypeTableArena);
         } break;
 
         case 1:
@@ -214,7 +216,6 @@ DoLevelWindow(engine_resources *Engine)
             break;
           }
           E->Id.Index = EntityIndex; // NOTE(Jesse): Hack.. entities got saved out with 0 indexes..
-          /* E->Asset */
         }
 
         if (Error == False)
@@ -466,7 +467,7 @@ DoAssetWindow(engine_resources *Engine)
                   // TODO(Jesse): Where to allocate these?
                   texture *T = MakeTexture_RGBA(V2i(256), (u32*)0, Engine->Memory, CSz("Thumbnail"));
                   asset_thumbnail Thumb = { T, {} };
-                  StandardCamera(&Thumb.Camera, 10000.0f, 100.0f, {});
+                  StandardCamera(&Thumb.Camera, 10000.0f, 100.0f, 0.f, {});
 
                   Push(&Editor->AssetThumbnails, &Thumb);
                 }
@@ -490,7 +491,7 @@ DoAssetWindow(engine_resources *Engine)
                   AssetViewWindow.CachedScroll = {};
                   f32 SmallObjectCorrectionFactor = 350.f/Length(ModelCenterpointOffset);
                   ThumbCamera->DistanceFromTarget = LengthSq(ModelCenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
-                  UpdateGameCamera(World, {}, 0.f, {}, ThumbCamera, 1.f);
+                  UpdateGameCamera(World, {}, 0.f, {}, ThumbCamera, 0.f);
                   RenderToTexture(Engine, Thumb, Model, {});
                 }
 
@@ -503,7 +504,7 @@ DoAssetWindow(engine_resources *Engine)
 
                   if (Input->LMB.Pressed) {MouseDP = GetMouseDelta(Plat)*2.f; }
                   if (Input->RMB.Pressed) { CameraZDelta += GetMouseDelta(Plat).y*2.f; }
-                  UpdateGameCamera(World, MouseDP, CameraZDelta, {}, ThumbCamera, 1.f);
+                  UpdateGameCamera(World, MouseDP, CameraZDelta, {}, ThumbCamera, 0.f);
                   RenderToTexture(Engine, Thumb, Model, {});
                 }
 

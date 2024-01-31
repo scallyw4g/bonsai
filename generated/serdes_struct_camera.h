@@ -73,6 +73,30 @@ Serialize(u8_cursor_block_array *Bytes, camera *BaseElement, umm Count = 1)
 
 
 
+    Result &= Serialize(Bytes, &Element->TargetPitch);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->TargetRoll);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->TargetYaw);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->Blend);
+
+
+
+
+
     Result &= Serialize(Bytes, &Element->DistanceFromTarget);
 
 
@@ -185,6 +209,38 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Yaw, Memory);
+
+
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->TargetPitch, Memory);
+
+
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->TargetRoll, Memory);
+
+
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->TargetYaw, Memory);
+
+
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->Blend, Memory);
 
 
 

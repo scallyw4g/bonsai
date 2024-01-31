@@ -279,7 +279,7 @@ Bonsai_Simulate(engine_resources *Resources)
   b32 DoZoomDelta = UiHoveredMouseInput(Ui) == False;
 
   v2 MouseDelta = GetMouseDelta(Plat);
-  UpdateGameCamera(World, MouseDelta, InputForCamera, CameraTargetP, Camera, DEFAULT_CAMERA_BLENDING*Plat->dt, DoPositionDelta, DoZoomDelta);
+  UpdateGameCamera(World, MouseDelta, InputForCamera, CameraTargetP, Camera, Plat->dt, DoPositionDelta, DoZoomDelta);
 
   Resources->Graphics->gBuffer->ViewProjection =
     ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
