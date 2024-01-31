@@ -52,8 +52,6 @@ struct lighting_settings
 
   // Computed from the above parameters and passed to the shader
   v3 CurrentSunColor;
-
-  u32 Test;
 };
 
 enum tone_mapping_type

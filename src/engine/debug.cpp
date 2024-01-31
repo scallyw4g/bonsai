@@ -50,6 +50,8 @@ DoLevelWindow(engine_resources *Engine)
       Header.VisibleRegion = World->VisibleRegion;
       Header.Camera = *Camera;
 
+      Header.RenderSettings = Graphics->Settings;
+
       u32 EntityCount = 0;
       RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
       {
@@ -136,13 +138,27 @@ DoLevelWindow(engine_resources *Engine)
         case 0:
         {
           Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(64, Global_SerializeTypeTableArena);
-          entity *E = 0;
-          Insert(TypeInfo(E), &Global_SerializeTypeTable, Global_SerializeTypeTableArena);
 
-          camera *C = 0;
-          auto CameraTypeInfo = TypeInfo(C);
-          CameraTypeInfo.Version = 0;
-          Insert(CameraTypeInfo, &Global_SerializeTypeTable, Global_SerializeTypeTableArena);
+          {
+            entity *Dummy = 0;
+            auto TI = TypeInfo(Dummy);
+            TI.Version = 1;
+            Insert(TI, &Global_SerializeTypeTable, Global_SerializeTypeTableArena);
+          }
+
+          {
+            camera *Dummy = 0;
+            auto TI = TypeInfo(Dummy);
+            TI.Version = 0;
+            Insert(TI, &Global_SerializeTypeTable, Global_SerializeTypeTableArena);
+          }
+
+          {
+            level_header *Dummy = 0;
+            auto TI = TypeInfo(Dummy);
+            TI.Version = 0;
+            Insert(TI, &Global_SerializeTypeTable, Global_SerializeTypeTableArena);
+          }
         } break;
 
         case 1:
@@ -171,6 +187,8 @@ DoLevelWindow(engine_resources *Engine)
 
         /* World->Flags  = Cast(world_flag, LevelHeader.WorldFlags); */
         World->Center = LevelHeader.WorldCenter;
+
+        Graphics->Settings = LevelHeader.RenderSettings;
         *Graphics->Camera = LevelHeader.Camera;
         /* World->VisibleRegion = LevelHeader.VisibleRegion; */
 

@@ -356,6 +356,12 @@ Marshal(entity_1 *E0, entity_2 *E1)
 }
 #endif
 
+poof(serdes_struct(lighting_settings))
+#include <generated/serdes_struct_lighting_settings.h>
+
+poof(serdes_struct(render_settings))
+#include <generated/serdes_struct_render_settings.h>
+
 /* poof(serdes_struct(member_info)) */
 /* #include <generated/serdes_struct_member_info.h> */
 /* poof(serdes_struct(member_info_block)) */
@@ -385,7 +391,6 @@ Marshal(level_header_0 *E0, level_header *E1)
   E1->WorldCenter = E0->WorldCenter;
   E1->VisibleRegion = E0->VisibleRegion;
   E1->Camera = E0->Camera;
-  E1->CameraTarget = E0->CameraTarget;
 }
 
 link_internal void
@@ -397,7 +402,17 @@ Marshal(level_header_1 *E0, level_header *E1)
   E1->WorldCenter = E0->WorldCenter;
   E1->VisibleRegion = E0->VisibleRegion;
   E1->Camera = E0->Camera;
-  E1->CameraTarget = E0->CameraTarget;
+}
+
+link_internal void
+Marshal(level_header_2 *E0, level_header *E1)
+{
+  E1->ChunkCount = E0->ChunkCount;
+  E1->EntityCount = E0->EntityCount;
+  E1->WorldFlags = E0->WorldFlags;
+  E1->WorldCenter = E0->WorldCenter;
+  E1->VisibleRegion = E0->VisibleRegion;
+  E1->Camera = E0->Camera;
 }
 
 
@@ -407,6 +422,9 @@ poof(deserialize_struct(level_header_0))
 
 poof(deserialize_struct(level_header_1))
 #include <generated/deserialize_struct_level_header_1.h>
+
+poof(deserialize_struct(level_header_2))
+#include <generated/deserialize_struct_level_header_2.h>
 
 poof(deserialize_struct(level_header))
 #include <generated/deserialize_struct_level_header.h>

@@ -105,23 +105,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
       PushNewRow(Ui);
 
       DoEditorUi(Ui, Window, &Element->CurrentSunColor, CSz("v3 CurrentSunColor"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->Test, CSz("u32 Test"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }

@@ -1,16 +1,16 @@
-// src/engine/serdes.cpp:420:0
+// src/engine/serdes.cpp:426:0
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, level_header_0 *Element, memory_arena *Memory, umm Count = 1);
+Deserialize(u8_cursor *Bytes, level_header_2 *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, level_header_0 *Element, memory_arena *Memory);
+DeserializeCurrentVersion(u8_cursor *Bytes, level_header_2 *Element, memory_arena *Memory);
 
 
 
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, level_header_0 *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, level_header_2 *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -72,7 +72,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header_0 *Element, memory_aren
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, level_header_0 *Element, memory_arena *Memory, umm Count)
+Deserialize(u8_cursor *Bytes, level_header_2 *Element, memory_arena *Memory, umm Count)
 {
   Assert(Count > 0);
 

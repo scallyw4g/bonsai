@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:411:0
+// src/engine/serdes.cpp:429:0
 
 link_internal b32
 Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory, umm Count = 1);
@@ -10,7 +10,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 link_internal b32
 DeserializeVersioned(u8_cursor *Bytes, level_header *Element, bonsai_type_info *TypeInfo, u64 Version, memory_arena *Memory)
 {
-  Assert(Version <=2);
+  Assert(Version <=3);
 
   b32 Result = True;
 
@@ -26,9 +26,15 @@ DeserializeVersioned(u8_cursor *Bytes, level_header *Element, bonsai_type_info *
     Result &= Deserialize(Bytes, &T1, Memory);
     Marshal(&T1, Element);
   }
+  if (Version == 2)
+  {
+    level_header_2 T2 = {};
+    Result &= Deserialize(Bytes, &T2, Memory);
+    Marshal(&T2, Element);
+  }
 
 
-  if (Version ==2)
+  if (Version ==3)
   {
     Result &= DeserializeCurrentVersion(Bytes, Element, Memory);
   }
@@ -91,7 +97,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->CameraTarget, Memory);
+  Result &= Deserialize(Bytes, &Element->RenderSettings, Memory);
 
   
 
