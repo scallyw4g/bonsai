@@ -6,8 +6,8 @@ ToString(turn_mode Type)
   counted_string Result = {};
   switch (Type)
   {
-    case TurnMode_Default: { Result = CSz("Default"); } break;
-    case TurnMode_Transition: { Result = CSz("Transition"); } break;
+    case TurnMode_Default: { Result = CSz("TurnMode_Default"); } break;
+    case TurnMode_Transition: { Result = CSz("TurnMode_Transition"); } break;
 
     
   }

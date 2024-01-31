@@ -6,10 +6,10 @@ ToString(chunk_flag Type)
   counted_string Result = {};
   switch (Type)
   {
-    case Chunk_Uninitialized: { Result = CSz("Uninitialized"); } break;
-    case Chunk_Queued: { Result = CSz("Queued"); } break;
-    case Chunk_VoxelsInitialized: { Result = CSz("VoxelsInitialized"); } break;
-    case Chunk_Garbage: { Result = CSz("Garbage"); } break;
+    case Chunk_Uninitialized: { Result = CSz("Chunk_Uninitialized"); } break;
+    case Chunk_Queued: { Result = CSz("Chunk_Queued"); } break;
+    case Chunk_VoxelsInitialized: { Result = CSz("Chunk_VoxelsInitialized"); } break;
+    case Chunk_Garbage: { Result = CSz("Chunk_Garbage"); } break;
 
     
   }

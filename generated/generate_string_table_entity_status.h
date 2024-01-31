@@ -6,9 +6,9 @@ ToString(entity_status Type)
   counted_string Result = {};
   switch (Type)
   {
-    case EntityStatus_None: { Result = CSz("None"); } break;
-    case EntityStatus_Carried: { Result = CSz("Carried"); } break;
-    case EntityStatus_Thrown: { Result = CSz("Thrown"); } break;
+    case EntityStatus_None: { Result = CSz("EntityStatus_None"); } break;
+    case EntityStatus_Carried: { Result = CSz("EntityStatus_Carried"); } break;
+    case EntityStatus_Thrown: { Result = CSz("EntityStatus_Thrown"); } break;
 
     
   }

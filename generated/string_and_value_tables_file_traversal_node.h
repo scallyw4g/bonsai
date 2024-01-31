@@ -6,9 +6,9 @@ ToString(file_traversal_type Type)
   counted_string Result = {};
   switch (Type)
   {
-    case FileTraversalType_None: { Result = CSz("None"); } break;
-    case FileTraversalType_Dir: { Result = CSz("Dir"); } break;
-    case FileTraversalType_File: { Result = CSz("File"); } break;
+    case FileTraversalType_None: { Result = CSz("FileTraversalType_None"); } break;
+    case FileTraversalType_Dir: { Result = CSz("FileTraversalType_Dir"); } break;
+    case FileTraversalType_File: { Result = CSz("FileTraversalType_File"); } break;
 
     
   }

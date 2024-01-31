@@ -6,16 +6,16 @@ ToString(bitmap_compression_type Type)
   counted_string Result = {};
   switch (Type)
   {
-    case BitmapCompressionType_RGB: { Result = CSz("RGB"); } break;
-    case BitmapCompressionType_RLE8: { Result = CSz("RLE8"); } break;
-    case BitmapCompressionType_RLE4: { Result = CSz("RLE4"); } break;
-    case BitmapCompressionType_BITFIELDS: { Result = CSz("BITFIELDS"); } break;
-    case BitmapCompressionType_JPEG: { Result = CSz("JPEG"); } break;
-    case BitmapCompressionType_PNG: { Result = CSz("PNG"); } break;
-    case BitmapCompressionType_ALPHABITFIELDS: { Result = CSz("ALPHABITFIELDS"); } break;
-    case BitmapCompressionType_CMYK: { Result = CSz("CMYK"); } break;
-    case BitmapCompressionType_CMYKRLE8: { Result = CSz("CMYKRLE8"); } break;
-    case BitmapCompressionType_CMYKRLE4: { Result = CSz("CMYKRLE4"); } break;
+    case BitmapCompressionType_RGB: { Result = CSz("BitmapCompressionType_RGB"); } break;
+    case BitmapCompressionType_RLE8: { Result = CSz("BitmapCompressionType_RLE8"); } break;
+    case BitmapCompressionType_RLE4: { Result = CSz("BitmapCompressionType_RLE4"); } break;
+    case BitmapCompressionType_BITFIELDS: { Result = CSz("BitmapCompressionType_BITFIELDS"); } break;
+    case BitmapCompressionType_JPEG: { Result = CSz("BitmapCompressionType_JPEG"); } break;
+    case BitmapCompressionType_PNG: { Result = CSz("BitmapCompressionType_PNG"); } break;
+    case BitmapCompressionType_ALPHABITFIELDS: { Result = CSz("BitmapCompressionType_ALPHABITFIELDS"); } break;
+    case BitmapCompressionType_CMYK: { Result = CSz("BitmapCompressionType_CMYK"); } break;
+    case BitmapCompressionType_CMYKRLE8: { Result = CSz("BitmapCompressionType_CMYKRLE8"); } break;
+    case BitmapCompressionType_CMYKRLE4: { Result = CSz("BitmapCompressionType_CMYKRLE4"); } break;
 
     
   }
