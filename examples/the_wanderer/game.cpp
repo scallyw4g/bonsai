@@ -103,7 +103,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   world_position WorldCenter = World_Position(0, 0, 0);
   AllocateWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
-  Resources->World->Flags = world_flag(Resources->World->Flags|WorldFlag_WorldCenterFollowsCameraTarget);
+  /* Resources->World->Flags = world_flag(Resources->World->Flags|WorldFlag_WorldCenterFollowsCameraTarget); */
 
   GameState->Models = AllocateGameModels(GameState, Resources->Memory, Heap);
 
@@ -113,12 +113,13 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   SpawnPlayerLikeEntity( Plat,
                          World,
                          &Asset,
+                         0,
                          GameState->Player,
                          Canonical_Position(Voxel_Position(0), WorldCenter + V3i(0,0,1)),
                          &GameState->Entropy );
 
-  StandardCamera(Graphics->Camera, 10000.0f, 2000.0f, GameState->Player->P);
-  Graphics->Camera->Ghost = GameState->Player->Id;
+  StandardCamera(Graphics->Camera, 10000.0f, 2000.0f, DEFAULT_CAMERA_BLENDING, GameState->Player->P);
+  Graphics->Camera->GhostId = GameState->Player->Id;
 
   return GameState;
 }

@@ -32,7 +32,6 @@ struct frustum
 
 struct entity;
 
-#if 1
 struct camera poof(@version(1))
 {
   frustum Frust;
@@ -58,7 +57,6 @@ struct camera poof(@version(1))
 
   entity_id GhostId;
 };
-#endif
 
 struct camera_0
 {

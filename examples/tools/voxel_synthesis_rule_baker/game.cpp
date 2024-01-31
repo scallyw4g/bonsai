@@ -703,7 +703,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* canonical_position CameraTargetP = {}; */
   canonical_position CameraTargetP = Canonical_Position(V3(0), WorldCenter);
 
-  StandardCamera(Graphics->Camera, 10000.0f, 1500.0f, CameraTargetP);
+  StandardCamera(Graphics->Camera, 10000.0f, 1500.0f, DEFAULT_CAMERA_BLENDING, CameraTargetP);
 
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 

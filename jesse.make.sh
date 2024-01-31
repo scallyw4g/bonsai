@@ -2,8 +2,8 @@
 
 OPT="-O2"
 
-./make.sh RunPoof
-[ $? -ne 0 ] && exit 1
+# ./make.sh RunPoof
+# [ $? -ne 0 ] && exit 1
 # exit 1
 
 # exit 0
@@ -34,10 +34,10 @@ OPT="-O2"
 # ./make.sh BuildTests
 
 # OPT="-O2"
-./make.sh $OPT \
-  BuildSingleExample examples/turn_based \
-  BuildExecutables \
-  BuildDebugSystem \
+# ./make.sh $OPT \
+#   BuildSingleExample examples/turn_based \
+#   BuildExecutables \
+#   BuildDebugSystem \
   # BuildSingleExample examples/terrain_gen \
   # BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
   # BuildSingleExample examples/the_wanderer \
@@ -47,4 +47,4 @@ OPT="-O2"
   # BuildSingleExample examples/transparency \
   # BuildTests \
 
-# ./make.sh $OPT BuildAll
+./make.sh $OPT BuildAll

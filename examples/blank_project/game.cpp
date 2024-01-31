@@ -64,11 +64,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   world_position WorldCenter = {};
   canonical_position CameraTargetP = {};
 
-  StandardCamera(Graphics->Camera, 10000.0f, 1000.0f, CameraTargetP);
+  StandardCamera(Graphics->Camera, 10000.0f, 1000.0f, DEFAULT_CAMERA_BLENDING, CameraTargetP);
 
   AllocateWorld(World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
-
-  World->Flags = WorldFlag_WorldCenterFollowsCameraTarget;
 
   GameState = Allocate(game_state, Resources->Memory, 1);
   return GameState;
