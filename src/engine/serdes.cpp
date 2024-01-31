@@ -249,7 +249,8 @@ poof(serdes_struct(file_traversal_node))
 /* poof(serdes_struct(asset_slot)) */
 /* #include <generated/serdes_struct_asset_slot.h> */
 
-poof(serdes_struct(asset_id))
+// Had to put a hack in to set (asset_id::Index = INVALID_ASSET_INDEX)
+/* poof(serdes_struct(asset_id)) */
 #include <generated/serdes_struct_asset_id.h>
 
 

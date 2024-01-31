@@ -36,8 +36,6 @@ Serialize(u8_cursor_block_array *Bytes, asset_id *BaseElement, umm Count = 1)
     asset_id *Element = BaseElement + ElementIndex;
     Result &= Serialize(Bytes, &Element->FileNode);
 
-    
-
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
 
@@ -57,11 +55,13 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, asset_id *Element, memory_arena *Memory)
 {
   b32 Result = True;
+
+  Element->Index = INVALID_ASSET_INDEX;
+
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->FileNode, Memory);
 
-  
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;
@@ -76,7 +76,6 @@ Deserialize(u8_cursor *Bytes, asset_id *Element, memory_arena *Memory, umm Count
   RangeIterator_t(umm, ElementIndex, Count)
   {
     Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
-
   }
 
   return Result;

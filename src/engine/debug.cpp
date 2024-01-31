@@ -214,6 +214,7 @@ DoLevelWindow(engine_resources *Engine)
             break;
           }
           E->Id.Index = EntityIndex; // NOTE(Jesse): Hack.. entities got saved out with 0 indexes..
+          /* E->Asset */
         }
 
         if (Error == False)
