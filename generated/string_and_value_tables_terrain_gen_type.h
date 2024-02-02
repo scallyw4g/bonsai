@@ -1,4 +1,4 @@
-// examples/terrain_gen/game_types.h:24:0
+// examples/terrain_gen/game_types.h:25:0
 
 link_internal counted_string
 ToString(terrain_gen_type Type)
@@ -9,6 +9,7 @@ ToString(terrain_gen_type Type)
     case TerrainGenType_Flat: { Result = CSz("TerrainGenType_Flat"); } break;
     case TerrainGenType_Checkerboard: { Result = CSz("TerrainGenType_Checkerboard"); } break;
     case TerrainGenType_SinCos: { Result = CSz("TerrainGenType_SinCos"); } break;
+    case TerrainGenType_Voronoi: { Result = CSz("TerrainGenType_Voronoi"); } break;
     case TerrainGenType_Perlin2D: { Result = CSz("TerrainGenType_Perlin2D"); } break;
     case TerrainGenType_Perlin3D: { Result = CSz("TerrainGenType_Perlin3D"); } break;
     case TerrainGenType_FBM2D: { Result = CSz("TerrainGenType_FBM2D"); } break;
@@ -34,6 +35,7 @@ TerrainGenType(counted_string S)
   if (StringsMatch(S, CSz("TerrainGenType_Flat"))) { return TerrainGenType_Flat; }
   if (StringsMatch(S, CSz("TerrainGenType_Checkerboard"))) { return TerrainGenType_Checkerboard; }
   if (StringsMatch(S, CSz("TerrainGenType_SinCos"))) { return TerrainGenType_SinCos; }
+  if (StringsMatch(S, CSz("TerrainGenType_Voronoi"))) { return TerrainGenType_Voronoi; }
   if (StringsMatch(S, CSz("TerrainGenType_Perlin2D"))) { return TerrainGenType_Perlin2D; }
   if (StringsMatch(S, CSz("TerrainGenType_Perlin3D"))) { return TerrainGenType_Perlin3D; }
   if (StringsMatch(S, CSz("TerrainGenType_FBM2D"))) { return TerrainGenType_FBM2D; }

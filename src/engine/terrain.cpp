@@ -1358,3 +1358,52 @@ SinCosTerrain( perlin_noise *Noise,
   }
   return ChunkSum;
 }
+
+link_internal u32
+VoronoiTerrain( perlin_noise *Noise,
+                world_chunk *Chunk,
+                v3i Dim,
+                v3i SrcToDest,
+                u16 ColorIndex,
+
+                s32 Frequency,
+                s32 Amplitude,
+ 
+                s64 zMin,
+                v3i WorldChunkDim,
+                void *OctavesIn )
+{
+  TIMED_FUNCTION();
+  Assert(OctavesIn == 0);
+
+  u32 ChunkSum = 0;
+
+  s32 MinZ = Chunk->WorldP.z*WorldChunkDim.z;
+  s32 MaxZ = MinZ+WorldChunkDim.z ;
+
+  for ( s32 z = 0; z < Dim.z; ++ z)
+  {
+    s64 WorldZ = z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z);
+    s64 WorldZSubZMin = WorldZ - zMin;
+    for ( s32 y = 0; y < Dim.y; ++ y)
+    {
+      s64 WorldY = y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y);
+      for ( s32 x = 0; x < Dim.x; ++ x)
+      {
+        s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x);
+        s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
+        Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
+
+        r32 NoiseValue = VoronoiNoise3D(V3(s32(WorldX), s32(WorldY), s32(WorldZ)) * 0.01f);
+        NoiseValue *= Amplitude;
+
+        b32 IsFilled = r32(NoiseValue) > r32(WorldZSubZMin) ;
+
+        SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
+        Chunk->Voxels[VoxIndex].Color = GRASS_GREEN*u8(IsFilled);
+        ChunkSum += IsFilled;
+      }
+    }
+  }
+  return ChunkSum;
+}

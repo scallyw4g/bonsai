@@ -419,6 +419,16 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             InitializeChunkWithNoise( SinCosTerrain, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, Ignored, InitFlags, 0);
           } break;
 
+          case TerrainGenType_Voronoi:
+          {
+            // Voronoi noise .. looks like rocks.
+            s32 Frequency = 100;
+            s32 Amplititude = 50;
+            s32 StartingZDepth = -1;
+            chunk_init_flags InitFlags = ChunkInitFlag_Noop;
+            InitializeChunkWithNoise( VoronoiTerrain, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, Ignored, InitFlags, 0);
+          } break;
+
           case TerrainGenType_Checkerboard:
           {
             // Custom flat noise function that produces a checkerboard
