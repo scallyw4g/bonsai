@@ -20,6 +20,8 @@ MapNoiseValueToFinal(f32 Value)
   {
     {{1.0f, 1.0f }},
     {{0.5f, 0.7f }},
+    {{0.35f, 0.43f }},
+    {{0.3f, 0.4f }},
     {{0.2f, 0.1f }},
     {{0.0f, 0.0f }},
   };
@@ -53,6 +55,6 @@ MapNoiseValueToFinal(f32 Value)
   Assert(Hit);
   Assert(Result <= 1.f);
   Assert(Result >= 0.f);
-  return Smoothstep(Result);
+  return Result;
 }
 
