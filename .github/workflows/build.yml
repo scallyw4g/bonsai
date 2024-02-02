@@ -34,7 +34,7 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: |
-          bin/
+          bin/*
           LICENSE
           CHANGELOG.txt
 
