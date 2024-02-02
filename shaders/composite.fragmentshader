@@ -43,13 +43,6 @@ uniform int ToneMappingType;
 // ---------
 // - Added "full round trip" based on Troy's feedback (https://www.shadertoy.com/view/mdcSDH)
 
-// Set to > 0 to show a video instead of the color gradients
-#define SHOW_VIDEO 0
-// 0: Default, 1: Golden, 2: Punchy
-
-// AgX
-// ->
-
 // Mean error^2: 3.6705141e-06
 vec3 agxDefaultContrastApprox(vec3 x) {
   vec3 x2 = x * x;
@@ -127,7 +120,7 @@ vec3 agxLook(vec3 val) {
     {
       // Punchy
       slope = vec3(1.0);
-      power = vec3(1.35, 1.35, 1.35);
+      power = vec3(1.15, 1.15, 1.15);
       sat = 1.4;
     } break;
   }

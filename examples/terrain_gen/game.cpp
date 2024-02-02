@@ -409,6 +409,16 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             InitializeChunkWithNoise( Noise_Flat, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, Ignored, ChunkInitFlag_Noop, 0);
           } break;
 
+          case TerrainGenType_SinCos:
+          {
+            // Bumpy Sin(x)+Cos(y) noise.  Useful for visualizing the polylines/splines mapping noise values to their final values.
+            s32 Frequency = 100;
+            s32 Amplititude = 50;
+            s32 StartingZDepth = -1;
+            chunk_init_flags InitFlags = ChunkInitFlag_Noop;
+            InitializeChunkWithNoise( SinCosTerrain, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, Ignored, InitFlags, 0);
+          } break;
+
           case TerrainGenType_Checkerboard:
           {
             // Custom flat noise function that produces a checkerboard
@@ -487,7 +497,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
 
             OctaveBuf.Octaves[0] = {V3(400, 400, 200), 150, V3(1)};
-            /* OctaveBuf.Octaves[1] = {V3(35, 35, 50),      6, V3(2.f)}; */
+            /* OctaveBuf.Octaves[1] = {V3(35, 35, 50),     60, V3(2.f)}; */
             /* OctaveBuf.Octaves[2] = {V3(500, 500, 20), 200, V3(2.f)}; */
             /* OctaveBuf.Octaves[2] = {75, 60, 1}; */
             /* OctaveBuf.Octaves[3] = {37, 30, 0}; */
@@ -497,6 +507,32 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
             InitializeChunkWithNoise( GrassyTerracedTerrain2, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
+          } break;
+
+
+          case TerrainGenType_GrassyTerracedTerrain3:
+          {
+            // Custom FBM noise example generating slightly-more-complex game-world-like terrain
+            s32 Frequency = 0; // Ignored
+            s32 Amplititude = 0; // Ignored
+            s32 StartingZDepth = -100;
+            u32 OctaveCount = 3;
+
+            octave_buffer OctaveBuf = { OctaveCount, {} };
+            OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
+
+            OctaveBuf.Octaves[0] = {V3(1400, 1400, 800), 150, V3(1.f)};
+            OctaveBuf.Octaves[1] = {V3(400, 400, 200),   150, V3(1.f)};
+            OctaveBuf.Octaves[2] = {V3(35, 35, 50),        6, V3(2.f)};
+            /* OctaveBuf.Octaves[2] = {V3(500, 500, 20), 200, V3(2.f)}; */
+            /* OctaveBuf.Octaves[2] = {75, 60, 1}; */
+            /* OctaveBuf.Octaves[3] = {37, 30, 0}; */
+
+
+            /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
+            /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
+            chunk_init_flags InitFlags = ChunkInitFlag_Noop;
+            InitializeChunkWithNoise( GrassyTerracedTerrain3, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
           } break;
 
           case TerrainGenType_TerracedTerrain:

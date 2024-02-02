@@ -58,8 +58,7 @@ HardResetWorld(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag_
 
   RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
   {
-    if ( (Flags&HardResetFlag_NoResetCamera) &&
-          (EntityTable[EntityIndex]->Behavior&EntityBehaviorFlags_DefatulCameraGhostBehavior) ) { continue; }
+    if ( (Flags&HardResetFlag_NoResetCamera) && Graphics->GameCamera.GhostId == EntityIndex ) { continue; }
 
     Unspawn(EntityTable[EntityIndex]);
   }

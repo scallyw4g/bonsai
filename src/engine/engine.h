@@ -45,5 +45,6 @@ link_internal engine_resources *GetEngineResources();
 #include <engine/voxel_synthesis.h>
 
 
+#include <engine/terrain.h>
 #include <engine/level.h>
 

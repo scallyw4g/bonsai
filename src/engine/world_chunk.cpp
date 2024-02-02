@@ -3434,7 +3434,6 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
 #endif
 
 #if 1
-  /* if (SyntheticChunkSum && (Flags & ChunkInitFlag_GenMipMapLODs) ) */
   if (SyntheticChunkSum)
   {
     untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
@@ -3442,18 +3441,22 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
     RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
     TempMesh->At = 0;
 
-    RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod1, TempMesh, Thread->TempMemory);
-    TempMesh->At = 0;
+    if (Flags & ChunkInitFlag_GenLODs)
+    {
+      RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod1, TempMesh, Thread->TempMemory);
+      TempMesh->At = 0;
 
-    RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod2, TempMesh, Thread->TempMemory);
-    TempMesh->At = 0;
+      RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod2, TempMesh, Thread->TempMemory);
+      TempMesh->At = 0;
 
-    RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod3, TempMesh, Thread->TempMemory);
-    TempMesh->At = 0;
+      RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod3, TempMesh, Thread->TempMemory);
+      TempMesh->At = 0;
 
-    RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod4, TempMesh, Thread->TempMemory);
-    TempMesh->At = 0;
+      RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod4, TempMesh, Thread->TempMemory);
+      TempMesh->At = 0;
+    }
   }
+
 #endif
 
   FullBarrier;
