@@ -1,3 +1,5 @@
+// examples/turn_based/game_types.h:121:0
+
 link_internal counted_string
 ToString(turn_mode Type)
 {
@@ -6,6 +8,8 @@ ToString(turn_mode Type)
   {
     case TurnMode_Default: { Result = CSz("TurnMode_Default"); } break;
     case TurnMode_Transition: { Result = CSz("TurnMode_Transition"); } break;
+
+    
   }
   return Result;
 }

@@ -19,10 +19,10 @@ struct plane
 
 struct frustum
 {
-  float farClip;
-  float nearClip;
-  float width;
-  float FOV;
+  f32 farClip;
+  f32 nearClip;
+  f32 width;
+  f32 FOV;
 
   plane Top;
   plane Bot;
@@ -30,13 +30,39 @@ struct frustum
   plane Right;
 };
 
-struct camera
+struct entity;
+
+struct camera poof(@version(1))
 {
   frustum Frust;
 
-  /* cp TargetP; */
   cp CurrentP;
-  /* cp ViewingTarget; // TODO(Jesse, id: 79, tags: over_allocation, ummmm) : Can this just be a v3? */
+
+  v3 RenderSpacePosition;
+
+  r32 Pitch;
+  r32 Roll;
+  r32 Yaw;
+
+  r32 TargetPitch;
+  r32 TargetRoll;
+  r32 TargetYaw;
+
+  r32 Blend; // How fast the camera interpolates.  0 is instant, 0.1f is verrry slow
+  r32 DistanceFromTarget;
+
+  v3 Front;
+  v3 Right;
+  v3 Up;
+
+  entity_id GhostId;
+};
+
+struct camera_0
+{
+  frustum Frust;
+
+  cp CurrentP;
 
   v3 RenderSpacePosition;
 
@@ -49,39 +75,11 @@ struct camera
   v3 Front;
   v3 Right;
   v3 Up;
+
+  entity_id GhostId;
 };
-/* #define DEFAULT_CAMERA_BLENDING (0.35f) */
-#define DEFAULT_CAMERA_BLENDING (1.f)
 
-void
-StandardCamera(camera* Camera, float FarClip, float DistanceFromTarget, canonical_position InitialTarget)
-{
-  Clear(Camera);
-
-  Camera->Frust.farClip = FarClip;
-  Camera->Frust.nearClip = 1.0f;
-  Camera->Frust.width = 30.0f;
-  Camera->Frust.FOV = 45.0f;
-
-  Camera->Up = WORLD_Z;
-  Camera->Right = WORLD_X;
-
-  Camera->Pitch = PI32 - (PI32*0.25f);
-  Camera->Yaw = PI32*0.15f;
-
-  Camera->DistanceFromTarget = DistanceFromTarget;
-
-  /* UpdateCameraP( */
-  /*     Canonical_Position(Voxel_Position(1,1,1), World_Position(0,0,0)), */
-  /*     Camera, */
-  /*     WorldChunkDim); */
-
-  /* input *Input = 0; */
-  /* v2 MouseDelta = {}; */
-  /* UpdateGameCamera(World, MouseDelta, Input, InitialTarget, Camera); */
-
-  return;
-}
+#define DEFAULT_CAMERA_BLENDING (18.f)
 
 inline v3
 GetCameraRelativeInput(hotkeys *Hotkeys, camera *Camera)
@@ -136,3 +134,7 @@ GetFrustumCenter(camera *Camera)
 
 inline v2
 GetMouseDelta(platform *Plat);
+
+link_internal void
+StandardCamera(camera* Camera, f32 FarClip, f32 DistanceFromTarget, f32 Blend, cp InitialTarget);
+

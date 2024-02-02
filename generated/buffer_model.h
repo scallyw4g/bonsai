@@ -1,11 +1,13 @@
+// src/engine/model.h:87:0
+
 struct model_buffer
 {
-  model *Start;
-  umm Count;
+  u64 Count;
+  model *Start; poof(@array_length(Element->Count))
 };
 
 link_internal model_buffer
-ModelBuffer(umm ElementCount, memory_arena* Memory)
+ModelBuffer( u64 ElementCount, memory_arena* Memory)
 {
   model_buffer Result = {};
 
@@ -22,36 +24,36 @@ ModelBuffer(umm ElementCount, memory_arena* Memory)
   return Result;
 }
 
-link_inline umm
+link_inline u64
 ZerothIndex(model_buffer *Buf)
 {
-  umm Result = 0;
+  u64 Result = 0;
   return Result;
 }
 
-link_inline umm
+link_inline u64
 AtElements(model_buffer *Buf)
 {
-  umm Result = Buf->Count;
+  u64 Result = Buf->Count;
   return Result;
 }
 
-link_inline umm
+link_inline u64
 TotalElements(model_buffer *Buf)
 {
-  umm Result = Buf->Count;
+  u64 Result = Buf->Count;
   return Result;
 }
 
-link_inline umm
+link_inline u64
 CurrentCount(model_buffer *Buf)
 {
-  umm Result = Buf->Count;
+  u64 Result = Buf->Count;
   return Result;
 }
 
 link_inline model *
-GetPtr(model_buffer *Buf, umm Index)
+GetPtr(model_buffer *Buf, u64 Index)
 {
   model *Result = 0;
   if (Index < Buf->Count) { Result = Buf->Start + Index; }
@@ -59,7 +61,7 @@ GetPtr(model_buffer *Buf, umm Index)
 }
 
 link_inline model *
-Get(model_buffer *Buf, umm Index)
+Get(model_buffer *Buf, u64 Index)
 {
   model *Result = GetPtr(Buf, Index);
   return Result;

@@ -45,13 +45,12 @@ BONSAI_INTERNAL='-D BONSAI_INTERNAL'
 EXAMPLES_TO_BUILD=""
 
 BUNDLED_EXAMPLES="
-  $EXAMPLES/asset_picker
   $EXAMPLES/blank_project
   $EXAMPLES/turn_based
-  $EXAMPLES/turn_based2
-  $EXAMPLES/tools/voxel_synthesis_rule_baker
   $EXAMPLES/the_wanderer
   $EXAMPLES/terrain_gen
+  $EXAMPLES/transparency
+  $EXAMPLES/tools/voxel_synthesis_rule_baker
 "
 # $EXAMPLES/wave_function_collapse_terrain
 
@@ -205,7 +204,7 @@ function BuildExamples
     echo -e "$Building $executable"
     SetOutputBinaryPathBasename "$executable" "$BIN"
     clang++                     \
-      -D DEBUG_SYSTEM_API=1     \
+      -D BONSAI_DEBUG_SYSTEM_API=1 \
       $OPTIMIZATION_LEVEL       \
       $CXX_OPTIONS              \
       $BONSAI_INTERNAL          \
@@ -351,8 +350,8 @@ function RunPoofHelper {
 
 
    # --log-level LogLevel_Debug                                                                                  \
-   #
   poof                    \
+   $COLOR_FLAG \
    -D POOF_PREPROCESSOR   \
    -D BONSAI_PREPROCESSOR \
    -I src/                \
@@ -381,28 +380,19 @@ function RunPoof
   # RunPoofHelper external/bonsai_debug/debug.cpp && echo -e "$Success poofed src/external/bonsai_debug/debug.cpp" &
   # TrackPid "" $!
 
-  RunPoofHelper examples/terrain_gen/game.cpp && echo -e "$Success poofed examples/terrain_gen/game.cpp" &
-  TrackPid "" $!
-
-  # RunPoofHelper examples/asset_picker/game.cpp && echo -e "$Success poofed examples/asset_picker/game.cpp" &
-  # TrackPid "" $!
-
-  # RunPoofHelper examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &
-  # TrackPid "" $!
-
   # RunPoofHelper examples/turn_based/game.cpp && echo -e "$Success poofed examples/turn_based/game.cpp" &
   # TrackPid "" $!
 
-  # RunPoofHelper examples/turn_based2/game.cpp && echo -e "$Success poofed examples/turn_based2/game.cpp" &
+  RunPoofHelper examples/terrain_gen/game.cpp && echo -e "$Success poofed examples/terrain_gen/game.cpp" &
+  TrackPid "" $!
+
+  # RunPoofHelper examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &
   # TrackPid "" $!
 
   # RunPoofHelper examples/tools/voxel_synthesis_rule_baker/game.cpp && echo -e "$Success poofed examples/tools/voxel_synthesis_rule_baker/game.cpp" &
   # TrackPid "" $!
 
   # RunPoofHelper src/tools/asset_packer.cpp && echo -e "$Success poofed src/tools/asset_packer.cpp" &
-  # TrackPid "" $!
-
-  # RunPoofHelper src/tools/voxel_synthesis_rule_baker.cpp && echo -e "$Success poofed src/tools/voxel_synthesis_rule_baker.cpp" &
   # TrackPid "" $!
 
   WaitForTrackedPids

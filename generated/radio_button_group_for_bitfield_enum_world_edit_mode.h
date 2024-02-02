@@ -1,3 +1,5 @@
+// src/engine/editor.h:340:0
+
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_mode Selection)
 {
@@ -15,7 +17,7 @@ GetRadioEnum(ui_toggle_button_group *RadioGroup, world_edit_mode *Result)
   {
     Assert(CountBitsSet_Kernighan(RadioGroup->ToggleBits) == 1);
     // NOTE(Jesse): This is better; it asserts that we've actually got a bitfield
-    Assert(((RadioGroup->ToggleBits == WorldEditMode_Select||RadioGroup->ToggleBits == WorldEditMode_FillSelection||RadioGroup->ToggleBits == WorldEditMode_PaintSelection||RadioGroup->ToggleBits == WorldEditMode_DeleteSelection||RadioGroup->ToggleBits == WorldEditMode_Eyedropper||RadioGroup->ToggleBits == WorldEditMode_AddSingle||RadioGroup->ToggleBits == WorldEditMode_RemoveSingle||RadioGroup->ToggleBits == WorldEditMode_PaintSingle||RadioGroup->ToggleBits == WorldEditMode_BlitEntity||RadioGroup->ToggleBits == WorldEditMode_RecomputeStandingSpots)));
+    Assert(((RadioGroup->ToggleBits == WorldEditMode_Select||RadioGroup->ToggleBits == WorldEditMode_FillSelection||RadioGroup->ToggleBits == WorldEditMode_PaintSelection||RadioGroup->ToggleBits == WorldEditMode_DeleteSelection||RadioGroup->ToggleBits == WorldEditMode_Eyedropper||RadioGroup->ToggleBits == WorldEditMode_AddSingle||RadioGroup->ToggleBits == WorldEditMode_RemoveSingle||RadioGroup->ToggleBits == WorldEditMode_PaintSingle||RadioGroup->ToggleBits == WorldEditMode_AssetBrush||RadioGroup->ToggleBits == WorldEditMode_BlitEntity||RadioGroup->ToggleBits == WorldEditMode_RecomputeStandingSpots)));
     /* Assert((((enum_t.map(value).sep(|) {value.name})) & RadioGroup->ToggleBits) != 0); */
   }
 
@@ -40,7 +42,7 @@ Clicked(ui_toggle_button_group *ButtonGroup, world_edit_mode Enum)
 }
 
 link_internal ui_toggle_button_group
-RadioButtonGroup_world_edit_mode(renderer_2d *Ui, umm IdModifier, ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None, UI_FUNCTION_PROTO_DEFAULTS)
+RadioButtonGroup_world_edit_mode(renderer_2d *Ui, window_layout *Window, const char *ToggleGroupIdentifier, ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None, UI_FUNCTION_PROTO_DEFAULTS)
 {
   cs ButtonNames[] =
   {
@@ -52,6 +54,7 @@ RadioButtonGroup_world_edit_mode(renderer_2d *Ui, umm IdModifier, ui_toggle_butt
     CSz("AddSingle"),
     CSz("RemoveSingle"),
     CSz("PaintSingle"),
+    CSz("AssetBrush"),
     CSz("BlitEntity"),
     CSz("RecomputeStandingSpots"),
   };
@@ -61,7 +64,8 @@ RadioButtonGroup_world_edit_mode(renderer_2d *Ui, umm IdModifier, ui_toggle_butt
   ui_toggle_button_handle_buffer ButtonBuffer = UiToggleButtonHandleBuffer(ButtonCount, GetTranArena());
   IterateOver(&ButtonBuffer, Button, ButtonIndex)
   {
-    *Button = UiToggle(ButtonNames[ButtonIndex], IdModifier+ButtonIndex);
+    cs Name = ButtonNames[ButtonIndex];
+    *Button = UiToggle(Name, Window, ToggleGroupIdentifier, (void*)Name.Start);
   }
 
   ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_RadioButtons), UI_FUNCTION_INSTANCE_NAMES);

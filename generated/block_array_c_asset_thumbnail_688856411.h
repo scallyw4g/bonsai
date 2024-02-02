@@ -1,3 +1,5 @@
+// src/engine/editor.cpp:1:0
+
 
 link_internal asset_thumbnail_block*
 Allocate_asset_thumbnail_block(memory_arena *Memory)
@@ -29,8 +31,8 @@ RemoveUnordered(asset_thumbnail_block_array *Array, asset_thumbnail_block_array_
   if (Array->Current->At == 0)
   {
     // Walk the chain till we get to the second-last one
-    asset_thumbnail_block *Current = &Array->First;
-    asset_thumbnail_block *LastB = GetBlock(&LastI);
+    asset_thumbnail_block *Current = Array->First;
+    asset_thumbnail_block *LastB = LastI.Block;
 
     while (Current->Next && Current->Next != LastB)
     {
@@ -47,7 +49,7 @@ Push(asset_thumbnail_block_array *Array, asset_thumbnail *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 
-  if (Array->Current == 0) { Array->First = *Allocate_asset_thumbnail_block(Array->Memory); Array->Current = &Array->First; }
+  if (Array->First == 0) { Array->First = Allocate_asset_thumbnail_block(Array->Memory); Array->Current = Array->First; }
 
   if (Array->Current->At == 8)
   {

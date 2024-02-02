@@ -143,7 +143,7 @@ CancelAllWorkQueueJobs(platform *Plat, work_queue *Queue)
 
   while (!QueueIsEmpty(Queue))
   {
-    work_queue_entry *Entry = Cast(work_queue_entry*, Queue->Entries + Queue->DequeueIndex++);
+    work_queue_entry *Entry = Cast(work_queue_entry*, Queue->Entries + Queue->DequeueIndex);
 
     work_queue_entry_type Type = Entry->Type;
     switch (Type)
@@ -173,5 +173,7 @@ CancelAllWorkQueueJobs(platform *Plat, work_queue *Queue)
         Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_Queued);
       } break;
     }
+
+    Queue->DequeueIndex = GetNextQueueIndex(Queue->DequeueIndex);
   }
 }

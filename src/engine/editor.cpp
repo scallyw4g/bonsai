@@ -9,19 +9,29 @@ GetUiDebug()
 }
 
 link_internal void
-DebugSlider_(renderer_2d *Ui, r32 *Value, cs Name, r32 Min, r32 Max)
+DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min, r32 Max, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  /* u32 Start = StartColumn(Ui); */
-  /*   PushTableStart(Ui); */
-      if (Name) { PushColumn(Ui, CS(Name)); }
-      /* PushColumn(Ui, CS(*Value)); */
+  u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushTableStart(Ui);
+      if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
       auto Range = Max-Min;
       r32 PercFilled = ((*Value)-Min)/Range;
 
       r32 Width = 125.f;
-      interactable_handle BargraphButton = PushButtonStart(Ui, (umm)(umm("DebugSlider") ^ umm(Value)));
-        PushBargraph(Ui, PercFilled, V3(0.75f), V3(0.4f), Width);
+
+      if (Value)
+      {
+        cs ValueText = CS(*Value);
+        v2 TextDim = GetDim(GetDrawBounds(ValueText, &DefaultStyle));
+
+        v2 Offset = V2(Width/2.f-TextDim.x/2.f, 0.f);
+
+        Text(Ui, ValueText, &DefaultStyle, TextRenderParam_NoAdvanceLayout, Offset);
+      }
+
+      interactable_handle BargraphButton = PushButtonStart(Ui, UiId(Window, "debug_slider", Value));
+        PushSliderBar(Ui, PercFilled, DefaultSelectedStyle.Color, V3(0.4f), Width);
       PushButtonEnd(Ui);
 
       v2 Offset = {};
@@ -31,82 +41,22 @@ DebugSlider_(renderer_2d *Ui, r32 *Value, cs Name, r32 Min, r32 Max)
         r32 NewValue = (Range*NewPerc) + Min;
         *Value = NewValue;
       }
-    /* PushTableEnd(Ui); */
-  /* EndColumn(Ui, Start); */
-}
-
-
-
-
-
-/* #define DoEditorUi(Ui, Value, "Value") DoEditorUi(Ui, Value, STRINGIZE(Value)) */
-#define DebugSlider(Ui, Value, Min, Max) DebugSlider_(Ui, Value, CSz(STRINGIZE(Value)), Min, Max)
-
-link_internal void
-DoEditorUi(renderer_2d *Ui, void *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
-{
-  if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
-  Value ?
-    PushColumn(Ui, FSz("0x%x",umm(Value)), EDITOR_UI_FUNCTION_INSTANCE_NAMES) :
-    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-  PushNewRow(Ui);
+    PushTableEnd(Ui);
+  EndColumn(Ui, Start);
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, r32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
-  if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
 
-  u32 Start = StartColumn(Ui);
+  u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushTableStart(Ui);
       if (Value)
       {
-        /* if (*Value >= 0.f) { PushColumn(Ui, CSz(" ")); } */
-        if (Button(Ui, CSz("-"), UiId(Value, "decrement"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1.f; }
-
-        if (*Value >= 10.f)
-        {
-          PushColumn(Ui, FSz("%.1f", r64(*Value)), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-        }
-        else
-        {
-          PushColumn(Ui, FSz("%.2f", r64(*Value)), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-        }
-
-        if (Button(Ui, CSz("+"), UiId(Value, "increment"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1.f; }
-#if 1
-          DebugSlider_(Ui, Value, {}, 0.f, 32.f);
-#else
-        if (*Value <= 2.f)
-        {
-          DebugSlider_(Ui, Value, 0, -2.f, 2.f);
-        }
-        else if (*Value >= 2.f && *Value <= 5.f)
-        {
-          DebugSlider_(Ui, Value, 0, 2.f, 5.f);
-        }
-        else if (*Value >= 5.f && *Value <= 10.f)
-        {
-          DebugSlider_(Ui, Value, 0, 5.f, 10.f);
-        }
-        else if (*Value >= 10.f && *Value <= 50.f)
-        {
-          DebugSlider_(Ui, Value, 0, 10.f, 50.f);
-        }
-        else if (*Value >= 50.f && *Value <= 100.f)
-        {
-          DebugSlider_(Ui, Value, 0, 50.f, 100.f);
-        }
-        else if (*Value >= 100.f && *Value <= 1000.f)
-        {
-          DebugSlider_(Ui, Value, 0, 100.f, 1000.f);
-        }
-        else
-        {
-          DebugSlider_(Ui, Value, 0, 1000.f, 10000.f);
-        }
-#endif
-        PushNewRow(Ui);
+        if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1.f; }
+          DebugSlider(Ui, Window, Value, {}, MinValue, MaxValue, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+        if (Button(Ui, CSz("+"), UiId(Window, "increment", Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1.f; }
       }
       else
       {
@@ -117,41 +67,102 @@ DoEditorUi(renderer_2d *Ui, r32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAUL
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, b8 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  if (Button(Ui, CS(Name), (umm)Value + (umm)"toggle", EDITOR_UI_FUNCTION_INSTANCE_NAMES )) { *Value = !(*Value); }
+  interactable_handle ButtonHandle = PushButtonStart(Ui, UiId(Window, "toggle", Value), Style);
 
-  counted_string Display = Value ?
-       *Value ? CSz("True") : CSz("False") :
-       CSz("(null)");
+    PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
-  Text(Ui, Display);
+    counted_string Display = Value ?
+         *Value ? CSz("True") : CSz("False") :
+         CSz("(null)");
+
+    PushColumn(Ui, Display, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+  PushButtonEnd(Ui);
+
+  if (Clicked(Ui, &ButtonHandle))
+   { *Value = !(*Value); }
 }
 
 
-poof(do_editor_ui_for_scalar_type({s64 u64 s32 u32 s16 u16 s8 u8}));
+poof(do_editor_ui_for_primitive_type({s64 u64 s32 u32 s16 u16 s8 u8}));
 #include <generated/do_editor_ui_for_scalar_type_688724926.h>
 
 poof(do_editor_ui_for_vector_type({v4i v4 v3i v3 v2 Quaternion}));
 #include <generated/do_editor_ui_for_vector_type_688873645.h>
 
-link_internal void
-DoEditorUi(renderer_2d *Ui, cp *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
-{
-  /* PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
+poof(do_editor_ui_for_container(v3_cursor))
+#include <generated/do_editor_ui_for_container_v3_cursor.h>
 
-  DoEditorUi(Ui, &Value->WorldP, CSz("WorldP"));
-  PushNewRow(Ui);
-  DoEditorUi(Ui, &Value->Offset, CSz("Offset"));
+poof(do_editor_ui_for_compound_type(ui_id))
+#include <generated/do_editor_ui_for_compound_type_ui_id.h>
+
+poof(do_editor_ui_for_compound_type(ui_toggle))
+#include <generated/do_editor_ui_for_compound_type_ui_toggle.h>
+
+link_internal cs
+CS(ui_toggle_hashtable_iterator &Iter)
+{
+  return CSz("(iterator)");
 }
 
+poof(do_editor_ui_for_container(ui_toggle_hashtable))
+#include <generated/do_editor_ui_for_container_ui_toggle_hashtable.h>
 
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, cs *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+{
+  PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  Value ?
+    PushColumn(Ui, *Value, EDITOR_UI_FUNCTION_INSTANCE_NAMES) :
+    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+}
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, cp *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+{
+  DoEditorUi(Ui, Window, &Value->WorldP, CSz("v3i WorldP"));
+  DoEditorUi(Ui, Window, &Value->Offset, CSz("v3 Offset"));
+}
 
 #if DO_EDITOR_UI_FOR_ENTITY_TYPE
 link_internal void
-DoEditorUi(renderer_2d *Ui, entity_type *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS);
+DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_type *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS);
 #endif
 
+poof(string_and_value_tables(particle_spawn_type))
+#include <generated/string_and_value_tables_particle_spawn_type.h>
+
+poof(string_and_value_tables(file_traversal_type))
+#include <generated/string_and_value_tables_file_traversal_node.h>
+
+poof(string_and_value_tables(tone_mapping_type))
+#include <generated/string_and_value_tables_tone_mapping_type.h>
+
+poof(string_and_value_tables(engine_debug_view_mode))
+#include <generated/string_and_value_tables_engine_debug_view_mode.h>
+
+
+poof(do_editor_ui_for_enum(entity_state))
+#include <generated/do_editor_ui_for_enum_entity_state.h>
+
+poof(do_editor_ui_for_enum(entity_behavior_flags))
+#include <generated/do_editor_ui_for_enum_entity_behavior_flags.h>
+
+poof(do_editor_ui_for_enum(tone_mapping_type))
+#include <generated/do_editor_ui_for_enum_tone_mapping_type.h>
+
+
+
+poof(do_editor_ui_for_compound_type(world))
+#include <generated/do_editor_ui_for_compound_type_world.h>
+
+poof(do_editor_ui_for_compound_type(lighting_settings))
+#include <generated/do_editor_ui_for_compound_type_lighting_settings.h>
+
+poof(do_editor_ui_for_compound_type(render_settings))
+#include <generated/do_editor_ui_for_compound_type_render_settings.h>
 
 poof(do_editor_ui_for_compound_type(physics))
 #include <generated/do_editor_ui_for_compound_type_physics.h>
@@ -159,24 +170,62 @@ poof(do_editor_ui_for_compound_type(physics))
 poof(do_editor_ui_for_compound_type(aabb))
 #include <generated/do_editor_ui_for_compound_type_aabb.h>
 
+poof(do_editor_ui_for_compound_type(random_series))
+#include <generated/do_editor_ui_for_compound_type_random_series.h>
+
+poof(do_editor_ui_for_enum(particle_spawn_type))
+#include <generated/do_editor_ui_for_enum_particle_spawn_type.h>
+
+poof(do_editor_ui_for_compound_type(particle))
+#include <generated/do_editor_ui_for_compound_type_particle.h>
+
 poof(do_editor_ui_for_compound_type(particle_system))
 #include <generated/do_editor_ui_for_compound_type_particle_system.h>
+
+poof(do_editor_ui_for_compound_type(keyframe))
+#include <generated/do_editor_ui_for_compound_type_keyframe.h>
 
 poof(do_editor_ui_for_compound_type(animation))
 #include <generated/do_editor_ui_for_compound_type_animation.h>
 
+poof(do_editor_ui_for_compound_type(vertex_material))
+#include <generated/do_editor_ui_for_compound_type_vertex_material.h>
+
+poof(do_editor_ui_for_compound_type(bonsai_futex))
+#include <generated/do_editor_ui_for_compound_type_bonsai_futex.h>
+
 poof(do_editor_ui_for_compound_type(untextured_3d_geometry_buffer))
 #include <generated/do_editor_ui_for_compound_type_untextured_3d_geometry_buffer.h>
 
-poof(do_editor_ui_for_compound_type(model))
-#include <generated/do_editor_ui_for_compound_type_model.h>
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, geo_u3d **ElementP, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+{
+  if (ElementP)
+  {
+    DoEditorUi(Ui, Window, *ElementP, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  }
+  else
+  {
+    PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushNewRow(Ui);
+  }
+}
 
-poof(do_editor_ui_for_compound_type(entity))
-#include <generated/do_editor_ui_for_compound_type_entity.h>
-
+poof(do_editor_ui_for_enum(chunk_flag))
+#include <generated/do_editor_ui_for_enum_chunk_flag.h>
 
 poof(do_editor_ui_for_compound_type(voxel))
 #include <generated/do_editor_ui_for_compound_type_voxel.h>
+
+poof(do_editor_ui_for_compound_type(voxel_lighting))
+#include <generated/do_editor_ui_for_compound_type_voxel_lighting.h>
+
+poof(do_editor_ui_for_compound_type(chunk_data))
+#include <generated/do_editor_ui_for_compound_type_chunk_data.h>
+
+poof(do_editor_ui_for_compound_type(vox_data))
+#include <generated/do_editor_ui_for_compound_type_vox_data.h>
 
 poof(do_editor_ui_for_compound_type(gpu_element_buffer_handles))
 #include <generated/do_editor_ui_for_compound_type_gpu_element_buffer_handles.h>
@@ -184,11 +233,90 @@ poof(do_editor_ui_for_compound_type(gpu_element_buffer_handles))
 poof(do_editor_ui_for_compound_type(lod_element_buffer))
 #include <generated/do_editor_ui_for_compound_type_lod_element_buffer.h>
 
+poof(do_editor_ui_for_compound_type(model))
+#include <generated/do_editor_ui_for_compound_type_model.h>
+
+poof(do_editor_ui_for_container(model_buffer))
+#include <generated/do_editor_ui_for_container_model_buffer.h>
+
+poof(do_editor_ui_for_enum(file_traversal_type))
+#include <generated/do_editor_ui_for_enum_file_traversal_type.h>
+
+poof(do_editor_ui_for_compound_type(file_traversal_node))
+#include <generated/do_editor_ui_for_compound_type_file_traversal_node.h>
+
+// NOTE(Jesse): Had to hack this slightly because the asset_load_state on Enitity is marked volatile
+/* poof(do_editor_ui_for_enum(asset_load_state)) */
+#include <generated/do_editor_ui_for_enum_asset_load_state.h>
+
+poof(do_editor_ui_for_compound_type(asset_id))
+#include <generated/do_editor_ui_for_compound_type_asset_id.h>
+
+poof(do_editor_ui_for_compound_type(asset))
+#include <generated/do_editor_ui_for_compound_type_asset.h>
+
+poof(do_editor_ui_for_compound_type(collision_event))
+#include <generated/do_editor_ui_for_compound_type_collision_event.h>
+
+poof(do_editor_ui_for_compound_type(entity_position_info))
+#include <generated/do_editor_ui_for_compound_type_entity_position_info.h>
+
+// @dirty_entity_P_format_hack
+//
+link_internal void
+DoEditorUi_entity_P(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+{
+  DoEditorUi(Ui, Window, &Element->P.WorldP, CSz("WorldP"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  DoEditorUi(Ui, Window, &Element->P.Offset, CSz("Offset"), EDITOR_UI_FUNCTION_INSTANCE_NAMES, 0.f, 32.f);
+}
+
+poof(do_editor_ui_for_compound_type(entity_id))
+#include <generated/do_editor_ui_for_compound_type_entity_id.h>
+
+poof(do_editor_ui_for_compound_type(entity))
+#include <generated/do_editor_ui_for_compound_type_entity.h>
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, void *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+{
+  if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  Value ?
+    PushColumn(Ui, FSz("0x%x",umm(Value)), EDITOR_UI_FUNCTION_INSTANCE_NAMES) :
+    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  PushNewRow(Ui);
+}
+
+
 poof(do_editor_ui_for_container(entity_ptr_block_array))
 #include <generated/do_editor_ui_for_container_entity_ptr_block_array.h>
 
 poof(do_editor_ui_for_compound_type(world_chunk))
 #include <generated/do_editor_ui_for_compound_type_world_chunk.h>
+
+
+poof(do_editor_ui_for_compound_type(plane))
+#include <generated/do_editor_ui_for_compound_type_plane.h>
+
+poof(do_editor_ui_for_compound_type(frustum))
+#include <generated/do_editor_ui_for_compound_type_frustum.h>
+
+poof(do_editor_ui_for_compound_type(camera))
+#include <generated/do_editor_ui_for_compound_type_camera.h>
+
+poof(do_editor_ui_for_compound_type(texture))
+#include <generated/do_editor_ui_for_compound_type_texture.h>
+
+poof(do_editor_ui_for_compound_type(shader))
+#include <generated/do_editor_ui_for_compound_type_shader.h>
+
+poof(do_editor_ui_for_compound_type(render_buffers_2d))
+#include <generated/do_editor_ui_for_compound_type_render_buffers_2d.h>
+
+poof(do_editor_ui_for_compound_type(renderer_2d))
+#include <generated/do_editor_ui_for_compound_type_renderer_2d.h>
+
+poof(do_editor_ui_for_compound_type(graphics))
+#include <generated/do_editor_ui_for_compound_type_graphics.h>
 
 poof(do_editor_ui_for_compound_type(render_debug))
 #include <generated/do_editor_ui_for_compound_type_render_debug.h>
@@ -199,6 +327,14 @@ poof(do_editor_ui_for_compound_type(ui_debug))
 poof(do_editor_ui_for_compound_type(engine_debug))
 #include <generated/do_editor_ui_for_compound_type_engine_debug.h>
 
+poof(do_editor_ui_for_enum(engine_debug_view_mode))
+#include <generated/do_editor_ui_for_enum_engine_debug_view_mode.h>
+
+poof(do_editor_ui_for_compound_type(level_editor))
+#include <generated/do_editor_ui_for_compound_type_level_editor.h>
+
+poof(do_editor_ui_for_compound_type(engine_resources))
+#include <generated/do_editor_ui_for_compound_type_engine_resources.h>
 
 
 link_internal rect3i
@@ -263,7 +399,6 @@ GetMax(v3 *SelectionRegion)
   return Result;
 }
 
-
 link_internal void
 DoDeleteRegion(engine_resources *Engine, rect3 *AABB)
 {
@@ -274,7 +409,6 @@ DoDeleteRegion(engine_resources *Engine, rect3 *AABB)
   };
   QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Subtractive, &Shape, Engine->Editor.SelectedColorIndex, Engine->Memory);
 }
-
 
 link_internal v3
 ConstrainUpdateVector(v3 UpdateVector, face_index Face, selection_mode SelectionMode)
@@ -358,7 +492,6 @@ HighlightFace(engine_resources *Engine, face_index Face, aabb SelectionAABB, r32
       DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
     } break;
   }
-
 }
 
 link_internal rect3i
@@ -427,16 +560,21 @@ DoSelectonModification( engine_resources *Engine,
 }
 
 link_internal void
-DoLevelEditor(engine_resources *Engine)
+DoWorldEditor(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  /* v2 WindowDim = {{325.f, 1200.f}}; */
-  local_persist window_layout Window = WindowLayout("World Edit");
+  {
+    local_persist window_layout Window = WindowLayout("World", window_layout_flags(WindowLayoutFlag_StartupAlign_Bottom));
+    PushWindowStart(Ui, &Window);
+      DoEditorUi(Ui, &Window, World, CSz("World"));
+    PushWindowEnd(Ui, &Window);
+  }
+
+  local_persist window_layout Window = WindowLayout("Edit");
 
   PushWindowStart(Ui, &Window);
-
-  ui_toggle_button_group WorldEditModeRadioGroup = RadioButtonGroup_world_edit_mode(Ui, umm("world_edit_mode_radio_group"), ToggleButtonGroupFlags_DrawVertical, {}, {}, {}, &DefaultStyle, V4(0, 0, 0, 16));
+  ui_toggle_button_group WorldEditModeRadioGroup = RadioButtonGroup_world_edit_mode(Ui, &Window, "world_edit_mode_radio_group", ToggleButtonGroupFlags_DrawVertical, {}, {}, {}, &DefaultStyle, V4(0, 0, 0, 16));
 
   v3_cursor *Palette = GetColorPalette();
   s32 PaletteColors = s32(AtElements(Palette));
@@ -464,7 +602,7 @@ DoLevelEditor(engine_resources *Engine)
       }
 
 
-      interactable_handle ColorPickerButton = PushButtonStart(Ui, (umm)"ColorPicker" ^ (umm)(ColorIndex+12657674));
+      interactable_handle ColorPickerButton = PushButtonStart(Ui, UiId(&Window, "ColorPicker", Cast(void*, u64(ColorIndex))) );
         PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, Padding );
       PushButtonEnd(Ui);
 
@@ -516,6 +654,7 @@ DoLevelEditor(engine_resources *Engine)
       SelectionAABB = AABBMinMax(SelectionMinP, SelectionMaxP);
     }
 
+    // TODO(Jesse): Use pre-computed ray
     maybe_ray MaybeRay = ComputeRayFromCursor(Engine, &gBuffer->ViewProjection, Camera, World->ChunkDim);
     if (MaybeRay.Tag == Maybe_Yes)
     {
@@ -579,18 +718,7 @@ DoLevelEditor(engine_resources *Engine)
     //
 
     u8 BaseColor = WHITE;
-    /* v3 P0 = GetRenderP(Engine, Editor->SelectionRegion.Min); */
-    /* v3 P1 = GetRenderP(Engine, Editor->SelectionRegion.Max); */
-    /* DEBUG_DrawAABB(Engine, P0, P1, BaseColor, Thickness); */
-
     DEBUG_DrawSimSpaceAABB(Engine, &SelectionAABB, BaseColor, Thickness);
-  }
-
-
-  {
-    /* DoEditorUi(Ui, &Editor->SelectionRegion, "SelectionRegion", &DefaultStyle, {}, {}); */
-    /* DoEditorUi(Ui, &World->Center,           "WorldCenter",     &DefaultStyle, {}, {}); */
-    /* Info("%S", ToString(WorldEditMode)); */
   }
 
 
@@ -598,7 +726,8 @@ DoLevelEditor(engine_resources *Engine)
   GetRadioEnum(&WorldEditModeRadioGroup, &WorldEditMode);
   picked_voxel_position HighlightVoxel = PickedVoxel_FirstFilled;
 
-  if (!UiCapturedMouseInput(Ui))
+  if ( UiCapturedMouseInput(Ui) == False &&
+       UiHoveredMouseInput(Ui)  == False  )
   {
     switch (WorldEditMode)
     {
@@ -727,9 +856,9 @@ DoLevelEditor(engine_resources *Engine)
       {
         if (Input->LMB.Pressed)
         {
+          Ui->RequestedForceCapture = True;;
           if (Engine->MousedOverVoxel.Tag)
           {
-            Ui->RequestedForceCapture = True;;
             voxel *V = GetVoxelPointer(&Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled);
 
             if (V)
@@ -741,9 +870,39 @@ DoLevelEditor(engine_resources *Engine)
         }
       } break;
 
+      case WorldEditMode_AssetBrush:
+      {
+        if (Input->LMB.Clicked)
+        {
+          cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
+          EntityOrigin.Offset = Round(EntityOrigin.Offset);
+
+          maybe_asset_ptr MaybeAsset = GetAssetPtr(Engine, &EngineDebug->SelectedAsset);
+          if (MaybeAsset.Tag)
+          {
+            asset *Asset = MaybeAsset.Value;
+            model *Model = GetPtr(&Asset->Models, EngineDebug->ModelIndex);
+            v3 AssetHalfDim = V3(Model->Dim)/2.f;
+            world_update_op_shape_params_asset AssetUpdateShape =
+            {
+              EngineDebug->SelectedAsset,
+              EngineDebug->ModelIndex,
+              Canonicalize(World, EntityOrigin - V3(AssetHalfDim.xy, 0.f))
+            };
+
+            world_update_op_shape Shape =
+            {
+              type_world_update_op_shape_params_asset,
+              .world_update_op_shape_params_asset = AssetUpdateShape,
+            };
+            QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, World->Memory);
+          }
+        }
+      } break;
+
       case WorldEditMode_BlitEntity:
       {
-        entity *SelectedEntity = EngineDebug->SelectedEntity;
+        entity *SelectedEntity = GetEntity(EntityTable, EngineDebug->SelectedEntity);
         if (SelectedEntity)
         {
           aabb EntityAABB = GetSimSpaceAABB(World, SelectedEntity);
@@ -753,9 +912,11 @@ DoLevelEditor(engine_resources *Engine)
             aabb_intersect_result IntersectionResult = Intersect(EntityAABB, Ray);
             if (Input->LMB.Clicked && IntersectionResult.Face)
             {
+#if 1
               world_update_op_shape_params_asset AssetUpdateShape =
               {
-                SelectedEntity->Model,
+                SelectedEntity->AssetId,
+                SelectedEntity->ModelIndex,
                 SelectedEntity->P,
               };
 
@@ -765,6 +926,7 @@ DoLevelEditor(engine_resources *Engine)
                 .world_update_op_shape_params_asset = AssetUpdateShape,
               };
               QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, World->Memory);
+#endif
             }
           }
         }

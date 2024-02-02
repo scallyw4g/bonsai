@@ -37,6 +37,15 @@ TrivialAddRemove()
 
   Push(&Array, &Element);
 
+  {
+    u32 Got = 0;
+    IterateOver(&Array, E, ElementIndex)
+    {
+      ++Got;
+    }
+    TestThat(Got == 1);
+  }
+
   auto Last = LastIndex(&Array);
 
   RemoveUnordered(&Array, Last);
@@ -86,8 +95,8 @@ TwoBlocksRemoveFromEnd()
 
     RemoveUnordered(&Array, Last);
 
-    TestThat( Array.First.Next == GetBlock(&Last) );
-    TestThat( Array.First.Next == Array.Current );
+    TestThat( Array.First->Next == Last.Block );
+    TestThat( Array.First->Next == Array.Current );
   }
 
   TestThat( Array.Current->At == 1 );
@@ -100,8 +109,7 @@ TwoBlocksRemoveFromEnd()
 
     RemoveUnordered(&Array, Last);
 
-    /* TestThat( Array.First.Next == GetBlock(&Last) ); */
-    TestThat( Array.Current == &Array.First);
+    TestThat( Array.Current == Array.First);
   }
 
   TestThat( Array.Current->At == 8 );
@@ -114,7 +122,7 @@ TwoBlocksRemoveFromEnd()
 
     RemoveUnordered(&Array, Last);
 
-    TestThat( Array.Current == &Array.First);
+    TestThat( Array.Current == Array.First);
   }
 
   /* TestThat( Last.ElementIndex = 1 ); */
@@ -158,8 +166,8 @@ TwoBlocksRemoveFromFront()
     RemoveUnordered(&Array, I);
 
     auto Last = LastIndex(&Array);
-    TestThat( Array.First.Next == GetBlock(&Last) );
-    TestThat( Array.First.Next == Array.Current );
+    TestThat( Array.First->Next == Last.Block );
+    TestThat( Array.First->Next == Array.Current );
     TestThat( Array.Current->At == 1 );
   }
 
@@ -168,7 +176,7 @@ TwoBlocksRemoveFromFront()
     auto I = ZerothIndex(&Array);
     RemoveUnordered(&Array, I);
 
-    TestThat( Array.Current == &Array.First);
+    TestThat( Array.Current == Array.First);
     TestThat( Array.Current->At == 8 );
   }
 
@@ -177,7 +185,7 @@ TwoBlocksRemoveFromFront()
     auto I = ZerothIndex(&Array);
     RemoveUnordered(&Array, I);
 
-    TestThat( Array.Current == &Array.First);
+    TestThat( Array.Current == Array.First);
     TestThat( Array.Current->At == 7 );
   }
 }

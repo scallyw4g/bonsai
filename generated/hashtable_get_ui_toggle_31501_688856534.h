@@ -1,5 +1,7 @@
+// external/bonsai_stdlib/src/ui/ui.cpp:13:0
+
 maybe_ui_toggle
-GetById( ui_toggle_hashtable *Table, umm Id )
+GetById( ui_toggle_hashtable *Table, ui_id Id )
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
@@ -23,7 +25,5 @@ GetById( ui_toggle_hashtable *Table, umm Id )
   }
 
   return Result;
-
-
 }
 

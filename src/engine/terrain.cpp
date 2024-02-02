@@ -1,3 +1,79 @@
+link_internal void
+GrowGrass( world_chunk *Chunk, v3i P, r32 NoiseValue, r32 MaskValue, v3i SrcToDest, v3i WorldChunkDim, r32 WorldZSubZMin, u16 *ThisColor, b32 *IsFilled )
+{
+  s32 x = P.x;
+  s32 y = P.y;
+  s32 z = P.z;
+
+
+  // NOTE(Jesse): This is pretty henious .. the math to compute GrassAreaX here
+  // (and, actually, maybe most of these calculations to turn positions into floats)
+  // is generating a fucked up index for the voxels along the exterior edge.
+  //
+  // The thing that's wrong is that the 0th still gets the Chunk->WorldP position,
+  // when it should get the previous chunks worldp.  Similar story with the max-edge
+  //
+  // I think this was actually also manifesting when doing mip-meshing, but I
+  // wasn't aware of this tom-fuckery then, and didn't catch it.
+  //
+  // TODO(Jesse): Should go audit the terrain-gen functions and find a better
+  // way of computing these float values.
+  //
+  if (x == 0 || y == 0 || x == Chunk->Dim.x-1 || y == Chunk->Dim.y-1) { return; }
+
+  f32 GrassAreaX = (x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / 16.f;
+  f32 GrassAreaY = (y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y)) / 16.f;
+
+  // TODO(Jesse): Does this actually help reduce stuff 'growing' in places
+  // it shouldn't?
+  f32 GrassAreaZ = 1.f; //(z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z)) / 32.f;
+
+  r32 GrassyAreaValue = PerlinNoise(GrassAreaX, GrassAreaY, GrassAreaZ);
+  if (*ThisColor == GRASS_GREEN)
+  {
+    if (GrassyAreaValue > 0.4f)
+    {
+      *ThisColor = GRASS_GREEN-1;
+
+      if (GrassyAreaValue > 0.6f)
+      {
+        if ((NoiseValue+(MaskValue*GrassyAreaValue*3.f)) > WorldZSubZMin)
+        {
+          f32 HashX = hash_f32(f32(x));
+          f32 HashY = hash_f32(f32(y));
+
+          s32 iHashX = *(s32*)&HashX;
+          s32 iHashY = *(s32*)&HashY;
+
+          random_series S0 { u64(x + y) | u64( (iHashX | (iHashY << 31)) ^ (iHashY << 16)) };
+          random_series S1 { RandomU32(&S0) | RandomU32(&S0)<<31 };
+
+          if (RandomUnilateral(&S1) > 0.92f)
+          {
+            *IsFilled = True;
+
+            r32 GrassColor = RandomUnilateral(&S1);
+            if (GrassColor > 0.8f)
+              *ThisColor = LONG_GREEN_GRASS0;
+
+            if (GrassColor > 0.88f)
+              *ThisColor = LONG_GREEN_GRASS1;
+
+            if (GrassColor > 0.98f)
+              *ThisColor = LONG_YELLOW_GRASS0;
+
+            if (GrassColor > 0.99f)
+              *ThisColor = LONG_YELLOW_GRASS1;
+
+            if (GrassColor > 0.999f)
+              *ThisColor = PINK;
+          }
+        }
+      }
+    }
+  }
+}
+
 
 link_internal void
 ComputeNormalsForChunk(world_chunk *Chunk, v3i Dim)
@@ -523,3 +599,759 @@ TerracedTerrain( perlin_noise *Noise,
   return ChunkSum;
 }
 
+link_internal u32
+GrassyTerracedTerrain2( perlin_noise *Noise,
+                       world_chunk *Chunk,
+                       v3i Dim,
+                       v3i SrcToDest,
+                       u16 ColorIndex,
+
+                       s32 IgnoredFrequency,
+                       s32 IgnoredAmplitude,
+
+                       s64 zMin,
+                       v3i WorldChunkDim,
+                       void *OctavesIn )
+{
+  TIMED_FUNCTION();
+  u32 ChunkSum = 0;
+
+  s32 MinZ = Chunk->WorldP.z*WorldChunkDim.z;
+  s32 MaxZ = MinZ+WorldChunkDim.z ;
+
+  octave_buffer *OctaveBuf = (octave_buffer*)OctavesIn;
+  u32 OctaveCount = OctaveBuf->Count;
+
+
+  for ( s32 z = 0; z < Dim.z; ++ z)
+  {
+    s64 WorldZ = z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z);
+    s64 WorldZSubZMin = WorldZ - zMin;
+    /* s64 WorldZSubZMin = zMin; */
+    for ( s32 y = 0; y < Dim.y; ++ y)
+    {
+      /* s64 WorldY = y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y); */
+      for ( s32 x = 0; x < Dim.x; ++ x)
+      {
+
+        r32 TerraceMask = 0.f;
+        {
+          octave TerraceOctaves[] =
+          {
+            {V3(250, 250, 25), 15.f, V3(2.f)},
+          };
+          /* RangeIterator(HoodooOctaveIndex, (s32)ArrayCount(TerraceOctaves)) */
+          {
+            {
+              octave O = TerraceOctaves[0];
+              f32 OctaveX = (x + SrcToDest.x + ( WorldChunkDim.x*Chunk->WorldP.x)) / O.Freq.x;
+              f32 OctaveY = (y + SrcToDest.y + ( WorldChunkDim.y*Chunk->WorldP.y)) / O.Freq.y;
+              f32 OctaveZ = (z + SrcToDest.z + ( WorldChunkDim.z*Chunk->WorldP.z)) / O.Freq.z;
+              /* f32 OctaveZ = 1.f; */
+              TerraceMask = PerlinNoise(OctaveX, OctaveY, OctaveZ) * O.Amp;
+            }
+          }
+        }
+
+        /* s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x); */
+        s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
+        Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
+        /* Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) ); */
+
+        r32 NoiseValue = 0.f;
+        r32 BaseNoiseValue = 0.f;
+        /* v3 Normal = V3(0); */
+        v3 Derivs = V3(0);
+        for (u32 OctaveIndex = 0; OctaveIndex < OctaveCount; ++OctaveIndex)
+        {
+          octave *Octave = OctaveBuf->Octaves+OctaveIndex;
+
+          f32 InX = (x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / Octave->Freq.x;
+          f32 InY = (y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y)) / Octave->Freq.y;
+          f32 InZ = (z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z)) / Octave->Freq.z;
+
+          /* r32 Warp = PerlinNoise(InX, InY, InZ); */
+          /* v3 WarpFactor = Warp*Octave->WarpStrength; */
+          v3 WarpFactor = {};
+
+          r32 N = PerlinNoise(InX+WarpFactor.x, InY+WarpFactor.y, InZ+WarpFactor.z);
+
+          /* Assert(N <= 1.05f); */
+          /* Assert(N > -1.05f); */
+
+          BaseNoiseValue += (N*Octave->Amp);
+        }
+
+        NoiseValue = BaseNoiseValue / TerraceMask;
+        b32 IsFilled = r32(NoiseValue) > r32(WorldZSubZMin) ;
+
+        u16 ThisColor = DIRT;
+
+        u8 ThisTransparency = 0;
+
+        s32 SandThreshold   = 3;
+        s32 GravelThreshold = 1;
+        s32 WaterThreshold  = 0;
+
+        r32 StoneThresh = r32(WorldZSubZMin) + 2.f;
+        r32 DirtThresh = r32(WorldZSubZMin) + 1.f;
+
+        /* if (IsFilled) */
+        {
+          ThisColor = GRASS_GREEN;
+
+          if (NoiseValue > StoneThresh)
+          {
+            ThisColor = DIRT;
+          }
+        }
+
+        if (!IsFilled)
+        {
+          f32 GrassAreaX = (x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / 32.f;
+          f32 GrassAreaY = (y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y)) / 32.f;
+          f32 GrassAreaZ = (z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z)) / 32.f;
+
+          r32 GrassyAreaValue = PerlinNoise(GrassAreaX, GrassAreaY, GrassAreaZ);
+          if (ThisColor == GRASS_GREEN)
+          {
+            if (GrassyAreaValue > 0.5f && NoiseValue+(GrassyAreaValue*5.f) > WorldZSubZMin)
+            {
+              f32 GrassX = (x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / 30.1f;
+              f32 GrassY = (y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y)) / 30.1f;
+              f32 GrassZ = (z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z)) / 450.f;
+
+              r32 GrassValue = PerlinNoise(GrassX, GrassY, GrassZ);
+
+              /* if (NoiseValue+(GrassValue*2.5f) > WorldZSubZMin) */
+              {
+                IsFilled = True;
+              }
+            }
+          }
+        }
+
+        GrowGrass( Chunk, V3i(x,y,z), NoiseValue, 1.f-TerraceMask, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled );
+
+        SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
+        Chunk->Voxels[VoxIndex].Color = ThisColor*u8(IsFilled);
+        Chunk->Voxels[VoxIndex].Transparency = ThisTransparency;
+        ChunkSum += IsFilled;
+
+
+
+        Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
+
+        if (IsFilled)
+        {
+          Assert( IsSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
+        }
+        else
+        {
+          Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
+        }
+      }
+    }
+  }
+
+#if 0
+  RangeIterator(z, (s32)Chunk->Dim.z)
+  RangeIterator(y, (s32)Chunk->Dim.y)
+  RangeIterator(x, (s32)Chunk->Dim.x)
+  {
+    voxel *V   = GetVoxel(Chunk, V3i(x,y,z));
+    voxel *VUp = TryGetVoxel(Chunk, V3i(x,y,z+1));
+
+    if (VUp && (VUp->Flags & Voxel_Filled) == 0)
+    {
+      if (V->Flags & Voxel_Filled)
+      {
+      }
+    }
+  }
+#endif
+
+
+  return ChunkSum;
+}
+
+link_internal u32
+GrassyTerracedTerrain3( perlin_noise *Noise,
+                       world_chunk *Chunk,
+                       v3i Dim,
+                       v3i SrcToDest,
+                       u16 ColorIndex,
+
+                       s32 IgnoredFrequency,
+                       s32 IgnoredAmplitude,
+
+                       s64 zMin,
+                       v3i WorldChunkDim,
+                       void *OctavesIn )
+{
+  TIMED_FUNCTION();
+  u32 ChunkSum = 0;
+
+  s32 MinZ = Chunk->WorldP.z*WorldChunkDim.z;
+  s32 MaxZ = MinZ+WorldChunkDim.z ;
+
+  octave_buffer *OctaveBuf = (octave_buffer*)OctavesIn;
+  u32 OctaveCount = OctaveBuf->Count;
+
+
+  for ( s32 z = 0; z < Dim.z; ++ z)
+  {
+    s64 WorldZ = z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z);
+    s64 WorldZSubZMin = WorldZ - zMin;
+    /* s64 WorldZSubZMin = zMin; */
+    for ( s32 y = 0; y < Dim.y; ++ y)
+    {
+      /* s64 WorldY = y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y); */
+      for ( s32 x = 0; x < Dim.x; ++ x)
+      {
+
+        r32 TerraceMask = 0.f;
+#if 0
+        {
+          octave TerraceOctaves[] =
+          {
+            {V3(250, 250, 25), 15.f, V3(2.f)},
+          };
+          /* RangeIterator(HoodooOctaveIndex, (s32)ArrayCount(TerraceOctaves)) */
+          {
+            {
+              octave O = TerraceOctaves[0];
+              f32 OctaveX = (x + SrcToDest.x + ( WorldChunkDim.x*Chunk->WorldP.x)) / O.Freq.x;
+              f32 OctaveY = (y + SrcToDest.y + ( WorldChunkDim.y*Chunk->WorldP.y)) / O.Freq.y;
+              f32 OctaveZ = (z + SrcToDest.z + ( WorldChunkDim.z*Chunk->WorldP.z)) / O.Freq.z;
+              /* f32 OctaveZ = 1.f; */
+              TerraceMask = PerlinNoise(OctaveX, OctaveY, OctaveZ) * O.Amp;
+            }
+          }
+        }
+#endif
+
+        /* s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x); */
+        s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
+        Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
+        /* Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) ); */
+
+        r32 NoiseValue = 0.f;
+        r32 BaseNoiseValue = 0.f;
+        /* v3 Normal = V3(0); */
+        v3 Derivs = V3(0);
+
+        f32 MaxValue = 0.f;
+        for (u32 OctaveIndex = 0; OctaveIndex < OctaveCount; ++OctaveIndex)
+        {
+          octave *Octave = OctaveBuf->Octaves+OctaveIndex;
+
+          f32 InX = (x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / Octave->Freq.x;
+          f32 InY = (y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y)) / Octave->Freq.y;
+          f32 InZ = (z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z)) / Octave->Freq.z;
+
+          /* r32 Warp = PerlinNoise(InX, InY, InZ); */
+          /* v3 WarpFactor = Warp*Octave->WarpStrength; */
+          v3 WarpFactor = {};
+
+          r32 N = PerlinNoise(InX+WarpFactor.x, InY+WarpFactor.y, InZ+WarpFactor.z);
+
+          if (OctaveIndex == 0)
+          {
+            BaseNoiseValue += MapNoiseValueToFinal(N) * Octave->Amp;
+          }
+          else
+          {
+            BaseNoiseValue += N * Octave->Amp;
+          }
+
+          MaxValue += Octave->Amp;
+        }
+
+        /* NoiseValue = BaseNoiseValue / TerraceMask; */
+        NoiseValue = BaseNoiseValue;
+
+        b32 IsFilled = r32(NoiseValue) > r32(WorldZSubZMin) ;
+
+        u16 ThisColor = DIRT;
+
+        u8 ThisTransparency = 0;
+
+        s32 SandThreshold   = 3;
+        s32 GravelThreshold = 1;
+        s32 WaterThreshold  = 0;
+
+        r32 StoneThresh = r32(WorldZSubZMin) + 2.f;
+        r32 DirtThresh = r32(WorldZSubZMin) + 1.f;
+
+        if (IsFilled)
+        {
+          ThisColor = GRASS_GREEN;
+
+          if (NoiseValue > StoneThresh)
+          {
+            ThisColor = DIRT;
+          }
+        }
+
+        if (!IsFilled)
+        {
+          f32 GrassAreaX = (x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / 32.f;
+          f32 GrassAreaY = (y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y)) / 32.f;
+          f32 GrassAreaZ = (z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z)) / 32.f;
+
+          r32 GrassyAreaValue = PerlinNoise(GrassAreaX, GrassAreaY, GrassAreaZ);
+          if (ThisColor == GRASS_GREEN)
+          {
+            if (GrassyAreaValue > 0.5f && NoiseValue+(GrassyAreaValue*5.f) > WorldZSubZMin)
+            {
+              f32 GrassX = (x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / 30.1f;
+              f32 GrassY = (y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y)) / 30.1f;
+              f32 GrassZ = (z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z)) / 450.f;
+
+              r32 GrassValue = PerlinNoise(GrassX, GrassY, GrassZ);
+
+              /* if (NoiseValue+(GrassValue*2.5f) > WorldZSubZMin) */
+              {
+                IsFilled = True;
+              }
+            }
+          }
+        }
+
+        GrowGrass( Chunk, V3i(x,y,z), NoiseValue, 1.f-TerraceMask, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled );
+
+        SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
+        Chunk->Voxels[VoxIndex].Color = ThisColor*u8(IsFilled);
+        Chunk->Voxels[VoxIndex].Transparency = ThisTransparency;
+        ChunkSum += IsFilled;
+
+
+
+        Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
+
+        if (IsFilled)
+        {
+          Assert( IsSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
+        }
+        else
+        {
+          Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
+        }
+      }
+    }
+  }
+
+#if 0
+  RangeIterator(z, (s32)Chunk->Dim.z)
+  RangeIterator(y, (s32)Chunk->Dim.y)
+  RangeIterator(x, (s32)Chunk->Dim.x)
+  {
+    voxel *V   = GetVoxel(Chunk, V3i(x,y,z));
+    voxel *VUp = TryGetVoxel(Chunk, V3i(x,y,z+1));
+
+    if (VUp && (VUp->Flags & Voxel_Filled) == 0)
+    {
+      if (V->Flags & Voxel_Filled)
+      {
+      }
+    }
+  }
+#endif
+
+
+  return ChunkSum;
+}
+
+link_internal u32
+GrassyTerracedTerrain( perlin_noise *Noise,
+                       world_chunk *Chunk,
+                       v3i Dim,
+                       v3i SrcToDest,
+                       u16 ColorIndex,
+
+                       s32 IgnoredFrequency,
+                       s32 IgnoredAmplitude,
+
+                       s64 zMin,
+                       v3i WorldChunkDim,
+                       void *OctavesIn )
+{
+  TIMED_FUNCTION();
+  u32 ChunkSum = 0;
+
+  s32 MinZ = Chunk->WorldP.z*WorldChunkDim.z;
+  s32 MaxZ = MinZ+WorldChunkDim.z ;
+
+  octave_buffer *OctaveBuf = (octave_buffer*)OctavesIn;
+  u32 OctaveCount = OctaveBuf->Count;
+
+  for ( s32 z = 0; z < Dim.z; ++ z)
+  {
+    s64 WorldZ = z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z);
+    s64 WorldZSubZMin = WorldZ - zMin;
+    /* s64 WorldZSubZMin = zMin; */
+    for ( s32 y = 0; y < Dim.y; ++ y)
+    {
+      /* s64 WorldY = y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y); */
+      for ( s32 x = 0; x < Dim.x; ++ x)
+      {
+        /* s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x); */
+        s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
+        Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
+        /* Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) ); */
+
+        r32 NoiseValue = 0.f;
+        r32 BaseNoiseValue = 0.f;
+        /* v3 Normal = V3(0); */
+        v3 Derivs = V3(0);
+        for (u32 OctaveIndex = 0; OctaveIndex < OctaveCount; ++OctaveIndex)
+        {
+          octave *Octave = OctaveBuf->Octaves+OctaveIndex;
+
+          f32 InX = (x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / Octave->Freq.x;
+          f32 InY = (y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y)) / Octave->Freq.y;
+          f32 InZ = (z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z)) / Octave->Freq.z;
+
+          /* r32 Warp = PerlinNoise(InX, InY, InZ); */
+          /* v3 WarpFactor = Warp*Octave->WarpStrength; */
+          v3 WarpFactor = {};
+
+          r32 N = PerlinNoise(InX+WarpFactor.x, InY+WarpFactor.y, InZ+WarpFactor.z);
+
+          /* Assert(N <= 1.05f); */
+          /* Assert(N > -1.05f); */
+
+          BaseNoiseValue += (N*Octave->Amp);
+          /* BaseNoiseValue = N; */
+
+          /* Normal += CalcNormal(V3(InX, InY, InZ), N, PerlinNoise ); */
+        }
+
+#if 1
+        {
+          octave TerraceOctaves[] =
+          {
+            {V3(250, 250, 25), 15.f, V3(2.f)},
+          };
+
+
+          /* RangeIterator(HoodooOctaveIndex, (s32)ArrayCount(TerraceOctaves)) */
+          {
+            r32 Mask = 0.f;
+            {
+              octave O = TerraceOctaves[0];
+              f32 OctaveX = (x + SrcToDest.x + ( WorldChunkDim.x*Chunk->WorldP.x)) / O.Freq.x;
+              f32 OctaveY = (y + SrcToDest.y + ( WorldChunkDim.y*Chunk->WorldP.y)) / O.Freq.y;
+              f32 OctaveZ = (z + SrcToDest.z + ( WorldChunkDim.z*Chunk->WorldP.z)) / O.Freq.z;
+              /* f32 OctaveZ = 1.f; */
+              Mask = PerlinNoise(OctaveX, OctaveY, OctaveZ) * O.Amp;
+            }
+
+            /* NoiseValue = Pow(BaseNoiseValue, Mask); */
+            /* NoiseValue = BaseNoiseValue * Mask; */
+            NoiseValue = BaseNoiseValue / Mask;
+          }
+        }
+#endif
+
+        /* Normal /= OctaveCount; */
+
+        /* Chunk->Voxels[VoxIndex].Derivs = Derivs; */
+
+        /* v3 Tangent, Bitangent, Normal; */
+        /* CalculateTBN(Derivs, &Tangent, &Bitangent, &Normal); */
+
+        /* Chunk->Voxels[VoxIndex].DebugColor = Derivs; */
+        /* Chunk->Voxels[VoxIndex].DebugColor = Normalize(Normal); */
+
+        /* Info("%f", r64(NoiseValue)); */
+        /* b32 IsFilled = r32(NoiseValue) > 100.f; */
+        /* b32 IsFilled = r32(NoiseValue) > 0.5f; */
+        /* b32 IsFilled = r32(NoiseValue) > 0.f; */
+        b32 IsFilled = r32(NoiseValue) > r32(WorldZSubZMin) ;
+
+        /* u16 StartColorMin = GREY_4; */
+        /* u16 StartColorMax = GREY_6; */
+        /* u16 STONE = GREY_5; */
+        /* u16 ThisColor = SafeTruncateToU16(umm(RandomBetween(StartColorMin, &GenColorEntropy, StartColorMax))); */
+        u16 ThisColor = DIRT;
+
+        u8 ThisTransparency = 0;
+
+        s32 SandThreshold   = 3;
+        s32 GravelThreshold = 1;
+        s32 WaterThreshold  = 0;
+
+        r32 StoneThresh = r32(WorldZSubZMin) + 2.f;
+        /* r32 DirtThresh = r32(WorldZSubZMin) + 1.f; */
+
+        /* if (IsFilled) */
+        {
+          ThisColor = GRASS_GREEN;
+
+          if (NoiseValue > StoneThresh)
+          {
+            ThisColor = DIRT;
+          }
+        }
+
+        GrowGrass( Chunk, V3i(x,y,z), NoiseValue, 1.f, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled );
+
+        SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
+        Chunk->Voxels[VoxIndex].Color = ThisColor*u8(IsFilled);
+        Chunk->Voxels[VoxIndex].Transparency = ThisTransparency;
+        ChunkSum += IsFilled;
+
+
+
+        Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
+
+        if (IsFilled)
+        {
+          Assert( IsSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
+        }
+        else
+        {
+          Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
+        }
+      }
+    }
+  }
+
+#if 0
+  RangeIterator(z, (s32)Chunk->Dim.z)
+  RangeIterator(y, (s32)Chunk->Dim.y)
+  RangeIterator(x, (s32)Chunk->Dim.x)
+  {
+    voxel *V   = GetVoxel(Chunk, V3i(x,y,z));
+    voxel *VUp = TryGetVoxel(Chunk, V3i(x,y,z+1));
+
+    if (VUp && (VUp->Flags & Voxel_Filled) == 0)
+    {
+      if (V->Flags & Voxel_Filled)
+      {
+      }
+    }
+  }
+#endif
+
+
+  return ChunkSum;
+}
+
+link_internal u32
+GrassyLargeTerracedTerrain( perlin_noise *Noise,
+                            world_chunk *Chunk,
+                            v3i Dim,
+                            v3i SrcToDest,
+                            u16 ColorIndex,
+
+                            s32 IgnoredFrequency,
+                            s32 IgnoredAmplitude,
+
+                            s64 zMin,
+                            v3i WorldChunkDim,
+                            void *OctavesIn )
+{
+  TIMED_FUNCTION();
+  u32 ChunkSum = 0;
+
+  s32 MinZ = Chunk->WorldP.z*WorldChunkDim.z;
+  s32 MaxZ = MinZ+WorldChunkDim.z ;
+
+  octave_buffer *OctaveBuf = (octave_buffer*)OctavesIn;
+  u32 OctaveCount = OctaveBuf->Count;
+
+  for ( s32 z = 0; z < Dim.z; ++ z)
+  {
+    s64 WorldZ = z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z);
+    s64 WorldZSubZMin = WorldZ - zMin;
+    /* s64 WorldZSubZMin = zMin; */
+    for ( s32 y = 0; y < Dim.y; ++ y)
+    {
+      /* s64 WorldY = y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y); */
+      for ( s32 x = 0; x < Dim.x; ++ x)
+      {
+        r32 TerraceMask = 0.f;
+        r32 TerraceNoiseValue = 0.f;
+        {
+          octave TerraceOctaves[] =
+          {
+            {V3(500, 500, 100), 15.f, V3(2.f)},
+          };
+
+          {
+            octave O = TerraceOctaves[0];
+            f32 OctaveX = (x + SrcToDest.x + ( WorldChunkDim.x*Chunk->WorldP.x)) / O.Freq.x;
+            f32 OctaveY = (y + SrcToDest.y + ( WorldChunkDim.y*Chunk->WorldP.y)) / O.Freq.y;
+            f32 OctaveZ = (z + SrcToDest.z + ( WorldChunkDim.z*Chunk->WorldP.z)) / O.Freq.z;
+            /* f32 OctaveZ = 1.f; */
+            TerraceMask = PerlinNoise(OctaveX, OctaveY, OctaveZ);
+            TerraceNoiseValue = TerraceMask * O.Amp;
+          }
+
+        }
+
+        /* s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x); */
+        s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
+        Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
+        /* Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) ); */
+
+        r32 NoiseValue = 0.f;
+        r32 BaseNoiseValue = 0.f;
+        /* v3 Normal = V3(0); */
+        v3 Derivs = V3(0);
+        for (u32 OctaveIndex = 0; OctaveIndex < OctaveCount; ++OctaveIndex)
+        {
+          octave *Octave = OctaveBuf->Octaves+OctaveIndex;
+
+          f32 InX = (x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / Octave->Freq.x;
+          f32 InY = (y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y)) / Octave->Freq.y;
+          f32 InZ = (z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z)) / Octave->Freq.z;
+
+          /* r32 Warp = PerlinNoise(InX, InY, InZ); */
+          /* v3 WarpFactor = Warp*Octave->WarpStrength; */
+          v3 WarpFactor = {};
+
+          r32 N = PerlinNoise(InX+WarpFactor.x, InY+WarpFactor.y, InZ+WarpFactor.z);
+
+          /* Assert(N <= 1.05f); */
+          /* Assert(N > -1.05f); */
+
+          /* BaseNoiseValue = N; */
+
+          /* Normal += CalcNormal(V3(InX, InY, InZ), N, PerlinNoise ); */
+          if (OctaveIndex < 2)
+          {
+            BaseNoiseValue += (N*Octave->Amp) / TerraceNoiseValue;
+            /* BaseNoiseValue += (N*Octave->Amp); */
+          }
+          else
+          {
+            BaseNoiseValue += (N*Octave->Amp);
+          }
+        }
+
+        NoiseValue = BaseNoiseValue;
+
+        b32 IsFilled = r32(NoiseValue) > r32(WorldZSubZMin) ;
+
+        u16 ThisColor = DIRT;
+
+        u8 ThisTransparency = 0;
+
+        s32 SandThreshold   = 3;
+        s32 GravelThreshold = 1;
+        s32 WaterThreshold  = 0;
+
+        r32 StoneThresh = r32(WorldZSubZMin) + 2.f;
+        /* r32 DirtThresh = r32(WorldZSubZMin) + 1.f; */
+
+        /* if (IsFilled) */
+        {
+          ThisColor = GRASS_GREEN;
+
+          if (NoiseValue > StoneThresh)
+          {
+            ThisColor = DIRT;
+          }
+        }
+
+        Assert(TerraceMask >= 0.f);
+        Assert(TerraceMask <= 1.1f);
+        /* GrowGrass( Chunk, V3i(x,y,z), NoiseValue, 0.7f-TerraceMask, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled ); */
+        GrowGrass( Chunk, V3i(x,y,z), NoiseValue, 1.f-Clamp01(TerraceMask), SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled );
+        /* GrowGrass( Chunk, V3i(x,y,z), NoiseValue, Clamp01(TerraceMask), SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled ); */
+
+        SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
+        Chunk->Voxels[VoxIndex].Color = ThisColor*u8(IsFilled);
+        Chunk->Voxels[VoxIndex].Transparency = ThisTransparency;
+        ChunkSum += IsFilled;
+
+
+
+        Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
+
+        if (IsFilled)
+        {
+          Assert( IsSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
+        }
+        else
+        {
+          Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
+        }
+      }
+    }
+  }
+
+#if 0
+  RangeIterator(z, (s32)Chunk->Dim.z)
+  RangeIterator(y, (s32)Chunk->Dim.y)
+  RangeIterator(x, (s32)Chunk->Dim.x)
+  {
+    voxel *V   = GetVoxel(Chunk, V3i(x,y,z));
+    voxel *VUp = TryGetVoxel(Chunk, V3i(x,y,z+1));
+
+    if (VUp && (VUp->Flags & Voxel_Filled) == 0)
+    {
+      if (V->Flags & Voxel_Filled)
+      {
+      }
+    }
+  }
+#endif
+
+
+  return ChunkSum;
+}
+
+link_internal u32
+SinCosTerrain( perlin_noise *Noise,
+               world_chunk *Chunk,
+               v3i Dim,
+               v3i SrcToDest,
+               u16 ColorIndex,
+
+               s32 Frequency,
+               s32 Amplitude,
+
+               s64 zMin,
+               v3i WorldChunkDim,
+               void *OctavesIn )
+{
+  TIMED_FUNCTION();
+  Assert(OctavesIn == 0);
+
+  u32 ChunkSum = 0;
+
+  s32 MinZ = Chunk->WorldP.z*WorldChunkDim.z;
+  s32 MaxZ = MinZ+WorldChunkDim.z ;
+
+  for ( s32 z = 0; z < Dim.z; ++ z)
+  {
+    s64 WorldZ = z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z);
+    s64 WorldZSubZMin = WorldZ - zMin;
+    for ( s32 y = 0; y < Dim.y; ++ y)
+    {
+      s64 WorldY = y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y);
+      for ( s32 x = 0; x < Dim.x; ++ x)
+      {
+        s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x);
+        s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
+        Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
+        r32 NoiseValue = ((Sin(r32(WorldX)/r32(Frequency))+1.f)/4.f) + ((Cos(r32(WorldY)/r32(Frequency))+1.f)/4.f);
+
+        NoiseValue = MapNoiseValueToFinal(NoiseValue);
+        NoiseValue *= Amplitude;
+
+        b32 IsFilled = r32(NoiseValue) > r32(WorldZSubZMin) ;
+
+        SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
+        Chunk->Voxels[VoxIndex].Color = GRASS_GREEN*u8(IsFilled);
+        ChunkSum += IsFilled;
+      }
+    }
+  }
+  return ChunkSum;
+}

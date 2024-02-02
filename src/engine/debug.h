@@ -1,67 +1,3 @@
-#define MAX_PICKED_WORLD_CHUNKS (64)
-
-#define EDITOR_UI_FUNCTION_PROTO_DEFAULTS  ui_style *Style = &DefaultStyle, v4 Padding = {{5, 2, 5, 2}}, column_render_params ColumnParams = ColumnRenderParam_LeftAlign
-#define EDITOR_UI_FUNCTION_PROTO_ARGUMENTS ui_style *Style,                 v4 Padding,                  column_render_params ColumnParams
-#define EDITOR_UI_FUNCTION_INSTANCE_NAMES            Style,                    Padding,                                       ColumnParams
-
-
-struct world;
-struct world_chunk;
-struct heap_allocator;
-struct entity;
-
-
-struct picked_world_chunk
-{
-  world_chunk *Chunk;
-  r32 tChunk;
-};
-
-enum picked_voxel_position
-{
-  PickedVoxel_LastEmpty,
-  PickedVoxel_FirstFilled,
-  PickedVoxel_Count,
-};
-
-struct picked_voxel
-{
-  picked_world_chunk Chunks[PickedVoxel_Count];
-  canonical_position Picks[PickedVoxel_Count]; // Technically we can just store the v3 offset, but I'm being lazy
-};
-
-struct maybe_picked_voxel
-{
-  maybe_tag Tag;
-  picked_voxel Value;
-};
-
-// TODO(Jesse)(metaprogramming, ptr): Once poof can accept pointer types we can generate this struct
-/* poof(static_buffer(world_chunk*, 64)) */
-/* #include <generated/buffer_world_chunk.h> */
-struct picked_world_chunk_static_buffer
-{
-  picked_world_chunk E[MAX_PICKED_WORLD_CHUNKS];
-  u64 At;
-};
-
-link_internal void
-Push(picked_world_chunk_static_buffer *Buf, world_chunk *Chunk, r32 t)
-{
-  if (Buf->At < MAX_PICKED_WORLD_CHUNKS)
-  {
-    Buf->E[Buf->At].Chunk = Chunk;
-    Buf->E[Buf->At].tChunk = t;
-
-    ++Buf->At;
-  }
-}
-
-enum pick_chunk_state
-{
-  PickedChunkState_None,
-  PickedChunkState_Hover,
-};
 
 struct render_debug
 {
@@ -74,7 +10,7 @@ struct render_debug
 struct engine_debug
 {
   picked_world_chunk_static_buffer PickedChunks;
-  texture_cursor Textures;
+  texture_ptr_block_array Textures;
 
   ui_debug UiDebug;
 
@@ -82,19 +18,16 @@ struct engine_debug
 
   b8 DrawEntityCollisionVolumes;
   b8 DrawWorldAxies;
-
-/*   b8 DrawWorldDebugColors; */
-
   b8 TriggerRuntimeBreak;
   b8 ResetAssetNodeView;
 
   u8 PickedChunkState;
   world_chunk *PickedChunk;
 
-  file_traversal_node SelectedAsset;
+  asset_id SelectedAsset;
+  u64 ModelIndex;
 
-  entity *HoverEntity;
-  entity *SelectedEntity;
+  entity_id SelectedEntity;
 };
 
 
@@ -119,7 +52,7 @@ poof(
     }
 
     link_internal ui_toggle_button_group
-    (NamePrefix)ButtonGroup_(enum_t.name)(renderer_2d *Ui, umm IdModifier, ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None, UI_FUNCTION_PROTO_DEFAULTS)
+    (NamePrefix)ButtonGroup_(enum_t.name)(renderer_2d *Ui, window_layout *Window, const char *ToggleGroupIdentifier, ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None, UI_FUNCTION_PROTO_DEFAULTS)
     {
       cs ButtonNames[] =
       {
@@ -134,7 +67,8 @@ poof(
       ui_toggle_button_handle_buffer ButtonBuffer = UiToggleButtonHandleBuffer(ButtonCount, GetTranArena());
       IterateOver(&ButtonBuffer, Button, ButtonIndex)
       {
-        *Button = UiToggle(ButtonNames[ButtonIndex], IdModifier+ButtonIndex);
+        cs Name = ButtonNames[ButtonIndex];
+        *Button = UiToggle(Name, Window, ToggleGroupIdentifier, (void*)Name.Start);
       }
 
       ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer, ui_toggle_button_group_flags(ExtraFlags(extra_poof_flags)), UI_FUNCTION_INSTANCE_NAMES);
@@ -209,6 +143,16 @@ enum engine_debug_view_mode
   EngineDebugViewMode_Textures,
   EngineDebugViewMode_RenderSettings,
   EngineDebugViewMode_EngineDebug,
+
+  // TODO(Jesse): Make these values bitfields?
+  /* EngineDebugViewMode_Level          = (1 << 0), */
+  /* EngineDebugViewMode_WorldEdit      = (1 << 1), */
+  /* EngineDebugViewMode_Entities       = (1 << 2), */
+  /* EngineDebugViewMode_Assets         = (1 << 3), */
+  /* EngineDebugViewMode_WorldChunks    = (1 << 4), */
+  /* EngineDebugViewMode_Textures       = (1 << 5), */
+  /* EngineDebugViewMode_RenderSettings = (1 << 6), */
+  /* EngineDebugViewMode_EngineDebug    = (1 << 7), */
 };
 
 poof(toggle_button_group_for_enum(engine_debug_view_mode))

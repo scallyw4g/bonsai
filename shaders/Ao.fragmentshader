@@ -25,7 +25,6 @@ void main()
   vec3  FragPosition = texture(gPosition, UV).rgb; // worldspace
   float FragDepth    = texture(gPosition, UV).w;   // Linear
 
-
   vec3 Noise = texture(SsaoNoiseTexture, UV*SsaoNoiseTile.xy).xyz;
 
   vec3 Up = FragNormal; // This must be true, because we're trying to reorient a hemisphere along the fragments normal.

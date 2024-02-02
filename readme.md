@@ -1,4 +1,5 @@
-![hero_banner](screenshots/5_skele.png)
+
+![hero_banner](screenshots/dusk_defence.png)
 
 # Welcome to Bonsai!
 
@@ -13,7 +14,7 @@ remove the CRT entirely, though it's unclear when/if I'll get around to it.
 The only requirements to build and run Bonsai are an OpenGL 3.3+ driver, C++
 compiler, and a few appropriate system headers.
 
-![banner](screenshots/8_skele.png)
+![banner](screenshots/5_skele.png)
 
 ## Renderer Features
 
@@ -23,6 +24,8 @@ compiler, and a few appropriate system headers.
 * Lighting Bloom
 * Shadow Mapping
 * Screen Space Ambient Occlusion
+
+![banner](screenshots/3_skele.png)
 
 ## Engine Features
 
@@ -36,6 +39,8 @@ compiler, and a few appropriate system headers.
 * Terrain Generators
 * Primitive Physics
 
+![banner](screenshots/profiler.png)
+
 ## Performance Profiler Features
 
 * Manual Instrumentation
@@ -43,6 +48,8 @@ compiler, and a few appropriate system headers.
 * Per frame call-graph tracing
 * Context Switches (windows only)
 * Physical Core  (windows only)
+
+![banner](screenshots/8_skele.png)
 
 # Getting Started
 
@@ -55,11 +62,13 @@ See the docs on the [build process](docs/01_build_process.md).
 -------------------------------------------------------------------------------
 ## Renderer
 
-[ ] Transparency : https://www.jcgt.org/published/0002/02/09/paper.pdf
-
 [ ] SSR : https://lettier.github.io/3d-game-shaders-for-beginners/screen-space-reflection.html
 
 [ ] Screen-space lines : https://mattdesl.svbtle.com/drawing-lines-is-hard
+
+[ ] Better shadows : https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-8-summed-area-variance-shadow-maps
+
+[ ] Motion Blur : https://developer.nvidia.com/gpugems/gpugems3/part-iv-image-effects/chapter-27-motion-blur-post-processing-effect
 
 [ ] TAA?
 

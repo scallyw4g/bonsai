@@ -1,3 +1,4 @@
+// external/bonsai_stdlib/src/ui/ui.cpp:10:0
 
 link_internal ui_toggle_linked_list_node *
 Allocate_ui_toggle_linked_list_node(memory_arena *Memory)
@@ -59,5 +60,89 @@ Insert(ui_toggle Element, ui_toggle_hashtable *Table, memory_arena *Memory)
   Bucket->Element = Element;
   Insert(Bucket, Table);
   return &Bucket->Element;
+}
+
+link_internal ui_toggle*
+Upsert(ui_toggle Element, ui_toggle_hashtable *Table, memory_arena *Memory)
+{
+  umm HashValue = Hash(&Element) % Table->Size;
+  ui_toggle_linked_list_node **Bucket = Table->Elements + HashValue;
+  while (*Bucket)
+  {
+    if (AreEqual(&Bucket[0]->Element, &Element)) { break; }
+    Bucket = &(*Bucket)->Next;
+  }
+
+  if (*Bucket)
+  {
+    Bucket[0]->Element = Element;
+  }
+  else
+  {
+    Insert(Element, Table, Memory);
+  }
+
+  return &Bucket[0]->Element;
+}
+
+//
+// Iterator impl.
+//
+
+struct ui_toggle_hashtable_iterator
+{
+  umm HashIndex;
+  ui_toggle_hashtable *Table;
+  ui_toggle_linked_list_node *Node;
+};
+
+link_internal ui_toggle_hashtable_iterator
+operator++( ui_toggle_hashtable_iterator &Iterator )
+{
+  if (Iterator.Node)
+  {
+    Iterator.Node = Iterator.Node->Next;
+  }
+  else
+  {
+    Assert (Iterator.HashIndex < Iterator.Table->Size );
+    Iterator.Node = Iterator.Table->Elements[++Iterator.HashIndex];
+  }
+
+  return Iterator;
+}
+
+link_internal b32
+operator<( ui_toggle_hashtable_iterator I0, ui_toggle_hashtable_iterator I1)
+{
+  b32 Result = I0.HashIndex < I1.HashIndex;
+  return Result;
+}
+
+link_inline ui_toggle_hashtable_iterator
+ZerothIndex(ui_toggle_hashtable *Hashtable)
+{
+  ui_toggle_hashtable_iterator Iterator = {};
+  Iterator.Table = Hashtable;
+  Iterator.Node = Hashtable->Elements[0];
+  return Iterator;
+}
+
+link_inline ui_toggle_hashtable_iterator
+AtElements(ui_toggle_hashtable *Hashtable)
+{
+  ui_toggle_hashtable_iterator Result = { Hashtable->Size, 0, 0 };
+  return Result;
+}
+
+link_inline ui_toggle *
+GetPtr(ui_toggle_hashtable *Hashtable, ui_toggle_hashtable_iterator Iterator)
+{
+  ui_toggle *Result = {};
+  if (Iterator.Node)
+  {
+    Result = &Iterator.Node->Element;
+  }
+  return Result;
 }
 

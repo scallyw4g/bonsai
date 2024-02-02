@@ -1,3 +1,5 @@
+// src/engine/entity.h:36:0
+
 link_internal counted_string
 ToString(entity_state Type)
 {
@@ -8,6 +10,8 @@ ToString(entity_state Type)
     case EntityState_Spawned: { Result = CSz("EntityState_Spawned"); } break;
     case EntityState_Destroyed: { Result = CSz("EntityState_Destroyed"); } break;
     case EntityState_Reserved: { Result = CSz("EntityState_Reserved"); } break;
+
+    
   }
   return Result;
 }

@@ -1,3 +1,5 @@
+// src/engine/mesh.cpp:196:0
+
 link_internal void
 DeallocateMeshes(threadsafe_geometry_buffer *Buf, tiered_mesh_freelist* MeshFreelist, memory_arena* Memory)
 {

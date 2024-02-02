@@ -1,11 +1,13 @@
+// src/engine/asset.h:177:0
+
 struct asset_buffer
 {
-  asset *Start;
   umm Count;
+  asset *Start; poof(@array_length(Element->Count))
 };
 
 link_internal asset_buffer
-AssetBuffer(umm ElementCount, memory_arena* Memory)
+AssetBuffer( umm ElementCount, memory_arena* Memory)
 {
   asset_buffer Result = {};
 
@@ -64,4 +66,5 @@ Get(asset_buffer *Buf, umm Index)
   asset *Result = GetPtr(Buf, Index);
   return Result;
 }
+
 

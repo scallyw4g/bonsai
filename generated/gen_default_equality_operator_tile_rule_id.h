@@ -1,3 +1,5 @@
+// src/engine/voxel_synthesis.h:38:0
+
 link_internal b32
 operator==( tile_rule_id E1, tile_rule_id E2 )
 {

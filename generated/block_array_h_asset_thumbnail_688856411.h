@@ -1,3 +1,5 @@
+// src/engine/editor.h:244:0
+
 struct asset_thumbnail_block
 {
   u32 Index;
@@ -8,16 +10,17 @@ struct asset_thumbnail_block
 
 struct asset_thumbnail_block_array_index
 {
-  void *Block;
+  asset_thumbnail_block *Block;
   u32 BlockIndex;
   u32 ElementIndex;
 };
 
 struct asset_thumbnail_block_array
 {
-  asset_thumbnail_block First;
+  asset_thumbnail_block *First;
   asset_thumbnail_block *Current;
-  memory_arena *Memory;
+  memory_arena *Memory; poof(@no_serialize)
+  
 };
 
 link_internal asset_thumbnail_block_array_index
@@ -29,7 +32,7 @@ operator++(asset_thumbnail_block_array_index &I0)
     {
       I0.ElementIndex = 0;
       I0.BlockIndex++;
-      I0.Block = Cast(asset_thumbnail_block*, I0.Block)->Next;
+      I0.Block = I0.Block->Next;
     }
     else
     {
@@ -50,13 +53,6 @@ operator<(asset_thumbnail_block_array_index I0, asset_thumbnail_block_array_inde
   return Result;
 }
 
-link_inline asset_thumbnail_block *
-GetBlock(asset_thumbnail_block_array_index *Index)
-{
-  asset_thumbnail_block *Result = Cast(asset_thumbnail_block*, Index->Block);
-  return Result;
-}
-
 link_inline umm
 GetIndex(asset_thumbnail_block_array_index *Index)
 {
@@ -68,8 +64,8 @@ link_internal asset_thumbnail_block_array_index
 ZerothIndex(asset_thumbnail_block_array *Arr)
 {
   asset_thumbnail_block_array_index Result = {};
-  Result.Block = &Arr->First;
-  Assert(GetBlock(&Result)->Index == 0);
+  Result.Block = Arr->First;
+  /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
@@ -108,8 +104,6 @@ AtElements(asset_thumbnail_block_array *Arr)
     Result.Block = Arr->Current;
     Result.BlockIndex = Arr->Current->Index;
     Result.ElementIndex = Arr->Current->At;
-    /* Assert(Result.ElementIndex); */
-    /* Result.ElementIndex--; */
   }
   return Result;
 }
@@ -118,7 +112,7 @@ link_internal asset_thumbnail *
 GetPtr(asset_thumbnail_block_array *Arr, asset_thumbnail_block_array_index Index)
 {
   asset_thumbnail *Result = {};
-  if (Index.Block) { Result = GetBlock(&Index)->Elements + Index.ElementIndex; }
+  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
   return Result;
 }
 
@@ -137,7 +131,7 @@ GetPtr(asset_thumbnail_block_array *Arr, umm Index)
   umm ElementIndex = Index % 8;
 
   umm AtBlock = 0;
-  asset_thumbnail_block *Block = &Arr->First;
+  asset_thumbnail_block *Block = Arr->First;
   while (AtBlock++ < BlockIndex)
   {
     Block = Block->Next;

@@ -1,4 +1,4 @@
-#define DEBUG_SYSTEM_API 1
+#define BONSAI_DEBUG_SYSTEM_API 1
 
 #include <bonsai_types.h>
 
@@ -65,7 +65,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     Player->Physics.Force += BoostForce;
   }
 
-  if (Hotkeys->Player_Jump)
+  if (Input->Space.Clicked)
   {
     Player->Physics.Force += V3(0, 0, 10);
   }
@@ -73,17 +73,21 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   /* Player->Physics.Force = V3(0, 0, 0); */
 
+#if 0
   if (Hotkeys->Player_Spawn)
   {
+    asset_id Asset = GetOrAllocateAssetId(Resources, {FileTraversalType_File, CSz("models"), CSz("players/chr_rain.vox")});
+
     Unspawn(Player);
     SpawnPlayerLikeEntity( Plat,
                            World,
-                           GameState->Models+ModelIndex_Player_jp,
+                           &Asset,
                            GameState->Player,
                            Canonical_Position(Voxel_Position(0), World->Center + V3i(0,0,1)),
                            &GameState->Entropy );
     World->Center = World_Position(0, 0, 0);
   }
+#endif
 
 
 #endif
@@ -97,23 +101,25 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
-  GameState->Models = AllocateGameModels(GameState, Resources->Memory, Heap);
-
   world_position WorldCenter = World_Position(0, 0, 0);
   AllocateWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
-  Resources->World->Flags = world_flag(Resources->World->Flags|WorldFlag_WorldCenterFollowsCameraTarget);
+  /* Resources->World->Flags = world_flag(Resources->World->Flags|WorldFlag_WorldCenterFollowsCameraTarget); */
 
-  GameState->Player = GetFreeEntity(EntityTable);
+  GameState->Models = AllocateGameModels(GameState, Resources->Memory, Heap);
+
+  GameState->Player = TryGetFreeEntityPtr(EntityTable);
+
+  asset_id Asset = GetOrAllocateAssetId(Resources, {FileTraversalType_File, CSz("models"), CSz("players/chr_rain.vox")});
   SpawnPlayerLikeEntity( Plat,
                          World,
-                         GameState->Models+ModelIndex_Player_jp,
+                         &Asset,
+                         0,
                          GameState->Player,
                          Canonical_Position(Voxel_Position(0), WorldCenter + V3i(0,0,1)),
                          &GameState->Entropy );
 
-  Resources->CameraGhost = GameState->Player;
-
-  StandardCamera(Graphics->Camera, 10000.0f, 2000.0f, GameState->Player->P);
+  StandardCamera(Graphics->Camera, 10000.0f, 2000.0f, DEFAULT_CAMERA_BLENDING, GameState->Player->P);
+  Graphics->Camera->GhostId = GameState->Player->Id;
 
   return GameState;
 }

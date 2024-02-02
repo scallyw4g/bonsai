@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/primitive_containers.cpp:2:0
+
 
 link_internal u32_block*
 Allocate_u32_block(memory_arena *Memory)
@@ -29,8 +31,8 @@ RemoveUnordered(u32_block_array *Array, u32_block_array_index Index)
   if (Array->Current->At == 0)
   {
     // Walk the chain till we get to the second-last one
-    u32_block *Current = &Array->First;
-    u32_block *LastB = GetBlock(&LastI);
+    u32_block *Current = Array->First;
+    u32_block *LastB = LastI.Block;
 
     while (Current->Next && Current->Next != LastB)
     {
@@ -47,7 +49,7 @@ Push(u32_block_array *Array, u32 *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 
-  if (Array->Current == 0) { Array->First = *Allocate_u32_block(Array->Memory); Array->Current = &Array->First; }
+  if (Array->First == 0) { Array->First = Allocate_u32_block(Array->Memory); Array->Current = Array->First; }
 
   if (Array->Current->At == 8)
   {

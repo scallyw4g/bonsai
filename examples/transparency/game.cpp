@@ -1,5 +1,5 @@
 // NOTE(Jesse): This includes implementations for performace profiling and debug tracing
-#define DEBUG_SYSTEM_API 1
+#define BONSAI_DEBUG_SYSTEM_API 1
 
 #include <bonsai_types.h>
 
@@ -33,13 +33,10 @@ SpawnSplosionEmitters(entity_block_array *Entities)
   local_persist random_series EmitterEntropy = {59406535723431};
 
   r32 Radius = 4.f;
-  LinkedListIter(&Entities->First, Block)
+  IterateOver(Entities, Entity, Index)
   {
-    IterateOver(Block, Entity, Index)
-    {
-      DoSplotion( GetEngineResources(), Entity->P, Radius, &EmitterEntropy, GetTranArena());
-      Radius += 1.0f;
-    }
+    DoSplotion( GetEngineResources(), Entity->P, Radius, &EmitterEntropy, GetTranArena());
+    Radius += 1.0f;
   }
 }
 
@@ -49,13 +46,10 @@ SpawnPersistentSmokeEmitters(entity_block_array *Entities)
   local_persist random_series EmitterEntropy = {59406535723431};
 
   r32 Radius = 1.0f;
-  LinkedListIter(&Entities->First, Block)
+  IterateOver(Entities, Entity, Index)
   {
-    IterateOver(Block, Entity, Index)
-    {
-      SpawnPersistantSmoke(Entity, &EmitterEntropy, {}, Radius);
-      Radius += 1.0f;
-    }
+    SpawnPersistantSmoke(Entity, &EmitterEntropy, {}, Radius);
+    Radius += 1.0f;
   }
 }
 
@@ -65,13 +59,10 @@ SpawnFireEmitters(entity_block_array *Entities, b32 Colorful = False)
   local_persist random_series EmitterEntropy = {59406535723431};
 
   r32 Radius = 1.0f;
-  LinkedListIter(&Entities->First, Block)
+  IterateOver(Entities, Entity, Index)
   {
-    IterateOver(Block, Entity, Index)
-    {
-      SpawnFire(Entity, &EmitterEntropy, {}, Radius, Colorful);
-      Radius += 1.0f;
-    }
+    SpawnFire(Entity, &EmitterEntropy, {}, Radius, Colorful);
+    Radius += 1.0f;
   }
 }
 
@@ -80,7 +71,9 @@ SpawnLineOfEntities(entity **EntityTable, entity_block_array *Storage, v3 BaseP,
 {
   RangeIterator(Index, Count)
   {
-    entity *E = GetFreeEntity(EntityTable);
+    entity *E = TryGetFreeEntityPtr(EntityTable);
+    Assert(E);
+
     E->P.Offset = BaseP + (Offset*r32(Index));
     SpawnEntity(E);
     Push(Storage, E);
@@ -97,14 +90,11 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   world_position WorldCenter = {};
   canonical_position CameraTargetP = {};
 
-  StandardCamera(Graphics->Camera, 10000.0f, 1000.0f, CameraTargetP);
+  StandardCamera(Graphics->Camera, 10000.0f, 1000.0f, DEFAULT_CAMERA_BLENDING, CameraTargetP);
 
   AllocateWorld(World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 
-  World->Flags = WorldFlag_WorldCenterFollowsCameraTarget;
-
-  Resources->CameraGhost = GetFreeEntity(EntityTable);
-  SpawnEntity(Resources->CameraGhost);
+  /* World->Flags = WorldFlag_WorldCenterFollowsCameraTarget; */
 
   GameState = Allocate(game_state, Resources->Memory, 1);
 
@@ -156,20 +146,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   UNPACK_ENGINE_RESOURCES(Resources);
 
   f32 dt = Plat->dt;
-
-#if 0
-  // Update camera position
-  if (Input->W.Pressed || Input->S.Pressed || Input->A.Pressed || Input->D.Pressed)
-  {
-    v3 Offset = GetCameraRelativeInput(Hotkeys, Camera);
-
-    // Constrain the camera update to the XY plane
-    Offset.z = 0;
-    Offset = Normalize(Offset, 1.f);
-
-    Resources->CameraGhost->P.Offset += Offset;
-  }
-#endif
 
   r32 LastSplosionThresh = 4.0f;
   if (SinceLastSplosion > LastSplosionThresh)

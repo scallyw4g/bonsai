@@ -6,6 +6,10 @@ struct world;
 struct heap_allocator;
 struct entity;
 
+typedef entity* entity_ptr;
+poof(maybe(entity_ptr))
+#include <generated/maybe_entity_ptr.h>
+
 
 
 #define ASSET_TABLE_COUNT (256)
@@ -13,8 +17,9 @@ CAssert(ASSET_TABLE_COUNT < u16_MAX); // NOTE(Jesse): u16_MAX is max_value(asset
 
 struct engine_resources
 {
-  // Stdlib
   bonsai_stdlib Stdlib;
+
+  // TODO(Jesse): Should this go in stdlib?
   renderer_2d   Ui;
 
   application_api GameApi;
@@ -30,17 +35,14 @@ struct engine_resources
   memory_arena   *Memory;
 
   entity **EntityTable;
-  asset    AssetTable[ASSET_TABLE_COUNT];
 
+  // TODO(Jesse): Put on an asset_system struct?
+  u64 CurrentUnnamedAssetIndex;
+  asset          AssetTable[ASSET_TABLE_COUNT];
+  bonsai_futex   AssetFutex;
   heap_allocator AssetMemory;
 
-  // At 120fps we get 9k hours worth of frames in a u32.. should be enough.
-  // 9k hours == 385 days
-  //
-  // TODO(Jesse)(frame-index): Should this just be 32-bit?
-  u32 FrameIndex;
-
-  entity *CameraGhost;
+  u32 FrameIndex; // At 120fps we get 9k hours (385 days) of frames in 32bits
 
   tiered_mesh_freelist MeshFreelist;
 
@@ -54,6 +56,9 @@ struct engine_resources
 
   level_editor Editor;
   maybe_picked_voxel MousedOverVoxel;
+  maybe_standing_spot ClosestStandingSpotToCursor;
+
+  maybe_entity_ptr HoverEntity;
 
   render_entity_to_texture_group RTTGroup;
 };
@@ -83,6 +88,13 @@ GetWorld()
   return Global_EngineResources->World;
 }
 
+link_weak bonsai_stdlib *
+GetStdlib()
+{
+  Assert(Global_EngineResources);
+  return &Global_EngineResources->Stdlib;
+}
+
 
 link_internal level_editor *
 GetLevelEditor()
@@ -95,17 +107,17 @@ GetLevelEditor()
   UNPACK_DATA_RESOURCES(Res)         \
   UNPACK_GRAPHICS_RESOURCES(Res)
 
-#define UNPACK_DATA_RESOURCES(Res)                               \
-  platform                  *Plat          = &(Res)->Stdlib.Plat;  \
-  world                     *World         =  Res->World;        \
-  game_state                *GameState     =  Res->GameState;    \
-  heap_allocator            *Heap          = &Res->Heap;         \
-  entity                   **EntityTable   =  Res->EntityTable;  \
-  hotkeys                   *Hotkeys       = &Res->Hotkeys;      \
-  engine_debug              *EngineDebug   = &Res->EngineDebug;  \
-  tiered_mesh_freelist      *MeshFreelist  = &Res->MeshFreelist; \
-  input                     *Input         = &Res->Stdlib.Plat.Input;  \
-  level_editor              *Editor        = &Res->Editor;       \
+#define UNPACK_DATA_RESOURCES(Res)                                    \
+  platform                  *Plat          = &(Res)->Stdlib.Plat;     \
+  world                     *World         =  Res->World;             \
+  game_state                *GameState     =  Res->GameState;         \
+  heap_allocator            *Heap          = &Res->Heap;              \
+  entity                   **EntityTable   =  Res->EntityTable;       \
+  hotkeys                   *Hotkeys       = &Res->Hotkeys;           \
+  engine_debug              *EngineDebug   = &Res->EngineDebug;       \
+  tiered_mesh_freelist      *MeshFreelist  = &Res->MeshFreelist;      \
+  input                     *Input         = &Res->Stdlib.Plat.Input; \
+  level_editor              *Editor        = &Res->Editor;            \
 
 #define UNPACK_GRAPHICS_RESOURCES(Res)                                    \
   graphics                  *Graphics      =  Res->Graphics;              \

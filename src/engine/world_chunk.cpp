@@ -287,9 +287,8 @@ MaybeDeallocateGpuElementBuffer(gpu_element_buffer_handles *Handles)
 }
 
 link_internal void
-FreeWorldChunk(world *World, world_chunk *Chunk, tiered_mesh_freelist* MeshFreelist, memory_arena* Memory)
+DeallocateWorldChunk( world_chunk *Chunk, tiered_mesh_freelist *MeshFreelist, memory_arena *Memory)
 {
-  TIMED_FUNCTION();
   Assert ( ThreadLocal_ThreadIndex == 0 );
   Assert ( NotSet(Chunk, Chunk_Queued) );
 
@@ -303,6 +302,16 @@ FreeWorldChunk(world *World, world_chunk *Chunk, tiered_mesh_freelist* MeshFreel
   }
 
   ClearWorldChunk(Chunk);
+}
+
+link_internal void
+FreeWorldChunk(world *World, world_chunk *Chunk, tiered_mesh_freelist *MeshFreelist, memory_arena* Memory)
+{
+  TIMED_FUNCTION();
+  Assert ( ThreadLocal_ThreadIndex == 0 );
+  Assert ( NotSet(Chunk, Chunk_Queued) );
+
+  DeallocateWorldChunk(Chunk, MeshFreelist, Memory);
   Assert(Chunk->Flags == Chunk_Uninitialized);
   /* World->FreeChunks[World->FreeChunkCount++] = Chunk; */
 
@@ -409,14 +418,14 @@ CollectUnusedChunks(engine_resources *Engine, tiered_mesh_freelist* MeshFreelist
       {
         if (IsInside(Chunk->WorldP, VRRect))
         {
-          InsertChunkIntoWorld(NextWorldHash, Chunk, World->VisibleRegion, World->HashSize);
+          Ensure( InsertChunkIntoWorld(NextWorldHash, Chunk, World->VisibleRegion, World->HashSize) );
         }
         else
         {
           if (Chunk->Flags & Chunk_Queued)
           {
             SetFlag(&Chunk->Flags, Chunk_Garbage);
-            InsertChunkIntoWorld(NextWorldHash, Chunk, World->VisibleRegion, World->HashSize);
+            Ensure( InsertChunkIntoWorld(NextWorldHash, Chunk, World->VisibleRegion, World->HashSize) );
           }
           else
           {
@@ -1328,7 +1337,11 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
 
                                             untextured_3d_geometry_buffer *DestGeometry,
                                             untextured_3d_geometry_buffer *DestTransparentGeometry,
-                                            memory_arena *TempMemory )
+                                            memory_arena *TempMemory ,
+
+                                            // NOTE(Jesse): This is so we can offset vertices such that we center
+                                            // entity models about 0 and rotation works properly.
+                                            v3 VertexOffset = {})
 {
   TIMED_FUNCTION();
 
@@ -1363,6 +1376,17 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
   u32 TmpVol = u32(Volume(TmpDim));
   auto TempVoxels = Allocate(voxel, TempMemory, TmpVol);
 
+  // NOTE(Jesse): It's necessary to copy the voxel data because the meshing
+  // algorithm unsets the face flags for the voxels instead of marking them
+  // as being processed.  When complete, there should be no face-flags left on
+  // this data. (This is not asserted, but maybe should be?)
+  //
+  // TODO(Jesse): Assert there are no face flags left in this copy at the end of
+  // this process?
+  //
+  // TODO(Jesse): Copy data into here as the algorithm proceedes instead of in
+  // one shot at the start?
+  //
   u32 TmpIndex = 0;
   for ( s32 zIndex = 0; zIndex < TmpDim.z ; ++zIndex )
   {
@@ -1391,15 +1415,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
         s32 Index = GetIndex(TmpVoxP, TmpDim);
         voxel *Voxel = TempVoxels + Index;
 
-        /* u8 C =  ((Voxel->Color + RandomU32(&ColorEntropy)) & 0xFF); */
-        /* u8 C = Voxel->Color; */
-
-        // TODO(Jesse): This copy could be avoided in multiple ways, and should be.
-        /* FillColorArray(C, FaceColors, ColorPallette, VERTS_PER_FACE); */
-
         f32 Trans = (f32)Voxel->Transparency / 255.f;
-
-        /* v3 Color = Voxel->DebugColor; */
         v3 Color = GetColorData(Voxel->Color);
 
         FillArray(VertexMaterial(Color, Trans, 0.f), Materials, VERTS_PER_FACE);
@@ -1412,38 +1428,38 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
           if (Voxel->Flags & Voxel_RightFace)
           {
             v3 Dim = DoXStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_RightFace, Voxel->Color, Voxel->Transparency);
-            RightFaceVertexData( V3(TmpVoxP), Dim, VertexData);
+            RightFaceVertexData( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
             BufferVertsDirect(Dest, 6, VertexData, RightFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_LeftFace)
           {
             v3 Dim = DoXStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_LeftFace, Voxel->Color, Voxel->Transparency);
-            LeftFaceVertexData( V3(TmpVoxP), Dim, VertexData);
+            LeftFaceVertexData( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
             BufferVertsDirect(Dest, 6, VertexData, LeftFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_BottomFace)
           {
             v3 Dim = DoZStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_BottomFace, Voxel->Color, Voxel->Transparency);
-            BottomFaceVertexData( V3(TmpVoxP), Dim, VertexData);
+            BottomFaceVertexData( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
             BufferVertsDirect(Dest, 6, VertexData, BottomFaceNormalData, Materials);
           }
 
           if (Voxel->Flags & Voxel_TopFace)
           {
             v3 Dim = DoZStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_TopFace, Voxel->Color, Voxel->Transparency);
-            TopFaceVertexData( V3(TmpVoxP), Dim, VertexData);
+            TopFaceVertexData( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
             BufferVertsDirect(Dest, 6, VertexData, TopFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_FrontFace)
           {
             v3 Dim = DoYStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_FrontFace, Voxel->Color, Voxel->Transparency);
-            FrontFaceVertexData( V3(TmpVoxP), Dim, VertexData);
+            FrontFaceVertexData( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
             BufferVertsDirect(Dest, 6, VertexData, FrontFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_BackFace)
           {
             v3 Dim = DoYStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_BackFace, Voxel->Color, Voxel->Transparency);
-            BackFaceVertexData( V3(TmpVoxP), Dim, VertexData);
+            BackFaceVertexData( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
             BufferVertsDirect(Dest, 6, VertexData, BackFaceNormalData, Materials);
           }
         }
@@ -1459,9 +1475,10 @@ link_internal void
 BuildWorldChunkMeshFromMarkedVoxels_Greedy( vox_data *Vox,
                                             untextured_3d_geometry_buffer *DestGeometry,
                                             untextured_3d_geometry_buffer *DestTransparentGeometry,
-                                            memory_arena *TempMemory)
+                                            memory_arena *TempMemory,
+                                            v3 VertexOffset = {})
 {
-  BuildWorldChunkMeshFromMarkedVoxels_Greedy(Vox->ChunkData->Voxels, Vox->ChunkData->Dim, {}, Vox->ChunkData->Dim, DestGeometry, DestTransparentGeometry, TempMemory );
+  BuildWorldChunkMeshFromMarkedVoxels_Greedy(Vox->ChunkData->Voxels, Vox->ChunkData->Dim, {}, Vox->ChunkData->Dim, DestGeometry, DestTransparentGeometry, TempMemory, VertexOffset);
 }
 
 link_internal void
@@ -3417,7 +3434,6 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
 #endif
 
 #if 1
-  /* if (SyntheticChunkSum && (Flags & ChunkInitFlag_GenMipMapLODs) ) */
   if (SyntheticChunkSum)
   {
     untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
@@ -3425,18 +3441,22 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
     RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
     TempMesh->At = 0;
 
-    RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod1, TempMesh, Thread->TempMemory);
-    TempMesh->At = 0;
+    if (Flags & ChunkInitFlag_GenLODs)
+    {
+      RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod1, TempMesh, Thread->TempMemory);
+      TempMesh->At = 0;
 
-    RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod2, TempMesh, Thread->TempMemory);
-    TempMesh->At = 0;
+      RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod2, TempMesh, Thread->TempMemory);
+      TempMesh->At = 0;
 
-    RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod3, TempMesh, Thread->TempMemory);
-    TempMesh->At = 0;
+      RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod3, TempMesh, Thread->TempMemory);
+      TempMesh->At = 0;
 
-    RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod4, TempMesh, Thread->TempMemory);
-    TempMesh->At = 0;
+      RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+WorldChunkDim, MeshBit_Lod4, TempMesh, Thread->TempMemory);
+      TempMesh->At = 0;
+    }
   }
+
 #endif
 
   FullBarrier;
@@ -3529,6 +3549,20 @@ DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, v3 RenderSpot_MinP, v3 Til
 }
 
 link_internal void
+DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, camera *Camera, cp CP, u32 ColorIndex = STANDING_SPOT_DEFAULT_COLOR, r32 Thickness = DEFAULT_STANDING_SPOT_THICKNESS)
+{
+  v3 StandingSpotP = GetRenderP(GetWorld()->ChunkDim, CP, Camera);
+  DrawStandingSpot(Mesh, StandingSpotP, V3(Global_StandingSpotDim), ColorIndex, Thickness);
+}
+
+link_internal void
+DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, camera *Camera, standing_spot *Spot, u32 ColorIndex = STANDING_SPOT_DEFAULT_COLOR, r32 Thickness = DEFAULT_STANDING_SPOT_THICKNESS)
+{
+  v3 StandingSpotP = GetRenderP(GetWorld()->ChunkDim, Spot->P, Camera);
+  DrawStandingSpot(Mesh, StandingSpotP, V3(Global_StandingSpotDim), ColorIndex, Thickness);
+}
+
+link_internal void
 DebugHighlightWorldChunkBasedOnState(graphics *Graphics, world_chunk *Chunk, untextured_3d_geometry_buffer *Dest)
 {
 #if 1
@@ -3589,141 +3623,6 @@ DebugHighlightWorldChunkBasedOnState(graphics *Graphics, world_chunk *Chunk, unt
 #endif
 }
 
-#if 0
-          auto MeshBit = MeshBit_None;
-
-          r32 CameraToChunkSquared = DistanceSq(CameraP, ChunkP);
-          if (CameraToChunkSquared > Square(100*32))
-          {
-            if (HasMesh(&Chunk->Meshes, MeshBit_Lod4)) { MeshBit = MeshBit_Lod4; }
-            /* else { if (NotSet(Chunk->Flags, Chunk_Queued)) { Info("hi4"); QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk, MeshBit_Lod4); } } */
-          }
-          else if (CameraToChunkSquared > Square(75*32))
-          {
-            if (HasMesh(&Chunk->Meshes, MeshBit_Lod3)) { MeshBit = MeshBit_Lod3; }
-            /* else { if (NotSet(Chunk->Flags, Chunk_Queued)) { Info("hi3"); QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk, MeshBit_Lod3); } } */
-          }
-          else if (CameraToChunkSquared > Square(50*32))
-          {
-            if (HasMesh(&Chunk->Meshes, MeshBit_Lod2)) { MeshBit = MeshBit_Lod2; }
-            /* else { if (NotSet(Chunk->Flags, Chunk_Queued)) { Info("hi2"); QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk, MeshBit_Lod2); } } */
-          }
-          else if (CameraToChunkSquared > Square(25*32))
-          {
-            if (HasMesh(&Chunk->Meshes, MeshBit_Lod1)) { MeshBit = MeshBit_Lod1; }
-            /* else { if (NotSet(Chunk->Flags, Chunk_Queued)) { Info("hi2"); QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk, MeshBit_Lod2); } } */
-          }
-          else
-          {
-           if (HasMesh(&Chunk->Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; }
-           /* else { if (NotSet(Chunk->Flags, Chunk_Queued)) { Info("hi0"); QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk, MeshBit_Lod0); } } */
-          }
-
-
-          if (MeshBit != MeshBit_None)
-          {
-            auto CopyJob = WorkQueueEntryCopyBufferRef(&Chunk->Meshes, MeshBit, Dest, Chunk->WorldP, Graphics->Camera, World->ChunkDim);
-            auto Entry = WorkQueueEntry(&CopyJob);
-            PushWorkQueueEntry(&Plat->HighPriority, &Entry);
-          }
-#endif
-
-link_internal void
-BufferWorld( platform                      *Plat,
-             untextured_3d_geometry_buffer *Dest,
-             world                         *World,
-             graphics                      *Graphics,
-             heap_allocator                *Heap )
-{
-  TIMED_FUNCTION();
-  NotImplemented;
-#if 0
-
-  work_queue_entry_copy_buffer_set CopySet = {};
-
-  v3i Radius = World->VisibleRegion/2;
-  v3i Min = World->Center - Radius;
-  v3i Max = World->Center + Radius;
-
-  // NOTE(Jesse): Debug
-  /* Assert(Min == V3i(0)); */
-  /* Assert(Max == V3i(4)); */
-
-  for (s32 x = Min.x; x < Max.x; ++ x)
-  for (s32 y = Min.y; y < Max.y; ++ y)
-  for (s32 z = Min.z; z < Max.z; ++ z)
-  {
-    world_position P = World_Position(x,y,z);
-    world_chunk *Chunk = 0;
-    {
-      /* TIMED_NAMED_BLOCK("GetWorldChunkFromHashtable"); */
-      Chunk = GetWorldChunkFromHashtable( World, P );
-    }
-
-    if (Chunk)
-    {
-      if (Chunk->Flags & Chunk_Queued) { continue; }
-      Assert(Chunk->Flags & Chunk_VoxelsInitialized);
-
-      // TODO(Jesse): Move into engine debug
-      DebugHighlightWorldChunkBasedOnState(Graphics, Chunk, Dest);
-
-      camera *Camera = Graphics->Camera;
-      if (IsInFrustum(World, Camera, Chunk))
-      {
-        v3 CameraP = GetSimSpaceP(World, Camera->CurrentP);
-        v3 ChunkP = GetSimSpaceP(World, Chunk->WorldP);
-
-        if (Chunk->Flags & Chunk_MeshUploadedToGpu)
-        {
-          if (HasMesh(&Chunk->Meshes, MeshBit_Lod0))
-          {
-            DrawTerrainImmediate(Graphics, &Chunk->GpuBuffers[], Chunk);
-          }
-        }
-        else
-        {
-          if (HasMesh(&Chunk->Meshes, MeshBit_Lod0))
-          {
-            untextured_3d_geometry_buffer *Mesh = TakeOwnershipSync(&Chunk->Meshes, MeshBit_Lod0);
-            CopyToGpuBuffer(Mesh, &Chunk->GpuBuffer);
-          }
-
-          SetBitfield(chunk_flag, Chunk->Flags, Chunk_MeshUploadedToGpu);
-        }
-
-#if 0
-        umm StandingSpotCount = AtElements(&Chunk->StandingSpots);
-        /* DebugLine("drawing (%u) standing spots", StandingSpotCount); */
-        for (u32 SpotIndex = 0; SpotIndex < StandingSpotCount; ++SpotIndex)
-        {
-          v3i *Spot = Chunk->StandingSpots.Start + SpotIndex;
-          v3 RenderSpot = GetRenderP(World->ChunkDim, Canonical_Position(*Spot, Chunk->WorldP), Graphics->Camera);
-          DrawStandingSpot(&Graphics->Transparency.GeoBuffer.Buffer, RenderSpot, V3(Global_StandingSpotDim));
-        }
-#endif
-
-      }
-    }
-    else
-    {
-      Chunk = GetAndInsertFreeWorldChunk(World->Memory, World, P);
-      if (Chunk)
-      { QueueChunkForInit(&Plat->LowPriority, Chunk, MeshBit_Lod0);  }
-      else
-      { InvalidCodePath(); }
-    }
-  }
-
-  if (CopySet.Count > 0)
-  {
-    work_queue_entry Entry = WorkQueueEntry(&CopySet);
-    PushWorkQueueEntry(&Plat->HighPriority, &Entry);
-  }
-
-  return;
-#endif
-}
 
 
 link_internal v3i
@@ -3850,8 +3749,11 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
 
       v3 MinSimP = GetSimSpaceP(World, ShapeAsset->Origin);
 
-      /* Assert(ShapeAsset->Models.Count > 0); */
-      v3 MaxSimP = MinSimP + ShapeAsset->Model->Dim;
+      asset *Asset = GetAndLockAssetSync(GetEngineResources(), &ShapeAsset->AssetId);
+      model *Model = GetModel(Asset, &ShapeAsset->AssetId, ShapeAsset->ModelIndex);
+      v3 MaxSimP = MinSimP + Model->Dim;
+
+      UnlockAsset(Engine, Asset);
 
       MinPCoarse = SimSpaceToCanonical(World, MinSimP-MinPStroke);
       MaxPCoarse = SimSpaceToCanonical(World, MaxSimP+MaxPStroke);
@@ -4054,6 +3956,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
     //
     // Instead of doing this, we should probably factor the common code into a function
     // and just call it in each case, without a [[fallthrough]]
+    asset *Asset = 0;
     chunk_data *Data = 0;
     v3 SimOrigin = {};
 
@@ -4314,8 +4217,10 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           world_update_op_shape_params_asset *AssetJob = SafeCast(world_update_op_shape_params_asset, &Shape);
           /* asset *Asset = AssetJob->Asset; */
           /* Assert(Asset->Models.Count > 0); */
-
-          Data = AssetJob->Model->Vox.ChunkData;
+          asset_id *AID = &AssetJob->AssetId;
+          Asset = GetAndLockAssetSync(GetEngineResources(), AID);
+          model *Model = GetModel(Asset, AID, AssetJob->ModelIndex);
+          Data = Model->Vox.ChunkData;
           SimOrigin = GetSimSpaceP(World, AssetJob->Origin);
         } [[fallthrough]];
 
@@ -4359,6 +4264,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           }
 
 
+          if (Asset) { UnlockAsset(GetEngineResources(), Asset); Asset = 0; }
         } break;
       }
 
@@ -4445,7 +4351,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
     Leak("Leaking mesh");
   };
 
-#if DEBUG_SYSTEM_API
+#if BONSAI_DEBUG_SYSTEM_API
   AtomicWrite((volatile void **)&GetDebugState()->PickedChunk, (void*) PickedChunk);
 #endif
 
@@ -4567,16 +4473,130 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   }
 }
 
-link_internal standing_spot_buffer
-GetStandingSpotsWithinRadius(world *World, canonical_position P, r32 Radius, memory_arena *TempMemory)
+link_internal maybe_standing_spot
+GetClosestToP(world *World, standing_spot_buffer *Spots, cp P)
 {
-  auto MinWorldP = P.WorldP - 1;
-  auto MaxWorldP = P.WorldP + 1;
+  maybe_standing_spot Result = {};
+
+  v3 SimP = GetSimSpaceP(World, P);
+
+  f32 ShortestDistanceToPlayerSq = f32_MAX;
+  IterateOver(Spots, Spot, SpotIndex)
+  {
+    v3 SpotSimP = GetSimSpaceP(World, Spot->P);
+    r32 ThisDist = DistanceSq(SpotSimP, SimP);
+    if (ThisDist < ShortestDistanceToPlayerSq)
+    {
+      ShortestDistanceToPlayerSq = ThisDist;
+
+      Result.Tag = Maybe_Yes;
+      Result.Value = Spots->Start[SpotIndex];
+    }
+  }
+
+  return Result;
+}
+
+link_internal standing_spot_buffer
+GetStandingSpotsWithinRadius(world *World, standing_spot_buffer *Spots, cp P, r32 Radius, memory_arena *Memory, memory_arena *TempMemory)
+{
+  v3 SimP = GetSimSpaceP(World, P);
+
+  standing_spot_buffer UnsortedSpots = StandingSpotBuffer(Spots->Count, TempMemory);
+  /* sort_key_f *SortKeys = Allocate(sort_key_f, TempMemory, Spots->Count); */
+
+  r32 RadSq = Square(Radius);
+  u32 ResultAt = 0;
+  IterateOver(Spots, Spot, SpotIndex)
+  {
+    v3 SpotSimP = GetSimSpaceCenterP(World, Spot);
+    r32 DistSq = DistanceSq(SimP, SpotSimP);
+    if (DistSq <= RadSq)
+    {
+      UnsortedSpots.Start[ResultAt] = *Spot;
+      /* SortKeys[ResultAt] = {SpotIndex, r64(DistSq)}; */
+
+      ResultAt += 1;
+    }
+  }
+
+#if 0
+  BubbleSort(SortKeys, ResultAt);
+
+  standing_spot_buffer Result = StandingSpotBuffer(ResultAt, TempMemory);
+
+  RangeIterator_t(u32, SortIndex, ResultAt)
+  {
+    u64 DestIndex = SortKeys[SortIndex].Index;
+    Result.Start[DestIndex] = UnsortedSpots.Start[SortIndex];
+  }
+#endif
+
+  // TODO(Jesse): Resize the result allocation?
+
+  standing_spot_buffer Result = {ResultAt, UnsortedSpots.Start};
+  return Result;
+}
+
+// TODO(Jesse): We can do this function with only a result buffer but I didn't
+// know how to scatter a buffer into itself without doing some annoying
+// bookkeeping with the sort_key buffer, so I didn't bother for now.
+//
+link_internal standing_spot_buffer
+GetStandingSpotsWithinRadiusSorted(world *World, standing_spot_buffer *Spots, cp P, r32 Radius, memory_arena *Memory, memory_arena *TempMemory)
+{
+  // NOTE(Jesse): This is probably buggy
+  NotImplemented;
+
+  v3 SimP = GetSimSpaceP(World, P);
+
+  standing_spot_buffer UnsortedSpots = StandingSpotBuffer(Spots->Count, TempMemory);
+  sort_key_f *SortKeys = Allocate(sort_key_f, TempMemory, Spots->Count);
+
+  r32 RadSq = Square(Radius);
+  u32 ResultAt = 0;
+  IterateOver(Spots, Spot, SpotIndex)
+  {
+    v3 SpotSimP = GetSimSpaceCenterP(World, Spot);
+    r32 DistSq = DistanceSq(SimP, SpotSimP);
+    if (DistSq <= RadSq)
+    {
+      UnsortedSpots.Start[ResultAt] = *Spot;
+      SortKeys[ResultAt] = {SpotIndex, r64(DistSq)};
+
+      ResultAt += 1;
+    }
+  }
+
+  BubbleSort(SortKeys, ResultAt);
+
+  standing_spot_buffer Result = StandingSpotBuffer(ResultAt, TempMemory);
+
+  RangeIterator_t(u32, SortIndex, ResultAt)
+  {
+    u64 DestIndex = SortKeys[SortIndex].Index;
+    Result.Start[DestIndex] = UnsortedSpots.Start[SortIndex];
+  }
+
+  return Result;
+}
+
+// TODO(Jesse): At the moment all the callsites of this function immediately
+// look for the closest spot to a point .. should we just sort and return the
+// sorted buffer?
+//
+// Alternatively, if sorting the whole array feels meh, we could return the 0th
+// element as closest to another point ..
+//
+link_internal standing_spot_buffer
+GetStandingSpotsWithinRadius(world *World, canonical_position P, r32 Radius, memory_arena *Memory)
+{
+  auto MinWorldP = Canonicalize(World, P - V3(Radius)).WorldP;
+  auto MaxWorldP = Canonicalize(World, P + V3(Radius)).WorldP;
 
   v3 SimSpaceP = GetSimSpaceP(World, P);
 
-/*   temp_memory_handle TempMemHandle = BeginTemporaryMemory(TempMemory); */
-
+  r32 RadSq = Square(Radius);
   standing_spot_stream StandingSpotStream = {};
 
   for (s32 zWorld = MinWorldP.z; zWorld <= MaxWorldP.z; ++zWorld)
@@ -4590,15 +4610,11 @@ GetStandingSpotsWithinRadius(world *World, canonical_position P, r32 Radius, mem
         {
           for (u32 StandingSpotIndex = 0; StandingSpotIndex < AtElements(&Chunk->StandingSpots); ++StandingSpotIndex)
           {
-            v3i StandingSpot = Chunk->StandingSpots.Start[StandingSpotIndex];
-            v3 SimSpaceStandingSpot = GetSimSpaceP(World, Canonical_Position(StandingSpot, Chunk->WorldP));
-            aabb StandingSpotAABB = AABBMinDim(SimSpaceStandingSpot, Global_StandingSpotDim);
+            standing_spot Spot = {True, {V3(Chunk->StandingSpots.Start[StandingSpotIndex]), Chunk->WorldP}};
 
-            sphere Query = Sphere(SimSpaceP, Radius);
-            /* if ( Abs(LengthSq(SimSpaceP-SimSpaceStandingSpot)) < Square(Radius) ) */
-            if (Intersect(&StandingSpotAABB, &Query))
+            v3 SimSpaceStandingSpot = GetSimSpaceCenterP(World, &Spot);
+            if ( DistanceSq(SimSpaceP, SimSpaceStandingSpot) <= RadSq )
             {
-              standing_spot Spot = { .P = Canonical_Position(StandingSpot, Chunk->WorldP), .CanStand = True };
               Push(&StandingSpotStream, Spot );
             }
           }
@@ -4607,7 +4623,55 @@ GetStandingSpotsWithinRadius(world *World, canonical_position P, r32 Radius, mem
     }
   }
 
-  standing_spot_buffer Result = Compact(&StandingSpotStream, TempMemory);
+  standing_spot_buffer Result = Compact(&StandingSpotStream, Memory);
+  return Result;
+}
+
+global_variable u32
+Global_EntityCanMoveThroughCollisionThresh = 10;
+
+link_internal standing_spot_buffer
+GetStandingSpotsWithinRadius_FilteredByStandable(world *World, canonical_position P, r32 GatherRadius, v3 EntityRadius, memory_arena *Memory)
+{
+  auto MinWorldP = Canonicalize(World, P - V3(GatherRadius)).WorldP;
+  auto MaxWorldP = Canonicalize(World, P + V3(GatherRadius)).WorldP;
+
+  v3 SimSpaceP = GetSimSpaceP(World, P);
+
+  r32 RadSq = Square(GatherRadius);
+  standing_spot_stream StandingSpotStream = {};
+
+  for (s32 zWorld = MinWorldP.z; zWorld <= MaxWorldP.z; ++zWorld)
+  {
+    for (s32 yWorld = MinWorldP.y; yWorld <= MaxWorldP.y; ++yWorld)
+    {
+      for (s32 xWorld = MinWorldP.x; xWorld <= MaxWorldP.x; ++xWorld)
+      {
+        world_chunk *Chunk = GetWorldChunkFromHashtable(World, {{xWorld, yWorld, zWorld}});
+        if (Chunk)
+        {
+          for (u32 StandingSpotIndex = 0; StandingSpotIndex < AtElements(&Chunk->StandingSpots); ++StandingSpotIndex)
+          {
+            standing_spot Spot = {True, {V3(Chunk->StandingSpots.Start[StandingSpotIndex]), Chunk->WorldP}};
+
+            v3 SimSpaceStandingSpot = GetSimSpaceCenterP(World, &Spot);
+            if ( DistanceSq(SimSpaceP, SimSpaceStandingSpot) <= RadSq )
+            {
+              /* v3 SimSpaceStandingSpotMinP = SimSpaceStandingSpot -V3(Global_StandingSpotHalfDim.xy, 0.f) + V3(0.f, 0.f, 1.f) - V3(EntityRadius.xy, 0.f); */
+              v3 SimSpaceStandingSpotMinP = SimSpaceStandingSpot + V3(0.f, 0.f, 1.f) - V3(EntityRadius.xy, 0.f);
+              aabb CanStandRect = RectMinRad(SimSpaceStandingSpotMinP, EntityRadius);
+              if (GetCollision(World, CanStandRect).Count < Global_EntityCanMoveThroughCollisionThresh)
+              {
+                Push(&StandingSpotStream, Spot );
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  standing_spot_buffer Result = Compact(&StandingSpotStream, Memory);
   return Result;
 }
 
@@ -4704,6 +4768,7 @@ RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, 
 
   picked_world_chunk_static_buffer AllChunksBuffer = {};
 
+  // TODO(Jesse): Use pre-computed ray on resources.
   maybe_ray MaybeRay = ComputeRayFromCursor(Resources, &gBuffer->ViewProjection, Camera, World->ChunkDim);
   if (MaybeRay.Tag == Maybe_Yes) { GetChunksIntersectingRay(World, &MaybeRay.Ray, &AllChunksBuffer); }
 
@@ -4815,26 +4880,6 @@ MousePickVoxel(engine_resources *Resources)
   maybe_ray MaybeRay = Resources->MaybeMouseRay;
   if (MaybeRay.Tag == Maybe_Yes)
   {
-
-#if 0
-    auto LineMinP = MaybeRay.Ray.Origin;
-    /* auto LineMinP = MaybeRay.Ray.Origin + V3(0, 1, 0); */
-    auto LineMaxP = MaybeRay.Ray.Origin + (MaybeRay.Ray.Dir * 100.f);
-
-    untextured_3d_geometry_buffer LineMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_LINE);
-    DEBUG_DrawLine(&LineMesh, LineMinP, LineMaxP, 2, 1.f);
-
-/*     DEBUG_VALUE_r32(LineMinP.x); */
-/*     DEBUG_VALUE_r32(LineMinP.y); */
-/*     DEBUG_VALUE_r32(LineMinP.z); */
-
-/*     DEBUG_VALUE_r32(LineMaxP.x); */
-/*     DEBUG_VALUE_r32(LineMaxP.y); */
-/*     DEBUG_VALUE_r32(LineMaxP.z); */
-#endif
-
-#if 1
-
     picked_voxel RayResult = RayTraceCollision( Resources, Camera->CurrentP, MaybeRay.Ray.Dir);
 
     if (world_chunk *ClosestChunk = RayResult.Chunks[PickedVoxel_FirstFilled].Chunk)
@@ -4842,67 +4887,9 @@ MousePickVoxel(engine_resources *Resources)
       v3 MinP =  V3(ClosestChunk->WorldP * World->ChunkDim);
       v3 VoxelP = MinP + Truncate(RayResult.Picks[PickedVoxel_FirstFilled].Offset);
 
-      // Highlight standing spot we're hovering over
-      for (u32 StandingSpotIndex = 0;
-               StandingSpotIndex < AtElements(&ClosestChunk->StandingSpots);
-             ++StandingSpotIndex)
-      {
-        v3i *Spot = ClosestChunk->StandingSpots.Start + StandingSpotIndex;
-
-        aabb SpotRect = AABBMinMax(V3(*Spot), V3(*Spot+Global_StandingSpotDim));
-        if (IsInside(SpotRect, Truncate(RayResult.Picks[PickedVoxel_FirstFilled].Offset)))
-        {
-          /* untextured_3d_geometry_buffer SpotAABB = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB); */
-          v3 RenderP = GetRenderP(World->ChunkDim, MinP+V3(*Spot), Camera);
-          DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RED, DEFAULT_STANDING_SPOT_THICKNESS+0.01f);
-        }
-      }
-
       Result.Tag   = Maybe_Yes;
       Result.Value = RayResult;
     }
-
-    local_persist b32 Picked = False;
-    local_persist picked_voxel PickedVoxel;
-    if (Hotkeys->Debug_PickChunks_Voxel)
-    {
-      Picked = Result.Tag;
-      PickedVoxel = Result.Value;
-
-#if DEBUG_SYSTEM_API
-      if (Picked)
-      {
-        GetDebugState()->PickedChunk = &PickedVoxel.Chunks[PickedVoxel_FirstFilled];
-      }
-#endif
-    }
-
-#if 0
-    // NOTE(Jesse): This is using absolute space coordinate nonsense
-    if (Picked)
-    {
-      v3 MinP =  V3(PickedVoxel.PickedChunk.Chunk->WorldP * World->ChunkDim);
-      v3 VoxelP = MinP + Truncate(PickedVoxel.Picks[PickedVoxel_FirstFilled]);
-
-      untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
-      DrawVoxel( &VoxelMesh, GetRenderP(World->ChunkDim, VoxelP+V3(.5f), Camera), RED, V3(1.05f) );
-
-      untextured_3d_geometry_buffer ChunkAABBMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
-      auto ChunkAABB = AABBMinDim( GetRenderP(World->ChunkDim, MinP, Camera), V3(World->ChunkDim));
-      DEBUG_DrawAABB(&ChunkAABBMesh, ChunkAABB, RED);
-    }
-#endif
-
-    if (Hotkeys->Debug_Action_ComputeStandingSpot)
-    {
-      /* v3i TileChunkOffset = (V3i(xIndex, yTile, zTile) * (TileChunkDim-1));// + V3(1); */
-      v3i TileChunkOffset = Voxel_Position(PickedVoxel.Picks[PickedVoxel_FirstFilled].Offset);
-      v3i TileChunkDim = Chunk_Dimension(8, 8, 2);
-      /* boundary_voxels* TempBoundingPoints = AllocateBoundaryVoxels((u32)Volume(TileChunkDim), TranArena); */
-      standing_spot Spot = ComputeStandingSpotFor8x8x2_V2(PickedVoxel.Chunks[PickedVoxel_FirstFilled].Chunk->Voxels, World->ChunkDim, TileChunkOffset, TileChunkDim); //, TempBoundingPoints);
-    }
-
-#endif
   }
 
   return Result;
@@ -4947,8 +4934,7 @@ BufferChunkMesh( graphics *Graphics,
   DEBUG_DrawChunkAABB(Dest, Graphics, WorldP, WorldChunkDim, PINK, 0.1f);
 #endif
 
-  v3 ModelBasisP =
-    GetRenderP( WorldChunkDim, Canonical_Position(Offset, WorldP), Graphics->Camera);
+  v3 ModelBasisP = GetRenderP( WorldChunkDim, Canonical_Position(Offset, WorldP), Graphics->Camera);
 
   auto CopyBuffer = ReserveBufferSpace( Dest, Src->At);
   if (Length(Rot.xyz) == 0.f)
@@ -4966,7 +4952,7 @@ BufferChunkMesh( graphics *Graphics,
   }
 }
 
-#if DEBUG_SYSTEM_API
+#if BONSAI_DEBUG_SYSTEM_API
 link_internal void
 Debug_DoWorldChunkPicking(engine_resources *Resources)
 {
@@ -5202,4 +5188,5 @@ DrawPickedChunks(renderer_2d* Group, render_entity_to_texture_group *PickedChunk
 
   return HotChunk;
 }
-#endif // DEBUG_SYSTEM_API
+#endif // BONSAI_DEBUG_SYSTEM_API
+

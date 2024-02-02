@@ -269,6 +269,22 @@ SplosionBittyParticleSystem(entity *Entity, random_series *Entropy, v3 Offset, r
 }
 
 link_internal void
+DoDig( engine_resources *Resources, canonical_position PickCP, f32 Radius, f32 Depth, memory_arena *TempMemory)
+{
+  v3 SimSpaceMinCenterP = GetSimSpaceP(Resources->World, PickCP);
+
+  v3 MinP = SimSpaceMinCenterP - V3(Radius, Radius, Depth);
+  v3 MaxP = SimSpaceMinCenterP + V3(Radius, Radius, Depth);
+
+  world_update_op_shape Shape = {
+    .Type = type_world_update_op_shape_params_rect,
+    .world_update_op_shape_params_rect.P0 = MinP,
+    .world_update_op_shape_params_rect.P1 = MaxP,
+  };
+  QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Subtractive, &Shape, ICE_BLUE, Resources->Memory);
+}
+
+link_internal void
 DoIceBlock( engine_resources *Resources, canonical_position PickCP, f32 Radius, memory_arena *TempMemory)
 {
   v3 SimSpaceMinCenterP = GetSimSpaceP(Resources->World, PickCP);
@@ -333,14 +349,18 @@ DoSplotion( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
   entity_behavior_flags SpawnFlags = EntityBehaviorFlags_UnspawnOnParticleSystemTerminate;
 
   {
-    entity *E = GetFreeEntity(EntityTable);
+    entity *E = TryGetFreeEntityPtr(EntityTable);
+    Assert(E);
+
     E->P = PickCP + V3(0.5f);
     SpawnEntity( E, SpawnFlags );
     /* E->UserData = (void*)GameEntityBehaviorFlags_Splosion; */
     SpawnExplosion(E, Entropy, {}, Radius, &Graphics->Transparency.GpuBuffer.Buffer);
   }
   {
-    entity *E = GetFreeEntity(EntityTable);
+    entity *E = TryGetFreeEntityPtr(EntityTable);
+    Assert(E);
+
     E->P = PickCP + V3(0.5f);
     SpawnEntity( E, SpawnFlags );
     SpawnSmoke(E, Entropy, {}, Radius*0.5f, &Graphics->Transparency.GpuBuffer.Buffer);
@@ -350,10 +370,12 @@ DoSplotion( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
   for (u32 BittyIndex = 0; BittyIndex < MaxBitties; ++BittyIndex)
   {
     entity_behavior_flags BittySpawnFlags = entity_behavior_flags(EntityBehaviorFlags_Default|EntityBehaviorFlags_UnspawnOnParticleSystemTerminate);
-    entity *E = GetFreeEntity(EntityTable);
+    entity *E = TryGetFreeEntityPtr(EntityTable);
+    Assert(E);
+
     E->Physics.Speed = 1.f;
 
-    E->EulerAngles.xyz = RandomRotation(Entropy);
+    E->EulerAngles = RandomRotation(Entropy);
     E->Scale = 0.3f;
     E->_CollisionVolumeRadius = V3(.1f);
 
@@ -367,6 +389,11 @@ DoSplotion( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
     SpawnEntity(E, BittySpawnFlags );
 
     if (GetCollision(World, E).Count) { Unspawn(E); continue; }
+
+    // TODO(Jesse): Pretty sure we're spawning these things inside other entities
+    // which is causing the bitty particles to wigg out, but this didn't fix it .. ?
+    //
+    /* if (GetCollision_Entities(World, E).Count) { Unspawn(E); continue; } */
 
     SplosionBittyParticleSystem(E, Entropy, {}, .1f, &Graphics->Transparency.GpuBuffer.Buffer);
   }

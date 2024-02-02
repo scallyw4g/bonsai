@@ -1,11 +1,13 @@
+// src/engine/voxel_synthesis.h:82:0
+
 struct tile_ruleset_buffer
 {
-  tile_ruleset *Start;
   umm Count;
+  tile_ruleset *Start; poof(@array_length(Element->Count))
 };
 
 link_internal tile_ruleset_buffer
-TileRulesetBuffer(umm ElementCount, memory_arena* Memory)
+TileRulesetBuffer( umm ElementCount, memory_arena* Memory)
 {
   tile_ruleset_buffer Result = {};
 
@@ -64,4 +66,5 @@ Get(tile_ruleset_buffer *Buf, umm Index)
   tile_ruleset *Result = GetPtr(Buf, Index);
   return Result;
 }
+
 

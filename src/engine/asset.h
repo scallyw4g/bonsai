@@ -129,6 +129,7 @@ typedef world_chunk_file_header_v3 world_chunk_file_header;
 enum asset_load_state
 {
   AssetLoadState_Unloaded,
+  AssetLoadState_Allocated,
 
   // On work queue
   AssetLoadState_Queued,
@@ -136,62 +137,54 @@ enum asset_load_state
   AssetLoadState_Loaded,
   AssetLoadState_Error,
 };
+poof(generate_string_table(asset_load_state))
+#include <generated/generate_string_table_asset_load_state.h>
 
-struct asset_slot
-{
-  u16 Index;        // Physical slot in asset table
-  u16 Generation;   // Monotonically increasing integer to identify the allocation of the asset slot in time
-};
 
+#define INVALID_ASSET_INDEX (u16_MAX)
 struct asset_id
 {
-  asset_slot Slot;
+  u16 Index; poof(@no_serialize) // Physical slot in asset table.  Can be INVALID_ASSET_INDEX if allocation failed.
   file_traversal_node FileNode;
 };
 
-link_internal asset_id
-AssetId(file_traversal_node *FileNode)
-{
-  asset_id Result = {};
-  Result.FileNode = *FileNode;
-  return Result;
-}
+poof(maybe(asset_id))
+#include <generated/maybe_asset_id.h>
 
-#define INVALID_ASSET_INDEX (u16_MAX)
+#if 0
+poof(
+  @editor_ui::asset(
+    DoEditorUi(Ui, GetAssetPtr(GetEngineResources(), &Element->Id)); PushNewRow(Ui);
+  )
+)
+#endif
+
 struct asset
 {
   volatile asset_load_state LoadState;
 
   asset_id Id;
 
-  // At 120fps we get 9k hours worth of frames in a u32.. should be enough.
-  // 9k hours == 385 days
-  //
-  // TODO(Jesse)(frame-index): Should this just be 32-bit?
+  // TODO(Jesse)(frame-index): Change to u32? At 120fps we get 9k hours (385 days) in a u32
   u64 LRUFrameIndex;
 
   model_buffer Models;
 };
 
+typedef asset* asset_ptr;
+
 
 poof(buffer(asset))
 #include <generated/buffer_asset.h>
 
-typedef asset* asset_ptr;
 poof(maybe(asset_ptr))
 #include <generated/maybe_asset_ptr.h>
 
-poof(maybe(asset_slot))
-#include <generated/maybe_asset_slot.h>
+/* poof(maybe(asset_slot)) */
+/* #include <generated/maybe_asset_slot.h> */
 
-poof(buffer(asset_slot))
-#include <generated/buffer_asset_slot.h>
-
-struct asset_file
-{
-  file_traversal_node FileNode;
-  asset_slot_buffer AssetSlots;
-};
+/* poof(buffer(asset_slot)) */
+/* #include <generated/buffer_asset_slot.h> */
 
 link_internal counted_string
 GetAssetFilenameFor(counted_string AssetPath, world_position WorldP, memory_arena *Memory)
@@ -202,5 +195,3 @@ GetAssetFilenameFor(counted_string AssetPath, world_position WorldP, memory_aren
 
 link_internal maybe_model_buffer
 LoadVoxModels(memory_arena *PermMemory, heap_allocator *Heap, char const *filepath, memory_arena *TempMemory);
-
-/* link_internal b32 Serialize(native_file *File, untextured_3d_geometry_buffer *Mesh); */

@@ -1,49 +1,67 @@
+// src/engine/editor.cpp:230:0
+
 link_internal void
-DoEditorUi(renderer_2d *Ui, gpu_element_buffer_handles *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Element)
   {
-    /* PushTableStart(Ui); */
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), umm(Element) ^ umm(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle gpu_element_buffer_handles", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
     {
+      PushNewRow(Ui);
+
+      PushTableStart(Ui);
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-      /* Padding.x += 20.f; */
-      PushNewRow(Ui);
-      DoEditorUi(Ui, &Element->VertexHandle, CSz("u32 VertexHandle"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->VertexHandle, CSz("u32 VertexHandle"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
-
-      PushNewRow(Ui);
-      DoEditorUi(Ui, &Element->NormalHandle, CSz("u32 NormalHandle"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
 
       PushNewRow(Ui);
-      DoEditorUi(Ui, &Element->MatHandle, CSz("u32 MatHandle"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+      DoEditorUi(Ui, Window, &Element->NormalHandle, CSz("u32 NormalHandle"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
 
 
 
 
       PushNewRow(Ui);
-      DoEditorUi(Ui, &Element->ElementCount, CSz("u32 ElementCount"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+      DoEditorUi(Ui, Window, &Element->MatHandle, CSz("u32 MatHandle"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui, Window, &Element->ElementCount, CSz("u32 ElementCount"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
 
 
 
 
       PushNewRow(Ui);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+      PushTableEnd(Ui);
     }
-    else
-    {
-      PushNewRow(Ui);
-    }
+
+    PushNewRow(Ui);
   }
   else
   {
-    PushColumn(Ui, FSz("%S = (null)", Name));
+    PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushNewRow(Ui);
   }
-  
+
 }
 

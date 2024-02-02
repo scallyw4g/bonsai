@@ -1,3 +1,5 @@
+// src/engine/world_chunk.h:320:0
+
 struct entity_ptr_block
 {
   u32 Index;
@@ -8,16 +10,17 @@ struct entity_ptr_block
 
 struct entity_ptr_block_array_index
 {
-  void *Block;
+  entity_ptr_block *Block;
   u32 BlockIndex;
   u32 ElementIndex;
 };
 
 struct entity_ptr_block_array
 {
-  entity_ptr_block First;
+  entity_ptr_block *First;
   entity_ptr_block *Current;
-  memory_arena *Memory;
+  memory_arena *Memory; poof(@no_serialize)
+  
 };
 
 link_internal entity_ptr_block_array_index
@@ -29,7 +32,7 @@ operator++(entity_ptr_block_array_index &I0)
     {
       I0.ElementIndex = 0;
       I0.BlockIndex++;
-      I0.Block = Cast(entity_ptr_block*, I0.Block)->Next;
+      I0.Block = I0.Block->Next;
     }
     else
     {
@@ -50,13 +53,6 @@ operator<(entity_ptr_block_array_index I0, entity_ptr_block_array_index I1)
   return Result;
 }
 
-link_inline entity_ptr_block *
-GetBlock(entity_ptr_block_array_index *Index)
-{
-  entity_ptr_block *Result = Cast(entity_ptr_block*, Index->Block);
-  return Result;
-}
-
 link_inline umm
 GetIndex(entity_ptr_block_array_index *Index)
 {
@@ -68,8 +64,8 @@ link_internal entity_ptr_block_array_index
 ZerothIndex(entity_ptr_block_array *Arr)
 {
   entity_ptr_block_array_index Result = {};
-  Result.Block = &Arr->First;
-  Assert(GetBlock(&Result)->Index == 0);
+  Result.Block = Arr->First;
+  /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
@@ -108,8 +104,6 @@ AtElements(entity_ptr_block_array *Arr)
     Result.Block = Arr->Current;
     Result.BlockIndex = Arr->Current->Index;
     Result.ElementIndex = Arr->Current->At;
-    /* Assert(Result.ElementIndex); */
-    /* Result.ElementIndex--; */
   }
   return Result;
 }
@@ -118,7 +112,7 @@ link_internal entity_ptr *
 GetPtr(entity_ptr_block_array *Arr, entity_ptr_block_array_index Index)
 {
   entity_ptr *Result = {};
-  if (Index.Block) { Result = GetBlock(&Index)->Elements + Index.ElementIndex; }
+  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
   return Result;
 }
 
@@ -137,7 +131,7 @@ GetPtr(entity_ptr_block_array *Arr, umm Index)
   umm ElementIndex = Index % 8;
 
   umm AtBlock = 0;
-  entity_ptr_block *Block = &Arr->First;
+  entity_ptr_block *Block = Arr->First;
   while (AtBlock++ < BlockIndex)
   {
     Block = Block->Next;
@@ -184,8 +178,8 @@ RemoveUnordered(entity_ptr_block_array *Array, entity_ptr_block_array_index Inde
   if (Array->Current->At == 0)
   {
     // Walk the chain till we get to the second-last one
-    entity_ptr_block *Current = &Array->First;
-    entity_ptr_block *LastB = GetBlock(&LastI);
+    entity_ptr_block *Current = Array->First;
+    entity_ptr_block *LastB = LastI.Block;
 
     while (Current->Next && Current->Next != LastB)
     {
@@ -202,7 +196,7 @@ Push(entity_ptr_block_array *Array, entity_ptr *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 
-  if (Array->Current == 0) { Array->First = *Allocate_entity_ptr_block(Array->Memory); Array->Current = &Array->First; }
+  if (Array->First == 0) { Array->First = Allocate_entity_ptr_block(Array->Memory); Array->Current = Array->First; }
 
   if (Array->Current->At == 8)
   {

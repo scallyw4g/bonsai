@@ -1,11 +1,13 @@
+// external/bonsai_stdlib/src/ui/ui.cpp:7:0
+
 struct ui_toggle_button_handle_buffer
 {
-  ui_toggle_button_handle *Start;
   umm Count;
+  ui_toggle_button_handle *Start; poof(@array_length(Element->Count))
 };
 
 link_internal ui_toggle_button_handle_buffer
-UiToggleButtonHandleBuffer(umm ElementCount, memory_arena* Memory)
+UiToggleButtonHandleBuffer( umm ElementCount, memory_arena* Memory)
 {
   ui_toggle_button_handle_buffer Result = {};
 
@@ -64,4 +66,5 @@ Get(ui_toggle_button_handle_buffer *Buf, umm Index)
   ui_toggle_button_handle *Result = GetPtr(Buf, Index);
   return Result;
 }
+
 

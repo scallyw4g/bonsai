@@ -1,11 +1,13 @@
+// external/bonsai_stdlib/src/vector.cpp:2:0
+
 struct v3i_buffer
 {
-  v3i *Start;
   umm Count;
+  v3i *Start; poof(@array_length(Element->Count))
 };
 
 link_internal v3i_buffer
-V3iBuffer(umm ElementCount, memory_arena* Memory)
+V3iBuffer( umm ElementCount, memory_arena* Memory)
 {
   v3i_buffer Result = {};
 
@@ -64,4 +66,5 @@ Get(v3i_buffer *Buf, umm Index)
   v3i *Result = GetPtr(Buf, Index);
   return Result;
 }
+
 

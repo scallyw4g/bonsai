@@ -1,3 +1,5 @@
+// src/engine/serdes.cpp:313:0
+
 struct entity_block
 {
   u32 Index;
@@ -8,16 +10,17 @@ struct entity_block
 
 struct entity_block_array_index
 {
-  void *Block;
+  entity_block *Block;
   u32 BlockIndex;
   u32 ElementIndex;
 };
 
 struct entity_block_array
 {
-  entity_block First;
+  entity_block *First;
   entity_block *Current;
-  memory_arena *Memory;
+  memory_arena *Memory; poof(@no_serialize)
+  
 };
 
 link_internal entity_block_array_index
@@ -29,7 +32,7 @@ operator++(entity_block_array_index &I0)
     {
       I0.ElementIndex = 0;
       I0.BlockIndex++;
-      I0.Block = Cast(entity_block*, I0.Block)->Next;
+      I0.Block = I0.Block->Next;
     }
     else
     {
@@ -50,13 +53,6 @@ operator<(entity_block_array_index I0, entity_block_array_index I1)
   return Result;
 }
 
-link_inline entity_block *
-GetBlock(entity_block_array_index *Index)
-{
-  entity_block *Result = Cast(entity_block*, Index->Block);
-  return Result;
-}
-
 link_inline umm
 GetIndex(entity_block_array_index *Index)
 {
@@ -68,8 +64,8 @@ link_internal entity_block_array_index
 ZerothIndex(entity_block_array *Arr)
 {
   entity_block_array_index Result = {};
-  Result.Block = &Arr->First;
-  Assert(GetBlock(&Result)->Index == 0);
+  Result.Block = Arr->First;
+  /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
@@ -108,8 +104,6 @@ AtElements(entity_block_array *Arr)
     Result.Block = Arr->Current;
     Result.BlockIndex = Arr->Current->Index;
     Result.ElementIndex = Arr->Current->At;
-    /* Assert(Result.ElementIndex); */
-    /* Result.ElementIndex--; */
   }
   return Result;
 }
@@ -118,7 +112,7 @@ link_internal entity *
 GetPtr(entity_block_array *Arr, entity_block_array_index Index)
 {
   entity *Result = {};
-  if (Index.Block) { Result = GetBlock(&Index)->Elements + Index.ElementIndex; }
+  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
   return Result;
 }
 
@@ -137,7 +131,7 @@ GetPtr(entity_block_array *Arr, umm Index)
   umm ElementIndex = Index % 8;
 
   umm AtBlock = 0;
-  entity_block *Block = &Arr->First;
+  entity_block *Block = Arr->First;
   while (AtBlock++ < BlockIndex)
   {
     Block = Block->Next;
@@ -184,8 +178,8 @@ RemoveUnordered(entity_block_array *Array, entity_block_array_index Index)
   if (Array->Current->At == 0)
   {
     // Walk the chain till we get to the second-last one
-    entity_block *Current = &Array->First;
-    entity_block *LastB = GetBlock(&LastI);
+    entity_block *Current = Array->First;
+    entity_block *LastB = LastI.Block;
 
     while (Current->Next && Current->Next != LastB)
     {
@@ -202,7 +196,7 @@ Push(entity_block_array *Array, entity *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 
-  if (Array->Current == 0) { Array->First = *Allocate_entity_block(Array->Memory); Array->Current = &Array->First; }
+  if (Array->First == 0) { Array->First = Allocate_entity_block(Array->Memory); Array->Current = Array->First; }
 
   if (Array->Current->At == 8)
   {

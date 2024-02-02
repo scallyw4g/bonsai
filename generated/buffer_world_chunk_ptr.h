@@ -1,11 +1,13 @@
+// src/engine/world_chunk.h:399:0
+
 struct world_chunk_ptr_buffer
 {
-  world_chunk_ptr *Start;
   umm Count;
+  world_chunk_ptr *Start; poof(@array_length(Element->Count))
 };
 
 link_internal world_chunk_ptr_buffer
-WorldChunkPtrBuffer(umm ElementCount, memory_arena* Memory)
+WorldChunkPtrBuffer( umm ElementCount, memory_arena* Memory)
 {
   world_chunk_ptr_buffer Result = {};
 
@@ -64,4 +66,5 @@ Get(world_chunk_ptr_buffer *Buf, umm Index)
   world_chunk_ptr *Result = GetPtr(Buf, Index);
   return Result;
 }
+
 

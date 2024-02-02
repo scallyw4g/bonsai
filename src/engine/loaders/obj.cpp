@@ -145,8 +145,7 @@ LoadObj(memory_arena *PermMem, heap_allocator *Heap, const char * FilePath)
   Assert(Remaining(&VertIndicies) == 0 );
   Assert(Remaining(&NormalIndicies) == 0 );
 
-  untextured_3d_geometry_buffer Mesh = {};
-  AllocateMesh(&Mesh, Stats.FaceCount*3, Heap);
+  untextured_3d_geometry_buffer *Mesh = AllocateMesh(Heap, Stats.FaceCount*3);
 
   v3 MinV = V3(f32_MAX);
   v3 MaxV = V3(f32_MIN);
@@ -165,17 +164,17 @@ LoadObj(memory_arena *PermMem, heap_allocator *Heap, const char * FilePath)
     MinV = Min(Vertex, MinV);
     MaxV = Max(Vertex, MaxV);
 
-    Mesh.Verts[Mesh.At] = Vertex;
-    Mesh.Normals[Mesh.At] = Normal;
-    Mesh.At++;
+    Mesh->Verts[Mesh->At] = Vertex;
+    Mesh->Normals[Mesh->At] = Normal;
+    Mesh->At++;
 
-    Assert(Mesh.At <= Mesh.End);
+    Assert(Mesh->At <= Mesh->End);
   }
 
-  Assert(Mesh.At == Mesh.End);
+  Assert(Mesh->At == Mesh->End);
 
   model Result = {};
-  Result.Mesh = Mesh;
+  AtomicReplaceMesh(&Result.Meshes, MeshBit_Lod0, Mesh, __rdtsc());
   Result.Dim = V3i(MaxV-MinV)+1;
 
   return Result;

@@ -24,10 +24,14 @@ Unspawn(entity *Entity)
   Assert(Entity->Emitter);
   auto Emitter = Entity->Emitter;
 
+  u32 Index = Entity->Id.Index;
+
   Clear(Entity);
   Deactivate(Emitter);
 
+  Entity->Id.Index = Index;;
   Entity->Emitter = Emitter;
+  Entity->AssetId.Index = INVALID_ASSET_INDEX;
 }
 
 link_internal aabb GetSimSpaceAABB(world *World, entity *Entity);
@@ -47,7 +51,7 @@ GetCollision(world *World, entity *First, aabb SecondAABB)
 
 
 link_internal collision_event
-GetCollision_Entities( world *World, entity *ThisEntity, canonical_position TestP, v3 CollisionDim )
+GetCollision_Entities( world *World, entity *ThisEntity, cp TestP, v3 CollisionDim )
 {
   TIMED_FUNCTION();
 
@@ -77,6 +81,13 @@ GetCollision_Entities( world *World, entity *ThisEntity, canonical_position Test
   Result.FrameIndex = GetEngineResources()->FrameIndex;
   Result.Count = Hit;
 
+  return Result;
+}
+
+link_internal collision_event
+GetCollision_Entities( world *World, entity *ThisEntity)
+{
+  auto Result = GetCollision_Entities(World, ThisEntity, ThisEntity->P, ThisEntity->_CollisionVolumeRadius*2.f);
   return Result;
 }
 
@@ -113,6 +124,76 @@ GetCollision( world *World, canonical_position TestP, v3 CollisionDim )
           Result.Count ++;
         }
 
+      }
+    }
+  }
+
+  return Result;
+}
+
+link_internal collision_event
+GetCollision( world *World, aabb SimSpaceCollisionDim )
+{
+  TIMED_FUNCTION();
+
+  chunk_dimension WorldChunkDim = World->ChunkDim;
+  /* Assert( IsCanonical(WorldChunkDim, TestP) ); */
+
+  collision_event Result = {};
+  Result.MinP = Canonical_Position(V3(f32_MAX), V3i(s32_MAX));
+  Result.MaxP = Canonical_Position(V3(-1.f), V3i(s32_MIN));
+  Result.FrameIndex = GetEngineResources()->FrameIndex;
+
+  cp MinP = SimSpaceToCanonical(World, SimSpaceCollisionDim.Min);
+  cp MaxP = SimSpaceToCanonical(World, SimSpaceCollisionDim.Max);
+  /* voxel_position MinP = Voxel_Position(TestP.Offset); */
+  /* voxel_position MaxP = Voxel_Position(Ceil(TestP.Offset + CollisionDim)); */
+
+  temp_memory_handle TMH = BeginTemporaryMemory(GetTranArena());
+
+  rect3cp CollisionRegion = RectMinMax(MinP, MaxP);
+  world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, CollisionRegion, GetTranArena());
+
+  if (Chunks.Count)
+  {
+    rect3i_buffer Ranges = Rect3iBuffer( Chunks.Count, GetTranArena() );
+
+    auto SimSpaceCollisionRegion = GetSimSpaceRect3i(World, CollisionRegion);
+    GatherRangesOverlapping(World, SimSpaceCollisionRegion, &Chunks, &Ranges);
+
+    IterateOver(&Ranges, Range, RangeIndex)
+    {
+      world_chunk *Chunk = *GetPtr(&Chunks, RangeIndex);
+      /* DEBUG_HighlightChunk(*Chunk, RED); */
+
+#if 0
+      {
+        cp Min = Canonical_Position(Range->Min, Chunk->WorldP);
+        cp Max = Canonical_Position(Range->Max, Chunk->WorldP);
+        Assert(IsCanonical(World, Min));
+        Assert(IsCanonical(World, Max));
+        rect3cp CPRange = RectMinMax(Min, Max);
+        DEBUG_HighlightRegion(CPRange, RED);
+      }
+#endif
+
+      for ( int z = Range->Min.z; z < Range->Max.z; z++ )
+      {
+        for ( int y = Range->Min.y; y < Range->Max.y; y++ )
+        {
+          for ( int x = Range->Min.x; x < Range->Max.x; x++ )
+          {
+            v3i Offset = V3i(x,y,z);
+            s32 Index = GetIndex(Offset, Chunk->Dim);
+            if (Chunk->Voxels[Index].Flags & Voxel_Filled)
+            {
+              cp Hit = {V3(Offset), Chunk->WorldP};
+              /* Assert(Hit > Result.MaxP); */
+              Result.MaxP = Hit;
+              Result.Count ++;
+            }
+          }
+        }
       }
     }
   }
@@ -161,6 +242,7 @@ GetCollision(world *World, entity **Entities, entity *Entity)
 /* TODO(Jesse, id: 130, tags: be_smarter): This offset is only used to check if
  * entities are grounded.  Can we do that in a more intelligent way?
  */
+// TODO(Jesse): Replace with GetCollision_Entities
 collision_event
 GetCollision(world *World, entity *Entity, v3 Offset = V3(0,0,0) )
 {
@@ -179,19 +261,81 @@ GetCollision(world *World, entity *Entity, v3 Offset = V3(0,0,0) )
 }
 
 link_internal entity *
+GetEntity(entity **EntityTable, entity_id Id)
+{
+  entity *Result = {};
+
+  // NOTE(Jesse): A Generation of 0 means the entity has never been allocated
+  if (Id.Generation)
+  {
+    entity *E = EntityTable[Id.Index];
+    if (E->Id.Generation == Id.Generation)
+    {
+      Result = E;
+    }
+  }
+
+  return Result;
+}
+
+link_internal entity_id
+GetFreeEntity(entity **EntityTable)
+{
+  entity_id Result = {};
+
+  for ( u32 EntityIndex = 0;
+        EntityIndex < TOTAL_ENTITY_COUNT;
+      ++EntityIndex )
+  {
+    entity *TestEntity = EntityTable[EntityIndex];
+    if (TestEntity->State == EntityState_Free)
+    {
+      TestEntity->State = EntityState_Reserved;
+      TestEntity->Id.Generation += 1;
+
+      Assert(TestEntity->Id.Index == EntityIndex);
+      Assert(TestEntity->AssetId.Index == INVALID_ASSET_INDEX);
+
+      Result = TestEntity->Id;
+      break;
+    }
+  }
+
+  if (Result.Generation)
+  {
+    entity *E = GetEntity(EntityTable, Result);
+    Assert(Unspawned(E));
+    Assert(!Destroyed(E));
+  }
+
+  return Result;
+}
+
+link_internal entity *
+TryGetFreeEntityPtr(entity **EntityTable)
+{
+  entity_id Id = GetFreeEntity(EntityTable);
+  entity *Result = GetEntity(EntityTable, Id);
+  return Result;
+}
+
+#if 0
+link_internal entity *
 GetFreeEntity(entity **EntityTable)
 {
   entity *Result = 0;
 
   for ( s32 EntityIndex = 0;
         EntityIndex < TOTAL_ENTITY_COUNT;
-        ++EntityIndex )
+      ++EntityIndex )
   {
     entity *TestEntity = EntityTable[EntityIndex];
     if (TestEntity->State == EntityState_Free)
     {
       Result = TestEntity;
       Result->State = EntityState_Reserved;
+      Result->Id = u64(EntityIndex);
+      Assert(Result->AssetId.Index == INVALID_ASSET_INDEX);
       break;
     }
   }
@@ -204,17 +348,18 @@ GetFreeEntity(entity **EntityTable)
 
   return Result;
 }
+#endif
 
 link_internal entity *
-AllocateEntity(memory_arena *Memory, chunk_dimension ModelDim)
+AllocateEntity(memory_arena *Memory)
 {
   entity *Entity = Allocate(entity, Memory, 1);
+
+  // TODO(Jesse)(wtf): WTF?
   Entity->Emitter = Allocate(particle_system, Memory, 1);
-  Entity->Model = Allocate(model, Memory, 1);
-  /* Entity->Model->Dim = ModelDim; */
 
   Entity->Scale = 1.0f;
-
+  Entity->AssetId.Index = INVALID_ASSET_INDEX;
   return Entity;
 }
 
@@ -226,8 +371,8 @@ AllocateEntityTable(memory_arena* Memory, u32 Count)
            EntityIndex < Count;
          ++EntityIndex)
   {
-    Result[EntityIndex] = AllocateEntity(Memory, Chunk_Dimension(0, 0, 0));
-    Result[EntityIndex]->Id = EntityIndex;
+    Result[EntityIndex] = AllocateEntity(Memory);
+    Result[EntityIndex]->Id.Index = EntityIndex;
   }
 
   return Result;
@@ -289,6 +434,7 @@ SpawnEntity(entity *Entity)
   Entity->State = EntityState_Spawned;
 }
 
+#if 0
 link_internal void
 SpawnEntity( entity *Entity, entity_behavior_flags Behavior, model *GameModels, model_index ModelIndex)
 {
@@ -316,6 +462,7 @@ SpawnEntity( entity *Entity, entity_behavior_flags Behavior, model *GameModels, 
 
   SpawnEntity(Entity);
 }
+#endif
 
 link_internal void
 SpawnEntity( entity *Entity, entity_behavior_flags Behavior )
@@ -327,7 +474,8 @@ SpawnEntity( entity *Entity, entity_behavior_flags Behavior )
 void
 SpawnEntity(
     entity *Entity,
-    model *Model,
+    asset_id *AssetId,
+    u64 ModelIndex,
     entity_behavior_flags Behavior,
 
     physics *Physics,
@@ -346,26 +494,17 @@ SpawnEntity(
 
   Entity->Behavior = Behavior;
 
-  if (Model) Entity->Model = Model;
   if (Physics) Entity->Physics = *Physics;
   if (InitialP) Entity->P = *InitialP;
+  if (AssetId) Entity->AssetId = *AssetId;
 
   Entity->_CollisionVolumeRadius = CollisionVolumeRadius;
 
   Entity->Scale = Scale;
 
+  Entity->ModelIndex = ModelIndex;
+
   SpawnEntity(Entity);
-}
-
-entity *
-AllocateEntity(memory_arena *Memory)
-{
-  entity *Entity = Allocate(entity, Memory, 1);
-  Entity->Emitter = Allocate(particle_system, Memory, 1);
-
-  Entity->Scale = 1.0f;
-
-  return Entity;
 }
 
 entity *
@@ -377,77 +516,29 @@ AllocatePlayer(memory_arena *Memory)
   return Player;
 }
 
-entity *
-SpawnProjectile(entity** EntityTable,
-                canonical_position *P,
-                v3 Velocity,
-                entity_behavior_flags Behavior
-  )
+link_internal void
+SpawnParticleSystem(particle_system *System)
 {
-  entity *Projectile = GetFreeEntity(EntityTable);
-
-  v3 CollisionVolumeRadius = V3(0.25f);
-
-  physics Physics = {};
-  Physics.Velocity = Velocity;
-  Physics.Speed = 60;
-
-  r32 Scale = 1.0f;
-  r32 RateOfFire = 1.0f;
-  s32 Health = 1;
-
-  SpawnEntity(
-    Projectile,
-    0,
-    Behavior,
-
-    &Physics,
-
-    P,
-    CollisionVolumeRadius,
-
-    Scale,
-    RateOfFire,
-    Health);
-
-#if 0
-  switch (ProjectileType)
-  {
-    case EntityType_PlayerProton:
-    {
-      Projectile->Model = GameModels[ModelIndex_Proton];
-    } break;
-
-    case EntityType_PlayerProjectile:
-    case EntityType_EnemyProjectile:
-    {
-      Projectile->Model = GameModels[ModelIndex_Projectile];
-    } break;
-
-    InvalidDefaultCase;
-  }
-#endif
-
-  return Projectile;
+  // Used to do stuff .. kept here to keep the book-ends intact .. might remove in the future
 }
+/* link_internal void */
+/* SpawnCameraGhost(engine_resources *Engine) */
+/* { */
+/*   Engine->_CameraGhost = GetFreeEntity(Engine->EntityTable); */
+/*   SpawnEntity(Engine->_CameraGhost, EntityBehaviorFlags_CameraGhost); */
+/* } */
 
-void
+link_internal void
 UnspawnParticleSystem(particle_system *System)
 {
   Clear(System);
 }
 
-#if 1
-void
-SpawnParticleSystem(particle_system *System)
-{
-}
-#endif
-
 link_internal void
 SpawnPlayerLikeEntity( platform *Plat,
                        world *World,
-                       model* Model,
+                       asset_id *AssetId,
+                       u64 ModelIndex,
                        entity *Player,
                        canonical_position InitialP,
                        random_series* Entropy,
@@ -463,14 +554,17 @@ SpawnPlayerLikeEntity( platform *Plat,
 
   v3 CollisionVolumeRadius = {};
 
-  if (Model)
+  if (AssetId)
   {
-    CollisionVolumeRadius = Model->Dim * Scale * 0.5f; // 0.5f is to shrink to a radius, instead of dim
+    BUG("Spawning player-like entity, defaulting CollisionVolumeRadius to 1.f");
+    CollisionVolumeRadius = V3(1.f);
+    Player->AssetId = *AssetId;
   }
 
   SpawnEntity(
       Player,
-      Model,
+      AssetId,
+      ModelIndex,
       EntityBehaviorFlags_Default,
 
       &Physics,
@@ -493,7 +587,8 @@ SpawnPlayerLikeEntity( platform *Plat,
 void
 SpawnStaticEntity( platform *Plat,
                    world *World,
-                   model* Model,
+                   asset_id *AssetId,
+                   u64 ModelIndex,
                    entity *Player,
                    canonical_position InitialP,
                    random_series* Entropy,
@@ -503,35 +598,13 @@ SpawnStaticEntity( platform *Plat,
   v3 CollisionVolumeRadius = {};
 
   // 0.5f is to shrink to a radius, instead of dim
-  if (Model) { CollisionVolumeRadius = Model->Dim * Scale * 0.5f; }
-
-#if 0
-  for (s32 z = -1; z < (s32)CollisionVolumeRadius.z; ++ z)
-  {
-    for (s32 y = -1; y < (s32)CollisionVolumeRadius.y; ++ y)
-    {
-      for (s32 x = -1; x < (s32)CollisionVolumeRadius.x; ++ x)
-      {
-        canonical_position CP = Canonicalize(World->ChunkDim, V3(x, y, z), InitialP.WorldP);
-
-        world_chunk *Chunk = GetWorldChunkFromHashtable( World, CP.WorldP );
-        if (Chunk == 0)
-        {
-          Chunk = GetWorldChunkFor(World->Memory, World, CP.WorldP);
-          if (Chunk)
-          {
-            QueueChunkForInit(&Plat->HighPriority, Chunk);
-          }
-        }
-      }
-    }
-  }
-#endif
+  if (AssetId) { NotImplemented; } //CollisionVolumeRadius = Model->Dim * Scale * 0.5f; }
 
   physics *Physics = 0;
   SpawnEntity(
       Player,
-      Model,
+      AssetId,
+      ModelIndex,
       EntityBehaviorFlags_None,
 
       Physics,
@@ -543,10 +616,6 @@ SpawnStaticEntity( platform *Plat,
       0,
       0
     );
-
-  /* WaitForWorkerThreads(&Plat->HighPriorityWorkerCount); */
-
-  return;
 }
 
 /* void */
@@ -1173,10 +1242,6 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
     }
   }
 
-#if 0
-  v3 RenderSpaceP = GetRenderP(Entity->P, Graphics->Camera, WorldChunkDim) + System->SpawnRegion.Center;
-  DoLight(Graphics->Lights, RenderSpaceP, 10.0f*EmissionColor);
-#endif
 }
 
 inline b32
@@ -1184,13 +1249,6 @@ IsGrounded( world *World, entity *entity )
 {
   collision_event c = GetCollision(World, entity, V3(0.0f, 0.0f, -0.01f));
   return c.Count > 0;
-}
-
-link_internal v3
-GetSimSpaceCenterP(entity *E, v3 SimSpaceP)
-{
-  v3 Result = SimSpaceP + E->_CollisionVolumeRadius;
-  return Result;
 }
 
 link_internal v3
@@ -1215,6 +1273,30 @@ GetSimSpaceBaseP(world *World, entity *E)
   return Result;
 }
 
+link_internal v3
+GetSimSpaceCenterP(world *World, entity *E)
+{
+  v3 Result = GetSimSpaceP(World, E) + E->_CollisionVolumeRadius;
+  return Result;
+}
+
+link_internal v3
+GetSimSpaceCenterP(entity *E, v3 SimSpaceP)
+{
+  v3 Result = SimSpaceP + E->_CollisionVolumeRadius;
+  return Result;
+}
+
+link_internal r32
+DistanceSqBetweenBasePoints(world *World, entity *E0, entity *E1)
+{
+  v3 Base0 = GetSimSpaceBaseP(World, E0);
+  v3 Base1 = GetSimSpaceBaseP(World, E1);
+
+  r32 Result = DistanceSq(Base0, Base1);
+  return Result;
+}
+
 link_internal aabb
 GetSimSpaceAABB(world *World, entity *Entity)
 {
@@ -1224,6 +1306,23 @@ GetSimSpaceAABB(world *World, entity *Entity)
   return Result;
 }
 
+inline b32
+Intersect(world *World, entity *First, aabb *Second)
+{
+  aabb Rect = GetSimSpaceAABB(World, First);
+  b32 Result = Intersect(&Rect, Second);
+  return Result;
+}
+
+inline b32
+Intersect(world *World, aabb *First, entity *Second)
+{
+  aabb Rect = GetSimSpaceAABB(World, Second);
+  b32 Result = Intersect(First, &Rect);
+  return Result;
+}
+
+// TODO(Jesse)(speed): Accelerate this using the entities stored on world chunks!
 link_internal u32_buffer
 GatherEntitiesIntersecting(world *World, entity **EntityTable, sphere *SimSpaceSphere, memory_arena *Memory)
 {
@@ -1234,9 +1333,6 @@ GatherEntitiesIntersecting(world *World, entity **EntityTable, sphere *SimSpaceS
     if (E)
     {
       aabb EntityAABB = GetSimSpaceAABB(World, E);
-
-      /* v3 ESimP = GetSimSpaceP(World, E->P); */
-      /* v3 ESimCenterP = GetSimSpaceCenterP(E, ESimP); */
 
       if (Intersect(&EntityAABB, SimSpaceSphere))
       {
@@ -1256,10 +1352,11 @@ Intersect(world *World, ray *Ray, entity *Entity)
   return Result;
 }
 
-link_internal entity *
-GetClosestEntityToRay(world *World, entity **EntityTable, ray *Ray)
+link_internal maybe_entity_ptr
+GetClosestEntityIntersectingRay(world *World, entity **EntityTable, ray *Ray)
 {
-  entity *Result = {};
+  maybe_entity_ptr Result = {};
+
   r32 tMin = f32_MAX;
   for ( s32 EntityIndex = 0;
             EntityIndex < TOTAL_ENTITY_COUNT;
@@ -1273,28 +1370,33 @@ GetClosestEntityToRay(world *World, entity **EntityTable, ray *Ray)
     if (I.t < tMin)
     {
       tMin = I.t;
-      Result = Entity;
+      Result.Tag = Maybe_Yes;
+      Result.Value = Entity;
     }
   }
 
   return Result;
 }
 
-link_internal entity *
+link_internal maybe_entity_ptr
 RayTraceEntityCollision(engine_resources *Resources, ray *Ray)
 {
-  entity *Result = GetClosestEntityToRay(Resources->World, Resources->EntityTable, Ray);
+  maybe_entity_ptr Result = GetClosestEntityIntersectingRay(Resources->World, Resources->EntityTable, Ray);
   return Result;
 }
 
 link_internal entity *
 MousePickEntity(engine_resources *Resources)
 {
+  // NOTE(Jesse): This is nearly defunct.  It's only called from game code in once place
+  //
+  NotImplemented;
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Resources);
 
   entity *Result = {};
 
+#if 0
   maybe_ray MaybeRay = ComputeRayFromCursor(Resources, &gBuffer->ViewProjection, Camera, World->ChunkDim);
 
   if (MaybeRay.Tag == Maybe_Yes)
@@ -1302,9 +1404,18 @@ MousePickEntity(engine_resources *Resources)
     /* v3 SimOrigin = GetSimSpaceP(World, Canonical_Position(World->ChunkDim, MaybeRay.Ray.Origin, V3i(0))); */
     /* ray SimRay = {SimOrigin, MaybeRay.Ray.Dir}; */
     ray SimRay = MaybeRay.Ray;
-    Result = RayTraceEntityCollision( Resources, &SimRay );
+    Result = RayTraceEntityCollision( Resources, &SimRay ).Value;
   }
+#endif
 
+  return Result;
+}
+
+link_internal b32
+EntityCollidedLastFrame(engine_resources *Engine, entity *E)
+{
+  b32 Result =  E->LastResolvedCollision.Count &&
+               (E->LastResolvedCollision.FrameIndex == Engine->FrameIndex-1);
   return Result;
 }
 
@@ -1328,10 +1439,34 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
     b32 DoDefaultUpdate = True;
     if (GameEntityUpdate) { DoDefaultUpdate = (GameEntityUpdate(Resources, Entity) == False); }
 
+
     Entity->P = Canonicalize(Resources->World, Entity->P);
 
     if (DoDefaultUpdate)
     {
+      // Update Camera Ghost
+      if (Entity->Behavior & EntityBehaviorFlags_DefatulCameraGhostBehavior)
+      {
+        if (Entity->Id == Graphics->Camera->GhostId)
+        {
+          if (UiCapturedMouseInput(Ui) == False)
+          {
+            f32 CameraSpeed = 80.f;
+            v3 Offset = GetCameraRelativeInput(Hotkeys, Camera);
+            Offset.z = 0; // Constrain to XY plane
+
+            if (Input->E.Pressed) { Offset.z += 1.f; }
+            if (Input->Q.Pressed) { Offset.z -= 1.f; }
+
+            Offset = Normalize(Offset);
+            Entity->P.Offset += Offset * Plat->dt * CameraSpeed;
+          }
+
+        }
+      }
+
+      if (Entity->Behavior & EntityBehaviorFlags_WorldCenter) { World->Center = Entity->P.WorldP; }
+
       b32 ApplyGravity = ((Entity->Behavior & EntityBehaviorFlags_Gravity) == EntityBehaviorFlags_Gravity);
       PhysicsUpdate(&Entity->Physics, dt, ApplyGravity);
 
@@ -1376,4 +1511,39 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
     InsertEntityIntoChunks(World, Entity, GetTranArena());
   }
 }
+
+
+link_internal maybe_standing_spot
+AStarPathfind(world *World, standing_spot_buffer *Spots, cp CurrentP, cp TargetP, r32 Movespeed)
+{
+  NotImplemented;
+
+  memory_arena *Temp = GetTranArena();
+  temp_memory_handle TMH = BeginTemporaryMemory(Temp);
+
+  standing_spot_block_array Stack = {};
+  Stack.Memory = Temp;
+
+  standing_spot_buffer HotSpots = GetStandingSpotsWithinRadiusSorted(World, Spots, CurrentP, Movespeed, Temp, Temp);
+
+  IterateOver(&HotSpots, Spot, SpotIndex)
+  {
+  }
+
+
+  maybe_standing_spot Result = {};
+
+#if 0
+  if (Spots->Count)
+  {
+    u32 Index = RandomBetween(0u, &E, u32(Spots->Count));
+
+    Result.Tag = Maybe_Yes;
+    Result.Value = Spots->Start[Index];
+  }
+#endif
+
+  return Result;
+}
+
 

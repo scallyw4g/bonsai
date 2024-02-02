@@ -22,7 +22,7 @@ struct transparency_render_group
   texture                   *AccumTex;
   texture                   *RevealTex;
   texture                   *Depth;
-  m4                        *ViewProjection;
+  /* m4                        *ViewProjection; */
 };
 
 struct bloom_render_group
@@ -32,14 +32,40 @@ struct bloom_render_group
   shader Shader;
 };
 
+struct lighting_settings
+{
+  b8 AutoDayNightCycle;
+
+  r32 tDay;      poof(@ui_value_range(-PI32, PI32))
+
+  v3 SunP;       poof(@ui_value_range(-1.f, 1.f))
+
+  v3 DawnColor;
+  v3 SunColor;
+  v3 DuskColor;
+  v3 MoonColor;
+
+  f32 SunIntensity;  poof(@ui_value_range(0.f, 3.f))
+  f32 MoonIntensity; poof(@ui_value_range(0.f, 3.f))
+  f32 DawnIntensity; poof(@ui_value_range(0.f, 3.f))
+  f32 DuskIntensity; poof(@ui_value_range(0.f, 3.f))
+
+  // Computed from the above parameters and passed to the shader
+  v3 CurrentSunColor;
+};
+
+enum tone_mapping_type
+{
+  ToneMappingType_None,
+  ToneMappingType_Reinhard,
+  ToneMappingType_Exposure,
+  ToneMappingType_AGX,
+  ToneMappingType_AGX_Sepia,
+  ToneMappingType_AGX_Punchy,
+};
+
 struct render_settings
 {
-  b32 Headless;
-
-  /* b8 DoDayNightCycle; */
-  b8 AutoDayNightCycle;
-  r32 tDay;
-
   // NOTE(Jesse): These have to be 32bit because they get passed to shaders
   // and the shader system is too dumb to handle 8-bit or 1-bit values
   b32 UseSsao;
@@ -51,15 +77,28 @@ struct render_settings
 
   b32 DrawMajorGrid;
   b32 DrawMinorGrid;
-  r32 MajorGridDim;
-  v3  OffsetOfWorldCenterToGrid;
+  r32 MajorGridDim;   poof(@ui_value_range(0, 32))
+
+  v3 OffsetOfWorldCenterToGrid; poof(@ui_skip)
+  b32 Headless;                 poof(@ui_skip)
+
+
+  tone_mapping_type ToneMappingType;
+
+  lighting_settings Lighting;
 };
 
 struct graphics
 {
   render_settings Settings;
 
-  camera *Camera;
+  // Default cameras, game code can do it's own thing if it wants to.
+  camera GameCamera;
+  camera DebugCamera;
+
+  // Pointer to current camera.  Anyone is free to modify this pointer ..?
+  camera *Camera; poof(@ui_skip)
+
   r32 Exposure;
 
   // TODO(Jesse): None of these need to be pointers..

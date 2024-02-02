@@ -1,3 +1,5 @@
+struct world_chunk;
+
 #define DEFAULT_LINE_THICKNESS (0.1f)
 
 #define SSAO_KERNEL_SIZE 32

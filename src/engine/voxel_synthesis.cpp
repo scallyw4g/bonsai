@@ -61,14 +61,13 @@ BakeVoxelSynthesisRules(const char* InputVox)
   Info("Synthesizing rules for (%s)", InputVox);
 
   /* vox_data Vox = LoadVoxData(Memory, &Heap, InputVox, Global_TileDim*2, Global_TileDim*2); */
-  vox_data_block_array Vox = LoadVoxData(GetColorPalette(), GetTranArena(), Memory, &Heap, InputVox, VoxLoaderClipBehavior_ClipToVoxels, {{Global_TileDim.x*2, Global_TileDim.y*2, Global_TileDim.z*3}}, {{Global_TileDim.x*2, Global_TileDim.y*2, Global_TileDim.z}}, Global_TileDim);
+  vox_data_block_array VoxArray = LoadVoxData(GetColorPalette(), GetTranArena(), Memory, &Heap, InputVox, VoxLoaderClipBehavior_ClipToVoxels, {{Global_TileDim.x*2, Global_TileDim.y*2, Global_TileDim.z*3}}, {{Global_TileDim.x*2, Global_TileDim.y*2, Global_TileDim.z}}, Global_TileDim);
 
-#if 1
-  voxel_synthesis_result Result = {};
-  NotImplemented;
-#else
+  vox_data *Vox_ = GetPtr(&VoxArray, ZerothIndex(&VoxArray));
+  Assert(Vox_);
 
-  v3i ModelDim = Vox[ZerothIndex(&Vox)].ChunkData->Dim;
+  vox_data Vox = *Vox_;
+  v3i ModelDim = Vox.ChunkData->Dim;
 
   v3i FillDim = ModelDim;
   FillDim.z = Global_TileDim.z*3;
@@ -244,7 +243,6 @@ BakeVoxelSynthesisRules(const char* InputVox)
       if (Aggregate == 0) Result.Errors++;
     }
   }
-#endif
 #endif
 
   return Result;
