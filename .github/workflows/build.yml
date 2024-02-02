@@ -29,12 +29,15 @@ jobs:
       run: sudo apt update && sudo apt install freeglut3-dev libx11-dev clang-15
     - name: Build
       run: ./make.sh
+    - name: Tar
+      if: startsWith(github.ref, 'refs/tags/')
+      run:  tar -cz bin/* > linux_release.tar.gz
     - name: Release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: |
-          bin/*
+          linux_release.tar.gz
           LICENSE
           CHANGELOG.txt
 
