@@ -855,7 +855,7 @@ GrassyTerracedTerrain3( perlin_noise *Noise,
           v3 WarpFactor = {};
 
           r32 N = PerlinNoise(InX+WarpFactor.x, InY+WarpFactor.y, InZ+WarpFactor.z);
-
+#if 1
           if (OctaveIndex == 0)
           {
             BaseNoiseValue += MapNoiseValueToFinal(N) * Octave->Amp;
@@ -864,6 +864,9 @@ GrassyTerracedTerrain3( perlin_noise *Noise,
           {
             BaseNoiseValue += N * Octave->Amp;
           }
+#else
+            BaseNoiseValue += MapNoiseValueToFinal(N) * Octave->Amp;
+#endif
 
           MaxValue += Octave->Amp;
         }

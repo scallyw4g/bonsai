@@ -6,23 +6,23 @@ MapNoiseValueToFinal(f32 Value)
   Assert(Value >= 0.f);
 
   // NOTE(Jesse): Descending order so we can scan from the front and find the interval we care about
-  v2 Points[] =
-  {
-    {{1.0f, 1.0f }},
-    {{0.7f, 0.85f }},
-    {{0.6f, 0.5f }},
-    {{0.3f, 0.4f }},
-    {{0.2f, 0.1f }},
-    {{0.0f, 0.0f }},
-  };
-
   /* v2 Points[] = */
   /* { */
   /*   {{1.0f, 1.0f }}, */
-  /*   {{0.5f, 0.7f }}, */
+  /*   {{0.7f, 0.85f }}, */
+  /*   {{0.6f, 0.5f }}, */
+  /*   {{0.3f, 0.4f }}, */
   /*   {{0.2f, 0.1f }}, */
   /*   {{0.0f, 0.0f }}, */
   /* }; */
+
+  v2 Points[] =
+  {
+    {{1.0f, 1.0f }},
+    {{0.5f, 0.7f }},
+    {{0.2f, 0.1f }},
+    {{0.0f, 0.0f }},
+  };
 
 
   b32 Hit = False;;
