@@ -17,7 +17,7 @@ jobs:
       run: sudo apt update && sudo apt install freeglut3-dev libx11-dev clang
     - name: Build
       run: ./make.sh
-      
+
   build-ubuntu-22:
     runs-on: ubuntu-22.04
     steps:
@@ -28,6 +28,14 @@ jobs:
       run: sudo apt update && sudo apt install freeglut3-dev libx11-dev clang-15
     - name: Build
       run: ./make.sh
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: |
+          bin/
+          LICENSE
+          CHANGELOG.txt
 
   build-windows:
     runs-on: windows-latest
@@ -43,4 +51,3 @@ jobs:
     - name: Build
       shell: bash
       run: ./make.sh
-
