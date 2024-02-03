@@ -3381,7 +3381,7 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
 #else
 
   u32 SyntheticChunkSum = NoiseCallback( Thread->PerlinNoise,
-                                         SyntheticChunk, SynChunkDim, -1.f*Global_ChunkApronMinDim,
+                                         SyntheticChunk, SynChunkDim, Global_ChunkApronMinDim,
                                          GRASS_GREEN, Frequency, Amplititude, zMin,
                                          WorldChunkDim, UserData );
 
