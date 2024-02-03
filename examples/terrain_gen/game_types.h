@@ -14,9 +14,10 @@ enum terrain_gen_type
   TerrainGenType_GrassyLargeTerracedTerrain = (1 << 9),
   TerrainGenType_GrassyTerracedTerrain2     = (1 << 10),
   TerrainGenType_GrassyTerracedTerrain3     = (1 << 11),
-  TerrainGenType_GrassyIsland               = (1 << 12),
-  TerrainGenType_Hoodoo                     = (1 << 13),
-  TerrainGenType_Warped                     = (1 << 14),
+  TerrainGenType_GrassyTerracedTerrain4     = (1 << 12),
+  TerrainGenType_GrassyIsland               = (1 << 13),
+  TerrainGenType_Hoodoo                     = (1 << 14),
+  TerrainGenType_Warped                     = (1 << 15),
 };
 
 poof(radio_button_group_for_bitfield_enum(terrain_gen_type))

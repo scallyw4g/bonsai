@@ -173,7 +173,7 @@ StandardCamera(camera* Camera, f32 FarClip, f32 DistanceFromTarget, f32 Blend, c
   Camera->Right = WORLD_X;
 
   Camera->TargetPitch = PI32 - (PI32*0.25f);
-  Camera->TargetYaw = PI32*0.15f;
+  Camera->TargetYaw = -PI32*0.15f;
 
   Camera->DistanceFromTarget = DistanceFromTarget;
 }

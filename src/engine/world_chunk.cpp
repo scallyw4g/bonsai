@@ -1416,6 +1416,8 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
         voxel *Voxel = TempVoxels + Index;
 
         f32 Trans = (f32)Voxel->Transparency / 255.f;
+
+        /* v3 Color = Voxel->DebugColor; */
         v3 Color = GetColorData(Voxel->Color);
 
         FillArray(VertexMaterial(Color, Trans, 0.f), Materials, VERTS_PER_FACE);
@@ -1776,8 +1778,12 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve( voxel *Voxels,
         // TODO(Jesse): This copy could be avoided in multiple ways, and should be.
         /* FillColorArray(Voxel->Color, FaceColors, ColorPallette, VERTS_PER_FACE); */
 
+#if VOXEL_DEBUG_COLOR
+        v3 Color = Voxel->DebugColor;
+#else
         v3 Color = GetColorData(Voxel->Color);
-        /* v3 Color = Voxel->DebugColor; */
+#endif
+
         f32 Trans = (f32)Voxel->Transparency / 255.f;
         FillArray(VertexMaterial(Color, Trans, 0.f), Materials, VERTS_PER_FACE);
 
@@ -3279,8 +3285,11 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOff
 
   if (MeshBit == MeshBit_Lod0)
   {
+#if VOXEL_DEBUG_COLOR
+    BuildWorldChunkMeshFromMarkedVoxels_Naieve( Chunk->Voxels, Chunk->Dim, MinOffset, MaxOffset, TempMesh, 0);
+#else
     BuildWorldChunkMeshFromMarkedVoxels_Greedy( Chunk->Voxels, Chunk->Dim, MinOffset, MaxOffset, TempMesh, 0, TempMem );
-    /* BuildWorldChunkMeshFromMarkedVoxels_Naieve( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, TempMesh, 0); */
+#endif
   }
   else
   {
@@ -3372,7 +3381,7 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
 #else
 
   u32 SyntheticChunkSum = NoiseCallback( Thread->PerlinNoise,
-                                         SyntheticChunk, SynChunkDim, Global_ChunkApronMinDim,
+                                         SyntheticChunk, SynChunkDim, -1.f*Global_ChunkApronMinDim,
                                          GRASS_GREEN, Frequency, Amplititude, zMin,
                                          WorldChunkDim, UserData );
 
@@ -3904,8 +3913,11 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
   voxel *CopiedVoxels = Allocate(voxel, Thread->PermMemory, TotalVoxels);
 
+#if VOXEL_DEBUG_COLOR
+  voxel UnsetVoxel = { 0xff, 0xff, 0xffff, {}};
+#else
   voxel UnsetVoxel = { 0xff, 0xff, 0xffff};
-  /* voxel UnsetVoxel = { 0xff, 0xff, 0xffff, {}, {}}; */
+#endif
   for (u32 VoxelIndex = 0; VoxelIndex < TotalVoxels; ++VoxelIndex) { CopiedVoxels[VoxelIndex] = UnsetVoxel; }
 
   v3i SimSpaceQueryMinP = SimSpaceQueryAABB.Min;
@@ -4176,7 +4188,11 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
           case WorldUpdateOperationMode_Additive:
           {
+#if VOXEL_DEBUG_COLOR
+            NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor, {}};
+#else
             NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor};
+#endif
             DimIterator(x, y, z, SimSpaceQueryDim)
             {
               v3i SimRelVoxP = V3i(x,y,z);

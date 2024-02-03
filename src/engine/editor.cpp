@@ -1000,7 +1000,7 @@ DoWorldEditor(engine_resources *Engine)
   //
   if (Engine->MousedOverVoxel.Tag)
   {
-#if 0
+#if VOXEL_DEBUG_COLOR
     {
       v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, HighlightVoxel));
       DEBUG_HighlightVoxel( Engine, SimP, RED, 0.075f);
@@ -1011,8 +1011,8 @@ DoWorldEditor(engine_resources *Engine)
       local_persist window_layout Window = WindowLayout("DEBUG DELETE ME", V2(150.f, 150.f));
       PushWindowStart(Ui, &Window);
 
-      v3 Tangent, Bitangent, Normal;
-      CalculateTBN(V->Derivs, &Tangent, &Bitangent, &Normal);
+      /* v3 Tangent, Bitangent, Normal; */
+      /* CalculateTBN(V->Derivs, &Tangent, &Bitangent, &Normal); */
 
       /* DEBUG_DrawSimSpaceVectorAt(Engine, SimP+V3(0,0,5), Normalize(Tangent)*20.f,     RED, 0.75f); */
       /* DEBUG_DrawSimSpaceVectorAt(Engine, SimP+V3(0,0,5), Normalize(Bitangent)*20.f, GREEN, 0.75f); */
@@ -1027,14 +1027,14 @@ DoWorldEditor(engine_resources *Engine)
       DEBUG_DrawSimSpaceVectorAt(Engine, SimP, Normalize(V->DebugColor)*-40.f, YELLOW, 0.75f);
       /* DEBUG_DrawSimSpaceVectorAt(Engine, SimP, Normalize(V->Derivs)*-20.f, YELLOW, 0.75f); */
 
-      DoEditorUi(Ui, &V->Derivs, "derivs");
-      DoEditorUi(Ui, &V->DebugColor, "DebugColor");
+      /* DoEditorUi(Ui, &V->Derivs, "derivs"); */
+      DoEditorUi(Ui, &Window, &V->DebugColor, CSz("DebugColor"));
 
       r32 DotP = Dot(V->DebugColor, V3(0,0,1));
-      DoEditorUi(Ui, &DotP, "Dot");
+      DoEditorUi(Ui, &Window, &DotP, CSz("Dot"));
 
       v3 AbsP = GetAbsoluteP(&Engine->MousedOverVoxel.Value);
-      DoEditorUi(Ui, &AbsP, "AbsP");
+      DoEditorUi(Ui, &Window, &AbsP, CSz("AbsP"));
 
       PushWindowEnd(Ui, &Window);
 
