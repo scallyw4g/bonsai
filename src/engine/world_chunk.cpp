@@ -1779,7 +1779,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve( voxel *Voxels,
         /* FillColorArray(Voxel->Color, FaceColors, ColorPallette, VERTS_PER_FACE); */
 
 #if VOXEL_DEBUG_COLOR
-        v3 Color = Voxel->DebugColor;
+        v3 Color = Abs(Voxel->DebugColor);
 #else
         v3 Color = GetColorData(Voxel->Color);
 #endif
@@ -4349,8 +4349,11 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
   auto DebugMesh = AllocateMesh(Thread->PermMemory, (u32)Kilobytes(64*32));
   // GetMeshForChunk(&EngineResources->MeshFreelist, Thread->PermMemory);
+#if VOXEL_DEBUG_COLOR
+  BuildWorldChunkMeshFromMarkedVoxels_Naieve( CopiedVoxels, QueryDim, {}, QueryDim, DebugMesh );
+#else
   BuildWorldChunkMeshFromMarkedVoxels_Greedy( CopiedVoxels, QueryDim, {}, QueryDim, DebugMesh );
-  /* BuildWorldChunkMeshFromMarkedVoxels_Naieve( CopiedVoxels, QueryDim, {}, QueryDim, DebugMesh ); */
+#endif
 
   /* aabb QueryAABB = AABBMinMax( {}, V3i(7.f + Radius*2.f) ); */
 

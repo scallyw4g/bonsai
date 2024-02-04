@@ -40,6 +40,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, EDIT
 
 
       PushNewRow(Ui);
+
+      DoEditorUi(Ui, Window, &Element->DebugColor, CSz("v3 DebugColor"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }

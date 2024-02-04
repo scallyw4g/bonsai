@@ -723,7 +723,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   Camera->GhostId = GetFreeEntity(EntityTable);
   entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId);
-  CameraGhost->P.WorldP = V3i(-53, -93, 2); 
+  /* CameraGhost->P.WorldP = V3i(-53, -93, 2); */ 
+  CameraGhost->P.WorldP = V3i(-5, -121, 2); 
   CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior|EntityBehaviorFlags_DefatulCameraGhostBehavior|EntityBehaviorFlags_WorldCenter);
 
   SpawnEntity(CameraGhost);

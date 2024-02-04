@@ -164,15 +164,18 @@ ComputeNormalsForChunkFromNoiseValues(v3i Dim, r32 ChunkWorldZ, r32 *NoiseValues
 
   for ( s32 z = 0; z < Dim.z; ++ z)
   {
-    /* s64 WorldZ = z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z); */
-    /* s64 WorldZSubZMin = WorldZ - zMin; */
     for ( s32 y = 0; y < Dim.y; ++ y)
     {
       for ( s32 x = 0; x < Dim.x; ++ x)
       {
         s32 VoxIndex = GetIndex(V3i(x,y,z), Dim);
 
+        r32 CurrentToThresh = (z+ChunkWorldZ)-NoiseValues[VoxIndex];
         r32 CurrentNoiseValue = NoiseValues[VoxIndex];
+        /* r32 CurrentNoiseValue = z+dz+ChunkWorldZ; */
+        /* r32 CurrentNoiseValue = z+dz+ChunkWorldZ; */
+        /* r32 CurrentNoiseValue = NoiseValues[VoxIndex] + z; */
+        /* r32 CurrentNoiseValue = NoiseValues[VoxIndex] + z + ChunkWorldZ; */
 
         /* if ( NoiseValues[VoxIndex] < (z+ChunkWorldZ) ) */
         {
@@ -188,7 +191,29 @@ ComputeNormalsForChunkFromNoiseValues(v3i Dim, r32 ChunkWorldZ, r32 *NoiseValues
                 s32 dPIndex = TryGetIndex(V3i(x+dx,y+dy,z+dz), Dim);
                 if (dPIndex > -1)
                 {
-                  if ( NoiseValues[dPIndex] > (z+dz+ChunkWorldZ) )
+                  r32 NoiseDelta = 0.f;
+                  /* r32 NoiseDelta = CurrentNoiseValue-NoiseValues[dPIndex]; */
+                  /* r32 NoiseDelta = NoiseValues[dPIndex]-CurrentNoiseValue; */
+
+                  r32 AbsThresh = (z+dz+ChunkWorldZ);
+                  r32 CurrentToAbsThres = AbsThresh - NoiseValues[dPIndex];
+
+                  // works
+                  /* if ( NoiseValues[dPIndex] > (z+dz+ChunkWorldZ) ) */
+                  /* if ( NoiseValues[dPIndex]-CurrentToAbsThres > AbsThresh ) */
+
+                  /* r32 CurrentToThresh = (z+dz+ChunkWorldZ)-NoiseValues[dPIndex]; */
+                  /* if ( NoiseValues[dPIndex]+CurrentToThresh > AbsThresh ) */
+
+                  /* if ( NoiseValues[dPIndex]+CurrentToThresh+NoiseDelta > (z+dz+ChunkWorldZ) ) */
+                  /* if ( NoiseValues[dPIndex]+CurrentToThresh    > (z+ChunkWorldZ) ) */
+                  /* if ( NoiseValues[dPIndex]+CurrentToThresh+dz > (z+dz+ChunkWorldZ) ) */
+                  /* if ( NoiseValues[dPIndex]+CurrentToThresh    > (z+ChunkWorldZ) ) */
+
+                  /* if (  CurrentNoiseValue < NoiseValues[dPIndex]+z+dz  ) */
+                  /* if (  NoiseValues[dPIndex]+z+dz < CurrentNoiseValue ) */
+                  /* if ( NoiseValues[dPIndex] > CurrentNoiseValue ) */
+                  if ( NoiseValues[dPIndex] > Truncate(CurrentNoiseValue)+dz )
                   {
                     Normal += V3(dx,dy,dz);
                   }
@@ -1114,17 +1139,18 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
         /* Chunk->Voxels[VoxIndex].DebugColor.x = *NoiseValue / MaxNoiseValue;; */
 
         u16 ThisColor = STONE;
+
 #if 1
         if (Dot(*Normal, V3(0,0,1)) < 0.65f)
         {
-          r32 Squareness = 0.5f;
+          r32 Squareness = 0.15f;
           r32 Voronoi = VoronoiNoise3D(V3(s32(WorldX), s32(WorldY), s32(WorldZ)) * 0.04f, Squareness) * 25.f;
           if (Voronoi < 2.f)
           {
-            *NoiseValue -= 2.f;
+            *NoiseValue -= 1.6f;
           }
 
-          if (Voronoi < 3.5f)
+          if (Voronoi < 2.5f)
           {
             ThisColor = DARK_STONE;
           }
