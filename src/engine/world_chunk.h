@@ -102,7 +102,7 @@ CAssert(Voxel_MarkBit < u8_MAX);
 
 global_variable u8 VoxelFaceMask = Voxel_LeftFace | Voxel_RightFace | Voxel_TopFace | Voxel_BottomFace | Voxel_FrontFace | Voxel_BackFace;
 
-#define VOXEL_DEBUG_COLOR (1)
+#define VOXEL_DEBUG_COLOR (0)
 
 // TODO(Jesse): Surely we can compress this.. but do we care?
 struct voxel

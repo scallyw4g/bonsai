@@ -1139,27 +1139,23 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
         /* Chunk->Voxels[VoxIndex].DebugColor.x = *NoiseValue / MaxNoiseValue;; */
 
         u16 ThisColor = STONE;
+        ThisColor = GRASS_GREEN;
 
 #if 1
-        if (Dot(*Normal, V3(0,0,1)) < 0.65f)
-        {
-          r32 Squareness = 0.15f;
-          r32 Voronoi = VoronoiNoise3D(V3(s32(WorldX), s32(WorldY), s32(WorldZ)) * 0.04f, Squareness) * 25.f;
-          if (Voronoi < 2.f)
-          {
-            *NoiseValue -= 1.6f;
-          }
 
-          if (Voronoi < 2.5f)
-          {
-            ThisColor = DARK_STONE;
-          }
-        }
-        else
-        {
-          ThisColor = GRASS_GREEN;
-        }
+        r32 DN = Dot(*Normal, V3(0,0,1));
 
+        r32 VoronoiThresh = 0.30f; // between 0 and 0.3f
+        DN = Clamp(0.f, DN, VoronoiThresh);
+
+        r32 VoronoiBlend = 1.f-MapValueToUnilateral(0.f, DN, VoronoiThresh);
+        r32 Squareness = 0.15f;
+        r32 Voronoi = VoronoiBlend * VoronoiNoise3D(V3(s32(WorldX), s32(WorldY), s32(WorldZ)) * 0.04f, Squareness);
+
+        if (Voronoi < 0.2f)
+        {
+          ThisColor = DARK_STONE;
+        }
 #endif
         b32 IsFilled = *NoiseValue > r32(z+ChunkWorldZ);
 

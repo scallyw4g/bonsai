@@ -551,14 +551,14 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             s32 Frequency = 0; // Ignored
             s32 Amplititude = 0; // Ignored
             s32 StartingZDepth = -100;
-            u32 OctaveCount = 2;
+            u32 OctaveCount = 3;
 
             octave_buffer OctaveBuf = { OctaveCount, {} };
             OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
 
             OctaveBuf.Octaves[0] = {V3(1400, 1400, 800), 350, V3(1.f)};
             OctaveBuf.Octaves[1] = {V3(400, 400, 200),   150, V3(1.f)};
-            /* OctaveBuf.Octaves[2] = {V3(35, 35, 50),        6, V3(2.f)}; */
+            OctaveBuf.Octaves[2] = {V3(35, 35, 50),        6, V3(2.f)};
             /* OctaveBuf.Octaves[2] = {V3(500, 500, 20), 200, V3(2.f)}; */
             /* OctaveBuf.Octaves[2] = {75, 60, 1}; */
             /* OctaveBuf.Octaves[3] = {37, 30, 0}; */

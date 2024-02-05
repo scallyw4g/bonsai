@@ -220,9 +220,9 @@ DoLevelWindow(engine_resources *Engine)
             }
 #endif
 
-            QueueChunkForMeshRebuild(&GetEngineResources()->Stdlib.Plat.LowPriority, Chunk, Flags);
-
             InsertChunkIntoWorld(World, Chunk);
+
+            QueueChunkForMeshRebuild(&GetEngineResources()->Stdlib.Plat.LowPriority, Chunk, Flags);
           }
         }
 
