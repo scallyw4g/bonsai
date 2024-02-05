@@ -162,6 +162,7 @@ ComputeNormalsForChunkFromNoiseValues(v3i Dim, r32 ChunkWorldZ, r32 *NoiseValues
 {
   TIMED_FUNCTION();
 
+  v3 *TmpRoughNormals = Allocate(v3, GetTranArena(), Volume(Dim));
   for ( s32 z = 0; z < Dim.z; ++ z)
   {
     for ( s32 y = 0; y < Dim.y; ++ y)
@@ -221,26 +222,24 @@ ComputeNormalsForChunkFromNoiseValues(v3i Dim, r32 ChunkWorldZ, r32 *NoiseValues
               }
             }
           }
-          Normals[VoxIndex] = Normalize(Normal) * -1.f;
+          TmpRoughNormals[VoxIndex] = Normalize(Normal) * -1.f;
         }
       }
     }
   }
 
-#if 0
-  for ( s32 z = 0; z < Dim.z; ++ z)
+#if 1
+  // TODO(Jesse): Parameterize this loop over the inner dimension
+  for ( s32 z = 1; z < Dim.z-1; ++ z)
   {
-    s64 WorldZ = z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z);
-    s64 WorldZSubZMin = WorldZ - zMin;
-    for ( s32 y = 0; y < Dim.y; ++ y)
+    for ( s32 y = 1; y < Dim.y-1; ++ y)
     {
-      for ( s32 x = 0; x < Dim.x; ++ x)
+      for ( s32 x = 1; x < Dim.x-1; ++ x)
       {
         s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
 
-        if ( NoiseValues[VoxIndex] > WorldZSubZMin)
         {
-          v3 Normal = Normals[VoxIndex];
+          v3 Normal = TmpRoughNormals[VoxIndex];
           for ( s32 dz = -1; dz < 2; ++ dz)
           {
             for ( s32 dy = -1; dy < 2; ++ dy)
@@ -249,17 +248,28 @@ ComputeNormalsForChunkFromNoiseValues(v3i Dim, r32 ChunkWorldZ, r32 *NoiseValues
               {
                 if (dz == 0 && dy == 0 && dx == 0) continue; // Skip the middle-most voxel
 
-                s32 dPIndex = TryGetIndex(Voxel_Position(x+dx,y+dy,z+dz), Dim);
-                if (dPIndex > -1)
-                {
-                  Normal += 0.05f*Normals[dPIndex];
-                }
+                s32 dPIndex = GetIndex(Voxel_Position(x+dx,y+dy,z+dz), Dim);
+                // NOTE(Jesse): Tuned this constant to look good.. it's 3x stronger
+                // than a 1x blend between the current normal and sum of surrounding normals..
+                Normal += (3.f/26.f)*Normals[dPIndex];
               }
             }
           }
           Normals[VoxIndex] = Normalize(Normal);
         }
 
+      }
+    }
+  }
+#else
+  for ( s32 z = 1; z < Dim.z-1; ++ z)
+  {
+    for ( s32 y = 1; y < Dim.y-1; ++ y)
+    {
+      for ( s32 x = 1; x < Dim.x-1; ++ x)
+      {
+        s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
+        Normals[VoxIndex] = TmpRoughNormals[VoxIndex];
       }
     }
   }
@@ -1125,7 +1135,7 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
   for ( s32 z = 0; z < Dim.z; ++ z)
   {
     s64 WorldZ = z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z);
-    /* s64 WorldZSubZMin = WorldZ - zMin; */
+    s64 WorldZSubZMin = WorldZ - zMin;
     for ( s32 y = 0; y < Dim.y; ++ y)
     {
       s64 WorldY = y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y);
@@ -1136,7 +1146,6 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
 
         r32 *NoiseValue = NoiseValues + VoxIndex;
         v3  *Normal = Normals + VoxIndex;
-        /* Chunk->Voxels[VoxIndex].DebugColor.x = *NoiseValue / MaxNoiseValue;; */
 
         u16 ThisColor = STONE;
         ThisColor = GRASS_GREEN;
@@ -1144,22 +1153,36 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
 #if 1
 
         r32 DN = Dot(*Normal, V3(0,0,1));
+        /* Chunk->Voxels[VoxIndex].DebugColor.x = DN; */
 
-        r32 VoronoiThresh = 0.30f; // between 0 and 0.3f
-        DN = Clamp(0.f, DN, VoronoiThresh);
+        DN = Clamp(0.5f, 1.f-DN, 1.f);
+        r32 VoronoiBlend = MapValueToUnilateral(0.5f, DN, 1.f);
 
-        r32 VoronoiBlend = 1.f-MapValueToUnilateral(0.f, DN, VoronoiThresh);
-        r32 Squareness = 0.15f;
-        r32 Voronoi = VoronoiBlend * VoronoiNoise3D(V3(s32(WorldX), s32(WorldY), s32(WorldZ)) * 0.04f, Squareness);
-
-        if (Voronoi < 0.2f)
+        /* Chunk->Voxels[VoxIndex].DebugColor.x = VoronoiBlend; */
+        if (VoronoiBlend > 0.f)
         {
-          ThisColor = DARK_STONE;
+          /* r32 Squareness = 0.1f; */
+          r32 Squareness = 0.5f;
+          /* r32 Squareness = 0.8f; */
+          /* r32 Squareness = 1.f; */
+          r32 Voronoi = VoronoiBlend * VoronoiNoise3D(V3(s32(WorldX), s32(WorldY), s32(WorldZ)) * 0.04f, Squareness);
+          /* r32 Voronoi = VoronoiNoise3D(V3(s32(WorldX), s32(WorldY), s32(WorldZ)) * 0.04f, Squareness); */
+
+          if (Voronoi < 0.07f)
+          {
+            /* *NoiseValue -= 0.25f; */
+            ThisColor = DARK_STONE;
+          }
+          else
+          {
+            /* *NoiseValue += 0.25f; */
+            ThisColor = STONE;
+          }
         }
 #endif
         b32 IsFilled = *NoiseValue > r32(z+ChunkWorldZ);
 
-        /* GrowGrass( Chunk, V3i(x,y,z), *NoiseValue, 1.f, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled ); */
+        GrowGrass( Chunk, V3i(x,y,z), *NoiseValue, 1.f, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled );
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
         Chunk->Voxels[VoxIndex].Color = ThisColor*u8(IsFilled);
@@ -1186,7 +1209,7 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
 #endif
 
 #if VOXEL_DEBUG_COLOR
-#if 1
+#if 0
   for ( s32 z = 0; z < Dim.z; ++ z)
   {
     for ( s32 y = 0; y < Dim.y; ++ y)

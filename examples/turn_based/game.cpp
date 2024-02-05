@@ -424,7 +424,7 @@ GameEntityUpdate(engine_resources *Engine, entity *Entity )
 
   Assert(Spawned(Entity));
 
-  if (Entity->Carrying)
+  if (Entity->Carrying.Generation)
   {
     entity *Carrying = GetEntity(EntityTable, Entity->Carrying);
     v3 EntitySimP = GetSimSpaceBaseP(World, Entity);
@@ -520,7 +520,7 @@ FireballPhysics()
 link_internal b32
 HoldingItem(entity *Player)
 {
-  b32 Result = Player->Carrying;
+  b32 Result = Player->Carrying.Generation > 0;
   return Result;
 }
 
