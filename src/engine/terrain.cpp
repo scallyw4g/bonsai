@@ -5,7 +5,6 @@ GrowGrass( world_chunk *Chunk, v3i P, r32 NoiseValue, r32 MaskValue, v3i SrcToDe
   s32 y = P.y;
   s32 z = P.z;
 
-
   // NOTE(Jesse): This is pretty henious .. the math to compute GrassAreaX here
   // (and, actually, maybe most of these calculations to turn positions into floats)
   // is generating a fucked up index for the voxels along the exterior edge.
@@ -28,7 +27,7 @@ GrowGrass( world_chunk *Chunk, v3i P, r32 NoiseValue, r32 MaskValue, v3i SrcToDe
   // it shouldn't?
   f32 GrassAreaZ = 1.f; //(z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z)) / 32.f;
 
-  r32 GrassyAreaValue = PerlinNoise(GrassAreaX, GrassAreaY, GrassAreaZ);
+  r32 GrassyAreaValue = MaskValue * PerlinNoise(GrassAreaX, GrassAreaY, GrassAreaZ);
   if (*ThisColor == GRASS_GREEN)
   {
     if (GrassyAreaValue > 0.4f)
@@ -37,7 +36,7 @@ GrowGrass( world_chunk *Chunk, v3i P, r32 NoiseValue, r32 MaskValue, v3i SrcToDe
 
       if (GrassyAreaValue > 0.6f)
       {
-        if ((NoiseValue+(MaskValue*GrassyAreaValue*3.f)) > WorldZSubZMin)
+        if ((NoiseValue+(GrassyAreaValue*3.f)) > WorldZSubZMin)
         {
           f32 HashX = hash_f32(f32(x));
           f32 HashY = hash_f32(f32(y));
@@ -1152,37 +1151,53 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
 
 #if 1
 
-        r32 DN = Dot(*Normal, V3(0,0,1));
-        /* Chunk->Voxels[VoxIndex].DebugColor.x = DN; */
+        r32 DotNormal = Dot(*Normal, V3(0,0,1));
+        /* Chunk->Voxels[VoxIndex].DebugColor.x = DotNormal; */
 
-        DN = Clamp(0.5f, 1.f-DN, 1.f);
-        r32 VoronoiBlend = MapValueToUnilateral(0.5f, DN, 1.f);
-
-        /* Chunk->Voxels[VoxIndex].DebugColor.x = VoronoiBlend; */
-        if (VoronoiBlend > 0.f)
         {
-          /* r32 Squareness = 0.1f; */
-          r32 Squareness = 0.5f;
-          /* r32 Squareness = 0.8f; */
-          /* r32 Squareness = 1.f; */
-          r32 Voronoi = VoronoiBlend * VoronoiNoise3D(V3(s32(WorldX), s32(WorldY), s32(WorldZ)) * 0.04f, Squareness);
-          /* r32 Voronoi = VoronoiNoise3D(V3(s32(WorldX), s32(WorldY), s32(WorldZ)) * 0.04f, Squareness); */
+          r32 Thresh = 0.20f;
+          r32 ClampedDotNormal = Clamp(Thresh, 1.f-DotNormal, 1.f);
+          r32 VoronoiBlend = MapValueToUnilateral(Thresh, ClampedDotNormal, 1.f);
 
-          if (Voronoi < 0.07f)
+          /* Chunk->Voxels[VoxIndex].DebugColor.x = VoronoiBlend; */
+          /* if (VoronoiBlend > 0.f) */
           {
-            /* *NoiseValue -= 0.25f; */
-            ThisColor = DARK_STONE;
-          }
-          else
-          {
-            /* *NoiseValue += 0.25f; */
-            ThisColor = STONE;
+            /* r32 Squareness = 0.1f; */
+            r32 Squareness = 0.5f;
+            /* r32 Squareness = 0.8f; */
+            /* r32 Squareness = 1.f; */
+            r32 Voronoi = VoronoiBlend * VoronoiNoise3D(V3(s32(WorldX), s32(WorldY), s32(WorldZ)) * 0.04f, Squareness);
+            /* r32 Voronoi = VoronoiNoise3D(V3(s32(WorldX), s32(WorldY), s32(WorldZ)) * 0.04f, Squareness); */
+
+            /* *NoiseValue -= (Voronoi*3.f); */
+
+            if (VoronoiBlend > 0.f)
+            {
+              if (Voronoi < 0.07f)
+              {
+                /* *NoiseValue -= 0.25f; */
+                ThisColor = DARK_STONE;
+              }
+              else
+              {
+                /* *NoiseValue += 0.25f; */
+                ThisColor = STONE;
+              }
+            }
           }
         }
 #endif
         b32 IsFilled = *NoiseValue > r32(z+ChunkWorldZ);
 
-        GrowGrass( Chunk, V3i(x,y,z), *NoiseValue, 1.f, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled );
+        {
+          r32 Thresh = 0.85f;
+          r32 ClampedDotNormal = Clamp(Thresh, DotNormal, 1.f);
+          r32 GrassMask = MapValueToUnilateral(Thresh, ClampedDotNormal, 1.f);
+
+          GrowGrass( Chunk, V3i(x,y,z), *NoiseValue, GrassMask, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled );
+          /* Chunk->Voxels[VoxIndex].DebugColor.x = GrassMask; */
+        }
+
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
         Chunk->Voxels[VoxIndex].Color = ThisColor*u8(IsFilled);
