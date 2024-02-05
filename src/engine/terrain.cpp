@@ -1,5 +1,5 @@
 link_internal void
-GrowGrass( world_chunk *Chunk, v3i P, r32 NoiseValue, r32 MaskValue, v3i SrcToDest, v3i WorldChunkDim, r32 WorldZSubZMin, u16 *ThisColor, b32 *IsFilled )
+GrowGrassPerlin( world_chunk *Chunk, v3i P, r32 NoiseValue, r32 MaskValue, v3i SrcToDest, v3i WorldChunkDim, r32 WorldZSubZMin, u16 *ThisColor, b32 *IsFilled )
 {
   s32 x = P.x;
   s32 y = P.y;
@@ -22,12 +22,16 @@ GrowGrass( world_chunk *Chunk, v3i P, r32 NoiseValue, r32 MaskValue, v3i SrcToDe
 
   f32 GrassAreaX = (x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / 16.f;
   f32 GrassAreaY = (y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y)) / 16.f;
+  /* f32 GrassAreaX = (x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)); */
+  /* f32 GrassAreaY = (y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y)); */
 
   // TODO(Jesse): Does this actually help reduce stuff 'growing' in places
   // it shouldn't?
-  f32 GrassAreaZ = 1.f; //(z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z)) / 32.f;
+  /* f32 GrassAreaZ = 1.f; //(z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z)) / 32.f; */
+  f32 GrassAreaZ = (z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z)) / 32.f;
 
   r32 GrassyAreaValue = MaskValue * PerlinNoise(GrassAreaX, GrassAreaY, GrassAreaZ);
+  /* r32 GrassyAreaValue = MaskValue * (VoronoiNoise3D(V3(GrassAreaX, GrassAreaY, GrassAreaZ)/5.f)*2.f); */
   if (*ThisColor == GRASS_GREEN)
   {
     if (GrassyAreaValue > 0.4f)
@@ -38,8 +42,8 @@ GrowGrass( world_chunk *Chunk, v3i P, r32 NoiseValue, r32 MaskValue, v3i SrcToDe
       {
         if ((NoiseValue+(GrassyAreaValue*3.f)) > WorldZSubZMin)
         {
-          f32 HashX = hash_f32(f32(x));
-          f32 HashY = hash_f32(f32(y));
+          f32 HashX = hash_f32(GrassAreaX);
+          f32 HashY = hash_f32(GrassAreaY);
 
           s32 iHashX = *(s32*)&HashX;
           s32 iHashY = *(s32*)&HashY;
@@ -58,13 +62,92 @@ GrowGrass( world_chunk *Chunk, v3i P, r32 NoiseValue, r32 MaskValue, v3i SrcToDe
             if (GrassColor > 0.88f)
               *ThisColor = LONG_GREEN_GRASS1;
 
-            if (GrassColor > 0.99f)
+            if (GrassColor > 0.993f)
               *ThisColor = LONG_YELLOW_GRASS0;
 
-            if (GrassColor > 0.993f)
+            if (GrassColor > 0.995f)
               *ThisColor = LONG_YELLOW_GRASS1;
 
-            if (GrassColor > 0.997f)
+            if (GrassColor > 0.998f)
+              *ThisColor = PINK;
+          }
+        }
+      }
+    }
+  }
+}
+
+link_internal void
+GrowGrassVoronoi( world_chunk *Chunk, v3i P, r32 *NoiseValue, r32 MaskValue, v3i SrcToDest, v3i WorldChunkDim, r32 WorldZSubZMin, u16 *ThisColor )
+{
+  s32 x = P.x;
+  s32 y = P.y;
+  s32 z = P.z;
+
+  // NOTE(Jesse): This is pretty henious .. the math to compute GrassAreaX here
+  // (and, actually, maybe most of these calculations to turn positions into floats)
+  // is generating a fucked up index for the voxels along the exterior edge.
+  //
+  // The thing that's wrong is that the 0th still gets the Chunk->WorldP position,
+  // when it should get the previous chunks worldp.  Similar story with the max-edge
+  //
+  // I think this was actually also manifesting when doing mip-meshing, but I
+  // wasn't aware of this tom-fuckery then, and didn't catch it.
+  //
+  // TODO(Jesse): Should go audit the terrain-gen functions and find a better
+  // way of computing these float values.
+  //
+  if (x == 0 || y == 0 || x == Chunk->Dim.x-1 || y == Chunk->Dim.y-1) { return; }
+
+  f32 GrassAreaX = (x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / 16.f;
+  f32 GrassAreaY = (y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y)) / 16.f;
+  /* f32 GrassAreaX = (x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)); */
+  /* f32 GrassAreaY = (y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y)); */
+
+  // TODO(Jesse): Does this actually help reduce stuff 'growing' in places
+  // it shouldn't?
+  /* f32 GrassAreaZ = 1.f; //(z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z)) / 32.f; */
+  f32 GrassAreaZ = (z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z)) / 32.f;
+
+  /* r32 GrassyAreaValue = MaskValue * PerlinNoise(GrassAreaX, GrassAreaY, GrassAreaZ); */
+  r32 GrassyAreaValue = MaskValue * (VoronoiNoise3D(V3(GrassAreaX, GrassAreaY, GrassAreaZ))*3.f);
+  if (*ThisColor == GRASS_GREEN)
+  {
+    if (GrassyAreaValue > 0.5f)
+    {
+      *ThisColor = GRASS_GREEN-1;
+
+      if (GrassyAreaValue > 0.6f)
+      {
+        if ((*NoiseValue+(GrassyAreaValue*3.f)) > WorldZSubZMin)
+        {
+          f32 HashX = hash_f32(GrassAreaX);
+          f32 HashY = hash_f32(GrassAreaY);
+
+          s32 iHashX = *(s32*)&HashX;
+          s32 iHashY = *(s32*)&HashY;
+
+          random_series S0 { u64(x + y) | u64( (iHashX | (iHashY << 31)) ^ (iHashY << 16)) };
+          random_series S1 { RandomU32(&S0) | RandomU32(&S0)<<31 };
+
+          if (RandomUnilateral(&S1) > 0.92f)
+          {
+            *NoiseValue += 1.f;
+
+            r32 GrassColor = RandomUnilateral(&S1);
+            if (GrassColor > 0.8f)
+              *ThisColor = LONG_GREEN_GRASS0;
+
+            if (GrassColor > 0.88f)
+              *ThisColor = LONG_GREEN_GRASS1;
+
+            if (GrassColor > 0.993f)
+              *ThisColor = LONG_YELLOW_GRASS0;
+
+            if (GrassColor > 0.995f)
+              *ThisColor = LONG_YELLOW_GRASS1;
+
+            if (GrassColor > 0.998f)
               *ThisColor = PINK;
           }
         }
@@ -853,7 +936,7 @@ GrassyTerracedTerrain2( perlin_noise *Noise,
           }
         }
 
-        GrowGrass( Chunk, V3i(x,y,z), NoiseValue, 1.f-TerraceMask, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled );
+        GrowGrassPerlin( Chunk, V3i(x,y,z), NoiseValue, 1.f-TerraceMask, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled );
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
         Chunk->Voxels[VoxIndex].Color = ThisColor*u8(IsFilled);
@@ -1016,7 +1099,7 @@ GrassyTerracedTerrain3( perlin_noise *Noise,
 
         b32 IsFilled = r32(NoiseValue) > r32(WorldZSubZMin);
 
-        GrowGrass( Chunk, V3i(x,y,z), NoiseValue, 1.f-TerraceMask, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled );
+        GrowGrassPerlin( Chunk, V3i(x,y,z), NoiseValue, 1.f-TerraceMask, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled );
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
         Chunk->Voxels[VoxIndex].Color = ThisColor*u8(IsFilled);
@@ -1166,9 +1249,10 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
             r32 Squareness = 0.5f;
             /* r32 Squareness = 0.8f; */
             /* r32 Squareness = 1.f; */
-            r32 Voronoi = VoronoiBlend * VoronoiNoise3D(V3(s32(WorldX), s32(WorldY), s32(WorldZ)) * 0.04f, Squareness);
+            r32 Voronoi = VoronoiBlend * VoronoiNoise3D(V3(s32(WorldX), s32(WorldY), s32(WorldZ*0.1f)) * 0.04f, Squareness);
             /* r32 Voronoi = VoronoiNoise3D(V3(s32(WorldX), s32(WorldY), s32(WorldZ)) * 0.04f, Squareness); */
 
+            *NoiseValue += ((Voronoi)*13.f);
             /* *NoiseValue -= (Voronoi*3.f); */
 
             if (VoronoiBlend > 0.f)
@@ -1187,16 +1271,19 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
           }
         }
 #endif
-        b32 IsFilled = *NoiseValue > r32(z+ChunkWorldZ);
 
+#if 0
         {
           r32 Thresh = 0.85f;
           r32 ClampedDotNormal = Clamp(Thresh, DotNormal, 1.f);
           r32 GrassMask = MapValueToUnilateral(Thresh, ClampedDotNormal, 1.f);
 
-          GrowGrass( Chunk, V3i(x,y,z), *NoiseValue, GrassMask, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled );
+          GrowGrassVoronoi( Chunk, V3i(x,y,z), NoiseValue, GrassMask, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor);
           /* Chunk->Voxels[VoxIndex].DebugColor.x = GrassMask; */
         }
+#endif
+
+        b32 IsFilled = *NoiseValue > r32(z+ChunkWorldZ);
 
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
@@ -1375,7 +1462,7 @@ GrassyTerracedTerrain( perlin_noise *Noise,
           }
         }
 
-        GrowGrass( Chunk, V3i(x,y,z), NoiseValue, 1.f, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled );
+        GrowGrassPerlin( Chunk, V3i(x,y,z), NoiseValue, 1.f, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled );
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
         Chunk->Voxels[VoxIndex].Color = ThisColor*u8(IsFilled);
@@ -1539,9 +1626,9 @@ GrassyLargeTerracedTerrain( perlin_noise *Noise,
 
         Assert(TerraceMask >= 0.f);
         Assert(TerraceMask <= 1.1f);
-        /* GrowGrass( Chunk, V3i(x,y,z), NoiseValue, 0.7f-TerraceMask, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled ); */
-        GrowGrass( Chunk, V3i(x,y,z), NoiseValue, 1.f-Clamp01(TerraceMask), SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled );
-        /* GrowGrass( Chunk, V3i(x,y,z), NoiseValue, Clamp01(TerraceMask), SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled ); */
+        /* GrowGrassPerlin( Chunk, V3i(x,y,z), NoiseValue, 0.7f-TerraceMask, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled ); */
+        GrowGrassPerlin( Chunk, V3i(x,y,z), NoiseValue, 1.f-Clamp01(TerraceMask), SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled );
+        /* GrowGrassPerlin( Chunk, V3i(x,y,z), NoiseValue, Clamp01(TerraceMask), SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled ); */
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
         Chunk->Voxels[VoxIndex].Color = ThisColor*u8(IsFilled);

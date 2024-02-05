@@ -146,7 +146,7 @@ GrassyIslandTerrain( perlin_noise *Noise,
         }
 
 #if 1
-        GrowGrass( Chunk, V3i(x,y,z), NoiseValue, 1.f, SrcToDest, WorldChunkDim, WorldZBiased, &ThisColor, &NoiseChoice );
+        GrowGrassPerlin( Chunk, V3i(x,y,z), NoiseValue, 1.f, SrcToDest, WorldChunkDim, WorldZBiased, &ThisColor, &NoiseChoice );
 #else
         s32 Below = TryGetIndex(x, y, z-1, Dim);
         s32 B0 = TryGetIndex(x+1, y, z-1, Dim);
