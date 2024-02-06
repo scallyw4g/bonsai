@@ -956,24 +956,6 @@ MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
             Voxel->Flags |= Voxel_BackFace;
           }
         }
-        b32 IsExteriorVoxel = (Voxel->Flags & VoxelFaceMask) != 0;
-
-        // If we marked the voxel, and it's getting uncovered, change it's
-        // color to the one we specified.
-        //
-        // This is basically a special-purpose hack to change the surface color
-        // of holes we create
-        /* if (Entropy) */
-        /* { */
-        /*   if ( WasMarked && */
-        /*        WasExteriorVoxel == False && */
-        /*        IsExteriorVoxel == True) */
-        /*   { */
-        /*     u32 NewColor = RandomBetween((u32)NewColorMin, Entropy, (u32)NewColorMax+1); */
-        /*     Voxel->Color = SafeTruncateU8(NewColor); */
-        /*   } */
-        /*   UnSetFlag((voxel_flag*)&Voxel->Flags, Voxel_MarkBit); */
-        /* } */
       }
     }
   }
@@ -4327,9 +4309,14 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           Assert(Index < TotalVoxels);
           Assert(CopiedVoxels[Index] != UnsetVoxel);
 
-          // nochicken turn asserts back on
           Assert( (V->Flags & Voxel_MarkBit) == 0);
+#if VOXEL_DEBUG_COLOR
+          V->Flags = CopiedVoxels[Index].Flags;
+          V->Color = CopiedVoxels[Index].Color;
+          V->Transparency = CopiedVoxels[Index].Transparency;
+#else
           *V = CopiedVoxels[Index];
+#endif
           Assert( (V->Flags & Voxel_MarkBit) == 0);
         }
       }

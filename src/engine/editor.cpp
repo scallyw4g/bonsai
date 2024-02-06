@@ -1027,11 +1027,14 @@ DoWorldEditor(engine_resources *Engine)
       DEBUG_DrawSimSpaceVectorAt(Engine, SimP, Normalize(V->DebugColor)*-40.f, YELLOW, 0.75f);
       /* DEBUG_DrawSimSpaceVectorAt(Engine, SimP, Normalize(V->Derivs)*-20.f, YELLOW, 0.75f); */
 
+      DoEditorUi(Ui, &Window, &V->Flags, CSz("Voxel Flags"));
+
       /* DoEditorUi(Ui, &V->Derivs, "derivs"); */
       DoEditorUi(Ui, &Window, &V->DebugColor, CSz("DebugColor"));
 
       r32 DotP = Dot(V->DebugColor, V3(0,0,1));
       DoEditorUi(Ui, &Window, &DotP, CSz("Dot"));
+      PushNewRow(Ui);
 
       v3 AbsP = GetAbsoluteP(&Engine->MousedOverVoxel.Value);
       DoEditorUi(Ui, &Window, &AbsP, CSz("AbsP"));
