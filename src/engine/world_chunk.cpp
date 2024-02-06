@@ -3896,7 +3896,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   voxel *CopiedVoxels = Allocate(voxel, Thread->PermMemory, TotalVoxels);
 
 #if VOXEL_DEBUG_COLOR
-  voxel UnsetVoxel = { 0xff, 0xff, 0xffff, {}};
+  voxel UnsetVoxel = { 0xff, 0xff, 0xffff, {}, {}};
 #else
   voxel UnsetVoxel = { 0xff, 0xff, 0xffff};
 #endif
@@ -4171,7 +4171,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           case WorldUpdateOperationMode_Additive:
           {
 #if VOXEL_DEBUG_COLOR
-            NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor, {}};
+            NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor, {}, {}};
 #else
             NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor};
 #endif
@@ -4895,6 +4895,24 @@ MousePickVoxel(engine_resources *Resources)
 
       Result.Tag   = Maybe_Yes;
       Result.Value = RayResult;
+    }
+  }
+
+  return Result;
+}
+
+link_internal voxel *
+TryGetVoxelPointer(world *World, cp Pos)
+{
+  voxel *Result = 0;
+
+  world_chunk *Chunk = GetWorldChunkFromHashtable(World, Pos.WorldP);
+  if (Chunk)
+  {
+    s32 Index = TryGetIndex(V3i(Pos.Offset), Chunk->Dim);
+    if (Index > -1)
+    {
+      Result = Chunk->Voxels + Index;
     }
   }
 

@@ -302,13 +302,11 @@ ComputeNormalsForChunkFromNoiseValues(v3i Dim, r32 ChunkWorldZ, r32 *NoiseValues
               s32 dPIndex = GetIndex(V3i(x+dx,y+dy,z+dz), Dim);
               /* if (dPIndex > -1) */
               {
-                if ( NoiseValues[dPIndex]-dz > Truncate(CurrentNoiseValue) )
+                r32 Diff = NoiseValues[dPIndex]-dz - Truncate(CurrentNoiseValue);
+                if ( Diff > 0.f )
                 {
-                  Normal += V3(dx,dy,dz);
-                }
-                else
-                {
-                  /* Normal -= V3(dx,dy,dz); */
+                  // TODO(Jesse): Recompute with a small random variance to the weight if this is 0?
+                  Normal += V3(dx,dy,dz)*Diff;
                 }
               }
             }
@@ -1242,7 +1240,7 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
         ThisColor = GRASS_GREEN;
 
         /* Chunk->Voxels[VoxIndex].DebugColor.x = *NoiseValue; */
-#if 1
+#if 0
         /* r32 Squareness = 0.5f; */
         /* *NoiseValue += 15.f*VoronoiNoise3D(V3(s32(WorldX), s32(WorldY), s32(WorldZ*0.1f)) * 0.04f, Squareness); */
 #else
@@ -1330,6 +1328,7 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
       {
         s32 Index  = GetIndex(V3i(x,y,z), Dim);
         Chunk->Voxels[Index].DebugColor = Normals[Index];
+        Chunk->Voxels[Index].DebugNoiseValue = NoiseValues[Index];
       }
     }
   }

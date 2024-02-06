@@ -159,7 +159,7 @@ GatherVoxelsOverlappingArea(world *World, rect3i SimSpaceAABB, world_chunk_ptr_b
 
   // TODO(Jesse): Put this behind a debug/internal flag ?
 #if VOXEL_DEBUG_COLOR
-  voxel UnsetVoxel = { 0xff, 0xff, 0xffff, {} };
+  voxel UnsetVoxel = { 0xff, 0xff, 0xffff, {}, {} };
 #else
   voxel UnsetVoxel = { 0xff, 0xff, 0xffff };
 #endif

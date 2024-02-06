@@ -560,6 +560,83 @@ DoSelectonModification( engine_resources *Engine,
 }
 
 link_internal void
+DoSelectedVoxelDebugWindow(engine_resources *Engine, cp VoxelCP)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  voxel *V = TryGetVoxelPointer(World, VoxelCP);
+
+
+#if VOXEL_DEBUG_COLOR
+  if (V)
+  {
+    v3 SimP = Floor(GetSimSpaceP(World, VoxelCP));
+    DEBUG_DrawSimSpaceVectorAt(Engine, SimP, Normalize(V->DebugColor)* 40.f,  GREEN, 0.75f);
+    DEBUG_DrawSimSpaceVectorAt(Engine, SimP, Normalize(V->DebugColor)*-40.f, YELLOW, 0.75f);
+  }
+#endif
+
+
+  {
+    local_persist window_layout Window = WindowLayout("Voxel Debug Window", V2(150.f, 150.f));
+    PushWindowStart(Ui, &Window);
+
+    if (V)
+    {
+      DoEditorUi(Ui, &Window, &V->Flags, CSz("Voxel Flags"));
+      PushNewRow(Ui);
+
+#if VOXEL_DEBUG_COLOR
+      DoEditorUi(Ui, &Window, &V->DebugNoiseValue, CSz("Noise Value"));
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui, &Window, &V->DebugColor, CSz("DebugColor"));
+
+      r32 DotP = Dot(V->DebugColor, V3(0,0,1));
+      DoEditorUi(Ui, &Window, &DotP, CSz("Dot against V3(0,0,1)"));
+      PushNewRow(Ui);
+
+      PushTableStart(Ui);
+        v3i Dim = V3i(3,3,3);
+        for (s32 dz = -1; dz < 2; ++dz)
+        {
+          for (s32 dy = -1; dy < 2; ++dy)
+          {
+            for (s32 dx = -1; dx < 2; ++dx)
+            {
+              /* if (dz == 0 && dy == 0 && dx == 0) continue; // ? */
+
+              voxel *dV = TryGetVoxelPointer(World, VoxelCP + V3(dx,dy,dz));
+
+              ui_style *Style = &DefaultStyle;
+
+              if (dV && dV->DebugNoiseValue-dz > Truncate(V->DebugNoiseValue))
+              {
+                Style = &DefaultSelectedStyle;
+              }
+
+              PushColumn(Ui, FSz("(%d %d %d)", dx, dy, dz), Style);
+              if (dV) { PushColumn(Ui, CS(dV->DebugNoiseValue)); }
+              else    { PushColumn(Ui, CSz("(null)")); }
+              PushNewRow(Ui);
+            }
+            PushNewRow(Ui);
+          }
+          PushNewRow(Ui);
+        }
+      PushTableEnd(Ui);
+#endif
+
+    }
+    else
+    {
+      PushColumn(Ui, CSz("(null)"));
+    }
+    PushWindowEnd(Ui, &Window);
+  }
+}
+
+link_internal void
 DoWorldEditor(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -994,64 +1071,27 @@ DoWorldEditor(engine_resources *Engine)
     }
   }
 
+#if VOXEL_DEBUG_COLOR
+  {
+    cp DebugVoxel = {};
+    if (Editor->SelectionClicks > 0)
+    {
+      DebugVoxel = Editor->SelectionRegion.Min;
+    }
+    else if (Engine->MousedOverVoxel.Tag)
+    {
+      DebugVoxel = Canonical_Position(&Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled);
+    }
 
-  //
-  // Highlight moused over voxel
-  //
+    DoSelectedVoxelDebugWindow(Engine, DebugVoxel);
+  }
+#endif
+
   if (Engine->MousedOverVoxel.Tag)
   {
-#if VOXEL_DEBUG_COLOR
-    {
-      v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, HighlightVoxel));
-      DEBUG_HighlightVoxel( Engine, SimP, RED, 0.075f);
-
-      voxel *V = GetVoxelPointer(&Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled);
-
-
-      local_persist window_layout Window = WindowLayout("DEBUG DELETE ME", V2(150.f, 150.f));
-      PushWindowStart(Ui, &Window);
-
-      /* v3 Tangent, Bitangent, Normal; */
-      /* CalculateTBN(V->Derivs, &Tangent, &Bitangent, &Normal); */
-
-      /* DEBUG_DrawSimSpaceVectorAt(Engine, SimP+V3(0,0,5), Normalize(Tangent)*20.f,     RED, 0.75f); */
-      /* DEBUG_DrawSimSpaceVectorAt(Engine, SimP+V3(0,0,5), Normalize(Bitangent)*20.f, GREEN, 0.75f); */
-      /* DEBUG_DrawSimSpaceVectorAt(Engine, SimP+V3(0,0,5), Normalize(Normal)*20.f,     BLUE, 0.75f); */
-
-      /* DEBUG_DrawSimSpaceVectorAt(Engine, SimP, Normalize(tangent)*20.f,     RED, 0.75f); */
-      /* DEBUG_DrawSimSpaceVectorAt(Engine, SimP, Normalize(bitangent)*20.f, GREEN, 0.75f); */
-      /* DEBUG_DrawSimSpaceVectorAt(Engine, SimP, Normalize(normal)*20.f,     BLUE, 0.75f); */
-
-
-      DEBUG_DrawSimSpaceVectorAt(Engine, SimP, Normalize(V->DebugColor)* 40.f,  GREEN, 0.75f);
-      DEBUG_DrawSimSpaceVectorAt(Engine, SimP, Normalize(V->DebugColor)*-40.f, YELLOW, 0.75f);
-      /* DEBUG_DrawSimSpaceVectorAt(Engine, SimP, Normalize(V->Derivs)*-20.f, YELLOW, 0.75f); */
-
-      DoEditorUi(Ui, &Window, &V->Flags, CSz("Voxel Flags"));
-
-      /* DoEditorUi(Ui, &V->Derivs, "derivs"); */
-      DoEditorUi(Ui, &Window, &V->DebugColor, CSz("DebugColor"));
-
-      r32 DotP = Dot(V->DebugColor, V3(0,0,1));
-      DoEditorUi(Ui, &Window, &DotP, CSz("Dot"));
-      PushNewRow(Ui);
-
-      v3 AbsP = GetAbsoluteP(&Engine->MousedOverVoxel.Value);
-      DoEditorUi(Ui, &Window, &AbsP, CSz("AbsP"));
-
-      PushWindowEnd(Ui, &Window);
-
-    }
-#else
-    {
-      v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled));
-      DEBUG_HighlightVoxel( Engine, SimP, RED, 0.075f);
-    }
-    /* { */
-    /*   v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, PickedVoxel_LastEmpty)); */
-    /*   DebugLine("%f %f %f", SimP.x, SimP.y, SimP.z); */
-    /*   DEBUG_HighlightVoxel( Engine, SimP, BLUE, 0.075f); */
-    /* } */
-#endif
+    v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled));
+    DEBUG_HighlightVoxel( Engine, SimP, RED, 0.075f);
   }
+
+
 }
