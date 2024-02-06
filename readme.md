@@ -88,12 +88,8 @@ See the docs on the [build process](docs/01_build_process.md).
 * https://xing-mei.github.io/files/erosion.pdf
 * https://nickmcd.me/2020/04/15/procedural-hydrology/
 
-[ ] Better perlin noise (with derivitives!)
-* https://www.scratchapixel.com/lessons/procedural-generation-virtual-worlds/perlin-noise-part-2/perlin-noise-computing-derivatives.html
-
-[ ] Inigo Quilez noise?
-* Value Noise : https://www.shadertoy.com/view/lsf3WH
-* Gradient Noise : https://www.shadertoy.com/view/Xsl3Dl
+[ ] Biomes
+* https://en.wikipedia.org/wiki/Holdridge_life_zones
 
 -------------------------------------------------------------------------------
 ## Sound
