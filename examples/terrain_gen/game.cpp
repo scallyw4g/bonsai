@@ -413,7 +413,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           {
             // Bumpy Sin(x)+Cos(y) noise.  Useful for visualizing the polylines/splines mapping noise values to their final values.
             s32 Frequency = 100;
-            s32 Amplititude = 50;
+            s32 Amplititude = 2500;
             s32 StartingZDepth = -1;
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
             InitializeChunkWithNoise( SinCosTerrain, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, Ignored, InitFlags, 0);
@@ -556,12 +556,9 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             octave_buffer OctaveBuf = { OctaveCount, {} };
             OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
 
-            OctaveBuf.Octaves[0] = {V3(1400, 1400, 800), 350, V3(1.f)};
-            OctaveBuf.Octaves[1] = {V3(400, 400, 200),   150, V3(1.f)};
-            OctaveBuf.Octaves[2] = {V3(35, 35, 25),        6, V3(2.f)};
-            /* OctaveBuf.Octaves[2] = {V3(500, 500, 20), 200, V3(2.f)}; */
-            /* OctaveBuf.Octaves[2] = {75, 60, 1}; */
-            /* OctaveBuf.Octaves[3] = {37, 30, 0}; */
+            OctaveBuf.Octaves[0] = {V3(800, 800, 1700), 350, V3(1.f)};
+            OctaveBuf.Octaves[1] = {V3(400, 400, 200),  350, V3(1.f)};
+            OctaveBuf.Octaves[2] = {V3(35, 35, 25),       6, V3(2.f)};
 
             /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
             /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
@@ -718,14 +715,17 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   /* GameState->TerrainGenType = TerrainGenType_GrassyTerracedTerrain; */
 
-  GameState->TerrainGenType = TerrainGenType_GrassyLargeTerracedTerrain;
+  GameState->TerrainGenType = TerrainGenType_GrassyTerracedTerrain4;
   /* World->Center = V3i(-22, 101, 1); */
 
   Camera->GhostId = GetFreeEntity(EntityTable);
   entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId);
   /* CameraGhost->P.WorldP = V3i(-53, -93, 2); */ 
-  CameraGhost->P.WorldP = V3i(-25, -75, 2); 
+  /* CameraGhost->P.WorldP = V3i(-25, -75, 2); */ 
   /* CameraGhost->P.WorldP = V3i(-5, -121, 2); */ 
+
+  /* CameraGhost->P.WorldP = V3i(33, -87, 2); */ 
+  CameraGhost->P.WorldP = V3i(5, -73, 2); 
   CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior|EntityBehaviorFlags_DefatulCameraGhostBehavior|EntityBehaviorFlags_WorldCenter);
 
   SpawnEntity(CameraGhost);

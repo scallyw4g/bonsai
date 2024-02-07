@@ -110,3 +110,5 @@ See the docs on the [build process](docs/01_build_process.md).
 [ ] Better floating-point rng : https://www.corsix.org/content/higher-quality-random-floats
 
 [ ] Better greedy meshing? https://www.youtube.com/watch?v=4xs66m1Of4A
+
+[ ] More interpolation goodies : https://paulbourke.net/miscellaneous/interpolation/

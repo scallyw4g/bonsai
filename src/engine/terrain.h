@@ -55,13 +55,23 @@ MapNoiseValueToFinal(f32 Value)
   /*   {{0.0f, 0.0f }}, */
   /* }; */
 
+  /* v2 Points[] = */
+  /* { */
+  /*   {{1.0f, 1.0f }}, */
+  /*   {{0.5f, 0.7f }}, */
+  /*   {{0.35f, 0.43f }}, */
+  /*   {{0.3f, 0.4f }}, */
+  /*   {{0.2f, 0.1f }}, */
+  /*   {{0.0f, 0.0f }}, */
+  /* }; */
+
   v2 Points[] =
   {
     {{1.0f, 1.0f }},
-    {{0.5f, 0.7f }},
-    {{0.35f, 0.43f }},
-    {{0.3f, 0.4f }},
-    {{0.2f, 0.1f }},
+    {{0.7f, 0.7f }},
+    {{0.65f, 0.43f }},
+    {{0.6f, 0.4f }},
+    {{0.5f, 0.1f }},
     {{0.0f, 0.0f }},
   };
 
@@ -88,7 +98,8 @@ MapNoiseValueToFinal(f32 Value)
       Assert(Range > 0.f);
 
       r32 t = (Value-P->x) / Range;
-      Result = Lerp(t, P->y, PNext->y);
+      /* Result = Lerp(t, P->y, PNext->y); */
+      Result = CosineInterpolate(t, P->y, PNext->y);
       Assert(Result >= 0.f);
       Assert(Result <= 1.f);
 
@@ -101,4 +112,5 @@ MapNoiseValueToFinal(f32 Value)
   Assert(Result >= 0.f);
   return Result;
 }
+
 
