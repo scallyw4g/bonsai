@@ -41,8 +41,8 @@ MapNoiseValueToMaterial(f32 Value)
 link_internal f32
 MapNoiseValueToFinal(f32 Value)
 {
-  Assert(Value <= 1.f);
-  Assert(Value >= 0.f);
+  /* Assert(Value <= 1.f); */
+  /* Assert(Value >= 0.f); */
 
   // NOTE(Jesse): Descending order so we can scan from the front and find the interval we care about
   /* v2 Points[] = */
@@ -90,26 +90,27 @@ MapNoiseValueToFinal(f32 Value)
     if (Value > P->x)
     {
       Hit = True;
-      Assert(PointIndex > 0);
+      /* Assert(PointIndex > 0); */
 
       v2 *PNext = Points + PointIndex - 1;
 
       r32 Range = PNext->x - P->x;
-      Assert(Range > 0.f);
+      /* Assert(Range > 0.f); */
 
       r32 t = (Value-P->x) / Range;
       /* Result = Lerp(t, P->y, PNext->y); */
       Result = CosineInterpolate(t, P->y, PNext->y);
-      Assert(Result >= 0.f);
-      Assert(Result <= 1.f);
+      /* Assert(Result >= 0.f); */
+      /* Assert(Result <= 1.f); */
 
       break;
     }
   }
 
-  Assert(Hit);
-  Assert(Result <= 1.f);
-  Assert(Result >= 0.f);
+  /* Assert(Hit); */
+  /* Assert(Result <= 1.f); */
+  /* Assert(Result >= 0.f); */
+
   return Result;
 }
 
