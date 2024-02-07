@@ -1,4 +1,4 @@
-// src/engine/voxel_synthesis.h:333:0
+// src/engine/voxel_synthesis.h:327:0
 
 struct voxel_synthesis_change_propagation_info_stack
 {
