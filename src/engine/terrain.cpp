@@ -1324,6 +1324,7 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
   r32 *NoiseValues = Allocate(r32, GetTranArena(), Volume(Dim));
   v3  *Normals     = Allocate( v3, GetTranArena(), Volume(Dim));
 
+  s32 VoxIndex = 0;
   for ( s32 z = 0; z < Dim.z; ++ z)
   {
     s64 WorldZ = z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z);
@@ -1334,7 +1335,8 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
       for ( s32 x = 0; x < Dim.x; ++ x)
       {
         s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x);
-        s32 VoxIndex = GetIndex(V3i(x,y,z), Dim);
+        /* s32 TestVoxIndex = GetIndex(V3i(x,y,z), Dim); */
+        /* Assert(VoxIndex == TestVoxIndex); */
 
         r32 *NoiseValue = NoiseValues + VoxIndex;
         for (u32 OctaveIndex = 0; OctaveIndex < OctaveCount; ++OctaveIndex)
@@ -1355,6 +1357,8 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
             *NoiseValue += N * Octave->Amp;
           }
         }
+
+        VoxIndex += 1;
       }
     }
   }
@@ -1362,6 +1366,7 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
   s64 ChunkWorldZ = SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z) - zMin;
   ComputeNormalsForChunkFromNoiseValues_Opt(Dim, ChunkWorldZ, NoiseValues, Normals);
 
+  VoxIndex = 0;
   for ( s32 z = 0; z < Dim.z; ++ z)
   {
     s64 WorldZ = z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z);
@@ -1372,7 +1377,8 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
       for ( s32 x = 0; x < Dim.x; ++ x)
       {
         s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x);
-        s32 VoxIndex = GetIndex(V3i(x,y,z), Dim);
+        /* s32 TestVoxIndex = GetIndex(V3i(x,y,z), Dim); */
+        /* Assert(VoxIndex == TestVoxIndex); */
 
         r32 *NoiseValue = NoiseValues + VoxIndex;
         v3  *Normal     = Normals + VoxIndex;
@@ -1417,6 +1423,7 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
         {
           Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
         }
+        VoxIndex += 1;
       }
     }
   }
