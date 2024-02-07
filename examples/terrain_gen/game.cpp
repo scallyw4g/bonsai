@@ -716,6 +716,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* GameState->TerrainGenType = TerrainGenType_GrassyTerracedTerrain; */
 
   GameState->TerrainGenType = TerrainGenType_GrassyTerracedTerrain4;
+  /* GameState->TerrainGenType = TerrainGenType_Voronoi; */
   /* World->Center = V3i(-22, 101, 1); */
 
   Camera->GhostId = GetFreeEntity(EntityTable);

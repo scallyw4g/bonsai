@@ -241,6 +241,71 @@ ComputeNormalsForChunkFromFilledFlag(world_chunk *Chunk, v3i WorldChunkDim, v3 *
 
 #if 1
 link_internal void
+ComputeNormalsForChunkFromNoiseValues_Opt(v3i Dim, r32 ChunkWorldZ, r32 *NoiseValues, v3 *Normals)
+{
+  /* HISTOGRAM_FUNCTION(); */
+
+  s32 MaxIndex = Volume(Dim);
+  s32 StartingIndex = 1 + Dim.x + (Dim.x*Dim.y);
+
+  s32 VoxIndex = StartingIndex;
+  for ( s32 z = 1; z < Dim.z-1; ++ z)
+  {
+    for ( s32 y = 1; y < Dim.y-1; ++ y)
+    {
+      for ( s32 x = 1; x < Dim.x-1; ++ x)
+      {
+        r32 CurrentNoiseValue = NoiseValues[VoxIndex];
+        /* s32 TestVoxIndex = GetIndex(V3i(x,y,z), Dim); */
+        /* Assert(VoxIndex == TestVoxIndex); */
+
+        v3 Normal = {};
+        s32 dPIndex = VoxIndex-StartingIndex;
+        for ( s32 dz = -1; dz < 2; ++ dz)
+        {
+          for ( s32 dy = -1; dy < 2; ++ dy)
+          {
+            for ( s32 dx = -1; dx < 2; ++ dx)
+            {
+              if (dz == 0 && dy == 0 && dx == 0)
+              {
+                dPIndex += 1;
+                continue; // Skip the middle-most voxel
+              }
+
+              /* s32 TestdPIndex = GetIndex(V3i(x+dx,y+dy,z+dz), Dim); */
+              /* Assert(dPIndex == TestdPIndex); */
+              /* if (dPIndex > -1) */
+              {
+                /* Assert(dPIndex < MaxIndex); */
+                r32 Diff = NoiseValues[dPIndex]-dz - Truncate(CurrentNoiseValue);
+                if ( Diff > 0.f )
+                {
+                  // TODO(Jesse): Recompute with a small random variance to the weight if this is 0?
+                  Normal += V3(dx,dy,dz)*Diff;
+                }
+              }
+              dPIndex += 1;
+            }
+            dPIndex += Dim.x-3; // Skip to the next row
+          }
+          dPIndex += (Dim.x*Dim.y)-(3*Dim.x); // Skip to the next plate
+        }
+
+        /* Assert(VoxIndex < MaxIndex); */
+        Normals[VoxIndex] = Normalize(Normal) * -1.f;
+
+        VoxIndex += 1;
+      }
+
+      VoxIndex += 2; // Skip the last one in the row, and the first one in the next
+    }
+
+    VoxIndex += (2*Dim.y); // Skip the last row, and the next
+  }
+}
+
+link_internal void
 ComputeNormalsForChunkFromNoiseValues(v3i Dim, r32 ChunkWorldZ, r32 *NoiseValues, v3 *Normals)
 {
   TIMED_FUNCTION();
@@ -1295,7 +1360,7 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
   }
 
   s64 ChunkWorldZ = SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z) - zMin;
-  ComputeNormalsForChunkFromNoiseValues(Dim, ChunkWorldZ, NoiseValues, Normals);
+  ComputeNormalsForChunkFromNoiseValues_Opt(Dim, ChunkWorldZ, NoiseValues, Normals);
 
   for ( s32 z = 0; z < Dim.z; ++ z)
   {
