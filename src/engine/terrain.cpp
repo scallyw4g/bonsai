@@ -1241,7 +1241,7 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
                         v3i WorldChunkDim,
                         void *OctavesIn )
 {
-  TIMED_FUNCTION();
+  HISTOGRAM_FUNCTION();
   u32 ChunkSum = 0;
 
   Assert(Dim == Chunk->Dim);
@@ -1294,7 +1294,6 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
     }
   }
 
-#if 0
   s64 ChunkWorldZ = SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z) - zMin;
   ComputeNormalsForChunkFromNoiseValues(Dim, ChunkWorldZ, NoiseValues, Normals);
 
@@ -1316,7 +1315,7 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
         u16 ThisColor = STONE;
         ThisColor = GRASS_GREEN;
 
-#if 1
+#if 0
         /* Chunk->Voxels[VoxIndex].DebugColor.x = *NoiseValue; */
         MakeCliffs(Chunk, VoxIndex, s32(WorldX), s32(WorldY), s32(WorldZ), NoiseValue, Normal, &ThisColor);
 
@@ -1356,7 +1355,6 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
       }
     }
   }
-#endif
 
 #if 0
   v3 *Normals = Allocate(v3, GetTranArena(), Volume(Dim));
