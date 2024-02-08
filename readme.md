@@ -68,6 +68,8 @@ See the docs on the [build process](docs/01_build_process.md).
 
 [ ] Better shadows : https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-8-summed-area-variance-shadow-maps
 
+[ ] Screen Space Shadows : https://panoskarabelas.com/posts/screen_space_shadows/
+
 [ ] Motion Blur : https://developer.nvidia.com/gpugems/gpugems3/part-iv-image-effects/chapter-27-motion-blur-post-processing-effect
 
 [ ] TAA?
