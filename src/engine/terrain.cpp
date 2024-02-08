@@ -1353,20 +1353,34 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
           {
             octave *Octave = OctaveBuf->Octaves+OctaveIndex;
 
-            f32 InX = (x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / Octave->Freq.x;
-            f32 xStep = 1.f/Octave->Freq.x;
+            /* f32 InX = (x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / Octave->Freq.x; */
+            /* f32 xStep = 1.f/Octave->Freq.x; */
 
             f32 InY = (y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y)) / Octave->Freq.y;
             f32 InZ = (z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z)) / Octave->Freq.z;
 
 #if PERLIN_8x
+            f32 xCoords[8] =
+            {
+              (    x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / Octave->Freq.x,
+              (1 + x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / Octave->Freq.x,
+              (2 + x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / Octave->Freq.x,
+              (3 + x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / Octave->Freq.x,
+              (4 + x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / Octave->Freq.x,
+              (5 + x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / Octave->Freq.x,
+              (6 + x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / Octave->Freq.x,
+              (7 + x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / Octave->Freq.x,
+            };
+
             f32 TmpPerlinResults[8];
 #if 1
-            PerlinNoise_8x(xStep, InX, InY, InZ, TmpPerlinResults);
+            PerlinNoise_8x(xCoords, InY, InZ, TmpPerlinResults);
 #else
             RangeIterator(Index, 8)
             {
-              InX += xStep;
+              /* f32 InX = xCoords[Index]; */
+              /* TmpPerlinResults[Index] = PerlinNoise(InX + (xStep*Index), InY, InZ); */
+              f32 InX = xCoords[Index];
               TmpPerlinResults[Index] = PerlinNoise(InX, InY, InZ);
             }
 #endif

@@ -512,6 +512,11 @@ while (( "$#" )); do
       OPTIMIZATION_LEVEL="-O2"
     ;;
 
+    "-O3")
+      OPTIMIZATION_LEVEL="-O3"
+    ;;
+
+
     *)
       echo "Unrecognized Build Option ($CliArg), exiting." && exit 1
     ;;
