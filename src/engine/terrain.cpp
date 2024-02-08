@@ -182,7 +182,16 @@ GrowGrassVoronoi_8x( world_chunk *Chunk, v3i P, r32 *NoiseValue, v3 *Normals, v3
   f32 zMapped = (P.z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z)) / 32.f;
 
   f32 VoronoiResults[8];
+#if 1
   VoronoiNoise3D_8x(VoronoiResults, _xGrassMapped, V2(yMapped, zMapped));
+#else
+  RangeIterator(Index, 8)
+  {
+    VoronoiResults[Index] = VoronoiNoise3D(V3(_xGrassMapped[Index], yMapped, zMapped));
+  }
+#endif
+
+
   RangeIterator(Index, 8)
   {
     r32 GrassMask = GrassMasks[Index];
@@ -225,7 +234,6 @@ GrowGrassVoronoi_8x( world_chunk *Chunk, v3i P, r32 *NoiseValue, v3 *Normals, v3
         if (MaskedVoronoi > 0.1f)
         {
           /* ThisColor[Index] = RED; */
-          ThisColor[Index] = GRASS_GREEN-1;
 
           if (MaskedVoronoi > 0.2f)
           {
@@ -233,11 +241,15 @@ GrowGrassVoronoi_8x( world_chunk *Chunk, v3i P, r32 *NoiseValue, v3 *Normals, v3
             if ((NoiseValue[Index]+(MaskedVoronoi*GrassHeightPower)) > WorldZSubZMin)
             {
               /* v3 Basis = V3(_xGrassMapped[Index], yMapped, zMapped); */
-              v3 Basis = V3(f32(P.x + Index + SrcToDest.x), f32(P.y), 0.f);
-              random_series S1 = RandomSeriesFromV3(Basis);
+              /* v3 Basis = V3(f32(P.x + Index + SrcToDest.x), f32(P.y + SrcToDest.y), 0.f); */
+              v3 Basis = V3(0.12542f+0.43542f*f32(Index), 1.43656f+1.566213f*f32(Index), 0.f);
+              /* random_series S1 = RandomSeriesFromV3(Basis); */
               /* random_series S1 = RandomSeriesFromV3i(V3i(P.x+Index, P.y, 0)); */
-              if (RandomUnilateral(&S1) > 0.8f)
+              /* random_series S1 = RandomSeriesFromV3i(V3i(13654376, 435267531, 543760)); */
+              random_series S1 = {u64(P.x+Index-2 + P.y-2)};
+              if (RandomUnilateral(&S1) > 0.7f)
               {
+                ThisColor[Index] = GRASS_GREEN-1;
                 if (MaskedVoronoi+RandomUnilateral(&S1) > 0.8f)
                 {
                   NoiseValue[Index] += MaskedVoronoi * 10.f;
