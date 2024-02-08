@@ -164,6 +164,7 @@ GrowGrassVoronoi_8x( world_chunk *Chunk, v3i P, r32 *NoiseValue, v3 *Normals, v3
 {
   s32 GrassMaskCount = 0;
   r32 GrassMasks[8];
+  r32 _xGrassMapped[8];
   RangeIterator(Index, 8)
   {
     r32 DotNormal = Dot(Normals[Index], V3(0,0,1));
@@ -171,22 +172,26 @@ GrowGrassVoronoi_8x( world_chunk *Chunk, v3i P, r32 *NoiseValue, v3 *Normals, v3
     r32 ClampedDotNormal = Clamp(Thresh, DotNormal, 1.f);
     GrassMasks[Index] = MapValueToUnilateral(Thresh, ClampedDotNormal, 1.f);
     if (GrassMasks[Index] > 0.f) ++GrassMaskCount;
+
+    _xGrassMapped[Index] = (Index + P.x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / 16.f;
   }
 
   if (GrassMaskCount == 0) return;
 
-  f32 GrassAreaY = (P.y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y)) / 16.f;
-  f32 GrassAreaZ = (P.z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z)) / 32.f;
+  f32 yMapped = (P.y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y)) / 16.f;
+  f32 zMapped = (P.z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z)) / 32.f;
 
+  f32 VoronoiResults[8];
+  VoronoiNoise3D_8x(VoronoiResults, _xGrassMapped, V2(yMapped, zMapped));
   RangeIterator(Index, 8)
   {
     r32 GrassMask = GrassMasks[Index];
 
     if (GrassMask > 0.f)
     {
-      s32 x = P.x + Index;;
-      s32 y = P.y;
-      s32 z = P.z;
+      /* s32 x = P.x + Index;; */
+      /* s32 y = P.y; */
+      /* s32 z = P.z; */
 
       // NOTE(Jesse): This is pretty henious .. the math to compute GrassAreaX here
       // (and, actually, maybe most of these calculations to turn positions into floats)
@@ -201,57 +206,58 @@ GrowGrassVoronoi_8x( world_chunk *Chunk, v3i P, r32 *NoiseValue, v3 *Normals, v3
       // TODO(Jesse): Should go audit the terrain-gen functions and find a better
       // way of computing these float values.
       //
-      if (x == 0 || y == 0 || x == Chunk->Dim.x-1 || y == Chunk->Dim.y-1) { return; }
+      /* if (x == 0 || y == 0 || x == Chunk->Dim.x-1 || y == Chunk->Dim.y-1) { return; } */
 
-      f32 GrassAreaX = (x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / 16.f;
+      /* f32 GrassAreaX = (x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / 16.f; */
       /* f32 GrassAreaX = (x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)); */
-      /* f32 GrassAreaY = (y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y)); */
+      /* f32 yMapped = (y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y)); */
 
       // TODO(Jesse): Does this actually help reduce stuff 'growing' in places
       // it shouldn't?
-      /* f32 GrassAreaZ = 1.f; //(z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z)) / 32.f; */
+      /* f32 zMapped = 1.f; //(z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z)) / 32.f; */
 
-      f32 GrassAreaPower = 6.f;
-      r32 GrassyAreaValue = GrassAreaPower * GrassMask * (VoronoiNoise3D(V3(GrassAreaX, GrassAreaY, GrassAreaZ)));
+      /* f32 GrassAreaPower = 6.f; */
+      f32 GrassAreaPower = 1.f;
+      r32 MaskedVoronoi = GrassAreaPower * GrassMask * VoronoiResults[Index];
       if (ThisColor[Index] == GRASS_GREEN)
       {
-        if (GrassyAreaValue > 0.5f)
+        /* NoiseValue[Index] += 5.f; */
+        if (MaskedVoronoi > 0.1f)
         {
+          /* ThisColor[Index] = RED; */
           ThisColor[Index] = GRASS_GREEN-1;
 
-          if (GrassyAreaValue > 0.6f)
+          if (MaskedVoronoi > 0.2f)
           {
             f32 GrassHeightPower = 50.f;
-            if ((NoiseValue[Index]+(GrassyAreaValue*GrassHeightPower)) > WorldZSubZMin)
+            if ((NoiseValue[Index]+(MaskedVoronoi*GrassHeightPower)) > WorldZSubZMin)
             {
-              f32 HashX = hash_f32(GrassAreaX);
-              f32 HashY = hash_f32(GrassAreaY);
-
-              s32 iHashX = *(s32*)&HashX;
-              s32 iHashY = *(s32*)&HashY;
-
-              random_series S0 { u64(x + y) | u64( (iHashX | (iHashY << 31)) ^ (iHashY << 16)) };
-              random_series S1 { RandomU32(&S0) | RandomU32(&S0)<<31 };
-
-              if (RandomUnilateral(&S1) > 0.89f)
+              /* v3 Basis = V3(_xGrassMapped[Index], yMapped, zMapped); */
+              v3 Basis = V3(f32(P.x + Index + SrcToDest.x), f32(P.y), 0.f);
+              random_series S1 = RandomSeriesFromV3(Basis);
+              /* random_series S1 = RandomSeriesFromV3i(V3i(P.x+Index, P.y, 0)); */
+              if (RandomUnilateral(&S1) > 0.8f)
               {
-                NoiseValue[Index] += 2.f;
+                if (MaskedVoronoi+RandomUnilateral(&S1) > 0.8f)
+                {
+                  NoiseValue[Index] += MaskedVoronoi * 10.f;
 
-                r32 GrassColor = RandomUnilateral(&S1);
-                if (GrassColor > 0.8f)
-                  ThisColor[Index] = LONG_GREEN_GRASS0;
+                  r32 GrassColor = RandomUnilateral(&S1);
+                  if (GrassColor > 0.8f)
+                    ThisColor[Index] = LONG_GREEN_GRASS0;
 
-                if (GrassColor > 0.88f)
-                  ThisColor[Index] = LONG_GREEN_GRASS1;
+                  if (GrassColor > 0.88f)
+                    ThisColor[Index] = LONG_GREEN_GRASS1;
 
-                if (GrassColor > 0.993f)
-                  ThisColor[Index] = LONG_YELLOW_GRASS0;
+                  if (GrassColor > 0.993f)
+                    ThisColor[Index] = LONG_YELLOW_GRASS0;
 
-                if (GrassColor > 0.995f)
-                  ThisColor[Index] = LONG_YELLOW_GRASS1;
+                  if (GrassColor > 0.995f)
+                    ThisColor[Index] = LONG_YELLOW_GRASS1;
 
-                if (GrassColor > 0.998f)
-                  ThisColor[Index] = PINK;
+                  if (GrassColor > 0.998f)
+                    ThisColor[Index] = PINK;
+                }
               }
             }
           }
