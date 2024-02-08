@@ -1230,65 +1230,66 @@ UnilateralToThesholdIndex(f32 Value, s32 ClipPoints)
 link_internal void
 MakeCliffs(world_chunk *Chunk, s32 VoxIndex, s32 WorldX, s32 WorldY, s32 WorldZ, r32 *NoiseValue, v3 *Normal, u16 *ThisColor)
 {
-  r32 DotNormal = Dot(*Normal, V3(0,0,1));
-
-  r32 Thresh = 0.43f; // Lower == more cliffy
-  r32 ClampedDotNormal = Clamp(Thresh, 1.f-DotNormal, 1.f);
-
-  // 1.f when the cliff is at it's most cliffy (terrain is vertical)
-  r32 CliffBlend = MapValueToUnilateral(Thresh, ClampedDotNormal, 1.f);
-
-  if (CliffBlend > 0.f)
+  RangeIterator(Index, 8)
   {
-    /* Chunk->Voxels[VoxIndex].DebugColor.x = CliffBlend; */
+    r32 DotNormal = Dot(Normal[Index], V3(0,0,1));
 
-    /* r32 Squareness = 0.1f; */
-    r32 Squareness = 0.25f;
-    /* r32 Squareness = 0.55f; */
-    /* r32 Squareness = 0.75f; */
-    /* r32 Squareness = 0.8f; */
-    /* r32 Squareness = 1.f; */
+    r32 Thresh = 0.43f; // Lower == more cliffy
+    r32 ClampedDotNormal = Clamp(Thresh, 1.f-DotNormal, 1.f);
 
-    v3 BaseCellSize = V3(5.f, 5.f, 5.f); // Increasing this increases the size of the cells
+    // 1.f when the cliff is at it's most cliffy (terrain is vertical)
+    r32 CliffBlend = MapValueToUnilateral(Thresh, ClampedDotNormal, 1.f);
 
-    v3 CellSizes[] = {
-      {BaseCellSize},
-      {BaseCellSize*V3(3.f, 3.f, 6.f)},
-      {BaseCellSize*V3(7.f, 7.f, 18.f)},
-    };
-
-    s32 Index = UnilateralToThesholdIndex(CliffBlend, ArrayCount(CellSizes)-1);
-    Assert(Index < s32(ArrayCount(CellSizes)));
-
-    v3 CellSize = CellSizes[Index];
-
-
-    v3 CellMultiplier = (1.f/CellSize);
-    v3 WorldP = V3(WorldX, WorldY, WorldZ);
-    r32 Voronoi =  VoronoiNoise3D(WorldP * CellMultiplier, Squareness);
-
-    *NoiseValue += 1.5f + CliffBlend*Voronoi*10.f;
-
-    r32 DarkStoneThresh = 0.08f;  // Increasing this increases the amount of darkness
-    if (Voronoi < DarkStoneThresh)
+    if (CliffBlend > 0.f)
     {
-      if (CliffBlend > 0.1f)
+      /* Chunk->Voxels[VoxIndex].DebugColor.x = CliffBlend; */
+
+      /* r32 Squareness = 0.1f; */
+      r32 Squareness = 0.25f;
+      /* r32 Squareness = 0.55f; */
+      /* r32 Squareness = 0.75f; */
+      /* r32 Squareness = 0.8f; */
+      /* r32 Squareness = 1.f; */
+
+      v3 BaseCellSize = V3(5.f, 5.f, 5.f); // Increasing this increases the size of the cells
+
+      v3 CellSizes[] = {
+        {BaseCellSize},
+        {BaseCellSize*V3(3.f, 3.f, 6.f)},
+        {BaseCellSize*V3(7.f, 7.f, 18.f)},
+      };
+
+      s32 CellIndex = UnilateralToThesholdIndex(CliffBlend, ArrayCount(CellSizes)-1);
+      Assert(CellIndex < s32(ArrayCount(CellSizes)));
+      v3 CellSize = CellSizes[CellIndex];
+
+      v3 CellMultiplier = (1.f/CellSize);
+      v3 WorldP = V3(WorldX+Index, WorldY, WorldZ);
+      r32 Voronoi = VoronoiNoise3D(WorldP * CellMultiplier, Squareness);
+
+      NoiseValue[Index] += 1.5f + CliffBlend*Voronoi*10.f;
+
+      r32 DarkStoneThresh = 0.08f;  // Increasing this increases the amount of darkness
+      if (Voronoi < DarkStoneThresh)
       {
-        *NoiseValue -= 2.f*(CliffBlend);
-        *ThisColor = DARK_STONE;
+        if (CliffBlend > 0.1f)
+        {
+          NoiseValue[Index] -= 2.f*(CliffBlend);
+          ThisColor[Index] = DARK_STONE;
+        }
+        else
+        {
+          f32 ColorPick = RandomUnilateralFromV3(WorldP);
+          if (ColorPick > 0.5f)
+          {
+            ThisColor[Index] = MOSS_GREEN;
+          }
+        }
       }
       else
       {
-        f32 ColorPick = RandomUnilateralFromV3(WorldP);
-        if (ColorPick > 0.5f)
-        {
-          *ThisColor = MOSS_GREEN;
-        }
+        ThisColor[Index] = STONE;
       }
-    }
-    else
-    {
-      *ThisColor = STONE;
     }
   }
 }
@@ -1403,7 +1404,7 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
       for ( s32 y = 0; y < Dim.y; ++ y)
       {
         s64 WorldY = y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y);
-        for ( s32 x = 0; x < Dim.x; ++ x)
+        for ( s32 x = 0; x < Dim.x;  x += 8)
         {
           s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x);
           /* s32 TestVoxIndex = GetIndex(V3i(x,y,z), Dim); */
@@ -1412,11 +1413,10 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
           r32 *NoiseValue = NoiseValues + VoxIndex;
           v3  *Normal     = Normals + VoxIndex;
 
-          u16 ThisColor = STONE;
-          ThisColor = GRASS_GREEN;
+          u16 ThisColor[8] = { GRASS_GREEN, GRASS_GREEN, GRASS_GREEN, GRASS_GREEN, GRASS_GREEN, GRASS_GREEN, GRASS_GREEN, GRASS_GREEN };
 
           /* Chunk->Voxels[VoxIndex].DebugColor.x = *NoiseValue; */
-          MakeCliffs(Chunk, VoxIndex, s32(WorldX), s32(WorldY), s32(WorldZ), NoiseValue, Normal, &ThisColor);
+          MakeCliffs(Chunk, VoxIndex, s32(WorldX), s32(WorldY), s32(WorldZ), NoiseValue, Normal, ThisColor);
 
 
 #if 0
@@ -1434,13 +1434,14 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
           }
 #endif
 
-          b32 IsFilled = *NoiseValue > r32(z+ChunkWorldZ);
-
-
-          SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
-          Chunk->Voxels[VoxIndex].Color = ThisColor*u8(IsFilled);
-          /* Chunk->Voxels[VoxIndex].Transparency = ThisTransparency; */
-          ChunkSum += IsFilled;
+          RangeIterator(Index, 8)
+          {
+            b32 IsFilled = NoiseValue[Index] > r32(z+ChunkWorldZ);
+            SetFlag(&Chunk->Voxels[VoxIndex+Index], (voxel_flag)(Voxel_Filled*IsFilled));
+            Chunk->Voxels[VoxIndex+Index].Color = ThisColor[Index]*u8(IsFilled);
+            /* Chunk->Voxels[VoxIndex].Transparency = ThisTransparency; */
+            ChunkSum += IsFilled;
+          }
 
 #if 0
           Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
@@ -1454,7 +1455,7 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
             Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
           }
 #endif
-          VoxIndex += 1;
+          VoxIndex += 8;
         }
       }
     }
