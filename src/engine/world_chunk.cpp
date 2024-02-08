@@ -769,6 +769,43 @@ typedef u32 (*chunk_init_callback)( perlin_noise *Noise, world_chunk *Chunk, chu
 
 
 link_internal b32
+TransparencyIncreases(voxel *SrcVox, voxel *DstVox)
+{
+  /* s32 DestIndex = GetIndex(DestP, SrcChunkDim); */
+  /* voxel *SrcVox = Voxels+SrcIndex; */
+  /* voxel *DstVox = Voxels+DestIndex; */
+
+  Assert(SrcVox->Flags & Voxel_Filled);
+
+  b32 Result = False;
+  if (SrcVox->Transparency)
+  {
+    // Transparent source voxels can only increase in transparency if the dest is unfilled
+    if ( (DstVox->Flags&Voxel_Filled) == False)
+    {
+      Assert(DstVox->Transparency == 0);
+      Result = True;
+    }
+  }
+  else
+  {
+    // Opaque source voxels can increase in transparency if the dest is unfilled or filled and transparent
+    if ( (DstVox->Flags&Voxel_Filled) == False)
+    {
+      Assert(DstVox->Transparency == 0);
+      Result = True;
+    }
+
+    if ( (DstVox->Flags&Voxel_Filled) && DstVox->Transparency)
+    {
+      Result = True;
+    }
+
+  }
+
+  return Result;
+}
+link_internal b32
 TransparencyIncreases(voxel *Voxels, s32 SrcIndex, v3i DestP, v3i SrcChunkDim)
 {
   s32 DestIndex = GetIndex(DestP, SrcChunkDim);
@@ -895,6 +932,108 @@ MarkBoundaryVoxels_MakeExteriorFaces( voxel *Voxels,
 
 link_internal void
 MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
+                                        v3i SrcChunkDim,
+                                        v3i SrcChunkMin,
+                                        v3i SrcChunkMax,
+                                        random_series *Entropy = 0,
+                                        u8 NewColorMin = 0,
+                                        u8 NewColorMax = 0 )
+{
+  TIMED_FUNCTION();
+
+  auto MinDim = SrcChunkMin;
+  auto MaxDim = Min(SrcChunkDim, SrcChunkMax); // SrcChunkMin+DestChunkDim+1
+
+  v3i InnerDim = MaxDim-MinDim;
+  s32 SrcIndex = MinDim.x;
+
+  s32 MaxIndex = Volume(SrcChunkDim);
+  for ( s32 z = MinDim.z; z < MaxDim.z ; ++z )
+  {
+    for ( s32 y = MinDim.y; y < MaxDim.y ; ++y )
+    {
+      for ( s32 x = MinDim.x; x < MaxDim.x ; ++x )
+      {
+        voxel *Voxel = Voxels + SrcIndex;
+        if (Voxel->Flags & Voxel_Filled)
+        {
+          Voxel->Flags = Voxel_Filled;
+
+          s32 RightIndex = SrcIndex + 1;
+          s32 LeftIndex  = SrcIndex - 1;
+
+          s32 FrontIndex = SrcIndex + SrcChunkDim.x;
+          s32 BackIndex  = SrcIndex - SrcChunkDim.x;
+
+          s32 TopIndex    = SrcIndex + SrcChunkDim.x*SrcChunkDim.y;
+          s32 BottomIndex = SrcIndex - SrcChunkDim.x*SrcChunkDim.y;
+
+          if ( RightIndex >= 0 && RightIndex < MaxIndex )
+          {
+            voxel *NextVoxel = Voxels + RightIndex;
+            if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel))
+            {
+              Voxel->Flags |= Voxel_RightFace;
+            }
+          }
+          if ( LeftIndex >= 0 && LeftIndex < MaxIndex )
+          {
+            voxel *NextVoxel = Voxels + LeftIndex;
+            if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel))
+            {
+              Voxel->Flags |= Voxel_LeftFace;
+            }
+          }
+
+          if ( TopIndex >= 0 && TopIndex < MaxIndex )
+          {
+            voxel *NextVoxel = Voxels + TopIndex;
+            if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel))
+            {
+              Voxel->Flags |= Voxel_TopFace;
+            }
+          }
+          if ( BottomIndex >= 0 && BottomIndex < MaxIndex )
+          {
+            voxel *NextVoxel = Voxels + BottomIndex;
+            if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel))
+            {
+              Voxel->Flags |= Voxel_BottomFace;
+            }
+          }
+
+
+          if ( FrontIndex >= 0 && FrontIndex < MaxIndex )
+          {
+            voxel *NextVoxel = Voxels + FrontIndex;
+            if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel))
+            {
+              Voxel->Flags |= Voxel_FrontFace;
+            }
+          }
+          if ( BackIndex >= 0 && BackIndex < MaxIndex )
+          {
+            voxel *NextVoxel = Voxels + BackIndex;
+            if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel))
+            {
+              Voxel->Flags |= Voxel_BackFace;
+            }
+          }
+
+        }
+
+        SrcIndex += 1;
+      }
+
+      SrcIndex += (SrcChunkDim.x)-InnerDim.x;
+    }
+
+    SrcIndex += (SrcChunkDim.x*SrcChunkDim.y)-(InnerDim.x*InnerDim.y);
+  }
+}
+
+link_internal void
+MarkBoundaryVoxels_NoExteriorFaces_Old( voxel *Voxels,
                                     chunk_dimension SrcChunkDim,
                                     chunk_dimension SrcChunkMin,
                                     chunk_dimension SrcChunkMax,
