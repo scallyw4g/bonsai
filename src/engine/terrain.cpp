@@ -1307,6 +1307,7 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
                         v3i WorldChunkDim,
                         void *OctavesIn )
 {
+  /* TIMED_FUNCTION(); */
   HISTOGRAM_FUNCTION();
   u32 ChunkSum = 0;
 
@@ -1339,12 +1340,7 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
       {
         s64 WorldY = y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y);
 
-#define PERLIN_8x 1
-#if PERLIN_8x
         for ( s32 x = 0; x < Dim.x; x += 8)
-#else
-        for ( s32 x = 0; x < Dim.x; x += 1)
-#endif
         {
           s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x);
 
@@ -1359,7 +1355,6 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
             f32 InY = (y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y)) / Octave->Freq.y;
             f32 InZ = (z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z)) / Octave->Freq.z;
 
-#if PERLIN_8x
             f32 xCoords[8] =
             {
               (    x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / Octave->Freq.x,
@@ -1373,18 +1368,7 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
             };
 
             f32 TmpPerlinResults[8];
-#if 1
             PerlinNoise_8x(xCoords, InY, InZ, TmpPerlinResults);
-#else
-            RangeIterator(Index, 8)
-            {
-              /* f32 InX = xCoords[Index]; */
-              /* TmpPerlinResults[Index] = PerlinNoise(InX + (xStep*Index), InY, InZ); */
-              f32 InX = xCoords[Index];
-              TmpPerlinResults[Index] = PerlinNoise(InX, InY, InZ);
-            }
-#endif
-
             RangeIterator(Index, 8)
             {
               f32 N = TmpPerlinResults[Index];
@@ -1398,24 +1382,9 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
               }
             }
 
-#else
-            /* f32 N = PerlinNoise(InX, InY, InZ); */
-            /* if (OctaveIndex == 0) */
-            /* { */
-            /*   *NoiseValue += MapNoiseValueToFinal(N) * Octave->Amp; */
-            /* } */
-            /* else */
-            /* { */
-            /*   *NoiseValue += N * Octave->Amp; */
-            /* } */
-#endif
           }
 
-#if PERLIN_8x
           VoxIndex += 8;
-#else
-          VoxIndex += 1;
-#endif
         }
       }
     }
@@ -1446,11 +1415,11 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
           u16 ThisColor = STONE;
           ThisColor = GRASS_GREEN;
 
-#if 0
           /* Chunk->Voxels[VoxIndex].DebugColor.x = *NoiseValue; */
           MakeCliffs(Chunk, VoxIndex, s32(WorldX), s32(WorldY), s32(WorldZ), NoiseValue, Normal, &ThisColor);
 
 
+#if 0
           {
             r32 DotNormal = Dot(*Normal, V3(0,0,1));
             r32 Thresh = 0.85f;

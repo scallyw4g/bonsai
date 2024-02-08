@@ -1152,32 +1152,32 @@ DrawDebugVoxels( voxel *Voxels,
         if (Voxel->Flags & Voxel_RightFace)
         {
           RightFaceVertexData( V3(SrcP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, RightFaceNormalData, Materials);
+          BufferFaceData(DestGeometry, VertexData, RightFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_LeftFace)
         {
           LeftFaceVertexData( V3(SrcP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, LeftFaceNormalData, Materials);
+          BufferFaceData(DestGeometry, VertexData, LeftFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_BottomFace)
         {
           BottomFaceVertexData( V3(SrcP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, BottomFaceNormalData, Materials);
+          BufferFaceData(DestGeometry, VertexData, BottomFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_TopFace)
         {
           TopFaceVertexData( V3(SrcP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, TopFaceNormalData, Materials);
+          BufferFaceData(DestGeometry, VertexData, TopFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_FrontFace)
         {
           FrontFaceVertexData( V3(SrcP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, FrontFaceNormalData, Materials);
+          BufferFaceData(DestGeometry, VertexData, FrontFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_BackFace)
         {
           BackFaceVertexData( V3(SrcP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, BackFaceNormalData, Materials);
+          BufferFaceData(DestGeometry, VertexData, BackFaceNormalData, Materials);
         }
       }
     }
@@ -1415,27 +1415,27 @@ BuildWorldChunkMesh_DebugVoxels( voxel *Voxels,
 
           {
             RightFaceVertexData( DestP, Diameter, VertexData);
-            BufferVertsDirect(DestGeometry, 6, VertexData, RightFaceNormalData, Materials);
+            BufferFaceData(DestGeometry, VertexData, RightFaceNormalData, Materials);
           }
           {
             LeftFaceVertexData( DestP, Diameter, VertexData);
-            BufferVertsDirect(DestGeometry, 6, VertexData, LeftFaceNormalData, Materials);
+            BufferFaceData(DestGeometry, VertexData, LeftFaceNormalData, Materials);
           }
           {
             BottomFaceVertexData( DestP, Diameter, VertexData);
-            BufferVertsDirect(DestGeometry, 6, VertexData, BottomFaceNormalData, Materials);
+            BufferFaceData(DestGeometry, VertexData, BottomFaceNormalData, Materials);
           }
           {
             TopFaceVertexData( DestP, Diameter, VertexData);
-            BufferVertsDirect(DestGeometry, 6, VertexData, TopFaceNormalData, Materials);
+            BufferFaceData(DestGeometry, VertexData, TopFaceNormalData, Materials);
           }
           {
             FrontFaceVertexData( DestP, Diameter, VertexData);
-            BufferVertsDirect(DestGeometry, 6, VertexData, FrontFaceNormalData, Materials);
+            BufferFaceData(DestGeometry, VertexData, FrontFaceNormalData, Materials);
           }
           {
             BackFaceVertexData( DestP, Diameter, VertexData);
-            BufferVertsDirect(DestGeometry, 6, VertexData, BackFaceNormalData, Materials);
+            BufferFaceData(DestGeometry, VertexData, BackFaceNormalData, Materials);
           }
         }
         TmpIndex++;
@@ -1464,33 +1464,15 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
                                             // entity models about 0 and rotation works properly.
                                             v3 VertexOffset = {})
 {
+  /* HISTOGRAM_FUNCTION(); */
   TIMED_FUNCTION();
-
-  /* Assert(IsSet(SrcChunk, Chunk_VoxelsInitialized)); */
-  /* Assert(IsSet(DestChunk, Chunk_VoxelsInitialized)); */
-
-  voxel_position rightVoxel;
-  voxel_position leftVoxel;
-  voxel_position topVoxel;
-  voxel_position botVoxel;
-  voxel_position frontVoxel;
-  voxel_position backVoxel;
-
-  s32 rightVoxelReadIndex;
-  s32 leftVoxelReadIndex;
-  s32 topVoxelReadIndex;
-  s32 botVoxelReadIndex;
-  s32 frontVoxelReadIndex;
-  s32 backVoxelReadIndex;
 
 
   v3 VertexData[VERTS_PER_FACE];
-  /* v3 FaceColors[VERTS_PER_FACE]; */
-  /* v2 TransEmiss[VERTS_PER_FACE]; */
   matl Materials[VERTS_PER_FACE];
 
   auto SrcMinP = SrcChunkMin;
-  auto MaxDim = Min(SrcChunkDim, SrcChunkMax); // SrcChunkMin+DestChunkDim+1
+  auto MaxDim = Min(SrcChunkDim, SrcChunkMax);
 
   auto TmpDim = MaxDim-SrcMinP;
 
@@ -1517,7 +1499,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
       {
         voxel_position SrcP = SrcMinP + Voxel_Position(xIndex, yIndex, zIndex);
         s32 SrcIndex = GetIndex(SrcP, SrcChunkDim);
-        Assert(TmpIndex < TmpVol);
+        /* Assert(TmpIndex < TmpVol); */
         TempVoxels[TmpIndex] = Voxels[SrcIndex];
         TmpIndex++;
       }
@@ -1526,19 +1508,18 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
 
   Assert(TmpIndex == TmpVol);
 
+  s32 Index = 0;
   for ( s32 z = 0; z < TmpDim.z ; ++z )
   {
     for ( s32 y = 0; y < TmpDim.y ; ++y )
     {
       for ( s32 x = 0; x < TmpDim.x ; ++x )
       {
-        voxel_position TmpVoxP = Voxel_Position(x,y,z);
-        s32 Index = GetIndex(TmpVoxP, TmpDim);
+        v3i TmpVoxP = V3i(x,y,z);
         voxel *Voxel = TempVoxels + Index;
 
-        f32 Trans = (f32)Voxel->Transparency / 255.f;
+        f32 Trans = f32(Voxel->Transparency) / 255.f;
 
-        /* v3 Color = Voxel->DebugColor; */
         v3 Color = GetColorData(Voxel->Color);
 
         FillArray(VertexMaterial(Color, Trans, 0.f), Materials, VERTS_PER_FACE);
@@ -1552,40 +1533,42 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
           {
             v3 Dim = DoXStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_RightFace, Voxel->Color, Voxel->Transparency);
             RightFaceVertexData( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
-            BufferVertsDirect(Dest, 6, VertexData, RightFaceNormalData, Materials);
+            BufferFaceData(Dest, VertexData, RightFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_LeftFace)
           {
             v3 Dim = DoXStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_LeftFace, Voxel->Color, Voxel->Transparency);
             LeftFaceVertexData( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
-            BufferVertsDirect(Dest, 6, VertexData, LeftFaceNormalData, Materials);
+            BufferFaceData(Dest, VertexData, LeftFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_BottomFace)
           {
             v3 Dim = DoZStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_BottomFace, Voxel->Color, Voxel->Transparency);
             BottomFaceVertexData( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
-            BufferVertsDirect(Dest, 6, VertexData, BottomFaceNormalData, Materials);
+            BufferFaceData(Dest, VertexData, BottomFaceNormalData, Materials);
           }
 
           if (Voxel->Flags & Voxel_TopFace)
           {
             v3 Dim = DoZStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_TopFace, Voxel->Color, Voxel->Transparency);
             TopFaceVertexData( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
-            BufferVertsDirect(Dest, 6, VertexData, TopFaceNormalData, Materials);
+            BufferFaceData(Dest, VertexData, TopFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_FrontFace)
           {
             v3 Dim = DoYStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_FrontFace, Voxel->Color, Voxel->Transparency);
             FrontFaceVertexData( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
-            BufferVertsDirect(Dest, 6, VertexData, FrontFaceNormalData, Materials);
+            BufferFaceData(Dest, VertexData, FrontFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_BackFace)
           {
             v3 Dim = DoYStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_BackFace, Voxel->Color, Voxel->Transparency);
             BackFaceVertexData( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
-            BufferVertsDirect(Dest, 6, VertexData, BackFaceNormalData, Materials);
+            BufferFaceData(Dest, VertexData, BackFaceNormalData, Materials);
           }
         }
+
+        ++Index;
       }
     }
   }
@@ -1800,13 +1783,13 @@ BuildMipMesh( voxel *Voxels,
         {
           v3 Dim = DoXStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_RightFace, Voxel->Color, Voxel->Transparency);
           RightFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, RightFaceNormalData, Materials);
+          BufferFaceData(DestGeometry, VertexData, RightFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_LeftFace)
         {
           v3 Dim = DoXStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_LeftFace, Voxel->Color, Voxel->Transparency);
           LeftFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, LeftFaceNormalData, Materials);
+          BufferFaceData(DestGeometry, VertexData, LeftFaceNormalData, Materials);
         }
 
 
@@ -1814,13 +1797,13 @@ BuildMipMesh( voxel *Voxels,
         {
           v3 Dim = DoZStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_BottomFace, Voxel->Color, Voxel->Transparency);
           BottomFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, BottomFaceNormalData, Materials);
+          BufferFaceData(DestGeometry, VertexData, BottomFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_TopFace)
         {
           v3 Dim = DoZStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_TopFace, Voxel->Color, Voxel->Transparency);
           TopFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, TopFaceNormalData, Materials);
+          BufferFaceData(DestGeometry, VertexData, TopFaceNormalData, Materials);
         }
 
 
@@ -1828,13 +1811,13 @@ BuildMipMesh( voxel *Voxels,
         {
           v3 Dim = DoYStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_FrontFace, Voxel->Color, Voxel->Transparency);
           FrontFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, FrontFaceNormalData, Materials);
+          BufferFaceData(DestGeometry, VertexData, FrontFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_BackFace)
         {
           v3 Dim = DoYStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_BackFace, Voxel->Color, Voxel->Transparency);
           BackFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, BackFaceNormalData, Materials);
+          BufferFaceData(DestGeometry, VertexData, BackFaceNormalData, Materials);
         }
       }
     }
@@ -1916,32 +1899,32 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve( voxel *Voxels,
           if (Voxel->Flags & Voxel_RightFace)
           {
             RightFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-            BufferVertsDirect(Dest, 6, VertexData, RightFaceNormalData, Materials);
+            BufferFaceData(Dest, VertexData, RightFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_LeftFace)
           {
             LeftFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-            BufferVertsDirect(Dest, 6, VertexData, LeftFaceNormalData, Materials);
+            BufferFaceData(Dest, VertexData, LeftFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_BottomFace)
           {
             BottomFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-            BufferVertsDirect(Dest, 6, VertexData, BottomFaceNormalData, Materials);
+            BufferFaceData(Dest, VertexData, BottomFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_TopFace)
           {
             TopFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-            BufferVertsDirect(Dest, 6, VertexData, TopFaceNormalData, Materials);
+            BufferFaceData(Dest, VertexData, TopFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_FrontFace)
           {
             FrontFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-            BufferVertsDirect(Dest, 6, VertexData, FrontFaceNormalData, Materials);
+            BufferFaceData(Dest, VertexData, FrontFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_BackFace)
           {
             BackFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-            BufferVertsDirect(Dest, 6, VertexData, BackFaceNormalData, Materials);
+            BufferFaceData(Dest, VertexData, BackFaceNormalData, Materials);
           }
         }
       }
@@ -2034,32 +2017,32 @@ BuildWorldChunkMesh_Direct( voxel *Voxels,
         if ( !IsInsideDim( VoxDim, rightVoxel) || NotFilled( Voxels, rightVoxel, VoxDim) )
         {
           RightFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, RightFaceNormalData, Materials);
+          BufferFaceData(DestGeometry, VertexData, RightFaceNormalData, Materials);
         }
         if ( !IsInsideDim( VoxDim, leftVoxel) || NotFilled( Voxels, leftVoxel, VoxDim) )
         {
           LeftFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, LeftFaceNormalData, Materials);
+          BufferFaceData(DestGeometry, VertexData, LeftFaceNormalData, Materials);
         }
         if ( !IsInsideDim( VoxDim, botVoxel) || NotFilled( Voxels, botVoxel, VoxDim) )
         {
           BottomFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, BottomFaceNormalData, Materials);
+          BufferFaceData(DestGeometry, VertexData, BottomFaceNormalData, Materials);
         }
         if ( !IsInsideDim( VoxDim, topVoxel) || NotFilled( Voxels, topVoxel, VoxDim) )
         {
           TopFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, TopFaceNormalData, Materials);
+          BufferFaceData(DestGeometry, VertexData, TopFaceNormalData, Materials);
         }
         if ( !IsInsideDim( VoxDim, frontVoxel) || NotFilled( Voxels, frontVoxel, VoxDim) )
         {
           FrontFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, FrontFaceNormalData, Materials);
+          BufferFaceData(DestGeometry, VertexData, FrontFaceNormalData, Materials);
         }
         if ( !IsInsideDim( VoxDim, backVoxel) || NotFilled( Voxels, backVoxel, VoxDim) )
         {
           BackFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
-          BufferVertsDirect(DestGeometry, 6, VertexData, BackFaceNormalData, Materials);
+          BufferFaceData(DestGeometry, VertexData, BackFaceNormalData, Materials);
         }
       }
     }
@@ -3513,7 +3496,6 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
 
   // NOTE(Jesse): You can use this for debug, but it doesn't work if you change it to NoExteriorFaces
   /* MarkBoundaryVoxels_MakeExteriorFaces(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim); */
-
 
   FullBarrier;
 

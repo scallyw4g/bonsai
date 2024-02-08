@@ -22,7 +22,7 @@ struct mesh_freelist
 };
 
 #define TIERED_MESH_FREELIST_MAX_ELEMENTS (64)
-#define WORLD_CHUNK_MESH_MIN_SIZE         (2048)
+#define WORLD_CHUNK_MESH_MIN_SIZE         (1024)
 #define ELEMENTS_PER_TEMP_MESH    (WORLD_CHUNK_MESH_MIN_SIZE*TIERED_MESH_FREELIST_MAX_ELEMENTS)
 
 poof( staticbuffer(mesh_freelist, {TIERED_MESH_FREELIST_MAX_ELEMENTS}, {tiered_mesh_freelist}) )
@@ -93,6 +93,28 @@ BufferVertsDirect(
   }
 }
 #endif
+
+inline void
+BufferFaceData(
+    untextured_3d_geometry_buffer *Dest,
+    v3 *Positions, v3 *Normals, vertex_material *Mats
+  )
+{
+  if (BufferHasRoomFor(Dest, 6))
+  {
+    MemCopy((u8*)Positions,  (u8*)&Dest->Verts[Dest->At],      sizeof(*Positions)*6 );
+    MemCopy((u8*)Normals,    (u8*)&Dest->Normals[Dest->At],    sizeof(*Normals)*6 );
+    MemCopy((u8*)Mats,       (u8*)&Dest->Mat[Dest->At],        sizeof(*Mats)*6 );
+    /* MemCopy((u8*)TransEmiss, (u8*)&Dest->TransEmiss[Dest->At], sizeof(*TransEmiss)*NumVerts ); */
+
+    Dest->At += 6;
+  }
+  else
+  {
+    MarkBufferForGrowth(Dest, 6);
+    SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", 6, Dest->At, Dest->End -1);
+  }
+}
 
 inline void
 BufferVertsDirect(
