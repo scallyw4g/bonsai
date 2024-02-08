@@ -1325,6 +1325,9 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
   r32 *NoiseValues = Allocate(r32, GetTranArena(), Volume(Dim));
   v3  *Normals     = Allocate( v3, GetTranArena(), Volume(Dim));
 
+  // NOTE(Jesse): Perlin_8x needs a multiple of 8 here.
+  Assert(Dim.x % 8 == 0);
+
   {
     TIMED_NAMED_BLOCK("Octaves");
     s32 VoxIndex = 0;
@@ -1335,11 +1338,15 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
       for ( s32 y = 0; y < Dim.y; ++ y)
       {
         s64 WorldY = y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y);
-        for ( s32 x = 0; x < Dim.x; ++ x)
+
+#define PERLIN_8x 1
+#if PERLIN_8x
+        for ( s32 x = 0; x < Dim.x; x += 8)
+#else
+        for ( s32 x = 0; x < Dim.x; x += 1)
+#endif
         {
           s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x);
-          /* s32 TestVoxIndex = GetIndex(V3i(x,y,z), Dim); */
-          /* Assert(VoxIndex == TestVoxIndex); */
 
           r32 *NoiseValue = NoiseValues + VoxIndex;
           for (u32 OctaveIndex = 0; OctaveIndex < OctaveCount; ++OctaveIndex)
@@ -1347,21 +1354,54 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
             octave *Octave = OctaveBuf->Octaves+OctaveIndex;
 
             f32 InX = (x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x)) / Octave->Freq.x;
+            f32 xStep = 1.f/Octave->Freq.x;
+
             f32 InY = (y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y)) / Octave->Freq.y;
             f32 InZ = (z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z)) / Octave->Freq.z;
 
-            r32 N = PerlinNoise(InX, InY, InZ);
-            if (OctaveIndex == 0)
+#if PERLIN_8x
+            f32 TmpPerlinResults[8];
+#if 1
+            PerlinNoise_8x(xStep, InX, InY, InZ, TmpPerlinResults);
+#else
+            RangeIterator(Index, 8)
             {
-              *NoiseValue += MapNoiseValueToFinal(N) * Octave->Amp;
+              InX += xStep;
+              TmpPerlinResults[Index] = PerlinNoise(InX, InY, InZ);
             }
-            else
+#endif
+
+            RangeIterator(Index, 8)
             {
-              *NoiseValue += N * Octave->Amp;
+              f32 N = TmpPerlinResults[Index];
+              if (OctaveIndex == 0)
+              {
+                NoiseValue[Index] += MapNoiseValueToFinal(N) * Octave->Amp;
+              }
+              else
+              {
+                NoiseValue[Index] += N * Octave->Amp;
+              }
             }
+
+#else
+            /* f32 N = PerlinNoise(InX, InY, InZ); */
+            /* if (OctaveIndex == 0) */
+            /* { */
+            /*   *NoiseValue += MapNoiseValueToFinal(N) * Octave->Amp; */
+            /* } */
+            /* else */
+            /* { */
+            /*   *NoiseValue += N * Octave->Amp; */
+            /* } */
+#endif
           }
 
+#if PERLIN_8x
+          VoxIndex += 8;
+#else
           VoxIndex += 1;
+#endif
         }
       }
     }
