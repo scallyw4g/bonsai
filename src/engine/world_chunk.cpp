@@ -1256,7 +1256,7 @@ Step(voxel *Voxels, v3i SrcDim, v3i StepDir, v3i StepShape, v3i *AtP, voxel_flag
   return Result;
 }
 
-global_variable random_series ColorEntropy = {33453};
+/* global_variable random_series ColorEntropy = {33453}; */
 
 link_internal v3
 DoXStepping(voxel *Voxels, v3i SrcChunkDim, v3i SrcP, voxel_flag Face, u16 Color, u8 Transparency)
