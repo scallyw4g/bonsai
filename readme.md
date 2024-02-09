@@ -49,13 +49,16 @@ compiler, and a few appropriate system headers.
 * Context Switches (windows only)
 * Physical Core  (windows only)
 
-![banner](screenshots/8_skele.png)
 
 # Getting Started
+
+![banner](screenshots/8_skele.png)
 
 ## Building
 
 See the docs on the [build process](docs/01_build_process.md).
+
+![banner](screenshots/grass.png)
 
 # Wishlist
 
