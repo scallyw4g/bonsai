@@ -1669,7 +1669,7 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
 
           u16 ThisColor[8] = { GRASS_GREEN, GRASS_GREEN, GRASS_GREEN, GRASS_GREEN, GRASS_GREEN, GRASS_GREEN, GRASS_GREEN, GRASS_GREEN };
 
-#if 0
+#if 1
           /* Chunk->Voxels[VoxIndex].DebugColor.x = *NoiseValue; */
           MakeCliffs_8x(Chunk, VoxIndex, s32(WorldX), s32(WorldY), s32(WorldZ), NoiseValue, Normal, ThisColor);
           GrowGrassVoronoi_8x( Chunk, V3i(x,y,z), NoiseValue, Normal, SrcToDest, WorldChunkDim, WorldZSubZMin, ThisColor);
@@ -1740,7 +1740,7 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
 #endif
 
 #if VOXEL_DEBUG_COLOR
-#if 0
+#if 1
   for ( s32 z = 0; z < Chunk->Dim.z; ++ z)
   {
     for ( s32 y = 0; y < Chunk->Dim.y; ++ y)

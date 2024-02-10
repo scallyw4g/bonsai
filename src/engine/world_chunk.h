@@ -599,13 +599,13 @@ IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
 global_variable v3i Global_StandingSpotDim = V3i(8,8,3);
 global_variable v3 Global_StandingSpotHalfDim = Global_StandingSpotDim/2.f;
 
-/* global_variable v3i Global_ChunkApronDim = V3i(4,4,4); */
-/* global_variable v3i Global_ChunkApronMinDim = V3i(2,2,2); */
-/* global_variable v3i Global_ChunkApronMaxDim = V3i(2,2,2); */
+global_variable v3i Global_ChunkApronDim = V3i(4,4,5);
+global_variable v3i Global_ChunkApronMinDim = V3i(2,2,2);
+global_variable v3i Global_ChunkApronMaxDim = V3i(2,2,3);
 
-global_variable v3i Global_ChunkApronDim = V3i(2,2,2);
-global_variable v3i Global_ChunkApronMinDim = V3i(1,1,1);
-global_variable v3i Global_ChunkApronMaxDim = V3i(1,1,1);
+/* global_variable v3i Global_ChunkApronDim = V3i(2,2,2); */
+/* global_variable v3i Global_ChunkApronMinDim = V3i(1,1,1); */
+/* global_variable v3i Global_ChunkApronMaxDim = V3i(1,1,1); */
 
 /* global_variable v3i Global_ChunkApronDim = V3i(0,0,0); */
 /* global_variable v3i Global_ChunkApronMinDim = V3i(0,0,0); */
