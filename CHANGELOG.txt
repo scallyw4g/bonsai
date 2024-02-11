@@ -9,6 +9,8 @@ This adds the ability to vary the terrain surface by the normal of the surface
 - Combined VoronoiNoise3D and ComputeNormalsForChunkFromNoiseValues in
 terrain_gen to make some craggy cliffs
 
+- Generally improved terrain generation performance by quite a bit.  It's still pretty slow
+
 * 1.3.8
 
 - Uploading build artifacts to release page
