@@ -791,12 +791,7 @@ Noise_Perlin3D( perlin_noise *Noise,
 typedef u32 (*chunk_init_callback)( perlin_noise *Noise, world_chunk *Chunk, chunk_dimension Dim, chunk_dimension SrcToDest, u16 ColorIndex, s32 Frequency, s32 Amplitude, s64 zMin, chunk_dimension WorldChunkDim, void* UserData);
 
 
-// NOTE(Jesse)(perf): When I was optimizing MarkBoundaryVoxels_NoExteriorFaces 
-// I noticed calling this function more than triples the runtime of that function
-// (~10m cycles vs ~3m cycles)
-//
-// It could be worth SIMD-ing this manually.. ?
-//
+// NOTE(Jesse): Asserts are commented out for perf
 link_internal b32
 TransparencyIncreases(voxel *SrcVox, voxel *DstVox)
 {
@@ -804,7 +799,7 @@ TransparencyIncreases(voxel *SrcVox, voxel *DstVox)
   /* voxel *SrcVox = Voxels+SrcIndex; */
   /* voxel *DstVox = Voxels+DestIndex; */
 
-  Assert(SrcVox->Flags & Voxel_Filled);
+  /* Assert(SrcVox->Flags & Voxel_Filled); */
 
   b32 Result = False;
   if (SrcVox->Transparency)
@@ -812,7 +807,7 @@ TransparencyIncreases(voxel *SrcVox, voxel *DstVox)
     // Transparent source voxels can only increase in transparency if the dest is unfilled
     if ( (DstVox->Flags&Voxel_Filled) == False)
     {
-      Assert(DstVox->Transparency == 0);
+      /* Assert(DstVox->Transparency == 0); */
       Result = True;
     }
   }
@@ -821,7 +816,7 @@ TransparencyIncreases(voxel *SrcVox, voxel *DstVox)
     // Opaque source voxels can increase in transparency if the dest is unfilled or filled and transparent
     if ( (DstVox->Flags&Voxel_Filled) == False)
     {
-      Assert(DstVox->Transparency == 0);
+      /* Assert(DstVox->Transparency == 0); */
       Result = True;
     }
 
@@ -3864,8 +3859,8 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
   //
   // I can't remember why the MaxPStroke has to be one more, and I actually
   // think that it might not .
-  f32 MinPStroke = 4.f;
-  f32 MaxPStroke = 5.f;
+  f32 MinPStroke = 2.f;
+  f32 MaxPStroke = 3.f;
 
   switch (Shape->Type)
   {
