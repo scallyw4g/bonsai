@@ -2304,9 +2304,9 @@ SinCosTerrain( perlin_noise *Noise,
     }
   }
 
-  s64 ChunkWorldZThresh = SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z) - zMin;
-  NotImplemented;
-  /* ComputeNormalsForChunkFromNoiseValues(ChunkWorldZThresh, NoiseValues, Normals); */
+/*   s64 ChunkWorldZThresh = SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z) - zMin; */
+/*   NotImplemented; */
+/*   /1* ComputeNormalsForChunkFromNoiseValues(ChunkWorldZThresh, NoiseValues, Normals); *1/ */
 
 
   for ( s32 z = 0; z < Dim.z; ++ z)
@@ -2325,7 +2325,7 @@ SinCosTerrain( perlin_noise *Noise,
         v3  *Normal     = Normals+VoxIndex;
 
         u16 ThisColor = GRASS_GREEN;
-        MakeCliffs(Chunk, VoxIndex, s32(WorldX), s32(WorldY), s32(WorldZ), NoiseValue, Normal, &ThisColor);
+        /* MakeCliffs(Chunk, VoxIndex, s32(WorldX), s32(WorldY), s32(WorldZ), NoiseValue, Normal, &ThisColor); */
 
         b32 IsFilled = r32(*NoiseValue) > r32(WorldZSubZMin);
 
@@ -2335,23 +2335,6 @@ SinCosTerrain( perlin_noise *Noise,
       }
     }
   }
-
-#if VOXEL_DEBUG_COLOR
-#if 1
-  for ( s32 z = 0; z < Chunk->Dim.z; ++ z)
-  {
-    for ( s32 y = 0; y < Chunk->Dim.y; ++ y)
-    {
-      for ( s32 x = 0; x < Chunk->Dim.x; ++ x)
-      {
-        s32 Index  = GetIndex(V3i(x,y,z), Dim);
-        Chunk->Voxels[Index].DebugColor = Normals[Index];
-        Chunk->Voxels[Index].DebugNoiseValue = NoiseValues[Index];
-      }
-    }
-  }
-#endif
-#endif
 
   return ChunkSum;
 }

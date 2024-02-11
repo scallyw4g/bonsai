@@ -235,12 +235,6 @@ poof(
 /* link_internal void */
 /* DoEditorUi(renderer_2d *Ui, v3i *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS); */
 
-struct asset_thumbnail
-{
-  texture *Texture;
-  camera   Camera;
-};
-
 poof(block_array_h(asset_thumbnail, {8}, {}))
 #include <generated/block_array_h_asset_thumbnail_688856411.h>
 

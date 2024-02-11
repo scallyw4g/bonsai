@@ -3860,8 +3860,8 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
   //
   // I can't remember why the MaxPStroke has to be one more, and I actually
   // think that it might not .
-  f32 MinPStroke = 2.f;
-  f32 MaxPStroke = 3.f;
+  f32 MinPStroke = 4.f;
+  f32 MaxPStroke = 5.f;
 
   switch (Shape->Type)
   {
@@ -3949,7 +3949,7 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
   /* } */
 
   /* world_position Delta = Max(MaxP.WorldP - MinP.WorldP, World_Position(1)); */
-  world_position Delta = MaxP.WorldP - MinP.WorldP + 1;
+  v3i Delta = MaxP.WorldP - MinP.WorldP + 1;
   u32 TotalChunkCount = Abs(Volume(Delta));
 
   // TODO(Jesse)(leak): Each one of these gets leaked at the moment
@@ -4033,7 +4033,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 {
   TIMED_FUNCTION();
 
-  random_series Entropy = {43246};
+  random_series ColorEntropy = {4654376543246};
 
   world_update_op_mode Mode              = Job->Mode;
   world_update_op_mode_modifier Modifier = Job->Modifier;
@@ -4070,7 +4070,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 #if VOXEL_DEBUG_COLOR
   voxel UnsetVoxel = { 0xff, 0xff, 0xffff, {}, {}};
 #else
-  voxel UnsetVoxel = { 0xff, 0xff, 0xffff};
+  voxel UnsetVoxel = { 0xff, 0xff, 0xffff };
 #endif
   for (u32 VoxelIndex = 0; VoxelIndex < TotalVoxels; ++VoxelIndex) { CopiedVoxels[VoxelIndex] = UnsetVoxel; }
 
@@ -4248,7 +4248,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
                       {
                         if (V->Flags & Voxel_Filled)
                         {
-                          V->Color = SafeTruncateU8(RandomBetween((u32)NewColorMin, &Entropy, (u32)NewColorMax+1));
+                          V->Color = SafeTruncateU8(RandomBetween((u32)NewColorMin, &ColorEntropy, (u32)NewColorMax+1));
                         }
 
                       }
@@ -4437,15 +4437,14 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           if (Asset) { UnlockAsset(GetEngineResources(), Asset); Asset = 0; }
         } break;
       }
-
     }
   }
 
 
   // NOTE(Jesse): We can actually do the entire dim here, but it's probably
   // better (faster) to just do what we actually need to
-  MarkBoundaryVoxels_NoExteriorFaces( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-1, &Entropy, GREY_5, GREY_7);
-  /* MarkBoundaryVoxels_NoExteriorFaces( CopiedVoxels, QueryDim, {}, QueryDim, &Entropy, GREY_5, GREY_7); */
+  MarkBoundaryVoxels_NoExteriorFaces( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-1, &ColorEntropy, GREY_5, GREY_7);
+  /* MarkBoundaryVoxels_NoExteriorFaces( CopiedVoxels, QueryDim, {}, QueryDim, &ColorEntropy, GREY_5, GREY_7); */
   /* MarkBoundaryVoxels_MakeExteriorFaces( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-1); */
   /* MarkBoundaryVoxels_MakeExteriorFaces( CopiedVoxels, QueryDim, {}, QueryDim); */
 
@@ -4493,25 +4492,24 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
         }
       }
     }
-
   }
 
 
   // DEBUG CODE
-  untextured_3d_geometry_buffer *DebugMesh = {};
+  untextured_3d_geometry_buffer *DebugMesh = &GetEngineDebug()->WorldEditDebugMesh;
 
 #define DEBUG_VIEW_WORLD_UPDATE 0
 #if DEBUG_VIEW_WORLD_UPDATE
   // TODO(Jesse): Need to copy the voxels because the Greedy thing blows away
   // the face flags as it does the traversal.
-  NotImplemented;
+  /* NotImplemented; */
 
-  auto DebugMesh = AllocateMesh(Thread->PermMemory, (u32)Kilobytes(64*32));
-  // GetMeshForChunk(&EngineResources->MeshFreelist, Thread->PermMemory);
+  chunk_data CD = { Chunk_VoxelsInitialized, QueryDim, CopiedVoxels, 0 };
+  vox_data Vox = {&CD};
 #if VOXEL_DEBUG_COLOR
   BuildWorldChunkMeshFromMarkedVoxels_Naieve( CopiedVoxels, QueryDim, {}, QueryDim, DebugMesh );
 #else
-  BuildWorldChunkMeshFromMarkedVoxels_Greedy( CopiedVoxels, QueryDim, {}, QueryDim, DebugMesh );
+  BuildWorldChunkMeshFromMarkedVoxels_Greedy( &Vox, DebugMesh, 0, GetTranArena());
 #endif
 
   /* aabb QueryAABB = AABBMinMax( {}, V3i(7.f + Radius*2.f) ); */
@@ -4520,21 +4518,12 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
   DEBUG_DrawAABB(DebugMesh, AABBMinDim(V3(-1), V3(2)), PINK);
 
-  world_chunk *TempChunk = AllocateWorldChunk(Thread->PermMemory, MinP.WorldP, QueryDim);
-  picked_world_chunk *PickedChunk = Allocate(picked_world_chunk, Thread->PermMemory, 1);
-  PickedChunk->Chunk = TempChunk;
+/*   world_chunk *TempChunk = AllocateWorldChunk(Thread->PermMemory, MinP.WorldP, QueryDim); */
+/*   picked_world_chunk *PickedChunk = Allocate(picked_world_chunk, Thread->PermMemory, 1); */
+/*   PickedChunk->Chunk = TempChunk; */
 
-  if (untextured_3d_geometry_buffer *Buf = AtomicReplaceMesh( &TempChunk->Meshes, MeshBit_Main, DebugMesh, DebugMesh->Timestamp))
-  {
-    Leak("Leaking mesh");
-  };
-
-#if BONSAI_DEBUG_SYSTEM_API
-  AtomicWrite((volatile void **)&GetDebugState()->PickedChunk, (void*) PickedChunk);
-#endif
-
-  v3 QueryRelLocation = V3(SimSphereP) - SimSpaceQueryMinP;
-  DrawVoxel_MinDim(DebugMesh, QueryRelLocation, V4(1,0,0,1), V3(1.f));
+  /* v3 QueryRelLocation = V3(SimSphereP) - SimSpaceQueryMinP; */
+  /* DrawVoxel_MinDim(DebugMesh, QueryRelLocation, V4(1,0,0,1), V3(1.f)); */
 #endif
 
   voxel_position_cursor StandingSpots = V3iCursor(ChunkCount*WORLD_CHUNK_STANDING_SPOT_COUNT, Thread->TempMemory);
@@ -4558,7 +4547,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
     rect3i SimSpaceChunkAABB = GetSimSpaceAABBi(World, Chunk);
     auto QueryRelChunkAABB = SimSpaceChunkAABB - SimSpaceQueryMinP;
 #if DEBUG_VIEW_WORLD_UPDATE
-    DEBUG_DrawAABB(DebugMesh, QueryRelChunkAABB, RED);
+    DEBUG_DrawAABB(DebugMesh, &QueryRelChunkAABB, RED);
 #endif
 
     /* DebugLine("Start StandingSpotCount(%d)/(%d)", AtElements(&Chunk->StandingSpots), Count(&Chunk->StandingSpots)); */
@@ -4631,7 +4620,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
       if (!Skip)
       {
 #if DEBUG_VIEW_WORLD_UPDATE
-        DrawStandingSpot(Mesh, V3(QueryRelSpot), V3(Global_StandingSpotDim), TEAL, DEFAULT_STANDING_SPOT_THICKNESS*1.5f);
+        DrawStandingSpot(DebugMesh, V3(QueryRelSpot), V3(Global_StandingSpotDim), TEAL, DEFAULT_STANDING_SPOT_THICKNESS*1.5f);
 #endif
         if ( Contains(SimSpaceChunkAABB, SimSpot) )
         {

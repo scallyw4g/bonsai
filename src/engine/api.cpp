@@ -23,45 +23,10 @@ Bonsai_Init(engine_resources *Resources)
 {
   TIMED_FUNCTION();
 
-  platform *Plat = &Resources->Stdlib.Plat;
-
   b32 Result = True;
 
-  memory_arena *BonsaiInitArena = AllocateArena(Megabytes(256));;
-  DEBUG_REGISTER_ARENA(BonsaiInitArena, 0);
-
-  Resources->Memory = BonsaiInitArena;
-  Resources->Heap = InitHeap(Gigabytes(2)); // TODO(Jesse): Is this actually used?
-
-  Resources->AssetMemory = InitHeap(Gigabytes(1));
-
-  Init_Global_QuadVertexBuffer();
-
-  Resources->World = Allocate(world, BonsaiInitArena, 1);
-  if (!Resources->World) { Error("Allocating World"); return False; }
-
-  Resources->Graphics = GraphicsInit(AllocateArena());
-  if (!Resources->Graphics) { Error("Initializing Graphics"); return False; }
-
-  {
-    memory_arena *UiMemory = AllocateArena();
-    InitRenderer2D(&Resources->Ui, &Resources->Heap, UiMemory, &Plat->MouseP, &Plat->MouseDP, &Plat->ScreenDim, &Plat->Input);
-    /* Resources->UiSpriteTexture = LoadBitmap("assets/mystic_rpg_icon_pack/Sprites/300%/Tool_6.bmp", UiMemory); */
-    /* Resources->UiSpriteTexture = LoadBitmap("assets/mystic_rpg_icon_pack/Sprites/300%/Tool_13.bmp", UiMemory); */
-
-    bitmap_block_array Bitmaps = {};
-    LoadBitmapsFromFolder(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/64x64_sprites"), &Bitmaps);
-    LoadBitmapsFromFolder(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/44x44_sprites"), &Bitmaps);
-    Resources->Ui.SpriteTextureArray = CreateTextureArrayFromBitmapArray(&Bitmaps, V2i(64,64), UiMemory);
-
-    /* Resources->UiSpriteTexture = LoadBitmap("assets/mystic_rpg_icon_pack/Sprites/300%/Tool_20.bmp", UiMemory); */
-    /* Resources->UiSpriteTexture = LoadBitmap("assets/mystic_rpg_icon_pack/Sprites/300%/Inventory_0.bmp", UiMemory); */
-    /* Resources->UiSpriteTexture = LoadBitmap("assets/test.bmp", UiMemory); */
-    /* Resources->UiSpriteTexture = LoadBitmap("assets/test_1.bmp", UiMemory); */
-    /* Resources->UiSpriteTexture = LoadBitmap("assets/test_2.bmp", UiMemory); */
-  }
-
-  Resources->EntityTable = AllocateEntityTable(BonsaiInitArena, TOTAL_ENTITY_COUNT);
+  Result &= InitEngineDebug(&Resources->EngineDebug);
+  Result &= InitEngineResources(Resources);
 
   return Result;
 }

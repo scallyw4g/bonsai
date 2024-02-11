@@ -1146,6 +1146,4 @@ DoWorldEditor(engine_resources *Engine)
     v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled));
     DEBUG_HighlightVoxel( Engine, SimP, RED, 0.075f);
   }
-
-
 }

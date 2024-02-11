@@ -413,7 +413,9 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           {
             // Bumpy Sin(x)+Cos(y) noise.  Useful for visualizing the polylines/splines mapping noise values to their final values.
             s32 Frequency = 100;
-            s32 Amplititude = 2500;
+            s32 Amplititude = 250;
+            /* s32 Frequency = 100; */
+            /* s32 Amplititude = 2500; */
             s32 StartingZDepth = -1;
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
             InitializeChunkWithNoise( SinCosTerrain, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, Ignored, InitFlags, 0);
@@ -715,7 +717,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   /* GameState->TerrainGenType = TerrainGenType_GrassyTerracedTerrain; */
 
-  GameState->TerrainGenType = TerrainGenType_GrassyTerracedTerrain4;
+  GameState->TerrainGenType = TerrainGenType_SinCos;
+  /* GameState->TerrainGenType = TerrainGenType_GrassyTerracedTerrain4; */
   /* GameState->TerrainGenType = TerrainGenType_Voronoi; */
   /* World->Center = V3i(-22, 101, 1); */
 
