@@ -609,9 +609,9 @@ global_variable v3 Global_StandingSpotHalfDim = Global_StandingSpotDim/2.f;
 /* global_variable v3i Global_ChunkApronMinDim = V3i(2,2,2); */
 /* global_variable v3i Global_ChunkApronMaxDim = V3i(2,2,3); */
 
-global_variable v3i Global_ChunkApronDim = V3i(2,2,3);
+global_variable v3i Global_ChunkApronDim = V3i(2,2,4);
 global_variable v3i Global_ChunkApronMinDim = V3i(1,1,1);
-global_variable v3i Global_ChunkApronMaxDim = V3i(1,1,2);
+global_variable v3i Global_ChunkApronMaxDim = V3i(1,1,3);
 
 /* global_variable v3i Global_ChunkApronDim = V3i(0,0,0); */
 /* global_variable v3i Global_ChunkApronMinDim = V3i(0,0,0); */
