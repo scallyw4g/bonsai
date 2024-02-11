@@ -791,6 +791,12 @@ Noise_Perlin3D( perlin_noise *Noise,
 typedef u32 (*chunk_init_callback)( perlin_noise *Noise, world_chunk *Chunk, chunk_dimension Dim, chunk_dimension SrcToDest, u16 ColorIndex, s32 Frequency, s32 Amplitude, s64 zMin, chunk_dimension WorldChunkDim, void* UserData);
 
 
+// NOTE(Jesse)(perf): When I was optimizing MarkBoundaryVoxels_NoExteriorFaces 
+// I noticed calling this function more than triples the runtime of that function
+// (~10m cycles vs ~3m cycles)
+//
+// It could be worth SIMD-ing this manually.. ?
+//
 link_internal b32
 TransparencyIncreases(voxel *SrcVox, voxel *DstVox)
 {
@@ -962,8 +968,8 @@ MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
                                         u8 NewColorMin = 0,
                                         u8 NewColorMax = 0 )
 {
-  HISTOGRAM_FUNCTION();
-  /* TIMED_FUNCTION(); */
+  /* HISTOGRAM_FUNCTION(); */
+  TIMED_FUNCTION();
 
   auto MinDim = SrcChunkMin;
   auto MaxDim = Min(SrcChunkDim, SrcChunkMax); // SrcChunkMin+DestChunkDim+1
