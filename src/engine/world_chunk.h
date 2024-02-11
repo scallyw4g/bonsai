@@ -113,7 +113,7 @@ struct voxel
 
   /* v3 Derivs; */
 #if VOXEL_DEBUG_COLOR
-  v3 DebugColor; poof(@no_serialize)
+  v3 DebugColor;       poof(@no_serialize)
   f32 DebugNoiseValue; poof(@no_serialize)
 #endif
 };
@@ -385,7 +385,13 @@ struct world_chunk
   // considered for collision detection.
   entity_ptr_block_array Entities;
 
-  u8 _Pad1[32];
+#if VOXEL_DEBUG_COLOR
+  f32 *NoiseValues;  poof(@no_serialize @array_length(Volume(Element->Dim)))
+  v3  *NormalValues; poof(@no_serialize @array_length(Volume(Element->Dim)))
+  u8 _Pad1[16]; poof(@no_serialize)
+#else
+  u8 _Pad1[32]; poof(@no_serialize)
+#endif
 };
 // TODO(Jesse, id: 87, tags: speed, cache_friendly): Re-enable this
 // @world-chunk-cache-line-size
@@ -599,13 +605,13 @@ IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
 global_variable v3i Global_StandingSpotDim = V3i(8,8,3);
 global_variable v3 Global_StandingSpotHalfDim = Global_StandingSpotDim/2.f;
 
-global_variable v3i Global_ChunkApronDim = V3i(4,4,5);
-global_variable v3i Global_ChunkApronMinDim = V3i(2,2,2);
-global_variable v3i Global_ChunkApronMaxDim = V3i(2,2,3);
+/* global_variable v3i Global_ChunkApronDim = V3i(4,4,5); */
+/* global_variable v3i Global_ChunkApronMinDim = V3i(2,2,2); */
+/* global_variable v3i Global_ChunkApronMaxDim = V3i(2,2,3); */
 
-/* global_variable v3i Global_ChunkApronDim = V3i(2,2,2); */
-/* global_variable v3i Global_ChunkApronMinDim = V3i(1,1,1); */
-/* global_variable v3i Global_ChunkApronMaxDim = V3i(1,1,1); */
+global_variable v3i Global_ChunkApronDim = V3i(2,2,3);
+global_variable v3i Global_ChunkApronMinDim = V3i(1,1,1);
+global_variable v3i Global_ChunkApronMaxDim = V3i(1,1,2);
 
 /* global_variable v3i Global_ChunkApronDim = V3i(0,0,0); */
 /* global_variable v3i Global_ChunkApronMinDim = V3i(0,0,0); */

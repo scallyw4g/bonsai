@@ -672,6 +672,7 @@ DoEngineDebug(engine_resources *Engine)
 
       if (EngineDebug->PickedChunk)
       {
+        WorldChunkWindow.Title = FSz("World Chunk : (%p)", EngineDebug->PickedChunk);
         /* DebugUi(Engine, CSz("PickedChunk"), EngineDebug->PickedChunk ); */
         DoEditorUi(Ui, &WorldChunkWindow, EngineDebug->PickedChunk, CSz("PickedChunk"));
       }

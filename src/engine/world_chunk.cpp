@@ -616,6 +616,22 @@ Noise_FBM2D( perlin_noise *Noise,
   if (MinZ > Amplitude)
     return ChunkSum;
 
+#if VOXEL_DEBUG_COLOR
+  memory_arena *TempArena = GetThreadLocalState(ThreadLocal_ThreadIndex)->PermMemory;
+#else
+  memory_arena *TempArena = GetTranArena();
+#endif
+
+  v3i NoiseDim = Chunk->Dim + 2;
+  v3i NormalDim = Chunk->Dim;
+  r32 *NoiseValues = Allocate(r32, TempArena, Volume(NoiseDim));
+  v3  *Normals     = Allocate( v3, TempArena, Volume(NormalDim));
+
+#if VOXEL_DEBUG_COLOR
+  Chunk->NoiseValues = NoiseValues;
+  Chunk->NormalValues = Normals;
+#endif
+
   Frequency = Max(Frequency, 1);
   Assert(Frequency != s32_MIN);
 
@@ -662,6 +678,10 @@ Noise_FBM2D( perlin_noise *Noise,
           InteriorFreq = Max(1, InteriorFreq/2);
         }
 
+#if VOXEL_DEBUG_COLOR
+        s32 NoiseIndex = GetIndex(V3i(x,y,z)+1, NoiseDim);
+        Chunk->NoiseValues[NoiseIndex] = NoiseValue;
+#endif
         b32 NoiseChoice = r64(NoiseValue) > r64(WorldZBiased);
 
         u16 ThisColor = SafeTruncateToU16(RandomBetween(u32(ColorIndex), &GenColorEntropy, u32(ColorIndex)+2));;
@@ -683,6 +703,9 @@ Noise_FBM2D( perlin_noise *Noise,
       }
     }
   }
+
+  s64 ChunkWorldZThresh = SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z) - zMin;
+  ComputeNormalsForChunkFromNoiseValues(ChunkWorldZThresh, NoiseValues, NoiseDim, Normals, NormalDim);
 
   return ChunkSum;
 }
@@ -3488,10 +3511,38 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
                                          SyntheticChunk, SynChunkDim, -1*Global_ChunkApronMinDim,
                                          GRASS_GREEN, Frequency, Amplititude, zMin,
                                          WorldChunkDim, UserData );
+  Assert(SyntheticChunk->Dim == SynChunkDim);
+
+#if 1 && VOXEL_DEBUG_COLOR
+  DestChunk->NoiseValues = SyntheticChunk->NoiseValues;
+  DestChunk->NormalValues = SyntheticChunk->NormalValues;
+
+#if 1
+  if (DestChunk->NoiseValues)
+  {
+    for ( s32 z = 0; z < SyntheticChunk->Dim.z; ++ z)
+    {
+      for ( s32 y = 0; y < SyntheticChunk->Dim.y; ++ y)
+      {
+        for ( s32 x = 0; x < SyntheticChunk->Dim.x; ++ x)
+        {
+          s32 NormalIndex  = GetIndex(V3i(x,y,z), SyntheticChunk->Dim);
+          s32 NoiseIndex   = GetIndex(V3i(x,y,z)+1, SyntheticChunk->Dim+2);
+          SyntheticChunk->Voxels[NormalIndex].DebugColor = SyntheticChunk->NormalValues[NormalIndex];
+          SyntheticChunk->Voxels[NormalIndex].DebugNoiseValue = SyntheticChunk->NoiseValues[NoiseIndex];
+        }
+      }
+    }
+  }
+#endif
+
+#endif
+
 
   MarkBoundaryVoxels_NoExteriorFaces(SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
 
   CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Global_ChunkApronMinDim);
+
 #endif
 
   // NOTE(Jesse): You can use this for debug, but it doesn't work if you change it to NoExteriorFaces

@@ -137,3 +137,5 @@ MapNoiseValueToFinal(f32 Value)
 }
 
 
+link_internal void
+ComputeNormalsForChunkFromNoiseValues( r32 ChunkWorldZ, r32 *NoiseValues, v3i NoiseDim, v3 *Normals, v3i NormalsDim);
