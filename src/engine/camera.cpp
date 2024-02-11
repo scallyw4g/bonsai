@@ -102,7 +102,12 @@ GetMouseDelta(platform *Plat)
 }
 
 link_internal void
-UpdateGameCamera(world *World, v2 MouseDelta, r32 CameraZoomDelta, cp TargetViewP, camera *Camera, r32 Dt)
+UpdateGameCamera( world *World,
+                  v2 MouseDelta,
+                  r32 CameraZoomDelta,
+                  cp TargetViewP,
+                  camera *Camera,
+                  r32 Dt )
 {
   // TODO(Jesse): Make these vary by DistanceFromTarget, such that the mouse feels the same amount of sensitive zoomed in as out.
   Camera->TargetYaw += MouseDelta.x;
@@ -173,7 +178,7 @@ StandardCamera(camera* Camera, f32 FarClip, f32 DistanceFromTarget, f32 Blend, c
   Camera->Right = WORLD_X;
 
   Camera->TargetPitch = PI32 - (PI32*0.25f);
-  Camera->TargetYaw = PI32*0.15f;
+  Camera->TargetYaw = -PI32*0.15f;
 
   Camera->DistanceFromTarget = DistanceFromTarget;
 }

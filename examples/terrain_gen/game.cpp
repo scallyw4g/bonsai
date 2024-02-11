@@ -146,7 +146,7 @@ GrassyIslandTerrain( perlin_noise *Noise,
         }
 
 #if 1
-        GrowGrass( Chunk, V3i(x,y,z), NoiseValue, 1.f, SrcToDest, WorldChunkDim, WorldZBiased, &ThisColor, &NoiseChoice );
+        GrowGrassPerlin( Chunk, V3i(x,y,z), NoiseValue, 1.f, SrcToDest, WorldChunkDim, WorldZBiased, &ThisColor, &NoiseChoice );
 #else
         s32 Below = TryGetIndex(x, y, z-1, Dim);
         s32 B0 = TryGetIndex(x+1, y, z-1, Dim);
@@ -413,10 +413,22 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           {
             // Bumpy Sin(x)+Cos(y) noise.  Useful for visualizing the polylines/splines mapping noise values to their final values.
             s32 Frequency = 100;
-            s32 Amplititude = 50;
+            s32 Amplititude = 250;
+            /* s32 Frequency = 100; */
+            /* s32 Amplititude = 2500; */
             s32 StartingZDepth = -1;
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
             InitializeChunkWithNoise( SinCosTerrain, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, Ignored, InitFlags, 0);
+          } break;
+
+          case TerrainGenType_Voronoi:
+          {
+            // Voronoi noise .. looks like rocks.
+            s32 Frequency = 100;
+            s32 Amplititude = 50;
+            s32 StartingZDepth = -1;
+            chunk_init_flags InitFlags = ChunkInitFlag_Noop;
+            InitializeChunkWithNoise( VoronoiTerrain, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, Ignored, InitFlags, 0);
           } break;
 
           case TerrainGenType_Checkerboard:
@@ -516,13 +528,13 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             s32 Frequency = 0; // Ignored
             s32 Amplititude = 0; // Ignored
             s32 StartingZDepth = -100;
-            u32 OctaveCount = 1;
+            u32 OctaveCount = 2;
 
             octave_buffer OctaveBuf = { OctaveCount, {} };
             OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
 
             OctaveBuf.Octaves[0] = {V3(1400, 1400, 800), 350, V3(1.f)};
-            /* OctaveBuf.Octaves[1] = {V3(400, 400, 200),   150, V3(1.f)}; */
+            OctaveBuf.Octaves[1] = {V3(400, 400, 200),   150, V3(1.f)};
             /* OctaveBuf.Octaves[2] = {V3(35, 35, 50),        6, V3(2.f)}; */
             /* OctaveBuf.Octaves[2] = {V3(500, 500, 20), 200, V3(2.f)}; */
             /* OctaveBuf.Octaves[2] = {75, 60, 1}; */
@@ -534,6 +546,28 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
             InitializeChunkWithNoise( GrassyTerracedTerrain3, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
           } break;
+
+          case TerrainGenType_GrassyTerracedTerrain4:
+          {
+            // Custom FBM noise example generating slightly-more-complex game-world-like terrain
+            s32 Frequency = 0; // Ignored
+            s32 Amplititude = 0; // Ignored
+            s32 StartingZDepth = -100;
+            u32 OctaveCount = 3;
+
+            octave_buffer OctaveBuf = { OctaveCount, {} };
+            OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
+
+            OctaveBuf.Octaves[0] = {V3(800, 800, 1700), 350, V3(1.f)};
+            OctaveBuf.Octaves[1] = {V3(400, 400, 200),  350, V3(1.f)};
+            OctaveBuf.Octaves[2] = {V3(35, 35, 25),       6, V3(2.f)};
+
+            /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
+            /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
+            chunk_init_flags InitFlags = ChunkInitFlag_Noop;
+            InitializeChunkWithNoise( GrassyTerracedTerrain4, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
+          } break;
+
 
           case TerrainGenType_TerracedTerrain:
           {
@@ -675,7 +709,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   world_position WorldCenter = {};
   canonical_position CameraTargetP = {};
 
-  StandardCamera(Graphics->Camera, 10000.0f, 1000.0f, DEFAULT_CAMERA_BLENDING, CameraTargetP);
+  StandardCamera(Graphics->Camera, 10000.0f, 5000.0f, DEFAULT_CAMERA_BLENDING, CameraTargetP);
 
   AllocateWorld(World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 
@@ -683,12 +717,22 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   /* GameState->TerrainGenType = TerrainGenType_GrassyTerracedTerrain; */
 
-  GameState->TerrainGenType = TerrainGenType_GrassyLargeTerracedTerrain;
+  GameState->TerrainGenType = TerrainGenType_SinCos;
+  /* GameState->TerrainGenType = TerrainGenType_GrassyTerracedTerrain4; */
+  /* GameState->TerrainGenType = TerrainGenType_Voronoi; */
   /* World->Center = V3i(-22, 101, 1); */
 
   Camera->GhostId = GetFreeEntity(EntityTable);
   entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId);
-  CameraGhost->P.WorldP = V3i(-22, 101, 1); 
+  /* CameraGhost->P.WorldP = V3i(-53, -93, 2); */ 
+  /* CameraGhost->P.WorldP = V3i(-25, -75, 2); */ 
+  /* CameraGhost->P.WorldP = V3i(-5, -121, 2); */ 
+
+  CameraGhost->P.WorldP = V3i(330, -87, 2); 
+  /* CameraGhost->P.WorldP = V3i(33, -87, 2); */ 
+  /* CameraGhost->P.WorldP = V3i(5, -73, 2); */ 
+  CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior|EntityBehaviorFlags_DefatulCameraGhostBehavior|EntityBehaviorFlags_WorldCenter);
+
   SpawnEntity(CameraGhost);
 
   return GameState;
@@ -701,12 +745,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Resources);
-
-  entity *Ghost = GetEntity(EntityTable, Camera->GhostId);
-  if (Ghost && Ghost->Id == Resources->Graphics->GameCamera.GhostId)
-  {
-    Ghost->Behavior = entity_behavior_flags(Ghost->Behavior|EntityBehaviorFlags_WorldCenter);
-  }
 
   f32 dt = Plat->dt;
   f32 Speed = 80.f;
@@ -721,7 +759,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   {
     GetRadioEnum(&TerrainGenTypeRadio, &GameState->TerrainGenType);
     SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
-    HardResetWorld(Resources);
+    HardResetWorld(Resources, HardResetFlag_NoResetCamera);
     UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
   }
 }

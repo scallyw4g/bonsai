@@ -11,6 +11,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
       PushTableStart(Ui);
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      DoEditorUi(Ui, Window, Element->Memory, CSz("memory_arena Memory"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+      
       DoEditorUi(Ui, Window, &Element->PickedChunks, CSz("picked_world_chunk_static_buffer PickedChunks"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
@@ -123,6 +129,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       PushNewRow(Ui);
 
       DoEditorUi(Ui, Window, &Element->SelectedEntity, CSz("entity_id SelectedEntity"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui, Window, &Element->WorldEditDebugMesh, CSz("untextured_3d_geometry_buffer WorldEditDebugMesh"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui, Window, &Element->WorldEditDebugThumb, CSz("asset_thumbnail WorldEditDebugThumb"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }

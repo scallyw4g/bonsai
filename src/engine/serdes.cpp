@@ -356,6 +356,15 @@ Marshal(entity_1 *E0, entity_2 *E1)
 }
 #endif
 
+link_internal void
+Marshal(lighting_settings_0 *E0, lighting_settings *E1)
+{
+  NotImplemented;
+}
+
+poof(serdes_struct(lighting_settings_0))
+#include <generated/serdes_struct_lighting_settings_0.h>
+
 poof(serdes_struct(lighting_settings))
 #include <generated/serdes_struct_lighting_settings.h>
 

@@ -79,6 +79,17 @@ ClampPositive( v2 V )
   return Result;
 }
 
+inline v2
+Clamp01( v2 V )
+{
+  v2 Result = V;
+  if ( V.E[0] < r32(0) ) Result.E[0] = r32(0);
+  if ( V.E[0] > r32(1) ) Result.E[0] = r32(1);
+  if ( V.E[1] < r32(0) ) Result.E[1] = r32(0);
+  if ( V.E[1] > r32(1) ) Result.E[1] = r32(1);
+  return Result;
+}
+
 
 
 

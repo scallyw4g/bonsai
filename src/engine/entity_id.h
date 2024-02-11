@@ -2,12 +2,6 @@ struct entity_id
 {
   u32 Index;
   u32 Generation;
-
-  operator bool()
-  {
-    b32 Result = (this->Generation != 0);
-    return Result;
-  }
 };
 
 link_internal b32

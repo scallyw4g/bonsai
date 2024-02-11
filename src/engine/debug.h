@@ -1,4 +1,11 @@
 
+// TODO(Jesse): rename this to just thumbnail and move to renderer?
+struct asset_thumbnail
+{
+  texture *Texture;
+  camera   Camera;
+};
+
 struct render_debug
 {
   u32 BytesSolidGeoLastFrame;
@@ -9,6 +16,7 @@ struct render_debug
 
 struct engine_debug
 {
+  memory_arena *Memory;
   picked_world_chunk_static_buffer PickedChunks;
   texture_ptr_block_array Textures;
 
@@ -28,6 +36,11 @@ struct engine_debug
   u64 ModelIndex;
 
   entity_id SelectedEntity;
+
+  // World Edit debug
+  //
+  untextured_3d_geometry_buffer WorldEditDebugMesh;
+  asset_thumbnail WorldEditDebugThumb;
 };
 
 

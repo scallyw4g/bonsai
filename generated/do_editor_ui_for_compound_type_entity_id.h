@@ -30,8 +30,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_id *Element, cs Name, 
 
 
       PushNewRow(Ui);
-
-
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }

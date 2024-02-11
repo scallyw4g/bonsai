@@ -102,6 +102,8 @@ CAssert(Voxel_MarkBit < u8_MAX);
 
 global_variable u8 VoxelFaceMask = Voxel_LeftFace | Voxel_RightFace | Voxel_TopFace | Voxel_BottomFace | Voxel_FrontFace | Voxel_BackFace;
 
+#define VOXEL_DEBUG_COLOR (0)
+
 // TODO(Jesse): Surely we can compress this.. but do we care?
 struct voxel
 {
@@ -110,8 +112,12 @@ struct voxel
   u16 Color;
 
   /* v3 Derivs; */
-  /* v3 DebugColor; */
+#if VOXEL_DEBUG_COLOR
+  v3 DebugColor;       poof(@no_serialize)
+  f32 DebugNoiseValue; poof(@no_serialize)
+#endif
 };
+/* CAssert(sizeof(voxel) == 8); */
 
 struct voxel_lighting
 {
@@ -379,7 +385,13 @@ struct world_chunk
   // considered for collision detection.
   entity_ptr_block_array Entities;
 
-  u8 _Pad1[32];
+#if VOXEL_DEBUG_COLOR
+  f32 *NoiseValues;  poof(@no_serialize @array_length(Volume(Element->Dim)))
+  v3  *NormalValues; poof(@no_serialize @array_length(Volume(Element->Dim)))
+  u8 _Pad1[16]; poof(@no_serialize)
+#else
+  u8 _Pad1[32]; poof(@no_serialize)
+#endif
 };
 // TODO(Jesse, id: 87, tags: speed, cache_friendly): Re-enable this
 // @world-chunk-cache-line-size
@@ -596,6 +608,7 @@ global_variable v3 Global_StandingSpotHalfDim = Global_StandingSpotDim/2.f;
 global_variable v3i Global_ChunkApronDim = V3i(2,2,4);
 global_variable v3i Global_ChunkApronMinDim = V3i(1,1,1);
 global_variable v3i Global_ChunkApronMaxDim = V3i(1,1,3);
+
 
 // NOTE(Jesse): Unfortunately C++ is too braindead to do this at compile time
 // (even if you mark the variables as const). I also tried all kinds of

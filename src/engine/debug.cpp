@@ -220,9 +220,9 @@ DoLevelWindow(engine_resources *Engine)
             }
 #endif
 
-            QueueChunkForMeshRebuild(&GetEngineResources()->Stdlib.Plat.LowPriority, Chunk, Flags);
-
             InsertChunkIntoWorld(World, Chunk);
+
+            QueueChunkForMeshRebuild(&GetEngineResources()->Stdlib.Plat.LowPriority, Chunk, Flags);
           }
         }
 
@@ -617,6 +617,31 @@ DoAssetWindow(engine_resources *Engine)
 }
 
 link_internal void
+DoWorldEditDebugWindow(engine_resources *Engine)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  engine_debug *Debug = &Engine->EngineDebug;
+
+  local_persist window_layout Window = WindowLayout("WorldEditDebug");
+  {
+    PushWindowStart(Ui, &Window);
+
+    /* camera C = {};; */
+    /* StandardCamera(&C, 10000.f, 100.f, DEFAULT_CAMERA_BLENDING, {}); */
+
+    UpdateGameCamera(World, {}, {}, {}, &Debug->WorldEditDebugThumb.Camera, {});
+    if (Debug->WorldEditDebugMesh.At)
+    {
+      RenderToTexture(Engine, &Debug->WorldEditDebugThumb, &Debug->WorldEditDebugMesh, {});
+      PushTexturedQuad(Ui, Debug->WorldEditDebugThumb.Texture, V2(512), zDepth_Text);
+    }
+
+    PushWindowEnd(Ui, &Window);
+  }
+}
+
+link_internal void
 DoEngineDebug(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -672,6 +697,7 @@ DoEngineDebug(engine_resources *Engine)
 
       if (EngineDebug->PickedChunk)
       {
+        WorldChunkWindow.Title = FSz("World Chunk : (%p)", EngineDebug->PickedChunk);
         /* DebugUi(Engine, CSz("PickedChunk"), EngineDebug->PickedChunk ); */
         DoEditorUi(Ui, &WorldChunkWindow, EngineDebug->PickedChunk, CSz("PickedChunk"));
       }
@@ -793,6 +819,7 @@ DoEngineDebug(engine_resources *Engine)
 
     DoGraphicsDebugWindow(Engine);
 
+    DoWorldEditDebugWindow(Engine);
   }
 
   /* Debug_DrawTextureToDebugQuad(&Engine->RTTGroup.DebugShader); */
@@ -802,3 +829,4 @@ DoEngineDebug(engine_resources *Engine)
     DoAssetWindow(Engine);
   }
 }
+

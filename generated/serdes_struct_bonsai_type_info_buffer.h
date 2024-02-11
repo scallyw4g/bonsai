@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:373:0
+// src/engine/serdes.cpp:382:0
 
 link_internal bonsai_type_info
 TypeInfo(bonsai_type_info_buffer *Ignored)

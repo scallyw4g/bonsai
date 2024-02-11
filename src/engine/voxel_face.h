@@ -19,8 +19,8 @@
 /* global_variable f32 ShimmerStrength = 0.0005f; */
 /* global_variable f32 ShimmerStrength = -0.0005f; */
 // TODO(Jesse): Remove this
-global_variable f32 ShimmerStrength = 0.f;
-global_variable v3 ShimmerFix = {{ShimmerStrength, ShimmerStrength, ShimmerStrength}};
+/* global_variable f32 ShimmerStrength = 0.f; */
+/* global_variable v3 ShimmerFix = {{ShimmerStrength, ShimmerStrength, ShimmerStrength}}; */
 
 global_variable v3 TopPlane  = {{ 1.f, 1.f, 0.f }};
 global_variable v3 BotPlane  = {{ 1.f, 1.f, 0.f }};
@@ -50,8 +50,7 @@ enum face_index
 inline void
 RightFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
-  v3 MaxP = MinP + Diameter + (ShimmerFix*RightPlane);
-  MinP -= ShimmerFix;
+  v3 MaxP = MinP + Diameter;
 
   /* Round(MaxP); */
   /* Round(MinP); */
@@ -84,8 +83,7 @@ global_variable v3 RightFaceNormalData[] =
 inline void
 LeftFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
-  v3 MaxP = MinP + Diameter + (ShimmerFix*LeftPlane);
-  MinP -= ShimmerFix;
+  v3 MaxP = MinP + Diameter;
 
   /* Round(MaxP); */
   /* Round(MinP); */
@@ -118,8 +116,7 @@ global_variable v3 LeftFaceNormalData[] =
 inline void
 BackFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
-  v3 MaxP = MinP + Diameter + (ShimmerFix*BackPlane);
-  MinP -= ShimmerFix;
+  v3 MaxP = MinP + Diameter;
 
   /* Round(MaxP); */
   /* Round(MinP); */
@@ -152,8 +149,7 @@ global_variable v3 BackFaceNormalData[] =
 inline void
 FrontFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
-  v3 MaxP = MinP + Diameter + (ShimmerFix*FrontPlane);
-  MinP -= ShimmerFix;
+  v3 MaxP = MinP + Diameter;
 
   /* Round(MaxP); */
   /* Round(MinP); */
@@ -187,8 +183,7 @@ global_variable v3 FrontFaceNormalData[] =
 inline void
 TopFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
-  v3 MaxP = MinP + Diameter + (ShimmerFix*TopPlane);
-  MinP -= ShimmerFix;
+  v3 MaxP = MinP + Diameter;
 
   /* Round(MaxP); */
   /* Round(MinP); */
@@ -223,8 +218,7 @@ inline void
 BottomFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
   /* TIMED_FUNCTION(); */
-  v3 MaxP = MinP + Diameter + (ShimmerFix*BotPlane);
-  MinP -= ShimmerFix;
+  v3 MaxP = MinP + Diameter;
 
   /* Round(MaxP); */
   /* Round(MinP); */

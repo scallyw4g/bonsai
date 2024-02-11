@@ -32,7 +32,31 @@ struct bloom_render_group
   shader Shader;
 };
 
-struct lighting_settings
+struct lighting_settings poof(@version(1))
+{
+  b8 AutoDayNightCycle;
+
+  r32 tDay;      poof(@ui_value_range(-PI32, PI32))
+
+  v3 SunP;       poof(@ui_value_range(-1.f, 1.f))
+
+  f32 DawnIntensity; poof(@ui_value_range(0.f, 3.f))
+  v3 DawnColor;
+
+  f32 SunIntensity;  poof(@ui_value_range(0.f, 3.f))
+  v3 SunColor;
+
+  f32 DuskIntensity; poof(@ui_value_range(0.f, 3.f))
+  v3 DuskColor;
+
+  f32 MoonIntensity; poof(@ui_value_range(0.f, 3.f))
+  v3 MoonColor;
+
+  // Computed from the above parameters and passed to the shader
+  v3 CurrentSunColor;
+};
+
+struct lighting_settings_0
 {
   b8 AutoDayNightCycle;
 

@@ -42,12 +42,6 @@ Serialize(u8_cursor_block_array *Bytes, entity_id *BaseElement, umm Count = 1)
 
     Result &= Serialize(Bytes, &Element->Generation);
 
-
-
-
-
-
-
     
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -80,12 +74,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_id *Element, memory_arena *Me
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Generation, Memory);
-
-
-
-
-
-
 
   
 

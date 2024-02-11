@@ -49,13 +49,16 @@ compiler, and a few appropriate system headers.
 * Context Switches (windows only)
 * Physical Core  (windows only)
 
-![banner](screenshots/8_skele.png)
 
 # Getting Started
+
+![banner](screenshots/8_skele.png)
 
 ## Building
 
 See the docs on the [build process](docs/01_build_process.md).
+
+![banner](screenshots/grass.png)
 
 # Wishlist
 
@@ -67,6 +70,8 @@ See the docs on the [build process](docs/01_build_process.md).
 [ ] Screen-space lines : https://mattdesl.svbtle.com/drawing-lines-is-hard
 
 [ ] Better shadows : https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-8-summed-area-variance-shadow-maps
+
+[ ] Screen Space Shadows : https://panoskarabelas.com/posts/screen_space_shadows/
 
 [ ] Motion Blur : https://developer.nvidia.com/gpugems/gpugems3/part-iv-image-effects/chapter-27-motion-blur-post-processing-effect
 
@@ -88,12 +93,8 @@ See the docs on the [build process](docs/01_build_process.md).
 * https://xing-mei.github.io/files/erosion.pdf
 * https://nickmcd.me/2020/04/15/procedural-hydrology/
 
-[ ] Better perlin noise (with derivitives!)
-* https://www.scratchapixel.com/lessons/procedural-generation-virtual-worlds/perlin-noise-part-2/perlin-noise-computing-derivatives.html
-
-[ ] Inigo Quilez noise?
-* Value Noise : https://www.shadertoy.com/view/lsf3WH
-* Gradient Noise : https://www.shadertoy.com/view/Xsl3Dl
+[ ] Biomes
+* https://en.wikipedia.org/wiki/Holdridge_life_zones
 
 -------------------------------------------------------------------------------
 ## Sound
@@ -114,3 +115,5 @@ See the docs on the [build process](docs/01_build_process.md).
 [ ] Better floating-point rng : https://www.corsix.org/content/higher-quality-random-floats
 
 [ ] Better greedy meshing? https://www.youtube.com/watch?v=4xs66m1Of4A
+
+[ ] More interpolation goodies : https://paulbourke.net/miscellaneous/interpolation/

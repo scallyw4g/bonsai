@@ -56,9 +56,9 @@ HardResetWorld(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag_
     }
   }
 
-  RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
+  RangeIterator_t(u32, EntityIndex, TOTAL_ENTITY_COUNT)
   {
-    if ( (Flags&HardResetFlag_NoResetCamera) && Graphics->GameCamera.GhostId == EntityIndex ) { continue; }
+    if ( (Flags&HardResetFlag_NoResetCamera) && Graphics->GameCamera.GhostId.Index == EntityIndex ) { continue; }
 
     Unspawn(EntityTable[EntityIndex]);
   }
@@ -158,8 +158,11 @@ GatherVoxelsOverlappingArea(world *World, rect3i SimSpaceAABB, world_chunk_ptr_b
   u32 TotalVoxels = (u32)TotalVoxels_signed;
 
   // TODO(Jesse): Put this behind a debug/internal flag ?
+#if VOXEL_DEBUG_COLOR
+  voxel UnsetVoxel = { 0xff, 0xff, 0xffff, {}, {} };
+#else
   voxel UnsetVoxel = { 0xff, 0xff, 0xffff };
-  /* voxel UnsetVoxel = { 0xff, 0xff, 0xffff, {}, {}, }; */
+#endif
   for (u32 VoxelIndex = 0; VoxelIndex < TotalVoxels; ++VoxelIndex) { Voxels[VoxelIndex] = UnsetVoxel; }
 
   v3i SimSpaceQueryMinP = SimSpaceAABB.Min;

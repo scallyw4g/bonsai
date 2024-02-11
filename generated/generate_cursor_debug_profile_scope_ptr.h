@@ -1,21 +1,21 @@
-// src/engine/world_chunk.cpp:4032:0
+// external/bonsai_debug/src/api.h:114:0
 
-struct voxel_stack_element_cursor
+struct debug_profile_scope_ptr_cursor
 {
-  voxel_stack_element *Start;
+  debug_profile_scope_ptr *Start;
   // TODO(Jesse)(immediate): For the love of fucksakes change these to indices
-  voxel_stack_element *At;
-  voxel_stack_element *End;
+  debug_profile_scope_ptr *At;
+  debug_profile_scope_ptr *End;
   /* OWNED_BY_THREAD_MEMBER(); */
 };
 
 
 
-link_internal voxel_stack_element_cursor
-VoxelStackElementCursor(umm ElementCount, memory_arena* Memory)
+link_internal debug_profile_scope_ptr_cursor
+DebugProfileScopePtrCursor(umm ElementCount, memory_arena* Memory)
 {
-  voxel_stack_element *Start = (voxel_stack_element*)PushStruct(Memory, sizeof(voxel_stack_element)*ElementCount, 1, 0);
-  voxel_stack_element_cursor Result = {
+  debug_profile_scope_ptr *Start = (debug_profile_scope_ptr*)PushStruct(Memory, sizeof(debug_profile_scope_ptr)*ElementCount, 1, 0);
+  debug_profile_scope_ptr_cursor Result = {
     .Start = Start,
     .End = Start+ElementCount,
     .At = Start,
@@ -24,38 +24,38 @@ VoxelStackElementCursor(umm ElementCount, memory_arena* Memory)
   return Result;
 }
 
-link_internal voxel_stack_element*
-GetPtr(voxel_stack_element_cursor *Cursor, umm ElementIndex)
+link_internal debug_profile_scope_ptr*
+GetPtr(debug_profile_scope_ptr_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
-  voxel_stack_element *Result = {};
+  debug_profile_scope_ptr *Result = {};
   if (ElementIndex < AtElements(Cursor)) { Result = Cursor->Start+ElementIndex; }
   return Result;
 }
 
-link_internal voxel_stack_element*
-GetPtrUnsafe(voxel_stack_element_cursor *Cursor, umm ElementIndex)
+link_internal debug_profile_scope_ptr*
+GetPtrUnsafe(debug_profile_scope_ptr_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
-  voxel_stack_element *Result = {};
+  debug_profile_scope_ptr *Result = {};
   if (ElementIndex < TotalElements(Cursor)) { Result = Cursor->Start+ElementIndex; }
   return Result;
 }
 
-link_internal voxel_stack_element
-Get(voxel_stack_element_cursor *Cursor, umm ElementIndex)
+link_internal debug_profile_scope_ptr
+Get(debug_profile_scope_ptr_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   Assert(ElementIndex < CurrentCount(Cursor));
-  voxel_stack_element Result = Cursor->Start[ElementIndex];
+  debug_profile_scope_ptr Result = Cursor->Start[ElementIndex];
   return Result;
 }
 
 link_internal void
-Set(voxel_stack_element_cursor *Cursor, umm ElementIndex, voxel_stack_element Element)
+Set(debug_profile_scope_ptr_cursor *Cursor, umm ElementIndex, debug_profile_scope_ptr Element)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -69,40 +69,40 @@ Set(voxel_stack_element_cursor *Cursor, umm ElementIndex, voxel_stack_element El
   }
 }
 
-link_internal voxel_stack_element*
-Advance(voxel_stack_element_cursor *Cursor)
+link_internal debug_profile_scope_ptr*
+Advance(debug_profile_scope_ptr_cursor *Cursor)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
-  voxel_stack_element * Result = {};
+  debug_profile_scope_ptr * Result = {};
   if ( Cursor->At < Cursor->End ) { Result = Cursor->At++; }
   return Result;
 }
 
-link_internal voxel_stack_element *
-Push(voxel_stack_element_cursor *Cursor, voxel_stack_element Element)
+link_internal debug_profile_scope_ptr *
+Push(debug_profile_scope_ptr_cursor *Cursor, debug_profile_scope_ptr Element)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   Assert( Cursor->At < Cursor->End );
-  voxel_stack_element *Result = Cursor->At;
+  debug_profile_scope_ptr *Result = Cursor->At;
   *Cursor->At++ = Element;
   return Result;
 }
 
-link_internal voxel_stack_element
-Pop(voxel_stack_element_cursor *Cursor)
+link_internal debug_profile_scope_ptr
+Pop(debug_profile_scope_ptr_cursor *Cursor)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   Assert( Cursor->At > Cursor->Start );
-  voxel_stack_element Result = Cursor->At[-1];
+  debug_profile_scope_ptr Result = Cursor->At[-1];
   Cursor->At--;
   return Result;
 }
 
 link_internal s32
-LastIndex(voxel_stack_element_cursor *Cursor)
+LastIndex(debug_profile_scope_ptr_cursor *Cursor)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -110,28 +110,28 @@ LastIndex(voxel_stack_element_cursor *Cursor)
   return Result;
 }
 
-link_internal voxel_stack_element*
-LastElement(voxel_stack_element_cursor *Cursor)
+link_internal debug_profile_scope_ptr*
+LastElement(debug_profile_scope_ptr_cursor *Cursor)
 {
-  voxel_stack_element *Result = {};
+  debug_profile_scope_ptr *Result = {};
   s32 I = LastIndex(Cursor);
   if (I > -1) { Result = Cursor->Start + I; }
   return Result;
 }
 
 link_internal b32
-Remove(voxel_stack_element_cursor *Cursor, voxel_stack_element Query)
+Remove(debug_profile_scope_ptr_cursor *Cursor, debug_profile_scope_ptr Query)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   b32 Result = False;
   CursorIterator(ElementIndex, Cursor)
   {
-    voxel_stack_element Element = Get(Cursor, ElementIndex);
+    debug_profile_scope_ptr Element = Get(Cursor, ElementIndex);
     if (AreEqual(Element, Query))
     {
       b32 IsLastIndex = LastIndex(Cursor) == s32(ElementIndex);
-      voxel_stack_element Tmp = Pop(Cursor);
+      debug_profile_scope_ptr Tmp = Pop(Cursor);
 
       if (IsLastIndex) { Assert(AreEqual(Tmp, Query)); }
       else { Set(Cursor, ElementIndex, Tmp); }
@@ -143,7 +143,7 @@ Remove(voxel_stack_element_cursor *Cursor, voxel_stack_element Query)
 
 
 link_internal b32
-ResizeCursor(voxel_stack_element_cursor *Cursor, umm Count, memory_arena *Memory)
+ResizeCursor(debug_profile_scope_ptr_cursor *Cursor, umm Count, memory_arena *Memory)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -152,7 +152,7 @@ ResizeCursor(voxel_stack_element_cursor *Cursor, umm Count, memory_arena *Memory
   TruncateToElementCount(Cursor, Count);
   umm NewSize = TotalSize(Cursor);
 
-  Assert(NewSize/sizeof(voxel_stack_element) == Count);
+  Assert(NewSize/sizeof(debug_profile_scope_ptr) == Count);
 
   /* Info("Attempting to reallocate CurrentSize(%u), NewSize(%u)", CurrentSize, NewSize); */
   Ensure(Reallocate((u8*)Cursor->Start, Memory, CurrentSize, NewSize));
@@ -160,7 +160,7 @@ ResizeCursor(voxel_stack_element_cursor *Cursor, umm Count, memory_arena *Memory
 }
 
 link_internal void
-Unshift( voxel_stack_element_cursor *Cursor )
+Unshift( debug_profile_scope_ptr_cursor *Cursor )
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
   umm Count = AtElements(Cursor);
