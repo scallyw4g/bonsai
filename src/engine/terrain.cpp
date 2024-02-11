@@ -1584,8 +1584,8 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
                         v3i WorldChunkDim,
                         void *OctavesIn )
 {
-  /* TIMED_FUNCTION(); */
-  HISTOGRAM_FUNCTION();
+  TIMED_FUNCTION();
+  /* HISTOGRAM_FUNCTION(); */
   u32 ChunkSum = 0;
 
   Assert(_Dim == Chunk->Dim);

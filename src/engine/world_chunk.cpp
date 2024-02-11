@@ -962,13 +962,13 @@ MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
                                         u8 NewColorMin = 0,
                                         u8 NewColorMax = 0 )
 {
-  TIMED_FUNCTION();
+  HISTOGRAM_FUNCTION();
+  /* TIMED_FUNCTION(); */
 
   auto MinDim = SrcChunkMin;
   auto MaxDim = Min(SrcChunkDim, SrcChunkMax); // SrcChunkMin+DestChunkDim+1
 
   v3i InnerDim = MaxDim-MinDim;
-  s32 SrcIndex = MinDim.x;
 
   s32 MaxIndex = Volume(SrcChunkDim);
   for ( s32 z = MinDim.z; z < MaxDim.z ; ++z )
@@ -977,19 +977,19 @@ MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
     {
       for ( s32 x = MinDim.x; x < MaxDim.x ; ++x )
       {
+        v3i SrcP = V3i(x,y,z);
+        s32 SrcIndex = GetIndex(SrcP, SrcChunkDim);
         voxel *Voxel = Voxels + SrcIndex;
         if (Voxel->Flags & Voxel_Filled)
         {
           Voxel->Flags = Voxel_Filled;
 
-          s32 RightIndex = SrcIndex + 1;
-          s32 LeftIndex  = SrcIndex - 1;
-
-          s32 FrontIndex = SrcIndex + SrcChunkDim.x;
-          s32 BackIndex  = SrcIndex - SrcChunkDim.x;
-
-          s32 TopIndex    = SrcIndex + SrcChunkDim.x*SrcChunkDim.y;
-          s32 BottomIndex = SrcIndex - SrcChunkDim.x*SrcChunkDim.y;
+          s32 RightIndex = GetIndex(SrcP + V3i(1, 0, 0), SrcChunkDim);
+          s32 LeftIndex  = GetIndex(SrcP - V3i(1, 0, 0), SrcChunkDim);
+          s32 TopIndex   = GetIndex(SrcP + V3i(0, 0, 1), SrcChunkDim);
+          s32 BottomIndex= GetIndex(SrcP - V3i(0, 0, 1), SrcChunkDim);
+          s32 FrontIndex = GetIndex(SrcP + V3i(0, 1, 0), SrcChunkDim);
+          s32 BackIndex  = GetIndex(SrcP - V3i(0, 1, 0), SrcChunkDim);
 
           if ( RightIndex >= 0 && RightIndex < MaxIndex )
           {
@@ -1045,18 +1045,15 @@ MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
 
         }
 
-        SrcIndex += 1;
       }
 
-      SrcIndex += (SrcChunkDim.x)-InnerDim.x;
     }
 
-    SrcIndex += (SrcChunkDim.x*SrcChunkDim.y)-(InnerDim.x*InnerDim.y);
   }
 }
 
 link_internal void
-MarkBoundaryVoxels_NoExteriorFaces_Old( voxel *Voxels,
+MarkBoundaryVoxels_NoExteriorFaces_( voxel *Voxels,
                                     chunk_dimension SrcChunkDim,
                                     chunk_dimension SrcChunkMin,
                                     chunk_dimension SrcChunkMax,
@@ -1064,7 +1061,8 @@ MarkBoundaryVoxels_NoExteriorFaces_Old( voxel *Voxels,
                                     u8 NewColorMin = 0,
                                     u8 NewColorMax = 0 )
 {
-  TIMED_FUNCTION();
+  HISTOGRAM_FUNCTION();
+  /* TIMED_FUNCTION(); */
 
   auto MinDim = SrcChunkMin;
   auto MaxDim = Min(SrcChunkDim, SrcChunkMax); // SrcChunkMin+DestChunkDim+1
