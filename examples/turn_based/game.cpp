@@ -488,16 +488,24 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       {
         s32 Frequency = 0; // Ignored
         s32 Amplititude = 0; // Ignored
-        s32 StartingZDepth = -100;
-        u32 OctaveCount = 1;
+        s32 StartingZDepth = -400;
+        u32 OctaveCount = 3;
 
         octave_buffer OctaveBuf = { OctaveCount, {} };
         OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
 
-        OctaveBuf.Octaves[0] = {V3(400, 400, 200), 150, V3(1)};
 
-        chunk_init_flags InitFlags = chunk_init_flags(ChunkInitFlag_ComputeStandingSpots|ChunkInitFlag_GenLODs);
-        InitializeChunkWithNoise( GrassyTerracedTerrain, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
+          OctaveBuf.Octaves[0] = {V3(800, 800, 1700), 350, V3(1.f)};
+          OctaveBuf.Octaves[1] = {V3(400, 400, 200),  350, V3(3.f)};
+          OctaveBuf.Octaves[2] = {V3(35, 35, 25),       6, V3(2.f)};
+
+        /* OctaveBuf.Octaves[0] = {V3(1000, 1000, 700), 150, V3(1)}; */
+        /* OctaveBuf.Octaves[1] = {V3(400, 400, 200), 150, V3(1,1,2)}; */
+        /* /1* OctaveBuf.Octaves[2] = {V3(6, 6, 200), 150, V3(1,1,2)}; *1/ */
+
+        /* chunk_init_flags InitFlags = chunk_init_flags(ChunkInitFlag_ComputeStandingSpots|ChunkInitFlag_GenLODs); */
+        chunk_init_flags InitFlags = ChunkInitFlag_Noop;
+        InitializeChunkWithNoise( GrassyTerracedTerrain4, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
       }
     }
   }

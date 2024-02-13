@@ -155,7 +155,7 @@ DeserializeMesh(native_file *File, world_chunk_file_header_v2 *Header, untexture
 
   u32 VertElementSize = Header->VertexElementSize;
   Assert(VertElementSize == (u32)sizeof(v3));
-  ReadBytesIntoBuffer(File, VertElementSize*TotalElements, (u8*)Result->Verts);
+  ReadBytesIntoBuffer(File, (u8*)Result->Verts, VertElementSize*TotalElements);
 
   //
   // Color data
@@ -168,7 +168,7 @@ DeserializeMesh(native_file *File, world_chunk_file_header_v2 *Header, untexture
 
   u32 ColorElementSize = Header->ColorElementSize;
   Assert(ColorElementSize == (u32)sizeof(v4));
-  /* ReadBytesIntoBuffer(File, ColorElementSize*TotalElements, (u8*)Result->Colors); */
+  /* ReadBytesIntoBuffer(File, (u8*)Result->Colors,  ColorElementSize*TotalElements); */
 
   //
   // Normal data
@@ -177,7 +177,7 @@ DeserializeMesh(native_file *File, world_chunk_file_header_v2 *Header, untexture
 
   u32 NormalElementSize = Header->NormalElementSize;
   Assert(NormalElementSize == (u32)sizeof(v3));
-  ReadBytesIntoBuffer(File, NormalElementSize*TotalElements, (u8*)Result->Normals);
+  ReadBytesIntoBuffer(File, (u8*)Result->Normals,  NormalElementSize*TotalElements);
 
   Result->Timestamp = __rdtsc();
 
@@ -201,7 +201,7 @@ DeserializeMesh(u8_cursor *File, world_chunk_file_header *Header, untextured_3d_
 
   u32 VertElementSize = Header->VertexElementSize;
   Assert(VertElementSize == (u32)sizeof(v3));
-  ReadBytesIntoBuffer(File, VertElementSize*TotalElements, (u8*)Result->Verts);
+  ReadBytesIntoBuffer(File, (u8*)Result->Verts,  VertElementSize*TotalElements);
 
   //
   // Color data
@@ -210,7 +210,7 @@ DeserializeMesh(u8_cursor *File, world_chunk_file_header *Header, untextured_3d_
 
   u32 MaterialElementSize = Header->MaterialElementSize;
   Assert(MaterialElementSize == (u32)sizeof(vertex_material));
-  ReadBytesIntoBuffer(File, MaterialElementSize*TotalElements, (u8*)Result->Mat);
+  ReadBytesIntoBuffer(File, (u8*)Result->Mat,  MaterialElementSize*TotalElements);
 
   //
   // Normal data
@@ -219,7 +219,7 @@ DeserializeMesh(u8_cursor *File, world_chunk_file_header *Header, untextured_3d_
 
   u32 NormalElementSize = Header->NormalElementSize;
   Assert(NormalElementSize == (u32)sizeof(v3));
-  ReadBytesIntoBuffer(File, NormalElementSize*TotalElements, (u8*)Result->Normals);
+  ReadBytesIntoBuffer(File, (u8*)Result->Normals,  NormalElementSize*TotalElements);
 
   Result->Timestamp = __rdtsc();
 
@@ -233,7 +233,7 @@ link_internal world_chunk_file_header_v3
 ReadWorldChunkFileHeader_v3(u8_cursor *File)
 {
   world_chunk_file_header_v3 Result = {};
-  Ensure( ReadBytesIntoBuffer(File, sizeof(Result), (u8*)&Result) );
+  Ensure( ReadBytesIntoBuffer(File, (u8*)&Result,  sizeof(Result)) );
 
   Assert( Result.WHNK == WorldChunkFileTag_WHNK );
   Assert( Result.Version == 3 );
@@ -254,7 +254,7 @@ ReadWorldChunkFileHeader_v2(u8_cursor *File)
 {
   world_chunk_file_header_v2 Result = {};
 
-  Ensure( ReadBytesIntoBuffer(File, sizeof(Result), (u8*)&Result) );
+  Ensure( ReadBytesIntoBuffer(File, (u8*)&Result,  sizeof(Result)) );
 
   Assert( Result.WHNK == WorldChunkFileTag_WHNK );
   Assert( Result.Version == 2 );
@@ -274,7 +274,7 @@ ReadWorldChunkFileHeader_v1(u8_stream *File)
 {
   world_chunk_file_header_v1 Result = {};
 
-  Ensure( ReadBytesIntoBuffer(File, sizeof(Result), (u8*)&Result) );
+  Ensure( ReadBytesIntoBuffer(File, (u8*)&Result,  sizeof(Result)) );
 
   Assert( Result.WHNK == WorldChunkFileTag_WHNK );
   Assert( Result.Version == 1 );
@@ -329,7 +329,7 @@ DeserializeChunk(u8_stream *FileBytes, world_chunk *Result, tiered_mesh_freelist
   u32 Tag = Read_u32(FileBytes);
   Assert( Tag ==  WorldChunkFileTag_VOXD );
   umm VoxByteCount = Header.VoxelElementCount * Header.VoxelElementSize;
-  ReadBytesIntoBuffer(FileBytes, VoxByteCount, (u8*)Result->Voxels);
+  ReadBytesIntoBuffer(FileBytes, (u8*)Result->Voxels,  VoxByteCount);
 
   Result->FilledCount = Header.VoxelElementCount;
 
@@ -350,7 +350,7 @@ DeserializeChunk(u8_stream *FileBytes, world_chunk *Result, tiered_mesh_freelist
     Assert(Tag ==  WorldChunkFileTag_SPOT);
 
     umm ByteCount = SpotElementSize*TotalElements;
-    ReadBytesIntoBuffer(FileBytes, ByteCount, (u8*)Result->StandingSpots.Start);
+    ReadBytesIntoBuffer(FileBytes, (u8*)Result->StandingSpots.Start,  ByteCount);
     Result->StandingSpots.At = Result->StandingSpots.Start + Header.StandingSpotElementCount;
   }
 
@@ -411,7 +411,7 @@ SerializeChunk(world_chunk *Chunk, counted_string AssetPath)
   u8_cursor_block_array Bytes = {};
   b32 Result = SerializeChunk(Chunk, &Bytes);
 
-  native_file File = OpenFile(Filename, "w+b");
+  native_file File = OpenFile(Filename, FilePermission_Write);
     Ensure( WriteToFile(&File, &Bytes) ); // TODO(Jesse)(completeness, error_handling): SoftError here?
   CloseFile(&File);
   return Result;

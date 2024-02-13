@@ -480,7 +480,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       world_chunk *Chunk = Job->Chunk;
 
       counted_string AssetFilename = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, Thread->TempMemory);
-      native_file AssetFile = OpenFile(AssetFilename, "r+b");
+      native_file AssetFile = OpenFile(AssetFilename, FilePermission_Read);
 
       if (ChunkIsGarbage(Chunk))
       {

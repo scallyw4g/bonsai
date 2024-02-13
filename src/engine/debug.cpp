@@ -101,7 +101,7 @@ DoLevelWindow(engine_resources *Engine)
       }
 
 
-      native_file LevelFile = OpenFile("../bonsai_levels/test.level", "w+b");
+      native_file LevelFile = OpenFile("../bonsai_levels/test.level", FilePermission_Write);
         u64 FileFormatVersion = LEVEL_FILE_FORMAT_VERSION_NUMBER;
         WriteToFile(&LevelFile, FileFormatVersion);
         WriteToFile(&LevelFile, &TypeBufferOutputStream);

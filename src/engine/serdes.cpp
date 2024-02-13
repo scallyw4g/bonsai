@@ -129,7 +129,7 @@ Deserialize(u8_stream *Bytes, chunk_data *Data, memory_arena *Memory, umm Count 
   b32 Result = True;
 
 #if 1
-  Result &= ReadBytesIntoBuffer(Bytes, sizeof(chunk_data), Cast(u8*, Data));
+  Result &= ReadBytesIntoBuffer(Bytes, Cast(u8*, Data), sizeof(chunk_data));
 
   umm ElementCount = umm(Volume(Data->Dim));
   Data->Voxels = 0;
@@ -183,7 +183,7 @@ Deserialize(u8_stream *Bytes, untextured_3d_geometry_buffer *Data, memory_arena 
 {
   b32 Result = True;
 #if 1
-  Result &= ReadBytesIntoBuffer(Bytes, sizeof(untextured_3d_geometry_buffer), Cast(u8*, Data));
+  Result &= ReadBytesIntoBuffer(Bytes, Cast(u8*, Data), sizeof(untextured_3d_geometry_buffer));
 
   umm ElementCount = Data->At;
 
