@@ -1,3 +1,10 @@
+* Next
+
+- Added EntityBrush to WorldEdit panel, which spawns the selected asset as an entity
+
+- Fixed entity LRUFrameIndex getting erroniously set in main thread on locked assets
+
+
 * 1.3.9
 
 - Implemented VoronoiNoise3D
