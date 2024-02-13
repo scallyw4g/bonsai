@@ -1005,28 +1005,34 @@ DoWorldEditor(engine_resources *Engine)
       {
         if (Input->LMB.Clicked)
         {
-          cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
-          EntityOrigin.Offset = Round(EntityOrigin.Offset);
-
-          maybe_asset_ptr MaybeAsset = GetAssetPtr(Engine, &EngineDebug->SelectedAsset);
-          if (MaybeAsset.Tag)
+          if (EngineDebug->SelectedAsset.FileNode.Type)
           {
-            asset *Asset = MaybeAsset.Value;
-            model *Model = GetPtr(&Asset->Models, EngineDebug->ModelIndex);
-            v3 AssetHalfDim = V3(Model->Dim)/2.f;
-            world_update_op_shape_params_asset AssetUpdateShape =
-            {
-              EngineDebug->SelectedAsset,
-              EngineDebug->ModelIndex,
-              Canonicalize(World, EntityOrigin - V3(AssetHalfDim.xy, 0.f))
-            };
+            cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
+            EntityOrigin.Offset = Round(EntityOrigin.Offset);
 
-            world_update_op_shape Shape =
+            maybe_asset_ptr MaybeAsset = GetAssetPtr(Engine, &EngineDebug->SelectedAsset);
+            if (MaybeAsset.Tag)
             {
-              type_world_update_op_shape_params_asset,
-              .world_update_op_shape_params_asset = AssetUpdateShape,
-            };
-            QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, World->Memory);
+              asset *Asset = MaybeAsset.Value;
+              model *Model = GetPtr(&Asset->Models, EngineDebug->ModelIndex);
+              if (Model)
+              {
+                v3 AssetHalfDim = V3(Model->Dim)/2.f;
+                world_update_op_shape_params_asset AssetUpdateShape =
+                {
+                  EngineDebug->SelectedAsset,
+                  EngineDebug->ModelIndex,
+                  Canonicalize(World, EntityOrigin - V3(AssetHalfDim.xy, 0.f))
+                };
+
+                world_update_op_shape Shape =
+                {
+                  type_world_update_op_shape_params_asset,
+                  .world_update_op_shape_params_asset = AssetUpdateShape,
+                };
+                QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, World->Memory);
+              }
+            }
           }
         }
       } break;

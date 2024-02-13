@@ -141,6 +141,7 @@ poof(generate_string_table(asset_load_state))
 #include <generated/generate_string_table_asset_load_state.h>
 
 
+#define ASSET_LOCKED_FRAME_INDEX (u64_MAX)
 #define INVALID_ASSET_INDEX (u16_MAX)
 struct asset_id
 {

@@ -464,7 +464,7 @@ AllocateAsset(engine_resources *Engine, file_traversal_node *FileNode, u64 Frame
   AcquireFutex(&Engine->AssetFutex);
   u16 FinalAssetIndex   = INVALID_ASSET_INDEX;
 
-  u64 LruAssetFrame     = u64_MAX;
+  u64 LruAssetFrame     = ASSET_LOCKED_FRAME_INDEX;
   u16 LruAssetIndex     = INVALID_ASSET_INDEX;
 
   RangeIterator_t(u16, TestAssetIndex, ASSET_TABLE_COUNT)
@@ -487,7 +487,7 @@ AllocateAsset(engine_resources *Engine, file_traversal_node *FileNode, u64 Frame
 
   if (FinalAssetIndex == INVALID_ASSET_INDEX)
   {
-    if (LruAssetFrame < u64_MAX)
+    if (LruAssetFrame < ASSET_LOCKED_FRAME_INDEX)
     {
       asset *LruAsset = Engine->AssetTable+LruAssetIndex;
       Assert(LruAsset->LoadState == AssetLoadState_Loaded || LruAsset->LoadState == AssetLoadState_Error);
@@ -515,8 +515,10 @@ AllocateAsset(engine_resources *Engine, file_traversal_node *FileNode, u64 Frame
 
   if (Result.Tag)
   {
-    Result.Value->LRUFrameIndex = FrameIndex ? FrameIndex : Engine->FrameIndex;
-    Result.Value->LRUFrameIndex = FrameIndex ? FrameIndex : Engine->FrameIndex;
+    u64 FrameIndexToWrite = FrameIndex ? FrameIndex : Engine->FrameIndex; 
+    Info("(%p) Setting Asset (%p) LRU Index (%p)", ThreadLocal_ThreadIndex, Result.Value->Id.Index, FrameIndexToWrite);
+    Result.Value->LRUFrameIndex = FrameIndexToWrite;
+    /* Result.Value->LRUFrameIndex = FrameIndex ? FrameIndex : Engine->FrameIndex; */
     Assert(Result.Value->Id.Index != INVALID_ASSET_INDEX);
 
     Assert(Result.Value->Id.FileNode.Dir.Start);
@@ -612,7 +614,9 @@ GetOrAllocateAsset(engine_resources *Engine, file_traversal_node *FileNode, u64 
 
   if (Asset)
   {
-    Asset->LRUFrameIndex = FrameIndex ? FrameIndex : Engine->FrameIndex;
+    u64 FrameIndexToWrite = FrameIndex ? FrameIndex : Engine->FrameIndex; 
+    Info("(%p) Setting Asset (%p) LRU Index (%p)", ThreadLocal_ThreadIndex, Asset->Id.Index, FrameIndexToWrite);
+    Asset->LRUFrameIndex = FrameIndexToWrite;
     Assert(Asset->LoadState != AssetLoadState_Unloaded);
 
     Result.Tag = Maybe_Yes;
@@ -653,15 +657,20 @@ GetAssetPtr(engine_resources *Engine, asset_id *AID, u64 FrameIndex = 0)
 
     asset *Asset = Engine->AssetTable + AID->Index;
 
-    Assert(Asset->Id.Index == AID->Index);
+    if (Asset->LRUFrameIndex != ASSET_LOCKED_FRAME_INDEX)
+    {
+      Assert(Asset->Id.Index == AID->Index);
 
-    // LoadState must be one of Allocated, Queued, Loaded or Error
-    Assert(Asset->LoadState != AssetLoadState_Unloaded);
+      // LoadState must be one of Allocated, Queued, Loaded or Error
+      Assert(Asset->LoadState != AssetLoadState_Unloaded);
 
-    Asset->LRUFrameIndex = FrameIndex ? FrameIndex : Engine->FrameIndex;
+      u64 FrameIndexToWrite = FrameIndex ? FrameIndex : Engine->FrameIndex; 
+      Info("(%p) Setting Asset (%p) LRU Index (%p)", ThreadLocal_ThreadIndex, AID->Index, FrameIndexToWrite);
+      AtomicWrite(&Asset->LRUFrameIndex, FrameIndexToWrite);
 
-    Result.Tag = Maybe_Yes;
-    Result.Value = Asset;
+      Result.Tag = Maybe_Yes;
+      Result.Value = Asset;
+    }
 
     ReleaseFutex(&Engine->AssetFutex);
   }
@@ -741,23 +750,30 @@ GetModel(asset *Asset, asset_id *AID, u64 ModelIndex)
 link_internal asset *
 GetAndLockAssetSync(engine_resources *Engine, asset_id *AID)
 {
-  maybe_asset_ptr Result = GetAssetPtr(Engine, AID, u64_MAX);
+  Info("(%p) Locking Asset (%p)", ThreadLocal_ThreadIndex, AID->Index);
+  maybe_asset_ptr Result = GetAssetPtr(Engine, AID, ASSET_LOCKED_FRAME_INDEX);
 
   while (Result.Tag == Maybe_No)
   {
+    /* Info("Missed Locking Asset (%p)", AID->Index); */
     SleepMs(1);
-    Result = GetAssetPtr(Engine, AID, u64_MAX);
+    Result = GetAssetPtr(Engine, AID, ASSET_LOCKED_FRAME_INDEX);
   }
 
-  Assert(Result.Value->LRUFrameIndex == u64_MAX);
+
+  Assert(Result.Value->LRUFrameIndex == ASSET_LOCKED_FRAME_INDEX);
+
+  Info("(%p) Locked Asset (%p) (%p)", ThreadLocal_ThreadIndex, AID->Index, Result.Value->LRUFrameIndex);
   return Result.Value;
 }
 
 link_internal void
 UnlockAsset(engine_resources *Engine, asset *Asset)
 {
-  Assert(Asset->LRUFrameIndex == u64_MAX);
+  Info("(%p) Unlocking Asset (%p) (%p)", ThreadLocal_ThreadIndex, Asset->Id.Index, Asset->LRUFrameIndex);
+  Assert(Asset->LRUFrameIndex == ASSET_LOCKED_FRAME_INDEX);
   Asset->LRUFrameIndex = Engine->FrameIndex;
+  Info("(%p) Unlocked Asset (%p) (%p)", ThreadLocal_ThreadIndex, Asset->Id.Index, Asset->LRUFrameIndex);
 }
 
 #if 0

@@ -1,4 +1,4 @@
-// src/engine/asset.h:177:0
+// src/engine/asset.h:178:0
 
 struct asset_buffer
 {
