@@ -1002,6 +1002,7 @@ DoWorldEditor(engine_resources *Engine)
       } break;
 
       case WorldEditMode_AssetBrush:
+      case WorldEditMode_EntityBrush:
       {
         if (Input->LMB.Clicked)
         {
@@ -1025,12 +1026,27 @@ DoWorldEditor(engine_resources *Engine)
                   Canonicalize(World, EntityOrigin - V3(AssetHalfDim.xy, 0.f))
                 };
 
-                world_update_op_shape Shape =
+                if (WorldEditMode == WorldEditMode_AssetBrush)
                 {
-                  type_world_update_op_shape_params_asset,
-                  .world_update_op_shape_params_asset = AssetUpdateShape,
-                };
-                QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, World->Memory);
+                  world_update_op_shape Shape =
+                  {
+                    type_world_update_op_shape_params_asset,
+                    .world_update_op_shape_params_asset = AssetUpdateShape,
+                  };
+                  QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, World->Memory);
+                }
+                else if (WorldEditMode == WorldEditMode_EntityBrush)
+                {
+                  entity *E = TryGetFreeEntityPtr(Engine->EntityTable);
+                  if (E)
+                  {
+                    SpawnEntity(E, &EngineDebug->SelectedAsset, EngineDebug->ModelIndex, EntityBehaviorFlags_Default, 0, &AssetUpdateShape.Origin, Model->Dim/2.f);
+                  }
+                }
+                else
+                {
+                  InvalidCodePath();
+                }
               }
             }
           }
