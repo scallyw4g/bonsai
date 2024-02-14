@@ -607,7 +607,9 @@ GraphicsInit(memory_arena *GraphicsMemory)
   graphics *Result = Allocate(graphics, GraphicsMemory, 1);
   Result->Memory = GraphicsMemory;
 
-  Result->Settings.ToneMappingType = ToneMappingType_AGX;
+  Result->Settings.ToneMappingType = ToneMappingType_Exposure;
+
+  Result->Settings.UseSsao           = True;
 
   Result->Settings.BravoilMyersOIT   = True;
   Result->Settings.BravoilMcGuireOIT = True;
@@ -633,10 +635,10 @@ GraphicsInit(memory_arena *GraphicsMemory)
     Lighting->DuskColor = V3(0.13f, 0.12f, 0.14f);
     Lighting->MoonColor = V3(0.04f, 0.07f, 0.18f);
 
-    Lighting->SunIntensity  = 1.22f;
+    Lighting->SunIntensity  = 1.10f;
     Lighting->MoonIntensity = 0.10f;
-    Lighting->DawnIntensity = 1.f;
-    Lighting->DuskIntensity = 1.f;
+    Lighting->DawnIntensity = 0.70f;
+    Lighting->DuskIntensity = 0.50f;
   }
 
   StandardCamera(&Result->GameCamera, 10000.f, 500.f, DEFAULT_CAMERA_BLENDING, {});
