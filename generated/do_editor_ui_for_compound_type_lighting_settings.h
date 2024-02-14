@@ -29,13 +29,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Window, &Element->SunP, CSz("v3 SunP"), EDITOR_UI_FUNCTION_INSTANCE_NAMES,-1.f, 1.f);
-
-
-
-
-
-      
       DoEditorUi(Ui, Window, &Element->DawnIntensity, CSz("f32 DawnIntensity"), EDITOR_UI_FUNCTION_INSTANCE_NAMES,0.f, 3.f);
 
 

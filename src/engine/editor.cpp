@@ -695,6 +695,11 @@ DoWorldEditor(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
+  world_edit_mode WorldEditMode = {};
+  picked_voxel_position HighlightVoxel = PickedVoxel_FirstFilled;
+  ui_toggle_button_group WorldEditModeRadioGroup = {};
+
+
   {
     local_persist window_layout Window = WindowLayout("World", window_layout_flags(WindowLayoutFlag_StartupAlign_Bottom));
     PushWindowStart(Ui, &Window);
@@ -702,59 +707,71 @@ DoWorldEditor(engine_resources *Engine)
     PushWindowEnd(Ui, &Window);
   }
 
-  local_persist window_layout Window = WindowLayout("Edit");
+  {
+    local_persist window_layout Window = WindowLayout("World Edit");
 
-  PushWindowStart(Ui, &Window);
-  ui_toggle_button_group WorldEditModeRadioGroup = RadioButtonGroup_world_edit_mode(Ui, &Window, "world_edit_mode_radio_group", ToggleButtonGroupFlags_DrawVertical, {}, {}, {}, &DefaultStyle, V4(0, 0, 0, 16));
+    PushWindowStart(Ui, &Window);
+    WorldEditModeRadioGroup = RadioButtonGroup_world_edit_mode(Ui, &Window, "world_edit_mode_radio_group", ToggleButtonGroupFlags_DrawVertical, {}, {}, {}, &DefaultStyle, V4(0, 0, 0, 16));
 
-  v3_cursor *Palette = GetColorPalette();
-  s32 PaletteColors = s32(AtElements(Palette));
-  /* Info("Global_ColorPaletteAt %d", Global_ColorPaletteAt); */
-  ui_element_reference ColorTable = PushTableStart(Ui);
-    RangeIterator_t(u16, ColorIndex, PaletteColors)
-    {
-      v3 Color = GetColorData(u32(ColorIndex));
-      ui_style Style = FlatUiStyle(Color);
+    GetRadioEnum(&WorldEditModeRadioGroup, &WorldEditMode);
 
-      v2 QuadDim = V2(22);
-      v4 Padding = V4(1);
-      v3 BorderColor = V3(1.0f);
-
-      if (Engine->Editor.SelectedColorIndex == ColorIndex)
+    v3_cursor *Palette = GetColorPalette();
+    s32 PaletteColors = s32(AtElements(Palette));
+    /* Info("Global_ColorPaletteAt %d", Global_ColorPaletteAt); */
+    ui_element_reference ColorTable = PushTableStart(Ui);
+      RangeIterator_t(u16, ColorIndex, PaletteColors)
       {
-        f32 BorderDim = 2.f;
-        PushRelativeBorder(Ui, QuadDim, BorderColor, V4(BorderDim));
+        v3 Color = GetColorData(u32(ColorIndex));
+        ui_style Style = FlatUiStyle(Color);
+
+        v2 QuadDim = V2(22);
+        v4 Padding = V4(1);
+        v3 BorderColor = V3(1.0f);
+
+        if (Engine->Editor.SelectedColorIndex == ColorIndex)
+        {
+          f32 BorderDim = 2.f;
+          PushRelativeBorder(Ui, QuadDim, BorderColor, V4(BorderDim));
+        }
+
+        if (Engine->Editor.HoverColorIndex == ColorIndex)
+        {
+          f32 BorderDim = 1.f;
+          PushRelativeBorder(Ui, QuadDim, BorderColor, V4(BorderDim));
+        }
+
+
+        interactable_handle ColorPickerButton = PushButtonStart(Ui, UiId(&Window, "ColorPicker", Cast(void*, u64(ColorIndex))) );
+          PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, Padding );
+        PushButtonEnd(Ui);
+
+
+        if (Hover(Ui, &ColorPickerButton))
+        {
+          f32 BorderDim = 1.f;
+          PushRelativeBorder(Ui, V2(-1.f,1.f)*QuadDim, BorderColor, V4(BorderDim));
+
+          PushTooltip(Ui, FSz("%d (%.2f, %.2f, %.2f)", ColorIndex, r64(Color.x), r64(Color.y), r64(Color.z)) );
+        }
+
+        if (Clicked(Ui, &ColorPickerButton))
+        {
+          Engine->Editor.SelectedColorIndex  = ColorIndex;
+        }
+
+
+        if ( (ColorIndex+1) % 8 == 0 ) { PushNewRow(Ui); }
       }
+    PushTableEnd(Ui);
+    PushWindowEnd(Ui, &Window);
+  }
 
-      if (Engine->Editor.HoverColorIndex == ColorIndex)
-      {
-        f32 BorderDim = 1.f;
-        PushRelativeBorder(Ui, QuadDim, BorderColor, V4(BorderDim));
-      }
+  {
+    local_persist window_layout Window = WindowLayout("BrushSettings");
+    PushWindowStart(Ui, &Window);
+    PushWindowEnd(Ui, &Window);
+  }
 
-
-      interactable_handle ColorPickerButton = PushButtonStart(Ui, UiId(&Window, "ColorPicker", Cast(void*, u64(ColorIndex))) );
-        PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, Padding );
-      PushButtonEnd(Ui);
-
-
-      if (Hover(Ui, &ColorPickerButton))
-      {
-        f32 BorderDim = 1.f;
-        PushRelativeBorder(Ui, V2(-1.f,1.f)*QuadDim, BorderColor, V4(BorderDim));
-
-        PushTooltip(Ui, FSz("%d (%.2f, %.2f, %.2f)", ColorIndex, r64(Color.x), r64(Color.y), r64(Color.z)) );
-      }
-
-      if (Clicked(Ui, &ColorPickerButton))
-      {
-        Engine->Editor.SelectedColorIndex  = ColorIndex;
-      }
-
-
-      if ( (ColorIndex+1) % 8 == 0 ) { PushNewRow(Ui); }
-    }
-  PushTableEnd(Ui);
 
 
   rect3 SelectionAABB = {};
@@ -852,10 +869,6 @@ DoWorldEditor(engine_resources *Engine)
     DEBUG_DrawSimSpaceAABB(Engine, &SelectionAABB, BaseColor, Thickness);
   }
 
-
-  world_edit_mode WorldEditMode = {};
-  GetRadioEnum(&WorldEditModeRadioGroup, &WorldEditMode);
-  picked_voxel_position HighlightVoxel = PickedVoxel_FirstFilled;
 
   if ( UiCapturedMouseInput(Ui) == False &&
        UiHoveredMouseInput(Ui)  == False  )
@@ -1001,6 +1014,10 @@ DoWorldEditor(engine_resources *Engine)
         }
       } break;
 
+      case WorldEditMode_NoiseBrush:
+      {
+      } break;
+
       case WorldEditMode_AssetBrush:
       case WorldEditMode_EntityBrush:
       {
@@ -1097,11 +1114,12 @@ DoWorldEditor(engine_resources *Engine)
           QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_RecomputeStandingSpots, &Shape, Editor->SelectedColorIndex, Engine->Memory);
         }
       } break;
+
     }
 
   }
 
-  PushWindowEnd(Ui, &Window);
+
 
 
 

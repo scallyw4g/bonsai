@@ -1,4 +1,4 @@
-// src/engine/editor.h:332:0
+// src/engine/editor.h:334:0
 
 link_internal counted_string
 ToString(world_edit_mode Type)
@@ -17,6 +17,7 @@ ToString(world_edit_mode Type)
     case WorldEditMode_AssetBrush: { Result = CSz("WorldEditMode_AssetBrush"); } break;
     case WorldEditMode_EntityBrush: { Result = CSz("WorldEditMode_EntityBrush"); } break;
     case WorldEditMode_BlitEntity: { Result = CSz("WorldEditMode_BlitEntity"); } break;
+    case WorldEditMode_NoiseBrush: { Result = CSz("WorldEditMode_NoiseBrush"); } break;
     case WorldEditMode_RecomputeStandingSpots: { Result = CSz("WorldEditMode_RecomputeStandingSpots"); } break;
 
     
@@ -40,6 +41,7 @@ WorldEditMode(counted_string S)
   if (StringsMatch(S, CSz("WorldEditMode_AssetBrush"))) { return WorldEditMode_AssetBrush; }
   if (StringsMatch(S, CSz("WorldEditMode_EntityBrush"))) { return WorldEditMode_EntityBrush; }
   if (StringsMatch(S, CSz("WorldEditMode_BlitEntity"))) { return WorldEditMode_BlitEntity; }
+  if (StringsMatch(S, CSz("WorldEditMode_NoiseBrush"))) { return WorldEditMode_NoiseBrush; }
   if (StringsMatch(S, CSz("WorldEditMode_RecomputeStandingSpots"))) { return WorldEditMode_RecomputeStandingSpots; }
 
   return Result;

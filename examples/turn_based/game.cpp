@@ -914,7 +914,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
               V3(1)
             );
 
-            /* fireball_state *FireballState = Allocate(fireball_state, &GameState->Heap, 1); */
+            /* fireball_state *FireballState = Allocate(fireball_state, GameMemory, 1); */
             fireball_state *FireballState = (fireball_state*)HeapAllocate(&GameState->Heap, sizeof(fireball_state));
 
             FireballState->ChargeLevel = 2;
@@ -1147,7 +1147,8 @@ EntityUserDataDeserialize(u8_cursor *Bytes, u64 *UserType, u64 *UserData, memory
 
   if(*UserData == True)
   {
-    entity_game_data *GameData = Allocate(entity_game_data, Memory, 1);
+    entity_game_data *GameData = Cast(entity_game_data *, HeapAllocate(&GetEngineResources()->GameState->Heap, sizeof(entity_game_data)));
+    /* entity_game_data *GameData = Allocate(entity_game_data, Memory, 1); */
     Deserialize(Bytes, GameData, Memory);
     *UserData = (u64)GameData;
   }

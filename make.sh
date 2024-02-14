@@ -3,6 +3,10 @@
 # TODO(Jesse)(build): Revisit this blog and see if there are some tidbits we can use.
 # http://ptspts.blogspot.com/2013/12/how-to-make-smaller-c-and-c-binaries.html
 
+
+# SANITIZER="-fsanitize=undefined"
+# SANITIZER="-fsanitize=address"
+
 BUILD_EVERYTHING=0
 
 RunPoof=0
@@ -104,6 +108,7 @@ function BuildExecutables
     SetOutputBinaryPathBasename "$executable" "$BIN"
     echo -e "$Building $executable"
     clang++                                          \
+      $SANITIZER                                     \
       $OPTIMIZATION_LEVEL                            \
       $CXX_OPTIONS                                   \
       $BONSAI_INTERNAL                               \
@@ -204,6 +209,7 @@ function BuildExamples
     echo -e "$Building $executable"
     SetOutputBinaryPathBasename "$executable" "$BIN"
     clang++                     \
+      $SANITIZER                \
       -D BONSAI_DEBUG_SYSTEM_API=1 \
       $OPTIMIZATION_LEVEL       \
       $CXX_OPTIONS              \

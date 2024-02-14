@@ -310,23 +310,25 @@ enum selection_mode
 
 enum world_edit_mode
 {
-  WorldEditMode_Select          = (1 << 0),
+  WorldEditMode_Select                 = (1 << 0),
 
-  WorldEditMode_FillSelection   = (1 << 1),
-  WorldEditMode_PaintSelection  = (1 << 2),
-  WorldEditMode_DeleteSelection = (1 << 3),
+  WorldEditMode_FillSelection          = (1 << 1),
+  WorldEditMode_PaintSelection         = (1 << 2),
+  WorldEditMode_DeleteSelection        = (1 << 3),
 
-  WorldEditMode_Eyedropper      = (1 << 4),
+  WorldEditMode_Eyedropper             = (1 << 4),
 
-  WorldEditMode_AddSingle       = (1 << 5),
-  WorldEditMode_RemoveSingle    = (1 << 6),
-  WorldEditMode_PaintSingle     = (1 << 7),
+  WorldEditMode_AddSingle              = (1 << 5),
+  WorldEditMode_RemoveSingle           = (1 << 6),
+  WorldEditMode_PaintSingle            = (1 << 7),
 
-  WorldEditMode_AssetBrush      = (1 << 8),
-  WorldEditMode_EntityBrush     = (1 << 9),
-  WorldEditMode_BlitEntity      = (1 << 10),
+  WorldEditMode_AssetBrush             = (1 << 8),
+  WorldEditMode_EntityBrush            = (1 << 9),
+  WorldEditMode_BlitEntity             = (1 << 10),
 
-  WorldEditMode_RecomputeStandingSpots = (1 << 11),
+  WorldEditMode_NoiseBrush             = (1 << 11),
+
+  WorldEditMode_RecomputeStandingSpots = (1 << 12),
 };
 
 poof(string_and_value_tables(world_edit_mode))
