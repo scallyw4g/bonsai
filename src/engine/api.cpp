@@ -266,12 +266,6 @@ DoDayNightCycle(graphics *Graphics, r32 tDay)
   r32 tDaytime = Cos(tDay);
   r32 tPostApex = Sin(tDay);
 
-  f32 SunIntensity = 1.f;
-  f32 MoonIntensity = 0.05f;
-
-  f32 DawnIntensity = 0.5f;
-  f32 DuskIntensity = 0.25f;
-
   lighting_settings *Lighting = &Graphics->Settings.Lighting;
 
   v3 DawnColor = Normalize(Lighting->DawnColor) * Lighting->DawnIntensity;
@@ -279,30 +273,30 @@ DoDayNightCycle(graphics *Graphics, r32 tDay)
   v3 DuskColor = Normalize(Lighting->DuskColor) * Lighting->DuskIntensity;
   v3 MoonColor = Normalize(Lighting->MoonColor) * Lighting->MoonIntensity;
 
-  /* if (Graphics->Settings.DoDayNightCycle) */
+  Lighting->SunP.x = Sin(tDay);
+  Lighting->SunP.y = Cos(tDay);
+  Lighting->SunP.z = (1.3f+Cos(tDay))/2.f;
+
+  if (tDaytime > 0.f)
   {
-    if (tDaytime > 0.f)
+    if (tPostApex > 0.f)
     {
-      if (tPostApex > 0.f)
-      {
-        Lighting->CurrentSunColor = Lerp(tDaytime, DuskColor, SunColor);
-      }
-      else
-      {
-        Lighting->CurrentSunColor = Lerp(tDaytime, DawnColor, SunColor);
-      }
+      Lighting->CurrentSunColor = Lerp(tDaytime, DuskColor, SunColor);
     }
     else
     {
-      /* SG->Sun.Color = V3(0.15f); */
-      if (tPostApex > 0.f)
-      {
-        Lighting->CurrentSunColor = Lerp(Abs(tDaytime), DuskColor, MoonColor);
-      }
-      else
-      {
-        Lighting->CurrentSunColor = Lerp(Abs(tDaytime), DawnColor, MoonColor);
-      }
+      Lighting->CurrentSunColor = Lerp(tDaytime, DawnColor, SunColor);
+    }
+  }
+  else
+  {
+    if (tPostApex > 0.f)
+    {
+      Lighting->CurrentSunColor = Lerp(Abs(tDaytime), DuskColor, MoonColor);
+    }
+    else
+    {
+      Lighting->CurrentSunColor = Lerp(Abs(tDaytime), DawnColor, MoonColor);
     }
   }
 
@@ -336,7 +330,10 @@ Bonsai_Render(engine_resources *Resources)
   ao_render_group     *AoGroup = Graphics->AoGroup;
   shadow_render_group *SG      = Graphics->SG;
 
-  if (Graphics->Settings.Lighting.AutoDayNightCycle) { Graphics->Settings.Lighting.tDay += Plat->dt/18.0f; }
+  if (Graphics->Settings.Lighting.AutoDayNightCycle)
+  {
+    Graphics->Settings.Lighting.tDay += Plat->dt/18.0f;
+  }
   DoDayNightCycle(Graphics, Graphics->Settings.Lighting.tDay);
 
 #if 0
