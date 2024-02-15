@@ -76,6 +76,7 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
+  v3 EnemySimP   = GetSimSpaceP(World, Enemy);
   cp EnemyBaseP  = GetEntityBaseP(World, Enemy);
   v3 EnemyBaseSimP  = GetSimSpaceP(World, EnemyBaseP);
   {
@@ -115,10 +116,8 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
   v3 PlayerBaseSimP = GetSimSpaceP(World, PlayerBaseP);
 
 
-
   // NOTE(Jesse): Entities embedded in the world cannot act
   if (GetCollision(World, Enemy).Count > Global_EntityCanMoveThroughCollisionThresh) { return; }
-
 
 
   u16 StandingSpotColor = YELLOW;
@@ -179,22 +178,21 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
 
     if (GameState->PlayerActed)
     {
-      v3 SpotSimP = GetSimSpaceBaseP(World, NextSpot);
-      v3 SpotTopSimP = SpotSimP + V3(Global_StandingSpotHalfDim.xy, Global_StandingSpotDim.z);
-      v3 UpdateV = SpotTopSimP - EnemyBaseSimP + V3(0,0,3);
+      v3 SpotTopSimP = GetSimSpaceBaseP(World, NextSpot) + V3(0, 0, Global_StandingSpotDim.z);
+      v3 UpdateV = SpotTopSimP - EnemySimP + V3(0,0,3) - V3(Enemy->_CollisionVolumeRadius.xy, 0.f);
 
       cp EnemyOriginalP = Enemy->P;
       UpdateEntityP(World, Enemy, UpdateV);
 
       // Disallow enemies moving onto other entities
       collision_event EntityCollision = DoEntityCollisions(World, EntityTable, Enemy).Collision;
-      if (EntityCollision.Count) { Enemy->P = EnemyOriginalP; }
+      if (EntityCollision.Count > Global_EntityCanMoveThroughCollisionThresh) { Enemy->P = EnemyOriginalP; }
     }
   }
 }
 
 link_internal void
-SpawnSkeleBitties(engine_resources *Engine, cp BasisP, u32 BittyCount, r32 Radius) // TODO(Jesse): Make Radius a v3?
+SpawnSkeleBitties(engine_resources *Engine, cp BasisP, u32 BittyCount, v3 SpawnRadius, v3 DirectionBias) // TODO(Jesse): Make Radius a v3?
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -220,11 +218,11 @@ SpawnSkeleBitties(engine_resources *Engine, cp BasisP, u32 BittyCount, r32 Radiu
     /* UpdateCollisionVolumeRadius(World, BittyEntity, V3(.1f), GetTranArena()); */
     BittyEntity->_CollisionVolumeRadius = V3(.1f);
 
-    v3 Rnd = RandomV3Bilateral(&Global_GameEntropy);
-    BittyEntity->Physics.Mass = 25.f;
-    BittyEntity->Physics.Force += Rnd*150.f*Radius;
+    v3 Rnd = RandomV3Unilateral(&Global_GameEntropy) * DirectionBias;
+    BittyEntity->Physics.Mass = 20.f;
+    BittyEntity->Physics.Force += Rnd*200.f;
     BittyEntity->Physics.Force.z = Abs(BittyEntity->Physics.Force.z) * 0.25f;
-    BittyEntity->P = BasisP + (Rnd*Radius) + V3(0.f, 0.f, 2.0f);
+    BittyEntity->P = BasisP + RandomV3Unilateral(&Global_GameEntropy)*SpawnRadius;
     BittyEntity->P.Offset.z = BasisP.Offset.z + 2.f;
 
     SpawnEntity(BittyEntity, EntityBehaviorFlags_Default);
@@ -234,9 +232,9 @@ SpawnSkeleBitties(engine_resources *Engine, cp BasisP, u32 BittyCount, r32 Radiu
 }
 
 link_internal void
-DestroyLoot(engine_resources *Engine, entity *Entity)
+DestroyLoot(engine_resources *Engine, entity *Entity, v3 ImpactDirection)
 {
-  SpawnSkeleBitties(Engine, Entity->P, 3, 8.f);
+  SpawnSkeleBitties(Engine, Entity->P, 3, Entity->_CollisionVolumeRadius*2.f, 8.f*ImpactDirection);
 
   file_traversal_node AssetName = {FileTraversalType_File, CSz("models"), CSz("skull_broken.vox")};
 
@@ -246,9 +244,9 @@ DestroyLoot(engine_resources *Engine, entity *Entity)
 }
 
 link_internal void
-DestroySkeleton(engine_resources *Engine, entity *Entity, r32 Radius)
+DestroySkeleton(engine_resources *Engine, entity *Entity, r32 Radius, v3 ImpactDirection)
 {
-  SpawnSkeleBitties(Engine, Entity->P, 7, 16.f);
+  SpawnSkeleBitties(Engine, Entity->P, 7, Entity->_CollisionVolumeRadius*2.f, Radius*ImpactDirection);
 
   UNPACK_ENGINE_RESOURCES(Engine);
   file_traversal_node SkullAssetNames[] =
@@ -272,15 +270,15 @@ DestroySkeleton(engine_resources *Engine, entity *Entity, r32 Radius)
 }
 
 link_internal void
-EffectFireballEntity(engine_resources *Engine, entity *Enemy)
+EffectFireballEntity(engine_resources *Engine, entity *Enemy, v3 Direction)
 {
   switch (ReinterpretCast(entity_aggregate_type, Enemy->UserType).Type)
   {
     case EntityType_Default:   {} break;
     case EntityType_Player:    {} break;
     case EntityType_Fireball:  {} break;
-    case EntityType_Enemy:     { DestroySkeleton(Engine, Enemy, 5.f); } break;
-    case EntityType_Loot:      { DestroyLoot(Engine, Enemy); } break;
+    case EntityType_Enemy:     { DestroySkeleton(Engine, Enemy, 15.f, Direction); } break;
+    case EntityType_Loot:      { DestroyLoot(Engine, Enemy, Direction); } break;
     case EntityType_ItemSpawn: {} break;
   }
 }
@@ -306,15 +304,16 @@ EffectProjectileImpact(engine_resources *Engine, entity *Entity)
       r32 Radius = 2.f + r32(State->ChargeLevel)*2.f;
       DoSplotion(Engine, Entity->P, Radius, &Global_GameEntropy, GetTranArena());
 
-      v3 SimP = GetSimSpaceP(World, Entity->P);
+      v3 ESimP = GetSimSpaceP(World, Entity->P);
 
-      sphere S = {SimP, Radius};
+      sphere S = {ESimP, Radius};
       u32_buffer EntityIndices = GatherEntitiesIntersecting(World, EntityTable, &S, GetTranArena());
 
       IterateOver(&EntityIndices, EIndex, EIndexIndex)
       {
-        entity *E = EntityTable[*EIndex];
-        EffectFireballEntity(Engine, E);
+        entity *EffectedEntity = EntityTable[*EIndex];
+        v3 FireballToEntity =  GetSimSpaceCenterP(World, EffectedEntity) - GetSimSpaceCenterP(World, Entity);
+        EffectFireballEntity(Engine, EffectedEntity, Normalize(V3(FireballToEntity.xy, 1.f)));
       }
 
       HeapDeallocate(&GameState->Heap, (u8*)State);
@@ -325,7 +324,8 @@ EffectProjectileImpact(engine_resources *Engine, entity *Entity)
     case EntityType_Loot:
     {
       Entity->Physics.Velocity *= 0.1f;
-      DestroyLoot(Engine, Entity);
+      Entity->Physics.Mass = 1.f;
+      DestroyLoot(Engine, Entity, {});
     } break;
   }
 }
@@ -333,6 +333,9 @@ EffectProjectileImpact(engine_resources *Engine, entity *Entity)
 link_internal b32
 EffectGrabEntity(engine_resources *Engine, entity *Grabber, entity *Grabee)
 {
+  world *World = Engine->World;
+
+  v3 GrabberToGrabee = Normalize(GetSimSpaceP(World, Grabee) - GetSimSpaceP(World, Grabber));
   b32 Result = False;
   switch (ReinterpretCast(entity_aggregate_type, Grabee->UserType).Type)
   {
@@ -346,7 +349,7 @@ EffectGrabEntity(engine_resources *Engine, entity *Grabber, entity *Grabee)
     case EntityType_Enemy:
     {
       Result = True;
-      DestroySkeleton(Engine, Grabee, 5.f);
+      DestroySkeleton(Engine, Grabee, 5.f, {});
     } break;
 
     case EntityType_Loot:
@@ -360,11 +363,14 @@ EffectGrabEntity(engine_resources *Engine, entity *Grabber, entity *Grabee)
 }
 
 link_internal b32
-EffectSmackEntity(engine_resources *Engine, entity *Enemy)
+EffectSmackEntity(engine_resources *Engine, entity *Smacker, entity *Smackee)
 {
   b32 Result = False;
 
-  switch (ReinterpretCast(entity_aggregate_type, Enemy->UserType).Type)
+  world *World = Engine->World;
+
+  v3 SmackerToSmackee = Normalize(GetSimSpaceP(World, Smackee) - GetSimSpaceP(World, Smacker));
+  switch (ReinterpretCast(entity_aggregate_type, Smackee->UserType).Type)
   {
     case EntityType_Default:
     case EntityType_Player:
@@ -376,13 +382,13 @@ EffectSmackEntity(engine_resources *Engine, entity *Enemy)
     case EntityType_Enemy:
     {
       Result = True;
-      DestroySkeleton(Engine, Enemy, 5.f);
+      DestroySkeleton(Engine, Smackee, 10.f, SmackerToSmackee);
     } break;
 
     case EntityType_Loot:
     {
       Result = True;
-      DestroyLoot(Engine, Enemy);
+      DestroyLoot(Engine, Smackee, SmackerToSmackee);
     } break;
   }
 
@@ -426,12 +432,15 @@ GameEntityUpdate(engine_resources *Engine, entity *Entity )
 
   if (Entity->Carrying.Generation)
   {
-    entity *Carrying = GetEntity(EntityTable, Entity->Carrying);
-    v3 EntitySimP = GetSimSpaceBaseP(World, Entity);
+    if (entity *Carrying = GetEntity(EntityTable, Entity->Carrying))
+    {
+      v3 EntitySimP = GetSimSpaceBaseP(World, Entity);
 
-    r32 AnimOffset = Sin(fmodf(Plat->GameTime*2.f, PI32)) + 1.f;
-    v3 NewP = EntitySimP + V3(0.f, 0.f, Entity->_CollisionVolumeRadius.z*2.f + AnimOffset) - V3(Carrying->_CollisionVolumeRadius.xy, 0.f);
-    Carrying->P = SimSpaceToCanonical(World,  NewP);
+      r32 AnimOffset = Sin(fmodf(Plat->GameTime*2.f, PI32*2.f)) + 3.f;
+      v3 NewP = EntitySimP + V3(0.f, 0.f, Entity->_CollisionVolumeRadius.z*2.f + AnimOffset) - V3(Carrying->_CollisionVolumeRadius.xy, 0.f);
+
+      Carrying->P = SimSpaceToCanonical(World,  NewP);
+    }
   }
 
   entity_aggregate_type EntityAggregateType = UserTypeToAggregateType(Entity->UserType);
@@ -523,7 +532,6 @@ FireballPhysics()
 
   return Result;
 }
-
 
 link_internal b32
 HoldingItem(entity *Player)
@@ -988,7 +996,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
                     entity *HoverEntity = Resources->HoverEntity.Value;
                     if (EntityIsWithinMeleeRangeOf(World, HoverEntity, Player))
                     {
-                      GameState->PlayerActed = EffectSmackEntity(Resources, HoverEntity);
+                      GameState->PlayerActed = EffectSmackEntity(Resources, Player, HoverEntity);
                     }
                     else
                     {

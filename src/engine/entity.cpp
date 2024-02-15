@@ -848,7 +848,7 @@ ClampBetween( r32 Min, v3 Gross, r32 Max )
   return Result;
 }
 
-void
+link_internal void
 UpdateEntityP(world* World, entity *Entity, v3 Delta)
 {
   Entity->P.Offset += Delta;

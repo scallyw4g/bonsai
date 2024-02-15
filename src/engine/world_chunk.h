@@ -629,7 +629,7 @@ GetSimSpaceCenterP(world *World, standing_spot *Spot)
 link_internal v3
 GetSimSpaceBaseP(world *World, standing_spot *Spot)
 {
-  v3 Result = GetSimSpaceP(World, Spot->P);
+  v3 Result = GetSimSpaceP(World, Spot->P) + V3(Global_StandingSpotHalfDim.xy, 0.f);
   return Result;
 }
 

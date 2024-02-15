@@ -96,6 +96,11 @@ See the docs on the [build process](docs/01_build_process.md).
 [ ] Biomes
 * https://en.wikipedia.org/wiki/Holdridge_life_zones
 
+[ ] Meshing
+* Isotropic surface meshing
+* https://graphics.stanford.edu/courses/cs164-10-spring/Handouts/isotropic.pdf
+* https://inria.hal.science/inria-00071612/document
+
 -------------------------------------------------------------------------------
 ## Sound
 

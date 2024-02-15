@@ -305,3 +305,22 @@ GetCollision( world *World, canonical_position TestP, v3 CollisionDim );
 
 link_internal collision_event
 GetCollision( world *World, aabb SimSpaceCollisionDim );
+
+link_internal cp
+GetEntityBaseP(world *World, entity *Entity)
+{
+  cp BaseP = Entity->P;
+  BaseP.Offset += Entity->_CollisionVolumeRadius.xy;
+  BaseP = Canonicalize(World, BaseP);
+  return BaseP;
+}
+
+link_internal cp
+GetEntityCenterP(world *World, entity *Entity)
+{
+  cp BaseP = Entity->P;
+  BaseP.Offset += Entity->_CollisionVolumeRadius;
+  BaseP = Canonicalize(World, BaseP);
+  return BaseP;
+}
+
