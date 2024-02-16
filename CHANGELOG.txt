@@ -1,8 +1,16 @@
-* Next
+* 1.3.10
 
 - Added EntityBrush to WorldEdit panel, which spawns the selected asset as an entity
 
+- Changed key-light position to be dynamic during day/night cycle
+
 - Fixed entity LRUFrameIndex getting erroniously set in main thread on locked assets
+
+- Fixed linux platform crashing on NotImplemented in PlatformTraverseDirectoryTree
+
+- Improved distribution of skele bitties spawning on impact
+
+- Fixed skeletons moving to incorrect position relative to standing spot
 
 
 * 1.3.9

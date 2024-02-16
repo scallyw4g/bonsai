@@ -365,9 +365,9 @@ enum world_edit_mode
   WorldEditMode_EntityBrush            = (1 << 9),
   WorldEditMode_BlitEntity             = (1 << 10),
 
-  WorldEditMode_NoiseBrush             = (1 << 11),
+  /* WorldEditMode_NoiseBrush             = (1 << 11), */
 
-  WorldEditMode_RecomputeStandingSpots = (1 << 12),
+  WorldEditMode_RecomputeStandingSpots = (1 << 11),
 };
 
 poof(string_and_value_tables(ui_noise_type))

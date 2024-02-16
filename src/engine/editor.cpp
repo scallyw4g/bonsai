@@ -821,7 +821,7 @@ DoWorldEditor(engine_resources *Engine)
   }
 
   {
-    local_persist window_layout Window = WindowLayout("Brush Settings");
+    local_persist window_layout Window = WindowLayout("Brush Settings", WindowLayoutFlag_StartupAlign_Right);
     PushWindowStart(Ui, &Window);
     switch (WorldEditMode)
     {
@@ -840,6 +840,7 @@ DoWorldEditor(engine_resources *Engine)
       { PushColumn(Ui, CSz("No brush settings.")); } break;
 
 
+#if 0
       case WorldEditMode_NoiseBrush:
       {
         ui_noise_type *NoiseType = &Engine->Editor.NoiseSelection.Type;
@@ -879,6 +880,7 @@ DoWorldEditor(engine_resources *Engine)
           } break;
         }
       } break;
+#endif
     }
     PushWindowEnd(Ui, &Window);
   }
@@ -1125,9 +1127,11 @@ DoWorldEditor(engine_resources *Engine)
         }
       } break;
 
+#if 0
       case WorldEditMode_NoiseBrush:
       {
       } break;
+#endif
 
       case WorldEditMode_AssetBrush:
       case WorldEditMode_EntityBrush:
