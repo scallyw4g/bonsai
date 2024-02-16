@@ -1,4 +1,4 @@
-// src/engine/world_chunk.h:411:0
+// src/engine/world_chunk.h:409:0
 
 struct world_chunk_ptr_buffer
 {

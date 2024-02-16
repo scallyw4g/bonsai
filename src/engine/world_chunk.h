@@ -326,7 +326,6 @@ typedef entity* entity_ptr;
 poof( block_array(entity_ptr, {8}) )
 #include <generated/block_array_entity_ptr_688856411.h>
 
-#pragma pack(push, 1)
 struct world_chunk
 {
   /* poof( use_struct(chunk_data) ) */
@@ -396,7 +395,6 @@ struct world_chunk
 // TODO(Jesse, id: 87, tags: speed, cache_friendly): Re-enable this
 // @world-chunk-cache-line-size
 /* CAssert(sizeof(world_chunk) == CACHE_LINE_SIZE); */
-#pragma pack(pop)
 
 // TODO(Jesse, id: 87, tags: speed, cache_friendly): Re-enable this
 // @world-chunk-cache-line-size
