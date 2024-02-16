@@ -3430,7 +3430,7 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOff
     if (Replaced) { DeallocateMesh(Replaced, &EngineResources->MeshFreelist, Thread->PermMemory); }
   }
 
-  // NOTE(Jesse): Chunk flags modified by caller; this routine gets called multiple times pre job
+  // NOTE(Jesse): Chunk flags modified by caller; this routine gets called multiple times per job
 }
 
 link_internal void
@@ -3538,7 +3538,8 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
 #endif
 
 
-  MarkBoundaryVoxels_NoExteriorFaces(SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
+  /* MarkBoundaryVoxels_NoExteriorFaces(SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim); */
+  MarkBoundaryVoxels_MakeExteriorFaces(SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
 
   CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Global_ChunkApronMinDim);
 
@@ -3621,17 +3622,25 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
 
 #endif
 
-  FullBarrier;
+#define FINALIZE_MESH_FOR_CHUNK(Src, Dest,Bit)                                \
+  {                                                                           \
+    geo_u3d *SrcMesh = (Src)->Meshes.E[ToIndex(Bit)];                         \
+    if (SrcMesh) {                                                            \
+      if (SrcMesh->At) {                                                      \
+        AtomicReplaceMesh(&(Dest)->Meshes, Bit, SrcMesh, SrcMesh->Timestamp); \
+      } else {                                                                \
+        DeallocateMesh(EngineResources, SrcMesh);                             \
+      }                                                                       \
+    }                                                                         \
+  }
 
-  // TODO(Jesse): Have to atomic replace these meshes
-  // nocheckin
-  DestChunk->Meshes = SyntheticChunk->Meshes;
+  FINALIZE_MESH_FOR_CHUNK(SyntheticChunk, DestChunk, MeshBit_Lod0 );
+  FINALIZE_MESH_FOR_CHUNK(SyntheticChunk, DestChunk, MeshBit_Lod1 );
+  FINALIZE_MESH_FOR_CHUNK(SyntheticChunk, DestChunk, MeshBit_Lod2 );
+  FINALIZE_MESH_FOR_CHUNK(SyntheticChunk, DestChunk, MeshBit_Lod3 );
+  FINALIZE_MESH_FOR_CHUNK(SyntheticChunk, DestChunk, MeshBit_Lod4 );
 
-  /* AtomicReplaceMesh(DestChunk->Meshes, MeshBit_Lod0, SyntheticChunk->Meshes.E[0], SyntheticChunk->Meshes.E[0].Timestamp); */
-  /* AtomicReplaceMesh(DestChunk->Meshes, MeshBit_Lod1, SyntheticChunk->Meshes.E[1], SyntheticChunk->Meshes.E[1].Timestamp); */
-  /* AtomicReplaceMesh(DestChunk->Meshes, MeshBit_Lod2, SyntheticChunk->Meshes.E[2], SyntheticChunk->Meshes.E[2].Timestamp); */
-  /* AtomicReplaceMesh(DestChunk->Meshes, MeshBit_Lod3, SyntheticChunk->Meshes.E[3], SyntheticChunk->Meshes.E[3].Timestamp); */
-  /* AtomicReplaceMesh(DestChunk->Meshes, MeshBit_Lod4, SyntheticChunk->Meshes.E[4], SyntheticChunk->Meshes.E[4].Timestamp); */
+#undef FINALIZE_MESH_FOR_CHUNK
 
   FinalizeChunkInitialization(DestChunk);
 }

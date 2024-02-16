@@ -1,3 +1,18 @@
+link_internal b32
+InitEditor(level_editor *Editor)
+{
+  b32 Result = True;
+
+  Editor->Memory = AllocateArena();
+
+  {
+    Editor->NoisePreviewThumbnail.Texture = MakeTexture_RGB(V2i(512), 0, Editor->Memory, CSz("NoisePreviewTexture"));
+    StandardCamera(&Editor->NoisePreviewThumbnail.Camera, 10000.f, 1000.f, 30.f, {});
+  }
+
+
+  return Result;
+}
 poof(block_array_c(asset_thumbnail, {8}))
 #include <generated/block_array_c_asset_thumbnail_688856411.h>
 
@@ -91,6 +106,15 @@ poof(do_editor_ui_for_primitive_type({s64 u64 s32 u32 s16 u16 s8 u8}));
 
 poof(do_editor_ui_for_vector_type({v4i v4 v3i v3 v2 Quaternion}));
 #include <generated/do_editor_ui_for_vector_type_688873645.h>
+
+
+
+poof(do_editor_ui_for_compound_type(perlin_noise_params))
+#include <generated/do_editor_ui_for_compound_type_perlin_noise_params.h>
+poof(do_editor_ui_for_compound_type(voronoi_noise_params))
+#include <generated/do_editor_ui_for_compound_type_voronoi_noise_params.h>
+
+
 
 poof(do_editor_ui_for_container(v3_cursor))
 #include <generated/do_editor_ui_for_container_v3_cursor.h>
@@ -690,6 +714,36 @@ DoSelectedVoxelDebugWindow(engine_resources *Engine, cp VoxelCP)
   }
 }
 
+#if 1
+link_internal void
+DoThumbnailInteractions(renderer_2d *Ui, window_layout *Window, const char* InteractionString, asset_thumbnail *Thumb)
+{
+  texture *Texture = Thumb->Texture;
+  camera  *ThumbCamera  = &Thumb->Camera;
+
+  interactable_handle B = PushButtonStart(Ui, UiId(Window, InteractionString, Cast(void*, Thumb)) );
+    u32 Index = StartColumn(Ui);
+      /* if (ModelIndex == EngineDebug->ModelIndex) { PushRelativeBorder(Ui, V2(256), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f)); } */
+      PushTexturedQuad(Ui, Texture, V2(Texture->Dim), zDepth_Text);
+      /* PushForceAdvance(Ui, V2(8, 0)); */
+    EndColumn(Ui, Index);
+  PushButtonEnd(Ui);
+
+  v2 MouseDP = {};
+  r32 CameraZDelta = {};
+  if (Pressed(Ui, &B))
+  {
+    /* EngineDebug->ModelIndex = ModelIndex; */
+
+    if (Ui->Input->LMB.Pressed) { MouseDP = (*Ui->MouseDP)*2.f; }
+    if (Ui->Input->RMB.Pressed) { CameraZDelta += (*Ui->MouseDP).y*2.f; }
+    UpdateGameCamera(GetWorld(), MouseDP, CameraZDelta, {}, ThumbCamera, 0.f);
+    /* RenderToTexture(Engine, Thumb, Model, {}); */
+  }
+
+}
+#endif
+
 link_internal void
 DoWorldEditor(engine_resources *Engine)
 {
@@ -767,8 +821,65 @@ DoWorldEditor(engine_resources *Engine)
   }
 
   {
-    local_persist window_layout Window = WindowLayout("BrushSettings");
+    local_persist window_layout Window = WindowLayout("Brush Settings");
     PushWindowStart(Ui, &Window);
+    switch (WorldEditMode)
+    {
+      case WorldEditMode_Select:
+      case WorldEditMode_FillSelection:
+      case WorldEditMode_PaintSelection:
+      case WorldEditMode_DeleteSelection:
+      case WorldEditMode_Eyedropper:
+      case WorldEditMode_AddSingle:
+      case WorldEditMode_RemoveSingle:
+      case WorldEditMode_PaintSingle:
+      case WorldEditMode_BlitEntity:
+      case WorldEditMode_RecomputeStandingSpots:
+      case WorldEditMode_AssetBrush:
+      case WorldEditMode_EntityBrush:
+      { PushColumn(Ui, CSz("No brush settings.")); } break;
+
+
+      case WorldEditMode_NoiseBrush:
+      {
+        ui_noise_type *NoiseType = &Engine->Editor.NoiseSelection.Type;
+        DoEditorUi(Ui, &Window, NoiseType, CSz("Noise Type"));
+        switch (*NoiseType)
+        {
+          case NoiseType_None: {} break;
+
+          case NoiseType_Perlin:
+          {
+            perlin_noise_params *Params = &Editor->NoiseSelection.PerlinParams;
+            DoEditorUi(Ui, &Window, Params, CSz("Perlin"));
+
+            world_chunk *DestChunk = AllocateWorldChunk(GetTranArena(), {}, V3i(32,32,32));
+            DestChunk->Flags = Chunk_Queued;
+
+            InitializeChunkWithNoise( Noise_Perlin2D, GetThreadLocalState(ThreadLocal_ThreadIndex), DestChunk, DestChunk->Dim, {}, s32(Params->Period), s32(Params->Amplitude), 0, MeshBit_None, ChunkInitFlag_Noop, 0);
+
+            lod_element_buffer *Meshes = &DestChunk->Meshes;
+
+            /* untextured_3d_geometry_buffer *Mesh = GetMesh(Meshes, MeshBit_Lod0); */
+            untextured_3d_geometry_buffer *Mesh = AtomicReplaceMesh( Meshes, MeshBit_Lod0, 0, u64_MAX );
+            if (Mesh)
+            {
+              RenderToTexture(Engine, &Editor->NoisePreviewThumbnail, Mesh, {});
+              DeallocateMesh(Engine, Mesh);
+            }
+
+            DoThumbnailInteractions(Ui, &Window, "noise preview interaction", &Editor->NoisePreviewThumbnail);
+            PushTexturedQuad(Ui, Editor->NoisePreviewThumbnail.Texture, V2(128), zDepth_Text);
+
+          } break;
+
+          case NoiseType_Voronoi:
+          {
+            DoEditorUi(Ui, &Window, &Editor->NoiseSelection.VoronoiParams, CSz("Voronoi"));
+          } break;
+        }
+      } break;
+    }
     PushWindowEnd(Ui, &Window);
   }
 

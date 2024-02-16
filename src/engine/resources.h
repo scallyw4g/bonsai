@@ -53,8 +53,8 @@ struct engine_resources
   debug_state *DebugState;
 
   engine_debug EngineDebug;
-
   level_editor Editor;
+
   maybe_picked_voxel MousedOverVoxel;
   maybe_standing_spot ClosestStandingSpotToCursor;
 

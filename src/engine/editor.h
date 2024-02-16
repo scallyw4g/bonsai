@@ -253,8 +253,47 @@ enum level_editor_flags
 poof(radio_button_group_for_bitfield_enum(level_editor_flags));
 #include <generated/radio_button_group_for_bitfield_enum_level_editor_flags.h>
 
+enum ui_noise_type
+{
+  NoiseType_None,
+  NoiseType_Perlin,
+  NoiseType_Voronoi,
+};
+
+struct perlin_noise_params
+{
+  r32 Threshold;
+  r32 Period;   poof(@ui_range(0, 100))
+
+  r32 Amplitude;
+};
+
+struct voronoi_noise_params
+{
+  r32 Threshold;
+  r32 Period;   poof(@ui_range(0, 100))
+
+  r32 Squareness;
+  r32 MaskChance;
+};
+
+// NOTE(Jesse): This is intentionally not a d_union such that you can flip
+// between different noise selections and your parameters stay intact.
+struct noise_selector
+{
+  ui_noise_type Type;
+  perlin_noise_params  PerlinParams;
+  voronoi_noise_params VoronoiParams;
+};
+
+
 struct level_editor
 {
+  memory_arena *Memory;
+
+  noise_selector NoiseSelection;
+  asset_thumbnail NoisePreviewThumbnail;
+
   u64 EngineDebugViewModeToggleBits;
 
   u16 SelectedColorIndex;
@@ -330,6 +369,14 @@ enum world_edit_mode
 
   WorldEditMode_RecomputeStandingSpots = (1 << 12),
 };
+
+poof(string_and_value_tables(ui_noise_type))
+#include <generated/string_and_value_tables_ui_noise_type.h>
+poof(radio_button_group_for_bitfield_enum(ui_noise_type));
+#include <generated/radio_button_group_for_bitfield_enum_ui_noise_type.h>
+poof(do_editor_ui_for_enum(ui_noise_type))
+#include <generated/do_editor_ui_for_enum_ui_noise_type.h>
+
 
 poof(string_and_value_tables(world_edit_mode))
 #include <generated/string_and_value_tables_world_edit_mode.h>

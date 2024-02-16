@@ -26,6 +26,7 @@ Bonsai_Init(engine_resources *Resources)
   b32 Result = True;
 
   Result &= InitEngineDebug(&Resources->EngineDebug);
+  Result &= InitEditor(&Resources->Editor);
   Result &= InitEngineResources(Resources);
 
   return Result;

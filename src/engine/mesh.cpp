@@ -171,6 +171,12 @@ DeallocateMesh(untextured_3d_geometry_buffer* Mesh, tiered_mesh_freelist* MeshFr
   }
 }
 
+link_internal void
+DeallocateMesh(engine_resources *Engine, untextured_3d_geometry_buffer* Mesh)
+{
+  DeallocateMesh(Mesh, &Engine->MeshFreelist, GetThreadLocalState(ThreadLocal_ThreadIndex)->PermMemory);
+}
+
 poof(
   func deallocate_meshes(type)
   {

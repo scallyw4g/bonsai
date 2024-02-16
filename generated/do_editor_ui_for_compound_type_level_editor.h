@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:333:0
+// src/engine/editor.cpp:357:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
@@ -11,6 +11,30 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
       PushTableStart(Ui);
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      DoEditorUi(Ui, Window, Element->Memory, CSz("memory_arena Memory"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+      
+      DoEditorUi(Ui, Window, &Element->NoiseSelection, CSz("noise_selector NoiseSelection"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui, Window, &Element->NoisePreviewThumbnail, CSz("asset_thumbnail NoisePreviewThumbnail"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      
       DoEditorUi(Ui, Window, &Element->EngineDebugViewModeToggleBits, CSz("u64 EngineDebugViewModeToggleBits"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
