@@ -96,7 +96,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   /* World->Flags = WorldFlag_WorldCenterFollowsCameraTarget; */
 
-  GameState = Allocate(game_state, Resources->Memory, 1);
+  GameState = Allocate(game_state, Resources->GameMemory, 1);
 
   s32 EmitterCount = 6;
   v3 xStride = V3(24, 0, 0);

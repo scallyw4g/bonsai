@@ -113,6 +113,10 @@ See the docs on the [build process](docs/01_build_process.md).
 
 [ ] Better low-discrepency sequences : https://blog.demofox.org/2017/05/29/when-random-numbers-are-too-random-low-discrepancy-sequences/
 
+[ ] Better hash function! : https://nullprogram.com/blog/2018/07/31/
+
+[ ] Better GPU hashing! : https://arugl.medium.com/hash-noise-in-gpu-shaders-210188ac3a3e
+
 [ ] Hash-trie as alternative to a table : https://nullprogram.com/blog/2023/09/30/
 
 [ ] Octree ? https://graphics.tudelft.nl/Publications-new/2020/CBE20/ModifyingCompressedVoxels-main.pdf

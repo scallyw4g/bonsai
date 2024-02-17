@@ -3856,6 +3856,9 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
 {
   TIMED_FUNCTION();
 
+  // TODO(Jesse): Should we just remove the paramter?  Or do we sometimes not pass this?
+  Assert(Memory == Engine->WorldUpdateMemory);
+
   UNPACK_ENGINE_RESOURCES(Engine);
 
   cp MinPCoarse = {};

@@ -97,7 +97,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 {
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  GameState = Allocate(game_state, Resources->Memory, 1);
+  GameState = Allocate(game_state, Resources->GameMemory, 1);
 
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
@@ -105,7 +105,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   AllocateWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
   /* Resources->World->Flags = world_flag(Resources->World->Flags|WorldFlag_WorldCenterFollowsCameraTarget); */
 
-  GameState->Models = AllocateGameModels(GameState, Resources->Memory, Heap);
+  GameState->Models = AllocateGameModels(GameState, Resources->GameMemory, Heap);
 
   GameState->Player = TryGetFreeEntityPtr(EntityTable);
 

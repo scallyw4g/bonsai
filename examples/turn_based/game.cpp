@@ -1176,7 +1176,7 @@ EntityUserDataDeserialize(u8_cursor *Bytes, u64 *UserType, u64 *UserData, memory
 
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 {
-  Resources->GameState = Allocate(game_state, Resources->Memory, 1);
+  Resources->GameState = Allocate(game_state, Resources->GameMemory, 1);
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
@@ -1202,7 +1202,10 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   asset_id PlayerAsset = GetOrAllocateAssetId(Resources, {FileTraversalType_File, CSz("models"), CSz("players/chr_rain.vox")});
   SpawnPlayerLikeEntity(Plat, World, &PlayerAsset, 0, Player, PlayerSpawnP, &GameState->Entropy);
 
-  Player->UserData = (u64)Allocate(entity_game_data, Resources->Memory, 1);
+  // TODO(Jesse): shouldn't this heap-allocate ..?
+  // nopush
+  NotImplemented;
+  Player->UserData = (u64)Allocate(entity_game_data, Resources->GameMemory, 1);
   Graphics->GameCamera.GhostId = Player->Id;
 
   u32 EnemyCount = 3;

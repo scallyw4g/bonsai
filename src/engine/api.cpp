@@ -318,7 +318,6 @@ DoDayNightCycle(graphics *Graphics, r32 tDay)
       }
     } break;
   }
-
 }
 
 link_export b32
@@ -522,4 +521,10 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       END_BLOCK("Copy Set");
     } break;
   }
+}
+
+link_internal void
+RequestGameLibReload(engine_resources *Engine, file_traversal_node FileNode)
+{
+  Engine->RequestedGameLibReloadNode = FileNode;
 }

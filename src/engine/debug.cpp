@@ -493,7 +493,7 @@ DoAssetWindow(engine_resources *Engine)
                   if (ModelIndex >= TotalElements(&Editor->AssetThumbnails))
                   {
                     // TODO(Jesse): Where to allocate these?
-                    texture *T = MakeTexture_RGBA(V2i(256), (u32*)0, Engine->Memory, CSz("Thumbnail"));
+                    texture *T = MakeTexture_RGBA(V2i(256), (u32*)0, Engine->Graphics->Memory, CSz("Thumbnail"));
                     asset_thumbnail Thumb = { T, {} };
                     StandardCamera(&Thumb.Camera, 10000.0f, 100.0f, 0.f, {});
 

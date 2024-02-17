@@ -966,7 +966,8 @@ SyncGpuBuffersImmediate(engine_resources *Engine, lod_element_buffer *Meshes)
         CopyToGpuBuffer(Mesh, Handles);
       }
 
-      DeallocateMesh(Mesh, &Engine->MeshFreelist, Engine->Memory);
+      // TODO(Jesse): Should these go on some asset arena.. ?
+      DeallocateMesh(Mesh, &Engine->MeshFreelist, Engine->Graphics->Memory);
     }
   }
 
@@ -1192,6 +1193,7 @@ DoWorldChunkStuff()
   v3i Min = World->Center - Radius;
   v3i Max = World->Center + Radius;
 
+  // nopush wtf?
   SetupGBufferShader(Graphics);
 
   for (s32 x = Min.x; x < Max.x; ++ x)

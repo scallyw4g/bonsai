@@ -41,6 +41,7 @@ EXAMPLES="$ROOT/examples"
 TESTS="$SRC/tests"
 BIN="$ROOT/bin"
 BIN_TEST="$BIN/tests"
+BIN_GAME_LIBS="$BIN/game_libs"
 
 BONSAI_INTERNAL='-D BONSAI_INTERNAL'
 
@@ -55,8 +56,8 @@ BUNDLED_EXAMPLES="
   $EXAMPLES/terrain_gen
   $EXAMPLES/transparency
   $EXAMPLES/tools/voxel_synthesis_rule_baker
+  $EXAMPLES/project_and_level_picker
 "
-# $EXAMPLES/wave_function_collapse_terrain
 
 EXECUTABLES_TO_BUILD="
   $SRC/game_loader.cpp
@@ -98,7 +99,6 @@ function MakeDebugLibRelease
 
   sync
 }
-
 
 function BuildExecutables
 {
@@ -207,7 +207,7 @@ function BuildExamples
   ColorizeTitle "Examples"
   for executable in $EXAMPLES_TO_BUILD; do
     echo -e "$Building $executable"
-    SetOutputBinaryPathBasename "$executable" "$BIN"
+    SetOutputBinaryPathBasename "$executable" "$BIN_GAME_LIBS"
     clang++                     \
       $SANITIZER                \
       -D BONSAI_DEBUG_SYSTEM_API=1 \
@@ -303,6 +303,9 @@ if [ ! -d "$BIN/wasm" ]; then
   mkdir "$BIN/wasm"
 fi
 
+if [ ! -d "$BIN_GAME_LIBS" ]; then
+  mkdir "$BIN_GAME_LIBS"
+fi
 
 if [ ! -d "$BIN_TEST" ]; then
   mkdir "$BIN_TEST"
@@ -543,6 +546,6 @@ time RunEntireBuild
 
 if [ $BundleRelease -eq 1 ]; then
   echo -n "Bundling .. "
-  tar -cz bin/* shaders/* external/bonsai_stdlib/shaders/* assets/* models/* texture_atlas_0.bmp > "$Platform""_x86_64_release.tar.gz"
+  tar -cz bin/game_loader.$PLATFORM_EXE_EXTENSION bin/game_libs/*.$PLATFORM_LIB_EXTENSION shaders/* external/bonsai_stdlib/shaders/* assets/* models/* texture_atlas_0.bmp > "$Platform""_x86_64_release.tar.gz"
   echo "Bundle Complete"
 fi

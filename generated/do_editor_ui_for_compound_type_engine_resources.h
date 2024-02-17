@@ -74,6 +74,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
+      DoEditorUi(Ui, Window, &Element->RequestedGameLibReloadNode, CSz("file_traversal_node RequestedGameLibReloadNode"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui, Window, &Element->RequestedGameLibReloadBehavior, CSz("game_lib_reload_behavior RequestedGameLibReloadBehavior"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      
       DoEditorUi(Ui, Window, &Element->Heap, CSz("heap_allocator Heap"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
@@ -83,7 +101,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui, Window, Element->Memory, CSz("memory_arena Memory"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, Element->GameMemory, CSz("memory_arena GameMemory"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+      
+      DoEditorUi(Ui, Window, Element->WorldUpdateMemory, CSz("memory_arena WorldUpdateMemory"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 

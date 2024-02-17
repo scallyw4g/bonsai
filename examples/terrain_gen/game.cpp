@@ -713,7 +713,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   AllocateWorld(World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 
-  GameState = Allocate(game_state, Resources->Memory, 1);
+  GameState = Allocate(game_state, Resources->GameMemory, 1);
 
   /* GameState->TerrainGenType = TerrainGenType_GrassyTerracedTerrain; */
 

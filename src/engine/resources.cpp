@@ -6,17 +6,18 @@ InitEngineResources(engine_resources *Engine)
 
   platform *Plat = &Engine->Stdlib.Plat;
 
-  memory_arena *BonsaiInitArena = AllocateArena(Megabytes(256));;
-  DEBUG_REGISTER_ARENA(BonsaiInitArena, 0);
+  memory_arena *WorldAndEntityArena = AllocateArena(Megabytes(256));
+  DEBUG_REGISTER_ARENA(WorldAndEntityArena, 0);
 
-  Engine->Memory = BonsaiInitArena;
+  Engine->GameMemory = AllocateArena();
+  Engine->WorldUpdateMemory = AllocateArena();
+
   Engine->Heap = InitHeap(Gigabytes(2)); // TODO(Jesse): Is this actually used?
-
   Engine->AssetMemory = InitHeap(Gigabytes(1));
 
   Init_Global_QuadVertexBuffer();
 
-  Engine->World = Allocate(world, BonsaiInitArena, 1);
+  Engine->World = Allocate(world, WorldAndEntityArena, 1);
   if (!Engine->World) { Error("Allocating World"); Result = False; }
 
   Engine->Graphics = GraphicsInit(AllocateArena());
@@ -40,7 +41,7 @@ InitEngineResources(engine_resources *Engine)
     /* Engine->UiSpriteTexture = LoadBitmap("assets/test_2.bmp", UiMemory); */
   }
 
-  Engine->EntityTable = AllocateEntityTable(BonsaiInitArena, TOTAL_ENTITY_COUNT);
+  Engine->EntityTable = AllocateEntityTable(WorldAndEntityArena, TOTAL_ENTITY_COUNT);
   return Result;
 }
 

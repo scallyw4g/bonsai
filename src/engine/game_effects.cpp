@@ -281,7 +281,7 @@ DoDig( engine_resources *Resources, canonical_position PickCP, f32 Radius, f32 D
     .world_update_op_shape_params_rect.P0 = MinP,
     .world_update_op_shape_params_rect.P1 = MaxP,
   };
-  QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Subtractive, &Shape, ICE_BLUE, Resources->Memory);
+  QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Subtractive, &Shape, ICE_BLUE, Resources->WorldUpdateMemory);
 }
 
 link_internal void
@@ -297,7 +297,7 @@ DoIceBlock( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
     .world_update_op_shape_params_rect.P0 = MinP,
     .world_update_op_shape_params_rect.P1 = MaxP,
   };
-  QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Additive, &Shape, ICE_BLUE, Resources->Memory);
+  QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Additive, &Shape, ICE_BLUE, Resources->WorldUpdateMemory);
 }
 
 link_internal void
@@ -310,10 +310,10 @@ DoSplotion( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
     .world_update_op_shape_params_sphere.Radius = Radius,
     .world_update_op_shape_params_sphere.Location = PickCP,
   };
-  QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Subtractive, WorldUpdateOperationModeModifier_Flood, &Shape, DARK_GREY, Resources->Memory);
-  /* QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Subtractive, WorldUpdateOperationModeModifier_None, &Shape, DARK_GREY, Resources->Memory); */
-  /* QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Additive, WorldUpdateOperationModeModifier_None, &Shape, DARK_GREY, Resources->Memory); */
-  /* QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Additive, WorldUpdateOperationModeModifier_Flood, &Shape, DARK_GREY, Resources->Memory); */
+  QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Subtractive, WorldUpdateOperationModeModifier_Flood, &Shape, DARK_GREY, Resources->WorldUpdateMemory);
+  /* QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Subtractive, WorldUpdateOperationModeModifier_None, &Shape, DARK_GREY, Resources->WorldUpdateMemory); */
+  /* QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Additive, WorldUpdateOperationModeModifier_None, &Shape, DARK_GREY, Resources->WorldUpdateMemory); */
+  /* QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Additive, WorldUpdateOperationModeModifier_Flood, &Shape, DARK_GREY, Resources->WorldUpdateMemory); */
 
   v3 SplosionSimP = GetSimSpaceP(World, PickCP);
 
