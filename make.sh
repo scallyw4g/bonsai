@@ -447,6 +447,7 @@ if [ $# -eq 0 ]; then
   BuildAll
 fi
 
+BundleRelease=0
 while (( "$#" )); do
   CliArg=$1
   echo $CliArg
@@ -502,6 +503,12 @@ while (( "$#" )); do
       shift
     ;;
 
+    "BundleRelease")
+      BundleRelease=1
+      OPTIMIZATION_LEVEL="-O2"
+      BuildAll
+    ;;
+
     "-Od")
       OPTIMIZATION_LEVEL="-Od"
     ;;
@@ -532,3 +539,10 @@ while (( "$#" )); do
 done
 
 time RunEntireBuild
+
+
+if [ $BundleRelease -eq 1 ]; then
+  echo -n "Bundling .. "
+  tar -cz bin/* shaders/* external/bonsai_stdlib/shaders/* assets/* models/* texture_atlas_0.bmp > "$Platform""_x86_64_release.tar.gz"
+  echo "Bundle Complete"
+fi
