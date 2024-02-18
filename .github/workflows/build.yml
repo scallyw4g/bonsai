@@ -19,7 +19,7 @@ jobs:
     - name: Build
       run: ./make.sh
 
-  build-ubuntu-22:
+  build-and-release-ubuntu-22:
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
@@ -35,13 +35,14 @@ jobs:
     - name: Release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
+      prerelease: true
       with:
         files: |
           Linux_x86_64_release.tar.gz
           LICENSE
           CHANGELOG.txt
 
-  build-windows:
+  build-and-release-windows:
     runs-on: windows-latest
     steps:
     - name: Set up MinGW
@@ -57,10 +58,12 @@ jobs:
       run: ./make.sh
     - name: Tar
       if: startsWith(github.ref, 'refs/tags/')
+      shell: bash
       run:  ./make.sh BundleRelease
     - name: Release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
+      prerelease: true
       with:
         files: |
           Windows_x86_64_release.tar.gz
