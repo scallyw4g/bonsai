@@ -31,13 +31,13 @@ jobs:
       run: ./make.sh
     - name: Tar
       if: startsWith(github.ref, 'refs/tags/')
-      run:  tar -cz bin/* > linux_x86_64_release.tar.gz
+      run:  make.sh BundleRelease
     - name: Release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: |
-          linux_x86_64_release.tar.gz
+          Linux_x86_64_release.tar.gz
           LICENSE
           CHANGELOG.txt
 
@@ -57,12 +57,12 @@ jobs:
       run: ./make.sh
     - name: Tar
       if: startsWith(github.ref, 'refs/tags/')
-      run:  tar -cz -f windows_x86_64_release.tar.gz bin/*.exe bin/*.dll 
+      run:  make.sh BundleRelease
     - name: Release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: |
-          windows_x86_64_release.tar.gz
+          Windows_x86_64_release.tar.gz
           LICENSE
           CHANGELOG.txt
