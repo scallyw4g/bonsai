@@ -1202,10 +1202,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   asset_id PlayerAsset = GetOrAllocateAssetId(Resources, {FileTraversalType_File, CSz("models"), CSz("players/chr_rain.vox")});
   SpawnPlayerLikeEntity(Plat, World, &PlayerAsset, 0, Player, PlayerSpawnP, &GameState->Entropy);
 
-  // TODO(Jesse): shouldn't this heap-allocate ..?
-  // nopush
-  NotImplemented;
-  Player->UserData = (u64)Allocate(entity_game_data, Resources->GameMemory, 1);
+  /* Player->UserData = (u64)Allocate(entity_game_data, Resources->GameMemory, 1); */
+  Player->UserData = (u64)HeapAllocate(&GameState->Heap, sizeof(entity_game_data));
   Graphics->GameCamera.GhostId = Player->Id;
 
   u32 EnemyCount = 3;

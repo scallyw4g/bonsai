@@ -508,8 +508,8 @@ while (( "$#" )); do
 
     "BundleRelease")
       BundleRelease=1
-      # OPTIMIZATION_LEVEL="-O2"
-      # BuildAll
+      OPTIMIZATION_LEVEL="-O2"
+      BuildAll
     ;;
 
     "-Od")

@@ -3964,8 +3964,9 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
       {
         world_position ChunkP = World_Position(xChunk, yChunk, zChunk);
         world_chunk *Chunk = GetWorldChunkFromHashtable(World, ChunkP);
-        if (Chunk)
+        if (Chunk && Chunk->Flags & Chunk_VoxelsInitialized)
         {
+          Assert(Chunk->Flags != Chunk_Uninitialized);
           Assert(ChunkIndex < TotalChunkCount);
           Buffer[ChunkIndex++] = Chunk;
         }

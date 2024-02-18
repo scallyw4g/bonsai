@@ -236,7 +236,7 @@ main( s32 ArgCount, const char ** Args )
 
     if (Plat->Input.Escape.Clicked)
     {
-      if (GameLibName == Global_ProjectSwitcherGameLibName)
+      if (StringsMatch(GameLibName, Global_ProjectSwitcherGameLibName))
       {
         Os->ContinueRunning = False;
         break;
@@ -272,7 +272,6 @@ main( s32 ArgCount, const char ** Args )
       if (EngineResources->RequestedGameLibReloadBehavior & GameLibReloadBehavior_FullInitialize)
       {
         EngineResources->RequestedGameLibReloadBehavior = game_lib_reload_behavior(EngineResources->RequestedGameLibReloadBehavior & ~GameLibReloadBehavior_FullInitialize);
-
 
         HardResetEngine(EngineResources);
 

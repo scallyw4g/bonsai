@@ -131,8 +131,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
 BONSAI_API_ON_LIBRARY_RELOAD()
 {
-  UNPACK_ENGINE_RESOURCES(Resources);
-  SpawnFireEmitters(&GameState->FireEmitters);
+  /* UNPACK_ENGINE_RESOURCES(Resources); */
+  /* SpawnFireEmitters(&GameState->FireEmitters); */
 }
 
 
