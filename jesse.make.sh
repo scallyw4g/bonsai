@@ -8,11 +8,11 @@
 
 # exit 1
 
-# ./make.sh $OPT \
-  # BuildSingleExample examples/project_and_level_picker \
-  # BuildSingleExample examples/turn_based \
-  # BuildDebugSystem \
-  # BuildExecutables \
+./make.sh $OPT \
+  BuildSingleExample examples/project_and_level_picker \
+  BuildSingleExample examples/turn_based \
+  BuildDebugSystem \
+  BuildExecutables \
   # BuildSingleExample examples/terrain_gen \
   # BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
   # BuildSingleExample examples/the_wanderer \
@@ -22,7 +22,7 @@
   # BuildSingleExample examples/transparency \
   # BuildTests \
 
-./make.sh BundleRelease
+# ./make.sh BundleRelease
 
 # ./make.sh $OPT BuildAll
 # exit 0
