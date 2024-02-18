@@ -11,6 +11,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
       PushTableStart(Ui);
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      DoEditorUi(Ui, Window, Element->Next, CSz("world_chunk Next"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+      
       DoEditorUi(Ui, Window, &Element->Flags, CSz("chunk_flag Flags"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
@@ -158,12 +164,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Window, Element->Next, CSz("world_chunk Next"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-      
       DoEditorUi(Ui, Window, &Element->Entities, CSz("entity_ptr_block_array Entities"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 

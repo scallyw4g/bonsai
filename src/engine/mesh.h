@@ -4,10 +4,9 @@ struct loaded_collada_mesh
   v3 Dim;
 };
 
-struct free_mesh
+struct free_list_thing
 {
-  untextured_3d_geometry_buffer* Mesh;
-  volatile free_mesh* Next;
+  volatile free_list_thing *Next;
 };
 
 struct mesh_freelist
@@ -17,8 +16,7 @@ struct mesh_freelist
   u32 MeshSize;
 #endif
 
-  volatile free_mesh* FirstFree;
-  volatile free_mesh* Containers;
+  volatile free_list_thing *FirstFreeMesh;
 };
 
 #define TIERED_MESH_FREELIST_MAX_ELEMENTS (64)

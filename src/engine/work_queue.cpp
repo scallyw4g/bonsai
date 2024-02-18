@@ -144,12 +144,15 @@ CancelAllWorkQueueJobs(platform *Plat, work_queue *Queue)
   // TODO(Jesse)(critical, bug): Why does the following not work?  We get
   // assertions that we didn't clear a world chunk queued flag sometimes.
   // nopush
+  //
+  // TODO(Jesse): Might as well use memset?
   RangeIterator(EntryIndex, WORK_QUEUE_SIZE)
   /* while (!QueueIsEmpty(Queue)) */
   {
     /* work_queue_entry *Entry = Cast(work_queue_entry*, Queue->Entries + Queue->DequeueIndex); */
     work_queue_entry *Entry = Cast(work_queue_entry*, Queue->Entries + EntryIndex);
 
+#if 0
     work_queue_entry_type Type = Entry->Type;
     switch (Type)
     {
@@ -180,6 +183,7 @@ CancelAllWorkQueueJobs(platform *Plat, work_queue *Queue)
         Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_Queued);
       } break;
     }
+#endif
 
     *Entry = {};
   }

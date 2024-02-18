@@ -123,7 +123,7 @@ AllocateMesh(memory_arena* Arena, u32 NumVerts)
 }
 
 link_internal void
-DeallocateMesh(untextured_3d_geometry_buffer* Mesh, mesh_freelist *MeshFreelist, memory_arena* Memory)
+DeallocateMesh(untextured_3d_geometry_buffer* Mesh, mesh_freelist *MeshFreelist)
 {
   Assert(Mesh);
 
@@ -143,11 +143,11 @@ DeallocateMesh(untextured_3d_geometry_buffer* Mesh, mesh_freelist *MeshFreelist,
   Mesh->At = 0;
 
   // TODO(Jesse): This is some UULLLLLTRRARAAARRR garbage.. kill it.
-  free_mesh* Container = Unlink_TS(&MeshFreelist->Containers);
-  if (!Container) { Container = Allocate(free_mesh, Memory, 1); }
-  Container->Mesh = Mesh;
+  /* free_list_thing *Container = Unlink_TS(&MeshFreelist->Containers); */
+  /* if (!Container) { Container = Allocate(free_mesh, Memory, 1); } */
+  /* Container->Mesh = Mesh; */
 
-  Link_TS(&MeshFreelist->FirstFree, Container);
+  Link_TS(&MeshFreelist->FirstFreeMesh, Cast(free_list_thing*, Mesh));
 
 #if BONSAI_INTERNAL
   ReleaseFutex(&MeshFreelist->DebugFutex);
@@ -155,7 +155,7 @@ DeallocateMesh(untextured_3d_geometry_buffer* Mesh, mesh_freelist *MeshFreelist,
 }
 
 link_internal void
-DeallocateMesh(untextured_3d_geometry_buffer* Mesh, tiered_mesh_freelist* MeshFreelist, memory_arena* Memory)
+DeallocateMesh(untextured_3d_geometry_buffer* Mesh, tiered_mesh_freelist* MeshFreelist)
 {
   mesh_freelist *Freelist = TryGetTierForSize(MeshFreelist, Mesh->End);
   if (Freelist)
@@ -163,7 +163,7 @@ DeallocateMesh(untextured_3d_geometry_buffer* Mesh, tiered_mesh_freelist* MeshFr
     u32 Tier = 1+ (Mesh->End/WORLD_CHUNK_MESH_MIN_SIZE);
     u32 Size = Tier*WORLD_CHUNK_MESH_MIN_SIZE;
 
-    DeallocateMesh(Mesh, Freelist, Memory);
+    DeallocateMesh(Mesh, Freelist);
   }
   else
   {
@@ -174,22 +174,22 @@ DeallocateMesh(untextured_3d_geometry_buffer* Mesh, tiered_mesh_freelist* MeshFr
 link_internal void
 DeallocateMesh(engine_resources *Engine, untextured_3d_geometry_buffer* Mesh)
 {
-  DeallocateMesh(Mesh, &Engine->MeshFreelist, GetThreadLocalState(ThreadLocal_ThreadIndex)->PermMemory);
+  DeallocateMesh(Mesh, &Engine->MeshFreelist);
 }
 
 poof(
   func deallocate_meshes(type)
   {
     link_internal void
-    DeallocateMeshes((type.name) *Buf, tiered_mesh_freelist* MeshFreelist, memory_arena* Memory)
+    DeallocateMeshes((type.name) *Buf, tiered_mesh_freelist* MeshFreelist)
     {
-      if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod0,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist, Memory); }
-      if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod1,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist, Memory); }
-      if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod2,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist, Memory); }
-      if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod3,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist, Memory); }
-      if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod4,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist, Memory); }
-      /* if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Debug, 0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist, Memory); } */
-      /* if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Transparency, 0, __rdtsc()) ) { DeallocateMesh(Mesh, MeshFreelist, Memory); } */
+      if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod0,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist); }
+      if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod1,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist); }
+      if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod2,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist); }
+      if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod3,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist); }
+      if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod4,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist); }
+      /* if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Debug, 0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist); } */
+      /* if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Transparency, 0, __rdtsc()) ) { DeallocateMesh(Mesh, MeshFreelist); } */
 
       Buf->MeshMask = 0;
     }

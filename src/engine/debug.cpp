@@ -183,7 +183,7 @@ DoLevelWindow(engine_resources *Engine)
       {
         SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
 
-        HardResetWorld(Engine);
+        SoftResetEngine(Engine);
 
         /* World->Flags  = Cast(world_flag, LevelHeader.WorldFlags); */
         World->Center = LevelHeader.WorldCenter;
@@ -205,8 +205,8 @@ DoLevelWindow(engine_resources *Engine)
 
         RangeIterator(ChunkIndex, ChunkCount)
         {
-          world_chunk *Chunk = GetFreeWorldChunk(World, World->Memory);
-          DeserializeChunk(&LevelBytes, Chunk, &Engine->MeshFreelist, World->Memory);
+          world_chunk *Chunk = GetFreeWorldChunk(World);
+          DeserializeChunk(&LevelBytes, Chunk, &Engine->MeshFreelist, World->ChunkMemory);
 
           if (IsInsideVisibleRegion(World, Chunk->WorldP))
           {
@@ -585,7 +585,7 @@ DoAssetWindow(engine_resources *Engine)
                               type_world_update_op_shape_params_asset,
                               .world_update_op_shape_params_asset = AssetUpdateShape,
                             };
-                            QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, World->Memory);
+                            QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, Engine->WorldUpdateMemory);
                           } break;
 
                           case AssetSpawnMode_Entity:

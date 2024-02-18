@@ -12,7 +12,7 @@ InitEngineResources(engine_resources *Engine)
   Engine->GameMemory = AllocateArena();
   Engine->WorldUpdateMemory = AllocateArena();
 
-  Engine->Heap = InitHeap(Gigabytes(2)); // TODO(Jesse): Is this actually used?
+  Engine->Heap        = InitHeap(Gigabytes(2)); // TODO(Jesse): Is this actually used?
   Engine->AssetMemory = InitHeap(Gigabytes(1));
 
   Init_Global_QuadVertexBuffer();
@@ -60,3 +60,101 @@ InitEngineDebug(engine_debug *Debug)
 
   return Result;
 }
+
+
+
+enum hard_reset_flags
+{
+  HardResetFlag_None = 0,
+  HardResetFlag_NoResetCamera = (1 << 0),
+};
+
+
+link_internal void
+AssertWorkerThreadsSuspended(engine_resources *Engine)
+{
+  Assert(Engine->Stdlib.Plat.WorkerThreadsSuspendFutex.SignalValue != FUTEX_UNSIGNALLED_VALUE);
+  Assert(Engine->Stdlib.Plat.WorkerThreadsSuspendFutex.ThreadsWaiting == GetWorkerThreadCount());
+}
+
+link_internal void
+CancelAllWorkQueueJobs(engine_resources *Engine)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  AssertWorkerThreadsSuspended(Engine);
+
+  CancelAllWorkQueueJobs(Plat, &Plat->HighPriority);
+  CancelAllWorkQueueJobs(Plat, &Plat->LowPriority);
+}
+
+link_internal void
+HardResetAssets(engine_resources *Engine)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+  AssertWorkerThreadsSuspended(Engine);
+
+  RangeIterator(AssetIndex, ASSET_TABLE_COUNT)
+  {
+    asset *Asset = Engine->AssetTable+AssetIndex;
+    if (Asset->LoadState != AssetLoadState_Unloaded)
+    {
+      // NOTE(Jesse): Somewhat of a hack, but we know all work queue jobs have
+      // been cancelled so we can force this.
+      Asset->LoadState = AssetLoadState_Loaded;
+      FreeAsset(Engine, Asset);
+    }
+  }
+}
+
+// NOTE(Jesse): This function soft-resets the engine to a state similar to that
+// at which it was when the game init routine was called.  This is useful when
+// resetting the game state.  For a more invasive 
+link_internal void
+SoftResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag_None)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  CancelAllWorkQueueJobs(Engine);
+
+  u32 ChunksFreed = 0;
+  RangeIterator(HashIndex, s32(World->HashSize))
+  {
+    if (world_chunk *Chunk = World->ChunkHash[HashIndex])
+    {
+      Chunk->Flags = Chunk_VoxelsInitialized;
+      FreeWorldChunk(World, Chunk, &Engine->MeshFreelist);
+      World->ChunkHash[HashIndex] = 0;
+      ++ChunksFreed;
+    }
+  }
+
+  RangeIterator_t(u32, EntityIndex, TOTAL_ENTITY_COUNT)
+  {
+    if ( (Flags&HardResetFlag_NoResetCamera) && Graphics->GameCamera.GhostId.Index == EntityIndex ) { continue; }
+    Unspawn(EntityTable[EntityIndex]);
+  }
+
+  HardResetAssets(Engine);
+}
+
+link_internal void
+HardResetEngine(engine_resources *Engine)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+  CancelAllWorkQueueJobs(Engine);
+
+  RangeIterator_t(u32, EntityIndex, TOTAL_ENTITY_COUNT)
+  {
+    Unspawn(EntityTable[EntityIndex]);
+  }
+
+  VaporizeArena(Engine->GameMemory);
+  Engine->GameMemory = AllocateArena();
+
+  VaporizeArena(Engine->World->ChunkMemory);
+  Engine->World->ChunkMemory = AllocateArena();
+
+  HardResetAssets(Engine);
+}
+

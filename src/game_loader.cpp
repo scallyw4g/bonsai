@@ -266,18 +266,22 @@ main( s32 ArgCount, const char ** Args )
       Ensure(InitializeEngineApi(&EngineApi, GameLib));
       Ensure(InitializeGameApi(GameApi, GameLib));
 
+      // Hook up global pointers
       Ensure( EngineApi.OnLibraryLoad(EngineResources) );
-      if (GameApi->OnLibraryLoad) { GameApi->OnLibraryLoad(EngineResources, &MainThread); }
 
       if (EngineResources->RequestedGameLibReloadBehavior & GameLibReloadBehavior_FullInitialize)
       {
         EngineResources->RequestedGameLibReloadBehavior = game_lib_reload_behavior(EngineResources->RequestedGameLibReloadBehavior & ~GameLibReloadBehavior_FullInitialize);
 
+
+        HardResetEngine(EngineResources);
+
         EngineResources->GameState = GameApi->GameInit(EngineResources, &MainThread);
         if (!EngineResources->GameState) { Error("Initializing Game :( "); return 1; }
-
-        HardResetWorld(EngineResources);
       }
+
+      // Do game-specific reload code
+      if (GameApi->OnLibraryLoad) { GameApi->OnLibraryLoad(EngineResources, &MainThread); }
 
       UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
       Info("Game Reload Success");

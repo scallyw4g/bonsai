@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-OPT="-O2"
-# OPT="-O0"
+# OPT="-O2"
 
 # ./make.sh RunPoof
 # [ $? -ne 0 ] && exit 1
@@ -22,6 +21,7 @@ OPT="-O2"
   # BuildSingleExample examples/transparency \
   # BuildTests \
 
+./make.sh BundleRelease
 
 # ./make.sh $OPT BuildAll
 # exit 0
@@ -41,7 +41,7 @@ OPT="-O2"
 # ./make.sh BuildDebugSystem
 # ./make.sh BuildBundledExamples
 
-./make.sh BuildAll -O0
+# ./make.sh BuildAll -O0
 # ./make.sh BuildAll -O2
 
 # OPT="-O2"

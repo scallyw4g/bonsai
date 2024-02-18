@@ -320,7 +320,6 @@ poof(
     }
 )
 
-
 struct entity;
 typedef entity* entity_ptr;
 poof( block_array(entity_ptr, {8}) )
@@ -328,6 +327,12 @@ poof( block_array(entity_ptr, {8}) )
 
 struct world_chunk
 {
+  // NOTE(Jesse): Since we waste so much space with padding this thing out we
+  // can afford to have a next pointer to keep the freelist
+  world_chunk *Next;
+  /* void *Next; // NOTE(Jesse): This gets cast to a "free_list_thing", so this just */
+              // takes up the space where the pointer value gets saved ..
+
   /* poof( use_struct(chunk_data) ) */
 
 /*   union */
@@ -374,11 +379,6 @@ struct world_chunk
   u8 DimY;
   u8 DimZ;
   u8 _Pad0;
-
-
-  // NOTE(Jesse): Since we waste so much space with padding this thing out we
-  // can afford to have a next pointer to keep the freelist
-  world_chunk *Next;
 
   // NOTE(Jesse): This is a list of all entities overlapping this chunk to be
   // considered for collision detection.
@@ -449,7 +449,8 @@ struct world
   world_chunk ChunkFreelistSentinal; poof(@ui_skip)
 
   v3i ChunkDim;                      poof(@ui_skip)
-  memory_arena* Memory;              poof(@ui_skip)
+  //memory_arena* Memory;              poof(@ui_skip)
+  memory_arena* ChunkMemory;         poof(@ui_skip)
   world_flag Flags;                  poof(@ui_skip)
 
   v3_cursor ColorPalette; // u16_max elements according to the color member stored in `voxel`
@@ -641,10 +642,10 @@ GetSpotMidpoint(world *World, standing_spot *Spot)
 struct mesh_freelist;
 
 link_internal void
-AllocateWorldChunk(world_chunk *Result, memory_arena *Storage, world_position WorldP, chunk_dimension Dim);
+AllocateWorldChunk(world_chunk *Result,  world_position WorldP, chunk_dimension Dim, memory_arena *Storage);
 
-link_internal world_chunk*
-AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension Dim);
+link_internal world_chunk *
+AllocateWorldChunk(world_position WorldP, chunk_dimension Dim, memory_arena *Storage);
 
 link_internal void
 BufferWorld(platform* Plat, untextured_3d_geometry_buffer*, untextured_3d_geometry_buffer*, world* World, graphics *Graphics, heap_allocator *Heap);

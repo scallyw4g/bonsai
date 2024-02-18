@@ -966,8 +966,7 @@ SyncGpuBuffersImmediate(engine_resources *Engine, lod_element_buffer *Meshes)
         CopyToGpuBuffer(Mesh, Handles);
       }
 
-      // TODO(Jesse): Should these go on some asset arena.. ?
-      DeallocateMesh(Mesh, &Engine->MeshFreelist, Engine->Graphics->Memory);
+      DeallocateMesh(Mesh, &Engine->MeshFreelist);
     }
   }
 
@@ -1207,7 +1206,7 @@ DoWorldChunkStuff()
     }
     else
     {
-      Chunk = GetAndInsertFreeWorldChunk(World->Memory, World, P);
+      Chunk = GetAndInsertFreeWorldChunk(World, P);
       if (Chunk)
       { QueueChunkForInit(&Plat->LowPriority, Chunk, MeshBit_Lod0);  }
       else

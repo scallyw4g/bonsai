@@ -418,7 +418,7 @@ SpawnEntity(entity *Entity)
           world_chunk *Chunk = GetWorldChunkFromHashtable( World, CP.WorldP );
           if (Chunk == 0)
           {
-            Chunk = AllocateAndInsertChunk(World->Memory, World, CP.WorldP);
+            Chunk = AllocateAndInsertChunk(World, CP.WorldP);
             if (Chunk)
             {
               QueueChunkForInit(&GetEngineResources()->Stdlib.Plat.HighPriority, Chunk, MeshBit_Lod0);

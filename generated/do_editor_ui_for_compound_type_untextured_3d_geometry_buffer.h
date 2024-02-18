@@ -11,6 +11,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
       PushTableStart(Ui);
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      
+
+      PushNewRow(Ui);
+
       DoEditorUi(Ui, Window, Element->Verts, CSz("v3 Verts"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 

@@ -40,7 +40,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
   DoWorldChunkStuff();
 
   // Must come before we update the frame index
-  CollectUnusedChunks(Resources, &Resources->MeshFreelist, Resources->World->Memory, Resources->World->VisibleRegion);
+  CollectUnusedChunks(Resources, &Resources->MeshFreelist, Resources->World->VisibleRegion);
 
   Resources->FrameIndex += 1;
 

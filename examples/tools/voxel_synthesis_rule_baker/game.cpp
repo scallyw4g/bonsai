@@ -560,7 +560,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
               if (Chunk)
               {
                 if ( Chunk->Flags & Chunk_Queued ) { continue; }
-                DeallocateWorldChunk(Chunk, MeshFreelist, Memory);
+                DeallocateWorldChunk(Chunk, MeshFreelist);
                 Chunk->WorldP = P;
                 QueueChunkForInit(&Plat->HighPriority, Chunk, MeshBit_Lod0);
               }

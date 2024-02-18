@@ -759,7 +759,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   {
     GetRadioEnum(&TerrainGenTypeRadio, &GameState->TerrainGenType);
     SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
-    HardResetWorld(Resources, HardResetFlag_NoResetCamera);
+    SoftResetEngine(Resources, HardResetFlag_NoResetCamera);
     UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
   }
 }
@@ -767,25 +767,5 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 BONSAI_API_ON_LIBRARY_RELOAD()
 {
   UNPACK_ENGINE_RESOURCES(Resources);
-
-  // NOTE(Jesse): Engine suspends workers for us here.
-  /* SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex); */
-  HardResetWorld(Resources, HardResetFlag_NoResetCamera);
-
-#if 0
-  if (entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId))
-  {
-    CameraGhost->P.WorldP = V3i(-22, 101, 1);
-    SpawnEntity(CameraGhost);
-  }
-  else
-  {
-    Camera->GhostId = GetFreeEntity(EntityTable);
-    CameraGhost = GetEntity(EntityTable, Camera->GhostId);
-    CameraGhost->P.WorldP = V3i(-22, 101, 1); 
-    SpawnEntity(CameraGhost);
-  }
-#endif
-
-  /* UnsignalFutex(&Plat->WorkerThreadsSuspendFutex); */
+  SoftResetEngine(Resources, HardResetFlag_NoResetCamera);
 }

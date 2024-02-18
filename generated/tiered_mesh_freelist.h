@@ -1,4 +1,4 @@
-// src/engine/mesh.h:28:0
+// src/engine/mesh.h:26:0
 
 struct tiered_mesh_freelist
 {
