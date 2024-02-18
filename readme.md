@@ -126,3 +126,8 @@ See the docs on the [build process](docs/01_build_process.md).
 [ ] Better greedy meshing? https://www.youtube.com/watch?v=4xs66m1Of4A
 
 [ ] More interpolation goodies : https://paulbourke.net/miscellaneous/interpolation/
+
+-------------------------------------------------------------------------------
+## Profiler
+
+[ ] Improve the ETW layer : https://github.com/bombomby/optick/blob/master/src/optick_core.win.h

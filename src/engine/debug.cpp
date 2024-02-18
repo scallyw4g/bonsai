@@ -461,8 +461,6 @@ DoAssetWindow(engine_resources *Engine)
 
 
       PushTableStart(Ui);
-        auto AssetSpawnModeRadioGroup = RadioButtonGroup_asset_spawn_mode(Ui, &AssetViewWindow, "asset_spawn_mode_radio_group");
-
         if (EngineDebug->SelectedAsset.FileNode.Type)
         {
           asset *Asset = GetAndLockAssetSync(Engine, &EngineDebug->SelectedAsset);
@@ -562,40 +560,6 @@ DoAssetWindow(engine_resources *Engine)
                         TeardownGBufferShader(Graphics);
                       }
 
-
-                      // Put asset into world
-                      //
-                      if ( Input->Space.Clicked )
-                      {
-                        world_update_op_shape_params_asset AssetUpdateShape =
-                        {
-                          EngineDebug->SelectedAsset,
-                          EngineDebug->ModelIndex,
-                          Canonicalize(World, EntityOrigin - V3(AssetHalfDim.xy, 0.f))
-                        };
-
-                        asset_spawn_mode AssetSpawnMode = {};
-                        GetRadioEnum(&AssetSpawnModeRadioGroup, &AssetSpawnMode);
-                        switch (AssetSpawnMode)
-                        {
-                          case AssetSpawnMode_BlitIntoWorld:
-                          {
-                            world_update_op_shape Shape =
-                            {
-                              type_world_update_op_shape_params_asset,
-                              .world_update_op_shape_params_asset = AssetUpdateShape,
-                            };
-                            QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, Engine->WorldUpdateMemory);
-                          } break;
-
-                          case AssetSpawnMode_Entity:
-                          {
-                            entity *E = TryGetFreeEntityPtr(Engine->EntityTable);
-                            Assert(E);
-                            SpawnEntity(E, &EngineDebug->SelectedAsset, ModelIndex, EntityBehaviorFlags_Default, 0, &AssetUpdateShape.Origin, Model->Dim/2.f);
-                          } break;
-                        }
-                      }
                     }
                   }
 

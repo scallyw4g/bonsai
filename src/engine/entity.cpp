@@ -919,7 +919,7 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
               // TODO(Jesse): Don't be so braindamaged about this?
               // @entity_collisions_need_min_max_p
               C = GetCollision_Entities(World, Entity, CollisionBasis, CollisionVolume);
-              if (C.Count) { Result = C; Remaining = V3(0); Info("Entity Entity Collision (%u)", C.Count); break; }
+              if (C.Count) { Result = C; Remaining = V3(0); /* Info("Entity Entity Collision (%u)", C.Count); */ break; }
             }
           }
 
