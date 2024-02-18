@@ -408,15 +408,15 @@ DoAssetWindow(engine_resources *Engine)
     local_persist window_layout Window = WindowLayout("Asset Table");
     PushWindowStart(Ui, &Window);
 
-    AcquireFutex(&Engine->AssetFutex);
+    AcquireFutex(&Engine->AssetSystem.AssetFutex);
     {
       RangeIterator(AssetIndex, ASSET_TABLE_COUNT)
       {
-        asset *Asset = Engine->AssetTable + AssetIndex;
+        asset *Asset = Engine->AssetSystem.AssetTable + AssetIndex;
         DoEditorUi(Ui, &Window, Asset, CS(AssetIndex));
       }
     }
-    ReleaseFutex(&Engine->AssetFutex);
+    ReleaseFutex(&Engine->AssetSystem.AssetFutex);
 
     PushWindowEnd(Ui, &Window);
   }

@@ -421,7 +421,7 @@ link_internal void
 FreeModelBuffer(heap_allocator *ModelMemory, model_buffer *Models)
 {
   /* NotImplemented; */
-  Leak("Implement model freeing!");
+  Leak("Implement asset model freeing!");
 }
 
 link_internal void
@@ -430,10 +430,10 @@ FreeAsset(engine_resources *Engine, asset *Asset)
   Assert(Asset->LoadState == AssetLoadState_Loaded ||
          Asset->LoadState == AssetLoadState_Error  );
 
-  FreeModelBuffer(&Engine->AssetMemory, &Asset->Models);
+  FreeModelBuffer(&Engine->AssetSystem.AssetMemory, &Asset->Models);
 
-  HeapDeallocate(&Engine->AssetMemory, Cast(void*, Asset->Id.FileNode.Dir.Start));
-  HeapDeallocate(&Engine->AssetMemory, Cast(void*, Asset->Id.FileNode.Name.Start));
+  HeapDeallocate(&Engine->AssetSystem.AssetMemory, Cast(void*, Asset->Id.FileNode.Dir.Start));
+  HeapDeallocate(&Engine->AssetSystem.AssetMemory, Cast(void*, Asset->Id.FileNode.Name.Start));
 
   Clear(Asset);
 }
@@ -461,7 +461,7 @@ AllocateAsset(engine_resources *Engine, file_traversal_node *FileNode, u64 Frame
   Assert(FileNode->Dir.Count);
   Assert(FileNode->Name.Count);
 
-  AcquireFutex(&Engine->AssetFutex);
+  AcquireFutex(&Engine->AssetSystem.AssetFutex);
   u16 FinalAssetIndex   = INVALID_ASSET_INDEX;
 
   u64 LruAssetFrame     = ASSET_LOCKED_FRAME_INDEX;
@@ -469,7 +469,7 @@ AllocateAsset(engine_resources *Engine, file_traversal_node *FileNode, u64 Frame
 
   RangeIterator_t(u16, TestAssetIndex, ASSET_TABLE_COUNT)
   {
-    asset *Asset = Engine->AssetTable + TestAssetIndex;
+    asset *Asset = Engine->AssetSystem.AssetTable + TestAssetIndex;
     if (Asset->LoadState == AssetLoadState_Unloaded)
     {
       FinalAssetIndex = TestAssetIndex; break;
@@ -489,7 +489,7 @@ AllocateAsset(engine_resources *Engine, file_traversal_node *FileNode, u64 Frame
   {
     if (LruAssetFrame < ASSET_LOCKED_FRAME_INDEX)
     {
-      asset *LruAsset = Engine->AssetTable+LruAssetIndex;
+      asset *LruAsset = Engine->AssetSystem.AssetTable+LruAssetIndex;
       Assert(LruAsset->LoadState == AssetLoadState_Loaded || LruAsset->LoadState == AssetLoadState_Error);
       FreeAsset(Engine, LruAsset);
 
@@ -501,16 +501,16 @@ AllocateAsset(engine_resources *Engine, file_traversal_node *FileNode, u64 Frame
 
   if (FinalAssetIndex != INVALID_ASSET_INDEX)
   {
-    asset *Asset = Engine->AssetTable+FinalAssetIndex;
+    asset *Asset = Engine->AssetSystem.AssetTable+FinalAssetIndex;
     Asset->LoadState = AssetLoadState_Allocated;
 
     Asset->Id.Index = FinalAssetIndex;
-    Asset->Id.FileNode = DeepCopy(&Engine->AssetMemory, FileNode);
+    Asset->Id.FileNode = DeepCopy(&Engine->AssetSystem.AssetMemory, FileNode);
 
     Result.Tag = Maybe_Yes;
     Result.Value = Asset;
   }
-  ReleaseFutex(&Engine->AssetFutex);
+  ReleaseFutex(&Engine->AssetSystem.AssetFutex);
 
 
   if (Result.Tag)
@@ -534,7 +534,7 @@ AllocateAsset(engine_resources *Engine, file_traversal_node *FileNode, u64 Frame
 link_internal maybe_asset_ptr
 AllocateAsset(engine_resources *Engine, u64 FrameIndex = 0)
 {
-  cs AssetName = CS(Engine->CurrentUnnamedAssetIndex++);
+  cs AssetName = CS(Engine->AssetSystem.CurrentUnnamedAssetIndex++);
 
   file_traversal_node FileNode = {FileTraversalType_File, AssetName, AssetName} ;
   maybe_asset_ptr Result = AllocateAsset(Engine,  &FileNode, FrameIndex);
@@ -590,11 +590,11 @@ GetOrAllocateAsset(engine_resources *Engine, file_traversal_node *FileNode, u64 
 {
   asset *Asset  = 0;
 
-  AcquireFutex(&Engine->AssetFutex);
+  AcquireFutex(&Engine->AssetSystem.AssetFutex);
   {
     RangeIterator(AssetIndex, ASSET_TABLE_COUNT)
     {
-      asset *Query = Engine->AssetTable + AssetIndex;
+      asset *Query = Engine->AssetSystem.AssetTable + AssetIndex;
       if (AreEqual(FileNode, &Query->Id.FileNode))
       {
         Asset = Query;
@@ -602,7 +602,7 @@ GetOrAllocateAsset(engine_resources *Engine, file_traversal_node *FileNode, u64 
       }
     }
   }
-  ReleaseFutex(&Engine->AssetFutex);
+  ReleaseFutex(&Engine->AssetSystem.AssetFutex);
 
   if (Asset == 0)
   {
@@ -653,9 +653,9 @@ GetAssetPtr(engine_resources *Engine, asset_id *AID, u64 FrameIndex = 0)
 
   if (AID->Index != INVALID_ASSET_INDEX)
   {
-    AcquireFutex(&Engine->AssetFutex);
+    AcquireFutex(&Engine->AssetSystem.AssetFutex);
 
-    asset *Asset = Engine->AssetTable + AID->Index;
+    asset *Asset = Engine->AssetSystem.AssetTable + AID->Index;
 
     if (Asset->LRUFrameIndex != ASSET_LOCKED_FRAME_INDEX)
     {
@@ -672,7 +672,7 @@ GetAssetPtr(engine_resources *Engine, asset_id *AID, u64 FrameIndex = 0)
       Result.Value = Asset;
     }
 
-    ReleaseFutex(&Engine->AssetFutex);
+    ReleaseFutex(&Engine->AssetSystem.AssetFutex);
   }
   else
   {

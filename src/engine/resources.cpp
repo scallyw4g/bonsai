@@ -12,8 +12,8 @@ InitEngineResources(engine_resources *Engine)
   Engine->GameMemory = AllocateArena();
   Engine->WorldUpdateMemory = AllocateArena();
 
-  Engine->Heap        = InitHeap(Gigabytes(2)); // TODO(Jesse): Is this actually used?
-  Engine->AssetMemory = InitHeap(Gigabytes(1));
+  Engine->Heap                    = InitHeap(Gigabytes(2)); // TODO(Jesse): Is this actually used?
+  Engine->AssetSystem.AssetMemory = InitHeap(Gigabytes(1));
 
   Init_Global_QuadVertexBuffer();
 
@@ -94,17 +94,10 @@ HardResetAssets(engine_resources *Engine)
   UNPACK_ENGINE_RESOURCES(Engine);
   AssertWorkerThreadsSuspended(Engine);
 
-  RangeIterator(AssetIndex, ASSET_TABLE_COUNT)
-  {
-    asset *Asset = Engine->AssetTable+AssetIndex;
-    if (Asset->LoadState != AssetLoadState_Unloaded)
-    {
-      // NOTE(Jesse): Somewhat of a hack, but we know all work queue jobs have
-      // been cancelled so we can force this.
-      Asset->LoadState = AssetLoadState_Loaded;
-      FreeAsset(Engine, Asset);
-    }
-  }
+  DeinitHeap(&Engine->AssetSystem.AssetMemory);
+
+  Engine->AssetSystem = {};
+  Engine->AssetSystem.AssetMemory = InitHeap(Gigabytes(1));
 }
 
 // NOTE(Jesse): This function soft-resets the engine to a state similar to that

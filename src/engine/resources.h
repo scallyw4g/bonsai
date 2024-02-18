@@ -23,6 +23,16 @@ enum game_lib_reload_behavior
   GameLibReloadBehavior_FullInitialize = (1 << 0),
 };
 
+struct asset_system
+{
+  // TODO(Jesse): Put on an asset_system struct?
+  u64 CurrentUnnamedAssetIndex;
+  asset          AssetTable[ASSET_TABLE_COUNT];
+  bonsai_futex   AssetFutex;
+  heap_allocator AssetMemory;
+
+};
+
 struct engine_resources
 {
   bonsai_stdlib Stdlib;
@@ -48,11 +58,7 @@ struct engine_resources
 
   entity **EntityTable;
 
-  // TODO(Jesse): Put on an asset_system struct?
-  u64 CurrentUnnamedAssetIndex;
-  asset          AssetTable[ASSET_TABLE_COUNT];
-  bonsai_futex   AssetFutex;
-  heap_allocator AssetMemory;
+  asset_system AssetSystem;
 
   u32 FrameIndex; // At 120fps we get 9k hours (385 days) of frames in 32bits
 
