@@ -3,13 +3,13 @@
 # OPT="-O2"
 # OPT="-O0"
 
-./make.sh RunPoof
-[ $? -ne 0 ] && exit 1
+# ./make.sh RunPoof
+# [ $? -ne 0 ] && exit 1
 
 # exit 1
 
-./make.sh $OPT \
-  BuildSingleExample examples/project_and_level_picker \
+# ./make.sh $OPT \
+#   BuildSingleExample examples/project_and_level_picker \
 #   BuildSingleExample examples/turn_based \
 #   BuildDebugSystem \
 #   BuildExecutables \
@@ -24,7 +24,7 @@
 
 # ./make.sh BundleRelease
 
-# ./make.sh $OPT BuildAll
+./make.sh $OPT BuildAll
 # exit 0
 
 # ./make.sh -O2 BuildSingleExample examples/blank_project

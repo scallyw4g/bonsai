@@ -5,14 +5,16 @@ InitEditor(level_editor *Editor)
 
   Editor->Memory = AllocateArena();
 
+  Editor->AssetThumbnails.Memory = Editor->Memory;
+
   {
     Editor->NoisePreviewThumbnail.Texture = MakeTexture_RGB(V2i(512), 0, Editor->Memory, CSz("NoisePreviewTexture"));
     StandardCamera(&Editor->NoisePreviewThumbnail.Camera, 10000.f, 1000.f, 30.f, {});
   }
 
-
   return Result;
 }
+
 poof(block_array_c(asset_thumbnail, {8}))
 #include <generated/block_array_c_asset_thumbnail_688856411.h>
 

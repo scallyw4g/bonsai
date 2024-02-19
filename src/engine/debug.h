@@ -17,6 +17,7 @@ struct render_debug
 struct engine_debug
 {
   memory_arena *Memory;
+
   picked_world_chunk_static_buffer PickedChunks;
   texture_ptr_block_array Textures;
 

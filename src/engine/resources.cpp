@@ -52,6 +52,8 @@ InitEngineDebug(engine_debug *Debug)
 
   Debug->Memory = AllocateArena();
 
+  Debug->Textures.Memory = Debug->Memory;
+
   {
     Debug->WorldEditDebugThumb.Texture = MakeTexture_RGB(V2i(1024,1024), 0, Debug->Memory, CSz("WorldEditDebugTexture"));
     StandardCamera(&Debug->WorldEditDebugThumb.Camera, 10000.f, 1000.f, 30.f, {});
@@ -147,6 +149,14 @@ HardResetEngine(engine_resources *Engine)
 
   VaporizeArena(Engine->World->ChunkMemory);
   Engine->World->ChunkMemory = AllocateArena();
+
+  VaporizeArena(Engine->Editor.Memory);
+  Engine->Editor = {};
+  Engine->Editor.Memory = AllocateArena();
+
+  VaporizeArena(Engine->EngineDebug.Memory);
+  Engine->EngineDebug = {};
+  Engine->EngineDebug.Memory = AllocateArena();
 
   HardResetAssets(Engine);
 }
