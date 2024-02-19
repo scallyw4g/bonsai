@@ -32,7 +32,7 @@ InitEngineResources(engine_resources *Engine)
     bitmap_block_array Bitmaps = {};
     LoadBitmapsFromFolder(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/64x64_sprites"), &Bitmaps);
     LoadBitmapsFromFolder(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/44x44_sprites"), &Bitmaps);
-    Engine->Ui.SpriteTextureArray = CreateTextureArrayFromBitmapArray(&Bitmaps, V2i(64,64), UiMemory);
+    Engine->Ui.SpriteTextureArray = CreateTextureArrayFromBitmapArray(&Bitmaps, V2i(64,64));
 
     /* Engine->UiSpriteTexture = LoadBitmap("assets/mystic_rpg_icon_pack/Sprites/300%/Tool_20.bmp", UiMemory); */
     /* Engine->UiSpriteTexture = LoadBitmap("assets/mystic_rpg_icon_pack/Sprites/300%/Inventory_0.bmp", UiMemory); */
@@ -55,7 +55,7 @@ InitEngineDebug(engine_debug *Debug)
   Debug->Textures.Memory = Debug->Memory;
 
   {
-    Debug->WorldEditDebugThumb.Texture = MakeTexture_RGB(V2i(1024,1024), 0, Debug->Memory, CSz("WorldEditDebugTexture"));
+    Debug->WorldEditDebugThumb.Texture = MakeTexture_RGB(V2i(1024,1024), 0, CSz("WorldEditDebugTexture"));
     StandardCamera(&Debug->WorldEditDebugThumb.Camera, 10000.f, 1000.f, 30.f, {});
     AllocateMesh(&Debug->WorldEditDebugMesh,  u32(Kilobytes(64*16)), Debug->Memory);
   }

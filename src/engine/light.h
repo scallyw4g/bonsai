@@ -6,8 +6,8 @@ struct light
 
 struct game_lights
 {
-  texture *ColorTex;
-  texture *PositionTex;
+  texture ColorTex;
+  texture PositionTex;
 
   r32 IndexToUV;
 
@@ -24,7 +24,7 @@ struct shadow_render_group
 
   m4 MVP;
 
-  texture *ShadowMap;
+  texture ShadowMap;
 };
 
 struct lighting_render_group
@@ -38,13 +38,10 @@ struct lighting_render_group
   // writing the final result of the gaussian blur to
   framebuffer BloomTextureFBO;
 
-  texture *LightingTex;
-  texture *BloomTex;
+  texture LightingTex;
+  texture BloomTex;
 
   shader Shader;
-
-  shader DebugBloomShader;
-  shader DebugLightingShader;
 };
 
 link_internal void

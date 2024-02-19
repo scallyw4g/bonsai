@@ -8,7 +8,7 @@ InitEditor(level_editor *Editor)
   Editor->AssetThumbnails.Memory = Editor->Memory;
 
   {
-    Editor->NoisePreviewThumbnail.Texture = MakeTexture_RGB(V2i(512), 0, Editor->Memory, CSz("NoisePreviewTexture"));
+    Editor->NoisePreviewThumbnail.Texture = MakeTexture_RGB(V2i(512), 0, CSz("NoisePreviewTexture"));
     StandardCamera(&Editor->NoisePreviewThumbnail.Camera, 10000.f, 1000.f, 30.f, {});
   }
 
@@ -720,7 +720,7 @@ DoSelectedVoxelDebugWindow(engine_resources *Engine, cp VoxelCP)
 link_internal void
 DoThumbnailInteractions(renderer_2d *Ui, window_layout *Window, const char* InteractionString, asset_thumbnail *Thumb)
 {
-  texture *Texture = Thumb->Texture;
+  texture *Texture = &Thumb->Texture;
   camera  *ThumbCamera  = &Thumb->Camera;
 
   interactable_handle B = PushButtonStart(Ui, UiId(Window, InteractionString, Cast(void*, Thumb)) );

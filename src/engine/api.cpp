@@ -384,7 +384,7 @@ Bonsai_Render(engine_resources *Resources)
   /* Clear(&Graphics->Transparency.GpuBuffer); */
 
   /* GaussianBlurTexture(&Graphics->Gaussian, AoGroup->Texture); */
-  if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomTextureFBO); }
+  if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, &Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomTextureFBO); }
 
   CompositeAndDisplay(Plat, Graphics);
 

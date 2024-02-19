@@ -12,23 +12,23 @@ struct ao_render_group
   v3 SsaoKernel[SSAO_KERNEL_SIZE]; // Could just be pushed on the heap
   s32 SsaoKernelUniform; // FIXME(Jesse): Automate me!
 
-  texture *Texture;
+  texture Texture;
 
   v3 NoiseTile;
 };
 
 struct g_buffer_textures
 {
-  texture *Color;
-  texture *Normal;
-  texture *Position;
-  texture *Depth;
+  texture Color;
+  texture Normal;
+  texture Position;
+  texture Depth;
 };
 
 struct g_buffer_render_group
 {
   framebuffer FBO;
-  g_buffer_textures *Textures;
+  g_buffer_textures Textures;
   shader gBufferShader;
   m4 ViewProjection;
 };

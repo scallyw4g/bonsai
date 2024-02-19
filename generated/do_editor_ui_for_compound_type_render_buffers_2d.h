@@ -41,7 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Window, Element->DebugTextureArray, CSz("texture DebugTextureArray"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      /* DoEditorUi(Ui, Window, Element->DebugTextureArray, CSz("texture DebugTextureArray"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
 
 
 

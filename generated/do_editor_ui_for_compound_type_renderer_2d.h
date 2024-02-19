@@ -17,7 +17,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
       
-      DoEditorUi(Ui, Window, Element->SpriteTextureArray, CSz("texture SpriteTextureArray"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      /* DoEditorUi(Ui, Window, Element->SpriteTextureArray, CSz("texture SpriteTextureArray"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
 
 
 

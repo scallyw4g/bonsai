@@ -520,8 +520,7 @@ DoAssetWindow(engine_resources *Engine)
                 render_entity_to_texture_group *RTTGroup = &Engine->RTTGroup;
                 if (ModelIndex >= TotalElements(&Editor->AssetThumbnails))
                 {
-                  // TODO(Jesse): Where to allocate these?
-                  texture *T = MakeTexture_RGBA(ThumbnailDim, (u32*)0, Engine->Graphics->Memory, CSz("Thumbnail"));
+                  texture T = MakeTexture_RGBA(ThumbnailDim, (u32*)0, CSz("Thumbnail"));
                   asset_thumbnail Thumb = { T, {} };
                   StandardCamera(&Thumb.Camera, 10000.0f, 100.0f, 0.f, {});
 
@@ -529,7 +528,7 @@ DoAssetWindow(engine_resources *Engine)
                 }
 
                 asset_thumbnail *Thumb = GetPtr(&Editor->AssetThumbnails, ModelIndex);
-                texture *Texture = Thumb->Texture;
+                texture *Texture      = &Thumb->Texture;
                 camera  *ThumbCamera  = &Thumb->Camera;
 
                 interactable_handle B = PushButtonStart(Ui, UiId(&AssetViewWindow, "asset_texture_viewport", Thumb) );
@@ -632,7 +631,7 @@ DoWorldEditDebugWindow(engine_resources *Engine)
     if (Debug->WorldEditDebugMesh.At)
     {
       RenderToTexture(Engine, &Debug->WorldEditDebugThumb, &Debug->WorldEditDebugMesh, {});
-      PushTexturedQuad(Ui, Debug->WorldEditDebugThumb.Texture, V2(512), zDepth_Text);
+      PushTexturedQuad(Ui, &Debug->WorldEditDebugThumb.Texture, V2(512), zDepth_Text);
     }
 
     PushWindowEnd(Ui, &Window);

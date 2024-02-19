@@ -34,15 +34,15 @@ UpdateLightingTextures(game_lights *Lights)
 
   u32 Type = GL_TEXTURE_2D;
 
-  GL.BindTexture(Type, Lights->PositionTex->ID);
+  GL.BindTexture(Type, Lights->PositionTex.ID);
   GL.TexImage2D( Type, 0, GL_RGB32F,
-                Lights->PositionTex->Dim.x, Lights->PositionTex->Dim.y,
+                Lights->PositionTex.Dim.x, Lights->PositionTex.Dim.y,
                 0,  GL_RGB, GL_FLOAT, PosData);
   AssertNoGlErrors;
 
-  GL.BindTexture(Type, Lights->ColorTex->ID);
+  GL.BindTexture(Type, Lights->ColorTex.ID);
   GL.TexImage2D( Type, 0, GL_RGB32F,
-                Lights->ColorTex->Dim.x, Lights->ColorTex->Dim.y,
+                Lights->ColorTex.Dim.x, Lights->ColorTex.Dim.y,
                 0,  GL_RGB, GL_FLOAT, ColorData);
   AssertNoGlErrors;
 
@@ -228,7 +228,7 @@ GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *D
     }
     else
     {
-      Tex = Group->Textures[!horizontal];
+      Tex = &Group->Textures[!horizontal];
     }
 
     /* GL.BindTexture( GL_TEXTURE_2D, Tex->ID ); */
@@ -1041,14 +1041,14 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
 link_internal void
 RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, model *Model, v3 Offset)
 {
-  SetupRenderToTextureShader(Engine, Thumb->Texture, &Thumb->Camera);
+  SetupRenderToTextureShader(Engine, &Thumb->Texture, &Thumb->Camera);
   DrawLod(Engine, &Engine->RTTGroup.Shader, &Model->Meshes, 0.f, Offset);
 }
 
 link_internal void
 RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, untextured_3d_geometry_buffer *Src, v3 Offset)
 {
-  SetupRenderToTextureShader(Engine, Thumb->Texture, &Thumb->Camera);
+  SetupRenderToTextureShader(Engine, &Thumb->Texture, &Thumb->Camera);
 
   auto RTTGroup = &Engine->RTTGroup;
 

@@ -2,8 +2,8 @@
 // TODO(Jesse): rename this to just thumbnail and move to renderer?
 struct asset_thumbnail
 {
-  texture *Texture;
-  camera   Camera;
+  texture Texture;
+  camera  Camera;
 };
 
 struct render_debug
