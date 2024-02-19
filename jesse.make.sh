@@ -3,8 +3,8 @@
 # OPT="-O2"
 # OPT="-O0"
 
-# ./make.sh RunPoof
-# [ $? -ne 0 ] && exit 1
+./make.sh RunPoof
+[ $? -ne 0 ] && exit 1
 
 # exit 1
 
@@ -24,7 +24,7 @@
 
 # ./make.sh BundleRelease
 
-./make.sh $OPT BuildAll
+# ./make.sh $OPT BuildAll
 
 # exit 0
 
