@@ -37,6 +37,14 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   return GameState;
 }
 
+
+link_internal b32
+FilterByLoadableDLLs(file_traversal_node *Node)
+{
+  b32 Result = Contains(Node->Name, CSz("_loadable."));
+  return Result;
+}
+
 BONSAI_API_MAIN_THREAD_CALLBACK()
 {
   TIMED_FUNCTION();
@@ -47,7 +55,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   local_persist window_layout Window = WindowLayout("Project Loader Window");
   PushWindowStart(Ui, &Window);
 
-    maybe_file_traversal_node MaybeNode = PlatformTraverseDirectoryTree(CSz("bin/game_libs"), EngineDrawFileNodesHelper, u64(&Window));
+  filtered_file_traversal_helper_params HelperParams = {&Window, FilterByLoadableDLLs};
+    maybe_file_traversal_node MaybeNode = PlatformTraverseDirectoryTree(CSz("bin/game_libs"), EngineDrawFileNodesFilteredHelper, u64(&HelperParams));
     if (MaybeNode.Tag)
     {
       RequestGameLibReload(Resources, MaybeNode.Value);
