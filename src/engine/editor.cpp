@@ -5,14 +5,16 @@ InitEditor(level_editor *Editor)
 
   Editor->Memory = AllocateArena();
 
+  Editor->AssetThumbnails.Memory = Editor->Memory;
+
   {
-    Editor->NoisePreviewThumbnail.Texture = MakeTexture_RGB(V2i(512), 0, Editor->Memory, CSz("NoisePreviewTexture"));
+    Editor->NoisePreviewThumbnail.Texture = MakeTexture_RGB(V2i(512), 0, CSz("NoisePreviewTexture"));
     StandardCamera(&Editor->NoisePreviewThumbnail.Camera, 10000.f, 1000.f, 30.f, {});
   }
 
-
   return Result;
 }
+
 poof(block_array_c(asset_thumbnail, {8}))
 #include <generated/block_array_c_asset_thumbnail_688856411.h>
 
@@ -431,7 +433,7 @@ DoDeleteRegion(engine_resources *Engine, rect3 *AABB)
     .world_update_op_shape_params_rect.P0 = AABB->Min,
     .world_update_op_shape_params_rect.P1 = AABB->Max,
   };
-  QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Subtractive, &Shape, Engine->Editor.SelectedColorIndex, Engine->Memory);
+  QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Subtractive, &Shape, Engine->Editor.SelectedColorIndex, Engine->WorldUpdateMemory);
 }
 
 link_internal v3
@@ -718,7 +720,7 @@ DoSelectedVoxelDebugWindow(engine_resources *Engine, cp VoxelCP)
 link_internal void
 DoThumbnailInteractions(renderer_2d *Ui, window_layout *Window, const char* InteractionString, asset_thumbnail *Thumb)
 {
-  texture *Texture = Thumb->Texture;
+  texture *Texture = &Thumb->Texture;
   camera  *ThumbCamera  = &Thumb->Camera;
 
   interactable_handle B = PushButtonStart(Ui, UiId(Window, InteractionString, Cast(void*, Thumb)) );
@@ -1045,7 +1047,7 @@ DoWorldEditor(engine_resources *Engine)
             .world_update_op_shape_params_rect.P0 = SelectionAABB.Min,
             .world_update_op_shape_params_rect.P1 = SelectionAABB.Max,
           };
-          QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Paint, &Shape, Editor->SelectedColorIndex, Engine->Memory);
+          QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Paint, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory);
         }
       } break;
 
@@ -1058,7 +1060,7 @@ DoWorldEditor(engine_resources *Engine)
             .world_update_op_shape_params_rect.P0 = SelectionAABB.Min,
             .world_update_op_shape_params_rect.P1 = SelectionAABB.Max,
           };
-          QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, Editor->SelectedColorIndex, Engine->Memory);
+          QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory);
         }
       } break;
 
@@ -1085,7 +1087,7 @@ DoWorldEditor(engine_resources *Engine)
               .world_update_op_shape_params_rect.P0 = P0,
               .world_update_op_shape_params_rect.P1 = P0+1,
             };
-            QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, Editor->SelectedColorIndex, Engine->Memory);
+            QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory);
           }
         }
       } break;
@@ -1104,7 +1106,7 @@ DoWorldEditor(engine_resources *Engine)
               .world_update_op_shape_params_rect.P0 = P0,
               .world_update_op_shape_params_rect.P1 = P0+1,
             };
-            QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Subtractive, &Shape, Editor->SelectedColorIndex, Engine->Memory);
+            QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Subtractive, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory);
           }
         }
       } break;
@@ -1165,7 +1167,7 @@ DoWorldEditor(engine_resources *Engine)
                     type_world_update_op_shape_params_asset,
                     .world_update_op_shape_params_asset = AssetUpdateShape,
                   };
-                  QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, World->Memory);
+                  QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, Engine->WorldUpdateMemory);
                 }
                 else if (WorldEditMode == WorldEditMode_EntityBrush)
                 {
@@ -1210,7 +1212,7 @@ DoWorldEditor(engine_resources *Engine)
                 type_world_update_op_shape_params_asset,
                 .world_update_op_shape_params_asset = AssetUpdateShape,
               };
-              QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, World->Memory);
+              QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, Engine->WorldUpdateMemory);
 #endif
             }
           }
@@ -1226,7 +1228,7 @@ DoWorldEditor(engine_resources *Engine)
             .world_update_op_shape_params_rect.P0 = SelectionAABB.Min,
             .world_update_op_shape_params_rect.P1 = SelectionAABB.Max,
           };
-          QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_RecomputeStandingSpots, &Shape, Editor->SelectedColorIndex, Engine->Memory);
+          QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_RecomputeStandingSpots, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory);
         }
       } break;
 
@@ -1259,10 +1261,10 @@ DoWorldEditor(engine_resources *Engine)
       v3 CopyDim = GetDim(World, Editor->CopyRegion);
       s32 VoxelCount = s32(Volume(CopyDim));
       Leak("voxel *V = Allocate(voxel, Engine->Memory, VoxelCount)");
-      voxel *V = Allocate(voxel, Engine->Memory, VoxelCount);
+      voxel *V = Allocate(voxel, Engine->WorldUpdateMemory, VoxelCount);
 
       Leak("");
-      world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, Editor->CopyRegion, Engine->Memory);
+      world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, Editor->CopyRegion, Engine->WorldUpdateMemory);
       GatherVoxelsOverlappingArea(World, GetSimSpaceRect3i(World, Editor->CopyRegion), &Chunks, V, VoxelCount);
 
       chunk_data D = {};
@@ -1276,7 +1278,7 @@ DoWorldEditor(engine_resources *Engine)
         type_world_update_op_shape_params_chunk_data,
         .world_update_op_shape_params_chunk_data = ChunkDataShape,
       };
-      QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, World->Memory);
+      QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, Engine->WorldUpdateMemory);
     }
   }
 

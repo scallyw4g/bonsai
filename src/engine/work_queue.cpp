@@ -141,15 +141,25 @@ CancelAllWorkQueueJobs(platform *Plat, work_queue *Queue)
   Assert(FutexIsSignaled(&Plat->WorkerThreadsSuspendFutex));
   Assert(Plat->WorkerThreadsSuspendFutex.ThreadsWaiting == GetWorkerThreadCount());
 
-  while (!QueueIsEmpty(Queue))
+  // TODO(Jesse)(critical, bug): Why does the following not work?  We get
+  // assertions that we didn't clear a world chunk queued flag sometimes.
+  // nopush
+  //
+  // TODO(Jesse): Might as well use memset?
+  RangeIterator(EntryIndex, WORK_QUEUE_SIZE)
+  /* while (!QueueIsEmpty(Queue)) */
   {
-    work_queue_entry *Entry = Cast(work_queue_entry*, Queue->Entries + Queue->DequeueIndex);
+    /* work_queue_entry *Entry = Cast(work_queue_entry*, Queue->Entries + Queue->DequeueIndex); */
+    work_queue_entry *Entry = Cast(work_queue_entry*, Queue->Entries + EntryIndex);
 
+#if 0
     work_queue_entry_type Type = Entry->Type;
     switch (Type)
     {
-      InvalidCase(type_work_queue_entry_noop);
+      /* InvalidCase(type_work_queue_entry_noop); */
       InvalidCase(type_work_queue_entry__align_to_cache_line_helper);
+
+      case type_work_queue_entry_noop: { } break;
 
       case type_work_queue_entry_copy_buffer_ref:
       case type_work_queue_entry_copy_buffer_set:
@@ -173,7 +183,11 @@ CancelAllWorkQueueJobs(platform *Plat, work_queue *Queue)
         Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_Queued);
       } break;
     }
+#endif
 
-    Queue->DequeueIndex = GetNextQueueIndex(Queue->DequeueIndex);
+    *Entry = {};
   }
+
+  Queue->EnqueueIndex = 0;
+  Queue->DequeueIndex = 0;
 }

@@ -6,7 +6,7 @@ struct composite_render_group
 struct gaussian_render_group
 {
   framebuffer FBOs[2];
-  texture *Textures[2];
+  texture Textures[2];
 
   shader Shader;
 
@@ -19,9 +19,9 @@ struct transparency_render_group
   gpu_mapped_element_buffer  GpuBuffer;
   framebuffer                FBO;
   shader                     Shader;
-  texture                   *AccumTex;
-  texture                   *RevealTex;
-  texture                   *Depth;
+  texture                    AccumTex;
+  texture                    RevealTex;
+  texture                    Depth;
   /* m4                        *ViewProjection; */
 };
 

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:360:0
+// src/engine/editor.cpp:362:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
@@ -74,6 +74,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
+      DoEditorUi(Ui, Window, &Element->RequestedGameLibReloadNode, CSz("file_traversal_node RequestedGameLibReloadNode"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui, Window, &Element->RequestedGameLibReloadBehavior, CSz("game_lib_reload_behavior RequestedGameLibReloadBehavior"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      
       DoEditorUi(Ui, Window, &Element->Heap, CSz("heap_allocator Heap"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
@@ -83,7 +101,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui, Window, Element->Memory, CSz("memory_arena Memory"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, Element->GameMemory, CSz("memory_arena GameMemory"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+      
+      DoEditorUi(Ui, Window, Element->WorldUpdateMemory, CSz("memory_arena WorldUpdateMemory"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -95,42 +119,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui, Window, &Element->CurrentUnnamedAssetIndex, CSz("u64 CurrentUnnamedAssetIndex"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      if (ToggleButton(Ui, CSz("v asset AssetTable[(256)]"), CSz("> asset AssetTable[(256)]"), UiId(Window, "toggle engine_resources asset AssetTable", Element->AssetTable), EDITOR_UI_FUNCTION_INSTANCE_NAMES ))
-      {
-        PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-        PushNewRow(Ui);
-        RangeIterator(ArrayIndex, (256))
-        {
-          DoEditorUi(Ui, Window, Element->AssetTable+ArrayIndex, FSz("asset AssetTable[%d]", ArrayIndex), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-          
-        }
-        PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
-      }
-      PushNewRow(Ui);
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->AssetFutex, CSz("bonsai_futex AssetFutex"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->AssetMemory, CSz("heap_allocator AssetMemory"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->AssetSystem, CSz("asset_system AssetSystem"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 

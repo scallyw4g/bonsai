@@ -40,7 +40,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
   DoWorldChunkStuff();
 
   // Must come before we update the frame index
-  CollectUnusedChunks(Resources, &Resources->MeshFreelist, Resources->World->Memory, Resources->World->VisibleRegion);
+  CollectUnusedChunks(Resources, &Resources->MeshFreelist, Resources->World->VisibleRegion);
 
   Resources->FrameIndex += 1;
 
@@ -318,7 +318,6 @@ DoDayNightCycle(graphics *Graphics, r32 tDay)
       }
     } break;
   }
-
 }
 
 link_export b32
@@ -385,7 +384,7 @@ Bonsai_Render(engine_resources *Resources)
   /* Clear(&Graphics->Transparency.GpuBuffer); */
 
   /* GaussianBlurTexture(&Graphics->Gaussian, AoGroup->Texture); */
-  if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomTextureFBO); }
+  if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, &Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomTextureFBO); }
 
   CompositeAndDisplay(Plat, Graphics);
 
@@ -522,4 +521,10 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       END_BLOCK("Copy Set");
     } break;
   }
+}
+
+link_internal void
+RequestGameLibReload(engine_resources *Engine, file_traversal_node FileNode)
+{
+  Engine->RequestedGameLibReloadNode = FileNode;
 }

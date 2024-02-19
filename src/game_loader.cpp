@@ -102,6 +102,9 @@ PrintFiles(file_traversal_node *Node)
   }
 }
 
+global_variable const char *
+Global_ProjectSwitcherGameLibName = "./bin/game_libs/project_and_level_picker_loadable" PLATFORM_RUNTIME_LIB_EXTENSION;
+
 s32
 main( s32 ArgCount, const char ** Args )
 {
@@ -128,13 +131,13 @@ main( s32 ArgCount, const char ** Args )
 #endif
 
 
-  /* if (!SearchForProjectRoot()) { Error("Couldn't find root dir, exiting."); return 1; } */
-  /* Info("Found Bonsai Root : %S", CS(GetCwd()) ); */
+  if (!SearchForProjectRoot()) { Error("Couldn't find root dir, exiting."); return 1; }
+  Info("Found Bonsai Root : %s", GetCwd() );
 
   engine_resources EngineResources_ = {};
   engine_resources *EngineResources = &EngineResources_;
 
-  const char* GameLibName = "./bin/blank_project_loadable" PLATFORM_RUNTIME_LIB_EXTENSION;
+  const char* GameLibName = Global_ProjectSwitcherGameLibName;
   switch (ArgCount)
   {
     case 1:  {} break;
@@ -188,7 +191,7 @@ main( s32 ArgCount, const char ** Args )
 
   memory_arena *WorkQueueMemory = AllocateArena();
   InitQueue(&Plat->HighPriority, WorkQueueMemory);
-  InitQueue(&Plat->LowPriority, WorkQueueMemory);
+  InitQueue(&Plat->LowPriority,  WorkQueueMemory);
 
 
   DEBUG_REGISTER_ARENA(GameMemory, 0);
@@ -210,7 +213,7 @@ main( s32 ArgCount, const char ** Args )
    */
 
   r32 LastMs = 0;
-  while (Plat->Input.Escape.Clicked == False)
+  while (Os->ContinueRunning)
   {
     /* u32 CSwitchEventsThisFrame = CSwitchEventsPerFrame; */
     /* CSwitchEventsPerFrame = 0; */
@@ -231,7 +234,20 @@ main( s32 ArgCount, const char ** Args )
     Plat->MouseDP = LastMouseP - Plat->MouseP;
     Plat->ScreenDim = V2(Plat->WindowWidth, Plat->WindowHeight);
 
-    /* Plat->dt *= 0.2f; */
+    if (Plat->Input.Escape.Clicked)
+    {
+      if (StringsMatch(GameLibName, Global_ProjectSwitcherGameLibName))
+      {
+        Os->ContinueRunning = False;
+        break;
+      }
+      else
+      {
+        EngineResources->RequestedGameLibReloadBehavior = GameLibReloadBehavior_FullInitialize;
+        GameLibName = Global_ProjectSwitcherGameLibName;
+        LastGameLibTime = 0;
+      }
+    }
 
     BindHotkeysToInput(&EngineResources->Hotkeys, &Plat->Input);
 
@@ -250,7 +266,20 @@ main( s32 ArgCount, const char ** Args )
       Ensure(InitializeEngineApi(&EngineApi, GameLib));
       Ensure(InitializeGameApi(GameApi, GameLib));
 
+      // Hook up global pointers
       Ensure( EngineApi.OnLibraryLoad(EngineResources) );
+
+      if (EngineResources->RequestedGameLibReloadBehavior & GameLibReloadBehavior_FullInitialize)
+      {
+        EngineResources->RequestedGameLibReloadBehavior = game_lib_reload_behavior(EngineResources->RequestedGameLibReloadBehavior & ~GameLibReloadBehavior_FullInitialize);
+
+        HardResetEngine(EngineResources);
+
+        EngineResources->GameState = GameApi->GameInit(EngineResources, &MainThread);
+        if (!EngineResources->GameState) { Error("Initializing Game :( "); return 1; }
+      }
+
+      // Do game-specific reload code
       if (GameApi->OnLibraryLoad) { GameApi->OnLibraryLoad(EngineResources, &MainThread); }
 
       UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
@@ -320,6 +349,21 @@ main( s32 ArgCount, const char ** Args )
     EngineApi.FrameEnd(EngineResources);
 
     BonsaiSwapBuffers(&EngineResources->Stdlib.Os);
+
+
+    // NOTE(Jesse): We can't hold strings from PlatformTraverseDirectoryTree
+    // across frame boundaries because transient memory gets cleared, so this
+    // has to happen before the end of the frame.
+    if ( EngineResources->RequestedGameLibReloadNode.Name )
+    {
+      LastGameLibTime = 0;
+      // TODO(Jesse)(leak): We probably don't want to just leak these strings..
+      GameLibName = ConcatZ( EngineResources->RequestedGameLibReloadNode.Dir, CSz("/"), EngineResources->RequestedGameLibReloadNode.Name, &BootstrapArena );
+
+      EngineResources->RequestedGameLibReloadNode = {};
+      EngineResources->RequestedGameLibReloadBehavior = GameLibReloadBehavior_FullInitialize;
+    }
+
 
     thread_local_state *TLS = GetThreadLocalState(ThreadLocal_ThreadIndex);
     Ensure( RewindArena(TLS->TempMemory) );

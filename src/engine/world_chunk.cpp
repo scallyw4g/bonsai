@@ -66,7 +66,7 @@ ChunkIsGarbage(world_chunk* Chunk)
 }
 
 link_internal void
-AllocateWorldChunk(world_chunk *Result, memory_arena *Storage, world_position WorldP, chunk_dimension Dim)
+AllocateWorldChunk(world_chunk *Result, world_position WorldP, chunk_dimension Dim, memory_arena *Storage)
 {
   u32 MaxLodMeshVerts = POINT_BUFFER_SIZE*3;
 
@@ -82,10 +82,10 @@ AllocateWorldChunk(world_chunk *Result, memory_arena *Storage, world_position Wo
 }
 
 link_internal world_chunk*
-AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension Dim)
+AllocateWorldChunk(world_position WorldP, chunk_dimension Dim, memory_arena *Storage)
 {
   world_chunk *Result = AllocateAlignedProtection(world_chunk, Storage, 1, CACHE_LINE_SIZE, false);
-  AllocateWorldChunk(Result, Storage, WorldP, Dim);
+  AllocateWorldChunk(Result, WorldP, Dim, Storage);
   return Result;
 }
 
@@ -162,7 +162,7 @@ InsertChunkIntoWorld(world *World, world_chunk *Chunk)
 }
 
 link_internal world_chunk*
-AllocateAndInsertChunk(memory_arena *Storage, world *World, world_position P)
+AllocateAndInsertChunk(world *World, world_position P)
 {
   TIMED_FUNCTION();
 
@@ -170,7 +170,7 @@ AllocateAndInsertChunk(memory_arena *Storage, world *World, world_position P)
 
   if (IsInsideVisibleRegion(World, P))
   {
-    world_chunk *Chunk = AllocateWorldChunk(Storage, P, World->ChunkDim);
+    world_chunk *Chunk = AllocateWorldChunk(P, World->ChunkDim, World->ChunkMemory);
     Assert(Chunk->Flags == Chunk_Uninitialized);
 
     if (Chunk)
@@ -197,7 +197,7 @@ AllocateAndInsertChunk(memory_arena *Storage, world *World, world_position P)
 }
 
 link_internal world_chunk *
-GetFreeWorldChunk(world *World, memory_arena *Storage)
+GetFreeWorldChunk(world *World)
 {
   world_chunk *Result = {};
   if (World->ChunkFreelistSentinal.Next)
@@ -210,7 +210,7 @@ GetFreeWorldChunk(world *World, memory_arena *Storage)
   }
   else
   {
-    Result = AllocateWorldChunk(Storage, {}, World->ChunkDim);
+    Result = AllocateWorldChunk({}, World->ChunkDim, World->ChunkMemory);
     Assert(Result->Flags == Chunk_Uninitialized);
   }
 
@@ -220,7 +220,7 @@ GetFreeWorldChunk(world *World, memory_arena *Storage)
 }
 
 link_internal world_chunk *
-GetAndInsertFreeWorldChunk(memory_arena *Storage, world *World, world_position P)
+GetAndInsertFreeWorldChunk(world *World, world_position P)
 {
   TIMED_FUNCTION();
 
@@ -228,7 +228,7 @@ GetAndInsertFreeWorldChunk(memory_arena *Storage, world *World, world_position P
 
   if (IsInsideVisibleRegion(World, P))
   {
-    world_chunk *Chunk = GetFreeWorldChunk(World, Storage);
+    world_chunk *Chunk = GetFreeWorldChunk(World);
     if (Chunk)
     {
       Chunk->WorldP = P;
@@ -287,14 +287,14 @@ MaybeDeallocateGpuElementBuffer(gpu_element_buffer_handles *Handles)
 }
 
 link_internal void
-DeallocateWorldChunk( world_chunk *Chunk, tiered_mesh_freelist *MeshFreelist, memory_arena *Memory)
+DeallocateWorldChunk( world_chunk *Chunk, tiered_mesh_freelist *MeshFreelist)
 {
   Assert ( ThreadLocal_ThreadIndex == 0 );
   Assert ( NotSet(Chunk, Chunk_Queued) );
 
-  if (Chunk->Entities.Memory) { VaporizeArena(Chunk->Entities.Memory); }
+  /* if (Chunk->Entities.Memory) { VaporizeArena(Chunk->Entities.Memory); } */
 
-  DeallocateMeshes(&Chunk->Meshes, MeshFreelist, Memory);
+  DeallocateMeshes(&Chunk->Meshes, MeshFreelist);
 
   RangeIterator(MeshIndex, MeshIndex_Count)
   {
@@ -305,13 +305,13 @@ DeallocateWorldChunk( world_chunk *Chunk, tiered_mesh_freelist *MeshFreelist, me
 }
 
 link_internal void
-FreeWorldChunk(world *World, world_chunk *Chunk, tiered_mesh_freelist *MeshFreelist, memory_arena* Memory)
+FreeWorldChunk(world *World, world_chunk *Chunk, tiered_mesh_freelist *MeshFreelist)
 {
   TIMED_FUNCTION();
   Assert ( ThreadLocal_ThreadIndex == 0 );
   Assert ( NotSet(Chunk, Chunk_Queued) );
 
-  DeallocateWorldChunk(Chunk, MeshFreelist, Memory);
+  DeallocateWorldChunk(Chunk, MeshFreelist);
   Assert(Chunk->Flags == Chunk_Uninitialized);
   /* World->FreeChunks[World->FreeChunkCount++] = Chunk; */
 
@@ -378,7 +378,7 @@ NextWorldHashtable(engine_resources *Engine)
 }
 
 link_internal void
-CollectUnusedChunks(engine_resources *Engine, tiered_mesh_freelist* MeshFreelist, memory_arena* Memory, chunk_dimension VisibleRegion)
+CollectUnusedChunks(engine_resources *Engine, tiered_mesh_freelist* MeshFreelist, chunk_dimension VisibleRegion)
 {
   TIMED_FUNCTION();
 
@@ -412,7 +412,7 @@ CollectUnusedChunks(engine_resources *Engine, tiered_mesh_freelist* MeshFreelist
     {
       if (Chunk->Flags == Chunk_Uninitialized)
       {
-        FreeWorldChunk(World, Chunk, MeshFreelist, Memory);
+        FreeWorldChunk(World, Chunk, MeshFreelist);
       }
       else
       {
@@ -429,7 +429,7 @@ CollectUnusedChunks(engine_resources *Engine, tiered_mesh_freelist* MeshFreelist
           }
           else
           {
-            FreeWorldChunk(World, Chunk, MeshFreelist, Memory);
+            FreeWorldChunk(World, Chunk, MeshFreelist);
           }
         }
       }
@@ -2087,22 +2087,11 @@ GetPermMeshForChunk(mesh_freelist* Freelist, u32 Elements, memory_arena* PermMem
 #if BONSAI_INTERNAL
   AcquireFutex(&Freelist->DebugFutex);
 #endif
-  free_mesh* MeshContainer = Unlink_TS(&Freelist->FirstFree);
-  untextured_3d_geometry_buffer* Result = 0;
 
-  if (MeshContainer)
-  {
-    Result = MeshContainer->Mesh;
-    Assert(Result);
-
-    MeshContainer->Mesh = 0;
-    FullBarrier;
-    Link_TS(&Freelist->Containers, MeshContainer);
-  }
-  else
+  untextured_3d_geometry_buffer* Result = Cast(untextured_3d_geometry_buffer*, Unlink_TS(&Freelist->FirstFreeMesh));
+  if (Result == 0)
   {
     Result = AllocateMesh(PermMemory, Elements);
-    Assert(Result);
   }
 
 #if BONSAI_INTERNAL
@@ -3427,7 +3416,7 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOff
 
   {
     untextured_3d_geometry_buffer *Replaced = AtomicReplaceMesh(&Chunk->Meshes, MeshBit, FinalMesh, FinalMesh->Timestamp);
-    if (Replaced) { DeallocateMesh(Replaced, &EngineResources->MeshFreelist, Thread->PermMemory); }
+    if (Replaced) { DeallocateMesh(Replaced, &EngineResources->MeshFreelist); }
   }
 
   // NOTE(Jesse): Chunk flags modified by caller; this routine gets called multiple times per job
@@ -3474,7 +3463,7 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
   v3i SynChunkP = DestChunk->WorldP;
 
 
-  world_chunk *SyntheticChunk = AllocateWorldChunk(Thread->TempMemory, SynChunkP, SynChunkDim );
+  world_chunk *SyntheticChunk = AllocateWorldChunk(SynChunkP, SynChunkDim, Thread->TempMemory);
 
 #if 0
   u32 SyntheticChunkSum = NoiseCallback( Thread->PerlinNoise,
@@ -3856,6 +3845,9 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
 {
   TIMED_FUNCTION();
 
+  // TODO(Jesse): Should we just remove the paramter?  Or do we sometimes not pass this?
+  Assert(Memory == Engine->WorldUpdateMemory);
+
   UNPACK_ENGINE_RESOURCES(Engine);
 
   cp MinPCoarse = {};
@@ -3972,8 +3964,9 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
       {
         world_position ChunkP = World_Position(xChunk, yChunk, zChunk);
         world_chunk *Chunk = GetWorldChunkFromHashtable(World, ChunkP);
-        if (Chunk)
+        if (Chunk && Chunk->Flags & Chunk_VoxelsInitialized)
         {
+          Assert(Chunk->Flags != Chunk_Uninitialized);
           Assert(ChunkIndex < TotalChunkCount);
           Buffer[ChunkIndex++] = Chunk;
         }

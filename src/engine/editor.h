@@ -2,6 +2,113 @@
 #define EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES MinValue, MaxValue
 
 poof(
+  func generic_button_group_for_enum(enum_t, type_poof_symbol NamePrefix, type_poof_symbol extra_poof_flags)
+  {
+    link_internal b32
+    ToggledOn(ui_toggle_button_group *ButtonGroup, enum_t.name Enum)
+    {
+      b32 Result = ButtonGroup->ToggleBits & (1 << Enum);
+      return Result;
+    }
+
+    // NOTE(Jesse): This could be implemented by reconstructing the button ID
+    // but I'm very unsure that's worth it.  Seems like just
+    link_internal b32
+    Clicked(ui_toggle_button_group *ButtonGroup, enum_t.name Enum)
+    {
+      b32 Result = False;
+      NotImplemented;
+      return Result;
+    }
+
+    link_internal ui_toggle_button_group
+    (NamePrefix)ButtonGroup_(enum_t.name)(renderer_2d *Ui, window_layout *Window, const char *ToggleGroupIdentifier, ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None, UI_FUNCTION_PROTO_DEFAULTS)
+    {
+      cs ButtonNames[] =
+      {
+        enum_t.map(value)
+        {
+          CSz("value.name.strip_all_prefix"),
+        }
+      };
+
+      u32 ButtonCount = ArrayCount(ButtonNames);
+
+      ui_toggle_button_handle_buffer ButtonBuffer = UiToggleButtonHandleBuffer(ButtonCount, GetTranArena());
+      IterateOver(&ButtonBuffer, Button, ButtonIndex)
+      {
+        cs Name = ButtonNames[ButtonIndex];
+        *Button = UiToggle(Name, Window, ToggleGroupIdentifier, (void*)Name.Start);
+      }
+
+      ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer, ui_toggle_button_group_flags(ExtraFlags(extra_poof_flags)), UI_FUNCTION_INSTANCE_NAMES);
+
+      return Result;
+    }
+  }
+)
+
+poof(
+  func toggle_button_group_for_enum(enum_t)
+  {
+    generic_button_group_for_enum(enum_t, {Toggle}, {|ToggleButtonGroupFlags_None})
+  }
+)
+
+poof(
+  func radio_button_group_for_enum(enum_t)
+  {
+    link_internal void
+    GetRadioEnum(ui_toggle_button_group *RadioGroup, enum_t.name *Result)
+    {
+      if (RadioGroup->ToggleBits)
+      {
+        Assert(CountBitsSet_Kernighan(RadioGroup->ToggleBits) == 1); // Radio group can 
+      }
+
+      s32 Index = s32(GetIndexOfNthSetBit(u32(RadioGroup->ToggleBits), 1));
+      *Result = enum_t.name(Max(0, Index));
+    }
+
+    generic_button_group_for_enum(enum_t, {Radio}, {|ToggleButtonGroupFlags_RadioButtons})
+  }
+)
+
+poof(
+  func radio_button_group_for_bitfield_enum(enum_t)
+  {
+    link_internal void
+    RadioSelect(ui_toggle_button_group *RadioGroup, enum_t.name Selection)
+    {
+      Assert(CountBitsSet_Kernighan(u32(Selection)) == 1);
+      u32 Index = GetIndexOfNthSetBit(u32(Selection), 1);
+      ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Index;
+      SetRadioButton(RadioGroup, ToggleHandle, True);
+      /* Ensure( ToggleRadioButton(RadioGroup, ToggleHandle) ); */
+    }
+
+    link_internal void
+    GetRadioEnum(ui_toggle_button_group *RadioGroup, enum_t.name *Result)
+    {
+      if (RadioGroup->ToggleBits)
+      {
+        Assert(CountBitsSet_Kernighan(RadioGroup->ToggleBits) == 1);
+        // NOTE(Jesse): This is better; it asserts that we've actually got a bitfield
+        Assert((((enum_t.map(value).sep(||) {RadioGroup->ToggleBits == value.name}))));
+        /* Assert((((enum_t.map(value).sep(|) {value.name})) & RadioGroup->ToggleBits) != 0); */
+      }
+
+      *Result = Cast((enum_t.name), RadioGroup->ToggleBits);
+    }
+
+    generic_button_group_for_enum(enum_t, {Radio}, {|ToggleButtonGroupFlags_RadioButtons})
+  }
+)
+
+
+
+
+poof(
   func do_editor_ui_for_vector_type(type_poof_symbol type_list)
   {
     type_list.map(type)
@@ -229,6 +336,24 @@ poof(
   }
 )
 
+
+poof(
+  func do_editor_ui_for_radio_enum(enum_t)
+  {
+    radio_button_group_for_enum(enum_t)
+
+    link_internal void
+    DoEditorUi(renderer_2d *Ui, window_layout *Window, enum_t.name *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+    {
+      if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+
+      /* ui_toggle_button_group RadioGroup = RadioButtonGroup_(enum_t.name)(Ui, Window, "nopush", ToggleButtonGroupFlags_None, EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
+      ui_toggle_button_group RadioGroup = RadioButtonGroup_(enum_t.name)(Ui, Window, "nopush");
+      GetRadioEnum(&RadioGroup, Element);
+    }
+  }
+)
+
 /* link_internal void */
 /* DoEditorUi(renderer_2d *Ui, aabb *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS); */
 
@@ -370,6 +495,11 @@ enum world_edit_mode
   WorldEditMode_RecomputeStandingSpots = (1 << 11),
 };
 
+
+poof(toggle_button_group_for_enum(engine_debug_view_mode))
+#include <generated/toggle_button_group_for_enum_engine_debug_view_mode.h>
+
+
 poof(string_and_value_tables(ui_noise_type))
 #include <generated/string_and_value_tables_ui_noise_type.h>
 poof(radio_button_group_for_bitfield_enum(ui_noise_type));
@@ -377,6 +507,9 @@ poof(radio_button_group_for_bitfield_enum(ui_noise_type));
 poof(do_editor_ui_for_enum(ui_noise_type))
 #include <generated/do_editor_ui_for_enum_ui_noise_type.h>
 
+
+poof(do_editor_ui_for_radio_enum(asset_window_view_mode))
+#include <generated/do_editor_ui_for_radio_enum_asset_window_view_mode.h>
 
 poof(string_and_value_tables(world_edit_mode))
 #include <generated/string_and_value_tables_world_edit_mode.h>

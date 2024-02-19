@@ -15,6 +15,24 @@ poof(maybe(entity_ptr))
 #define ASSET_TABLE_COUNT (256)
 CAssert(ASSET_TABLE_COUNT < u16_MAX); // NOTE(Jesse): u16_MAX is max_value(asset_handle::index)
 
+
+enum game_lib_reload_behavior
+{
+  GameLibReloadBehavior_None,
+
+  GameLibReloadBehavior_FullInitialize = (1 << 0),
+};
+
+struct asset_system
+{
+  // TODO(Jesse): Put on an asset_system struct?
+  u64 CurrentUnnamedAssetIndex;
+  asset          AssetTable[ASSET_TABLE_COUNT];
+  bonsai_futex   AssetFutex;
+  heap_allocator AssetMemory;
+
+};
+
 struct engine_resources
 {
   bonsai_stdlib Stdlib;
@@ -31,16 +49,16 @@ struct engine_resources
   game_state *GameState;
   graphics   *Graphics;
 
+  file_traversal_node      RequestedGameLibReloadNode;
+  game_lib_reload_behavior RequestedGameLibReloadBehavior;
+
   heap_allocator  Heap;
-  memory_arena   *Memory;
+  memory_arena   *GameMemory; // NOTE(Jesse): This gets passed to the game; hopefully they play nice and do all allocations here..
+  memory_arena   *WorldUpdateMemory;
 
   entity **EntityTable;
 
-  // TODO(Jesse): Put on an asset_system struct?
-  u64 CurrentUnnamedAssetIndex;
-  asset          AssetTable[ASSET_TABLE_COUNT];
-  bonsai_futex   AssetFutex;
-  heap_allocator AssetMemory;
+  asset_system AssetSystem;
 
   u32 FrameIndex; // At 120fps we get 9k hours (385 days) of frames in 32bits
 

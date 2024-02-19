@@ -433,7 +433,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  memory_arena *Memory = Resources->Memory;
+  memory_arena *Memory = Resources->GameMemory;
 
   v3i TileSuperpositionsDim = GameState->BakeResult.TileSuperpositionsDim;
   s32 TileSuperpositionsCount = Volume(GameState->BakeResult.TileSuperpositionsDim);
@@ -560,7 +560,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
               if (Chunk)
               {
                 if ( Chunk->Flags & Chunk_Queued ) { continue; }
-                DeallocateWorldChunk(Chunk, MeshFreelist, Memory);
+                DeallocateWorldChunk(Chunk, MeshFreelist);
                 Chunk->WorldP = P;
                 QueueChunkForInit(&Plat->HighPriority, Chunk, MeshBit_Lod0);
               }
@@ -688,7 +688,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 {
-  Resources->GameState = Allocate(game_state, Resources->Memory, 1);
+  Resources->GameState = Allocate(game_state, Resources->GameMemory, 1);
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
@@ -769,8 +769,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
       BakeEntity->_CollisionVolumeRadius = ChunkData->Dim/2.f;
       BakeEntity->P = BakeEntityP;
 
-      model *Model = Allocate(model, Resources->Memory, 1);
-      AllocateAndBuildMesh(&GameState->BakeResult.VoxData, Model, TempMemory, Resources->Memory);
+      model *Model = Allocate(model, Resources->GameMemory, 1);
+      AllocateAndBuildMesh(&GameState->BakeResult.VoxData, Model, TempMemory, Resources->GameMemory);
 
       asset *Asset = MaybeAsset.Value;
       Asset->LoadState = AssetLoadState_Loaded;
@@ -801,8 +801,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
           asset *Asset = MaybeAsset.Value;
           Asset->LoadState = AssetLoadState_Loaded;
 
-          model *Model = Allocate(model, Resources->Memory, 1);
-          untextured_3d_geometry_buffer *Mesh = AllocateTempWorldChunkMesh(Resources->Memory);
+          model *Model = Allocate(model, Resources->GameMemory, 1);
+          untextured_3d_geometry_buffer *Mesh = AllocateTempWorldChunkMesh(Resources->GameMemory);
           AtomicReplaceMesh(&Model->Meshes, MeshBit_Lod0, Mesh, __rdtsc());
 
           Asset->Models.Start = Model;
@@ -860,7 +860,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   }
 
-  memory_arena *Memory = Resources->Memory;
+  memory_arena *Memory = Resources->GameMemory;
 
   v3i TileSuperpositionsDim = World->VisibleRegion*World->ChunkDim / Global_TileDim;
   Assert(World->VisibleRegion*World->ChunkDim  % Global_TileDim == V3i(0));

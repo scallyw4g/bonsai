@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:221:0
+// src/engine/editor.cpp:223:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
@@ -11,6 +11,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
       PushTableStart(Ui);
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      
+
+      PushNewRow(Ui);
+
       DoEditorUi(Ui, Window, Element->Verts, CSz("v3 Verts"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 

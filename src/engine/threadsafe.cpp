@@ -1,12 +1,12 @@
 
-free_mesh *
-Unlink_TS(volatile free_mesh** Freelist)
+free_list_thing *
+Unlink_TS(volatile free_list_thing** Freelist)
 {
   FullBarrier;
-  volatile free_mesh* FirstFree = *Freelist;
+  volatile free_list_thing* FirstFree = *Freelist;
   if (FirstFree)
   {
-    volatile free_mesh* NextMesh = FirstFree->Next;
+    volatile free_list_thing* NextMesh = FirstFree->Next;
     while (FirstFree && !AtomicCompareExchange((volatile void**)Freelist, (void*)NextMesh, (void*)FirstFree))
     {
       FirstFree = *Freelist;
@@ -22,25 +22,23 @@ Unlink_TS(volatile free_mesh** Freelist)
     FirstFree->Next = 0;
   }
 
-  return (free_mesh*)FirstFree;
+  return Cast(free_list_thing*, FirstFree);
 }
 
-
-free_mesh *
-Link_TS(volatile free_mesh** Freelist, free_mesh* ToLink)
+link_internal void
+Link_TS(volatile free_list_thing** Freelist, free_list_thing* ToLink)
 {
   FullBarrier;
 
-  Assert(!ToLink->Next);
+  // NOTE(Jesse): We pass in random pointers to random structures, so this could be anything.
+  /* Assert(!ToLink->Next); */
 
-  volatile free_mesh* FirstFree = *Freelist;
+  volatile free_list_thing* FirstFree = *Freelist;
   ToLink->Next = FirstFree;
   while (!AtomicCompareExchange((volatile void**)Freelist, (void*)ToLink, (void*)FirstFree))
   {
     FirstFree = *Freelist;
     ToLink->Next = FirstFree;
   }
-
-  return (free_mesh*)FirstFree;
 }
 

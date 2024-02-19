@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:351:0
+// src/engine/editor.cpp:353:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
@@ -104,6 +104,15 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       PushNewRow(Ui);
 
       DoEditorUi(Ui, Window, Element->PickedChunk, CSz("world_chunk PickedChunk"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+      
+      DoEditorUi(Ui, Window, &Element->AssetWindowViewMode, CSz("asset_window_view_mode AssetWindowViewMode"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
 
 
 
