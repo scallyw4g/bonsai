@@ -11,20 +11,23 @@ out vec2 TransEmiss;
 uniform vec3 OffsetOfWorldCenterToGrid;
 uniform vec3 CameraToWorld;
 uniform mat4 ViewProjection;
-uniform mat4 Model;
+uniform mat4 ModelMatrix;
+
+// TODO(Jesse): Pass in a m3 here.  I didn't have an m3 struct, so I didn't
+// bother, but I should do that at some point..
+//
+uniform mat4 NormalMatrix; // Inverted and transposed ModelMatrix.
 
 void main()
 {
   MaterialColor = vertexColor;
   TransEmiss = in_TransEmiss;
 
-  v4 ModelVertex = Model*vec4(vertexPosition_modelspace, 1);
+  v4 ModelVertex = ModelMatrix*vec4(vertexPosition_modelspace, 1);
 
   vertexP_worldspace = ModelVertex.xyz;
-  vertexN_worldspace = vec4(vec4(vertexNormal_modelspace, 1)).xyz;
+  vertexN_worldspace = mat3(NormalMatrix) * vertexNormal_modelspace;
 
   gl_Position =  ViewProjection * ModelVertex;
-  /* gl_Position =  ViewProjection * Model * vec4(vertexPosition_modelspace, 1); */
-  /* gl_Position = ViewProjection * VertexP; */
 }
 

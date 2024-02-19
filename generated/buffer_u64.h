@@ -1,11 +1,13 @@
+// external/bonsai_stdlib/src/binary_parser.cpp:23:0
+
 struct u64_buffer
 {
-  u64 *Start;
   umm Count;
+  u64 *Start; poof(@array_length(Element->Count))
 };
 
 link_internal u64_buffer
-U64Buffer(umm ElementCount, memory_arena* Memory)
+U64Buffer( umm ElementCount, memory_arena* Memory)
 {
   u64_buffer Result = {};
 
@@ -64,4 +66,5 @@ Get(u64_buffer *Buf, umm Index)
   u64 *Result = GetPtr(Buf, Index);
   return Result;
 }
+
 

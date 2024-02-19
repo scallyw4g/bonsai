@@ -324,12 +324,6 @@ poof(gen_constructor(voxel_synthesis_change_propagation_info))
 poof(are_equal(voxel_synthesis_change_propagation_info))
 #include <generated/are_equal_voxel_synthesis_change_propagation_info.h>
 
-link_internal b32
-AreEqual(voxel_synthesis_change_propagation_info O1, voxel_synthesis_change_propagation_info O2)
-{
-  return AreEqual(&O1, &O2);
-}
-
 poof(generate_stack(voxel_synthesis_change_propagation_info, {v3i Min, Max;} ))
 #include <generated/generate_stack_voxel_synthesis_change_propagation_info_803395170.h>
 

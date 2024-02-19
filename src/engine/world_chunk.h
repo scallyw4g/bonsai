@@ -1,3 +1,65 @@
+
+struct world;
+struct world_chunk;
+struct heap_allocator;
+struct entity;
+
+
+struct picked_world_chunk
+{
+  world_chunk *Chunk;
+  r32 tChunk;
+};
+
+enum picked_voxel_position
+{
+  PickedVoxel_LastEmpty,
+  PickedVoxel_FirstFilled,
+  PickedVoxel_Count,
+};
+
+struct picked_voxel
+{
+  picked_world_chunk Chunks[PickedVoxel_Count];
+  canonical_position Picks[PickedVoxel_Count]; // Technically we can just store the v3 offset, but I'm being lazy
+};
+
+struct maybe_picked_voxel
+{
+  maybe_tag Tag;
+  picked_voxel Value;
+};
+
+
+// TODO(Jesse): Move this to debug/editor.h?
+// TODO(Jesse)(metaprogramming, ptr): Once poof can accept pointer types we can generate this struct
+/* poof(static_buffer(world_chunk*, 64)) */
+/* #include <generated/buffer_world_chunk.h> */
+#define MAX_PICKED_WORLD_CHUNKS (64)
+struct picked_world_chunk_static_buffer
+{
+  picked_world_chunk E[MAX_PICKED_WORLD_CHUNKS];
+  u64 At;
+};
+
+link_internal void
+Push(picked_world_chunk_static_buffer *Buf, world_chunk *Chunk, r32 t)
+{
+  if (Buf->At < MAX_PICKED_WORLD_CHUNKS)
+  {
+    Buf->E[Buf->At].Chunk = Chunk;
+    Buf->E[Buf->At].tChunk = t;
+
+    ++Buf->At;
+  }
+}
+
+enum pick_chunk_state
+{
+  PickedChunkState_None,
+  PickedChunkState_Hover,
+};
+
 enum chunk_flag
 {
   Chunk_Uninitialized     = 0 << 0,
@@ -40,6 +102,8 @@ CAssert(Voxel_MarkBit < u8_MAX);
 
 global_variable u8 VoxelFaceMask = Voxel_LeftFace | Voxel_RightFace | Voxel_TopFace | Voxel_BottomFace | Voxel_FrontFace | Voxel_BackFace;
 
+#define VOXEL_DEBUG_COLOR (0)
+
 // TODO(Jesse): Surely we can compress this.. but do we care?
 struct voxel
 {
@@ -48,8 +112,12 @@ struct voxel
   u16 Color;
 
   /* v3 Derivs; */
-  /* v3 DebugColor; */
+#if VOXEL_DEBUG_COLOR
+  v3 DebugColor;       poof(@no_serialize)
+  f32 DebugNoiseValue; poof(@no_serialize)
+#endif
 };
+/* CAssert(sizeof(voxel) == 8); */
 
 struct voxel_lighting
 {
@@ -189,7 +257,7 @@ struct lod_element_buffer
   gpu_element_buffer_handles GpuBufferHandles[MeshIndex_Count];
 
   // Src meshes, read-only
-  geo_u3d      *E[MeshIndex_Count];
+  geo_u3d_ptr   E[MeshIndex_Count];
   bonsai_futex  Locks[MeshIndex_Count];
 };
 
@@ -231,7 +299,8 @@ enum chunk_init_flags
   ChunkInitFlag_GenLODs              = (1 << 2),
 };
 
-#define WORLD_CHUNK_STANDING_SPOT_COUNT (32)
+/* #define WORLD_CHUNK_STANDING_SPOT_COUNT (32) */
+#define WORLD_CHUNK_STANDING_SPOT_COUNT (64)
 
 poof(
     func use_struct(struct_type)
@@ -252,11 +321,11 @@ poof(
 )
 
 
+struct entity;
 typedef entity* entity_ptr;
 poof( block_array(entity_ptr, {8}) )
 #include <generated/block_array_entity_ptr_688856411.h>
 
-#pragma pack(push, 1)
 struct world_chunk
 {
   /* poof( use_struct(chunk_data) ) */
@@ -315,12 +384,17 @@ struct world_chunk
   // considered for collision detection.
   entity_ptr_block_array Entities;
 
-  u8 _Pad1[32];
+#if VOXEL_DEBUG_COLOR
+  f32 *NoiseValues;  poof(@no_serialize @array_length(Volume(Element->Dim)))
+  v3  *NormalValues; poof(@no_serialize @array_length(Volume(Element->Dim)))
+  u8 _Pad1[16]; poof(@no_serialize)
+#else
+  u8 _Pad1[32]; poof(@no_serialize)
+#endif
 };
 // TODO(Jesse, id: 87, tags: speed, cache_friendly): Re-enable this
 // @world-chunk-cache-line-size
 /* CAssert(sizeof(world_chunk) == CACHE_LINE_SIZE); */
-#pragma pack(pop)
 
 // TODO(Jesse, id: 87, tags: speed, cache_friendly): Re-enable this
 // @world-chunk-cache-line-size
@@ -359,27 +433,31 @@ Volume(world_chunk* Chunk)
 
 enum world_flag
 {
-  WorldFlag_WorldCenterFollowsCameraTarget = (1 << 0),
+  WorldFlag_noop,
+  /* WorldFlag_WorldCenterFollowsCameraTarget = (1 << 0), */
 };
 
 struct world
 {
-  u32 HashSize;
-  world_chunk **ChunkHashMemory[2];
-  world_chunk **ChunkHash;
-
-  world_chunk ChunkFreelistSentinal;
-
   v3i Center;
   v3i VisibleRegion; // The number of chunks in xyz we're going to update and render
 
-  v3i ChunkDim;
+  u32 HashSize;                      poof(@ui_skip)
+  world_chunk **ChunkHashMemory[2];  poof(@ui_skip)
+  world_chunk **ChunkHash;           poof(@ui_skip)
 
-  memory_arena* Memory;
+  world_chunk ChunkFreelistSentinal; poof(@ui_skip)
 
-  world_flag Flags;
+  v3i ChunkDim;                      poof(@ui_skip)
+  memory_arena* Memory;              poof(@ui_skip)
+  world_flag Flags;                  poof(@ui_skip)
 
   v3_cursor ColorPalette; // u16_max elements according to the color member stored in `voxel`
+  // NOTE(Jesse): Couldn't quite figure out how to pass this through the
+  // container ui function.  Going to turn the UI off for now
+  // poof(@ui_value_range(0, 255)) 
+  poof(@ui_skip)
+
 };
 
 struct standing_spot
@@ -387,6 +465,13 @@ struct standing_spot
   b32 CanStand;
   canonical_position P;
 };
+
+poof(maybe(standing_spot))
+#include <generated/maybe_standing_spot.h>
+
+poof(block_array(standing_spot, {32}))
+#include <generated/block_array_standing_spot_688853862.h>
+
 
 inline standing_spot
 StandingSpot(v3 Offset, world_position WP)
@@ -522,6 +607,7 @@ global_variable v3i Global_ChunkApronDim = V3i(2,2,4);
 global_variable v3i Global_ChunkApronMinDim = V3i(1,1,1);
 global_variable v3i Global_ChunkApronMaxDim = V3i(1,1,3);
 
+
 // NOTE(Jesse): Unfortunately C++ is too braindead to do this at compile time
 // (even if you mark the variables as const). I also tried all kinds of
 // ridiculous const-casting trickery to no avail, so I'm doing it at runtime
@@ -530,6 +616,20 @@ global_variable v3i Global_ChunkApronMaxDim = V3i(1,1,3);
 /* CAssert(Global_ChunkApronDim.y == Global_ChunkApronMinDim.y + Global_ChunkApronMaxDim.y); */
 /* CAssert(Global_ChunkApronDim.z == Global_ChunkApronMinDim.z + Global_ChunkApronMaxDim.z); */
 
+
+link_internal v3
+GetSimSpaceCenterP(world *World, standing_spot *Spot)
+{
+  v3 Result = GetSimSpaceP(World, Spot->P) + Global_StandingSpotHalfDim;
+  return Result;
+}
+
+link_internal v3
+GetSimSpaceBaseP(world *World, standing_spot *Spot)
+{
+  v3 Result = GetSimSpaceP(World, Spot->P) + V3(Global_StandingSpotHalfDim.xy, 0.f);
+  return Result;
+}
 
 link_internal cp
 GetSpotMidpoint(world *World, standing_spot *Spot)
@@ -582,6 +682,12 @@ MapIntoQueryBox(v3i SimSpaceVoxP, v3i SimSpaceQueryMinP, voxel_position SimSpace
 link_internal world_chunk*
 GetWorldChunkFromHashtable(world *World, world_position P);
 
+link_internal world_chunk_ptr_buffer
+GatherChunksOverlappingArea(world *World, rect3cp Region, memory_arena *Memory);
+
+link_internal standing_spot_buffer
+GetStandingSpotsWithinRadius_FilteredByStandable(world *World, canonical_position P, r32 GatherRadius, v3 EntityRadius, memory_arena *Memory);
+
 /* link_internal untextured_3d_geometry_buffer * */
 /* SetMesh(world_chunk *Chunk, world_chunk_mesh_bitfield MeshBit, mesh_freelist *MeshFreelist, memory_arena *PermMemory); */
 
@@ -601,6 +707,15 @@ IsInsideVisibleRegion(world *World, v3i P)
 {
   rect3i VRRect = GetVisibleRegionRect(World);
   b32 Result = IsInside(P, VRRect);
+  return Result;
+}
+
+inline voxel*
+TryGetVoxel(world_chunk* Chunk, voxel_position VoxelP)
+{
+  voxel *Result = {};
+  s32 VoxelIndex = TryGetIndex(VoxelP, Chunk->Dim);
+  if (VoxelIndex > -1) { Result = Chunk->Voxels + VoxelIndex; }
   return Result;
 }
 

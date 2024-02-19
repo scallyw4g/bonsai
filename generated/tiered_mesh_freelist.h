@@ -1,3 +1,5 @@
+// src/engine/mesh.h:28:0
+
 struct tiered_mesh_freelist
 {
   mesh_freelist Start[TIERED_MESH_FREELIST_MAX_ELEMENTS];

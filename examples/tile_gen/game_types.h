@@ -14,8 +14,5 @@ struct game_state
 
   entity *Player;
 
-#if DEBUG_SYSTEM_API
-  get_debug_state_proc GetDebugState;
-#endif
 };
 

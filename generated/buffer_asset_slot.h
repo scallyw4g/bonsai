@@ -5,7 +5,7 @@ struct asset_slot_buffer
 };
 
 link_internal asset_slot_buffer
-AssetSlotBuffer(umm ElementCount, memory_arena* Memory)
+AssetSlotBuffer( umm ElementCount, memory_arena* Memory)
 {
   asset_slot_buffer Result = {};
 
@@ -64,4 +64,5 @@ Get(asset_slot_buffer *Buf, umm Index)
   asset_slot *Result = GetPtr(Buf, Index);
   return Result;
 }
+
 

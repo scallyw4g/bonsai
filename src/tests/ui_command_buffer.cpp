@@ -10,7 +10,7 @@ TestTable(renderer_2d* Group)
       Index < 2;
       ++Index)
   {
-    interactable_handle Interaction = PushButtonStart(Group, (umm)"TestButtonInteraction"^(umm)Index);
+    interactable_handle Interaction = PushButtonStart(Group, UiId(0, "TestButtonInteraction", Index));
       PushColumn(Group, CS("String1"));
       PushColumn(Group, CS("String2"));
       PushColumn(Group, CS("String3"));
@@ -29,7 +29,7 @@ TestTable(renderer_2d* Group)
   PushTableEnd(Group);
 
   PushTableStart(Group);
-    PushButtonStart(Group, (umm)"Ignored");
+    PushButtonStart(Group, UiId(0,Cast(void*,0),Cast(void*,0)));
       PushColumn(Group, CS("String1"));
       PushColumn(Group, CS("String2"));
       PushColumn(Group, CS("String3"));
@@ -39,7 +39,7 @@ TestTable(renderer_2d* Group)
   PushTableEnd(Group);
 
   PushTableStart(Group);
-    PushButtonStart(Group, (umm)"Ignored");
+    PushButtonStart(Group, UiId(0,Cast(void*,0),Cast(void*,0)));
       PushColumn(Group, CS("String1"));
       PushColumn(Group, CS("String2"));
       PushColumn(Group, CS("String3"));

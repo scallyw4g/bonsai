@@ -1,5 +1,5 @@
 // NOTE(Jesse): This includes implementations for performace profiling and debug tracing
-#define DEBUG_SYSTEM_API 1
+#define BONSAI_DEBUG_SYSTEM_API 1
 
 #include <bonsai_types.h>
 
@@ -64,16 +64,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   world_position WorldCenter = {};
   canonical_position CameraTargetP = {};
 
-  StandardCamera(Graphics->Camera, 10000.0f, 1000.0f, CameraTargetP);
+  StandardCamera(Graphics->Camera, 10000.0f, 1000.0f, DEFAULT_CAMERA_BLENDING, CameraTargetP);
 
   AllocateWorld(World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
-
-  World->Flags = WorldFlag_WorldCenterFollowsCameraTarget;
-
-  entity *CameraGhost = GetFreeEntity(EntityTable);
-  SpawnEntity(CameraGhost);
-
-  Resources->CameraGhost = CameraGhost;
 
   GameState = Allocate(game_state, Resources->Memory, 1);
   return GameState;
@@ -89,17 +82,4 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   UNPACK_ENGINE_RESOURCES(Resources);
 
   f32 dt = Plat->dt;
-
-  // Update camera position
-  if (Input->W.Pressed || Input->S.Pressed || Input->A.Pressed || Input->D.Pressed)
-  {
-    v3 Offset = GetCameraRelativeInput(Hotkeys, Camera);
-
-    // Constrain the camera update to the XY plane
-    Offset.z = 0;
-    Offset = Normalize(Offset, 1.f);
-
-    Resources->CameraGhost->P.Offset += Offset;
-  }
-
 }

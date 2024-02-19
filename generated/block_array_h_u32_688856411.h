@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/primitive_containers.h:2:0
+
 struct u32_block
 {
   u32 Index;
@@ -8,16 +10,17 @@ struct u32_block
 
 struct u32_block_array_index
 {
-  void *Block;
+  u32_block *Block;
   u32 BlockIndex;
   u32 ElementIndex;
 };
 
 struct u32_block_array
 {
-  u32_block First;
+  u32_block *First;
   u32_block *Current;
-  memory_arena *Memory;
+  memory_arena *Memory; poof(@no_serialize)
+  
 };
 
 link_internal u32_block_array_index
@@ -29,7 +32,7 @@ operator++(u32_block_array_index &I0)
     {
       I0.ElementIndex = 0;
       I0.BlockIndex++;
-      I0.Block = Cast(u32_block*, I0.Block)->Next;
+      I0.Block = I0.Block->Next;
     }
     else
     {
@@ -50,13 +53,6 @@ operator<(u32_block_array_index I0, u32_block_array_index I1)
   return Result;
 }
 
-link_inline u32_block *
-GetBlock(u32_block_array_index *Index)
-{
-  u32_block *Result = Cast(u32_block*, Index->Block);
-  return Result;
-}
-
 link_inline umm
 GetIndex(u32_block_array_index *Index)
 {
@@ -68,8 +64,8 @@ link_internal u32_block_array_index
 ZerothIndex(u32_block_array *Arr)
 {
   u32_block_array_index Result = {};
-  Result.Block = &Arr->First;
-  Assert(GetBlock(&Result)->Index == 0);
+  Result.Block = Arr->First;
+  /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
@@ -108,8 +104,6 @@ AtElements(u32_block_array *Arr)
     Result.Block = Arr->Current;
     Result.BlockIndex = Arr->Current->Index;
     Result.ElementIndex = Arr->Current->At;
-    /* Assert(Result.ElementIndex); */
-    /* Result.ElementIndex--; */
   }
   return Result;
 }
@@ -118,7 +112,7 @@ link_internal u32 *
 GetPtr(u32_block_array *Arr, u32_block_array_index Index)
 {
   u32 *Result = {};
-  if (Index.Block) { Result = GetBlock(&Index)->Elements + Index.ElementIndex; }
+  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
   return Result;
 }
 
@@ -137,7 +131,7 @@ GetPtr(u32_block_array *Arr, umm Index)
   umm ElementIndex = Index % 8;
 
   umm AtBlock = 0;
-  u32_block *Block = &Arr->First;
+  u32_block *Block = Arr->First;
   while (AtBlock++ < BlockIndex)
   {
     Block = Block->Next;

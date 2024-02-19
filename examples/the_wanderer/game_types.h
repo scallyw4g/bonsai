@@ -13,9 +13,5 @@ struct game_state
   event_queue EventQueue;
 
   entity *Player;
-
-#if DEBUG_SYSTEM_API
-  get_debug_state_proc GetDebugState;
-#endif
 };
 

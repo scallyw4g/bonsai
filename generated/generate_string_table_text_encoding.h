@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/ansi_stream.h:32:0
+
 link_internal counted_string
 ToString(text_encoding Type)
 {
@@ -16,6 +18,8 @@ ToString(text_encoding Type)
     case TextEncoding_CSCU: { Result = CSz("TextEncoding_CSCU"); } break;
     case TextEncoding_BOCU: { Result = CSz("TextEncoding_BOCU"); } break;
     case TextEncoding_GB18030: { Result = CSz("TextEncoding_GB18030"); } break;
+
+    
   }
   return Result;
 }

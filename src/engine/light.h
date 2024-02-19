@@ -20,13 +20,11 @@ struct shadow_render_group
   u32 FramebufferName;
   s32 MVP_ID;
 
-  shader DebugTextureShader;
   shader DepthShader;
 
   m4 MVP;
 
   texture *ShadowMap;
-  light Sun;
 };
 
 struct lighting_render_group
@@ -49,21 +47,20 @@ struct lighting_render_group
   shader DebugLightingShader;
 };
 
-void
-DoLight(game_lights *Lights, v3 Position, v3 Color)
+link_internal void
+DoLight(game_lights *Lights, v3 RenderPosition, v3 Color)
 {
-  Assert(Lights->Count < MAX_LIGHTS);
   u32 ThisLightIndex = AtomicIncrement((volatile u32 *)&Lights->Count) - 1;
-  Assert(Lights->Count < MAX_LIGHTS);
-
   if (ThisLightIndex < MAX_LIGHTS)
   {
     light *Light = Lights->Lights + ThisLightIndex;
-    Light->Position = Position;
+    Light->Position = RenderPosition;
     Light->Color = Color;
   }
-
- return;
+  else
+  {
+    Warn("Too many lights in scene!");
+  }
 }
 
 #define LUMINANCE_MAP_RESOLUTION_X (SCR_WIDTH)

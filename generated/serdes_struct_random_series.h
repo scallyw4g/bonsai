@@ -1,28 +1,84 @@
-link_internal b32
-Serialize(native_file *File, random_series *Element)
+// src/engine/serdes.cpp:231:0
+
+link_internal bonsai_type_info
+TypeInfo(random_series *Ignored)
 {
-  u64 PointerTrue = True; 
-  u64 PointerFalse = False; 
+  bonsai_type_info Result = {};
 
-  b32 Result = True;
+  Result.Name = CSz("random_series");
+  Result.Version = 0 ;
 
-  Result &= Serialize(File, &Element->Seed);
+  /* type.map(member) */
+  /* { */
+  /*   { */
+  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
+  /*     Push(&Result.Members, &Member); */
+  /*   } */
+  /* } */
 
-  
-
-  MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, random_series *Element, memory_arena *Memory)
+Serialize(u8_cursor_block_array *Bytes, random_series *BaseElement, umm Count = 1)
+{
+  Assert(Count > 0);
+
+  u64 PointerTrue = True;
+  u64 PointerFalse = False;
+
+  b32 Result = True;
+
+  
+
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    random_series *Element = BaseElement + ElementIndex;
+    Result &= Serialize(Bytes, &Element->Seed);
+
+    
+
+    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+  }
+
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, random_series *Element, memory_arena *Memory, umm Count = 1);
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, random_series *Element, memory_arena *Memory);
+
+
+
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, random_series *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  Result &= Deserialize(Bytes, &Element->Seed);
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->Seed, Memory);
 
   
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, random_series *Element, memory_arena *Memory, umm Count)
+{
+  Assert(Count > 0);
+
+  b32 Result = True;
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+
+  }
+
   return Result;
 }
 

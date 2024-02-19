@@ -1,3 +1,5 @@
+// src/engine/world_chunk.h:518:0
+
 struct standing_spot_stream_chunk
 {
   standing_spot Element;

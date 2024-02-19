@@ -7,7 +7,7 @@ Bonsai_OnLibraryLoad(engine_resources *Resources)
   if (ThreadLocal_ThreadIndex == -1) { SetThreadLocal_ThreadIndex(0); }
   else { Assert(ThreadLocal_ThreadIndex == 0); }
 
-#if DEBUG_SYSTEM_API
+#if BONSAI_DEBUG_SYSTEM_API
   Global_DebugStatePointer = Resources->DebugState;
 #endif
 
@@ -23,27 +23,11 @@ Bonsai_Init(engine_resources *Resources)
 {
   TIMED_FUNCTION();
 
-  platform *Plat = &Resources->Stdlib.Plat;
-
   b32 Result = True;
 
-  memory_arena *BonsaiInitArena = AllocateArena(Megabytes(256));;
-  DEBUG_REGISTER_ARENA(BonsaiInitArena, 0);
-
-  Resources->Memory = BonsaiInitArena;
-  Resources->Heap = InitHeap(Gigabytes(2));
-
-  Init_Global_QuadVertexBuffer();
-
-  Resources->World = Allocate(world, BonsaiInitArena, 1);
-  if (!Resources->World) { Error("Allocating World"); return False; }
-
-  Resources->Graphics = GraphicsInit(AllocateArena());
-  if (!Resources->Graphics) { Error("Initializing Graphics"); return False; }
-
-  InitRenderer2D(&Resources->Ui, &Resources->Heap, AllocateArena(), &Plat->MouseP, &Plat->MouseDP, &Plat->ScreenDim, &Plat->Input);
-
-  Resources->EntityTable = AllocateEntityTable(BonsaiInitArena, TOTAL_ENTITY_COUNT);
+  Result &= InitEngineDebug(&Resources->EngineDebug);
+  Result &= InitEditor(&Resources->Editor);
+  Result &= InitEngineResources(Resources);
 
   return Result;
 }
@@ -52,6 +36,8 @@ link_export b32
 Bonsai_FrameBegin(engine_resources *Resources)
 {
   TIMED_FUNCTION();
+
+  DoWorldChunkStuff();
 
   // Must come before we update the frame index
   CollectUnusedChunks(Resources, &Resources->MeshFreelist, Resources->World->Memory, Resources->World->VisibleRegion);
@@ -69,20 +55,6 @@ Bonsai_FrameBegin(engine_resources *Resources)
   World->ChunkHash = CurrentWorldHashtable(Resources);
 
   ClearFramebuffers(Graphics, &Resources->RTTGroup);
-
-
-#if 0
-  // TODO(Jesse): Is this random leftover debug code that can be removed?
-  if (EngineDebug->SelectedAsset.Type)
-  {
-    asset *Asset = GetAsset(Resources, &EngineDebug->SelectedAsset);
-    if (Asset->LoadState == AssetLoadState_Loaded)
-    {
-      /* UpdateGameCamera(World, {}, 0, Canonical_Position(V3(Asset->Model.Dim/2), V3i(0)), Resources->RTTGroup.Camera); */
-      /* RenderToTexture(Resources, &Asset->Model.Mesh); */
-    }
-  }
-#endif
 
   MapGpuElementBuffer(GpuMap);
   MapGpuElementBuffer(&Graphics->Transparency.GpuBuffer);
@@ -103,65 +75,89 @@ Bonsai_FrameBegin(engine_resources *Resources)
   // the UI captures the input
   //
   // @camera-update-ui-update-frame-jank
-  Resources->MaybeMouseRay = ComputeRayFromCursor(Resources, &gBuffer->ViewProjection, Camera, World->ChunkDim);
-  Resources->MousedOverVoxel = MousePickVoxel(Resources);
-
-  UiFrameBegin(&Resources->Ui);
-  DoEngineDebug(Resources);
-
-  // NOTE(Jesse): Has to come after the UI draws such that we don't get a frame
-  // of camera-jank if the UI captures mouse input
-  //
-  // The specific case here is that if the camera updates, then the UI draws,
-  // and we're in paint-single mode (which captures the input) there's a frame
-  // where the camera updates, then freezes, which feels ultra-janky.  Updating
-  // the UI, then the camera, avoids this order-of-operations issue.
-  //
-  // @camera-update-ui-update-frame-jank
-  //
-  // Unfortunately, this actually re-introduces another order-of-operations issue
-  // which I've fixed in the past, which is that the immediate geometry is a
-  // frame late. 
-  //
-  // @immediate-geometry-is-a-frame-late
-  if (UiCapturedMouseInput(Ui) == False)
+  if (UiHoveredMouseInput(Ui))
   {
-    f32 CameraSpeed = 80.f;
-    v3 Offset = GetCameraRelativeInput(Hotkeys, Camera);
-    Offset.z = 0; // Constrain to XY plane
-
-    if (Input->E.Pressed) { Offset.z += 1.f; }
-    if (Input->Q.Pressed) { Offset.z -= 1.f; }
-
-    Offset = Normalize(Offset);
-    /* Camera->ViewingTarget.Offset += Offset; */
-    if (Resources->CameraGhost) { Resources->CameraGhost->P.Offset += Offset * Plat->dt * CameraSpeed; }
-
-    // NOTE(Jesse): This has to come before we draw any of the game geometry.
-    // Specifically, if it comes after we draw bounding boxes for anything
-    // the bounding box lines shift when we move the camera because they're
-    // then a frame late.
-    //
-    // @immediate-geometry-is-a-frame-late
-    //
-    // UPDATE(Jesse): This bug has been reintroduced because of @camera-update-ui-update-frame-jank
-    // More info and a solution documented at : https://github.com/scallyw4g/bonsai/issues/30
-    //
-    cp CameraGhostP = Resources->CameraGhost ? Resources->CameraGhost->P : Canonical_Position(0);
-
-    input *InputForCamera = 0;
-    v2 MouseDelta = GetMouseDelta(Plat);
-
-    InputForCamera = &Plat->Input;;
-    UpdateGameCamera(World, MouseDelta, InputForCamera, CameraGhostP, Camera, DEFAULT_CAMERA_BLENDING*Plat->dt);
-
-    Resources->Graphics->gBuffer->ViewProjection =
-      ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
-      ViewMatrix(World->ChunkDim, Camera);
-
-    if (World->Flags & WorldFlag_WorldCenterFollowsCameraTarget) { World->Center = CameraGhostP.WorldP; }
+    Resources->MaybeMouseRay   = {};
+    Resources->MousedOverVoxel = {};
+    Resources->HoverEntity     = {};
+  }
+  else
+  {
+    Resources->MaybeMouseRay   = ComputeRayFromCursor(Resources, &gBuffer->ViewProjection, Camera, World->ChunkDim);
+    Resources->MousedOverVoxel = MousePickVoxel(Resources);
+    Resources->HoverEntity     = GetClosestEntityIntersectingRay(World, EntityTable, &Resources->MaybeMouseRay.Ray);
   }
 
+  // Find closest standing spot to cursor
+  {
+    Resources->ClosestStandingSpotToCursor = {};
+
+    f32 ShortestDistanceToPlayerSq = f32_MAX;
+    umm ClosestTileIndex = umm_MAX;
+    if (Resources->MousedOverVoxel.Tag)
+    {
+      cp MouseVoxelCP = Canonical_Position(&Resources->MousedOverVoxel.Value);
+      v3 MouseVoxelSimP = GetSimSpaceP(World, MouseVoxelCP);
+      standing_spot_buffer Spots = GetStandingSpotsWithinRadius(World, MouseVoxelCP, 8, GetTranArena());
+      IterateOver(&Spots, Spot, SpotIndex)
+      {
+        v3 SpotSimP = GetSimSpaceP(World, Spot->P) + Global_StandingSpotHalfDim;
+        r32 ThisDist = DistanceSq(SpotSimP, MouseVoxelSimP);
+        if (ThisDist < ShortestDistanceToPlayerSq)
+        {
+          ShortestDistanceToPlayerSq = ThisDist;
+          ClosestTileIndex = SpotIndex;
+        }
+      }
+
+      if (ClosestTileIndex < Spots.Count)
+      {
+        Resources->ClosestStandingSpotToCursor.Tag = Maybe_Yes;
+        Resources->ClosestStandingSpotToCursor.Value = Spots.Start[ClosestTileIndex];
+      }
+    }
+  }
+
+  UiFrameBegin(Ui);         // Clear UI interactions
+  DoEngineDebug(Resources); // Do Editor/Debug UI
+
+#if 0
+  {
+    local_persist window_layout TestWindow = WindowLayout("TestWindow");
+    PushWindowStart(Ui, &TestWindow);
+
+      PushTableStart(Ui);
+        DoEditorUi(Ui, &TestWindow, &Resources->Ui.ToggleTable, CSz("ToggleTable"));
+      PushTableEnd(Ui);
+
+    PushWindowEnd(Ui, &TestWindow);
+  }
+#endif
+
+#if 0
+  // NOTE(Jesse): This is a start on debugging some UI layout issues
+  {
+    local_persist window_layout TestWindow = WindowLayout("TestWindow");
+
+    PushWindowStart(Ui, &TestWindow);
+
+    PushTableStart(Ui);
+      PushColumn(Ui, CSz("foo"));
+      PushColumn(Ui, CSz("bar"));
+      PushColumn(Ui, CSz("baz"));
+      PushNewRow(Ui);
+
+      u32 I = StartColumn(Ui);
+        PushTableStart(Ui);
+          PushColumn(Ui, CSz("foo"));
+        PushTableEnd(Ui);
+      EndColumn(Ui, I);
+
+    PushTableEnd(Ui);
+
+    PushWindowEnd(Ui, &TestWindow);
+  }
+#endif
 
   b32 Result = True;
   return Result;
@@ -177,7 +173,7 @@ Bonsai_FrameEnd(engine_resources *Resources)
 }
 
 link_export b32
-Bonsai_SimulateAndBufferGeometry(engine_resources *Resources)
+Bonsai_Simulate(engine_resources *Resources)
 {
   TIMED_FUNCTION();
 
@@ -185,22 +181,78 @@ Bonsai_SimulateAndBufferGeometry(engine_resources *Resources)
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
-#if 0 // DEBUG_SYSTEM_API
-  if (GetDebugState()->UiGroup.PressedInteractionId != StringHash("GameViewport"))
-  {
-    GameInput = 0;
-  }
-#endif
-
   SimulateEntities(Resources, Plat->dt, World->VisibleRegion, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, &Plat->HighPriority);
   /* DispatchSimulateParticleSystemJobs(&Plat->HighPriority, EntityTable, World->ChunkDim, &GpuMap->Buffer, Graphics, Plat->dt); */
 
-  BufferEntities( EntityTable, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, Graphics, World, Plat->dt);
-  /* BufferEntities( EntityTable, &Graphics->Transparency.GpuBuffer.Buffer, Graphics, World, Plat->dt); */
-
   UnsignalFutex(&Resources->Stdlib.Plat.HighPriorityModeFutex);
 
-#if DEBUG_SYSTEM_API
+  if (Input->F4.Clicked)
+  {
+    if (Graphics->Camera == &Graphics->GameCamera)
+    {
+      Graphics->Camera = &Graphics->DebugCamera;
+    }
+    else
+    {
+      Graphics->Camera = &Graphics->GameCamera;
+    }
+    Camera = Graphics->Camera;
+  }
+
+  // NOTE(Jesse): Has to come after the UI happens such that we don't get a
+  // frame of camera-jank if the UI captures mouse input
+  //
+  // The specific case here is that if the camera updates, then the UI draws,
+  // and we're in paint-single mode (which captures the input) there's a frame
+  // where the camera updates, then freezes, which feels ultra-janky.  Updating
+  // the UI, then the camera, avoids this order-of-operations issue.
+  //
+  // @camera-update-ui-update-frame-jank
+  //
+  // Unfortunately, this actually re-introduces another order-of-operations issue
+  // which I've fixed in the past, which is that the immediate geometry is a
+  // frame late. 
+  //
+  // @immediate-geometry-is-a-frame-late
+  //
+  // NOTE(Jesse): This has to come before we draw any of the game geometry.
+  // Specifically, if it comes after we draw bounding boxes for anything
+  // the bounding box lines shift when we move the camera because they're
+  // then a frame late.
+  //
+  // @immediate-geometry-is-a-frame-late
+  //
+  // UPDATE(Jesse): This bug has been reintroduced because of @camera-update-ui-update-frame-jank
+  // More info and a solution documented at : https://github.com/scallyw4g/bonsai/issues/30
+  //
+
+  cp CameraTargetP = {};
+  input *InputForCamera = &Plat->Input;
+
+  entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId);
+  if (CameraGhost == 0)
+  {
+    // Allocate default camera ghost
+    Camera->GhostId = GetFreeEntity(EntityTable);
+    CameraGhost = GetEntity(EntityTable, Camera->GhostId);
+    CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior | EntityBehaviorFlags_DefatulCameraGhostBehavior);
+    SpawnEntity(CameraGhost);
+  }
+
+  if (CameraGhost) { CameraTargetP = CameraGhost->P; }
+
+  b32 DoPositionDelta = (!UiCapturedMouseInput(Ui) && UiInteractionWasViewport(Ui));
+  b32 DoZoomDelta = UiHoveredMouseInput(Ui) == False;
+
+  v2 MouseDelta = GetMouseDelta(Plat);
+  UpdateGameCamera(World, MouseDelta, InputForCamera, CameraTargetP, Camera, Plat->dt, DoPositionDelta, DoZoomDelta);
+
+  Resources->Graphics->gBuffer->ViewProjection =
+    ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
+    ViewMatrix(World->ChunkDim, Camera);
+
+
+#if BONSAI_DEBUG_SYSTEM_API
   Debug_DoWorldChunkPicking(Resources);
 #endif
 
@@ -215,51 +267,57 @@ DoDayNightCycle(graphics *Graphics, r32 tDay)
   r32 tDaytime = Cos(tDay);
   r32 tPostApex = Sin(tDay);
 
-  f32 SunIntensity = 1.f;
-  f32 MoonIntensity = 0.05f;
+  lighting_settings *Lighting = &Graphics->Settings.Lighting;
 
-  f32 DawnIntensity = 0.5f;
-  f32 DuskIntensity = 0.25f;
+  v3 DawnColor = Normalize(Lighting->DawnColor) * Lighting->DawnIntensity;
+  v3 SunColor  = Normalize(Lighting->SunColor ) * Lighting->SunIntensity;
+  v3 DuskColor = Normalize(Lighting->DuskColor) * Lighting->DuskIntensity;
+  v3 MoonColor = Normalize(Lighting->MoonColor) * Lighting->MoonIntensity;
 
-  v3 DawnColor = Normalize(V3(0.3f, 0.2f, 0.2f)) * DawnIntensity;
-  v3 SunColor  = Normalize(V3(0.2f, 0.2f, 0.3f)) * SunIntensity;
-  v3 DuskColor = Normalize(V3(0.4f, 0.2f, 0.2f)) * DuskIntensity;
-  v3 MoonColor = Normalize(V3(0.2f, 0.2f, 0.5f)) * MoonIntensity;
+  Lighting->SunP.x = Sin(tDay);
+  Lighting->SunP.y = Cos(tDay);
+  Lighting->SunP.z = (1.3f+Cos(tDay))/2.f;
 
-  /* if (Graphics->Settings.DoDayNightCycle) */
+  if (tDaytime > 0.f)
   {
-    if (tDaytime > 0.f)
+    if (tPostApex > 0.f)
     {
-      if (tPostApex > 0.f)
-      {
-        SG->Sun.Color = Lerp(tDaytime, DuskColor, SunColor);
-      }
-      else
-      {
-        SG->Sun.Color = Lerp(tDaytime, DawnColor, SunColor);
-      }
+      Lighting->CurrentSunColor = Lerp(tDaytime, DuskColor, SunColor);
     }
     else
     {
-      /* SG->Sun.Color = V3(0.15f); */
-      if (tPostApex > 0.f)
-      {
-        SG->Sun.Color = Lerp(Abs(tDaytime), DuskColor, MoonColor);
-      }
-      else
-      {
-        SG->Sun.Color = Lerp(Abs(tDaytime), DawnColor, MoonColor);
-      }
+      Lighting->CurrentSunColor = Lerp(tDaytime, DawnColor, SunColor);
     }
   }
-  /* else */
-  /* { */
-    /* SG->Sun.Color = SunColor; */
-  /* } */
+  else
+  {
+    if (tPostApex > 0.f)
+    {
+      Lighting->CurrentSunColor = Lerp(Abs(tDaytime), DuskColor, MoonColor);
+    }
+    else
+    {
+      Lighting->CurrentSunColor = Lerp(Abs(tDaytime), DawnColor, MoonColor);
+    }
+  }
 
-  SG->Sun.Position.x = Sin(tDay);
-  SG->Sun.Position.y = tDaytime;
-  SG->Sun.Position.z = tDaytime*0.7f + 1.3f;
+  switch (Graphics->Settings.ToneMappingType)
+  {
+    case ToneMappingType_None:
+    case ToneMappingType_Reinhard:
+    case ToneMappingType_Exposure:
+      { } break;
+
+    case ToneMappingType_AGX:
+    case ToneMappingType_AGX_Sepia:
+    case ToneMappingType_AGX_Punchy:
+    {
+      if (LengthSq(Lighting->CurrentSunColor) > 1.f)
+      {
+        Lighting->CurrentSunColor = Normalize(Lighting->CurrentSunColor);
+      }
+    } break;
+  }
 
 }
 
@@ -273,13 +331,24 @@ Bonsai_Render(engine_resources *Resources)
   ao_render_group     *AoGroup = Graphics->AoGroup;
   shadow_render_group *SG      = Graphics->SG;
 
-  if (Graphics->Settings.AutoDayNightCycle) { Graphics->Settings.tDay += Plat->dt/18.0f; }
-  DoDayNightCycle(Graphics, Graphics->Settings.tDay);
+  if (Graphics->Settings.Lighting.AutoDayNightCycle)
+  {
+    Graphics->Settings.Lighting.tDay += Plat->dt/18.0f;
+  }
+  DoDayNightCycle(Graphics, Graphics->Settings.Lighting.tDay);
 
-  v3 CameraTargetSimP = GetSimSpaceP(World, Resources->CameraGhost);
-  Graphics->Settings.OffsetOfWorldCenterToGrid.x = fmodf(CameraTargetSimP.x, Graphics->Settings.MajorGridDim);
-  Graphics->Settings.OffsetOfWorldCenterToGrid.y = fmodf(CameraTargetSimP.y, Graphics->Settings.MajorGridDim);
-  Graphics->Settings.OffsetOfWorldCenterToGrid.z = fmodf(CameraTargetSimP.z, Graphics->Settings.MajorGridDim);
+#if 0
+  NotImplemented;
+#else
+  entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId);
+  if (CameraGhost)
+  {
+    v3 CameraTargetSimP = GetSimSpaceP(World, CameraGhost);
+    Graphics->Settings.OffsetOfWorldCenterToGrid.x = fmodf(CameraTargetSimP.x, Graphics->Settings.MajorGridDim);
+    Graphics->Settings.OffsetOfWorldCenterToGrid.y = fmodf(CameraTargetSimP.y, Graphics->Settings.MajorGridDim);
+    Graphics->Settings.OffsetOfWorldCenterToGrid.z = fmodf(CameraTargetSimP.z, Graphics->Settings.MajorGridDim);
+  }
+#endif
 
   EngineDebug->Render.BytesSolidGeoLastFrame = GpuMap->Buffer.At;
   EngineDebug->Render.BytesTransGeoLastFrame = Graphics->Transparency.GpuBuffer.Buffer.At;
@@ -295,11 +364,9 @@ Bonsai_Render(engine_resources *Resources)
 
   if (GpuMap->Buffer.At)
   {
-    // NOTE(Jesse): GBuffer and ShadowMap must be rendered in series because they
-    // both do operate on the total scene geometry. The rest of the render passes
-    // operate on the textures they create and only render a quad.
-    RenderGBuffer(GpuMap, Graphics);
-    RenderShadowMap(GpuMap, Graphics);
+    RenderImmediateGeometryToGBuffer(GpuMap, Graphics);
+    // Comment this out to not cast shadows from immediate geometry
+    RenderImmediateGeometryToShadowMap(GpuMap, Graphics);
   }
 
   Clear(&GpuMap->Buffer);
@@ -411,7 +478,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       world_chunk *Chunk = Job->Chunk;
 
       counted_string AssetFilename = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, Thread->TempMemory);
-      native_file AssetFile = OpenFile(AssetFilename, "r+b");
+      native_file AssetFile = OpenFile(AssetFilename, FilePermission_Read);
 
       if (ChunkIsGarbage(Chunk))
       {

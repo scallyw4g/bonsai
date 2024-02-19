@@ -66,8 +66,9 @@ struct model
 {
   vox_data Vox;
 
-  /* gpu_mapped_element_buffer MeshBuffer; */
-  untextured_3d_geometry_buffer Mesh;
+  lod_element_buffer Meshes; poof(@no_serialize)
+
+  /* untextured_3d_geometry_buffer Mesh; */
   untextured_3d_geometry_buffer TransparentMesh;
   animation Animation;
   v3i Dim;
@@ -83,7 +84,7 @@ Deserialize(u8_stream *Bytes, gpu_mapped_element_buffer *Element, memory_arena *
 poof(block_array(vox_data, {8}))
 #include <generated/block_array_vox_data_688856411.h>
 
-poof(buffer(model))
+poof(buffer_t(model, u64))
 #include <generated/buffer_model.h>
 
 poof(block_array(model, {8}))

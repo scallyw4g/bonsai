@@ -1,107 +1,197 @@
-link_internal b32
-Serialize(native_file *File, particle_system *Element)
+// src/engine/serdes.cpp:234:0
+
+link_internal bonsai_type_info
+TypeInfo(particle_system *Ignored)
 {
-  u64 PointerTrue = True; 
-  u64 PointerFalse = False; 
+  bonsai_type_info Result = {};
+
+  Result.Name = CSz("particle_system");
+  Result.Version = 0 ;
+
+  /* type.map(member) */
+  /* { */
+  /*   { */
+  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
+  /*     Push(&Result.Members, &Member); */
+  /*   } */
+  /* } */
 
-  b32 Result = True;
-
-  Result &= Serialize(File, &Element->Entropy);
-
-
-
-  Result &= Serialize(File, (u32*)&Element->SpawnType);
-
-
-  Result &= Serialize(File, &Element->Drag);
-
-
-
-  Result &= Serialize(File, &Element->Lifetime);
-
-
-
-  Result &= Serialize(File, &Element->EmissionDelay);
-
-
-
-  Result &= Serialize(File, &Element->EmissionLifespan);
-
-
-
-  Result &= Serialize(File, &Element->ActiveParticles);
-
-
-
-  Result &= Serialize(File, &Element->LifespanMod);
-
-
-
-  Result &= Serialize(File, &Element->ParticleLifespan);
-
-
-
-  Result &= Serialize(File, &Element->ParticlesPerSecond);
-
-
-
-  Result &= Serialize(File, &Element->ParticleLightEmission);
-
-
-
-  Result &= Serialize(File, &Element->ParticleLightEmissionChance);
-
-
-
-  Result &= Serialize(File, &Element->ParticleStartingTransparency);
-
-
-
-  Result &= Serialize(File, &Element->ParticleEndingTransparency);
-
-
-
-  Result &= Serialize(File, &Element->ParticleStartingDim);
-
-
-
-  Result &= Serialize(File, &Element->ParticleEndingDim);
-
-
-
-  Result &= Serialize(File, &Element->ParticleTurbMin);
-
-
-
-  Result &= Serialize(File, &Element->ParticleTurbMax);
-
-
-
-  Result &= Serialize(File, &Element->SpawnRegion);
-
-
-
-  Result &= Serialize(File, &Element->SystemMovementCoefficient);
-
-
-
-  Result &= Serialize(File, &Element->ElapsedSinceLastEmission);
-
-
-
-  Result &= SerializeArray(File, Element->Colors, 6);
-
-  
-
-  MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   return Result;
 }
 
 link_internal b32
-Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
+Serialize(u8_cursor_block_array *Bytes, particle_system *BaseElement, umm Count = 1)
+{
+  Assert(Count > 0);
+
+  u64 PointerTrue = True;
+  u64 PointerFalse = False;
+
+  b32 Result = True;
+
+  
+
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    particle_system *Element = BaseElement + ElementIndex;
+    Result &= Serialize(Bytes, &Element->Entropy);
+
+
+
+
+
+    Result &= Serialize(Bytes, (u32*)&Element->SpawnType);
+
+
+
+
+    Result &= Serialize(Bytes, &Element->Drag);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->Lifetime);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->EmissionDelay);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->EmissionLifespan);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->ActiveParticles);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->LifespanMod);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->ParticleLifespan);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->ParticlesPerSecond);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->ParticleLightEmission);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->ParticleLightEmissionChance);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->ParticleStartingTransparency);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->ParticleEndingTransparency);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->ParticleStartingDim);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->ParticleEndingDim);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->ParticleTurbMin);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->ParticleTurbMax);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->SpawnRegion);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->SystemMovementCoefficient);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->ElapsedSinceLastEmission);
+
+
+
+
+
+    Result &= Serialize(Bytes, Element->Colors, 6);
+
+
+
+
+
+
+
+    
+
+    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+  }
+
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, particle_system *Element, memory_arena *Memory, umm Count = 1);
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_arena *Memory);
+
+
+
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_arena *Memory)
 {
   b32 Result = True;
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Entropy, Memory);
+
 
 
 
@@ -109,97 +199,156 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
   Element->SpawnType = Cast(particle_spawn_type, Read_u32(Bytes));
 
 
-  Result &= Deserialize(Bytes, &Element->Drag);
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->Drag, Memory);
 
 
 
 
-  Result &= Deserialize(Bytes, &Element->Lifetime);
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->Lifetime, Memory);
 
 
 
 
-  Result &= Deserialize(Bytes, &Element->EmissionDelay);
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->EmissionDelay, Memory);
 
 
 
 
-  Result &= Deserialize(Bytes, &Element->EmissionLifespan);
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->EmissionLifespan, Memory);
 
 
 
 
-  Result &= Deserialize(Bytes, &Element->ActiveParticles);
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->ActiveParticles, Memory);
 
 
 
 
-  Result &= Deserialize(Bytes, &Element->LifespanMod);
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->LifespanMod, Memory);
 
 
 
 
-  Result &= Deserialize(Bytes, &Element->ParticleLifespan);
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->ParticleLifespan, Memory);
 
 
 
 
-  Result &= Deserialize(Bytes, &Element->ParticlesPerSecond);
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->ParticlesPerSecond, Memory);
 
 
 
 
-  Result &= Deserialize(Bytes, &Element->ParticleLightEmission);
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->ParticleLightEmission, Memory);
 
 
 
 
-  Result &= Deserialize(Bytes, &Element->ParticleLightEmissionChance);
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->ParticleLightEmissionChance, Memory);
 
 
 
 
-  Result &= Deserialize(Bytes, &Element->ParticleStartingTransparency);
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->ParticleStartingTransparency, Memory);
 
 
 
 
-  Result &= Deserialize(Bytes, &Element->ParticleEndingTransparency);
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->ParticleEndingTransparency, Memory);
 
 
 
 
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ParticleStartingDim, Memory);
 
 
 
 
-  Result &= Deserialize(Bytes, &Element->ParticleEndingDim);
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->ParticleEndingDim, Memory);
 
 
 
 
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ParticleTurbMin, Memory);
 
 
 
 
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ParticleTurbMax, Memory);
 
 
 
 
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->SpawnRegion, Memory);
 
 
 
 
-  Result &= Deserialize(Bytes, &Element->SystemMovementCoefficient);
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->SystemMovementCoefficient, Memory);
 
 
 
 
-  Result &= Deserialize(Bytes, &Element->ElapsedSinceLastEmission);
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->ElapsedSinceLastEmission, Memory);
+
 
 
 
@@ -209,9 +358,30 @@ Deserialize(u8_stream *Bytes, particle_system *Element, memory_arena *Memory)
     Result &= Deserialize(Bytes, &Element->Colors[ElementIndex]);
   }
 
+
+
+
+
+
+
   
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, particle_system *Element, memory_arena *Memory, umm Count)
+{
+  Assert(Count > 0);
+
+  b32 Result = True;
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+
+  }
+
   return Result;
 }
 

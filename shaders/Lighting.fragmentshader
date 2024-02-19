@@ -255,10 +255,10 @@ void main()
      */
     // TODO(Jesse): Can do squared?
     float DistanceToFrag = distance(CameraP, FragPosition.xyz);
-    float MaxFogDist = 4500.f;
+    float MaxFogDist = 6000.f;
 
     float FogContrib = clamp( DistanceToFrag / MaxFogDist, 0.f, 1.f);
-    v3 FogColor = V3(0.01f, 0.04f, 0.20f);
+    v3 FogColor = V3(0.01f, 0.04f, 0.15f);
     v3 Fog = FogContrib * FogColor;
 #else
     v3 Fog = V3(0);

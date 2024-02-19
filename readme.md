@@ -1,4 +1,5 @@
-![hero_banner](screenshots/5_skele.png)
+
+![hero_banner](screenshots/dusk_defence.png)
 
 # Welcome to Bonsai!
 
@@ -13,7 +14,7 @@ remove the CRT entirely, though it's unclear when/if I'll get around to it.
 The only requirements to build and run Bonsai are an OpenGL 3.3+ driver, C++
 compiler, and a few appropriate system headers.
 
-![banner](screenshots/8_skele.png)
+![banner](screenshots/5_skele.png)
 
 ## Renderer Features
 
@@ -23,6 +24,8 @@ compiler, and a few appropriate system headers.
 * Lighting Bloom
 * Shadow Mapping
 * Screen Space Ambient Occlusion
+
+![banner](screenshots/3_skele.png)
 
 ## Engine Features
 
@@ -36,6 +39,8 @@ compiler, and a few appropriate system headers.
 * Terrain Generators
 * Primitive Physics
 
+![banner](screenshots/profiler.png)
+
 ## Performance Profiler Features
 
 * Manual Instrumentation
@@ -44,22 +49,31 @@ compiler, and a few appropriate system headers.
 * Context Switches (windows only)
 * Physical Core  (windows only)
 
+
 # Getting Started
+
+![banner](screenshots/8_skele.png)
 
 ## Building
 
 See the docs on the [build process](docs/01_build_process.md).
+
+![banner](screenshots/grass.png)
 
 # Wishlist
 
 -------------------------------------------------------------------------------
 ## Renderer
 
-[ ] Transparency : https://www.jcgt.org/published/0002/02/09/paper.pdf
-
 [ ] SSR : https://lettier.github.io/3d-game-shaders-for-beginners/screen-space-reflection.html
 
 [ ] Screen-space lines : https://mattdesl.svbtle.com/drawing-lines-is-hard
+
+[ ] Better shadows : https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-8-summed-area-variance-shadow-maps
+
+[ ] Screen Space Shadows : https://panoskarabelas.com/posts/screen_space_shadows/
+
+[ ] Motion Blur : https://developer.nvidia.com/gpugems/gpugems3/part-iv-image-effects/chapter-27-motion-blur-post-processing-effect
 
 [ ] TAA?
 
@@ -79,12 +93,13 @@ See the docs on the [build process](docs/01_build_process.md).
 * https://xing-mei.github.io/files/erosion.pdf
 * https://nickmcd.me/2020/04/15/procedural-hydrology/
 
-[ ] Better perlin noise (with derivitives!)
-* https://www.scratchapixel.com/lessons/procedural-generation-virtual-worlds/perlin-noise-part-2/perlin-noise-computing-derivatives.html
+[ ] Biomes
+* https://en.wikipedia.org/wiki/Holdridge_life_zones
 
-[ ] Inigo Quilez noise?
-* Value Noise : https://www.shadertoy.com/view/lsf3WH
-* Gradient Noise : https://www.shadertoy.com/view/Xsl3Dl
+[ ] Meshing
+* Isotropic surface meshing
+* https://graphics.stanford.edu/courses/cs164-10-spring/Handouts/isotropic.pdf
+* https://inria.hal.science/inria-00071612/document
 
 -------------------------------------------------------------------------------
 ## Sound
@@ -105,3 +120,5 @@ See the docs on the [build process](docs/01_build_process.md).
 [ ] Better floating-point rng : https://www.corsix.org/content/higher-quality-random-floats
 
 [ ] Better greedy meshing? https://www.youtube.com/watch?v=4xs66m1Of4A
+
+[ ] More interpolation goodies : https://paulbourke.net/miscellaneous/interpolation/

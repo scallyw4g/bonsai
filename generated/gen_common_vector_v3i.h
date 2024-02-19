@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/vector.h:733:0
+
 inline s32
 LengthSq( v3i Vec )
 {
@@ -81,6 +83,19 @@ ClampPositive( v3i V )
   if ( V.E[0] < s32(0) ) Result.E[0] = s32(0);
   if ( V.E[1] < s32(0) ) Result.E[1] = s32(0);
   if ( V.E[2] < s32(0) ) Result.E[2] = s32(0);
+  return Result;
+}
+
+inline v3i
+Clamp01( v3i V )
+{
+  v3i Result = V;
+  if ( V.E[0] < s32(0) ) Result.E[0] = s32(0);
+  if ( V.E[0] > s32(1) ) Result.E[0] = s32(1);
+  if ( V.E[1] < s32(0) ) Result.E[1] = s32(0);
+  if ( V.E[1] > s32(1) ) Result.E[1] = s32(1);
+  if ( V.E[2] < s32(0) ) Result.E[2] = s32(0);
+  if ( V.E[2] > s32(1) ) Result.E[2] = s32(1);
   return Result;
 }
 

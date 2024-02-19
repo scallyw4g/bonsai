@@ -68,9 +68,7 @@ struct particle_system
 
   u8 Colors[PARTICLE_SYSTEM_COLOR_COUNT];
 
-#if !POOF_PREPROCESSOR
-  particle Particles[PARTICLES_PER_SYSTEM];
-#endif
+  particle Particles[PARTICLES_PER_SYSTEM]; poof(@no_serialize)
 
   /* untextured_3d_geometry_buffer *Dest; */
 };

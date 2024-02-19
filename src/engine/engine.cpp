@@ -1,3 +1,4 @@
+
 #include <engine/color.cpp>
 #include <engine/debug_draw.cpp>
 
@@ -21,7 +22,9 @@
 #include <engine/gpu_mapped_buffer.cpp>
 #include <engine/render/render_init.cpp>
 #include <engine/render.cpp> // TODO(Jesse): Probably time to split this up?
+#include <engine/resources.cpp>
 
+#include <engine/serdes.cpp>
 #include <engine/editor.cpp>
 #include <engine/debug_visualize.cpp>
 #include <engine/debug.cpp>

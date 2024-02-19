@@ -1,3 +1,5 @@
+// src/engine/work_queue.cpp:111:0
+
 link_internal untextured_3d_geometry_buffer *
 TakeOwnershipSync( threadsafe_geometry_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
 {

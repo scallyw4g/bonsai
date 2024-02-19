@@ -1,3 +1,5 @@
+// external/bonsai_stdlib/src/counted_string.h:92:0
+
 struct tagged_counted_string_stream_stream_chunk
 {
   tagged_counted_string_stream Element;

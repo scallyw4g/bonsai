@@ -47,8 +47,7 @@ LoadMeshData(xml_token_stream* XmlTokens, counted_string* GeometryId, memory_are
     counted_string VertexCountSelector = FormatCountedString(TempMemory, CSz("geometry%.*s polylist vcount"), GeometryId->Count, GeometryId->Start);
     ansi_stream Triangles              = AnsiStream(GetFirstMatchingTag(XmlTokens, &VertexCountSelector)->Value);
 
-    untextured_3d_geometry_buffer Mesh = {};
-    AllocateMesh(&Mesh, TotalTriangleCount*3, Heap);
+    untextured_3d_geometry_buffer *Mesh = AllocateMesh(Heap, TotalTriangleCount*3);
 
     v3 MaxP = V3(f32_MIN);
     v3 MinP = V3(f32_MAX);
@@ -64,7 +63,7 @@ LoadMeshData(xml_token_stream* XmlTokens, counted_string* GeometryId, memory_are
           VertIndex < 3;
           ++VertIndex)
       {
-        Assert(Mesh.At < Mesh.End);
+        Assert(Mesh->At < Mesh->End);
 
         u32 PositionIndex = ToU32(PopWordCounted(&Indices));
         u32 NormalIndex = ToU32(PopWordCounted(&Indices));
@@ -72,13 +71,13 @@ LoadMeshData(xml_token_stream* XmlTokens, counted_string* GeometryId, memory_are
         Assert(NormalIndex < TotalElements(&Normals));
 
         v3 P = Positions.Start[PositionIndex];
-        Mesh.Verts[Mesh.At] = P;
+        Mesh->Verts[Mesh->At] = P;
         MaxP = Max(P, MaxP);
         MinP = Min(P, MinP);
 
-        Mesh.Normals[Mesh.At] = Normalize(Normals.Start[NormalIndex]);
+        Mesh->Normals[Mesh->At] = Normalize(Normals.Start[NormalIndex]);
 
-        Mesh.At++;
+        Mesh->At++;
       }
     }
 
@@ -101,7 +100,7 @@ LoadMeshData(xml_token_stream* XmlTokens, counted_string* GeometryId, memory_are
           VertIndex < 3;
           ++VertIndex)
       {
-        Assert(Mesh.At < Mesh.End);
+        Assert(Mesh->At < Mesh->End);
 
         u32 PositionIndex = ToU32(PopWordCounted(&Indices));
         u32 NormalIndex = ToU32(PopWordCounted(&Indices));
@@ -109,20 +108,20 @@ LoadMeshData(xml_token_stream* XmlTokens, counted_string* GeometryId, memory_are
         Assert(NormalIndex < TotalElements(&Normals));
 
         v3 P = Positions.Start[PositionIndex];
-        Mesh.Verts[Mesh.At] = P;
+        Mesh->Verts[Mesh->At] = P;
         MaxP = Max(P, MaxP);
         MinP = Min(P, MinP);
 
-        Mesh.Normals[Mesh.At] = Normalize(Normals.Start[NormalIndex]);
+        Mesh->Normals[Mesh->At] = Normalize(Normals.Start[NormalIndex]);
 
-        Mesh.At++;
+        Mesh->At++;
       }
     }
 #endif
 
   }
 
-  Assert(Result.Mesh.At == Result.Mesh.End);
+  Assert(Result.Mesh->At == Result.Mesh->End);
   return Result;
 }
 
@@ -207,7 +206,8 @@ LoadCollada(memory_arena *Memory, heap_allocator *Heap, const char * FilePath)
       Assert(GeometryName && GeometryId);
 
       loaded_collada_mesh ColladaMesh = LoadMeshData(&XmlTokens, GeometryId, GetTranArena(), Heap);
-      Result.Mesh = ColladaMesh.Mesh;
+      AtomicReplaceMesh(&Result.Meshes, MeshBit_Lod0, ColladaMesh.Mesh, __rdtsc());
+      /* Result.Mesh = ColladaMesh.Mesh; */
       Result.Dim = Voxel_Position(ColladaMesh.Dim);
 
       xml_tag* xKeyframeTimeTag = 0;

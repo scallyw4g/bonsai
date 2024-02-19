@@ -1,11 +1,13 @@
+// external/bonsai_stdlib/src/c_token.cpp:2:0
+
 struct c_token_buffer
 {
-  c_token *Start;
   umm Count;
+  c_token *Start; poof(@array_length(Element->Count))
 };
 
 link_internal c_token_buffer
-CTokenBuffer(umm ElementCount, memory_arena* Memory)
+CTokenBuffer( umm ElementCount, memory_arena* Memory)
 {
   c_token_buffer Result = {};
 
@@ -64,4 +66,5 @@ Get(c_token_buffer *Buf, umm Index)
   c_token *Result = GetPtr(Buf, Index);
   return Result;
 }
+
 

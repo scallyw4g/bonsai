@@ -29,8 +29,8 @@ RemoveUnordered(texture_block_array *Array, texture_block_array_index Index)
   if (Array->Current->At == 0)
   {
     // Walk the chain till we get to the second-last one
-    texture_block *Current = &Array->First;
-    texture_block *LastB = GetBlock(&LastI);
+    texture_block *Current = Array->First;
+    texture_block *LastB = LastI.Block;
 
     while (Current->Next && Current->Next != LastB)
     {
@@ -47,7 +47,7 @@ Push(texture_block_array *Array, texture *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 
-  if (Array->Current == 0) { Array->First = *Allocate_texture_block(Array->Memory); Array->Current = &Array->First; }
+  if (Array->First == 0) { Array->First = Allocate_texture_block(Array->Memory); Array->Current = Array->First; }
 
   if (Array->Current->At == 8)
   {

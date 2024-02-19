@@ -1,11 +1,13 @@
+// external/bonsai_stdlib/src/counted_string.cpp:19:0
+
 struct counted_string_buffer
 {
-  counted_string *Start;
   umm Count;
+  counted_string *Start; poof(@array_length(Element->Count))
 };
 
 link_internal counted_string_buffer
-CountedStringBuffer(umm ElementCount, memory_arena* Memory)
+CountedStringBuffer( umm ElementCount, memory_arena* Memory)
 {
   counted_string_buffer Result = {};
 
@@ -64,4 +66,5 @@ Get(counted_string_buffer *Buf, umm Index)
   counted_string *Result = GetPtr(Buf, Index);
   return Result;
 }
+
 
