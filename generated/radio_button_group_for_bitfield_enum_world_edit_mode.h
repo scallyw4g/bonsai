@@ -1,4 +1,4 @@
-// src/engine/editor.h:384:0
+// src/engine/editor.h:517:0
 
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_mode Selection)
@@ -73,6 +73,5 @@ RadioButtonGroup_world_edit_mode(renderer_2d *Ui, window_layout *Window, const c
 
   return Result;
 }
-
 
 

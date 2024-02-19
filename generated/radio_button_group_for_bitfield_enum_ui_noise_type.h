@@ -1,4 +1,4 @@
-// src/engine/editor.h:375:0
+// src/engine/editor.h:505:0
 
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, ui_noise_type Selection)
@@ -64,6 +64,5 @@ RadioButtonGroup_ui_noise_type(renderer_2d *Ui, window_layout *Window, const cha
 
   return Result;
 }
-
 
 

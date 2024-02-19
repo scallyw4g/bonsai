@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:16:0
+// src/engine/editor.cpp:18:0
 
 
 link_internal asset_thumbnail_block*
