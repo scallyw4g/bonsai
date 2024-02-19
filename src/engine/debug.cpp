@@ -422,8 +422,7 @@ DoAssetWindow(engine_resources *Engine)
   }
 
   {
-    v2 AssetListWindowDim = {{350.f, 1200.f}};
-    local_persist window_layout Window = WindowLayout("Disk Assets", DefaultWindowBasis(*Ui->ScreenDim, AssetListWindowDim), AssetListWindowDim);
+    local_persist window_layout Window = WindowLayout("Asset Files");
 
     render_settings *Settings = &Graphics->Settings;
     PushWindowStart(Ui, &Window);
@@ -487,11 +486,13 @@ DoAssetWindow(engine_resources *Engine)
                 {
                   SyncGpuBuffersImmediate(Engine, &Model->Meshes);
 
+                  v2i ThumbnailDim = V2i(128);
+
                   render_entity_to_texture_group *RTTGroup = &Engine->RTTGroup;
                   if (ModelIndex >= TotalElements(&Editor->AssetThumbnails))
                   {
                     // TODO(Jesse): Where to allocate these?
-                    texture *T = MakeTexture_RGBA(V2i(256), (u32*)0, Engine->Graphics->Memory, CSz("Thumbnail"));
+                    texture *T = MakeTexture_RGBA(ThumbnailDim, (u32*)0, Engine->Graphics->Memory, CSz("Thumbnail"));
                     asset_thumbnail Thumb = { T, {} };
                     StandardCamera(&Thumb.Camera, 10000.0f, 100.0f, 0.f, {});
 
@@ -504,7 +505,7 @@ DoAssetWindow(engine_resources *Engine)
 
                   interactable_handle B = PushButtonStart(Ui, UiId(&AssetViewWindow, "asset_texture_viewport", Thumb) );
                     u32 Index = StartColumn(Ui);
-                      if (ModelIndex == EngineDebug->ModelIndex) { PushRelativeBorder(Ui, V2(256), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f)); }
+                      if (ModelIndex == EngineDebug->ModelIndex) { PushRelativeBorder(Ui, V2(ThumbnailDim), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f)); }
                       PushTexturedQuad(Ui, Texture, V2(Texture->Dim), zDepth_Text);
                       PushForceAdvance(Ui, V2(8, 0));
                     EndColumn(Ui, Index);
