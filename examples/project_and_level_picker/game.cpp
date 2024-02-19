@@ -41,7 +41,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 link_internal b32
 FilterByLoadableDLLs(file_traversal_node *Node)
 {
-  b32 Result = Contains(Node->Name, CSz("_loadable."));
+  b32 Result = EndsWith(Node->Name, CSz("_loadable" PLATFORM_RUNTIME_LIB_EXTENSION));
   return Result;
 }
 

@@ -411,6 +411,13 @@ DoGraphicsDebugWindow(engine_resources *Engine)
   PushWindowEnd(Ui, &Window);
 }
 
+link_internal b32
+FilterFilenamesByVoxExtension(file_traversal_node *Node)
+{
+  b32 Result = EndsWith(Node->Name, CSz(".vox"));
+  return Result;
+}
+
 link_internal void
 DoAssetWindow(engine_resources *Engine)
 {
@@ -428,7 +435,8 @@ DoAssetWindow(engine_resources *Engine)
       case AssetWindowViewMode_AssetFiles:
       {
         render_settings *Settings = &Graphics->Settings;
-          maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTree(CSz("models"), EngineDrawFileNodesHelper, u64(&Window) );
+        filtered_file_traversal_helper_params HelperParams = {&Window, FilterFilenamesByVoxExtension};
+          maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTree(CSz("models"), EngineDrawFileNodesFilteredHelper, u64(&HelperParams) );
 
         if (ClickedFileNode.Tag)
         {
@@ -707,9 +715,9 @@ DoEngineDebug(engine_resources *Engine)
     s32 xAdvance = 15;
 
     s32 AtColumn = 0;
-    IterateOver(&Engine->Stdlib.AllTextures, TexturePtr, TextureIndex)
+    IterateOver(&Engine->Stdlib.AllTextures, TexturePtrPtr, TextureIndex)
     {
-      texture *Texture = *TexturePtr;
+      texture *Texture = *TexturePtrPtr;
 
       v2 Dim = Min(V2(Texture->Dim), DefaultTextureDim);
 
