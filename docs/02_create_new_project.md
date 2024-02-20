@@ -24,8 +24,8 @@ switches the `make.sh` script accepts
 ## Run your project
 
 The build should have created `bin/game_loader` (.exe on Windows) and
-`bin/shiny_new_project` (.dll on Windows).  At a CLI, you can run your game
-with `bin/game_loader(.exe) bin/shiny_new_project(.dll)`
+`bin/shiny_new_project` (.dll on Windows, .so on Linux).  At a CLI, you can run
+your game with `bin/game_loader(.exe) bin/game_libs/shiny_new_project(.dll|.so)`
 
 
 ## NOTES
