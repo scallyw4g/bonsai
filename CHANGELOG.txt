@@ -1,4 +1,23 @@
-* Next
+* 1.4.0
+
+This marks the first stable public release.  Downloading pre-built binaries is
+expected to work out of the box.  If they do not work for you for any reason,
+please open an issue.
+
+- Added the ability to have the game code request to switch to another project
+
+- Added project_and_level_switcher
+
+- Tightened up allocations onto specific arenas to support HardResetEngine
+  The engine can now be hard-reset (which happens on project switch).  Most
+  memory arenas get blown away and reinitialized from scratch.
+
+- Added release packaging to make.sh
+
+- Fixed a pile of crashes, unexpected behavior
+
+- Generally polished UI/UX in some places
+
 
 * 1.3.10
 
