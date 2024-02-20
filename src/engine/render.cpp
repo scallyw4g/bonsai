@@ -1126,6 +1126,12 @@ DrawEntity(
       {
         model *Model = GetModel(MaybeAsset.Value, &Entity->AssetId, Entity->ModelIndex);
 
+        if (Entity->Behavior & EntityBehaviorFlags_FitCollisionVolumeToModel)
+        {
+          Entity->Behavior = entity_behavior_flags(Entity->Behavior & ~EntityBehaviorFlags_FitCollisionVolumeToModel);
+          Entity->_CollisionVolumeRadius = Model->Dim/2.f;
+        }
+
         SyncGpuBuffersImmediate(GetEngineResources(), &Model->Meshes);
 
         v3 Offset = AnimationOffset + Entity->Scale*(V3(Model->Dim)/2.f);

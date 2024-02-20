@@ -39,6 +39,36 @@ struct entity_aggregate_type
 };
 CAssert(sizeof(entity_aggregate_type) == 8); // This has to fit into entity::UserType
 
+link_internal u64
+PackEntityAggregateType(entity_aggregate_type Type)
+{
+  u64 Reuslt = ReinterpretCast(u64, Type);
+  return Reuslt;
+}
+
+link_internal u64
+PackEntityAggregateType( entity_type Type, entity_status Status )
+{
+  entity_aggregate_type T = {Type, Status};
+  u64 Result = PackEntityAggregateType(T);
+  return Result;
+}
+
+link_internal entity_aggregate_type*
+UserTypeToAggregateTypePtr(u64 *UserType)
+{
+  entity_aggregate_type *Result = Cast(entity_aggregate_type*, UserType);
+  return Result;
+}
+
+link_internal entity_aggregate_type
+UserTypeToAggregateType(u64 UserType)
+{
+  entity_aggregate_type Result = ReinterpretCast(entity_aggregate_type, UserType);
+  return Result;
+}
+
+
 poof(generate_string_table(entity_type))
 #include <generated/generate_string_table_entity_type.h>
 

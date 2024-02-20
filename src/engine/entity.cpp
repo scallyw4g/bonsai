@@ -467,7 +467,7 @@ SpawnEntity( entity *Entity, entity_behavior_flags Behavior, model *GameModels, 
 link_internal void
 SpawnEntity( entity *Entity, entity_behavior_flags Behavior )
 {
-  Entity->Behavior = Behavior;
+  Entity->Behavior = entity_behavior_flags(Entity->Behavior|Behavior);
   SpawnEntity(Entity);
 }
 
@@ -492,7 +492,6 @@ SpawnEntity(
 
   world *World = GetEngineResources()->World;
 
-  Entity->Behavior = Behavior;
 
   if (Physics) Entity->Physics = *Physics;
   if (InitialP) Entity->P = *InitialP;
@@ -504,7 +503,7 @@ SpawnEntity(
 
   Entity->ModelIndex = ModelIndex;
 
-  SpawnEntity(Entity);
+  SpawnEntity(Entity, Behavior);
 }
 
 entity *
@@ -565,7 +564,7 @@ SpawnPlayerLikeEntity( platform *Plat,
       Player,
       AssetId,
       ModelIndex,
-      EntityBehaviorFlags_Default,
+      entity_behavior_flags(Player->Behavior | EntityBehaviorFlags_Default),
 
       &Physics,
 

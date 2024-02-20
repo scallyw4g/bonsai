@@ -25,20 +25,6 @@ MoveToStandingSpot(world *World, canonical_position P)
   return Result;
 }
 
-link_internal entity_aggregate_type*
-UserTypeToAggregateTypePtr(u64 *UserType)
-{
-  entity_aggregate_type *Result = Cast(entity_aggregate_type*, UserType);
-  return Result;
-}
-
-link_internal entity_aggregate_type
-UserTypeToAggregateType(u64 UserType)
-{
-  entity_aggregate_type Result = ReinterpretCast(entity_aggregate_type, UserType);
-  return Result;
-}
-
 link_weak void
 EntityUserDataEditorUi(renderer_2d *Ui, window_layout *Window, u64 *UserType, u64 *UserData, cs Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS)
 {
@@ -272,7 +258,7 @@ DestroySkeleton(engine_resources *Engine, entity *Entity, r32 Radius, v3 ImpactD
 link_internal void
 EffectFireballEntity(engine_resources *Engine, entity *Enemy, v3 Direction)
 {
-  switch (ReinterpretCast(entity_aggregate_type, Enemy->UserType).Type)
+  switch (UserTypeToAggregateType(Enemy->UserType).Type)
   {
     case EntityType_Default:   {} break;
     case EntityType_Player:    {} break;
@@ -288,7 +274,7 @@ EffectProjectileImpact(engine_resources *Engine, entity *Entity)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  switch (ReinterpretCast(entity_aggregate_type, Entity->UserType).Type)
+  switch (UserTypeToAggregateType(Entity->UserType).Type)
   {
     case EntityType_Default:
     case EntityType_Player:
@@ -337,7 +323,7 @@ EffectGrabEntity(engine_resources *Engine, entity *Grabber, entity *Grabee)
 
   v3 GrabberToGrabee = Normalize(GetSimSpaceP(World, Grabee) - GetSimSpaceP(World, Grabber));
   b32 Result = False;
-  switch (ReinterpretCast(entity_aggregate_type, Grabee->UserType).Type)
+  switch (UserTypeToAggregateType(Grabee->UserType).Type)
   {
     case EntityType_Default:
     case EntityType_Player:
@@ -370,7 +356,7 @@ EffectSmackEntity(engine_resources *Engine, entity *Smacker, entity *Smackee)
   world *World = Engine->World;
 
   v3 SmackerToSmackee = Normalize(GetSimSpaceP(World, Smackee) - GetSimSpaceP(World, Smacker));
-  switch (ReinterpretCast(entity_aggregate_type, Smackee->UserType).Type)
+  switch (UserTypeToAggregateType(Smackee->UserType).Type)
   {
     case EntityType_Default:
     case EntityType_Player:
@@ -1222,6 +1208,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
     cp EnemySpawnP = Canonical_Position(V3(0), WorldCenter + WP );
     entity *Enemy = TryGetFreeEntityPtr(EntityTable);
     Assert(Enemy);
+
+    Enemy->UserType = PackEntityAggregateType(EntityType_Enemy, EntityStatus_None);
 
     SpawnPlayerLikeEntity(Plat, World, &EnemyAsset, 0, Enemy, EnemySpawnP, &GameState->Entropy, 1.f);
   }
