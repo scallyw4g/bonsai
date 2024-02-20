@@ -13,6 +13,7 @@ struct ao_render_group
   s32 SsaoKernelUniform; // FIXME(Jesse): Automate me!
 
   texture Texture;
+  texture NoiseTexture;
 
   v3 NoiseTile;
 };

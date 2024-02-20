@@ -204,10 +204,13 @@ GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *D
   /* u32 amount = 25; */
   /* u32 amount = 1; */
 
+  AssertNoGlErrors;
   UseShader(&Group->Shader);
+  AssertNoGlErrors;
 
   for (u32 i = 0; i < amount; i++)
   {
+    AssertNoGlErrors;
     b32 last_iteration = (i == amount-1);
 
     if (last_iteration)
@@ -219,6 +222,7 @@ GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *D
       GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBOs[horizontal].ID);
     }
 
+    AssertNoGlErrors;
     BindUniform(&Group->Shader, "horizontal", horizontal);
 
     texture *Tex;
@@ -234,6 +238,7 @@ GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *D
     /* GL.BindTexture( GL_TEXTURE_2D, Tex->ID ); */
     BindUniform(&Group->Shader, "SrcImage", Tex, 0);
 
+    AssertNoGlErrors;
     RenderQuad();
 
     horizontal = !horizontal;

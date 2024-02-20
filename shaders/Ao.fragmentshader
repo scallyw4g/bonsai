@@ -1,7 +1,7 @@
 in vec2 UV;
 out float Output;
 
-uniform sampler2D gColor;
+/* uniform sampler2D gColor; */
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 

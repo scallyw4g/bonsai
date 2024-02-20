@@ -14,32 +14,26 @@ InitSsaoKernel(v3 *Kernel, s32 Count, random_series *Entropy)
   }
 }
 
-void
-InitSsaoNoise(v3 *Noise, s32 Count, random_series *Entropy)
-{
-  for (s32 NoiseIndex = 0;
-       NoiseIndex < Count;
-       ++NoiseIndex)
-  {
-    Noise[NoiseIndex] = Normalize( V3(RandomBilateral(Entropy), RandomBilateral(Entropy), 0.0f) );
-  }
-}
-
 link_internal texture
 AllocateAndInitSsaoNoise(ao_render_group *AoGroup, memory_arena *GraphicsMemory)
 {
-  v2i SsaoNoiseDim = V2i(4,4);
-  random_series SsaoEntropy = {453265436};
+  v2i SsaoNoiseDim = V2i(32,32);
+  random_series SsaoEntropy = {465436};
 
   AoGroup->NoiseTile = V3(SCR_WIDTH/SsaoNoiseDim.x, SCR_HEIGHT/SsaoNoiseDim.y, 1);
 
   InitSsaoKernel(AoGroup->SsaoKernel, ArrayCount(AoGroup->SsaoKernel), &SsaoEntropy);
 
-  // TODO(Jesse, id: 117, tags: transient_memory, allocation, back_burner): Transient arena for this instead of stack allocation ?
-  v3 *SsaoNoise = Allocate(v3, GraphicsMemory, 16);
-  InitSsaoNoise(SsaoNoise, 16, &SsaoEntropy);
+  v3 *SsaoNoise = Allocate(v3, GetTranArena(), Volume(SsaoNoiseDim));
+  /* InitSsaoNoise(SsaoNoise, Volume(SsaoNoiseDim), &SsaoEntropy); */
+  for (s32 NoiseIndex = 0;
+           NoiseIndex < Volume(SsaoNoiseDim);
+         ++NoiseIndex)
+  {
+    SsaoNoise[NoiseIndex] = Normalize( V3(RandomBilateral(&SsaoEntropy), RandomBilateral(&SsaoEntropy), 0.0f) );
+  }
 
-  texture SsaoNoiseTexture = MakeTexture_RGB(SsaoNoiseDim, SsaoNoise, CSz("SSAONoiseTexture"));
+  texture SsaoNoiseTexture = MakeTexture_RGB(SsaoNoiseDim, SsaoNoise, CSz("SsaoNoiseTexture"));
   return SsaoNoiseTexture;
 }
 
@@ -265,9 +259,8 @@ MakeGaussianBlurRenderGroup(memory_arena *GraphicsMemory)
   {
     GL.BindFramebuffer(GL_FRAMEBUFFER, Result.FBOs[Index].ID);
 
-    Result.Textures[Index] = GenTexture(V2i(SCR_WIDTH, SCR_HEIGHT), CSz("GaussianBlur"));
-    Result.Textures[Index].Channels = 4;
-
+    u32 Channels = 4;
+    Result.Textures[Index] = GenTexture(V2i(SCR_WIDTH, SCR_HEIGHT), CSz("GaussianBlur"), Channels);
     GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, 0);
 
     FramebufferTexture(&Result.FBOs[Index], Result.Textures+Index);
@@ -349,13 +342,13 @@ MakeSsaoShader(memory_arena *GraphicsMemory, g_buffer_textures *gTextures,
 
   shader_uniform **Current = &Shader.FirstUniform;
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Color, "gColor");
+  /* *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Color, "gColor"); */
+  /* Current = &(*Current)->Next; */
+
+  *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Position, "gPosition");
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Normal, "gNormal");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Position, "gPosition");
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, SsaoNoiseTexture, "SsaoNoiseTexture");
@@ -380,7 +373,8 @@ InitAoRenderGroup(ao_render_group *AoGroup)
   v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
   AssertNoGlErrors;
 
-  AoGroup->Texture = MakeTexture_SingleChannel( ScreenDim, CSz("AoTexture"));
+  b32 IsDepthTexture = False;
+  AoGroup->Texture = MakeTexture_SingleChannel( ScreenDim, CSz("AoTexture"), IsDepthTexture);
 
   FramebufferTexture(&AoGroup->FBO, &AoGroup->Texture);
   SetDrawBuffers(&AoGroup->FBO);
@@ -511,8 +505,9 @@ InitRenderToTextureGroup(render_entity_to_texture_group *Group, v2i TextureSize,
 #endif
 
   // TODO(Jesse)(make_texture_rgba): Can we use MakeTexture_RGBA
-  texture Texture = GenTexture(TextureSize, CSz("RenderToTexture"));
-  Texture.Channels = 4;
+
+  u32 Channels = 4;
+  texture Texture = GenTexture(TextureSize, CSz("RenderToTexture"), Channels);
 
   GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, Image);
 
@@ -568,13 +563,17 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
   GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
 
   // TODO(Jesse)(make_texture_rgba) : ?
-  Group->AccumTex = GenTexture(TextureSize, CSz("Transparency Accum"));
-  Group->AccumTex.Channels = 4;
-  GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, 0);
+  {
+    u32 Channels = 4;
+    Group->AccumTex = GenTexture(TextureSize, CSz("Transparency Accum"), Channels);
+    GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, 0);
+  }
 
-  Group->RevealTex = GenTexture(TextureSize, CSz("Transparency Reveal"));
-  Group->RevealTex.Channels = 2;
-  GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RG32F, TextureSize.x, TextureSize.y, 0, GL_RG, GL_FLOAT, 0);
+  {
+    u32 Channels = 2;
+    Group->RevealTex = GenTexture(TextureSize, CSz("Transparency Reveal"), Channels);
+    GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RG32F, TextureSize.x, TextureSize.y, 0, GL_RG, GL_FLOAT, 0);
+  }
 
   // NOTE(Jesse): These have to be bound in this order because they're cleared
   // in this order (and the Reveal tex is special-case cleared to 1.f instead of 0.f)
@@ -752,14 +751,14 @@ GraphicsInit(memory_arena *GraphicsMemory)
 
   Result->Gaussian          = MakeGaussianBlurRenderGroup(GraphicsMemory);
 
-  texture SsaoNoiseTexture = AllocateAndInitSsaoNoise(AoGroup, GraphicsMemory);
+  AoGroup->NoiseTexture = AllocateAndInitSsaoNoise(AoGroup, GraphicsMemory);
 
   gBuffer->gBufferShader =
     CreateGbufferShader(Result, GraphicsMemory, &gBuffer->ViewProjection, Result->Camera);
 
   AoGroup->Shader = MakeSsaoShader( GraphicsMemory,
                                    &gBuffer->Textures,
-                                   &SsaoNoiseTexture,
+                                   &AoGroup->NoiseTexture,
                                    &AoGroup->NoiseTile,
                                    &gBuffer->ViewProjection );
 

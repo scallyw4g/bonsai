@@ -714,20 +714,17 @@ DoEngineDebug(engine_resources *Engine)
     s32 xAdvance = 15;
 
     s32 AtColumn = 0;
-    IterateOver(&Engine->Stdlib.AllTextures, TexturePtrPtr, TextureIndex)
+    IterateOver(&Engine->Stdlib.AllTextures, Texture, TextureIndex)
     {
-      texture *Texture = *TexturePtrPtr;
-
       v2 Dim = Min(V2(Texture->Dim), DefaultTextureDim);
 
       PushTableStart(Ui);
 
-        PushColumn(Ui, Texture->DebugName, ColumnRenderParam_LeftAlign);
-        PushNewRow(Ui);
+        PushColumn(Ui, FSz("(%u) %S (%dx%d) Slices(%u) Channels(%u) IsDepthTexture(%b)", Texture->ID, Texture->DebugName, Texture->Dim.x, Texture->Dim.y, Texture->Slices, Texture->Channels, Texture->IsDepthTexture), ColumnRenderParam_LeftAlign); PushNewRow(Ui);
 
         u32 StartOuter = StartColumn(Ui);
           PushTableStart(Ui);
-              if (Texture->Slices)
+              if (Texture->Slices > 1)
               {
                 RangeIterator_t(u32, SliceIndex, Texture->Slices)
                 {
