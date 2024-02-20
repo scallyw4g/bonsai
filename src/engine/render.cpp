@@ -151,7 +151,7 @@ link_internal void
 CompositeAndDisplay( platform *Plat, graphics *Graphics )
 {
   GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
-  SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
+  SetViewport(Plat->ScreenDim);
 
   GL.Enable(GL_BLEND);
   GL.BlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);

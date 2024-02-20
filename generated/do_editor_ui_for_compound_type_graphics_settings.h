@@ -39,6 +39,15 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
 
       
       DoEditorUi(Ui, Window, &Element->ShaderLanguage, CSz("shader_language_setting ShaderLanguage"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui, Window, &Element->WindowStartingSize, CSz("resolution_setting WindowStartingSize"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }

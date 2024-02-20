@@ -1,9 +1,10 @@
 link_internal engine_settings
-ParseEngineSettings(cs SettingsFile)
+ParseEngineSettings(cs SettingsFile, memory_arena *Memory = 0)
 {
   engine_settings Settings = {};
 
-  parser *Parser = ParserForFile(0, SettingsFile, TokenCursorSource_RootFile, GetTranArena());
+  if (Memory == 0) { Memory = GetTranArena(); }
+  parser *Parser = ParserForFile(0, SettingsFile, TokenCursorSource_RootFile, Memory);
 
   while (c_token *TSetting = PopTokenPointer(Parser))
   {
@@ -35,6 +36,11 @@ ParseEngineSettings(cs SettingsFile)
           case 16:
           {
             if (StringsMatch(CSz("lighting_quality"), TSetting->Value)) { Settings.Graphics.LightingQuality = LightingQualitySetting(TSettingValue->Value); }
+          } break;
+
+          case 20:
+          {
+            if (StringsMatch(CSz("window_starting_size"), TSetting->Value)) { Settings.Graphics.WindowStartingSize = ResolutionSetting(TSettingValue->Value); }
           } break;
 
           InvalidDefaultCase;

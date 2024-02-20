@@ -248,7 +248,7 @@ Bonsai_Simulate(engine_resources *Resources)
   UpdateGameCamera(World, MouseDelta, InputForCamera, CameraTargetP, Camera, Plat->dt, DoPositionDelta, DoZoomDelta);
 
   Resources->Graphics->gBuffer->ViewProjection =
-    ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
+    ProjectionMatrix(Camera, Plat->ScreenDim.x, Plat->ScreenDim.y) *
     ViewMatrix(World->ChunkDim, Camera);
 
 

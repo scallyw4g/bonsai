@@ -26,7 +26,7 @@ enum lighting_quality_setting
 enum shader_language_setting
 {
   ShaderLanguageSetting_330core, // default
-  ShaderLanguageSetting_310es,
+  ShaderLanguageSetting_310es,   // web
 };
 
 poof(string_and_value_tables(resolution_setting));
@@ -44,6 +44,7 @@ struct graphics_settings
     shadow_quality_setting ShadowQuality;
   lighting_quality_setting LightingQuality;
    shader_language_setting ShaderLanguage;
+        resolution_setting WindowStartingSize;
 };
 
 struct engine_settings
@@ -52,15 +53,22 @@ struct engine_settings
 };
 
 link_internal v2i
-GetApplicationResolution(engine_settings *Settings)
+SettingToValue(resolution_setting Setting)
 {
-  switch (Settings->Graphics.Resolution)
+  switch (Setting)
   {
     case ResolutionSetting_4096x2160: { return V2i(4096,2160); } break;
     case ResolutionSetting_1920x1080: { return V2i(1920,1080); } break;
     case ResolutionSetting_1280x720 : { return V2i(1280, 720); } break;
     default: { return V2i(0); } break;
   }
+}
+
+link_internal v2i
+GetApplicationResolution(engine_settings *Settings)
+{
+  v2i Result = SettingToValue(Settings->Graphics.Resolution);
+  return Result;
 }
 
 link_internal v2i

@@ -169,13 +169,19 @@ main( s32 ArgCount, const char ** Args )
   memory_arena BootstrapArena = {};
   memory_arena *GameMemory = AllocateArena();
 
+
+  {
+    temp_memory_handle TempHandle = BeginTemporaryMemory(&BootstrapArena);
+    EngineResources->Settings = ParseEngineSettings(CSz("settings.init"), &BootstrapArena);
+  }
+
+  EngineResources->Stdlib.Plat.ScreenDim = V2(SettingToValue(EngineResources->Settings.Graphics.WindowStartingSize));
+
   Ensure( InitializeBonsaiStdlib( bonsai_init_flags(BonsaiInit_LaunchThreadPool|BonsaiInit_OpenWindow|BonsaiInit_InitDebugSystem),
                                   GameApi,
                                   &EngineResources->Stdlib,
                                   &BootstrapArena) );
 
-
-  EngineResources->Settings = ParseEngineSettings(CSz("settings.init"));
 
 
   EngineResources->DebugState = Global_DebugStatePointer;
@@ -236,7 +242,8 @@ main( s32 ArgCount, const char ** Args )
     v2 LastMouseP = Plat->MouseP;
     while ( ProcessOsMessages(Os, Plat) );
     Plat->MouseDP = LastMouseP - Plat->MouseP;
-    Plat->ScreenDim = V2(Plat->WindowWidth, Plat->WindowHeight);
+    Assert(Plat->ScreenDim.x > 0);
+    Assert(Plat->ScreenDim.y > 0);
 
     if (Plat->Input.Escape.Clicked)
     {

@@ -1,30 +1,51 @@
 
-// ResolutionSetting_4096x2160
-// ResolutionSetting_1920x1080
-// ResolutionSetting_1280x720
+//
+// NOTE(Jesse): Resolution of the back-buffers the renderer allocates
+//
 
-resolution=ResolutionSetting_4096x2160
-
-
-// ShadowQualitySetting_High
-// ShadowQualitySetting_Med
-// ShadowQualitySetting_Low
-// ShadowQualitySetting_Off
-
-shadow_quality=ShadowQualitySetting_High
+   resolution = ResolutionSetting_4096x2160
+// resolution = ResolutionSetting_1920x1080
+// resolution = ResolutionSetting_1280x720
 
 
-// LightingQualitySetting_High
-// LightingQualitySetting_Med
-// LightingQualitySetting_Low
-// LightingQualitySetting_Off
 
+//
+// NOTE(Jesse): Currently only selects the size of the shadow map texture.
+// When I get around to improving the shadows it'll control more than that..
+//
+
+   shadow_quality = ShadowQualitySetting_High
+// shadow_quality = ShadowQualitySetting_Med
+// shadow_quality = ShadowQualitySetting_Low
+// shadow_quality = ShadowQualitySetting_Off
+
+
+
+//
 // NOTE(Jesse)(lighting_setting): Currently does nothing
-lighting_quality=LightingQualitySetting_High
+//
+
+   lighting_quality = LightingQualitySetting_High
+// lighting_quality = LightingQualitySetting_Med
+// lighting_quality = LightingQualitySetting_Low
+// lighting_quality = LightingQualitySetting_Off
 
 
-// ShaderLanguageSetting_330core
-// ShaderLanguageSetting_310es
 
-shader_language=ShaderLanguageSetting_310es
+//
+// NOTE(Jesse): I observed some (MESA) drivers not supporting 310es, so I added
+// a switch to fall-back to 330core.  The browser requires 310es.
+//
 
+   shader_language = ShaderLanguageSetting_330core
+// shader_language = ShaderLanguageSetting_310es
+
+
+
+//
+// NOTE(Jesse): In case you wanted a hi-res back-buffer, and a smaller window.
+//
+
+   window_starting_size = ResolutionSetting_4096x2160
+// window_starting_size = ResolutionSetting_1920x1080
+// window_starting_size = ResolutionSetting_1280x720
