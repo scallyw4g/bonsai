@@ -512,8 +512,9 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
         /* OctaveBuf.Octaves[1] = {V3(400, 400, 200), 150, V3(1,1,2)}; */
         /* /1* OctaveBuf.Octaves[2] = {V3(6, 6, 200), 150, V3(1,1,2)}; *1/ */
 
-        /* chunk_init_flags InitFlags = chunk_init_flags(ChunkInitFlag_ComputeStandingSpots|ChunkInitFlag_GenLODs); */
-        chunk_init_flags InitFlags = ChunkInitFlag_Noop;
+        chunk_init_flags InitFlags = chunk_init_flags(ChunkInitFlag_ComputeStandingSpots|ChunkInitFlag_GenLODs);
+        /* chunk_init_flags InitFlags = chunk_init_flags(ChunkInitFlag_ComputeStandingSpots); */
+        /* chunk_init_flags InitFlags = ChunkInitFlag_Noop; */
         InitializeChunkWithNoise( GrassyTerracedTerrain4, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
       }
     }
@@ -1197,6 +1198,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   entity *Player = GetEntity(EntityTable, GameState->PlayerId);
   Player->UserType = Cast(u64, EntityType_Player);
+  Player->Behavior = entity_behavior_flags(EntityBehaviorFlags_WorldCenter|Player->Behavior);
 
   asset_id PlayerAsset = GetOrAllocateAssetId(Resources, {FileTraversalType_File, CSz("models"), CSz("players/chr_rain.vox")});
   SpawnPlayerLikeEntity(Plat, World, &PlayerAsset, 0, Player, PlayerSpawnP, &GameState->Entropy);
