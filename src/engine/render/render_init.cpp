@@ -15,12 +15,12 @@ InitSsaoKernel(v3 *Kernel, s32 Count, random_series *Entropy)
 }
 
 link_internal texture
-AllocateAndInitSsaoNoise(ao_render_group *AoGroup, memory_arena *GraphicsMemory)
+AllocateAndInitSsaoNoise(v2i ApplicationResolution, ao_render_group *AoGroup, memory_arena *GraphicsMemory)
 {
   v2i SsaoNoiseDim = V2i(32,32);
   random_series SsaoEntropy = {465436};
 
-  AoGroup->NoiseTile = V3(SCR_WIDTH/SsaoNoiseDim.x, SCR_HEIGHT/SsaoNoiseDim.y, 1);
+  AoGroup->NoiseTile = V3(ApplicationResolution*SsaoNoiseDim, 1);
 
   InitSsaoKernel(AoGroup->SsaoKernel, ArrayCount(AoGroup->SsaoKernel), &SsaoEntropy);
 
@@ -245,7 +245,7 @@ CreateAoRenderGroup(memory_arena *Mem)
 }
 
 link_internal gaussian_render_group
-MakeGaussianBlurRenderGroup(memory_arena *GraphicsMemory)
+MakeGaussianBlurRenderGroup(v2i ApplicationResolution, memory_arena *GraphicsMemory)
 {
   gaussian_render_group Result = {};
 
@@ -260,8 +260,8 @@ MakeGaussianBlurRenderGroup(memory_arena *GraphicsMemory)
     GL.BindFramebuffer(GL_FRAMEBUFFER, Result.FBOs[Index].ID);
 
     u32 Channels = 4;
-    Result.Textures[Index] = GenTexture(V2i(SCR_WIDTH, SCR_HEIGHT), CSz("GaussianBlur"), Channels);
-    GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, 0);
+    Result.Textures[Index] = GenTexture(ApplicationResolution, CSz("GaussianBlur"), Channels);
+    GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, ApplicationResolution.x, ApplicationResolution.y, 0, GL_RGBA, GL_FLOAT, 0);
 
     FramebufferTexture(&Result.FBOs[Index], Result.Textures+Index);
 
@@ -366,15 +366,12 @@ MakeSsaoShader(memory_arena *GraphicsMemory, g_buffer_textures *gTextures,
 }
 
 link_internal bool
-InitAoRenderGroup(ao_render_group *AoGroup)
+InitAoRenderGroup(v2i ApplicationResolution, ao_render_group *AoGroup)
 {
   GL.BindFramebuffer(GL_FRAMEBUFFER, AoGroup->FBO.ID);
 
-  v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
-  AssertNoGlErrors;
-
   b32 IsDepthTexture = False;
-  AoGroup->Texture = MakeTexture_SingleChannel( ScreenDim, CSz("AoTexture"), IsDepthTexture);
+  AoGroup->Texture = MakeTexture_SingleChannel( ApplicationResolution, CSz("AoTexture"), IsDepthTexture);
 
   FramebufferTexture(&AoGroup->FBO, &AoGroup->Texture);
   SetDrawBuffers(&AoGroup->FBO);
@@ -384,29 +381,28 @@ InitAoRenderGroup(ao_render_group *AoGroup)
   if (!CheckAndClearFramebuffer())
     return false;
 
+  AssertNoGlErrors;
   return True;
 }
 
 bool
-InitGbufferRenderGroup(g_buffer_render_group *gBuffer)
+InitGbufferRenderGroup(v2i ApplicationResolution, g_buffer_render_group *gBuffer)
 {
-  v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
-
   GL.BindFramebuffer(GL_FRAMEBUFFER, gBuffer->FBO.ID);
 
-  gBuffer->Textures.Color = MakeTexture_RGBA( ScreenDim, (v4*)0, CSz("gBufferColor"));
+  gBuffer->Textures.Color = MakeTexture_RGBA( ApplicationResolution, (v4*)0, CSz("gBufferColor"));
 
-  gBuffer->Textures.Normal   = MakeTexture_RGB( ScreenDim, (v3*)0, CSz("gBufferNormal"));
+  gBuffer->Textures.Normal   = MakeTexture_RGB( ApplicationResolution, (v3*)0, CSz("gBufferNormal"));
 
   // NOTE(Jesse): Depth gets stuffed into A value here.
-  gBuffer->Textures.Position = MakeTexture_RGBA( ScreenDim, (v4*)0, CSz("gBufferPosition"));
+  gBuffer->Textures.Position = MakeTexture_RGBA( ApplicationResolution, (v4*)0, CSz("gBufferPosition"));
 
   FramebufferTexture(&gBuffer->FBO, &gBuffer->Textures.Color);
   FramebufferTexture(&gBuffer->FBO, &gBuffer->Textures.Normal);
   FramebufferTexture(&gBuffer->FBO, &gBuffer->Textures.Position);
   SetDrawBuffers(&gBuffer->FBO);
 
-  gBuffer->Textures.Depth = MakeDepthTexture( ScreenDim, CSz("gBufferDepth") );
+  gBuffer->Textures.Depth = MakeDepthTexture( ApplicationResolution, CSz("gBufferDepth") );
   FramebufferDepthTexture(&gBuffer->Textures.Depth);
 
   b32 Result = CheckAndClearFramebuffer();
@@ -599,8 +595,8 @@ InitBloomRenderGroup(bloom_render_group *Group, m4 *ViewProjection, memory_arena
   Current = &(*Current)->Next;
 }
 
-graphics *
-GraphicsInit(memory_arena *GraphicsMemory)
+link_internal graphics *
+GraphicsInit(v2i ApplicationResolution, memory_arena *GraphicsMemory)
 {
   graphics *Result = Allocate(graphics, GraphicsMemory, 1);
   Result->Memory = GraphicsMemory;
@@ -649,19 +645,19 @@ GraphicsInit(memory_arena *GraphicsMemory)
 
 
   g_buffer_render_group *gBuffer = CreateGbuffer(GraphicsMemory);
-  if (!InitGbufferRenderGroup(gBuffer))
+  if (!InitGbufferRenderGroup(ApplicationResolution, gBuffer))
   {
     Error("Initializing g_buffer_render_group"); return False;
   }
 
   shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1);
-  if (!InitializeShadowRenderGroup(SG, V2i(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y)))
+  if (!InitializeShadowRenderGroup(SG, GetShadowMapResolution(&GetEngineResources()->Settings)))
   {
     SoftError("Initializing Shadow Buffer");// return False;
   }
 
   ao_render_group *AoGroup = CreateAoRenderGroup(GraphicsMemory);
-  if (!InitAoRenderGroup(AoGroup))
+  if (!InitAoRenderGroup(ApplicationResolution, AoGroup))
   {
     Error("Initializing ao_render_group"); return False;
   }
@@ -675,7 +671,7 @@ GraphicsInit(memory_arena *GraphicsMemory)
 #endif
 
 
-  InitTransparencyRenderGroup(&Result->Settings, &Result->Transparency, V2i(SCR_WIDTH, SCR_HEIGHT), &gBuffer->ViewProjection, &gBuffer->Textures.Depth, GraphicsMemory);
+  InitTransparencyRenderGroup(&Result->Settings, &Result->Transparency, ApplicationResolution, &gBuffer->ViewProjection, &gBuffer->Textures.Depth, GraphicsMemory);
 
   // Initialize the lighting group
   {
@@ -712,8 +708,10 @@ GraphicsInit(memory_arena *GraphicsMemory)
 
     // NOTE(Jesse): This is used for bloom
     Lighting->FBO = GenFramebuffer();
-    Lighting->LightingTex = MakeTexture_RGB( V2i(LUMINANCE_MAP_RESOLUTION_X, LUMINANCE_MAP_RESOLUTION_Y), 0, CSz("Lighting"));
-    Lighting->BloomTex    = MakeTexture_RGB( V2i(LUMINANCE_MAP_RESOLUTION_X, LUMINANCE_MAP_RESOLUTION_Y), 0, CSz("Bloom"));
+
+    v2i LuminanceMapResolution = GetLuminanceMapResolution(&GetEngineResources()->Settings);
+    Lighting->LightingTex = MakeTexture_RGB( LuminanceMapResolution, 0, CSz("Lighting"));
+    Lighting->BloomTex    = MakeTexture_RGB( LuminanceMapResolution, 0, CSz("Bloom"));
 
     /* Lighting->DebugBloomShader    = MakeSimpleTextureShader(&Lighting->BloomTex, GraphicsMemory); */
     /* Lighting->DebugLightingShader = MakeSimpleTextureShader(&Lighting->LightingTex, GraphicsMemory); */
@@ -749,9 +747,9 @@ GraphicsInit(memory_arena *GraphicsMemory)
     InitRenderToTextureGroup(&Resources->RTTGroup, V2i(256), GraphicsMemory);
   }
 
-  Result->Gaussian          = MakeGaussianBlurRenderGroup(GraphicsMemory);
+  Result->Gaussian      = MakeGaussianBlurRenderGroup(ApplicationResolution, GraphicsMemory);
 
-  AoGroup->NoiseTexture = AllocateAndInitSsaoNoise(AoGroup, GraphicsMemory);
+  AoGroup->NoiseTexture = AllocateAndInitSsaoNoise(ApplicationResolution, AoGroup, GraphicsMemory);
 
   gBuffer->gBufferShader =
     CreateGbufferShader(Result, GraphicsMemory, &gBuffer->ViewProjection, Result->Camera);

@@ -359,6 +359,18 @@ poof(do_editor_ui_for_enum(engine_debug_view_mode))
 poof(do_editor_ui_for_compound_type(level_editor))
 #include <generated/do_editor_ui_for_compound_type_level_editor.h>
 
+poof(do_editor_ui_for_enum(resolution_setting))
+#include <generated/do_editor_ui_for_enum_resolution_setting.h>
+
+poof(do_editor_ui_for_enum(shader_language_setting))
+#include <generated/do_editor_ui_for_enum_shader_language_setting.h>
+
+poof(do_editor_ui_for_compound_type(graphics_settings))
+#include <generated/do_editor_ui_for_compound_type_graphics_settings.h>
+
+poof(do_editor_ui_for_compound_type(engine_settings))
+#include <generated/do_editor_ui_for_compound_type_engine_settings.h>
+
 poof(do_editor_ui_for_compound_type(engine_resources))
 #include <generated/do_editor_ui_for_compound_type_engine_resources.h>
 

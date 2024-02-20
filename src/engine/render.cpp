@@ -1,8 +1,8 @@
 void
-RenderAoTexture(ao_render_group *AoGroup)
+RenderAoTexture(v2i ApplicationResolution, ao_render_group *AoGroup)
 {
   GL.BindFramebuffer(GL_FRAMEBUFFER, AoGroup->FBO.ID);
-  SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
+  SetViewport(ApplicationResolution);
 
   GL.UseProgram(AoGroup->Shader.ID);
 
@@ -97,7 +97,7 @@ RenderImmediateGeometryToShadowMap(gpu_mapped_element_buffer *GpuMap, graphics *
   GL.BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
   GL.UseProgram(SG->DepthShader.ID);
 
-  SetViewport(V2(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y));
+  SetViewport(GetShadowMapResolution(&GetEngineResources()->Settings));
 
   // @duplicate_shadow_map_MVP_calculation
   v3 FrustCenter = GetFrustumCenter(Graphics->Camera);
@@ -115,7 +115,7 @@ RenderImmediateGeometryToShadowMap(gpu_mapped_element_buffer *GpuMap, graphics *
 }
 
 link_internal void
-RenderImmediateGeometryToGBuffer(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
+RenderImmediateGeometryToGBuffer(v2i ApplicationResolution, gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
 {
   TIMED_FUNCTION();
 
@@ -124,7 +124,7 @@ RenderImmediateGeometryToGBuffer(gpu_mapped_element_buffer *GpuMap, graphics *Gr
   GL.BindFramebuffer(GL_FRAMEBUFFER, GBufferRenderGroup->FBO.ID);
   GL.UseProgram(GBufferRenderGroup->gBufferShader.ID);
 
-  SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
+  SetViewport(ApplicationResolution);
 
   BindShaderUniforms(&GBufferRenderGroup->gBufferShader);
 
@@ -170,9 +170,9 @@ CompositeAndDisplay( platform *Plat, graphics *Graphics )
 
 // Does lighting on gBuffer textures.  Also composites transparent surfaces
 link_internal void
-RenderLuminanceTexture(gpu_mapped_element_buffer *GpuMap, lighting_render_group *Lighting, graphics *Graphics)
+RenderLuminanceTexture(v2i ApplicationResolution, gpu_mapped_element_buffer *GpuMap, lighting_render_group *Lighting, graphics *Graphics)
 {
-  SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
+  SetViewport(ApplicationResolution);
 
   UpdateLightingTextures(&Graphics->Lighting.Lights);
 
@@ -753,7 +753,7 @@ DrawFrustum(world *World, graphics *Graphics, camera *Camera)
 }
 
 link_internal void
-RenderTransparencyBuffers(render_settings *Settings, transparency_render_group *Group)
+RenderTransparencyBuffers(v2i ApplicationResolution, render_settings *Settings, transparency_render_group *Group)
 {
   FlushBuffersToCard(&Group->GpuBuffer);
   if (Group->GpuBuffer.Buffer.At)
@@ -764,7 +764,7 @@ RenderTransparencyBuffers(render_settings *Settings, transparency_render_group *
 
     if (Settings->BravoilMcGuireOIT)
     {
-      SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
+      SetViewport(ApplicationResolution);
       GL.Disable(GL_CULL_FACE);
 
       GL.Enable(GL_BLEND);
@@ -792,7 +792,7 @@ RenderTransparencyBuffers(render_settings *Settings, transparency_render_group *
       /* GL.DepthFunc(GL_LEQUAL); */
       /* GL.DepthFunc(GL_ALWAYS); */
 
-      SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
+      SetViewport(ApplicationResolution);
 
       Draw(Group->GpuBuffer.Buffer.At);
 
@@ -1143,14 +1143,14 @@ DrawEntity(
 }
 
 link_internal void
-SetupGBufferShader(graphics *Graphics)
+SetupGBufferShader(v2i ApplicationResolution, graphics *Graphics)
 {
   auto GBufferRenderGroup = Graphics->gBuffer;
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, GBufferRenderGroup->FBO.ID);
   GL.UseProgram(GBufferRenderGroup->gBufferShader.ID);
 
-  SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
+  SetViewport(ApplicationResolution);
 
   BindShaderUniforms(&GBufferRenderGroup->gBufferShader);
 
@@ -1184,7 +1184,8 @@ DrawEntities( shader *Shader,
 }
 
 link_internal void
-DrawEntitiesToGBuffer( entity **EntityTable,
+DrawEntitiesToGBuffer( v2i ApplicationResolution,
+                       entity **EntityTable,
                        untextured_3d_geometry_buffer* Dest,
                        untextured_3d_geometry_buffer* TransparencyDest,
                        graphics *Graphics, world *World, r32 dt)
@@ -1197,7 +1198,7 @@ DrawEntitiesToGBuffer( entity **EntityTable,
   Graphics->Settings.DrawMajorGrid = False;
   Graphics->Settings.DrawMinorGrid = False;
 
-  SetupGBufferShader(Graphics);
+  SetupGBufferShader(ApplicationResolution, Graphics);
 
   DrawEntities(&Graphics->gBuffer->gBufferShader, EntityTable, Dest, TransparencyDest, Graphics, World, dt);
 
@@ -1219,7 +1220,7 @@ DoWorldChunkStuff()
   v3i Max = World->Center + Radius;
 
   // nopush wtf?
-  SetupGBufferShader(Graphics);
+  SetupGBufferShader(GetApplicationResolution(&GetEngineResources()->Settings), Graphics);
 
   for (s32 x = Min.x; x < Max.x; ++ x)
   for (s32 y = Min.y; y < Max.y; ++ y)
@@ -1243,7 +1244,7 @@ DoWorldChunkStuff()
 
 
 link_internal void
-DrawWorldToGBuffer(engine_resources *Engine)
+DrawWorldToGBuffer(engine_resources *Engine, v2i ApplicationResolution)
 {
   TIMED_FUNCTION();
 
@@ -1253,7 +1254,7 @@ DrawWorldToGBuffer(engine_resources *Engine)
   v3i Min = World->Center - Radius;
   v3i Max = World->Center + Radius;
 
-  SetupGBufferShader(Graphics);
+  SetupGBufferShader(ApplicationResolution, Graphics);
 
   RangeIterator_t(u32, ChunkIndex, World->HashSize)
   {
@@ -1289,13 +1290,13 @@ DrawWorldToGBuffer(engine_resources *Engine)
     }
   }
 
-  DrawEntitiesToGBuffer( EntityTable, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, Graphics, World, Plat->dt);
+  DrawEntitiesToGBuffer( ApplicationResolution, EntityTable, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, Graphics, World, Plat->dt);
 
   TeardownGBufferShader(Graphics);
 }
 
 link_internal void
-DrawWorldToShadowMap(engine_resources *Engine)
+DrawWorldToShadowMap(v2i ShadowMapResolution, engine_resources *Engine)
 {
   TIMED_FUNCTION();
 
@@ -1310,7 +1311,7 @@ DrawWorldToShadowMap(engine_resources *Engine)
   GL.BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
   GL.UseProgram(SG->DepthShader.ID);
 
-  SetViewport(V2(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y));
+  SetViewport(ShadowMapResolution);
 
   // TODO(Jesse): Duplicate MVP calculation
   // @duplicate_shadow_map_MVP_calculation

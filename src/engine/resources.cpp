@@ -1,6 +1,6 @@
 
 link_internal b32
-InitEngineResources(engine_resources *Engine)
+InitEngineResources(v2i ApplicationResolution, engine_resources *Engine)
 {
   b32 Result = True;
 
@@ -20,7 +20,7 @@ InitEngineResources(engine_resources *Engine)
   Engine->World = Allocate(world, WorldAndEntityArena, 1);
   if (!Engine->World) { Error("Allocating World"); Result = False; }
 
-  Engine->Graphics = GraphicsInit(AllocateArena());
+  Engine->Graphics = GraphicsInit(ApplicationResolution, AllocateArena());
   if (!Engine->Graphics) { Error("Initializing Graphics"); Result = False; }
 
   {

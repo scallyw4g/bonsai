@@ -1,0 +1,30 @@
+
+// ResolutionSetting_4096x2160
+// ResolutionSetting_1920x1080
+// ResolutionSetting_1280x720
+
+resolution=ResolutionSetting_1280x720
+
+
+// ShadowQualitySetting_High
+// ShadowQualitySetting_Med
+// ShadowQualitySetting_Low
+// ShadowQualitySetting_Off
+
+shadow_quality=ShadowQualitySetting_High
+
+
+// LightingQualitySetting_High
+// LightingQualitySetting_Med
+// LightingQualitySetting_Low
+// LightingQualitySetting_Off
+
+// NOTE(Jesse)(lighting_setting): Currently does nothing
+lighting_quality=LightingQualitySetting_High
+
+
+// ShaderLanguageSetting_330core
+// ShaderLanguageSetting_310es
+
+shader_language=ShaderLanguageSetting_310es
+

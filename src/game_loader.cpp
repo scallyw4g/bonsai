@@ -105,6 +105,7 @@ PrintFiles(file_traversal_node *Node)
 global_variable const char *
 Global_ProjectSwitcherGameLibName = "./bin/game_libs/project_and_level_picker_loadable" PLATFORM_RUNTIME_LIB_EXTENSION;
 
+
 s32
 main( s32 ArgCount, const char ** Args )
 {
@@ -172,6 +173,9 @@ main( s32 ArgCount, const char ** Args )
                                   GameApi,
                                   &EngineResources->Stdlib,
                                   &BootstrapArena) );
+
+
+  EngineResources->Settings = ParseEngineSettings(CSz("settings.init"));
 
 
   EngineResources->DebugState = Global_DebugStatePointer;

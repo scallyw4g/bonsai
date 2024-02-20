@@ -26,6 +26,7 @@ uniform float Exposure;
 
 uniform int ToneMappingType;
 
+uniform v2 ApplicationResolution;
 
 
 
@@ -148,10 +149,10 @@ void main()
 {
   vec3 ToneMapped;
 
-  vec2 gBufferTextureDim = vec2(SCR_WIDTH, SCR_HEIGHT);
+  vec2 gBufferTextureDim = ApplicationResolution;
   ivec2 texelCoord = ivec2(gBufferUV*gBufferTextureDim);
 
-  vec2 gBufferTexelStep = 1.0 / vec2(SCR_WIDTH, SCR_HEIGHT);
+  vec2 gBufferTexelStep = 1.0 / ApplicationResolution;
 
   vec4 AccumTex = texture(TransparencyAccum, gBufferUV);
   float AccumCountTex = max(1.f, texture(TransparencyCount, gBufferUV).r);
