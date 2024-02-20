@@ -666,6 +666,10 @@ DoEngineDebug(engine_resources *Engine)
   if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_WorldChunks))
   {
     local_persist window_layout WorldChunkWindow = WindowLayout("World Chunks");
+    WorldChunkWindow.Title = EngineDebug->PickedChunk ?
+      FSz("World Chunk : (%p)", EngineDebug->PickedChunk) :
+      CSz("World Chunk");
+
     PushWindowStart(Ui, &WorldChunkWindow);
 
       if ( Clicked(&EditorButtonGroup, CSz("WorldChunks")) ||
@@ -694,8 +698,6 @@ DoEngineDebug(engine_resources *Engine)
 
       if (EngineDebug->PickedChunk)
       {
-        WorldChunkWindow.Title = FSz("World Chunk : (%p)", EngineDebug->PickedChunk);
-        /* DebugUi(Engine, CSz("PickedChunk"), EngineDebug->PickedChunk ); */
         DoEditorUi(Ui, &WorldChunkWindow, EngineDebug->PickedChunk, CSz("PickedChunk"));
       }
 
@@ -708,7 +710,7 @@ DoEngineDebug(engine_resources *Engine)
     v2 DefaultTextureDim = V2(250);
 
     auto Flags = window_layout_flags(WindowLayoutFlag_StartupAlign_Bottom|WindowLayoutFlag_StartupSize_InferWidth);
-    local_persist window_layout TexturesWindow = WindowLayout("Textures", {}, V2(0.f, DefaultTextureDim.y + 30.f), Flags);
+    local_persist window_layout TexturesWindow = WindowLayout("Textures", Flags);
     PushWindowStart(Ui, &TexturesWindow);
 
     s32 xAdvance = 15;

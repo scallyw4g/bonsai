@@ -31,7 +31,12 @@ FlushBuffersToCard(gpu_element_buffer_handles* Handles)
 
   if (BufferUnmapped == False) { Error("glUnmapBuffer Failed"); }
 
+  // TODO(Jesse): The transparency code doesn't work if I uncomment these.. why??
   /* GL.BindBuffer(GL_ARRAY_BUFFER, 0); */
+  /* GL.DisableVertexAttribArray(0); */
+  /* GL.DisableVertexAttribArray(1); */
+  /* GL.DisableVertexAttribArray(2); */
+  /* GL.DisableVertexAttribArray(3); */
 
   return BufferUnmapped;
 }
@@ -126,6 +131,12 @@ MapGpuElementBuffer(gpu_element_buffer_handles *Handles)
   if (!Result.Mat)     { Error("Allocating gpu_mapped_element_buffer::Mat");     }
 
   GL.BindBuffer(GL_ARRAY_BUFFER, 0);
+
+  GL.DisableVertexAttribArray(0);
+  GL.DisableVertexAttribArray(1);
+  GL.DisableVertexAttribArray(2);
+  GL.DisableVertexAttribArray(3);
+
 
   return Result;
 }

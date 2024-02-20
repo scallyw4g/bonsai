@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# OPT="-O2"
+OPT="-O2"
 # OPT="-O0"
 
 # ./make.sh RunPoof

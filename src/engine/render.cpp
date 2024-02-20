@@ -12,9 +12,9 @@ RenderAoTexture(ao_render_group *AoGroup)
 
   RenderQuad();
 
-  AssertNoGlErrors;
+  CleanupTextureBindings(&AoGroup->Shader);
 
-  return;
+  AssertNoGlErrors;
 }
 
 void
@@ -49,6 +49,7 @@ UpdateLightingTextures(game_lights *Lights)
   return;
 }
 
+#if 0
 link_internal void
 Debug_DrawTextureToDebugQuad( shader *DebugShader )
 {
@@ -60,10 +61,11 @@ Debug_DrawTextureToDebugQuad( shader *DebugShader )
 
   RenderQuad();
 
-  AssertNoGlErrors;
+  CleanupTextureBindings(&AoGroup->Shader);
 
-  return;
+  AssertNoGlErrors;
 }
+#endif
 
 inline m4
 GetShadowMapMVP(v3 SunP, v3 FrustumCenter)
@@ -139,6 +141,8 @@ RenderImmediateGeometryToGBuffer(gpu_mapped_element_buffer *GpuMap, graphics *Gr
   GL.Disable(GL_CULL_FACE);
   Draw(GpuMap->Buffer.At);
   GL.Enable(GL_CULL_FACE);
+
+  CleanupTextureBindings(&GBufferRenderGroup->gBufferShader);
 
   AssertNoGlErrors;
 }
@@ -808,6 +812,8 @@ SetupRenderToTextureShader(engine_resources *Engine, texture *Texture, camera *C
 
   // GL stuff
   {
+    /* GL.DisableVertexAttribArray(1); */
+
     GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID);
 
     GL.UseProgram(RTTGroup->Shader.ID);
@@ -914,6 +920,13 @@ DrawGpuBufferImmediate(graphics *Graphics, gpu_element_buffer_handles *Handles)
   AssertNoGlErrors;
 
   Draw(Handles->ElementCount);
+
+  GL.BindBuffer(GL_ARRAY_BUFFER, 0);
+
+  GL.DisableVertexAttribArray(0);
+  GL.DisableVertexAttribArray(1);
+  GL.DisableVertexAttribArray(2);
+  GL.DisableVertexAttribArray(3);
 }
 
 link_internal void
@@ -1036,7 +1049,7 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
 
     m4 NormalMatrix = Transpose(Inverse(LocalTransform));
 
-    BindUniform(Shader, "ModelMatrix", &LocalTransform);
+    TryBindUniform(Shader, "ModelMatrix", &LocalTransform);
     TryBindUniform(Shader, "NormalMatrix", &NormalMatrix); // NOTE(Jesse): Not all shaders that use this path draw normals (namely, DepthRTT)
 
     DrawGpuBufferImmediate(Graphics, &Meshes->GpuBufferHandles[ToIndex(MeshBit)]);
@@ -1143,6 +1156,8 @@ SetupGBufferShader(graphics *Graphics)
 link_internal void
 TeardownGBufferShader(graphics *Graphics)
 {
+  auto GBufferRenderGroup = Graphics->gBuffer;
+  CleanupTextureBindings(&GBufferRenderGroup->gBufferShader);
   GL.Enable(GL_CULL_FACE);
 }
 
