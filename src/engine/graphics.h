@@ -10,8 +10,8 @@ struct gaussian_render_group
 
   shader Shader;
 
-  shader DebugTextureShader0;
-  shader DebugTextureShader1;
+  /* shader DebugTextureShader0; */
+  /* shader DebugTextureShader1; */
 };
 
 struct transparency_render_group
@@ -110,6 +110,14 @@ struct render_settings
   tone_mapping_type ToneMappingType;
 
   lighting_settings Lighting;
+
+  v2 ApplicationResolution;
+  v2 ShadowMapResolution;
+  v2 LuminanceMapResolution;
+
+  v2i iApplicationResolution;
+  v2i iShadowMapResolution;
+  v2i iLuminanceMapResolution;
 };
 
 struct graphics
