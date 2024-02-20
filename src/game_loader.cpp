@@ -166,6 +166,7 @@ main( s32 ArgCount, const char ** Args )
     if (!InitializeEngineApi(&EngineApi, GameLib)) { Error("Initializing EngineApi :( "); return 1; }
   }
 
+
   memory_arena BootstrapArena = {};
   memory_arena *GameMemory = AllocateArena();
 

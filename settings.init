@@ -46,6 +46,6 @@
 // NOTE(Jesse): In case you wanted a hi-res back-buffer, and a smaller window.
 //
 
-   window_starting_size = ResolutionSetting_4096x2160
-// window_starting_size = ResolutionSetting_1920x1080
+// window_starting_size = ResolutionSetting_4096x2160
+   window_starting_size = ResolutionSetting_1920x1080
 // window_starting_size = ResolutionSetting_1280x720
