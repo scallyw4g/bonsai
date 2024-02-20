@@ -247,8 +247,9 @@ Bonsai_Simulate(engine_resources *Resources)
   v2 MouseDelta = GetMouseDelta(Plat);
   UpdateGameCamera(World, MouseDelta, InputForCamera, CameraTargetP, Camera, Plat->dt, DoPositionDelta, DoZoomDelta);
 
+  // TODO(Jesse)(correctness, nopush): This should actually be passing the back-buffer resolution??
   Resources->Graphics->gBuffer->ViewProjection =
-    ProjectionMatrix(Camera, Plat->ScreenDim.x, Plat->ScreenDim.y) *
+    ProjectionMatrix(Camera, Plat->ScreenDim) *
     ViewMatrix(World->ChunkDim, Camera);
 
 

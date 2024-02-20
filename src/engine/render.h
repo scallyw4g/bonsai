@@ -127,10 +127,10 @@ Rads(degrees Degrees)
 }
 
 inline m4
-ProjectionMatrix(camera *Camera, r32 WindowWidth, r32 WindowHeight)
+ProjectionMatrix(camera *Camera, v2 ScreenDim)
 {
   m4 Result = Perspective( Rads(Camera->Frust.FOV),
-                                V2(WindowWidth, WindowHeight),
+                                ScreenDim,
                                 Camera->Frust.nearClip,
                                 Camera->Frust.farClip);
 

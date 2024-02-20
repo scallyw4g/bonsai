@@ -824,7 +824,7 @@ SetupRenderToTextureShader(engine_resources *Engine, texture *Texture, camera *C
       /* Translate( GetRenderP(World->ChunkDim, Camera->CurrentP, Camera) ) * */
       /* Translate( GetSimSpaceP(World, CameraTarget) ) * */
       /* Translate( V3(-10) ) * */
-      ProjectionMatrix(Camera, Texture->Dim.x, Texture->Dim.y) *
+      ProjectionMatrix(Camera, V2(Texture->Dim)) *
       ViewMatrix(Engine->World->ChunkDim, Camera)
       /* + Translate2(V3(-0.01f, 0.f, 0.f)) */
       /* * Translate( V3(-10) ) */
