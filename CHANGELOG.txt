@@ -1,3 +1,9 @@
+* 1.4.1
+
+- Fix PlatformTraverseDirectoryTree on Linux snapping pointers to invalid memory
+
+- Minor gameplay fixes for turn_based
+
 * 1.4.0
 
 This marks the first stable public release.  Downloading pre-built binaries is
