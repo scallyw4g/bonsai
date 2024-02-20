@@ -65,8 +65,8 @@ DoLight(game_lights *Lights, v3 RenderPosition, v3 Color)
 
 // TODO(Jesse): Make a shadow.h ?
 // NOTE(Jesse): 32x1024 x2 == 64k at 32bit float
-#define SHADOW_MAP_RESOLUTION_X (16*1024)
-#define SHADOW_MAP_RESOLUTION_Y (16*1024)
+#define SHADOW_MAP_RESOLUTION_X ((16*1024)/SCREEN_RATIO)
+#define SHADOW_MAP_RESOLUTION_Y ((16*1024)/SCREEN_RATIO)
 /* #define SHADOW_MAP_RESOLUTION_X (2*1024) */
 /* #define SHADOW_MAP_RESOLUTION_Y (2*1024) */
 
