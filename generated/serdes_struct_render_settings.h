@@ -101,6 +101,42 @@ Serialize(u8_cursor_block_array *Bytes, render_settings *BaseElement, umm Count 
 
     Result &= Serialize(Bytes, &Element->Lighting);
 
+
+
+
+
+    Result &= Serialize(Bytes, &Element->ApplicationResolution);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->ShadowMapResolution);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->LuminanceMapResolution);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->iApplicationResolution);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->iShadowMapResolution);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->iLuminanceMapResolution);
+
     
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -210,6 +246,54 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Lighting, Memory);
+
+
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->ApplicationResolution, Memory);
+
+
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->ShadowMapResolution, Memory);
+
+
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->LuminanceMapResolution, Memory);
+
+
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->iApplicationResolution, Memory);
+
+
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->iShadowMapResolution, Memory);
+
+
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->iLuminanceMapResolution, Memory);
 
   
 

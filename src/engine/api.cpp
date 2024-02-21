@@ -247,8 +247,9 @@ Bonsai_Simulate(engine_resources *Resources)
   v2 MouseDelta = GetMouseDelta(Plat);
   UpdateGameCamera(World, MouseDelta, InputForCamera, CameraTargetP, Camera, Plat->dt, DoPositionDelta, DoZoomDelta);
 
+  // TODO(Jesse)(correctness, nopush): This should actually be passing the back-buffer resolution??
   Resources->Graphics->gBuffer->ViewProjection =
-    ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
+    ProjectionMatrix(Camera, Plat->ScreenDim) *
     ViewMatrix(World->ChunkDim, Camera);
 
 
@@ -352,8 +353,9 @@ Bonsai_Render(engine_resources *Resources)
   EngineDebug->Render.BytesSolidGeoLastFrame = GpuMap->Buffer.At;
   EngineDebug->Render.BytesTransGeoLastFrame = Graphics->Transparency.GpuBuffer.Buffer.At;
 
-  DrawWorldToGBuffer(Resources);
-  DrawWorldToShadowMap(Resources);
+  DrawWorldToGBuffer(Resources, GetApplicationResolution(&Resources->Settings));
+
+  DrawWorldToShadowMap(GetShadowMapResolution(&Resources->Settings), Resources);
 
   // TODO(Jesse): Move into engine debug
   DebugHighlightWorldChunkBasedOnState(Graphics, EngineDebug->PickedChunk, &GpuMap->Buffer);
@@ -363,7 +365,7 @@ Bonsai_Render(engine_resources *Resources)
 
   if (GpuMap->Buffer.At)
   {
-    RenderImmediateGeometryToGBuffer(GpuMap, Graphics);
+    RenderImmediateGeometryToGBuffer(GetApplicationResolution(&Resources->Settings), GpuMap, Graphics);
     // Comment this out to not cast shadows from immediate geometry
     RenderImmediateGeometryToShadowMap(GpuMap, Graphics);
   }
@@ -373,13 +375,13 @@ Bonsai_Render(engine_resources *Resources)
   // NOTE(Jesse): I observed the AO lagging a frame behind if this is re-ordered
   // after the transparency/luminance textures.  I have literally 0 ideas as to
   // why that would be, but here we are.
-  if (Graphics->Settings.UseSsao) { RenderAoTexture(AoGroup); }
+  if (Graphics->Settings.UseSsao) { RenderAoTexture(GetApplicationResolution(&Resources->Settings), AoGroup); }
 
   /* FlushBuffersToCard(&Graphics->Transparency.GpuBuffer); */
   /* if (Graphics->Transparency.GpuBuffer.Buffer.At) */
   {
-    RenderTransparencyBuffers(&Graphics->Settings, &Graphics->Transparency);
-    RenderLuminanceTexture(GpuMap, Lighting, Graphics);
+    RenderTransparencyBuffers(GetApplicationResolution(&Resources->Settings), &Graphics->Settings, &Graphics->Transparency);
+    RenderLuminanceTexture(GetApplicationResolution(&Resources->Settings), GpuMap, Lighting, Graphics);
   }
   /* Clear(&Graphics->Transparency.GpuBuffer); */
 

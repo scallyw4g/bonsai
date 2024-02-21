@@ -248,12 +248,12 @@ ComputeRayFromCursor(engine_resources *Engine, m4* ViewProjection, camera *Camer
   {
     v3 MouseMinWorldP = Unproject( Plat->MouseP,
                                    0.0f,
-                                   V2(Plat->WindowWidth, Plat->WindowHeight),
+                                   Plat->ScreenDim,
                                    &InverseViewProjection);
 
     v3 MouseMaxWorldP = Unproject( Plat->MouseP,
                                    1.0f,
-                                   V2(Plat->WindowWidth, Plat->WindowHeight),
+                                   Plat->ScreenDim,
                                    &InverseViewProjection);
 
     v3 RayDirection = Normalize(MouseMaxWorldP - MouseMinWorldP);

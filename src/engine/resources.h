@@ -35,6 +35,8 @@ struct asset_system
 
 struct engine_resources
 {
+  engine_settings Settings;
+
   bonsai_stdlib Stdlib;
 
   // TODO(Jesse): Should this go in stdlib?

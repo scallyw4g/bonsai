@@ -1,5 +1,5 @@
 
-in vec2 gBufferUV;
+in vec2 ScreenUV;
 out vec4 OutColor;
 
 
@@ -26,6 +26,8 @@ uniform float Exposure;
 
 uniform int ToneMappingType;
 
+uniform v2 ApplicationResolution;
+// uniform v2 LuminanceMapResolution;;
 
 
 
@@ -148,21 +150,20 @@ void main()
 {
   vec3 ToneMapped;
 
-  vec2 gBufferTextureDim = vec2(SCR_WIDTH, SCR_HEIGHT);
-  ivec2 texelCoord = ivec2(gBufferUV*gBufferTextureDim);
+  vec2 gBufferTextureDim = ApplicationResolution;
+  vec2 gBufferTexelStep = 1.0 / gBufferTextureDim; // TODO(Jesse): Pass this in as a uniform
 
-  vec2 gBufferTexelStep = 1.0 / vec2(SCR_WIDTH, SCR_HEIGHT);
 
-  vec4 AccumTex = texture(TransparencyAccum, gBufferUV);
-  float AccumCountTex = max(1.f, texture(TransparencyCount, gBufferUV).r);
+  vec4 AccumTex      =          texture(TransparencyAccum, ScreenUV);
+  f32  AccumCountTex = max(1.f, texture(TransparencyCount, ScreenUV).r);
+  vec3 FragNormal    =          texture(gNormal,           ScreenUV).rgb;
+  vec3 Lighting      =          texture(LightingTex,       ScreenUV).rgb;
 
-  vec3 FragNormal = texture(gNormal, gBufferUV).rgb;
-
-  /* vec3 Diffuse  = texelFetch(gColor, texelCoord, 0).rgb; */
-  vec3 Lighting = texture(LightingTex, gBufferUV).rgb;
+  /* OutColor = v4(Lighting, 1.f);; */
+  /* return; */
 
   v3 Bloom = vec3(0.0f, 0.0f, 0.0f);
-  if (UseLightingBloom) { Bloom = texture(BloomTex, gBufferUV).rgb; }
+  if (UseLightingBloom) { Bloom = texture(BloomTex, ScreenUV).rgb; }
 
 
   // Super-poor ultra-jank not-good very-bad AA
@@ -171,24 +172,20 @@ void main()
   // the FragNormal texture lookup here.  Reason being is that we're blending
   // the lit pixel values, which aren't available in the lighting shader (obviously).
   {
-    vec3 xNextFragNormal = texture(gNormal, gBufferUV+ vec2(gBufferTexelStep.x, 0) ).rgb;
+    vec3 xNextFragNormal = texture(gNormal, ScreenUV+ vec2(gBufferTexelStep.x, 0) ).rgb;
     if ( abs(dot(FragNormal, xNextFragNormal)) < 0.5f )
     {
-      Lighting += texture(LightingTex, gBufferUV + vec2(gBufferTexelStep.x, 0) ).rgb;
+      Lighting += texture(LightingTex, ScreenUV + vec2(gBufferTexelStep.x, 0) ).rgb;
       Lighting/=2.f;
     }
 
-    vec3 yNextFragNormal = texture(gNormal, gBufferUV+ vec2(0, gBufferTexelStep.y) ).rgb;
+    vec3 yNextFragNormal = texture(gNormal, ScreenUV+ vec2(0, gBufferTexelStep.y) ).rgb;
     if ( abs(dot(FragNormal, yNextFragNormal)) < 0.5f )
     {
-      Lighting += texture(LightingTex, gBufferUV + vec2(0, gBufferTexelStep.y) ).rgb;
+      Lighting += texture(LightingTex, ScreenUV + vec2(0, gBufferTexelStep.y) ).rgb;
       Lighting/=2.f;
     }
   }
-
-
-
-  vec4 FragPosition = texelFetch(gPosition, texelCoord, 0);
 
   vec3 sampleVis = vec3(1.0f/5.f);
   /* vec3 sampleVis = vec3(1.f/7.f); */

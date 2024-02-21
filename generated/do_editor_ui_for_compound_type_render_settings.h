@@ -103,6 +103,60 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
 
       
       DoEditorUi(Ui, Window, &Element->Lighting, CSz("lighting_settings Lighting"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui, Window, &Element->ApplicationResolution, CSz("v2 ApplicationResolution"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui, Window, &Element->ShadowMapResolution, CSz("v2 ShadowMapResolution"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui, Window, &Element->LuminanceMapResolution, CSz("v2 LuminanceMapResolution"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui, Window, &Element->iApplicationResolution, CSz("v2i iApplicationResolution"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui, Window, &Element->iShadowMapResolution, CSz("v2i iShadowMapResolution"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui, Window, &Element->iLuminanceMapResolution, CSz("v2i iLuminanceMapResolution"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }

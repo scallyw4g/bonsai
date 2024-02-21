@@ -29,6 +29,9 @@ uniform bool UseSsao;
 uniform bool UseShadowMapping;
 uniform bool UseLightingBloom;
 
+uniform v2 ApplicationResolution;
+uniform v2 ShadowMapResolution;
+
 int AoBlurSize = 4; // size of AO noise texture
 float BlurredAO = 0.0f;
 
@@ -82,7 +85,7 @@ vec3 LightingCalc(float AttenuationFactor, vec3 LightColor, vec3 FragToLight, ve
 void main()
 {
 
-  vec2 gBufferTextureDim = vec2(SCR_WIDTH, SCR_HEIGHT);
+  vec2 gBufferTextureDim = ApplicationResolution;
   ivec2 texelCoord = ivec2(gBufferUV*gBufferTextureDim);
   vec4 FragPosition = texelFetch(gPosition, texelCoord, 0);
 
@@ -203,7 +206,7 @@ void main()
       /* return; */
 
 
-      v2 ShadowMapUVStep = vec2(1.f)/vec2(float(SHADOW_MAP_RESOLUTION_X), float(SHADOW_MAP_RESOLUTION_Y));
+      v2 ShadowMapUVStep = vec2(1.f)/ShadowMapResolution;
 
       float ShadowSampleDepth = texture(shadowMap, FragPShadowSpace.xy ).x + acneBias;
       if ( FragDepth > ShadowSampleDepth ) { ShadowVisibility -= vec3(1.f); }

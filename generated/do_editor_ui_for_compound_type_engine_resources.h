@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:362:0
+// src/engine/editor.cpp:374:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
@@ -11,6 +11,15 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
       PushTableStart(Ui);
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      DoEditorUi(Ui, Window, &Element->Settings, CSz("engine_settings Settings"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      
       DoEditorUi(Ui, Window, &Element->Stdlib, CSz("bonsai_stdlib Stdlib"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 

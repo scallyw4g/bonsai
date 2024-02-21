@@ -106,7 +106,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, EDITOR_UI
 poof(do_editor_ui_for_primitive_type({s64 u64 s32 u32 s16 u16 s8 u8}));
 #include <generated/do_editor_ui_for_scalar_type_688724926.h>
 
-poof(do_editor_ui_for_vector_type({v4i v4 v3i v3 v2 Quaternion}));
+poof(do_editor_ui_for_vector_type({v4i v4 v3i v3 v2i v2 Quaternion}));
 #include <generated/do_editor_ui_for_vector_type_688873645.h>
 
 
@@ -358,6 +358,18 @@ poof(do_editor_ui_for_enum(engine_debug_view_mode))
 
 poof(do_editor_ui_for_compound_type(level_editor))
 #include <generated/do_editor_ui_for_compound_type_level_editor.h>
+
+poof(do_editor_ui_for_enum(resolution_setting))
+#include <generated/do_editor_ui_for_enum_resolution_setting.h>
+
+poof(do_editor_ui_for_enum(shader_language_setting))
+#include <generated/do_editor_ui_for_enum_shader_language_setting.h>
+
+poof(do_editor_ui_for_compound_type(graphics_settings))
+#include <generated/do_editor_ui_for_compound_type_graphics_settings.h>
+
+poof(do_editor_ui_for_compound_type(engine_settings))
+#include <generated/do_editor_ui_for_compound_type_engine_settings.h>
 
 poof(do_editor_ui_for_compound_type(engine_resources))
 #include <generated/do_editor_ui_for_compound_type_engine_resources.h>

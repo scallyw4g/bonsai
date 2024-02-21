@@ -9,6 +9,8 @@ uniform sampler2D gBufferDepthTexture;
 uniform bool BravoilMyersOIT;
 uniform bool BravoilMcGuireOIT;
 
+uniform v2 ApplicationResolution;
+
 layout (location = 0) out vec4 ColorAccumulation;
 layout (location = 1) out vec2 Count;
 
@@ -65,7 +67,9 @@ float Eq10(float Depth, float Alpha)
 
 void main()
 {
-  v2 UV = gl_FragCoord.xy / V2(SCR_WIDTH, SCR_HEIGHT);
+  // TODO(Jesse): Is this actually correct? I  would think we'd want the screen
+  // dimension here, but this is what we were doing before so I'm going to leave it.
+  v2 UV = gl_FragCoord.xy / ApplicationResolution;
   float gBufferDepth = texture(gBufferDepthTexture, UV).r;
   float FragDepth = gl_FragCoord.z;
 

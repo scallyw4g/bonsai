@@ -35,6 +35,7 @@ link_internal engine_resources *GetEngineResources();
 
 #include <engine/debug.h>
 #include <engine/editor.h>
+#include <engine/settings.h>
 #include <engine/resources.h>
 
 #include <engine/work_queue.h>

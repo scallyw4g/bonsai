@@ -1,3 +1,7 @@
+* 1.4.2
+
+- Added settings.init, which drives some graphics settings at the moment
+
 * 1.4.1
 
 - Fix PlatformTraverseDirectoryTree on Linux snapping pointers to invalid memory

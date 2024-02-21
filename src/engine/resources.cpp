@@ -6,6 +6,9 @@ InitEngineResources(engine_resources *Engine)
 
   platform *Plat = &Engine->Stdlib.Plat;
 
+  Assert(Global_ShaderHeaderCode.Start == 0);
+  LoadGlobalShaderHeaderCode(Engine->Settings.Graphics.ShaderLanguage);
+
   memory_arena *WorldAndEntityArena = AllocateArena(Megabytes(256));
   DEBUG_REGISTER_ARENA(WorldAndEntityArena, 0);
 
@@ -20,7 +23,7 @@ InitEngineResources(engine_resources *Engine)
   Engine->World = Allocate(world, WorldAndEntityArena, 1);
   if (!Engine->World) { Error("Allocating World"); Result = False; }
 
-  Engine->Graphics = GraphicsInit(AllocateArena());
+  Engine->Graphics = GraphicsInit(&Engine->Settings, AllocateArena());
   if (!Engine->Graphics) { Error("Initializing Graphics"); Result = False; }
 
   {

@@ -1037,7 +1037,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   PushBorderlessWindowStart(Ui, &ActionsWindow);
 
   v2 WindowDim = GetDim(&ActionsWindow);
-  v2 WindowOffset = V2(Plat->WindowWidth/2.f-(WindowDim.x/2.f), Plat->WindowHeight-WindowDim.y-25.f);
+  v2 WindowOffset = V2(Plat->ScreenDim.x/2.f-(WindowDim.x/2.f), Plat->ScreenDim.y-WindowDim.y-25.f);
   /* v2 WindowOffset = V2(0.f, Plat->WindowHeight-WindowDim.y); */
   /* v2 WindowOffset = {}; */
 
