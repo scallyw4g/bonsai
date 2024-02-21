@@ -23,9 +23,9 @@ RunTests=0
 MakeDebugLibRelease=0
 
 stdlib_build_scripts='external/bonsai_stdlib/scripts'
-. $stdlib_build_scripts/preamble.sh
-. $stdlib_build_scripts/setup_for_cxx.sh
-. external/bonsai_debug/make.sh
+source $stdlib_build_scripts/preamble.sh
+source $stdlib_build_scripts/setup_for_cxx.sh
+source external/bonsai_debug/make.sh
 
 
 OPTIMIZATION_LEVEL=""

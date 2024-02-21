@@ -8,10 +8,10 @@ link_internal b32
 Sorted(sort_key *Keys, s32 KeyCount, b32 DebugPrint = False)
 {
   b32 Result = True;
-  if (DebugPrint) { LogDirect("Keys(%u)\n", KeyCount); }
+  if (DebugPrint) { Info("Keys(%u)\n", KeyCount); }
   RangeIterator(Index, KeyCount)
   {
-    if (DebugPrint) { LogDirect("Index(%d) SortIndex(%lu) Value(%lu)\n", Index, Keys[Index].Index, Keys[Index].Value); }
+    if (DebugPrint) { Info("Index(%d) SortIndex(%lu) Value(%lu)\n", Index, Keys[Index].Index, Keys[Index].Value); }
     s32 NextIndex = Min(Index+1, KeyCount-1);
     Assert(NextIndex < KeyCount);
     Result |= (Keys[Index].Value <= Keys[NextIndex].Value);
