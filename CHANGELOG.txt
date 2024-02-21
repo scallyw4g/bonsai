@@ -1,6 +1,22 @@
 * 1.4.2
 
 - Added settings.init, which drives some graphics settings at the moment
+	Some settings are now dynamic, loaded at startup from settings.init.  I
+	needed to switch between different graphics settings to get the engine to
+	load on my laptop with an integrated GPU, so this was finally necessary.
+
+- Added GetLexicographicallySortedListOfFilesInDirectory
+	The code that loads bitmaps for the UI sprites needed a stable ordering
+	across operating systems, which is not natively provided.  This function
+	addresses the need there.
+
+- Rename PlatformTraverseDirectoryTree -> PlatformTraverseDirectoryTreeUnordered
+	More specific name such that we know the ordering differes across platforms
+
+- Remove some #defines that are now driven by settings.init
+
+- Fixed some minor duplication in platform
+
 
 * 1.4.1
 
