@@ -1,4 +1,4 @@
-// src/engine/settings.h:36:0
+// src/engine/settings.h:30:0
 
 link_internal counted_string
 ToString(lighting_quality_setting Type)

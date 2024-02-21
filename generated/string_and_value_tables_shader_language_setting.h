@@ -1,4 +1,4 @@
-// src/engine/settings.h:38:0
+// src/engine/settings.h:32:0
 
 link_internal counted_string
 ToString(shader_language_setting Type)

@@ -1,4 +1,4 @@
-// src/engine/settings.h:34:0
+// src/engine/settings.h:28:0
 
 link_internal counted_string
 ToString(shadow_quality_setting Type)

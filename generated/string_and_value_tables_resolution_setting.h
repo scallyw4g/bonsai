@@ -1,4 +1,4 @@
-// src/engine/settings.h:32:0
+// src/engine/settings.h:26:0
 
 link_internal counted_string
 ToString(resolution_setting Type)
