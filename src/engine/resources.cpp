@@ -6,6 +6,9 @@ InitEngineResources(engine_resources *Engine)
 
   platform *Plat = &Engine->Stdlib.Plat;
 
+  Assert(Global_ShaderHeaderCode.Start == 0);
+  LoadGlobalShaderHeaderCode(Engine->Settings.Graphics.ShaderLanguage);
+
   memory_arena *WorldAndEntityArena = AllocateArena(Megabytes(256));
   DEBUG_REGISTER_ARENA(WorldAndEntityArena, 0);
 

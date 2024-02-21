@@ -23,12 +23,6 @@ enum lighting_quality_setting
 };
 
 
-enum shader_language_setting
-{
-  ShaderLanguageSetting_330core, // default
-  ShaderLanguageSetting_310es,   // web
-};
-
 poof(string_and_value_tables(resolution_setting));
 #include <generated/string_and_value_tables_resolution_setting.h>
 poof(string_and_value_tables(shadow_quality_setting));
