@@ -363,7 +363,7 @@ main( s32 ArgCount, const char ** Args )
     BonsaiSwapBuffers(&EngineResources->Stdlib.Os);
 
 
-    // NOTE(Jesse): We can't hold strings from PlatformTraverseDirectoryTree
+    // NOTE(Jesse): We can't hold strings from PlatformTraverseDirectoryTreeUnordered
     // across frame boundaries because transient memory gets cleared, so this
     // has to happen before the end of the frame.
     if ( EngineResources->RequestedGameLibReloadNode.Name )

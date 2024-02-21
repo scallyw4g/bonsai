@@ -41,7 +41,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 link_internal b32
 FilterByLoadableDLLs(file_traversal_node *Node)
 {
-  b32 Result = EndsWith(Node->Name, CSz("_loadable" PLATFORM_RUNTIME_LIB_EXTENSION));
+  b32 Result = (EndsWith(Node->Name, CSz("_loadable" PLATFORM_RUNTIME_LIB_EXTENSION))) &&
+               (StringsMatch(Node->Name, CSz("project_and_level_picker_loadable" PLATFORM_RUNTIME_LIB_EXTENSION)) == False);
   return Result;
 }
 
@@ -56,7 +57,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   PushWindowStart(Ui, &Window);
 
   filtered_file_traversal_helper_params HelperParams = {&Window, FilterByLoadableDLLs};
-    maybe_file_traversal_node MaybeNode = PlatformTraverseDirectoryTree(CSz("bin/game_libs"), EngineDrawFileNodesFilteredHelper, u64(&HelperParams));
+    maybe_file_traversal_node MaybeNode = PlatformTraverseDirectoryTreeUnordered(CSz("bin/game_libs"), EngineDrawFileNodesFilteredHelper, u64(&HelperParams));
     if (MaybeNode.Tag)
     {
       RequestGameLibReload(Resources, MaybeNode.Value);

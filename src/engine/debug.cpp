@@ -128,7 +128,7 @@ DoLevelWindow(engine_resources *Engine)
   PushNewRow(Ui);
 
   PushTableStart(Ui);
-    maybe_file_traversal_node ClickedNode = PlatformTraverseDirectoryTree(CSz("../bonsai_levels"), EngineDrawFileNodesHelper, Cast(u64, &Window));
+    maybe_file_traversal_node ClickedNode = PlatformTraverseDirectoryTreeUnordered(CSz("../bonsai_levels"), EngineDrawFileNodesHelper, Cast(u64, &Window));
   PushTableEnd(Ui);
   PushNewRow(Ui);
 
@@ -436,7 +436,7 @@ DoAssetWindow(engine_resources *Engine)
       {
         render_settings *Settings = &Graphics->Settings;
         filtered_file_traversal_helper_params HelperParams = {&Window, FilterFilenamesByVoxExtension};
-          maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTree(CSz("models"), EngineDrawFileNodesFilteredHelper, u64(&HelperParams) );
+        maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTreeUnordered(CSz("models"), EngineDrawFileNodesFilteredHelper, u64(&HelperParams) );
 
         if (ClickedFileNode.Tag)
         {
