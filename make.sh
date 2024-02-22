@@ -544,7 +544,12 @@ done
 time RunEntireBuild
 
 if [ $BundleRelease -eq 1 ]; then
-  echo -n "Bundling .. "
+  echo -e ""
+  echo -e "$Delimeter"
+  echo -e ""
+
+  ColorizeTitle "Bundling"
+
   tar -cz                                                                  \
     bin/game_loader$PLATFORM_EXE_EXTENSION                                 \
     bin/game_libs/blank_project_loadable$PLATFORM_LIB_EXTENSION            \
@@ -563,5 +568,4 @@ if [ $BundleRelease -eq 1 ]; then
     .root_marker                                                           \
     settings.init                                                          \
     texture_atlas_0.bmp > "$Platform""_x86_64_release.tar.gz"
-  echo "Bundle Complete"
 fi
