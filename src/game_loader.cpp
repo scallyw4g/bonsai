@@ -105,6 +105,7 @@ PrintFiles(file_traversal_node *Node)
 global_variable const char *
 Global_ProjectSwitcherGameLibName = "./bin/game_libs/project_and_level_picker_loadable" PLATFORM_RUNTIME_LIB_EXTENSION;
 
+
 s32
 main( s32 ArgCount, const char ** Args )
 {
@@ -165,13 +166,23 @@ main( s32 ArgCount, const char ** Args )
     if (!InitializeEngineApi(&EngineApi, GameLib)) { Error("Initializing EngineApi :( "); return 1; }
   }
 
+
   memory_arena BootstrapArena = {};
   memory_arena *GameMemory = AllocateArena();
+
+
+  {
+    temp_memory_handle TempHandle = BeginTemporaryMemory(&BootstrapArena);
+    EngineResources->Settings = ParseEngineSettings(CSz("settings.init"), &BootstrapArena);
+  }
+
+  EngineResources->Stdlib.Plat.ScreenDim = V2(SettingToValue(EngineResources->Settings.Graphics.WindowStartingSize));
 
   Ensure( InitializeBonsaiStdlib( bonsai_init_flags(BonsaiInit_LaunchThreadPool|BonsaiInit_OpenWindow|BonsaiInit_InitDebugSystem),
                                   GameApi,
                                   &EngineResources->Stdlib,
                                   &BootstrapArena) );
+
 
 
   EngineResources->DebugState = Global_DebugStatePointer;
@@ -232,7 +243,8 @@ main( s32 ArgCount, const char ** Args )
     v2 LastMouseP = Plat->MouseP;
     while ( ProcessOsMessages(Os, Plat) );
     Plat->MouseDP = LastMouseP - Plat->MouseP;
-    Plat->ScreenDim = V2(Plat->WindowWidth, Plat->WindowHeight);
+    Assert(Plat->ScreenDim.x > 0);
+    Assert(Plat->ScreenDim.y > 0);
 
     if (Plat->Input.Escape.Clicked)
     {
@@ -351,7 +363,7 @@ main( s32 ArgCount, const char ** Args )
     BonsaiSwapBuffers(&EngineResources->Stdlib.Os);
 
 
-    // NOTE(Jesse): We can't hold strings from PlatformTraverseDirectoryTree
+    // NOTE(Jesse): We can't hold strings from PlatformTraverseDirectoryTreeUnordered
     // across frame boundaries because transient memory gets cleared, so this
     // has to happen before the end of the frame.
     if ( EngineResources->RequestedGameLibReloadNode.Name )

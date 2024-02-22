@@ -6,6 +6,9 @@ InitEngineResources(engine_resources *Engine)
 
   platform *Plat = &Engine->Stdlib.Plat;
 
+  Assert(Global_ShaderHeaderCode.Start == 0);
+  LoadGlobalShaderHeaderCode(Engine->Settings.Graphics.ShaderLanguage);
+
   memory_arena *WorldAndEntityArena = AllocateArena(Megabytes(256));
   DEBUG_REGISTER_ARENA(WorldAndEntityArena, 0);
 
@@ -20,25 +23,25 @@ InitEngineResources(engine_resources *Engine)
   Engine->World = Allocate(world, WorldAndEntityArena, 1);
   if (!Engine->World) { Error("Allocating World"); Result = False; }
 
-  Engine->Graphics = GraphicsInit(AllocateArena());
+  Engine->Graphics = GraphicsInit(&Engine->Settings, AllocateArena());
   if (!Engine->Graphics) { Error("Initializing Graphics"); Result = False; }
 
   {
     memory_arena *UiMemory = AllocateArena();
     InitRenderer2D(&Engine->Ui, &Engine->Heap, UiMemory, &Plat->MouseP, &Plat->MouseDP, &Plat->ScreenDim, &Plat->Input);
-    /* Engine->UiSpriteTexture = LoadBitmap("assets/mystic_rpg_icon_pack/Sprites/300%/Tool_6.bmp", UiMemory); */
-    /* Engine->UiSpriteTexture = LoadBitmap("assets/mystic_rpg_icon_pack/Sprites/300%/Tool_13.bmp", UiMemory); */
 
-    bitmap_block_array Bitmaps = {};
-    LoadBitmapsFromFolder(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/64x64_sprites"), &Bitmaps);
-    LoadBitmapsFromFolder(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/44x44_sprites"), &Bitmaps);
-    Engine->Ui.SpriteTextureArray = CreateTextureArrayFromBitmapArray(&Bitmaps, V2i(64,64));
+    bitmap_block_array Bitmaps = { .Memory = GetTranArena() };
+    /* LoadBitmapsFromFolderUnordered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/64x64_sprites"), &Bitmaps); */
+    /* LoadBitmapsFromFolderUnordered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/44x44_sprites"), &Bitmaps); */
+    /* Engine->Ui.SpriteTextureArray = CreateTextureArrayFromBitmapBlockArray(&Bitmaps, V2i(64,64)); */
 
-    /* Engine->UiSpriteTexture = LoadBitmap("assets/mystic_rpg_icon_pack/Sprites/300%/Tool_20.bmp", UiMemory); */
-    /* Engine->UiSpriteTexture = LoadBitmap("assets/mystic_rpg_icon_pack/Sprites/300%/Inventory_0.bmp", UiMemory); */
-    /* Engine->UiSpriteTexture = LoadBitmap("assets/test.bmp", UiMemory); */
-    /* Engine->UiSpriteTexture = LoadBitmap("assets/test_1.bmp", UiMemory); */
-    /* Engine->UiSpriteTexture = LoadBitmap("assets/test_2.bmp", UiMemory); */
+    LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/64x64_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
+    LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/44x44_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
+    Engine->Ui.SpriteTextureArray = CreateTextureArrayFromBitmapBlockArray(&Bitmaps, V2i(64,64));
+
+    // TODO(Jesse): Can this be turned into a bitmap_buffer_buffer statically somehow so as to avoid the ArrayCount?
+    /* bitmap_buffer Buffers[] = { Bitmaps64, Bitmaps44 }; */
+    /* Engine->Ui.SpriteTextureArray = CreateTextureArrayFromBitmapBufferArray(Buffers, ArrayCount(Buffers), V2i(64,64)); */
   }
 
   Engine->EntityTable = AllocateEntityTable(WorldAndEntityArena, TOTAL_ENTITY_COUNT);

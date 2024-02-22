@@ -86,7 +86,7 @@ See the docs on the [build process](docs/01_build_process.md).
 [ ] Remove meshing entirely? https://www.youtube.com/watch?v=4xs66m1Of4A
 
 -------------------------------------------------------------------------------
-## Terrain Generation
+## Terrain
 
 [ ] Erosion simulation
 * https://inria.hal.science/hal-01262376/document
@@ -102,11 +102,12 @@ See the docs on the [build process](docs/01_build_process.md).
 * https://inria.hal.science/inria-00071612/document
 
 -------------------------------------------------------------------------------
-## Sound
+## Assets
 
-[ ] Write an mp3, ogg, ..? decompresser
+[ ] MCA importer
+* https://github.com/GabeRundlett/gvox/blob/old/src/formats/minecraft.cpp
 
-[ ] Do sound :'D
+[ ] Sound : mp3, ogg, ..? decompresser
 
 -------------------------------------------------------------------------------
 ## Datastructures
