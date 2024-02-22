@@ -545,20 +545,23 @@ time RunEntireBuild
 
 if [ $BundleRelease -eq 1 ]; then
   echo -n "Bundling .. "
-  tar -cz                                                         \
-    bin/game_loader$PLATFORM_EXE_EXTENSION                        \
+  tar -cz                                                                  \
+    bin/game_loader$PLATFORM_EXE_EXTENSION                                 \
     bin/game_libs/blank_project_loadable$PLATFORM_LIB_EXTENSION            \
     bin/game_libs/turn_based_loadable$PLATFORM_LIB_EXTENSION               \
     bin/game_libs/the_wanderer_loadable$PLATFORM_LIB_EXTENSION             \
     bin/game_libs/terrain_gen_loadable$PLATFORM_LIB_EXTENSION              \
     bin/game_libs/transparency_loadable$PLATFORM_LIB_EXTENSION             \
     bin/game_libs/project_and_level_picker_loadable$PLATFORM_LIB_EXTENSION \
-    bin/lib_debug_system_loadable$PLATFORM_LIB_EXTENSION          \
-    shaders/*                                                     \
-    external/bonsai_stdlib/shaders/*                              \
-    assets/*                                                      \
-    models/*                                                      \
-    .root_marker                                                  \
+    bin/lib_debug_system_loadable$PLATFORM_LIB_EXTENSION                   \
+    \
+    shaders/*                                                              \
+    external/bonsai_stdlib/shaders/*                                       \
+    assets/*                                                               \
+    models/*                                                               \
+    \
+    .root_marker                                                           \
+    settings.init                                                          \
     texture_atlas_0.bmp > "$Platform""_x86_64_release.tar.gz"
   echo "Bundle Complete"
 fi
