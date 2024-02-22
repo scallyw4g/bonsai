@@ -17,6 +17,13 @@
 
 - Fixed some minor duplication in platform
 
+- Remove voxel_synthesis_rule_baker from release
+	This example needs models I don't have written permissions to redistribute,
+	and isn't particularly polished.  I'll polish it up and make some models
+	that I can ship for in the future.
+
+- Removed a bunch of assets I didn't have permission to redistribute
+
 
 * 1.4.1
 
