@@ -53,8 +53,27 @@ poof(serdes_struct(entity_id))
 #include <generated/serdes_struct_entity_id.h>
 
 
+poof(deserialize_struct(camera_1))
+#include <generated/deserialize_struct_camera_1.h>
+
 poof(deserialize_struct(camera_0))
 #include <generated/deserialize_struct_camera_0.h>
+
+link_internal void
+Marshal(camera_1 *C0, camera *C1)
+{
+  C1->Frust = C0->Frust;
+  C1->CurrentP = C0->CurrentP;
+  C1->RenderSpacePosition = C0->RenderSpacePosition;
+  C1->Pitch = C0->Pitch;
+  C1->Roll = C0->Roll;
+  C1->Yaw = C0->Yaw;
+  C1->DistanceFromTarget = C0->DistanceFromTarget;
+  C1->Front = C0->Front;
+  C1->Right = C0->Right;
+  C1->Up = C0->Up;
+  C1->GhostId = C0->GhostId;;
+}
 
 link_internal void
 Marshal(camera_0 *C0, camera *C1)
@@ -350,6 +369,25 @@ poof(serdes_struct(lighting_settings_0))
 poof(serdes_struct(lighting_settings))
 #include <generated/serdes_struct_lighting_settings.h>
 
+
+
+
+
+
+link_internal void
+Marshal(render_settings_0 *E0, render_settings *E1)
+{
+  poof(func (render_settings_0 settings_t) {
+      settings_t.map(member) {
+        E1->(member.name) = E0->(member.name);
+      }
+  })
+#include <generated/anonymous_render_settings_0_wwLVyABc.h>
+}
+
+poof(deserialize_struct(render_settings_0))
+#include <generated/serialize_struct_render_settings_0.h>
+
 poof(serdes_struct(render_settings))
 #include <generated/serdes_struct_render_settings.h>
 
@@ -425,83 +463,5 @@ poof(serialize_struct(level_header))
 
 
 
-#if 0
-link_internal b32
-Deserialize(u8_stream *Bytes, entity *Element, memory_arena *Memory)
-{
-  b32 Result = True;
 
-  u64 Version;
-  Result &= Deserialize(Bytes, &Version, Memory);
-
-  if (Result)
-  {
-    switch(Version)
-    {
-      case 0:
-      {
-        entity_0 E0 = {};
-        entity_1 E1 = {};
-        Deserialize(Bytes, &E0, Memory);
-        Marshal(&E0, &E1);
-        Marshal(&E1, Element);
-      } break;
-
-      case 1:
-      {
-        entity_1 E1 = {};
-        Deserialize(Bytes, &E1, Memory);
-        Marshal(&E1, Element);
-      } break;
-
-      default: { SoftError("Could not deserialize entity, got invalid version (%lu)", Version); }
-    }
-
-
-  }
-
-  Element->AssetId.Index = INVALID_ASSET_INDEX;
-
-  return Result;
-}
-#endif
-
-
-#if 0
-link_internal b32
-DeserializeVersioned(u8_stream *Bytes, entity *Element, bonsai_type_info *TypeInfo, u64 Version, memory_arena *Memory)
-{
-  b32 Result = True;
-
-  if (Result)
-  {
-    switch(Version)
-    {
-      case 0:
-      {
-        entity_0 E0 = {};
-        entity_1 E1 = {};
-        Deserialize(Bytes, &E0, Memory);
-        Marshal(&E0, &E1);
-        Marshal(&E1, Element);
-      } break;
-
-      case 1:
-      {
-        entity_1 E1 = {};
-        Deserialize(Bytes, &E1, Memory);
-        Marshal(&E1, Element);
-      } break;
-
-      default: { SoftError("Could not deserialize entity, got invalid version (%lu)", Version); }
-    }
-
-
-  }
-
-  Element->AssetId.Index = INVALID_ASSET_INDEX;
-
-  return Result;
-}
-#endif
 

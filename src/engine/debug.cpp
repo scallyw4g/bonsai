@@ -328,7 +328,7 @@ DoEntityWindow(engine_resources *Engine)
   {
     DrawEntityCollisionVolume(SelectedEntity, &GpuMap->Buffer, Graphics, World->ChunkDim, WHITE);
 
-    local_persist window_layout EntityWindow = WindowLayout("Entity", WindowLayoutFlag_StartupAlign_Right);
+    local_persist window_layout EntityWindow = WindowLayout("Entity", WindowLayoutFlag_Align_Right);
 
     PushWindowStart(Ui, &EntityWindow);
       PushTableStart(Ui);
@@ -396,7 +396,7 @@ DoGraphicsDebugWindow(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  local_persist window_layout Window = WindowLayout("Graphics", window_layout_flags(WindowLayoutFlag_StartupAlign_BottomRight|WindowLayoutFlag_DynamicSize|WindowLayoutFlag_StartupSize_Infer) );
+  local_persist window_layout Window = WindowLayout("Graphics", window_layout_flags(WindowLayoutFlag_Align_BottomRight) );
 
   PushWindowStart(Ui, &Window);
     PushTableStart(Ui);
@@ -484,7 +484,7 @@ DoAssetWindow(engine_resources *Engine)
   if (EngineDebug->SelectedAsset.FileNode.Type)
   {
     local_persist window_layout AssetViewWindow =
-      WindowLayout("Asset View", {}, {}, window_layout_flags(WindowLayoutFlag_StartupAlign_Right|WindowLayoutFlag_Default));
+      WindowLayout("Asset View", window_layout_flags(WindowLayoutFlag_Align_Right));
     PushWindowStart(Ui, &AssetViewWindow);
 
 
@@ -709,8 +709,7 @@ DoEngineDebug(engine_resources *Engine)
   {
     v2 DefaultTextureDim = V2(250);
 
-    auto Flags = window_layout_flags(WindowLayoutFlag_StartupAlign_Bottom|WindowLayoutFlag_StartupSize_InferWidth);
-    local_persist window_layout TexturesWindow = WindowLayout("Textures", Flags);
+    local_persist window_layout TexturesWindow = WindowLayout("Textures", WindowLayoutFlag_Align_Bottom);
     PushWindowStart(Ui, &TexturesWindow);
 
     s32 xAdvance = 15;
@@ -782,7 +781,7 @@ DoEngineDebug(engine_resources *Engine)
   if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_RenderSettings))
   {
     v2 WindowDim = {{1200.f, 250.f}};
-    local_persist window_layout RenderSettingsWindow = WindowLayout("Graphics Settings", WindowLayoutFlag_StartupAlign_Right);
+    local_persist window_layout RenderSettingsWindow = WindowLayout("Graphics Settings", WindowLayoutFlag_Align_Right);
 
     render_settings *Settings = &Graphics->Settings;
     PushWindowStart(Ui, &RenderSettingsWindow);
@@ -795,7 +794,7 @@ DoEngineDebug(engine_resources *Engine)
     v2 WindowDim = {{1200.f, 250.f}};
 
     {
-      local_persist window_layout Window = WindowLayout("Engine Debug", WindowLayoutFlag_StartupAlign_Right);
+      local_persist window_layout Window = WindowLayout("Engine Debug", WindowLayoutFlag_Align_Right);
       PushWindowStart(Ui, &Window);
         PushTableStart(Ui);
         DoEditorUi(Ui, &Window, EngineDebug, CSz("Engine Debug"));

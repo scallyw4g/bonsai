@@ -32,7 +32,34 @@ struct frustum
 
 struct entity;
 
-struct camera poof(@version(1))
+struct camera poof(@version(2))
+{
+  frustum Frust;
+
+  cp CurrentP;
+
+  v3 RenderSpacePosition;
+
+  r32 Pitch;
+  r32 Roll;
+  r32 Yaw;
+  r32 DistanceFromTarget;
+
+  r32 TargetPitch;              poof(@no_serialize)
+  r32 TargetRoll;               poof(@no_serialize)
+  r32 TargetYaw;                poof(@no_serialize)
+  r32 TargetDistanceFromTarget; poof(@no_serialize)
+
+  r32 Blend; // How fast the camera interpolates.  0 is instant, 0.1f is verrry slow
+
+  v3 Front;
+  v3 Right;
+  v3 Up;
+
+  entity_id GhostId;
+};
+
+struct camera_1
 {
   frustum Frust;
 

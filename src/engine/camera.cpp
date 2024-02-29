@@ -124,8 +124,9 @@ UpdateGameCamera( world *World,
   Camera->Pitch = Lerp(t, Camera->Pitch, Camera->TargetPitch);
 
   /* Camera->DistanceFromTarget += MouseDelta.y*Camera->DistanceFromTarget; */
-  Camera->DistanceFromTarget += CameraZoomDelta * Camera->DistanceFromTarget;
+  Camera->TargetDistanceFromTarget += CameraZoomDelta * Camera->DistanceFromTarget;
 
+  Camera->DistanceFromTarget = Lerp(t, Camera->DistanceFromTarget, Camera->TargetDistanceFromTarget);
   Camera->DistanceFromTarget = ClampMin(Camera->DistanceFromTarget, Camera->Frust.nearClip);
   Camera->DistanceFromTarget = ClampMax(Camera->DistanceFromTarget, Camera->Frust.farClip);
 
@@ -153,7 +154,7 @@ UpdateGameCamera( world *World,
 
     if (DoZoomDelta)
     {
-      CameraZoomDelta = Input->MouseWheelDelta/200.f;
+      CameraZoomDelta = -1.f*Input->MouseWheelDelta/500.f;
     }
 
     if (Input->RMB.Pressed) { CameraZoomDelta += MouseDelta.y; }
@@ -180,7 +181,7 @@ StandardCamera(camera* Camera, f32 FarClip, f32 DistanceFromTarget, f32 Blend, c
   Camera->TargetPitch = PI32 - (PI32*0.25f);
   Camera->TargetYaw = -PI32*0.15f;
 
-  Camera->DistanceFromTarget = DistanceFromTarget;
+  Camera->TargetDistanceFromTarget = DistanceFromTarget;
 }
 
 link_internal bool

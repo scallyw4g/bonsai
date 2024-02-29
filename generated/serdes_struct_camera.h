@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:92:0
+// src/engine/serdes.cpp:111:0
 
 link_internal bonsai_type_info
 TypeInfo(camera *Ignored)
@@ -6,7 +6,7 @@ TypeInfo(camera *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("camera");
-  Result.Version =1 ;
+  Result.Version =2 ;
 
   /* type.map(member) */
   /* { */
@@ -30,7 +30,7 @@ Serialize(u8_cursor_block_array *Bytes, camera *BaseElement, umm Count = 1)
   b32 Result = True;
 
   Upsert(TypeInfo(BaseElement), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
-  u64 VersionNumber =1;
+  u64 VersionNumber =2;
   Serialize(Bytes, &VersionNumber);
 
 
@@ -73,31 +73,13 @@ Serialize(u8_cursor_block_array *Bytes, camera *BaseElement, umm Count = 1)
 
 
 
-    Result &= Serialize(Bytes, &Element->TargetPitch);
-
-
-
-
-
-    Result &= Serialize(Bytes, &Element->TargetRoll);
-
-
-
-
-
-    Result &= Serialize(Bytes, &Element->TargetYaw);
+    Result &= Serialize(Bytes, &Element->DistanceFromTarget);
 
 
 
 
 
     Result &= Serialize(Bytes, &Element->Blend);
-
-
-
-
-
-    Result &= Serialize(Bytes, &Element->DistanceFromTarget);
 
 
 
@@ -141,7 +123,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
 link_internal b32
 DeserializeVersioned(u8_cursor *Bytes, camera *Element, bonsai_type_info *TypeInfo, u64 Version, memory_arena *Memory)
 {
-  Assert(Version <=1);
+  Assert(Version <=2);
 
   b32 Result = True;
 
@@ -151,9 +133,15 @@ DeserializeVersioned(u8_cursor *Bytes, camera *Element, bonsai_type_info *TypeIn
     Result &= Deserialize(Bytes, &T0, Memory);
     Marshal(&T0, Element);
   }
+  if (Version == 1)
+  {
+    camera_1 T1 = {};
+    Result &= Deserialize(Bytes, &T1, Memory);
+    Marshal(&T1, Element);
+  }
 
 
-  if (Version ==1)
+  if (Version ==2)
   {
     Result &= DeserializeCurrentVersion(Bytes, Element, Memory);
   }
@@ -216,23 +204,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->TargetPitch, Memory);
-
-
-
-
-
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->TargetRoll, Memory);
-
-
-
-
-
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->TargetYaw, Memory);
+  Result &= Deserialize(Bytes, &Element->DistanceFromTarget, Memory);
 
 
 
@@ -241,14 +213,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Blend, Memory);
-
-
-
-
-
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->DistanceFromTarget, Memory);
 
 
 

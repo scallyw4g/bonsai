@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:98:0
+// src/engine/serdes.cpp:117:0
 
 link_internal bonsai_type_info
 TypeInfo(vertex_material *Ignored)

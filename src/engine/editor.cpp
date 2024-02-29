@@ -769,7 +769,7 @@ DoWorldEditor(engine_resources *Engine)
 
 
   {
-    local_persist window_layout Window = WindowLayout("World", window_layout_flags(WindowLayoutFlag_StartupAlign_Bottom));
+    local_persist window_layout Window = WindowLayout("World", window_layout_flags(WindowLayoutFlag_Align_Bottom));
     PushWindowStart(Ui, &Window);
       DoEditorUi(Ui, &Window, World, CSz("World"));
     PushWindowEnd(Ui, &Window);
@@ -835,7 +835,7 @@ DoWorldEditor(engine_resources *Engine)
   }
 
   {
-    local_persist window_layout Window = WindowLayout("Brush Settings", WindowLayoutFlag_StartupAlign_Right);
+    local_persist window_layout Window = WindowLayout("Brush Settings", WindowLayoutFlag_Align_Right);
     PushWindowStart(Ui, &Window);
     switch (WorldEditMode)
     {

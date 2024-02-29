@@ -749,7 +749,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   f32 dt = Plat->dt;
   f32 Speed = 80.f;
 
-  global_variable window_layout Window = WindowLayout("Terrain Gen", WindowLayoutFlag_StartupAlign_Right);
+  global_variable window_layout Window = WindowLayout("Terrain Gen", WindowLayoutFlag_Align_Right);
 
   PushWindowStart(Ui, &Window);
     ui_toggle_button_group TerrainGenTypeRadio = RadioButtonGroup_terrain_gen_type(Ui, &Window, "terrain_gen", ToggleButtonGroupFlags_DrawVertical);

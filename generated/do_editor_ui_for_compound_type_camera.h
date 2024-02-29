@@ -68,6 +68,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, EDI
 
       PushNewRow(Ui);
 
+      DoEditorUi(Ui, Window, &Element->DistanceFromTarget, CSz("r32 DistanceFromTarget"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
       DoEditorUi(Ui, Window, &Element->TargetPitch, CSz("r32 TargetPitch"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
@@ -98,7 +108,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, EDI
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Window, &Element->Blend, CSz("r32 Blend"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->TargetDistanceFromTarget, CSz("r32 TargetDistanceFromTarget"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -108,7 +118,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, EDI
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Window, &Element->DistanceFromTarget, CSz("r32 DistanceFromTarget"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui, Window, &Element->Blend, CSz("r32 Blend"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
