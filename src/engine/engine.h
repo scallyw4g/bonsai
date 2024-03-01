@@ -14,6 +14,7 @@
 #include <engine/camera.h>
 #include <engine/light.h>
 #include <engine/render.h>
+#include <engine/render_settings.h>
 #include <engine/graphics.h>
 
 struct engine_resources;

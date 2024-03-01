@@ -1,21 +1,21 @@
-// src/engine/serdes.cpp:59:0
+// src/engine/serdes.cpp:392:0
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, camera_0 *Element, memory_arena *Memory, umm Count = 1);
+Deserialize(u8_cursor *Bytes, render_settings_0 *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, camera_0 *Element, memory_arena *Memory);
+DeserializeCurrentVersion(u8_cursor *Bytes, render_settings_0 *Element, memory_arena *Memory);
 
 
 
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, camera_0 *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, render_settings_0 *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Frust, Memory);
+  Result &= Deserialize(Bytes, &Element->UseSsao, Memory);
 
 
 
@@ -23,7 +23,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_0 *Element, memory_arena *Mem
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->CurrentP, Memory);
+  Result &= Deserialize(Bytes, &Element->UseShadowMapping, Memory);
 
 
 
@@ -31,7 +31,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_0 *Element, memory_arena *Mem
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->RenderSpacePosition, Memory);
+  Result &= Deserialize(Bytes, &Element->UseLightingBloom, Memory);
 
 
 
@@ -39,7 +39,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_0 *Element, memory_arena *Mem
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Pitch, Memory);
+  Result &= Deserialize(Bytes, &Element->BravoilMyersOIT, Memory);
 
 
 
@@ -47,7 +47,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_0 *Element, memory_arena *Mem
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Roll, Memory);
+  Result &= Deserialize(Bytes, &Element->BravoilMcGuireOIT, Memory);
 
 
 
@@ -55,7 +55,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_0 *Element, memory_arena *Mem
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Yaw, Memory);
+  Result &= Deserialize(Bytes, &Element->DrawMajorGrid, Memory);
 
 
 
@@ -63,7 +63,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_0 *Element, memory_arena *Mem
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->DistanceFromTarget, Memory);
+  Result &= Deserialize(Bytes, &Element->DrawMinorGrid, Memory);
 
 
 
@@ -71,7 +71,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_0 *Element, memory_arena *Mem
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Front, Memory);
+  Result &= Deserialize(Bytes, &Element->MajorGridDim, Memory);
 
 
 
@@ -79,7 +79,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_0 *Element, memory_arena *Mem
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Right, Memory);
+  Result &= Deserialize(Bytes, &Element->OffsetOfWorldCenterToGrid, Memory);
 
 
 
@@ -87,15 +87,20 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_0 *Element, memory_arena *Mem
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Up, Memory);
+  Result &= Deserialize(Bytes, &Element->Headless, Memory);
 
+
+
+
+
+  Element->ToneMappingType = Cast(tone_mapping_type, Read_u32(Bytes));
 
 
 
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->GhostId, Memory);
+  Result &= Deserialize(Bytes, &Element->Lighting, Memory);
 
   
 
@@ -104,7 +109,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_0 *Element, memory_arena *Mem
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, camera_0 *Element, memory_arena *Memory, umm Count)
+Deserialize(u8_cursor *Bytes, render_settings_0 *Element, memory_arena *Memory, umm Count)
 {
   Assert(Count > 0);
 

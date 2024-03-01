@@ -120,8 +120,9 @@ void main()
   /* } */
   /* else */
   {
-    /* out_LightColor = V4(FragPosition, 1.f); */
-    /* return; */
+
+  /* out_LightColor = FragPosition; */
+  /* return; */
 
 
     /* float Emission = clamp(0.f, 1.f, texelFetch(gColor, texelCoord, 0).a); */

@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:313:0
+// src/engine/serdes.cpp:336:0
 
 struct entity_block
 {

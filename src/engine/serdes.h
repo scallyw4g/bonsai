@@ -203,15 +203,15 @@ poof(
     type.has_tag(version)?
     {
       link_internal b32
-      DeserializeVersioned(u8_cursor *Bytes, type.name *Element, bonsai_type_info *TypeInfo, u64 Version, memory_arena *Memory)
+      DeserializeVersioned(u8_cursor *Bytes, type.name *Element, bonsai_type_info *TypeInfo, memory_arena *Memory)
       {
-        Assert(Version <= type.tag_value(version));
+        Assert(TypeInfo->Version <= type.tag_value(version));
 
         b32 Result = True;
 
         type.tag_value(version).map(this_version)
         {
-          if (Version == this_version)
+          if (TypeInfo->Version == this_version)
           {
             (type.name)_(this_version) T(this_version) = {};
             Result &= Deserialize(Bytes, &T(this_version), Memory);
@@ -219,7 +219,7 @@ poof(
           }
         }
 
-        if (Version == type.tag_value(version))
+        if (TypeInfo->Version == type.tag_value(version))
         {
           Result &= DeserializeCurrentVersion(Bytes, Element, Memory);
         }
@@ -319,17 +319,17 @@ poof(
 
           if (MaybeSerializedType.Tag)
           {
-
-            u64 VersionNumber = 0;
+            u64 OldIgnoredVersionNumber;
             if (MaybeSerializedType.Value.Version > 0)
             {
-              Deserialize(Bytes, &VersionNumber, Memory);
+              Deserialize(Bytes, &OldIgnoredVersionNumber, Memory);
             }
-            Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &MaybeSerializedType.Value, VersionNumber, Memory);
+            Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &MaybeSerializedType.Value, Memory);
           }
           else
           {
-            Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+            bonsai_type_info T0TypeInfo = {};
+            Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &T0TypeInfo, Memory);
           }
         }
         {

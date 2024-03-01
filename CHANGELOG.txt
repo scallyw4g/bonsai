@@ -1,3 +1,15 @@
+* 1.4.3
+
+- @Shawnecy fixed some UI bugs
+	Textures no longer stretch when clipped by the application window.
+	Dynamically/Inferred sized windows no longer size themselves larger than the application window.
+
+- Fixed loading levels which was broken by adding settings.init
+
+- Fixed camera zooming when scrolling MMB & added smoothing to the zoom
+
+- Minor general improvements to project structure
+
 * 1.4.2
 
 - Added settings.init, which drives some graphics settings at the moment

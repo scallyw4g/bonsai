@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:420:0
+// src/engine/serdes.cpp:462:0
 
 link_internal b32
 Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory, umm Count = 1);
@@ -8,25 +8,25 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 
 
 link_internal b32
-DeserializeVersioned(u8_cursor *Bytes, level_header *Element, bonsai_type_info *TypeInfo, u64 Version, memory_arena *Memory)
+DeserializeVersioned(u8_cursor *Bytes, level_header *Element, bonsai_type_info *TypeInfo, memory_arena *Memory)
 {
-  Assert(Version <=3);
+  Assert(TypeInfo->Version <=3);
 
   b32 Result = True;
 
-  if (Version == 0)
+  if (TypeInfo->Version == 0)
   {
     level_header_0 T0 = {};
     Result &= Deserialize(Bytes, &T0, Memory);
     Marshal(&T0, Element);
   }
-  if (Version == 1)
+  if (TypeInfo->Version == 1)
   {
     level_header_1 T1 = {};
     Result &= Deserialize(Bytes, &T1, Memory);
     Marshal(&T1, Element);
   }
-  if (Version == 2)
+  if (TypeInfo->Version == 2)
   {
     level_header_2 T2 = {};
     Result &= Deserialize(Bytes, &T2, Memory);
@@ -34,7 +34,7 @@ DeserializeVersioned(u8_cursor *Bytes, level_header *Element, bonsai_type_info *
   }
 
 
-  if (Version ==3)
+  if (TypeInfo->Version ==3)
   {
     Result &= DeserializeCurrentVersion(Bytes, Element, Memory);
   }
@@ -117,17 +117,17 @@ Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory, umm C
 
     if (MaybeSerializedType.Tag)
     {
-
-      u64 VersionNumber = 0;
+      u64 OldIgnoredVersionNumber;
       if (MaybeSerializedType.Value.Version > 0)
       {
-        Deserialize(Bytes, &VersionNumber, Memory);
+        Deserialize(Bytes, &OldIgnoredVersionNumber, Memory);
       }
-      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &MaybeSerializedType.Value, VersionNumber, Memory);
+      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &MaybeSerializedType.Value, Memory);
     }
     else
     {
-      Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+      bonsai_type_info T0TypeInfo = {};
+      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &T0TypeInfo, Memory);
     }
 
   }

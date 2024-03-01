@@ -332,6 +332,47 @@ poof(do_editor_ui_for_compound_type(camera))
 poof(do_editor_ui_for_compound_type(texture))
 #include <generated/do_editor_ui_for_compound_type_texture.h>
 
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_uniform *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+{
+  if (Element)
+  {
+    if (ToggleButton(Ui, FSz("v %s", Element->Name), FSz("> %s", Element->Name), UiId(Window, "toggle shader_uniform", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    {
+      PushNewRow(Ui);
+
+      PushTableStart(Ui);
+      DoEditorUi(Ui, Window, &Element->Type, CSz("shader_uniform_type Type"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      switch (Element->Type)
+      {
+        InvalidCase(ShaderUniform_Undefined);
+
+        case ShaderUniform_M4:        { DoEditorUi(Ui, Window, Element->M4, CSz("M4"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
+        case ShaderUniform_V2:        { DoEditorUi(Ui, Window, Element->V2, CSz("V2"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
+        case ShaderUniform_V3:        { DoEditorUi(Ui, Window, Element->V3, CSz("V3"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
+        case ShaderUniform_S32:       { DoEditorUi(Ui, Window, Element->S32, CSz("S32"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
+        case ShaderUniform_U32:       { DoEditorUi(Ui, Window, Element->U32, CSz("U32"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
+        case ShaderUniform_R32:       { DoEditorUi(Ui, Window, Element->R32, CSz("R32"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
+        case ShaderUniform_Texture:   { DoEditorUi(Ui, Window, Element->Texture, CSz("Texture"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
+        case ShaderUniform_Light:     { DoEditorUi(Ui, Window, Element->Light, CSz("Light"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
+        case ShaderUniform_Camera:    { DoEditorUi(Ui, Window, Element->Camera, CSz("Camera"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
+      }
+
+      DoEditorUi(Ui, Window, &Element->ID, CSz("s32 ID"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      PushTableEnd(Ui);
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui, Window, Element->Next, CSz("shader_uniform Next"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    }
+  }
+  else
+  {
+    PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushNewRow(Ui);
+  }
+}
+
 poof(do_editor_ui_for_compound_type(shader))
 #include <generated/do_editor_ui_for_compound_type_shader.h>
 
@@ -340,6 +381,9 @@ poof(do_editor_ui_for_compound_type(render_buffers_2d))
 
 poof(do_editor_ui_for_compound_type(renderer_2d))
 #include <generated/do_editor_ui_for_compound_type_renderer_2d.h>
+
+poof(do_editor_ui_for_compound_type(lighting_render_group))
+#include <generated/do_editor_ui_for_compound_type_lighting_render_group.h>
 
 poof(do_editor_ui_for_compound_type(graphics))
 #include <generated/do_editor_ui_for_compound_type_graphics.h>
@@ -769,7 +813,7 @@ DoWorldEditor(engine_resources *Engine)
 
 
   {
-    local_persist window_layout Window = WindowLayout("World", window_layout_flags(WindowLayoutFlag_StartupAlign_Bottom));
+    local_persist window_layout Window = WindowLayout("World", window_layout_flags(WindowLayoutFlag_Align_Bottom));
     PushWindowStart(Ui, &Window);
       DoEditorUi(Ui, &Window, World, CSz("World"));
     PushWindowEnd(Ui, &Window);
@@ -835,7 +879,7 @@ DoWorldEditor(engine_resources *Engine)
   }
 
   {
-    local_persist window_layout Window = WindowLayout("Brush Settings", WindowLayoutFlag_StartupAlign_Right);
+    local_persist window_layout Window = WindowLayout("Brush Settings", WindowLayoutFlag_Align_Right);
     PushWindowStart(Ui, &Window);
     switch (WorldEditMode)
     {

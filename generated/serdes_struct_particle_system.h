@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:234:0
+// src/engine/serdes.cpp:257:0
 
 link_internal bonsai_type_info
 TypeInfo(particle_system *Ignored)

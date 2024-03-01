@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:243:0
+// src/engine/serdes.cpp:266:0
 
 link_internal bonsai_type_info
 TypeInfo(model *Ignored)
