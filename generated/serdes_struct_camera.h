@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:111:0
+// src/engine/serdes.cpp:115:0
 
 link_internal bonsai_type_info
 TypeInfo(camera *Ignored)
