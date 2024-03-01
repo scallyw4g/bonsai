@@ -202,7 +202,7 @@ void main()
 
   vec3 TotalLight = Lighting + TransparencyContrib.rgb;
 
-  if (UseLightingBloom) { TotalLight += 0.35f*Bloom; }
+  if (UseLightingBloom) { TotalLight += 0.25f*Bloom; }
 
   /* vec3 TotalLight = Lighting + 0.15f*Bloom + (TransparencyContrib.rgb * TransparencyContrib.a); */
   /* vec3 TotalLight = (Diffuse * Lighting) * 2.f; */
