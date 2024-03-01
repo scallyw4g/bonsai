@@ -191,6 +191,19 @@ DoLevelWindow(engine_resources *Engine)
       level_header LevelHeader = {};
       Deserialize(&LevelBytes, &LevelHeader, Thread->PermMemory);
 
+
+      {
+        engine_settings *EngineSettings = &GetEngineResources()->Settings;
+        LevelHeader.RenderSettings.ApplicationResolution  = V2(GetApplicationResolution(EngineSettings));
+        LevelHeader.RenderSettings.ShadowMapResolution    = V2(GetShadowMapResolution(EngineSettings));
+        LevelHeader.RenderSettings.LuminanceMapResolution = V2(GetLuminanceMapResolution(EngineSettings));
+
+        LevelHeader.RenderSettings.iApplicationResolution  = GetApplicationResolution(EngineSettings);
+        LevelHeader.RenderSettings.iShadowMapResolution    = GetShadowMapResolution(EngineSettings);
+        LevelHeader.RenderSettings.iLuminanceMapResolution = GetLuminanceMapResolution(EngineSettings);
+      }
+
+
       if (Error == False)
       {
         SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);

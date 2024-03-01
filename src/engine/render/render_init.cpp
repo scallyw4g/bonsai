@@ -41,7 +41,6 @@ link_internal lighting_render_group
 MakeLightingRenderGroup()
 {
   lighting_render_group Result = {};
-
   return Result;
 }
 

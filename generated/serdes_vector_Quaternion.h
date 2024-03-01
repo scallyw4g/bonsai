@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:238:0
+// src/engine/serdes.cpp:242:0
 
 link_internal b32
 Serialize(u8_cursor_block_array *Bytes, Quaternion *Element, umm Count = 1)

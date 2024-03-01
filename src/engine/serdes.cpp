@@ -65,10 +65,12 @@ Marshal(camera_1 *C0, camera *C1)
   C1->Frust = C0->Frust;
   C1->CurrentP = C0->CurrentP;
   C1->RenderSpacePosition = C0->RenderSpacePosition;
-  C1->Pitch = C0->Pitch;
-  C1->Roll = C0->Roll;
-  C1->Yaw = C0->Yaw;
-  C1->DistanceFromTarget = C0->DistanceFromTarget;
+
+  C1->TargetPitch = C0->Pitch;
+  C1->TargetRoll = C0->Roll;
+  C1->TargetYaw = C0->Yaw;
+  C1->TargetDistanceFromTarget = C0->DistanceFromTarget;
+
   C1->Front = C0->Front;
   C1->Right = C0->Right;
   C1->Up = C0->Up;
@@ -82,10 +84,12 @@ Marshal(camera_0 *C0, camera *C1)
   C1->Frust = C0->Frust;
   C1->CurrentP = C0->CurrentP;
   C1->RenderSpacePosition = C0->RenderSpacePosition;
-  C1->Pitch = C0->Pitch;
-  C1->Roll = C0->Roll;
-  C1->Yaw = C0->Yaw;
-  C1->DistanceFromTarget = C0->DistanceFromTarget;
+
+  C1->TargetPitch = C0->Pitch;
+  C1->TargetRoll = C0->Roll;
+  C1->TargetYaw = C0->Yaw;
+  C1->TargetDistanceFromTarget = C0->DistanceFromTarget;
+
   C1->Front = C0->Front;
   C1->Right = C0->Right;
   C1->Up = C0->Up;
