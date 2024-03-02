@@ -1,13 +1,9 @@
-// src/engine/editor.h:540:0
+// src/engine/editor.h:562:0
 
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_mode Selection)
 {
-  Assert(CountBitsSet_Kernighan(u32(Selection)) == 1);
-  u32 Index = GetIndexOfNthSetBit(u32(Selection), 1);
-  ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Index;
-  SetRadioButton(RadioGroup, ToggleHandle, True);
-  /* Ensure( ToggleRadioButton(RadioGroup, ToggleHandle) ); */
+  NotImplemented;
 }
 
 link_internal void
@@ -15,13 +11,11 @@ GetRadioEnum(ui_toggle_button_group *RadioGroup, world_edit_mode *Result)
 {
   if (RadioGroup->ToggleBits)
   {
-    Assert(CountBitsSet_Kernighan(RadioGroup->ToggleBits) == 1);
-    // NOTE(Jesse): This is better; it asserts that we've actually got a bitfield
-    Assert(((RadioGroup->ToggleBits == WorldEditMode_Paint||RadioGroup->ToggleBits == WorldEditMode_Attach||RadioGroup->ToggleBits == WorldEditMode_Remove)));
-    /* Assert((((enum_t.map(value).sep(|) {value.name})) & RadioGroup->ToggleBits) != 0); */
+    Assert(CountBitsSet_Kernighan(RadioGroup->ToggleBits) == 1); // Radio group can 
   }
 
-  *Result = Cast(world_edit_mode, RadioGroup->ToggleBits);
+  s32 Index = s32(GetIndexOfNthSetBit(u32(RadioGroup->ToggleBits), 1));
+  *Result = world_edit_mode(Max(0, Index));
 }
 
 link_internal b32
@@ -42,7 +36,12 @@ Clicked(ui_toggle_button_group *ButtonGroup, world_edit_mode Enum)
 }
 
 link_internal ui_toggle_button_group
-RadioButtonGroup_world_edit_mode(renderer_2d *Ui, window_layout *Window, const char *ToggleGroupIdentifier, ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None, UI_FUNCTION_PROTO_DEFAULTS)
+RadioButtonGroup_world_edit_mode( renderer_2d *Ui,
+  window_layout *Window,
+  const char *ToggleGroupIdentifier,
+  ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None,
+  ui_relative_position_reference *RelativePosition = 0,
+  UI_FUNCTION_PROTO_DEFAULTS )
 {
   cs ButtonNames[] =
   {
@@ -65,4 +64,22 @@ RadioButtonGroup_world_edit_mode(renderer_2d *Ui, window_layout *Window, const c
   return Result;
 }
 
+
+
+link_internal ui_toggle_button_group
+DoEditorUi( renderer_2d *Ui,
+  window_layout *Window,
+  world_edit_mode *Element,
+  cs Name,
+
+  // TODO(Jesse): Should these be systemic in the DoEditorUi API?
+  ui_relative_position_reference *RelativePosition = 0,
+
+  EDITOR_UI_FUNCTION_PROTO_DEFAULTS )
+{
+  if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); PushNewRow(Ui); }
+  ui_toggle_button_group RadioGroup = RadioButtonGroup_world_edit_mode(Ui, Window, "world_edit_mode radio group");
+  GetRadioEnum(&RadioGroup, Element);
+  return RadioGroup;
+}
 

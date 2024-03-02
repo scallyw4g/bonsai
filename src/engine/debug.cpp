@@ -373,7 +373,7 @@ DoEntityWindow(engine_resources *Engine)
 
       if (Editor->Entity.ClickedFace)
       {
-        selection_mode SelectionMode = {};
+        world_edit_selection_mode SelectionMode = {};
         if (Input->Shift.Pressed && Input->Ctrl.Pressed)
         {
           SelectionMode = SelectionMode_TranslateLinear;

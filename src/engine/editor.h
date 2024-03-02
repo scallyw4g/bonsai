@@ -22,7 +22,12 @@ poof(
     }
 
     link_internal ui_toggle_button_group
-    (NamePrefix)ButtonGroup_(enum_t.name)(renderer_2d *Ui, window_layout *Window, const char *ToggleGroupIdentifier, ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None, UI_FUNCTION_PROTO_DEFAULTS)
+    (NamePrefix)ButtonGroup_(enum_t.name)( renderer_2d *Ui,
+                                           window_layout *Window,
+                                           const char *ToggleGroupIdentifier,
+                                           ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None,
+                                           ui_relative_position_reference *RelativePosition = 0,
+                                           UI_FUNCTION_PROTO_DEFAULTS )
     {
       cs ButtonNames[] =
       {
@@ -58,6 +63,12 @@ poof(
 poof(
   func radio_button_group_for_enum(enum_t)
   {
+    link_internal void
+    RadioSelect(ui_toggle_button_group *RadioGroup, enum_t.name Selection)
+    {
+      NotImplemented;
+    }
+
     link_internal void
     GetRadioEnum(ui_toggle_button_group *RadioGroup, enum_t.name *Result)
     {
@@ -342,14 +353,21 @@ poof(
   {
     radio_button_group_for_enum(enum_t)
 
-    link_internal void
-    DoEditorUi(renderer_2d *Ui, window_layout *Window, enum_t.name *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
-    {
-      if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+    link_internal ui_toggle_button_group
+    DoEditorUi( renderer_2d *Ui,
+                window_layout *Window,
+                enum_t.name *Element,
+                cs Name,
 
-      /* ui_toggle_button_group RadioGroup = RadioButtonGroup_(enum_t.name)(Ui, Window, "nopush", ToggleButtonGroupFlags_None, EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
-      ui_toggle_button_group RadioGroup = RadioButtonGroup_(enum_t.name)(Ui, Window, "nopush");
-      GetRadioEnum(&RadioGroup, Element);
+                // TODO(Jesse): Should these be systemic in the DoEditorUi API?
+                ui_relative_position_reference *RelativePosition = 0,
+
+                EDITOR_UI_FUNCTION_PROTO_DEFAULTS )
+    {
+        if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); PushNewRow(Ui); }
+        ui_toggle_button_group RadioGroup = RadioButtonGroup_(enum_t.name)(Ui, Window, "enum_t.name radio group");
+        GetRadioEnum(&RadioGroup, Element);
+        return RadioGroup;
     }
   }
 )
@@ -462,7 +480,7 @@ struct maybe_v3
   v3 V3;
 };
 
-enum selection_mode
+enum world_edit_selection_mode
 {
   SelectionMode_Noop,
 
@@ -471,6 +489,31 @@ enum selection_mode
   SelectionMode_TranslatePlanar,
 };
 
+enum world_edit_mode
+{
+  WorldEditMode_Paint,
+  WorldEditMode_Attach,
+  WorldEditMode_Remove,
+};
+
+enum world_edit_tool
+{
+  WorldEditTool_Select,      // world_edit_selection_mode
+  WorldEditTool_Single,
+  WorldEditTool_Eyedropper,
+  WorldEditTool_Brush,       // world_edit_brush_type
+  WorldEditTool_BlitEntity,
+  WorldEditTool_RecomputeStandingSpots,
+};
+
+enum world_edit_brush_type
+{
+  WorldEditTool_BrushType_Asset,
+  WorldEditTool_BrushType_Entity,
+  WorldEditTool_BrushType_Noise
+};
+
+#if 0
 enum world_edit_mode
 {
   WorldEditMode_Select                 = (1 << 0),
@@ -493,6 +536,7 @@ enum world_edit_mode
 
   WorldEditMode_RecomputeStandingSpots = (1 << 12),
 };
+#endif
 
 
 poof(toggle_button_group_for_enum(engine_debug_view_mode))
@@ -510,10 +554,19 @@ poof(do_editor_ui_for_enum(ui_noise_type))
 poof(do_editor_ui_for_radio_enum(asset_window_view_mode))
 #include <generated/do_editor_ui_for_radio_enum_asset_window_view_mode.h>
 
-poof(string_and_value_tables(world_edit_mode))
-#include <generated/string_and_value_tables_world_edit_mode.h>
+/* poof(string_and_value_tables(world_edit_mode)) */
+/* #include <generated/string_and_value_tables_world_edit_mode.h> */
+/* poof(radio_button_group_for_bitfield_enum(world_edit_mode)); */
+/* #include <generated/radio_button_group_for_bitfield_enum_world_edit_mode.h> */
 
-poof(radio_button_group_for_bitfield_enum(world_edit_mode));
-#include <generated/radio_button_group_for_bitfield_enum_world_edit_mode.h>
+poof(do_editor_ui_for_radio_enum(world_edit_mode))
+#include <generated/do_editor_ui_for_radio_enum_world_edit_mode.h>
+
+poof(do_editor_ui_for_radio_enum(world_edit_tool))
+#include <generated/do_editor_ui_for_radio_enum_world_edit_tool.h>
+
+poof(do_editor_ui_for_radio_enum(world_edit_brush_type))
+#include <generated/do_editor_ui_for_radio_enum_world_edit_brush_type.h>
+
 
 link_internal b32 HardResetEditor(level_editor *Editor);

@@ -1,7 +1,7 @@
-// src/engine/editor.h:540:0
+// src/engine/editor.h:545:0
 
 link_internal void
-RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_mode Selection)
+RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_tool Selection)
 {
   Assert(CountBitsSet_Kernighan(u32(Selection)) == 1);
   u32 Index = GetIndexOfNthSetBit(u32(Selection), 1);
@@ -11,21 +11,21 @@ RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_mode Selection)
 }
 
 link_internal void
-GetRadioEnum(ui_toggle_button_group *RadioGroup, world_edit_mode *Result)
+GetRadioEnum(ui_toggle_button_group *RadioGroup, world_edit_tool *Result)
 {
   if (RadioGroup->ToggleBits)
   {
     Assert(CountBitsSet_Kernighan(RadioGroup->ToggleBits) == 1);
     // NOTE(Jesse): This is better; it asserts that we've actually got a bitfield
-    Assert(((RadioGroup->ToggleBits == WorldEditMode_Paint||RadioGroup->ToggleBits == WorldEditMode_Attach||RadioGroup->ToggleBits == WorldEditMode_Remove)));
+    Assert(((RadioGroup->ToggleBits == WorldEditTool_Select||RadioGroup->ToggleBits == WorldEditTool_Eyedropper||RadioGroup->ToggleBits == WorldEditTool_Brush||RadioGroup->ToggleBits == WorldEditTool_BlitEntity||RadioGroup->ToggleBits == WorldEditTool_RecomputeStandingSpots)));
     /* Assert((((enum_t.map(value).sep(|) {value.name})) & RadioGroup->ToggleBits) != 0); */
   }
 
-  *Result = Cast(world_edit_mode, RadioGroup->ToggleBits);
+  *Result = Cast(world_edit_tool, RadioGroup->ToggleBits);
 }
 
 link_internal b32
-ToggledOn(ui_toggle_button_group *ButtonGroup, world_edit_mode Enum)
+ToggledOn(ui_toggle_button_group *ButtonGroup, world_edit_tool Enum)
 {
   b32 Result = ButtonGroup->ToggleBits & (1 << Enum);
   return Result;
@@ -34,7 +34,7 @@ ToggledOn(ui_toggle_button_group *ButtonGroup, world_edit_mode Enum)
 // NOTE(Jesse): This could be implemented by reconstructing the button ID
 // but I'm very unsure that's worth it.  Seems like just
 link_internal b32
-Clicked(ui_toggle_button_group *ButtonGroup, world_edit_mode Enum)
+Clicked(ui_toggle_button_group *ButtonGroup, world_edit_tool Enum)
 {
   b32 Result = False;
   NotImplemented;
@@ -42,13 +42,15 @@ Clicked(ui_toggle_button_group *ButtonGroup, world_edit_mode Enum)
 }
 
 link_internal ui_toggle_button_group
-RadioButtonGroup_world_edit_mode(renderer_2d *Ui, window_layout *Window, const char *ToggleGroupIdentifier, ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None, UI_FUNCTION_PROTO_DEFAULTS)
+RadioButtonGroup_world_edit_tool(renderer_2d *Ui, window_layout *Window, const char *ToggleGroupIdentifier, ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None, UI_FUNCTION_PROTO_DEFAULTS)
 {
   cs ButtonNames[] =
   {
-    CSz("Paint"),
-    CSz("Attach"),
-    CSz("Remove"),
+    CSz("Select"),
+    CSz("Eyedropper"),
+    CSz("Brush"),
+    CSz("BlitEntity"),
+    CSz("RecomputeStandingSpots"),
   };
 
   u32 ButtonCount = ArrayCount(ButtonNames);

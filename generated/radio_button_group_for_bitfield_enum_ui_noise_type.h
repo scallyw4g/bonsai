@@ -1,4 +1,4 @@
-// src/engine/editor.h:504:0
+// src/engine/editor.h:548:0
 
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, ui_noise_type Selection)
@@ -42,7 +42,12 @@ Clicked(ui_toggle_button_group *ButtonGroup, ui_noise_type Enum)
 }
 
 link_internal ui_toggle_button_group
-RadioButtonGroup_ui_noise_type(renderer_2d *Ui, window_layout *Window, const char *ToggleGroupIdentifier, ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None, UI_FUNCTION_PROTO_DEFAULTS)
+RadioButtonGroup_ui_noise_type( renderer_2d *Ui,
+  window_layout *Window,
+  const char *ToggleGroupIdentifier,
+  ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None,
+  ui_relative_position_reference *RelativePosition = 0,
+  UI_FUNCTION_PROTO_DEFAULTS )
 {
   cs ButtonNames[] =
   {

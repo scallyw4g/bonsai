@@ -1,13 +1,13 @@
-// src/engine/editor.h:554:0
+// src/engine/editor.h:565:0
 
 link_internal void
-RadioSelect(ui_toggle_button_group *RadioGroup, asset_window_view_mode Selection)
+RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_tool Selection)
 {
   NotImplemented;
 }
 
 link_internal void
-GetRadioEnum(ui_toggle_button_group *RadioGroup, asset_window_view_mode *Result)
+GetRadioEnum(ui_toggle_button_group *RadioGroup, world_edit_tool *Result)
 {
   if (RadioGroup->ToggleBits)
   {
@@ -15,11 +15,11 @@ GetRadioEnum(ui_toggle_button_group *RadioGroup, asset_window_view_mode *Result)
   }
 
   s32 Index = s32(GetIndexOfNthSetBit(u32(RadioGroup->ToggleBits), 1));
-  *Result = asset_window_view_mode(Max(0, Index));
+  *Result = world_edit_tool(Max(0, Index));
 }
 
 link_internal b32
-ToggledOn(ui_toggle_button_group *ButtonGroup, asset_window_view_mode Enum)
+ToggledOn(ui_toggle_button_group *ButtonGroup, world_edit_tool Enum)
 {
   b32 Result = ButtonGroup->ToggleBits & (1 << Enum);
   return Result;
@@ -28,7 +28,7 @@ ToggledOn(ui_toggle_button_group *ButtonGroup, asset_window_view_mode Enum)
 // NOTE(Jesse): This could be implemented by reconstructing the button ID
 // but I'm very unsure that's worth it.  Seems like just
 link_internal b32
-Clicked(ui_toggle_button_group *ButtonGroup, asset_window_view_mode Enum)
+Clicked(ui_toggle_button_group *ButtonGroup, world_edit_tool Enum)
 {
   b32 Result = False;
   NotImplemented;
@@ -36,7 +36,7 @@ Clicked(ui_toggle_button_group *ButtonGroup, asset_window_view_mode Enum)
 }
 
 link_internal ui_toggle_button_group
-RadioButtonGroup_asset_window_view_mode( renderer_2d *Ui,
+RadioButtonGroup_world_edit_tool( renderer_2d *Ui,
   window_layout *Window,
   const char *ToggleGroupIdentifier,
   ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None,
@@ -45,8 +45,12 @@ RadioButtonGroup_asset_window_view_mode( renderer_2d *Ui,
 {
   cs ButtonNames[] =
   {
-    CSz("AssetFiles"),
-    CSz("AssetTable"),
+    CSz("Select"),
+    CSz("Single"),
+    CSz("Eyedropper"),
+    CSz("Brush"),
+    CSz("BlitEntity"),
+    CSz("RecomputeStandingSpots"),
   };
 
   u32 ButtonCount = ArrayCount(ButtonNames);
@@ -68,7 +72,7 @@ RadioButtonGroup_asset_window_view_mode( renderer_2d *Ui,
 link_internal ui_toggle_button_group
 DoEditorUi( renderer_2d *Ui,
   window_layout *Window,
-  asset_window_view_mode *Element,
+  world_edit_tool *Element,
   cs Name,
 
   // TODO(Jesse): Should these be systemic in the DoEditorUi API?
@@ -77,7 +81,7 @@ DoEditorUi( renderer_2d *Ui,
   EDITOR_UI_FUNCTION_PROTO_DEFAULTS )
 {
   if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); PushNewRow(Ui); }
-  ui_toggle_button_group RadioGroup = RadioButtonGroup_asset_window_view_mode(Ui, Window, "asset_window_view_mode radio group");
+  ui_toggle_button_group RadioGroup = RadioButtonGroup_world_edit_tool(Ui, Window, "world_edit_tool radio group");
   GetRadioEnum(&RadioGroup, Element);
   return RadioGroup;
 }

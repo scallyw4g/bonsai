@@ -1,4 +1,4 @@
-// src/engine/editor.h:378:0
+// src/engine/editor.h:396:0
 
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, level_editor_flags Selection)
@@ -42,7 +42,12 @@ Clicked(ui_toggle_button_group *ButtonGroup, level_editor_flags Enum)
 }
 
 link_internal ui_toggle_button_group
-RadioButtonGroup_level_editor_flags(renderer_2d *Ui, window_layout *Window, const char *ToggleGroupIdentifier, ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None, UI_FUNCTION_PROTO_DEFAULTS)
+RadioButtonGroup_level_editor_flags( renderer_2d *Ui,
+  window_layout *Window,
+  const char *ToggleGroupIdentifier,
+  ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None,
+  ui_relative_position_reference *RelativePosition = 0,
+  UI_FUNCTION_PROTO_DEFAULTS )
 {
   cs ButtonNames[] =
   {

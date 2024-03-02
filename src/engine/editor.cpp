@@ -444,7 +444,7 @@ poof(do_editor_ui_for_compound_type(engine_resources))
 
 
 link_internal rect3i
-ModifySelectionAABB(rect3 *SelectionRegion, v3i UpdateVector, face_index Face, selection_mode Mode)
+ModifySelectionAABB(rect3 *SelectionRegion, v3i UpdateVector, face_index Face, world_edit_selection_mode Mode)
 {
   rect3i Result = Rect3i(SelectionRegion);
   Assert(SelectionRegion->Min <= SelectionRegion->Max);
@@ -517,7 +517,7 @@ DoDeleteRegion(engine_resources *Engine, rect3 *AABB)
 }
 
 link_internal v3
-ConstrainUpdateVector(v3 UpdateVector, face_index Face, selection_mode SelectionMode)
+ConstrainUpdateVector(v3 UpdateVector, face_index Face, world_edit_selection_mode SelectionMode)
 {
   v3 Result = UpdateVector;
 
@@ -603,7 +603,7 @@ HighlightFace(engine_resources *Engine, face_index Face, aabb SelectionAABB, r32
 link_internal rect3i
 DoSelectonModification( engine_resources *Engine,
                         ray *MouseRay,
-                        selection_mode SelectionMode,
+                        world_edit_selection_mode SelectionMode,
                         selection_modification_state *SelectionState,
                         aabb SelectionAABB )
 {
@@ -831,24 +831,28 @@ DoWorldEditor(engine_resources *Engine)
   UNPACK_ENGINE_RESOURCES(Engine);
 
   world_edit_mode WorldEditMode = {};
+  world_edit_tool WorldEditTool = {};
+  world_edit_brush_type WorldEditBrushType = {};
+
   picked_voxel_position HighlightVoxel = PickedVoxel_FirstFilled;
   ui_toggle_button_group WorldEditModeRadioGroup = {};
 
 
   {
-    local_persist window_layout Window = WindowLayout("World", window_layout_flags(WindowLayoutFlag_Align_Bottom));
-    PushWindowStart(Ui, &Window);
-      DoEditorUi(Ui, &Window, World, CSz("World"));
-    PushWindowEnd(Ui, &Window);
-  }
-
-  {
     local_persist window_layout Window = WindowLayout("World Edit");
-
     PushWindowStart(Ui, &Window);
-    WorldEditModeRadioGroup = RadioButtonGroup_world_edit_mode(Ui, &Window, "world_edit_mode_radio_group", ToggleButtonGroupFlags_DrawVertical, {}, {}, {}, &DefaultStyle, V4(0, 0, 0, 16));
 
-    GetRadioEnum(&WorldEditModeRadioGroup, &WorldEditMode);
+    DoEditorUi(Ui, &Window, &WorldEditMode, CSz("Edit Mode"));
+    PushNewRow(Ui);
+
+    DoEditorUi(Ui, &Window, &WorldEditTool, CSz("Tool"));
+    PushNewRow(Ui);
+
+    DoEditorUi(Ui, &Window, &WorldEditBrushType, CSz("BrushType"));
+
+
+    PushNewRow(Ui);
+
 
     v3_cursor *Palette = GetColorPalette();
     s32 PaletteColors = s32(AtElements(Palette));
@@ -901,6 +905,7 @@ DoWorldEditor(engine_resources *Engine)
     PushWindowEnd(Ui, &Window);
   }
 
+#if 0
   {
     local_persist window_layout Window = WindowLayout("Brush Settings", WindowLayoutFlag_Align_Right);
     PushWindowStart(Ui, &Window);
@@ -974,6 +979,7 @@ DoWorldEditor(engine_resources *Engine)
     }
     PushWindowEnd(Ui, &Window);
   }
+#endif
 
 
 
@@ -1037,7 +1043,7 @@ DoWorldEditor(engine_resources *Engine)
 
       if (Editor->Selection.ClickedFace)
       {
-        selection_mode SelectionMode = {};
+        world_edit_selection_mode SelectionMode = {};
         if (Input->Shift.Pressed && Input->Ctrl.Pressed)
         {
           SelectionMode = SelectionMode_TranslateLinear;
@@ -1075,9 +1081,14 @@ DoWorldEditor(engine_resources *Engine)
   if ( UiCapturedMouseInput(Ui) == False &&
        UiHoveredMouseInput(Ui)  == False  )
   {
-    switch (WorldEditMode)
+    switch (WorldEditTool)
     {
-      case WorldEditMode_Select:
+      case WorldEditTool_Brush:
+      case WorldEditTool_Single:
+      {
+      } break;
+
+      case WorldEditTool_Select:
       {
         if (Input->LMB.Clicked)
         {
@@ -1103,7 +1114,7 @@ DoWorldEditor(engine_resources *Engine)
         }
       } break;
 
-      case WorldEditMode_Eyedropper:
+      case WorldEditTool_Eyedropper:
       {
         if (Engine->MousedOverVoxel.Tag)
         {
@@ -1124,6 +1135,7 @@ DoWorldEditor(engine_resources *Engine)
         }
       } break;
 
+#if 0
       case WorldEditMode_PaintSelection:
       {
         if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
@@ -1270,8 +1282,9 @@ DoWorldEditor(engine_resources *Engine)
           }
         }
       } break;
+#endif
 
-      case WorldEditMode_BlitEntity:
+      case WorldEditTool_BlitEntity:
       {
         entity *SelectedEntity = GetEntity(EntityTable, EngineDebug->SelectedEntity);
         if (SelectedEntity)
@@ -1303,7 +1316,7 @@ DoWorldEditor(engine_resources *Engine)
         }
       } break;
 
-      case WorldEditMode_RecomputeStandingSpots:
+      case WorldEditTool_RecomputeStandingSpots:
       {
         if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
         {
@@ -1326,13 +1339,13 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Input->Ctrl.Pressed || Input->Shift.Pressed) { Ui->RequestedForceCapture = True; }
 
-  if (Input->Ctrl.Pressed && Input->S.Clicked) { RadioSelect(&WorldEditModeRadioGroup, WorldEditMode_Select); ResetSelection(Editor); }
+  if (Input->Ctrl.Pressed && Input->S.Clicked) { RadioSelect(&WorldEditModeRadioGroup, WorldEditTool_Select); ResetSelection(Editor); }
 
   if (Clicked(&WorldEditModeRadioGroup, CSz("Select"))) { ResetSelection(Editor); }
 
-  if (Input->Ctrl.Pressed && Input->F.Clicked) { ResetSelectionIfIncomplete(Editor); RadioSelect(&WorldEditModeRadioGroup, WorldEditMode_FillSelection); }
+  if (Input->Ctrl.Pressed && Input->F.Clicked) { ResetSelectionIfIncomplete(Editor); /* RadioSelect(&WorldEditModeRadioGroup, WorldEditTool_FillSelection); */ }
 
-  if (Input->Ctrl.Pressed && Input->E.Clicked) { ResetSelectionIfIncomplete(Editor); RadioSelect(&WorldEditModeRadioGroup, WorldEditMode_Eyedropper); }
+  if (Input->Ctrl.Pressed && Input->E.Clicked) { ResetSelectionIfIncomplete(Editor); /* RadioSelect(&WorldEditModeRadioGroup, WorldEditTool_Eyedropper); */ }
 
   if (Editor->SelectionClicks == 2)
   {

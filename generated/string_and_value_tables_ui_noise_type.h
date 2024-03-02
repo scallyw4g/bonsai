@@ -1,4 +1,4 @@
-// src/engine/editor.h:502:0
+// src/engine/editor.h:546:0
 
 link_internal counted_string
 ToString(ui_noise_type Type)

@@ -1,4 +1,4 @@
-// src/engine/editor.h:498:0
+// src/engine/editor.h:542:0
 
 link_internal b32
 ToggledOn(ui_toggle_button_group *ButtonGroup, engine_debug_view_mode Enum)
@@ -18,7 +18,12 @@ Clicked(ui_toggle_button_group *ButtonGroup, engine_debug_view_mode Enum)
 }
 
 link_internal ui_toggle_button_group
-ToggleButtonGroup_engine_debug_view_mode(renderer_2d *Ui, window_layout *Window, const char *ToggleGroupIdentifier, ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None, UI_FUNCTION_PROTO_DEFAULTS)
+ToggleButtonGroup_engine_debug_view_mode( renderer_2d *Ui,
+  window_layout *Window,
+  const char *ToggleGroupIdentifier,
+  ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None,
+  ui_relative_position_reference *RelativePosition = 0,
+  UI_FUNCTION_PROTO_DEFAULTS )
 {
   cs ButtonNames[] =
   {
