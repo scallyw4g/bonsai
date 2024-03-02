@@ -1,4 +1,4 @@
-// src/engine/editor.h:511:0
+// src/engine/editor.h:510:0
 
 link_internal void
 GetRadioEnum(ui_toggle_button_group *RadioGroup, asset_window_view_mode *Result)

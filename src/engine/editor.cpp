@@ -27,7 +27,10 @@ HardResetEditor(level_editor *Editor)
   }
 
   VaporizeArena(Editor->Memory);
-  Clear(Editor);
+
+  // NOTE(Jesse): There are some default values in the perlin params that we want to reset to
+  *Editor = {};
+  /* Clear(Editor); */
 
   b32 Result = InitEditor(Editor);
   return Result;
@@ -932,10 +935,11 @@ DoWorldEditor(engine_resources *Engine)
             perlin_noise_params *Params = &Editor->NoiseSelection.PerlinParams;
             DoEditorUi(Ui, &Window, Params, CSz("Perlin"));
 
-            world_chunk *DestChunk = AllocateWorldChunk({}, V3i(64,64,64), GetTranArena());
+            v3i ChunkSize = V3i(64);
+            world_chunk *DestChunk = AllocateWorldChunk({}, ChunkSize, GetTranArena());
             DestChunk->Flags = Chunk_Queued;
 
-            InitializeChunkWithNoise( Noise_Perlin2D, GetThreadLocalState(ThreadLocal_ThreadIndex), DestChunk, DestChunk->Dim, {}, s32(Params->Period), s32(Params->Amplitude), 0, MeshBit_None, ChunkInitFlag_Noop, 0);
+            InitializeChunkWithNoise( Noise_Perlin2D, GetThreadLocalState(ThreadLocal_ThreadIndex), DestChunk, DestChunk->Dim, {}, s32(Params->Period), s32(Params->Amplitude), ChunkSize.z/4, MeshBit_None, ChunkInitFlag_Noop, 0);
 
             lod_element_buffer *Meshes = &DestChunk->Meshes;
 
@@ -944,7 +948,7 @@ DoWorldEditor(engine_resources *Engine)
             untextured_3d_geometry_buffer *Mesh = AtomicReplaceMesh( Meshes, MeshBit_Lod0, 0, u64_MAX );
             if (Mesh)
             {
-              RenderToTexture(Engine, &Editor->NoisePreviewThumbnail, Mesh, V3(-32.f));
+              RenderToTexture(Engine, &Editor->NoisePreviewThumbnail, Mesh, V3(ChunkSize/-2));
               DeallocateMesh(Engine, Mesh);
             }
 

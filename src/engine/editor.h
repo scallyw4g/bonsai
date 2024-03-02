@@ -387,10 +387,9 @@ enum ui_noise_type
 
 struct perlin_noise_params
 {
-  r32 Threshold;
-  r32 Period;   poof(@ui_range(0, 100))
-
-  r32 Amplitude;
+  r32 Threshold = 0.5f;
+  r32 Period    = 10.f;   poof(@ui_range(0, 100))
+  r32 Amplitude = 10.f;   poof(@ui_range(0, 100))
 };
 
 struct voronoi_noise_params
