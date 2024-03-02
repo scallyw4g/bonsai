@@ -939,13 +939,9 @@ DoWorldEditor(engine_resources *Engine)
             world_chunk *DestChunk = AllocateWorldChunk({}, ChunkSize, GetTranArena());
             DestChunk->Flags = Chunk_Queued;
 
-            InitializeChunkWithNoise( Noise_Perlin2D, GetThreadLocalState(ThreadLocal_ThreadIndex), DestChunk, DestChunk->Dim, {}, s32(Params->Period), s32(Params->Amplitude), ChunkSize.z/4, MeshBit_None, ChunkInitFlag_Noop, 0);
+            InitializeChunkWithNoise( Noise_Perlin3D, GetThreadLocalState(ThreadLocal_ThreadIndex), DestChunk, DestChunk->Dim, {}, s32(Params->Period), s32(Params->Amplitude), ChunkSize.z/4, MeshBit_None, ChunkInitFlag_Noop, 0);
 
-            lod_element_buffer *Meshes = &DestChunk->Meshes;
-
-            /* SetCameraTarget(V3(32,32,32), &Editor->NoisePreviewThumbnail.Camera); */
-
-            untextured_3d_geometry_buffer *Mesh = AtomicReplaceMesh( Meshes, MeshBit_Lod0, 0, u64_MAX );
+            untextured_3d_geometry_buffer *Mesh = AtomicReplaceMesh( &DestChunk->Meshes, MeshBit_Lod0, 0, u64_MAX );
             if (Mesh)
             {
               RenderToTexture(Engine, &Editor->NoisePreviewThumbnail, Mesh, V3(ChunkSize/-2));

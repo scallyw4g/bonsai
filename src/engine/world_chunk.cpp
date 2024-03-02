@@ -587,7 +587,7 @@ Noise_FBM2D( perlin_noise *Noise,
              chunk_dimension Dim,
              chunk_dimension SrcToDest,
              u16 ColorIndex,
-             s32 Frequency,
+             s32 Period,
              s32 Amplitude,
              s64 zMin,
              chunk_dimension WorldChunkDim,
@@ -595,7 +595,7 @@ Noise_FBM2D( perlin_noise *Noise,
 {
   TIMED_FUNCTION();
 
-  Assert(Frequency != s32_MIN);
+  Assert(Period != s32_MIN);
 
   random_series GenColorEntropy = {12653763234231};
 
@@ -634,8 +634,8 @@ Noise_FBM2D( perlin_noise *Noise,
   Chunk->NormalValues = Normals;
 #endif
 
-  Frequency = Max(Frequency, 1);
-  Assert(Frequency != s32_MIN);
+  Period = Max(Period, 1);
+  Assert(Period != s32_MIN);
 
   u32 Octaves = *(u32*)OctaveCount;
   for ( s32 z = 0; z < Dim.z; ++ z)
@@ -651,8 +651,8 @@ Noise_FBM2D( perlin_noise *Noise,
         Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
         Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
 
-        Assert(Frequency != s32_MIN);
-        s32 InteriorFreq = Frequency;
+        Assert(Period != s32_MIN);
+        s32 InteriorFreq = Period;
         s32 InteriorAmp = Amplitude;
         for (u32 OctaveIndex = 0; OctaveIndex < Octaves; ++OctaveIndex)
         {
@@ -718,7 +718,7 @@ Noise_Perlin2D( perlin_noise *Noise,
                 chunk_dimension Dim,
                 chunk_dimension SrcToDest,
                 u16 ColorIndex,
-                s32 Frequency,
+                s32 Period,
                 s32 Amplitude,
                 s64 zMin,
                 chunk_dimension WorldChunkDim,
@@ -727,7 +727,7 @@ Noise_Perlin2D( perlin_noise *Noise,
   TIMED_FUNCTION();
 
   u32 OctaveCount = 1;
-  u32 SyntheticChunkSum = Noise_FBM2D( Noise, Chunk, Dim, SrcToDest, ColorIndex, Frequency, Amplitude, zMin, WorldChunkDim, (void*)&OctaveCount);
+  u32 SyntheticChunkSum = Noise_FBM2D( Noise, Chunk, Dim, SrcToDest, ColorIndex, Period, Amplitude, zMin, WorldChunkDim, (void*)&OctaveCount);
   return SyntheticChunkSum;
 }
 
@@ -737,7 +737,7 @@ Noise_Perlin3D( perlin_noise *Noise,
                 chunk_dimension Dim,
                 chunk_dimension SrcToDest,
                 u16 ColorIndex,
-                s32 Frequency,
+                s32 Period,
                 s32 Amplitude,
                 s64 zMin,
                 chunk_dimension WorldChunkDim,
@@ -760,9 +760,9 @@ Noise_Perlin3D( perlin_noise *Noise,
 
         Assert( NotSet(&Chunk->Voxels[i], Voxel_Filled) );
 
-        f32 InX = ((f32)x + ( (f32)WorldChunkDim.x*(f32)Chunk->WorldP.x))/NOISE_FREQUENCY;
-        f32 InY = ((f32)y + ( (f32)WorldChunkDim.y*(f32)Chunk->WorldP.y))/NOISE_FREQUENCY;
-        f32 InZ = ((f32)z + ( (f32)WorldChunkDim.z*(f32)Chunk->WorldP.z))/NOISE_FREQUENCY;
+        f32 InX = ((f32)x + ( (f32)WorldChunkDim.x*(f32)Chunk->WorldP.x))/Period;
+        f32 InY = ((f32)y + ( (f32)WorldChunkDim.y*(f32)Chunk->WorldP.y))/Period;
+        f32 InZ = ((f32)z + ( (f32)WorldChunkDim.z*(f32)Chunk->WorldP.z))/Period;
 
         r32 noiseValue = PerlinNoise(InX, InY, InZ);
 
@@ -790,7 +790,7 @@ Noise_Perlin3D( perlin_noise *Noise,
   return Result;
 }
 
-typedef u32 (*chunk_init_callback)( perlin_noise *Noise, world_chunk *Chunk, chunk_dimension Dim, chunk_dimension SrcToDest, u16 ColorIndex, s32 Frequency, s32 Amplitude, s64 zMin, chunk_dimension WorldChunkDim, void* UserData);
+typedef u32 (*chunk_init_callback)( perlin_noise *Noise, world_chunk *Chunk, chunk_dimension Dim, chunk_dimension SrcToDest, u16 ColorIndex, s32 Period, s32 Amplitude, s64 zMin, chunk_dimension WorldChunkDim, void* UserData);
 
 
 // NOTE(Jesse): Asserts are commented out for perf
@@ -3021,11 +3021,6 @@ ComputeStandingSpots( v3i SrcChunkDim,
 }
 
 link_internal void
-DoChunkMeshes(thread_local_state *Thread, world_chunk *DestChunk, chunk_dimension WorldChunkDim, s32 Frequency, s32 Amplititude, s32 zMin)
-{
-}
-
-link_internal void
 ComputeLodMesh( thread_local_state *Thread,
                 world_chunk *DestChunk, chunk_dimension WorldChunkDim,
                 world_chunk *SyntheticChunk, chunk_dimension SynChunkDim,
@@ -3430,7 +3425,7 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
                           world_chunk *DestChunk,
                           chunk_dimension WorldChunkDim,
                           native_file *AssetFile,
-                          s32 Frequency,
+                          s32 Period,
                           s32 Amplititude,
                           s32 zMin,
 
@@ -3470,7 +3465,7 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
 #if 0
   u32 SyntheticChunkSum = NoiseCallback( Thread->PerlinNoise,
                                          DestChunk, WorldChunkDim, {},
-                                         GRASS_GREEN, Frequency, Amplititude, zMin,
+                                         GRASS_GREEN, Period, Amplititude, zMin,
                                          WorldChunkDim, UserData );
 
   MarkBoundaryVoxels_NoExteriorFaces(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim);
@@ -3499,7 +3494,7 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
 
   u32 SyntheticChunkSum = NoiseCallback( Thread->PerlinNoise,
                                          SyntheticChunk, SynChunkDim, -1*Global_ChunkApronMinDim,
-                                         GRASS_GREEN, Frequency, Amplititude, zMin,
+                                         GRASS_GREEN, Period, Amplititude, zMin,
                                          WorldChunkDim, UserData );
 
   Assert(SyntheticChunk->Dim == SynChunkDim);
@@ -3639,9 +3634,9 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
 
 // TODO(Jesse): Probably remove this globally
 link_internal void
-InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChunk, chunk_dimension WorldChunkDim, native_file *AssetFile, s32 Frequency, s32 Amplititude, s32 zMin, chunk_init_flags Flags)
+InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChunk, chunk_dimension WorldChunkDim, native_file *AssetFile, s32 Period, s32 Amplititude, s32 zMin, chunk_init_flags Flags)
 {
-  InitializeChunkWithNoise( Noise_Perlin2D, Thread, DestChunk, DestChunk->Dim, AssetFile, Frequency, Amplititude, zMin, MeshBit_Lod0, Flags, 0);
+  InitializeChunkWithNoise( Noise_Perlin2D, Thread, DestChunk, DestChunk->Dim, AssetFile, Period, Amplititude, zMin, MeshBit_Lod0, Flags, 0);
 }
 
 // nochecking Move as much out of this block as possible.  Only the last few of
