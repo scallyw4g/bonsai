@@ -1,28 +1,34 @@
 // src/engine/editor.cpp:240:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   if (Element)
   {
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle vertex_material", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle vertex_material", Element), &DefaultUiRenderParams_Generic))
     {
       PushNewRow(Ui);
 
       PushTableStart(Ui);
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-      DoEditorUi(Ui, Window, &Element->Color, CSz("v3 Color"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
+      DoEditorUi(Ui,
+        Window,
+&(Element->Color),
+        CSz("v3 Color"),
+        Params
+        );
 
 
 
 
 
       
-      DoEditorUi(Ui, Window, &Element->Transparency, CSz("f32 Transparency"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
+      DoEditorUi(Ui,
+        Window,
+&(Element->Transparency),
+        CSz("f32 Transparency"),
+        Params
+        );
 
 
 
@@ -30,9 +36,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Window, &Element->Emission, CSz("f32 Emission"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
+      DoEditorUi(Ui,
+        Window,
+&(Element->Emission),
+        CSz("f32 Emission"),
+        Params
+        );
 
 
 
@@ -47,8 +56,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
   }
   else
   {
-    PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, Name, Params);
+    PushColumn(Ui, CSz("(null)"), Params);
     PushNewRow(Ui);
   }
 

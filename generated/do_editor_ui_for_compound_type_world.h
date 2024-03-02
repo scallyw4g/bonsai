@@ -1,28 +1,34 @@
 // src/engine/editor.cpp:207:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   if (Element)
   {
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle world", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle world", Element), &DefaultUiRenderParams_Generic))
     {
       PushNewRow(Ui);
 
       PushTableStart(Ui);
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-      DoEditorUi(Ui, Window, &Element->Center, CSz("v3i Center"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
+      DoEditorUi(Ui,
+        Window,
+&(Element->Center),
+        CSz("v3i Center"),
+        Params
+        );
 
 
 
 
 
       
-      DoEditorUi(Ui, Window, &Element->VisibleRegion, CSz("v3i VisibleRegion"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
+      DoEditorUi(Ui,
+        Window,
+&(Element->VisibleRegion),
+        CSz("v3i VisibleRegion"),
+        Params
+        );
 
 
 
@@ -42,8 +48,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, EDIT
   }
   else
   {
-    PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, Name, Params);
+    PushColumn(Ui, CSz("(null)"), Params);
     PushNewRow(Ui);
   }
 

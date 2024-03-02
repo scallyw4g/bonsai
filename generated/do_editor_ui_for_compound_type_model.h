@@ -1,53 +1,70 @@
 // src/engine/editor.cpp:285:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   if (Element)
   {
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle model", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle model", Element), &DefaultUiRenderParams_Generic))
     {
       PushNewRow(Ui);
 
       PushTableStart(Ui);
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-      DoEditorUi(Ui, Window, &Element->Vox, CSz("vox_data Vox"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->Meshes, CSz("lod_element_buffer Meshes"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
+      DoEditorUi(Ui,
+        Window,
+&(Element->Vox),
+        CSz("vox_data Vox"),
+        Params
+        );
 
 
 
 
 
       
-      DoEditorUi(Ui, Window, &Element->TransparentMesh, CSz("untextured_3d_geometry_buffer TransparentMesh"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->Animation, CSz("animation Animation"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
+      DoEditorUi(Ui,
+        Window,
+&(Element->Meshes),
+        CSz("lod_element_buffer Meshes"),
+        Params
+        );
 
 
 
 
 
       
-      DoEditorUi(Ui, Window, &Element->Dim, CSz("v3i Dim"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui,
+        Window,
+&(Element->TransparentMesh),
+        CSz("untextured_3d_geometry_buffer TransparentMesh"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&(Element->Animation),
+        CSz("animation Animation"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&(Element->Dim),
+        CSz("v3i Dim"),
+        Params
+        );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
@@ -56,8 +73,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, EDIT
   }
   else
   {
-    PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, Name, Params);
+    PushColumn(Ui, CSz("(null)"), Params);
     PushNewRow(Ui);
   }
 

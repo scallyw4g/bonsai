@@ -1,29 +1,22 @@
 // src/engine/editor.cpp:137:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   if (Element)
   {
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle perlin_noise_params", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle perlin_noise_params", Element), &DefaultUiRenderParams_Generic))
     {
       PushNewRow(Ui);
 
       PushTableStart(Ui);
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-      DoEditorUi(Ui, Window, &Element->Threshold, CSz("r32 Threshold"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->Period, CSz("r32 Period"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
+      DoEditorUi(Ui,
+        Window,
+&(Element->Threshold),
+        CSz("r32 Threshold"),
+        Params
+        );
 
 
 
@@ -31,9 +24,25 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Window, &Element->Amplitude, CSz("r32 Amplitude"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui,
+        Window,
+&(Element->Period),
+        CSz("r32 Period"),
+        Params
+        );
 
 
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&(Element->Amplitude),
+        CSz("r32 Amplitude"),
+        Params
+        );
 
 
 
@@ -48,8 +57,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
   }
   else
   {
-    PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, Name, Params);
+    PushColumn(Ui, CSz("(null)"), Params);
     PushNewRow(Ui);
   }
 

@@ -1,19 +1,22 @@
 // src/engine/editor.cpp:402:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   if (Element)
   {
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle shader", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle shader", Element), &DefaultUiRenderParams_Generic))
     {
       PushNewRow(Ui);
 
       PushTableStart(Ui);
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-      DoEditorUi(Ui, Window, &Element->ID, CSz("u32 ID"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
+      DoEditorUi(Ui,
+        Window,
+&(Element->ID),
+        CSz("u32 ID"),
+        Params
+        );
 
 
 
@@ -21,7 +24,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, EDI
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Window, Element->FirstUniform, CSz("shader_uniform FirstUniform"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui,
+        Window,
+        (Element->FirstUniform),
+        CSz("shader_uniform FirstUniform"),
+        Params
+        );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
@@ -30,8 +38,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, EDI
   }
   else
   {
-    PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, Name, Params);
+    PushColumn(Ui, CSz("(null)"), Params);
     PushNewRow(Ui);
   }
 

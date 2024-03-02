@@ -12,7 +12,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, s64 *Value, cs Name, ui_rende
     u32 Start = StartColumn(Ui, Params);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; }
-    PushColumn(Ui, CS(*Value), Params);
+    PushColumn(Ui, CS(*Value), &DefaultUiRenderParams_Generic);
     if (Button(Ui, CSz("+"), UiId(Window, "increment", Value), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
@@ -43,7 +43,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, u64 *Value, cs Name, ui_rende
     u32 Start = StartColumn(Ui, Params);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; }
-    PushColumn(Ui, CS(*Value), Params);
+    PushColumn(Ui, CS(*Value), &DefaultUiRenderParams_Generic);
     if (Button(Ui, CSz("+"), UiId(Window, "increment", Value), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
@@ -74,7 +74,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, s32 *Value, cs Name, ui_rende
     u32 Start = StartColumn(Ui, Params);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; }
-    PushColumn(Ui, CS(*Value), Params);
+    PushColumn(Ui, CS(*Value), &DefaultUiRenderParams_Generic);
     if (Button(Ui, CSz("+"), UiId(Window, "increment", Value), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
@@ -105,7 +105,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, u32 *Value, cs Name, ui_rende
     u32 Start = StartColumn(Ui, Params);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; }
-    PushColumn(Ui, CS(*Value), Params);
+    PushColumn(Ui, CS(*Value), &DefaultUiRenderParams_Generic);
     if (Button(Ui, CSz("+"), UiId(Window, "increment", Value), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
@@ -136,7 +136,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, s16 *Value, cs Name, ui_rende
     u32 Start = StartColumn(Ui, Params);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; }
-    PushColumn(Ui, CS(*Value), Params);
+    PushColumn(Ui, CS(*Value), &DefaultUiRenderParams_Generic);
     if (Button(Ui, CSz("+"), UiId(Window, "increment", Value), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
@@ -167,7 +167,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, u16 *Value, cs Name, ui_rende
     u32 Start = StartColumn(Ui, Params);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; }
-    PushColumn(Ui, CS(*Value), Params);
+    PushColumn(Ui, CS(*Value), &DefaultUiRenderParams_Generic);
     if (Button(Ui, CSz("+"), UiId(Window, "increment", Value), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
@@ -198,7 +198,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, s8 *Value, cs Name, ui_render
     u32 Start = StartColumn(Ui, Params);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; }
-    PushColumn(Ui, CS(*Value), Params);
+    PushColumn(Ui, CS(*Value), &DefaultUiRenderParams_Generic);
     if (Button(Ui, CSz("+"), UiId(Window, "increment", Value), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
@@ -229,7 +229,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, u8 *Value, cs Name, ui_render
     u32 Start = StartColumn(Ui, Params);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; }
-    PushColumn(Ui, CS(*Value), Params);
+    PushColumn(Ui, CS(*Value), &DefaultUiRenderParams_Generic);
     if (Button(Ui, CSz("+"), UiId(Window, "increment", Value), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);

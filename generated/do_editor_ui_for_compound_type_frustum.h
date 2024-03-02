@@ -1,29 +1,22 @@
 // src/engine/editor.cpp:349:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   if (Element)
   {
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle frustum", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle frustum", Element), &DefaultUiRenderParams_Generic))
     {
       PushNewRow(Ui);
 
       PushTableStart(Ui);
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-      DoEditorUi(Ui, Window, &Element->farClip, CSz("f32 farClip"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->nearClip, CSz("f32 nearClip"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
+      DoEditorUi(Ui,
+        Window,
+&(Element->farClip),
+        CSz("f32 farClip"),
+        Params
+        );
 
 
 
@@ -31,19 +24,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ED
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Window, &Element->width, CSz("f32 width"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->FOV, CSz("f32 FOV"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
+      DoEditorUi(Ui,
+        Window,
+&(Element->nearClip),
+        CSz("f32 nearClip"),
+        Params
+        );
 
 
 
@@ -51,34 +37,74 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ED
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Window, &Element->Top, CSz("plane Top"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui,
+        Window,
+&(Element->width),
+        CSz("f32 width"),
+        Params
+        );
 
 
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&(Element->FOV),
+        CSz("f32 FOV"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&(Element->Top),
+        CSz("plane Top"),
+        Params
+        );
 
 
 
 
 
       
-      DoEditorUi(Ui, Window, &Element->Bot, CSz("plane Bot"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->Left, CSz("plane Left"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
+      DoEditorUi(Ui,
+        Window,
+&(Element->Bot),
+        CSz("plane Bot"),
+        Params
+        );
 
 
 
 
 
       
-      DoEditorUi(Ui, Window, &Element->Right, CSz("plane Right"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui,
+        Window,
+&(Element->Left),
+        CSz("plane Left"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&(Element->Right),
+        CSz("plane Right"),
+        Params
+        );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
@@ -87,8 +113,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ED
   }
   else
   {
-    PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, Name, Params);
+    PushColumn(Ui, CSz("(null)"), Params);
     PushNewRow(Ui);
   }
 
