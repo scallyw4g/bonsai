@@ -580,7 +580,6 @@ Noise_Flat( perlin_noise *Noise,
   return Result;;
 }
 
-global_variable random_series GenColorEntropy = {12653763234231};
 
 link_internal u32
 Noise_FBM2D( perlin_noise *Noise,
@@ -595,7 +594,10 @@ Noise_FBM2D( perlin_noise *Noise,
              void *OctaveCount )
 {
   TIMED_FUNCTION();
+
   Assert(Frequency != s32_MIN);
+
+  random_series GenColorEntropy = {12653763234231};
 
   u32 ChunkSum = 0;
 
@@ -3499,6 +3501,7 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
                                          SyntheticChunk, SynChunkDim, -1*Global_ChunkApronMinDim,
                                          GRASS_GREEN, Frequency, Amplititude, zMin,
                                          WorldChunkDim, UserData );
+
   Assert(SyntheticChunk->Dim == SynChunkDim);
 
 #if 1 && VOXEL_DEBUG_COLOR

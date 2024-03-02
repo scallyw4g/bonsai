@@ -815,89 +815,29 @@ SetupRenderToTextureShader(engine_resources *Engine, texture *Texture, camera *C
     /* GL.DisableVertexAttribArray(1); */
 
     GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID);
+    GL.BindTexture(GL_TEXTURE_2D, Texture->ID);
 
     GL.UseProgram(RTTGroup->Shader.ID);
 
     SetViewport(V2(Texture->Dim));
 
     RTTGroup->ViewProjection =
-      /* Translate( GetRenderP(World->ChunkDim, Camera->CurrentP, Camera) ) * */
-      /* Translate( GetSimSpaceP(World, CameraTarget) ) * */
-      /* Translate( V3(-10) ) * */
       ProjectionMatrix(Camera, V2(Texture->Dim)) *
-      ViewMatrix(Engine->World->ChunkDim, Camera)
-      /* + Translate2(V3(-0.01f, 0.f, 0.f)) */
-      /* * Translate( V3(-10) ) */
-      /* Translate( GetSimSpaceP(World, Camera->CurrentP) ); */
-      ;
+      ViewMatrix(Engine->World->ChunkDim, Camera) ;
 
-    /* BindShaderUniforms(&RTTGroup->Shader); */
     BindUniform(&RTTGroup->Shader, "ViewProjection", &RTTGroup->ViewProjection);
-    GL.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, Texture->ID, 0);
+
+    RTTGroup->FBO.Attachments = 0;
+    FramebufferTexture(&RTTGroup->FBO, Texture);
+    SetDrawBuffers(&RTTGroup->FBO);
+
+    GL.ClearColor(1,0,1,1);
     GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    /* FramebufferTexture(&Engine->RTTGroup.FBO, Texture); */
     /* Ensure(CheckAndClearFramebuffer()); */
 
     GL.Enable(GL_DEPTH_TEST);
   }
 }
-
-#if 0
-link_internal void
-RenderToTexture(engine_resources *Engine, texture *Texture, untextured_3d_geometry_buffer *Src, v3 Offset)
-{
-  auto World    = Engine->World;
-  auto RTTGroup = &Engine->RTTGroup;
-
-  // GL stuff
-  {
-    /* texture *Tex = RTTGroup->Texture; */
-
-    GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID);
-
-    GL.UseProgram(RTTGroup->Shader.ID);
-
-    SetViewport(V2(Texture->Dim));
-
-#if 1
-    auto Camera = RTTGroup->Camera;
-#else
-    camera *Camera = Engine->Graphics->Camera;
-#endif
-
-    RTTGroup->ViewProjection =
-      /* Translate( GetRenderP(World->ChunkDim, Camera->CurrentP, Camera) ) * */
-      /* Translate( GetSimSpaceP(World, CameraTarget) ) * */
-      /* Translate( V3(-10) ) * */
-      ProjectionMatrix(Camera, Texture->Dim.x, Texture->Dim.y) *
-      ViewMatrix(World->ChunkDim, Camera)
-      /* + Translate2(V3(-0.01f, 0.f, 0.f)) */
-      /* * Translate( V3(-10) ) */
-      /* Translate( GetSimSpaceP(World, Camera->CurrentP) ); */
-      ;
-
-    BindShaderUniforms(&RTTGroup->Shader);
-    GL.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, Texture->ID, 0);
-    GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    /* FramebufferTexture(&Engine->RTTGroup.FBO, Texture); */
-    /* Ensure(CheckAndClearFramebuffer()); */
-  }
-
-  // Geometry stuff
-  {
-    MapGpuElementBuffer(&RTTGroup->GeoBuffer);
-    untextured_3d_geometry_buffer* Dest = &RTTGroup->GeoBuffer.Buffer;
-
-    v3 Basis = Offset;
-    BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
-    FlushBuffersToCard(&RTTGroup->GeoBuffer);
-  }
-
-  GL.Enable(GL_DEPTH_TEST);
-  Draw(RTTGroup->GeoBuffer.Buffer.At);
-  RTTGroup->GeoBuffer.Buffer.At = 0;
-}
-#endif
 
 link_internal void
 DrawGpuBufferImmediate(graphics *Graphics, gpu_element_buffer_handles *Handles)
@@ -1057,16 +997,18 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
 }
 
 link_internal void
-RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, model *Model, v3 Offset)
+RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, model *Model, v3 Offset, camera *Camera = 0)
 {
-  SetupRenderToTextureShader(Engine, &Thumb->Texture, &Thumb->Camera);
+  if (Camera == 0) { Camera = &Thumb->Camera; }
+  SetupRenderToTextureShader(Engine, &Thumb->Texture, Camera);
   DrawLod(Engine, &Engine->RTTGroup.Shader, &Model->Meshes, 0.f, Offset);
 }
 
 link_internal void
-RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, untextured_3d_geometry_buffer *Src, v3 Offset)
+RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, untextured_3d_geometry_buffer *Src, v3 Offset, camera *Camera = 0)
 {
-  SetupRenderToTextureShader(Engine, &Thumb->Texture, &Thumb->Camera);
+  if (Camera == 0) { Camera = &Thumb->Camera; }
+  SetupRenderToTextureShader(Engine, &Thumb->Texture, Camera);
 
   auto RTTGroup = &Engine->RTTGroup;
 
@@ -1075,8 +1017,7 @@ RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, untextured_3d_
     MapGpuElementBuffer(&RTTGroup->GeoBuffer);
     untextured_3d_geometry_buffer* Dest = &RTTGroup->GeoBuffer.Buffer;
 
-    v3 Basis = Offset;
-    BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
+    BufferVertsChecked(Src, Dest, Offset, V3(1.0f));
     FlushBuffersToCard(&RTTGroup->GeoBuffer);
   }
 

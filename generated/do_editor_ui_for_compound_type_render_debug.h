@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:391:0
+// src/engine/editor.cpp:412:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)

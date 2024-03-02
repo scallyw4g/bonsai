@@ -528,14 +528,13 @@ DoAssetWindow(engine_resources *Engine)
               {
                 SyncGpuBuffersImmediate(Engine, &Model->Meshes);
 
-                v2i ThumbnailDim = V2i(128);
-
                 render_entity_to_texture_group *RTTGroup = &Engine->RTTGroup;
                 if (ModelIndex >= TotalElements(&Editor->AssetThumbnails))
                 {
+                  v2i ThumbnailDim = V2i(128);
                   texture T = MakeTexture_RGBA(ThumbnailDim, (u32*)0, CSz("Thumbnail"));
                   asset_thumbnail Thumb = { T, {} };
-                  StandardCamera(&Thumb.Camera, 10000.0f, 100.0f, 0.f, {});
+                  StandardCamera(&Thumb.Camera, 10000.0f, 100.0f, 0.f);
 
                   Push(&Editor->AssetThumbnails, &Thumb);
                 }
@@ -544,36 +543,26 @@ DoAssetWindow(engine_resources *Engine)
                 texture *Texture      = &Thumb->Texture;
                 camera  *ThumbCamera  = &Thumb->Camera;
 
-                interactable_handle B = PushButtonStart(Ui, UiId(&AssetViewWindow, "asset_texture_viewport", Thumb) );
-                  u32 Index = StartColumn(Ui);
-                    if (ModelIndex == EngineDebug->ModelIndex) { PushRelativeBorder(Ui, V2(ThumbnailDim), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f)); }
-                    PushTexturedQuad(Ui, Texture, V2(Texture->Dim), zDepth_Text);
-                    PushForceAdvance(Ui, V2(8, 0));
-                  EndColumn(Ui, Index);
-                PushButtonEnd(Ui);
-
-                v3 ModelCenterpointOffset = Model->Dim/-2.f;
                 if (EngineDebug->ResetAssetNodeView)
                 {
                   AssetViewWindow.Scroll = {};
                   AssetViewWindow.CachedScroll = {};
+
+                  v3 ModelCenterpointOffset = Model->Dim/-2.f;
                   f32 SmallObjectCorrectionFactor = 350.f/Length(ModelCenterpointOffset);
                   ThumbCamera->DistanceFromTarget = LengthSq(ModelCenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
                   UpdateGameCamera(World, {}, 0.f, {}, ThumbCamera, 0.f);
                   RenderToTexture(Engine, Thumb, Model, {});
                 }
 
+                interactable_handle B = RenderAndInteractWithThumbnailTexture(Ui, &AssetViewWindow, "asset_texture_viewport", Thumb);
+                if (ModelIndex == EngineDebug->ModelIndex) { PushRelativeBorder(Ui, V2(Texture->Dim)*V2(-1.f, 1.f), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f)); }
+                PushForceAdvance(Ui, V2(8, 0));
 
-                v2 MouseDP = {};
-                r32 CameraZDelta = {};
                 if (Pressed(Ui, &B))
                 {
-                  EngineDebug->ModelIndex = ModelIndex;
-
-                  if (Input->LMB.Pressed) {MouseDP = GetMouseDelta(Plat)*2.f; }
-                  if (Input->RMB.Pressed) { CameraZDelta += GetMouseDelta(Plat).y*2.f; }
-                  UpdateGameCamera(World, MouseDP, CameraZDelta, {}, ThumbCamera, 0.f);
                   RenderToTexture(Engine, Thumb, Model, {});
+                  EngineDebug->ModelIndex = ModelIndex;
                 }
 
                 if ( Engine->MousedOverVoxel.Tag )

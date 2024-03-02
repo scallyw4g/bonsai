@@ -490,9 +490,9 @@ enum world_edit_mode
   WorldEditMode_EntityBrush            = (1 << 9),
   WorldEditMode_BlitEntity             = (1 << 10),
 
-  /* WorldEditMode_NoiseBrush             = (1 << 11), */
+  WorldEditMode_NoiseBrush             = (1 << 11),
 
-  WorldEditMode_RecomputeStandingSpots = (1 << 11),
+  WorldEditMode_RecomputeStandingSpots = (1 << 12),
 };
 
 
@@ -516,3 +516,5 @@ poof(string_and_value_tables(world_edit_mode))
 
 poof(radio_button_group_for_bitfield_enum(world_edit_mode));
 #include <generated/radio_button_group_for_bitfield_enum_world_edit_mode.h>
+
+link_internal b32 HardResetEditor(level_editor *Editor);

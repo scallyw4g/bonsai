@@ -1173,7 +1173,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   world_position WorldCenter = World_Position(5, -4, 0);
   canonical_position PlayerSpawnP = Canonical_Position(Voxel_Position(0), WorldCenter + World_Position(0,0,1));
 
-  StandardCamera(&Graphics->GameCamera, 10000.0f, 500.0f, DEFAULT_CAMERA_BLENDING, PlayerSpawnP);
+  StandardCamera(&Graphics->GameCamera, 10000.0f, 500.0f, DEFAULT_CAMERA_BLENDING);
 
   GameState->Entropy = {DEBUG_NOISE_SEED};
 

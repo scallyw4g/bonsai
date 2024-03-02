@@ -1,5 +1,5 @@
-out vec4 TargetTexture;
-/* layout (location = 0) out vec4 TargetTexture; */
+/* out vec4 TargetTexture; */
+layout (location = 0) out vec4 TargetTexture;
 
 in vec4 Color;
 in vec3 Normal;
@@ -7,12 +7,13 @@ in vec3 Normal;
 
 void main()
 {
-  vec3 SunP = normalize(V3(-1.f, 0.75f, 0.5f));
+  vec3 KeyLight = normalize(V3(1.f, -0.75f, 0.75f));
 
-  float cosTheta = max(0.5f, dot(Normal, SunP));
+  // In this land, the light comes from two sides, cuz why not
+  float keyLightTheta = abs(dot(Normal, KeyLight));
 
-  /* TargetTexture.rgb = vec3(1, 1, 1); */
-  TargetTexture.rgb = Color.xyz * cosTheta;
+  TargetTexture.rgb = Color.xyz * keyLightTheta;
+  /* TargetTexture.rgb = V3(1,0,0); */
   TargetTexture.a = 1.f;
 }
 
