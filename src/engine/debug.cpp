@@ -626,9 +626,6 @@ DoWorldEditDebugWindow(engine_resources *Engine)
   {
     PushWindowStart(Ui, &Window);
 
-    /* camera C = {};; */
-    /* StandardCamera(&C, 10000.f, 100.f, DEFAULT_CAMERA_BLENDING, {}); */
-
     UpdateGameCamera(World, {}, {}, {}, &Debug->WorldEditDebugThumb.Camera, {});
     if (Debug->WorldEditDebugMesh.At)
     {

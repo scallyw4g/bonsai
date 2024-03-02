@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:138:0
+// src/engine/editor.cpp:137:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)

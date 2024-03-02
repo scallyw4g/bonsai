@@ -163,5 +163,5 @@ inline v2
 GetMouseDelta(platform *Plat);
 
 link_internal void
-StandardCamera(camera* Camera, f32 FarClip, f32 DistanceFromTarget, f32 Blend);
+StandardCamera(camera* Camera, f32 FarClip, f32 DistanceFromTarget, f32 Blend = DEFAULT_CAMERA_BLENDING);
 

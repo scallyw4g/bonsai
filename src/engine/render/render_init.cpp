@@ -625,8 +625,8 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
     Lighting->DuskIntensity = 0.50f;
   }
 
-  StandardCamera(&Result->GameCamera, 10000.f, 500.f, DEFAULT_CAMERA_BLENDING);
-  StandardCamera(&Result->DebugCamera, 10000.f, 500.f, DEFAULT_CAMERA_BLENDING);
+  StandardCamera(&Result->GameCamera, 10000.f, 500.f);
+  StandardCamera(&Result->DebugCamera, 10000.f, 500.f);
 
   Result->Camera = &Result->GameCamera;
 
