@@ -831,7 +831,6 @@ SetupRenderToTextureShader(engine_resources *Engine, texture *Texture, camera *C
     FramebufferTexture(&RTTGroup->FBO, Texture);
     SetDrawBuffers(&RTTGroup->FBO);
 
-    GL.ClearColor(1,0,1,1);
     GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     /* Ensure(CheckAndClearFramebuffer()); */
 
