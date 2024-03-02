@@ -158,32 +158,34 @@ poof(
     type_list.map(type)
     {
       link_internal void
-      DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+      DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
       {
-        if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+        Params = Params ? Params : &DefaultUiRenderParams_Column;
+
+        if (Name) { PushColumn(Ui, Name, Params); }
 
         if (Value)
         {
-          u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+          u32 Start = StartColumn(Ui, Params);
             PushTableStart(Ui);
-              if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1; }
-                  PushColumn(Ui, CS(*Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-              if (Button(Ui, CSz("+"), UiId(Window, "increment", Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1; }
+              if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; }
+                  PushColumn(Ui, CS(*Value), Params);
+              if (Button(Ui, CSz("+"), UiId(Window, "increment", Value), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; }
             PushTableEnd(Ui);
           EndColumn(Ui, Start);
         }
         else
         {
-          PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+          PushColumn(Ui, CSz("(null)"), Params);
           PushNewRow(Ui);
         }
 
       }
 
       link_internal void
-      DoEditorUi(renderer_2d *Ui, window_layout *Window, volatile type.name *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+      DoEditorUi(renderer_2d *Ui, window_layout *Window, volatile type.name *Value, cs Name, ui_render_params *Params)
       {
-        DoEditorUi(Ui, Window, ((type.name)*) Value, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+        DoEditorUi(Ui, Window, ((type.name)*) Value, Name, Params);
       }
 
     }

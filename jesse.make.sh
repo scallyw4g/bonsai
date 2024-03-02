@@ -11,10 +11,10 @@
 # ./make.sh $OPT BuildAll
 
 ./make.sh $OPT \
-  BuildSingleExample examples/blank_project \
-  # BuildSingleExample examples/project_and_level_picker \
-  # BuildDebugSystem \
-  # BuildExecutables \
+  BuildSingleExample examples/project_and_level_picker \
+  BuildDebugSystem \
+  BuildExecutables \
+  # BuildSingleExample examples/blank_project \
   # BuildSingleExample examples/turn_based \
   # BuildSingleExample examples/terrain_gen \
   # BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
