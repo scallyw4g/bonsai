@@ -587,9 +587,11 @@ Noise_FBM2D( perlin_noise *Noise,
              chunk_dimension Dim,
              chunk_dimension SrcToDest,
              u16 ColorIndex,
+
              s32 Period,
              s32 Amplitude,
              s64 zMin,
+
              chunk_dimension WorldChunkDim,
              void *OctaveCount )
 {
@@ -718,9 +720,11 @@ Noise_Perlin2D( perlin_noise *Noise,
                 chunk_dimension Dim,
                 chunk_dimension SrcToDest,
                 u16 ColorIndex,
+
                 s32 Period,
                 s32 Amplitude,
                 s64 zMin,
+
                 chunk_dimension WorldChunkDim,
                 void *UserData )
 {
@@ -737,9 +741,11 @@ Noise_Perlin3D( perlin_noise *Noise,
                 chunk_dimension Dim,
                 chunk_dimension SrcToDest,
                 u16 ColorIndex,
+
                 s32 Period,
                 s32 Amplitude,
-                s64 zMin,
+                s64 Thresh,
+
                 chunk_dimension WorldChunkDim,
                 void* Ignored)
 {
@@ -764,10 +770,9 @@ Noise_Perlin3D( perlin_noise *Noise,
         f32 InY = ((f32)y + ( (f32)WorldChunkDim.y*(f32)Chunk->WorldP.y))/Period;
         f32 InZ = ((f32)z + ( (f32)WorldChunkDim.z*(f32)Chunk->WorldP.z))/Period;
 
-        r32 noiseValue = PerlinNoise(InX, InY, InZ);
+        r32 NoiseValue = PerlinNoise(InX, InY, InZ);
 
-        s32 NoiseChoice = Floori(noiseValue + 0.5f);
-
+        s32 NoiseChoice = NoiseValue*Amplitude > Thresh;
         Assert(NoiseChoice == 0 || NoiseChoice == 1);
 
         SetFlag(&Chunk->Voxels[i], (voxel_flag)(NoiseChoice * Voxel_Filled));
@@ -3425,6 +3430,7 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
                           world_chunk *DestChunk,
                           chunk_dimension WorldChunkDim,
                           native_file *AssetFile,
+
                           s32 Period,
                           s32 Amplititude,
                           s32 zMin,
@@ -3461,36 +3467,6 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
 
 
   world_chunk *SyntheticChunk = AllocateWorldChunk(SynChunkP, SynChunkDim, Thread->TempMemory);
-
-#if 0
-  u32 SyntheticChunkSum = NoiseCallback( Thread->PerlinNoise,
-                                         DestChunk, WorldChunkDim, {},
-                                         GRASS_GREEN, Period, Amplititude, zMin,
-                                         WorldChunkDim, UserData );
-
-  MarkBoundaryVoxels_NoExteriorFaces(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim);
-  SetFlag(DestChunk, Chunk_VoxelsInitialized);
-
-  if (SyntheticChunkSum)
-  {
-    untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
-
-    RebuildWorldChunkMesh(Thread, DestChunk, {}, WorldChunkDim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
-    TempMesh->At = 0;
-
-    RebuildWorldChunkMesh(Thread, DestChunk, {}, WorldChunkDim, MeshBit_Lod1, TempMesh, Thread->TempMemory);
-    TempMesh->At = 0;
-
-    RebuildWorldChunkMesh(Thread, DestChunk, {}, WorldChunkDim, MeshBit_Lod2, TempMesh, Thread->TempMemory);
-    TempMesh->At = 0;
-
-    RebuildWorldChunkMesh(Thread, DestChunk, {}, WorldChunkDim, MeshBit_Lod3, TempMesh, Thread->TempMemory);
-    TempMesh->At = 0;
-
-    RebuildWorldChunkMesh(Thread, DestChunk, {}, WorldChunkDim, MeshBit_Lod4, TempMesh, Thread->TempMemory);
-    TempMesh->At = 0;
-  }
-#else
 
   u32 SyntheticChunkSum = NoiseCallback( Thread->PerlinNoise,
                                          SyntheticChunk, SynChunkDim, -1*Global_ChunkApronMinDim,
@@ -3530,8 +3506,6 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
 
   CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Global_ChunkApronMinDim);
 
-#endif
-
   // NOTE(Jesse): You can use this for debug, but it doesn't work if you change it to NoExteriorFaces
   /* MarkBoundaryVoxels_MakeExteriorFaces(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim); */
 
@@ -3539,28 +3513,6 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
 
   SetFlag(DestChunk, Chunk_VoxelsInitialized);
   SetFlag(SyntheticChunk, Chunk_VoxelsInitialized);
-
-#if 0
-  // NOTE(Jesse): A fully filled chunk can still have boundary voxels on its
-  // exterior edge, so that does not preclude it from going through BuildWorldChunkMesh
-  if ( DestChunk->FilledCount > 0) // && DestChunk->FilledCount < (u32)Volume(WorldChunkDim))
-  {
-    untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
-    untextured_3d_geometry_buffer *TempTransparentMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
-    BuildWorldChunkMeshFromMarkedVoxels_Greedy(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim, TempMesh, TempTransparentMesh, Thread->TempMemory);
-    /* BuildWorldChunkMeshFromMarkedVoxels_Naieve(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim, TempMesh); */
-
-    if (TempMesh->At) { Mesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory); DeepCopy(TempMesh, Mesh); }
-
-    if (TempTransparentMesh->At)
-    {
-      TransparencyMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempTransparentMesh, Thread->PermMemory);
-      DeepCopy(TempTransparentMesh, TransparencyMesh);
-    }
-  }
-#endif
-
-
 
   if (Flags & ChunkInitFlag_ComputeStandingSpots)
   {
@@ -3583,7 +3535,6 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
   }
 #endif
 
-#if 1
   if (SyntheticChunkSum)
   {
     untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
@@ -3606,8 +3557,6 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
       TempMesh->At = 0;
     }
   }
-
-#endif
 
 #define FINALIZE_MESH_FOR_CHUNK(Src, Dest,Bit)                                \
   {                                                                           \

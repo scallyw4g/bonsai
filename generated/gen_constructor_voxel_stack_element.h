@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4026:0
+// src/engine/world_chunk.cpp:3972:0
 
 link_internal voxel_stack_element
 VoxelStackElement( v3i VoxSimP , voxel_rule_direction Dir  )

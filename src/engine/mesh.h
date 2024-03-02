@@ -19,7 +19,7 @@ struct mesh_freelist
   volatile free_list_thing *FirstFreeMesh;
 };
 
-#define TIERED_MESH_FREELIST_MAX_ELEMENTS (64)
+#define TIERED_MESH_FREELIST_MAX_ELEMENTS (128)
 #define WORLD_CHUNK_MESH_MIN_SIZE         (2048)
 #define ELEMENTS_PER_TEMP_MESH    (WORLD_CHUNK_MESH_MIN_SIZE*TIERED_MESH_FREELIST_MAX_ELEMENTS)
 
