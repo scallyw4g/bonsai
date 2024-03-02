@@ -935,20 +935,32 @@ DoWorldEditor(engine_resources *Engine)
             perlin_noise_params *Params = &Editor->NoiseSelection.PerlinParams;
             DoEditorUi(Ui, &Window, Params, CSz("Perlin"));
 
-            v3i ChunkSize = V3i(64);
-            world_chunk *DestChunk = AllocateWorldChunk({}, ChunkSize, GetTranArena());
-            DestChunk->Flags = Chunk_Queued;
-
-            InitializeChunkWithNoise( Noise_Perlin3D, GetThreadLocalState(ThreadLocal_ThreadIndex), DestChunk, DestChunk->Dim, {}, s32(Params->Period), s32(Params->Amplitude), s32(Params->Threshold), MeshBit_None, ChunkInitFlag_Noop, 0);
-
-            untextured_3d_geometry_buffer *Mesh = AtomicReplaceMesh( &DestChunk->Meshes, MeshBit_Lod0, 0, u64_MAX );
-            if (Mesh)
+            if (Editor->SelectionClicks)
             {
-              RenderToTexture(Engine, &Editor->NoisePreviewThumbnail, Mesh, V3(ChunkSize/-2));
-              DeallocateMesh(Engine, Mesh);
-            }
+              v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
+              v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
 
-            RenderAndInteractWithThumbnailTexture(Ui, &Window, "noise preview interaction", &Editor->NoisePreviewThumbnail);
+              v3 Dim = SelectionMaxP-SelectionMinP;
+
+              v3i ChunkSize = V3i(Dim);
+              world_chunk *DestChunk = AllocateWorldChunk({}, ChunkSize, GetTranArena());
+              DestChunk->Flags = Chunk_Queued;
+
+              InitializeChunkWithNoise( Noise_Perlin3D, GetThreadLocalState(ThreadLocal_ThreadIndex), DestChunk, DestChunk->Dim, {}, s32(Params->Period), s32(Params->Amplitude), s32(Params->Threshold), MeshBit_None, ChunkInitFlag_Noop, 0);
+
+              untextured_3d_geometry_buffer *Mesh = AtomicReplaceMesh( &DestChunk->Meshes, MeshBit_Lod0, 0, u64_MAX );
+              if (Mesh)
+              {
+                RenderToTexture(Engine, &Editor->NoisePreviewThumbnail, Mesh, V3(ChunkSize/-2));
+                DeallocateMesh(Engine, Mesh);
+              }
+
+              RenderAndInteractWithThumbnailTexture(Ui, &Window, "noise preview interaction", &Editor->NoisePreviewThumbnail);
+            }
+            else
+            {
+              PushColumn(Ui, CSz("Make a selection to use Noise Brush"));
+            }
 
           } break;
 
@@ -1021,7 +1033,6 @@ DoWorldEditor(engine_resources *Engine)
           Editor->Selection.ClickedFace = Face;
           Editor->Selection.ClickedP[0] = PlaneBaseP;
         }
-
       }
 
       if (Editor->Selection.ClickedFace)

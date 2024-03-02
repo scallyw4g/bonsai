@@ -11,6 +11,7 @@ OPT="-O2"
 # ./make.sh $OPT BuildAll
 
 ./make.sh $OPT \
+  BuildSingleExample examples/blank_project \
   BuildSingleExample examples/project_and_level_picker \
   BuildDebugSystem \
   BuildExecutables \
@@ -20,7 +21,6 @@ OPT="-O2"
   # BuildSingleExample examples/the_wanderer \
   # BuildSingleExample examples/graveyard \
   # BuildSingleExample examples/transparency \
-  # BuildSingleExample examples/blank_project \
   # BuildSingleExample examples/transparency \
   # BuildTests \
 
