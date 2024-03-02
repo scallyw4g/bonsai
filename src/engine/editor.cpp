@@ -107,6 +107,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, EDITOR_U
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
+  UNPACK_UI_RENDER_PARAMS(Params);
+
   interactable_handle ButtonHandle = PushButtonStart(Ui, UiId(Window, "toggle", Value), Style);
 
     PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
