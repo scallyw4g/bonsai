@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:352:0
+// src/engine/editor.cpp:362:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->Frust),
+&Element->Frust,
         CSz("frustum Frust"),
         Params
         );
@@ -25,7 +25,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
       
       DoEditorUi(Ui,
         Window,
-&(Element->CurrentP),
+&Element->CurrentP,
         CSz("cp CurrentP"),
         Params
         );
@@ -37,7 +37,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
       
       DoEditorUi(Ui,
         Window,
-&(Element->RenderSpacePosition),
+&Element->RenderSpacePosition,
         CSz("v3 RenderSpacePosition"),
         Params
         );
@@ -49,7 +49,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
       
       DoEditorUi(Ui,
         Window,
-&(Element->Pitch),
+&Element->Pitch,
         CSz("r32 Pitch"),
         Params
         );
@@ -62,7 +62,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
       DoEditorUi(Ui,
         Window,
-&(Element->Roll),
+&Element->Roll,
         CSz("r32 Roll"),
         Params
         );
@@ -75,7 +75,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
       DoEditorUi(Ui,
         Window,
-&(Element->Yaw),
+&Element->Yaw,
         CSz("r32 Yaw"),
         Params
         );
@@ -88,7 +88,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
       DoEditorUi(Ui,
         Window,
-&(Element->DistanceFromTarget),
+&Element->DistanceFromTarget,
         CSz("r32 DistanceFromTarget"),
         Params
         );
@@ -101,7 +101,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
       DoEditorUi(Ui,
         Window,
-&(Element->TargetPitch),
+&Element->TargetPitch,
         CSz("r32 TargetPitch"),
         Params
         );
@@ -114,7 +114,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
       DoEditorUi(Ui,
         Window,
-&(Element->TargetRoll),
+&Element->TargetRoll,
         CSz("r32 TargetRoll"),
         Params
         );
@@ -127,7 +127,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
       DoEditorUi(Ui,
         Window,
-&(Element->TargetYaw),
+&Element->TargetYaw,
         CSz("r32 TargetYaw"),
         Params
         );
@@ -140,7 +140,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
       DoEditorUi(Ui,
         Window,
-&(Element->TargetDistanceFromTarget),
+&Element->TargetDistanceFromTarget,
         CSz("r32 TargetDistanceFromTarget"),
         Params
         );
@@ -153,7 +153,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
       DoEditorUi(Ui,
         Window,
-&(Element->Blend),
+&Element->Blend,
         CSz("r32 Blend"),
         Params
         );
@@ -166,7 +166,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
       DoEditorUi(Ui,
         Window,
-&(Element->Front),
+&Element->Front,
         CSz("v3 Front"),
         Params
         );
@@ -178,7 +178,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
       
       DoEditorUi(Ui,
         Window,
-&(Element->Right),
+&Element->Right,
         CSz("v3 Right"),
         Params
         );
@@ -190,7 +190,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
       
       DoEditorUi(Ui,
         Window,
-&(Element->Up),
+&Element->Up,
         CSz("v3 Up"),
         Params
         );
@@ -202,15 +202,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
       
       DoEditorUi(Ui,
         Window,
-&(Element->GhostId),
+&Element->GhostId,
         CSz("entity_id GhostId"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

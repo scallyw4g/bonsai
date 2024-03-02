@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:270:0
+// src/engine/editor.cpp:280:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_lighting *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_lighting *Element, cs N
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->Emission),
+&Element->Emission,
         CSz("u8 Emission"),
         Params
         );
@@ -26,8 +26,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_lighting *Element, cs N
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

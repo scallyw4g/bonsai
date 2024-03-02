@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:267:0
+// src/engine/editor.cpp:277:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, ui_r
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->Flags),
+&Element->Flags,
         CSz("u8 Flags"),
         Params
         );
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, ui_r
 
       DoEditorUi(Ui,
         Window,
-&(Element->Transparency),
+&Element->Transparency,
         CSz("u8 Transparency"),
         Params
         );
@@ -39,7 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, ui_r
 
       DoEditorUi(Ui,
         Window,
-&(Element->Color),
+&Element->Color,
         CSz("u16 Color"),
         Params
         );
@@ -52,8 +52,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, ui_r
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

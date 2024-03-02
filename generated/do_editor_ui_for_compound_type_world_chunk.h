@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:342:0
+// src/engine/editor.cpp:352:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-        (Element->Next),
+        Element->Next,
         CSz("world_chunk Next"),
         Params
         );
@@ -25,7 +25,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
-&(Element->Flags),
+&Element->Flags,
         CSz("chunk_flag Flags"),
         Params
         );
@@ -37,7 +37,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
-&(Element->Dim),
+&Element->Dim,
         CSz("v3i Dim"),
         Params
         );
@@ -49,7 +49,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
-        (Element->Voxels),
+        Element->Voxels,
         CSz("voxel Voxels"),
         Params
         );
@@ -61,7 +61,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
-        (Element->VoxelLighting),
+        Element->VoxelLighting,
         CSz("voxel_lighting VoxelLighting"),
         Params
         );
@@ -73,7 +73,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
-&(Element->Meshes),
+&Element->Meshes,
         CSz("lod_element_buffer Meshes"),
         Params
         );
@@ -85,7 +85,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
-&(Element->StandingSpots),
+&Element->StandingSpots,
         CSz("voxel_position_cursor StandingSpots"),
         Params
         );
@@ -97,7 +97,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
-&(Element->WorldP),
+&Element->WorldP,
         CSz("v3i WorldP"),
         Params
         );
@@ -109,7 +109,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
-&(Element->FilledCount),
+&Element->FilledCount,
         CSz("u32 FilledCount"),
         Params
         );
@@ -135,7 +135,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
       DoEditorUi(Ui,
         Window,
-&(Element->PointsToLeaveRemaining),
+&Element->PointsToLeaveRemaining,
         CSz("s32 PointsToLeaveRemaining"),
         Params
         );
@@ -148,7 +148,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
       DoEditorUi(Ui,
         Window,
-&(Element->TriCount),
+&Element->TriCount,
         CSz("u32 TriCount"),
         Params
         );
@@ -161,7 +161,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
       DoEditorUi(Ui,
         Window,
-&(Element->EdgeBoundaryVoxelCount),
+&Element->EdgeBoundaryVoxelCount,
         CSz("s32 EdgeBoundaryVoxelCount"),
         Params
         );
@@ -174,7 +174,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
       DoEditorUi(Ui,
         Window,
-&(Element->DimX),
+&Element->DimX,
         CSz("u8 DimX"),
         Params
         );
@@ -187,7 +187,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
       DoEditorUi(Ui,
         Window,
-&(Element->DimY),
+&Element->DimY,
         CSz("u8 DimY"),
         Params
         );
@@ -200,7 +200,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
       DoEditorUi(Ui,
         Window,
-&(Element->DimZ),
+&Element->DimZ,
         CSz("u8 DimZ"),
         Params
         );
@@ -213,7 +213,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
       DoEditorUi(Ui,
         Window,
-&(Element->_Pad0),
+&Element->_Pad0,
         CSz("u8 _Pad0"),
         Params
         );
@@ -226,7 +226,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
       DoEditorUi(Ui,
         Window,
-&(Element->Entities),
+&Element->Entities,
         CSz("entity_ptr_block_array Entities"),
         Params
         );
@@ -255,8 +255,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

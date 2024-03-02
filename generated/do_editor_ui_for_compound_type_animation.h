@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:237:0
+// src/engine/editor.cpp:247:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->t),
+&Element->t,
         CSz("r32 t"),
         Params
         );
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
       DoEditorUi(Ui,
         Window,
-&(Element->tEnd),
+&Element->tEnd,
         CSz("r32 tEnd"),
         Params
         );
@@ -39,7 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
       DoEditorUi(Ui,
         Window,
-&(Element->xKeyframeCount),
+&Element->xKeyframeCount,
         CSz("u32 xKeyframeCount"),
         Params
         );
@@ -52,7 +52,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
       DoEditorUi(Ui,
         Window,
-        (Element->xKeyframes),
+        Element->xKeyframes,
         CSz("keyframe xKeyframes"),
         Params
         );
@@ -64,7 +64,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
       
       DoEditorUi(Ui,
         Window,
-&(Element->yKeyframeCount),
+&Element->yKeyframeCount,
         CSz("u32 yKeyframeCount"),
         Params
         );
@@ -77,7 +77,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
       DoEditorUi(Ui,
         Window,
-        (Element->yKeyframes),
+        Element->yKeyframes,
         CSz("keyframe yKeyframes"),
         Params
         );
@@ -89,7 +89,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
       
       DoEditorUi(Ui,
         Window,
-&(Element->zKeyframeCount),
+&Element->zKeyframeCount,
         CSz("u32 zKeyframeCount"),
         Params
         );
@@ -102,15 +102,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
       DoEditorUi(Ui,
         Window,
-        (Element->zKeyframes),
+        Element->zKeyframes,
         CSz("keyframe zKeyframes"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

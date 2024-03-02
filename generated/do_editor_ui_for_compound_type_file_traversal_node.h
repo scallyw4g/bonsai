@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:294:0
+// src/engine/editor.cpp:304:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element,
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->Type),
+&Element->Type,
         CSz("file_traversal_type Type"),
         Params
         );
@@ -25,7 +25,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element,
       
       DoEditorUi(Ui,
         Window,
-&(Element->Dir),
+&Element->Dir,
         CSz("cs Dir"),
         Params
         );
@@ -38,7 +38,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element,
 
       DoEditorUi(Ui,
         Window,
-&(Element->Name),
+&Element->Name,
         CSz("cs Name"),
         Params
         );
@@ -51,8 +51,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element,
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

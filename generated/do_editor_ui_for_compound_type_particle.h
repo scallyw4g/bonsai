@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:228:0
+// src/engine/editor.cpp:238:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->Velocity),
+&Element->Velocity,
         CSz("v3 Velocity"),
         Params
         );
@@ -25,7 +25,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
       
       DoEditorUi(Ui,
         Window,
-&(Element->Offset),
+&Element->Offset,
         CSz("v3 Offset"),
         Params
         );
@@ -37,7 +37,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
       
       DoEditorUi(Ui,
         Window,
-&(Element->Color),
+&Element->Color,
         CSz("u8 Color"),
         Params
         );
@@ -50,7 +50,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
 
       DoEditorUi(Ui,
         Window,
-&(Element->IsLight),
+&Element->IsLight,
         CSz("b8 IsLight"),
         Params
         );
@@ -63,7 +63,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
 
       DoEditorUi(Ui,
         Window,
-&(Element->RemainingLifespan),
+&Element->RemainingLifespan,
         CSz("r32 RemainingLifespan"),
         Params
         );
@@ -76,8 +76,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

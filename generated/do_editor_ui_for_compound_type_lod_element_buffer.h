@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:282:0
+// src/engine/editor.cpp:292:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, 
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->MeshMask),
+&Element->MeshMask,
         CSz("u32 MeshMask"),
         Params
         );
@@ -71,8 +71,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, 
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

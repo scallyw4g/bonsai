@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:246:0
+// src/engine/editor.cpp:256:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -17,7 +17,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
       DoEditorUi(Ui,
         Window,
-        (Element->Verts),
+        Element->Verts,
         CSz("v3 Verts"),
         Params
         );
@@ -29,7 +29,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
       
       DoEditorUi(Ui,
         Window,
-        (Element->Normals),
+        Element->Normals,
         CSz("v3 Normals"),
         Params
         );
@@ -41,7 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
       
       DoEditorUi(Ui,
         Window,
-        (Element->Mat),
+        Element->Mat,
         CSz("vertex_material Mat"),
         Params
         );
@@ -53,7 +53,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
       
       DoEditorUi(Ui,
         Window,
-&(Element->End),
+&Element->End,
         CSz("u32 End"),
         Params
         );
@@ -66,7 +66,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
       DoEditorUi(Ui,
         Window,
-&(Element->At),
+&Element->At,
         CSz("u32 At"),
         Params
         );
@@ -79,7 +79,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
       DoEditorUi(Ui,
         Window,
-        (Element->Parent),
+        Element->Parent,
         CSz("untextured_3d_geometry_buffer Parent"),
         Params
         );
@@ -91,7 +91,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
       
       DoEditorUi(Ui,
         Window,
-&(Element->BufferNeedsToGrow),
+&Element->BufferNeedsToGrow,
         CSz("u32 BufferNeedsToGrow"),
         Params
         );
@@ -104,7 +104,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
       DoEditorUi(Ui,
         Window,
-&(Element->Timestamp),
+&Element->Timestamp,
         CSz("u64 Timestamp"),
         Params
         );
@@ -117,8 +117,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

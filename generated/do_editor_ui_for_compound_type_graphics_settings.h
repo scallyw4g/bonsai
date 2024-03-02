@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:438:0
+// src/engine/editor.cpp:448:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->Resolution),
+&Element->Resolution,
         CSz("resolution_setting Resolution"),
         Params
         );
@@ -25,7 +25,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
       
       DoEditorUi(Ui,
         Window,
-&(Element->ShadowQuality),
+&Element->ShadowQuality,
         CSz("shadow_quality_setting ShadowQuality"),
         Params
         );
@@ -37,7 +37,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
       
       DoEditorUi(Ui,
         Window,
-&(Element->LightingQuality),
+&Element->LightingQuality,
         CSz("lighting_quality_setting LightingQuality"),
         Params
         );
@@ -49,7 +49,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
       
       DoEditorUi(Ui,
         Window,
-&(Element->ShaderLanguage),
+&Element->ShaderLanguage,
         CSz("shader_language_setting ShaderLanguage"),
         Params
         );
@@ -61,15 +61,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
       
       DoEditorUi(Ui,
         Window,
-&(Element->WindowStartingSize),
+&Element->WindowStartingSize,
         CSz("resolution_setting WindowStartingSize"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

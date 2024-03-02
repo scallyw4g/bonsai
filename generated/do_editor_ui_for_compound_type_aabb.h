@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:219:0
+// src/engine/editor.cpp:229:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, aabb *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, aabb *Element, cs Name, ui_re
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->Min),
+&Element->Min,
         CSz("v3 Min"),
         Params
         );
@@ -25,15 +25,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, aabb *Element, cs Name, ui_re
       
       DoEditorUi(Ui,
         Window,
-&(Element->Max),
+&Element->Max,
         CSz("v3 Max"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

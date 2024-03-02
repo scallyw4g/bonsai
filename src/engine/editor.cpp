@@ -47,16 +47,16 @@ GetUiDebug()
 }
 
 link_internal void
-DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min, r32 Max, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min, r32 Max, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
-  u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  u32 Start = StartColumn(Ui, Params);
     PushTableStart(Ui);
-      if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+      if (Name) { PushColumn(Ui, CS(Name), Params); }
 
       auto Range = Max-Min;
       r32 PercFilled = ((*Value)-Min)/Range;
 
-      r32 Width = 125.f;
+      r32 Width = 100.f;
 
       if (Value)
       {
@@ -69,7 +69,7 @@ DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min
       }
 
       interactable_handle BargraphButton = PushButtonStart(Ui, UiId(Window, "debug_slider", Value));
-        PushSliderBar(Ui, PercFilled, DefaultSelectedStyle.Color, V3(0.4f), Width);
+        PushSliderBar(Ui, PercFilled, UI_WINDOW_BEZEL_DEFAULT_COLOR_SATURATED, UI_WINDOW_BEZEL_DEFAULT_COLOR_MUTED, Width); // Value marker
       PushButtonEnd(Ui);
 
       v2 Offset = {};
@@ -84,21 +84,21 @@ DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
-  if (Name) { PushColumn(Ui,    Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  if (Name) { PushColumn(Ui, Name, Params); }
 
-  u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  u32 Start = StartColumn(Ui);
     PushTableStart(Ui);
       if (Value)
       {
-        if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value - 1.f; }
-          DebugSlider(Ui, Window, Value, {}, MinValue, MaxValue, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-        if (Button(Ui, CSz("+"), UiId(Window, "increment", Value), EDITOR_UI_FUNCTION_INSTANCE_NAMES)) { *Value = *Value + 1.f; }
+        if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value))) { *Value = *Value - 1.f; }
+          DebugSlider(Ui, Window, Value, {}, MinValue, MaxValue);
+        if (Button(Ui, CSz("+"), UiId(Window, "increment", Value))) { *Value = *Value + 1.f; }
       }
       else
       {
-        PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+        PushColumn(Ui, CSz("(null)"));
       }
     PushTableEnd(Ui);
   EndColumn(Ui, Start);
@@ -113,11 +113,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, EDITOR_UI
 
     PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
-    counted_string Display = Value ?
-         *Value ? CSz("True") : CSz("False") :
-         CSz("(null)");
+    if (Value)
+    {
+      if (*Value)
+      {
+        PushUntexturedQuad(Ui, V2(2.f, 2.f), V2(Params->Style->Font.Size.y)-4.f, zDepth_Border, &Global_DefaultCheckboxForeground, Padding, QuadRenderParam_NoAdvance );
+      }
+    }
+    else
+    {
+      PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    }
 
-    PushColumn(Ui, Display, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushUntexturedQuad(Ui, {}, V2(Params->Style->Font.Size.y), zDepth_Text, &Global_DefaultCheckboxBackground, Padding, QuadRenderParam_Default );
+
+
 
   PushButtonEnd(Ui);
 
@@ -313,10 +323,10 @@ poof(do_editor_ui_for_compound_type(entity_position_info))
 // @dirty_entity_P_format_hack
 //
 link_internal void
-DoEditorUi_entity_P(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi_entity_P(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Column)
 {
-  DoEditorUi(Ui, Window, &Element->P.WorldP, CSz("WorldP"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-  DoEditorUi(Ui, Window, &Element->P.Offset, CSz("Offset"), EDITOR_UI_FUNCTION_INSTANCE_NAMES, 0.f, 32.f);
+  DoEditorUi(Ui, Window, &Element->P.WorldP, CSz("WorldP"), Params);
+  DoEditorUi(Ui, Window, &Element->P.Offset, CSz("Offset"), Params, 0.f, 32.f);
 }
 
 poof(do_editor_ui_for_compound_type(entity_id))
@@ -326,12 +336,12 @@ poof(do_editor_ui_for_compound_type(entity))
 #include <generated/do_editor_ui_for_compound_type_entity.h>
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, void *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, void *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Column)
 {
-  if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  if (Name) { PushColumn(Ui, CS(Name), Params); }
   Value ?
-    PushColumn(Ui, FSz("0x%x",umm(Value)), EDITOR_UI_FUNCTION_INSTANCE_NAMES) :
-    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, FSz("0x%x",umm(Value)), &DefaultUiRenderParams_Column) :
+    PushColumn(Ui, CSz("(null)"), &DefaultUiRenderParams_Column);
   PushNewRow(Ui);
 }
 

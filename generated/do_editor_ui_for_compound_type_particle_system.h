@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:231:0
+// src/engine/editor.cpp:241:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->Entropy),
+&Element->Entropy,
         CSz("random_series Entropy"),
         Params
         );
@@ -25,7 +25,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       
       DoEditorUi(Ui,
         Window,
-&(Element->SpawnType),
+&Element->SpawnType,
         CSz("particle_spawn_type SpawnType"),
         Params
         );
@@ -37,7 +37,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       
       DoEditorUi(Ui,
         Window,
-&(Element->Drag),
+&Element->Drag,
         CSz("r32 Drag"),
         Params
         );
@@ -50,7 +50,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
       DoEditorUi(Ui,
         Window,
-&(Element->Lifetime),
+&Element->Lifetime,
         CSz("r32 Lifetime"),
         Params
         );
@@ -63,7 +63,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
       DoEditorUi(Ui,
         Window,
-&(Element->EmissionDelay),
+&Element->EmissionDelay,
         CSz("r32 EmissionDelay"),
         Params
         );
@@ -76,7 +76,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
       DoEditorUi(Ui,
         Window,
-&(Element->EmissionLifespan),
+&Element->EmissionLifespan,
         CSz("r32 EmissionLifespan"),
         Params
         );
@@ -89,7 +89,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
       DoEditorUi(Ui,
         Window,
-&(Element->ActiveParticles),
+&Element->ActiveParticles,
         CSz("u32 ActiveParticles"),
         Params
         );
@@ -102,7 +102,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
       DoEditorUi(Ui,
         Window,
-&(Element->LifespanMod),
+&Element->LifespanMod,
         CSz("r32 LifespanMod"),
         Params
         );
@@ -115,7 +115,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
       DoEditorUi(Ui,
         Window,
-&(Element->ParticleLifespan),
+&Element->ParticleLifespan,
         CSz("r32 ParticleLifespan"),
         Params
         );
@@ -128,7 +128,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
       DoEditorUi(Ui,
         Window,
-&(Element->ParticlesPerSecond),
+&Element->ParticlesPerSecond,
         CSz("r32 ParticlesPerSecond"),
         Params
         );
@@ -141,7 +141,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
       DoEditorUi(Ui,
         Window,
-&(Element->ParticleLightEmission),
+&Element->ParticleLightEmission,
         CSz("r32 ParticleLightEmission"),
         Params
         );
@@ -154,7 +154,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
       DoEditorUi(Ui,
         Window,
-&(Element->ParticleLightEmissionChance),
+&Element->ParticleLightEmissionChance,
         CSz("r32 ParticleLightEmissionChance"),
         Params
         );
@@ -167,7 +167,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
       DoEditorUi(Ui,
         Window,
-&(Element->ParticleStartingTransparency),
+&Element->ParticleStartingTransparency,
         CSz("r32 ParticleStartingTransparency"),
         Params
         );
@@ -180,7 +180,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
       DoEditorUi(Ui,
         Window,
-&(Element->ParticleEndingTransparency),
+&Element->ParticleEndingTransparency,
         CSz("r32 ParticleEndingTransparency"),
         Params
         );
@@ -193,7 +193,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
       DoEditorUi(Ui,
         Window,
-&(Element->ParticleStartingDim),
+&Element->ParticleStartingDim,
         CSz("v3 ParticleStartingDim"),
         Params
         );
@@ -205,7 +205,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       
       DoEditorUi(Ui,
         Window,
-&(Element->ParticleEndingDim),
+&Element->ParticleEndingDim,
         CSz("f32 ParticleEndingDim"),
         Params
         );
@@ -218,7 +218,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
       DoEditorUi(Ui,
         Window,
-&(Element->ParticleTurbMin),
+&Element->ParticleTurbMin,
         CSz("v3 ParticleTurbMin"),
         Params
         );
@@ -230,7 +230,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       
       DoEditorUi(Ui,
         Window,
-&(Element->ParticleTurbMax),
+&Element->ParticleTurbMax,
         CSz("v3 ParticleTurbMax"),
         Params
         );
@@ -242,7 +242,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       
       DoEditorUi(Ui,
         Window,
-&(Element->SpawnRegion),
+&Element->SpawnRegion,
         CSz("aabb SpawnRegion"),
         Params
         );
@@ -254,7 +254,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       
       DoEditorUi(Ui,
         Window,
-&(Element->SystemMovementCoefficient),
+&Element->SystemMovementCoefficient,
         CSz("r32 SystemMovementCoefficient"),
         Params
         );
@@ -267,7 +267,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
       DoEditorUi(Ui,
         Window,
-&(Element->ElapsedSinceLastEmission),
+&Element->ElapsedSinceLastEmission,
         CSz("r32 ElapsedSinceLastEmission"),
         Params
         );
@@ -310,8 +310,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:355:0
+// src/engine/editor.cpp:365:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->ID),
+&Element->ID,
         CSz("u32 ID"),
         Params
         );
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
 
       DoEditorUi(Ui,
         Window,
-&(Element->Dim),
+&Element->Dim,
         CSz("v2i Dim"),
         Params
         );
@@ -38,7 +38,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
       
       DoEditorUi(Ui,
         Window,
-&(Element->Slices),
+&Element->Slices,
         CSz("u32 Slices"),
         Params
         );
@@ -51,7 +51,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
 
       DoEditorUi(Ui,
         Window,
-&(Element->Channels),
+&Element->Channels,
         CSz("u32 Channels"),
         Params
         );
@@ -77,7 +77,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
 
       DoEditorUi(Ui,
         Window,
-&(Element->DebugName),
+&Element->DebugName,
         CSz("cs DebugName"),
         Params
         );
@@ -90,8 +90,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

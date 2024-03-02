@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:417:0
+// src/engine/editor.cpp:427:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->BytesSolidGeoLastFrame),
+&Element->BytesSolidGeoLastFrame,
         CSz("u32 BytesSolidGeoLastFrame"),
         Params
         );
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
 
       DoEditorUi(Ui,
         Window,
-&(Element->BytesTransGeoLastFrame),
+&Element->BytesTransGeoLastFrame,
         CSz("u32 BytesTransGeoLastFrame"),
         Params
         );
@@ -39,7 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
 
       DoEditorUi(Ui,
         Window,
-&(Element->DrawCallsLastFrame),
+&Element->DrawCallsLastFrame,
         CSz("u32 DrawCallsLastFrame"),
         Params
         );
@@ -52,8 +52,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

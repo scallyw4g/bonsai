@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:349:0
+// src/engine/editor.cpp:359:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->farClip),
+&Element->farClip,
         CSz("f32 farClip"),
         Params
         );
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
 
       DoEditorUi(Ui,
         Window,
-&(Element->nearClip),
+&Element->nearClip,
         CSz("f32 nearClip"),
         Params
         );
@@ -39,7 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
 
       DoEditorUi(Ui,
         Window,
-&(Element->width),
+&Element->width,
         CSz("f32 width"),
         Params
         );
@@ -52,7 +52,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
 
       DoEditorUi(Ui,
         Window,
-&(Element->FOV),
+&Element->FOV,
         CSz("f32 FOV"),
         Params
         );
@@ -65,7 +65,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
 
       DoEditorUi(Ui,
         Window,
-&(Element->Top),
+&Element->Top,
         CSz("plane Top"),
         Params
         );
@@ -77,7 +77,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
       
       DoEditorUi(Ui,
         Window,
-&(Element->Bot),
+&Element->Bot,
         CSz("plane Bot"),
         Params
         );
@@ -89,7 +89,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
       
       DoEditorUi(Ui,
         Window,
-&(Element->Left),
+&Element->Left,
         CSz("plane Left"),
         Params
         );
@@ -101,15 +101,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
       
       DoEditorUi(Ui,
         Window,
-&(Element->Right),
+&Element->Right,
         CSz("plane Right"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

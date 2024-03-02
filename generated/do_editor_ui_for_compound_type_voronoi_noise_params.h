@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:139:0
+// src/engine/editor.cpp:149:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->Threshold),
+&Element->Threshold,
         CSz("r32 Threshold"),
         Params
         );
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
 
       DoEditorUi(Ui,
         Window,
-&(Element->Period),
+&Element->Period,
         CSz("r32 Period"),
         Params
         );
@@ -39,7 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
 
       DoEditorUi(Ui,
         Window,
-&(Element->Squareness),
+&Element->Squareness,
         CSz("r32 Squareness"),
         Params
         );
@@ -52,7 +52,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
 
       DoEditorUi(Ui,
         Window,
-&(Element->MaskChance),
+&Element->MaskChance,
         CSz("r32 MaskChance"),
         Params
         );
@@ -65,8 +65,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

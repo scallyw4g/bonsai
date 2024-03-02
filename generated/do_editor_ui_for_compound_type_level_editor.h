@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:429:0
+// src/engine/editor.cpp:439:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-        (Element->Memory),
+        Element->Memory,
         CSz("memory_arena Memory"),
         Params
         );
@@ -25,7 +25,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       
       DoEditorUi(Ui,
         Window,
-&(Element->NoiseSelection),
+&Element->NoiseSelection,
         CSz("noise_selector NoiseSelection"),
         Params
         );
@@ -37,7 +37,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       
       DoEditorUi(Ui,
         Window,
-&(Element->NoisePreviewThumbnail),
+&Element->NoisePreviewThumbnail,
         CSz("asset_thumbnail NoisePreviewThumbnail"),
         Params
         );
@@ -49,7 +49,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       
       DoEditorUi(Ui,
         Window,
-&(Element->EngineDebugViewModeToggleBits),
+&Element->EngineDebugViewModeToggleBits,
         CSz("u64 EngineDebugViewModeToggleBits"),
         Params
         );
@@ -62,7 +62,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
       DoEditorUi(Ui,
         Window,
-&(Element->SelectedColorIndex),
+&Element->SelectedColorIndex,
         CSz("u16 SelectedColorIndex"),
         Params
         );
@@ -75,7 +75,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
       DoEditorUi(Ui,
         Window,
-&(Element->HoverColorIndex),
+&Element->HoverColorIndex,
         CSz("u16 HoverColorIndex"),
         Params
         );
@@ -88,7 +88,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
       DoEditorUi(Ui,
         Window,
-&(Element->SelectionClicks),
+&Element->SelectionClicks,
         CSz("u32 SelectionClicks"),
         Params
         );
@@ -101,7 +101,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
       DoEditorUi(Ui,
         Window,
-&(Element->SelectionBase),
+&Element->SelectionBase,
         CSz("cp SelectionBase"),
         Params
         );
@@ -113,7 +113,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       
       DoEditorUi(Ui,
         Window,
-&(Element->SelectionRegion),
+&Element->SelectionRegion,
         CSz("rect3cp SelectionRegion"),
         Params
         );
@@ -125,7 +125,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       
       DoEditorUi(Ui,
         Window,
-&(Element->CopyRegion),
+&Element->CopyRegion,
         CSz("rect3cp CopyRegion"),
         Params
         );
@@ -137,7 +137,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       
       DoEditorUi(Ui,
         Window,
-&(Element->Selection),
+&Element->Selection,
         CSz("selection_modification_state Selection"),
         Params
         );
@@ -149,7 +149,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       
       DoEditorUi(Ui,
         Window,
-&(Element->Entity),
+&Element->Entity,
         CSz("selection_modification_state Entity"),
         Params
         );
@@ -161,15 +161,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       
       DoEditorUi(Ui,
         Window,
-&(Element->AssetThumbnails),
+&Element->AssetThumbnails,
         CSz("asset_thumbnail_block_array AssetThumbnails"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

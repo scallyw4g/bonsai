@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:147:0
+// src/engine/editor.cpp:157:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->_Reserved),
+&Element->_Reserved,
         CSz("u32 _Reserved"),
         Params
         );
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
 
       DoEditorUi(Ui,
         Window,
-&(Element->WindowBits),
+&Element->WindowBits,
         CSz("u32 WindowBits"),
         Params
         );
@@ -39,7 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
 
       DoEditorUi(Ui,
         Window,
-&(Element->InteractionBits),
+&Element->InteractionBits,
         CSz("u32 InteractionBits"),
         Params
         );
@@ -52,7 +52,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
 
       DoEditorUi(Ui,
         Window,
-&(Element->ElementBits),
+&Element->ElementBits,
         CSz("u32 ElementBits"),
         Params
         );
@@ -65,8 +65,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:411:0
+// src/engine/editor.cpp:421:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->Lights),
+&Element->Lights,
         CSz("game_lights Lights"),
         Params
         );
@@ -25,7 +25,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
       
       DoEditorUi(Ui,
         Window,
-&(Element->FBO),
+&Element->FBO,
         CSz("framebuffer FBO"),
         Params
         );
@@ -37,7 +37,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
       
       DoEditorUi(Ui,
         Window,
-&(Element->BloomTextureFBO),
+&Element->BloomTextureFBO,
         CSz("framebuffer BloomTextureFBO"),
         Params
         );
@@ -49,7 +49,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
       
       DoEditorUi(Ui,
         Window,
-&(Element->LightingTex),
+&Element->LightingTex,
         CSz("texture LightingTex"),
         Params
         );
@@ -61,7 +61,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
       
       DoEditorUi(Ui,
         Window,
-&(Element->BloomTex),
+&Element->BloomTex,
         CSz("texture BloomTex"),
         Params
         );
@@ -73,15 +73,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
       
       DoEditorUi(Ui,
         Window,
-&(Element->Shader),
+&Element->Shader,
         CSz("shader Shader"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

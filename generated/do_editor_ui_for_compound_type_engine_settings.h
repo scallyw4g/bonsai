@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:441:0
+// src/engine/editor.cpp:451:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,15 +13,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs 
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->Graphics),
+&Element->Graphics,
         CSz("graphics_settings Graphics"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:405:0
+// src/engine/editor.cpp:415:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->SolidUIVertexBuffer),
+&Element->SolidUIVertexBuffer,
         CSz("u32 SolidUIVertexBuffer"),
         Params
         );
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
 
       DoEditorUi(Ui,
         Window,
-&(Element->SolidUIColorBuffer),
+&Element->SolidUIColorBuffer,
         CSz("u32 SolidUIColorBuffer"),
         Params
         );
@@ -39,7 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
 
       DoEditorUi(Ui,
         Window,
-&(Element->SolidUIUVBuffer),
+&Element->SolidUIUVBuffer,
         CSz("u32 SolidUIUVBuffer"),
         Params
         );
@@ -52,7 +52,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
 
       DoEditorUi(Ui,
         Window,
-&(Element->DebugTextureArray),
+&Element->DebugTextureArray,
         CSz("texture DebugTextureArray"),
         Params
         );
@@ -64,7 +64,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
       
       DoEditorUi(Ui,
         Window,
-&(Element->TextTextureUniform),
+&Element->TextTextureUniform,
         CSz("s32 TextTextureUniform"),
         Params
         );
@@ -77,7 +77,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
 
       DoEditorUi(Ui,
         Window,
-&(Element->Text2DShader),
+&Element->Text2DShader,
         CSz("shader Text2DShader"),
         Params
         );
@@ -89,7 +89,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
       
       DoEditorUi(Ui,
         Window,
-&(Element->SolidUIShader),
+&Element->SolidUIShader,
         CSz("shader SolidUIShader"),
         Params
         );
@@ -101,15 +101,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
       
       DoEditorUi(Ui,
         Window,
-&(Element->Geo),
+&Element->Geo,
         CSz("textured_2d_geometry_buffer Geo"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

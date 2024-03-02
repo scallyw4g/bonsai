@@ -262,8 +262,11 @@ poof(
           PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
           PushTableEnd(Ui);
         }
+        else
+        {
+          PushNewRow(Ui);
+        }
 
-        PushNewRow(Ui);
       }
       else
       {

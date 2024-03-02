@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:414:0
+// src/engine/editor.cpp:424:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->Settings),
+&Element->Settings,
         CSz("render_settings Settings"),
         Params
         );
@@ -25,7 +25,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
       
       DoEditorUi(Ui,
         Window,
-&(Element->GameCamera),
+&Element->GameCamera,
         CSz("camera GameCamera"),
         Params
         );
@@ -37,7 +37,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
       
       DoEditorUi(Ui,
         Window,
-&(Element->DebugCamera),
+&Element->DebugCamera,
         CSz("camera DebugCamera"),
         Params
         );
@@ -49,7 +49,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
       
       DoEditorUi(Ui,
         Window,
-&(Element->Exposure),
+&Element->Exposure,
         CSz("r32 Exposure"),
         Params
         );
@@ -62,7 +62,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
       DoEditorUi(Ui,
         Window,
-        (Element->gBuffer),
+        Element->gBuffer,
         CSz("g_buffer_render_group gBuffer"),
         Params
         );
@@ -74,7 +74,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
       
       DoEditorUi(Ui,
         Window,
-        (Element->AoGroup),
+        Element->AoGroup,
         CSz("ao_render_group AoGroup"),
         Params
         );
@@ -86,7 +86,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
       
       DoEditorUi(Ui,
         Window,
-        (Element->SG),
+        Element->SG,
         CSz("shadow_render_group SG"),
         Params
         );
@@ -98,7 +98,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
       
       DoEditorUi(Ui,
         Window,
-&(Element->Transparency),
+&Element->Transparency,
         CSz("transparency_render_group Transparency"),
         Params
         );
@@ -110,7 +110,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
       
       DoEditorUi(Ui,
         Window,
-&(Element->Lighting),
+&Element->Lighting,
         CSz("lighting_render_group Lighting"),
         Params
         );
@@ -122,7 +122,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
       
       DoEditorUi(Ui,
         Window,
-&(Element->Gaussian),
+&Element->Gaussian,
         CSz("gaussian_render_group Gaussian"),
         Params
         );
@@ -134,7 +134,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
       
       DoEditorUi(Ui,
         Window,
-&(Element->CompositeGroup),
+&Element->CompositeGroup,
         CSz("composite_render_group CompositeGroup"),
         Params
         );
@@ -162,7 +162,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
       
       DoEditorUi(Ui,
         Window,
-&(Element->GpuBufferWriteIndex),
+&Element->GpuBufferWriteIndex,
         CSz("u32 GpuBufferWriteIndex"),
         Params
         );
@@ -175,15 +175,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
       DoEditorUi(Ui,
         Window,
-        (Element->Memory),
+        Element->Memory,
         CSz("memory_arena Memory"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

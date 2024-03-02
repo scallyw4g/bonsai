@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:243:0
+// src/engine/editor.cpp:253:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->SignalValue),
+&Element->SignalValue,
         CSz("u32 SignalValue"),
         Params
         );
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
 
       DoEditorUi(Ui,
         Window,
-&(Element->ThreadsWaiting),
+&Element->ThreadsWaiting,
         CSz("u32 ThreadsWaiting"),
         Params
         );
@@ -52,8 +52,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

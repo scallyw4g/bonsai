@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:358:0
+// src/engine/editor.cpp:368:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail *Element, cs 
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->Texture),
+&Element->Texture,
         CSz("texture Texture"),
         Params
         );
@@ -25,15 +25,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail *Element, cs 
       
       DoEditorUi(Ui,
         Window,
-&(Element->Camera),
+&Element->Camera,
         CSz("camera Camera"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

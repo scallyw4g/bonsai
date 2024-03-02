@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:304:0
+// src/engine/editor.cpp:314:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_r
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->LoadState),
+&Element->LoadState,
         CSz("asset_load_state LoadState"),
         Params
         );
@@ -25,7 +25,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_r
       
       DoEditorUi(Ui,
         Window,
-&(Element->Id),
+&Element->Id,
         CSz("asset_id Id"),
         Params
         );
@@ -37,7 +37,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_r
       
       DoEditorUi(Ui,
         Window,
-&(Element->LRUFrameIndex),
+&Element->LRUFrameIndex,
         CSz("u64 LRUFrameIndex"),
         Params
         );
@@ -50,15 +50,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_r
 
       DoEditorUi(Ui,
         Window,
-&(Element->Models),
+&Element->Models,
         CSz("model_buffer Models"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

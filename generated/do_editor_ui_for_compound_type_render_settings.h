@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:213:0
+// src/engine/editor.cpp:223:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -104,7 +104,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
 
       DoEditorUi(Ui,
         Window,
-&(Element->MajorGridDim),
+&Element->MajorGridDim,
         CSz("r32 MajorGridDim"),
         Params
 ,0, 32 );
@@ -121,7 +121,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
 
       DoEditorUi(Ui,
         Window,
-&(Element->ToneMappingType),
+&Element->ToneMappingType,
         CSz("tone_mapping_type ToneMappingType"),
         Params
         );
@@ -133,7 +133,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
       
       DoEditorUi(Ui,
         Window,
-&(Element->Lighting),
+&Element->Lighting,
         CSz("lighting_settings Lighting"),
         Params
         );
@@ -145,7 +145,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
       
       DoEditorUi(Ui,
         Window,
-&(Element->ApplicationResolution),
+&Element->ApplicationResolution,
         CSz("v2 ApplicationResolution"),
         Params
         );
@@ -157,7 +157,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
       
       DoEditorUi(Ui,
         Window,
-&(Element->ShadowMapResolution),
+&Element->ShadowMapResolution,
         CSz("v2 ShadowMapResolution"),
         Params
         );
@@ -169,7 +169,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
       
       DoEditorUi(Ui,
         Window,
-&(Element->LuminanceMapResolution),
+&Element->LuminanceMapResolution,
         CSz("v2 LuminanceMapResolution"),
         Params
         );
@@ -181,7 +181,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
       
       DoEditorUi(Ui,
         Window,
-&(Element->iApplicationResolution),
+&Element->iApplicationResolution,
         CSz("v2i iApplicationResolution"),
         Params
         );
@@ -193,7 +193,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
       
       DoEditorUi(Ui,
         Window,
-&(Element->iShadowMapResolution),
+&Element->iShadowMapResolution,
         CSz("v2i iShadowMapResolution"),
         Params
         );
@@ -205,15 +205,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
       
       DoEditorUi(Ui,
         Window,
-&(Element->iLuminanceMapResolution),
+&Element->iLuminanceMapResolution,
         CSz("v2i iLuminanceMapResolution"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:322:0
+// src/engine/editor.cpp:332:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_id *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_id *Element, cs Name, 
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->Index),
+&Element->Index,
         CSz("u32 Index"),
         Params
         );
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_id *Element, cs Name, 
 
       DoEditorUi(Ui,
         Window,
-&(Element->Generation),
+&Element->Generation,
         CSz("u32 Generation"),
         Params
         );
@@ -39,8 +39,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_id *Element, cs Name, 
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

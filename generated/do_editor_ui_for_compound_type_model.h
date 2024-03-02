@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:285:0
+// src/engine/editor.cpp:295:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->Vox),
+&Element->Vox,
         CSz("vox_data Vox"),
         Params
         );
@@ -25,7 +25,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
       
       DoEditorUi(Ui,
         Window,
-&(Element->Meshes),
+&Element->Meshes,
         CSz("lod_element_buffer Meshes"),
         Params
         );
@@ -37,7 +37,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
       
       DoEditorUi(Ui,
         Window,
-&(Element->TransparentMesh),
+&Element->TransparentMesh,
         CSz("untextured_3d_geometry_buffer TransparentMesh"),
         Params
         );
@@ -49,7 +49,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
       
       DoEditorUi(Ui,
         Window,
-&(Element->Animation),
+&Element->Animation,
         CSz("animation Animation"),
         Params
         );
@@ -61,15 +61,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
       
       DoEditorUi(Ui,
         Window,
-&(Element->Dim),
+&Element->Dim,
         CSz("v3i Dim"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

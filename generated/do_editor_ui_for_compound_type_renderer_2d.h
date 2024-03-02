@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:408:0
+// src/engine/editor.cpp:418:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-        (Element->TextGroup),
+        Element->TextGroup,
         CSz("render_buffers_2d TextGroup"),
         Params
         );
@@ -25,7 +25,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
-&(Element->SpriteTextureArray),
+&Element->SpriteTextureArray,
         CSz("texture SpriteTextureArray"),
         Params
         );
@@ -37,7 +37,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
-&(Element->InteractionStackTop),
+&Element->InteractionStackTop,
         CSz("u64 InteractionStackTop"),
         Params
         );
@@ -50,7 +50,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
       DoEditorUi(Ui,
         Window,
-        (Element->MouseP),
+        Element->MouseP,
         CSz("v2 MouseP"),
         Params
         );
@@ -62,7 +62,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
-        (Element->MouseDP),
+        Element->MouseDP,
         CSz("v2 MouseDP"),
         Params
         );
@@ -74,7 +74,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
-        (Element->ScreenDim),
+        Element->ScreenDim,
         CSz("v2 ScreenDim"),
         Params
         );
@@ -86,7 +86,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
-        (Element->Input),
+        Element->Input,
         CSz("input Input"),
         Params
         );
@@ -98,7 +98,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
-&(Element->ToggleTable),
+&Element->ToggleTable,
         CSz("ui_toggle_hashtable ToggleTable"),
         Params
         );
@@ -126,7 +126,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
-        (Element->HighestWindow),
+        Element->HighestWindow,
         CSz("window_layout HighestWindow"),
         Params
         );
@@ -138,7 +138,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
-&(Element->Hover),
+&Element->Hover,
         CSz("interactable Hover"),
         Params
         );
@@ -150,7 +150,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
-&(Element->Clicked),
+&Element->Clicked,
         CSz("interactable Clicked"),
         Params
         );
@@ -162,7 +162,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
-&(Element->Pressed),
+&Element->Pressed,
         CSz("interactable Pressed"),
         Params
         );
@@ -187,7 +187,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
       DoEditorUi(Ui,
         Window,
-&(Element->Geo),
+&Element->Geo,
         CSz("untextured_2d_geometry_buffer Geo"),
         Params
         );
@@ -199,7 +199,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
-&(Element->TexturedQuadShader),
+&Element->TexturedQuadShader,
         CSz("shader TexturedQuadShader"),
         Params
         );
@@ -211,7 +211,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
-        (Element->CommandBuffer),
+        Element->CommandBuffer,
         CSz("ui_render_command_buffer CommandBuffer"),
         Params
         );
@@ -223,7 +223,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
-&(Element->RenderCommandArena),
+&Element->RenderCommandArena,
         CSz("memory_arena RenderCommandArena"),
         Params
         );
@@ -235,7 +235,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
-&(Element->UiToggleArena),
+&Element->UiToggleArena,
         CSz("memory_arena UiToggleArena"),
         Params
         );
@@ -263,7 +263,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
-&(Element->SolidGeoCountLastFrame),
+&Element->SolidGeoCountLastFrame,
         CSz("u32 SolidGeoCountLastFrame"),
         Params
         );
@@ -276,7 +276,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
       DoEditorUi(Ui,
         Window,
-&(Element->TextGeoCountLastFrame),
+&Element->TextGeoCountLastFrame,
         CSz("u32 TextGeoCountLastFrame"),
         Params
         );
@@ -289,15 +289,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
       DoEditorUi(Ui,
         Window,
-        (Element->ColorPalette),
+        Element->ColorPalette,
         CSz("v3_cursor ColorPalette"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

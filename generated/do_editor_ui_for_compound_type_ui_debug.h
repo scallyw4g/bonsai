@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:420:0
+// src/engine/editor.cpp:430:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->OutlineUiValues),
+&Element->OutlineUiValues,
         CSz("b8 OutlineUiValues"),
         Params
         );
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
 
       DoEditorUi(Ui,
         Window,
-&(Element->OutlineUiButtons),
+&Element->OutlineUiButtons,
         CSz("b8 OutlineUiButtons"),
         Params
         );
@@ -39,7 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
 
       DoEditorUi(Ui,
         Window,
-&(Element->OutlineUiTables),
+&Element->OutlineUiTables,
         CSz("b8 OutlineUiTables"),
         Params
         );
@@ -52,7 +52,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
 
       DoEditorUi(Ui,
         Window,
-&(Element->OutlineUiTableColumns),
+&Element->OutlineUiTableColumns,
         CSz("b8 OutlineUiTableColumns"),
         Params
         );
@@ -65,7 +65,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
 
       DoEditorUi(Ui,
         Window,
-&(Element->DebugBreakOnElementClick),
+&Element->DebugBreakOnElementClick,
         CSz("b8 DebugBreakOnElementClick"),
         Params
         );
@@ -78,7 +78,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
 
       DoEditorUi(Ui,
         Window,
-&(Element->DebugBreakUiCommand),
+&Element->DebugBreakUiCommand,
         CSz("b8 DebugBreakUiCommand"),
         Params
         );
@@ -91,8 +91,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:310:0
+// src/engine/editor.cpp:320:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->P),
+&Element->P,
         CSz("cp P"),
         Params
         );
@@ -25,7 +25,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
       
       DoEditorUi(Ui,
         Window,
-&(Element->_CollisionVolumeRadius),
+&Element->_CollisionVolumeRadius,
         CSz("v3 _CollisionVolumeRadius"),
         Params
         );
@@ -37,7 +37,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
       
       DoEditorUi(Ui,
         Window,
-&(Element->Scale),
+&Element->Scale,
         CSz("r32 Scale"),
         Params
         );
@@ -50,15 +50,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
 
       DoEditorUi(Ui,
         Window,
-&(Element->EulerAngles),
+&Element->EulerAngles,
         CSz("v3 EulerAngles"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:279:0
+// src/engine/editor.cpp:289:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->VertexHandle),
+&Element->VertexHandle,
         CSz("u32 VertexHandle"),
         Params
         );
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
 
       DoEditorUi(Ui,
         Window,
-&(Element->NormalHandle),
+&Element->NormalHandle,
         CSz("u32 NormalHandle"),
         Params
         );
@@ -39,7 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
 
       DoEditorUi(Ui,
         Window,
-&(Element->MatHandle),
+&Element->MatHandle,
         CSz("u32 MatHandle"),
         Params
         );
@@ -52,7 +52,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
 
       DoEditorUi(Ui,
         Window,
-&(Element->ElementCount),
+&Element->ElementCount,
         CSz("u32 ElementCount"),
         Params
         );
@@ -65,8 +65,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:273:0
+// src/engine/editor.cpp:283:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -13,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name,
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&(Element->Flags),
+&Element->Flags,
         CSz("chunk_flag Flags"),
         Params
         );
@@ -25,7 +25,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name,
       
       DoEditorUi(Ui,
         Window,
-&(Element->Dim),
+&Element->Dim,
         CSz("v3i Dim"),
         Params
         );
@@ -37,7 +37,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name,
       
       DoEditorUi(Ui,
         Window,
-        (Element->Voxels),
+        Element->Voxels,
         CSz("voxel Voxels"),
         Params
         );
@@ -49,15 +49,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name,
       
       DoEditorUi(Ui,
         Window,
-        (Element->VoxelLighting),
+        Element->VoxelLighting,
         CSz("voxel_lighting VoxelLighting"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {

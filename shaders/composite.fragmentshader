@@ -27,7 +27,7 @@ uniform float Exposure;
 uniform int ToneMappingType;
 
 uniform v2 ApplicationResolution;
-// uniform v2 LuminanceMapResolution;;
+// uniform v2 LuminanceMapResolution;
 
 
 
