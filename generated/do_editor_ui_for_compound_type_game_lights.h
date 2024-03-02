@@ -1,11 +1,11 @@
-// src/engine/editor.cpp:451:0
+// src/engine/editor.cpp:421:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   if (Element)
   {
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle graphics_settings", Element), &DefaultUiRenderParams_Generic))
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle game_lights", Element), &DefaultUiRenderParams_Generic))
     {
       PushNewRow(Ui);
 
@@ -13,8 +13,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&Element->Resolution,
-        CSz("resolution_setting Resolution"),
+&Element->ColorTex,
+        CSz("texture ColorTex"),
         Params
         );
 
@@ -25,8 +25,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
       
       DoEditorUi(Ui,
         Window,
-&Element->ShadowQuality,
-        CSz("shadow_quality_setting ShadowQuality"),
+&Element->PositionTex,
+        CSz("texture PositionTex"),
         Params
         );
 
@@ -37,8 +37,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
       
       DoEditorUi(Ui,
         Window,
-&Element->LightingQuality,
-        CSz("lighting_quality_setting LightingQuality"),
+&Element->IndexToUV,
+        CSz("r32 IndexToUV"),
         Params
         );
 
@@ -46,11 +46,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
 
 
 
-      
+      PushNewRow(Ui);
+
       DoEditorUi(Ui,
         Window,
-&Element->ShaderLanguage,
-        CSz("shader_language_setting ShaderLanguage"),
+&Element->Count,
+        CSz("s32 Count"),
         Params
         );
 
@@ -58,11 +59,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
 
 
 
-      
+      PushNewRow(Ui);
+
       DoEditorUi(Ui,
         Window,
-&Element->WindowStartingSize,
-        CSz("resolution_setting WindowStartingSize"),
+        Element->Lights,
+        CSz("light Lights"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

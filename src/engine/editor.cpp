@@ -418,6 +418,9 @@ poof(do_editor_ui_for_compound_type(render_buffers_2d))
 poof(do_editor_ui_for_compound_type(renderer_2d))
 #include <generated/do_editor_ui_for_compound_type_renderer_2d.h>
 
+poof(do_editor_ui_for_compound_type(game_lights))
+#include <generated/do_editor_ui_for_compound_type_game_lights.h>
+
 poof(do_editor_ui_for_compound_type(lighting_render_group))
 #include <generated/do_editor_ui_for_compound_type_lighting_render_group.h>
 

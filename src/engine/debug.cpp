@@ -813,7 +813,7 @@ DoEngineDebug(engine_resources *Engine)
 
     DoGraphicsDebugWindow(Engine);
 
-    DoWorldEditDebugWindow(Engine);
+    /* DoWorldEditDebugWindow(Engine); */
   }
 
   /* Debug_DrawTextureToDebugQuad(&Engine->RTTGroup.DebugShader); */
