@@ -15,7 +15,7 @@
   BuildDebugSystem \
   BuildExecutables \
   BuildSingleExample examples/turn_based \
-  # BuildSingleExample examples/blank_project \
+  BuildSingleExample examples/blank_project \
   # BuildSingleExample examples/terrain_gen \
   # BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
   # BuildSingleExample examples/the_wanderer \

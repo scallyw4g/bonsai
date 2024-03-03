@@ -852,28 +852,30 @@ DoWorldEditor(engine_resources *Engine)
   picked_voxel_position HighlightVoxel = PickedVoxel_FirstFilled;
   ui_toggle_button_group WorldEditModeRadioGroup = {};
 
+  ui_toggle_button_group WorldEditToolButtonGroup = {};
+  ui_toggle_button_group WorldEditModeButtonGroup = {};
+  ui_toggle_button_group WorldEditBrushTypeButtonGroup = {};
 
   {
     local_persist window_layout Window = WindowLayout("World Edit");
     PushWindowStart(Ui, &Window);
 
     PushTableStart(Ui);
-      ui_element_reference CurrentElementRef = {};
-
       ui_render_params Params = DefaultUiRenderParams_Generic;
+
       {
-        CurrentElementRef = DoEditorUi(Ui, &Window, &WorldEditMode, CSz("Edit Mode"), &Params, ToggleButtonGroupFlags_DrawVertical).UiRef;
+        WorldEditModeButtonGroup = DoEditorUi(Ui, &Window, &WorldEditMode, CSz("Edit Mode"), &Params, ToggleButtonGroupFlags_DrawVertical);
       }
 
       Params.RelativePosition.Position   = Position_RightOf;
       {
-        Params.RelativePosition.RelativeTo = CurrentElementRef;
-        CurrentElementRef = DoEditorUi(Ui, &Window, &WorldEditTool, CSz("Tool"), &Params, ToggleButtonGroupFlags_DrawVertical).UiRef;
+        Params.RelativePosition.RelativeTo = WorldEditModeButtonGroup.UiRef;
+        WorldEditToolButtonGroup = DoEditorUi(Ui, &Window, &WorldEditTool, CSz("Tool"), &Params, ToggleButtonGroupFlags_DrawVertical);
       }
 
       {
-        Params.RelativePosition.RelativeTo = CurrentElementRef;
-        CurrentElementRef = DoEditorUi(Ui, &Window, &WorldEditBrushType, CSz("BrushType"), &Params, ToggleButtonGroupFlags_DrawVertical).UiRef;
+        Params.RelativePosition.RelativeTo = WorldEditToolButtonGroup.UiRef;
+        WorldEditBrushTypeButtonGroup = DoEditorUi(Ui, &Window, &WorldEditBrushType, CSz("BrushType"), &Params, ToggleButtonGroupFlags_DrawVertical);
       }
     PushTableEnd(Ui);
 
@@ -1101,6 +1103,32 @@ DoWorldEditor(engine_resources *Engine)
     DEBUG_DrawSimSpaceAABB(Engine, &SelectionAABB, BaseColor, Thickness);
   }
 
+  //
+  // Do tool selection actions (what happens when we change a tool selection)
+  //
+
+  if (WorldEditToolButtonGroup.AnyElementClicked)
+  {
+    switch (WorldEditTool)
+    {
+      case WorldEditTool_Single:
+      case WorldEditTool_Eyedropper:
+      case WorldEditTool_Brush:
+      case WorldEditTool_BlitEntity:
+      case WorldEditTool_StandingSpots:
+      { } break;
+
+      case WorldEditTool_Select:
+      {
+        ResetSelection(Editor);
+      } break;
+    }
+  }
+
+
+  //
+  // Do edit tool interactions in the wordl
+  //
 
   if ( UiCapturedMouseInput(Ui) == False &&
        UiHoveredMouseInput(Ui)  == False  )
