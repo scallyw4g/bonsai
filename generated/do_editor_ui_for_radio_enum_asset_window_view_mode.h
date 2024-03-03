@@ -1,4 +1,4 @@
-// src/engine/editor.h:565:0
+// src/engine/editor.h:562:0
 
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, asset_window_view_mode Selection)
@@ -38,10 +38,10 @@ Clicked(ui_toggle_button_group *ButtonGroup, asset_window_view_mode Enum)
 link_internal ui_toggle_button_group
 RadioButtonGroup_asset_window_view_mode( renderer_2d *Ui,
   window_layout *Window,
+  cs GroupName,
   const char *ToggleGroupIdentifier,
-  ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None,
-  ui_relative_position_reference *RelativePosition = 0,
-  UI_FUNCTION_PROTO_DEFAULTS )
+  ui_render_params *Params = &DefaultUiRenderParams_Generic,
+  ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
 {
   cs ButtonNames[] =
   {
@@ -54,11 +54,11 @@ RadioButtonGroup_asset_window_view_mode( renderer_2d *Ui,
   ui_toggle_button_handle_buffer ButtonBuffer = UiToggleButtonHandleBuffer(ButtonCount, GetTranArena());
   IterateOver(&ButtonBuffer, Button, ButtonIndex)
   {
-    cs Name = ButtonNames[ButtonIndex];
-    *Button = UiToggle(Name, Window, ToggleGroupIdentifier, (void*)Name.Start);
+    cs ButtonName = ButtonNames[ButtonIndex];
+    *Button = UiToggle(ButtonName, Window, ToggleGroupIdentifier, (void*)ButtonName.Start);
   }
 
-  ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_RadioButtons), UI_FUNCTION_INSTANCE_NAMES);
+  ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer, GroupName, Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_RadioButtons));
 
   return Result;
 }
@@ -69,15 +69,12 @@ link_internal ui_toggle_button_group
 DoEditorUi( renderer_2d *Ui,
   window_layout *Window,
   asset_window_view_mode *Element,
-  cs Name,
-
-  // TODO(Jesse): Should these be systemic in the DoEditorUi API?
-  ui_relative_position_reference *RelativePosition = 0,
-
-  EDITOR_UI_FUNCTION_PROTO_DEFAULTS )
+  cs GroupName,
+  ui_render_params *Params,
+  ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
 {
-  if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); PushNewRow(Ui); }
-  ui_toggle_button_group RadioGroup = RadioButtonGroup_asset_window_view_mode(Ui, Window, "asset_window_view_mode radio group");
+  /* if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); PushNewRow(Ui); } */
+  ui_toggle_button_group RadioGroup = RadioButtonGroup_asset_window_view_mode(Ui, Window, GroupName, "asset_window_view_mode radio group", Params, ExtraFlags);
   GetRadioEnum(&RadioGroup, Element);
   return RadioGroup;
 }

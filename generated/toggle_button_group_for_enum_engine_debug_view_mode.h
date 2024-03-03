@@ -1,4 +1,4 @@
-// src/engine/editor.h:553:0
+// src/engine/editor.h:550:0
 
 link_internal b32
 ToggledOn(ui_toggle_button_group *ButtonGroup, engine_debug_view_mode Enum)
@@ -20,10 +20,10 @@ Clicked(ui_toggle_button_group *ButtonGroup, engine_debug_view_mode Enum)
 link_internal ui_toggle_button_group
 ToggleButtonGroup_engine_debug_view_mode( renderer_2d *Ui,
   window_layout *Window,
+  cs GroupName,
   const char *ToggleGroupIdentifier,
-  ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None,
-  ui_relative_position_reference *RelativePosition = 0,
-  UI_FUNCTION_PROTO_DEFAULTS )
+  ui_render_params *Params = &DefaultUiRenderParams_Generic,
+  ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
 {
   cs ButtonNames[] =
   {
@@ -42,11 +42,11 @@ ToggleButtonGroup_engine_debug_view_mode( renderer_2d *Ui,
   ui_toggle_button_handle_buffer ButtonBuffer = UiToggleButtonHandleBuffer(ButtonCount, GetTranArena());
   IterateOver(&ButtonBuffer, Button, ButtonIndex)
   {
-    cs Name = ButtonNames[ButtonIndex];
-    *Button = UiToggle(Name, Window, ToggleGroupIdentifier, (void*)Name.Start);
+    cs ButtonName = ButtonNames[ButtonIndex];
+    *Button = UiToggle(ButtonName, Window, ToggleGroupIdentifier, (void*)ButtonName.Start);
   }
 
-  ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_None), UI_FUNCTION_INSTANCE_NAMES);
+  ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer, GroupName, Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_None));
 
   return Result;
 }

@@ -857,16 +857,25 @@ DoWorldEditor(engine_resources *Engine)
     local_persist window_layout Window = WindowLayout("World Edit");
     PushWindowStart(Ui, &Window);
 
-    DoEditorUi(Ui, &Window, &WorldEditMode, CSz("Edit Mode"));
-    PushNewRow(Ui);
+    PushTableStart(Ui);
+      ui_element_reference CurrentElementRef = {};
 
-    DoEditorUi(Ui, &Window, &WorldEditTool, CSz("Tool"));
-    PushNewRow(Ui);
+      ui_render_params Params = DefaultUiRenderParams_Generic;
+      {
+        CurrentElementRef = DoEditorUi(Ui, &Window, &WorldEditMode, CSz("Edit Mode"), &Params, ToggleButtonGroupFlags_DrawVertical).UiRef;
+      }
 
-    DoEditorUi(Ui, &Window, &WorldEditBrushType, CSz("BrushType"));
+      Params.RelativePosition.Position   = Position_RightOf;
+      {
+        Params.RelativePosition.RelativeTo = CurrentElementRef;
+        CurrentElementRef = DoEditorUi(Ui, &Window, &WorldEditTool, CSz("Tool"), &Params, ToggleButtonGroupFlags_DrawVertical).UiRef;
+      }
 
-
-    PushNewRow(Ui);
+      {
+        Params.RelativePosition.RelativeTo = CurrentElementRef;
+        CurrentElementRef = DoEditorUi(Ui, &Window, &WorldEditBrushType, CSz("BrushType"), &Params, ToggleButtonGroupFlags_DrawVertical).UiRef;
+      }
+    PushTableEnd(Ui);
 
 
     v3_cursor *Palette = GetColorPalette();
@@ -935,7 +944,7 @@ DoWorldEditor(engine_resources *Engine)
       case WorldEditMode_RemoveSingle:
       case WorldEditMode_PaintSingle:
       case WorldEditMode_BlitEntity:
-      case WorldEditMode_RecomputeStandingSpots:
+      case WorldEditMode_StandingSpots:
       case WorldEditMode_AssetBrush:
       case WorldEditMode_EntityBrush:
       { PushColumn(Ui, CSz("No brush settings.")); } break;
@@ -1331,7 +1340,7 @@ DoWorldEditor(engine_resources *Engine)
         }
       } break;
 
-      case WorldEditTool_RecomputeStandingSpots:
+      case WorldEditTool_StandingSpots:
       {
         if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
         {
@@ -1340,7 +1349,7 @@ DoWorldEditor(engine_resources *Engine)
             .world_update_op_shape_params_rect.P0 = SelectionAABB.Min,
             .world_update_op_shape_params_rect.P1 = SelectionAABB.Max,
           };
-          QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_RecomputeStandingSpots, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory);
+          QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_StandingSpots, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory);
         }
       } break;
 

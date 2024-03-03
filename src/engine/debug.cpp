@@ -643,7 +643,7 @@ DoEngineDebug(engine_resources *Engine)
   UNPACK_ENGINE_RESOURCES(Engine);
 
   ui_toggle_button_group EditorButtonGroup =
-    ToggleButtonGroup_engine_debug_view_mode(Ui, 0, "engine_debug_view_mode");
+    ToggleButtonGroup_engine_debug_view_mode(Ui, 0, CS(""), "engine_debug_view_mode");
 
   Editor->EngineDebugViewModeToggleBits = EditorButtonGroup.ToggleBits;
 

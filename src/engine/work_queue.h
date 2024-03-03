@@ -134,7 +134,7 @@ enum world_update_op_mode
   WorldUpdateOperationMode_Subtractive,
 
   // NOTE(Jesse): This is kind of a hack to skip the update loop and compute standing spots for a given area
-  WorldUpdateOperationMode_RecomputeStandingSpots,
+  WorldUpdateOperationMode_StandingSpots,
 };
 
 enum world_update_op_mode_modifier

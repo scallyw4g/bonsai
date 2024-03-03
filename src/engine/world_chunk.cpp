@@ -4090,7 +4090,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
         {
           InvalidCase(WorldUpdateOperationMode_None);
 
-          case WorldUpdateOperationMode_RecomputeStandingSpots: {} break;
+          case WorldUpdateOperationMode_StandingSpots: {} break;
 
           case WorldUpdateOperationMode_Subtractive:
           {
@@ -4286,7 +4286,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
         {
           InvalidCase(WorldUpdateOperationMode_None);
 
-          case WorldUpdateOperationMode_RecomputeStandingSpots: {} break;
+          case WorldUpdateOperationMode_StandingSpots: {} break;
 
           case WorldUpdateOperationMode_Additive:
           {
@@ -4361,8 +4361,8 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
             InvalidCase(WorldUpdateOperationMode_Subtractive);
 
             // TODO(Jesse): Would we ever want this on in this path?
-            InvalidCase(WorldUpdateOperationMode_RecomputeStandingSpots);
-            /* case WorldUpdateOperationMode_RecomputeStandingSpots: {} break; */
+            InvalidCase(WorldUpdateOperationMode_StandingSpots);
+            /* case WorldUpdateOperationMode_StandingSpots: {} break; */
 
             case WorldUpdateOperationMode_Additive:
             {
@@ -4476,7 +4476,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
   voxel_position_cursor StandingSpots = V3iCursor(ChunkCount*WORLD_CHUNK_STANDING_SPOT_COUNT, Thread->TempMemory);
 
-  /* if (GetLevelEditor()->Flags & LevelEditorFlags_RecomputeStandingSpotsOnLevelLoad) */
+  /* if (GetLevelEditor()->Flags & LevelEditorFlags_StandingSpotsOnLevelLoad) */
   {
     ComputeStandingSpots( QueryDim, CopiedVoxels, {},
                           {},

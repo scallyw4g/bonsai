@@ -24,10 +24,10 @@ poof(
     link_internal ui_toggle_button_group
     (NamePrefix)ButtonGroup_(enum_t.name)( renderer_2d *Ui,
                                            window_layout *Window,
+                                           cs GroupName,
                                            const char *ToggleGroupIdentifier,
-                                           ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None,
-                                           ui_relative_position_reference *RelativePosition = 0,
-                                           UI_FUNCTION_PROTO_DEFAULTS )
+                                           ui_render_params *Params = &DefaultUiRenderParams_Generic,
+                                           ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
     {
       cs ButtonNames[] =
       {
@@ -42,11 +42,11 @@ poof(
       ui_toggle_button_handle_buffer ButtonBuffer = UiToggleButtonHandleBuffer(ButtonCount, GetTranArena());
       IterateOver(&ButtonBuffer, Button, ButtonIndex)
       {
-        cs Name = ButtonNames[ButtonIndex];
-        *Button = UiToggle(Name, Window, ToggleGroupIdentifier, (void*)Name.Start);
+        cs ButtonName = ButtonNames[ButtonIndex];
+        *Button = UiToggle(ButtonName, Window, ToggleGroupIdentifier, (void*)ButtonName.Start);
       }
 
-      ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer, ui_toggle_button_group_flags(ExtraFlags(extra_poof_flags)), UI_FUNCTION_INSTANCE_NAMES);
+      ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer, GroupName, Params, ui_toggle_button_group_flags(ExtraFlags(extra_poof_flags)));
 
       return Result;
     }
@@ -368,15 +368,12 @@ poof(
     DoEditorUi( renderer_2d *Ui,
                 window_layout *Window,
                 enum_t.name *Element,
-                cs Name,
-
-                // TODO(Jesse): Should these be systemic in the DoEditorUi API?
-                ui_relative_position_reference *RelativePosition = 0,
-
-                EDITOR_UI_FUNCTION_PROTO_DEFAULTS )
+                cs GroupName,
+                ui_render_params *Params,
+                ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
     {
-      if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); PushNewRow(Ui); }
-      ui_toggle_button_group RadioGroup = RadioButtonGroup_(enum_t.name)(Ui, Window, "enum_t.name radio group");
+      /* if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); PushNewRow(Ui); } */
+      ui_toggle_button_group RadioGroup = RadioButtonGroup_(enum_t.name)(Ui, Window, GroupName, "enum_t.name radio group", Params, ExtraFlags);
       GetRadioEnum(&RadioGroup, Element);
       return RadioGroup;
     }
@@ -514,7 +511,7 @@ enum world_edit_tool
   WorldEditTool_Eyedropper,
   WorldEditTool_Brush,       // world_edit_brush_type
   WorldEditTool_BlitEntity,
-  WorldEditTool_RecomputeStandingSpots,
+  WorldEditTool_StandingSpots, // Recomputes standing spots for an area
 };
 
 enum world_edit_brush_type
