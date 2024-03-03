@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->Graphics,
-        CSz("graphics_settings Graphics"),
+        CSz("Graphics"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

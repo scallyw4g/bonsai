@@ -1,37 +1,37 @@
 // src/engine/editor.cpp:235:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_spawn_type *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_spawn_type *Element, cs Name, ui_render_params *Params)
 {
-  if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
   cs ElementName = ToString(*Element);
-  if (ToggleButton(Ui, ElementName, ElementName, UiId(Window, "enum value.type value.name", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+  if (ToggleButton(Ui, ElementName, ElementName, UiId(Window, "enum value.type value.name", Element), Params))
   {
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("ParticleSpawnType_None"), UiId(Window, "enum ParticleSpawnType_None", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    PushColumn(Ui, CSz("|")); // Skip the first Name column
+    if (Button(Ui, CSz("None"), UiId(Window, "enum ParticleSpawnType_None", Element), Params))
     {
       *Element = ParticleSpawnType_None;
 
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("ParticleSpawnType_Random"), UiId(Window, "enum ParticleSpawnType_Random", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    PushColumn(Ui, CSz("|")); // Skip the first Name column
+    if (Button(Ui, CSz("Random"), UiId(Window, "enum ParticleSpawnType_Random", Element), Params))
     {
       *Element = ParticleSpawnType_Random;
 
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("ParticleSpawnType_Expanding"), UiId(Window, "enum ParticleSpawnType_Expanding", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    PushColumn(Ui, CSz("|")); // Skip the first Name column
+    if (Button(Ui, CSz("Expanding"), UiId(Window, "enum ParticleSpawnType_Expanding", Element), Params))
     {
       *Element = ParticleSpawnType_Expanding;
 
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("ParticleSpawnType_Contracting"), UiId(Window, "enum ParticleSpawnType_Contracting", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    PushColumn(Ui, CSz("|")); // Skip the first Name column
+    if (Button(Ui, CSz("Contracting"), UiId(Window, "enum ParticleSpawnType_Contracting", Element), Params))
     {
       *Element = ParticleSpawnType_Contracting;
 

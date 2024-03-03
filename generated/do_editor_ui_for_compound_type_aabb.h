@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, aabb *Element, cs Name, ui_re
       DoEditorUi(Ui,
         Window,
 &Element->Min,
-        CSz("v3 Min"),
+        CSz("Min"),
         Params
         );
 
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, aabb *Element, cs Name, ui_re
       DoEditorUi(Ui,
         Window,
 &Element->Max,
-        CSz("v3 Max"),
+        CSz("Max"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

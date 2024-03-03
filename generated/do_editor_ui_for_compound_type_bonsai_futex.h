@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->SignalValue,
-        CSz("u32 SignalValue"),
+        CSz("SignalValue"),
         Params
         );
 
@@ -27,7 +27,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->ThreadsWaiting,
-        CSz("u32 ThreadsWaiting"),
+        CSz("ThreadsWaiting"),
         Params
         );
 
@@ -40,8 +40,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
       DoEditorUi(Ui,
         Window,
         Cast(b8*,&Element->Initialized),
-        CSz("b32 Initialized"),
-        Params
+        CSz("Initialized"),
+        &DefaultUiRenderParams_Checkbox
         );
 
 

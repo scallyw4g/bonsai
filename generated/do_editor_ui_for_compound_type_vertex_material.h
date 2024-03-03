@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->Color,
-        CSz("v3 Color"),
+        CSz("Color"),
         Params
         );
 
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->Transparency,
-        CSz("f32 Transparency"),
+        CSz("Transparency"),
         Params
         );
 
@@ -39,7 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->Emission,
-        CSz("f32 Emission"),
+        CSz("Emission"),
         Params
         );
 

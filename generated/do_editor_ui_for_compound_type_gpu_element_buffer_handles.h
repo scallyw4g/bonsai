@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
       DoEditorUi(Ui,
         Window,
 &Element->VertexHandle,
-        CSz("u32 VertexHandle"),
+        CSz("VertexHandle"),
         Params
         );
 
@@ -27,7 +27,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
       DoEditorUi(Ui,
         Window,
 &Element->NormalHandle,
-        CSz("u32 NormalHandle"),
+        CSz("NormalHandle"),
         Params
         );
 
@@ -40,7 +40,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
       DoEditorUi(Ui,
         Window,
 &Element->MatHandle,
-        CSz("u32 MatHandle"),
+        CSz("MatHandle"),
         Params
         );
 
@@ -53,7 +53,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
       DoEditorUi(Ui,
         Window,
 &Element->ElementCount,
-        CSz("u32 ElementCount"),
+        CSz("ElementCount"),
         Params
         );
 

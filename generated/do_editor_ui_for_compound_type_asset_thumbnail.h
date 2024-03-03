@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->Texture,
-        CSz("texture Texture"),
+        CSz("Texture"),
         Params
         );
 
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->Camera,
-        CSz("camera Camera"),
+        CSz("Camera"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

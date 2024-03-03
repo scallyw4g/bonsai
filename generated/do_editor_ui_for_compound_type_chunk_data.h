@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name,
       DoEditorUi(Ui,
         Window,
 &Element->Flags,
-        CSz("chunk_flag Flags"),
+        CSz("Flags"),
         Params
         );
 
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name,
       DoEditorUi(Ui,
         Window,
 &Element->Dim,
-        CSz("v3i Dim"),
+        CSz("Dim"),
         Params
         );
 
@@ -38,7 +38,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name,
       DoEditorUi(Ui,
         Window,
         Element->Voxels,
-        CSz("voxel Voxels"),
+        CSz("Voxels"),
         Params
         );
 
@@ -50,7 +50,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name,
       DoEditorUi(Ui,
         Window,
         Element->VoxelLighting,
-        CSz("voxel_lighting VoxelLighting"),
+        CSz("VoxelLighting"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
 &Element->P,
-        CSz("v3 P"),
+        CSz("P"),
         Params
         );
 
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
 &Element->Normal,
-        CSz("v3 Normal"),
+        CSz("Normal"),
         Params
         );
 
@@ -38,7 +38,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
 &Element->d,
-        CSz("r32 d"),
+        CSz("d"),
         Params
         );
 

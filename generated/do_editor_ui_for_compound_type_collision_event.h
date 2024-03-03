@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_event *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->FrameIndex,
-        CSz("u32 FrameIndex"),
+        CSz("FrameIndex"),
         Params
         );
 
@@ -27,7 +27,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_event *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->Count,
-        CSz("u32 Count"),
+        CSz("Count"),
         Params
         );
 
@@ -40,7 +40,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_event *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->MinP,
-        CSz("cp MinP"),
+        CSz("MinP"),
         Params
         );
 
@@ -52,7 +52,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_event *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->MaxP,
-        CSz("cp MaxP"),
+        CSz("MaxP"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

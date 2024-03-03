@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       DoEditorUi(Ui,
         Window,
         Element->Memory,
-        CSz("memory_arena Memory"),
+        CSz("Memory"),
         Params
         );
 
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->NoiseSelection,
-        CSz("noise_selector NoiseSelection"),
+        CSz("NoiseSelection"),
         Params
         );
 
@@ -38,7 +38,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->NoisePreviewThumbnail,
-        CSz("asset_thumbnail NoisePreviewThumbnail"),
+        CSz("NoisePreviewThumbnail"),
         Params
         );
 
@@ -50,7 +50,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->EngineDebugViewModeToggleBits,
-        CSz("u64 EngineDebugViewModeToggleBits"),
+        CSz("EngineDebugViewModeToggleBits"),
         Params
         );
 
@@ -63,7 +63,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->SelectedColorIndex,
-        CSz("u16 SelectedColorIndex"),
+        CSz("SelectedColorIndex"),
         Params
         );
 
@@ -76,7 +76,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->HoverColorIndex,
-        CSz("u16 HoverColorIndex"),
+        CSz("HoverColorIndex"),
         Params
         );
 
@@ -89,7 +89,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->SelectionClicks,
-        CSz("u32 SelectionClicks"),
+        CSz("SelectionClicks"),
         Params
         );
 
@@ -102,7 +102,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->SelectionBase,
-        CSz("cp SelectionBase"),
+        CSz("SelectionBase"),
         Params
         );
 
@@ -114,7 +114,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->SelectionRegion,
-        CSz("rect3cp SelectionRegion"),
+        CSz("SelectionRegion"),
         Params
         );
 
@@ -126,7 +126,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->CopyRegion,
-        CSz("rect3cp CopyRegion"),
+        CSz("CopyRegion"),
         Params
         );
 
@@ -138,7 +138,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->Selection,
-        CSz("selection_modification_state Selection"),
+        CSz("Selection"),
         Params
         );
 
@@ -150,7 +150,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->Entity,
-        CSz("selection_modification_state Entity"),
+        CSz("Entity"),
         Params
         );
 
@@ -162,7 +162,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->AssetThumbnails,
-        CSz("asset_thumbnail_block_array AssetThumbnails"),
+        CSz("AssetThumbnails"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

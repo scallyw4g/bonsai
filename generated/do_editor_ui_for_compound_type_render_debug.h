@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->BytesSolidGeoLastFrame,
-        CSz("u32 BytesSolidGeoLastFrame"),
+        CSz("BytesSolidGeoLastFrame"),
         Params
         );
 
@@ -27,7 +27,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->BytesTransGeoLastFrame,
-        CSz("u32 BytesTransGeoLastFrame"),
+        CSz("BytesTransGeoLastFrame"),
         Params
         );
 
@@ -40,7 +40,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->DrawCallsLastFrame,
-        CSz("u32 DrawCallsLastFrame"),
+        CSz("DrawCallsLastFrame"),
         Params
         );
 

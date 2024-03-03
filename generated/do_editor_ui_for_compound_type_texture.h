@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
       DoEditorUi(Ui,
         Window,
 &Element->ID,
-        CSz("u32 ID"),
+        CSz("ID"),
         Params
         );
 
@@ -27,7 +27,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
       DoEditorUi(Ui,
         Window,
 &Element->Dim,
-        CSz("v2i Dim"),
+        CSz("Dim"),
         Params
         );
 
@@ -39,7 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
       DoEditorUi(Ui,
         Window,
 &Element->Slices,
-        CSz("u32 Slices"),
+        CSz("Slices"),
         Params
         );
 
@@ -52,7 +52,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
       DoEditorUi(Ui,
         Window,
 &Element->Channels,
-        CSz("u32 Channels"),
+        CSz("Channels"),
         Params
         );
 
@@ -65,8 +65,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
       DoEditorUi(Ui,
         Window,
         Cast(b8*,&Element->IsDepthTexture),
-        CSz("b32 IsDepthTexture"),
-        Params
+        CSz("IsDepthTexture"),
+        &DefaultUiRenderParams_Checkbox
         );
 
 
@@ -78,7 +78,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
       DoEditorUi(Ui,
         Window,
 &Element->DebugName,
-        CSz("cs DebugName"),
+        CSz("DebugName"),
         Params
         );
 

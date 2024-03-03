@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_id *Element, cs Name, u
       DoEditorUi(Ui,
         Window,
 &Element->Index,
-        CSz("u16 Index"),
+        CSz("Index"),
         Params
         );
 
@@ -27,7 +27,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_id *Element, cs Name, u
       DoEditorUi(Ui,
         Window,
 &Element->FileNode,
-        CSz("file_traversal_node FileNode"),
+        CSz("FileNode"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, 
       DoEditorUi(Ui,
         Window,
 &Element->MeshMask,
-        CSz("u32 MeshMask"),
+        CSz("MeshMask"),
         Params
         );
 
@@ -24,13 +24,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, 
 
       PushNewRow(Ui);
 
-      if (ToggleButton(Ui, CSz("v gpu_element_buffer_handles GpuBufferHandles[MeshIndex_Count]"), CSz("> gpu_element_buffer_handles GpuBufferHandles[MeshIndex_Count]"), UiId(Window, "toggle lod_element_buffer gpu_element_buffer_handles GpuBufferHandles", Element->GpuBufferHandles), Params ))
+      if (ToggleButton(Ui, CSz("v GpuBufferHandles[MeshIndex_Count]"), CSz("> GpuBufferHandles[MeshIndex_Count]"), UiId(Window, "toggle lod_element_buffer gpu_element_buffer_handles GpuBufferHandles", Element->GpuBufferHandles), Params ))
       {
         PushForceUpdateBasis(Ui, V2(20.f, 0.f));
         PushNewRow(Ui);
         RangeIterator(ArrayIndex, MeshIndex_Count)
         {
-          DoEditorUi(Ui, Window, Element->GpuBufferHandles+ArrayIndex, FSz("gpu_element_buffer_handles GpuBufferHandles[%d]", ArrayIndex), Params);
+          DoEditorUi(Ui, Window, Element->GpuBufferHandles+ArrayIndex, FSz("GpuBufferHandles[%d]", ArrayIndex), Params);
           
         }
         PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
@@ -40,13 +40,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, 
 
 
       
-      if (ToggleButton(Ui, CSz("v geo_u3d_ptr E[MeshIndex_Count]"), CSz("> geo_u3d_ptr E[MeshIndex_Count]"), UiId(Window, "toggle lod_element_buffer geo_u3d_ptr E", Element->E), Params ))
+      if (ToggleButton(Ui, CSz("v E[MeshIndex_Count]"), CSz("> E[MeshIndex_Count]"), UiId(Window, "toggle lod_element_buffer geo_u3d_ptr E", Element->E), Params ))
       {
         PushForceUpdateBasis(Ui, V2(20.f, 0.f));
         PushNewRow(Ui);
         RangeIterator(ArrayIndex, MeshIndex_Count)
         {
-          DoEditorUi(Ui, Window, Element->E+ArrayIndex, FSz("geo_u3d_ptr E[%d]", ArrayIndex), Params);
+          DoEditorUi(Ui, Window, Element->E+ArrayIndex, FSz("E[%d]", ArrayIndex), Params);
           
         }
         PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
@@ -56,13 +56,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, 
 
 
       
-      if (ToggleButton(Ui, CSz("v bonsai_futex Locks[MeshIndex_Count]"), CSz("> bonsai_futex Locks[MeshIndex_Count]"), UiId(Window, "toggle lod_element_buffer bonsai_futex Locks", Element->Locks), Params ))
+      if (ToggleButton(Ui, CSz("v Locks[MeshIndex_Count]"), CSz("> Locks[MeshIndex_Count]"), UiId(Window, "toggle lod_element_buffer bonsai_futex Locks", Element->Locks), Params ))
       {
         PushForceUpdateBasis(Ui, V2(20.f, 0.f));
         PushNewRow(Ui);
         RangeIterator(ArrayIndex, MeshIndex_Count)
         {
-          DoEditorUi(Ui, Window, Element->Locks+ArrayIndex, FSz("bonsai_futex Locks[%d]", ArrayIndex), Params);
+          DoEditorUi(Ui, Window, Element->Locks+ArrayIndex, FSz("Locks[%d]", ArrayIndex), Params);
           
         }
         PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

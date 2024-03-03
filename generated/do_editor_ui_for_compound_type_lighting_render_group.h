@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
       DoEditorUi(Ui,
         Window,
 &Element->Lights,
-        CSz("game_lights Lights"),
+        CSz("Lights"),
         Params
         );
 
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
       DoEditorUi(Ui,
         Window,
 &Element->FBO,
-        CSz("framebuffer FBO"),
+        CSz("FBO"),
         Params
         );
 
@@ -38,7 +38,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
       DoEditorUi(Ui,
         Window,
 &Element->BloomTextureFBO,
-        CSz("framebuffer BloomTextureFBO"),
+        CSz("BloomTextureFBO"),
         Params
         );
 
@@ -50,7 +50,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
       DoEditorUi(Ui,
         Window,
 &Element->LightingTex,
-        CSz("texture LightingTex"),
+        CSz("LightingTex"),
         Params
         );
 
@@ -62,7 +62,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
       DoEditorUi(Ui,
         Window,
 &Element->BloomTex,
-        CSz("texture BloomTex"),
+        CSz("BloomTex"),
         Params
         );
 
@@ -74,7 +74,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
       DoEditorUi(Ui,
         Window,
 &Element->Shader,
-        CSz("shader Shader"),
+        CSz("Shader"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, ui
       DoEditorUi(Ui,
         Window,
 &Element->Velocity,
-        CSz("v3 Velocity"),
+        CSz("Velocity"),
         Params
         );
 
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, ui
       DoEditorUi(Ui,
         Window,
 &Element->Force,
-        CSz("v3 Force"),
+        CSz("Force"),
         Params
         );
 
@@ -38,7 +38,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, ui
       DoEditorUi(Ui,
         Window,
 &Element->Delta,
-        CSz("v3 Delta"),
+        CSz("Delta"),
         Params
         );
 
@@ -50,7 +50,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, ui
       DoEditorUi(Ui,
         Window,
 &Element->Mass,
-        CSz("r32 Mass"),
+        CSz("Mass"),
         Params
         );
 
@@ -63,7 +63,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, ui
       DoEditorUi(Ui,
         Window,
 &Element->Speed,
-        CSz("r32 Speed"),
+        CSz("Speed"),
         Params
         );
 

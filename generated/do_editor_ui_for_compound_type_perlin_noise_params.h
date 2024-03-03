@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
       DoEditorUi(Ui,
         Window,
 &Element->Threshold,
-        CSz("r32 Threshold"),
+        CSz("Threshold"),
         Params
         );
 
@@ -27,7 +27,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
       DoEditorUi(Ui,
         Window,
 &Element->Period,
-        CSz("r32 Period"),
+        CSz("Period"),
         Params
         );
 
@@ -40,7 +40,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
       DoEditorUi(Ui,
         Window,
 &Element->Amplitude,
-        CSz("r32 Amplitude"),
+        CSz("Amplitude"),
         Params
         );
 

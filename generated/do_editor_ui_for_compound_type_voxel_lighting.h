@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_lighting *Element, cs N
       DoEditorUi(Ui,
         Window,
 &Element->Emission,
-        CSz("u8 Emission"),
+        CSz("Emission"),
         Params
         );
 

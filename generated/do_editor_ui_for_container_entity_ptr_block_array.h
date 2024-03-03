@@ -20,6 +20,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_ptr_block_array *Conta
   {
     PushColumn(Ui, FSz("%S", Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushNewRow(Ui);
   }
 }
 

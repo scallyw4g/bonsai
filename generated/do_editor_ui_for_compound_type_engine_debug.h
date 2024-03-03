@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       DoEditorUi(Ui,
         Window,
         Element->Memory,
-        CSz("memory_arena Memory"),
+        CSz("Memory"),
         Params
         );
 
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->PickedChunks,
-        CSz("picked_world_chunk_static_buffer PickedChunks"),
+        CSz("PickedChunks"),
         Params
         );
 
@@ -38,7 +38,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->Textures,
-        CSz("texture_ptr_block_array Textures"),
+        CSz("Textures"),
         Params
         );
 
@@ -50,7 +50,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->UiDebug,
-        CSz("ui_debug UiDebug"),
+        CSz("UiDebug"),
         Params
         );
 
@@ -62,7 +62,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->Render,
-        CSz("render_debug Render"),
+        CSz("Render"),
         Params
         );
 
@@ -74,7 +74,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->DrawEntityCollisionVolumes,
-        CSz("b8 DrawEntityCollisionVolumes"),
+        CSz("DrawEntityCollisionVolumes"),
         Params
         );
 
@@ -87,7 +87,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->DrawWorldAxies,
-        CSz("b8 DrawWorldAxies"),
+        CSz("DrawWorldAxies"),
         Params
         );
 
@@ -100,7 +100,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->TriggerRuntimeBreak,
-        CSz("b8 TriggerRuntimeBreak"),
+        CSz("TriggerRuntimeBreak"),
         Params
         );
 
@@ -113,7 +113,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->ResetAssetNodeView,
-        CSz("b8 ResetAssetNodeView"),
+        CSz("ResetAssetNodeView"),
         Params
         );
 
@@ -126,7 +126,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->PickedChunkState,
-        CSz("u8 PickedChunkState"),
+        CSz("PickedChunkState"),
         Params
         );
 
@@ -139,7 +139,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       DoEditorUi(Ui,
         Window,
         Element->PickedChunk,
-        CSz("world_chunk PickedChunk"),
+        CSz("PickedChunk"),
         Params
         );
 
@@ -151,7 +151,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->AssetWindowViewMode,
-        CSz("asset_window_view_mode AssetWindowViewMode"),
+        CSz("AssetWindowViewMode"),
         Params
         );
 
@@ -163,7 +163,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->SelectedAsset,
-        CSz("asset_id SelectedAsset"),
+        CSz("SelectedAsset"),
         Params
         );
 
@@ -175,7 +175,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->ModelIndex,
-        CSz("u64 ModelIndex"),
+        CSz("ModelIndex"),
         Params
         );
 
@@ -188,7 +188,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->SelectedEntity,
-        CSz("entity_id SelectedEntity"),
+        CSz("SelectedEntity"),
         Params
         );
 
@@ -200,7 +200,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->WorldEditDebugMesh,
-        CSz("untextured_3d_geometry_buffer WorldEditDebugMesh"),
+        CSz("WorldEditDebugMesh"),
         Params
         );
 
@@ -212,7 +212,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       DoEditorUi(Ui,
         Window,
 &Element->WorldEditDebugThumb,
-        CSz("asset_thumbnail WorldEditDebugThumb"),
+        CSz("WorldEditDebugThumb"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

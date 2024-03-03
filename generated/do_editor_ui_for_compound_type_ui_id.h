@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
 &Element->_Reserved,
-        CSz("u32 _Reserved"),
+        CSz("_Reserved"),
         Params
         );
 
@@ -27,7 +27,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
 &Element->WindowBits,
-        CSz("u32 WindowBits"),
+        CSz("WindowBits"),
         Params
         );
 
@@ -40,7 +40,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
 &Element->InteractionBits,
-        CSz("u32 InteractionBits"),
+        CSz("InteractionBits"),
         Params
         );
 
@@ -53,7 +53,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
 &Element->ElementBits,
-        CSz("u32 ElementBits"),
+        CSz("ElementBits"),
         Params
         );
 

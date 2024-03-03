@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
       DoEditorUi(Ui,
         Window,
 &Element->ID,
-        CSz("u32 ID"),
+        CSz("ID"),
         Params
         );
 
@@ -27,7 +27,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
       DoEditorUi(Ui,
         Window,
         Element->FirstUniform,
-        CSz("shader_uniform FirstUniform"),
+        CSz("FirstUniform"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

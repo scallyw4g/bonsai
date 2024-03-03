@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vox_data *Element, cs Name, u
       DoEditorUi(Ui,
         Window,
         Element->ChunkData,
-        CSz("chunk_data ChunkData"),
+        CSz("ChunkData"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

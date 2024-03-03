@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
       DoEditorUi(Ui,
         Window,
 &Element->Resolution,
-        CSz("resolution_setting Resolution"),
+        CSz("Resolution"),
         Params
         );
 
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
       DoEditorUi(Ui,
         Window,
 &Element->ShadowQuality,
-        CSz("shadow_quality_setting ShadowQuality"),
+        CSz("ShadowQuality"),
         Params
         );
 
@@ -38,7 +38,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
       DoEditorUi(Ui,
         Window,
 &Element->LightingQuality,
-        CSz("lighting_quality_setting LightingQuality"),
+        CSz("LightingQuality"),
         Params
         );
 
@@ -50,7 +50,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
       DoEditorUi(Ui,
         Window,
 &Element->ShaderLanguage,
-        CSz("shader_language_setting ShaderLanguage"),
+        CSz("ShaderLanguage"),
         Params
         );
 
@@ -62,7 +62,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
       DoEditorUi(Ui,
         Window,
 &Element->WindowStartingSize,
-        CSz("resolution_setting WindowStartingSize"),
+        CSz("WindowStartingSize"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

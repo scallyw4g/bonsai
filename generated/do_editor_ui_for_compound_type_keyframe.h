@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
       DoEditorUi(Ui,
         Window,
 &Element->tEnd,
-        CSz("r32 tEnd"),
+        CSz("tEnd"),
         Params
         );
 
@@ -27,7 +27,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
       DoEditorUi(Ui,
         Window,
 &Element->Value,
-        CSz("r32 Value"),
+        CSz("Value"),
         Params
         );
 

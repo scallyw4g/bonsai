@@ -49,9 +49,9 @@ GetUiDebug()
 link_internal void
 DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min, r32 Max, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
-  u32 Start = StartColumn(Ui, Params);
+  u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Generic);
     PushTableStart(Ui);
-      if (Name) { PushColumn(Ui, CS(Name), Params); }
+      if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
 
       auto Range = Max-Min;
       r32 PercFilled = ((*Value)-Min)/Range;
@@ -86,9 +86,9 @@ DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
-  if (Name) { PushColumn(Ui, Name, Params); }
+  if (Name) { PushColumn(Ui, Name, &DefaultUiRenderParams_Blank); }
 
-  u32 Start = StartColumn(Ui);
+  u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
       if (Value)
       {
@@ -105,27 +105,27 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, ui_rende
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Checkbox)
 {
   UNPACK_UI_RENDER_PARAMS(Params);
 
   interactable_handle ButtonHandle = PushButtonStart(Ui, UiId(Window, "toggle", Value), Style);
 
-    PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Generic);
 
     if (Value)
     {
       if (*Value)
       {
-        PushUntexturedQuad(Ui, V2(2.f, 2.f), V2(Params->Style->Font.Size.y)-4.f, zDepth_Border, &Global_DefaultCheckboxForeground, Padding, QuadRenderParam_NoAdvance );
+        PushUntexturedQuad(Ui, V2(2.f, 2.f), V2(Params->Style->Font.Size.y)-4.f, zDepth_Border, &Global_DefaultCheckboxForeground, DefaultCheckboxPadding, QuadRenderParam_NoAdvance );
       }
     }
     else
     {
-      PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      PushColumn(Ui, CSz("(null)"), Params);
     }
 
-    PushUntexturedQuad(Ui, {}, V2(Params->Style->Font.Size.y), zDepth_Text, &Global_DefaultCheckboxBackground, Padding, QuadRenderParam_Default );
+    PushUntexturedQuad(Ui, {}, V2(Params->Style->Font.Size.y), zDepth_Text, &Global_DefaultCheckboxBackground, DefaultCheckboxPadding, QuadRenderParam_Default );
 
 
 

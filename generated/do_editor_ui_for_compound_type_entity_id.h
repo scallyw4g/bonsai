@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_id *Element, cs Name, 
       DoEditorUi(Ui,
         Window,
 &Element->Index,
-        CSz("u32 Index"),
+        CSz("Index"),
         Params
         );
 
@@ -27,7 +27,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_id *Element, cs Name, 
       DoEditorUi(Ui,
         Window,
 &Element->Generation,
-        CSz("u32 Generation"),
+        CSz("Generation"),
         Params
         );
 

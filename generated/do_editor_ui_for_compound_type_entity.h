@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
       DoEditorUi(Ui,
         Window,
 &Element->Id,
-        CSz("entity_id Id"),
+        CSz("Id"),
         Params
         );
 
@@ -32,7 +32,7 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
       DoEditorUi(Ui,
         Window,
 &Element->EulerAngles,
-        CSz("v3 EulerAngles"),
+        CSz("EulerAngles"),
         Params
 ,-PI32, PI32 );
 
@@ -44,7 +44,7 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
       DoEditorUi(Ui,
         Window,
 &Element->Scale,
-        CSz("r32 Scale"),
+        CSz("Scale"),
         Params
         );
 
@@ -57,7 +57,7 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
       DoEditorUi(Ui,
         Window,
 &Element->_CollisionVolumeRadius,
-        CSz("v3 _CollisionVolumeRadius"),
+        CSz("_CollisionVolumeRadius"),
         Params
         );
 
@@ -69,7 +69,7 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
       DoEditorUi(Ui,
         Window,
 &Element->Physics,
-        CSz("physics Physics"),
+        CSz("Physics"),
         Params
         );
 
@@ -81,7 +81,7 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
       DoEditorUi(Ui,
         Window,
 &Element->AssetId,
-        CSz("asset_id AssetId"),
+        CSz("AssetId"),
         Params
         );
 
@@ -93,7 +93,7 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
       DoEditorUi(Ui,
         Window,
 &Element->ModelIndex,
-        CSz("u64 ModelIndex"),
+        CSz("ModelIndex"),
         Params
         );
 
@@ -106,7 +106,7 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
       DoEditorUi(Ui,
         Window,
 &Element->LastResolvedCollision,
-        CSz("collision_event LastResolvedCollision"),
+        CSz("LastResolvedCollision"),
         Params
         );
 
@@ -118,7 +118,7 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
       DoEditorUi(Ui,
         Window,
 &Element->LastResolvedPosInfo,
-        CSz("entity_position_info LastResolvedPosInfo"),
+        CSz("LastResolvedPosInfo"),
         Params
         );
 
@@ -130,7 +130,7 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
       DoEditorUi(Ui,
         Window,
         Element->Emitter,
-        CSz("particle_system Emitter"),
+        CSz("Emitter"),
         Params
         );
 
@@ -142,7 +142,7 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
       DoEditorUi(Ui,
         Window,
 &Element->State,
-        CSz("entity_state State"),
+        CSz("State"),
         Params
         );
 
@@ -154,7 +154,7 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
       DoEditorUi(Ui,
         Window,
 &Element->Behavior,
-        CSz("entity_behavior_flags Behavior"),
+        CSz("Behavior"),
         Params
         );
 
@@ -166,7 +166,7 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
       DoEditorUi(Ui,
         Window,
 &Element->Carrying,
-        CSz("entity_id Carrying"),
+        CSz("Carrying"),
         Params
         );
 

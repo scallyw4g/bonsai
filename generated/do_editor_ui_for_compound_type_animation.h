@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
       DoEditorUi(Ui,
         Window,
 &Element->t,
-        CSz("r32 t"),
+        CSz("t"),
         Params
         );
 
@@ -27,7 +27,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
       DoEditorUi(Ui,
         Window,
 &Element->tEnd,
-        CSz("r32 tEnd"),
+        CSz("tEnd"),
         Params
         );
 
@@ -40,7 +40,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
       DoEditorUi(Ui,
         Window,
 &Element->xKeyframeCount,
-        CSz("u32 xKeyframeCount"),
+        CSz("xKeyframeCount"),
         Params
         );
 
@@ -53,7 +53,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
       DoEditorUi(Ui,
         Window,
         Element->xKeyframes,
-        CSz("keyframe xKeyframes"),
+        CSz("xKeyframes"),
         Params
         );
 
@@ -65,7 +65,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
       DoEditorUi(Ui,
         Window,
 &Element->yKeyframeCount,
-        CSz("u32 yKeyframeCount"),
+        CSz("yKeyframeCount"),
         Params
         );
 
@@ -78,7 +78,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
       DoEditorUi(Ui,
         Window,
         Element->yKeyframes,
-        CSz("keyframe yKeyframes"),
+        CSz("yKeyframes"),
         Params
         );
 
@@ -90,7 +90,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
       DoEditorUi(Ui,
         Window,
 &Element->zKeyframeCount,
-        CSz("u32 zKeyframeCount"),
+        CSz("zKeyframeCount"),
         Params
         );
 
@@ -103,7 +103,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
       DoEditorUi(Ui,
         Window,
         Element->zKeyframes,
-        CSz("keyframe zKeyframes"),
+        CSz("zKeyframes"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, random_series *Element, cs Na
       DoEditorUi(Ui,
         Window,
 &Element->Seed,
-        CSz("u64 Seed"),
+        CSz("Seed"),
         Params
         );
 

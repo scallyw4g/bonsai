@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element,
       DoEditorUi(Ui,
         Window,
 &Element->Type,
-        CSz("file_traversal_type Type"),
+        CSz("Type"),
         Params
         );
 
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element,
       DoEditorUi(Ui,
         Window,
 &Element->Dir,
-        CSz("cs Dir"),
+        CSz("Dir"),
         Params
         );
 
@@ -39,7 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element,
       DoEditorUi(Ui,
         Window,
 &Element->Name,
-        CSz("cs Name"),
+        CSz("Name"),
         Params
         );
 

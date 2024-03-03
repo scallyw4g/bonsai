@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
       DoEditorUi(Ui,
         Window,
 &Element->Threshold,
-        CSz("r32 Threshold"),
+        CSz("Threshold"),
         Params
         );
 
@@ -27,7 +27,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
       DoEditorUi(Ui,
         Window,
 &Element->Period,
-        CSz("r32 Period"),
+        CSz("Period"),
         Params
         );
 
@@ -40,7 +40,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
       DoEditorUi(Ui,
         Window,
 &Element->Squareness,
-        CSz("r32 Squareness"),
+        CSz("Squareness"),
         Params
         );
 
@@ -53,7 +53,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
       DoEditorUi(Ui,
         Window,
 &Element->MaskChance,
-        CSz("r32 MaskChance"),
+        CSz("MaskChance"),
         Params
         );
 

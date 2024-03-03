@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, 
       DoEditorUi(Ui,
         Window,
 &Element->Id,
-        CSz("ui_id Id"),
+        CSz("Id"),
         Params
         );
 
@@ -26,8 +26,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, 
       DoEditorUi(Ui,
         Window,
         Cast(b8*,&Element->ToggledOn),
-        CSz("b32 ToggledOn"),
-        Params
+        CSz("ToggledOn"),
+        &DefaultUiRenderParams_Checkbox
         );
 
 

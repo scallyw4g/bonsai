@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
       DoEditorUi(Ui,
         Window,
 &Element->SolidUIVertexBuffer,
-        CSz("u32 SolidUIVertexBuffer"),
+        CSz("SolidUIVertexBuffer"),
         Params
         );
 
@@ -27,7 +27,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
       DoEditorUi(Ui,
         Window,
 &Element->SolidUIColorBuffer,
-        CSz("u32 SolidUIColorBuffer"),
+        CSz("SolidUIColorBuffer"),
         Params
         );
 
@@ -40,7 +40,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
       DoEditorUi(Ui,
         Window,
 &Element->SolidUIUVBuffer,
-        CSz("u32 SolidUIUVBuffer"),
+        CSz("SolidUIUVBuffer"),
         Params
         );
 
@@ -53,7 +53,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
       DoEditorUi(Ui,
         Window,
 &Element->DebugTextureArray,
-        CSz("texture DebugTextureArray"),
+        CSz("DebugTextureArray"),
         Params
         );
 
@@ -65,7 +65,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
       DoEditorUi(Ui,
         Window,
 &Element->TextTextureUniform,
-        CSz("s32 TextTextureUniform"),
+        CSz("TextTextureUniform"),
         Params
         );
 
@@ -78,7 +78,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
       DoEditorUi(Ui,
         Window,
 &Element->Text2DShader,
-        CSz("shader Text2DShader"),
+        CSz("Text2DShader"),
         Params
         );
 
@@ -90,7 +90,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
       DoEditorUi(Ui,
         Window,
 &Element->SolidUIShader,
-        CSz("shader SolidUIShader"),
+        CSz("SolidUIShader"),
         Params
         );
 
@@ -102,7 +102,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
       DoEditorUi(Ui,
         Window,
 &Element->Geo,
-        CSz("textured_2d_geometry_buffer Geo"),
+        CSz("Geo"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

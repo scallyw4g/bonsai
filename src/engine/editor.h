@@ -125,20 +125,20 @@ poof(
     type_list.map(type)
     {
       link_internal void
-      DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+      DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
       {
         type.member(0, (E) 
         {
           /* PushTableStart(Ui); */
-            if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+            if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
 
             if (Value)
             {
-              u32 Start = StartColumn(Ui, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+              u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
                 PushTableStart(Ui);
                   E.map_array(e_index)
                   {
-                    DoEditorUi(Ui, Window, &Value->(E.name)[e_index], {}, EDITOR_UI_FUNCTION_INSTANCE_NAMES, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+                    DoEditorUi(Ui, Window, &Value->(E.name)[e_index], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
                   }
                 PushTableEnd(Ui);
                 /* PushNewRow(Ui); */
@@ -160,13 +160,13 @@ poof(
       link_internal void
       DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
       {
-        Params = Params ? Params : &DefaultUiRenderParams_Column;
+        Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
-        if (Name) { PushColumn(Ui, Name, Params); }
+        if (Name) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
 
         if (Value)
         {
-          u32 Start = StartColumn(Ui, Params);
+          u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
             PushTableStart(Ui);
               if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; }
                   PushColumn(Ui, CS(*Value), &DefaultUiRenderParams_Generic);
@@ -214,13 +214,13 @@ poof(
               {
                 member.is_array?
                 {
-                  if (ToggleButton(Ui, CSz("v member.type member.name[member.array]"), CSz("> member.type member.name[member.array]"), UiId(Window, "toggle type.name member.type member.name", Element->(member.name)), Params ))
+                  if (ToggleButton(Ui, CSz("v member.name[member.array]"), CSz("> member.name[member.array]"), UiId(Window, "toggle type.name member.type member.name", Element->(member.name)), Params ))
                   {
                     PushForceUpdateBasis(Ui, V2(20.f, 0.f));
                       PushNewRow(Ui);
                       RangeIterator(ArrayIndex, member.array)
                       {
-                        DoEditorUi(Ui, Window, Element->(member.name)+ArrayIndex, FSz("member.type member.name[%d]", ArrayIndex), Params);
+                        DoEditorUi(Ui, Window, Element->(member.name)+ArrayIndex, FSz("member.name[%d]", ArrayIndex), Params);
                         member.is_primitive?  { PushNewRow(Ui); }
                       }
                     PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
@@ -238,15 +238,15 @@ poof(
                       DoEditorUi(Ui,
                                  Window,
                                  Cast(b8*, member.is_pointer?{}{&}Element->(member.name)),
-                                 CSz("member.type member.name"),
-                                 Params
+                                 CSz("member.name"),
+                                 &DefaultUiRenderParams_Checkbox
                                  member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
                     }
                     {
                       DoEditorUi(Ui,
                                  Window,
                                  member.is_pointer?{}{&}Element->(member.name),
-                                 CSz("member.type member.name"),
+                                 CSz("member.name"),
                                  Params
                                  member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
                     }
@@ -283,28 +283,35 @@ poof(
   func do_editor_ui_for_enum(enum_t)
   {
     link_internal void
-    DoEditorUi(renderer_2d *Ui, window_layout *Window, enum_t.name *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+    DoEditorUi(renderer_2d *Ui, window_layout *Window, enum_t.name *Element, cs Name, ui_render_params *Params)
     {
-      if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+      if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
       cs ElementName = ToString(*Element);
-      if (ToggleButton(Ui, ElementName, ElementName, UiId(Window, "enum value.type value.name", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+      if (ToggleButton(Ui, ElementName, ElementName, UiId(Window, "enum value.type value.name", Element), Params))
       {
         PushNewRow(Ui);
         enum_t.map(value)
         {
-          PushColumn(Ui, CSz("")); // Skip the first Name column
-          if (Button(Ui, CSz("value.name"), UiId(Window, "enum value.name", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+          PushColumn(Ui, CSz("|")); // Skip the first Name column
+          if (Button(Ui, CSz("value.name.strip_all_prefix"), UiId(Window, "enum value.name", Element), Params))
           {
             enum_t.has_tag(bitfield)?
             {
-              if ((*Element & value.name) == value.name)
+              if ((value.name) == enum_t.name(0))
               {
-                *Element = enum_t.name(*Element&~value.name);
+                *Element = enum_t.name(0);
               }
               else
               {
-                *Element = enum_t.name(*Element|value.name);
+                if ((*Element & value.name) == value.name)
+                {
+                  *Element = enum_t.name(*Element&~value.name);
+                }
+                else
+                {
+                  *Element = enum_t.name(*Element|value.name);
+                }
               }
             }
             {
@@ -345,6 +352,7 @@ poof(
       {
         PushColumn(Ui, FSz("%S", Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
         PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+        PushNewRow(Ui);
       }
     }
   }
@@ -367,10 +375,10 @@ poof(
 
                 EDITOR_UI_FUNCTION_PROTO_DEFAULTS )
     {
-        if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); PushNewRow(Ui); }
-        ui_toggle_button_group RadioGroup = RadioButtonGroup_(enum_t.name)(Ui, Window, "enum_t.name radio group");
-        GetRadioEnum(&RadioGroup, Element);
-        return RadioGroup;
+      if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); PushNewRow(Ui); }
+      ui_toggle_button_group RadioGroup = RadioButtonGroup_(enum_t.name)(Ui, Window, "enum_t.name radio group");
+      GetRadioEnum(&RadioGroup, Element);
+      return RadioGroup;
     }
   }
 )

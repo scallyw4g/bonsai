@@ -3,13 +3,13 @@
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, s64 *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
-  Params = Params ? Params : &DefaultUiRenderParams_Column;
+  Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
-  if (Name) { PushColumn(Ui, Name, Params); }
+  if (Name) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
 
   if (Value)
   {
-    u32 Start = StartColumn(Ui, Params);
+    u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; }
     PushColumn(Ui, CS(*Value), &DefaultUiRenderParams_Generic);
@@ -34,13 +34,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, volatile s64 *Value, cs Name,
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, u64 *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
-  Params = Params ? Params : &DefaultUiRenderParams_Column;
+  Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
-  if (Name) { PushColumn(Ui, Name, Params); }
+  if (Name) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
 
   if (Value)
   {
-    u32 Start = StartColumn(Ui, Params);
+    u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; }
     PushColumn(Ui, CS(*Value), &DefaultUiRenderParams_Generic);
@@ -65,13 +65,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, volatile u64 *Value, cs Name,
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, s32 *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
-  Params = Params ? Params : &DefaultUiRenderParams_Column;
+  Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
-  if (Name) { PushColumn(Ui, Name, Params); }
+  if (Name) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
 
   if (Value)
   {
-    u32 Start = StartColumn(Ui, Params);
+    u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; }
     PushColumn(Ui, CS(*Value), &DefaultUiRenderParams_Generic);
@@ -96,13 +96,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, volatile s32 *Value, cs Name,
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, u32 *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
-  Params = Params ? Params : &DefaultUiRenderParams_Column;
+  Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
-  if (Name) { PushColumn(Ui, Name, Params); }
+  if (Name) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
 
   if (Value)
   {
-    u32 Start = StartColumn(Ui, Params);
+    u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; }
     PushColumn(Ui, CS(*Value), &DefaultUiRenderParams_Generic);
@@ -127,13 +127,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, volatile u32 *Value, cs Name,
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, s16 *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
-  Params = Params ? Params : &DefaultUiRenderParams_Column;
+  Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
-  if (Name) { PushColumn(Ui, Name, Params); }
+  if (Name) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
 
   if (Value)
   {
-    u32 Start = StartColumn(Ui, Params);
+    u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; }
     PushColumn(Ui, CS(*Value), &DefaultUiRenderParams_Generic);
@@ -158,13 +158,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, volatile s16 *Value, cs Name,
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, u16 *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
-  Params = Params ? Params : &DefaultUiRenderParams_Column;
+  Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
-  if (Name) { PushColumn(Ui, Name, Params); }
+  if (Name) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
 
   if (Value)
   {
-    u32 Start = StartColumn(Ui, Params);
+    u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; }
     PushColumn(Ui, CS(*Value), &DefaultUiRenderParams_Generic);
@@ -189,13 +189,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, volatile u16 *Value, cs Name,
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, s8 *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
-  Params = Params ? Params : &DefaultUiRenderParams_Column;
+  Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
-  if (Name) { PushColumn(Ui, Name, Params); }
+  if (Name) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
 
   if (Value)
   {
-    u32 Start = StartColumn(Ui, Params);
+    u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; }
     PushColumn(Ui, CS(*Value), &DefaultUiRenderParams_Generic);
@@ -220,13 +220,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, volatile s8 *Value, cs Name, 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, u8 *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
-  Params = Params ? Params : &DefaultUiRenderParams_Column;
+  Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
-  if (Name) { PushColumn(Ui, Name, Params); }
+  if (Name) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
 
   if (Value)
   {
-    u32 Start = StartColumn(Ui, Params);
+    u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; }
     PushColumn(Ui, CS(*Value), &DefaultUiRenderParams_Generic);

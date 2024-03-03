@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
       DoEditorUi(Ui,
         Window,
 &Element->OutlineUiValues,
-        CSz("b8 OutlineUiValues"),
+        CSz("OutlineUiValues"),
         Params
         );
 
@@ -27,7 +27,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
       DoEditorUi(Ui,
         Window,
 &Element->OutlineUiButtons,
-        CSz("b8 OutlineUiButtons"),
+        CSz("OutlineUiButtons"),
         Params
         );
 
@@ -40,7 +40,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
       DoEditorUi(Ui,
         Window,
 &Element->OutlineUiTables,
-        CSz("b8 OutlineUiTables"),
+        CSz("OutlineUiTables"),
         Params
         );
 
@@ -53,7 +53,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
       DoEditorUi(Ui,
         Window,
 &Element->OutlineUiTableColumns,
-        CSz("b8 OutlineUiTableColumns"),
+        CSz("OutlineUiTableColumns"),
         Params
         );
 
@@ -66,7 +66,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
       DoEditorUi(Ui,
         Window,
 &Element->DebugBreakOnElementClick,
-        CSz("b8 DebugBreakOnElementClick"),
+        CSz("DebugBreakOnElementClick"),
         Params
         );
 
@@ -79,7 +79,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
       DoEditorUi(Ui,
         Window,
 &Element->DebugBreakUiCommand,
-        CSz("b8 DebugBreakUiCommand"),
+        CSz("DebugBreakUiCommand"),
         Params
         );
 

@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->Entropy,
-        CSz("random_series Entropy"),
+        CSz("Entropy"),
         Params
         );
 
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->SpawnType,
-        CSz("particle_spawn_type SpawnType"),
+        CSz("SpawnType"),
         Params
         );
 
@@ -38,7 +38,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->Drag,
-        CSz("r32 Drag"),
+        CSz("Drag"),
         Params
         );
 
@@ -51,7 +51,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->Lifetime,
-        CSz("r32 Lifetime"),
+        CSz("Lifetime"),
         Params
         );
 
@@ -64,7 +64,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->EmissionDelay,
-        CSz("r32 EmissionDelay"),
+        CSz("EmissionDelay"),
         Params
         );
 
@@ -77,7 +77,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->EmissionLifespan,
-        CSz("r32 EmissionLifespan"),
+        CSz("EmissionLifespan"),
         Params
         );
 
@@ -90,7 +90,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->ActiveParticles,
-        CSz("u32 ActiveParticles"),
+        CSz("ActiveParticles"),
         Params
         );
 
@@ -103,7 +103,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->LifespanMod,
-        CSz("r32 LifespanMod"),
+        CSz("LifespanMod"),
         Params
         );
 
@@ -116,7 +116,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->ParticleLifespan,
-        CSz("r32 ParticleLifespan"),
+        CSz("ParticleLifespan"),
         Params
         );
 
@@ -129,7 +129,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->ParticlesPerSecond,
-        CSz("r32 ParticlesPerSecond"),
+        CSz("ParticlesPerSecond"),
         Params
         );
 
@@ -142,7 +142,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->ParticleLightEmission,
-        CSz("r32 ParticleLightEmission"),
+        CSz("ParticleLightEmission"),
         Params
         );
 
@@ -155,7 +155,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->ParticleLightEmissionChance,
-        CSz("r32 ParticleLightEmissionChance"),
+        CSz("ParticleLightEmissionChance"),
         Params
         );
 
@@ -168,7 +168,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->ParticleStartingTransparency,
-        CSz("r32 ParticleStartingTransparency"),
+        CSz("ParticleStartingTransparency"),
         Params
         );
 
@@ -181,7 +181,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->ParticleEndingTransparency,
-        CSz("r32 ParticleEndingTransparency"),
+        CSz("ParticleEndingTransparency"),
         Params
         );
 
@@ -194,7 +194,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->ParticleStartingDim,
-        CSz("v3 ParticleStartingDim"),
+        CSz("ParticleStartingDim"),
         Params
         );
 
@@ -206,7 +206,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->ParticleEndingDim,
-        CSz("f32 ParticleEndingDim"),
+        CSz("ParticleEndingDim"),
         Params
         );
 
@@ -219,7 +219,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->ParticleTurbMin,
-        CSz("v3 ParticleTurbMin"),
+        CSz("ParticleTurbMin"),
         Params
         );
 
@@ -231,7 +231,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->ParticleTurbMax,
-        CSz("v3 ParticleTurbMax"),
+        CSz("ParticleTurbMax"),
         Params
         );
 
@@ -243,7 +243,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->SpawnRegion,
-        CSz("aabb SpawnRegion"),
+        CSz("SpawnRegion"),
         Params
         );
 
@@ -255,7 +255,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->SystemMovementCoefficient,
-        CSz("r32 SystemMovementCoefficient"),
+        CSz("SystemMovementCoefficient"),
         Params
         );
 
@@ -268,7 +268,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
 &Element->ElapsedSinceLastEmission,
-        CSz("r32 ElapsedSinceLastEmission"),
+        CSz("ElapsedSinceLastEmission"),
         Params
         );
 
@@ -278,13 +278,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
       PushNewRow(Ui);
 
-      if (ToggleButton(Ui, CSz("v u8 Colors[6]"), CSz("> u8 Colors[6]"), UiId(Window, "toggle particle_system u8 Colors", Element->Colors), Params ))
+      if (ToggleButton(Ui, CSz("v Colors[6]"), CSz("> Colors[6]"), UiId(Window, "toggle particle_system u8 Colors", Element->Colors), Params ))
       {
         PushForceUpdateBasis(Ui, V2(20.f, 0.f));
         PushNewRow(Ui);
         RangeIterator(ArrayIndex, 6)
         {
-          DoEditorUi(Ui, Window, Element->Colors+ArrayIndex, FSz("u8 Colors[%d]", ArrayIndex), Params);
+          DoEditorUi(Ui, Window, Element->Colors+ArrayIndex, FSz("Colors[%d]", ArrayIndex), Params);
  PushNewRow(Ui); 
         }
         PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
@@ -295,13 +295,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
       PushNewRow(Ui);
 
-      if (ToggleButton(Ui, CSz("v particle Particles[(4096)]"), CSz("> particle Particles[(4096)]"), UiId(Window, "toggle particle_system particle Particles", Element->Particles), Params ))
+      if (ToggleButton(Ui, CSz("v Particles[(4096)]"), CSz("> Particles[(4096)]"), UiId(Window, "toggle particle_system particle Particles", Element->Particles), Params ))
       {
         PushForceUpdateBasis(Ui, V2(20.f, 0.f));
         PushNewRow(Ui);
         RangeIterator(ArrayIndex, (4096))
         {
-          DoEditorUi(Ui, Window, Element->Particles+ArrayIndex, FSz("particle Particles[%d]", ArrayIndex), Params);
+          DoEditorUi(Ui, Window, Element->Particles+ArrayIndex, FSz("Particles[%d]", ArrayIndex), Params);
           
         }
         PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

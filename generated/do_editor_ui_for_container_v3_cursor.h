@@ -20,6 +20,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v3_cursor *Container, cs Name
   {
     PushColumn(Ui, FSz("%S", Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushNewRow(Ui);
   }
 }
 

@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
 &Element->LoadState,
-        CSz("asset_load_state LoadState"),
+        CSz("LoadState"),
         Params
         );
 
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
 &Element->Id,
-        CSz("asset_id Id"),
+        CSz("Id"),
         Params
         );
 
@@ -38,7 +38,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
 &Element->LRUFrameIndex,
-        CSz("u64 LRUFrameIndex"),
+        CSz("LRUFrameIndex"),
         Params
         );
 
@@ -51,7 +51,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
 &Element->Models,
-        CSz("model_buffer Models"),
+        CSz("Models"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

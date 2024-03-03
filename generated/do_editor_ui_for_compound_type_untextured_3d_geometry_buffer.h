@@ -18,7 +18,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
       DoEditorUi(Ui,
         Window,
         Element->Verts,
-        CSz("v3 Verts"),
+        CSz("Verts"),
         Params
         );
 
@@ -30,7 +30,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
       DoEditorUi(Ui,
         Window,
         Element->Normals,
-        CSz("v3 Normals"),
+        CSz("Normals"),
         Params
         );
 
@@ -42,7 +42,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
       DoEditorUi(Ui,
         Window,
         Element->Mat,
-        CSz("vertex_material Mat"),
+        CSz("Mat"),
         Params
         );
 
@@ -54,7 +54,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
       DoEditorUi(Ui,
         Window,
 &Element->End,
-        CSz("u32 End"),
+        CSz("End"),
         Params
         );
 
@@ -67,7 +67,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
       DoEditorUi(Ui,
         Window,
 &Element->At,
-        CSz("u32 At"),
+        CSz("At"),
         Params
         );
 
@@ -80,7 +80,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
       DoEditorUi(Ui,
         Window,
         Element->Parent,
-        CSz("untextured_3d_geometry_buffer Parent"),
+        CSz("Parent"),
         Params
         );
 
@@ -92,7 +92,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
       DoEditorUi(Ui,
         Window,
 &Element->BufferNeedsToGrow,
-        CSz("u32 BufferNeedsToGrow"),
+        CSz("BufferNeedsToGrow"),
         Params
         );
 
@@ -105,7 +105,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
       DoEditorUi(Ui,
         Window,
 &Element->Timestamp,
-        CSz("u64 Timestamp"),
+        CSz("Timestamp"),
         Params
         );
 

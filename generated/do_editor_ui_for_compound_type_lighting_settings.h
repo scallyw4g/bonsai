@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
       DoEditorUi(Ui,
         Window,
 &Element->AutoDayNightCycle,
-        CSz("b8 AutoDayNightCycle"),
+        CSz("AutoDayNightCycle"),
         Params
         );
 
@@ -27,7 +27,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
       DoEditorUi(Ui,
         Window,
 &Element->tDay,
-        CSz("r32 tDay"),
+        CSz("tDay"),
         Params
 ,-PI32, PI32 );
 
@@ -40,7 +40,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
       DoEditorUi(Ui,
         Window,
 &Element->DawnIntensity,
-        CSz("f32 DawnIntensity"),
+        CSz("DawnIntensity"),
         Params
 ,0.f, 3.f );
 
@@ -53,7 +53,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
       DoEditorUi(Ui,
         Window,
 &Element->DawnColor,
-        CSz("v3 DawnColor"),
+        CSz("DawnColor"),
         Params
         );
 
@@ -65,7 +65,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
       DoEditorUi(Ui,
         Window,
 &Element->SunIntensity,
-        CSz("f32 SunIntensity"),
+        CSz("SunIntensity"),
         Params
 ,0.f, 3.f );
 
@@ -78,7 +78,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
       DoEditorUi(Ui,
         Window,
 &Element->SunColor,
-        CSz("v3 SunColor"),
+        CSz("SunColor"),
         Params
         );
 
@@ -90,7 +90,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
       DoEditorUi(Ui,
         Window,
 &Element->DuskIntensity,
-        CSz("f32 DuskIntensity"),
+        CSz("DuskIntensity"),
         Params
 ,0.f, 3.f );
 
@@ -103,7 +103,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
       DoEditorUi(Ui,
         Window,
 &Element->DuskColor,
-        CSz("v3 DuskColor"),
+        CSz("DuskColor"),
         Params
         );
 
@@ -115,7 +115,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
       DoEditorUi(Ui,
         Window,
 &Element->MoonIntensity,
-        CSz("f32 MoonIntensity"),
+        CSz("MoonIntensity"),
         Params
 ,0.f, 3.f );
 
@@ -128,7 +128,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
       DoEditorUi(Ui,
         Window,
 &Element->MoonColor,
-        CSz("v3 MoonColor"),
+        CSz("MoonColor"),
         Params
         );
 
@@ -140,7 +140,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
       DoEditorUi(Ui,
         Window,
 &Element->CurrentSunColor,
-        CSz("v3 CurrentSunColor"),
+        CSz("CurrentSunColor"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

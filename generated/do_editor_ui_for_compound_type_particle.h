@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
       DoEditorUi(Ui,
         Window,
 &Element->Velocity,
-        CSz("v3 Velocity"),
+        CSz("Velocity"),
         Params
         );
 
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
       DoEditorUi(Ui,
         Window,
 &Element->Offset,
-        CSz("v3 Offset"),
+        CSz("Offset"),
         Params
         );
 
@@ -38,7 +38,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
       DoEditorUi(Ui,
         Window,
 &Element->Color,
-        CSz("u8 Color"),
+        CSz("Color"),
         Params
         );
 
@@ -51,7 +51,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
       DoEditorUi(Ui,
         Window,
 &Element->IsLight,
-        CSz("b8 IsLight"),
+        CSz("IsLight"),
         Params
         );
 
@@ -64,7 +64,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
       DoEditorUi(Ui,
         Window,
 &Element->RemainingLifespan,
-        CSz("r32 RemainingLifespan"),
+        CSz("RemainingLifespan"),
         Params
         );
 

@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
       DoEditorUi(Ui,
         Window,
 &Element->farClip,
-        CSz("f32 farClip"),
+        CSz("farClip"),
         Params
         );
 
@@ -27,7 +27,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
       DoEditorUi(Ui,
         Window,
 &Element->nearClip,
-        CSz("f32 nearClip"),
+        CSz("nearClip"),
         Params
         );
 
@@ -40,7 +40,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
       DoEditorUi(Ui,
         Window,
 &Element->width,
-        CSz("f32 width"),
+        CSz("width"),
         Params
         );
 
@@ -53,7 +53,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
       DoEditorUi(Ui,
         Window,
 &Element->FOV,
-        CSz("f32 FOV"),
+        CSz("FOV"),
         Params
         );
 
@@ -66,7 +66,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
       DoEditorUi(Ui,
         Window,
 &Element->Top,
-        CSz("plane Top"),
+        CSz("Top"),
         Params
         );
 
@@ -78,7 +78,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
       DoEditorUi(Ui,
         Window,
 &Element->Bot,
-        CSz("plane Bot"),
+        CSz("Bot"),
         Params
         );
 
@@ -90,7 +90,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
       DoEditorUi(Ui,
         Window,
 &Element->Left,
-        CSz("plane Left"),
+        CSz("Left"),
         Params
         );
 
@@ -102,7 +102,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
       DoEditorUi(Ui,
         Window,
 &Element->Right,
-        CSz("plane Right"),
+        CSz("Right"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

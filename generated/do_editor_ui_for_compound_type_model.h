@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
 &Element->Vox,
-        CSz("vox_data Vox"),
+        CSz("Vox"),
         Params
         );
 
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
 &Element->Meshes,
-        CSz("lod_element_buffer Meshes"),
+        CSz("Meshes"),
         Params
         );
 
@@ -38,7 +38,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
 &Element->TransparentMesh,
-        CSz("untextured_3d_geometry_buffer TransparentMesh"),
+        CSz("TransparentMesh"),
         Params
         );
 
@@ -50,7 +50,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
 &Element->Animation,
-        CSz("animation Animation"),
+        CSz("Animation"),
         Params
         );
 
@@ -62,7 +62,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
 &Element->Dim,
-        CSz("v3i Dim"),
+        CSz("Dim"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

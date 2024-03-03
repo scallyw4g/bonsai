@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
 &Element->Flags,
-        CSz("u8 Flags"),
+        CSz("Flags"),
         Params
         );
 
@@ -27,7 +27,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
 &Element->Transparency,
-        CSz("u8 Transparency"),
+        CSz("Transparency"),
         Params
         );
 
@@ -40,7 +40,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
 &Element->Color,
-        CSz("u16 Color"),
+        CSz("Color"),
         Params
         );
 

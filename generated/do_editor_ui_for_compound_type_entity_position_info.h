@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
       DoEditorUi(Ui,
         Window,
 &Element->P,
-        CSz("cp P"),
+        CSz("P"),
         Params
         );
 
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
       DoEditorUi(Ui,
         Window,
 &Element->_CollisionVolumeRadius,
-        CSz("v3 _CollisionVolumeRadius"),
+        CSz("_CollisionVolumeRadius"),
         Params
         );
 
@@ -38,7 +38,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
       DoEditorUi(Ui,
         Window,
 &Element->Scale,
-        CSz("r32 Scale"),
+        CSz("Scale"),
         Params
         );
 
@@ -51,7 +51,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
       DoEditorUi(Ui,
         Window,
 &Element->EulerAngles,
-        CSz("v3 EulerAngles"),
+        CSz("EulerAngles"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

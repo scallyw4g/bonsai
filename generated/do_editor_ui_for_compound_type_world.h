@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
 &Element->Center,
-        CSz("v3i Center"),
+        CSz("Center"),
         Params
         );
 
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
 &Element->VisibleRegion,
-        CSz("v3i VisibleRegion"),
+        CSz("VisibleRegion"),
         Params
         );
 

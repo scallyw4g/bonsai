@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
 &Element->Settings,
-        CSz("engine_settings Settings"),
+        CSz("Settings"),
         Params
         );
 
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
 &Element->Stdlib,
-        CSz("bonsai_stdlib Stdlib"),
+        CSz("Stdlib"),
         Params
         );
 
@@ -38,7 +38,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
 &Element->Ui,
-        CSz("renderer_2d Ui"),
+        CSz("Ui"),
         Params
         );
 
@@ -50,7 +50,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
 &Element->GameApi,
-        CSz("application_api GameApi"),
+        CSz("GameApi"),
         Params
         );
 
@@ -62,7 +62,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
 &Element->Hotkeys,
-        CSz("hotkeys Hotkeys"),
+        CSz("Hotkeys"),
         Params
         );
 
@@ -74,7 +74,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
 &Element->MaybeMouseRay,
-        CSz("maybe_ray MaybeMouseRay"),
+        CSz("MaybeMouseRay"),
         Params
         );
 
@@ -86,7 +86,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
         Element->World,
-        CSz("world World"),
+        CSz("World"),
         Params
         );
 
@@ -98,7 +98,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
         Element->GameState,
-        CSz("game_state GameState"),
+        CSz("GameState"),
         Params
         );
 
@@ -110,7 +110,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
         Element->Graphics,
-        CSz("graphics Graphics"),
+        CSz("Graphics"),
         Params
         );
 
@@ -122,7 +122,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
 &Element->RequestedGameLibReloadNode,
-        CSz("file_traversal_node RequestedGameLibReloadNode"),
+        CSz("RequestedGameLibReloadNode"),
         Params
         );
 
@@ -134,7 +134,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
 &Element->RequestedGameLibReloadBehavior,
-        CSz("game_lib_reload_behavior RequestedGameLibReloadBehavior"),
+        CSz("RequestedGameLibReloadBehavior"),
         Params
         );
 
@@ -146,7 +146,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
 &Element->Heap,
-        CSz("heap_allocator Heap"),
+        CSz("Heap"),
         Params
         );
 
@@ -158,7 +158,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
         Element->GameMemory,
-        CSz("memory_arena GameMemory"),
+        CSz("GameMemory"),
         Params
         );
 
@@ -170,7 +170,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
         Element->WorldUpdateMemory,
-        CSz("memory_arena WorldUpdateMemory"),
+        CSz("WorldUpdateMemory"),
         Params
         );
 
@@ -182,7 +182,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
         Element->EntityTable,
-        CSz("entity EntityTable"),
+        CSz("EntityTable"),
         Params
         );
 
@@ -194,7 +194,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
 &Element->AssetSystem,
-        CSz("asset_system AssetSystem"),
+        CSz("AssetSystem"),
         Params
         );
 
@@ -206,7 +206,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
 &Element->FrameIndex,
-        CSz("u32 FrameIndex"),
+        CSz("FrameIndex"),
         Params
         );
 
@@ -219,7 +219,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
 &Element->MeshFreelist,
-        CSz("tiered_mesh_freelist MeshFreelist"),
+        CSz("MeshFreelist"),
         Params
         );
 
@@ -231,7 +231,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
         Element->DebugState,
-        CSz("debug_state DebugState"),
+        CSz("DebugState"),
         Params
         );
 
@@ -243,7 +243,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
 &Element->EngineDebug,
-        CSz("engine_debug EngineDebug"),
+        CSz("EngineDebug"),
         Params
         );
 
@@ -255,7 +255,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
 &Element->Editor,
-        CSz("level_editor Editor"),
+        CSz("Editor"),
         Params
         );
 
@@ -267,7 +267,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
 &Element->MousedOverVoxel,
-        CSz("maybe_picked_voxel MousedOverVoxel"),
+        CSz("MousedOverVoxel"),
         Params
         );
 
@@ -279,7 +279,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
 &Element->ClosestStandingSpotToCursor,
-        CSz("maybe_standing_spot ClosestStandingSpotToCursor"),
+        CSz("ClosestStandingSpotToCursor"),
         Params
         );
 
@@ -291,7 +291,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
 &Element->HoverEntity,
-        CSz("maybe_entity_ptr HoverEntity"),
+        CSz("HoverEntity"),
         Params
         );
 
@@ -303,7 +303,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
 &Element->RTTGroup,
-        CSz("render_entity_to_texture_group RTTGroup"),
+        CSz("RTTGroup"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

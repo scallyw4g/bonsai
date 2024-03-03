@@ -14,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
       DoEditorUi(Ui,
         Window,
 &Element->ColorTex,
-        CSz("texture ColorTex"),
+        CSz("ColorTex"),
         Params
         );
 
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
       DoEditorUi(Ui,
         Window,
 &Element->PositionTex,
-        CSz("texture PositionTex"),
+        CSz("PositionTex"),
         Params
         );
 
@@ -38,7 +38,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
       DoEditorUi(Ui,
         Window,
 &Element->IndexToUV,
-        CSz("r32 IndexToUV"),
+        CSz("IndexToUV"),
         Params
         );
 
@@ -51,7 +51,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
       DoEditorUi(Ui,
         Window,
 &Element->Count,
-        CSz("s32 Count"),
+        CSz("Count"),
         Params
         );
 
@@ -64,7 +64,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
       DoEditorUi(Ui,
         Window,
         Element->Lights,
-        CSz("light Lights"),
+        CSz("Lights"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

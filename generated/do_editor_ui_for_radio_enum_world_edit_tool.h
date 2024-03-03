@@ -1,4 +1,4 @@
-// src/engine/editor.h:568:0
+// src/engine/editor.h:576:0
 
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_tool Selection)
@@ -80,7 +80,7 @@ DoEditorUi( renderer_2d *Ui,
 
   EDITOR_UI_FUNCTION_PROTO_DEFAULTS )
 {
-  if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); PushNewRow(Ui); }
+  if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); PushNewRow(Ui); }
   ui_toggle_button_group RadioGroup = RadioButtonGroup_world_edit_tool(Ui, Window, "world_edit_tool radio group");
   GetRadioEnum(&RadioGroup, Element);
   return RadioGroup;
