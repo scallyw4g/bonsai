@@ -693,8 +693,9 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
                          &Result->Settings.BravoilMyersOIT,
                          &Result->Settings.BravoilMcGuireOIT,
 
-
-                         &SG->MVP, &Lighting->Lights, Result->Camera,
+                         &SG->MVP,
+                         &Lighting->Lights,
+                         Result->Camera,
                          &Result->Settings.Lighting.SunP,
                          &Result->Settings.Lighting.CurrentSunColor,
 
