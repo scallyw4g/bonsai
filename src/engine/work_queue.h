@@ -126,6 +126,7 @@ struct world_update_op_shape
   };
 };
 
+// TODO(Jesse): Pretty sure this can be deleted and use world_edit_mode instead
 enum world_update_op_mode
 {
   WorldUpdateOperationMode_None,

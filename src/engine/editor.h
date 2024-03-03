@@ -499,6 +499,8 @@ enum world_edit_selection_mode
 
 enum world_edit_mode
 {
+  WorldEditMode_Disabled,
+  WorldEditMode_Select,      // world_edit_selection_mode
   WorldEditMode_Paint,
   WorldEditMode_Attach,
   WorldEditMode_Remove,
@@ -506,7 +508,7 @@ enum world_edit_mode
 
 enum world_edit_tool
 {
-  WorldEditTool_Select,      // world_edit_selection_mode
+  WorldEditTool_Disabled,
   WorldEditTool_Single,
   WorldEditTool_Eyedropper,
   WorldEditTool_Brush,       // world_edit_brush_type
@@ -516,9 +518,11 @@ enum world_edit_tool
 
 enum world_edit_brush_type
 {
+  WorldEditTool_BrushType_Disabled,
+  WorldEditTool_BrushType_Selection,
   WorldEditTool_BrushType_Asset,
   WorldEditTool_BrushType_Entity,
-  WorldEditTool_BrushType_Noise
+  WorldEditTool_BrushType_Noise,
 };
 
 #if 0

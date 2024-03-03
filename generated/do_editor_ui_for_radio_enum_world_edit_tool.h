@@ -1,4 +1,4 @@
-// src/engine/editor.h:573:0
+// src/engine/editor.h:577:0
 
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_tool Selection)
@@ -45,7 +45,7 @@ RadioButtonGroup_world_edit_tool( renderer_2d *Ui,
 {
   cs ButtonNames[] =
   {
-    CSz("Select"),
+    CSz("Disabled"),
     CSz("Single"),
     CSz("Eyedropper"),
     CSz("Brush"),

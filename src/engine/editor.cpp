@@ -520,16 +520,41 @@ GetMax(v3 *SelectionRegion)
   return Result;
 }
 
+/* link_internal void */
+/* DoDeleteRegion(engine_resources *Engine, rect3 *AABB) */
+/* { */
+/*   world_update_op_shape Shape = { */
+/*     .Type = type_world_update_op_shape_params_rect, */
+/*     .world_update_op_shape_params_rect.P0 = AABB->Min, */
+/*     .world_update_op_shape_params_rect.P1 = AABB->Max, */
+/*   }; */
+/*   QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Subtractive, &Shape, Engine->Editor.SelectedColorIndex, Engine->WorldUpdateMemory); */
+/* } */
+
 link_internal void
-DoDeleteRegion(engine_resources *Engine, rect3 *AABB)
+DoSelectionRegionEdit(engine_resources *Engine, rect3 *SelectionAABB, world_edit_mode WorldEditMode)
 {
+  world_update_op_mode UpdateOpMode = {};
+
+  switch (WorldEditMode)
+  {
+    case WorldEditMode_Disabled: {} break;
+    case WorldEditMode_Select: {} break;
+    case WorldEditMode_Paint:  { UpdateOpMode = WorldUpdateOperationMode_Paint;       } break;
+    case WorldEditMode_Attach: { UpdateOpMode = WorldUpdateOperationMode_Additive;    } break;
+    case WorldEditMode_Remove: { UpdateOpMode = WorldUpdateOperationMode_Subtractive; } break;
+  }
+  Assert(UpdateOpMode);
+
   world_update_op_shape Shape = {
     .Type = type_world_update_op_shape_params_rect,
-    .world_update_op_shape_params_rect.P0 = AABB->Min,
-    .world_update_op_shape_params_rect.P1 = AABB->Max,
+    .world_update_op_shape_params_rect.P0 = SelectionAABB->Min,
+    .world_update_op_shape_params_rect.P1 = SelectionAABB->Max,
   };
-  QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Subtractive, &Shape, Engine->Editor.SelectedColorIndex, Engine->WorldUpdateMemory);
+
+  QueueWorldUpdateForRegion(Engine, UpdateOpMode, &Shape, Engine->Editor.SelectedColorIndex, Engine->WorldUpdateMemory);
 }
+
 
 link_internal v3
 ConstrainUpdateVector(v3 UpdateVector, face_index Face, world_edit_selection_mode SelectionMode)
@@ -1009,6 +1034,14 @@ DoWorldEditor(engine_resources *Engine)
 
 
 
+
+  //
+  //
+  // Do selection stuff
+  //
+  //
+
+
   rect3 SelectionAABB = {};
   aabb_intersect_result AABBTest = {};
 
@@ -1103,22 +1136,26 @@ DoWorldEditor(engine_resources *Engine)
     DEBUG_DrawSimSpaceAABB(Engine, &SelectionAABB, BaseColor, Thickness);
   }
 
+
+
+
+  //
   //
   // Do tool selection actions (what happens when we change a tool selection)
   //
+  //
 
-  if (WorldEditToolButtonGroup.AnyElementClicked)
+  if (WorldEditModeButtonGroup.AnyElementClicked)
   {
-    switch (WorldEditTool)
+    switch (WorldEditMode)
     {
-      case WorldEditTool_Single:
-      case WorldEditTool_Eyedropper:
-      case WorldEditTool_Brush:
-      case WorldEditTool_BlitEntity:
-      case WorldEditTool_StandingSpots:
+      case WorldEditMode_Disabled:
+      case WorldEditMode_Paint:
+      case WorldEditMode_Attach:
+      case WorldEditMode_Remove:
       { } break;
 
-      case WorldEditTool_Select:
+      case WorldEditMode_Select:
       {
         ResetSelection(Editor);
       } break;
@@ -1127,20 +1164,30 @@ DoWorldEditor(engine_resources *Engine)
 
 
   //
-  // Do edit tool interactions in the wordl
+  //
+  // Edit tool interactions in the world
+  //
   //
 
   if ( UiCapturedMouseInput(Ui) == False &&
        UiHoveredMouseInput(Ui)  == False  )
   {
-    switch (WorldEditTool)
+
+    switch (WorldEditMode)
     {
-      case WorldEditTool_Brush:
-      case WorldEditTool_Single:
+      case WorldEditMode_Disabled: {} break;
+
+      case WorldEditMode_Paint:
+      case WorldEditMode_Attach:
+      case WorldEditMode_Remove:
       {
+        if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
+        {
+          DoSelectionRegionEdit(Engine, &SelectionAABB, WorldEditMode);
+        }
       } break;
 
-      case WorldEditTool_Select:
+      case WorldEditMode_Select:
       {
         if (Input->LMB.Clicked)
         {
@@ -1165,6 +1212,15 @@ DoWorldEditor(engine_resources *Engine)
           }
         }
       } break;
+    }
+
+    switch (WorldEditTool)
+    {
+      case WorldEditTool_Disabled:
+      case WorldEditTool_Brush:
+      case WorldEditTool_Single:
+      {
+      } break;
 
       case WorldEditTool_Eyedropper:
       {
@@ -1188,38 +1244,12 @@ DoWorldEditor(engine_resources *Engine)
       } break;
 
 #if 0
-      case WorldEditMode_PaintSelection:
-      {
-        if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
-        {
-          world_update_op_shape Shape = {
-            .Type = type_world_update_op_shape_params_rect,
-            .world_update_op_shape_params_rect.P0 = SelectionAABB.Min,
-            .world_update_op_shape_params_rect.P1 = SelectionAABB.Max,
-          };
-          QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Paint, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory);
-        }
-      } break;
-
       case WorldEditMode_FillSelection:
       {
-        if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
-        {
-          world_update_op_shape Shape = {
-            .Type = type_world_update_op_shape_params_rect,
-            .world_update_op_shape_params_rect.P0 = SelectionAABB.Min,
-            .world_update_op_shape_params_rect.P1 = SelectionAABB.Max,
-          };
-          QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory);
-        }
       } break;
 
       case WorldEditMode_DeleteSelection:
       {
-        if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
-        {
-          DoDeleteRegion(Engine, &SelectionAABB);
-        }
       } break;
 
 
@@ -1391,9 +1421,9 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Input->Ctrl.Pressed || Input->Shift.Pressed) { Ui->RequestedForceCapture = True; }
 
-  if (Input->Ctrl.Pressed && Input->S.Clicked) { RadioSelect(&WorldEditModeRadioGroup, WorldEditTool_Select); ResetSelection(Editor); }
+  /* if (Input->Ctrl.Pressed && Input->S.Clicked) { RadioSelect(&WorldEditModeRadioGroup, WorldEditTool_Select); ResetSelection(Editor); } */
 
-  if (Clicked(&WorldEditModeRadioGroup, CSz("Select"))) { ResetSelection(Editor); }
+  /* if (Clicked(&WorldEditModeRadioGroup, CSz("Select"))) { ResetSelection(Editor); } */
 
   if (Input->Ctrl.Pressed && Input->F.Clicked) { ResetSelectionIfIncomplete(Editor); /* RadioSelect(&WorldEditModeRadioGroup, WorldEditTool_FillSelection); */ }
 
@@ -1401,7 +1431,7 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Editor->SelectionClicks == 2)
   {
-    if (Input->Ctrl.Pressed && Input->D.Clicked) { DoDeleteRegion(Engine, &SelectionAABB); }
+    if (Input->Ctrl.Pressed && Input->D.Clicked) { DoSelectionRegionEdit(Engine, &SelectionAABB, WorldEditMode_Remove); }
 
     if (Input->Ctrl.Pressed && Input->C.Clicked) { Editor->CopyRegion = Editor->SelectionRegion; }
 
