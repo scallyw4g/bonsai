@@ -923,7 +923,7 @@ DoWorldEditor(engine_resources *Engine)
         }
 
 
-        if ( (ColorIndex+1) % 8 == 0 ) { PushNewRow(Ui); }
+        if ( (ColorIndex+1) % 16 == 0 ) { PushNewRow(Ui); }
       }
     PushTableEnd(Ui);
     PushWindowEnd(Ui, &Window);
