@@ -1226,27 +1226,105 @@ DoWorldEditor(engine_resources *Engine)
         switch (WorldEditBrushType)
         {
           case WorldEdit_BrushType_Disabled:
-          case WorldEdit_BrushType_Asset:
-          case WorldEdit_BrushType_Entity:
           case WorldEdit_BrushType_Noise:
           {} break;
 
-          case WorldEdit_BrushType_Single:
+          case WorldEdit_BrushType_Entity:
+          case WorldEdit_BrushType_Asset:
           {
-            b32 DoPaint = Input->LMB.Clicked;
-            if (WorldEditMode == WorldEdit_Mode_Paint) { DoPaint = Input->LMB.Pressed; }
-
-            HighlightVoxel = MapWorldEditModeToHighlightVoxelForSingleSelection(WorldEditMode);
-            if (DoPaint)
+            if (Input->LMB.Clicked)
             {
-              if (Engine->MousedOverVoxel.Tag)
+              if (EngineDebug->SelectedAsset.FileNode.Type)
               {
-                v3 P0 = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel.Value, HighlightVoxel));
-                rect3 AABB = RectMinMax(P0, P0+1.f);
-                DoSelectionRegionEdit(Engine, &AABB, WorldEditMode);
-                /* QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory); */
+                cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
+                EntityOrigin.Offset = Round(EntityOrigin.Offset);
+
+                maybe_asset_ptr MaybeAsset = GetAssetPtr(Engine, &EngineDebug->SelectedAsset);
+                if (MaybeAsset.Tag)
+                {
+                  asset *Asset = MaybeAsset.Value;
+                  model *Model = GetPtr(&Asset->Models, EngineDebug->ModelIndex);
+                  if (Model)
+                  {
+                    v3 AssetHalfDim = V3(Model->Dim)/2.f;
+                    world_update_op_shape_params_asset AssetUpdateShape =
+                    {
+                      EngineDebug->SelectedAsset,
+                      EngineDebug->ModelIndex,
+                      Canonicalize(World, EntityOrigin - V3(AssetHalfDim.xy, 0.f))
+                    };
+
+                    if (WorldEditBrushType == WorldEdit_BrushType_Asset)
+                    {
+                      world_update_op_shape Shape =
+                      {
+                        type_world_update_op_shape_params_asset,
+                        .world_update_op_shape_params_asset = AssetUpdateShape,
+                      };
+                      QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, Engine->WorldUpdateMemory);
+                    }
+                    else if (WorldEditBrushType == WorldEdit_BrushType_Entity)
+                    {
+                      entity *E = TryGetFreeEntityPtr(Engine->EntityTable);
+                      if (E)
+                      {
+                        SpawnEntity(E, &EngineDebug->SelectedAsset, EngineDebug->ModelIndex, EntityBehaviorFlags_Default, 0, &AssetUpdateShape.Origin, Model->Dim/2.f);
+                      }
+                    }
+                    else
+                    {
+                      InvalidCodePath();
+                    }
+                  }
+                }
               }
             }
+          } break;
+
+          case WorldEdit_BrushType_Single:
+          {
+            // NOTE(Jesse): This is kind of an optimization to jump directly to
+            // rebuilding the chunk mesh instead of doing all the hoop-jumping
+            // related to editing.  I'm not really sure if it's worth the extra
+            // complexity here, and/or the slight bit of jank it introduces.  I
+            // expect that once I serialize the world edits this should go away
+            // and we can just collapse world edits automatically in the edit thread.
+            //
+            // When my laptop is unplugged running on battery power, this is _much_ faster.
+            if (WorldEditMode == WorldEdit_Mode_Paint)
+            {
+              HighlightVoxel = MapWorldEditModeToHighlightVoxelForSingleSelection(WorldEditMode);
+
+              b32 DoPaint = Input->LMB.Pressed;
+              if (DoPaint)
+              {
+                Ui->RequestedForceCapture = True;;
+                if (Engine->MousedOverVoxel.Tag)
+                {
+                  if (voxel *V = GetVoxelPointer(&Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled))
+                  {
+                    V->Color = Engine->Editor.SelectedColorIndex;
+                    QueueChunkForMeshRebuild(&Plat->LowPriority, Engine->MousedOverVoxel.Value.Chunks[PickedVoxel_FirstFilled].Chunk);
+                  }
+                }
+              }
+            }
+            else
+            {
+              b32 DoPaint = Input->LMB.Clicked;
+              if (DoPaint)
+              {
+                Ui->RequestedForceCapture = True;
+                if (Engine->MousedOverVoxel.Tag)
+                {
+                  v3 P0 = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel.Value, HighlightVoxel));
+                  rect3 AABB = RectMinMax(P0, P0+1.f);
+                  DoSelectionRegionEdit(Engine, &AABB, WorldEditMode);
+                  /* QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory); */
+                }
+              }
+            }
+
           } break;
 
           case WorldEdit_BrushType_Selection:
@@ -1314,121 +1392,6 @@ DoWorldEditor(engine_resources *Engine)
           Engine->Editor.HoverColorIndex = INVALID_COLOR_INDEX;
         }
       } break;
-
-#if 0
-
-      case WorldEditMode_AddSingle:
-      {
-        HighlightVoxel = PickedVoxel_LastEmpty;
-        if (Input->LMB.Clicked)
-        {
-          if (Engine->MousedOverVoxel.Tag)
-          {
-            v3 P0 = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel.Value, HighlightVoxel));
-
-            world_update_op_shape Shape = {
-              .Type = type_world_update_op_shape_params_rect,
-              .world_update_op_shape_params_rect.P0 = P0,
-              .world_update_op_shape_params_rect.P1 = P0+1,
-            };
-            QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory);
-          }
-        }
-      } break;
-
-      case WorldEditMode_RemoveSingle:
-      {
-        HighlightVoxel = PickedVoxel_FirstFilled;
-        if (Input->LMB.Clicked)
-        {
-          if (Engine->MousedOverVoxel.Tag)
-          {
-            v3 P0 = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel.Value, HighlightVoxel));
-
-            world_update_op_shape Shape = {
-              .Type = type_world_update_op_shape_params_rect,
-              .world_update_op_shape_params_rect.P0 = P0,
-              .world_update_op_shape_params_rect.P1 = P0+1,
-            };
-            QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Subtractive, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory);
-          }
-        }
-      } break;
-
-      case WorldEditMode_PaintSingle:
-      {
-        if (Input->LMB.Pressed)
-        {
-          Ui->RequestedForceCapture = True;;
-          if (Engine->MousedOverVoxel.Tag)
-          {
-            voxel *V = GetVoxelPointer(&Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled);
-
-            if (V)
-            {
-              V->Color = Engine->Editor.SelectedColorIndex;
-              QueueChunkForMeshRebuild(&Plat->LowPriority, Engine->MousedOverVoxel.Value.Chunks[PickedVoxel_FirstFilled].Chunk);
-            }
-          }
-        }
-      } break;
-
-      case WorldEditMode_NoiseBrush:
-      {
-      } break;
-
-      case WorldEditMode_AssetBrush:
-      case WorldEditMode_EntityBrush:
-      {
-        if (Input->LMB.Clicked)
-        {
-          if (EngineDebug->SelectedAsset.FileNode.Type)
-          {
-            cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
-            EntityOrigin.Offset = Round(EntityOrigin.Offset);
-
-            maybe_asset_ptr MaybeAsset = GetAssetPtr(Engine, &EngineDebug->SelectedAsset);
-            if (MaybeAsset.Tag)
-            {
-              asset *Asset = MaybeAsset.Value;
-              model *Model = GetPtr(&Asset->Models, EngineDebug->ModelIndex);
-              if (Model)
-              {
-                v3 AssetHalfDim = V3(Model->Dim)/2.f;
-                world_update_op_shape_params_asset AssetUpdateShape =
-                {
-                  EngineDebug->SelectedAsset,
-                  EngineDebug->ModelIndex,
-                  Canonicalize(World, EntityOrigin - V3(AssetHalfDim.xy, 0.f))
-                };
-
-                if (WorldEditMode == WorldEditMode_AssetBrush)
-                {
-                  world_update_op_shape Shape =
-                  {
-                    type_world_update_op_shape_params_asset,
-                    .world_update_op_shape_params_asset = AssetUpdateShape,
-                  };
-                  QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, Engine->WorldUpdateMemory);
-                }
-                else if (WorldEditMode == WorldEditMode_EntityBrush)
-                {
-                  entity *E = TryGetFreeEntityPtr(Engine->EntityTable);
-                  if (E)
-                  {
-                    SpawnEntity(E, &EngineDebug->SelectedAsset, EngineDebug->ModelIndex, EntityBehaviorFlags_Default, 0, &AssetUpdateShape.Origin, Model->Dim/2.f);
-                  }
-                }
-                else
-                {
-                  InvalidCodePath();
-                }
-              }
-            }
-          }
-        }
-      } break;
-#endif
 
       case WorldEdit_Tool_BlitEntity:
       {
