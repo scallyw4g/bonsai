@@ -47,6 +47,7 @@ RadioButtonGroup_world_edit_brush_type( renderer_2d *Ui,
   {
     CSz("Disabled"),
     CSz("Selection"),
+    CSz("Single"),
     CSz("Asset"),
     CSz("Entity"),
     CSz("Noise"),

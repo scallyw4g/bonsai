@@ -499,30 +499,30 @@ enum world_edit_selection_mode
 
 enum world_edit_mode
 {
-  WorldEditMode_Disabled,
-  WorldEditMode_Select,      // world_edit_selection_mode
-  WorldEditMode_Paint,
-  WorldEditMode_Attach,
-  WorldEditMode_Remove,
+  WorldEdit_Mode_Disabled, // poof(@ui_skip)
+  WorldEdit_Mode_Paint,
+  WorldEdit_Mode_Attach,
+  WorldEdit_Mode_Remove,
 };
 
 enum world_edit_tool
 {
-  WorldEditTool_Disabled,
-  WorldEditTool_Single,
-  WorldEditTool_Eyedropper,
-  WorldEditTool_Brush,       // world_edit_brush_type
-  WorldEditTool_BlitEntity,
-  WorldEditTool_StandingSpots, // Recomputes standing spots for an area
+  WorldEdit_Tool_Disabled,      // poof(@ui_skip)
+  WorldEdit_Tool_Select,        // world_edit_selection_mode
+  WorldEdit_Tool_Brush,         // world_edit_brush_type
+  WorldEdit_Tool_Eyedropper,
+  WorldEdit_Tool_BlitEntity,
+  WorldEdit_Tool_StandingSpots, // Recomputes standing spots for an area
 };
 
 enum world_edit_brush_type
 {
-  WorldEditTool_BrushType_Disabled,
-  WorldEditTool_BrushType_Selection,
-  WorldEditTool_BrushType_Asset,
-  WorldEditTool_BrushType_Entity,
-  WorldEditTool_BrushType_Noise,
+  WorldEdit_BrushType_Disabled,   // poof(@ui_skip)
+  WorldEdit_BrushType_Selection,
+  WorldEdit_BrushType_Single,
+  WorldEdit_BrushType_Asset,
+  WorldEdit_BrushType_Entity,
+  WorldEdit_BrushType_Noise,
 };
 
 #if 0

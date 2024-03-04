@@ -181,8 +181,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, cs *Value, cs Name, EDITOR_UI
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, cp *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  DoEditorUi(Ui, Window, &Value->WorldP, CSz("v3i WorldP"));
-  DoEditorUi(Ui, Window, &Value->Offset, CSz("v3 Offset"));
+  DoEditorUi(Ui, Window, &Value->WorldP, CSz("WorldP"));
+  DoEditorUi(Ui, Window, &Value->Offset, CSz("Offset"));
 }
 
 #if DO_EDITOR_UI_FOR_ENTITY_TYPE
@@ -538,11 +538,11 @@ DoSelectionRegionEdit(engine_resources *Engine, rect3 *SelectionAABB, world_edit
 
   switch (WorldEditMode)
   {
-    case WorldEditMode_Disabled: {} break;
-    case WorldEditMode_Select: {} break;
-    case WorldEditMode_Paint:  { UpdateOpMode = WorldUpdateOperationMode_Paint;       } break;
-    case WorldEditMode_Attach: { UpdateOpMode = WorldUpdateOperationMode_Additive;    } break;
-    case WorldEditMode_Remove: { UpdateOpMode = WorldUpdateOperationMode_Subtractive; } break;
+    case WorldEdit_Mode_Disabled: {} break;
+    /* case WorldEdit_Mode_Select: {} break; */
+    case WorldEdit_Mode_Paint:  { UpdateOpMode = WorldUpdateOperationMode_Paint;       } break;
+    case WorldEdit_Mode_Attach: { UpdateOpMode = WorldUpdateOperationMode_Additive;    } break;
+    case WorldEdit_Mode_Remove: { UpdateOpMode = WorldUpdateOperationMode_Subtractive; } break;
   }
   Assert(UpdateOpMode);
 
@@ -865,6 +865,32 @@ RenderAndInteractWithThumbnailTexture(renderer_2d *Ui, window_layout *Window, co
 }
 #endif
 
+
+link_internal picked_voxel_position
+MapWorldEditModeToHighlightVoxelForSingleSelection(world_edit_mode WorldEditMode)
+{
+  picked_voxel_position Result = {};
+
+  switch (WorldEditMode)
+  {
+    case WorldEdit_Mode_Disabled:
+    case WorldEdit_Mode_Attach:
+    {
+      Result = PickedVoxel_LastEmpty;
+    } break;
+
+    case WorldEdit_Mode_Paint:
+    case WorldEdit_Mode_Remove:
+    {
+      Result = PickedVoxel_FirstFilled;
+    } break;
+  }
+
+  // 0 is a valid result
+  /* Assert(Result); */
+  return Result;
+}
+
 link_internal void
 DoWorldEditor(engine_resources *Engine)
 {
@@ -887,20 +913,27 @@ DoWorldEditor(engine_resources *Engine)
 
     PushTableStart(Ui);
       ui_render_params Params = DefaultUiRenderParams_Generic;
+      ui_element_reference CurrentRef = {};
 
       {
-        WorldEditModeButtonGroup = DoEditorUi(Ui, &Window, &WorldEditMode, CSz("Edit Mode"), &Params, ToggleButtonGroupFlags_DrawVertical);
-      }
-
-      Params.RelativePosition.Position   = Position_RightOf;
-      {
-        Params.RelativePosition.RelativeTo = WorldEditModeButtonGroup.UiRef;
         WorldEditToolButtonGroup = DoEditorUi(Ui, &Window, &WorldEditTool, CSz("Tool"), &Params, ToggleButtonGroupFlags_DrawVertical);
+        CurrentRef = WorldEditToolButtonGroup.UiRef;
       }
 
+      if (WorldEditTool == WorldEdit_Tool_Brush)
       {
-        Params.RelativePosition.RelativeTo = WorldEditToolButtonGroup.UiRef;
-        WorldEditBrushTypeButtonGroup = DoEditorUi(Ui, &Window, &WorldEditBrushType, CSz("BrushType"), &Params, ToggleButtonGroupFlags_DrawVertical);
+        Params.RelativePosition.Position   = Position_RightOf;
+        Params.RelativePosition.RelativeTo = CurrentRef;
+        WorldEditModeButtonGroup = DoEditorUi(Ui, &Window, &WorldEditMode, CSz("Mode"), &Params, ToggleButtonGroupFlags_DrawVertical);
+        CurrentRef = WorldEditModeButtonGroup.UiRef;
+      }
+
+      if (WorldEditTool == WorldEdit_Tool_Brush)
+      {
+        Params.RelativePosition.Position   = Position_RightOf;
+        Params.RelativePosition.RelativeTo = CurrentRef;
+        WorldEditBrushTypeButtonGroup = DoEditorUi(Ui, &Window, &WorldEditBrushType, CSz("Brush Type"), &Params, ToggleButtonGroupFlags_DrawVertical);
+        CurrentRef = WorldEditBrushTypeButtonGroup.UiRef;
       }
     PushTableEnd(Ui);
 
@@ -1147,18 +1180,27 @@ DoWorldEditor(engine_resources *Engine)
 
   if (WorldEditModeButtonGroup.AnyElementClicked)
   {
-    switch (WorldEditMode)
+    switch (WorldEditTool)
     {
-      case WorldEditMode_Disabled:
-      case WorldEditMode_Paint:
-      case WorldEditMode_Attach:
-      case WorldEditMode_Remove:
+      case WorldEdit_Tool_Disabled:
+      case WorldEdit_Tool_Brush:
+      case WorldEdit_Tool_Eyedropper:
+      case WorldEdit_Tool_BlitEntity:
+      case WorldEdit_Tool_StandingSpots:
       { } break;
 
-      case WorldEditMode_Select:
+      case WorldEdit_Tool_Select:
       {
         ResetSelection(Editor);
       } break;
+    }
+    switch (WorldEditMode)
+    {
+      case WorldEdit_Mode_Disabled:
+      case WorldEdit_Mode_Paint:
+      case WorldEdit_Mode_Attach:
+      case WorldEdit_Mode_Remove:
+      { } break;
     }
   }
 
@@ -1175,19 +1217,58 @@ DoWorldEditor(engine_resources *Engine)
 
     switch (WorldEditMode)
     {
-      case WorldEditMode_Disabled: {} break;
+      case WorldEdit_Mode_Disabled: {} break;
 
-      case WorldEditMode_Paint:
-      case WorldEditMode_Attach:
-      case WorldEditMode_Remove:
+      case WorldEdit_Mode_Paint:
+      case WorldEdit_Mode_Attach:
+      case WorldEdit_Mode_Remove:
       {
-        if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
+        switch (WorldEditBrushType)
         {
-          DoSelectionRegionEdit(Engine, &SelectionAABB, WorldEditMode);
+          case WorldEdit_BrushType_Disabled:
+          case WorldEdit_BrushType_Asset:
+          case WorldEdit_BrushType_Entity:
+          case WorldEdit_BrushType_Noise:
+          {} break;
+
+          case WorldEdit_BrushType_Single:
+          {
+            b32 DoPaint = Input->LMB.Clicked;
+            if (WorldEditMode == WorldEdit_Mode_Paint) { DoPaint = Input->LMB.Pressed; }
+
+            HighlightVoxel = MapWorldEditModeToHighlightVoxelForSingleSelection(WorldEditMode);
+            if (DoPaint)
+            {
+              if (Engine->MousedOverVoxel.Tag)
+              {
+                v3 P0 = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel.Value, HighlightVoxel));
+                rect3 AABB = RectMinMax(P0, P0+1.f);
+                DoSelectionRegionEdit(Engine, &AABB, WorldEditMode);
+                /* QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory); */
+              }
+            }
+          } break;
+
+          case WorldEdit_BrushType_Selection:
+          {
+            if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
+            {
+              DoSelectionRegionEdit(Engine, &SelectionAABB, WorldEditMode);
+            }
+          } break;
         }
       } break;
 
-      case WorldEditMode_Select:
+    }
+
+    switch (WorldEditTool)
+    {
+      case WorldEdit_Tool_Disabled:
+      case WorldEdit_Tool_Brush:
+      {
+      } break;
+
+      case WorldEdit_Tool_Select:
       {
         if (Input->LMB.Clicked)
         {
@@ -1212,17 +1293,8 @@ DoWorldEditor(engine_resources *Engine)
           }
         }
       } break;
-    }
 
-    switch (WorldEditTool)
-    {
-      case WorldEditTool_Disabled:
-      case WorldEditTool_Brush:
-      case WorldEditTool_Single:
-      {
-      } break;
-
-      case WorldEditTool_Eyedropper:
+      case WorldEdit_Tool_Eyedropper:
       {
         if (Engine->MousedOverVoxel.Tag)
         {
@@ -1244,14 +1316,6 @@ DoWorldEditor(engine_resources *Engine)
       } break;
 
 #if 0
-      case WorldEditMode_FillSelection:
-      {
-      } break;
-
-      case WorldEditMode_DeleteSelection:
-      {
-      } break;
-
 
       case WorldEditMode_AddSingle:
       {
@@ -1366,7 +1430,7 @@ DoWorldEditor(engine_resources *Engine)
       } break;
 #endif
 
-      case WorldEditTool_BlitEntity:
+      case WorldEdit_Tool_BlitEntity:
       {
         entity *SelectedEntity = GetEntity(EntityTable, EngineDebug->SelectedEntity);
         if (SelectedEntity)
@@ -1398,7 +1462,7 @@ DoWorldEditor(engine_resources *Engine)
         }
       } break;
 
-      case WorldEditTool_StandingSpots:
+      case WorldEdit_Tool_StandingSpots:
       {
         if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
         {
@@ -1431,7 +1495,7 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Editor->SelectionClicks == 2)
   {
-    if (Input->Ctrl.Pressed && Input->D.Clicked) { DoSelectionRegionEdit(Engine, &SelectionAABB, WorldEditMode_Remove); }
+    if (Input->Ctrl.Pressed && Input->D.Clicked) { DoSelectionRegionEdit(Engine, &SelectionAABB, WorldEdit_Mode_Remove); }
 
     if (Input->Ctrl.Pressed && Input->C.Clicked) { Editor->CopyRegion = Editor->SelectionRegion; }
 

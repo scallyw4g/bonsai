@@ -46,7 +46,6 @@ RadioButtonGroup_world_edit_mode( renderer_2d *Ui,
   cs ButtonNames[] =
   {
     CSz("Disabled"),
-    CSz("Select"),
     CSz("Paint"),
     CSz("Attach"),
     CSz("Remove"),

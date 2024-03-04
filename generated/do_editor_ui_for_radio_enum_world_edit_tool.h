@@ -46,9 +46,9 @@ RadioButtonGroup_world_edit_tool( renderer_2d *Ui,
   cs ButtonNames[] =
   {
     CSz("Disabled"),
-    CSz("Single"),
-    CSz("Eyedropper"),
+    CSz("Select"),
     CSz("Brush"),
+    CSz("Eyedropper"),
     CSz("BlitEntity"),
     CSz("StandingSpots"),
   };
