@@ -115,9 +115,11 @@ struct world_update_op_shape_params_chunk_data
 };
 
 
+// TODO(Jesse): Rename to world_update_brush ?
 struct world_update_op_shape
 {
   world_update_op_shape_type Type;
+
   union {
     world_update_op_shape_params_sphere     world_update_op_shape_params_sphere;
     world_update_op_shape_params_rect       world_update_op_shape_params_rect;

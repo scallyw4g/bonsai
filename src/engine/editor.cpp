@@ -526,7 +526,7 @@ GetMax(v3 *SelectionRegion)
 }
 
 link_internal void
-DoSelectionRegionEdit(engine_resources *Engine, rect3 *SelectionAABB, world_edit_mode WorldEditMode)
+ApplyEditToRegion(engine_resources *Engine, rect3 *SelectionAABB, world_edit_mode WorldEditMode)
 {
   world_update_op_shape Shape = {
     .Type = type_world_update_op_shape_params_rect,
@@ -1227,10 +1227,6 @@ DoWorldEditor(engine_resources *Engine)
           case WorldEdit_BrushType_Disabled:
           {} break;
 
-          case WorldEdit_BrushType_Noise:
-          {
-          } break;
-
           case WorldEdit_BrushType_Entity:
           case WorldEdit_BrushType_Asset:
           {
@@ -1321,19 +1317,35 @@ DoWorldEditor(engine_resources *Engine)
                 {
                   v3 P0 = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel.Value, HighlightVoxel));
                   rect3 AABB = RectMinMax(P0, P0+1.f);
-                  DoSelectionRegionEdit(Engine, &AABB, WorldEditMode);
+                  ApplyEditToRegion(Engine, &AABB, WorldEditMode);
                   /* QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory); */
                 }
               }
             }
+          } break;
 
+          case WorldEdit_BrushType_Noise:
+          {
+            if (WorldEditMode && Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
+            {
+              world_chunk *Chunk = &Editor->NoiseEditor.Chunk;
+              chunk_data D = {Chunk->Flags, Chunk->Dim, Chunk->Voxels, Chunk->VoxelLighting};
+              world_update_op_shape_params_chunk_data ChunkDataShape = { D, GetSimSpaceP(World, Editor->SelectionRegion.Min) };
+
+              world_update_op_shape Shape =
+              {
+                type_world_update_op_shape_params_chunk_data,
+                .world_update_op_shape_params_chunk_data = ChunkDataShape,
+              };
+              QueueWorldUpdateForRegion(Engine, WorldEditMode, &Shape, {}, Engine->WorldUpdateMemory);
+            }
           } break;
 
           case WorldEdit_BrushType_Selection:
           {
             if (WorldEditMode && Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
             {
-              DoSelectionRegionEdit(Engine, &SelectionAABB, WorldEditMode);
+              ApplyEditToRegion(Engine, &SelectionAABB, WorldEditMode);
             }
           } break;
         }
@@ -1342,8 +1354,7 @@ DoWorldEditor(engine_resources *Engine)
       case WorldEdit_Tool_Select:
       {
         if (Input->LMB.Clicked)
-        {
-          switch (Editor->SelectionClicks)
+        { switch (Editor->SelectionClicks)
           {
             case 0:
             {
@@ -1453,7 +1464,7 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Editor->SelectionClicks == 2)
   {
-    if (Input->Ctrl.Pressed && Input->D.Clicked) { DoSelectionRegionEdit(Engine, &SelectionAABB, WorldEdit_Mode_Remove); }
+    if (Input->Ctrl.Pressed && Input->D.Clicked) { ApplyEditToRegion(Engine, &SelectionAABB, WorldEdit_Mode_Remove); }
 
     if (Input->Ctrl.Pressed && Input->C.Clicked) { Editor->CopyRegion = Editor->SelectionRegion; }
 
