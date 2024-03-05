@@ -4362,12 +4362,38 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           switch(Mode)
           {
             InvalidCase(WorldEdit_Mode_Disabled);
-            InvalidCase(WorldEdit_Mode_Paint);
-            InvalidCase(WorldEdit_Mode_Remove);
 
-            // TODO(Jesse): Would we ever want this on in this path?
-            /* InvalidCase(WorldEdit_Mode_StandingSpots); */
-            /* case WorldEdit_Mode_StandingSpots: {} break; */
+            case WorldEdit_Mode_Remove:
+            {
+              DimIterator(x, y, z, SimSpaceQueryDim)
+              {
+                v3i SimRelVoxP = V3i(x,y,z);
+                v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
+                V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
+
+                {
+                  v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
+                  voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
+                  if (AssetV && (AssetV->Flags&Voxel_Filled)) { V->Flags = Voxel_Empty; }
+                }
+              }
+            } break;
+
+            case WorldEdit_Mode_Paint:
+            {
+              DimIterator(x, y, z, SimSpaceQueryDim)
+              {
+                v3i SimRelVoxP = V3i(x,y,z);
+                v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
+                V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
+
+                {
+                  v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
+                  voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
+                  if (AssetV && (AssetV->Flags&Voxel_Filled)) { V->Color = NewColor; }
+                }
+              }
+            } break;
 
             case WorldEdit_Mode_Attach:
             {

@@ -1337,7 +1337,7 @@ DoWorldEditor(engine_resources *Engine)
                 type_world_update_op_shape_params_chunk_data,
                 .world_update_op_shape_params_chunk_data = ChunkDataShape,
               };
-              QueueWorldUpdateForRegion(Engine, WorldEditMode, &Shape, {}, Engine->WorldUpdateMemory);
+              QueueWorldUpdateForRegion(Engine, WorldEditMode, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory);
             }
           } break;
 
