@@ -875,6 +875,91 @@ MapWorldEditModeToHighlightVoxelForSingleSelection(world_edit_mode WorldEditMode
 }
 
 link_internal void
+DoBrushSettingsWindow(engine_resources *Engine, world_edit_mode WorldEditMode, world_edit_tool WorldEditTool, world_edit_brush_type WorldEditBrushType)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  local_persist window_layout Window = WindowLayout("Brush Settings", WindowLayoutFlag_Align_Right);
+  PushWindowStart(Ui, &Window);
+  switch (WorldEditTool)
+  {
+    case  WorldEdit_Tool_Disabled:
+    case  WorldEdit_Tool_Select:
+    case  WorldEdit_Tool_Eyedropper:
+    case  WorldEdit_Tool_BlitEntity:
+    case  WorldEdit_Tool_StandingSpots:
+    {
+    } break;
+
+    case WorldEdit_Tool_Brush:
+    {
+      if (WorldEditBrushType == WorldEdit_BrushType_Noise)
+      {
+        noise_params *Params     = &Editor->NoiseEditor.Params;
+        noise_params *PrevParams = &Editor->NoiseEditor.PrevParams;
+
+        DoEditorUi(Ui, &Window, &Params->Type, CSz("Noise Type"), &DefaultUiRenderParams_Generic);
+        switch (Params->Type)
+        {
+          case NoiseType_None: {} break;
+
+          case NoiseType_Perlin:
+          {
+            perlin_noise_params *PerlinParams = &Editor->NoiseEditor.Params.PerlinParams;
+
+            DoEditorUi(Ui, &Window, PerlinParams, CSz("Perlin"));
+
+            if (Editor->SelectionClicks)
+            {
+              v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
+              v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
+
+              Params->ChunkSize = V3i(SelectionMaxP-SelectionMinP);
+
+              world_chunk *DestChunk = &Editor->NoiseEditor.Chunk;
+              if (DestChunk->Dim != Params->ChunkSize)
+              {
+                // TODO(Jesse): Figure out exactly how this works.  We can't allocate from the Editor
+                // memory pool because the goemetry buffers get freed to a freelist, and the editor memory
+                // pool gets cleared on game reload
+                //
+                // @editor_chunk_memory_question
+                //
+                /* DeallocateWorldChunk(DestChunk, MeshFreelist); */
+                AllocateWorldChunk(DestChunk, {}, Params->ChunkSize, Editor->Memory);
+              }
+
+              if (!AreEqual(Params, PrevParams))
+              {
+                *PrevParams = *Params;
+                DestChunk->Flags = Chunk_Queued;
+                InitializeChunkWithNoise( Noise_Perlin3D, GetThreadLocalState(ThreadLocal_ThreadIndex), DestChunk, DestChunk->Dim, {}, s32(PerlinParams->Period), s32(PerlinParams->Amplitude), s32(PerlinParams->Threshold), MeshBit_None, ChunkInitFlag_Noop, 0);
+                SyncGpuBuffersImmediate(Engine, &DestChunk->Meshes);
+              }
+
+              RenderToTexture(Engine, &Editor->NoiseEditor.PreviewThumbnail, &DestChunk->Meshes, V3(Params->ChunkSize)/-2.f);
+              RenderAndInteractWithThumbnailTexture(Ui, &Window, "noise preview interaction", &Editor->NoiseEditor.PreviewThumbnail);
+            }
+            else
+            {
+              PushColumn(Ui, CSz("Make a selection to use Noise Brush"));
+            }
+
+          } break;
+
+          case NoiseType_Voronoi:
+          {
+            DoEditorUi(Ui, &Window, &Editor->NoiseEditor.Params.VoronoiParams, CSz("Voronoi"));
+          } break;
+        }
+      }
+    } break;
+  }
+  PushWindowEnd(Ui, &Window);
+}
+
+
+link_internal void
 DoWorldEditor(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -970,83 +1055,6 @@ DoWorldEditor(engine_resources *Engine)
         if ( (ColorIndex+1) % 16 == 0 ) { PushNewRow(Ui); }
       }
     PushTableEnd(Ui);
-    PushWindowEnd(Ui, &Window);
-  }
-
-  {
-    local_persist window_layout Window = WindowLayout("Brush Settings", WindowLayoutFlag_Align_Right);
-    PushWindowStart(Ui, &Window);
-    switch (WorldEditTool)
-    {
-      case  WorldEdit_Tool_Disabled:
-      case  WorldEdit_Tool_Select:
-      case  WorldEdit_Tool_Eyedropper:
-      case  WorldEdit_Tool_BlitEntity:
-      case  WorldEdit_Tool_StandingSpots:
-      {
-      } break;
-
-      case WorldEdit_Tool_Brush:
-      {
-        noise_params *Params     = &Editor->NoiseEditor.Params;
-        noise_params *PrevParams = &Editor->NoiseEditor.PrevParams;
-
-        DoEditorUi(Ui, &Window, &Params->Type, CSz("Noise Type"), &DefaultUiRenderParams_Generic);
-        switch (Params->Type)
-        {
-          case NoiseType_None: {} break;
-
-          case NoiseType_Perlin:
-          {
-            perlin_noise_params *PerlinParams = &Editor->NoiseEditor.Params.PerlinParams;
-
-            DoEditorUi(Ui, &Window, PerlinParams, CSz("Perlin"));
-
-            if (Editor->SelectionClicks)
-            {
-              v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
-              v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
-
-              Params->ChunkSize = V3i(SelectionMaxP-SelectionMinP);
-
-              world_chunk *DestChunk = &Editor->NoiseEditor.Chunk;
-              if (DestChunk->Dim != Params->ChunkSize)
-              {
-                // TODO(Jesse): Figure out exactly how this works.  We can't allocate from the Editor
-                // memory pool because the goemetry buffers get freed to a freelist, and the editor memory
-                // pool gets cleared on game reload
-                //
-                // @editor_chunk_memory_question
-                //
-                /* DeallocateWorldChunk(DestChunk, MeshFreelist); */
-                AllocateWorldChunk(DestChunk, {}, Params->ChunkSize, Editor->Memory);
-              }
-
-              if (!AreEqual(Params, PrevParams))
-              {
-                *PrevParams = *Params;
-                DestChunk->Flags = Chunk_Queued;
-                InitializeChunkWithNoise( Noise_Perlin3D, GetThreadLocalState(ThreadLocal_ThreadIndex), DestChunk, DestChunk->Dim, {}, s32(PerlinParams->Period), s32(PerlinParams->Amplitude), s32(PerlinParams->Threshold), MeshBit_None, ChunkInitFlag_Noop, 0);
-                SyncGpuBuffersImmediate(Engine, &DestChunk->Meshes);
-              }
-
-              RenderToTexture(Engine, &Editor->NoiseEditor.PreviewThumbnail, &DestChunk->Meshes, V3(Params->ChunkSize)/-2.f);
-              RenderAndInteractWithThumbnailTexture(Ui, &Window, "noise preview interaction", &Editor->NoiseEditor.PreviewThumbnail);
-            }
-            else
-            {
-              PushColumn(Ui, CSz("Make a selection to use Noise Brush"));
-            }
-
-          } break;
-
-          case NoiseType_Voronoi:
-          {
-            DoEditorUi(Ui, &Window, &Editor->NoiseEditor.Params.VoronoiParams, CSz("Voronoi"));
-          } break;
-        }
-      } break;
-    }
     PushWindowEnd(Ui, &Window);
   }
 
@@ -1194,6 +1202,11 @@ DoWorldEditor(engine_resources *Engine)
   }
 
 
+  if (WorldEditTool == WorldEdit_Tool_Brush)
+  {
+    DoBrushSettingsWindow(Engine, WorldEditMode, WorldEditTool, WorldEditBrushType);
+  }
+
   //
   //
   // Edit tool interactions in the world
@@ -1318,7 +1331,7 @@ DoWorldEditor(engine_resources *Engine)
 
           case WorldEdit_BrushType_Selection:
           {
-            if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
+            if (WorldEditMode && Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
             {
               DoSelectionRegionEdit(Engine, &SelectionAABB, WorldEditMode);
             }
