@@ -856,6 +856,8 @@ MapWorldEditModeToHighlightVoxelForSingleSelection(world_edit_mode WorldEditMode
 
   switch (WorldEditMode)
   {
+    InvalidCase(WorldEdit_Mode_Count);
+
     case WorldEdit_Mode_Disabled:
     case WorldEdit_Mode_Attach:
     {
@@ -1193,6 +1195,8 @@ DoWorldEditor(engine_resources *Engine)
   {
     switch (WorldEditMode)
     {
+      InvalidCase(WorldEdit_Mode_Count);
+
       case WorldEdit_Mode_Disabled:
       case WorldEdit_Mode_Paint:
       case WorldEdit_Mode_Attach:

@@ -310,7 +310,7 @@ DoSplotion( engine_resources *Resources, cp PickCP, f32 Radius, random_series *E
     .world_update_op_shape_params_sphere.Radius = Radius,
     .world_update_op_shape_params_sphere.Location = PickCP,
   };
-  QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Remove, WorldEditModeModifier_Flood, &Shape, DARK_GREY, Resources->WorldUpdateMemory);
+  QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Remove, WorldEdit_Modifier_Flood, &Shape, DARK_GREY, Resources->WorldUpdateMemory);
   /* QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Remove, WorldUpdateModeModifier_None, &Shape, DARK_GREY, Resources->WorldUpdateMemory); */
   /* QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Attach, WorldUpdateModeModifier_None, &Shape, DARK_GREY, Resources->WorldUpdateMemory); */
   /* QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Attach, WorldUpdatenModeModifier_Flood, &Shape, DARK_GREY, Resources->WorldUpdateMemory); */

@@ -80,13 +80,22 @@ enum world_update_op_shape_type
   type_world_update_op_shape_params_rect,
   type_world_update_op_shape_params_asset,
   type_world_update_op_shape_params_chunk_data,
+
+  type_world_update_op_shape_params_count,
 };
+
+poof(string_and_value_tables(world_update_op_shape_type))
+#include <generated/string_and_value_tables_world_update_op_shape_type.h>
 
 struct world_update_op_shape_params_sphere
 {
   canonical_position Location;
   f32 Radius;
 };
+
+
+
+
 
 struct world_update_op_shape_params_rect
 {
@@ -128,11 +137,16 @@ struct world_update_op_shape
   };
 };
 
+// TODO(Jesse): Rename to reflect that it's the iteration pattern
 enum world_edit_mode_modifier
 {
-  WorldEditModeModifier_None,
-  WorldEditModeModifier_Flood,
+  WorldEdit_Modifier_None,
+  WorldEdit_Modifier_Flood,
+  WorldEdit_Modifier_Count,
 };
+
+poof(string_and_value_tables(world_edit_mode_modifier))
+#include <generated/string_and_value_tables_world_edit_mode_modifier.h>
 
 
 struct work_queue_entry_update_world_region
@@ -169,6 +183,96 @@ struct work_queue_entry__align_to_cache_line_helper
   u8 Pad[(CACHE_LINE_SIZE*4) -8];
 };
 CAssert( (sizeof(work_queue_entry__align_to_cache_line_helper)+8) % CACHE_LINE_SIZE == 0);
+
+
+
+
+
+
+#if VOXEL_DEBUG_COLOR
+global_variable voxel Global_UnsetVoxel = { 0xff, 0xff, 0xffff, {}, {}};
+#else
+global_variable voxel Global_UnsetVoxel = { 0xff, 0xff, 0xffff };
+#endif
+
+
+poof(
+  func rectilinear_world_update_inplace(type_poof_symbol MetaMode,
+                                        type_poof_symbol MetaModifier,
+                                        type_poof_symbol MetaShapeType,
+                                        type_poof_symbol UserCode)
+  {
+    link_internal void
+    RectilinearWorldUpdate_(MetaMode)_(MetaModifier)_(MetaShapeType)
+    (          world_edit_mode   Mode,
+      world_edit_mode_modifier   Modifier,
+         world_update_op_shape  *Shape,
+                   world_chunk **ChunkBuffer,
+                           u32   ChunkCount,
+                        rect3i  *SimSpaceQueryAABB,
+                         voxel  *CopiedVoxels )
+    {
+
+      Assert(Mode == MetaMode);
+      Assert(Modifier == MetaModifier);
+      Assert(Shape->Type == MetaShapeType);
+
+      /* v3i SimSpaceQueryMinP = V3i(SimSpaceQueryAABB->Min); */
+      v3i SimSpaceQueryDim = GetDim(*SimSpaceQueryAABB);
+      Assert(SimSpaceQueryDim.x % Global_StandingSpotDim.x == 0);
+      Assert(SimSpaceQueryDim.y % Global_StandingSpotDim.y == 0);
+
+      DimIterator(x, y, z, SimSpaceQueryDim)
+      {
+        v3i SimRelVoxP = V3i(x,y,z);
+        /* v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min; */
+        voxel *V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
+
+        UserCode
+      }
+    }
+
+    // Unfortunately, the C compiler is too stupid to do this.  I'm leaving
+    // this here such that when adding a new callback you can manually paste
+    // this line into Initialize_Global_UpdateWorldCallbackTable()
+    //
+    static const char* lolwut_StringHack_(MetaMode)_(MetaModifier)_(MetaShapeType) = "Global_WorldUpdateCallbackTable[MetaMode][MetaModifier][MetaShapeType] = RectilinearWorldUpdate_(MetaMode)_(MetaModifier)_(MetaShapeType);";
+  }
+)
+
+
+typedef void(*world_update_callback)(world_edit_mode, world_edit_mode_modifier, world_update_op_shape *, world_chunk **, u32, rect3i *, voxel *);
+
+global_variable world_update_callback
+Global_WorldUpdateCallbackTable[WorldEdit_Mode_Count][WorldEdit_Modifier_Count][type_world_update_op_shape_params_count];
+
+
+poof(rectilinear_world_update_inplace( {WorldEdit_Mode_Attach},
+                                       {WorldEdit_Modifier_None},
+                                       {type_world_update_op_shape_params_rect},
+  {
+    world_update_op_shape_params_rect *Rect = SafeCast(world_update_op_shape_params_rect, Shape);
+    rect3i SSRect = {V3i(Rect->P0), V3i(Rect->P1)};
+
+    /* voxel NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor}; */
+    /* if (Contains(SSRect, SimVoxP)) { *V = NewVoxelValue; } */
+  }
+))
+#include <generated/rectilinear_world_update_inplace_606674763_323214162_687443974_863974643.h>
+
+link_internal void
+Initialize_Global_UpdateWorldCallbackTable()
+{
+  Global_WorldUpdateCallbackTable[WorldEdit_Mode_Attach][WorldEdit_Modifier_None][type_world_update_op_shape_params_rect] = RectilinearWorldUpdate_WorldEdit_Mode_Attach_WorldEdit_Modifier_None_type_world_update_op_shape_params_rect;
+}
+
+
+
+
+
+
+
+
 
 
 
@@ -235,3 +339,6 @@ TakeOwnershipSync(lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit);
 
 link_internal void
 ReleaseOwnership(lod_element_buffer *Src, world_chunk_mesh_bitfield MeshBit, untextured_3d_geometry_buffer *Buf);
+
+
+

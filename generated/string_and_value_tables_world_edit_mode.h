@@ -1,4 +1,4 @@
-// src/engine/editor.h:538:0
+// src/engine/editor.h:567:0
 
 link_internal counted_string
 ToString(world_edit_mode Type)
@@ -6,9 +6,11 @@ ToString(world_edit_mode Type)
   counted_string Result = {};
   switch (Type)
   {
-    case WorldEditMode_Paint: { Result = CSz("WorldEditMode_Paint"); } break;
-    case WorldEditMode_Attach: { Result = CSz("WorldEditMode_Attach"); } break;
-    case WorldEditMode_Remove: { Result = CSz("WorldEditMode_Remove"); } break;
+    case WorldEdit_Mode_Disabled: { Result = CSz("WorldEdit_Mode_Disabled"); } break;
+    case WorldEdit_Mode_Paint: { Result = CSz("WorldEdit_Mode_Paint"); } break;
+    case WorldEdit_Mode_Attach: { Result = CSz("WorldEdit_Mode_Attach"); } break;
+    case WorldEdit_Mode_Remove: { Result = CSz("WorldEdit_Mode_Remove"); } break;
+    case WorldEdit_Mode_Count: { Result = CSz("WorldEdit_Mode_Count"); } break;
 
     
   }
@@ -20,9 +22,11 @@ WorldEditMode(counted_string S)
 {
   world_edit_mode Result = {};
 
-  if (StringsMatch(S, CSz("WorldEditMode_Paint"))) { return WorldEditMode_Paint; }
-  if (StringsMatch(S, CSz("WorldEditMode_Attach"))) { return WorldEditMode_Attach; }
-  if (StringsMatch(S, CSz("WorldEditMode_Remove"))) { return WorldEditMode_Remove; }
+  if (StringsMatch(S, CSz("WorldEdit_Mode_Disabled"))) { return WorldEdit_Mode_Disabled; }
+  if (StringsMatch(S, CSz("WorldEdit_Mode_Paint"))) { return WorldEdit_Mode_Paint; }
+  if (StringsMatch(S, CSz("WorldEdit_Mode_Attach"))) { return WorldEdit_Mode_Attach; }
+  if (StringsMatch(S, CSz("WorldEdit_Mode_Remove"))) { return WorldEdit_Mode_Remove; }
+  if (StringsMatch(S, CSz("WorldEdit_Mode_Count"))) { return WorldEdit_Mode_Count; }
 
   return Result;
 }

@@ -538,14 +538,16 @@ enum world_edit_brush_type
   WorldEdit_BrushType_Noise,
 };
 
+// TODO(Jesse): Rename to .. something something behavior ?
 enum world_edit_mode
 {
   WorldEdit_Mode_Disabled, // poof(@ui_skip)
   WorldEdit_Mode_Paint,
   WorldEdit_Mode_Attach,
   WorldEdit_Mode_Remove,
-};
 
+  WorldEdit_Mode_Count,
+};
 
 poof(toggle_button_group_for_enum(engine_debug_view_mode))
 #include <generated/toggle_button_group_for_enum_engine_debug_view_mode.h>
@@ -562,8 +564,8 @@ poof(do_editor_ui_for_enum(ui_noise_type))
 poof(do_editor_ui_for_radio_enum(asset_window_view_mode))
 #include <generated/do_editor_ui_for_radio_enum_asset_window_view_mode.h>
 
-/* poof(string_and_value_tables(world_edit_mode)) */
-/* #include <generated/string_and_value_tables_world_edit_mode.h> */
+poof(string_and_value_tables(world_edit_mode))
+#include <generated/string_and_value_tables_world_edit_mode.h>
 /* poof(radio_button_group_for_bitfield_enum(world_edit_mode)); */
 /* #include <generated/radio_button_group_for_bitfield_enum_world_edit_mode.h> */
 

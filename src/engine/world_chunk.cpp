@@ -3818,6 +3818,7 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_edit_mode Mode, world_
   switch (Shape->Type)
   {
     InvalidCase(type_world_update_op_shape_params_noop);
+    InvalidCase(type_world_update_op_shape_params_count);
 
     case type_world_update_op_shape_params_sphere:
     {
@@ -3940,7 +3941,7 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_edit_mode Mode, world_
 link_internal void
 QueueWorldUpdateForRegion(engine_resources *Engine, world_edit_mode Mode, world_update_op_shape *Shape, u16 ColorIndex, memory_arena *Memory)
 {
-  QueueWorldUpdateForRegion(Engine, Mode, WorldEditModeModifier_None, Shape, ColorIndex, Memory);
+  QueueWorldUpdateForRegion(Engine, Mode, WorldEdit_Modifier_None, Shape, ColorIndex, Memory);
 }
 
 link_internal u32
@@ -4018,13 +4019,17 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
   auto _P0 = GetSimSpaceP(World, MinP);
   auto _P1 = GetSimSpaceP(World, MaxP);
-  auto P0 = Min(_P0, _P1); 
+
+  // TODO(Jesse): Should these not just be assertions?  Pretty sure the calling
+  // code makes sure these are already in 'sorted' order.
+  auto P0 = Min(_P0, _P1);
   auto P1 = Max(_P0, _P1);
 
   // NOTE(Jesse): These are meant to truncate instead of floor
   rect3i SimSpaceQueryAABB = Rect3iMinMax( V3i(P0), V3i(P1) );
 
   v3i QueryDim = GetDim(SimSpaceQueryAABB);
+  v3i SimSpaceQueryMinP = SimSpaceQueryAABB.Min;
   v3i SimSpaceQueryDim = QueryDim;
 
   Assert(QueryDim.x % Global_StandingSpotDim.x == 0);
@@ -4037,16 +4042,9 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
   voxel *CopiedVoxels = Allocate(voxel, Thread->PermMemory, TotalVoxels);
 
-#if VOXEL_DEBUG_COLOR
-  voxel UnsetVoxel = { 0xff, 0xff, 0xffff, {}, {}};
-#else
-  voxel UnsetVoxel = { 0xff, 0xff, 0xffff };
-#endif
-  for (u32 VoxelIndex = 0; VoxelIndex < TotalVoxels; ++VoxelIndex) { CopiedVoxels[VoxelIndex] = UnsetVoxel; }
+  for (u32 VoxelIndex = 0; VoxelIndex < TotalVoxels; ++VoxelIndex) { CopiedVoxels[VoxelIndex] = Global_UnsetVoxel; }
 
-  v3i SimSpaceQueryMinP = SimSpaceQueryAABB.Min;
-
-
+#if 1
   for (u32 ChunkIndex = 0; ChunkIndex < ChunkCount; ++ChunkIndex)
   {
     world_chunk *Chunk = ChunkBuffer[ChunkIndex];
@@ -4077,13 +4075,25 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           Assert(SimSpaceQueryMinP <= SimSpaceVoxPExact);
           u32 Index = MapIntoQueryBox(SimSpaceVoxPExact, SimSpaceQueryMinP, QueryDim);
           Assert(Index < TotalVoxels);
-          Assert(CopiedVoxels[Index] == UnsetVoxel);
+          Assert(CopiedVoxels[Index] == Global_UnsetVoxel);
           CopiedVoxels[Index] = *V;
         }
       }
     }
   }
+#endif
 
+#if 0
+  world_update_callback Callback = Global_WorldUpdateCallbackTable[Mode][Modifier][Shape.Type];
+  if (Callback)
+  {
+    Callback(Mode, Modifier, &Shape, ChunkBuffer, ChunkCount, &SimSpaceQueryAABB, CopiedVoxels);
+  }
+  else
+  {
+    Warn("Attempted to index into an un-implemented world update callback (%S)(%S)(%S).", ToString(Mode), ToString(Modifier), ToString(Shape.Type));
+  }
+#else
   { // NOTE(Jesse): This scope is here just to jump around in my editor
     voxel *V = 0;
 
@@ -4098,6 +4108,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
     switch (Shape.Type)
     {
+      InvalidCase(type_world_update_op_shape_params_count);
       InvalidCase(type_world_update_op_shape_params_noop);
 
       case type_world_update_op_shape_params_sphere:
@@ -4110,6 +4121,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
         switch(Mode)
         {
+          InvalidCase(WorldEdit_Mode_Count);
           InvalidCase(WorldEdit_Mode_Disabled);
 
           /* case WorldEdit_Mode_StandingSpots: {} break; */
@@ -4118,7 +4130,9 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           {
             switch(Modifier)
             {
-              case WorldEditModeModifier_None:
+              InvalidCase(WorldEdit_Modifier_Count);
+
+              case WorldEdit_Modifier_None:
               {
                 poof(rectalinear_iteration_pattern({
                   v3i CenterToVoxP = SimVoxP - SimSphereP;
@@ -4127,7 +4141,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 #include <generated/rectalinear_iteration_pattern_812652930.h>
               } break;
 
-              case WorldEditModeModifier_Flood:
+              case WorldEdit_Modifier_Flood:
               {
                 // TODO(Jesse): Do we want to try and keep the amount of temp memory to a minimum here?
                 voxel_stack_element_cursor Stack = VoxelStackElementCursor(umm(TotalVoxels*6), Thread->TempMemory);
@@ -4241,7 +4255,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
           case WorldEdit_Mode_Attach:
           {
-            Assert(Modifier == WorldEditModeModifier_None); // Not Implemented
+            Assert(Modifier == WorldEdit_Modifier_None); // Not Implemented
 
             poof(rectalinear_iteration_pattern({
               v3i CenterToVoxP = SimVoxP - SimSphereP;
@@ -4255,9 +4269,10 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           {
             switch(Modifier)
             {
-              InvalidCase(WorldEditModeModifier_Flood);
+              InvalidCase(WorldEdit_Modifier_Count);
+              InvalidCase(WorldEdit_Modifier_Flood);
 
-              case WorldEditModeModifier_None:
+              case WorldEdit_Modifier_None:
               {
                 poof(rectalinear_iteration_pattern({
                   v3i CenterToVoxP = SimVoxP - SimSphereP;
@@ -4273,7 +4288,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
       case type_world_update_op_shape_params_rect:
       {
-        Assert(Modifier == WorldEditModeModifier_None); // Not Implemented
+        Assert(Modifier == WorldEdit_Modifier_None); // Not Implemented
 
         world_update_op_shape_params_rect *Rect = SafeCast(world_update_op_shape_params_rect, &Shape);
 
@@ -4285,6 +4300,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
         switch(Mode)
         {
+          InvalidCase(WorldEdit_Mode_Count);
           InvalidCase(WorldEdit_Mode_Disabled);
 
           case WorldEdit_Mode_Attach:
@@ -4321,7 +4337,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
       {
         case type_world_update_op_shape_params_asset:
         {
-          Assert(Modifier == WorldEditModeModifier_None); // Not Implemented
+          Assert(Modifier == WorldEdit_Modifier_None); // Not Implemented
           world_update_op_shape_params_asset *AssetJob = SafeCast(world_update_op_shape_params_asset, &Shape);
           /* asset *Asset = AssetJob->Asset; */
           /* Assert(Asset->Models.Count > 0); */
@@ -4334,7 +4350,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
         case type_world_update_op_shape_params_chunk_data:
         {
-          Assert(Modifier == WorldEditModeModifier_None); // Not Implemented
+          Assert(Modifier == WorldEdit_Modifier_None); // Not Implemented
 
           if (Data == 0)
           {
@@ -4345,6 +4361,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
           switch(Mode)
           {
+            InvalidCase(WorldEdit_Mode_Count);
             InvalidCase(WorldEdit_Mode_Disabled);
 
             case WorldEdit_Mode_Remove:
@@ -4384,16 +4401,19 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
       }
     }
   }
+#endif
 
 
   // NOTE(Jesse): We can actually do the entire dim here, but it's probably
   // better (faster) to just do what we actually need to
+
   MarkBoundaryVoxels_NoExteriorFaces( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-1, &ColorEntropy, GREY_5, GREY_7);
   /* MarkBoundaryVoxels_NoExteriorFaces( CopiedVoxels, QueryDim, {}, QueryDim, &ColorEntropy, GREY_5, GREY_7); */
   /* MarkBoundaryVoxels_MakeExteriorFaces( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-1); */
   /* MarkBoundaryVoxels_MakeExteriorFaces( CopiedVoxels, QueryDim, {}, QueryDim); */
 
 
+#if 1
   for (u32 ChunkIndex = 0; ChunkIndex < ChunkCount; ++ChunkIndex)
   {
     world_chunk *Chunk = ChunkBuffer[ChunkIndex];
@@ -4423,7 +4443,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           Assert(SimSpaceQueryMinP <= SimSpaceVoxPExact);
           u32 Index = MapIntoQueryBox(SimSpaceVoxPExact, SimSpaceQueryMinP, QueryDim);
           Assert(Index < TotalVoxels);
-          Assert(CopiedVoxels[Index] != UnsetVoxel);
+          Assert(CopiedVoxels[Index] != Global_UnsetVoxel);
 
           Assert( (V->Flags & Voxel_MarkBit) == 0);
 #if VOXEL_DEBUG_COLOR
@@ -4438,6 +4458,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
       }
     }
   }
+#endif
 
 
   // DEBUG CODE
@@ -4474,6 +4495,9 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   voxel_position_cursor StandingSpots = V3iCursor(ChunkCount*WORLD_CHUNK_STANDING_SPOT_COUNT, Thread->TempMemory);
 
   /* if (GetLevelEditor()->Flags & LevelEditorFlags_StandingSpotsOnLevelLoad) */
+#if 0
+  NotImplemented;
+#else
   {
     ComputeStandingSpots( QueryDim, CopiedVoxels, {},
                           {},
@@ -4482,7 +4506,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
                           0,
                           &StandingSpots, Thread->TempMemory );
   }
-
+#endif
 
   FullBarrier;
   for (u32 ChunkIndex = 0; ChunkIndex < ChunkCount; ++ChunkIndex)
