@@ -3981,6 +3981,23 @@ poof(block_array(voxel_stack_element, {32}))
 poof(generate_cursor(voxel_stack_element))
 #include <generated/generate_cursor_voxel_stack_element.h>
 
+
+
+poof(
+  func rectalinear_iteration_pattern(type_poof_symbol UserCode) @code_fragment
+  {
+    DimIterator(x, y, z, SimSpaceQueryDim)
+    {
+      v3i SimRelVoxP = V3i(x,y,z);
+      v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
+      V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
+
+      UserCode
+    }
+
+  }
+)
+
 link_internal void
 DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_queue_entry_update_world_region *Job)
 {
@@ -4103,17 +4120,11 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
             {
               case WorldEditModeModifier_None:
               {
-                DimIterator(x, y, z, SimSpaceQueryDim)
-                {
-                  v3i SimRelVoxP = V3i(x,y,z);
-                  v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
+                poof(rectalinear_iteration_pattern({
                   v3i CenterToVoxP = SimVoxP - SimSphereP;
-                  V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
-                  if (LengthSq(CenterToVoxP) < RadiusSquared)
-                  {
-                    V->Flags = Voxel_Empty;
-                  }
-                }
+                  if (LengthSq(CenterToVoxP) < RadiusSquared) { V->Flags = Voxel_Empty; }
+                }))
+#include <generated/rectalinear_iteration_pattern_812652930.h>
               } break;
 
               case WorldEditModeModifier_Flood:
@@ -4230,20 +4241,13 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
           case WorldEdit_Mode_Attach:
           {
-            // Not Implemented
-            Assert(Modifier == WorldEditModeModifier_None);
+            Assert(Modifier == WorldEditModeModifier_None); // Not Implemented
 
-            DimIterator(x, y, z, SimSpaceQueryDim)
-            {
-              v3i SimRelVoxP = V3i(x,y,z);
-              v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
+            poof(rectalinear_iteration_pattern({
               v3i CenterToVoxP = SimVoxP - SimSphereP;
-              V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
-              if (LengthSq(CenterToVoxP) < RadiusSquared)
-              {
-                V->Flags = Voxel_Filled;
-              }
-            }
+              if (LengthSq(CenterToVoxP) < RadiusSquared) { V->Flags = Voxel_Filled; }
+            }))
+#include <generated/rectalinear_iteration_pattern_199114513.h>
           } break;
 
 
@@ -4255,17 +4259,11 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
               case WorldEditModeModifier_None:
               {
-                DimIterator(x, y, z, SimSpaceQueryDim)
-                {
-                  v3i SimRelVoxP = V3i(x,y,z);
-                  v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
+                poof(rectalinear_iteration_pattern({
                   v3i CenterToVoxP = SimVoxP - SimSphereP;
-                  V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
-                  if (LengthSq(CenterToVoxP) < RadiusSquared)
-                  {
-                    if (V->Flags & Voxel_Filled) { V->Color = NewColor; }
-                  }
-                }
+                  if (LengthSq(CenterToVoxP) < RadiusSquared) { if (V->Flags & Voxel_Filled) { V->Color = NewColor; } }
+                }))
+#include <generated/rectalinear_iteration_pattern_651830000.h>
               } break;
             }
 
@@ -4275,8 +4273,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
       case type_world_update_op_shape_params_rect:
       {
-        // Not implemented
-        Assert(Modifier == WorldEditModeModifier_None);
+        Assert(Modifier == WorldEditModeModifier_None); // Not Implemented
 
         world_update_op_shape_params_rect *Rect = SafeCast(world_update_op_shape_params_rect, &Shape);
 
@@ -4286,49 +4283,37 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
         // NOTE(Jesse): These are specifically meant to truncate, not floor
         rect3i SSRect = {V3i(Rect->P0), V3i(Rect->P1)};
 
-        voxel NewVoxelValue = {};
         switch(Mode)
         {
           InvalidCase(WorldEdit_Mode_Disabled);
 
-          /* case WorldEdit_Mode_StandingSpots: {} break; */
-
           case WorldEdit_Mode_Attach:
-          {
-#if VOXEL_DEBUG_COLOR
-            NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor, {}, {}};
-#else
-            NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor};
-#endif
-            DimIterator(x, y, z, SimSpaceQueryDim)
-            {
-              v3i SimRelVoxP = V3i(x,y,z);
-              v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
-              V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
-              if (Contains(SSRect, SimVoxP)) { *V = NewVoxelValue; }
-            }
-          } break;
-
           case WorldEdit_Mode_Remove:
           {
-            DimIterator(x, y, z, SimSpaceQueryDim)
+            voxel NewVoxelValue = {};
+
+            if (Mode == WorldEdit_Mode_Attach)
             {
-              v3i SimRelVoxP = V3i(x,y,z);
-              v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
-              V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
-              if (Contains(SSRect, SimVoxP)) { *V = NewVoxelValue; }
+#if VOXEL_DEBUG_COLOR
+              NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor, {}, {}};
+#else
+              NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor};
+#endif
             }
+
+            poof(rectalinear_iteration_pattern({
+              if (Contains(SSRect, SimVoxP)) { *V = NewVoxelValue; }
+            }))
+#include <generated/rectalinear_iteration_pattern_416827956.h>
+
           } break;
 
           case WorldEdit_Mode_Paint:
           {
-            DimIterator(x, y, z, SimSpaceQueryDim)
-            {
-              v3i SimRelVoxP = V3i(x,y,z);
-              v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
-              V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
+            poof(rectalinear_iteration_pattern({
               if (Contains(SSRect, SimVoxP)) { if (V->Flags & Voxel_Filled) { V->Color = NewColor; } }
-            }
+            }))
+#include <generated/rectalinear_iteration_pattern_99934950.h>
           } break;
         }
       } break;
@@ -4336,7 +4321,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
       {
         case type_world_update_op_shape_params_asset:
         {
-          Assert(Modifier == WorldEditModeModifier_None);
+          Assert(Modifier == WorldEditModeModifier_None); // Not Implemented
           world_update_op_shape_params_asset *AssetJob = SafeCast(world_update_op_shape_params_asset, &Shape);
           /* asset *Asset = AssetJob->Asset; */
           /* Assert(Asset->Models.Count > 0); */
@@ -4349,8 +4334,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
         case type_world_update_op_shape_params_chunk_data:
         {
-          // Not implemented
-          Assert(Modifier == WorldEditModeModifier_None);
+          Assert(Modifier == WorldEditModeModifier_None); // Not Implemented
 
           if (Data == 0)
           {
@@ -4365,50 +4349,32 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
             case WorldEdit_Mode_Remove:
             {
-              DimIterator(x, y, z, SimSpaceQueryDim)
-              {
-                v3i SimRelVoxP = V3i(x,y,z);
-                v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
-                V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
-
-                {
-                  v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
-                  voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
-                  if (AssetV && (AssetV->Flags&Voxel_Filled)) { V->Flags = Voxel_Empty; }
-                }
-              }
+              poof(rectalinear_iteration_pattern({
+                v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
+                voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
+                if (AssetV && (AssetV->Flags&Voxel_Filled)) { V->Flags = Voxel_Empty; }
+              }))
+#include <generated/rectalinear_iteration_pattern_428632106.h>
             } break;
 
             case WorldEdit_Mode_Paint:
             {
-              DimIterator(x, y, z, SimSpaceQueryDim)
-              {
-                v3i SimRelVoxP = V3i(x,y,z);
-                v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
-                V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
-
-                {
-                  v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
-                  voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
-                  if (AssetV && (AssetV->Flags&Voxel_Filled)) { V->Color = NewColor; }
-                }
-              }
+              poof(rectalinear_iteration_pattern({
+                v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
+                voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
+                if (AssetV && (AssetV->Flags&Voxel_Filled)) { V->Color = NewColor; }
+              }))
+#include <generated/rectalinear_iteration_pattern_583358156.h>
             } break;
 
             case WorldEdit_Mode_Attach:
             {
-              DimIterator(x, y, z, SimSpaceQueryDim)
-              {
-                v3i SimRelVoxP = V3i(x,y,z);
-                v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
-                V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
-
-                {
-                  v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
-                  voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
-                  if (AssetV && (AssetV->Flags&Voxel_Filled)) { *V = *AssetV; }
-                }
-              }
+              poof(rectalinear_iteration_pattern({
+                v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
+                voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
+                if (AssetV && (AssetV->Flags&Voxel_Filled)) { *V = *AssetV; }
+              }))
+#include <generated/rectalinear_iteration_pattern_122717011.h>
             } break;
           }
 
