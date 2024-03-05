@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:420:0
+// src/engine/editor.cpp:426:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)

@@ -8,7 +8,7 @@ InitEditor(level_editor *Editor)
   Editor->AssetThumbnails.Memory = Editor->Memory;
 
   {
-    Editor->NoiseEditor.PreviewThumbnail.Texture = MakeTexture_RGB(V2i(1024), 0, CSz("NoisePreviewTexture"));
+    Editor->NoiseEditor.PreviewThumbnail.Texture = MakeTexture_RGB(V2i(512), 0, CSz("NoisePreviewTexture"));
     StandardCamera(&Editor->NoiseEditor.PreviewThumbnail.Camera, 10000.f, 1000.f, 30.f);
   }
 
@@ -24,6 +24,12 @@ HardResetEditor(level_editor *Editor)
   {
     DeleteTexture(&Thumb->Texture);
   }
+
+  // @editor_chunk_memory_question
+  //
+  // I guess here we can actually just not worry about clearing it because
+  // it'll get realloc'd in the update path ..?  Seems fine..
+  /* DeallocateWorldChunk(&Editor->NoiseEditor.Chunk, &GetEngineResources()->MeshFreelist); */
 
   VaporizeArena(Editor->Memory);
 
@@ -519,32 +525,9 @@ GetMax(v3 *SelectionRegion)
   return Result;
 }
 
-/* link_internal void */
-/* DoDeleteRegion(engine_resources *Engine, rect3 *AABB) */
-/* { */
-/*   world_update_op_shape Shape = { */
-/*     .Type = type_world_update_op_shape_params_rect, */
-/*     .world_update_op_shape_params_rect.P0 = AABB->Min, */
-/*     .world_update_op_shape_params_rect.P1 = AABB->Max, */
-/*   }; */
-/*   QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Subtractive, &Shape, Engine->Editor.SelectedColorIndex, Engine->WorldUpdateMemory); */
-/* } */
-
 link_internal void
 DoSelectionRegionEdit(engine_resources *Engine, rect3 *SelectionAABB, world_edit_mode WorldEditMode)
 {
-  /* world_edit_mode UpdateOpMode = {}; */
-
-  /* switch (WorldEditMode) */
-  /* { */
-  /*   case WorldEdit_Mode_Disabled: {} break; */
-  /*   /1* case WorldEdit_Mode_Select: {} break; *1/ */
-  /*   case WorldEdit_Mode_Paint:  { UpdateOpMode = WorldUpdateOperationMode_Paint;       } break; */
-  /*   case WorldEdit_Mode_Attach: { UpdateOpMode = WorldEdit_Mode_Attach;    } break; */
-  /*   case WorldEdit_Mode_Remove: { UpdateOpMode = WorldUpdateOperationMode_Subtractive; } break; */
-  /* } */
-  /* Assert(UpdateOpMode); */
-
   world_update_op_shape Shape = {
     .Type = type_world_update_op_shape_params_rect,
     .world_update_op_shape_params_rect.P0 = SelectionAABB->Min,
@@ -924,17 +907,18 @@ DoWorldEditor(engine_resources *Engine)
       {
         Params.RelativePosition.Position   = Position_RightOf;
         Params.RelativePosition.RelativeTo = CurrentRef;
-        WorldEditModeButtonGroup = DoEditorUi(Ui, &Window, &WorldEditMode, CSz("Mode"), &Params, ToggleButtonGroupFlags_DrawVertical);
-        CurrentRef = WorldEditModeButtonGroup.UiRef;
+        WorldEditBrushTypeButtonGroup = DoEditorUi(Ui, &Window, &WorldEditBrushType, CSz("Brush Type"), &Params, ToggleButtonGroupFlags_DrawVertical);
+        CurrentRef = WorldEditBrushTypeButtonGroup.UiRef;
       }
 
       if (WorldEditTool == WorldEdit_Tool_Brush)
       {
         Params.RelativePosition.Position   = Position_RightOf;
         Params.RelativePosition.RelativeTo = CurrentRef;
-        WorldEditBrushTypeButtonGroup = DoEditorUi(Ui, &Window, &WorldEditBrushType, CSz("Brush Type"), &Params, ToggleButtonGroupFlags_DrawVertical);
-        CurrentRef = WorldEditBrushTypeButtonGroup.UiRef;
+        WorldEditModeButtonGroup = DoEditorUi(Ui, &Window, &WorldEditMode, CSz("Mode"), &Params, ToggleButtonGroupFlags_DrawVertical);
+        CurrentRef = WorldEditModeButtonGroup.UiRef;
       }
+
     PushTableEnd(Ui);
 
 
@@ -1028,7 +1012,13 @@ DoWorldEditor(engine_resources *Engine)
               world_chunk *DestChunk = &Editor->NoiseEditor.Chunk;
               if (DestChunk->Dim != Params->ChunkSize)
               {
-                DeallocateWorldChunk(DestChunk, MeshFreelist);
+                // TODO(Jesse): Figure out exactly how this works.  We can't allocate from the Editor
+                // memory pool because the goemetry buffers get freed to a freelist, and the editor memory
+                // pool gets cleared on game reload
+                //
+                // @editor_chunk_memory_question
+                //
+                /* DeallocateWorldChunk(DestChunk, MeshFreelist); */
                 AllocateWorldChunk(DestChunk, {}, Params->ChunkSize, Editor->Memory);
               }
 
@@ -1213,13 +1203,11 @@ DoWorldEditor(engine_resources *Engine)
   if ( UiCapturedMouseInput(Ui) == False &&
        UiHoveredMouseInput(Ui)  == False  )
   {
-    switch (WorldEditMode)
+    switch (WorldEditTool)
     {
-      case WorldEdit_Mode_Disabled: {} break;
+      case WorldEdit_Tool_Disabled:
 
-      case WorldEdit_Mode_Paint:
-      case WorldEdit_Mode_Attach:
-      case WorldEdit_Mode_Remove:
+      case WorldEdit_Tool_Brush:
       {
         switch (WorldEditBrushType)
         {
@@ -1336,15 +1324,6 @@ DoWorldEditor(engine_resources *Engine)
             }
           } break;
         }
-      } break;
-
-    }
-
-    switch (WorldEditTool)
-    {
-      case WorldEdit_Tool_Disabled:
-      case WorldEdit_Tool_Brush:
-      {
       } break;
 
       case WorldEdit_Tool_Select:

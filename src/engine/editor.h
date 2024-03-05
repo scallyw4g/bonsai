@@ -518,14 +518,6 @@ enum world_edit_selection_mode
   SelectionMode_TranslatePlanar,
 };
 
-enum world_edit_mode
-{
-  WorldEdit_Mode_Disabled, // poof(@ui_skip)
-  WorldEdit_Mode_Paint,
-  WorldEdit_Mode_Attach,
-  WorldEdit_Mode_Remove,
-};
-
 enum world_edit_tool
 {
   WorldEdit_Tool_Disabled,      // poof(@ui_skip)
@@ -546,30 +538,13 @@ enum world_edit_brush_type
   WorldEdit_BrushType_Noise,
 };
 
-#if 0
 enum world_edit_mode
 {
-  WorldEditMode_Select                 = (1 << 0),
-
-  WorldEditMode_FillSelection          = (1 << 1),
-  WorldEditMode_PaintSelection         = (1 << 2),
-  WorldEditMode_DeleteSelection        = (1 << 3),
-
-  WorldEditMode_Eyedropper             = (1 << 4),
-
-  WorldEditMode_AddSingle              = (1 << 5),
-  WorldEditMode_RemoveSingle           = (1 << 6),
-  WorldEditMode_PaintSingle            = (1 << 7),
-
-  WorldEditMode_AssetBrush             = (1 << 8),
-  WorldEditMode_EntityBrush            = (1 << 9),
-  WorldEditMode_BlitEntity             = (1 << 10),
-
-  WorldEditMode_NoiseBrush             = (1 << 11),
-
-  WorldEditMode_RecomputeStandingSpots = (1 << 12),
+  WorldEdit_Mode_Disabled, // poof(@ui_skip)
+  WorldEdit_Mode_Paint,
+  WorldEdit_Mode_Attach,
+  WorldEdit_Mode_Remove,
 };
-#endif
 
 
 poof(toggle_button_group_for_enum(engine_debug_view_mode))

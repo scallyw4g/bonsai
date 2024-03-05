@@ -287,6 +287,15 @@ MaybeDeallocateGpuElementBuffer(gpu_element_buffer_handles *Handles)
 }
 
 link_internal void
+DeallocateGpuBuffers( world_chunk *Chunk )
+{
+  RangeIterator(MeshIndex, MeshIndex_Count)
+  {
+    MaybeDeallocateGpuElementBuffer(&Chunk->Meshes.GpuBufferHandles[MeshIndex]);
+  }
+}
+
+link_internal void
 DeallocateWorldChunk( world_chunk *Chunk, tiered_mesh_freelist *MeshFreelist)
 {
   Assert ( ThreadLocal_ThreadIndex == 0 );
@@ -295,11 +304,7 @@ DeallocateWorldChunk( world_chunk *Chunk, tiered_mesh_freelist *MeshFreelist)
   /* if (Chunk->Entities.Memory) { VaporizeArena(Chunk->Entities.Memory); } */
 
   DeallocateMeshes(&Chunk->Meshes, MeshFreelist);
-
-  RangeIterator(MeshIndex, MeshIndex_Count)
-  {
-    MaybeDeallocateGpuElementBuffer(&Chunk->Meshes.GpuBufferHandles[MeshIndex]);
-  }
+  DeallocateGpuBuffers(Chunk);
 
   ClearWorldChunk(Chunk);
 }
