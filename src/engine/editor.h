@@ -413,10 +413,13 @@ enum ui_noise_type
 
 struct perlin_noise_params
 {
-  r32 Threshold = 0.5f;
-  r32 Period    = 10.f;   poof(@ui_range(0, 100))
-  r32 Amplitude = 10.f;   poof(@ui_range(0, 100))
+  r32 Threshold = 4.0f;
+  r32 Period    = 8.f;   poof(@ui_range(0, 100))
+  r32 Amplitude = 8.f;   poof(@ui_range(0, 100))
 };
+
+poof(are_equal(perlin_noise_params))
+#include <generated/are_equal_perlin_noise_params.h>
 
 struct voronoi_noise_params
 {
@@ -429,20 +432,38 @@ struct voronoi_noise_params
 
 // NOTE(Jesse): This is intentionally not a d_union such that you can flip
 // between different noise selections and your parameters stay intact.
-struct noise_selector
+struct noise_params
 {
   ui_noise_type Type;
+
   perlin_noise_params  PerlinParams;
   voronoi_noise_params VoronoiParams;
+
+  v3i ChunkSize;
 };
 
+poof(are_equal(noise_params))
+#include <generated/are_equal_noise_params.h>
+
+
+struct noise_editor
+{
+  noise_params Params;
+
+  // NOTE(Jesse): This is to detect changes in the noise selection params such
+  // that we can re-run the visualization job.
+  noise_params PrevParams; poof(@ui_skip)
+
+  world_chunk Chunk;
+
+  asset_thumbnail PreviewThumbnail;
+};
 
 struct level_editor
 {
   memory_arena *Memory;
 
-  noise_selector NoiseSelection;
-  asset_thumbnail NoisePreviewThumbnail;
+  noise_editor NoiseEditor;
 
   u64 EngineDebugViewModeToggleBits;
 
@@ -450,7 +471,7 @@ struct level_editor
   u16 HoverColorIndex;
 
   u32 SelectionClicks;
-  cp SelectionBase;
+  cp  SelectionBase;
 
   rect3cp SelectionRegion;
   rect3cp CopyRegion;

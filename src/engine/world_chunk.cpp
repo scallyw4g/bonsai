@@ -81,7 +81,7 @@ AllocateWorldChunk(world_chunk *Result, world_position WorldP, chunk_dimension D
   Result->StandingSpots = V3iCursor(WORLD_CHUNK_STANDING_SPOT_COUNT, Storage);
 }
 
-link_internal world_chunk*
+link_internal world_chunk *
 AllocateWorldChunk(world_position WorldP, chunk_dimension Dim, memory_arena *Storage)
 {
   world_chunk *Result = AllocateAlignedProtection(world_chunk, Storage, 1, CACHE_LINE_SIZE, false);
@@ -3598,7 +3598,7 @@ WorkQueueEntryRebuildMesh(world_chunk *Chunk, chunk_init_flags Flags) //, world_
 }
 
 link_internal work_queue_entry_update_world_region
-WorkQueueEntryUpdateWorldRegion(world_update_op_mode Mode, world_update_op_mode_modifier Modifier, world_update_op_shape *Shape, u16 ColorIndex, canonical_position MinP, canonical_position MaxP, world_chunk** ChunkBuffer, u32 ChunkCount)
+WorkQueueEntryUpdateWorldRegion(world_edit_mode Mode, world_edit_mode_modifier Modifier, world_update_op_shape *Shape, u16 ColorIndex, canonical_position MinP, canonical_position MaxP, world_chunk** ChunkBuffer, u32 ChunkCount)
 {
   work_queue_entry_update_world_region Result =
   {
@@ -3788,7 +3788,7 @@ BlitAssetIntoWorld(engine_resources *Engine, asset *Asset, cp Origin)
 }
 
 link_internal void
-QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, world_update_op_mode_modifier Modifier, world_update_op_shape *Shape, u16 ColorIndex, memory_arena *Memory)
+QueueWorldUpdateForRegion(engine_resources *Engine, world_edit_mode Mode, world_edit_mode_modifier Modifier, world_update_op_shape *Shape, u16 ColorIndex, memory_arena *Memory)
 {
   TIMED_FUNCTION();
 
@@ -3933,9 +3933,9 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, w
 }
 
 link_internal void
-QueueWorldUpdateForRegion(engine_resources *Engine, world_update_op_mode Mode, world_update_op_shape *Shape, u16 ColorIndex, memory_arena *Memory)
+QueueWorldUpdateForRegion(engine_resources *Engine, world_edit_mode Mode, world_update_op_shape *Shape, u16 ColorIndex, memory_arena *Memory)
 {
-  QueueWorldUpdateForRegion(Engine, Mode, WorldUpdateOperationModeModifier_None, Shape, ColorIndex, Memory);
+  QueueWorldUpdateForRegion(Engine, Mode, WorldEditModeModifier_None, Shape, ColorIndex, Memory);
 }
 
 link_internal u32
@@ -3983,8 +3983,8 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
   random_series ColorEntropy = {4654376543246};
 
-  world_update_op_mode Mode              = Job->Mode;
-  world_update_op_mode_modifier Modifier = Job->Modifier;
+  world_edit_mode Mode              = Job->Mode;
+  world_edit_mode_modifier Modifier = Job->Modifier;
 
   world_update_op_shape Shape = Job->Shape;
   u16 NewColor                = Job->ColorIndex;
@@ -4088,15 +4088,15 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
         switch(Mode)
         {
-          InvalidCase(WorldUpdateOperationMode_None);
+          InvalidCase(WorldEdit_Mode_Disabled);
 
-          case WorldUpdateOperationMode_StandingSpots: {} break;
+          /* case WorldEdit_Mode_StandingSpots: {} break; */
 
-          case WorldUpdateOperationMode_Subtractive:
+          case WorldEdit_Mode_Remove:
           {
             switch(Modifier)
             {
-              case WorldUpdateOperationModeModifier_None:
+              case WorldEditModeModifier_None:
               {
                 DimIterator(x, y, z, SimSpaceQueryDim)
                 {
@@ -4111,7 +4111,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
                 }
               } break;
 
-              case WorldUpdateOperationModeModifier_Flood:
+              case WorldEditModeModifier_Flood:
               {
                 // TODO(Jesse): Do we want to try and keep the amount of temp memory to a minimum here?
                 voxel_stack_element_cursor Stack = VoxelStackElementCursor(umm(TotalVoxels*6), Thread->TempMemory);
@@ -4223,10 +4223,10 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
             }
           } break;
 
-          case WorldUpdateOperationMode_Additive:
+          case WorldEdit_Mode_Attach:
           {
             // Not Implemented
-            Assert(Modifier == WorldUpdateOperationModeModifier_None);
+            Assert(Modifier == WorldEditModeModifier_None);
 
             DimIterator(x, y, z, SimSpaceQueryDim)
             {
@@ -4242,13 +4242,13 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           } break;
 
 
-          case WorldUpdateOperationMode_Paint:
+          case WorldEdit_Mode_Paint:
           {
             switch(Modifier)
             {
-              InvalidCase(WorldUpdateOperationModeModifier_Flood);
+              InvalidCase(WorldEditModeModifier_Flood);
 
-              case WorldUpdateOperationModeModifier_None:
+              case WorldEditModeModifier_None:
               {
                 DimIterator(x, y, z, SimSpaceQueryDim)
                 {
@@ -4271,7 +4271,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
       case type_world_update_op_shape_params_rect:
       {
         // Not implemented
-        Assert(Modifier == WorldUpdateOperationModeModifier_None);
+        Assert(Modifier == WorldEditModeModifier_None);
 
         world_update_op_shape_params_rect *Rect = SafeCast(world_update_op_shape_params_rect, &Shape);
 
@@ -4284,11 +4284,11 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
         voxel NewVoxelValue = {};
         switch(Mode)
         {
-          InvalidCase(WorldUpdateOperationMode_None);
+          InvalidCase(WorldEdit_Mode_Disabled);
 
-          case WorldUpdateOperationMode_StandingSpots: {} break;
+          /* case WorldEdit_Mode_StandingSpots: {} break; */
 
-          case WorldUpdateOperationMode_Additive:
+          case WorldEdit_Mode_Attach:
           {
 #if VOXEL_DEBUG_COLOR
             NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor, {}, {}};
@@ -4304,7 +4304,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
             }
           } break;
 
-          case WorldUpdateOperationMode_Subtractive:
+          case WorldEdit_Mode_Remove:
           {
             DimIterator(x, y, z, SimSpaceQueryDim)
             {
@@ -4315,7 +4315,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
             }
           } break;
 
-          case WorldUpdateOperationMode_Paint:
+          case WorldEdit_Mode_Paint:
           {
             DimIterator(x, y, z, SimSpaceQueryDim)
             {
@@ -4331,7 +4331,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
       {
         case type_world_update_op_shape_params_asset:
         {
-          Assert(Modifier == WorldUpdateOperationModeModifier_None);
+          Assert(Modifier == WorldEditModeModifier_None);
           world_update_op_shape_params_asset *AssetJob = SafeCast(world_update_op_shape_params_asset, &Shape);
           /* asset *Asset = AssetJob->Asset; */
           /* Assert(Asset->Models.Count > 0); */
@@ -4345,7 +4345,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
         case type_world_update_op_shape_params_chunk_data:
         {
           // Not implemented
-          Assert(Modifier == WorldUpdateOperationModeModifier_None);
+          Assert(Modifier == WorldEditModeModifier_None);
 
           if (Data == 0)
           {
@@ -4356,15 +4356,15 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
           switch(Mode)
           {
-            InvalidCase(WorldUpdateOperationMode_None);
-            InvalidCase(WorldUpdateOperationMode_Paint);
-            InvalidCase(WorldUpdateOperationMode_Subtractive);
+            InvalidCase(WorldEdit_Mode_Disabled);
+            InvalidCase(WorldEdit_Mode_Paint);
+            InvalidCase(WorldEdit_Mode_Remove);
 
             // TODO(Jesse): Would we ever want this on in this path?
-            InvalidCase(WorldUpdateOperationMode_StandingSpots);
-            /* case WorldUpdateOperationMode_StandingSpots: {} break; */
+            /* InvalidCase(WorldEdit_Mode_StandingSpots); */
+            /* case WorldEdit_Mode_StandingSpots: {} break; */
 
-            case WorldUpdateOperationMode_Additive:
+            case WorldEdit_Mode_Attach:
             {
               DimIterator(x, y, z, SimSpaceQueryDim)
               {

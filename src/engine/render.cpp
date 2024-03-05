@@ -988,7 +988,7 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
 
     m4 NormalMatrix = Transpose(Inverse(LocalTransform));
 
-    TryBindUniform(Shader, "ModelMatrix", &LocalTransform);
+    Ensure(TryBindUniform(Shader, "ModelMatrix", &LocalTransform));
     TryBindUniform(Shader, "NormalMatrix", &NormalMatrix); // NOTE(Jesse): Not all shaders that use this path draw normals (namely, DepthRTT)
 
     DrawGpuBufferImmediate(Graphics, &Meshes->GpuBufferHandles[ToIndex(MeshBit)]);
@@ -996,11 +996,17 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
 }
 
 link_internal void
-RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, model *Model, v3 Offset, camera *Camera = 0)
+RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, lod_element_buffer *Meshes, v3 Offset, camera *Camera = 0)
 {
   if (Camera == 0) { Camera = &Thumb->Camera; }
   SetupRenderToTextureShader(Engine, &Thumb->Texture, Camera);
-  DrawLod(Engine, &Engine->RTTGroup.Shader, &Model->Meshes, 0.f, Offset);
+  DrawLod(Engine, &Engine->RTTGroup.Shader, Meshes, 0.f, Offset);
+}
+
+link_internal void
+RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, model *Model, v3 Offset, camera *Camera = 0)
+{
+  RenderToTexture(Engine, Thumb, &Model->Meshes, Offset, Camera);
 }
 
 link_internal void

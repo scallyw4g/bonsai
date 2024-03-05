@@ -126,31 +126,21 @@ struct world_update_op_shape
   };
 };
 
-// TODO(Jesse): Pretty sure this can be deleted and use world_edit_mode instead
-enum world_update_op_mode
+enum world_edit_mode_modifier
 {
-  WorldUpdateOperationMode_None,
-  WorldUpdateOperationMode_Paint,
-  WorldUpdateOperationMode_Additive,
-  WorldUpdateOperationMode_Subtractive,
-
-  // NOTE(Jesse): This is kind of a hack to skip the update loop and compute standing spots for a given area
-  WorldUpdateOperationMode_StandingSpots,
-};
-
-enum world_update_op_mode_modifier
-{
-  WorldUpdateOperationModeModifier_None,
-  WorldUpdateOperationModeModifier_Flood,
+  WorldEditModeModifier_None,
+  WorldEditModeModifier_Flood,
 };
 
 
 struct work_queue_entry_update_world_region
 {
-  world_update_op_mode          Mode;
-  world_update_op_mode_modifier Modifier;
+  world_edit_mode          Mode;
+  world_edit_mode_modifier Modifier;
 
   world_update_op_shape Shape;
+
+  //
 
   u16 ColorIndex;
   u8  Transparency;
@@ -160,7 +150,6 @@ struct work_queue_entry_update_world_region
 
   world_chunk **ChunkBuffer;
   u32 ChunkCount;
-
 };
 
 struct asset;

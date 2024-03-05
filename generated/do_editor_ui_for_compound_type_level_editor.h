@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:442:0
+// src/engine/editor.cpp:441:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -25,20 +25,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       
       DoEditorUi(Ui,
         Window,
-&Element->NoiseSelection,
-        CSz("NoiseSelection"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->NoisePreviewThumbnail,
-        CSz("NoisePreviewThumbnail"),
+&Element->NoiseEditor,
+        CSz("NoiseEditor"),
         Params
         );
 

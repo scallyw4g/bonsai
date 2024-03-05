@@ -3,14 +3,13 @@ link_internal b32
 InitEditor(level_editor *Editor)
 {
   b32 Result = True;
-
   Editor->Memory = AllocateArena();
 
   Editor->AssetThumbnails.Memory = Editor->Memory;
 
   {
-    Editor->NoisePreviewThumbnail.Texture = MakeTexture_RGB(V2i(1024), 0, CSz("NoisePreviewTexture"));
-    StandardCamera(&Editor->NoisePreviewThumbnail.Camera, 10000.f, 1000.f, 30.f);
+    Editor->NoiseEditor.PreviewThumbnail.Texture = MakeTexture_RGB(V2i(1024), 0, CSz("NoisePreviewTexture"));
+    StandardCamera(&Editor->NoiseEditor.PreviewThumbnail.Camera, 10000.f, 1000.f, 30.f);
   }
 
   return Result;
@@ -19,7 +18,7 @@ InitEditor(level_editor *Editor)
 link_internal b32
 HardResetEditor(level_editor *Editor)
 {
-  DeleteTexture(&Editor->NoisePreviewThumbnail.Texture);
+  DeleteTexture(&Editor->NoiseEditor.PreviewThumbnail.Texture);
 
   IterateOver(&Editor->AssetThumbnails, Thumb, Index)
   {
@@ -534,17 +533,17 @@ GetMax(v3 *SelectionRegion)
 link_internal void
 DoSelectionRegionEdit(engine_resources *Engine, rect3 *SelectionAABB, world_edit_mode WorldEditMode)
 {
-  world_update_op_mode UpdateOpMode = {};
+  /* world_edit_mode UpdateOpMode = {}; */
 
-  switch (WorldEditMode)
-  {
-    case WorldEdit_Mode_Disabled: {} break;
-    /* case WorldEdit_Mode_Select: {} break; */
-    case WorldEdit_Mode_Paint:  { UpdateOpMode = WorldUpdateOperationMode_Paint;       } break;
-    case WorldEdit_Mode_Attach: { UpdateOpMode = WorldUpdateOperationMode_Additive;    } break;
-    case WorldEdit_Mode_Remove: { UpdateOpMode = WorldUpdateOperationMode_Subtractive; } break;
-  }
-  Assert(UpdateOpMode);
+  /* switch (WorldEditMode) */
+  /* { */
+  /*   case WorldEdit_Mode_Disabled: {} break; */
+  /*   /1* case WorldEdit_Mode_Select: {} break; *1/ */
+  /*   case WorldEdit_Mode_Paint:  { UpdateOpMode = WorldUpdateOperationMode_Paint;       } break; */
+  /*   case WorldEdit_Mode_Attach: { UpdateOpMode = WorldEdit_Mode_Attach;    } break; */
+  /*   case WorldEdit_Mode_Remove: { UpdateOpMode = WorldUpdateOperationMode_Subtractive; } break; */
+  /* } */
+  /* Assert(UpdateOpMode); */
 
   world_update_op_shape Shape = {
     .Type = type_world_update_op_shape_params_rect,
@@ -552,7 +551,7 @@ DoSelectionRegionEdit(engine_resources *Engine, rect3 *SelectionAABB, world_edit
     .world_update_op_shape_params_rect.P1 = SelectionAABB->Max,
   };
 
-  QueueWorldUpdateForRegion(Engine, UpdateOpMode, &Shape, Engine->Editor.SelectedColorIndex, Engine->WorldUpdateMemory);
+  QueueWorldUpdateForRegion(Engine, WorldEditMode, &Shape, Engine->Editor.SelectedColorIndex, Engine->WorldUpdateMemory);
 }
 
 
@@ -853,13 +852,14 @@ RenderAndInteractWithThumbnailTexture(renderer_2d *Ui, window_layout *Window, co
   r32 CameraZDelta = {};
   if (Pressed(Ui, &B))
   {
+    Ui->RequestedForceCapture = True;
     v2 MouseDelta = GetMouseDelta(&GetEngineResources()->Stdlib.Plat);
     if (Ui->Input->LMB.Pressed) { MouseDP = MouseDelta*2.f; }
     if (Ui->Input->RMB.Pressed) { CameraZDelta += MouseDelta.y*2.f; }
     UpdateGameCamera(GetWorld(), MouseDP, CameraZDelta, {}, ThumbCamera, 0.f);
   }
 
-  if (Ui->Input->LMB.Pressed == False && Hover(Ui, &B)) { PushTooltip(Ui, ToString(Texture)); }
+  /* if (Ui->Input->LMB.Pressed == False && Hover(Ui, &B)) { PushTooltip(Ui, ToString(Texture)); } */
 
   return B;
 }
@@ -989,62 +989,59 @@ DoWorldEditor(engine_resources *Engine)
     PushWindowEnd(Ui, &Window);
   }
 
-#if 0
   {
     local_persist window_layout Window = WindowLayout("Brush Settings", WindowLayoutFlag_Align_Right);
     PushWindowStart(Ui, &Window);
-    switch (WorldEditMode)
+    switch (WorldEditTool)
     {
-      case WorldEditMode_Select:
-      case WorldEditMode_FillSelection:
-      case WorldEditMode_PaintSelection:
-      case WorldEditMode_DeleteSelection:
-      case WorldEditMode_Eyedropper:
-      case WorldEditMode_AddSingle:
-      case WorldEditMode_RemoveSingle:
-      case WorldEditMode_PaintSingle:
-      case WorldEditMode_BlitEntity:
-      case WorldEditMode_StandingSpots:
-      case WorldEditMode_AssetBrush:
-      case WorldEditMode_EntityBrush:
-      { PushColumn(Ui, CSz("No brush settings.")); } break;
-
-
-#if 1
-      case WorldEditMode_NoiseBrush:
+      case  WorldEdit_Tool_Disabled:
+      case  WorldEdit_Tool_Select:
+      case  WorldEdit_Tool_Eyedropper:
+      case  WorldEdit_Tool_BlitEntity:
+      case  WorldEdit_Tool_StandingSpots:
       {
-        ui_noise_type *NoiseType = &Engine->Editor.NoiseSelection.Type;
-        DoEditorUi(Ui, &Window, NoiseType, CSz("Noise Type"));
-        switch (*NoiseType)
+      } break;
+
+      case WorldEdit_Tool_Brush:
+      {
+        noise_params *Params     = &Editor->NoiseEditor.Params;
+        noise_params *PrevParams = &Editor->NoiseEditor.PrevParams;
+
+        DoEditorUi(Ui, &Window, &Params->Type, CSz("Noise Type"), &DefaultUiRenderParams_Generic);
+        switch (Params->Type)
         {
           case NoiseType_None: {} break;
 
           case NoiseType_Perlin:
           {
-            perlin_noise_params *Params = &Editor->NoiseSelection.PerlinParams;
-            DoEditorUi(Ui, &Window, Params, CSz("Perlin"));
+            perlin_noise_params *PerlinParams = &Editor->NoiseEditor.Params.PerlinParams;
+
+            DoEditorUi(Ui, &Window, PerlinParams, CSz("Perlin"));
 
             if (Editor->SelectionClicks)
             {
               v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
               v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
 
-              v3 Dim = SelectionMaxP-SelectionMinP;
+              Params->ChunkSize = V3i(SelectionMaxP-SelectionMinP);
 
-              v3i ChunkSize = V3i(Dim);
-              world_chunk *DestChunk = AllocateWorldChunk({}, ChunkSize, GetTranArena());
-              DestChunk->Flags = Chunk_Queued;
-
-              InitializeChunkWithNoise( Noise_Perlin3D, GetThreadLocalState(ThreadLocal_ThreadIndex), DestChunk, DestChunk->Dim, {}, s32(Params->Period), s32(Params->Amplitude), s32(Params->Threshold), MeshBit_None, ChunkInitFlag_Noop, 0);
-
-              untextured_3d_geometry_buffer *Mesh = AtomicReplaceMesh( &DestChunk->Meshes, MeshBit_Lod0, 0, u64_MAX );
-              if (Mesh)
+              world_chunk *DestChunk = &Editor->NoiseEditor.Chunk;
+              if (DestChunk->Dim != Params->ChunkSize)
               {
-                RenderToTexture(Engine, &Editor->NoisePreviewThumbnail, Mesh, V3(ChunkSize/-2));
-                DeallocateMesh(Engine, Mesh);
+                DeallocateWorldChunk(DestChunk, MeshFreelist);
+                AllocateWorldChunk(DestChunk, {}, Params->ChunkSize, Editor->Memory);
               }
 
-              RenderAndInteractWithThumbnailTexture(Ui, &Window, "noise preview interaction", &Editor->NoisePreviewThumbnail);
+              if (!AreEqual(Params, PrevParams))
+              {
+                *PrevParams = *Params;
+                DestChunk->Flags = Chunk_Queued;
+                InitializeChunkWithNoise( Noise_Perlin3D, GetThreadLocalState(ThreadLocal_ThreadIndex), DestChunk, DestChunk->Dim, {}, s32(PerlinParams->Period), s32(PerlinParams->Amplitude), s32(PerlinParams->Threshold), MeshBit_None, ChunkInitFlag_Noop, 0);
+                SyncGpuBuffersImmediate(Engine, &DestChunk->Meshes);
+              }
+
+              RenderToTexture(Engine, &Editor->NoiseEditor.PreviewThumbnail, &DestChunk->Meshes, V3(Params->ChunkSize)/-2.f);
+              RenderAndInteractWithThumbnailTexture(Ui, &Window, "noise preview interaction", &Editor->NoiseEditor.PreviewThumbnail);
             }
             else
             {
@@ -1055,15 +1052,13 @@ DoWorldEditor(engine_resources *Engine)
 
           case NoiseType_Voronoi:
           {
-            DoEditorUi(Ui, &Window, &Editor->NoiseSelection.VoronoiParams, CSz("Voronoi"));
+            DoEditorUi(Ui, &Window, &Editor->NoiseEditor.Params.VoronoiParams, CSz("Voronoi"));
           } break;
         }
       } break;
-#endif
     }
     PushWindowEnd(Ui, &Window);
   }
-#endif
 
 
 
@@ -1178,7 +1173,7 @@ DoWorldEditor(engine_resources *Engine)
   //
   //
 
-  if (WorldEditModeButtonGroup.AnyElementClicked)
+  if (WorldEditToolButtonGroup.AnyElementClicked)
   {
     switch (WorldEditTool)
     {
@@ -1194,6 +1189,10 @@ DoWorldEditor(engine_resources *Engine)
         ResetSelection(Editor);
       } break;
     }
+  }
+
+  if (WorldEditModeButtonGroup.AnyElementClicked)
+  {
     switch (WorldEditMode)
     {
       case WorldEdit_Mode_Disabled:
@@ -1214,7 +1213,6 @@ DoWorldEditor(engine_resources *Engine)
   if ( UiCapturedMouseInput(Ui) == False &&
        UiHoveredMouseInput(Ui)  == False  )
   {
-
     switch (WorldEditMode)
     {
       case WorldEdit_Mode_Disabled: {} break;
@@ -1226,8 +1224,11 @@ DoWorldEditor(engine_resources *Engine)
         switch (WorldEditBrushType)
         {
           case WorldEdit_BrushType_Disabled:
-          case WorldEdit_BrushType_Noise:
           {} break;
+
+          case WorldEdit_BrushType_Noise:
+          {
+          } break;
 
           case WorldEdit_BrushType_Entity:
           case WorldEdit_BrushType_Asset:
@@ -1261,7 +1262,7 @@ DoWorldEditor(engine_resources *Engine)
                         type_world_update_op_shape_params_asset,
                         .world_update_op_shape_params_asset = AssetUpdateShape,
                       };
-                      QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, Engine->WorldUpdateMemory);
+                      QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, &Shape, {}, Engine->WorldUpdateMemory);
                     }
                     else if (WorldEditBrushType == WorldEdit_BrushType_Entity)
                     {
@@ -1291,9 +1292,9 @@ DoWorldEditor(engine_resources *Engine)
             // and we can just collapse world edits automatically in the edit thread.
             //
             // When my laptop is unplugged running on battery power, this is _much_ faster.
+            HighlightVoxel = MapWorldEditModeToHighlightVoxelForSingleSelection(WorldEditMode);
             if (WorldEditMode == WorldEdit_Mode_Paint)
             {
-              HighlightVoxel = MapWorldEditModeToHighlightVoxelForSingleSelection(WorldEditMode);
 
               b32 DoPaint = Input->LMB.Pressed;
               if (DoPaint)
@@ -1320,7 +1321,7 @@ DoWorldEditor(engine_resources *Engine)
                   v3 P0 = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel.Value, HighlightVoxel));
                   rect3 AABB = RectMinMax(P0, P0+1.f);
                   DoSelectionRegionEdit(Engine, &AABB, WorldEditMode);
-                  /* QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory); */
+                  /* QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory); */
                 }
               }
             }
@@ -1418,7 +1419,7 @@ DoWorldEditor(engine_resources *Engine)
                 type_world_update_op_shape_params_asset,
                 .world_update_op_shape_params_asset = AssetUpdateShape,
               };
-              QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, Engine->WorldUpdateMemory);
+              QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, &Shape, {}, Engine->WorldUpdateMemory);
 #endif
             }
           }
@@ -1427,6 +1428,8 @@ DoWorldEditor(engine_resources *Engine)
 
       case WorldEdit_Tool_StandingSpots:
       {
+        NotImplemented;
+#if 0
         if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
         {
           world_update_op_shape Shape = {
@@ -1436,10 +1439,10 @@ DoWorldEditor(engine_resources *Engine)
           };
           QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_StandingSpots, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory);
         }
+#endif
       } break;
 
     }
-
   }
 
 
@@ -1448,13 +1451,13 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Input->Ctrl.Pressed || Input->Shift.Pressed) { Ui->RequestedForceCapture = True; }
 
-  /* if (Input->Ctrl.Pressed && Input->S.Clicked) { RadioSelect(&WorldEditModeRadioGroup, WorldEditTool_Select); ResetSelection(Editor); } */
+  if (Input->Ctrl.Pressed && Input->S.Clicked) { RadioSelect(&WorldEditModeRadioGroup, WorldEdit_Tool_Select); ResetSelection(Editor); }
 
   /* if (Clicked(&WorldEditModeRadioGroup, CSz("Select"))) { ResetSelection(Editor); } */
 
-  if (Input->Ctrl.Pressed && Input->F.Clicked) { ResetSelectionIfIncomplete(Editor); /* RadioSelect(&WorldEditModeRadioGroup, WorldEditTool_FillSelection); */ }
+  /* if (Input->Ctrl.Pressed && Input->F.Clicked) { ResetSelectionIfIncomplete(Editor); RadioSelect(&WorldEditModeRadioGroup, WorldEdit_Tool_FillSelection); } */
 
-  if (Input->Ctrl.Pressed && Input->E.Clicked) { ResetSelectionIfIncomplete(Editor); /* RadioSelect(&WorldEditModeRadioGroup, WorldEditTool_Eyedropper); */ }
+  if (Input->Ctrl.Pressed && Input->E.Clicked) { ResetSelectionIfIncomplete(Editor); RadioSelect(&WorldEditModeRadioGroup, WorldEdit_Tool_Eyedropper); }
 
   if (Editor->SelectionClicks == 2)
   {
@@ -1484,7 +1487,7 @@ DoWorldEditor(engine_resources *Engine)
         type_world_update_op_shape_params_chunk_data,
         .world_update_op_shape_params_chunk_data = ChunkDataShape,
       };
-      QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_Additive, &Shape, {}, Engine->WorldUpdateMemory);
+      QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, &Shape, {}, Engine->WorldUpdateMemory);
     }
   }
 
@@ -1506,7 +1509,7 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Engine->MousedOverVoxel.Tag)
   {
-    v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled));
+    v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, HighlightVoxel));
     DEBUG_HighlightVoxel( Engine, SimP, RED, 0.075f);
   }
 }
