@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4345:0
+// src/engine/world_chunk.cpp:4343:0
 
 // TODO(Jesse): Do we want to try and keep the amount of temp memory to a minimum here?
 voxel_stack_element_cursor Stack = VoxelStackElementCursor(umm(TotalVoxels*6), Thread->TempMemory);
@@ -39,7 +39,13 @@ while (AtElements(&Stack))
     
                     if (Contains(SSRect, SimVoxP))
                     {
-                      *V = NewVoxelValue;
+                      if (Mode == WorldEdit_Mode_Attach && (V->Flags&Voxel_Filled) )
+                      {
+                      }
+                      else
+                      {
+                        *V = NewVoxelValue;
+                      }
                     }
                   
 

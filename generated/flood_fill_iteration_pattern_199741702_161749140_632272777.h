@@ -72,7 +72,6 @@ while (AtElements(&Stack))
                     {
                       V->Color = GREY_8;
                     }
-
                   
 
       if ( (V->Flags&Voxel_MarkBit))

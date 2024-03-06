@@ -4327,11 +4327,10 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 #endif
         }
 
-
         switch(Mode)
         {
-          InvalidCase(WorldEdit_Mode_Count);
           InvalidCase(WorldEdit_Mode_Disabled);
+          InvalidCase(WorldEdit_Mode_Count);
 
           case WorldEdit_Mode_Attach:
           case WorldEdit_Mode_Remove:
@@ -4348,7 +4347,13 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
                   {
                     if (Contains(SSRect, SimVoxP))
                     {
-                      *V = NewVoxelValue;
+                      if (Mode == WorldEdit_Mode_Attach && (V->Flags&Voxel_Filled) )
+                      {
+                      }
+                      else
+                      {
+                        *V = NewVoxelValue;
+                      }
                     }
                   },
                   {
@@ -4363,7 +4368,6 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
                   if (Contains(SSRect, SimVoxP)) { *V = NewVoxelValue; }
                 }))
 #include <generated/rectalinear_iteration_pattern_416827956.h>
-
               } break;
 
 
