@@ -4426,7 +4426,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
             SimOrigin = Casted->SimSpaceOrigin;
           }
 
-          rect3i SSRect = {V3i(SimOrigin), Data->Dim};
+          rect3i SSRect = RectMinDim(V3i(SimOrigin), Data->Dim);// {, V3i(SimOrigin)+Data->Dim};
           v3i EditCenterP = V3i(SimOrigin) + V3i(Data->Dim/2.f);
 
           switch(Mode)
