@@ -4007,14 +4007,14 @@ DEBUG_AssertVoxelFloodStartsInEmptyVoxel(v3i SimSphereP, rect3i *SimSpaceQueryAA
 }
 
 poof(
-  func flood_fill_iteration_pattern(type_poof_symbol UserPredicate, type_poof_symbol UserCode, type_poof_symbol UserCode2) @code_fragment
+  func flood_fill_iteration_pattern(type_poof_symbol FloodPredicate, type_poof_symbol UserCode, type_poof_symbol UserCode2) @code_fragment
   {
     // TODO(Jesse): Do we want to try and keep the amount of temp memory to a minimum here?
     voxel_stack_element_cursor Stack = VoxelStackElementCursor(umm(TotalVoxels*6), Thread->TempMemory);
 
     // Unfortunately, can't #if this out in a poof function.  Should probably
     // put it on a #define switch to make sure it gets compiled out.
-    DEBUG_AssertVoxelFloodStartsInEmptyVoxel(EditCenterP, &SimSpaceQueryAABB, CopiedVoxels);
+    /* DEBUG_AssertVoxelFloodStartsInEmptyVoxel(EditCenterP, &SimSpaceQueryAABB, CopiedVoxels); */
 
     Push(&Stack, VoxelStackElement(EditCenterP, VoxelRuleDir_Count));
     while (AtElements(&Stack))
@@ -4030,9 +4030,9 @@ poof(
 
         v3i CenterToVoxP = SimVoxP - EditCenterP;
 
-        if ((UserPredicate))
+        if ((FloodPredicate))
         {
-          if ( (V->Flags&Voxel_Filled) == 0 && (V->Flags & Voxel_MarkBit) == 0)
+          if ( (V->Flags & Voxel_MarkBit) == 0)
           {
             Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_PosX));
             Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_NegX));
@@ -4043,15 +4043,12 @@ poof(
           }
         }
 
-
         (UserCode)
 
         V->Flags |= Voxel_MarkBit;
       }
     }
 
-    u8 NewColorMin = GREY_5;
-    u8 NewColorMax = GREY_8;
     Push(&Stack, VoxelStackElement(EditCenterP, VoxelRuleDir_Count));
     while (AtElements(&Stack))
     {
@@ -4247,7 +4244,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
               case WorldEdit_Modifier_Flood:
               {
                 poof(flood_fill_iteration_pattern(
-                  { LengthSq(CenterToVoxP) < RadiusSquared },
+                  { LengthSq(CenterToVoxP) < RadiusSquared && (V->Flags&Voxel_Filled) == 0 },
                   {
                     if ( LengthSq(CenterToVoxP) < Square(Sphere->Radius-1.f) && V->Flags & Voxel_Filled )
                        { V->Flags = Voxel_Empty; }
@@ -4258,15 +4255,14 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
                     {
                       if (V->Flags & Voxel_Filled)
                       {
-                        V->Color = SafeTruncateU8(RandomBetween((u32)NewColorMin, &ColorEntropy, (u32)NewColorMax+1));
+                        V->Color = SafeTruncateU8(RandomBetween((u32)GREY_5, &ColorEntropy, (u32)GREY_8+1));
                       }
 
                     }
                     else if (LengthSq(CenterToVoxP) < RadiusSquared)
                     {
-                      V->Color = NewColorMax;
+                      V->Color = GREY_8;
                     }
-
                   }
                   ))
 #include <generated/flood_fill_iteration_pattern_199741702_161749140_632272777.h>
@@ -4309,15 +4305,28 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
       case type_world_update_op_shape_params_rect:
       {
-        Assert(Modifier == WorldEdit_Modifier_None); // Not Implemented
-
         world_update_op_shape_params_rect *Rect = SafeCast(world_update_op_shape_params_rect, &Shape);
+
+        Modifier = WorldEdit_Modifier_Flood;
 
         // NOTE(Jesse): Outside world should have min/max'd these already
         Assert(Rect->P0 < Rect->P1);
 
         // NOTE(Jesse): These are specifically meant to truncate, not floor
         rect3i SSRect = {V3i(Rect->P0), V3i(Rect->P1)};
+        v3 Dim = V3(GetDim(SSRect));
+        v3i EditCenterP = V3i(Floor(Rect->P0+(Dim/2.f)));
+
+        voxel NewVoxelValue = {};
+        if (Mode == WorldEdit_Mode_Attach)
+        {
+#if VOXEL_DEBUG_COLOR
+          NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor, {}, {}};
+#else
+          NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor};
+#endif
+        }
+
 
         switch(Mode)
         {
@@ -4327,22 +4336,38 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           case WorldEdit_Mode_Attach:
           case WorldEdit_Mode_Remove:
           {
-            voxel NewVoxelValue = {};
-
-            if (Mode == WorldEdit_Mode_Attach)
+            switch (Modifier)
             {
-#if VOXEL_DEBUG_COLOR
-              NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor, {}, {}};
-#else
-              NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor};
-#endif
-            }
+              InvalidCase(WorldEdit_Modifier_Count);
+              case WorldEdit_Modifier_Flood:
+              {
+                poof(flood_fill_iteration_pattern(
+                  {
+                    Contains(SSRect, SimVoxP) && ((V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Attach)))
+                  },
+                  {
+                    if (Contains(SSRect, SimVoxP))
+                    {
+                      *V = NewVoxelValue;
+                    }
+                  },
+                  {
+                  }
+                  ))
+#include <generated/flood_fill_iteration_pattern_913730393_339899188_339899188.h>
+              } break;
 
-            poof(rectalinear_iteration_pattern({
-              if (Contains(SSRect, SimVoxP)) { *V = NewVoxelValue; }
-            }))
+              case WorldEdit_Modifier_None:
+              {
+                poof(rectalinear_iteration_pattern({
+                  if (Contains(SSRect, SimVoxP)) { *V = NewVoxelValue; }
+                }))
 #include <generated/rectalinear_iteration_pattern_416827956.h>
 
+              } break;
+
+
+            }
           } break;
 
           case WorldEdit_Mode_Paint:

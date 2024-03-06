@@ -99,6 +99,7 @@ struct world_update_op_shape_params_sphere
 
 struct world_update_op_shape_params_rect
 {
+  // Sim-space positions
   v3 P0;
   v3 P1;
   /* rect3 Region; */ // TODO(Jesse): Make this a thing
