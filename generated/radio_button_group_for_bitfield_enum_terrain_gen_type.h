@@ -42,7 +42,12 @@ Clicked(ui_toggle_button_group *ButtonGroup, terrain_gen_type Enum)
 }
 
 link_internal ui_toggle_button_group
-RadioButtonGroup_terrain_gen_type(renderer_2d *Ui, window_layout *Window, const char *ToggleGroupIdentifier, ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None, UI_FUNCTION_PROTO_DEFAULTS)
+RadioButtonGroup_terrain_gen_type( renderer_2d *Ui,
+  window_layout *Window,
+  cs GroupName,
+  const char *ToggleGroupIdentifier,
+  ui_render_params *Params = &DefaultUiRenderParams_Generic,
+  ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
 {
   cs ButtonNames[] =
   {
@@ -69,11 +74,11 @@ RadioButtonGroup_terrain_gen_type(renderer_2d *Ui, window_layout *Window, const 
   ui_toggle_button_handle_buffer ButtonBuffer = UiToggleButtonHandleBuffer(ButtonCount, GetTranArena());
   IterateOver(&ButtonBuffer, Button, ButtonIndex)
   {
-    cs Name = ButtonNames[ButtonIndex];
-    *Button = UiToggle(Name, Window, ToggleGroupIdentifier, (void*)Name.Start);
+    cs ButtonName = ButtonNames[ButtonIndex];
+    *Button = UiToggle(ButtonName, Window, ToggleGroupIdentifier, (void*)ButtonName.Start);
   }
 
-  ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_RadioButtons), UI_FUNCTION_INSTANCE_NAMES);
+  ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer, GroupName, Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_RadioButtons));
 
   return Result;
 }
