@@ -114,6 +114,8 @@ See the docs on the [build process](docs/01_build_process.md).
 
 [ ] Better low-discrepency sequences : https://blog.demofox.org/2017/05/29/when-random-numbers-are-too-random-low-discrepancy-sequences/
 
+[ ] Better disk/sphere sampling patterns : https://extremelearning.com.au/how-to-generate-uniformly-random-points-on-n-spheres-and-n-balls/
+
 [ ] Better hash function! : https://nullprogram.com/blog/2018/07/31/
 
 [ ] Better GPU hashing! : https://arugl.medium.com/hash-noise-in-gpu-shaders-210188ac3a3e
