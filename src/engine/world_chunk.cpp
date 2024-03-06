@@ -4376,10 +4376,43 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
           case WorldEdit_Mode_Paint:
           {
-            poof(rectalinear_iteration_pattern({
-              if (Contains(SSRect, SimVoxP)) { if (V->Flags & Voxel_Filled) { V->Color = NewColor; } }
-            }))
+            switch (Modifier)
+            {
+              InvalidCase(WorldEdit_Modifier_Count);
+              case WorldEdit_Modifier_Flood:
+              {
+                poof(flood_fill_iteration_pattern(
+                  {
+                    Contains(SSRect, SimVoxP) && ((V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Attach)))
+                  },
+                  {
+                    if (Contains(SSRect, SimVoxP))
+                    {
+                      if (Mode == WorldEdit_Mode_Attach && (V->Flags&Voxel_Filled) )
+                      {
+                      }
+                      else
+                      {
+                        V->Color = NewColor;
+                      }
+                    }
+                  },
+                  {
+                  }
+                  ))
+#include <generated/flood_fill_iteration_pattern_720542204_890094085_4111003.h>
+              } break;
+
+              case WorldEdit_Modifier_None:
+              {
+                poof(rectalinear_iteration_pattern({
+                  if (Contains(SSRect, SimVoxP)) { if (V->Flags & Voxel_Filled) { V->Color = NewColor; } }
+                }))
 #include <generated/rectalinear_iteration_pattern_99934950.h>
+              } break;
+
+
+            }
           } break;
         }
       } break;
