@@ -74,9 +74,9 @@ AllocateWorldChunk(world_chunk *Result, world_position WorldP, chunk_dimension D
   Result->WorldP = WorldP;
 
   Result->Dim  = Dim;
-  Result->DimX = SafeTruncateU8(Dim.x);
-  Result->DimY = SafeTruncateU8(Dim.y);
-  Result->DimZ = SafeTruncateU8(Dim.z);
+  /* Result->DimX = SafeTruncateU8(Dim.x); */
+  /* Result->DimY = SafeTruncateU8(Dim.y); */
+  /* Result->DimZ = SafeTruncateU8(Dim.z); */
 
   Result->StandingSpots = V3iCursor(WORLD_CHUNK_STANDING_SPOT_COUNT, Storage);
 }
@@ -3305,18 +3305,12 @@ ComputeLodMesh( thread_local_state *Thread,
 #if 1
 #endif
 
-link_internal chunk_dimension
-ChunkDimension(world_chunk* Chunk)
-{
-  chunk_dimension Result = {};
-  if (Chunk)
-  {
-    Result.x = Chunk->DimX;
-    Result.y = Chunk->DimY;
-    Result.z = Chunk->DimZ;
-  }
-  return Result;
-}
+/* link_internal chunk_dimension */
+/* ChunkDimension(world_chunk* Chunk) */
+/* { */
+/*   chunk_dimension Result = Chunk->Dim; */
+/*   return Result; */
+/* } */
 
 link_internal void
 InitializeWorldChunkEmpty(world_chunk *DestChunk)
@@ -3331,7 +3325,7 @@ InitializeWorldChunkEmpty(world_chunk *DestChunk)
   ZeroChunk(DestChunk, Volume(WorldChunkDim));
 #else
   for ( s32 VoxelIndex = 0;
-        VoxelIndex < Volume(ChunkDimension(DestChunk));
+        VoxelIndex < Volume(DestChunk->Dim);
         ++VoxelIndex)
   {
     voxel *Voxel = &DestChunk->Voxels[VoxelIndex];

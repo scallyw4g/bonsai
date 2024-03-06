@@ -174,45 +174,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
       DoEditorUi(Ui,
         Window,
-&Element->DimX,
-        CSz("DimX"),
-        Params
-        );
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-&Element->DimY,
-        CSz("DimY"),
-        Params
-        );
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-&Element->DimZ,
-        CSz("DimZ"),
-        Params
-        );
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
 &Element->_Pad0,
         CSz("_Pad0"),
         Params

@@ -375,10 +375,11 @@ struct world_chunk
   u32 TriCount;
   s32 EdgeBoundaryVoxelCount;
 
-  u8 DimX;
-  u8 DimY;
-  u8 DimZ;
-  u8 _Pad0;
+  u32 _Pad0;
+  /* u8 DimX; */
+  /* u8 DimY; */
+  /* u8 DimZ; */
+  /* u8 _Pad0; */
 
   // NOTE(Jesse): This is a list of all entities overlapping this chunk to be
   // considered for collision detection.
