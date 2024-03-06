@@ -281,7 +281,7 @@ DoDig( engine_resources *Resources, canonical_position PickCP, f32 Radius, f32 D
     .world_update_op_shape_params_rect.P0 = MinP,
     .world_update_op_shape_params_rect.P1 = MaxP,
   };
-  QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Remove, &Shape, ICE_BLUE, Resources->WorldUpdateMemory);
+  QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Remove, WorldEdit_Modifier_None, &Shape, ICE_BLUE, Resources->WorldUpdateMemory);
 }
 
 link_internal void
@@ -297,7 +297,7 @@ DoIceBlock( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
     .world_update_op_shape_params_rect.P0 = MinP,
     .world_update_op_shape_params_rect.P1 = MaxP,
   };
-  QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Attach, &Shape, ICE_BLUE, Resources->WorldUpdateMemory);
+  QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Attach, WorldEdit_Modifier_None, &Shape, ICE_BLUE, Resources->WorldUpdateMemory);
 }
 
 link_internal void

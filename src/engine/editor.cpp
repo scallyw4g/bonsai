@@ -526,7 +526,7 @@ GetMax(v3 *SelectionRegion)
 }
 
 link_internal void
-ApplyEditToRegion(engine_resources *Engine, rect3 *SelectionAABB, world_edit_mode WorldEditMode)
+ApplyEditToRegion(engine_resources *Engine, rect3 *SelectionAABB, world_edit_mode WorldEditMode, world_edit_mode_modifier Modifier)
 {
   world_update_op_shape Shape = {
     .Type = type_world_update_op_shape_params_rect,
@@ -534,7 +534,7 @@ ApplyEditToRegion(engine_resources *Engine, rect3 *SelectionAABB, world_edit_mod
     .world_update_op_shape_params_rect.P1 = SelectionAABB->Max,
   };
 
-  QueueWorldUpdateForRegion(Engine, WorldEditMode, &Shape, Engine->Editor.SelectedColorIndex, Engine->WorldUpdateMemory);
+  QueueWorldUpdateForRegion(Engine, WorldEditMode, Modifier, &Shape, Engine->Editor.SelectedColorIndex, Engine->WorldUpdateMemory);
 }
 
 
@@ -967,6 +967,7 @@ DoWorldEditor(engine_resources *Engine)
   UNPACK_ENGINE_RESOURCES(Engine);
 
   world_edit_mode WorldEditMode = {};
+  world_edit_mode_modifier WorldEditModifier = {};
   world_edit_tool WorldEditTool = {};
   world_edit_brush_type WorldEditBrushType = {};
 
@@ -976,6 +977,7 @@ DoWorldEditor(engine_resources *Engine)
   ui_toggle_button_group WorldEditToolButtonGroup = {};
   ui_toggle_button_group WorldEditModeButtonGroup = {};
   ui_toggle_button_group WorldEditBrushTypeButtonGroup = {};
+  ui_toggle_button_group WorldEditModifierButtonGroup = {};
 
   {
     local_persist window_layout Window = WindowLayout("World Edit");
@@ -1004,6 +1006,12 @@ DoWorldEditor(engine_resources *Engine)
         Params.RelativePosition.RelativeTo = CurrentRef;
         WorldEditModeButtonGroup = DoEditorUi(Ui, &Window, &WorldEditMode, CSz("Mode"), &Params, ToggleButtonGroupFlags_DrawVertical);
         CurrentRef = WorldEditModeButtonGroup.UiRef;
+      }
+
+      if (WorldEditTool == WorldEdit_Tool_Brush)
+      {
+        Params = DefaultUiRenderParams_Generic;
+        WorldEditModifierButtonGroup = DoEditorUi(Ui, &Window, &WorldEditModifier, CSz(""), &Params, ToggleButtonGroupFlags_DrawVertical);
       }
 
     PushTableEnd(Ui);
@@ -1263,7 +1271,7 @@ DoWorldEditor(engine_resources *Engine)
                         type_world_update_op_shape_params_asset,
                         .world_update_op_shape_params_asset = AssetUpdateShape,
                       };
-                      QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, &Shape, {}, Engine->WorldUpdateMemory);
+                      QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, WorldEditModifier, &Shape, {}, Engine->WorldUpdateMemory);
                     }
                     else if (WorldEditBrushType == WorldEdit_BrushType_Entity)
                     {
@@ -1321,7 +1329,7 @@ DoWorldEditor(engine_resources *Engine)
                 {
                   v3 P0 = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel.Value, HighlightVoxel));
                   rect3 AABB = RectMinMax(P0, P0+1.f);
-                  ApplyEditToRegion(Engine, &AABB, WorldEditMode);
+                  ApplyEditToRegion(Engine, &AABB, WorldEditMode, WorldEditModifier);
                   /* QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory); */
                 }
               }
@@ -1341,7 +1349,7 @@ DoWorldEditor(engine_resources *Engine)
                 type_world_update_op_shape_params_chunk_data,
                 .world_update_op_shape_params_chunk_data = ChunkDataShape,
               };
-              QueueWorldUpdateForRegion(Engine, WorldEditMode, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory);
+              QueueWorldUpdateForRegion(Engine, WorldEditMode, WorldEditModifier, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory);
             }
           } break;
 
@@ -1349,7 +1357,7 @@ DoWorldEditor(engine_resources *Engine)
           {
             if (WorldEditMode && Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
             {
-              ApplyEditToRegion(Engine, &SelectionAABB, WorldEditMode);
+              ApplyEditToRegion(Engine, &SelectionAABB, WorldEditMode, WorldEditModifier);
             }
           } break;
         }
@@ -1426,7 +1434,7 @@ DoWorldEditor(engine_resources *Engine)
                 type_world_update_op_shape_params_asset,
                 .world_update_op_shape_params_asset = AssetUpdateShape,
               };
-              QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, &Shape, {}, Engine->WorldUpdateMemory);
+              QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, WorldEditModifier, &Shape, {}, Engine->WorldUpdateMemory);
 #endif
             }
           }
@@ -1468,7 +1476,7 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Editor->SelectionClicks == 2)
   {
-    if (Input->Ctrl.Pressed && Input->D.Clicked) { ApplyEditToRegion(Engine, &SelectionAABB, WorldEdit_Mode_Remove); }
+    if (Input->Ctrl.Pressed && Input->D.Clicked) { ApplyEditToRegion(Engine, &SelectionAABB, WorldEdit_Mode_Remove, WorldEdit_Modifier_None); }
 
     if (Input->Ctrl.Pressed && Input->C.Clicked) { Editor->CopyRegion = Editor->SelectionRegion; }
 
@@ -1494,7 +1502,7 @@ DoWorldEditor(engine_resources *Engine)
         type_world_update_op_shape_params_chunk_data,
         .world_update_op_shape_params_chunk_data = ChunkDataShape,
       };
-      QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, &Shape, {}, Engine->WorldUpdateMemory);
+      QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, WorldEdit_Modifier_None, &Shape, {}, Engine->WorldUpdateMemory);
     }
   }
 

@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4430:0
+// src/engine/world_chunk.cpp:4444:0
 
 DimIterator(x, y, z, SimSpaceQueryDim)
 {
@@ -7,10 +7,10 @@ DimIterator(x, y, z, SimSpaceQueryDim)
   V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
 
   
-                v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
-                voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
-                if (AssetV && (AssetV->Flags&Voxel_Filled)) { V->Flags = Voxel_Empty; }
-              
+                    v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
+                    voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
+                    if (AssetV && (AssetV->Flags&Voxel_Filled)) { V->Flags = Voxel_Empty; }
+                  
 }
 
 

@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4343:0
+// src/engine/world_chunk.cpp:4428:0
 
 // TODO(Jesse): Do we want to try and keep the amount of temp memory to a minimum here?
 voxel_stack_element_cursor Stack = VoxelStackElementCursor(umm(TotalVoxels*6), Thread->TempMemory);
@@ -21,7 +21,11 @@ while (AtElements(&Stack))
 
     v3i CenterToVoxP = SimVoxP - EditCenterP;
 
-    if ( Contains(SSRect, SimVoxP) && ((V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Attach))) )
+    
+                      v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
+                      voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
+                      if (Contains(SSRect, SimVoxP) && (V->Flags&Voxel_Filled) == 0)
+                    
     {
       if ( (V->Flags & Voxel_MarkBit) == 0)
       {
@@ -35,9 +39,8 @@ while (AtElements(&Stack))
     }
 
     
-                    if (Contains(SSRect, SimVoxP) && Mode == WorldEdit_Mode_Attach && (V->Flags&Voxel_Filled) ) { }
-                    else { *V = NewVoxelValue; }
-                  
+                      if (AssetV && (AssetV->Flags&Voxel_Filled)) { *V = {}; }
+                    
 
     V->Flags |= Voxel_MarkBit;
   }

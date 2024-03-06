@@ -146,6 +146,9 @@ enum world_edit_mode_modifier
   WorldEdit_Modifier_Count,
 };
 
+poof(do_editor_ui_for_radio_enum(world_edit_mode_modifier))
+#include <generated/do_editor_ui_for_radio_enum_world_edit_mode_modifier.h>
+
 poof(string_and_value_tables(world_edit_mode_modifier))
 #include <generated/string_and_value_tables_world_edit_mode_modifier.h>
 

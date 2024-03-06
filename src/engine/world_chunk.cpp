@@ -3938,12 +3938,6 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_edit_mode Mode, world_
   }
 }
 
-link_internal void
-QueueWorldUpdateForRegion(engine_resources *Engine, world_edit_mode Mode, world_update_op_shape *Shape, u16 ColorIndex, memory_arena *Memory)
-{
-  QueueWorldUpdateForRegion(Engine, Mode, WorldEdit_Modifier_None, Shape, ColorIndex, Memory);
-}
-
 link_internal u32
 MapIntoQueryBox(v3i SimSpaceVoxP, v3i SimSpaceQueryMinP, voxel_position SimSpaceQueryDim)
 {
@@ -4030,7 +4024,7 @@ poof(
 
         v3i CenterToVoxP = SimVoxP - EditCenterP;
 
-        if ((FloodPredicate))
+        (FloodPredicate)
         {
           if ( (V->Flags & Voxel_MarkBit) == 0)
           {
@@ -4244,7 +4238,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
               case WorldEdit_Modifier_Flood:
               {
                 poof(flood_fill_iteration_pattern(
-                  { LengthSq(CenterToVoxP) < RadiusSquared && (V->Flags&Voxel_Filled) == 0 },
+                  { if (LengthSq(CenterToVoxP) < RadiusSquared && (V->Flags&Voxel_Filled) == 0) },
                   {
                     if ( LengthSq(CenterToVoxP) < Square(Sphere->Radius-1.f) && V->Flags & Voxel_Filled )
                        { V->Flags = Voxel_Empty; }
@@ -4307,8 +4301,6 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
       {
         world_update_op_shape_params_rect *Rect = SafeCast(world_update_op_shape_params_rect, &Shape);
 
-        Modifier = WorldEdit_Modifier_Flood;
-
         // NOTE(Jesse): Outside world should have min/max'd these already
         Assert(Rect->P0 < Rect->P1);
 
@@ -4341,7 +4333,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
               case WorldEdit_Modifier_Flood:
               {
                 poof(flood_fill_iteration_pattern(
-                  { Contains(SSRect, SimVoxP) && ((V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Attach))) },
+                  { if (Contains(SSRect, SimVoxP) && ((V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Attach)))) },
                   {
                     if (Contains(SSRect, SimVoxP) && Mode == WorldEdit_Mode_Attach && (V->Flags&Voxel_Filled) ) { }
                     else { *V = NewVoxelValue; }
@@ -4358,8 +4350,6 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
                 }))
 #include <generated/rectalinear_iteration_pattern_416827956.h>
               } break;
-
-
             }
           } break;
 
@@ -4371,7 +4361,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
               case WorldEdit_Modifier_Flood:
               {
                 poof(flood_fill_iteration_pattern(
-                  { Contains(SSRect, SimVoxP) && ((V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Attach))) },
+                  { if (Contains(SSRect, SimVoxP) && ((V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Attach)))) },
                   {
                     if (Contains(SSRect, SimVoxP) && Mode == WorldEdit_Mode_Attach && (V->Flags&Voxel_Filled) ) { }
                     else { V->Color = NewColor; }
@@ -4398,7 +4388,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
       {
         case type_world_update_op_shape_params_asset:
         {
-          Assert(Modifier == WorldEdit_Modifier_None); // Not Implemented
+          /* Assert(Modifier == WorldEdit_Modifier_None); // Not Implemented */
           world_update_op_shape_params_asset *AssetJob = SafeCast(world_update_op_shape_params_asset, &Shape);
           /* asset *Asset = AssetJob->Asset; */
           /* Assert(Asset->Models.Count > 0); */
@@ -4411,7 +4401,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
         case type_world_update_op_shape_params_chunk_data:
         {
-          Assert(Modifier == WorldEdit_Modifier_None); // Not Implemented
+          /* Assert(Modifier == WorldEdit_Modifier_None); // Not Implemented */
 
           if (Data == 0)
           {
@@ -4420,6 +4410,9 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
             SimOrigin = Casted->SimSpaceOrigin;
           }
 
+          rect3i SSRect = {V3i(SimOrigin), Data->Dim};
+          v3i EditCenterP = V3i(SimOrigin) + V3i(Data->Dim/2.f);
+
           switch(Mode)
           {
             InvalidCase(WorldEdit_Mode_Count);
@@ -4427,12 +4420,36 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
             case WorldEdit_Mode_Remove:
             {
-              poof(rectalinear_iteration_pattern({
-                v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
-                voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
-                if (AssetV && (AssetV->Flags&Voxel_Filled)) { V->Flags = Voxel_Empty; }
-              }))
+              switch (Modifier)
+              {
+                InvalidCase(WorldEdit_Modifier_Count);
+                case WorldEdit_Modifier_Flood:
+                {
+                  poof(flood_fill_iteration_pattern(
+                    {
+                      v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
+                      voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
+                      if (Contains(SSRect, SimVoxP) && (V->Flags&Voxel_Filled) == 0)
+                    },
+                    {
+                      if (AssetV && (AssetV->Flags&Voxel_Filled)) { *V = {}; }
+                    },
+                    {}
+                    ))
+#include <generated/flood_fill_iteration_pattern_913730393_339899188_339899188.h>
+                } break;
+
+                case WorldEdit_Modifier_None:
+                {
+                  poof(rectalinear_iteration_pattern({
+                    v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
+                    voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
+                    if (AssetV && (AssetV->Flags&Voxel_Filled)) { V->Flags = Voxel_Empty; }
+                  }))
 #include <generated/rectalinear_iteration_pattern_428632106.h>
+
+                } break;
+              }
             } break;
 
             case WorldEdit_Mode_Paint:
@@ -4447,12 +4464,38 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
             case WorldEdit_Mode_Attach:
             {
-              poof(rectalinear_iteration_pattern({
-                v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
-                voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
-                if (AssetV && (AssetV->Flags&Voxel_Filled)) { *V = *AssetV; }
-              }))
+              switch (Modifier)
+              {
+                InvalidCase(WorldEdit_Modifier_Count);
+                case WorldEdit_Modifier_Flood:
+                {
+                  poof(flood_fill_iteration_pattern(
+                    {
+                      v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
+                      voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
+                      if ((V->Flags&Voxel_Filled))
+                    },
+                    {
+                      if ( ((V->Flags&Voxel_Filled) == 0) && AssetV && (AssetV->Flags&Voxel_Filled)) { *V = *AssetV; }
+                      /* if ( (V->Flags&Voxel_Filled) == 0 && */
+                           /* AssetV && (AssetV->Flags&Voxel_Filled)) { *V = *AssetV; } */
+                    },
+                    {}
+                    ))
+#include <generated/flood_fill_iteration_pattern_275071431_785723886_0.h>
+                } break;
+
+                case WorldEdit_Modifier_None:
+                {
+                  poof(rectalinear_iteration_pattern({
+                    v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
+                    voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
+                    if (AssetV && (AssetV->Flags&Voxel_Filled)) { *V = *AssetV; }
+                  }))
 #include <generated/rectalinear_iteration_pattern_122717011.h>
+                } break;
+              }
+
             } break;
           }
 
