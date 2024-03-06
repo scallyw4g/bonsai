@@ -72,101 +72,17 @@ struct work_queue_entry_rebuild_mesh
 
 
 
-enum world_update_op_shape_type
-{
-  type_world_update_op_shape_params_noop,
-
-  type_world_update_op_shape_params_sphere,
-  type_world_update_op_shape_params_rect,
-  type_world_update_op_shape_params_asset,
-  type_world_update_op_shape_params_chunk_data,
-
-  type_world_update_op_shape_params_count,
-};
-
-poof(string_and_value_tables(world_update_op_shape_type))
-#include <generated/string_and_value_tables_world_update_op_shape_type.h>
-
-struct world_update_op_shape_params_sphere
-{
-  canonical_position Location;
-  f32 Radius;
-};
-
-
-
-
-
-struct world_update_op_shape_params_rect
-{
-  // Sim-space positions
-  v3 P0;
-  v3 P1;
-  /* rect3 Region; */ // TODO(Jesse): Make this a thing
-  /* rect3cp Region; */
-};
-
-struct asset;
-struct world_update_op_shape_params_asset
-{
-  /* asset *Asset; */
-  /* model *Model; */
-
-  asset_id AssetId;
-  u64      ModelIndex;
-  cp Origin;
-};
-
-struct world_update_op_shape_params_chunk_data
-{
-  chunk_data Data;
-  v3 SimSpaceOrigin;
-  /* cp Origin; */
-};
-
-
-// TODO(Jesse): Rename to world_update_brush ?
-struct world_update_op_shape
-{
-  world_update_op_shape_type Type;
-
-  union {
-    world_update_op_shape_params_sphere     world_update_op_shape_params_sphere;
-    world_update_op_shape_params_rect       world_update_op_shape_params_rect;
-    world_update_op_shape_params_asset      world_update_op_shape_params_asset;
-    world_update_op_shape_params_chunk_data world_update_op_shape_params_chunk_data;
-  };
-};
-
-// TODO(Jesse): Rename to reflect that it's the iteration pattern
-enum world_edit_mode_modifier
-{
-  WorldEdit_Modifier_None,
-  WorldEdit_Modifier_Flood,
-  WorldEdit_Modifier_Count,
-};
-
-poof(do_editor_ui_for_radio_enum(world_edit_mode_modifier))
-#include <generated/do_editor_ui_for_radio_enum_world_edit_mode_modifier.h>
-
-poof(string_and_value_tables(world_edit_mode_modifier))
-#include <generated/string_and_value_tables_world_edit_mode_modifier.h>
-
 
 struct work_queue_entry_update_world_region
 {
-  world_edit_mode          Mode;
-  world_edit_mode_modifier Modifier;
+  world_edit_brush Brush;
 
-  world_update_op_shape Shape;
-
-  //
-
+  // TODO(Jesse): These feel like part of the brush?
   u16 ColorIndex;
   u8  Transparency;
 
-  canonical_position MinP;
-  canonical_position MaxP;
+  cp MinP;
+  cp MaxP;
 
   world_chunk **ChunkBuffer;
   u32 ChunkCount;
@@ -200,6 +116,7 @@ global_variable voxel Global_UnsetVoxel = { 0xff, 0xff, 0xffff };
 #endif
 
 
+#if 0
 poof(
   func rectilinear_world_update_inplace(type_poof_symbol MetaMode,
                                         type_poof_symbol MetaModifier,
@@ -269,8 +186,7 @@ Initialize_Global_UpdateWorldCallbackTable()
 {
   Global_WorldUpdateCallbackTable[WorldEdit_Mode_Attach][WorldEdit_Modifier_None][type_world_update_op_shape_params_rect] = RectilinearWorldUpdate_WorldEdit_Mode_Attach_WorldEdit_Modifier_None_type_world_update_op_shape_params_rect;
 }
-
-
+#endif
 
 
 

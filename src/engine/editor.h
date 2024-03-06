@@ -579,4 +579,104 @@ poof(do_editor_ui_for_radio_enum(world_edit_brush_type))
 #include <generated/do_editor_ui_for_radio_enum_world_edit_brush_type.h>
 
 
+
+
+
+
+enum world_update_op_shape_type
+{
+  type_world_update_op_shape_params_noop,
+
+  type_world_update_op_shape_params_sphere,
+  type_world_update_op_shape_params_rect,
+  type_world_update_op_shape_params_asset,
+  type_world_update_op_shape_params_chunk_data,
+
+  type_world_update_op_shape_params_count,
+};
+
+poof(string_and_value_tables(world_update_op_shape_type))
+#include <generated/string_and_value_tables_world_update_op_shape_type.h>
+
+
+struct world_update_op_shape_params_rect
+{
+  // Sim-space positions
+  v3 P0;
+  v3 P1;
+  /* rect3 Region; */ // TODO(Jesse): Make this a thing
+  /* rect3cp Region; */
+};
+
+struct asset;
+struct world_update_op_shape_params_asset
+{
+  /* asset *Asset; */
+  /* model *Model; */
+
+  asset_id AssetId;
+  u64      ModelIndex;
+  cp Origin;
+};
+
+struct world_update_op_shape_params_chunk_data
+{
+  chunk_data Data;
+  v3 SimSpaceOrigin;
+  /* cp Origin; */
+};
+
+struct world_update_op_shape_params_sphere
+{
+  canonical_position Location;
+  f32 Radius;
+};
+
+struct world_update_op_shape
+{
+  world_update_op_shape_type Type;
+
+  union {
+    world_update_op_shape_params_sphere     world_update_op_shape_params_sphere;
+    world_update_op_shape_params_rect       world_update_op_shape_params_rect;
+    world_update_op_shape_params_asset      world_update_op_shape_params_asset;
+    world_update_op_shape_params_chunk_data world_update_op_shape_params_chunk_data;
+  };
+};
+
+
+// TODO(Jesse): Rename to reflect that it's the iteration pattern
+enum world_edit_mode_modifier
+{
+  WorldEdit_Modifier_None,
+  WorldEdit_Modifier_Flood,
+  WorldEdit_Modifier_Count,
+};
+
+poof(do_editor_ui_for_radio_enum(world_edit_mode_modifier))
+#include <generated/do_editor_ui_for_radio_enum_world_edit_mode_modifier.h>
+
+poof(string_and_value_tables(world_edit_mode_modifier))
+#include <generated/string_and_value_tables_world_edit_mode_modifier.h>
+
+struct world_edit_brush
+{
+  world_update_op_shape    Shape;
+
+  world_edit_mode          Mode;
+  world_edit_mode_modifier Modifier;
+
+  // NOTE(Jesse): If Modifier is Flood, this is set to where the flood should start
+  v3 SimFloodOrigin;
+};
+
+
+
+
 link_internal b32 HardResetEditor(level_editor *Editor);
+
+link_internal v3
+GetHotVoxelForEditMode(engine_resources *Engine, world_edit_mode WorldEditMode);
+
+link_internal v3
+GetHotVoxelForFlood(engine_resources *Engine, world_edit_mode WorldEditMode, world_edit_mode_modifier Modifier);

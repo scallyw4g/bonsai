@@ -3603,18 +3603,30 @@ WorkQueueEntryRebuildMesh(world_chunk *Chunk, chunk_init_flags Flags) //, world_
 }
 
 link_internal work_queue_entry_update_world_region
-WorkQueueEntryUpdateWorldRegion(world_edit_mode Mode, world_edit_mode_modifier Modifier, world_update_op_shape *Shape, u16 ColorIndex, canonical_position MinP, canonical_position MaxP, world_chunk** ChunkBuffer, u32 ChunkCount)
+WorkQueueEntryUpdateWorldRegion(world_edit_mode Mode,
+                                world_edit_mode_modifier Modifier,
+                                v3 SimFloodOrigin,
+                                world_update_op_shape *Shape,
+                                u16 ColorIndex,
+                                cp MinP,
+                                cp MaxP,
+                                world_chunk** ChunkBuffer,
+                                u32 ChunkCount)
 {
   work_queue_entry_update_world_region Result =
   {
-    .Mode = Mode,
-    .Modifier = Modifier,
-    .Shape = *Shape,
-    .ColorIndex = ColorIndex,
-    .ChunkBuffer = ChunkBuffer,
-    .ChunkCount = ChunkCount,
-    .MinP = MinP,
-    .MaxP = MaxP
+    {
+      *Shape,
+      Mode,
+      Modifier,
+      SimFloodOrigin,
+    },
+    ColorIndex,
+    {},
+    MinP,
+    MaxP,
+    ChunkBuffer,
+    ChunkCount,
   };
   return Result;
 }
@@ -3793,7 +3805,12 @@ BlitAssetIntoWorld(engine_resources *Engine, asset *Asset, cp Origin)
 }
 
 link_internal void
-QueueWorldUpdateForRegion(engine_resources *Engine, world_edit_mode Mode, world_edit_mode_modifier Modifier, world_update_op_shape *Shape, u16 ColorIndex, memory_arena *Memory)
+QueueWorldUpdateForRegion(engine_resources *Engine,
+                          world_edit_mode Mode,
+                          world_edit_mode_modifier Modifier,
+                          world_update_op_shape *Shape,
+                          u16 ColorIndex,
+                          memory_arena *Memory)
 {
   TIMED_FUNCTION();
 
@@ -3930,9 +3947,12 @@ QueueWorldUpdateForRegion(engine_resources *Engine, world_edit_mode Mode, world_
   // NOTE(Jesse): If none of the world chunks were in the hashtable yet we get ChunkCount == 0
   if (ChunkIndex > 0)
   {
+
+    v3 SimFloodOrigin = GetHotVoxelForFlood(Engine, Mode, Modifier);
+
     work_queue_entry Entry = {
       .Type = type_work_queue_entry_update_world_region,
-      .work_queue_entry_update_world_region = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, Shape, ColorIndex, MinP, MaxP, Buffer, ChunkIndex),
+      .work_queue_entry_update_world_region = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, Shape, ColorIndex, MinP, MaxP, Buffer, ChunkIndex),
     };
     PushWorkQueueEntry(&Plat->LowPriority, &Entry);
   }
@@ -4008,9 +4028,9 @@ poof(
 
     // Unfortunately, can't #if this out in a poof function.  Should probably
     // put it on a #define switch to make sure it gets compiled out.
-    /* DEBUG_AssertVoxelFloodStartsInEmptyVoxel(EditCenterP, &SimSpaceQueryAABB, CopiedVoxels); */
+    /* DEBUG_AssertVoxelFloodStartsInEmptyVoxel(FloodOrigin, &SimSpaceQueryAABB, CopiedVoxels); */
 
-    Push(&Stack, VoxelStackElement(EditCenterP, VoxelRuleDir_Count));
+    Push(&Stack, VoxelStackElement(FloodOrigin, VoxelRuleDir_Count));
     while (AtElements(&Stack))
     {
       voxel_stack_element Element = Pop(&Stack);
@@ -4022,7 +4042,7 @@ poof(
       {
         V = CopiedVoxels+VoxelIndex;
 
-        v3i CenterToVoxP = SimVoxP - EditCenterP;
+        v3i CenterToVoxP = SimVoxP - FloodOrigin;
 
         (FloodPredicate)
         {
@@ -4043,7 +4063,7 @@ poof(
       }
     }
 
-    Push(&Stack, VoxelStackElement(EditCenterP, VoxelRuleDir_Count));
+    Push(&Stack, VoxelStackElement(FloodOrigin, VoxelRuleDir_Count));
     while (AtElements(&Stack))
     {
       voxel_stack_element Element = Pop(&Stack);
@@ -4100,14 +4120,15 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
   random_series ColorEntropy = {4654376543246};
 
-  world_edit_mode Mode              = Job->Mode;
-  world_edit_mode_modifier Modifier = Job->Modifier;
+  world_edit_mode              Mode = Job->Brush.Mode;
+  world_edit_mode_modifier Modifier = Job->Brush.Modifier;
+  world_update_op_shape       Shape = Job->Brush.Shape;
+  v3i                   FloodOrigin = V3i(Job->Brush.SimFloodOrigin);
 
-  world_update_op_shape Shape = Job->Shape;
   u16 NewColor                = Job->ColorIndex;
   u8  NewTransparency         = Job->Transparency;
-  canonical_position MaxP     = Job->MaxP;
-  canonical_position MinP     = Job->MinP;
+  cp MaxP                     = Job->MaxP;
+  cp MinP                     = Job->MinP;
   world_chunk **ChunkBuffer   = Job->ChunkBuffer;
   u32 ChunkCount              = Job->ChunkCount;
 
@@ -4335,12 +4356,13 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
                 poof(flood_fill_iteration_pattern(
                   { if (Contains(SSRect, SimVoxP) && ((V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Attach)))) },
                   {
-                    if (Contains(SSRect, SimVoxP) && Mode == WorldEdit_Mode_Attach && (V->Flags&Voxel_Filled) ) { }
-                    else { *V = NewVoxelValue; }
+                    if ( Mode == WorldEdit_Mode_Attach &&
+                        (V->Flags&Voxel_Filled) ) { }
+                    else { if (Contains(SSRect, SimVoxP)) { *V = NewVoxelValue; } }
                   },
                   {}
                   ))
-#include <generated/flood_fill_iteration_pattern_913730393_339899188_339899188.h>
+#include <generated/flood_fill_iteration_pattern_846291950_267608728_0.h>
               } break;
 
               case WorldEdit_Modifier_None:
@@ -4436,7 +4458,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
                     },
                     {}
                     ))
-#include <generated/flood_fill_iteration_pattern_913730393_339899188_339899188.h>
+#include <generated/flood_fill_iteration_pattern_275071431_101859599_0.h>
                 } break;
 
                 case WorldEdit_Modifier_None:

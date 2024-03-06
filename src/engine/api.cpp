@@ -14,7 +14,7 @@ Bonsai_OnLibraryLoad(engine_resources *Resources)
   Global_ThreadStates = Resources->Stdlib.ThreadStates;
   Global_EngineResources = Resources;
 
-  Initialize_Global_UpdateWorldCallbackTable();
+  /* Initialize_Global_UpdateWorldCallbackTable(); */
 
   b32 Result = InitializeOpenglFunctions();
   return Result;
@@ -31,7 +31,7 @@ Bonsai_Init(engine_resources *Resources)
   Result &= InitEditor(&Resources->Editor);
   Result &= InitEngineResources(Resources);
 
-  Initialize_Global_UpdateWorldCallbackTable();
+  /* Initialize_Global_UpdateWorldCallbackTable(); */
 
   return Result;
 }

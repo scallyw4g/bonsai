@@ -849,32 +849,89 @@ RenderAndInteractWithThumbnailTexture(renderer_2d *Ui, window_layout *Window, co
 #endif
 
 
-link_internal picked_voxel_position
-MapWorldEditModeToHighlightVoxelForSingleSelection(world_edit_mode WorldEditMode)
+link_internal v3
+GetHotVoxelForEditMode(engine_resources *Engine, world_edit_mode WorldEditMode)
 {
-  picked_voxel_position Result = {};
+  picked_voxel_position Pos = {};
 
   switch (WorldEditMode)
   {
     InvalidCase(WorldEdit_Mode_Count);
 
-    case WorldEdit_Mode_Disabled:
     case WorldEdit_Mode_Attach:
     {
-      Result = PickedVoxel_LastEmpty;
+      Pos = PickedVoxel_LastEmpty;
     } break;
 
+    case WorldEdit_Mode_Disabled:
     case WorldEdit_Mode_Paint:
     case WorldEdit_Mode_Remove:
     {
-      Result = PickedVoxel_FirstFilled;
+      Pos = PickedVoxel_FirstFilled;
     } break;
   }
 
-  // 0 is a valid result
-  /* Assert(Result); */
+  v3 Result = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, Pos));
   return Result;
 }
+
+link_internal v3
+GetHotVoxelForFlood(engine_resources *Engine, world_edit_mode WorldEditMode, world_edit_mode_modifier Modifier)
+{
+  v3 Result = {};
+  picked_voxel_position Pos = {};
+
+  if (Modifier == WorldEdit_Modifier_Flood)
+  {
+    switch (WorldEditMode)
+    {
+      InvalidCase(WorldEdit_Mode_Disabled);
+      InvalidCase(WorldEdit_Mode_Count);
+
+      case WorldEdit_Mode_Attach:
+      {
+        Pos = PickedVoxel_FirstFilled;
+      } break;
+
+      case WorldEdit_Mode_Paint:
+      case WorldEdit_Mode_Remove:
+      {
+        Pos = PickedVoxel_LastEmpty;
+      } break;
+    }
+
+    Result = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, Pos));
+  }
+
+  return Result;
+}
+
+/* link_internal picked_voxel_position */
+/* MapWorldEditModeToHighlightVoxel(world_edit_mode WorldEditMode) */
+/* { */
+/*   picked_voxel_position Result = {}; */
+
+/*   switch (WorldEditMode) */
+/*   { */
+/*     InvalidCase(WorldEdit_Mode_Count); */
+
+/*     case WorldEdit_Mode_Disabled: */
+/*     case WorldEdit_Mode_Attach: */
+/*     { */
+/*       Result = PickedVoxel_LastEmpty; */
+/*     } break; */
+
+/*     case WorldEdit_Mode_Paint: */
+/*     case WorldEdit_Mode_Remove: */
+/*     { */
+/*       Result = PickedVoxel_FirstFilled; */
+/*     } break; */
+/*   } */
+
+/*   // 0 is a valid result */
+/*   /1* Assert(Result); *1/ */
+/*   return Result; */
+/* } */
 
 link_internal void
 DoBrushSettingsWindow(engine_resources *Engine, world_edit_mode WorldEditMode, world_edit_tool WorldEditTool, world_edit_brush_type WorldEditBrushType)
@@ -971,7 +1028,6 @@ DoWorldEditor(engine_resources *Engine)
   world_edit_tool WorldEditTool = {};
   world_edit_brush_type WorldEditBrushType = {};
 
-  picked_voxel_position HighlightVoxel = PickedVoxel_FirstFilled;
   ui_toggle_button_group WorldEditModeRadioGroup = {};
 
   ui_toggle_button_group WorldEditToolButtonGroup = {};
@@ -1301,7 +1357,6 @@ DoWorldEditor(engine_resources *Engine)
             // and we can just collapse world edits automatically in the edit thread.
             //
             // When my laptop is unplugged running on battery power, this is _much_ faster.
-            HighlightVoxel = MapWorldEditModeToHighlightVoxelForSingleSelection(WorldEditMode);
             if (WorldEditMode == WorldEdit_Mode_Paint)
             {
 
@@ -1327,10 +1382,9 @@ DoWorldEditor(engine_resources *Engine)
                 Ui->RequestedForceCapture = True;
                 if (Engine->MousedOverVoxel.Tag)
                 {
-                  v3 P0 = Floor(GetSimSpaceP(World, &Engine->MousedOverVoxel.Value, HighlightVoxel));
+                  v3 P0 = GetHotVoxelForEditMode(Engine, WorldEditMode);
                   rect3 AABB = RectMinMax(P0, P0+1.f);
                   ApplyEditToRegion(Engine, &AABB, WorldEditMode, WorldEditModifier);
-                  /* QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory); */
                 }
               }
             }
@@ -1524,7 +1578,7 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Engine->MousedOverVoxel.Tag)
   {
-    v3 SimP = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, HighlightVoxel));
-    DEBUG_HighlightVoxel( Engine, SimP, RED, 0.075f);
+    v3 HotVoxel = GetHotVoxelForEditMode(Engine, WorldEditMode);
+    DEBUG_HighlightVoxel( Engine, HotVoxel, RED, 0.075f);
   }
 }
