@@ -974,6 +974,7 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_mode WorldEditMode, w
               v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
 
               Params->ChunkSize = V3i(SelectionMaxP-SelectionMinP);
+              Params->Color = Engine->Editor.SelectedColorIndex;
 
               world_chunk *DestChunk = &Editor->NoiseEditor.Chunk;
               if (DestChunk->Dim != Params->ChunkSize)
@@ -992,7 +993,18 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_mode WorldEditMode, w
               {
                 *PrevParams = *Params;
                 DestChunk->Flags = Chunk_Queued;
-                InitializeChunkWithNoise( Noise_Perlin3D, GetThreadLocalState(ThreadLocal_ThreadIndex), DestChunk, DestChunk->Dim, {}, s32(PerlinParams->Period), s32(PerlinParams->Amplitude), s32(PerlinParams->Threshold), MeshBit_None, ChunkInitFlag_Noop, 0);
+                InitializeChunkWithNoise( Noise_Perlin3D,
+                                          GetThreadLocalState(ThreadLocal_ThreadIndex),
+                                          DestChunk,
+                                          DestChunk->Dim,
+                                          {},
+                                          s32(PerlinParams->Period),
+                                          s32(PerlinParams->Amplitude),
+                                          s32(PerlinParams->Threshold),
+                                          Engine->Editor.SelectedColorIndex ,
+                                          MeshBit_None,
+                                          ChunkInitFlag_Noop,
+                                          0);
                 SyncGpuBuffersImmediate(Engine, &DestChunk->Meshes);
               }
 

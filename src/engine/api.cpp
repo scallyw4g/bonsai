@@ -504,6 +504,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
                                          Frequency,
                                          Amplititude,
                                          StartingZDepth,
+                                         GRASS_GREEN,
                                          ChunkInitFlag_ComputeStandingSpots );
       }
 

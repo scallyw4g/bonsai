@@ -442,6 +442,7 @@ struct noise_params
   voronoi_noise_params VoronoiParams;
 
   v3i ChunkSize;
+  u16 Color;
 };
 
 poof(are_equal(noise_params))
