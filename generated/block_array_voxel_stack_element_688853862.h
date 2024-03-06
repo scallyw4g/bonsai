@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:3998:0
+// src/engine/world_chunk.cpp:4003:0
 
 struct voxel_stack_element_block
 {

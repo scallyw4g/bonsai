@@ -913,6 +913,9 @@ MarkBoundaryVoxels_MakeExteriorFaces( voxel *Voxels,
 
   auto MinDim = SrcChunkMin;
   auto MaxDim = Min(SrcChunkDim, SrcChunkMax);
+
+  rect3i ClampedDim = RectMinMax(SrcChunkMin, SrcChunkMax);
+
   for ( s32 z = MinDim.z; z < MaxDim.z ; ++z )
   {
     for ( s32 y = MinDim.y; y < MaxDim.y ; ++y )
@@ -936,27 +939,27 @@ MarkBoundaryVoxels_MakeExteriorFaces( voxel *Voxels,
           voxel_position backVoxel  = DestP - Voxel_Position(0, 1, 0);
 
 
-          if ( !IsInsideDim( SrcChunkDim, rightVoxel) || NotFilled( Voxels, rightVoxel, SrcChunkDim) || TransparencyIncreases( Voxels, SrcIndex, rightVoxel, SrcChunkDim) )
+          if ( !Contains( ClampedDim, rightVoxel) || NotFilled( Voxels, rightVoxel, SrcChunkDim) || TransparencyIncreases( Voxels, SrcIndex, rightVoxel, SrcChunkDim) )
           {
             Voxel->Flags |= Voxel_RightFace;
           }
-          if ( !IsInsideDim( SrcChunkDim, leftVoxel)  || NotFilled( Voxels, leftVoxel, SrcChunkDim)  || TransparencyIncreases( Voxels, SrcIndex, leftVoxel, SrcChunkDim) )
+          if ( !Contains( ClampedDim, leftVoxel)  || NotFilled( Voxels, leftVoxel, SrcChunkDim)  || TransparencyIncreases( Voxels, SrcIndex, leftVoxel, SrcChunkDim)  )
           {
             Voxel->Flags |= Voxel_LeftFace;
           }
-          if ( !IsInsideDim( SrcChunkDim, botVoxel)   || NotFilled( Voxels, botVoxel, SrcChunkDim)   || TransparencyIncreases( Voxels, SrcIndex, botVoxel, SrcChunkDim) )
+          if ( !Contains( ClampedDim, botVoxel)   || NotFilled( Voxels, botVoxel, SrcChunkDim)   || TransparencyIncreases( Voxels, SrcIndex, botVoxel, SrcChunkDim)   )
           {
             Voxel->Flags |= Voxel_BottomFace;
           }
-          if ( !IsInsideDim( SrcChunkDim, topVoxel)   || NotFilled( Voxels, topVoxel, SrcChunkDim)   || TransparencyIncreases( Voxels, SrcIndex, topVoxel, SrcChunkDim) )
+          if ( !Contains( ClampedDim, topVoxel)   || NotFilled( Voxels, topVoxel, SrcChunkDim)   || TransparencyIncreases( Voxels, SrcIndex, topVoxel, SrcChunkDim)   )
           {
             Voxel->Flags |= Voxel_TopFace;
           }
-          if ( !IsInsideDim( SrcChunkDim, frontVoxel) || NotFilled( Voxels, frontVoxel, SrcChunkDim) || TransparencyIncreases( Voxels, SrcIndex, frontVoxel, SrcChunkDim) )
+          if ( !Contains( ClampedDim, frontVoxel) || NotFilled( Voxels, frontVoxel, SrcChunkDim) || TransparencyIncreases( Voxels, SrcIndex, frontVoxel, SrcChunkDim) )
           {
             Voxel->Flags |= Voxel_FrontFace;
           }
-          if ( !IsInsideDim( SrcChunkDim, backVoxel)  || NotFilled( Voxels, backVoxel, SrcChunkDim)  || TransparencyIncreases( Voxels, SrcIndex, backVoxel, SrcChunkDim) )
+          if ( !Contains( ClampedDim, backVoxel)  || NotFilled( Voxels, backVoxel, SrcChunkDim)  || TransparencyIncreases( Voxels, SrcIndex, backVoxel, SrcChunkDim)  )
           {
             Voxel->Flags |= Voxel_BackFace;
           }
@@ -3506,15 +3509,17 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
 
   if (MakeExteriorFaces)
   {
-    CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Global_ChunkApronMinDim);
-    MarkBoundaryVoxels_MakeExteriorFaces(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim);
+    /* CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Global_ChunkApronMinDim); */
+    MarkBoundaryVoxels_MakeExteriorFaces(SyntheticChunk->Voxels, SynChunkDim, Global_ChunkApronMinDim, SynChunkDim-Global_ChunkApronMaxDim);
+    /* MarkBoundaryVoxels_MakeExteriorFaces(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim); */
   }
   else
   {
     MarkBoundaryVoxels_NoExteriorFaces(SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
-    CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Global_ChunkApronMinDim);
+    /* CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Global_ChunkApronMinDim); */
   }
 
+    CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Global_ChunkApronMinDim);
 
   // NOTE(Jesse): You can use this for debug, but it doesn't work if you change it to NoExteriorFaces
   /* MarkBoundaryVoxels_MakeExteriorFaces(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim); */

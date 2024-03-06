@@ -1004,7 +1004,8 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_mode WorldEditMode, w
                                           Engine->Editor.SelectedColorIndex ,
                                           MeshBit_None,
                                           ChunkInitFlag_Noop,
-                                          0);
+                                          0,
+                                          True);
                 SyncGpuBuffersImmediate(Engine, &DestChunk->Meshes);
               }
 
