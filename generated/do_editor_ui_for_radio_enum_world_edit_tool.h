@@ -1,9 +1,11 @@
-// src/engine/editor.h:575:0
+// src/engine/editor.h:577:0
 
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_tool Selection)
 {
-  NotImplemented;
+  ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Selection;
+  SetRadioButton(RadioGroup, ToggleHandle, True);
+  /* Ensure( ToggleRadioButton(RadioGroup, ToggleHandle) ); */
 }
 
 link_internal void

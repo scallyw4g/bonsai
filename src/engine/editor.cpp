@@ -1520,13 +1520,13 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Input->Ctrl.Pressed || Input->Shift.Pressed) { Ui->RequestedForceCapture = True; }
 
-  if (Input->Ctrl.Pressed && Input->S.Clicked) { RadioSelect(&WorldEditModeRadioGroup, WorldEdit_Tool_Select); ResetSelection(Editor); }
+  if (Input->Ctrl.Pressed && Input->S.Clicked) { RadioSelect(&WorldEditToolButtonGroup, WorldEdit_Tool_Select); ResetSelection(Editor); }
 
   /* if (Clicked(&WorldEditModeRadioGroup, CSz("Select"))) { ResetSelection(Editor); } */
 
   /* if (Input->Ctrl.Pressed && Input->F.Clicked) { ResetSelectionIfIncomplete(Editor); RadioSelect(&WorldEditModeRadioGroup, WorldEdit_Tool_FillSelection); } */
 
-  if (Input->Ctrl.Pressed && Input->E.Clicked) { ResetSelectionIfIncomplete(Editor); RadioSelect(&WorldEditModeRadioGroup, WorldEdit_Tool_Eyedropper); }
+  if (Input->Ctrl.Pressed && Input->E.Clicked) { ResetSelectionIfIncomplete(Editor); RadioSelect(&WorldEditToolButtonGroup, WorldEdit_Tool_Eyedropper); }
 
   if (Editor->SelectionClicks == 2)
   {

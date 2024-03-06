@@ -66,7 +66,9 @@ poof(
     link_internal void
     RadioSelect(ui_toggle_button_group *RadioGroup, enum_t.name Selection)
     {
-      NotImplemented;
+      ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Selection;
+      SetRadioButton(RadioGroup, ToggleHandle, True);
+      /* Ensure( ToggleRadioButton(RadioGroup, ToggleHandle) ); */
     }
 
     link_internal void
