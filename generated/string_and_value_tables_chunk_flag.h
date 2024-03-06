@@ -1,4 +1,4 @@
-// src/engine/world_chunk.h:77:0
+// src/engine/world_chunk.h:78:0
 
 link_internal counted_string
 ToString(chunk_flag Type)

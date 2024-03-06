@@ -968,12 +968,12 @@ MarkBoundaryVoxels_MakeExteriorFaces( voxel *Voxels,
 
 link_internal void
 MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
-                                        v3i SrcChunkDim,
-                                        v3i SrcChunkMin,
-                                        v3i SrcChunkMax,
-                                        random_series *Entropy = 0,
-                                        u8 NewColorMin = 0,
-                                        u8 NewColorMax = 0 )
+                                      v3i  SrcChunkDim,
+                                      v3i  SrcChunkMin,
+                                      v3i  SrcChunkMax,
+                            random_series *Entropy = 0,
+                                       u8  NewColorMin = 0,
+                                       u8  NewColorMax = 0 )
 {
   /* HISTOGRAM_FUNCTION(); */
   TIMED_FUNCTION();
@@ -993,6 +993,7 @@ MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
         v3i SrcP = V3i(x,y,z);
         s32 SrcIndex = GetIndex(SrcP, SrcChunkDim);
         voxel *Voxel = Voxels + SrcIndex;
+
         if (Voxel->Flags & Voxel_Filled)
         {
           Voxel->Flags = Voxel_Filled;
@@ -4426,7 +4427,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
             SimOrigin = Casted->SimSpaceOrigin;
           }
 
-          rect3i SSRect = RectMinDim(V3i(SimOrigin), Data->Dim);// {, V3i(SimOrigin)+Data->Dim};
+          rect3i SSRect = RectMinDim(V3i(SimOrigin), Data->Dim);
           v3i EditCenterP = V3i(SimOrigin) + V3i(Data->Dim/2.f);
 
           switch(Mode)
@@ -4549,6 +4550,8 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
     auto ChunkRelRectMin = SimSpaceIntersectionMin - SimSpaceChunkMin;
     auto ChunkRelRectMax = SimSpaceIntersectionMax - SimSpaceChunkMin;
 
+    s32 StartedFilled = 0;
+    s32 EndedFilled = 0;
     for (s32 zVoxel = s32(ChunkRelRectMin.z); zVoxel < s32(ChunkRelRectMax.z); zVoxel += 1)
     {
       for (s32 yVoxel = s32(ChunkRelRectMin.y); yVoxel < s32(ChunkRelRectMax.y); yVoxel += 1)
@@ -4566,6 +4569,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           Assert(CopiedVoxels[Index] != Global_UnsetVoxel);
 
           Assert( (V->Flags & Voxel_MarkBit) == 0);
+          StartedFilled += (V->Flags&Voxel_Filled);
 #if VOXEL_DEBUG_COLOR
           V->Flags = CopiedVoxels[Index].Flags;
           V->Color = CopiedVoxels[Index].Color;
@@ -4573,10 +4577,15 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 #else
           *V = CopiedVoxels[Index];
 #endif
+          EndedFilled += (V->Flags&Voxel_Filled);
           Assert( (V->Flags & Voxel_MarkBit) == 0);
         }
       }
     }
+
+    s32 DiffFilled = EndedFilled - StartedFilled;
+    Chunk->FilledCount += DiffFilled;
+    Assert(Chunk->FilledCount >= 0);
   }
 #endif
 
@@ -4978,7 +4987,7 @@ GetChunksIntersectingRay(world *World, ray *Ray, picked_world_chunk_static_buffe
     }
   }
 
-  return { .Chunk = ClosestChunk, .tChunk = tChunkMin };
+  return { .Chunk = ClosestChunk, .tChunk = r64(tChunkMin) };
 }
 
 link_internal world_chunk*
@@ -5042,10 +5051,12 @@ RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, 
 
     if (ClosestChunk->FilledCount == 0) continue;
 
-    /* { */
-    /*   untextured_3d_geometry_buffer AABBMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB); */
-    /*   DEBUG_DrawChunkAABB(&AABBMesh, Graphics, ClosestChunk, World->ChunkDim, RED); */
-    /* } */
+#if 0
+    {
+      aabb ChunkAABB = GetSimSpaceAABB(World, ClosestChunk);
+      DEBUG_DrawSimSpaceAABB(GetEngineResources(), &ChunkAABB, RED);
+    }
+#endif
 
     v3 CollisionP = MaybeRay.Ray.Origin + (MaybeRay.Ray.Dir*tChunk);
 
@@ -5071,14 +5082,14 @@ RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, 
         // Hit = True;
         ClosestChunkIndex = -1;
 
-        Result.Chunks[PickedVoxel_FirstFilled] = {ClosestChunk, tChunk};
+        Result.Chunks[PickedVoxel_FirstFilled] = {ClosestChunk, r64(tChunk)};
         Result.Picks[PickedVoxel_FirstFilled] = Canonical_Position(AtP, ClosestChunk->WorldP);
 
         break;
       }
       else
       {
-        Result.Chunks[PickedVoxel_LastEmpty] = {ClosestChunk, tChunk};
+        Result.Chunks[PickedVoxel_LastEmpty] = {ClosestChunk, r64(tChunk)};
         Result.Picks[PickedVoxel_LastEmpty] = Canonical_Position(AtP, ClosestChunk->WorldP);
       }
 

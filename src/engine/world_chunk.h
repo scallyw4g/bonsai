@@ -5,10 +5,11 @@ struct heap_allocator;
 struct entity;
 
 
+// NOTE(Jesse): Gets casted to sort_key_f, so Chunk and tChunk ahve to be 1st and second, in that order
 struct picked_world_chunk
 {
   world_chunk *Chunk;
-  r32 tChunk;
+  r64 tChunk;
 };
 
 enum picked_voxel_position
@@ -48,7 +49,7 @@ Push(picked_world_chunk_static_buffer *Buf, world_chunk *Chunk, r32 t)
   if (Buf->At < MAX_PICKED_WORLD_CHUNKS)
   {
     Buf->E[Buf->At].Chunk = Chunk;
-    Buf->E[Buf->At].tChunk = t;
+    Buf->E[Buf->At].tChunk = r64(t);
 
     ++Buf->At;
   }
@@ -368,7 +369,7 @@ struct world_chunk
 
   v3i WorldP;
 
-  u32 FilledCount;
+  s32 FilledCount;
   b32 DrawBoundingVoxels;
 
   s32 PointsToLeaveRemaining;

@@ -331,7 +331,7 @@ DeserializeChunk(u8_stream *FileBytes, world_chunk *Result, tiered_mesh_freelist
   umm VoxByteCount = Header.VoxelElementCount * Header.VoxelElementSize;
   ReadBytesIntoBuffer(FileBytes, (u8*)Result->Voxels,  VoxByteCount);
 
-  Result->FilledCount = Header.VoxelElementCount;
+  Result->FilledCount = s32(Header.VoxelElementCount);
 
   if (Header.StandingSpotElementCount)
   {
