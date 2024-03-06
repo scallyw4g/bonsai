@@ -21,9 +21,7 @@ while (AtElements(&Stack))
 
     v3i CenterToVoxP = SimVoxP - EditCenterP;
 
-    if (
-                    Contains(SSRect, SimVoxP) && ((V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Attach)))
-                  )
+    if ( Contains(SSRect, SimVoxP) && ((V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Attach))) )
     {
       if ( (V->Flags & Voxel_MarkBit) == 0)
       {
@@ -37,16 +35,8 @@ while (AtElements(&Stack))
     }
 
     
-                    if (Contains(SSRect, SimVoxP))
-                    {
-                      if (Mode == WorldEdit_Mode_Attach && (V->Flags&Voxel_Filled) )
-                      {
-                      }
-                      else
-                      {
-                        *V = NewVoxelValue;
-                      }
-                    }
+                    if (Contains(SSRect, SimVoxP) && Mode == WorldEdit_Mode_Attach && (V->Flags&Voxel_Filled) ) { }
+                    else { *V = NewVoxelValue; }
                   
 
     V->Flags |= Voxel_MarkBit;
@@ -69,7 +59,6 @@ while (AtElements(&Stack))
       V = CopiedVoxels+VoxelIndex;
 
       
-                  
 
       if ( (V->Flags&Voxel_MarkBit))
       {
