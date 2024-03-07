@@ -549,19 +549,19 @@ CopyChunkOffset(world_chunk *Src, voxel_position SrcChunkDim, world_chunk *Dest,
 
 link_internal u32
 Terrain_Flat( perlin_noise *Noise,
-            world_chunk *Chunk,
-            chunk_dimension Dim,
+              world_chunk *Chunk,
+              chunk_dimension Dim,
 
-            chunk_dimension SrcToDest,
+              chunk_dimension SrcToDest,
 
-            u16 ColorIndex,
-            s32 Ignored0,
-            s32 Ignored1,
+              u16 ColorIndex,
+              s32 Ignored0,
+              s32 Ignored1,
 
-            s64 zMin,
-            chunk_dimension WorldChunkDim,
+              s64 zMin,
+              chunk_dimension WorldChunkDim,
 
-            void *Ignored3 )
+              void *Ignored3 )
 {
   u32 Result = 0;
   for ( s32 z = 0; z < Dim.z; ++ z)

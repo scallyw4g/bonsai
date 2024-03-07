@@ -441,7 +441,7 @@ DoAssetWindow(engine_resources *Engine)
 
     PushWindowStart(Ui, &Window);
 
-    DoEditorUi(Ui, &Window, &Engine->EngineDebug.AssetWindowViewMode, CSz(""), &DefaultUiRenderParams_Generic);
+    DoEditorUi(Ui, &Window, &Engine->EngineDebug.AssetWindowViewMode, CSz("View"), &DefaultUiRenderParams_Generic);
 
     switch (Engine->EngineDebug.AssetWindowViewMode)
     {
