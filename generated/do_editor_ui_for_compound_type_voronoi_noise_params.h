@@ -39,6 +39,19 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
 
       DoEditorUi(Ui,
         Window,
+&Element->Amplitude,
+        CSz("Amplitude"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
 &Element->Squareness,
         CSz("Squareness"),
         Params

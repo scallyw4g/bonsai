@@ -548,7 +548,7 @@ CopyChunkOffset(world_chunk *Src, voxel_position SrcChunkDim, world_chunk *Dest,
 }
 
 link_internal u32
-Noise_Flat( perlin_noise *Noise,
+Terrain_Flat( perlin_noise *Noise,
             world_chunk *Chunk,
             chunk_dimension Dim,
 
@@ -587,7 +587,7 @@ Noise_Flat( perlin_noise *Noise,
 
 
 link_internal u32
-Noise_FBM2D( perlin_noise *Noise,
+Terrain_FBM2D( perlin_noise *Noise,
              world_chunk *Chunk,
              chunk_dimension Dim,
              chunk_dimension SrcToDest,
@@ -720,7 +720,7 @@ Noise_FBM2D( perlin_noise *Noise,
 }
 
 link_internal u32
-Noise_Perlin2D( perlin_noise *Noise,
+Terrain_Perlin2D( perlin_noise *Noise,
                 world_chunk *Chunk,
                 chunk_dimension Dim,
                 chunk_dimension SrcToDest,
@@ -736,12 +736,12 @@ Noise_Perlin2D( perlin_noise *Noise,
   TIMED_FUNCTION();
 
   u32 OctaveCount = 1;
-  u32 SyntheticChunkSum = Noise_FBM2D( Noise, Chunk, Dim, SrcToDest, ColorIndex, Period, Amplitude, zMin, WorldChunkDim, (void*)&OctaveCount);
+  u32 SyntheticChunkSum = Terrain_FBM2D( Noise, Chunk, Dim, SrcToDest, ColorIndex, Period, Amplitude, zMin, WorldChunkDim, (void*)&OctaveCount);
   return SyntheticChunkSum;
 }
 
 link_internal u32
-Noise_Perlin3D( perlin_noise *Noise,
+Terrain_Perlin3D( perlin_noise *Noise,
                 world_chunk *Chunk,
                 chunk_dimension Dim,
                 chunk_dimension SrcToDest,
@@ -3509,17 +3509,14 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
 
   if (MakeExteriorFaces)
   {
-    /* CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Global_ChunkApronMinDim); */
     MarkBoundaryVoxels_MakeExteriorFaces(SyntheticChunk->Voxels, SynChunkDim, Global_ChunkApronMinDim, SynChunkDim-Global_ChunkApronMaxDim);
-    /* MarkBoundaryVoxels_MakeExteriorFaces(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim); */
   }
   else
   {
     MarkBoundaryVoxels_NoExteriorFaces(SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
-    /* CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Global_ChunkApronMinDim); */
   }
 
-    CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Global_ChunkApronMinDim);
+  CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Global_ChunkApronMinDim);
 
   // NOTE(Jesse): You can use this for debug, but it doesn't work if you change it to NoExteriorFaces
   /* MarkBoundaryVoxels_MakeExteriorFaces(DestChunk->Voxels, WorldChunkDim, {}, WorldChunkDim); */
@@ -3596,12 +3593,12 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
   FinalizeChunkInitialization(DestChunk);
 }
 
-// TODO(Jesse): Probably remove this globally
-link_internal void
-InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChunk, chunk_dimension WorldChunkDim, native_file *AssetFile, s32 Period, s32 Amplititude, s32 zMin, u16 Color, chunk_init_flags Flags)
-{
-  InitializeChunkWithNoise( Noise_Perlin2D, Thread, DestChunk, DestChunk->Dim, AssetFile, Period, Amplititude, zMin, Color, MeshBit_Lod0, Flags, 0);
-}
+/* // TODO(Jesse): Probably remove this globally */
+/* link_internal void */
+/* InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChunk, chunk_dimension WorldChunkDim, native_file *AssetFile, s32 Period, s32 Amplititude, s32 zMin, u16 Color, chunk_init_flags Flags) */
+/* { */
+/*   InitializeChunkWithNoise( Terrain_Perlin2D, Thread, DestChunk, DestChunk->Dim, AssetFile, Period, Amplititude, zMin, Color, MeshBit_Lod0, Flags, 0); */
+/* } */
 
 // nochecking Move as much out of this block as possible.  Only the last few of
 // the things in this block are actually related to drawing

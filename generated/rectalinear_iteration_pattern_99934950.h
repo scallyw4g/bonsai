@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4408:0
+// src/engine/world_chunk.cpp:4405:0
 
 DimIterator(x, y, z, SimSpaceQueryDim)
 {

@@ -2259,18 +2259,18 @@ GrassyLargeTerracedTerrain( perlin_noise *Noise,
 }
 
 link_internal u32
-SinCosTerrain( perlin_noise *Noise,
-               world_chunk *Chunk,
-               v3i Dim,
-               v3i SrcToDest,
-               u16 ColorIndex,
+Terrain_SinCos( perlin_noise *Noise,
+                world_chunk *Chunk,
+                v3i Dim,
+                v3i SrcToDest,
+                u16 ColorIndex,
 
-               s32 Frequency,
-               s32 Amplitude,
+                s32 Frequency,
+                s32 Amplitude,
 
-               s64 zMin,
-               v3i WorldChunkDim,
-               void *OctavesIn )
+                s64 zMin,
+                v3i WorldChunkDim,
+                void *OctavesIn )
 {
   TIMED_FUNCTION();
   Assert(OctavesIn == 0);
@@ -2340,26 +2340,83 @@ SinCosTerrain( perlin_noise *Noise,
 }
 
 link_internal u32
-VoronoiTerrain( perlin_noise *Noise,
-                world_chunk *Chunk,
-                v3i Dim,
-                v3i SrcToDest,
-                u16 ColorIndex,
+Terrain_Voronoi3D( perlin_noise *Noise,
+                   world_chunk *Chunk,
+                   v3i Dim,
+                   v3i SrcToDest,
+                   u16 ColorIndex,
 
-                s32 Frequency,
-                s32 Amplitude,
- 
-                s64 zMin,
-                v3i WorldChunkDim,
-                void *OctavesIn )
+                   s32 Period,
+                   s32 Amplitude,
+                   s64 zMin,
+
+                   v3i WorldChunkDim,
+                   void *VoidVoronoiParams )
 {
   TIMED_FUNCTION();
-  Assert(OctavesIn == 0);
 
   u32 ChunkSum = 0;
 
   s32 MinZ = Chunk->WorldP.z*WorldChunkDim.z;
   s32 MaxZ = MinZ+WorldChunkDim.z ;
+
+  voronoi_noise_params *VoronoiParams = Cast(voronoi_noise_params*, VoidVoronoiParams);
+
+  r32 Squareness = VoronoiParams ? VoronoiParams->Squareness : 0.f;
+  r32 MaskChance = VoronoiParams ? VoronoiParams->MaskChance : 0.f;
+
+  for ( s32 z = 0; z < Dim.z; ++ z)
+  {
+    s64 WorldZ = z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z);
+    for ( s32 y = 0; y < Dim.y; ++ y)
+    {
+      s64 WorldY = y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y);
+      for ( s32 x = 0; x < Dim.x; ++ x)
+      {
+        s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x);
+        s32 VoxIndex = GetIndex(V3i(x,y,z), Dim);
+        Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
+
+        r32 NoiseValue = VoronoiNoise3D(V3(f32(WorldX), f32(WorldY), f32(WorldZ)) / f32(Period), Squareness, MaskChance);
+        NoiseValue = Clamp01(NoiseValue);
+        NoiseValue *= Amplitude;
+
+        b32 IsFilled = r32(NoiseValue) > r32(zMin) ;
+
+        SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
+        Chunk->Voxels[VoxIndex].Color = GRASS_GREEN*u8(IsFilled);
+        ChunkSum += IsFilled;
+      }
+    }
+  }
+  return ChunkSum;
+}
+
+link_internal u32
+Terrain_Voronoi2D( perlin_noise *Noise,
+                   world_chunk *Chunk,
+                   v3i Dim,
+                   v3i SrcToDest,
+                   u16 ColorIndex,
+
+                   s32 Period,
+                   s32 Amplitude,
+                   s64 zMin,
+
+                   v3i WorldChunkDim,
+                   void *VoidVoronoiParams )
+{
+  TIMED_FUNCTION();
+
+  u32 ChunkSum = 0;
+
+  s32 MinZ = Chunk->WorldP.z*WorldChunkDim.z;
+  s32 MaxZ = MinZ+WorldChunkDim.z ;
+
+  voronoi_noise_params *VoronoiParams = Cast(voronoi_noise_params*, VoidVoronoiParams);
+
+  r32 Squareness = VoronoiParams ? VoronoiParams->Squareness : 0.f;
+  r32 MaskChance = VoronoiParams ? VoronoiParams->MaskChance : 0.f;
 
   for ( s32 z = 0; z < Dim.z; ++ z)
   {
@@ -2374,7 +2431,8 @@ VoronoiTerrain( perlin_noise *Noise,
         s32 VoxIndex = GetIndex(V3i(x,y,z), Dim);
         Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
 
-        r32 NoiseValue = VoronoiNoise3D(V3(s32(WorldX), s32(WorldY), s32(WorldZ)) * 0.01f);
+        r32 NoiseValue = VoronoiNoise3D(V3(f32(WorldX), f32(WorldY), f32(WorldZ)) / f32(Period), Squareness, MaskChance);
+        /* r32 NoiseValue =  VoronoiNoise3D(V3(s32(WorldX), s32(WorldY), s32(WorldZ)) * 0.04f) * 25.f; */
         NoiseValue = Clamp01(NoiseValue);
         /* NoiseValue = MapNoiseValueToFinal(NoiseValue); */ // Crazyballs
         NoiseValue *= Amplitude;

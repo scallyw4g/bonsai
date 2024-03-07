@@ -139,3 +139,10 @@ MapNoiseValueToFinal(f32 Value)
 
 link_internal void
 ComputeNormalsForChunkFromNoiseValues( r32 ChunkWorldZ, r32 *NoiseValues, v3i NoiseDim, v3 *Normals, v3i NormalsDim);
+
+
+link_internal u32
+Terrain_Voronoi2D( perlin_noise *, world_chunk *, v3i, v3i, u16, s32, s32, s64, v3i, void *);
+
+link_internal u32
+Terrain_Voronoi3D( perlin_noise *, world_chunk *, v3i, v3i, u16, s32, s32, s64, v3i, void *);

@@ -492,20 +492,13 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       }
       else
       {
-        s32 Frequency = 50;
+        s32 Period = 50;
         s32 Amplititude = 15;
         s32 StartingZDepth = -5;
+        u16 Color = GRASS_GREEN;
 
         Assert(Chunk->Dim == World->ChunkDim);
-        InitializeWorldChunkPerlinPlane( Thread,
-                                         Chunk,
-                                         Chunk->Dim,
-                                         &AssetFile,
-                                         Frequency,
-                                         Amplititude,
-                                         StartingZDepth,
-                                         GRASS_GREEN,
-                                         ChunkInitFlag_ComputeStandingSpots );
+        InitializeChunkWithNoise( Terrain_Perlin2D, Thread, Chunk, Chunk->Dim, &AssetFile, Period, Amplititude, StartingZDepth, Color, MeshBit_Lod0, ChunkInitFlag_ComputeStandingSpots, 0);
       }
 
     } break;
