@@ -25,7 +25,7 @@ poof(
     (NamePrefix)ButtonGroup_(enum_t.name)( renderer_2d *Ui,
                                            window_layout *Window,
                                            cs GroupName,
-                                           const char *ToggleGroupIdentifier,
+                                           enum_t.name *Element,
                                            ui_render_params *Params = &DefaultUiRenderParams_Generic,
                                            ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
     {
@@ -43,7 +43,7 @@ poof(
       IterateOver(&ButtonBuffer, Button, ButtonIndex)
       {
         cs ButtonName = ButtonNames[ButtonIndex];
-        *Button = UiToggle(ButtonName, Window, ToggleGroupIdentifier, (void*)ButtonName.Start);
+        *Button = UiToggle(ButtonName, UiId(Window, Cast(void*, Element), Cast(void*, ButtonName.Start)));
       }
 
       ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer, GroupName, Params, ui_toggle_button_group_flags(ExtraFlags(extra_poof_flags)));
@@ -375,12 +375,137 @@ poof(
                 ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
     {
       /* if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); PushNewRow(Ui); } */
-      ui_toggle_button_group RadioGroup = RadioButtonGroup_(enum_t.name)(Ui, Window, GroupName, "enum_t.name radio group", Params, ExtraFlags);
+      ui_toggle_button_group RadioGroup = RadioButtonGroup_(enum_t.name)(Ui, Window, GroupName, Element, Params, ExtraFlags);
       GetRadioEnum(&RadioGroup, Element);
       return RadioGroup;
     }
   }
 )
+
+
+poof(do_editor_ui_for_primitive_type({s64 u64 s32 u32 s16 u16 s8 u8}));
+#include <generated/do_editor_ui_for_scalar_type_688724926.h>
+
+link_internal void
+DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min, r32 Max, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+{
+  u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Generic);
+    PushTableStart(Ui);
+      if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
+
+      auto Range = Max-Min;
+      r32 PercFilled = ((*Value)-Min)/Range;
+
+      r32 Width = 100.f;
+
+      if (Value)
+      {
+        cs ValueText = CS(*Value);
+        v2 TextDim = GetDim(GetDrawBounds(ValueText, &DefaultStyle));
+
+        v2 Offset = V2(Width/2.f-TextDim.x/2.f, 0.f);
+
+        Text(Ui, ValueText, &DefaultStyle, TextRenderParam_NoAdvanceLayout, Offset);
+      }
+
+      interactable_handle BargraphButton = PushButtonStart(Ui, UiId(Window, "debug_slider", Value));
+        PushSliderBar(Ui, PercFilled, UI_WINDOW_BEZEL_DEFAULT_COLOR_SATURATED, UI_WINDOW_BEZEL_DEFAULT_COLOR_MUTED, Width); // Value marker
+      PushButtonEnd(Ui);
+
+      v2 Offset = {};
+      if (Pressed(Ui, &BargraphButton, &Offset))
+      {
+        r32 NewPerc = Clamp01(Offset.x / Width);
+        r32 NewValue = (Range*NewPerc) + Min;
+        *Value = NewValue;
+      }
+    PushTableEnd(Ui);
+  EndColumn(Ui, Start);
+}
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+{
+  if (Name) { PushColumn(Ui, Name, &DefaultUiRenderParams_Blank); }
+
+  u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
+    PushTableStart(Ui);
+      if (Value)
+      {
+        if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value))) { *Value = *Value - 1.f; }
+          DebugSlider(Ui, Window, Value, {}, MinValue, MaxValue);
+        if (Button(Ui, CSz("+"), UiId(Window, "increment", Value))) { *Value = *Value + 1.f; }
+      }
+      else
+      {
+        PushColumn(Ui, CSz("(null)"));
+      }
+    PushTableEnd(Ui);
+  EndColumn(Ui, Start);
+}
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Checkbox)
+{
+  UNPACK_UI_RENDER_PARAMS(Params);
+
+  interactable_handle ButtonHandle = PushButtonStart(Ui, UiId(Window, "toggle", Value), Style);
+
+    PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Generic);
+
+    if (Value)
+    {
+      if (*Value)
+      {
+        PushUntexturedQuad(Ui, V2(2.f, 2.f), V2(Params->Style->Font.Size.y)-4.f, zDepth_Border, &Global_DefaultCheckboxForeground, DefaultCheckboxPadding, QuadRenderParam_NoAdvance );
+      }
+    }
+    else
+    {
+      PushColumn(Ui, CSz("(null)"), Params);
+    }
+
+    PushUntexturedQuad(Ui, {}, V2(Params->Style->Font.Size.y), zDepth_Text, &Global_DefaultCheckboxBackground, DefaultCheckboxPadding, QuadRenderParam_Default );
+
+
+
+  PushButtonEnd(Ui);
+
+  if (Clicked(Ui, &ButtonHandle))
+   { *Value = !(*Value); }
+}
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, cs *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+{
+  PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  Value ?
+    PushColumn(Ui, *Value, EDITOR_UI_FUNCTION_INSTANCE_NAMES) :
+    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+}
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, void *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Column)
+{
+  if (Name) { PushColumn(Ui, CS(Name), Params); }
+  Value ?
+    PushColumn(Ui, FSz("0x%x",umm(Value)), &DefaultUiRenderParams_Column) :
+    PushColumn(Ui, CSz("(null)"), &DefaultUiRenderParams_Column);
+  PushNewRow(Ui);
+}
+
+
+poof(do_editor_ui_for_vector_type({v4i v4 v3i v3 v2i v2 Quaternion}));
+#include <generated/do_editor_ui_for_vector_type_688873645.h>
+
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, cp *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+{
+  DoEditorUi(Ui, Window, &Value->WorldP, CSz("WorldP"));
+  DoEditorUi(Ui, Window, &Value->Offset, CSz("Offset"));
+}
+
 
 /* link_internal void */
 /* DoEditorUi(renderer_2d *Ui, aabb *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS); */
@@ -413,6 +538,15 @@ enum ui_noise_type
   NoiseType_Voronoi,
 };
 
+poof(string_and_value_tables(ui_noise_type))
+#include <generated/string_and_value_tables_ui_noise_type.h>
+poof(radio_button_group_for_bitfield_enum(ui_noise_type));
+#include <generated/radio_button_group_for_bitfield_enum_ui_noise_type.h>
+poof(do_editor_ui_for_enum(ui_noise_type))
+#include <generated/do_editor_ui_for_enum_ui_noise_type.h>
+
+
+
 struct perlin_noise_params
 {
   r32 Threshold = 4.0f;
@@ -425,8 +559,8 @@ poof(are_equal(perlin_noise_params))
 
 struct voronoi_noise_params
 {
-  r32 Threshold = 4.f;
-  r32 Period    = 8.f;   poof(@ui_range(0, 100))
+  r32 Threshold = 2.f;
+  r32 Period    = 10.f;  poof(@ui_range(0, 100))
   r32 Amplitude = 8.f;   poof(@ui_range(0, 100))
 
   r32 Squareness;
@@ -449,63 +583,6 @@ struct noise_params
 poof(are_equal(noise_params))
 #include <generated/are_equal_noise_params.h>
 
-
-struct noise_editor
-{
-  noise_params Params;
-
-  // NOTE(Jesse): This is to detect changes in the noise selection params such
-  // that we can re-run the visualization job.
-  noise_params PrevParams; poof(@ui_skip)
-
-  world_chunk Chunk;
-
-  asset_thumbnail PreviewThumbnail;
-};
-
-struct level_editor
-{
-  memory_arena *Memory;
-
-  noise_editor NoiseEditor;
-
-  u64 EngineDebugViewModeToggleBits;
-
-  u16 SelectedColorIndex;
-  u16 HoverColorIndex;
-
-  u32 SelectionClicks;
-  cp  SelectionBase;
-
-  rect3cp SelectionRegion;
-  rect3cp CopyRegion;
-
-  // Recorded when accel-clicking on the selection to manipulate it
-  selection_modification_state Selection;
-  selection_modification_state Entity;
-
-  asset_thumbnail_block_array AssetThumbnails;
-};
-
-link_internal b32
-SelectionIncomplete(u32 SelectionClicks)
-{
-  return SelectionClicks == 0 || SelectionClicks == 1;
-}
-
-link_internal void
-ResetSelection(level_editor *Editor)
-{
-  Editor->SelectionClicks = 0;
-  Editor->SelectionBase = {};
-  Editor->SelectionRegion = {};
-}
-
-link_internal void
-ResetSelectionIfIncomplete(level_editor *Editor)
-{
-  if (SelectionIncomplete(Editor->SelectionClicks)) { ResetSelection(Editor); }
-}
 
 struct maybe_v3
 {
@@ -540,6 +617,7 @@ enum world_edit_brush_type
   WorldEdit_BrushType_Asset,
   WorldEdit_BrushType_Entity,
   WorldEdit_BrushType_Noise,
+  WorldEdit_BrushType_Layered,
 };
 
 // TODO(Jesse): Rename to .. something something behavior ?
@@ -556,13 +634,6 @@ enum world_edit_mode
 poof(toggle_button_group_for_enum(engine_debug_view_mode))
 #include <generated/toggle_button_group_for_enum_engine_debug_view_mode.h>
 
-
-poof(string_and_value_tables(ui_noise_type))
-#include <generated/string_and_value_tables_ui_noise_type.h>
-poof(radio_button_group_for_bitfield_enum(ui_noise_type));
-#include <generated/radio_button_group_for_bitfield_enum_ui_noise_type.h>
-poof(do_editor_ui_for_enum(ui_noise_type))
-#include <generated/do_editor_ui_for_enum_ui_noise_type.h>
 
 
 poof(do_editor_ui_for_radio_enum(asset_window_view_mode))
@@ -648,6 +719,9 @@ struct world_update_op_shape
   };
 };
 
+/* poof(do_editor_ui_for_compound_type(world_update_op_shape)) */
+/* #include <generated/do_editor_ui_for_compound_type_world_update_op_shape.h> */
+
 
 // TODO(Jesse): Rename to reflect that it's the iteration pattern
 enum world_edit_mode_modifier
@@ -674,7 +748,112 @@ struct world_edit_brush
   v3 SimFloodOrigin;
 };
 
+poof(do_editor_ui_for_compound_type(world_edit_brush))
+#include <generated/do_editor_ui_for_compound_type_world_edit_brush.h>
 
+
+
+
+
+
+
+
+
+
+struct noise_editor
+{
+  noise_params Params;
+
+  // NOTE(Jesse): This is to detect changes in the noise selection params such
+  // that we can re-run the visualization job.
+  noise_params PrevParams; poof(@ui_skip)
+
+  world_chunk Chunk;
+
+  asset_thumbnail PreviewThumbnail;
+};
+
+enum brush_layer_type
+{
+  BrushLayerType_Shape,
+  BrushLayerType_Noise,
+};
+
+poof(do_editor_ui_for_radio_enum(brush_layer_type))
+#include <generated/do_editor_ui_for_radio_enum_brush_layer_type.h>
+
+struct brush_layer
+{
+  brush_layer_type Type;
+
+  noise_editor NoiseEditor;
+};
+
+// TODO(Jesse): Make this dynamic .. probably ..
+#define MAX_BRUSH_LAYERS 8
+struct layered_brush_editor
+{
+  s32 LayerCount;
+  brush_layer Layers[MAX_BRUSH_LAYERS];
+};
+
+
+poof(do_editor_ui_for_compound_type(noise_editor))
+#include <generated/do_editor_ui_for_compound_type_noise_editor.h>
+poof(do_editor_ui_for_compound_type(brush_layer))
+#include <generated/do_editor_ui_for_compound_type_brush_layer.h>
+poof(do_editor_ui_for_compound_type(layered_brush_editor))
+#include <generated/do_editor_ui_for_compound_type_layered_brush_editor.h>
+
+struct level_editor
+{
+  memory_arena *Memory;
+
+  noise_editor NoiseEditor;
+
+  layered_brush_editor LayeredBrushEditor;
+
+  u64 EngineDebugViewModeToggleBits;
+
+  u16 SelectedColorIndex;
+  u16 HoverColorIndex;
+
+  u32 SelectionClicks;
+  cp  SelectionBase;
+
+  rect3cp SelectionRegion;
+  rect3cp CopyRegion;
+
+  // Recorded when accel-clicking on the selection to manipulate it
+  selection_modification_state Selection;
+  selection_modification_state Entity;
+
+  asset_thumbnail_block_array AssetThumbnails;
+};
+
+
+
+
+
+link_internal b32
+SelectionIncomplete(u32 SelectionClicks)
+{
+  return SelectionClicks == 0 || SelectionClicks == 1;
+}
+
+link_internal void
+ResetSelection(level_editor *Editor)
+{
+  Editor->SelectionClicks = 0;
+  Editor->SelectionBase = {};
+  Editor->SelectionRegion = {};
+}
+
+link_internal void
+ResetSelectionIfIncomplete(level_editor *Editor)
+{
+  if (SelectionIncomplete(Editor->SelectionClicks)) { ResetSelection(Editor); }
+}
 
 
 link_internal b32 HardResetEditor(level_editor *Editor);

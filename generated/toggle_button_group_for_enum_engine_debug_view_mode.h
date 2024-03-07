@@ -1,4 +1,4 @@
-// src/engine/editor.h:556:0
+// src/engine/editor.h:634:0
 
 link_internal b32
 ToggledOn(ui_toggle_button_group *ButtonGroup, engine_debug_view_mode Enum)
@@ -21,7 +21,7 @@ link_internal ui_toggle_button_group
 ToggleButtonGroup_engine_debug_view_mode( renderer_2d *Ui,
   window_layout *Window,
   cs GroupName,
-  const char *ToggleGroupIdentifier,
+  engine_debug_view_mode *Element,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
   ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
 {
@@ -43,7 +43,7 @@ ToggleButtonGroup_engine_debug_view_mode( renderer_2d *Ui,
   IterateOver(&ButtonBuffer, Button, ButtonIndex)
   {
     cs ButtonName = ButtonNames[ButtonIndex];
-    *Button = UiToggle(ButtonName, Window, ToggleGroupIdentifier, (void*)ButtonName.Start);
+    *Button = UiToggle(ButtonName, UiId(Window, Cast(void*, Element), Cast(void*, ButtonName.Start)));
   }
 
   ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer, GroupName, Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_None));

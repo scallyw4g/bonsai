@@ -1,4 +1,4 @@
-// src/engine/editor.h:406:0
+// src/engine/editor.h:531:0
 
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, level_editor_flags Selection)
@@ -45,7 +45,7 @@ link_internal ui_toggle_button_group
 RadioButtonGroup_level_editor_flags( renderer_2d *Ui,
   window_layout *Window,
   cs GroupName,
-  const char *ToggleGroupIdentifier,
+  level_editor_flags *Element,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
   ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
 {
@@ -61,7 +61,7 @@ RadioButtonGroup_level_editor_flags( renderer_2d *Ui,
   IterateOver(&ButtonBuffer, Button, ButtonIndex)
   {
     cs ButtonName = ButtonNames[ButtonIndex];
-    *Button = UiToggle(ButtonName, Window, ToggleGroupIdentifier, (void*)ButtonName.Start);
+    *Button = UiToggle(ButtonName, UiId(Window, Cast(void*, Element), Cast(void*, ButtonName.Start)));
   }
 
   ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer, GroupName, Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_RadioButtons));

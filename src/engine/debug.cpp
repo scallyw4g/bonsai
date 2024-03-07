@@ -642,8 +642,11 @@ DoEngineDebug(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
+  engine_debug_view_mode ViewMode;
+
+  // TODO(Jesse): Rework with DoEditorUi ?
   ui_toggle_button_group EditorButtonGroup =
-    ToggleButtonGroup_engine_debug_view_mode(Ui, 0, CS(""), "engine_debug_view_mode", &DefaultUiRenderParams_Column);
+    ToggleButtonGroup_engine_debug_view_mode(Ui, 0, CS(""), &ViewMode, &DefaultUiRenderParams_Column);
 
   Editor->EngineDebugViewModeToggleBits = EditorButtonGroup.ToggleBits;
 

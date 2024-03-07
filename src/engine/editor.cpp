@@ -7,18 +7,19 @@ InitEditor(level_editor *Editor)
 
   Editor->AssetThumbnails.Memory = Editor->Memory;
 
-  {
-    Editor->NoiseEditor.PreviewThumbnail.Texture = MakeTexture_RGB(V2i(512), 0, CSz("NoisePreviewTexture"));
-    StandardCamera(&Editor->NoiseEditor.PreviewThumbnail.Camera, 10000.f, 1000.f, 30.f);
-  }
-
   return Result;
 }
 
 link_internal b32
 HardResetEditor(level_editor *Editor)
 {
-  DeleteTexture(&Editor->NoiseEditor.PreviewThumbnail.Texture);
+  // TODO(Jesse)(leak): Delete textures allocated to visualize layered noise brushes?
+  // @hard_reset_texture_memory
+
+  if (Editor->NoiseEditor.PreviewThumbnail.Texture.ID)
+  {
+    DeleteTexture(&Editor->NoiseEditor.PreviewThumbnail.Texture);
+  }
 
   IterateOver(&Editor->AssetThumbnails, Thumb, Index)
   {
@@ -33,7 +34,7 @@ HardResetEditor(level_editor *Editor)
 
   VaporizeArena(Editor->Memory);
 
-  // NOTE(Jesse): There are some default values in the perlin params that we want to reset to
+  // NOTE(Jesse): There are some default values in noise params that we want to reset to
   *Editor = {};
   /* Clear(Editor); */
 
@@ -50,104 +51,6 @@ GetUiDebug()
   Assert(Global_EngineResources);
   return &Global_EngineResources->EngineDebug.UiDebug;
 }
-
-link_internal void
-DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min, r32 Max, ui_render_params *Params = &DefaultUiRenderParams_Generic)
-{
-  u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Generic);
-    PushTableStart(Ui);
-      if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
-
-      auto Range = Max-Min;
-      r32 PercFilled = ((*Value)-Min)/Range;
-
-      r32 Width = 100.f;
-
-      if (Value)
-      {
-        cs ValueText = CS(*Value);
-        v2 TextDim = GetDim(GetDrawBounds(ValueText, &DefaultStyle));
-
-        v2 Offset = V2(Width/2.f-TextDim.x/2.f, 0.f);
-
-        Text(Ui, ValueText, &DefaultStyle, TextRenderParam_NoAdvanceLayout, Offset);
-      }
-
-      interactable_handle BargraphButton = PushButtonStart(Ui, UiId(Window, "debug_slider", Value));
-        PushSliderBar(Ui, PercFilled, UI_WINDOW_BEZEL_DEFAULT_COLOR_SATURATED, UI_WINDOW_BEZEL_DEFAULT_COLOR_MUTED, Width); // Value marker
-      PushButtonEnd(Ui);
-
-      v2 Offset = {};
-      if (Pressed(Ui, &BargraphButton, &Offset))
-      {
-        r32 NewPerc = Clamp01(Offset.x / Width);
-        r32 NewValue = (Range*NewPerc) + Min;
-        *Value = NewValue;
-      }
-    PushTableEnd(Ui);
-  EndColumn(Ui, Start);
-}
-
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
-{
-  if (Name) { PushColumn(Ui, Name, &DefaultUiRenderParams_Blank); }
-
-  u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
-    PushTableStart(Ui);
-      if (Value)
-      {
-        if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value))) { *Value = *Value - 1.f; }
-          DebugSlider(Ui, Window, Value, {}, MinValue, MaxValue);
-        if (Button(Ui, CSz("+"), UiId(Window, "increment", Value))) { *Value = *Value + 1.f; }
-      }
-      else
-      {
-        PushColumn(Ui, CSz("(null)"));
-      }
-    PushTableEnd(Ui);
-  EndColumn(Ui, Start);
-}
-
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Checkbox)
-{
-  UNPACK_UI_RENDER_PARAMS(Params);
-
-  interactable_handle ButtonHandle = PushButtonStart(Ui, UiId(Window, "toggle", Value), Style);
-
-    PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Generic);
-
-    if (Value)
-    {
-      if (*Value)
-      {
-        PushUntexturedQuad(Ui, V2(2.f, 2.f), V2(Params->Style->Font.Size.y)-4.f, zDepth_Border, &Global_DefaultCheckboxForeground, DefaultCheckboxPadding, QuadRenderParam_NoAdvance );
-      }
-    }
-    else
-    {
-      PushColumn(Ui, CSz("(null)"), Params);
-    }
-
-    PushUntexturedQuad(Ui, {}, V2(Params->Style->Font.Size.y), zDepth_Text, &Global_DefaultCheckboxBackground, DefaultCheckboxPadding, QuadRenderParam_Default );
-
-
-
-  PushButtonEnd(Ui);
-
-  if (Clicked(Ui, &ButtonHandle))
-   { *Value = !(*Value); }
-}
-
-
-poof(do_editor_ui_for_primitive_type({s64 u64 s32 u32 s16 u16 s8 u8}));
-#include <generated/do_editor_ui_for_scalar_type_688724926.h>
-
-poof(do_editor_ui_for_vector_type({v4i v4 v3i v3 v2i v2 Quaternion}));
-#include <generated/do_editor_ui_for_vector_type_688873645.h>
-
-
 
 poof(do_editor_ui_for_compound_type(perlin_noise_params))
 #include <generated/do_editor_ui_for_compound_type_perlin_noise_params.h>
@@ -173,22 +76,6 @@ CS(ui_toggle_hashtable_iterator &Iter)
 
 poof(do_editor_ui_for_container(ui_toggle_hashtable))
 #include <generated/do_editor_ui_for_container_ui_toggle_hashtable.h>
-
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, cs *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
-{
-  PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-  Value ?
-    PushColumn(Ui, *Value, EDITOR_UI_FUNCTION_INSTANCE_NAMES) :
-    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-}
-
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, cp *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
-{
-  DoEditorUi(Ui, Window, &Value->WorldP, CSz("WorldP"));
-  DoEditorUi(Ui, Window, &Value->Offset, CSz("Offset"));
-}
 
 #if DO_EDITOR_UI_FOR_ENTITY_TYPE
 link_internal void
@@ -339,16 +226,6 @@ poof(do_editor_ui_for_compound_type(entity_id))
 
 poof(do_editor_ui_for_compound_type(entity))
 #include <generated/do_editor_ui_for_compound_type_entity.h>
-
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, void *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Column)
-{
-  if (Name) { PushColumn(Ui, CS(Name), Params); }
-  Value ?
-    PushColumn(Ui, FSz("0x%x",umm(Value)), &DefaultUiRenderParams_Column) :
-    PushColumn(Ui, CSz("(null)"), &DefaultUiRenderParams_Column);
-  PushNewRow(Ui);
-}
 
 
 poof(do_editor_ui_for_container(entity_ptr_block_array))
@@ -825,6 +702,14 @@ RenderAndInteractWithThumbnailTexture(renderer_2d *Ui, window_layout *Window, co
   texture *Texture = &Thumb->Texture;
   camera  *ThumbCamera  = &Thumb->Camera;
 
+  // TODO(Jesse)(leak): How do we deallocate these on hard reset?
+  // @hard_reset_texture_memory
+  if (Texture->ID == 0)
+  {
+    *Texture = MakeTexture_RGB(V2i(512), 0, CSz("NoisePreviewTexture"));
+    StandardCamera(ThumbCamera, 10000.f, 1000.f, 30.f);
+  }
+
   interactable_handle B = PushButtonStart(Ui, UiId(Window, InteractionString, Cast(void*, Thumb)) );
     u32 Index = StartColumn(Ui);
       PushTexturedQuad(Ui, Texture, V2(Texture->Dim), zDepth_Text);
@@ -906,32 +791,248 @@ GetHotVoxelForFlood(engine_resources *Engine, world_edit_mode WorldEditMode, wor
   return Result;
 }
 
-/* link_internal picked_voxel_position */
-/* MapWorldEditModeToHighlightVoxel(world_edit_mode WorldEditMode) */
-/* { */
-/*   picked_voxel_position Result = {}; */
 
-/*   switch (WorldEditMode) */
-/*   { */
-/*     InvalidCase(WorldEdit_Mode_Count); */
+link_internal void
+BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, noise_editor *NoiseEditor)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
 
-/*     case WorldEdit_Mode_Disabled: */
-/*     case WorldEdit_Mode_Attach: */
-/*     { */
-/*       Result = PickedVoxel_LastEmpty; */
-/*     } break; */
+#if 1
+  v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
+  v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
 
-/*     case WorldEdit_Mode_Paint: */
-/*     case WorldEdit_Mode_Remove: */
-/*     { */
-/*       Result = PickedVoxel_FirstFilled; */
-/*     } break; */
-/*   } */
+  noise_params *Params = &NoiseEditor->Params;
+  Params->ChunkSize = V3i(SelectionMaxP-SelectionMinP);
 
-/*   // 0 is a valid result */
-/*   /1* Assert(Result); *1/ */
-/*   return Result; */
-/* } */
+  if (Button(Ui, CSz("Set Color"), UiId(Window, "set color interaction", Cast(void*, Params))))
+  {
+    Params->Color = Engine->Editor.SelectedColorIndex;
+  }
+  PushNewRow(Ui);
+
+  noise_params *PrevParams = &NoiseEditor->PrevParams;
+
+  b32 NoiseNeedsUpdate = !AreEqual(Params, PrevParams);
+  *PrevParams = *Params;
+#endif
+
+
+  world_chunk *DestChunk = &NoiseEditor->Chunk;
+  if (DestChunk->Dim != Params->ChunkSize)
+  {
+    // TODO(Jesse): Figure out exactly how this works.  We can't allocate from the Editor
+    // memory pool because the goemetry buffers get freed to a freelist, and the editor memory
+    // pool gets cleared on game reload
+    //
+    // @editor_chunk_memory_question
+    //
+    /* DeallocateWorldChunk(DestChunk, MeshFreelist); */
+    AllocateWorldChunk(DestChunk, {}, Params->ChunkSize, Editor->Memory);
+  }
+
+  DoEditorUi(Ui, Window, &Params->Type, CSz("Noise Type"), &DefaultUiRenderParams_Generic);
+  if (Editor->SelectionClicks)
+  {
+    PushTableStart(Ui);
+    switch (Params->Type)
+    {
+      case NoiseType_None: {} break;
+
+      case NoiseType_Perlin:
+      {
+        perlin_noise_params *PerlinParams = &Params->PerlinParams;
+
+        DoEditorUi(Ui, Window, PerlinParams, CSz("Perlin"));
+        if (NoiseNeedsUpdate)
+        {
+          DestChunk->Flags = Chunk_Queued;
+          InitializeChunkWithNoise( Terrain_Perlin3D,
+                                    GetThreadLocalState(ThreadLocal_ThreadIndex),
+                                    DestChunk,
+                                    DestChunk->Dim,
+                                    {},
+                                    s32(PerlinParams->Period),
+                                    s32(PerlinParams->Amplitude),
+                                    s32(PerlinParams->Threshold),
+                                    Params->Color,
+                                    MeshBit_None,
+                                    ChunkInitFlag_Noop,
+                                    0,
+                                    True );
+
+          SyncGpuBuffersImmediate(Engine, &DestChunk->Meshes);
+        }
+      } break;
+
+      case NoiseType_Voronoi:
+      {
+        voronoi_noise_params *VoronoiParams = &Params->VoronoiParams;
+        DoEditorUi(Ui, Window, VoronoiParams, CSz("Voronoi"));
+        if (NoiseNeedsUpdate)
+        {
+          DestChunk->Flags = Chunk_Queued;
+
+          InitializeChunkWithNoise( Terrain_Voronoi3D,
+                                    GetThreadLocalState(ThreadLocal_ThreadIndex),
+                                    DestChunk,
+                                    DestChunk->Dim,
+                                    {},
+                                    s32(VoronoiParams->Period),
+                                    s32(VoronoiParams->Amplitude),
+                                    s32(VoronoiParams->Threshold),
+                                    Params->Color,
+                                    MeshBit_None,
+                                    ChunkInitFlag_Noop,
+                                    Cast(void*, VoronoiParams),
+                                    True );
+
+          SyncGpuBuffersImmediate(Engine, &DestChunk->Meshes);
+        }
+      } break;
+    }
+    PushTableEnd(Ui);
+
+    RenderToTexture(Engine, &NoiseEditor->PreviewThumbnail, &DestChunk->Meshes, V3(Params->ChunkSize)/-2.f);
+    RenderAndInteractWithThumbnailTexture(Ui, Window, "noise preview interaction", &NoiseEditor->PreviewThumbnail);
+  }
+  else
+  {
+    PushColumn(Ui, CSz("Make a selection to use Noise Brush"));
+  }
+}
+
+link_internal void
+BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *Window)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
+  v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
+
+
+  brush_layer *Layers = Editor->LayeredBrushEditor.Layers;
+
+  DoEditorUi(Ui, Window, &Editor->LayeredBrushEditor.LayerCount, CSz("Layer Count"), &DefaultUiRenderParams_Generic);
+  PushNewRow(Ui);
+
+  RangeIterator(LayerIndex, Editor->LayeredBrushEditor.LayerCount)
+  {
+    brush_layer *Layer = Layers + LayerIndex;
+
+    PushNewRow(Ui);
+    PushColumn(Ui, FSz("Layer:", LayerIndex));
+    PushColumn(Ui, CS(LayerIndex));
+    PushNewRow(Ui);
+    DoEditorUi(Ui, Window, &Layer->Type, CSz("Layer Type"), &DefaultUiRenderParams_Button);
+
+    switch (Layer->Type)
+    {
+      case BrushLayerType_Shape: {} break;
+
+      case BrushLayerType_Noise:
+      {
+        BrushSettingsForNoiseBrush(Engine, Window, &Layer->NoiseEditor);
+        PushNewRow(Ui);
+      } break;
+    }
+  }
+
+#if 0
+  noise_params *Params = &Editor->NoiseEditor.Params;
+  Params->ChunkSize = V3i(SelectionMaxP-SelectionMinP);
+  Params->Color = Engine->Editor.SelectedColorIndex;
+
+  noise_params *PrevParams = &Editor->NoiseEditor.PrevParams;
+
+  b32 NoiseNeedsUpdate = !AreEqual(Params, PrevParams);
+  *PrevParams = *Params;
+
+
+  world_chunk *DestChunk = &Editor->NoiseEditor.Chunk;
+  if (DestChunk->Dim != Params->ChunkSize)
+  {
+    // TODO(Jesse): Figure out exactly how this works.  We can't allocate from the Editor
+    // memory pool because the goemetry buffers get freed to a freelist, and the editor memory
+    // pool gets cleared on game reload
+    //
+    // @editor_chunk_memory_question
+    //
+    /* DeallocateWorldChunk(DestChunk, MeshFreelist); */
+    AllocateWorldChunk(DestChunk, {}, Params->ChunkSize, Editor->Memory);
+  }
+
+  PushTableStart(Ui);
+    DoEditorUi(Ui, Window, &Params->Type, CSz("Noise Type"), &DefaultUiRenderParams_Generic);
+    if (Editor->SelectionClicks)
+    {
+      switch (Params->Type)
+      {
+        case NoiseType_None: {} break;
+
+        case NoiseType_Perlin:
+        {
+          perlin_noise_params *PerlinParams = &Editor->NoiseEditor.Params.PerlinParams;
+
+          DoEditorUi(Ui, Window, PerlinParams, CSz("Perlin"));
+          if (NoiseNeedsUpdate)
+          {
+            DestChunk->Flags = Chunk_Queued;
+            InitializeChunkWithNoise( Terrain_Perlin3D,
+                                      GetThreadLocalState(ThreadLocal_ThreadIndex),
+                                      DestChunk,
+                                      DestChunk->Dim,
+                                      {},
+                                      s32(PerlinParams->Period),
+                                      s32(PerlinParams->Amplitude),
+                                      s32(PerlinParams->Threshold),
+                                      Engine->Editor.SelectedColorIndex ,
+                                      MeshBit_None,
+                                      ChunkInitFlag_Noop,
+                                      0,
+                                      True);
+
+            SyncGpuBuffersImmediate(Engine, &DestChunk->Meshes);
+          }
+        } break;
+
+        case NoiseType_Voronoi:
+        {
+          voronoi_noise_params *VoronoiParams = &Editor->NoiseEditor.Params.VoronoiParams;
+          DoEditorUi(Ui, Window, VoronoiParams, CSz("Voronoi"));
+          if (NoiseNeedsUpdate)
+          {
+            DestChunk->Flags = Chunk_Queued;
+
+            InitializeChunkWithNoise( Terrain_Voronoi3D,
+                                      GetThreadLocalState(ThreadLocal_ThreadIndex),
+                                      DestChunk,
+                                      DestChunk->Dim,
+                                      {},
+                                      s32(VoronoiParams->Period),
+                                      s32(VoronoiParams->Amplitude),
+                                      s32(VoronoiParams->Threshold),
+                                      Engine->Editor.SelectedColorIndex,
+                                      MeshBit_None,
+                                      ChunkInitFlag_Noop,
+                                      Cast(void*, VoronoiParams),
+                                      True);
+
+            SyncGpuBuffersImmediate(Engine, &DestChunk->Meshes);
+          }
+        } break;
+      }
+    }
+    else
+    {
+      PushColumn(Ui, CSz("Make a selection to use Noise Brush"));
+    }
+  PushTableEnd(Ui);
+
+  RenderToTexture(Engine, &Editor->NoiseEditor.PreviewThumbnail, &DestChunk->Meshes, V3(Params->ChunkSize)/-2.f);
+  RenderAndInteractWithThumbnailTexture(Ui, Window, "noise preview interaction", &Editor->NoiseEditor.PreviewThumbnail);
+#endif
+
+}
 
 link_internal void
 DoBrushSettingsWindow(engine_resources *Engine, world_edit_mode WorldEditMode, world_edit_tool WorldEditTool, world_edit_brush_type WorldEditBrushType)
@@ -939,7 +1040,6 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_mode WorldEditMode, w
   UNPACK_ENGINE_RESOURCES(Engine);
 
   local_persist window_layout Window = WindowLayout("Brush Settings", WindowLayoutFlag_Align_Right);
-  PushWindowStart(Ui, &Window);
   switch (WorldEditTool)
   {
     case  WorldEdit_Tool_Disabled:
@@ -952,110 +1052,45 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_mode WorldEditMode, w
 
     case WorldEdit_Tool_Brush:
     {
-      if (WorldEditBrushType == WorldEdit_BrushType_Noise)
+      switch (WorldEditBrushType)
       {
-        v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
-        v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
+        case WorldEdit_BrushType_Disabled: {} break;
+        case WorldEdit_BrushType_Selection: {} break;
+        case WorldEdit_BrushType_Single: {} break;
+        case WorldEdit_BrushType_Asset: {} break;
+        case WorldEdit_BrushType_Entity: {} break;
 
-        noise_params *Params = &Editor->NoiseEditor.Params;
-        Params->ChunkSize = V3i(SelectionMaxP-SelectionMinP);
-        Params->Color = Engine->Editor.SelectedColorIndex;
-
-        noise_params *PrevParams = &Editor->NoiseEditor.PrevParams;
-
-        b32 NoiseNeedsUpdate = !AreEqual(Params, PrevParams);
-        *PrevParams = *Params;
-
-
-        world_chunk *DestChunk = &Editor->NoiseEditor.Chunk;
-        if (DestChunk->Dim != Params->ChunkSize)
+        case WorldEdit_BrushType_Layered:
         {
-          // TODO(Jesse): Figure out exactly how this works.  We can't allocate from the Editor
-          // memory pool because the goemetry buffers get freed to a freelist, and the editor memory
-          // pool gets cleared on game reload
-          //
-          // @editor_chunk_memory_question
-          //
-          /* DeallocateWorldChunk(DestChunk, MeshFreelist); */
-          AllocateWorldChunk(DestChunk, {}, Params->ChunkSize, Editor->Memory);
-        }
+          PushWindowStart(Ui, &Window);
+            BrushSettingsForLayeredBrush(Engine, &Window);
+          PushWindowEnd(Ui, &Window);
+        } break;
 
-        DoEditorUi(Ui, &Window, &Params->Type, CSz("Noise Type"), &DefaultUiRenderParams_Generic);
-
-        if (Editor->SelectionClicks)
+        case WorldEdit_BrushType_Noise:
         {
-          switch (Params->Type)
-          {
-            case NoiseType_None: {} break;
+          PushWindowStart(Ui, &Window);
+#if 0
+            v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
+            v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
 
-            case NoiseType_Perlin:
-            {
-              perlin_noise_params *PerlinParams = &Editor->NoiseEditor.Params.PerlinParams;
+            noise_params *Params = &Editor->NoiseEditor.Params;
+            Params->ChunkSize = V3i(SelectionMaxP-SelectionMinP);
+            Params->Color = Engine->Editor.SelectedColorIndex;
 
-              DoEditorUi(Ui, &Window, PerlinParams, CSz("Perlin"));
-              if (NoiseNeedsUpdate)
-              {
-                DestChunk->Flags = Chunk_Queued;
-                InitializeChunkWithNoise( Terrain_Perlin3D,
-                                          GetThreadLocalState(ThreadLocal_ThreadIndex),
-                                          DestChunk,
-                                          DestChunk->Dim,
-                                          {},
-                                          s32(PerlinParams->Period),
-                                          s32(PerlinParams->Amplitude),
-                                          s32(PerlinParams->Threshold),
-                                          Engine->Editor.SelectedColorIndex ,
-                                          MeshBit_None,
-                                          ChunkInitFlag_Noop,
-                                          0,
-                                          True);
+            noise_params *PrevParams = &Editor->NoiseEditor.PrevParams;
 
-                SyncGpuBuffersImmediate(Engine, &DestChunk->Meshes);
-              }
-            } break;
+            b32 NoiseNeedsUpdate = !AreEqual(Params, PrevParams);
+            *PrevParams = *Params;
+#endif
 
-            case NoiseType_Voronoi:
-            {
-              voronoi_noise_params *VoronoiParams = &Editor->NoiseEditor.Params.VoronoiParams;
-              DoEditorUi(Ui, &Window, VoronoiParams, CSz("Voronoi"));
-              if (NoiseNeedsUpdate)
-              {
-                DestChunk->Flags = Chunk_Queued;
-
-                InitializeChunkWithNoise( Terrain_Voronoi3D,
-                                          GetThreadLocalState(ThreadLocal_ThreadIndex),
-                                          DestChunk,
-                                          DestChunk->Dim,
-                                          {},
-                                          s32(VoronoiParams->Period),
-                                          s32(VoronoiParams->Amplitude),
-                                          s32(VoronoiParams->Threshold),
-                                          Engine->Editor.SelectedColorIndex,
-                                          MeshBit_None,
-                                          ChunkInitFlag_Noop,
-                                          Cast(void*, VoronoiParams),
-                                          True);
-
-                SyncGpuBuffersImmediate(Engine, &DestChunk->Meshes);
-              }
-            } break;
-          }
-        }
-        else
-        {
-          PushColumn(Ui, CSz("Make a selection to use Noise Brush"));
-        }
-
-
-
-        RenderToTexture(Engine, &Editor->NoiseEditor.PreviewThumbnail, &DestChunk->Meshes, V3(Params->ChunkSize)/-2.f);
-        RenderAndInteractWithThumbnailTexture(Ui, &Window, "noise preview interaction", &Editor->NoiseEditor.PreviewThumbnail);
+            BrushSettingsForNoiseBrush(Engine, &Window, &Editor->NoiseEditor); //Params, NoiseNeedsUpdate);
+          PushWindowEnd(Ui, &Window);
+        } break;
       }
     } break;
   }
-  PushWindowEnd(Ui, &Window);
 }
-
 
 link_internal void
 DoWorldEditor(engine_resources *Engine)
@@ -1079,7 +1114,8 @@ DoWorldEditor(engine_resources *Engine)
     PushWindowStart(Ui, &Window);
 
     PushTableStart(Ui);
-      ui_render_params Params = DefaultUiRenderParams_Generic;
+      ui_render_params Params = DefaultUiRenderParams_Button;
+      Params.Padding = V4(6, 3, 6, 3);
       ui_element_reference CurrentRef = {};
 
       {
@@ -1309,10 +1345,7 @@ DoWorldEditor(engine_resources *Engine)
   }
 
 
-  if (WorldEditTool == WorldEdit_Tool_Brush)
-  {
-    DoBrushSettingsWindow(Engine, WorldEditMode, WorldEditTool, WorldEditBrushType);
-  }
+  DoBrushSettingsWindow(Engine, WorldEditMode, WorldEditTool, WorldEditBrushType);
 
   //
   //
@@ -1452,6 +1485,10 @@ DoWorldEditor(engine_resources *Engine)
             {
               ApplyEditToRegion(Engine, &SelectionAABB, WorldEditMode, WorldEditModifier);
             }
+          } break;
+
+          case WorldEdit_BrushType_Layered:
+          {
           } break;
         }
       } break;

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:447:0
+// src/engine/editor.cpp:324:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -27,6 +27,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         Window,
 &Element->NoiseEditor,
         CSz("NoiseEditor"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->LayeredBrushEditor,
+        CSz("LayeredBrushEditor"),
         Params
         );
 

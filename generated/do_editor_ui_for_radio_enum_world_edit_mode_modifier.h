@@ -1,4 +1,4 @@
-// src/engine/editor.h:660:0
+// src/engine/editor.h:734:0
 
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_mode_modifier Selection)
@@ -41,7 +41,7 @@ link_internal ui_toggle_button_group
 RadioButtonGroup_world_edit_mode_modifier( renderer_2d *Ui,
   window_layout *Window,
   cs GroupName,
-  const char *ToggleGroupIdentifier,
+  world_edit_mode_modifier *Element,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
   ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
 {
@@ -58,7 +58,7 @@ RadioButtonGroup_world_edit_mode_modifier( renderer_2d *Ui,
   IterateOver(&ButtonBuffer, Button, ButtonIndex)
   {
     cs ButtonName = ButtonNames[ButtonIndex];
-    *Button = UiToggle(ButtonName, Window, ToggleGroupIdentifier, (void*)ButtonName.Start);
+    *Button = UiToggle(ButtonName, UiId(Window, Cast(void*, Element), Cast(void*, ButtonName.Start)));
   }
 
   ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer, GroupName, Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_RadioButtons));
@@ -77,7 +77,7 @@ DoEditorUi( renderer_2d *Ui,
   ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
 {
   /* if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); PushNewRow(Ui); } */
-  ui_toggle_button_group RadioGroup = RadioButtonGroup_world_edit_mode_modifier(Ui, Window, GroupName, "world_edit_mode_modifier radio group", Params, ExtraFlags);
+  ui_toggle_button_group RadioGroup = RadioButtonGroup_world_edit_mode_modifier(Ui, Window, GroupName, Element, Params, ExtraFlags);
   GetRadioEnum(&RadioGroup, Element);
   return RadioGroup;
 }
