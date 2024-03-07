@@ -246,7 +246,7 @@ Bonsai_Simulate(engine_resources *Resources)
   if (CameraGhost) { CameraTargetP = CameraGhost->P; }
 
   b32 DoPositionDelta = (!UiCapturedMouseInput(Ui) && UiInteractionWasViewport(Ui));
-  b32 DoZoomDelta = UiHoveredMouseInput(Ui) == False;
+  b32 DoZoomDelta = DoPositionDelta; //UiHoveredMouseInput(Ui) == False;
 
   v2 MouseDelta = GetMouseDelta(Plat);
   UpdateGameCamera(World, MouseDelta, InputForCamera, CameraTargetP, Camera, Plat->dt, DoPositionDelta, DoZoomDelta);
