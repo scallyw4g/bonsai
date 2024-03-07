@@ -425,9 +425,9 @@ poof(are_equal(perlin_noise_params))
 
 struct voronoi_noise_params
 {
-  r32 Threshold = 2.f;
-  r32 Period    = 25.f;   poof(@ui_range(0, 100))
-  r32 Amplitude = 25.f;   poof(@ui_range(0, 100))
+  r32 Threshold = 4.f;
+  r32 Period    = 8.f;   poof(@ui_range(0, 100))
+  r32 Amplitude = 8.f;   poof(@ui_range(0, 100))
 
   r32 Squareness;
   r32 MaskChance;

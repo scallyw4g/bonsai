@@ -2384,7 +2384,7 @@ Terrain_Voronoi3D( perlin_noise *Noise,
         b32 IsFilled = r32(NoiseValue) > r32(zMin) ;
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
-        Chunk->Voxels[VoxIndex].Color = GRASS_GREEN*u8(IsFilled);
+        Chunk->Voxels[VoxIndex].Color = ColorIndex*u8(IsFilled);
         ChunkSum += IsFilled;
       }
     }
@@ -2440,7 +2440,7 @@ Terrain_Voronoi2D( perlin_noise *Noise,
         b32 IsFilled = r32(NoiseValue) > r32(WorldZSubZMin) ;
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
-        Chunk->Voxels[VoxIndex].Color = GRASS_GREEN*u8(IsFilled);
+        Chunk->Voxels[VoxIndex].Color = ColorIndex*u8(IsFilled);
         ChunkSum += IsFilled;
       }
     }
