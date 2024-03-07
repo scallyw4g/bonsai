@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4268:0
+// src/engine/world_chunk.cpp:4194:0
 
 // TODO(Jesse): Do we want to try and keep the amount of temp memory to a minimum here?
 voxel_stack_element_cursor Stack = VoxelStackElementCursor(umm(TotalVoxels*6), Thread->TempMemory);
@@ -35,9 +35,9 @@ while (AtElements(&Stack))
     }
 
     
-                    if ( LengthSq(CenterToVoxP) < Square(Sphere->Radius-1.f) && V->Flags & Voxel_Filled )
-                       { V->Flags = Voxel_Empty; }
-                  
+                  if ( LengthSq(CenterToVoxP) < Square(Sphere->Radius-1.f) && V->Flags & Voxel_Filled )
+                     { V->Flags = Voxel_Empty; }
+                
 
     V->Flags |= Voxel_MarkBit;
   }
@@ -59,20 +59,20 @@ while (AtElements(&Stack))
       V = CopiedVoxels+VoxelIndex;
 
       
-                    v3i CenterToVoxP = SimVoxP - EditCenterP;
-                    if (LengthSq(CenterToVoxP) < Square(Sphere->Radius-1.f))
+                  v3i CenterToVoxP = SimVoxP - EditCenterP;
+                  if (LengthSq(CenterToVoxP) < Square(Sphere->Radius-1.f))
+                  {
+                    if (V->Flags & Voxel_Filled)
                     {
-                      if (V->Flags & Voxel_Filled)
-                      {
-                        V->Color = SafeTruncateU8(RandomBetween((u32)GREY_5, &ColorEntropy, (u32)GREY_8+1));
-                      }
+                      V->Color = SafeTruncateU8(RandomBetween((u32)GREY_5, &ColorEntropy, (u32)GREY_8+1));
+                    }
 
-                    }
-                    else if (LengthSq(CenterToVoxP) < RadiusSquared)
-                    {
-                      V->Color = GREY_8;
-                    }
-                  
+                  }
+                  else if (LengthSq(CenterToVoxP) < RadiusSquared)
+                  {
+                    V->Color = GREY_8;
+                  }
+                
 
       if ( (V->Flags&Voxel_MarkBit))
       {

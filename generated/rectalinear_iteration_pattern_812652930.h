@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4259:0
+// src/engine/world_chunk.cpp:4185:0
 
 DimIterator(x, y, z, SimSpaceQueryDim)
 {
@@ -7,9 +7,9 @@ DimIterator(x, y, z, SimSpaceQueryDim)
   V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
 
   
-                  v3i CenterToVoxP = SimVoxP - EditCenterP;
-                  if (LengthSq(CenterToVoxP) < RadiusSquared) { V->Flags = Voxel_Empty; }
-                
+                v3i CenterToVoxP = SimVoxP - EditCenterP;
+                if (LengthSq(CenterToVoxP) < RadiusSquared) { V->Flags = Voxel_Empty; }
+              
 }
 
 

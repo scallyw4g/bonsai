@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4316:0
+// src/engine/world_chunk.cpp:4242:0
 
 DimIterator(x, y, z, SimSpaceQueryDim)
 {
@@ -7,9 +7,9 @@ DimIterator(x, y, z, SimSpaceQueryDim)
   V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
 
   
-                  v3i CenterToVoxP = SimVoxP - EditCenterP;
-                  if (LengthSq(CenterToVoxP) < RadiusSquared) { if (V->Flags & Voxel_Filled) { V->Color = NewColor; } }
-                
+                v3i CenterToVoxP = SimVoxP - EditCenterP;
+                if (LengthSq(CenterToVoxP) < RadiusSquared) { if (V->Flags & Voxel_Filled) { V->Color = NewColor; } }
+              
 }
 
 

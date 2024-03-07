@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4377:0
+// src/engine/world_chunk.cpp:4303:0
 
 DimIterator(x, y, z, SimSpaceQueryDim)
 {
@@ -7,8 +7,8 @@ DimIterator(x, y, z, SimSpaceQueryDim)
   V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
 
   
-                  if (Contains(SSRect, SimVoxP)) { *V = NewVoxelValue; }
-                
+                if (Contains(SSRect, SimVoxP)) { *V = NewVoxelValue; }
+              
 }
 
 

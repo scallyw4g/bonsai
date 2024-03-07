@@ -759,6 +759,11 @@ poof(do_editor_ui_for_compound_type(world_edit_brush))
 
 
 
+struct chunk_thumbnail
+{
+  world_chunk Chunk;
+  asset_thumbnail Thumbnail;
+};
 
 struct noise_editor
 {
@@ -768,9 +773,7 @@ struct noise_editor
   // that we can re-run the visualization job.
   noise_params PrevParams; poof(@ui_skip)
 
-  world_chunk Chunk;
-
-  asset_thumbnail PreviewThumbnail;
+  chunk_thumbnail Preview;
 };
 
 enum brush_layer_type
@@ -795,6 +798,9 @@ struct layered_brush_editor
 {
   s32 LayerCount;
   brush_layer Layers[MAX_BRUSH_LAYERS];
+
+  v3i PreviewChunkDim;
+  chunk_thumbnail Preview;
 };
 
 
