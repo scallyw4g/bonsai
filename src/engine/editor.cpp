@@ -804,29 +804,31 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-#if 1
-
   noise_params *Params = &NoiseEditor->Params;
   Params->ChunkSize = GetSelectionDim(World, Editor);
 
   PushNewRow(Ui);
-  if (Button(Ui, CSz("Set Color"), UiId(Window, "set color interaction", Cast(void*, Params))))
   {
-    Params->Color = Engine->Editor.SelectedColorIndex;
+    if (Button(Ui, CSz("Set Color"), UiId(Window, "set color interaction", Cast(void*, Params)))) { Params->Color = Engine->Editor.SelectedColorIndex; }
+    ui_style Style = UiStyleFromLightestColor(GetColorData(Params->Color));
+    PushUntexturedQuad(Ui, {}, V2(Global_Font.Size.y), zDepth_Text, &Style);
+    PushNewRow(Ui);
   }
-  PushNewRow(Ui);
 
+  DoEditorUi(Ui, Window, &Params->Offset,     CSz("Select Offset"));
   DoEditorUi(Ui, Window, &Params->EditParams, CSz("Edit Mode"));
 
   noise_params *PrevParams = &NoiseEditor->PrevParams;
 
   b32 NoiseNeedsUpdate = !AreEqual(Params, PrevParams);
   *PrevParams = *Params;
-#endif
+
+
 
 
   world_chunk *DestChunk = &NoiseEditor->Preview.Chunk;
-  if (DestChunk->Dim != Params->ChunkSize)
+  v3i TargetDim = Params->ChunkSize + GetDim(Params->Offset);
+  if (DestChunk->Dim != TargetDim)
   {
     // TODO(Jesse)(leak): Figure out exactly how this works.  We can't allocate from the Editor
     // memory pool because the goemetry buffers get freed to a freelist, and the editor memory
@@ -835,7 +837,7 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
     // @editor_chunk_memory_question
     //
     /* DeallocateWorldChunk(DestChunk, MeshFreelist); */
-    AllocateWorldChunk(DestChunk, {}, Params->ChunkSize, Editor->Memory);
+    AllocateWorldChunk(DestChunk, {}, TargetDim, Editor->Memory);
   }
 
   DoEditorUi(Ui, Window, &Params->Type, CSz("Noise Type"), &DefaultUiRenderParams_Generic);
@@ -900,7 +902,7 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
     }
     PushTableEnd(Ui);
 
-    RenderToTexture(Engine, &NoiseEditor->Preview.Thumbnail, &DestChunk->Meshes, V3(Params->ChunkSize)/-2.f);
+    RenderToTexture(Engine, &NoiseEditor->Preview.Thumbnail, &DestChunk->Meshes, V3(DestChunk->Dim)/-2.f);
     RenderAndInteractWithThumbnailTexture(Ui, Window, "noise preview interaction", &NoiseEditor->Preview.Thumbnail);
   }
   else
@@ -941,14 +943,13 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestC
           type_world_update_op_shape_params_chunk_data,
           .world_update_op_shape_params_chunk_data = ChunkDataShape,
         };
-        /* QueueWorldUpdateForRegion(Engine, WorldEditMode, MainPanelEditParams.Modifier, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory); */
 
         rect3i UpdateBounds = {V3i(0), SrcChunk->Dim};
         v3 SimFloodOrigin = V3(0);
         u16 ColorIndex = 0;
 
-          work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, ColorIndex, {}, {}, &SrcChunk, 1);
-          ApplyUpdateToRegion(GetThreadLocalState(ThreadLocal_ThreadIndex), &Job, UpdateBounds, u32(Volume(DestChunk->Dim)), DestChunk->Voxels);
+        work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, ColorIndex, {}, {}, &SrcChunk, 1);
+        ApplyUpdateToRegion(GetThreadLocalState(ThreadLocal_ThreadIndex), &Job, UpdateBounds, u32(Volume(DestChunk->Dim)), DestChunk->Voxels);
 #endif
 
       } break;
@@ -1464,6 +1465,7 @@ DoWorldEditor(engine_resources *Engine)
             if (MainPanelEditParams.Mode && Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
             {
               world_chunk *Chunk = 0;
+              v3i MinOffset = {};
               if (WorldEditBrushType == WorldEdit_BrushType_Layered)
               {
                 Chunk = &Editor->LayeredBrushEditor.Preview.Chunk;
@@ -1471,6 +1473,7 @@ DoWorldEditor(engine_resources *Engine)
               else if (WorldEditBrushType == WorldEdit_BrushType_Noise)
               {
                 Chunk = &Editor->NoiseEditor.Preview.Chunk;
+                MinOffset += Editor->NoiseEditor.Params.Offset.Min;
               }
               else
               {
@@ -1478,7 +1481,7 @@ DoWorldEditor(engine_resources *Engine)
               }
 
               chunk_data D = {Chunk->Flags, Chunk->Dim, Chunk->Voxels, Chunk->VoxelLighting};
-              world_update_op_shape_params_chunk_data ChunkDataShape = { D, GetSimSpaceP(World, Editor->SelectionRegion.Min) };
+              world_update_op_shape_params_chunk_data ChunkDataShape = { D, V3(MinOffset) + GetSimSpaceP(World, Editor->SelectionRegion.Min) };
 
               world_update_op_shape Shape =
               {

@@ -498,6 +498,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, void *Value, cs Name, ui_rend
 poof(do_editor_ui_for_vector_type({v4i v4 v3i v3 v2i v2 Quaternion}));
 #include <generated/do_editor_ui_for_vector_type_688873645.h>
 
+poof(do_editor_ui_for_compound_type(rect3i))
+#include <generated/do_editor_ui_for_compound_type_rect3i.h>
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, cp *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
@@ -604,6 +606,7 @@ enum world_edit_mode
 enum world_edit_mode_modifier
 {
   WorldEdit_Modifier_None,
+
   WorldEdit_Modifier_Flood,
 };
 
@@ -649,13 +652,17 @@ struct noise_params
 {
   ui_noise_type Type;
 
+  // NOTE(Jesse): This is the relative offset from the base selection.  Can be
+  // used to inflate or contract the area affected by the brush
+  rect3i Offset;
+
   world_edit_params    EditParams;
 
   perlin_noise_params  PerlinParams;
   voronoi_noise_params VoronoiParams;
 
   v3i ChunkSize;
-  u16 Color;
+  u16 Color = 1; // Default to white
 };
 
 poof(are_equal(noise_params))

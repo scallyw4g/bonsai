@@ -1,4 +1,4 @@
-// src/engine/editor.h:847:0
+// src/engine/editor.h:854:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)

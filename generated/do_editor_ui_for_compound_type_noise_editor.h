@@ -1,4 +1,4 @@
-// src/engine/editor.h:843:0
+// src/engine/editor.h:850:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_editor *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
