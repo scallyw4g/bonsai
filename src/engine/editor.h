@@ -547,48 +547,19 @@ poof(do_editor_ui_for_enum(ui_noise_type))
 
 
 
-struct perlin_noise_params
-{
-  r32 Threshold = 4.0f;
-  r32 Period    = 8.f;   poof(@ui_range(0, 100))
-  r32 Amplitude = 8.f;   poof(@ui_range(0, 100))
-};
-
-poof(are_equal(perlin_noise_params))
-#include <generated/are_equal_perlin_noise_params.h>
-
-struct voronoi_noise_params
-{
-  r32 Threshold = 2.f;
-  r32 Period    = 10.f;  poof(@ui_range(0, 100))
-  r32 Amplitude = 8.f;   poof(@ui_range(0, 100))
-
-  r32 Squareness;
-  r32 MaskChance;
-};
-
-// NOTE(Jesse): This is intentionally not a d_union such that you can flip
-// between different noise selections and your parameters stay intact.
-struct noise_params
-{
-  ui_noise_type Type;
-
-  perlin_noise_params  PerlinParams;
-  voronoi_noise_params VoronoiParams;
-
-  v3i ChunkSize;
-  u16 Color;
-};
-
-poof(are_equal(noise_params))
-#include <generated/are_equal_noise_params.h>
 
 
-struct maybe_v3
-{
-  maybe_tag Tag;
-  v3 V3;
-};
+
+
+
+
+
+
+
+
+
+
+
 
 enum world_edit_selection_mode
 {
@@ -627,9 +598,84 @@ enum world_edit_mode
   WorldEdit_Mode_Paint,
   WorldEdit_Mode_Attach,
   WorldEdit_Mode_Remove,
-
-  WorldEdit_Mode_Count,
 };
+
+// TODO(Jesse): Rename to reflect that it's the iteration pattern
+enum world_edit_mode_modifier
+{
+  WorldEdit_Modifier_None,
+  WorldEdit_Modifier_Flood,
+};
+
+struct world_edit_params
+{
+  world_edit_mode Mode;
+  world_edit_mode_modifier Modifier;
+};
+
+
+
+
+
+
+
+
+
+
+
+struct perlin_noise_params
+{
+  r32 Threshold = 4.0f;
+  r32 Period    = 8.f;   poof(@ui_range(0, 100))
+  r32 Amplitude = 8.f;   poof(@ui_range(0, 100))
+};
+
+poof(are_equal(perlin_noise_params))
+#include <generated/are_equal_perlin_noise_params.h>
+
+struct voronoi_noise_params
+{
+  r32 Threshold = 2.f;
+  r32 Period    = 10.f;  poof(@ui_range(0, 100))
+  r32 Amplitude = 8.f;   poof(@ui_range(0, 100))
+
+  r32 Squareness;
+  r32 MaskChance;
+};
+
+// NOTE(Jesse): This is intentionally not a d_union such that you can flip
+// between different noise selections and your parameters stay intact.
+struct noise_params
+{
+  ui_noise_type Type;
+
+  world_edit_params    EditParams;
+
+  perlin_noise_params  PerlinParams;
+  voronoi_noise_params VoronoiParams;
+
+  v3i ChunkSize;
+  u16 Color;
+};
+
+poof(are_equal(noise_params))
+#include <generated/are_equal_noise_params.h>
+
+
+struct maybe_v3
+{
+  maybe_tag Tag;
+  v3 V3;
+};
+
+
+poof(do_editor_ui_for_radio_enum(world_edit_mode_modifier))
+#include <generated/do_editor_ui_for_radio_enum_world_edit_mode_modifier.h>
+
+poof(string_and_value_tables(world_edit_mode_modifier))
+#include <generated/string_and_value_tables_world_edit_mode_modifier.h>
+
+
 
 poof(toggle_button_group_for_enum(engine_debug_view_mode))
 #include <generated/toggle_button_group_for_enum_engine_debug_view_mode.h>
@@ -652,6 +698,10 @@ poof(do_editor_ui_for_radio_enum(world_edit_tool))
 
 poof(do_editor_ui_for_radio_enum(world_edit_brush_type))
 #include <generated/do_editor_ui_for_radio_enum_world_edit_brush_type.h>
+
+poof(do_editor_ui_for_compound_type(world_edit_params))
+#include <generated/do_editor_ui_for_compound_type_world_edit_params.h>
+
 
 
 
@@ -722,20 +772,6 @@ struct world_update_op_shape
 /* poof(do_editor_ui_for_compound_type(world_update_op_shape)) */
 /* #include <generated/do_editor_ui_for_compound_type_world_update_op_shape.h> */
 
-
-// TODO(Jesse): Rename to reflect that it's the iteration pattern
-enum world_edit_mode_modifier
-{
-  WorldEdit_Modifier_None,
-  WorldEdit_Modifier_Flood,
-  WorldEdit_Modifier_Count,
-};
-
-poof(do_editor_ui_for_radio_enum(world_edit_mode_modifier))
-#include <generated/do_editor_ui_for_radio_enum_world_edit_mode_modifier.h>
-
-poof(string_and_value_tables(world_edit_mode_modifier))
-#include <generated/string_and_value_tables_world_edit_mode_modifier.h>
 
 struct world_edit_brush
 {

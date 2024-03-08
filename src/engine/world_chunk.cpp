@@ -4168,7 +4168,6 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 
       switch(Mode)
       {
-        InvalidCase(WorldEdit_Mode_Count);
         InvalidCase(WorldEdit_Mode_Disabled);
 
         /* case WorldEdit_Mode_StandingSpots: {} break; */
@@ -4177,8 +4176,6 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
         {
           switch(Modifier)
           {
-            InvalidCase(WorldEdit_Modifier_Count);
-
             case WorldEdit_Modifier_None:
             {
               poof(rectalinear_iteration_pattern({
@@ -4233,7 +4230,6 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
         {
           switch(Modifier)
           {
-            InvalidCase(WorldEdit_Modifier_Count);
             InvalidCase(WorldEdit_Modifier_Flood);
 
             case WorldEdit_Modifier_None:
@@ -4275,14 +4271,12 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
       switch(Mode)
       {
         InvalidCase(WorldEdit_Mode_Disabled);
-        InvalidCase(WorldEdit_Mode_Count);
 
         case WorldEdit_Mode_Attach:
         case WorldEdit_Mode_Remove:
         {
           switch (Modifier)
           {
-            InvalidCase(WorldEdit_Modifier_Count);
             case WorldEdit_Modifier_Flood:
             {
               poof(flood_fill_iteration_pattern(
@@ -4311,7 +4305,6 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
         {
           switch (Modifier)
           {
-            InvalidCase(WorldEdit_Modifier_Count);
             case WorldEdit_Modifier_Flood:
             {
               poof(flood_fill_iteration_pattern(
@@ -4369,14 +4362,12 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 
         switch(Mode)
         {
-          InvalidCase(WorldEdit_Mode_Count);
           InvalidCase(WorldEdit_Mode_Disabled);
 
           case WorldEdit_Mode_Remove:
           {
             switch (Modifier)
             {
-              InvalidCase(WorldEdit_Modifier_Count);
               case WorldEdit_Modifier_Flood:
               {
                 poof(flood_fill_iteration_pattern(
@@ -4420,7 +4411,6 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
           {
             switch (Modifier)
             {
-              InvalidCase(WorldEdit_Modifier_Count);
               case WorldEdit_Modifier_Flood:
               {
                 poof(flood_fill_iteration_pattern(

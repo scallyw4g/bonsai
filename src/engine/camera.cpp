@@ -188,7 +188,10 @@ StandardCamera(camera* Camera, f32 FarClip, f32 DistanceFromTarget, f32 Blend)
   Camera->TargetYaw = -PI32*0.15f;
 
   Camera->TargetDistanceFromTarget = DistanceFromTarget;
-  UpdateGameCamera(GetWorld(), {}, {}, {}, Camera, 0.f);
+
+  // NOTE(Jesse): Can't do this because this gets called before the world's
+  // initialized.  I guess we could check and conditionall call it .. but .. meh
+  // UpdateGameCamera(GetWorld(), {}, {}, {}, Camera, 0.f);
 }
 
 link_internal bool
