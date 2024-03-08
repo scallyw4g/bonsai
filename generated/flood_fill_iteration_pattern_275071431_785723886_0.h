@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4427:0
+// src/engine/world_chunk.cpp:4426:0
 
 // TODO(Jesse): Do we want to try and keep the amount of temp memory to a minimum here?
 voxel_stack_element_cursor Stack = VoxelStackElementCursor(umm(TotalVoxels*6), Thread->TempMemory);
@@ -40,8 +40,6 @@ while (AtElements(&Stack))
 
     
                     if ( ((V->Flags&Voxel_Filled) == 0) && AssetV && (AssetV->Flags&Voxel_Filled)) { *V = *AssetV; }
-                    /* if ( (V->Flags&Voxel_Filled) == 0 && */
-                         /* AssetV && (AssetV->Flags&Voxel_Filled)) { *V = *AssetV; } */
                   
 
     V->Flags |= Voxel_MarkBit;

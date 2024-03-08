@@ -1,3 +1,14 @@
+// TODO(Jeses): Move to header
+link_internal v3i
+GetSelectionDim(world *World, level_editor *Editor)
+{
+  v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
+  v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
+
+  v3i Result = V3i(SelectionMaxP - SelectionMinP);
+  return Result;
+}
+
 
 link_internal b32
 InitEditor(level_editor *Editor)
@@ -791,18 +802,15 @@ GetHotVoxelForFlood(engine_resources *Engine, world_edit_mode WorldEditMode, wor
   return Result;
 }
 
-
 link_internal b32
 BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, noise_editor *NoiseEditor)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
 #if 1
-  v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
-  v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
 
   noise_params *Params = &NoiseEditor->Params;
-  Params->ChunkSize = V3i(SelectionMaxP-SelectionMinP);
+  Params->ChunkSize = GetSelectionDim(World, Editor);
 
   if (Button(Ui, CSz("Set Color"), UiId(Window, "set color interaction", Cast(void*, Params))))
   {
@@ -907,26 +915,38 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
 link_internal void
 ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestChunk)
 {
+  UNPACK_ENGINE_RESOURCES(Engine);
+
   switch (Layer->Type)
   {
     case BrushLayerType_Shape:
-    { NotImplemented; } break;
+    {} break;
 
     case BrushLayerType_Noise:
     {
-#if 0
+#if 1
       world_chunk *SrcChunk = &Layer->NoiseEditor.Preview.Chunk;
-      world_chunk *DestChunk = &Layer->NoiseEditor.Preview.Chunk;
 
-      chunk_data D = {Chunk->Flags, Chunk->Dim, Chunk->Voxels, Chunk->VoxelLighting};
-      world_update_op_shape_params_chunk_data ChunkDataShape = { D, GetSimSpaceP(World, Editor->SelectionRegion.Min) };
+      chunk_data D = {SrcChunk->Flags, SrcChunk->Dim, SrcChunk->Voxels, SrcChunk->VoxelLighting};
+      world_update_op_shape_params_chunk_data ChunkDataShape = { D, {} };
+
+      Assert(SrcChunk->Dim == DestChunk->Dim);
 
       world_update_op_shape Shape =
       {
         type_world_update_op_shape_params_chunk_data,
         .world_update_op_shape_params_chunk_data = ChunkDataShape,
       };
-      QueueWorldUpdateForRegion(Engine, WorldEditMode, WorldEditModifier, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory);
+      /* QueueWorldUpdateForRegion(Engine, WorldEditMode, WorldEditModifier, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory); */
+
+      rect3i UpdateBounds = {V3i(0), SrcChunk->Dim};
+      v3 SimFloodOrigin = V3(0);
+      u16 ColorIndex = 0;
+
+      world_edit_mode Mode = WorldEdit_Mode_Attach;
+      world_edit_mode_modifier Modifier = WorldEdit_Modifier_None;
+      work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, ColorIndex, {}, {}, &SrcChunk, 1);
+      ApplyUpdateToRegion(GetThreadLocalState(ThreadLocal_ThreadIndex), &Job, UpdateBounds, u32(Volume(DestChunk->Dim)), DestChunk->Voxels);
 #endif
 
     } break;
@@ -977,29 +997,38 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *Window)
     PushNewRow(Ui);
   }
 
-  world_chunk *PreviewChunk = &LayeredBrushEditor->Preview.Chunk;
-  v3i TargetDim = LayeredBrushEditor->PreviewChunkDim;
-  if (AnyBrushesUpdated)
   {
-    if (PreviewChunk->Dim != TargetDim)
+    world_chunk *PreviewChunk = &LayeredBrushEditor->Preview.Chunk;
+    v3i TargetDim = GetSelectionDim(World, Editor);
+    if (AnyBrushesUpdated)
     {
-      // @editor_chunk_memory_question
-      AllocateWorldChunk(PreviewChunk, {}, TargetDim, Editor->Memory);
-    }
-    else
-    {
-      ClearChunkVoxels(PreviewChunk->Voxels, PreviewChunk->Dim);
-    }
+      if (PreviewChunk->Dim != TargetDim)
+      {
+        // @editor_chunk_memory_question
+        AllocateWorldChunk(PreviewChunk, {}, TargetDim, Editor->Memory);
+      }
+      else
+      {
+        ClearChunkVoxels(PreviewChunk->Voxels, PreviewChunk->Dim);
+      }
 
 
-    RangeIterator(LayerIndex, LayeredBrushEditor->LayerCount)
-    {
-      brush_layer *Layer = Layers + LayerIndex;
-      /* ApplyBrushLayer(Engine, Layer); */
+      RangeIterator(LayerIndex, LayeredBrushEditor->LayerCount)
+      {
+        brush_layer *Layer = Layers + LayerIndex;
+        ApplyBrushLayer(Engine, Layer, PreviewChunk);
+      }
+
+
+      MarkBoundaryVoxels_MakeExteriorFaces( PreviewChunk->Voxels, PreviewChunk->Dim, {{}}, PreviewChunk->Dim );
+      FinalizeChunkInitialization(PreviewChunk);
+      QueueChunkForMeshRebuild(&Plat->LowPriority, PreviewChunk);
     }
+
+    SyncGpuBuffersImmediate(Engine, &PreviewChunk->Meshes);
+    RenderToTexture(Engine, &LayeredBrushEditor->Preview.Thumbnail, &PreviewChunk->Meshes, TargetDim/-2.f);
   }
 
-  RenderToTexture(Engine, &LayeredBrushEditor->Preview.Thumbnail, &PreviewChunk->Meshes, TargetDim/-2.f);
 }
 
 link_internal void
@@ -1416,11 +1445,25 @@ DoWorldEditor(engine_resources *Engine)
             }
           } break;
 
+          case WorldEdit_BrushType_Layered:
           case WorldEdit_BrushType_Noise:
           {
             if (WorldEditMode && Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
             {
-              world_chunk *Chunk = &Editor->NoiseEditor.Preview.Chunk;
+              world_chunk *Chunk = 0;
+              if (WorldEditBrushType == WorldEdit_BrushType_Layered)
+              {
+                Chunk = &Editor->LayeredBrushEditor.Preview.Chunk;
+              }
+              else if (WorldEditBrushType == WorldEdit_BrushType_Noise)
+              {
+                Chunk = &Editor->NoiseEditor.Preview.Chunk;
+              }
+              else
+              {
+                InvalidCodePath();
+              }
+
               chunk_data D = {Chunk->Flags, Chunk->Dim, Chunk->Voxels, Chunk->VoxelLighting};
               world_update_op_shape_params_chunk_data ChunkDataShape = { D, GetSimSpaceP(World, Editor->SelectionRegion.Min) };
 
@@ -1441,9 +1484,6 @@ DoWorldEditor(engine_resources *Engine)
             }
           } break;
 
-          case WorldEdit_BrushType_Layered:
-          {
-          } break;
         }
       } break;
 

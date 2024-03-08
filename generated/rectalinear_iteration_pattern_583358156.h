@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4412:0
+// src/engine/world_chunk.cpp:4411:0
 
 DimIterator(x, y, z, SimSpaceQueryDim)
 {
@@ -9,7 +9,7 @@ DimIterator(x, y, z, SimSpaceQueryDim)
   
               v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
               voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
-              if (AssetV && (AssetV->Flags&Voxel_Filled)) { V->Color = NewColor; }
+              if (AssetV && (AssetV->Flags&Voxel_Filled)) { V->Color = AssetV->Color; }
             
 }
 
