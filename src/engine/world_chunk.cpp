@@ -927,9 +927,9 @@ MarkBoundaryVoxels_MakeExteriorFaces( voxel *Voxels,
 
         voxel *Voxel = Voxels + SrcIndex;
 
-        if (IsFilled(Voxel))
+        if (Voxel->Flags&Voxel_Filled)
         {
-          /* Voxel->Flags = Voxel_Filled; */
+          Voxel->Flags = Voxel_Filled;
 
           voxel_position rightVoxel = DestP + Voxel_Position(1, 0, 0);
           voxel_position leftVoxel  = DestP - Voxel_Position(1, 0, 0);

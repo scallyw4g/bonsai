@@ -718,7 +718,7 @@ RenderAndInteractWithThumbnailTexture(renderer_2d *Ui, window_layout *Window, co
   if (Texture->ID == 0)
   {
     *Texture = MakeTexture_RGB(V2i(256), 0, CSz("NoisePreviewTexture"));
-    StandardCamera(ThumbCamera, 10000.f, 1000.f, 30.f);
+    StandardCamera(ThumbCamera, 10000.f, 500.f, 30.f);
   }
 
   interactable_handle B = PushButtonStart(Ui, UiId(Window, InteractionString, Cast(void*, Thumb)) );
@@ -735,8 +735,8 @@ RenderAndInteractWithThumbnailTexture(renderer_2d *Ui, window_layout *Window, co
     v2 MouseDelta = GetMouseDelta(&GetEngineResources()->Stdlib.Plat);
     if (Ui->Input->LMB.Pressed) { MouseDP = MouseDelta*2.f; }
     if (Ui->Input->RMB.Pressed) { CameraZDelta += MouseDelta.y*2.f; }
-    UpdateGameCamera(GetWorld(), MouseDP, CameraZDelta, {}, ThumbCamera, 0.f);
   }
+  UpdateGameCamera(GetWorld(), MouseDP, CameraZDelta, {}, ThumbCamera, 0.f);
 
   /* if (Ui->Input->LMB.Pressed == False && Hover(Ui, &B)) { PushTooltip(Ui, ToString(Texture)); } */
 

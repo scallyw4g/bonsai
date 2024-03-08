@@ -188,6 +188,7 @@ StandardCamera(camera* Camera, f32 FarClip, f32 DistanceFromTarget, f32 Blend)
   Camera->TargetYaw = -PI32*0.15f;
 
   Camera->TargetDistanceFromTarget = DistanceFromTarget;
+  UpdateGameCamera(GetWorld(), {}, {}, {}, Camera, 0.f);
 }
 
 link_internal bool
