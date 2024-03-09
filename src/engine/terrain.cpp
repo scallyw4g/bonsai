@@ -1442,7 +1442,8 @@ MakeCliffs(world_chunk *Chunk, s32 VoxIndex, s32 WorldX, s32 WorldY, s32 WorldZ,
 
       v3 CellMultiplier = (1.f/CellSize);
       v3 WorldP = V3(WorldX+Index, WorldY, WorldZ);
-      r32 RockMaskChance = CliffBlend*6.f; // Higher = less rocks
+      /* r32 RockMaskChance = CliffBlend*6.f; // Higher = less rocks */
+      r32 RockMaskChance = 0.f;
       r32 Voronoi = VoronoiNoise3D(WorldP * CellMultiplier, Squareness, RockMaskChance);
 
       NoiseValue[Index] += CliffBlend*Voronoi*10.f;
@@ -1507,9 +1508,8 @@ MakeCliffs_8x(world_chunk *Chunk, s32 NormalsIndex, s32 WorldX, s32 WorldY, s32 
     {
       /* Chunk->Voxels[NormalsIndex].DebugColor.x = CliffBlend; */
 
-      r32 Squareness = 0.0f;
       /* r32 Squareness = 0.1f; */
-      /* r32 Squareness = 0.25f; */
+      r32 Squareness = 0.25f;
       /* r32 Squareness = 0.55f; */
       /* r32 Squareness = 0.75f; */
       /* r32 Squareness = 0.8f; */
@@ -1517,19 +1517,11 @@ MakeCliffs_8x(world_chunk *Chunk, s32 NormalsIndex, s32 WorldX, s32 WorldY, s32 
 
       v3 BaseCellSize = V3(5.f, 5.f, 5.f); // Increasing this increases the size of the cells
 
-/*       r32 Squarenensses[] = { */
-/*         0.0f, */
-/*         0.1f, */
-/*         0.25f, */
-/*       }; */
-      /* r32 Squareness = Squarenensses[CellIndex]; */
-
       v3 CellSizes[] = {
         {BaseCellSize},
         {BaseCellSize*V3(3.f, 3.f, 6.f)},
         {BaseCellSize*V3(7.f, 7.f, 18.f)},
       };
-
 
       s32 CellIndex = UnilateralToThesholdIndex(CliffBlend, ArrayCount(CellSizes)-1);
       Assert(CellIndex < s32(ArrayCount(CellSizes)));
