@@ -1168,7 +1168,10 @@ EditWorldSelection(engine_resources *Engine, rect3 *SelectionAABB)
         Editor->SelectionRegion = RectMinMax(MinP, MaxP);
       }
     }
-    else { Thickness = 0.20f; }
+    else
+    {
+      Thickness = 0.20f;
+    }
 
     {
       v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
@@ -1228,10 +1231,14 @@ EditWorldSelection(engine_resources *Engine, rect3 *SelectionAABB)
 
         if (!Input->LMB.Pressed)
         {
-          // Make ModifiedSelection permanent
-          Editor->SelectionRegion = SimSpaceToCanonical(World, &ModifiedSelection);
-          Editor->Selection.ClickedFace = FaceIndex_None;
-          Editor->SelectionChanged = True;
+          // If we actually changed the selection region
+          rect3cp ProposedSelection = SimSpaceToCanonical(World, &ModifiedSelection);
+          /* if (!AreEqual(Editor->SelectionRegion, ProposedSelection)) */
+          {
+            // Make ModifiedSelection permanent
+            Editor->SelectionRegion = ProposedSelection;
+            Editor->Selection.ClickedFace = FaceIndex_None;
+          }
         }
       }
     }
@@ -1250,6 +1257,28 @@ link_internal void
 DoWorldEditor(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
+
+  // @selection_changed_flag
+  //
+  aabb SelectionAABB = {};
+  aabb_intersect_result AABBTest = EditWorldSelection(Engine, &SelectionAABB);
+
+
+  // Don't fire selection changed event when dragging selection with selection edit tool
+  if (Editor->SelectionClicks != 1)
+  {
+    if (AreEqual(Editor->SelectionRegion, Editor->PrevSelectionRegion))
+    {
+      Editor->SelectionChanged = False;
+    }
+    else
+    {
+      Editor->SelectionChanged = True;
+    }
+    Editor->PrevSelectionRegion = Editor->SelectionRegion;
+  }
+
+
 
   world_edit_tool WorldEditTool = {};
   world_edit_params MainPanelEditParams = {};
@@ -1356,8 +1385,6 @@ DoWorldEditor(engine_resources *Engine)
 
 
 
-  aabb SelectionAABB = {};
-  aabb_intersect_result AABBTest = EditWorldSelection(Engine, &SelectionAABB);
 
 
 

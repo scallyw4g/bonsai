@@ -1,11 +1,11 @@
-// src/engine/editor.h:702:0
+// src/engine/editor.h:513:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_params *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3cp *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   if (Element)
   {
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle world_edit_params", Element), &DefaultUiRenderParams_Generic))
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle rect3cp", Element), &DefaultUiRenderParams_Generic))
     {
       PushNewRow(Ui);
 
@@ -13,8 +13,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_params *Element, c
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&Element->Mode,
-        CSz("Mode"),
+&Element->Min,
+        CSz("Min"),
         Params
         );
 
@@ -25,8 +25,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_params *Element, c
       
       DoEditorUi(Ui,
         Window,
-&Element->Modifier,
-        CSz("Modifier"),
+&Element->Max,
+        CSz("Max"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

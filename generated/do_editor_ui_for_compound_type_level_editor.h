@@ -138,6 +138,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       
       DoEditorUi(Ui,
         Window,
+&Element->PrevSelectionRegion,
+        CSz("PrevSelectionRegion"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
 &Element->CopyRegion,
         CSz("CopyRegion"),
         Params

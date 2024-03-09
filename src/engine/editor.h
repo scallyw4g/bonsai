@@ -498,8 +498,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, void *Value, cs Name, ui_rend
 poof(do_editor_ui_for_vector_type({v4i v4 v3i v3 v2i v2 Quaternion}));
 #include <generated/do_editor_ui_for_vector_type_688873645.h>
 
-poof(do_editor_ui_for_compound_type(rect3i))
-#include <generated/do_editor_ui_for_compound_type_rect3i.h>
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, cp *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
@@ -508,6 +506,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, cp *Value, cs Name, EDITOR_UI
   DoEditorUi(Ui, Window, &Value->Offset, CSz("Offset"));
 }
 
+
+poof(do_editor_ui_for_compound_type(rect3i))
+#include <generated/do_editor_ui_for_compound_type_rect3i.h>
+
+poof(do_editor_ui_for_compound_type(rect3cp))
+#include <generated/do_editor_ui_for_compound_type_rect3cp.h>
 
 /* link_internal void */
 /* DoEditorUi(renderer_2d *Ui, aabb *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS); */
@@ -859,6 +863,8 @@ struct level_editor
   cp  SelectionBase;
 
   rect3cp SelectionRegion;
+  rect3cp PrevSelectionRegion; // Change detection
+                               //
   rect3cp CopyRegion;
 
   // Recorded when accel-clicking on the selection to manipulate it
@@ -873,9 +879,16 @@ struct level_editor
 
 
 link_internal b32
+SelectionComplete(u32 SelectionClicks)
+{
+  return SelectionClicks == 2;
+}
+
+
+link_internal b32
 SelectionIncomplete(u32 SelectionClicks)
 {
-  return SelectionClicks == 0 || SelectionClicks == 1;
+  return !SelectionComplete(SelectionClicks);
 }
 
 link_internal void
