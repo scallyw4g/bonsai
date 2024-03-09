@@ -768,7 +768,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   global_variable window_layout Window = WindowLayout("Terrain Gen", WindowLayoutFlag_Align_Right);
 
   PushWindowStart(Ui, &Window);
-    ui_toggle_button_group TerrainGenTypeRadio = RadioButtonGroup_terrain_gen_type(Ui, &Window, CSz("Terrain Generators"), "terrain_gen", &DefaultUiRenderParams_Generic, ToggleButtonGroupFlags_DrawVertical);
+    terrain_gen_type Type = {};
+    ui_toggle_button_group TerrainGenTypeRadio = RadioButtonGroup_terrain_gen_type(Ui, &Window, CSz("Terrain Generators"), &Type, &DefaultUiRenderParams_Generic, ToggleButtonGroupFlags_DrawVertical);
   PushWindowEnd(Ui, &Window);
 
   if (TerrainGenTypeRadio.AnyElementClicked)
