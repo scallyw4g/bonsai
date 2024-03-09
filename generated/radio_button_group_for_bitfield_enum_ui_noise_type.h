@@ -1,4 +1,4 @@
-// src/engine/editor.h:545:0
+// src/engine/editor.h:544:0
 
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, ui_noise_type Selection)
@@ -17,7 +17,7 @@ GetRadioEnum(ui_toggle_button_group *RadioGroup, ui_noise_type *Result)
   {
     Assert(CountBitsSet_Kernighan(RadioGroup->ToggleBits) == 1);
     // NOTE(Jesse): This is better; it asserts that we've actually got a bitfield
-    Assert(((RadioGroup->ToggleBits == NoiseType_None||RadioGroup->ToggleBits == NoiseType_Perlin||RadioGroup->ToggleBits == NoiseType_Voronoi)));
+    Assert(((RadioGroup->ToggleBits == NoiseType_Perlin||RadioGroup->ToggleBits == NoiseType_Voronoi)));
     /* Assert((((enum_t.map(value).sep(|) {value.name})) & RadioGroup->ToggleBits) != 0); */
   }
 
@@ -51,7 +51,6 @@ RadioButtonGroup_ui_noise_type( renderer_2d *Ui,
 {
   cs ButtonNames[] =
   {
-    CSz("None"),
     CSz("Perlin"),
     CSz("Voronoi"),
   };

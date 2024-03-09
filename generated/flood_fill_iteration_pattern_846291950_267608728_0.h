@@ -1,23 +1,23 @@
-// src/engine/world_chunk.cpp:4282:0
+// src/engine/world_chunk.cpp:4276:0
 
 // TODO(Jesse): Do we want to try and keep the amount of temp memory to a minimum here?
 voxel_stack_element_cursor Stack = VoxelStackElementCursor(umm(TotalVoxels*6), Thread->TempMemory);
 
 // Unfortunately, can't #if this out in a poof function.  Should probably
 // put it on a #define switch to make sure it gets compiled out.
-/* DEBUG_AssertVoxelFloodStartsInEmptyVoxel(FloodOrigin, &SimSpaceQueryAABB, CopiedVoxels); */
+/* DEBUG_AssertVoxelFloodStartsInEmptyVoxel(FloodOrigin, &SimSpaceUpdateBounds, CopiedChunk->Voxels); */
 
 Push(&Stack, VoxelStackElement(FloodOrigin, VoxelRuleDir_Count));
 while (AtElements(&Stack))
 {
   voxel_stack_element Element = Pop(&Stack);
   v3i SimVoxP = Element.VoxSimP + AllDirections[Element.Dir];
-  v3i RelVoxP = SimVoxP - SimSpaceQueryAABB.Min;
+  v3i RelVoxP = SimVoxP - SimSpaceUpdateBounds.Min;
 
-  s32 VoxelIndex = TryGetIndex(RelVoxP, QueryDim);
+  s32 VoxelIndex = TryGetIndex(RelVoxP, UpdateDim);
   if (VoxelIndex > -1)
   {
-    V = CopiedVoxels+VoxelIndex;
+    V = CopiedChunk->Voxels+VoxelIndex;
 
     v3i CenterToVoxP = SimVoxP - FloodOrigin;
 
@@ -51,13 +51,13 @@ while (AtElements(&Stack))
   v3i Dir = AllDirections[Element.Dir];
   {
     v3i SimVoxP = Element.VoxSimP + Dir;
-    v3i RelVoxP = SimVoxP - SimSpaceQueryAABB.Min;
+    v3i RelVoxP = SimVoxP - SimSpaceUpdateBounds.Min;
 
-    s32 VoxelIndex = TryGetIndex(RelVoxP, QueryDim);
+    s32 VoxelIndex = TryGetIndex(RelVoxP, UpdateDim);
 
     if (VoxelIndex > -1)
     {
-      V = CopiedVoxels+VoxelIndex;
+      V = CopiedChunk->Voxels+VoxelIndex;
 
       
 

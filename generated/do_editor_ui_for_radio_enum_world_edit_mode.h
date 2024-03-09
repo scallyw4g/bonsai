@@ -1,4 +1,4 @@
-// src/engine/editor.h:700:0
+// src/engine/editor.h:697:0
 
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_mode Selection)
@@ -47,10 +47,9 @@ RadioButtonGroup_world_edit_mode( renderer_2d *Ui,
 {
   cs ButtonNames[] =
   {
-    CSz("Disabled"),
-    CSz("Paint"),
     CSz("Attach"),
     CSz("Remove"),
+    CSz("Paint"),
   };
 
   u32 ButtonCount = ArrayCount(ButtonNames);

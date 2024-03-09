@@ -1,11 +1,11 @@
-// src/engine/editor.cpp:318:0
+// src/engine/editor.h:501:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3i *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   if (Element)
   {
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle shader", Element), &DefaultUiRenderParams_Generic))
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle rect3i", Element), &DefaultUiRenderParams_Generic))
     {
       PushNewRow(Ui);
 
@@ -13,8 +13,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&Element->ID,
-        CSz("ID"),
+&Element->Min,
+        CSz("Min"),
         Params
         );
 
@@ -22,12 +22,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
 
 
 
-      PushNewRow(Ui);
-
+      
       DoEditorUi(Ui,
         Window,
-        Element->FirstUniform,
-        CSz("FirstUniform"),
+&Element->Max,
+        CSz("Max"),
         Params
         );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));

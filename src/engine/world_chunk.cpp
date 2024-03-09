@@ -931,12 +931,12 @@ MarkBoundaryVoxels_MakeExteriorFaces( voxel *Voxels,
         {
           Voxel->Flags = Voxel_Filled;
 
-          voxel_position rightVoxel = DestP + Voxel_Position(1, 0, 0);
-          voxel_position leftVoxel  = DestP - Voxel_Position(1, 0, 0);
-          voxel_position topVoxel   = DestP + Voxel_Position(0, 0, 1);
-          voxel_position botVoxel   = DestP - Voxel_Position(0, 0, 1);
-          voxel_position frontVoxel = DestP + Voxel_Position(0, 1, 0);
-          voxel_position backVoxel  = DestP - Voxel_Position(0, 1, 0);
+          voxel_position rightVoxel = DestP + V3i(1, 0, 0);
+          voxel_position leftVoxel  = DestP - V3i(1, 0, 0);
+          voxel_position topVoxel   = DestP + V3i(0, 0, 1);
+          voxel_position botVoxel   = DestP - V3i(0, 0, 1);
+          voxel_position frontVoxel = DestP + V3i(0, 1, 0);
+          voxel_position backVoxel  = DestP - V3i(0, 1, 0);
 
 
           if ( !Contains( ClampedDim, rightVoxel) || NotFilled( Voxels, rightVoxel, SrcChunkDim) || TransparencyIncreases( Voxels, SrcIndex, rightVoxel, SrcChunkDim) )
@@ -1001,12 +1001,12 @@ MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
         {
           Voxel->Flags = Voxel_Filled;
 
-          s32 RightIndex = GetIndex(SrcP + V3i(1, 0, 0), SrcChunkDim);
-          s32 LeftIndex  = GetIndex(SrcP - V3i(1, 0, 0), SrcChunkDim);
-          s32 TopIndex   = GetIndex(SrcP + V3i(0, 0, 1), SrcChunkDim);
-          s32 BottomIndex= GetIndex(SrcP - V3i(0, 0, 1), SrcChunkDim);
-          s32 FrontIndex = GetIndex(SrcP + V3i(0, 1, 0), SrcChunkDim);
-          s32 BackIndex  = GetIndex(SrcP - V3i(0, 1, 0), SrcChunkDim);
+          s32 RightIndex = TryGetIndex(SrcP + V3i(1, 0, 0), SrcChunkDim);
+          s32 LeftIndex  = TryGetIndex(SrcP - V3i(1, 0, 0), SrcChunkDim);
+          s32 TopIndex   = TryGetIndex(SrcP + V3i(0, 0, 1), SrcChunkDim);
+          s32 BottomIndex= TryGetIndex(SrcP - V3i(0, 0, 1), SrcChunkDim);
+          s32 FrontIndex = TryGetIndex(SrcP + V3i(0, 1, 0), SrcChunkDim);
+          s32 BackIndex  = TryGetIndex(SrcP - V3i(0, 1, 0), SrcChunkDim);
 
           if ( RightIndex >= 0 && RightIndex < MaxIndex )
           {
@@ -3965,18 +3965,18 @@ QueueWorldUpdateForRegion(engine_resources *Engine,
 }
 
 link_internal u32
-MapIntoQueryBox(v3i SimSpaceVoxP, v3i SimSpaceQueryMinP, voxel_position SimSpaceQueryDim)
+MapIntoQueryBox(v3i SimSpaceVoxP, v3i UpdateMinP, v3i UpdateDim)
 {
-  auto Rel = SimSpaceVoxP - SimSpaceQueryMinP;
-  auto Result = GetIndex(Rel, SimSpaceQueryDim);
+  auto Rel = SimSpaceVoxP - UpdateMinP;
+  auto Result = GetIndex(Rel, UpdateDim);
   return (u32)Result;
 }
 
 link_internal u32
-MapIntoQueryBox(v3 SimSpaceVoxP, v3 SimSpaceQueryMinP, voxel_position SimSpaceQueryDim)
+MapIntoQueryBox(v3 SimSpaceVoxP, v3 UpdateMinP, v3i UpdateDim)
 {
-  v3 Rel = SimSpaceVoxP - SimSpaceQueryMinP;
-  s32 Result = GetIndex(Rel, SimSpaceQueryDim);
+  v3 Rel = SimSpaceVoxP - UpdateMinP;
+  s32 Result = GetIndex(Rel, UpdateDim);
   return (u32)Result;
 }
 
@@ -4005,17 +4005,17 @@ poof(generate_cursor(voxel_stack_element))
 
 
 link_internal void
-DEBUG_AssertVoxelFloodStartsInEmptyVoxel(v3i SimSphereP, rect3i *SimSpaceQueryAABB, voxel *CopiedVoxels)
+DEBUG_AssertVoxelFloodStartsInEmptyVoxel(v3i SimSphereP, rect3i *SimSpaceUpdateBounds, voxel *CopiedVoxels)
 {
 #if 1
 #if BONSAI_INTERNAL
-    v3i QueryDim = GetDim(*SimSpaceQueryAABB);
+    v3i UpdateDim = GetDim(*SimSpaceUpdateBounds);
 
     { // NOTE(Jesse): Debug.  Don't rely on the optimizer to remove this in release mode
       //
       // This asserts that we're not trying to flood starting at a voxel that's inside the world.
-      v3i RelVoxP = SimSphereP - SimSpaceQueryAABB->Min;
-      s32 VoxelIndex = TryGetIndex(RelVoxP, QueryDim);
+      v3i RelVoxP = SimSphereP - SimSpaceUpdateBounds->Min;
+      s32 VoxelIndex = TryGetIndex(RelVoxP, UpdateDim);
       if (VoxelIndex > -1)
       {
         voxel *OriginV  = CopiedVoxels+VoxelIndex;
@@ -4034,19 +4034,19 @@ poof(
 
     // Unfortunately, can't #if this out in a poof function.  Should probably
     // put it on a #define switch to make sure it gets compiled out.
-    /* DEBUG_AssertVoxelFloodStartsInEmptyVoxel(FloodOrigin, &SimSpaceQueryAABB, CopiedVoxels); */
+    /* DEBUG_AssertVoxelFloodStartsInEmptyVoxel(FloodOrigin, &SimSpaceUpdateBounds, CopiedChunk->Voxels); */
 
     Push(&Stack, VoxelStackElement(FloodOrigin, VoxelRuleDir_Count));
     while (AtElements(&Stack))
     {
       voxel_stack_element Element = Pop(&Stack);
       v3i SimVoxP = Element.VoxSimP + AllDirections[Element.Dir];
-      v3i RelVoxP = SimVoxP - SimSpaceQueryAABB.Min;
+      v3i RelVoxP = SimVoxP - SimSpaceUpdateBounds.Min;
 
-      s32 VoxelIndex = TryGetIndex(RelVoxP, QueryDim);
+      s32 VoxelIndex = TryGetIndex(RelVoxP, UpdateDim);
       if (VoxelIndex > -1)
       {
-        V = CopiedVoxels+VoxelIndex;
+        V = CopiedChunk->Voxels+VoxelIndex;
 
         v3i CenterToVoxP = SimVoxP - FloodOrigin;
 
@@ -4076,13 +4076,13 @@ poof(
       v3i Dir = AllDirections[Element.Dir];
       {
         v3i SimVoxP = Element.VoxSimP + Dir;
-        v3i RelVoxP = SimVoxP - SimSpaceQueryAABB.Min;
+        v3i RelVoxP = SimVoxP - SimSpaceUpdateBounds.Min;
 
-        s32 VoxelIndex = TryGetIndex(RelVoxP, QueryDim);
+        s32 VoxelIndex = TryGetIndex(RelVoxP, UpdateDim);
 
         if (VoxelIndex > -1)
         {
-          V = CopiedVoxels+VoxelIndex;
+          V = CopiedChunk->Voxels+VoxelIndex;
 
           (UserCode2)
 
@@ -4107,11 +4107,11 @@ poof(
 poof(
   func rectalinear_iteration_pattern(type_poof_symbol UserCode) @code_fragment
   {
-    DimIterator(x, y, z, SimSpaceQueryDim)
+    DimIterator(x, y, z, UpdateDim)
     {
       v3i SimRelVoxP = V3i(x,y,z);
-      v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
-      V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
+      v3i SimVoxP = SimRelVoxP + SimSpaceUpdateBounds.Min;
+      V = CopiedChunk->Voxels + GetIndex(SimRelVoxP, UpdateDim);
 
       UserCode
     }
@@ -4120,14 +4120,14 @@ poof(
 )
 
 link_internal void
-ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_region *Job, rect3i SimSpaceQueryAABB, u32 TotalVoxels, voxel *CopiedVoxels)
+ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_region *Job, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk)
 {
   world *World = GetWorld();
 
   random_series ColorEntropy = {4654376543246};
 
-  v3i SimSpaceQueryDim = GetDim(SimSpaceQueryAABB);
-  v3i QueryDim = SimSpaceQueryDim;
+  v3i UpdateDim = GetDim(SimSpaceUpdateBounds);
+  s32 TotalVoxels = Volume(UpdateDim);
 
   world_edit_mode              Mode = Job->Brush.Mode;
   world_edit_mode_modifier Modifier = Job->Brush.Modifier;
@@ -4168,15 +4168,11 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 
       switch(Mode)
       {
-        InvalidCase(WorldEdit_Mode_Disabled);
-
-        /* case WorldEdit_Mode_StandingSpots: {} break; */
-
         case WorldEdit_Mode_Remove:
         {
           switch(Modifier)
           {
-            case WorldEdit_Modifier_None:
+            case WorldEdit_Modifier_Default:
             {
               poof(rectalinear_iteration_pattern({
                 v3i CenterToVoxP = SimVoxP - EditCenterP;
@@ -4216,7 +4212,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 
         case WorldEdit_Mode_Attach:
         {
-          Assert(Modifier == WorldEdit_Modifier_None); // Not Implemented
+          Assert(Modifier == WorldEdit_Modifier_Default); // Not Implemented
 
           poof(rectalinear_iteration_pattern({
             v3i CenterToVoxP = SimVoxP - EditCenterP;
@@ -4232,7 +4228,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
           {
             InvalidCase(WorldEdit_Modifier_Flood);
 
-            case WorldEdit_Modifier_None:
+            case WorldEdit_Modifier_Default:
             {
               poof(rectalinear_iteration_pattern({
                 v3i CenterToVoxP = SimVoxP - EditCenterP;
@@ -4270,8 +4266,6 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 
       switch(Mode)
       {
-        InvalidCase(WorldEdit_Mode_Disabled);
-
         case WorldEdit_Mode_Attach:
         case WorldEdit_Mode_Remove:
         {
@@ -4291,7 +4285,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 #include <generated/flood_fill_iteration_pattern_846291950_267608728_0.h>
             } break;
 
-            case WorldEdit_Modifier_None:
+            case WorldEdit_Modifier_Default:
             {
               poof(rectalinear_iteration_pattern({
                 if (Contains(SSRect, SimVoxP)) { *V = NewVoxelValue; }
@@ -4318,7 +4312,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 #include <generated/flood_fill_iteration_pattern_720542204_890094085_4111003.h>
             } break;
 
-            case WorldEdit_Modifier_None:
+            case WorldEdit_Modifier_Default:
             {
               poof(rectalinear_iteration_pattern({
                 if (Contains(SSRect, SimVoxP)) { if (V->Flags & Voxel_Filled) { V->Color = NewColor; } }
@@ -4335,7 +4329,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
     {
       case type_world_update_op_shape_params_asset:
       {
-        /* Assert(Modifier == WorldEdit_Modifier_None); // Not Implemented */
+        /* Assert(Modifier == WorldEdit_Modifier_Default); // Not Implemented */
         world_update_op_shape_params_asset *AssetJob = SafeCast(world_update_op_shape_params_asset, &Shape);
         /* asset *Asset = AssetJob->Asset; */
         /* Assert(Asset->Models.Count > 0); */
@@ -4348,7 +4342,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 
       case type_world_update_op_shape_params_chunk_data:
       {
-        /* Assert(Modifier == WorldEdit_Modifier_None); // Not Implemented */
+        /* Assert(Modifier == WorldEdit_Modifier_Default); // Not Implemented */
 
         if (Data == 0)
         {
@@ -4362,8 +4356,6 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 
         switch(Mode)
         {
-          InvalidCase(WorldEdit_Mode_Disabled);
-
           case WorldEdit_Mode_Remove:
           {
             switch (Modifier)
@@ -4384,7 +4376,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 #include <generated/flood_fill_iteration_pattern_275071431_101859599_0.h>
               } break;
 
-              case WorldEdit_Modifier_None:
+              case WorldEdit_Modifier_Default:
               {
                 poof(rectalinear_iteration_pattern({
                   v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
@@ -4427,7 +4419,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 #include <generated/flood_fill_iteration_pattern_275071431_785723886_0.h>
               } break;
 
-              case WorldEdit_Modifier_None:
+              case WorldEdit_Modifier_Default:
               {
                 poof(rectalinear_iteration_pattern({
                   v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
@@ -4462,8 +4454,8 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
   u16 NewColor                = Job->ColorIndex;
   u8  NewTransparency         = Job->Transparency;
-  cp MaxP                     = Job->MaxP;
-  cp MinP                     = Job->MinP;
+  cp  MaxP                    = Job->MaxP;
+  cp  MinP                    = Job->MinP;
   world_chunk **ChunkBuffer   = Job->ChunkBuffer;
   u32 ChunkCount              = Job->ChunkCount;
 
@@ -4476,30 +4468,31 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   auto P1 = Max(_P0, _P1);
 
   // NOTE(Jesse): These are meant to truncate instead of floor
-  rect3i SimSpaceQueryAABB = Rect3iMinMax( V3i(P0), V3i(P1) );
+  rect3i SimSpaceUpdateBounds = Rect3iMinMax( V3i(P0), V3i(P1) );
 
-  v3i QueryDim = GetDim(SimSpaceQueryAABB);
-  v3i SimSpaceQueryMinP = SimSpaceQueryAABB.Min;
-  v3i SimSpaceQueryDim = QueryDim;
+  v3i UpdateDim = GetDim(SimSpaceUpdateBounds);
+  v3i UpdateMinP = SimSpaceUpdateBounds.Min;
 
-  Assert(QueryDim.x % Global_StandingSpotDim.x == 0);
-  Assert(QueryDim.y % Global_StandingSpotDim.y == 0);
+  Assert(UpdateDim.x % Global_StandingSpotDim.x == 0);
+  Assert(UpdateDim.y % Global_StandingSpotDim.y == 0);
 
-  s32 TotalVoxels_signed = Volume(SimSpaceQueryAABB);
-  Assert(TotalVoxels_signed > 0);
+  /* s32 TotalVoxels_signed = Volume(SimSpaceUpdateBounds); */
+  /* Assert(TotalVoxels_signed > 0); */
 
-  u32 TotalVoxels = (u32)TotalVoxels_signed;
+  world_chunk CopiedChunk = {};
 
-  voxel *CopiedVoxels = Allocate(voxel, Thread->PermMemory, TotalVoxels);
+  s32 TotalVoxels = Volume(UpdateDim);
+  CopiedChunk.Voxels = Allocate(voxel, Thread->PermMemory, TotalVoxels);
+  CopiedChunk.Dim = UpdateDim;
 
-  for (u32 VoxelIndex = 0; VoxelIndex < TotalVoxels; ++VoxelIndex) { CopiedVoxels[VoxelIndex] = Global_UnsetVoxel; }
+  for (s32 VoxelIndex = 0; VoxelIndex < TotalVoxels; ++VoxelIndex) { CopiedChunk.Voxels[VoxelIndex] = Global_UnsetVoxel; }
 
 #if 1
   for (u32 ChunkIndex = 0; ChunkIndex < ChunkCount; ++ChunkIndex)
   {
     world_chunk *Chunk = ChunkBuffer[ChunkIndex];
     auto SimSpaceChunkRect = GetSimSpaceAABBi(World, Chunk);
-    auto SimSpaceIntersectionRect = Union(&SimSpaceChunkRect, &SimSpaceQueryAABB);
+    auto SimSpaceIntersectionRect = Union(&SimSpaceChunkRect, &SimSpaceUpdateBounds);
 
     auto SimSpaceIntersectionMin = SimSpaceIntersectionRect.Min;
     auto SimSpaceIntersectionMax = SimSpaceIntersectionRect.Max;
@@ -4516,17 +4509,17 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
       {
         for (s32 xVoxel = s32(ChunkRelRectMin.x); xVoxel < s32(ChunkRelRectMax.x); xVoxel += 1)
         {
-          voxel_position RelVoxP = Voxel_Position(s32(xVoxel), s32(yVoxel), s32(zVoxel));
+          v3i RelVoxP = V3i(s32(xVoxel), s32(yVoxel), s32(zVoxel));
           voxel *V = GetVoxel(Chunk, RelVoxP);
           Assert( (V->Flags & Voxel_MarkBit) == 0);
 
           v3i SimSpaceVoxPExact = V3i(xVoxel, yVoxel, zVoxel) + SimSpaceChunkMin;
 
-          Assert(SimSpaceQueryMinP <= SimSpaceVoxPExact);
-          u32 Index = MapIntoQueryBox(SimSpaceVoxPExact, SimSpaceQueryMinP, QueryDim);
-          Assert(Index < TotalVoxels);
-          Assert(CopiedVoxels[Index] == Global_UnsetVoxel);
-          CopiedVoxels[Index] = *V;
+          Assert(UpdateMinP <= SimSpaceVoxPExact);
+          u32 Index = MapIntoQueryBox(SimSpaceVoxPExact, UpdateMinP, UpdateDim);
+          Assert(s32(Index) < TotalVoxels);
+          Assert(CopiedChunk.Voxels[Index] == Global_UnsetVoxel);
+          CopiedChunk.Voxels[Index] = *V;
         }
       }
     }
@@ -4537,7 +4530,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   world_update_callback Callback = Global_WorldUpdateCallbackTable[Mode][Modifier][Shape.Type];
   if (Callback)
   {
-    Callback(Mode, Modifier, &Shape, ChunkBuffer, ChunkCount, &SimSpaceQueryAABB, CopiedVoxels);
+    Callback(Mode, Modifier, &Shape, ChunkBuffer, ChunkCount, &SimSpaceUpdateBounds, CopiedChunk.Voxels);
   }
   else
   {
@@ -4545,16 +4538,16 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   }
 #endif
 
-  ApplyUpdateToRegion(Thread, Job, SimSpaceQueryAABB, TotalVoxels, CopiedVoxels);
+  ApplyUpdateToRegion(Thread, Job, SimSpaceUpdateBounds, &CopiedChunk);
 
 
   // NOTE(Jesse): We can actually do the entire dim here, but it's probably
   // better (faster) to just do what we actually need to
 
-  MarkBoundaryVoxels_NoExteriorFaces( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-1, &ColorEntropy, GREY_5, GREY_7);
-  /* MarkBoundaryVoxels_NoExteriorFaces( CopiedVoxels, QueryDim, {}, QueryDim, &ColorEntropy, GREY_5, GREY_7); */
-  /* MarkBoundaryVoxels_MakeExteriorFaces( CopiedVoxels, QueryDim, {{1,1,1}}, QueryDim-1); */
-  /* MarkBoundaryVoxels_MakeExteriorFaces( CopiedVoxels, QueryDim, {}, QueryDim); */
+  MarkBoundaryVoxels_NoExteriorFaces( CopiedChunk.Voxels, UpdateDim, {{1,1,1}}, UpdateDim-1, &ColorEntropy, GREY_5, GREY_7);
+  /* MarkBoundaryVoxels_NoExteriorFaces( CopiedChunk.Voxels, UpdateDim, {}, UpdateDim, &ColorEntropy, GREY_5, GREY_7); */
+  /* MarkBoundaryVoxels_MakeExteriorFaces( CopiedChunk.Voxels, UpdateDim, {{1,1,1}}, UpdateDim-1); */
+  /* MarkBoundaryVoxels_MakeExteriorFaces( CopiedChunk.Voxels, UpdateDim, {}, UpdateDim); */
 
 
 #if 1
@@ -4562,7 +4555,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   {
     world_chunk *Chunk = ChunkBuffer[ChunkIndex];
     auto SimSpaceChunkRect = GetSimSpaceAABBi(World, Chunk);
-    auto SimSpaceIntersectionRect = Union(&SimSpaceChunkRect, &SimSpaceQueryAABB);
+    auto SimSpaceIntersectionRect = Union(&SimSpaceChunkRect, &SimSpaceUpdateBounds);
 
     auto SimSpaceIntersectionMin = SimSpaceIntersectionRect.Min;
     auto SimSpaceIntersectionMax = SimSpaceIntersectionRect.Max;
@@ -4586,19 +4579,19 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
           v3i SimSpaceVoxPExact = V3i(xVoxel, yVoxel, zVoxel) + SimSpaceChunkMin;
 
-          Assert(SimSpaceQueryMinP <= SimSpaceVoxPExact);
-          u32 Index = MapIntoQueryBox(SimSpaceVoxPExact, SimSpaceQueryMinP, QueryDim);
-          Assert(Index < TotalVoxels);
-          Assert(CopiedVoxels[Index] != Global_UnsetVoxel);
+          Assert(UpdateMinP <= SimSpaceVoxPExact);
+          u32 Index = MapIntoQueryBox(SimSpaceVoxPExact, UpdateMinP, UpdateDim);
+          Assert(s32(Index) < TotalVoxels);
+          Assert(CopiedChunk.Voxels[Index] != Global_UnsetVoxel);
 
           Assert( (V->Flags & Voxel_MarkBit) == 0);
           StartedFilled += (V->Flags&Voxel_Filled);
 #if VOXEL_DEBUG_COLOR
-          V->Flags = CopiedVoxels[Index].Flags;
-          V->Color = CopiedVoxels[Index].Color;
-          V->Transparency = CopiedVoxels[Index].Transparency;
+          V->Flags = CopiedChunk.Voxels[Index].Flags;
+          V->Color = CopiedChunk.Voxels[Index].Color;
+          V->Transparency = CopiedChunk.Voxels[Index].Transparency;
 #else
-          *V = CopiedVoxels[Index];
+          *V = CopiedChunk.Voxels[Index];
 #endif
           EndedFilled += (V->Flags&Voxel_Filled);
           Assert( (V->Flags & Voxel_MarkBit) == 0);
@@ -4622,25 +4615,25 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   // the face flags as it does the traversal.
   /* NotImplemented; */
 
-  chunk_data CD = { Chunk_VoxelsInitialized, QueryDim, CopiedVoxels, 0 };
+  chunk_data CD = { Chunk_VoxelsInitialized, UpdateDim, CopiedChunk.Voxels, 0 };
   vox_data Vox = {&CD};
 #if VOXEL_DEBUG_COLOR
-  BuildWorldChunkMeshFromMarkedVoxels_Naieve( CopiedVoxels, QueryDim, {}, QueryDim, DebugMesh );
+  BuildWorldChunkMeshFromMarkedVoxels_Naieve( CopiedChunk.Voxels, UpdateDim, {}, UpdateDim, DebugMesh );
 #else
   BuildWorldChunkMeshFromMarkedVoxels_Greedy( &Vox, DebugMesh, 0, GetTranArena());
 #endif
 
   /* aabb QueryAABB = AABBMinMax( {}, V3i(7.f + Radius*2.f) ); */
 
-  DEBUG_DrawAABB(DebugMesh, AABBMinDim({}, V3(QueryDim)), BLUE);
+  DEBUG_DrawAABB(DebugMesh, AABBMinDim({}, V3(UpdateDim)), BLUE);
 
   DEBUG_DrawAABB(DebugMesh, AABBMinDim(V3(-1), V3(2)), PINK);
 
-/*   world_chunk *TempChunk = AllocateWorldChunk(Thread->PermMemory, MinP.WorldP, QueryDim); */
+/*   world_chunk *TempChunk = AllocateWorldChunk(Thread->PermMemory, MinP.WorldP, UpdateDim); */
 /*   picked_world_chunk *PickedChunk = Allocate(picked_world_chunk, Thread->PermMemory, 1); */
 /*   PickedChunk->Chunk = TempChunk; */
 
-  /* v3 QueryRelLocation = V3(SimSphereP) - SimSpaceQueryMinP; */
+  /* v3 QueryRelLocation = V3(SimSphereP) - UpdateMinP; */
   /* DrawVoxel_MinDim(DebugMesh, QueryRelLocation, V4(1,0,0,1), V3(1.f)); */
 #endif
 
@@ -4651,10 +4644,10 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   NotImplemented;
 #else
   {
-    ComputeStandingSpots( QueryDim, CopiedVoxels, {},
+    ComputeStandingSpots( UpdateDim, CopiedChunk.Voxels, {},
                           {},
                           Global_StandingSpotDim,
-                          QueryDim,
+                          UpdateDim,
                           0,
                           &StandingSpots, Thread->TempMemory );
   }
@@ -4666,7 +4659,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
     world_chunk *Chunk = ChunkBuffer[ChunkIndex];
 
     rect3i SimSpaceChunkAABB = GetSimSpaceAABBi(World, Chunk);
-    auto QueryRelChunkAABB = SimSpaceChunkAABB - SimSpaceQueryMinP;
+    auto QueryRelChunkAABB = SimSpaceChunkAABB - UpdateMinP;
 #if DEBUG_VIEW_WORLD_UPDATE
     DEBUG_DrawAABB(DebugMesh, &QueryRelChunkAABB, RED);
 #endif
@@ -4687,17 +4680,17 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
       voxel_position ChunkSimSpot = SimSpaceChunkMin + ChunkSpot;
       rect3i SimSpotAABB = Rect3iMinDim(ChunkSimSpot, Global_StandingSpotDim);
 
-      voxel_position QueryRelChunkSpot = ChunkSimSpot - SimSpaceQueryMinP;
+      voxel_position QueryRelChunkSpot = ChunkSimSpot - UpdateMinP;
 
       {
         /* DrawStandingSpot(Mesh, V3(QueryRelChunkSpot), V3(Global_StandingSpotDim), TEAL, DEFAULT_STANDING_SPOT_THICKNESS*1.5f); */
       }
 
-      auto SimSpaceSpotUnion = Union(&SimSpotAABB, &SimSpaceQueryAABB);
+      auto SimSpaceSpotUnion = Union(&SimSpotAABB, &SimSpaceUpdateBounds);
       auto SimSpaceUnionDim = GetDim(SimSpaceSpotUnion);
       if (Volume(SimSpaceSpotUnion) == Volume(Global_StandingSpotDim)) // Cull
       {
-        voxel_position QueryRelUnion = SimSpaceSpotUnion.Min - SimSpaceQueryMinP;
+        voxel_position QueryRelUnion = SimSpaceSpotUnion.Min - UpdateMinP;
         voxel_position SwapSpot = Pop<voxel_position, voxel_position_cursor>(&Chunk->StandingSpots);
         Chunk->StandingSpots.Start[StandingSpotIndex] = SwapSpot;
         /* DebugLine("Dropping StandingSpot(%d,%d,%d)", ChunkSpot.x, ChunkSpot.y, ChunkSpot.z); */
@@ -4720,7 +4713,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
     for (StandingSpotIndex = 0; StandingSpotIndex < AtElements(&StandingSpots); ++StandingSpotIndex)
     {
       voxel_position QueryRelSpot = StandingSpots.Start[StandingSpotIndex];
-      voxel_position SimSpot = QueryRelSpot + SimSpaceQueryMinP;
+      voxel_position SimSpot = QueryRelSpot + UpdateMinP;
       rect3i SimSpotAABB = Rect3iMinDim(SimSpot, Global_StandingSpotDim);
 
       //
@@ -4747,7 +4740,15 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
         {
           voxel_position ChunkRelSpot = SimSpot - SimSpaceChunkAABB.Min;
           Assert(Contains(World->ChunkDim, ChunkRelSpot));
-          Push(ChunkRelSpot, &Chunk->StandingSpots);
+          if (Remaining(&Chunk->StandingSpots))
+          {
+            Push(ChunkRelSpot, &Chunk->StandingSpots);
+          }
+          else
+          {
+            Warn("Ran out of standing spots on world_chunk (%p)", Chunk);
+            break;
+          }
         }
       }
     }

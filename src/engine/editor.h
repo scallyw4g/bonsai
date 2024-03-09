@@ -535,7 +535,6 @@ poof(radio_button_group_for_bitfield_enum(level_editor_flags));
 
 enum ui_noise_type
 {
-  NoiseType_None,
   NoiseType_Perlin,
   NoiseType_Voronoi,
 };
@@ -596,17 +595,15 @@ enum world_edit_brush_type
 // TODO(Jesse): Rename to .. something something behavior ?
 enum world_edit_mode
 {
-  WorldEdit_Mode_Disabled, // poof(@ui_skip)
-  WorldEdit_Mode_Paint,
   WorldEdit_Mode_Attach,
   WorldEdit_Mode_Remove,
+  WorldEdit_Mode_Paint,
 };
 
 // TODO(Jesse): Rename to reflect that it's the iteration pattern
 enum world_edit_mode_modifier
 {
-  WorldEdit_Modifier_None,
-
+  WorldEdit_Modifier_Default,
   WorldEdit_Modifier_Flood,
 };
 
@@ -808,7 +805,7 @@ struct chunk_thumbnail
   asset_thumbnail Thumbnail;
 };
 
-struct noise_editor
+struct noise_layer
 {
   noise_params Params;
 
@@ -828,11 +825,12 @@ enum brush_layer_type
 poof(do_editor_ui_for_radio_enum(brush_layer_type))
 #include <generated/do_editor_ui_for_radio_enum_brush_layer_type.h>
 
+  // TODO(Jesse): Rename to `brush` ..?
 struct brush_layer
 {
   brush_layer_type Type;
 
-  noise_editor NoiseEditor;
+  noise_layer NoiseLayer;
 };
 
 // TODO(Jesse): Make this dynamic .. probably ..
@@ -847,18 +845,12 @@ struct layered_brush_editor
 };
 
 
-poof(do_editor_ui_for_compound_type(noise_editor))
-#include <generated/do_editor_ui_for_compound_type_noise_editor.h>
-poof(do_editor_ui_for_compound_type(brush_layer))
-#include <generated/do_editor_ui_for_compound_type_brush_layer.h>
-poof(do_editor_ui_for_compound_type(layered_brush_editor))
-#include <generated/do_editor_ui_for_compound_type_layered_brush_editor.h>
-
 struct level_editor
 {
   memory_arena *Memory;
 
-  noise_editor NoiseEditor;
+  // TODO(Jesse): Rename NoiseBrush?
+  noise_layer NoiseLayer;
 
   layered_brush_editor LayeredBrushEditor;
 

@@ -1,10 +1,10 @@
-// src/engine/world_chunk.cpp:4432:0
+// src/engine/world_chunk.cpp:4424:0
 
-DimIterator(x, y, z, SimSpaceQueryDim)
+DimIterator(x, y, z, UpdateDim)
 {
   v3i SimRelVoxP = V3i(x,y,z);
-  v3i SimVoxP = SimRelVoxP + SimSpaceQueryAABB.Min;
-  V = CopiedVoxels + GetIndex(SimRelVoxP, SimSpaceQueryDim);
+  v3i SimVoxP = SimRelVoxP + SimSpaceUpdateBounds.Min;
+  V = CopiedChunk->Voxels + GetIndex(SimRelVoxP, UpdateDim);
 
   
                   v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
