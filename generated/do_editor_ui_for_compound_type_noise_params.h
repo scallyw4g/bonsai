@@ -1,11 +1,11 @@
-// src/engine/editor.cpp:201:0
+// src/engine/editor.cpp:72:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_params *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   if (Element)
   {
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle model", Element), &DefaultUiRenderParams_Generic))
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle noise_params", Element), &DefaultUiRenderParams_Generic))
     {
       PushNewRow(Ui);
 
@@ -13,8 +13,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
       PushForceUpdateBasis(Ui, V2(20.f, 0.f));
       DoEditorUi(Ui,
         Window,
-&Element->Vox,
-        CSz("Vox"),
+&Element->Type,
+        CSz("Type"),
         Params
         );
 
@@ -25,8 +25,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
       
       DoEditorUi(Ui,
         Window,
-&Element->Meshes,
-        CSz("Meshes"),
+&Element->EditParams,
+        CSz("EditParams"),
         Params
         );
 
@@ -37,8 +37,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
       
       DoEditorUi(Ui,
         Window,
-&Element->TransparentMesh,
-        CSz("TransparentMesh"),
+&Element->PerlinParams,
+        CSz("PerlinParams"),
         Params
         );
 
@@ -49,8 +49,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
       
       DoEditorUi(Ui,
         Window,
-&Element->Animation,
-        CSz("Animation"),
+&Element->VoronoiParams,
+        CSz("VoronoiParams"),
         Params
         );
 
@@ -61,10 +61,28 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
       
       DoEditorUi(Ui,
         Window,
-&Element->Dim,
-        CSz("Dim"),
+&Element->Offset,
+        CSz("Offset"),
         Params
         );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Color,
+        CSz("Color"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }
