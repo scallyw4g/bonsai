@@ -649,28 +649,20 @@ struct noise_params
 {
   ui_noise_type Type;
 
-  // NOTE(Jesse): This is the relative offset from the base selection.  Can be
-  // used to inflate or contract the area affected by the brush
-  rect3i Offset;
-
   world_edit_params    EditParams;
 
   perlin_noise_params  PerlinParams;
   voronoi_noise_params VoronoiParams;
 
-  v3i ChunkSize;
+  // NOTE(Jesse): This is the relative offset from the base selection.
+  // Used to inflate or contract the area affected by the brush.
+  rect3i Offset;
+
   u16 Color = 1; // Default to white
 };
 
 poof(are_equal(noise_params))
 #include <generated/are_equal_noise_params.h>
-
-
-struct maybe_v3
-{
-  maybe_tag Tag;
-  v3 V3;
-};
 
 
 poof(do_editor_ui_for_radio_enum(world_edit_mode_modifier))
@@ -805,13 +797,15 @@ struct chunk_thumbnail
   asset_thumbnail Thumbnail;
 };
 
+struct shape_layer
+{
+  u32 TODO;
+};
+
 struct noise_layer
 {
   noise_params Params;
-
-  // NOTE(Jesse): This is to detect changes in the noise selection params such
-  // that we can re-run the visualization job.
-  noise_params PrevParams; poof(@ui_skip)
+  noise_params PrevParams; poof(@ui_skip) // NOTE(Jesse): Change detection.
 
   chunk_thumbnail Preview;
 };
@@ -831,6 +825,7 @@ struct brush_layer
   brush_layer_type Type;
 
   noise_layer NoiseLayer;
+  shape_layer ShapeLayer;
 };
 
 // TODO(Jesse): Make this dynamic .. probably ..
@@ -859,6 +854,7 @@ struct level_editor
   u16 SelectedColorIndex;
   u16 HoverColorIndex;
 
+  b32 SelectionChanged;
   u32 SelectionClicks;
   cp  SelectionBase;
 

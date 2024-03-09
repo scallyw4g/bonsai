@@ -32,10 +32,10 @@ struct aabb_intersect_result
 // 
 // TODO(Jesse): Should this not take an aabb pointer?!
 link_internal aabb_intersect_result
-Intersect(aabb AABB, ray *Ray)
+Intersect(aabb *AABB, ray *Ray)
 {
-  v3 AABBMin = AABB.Min;
-  v3 AABBMax = AABB.Max;
+  v3 AABBMin = AABB->Min;
+  v3 AABBMax = AABB->Max;
 
   // Intersection of the the xMin plane
   r32 tmin = (AABBMin.x - Ray->Origin.x) / Ray->Dir.x;
@@ -96,6 +96,12 @@ Intersect(aabb AABB, ray *Ray)
   if (tzmax < tmax) tmax = tzmax;
 
   return {Face, tmin};
+}
+
+link_internal aabb_intersect_result
+Intersect(aabb AABB, ray *Ray)
+{
+  return Intersect(&AABB, Ray);
 }
 
 

@@ -29,6 +29,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name
         CSz("NoiseLayer"),
         Params
         );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->ShapeLayer,
+        CSz("ShapeLayer"),
+        Params
+        );
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }

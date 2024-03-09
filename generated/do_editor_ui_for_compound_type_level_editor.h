@@ -88,6 +88,19 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
       DoEditorUi(Ui,
         Window,
+        Cast(b8*,&Element->SelectionChanged),
+        CSz("SelectionChanged"),
+        &DefaultUiRenderParams_Checkbox
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
 &Element->SelectionClicks,
         CSz("SelectionClicks"),
         Params

@@ -1,4 +1,4 @@
-// src/engine/editor.h:703:0
+// src/engine/editor.h:695:0
 
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_brush_type Selection)
