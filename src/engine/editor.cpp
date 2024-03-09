@@ -855,13 +855,13 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
   noise_params *Params = &Layer->Params;
   noise_params *PrevParams = &Layer->PrevParams;
 
-  v3i SelectionDim = GetSelectionDim(World, Editor);
+  v3i SelectionDim     = GetSelectionDim(World, Editor);
   v3i RequiredLayerDim = GetRequiredDimForLayer(SelectionDim, Layer);
   b32 ReallocChunk     = Editor->SelectionChanged || Layer->Preview.Chunk.Dim != RequiredLayerDim;
   b32 NoiseNeedsUpdate = ReallocChunk || !AreEqual(Params, PrevParams);
   *PrevParams = *Params;
 
-  /* Info("NoiseNeedsUpdate(%b) ReallocChunk(%b)", NoiseNeedsUpdate, ReallocChunk); */
+
 
   PushNewRow(Ui);
   {
@@ -873,6 +873,7 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
 
   DoEditorUi(Ui, Window, &Params->Offset,     CSz("Select Offset"));
   DoEditorUi(Ui, Window, &Params->EditParams, CSz("Edit Mode"));
+
 
 
   world_chunk *DestChunk    = &Layer->Preview.Chunk;
