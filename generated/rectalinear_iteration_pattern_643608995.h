@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4137:0
+// src/engine/world_chunk.cpp:4202:0
 
 DimIterator(x, y, z, UpdateDim)
 {
@@ -11,33 +11,7 @@ DimIterator(x, y, z, UpdateDim)
         if ((V->Flags&Voxel_Filled)==False && Contains(SSRect, SimVoxP))
         {
           b32 IsUnfilledBorder = False;
-          if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(1,0,0)))
-          {
-            if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
-          }
-          if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(-1,0,0)))
-          {
-            if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
-          }
-
-          if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,1,0)))
-          {
-            if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
-          }
-          if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,-1,0)))
-          {
-            if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
-          }
-
-          if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,0,1)))
-          {
-            if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
-          }
-          if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,0,-1)))
-          {
-            if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
-          }
-
+          poof_check_for_unfilled_border()
           Assert(NewVoxelValue->Flags & Voxel_Filled);
           if (IsUnfilledBorder) { *V = *NewVoxelValue; }
         }

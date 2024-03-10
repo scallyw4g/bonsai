@@ -4119,6 +4119,71 @@ poof(
   }
 )
 
+// TODO(Jesse): Make this not a macro.
+#define poof_check_for_unfilled_border()                              \
+  {                                                                    \
+    if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(1,0,0)))  \
+    {                                                                  \
+      if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }      \
+    }                                                                  \
+    if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(-1,0,0))) \
+    {                                                                  \
+      if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }      \
+    }                                                                  \
+                                                                       \
+    if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,1,0)))  \
+    {                                                                  \
+      if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }      \
+    }                                                                  \
+    if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,-1,0))) \
+    {                                                                  \
+      if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }      \
+    }                                                                  \
+                                                                       \
+    if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,0,1)))  \
+    {                                                                  \
+      if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }      \
+    }                                                                  \
+    if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,0,-1))) \
+    {                                                                  \
+      if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }      \
+    }                                                                  \
+  }                                                                    \
+
+#if 0
+poof(
+  func poof_check_for_unfilled_border(ignored)
+  {
+    if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(1,0,0)))
+    {
+      if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
+    }
+    if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(-1,0,0)))
+    {
+      if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
+    }
+
+    if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,1,0)))
+    {
+      if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
+    }
+    if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,-1,0)))
+    {
+      if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
+    }
+
+    if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,0,1)))
+    {
+      if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
+    }
+    if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,0,-1)))
+    {
+      if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
+    }
+  }
+)
+#endif
+
 link_internal void
 WorldEdit_shape_rect_Surface(world_edit_mode Mode, voxel *V, rect3i SSRect, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, v3i UpdateDim, voxel *NewVoxelValue)
 {
@@ -4139,33 +4204,7 @@ WorldEdit_shape_rect_Surface(world_edit_mode Mode, voxel *V, rect3i SSRect, rect
         if ((V->Flags&Voxel_Filled)==False && Contains(SSRect, SimVoxP))
         {
           b32 IsUnfilledBorder = False;
-          if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(1,0,0)))
-          {
-            if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
-          }
-          if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(-1,0,0)))
-          {
-            if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
-          }
-
-          if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,1,0)))
-          {
-            if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
-          }
-          if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,-1,0)))
-          {
-            if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
-          }
-
-          if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,0,1)))
-          {
-            if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
-          }
-          if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,0,-1)))
-          {
-            if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
-          }
-
+          poof_check_for_unfilled_border()
           Assert(NewVoxelValue->Flags & Voxel_Filled);
           if (IsUnfilledBorder) { *V = *NewVoxelValue; }
         }
@@ -4206,33 +4245,7 @@ WorldEdit_shape_chunk_data_Surface(world_edit_mode Mode, voxel *V, rect3i SSRect
         if ((V->Flags&Voxel_Filled)==False && Contains(SSRect, SimVoxP))
         {
           b32 IsUnfilledBorder = False;
-          if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(1,0,0)))
-          {
-            if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
-          }
-          if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(-1,0,0)))
-          {
-            if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
-          }
-
-          if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,1,0)))
-          {
-            if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
-          }
-          if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,-1,0)))
-          {
-            if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
-          }
-
-          if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,0,1)))
-          {
-            if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
-          }
-          if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,0,-1)))
-          {
-            if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
-          }
-
+          poof_check_for_unfilled_border()
           if (IsUnfilledBorder)
           {
             *V = *NewVoxelValue;
@@ -4261,6 +4274,43 @@ WorldEdit_shape_chunk_data_Surface(world_edit_mode Mode, voxel *V, rect3i SSRect
   }
 }
 
+link_internal void
+WorldEdit_shape_rect_Flood(world_edit_mode Mode, voxel *V, rect3i SSRect, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk,
+    thread_local_state *Thread,  v3i FloodOrigin, v3i UpdateDim, voxel *NewVoxelValue)
+{
+  s32 TotalVoxels = Volume(UpdateDim);
+
+  switch (Mode)
+  {
+    case WorldEdit_Mode_Attach:
+    case WorldEdit_Mode_Remove:
+    {
+      poof(flood_fill_iteration_pattern(
+        { if (Contains(SSRect, SimVoxP) && ((V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Attach)))) },
+        {
+          if ( Mode == WorldEdit_Mode_Attach &&
+              (V->Flags&Voxel_Filled) ) { }
+          else { if (Contains(SSRect, SimVoxP)) { *V = *NewVoxelValue; } }
+        },
+        {}
+        ))
+#include <generated/flood_fill_iteration_pattern_846291950_267608728_0.h>
+    } break;
+
+    case WorldEdit_Mode_Paint:
+    {
+      poof(flood_fill_iteration_pattern(
+        { if (Contains(SSRect, SimVoxP) && ((V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Attach)))) },
+        {
+          if (Contains(SSRect, SimVoxP) && Mode == WorldEdit_Mode_Attach && (V->Flags&Voxel_Filled) ) { }
+          else { V->Color = NewVoxelValue->Color; }
+        },
+        {}
+        ))
+#include <generated/flood_fill_iteration_pattern_720542204_890094085_4111003.h>
+    } break;
+  }
+}
 
 link_internal void
 ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_region *Job, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk)
@@ -4424,23 +4474,15 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
         {
           switch (Modifier)
           {
-
             case WorldEdit_Modifier_Surface:
             {
-              WorldEdit_shape_rect_Surface(Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim, &NewVoxelValue); } break;
+              WorldEdit_shape_rect_Surface(Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim, &NewVoxelValue);
+            } break;
 
             case WorldEdit_Modifier_Flood:
             {
-              poof(flood_fill_iteration_pattern(
-                { if (Contains(SSRect, SimVoxP) && ((V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Attach)))) },
-                {
-                  if ( Mode == WorldEdit_Mode_Attach &&
-                      (V->Flags&Voxel_Filled) ) { }
-                  else { if (Contains(SSRect, SimVoxP)) { *V = NewVoxelValue; } }
-                },
-                {}
-                ))
-#include <generated/flood_fill_iteration_pattern_846291950_267608728_0.h>
+              WorldEdit_shape_rect_Flood(Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, 
+                 Thread, FloodOrigin, UpdateDim, &NewVoxelValue);
             } break;
 
             case WorldEdit_Modifier_Default:
@@ -4464,15 +4506,8 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 
             case WorldEdit_Modifier_Flood:
             {
-              poof(flood_fill_iteration_pattern(
-                { if (Contains(SSRect, SimVoxP) && ((V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Attach)))) },
-                {
-                  if (Contains(SSRect, SimVoxP) && Mode == WorldEdit_Mode_Attach && (V->Flags&Voxel_Filled) ) { }
-                  else { V->Color = NewColor; }
-                },
-                {}
-                ))
-#include <generated/flood_fill_iteration_pattern_720542204_890094085_4111003.h>
+              WorldEdit_shape_rect_Flood(Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk,
+                 Thread, FloodOrigin, UpdateDim, &NewVoxelValue);
             } break;
 
             case WorldEdit_Modifier_Default:
