@@ -4246,7 +4246,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 #include <generated/rectalinear_iteration_pattern_812652930.h>
             } break;
 
-            case WorldEdit_Modifier_SingleLayer:
+            case WorldEdit_Modifier_Surface:
             {
               NotImplemented;
             } break;
@@ -4298,7 +4298,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
           {
             InvalidCase(WorldEdit_Modifier_Flood);
 
-            case WorldEdit_Modifier_SingleLayer:
+            case WorldEdit_Modifier_Surface:
             {
               NotImplemented;
             } break;
@@ -4347,7 +4347,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
           switch (Modifier)
           {
 
-            case WorldEdit_Modifier_SingleLayer:
+            case WorldEdit_Modifier_Surface:
             {
               WorldEdit_shape_rect_SingleLayer(Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim, NewVoxelValue);
             } break;
@@ -4380,7 +4380,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
         {
           switch (Modifier)
           {
-            case WorldEdit_Modifier_SingleLayer:
+            case WorldEdit_Modifier_Surface:
             {
               NotImplemented;
             } break;
@@ -4446,7 +4446,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
           {
             switch (Modifier)
             {
-              case WorldEdit_Modifier_SingleLayer:
+              case WorldEdit_Modifier_Surface:
               {
                 NotImplemented;
               } break;
@@ -4494,7 +4494,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
           {
             switch (Modifier)
             {
-              case WorldEdit_Modifier_SingleLayer:
+              case WorldEdit_Modifier_Surface:
               {
                 NotImplemented;
               } break;

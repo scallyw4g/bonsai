@@ -49,7 +49,7 @@ RadioButtonGroup_world_edit_mode_modifier( renderer_2d *Ui,
   {
     CSz("Default"),
     CSz("Flood"),
-    CSz("SingleLayer"),
+    CSz("Surface"),
   };
 
   u32 ButtonCount = ArrayCount(ButtonNames);
