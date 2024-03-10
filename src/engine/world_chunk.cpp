@@ -4186,14 +4186,36 @@ poof(
 
 
 
+struct apply_world_edit_params
+{
+  world_edit_mode Mode;
+  voxel *V;
+  rect3i SSRect;
+  rect3i SimSpaceUpdateBounds;
+  world_chunk *CopiedChunk;
+  v3i UpdateDim;
+};
+
+#define UNPACK_APPLY_WORLD_EDIT_PARAMS(P)                \
+  world_edit_mode Mode = P->Mode;                        \
+  voxel *V = P->V;                                       \
+  rect3i SSRect = P->SSRect;                             \
+  rect3i SimSpaceUpdateBounds = P->SimSpaceUpdateBounds; \
+  world_chunk *CopiedChunk = P->CopiedChunk;             \
+  v3i UpdateDim = P->UpdateDim;
+
+
+
 //
 // shape_rect
 //
 //
 
 link_internal void
-WorldEdit_shape_rect_Surface(world_edit_mode Mode, voxel *V, rect3i SSRect, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, v3i UpdateDim, voxel *NewVoxelValue)
+WorldEdit_shape_rect_Surface(apply_world_edit_params *Params, voxel *NewVoxelValue)
 {
+  UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
+
   switch (Mode)
   {
     case WorldEdit_Mode_Paint:
@@ -4230,9 +4252,9 @@ WorldEdit_shape_rect_Surface(world_edit_mode Mode, voxel *V, rect3i SSRect, rect
 }
 
 link_internal void
-WorldEdit_shape_rect_Flood(world_edit_mode Mode, voxel *V, rect3i SSRect, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk,
-    thread_local_state *Thread,  v3i FloodOrigin, v3i UpdateDim, voxel *NewVoxelValue)
+WorldEdit_shape_rect_Flood( apply_world_edit_params *Params, thread_local_state *Thread, v3i FloodOrigin, voxel *NewVoxelValue)
 {
+  UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
   s32 TotalVoxels = Volume(UpdateDim);
 
   switch (Mode)
@@ -4268,9 +4290,9 @@ WorldEdit_shape_rect_Flood(world_edit_mode Mode, voxel *V, rect3i SSRect, rect3i
 }
 
 link_internal void
-WorldEdit_shape_rect_Default(
-    world_edit_mode Mode, voxel *V, rect3i SSRect, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, v3i UpdateDim, voxel *NewVoxelValue)
+WorldEdit_shape_rect_Default(apply_world_edit_params *Params, voxel *NewVoxelValue)
 {
+  UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
   switch (Mode)
   {
     case WorldEdit_Mode_Attach:
@@ -4298,8 +4320,10 @@ WorldEdit_shape_rect_Default(
 //
 
 link_internal void
-WorldEdit_shape_chunk_data_Surface(world_edit_mode Mode, voxel *V, rect3i SSRect, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, v3i UpdateDim, v3 SimOrigin, chunk_data *Data)
+WorldEdit_shape_chunk_data_Surface(apply_world_edit_params *Params, v3 SimOrigin, chunk_data *Data)
 {
+  UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
+
   switch (Mode)
   {
     case WorldEdit_Mode_Paint:
@@ -4350,12 +4374,13 @@ WorldEdit_shape_chunk_data_Surface(world_edit_mode Mode, voxel *V, rect3i SSRect
 }
 
 link_internal void
-WorldEdit_shape_chunk_data_Flood(
-    world_edit_mode Mode, voxel *V, rect3i SSRect, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, v3i UpdateDim,
+WorldEdit_shape_chunk_data_Flood( apply_world_edit_params *Params,
     v3 SimOrigin, chunk_data *Data,
     thread_local_state *Thread,  v3i FloodOrigin
   )
 {
+  UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
+
   s32 TotalVoxels = Volume(UpdateDim);
   switch (Mode)
   {
@@ -4390,6 +4415,7 @@ WorldEdit_shape_chunk_data_Flood(
         ))
 #include <generated/flood_fill_iteration_pattern_275071431_101859599_0.h>
     } break;
+
     case WorldEdit_Mode_Paint:
     {
     } break;
@@ -4398,11 +4424,10 @@ WorldEdit_shape_chunk_data_Flood(
 }
 
 link_internal void
-WorldEdit_shape_chunk_data_Default(
-    world_edit_mode Mode, voxel *V, rect3i SSRect, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, v3i UpdateDim,
-    v3 SimOrigin, chunk_data *Data
-  )
+WorldEdit_shape_chunk_data_Default(apply_world_edit_params *Params, v3 SimOrigin, chunk_data *Data)
 {
+  UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
+
   switch (Mode)
   {
     case WorldEdit_Mode_Attach:
@@ -4589,18 +4614,21 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
           {
             case WorldEdit_Modifier_Surface:
             {
-              WorldEdit_shape_rect_Surface(Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim, &NewVoxelValue);
+              apply_world_edit_params Params = {Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim};
+              WorldEdit_shape_rect_Surface(&Params, &NewVoxelValue);
             } break;
 
             case WorldEdit_Modifier_Flood:
             {
-              WorldEdit_shape_rect_Flood(Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, 
-                 Thread, FloodOrigin, UpdateDim, &NewVoxelValue);
+              apply_world_edit_params Params = {Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim};
+              WorldEdit_shape_rect_Flood(&Params,
+                 Thread, FloodOrigin, &NewVoxelValue);
             } break;
 
             case WorldEdit_Modifier_Default:
             {
-              WorldEdit_shape_rect_Default(Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim, &NewVoxelValue);
+              apply_world_edit_params Params = {Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim};
+              WorldEdit_shape_rect_Default(&Params, &NewVoxelValue);
             } break;
           }
         } break;
@@ -4611,18 +4639,21 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
           {
             case WorldEdit_Modifier_Surface:
             {
-              WorldEdit_shape_rect_Surface(Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim, &NewVoxelValue);
+              apply_world_edit_params Params = {Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim};
+              WorldEdit_shape_rect_Surface(&Params, &NewVoxelValue);
             } break;
 
             case WorldEdit_Modifier_Flood:
             {
-              WorldEdit_shape_rect_Flood(Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk,
-                 Thread, FloodOrigin, UpdateDim, &NewVoxelValue);
+              apply_world_edit_params Params = {Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim};
+              WorldEdit_shape_rect_Flood(&Params,
+                 Thread, FloodOrigin, &NewVoxelValue);
             } break;
 
             case WorldEdit_Modifier_Default:
             {
-              WorldEdit_shape_rect_Default(Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim, &NewVoxelValue);
+              apply_world_edit_params Params = {Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim};
+              WorldEdit_shape_rect_Default(&Params, &NewVoxelValue);
             } break;
           }
         } break;
@@ -4668,24 +4699,23 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
             {
               case WorldEdit_Modifier_Surface:
               {
-                WorldEdit_shape_chunk_data_Surface(
-                    Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim,
-                    SimOrigin, Data);
+                apply_world_edit_params Params = {Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim};
+                WorldEdit_shape_chunk_data_Surface(&Params, SimOrigin, Data);
               } break;
 
               case WorldEdit_Modifier_Flood:
               {
+                apply_world_edit_params Params = {Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim};
                 WorldEdit_shape_chunk_data_Flood(
-                    Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim,
+                    &Params,
                     SimOrigin, Data,
                     Thread, FloodOrigin);
               } break;
 
               case WorldEdit_Modifier_Default:
               {
-                WorldEdit_shape_chunk_data_Default(
-                    Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim,
-                    SimOrigin, Data);
+                apply_world_edit_params Params = {Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim};
+                WorldEdit_shape_chunk_data_Default(&Params, SimOrigin, Data);
               } break;
             }
           } break;
@@ -4696,24 +4726,23 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
             {
               case WorldEdit_Modifier_Surface:
               {
-                WorldEdit_shape_chunk_data_Surface(
-                    Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim,
-                    SimOrigin, Data);
+                apply_world_edit_params Params = {Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim};
+                WorldEdit_shape_chunk_data_Surface(&Params, SimOrigin, Data);
               } break;
 
               case WorldEdit_Modifier_Flood:
               {
+                apply_world_edit_params Params = {Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim};
                 WorldEdit_shape_chunk_data_Flood(
-                    Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim,
+                    &Params,
                     SimOrigin, Data,
                     Thread, FloodOrigin);
               } break;
 
               case WorldEdit_Modifier_Default:
               {
-                WorldEdit_shape_chunk_data_Default(
-                    Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim,
-                    SimOrigin, Data);
+                apply_world_edit_params Params = {Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim};
+                WorldEdit_shape_chunk_data_Default(&Params, SimOrigin, Data);
               } break;
             }
           } break;
