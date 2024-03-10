@@ -4184,6 +4184,13 @@ poof(
 )
 #endif
 
+
+
+//
+// shape_rect
+//
+//
+
 link_internal void
 WorldEdit_shape_rect_Surface(world_edit_mode Mode, voxel *V, rect3i SSRect, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, v3i UpdateDim, voxel *NewVoxelValue)
 {
@@ -4221,6 +4228,50 @@ WorldEdit_shape_rect_Surface(world_edit_mode Mode, voxel *V, rect3i SSRect, rect
     } break;
   }
 }
+
+link_internal void
+WorldEdit_shape_rect_Flood(world_edit_mode Mode, voxel *V, rect3i SSRect, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk,
+    thread_local_state *Thread,  v3i FloodOrigin, v3i UpdateDim, voxel *NewVoxelValue)
+{
+  s32 TotalVoxels = Volume(UpdateDim);
+
+  switch (Mode)
+  {
+    case WorldEdit_Mode_Attach:
+    case WorldEdit_Mode_Remove:
+    {
+      poof(flood_fill_iteration_pattern(
+        { if (Contains(SSRect, SimVoxP) && ((V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Attach)))) },
+        {
+          if ( Mode == WorldEdit_Mode_Attach &&
+              (V->Flags&Voxel_Filled) ) { }
+          else { if (Contains(SSRect, SimVoxP)) { *V = *NewVoxelValue; } }
+        },
+        {}
+        ))
+#include <generated/flood_fill_iteration_pattern_846291950_267608728_0.h>
+    } break;
+
+    case WorldEdit_Mode_Paint:
+    {
+      poof(flood_fill_iteration_pattern(
+        { if (Contains(SSRect, SimVoxP) && ((V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Attach)))) },
+        {
+          if (Contains(SSRect, SimVoxP) && Mode == WorldEdit_Mode_Attach && (V->Flags&Voxel_Filled) ) { }
+          else { V->Color = NewVoxelValue->Color; }
+        },
+        {}
+        ))
+#include <generated/flood_fill_iteration_pattern_720542204_890094085_4111003.h>
+    } break;
+  }
+}
+
+
+//
+// shape_chunk_data
+//
+//
 
 link_internal void
 WorldEdit_shape_chunk_data_Surface(world_edit_mode Mode, voxel *V, rect3i SSRect, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, v3i UpdateDim, v3 SimOrigin, chunk_data *Data)
@@ -4275,42 +4326,25 @@ WorldEdit_shape_chunk_data_Surface(world_edit_mode Mode, voxel *V, rect3i SSRect
 }
 
 link_internal void
-WorldEdit_shape_rect_Flood(world_edit_mode Mode, voxel *V, rect3i SSRect, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk,
-    thread_local_state *Thread,  v3i FloodOrigin, v3i UpdateDim, voxel *NewVoxelValue)
+WorldEdit_shape_chunk_data_Flood(world_edit_mode Mode, voxel *V, rect3i SSRect, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, v3i UpdateDim, v3 SimOrigin, chunk_data *Data)
 {
-  s32 TotalVoxels = Volume(UpdateDim);
-
   switch (Mode)
   {
-    case WorldEdit_Mode_Attach:
-    case WorldEdit_Mode_Remove:
-    {
-      poof(flood_fill_iteration_pattern(
-        { if (Contains(SSRect, SimVoxP) && ((V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Attach)))) },
-        {
-          if ( Mode == WorldEdit_Mode_Attach &&
-              (V->Flags&Voxel_Filled) ) { }
-          else { if (Contains(SSRect, SimVoxP)) { *V = *NewVoxelValue; } }
-        },
-        {}
-        ))
-#include <generated/flood_fill_iteration_pattern_846291950_267608728_0.h>
-    } break;
-
     case WorldEdit_Mode_Paint:
     {
-      poof(flood_fill_iteration_pattern(
-        { if (Contains(SSRect, SimVoxP) && ((V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Attach)))) },
-        {
-          if (Contains(SSRect, SimVoxP) && Mode == WorldEdit_Mode_Attach && (V->Flags&Voxel_Filled) ) { }
-          else { V->Color = NewVoxelValue->Color; }
-        },
-        {}
-        ))
-#include <generated/flood_fill_iteration_pattern_720542204_890094085_4111003.h>
     } break;
-  }
+
+    case WorldEdit_Mode_Attach:
+    {
+    } break;
+
+    case WorldEdit_Mode_Remove:
+    {
+    } break;
 }
+
+
+
 
 link_internal void
 ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_region *Job, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk)
