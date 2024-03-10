@@ -10,8 +10,6 @@ DimIterator(x, y, z, UpdateDim)
 
         v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
         voxel *NewVoxelValue = TryGetVoxel(Data, OriginToCurrentVoxP);
-        /* v3i OriginToCurrentVoxP = SimVoxP - SimOrigin; */
-        /* voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP); */
 
         if ((V->Flags&Voxel_Filled)==False && Contains(SSRect, SimVoxP))
         {
@@ -43,8 +41,6 @@ DimIterator(x, y, z, UpdateDim)
             if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
           }
 
-          /* if (AssetV && (AssetV->Flags&Voxel_Filled)) { *V = *AssetV; } */
-          /* if ( NewVoxelValue && (NewVoxelValue->Flags&Voxel_Filled) && IsUnfilledBorder) { *V = *NewVoxelValue; } */
           if (IsUnfilledBorder)
           {
             *V = *NewVoxelValue;

@@ -4245,10 +4245,18 @@ WorldEdit_shape_chunk_data_Surface(world_edit_mode Mode, voxel *V, rect3i SSRect
 
     case WorldEdit_Mode_Remove:
     {
-      NotImplemented;
-      /* poof(rectalinear_iteration_pattern({ */
-      /*   if ( (V->Flags&VoxelFaceMask) && Contains(SSRect, SimVoxP)) { *V = *NewVoxelValue; } */
-      /* })) */
+      poof(rectalinear_iteration_pattern({
+        v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
+        voxel *NewVoxelValue = TryGetVoxel(Data, OriginToCurrentVoxP);
+        if (NewVoxelValue)
+        {
+          if ( (V->Flags&VoxelFaceMask) && (NewVoxelValue->Flags&Voxel_Filled) && Contains(SSRect, SimVoxP) )
+          {
+            *V = {};
+          }
+        }
+      }))
+#include <generated/rectalinear_iteration_pattern_992879728.h>
     } break;
   }
 }
@@ -4555,8 +4563,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
             {
               case WorldEdit_Modifier_Surface:
               {
-                NotImplemented;
-                /* WorldEdit_shape_chunk_data_Surface(Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim, SimOrigin, Data); */
+                WorldEdit_shape_chunk_data_Surface(Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim, SimOrigin, Data);
               } break;
 
               case WorldEdit_Modifier_Flood:
