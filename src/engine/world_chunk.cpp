@@ -4326,21 +4326,39 @@ WorldEdit_shape_chunk_data_Surface(world_edit_mode Mode, voxel *V, rect3i SSRect
 }
 
 link_internal void
-WorldEdit_shape_chunk_data_Flood(world_edit_mode Mode, voxel *V, rect3i SSRect, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, v3i UpdateDim, v3 SimOrigin, chunk_data *Data)
+WorldEdit_shape_chunk_data_Flood(
+    world_edit_mode Mode, voxel *V, rect3i SSRect, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, v3i UpdateDim,
+    v3 SimOrigin, chunk_data *Data,
+    thread_local_state *Thread,  v3i FloodOrigin
+  )
 {
+  s32 TotalVoxels = Volume(UpdateDim);
   switch (Mode)
   {
-    case WorldEdit_Mode_Paint:
+    case WorldEdit_Mode_Attach:
     {
+      poof(flood_fill_iteration_pattern(
+        {
+          v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
+          voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
+          if ((V->Flags&Voxel_Filled))
+        },
+        {
+          if ( ((V->Flags&Voxel_Filled) == 0) && AssetV && (AssetV->Flags&Voxel_Filled)) { *V = *AssetV; }
+        },
+        {}
+        ))
+#include <generated/flood_fill_iteration_pattern_275071431_785723886_0.h>
     } break;
 
-    case WorldEdit_Mode_Attach:
+    case WorldEdit_Mode_Paint:
     {
     } break;
 
     case WorldEdit_Mode_Remove:
     {
     } break;
+  }
 }
 
 
@@ -4599,18 +4617,9 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 
               case WorldEdit_Modifier_Flood:
               {
-                poof(flood_fill_iteration_pattern(
-                  {
-                    v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
-                    voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
-                    if ((V->Flags&Voxel_Filled))
-                  },
-                  {
-                    if ( ((V->Flags&Voxel_Filled) == 0) && AssetV && (AssetV->Flags&Voxel_Filled)) { *V = *AssetV; }
-                  },
-                  {}
-                  ))
-#include <generated/flood_fill_iteration_pattern_275071431_785723886_0.h>
+                WorldEdit_shape_chunk_data_Flood(Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim,
+                    SimOrigin, Data,
+                    Thread, FloodOrigin);
               } break;
 
               case WorldEdit_Modifier_Default:
