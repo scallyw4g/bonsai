@@ -604,11 +604,12 @@ enum world_edit_mode
   WorldEdit_Mode_Paint,
 };
 
-// TODO(Jesse): Rename to reflect that it's the iteration pattern
+// TODO(Jesse): Rename to reflect that it's the iteration pattern ..?
 enum world_edit_mode_modifier
 {
-  WorldEdit_Modifier_Default,
-  WorldEdit_Modifier_Flood,
+  WorldEdit_Modifier_Default      =     0,
+  WorldEdit_Modifier_Flood        = (1<<0),
+  WorldEdit_Modifier_SingleLayer  = (1<<1),
 };
 
 struct world_edit_params

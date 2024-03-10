@@ -85,7 +85,7 @@ poof(do_editor_ui_for_compound_type(ui_toggle))
 link_internal cs
 CS(ui_toggle_hashtable_iterator &Iter)
 {
-  return CSz("(iterator)");
+  return CSz("(TODO @put_name_here)");
 }
 
 poof(do_editor_ui_for_container(ui_toggle_hashtable))

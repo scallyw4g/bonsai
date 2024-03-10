@@ -1,4 +1,4 @@
-// src/engine/editor.h:675:0
+// src/engine/editor.h:676:0
 
 link_internal counted_string
 ToString(world_edit_mode_modifier Type)
@@ -8,6 +8,7 @@ ToString(world_edit_mode_modifier Type)
   {
     case WorldEdit_Modifier_Default: { Result = CSz("WorldEdit_Modifier_Default"); } break;
     case WorldEdit_Modifier_Flood: { Result = CSz("WorldEdit_Modifier_Flood"); } break;
+    case WorldEdit_Modifier_SingleLayer: { Result = CSz("WorldEdit_Modifier_SingleLayer"); } break;
 
     
   }
@@ -21,6 +22,7 @@ WorldEditModeModifier(counted_string S)
 
   if (StringsMatch(S, CSz("WorldEdit_Modifier_Default"))) { return WorldEdit_Modifier_Default; }
   if (StringsMatch(S, CSz("WorldEdit_Modifier_Flood"))) { return WorldEdit_Modifier_Flood; }
+  if (StringsMatch(S, CSz("WorldEdit_Modifier_SingleLayer"))) { return WorldEdit_Modifier_SingleLayer; }
 
   return Result;
 }

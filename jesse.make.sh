@@ -13,9 +13,9 @@
 ./make.sh $OPT \
   BuildSingleExample examples/project_and_level_picker \
   BuildSingleExample examples/blank_project \
-  BuildDebugSystem \
   BuildExecutables \
-  BuildSingleExample examples/terrain_gen \
+  # BuildDebugSystem \
+  # BuildSingleExample examples/terrain_gen \
 #   BuildSingleExample examples/turn_based \
   # BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
   # BuildSingleExample examples/the_wanderer \

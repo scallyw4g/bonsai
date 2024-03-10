@@ -4120,6 +4120,71 @@ poof(
 )
 
 link_internal void
+WorldEdit_shape_rect_SingleLayer(world_edit_mode Mode, voxel *V, rect3i SSRect, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, v3i UpdateDim, voxel NewVoxelValue)
+{
+  switch (Mode)
+  {
+    case WorldEdit_Mode_Paint:
+    {
+      poof(rectalinear_iteration_pattern({
+        if ( (V->Flags&VoxelFaceMask) && Contains(SSRect, SimVoxP)) { V->Color = NewVoxelValue.Color; }
+      }))
+#include <generated/rectalinear_iteration_pattern_965125886.h>
+    } break;
+
+    case WorldEdit_Mode_Attach:
+    {
+      poof(rectalinear_iteration_pattern({
+
+        if ((V->Flags&Voxel_Filled)==False && Contains(SSRect, SimVoxP))
+        {
+          b32 IsUnfilledBorder = False;
+          if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(1,0,0)))
+          {
+            if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
+          }
+          if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(-1,0,0)))
+          {
+            if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
+          }
+
+          if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,1,0)))
+          {
+            if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
+          }
+          if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,-1,0)))
+          {
+            if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
+          }
+
+          if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,0,1)))
+          {
+            if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
+          }
+          if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,0,-1)))
+          {
+            if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
+          }
+
+          Assert(NewVoxelValue.Flags & Voxel_Filled);
+          if (IsUnfilledBorder) { *V = NewVoxelValue; }
+        }
+      }))
+#include <generated/rectalinear_iteration_pattern_643608995.h>
+    } break;
+
+    case WorldEdit_Mode_Remove:
+    {
+      poof(rectalinear_iteration_pattern({
+        if ( (V->Flags&VoxelFaceMask) && Contains(SSRect, SimVoxP)) { *V = NewVoxelValue; }
+      }))
+#include <generated/rectalinear_iteration_pattern_530902269.h>
+    } break;
+  }
+}
+
+
+link_internal void
 ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_region *Job, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk)
 {
   world *World = GetWorld();
@@ -4181,6 +4246,11 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 #include <generated/rectalinear_iteration_pattern_812652930.h>
             } break;
 
+            case WorldEdit_Modifier_SingleLayer:
+            {
+              NotImplemented;
+            } break;
+
             case WorldEdit_Modifier_Flood:
             {
               poof(flood_fill_iteration_pattern(
@@ -4228,6 +4298,11 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
           {
             InvalidCase(WorldEdit_Modifier_Flood);
 
+            case WorldEdit_Modifier_SingleLayer:
+            {
+              NotImplemented;
+            } break;
+
             case WorldEdit_Modifier_Default:
             {
               poof(rectalinear_iteration_pattern({
@@ -4271,6 +4346,12 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
         {
           switch (Modifier)
           {
+
+            case WorldEdit_Modifier_SingleLayer:
+            {
+              WorldEdit_shape_rect_SingleLayer(Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim, NewVoxelValue);
+            } break;
+
             case WorldEdit_Modifier_Flood:
             {
               poof(flood_fill_iteration_pattern(
@@ -4299,6 +4380,11 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
         {
           switch (Modifier)
           {
+            case WorldEdit_Modifier_SingleLayer:
+            {
+              NotImplemented;
+            } break;
+
             case WorldEdit_Modifier_Flood:
             {
               poof(flood_fill_iteration_pattern(
@@ -4360,6 +4446,11 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
           {
             switch (Modifier)
             {
+              case WorldEdit_Modifier_SingleLayer:
+              {
+                NotImplemented;
+              } break;
+
               case WorldEdit_Modifier_Flood:
               {
                 poof(flood_fill_iteration_pattern(
@@ -4403,6 +4494,11 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
           {
             switch (Modifier)
             {
+              case WorldEdit_Modifier_SingleLayer:
+              {
+                NotImplemented;
+              } break;
+
               case WorldEdit_Modifier_Flood:
               {
                 poof(flood_fill_iteration_pattern(
