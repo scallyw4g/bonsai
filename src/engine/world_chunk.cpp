@@ -4568,8 +4568,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 
       // NOTE(Jesse): These are specifically meant to truncate, not floor
       rect3i SSRect = {V3i(Rect->P0), V3i(Rect->P1)};
-      v3 Dim = V3(GetDim(SSRect));
-      v3i EditCenterP = V3i(Floor(Rect->P0+(Dim/2.f)));
+      v3i EditCenterP = V3i(Floor(Rect->P0+(GetDim(SSRect)/2.f)));
 
       voxel NewVoxelValue = {};
       if (Mode == WorldEdit_Mode_Attach || Mode == WorldEdit_Mode_Paint)
@@ -4634,18 +4633,18 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
       case type_world_update_op_shape_params_asset:
       case type_world_update_op_shape_params_chunk_data:
       {
-        asset *Asset = 0;
-        chunk_data *Data = 0;
-        v3 SimOrigin = {};
+             asset *Asset     = 0;
+        chunk_data *Data      = 0;
+                v3  SimOrigin = {};
 
         if (Shape.Type == type_world_update_op_shape_params_asset)
         {
-          world_update_op_shape_params_asset *AssetJob = SafeCast(world_update_op_shape_params_asset, &Shape);
-          asset_id *AID = &AssetJob->AssetId;
+          world_update_op_shape_params_asset *Casted = SafeCast(world_update_op_shape_params_asset, &Shape);
+          asset_id *AID = &Casted->AssetId;
           Asset = GetAndLockAssetSync(GetEngineResources(), AID);
-          model *Model = GetModel(Asset, AID, AssetJob->ModelIndex);
+          model *Model = GetModel(Asset, AID, Casted->ModelIndex);
           Data = Model->Vox.ChunkData;
-          SimOrigin = GetSimSpaceP(World, AssetJob->Origin);
+          SimOrigin = GetSimSpaceP(World, Casted->Origin);
         }
         else if (Shape.Type == type_world_update_op_shape_params_chunk_data)
         {
@@ -4689,7 +4688,6 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
                     SimOrigin, Data);
               } break;
             }
-
           } break;
 
           case WorldEdit_Mode_Remove:
@@ -4730,7 +4728,6 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 #include <generated/rectalinear_iteration_pattern_583358156.h>
           } break;
         }
-
 
         if (Asset) { UnlockAsset(GetEngineResources(), Asset); Asset = 0; }
       } break;
