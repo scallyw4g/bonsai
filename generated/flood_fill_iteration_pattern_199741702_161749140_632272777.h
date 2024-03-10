@@ -1,5 +1,6 @@
-// src/engine/world_chunk.cpp:4522:0
+// src/engine/world_chunk.cpp:4544:0
 
+voxel *V = {};
 // TODO(Jesse): Do we want to try and keep the amount of temp memory to a minimum here?
 voxel_stack_element_cursor Stack = VoxelStackElementCursor(umm(TotalVoxels*6), Thread->TempMemory);
 

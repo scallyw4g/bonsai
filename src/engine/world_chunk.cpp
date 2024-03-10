@@ -4029,6 +4029,7 @@ DEBUG_AssertVoxelFloodStartsInEmptyVoxel(v3i SimSphereP, rect3i *SimSpaceUpdateB
 poof(
   func flood_fill_iteration_pattern(type_poof_symbol FloodPredicate, type_poof_symbol UserCode, type_poof_symbol UserCode2) @code_fragment
   {
+    voxel *V = {};
     // TODO(Jesse): Do we want to try and keep the amount of temp memory to a minimum here?
     voxel_stack_element_cursor Stack = VoxelStackElementCursor(umm(TotalVoxels*6), Thread->TempMemory);
 
@@ -4111,7 +4112,7 @@ poof(
     {
       v3i SimRelVoxP = V3i(x,y,z);
       v3i SimVoxP = SimRelVoxP + SimSpaceUpdateBounds.Min;
-      V = CopiedChunk->Voxels + GetIndex(SimRelVoxP, UpdateDim);
+      voxel *V = CopiedChunk->Voxels + GetIndex(SimRelVoxP, UpdateDim);
 
       UserCode
     }
@@ -4189,23 +4190,23 @@ poof(
 struct apply_world_edit_params
 {
   world_edit_mode Mode;
-  voxel *V;
   rect3i SSRect;
   rect3i SimSpaceUpdateBounds;
   world_chunk *CopiedChunk;
-  v3i UpdateDim;
 };
 
 #define UNPACK_APPLY_WORLD_EDIT_PARAMS(P)                \
   world_edit_mode Mode = P->Mode;                        \
-  voxel *V = P->V;                                       \
   rect3i SSRect = P->SSRect;                             \
   rect3i SimSpaceUpdateBounds = P->SimSpaceUpdateBounds; \
   world_chunk *CopiedChunk = P->CopiedChunk;             \
-  v3i UpdateDim = P->UpdateDim;
+  v3i UpdateDim = GetDim(SimSpaceUpdateBounds)
 
 
 
+
+
+//
 //
 // shape_rect
 //
@@ -4314,6 +4315,12 @@ WorldEdit_shape_rect_Default(apply_world_edit_params *Params, voxel *NewVoxelVal
   }
 }
 
+
+
+
+
+
+//
 //
 // shape_chunk_data
 //
@@ -4328,10 +4335,12 @@ WorldEdit_shape_chunk_data_Surface(apply_world_edit_params *Params, v3 SimOrigin
   {
     case WorldEdit_Mode_Paint:
     {
-      NotImplemented;
-      /* poof(rectalinear_iteration_pattern({ */
-        /* if ( (V->Flags&VoxelFaceMask) && Contains(SSRect, SimVoxP)) { V->Color = NewVoxelValue.Color; } */
-      /* })) */
+      poof(rectalinear_iteration_pattern({
+        v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
+        voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
+        if (AssetV && (AssetV->Flags&Voxel_Filled)) { V->Color = AssetV->Color; }
+      }))
+#include <generated/rectalinear_iteration_pattern_583358156.h>
     } break;
 
     case WorldEdit_Mode_Attach:
@@ -4418,6 +4427,12 @@ WorldEdit_shape_chunk_data_Flood( apply_world_edit_params *Params,
 
     case WorldEdit_Mode_Paint:
     {
+      poof(rectalinear_iteration_pattern({
+        v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
+        voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
+        if (AssetV && (AssetV->Flags&Voxel_Filled)) { V->Color = AssetV->Color; }
+      }))
+#include <generated/rectalinear_iteration_pattern_583358156.h>
     } break;
 
   }
@@ -4452,10 +4467,19 @@ WorldEdit_shape_chunk_data_Default(apply_world_edit_params *Params, v3 SimOrigin
 
     case WorldEdit_Mode_Paint:
     {
+      poof(rectalinear_iteration_pattern({
+        v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
+        voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
+        if (AssetV && (AssetV->Flags&Voxel_Filled)) { V->Color = AssetV->Color; }
+      }))
+#include <generated/rectalinear_iteration_pattern_583358156.h>
     } break;
 
   }
 }
+
+
+
 
 
 
@@ -4481,9 +4505,6 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
   cp  MinP                    = Job->MinP;
   world_chunk **ChunkBuffer   = Job->ChunkBuffer;
   u32 ChunkCount              = Job->ChunkCount;
-
-
-  voxel *V = 0;
 
   switch (Shape.Type)
   {
@@ -4605,57 +4626,22 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 #endif
       }
 
-      switch(Mode)
+      apply_world_edit_params Params = {Mode, SSRect, SimSpaceUpdateBounds, CopiedChunk};
+      switch (Modifier)
       {
-        case WorldEdit_Mode_Attach:
-        case WorldEdit_Mode_Remove:
+        case WorldEdit_Modifier_Surface:
         {
-          switch (Modifier)
-          {
-            case WorldEdit_Modifier_Surface:
-            {
-              apply_world_edit_params Params = {Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim};
-              WorldEdit_shape_rect_Surface(&Params, &NewVoxelValue);
-            } break;
-
-            case WorldEdit_Modifier_Flood:
-            {
-              apply_world_edit_params Params = {Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim};
-              WorldEdit_shape_rect_Flood(&Params,
-                 Thread, FloodOrigin, &NewVoxelValue);
-            } break;
-
-            case WorldEdit_Modifier_Default:
-            {
-              apply_world_edit_params Params = {Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim};
-              WorldEdit_shape_rect_Default(&Params, &NewVoxelValue);
-            } break;
-          }
+          WorldEdit_shape_rect_Surface(&Params, &NewVoxelValue);
         } break;
 
-        case WorldEdit_Mode_Paint:
+        case WorldEdit_Modifier_Flood:
         {
-          switch (Modifier)
-          {
-            case WorldEdit_Modifier_Surface:
-            {
-              apply_world_edit_params Params = {Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim};
-              WorldEdit_shape_rect_Surface(&Params, &NewVoxelValue);
-            } break;
+          WorldEdit_shape_rect_Flood(&Params, Thread, FloodOrigin, &NewVoxelValue);
+        } break;
 
-            case WorldEdit_Modifier_Flood:
-            {
-              apply_world_edit_params Params = {Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim};
-              WorldEdit_shape_rect_Flood(&Params,
-                 Thread, FloodOrigin, &NewVoxelValue);
-            } break;
-
-            case WorldEdit_Modifier_Default:
-            {
-              apply_world_edit_params Params = {Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim};
-              WorldEdit_shape_rect_Default(&Params, &NewVoxelValue);
-            } break;
-          }
+        case WorldEdit_Modifier_Default:
+        {
+          WorldEdit_shape_rect_Default(&Params, &NewVoxelValue);
         } break;
       }
     } break;
@@ -4691,70 +4677,22 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
         rect3i SSRect = RectMinDim(V3i(SimOrigin), Data->Dim);
         v3i EditCenterP = V3i(SimOrigin) + V3i(Data->Dim/2.f);
 
-        switch(Mode)
+        apply_world_edit_params Params = {Mode, SSRect, SimSpaceUpdateBounds, CopiedChunk};
+        switch (Modifier)
         {
-          case WorldEdit_Mode_Attach:
+          case WorldEdit_Modifier_Surface:
           {
-            switch (Modifier)
-            {
-              case WorldEdit_Modifier_Surface:
-              {
-                apply_world_edit_params Params = {Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim};
-                WorldEdit_shape_chunk_data_Surface(&Params, SimOrigin, Data);
-              } break;
-
-              case WorldEdit_Modifier_Flood:
-              {
-                apply_world_edit_params Params = {Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim};
-                WorldEdit_shape_chunk_data_Flood(
-                    &Params,
-                    SimOrigin, Data,
-                    Thread, FloodOrigin);
-              } break;
-
-              case WorldEdit_Modifier_Default:
-              {
-                apply_world_edit_params Params = {Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim};
-                WorldEdit_shape_chunk_data_Default(&Params, SimOrigin, Data);
-              } break;
-            }
+            WorldEdit_shape_chunk_data_Surface(&Params, SimOrigin, Data);
           } break;
 
-          case WorldEdit_Mode_Remove:
+          case WorldEdit_Modifier_Flood:
           {
-            switch (Modifier)
-            {
-              case WorldEdit_Modifier_Surface:
-              {
-                apply_world_edit_params Params = {Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim};
-                WorldEdit_shape_chunk_data_Surface(&Params, SimOrigin, Data);
-              } break;
-
-              case WorldEdit_Modifier_Flood:
-              {
-                apply_world_edit_params Params = {Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim};
-                WorldEdit_shape_chunk_data_Flood(
-                    &Params,
-                    SimOrigin, Data,
-                    Thread, FloodOrigin);
-              } break;
-
-              case WorldEdit_Modifier_Default:
-              {
-                apply_world_edit_params Params = {Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim};
-                WorldEdit_shape_chunk_data_Default(&Params, SimOrigin, Data);
-              } break;
-            }
+            WorldEdit_shape_chunk_data_Flood( &Params, SimOrigin, Data, Thread, FloodOrigin);
           } break;
 
-          case WorldEdit_Mode_Paint:
+          case WorldEdit_Modifier_Default:
           {
-            poof(rectalinear_iteration_pattern({
-              v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
-              voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
-              if (AssetV && (AssetV->Flags&Voxel_Filled)) { V->Color = AssetV->Color; }
-            }))
-#include <generated/rectalinear_iteration_pattern_583358156.h>
+            WorldEdit_shape_chunk_data_Default(&Params, SimOrigin, Data);
           } break;
         }
 

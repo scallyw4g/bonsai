@@ -1,10 +1,10 @@
-// src/engine/world_chunk.cpp:4508:0
+// src/engine/world_chunk.cpp:4530:0
 
 DimIterator(x, y, z, UpdateDim)
 {
   v3i SimRelVoxP = V3i(x,y,z);
   v3i SimVoxP = SimRelVoxP + SimSpaceUpdateBounds.Min;
-  V = CopiedChunk->Voxels + GetIndex(SimRelVoxP, UpdateDim);
+  voxel *V = CopiedChunk->Voxels + GetIndex(SimRelVoxP, UpdateDim);
 
   
                 v3i CenterToVoxP = SimVoxP - EditCenterP;
