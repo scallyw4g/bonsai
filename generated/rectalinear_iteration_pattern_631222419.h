@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4137:0
+// src/engine/world_chunk.cpp:4201:0
 
 DimIterator(x, y, z, UpdateDim)
 {
@@ -7,6 +7,11 @@ DimIterator(x, y, z, UpdateDim)
   V = CopiedChunk->Voxels + GetIndex(SimRelVoxP, UpdateDim);
 
   
+
+        v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
+        voxel *NewVoxelValue = TryGetVoxel(Data, OriginToCurrentVoxP);
+        /* v3i OriginToCurrentVoxP = SimVoxP - SimOrigin; */
+        /* voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP); */
 
         if ((V->Flags&Voxel_Filled)==False && Contains(SSRect, SimVoxP))
         {
@@ -38,8 +43,13 @@ DimIterator(x, y, z, UpdateDim)
             if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
           }
 
-          Assert(NewVoxelValue->Flags & Voxel_Filled);
-          if (IsUnfilledBorder) { *V = *NewVoxelValue; }
+          /* if (AssetV && (AssetV->Flags&Voxel_Filled)) { *V = *AssetV; } */
+          /* if ( NewVoxelValue && (NewVoxelValue->Flags&Voxel_Filled) && IsUnfilledBorder) { *V = *NewVoxelValue; } */
+          if (IsUnfilledBorder)
+          {
+            *V = *NewVoxelValue;
+            V->Flags = voxel_flag(V->Flags&~VoxelFaceMask); // Knock out face flags so the algorithm doesn't "self-apply"
+          }
         }
       
 }

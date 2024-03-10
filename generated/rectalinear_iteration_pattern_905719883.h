@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4137:0
+// src/engine/world_chunk.cpp:4201:0
 
 DimIterator(x, y, z, UpdateDim)
 {
@@ -7,6 +7,9 @@ DimIterator(x, y, z, UpdateDim)
   V = CopiedChunk->Voxels + GetIndex(SimRelVoxP, UpdateDim);
 
   
+
+        v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
+        voxel *NewVoxelValue = TryGetVoxel(Data, OriginToCurrentVoxP);
 
         if ((V->Flags&Voxel_Filled)==False && Contains(SSRect, SimVoxP))
         {
@@ -38,8 +41,7 @@ DimIterator(x, y, z, UpdateDim)
             if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
           }
 
-          Assert(NewVoxelValue->Flags & Voxel_Filled);
-          if (IsUnfilledBorder) { *V = *NewVoxelValue; }
+          if ( (NewVoxelValue->Flags&Voxel_Filled) && IsUnfilledBorder) { *V = *NewVoxelValue; }
         }
       
 }

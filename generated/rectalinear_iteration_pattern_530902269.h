@@ -7,7 +7,7 @@ DimIterator(x, y, z, UpdateDim)
   V = CopiedChunk->Voxels + GetIndex(SimRelVoxP, UpdateDim);
 
   
-        if ( (V->Flags&VoxelFaceMask) && Contains(SSRect, SimVoxP)) { *V = NewVoxelValue; }
+        if ( (V->Flags&VoxelFaceMask) && Contains(SSRect, SimVoxP)) { *V = *NewVoxelValue; }
       
 }
 
