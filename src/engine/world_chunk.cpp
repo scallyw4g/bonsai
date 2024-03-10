@@ -4452,22 +4452,13 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 
   u16 NewColor                = Job->ColorIndex;
   u8  NewTransparency         = Job->Transparency;
-  cp MaxP                     = Job->MaxP;
-  cp MinP                     = Job->MinP;
+  cp  MaxP                    = Job->MaxP;
+  cp  MinP                    = Job->MinP;
   world_chunk **ChunkBuffer   = Job->ChunkBuffer;
   u32 ChunkCount              = Job->ChunkCount;
 
 
   voxel *V = 0;
-
-  // NOTE(Jesse): These are here because they're common across the asset and chunk_data
-  // paths, but there's no way to zero-init them and check if the first one got hit.
-  //
-  // Instead of doing this, we should probably factor the common code into a function
-  // and just call it in each case, without a [[fallthrough]]
-  asset *Asset = 0;
-  chunk_data *Data = 0;
-  v3 SimOrigin = {};
 
   switch (Shape.Type)
   {
@@ -4641,22 +4632,30 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 
     {
       case type_world_update_op_shape_params_asset:
-      {
-        world_update_op_shape_params_asset *AssetJob = SafeCast(world_update_op_shape_params_asset, &Shape);
-        asset_id *AID = &AssetJob->AssetId;
-        Asset = GetAndLockAssetSync(GetEngineResources(), AID);
-        model *Model = GetModel(Asset, AID, AssetJob->ModelIndex);
-        Data = Model->Vox.ChunkData;
-        SimOrigin = GetSimSpaceP(World, AssetJob->Origin);
-      } [[fallthrough]];
-
       case type_world_update_op_shape_params_chunk_data:
       {
-        if (Data == 0)
+        asset *Asset = 0;
+        chunk_data *Data = 0;
+        v3 SimOrigin = {};
+
+        if (Shape.Type == type_world_update_op_shape_params_asset)
+        {
+          world_update_op_shape_params_asset *AssetJob = SafeCast(world_update_op_shape_params_asset, &Shape);
+          asset_id *AID = &AssetJob->AssetId;
+          Asset = GetAndLockAssetSync(GetEngineResources(), AID);
+          model *Model = GetModel(Asset, AID, AssetJob->ModelIndex);
+          Data = Model->Vox.ChunkData;
+          SimOrigin = GetSimSpaceP(World, AssetJob->Origin);
+        }
+        else if (Shape.Type == type_world_update_op_shape_params_chunk_data)
         {
           auto *Casted = SafeCast(world_update_op_shape_params_chunk_data, &Shape);
           Data = &Casted->Data;
           SimOrigin = Casted->SimSpaceOrigin;
+        }
+        else
+        {
+          InvalidCodePath();
         }
 
         rect3i SSRect = RectMinDim(V3i(SimOrigin), Data->Dim);
