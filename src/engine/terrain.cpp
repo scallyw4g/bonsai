@@ -1445,7 +1445,6 @@ MakeCliffs(world_chunk *Chunk, s32 VoxIndex, s32 WorldX, s32 WorldY, s32 WorldZ,
       /* r32 RockMaskChance = CliffBlend*6.f; // Higher = less rocks */
       r32 RockMaskChance = 0.f;
       r32 Voronoi = VoronoiNoise3D(WorldP * CellMultiplier, Squareness, RockMaskChance);
-
       NoiseValue[Index] += CliffBlend*Voronoi*10.f;
 
       r32 DarkStoneThresh = 0.08f;  // Increasing this increases the amount of darkness

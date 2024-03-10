@@ -780,9 +780,3 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
   }
 }
-
-BONSAI_API_ON_LIBRARY_RELOAD()
-{
-  UNPACK_ENGINE_RESOURCES(Resources);
-  SoftResetEngine(Resources, HardResetFlag_NoResetCamera);
-}
