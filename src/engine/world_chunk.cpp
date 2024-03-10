@@ -4351,13 +4351,60 @@ WorldEdit_shape_chunk_data_Flood(
 #include <generated/flood_fill_iteration_pattern_275071431_785723886_0.h>
     } break;
 
+    case WorldEdit_Mode_Remove:
+    {
+      poof(flood_fill_iteration_pattern(
+        {
+          v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
+          voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
+          if (Contains(SSRect, SimVoxP) && (V->Flags&Voxel_Filled) == 0)
+        },
+        {
+          if (AssetV && (AssetV->Flags&Voxel_Filled)) { *V = {}; }
+        },
+        {}
+        ))
+#include <generated/flood_fill_iteration_pattern_275071431_101859599_0.h>
+    } break;
     case WorldEdit_Mode_Paint:
     {
     } break;
 
+  }
+}
+
+link_internal void
+WorldEdit_shape_chunk_data_Default(
+    world_edit_mode Mode, voxel *V, rect3i SSRect, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, v3i UpdateDim,
+    v3 SimOrigin, chunk_data *Data
+  )
+{
+  switch (Mode)
+  {
+    case WorldEdit_Mode_Attach:
+    {
+      poof(rectalinear_iteration_pattern({
+        v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
+        voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
+        if (AssetV && (AssetV->Flags&Voxel_Filled)) { *V = *AssetV; }
+      }))
+#include <generated/rectalinear_iteration_pattern_122717011.h>
+    } break;
+
     case WorldEdit_Mode_Remove:
     {
+      poof(rectalinear_iteration_pattern({
+        v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
+        voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
+        if (AssetV && (AssetV->Flags&Voxel_Filled)) { V->Flags = Voxel_Empty; }
+      }))
+#include <generated/rectalinear_iteration_pattern_428632106.h>
     } break;
+
+    case WorldEdit_Mode_Paint:
+    {
+    } break;
+
   }
 }
 
@@ -4579,10 +4626,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
     {
       case type_world_update_op_shape_params_asset:
       {
-        /* Assert(Modifier == WorldEdit_Modifier_Default); // Not Implemented */
         world_update_op_shape_params_asset *AssetJob = SafeCast(world_update_op_shape_params_asset, &Shape);
-        /* asset *Asset = AssetJob->Asset; */
-        /* Assert(Asset->Models.Count > 0); */
         asset_id *AID = &AssetJob->AssetId;
         Asset = GetAndLockAssetSync(GetEngineResources(), AID);
         model *Model = GetModel(Asset, AID, AssetJob->ModelIndex);
@@ -4592,8 +4636,6 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 
       case type_world_update_op_shape_params_chunk_data:
       {
-        /* Assert(Modifier == WorldEdit_Modifier_Default); // Not Implemented */
-
         if (Data == 0)
         {
           auto *Casted = SafeCast(world_update_op_shape_params_chunk_data, &Shape);
@@ -4612,24 +4654,24 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
             {
               case WorldEdit_Modifier_Surface:
               {
-                WorldEdit_shape_chunk_data_Surface(Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim, SimOrigin, Data);
+                WorldEdit_shape_chunk_data_Surface(
+                    Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim,
+                    SimOrigin, Data);
               } break;
 
               case WorldEdit_Modifier_Flood:
               {
-                WorldEdit_shape_chunk_data_Flood(Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim,
+                WorldEdit_shape_chunk_data_Flood(
+                    Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim,
                     SimOrigin, Data,
                     Thread, FloodOrigin);
               } break;
 
               case WorldEdit_Modifier_Default:
               {
-                poof(rectalinear_iteration_pattern({
-                  v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
-                  voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
-                  if (AssetV && (AssetV->Flags&Voxel_Filled)) { *V = *AssetV; }
-                }))
-#include <generated/rectalinear_iteration_pattern_122717011.h>
+                WorldEdit_shape_chunk_data_Default(
+                    Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim,
+                    SimOrigin, Data);
               } break;
             }
 
@@ -4641,34 +4683,24 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
             {
               case WorldEdit_Modifier_Surface:
               {
-                WorldEdit_shape_chunk_data_Surface(Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim, SimOrigin, Data);
+                WorldEdit_shape_chunk_data_Surface(
+                    Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim,
+                    SimOrigin, Data);
               } break;
 
               case WorldEdit_Modifier_Flood:
               {
-                poof(flood_fill_iteration_pattern(
-                  {
-                    v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
-                    voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
-                    if (Contains(SSRect, SimVoxP) && (V->Flags&Voxel_Filled) == 0)
-                  },
-                  {
-                    if (AssetV && (AssetV->Flags&Voxel_Filled)) { *V = {}; }
-                  },
-                  {}
-                  ))
-#include <generated/flood_fill_iteration_pattern_275071431_101859599_0.h>
+                WorldEdit_shape_chunk_data_Flood(
+                    Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim,
+                    SimOrigin, Data,
+                    Thread, FloodOrigin);
               } break;
 
               case WorldEdit_Modifier_Default:
               {
-                poof(rectalinear_iteration_pattern({
-                  v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
-                  voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
-                  if (AssetV && (AssetV->Flags&Voxel_Filled)) { V->Flags = Voxel_Empty; }
-                }))
-#include <generated/rectalinear_iteration_pattern_428632106.h>
-
+                WorldEdit_shape_chunk_data_Default(
+                    Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim,
+                    SimOrigin, Data);
               } break;
             }
           } break;

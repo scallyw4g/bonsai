@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4665:0
+// src/engine/world_chunk.cpp:4396:0
 
 DimIterator(x, y, z, UpdateDim)
 {
@@ -7,10 +7,10 @@ DimIterator(x, y, z, UpdateDim)
   V = CopiedChunk->Voxels + GetIndex(SimRelVoxP, UpdateDim);
 
   
-                  v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
-                  voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
-                  if (AssetV && (AssetV->Flags&Voxel_Filled)) { V->Flags = Voxel_Empty; }
-                
+        v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
+        voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
+        if (AssetV && (AssetV->Flags&Voxel_Filled)) { V->Flags = Voxel_Empty; }
+      
 }
 
 
