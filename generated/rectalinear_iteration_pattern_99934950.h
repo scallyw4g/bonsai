@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4614:0
+// src/engine/world_chunk.cpp:4287:0
 
 DimIterator(x, y, z, UpdateDim)
 {
@@ -7,8 +7,8 @@ DimIterator(x, y, z, UpdateDim)
   V = CopiedChunk->Voxels + GetIndex(SimRelVoxP, UpdateDim);
 
   
-                if (Contains(SSRect, SimVoxP)) { if (V->Flags & Voxel_Filled) { V->Color = NewColor; } }
-              
+        if (Contains(SSRect, SimVoxP)) { if (V->Flags & Voxel_Filled) { V->Color = NewVoxelValue->Color; } }
+      
 }
 
 

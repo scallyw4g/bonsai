@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4538:0
+// src/engine/world_chunk.cpp:4384:0
 
 DimIterator(x, y, z, UpdateDim)
 {
@@ -7,9 +7,8 @@ DimIterator(x, y, z, UpdateDim)
   V = CopiedChunk->Voxels + GetIndex(SimRelVoxP, UpdateDim);
 
   
-            v3i CenterToVoxP = SimVoxP - EditCenterP;
-            if (LengthSq(CenterToVoxP) < RadiusSquared) { V->Flags = Voxel_Filled; }
-          
+        if (Contains(SSRect, SimVoxP)) { *V = *NewVoxelValue; }
+      
 }
 
 

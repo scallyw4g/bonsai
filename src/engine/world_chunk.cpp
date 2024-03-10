@@ -4267,6 +4267,30 @@ WorldEdit_shape_rect_Flood(world_edit_mode Mode, voxel *V, rect3i SSRect, rect3i
   }
 }
 
+link_internal void
+WorldEdit_shape_rect_Default(
+    world_edit_mode Mode, voxel *V, rect3i SSRect, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, v3i UpdateDim, voxel *NewVoxelValue)
+{
+  switch (Mode)
+  {
+    case WorldEdit_Mode_Attach:
+    case WorldEdit_Mode_Remove:
+    {
+      poof(rectalinear_iteration_pattern({
+        if (Contains(SSRect, SimVoxP)) { *V = *NewVoxelValue; }
+      }))
+#include <generated/rectalinear_iteration_pattern_416827956.h>
+    } break;
+
+    case WorldEdit_Mode_Paint:
+    {
+      poof(rectalinear_iteration_pattern({
+        if (Contains(SSRect, SimVoxP)) { if (V->Flags & Voxel_Filled) { V->Color = NewVoxelValue->Color; } }
+      }))
+#include <generated/rectalinear_iteration_pattern_99934950.h>
+    } break;
+  }
+}
 
 //
 // shape_chunk_data
@@ -4586,10 +4610,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 
             case WorldEdit_Modifier_Default:
             {
-              poof(rectalinear_iteration_pattern({
-                if (Contains(SSRect, SimVoxP)) { *V = NewVoxelValue; }
-              }))
-#include <generated/rectalinear_iteration_pattern_416827956.h>
+              WorldEdit_shape_rect_Default(Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim, &NewVoxelValue);
             } break;
           }
         } break;
@@ -4611,13 +4632,8 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 
             case WorldEdit_Modifier_Default:
             {
-              poof(rectalinear_iteration_pattern({
-                if (Contains(SSRect, SimVoxP)) { if (V->Flags & Voxel_Filled) { V->Color = NewColor; } }
-              }))
-#include <generated/rectalinear_iteration_pattern_99934950.h>
+              WorldEdit_shape_rect_Default(Mode, V, SSRect, SimSpaceUpdateBounds, CopiedChunk, UpdateDim, &NewVoxelValue);
             } break;
-
-
           }
         } break;
       }
