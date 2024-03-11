@@ -1058,6 +1058,21 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
   {
     PushWindowStart(Ui, BrushSettingsWindow);
+
+    if (Button(Ui, CSz("Export"), UiId(BrushSettingsWindow, "brush export", 0u)))
+    {
+      u8_cursor_block_array OutputStream = {};
+
+      Serialize(&OutputStream, LayeredBrushEditor);
+      native_file F = OpenFile("brushes/temp.brush", FilePermission_Write);
+        if(WriteToFile(&F, &OutputStream) == False)
+        {
+          SoftError("Could not export brush.");
+        }
+      CloseFile(&F);
+    }
+    PushNewRow(Ui);
+
     DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrushEditor->LayerCount, CSz("Layer Count"), &DefaultUiRenderParams_Generic);
     PushNewRow(Ui);
     PushNewRow(Ui);

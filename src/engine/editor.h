@@ -816,9 +816,9 @@ struct layer_update_result
 struct noise_layer
 {
   noise_params Params;
-  noise_params PrevParams; poof(@ui_skip) // NOTE(Jesse): Change detection.
+  noise_params PrevParams; poof(@ui_skip @no_serialize) // NOTE(Jesse): Change detection.
 
-  chunk_thumbnail Preview;
+  chunk_thumbnail Preview; poof(@no_serialize)
 };
 
 enum brush_layer_type
@@ -846,8 +846,7 @@ struct layered_brush_editor
   s32 LayerCount;
   brush_layer Layers[MAX_BRUSH_LAYERS];
 
-  v3i PreviewChunkDim;
-  chunk_thumbnail Preview;
+  chunk_thumbnail Preview; poof(@no_serialize)
 };
 
 
