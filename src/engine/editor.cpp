@@ -816,7 +816,8 @@ link_internal v3i
 GetRequiredDimForLayer(v3i SelectionDim, noise_layer *Layer)
 {
   noise_params *Params = &Layer->Params;
-  v3i Result = SelectionDim + GetDim(Params->Offset);
+  v3i Request = SelectionDim + GetDim(Params->Offset);
+  v3i Result = Max(V3i(0), Request);
   return Result;
 }
 

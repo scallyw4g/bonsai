@@ -3570,7 +3570,7 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
     }
   }
 
-#define FINALIZE_MESH_FOR_CHUNK(Src, Dest,Bit)                                \
+#define FINALIZE_MESH_FOR_CHUNK(Src, Dest, Bit)                               \
   {                                                                           \
     geo_u3d *SrcMesh = (Src)->Meshes.E[ToIndex(Bit)];                         \
     if (SrcMesh) {                                                            \
@@ -3593,17 +3593,10 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
   FinalizeChunkInitialization(DestChunk);
 }
 
-/* // TODO(Jesse): Probably remove this globally */
-/* link_internal void */
-/* InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChunk, chunk_dimension WorldChunkDim, native_file *AssetFile, s32 Period, s32 Amplititude, s32 zMin, u16 Color, chunk_init_flags Flags) */
-/* { */
-/*   InitializeChunkWithNoise( Terrain_Perlin2D, Thread, DestChunk, DestChunk->Dim, AssetFile, Period, Amplititude, zMin, Color, MeshBit_Lod0, Flags, 0); */
-/* } */
-
 // nochecking Move as much out of this block as possible.  Only the last few of
 // the things in this block are actually related to drawing
 link_internal work_queue_entry_rebuild_mesh
-WorkQueueEntryRebuildMesh(world_chunk *Chunk, chunk_init_flags Flags) //, world_chunk_mesh_bitfield MeshBit)
+WorkQueueEntryRebuildMesh(world_chunk *Chunk, chunk_init_flags Flags)
 {
   work_queue_entry_rebuild_mesh Result = { Chunk, Flags };
   return Result;
