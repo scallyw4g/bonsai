@@ -847,22 +847,104 @@ GetLayerDim(brush_layer *Layer)
   return Result;
 }
 
-
 link_internal b32
+CheckForChangesAndUpdate(engine_resources *Engine, noise_layer *Layer)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  noise_params *Params     = &Layer->Params;
+  noise_params *PrevParams = &Layer->PrevParams;
+
+  v3i SelectionDim     = GetSelectionDim(World, Editor);
+  v3i RequiredLayerDim = GetRequiredDimForLayer(SelectionDim, Layer);
+
+  b32 ReallocChunk     = Editor->SelectionChanged || Layer->Preview.Chunk.Dim != RequiredLayerDim;
+  b32 UpdateNoise = ReallocChunk || !AreEqual(Params, PrevParams);
+
+  *PrevParams = *Params;
+
+
+
+  world_chunk *Chunk = &Layer->Preview.Chunk;
+  if (ReallocChunk)
+  {
+    // TODO(Jesse)(leak): Figure out exactly how this works.  We can't allocate from the Editor
+    // memory pool because the goemetry buffers get freed to a freelist, and the editor memory
+    // pool gets cleared on game reload
+    //
+    // @editor_chunk_memory_question
+    //
+    /* DeallocateWorldChunk(Chunk, MeshFreelist); */
+    DeallocateGpuBuffers(Chunk);
+    AllocateWorldChunk(Chunk, {}, RequiredLayerDim, Editor->Memory);
+  }
+
+
+
+  switch (Params->Type)
+  {
+    case NoiseType_Perlin:
+    {
+      perlin_noise_params *PerlinParams = &Params->PerlinParams;
+
+      if (UpdateNoise)
+      {
+        Chunk->Flags = Chunk_Queued;
+        InitializeChunkWithNoise( Terrain_Perlin3D,
+                                  GetThreadLocalState(ThreadLocal_ThreadIndex),
+                                  Chunk,
+                                  Chunk->Dim,
+                                  {},
+                                  s32(PerlinParams->Period),
+                                  s32(PerlinParams->Amplitude),
+                                  s32(PerlinParams->Threshold),
+                                  Params->Color,
+                                  MeshBit_None,
+                                  ChunkInitFlag_Noop,
+                                  0,
+                                  True );
+      }
+    } break;
+
+    case NoiseType_Voronoi:
+    {
+      voronoi_noise_params *VoronoiParams = &Params->VoronoiParams;
+      if (UpdateNoise)
+      {
+        Chunk->Flags = Chunk_Queued;
+        InitializeChunkWithNoise( Terrain_Voronoi3D,
+                                  GetThreadLocalState(ThreadLocal_ThreadIndex),
+                                  Chunk,
+                                  Chunk->Dim,
+                                  {},
+                                  s32(VoronoiParams->Period),
+                                  s32(VoronoiParams->Amplitude),
+                                  s32(VoronoiParams->Threshold),
+                                  Params->Color,
+                                  MeshBit_None,
+                                  ChunkInitFlag_Noop,
+                                  Cast(void*, VoronoiParams),
+                                  True );
+      }
+    } break;
+  }
+
+
+  SyncGpuBuffersImmediate(Engine, &Chunk->Meshes);
+  if (Layer->Preview.Thumbnail.Texture.ID) //  NOTE(Jesse): Avoid spamming a warning to console
+  {
+    RenderToTexture(Engine, &Layer->Preview.Thumbnail, &Chunk->Meshes, V3(Chunk->Dim)/-2.f);
+  }
+
+  return UpdateNoise;
+}
+
+link_internal void
 BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, noise_layer *Layer)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
   noise_params *Params = &Layer->Params;
-  noise_params *PrevParams = &Layer->PrevParams;
-
-  v3i SelectionDim     = GetSelectionDim(World, Editor);
-  v3i RequiredLayerDim = GetRequiredDimForLayer(SelectionDim, Layer);
-  b32 ReallocChunk     = Editor->SelectionChanged || Layer->Preview.Chunk.Dim != RequiredLayerDim;
-  b32 NoiseNeedsUpdate = ReallocChunk || !AreEqual(Params, PrevParams);
-  *PrevParams = *Params;
-
-
 
   PushNewRow(Ui);
   {
@@ -874,25 +956,9 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
 
   DoEditorUi(Ui, Window, &Params->Offset,     CSz("Select Offset"));
   DoEditorUi(Ui, Window, &Params->EditParams, CSz("Edit Mode"));
+  DoEditorUi(Ui, Window, &Params->Type,       CSz("Noise Type"), &DefaultUiRenderParams_Generic);
 
-
-
-  world_chunk *DestChunk    = &Layer->Preview.Chunk;
-  if (ReallocChunk)
-  {
-    // TODO(Jesse)(leak): Figure out exactly how this works.  We can't allocate from the Editor
-    // memory pool because the goemetry buffers get freed to a freelist, and the editor memory
-    // pool gets cleared on game reload
-    //
-    // @editor_chunk_memory_question
-    //
-    /* DeallocateWorldChunk(DestChunk, MeshFreelist); */
-    DeallocateGpuBuffers(DestChunk);
-    AllocateWorldChunk(DestChunk, {}, RequiredLayerDim, Editor->Memory);
-  }
-
-  DoEditorUi(Ui, Window, &Params->Type, CSz("Noise Type"), &DefaultUiRenderParams_Generic);
-  if (SelectionComplete(Editor->SelectionClicks)) // TODO(Jesse): Is this even necessary?
+  if (SelectionComplete(Editor->SelectionClicks))
   {
     PushTableStart(Ui);
     switch (Params->Type)
@@ -902,61 +968,22 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
         perlin_noise_params *PerlinParams = &Params->PerlinParams;
 
         DoEditorUi(Ui, Window, PerlinParams, CSz("Perlin"));
-        if (NoiseNeedsUpdate)
-        {
-          DestChunk->Flags = Chunk_Queued;
-          InitializeChunkWithNoise( Terrain_Perlin3D,
-                                    GetThreadLocalState(ThreadLocal_ThreadIndex),
-                                    DestChunk,
-                                    DestChunk->Dim,
-                                    {},
-                                    s32(PerlinParams->Period),
-                                    s32(PerlinParams->Amplitude),
-                                    s32(PerlinParams->Threshold),
-                                    Params->Color,
-                                    MeshBit_None,
-                                    ChunkInitFlag_Noop,
-                                    0,
-                                    True );
-        }
       } break;
 
       case NoiseType_Voronoi:
       {
         voronoi_noise_params *VoronoiParams = &Params->VoronoiParams;
         DoEditorUi(Ui, Window, VoronoiParams, CSz("Voronoi"));
-        if (NoiseNeedsUpdate)
-        {
-          DestChunk->Flags = Chunk_Queued;
-          InitializeChunkWithNoise( Terrain_Voronoi3D,
-                                    GetThreadLocalState(ThreadLocal_ThreadIndex),
-                                    DestChunk,
-                                    DestChunk->Dim,
-                                    {},
-                                    s32(VoronoiParams->Period),
-                                    s32(VoronoiParams->Amplitude),
-                                    s32(VoronoiParams->Threshold),
-                                    Params->Color,
-                                    MeshBit_None,
-                                    ChunkInitFlag_Noop,
-                                    Cast(void*, VoronoiParams),
-                                    True );
-        }
       } break;
     }
     PushTableEnd(Ui);
 
-
-    SyncGpuBuffersImmediate(Engine, &DestChunk->Meshes);
-    RenderToTexture(Engine, &Layer->Preview.Thumbnail, &DestChunk->Meshes, V3(DestChunk->Dim)/-2.f);
     RenderAndInteractWithThumbnailTexture(Ui, Window, "noise preview interaction", &Layer->Preview.Thumbnail);
   }
   else
   {
     PushColumn(Ui, CSz("Make a selection to use Noise Brush"));
   }
-
-  return NoiseNeedsUpdate;
 }
 
 
@@ -1019,13 +1046,23 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
     PushWindowEnd(Ui, &PreviewWindow);
   }
 
+
+  b32 AnyBrushSettingsUpdated = False;
+  {
+    RangeIterator(LayerIndex, LayeredBrushEditor->LayerCount)
+    {
+      brush_layer *Layer = Layers + LayerIndex;
+      AnyBrushSettingsUpdated |= CheckForChangesAndUpdate(Engine, &Layer->NoiseLayer);
+    }
+  }
+
+
   {
     PushWindowStart(Ui, BrushSettingsWindow);
     DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrushEditor->LayerCount, CSz("Layer Count"), &DefaultUiRenderParams_Generic);
     PushNewRow(Ui);
     PushNewRow(Ui);
 
-    b32 BrushSettingsUpdated = False;
     RangeIterator(LayerIndex, LayeredBrushEditor->LayerCount)
     {
       brush_layer *Layer = Layers + LayerIndex;
@@ -1042,10 +1079,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
           case BrushLayerType_Noise:
           {
-            if (BrushSettingsForNoiseBrush(Engine, BrushSettingsWindow, &Layer->NoiseLayer))
-            {
-              BrushSettingsUpdated = True;
-            }
+            BrushSettingsForNoiseBrush(Engine, BrushSettingsWindow, &Layer->NoiseLayer);
             PushNewRow(Ui);
           } break;
         }
@@ -1053,20 +1087,11 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
       PushNewRow(Ui);
     }
 
-    /* if (Editor->SelectionChanged) */
-    /* { */
-    /*   RangeIterator(LayerIndex, LayeredBrushEditor->LayerCount) */
-    /*   { */
-    /*     brush_layer *Layer = Layers + LayerIndex; */
-    /*   } */
-    /* } */
-
     {
       world_chunk *PreviewChunk = &LayeredBrushEditor->Preview.Chunk;
       /* v3i TargetDim = Max(GetSelectionDim(World, Editor), LargestLayerDim); */
-      if (BrushSettingsUpdated)
+      if (AnyBrushSettingsUpdated)
       {
-
         // First find the largest total dimension of all the layers, and the
         // largest negative minimum offset.  We need this min offset such that
         // we can position layers relative to it.  By doing this, we implicitly

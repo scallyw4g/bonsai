@@ -807,6 +807,12 @@ struct shape_layer
   u32 TODO;
 };
 
+struct layer_update_result
+{
+  b32 ReallocChunk;
+  b32 NoiseNeedsUpdate;
+};
+
 struct noise_layer
 {
   noise_params Params;
