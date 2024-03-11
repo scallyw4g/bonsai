@@ -355,7 +355,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
   RangeIterator(ElementIndex, 6)
   {
-    Result &= Deserialize(Bytes, &Element->Colors[ElementIndex]);
+    Result &= Deserialize(Bytes, &Element->Colors[ElementIndex], Memory);
   }
 
 

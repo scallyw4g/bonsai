@@ -1,3 +1,4 @@
+//
 // TODO(Jeses): Move to header
 link_internal v3i
 GetSelectionDim(world *World, level_editor *Editor)
@@ -6,6 +7,29 @@ GetSelectionDim(world *World, level_editor *Editor)
   v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
 
   v3i Result = V3i(SelectionMaxP - SelectionMinP);
+  return Result;
+}
+
+// TODO(Jesse): Should these live somewhere else?  @engine_draw_file_nodes_helpers
+link_internal maybe_file_traversal_node
+EngineDrawFileNodesFilteredHelper(file_traversal_node Node, u64 Params)
+{
+  engine_resources *Engine = GetEngineResources();
+  filtered_file_traversal_helper_params *HelperParams = ReinterpretCast(filtered_file_traversal_helper_params*, Params);
+  maybe_file_traversal_node Result = DrawFileNodes(&Engine->Ui, Node, HelperParams);
+  return Result;
+}
+
+// @engine_draw_file_nodes_helpers
+link_internal b32 DefaultFileFilter(file_traversal_node *Node) { return True; }
+
+// @engine_draw_file_nodes_helpers
+link_internal maybe_file_traversal_node
+EngineDrawFileNodesHelper(file_traversal_node Node, u64 Window)
+{
+  engine_resources *Engine = GetEngineResources();
+  filtered_file_traversal_helper_params HelperParams = {(window_layout*)Window, DefaultFileFilter};
+  maybe_file_traversal_node Result = DrawFileNodes(&Engine->Ui, Node, &HelperParams);
   return Result;
 }
 
@@ -1031,6 +1055,16 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestC
 }
 
 link_internal void
+DoBrushImportWindow(engine_resources *Engine)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  local_persist window_layout Window = WindowLayout("Brush Import");
+  PushWindowStart(Ui, &Window);
+  PushWindowEnd(Ui, &Window);
+}
+
+link_internal void
 BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSettingsWindow)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -1062,98 +1096,113 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
     if (Button(Ui, CSz("Export"), UiId(BrushSettingsWindow, "brush export", 0u)))
     {
       u8_cursor_block_array OutputStream = {};
-
       Serialize(&OutputStream, LayeredBrushEditor);
       native_file F = OpenFile("brushes/temp.brush", FilePermission_Write);
-        if(WriteToFile(&F, &OutputStream) == False)
-        {
-          SoftError("Could not export brush.");
-        }
+        if (WriteToFile(&F, &OutputStream) == False) { SoftError("Could not export brush."); }
       CloseFile(&F);
+      VaporizeArena(OutputStream.Memory);
     }
-    PushNewRow(Ui);
 
-    DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrushEditor->LayerCount, CSz("Layer Count"), &DefaultUiRenderParams_Generic);
-    PushNewRow(Ui);
-    PushNewRow(Ui);
-
-    RangeIterator(LayerIndex, LayeredBrushEditor->LayerCount)
+    if (ToggleButton(Ui, CSz("Import"), CSz("Import"), UiId(BrushSettingsWindow, "brush import", 0u)))
     {
-      brush_layer *Layer = Layers + LayerIndex;
-
       PushNewRow(Ui);
-      if (ToggleButton(Ui, FSz("v Layer %d", LayerIndex), FSz("> Layer %d", LayerIndex), UiId(BrushSettingsWindow, "brush_layer toggle interaction", Layer)))
+
+
+      filtered_file_traversal_helper_params HelperParams = {BrushSettingsWindow, 0};
+      maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTreeUnordered(CSz("brushes"), EngineDrawFileNodesFilteredHelper, u64(&HelperParams) );
+
+      if (ClickedFileNode.Tag)
       {
+        Info("Clicked brush");
+        u8_stream Bytes = U8_StreamFromFile(Concat( ClickedFileNode.Value.Dir, CSz("/"), ClickedFileNode.Value.Name, GetTranArena()), GetTranArena());
+        Deserialize(&Bytes, &Editor->LayeredBrushEditor, 0); // NOTE(Jesse): Passing 0 for the memory is fine here because these brushes have no pointers.  In the future this may change.
+      }
+
+    }
+    else
+    {
+      PushNewRow(Ui);
+      DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrushEditor->LayerCount, CSz("Layer Count"), &DefaultUiRenderParams_Generic);
+      PushNewRow(Ui);
+      PushNewRow(Ui);
+
+      RangeIterator(LayerIndex, LayeredBrushEditor->LayerCount)
+      {
+        brush_layer *Layer = Layers + LayerIndex;
+
         PushNewRow(Ui);
-        DoEditorUi(Ui, BrushSettingsWindow, &Layer->Type, CSz("Layer Type"), &DefaultUiRenderParams_Button);
-
-        switch (Layer->Type)
+        if (ToggleButton(Ui, FSz("v Layer %d", LayerIndex), FSz("> Layer %d", LayerIndex), UiId(BrushSettingsWindow, "brush_layer toggle interaction", Layer)))
         {
-          case BrushLayerType_Noise:
+          PushNewRow(Ui);
+          DoEditorUi(Ui, BrushSettingsWindow, &Layer->Type, CSz("Layer Type"), &DefaultUiRenderParams_Button);
+
+          switch (Layer->Type)
           {
-            BrushSettingsForNoiseBrush(Engine, BrushSettingsWindow, &Layer->NoiseLayer);
-            PushNewRow(Ui);
-          } break;
+            case BrushLayerType_Noise:
+            {
+              BrushSettingsForNoiseBrush(Engine, BrushSettingsWindow, &Layer->NoiseLayer);
+              PushNewRow(Ui);
+            } break;
 
-          case BrushLayerType_Shape: { PushColumn(Ui, CSz("TODO(Jesse): Shape brush.")); } break;
+            case BrushLayerType_Shape: { PushColumn(Ui, CSz("TODO(Jesse): Shape brush.")); } break;
+          }
         }
+        PushNewRow(Ui);
       }
-      PushNewRow(Ui);
-    }
 
-    {
-      world_chunk *PreviewChunk = &LayeredBrushEditor->Preview.Chunk;
-      /* v3i TargetDim = Max(GetSelectionDim(World, Editor), LargestLayerDim); */
-      if (AnyBrushSettingsUpdated)
       {
-        // First find the largest total dimension of all the layers, and the
-        // largest negative minimum offset.  We need this min offset such that
-        // we can position layers relative to it.  By doing this, we implicitly
-        // take into account the size of the selection, but the computation is
-        // simpler than if we used the selection box directly .. I claim ..
-        //
-        // I still haven't done it, but that's my theory at the moment.
-        //
-        v3i LargestLayerDim = GetSelectionDim(World, Editor);
-        v3i SmallestMinOffset = V3i(s32_MAX);
-        RangeIterator(LayerIndex, LayeredBrushEditor->LayerCount)
+        world_chunk *PreviewChunk = &LayeredBrushEditor->Preview.Chunk;
+        /* v3i TargetDim = Max(GetSelectionDim(World, Editor), LargestLayerDim); */
+        if (AnyBrushSettingsUpdated)
         {
-          brush_layer *Layer = Layers + LayerIndex;
+          // First find the largest total dimension of all the layers, and the
+          // largest negative minimum offset.  We need this min offset such that
+          // we can position layers relative to it.  By doing this, we implicitly
+          // take into account the size of the selection, but the computation is
+          // simpler than if we used the selection box directly .. I claim ..
+          //
+          // I still haven't done it, but that's my theory at the moment.
+          //
+          v3i LargestLayerDim = GetSelectionDim(World, Editor);
+          v3i SmallestMinOffset = V3i(s32_MAX);
+          RangeIterator(LayerIndex, LayeredBrushEditor->LayerCount)
+          {
+            brush_layer *Layer = Layers + LayerIndex;
 
-          v3i LayerDim = GetLayerDim(Layer);
-          LargestLayerDim = Max(LayerDim, LargestLayerDim);
+            v3i LayerDim = GetLayerDim(Layer);
+            LargestLayerDim = Max(LayerDim, LargestLayerDim);
 
-          SmallestMinOffset = Min(Layer->NoiseLayer.Params.Offset.Min, SmallestMinOffset);
+            SmallestMinOffset = Min(Layer->NoiseLayer.Params.Offset.Min, SmallestMinOffset);
+          }
+
+
+          if (PreviewChunk->Dim != LargestLayerDim)
+          {
+            // @editor_chunk_memory_question
+            AllocateWorldChunk(PreviewChunk, {}, LargestLayerDim, Editor->Memory);
+          }
+          else
+          {
+            ClearChunkVoxels(PreviewChunk->Voxels, PreviewChunk->Dim);
+          }
+
+          RangeIterator(LayerIndex, LayeredBrushEditor->LayerCount)
+          {
+            brush_layer *Layer = Layers + LayerIndex;
+            ApplyBrushLayer(Engine, Layer, PreviewChunk, SmallestMinOffset);
+          }
+
+          MarkBoundaryVoxels_MakeExteriorFaces( PreviewChunk->Voxels, PreviewChunk->Dim, {{}}, PreviewChunk->Dim );
+          FinalizeChunkInitialization(PreviewChunk);
+          QueueChunkForMeshRebuild(&Plat->LowPriority, PreviewChunk);
         }
 
-
-        if (PreviewChunk->Dim != LargestLayerDim)
-        {
-          // @editor_chunk_memory_question
-          AllocateWorldChunk(PreviewChunk, {}, LargestLayerDim, Editor->Memory);
-        }
-        else
-        {
-          ClearChunkVoxels(PreviewChunk->Voxels, PreviewChunk->Dim);
-        }
-
-        RangeIterator(LayerIndex, LayeredBrushEditor->LayerCount)
-        {
-          brush_layer *Layer = Layers + LayerIndex;
-          ApplyBrushLayer(Engine, Layer, PreviewChunk, SmallestMinOffset);
-        }
-
-        MarkBoundaryVoxels_MakeExteriorFaces( PreviewChunk->Voxels, PreviewChunk->Dim, {{}}, PreviewChunk->Dim );
-        FinalizeChunkInitialization(PreviewChunk);
-        QueueChunkForMeshRebuild(&Plat->LowPriority, PreviewChunk);
+        SyncGpuBuffersImmediate(Engine, &PreviewChunk->Meshes);
+        RenderToTexture(Engine, &LayeredBrushEditor->Preview.Thumbnail, &PreviewChunk->Meshes, PreviewChunk->Dim/-2.f);
       }
-
-      SyncGpuBuffersImmediate(Engine, &PreviewChunk->Meshes);
-      RenderToTexture(Engine, &LayeredBrushEditor->Preview.Thumbnail, &PreviewChunk->Meshes, PreviewChunk->Dim/-2.f);
     }
     PushWindowEnd(Ui, BrushSettingsWindow);
   }
-
 }
 
 link_internal void

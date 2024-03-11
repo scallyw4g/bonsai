@@ -483,19 +483,19 @@ poof(serialize_struct(level_header))
 
 
 
-poof(serialize_struct(voronoi_noise_params))
-#include <generated/serialize_struct_voronoi_noise_params.h>
-poof(serialize_struct(perlin_noise_params))
-#include <generated/serialize_struct_perlin_noise_params.h>
-poof(serialize_struct(world_edit_params))
-#include <generated/serialize_struct_world_edit_params.h>
-poof(serialize_struct(noise_params))
-#include <generated/serialize_struct_noise_params.h>
-poof(serialize_struct(noise_layer))
-#include <generated/serialize_struct_noise_layer.h>
-poof(serialize_struct(shape_layer))
-#include <generated/serialize_struct_shape_layer.h>
-poof(serialize_struct(brush_layer))
-#include <generated/serialize_struct_brush_layer.h>
-poof(serialize_struct(layered_brush_editor))
-#include <generated/serialize_struct_layered_brush_editor.h>
+poof(serdes_struct(voronoi_noise_params))
+#include <generated/serdes_struct_voronoi_noise_params.h>
+poof(serdes_struct(perlin_noise_params))
+#include <generated/serdes_struct_perlin_noise_params.h>
+poof(serdes_struct(world_edit_params))
+#include <generated/serdes_struct_world_edit_params.h>
+poof(serdes_struct(noise_params))
+#include <generated/serdes_struct_noise_params.h>
+poof(serdes_struct(noise_layer))
+#include <generated/serdes_struct_noise_layer.h>
+poof(serdes_struct(shape_layer))
+#include <generated/serdes_struct_shape_layer.h>
+poof(serdes_struct(brush_layer))
+#include <generated/serdes_struct_brush_layer.h>
+poof(serdes_struct(layered_brush_editor))
+#include <generated/serdes_struct_layered_brush_editor.h>

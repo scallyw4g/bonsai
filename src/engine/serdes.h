@@ -258,7 +258,7 @@ poof(
                 {
                   RangeIterator(ElementIndex, member.array)
                   {
-                    Result &= Deserialize(Bytes, &Element->(member.name)[ElementIndex]);
+                    Result &= Deserialize(Bytes, &Element->(member.name)[ElementIndex], Memory);
                   }
                 }
                 {

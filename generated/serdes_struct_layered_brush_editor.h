@@ -1,11 +1,11 @@
-// src/engine/serdes.cpp:496:0
+// src/engine/serdes.cpp:500:0
 
 link_internal bonsai_type_info
-TypeInfo(shape_layer *Ignored)
+TypeInfo(layered_brush_editor *Ignored)
 {
   bonsai_type_info Result = {};
 
-  Result.Name = CSz("shape_layer");
+  Result.Name = CSz("layered_brush_editor");
   Result.Version = 0 ;
 
   /* type.map(member) */
@@ -20,7 +20,7 @@ TypeInfo(shape_layer *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, shape_layer *BaseElement, umm Count = 1)
+Serialize(u8_cursor_block_array *Bytes, layered_brush_editor *BaseElement, umm Count = 1)
 {
   Assert(Count > 0);
 
@@ -33,8 +33,20 @@ Serialize(u8_cursor_block_array *Bytes, shape_layer *BaseElement, umm Count = 1)
 
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    shape_layer *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->TODO);
+    layered_brush_editor *Element = BaseElement + ElementIndex;
+    Result &= Serialize(Bytes, &Element->LayerCount);
+
+
+
+
+
+    Result &= Serialize(Bytes, Element->Layers, 8);
+
+
+
+
+
+
 
     
 
@@ -45,21 +57,36 @@ Serialize(u8_cursor_block_array *Bytes, shape_layer *BaseElement, umm Count = 1)
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, shape_layer *Element, memory_arena *Memory, umm Count = 1);
+Deserialize(u8_cursor *Bytes, layered_brush_editor *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *Memory);
+DeserializeCurrentVersion(u8_cursor *Bytes, layered_brush_editor *Element, memory_arena *Memory);
 
 
 
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, layered_brush_editor *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->TODO, Memory);
+  Result &= Deserialize(Bytes, &Element->LayerCount, Memory);
+
+
+
+
+
+  RangeIterator(ElementIndex, 8)
+  {
+    Result &= Deserialize(Bytes, &Element->Layers[ElementIndex], Memory);
+  }
+
+
+
+
+
+
 
   
 
@@ -68,7 +95,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, shape_layer *Element, memory_arena *Memory, umm Count)
+Deserialize(u8_cursor *Bytes, layered_brush_editor *Element, memory_arena *Memory, umm Count)
 {
   Assert(Count > 0);
 
