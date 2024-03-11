@@ -887,6 +887,7 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
     // @editor_chunk_memory_question
     //
     /* DeallocateWorldChunk(DestChunk, MeshFreelist); */
+    DeallocateGpuBuffers(DestChunk);
     AllocateWorldChunk(DestChunk, {}, RequiredLayerDim, Editor->Memory);
   }
 
