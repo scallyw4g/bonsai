@@ -47,8 +47,8 @@ RadioButtonGroup_brush_layer_type( renderer_2d *Ui,
 {
   cs ButtonNames[] =
   {
-    CSz("Shape"),
     CSz("Noise"),
+    CSz("Shape"),
   };
 
   u32 ButtonCount = ArrayCount(ButtonNames);

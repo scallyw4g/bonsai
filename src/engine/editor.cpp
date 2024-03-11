@@ -966,7 +966,6 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
       case NoiseType_Perlin:
       {
         perlin_noise_params *PerlinParams = &Params->PerlinParams;
-
         DoEditorUi(Ui, Window, PerlinParams, CSz("Perlin"));
       } break;
 
@@ -1075,13 +1074,13 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
         switch (Layer->Type)
         {
-          case BrushLayerType_Shape: {} break;
-
           case BrushLayerType_Noise:
           {
             BrushSettingsForNoiseBrush(Engine, BrushSettingsWindow, &Layer->NoiseLayer);
             PushNewRow(Ui);
           } break;
+
+          case BrushLayerType_Shape: { PushColumn(Ui, CSz("TODO(Jesse): Shape brush.")); } break;
         }
       }
       PushNewRow(Ui);

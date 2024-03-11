@@ -823,8 +823,8 @@ struct noise_layer
 
 enum brush_layer_type
 {
-  BrushLayerType_Shape,
   BrushLayerType_Noise,
+  BrushLayerType_Shape,
 };
 
 poof(do_editor_ui_for_radio_enum(brush_layer_type))
