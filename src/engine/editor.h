@@ -758,7 +758,7 @@ struct world_update_op_shape_params_sphere
   f32 Radius;
 };
 
-struct world_update_op_shape
+struct world_edit_shape
 {
   world_update_op_shape_type Type;
 
@@ -770,13 +770,13 @@ struct world_update_op_shape
   };
 };
 
-/* poof(do_editor_ui_for_compound_type(world_update_op_shape)) */
+/* poof(do_editor_ui_for_compound_type(world_edit_shape)) */
 /* #include <generated/do_editor_ui_for_compound_type_world_update_op_shape.h> */
 
 
 struct world_edit_brush
 {
-  world_update_op_shape    Shape;
+  world_edit_shape         Shape;
 
   world_edit_mode          Mode;
   world_edit_mode_modifier Modifier;

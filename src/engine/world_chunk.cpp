@@ -3613,7 +3613,7 @@ link_internal work_queue_entry_update_world_region
 WorkQueueEntryUpdateWorldRegion(world_edit_mode Mode,
                                 world_edit_mode_modifier Modifier,
                                 v3 SimFloodOrigin,
-                                world_update_op_shape *Shape,
+                                world_edit_shape *Shape,
                                 u16 ColorIndex,
                                 cp MinP,
                                 cp MaxP,
@@ -3815,7 +3815,7 @@ link_internal void
 QueueWorldUpdateForRegion(engine_resources *Engine,
                           world_edit_mode Mode,
                           world_edit_mode_modifier Modifier,
-                          world_update_op_shape *Shape,
+                          world_edit_shape *Shape,
                           u16 ColorIndex,
                           memory_arena *Memory)
 {
@@ -4496,7 +4496,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 
   world_edit_mode              Mode = Job->Brush.Mode;
   world_edit_mode_modifier Modifier = Job->Brush.Modifier;
-  world_update_op_shape       Shape = Job->Brush.Shape;
+  world_edit_shape       Shape = Job->Brush.Shape;
   v3i                   FloodOrigin = V3i(Job->Brush.SimFloodOrigin);
 
   u16 NewColor                = Job->ColorIndex;
@@ -4711,7 +4711,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
   world_edit_mode              Mode = Job->Brush.Mode;
   world_edit_mode_modifier Modifier = Job->Brush.Modifier;
-  world_update_op_shape       Shape = Job->Brush.Shape;
+  world_edit_shape       Shape = Job->Brush.Shape;
   v3i                   FloodOrigin = V3i(Job->Brush.SimFloodOrigin);
 
   u16 NewColor                = Job->ColorIndex;

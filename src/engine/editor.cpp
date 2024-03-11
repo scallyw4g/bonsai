@@ -432,7 +432,7 @@ GetMax(v3 *SelectionRegion)
 link_internal void
 ApplyEditToRegion(engine_resources *Engine, rect3 *SelectionAABB, world_edit_mode WorldEditMode, world_edit_mode_modifier Modifier)
 {
-  world_update_op_shape Shape = {
+  world_edit_shape Shape = {
     .Type = type_world_update_op_shape_params_rect,
     .world_update_op_shape_params_rect.P0 = SelectionAABB->Min,
     .world_update_op_shape_params_rect.P1 = SelectionAABB->Max,
@@ -984,7 +984,7 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestC
 
       Assert(SrcChunk->Dim <= DestChunk->Dim);
 
-      world_update_op_shape Shape =
+      world_edit_shape Shape =
       {
         type_world_update_op_shape_params_chunk_data,
         .world_update_op_shape_params_chunk_data = ChunkDataShape,
@@ -1488,7 +1488,7 @@ DoWorldEditor(engine_resources *Engine)
 
                     if (WorldEditBrushType == WorldEdit_BrushType_Asset)
                     {
-                      world_update_op_shape Shape =
+                      world_edit_shape Shape =
                       {
                         type_world_update_op_shape_params_asset,
                         .world_update_op_shape_params_asset = AssetUpdateShape,
@@ -1586,7 +1586,7 @@ DoWorldEditor(engine_resources *Engine)
               chunk_data D = {Chunk->Flags, Chunk->Dim, Chunk->Voxels, Chunk->VoxelLighting};
               world_update_op_shape_params_chunk_data ChunkDataShape = { D, V3(MinOffset) + GetSimSpaceP(World, Editor->SelectionRegion.Min) };
 
-              world_update_op_shape Shape =
+              world_edit_shape Shape =
               {
                 type_world_update_op_shape_params_chunk_data,
                 .world_update_op_shape_params_chunk_data = ChunkDataShape,
@@ -1672,7 +1672,7 @@ DoWorldEditor(engine_resources *Engine)
                 SelectedEntity->P,
               };
 
-              world_update_op_shape Shape =
+              world_edit_shape Shape =
               {
                 type_world_update_op_shape_params_asset,
                 .world_update_op_shape_params_asset = AssetUpdateShape,
@@ -1690,7 +1690,7 @@ DoWorldEditor(engine_resources *Engine)
 #if 0
         if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
         {
-          world_update_op_shape Shape = {
+          world_edit_shape Shape = {
             .Type = type_world_update_op_shape_params_rect,
             .world_update_op_shape_params_rect.P0 = SelectionAABB.Min,
             .world_update_op_shape_params_rect.P1 = SelectionAABB.Max,
@@ -1740,7 +1740,7 @@ DoWorldEditor(engine_resources *Engine)
 
       world_update_op_shape_params_chunk_data ChunkDataShape = { D, GetSimSpaceP(World, Editor->SelectionRegion.Min) };
 
-      world_update_op_shape Shape =
+      world_edit_shape Shape =
       {
         type_world_update_op_shape_params_chunk_data,
         .world_update_op_shape_params_chunk_data = ChunkDataShape,

@@ -276,7 +276,7 @@ DoDig( engine_resources *Resources, canonical_position PickCP, f32 Radius, f32 D
   v3 MinP = SimSpaceMinCenterP - V3(Radius, Radius, Depth);
   v3 MaxP = SimSpaceMinCenterP + V3(Radius, Radius, Depth);
 
-  world_update_op_shape Shape = {
+  world_edit_shape Shape = {
     .Type = type_world_update_op_shape_params_rect,
     .world_update_op_shape_params_rect.P0 = MinP,
     .world_update_op_shape_params_rect.P1 = MaxP,
@@ -292,7 +292,7 @@ DoIceBlock( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
   v3 MinP = SimSpaceMinCenterP - V3(Radius, Radius, 0.f);
   v3 MaxP = SimSpaceMinCenterP + V3(Radius, Radius, 3.f*Radius);
 
-  world_update_op_shape Shape = {
+  world_edit_shape Shape = {
     .Type = type_world_update_op_shape_params_rect,
     .world_update_op_shape_params_rect.P0 = MinP,
     .world_update_op_shape_params_rect.P1 = MaxP,
@@ -305,7 +305,7 @@ DoSplotion( engine_resources *Resources, cp PickCP, f32 Radius, random_series *E
 {
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  world_update_op_shape Shape = {
+  world_edit_shape Shape = {
     .Type = type_world_update_op_shape_params_sphere,
     .world_update_op_shape_params_sphere.Radius = Radius,
     .world_update_op_shape_params_sphere.Location = PickCP,
