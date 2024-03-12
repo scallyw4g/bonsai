@@ -971,36 +971,35 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
   noise_params *Params = &Layer->Params;
 
   PushTableStart(Ui);
-    PushNewRow(Ui);
-    {
-      if (Button(Ui, CSz("Set Color"), UiId(Window, "set color interaction", Cast(void*, Params)))) { Params->Color = Engine->Editor.SelectedColorIndex; }
-      ui_style Style = UiStyleFromLightestColor(GetColorData(Params->Color));
-      PushUntexturedQuad(Ui, {}, V2(Global_Font.Size.y), zDepth_Text, &Style, DefaultGenericPadding);
-      PushNewRow(Ui);
-    }
-
-    DoEditorUi(Ui, Window, &Params->Offset,     CSz("Select Offset"));
-    DoEditorUi(Ui, Window, &Params->EditParams, CSz("Edit Mode"));
-    DoEditorUi(Ui, Window, &Params->Type,       CSz("Noise Type"), &DefaultUiRenderParams_Generic);
-
     if (SelectionComplete(Editor->SelectionClicks))
     {
+      DoEditorUi(Ui, Window, &Params->Type,       CSz(""), &DefaultUiRenderParams_Generic);
       PushTableStart(Ui); // TODO(Jesse): Necessary?
-      switch (Params->Type)
-      {
-        case NoiseType_Perlin:
+        switch (Params->Type)
         {
-          perlin_noise_params *PerlinParams = &Params->PerlinParams;
-          DoEditorUi(Ui, Window, PerlinParams, CSz("Perlin"));
-        } break;
+          case NoiseType_Perlin:
+          {
+            perlin_noise_params *PerlinParams = &Params->PerlinParams;
+            DoEditorUi(Ui, Window, PerlinParams, CSz("NoiseSettings"));
+          } break;
 
-        case NoiseType_Voronoi:
-        {
-          voronoi_noise_params *VoronoiParams = &Params->VoronoiParams;
-          DoEditorUi(Ui, Window, VoronoiParams, CSz("Voronoi"));
-        } break;
-      }
+          case NoiseType_Voronoi:
+          {
+            voronoi_noise_params *VoronoiParams = &Params->VoronoiParams;
+            DoEditorUi(Ui, Window, VoronoiParams, CSz("NoiseSettings"));
+          } break;
+        }
       PushTableEnd(Ui);
+
+      DoEditorUi(Ui, Window, &Params->EditParams, CSz("Behavior"));
+      DoEditorUi(Ui, Window, &Params->Offset,     CSz("Dilation"));
+
+      {
+        if (Button(Ui, CSz("Set Color"), UiId(Window, "set color interaction", Cast(void*, Params)))) { Params->Color = Engine->Editor.SelectedColorIndex; }
+        ui_style Style = UiStyleFromLightestColor(GetColorData(Params->Color));
+        PushUntexturedQuad(Ui, {}, V2(Global_Font.Size.y), zDepth_Text, &Style, DefaultGenericPadding);
+        PushNewRow(Ui);
+      }
     }
     else
     {
@@ -1127,15 +1126,17 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
       PushNewRow(Ui);
       PushNewRow(Ui);
 
+      PushTableStart(Ui);
       RangeIterator(LayerIndex, LayeredBrushEditor->LayerCount)
       {
         brush_layer *Layer = Layers + LayerIndex;
 
         if (ToggleButton(Ui, FSz("v Layer %d", LayerIndex), FSz("> Layer %d", LayerIndex), UiId(BrushSettingsWindow, "brush_layer toggle interaction", Layer)))
         {
+          DoEditorUi(Ui, BrushSettingsWindow, &Layer->Type, {}, &DefaultUiRenderParams_Generic);
+
           PushNewRow(Ui);
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-          DoEditorUi(Ui, BrushSettingsWindow, &Layer->Type, CSz("Layer Type"), &DefaultUiRenderParams_Button);
 
           switch (Layer->Type)
           {
@@ -1150,6 +1151,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         }
         PushNewRow(Ui);
       }
+      PushTableEnd(Ui);
 
       {
         world_chunk *PreviewChunk = &LayeredBrushEditor->Preview.Chunk;

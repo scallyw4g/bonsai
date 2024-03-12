@@ -141,6 +141,28 @@ Bonsai_FrameBegin(engine_resources *Resources)
 #endif
 
 #if 0
+  // NOTE(Jesse): This is fixed
+  // @enum_button_group_aligns_poorly_after_toggle_button
+  {
+    local_persist window_layout TestWindow = WindowLayout("TestWindow");
+    PushWindowStart(Ui, &TestWindow);
+
+    ui_id BogusInteractionId = UiId(&TestWindow, "test_window_toggle_interaction", 0u);
+      if (ToggleButton(Ui, CSz("v Label"), CSz("v Label"), BogusInteractionId))
+      {
+
+        PushTableStart(Ui);
+          Button(Ui, CSz("Foo"), BogusInteractionId);
+          Button(Ui, CSz("Boo"), BogusInteractionId);
+          Button(Ui, CSz("Goo"), BogusInteractionId);
+        PushTableEnd(Ui);
+      }
+
+    PushWindowEnd(Ui, &TestWindow);
+  }
+#endif
+
+#if 0
   {
     local_persist window_layout TestWindow = WindowLayout("TestWindow");
     PushWindowStart(Ui, &TestWindow);
