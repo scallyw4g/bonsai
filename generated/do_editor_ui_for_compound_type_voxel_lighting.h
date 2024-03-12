@@ -10,7 +10,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_lighting *Element, cs N
       PushNewRow(Ui);
 
       PushTableStart(Ui);
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      OPEN_INDENT_FOR_TOGGLEABLE_REGION();
       DoEditorUi(Ui,
         Window,
 &Element->Emission,
@@ -23,7 +23,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_lighting *Element, cs N
 
 
       PushNewRow(Ui);
-      PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+      CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       PushTableEnd(Ui);
     }
     else

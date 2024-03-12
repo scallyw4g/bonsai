@@ -10,7 +10,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
       PushNewRow(Ui);
 
       PushTableStart(Ui);
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      OPEN_INDENT_FOR_TOGGLEABLE_REGION();
       DoEditorUi(Ui,
         Window,
         Element->Next,
@@ -199,21 +199,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
       
       if (ToggleButton(Ui, CSz("v _Pad1[32]"), CSz("> _Pad1[32]"), UiId(Window, "toggle world_chunk u8 _Pad1", Element->_Pad1), Params ))
       {
-        PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
         RangeIterator(ArrayIndex, 32)
         {
           DoEditorUi(Ui, Window, Element->_Pad1+ArrayIndex, FSz("_Pad1[%d]", ArrayIndex), Params);
  PushNewRow(Ui); 
         }
-        PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       }
       PushNewRow(Ui);
 
 
 
       PushNewRow(Ui);
-      PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+      CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       PushTableEnd(Ui);
     }
     else

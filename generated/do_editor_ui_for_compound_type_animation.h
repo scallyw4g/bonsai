@@ -10,7 +10,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
       PushNewRow(Ui);
 
       PushTableStart(Ui);
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      OPEN_INDENT_FOR_TOGGLEABLE_REGION();
       DoEditorUi(Ui,
         Window,
 &Element->t,
@@ -106,7 +106,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
         CSz("zKeyframes"),
         Params
         );
-      PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+      CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       PushTableEnd(Ui);
     }
     else

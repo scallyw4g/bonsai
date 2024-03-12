@@ -10,7 +10,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
       PushNewRow(Ui);
 
       PushTableStart(Ui);
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      OPEN_INDENT_FOR_TOGGLEABLE_REGION();
       DoEditorUi(Ui,
         Window,
 &Element->SolidUIVertexBuffer,
@@ -105,7 +105,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
         CSz("Geo"),
         Params
         );
-      PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+      CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       PushTableEnd(Ui);
     }
     else

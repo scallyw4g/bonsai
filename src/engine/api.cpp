@@ -129,6 +129,21 @@ Bonsai_FrameBegin(engine_resources *Resources)
   {
     local_persist window_layout TestWindow = WindowLayout("TestWindow");
     PushWindowStart(Ui, &TestWindow);
+      PushTableStart(Ui);
+        RenderAndInteractWithThumbnailTexture(Ui, &TestWindow, "test_foo_string", &Editor->NoiseLayer.Preview.Thumbnail);
+      PushTableEnd(Ui);
+      PushNewRow(Ui);
+      PushTableStart(Ui);
+        RenderAndInteractWithThumbnailTexture(Ui, &TestWindow, "test_foo_string", &Editor->NoiseLayer.Preview.Thumbnail);
+      PushTableEnd(Ui);
+    PushWindowEnd(Ui, &TestWindow);
+  }
+#endif
+
+#if 0
+  {
+    local_persist window_layout TestWindow = WindowLayout("TestWindow");
+    PushWindowStart(Ui, &TestWindow);
 
       PushTableStart(Ui);
         DoEditorUi(Ui, &TestWindow, &Resources->Ui.ToggleTable, CSz("ToggleTable"));

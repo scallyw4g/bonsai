@@ -10,7 +10,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
       PushNewRow(Ui);
 
       PushTableStart(Ui);
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      OPEN_INDENT_FOR_TOGGLEABLE_REGION();
       DoEditorUi(Ui,
         Window,
         Cast(b8*,&Element->UseSsao),
@@ -209,7 +209,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
         CSz("iLuminanceMapResolution"),
         Params
         );
-      PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+      CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       PushTableEnd(Ui);
     }
     else

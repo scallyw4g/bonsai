@@ -10,14 +10,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vox_data *Element, cs Name, u
       PushNewRow(Ui);
 
       PushTableStart(Ui);
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      OPEN_INDENT_FOR_TOGGLEABLE_REGION();
       DoEditorUi(Ui,
         Window,
         Element->ChunkData,
         CSz("ChunkData"),
         Params
         );
-      PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+      CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       PushTableEnd(Ui);
     }
     else

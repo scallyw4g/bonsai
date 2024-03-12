@@ -10,7 +10,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
       PushNewRow(Ui);
 
       PushTableStart(Ui);
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      OPEN_INDENT_FOR_TOGGLEABLE_REGION();
       DoEditorUi(Ui,
         Window,
 &Element->Settings,
@@ -146,14 +146,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
       
       if (ToggleButton(Ui, CSz("v GpuBuffers[2]"), CSz("> GpuBuffers[2]"), UiId(Window, "toggle graphics gpu_mapped_element_buffer GpuBuffers", Element->GpuBuffers), Params ))
       {
-        PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
         RangeIterator(ArrayIndex, 2)
         {
           DoEditorUi(Ui, Window, Element->GpuBuffers+ArrayIndex, FSz("GpuBuffers[%d]", ArrayIndex), Params);
           
         }
-        PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       }
       PushNewRow(Ui);
 
@@ -179,7 +179,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         CSz("Memory"),
         Params
         );
-      PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+      CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       PushTableEnd(Ui);
     }
     else

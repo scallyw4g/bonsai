@@ -10,7 +10,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
       PushNewRow(Ui);
 
       PushTableStart(Ui);
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      OPEN_INDENT_FOR_TOGGLEABLE_REGION();
       DoEditorUi(Ui,
         Window,
         Element->TextGroup,
@@ -110,14 +110,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
       
       if (ToggleButton(Ui, CSz("v MinimizedWindowBuffer[64]"), CSz("> MinimizedWindowBuffer[64]"), UiId(Window, "toggle renderer_2d window_layout MinimizedWindowBuffer", Element->MinimizedWindowBuffer), Params ))
       {
-        PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
         RangeIterator(ArrayIndex, 64)
         {
           DoEditorUi(Ui, Window, Element->MinimizedWindowBuffer+ArrayIndex, FSz("MinimizedWindowBuffer[%d]", ArrayIndex), Params);
           
         }
-        PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       }
       PushNewRow(Ui);
 
@@ -247,14 +247,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
       
       if (ToggleButton(Ui, CSz("v DebugColors[128]"), CSz("> DebugColors[128]"), UiId(Window, "toggle renderer_2d v3 DebugColors", Element->DebugColors), Params ))
       {
-        PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
         RangeIterator(ArrayIndex, 128)
         {
           DoEditorUi(Ui, Window, Element->DebugColors+ArrayIndex, FSz("DebugColors[%d]", ArrayIndex), Params);
           
         }
-        PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       }
       PushNewRow(Ui);
 
@@ -293,7 +293,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         CSz("ColorPalette"),
         Params
         );
-      PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+      CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       PushTableEnd(Ui);
     }
     else

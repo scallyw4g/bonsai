@@ -10,7 +10,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
       PushNewRow(Ui);
 
       PushTableStart(Ui);
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      OPEN_INDENT_FOR_TOGGLEABLE_REGION();
       DoEditorUi(Ui,
         Window,
 &Element->LayerCount,
@@ -26,14 +26,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
 
       if (ToggleButton(Ui, CSz("v Layers[8]"), CSz("> Layers[8]"), UiId(Window, "toggle layered_brush_editor brush_layer Layers", Element->Layers), Params ))
       {
-        PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
         RangeIterator(ArrayIndex, 8)
         {
           DoEditorUi(Ui, Window, Element->Layers+ArrayIndex, FSz("Layers[%d]", ArrayIndex), Params);
           
         }
-        PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       }
       PushNewRow(Ui);
 
@@ -46,7 +46,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
         CSz("Preview"),
         Params
         );
-      PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+      CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       PushTableEnd(Ui);
     }
     else

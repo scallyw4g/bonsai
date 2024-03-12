@@ -10,7 +10,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_id *Element, cs Name, 
       PushNewRow(Ui);
 
       PushTableStart(Ui);
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      OPEN_INDENT_FOR_TOGGLEABLE_REGION();
       DoEditorUi(Ui,
         Window,
 &Element->Index,
@@ -36,7 +36,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_id *Element, cs Name, 
 
 
       PushNewRow(Ui);
-      PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+      CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       PushTableEnd(Ui);
     }
     else

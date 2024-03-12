@@ -1044,11 +1044,13 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestC
       v3 SimFloodOrigin = V3(0);
       u16 ColorIndex = 0;
 
-      s32 Iterations = Max(1, Params->EditParams.Iterations);
+      s32 Iterations = Params->EditParams.Iterations;
+      if (Iterations > 1) { Info("%d", Iterations); }
       RangeIterator(IterIndex, Iterations)
       {
         work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, ColorIndex, {}, {}, &SrcChunk, 1);
         ApplyUpdateToRegion(GetThreadLocalState(ThreadLocal_ThreadIndex), &Job, UpdateBounds, DestChunk);
+        MarkBoundaryVoxels_MakeExteriorFaces( DestChunk->Voxels, DestChunk->Dim, {{}}, DestChunk->Dim );
       }
 
 #endif
@@ -1128,7 +1130,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         if (ToggleButton(Ui, FSz("v Layer %d", LayerIndex), FSz("> Layer %d", LayerIndex), UiId(BrushSettingsWindow, "brush_layer toggle interaction", Layer)))
         {
           PushNewRow(Ui);
-          PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+          OPEN_INDENT_FOR_TOGGLEABLE_REGION();
           DoEditorUi(Ui, BrushSettingsWindow, &Layer->Type, CSz("Layer Type"), &DefaultUiRenderParams_Button);
 
           switch (Layer->Type)
@@ -1141,13 +1143,14 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
             case BrushLayerType_Shape: { PushColumn(Ui, CSz("TODO(Jesse): Shape brush.")); } break;
           }
-          PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+          CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
         }
         PushNewRow(Ui);
         PushTableEnd(Ui);
 
         PushTableStart(Ui);
           RenderAndInteractWithThumbnailTexture(Ui, BrushSettingsWindow, "noise preview interaction", &Layer->NoiseLayer.Preview.Thumbnail);
+          PushNewRow(Ui);
         PushTableEnd(Ui);
       }
 
@@ -1193,7 +1196,6 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
             ApplyBrushLayer(Engine, Layer, PreviewChunk, SmallestMinOffset);
           }
 
-          MarkBoundaryVoxels_MakeExteriorFaces( PreviewChunk->Voxels, PreviewChunk->Dim, {{}}, PreviewChunk->Dim );
           FinalizeChunkInitialization(PreviewChunk);
           QueueChunkForMeshRebuild(&Plat->LowPriority, PreviewChunk);
         }

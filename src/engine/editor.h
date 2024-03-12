@@ -207,7 +207,7 @@ poof(
           PushNewRow(Ui);
 
           PushTableStart(Ui);
-          PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+          OPEN_INDENT_FOR_TOGGLEABLE_REGION();
             type.map(member)
             {
               member.has_tag(ui_skip)?
@@ -218,14 +218,14 @@ poof(
                 {
                   if (ToggleButton(Ui, CSz("v member.name[member.array]"), CSz("> member.name[member.array]"), UiId(Window, "toggle type.name member.type member.name", Element->(member.name)), Params ))
                   {
-                    PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+                    OPEN_INDENT_FOR_TOGGLEABLE_REGION();
                       PushNewRow(Ui);
                       RangeIterator(ArrayIndex, member.array)
                       {
                         DoEditorUi(Ui, Window, Element->(member.name)+ArrayIndex, FSz("member.name[%d]", ArrayIndex), Params);
                         member.is_primitive?  { PushNewRow(Ui); }
                       }
-                    PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+                    CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
                   }
                   PushNewRow(Ui);
                 }
@@ -261,7 +261,7 @@ poof(
                 PushNewRow(Ui);
               }
             }
-          PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+          CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
           PushTableEnd(Ui);
         }
         else
@@ -617,7 +617,7 @@ struct world_edit_params
   world_edit_mode Mode;
   world_edit_mode_modifier Modifier;
 
-  s32 Iterations; // NOTE(Jesse): Set this to do the filter multiple times.
+  s32 Iterations = 1; // NOTE(Jesse): Set this to do the filter multiple times.
 };
 
 
@@ -845,7 +845,7 @@ struct brush_layer
 #define MAX_BRUSH_LAYERS 8
 struct layered_brush_editor
 {
-  s32 LayerCount;
+  s32 LayerCount = 1;
   brush_layer Layers[MAX_BRUSH_LAYERS];
 
   chunk_thumbnail Preview; poof(@no_serialize)

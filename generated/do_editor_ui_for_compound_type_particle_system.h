@@ -10,7 +10,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       PushNewRow(Ui);
 
       PushTableStart(Ui);
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      OPEN_INDENT_FOR_TOGGLEABLE_REGION();
       DoEditorUi(Ui,
         Window,
 &Element->Entropy,
@@ -280,14 +280,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
       if (ToggleButton(Ui, CSz("v Colors[6]"), CSz("> Colors[6]"), UiId(Window, "toggle particle_system u8 Colors", Element->Colors), Params ))
       {
-        PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
         RangeIterator(ArrayIndex, 6)
         {
           DoEditorUi(Ui, Window, Element->Colors+ArrayIndex, FSz("Colors[%d]", ArrayIndex), Params);
  PushNewRow(Ui); 
         }
-        PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       }
       PushNewRow(Ui);
 
@@ -297,17 +297,17 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
       if (ToggleButton(Ui, CSz("v Particles[(4096)]"), CSz("> Particles[(4096)]"), UiId(Window, "toggle particle_system particle Particles", Element->Particles), Params ))
       {
-        PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
         RangeIterator(ArrayIndex, (4096))
         {
           DoEditorUi(Ui, Window, Element->Particles+ArrayIndex, FSz("Particles[%d]", ArrayIndex), Params);
           
         }
-        PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       }
       PushNewRow(Ui);
-      PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+      CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       PushTableEnd(Ui);
     }
     else

@@ -10,7 +10,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name,
       PushNewRow(Ui);
 
       PushTableStart(Ui);
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      OPEN_INDENT_FOR_TOGGLEABLE_REGION();
       DoEditorUi(Ui,
         Window,
 &Element->Flags,
@@ -53,7 +53,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name,
         CSz("VoxelLighting"),
         Params
         );
-      PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+      CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       PushTableEnd(Ui);
     }
     else

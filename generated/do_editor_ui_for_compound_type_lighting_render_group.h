@@ -10,7 +10,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
       PushNewRow(Ui);
 
       PushTableStart(Ui);
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      OPEN_INDENT_FOR_TOGGLEABLE_REGION();
       DoEditorUi(Ui,
         Window,
 &Element->Lights,
@@ -77,7 +77,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         CSz("Shader"),
         Params
         );
-      PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+      CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       PushTableEnd(Ui);
     }
     else

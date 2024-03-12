@@ -10,7 +10,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element,
       PushNewRow(Ui);
 
       PushTableStart(Ui);
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      OPEN_INDENT_FOR_TOGGLEABLE_REGION();
       DoEditorUi(Ui,
         Window,
 &Element->Type,
@@ -48,7 +48,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element,
 
 
       PushNewRow(Ui);
-      PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+      CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       PushTableEnd(Ui);
     }
     else

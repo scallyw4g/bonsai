@@ -10,7 +10,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_r
       PushNewRow(Ui);
 
       PushTableStart(Ui);
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+      OPEN_INDENT_FOR_TOGGLEABLE_REGION();
       DoEditorUi(Ui,
         Window,
 &Element->LoadState,
@@ -54,7 +54,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_r
         CSz("Models"),
         Params
         );
-      PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+      CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       PushTableEnd(Ui);
     }
     else
