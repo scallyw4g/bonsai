@@ -973,7 +973,7 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
   PushTableStart(Ui);
     if (SelectionComplete(Editor->SelectionClicks))
     {
-      DoEditorUi(Ui, Window, &Params->Type,       CSz(""), &DefaultUiRenderParams_Generic);
+      DoEditorUi(Ui, Window, &Params->Type, {}, &DefaultUiRenderParams_Generic);
       PushTableStart(Ui); // TODO(Jesse): Necessary?
         switch (Params->Type)
         {
