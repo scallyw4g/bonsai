@@ -6,10 +6,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
   if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
   cs ElementName = ToString(*Element);
-  if (ToggleButton(Ui, ElementName, ElementName, UiId(Window, "enum value.type value.name", Element), Params))
+  ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
+  if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
   {
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("|")); // Skip the first Name column
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("None"), UiId(Window, "enum EntityBehaviorFlags_None", Element), Params))
     {
       if (EntityBehaviorFlags_None == entity_behavior_flags(0))
@@ -28,9 +29,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
         }
       }
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("|")); // Skip the first Name column
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Gravity"), UiId(Window, "enum EntityBehaviorFlags_Gravity", Element), Params))
     {
       if (EntityBehaviorFlags_Gravity == entity_behavior_flags(0))
@@ -49,9 +52,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
         }
       }
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("|")); // Skip the first Name column
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("WorldCollision"), UiId(Window, "enum EntityBehaviorFlags_WorldCollision", Element), Params))
     {
       if (EntityBehaviorFlags_WorldCollision == entity_behavior_flags(0))
@@ -70,9 +75,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
         }
       }
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("|")); // Skip the first Name column
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("EntityCollision"), UiId(Window, "enum EntityBehaviorFlags_EntityCollision", Element), Params))
     {
       if (EntityBehaviorFlags_EntityCollision == entity_behavior_flags(0))
@@ -91,9 +98,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
         }
       }
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("|")); // Skip the first Name column
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("UnspawnOnParticleSystemTerminate"), UiId(Window, "enum EntityBehaviorFlags_UnspawnOnParticleSystemTerminate", Element), Params))
     {
       if (EntityBehaviorFlags_UnspawnOnParticleSystemTerminate == entity_behavior_flags(0))
@@ -112,9 +121,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
         }
       }
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("|")); // Skip the first Name column
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("FitCollisionVolumeToModel"), UiId(Window, "enum EntityBehaviorFlags_FitCollisionVolumeToModel", Element), Params))
     {
       if (EntityBehaviorFlags_FitCollisionVolumeToModel == entity_behavior_flags(0))
@@ -133,9 +144,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
         }
       }
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("|")); // Skip the first Name column
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("DefatulCameraGhostBehavior"), UiId(Window, "enum EntityBehaviorFlags_DefatulCameraGhostBehavior", Element), Params))
     {
       if (EntityBehaviorFlags_DefatulCameraGhostBehavior == entity_behavior_flags(0))
@@ -154,9 +167,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
         }
       }
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("|")); // Skip the first Name column
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("WorldCenter"), UiId(Window, "enum EntityBehaviorFlags_WorldCenter", Element), Params))
     {
       if (EntityBehaviorFlags_WorldCenter == entity_behavior_flags(0))
@@ -175,9 +190,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
         }
       }
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("|")); // Skip the first Name column
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Default"), UiId(Window, "enum EntityBehaviorFlags_Default", Element), Params))
     {
       if (EntityBehaviorFlags_Default == entity_behavior_flags(0))
@@ -196,6 +213,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
         }
       }
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
   }

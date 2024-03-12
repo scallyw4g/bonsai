@@ -1,4 +1,4 @@
-// src/engine/editor.h:726:0
+// src/engine/editor.h:729:0
 
 link_internal counted_string
 ToString(world_update_op_shape_type Type)

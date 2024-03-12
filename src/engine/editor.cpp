@@ -1134,8 +1134,6 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         if (ToggleButton(Ui, FSz("v Layer %d", LayerIndex), FSz("> Layer %d", LayerIndex), UiId(BrushSettingsWindow, "brush_layer toggle interaction", Layer)))
         {
           DoEditorUi(Ui, BrushSettingsWindow, &Layer->Type, {}, &DefaultUiRenderParams_Generic);
-
-          PushNewRow(Ui);
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
 
           switch (Layer->Type)

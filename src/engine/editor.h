@@ -290,12 +290,13 @@ poof(
       if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
       cs ElementName = ToString(*Element);
-      if (ToggleButton(Ui, ElementName, ElementName, UiId(Window, "enum value.type value.name", Element), Params))
+      ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
+      if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
       {
         PushNewRow(Ui);
         enum_t.map(value)
         {
-          PushColumn(Ui, CSz("|")); // Skip the first Name column
+          if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
           if (Button(Ui, CSz("value.name.strip_all_prefix"), UiId(Window, "enum value.name", Element), Params))
           {
             enum_t.has_tag(bitfield)?
@@ -319,6 +320,8 @@ poof(
             {
               *Element = value.name;
             }
+
+            SetToggleButton(Ui, ToggleButtonId, False);
           }
           PushNewRow(Ui);
         }

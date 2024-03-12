@@ -6,35 +6,44 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name,
   if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
   cs ElementName = ToString(*Element);
-  if (ToggleButton(Ui, ElementName, ElementName, UiId(Window, "enum value.type value.name", Element), Params))
+  ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
+  if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
   {
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("|")); // Skip the first Name column
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Uninitialized"), UiId(Window, "enum Chunk_Uninitialized", Element), Params))
     {
       *Element = Chunk_Uninitialized;
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("|")); // Skip the first Name column
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Queued"), UiId(Window, "enum Chunk_Queued", Element), Params))
     {
       *Element = Chunk_Queued;
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("|")); // Skip the first Name column
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("VoxelsInitialized"), UiId(Window, "enum Chunk_VoxelsInitialized", Element), Params))
     {
       *Element = Chunk_VoxelsInitialized;
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("|")); // Skip the first Name column
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Garbage"), UiId(Window, "enum Chunk_Garbage", Element), Params))
     {
       *Element = Chunk_Garbage;
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
   }
