@@ -970,41 +970,48 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
 
   noise_params *Params = &Layer->Params;
 
-  PushNewRow(Ui);
-  {
-    if (Button(Ui, CSz("Set Color"), UiId(Window, "set color interaction", Cast(void*, Params)))) { Params->Color = Engine->Editor.SelectedColorIndex; }
-    ui_style Style = UiStyleFromLightestColor(GetColorData(Params->Color));
-    PushUntexturedQuad(Ui, {}, V2(Global_Font.Size.y), zDepth_Text, &Style, DefaultGenericPadding);
+  PushTableStart(Ui);
     PushNewRow(Ui);
-  }
-
-  DoEditorUi(Ui, Window, &Params->Offset,     CSz("Select Offset"));
-  DoEditorUi(Ui, Window, &Params->EditParams, CSz("Edit Mode"));
-  DoEditorUi(Ui, Window, &Params->Type,       CSz("Noise Type"), &DefaultUiRenderParams_Generic);
-
-  if (SelectionComplete(Editor->SelectionClicks))
-  {
-    PushTableStart(Ui);
-    switch (Params->Type)
     {
-      case NoiseType_Perlin:
-      {
-        perlin_noise_params *PerlinParams = &Params->PerlinParams;
-        DoEditorUi(Ui, Window, PerlinParams, CSz("Perlin"));
-      } break;
-
-      case NoiseType_Voronoi:
-      {
-        voronoi_noise_params *VoronoiParams = &Params->VoronoiParams;
-        DoEditorUi(Ui, Window, VoronoiParams, CSz("Voronoi"));
-      } break;
+      if (Button(Ui, CSz("Set Color"), UiId(Window, "set color interaction", Cast(void*, Params)))) { Params->Color = Engine->Editor.SelectedColorIndex; }
+      ui_style Style = UiStyleFromLightestColor(GetColorData(Params->Color));
+      PushUntexturedQuad(Ui, {}, V2(Global_Font.Size.y), zDepth_Text, &Style, DefaultGenericPadding);
+      PushNewRow(Ui);
     }
-    PushTableEnd(Ui);
-  }
-  else
-  {
-    PushColumn(Ui, CSz("Make a selection to use Noise Brush"));
-  }
+
+    DoEditorUi(Ui, Window, &Params->Offset,     CSz("Select Offset"));
+    DoEditorUi(Ui, Window, &Params->EditParams, CSz("Edit Mode"));
+    DoEditorUi(Ui, Window, &Params->Type,       CSz("Noise Type"), &DefaultUiRenderParams_Generic);
+
+    if (SelectionComplete(Editor->SelectionClicks))
+    {
+      PushTableStart(Ui); // TODO(Jesse): Necessary?
+      switch (Params->Type)
+      {
+        case NoiseType_Perlin:
+        {
+          perlin_noise_params *PerlinParams = &Params->PerlinParams;
+          DoEditorUi(Ui, Window, PerlinParams, CSz("Perlin"));
+        } break;
+
+        case NoiseType_Voronoi:
+        {
+          voronoi_noise_params *VoronoiParams = &Params->VoronoiParams;
+          DoEditorUi(Ui, Window, VoronoiParams, CSz("Voronoi"));
+        } break;
+      }
+      PushTableEnd(Ui);
+    }
+    else
+    {
+      PushColumn(Ui, CSz("Make a selection to use Noise Brush"));
+    }
+  PushTableEnd(Ui);
+
+  PushTableStart(Ui);
+    RenderAndInteractWithThumbnailTexture(Ui, Window, "noise preview interaction", &Layer->Preview.Thumbnail);
+    PushNewRow(Ui);
+  PushTableEnd(Ui);
 }
 
 
@@ -1112,7 +1119,6 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         Deserialize(&Bytes, &Editor->LayeredBrushEditor, 0); // NOTE(Jesse): Passing 0 for the memory is fine here because these brushes have no pointers.  In the future this may change, and we'll crash here.
         SetToggleButton(Ui, ImportToggleId, False);
       }
-
     }
     else
     {
@@ -1123,10 +1129,8 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
       RangeIterator(LayerIndex, LayeredBrushEditor->LayerCount)
       {
-        PushTableStart(Ui);
         brush_layer *Layer = Layers + LayerIndex;
 
-        PushNewRow(Ui);
         if (ToggleButton(Ui, FSz("v Layer %d", LayerIndex), FSz("> Layer %d", LayerIndex), UiId(BrushSettingsWindow, "brush_layer toggle interaction", Layer)))
         {
           PushNewRow(Ui);
@@ -1138,7 +1142,6 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
             case BrushLayerType_Noise:
             {
               BrushSettingsForNoiseBrush(Engine, BrushSettingsWindow, &Layer->NoiseLayer);
-              PushNewRow(Ui);
             } break;
 
             case BrushLayerType_Shape: { PushColumn(Ui, CSz("TODO(Jesse): Shape brush.")); } break;
@@ -1146,27 +1149,20 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
           CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
         }
         PushNewRow(Ui);
-        PushTableEnd(Ui);
-
-        PushTableStart(Ui);
-          RenderAndInteractWithThumbnailTexture(Ui, BrushSettingsWindow, "noise preview interaction", &Layer->NoiseLayer.Preview.Thumbnail);
-          PushNewRow(Ui);
-        PushTableEnd(Ui);
       }
 
       {
         world_chunk *PreviewChunk = &LayeredBrushEditor->Preview.Chunk;
-        /* v3i TargetDim = Max(GetSelectionDim(World, Editor), LargestLayerDim); */
+        //
+        // TODO(Jesse)(async, speed): It would be kinda nice if this ran async..
         if (AnyBrushSettingsUpdated)
         {
           // First find the largest total dimension of all the layers, and the
-          // largest negative minimum offset.  We need this min offset such that
-          // we can position layers relative to it.  By doing this, we implicitly
-          // take into account the size of the selection, but the computation is
-          // simpler than if we used the selection box directly .. I claim ..
-          //
-          // I still haven't done it, but that's my theory at the moment.
-          //
+          // largest negative minimum offset.  We need this min offset such
+          // that we can position layers relative to it.  By doing this, we
+          // implicitly take into account the size of the selection, but the
+          // computation is simpler than if we used the selection box directly
+          // .. I claim ..
           v3i LargestLayerDim = GetSelectionDim(World, Editor);
           v3i SmallestMinOffset = V3i(s32_MAX);
           RangeIterator(LayerIndex, LayeredBrushEditor->LayerCount)
@@ -1180,14 +1176,16 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
           }
 
 
-          if (PreviewChunk->Dim != LargestLayerDim)
+          // Clear the voxels if the size didn't change, otherwise realloc
+          if (PreviewChunk->Dim == LargestLayerDim)
           {
-            // @editor_chunk_memory_question
-            AllocateWorldChunk(PreviewChunk, {}, LargestLayerDim, Editor->Memory);
+            // TODO(Jesse): Actually necessary??  I think maybe not
+            ClearChunkVoxels(PreviewChunk->Voxels, PreviewChunk->Dim);
           }
           else
           {
-            ClearChunkVoxels(PreviewChunk->Voxels, PreviewChunk->Dim);
+            // @editor_chunk_memory_question
+            AllocateWorldChunk(PreviewChunk, {}, LargestLayerDim, Editor->Memory);
           }
 
           RangeIterator(LayerIndex, LayeredBrushEditor->LayerCount)
@@ -1243,7 +1241,6 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, w
         {
           PushWindowStart(Ui, &Window);
             BrushSettingsForNoiseBrush(Engine, &Window, &Editor->NoiseLayer);
-            RenderAndInteractWithThumbnailTexture(Ui, &Window, "noise preview interaction", &Editor->NoiseLayer.Preview.Thumbnail);
           PushWindowEnd(Ui, &Window);
         } break;
       }

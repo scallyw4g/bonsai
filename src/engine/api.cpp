@@ -132,7 +132,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
       PushTableStart(Ui);
         RenderAndInteractWithThumbnailTexture(Ui, &TestWindow, "test_foo_string", &Editor->NoiseLayer.Preview.Thumbnail);
       PushTableEnd(Ui);
-      PushNewRow(Ui);
+      PushNewRow(Ui); // TODO(Jesse)(bug, ui): If you take this out, the textures overlap one another.  Bug
       PushTableStart(Ui);
         RenderAndInteractWithThumbnailTexture(Ui, &TestWindow, "test_foo_string", &Editor->NoiseLayer.Preview.Thumbnail);
       PushTableEnd(Ui);
