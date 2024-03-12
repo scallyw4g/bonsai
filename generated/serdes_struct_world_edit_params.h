@@ -41,6 +41,11 @@ Serialize(u8_cursor_block_array *Bytes, world_edit_params *BaseElement, umm Coun
 
     Result &= Serialize(Bytes, (u32*)&Element->Modifier);
 
+
+
+
+    Result &= Serialize(Bytes, &Element->Iterations);
+
     
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -68,6 +73,13 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_params *Element, memory_a
 
 
   Element->Modifier = Cast(world_edit_mode_modifier, Read_u32(Bytes));
+
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->Iterations, Memory);
 
   
 

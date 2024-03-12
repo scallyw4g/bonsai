@@ -1000,8 +1000,6 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
       } break;
     }
     PushTableEnd(Ui);
-
-    RenderAndInteractWithThumbnailTexture(Ui, Window, "noise preview interaction", &Layer->Preview.Thumbnail);
   }
   else
   {
@@ -1046,8 +1044,13 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestC
       v3 SimFloodOrigin = V3(0);
       u16 ColorIndex = 0;
 
-      work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, ColorIndex, {}, {}, &SrcChunk, 1);
-      ApplyUpdateToRegion(GetThreadLocalState(ThreadLocal_ThreadIndex), &Job, UpdateBounds, DestChunk);
+      s32 Iterations = Max(1, Params->EditParams.Iterations);
+      RangeIterator(IterIndex, Iterations)
+      {
+        work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, ColorIndex, {}, {}, &SrcChunk, 1);
+        ApplyUpdateToRegion(GetThreadLocalState(ThreadLocal_ThreadIndex), &Job, UpdateBounds, DestChunk);
+      }
+
 #endif
 
     } break;
@@ -1103,10 +1106,8 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
       if (ClickedFileNode.Tag)
       {
-        Info("Clicked brush");
         u8_stream Bytes = U8_StreamFromFile(Concat( ClickedFileNode.Value.Dir, CSz("/"), ClickedFileNode.Value.Name, GetTranArena()), GetTranArena());
-        Deserialize(&Bytes, &Editor->LayeredBrushEditor, 0); // NOTE(Jesse): Passing 0 for the memory is fine here because these brushes have no pointers.  In the future this may change.
-
+        Deserialize(&Bytes, &Editor->LayeredBrushEditor, 0); // NOTE(Jesse): Passing 0 for the memory is fine here because these brushes have no pointers.  In the future this may change, and we'll crash here.
         SetToggleButton(Ui, ImportToggleId, False);
       }
 
@@ -1120,12 +1121,14 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
       RangeIterator(LayerIndex, LayeredBrushEditor->LayerCount)
       {
+        PushTableStart(Ui);
         brush_layer *Layer = Layers + LayerIndex;
 
         PushNewRow(Ui);
         if (ToggleButton(Ui, FSz("v Layer %d", LayerIndex), FSz("> Layer %d", LayerIndex), UiId(BrushSettingsWindow, "brush_layer toggle interaction", Layer)))
         {
           PushNewRow(Ui);
+          PushForceUpdateBasis(Ui, V2(20.f, 0.f));
           DoEditorUi(Ui, BrushSettingsWindow, &Layer->Type, CSz("Layer Type"), &DefaultUiRenderParams_Button);
 
           switch (Layer->Type)
@@ -1138,8 +1141,14 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
             case BrushLayerType_Shape: { PushColumn(Ui, CSz("TODO(Jesse): Shape brush.")); } break;
           }
+          PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
         }
         PushNewRow(Ui);
+        PushTableEnd(Ui);
+
+        PushTableStart(Ui);
+          RenderAndInteractWithThumbnailTexture(Ui, BrushSettingsWindow, "noise preview interaction", &Layer->NoiseLayer.Preview.Thumbnail);
+        PushTableEnd(Ui);
       }
 
       {
@@ -1232,6 +1241,7 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, w
         {
           PushWindowStart(Ui, &Window);
             BrushSettingsForNoiseBrush(Engine, &Window, &Editor->NoiseLayer);
+            RenderAndInteractWithThumbnailTexture(Ui, &Window, "noise preview interaction", &Editor->NoiseLayer.Preview.Thumbnail);
           PushWindowEnd(Ui, &Window);
         } break;
       }

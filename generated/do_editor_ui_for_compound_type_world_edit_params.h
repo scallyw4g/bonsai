@@ -1,4 +1,4 @@
-// src/engine/editor.h:703:0
+// src/engine/editor.h:705:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_params *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -29,6 +29,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_params *Element, c
         CSz("Modifier"),
         Params
         );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Iterations,
+        CSz("Iterations"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
       PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       PushTableEnd(Ui);
     }

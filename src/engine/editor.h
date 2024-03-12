@@ -616,6 +616,8 @@ struct world_edit_params
 {
   world_edit_mode Mode;
   world_edit_mode_modifier Modifier;
+
+  s32 Iterations; // NOTE(Jesse): Set this to do the filter multiple times.
 };
 
 
@@ -630,7 +632,7 @@ struct world_edit_params
 
 struct perlin_noise_params
 {
-  r32 Threshold = 4.0f;
+  r32 Threshold = 3.0f;
   r32 Period    = 8.f;   poof(@ui_range(0, 100))
   r32 Amplitude = 8.f;   poof(@ui_range(0, 100))
 };
@@ -640,7 +642,7 @@ poof(are_equal(perlin_noise_params))
 
 struct voronoi_noise_params
 {
-  r32 Threshold = 2.f;
+  r32 Threshold = 1.5f;
   r32 Period    = 10.f;  poof(@ui_range(0, 100))
   r32 Amplitude = 8.f;   poof(@ui_range(0, 100))
 
