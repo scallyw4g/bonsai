@@ -1055,16 +1055,6 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestC
 }
 
 link_internal void
-DoBrushImportWindow(engine_resources *Engine)
-{
-  UNPACK_ENGINE_RESOURCES(Engine);
-
-  local_persist window_layout Window = WindowLayout("Brush Import");
-  PushWindowStart(Ui, &Window);
-  PushWindowEnd(Ui, &Window);
-}
-
-link_internal void
 BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSettingsWindow)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -1103,10 +1093,10 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
       VaporizeArena(OutputStream.Memory);
     }
 
-    if (ToggleButton(Ui, CSz("Import"), CSz("Import"), UiId(BrushSettingsWindow, "brush import", 0u)))
+    ui_id ImportToggleId = UiId(BrushSettingsWindow, "brush import", 0u);
+    if (ToggleButton(Ui, CSz("Import"), CSz("Import"), ImportToggleId))
     {
       PushNewRow(Ui);
-
 
       filtered_file_traversal_helper_params HelperParams = {BrushSettingsWindow, 0};
       maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTreeUnordered(CSz("brushes"), EngineDrawFileNodesFilteredHelper, u64(&HelperParams) );
@@ -1116,6 +1106,8 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         Info("Clicked brush");
         u8_stream Bytes = U8_StreamFromFile(Concat( ClickedFileNode.Value.Dir, CSz("/"), ClickedFileNode.Value.Name, GetTranArena()), GetTranArena());
         Deserialize(&Bytes, &Editor->LayeredBrushEditor, 0); // NOTE(Jesse): Passing 0 for the memory is fine here because these brushes have no pointers.  In the future this may change.
+
+        SetToggleButton(Ui, ImportToggleId, False);
       }
 
     }
