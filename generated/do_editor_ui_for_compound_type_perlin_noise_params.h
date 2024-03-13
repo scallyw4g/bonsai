@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:107:0
+// src/engine/editor.cpp:110:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)

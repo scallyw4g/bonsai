@@ -54,6 +54,9 @@ InitEditor(level_editor *Editor)
 
   Editor->AssetThumbnails.Memory = Editor->Memory;
 
+  Editor->Shape.Settings.Type = BrushLayerType_Shape;
+  Editor->Noise.Settings.Type = BrushLayerType_Noise;
+
   return Result;
 }
 
@@ -110,9 +113,6 @@ poof(do_editor_ui_for_compound_type(perlin_noise_params))
 poof(do_editor_ui_for_compound_type(voronoi_noise_params))
 #include <generated/do_editor_ui_for_compound_type_voronoi_noise_params.h>
 
-/* poof(do_editor_ui_for_compound_type(noise_params)) */
-/* #include <generated/do_editor_ui_for_compound_type_noise_params.h> */
-
 poof(do_editor_ui_for_compound_type(world_update_op_shape_params_sphere))
 #include <generated/do_editor_ui_for_compound_type_world_update_op_shape_params_sphere.h>
 poof(do_editor_ui_for_compound_type(world_update_op_shape_params_rect))
@@ -121,6 +121,8 @@ poof(do_editor_ui_for_enum(shape_type))
 #include <generated/do_editor_ui_for_enum_shape_type.h>
 poof(do_editor_ui_for_compound_type(shape_layer))
 #include <generated/do_editor_ui_for_compound_type_shape_layer.h>
+poof(do_editor_ui_for_compound_type(brush_settings))
+#include <generated/do_editor_ui_for_compound_type_brush_settings.h>
 
 
 poof(do_editor_ui_for_container(v3_cursor))
@@ -1096,6 +1098,7 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
     else
     {
       PushColumn(Ui, CSz("Make a selection to use Noise Brush"));
+      PushNewRow(Ui);
     }
   PushTableEnd(Ui);
 
@@ -1105,6 +1108,43 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
   PushTableEnd(Ui);
 }
 
+link_internal void
+DoSettingsForBrush(engine_resources *Engine, brush_layer *Layer, window_layout *Window)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  brush_settings *Settings = &Layer->Settings;
+  DoEditorUi(Ui, Window, &Settings->Type, {}, &DefaultUiRenderParams_Generic);
+  OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+
+  switch (Layer->Settings.Type)
+  {
+    case BrushLayerType_Noise:
+    {
+      BrushSettingsForNoiseBrush(Engine, Window, &Settings->Noise, &Layer->Preview);
+    } break;
+
+    case BrushLayerType_Shape:
+    {
+      BrushSettingsForShapeBrush(Engine, Window, &Settings->Shape);
+    } break;
+  }
+
+  // TODO(Jesse): do enum selector for Mode/Modifier/iterations
+  DoEditorUi(Ui, Window, &Settings->Offset,     CSz("Dilation"));
+  DoEditorUi(Ui, Window, &Settings->Mode,       CSz("Mode"));
+  DoEditorUi(Ui, Window, &Settings->Modifier,   CSz("Modifier"));
+  DoEditorUi(Ui, Window, &Settings->Iterations, CSz("Iterations"));
+  {
+    if (Button(Ui, CSz("Set Color"), UiId(Window, "set color interaction", Cast(void*, Settings)))) { Settings->Color = Engine->Editor.SelectedColorIndex; }
+    ui_style Style = UiStyleFromLightestColor(GetColorData(Settings->Color));
+    PushUntexturedQuad(Ui, {}, V2(Global_Font.Size.y), zDepth_Text, &Style, DefaultGenericPadding);
+    PushNewRow(Ui);
+  }
+
+  CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+
+}
 
 link_internal void
 ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestChunk, v3i SmallestMinOffset)
@@ -1244,34 +1284,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
         if (ToggleButton(Ui, FSz("v Layer %d", LayerIndex), FSz("> Layer %d", LayerIndex), UiId(BrushSettingsWindow, "brush_layer toggle interaction", Layer)))
         {
-          brush_settings *Settings = &Layer->Settings;
-          DoEditorUi(Ui, BrushSettingsWindow, &Settings->Type, {}, &DefaultUiRenderParams_Generic);
-          OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-
-          switch (Layer->Settings.Type)
-          {
-            case BrushLayerType_Noise:
-            {
-              BrushSettingsForNoiseBrush(Engine, BrushSettingsWindow, &Settings->Noise, &Layer->Preview);
-            } break;
-
-            case BrushLayerType_Shape:
-            {
-              BrushSettingsForShapeBrush(Engine, BrushSettingsWindow, &Settings->Shape);
-            } break;
-          }
-
-          // TODO(Jesse): do enum selector for Mode/Modifier/iterations
-          NotImplemented;
-          DoEditorUi(Ui, BrushSettingsWindow, &Settings->Offset,     CSz("Dilation"));
-          {
-            if (Button(Ui, CSz("Set Color"), UiId(BrushSettingsWindow, "set color interaction", Cast(void*, Settings)))) { Settings->Color = Engine->Editor.SelectedColorIndex; }
-            ui_style Style = UiStyleFromLightestColor(GetColorData(Settings->Color));
-            PushUntexturedQuad(Ui, {}, V2(Global_Font.Size.y), zDepth_Text, &Style, DefaultGenericPadding);
-            PushNewRow(Ui);
-          }
-
-          CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+          DoSettingsForBrush(Engine, Layer, BrushSettingsWindow);
         }
         PushNewRow(Ui);
       }
@@ -1361,14 +1374,16 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, w
         case WorldEdit_BrushType_Noise:
         {
           PushWindowStart(Ui, &Window);
-            BrushSettingsForNoiseBrush(Engine, &Window, &Editor->Noise.Settings.Noise, &Editor->Noise.Preview);
+            DoSettingsForBrush(Engine, &Editor->Noise, &Window);
+            /* BrushSettingsForNoiseBrush(Engine, &Window, &Editor->Noise.Settings.Noise, &Editor->Noise.Preview); */
           PushWindowEnd(Ui, &Window);
         } break;
 
         case WorldEdit_BrushType_Shape:
         {
           PushWindowStart(Ui, &Window);
-            BrushSettingsForShapeBrush(Engine, &Window, &Editor->Shape.Settings.Shape);
+            DoSettingsForBrush(Engine, &Editor->Shape, &Window);
+            /* BrushSettingsForShapeBrush(Engine, &Window, &Editor->Shape.Settings.Shape); */
           PushWindowEnd(Ui, &Window);
         } break;
 
@@ -1795,7 +1810,7 @@ DoWorldEditor(engine_resources *Engine)
               /* Assert(Editor->Shape.Settings.Type == BrushLayerType_Shape); */
               switch (Editor->Shape.Settings.Shape.Type)
               {
-                case ShapeType_None: {} break;
+                case ShapeType_None: { InvalidCodePath(); } break;
 
                 case ShapeType_Sphere:
                 {

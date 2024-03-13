@@ -1,7 +1,7 @@
-// src/engine/editor.cpp:391:0
+// src/engine/editor.cpp:124:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   if (Element)
   {
@@ -11,7 +11,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
     b32 DidToggle = False;
     if (Name)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle ui_debug", Element), &DefaultUiRenderParams_Generic))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle brush_settings", Element), &DefaultUiRenderParams_Generic))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -28,8 +28,68 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->OutlineUiValues,
-        CSz("OutlineUiValues"),
+&Element->Type,
+        CSz("Type"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Noise,
+        CSz("Noise"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Shape,
+        CSz("Shape"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Mode,
+        CSz("Mode"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Modifier,
+        CSz("Modifier"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Iterations,
+        CSz("Iterations"),
         Params
         );
 
@@ -41,8 +101,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
 
       DoEditorUi(Ui,
         Window,
-&Element->OutlineUiButtons,
-        CSz("OutlineUiButtons"),
+&Element->Offset,
+        CSz("Offset"),
         Params
         );
 
@@ -50,51 +110,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
 
 
 
-      PushNewRow(Ui);
-
+      
       DoEditorUi(Ui,
         Window,
-&Element->OutlineUiTables,
-        CSz("OutlineUiTables"),
-        Params
-        );
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-&Element->OutlineUiTableColumns,
-        CSz("OutlineUiTableColumns"),
-        Params
-        );
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-&Element->DebugBreakOnElementClick,
-        CSz("DebugBreakOnElementClick"),
-        Params
-        );
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-&Element->DebugBreakUiCommand,
-        CSz("DebugBreakUiCommand"),
+&Element->Color,
+        CSz("Color"),
         Params
         );
 
