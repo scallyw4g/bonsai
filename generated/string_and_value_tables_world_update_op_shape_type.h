@@ -1,6 +1,25 @@
 // src/engine/editor.h:745:0
 
 link_internal counted_string
+ToStringPrefixless(world_update_op_shape_type Type)
+{
+  counted_string Result = {};
+  switch (Type)
+  {
+    case type_world_update_op_shape_params_noop: { Result = CSz("noop"); } break;
+    case type_world_update_op_shape_params_sphere: { Result = CSz("sphere"); } break;
+    case type_world_update_op_shape_params_rect: { Result = CSz("rect"); } break;
+    case type_world_update_op_shape_params_asset: { Result = CSz("asset"); } break;
+    case type_world_update_op_shape_params_chunk_data: { Result = CSz("data"); } break;
+    case type_world_update_op_shape_params_count: { Result = CSz("count"); } break;
+
+    
+  }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  return Result;
+}
+
+link_internal counted_string
 ToString(world_update_op_shape_type Type)
 {
   counted_string Result = {};
@@ -15,6 +34,7 @@ ToString(world_update_op_shape_type Type)
 
     
   }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
   return Result;
 }
 

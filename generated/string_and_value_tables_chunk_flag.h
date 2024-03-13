@@ -1,6 +1,23 @@
 // src/engine/world_chunk.h:78:0
 
 link_internal counted_string
+ToStringPrefixless(chunk_flag Type)
+{
+  counted_string Result = {};
+  switch (Type)
+  {
+    case Chunk_Uninitialized: { Result = CSz("Uninitialized"); } break;
+    case Chunk_Queued: { Result = CSz("Queued"); } break;
+    case Chunk_VoxelsInitialized: { Result = CSz("VoxelsInitialized"); } break;
+    case Chunk_Garbage: { Result = CSz("Garbage"); } break;
+
+    
+  }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  return Result;
+}
+
+link_internal counted_string
 ToString(chunk_flag Type)
 {
   counted_string Result = {};
@@ -13,6 +30,7 @@ ToString(chunk_flag Type)
 
     
   }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
   return Result;
 }
 

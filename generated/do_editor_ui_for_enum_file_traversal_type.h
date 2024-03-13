@@ -5,7 +5,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_type *Element,
 {
   if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
-  cs ElementName = ToString(*Element);
+  cs ElementName = ToStringPrefixless(*Element);
   ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
   if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
   {

@@ -304,7 +304,7 @@ poof(
     {
       if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
-      cs ElementName = ToString(*Element);
+      cs ElementName = ToStringPrefixless(*Element);
       ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
       if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
       {
@@ -825,6 +825,7 @@ struct chunk_thumbnail
 
 enum shape_type
 {
+  ShapeType_None   = type_world_update_op_shape_params_noop,
   ShapeType_Sphere = type_world_update_op_shape_params_sphere,
   ShapeType_Rect   = type_world_update_op_shape_params_rect,
 };

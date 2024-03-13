@@ -1,7 +1,7 @@
-// src/engine/editor.cpp:387:0
+// src/engine/editor.cpp:103:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, resolution_setting *Element, cs Name, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_type *Element, cs Name, ui_render_params *Params)
 {
   if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
@@ -11,27 +11,27 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, resolution_setting *Element, 
   {
     PushNewRow(Ui);
     if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("4096x2160"), UiId(Window, "enum ResolutionSetting_4096x2160", Element), Params))
+    if (Button(Ui, CSz("None"), UiId(Window, "enum ShapeType_None", Element), Params))
     {
-      *Element = ResolutionSetting_4096x2160;
+      *Element = ShapeType_None;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("1920x1080"), UiId(Window, "enum ResolutionSetting_1920x1080", Element), Params))
+    if (Button(Ui, CSz("Sphere"), UiId(Window, "enum ShapeType_Sphere", Element), Params))
     {
-      *Element = ResolutionSetting_1920x1080;
+      *Element = ShapeType_Sphere;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("1280x720"), UiId(Window, "enum ResolutionSetting_1280x720", Element), Params))
+    if (Button(Ui, CSz("Rect"), UiId(Window, "enum ShapeType_Rect", Element), Params))
     {
-      *Element = ResolutionSetting_1280x720;
+      *Element = ShapeType_Rect;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);

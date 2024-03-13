@@ -5,7 +5,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, tone_mapping_type *Element, c
 {
   if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
-  cs ElementName = ToString(*Element);
+  cs ElementName = ToStringPrefixless(*Element);
   ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
   if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
   {

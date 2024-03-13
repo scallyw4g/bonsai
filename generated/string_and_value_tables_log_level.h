@@ -1,6 +1,25 @@
 // external/bonsai_stdlib/src/console_io.h:13:0
 
 link_internal counted_string
+ToStringPrefixless(log_level Type)
+{
+  counted_string Result = {};
+  switch (Type)
+  {
+    case LogLevel_Undefined: { Result = CSz("Undefined"); } break;
+    case LogLevel_Verbose: { Result = CSz("Verbose"); } break;
+    case LogLevel_Debug: { Result = CSz("Debug"); } break;
+    case LogLevel_Info: { Result = CSz("Info"); } break;
+    case LogLevel_Error: { Result = CSz("Error"); } break;
+    case LogLevel_Shush: { Result = CSz("Shush"); } break;
+
+    
+  }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  return Result;
+}
+
+link_internal counted_string
 ToString(log_level Type)
 {
   counted_string Result = {};
@@ -15,6 +34,7 @@ ToString(log_level Type)
 
     
   }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
   return Result;
 }
 

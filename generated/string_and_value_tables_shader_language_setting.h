@@ -1,6 +1,21 @@
 // src/engine/settings.h:32:0
 
 link_internal counted_string
+ToStringPrefixless(shader_language_setting Type)
+{
+  counted_string Result = {};
+  switch (Type)
+  {
+    case ShaderLanguageSetting_330core: { Result = CSz("330core"); } break;
+    case ShaderLanguageSetting_310es: { Result = CSz("310es"); } break;
+
+    
+  }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  return Result;
+}
+
+link_internal counted_string
 ToString(shader_language_setting Type)
 {
   counted_string Result = {};
@@ -11,6 +26,7 @@ ToString(shader_language_setting Type)
 
     
   }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
   return Result;
 }
 

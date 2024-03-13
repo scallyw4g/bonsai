@@ -1,6 +1,35 @@
 // examples/terrain_gen/game_types.h:26:0
 
 link_internal counted_string
+ToStringPrefixless(terrain_gen_type Type)
+{
+  counted_string Result = {};
+  switch (Type)
+  {
+    case TerrainGenType_Flat: { Result = CSz("Flat"); } break;
+    case TerrainGenType_Checkerboard: { Result = CSz("Checkerboard"); } break;
+    case TerrainGenType_SinCos: { Result = CSz("SinCos"); } break;
+    case TerrainGenType_Voronoi: { Result = CSz("Voronoi"); } break;
+    case TerrainGenType_Perlin2D: { Result = CSz("Perlin2D"); } break;
+    case TerrainGenType_Perlin3D: { Result = CSz("Perlin3D"); } break;
+    case TerrainGenType_FBM2D: { Result = CSz("FBM2D"); } break;
+    case TerrainGenType_TerracedTerrain: { Result = CSz("TerracedTerrain"); } break;
+    case TerrainGenType_GrassyTerracedTerrain: { Result = CSz("GrassyTerracedTerrain"); } break;
+    case TerrainGenType_GrassyLargeTerracedTerrain: { Result = CSz("GrassyLargeTerracedTerrain"); } break;
+    case TerrainGenType_GrassyTerracedTerrain2: { Result = CSz("GrassyTerracedTerrain2"); } break;
+    case TerrainGenType_GrassyTerracedTerrain3: { Result = CSz("GrassyTerracedTerrain3"); } break;
+    case TerrainGenType_GrassyTerracedTerrain4: { Result = CSz("GrassyTerracedTerrain4"); } break;
+    case TerrainGenType_GrassyIsland: { Result = CSz("GrassyIsland"); } break;
+    case TerrainGenType_Hoodoo: { Result = CSz("Hoodoo"); } break;
+    case TerrainGenType_Warped: { Result = CSz("Warped"); } break;
+
+    
+  }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  return Result;
+}
+
+link_internal counted_string
 ToString(terrain_gen_type Type)
 {
   counted_string Result = {};
@@ -25,6 +54,7 @@ ToString(terrain_gen_type Type)
 
     
   }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
   return Result;
 }
 

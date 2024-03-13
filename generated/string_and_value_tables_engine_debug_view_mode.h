@@ -1,6 +1,27 @@
 // src/engine/editor.cpp:141:0
 
 link_internal counted_string
+ToStringPrefixless(engine_debug_view_mode Type)
+{
+  counted_string Result = {};
+  switch (Type)
+  {
+    case EngineDebugViewMode_Level: { Result = CSz("Level"); } break;
+    case EngineDebugViewMode_WorldEdit: { Result = CSz("WorldEdit"); } break;
+    case EngineDebugViewMode_Entities: { Result = CSz("Entities"); } break;
+    case EngineDebugViewMode_Assets: { Result = CSz("Assets"); } break;
+    case EngineDebugViewMode_WorldChunks: { Result = CSz("WorldChunks"); } break;
+    case EngineDebugViewMode_Textures: { Result = CSz("Textures"); } break;
+    case EngineDebugViewMode_RenderSettings: { Result = CSz("RenderSettings"); } break;
+    case EngineDebugViewMode_EngineDebug: { Result = CSz("EngineDebug"); } break;
+
+    
+  }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  return Result;
+}
+
+link_internal counted_string
 ToString(engine_debug_view_mode Type)
 {
   counted_string Result = {};
@@ -17,6 +38,7 @@ ToString(engine_debug_view_mode Type)
 
     
   }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
   return Result;
 }
 

@@ -1,6 +1,22 @@
 // src/engine/editor.h:697:0
 
 link_internal counted_string
+ToStringPrefixless(world_edit_mode_modifier Type)
+{
+  counted_string Result = {};
+  switch (Type)
+  {
+    case WorldEdit_Modifier_Default: { Result = CSz("Default"); } break;
+    case WorldEdit_Modifier_Flood: { Result = CSz("Flood"); } break;
+    case WorldEdit_Modifier_Surface: { Result = CSz("Surface"); } break;
+
+    
+  }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  return Result;
+}
+
+link_internal counted_string
 ToString(world_edit_mode_modifier Type)
 {
   counted_string Result = {};
@@ -12,6 +28,7 @@ ToString(world_edit_mode_modifier Type)
 
     
   }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
   return Result;
 }
 

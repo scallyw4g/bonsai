@@ -1,6 +1,22 @@
 // src/engine/editor.h:710:0
 
 link_internal counted_string
+ToStringPrefixless(world_edit_mode Type)
+{
+  counted_string Result = {};
+  switch (Type)
+  {
+    case WorldEdit_Mode_Attach: { Result = CSz("Attach"); } break;
+    case WorldEdit_Mode_Remove: { Result = CSz("Remove"); } break;
+    case WorldEdit_Mode_Paint: { Result = CSz("Paint"); } break;
+
+    
+  }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  return Result;
+}
+
+link_internal counted_string
 ToString(world_edit_mode Type)
 {
   counted_string Result = {};
@@ -12,6 +28,7 @@ ToString(world_edit_mode Type)
 
     
   }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
   return Result;
 }
 
