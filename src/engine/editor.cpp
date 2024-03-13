@@ -868,7 +868,6 @@ GetRequiredDimForLayer(v3i SelectionDim, brush_layer *Layer)
   {
     case BrushLayerType_Noise:
     {
-      /* noise_layer *Noise = &Layer->Settings.Noise; */
       Request += SelectionDim;
     } break;
 
@@ -880,7 +879,7 @@ GetRequiredDimForLayer(v3i SelectionDim, brush_layer *Layer)
 
         case ShapeType_Sphere:
         {
-          // TODO(Jesse): This might need a +1..
+          // TODO(Jesse): This might need a +1 ..
           Request += s32(2.f*Layer->Settings.Shape.Sphere.Radius);
         } break;
 
@@ -917,17 +916,6 @@ GetShapeDim(shape_layer *Layer)
   return Result;
 }
 
-#if 0
-link_internal v3i
-GetLayerDim(noise_layer *Layer)
-{
-  NotImplemented;
-  noise_params *Params = &Layer->Params;
-  v3i Result = Layer->Preview.Chunk.Dim + GetDim(Params->Offset);
-  return Result;
-}
-#endif
-
 // NOTE(Jesse): This is a little wacky, and I actually don't quite know why the
 // preview chunk dimension is primal for noise layers, but .. there you go.
 link_internal v3i
@@ -950,7 +938,7 @@ GetLayerDim(brush_layer *Layer)
 }
 
 link_internal b32
-CheckForChangesAndUpdate(engine_resources *Engine, brush_layer *Layer)
+CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, brush_layer *Layer)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -993,7 +981,9 @@ CheckForChangesAndUpdate(engine_resources *Engine, brush_layer *Layer)
         case ShapeType_None:
         case ShapeType_Rect:
         case ShapeType_Sphere:
-        { NotImplemented; /* Update preview chunk voxels .. ? */ } break;
+        {
+          ApplyBrushLayer(Engine, Layer, Chunk, Settings->Offset.Min);
+        } break;
       }
     } break;
 
@@ -1076,7 +1066,7 @@ BrushSettingsForShapeBrush(engine_resources *Engine, window_layout *Window, shap
 
     case ShapeType_Sphere:
     {
-      Layer->Sphere.Location = Canonical_Position(&Engine->MousedOverVoxel.Value);
+      Layer->Sphere.Location = Canonical_Position(V3(Layer->Sphere.Radius), {});
       DoEditorUi(Ui, Window, &Layer->Sphere, {});
     } break;
   }
@@ -1115,11 +1105,6 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
       PushNewRow(Ui);
     }
   PushTableEnd(Ui);
-
-  PushTableStart(Ui);
-    RenderAndInteractWithThumbnailTexture(Ui, Window, "noise preview interaction", &Preview->Thumbnail);
-    PushNewRow(Ui);
-  PushTableEnd(Ui);
 }
 
 link_internal void
@@ -1130,6 +1115,21 @@ DoSettingsForBrush(engine_resources *Engine, brush_layer *Layer, window_layout *
   brush_settings *Settings = &Layer->Settings;
   DoEditorUi(Ui, Window, &Settings->Type, {}, &DefaultUiRenderParams_Generic);
   OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+
+
+  // TODO(Jesse): do enum selector for Mode/Modifier/iterations
+  DoEditorUi(Ui, Window, &Settings->Offset,     CSz("Dilation"));
+  DoEditorUi(Ui, Window, &Settings->Mode,       CSz("Mode"));
+  DoEditorUi(Ui, Window, &Settings->Modifier,   CSz("Modifier"));
+  DoEditorUi(Ui, Window, &Settings->Iterations, CSz("Iterations"));
+  PushNewRow(Ui); // Primitives require a new row.. I forget why, but there's a good reason.
+
+  {
+    ui_style Style = UiStyleFromLightestColor(GetColorData(Settings->Color));
+    PushUntexturedQuad(Ui, {}, V2(Global_Font.Size.y), zDepth_Text, &Style, DefaultGenericPadding);
+    if (Button(Ui, CSz("Set Color"), UiId(Window, "set color interaction", Cast(void*, Settings)))) { Settings->Color = Engine->Editor.SelectedColorIndex; }
+    PushNewRow(Ui);
+  }
 
   switch (Layer->Settings.Type)
   {
@@ -1144,20 +1144,11 @@ DoSettingsForBrush(engine_resources *Engine, brush_layer *Layer, window_layout *
     } break;
   }
 
-  // TODO(Jesse): do enum selector for Mode/Modifier/iterations
-  DoEditorUi(Ui, Window, &Settings->Offset,     CSz("Dilation"));
-  DoEditorUi(Ui, Window, &Settings->Mode,       CSz("Mode"));
-  DoEditorUi(Ui, Window, &Settings->Modifier,   CSz("Modifier"));
-  DoEditorUi(Ui, Window, &Settings->Iterations, CSz("Iterations"));
-  {
-    if (Button(Ui, CSz("Set Color"), UiId(Window, "set color interaction", Cast(void*, Settings)))) { Settings->Color = Engine->Editor.SelectedColorIndex; }
-    ui_style Style = UiStyleFromLightestColor(GetColorData(Settings->Color));
-    PushUntexturedQuad(Ui, {}, V2(Global_Font.Size.y), zDepth_Text, &Style, DefaultGenericPadding);
+  PushTableStart(Ui);
+    RenderAndInteractWithThumbnailTexture(Ui, Window, "noise preview interaction", &Layer->Preview.Thumbnail);
     PushNewRow(Ui);
-  }
-
+  PushTableEnd(Ui);
   CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
-
 }
 
 link_internal void
@@ -1217,7 +1208,7 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestC
   }
 
   v3 SimFloodOrigin = V3(0);
-  u16 ColorIndex = Editor->SelectedColorIndex;
+  u16 ColorIndex = Layer->Settings.Color;
 
   s32 Iterations = Settings->Iterations;
   if (Iterations > 1) { Info("%d", Iterations); }
@@ -1251,7 +1242,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
     RangeIterator(LayerIndex, LayeredBrushEditor->LayerCount)
     {
       brush_layer *Layer = Layers + LayerIndex;
-      AnyBrushSettingsUpdated |= CheckForChangesAndUpdate(Engine, Layer);
+      AnyBrushSettingsUpdated |= CheckForChangesAndUpdate_ThenRenderToPreviewTexture(Engine, Layer);
     }
   }
 
@@ -1305,7 +1296,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
       PushTableEnd(Ui);
 
       {
-        world_chunk *PreviewChunk = &LayeredBrushEditor->Preview.Chunk;
+        world_chunk *Root_LayeredBrushPreview = &LayeredBrushEditor->Preview.Chunk;
         //
         // TODO(Jesse)(async, speed): It would be kinda nice if this ran async..
         if (AnyBrushSettingsUpdated)
@@ -1330,29 +1321,29 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
 
           // Clear the voxels if the size didn't change, otherwise realloc
-          if (PreviewChunk->Dim == LargestLayerDim)
+          if (Root_LayeredBrushPreview->Dim == LargestLayerDim)
           {
             // TODO(Jesse): Actually necessary??  I think maybe not
-            ClearChunkVoxels(PreviewChunk->Voxels, PreviewChunk->Dim);
+            ClearChunkVoxels(Root_LayeredBrushPreview->Voxels, Root_LayeredBrushPreview->Dim);
           }
           else
           {
             // @editor_chunk_memory_question
-            AllocateWorldChunk(PreviewChunk, {}, LargestLayerDim, Editor->Memory);
+            AllocateWorldChunk(Root_LayeredBrushPreview, {}, LargestLayerDim, Editor->Memory);
           }
 
           RangeIterator(LayerIndex, LayeredBrushEditor->LayerCount)
           {
             brush_layer *Layer = Layers + LayerIndex;
-            ApplyBrushLayer(Engine, Layer, PreviewChunk, SmallestMinOffset);
+            ApplyBrushLayer(Engine, Layer, Root_LayeredBrushPreview, SmallestMinOffset);
           }
 
-          FinalizeChunkInitialization(PreviewChunk);
-          QueueChunkForMeshRebuild(&Plat->LowPriority, PreviewChunk);
+          FinalizeChunkInitialization(Root_LayeredBrushPreview);
+          QueueChunkForMeshRebuild(&Plat->LowPriority, Root_LayeredBrushPreview);
         }
 
-        SyncGpuBuffersImmediate(Engine, &PreviewChunk->Meshes);
-        RenderToTexture(Engine, &LayeredBrushEditor->Preview.Thumbnail, &PreviewChunk->Meshes, PreviewChunk->Dim/-2.f);
+        SyncGpuBuffersImmediate(Engine, &Root_LayeredBrushPreview->Meshes);
+        RenderToTexture(Engine, &LayeredBrushEditor->Preview.Thumbnail, &Root_LayeredBrushPreview->Meshes, Root_LayeredBrushPreview->Dim/-2.f);
       }
     }
     PushWindowEnd(Ui, BrushSettingsWindow);
@@ -1386,18 +1377,10 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, w
         case WorldEdit_BrushType_Entity: {} break;
 
         case WorldEdit_BrushType_Noise:
-        {
-          PushWindowStart(Ui, &Window);
-            DoSettingsForBrush(Engine, &Editor->Noise, &Window);
-            /* BrushSettingsForNoiseBrush(Engine, &Window, &Editor->Noise.Settings.Noise, &Editor->Noise.Preview); */
-          PushWindowEnd(Ui, &Window);
-        } break;
-
         case WorldEdit_BrushType_Shape:
         {
           PushWindowStart(Ui, &Window);
-            DoSettingsForBrush(Engine, &Editor->Shape, &Window);
-            /* BrushSettingsForShapeBrush(Engine, &Window, &Editor->Shape.Settings.Shape); */
+            DoSettingsForBrush(Engine, &Editor->Noise, &Window);
           PushWindowEnd(Ui, &Window);
         } break;
 

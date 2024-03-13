@@ -1,7 +1,7 @@
 // src/engine/editor.h:404:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, s64 *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, s64 *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
@@ -32,7 +32,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, volatile s64 *Value, cs Name,
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, u64 *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, u64 *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
@@ -63,7 +63,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, volatile u64 *Value, cs Name,
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, s32 *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, s32 *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
@@ -94,7 +94,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, volatile s32 *Value, cs Name,
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, u32 *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, u32 *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
@@ -125,7 +125,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, volatile u32 *Value, cs Name,
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, s16 *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, s16 *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
@@ -156,7 +156,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, volatile s16 *Value, cs Name,
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, u16 *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, u16 *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
@@ -187,7 +187,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, volatile u16 *Value, cs Name,
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, s8 *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, s8 *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
@@ -218,7 +218,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, volatile s8 *Value, cs Name, 
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, u8 *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, u8 *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   Params = Params ? Params : &DefaultUiRenderParams_Blank;
 

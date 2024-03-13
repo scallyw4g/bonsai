@@ -160,7 +160,7 @@ poof(
     type_list.map(type)
     {
       link_internal void
-      DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+      DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
       {
         Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
@@ -389,7 +389,7 @@ poof(
                 window_layout *Window,
                 enum_t.name *Element,
                 cs GroupName,
-                ui_render_params *Params,
+                ui_render_params *Params = &DefaultUiRenderParams_Generic,
                 ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
     {
       /* if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); PushNewRow(Ui); } */
@@ -763,10 +763,6 @@ struct world_edit_shape
   };
 };
 
-/* poof(do_editor_ui_for_compound_type(world_edit_shape)) */
-/* #include <generated/do_editor_ui_for_compound_type_world_update_op_shape.h> */
-
-
 struct world_edit_brush
 {
   world_edit_shape         Shape;
@@ -791,6 +787,16 @@ poof(do_editor_ui_for_compound_type(world_edit_brush))
 
 enum shape_type
 {
+  // NOTE(Jesse): Having this none value is kinda janky; I'd prefer to not for
+  // this enum, but since we have to overlap with type_world_update_op_shape_params
+  // we kinda have to have it (so that the none value draws if we accidentally set it to 0.
+  //
+  // type_world_update_op_shape_params doesn't strictly require a 0 value,
+  // but it's really nice to have the assertion in DoWorldUpdate
+  //
+  // Once this code matures a bit we can probably take this _None value
+  // out.  It's strictly so we get a visual trigger in the UI.
+  //
   ShapeType_None   = type_world_update_op_shape_params_noop,
   ShapeType_Sphere = type_world_update_op_shape_params_sphere,
   ShapeType_Rect   = type_world_update_op_shape_params_rect,
@@ -800,8 +806,7 @@ poof(string_and_value_tables(shape_type))
 
 struct shape_layer
 {
-  shape_type Type;
-  /* b32 InferFromSelection; */
+  shape_type Type = ShapeType_Sphere;
 
   // NOTE(Jesse): Intentionally not a d-union such that you can toggle between
   // them and your parameter selections stay intact.
@@ -950,3 +955,6 @@ GetHotVoxelForEditMode(engine_resources *Engine, world_edit_mode WorldEditMode);
 
 link_internal v3
 GetHotVoxelForFlood(engine_resources *Engine, world_edit_mode WorldEditMode, world_edit_mode_modifier Modifier);
+
+link_internal void
+ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestChunk, v3i SmallestMinOffset);

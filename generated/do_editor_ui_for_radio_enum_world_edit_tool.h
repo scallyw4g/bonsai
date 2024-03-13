@@ -76,7 +76,7 @@ DoEditorUi( renderer_2d *Ui,
   window_layout *Window,
   world_edit_tool *Element,
   cs GroupName,
-  ui_render_params *Params,
+  ui_render_params *Params = &DefaultUiRenderParams_Generic,
   ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
 {
   /* if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); PushNewRow(Ui); } */
