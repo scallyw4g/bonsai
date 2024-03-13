@@ -175,6 +175,8 @@ struct asset
 typedef asset* asset_ptr;
 
 
+
+
 poof(buffer(asset))
 #include <generated/buffer_asset.h>
 

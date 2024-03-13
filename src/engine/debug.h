@@ -1,10 +1,18 @@
 
-// TODO(Jesse): rename this to just thumbnail and move to renderer?
+// TODO(Jesse): rename this to just thumbnail and move to renderer.. ?
 struct asset_thumbnail
 {
   texture Texture;
   camera  Camera;
 };
+
+// TODO(Jesse): Move to renderer?
+struct chunk_thumbnail
+{
+  world_chunk Chunk;
+  asset_thumbnail Thumbnail;
+};
+
 
 struct render_debug
 {

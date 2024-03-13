@@ -3610,7 +3610,7 @@ WorkQueueEntryUpdateWorldRegion(world_edit_mode Mode,
                                 u16 ColorIndex,
                                 cp MinP,
                                 cp MaxP,
-                                world_chunk** ChunkBuffer,
+                                world_chunk** DestChunkBuffer,
                                 u32 ChunkCount)
 {
   work_queue_entry_update_world_region Result =
@@ -3625,7 +3625,7 @@ WorkQueueEntryUpdateWorldRegion(world_edit_mode Mode,
     {},
     MinP,
     MaxP,
-    ChunkBuffer,
+    DestChunkBuffer,
     ChunkCount,
   };
   return Result;
@@ -4489,15 +4489,11 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 
   world_edit_mode              Mode = Job->Brush.Mode;
   world_edit_mode_modifier Modifier = Job->Brush.Modifier;
-  world_edit_shape       Shape = Job->Brush.Shape;
+  world_edit_shape            Shape = Job->Brush.Shape;
   v3i                   FloodOrigin = V3i(Job->Brush.SimFloodOrigin);
 
   u16 NewColor                = Job->ColorIndex;
   u8  NewTransparency         = Job->Transparency;
-  cp  MaxP                    = Job->MaxP;
-  cp  MinP                    = Job->MinP;
-  world_chunk **ChunkBuffer   = Job->ChunkBuffer;
-  u32 ChunkCount              = Job->ChunkCount;
 
   voxel NewVoxelValue = {};
   if (Mode == WorldEdit_Mode_Attach || Mode == WorldEdit_Mode_Paint)
@@ -4712,7 +4708,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   u8  NewTransparency         = Job->Transparency;
   cp  MaxP                    = Job->MaxP;
   cp  MinP                    = Job->MinP;
-  world_chunk **ChunkBuffer   = Job->ChunkBuffer;
+  world_chunk **DestChunkBuffer   = Job->DestChunkBuffer;
   u32 ChunkCount              = Job->ChunkCount;
 
   auto _P0 = GetSimSpaceP(World, MinP);
@@ -4746,7 +4742,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 #if 1
   for (u32 ChunkIndex = 0; ChunkIndex < ChunkCount; ++ChunkIndex)
   {
-    world_chunk *Chunk = ChunkBuffer[ChunkIndex];
+    world_chunk *Chunk = DestChunkBuffer[ChunkIndex];
     auto SimSpaceChunkRect = GetSimSpaceAABBi(World, Chunk);
     auto SimSpaceIntersectionRect = Union(&SimSpaceChunkRect, &SimSpaceUpdateBounds);
 
@@ -4786,7 +4782,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   world_update_callback Callback = Global_WorldUpdateCallbackTable[Mode][Modifier][Shape.Type];
   if (Callback)
   {
-    Callback(Mode, Modifier, &Shape, ChunkBuffer, ChunkCount, &SimSpaceUpdateBounds, CopiedChunk.Voxels);
+    Callback(Mode, Modifier, &Shape, DestChunkBuffer, ChunkCount, &SimSpaceUpdateBounds, CopiedChunk.Voxels);
   }
   else
   {
@@ -4809,7 +4805,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 #if 1
   for (u32 ChunkIndex = 0; ChunkIndex < ChunkCount; ++ChunkIndex)
   {
-    world_chunk *Chunk = ChunkBuffer[ChunkIndex];
+    world_chunk *Chunk = DestChunkBuffer[ChunkIndex];
     auto SimSpaceChunkRect = GetSimSpaceAABBi(World, Chunk);
     auto SimSpaceIntersectionRect = Union(&SimSpaceChunkRect, &SimSpaceUpdateBounds);
 
@@ -4912,7 +4908,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   FullBarrier;
   for (u32 ChunkIndex = 0; ChunkIndex < ChunkCount; ++ChunkIndex)
   {
-    world_chunk *Chunk = ChunkBuffer[ChunkIndex];
+    world_chunk *Chunk = DestChunkBuffer[ChunkIndex];
 
     rect3i SimSpaceChunkAABB = GetSimSpaceAABBi(World, Chunk);
     auto QueryRelChunkAABB = SimSpaceChunkAABB - UpdateMinP;

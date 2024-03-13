@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:393:0
+// src/engine/editor.cpp:398:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -40,8 +40,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       
       DoEditorUi(Ui,
         Window,
-&Element->NoiseLayer,
-        CSz("NoiseLayer"),
+&Element->Noise,
+        CSz("Noise"),
         Params
         );
 
@@ -52,8 +52,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       
       DoEditorUi(Ui,
         Window,
-&Element->ShapeLayer,
-        CSz("ShapeLayer"),
+&Element->Shape,
+        CSz("Shape"),
         Params
         );
 

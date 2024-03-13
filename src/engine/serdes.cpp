@@ -489,8 +489,6 @@ poof(serdes_struct(perlin_noise_params))
 #include <generated/serdes_struct_perlin_noise_params.h>
 poof(serdes_struct(world_edit_params))
 #include <generated/serdes_struct_world_edit_params.h>
-poof(serdes_struct(noise_params))
-#include <generated/serdes_struct_noise_params.h>
 poof(serdes_struct(noise_layer))
 #include <generated/serdes_struct_noise_layer.h>
 poof(serdes_struct(world_update_op_shape_params_rect))
@@ -499,6 +497,8 @@ poof(serdes_struct(world_update_op_shape_params_sphere))
 #include <generated/serdes_struct_world_update_op_shape_params_sphere.h>
 poof(serdes_struct(shape_layer))
 #include <generated/serdes_struct_shape_layer.h>
+poof(serdes_struct(brush_settings))
+#include <generated/serdes_struct_brush_settings.h>
 poof(serdes_struct(brush_layer))
 #include <generated/serdes_struct_brush_layer.h>
 poof(serdes_struct(layered_brush_editor))

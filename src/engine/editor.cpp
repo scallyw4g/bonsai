@@ -63,9 +63,14 @@ HardResetEditor(level_editor *Editor)
   // TODO(Jesse)(leak): Delete textures allocated to visualize layered noise brushes?
   // @hard_reset_texture_memory
 
-  if (Editor->NoiseLayer.Preview.Thumbnail.Texture.ID)
+  if (Editor->Shape.Preview.Thumbnail.Texture.ID)
   {
-    DeleteTexture(&Editor->NoiseLayer.Preview.Thumbnail.Texture);
+    DeleteTexture(&Editor->Shape.Preview.Thumbnail.Texture);
+  }
+
+  if (Editor->Noise.Preview.Thumbnail.Texture.ID)
+  {
+    DeleteTexture(&Editor->Noise.Preview.Thumbnail.Texture);
   }
 
   IterateOver(&Editor->AssetThumbnails, Thumb, Index)
@@ -77,7 +82,7 @@ HardResetEditor(level_editor *Editor)
   //
   // I guess here we can actually just not worry about clearing it because
   // it'll get realloc'd in the update path ..?  Seems fine..
-  /* DeallocateWorldChunk(&Editor->NoiseLayer.Chunk, &GetEngineResources()->MeshFreelist); */
+  /* DeallocateWorldChunk(&Editor->Noise.Chunk, &GetEngineResources()->MeshFreelist); */
 
   VaporizeArena(Editor->Memory);
 
@@ -105,8 +110,8 @@ poof(do_editor_ui_for_compound_type(perlin_noise_params))
 poof(do_editor_ui_for_compound_type(voronoi_noise_params))
 #include <generated/do_editor_ui_for_compound_type_voronoi_noise_params.h>
 
-poof(do_editor_ui_for_compound_type(noise_params))
-#include <generated/do_editor_ui_for_compound_type_noise_params.h>
+/* poof(do_editor_ui_for_compound_type(noise_params)) */
+/* #include <generated/do_editor_ui_for_compound_type_noise_params.h> */
 
 poof(do_editor_ui_for_compound_type(world_update_op_shape_params_sphere))
 #include <generated/do_editor_ui_for_compound_type_world_update_op_shape_params_sphere.h>
@@ -854,55 +859,95 @@ GetHotVoxelForFlood(engine_resources *Engine, world_edit_mode WorldEditMode, wor
 }
 
 link_internal v3i
-GetRequiredDimForLayer(v3i SelectionDim, noise_layer *Layer)
+GetRequiredDimForLayer(v3i SelectionDim, brush_layer *Layer)
 {
-  noise_params *Params = &Layer->Params;
-  v3i Request = SelectionDim + GetDim(Params->Offset);
+  v3i Request = GetDim(Layer->Settings.Offset);
+  switch (Layer->Settings.Type)
+  {
+    case BrushLayerType_Noise:
+    {
+      /* noise_layer *Noise = &Layer->Settings.Noise; */
+      Request += SelectionDim;
+    } break;
+
+    case BrushLayerType_Shape:
+    {
+      NotImplemented;
+    } break;
+  }
+
   v3i Result = Max(V3i(0), Request);
   return Result;
 }
 
 link_internal v3i
-GetLayerDim(noise_layer *Layer)
-{
-  noise_params *Params = &Layer->Params;
-  v3i Result = Layer->Preview.Chunk.Dim + GetDim(Params->Offset);
-  return Result;
-}
-
-link_internal v3i
-GetLayerDim(brush_layer *Layer)
+GetShapeDim(shape_layer *Layer)
 {
   v3i Result = {};
   switch (Layer->Type)
   {
+    case ShapeType_None: { } break;
+    case ShapeType_Sphere:
+    {
+      Result = V3i(Layer->Sphere.Radius*2.f);
+    } break;
+
+    case ShapeType_Rect:
+    {
+      Result = V3i(GetDim(Layer->Rect.Region));
+    } break;
+  }
+
+  return Result;
+}
+
+#if 0
+link_internal v3i
+GetLayerDim(noise_layer *Layer)
+{
+  NotImplemented;
+  noise_params *Params = &Layer->Params;
+  v3i Result = Layer->Preview.Chunk.Dim + GetDim(Params->Offset);
+  return Result;
+}
+#endif
+
+// NOTE(Jesse): This is a little wacky, and I actually don't quite know why the
+// preview chunk dimension is primal for noise layers, but .. there you go.
+link_internal v3i
+GetLayerDim(brush_layer *Layer)
+{
+  v3i Result = GetDim(Layer->Settings.Offset);
+  switch (Layer->Settings.Type)
+  {
     case BrushLayerType_Shape:
     {
+      Result += GetShapeDim(&Layer->Settings.Shape);
     } break;
 
     case BrushLayerType_Noise:
     {
-      Result = GetLayerDim(&Layer->NoiseLayer);
+      Result += Layer->Preview.Chunk.Dim;
     } break;
   }
   return Result;
 }
 
 link_internal b32
-CheckForChangesAndUpdate(engine_resources *Engine, noise_layer *Layer)
+CheckForChangesAndUpdate(engine_resources *Engine, brush_layer *Layer)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  noise_params *Params     = &Layer->Params;
-  noise_params *PrevParams = &Layer->PrevParams;
+  brush_settings *Settings     = &Layer->Settings;
+  brush_settings *PrevSettings = &Layer->PrevSettings;
 
   v3i SelectionDim     = GetSelectionDim(World, Editor);
   v3i RequiredLayerDim = GetRequiredDimForLayer(SelectionDim, Layer);
 
   b32 ReallocChunk     = Editor->SelectionChanged || Layer->Preview.Chunk.Dim != RequiredLayerDim;
-  b32 UpdateNoise = ReallocChunk || !AreEqual(Params, PrevParams);
+  b32 UpdateNoise = ReallocChunk || !AreEqual(Settings, PrevSettings);
 
-  *PrevParams = *Params;
+  *PrevSettings = *Settings;
 
 
 
@@ -922,50 +967,66 @@ CheckForChangesAndUpdate(engine_resources *Engine, noise_layer *Layer)
 
 
 
-  switch (Params->Type)
+  switch (Settings->Type)
   {
-    case NoiseType_Perlin:
+    case BrushLayerType_Shape:
     {
-      perlin_noise_params *PerlinParams = &Params->PerlinParams;
-
-      if (UpdateNoise)
+      shape_layer *Shape = &Settings->Shape;
+      switch (Shape->Type)
       {
-        Chunk->Flags = Chunk_Queued;
-        InitializeChunkWithNoise( Terrain_Perlin3D,
-                                  GetThreadLocalState(ThreadLocal_ThreadIndex),
-                                  Chunk,
-                                  Chunk->Dim,
-                                  {},
-                                  s32(PerlinParams->Period),
-                                  s32(PerlinParams->Amplitude),
-                                  s32(PerlinParams->Threshold),
-                                  Params->Color,
-                                  MeshBit_None,
-                                  ChunkInitFlag_Noop,
-                                  0,
-                                  True );
+        case ShapeType_None:
+        case ShapeType_Rect:
+        case ShapeType_Sphere:
+        { NotImplemented; /* Update preview chunk voxels .. ? */ } break;
       }
     } break;
 
-    case NoiseType_Voronoi:
+    case BrushLayerType_Noise:
     {
-      voronoi_noise_params *VoronoiParams = &Params->VoronoiParams;
-      if (UpdateNoise)
+      noise_layer *Noise = &Settings->Noise;
+      switch (Noise->Type)
       {
-        Chunk->Flags = Chunk_Queued;
-        InitializeChunkWithNoise( Terrain_Voronoi3D,
-                                  GetThreadLocalState(ThreadLocal_ThreadIndex),
-                                  Chunk,
-                                  Chunk->Dim,
-                                  {},
-                                  s32(VoronoiParams->Period),
-                                  s32(VoronoiParams->Amplitude),
-                                  s32(VoronoiParams->Threshold),
-                                  Params->Color,
-                                  MeshBit_None,
-                                  ChunkInitFlag_Noop,
-                                  Cast(void*, VoronoiParams),
-                                  True );
+        case NoiseType_Perlin:
+        {
+          if (UpdateNoise)
+          {
+            Chunk->Flags = Chunk_Queued;
+            InitializeChunkWithNoise( Terrain_Perlin3D,
+                                      GetThreadLocalState(ThreadLocal_ThreadIndex),
+                                      Chunk,
+                                      Chunk->Dim,
+                                      {},
+                                      s32(Noise->Perlin.Period),
+                                      s32(Noise->Perlin.Amplitude),
+                                      s32(Noise->Perlin.Threshold),
+                                      Settings->Color,
+                                      MeshBit_None,
+                                      ChunkInitFlag_Noop,
+                                      0,
+                                      True );
+          }
+        } break;
+
+        case NoiseType_Voronoi:
+        {
+          if (UpdateNoise)
+          {
+            Chunk->Flags = Chunk_Queued;
+            InitializeChunkWithNoise( Terrain_Voronoi3D,
+                                      GetThreadLocalState(ThreadLocal_ThreadIndex),
+                                      Chunk,
+                                      Chunk->Dim,
+                                      {},
+                                      s32(Noise->Voronoi.Period),
+                                      s32(Noise->Voronoi.Amplitude),
+                                      s32(Noise->Voronoi.Threshold),
+                                      Settings->Color,
+                                      MeshBit_None,
+                                      ChunkInitFlag_Noop,
+                                      Cast(void*, &Noise->Voronoi),
+                                      True );
+          }
+        } break;
       }
     } break;
   }
@@ -1007,42 +1068,30 @@ BrushSettingsForShapeBrush(engine_resources *Engine, window_layout *Window, shap
 }
 
 link_internal void
-BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, noise_layer *Layer)
+BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, noise_layer *Layer, chunk_thumbnail *Preview)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
-
-  noise_params *Params = &Layer->Params;
 
   PushTableStart(Ui);
     if (SelectionComplete(Editor->SelectionClicks))
     {
-      DoEditorUi(Ui, Window, &Params->Type, {}, &DefaultUiRenderParams_Generic);
+      DoEditorUi(Ui, Window, &Layer->Type, {}, &DefaultUiRenderParams_Generic);
       PushTableStart(Ui); // TODO(Jesse): Necessary?
-        switch (Params->Type)
+        switch (Layer->Type)
         {
           case NoiseType_Perlin:
           {
-            perlin_noise_params *PerlinParams = &Params->PerlinParams;
-            DoEditorUi(Ui, Window, PerlinParams, CSz("NoiseSettings"));
+            perlin_noise_params *Perlin = &Layer->Perlin;
+            DoEditorUi(Ui, Window, Perlin, CSz("NoiseSettings"));
           } break;
 
           case NoiseType_Voronoi:
           {
-            voronoi_noise_params *VoronoiParams = &Params->VoronoiParams;
-            DoEditorUi(Ui, Window, VoronoiParams, CSz("NoiseSettings"));
+            voronoi_noise_params *Voronoi = &Layer->Voronoi;
+            DoEditorUi(Ui, Window, Voronoi, CSz("NoiseSettings"));
           } break;
         }
       PushTableEnd(Ui);
-
-      DoEditorUi(Ui, Window, &Params->EditParams, CSz("Behavior"));
-      DoEditorUi(Ui, Window, &Params->Offset,     CSz("Dilation"));
-
-      {
-        if (Button(Ui, CSz("Set Color"), UiId(Window, "set color interaction", Cast(void*, Params)))) { Params->Color = Engine->Editor.SelectedColorIndex; }
-        ui_style Style = UiStyleFromLightestColor(GetColorData(Params->Color));
-        PushUntexturedQuad(Ui, {}, V2(Global_Font.Size.y), zDepth_Text, &Style, DefaultGenericPadding);
-        PushNewRow(Ui);
-      }
     }
     else
     {
@@ -1051,7 +1100,7 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
   PushTableEnd(Ui);
 
   PushTableStart(Ui);
-    RenderAndInteractWithThumbnailTexture(Ui, Window, "noise preview interaction", &Layer->Preview.Thumbnail);
+    RenderAndInteractWithThumbnailTexture(Ui, Window, "noise preview interaction", &Preview->Thumbnail);
     PushNewRow(Ui);
   PushTableEnd(Ui);
 }
@@ -1062,20 +1111,45 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestC
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  noise_params *Params  = &Layer->NoiseLayer.Params;
-  world_edit_mode              Mode = Params->EditParams.Mode;
-  world_edit_mode_modifier Modifier = Params->EditParams.Modifier;
-  switch (Layer->Type)
+  brush_settings *Settings = &Layer->Settings;
+
+  world_edit_mode              Mode = Settings->Mode;
+  world_edit_mode_modifier Modifier = Settings->Modifier;
+
+
+  rect3i UpdateBounds = {{}, DestChunk->Dim};
+
+  world_edit_shape Shape = {};
+  switch (Settings->Type)
   {
     case BrushLayerType_Shape:
-    {} break;
+    {
+      // @duplicated_shape_job_setup_code
+      Shape.Type = world_update_op_shape_type(Settings->Shape.Type);
+
+      switch (Settings->Shape.Type)
+      {
+        case ShapeType_None: { } break;
+
+        case ShapeType_Sphere:
+        {
+          Shape.world_update_op_shape_params_sphere = Settings->Shape.Sphere;
+        } break;
+
+        case ShapeType_Rect:
+        {
+          Shape.world_update_op_shape_params_rect = Settings->Shape.Rect;
+        } break;
+      }
+
+    } break;
 
     case BrushLayerType_Noise:
     {
-#if 1
-      world_chunk *SrcChunk = &Layer->NoiseLayer.Preview.Chunk;
+      noise_layer     *Noise = &Settings->Noise;
+      world_chunk  *SrcChunk = &Layer->Preview.Chunk;
+      v3i       SrcOffsetMin = Settings->Offset.Min;
 
-      v3i SrcOffsetMin = Params->Offset.Min;
       v3i DestRelativeMinCorner = (-1*SmallestMinOffset) + SrcOffsetMin;
 
       chunk_data D = {SrcChunk->Flags, SrcChunk->Dim, SrcChunk->Voxels, SrcChunk->VoxelLighting};
@@ -1083,29 +1157,23 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestC
 
       Assert(SrcChunk->Dim <= DestChunk->Dim);
 
-      world_edit_shape Shape =
-      {
-        type_world_update_op_shape_params_chunk_data,
-        .world_update_op_shape_params_chunk_data = ChunkDataShape,
-      };
-
-      rect3i UpdateBounds = {{}, DestChunk->Dim};
-      v3 SimFloodOrigin = V3(0);
-      u16 ColorIndex = 0;
-
-      s32 Iterations = Params->EditParams.Iterations;
-      if (Iterations > 1) { Info("%d", Iterations); }
-      RangeIterator(IterIndex, Iterations)
-      {
-        work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, ColorIndex, {}, {}, &SrcChunk, 1);
-        ApplyUpdateToRegion(GetThreadLocalState(ThreadLocal_ThreadIndex), &Job, UpdateBounds, DestChunk);
-        MarkBoundaryVoxels_MakeExteriorFaces( DestChunk->Voxels, DestChunk->Dim, {{}}, DestChunk->Dim );
-      }
-
-#endif
-
+      Shape.Type = type_world_update_op_shape_params_chunk_data;
+      Shape.world_update_op_shape_params_chunk_data = ChunkDataShape;
     } break;
   }
+
+  v3 SimFloodOrigin = V3(0);
+  u16 ColorIndex = Editor->SelectedColorIndex;
+
+  s32 Iterations = Settings->Iterations;
+  if (Iterations > 1) { Info("%d", Iterations); }
+  RangeIterator(IterIndex, Iterations)
+  {
+    work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, ColorIndex, {}, {}, {}, 0);
+    ApplyUpdateToRegion(GetThreadLocalState(ThreadLocal_ThreadIndex), &Job, UpdateBounds, DestChunk);
+    MarkBoundaryVoxels_MakeExteriorFaces( DestChunk->Voxels, DestChunk->Dim, {{}}, DestChunk->Dim );
+  }
+
 }
 
 link_internal void
@@ -1129,7 +1197,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
     RangeIterator(LayerIndex, LayeredBrushEditor->LayerCount)
     {
       brush_layer *Layer = Layers + LayerIndex;
-      AnyBrushSettingsUpdated |= CheckForChangesAndUpdate(Engine, &Layer->NoiseLayer);
+      AnyBrushSettingsUpdated |= CheckForChangesAndUpdate(Engine, Layer);
     }
   }
 
@@ -1176,21 +1244,33 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
         if (ToggleButton(Ui, FSz("v Layer %d", LayerIndex), FSz("> Layer %d", LayerIndex), UiId(BrushSettingsWindow, "brush_layer toggle interaction", Layer)))
         {
-          DoEditorUi(Ui, BrushSettingsWindow, &Layer->Type, {}, &DefaultUiRenderParams_Generic);
+          brush_settings *Settings = &Layer->Settings;
+          DoEditorUi(Ui, BrushSettingsWindow, &Settings->Type, {}, &DefaultUiRenderParams_Generic);
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
 
-          switch (Layer->Type)
+          switch (Layer->Settings.Type)
           {
             case BrushLayerType_Noise:
             {
-              BrushSettingsForNoiseBrush(Engine, BrushSettingsWindow, &Layer->NoiseLayer);
+              BrushSettingsForNoiseBrush(Engine, BrushSettingsWindow, &Settings->Noise, &Layer->Preview);
             } break;
 
             case BrushLayerType_Shape:
             {
-              BrushSettingsForShapeBrush(Engine, BrushSettingsWindow, &Layer->ShapeLayer);
+              BrushSettingsForShapeBrush(Engine, BrushSettingsWindow, &Settings->Shape);
             } break;
           }
+
+          // TODO(Jesse): do enum selector for Mode/Modifier/iterations
+          NotImplemented;
+          DoEditorUi(Ui, BrushSettingsWindow, &Settings->Offset,     CSz("Dilation"));
+          {
+            if (Button(Ui, CSz("Set Color"), UiId(BrushSettingsWindow, "set color interaction", Cast(void*, Settings)))) { Settings->Color = Engine->Editor.SelectedColorIndex; }
+            ui_style Style = UiStyleFromLightestColor(GetColorData(Settings->Color));
+            PushUntexturedQuad(Ui, {}, V2(Global_Font.Size.y), zDepth_Text, &Style, DefaultGenericPadding);
+            PushNewRow(Ui);
+          }
+
           CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
         }
         PushNewRow(Ui);
@@ -1218,7 +1298,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
             v3i LayerDim = GetLayerDim(Layer);
             LargestLayerDim = Max(LayerDim, LargestLayerDim);
 
-            SmallestMinOffset = Min(Layer->NoiseLayer.Params.Offset.Min, SmallestMinOffset);
+            SmallestMinOffset = Min(Layer->Settings.Offset.Min, SmallestMinOffset);
           }
 
 
@@ -1278,17 +1358,17 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, w
         case WorldEdit_BrushType_Asset: {} break;
         case WorldEdit_BrushType_Entity: {} break;
 
-        case WorldEdit_BrushType_Shape:
-        {
-          PushWindowStart(Ui, &Window);
-            BrushSettingsForShapeBrush(Engine, &Window, &Editor->ShapeLayer);
-          PushWindowEnd(Ui, &Window);
-        } break;
-
         case WorldEdit_BrushType_Noise:
         {
           PushWindowStart(Ui, &Window);
-            BrushSettingsForNoiseBrush(Engine, &Window, &Editor->NoiseLayer);
+            BrushSettingsForNoiseBrush(Engine, &Window, &Editor->Noise.Settings.Noise, &Editor->Noise.Preview);
+          PushWindowEnd(Ui, &Window);
+        } break;
+
+        case WorldEdit_BrushType_Shape:
+        {
+          PushWindowStart(Ui, &Window);
+            BrushSettingsForShapeBrush(Engine, &Window, &Editor->Shape.Settings.Shape);
           PushWindowEnd(Ui, &Window);
         } break;
 
@@ -1705,20 +1785,23 @@ DoWorldEditor(engine_resources *Engine)
           {
             if (Input->LMB.Clicked && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
             {
-              world_edit_shape Shape = { world_update_op_shape_type(Editor->ShapeLayer.Type), {} };
+              // TODO(Jesse): Duplicate code .. idk if it's worth collapsing it, but it might be 
+              // @duplicated_shape_job_setup_code
+              world_edit_shape Shape = { world_update_op_shape_type(Editor->Shape.Settings.Type), {} };
 
-              switch (Editor->ShapeLayer.Type)
+              Assert(Editor->Shape.Settings.Type == BrushLayerType_Shape);
+              switch (Editor->Shape.Settings.Shape.Type)
               {
                 case ShapeType_None: {} break;
 
                 case ShapeType_Sphere:
                 {
-                  Shape.world_update_op_shape_params_sphere = Editor->ShapeLayer.Sphere;
+                  Shape.world_update_op_shape_params_sphere = Editor->Shape.Settings.Shape.Sphere;
                 } break;
 
                 case ShapeType_Rect:
                 {
-                  Shape.world_update_op_shape_params_rect = Editor->ShapeLayer.Rect;
+                  Shape.world_update_op_shape_params_rect = Editor->Shape.Settings.Shape.Rect;
                 } break;
               }
 
@@ -1740,13 +1823,13 @@ DoWorldEditor(engine_resources *Engine)
                 RangeIterator(LayerIndex, Editor->LayeredBrushEditor.LayerCount)
                 {
                   brush_layer *Layer = Editor->LayeredBrushEditor.Layers + LayerIndex;
-                  MinOffset = Min(Layer->NoiseLayer.Params.Offset.Min, MinOffset);
+                  MinOffset = Min(Layer->Settings.Offset.Min, MinOffset);
                 }
               }
               else if (WorldEditBrushType == WorldEdit_BrushType_Noise)
               {
-                Chunk = &Editor->NoiseLayer.Preview.Chunk;
-                MinOffset = Editor->NoiseLayer.Params.Offset.Min;
+                Chunk = &Editor->Noise.Preview.Chunk;
+                MinOffset = Editor->Noise.Settings.Offset.Min;
               }
               else
               {

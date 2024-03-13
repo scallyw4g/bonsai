@@ -666,28 +666,6 @@ struct voronoi_noise_params
   r32 MaskChance;
 };
 
-// NOTE(Jesse): This is intentionally not a d_union such that you can flip
-// between different noise selections and your parameters stay intact.
-struct noise_params
-{
-  ui_noise_type Type;
-
-  world_edit_params    EditParams;
-
-  perlin_noise_params  PerlinParams;
-  voronoi_noise_params VoronoiParams;
-
-  // NOTE(Jesse): This is the relative offset from the base selection.
-  // Used to inflate or contract the area affected by the brush.
-  rect3i Offset;
-
-  u16 Color = 1; // Default to white
-};
-
-poof(are_equal(noise_params))
-#include <generated/are_equal_noise_params.h>
-
-
 poof(do_editor_ui_for_radio_enum(world_edit_mode_modifier))
 #include <generated/do_editor_ui_for_radio_enum_world_edit_mode_modifier.h>
 
@@ -811,12 +789,6 @@ poof(do_editor_ui_for_compound_type(world_edit_brush))
 
 
 
-struct chunk_thumbnail
-{
-  world_chunk Chunk;
-  asset_thumbnail Thumbnail;
-};
-
 enum shape_type
 {
   ShapeType_None   = type_world_update_op_shape_params_noop,
@@ -829,7 +801,7 @@ poof(string_and_value_tables(shape_type))
 struct shape_layer
 {
   shape_type Type;
-  b32 InferFromSelection;
+  /* b32 InferFromSelection; */
 
   // NOTE(Jesse): Intentionally not a d-union such that you can toggle between
   // them and your parameter selections stay intact.
@@ -837,19 +809,18 @@ struct shape_layer
   world_update_op_shape_params_rect   Rect;
 };
 
-struct layer_update_result
-{
-  b32 ReallocChunk;
-  b32 NoiseNeedsUpdate;
-};
-
+// NOTE(Jesse): This is intentionally not a d_union such that you can flip
+// between different noise selections and your parameters stay intact.
 struct noise_layer
 {
-  noise_params Params;
-  noise_params PrevParams; poof(@ui_skip @no_serialize) // NOTE(Jesse): Change detection.
+  ui_noise_type Type;
 
-  chunk_thumbnail Preview; poof(@no_serialize)
+  perlin_noise_params  Perlin;
+  voronoi_noise_params Voronoi;
 };
+
+
+
 
 enum brush_layer_type
 {
@@ -860,14 +831,39 @@ enum brush_layer_type
 poof(do_editor_ui_for_radio_enum(brush_layer_type))
 #include <generated/do_editor_ui_for_radio_enum_brush_layer_type.h>
 
-  // TODO(Jesse): Rename to `brush` ..?
-struct brush_layer
+// TODO(Jesse): Rename to `brush` ..?
+struct brush_settings
 {
   brush_layer_type Type;
 
-  noise_layer NoiseLayer;
-  shape_layer ShapeLayer;
+  noise_layer Noise;
+  shape_layer Shape;
+
+  //
+  // Common across brush types
+  //
+  world_edit_mode          Mode;
+  world_edit_mode_modifier Modifier;
+  s32 Iterations = 1; // NOTE(Jesse): How many times to do the filter.
+
+  // NOTE(Jesse): This is the relative offset from the base selection.
+  // Used to inflate or contract the area affected by the brush.
+  rect3i Offset;
+
+  u16 Color = 1; // Default to white
 };
+poof(are_equal(brush_settings))
+#include <generated/are_equal_brush_settings.h>
+
+// TODO(Jesse): Rename to `brush` ..?
+struct brush_layer
+{
+  brush_settings Settings;
+  brush_settings PrevSettings; poof(@no_serialize @ui_skip) // Change detection
+
+  chunk_thumbnail Preview; poof(@no_serialize)
+};
+
 
 // TODO(Jesse): Make this dynamic .. probably ..
 #define MAX_BRUSH_LAYERS 8
@@ -887,8 +883,9 @@ struct level_editor
   // TODO(Jesse): Think of a better naming scheme for these..
   // NOTE(Jesse): Brushes
   // {
-       noise_layer NoiseLayer;
-       shape_layer ShapeLayer;
+       // TODO(Jesse): Consolodate?  Maybe not so the settings persist, but maybe..
+       brush_layer Noise;
+       brush_layer Shape;
 
        layered_brush_editor LayeredBrushEditor;
   // }

@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:494:0
+// src/engine/serdes.cpp:492:0
 
 link_internal bonsai_type_info
 TypeInfo(noise_layer *Ignored)
@@ -34,13 +34,18 @@ Serialize(u8_cursor_block_array *Bytes, noise_layer *BaseElement, umm Count = 1)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     noise_layer *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Params);
+    Result &= Serialize(Bytes, (u32*)&Element->Type);
+
+
+
+
+    Result &= Serialize(Bytes, &Element->Perlin);
 
 
 
 
 
-
+    Result &= Serialize(Bytes, &Element->Voronoi);
 
     
 
@@ -63,15 +68,22 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer *Element, memory_arena *Memory)
 {
   b32 Result = True;
+  Element->Type = Cast(ui_noise_type, Read_u32(Bytes));
+
+
+
+
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Params, Memory);
+  Result &= Deserialize(Bytes, &Element->Perlin, Memory);
 
 
 
 
 
-
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->Voronoi, Memory);
 
   
 

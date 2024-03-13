@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:108:0
+// src/engine/editor.cpp:113:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_params *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -40,18 +40,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_params *Element, cs Nam
       
       DoEditorUi(Ui,
         Window,
-&Element->EditParams,
-        CSz("EditParams"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
 &Element->PerlinParams,
         CSz("PerlinParams"),
         Params
@@ -68,36 +56,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_params *Element, cs Nam
         CSz("VoronoiParams"),
         Params
         );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->Offset,
-        CSz("Offset"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->Color,
-        CSz("Color"),
-        Params
-        );
-
-
-
-
-
-      PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

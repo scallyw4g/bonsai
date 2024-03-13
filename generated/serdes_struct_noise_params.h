@@ -39,12 +39,6 @@ Serialize(u8_cursor_block_array *Bytes, noise_params *BaseElement, umm Count = 1
 
 
 
-    Result &= Serialize(Bytes, &Element->EditParams);
-
-
-
-
-
     Result &= Serialize(Bytes, &Element->PerlinParams);
 
 
@@ -52,18 +46,6 @@ Serialize(u8_cursor_block_array *Bytes, noise_params *BaseElement, umm Count = 1
 
 
     Result &= Serialize(Bytes, &Element->VoronoiParams);
-
-
-
-
-
-    Result &= Serialize(Bytes, &Element->Offset);
-
-
-
-
-
-    Result &= Serialize(Bytes, &Element->Color);
 
     
 
@@ -93,14 +75,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, noise_params *Element, memory_arena 
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->EditParams, Memory);
-
-
-
-
-
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->PerlinParams, Memory);
 
 
@@ -110,22 +84,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, noise_params *Element, memory_arena 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->VoronoiParams, Memory);
-
-
-
-
-
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Offset, Memory);
-
-
-
-
-
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Color, Memory);
 
   
 

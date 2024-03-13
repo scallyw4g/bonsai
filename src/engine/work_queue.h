@@ -84,7 +84,7 @@ struct work_queue_entry_update_world_region
   cp MinP;
   cp MaxP;
 
-  world_chunk **ChunkBuffer;
+  world_chunk **DestChunkBuffer;
   u32 ChunkCount;
 };
 

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:312:0
+// src/engine/editor.cpp:317:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,8 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->Params,
-        CSz("Params"),
+&Element->Type,
+        CSz("Type"),
         Params
         );
 
@@ -40,8 +40,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
-&Element->Preview,
-        CSz("Preview"),
+&Element->Perlin,
+        CSz("Perlin"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Voronoi,
+        CSz("Voronoi"),
         Params
         );
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

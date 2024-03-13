@@ -34,18 +34,13 @@ Serialize(u8_cursor_block_array *Bytes, brush_layer *BaseElement, umm Count = 1)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     brush_layer *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, (u32*)&Element->Type);
-
-
-
-
-    Result &= Serialize(Bytes, &Element->NoiseLayer);
+    Result &= Serialize(Bytes, &Element->Settings);
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->ShapeLayer);
+
 
     
 
@@ -68,22 +63,15 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, brush_layer *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  Element->Type = Cast(brush_layer_type, Read_u32(Bytes));
-
-
-
-
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->NoiseLayer, Memory);
+  Result &= Deserialize(Bytes, &Element->Settings, Memory);
 
 
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->ShapeLayer, Memory);
+
 
   
 
