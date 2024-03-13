@@ -1787,20 +1787,25 @@ DoWorldEditor(engine_resources *Engine)
             {
               // TODO(Jesse): Duplicate code .. idk if it's worth collapsing it, but it might be 
               // @duplicated_shape_job_setup_code
-              world_edit_shape Shape = { world_update_op_shape_type(Editor->Shape.Settings.Type), {} };
+              world_edit_shape Shape = {};
 
-              Assert(Editor->Shape.Settings.Type == BrushLayerType_Shape);
+              // NOTE(Jesse): This is a bit of a bogus assertion because we should
+              // only ever modify the shape params by virtue of the naming convention..
+              // IDK if I care about having this at the cost of having to set it somewhere at startup
+              /* Assert(Editor->Shape.Settings.Type == BrushLayerType_Shape); */
               switch (Editor->Shape.Settings.Shape.Type)
               {
                 case ShapeType_None: {} break;
 
                 case ShapeType_Sphere:
                 {
+                  Shape.Type = type_world_update_op_shape_params_sphere;
                   Shape.world_update_op_shape_params_sphere = Editor->Shape.Settings.Shape.Sphere;
                 } break;
 
                 case ShapeType_Rect:
                 {
+                  Shape.Type = type_world_update_op_shape_params_rect;
                   Shape.world_update_op_shape_params_rect = Editor->Shape.Settings.Shape.Rect;
                 } break;
               }
