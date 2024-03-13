@@ -1,4 +1,4 @@
-// src/engine/editor.h:705:0
+// src/engine/editor.h:721:0
 
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_brush_type Selection)
@@ -52,6 +52,7 @@ RadioButtonGroup_world_edit_brush_type( renderer_2d *Ui,
     CSz("Single"),
     CSz("Asset"),
     CSz("Entity"),
+    CSz("Shape"),
     CSz("Noise"),
     CSz("Layered"),
   };

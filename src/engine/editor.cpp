@@ -96,6 +96,15 @@ poof(do_editor_ui_for_compound_type(voronoi_noise_params))
 poof(do_editor_ui_for_compound_type(noise_params))
 #include <generated/do_editor_ui_for_compound_type_noise_params.h>
 
+poof(do_editor_ui_for_compound_type(world_update_op_shape_params_sphere))
+#include <generated/do_editor_ui_for_compound_type_world_update_op_shape_params_sphere.h>
+poof(do_editor_ui_for_compound_type(world_update_op_shape_params_rect))
+#include <generated/do_editor_ui_for_compound_type_world_update_op_shape_params_rect.h>
+poof(do_editor_ui_for_enum(shape_type))
+#include <generated/do_editor_ui_for_enum_shape_type.h>
+poof(do_editor_ui_for_compound_type(shape_layer))
+#include <generated/do_editor_ui_for_compound_type_shape_layer.h>
+
 
 poof(do_editor_ui_for_container(v3_cursor))
 #include <generated/do_editor_ui_for_container_v3_cursor.h>
@@ -964,6 +973,14 @@ CheckForChangesAndUpdate(engine_resources *Engine, noise_layer *Layer)
 }
 
 link_internal void
+BrushSettingsForShapeBrush(engine_resources *Engine, window_layout *Window, shape_layer *Layer)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  DoEditorUi(Ui, Window, Layer, {});
+}
+
+link_internal void
 BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, noise_layer *Layer)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -1143,7 +1160,10 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
               BrushSettingsForNoiseBrush(Engine, BrushSettingsWindow, &Layer->NoiseLayer);
             } break;
 
-            case BrushLayerType_Shape: { PushColumn(Ui, CSz("TODO(Jesse): Shape brush.")); } break;
+            case BrushLayerType_Shape:
+            {
+              BrushSettingsForShapeBrush(Engine, BrushSettingsWindow, &Layer->ShapeLayer);
+            } break;
           }
           CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
         }
@@ -1232,9 +1252,11 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, w
         case WorldEdit_BrushType_Asset: {} break;
         case WorldEdit_BrushType_Entity: {} break;
 
-        case WorldEdit_BrushType_Layered:
+        case WorldEdit_BrushType_Shape:
         {
-          BrushSettingsForLayeredBrush(Engine, &Window);
+          PushWindowStart(Ui, &Window);
+            BrushSettingsForShapeBrush(Engine, &Window, &Editor->ShapeLayer);
+          PushWindowEnd(Ui, &Window);
         } break;
 
         case WorldEdit_BrushType_Noise:
@@ -1243,6 +1265,12 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, w
             BrushSettingsForNoiseBrush(Engine, &Window, &Editor->NoiseLayer);
           PushWindowEnd(Ui, &Window);
         } break;
+
+        case WorldEdit_BrushType_Layered:
+        {
+          BrushSettingsForLayeredBrush(Engine, &Window);
+        } break;
+
       }
     } break;
   }
@@ -1643,6 +1671,31 @@ DoWorldEditor(engine_resources *Engine)
                   rect3 AABB = RectMinMax(P0, P0+1.f);
                   ApplyEditToRegion(Engine, &AABB, MainPanelEditParams.Mode, MainPanelEditParams.Modifier);
                 }
+              }
+            }
+          } break;
+
+          case WorldEdit_BrushType_Shape:
+          {
+            if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
+            {
+              world_update_op_shape_type OpShape = world_update_op_shape_type(Editor->ShapeLayer.Type);
+
+              world_edit_shape Shape = { OpShape, {} };
+
+              switch (OpShape)
+              {
+                case type_world_update_op_shape_params_sphere:
+                {
+                  Shape.world_update_op_shape_params_sphere = Editor->ShapeLayer.Sphere;
+                } break;
+
+                case type_world_update_op_shape_params_rect:
+                {
+                  Shape.world_update_op_shape_params_rect = Editor->ShapeLayer.Rect;
+                } break;
+
+                InvalidDefaultCase;
               }
             }
           } break;

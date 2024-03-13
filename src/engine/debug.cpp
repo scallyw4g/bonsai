@@ -772,7 +772,7 @@ DoEngineDebug(engine_resources *Engine)
 
     render_settings *Settings = &Graphics->Settings;
     PushWindowStart(Ui, &RenderSettingsWindow);
-      DoEditorUi(Ui, &RenderSettingsWindow, Settings, CSz("Graphics Settings"));
+      DoEditorUi(Ui, &RenderSettingsWindow, Settings, {});
     PushWindowEnd(Ui, &RenderSettingsWindow);
   }
 
@@ -783,19 +783,13 @@ DoEngineDebug(engine_resources *Engine)
     {
       local_persist window_layout Window = WindowLayout("Engine Debug", WindowLayoutFlag_Align_Right);
       PushWindowStart(Ui, &Window);
-        PushTableStart(Ui);
-        DoEditorUi(Ui, &Window, EngineDebug, CSz("Engine Debug"));
-        PushTableEnd(Ui);
-        /* DoEditorUi(Ui, &EngineDebug->UiDebug, CSz("UI Debug")); */
-        /* DoEditorUi(Ui, &EngineDebug->Render,  CSz("Graphics Debug")); */
+        DoEditorUi(Ui, &Window, EngineDebug, {});
       PushWindowEnd(Ui, &Window);
     }
     {
       local_persist window_layout Window = WindowLayout("Engine");
       PushWindowStart(Ui, &Window);
-        PushTableStart(Ui);
-        DoEditorUi(Ui, &Window, Engine, CSz("Engine Resources"));
-        PushTableEnd(Ui);
+        DoEditorUi(Ui, &Window, Engine, {});
       PushWindowEnd(Ui, &Window);
     }
 

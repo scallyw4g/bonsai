@@ -202,12 +202,27 @@ poof(
     {
       if (Element)
       {
-        if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle type.name", Element), &DefaultUiRenderParams_Generic))
+        // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to
+        // support not drawing the toggl-y thing if we just want to dump the members.
+        b32 DrawChildren = True;
+        b32 DidToggle = False;
+        if (Name)
         {
-          PushNewRow(Ui);
+          if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle type.name", Element), &DefaultUiRenderParams_Generic))
+          {
+            DidToggle = True;
+            PushNewRow(Ui);
+          }
+          else
+          {
+            DrawChildren = False;
+          }
+        }
 
+        if (DrawChildren)
+        {
           PushTableStart(Ui);
-          OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+          if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             type.map(member)
             {
               member.has_tag(ui_skip)?
@@ -261,7 +276,7 @@ poof(
                 PushNewRow(Ui);
               }
             }
-          CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+          if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
           PushTableEnd(Ui);
         }
         else
@@ -595,6 +610,7 @@ enum world_edit_brush_type
   WorldEdit_BrushType_Single,
   WorldEdit_BrushType_Asset,
   WorldEdit_BrushType_Entity,
+  WorldEdit_BrushType_Shape,
   WorldEdit_BrushType_Noise,
   WorldEdit_BrushType_Layered,
 };
@@ -759,7 +775,7 @@ struct world_update_op_shape_params_chunk_data
 
 struct world_update_op_shape_params_sphere
 {
-  canonical_position Location;
+  cp Location;
   f32 Radius;
 };
 
@@ -807,9 +823,22 @@ struct chunk_thumbnail
   asset_thumbnail Thumbnail;
 };
 
+enum shape_type
+{
+  ShapeType_Sphere = type_world_update_op_shape_params_sphere,
+  ShapeType_Rect   = type_world_update_op_shape_params_rect,
+};
+poof(string_and_value_tables(shape_type))
+#include <generated/string_and_value_tables_shape_type.h>
+
 struct shape_layer
 {
-  u32 TODO;
+  shape_type Type;
+
+  // NOTE(Jesse): Intentionally not a d-union such that you can toggle between
+  // them and your parameter selections stay intact.
+  world_update_op_shape_params_sphere Sphere;
+  world_update_op_shape_params_rect   Rect;
 };
 
 struct layer_update_result
@@ -859,10 +888,14 @@ struct level_editor
 {
   memory_arena *Memory;
 
-  // TODO(Jesse): Rename NoiseBrush?
-  noise_layer NoiseLayer;
+  // TODO(Jesse): Think of a better naming scheme for these..
+  // NOTE(Jesse): Brushes
+  // {
+       noise_layer NoiseLayer;
+       shape_layer ShapeLayer;
 
-  layered_brush_editor LayeredBrushEditor;
+       layered_brush_editor LayeredBrushEditor;
+  // }
 
   u64 EngineDebugViewModeToggleBits;
 

@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:496:0
+// src/engine/serdes.cpp:500:0
 
 link_internal bonsai_type_info
 TypeInfo(shape_layer *Ignored)
@@ -34,7 +34,18 @@ Serialize(u8_cursor_block_array *Bytes, shape_layer *BaseElement, umm Count = 1)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     shape_layer *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->TODO);
+    Result &= Serialize(Bytes, (u32*)&Element->Type);
+
+
+
+
+    Result &= Serialize(Bytes, &Element->Sphere);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->Rect);
 
     
 
@@ -57,9 +68,22 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *Memory)
 {
   b32 Result = True;
+  Element->Type = Cast(shape_type, Read_u32(Bytes));
+
+
+
+
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->TODO, Memory);
+  Result &= Deserialize(Bytes, &Element->Sphere, Memory);
+
+
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->Rect, Memory);
 
   
 

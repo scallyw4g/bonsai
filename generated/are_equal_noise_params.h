@@ -1,4 +1,4 @@
-// src/engine/editor.h:674:0
+// src/engine/editor.h:690:0
 
 link_internal b32
 AreEqual(noise_params *Thing1, noise_params *Thing2)
