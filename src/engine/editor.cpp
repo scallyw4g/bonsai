@@ -874,7 +874,21 @@ GetRequiredDimForLayer(v3i SelectionDim, brush_layer *Layer)
 
     case BrushLayerType_Shape:
     {
-      NotImplemented;
+      switch (Layer->Settings.Shape.Type)
+      {
+        case ShapeType_None: {} break;
+
+        case ShapeType_Sphere:
+        {
+          // TODO(Jesse): This might need a +1..
+          Request += s32(2.f*Layer->Settings.Shape.Sphere.Radius);
+        } break;
+
+        case ShapeType_Rect:
+        {
+          Request += V3i(GetDim(Layer->Settings.Shape.Rect.Region));
+        } break;
+      }
     } break;
   }
 
