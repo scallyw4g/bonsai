@@ -903,7 +903,7 @@ MarkBoundaryVoxels_Debug( voxel *Voxels, chunk_dimension SrcChunkDim)
   }
 }
 
-link_internal void
+link_internal s32
 MarkBoundaryVoxels_MakeExteriorFaces( voxel *Voxels,
                                       chunk_dimension SrcChunkDim,
                                       chunk_dimension SrcChunkMin,
@@ -916,6 +916,7 @@ MarkBoundaryVoxels_MakeExteriorFaces( voxel *Voxels,
 
   rect3i ClampedDim = RectMinMax(SrcChunkMin, SrcChunkMax);
 
+  s32 Result = 0;
   for ( s32 z = MinDim.z; z < MaxDim.z ; ++z )
   {
     for ( s32 y = MinDim.y; y < MaxDim.y ; ++y )
@@ -926,6 +927,8 @@ MarkBoundaryVoxels_MakeExteriorFaces( voxel *Voxels,
         s32 SrcIndex = GetIndex(DestP, SrcChunkDim);
 
         voxel *Voxel = Voxels + SrcIndex;
+
+        Result += Voxel->Flags&Voxel_Filled;
 
         if (Voxel->Flags&Voxel_Filled)
         {
@@ -967,9 +970,11 @@ MarkBoundaryVoxels_MakeExteriorFaces( voxel *Voxels,
       }
     }
   }
+
+  return Result;
 }
 
-link_internal void
+link_internal s32
 MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
                                       v3i  SrcChunkDim,
                                       v3i  SrcChunkMin,
@@ -987,6 +992,8 @@ MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
   v3i InnerDim = MaxDim-MinDim;
 
   s32 MaxIndex = Volume(SrcChunkDim);
+
+  s32 Result = 0;
   for ( s32 z = MinDim.z; z < MaxDim.z ; ++z )
   {
     for ( s32 y = MinDim.y; y < MaxDim.y ; ++y )
@@ -997,6 +1004,7 @@ MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
         s32 SrcIndex = GetIndex(SrcP, SrcChunkDim);
         voxel *Voxel = Voxels + SrcIndex;
 
+        Result += Voxel->Flags&Voxel_Filled;
         if (Voxel->Flags & Voxel_Filled)
         {
           Voxel->Flags = Voxel_Filled;
@@ -1067,8 +1075,11 @@ MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
     }
 
   }
+
+  return Result;
 }
 
+#if 0
 link_internal void
 MarkBoundaryVoxels_NoExteriorFaces_( voxel *Voxels,
                                     chunk_dimension SrcChunkDim,
@@ -1137,6 +1148,7 @@ MarkBoundaryVoxels_NoExteriorFaces_( voxel *Voxels,
     }
   }
 }
+#endif
 
 link_internal void
 DrawDebugVoxels( voxel *Voxels,
@@ -4215,7 +4227,10 @@ WorldEdit_shape_rect_Surface(apply_world_edit_params *Params, voxel *NewVoxelVal
     case WorldEdit_Mode_Paint:
     {
       poof(rectalinear_iteration_pattern({
-        if ( (V->Flags&VoxelFaceMask) && Contains(SSRect, SimVoxP)) { V->Color = NewVoxelValue->Color; }
+        if ( (V->Flags&VoxelFaceMask) && Contains(SSRect, SimVoxP))
+        {
+          V->Color = NewVoxelValue->Color;
+        }
       }))
 #include <generated/rectalinear_iteration_pattern_965125886.h>
     } break;
@@ -4229,7 +4244,10 @@ WorldEdit_shape_rect_Surface(apply_world_edit_params *Params, voxel *NewVoxelVal
           b32 IsUnfilledBorder = False;
           poof_check_for_unfilled_border()
           Assert(NewVoxelValue->Flags & Voxel_Filled);
-          if (IsUnfilledBorder) { *V = *NewVoxelValue; }
+          if (IsUnfilledBorder)
+          {
+            *V = *NewVoxelValue;
+          }
         }
       }))
 #include <generated/rectalinear_iteration_pattern_643608995.h>
@@ -4238,7 +4256,10 @@ WorldEdit_shape_rect_Surface(apply_world_edit_params *Params, voxel *NewVoxelVal
     case WorldEdit_Mode_Remove:
     {
       poof(rectalinear_iteration_pattern({
-        if ( (V->Flags&VoxelFaceMask) && Contains(SSRect, SimVoxP)) { *V = *NewVoxelValue; }
+        if ( (V->Flags&VoxelFaceMask) && Contains(SSRect, SimVoxP))
+        {
+          *V = *NewVoxelValue;
+        }
       }))
 #include <generated/rectalinear_iteration_pattern_530902269.h>
     } break;
@@ -4574,7 +4595,10 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 
           poof(rectalinear_iteration_pattern({
             v3i CenterToVoxP = SimVoxP - EditCenterP;
-            if (LengthSq(CenterToVoxP) < RadiusSquared) { *V = NewVoxelValue; }
+            if (LengthSq(CenterToVoxP) < RadiusSquared)
+            {
+              *V = NewVoxelValue;
+            }
           }))
 #include <generated/rectalinear_iteration_pattern_199114513.h>
         } break;

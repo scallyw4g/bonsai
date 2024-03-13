@@ -479,14 +479,14 @@ GetMax(v3 *SelectionRegion)
 }
 
 link_internal void
-ApplyEditToRegion(engine_resources *Engine, rect3 *SelectionAABB, world_edit_mode WorldEditMode, world_edit_mode_modifier Modifier)
+ApplyEditToRegion(engine_resources *Engine, rect3 *SelectionAABB, u16 ColorIndex, world_edit_mode WorldEditMode, world_edit_mode_modifier Modifier)
 {
   world_edit_shape Shape = {
     .Type = type_world_update_op_shape_params_rect,
     .world_update_op_shape_params_rect.Region = *SelectionAABB
   };
 
-  QueueWorldUpdateForRegion(Engine, WorldEditMode, Modifier, &Shape, Engine->Editor.SelectedColorIndex, Engine->WorldUpdateMemory);
+  QueueWorldUpdateForRegion(Engine, WorldEditMode, Modifier, &Shape, ColorIndex, Engine->WorldUpdateMemory);
 }
 
 
@@ -949,7 +949,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
   v3i RequiredLayerDim = GetRequiredDimForLayer(SelectionDim, Layer);
 
   b32 ReallocChunk     = Editor->SelectionChanged || Layer->Preview.Chunk.Dim != RequiredLayerDim;
-  b32 UpdateNoise = ReallocChunk || !AreEqual(Settings, PrevSettings);
+  b32 UpdateVoxels     = ReallocChunk || !AreEqual(Settings, PrevSettings);
 
   *PrevSettings = *Settings;
 
@@ -971,30 +971,33 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
 
 
 
-  switch (Settings->Type)
+  if (UpdateVoxels)
   {
-    case BrushLayerType_Shape:
+    Info("Detected changes to settings, updating voxels.");
+    switch (Settings->Type)
     {
-      shape_layer *Shape = &Settings->Shape;
-      switch (Shape->Type)
+      case BrushLayerType_Shape:
       {
-        case ShapeType_None:
-        case ShapeType_Rect:
-        case ShapeType_Sphere:
+        shape_layer *Shape = &Settings->Shape;
+        switch (Shape->Type)
         {
-          ApplyBrushLayer(Engine, Layer, Chunk, Settings->Offset.Min);
-        } break;
-      }
-    } break;
+          case ShapeType_None:
+          case ShapeType_Rect:
+          case ShapeType_Sphere:
+          {
+            ApplyBrushLayer(Engine, Layer, Chunk, Settings->Offset.Min);
+            FinalizeChunkInitialization(Chunk);
+            QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk);
+          } break;
+        }
+      } break;
 
-    case BrushLayerType_Noise:
-    {
-      noise_layer *Noise = &Settings->Noise;
-      switch (Noise->Type)
+      case BrushLayerType_Noise:
       {
-        case NoiseType_Perlin:
+        noise_layer *Noise = &Settings->Noise;
+        switch (Noise->Type)
         {
-          if (UpdateNoise)
+          case NoiseType_Perlin:
           {
             Chunk->Flags = Chunk_Queued;
             InitializeChunkWithNoise( Terrain_Perlin3D,
@@ -1010,12 +1013,9 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
                                       ChunkInitFlag_Noop,
                                       0,
                                       True );
-          }
-        } break;
+          } break;
 
-        case NoiseType_Voronoi:
-        {
-          if (UpdateNoise)
+          case NoiseType_Voronoi:
           {
             Chunk->Flags = Chunk_Queued;
             InitializeChunkWithNoise( Terrain_Voronoi3D,
@@ -1031,10 +1031,11 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
                                       ChunkInitFlag_Noop,
                                       Cast(void*, &Noise->Voronoi),
                                       True );
-          }
-        } break;
-      }
-    } break;
+          } break;
+        }
+      } break;
+    }
+
   }
 
 
@@ -1044,7 +1045,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
     RenderToTexture(Engine, &Layer->Preview.Thumbnail, &Chunk->Meshes, V3(Chunk->Dim)/-2.f);
   }
 
-  return UpdateNoise;
+  return UpdateVoxels;
 }
 
 link_internal void
@@ -1216,7 +1217,7 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestC
   {
     work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, ColorIndex, {}, {}, {}, 0);
     ApplyUpdateToRegion(GetThreadLocalState(ThreadLocal_ThreadIndex), &Job, UpdateBounds, DestChunk);
-    MarkBoundaryVoxels_MakeExteriorFaces( DestChunk->Voxels, DestChunk->Dim, {{}}, DestChunk->Dim );
+    DestChunk->FilledCount = MarkBoundaryVoxels_MakeExteriorFaces( DestChunk->Voxels, DestChunk->Dim, {{}}, DestChunk->Dim );
   }
 
 }
@@ -1377,10 +1378,18 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, w
         case WorldEdit_BrushType_Entity: {} break;
 
         case WorldEdit_BrushType_Noise:
-        case WorldEdit_BrushType_Shape:
         {
+          CheckForChangesAndUpdate_ThenRenderToPreviewTexture(Engine, &Editor->Noise);
           PushWindowStart(Ui, &Window);
             DoSettingsForBrush(Engine, &Editor->Noise, &Window);
+          PushWindowEnd(Ui, &Window);
+        } break;
+
+        case WorldEdit_BrushType_Shape:
+        {
+          CheckForChangesAndUpdate_ThenRenderToPreviewTexture(Engine, &Editor->Shape);
+          PushWindowStart(Ui, &Window);
+            DoSettingsForBrush(Engine, &Editor->Shape, &Window);
           PushWindowEnd(Ui, &Window);
         } break;
 
@@ -1787,7 +1796,7 @@ DoWorldEditor(engine_resources *Engine)
                 {
                   v3 P0 = GetHotVoxelForEditMode(Engine, MainPanelEditParams.Mode);
                   rect3 AABB = RectMinMax(P0, P0+1.f);
-                  ApplyEditToRegion(Engine, &AABB, MainPanelEditParams.Mode, MainPanelEditParams.Modifier);
+                  ApplyEditToRegion(Engine, &AABB, Engine->Editor.SelectedColorIndex,  MainPanelEditParams.Mode, MainPanelEditParams.Modifier);
                 }
               }
             }
@@ -1822,7 +1831,7 @@ DoWorldEditor(engine_resources *Engine)
                 } break;
               }
 
-              QueueWorldUpdateForRegion(Engine, MainPanelEditParams.Mode, MainPanelEditParams.Modifier, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory);
+              QueueWorldUpdateForRegion(Engine, MainPanelEditParams.Mode, MainPanelEditParams.Modifier, &Shape, Editor->Shape.Settings.Color, Engine->WorldUpdateMemory);
             }
           } break;
 
@@ -1861,7 +1870,7 @@ DoWorldEditor(engine_resources *Engine)
                 type_world_update_op_shape_params_chunk_data,
                 .world_update_op_shape_params_chunk_data = ChunkDataShape,
               };
-              QueueWorldUpdateForRegion(Engine, MainPanelEditParams.Mode, MainPanelEditParams.Modifier, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory);
+              QueueWorldUpdateForRegion(Engine, MainPanelEditParams.Mode, MainPanelEditParams.Modifier, &Shape, Editor->Noise.Settings.Color, Engine->WorldUpdateMemory);
             }
           } break;
 
@@ -1869,7 +1878,7 @@ DoWorldEditor(engine_resources *Engine)
           {
             if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
             {
-              ApplyEditToRegion(Engine, &SelectionAABB, MainPanelEditParams.Mode, MainPanelEditParams.Modifier);
+              ApplyEditToRegion(Engine, &SelectionAABB, Engine->Editor.SelectedColorIndex, MainPanelEditParams.Mode, MainPanelEditParams.Modifier);
             }
           } break;
 
@@ -1989,7 +1998,7 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Editor->SelectionClicks == 2)
   {
-    if (Input->Ctrl.Pressed && Input->D.Clicked) { ApplyEditToRegion(Engine, &SelectionAABB, WorldEdit_Mode_Remove, WorldEdit_Modifier_Default); }
+    if (Input->Ctrl.Pressed && Input->D.Clicked) { ApplyEditToRegion(Engine, &SelectionAABB, {}, WorldEdit_Mode_Remove, WorldEdit_Modifier_Default); }
 
     if (Input->Ctrl.Pressed && Input->C.Clicked) { Editor->CopyRegion = Editor->SelectionRegion; }
 

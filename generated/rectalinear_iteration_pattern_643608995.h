@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4225:0
+// src/engine/world_chunk.cpp:4240:0
 
 DimIterator(x, y, z, UpdateDim)
 {
@@ -13,7 +13,10 @@ DimIterator(x, y, z, UpdateDim)
           b32 IsUnfilledBorder = False;
           poof_check_for_unfilled_border()
           Assert(NewVoxelValue->Flags & Voxel_Filled);
-          if (IsUnfilledBorder) { *V = *NewVoxelValue; }
+          if (IsUnfilledBorder)
+          {
+            *V = *NewVoxelValue;
+          }
         }
       
 }

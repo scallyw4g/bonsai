@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4240:0
+// src/engine/world_chunk.cpp:4258:0
 
 DimIterator(x, y, z, UpdateDim)
 {
@@ -7,7 +7,10 @@ DimIterator(x, y, z, UpdateDim)
   voxel *V = CopiedChunk->Voxels + GetIndex(SimRelVoxP, UpdateDim);
 
   
-        if ( (V->Flags&VoxelFaceMask) && Contains(SSRect, SimVoxP)) { *V = *NewVoxelValue; }
+        if ( (V->Flags&VoxelFaceMask) && Contains(SSRect, SimVoxP))
+        {
+          *V = *NewVoxelValue;
+        }
       
 }
 
