@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:101:0
+// src/engine/editor.cpp:113:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_rect *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,20 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->P0,
-        CSz("P0"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->P1,
-        CSz("P1"),
+&Element->Region,
+        CSz("Region"),
         Params
         );
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

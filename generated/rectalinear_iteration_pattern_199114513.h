@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4568:0
+// src/engine/world_chunk.cpp:4579:0
 
 DimIterator(x, y, z, UpdateDim)
 {
@@ -8,7 +8,7 @@ DimIterator(x, y, z, UpdateDim)
 
   
             v3i CenterToVoxP = SimVoxP - EditCenterP;
-            if (LengthSq(CenterToVoxP) < RadiusSquared) { V->Flags = Voxel_Filled; }
+            if (LengthSq(CenterToVoxP) < RadiusSquared) { *V = NewVoxelValue; }
           
 }
 

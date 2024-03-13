@@ -300,7 +300,7 @@ poof(
   func do_editor_ui_for_enum(enum_t)
   {
     link_internal void
-    DoEditorUi(renderer_2d *Ui, window_layout *Window, enum_t.name *Element, cs Name, ui_render_params *Params)
+    DoEditorUi(renderer_2d *Ui, window_layout *Window, enum_t.name *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
     {
       if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
@@ -525,17 +525,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, cp *Value, cs Name, EDITOR_UI
 }
 
 
+poof(do_editor_ui_for_compound_type(rect3))
+#include <generated/do_editor_ui_for_compound_type_rect3.h>
+
 poof(do_editor_ui_for_compound_type(rect3i))
 #include <generated/do_editor_ui_for_compound_type_rect3i.h>
 
 poof(do_editor_ui_for_compound_type(rect3cp))
 #include <generated/do_editor_ui_for_compound_type_rect3cp.h>
-
-/* link_internal void */
-/* DoEditorUi(renderer_2d *Ui, aabb *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS); */
-
-/* link_internal void */
-/* DoEditorUi(renderer_2d *Ui, v3i *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS); */
 
 poof(block_array_h(asset_thumbnail, {8}, {}))
 #include <generated/block_array_h_asset_thumbnail_688856411.h>
@@ -749,10 +746,7 @@ poof(string_and_value_tables(world_update_op_shape_type))
 struct world_update_op_shape_params_rect
 {
   // Sim-space positions
-  v3 P0;
-  v3 P1;
-  /* rect3 Region; */ // TODO(Jesse): Make this a thing
-  /* rect3cp Region; */
+  rect3 Region;
 };
 
 struct asset;
@@ -776,7 +770,7 @@ struct world_update_op_shape_params_chunk_data
 struct world_update_op_shape_params_sphere
 {
   cp Location;
-  f32 Radius;
+  f32 Radius = 10.f;
 };
 
 struct world_edit_shape
@@ -835,6 +829,7 @@ poof(string_and_value_tables(shape_type))
 struct shape_layer
 {
   shape_type Type;
+  b32 InferFromSelection;
 
   // NOTE(Jesse): Intentionally not a d-union such that you can toggle between
   // them and your parameter selections stay intact.

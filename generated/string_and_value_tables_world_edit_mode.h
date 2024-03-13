@@ -1,4 +1,4 @@
-// src/engine/editor.h:710:0
+// src/engine/editor.h:707:0
 
 link_internal counted_string
 ToStringPrefixless(world_edit_mode Type)

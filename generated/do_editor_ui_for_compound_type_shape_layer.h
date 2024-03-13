@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:105:0
+// src/engine/editor.cpp:117:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -38,6 +38,19 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
 
 
       
+      DoEditorUi(Ui,
+        Window,
+        Cast(b8*,&Element->InferFromSelection),
+        CSz("InferFromSelection"),
+        &DefaultUiRenderParams_Checkbox
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
       DoEditorUi(Ui,
         Window,
 &Element->Sphere,

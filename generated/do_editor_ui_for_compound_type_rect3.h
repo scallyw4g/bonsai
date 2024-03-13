@@ -1,7 +1,7 @@
-// src/engine/editor.cpp:268:0
+// src/engine/editor.h:528:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3 *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   if (Element)
   {
@@ -11,7 +11,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
     b32 DidToggle = False;
     if (Name)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle entity_position_info", Element), &DefaultUiRenderParams_Generic))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle rect3", Element), &DefaultUiRenderParams_Generic))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -28,8 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->P,
-        CSz("P"),
+&Element->Min,
+        CSz("Min"),
         Params
         );
 
@@ -40,33 +40,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
       
       DoEditorUi(Ui,
         Window,
-&Element->_CollisionVolumeRadius,
-        CSz("_CollisionVolumeRadius"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->Scale,
-        CSz("Scale"),
-        Params
-        );
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-&Element->EulerAngles,
-        CSz("EulerAngles"),
+&Element->Max,
+        CSz("Max"),
         Params
         );
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

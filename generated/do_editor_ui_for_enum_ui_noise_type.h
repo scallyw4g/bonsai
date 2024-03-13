@@ -1,7 +1,7 @@
-// src/engine/editor.h:568:0
+// src/engine/editor.h:565:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_noise_type *Element, cs Name, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_noise_type *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 

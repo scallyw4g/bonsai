@@ -39,6 +39,12 @@ Serialize(u8_cursor_block_array *Bytes, shape_layer *BaseElement, umm Count = 1)
 
 
 
+    Result &= Serialize(Bytes, &Element->InferFromSelection);
+
+
+
+
+
     Result &= Serialize(Bytes, &Element->Sphere);
 
 
@@ -69,6 +75,14 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *
 {
   b32 Result = True;
   Element->Type = Cast(shape_type, Read_u32(Bytes));
+
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->InferFromSelection, Memory);
+
 
 
 

@@ -1,5 +1,17 @@
 //
 // TODO(Jeses): Move to header
+link_internal rect3
+GetSelectionRect(world *World, level_editor *Editor)
+{
+  v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
+  v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
+
+  rect3 Result = RectMinMax(SelectionMinP, SelectionMaxP);
+  return Result;
+}
+
+//
+// TODO(Jeses): Move to header
 link_internal v3i
 GetSelectionDim(world *World, level_editor *Editor)
 {
@@ -164,9 +176,6 @@ poof(do_editor_ui_for_compound_type(render_settings))
 
 poof(do_editor_ui_for_compound_type(physics))
 #include <generated/do_editor_ui_for_compound_type_physics.h>
-
-poof(do_editor_ui_for_compound_type(aabb))
-#include <generated/do_editor_ui_for_compound_type_aabb.h>
 
 poof(do_editor_ui_for_compound_type(random_series))
 #include <generated/do_editor_ui_for_compound_type_random_series.h>
@@ -467,8 +476,7 @@ ApplyEditToRegion(engine_resources *Engine, rect3 *SelectionAABB, world_edit_mod
 {
   world_edit_shape Shape = {
     .Type = type_world_update_op_shape_params_rect,
-    .world_update_op_shape_params_rect.P0 = SelectionAABB->Min,
-    .world_update_op_shape_params_rect.P1 = SelectionAABB->Max,
+    .world_update_op_shape_params_rect.Region = *SelectionAABB
   };
 
   QueueWorldUpdateForRegion(Engine, WorldEditMode, Modifier, &Shape, Engine->Editor.SelectedColorIndex, Engine->WorldUpdateMemory);
@@ -977,7 +985,25 @@ BrushSettingsForShapeBrush(engine_resources *Engine, window_layout *Window, shap
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  DoEditorUi(Ui, Window, Layer, {});
+  DoEditorUi(Ui, Window, &Layer->Type, CSz("Shape Type"));
+
+  switch (Layer->Type)
+  {
+    case ShapeType_None: { } break;
+
+    case ShapeType_Rect:
+    {
+      Layer->Rect.Region = GetSelectionRect(World, Editor);
+      DoEditorUi(Ui, Window, &Layer->Rect, {});
+    } break;
+
+    case ShapeType_Sphere:
+    {
+      Layer->Sphere.Location = Canonical_Position(&Engine->MousedOverVoxel.Value);
+      DoEditorUi(Ui, Window, &Layer->Sphere, {});
+    } break;
+  }
+
 }
 
 link_internal void
@@ -1677,26 +1703,26 @@ DoWorldEditor(engine_resources *Engine)
 
           case WorldEdit_BrushType_Shape:
           {
-            if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
+            if (Input->LMB.Clicked && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
             {
-              world_update_op_shape_type OpShape = world_update_op_shape_type(Editor->ShapeLayer.Type);
+              world_edit_shape Shape = { world_update_op_shape_type(Editor->ShapeLayer.Type), {} };
 
-              world_edit_shape Shape = { OpShape, {} };
-
-              switch (OpShape)
+              switch (Editor->ShapeLayer.Type)
               {
-                case type_world_update_op_shape_params_sphere:
+                case ShapeType_None: {} break;
+
+                case ShapeType_Sphere:
                 {
                   Shape.world_update_op_shape_params_sphere = Editor->ShapeLayer.Sphere;
                 } break;
 
-                case type_world_update_op_shape_params_rect:
+                case ShapeType_Rect:
                 {
                   Shape.world_update_op_shape_params_rect = Editor->ShapeLayer.Rect;
                 } break;
-
-                InvalidDefaultCase;
               }
+
+              QueueWorldUpdateForRegion(Engine, MainPanelEditParams.Mode, MainPanelEditParams.Modifier, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory);
             }
           } break;
 

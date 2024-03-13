@@ -34,13 +34,7 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_rect *BaseE
   RangeIterator_t(umm, ElementIndex, Count)
   {
     world_update_op_shape_params_rect *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->P0);
-
-
-
-
-
-    Result &= Serialize(Bytes, &Element->P1);
+    Result &= Serialize(Bytes, &Element->Region);
 
     
 
@@ -65,15 +59,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_rect *E
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->P0, Memory);
-
-
-
-
-
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->P1, Memory);
+  Result &= Deserialize(Bytes, &Element->Region, Memory);
 
   
 

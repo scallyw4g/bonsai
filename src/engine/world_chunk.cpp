@@ -3854,11 +3854,11 @@ QueueWorldUpdateForRegion(engine_resources *Engine,
       MinPCoarse = ShapeRect->Region.Min;
       MaxPCoarse = ShapeRect->Region.Max;
 #else
-      v3 MinP = Min(ShapeRect->P0, ShapeRect->P1);
-      v3 MaxP = Max(ShapeRect->P0, ShapeRect->P1);
+      v3 MinP = Min(ShapeRect->Region.Min, ShapeRect->Region.Max);
+      v3 MaxP = Max(ShapeRect->Region.Min, ShapeRect->Region.Max);
 
-      ShapeRect->P0 = MinP;
-      ShapeRect->P1 = MaxP;
+      ShapeRect->Region.Min = MinP;
+      ShapeRect->Region.Max = MaxP;
 
       MinPCoarse = SimSpaceToCanonical(World, MinP - V3(MinPStroke) - V3(Global_ChunkApronMinDim));
       MaxPCoarse = SimSpaceToCanonical(World, MaxP + V3(MaxPStroke) + V3(Global_ChunkApronMaxDim));
@@ -4499,6 +4499,17 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
   world_chunk **ChunkBuffer   = Job->ChunkBuffer;
   u32 ChunkCount              = Job->ChunkCount;
 
+  voxel NewVoxelValue = {};
+  if (Mode == WorldEdit_Mode_Attach || Mode == WorldEdit_Mode_Paint)
+  {
+#if VOXEL_DEBUG_COLOR
+    NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor, {}, {}};
+#else
+    NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor};
+#endif
+  }
+
+
   switch (Shape.Type)
   {
     InvalidCase(type_world_update_op_shape_params_count);
@@ -4522,7 +4533,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
             {
               poof(rectalinear_iteration_pattern({
                 v3i CenterToVoxP = SimVoxP - EditCenterP;
-                if (LengthSq(CenterToVoxP) < RadiusSquared) { V->Flags = Voxel_Empty; }
+                if (LengthSq(CenterToVoxP) < RadiusSquared) { *V = {}; }
               }))
 #include <generated/rectalinear_iteration_pattern_812652930.h>
             } break;
@@ -4567,7 +4578,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 
           poof(rectalinear_iteration_pattern({
             v3i CenterToVoxP = SimVoxP - EditCenterP;
-            if (LengthSq(CenterToVoxP) < RadiusSquared) { V->Flags = Voxel_Filled; }
+            if (LengthSq(CenterToVoxP) < RadiusSquared) { *V = NewVoxelValue; }
           }))
 #include <generated/rectalinear_iteration_pattern_199114513.h>
         } break;
@@ -4603,21 +4614,11 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
       world_update_op_shape_params_rect *Rect = SafeCast(world_update_op_shape_params_rect, &Shape);
 
       // NOTE(Jesse): Outside world should have min/max'd these already
-      Assert(Rect->P0 < Rect->P1);
+      Assert(Rect->Region.Min < Rect->Region.Max);
 
       // NOTE(Jesse): These are specifically meant to truncate, not floor
-      rect3i SSRect = {V3i(Rect->P0), V3i(Rect->P1)};
-      v3i EditCenterP = V3i(Floor(Rect->P0+(GetDim(SSRect)/2.f)));
-
-      voxel NewVoxelValue = {};
-      if (Mode == WorldEdit_Mode_Attach || Mode == WorldEdit_Mode_Paint)
-      {
-#if VOXEL_DEBUG_COLOR
-        NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor, {}, {}};
-#else
-        NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor};
-#endif
-      }
+      rect3i SSRect = {V3i(Rect->Region.Min), V3i(Rect->Region.Max)};
+      v3i EditCenterP = V3i(Floor(Rect->Region.Min+(GetDim(SSRect)/2.f)));
 
       apply_world_edit_params Params = {Mode, SSRect, SimSpaceUpdateBounds, CopiedChunk};
       switch (Modifier)

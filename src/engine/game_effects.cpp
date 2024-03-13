@@ -278,8 +278,7 @@ DoDig( engine_resources *Resources, canonical_position PickCP, f32 Radius, f32 D
 
   world_edit_shape Shape = {
     .Type = type_world_update_op_shape_params_rect,
-    .world_update_op_shape_params_rect.P0 = MinP,
-    .world_update_op_shape_params_rect.P1 = MaxP,
+    .world_update_op_shape_params_rect.Region = RectMinMax(MinP,MaxP),
   };
   QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Remove, WorldEdit_Modifier_Default, &Shape, ICE_BLUE, Resources->WorldUpdateMemory);
 }
@@ -294,8 +293,7 @@ DoIceBlock( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
 
   world_edit_shape Shape = {
     .Type = type_world_update_op_shape_params_rect,
-    .world_update_op_shape_params_rect.P0 = MinP,
-    .world_update_op_shape_params_rect.P1 = MaxP,
+    .world_update_op_shape_params_rect.Region = RectMinMax(MinP,MaxP),
   };
   QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Attach, WorldEdit_Modifier_Default, &Shape, ICE_BLUE, Resources->WorldUpdateMemory);
 }
