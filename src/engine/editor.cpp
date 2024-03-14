@@ -1125,6 +1125,10 @@ DoSettingsForBrush(engine_resources *Engine, brush_layer *Layer, window_layout *
   DoEditorUi(Ui, Window, &Settings->Iterations, CSz("Iterations"));
   PushNewRow(Ui); // Primitives require a new row.. I forget why, but there's a good reason.
 
+  // NOTE(Jesse): These are only stricly necessary if Modifier is Flood or Surface .. do we care?
+  Settings->Offset.Min = Min(V3i(-Settings->Iterations), Settings->Offset.Min);
+  Settings->Offset.Max = Max(V3i( Settings->Iterations), Settings->Offset.Max);
+
   {
     ui_style Style = UiStyleFromLightestColor(GetColorData(Settings->Color));
     PushUntexturedQuad(Ui, {}, V2(Global_Font.Size.y), zDepth_Text, &Style, DefaultGenericPadding);
