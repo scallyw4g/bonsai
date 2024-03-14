@@ -2261,20 +2261,13 @@ GrassyLargeTerracedTerrain( world_chunk *Chunk,
 
 link_internal u32
 Terrain_SinCos( world_chunk *Chunk,
-                v3i Dim,
-                v3i NoiseBasis,
-                v3i SrcToDest,
-                u16 ColorIndex,
-
-                v3  Frequency,
-                s32 Amplitude,
-
-                s64 zMin,
-                v3i WorldChunkDim,
-                void *OctavesIn )
+                v3i NoiseBasisOffset,
+                void *NoiseParams,
+                void *UserData )
 {
   TIMED_FUNCTION();
-  Assert(OctavesIn == 0);
+
+  UNPACK_NOISE_PARAMS(NoiseParams);
 
   r32 *NoiseValues = Allocate(r32, GetTranArena(), Volume(Dim));
   v3  *Normals     = Allocate( v3, GetTranArena(), Volume(Dim));
@@ -2295,7 +2288,7 @@ Terrain_SinCos( world_chunk *Chunk,
       {
         s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x);
         s32 VoxIndex = GetIndex(V3i(x,y,z), Dim);
-        r32 NoiseValue = ((Sin(r32(WorldX)/Frequency.x)+1.f)/2.f) + ((Cos(r32(WorldY)/Frequency.y)+1.f)/4.f);
+        r32 NoiseValue = ((Sin(r32(WorldX)/Period.x)+1.f)/2.f) + ((Cos(r32(WorldY)/Period.y)+1.f)/4.f);
 
         /* NoiseValue = MapNoiseValueToFinal(NoiseValue); */
         NoiseValue *= Amplitude;
@@ -2342,26 +2335,20 @@ Terrain_SinCos( world_chunk *Chunk,
 
 link_internal u32
 Terrain_Voronoi3D( world_chunk *Chunk,
-                   v3i Dim,
-                   v3i NoiseBasis,
-                   v3i SrcToDest,
-                   u16 ColorIndex,
-
-                   v3  Period,
-                   s32 Amplitude,
-                   s64 zMin,
-
-                   v3i WorldChunkDim,
-                   void *VoidVoronoiParams )
+                          v3i  NoiseBasis,
+                         void *NoiseParams,
+                         void *UserData )
 {
   TIMED_FUNCTION();
+
+  UNPACK_NOISE_PARAMS(NoiseParams);
 
   u32 ChunkSum = 0;
 
   s32 MinZ = Chunk->WorldP.z*WorldChunkDim.z;
-  s32 MaxZ = MinZ+WorldChunkDim.z ;
+  s32 MaxZ = MinZ+WorldChunkDim.z;
 
-  voronoi_noise_params *VoronoiParams = Cast(voronoi_noise_params*, VoidVoronoiParams);
+  voronoi_noise_params *VoronoiParams = Cast(voronoi_noise_params*, UserData);
 
   r32 Squareness = VoronoiParams ? VoronoiParams->Squareness : 0.f;
   r32 MaskChance = VoronoiParams ? VoronoiParams->MaskChance : 0.f;

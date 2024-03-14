@@ -598,6 +598,26 @@ struct world_edit_params
 
 
 
+// TODO(Jesse): Probably do perlin/voronoi in terms of this?
+struct generic_noise_params
+{
+  r32 Threshold = 3.0f;
+  v3  Period    = {{8.f, 8.f, 8.f}}; poof(@ui_range(0, 100))
+  r32 Amplitude = 8.f;               poof(@ui_range(0, 100))
+  u16 Color     = 1; // White
+};
+
+// TODO(Jesse): Get rid of zMin
+#define UNPACK_NOISE_PARAMS(P) \
+  v3i WorldChunkDim = GetWorldChunkDim(); \
+  v3i Dim = Chunk->Dim; \
+  r32 Thresh  = Cast(generic_noise_params*, (P))->Threshold; \
+  s64 zMin    = s64(Cast(generic_noise_params*, (P))->Threshold); \
+  v3  Period     = Cast(generic_noise_params*, (P))->Period; \
+  s32 Amplitude  = s32(Cast(generic_noise_params*, (P))->Amplitude); \
+  u16 Color      = Cast(generic_noise_params*, (P))->Color; \
+  v3i SrcToDest  = {-1*Global_ChunkApronMinDim}; \
+  u16 ColorIndex = Cast(generic_noise_params*, (P))->Color
 
 
 struct perlin_noise_params

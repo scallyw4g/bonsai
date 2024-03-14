@@ -108,6 +108,12 @@ GetWorld()
   return Global_EngineResources->World;
 }
 
+link_internal v3i
+GetWorldChunkDim()
+{
+  return GetWorld()->ChunkDim;
+}
+
 link_weak bonsai_stdlib *
 GetStdlib()
 {
