@@ -459,9 +459,9 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           case TerrainGenType_Perlin3D:
           {
             // Perlin 3D Params
-            v3 Period = V3(100);
-            s32 Amplititude = 5;
-            s32 StartingZDepth = 0;
+            v3 Period = V3(50);
+            s32 Amplititude = 8;
+            s32 StartingZDepth = 2;
             u16 Color = GRASS_GREEN;
             InitializeChunkWithNoise( Terrain_Perlin3D, Thread, Chunk, Chunk->Dim, 0, Period, Amplititude, StartingZDepth, Color, MeshBit_Lod0, ChunkInitFlag_Noop, 0);
           } break;
