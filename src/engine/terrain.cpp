@@ -615,7 +615,7 @@ HoodooTerrain( perlin_noise *Noise,
                chunk_dimension Dim,
                chunk_dimension SrcToDest,
                u16 ColorIndex,
-               s32 Frequency,
+               v3  Frequency,
                s32 Amplitude,
                s64 zMin,
                chunk_dimension WorldChunkDim,
@@ -799,7 +799,7 @@ TerracedTerrain( perlin_noise *Noise,
                  v3i SrcToDest,
                  u16 ColorIndex,
 
-                 s32 IgnoredFrequency,
+                 v3  IgnoredFrequency,
                  s32 IgnoredAmplitude,
 
                  s64 zMin,
@@ -1060,7 +1060,7 @@ GrassyTerracedTerrain2( perlin_noise *Noise,
                        v3i SrcToDest,
                        u16 ColorIndex,
 
-                       s32 IgnoredFrequency,
+                       v3  IgnoredFrequency,
                        s32 IgnoredAmplitude,
 
                        s64 zMin,
@@ -1236,7 +1236,7 @@ GrassyTerracedTerrain3( perlin_noise *Noise,
                        v3i SrcToDest,
                        u16 ColorIndex,
 
-                       s32 IgnoredFrequency,
+                       v3  IgnoredFrequency,
                        s32 IgnoredAmplitude,
 
                        s64 zMin,
@@ -1578,7 +1578,7 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
                         v3i SrcToDest,
                         u16 ColorIndex,
 
-                        s32 IgnoredFrequency,
+                        v3  IgnoredFrequency,
                         s32 IgnoredAmplitude,
 
                         s64 zMin,
@@ -1923,7 +1923,7 @@ GrassyTerracedTerrain( perlin_noise *Noise,
                        v3i SrcToDest,
                        u16 ColorIndex,
 
-                       s32 IgnoredFrequency,
+                       v3  IgnoredFrequency,
                        s32 IgnoredAmplitude,
 
                        s64 zMin,
@@ -2100,7 +2100,7 @@ GrassyLargeTerracedTerrain( perlin_noise *Noise,
                             v3i SrcToDest,
                             u16 ColorIndex,
 
-                            s32 IgnoredFrequency,
+                            v3  IgnoredFrequency,
                             s32 IgnoredAmplitude,
 
                             s64 zMin,
@@ -2266,7 +2266,7 @@ Terrain_SinCos( perlin_noise *Noise,
                 v3i SrcToDest,
                 u16 ColorIndex,
 
-                s32 Frequency,
+                v3  Frequency,
                 s32 Amplitude,
 
                 s64 zMin,
@@ -2295,7 +2295,7 @@ Terrain_SinCos( perlin_noise *Noise,
       {
         s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x);
         s32 VoxIndex = GetIndex(V3i(x,y,z), Dim);
-        r32 NoiseValue = ((Sin(r32(WorldX)/r32(Frequency))+1.f)/2.f) + ((Cos(r32(WorldY)/r32(Frequency))+1.f)/4.f);
+        r32 NoiseValue = ((Sin(r32(WorldX)/Frequency.x)+1.f)/2.f) + ((Cos(r32(WorldY)/Frequency.y)+1.f)/4.f);
 
         /* NoiseValue = MapNoiseValueToFinal(NoiseValue); */
         NoiseValue *= Amplitude;

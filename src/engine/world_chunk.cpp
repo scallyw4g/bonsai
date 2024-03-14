@@ -555,7 +555,7 @@ Terrain_Flat( perlin_noise *Noise,
               chunk_dimension SrcToDest,
 
               u16 ColorIndex,
-              s32 Ignored0,
+              v3  Ignored0,
               s32 Ignored1,
 
               s64 zMin,

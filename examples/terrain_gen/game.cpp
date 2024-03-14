@@ -14,7 +14,7 @@ Terrain_Checkerboard( perlin_noise *Noise,
 
               u16 ColorIndex,
 
-              s32 Period,
+              v3 Period,
               s32 Amplitude,
               s64 zMin,
 
@@ -56,7 +56,7 @@ GrassyIslandTerrain( perlin_noise *Noise,
                      chunk_dimension SrcToDest,
                      u16 ColorIndex,
 
-                     s32 IgnoredPeriod,
+                     v3 IgnoredPeriod,
                      s32 IgnoredAmplitude,
 
                      s64 zMin,
@@ -267,7 +267,7 @@ WarpedTerrain( perlin_noise *Noise,
                chunk_dimension SrcToDest,
                u16 ColorIndex,
 
-               s32 IgnoredPeriod,
+               v3 IgnoredPeriod,
                s32 IgnoredAmplitude,
 
                s64 zMin,
@@ -403,7 +403,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           case TerrainGenType_Flat:
           {
             // Flat Params
-            s32 Period = 100;
+            v3 Period = V3(100);
             s32 Amplititude = 25;
             s32 StartingZDepth = -1;
             u16 Color = GRASS_GREEN;
@@ -413,7 +413,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           case TerrainGenType_SinCos:
           {
             // Bumpy Sin(x)+Cos(y) noise.  Useful for visualizing the polylines/splines mapping noise values to their final values.
-            s32 Period = 100;
+            v3 Period = V3(100);
             s32 Amplititude = 250;
             /* s32 Period = 100; */
             /* s32 Amplititude = 2500; */
@@ -426,7 +426,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           case TerrainGenType_Voronoi:
           {
             // Voronoi noise .. looks like rocks.
-            s32 Period = 100;
+            v3 Period = V3(100);
             s32 Amplititude = 50;
             s32 StartingZDepth = -1;
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
@@ -437,7 +437,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           case TerrainGenType_Checkerboard:
           {
             // Custom flat noise function that produces a checkerboard
-            s32 Period = 0;
+            v3 Period = V3(0);
             s32 Amplititude = 0;
             s32 StartingZDepth = -1;
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
@@ -449,7 +449,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           case TerrainGenType_Perlin2D:
           {
             // Perlin 2D Params
-            s32 Period = 100;
+            v3 Period = V3(100);
             s32 Amplititude = 5;
             s32 StartingZDepth = 0;
             u16 Color = GRASS_GREEN;
@@ -459,7 +459,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           case TerrainGenType_Perlin3D:
           {
             // Perlin 3D Params
-            s32 Period = 100;
+            v3 Period = V3(100);
             s32 Amplititude = 5;
             s32 StartingZDepth = 0;
             u16 Color = GRASS_GREEN;
@@ -470,7 +470,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           case TerrainGenType_FBM2D:
           {
             // FBM params
-            s32 Period = 300;
+            v3 Period = V3(300);
             s32 Amplititude = 220;
             s32 StartingZDepth = -200;
             u32 Octaves = 4;
@@ -483,7 +483,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           case TerrainGenType_GrassyTerracedTerrain:
           {
             // Custom FBM noise example generating slightly-more-complex game-world-like terrain
-            s32 Period = 0; // Ignored
+            v3 Period = V3(0); // Ignored
             s32 Amplititude = 0; // Ignored
             s32 StartingZDepth = -100;
             u32 OctaveCount = 1;
@@ -508,7 +508,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           case TerrainGenType_GrassyTerracedTerrain2:
           {
             // Custom FBM noise example generating slightly-more-complex game-world-like terrain
-            s32 Period = 0; // Ignored
+            v3 Period = V3(0); // Ignored
             s32 Amplititude = 0; // Ignored
             s32 StartingZDepth = -100;
             u32 OctaveCount = 1;
@@ -534,7 +534,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           case TerrainGenType_GrassyTerracedTerrain3:
           {
             // Custom FBM noise example generating slightly-more-complex game-world-like terrain
-            s32 Period = 0; // Ignored
+            v3 Period = V3(0); // Ignored
             s32 Amplititude = 0; // Ignored
             s32 StartingZDepth = -100;
             u32 OctaveCount = 2;
@@ -560,7 +560,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           case TerrainGenType_GrassyTerracedTerrain4:
           {
             // Custom FBM noise example generating slightly-more-complex game-world-like terrain
-            s32 Period = 0; // Ignored
+            v3 Period = V3(0); // Ignored
             s32 Amplititude = 0; // Ignored
             s32 StartingZDepth = -100;
             u32 OctaveCount = 3;
@@ -583,7 +583,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           case TerrainGenType_TerracedTerrain:
           {
             // Custom FBM noise example generating slightly-more-complex game-world-like terrain
-            s32 Period = 0; // Ignored
+            v3 Period = V3(0); // Ignored
             s32 Amplititude = 0; // Ignored
             s32 StartingZDepth = -100;
             u32 OctaveCount = 1;
@@ -608,7 +608,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           case TerrainGenType_GrassyLargeTerracedTerrain:
           {
             // Custom FBM noise example generating slightly-more-complex game-world-like terrain
-            s32 Period = 0; // Ignored
+            v3 Period = V3(0); // Ignored
             s32 Amplititude = 0; // Ignored
             s32 StartingZDepth = -140;
             u32 OctaveCount = 4;
@@ -635,7 +635,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           case TerrainGenType_GrassyIsland:
           {
             // Custom FBM noise example generating slightly-more-complex game-world-like terrain
-            s32 Period = 0; // Ignored
+            v3 Period = V3(0); // Ignored
             s32 Amplititude = 0; // Ignored
             s32 StartingZDepth = -140;
             u32 OctaveCount = 2;
@@ -659,7 +659,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
           case TerrainGenType_Hoodoo:
           {
-            s32 Period = 300;
+            v3 Period = V3(300);
             s32 Amplititude = 220;
             s32 StartingZDepth = 70;
             u32 OctaveCount = 2;
@@ -681,7 +681,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           case TerrainGenType_Warped:
           {
             // Custom FBM noise example generating highly domain-warped terrain
-            s32 Period = 0; // Ignored
+            v3 Period = V3(0); // Ignored
             s32 Amplititude = 0; // Ignored
             s32 StartingZDepth = -200;
             u32 OctaveCount = 2;
@@ -768,13 +768,11 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   global_variable window_layout Window = WindowLayout("Terrain Gen", WindowLayoutFlag_Align_Right);
 
   PushWindowStart(Ui, &Window);
-    terrain_gen_type Type = {};
-    ui_toggle_button_group TerrainGenTypeRadio = RadioButtonGroup_terrain_gen_type(Ui, &Window, CSz("Terrain Generators"), &Type, &DefaultUiRenderParams_Generic, ToggleButtonGroupFlags_DrawVertical);
+    ui_toggle_button_group TerrainGenTypeRadio = RadioButtonGroup_terrain_gen_type(Ui, &Window, CSz("Terrain Generators"), &GameState->TerrainGenType, &DefaultUiRenderParams_Generic, ToggleButtonGroupFlags_DrawVertical);
   PushWindowEnd(Ui, &Window);
 
   if (TerrainGenTypeRadio.AnyElementClicked)
   {
-    GetRadioEnum(&TerrainGenTypeRadio, &GameState->TerrainGenType);
     SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
     SoftResetEngine(Resources, HardResetFlag_NoResetCamera);
     UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
