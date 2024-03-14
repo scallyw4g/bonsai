@@ -548,8 +548,7 @@ CopyChunkOffset(world_chunk *Src, voxel_position SrcChunkDim, world_chunk *Dest,
 }
 
 link_internal u32
-Terrain_Flat( perlin_noise *Noise,
-              world_chunk *Chunk,
+Terrain_Flat( world_chunk *Chunk,
               chunk_dimension Dim,
 
               chunk_dimension SrcToDest,
@@ -587,18 +586,17 @@ Terrain_Flat( perlin_noise *Noise,
 
 
 link_internal u32
-Terrain_FBM2D( perlin_noise *Noise,
-             world_chunk *Chunk,
-             chunk_dimension Dim,
-             chunk_dimension SrcToDest,
-             u16 ColorIndex,
+Terrain_FBM2D( world_chunk *Chunk,
+               chunk_dimension Dim,
+               chunk_dimension SrcToDest,
+               u16 ColorIndex,
 
-             v3  Period,
-             s32 Amplitude,
-             s64 zMin,
+               v3  Period,
+               s32 Amplitude,
+               s64 zMin,
 
-             chunk_dimension WorldChunkDim,
-             void *OctaveCount )
+               chunk_dimension WorldChunkDim,
+               void *OctaveCount )
 {
   TIMED_FUNCTION();
 
@@ -716,29 +714,27 @@ Terrain_FBM2D( perlin_noise *Noise,
 }
 
 link_internal u32
-Terrain_Perlin2D( perlin_noise *Noise,
-                world_chunk *Chunk,
-                chunk_dimension Dim,
-                chunk_dimension SrcToDest,
-                u16 ColorIndex,
+Terrain_Perlin2D( world_chunk *Chunk,
+                  chunk_dimension Dim,
+                  chunk_dimension SrcToDest,
+                  u16 ColorIndex,
 
-                v3  Period,
-                s32 Amplitude,
-                s64 zMin,
+                  v3  Period,
+                  s32 Amplitude,
+                  s64 zMin,
 
-                chunk_dimension WorldChunkDim,
-                void *UserData )
+                  chunk_dimension WorldChunkDim,
+                  void *UserData )
 {
   TIMED_FUNCTION();
 
   u32 OctaveCount = 1;
-  u32 SyntheticChunkSum = Terrain_FBM2D( Noise, Chunk, Dim, SrcToDest, ColorIndex, Period, Amplitude, zMin, WorldChunkDim, (void*)&OctaveCount);
+  u32 SyntheticChunkSum = Terrain_FBM2D( Chunk, Dim, SrcToDest, ColorIndex, Period, Amplitude, zMin, WorldChunkDim, (void*)&OctaveCount);
   return SyntheticChunkSum;
 }
 
 link_internal u32
-Terrain_Perlin3D( perlin_noise *Noise,
-                  world_chunk *Chunk,
+Terrain_Perlin3D( world_chunk *Chunk,
                   chunk_dimension Dim,
                   chunk_dimension SrcToDest,
                   u16 ColorIndex,
@@ -796,7 +792,7 @@ Terrain_Perlin3D( perlin_noise *Noise,
   return Result;
 }
 
-typedef u32 (*chunk_init_callback)( perlin_noise *Noise, world_chunk *Chunk, v3i Dim, v3i SrcToDest, u16 ColorIndex, v3 Period, s32 Amplitude, s64 zMin, chunk_dimension WorldChunkDim, void* UserData);
+typedef u32 (*chunk_init_callback)( world_chunk *Chunk, v3i Dim, v3i SrcToDest, u16 ColorIndex, v3 Period, s32 Amplitude, s64 zMin, chunk_dimension WorldChunkDim, void* UserData);
 
 
 // NOTE(Jesse): Asserts are commented out for perf
@@ -3482,8 +3478,7 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
 
   world_chunk *SyntheticChunk = AllocateWorldChunk(SynChunkP, SynChunkDim, Thread->TempMemory);
 
-  u32 SyntheticChunkSum = NoiseCallback( Thread->PerlinNoise,
-                                         SyntheticChunk, SynChunkDim, -1*Global_ChunkApronMinDim,
+  u32 SyntheticChunkSum = NoiseCallback( SyntheticChunk, SynChunkDim, -1*Global_ChunkApronMinDim,
                                          Color, Period, Amplititude, zMin,
                                          WorldChunkDim, UserData );
 

@@ -610,8 +610,7 @@ ComputeNormalsForChunkFromNoiseValues( r32 ChunkWorldZ, r32 *NoiseValues, v3i No
 
 
 link_internal u32
-HoodooTerrain( perlin_noise *Noise,
-               world_chunk *Chunk,
+HoodooTerrain( world_chunk *Chunk,
                chunk_dimension Dim,
                chunk_dimension SrcToDest,
                u16 ColorIndex,
@@ -793,8 +792,7 @@ HoodooTerrain( perlin_noise *Noise,
 }
 
 link_internal u32
-TerracedTerrain( perlin_noise *Noise,
-                 world_chunk *Chunk,
+TerracedTerrain( world_chunk *Chunk,
                  v3i Dim,
                  v3i SrcToDest,
                  u16 ColorIndex,
@@ -1054,8 +1052,7 @@ TerracedTerrain( perlin_noise *Noise,
 }
 
 link_internal u32
-GrassyTerracedTerrain2( perlin_noise *Noise,
-                       world_chunk *Chunk,
+GrassyTerracedTerrain2( world_chunk *Chunk,
                        v3i Dim,
                        v3i SrcToDest,
                        u16 ColorIndex,
@@ -1230,8 +1227,7 @@ GrassyTerracedTerrain2( perlin_noise *Noise,
 }
 
 link_internal u32
-GrassyTerracedTerrain3( perlin_noise *Noise,
-                       world_chunk *Chunk,
+GrassyTerracedTerrain3( world_chunk *Chunk,
                        v3i Dim,
                        v3i SrcToDest,
                        u16 ColorIndex,
@@ -1572,8 +1568,7 @@ MakeCliffs_8x(world_chunk *Chunk, s32 NormalsIndex, s32 WorldX, s32 WorldY, s32 
 }
 
 link_internal u32
-GrassyTerracedTerrain4( perlin_noise *Noise,
-                        world_chunk *Chunk,
+GrassyTerracedTerrain4( world_chunk *Chunk,
                         v3i _Dim,
                         v3i SrcToDest,
                         u16 ColorIndex,
@@ -1917,8 +1912,7 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
 }
 
 link_internal u32
-GrassyTerracedTerrain( perlin_noise *Noise,
-                       world_chunk *Chunk,
+GrassyTerracedTerrain( world_chunk *Chunk,
                        v3i Dim,
                        v3i SrcToDest,
                        u16 ColorIndex,
@@ -2094,8 +2088,7 @@ GrassyTerracedTerrain( perlin_noise *Noise,
 }
 
 link_internal u32
-GrassyLargeTerracedTerrain( perlin_noise *Noise,
-                            world_chunk *Chunk,
+GrassyLargeTerracedTerrain( world_chunk *Chunk,
                             v3i Dim,
                             v3i SrcToDest,
                             u16 ColorIndex,
@@ -2260,8 +2253,7 @@ GrassyLargeTerracedTerrain( perlin_noise *Noise,
 }
 
 link_internal u32
-Terrain_SinCos( perlin_noise *Noise,
-                world_chunk *Chunk,
+Terrain_SinCos( world_chunk *Chunk,
                 v3i Dim,
                 v3i SrcToDest,
                 u16 ColorIndex,
@@ -2341,8 +2333,7 @@ Terrain_SinCos( perlin_noise *Noise,
 }
 
 link_internal u32
-Terrain_Voronoi3D( perlin_noise *Noise,
-                   world_chunk *Chunk,
+Terrain_Voronoi3D( world_chunk *Chunk,
                    v3i Dim,
                    v3i SrcToDest,
                    u16 ColorIndex,
@@ -2394,8 +2385,7 @@ Terrain_Voronoi3D( perlin_noise *Noise,
 }
 
 link_internal u32
-Terrain_Voronoi2D( perlin_noise *Noise,
-                   world_chunk *Chunk,
+Terrain_Voronoi2D( world_chunk *Chunk,
                    v3i Dim,
                    v3i SrcToDest,
                    u16 ColorIndex,

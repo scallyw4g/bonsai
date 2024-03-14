@@ -5,7 +5,7 @@
 ./make.sh RunPoof
 [ $? -ne 0 ] && exit 1
 
-./make.sh $OPT BuildAll
+# ./make.sh $OPT BuildAll
 
 ./make.sh $OPT \
   BuildSingleExample examples/project_and_level_picker \

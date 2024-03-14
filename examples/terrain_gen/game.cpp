@@ -6,20 +6,19 @@
 #include "game_types.h"
 
 link_internal u32
-Terrain_Checkerboard( perlin_noise *Noise,
-              world_chunk *Chunk,
+Terrain_Checkerboard( world_chunk *Chunk,
 
-              chunk_dimension Dim,
-              chunk_dimension SrcToDest,
+                      chunk_dimension Dim,
+                      chunk_dimension SrcToDest,
 
-              u16 ColorIndex,
+                      u16 ColorIndex,
 
-              v3 Period,
-              s32 Amplitude,
-              s64 zMin,
+                      v3 Period,
+                      s32 Amplitude,
+                      s64 zMin,
 
-              chunk_dimension WorldChunkDim,
-              void *Ignored )
+                      chunk_dimension WorldChunkDim,
+                      void *Ignored )
 {
   u32 Result = 0;
 
@@ -50,8 +49,7 @@ Terrain_Checkerboard( perlin_noise *Noise,
 }
 
 link_internal u32
-GrassyIslandTerrain( perlin_noise *Noise,
-                     world_chunk *Chunk,
+GrassyIslandTerrain( world_chunk *Chunk,
                      chunk_dimension Dim,
                      chunk_dimension SrcToDest,
                      u16 ColorIndex,
@@ -261,8 +259,7 @@ GrassyIslandTerrain( perlin_noise *Noise,
 }
 
 link_internal u32
-WarpedTerrain( perlin_noise *Noise,
-               world_chunk *Chunk,
+WarpedTerrain( world_chunk *Chunk,
                chunk_dimension Dim,
                chunk_dimension SrcToDest,
                u16 ColorIndex,
