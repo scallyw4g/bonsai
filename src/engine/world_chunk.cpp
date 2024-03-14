@@ -659,10 +659,10 @@ Terrain_FBM2D( world_chunk *Chunk,
         s32 InteriorAmp = Amplitude;
         for (u32 OctaveIndex = 0; OctaveIndex < Octaves; ++OctaveIndex)
         {
-          v3 NoiseInput = SafeDivide0(V3(NoiseBasis) + V3(x,y,z), IPeriod);
+          v3 NoiseInput = MapWorldPositionToNoiseInputValue(V3(NoiseBasis), V3(x,y,z), IPeriod);
 
           r32 Warp = 0.f;
-          r32 N = PerlinNoise(NoiseInput.x+Warp, NoiseInput.y+Warp, NoiseInput.z+Warp);
+          r32 N = PerlinNoise(NoiseInput+Warp);
           Assert(N <= 1.05f);
           Assert(N > -1.05f);
 
@@ -762,11 +762,12 @@ Terrain_Perlin3D( world_chunk *Chunk,
 
         Assert( NotSet(&Chunk->Voxels[i], Voxel_Filled) );
 
-        f32 InX = ((f32)x + ( (f32)WorldChunkDim.x*(f32)Chunk->WorldP.x))/Period.x;
-        f32 InY = ((f32)y + ( (f32)WorldChunkDim.y*(f32)Chunk->WorldP.y))/Period.y;
-        f32 InZ = ((f32)z + ( (f32)WorldChunkDim.z*(f32)Chunk->WorldP.z))/Period.z;
+        /* f32 InX = ((f32)x + ( (f32)WorldChunkDim.x*(f32)Chunk->WorldP.x))/Period.x; */
+        /* f32 InY = ((f32)y + ( (f32)WorldChunkDim.y*(f32)Chunk->WorldP.y))/Period.y; */
+        /* f32 InZ = ((f32)z + ( (f32)WorldChunkDim.z*(f32)Chunk->WorldP.z))/Period.z; */
 
-        r32 NoiseValue = PerlinNoise(InX, InY, InZ);
+        v3 NoiseInput = MapWorldPositionToNoiseInputValue(V3(NoiseBasis), V3(x,y,z), Period);
+        r32 NoiseValue = PerlinNoise(NoiseInput);
 
         s32 NoiseChoice = NoiseValue*Amplitude > Thresh;
         Assert(NoiseChoice == 0 || NoiseChoice == 1);
