@@ -50,8 +50,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
 
 
 
-      PushNewRow(Ui);
-
+      
       DoEditorUi(Ui,
         Window,
 &Element->Amplitude,

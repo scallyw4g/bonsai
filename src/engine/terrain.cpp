@@ -2347,7 +2347,7 @@ Terrain_Voronoi3D( perlin_noise *Noise,
                    v3i SrcToDest,
                    u16 ColorIndex,
 
-                   s32 Period,
+                   v3  Period,
                    s32 Amplitude,
                    s64 zMin,
 
@@ -2378,7 +2378,7 @@ Terrain_Voronoi3D( perlin_noise *Noise,
         s32 VoxIndex = GetIndex(V3i(x,y,z), Dim);
         Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
 
-        r32 NoiseValue = VoronoiNoise3D(V3(f32(WorldX), f32(WorldY), f32(WorldZ)) / f32(Period), Squareness, MaskChance);
+        r32 NoiseValue = VoronoiNoise3D(V3(f32(WorldX), f32(WorldY), f32(WorldZ)) / Period, Squareness, MaskChance);
         NoiseValue = Clamp01(NoiseValue);
         NoiseValue *= Amplitude;
 
@@ -2400,7 +2400,7 @@ Terrain_Voronoi2D( perlin_noise *Noise,
                    v3i SrcToDest,
                    u16 ColorIndex,
 
-                   s32 Period,
+                   v3  Period,
                    s32 Amplitude,
                    s64 zMin,
 
@@ -2432,7 +2432,7 @@ Terrain_Voronoi2D( perlin_noise *Noise,
         s32 VoxIndex = GetIndex(V3i(x,y,z), Dim);
         Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
 
-        r32 NoiseValue = VoronoiNoise3D(V3(f32(WorldX), f32(WorldY), f32(WorldZ)) / f32(Period), Squareness, MaskChance);
+        r32 NoiseValue = VoronoiNoise3D(V3(f32(WorldX), f32(WorldY), f32(WorldZ)) / Period, Squareness, MaskChance);
         /* r32 NoiseValue =  VoronoiNoise3D(V3(s32(WorldX), s32(WorldY), s32(WorldZ)) * 0.04f) * 25.f; */
         NoiseValue = Clamp01(NoiseValue);
         /* NoiseValue = MapNoiseValueToFinal(NoiseValue); */ // Crazyballs

@@ -593,7 +593,7 @@ Terrain_FBM2D( perlin_noise *Noise,
              chunk_dimension SrcToDest,
              u16 ColorIndex,
 
-             s32 Period,
+             v3  Period,
              s32 Amplitude,
              s64 zMin,
 
@@ -601,8 +601,6 @@ Terrain_FBM2D( perlin_noise *Noise,
              void *OctaveCount )
 {
   TIMED_FUNCTION();
-
-  Assert(Period != s32_MIN);
 
   random_series GenColorEntropy = {12653763234231};
 
@@ -641,8 +639,7 @@ Terrain_FBM2D( perlin_noise *Noise,
   Chunk->NormalValues = Normals;
 #endif
 
-  Period = Max(Period, 1);
-  Assert(Period != s32_MIN);
+  Period = Max(Period, V3(1.f));
 
   u32 Octaves = *(u32*)OctaveCount;
   for ( s32 z = 0; z < Dim.z; ++ z)
@@ -658,15 +655,14 @@ Terrain_FBM2D( perlin_noise *Noise,
         Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
         Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
 
-        Assert(Period != s32_MIN);
-        s32 InteriorFreq = Period;
+        v3 IPeriod = Period;
         s32 InteriorAmp = Amplitude;
         for (u32 OctaveIndex = 0; OctaveIndex < Octaves; ++OctaveIndex)
         {
 
-          f32 InX = SafeDivide0((x + SrcToDest.x + ( WorldChunkDim.x*Chunk->WorldP.x)), f32(InteriorFreq));
-          f32 InY = SafeDivide0((y + SrcToDest.y + ( WorldChunkDim.y*Chunk->WorldP.y)), f32(InteriorFreq));
-          f32 InZ = SafeDivide0((z + SrcToDest.z + ( WorldChunkDim.z*Chunk->WorldP.z)), f32(InteriorFreq));
+          f32 InX = SafeDivide0((x + SrcToDest.x + ( WorldChunkDim.x*Chunk->WorldP.x)), f32(IPeriod.x));
+          f32 InY = SafeDivide0((y + SrcToDest.y + ( WorldChunkDim.y*Chunk->WorldP.y)), f32(IPeriod.y));
+          f32 InZ = SafeDivide0((z + SrcToDest.z + ( WorldChunkDim.z*Chunk->WorldP.z)), f32(IPeriod.z));
           /* f32 InZ = 1.0; */
 
           r32 Warp = 0.f;
@@ -684,7 +680,7 @@ Terrain_FBM2D( perlin_noise *Noise,
           NoiseValue += N*InteriorAmp;
 
           InteriorAmp = Max(1, InteriorAmp/2);
-          InteriorFreq = Max(1, InteriorFreq/2);
+          IPeriod = Max(V3(1.f), IPeriod/2);
         }
 
 #if VOXEL_DEBUG_COLOR
@@ -726,7 +722,7 @@ Terrain_Perlin2D( perlin_noise *Noise,
                 chunk_dimension SrcToDest,
                 u16 ColorIndex,
 
-                s32 Period,
+                v3  Period,
                 s32 Amplitude,
                 s64 zMin,
 
@@ -742,17 +738,17 @@ Terrain_Perlin2D( perlin_noise *Noise,
 
 link_internal u32
 Terrain_Perlin3D( perlin_noise *Noise,
-                world_chunk *Chunk,
-                chunk_dimension Dim,
-                chunk_dimension SrcToDest,
-                u16 ColorIndex,
+                  world_chunk *Chunk,
+                  chunk_dimension Dim,
+                  chunk_dimension SrcToDest,
+                  u16 ColorIndex,
 
-                s32 Period,
-                s32 Amplitude,
-                s64 Thresh,
+                  v3  Period,
+                  s32 Amplitude,
+                  s64 Thresh,
 
-                chunk_dimension WorldChunkDim,
-                void* Ignored)
+                  chunk_dimension WorldChunkDim,
+                  void* Ignored)
 {
   TIMED_FUNCTION();
 
@@ -771,9 +767,9 @@ Terrain_Perlin3D( perlin_noise *Noise,
 
         Assert( NotSet(&Chunk->Voxels[i], Voxel_Filled) );
 
-        f32 InX = ((f32)x + ( (f32)WorldChunkDim.x*(f32)Chunk->WorldP.x))/Period;
-        f32 InY = ((f32)y + ( (f32)WorldChunkDim.y*(f32)Chunk->WorldP.y))/Period;
-        f32 InZ = ((f32)z + ( (f32)WorldChunkDim.z*(f32)Chunk->WorldP.z))/Period;
+        f32 InX = ((f32)x + ( (f32)WorldChunkDim.x*(f32)Chunk->WorldP.x))/Period.x;
+        f32 InY = ((f32)y + ( (f32)WorldChunkDim.y*(f32)Chunk->WorldP.y))/Period.y;
+        f32 InZ = ((f32)z + ( (f32)WorldChunkDim.z*(f32)Chunk->WorldP.z))/Period.z;
 
         r32 NoiseValue = PerlinNoise(InX, InY, InZ);
 
@@ -800,7 +796,7 @@ Terrain_Perlin3D( perlin_noise *Noise,
   return Result;
 }
 
-typedef u32 (*chunk_init_callback)( perlin_noise *Noise, world_chunk *Chunk, chunk_dimension Dim, chunk_dimension SrcToDest, u16 ColorIndex, s32 Period, s32 Amplitude, s64 zMin, chunk_dimension WorldChunkDim, void* UserData);
+typedef u32 (*chunk_init_callback)( perlin_noise *Noise, world_chunk *Chunk, v3i Dim, v3i SrcToDest, u16 ColorIndex, v3 Period, s32 Amplitude, s64 zMin, chunk_dimension WorldChunkDim, void* UserData);
 
 
 // NOTE(Jesse): Asserts are commented out for perf
@@ -3446,7 +3442,7 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
                           chunk_dimension WorldChunkDim,
                           native_file *AssetFile,
 
-                          s32 Period,
+                          v3  Period,
                           s32 Amplititude,
                           s32 zMin,
 
