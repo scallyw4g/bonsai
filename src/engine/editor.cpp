@@ -1012,7 +1012,8 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
                                       MeshBit_None,
                                       ChunkInitFlag_Noop,
                                       0,
-                                      True );
+                                      True,
+                                      V3i(GetAbsoluteP(Editor->SelectionRegion.Min, GetWorldChunkDim())) );
           } break;
 
           case NoiseType_Voronoi:
@@ -1030,7 +1031,8 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
                                       MeshBit_None,
                                       ChunkInitFlag_Noop,
                                       Cast(void*, &Noise->Voronoi),
-                                      True );
+                                      True,
+                                      V3i(GetAbsoluteP(Editor->SelectionRegion.Min, GetWorldChunkDim())) );
           } break;
         }
       } break;

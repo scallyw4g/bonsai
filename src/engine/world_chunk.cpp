@@ -3418,7 +3418,8 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
                              chunk_init_flags  Flags,
 
                                          void *UserData,
-                                          b32  MakeExteriorFaces = False )
+                                          b32  MakeExteriorFaces = False,
+                                          v3i  NoiseBasisOffset  = {} )
 {
   TIMED_FUNCTION();
 
@@ -3449,7 +3450,7 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
   world_chunk *SyntheticChunk = AllocateWorldChunk(SynChunkP, SynChunkDim, Thread->TempMemory);
 
 
-  v3i NoiseBasis = (DestChunk->WorldP*GetWorldChunkDim());
+  v3i NoiseBasis = NoiseBasisOffset + (DestChunk->WorldP*GetWorldChunkDim());
   u32 SyntheticChunkSum = NoiseCallback( SyntheticChunk,
                                          NoiseBasis,
                                          NoiseParams,
@@ -3587,10 +3588,11 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
                              chunk_init_flags  Flags,
 
                                          void *UserData,
-                                          b32  MakeExteriorFaces = False )
+                                          b32  MakeExteriorFaces = False,
+                                          v3i  NoiseBasisOffset  = {} )
 {
   generic_noise_params Params = {r32(Thresh), Period, r32(Amp), Color};
-  InitializeChunkWithNoise(NoiseCallback, Thread, DestChunk, &Params, Flags, UserData, MakeExteriorFaces);
+  InitializeChunkWithNoise(NoiseCallback, Thread, DestChunk, &Params, Flags, UserData, MakeExteriorFaces, NoiseBasisOffset);
 }
 
 // nochecking Move as much out of this block as possible.  Only the last few of
