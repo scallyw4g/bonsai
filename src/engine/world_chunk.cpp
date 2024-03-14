@@ -655,19 +655,14 @@ Terrain_FBM2D( world_chunk *Chunk,
         Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
         Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
 
-        v3 IPeriod = Period;
+        v3 IPeriod = Period; // Interior Period
         s32 InteriorAmp = Amplitude;
         for (u32 OctaveIndex = 0; OctaveIndex < Octaves; ++OctaveIndex)
         {
-
-          f32 InX = SafeDivide0((x + SrcToDest.x + ( WorldChunkDim.x*Chunk->WorldP.x)), f32(IPeriod.x));
-          f32 InY = SafeDivide0((y + SrcToDest.y + ( WorldChunkDim.y*Chunk->WorldP.y)), f32(IPeriod.y));
-          f32 InZ = SafeDivide0((z + SrcToDest.z + ( WorldChunkDim.z*Chunk->WorldP.z)), f32(IPeriod.z));
-          /* f32 InZ = 1.0; */
+          v3 NoiseInput = SafeDivide0(V3(NoiseBasis) + V3(x,y,z), IPeriod);
 
           r32 Warp = 0.f;
-
-          r32 N = PerlinNoise(InX+Warp, InY+Warp, InZ+Warp);
+          r32 N = PerlinNoise(NoiseInput.x+Warp, NoiseInput.y+Warp, NoiseInput.z+Warp);
           Assert(N <= 1.05f);
           Assert(N > -1.05f);
 
