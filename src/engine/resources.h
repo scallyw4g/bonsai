@@ -123,6 +123,13 @@ GetLevelEditor()
   return &Global_EngineResources->Editor;
 }
 
+link_internal entity *
+GetCameraGhost(engine_resources *Engine)
+{
+  entity *Result = GetEntity(Engine->EntityTable, Engine->Graphics->Camera->GhostId);
+  return Result;
+}
+
 #define UNPACK_ENGINE_RESOURCES(Res) \
   UNPACK_DATA_RESOURCES(Res)         \
   UNPACK_GRAPHICS_RESOURCES(Res)

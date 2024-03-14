@@ -40,6 +40,42 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       
       DoEditorUi(Ui,
         Window,
+&Element->Tool,
+        CSz("Tool"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Params,
+        CSz("Params"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->BrushType,
+        CSz("BrushType"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
 &Element->Noise,
         CSz("Noise"),
         Params

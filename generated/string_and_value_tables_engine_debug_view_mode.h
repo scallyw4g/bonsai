@@ -15,7 +15,23 @@ ToStringPrefixless(engine_debug_view_mode Type)
     case EngineDebugViewMode_RenderSettings: { Result = CSz("RenderSettings"); } break;
     case EngineDebugViewMode_EngineDebug: { Result = CSz("EngineDebug"); } break;
 
-    
+    // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
+    // but the metaprogram might have to be a bit fancier..
+    default:
+    {
+      u32 CurrentFlags = u32(Type);
+
+      u32 FirstValue = UnsetLeastSignificantSetBit(&CurrentFlags);
+      Result = ToStringPrefixless(engine_debug_view_mode(FirstValue));
+
+      while (CurrentFlags)
+      {
+        u32 Value = UnsetLeastSignificantSetBit(&CurrentFlags);
+        cs Next = ToStringPrefixless(engine_debug_view_mode(Value));
+        Result = FSz("%S | %S", Result, Next);
+      }
+    } break;
+
   }
   /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
   return Result;
@@ -36,7 +52,23 @@ ToString(engine_debug_view_mode Type)
     case EngineDebugViewMode_RenderSettings: { Result = CSz("EngineDebugViewMode_RenderSettings"); } break;
     case EngineDebugViewMode_EngineDebug: { Result = CSz("EngineDebugViewMode_EngineDebug"); } break;
 
-    
+    // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
+    // but the metaprogram might have to be a bit fancier..
+    default:
+    {
+      u32 CurrentFlags = u32(Type);
+
+      u32 FirstValue = UnsetLeastSignificantSetBit(&CurrentFlags);
+      Result = ToString(engine_debug_view_mode(FirstValue));
+
+      while (CurrentFlags)
+      {
+        u32 Value = UnsetLeastSignificantSetBit(&CurrentFlags);
+        cs Next = ToString(engine_debug_view_mode(Value));
+        Result = FSz("%S | %S", Result, Next);
+      }
+    } break;
+
   }
   /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
   return Result;

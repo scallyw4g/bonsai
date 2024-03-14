@@ -40,6 +40,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       
       DoEditorUi(Ui,
         Window,
+&Element->ViewMode,
+        CSz("ViewMode"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
 &Element->PickedChunks,
         CSz("PickedChunks"),
         Params

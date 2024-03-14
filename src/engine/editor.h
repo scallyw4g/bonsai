@@ -4,13 +4,6 @@
 poof(
   func generic_button_group_for_enum(enum_t, type_poof_symbol NamePrefix, type_poof_symbol extra_poof_flags)
   {
-    link_internal b32
-    ToggledOn(ui_toggle_button_group *ButtonGroup, enum_t.name Enum)
-    {
-      b32 Result = ButtonGroup->ToggleBits & (1 << Enum);
-      return Result;
-    }
-
     // NOTE(Jesse): This could be implemented by reconstructing the button ID
     // but I'm very unsure that's worth it.  Seems like just
     link_internal b32
@@ -23,11 +16,11 @@ poof(
 
     link_internal ui_toggle_button_group
     (NamePrefix)ButtonGroup_(enum_t.name)( renderer_2d *Ui,
-                                           window_layout *Window,
-                                           cs GroupName,
+                                         window_layout *Window,
+                                                    cs  GroupName,
                                            enum_t.name *Element,
-                                           ui_render_params *Params = &DefaultUiRenderParams_Generic,
-                                           ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
+                                      ui_render_params *Params     = &DefaultUiRenderParams_Generic,
+                          ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
     {
       cs ButtonNames[] =
       {
@@ -46,74 +39,51 @@ poof(
         *Button = UiToggle(ButtonName, UiId(Window, Cast(void*, Element), Cast(void*, ButtonName.Start)));
       }
 
-      ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer, GroupName, Params, ui_toggle_button_group_flags(ExtraFlags(extra_poof_flags)));
-
+      ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ui_toggle_button_group_flags(ExtraFlags(extra_poof_flags)));
       return Result;
     }
   }
 )
 
+// multi-select group
 poof(
   func toggle_button_group_for_enum(enum_t)
   {
-    generic_button_group_for_enum(enum_t, {Toggle}, {|ToggleButtonGroupFlags_None})
+    enum_t.has_tag(bitfield)?
+    {
+      generic_button_group_for_enum(enum_t, {Toggle}, {|ToggleButtonGroupFlags_MultiSelectButtons})
+    }
+    {
+      poof_error { Enum without @bitfield tag (enum_t.name) cannot create a multi-select button group. }
+    }
   }
 )
 
 poof(
   func radio_button_group_for_enum(enum_t)
   {
-    link_internal void
-    RadioSelect(ui_toggle_button_group *RadioGroup, enum_t.name Selection)
+    enum_t.has_tag(bitfield)? // TODO(Jesse): Pretty sure this is bogus.
     {
-      ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Selection;
-      SetRadioButton(RadioGroup, ToggleHandle, True);
-      /* Ensure( ToggleRadioButton(RadioGroup, ToggleHandle) ); */
+      poof_error { Enum with @bitfield tag (enum_t.name) cannot create a radio button group. }
     }
-
-    link_internal void
-    GetRadioEnum(ui_toggle_button_group *RadioGroup, enum_t.name *Result)
     {
-      if (RadioGroup->ToggleBits)
+      link_internal void
+      RadioSelect(ui_toggle_button_group *RadioGroup, enum_t.name Selection)
       {
-        Assert(CountBitsSet_Kernighan(RadioGroup->ToggleBits) == 1); // Radio group can 
+        ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Selection;
+        SetRadioButton(RadioGroup, ToggleHandle, True);
+        /* Ensure( ToggleRadioButton(RadioGroup, ToggleHandle) ); */
       }
 
-      s32 Index = s32(GetIndexOfNthSetBit(u32(RadioGroup->ToggleBits), 1));
-      *Result = enum_t.name(Max(0, Index));
+      generic_button_group_for_enum(enum_t, {Radio}, {|ToggleButtonGroupFlags_RadioButtons})
     }
-
-    generic_button_group_for_enum(enum_t, {Radio}, {|ToggleButtonGroupFlags_RadioButtons})
   }
 )
 
+// TODO(Jesse) This is now the same as the radio button path, remove it
 poof(
   func radio_button_group_for_bitfield_enum(enum_t)
   {
-    link_internal void
-    RadioSelect(ui_toggle_button_group *RadioGroup, enum_t.name Selection)
-    {
-      Assert(CountBitsSet_Kernighan(u32(Selection)) == 1);
-      u32 Index = GetIndexOfNthSetBit(u32(Selection), 1);
-      ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Index;
-      SetRadioButton(RadioGroup, ToggleHandle, True);
-      /* Ensure( ToggleRadioButton(RadioGroup, ToggleHandle) ); */
-    }
-
-    link_internal void
-    GetRadioEnum(ui_toggle_button_group *RadioGroup, enum_t.name *Result)
-    {
-      if (RadioGroup->ToggleBits)
-      {
-        Assert(CountBitsSet_Kernighan(RadioGroup->ToggleBits) == 1);
-        // NOTE(Jesse): This is better; it asserts that we've actually got a bitfield
-        Assert((((enum_t.map(value).sep(||) {RadioGroup->ToggleBits == value.name}))));
-        /* Assert((((enum_t.map(value).sep(|) {value.name})) & RadioGroup->ToggleBits) != 0); */
-      }
-
-      *Result = Cast((enum_t.name), RadioGroup->ToggleBits);
-    }
-
     generic_button_group_for_enum(enum_t, {Radio}, {|ToggleButtonGroupFlags_RadioButtons})
   }
 )
@@ -392,9 +362,7 @@ poof(
                 ui_render_params *Params = &DefaultUiRenderParams_Generic,
                 ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
     {
-      /* if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); PushNewRow(Ui); } */
       ui_toggle_button_group RadioGroup = RadioButtonGroup_(enum_t.name)(Ui, Window, GroupName, Element, Params, ExtraFlags);
-      GetRadioEnum(&RadioGroup, Element);
       return RadioGroup;
     }
   }
@@ -884,6 +852,11 @@ struct layered_brush_editor
 struct level_editor
 {
   memory_arena *Memory;
+
+  world_edit_tool       Tool;
+  world_edit_params     Params;
+  world_edit_brush_type BrushType;
+
 
   // TODO(Jesse): Think of a better naming scheme for these..
   // NOTE(Jesse): Brushes

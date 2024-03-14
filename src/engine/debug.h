@@ -28,9 +28,24 @@ enum asset_window_view_mode
   AssetWindowViewMode_AssetTable,
 };
 
+enum engine_debug_view_mode poof(@bitfield)
+{
+  // TODO(Jesse): Make these values bitfields?
+  EngineDebugViewMode_Level          = (1 << 0),
+  EngineDebugViewMode_WorldEdit      = (1 << 1),
+  EngineDebugViewMode_Entities       = (1 << 2),
+  EngineDebugViewMode_Assets         = (1 << 3),
+  EngineDebugViewMode_WorldChunks    = (1 << 4),
+  EngineDebugViewMode_Textures       = (1 << 5),
+  EngineDebugViewMode_RenderSettings = (1 << 6),
+  EngineDebugViewMode_EngineDebug    = (1 << 7),
+};
+
 struct engine_debug
 {
   memory_arena *Memory;
+
+  engine_debug_view_mode ViewMode;
 
   picked_world_chunk_static_buffer PickedChunks;
   texture_ptr_block_array Textures;
@@ -58,28 +73,6 @@ struct engine_debug
   //
   untextured_3d_geometry_buffer WorldEditDebugMesh;
   asset_thumbnail WorldEditDebugThumb;
-};
-
-enum engine_debug_view_mode
-{
-  EngineDebugViewMode_Level,
-  EngineDebugViewMode_WorldEdit,
-  EngineDebugViewMode_Entities,
-  EngineDebugViewMode_Assets,
-  EngineDebugViewMode_WorldChunks,
-  EngineDebugViewMode_Textures,
-  EngineDebugViewMode_RenderSettings,
-  EngineDebugViewMode_EngineDebug,
-
-  // TODO(Jesse): Make these values bitfields?
-  /* EngineDebugViewMode_Level          = (1 << 0), */
-  /* EngineDebugViewMode_WorldEdit      = (1 << 1), */
-  /* EngineDebugViewMode_Entities       = (1 << 2), */
-  /* EngineDebugViewMode_Assets         = (1 << 3), */
-  /* EngineDebugViewMode_WorldChunks    = (1 << 4), */
-  /* EngineDebugViewMode_Textures       = (1 << 5), */
-  /* EngineDebugViewMode_RenderSettings = (1 << 6), */
-  /* EngineDebugViewMode_EngineDebug    = (1 << 7), */
 };
 
 link_internal engine_debug * GetEngineDebug();

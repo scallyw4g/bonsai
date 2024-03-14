@@ -1126,8 +1126,8 @@ DoSettingsForBrush(engine_resources *Engine, brush_layer *Layer, window_layout *
   PushNewRow(Ui); // Primitives require a new row.. I forget why, but there's a good reason.
 
   // NOTE(Jesse): These are only stricly necessary if Modifier is Flood or Surface .. do we care?
-  Settings->Offset.Min = Min(V3i(-Settings->Iterations), Settings->Offset.Min);
-  Settings->Offset.Max = Max(V3i( Settings->Iterations), Settings->Offset.Max);
+  /* Settings->Offset.Min = Min(V3i(-Settings->Iterations), Settings->Offset.Min); */
+  /* Settings->Offset.Max = Max(V3i( Settings->Iterations), Settings->Offset.Max); */
 
   {
     ui_style Style = UiStyleFromLightestColor(GetColorData(Settings->Color));
@@ -1516,6 +1516,14 @@ EditWorldSelection(engine_resources *Engine, rect3 *SelectionAABB)
   return AABBTest;
 }
 
+link_internal cp
+GetSelectionCenterP(world *World, level_editor *Editor)
+{
+  v3i Dim = GetSelectionDim(World, Editor);
+  cp Result = Canonicalize(World, Editor->SelectionRegion.Min + V3(Dim/2));
+  return Result;
+}
+
 link_internal void
 DoWorldEditor(engine_resources *Engine)
 {
@@ -1543,13 +1551,6 @@ DoWorldEditor(engine_resources *Engine)
 
 
 
-  world_edit_tool WorldEditTool = {};
-  world_edit_params MainPanelEditParams = {};
-
-  world_edit_brush_type WorldEditBrushType = {};
-
-  ui_toggle_button_group WorldEditModeRadioGroup = {};
-
   ui_toggle_button_group WorldEditToolButtonGroup = {};
   ui_toggle_button_group WorldEditModeButtonGroup = {};
   ui_toggle_button_group WorldEditBrushTypeButtonGroup = {};
@@ -1565,30 +1566,30 @@ DoWorldEditor(engine_resources *Engine)
       ui_element_reference CurrentRef = {};
 
       {
-        WorldEditToolButtonGroup = DoEditorUi(Ui, &Window, &WorldEditTool, CSz("Tool"), &Params, ToggleButtonGroupFlags_DrawVertical);
+        WorldEditToolButtonGroup = DoEditorUi(Ui, &Window, &Editor->Tool, CSz("Tool"), &Params, ToggleButtonGroupFlags_DrawVertical);
         CurrentRef = WorldEditToolButtonGroup.UiRef;
       }
 
-      if (WorldEditTool == WorldEdit_Tool_Brush)
+      if (Editor->Tool == WorldEdit_Tool_Brush)
       {
         Params.RelativePosition.Position   = Position_RightOf;
         Params.RelativePosition.RelativeTo = CurrentRef;
-        WorldEditBrushTypeButtonGroup = DoEditorUi(Ui, &Window, &WorldEditBrushType, CSz("Brush Type"), &Params, ToggleButtonGroupFlags_DrawVertical);
+        WorldEditBrushTypeButtonGroup = DoEditorUi(Ui, &Window, &Editor->BrushType, CSz("Brush Type"), &Params, ToggleButtonGroupFlags_DrawVertical);
         CurrentRef = WorldEditBrushTypeButtonGroup.UiRef;
       }
 
-      if (WorldEditTool == WorldEdit_Tool_Brush)
+      if (Editor->Tool == WorldEdit_Tool_Brush)
       {
         Params.RelativePosition.Position   = Position_RightOf;
         Params.RelativePosition.RelativeTo = CurrentRef;
-        WorldEditModeButtonGroup = DoEditorUi(Ui, &Window, &MainPanelEditParams.Mode, CSz("Mode"), &Params, ToggleButtonGroupFlags_DrawVertical);
+        WorldEditModeButtonGroup = DoEditorUi(Ui, &Window, &Editor->Params.Mode, CSz("Mode"), &Params, ToggleButtonGroupFlags_DrawVertical);
         CurrentRef = WorldEditModeButtonGroup.UiRef;
       }
 
-      if (WorldEditTool == WorldEdit_Tool_Brush)
+      if (Editor->Tool == WorldEdit_Tool_Brush)
       {
         Params = DefaultUiRenderParams_Generic;
-        WorldEditModifierButtonGroup = DoEditorUi(Ui, &Window, &MainPanelEditParams.Modifier, CSz(""), &Params, ToggleButtonGroupFlags_DrawVertical);
+        WorldEditModifierButtonGroup = DoEditorUi(Ui, &Window, &Editor->Params.Modifier, CSz(""), &Params, ToggleButtonGroupFlags_DrawVertical);
       }
 
     PushTableEnd(Ui);
@@ -1660,7 +1661,7 @@ DoWorldEditor(engine_resources *Engine)
 
   if (WorldEditToolButtonGroup.AnyElementClicked)
   {
-    switch (WorldEditTool)
+    switch (Editor->Tool)
     {
       case WorldEdit_Tool_Disabled:
       case WorldEdit_Tool_Brush:
@@ -1678,7 +1679,7 @@ DoWorldEditor(engine_resources *Engine)
 
   if (WorldEditModeButtonGroup.AnyElementClicked)
   {
-    switch (MainPanelEditParams.Mode)
+    switch (Editor->Params.Mode)
     {
 
       case WorldEdit_Mode_Paint:
@@ -1689,7 +1690,7 @@ DoWorldEditor(engine_resources *Engine)
   }
 
 
-  DoBrushSettingsWindow(Engine, WorldEditTool, WorldEditBrushType);
+  DoBrushSettingsWindow(Engine, Editor->Tool, Editor->BrushType);
 
   //
   //
@@ -1700,13 +1701,13 @@ DoWorldEditor(engine_resources *Engine)
   if ( UiCapturedMouseInput(Ui) == False &&
        UiHoveredMouseInput(Ui)  == False  )
   {
-    switch (WorldEditTool)
+    switch (Editor->Tool)
     {
       case WorldEdit_Tool_Disabled:
 
       case WorldEdit_Tool_Brush:
       {
-        switch (WorldEditBrushType)
+        switch (Editor->BrushType)
         {
           case WorldEdit_BrushType_Disabled:
           {} break;
@@ -1736,16 +1737,16 @@ DoWorldEditor(engine_resources *Engine)
                       Canonicalize(World, EntityOrigin - V3(AssetHalfDim.xy, 0.f))
                     };
 
-                    if (WorldEditBrushType == WorldEdit_BrushType_Asset)
+                    if (Editor->BrushType == WorldEdit_BrushType_Asset)
                     {
                       world_edit_shape Shape =
                       {
                         type_world_update_op_shape_params_asset,
                         .world_update_op_shape_params_asset = AssetUpdateShape,
                       };
-                      QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, MainPanelEditParams.Modifier, &Shape, {}, Engine->WorldUpdateMemory);
+                      QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, Editor->Params.Modifier, &Shape, {}, Engine->WorldUpdateMemory);
                     }
-                    else if (WorldEditBrushType == WorldEdit_BrushType_Entity)
+                    else if (Editor->BrushType == WorldEdit_BrushType_Entity)
                     {
                       entity *E = TryGetFreeEntityPtr(Engine->EntityTable);
                       if (E)
@@ -1773,7 +1774,7 @@ DoWorldEditor(engine_resources *Engine)
             // and we can just collapse world edits automatically in the edit thread.
             //
             // When my laptop is unplugged running on battery power, this is _much_ faster.
-            if (MainPanelEditParams.Mode == WorldEdit_Mode_Paint)
+            if (Editor->Params.Mode == WorldEdit_Mode_Paint)
             {
 
               b32 DoPaint = Input->LMB.Pressed;
@@ -1798,9 +1799,9 @@ DoWorldEditor(engine_resources *Engine)
                 Ui->RequestedForceCapture = True;
                 if (Engine->MousedOverVoxel.Tag)
                 {
-                  v3 P0 = GetHotVoxelForEditMode(Engine, MainPanelEditParams.Mode);
+                  v3 P0 = GetHotVoxelForEditMode(Engine, Editor->Params.Mode);
                   rect3 AABB = RectMinMax(P0, P0+1.f);
-                  ApplyEditToRegion(Engine, &AABB, Engine->Editor.SelectedColorIndex,  MainPanelEditParams.Mode, MainPanelEditParams.Modifier);
+                  ApplyEditToRegion(Engine, &AABB, Engine->Editor.SelectedColorIndex,  Editor->Params.Mode, Editor->Params.Modifier);
                 }
               }
             }
@@ -1835,7 +1836,7 @@ DoWorldEditor(engine_resources *Engine)
                 } break;
               }
 
-              QueueWorldUpdateForRegion(Engine, MainPanelEditParams.Mode, MainPanelEditParams.Modifier, &Shape, Editor->Shape.Settings.Color, Engine->WorldUpdateMemory);
+              QueueWorldUpdateForRegion(Engine, Editor->Params.Mode, Editor->Params.Modifier, &Shape, Editor->Shape.Settings.Color, Engine->WorldUpdateMemory);
             }
           } break;
 
@@ -1846,7 +1847,7 @@ DoWorldEditor(engine_resources *Engine)
             {
               world_chunk *Chunk = 0;
               v3i MinOffset = V3i(s32_MAX);
-              if (WorldEditBrushType == WorldEdit_BrushType_Layered)
+              if (Editor->BrushType == WorldEdit_BrushType_Layered)
               {
                 Chunk = &Editor->LayeredBrushEditor.Preview.Chunk;
 
@@ -1856,7 +1857,7 @@ DoWorldEditor(engine_resources *Engine)
                   MinOffset = Min(Layer->Settings.Offset.Min, MinOffset);
                 }
               }
-              else if (WorldEditBrushType == WorldEdit_BrushType_Noise)
+              else if (Editor->BrushType == WorldEdit_BrushType_Noise)
               {
                 Chunk = &Editor->Noise.Preview.Chunk;
                 MinOffset = Editor->Noise.Settings.Offset.Min;
@@ -1874,7 +1875,7 @@ DoWorldEditor(engine_resources *Engine)
                 type_world_update_op_shape_params_chunk_data,
                 .world_update_op_shape_params_chunk_data = ChunkDataShape,
               };
-              QueueWorldUpdateForRegion(Engine, MainPanelEditParams.Mode, MainPanelEditParams.Modifier, &Shape, Editor->Noise.Settings.Color, Engine->WorldUpdateMemory);
+              QueueWorldUpdateForRegion(Engine, Editor->Params.Mode, Editor->Params.Modifier, &Shape, Editor->Noise.Settings.Color, Engine->WorldUpdateMemory);
             }
           } break;
 
@@ -1882,7 +1883,7 @@ DoWorldEditor(engine_resources *Engine)
           {
             if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
             {
-              ApplyEditToRegion(Engine, &SelectionAABB, Engine->Editor.SelectedColorIndex, MainPanelEditParams.Mode, MainPanelEditParams.Modifier);
+              ApplyEditToRegion(Engine, &SelectionAABB, Engine->Editor.SelectedColorIndex, Editor->Params.Mode, Editor->Params.Modifier);
             }
           } break;
 
@@ -1960,7 +1961,7 @@ DoWorldEditor(engine_resources *Engine)
                 type_world_update_op_shape_params_asset,
                 .world_update_op_shape_params_asset = AssetUpdateShape,
               };
-              QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, MainPanelEditParams.Modifier, &Shape, {}, Engine->WorldUpdateMemory);
+              QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, Editor->Params.Modifier, &Shape, {}, Engine->WorldUpdateMemory);
 #endif
             }
           }
@@ -1992,13 +1993,11 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Input->Ctrl.Pressed || Input->Shift.Pressed) { Ui->RequestedForceCapture = True; }
 
-  if (Input->Ctrl.Pressed && Input->S.Clicked) { RadioSelect(&WorldEditToolButtonGroup, WorldEdit_Tool_Select); ResetSelection(Editor); }
+  if (Input->Ctrl.Pressed && Input->S.Clicked) { Editor->Tool = WorldEdit_Tool_Select; ResetSelection(Editor); }
 
-  /* if (Clicked(&WorldEditModeRadioGroup, CSz("Select"))) { ResetSelection(Editor); } */
+  if (Input->Ctrl.Pressed && Input->E.Clicked) { Editor->Tool = WorldEdit_Tool_Eyedropper; ResetSelectionIfIncomplete(Editor); }
 
-  /* if (Input->Ctrl.Pressed && Input->F.Clicked) { ResetSelectionIfIncomplete(Editor); RadioSelect(&WorldEditModeRadioGroup, WorldEdit_Tool_FillSelection); } */
-
-  if (Input->Ctrl.Pressed && Input->E.Clicked) { ResetSelectionIfIncomplete(Editor); RadioSelect(&WorldEditToolButtonGroup, WorldEdit_Tool_Eyedropper); }
+  if (Input->Ctrl.Pressed && Input->G.Clicked) { if (entity *Ghost = GetCameraGhost(Engine)) { Ghost->P = GetSelectionCenterP(World, Editor); } }
 
   if (Editor->SelectionClicks == 2)
   {
@@ -2050,7 +2049,7 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Engine->MousedOverVoxel.Tag)
   {
-    v3 HotVoxel = GetHotVoxelForEditMode(Engine, MainPanelEditParams.Mode);
+    v3 HotVoxel = GetHotVoxelForEditMode(Engine, Editor->Params.Mode);
     DEBUG_HighlightVoxel( Engine, HotVoxel, RED, 0.075f);
   }
 }

@@ -1,35 +1,4 @@
-// src/engine/editor.h:563:0
-
-link_internal void
-RadioSelect(ui_toggle_button_group *RadioGroup, ui_noise_type Selection)
-{
-  Assert(CountBitsSet_Kernighan(u32(Selection)) == 1);
-  u32 Index = GetIndexOfNthSetBit(u32(Selection), 1);
-  ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Index;
-  SetRadioButton(RadioGroup, ToggleHandle, True);
-  /* Ensure( ToggleRadioButton(RadioGroup, ToggleHandle) ); */
-}
-
-link_internal void
-GetRadioEnum(ui_toggle_button_group *RadioGroup, ui_noise_type *Result)
-{
-  if (RadioGroup->ToggleBits)
-  {
-    Assert(CountBitsSet_Kernighan(RadioGroup->ToggleBits) == 1);
-    // NOTE(Jesse): This is better; it asserts that we've actually got a bitfield
-    Assert(((RadioGroup->ToggleBits == NoiseType_Perlin||RadioGroup->ToggleBits == NoiseType_Voronoi)));
-    /* Assert((((enum_t.map(value).sep(|) {value.name})) & RadioGroup->ToggleBits) != 0); */
-  }
-
-  *Result = Cast(ui_noise_type, RadioGroup->ToggleBits);
-}
-
-link_internal b32
-ToggledOn(ui_toggle_button_group *ButtonGroup, ui_noise_type Enum)
-{
-  b32 Result = ButtonGroup->ToggleBits & (1 << Enum);
-  return Result;
-}
+// src/engine/editor.h:531:0
 
 // NOTE(Jesse): This could be implemented by reconstructing the button ID
 // but I'm very unsure that's worth it.  Seems like just
@@ -44,10 +13,10 @@ Clicked(ui_toggle_button_group *ButtonGroup, ui_noise_type Enum)
 link_internal ui_toggle_button_group
 RadioButtonGroup_ui_noise_type( renderer_2d *Ui,
   window_layout *Window,
-  cs GroupName,
+  cs  GroupName,
   ui_noise_type *Element,
-  ui_render_params *Params = &DefaultUiRenderParams_Generic,
-  ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
+  ui_render_params *Params     = &DefaultUiRenderParams_Generic,
+  ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
 {
   cs ButtonNames[] =
   {
@@ -64,8 +33,7 @@ RadioButtonGroup_ui_noise_type( renderer_2d *Ui,
     *Button = UiToggle(ButtonName, UiId(Window, Cast(void*, Element), Cast(void*, ButtonName.Start)));
   }
 
-  ui_toggle_button_group Result = UiToggleButtonGroup(Ui, &ButtonBuffer, GroupName, Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_RadioButtons));
-
+  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_RadioButtons));
   return Result;
 }
 

@@ -622,35 +622,36 @@ DoEngineDebug(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  engine_debug_view_mode ViewMode;
 
   // TODO(Jesse): Rework with DoEditorUi ?
   ui_toggle_button_group EditorButtonGroup =
-    ToggleButtonGroup_engine_debug_view_mode(Ui, 0, CS(""), &ViewMode, &DefaultUiRenderParams_Column);
+    ToggleButtonGroup_engine_debug_view_mode(Ui, 0, CS(""), &Engine->EngineDebug.ViewMode, &DefaultUiRenderParams_Column);
 
-  Editor->EngineDebugViewModeToggleBits = EditorButtonGroup.ToggleBits;
+  engine_debug_view_mode ViewMode = Engine->EngineDebug.ViewMode;
+
+  /* Editor->EngineDebugViewModeToggleBits = EditorButtonGroup.ToggleBits; */
 
   // NOTE(Jesse): Do the world editor first so the SelectionChanged flag gets
   // set before the rest of the UI code runs.  This is not strictly necessary
   // for correctness, but  avoids a frame of lag.
   // @selection_changed_flag
   //
-  if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_WorldEdit))
+  if (ViewMode & EngineDebugViewMode_WorldEdit)
   {
     DoWorldEditor(Engine);
   }
 
-  if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_Entities))
+  if (ViewMode & EngineDebugViewMode_Entities)
   {
     DoEntityWindow(Engine);
   }
 
-  if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_Level))
+  if (ViewMode & EngineDebugViewMode_Level)
   {
     DoLevelWindow(Engine);
   }
 
-  if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_WorldChunks))
+  if (ViewMode & EngineDebugViewMode_WorldChunks)
   {
     local_persist window_layout WorldChunkWindow = WindowLayout("World Chunks");
     WorldChunkWindow.Title = EngineDebug->PickedChunk ?
@@ -692,7 +693,7 @@ DoEngineDebug(engine_resources *Engine)
   }
 
 #if 1
-  if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_Textures))
+  if (ViewMode & EngineDebugViewMode_Textures)
   {
     v2 DefaultTextureDim = V2(250);
 
@@ -765,7 +766,7 @@ DoEngineDebug(engine_resources *Engine)
   }
 #endif
 
-  if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_RenderSettings))
+  if (ViewMode & EngineDebugViewMode_RenderSettings)
   {
     v2 WindowDim = {{1200.f, 250.f}};
     local_persist window_layout RenderSettingsWindow = WindowLayout("Graphics Settings", WindowLayoutFlag_Align_Right);
@@ -776,7 +777,7 @@ DoEngineDebug(engine_resources *Engine)
     PushWindowEnd(Ui, &RenderSettingsWindow);
   }
 
-  if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_EngineDebug))
+  if (ViewMode & EngineDebugViewMode_EngineDebug)
   {
     v2 WindowDim = {{1200.f, 250.f}};
 
@@ -800,7 +801,7 @@ DoEngineDebug(engine_resources *Engine)
 
   /* Debug_DrawTextureToDebugQuad(&Engine->RTTGroup.DebugShader); */
 
-  if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_Assets))
+  if (ViewMode & EngineDebugViewMode_Assets)
   {
     DoAssetWindow(Engine);
   }
