@@ -1053,7 +1053,7 @@ BrushSettingsForShapeBrush(engine_resources *Engine, window_layout *Window, shap
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  DoEditorUi(Ui, Window, &Layer->Type, CSz("Shape Type"));
+  DoEditorUi(Ui, Window, &Layer->Type, CSz("ShapeType"));
 
   switch (Layer->Type)
   {
@@ -1062,13 +1062,13 @@ BrushSettingsForShapeBrush(engine_resources *Engine, window_layout *Window, shap
     case ShapeType_Rect:
     {
       Layer->Rect.Region = GetSelectionRect(World, Editor);
-      DoEditorUi(Ui, Window, &Layer->Rect, {});
+      DoEditorUi(Ui, Window, &Layer->Rect, CSz("Settings"));
     } break;
 
     case ShapeType_Sphere:
     {
       Layer->Sphere.Location = Canonical_Position(V3(Layer->Sphere.Radius), {});
-      DoEditorUi(Ui, Window, &Layer->Sphere, {});
+      DoEditorUi(Ui, Window, &Layer->Sphere, CSz("Settings"));
     } break;
   }
 
@@ -1082,20 +1082,20 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
   PushTableStart(Ui);
     if (SelectionComplete(Editor->SelectionClicks))
     {
-      DoEditorUi(Ui, Window, &Layer->Type, {}, &DefaultUiRenderParams_Generic);
+      DoEditorUi(Ui, Window, &Layer->Type, CSz("NoiseType"), &DefaultUiRenderParams_Generic);
       PushTableStart(Ui); // TODO(Jesse): Necessary?
         switch (Layer->Type)
         {
           case NoiseType_Perlin:
           {
             perlin_noise_params *Perlin = &Layer->Perlin;
-            DoEditorUi(Ui, Window, Perlin, CSz("NoiseSettings"));
+            DoEditorUi(Ui, Window, Perlin, CSz("Settings"));
           } break;
 
           case NoiseType_Voronoi:
           {
             voronoi_noise_params *Voronoi = &Layer->Voronoi;
-            DoEditorUi(Ui, Window, Voronoi, CSz("NoiseSettings"));
+            DoEditorUi(Ui, Window, Voronoi, CSz("Settings"));
           } break;
         }
       PushTableEnd(Ui);
@@ -1118,24 +1118,6 @@ DoSettingsForBrush(engine_resources *Engine, brush_layer *Layer, window_layout *
   OPEN_INDENT_FOR_TOGGLEABLE_REGION();
 
 
-  // TODO(Jesse): do enum selector for Mode/Modifier/iterations
-  DoEditorUi(Ui, Window, &Settings->Offset,     CSz("Dilation"));
-  DoEditorUi(Ui, Window, &Settings->Mode,       CSz("Mode"));
-  DoEditorUi(Ui, Window, &Settings->Modifier,   CSz("Modifier"));
-  DoEditorUi(Ui, Window, &Settings->Iterations, CSz("Iterations"));
-  PushNewRow(Ui); // Primitives require a new row.. I forget why, but there's a good reason.
-
-  // NOTE(Jesse): These are only stricly necessary if Modifier is Flood or Surface .. do we care?
-  /* Settings->Offset.Min = Min(V3i(-Settings->Iterations), Settings->Offset.Min); */
-  /* Settings->Offset.Max = Max(V3i( Settings->Iterations), Settings->Offset.Max); */
-
-  {
-    ui_style Style = UiStyleFromLightestColor(GetColorData(Settings->Color));
-    PushUntexturedQuad(Ui, {}, V2(Global_Font.Size.y), zDepth_Text, &Style, DefaultGenericPadding);
-    if (Button(Ui, CSz("Set Color"), UiId(Window, "set color interaction", Cast(void*, Settings)))) { Settings->Color = Engine->Editor.SelectedColorIndex; }
-    PushNewRow(Ui);
-  }
-
   switch (Layer->Settings.Type)
   {
     case BrushLayerType_Noise:
@@ -1147,6 +1129,28 @@ DoSettingsForBrush(engine_resources *Engine, brush_layer *Layer, window_layout *
     {
       BrushSettingsForShapeBrush(Engine, Window, &Settings->Shape);
     } break;
+  }
+
+
+  // TODO(Jesse): do enum selector for Mode/Modifier/iterations
+  DoEditorUi(Ui, Window, &Settings->Mode,       CSz("Mode"));
+  DoEditorUi(Ui, Window, &Settings->Modifier,   CSz("Modifier"));
+  if (Settings->Modifier == WorldEdit_Modifier_Surface || Settings->Modifier == WorldEdit_Modifier_Flood)
+  {
+    DoEditorUi(Ui, Window, &Settings->Iterations, CSz("Iterations"));
+    PushNewRow(Ui); // Primitives require a new row.. I forget why, but there's a good reason.
+  }
+  DoEditorUi(Ui, Window, &Settings->Offset,     CSz("Dilation"));
+
+  // NOTE(Jesse): These are only stricly necessary if Modifier is Flood or Surface .. do we care?
+  /* Settings->Offset.Min = Min(V3i(-Settings->Iterations), Settings->Offset.Min); */
+  /* Settings->Offset.Max = Max(V3i( Settings->Iterations), Settings->Offset.Max); */
+
+  {
+    ui_style Style = UiStyleFromLightestColor(GetColorData(Settings->Color));
+    PushUntexturedQuad(Ui, {}, V2(Global_Font.Size.y), zDepth_Text, &Style, DefaultGenericPadding);
+    if (Button(Ui, CSz("Set Color"), UiId(Window, "set color interaction", Cast(void*, Settings)))) { Settings->Color = Engine->Editor.SelectedColorIndex; }
+    PushNewRow(Ui);
   }
 
   PushTableStart(Ui);
