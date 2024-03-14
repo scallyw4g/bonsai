@@ -857,6 +857,8 @@ struct level_editor
   world_edit_params     Params;
   world_edit_brush_type BrushType;
 
+  world_edit_tool       PreviousTool; // So we can 'pop' back to the last tool on select/eyedropper
+
 
   // TODO(Jesse): Think of a better naming scheme for these..
   // NOTE(Jesse): Brushes

@@ -76,6 +76,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       
       DoEditorUi(Ui,
         Window,
+&Element->PreviousTool,
+        CSz("PreviousTool"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
 &Element->Noise,
         CSz("Noise"),
         Params

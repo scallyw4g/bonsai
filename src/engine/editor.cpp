@@ -1909,6 +1909,12 @@ DoWorldEditor(engine_resources *Engine)
             case 1:
             {
               Editor->SelectionClicks += 1;
+
+              if (Editor->PreviousTool)
+              {
+                Editor->Tool = Editor->PreviousTool;
+                Editor->PreviousTool = {};
+              }
             } break;
 
           }
@@ -1928,6 +1934,12 @@ DoWorldEditor(engine_resources *Engine)
           {
             Info("Selecting Color (%S)", CS(V->Color));
             Engine->Editor.SelectedColorIndex = V->Color;
+
+            if (Editor->PreviousTool)
+            {
+              Editor->Tool = Editor->PreviousTool;
+              Editor->PreviousTool = {};
+            }
           }
         }
         else
@@ -1990,12 +2002,18 @@ DoWorldEditor(engine_resources *Engine)
 
 
 
+  //
+  //
+  // Hotkeys
+  //
+  //
+
 
   if (Input->Ctrl.Pressed || Input->Shift.Pressed) { Ui->RequestedForceCapture = True; }
 
-  if (Input->Ctrl.Pressed && Input->S.Clicked) { Editor->Tool = WorldEdit_Tool_Select; ResetSelection(Editor); }
+  if (Input->Ctrl.Pressed && Input->S.Clicked) { Editor->PreviousTool = Editor->Tool; Editor->Tool = WorldEdit_Tool_Select; ResetSelection(Editor); }
 
-  if (Input->Ctrl.Pressed && Input->E.Clicked) { Editor->Tool = WorldEdit_Tool_Eyedropper; ResetSelectionIfIncomplete(Editor); }
+  if (Input->Ctrl.Pressed && Input->E.Clicked) { Editor->PreviousTool = Editor->Tool; Editor->Tool = WorldEdit_Tool_Eyedropper; ResetSelectionIfIncomplete(Editor); }
 
   if (Input->Ctrl.Pressed && Input->G.Clicked) { if (entity *Ghost = GetCameraGhost(Engine)) { Ghost->P = GetSelectionCenterP(World, Editor); } }
 
