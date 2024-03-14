@@ -18,9 +18,9 @@ RadioButtonGroup_world_edit_mode_modifier( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-    { CSz("Default"), UiId(Window, Cast(void*, Element), Cast(void*, "Default")), WorldEdit_Modifier_Default },
-    { CSz("Flood"), UiId(Window, Cast(void*, Element), Cast(void*, "Flood")), WorldEdit_Modifier_Flood },
-    { CSz("Surface"), UiId(Window, Cast(void*, Element), Cast(void*, "Surface")), WorldEdit_Modifier_Surface },
+    { CSz("Default"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_mode_modifier WorldEdit_Modifier_Default")), WorldEdit_Modifier_Default },
+    { CSz("Flood"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_mode_modifier WorldEdit_Modifier_Flood")), WorldEdit_Modifier_Flood },
+    { CSz("Surface"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_mode_modifier WorldEdit_Modifier_Surface")), WorldEdit_Modifier_Surface },
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {

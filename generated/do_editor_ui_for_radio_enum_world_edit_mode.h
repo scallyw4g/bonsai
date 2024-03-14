@@ -18,9 +18,9 @@ RadioButtonGroup_world_edit_mode( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-    { CSz("Attach"), UiId(Window, Cast(void*, Element), Cast(void*, "Attach")), WorldEdit_Mode_Attach },
-    { CSz("Remove"), UiId(Window, Cast(void*, Element), Cast(void*, "Remove")), WorldEdit_Mode_Remove },
-    { CSz("Paint"), UiId(Window, Cast(void*, Element), Cast(void*, "Paint")), WorldEdit_Mode_Paint },
+    { CSz("Attach"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_mode WorldEdit_Mode_Attach")), WorldEdit_Mode_Attach },
+    { CSz("Remove"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_mode WorldEdit_Mode_Remove")), WorldEdit_Mode_Remove },
+    { CSz("Paint"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_mode WorldEdit_Mode_Paint")), WorldEdit_Mode_Paint },
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {

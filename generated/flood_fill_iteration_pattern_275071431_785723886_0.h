@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4400:0
+// src/engine/world_chunk.cpp:4402:0
 
 voxel *V = {};
 // TODO(Jesse): Do we want to try and keep the amount of temp memory to a minimum here?

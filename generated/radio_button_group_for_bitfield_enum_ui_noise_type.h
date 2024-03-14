@@ -10,8 +10,8 @@ RadioButtonGroup_ui_noise_type( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-    { CSz("Perlin"), UiId(Window, Cast(void*, Element), Cast(void*, "Perlin")), NoiseType_Perlin },
-    { CSz("Voronoi"), UiId(Window, Cast(void*, Element), Cast(void*, "Voronoi")), NoiseType_Voronoi },
+    { CSz("Perlin"), UiId(Window, Cast(void*, Element), Cast(void*, "ui_noise_type NoiseType_Perlin")), NoiseType_Perlin },
+    { CSz("Voronoi"), UiId(Window, Cast(void*, Element), Cast(void*, "ui_noise_type NoiseType_Voronoi")), NoiseType_Voronoi },
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {
