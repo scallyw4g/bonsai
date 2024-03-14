@@ -8,8 +8,9 @@
 link_internal u32
 Terrain_Checkerboard( world_chunk *Chunk,
 
-                      chunk_dimension Dim,
-                      chunk_dimension SrcToDest,
+                      v3i Dim,
+                      v3i NoiseBasis,
+                      v3i SrcToDest,
 
                       u16 ColorIndex,
 
@@ -50,8 +51,9 @@ Terrain_Checkerboard( world_chunk *Chunk,
 
 link_internal u32
 GrassyIslandTerrain( world_chunk *Chunk,
-                     chunk_dimension Dim,
-                     chunk_dimension SrcToDest,
+                     v3i Dim,
+                     v3i NoiseBasis,
+                     v3i SrcToDest,
                      u16 ColorIndex,
 
                      v3 IgnoredPeriod,
@@ -260,8 +262,9 @@ GrassyIslandTerrain( world_chunk *Chunk,
 
 link_internal u32
 WarpedTerrain( world_chunk *Chunk,
-               chunk_dimension Dim,
-               chunk_dimension SrcToDest,
+               v3i Dim,
+               v3i NoiseBasis,
+               v3i SrcToDest,
                u16 ColorIndex,
 
                v3 IgnoredPeriod,
@@ -767,6 +770,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   PushWindowStart(Ui, &Window);
     ui_toggle_button_group TerrainGenTypeRadio = RadioButtonGroup_terrain_gen_type(Ui, &Window, CSz("Terrain Generators"), &GameState->TerrainGenType, &DefaultUiRenderParams_Generic, ToggleButtonGroupFlags_DrawVertical);
   PushWindowEnd(Ui, &Window);
+
+  /* Info("%S :: %d", ToString(GameState->TerrainGenType), GameState->TerrainGenType); */
 
   if (TerrainGenTypeRadio.AnyElementClicked)
   {

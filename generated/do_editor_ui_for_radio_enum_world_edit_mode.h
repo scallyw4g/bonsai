@@ -1,4 +1,4 @@
-// src/engine/editor.h:658:0
+// src/engine/editor.h:644:0
 
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_mode Selection)
@@ -6,16 +6,6 @@ RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_mode Selection)
   ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Selection;
   SetRadioButton(RadioGroup, ToggleHandle, True);
   /* Ensure( ToggleRadioButton(RadioGroup, ToggleHandle) ); */
-}
-
-// NOTE(Jesse): This could be implemented by reconstructing the button ID
-// but I'm very unsure that's worth it.  Seems like just
-link_internal b32
-Clicked(ui_toggle_button_group *ButtonGroup, world_edit_mode Enum)
-{
-  b32 Result = False;
-  NotImplemented;
-  return Result;
 }
 
 link_internal ui_toggle_button_group
@@ -26,21 +16,17 @@ RadioButtonGroup_world_edit_mode( renderer_2d *Ui,
   ui_render_params *Params     = &DefaultUiRenderParams_Generic,
   ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
 {
-  cs ButtonNames[] =
+  ui_toggle_button_handle ButtonHandles[] =
   {
-    CSz("Attach"),
-    CSz("Remove"),
-    CSz("Paint"),
+    { CSz("Attach"), UiId(Window, Cast(void*, Element), Cast(void*, "Attach")), WorldEdit_Mode_Attach },
+    { CSz("Remove"), UiId(Window, Cast(void*, Element), Cast(void*, "Remove")), WorldEdit_Mode_Remove },
+    { CSz("Paint"), UiId(Window, Cast(void*, Element), Cast(void*, "Paint")), WorldEdit_Mode_Paint },
   };
 
-  u32 ButtonCount = ArrayCount(ButtonNames);
-
-  ui_toggle_button_handle_buffer ButtonBuffer = UiToggleButtonHandleBuffer(ButtonCount, GetTranArena());
-  IterateOver(&ButtonBuffer, Button, ButtonIndex)
-  {
-    cs ButtonName = ButtonNames[ButtonIndex];
-    *Button = UiToggle(ButtonName, UiId(Window, Cast(void*, Element), Cast(void*, ButtonName.Start)));
-  }
+  ui_toggle_button_handle_buffer ButtonBuffer = {
+    ArrayCount(ButtonHandles),
+    ButtonHandles
+  };
 
   ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_RadioButtons));
   return Result;

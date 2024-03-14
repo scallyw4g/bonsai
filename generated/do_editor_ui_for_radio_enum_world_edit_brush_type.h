@@ -1,4 +1,4 @@
-// src/engine/editor.h:664:0
+// src/engine/editor.h:650:0
 
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_brush_type Selection)
@@ -6,16 +6,6 @@ RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_brush_type Selection)
   ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Selection;
   SetRadioButton(RadioGroup, ToggleHandle, True);
   /* Ensure( ToggleRadioButton(RadioGroup, ToggleHandle) ); */
-}
-
-// NOTE(Jesse): This could be implemented by reconstructing the button ID
-// but I'm very unsure that's worth it.  Seems like just
-link_internal b32
-Clicked(ui_toggle_button_group *ButtonGroup, world_edit_brush_type Enum)
-{
-  b32 Result = False;
-  NotImplemented;
-  return Result;
 }
 
 link_internal ui_toggle_button_group
@@ -26,26 +16,22 @@ RadioButtonGroup_world_edit_brush_type( renderer_2d *Ui,
   ui_render_params *Params     = &DefaultUiRenderParams_Generic,
   ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
 {
-  cs ButtonNames[] =
+  ui_toggle_button_handle ButtonHandles[] =
   {
-    CSz("Disabled"),
-    CSz("Selection"),
-    CSz("Single"),
-    CSz("Asset"),
-    CSz("Entity"),
-    CSz("Shape"),
-    CSz("Noise"),
-    CSz("Layered"),
+    { CSz("Disabled"), UiId(Window, Cast(void*, Element), Cast(void*, "Disabled")), WorldEdit_BrushType_Disabled },
+    { CSz("Selection"), UiId(Window, Cast(void*, Element), Cast(void*, "Selection")), WorldEdit_BrushType_Selection },
+    { CSz("Single"), UiId(Window, Cast(void*, Element), Cast(void*, "Single")), WorldEdit_BrushType_Single },
+    { CSz("Asset"), UiId(Window, Cast(void*, Element), Cast(void*, "Asset")), WorldEdit_BrushType_Asset },
+    { CSz("Entity"), UiId(Window, Cast(void*, Element), Cast(void*, "Entity")), WorldEdit_BrushType_Entity },
+    { CSz("Shape"), UiId(Window, Cast(void*, Element), Cast(void*, "Shape")), WorldEdit_BrushType_Shape },
+    { CSz("Noise"), UiId(Window, Cast(void*, Element), Cast(void*, "Noise")), WorldEdit_BrushType_Noise },
+    { CSz("Layered"), UiId(Window, Cast(void*, Element), Cast(void*, "Layered")), WorldEdit_BrushType_Layered },
   };
 
-  u32 ButtonCount = ArrayCount(ButtonNames);
-
-  ui_toggle_button_handle_buffer ButtonBuffer = UiToggleButtonHandleBuffer(ButtonCount, GetTranArena());
-  IterateOver(&ButtonBuffer, Button, ButtonIndex)
-  {
-    cs ButtonName = ButtonNames[ButtonIndex];
-    *Button = UiToggle(ButtonName, UiId(Window, Cast(void*, Element), Cast(void*, ButtonName.Start)));
-  }
+  ui_toggle_button_handle_buffer ButtonBuffer = {
+    ArrayCount(ButtonHandles),
+    ButtonHandles
+  };
 
   ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_RadioButtons));
   return Result;

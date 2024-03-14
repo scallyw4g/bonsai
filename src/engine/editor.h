@@ -4,16 +4,6 @@
 poof(
   func generic_button_group_for_enum(enum_t, type_poof_symbol NamePrefix, type_poof_symbol extra_poof_flags)
   {
-    // NOTE(Jesse): This could be implemented by reconstructing the button ID
-    // but I'm very unsure that's worth it.  Seems like just
-    link_internal b32
-    Clicked(ui_toggle_button_group *ButtonGroup, enum_t.name Enum)
-    {
-      b32 Result = False;
-      NotImplemented;
-      return Result;
-    }
-
     link_internal ui_toggle_button_group
     (NamePrefix)ButtonGroup_(enum_t.name)( renderer_2d *Ui,
                                          window_layout *Window,
@@ -22,22 +12,18 @@ poof(
                                       ui_render_params *Params     = &DefaultUiRenderParams_Generic,
                           ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
     {
-      cs ButtonNames[] =
+      ui_toggle_button_handle ButtonHandles[] =
       {
-        enum_t.map(value)
+        enum_t.map(enum_v)
         {
-          CSz("value.name.strip_all_prefix"),
+          { CSz("enum_v.name.strip_all_prefix"), UiId(Window, Cast(void*, Element), Cast(void*, "enum_v.name.strip_all_prefix")), enum_v.name },
         }
       };
 
-      u32 ButtonCount = ArrayCount(ButtonNames);
-
-      ui_toggle_button_handle_buffer ButtonBuffer = UiToggleButtonHandleBuffer(ButtonCount, GetTranArena());
-      IterateOver(&ButtonBuffer, Button, ButtonIndex)
-      {
-        cs ButtonName = ButtonNames[ButtonIndex];
-        *Button = UiToggle(ButtonName, UiId(Window, Cast(void*, Element), Cast(void*, ButtonName.Start)));
-      }
+      ui_toggle_button_handle_buffer ButtonBuffer = {
+        ArrayCount(ButtonHandles),
+        ButtonHandles
+      };
 
       ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ui_toggle_button_group_flags(ExtraFlags(extra_poof_flags)));
       return Result;

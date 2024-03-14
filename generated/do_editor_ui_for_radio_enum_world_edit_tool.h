@@ -1,4 +1,4 @@
-// src/engine/editor.h:661:0
+// src/engine/editor.h:647:0
 
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_tool Selection)
@@ -6,16 +6,6 @@ RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_tool Selection)
   ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Selection;
   SetRadioButton(RadioGroup, ToggleHandle, True);
   /* Ensure( ToggleRadioButton(RadioGroup, ToggleHandle) ); */
-}
-
-// NOTE(Jesse): This could be implemented by reconstructing the button ID
-// but I'm very unsure that's worth it.  Seems like just
-link_internal b32
-Clicked(ui_toggle_button_group *ButtonGroup, world_edit_tool Enum)
-{
-  b32 Result = False;
-  NotImplemented;
-  return Result;
 }
 
 link_internal ui_toggle_button_group
@@ -26,24 +16,20 @@ RadioButtonGroup_world_edit_tool( renderer_2d *Ui,
   ui_render_params *Params     = &DefaultUiRenderParams_Generic,
   ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
 {
-  cs ButtonNames[] =
+  ui_toggle_button_handle ButtonHandles[] =
   {
-    CSz("Disabled"),
-    CSz("Select"),
-    CSz("Brush"),
-    CSz("Eyedropper"),
-    CSz("BlitEntity"),
-    CSz("StandingSpots"),
+    { CSz("Disabled"), UiId(Window, Cast(void*, Element), Cast(void*, "Disabled")), WorldEdit_Tool_Disabled },
+    { CSz("Select"), UiId(Window, Cast(void*, Element), Cast(void*, "Select")), WorldEdit_Tool_Select },
+    { CSz("Brush"), UiId(Window, Cast(void*, Element), Cast(void*, "Brush")), WorldEdit_Tool_Brush },
+    { CSz("Eyedropper"), UiId(Window, Cast(void*, Element), Cast(void*, "Eyedropper")), WorldEdit_Tool_Eyedropper },
+    { CSz("BlitEntity"), UiId(Window, Cast(void*, Element), Cast(void*, "BlitEntity")), WorldEdit_Tool_BlitEntity },
+    { CSz("StandingSpots"), UiId(Window, Cast(void*, Element), Cast(void*, "StandingSpots")), WorldEdit_Tool_StandingSpots },
   };
 
-  u32 ButtonCount = ArrayCount(ButtonNames);
-
-  ui_toggle_button_handle_buffer ButtonBuffer = UiToggleButtonHandleBuffer(ButtonCount, GetTranArena());
-  IterateOver(&ButtonBuffer, Button, ButtonIndex)
-  {
-    cs ButtonName = ButtonNames[ButtonIndex];
-    *Button = UiToggle(ButtonName, UiId(Window, Cast(void*, Element), Cast(void*, ButtonName.Start)));
-  }
+  ui_toggle_button_handle_buffer ButtonBuffer = {
+    ArrayCount(ButtonHandles),
+    ButtonHandles
+  };
 
   ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_RadioButtons));
   return Result;

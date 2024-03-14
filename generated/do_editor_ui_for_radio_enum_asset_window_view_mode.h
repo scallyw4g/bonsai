@@ -1,4 +1,4 @@
-// src/engine/editor.h:650:0
+// src/engine/editor.h:636:0
 
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, asset_window_view_mode Selection)
@@ -6,16 +6,6 @@ RadioSelect(ui_toggle_button_group *RadioGroup, asset_window_view_mode Selection
   ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Selection;
   SetRadioButton(RadioGroup, ToggleHandle, True);
   /* Ensure( ToggleRadioButton(RadioGroup, ToggleHandle) ); */
-}
-
-// NOTE(Jesse): This could be implemented by reconstructing the button ID
-// but I'm very unsure that's worth it.  Seems like just
-link_internal b32
-Clicked(ui_toggle_button_group *ButtonGroup, asset_window_view_mode Enum)
-{
-  b32 Result = False;
-  NotImplemented;
-  return Result;
 }
 
 link_internal ui_toggle_button_group
@@ -26,20 +16,16 @@ RadioButtonGroup_asset_window_view_mode( renderer_2d *Ui,
   ui_render_params *Params     = &DefaultUiRenderParams_Generic,
   ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
 {
-  cs ButtonNames[] =
+  ui_toggle_button_handle ButtonHandles[] =
   {
-    CSz("AssetFiles"),
-    CSz("AssetTable"),
+    { CSz("AssetFiles"), UiId(Window, Cast(void*, Element), Cast(void*, "AssetFiles")), AssetWindowViewMode_AssetFiles },
+    { CSz("AssetTable"), UiId(Window, Cast(void*, Element), Cast(void*, "AssetTable")), AssetWindowViewMode_AssetTable },
   };
 
-  u32 ButtonCount = ArrayCount(ButtonNames);
-
-  ui_toggle_button_handle_buffer ButtonBuffer = UiToggleButtonHandleBuffer(ButtonCount, GetTranArena());
-  IterateOver(&ButtonBuffer, Button, ButtonIndex)
-  {
-    cs ButtonName = ButtonNames[ButtonIndex];
-    *Button = UiToggle(ButtonName, UiId(Window, Cast(void*, Element), Cast(void*, ButtonName.Start)));
-  }
+  ui_toggle_button_handle_buffer ButtonBuffer = {
+    ArrayCount(ButtonHandles),
+    ButtonHandles
+  };
 
   ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_RadioButtons));
   return Result;

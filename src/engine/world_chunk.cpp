@@ -762,10 +762,6 @@ Terrain_Perlin3D( world_chunk *Chunk,
 
         Assert( NotSet(&Chunk->Voxels[i], Voxel_Filled) );
 
-        /* f32 InX = ((f32)x + ( (f32)WorldChunkDim.x*(f32)Chunk->WorldP.x))/Period.x; */
-        /* f32 InY = ((f32)y + ( (f32)WorldChunkDim.y*(f32)Chunk->WorldP.y))/Period.y; */
-        /* f32 InZ = ((f32)z + ( (f32)WorldChunkDim.z*(f32)Chunk->WorldP.z))/Period.z; */
-
         v3 NoiseInput = MapWorldPositionToNoiseInputValue(V3(NoiseBasis), V3(x,y,z), Period);
         r32 NoiseValue = PerlinNoise(NoiseInput);
 

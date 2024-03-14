@@ -611,8 +611,9 @@ ComputeNormalsForChunkFromNoiseValues( r32 ChunkWorldZ, r32 *NoiseValues, v3i No
 
 link_internal u32
 HoodooTerrain( world_chunk *Chunk,
-               chunk_dimension Dim,
-               chunk_dimension SrcToDest,
+               v3i Dim,
+               v3i NoiseBasis,
+               v3i SrcToDest,
                u16 ColorIndex,
                v3  Frequency,
                s32 Amplitude,
@@ -794,6 +795,7 @@ HoodooTerrain( world_chunk *Chunk,
 link_internal u32
 TerracedTerrain( world_chunk *Chunk,
                  v3i Dim,
+                 v3i NoiseBasis,
                  v3i SrcToDest,
                  u16 ColorIndex,
 
@@ -1054,6 +1056,7 @@ TerracedTerrain( world_chunk *Chunk,
 link_internal u32
 GrassyTerracedTerrain2( world_chunk *Chunk,
                        v3i Dim,
+                       v3i NoiseBasis,
                        v3i SrcToDest,
                        u16 ColorIndex,
 
@@ -1229,6 +1232,7 @@ GrassyTerracedTerrain2( world_chunk *Chunk,
 link_internal u32
 GrassyTerracedTerrain3( world_chunk *Chunk,
                        v3i Dim,
+                       v3i NoiseBasis,
                        v3i SrcToDest,
                        u16 ColorIndex,
 
@@ -1570,6 +1574,7 @@ MakeCliffs_8x(world_chunk *Chunk, s32 NormalsIndex, s32 WorldX, s32 WorldY, s32 
 link_internal u32
 GrassyTerracedTerrain4( world_chunk *Chunk,
                         v3i _Dim,
+                        v3i NoiseBasis,
                         v3i SrcToDest,
                         u16 ColorIndex,
 
@@ -1914,6 +1919,7 @@ GrassyTerracedTerrain4( world_chunk *Chunk,
 link_internal u32
 GrassyTerracedTerrain( world_chunk *Chunk,
                        v3i Dim,
+                       v3i NoiseBasis,
                        v3i SrcToDest,
                        u16 ColorIndex,
 
@@ -2090,6 +2096,7 @@ GrassyTerracedTerrain( world_chunk *Chunk,
 link_internal u32
 GrassyLargeTerracedTerrain( world_chunk *Chunk,
                             v3i Dim,
+                            v3i NoiseBasis,
                             v3i SrcToDest,
                             u16 ColorIndex,
 
@@ -2255,6 +2262,7 @@ GrassyLargeTerracedTerrain( world_chunk *Chunk,
 link_internal u32
 Terrain_SinCos( world_chunk *Chunk,
                 v3i Dim,
+                v3i NoiseBasis,
                 v3i SrcToDest,
                 u16 ColorIndex,
 
