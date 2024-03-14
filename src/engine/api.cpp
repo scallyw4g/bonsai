@@ -529,9 +529,9 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       }
       else
       {
-        s32 Period = 50;
-        s32 Amplititude = 15;
-        s32 StartingZDepth = -5;
+        s32 Period = 150;
+        s32 Amplititude = 10;
+        s32 StartingZDepth = -25;
         u16 Color = GRASS_GREEN;
 
         Assert(Chunk->Dim == World->ChunkDim);

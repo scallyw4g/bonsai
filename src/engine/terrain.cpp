@@ -2335,6 +2335,7 @@ Terrain_SinCos( world_chunk *Chunk,
 link_internal u32
 Terrain_Voronoi3D( world_chunk *Chunk,
                    v3i Dim,
+                   v3i NoiseBasis,
                    v3i SrcToDest,
                    u16 ColorIndex,
 
@@ -2387,6 +2388,7 @@ Terrain_Voronoi3D( world_chunk *Chunk,
 link_internal u32
 Terrain_Voronoi2D( world_chunk *Chunk,
                    v3i Dim,
+                   v3i NoiseBasis,
                    v3i SrcToDest,
                    u16 ColorIndex,
 

@@ -549,9 +549,10 @@ CopyChunkOffset(world_chunk *Src, voxel_position SrcChunkDim, world_chunk *Dest,
 
 link_internal u32
 Terrain_Flat( world_chunk *Chunk,
-              chunk_dimension Dim,
 
-              chunk_dimension SrcToDest,
+              v3i Dim,
+              v3i NoiseBasis,
+              v3i SrcToDest,
 
               u16 ColorIndex,
               v3  Ignored0,
@@ -587,8 +588,9 @@ Terrain_Flat( world_chunk *Chunk,
 
 link_internal u32
 Terrain_FBM2D( world_chunk *Chunk,
-               chunk_dimension Dim,
-               chunk_dimension SrcToDest,
+               v3i Dim,
+               v3i NoiseBasis,
+               v3i SrcToDest,
                u16 ColorIndex,
 
                v3  Period,
@@ -715,8 +717,9 @@ Terrain_FBM2D( world_chunk *Chunk,
 
 link_internal u32
 Terrain_Perlin2D( world_chunk *Chunk,
-                  chunk_dimension Dim,
-                  chunk_dimension SrcToDest,
+                  v3i Dim,
+                  v3i NoiseBasis,
+                  v3i SrcToDest,
                   u16 ColorIndex,
 
                   v3  Period,
@@ -729,14 +732,15 @@ Terrain_Perlin2D( world_chunk *Chunk,
   TIMED_FUNCTION();
 
   u32 OctaveCount = 1;
-  u32 SyntheticChunkSum = Terrain_FBM2D( Chunk, Dim, SrcToDest, ColorIndex, Period, Amplitude, zMin, WorldChunkDim, (void*)&OctaveCount);
+  u32 SyntheticChunkSum = Terrain_FBM2D( Chunk, Dim, NoiseBasis, SrcToDest, ColorIndex, Period, Amplitude, zMin, WorldChunkDim, (void*)&OctaveCount);
   return SyntheticChunkSum;
 }
 
 link_internal u32
 Terrain_Perlin3D( world_chunk *Chunk,
-                  chunk_dimension Dim,
-                  chunk_dimension SrcToDest,
+                  v3i Dim,
+                  v3i NoiseBasis,
+                  v3i SrcToDest,
                   u16 ColorIndex,
 
                   v3  Period,
@@ -792,7 +796,7 @@ Terrain_Perlin3D( world_chunk *Chunk,
   return Result;
 }
 
-typedef u32 (*chunk_init_callback)( world_chunk *Chunk, v3i Dim, v3i SrcToDest, u16 ColorIndex, v3 Period, s32 Amplitude, s64 zMin, chunk_dimension WorldChunkDim, void* UserData);
+typedef u32 (*chunk_init_callback)( world_chunk *Chunk, v3i Dim, v3i NoiseBasis, v3i SrcToDest, u16 ColorIndex, v3 Period, s32 Amplitude, s64 zMin, chunk_dimension WorldChunkDim, void* UserData);
 
 
 // NOTE(Jesse): Asserts are commented out for perf
@@ -3432,23 +3436,23 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOff
 }
 
 link_internal void
-InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
-                          thread_local_state *Thread,
-                          world_chunk *DestChunk,
-                          chunk_dimension WorldChunkDim,
-                          native_file *AssetFile,
+InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
+                           thread_local_state *Thread,
+                                  world_chunk *DestChunk,
+                                          v3i  WorldChunkDim,
+                                  native_file *AssetFile,
 
-                          v3  Period,
-                          s32 Amplititude,
-                          s32 zMin,
+                                          v3   Period,
+                                          s32  Amplititude,
+                                          s32  zMin,
 
-                          u16 Color,
+                                          u16  Color,
 
-                          world_chunk_mesh_bitfield MeshBit,
-                          chunk_init_flags Flags,
+                    world_chunk_mesh_bitfield  MeshBit,
+                             chunk_init_flags  Flags,
 
-                          void* UserData,
-                          b32 MakeExteriorFaces = False )
+                                         void *UserData,
+                                          b32  MakeExteriorFaces = False )
 {
   TIMED_FUNCTION();
 
@@ -3478,7 +3482,8 @@ InitializeChunkWithNoise( chunk_init_callback NoiseCallback,
 
   world_chunk *SyntheticChunk = AllocateWorldChunk(SynChunkP, SynChunkDim, Thread->TempMemory);
 
-  u32 SyntheticChunkSum = NoiseCallback( SyntheticChunk, SynChunkDim, -1*Global_ChunkApronMinDim,
+  v3i NoiseOrigin = -1*Global_ChunkApronMinDim + (WorldChunkDim*DestChunk->WorldP);
+  u32 SyntheticChunkSum = NoiseCallback( SyntheticChunk, SynChunkDim, NoiseOrigin, -1*Global_ChunkApronMinDim,
                                          Color, Period, Amplititude, zMin,
                                          WorldChunkDim, UserData );
 
