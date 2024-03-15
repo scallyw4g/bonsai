@@ -861,6 +861,28 @@ GetHotVoxelForFlood(engine_resources *Engine, world_edit_mode WorldEditMode, wor
 }
 
 link_internal v3i
+GetShapeDim(shape_layer *Layer)
+{
+  v3i Result = {};
+  switch (Layer->Type)
+  {
+    case ShapeType_None: { } break;
+    case ShapeType_Sphere:
+    {
+      // TODO(Jesse): This might need a +1 .. or even +2 and an offset somewhere else.. ?
+      Result = V3i(Layer->Sphere.Radius*2.f);
+    } break;
+
+    case ShapeType_Rect:
+    {
+      Result = V3i(GetDim(Layer->Rect.Region));
+    } break;
+  }
+
+  return Result;
+}
+
+link_internal v3i
 GetRequiredDimForLayer(v3i SelectionDim, brush_layer *Layer)
 {
   v3i Request = GetDim(Layer->Settings.Offset);
@@ -873,46 +895,11 @@ GetRequiredDimForLayer(v3i SelectionDim, brush_layer *Layer)
 
     case BrushLayerType_Shape:
     {
-      switch (Layer->Settings.Shape.Type)
-      {
-        case ShapeType_None: {} break;
-
-        case ShapeType_Sphere:
-        {
-          // TODO(Jesse): This might need a +1 ..
-          Request += s32(2.f*Layer->Settings.Shape.Sphere.Radius);
-        } break;
-
-        case ShapeType_Rect:
-        {
-          Request += V3i(GetDim(Layer->Settings.Shape.Rect.Region));
-        } break;
-      }
+      Request += GetShapeDim(&Layer->Settings.Shape);
     } break;
   }
 
   v3i Result = Max(V3i(0), Request);
-  return Result;
-}
-
-link_internal v3i
-GetShapeDim(shape_layer *Layer)
-{
-  v3i Result = {};
-  switch (Layer->Type)
-  {
-    case ShapeType_None: { } break;
-    case ShapeType_Sphere:
-    {
-      Result = V3i(Layer->Sphere.Radius*2.f);
-    } break;
-
-    case ShapeType_Rect:
-    {
-      Result = V3i(GetDim(Layer->Rect.Region));
-    } break;
-  }
-
   return Result;
 }
 
@@ -1074,8 +1061,7 @@ BrushSettingsForShapeBrush(engine_resources *Engine, window_layout *Window, shap
       r32 MaxSphereRadius = Min(Min(SelectionDim.x, SelectionDim.y), SelectionDim.z)/2.f;
       /* Layer->Sphere.Radius = Min(Layer->Sphere.Radius, MaxSphereRadius); */
       Layer->Sphere.Radius = MaxSphereRadius; //Min(Layer->Sphere.Radius, MaxSphereRadius);
-
-      Layer->Sphere.Location = Canonical_Position(V3(Layer->Sphere.Radius), {});
+      Layer->Sphere.Location = Canonical_Position(V3(MaxSphereRadius), {});
       DoEditorUi(Ui, Window, &Layer->Sphere, CSz("Settings"));
     } break;
   }
@@ -1186,7 +1172,6 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestC
   {
     case BrushLayerType_Shape:
     {
-      // @duplicated_shape_job_setup_code
       Shape.Type = world_update_op_shape_type(Settings->Shape.Type);
 
       switch (Settings->Shape.Type)
@@ -1820,68 +1805,61 @@ DoWorldEditor(engine_resources *Engine)
           } break;
 
           case WorldEdit_BrushType_Shape:
-          {
-            if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
-            {
-              // TODO(Jesse): Duplicate code .. idk if it's worth collapsing it, but it might be 
-              // @duplicated_shape_job_setup_code
-              world_edit_shape Shape = {};
-
-              // NOTE(Jesse): This is a bit of a bogus assertion because we should
-              // only ever modify the shape params by virtue of the naming convention..
-              // IDK if I care about having this at the cost of having to set it somewhere at startup
-              /* Assert(Editor->Shape.Settings.Type == BrushLayerType_Shape); */
-              switch (Editor->Shape.Settings.Shape.Type)
-              {
-                case ShapeType_None: { InvalidCodePath(); } break;
-
-                case ShapeType_Sphere:
-                {
-                  Shape.Type = type_world_update_op_shape_params_sphere;
-                  Shape.world_update_op_shape_params_sphere = Editor->Shape.Settings.Shape.Sphere;
-                  Shape.world_update_op_shape_params_sphere.Location = Canonicalize(World, Editor->SelectionRegion.Min + (GetDim(World, Editor->SelectionRegion)/2.f));
-                } break;
-
-                case ShapeType_Rect:
-                {
-                  Shape.Type = type_world_update_op_shape_params_rect;
-                  Shape.world_update_op_shape_params_rect = Editor->Shape.Settings.Shape.Rect;
-                } break;
-              }
-
-              QueueWorldUpdateForRegion(Engine, Editor->Params.Mode, Editor->Params.Modifier, &Shape, Editor->Shape.Settings.Color, Engine->WorldUpdateMemory);
-            }
-          } break;
-
           case WorldEdit_BrushType_Layered:
           case WorldEdit_BrushType_Noise:
           {
             if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
             {
               world_chunk *Chunk = 0;
-              v3i MinOffset = V3i(s32_MAX);
-              if (Editor->BrushType == WorldEdit_BrushType_Layered)
+              v3i Offset = V3i(s32_MAX);
+              switch (Editor->BrushType)
               {
-                Chunk = &Editor->LayeredBrushEditor.Preview.Chunk;
+                InvalidCase(WorldEdit_BrushType_Disabled);
+                InvalidCase(WorldEdit_BrushType_Selection);
+                InvalidCase(WorldEdit_BrushType_Single);
+                InvalidCase(WorldEdit_BrushType_Asset);
+                InvalidCase(WorldEdit_BrushType_Entity);
 
-                RangeIterator(LayerIndex, Editor->LayeredBrushEditor.LayerCount)
+                case WorldEdit_BrushType_Layered:
                 {
-                  brush_layer *Layer = Editor->LayeredBrushEditor.Layers + LayerIndex;
-                  MinOffset = Min(Layer->Settings.Offset.Min, MinOffset);
-                }
-              }
-              else if (Editor->BrushType == WorldEdit_BrushType_Noise)
-              {
-                Chunk = &Editor->Noise.Preview.Chunk;
-                MinOffset = Editor->Noise.Settings.Offset.Min;
-              }
-              else
-              {
-                InvalidCodePath();
+                  Chunk = &Editor->LayeredBrushEditor.Preview.Chunk;
+
+                  RangeIterator(LayerIndex, Editor->LayeredBrushEditor.LayerCount)
+                  {
+                    brush_layer *Layer = Editor->LayeredBrushEditor.Layers + LayerIndex;
+                    Offset = Min(Layer->Settings.Offset.Min, Offset);
+                  }
+                } break;
+
+                case WorldEdit_BrushType_Noise:
+                {
+                  Chunk = &Editor->Noise.Preview.Chunk;
+                  Offset = Editor->Noise.Settings.Offset.Min;
+                } break;
+
+                case WorldEdit_BrushType_Shape:
+                {
+                  Chunk = &Editor->Shape.Preview.Chunk;
+
+                  switch (Editor->Shape.Settings.Shape.Type)
+                  {
+                    case ShapeType_None: { InvalidCodePath(); } break;
+
+                    case ShapeType_Sphere:
+                    {
+                      Offset = V3i(V3(GetSelectionDim(World, Editor))/2.f - V3(Editor->Shape.Settings.Shape.Sphere.Radius));
+                    } break;
+
+                    case ShapeType_Rect:
+                    {
+                      Offset = {};
+                    } break;
+                  }
+                } break;
               }
 
               chunk_data D = {Chunk->Flags, Chunk->Dim, Chunk->Voxels, Chunk->VoxelLighting};
-              world_update_op_shape_params_chunk_data ChunkDataShape = { D, V3(MinOffset) + GetSimSpaceP(World, Editor->SelectionRegion.Min) };
+              world_update_op_shape_params_chunk_data ChunkDataShape = { D, V3(Offset) + GetSimSpaceP(World, Editor->SelectionRegion.Min) };
 
               world_edit_shape Shape =
               {

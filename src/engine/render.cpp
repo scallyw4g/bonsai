@@ -1280,6 +1280,7 @@ DrawEditorPreview(engine_resources *Engine, shader *Shader)
             {
               world_update_op_shape_params_sphere *Sphere = &Editor->Shape.Settings.Shape.Sphere;
               cp Location = Canonicalize(World, Editor->SelectionRegion.Min + (GetDim(World, Editor->SelectionRegion)/2.f) - V3(Sphere->Radius));
+              Location.Offset = Floor(Location.Offset);
               Basis = GetRenderP(Engine, Location);
             } break;
           }
