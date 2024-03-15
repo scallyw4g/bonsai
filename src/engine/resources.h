@@ -140,6 +140,8 @@ GetCameraGhost(engine_resources *Engine)
   UNPACK_DATA_RESOURCES(Res)         \
   UNPACK_GRAPHICS_RESOURCES(Res)
 
+ // TODO(Jesse): make this unpack DT
+ // r32                        dt            = Plat->dt;
 #define UNPACK_DATA_RESOURCES(Res)                                    \
   platform                  *Plat          = &(Res)->Stdlib.Plat;     \
   world                     *World         =  Res->World;             \

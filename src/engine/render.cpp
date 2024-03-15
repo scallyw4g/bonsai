@@ -1206,18 +1206,9 @@ DoWorldChunkStuff()
 
 
 link_internal void
-DrawWorldToGBuffer(engine_resources *Engine, v2i ApplicationResolution)
+DrawWorld(engine_resources *Engine, v2i ApplicationResolution)
 {
-  TIMED_FUNCTION();
-
   UNPACK_ENGINE_RESOURCES(Engine);
-
-  v3i Radius = World->VisibleRegion/2;
-  v3i Min = World->Center - Radius;
-  v3i Max = World->Center + Radius;
-
-  SetupGBufferShader(ApplicationResolution, Graphics);
-
   RangeIterator_t(u32, ChunkIndex, World->HashSize)
   {
     world_chunk *Chunk = World->ChunkHash[ChunkIndex];
@@ -1233,7 +1224,7 @@ DrawWorldToGBuffer(engine_resources *Engine, v2i ApplicationResolution)
         // update job gets pushed is more straight-forward?
 
         SyncGpuBuffersImmediate(Engine, &Chunk->Meshes);
-        v3 Basis = GetRenderP(GetEngineResources(), Chunk->WorldP);
+        v3 Basis = GetRenderP(Engine, Chunk->WorldP);
         DrawLod(Engine, &Graphics->gBuffer->gBufferShader, &Chunk->Meshes, 0.f, Basis);
 
 #if 0
@@ -1251,14 +1242,84 @@ DrawWorldToGBuffer(engine_resources *Engine, v2i ApplicationResolution)
       }
     }
   }
+}
 
-  DrawEntitiesToGBuffer( ApplicationResolution, EntityTable, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, Graphics, World, Plat->dt);
+link_internal void
+DrawEditorPreview(engine_resources *Engine)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  world_chunk *Chunk = {};
+  v3 Basis = {};
+
+  switch (Editor->Tool)
+  {
+    case WorldEdit_Tool_Brush:
+    {
+      switch (Editor->BrushType)
+      {
+        case WorldEdit_BrushType_Noise:
+        {
+          Chunk = &Editor->Noise.Preview.Chunk;
+          Basis = GetRenderP(Engine, Editor->SelectionRegion.Min);
+        } break;
+
+        case WorldEdit_BrushType_Layered:
+        {
+          Chunk = &Editor->LayeredBrushEditor.Preview.Chunk;
+          Basis = GetRenderP(Engine, Editor->SelectionRegion.Min);
+        } break;
+
+        case WorldEdit_BrushType_Shape:
+        {
+          Chunk = &Editor->LayeredBrushEditor.Preview.Chunk;
+          Basis = GetRenderP(Engine, Editor->SelectionRegion.Min); // TODO(Jesse): ?
+        } break;
+
+        default: {} break;
+      }
+    } break;
+
+    default: {} break;
+  }
+
+  if (Chunk)
+  {
+    SyncGpuBuffersImmediate(Engine, &Chunk->Meshes);
+    DrawLod(Engine, &Graphics->gBuffer->gBufferShader, &Chunk->Meshes, 0.f, Basis);
+  }
+}
+
+link_internal void
+DrawStuffToGBufferTextures(engine_resources *Engine, v2i ApplicationResolution)
+{
+  TIMED_FUNCTION();
+
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+
+  v3i Radius = World->VisibleRegion/2;
+  v3i Min = World->Center - Radius;
+  v3i Max = World->Center + Radius;
+
+  SetupGBufferShader(ApplicationResolution, Graphics);
+
+  DrawWorld(Engine, ApplicationResolution);
+
+  DrawEditorPreview(Engine);
+
+  { // NOTE(Jesse): Don't draw the grid on entities; it looks fucky if they're rotated.
+    BindUniform(&Graphics->gBuffer->gBufferShader, "DrawMajorGrid", False);
+    BindUniform(&Graphics->gBuffer->gBufferShader, "DrawMinorGrid", False);
+    r32 dt = Plat->dt;
+    DrawEntities(&Graphics->gBuffer->gBufferShader, EntityTable, &GpuMap->Buffer, 0, Graphics, World, dt);
+  }
 
   TeardownGBufferShader(Graphics);
 }
 
 link_internal void
-DrawWorldToShadowMap(v2i ShadowMapResolution, engine_resources *Engine)
+DrawWorldAndEntitiesToShadowMap(v2i ShadowMapResolution, engine_resources *Engine)
 {
   TIMED_FUNCTION();
 

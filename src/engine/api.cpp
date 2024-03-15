@@ -394,9 +394,13 @@ Bonsai_Render(engine_resources *Resources)
   EngineDebug->Render.BytesSolidGeoLastFrame = GpuMap->Buffer.At;
   EngineDebug->Render.BytesTransGeoLastFrame = Graphics->Transparency.GpuBuffer.Buffer.At;
 
-  DrawWorldToGBuffer(Resources, GetApplicationResolution(&Resources->Settings));
+  /* DrawWorldToGBuffer(Resources, GetApplicationResolution(&Resources->Settings)); */
+  /* DrawEditorChunkPreviewToGBuffer(); */
 
-  DrawWorldToShadowMap(GetShadowMapResolution(&Resources->Settings), Resources);
+  // Editor preview, World, Entities
+  DrawStuffToGBufferTextures(Resources, GetApplicationResolution(&Resources->Settings));
+
+  DrawWorldAndEntitiesToShadowMap(GetShadowMapResolution(&Resources->Settings), Resources);
 
   // TODO(Jesse): Move into engine debug
   DebugHighlightWorldChunkBasedOnState(Graphics, EngineDebug->PickedChunk, &GpuMap->Buffer);

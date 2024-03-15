@@ -1386,11 +1386,11 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, w
     {
       switch (WorldEditBrushType)
       {
-        case WorldEdit_BrushType_Disabled: {} break;
+        case WorldEdit_BrushType_Disabled:  {} break;
         case WorldEdit_BrushType_Selection: {} break;
-        case WorldEdit_BrushType_Single: {} break;
-        case WorldEdit_BrushType_Asset: {} break;
-        case WorldEdit_BrushType_Entity: {} break;
+        case WorldEdit_BrushType_Single:    {} break;
+        case WorldEdit_BrushType_Asset:     {} break;
+        case WorldEdit_BrushType_Entity:    {} break;
 
         case WorldEdit_BrushType_Noise:
         {
@@ -1398,6 +1398,8 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, w
           PushWindowStart(Ui, &Window);
             DoSettingsForBrush(Engine, &Editor->Noise, &Window);
           PushWindowEnd(Ui, &Window);
+
+          /* DrawPreviewChunkToWorld(Engine, &Editor->Noise.Preview); */
         } break;
 
         case WorldEdit_BrushType_Shape:
@@ -1406,11 +1408,14 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, w
           PushWindowStart(Ui, &Window);
             DoSettingsForBrush(Engine, &Editor->Shape, &Window);
           PushWindowEnd(Ui, &Window);
+
+          /* DrawPreviewChunkToWorld(Engine, &Editor->Shape.Preview); */
         } break;
 
         case WorldEdit_BrushType_Layered:
         {
           BrushSettingsForLayeredBrush(Engine, &Window);
+          /* DrawPreviewChunkToWorld(Engine, &Editor->LayeredBrushEditor.Preview); */
         } break;
 
       }
@@ -1838,6 +1843,7 @@ DoWorldEditor(engine_resources *Engine)
                 {
                   Shape.Type = type_world_update_op_shape_params_sphere;
                   Shape.world_update_op_shape_params_sphere = Editor->Shape.Settings.Shape.Sphere;
+                  Shape.world_update_op_shape_params_sphere.Location = Editor->SelectionRegion.Min;
                 } break;
 
                 case ShapeType_Rect:

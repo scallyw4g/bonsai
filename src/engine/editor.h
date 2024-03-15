@@ -721,7 +721,7 @@ struct world_update_op_shape_params_chunk_data
 
 struct world_update_op_shape_params_sphere
 {
-  cp Location;
+  cp  Location;
   f32 Radius = 10.f;
 };
 
