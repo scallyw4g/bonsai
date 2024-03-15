@@ -968,10 +968,23 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
         shape_layer *Shape = &Settings->Shape;
         switch (Shape->Type)
         {
-          case ShapeType_None:
+          case ShapeType_None: {} break;
+
           case ShapeType_Rect:
+          {
+            Shape->Rect.Region = RectMinDim({}, V3(SelectionDim));
+            ApplyBrushLayer(Engine, Layer, Chunk, Settings->Offset.Min);
+            FinalizeChunkInitialization(Chunk);
+            QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk);
+          } break;
+
           case ShapeType_Sphere:
           {
+            // NOTE(Jesse): Constrain maximum sphere radius to minimum selection dimension
+            r32 MaxSphereRadius = Min(Min(SelectionDim.x, SelectionDim.y), SelectionDim.z)/2.f;
+            Shape->Sphere.Radius = MaxSphereRadius;
+            Shape->Sphere.Location = Canonical_Position(V3(MaxSphereRadius), {});
+
             ApplyBrushLayer(Engine, Layer, Chunk, Settings->Offset.Min);
             FinalizeChunkInitialization(Chunk);
             QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk);
@@ -1051,17 +1064,11 @@ BrushSettingsForShapeBrush(engine_resources *Engine, window_layout *Window, shap
 
     case ShapeType_Rect:
     {
-      Layer->Rect.Region = RectMinDim({}, SelectionDim);
       DoEditorUi(Ui, Window, &Layer->Rect, CSz("Settings"));
     } break;
 
     case ShapeType_Sphere:
     {
-      // NOTE(Jesse): Constrain maximum sphere radius to minimum selection dimension
-      r32 MaxSphereRadius = Min(Min(SelectionDim.x, SelectionDim.y), SelectionDim.z)/2.f;
-      /* Layer->Sphere.Radius = Min(Layer->Sphere.Radius, MaxSphereRadius); */
-      Layer->Sphere.Radius = MaxSphereRadius; //Min(Layer->Sphere.Radius, MaxSphereRadius);
-      Layer->Sphere.Location = Canonical_Position(V3(MaxSphereRadius), {});
       DoEditorUi(Ui, Window, &Layer->Sphere, CSz("Settings"));
     } break;
   }
