@@ -12,7 +12,7 @@
   BuildSingleExample examples/blank_project \
   BuildExecutables \
   BuildDebugSystem \
-  # BuildSingleExample examples/terrain_gen \
+  BuildSingleExample examples/terrain_gen \
   # BuildSingleExample examples/turn_based \
   # BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
   # BuildSingleExample examples/the_wanderer \

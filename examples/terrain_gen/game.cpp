@@ -7,20 +7,12 @@
 
 link_internal u32
 Terrain_Checkerboard( world_chunk *Chunk,
-
-                      v3i Dim,
-                      v3i NoiseBasis,
-                      v3i SrcToDest,
-
-                      u16 ColorIndex,
-
-                      v3 Period,
-                      s32 Amplitude,
-                      s64 zMin,
-
-                      chunk_dimension WorldChunkDim,
-                      void *Ignored )
+                              v3i  NoiseBasis,
+                             void *NoiseParams,
+                             void *UserData )
 {
+  UNPACK_NOISE_PARAMS(NoiseParams);
+
   u32 Result = 0;
 
   auto AbsX = Abs(Chunk->WorldP.x);
@@ -51,25 +43,18 @@ Terrain_Checkerboard( world_chunk *Chunk,
 
 link_internal u32
 GrassyIslandTerrain( world_chunk *Chunk,
-                     v3i Dim,
-                     v3i NoiseBasis,
-                     v3i SrcToDest,
-                     u16 ColorIndex,
-
-                     v3 IgnoredPeriod,
-                     s32 IgnoredAmplitude,
-
-                     s64 zMin,
-                     chunk_dimension WorldChunkDim,
-                     void *OctavesIn )
+                              v3i  NoiseBasis,
+                             void *NoiseParams,
+                             void *UserData )
 {
   TIMED_FUNCTION();
+  UNPACK_NOISE_PARAMS(NoiseParams);
   u32 ChunkSum = 0;
 
   s32 MinZ = Chunk->WorldP.z*WorldChunkDim.z;
   s32 MaxZ = MinZ+WorldChunkDim.z ;
 
-  octave_buffer *OctaveBuf = (octave_buffer*)OctavesIn;
+  octave_buffer *OctaveBuf = (octave_buffer*)UserData;
   u32 OctaveCount = OctaveBuf->Count;
 
   for ( s32 z = 0; z < Dim.z; ++ z)
@@ -262,25 +247,19 @@ GrassyIslandTerrain( world_chunk *Chunk,
 
 link_internal u32
 WarpedTerrain( world_chunk *Chunk,
-               v3i Dim,
-               v3i NoiseBasis,
-               v3i SrcToDest,
-               u16 ColorIndex,
-
-               v3 IgnoredPeriod,
-               s32 IgnoredAmplitude,
-
-               s64 zMin,
-               chunk_dimension WorldChunkDim,
-               void *OctavesIn )
+                       v3i  NoiseBasis,
+                      void *NoiseParams,
+                      void *UserData )
 {
   TIMED_FUNCTION();
+  UNPACK_NOISE_PARAMS(NoiseParams);
+
   u32 ChunkSum = 0;
 
   s32 MinZ = Chunk->WorldP.z*WorldChunkDim.z;
   s32 MaxZ = MinZ+WorldChunkDim.z ;
 
-  octave_buffer *OctaveBuf = (octave_buffer*)OctavesIn;
+  octave_buffer *OctaveBuf = (octave_buffer*)UserData;
   u32 OctaveCount = OctaveBuf->Count;
 
   for ( s32 z = 0; z < Dim.z; ++ z)
@@ -453,7 +432,8 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             s32 Amplititude = 5;
             s32 StartingZDepth = 0;
             u16 Color = GRASS_GREEN;
-            InitializeChunkWithNoise( Terrain_Perlin2D, Thread, Chunk, Chunk->Dim, 0, Period, Amplititude, StartingZDepth, Color, MeshBit_Lod0, ChunkInitFlag_Noop, 0);
+            u32 Octaves = 1;
+            InitializeChunkWithNoise( Terrain_Perlin2D, Thread, Chunk, Chunk->Dim, 0, Period, Amplititude, StartingZDepth, Color, MeshBit_Lod0, ChunkInitFlag_Noop, &Octaves);
           } break;
 
           case TerrainGenType_Perlin3D:
