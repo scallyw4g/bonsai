@@ -1057,18 +1057,23 @@ BrushSettingsForShapeBrush(engine_resources *Engine, window_layout *Window, shap
 
   DoEditorUi(Ui, Window, &Layer->Type, CSz("ShapeType"));
 
+  v3 SelectionDim = GetDim(GetSelectionRect(World, Editor));
   switch (Layer->Type)
   {
     case ShapeType_None: { } break;
 
     case ShapeType_Rect:
     {
-      Layer->Rect.Region = GetSelectionRect(World, Editor);
+      Layer->Rect.Region = RectMinDim({}, SelectionDim);
       DoEditorUi(Ui, Window, &Layer->Rect, CSz("Settings"));
     } break;
 
     case ShapeType_Sphere:
     {
+      // NOTE(Jesse): Constrain maximum sphere radius to minimum selection dimension
+      r32 MaxSphereRadius = Min(Min(SelectionDim.x, SelectionDim.y), SelectionDim.z)/2.f;
+      Layer->Sphere.Radius = Min(Layer->Sphere.Radius, MaxSphereRadius);
+
       Layer->Sphere.Location = Canonical_Position(V3(Layer->Sphere.Radius), {});
       DoEditorUi(Ui, Window, &Layer->Sphere, CSz("Settings"));
     } break;
