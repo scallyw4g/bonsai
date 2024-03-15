@@ -293,7 +293,6 @@ Bonsai_Simulate(engine_resources *Resources)
     ProjectionMatrix(Camera, Plat->ScreenDim) *
     ViewMatrix(World->ChunkDim, Camera);
 
-
 #if BONSAI_DEBUG_SYSTEM_API
   Debug_DoWorldChunkPicking(Resources);
 #endif

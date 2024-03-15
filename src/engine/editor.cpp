@@ -1072,7 +1072,8 @@ BrushSettingsForShapeBrush(engine_resources *Engine, window_layout *Window, shap
     {
       // NOTE(Jesse): Constrain maximum sphere radius to minimum selection dimension
       r32 MaxSphereRadius = Min(Min(SelectionDim.x, SelectionDim.y), SelectionDim.z)/2.f;
-      Layer->Sphere.Radius = Min(Layer->Sphere.Radius, MaxSphereRadius);
+      /* Layer->Sphere.Radius = Min(Layer->Sphere.Radius, MaxSphereRadius); */
+      Layer->Sphere.Radius = MaxSphereRadius; //Min(Layer->Sphere.Radius, MaxSphereRadius);
 
       Layer->Sphere.Location = Canonical_Position(V3(Layer->Sphere.Radius), {});
       DoEditorUi(Ui, Window, &Layer->Sphere, CSz("Settings"));
@@ -1398,8 +1399,6 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, w
           PushWindowStart(Ui, &Window);
             DoSettingsForBrush(Engine, &Editor->Noise, &Window);
           PushWindowEnd(Ui, &Window);
-
-          /* DrawPreviewChunkToWorld(Engine, &Editor->Noise.Preview); */
         } break;
 
         case WorldEdit_BrushType_Shape:
@@ -1408,14 +1407,11 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, w
           PushWindowStart(Ui, &Window);
             DoSettingsForBrush(Engine, &Editor->Shape, &Window);
           PushWindowEnd(Ui, &Window);
-
-          /* DrawPreviewChunkToWorld(Engine, &Editor->Shape.Preview); */
         } break;
 
         case WorldEdit_BrushType_Layered:
         {
           BrushSettingsForLayeredBrush(Engine, &Window);
-          /* DrawPreviewChunkToWorld(Engine, &Editor->LayeredBrushEditor.Preview); */
         } break;
 
       }
@@ -1825,7 +1821,7 @@ DoWorldEditor(engine_resources *Engine)
 
           case WorldEdit_BrushType_Shape:
           {
-            if (Input->LMB.Clicked && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
+            if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
             {
               // TODO(Jesse): Duplicate code .. idk if it's worth collapsing it, but it might be 
               // @duplicated_shape_job_setup_code
@@ -1843,7 +1839,7 @@ DoWorldEditor(engine_resources *Engine)
                 {
                   Shape.Type = type_world_update_op_shape_params_sphere;
                   Shape.world_update_op_shape_params_sphere = Editor->Shape.Settings.Shape.Sphere;
-                  Shape.world_update_op_shape_params_sphere.Location = Editor->SelectionRegion.Min;
+                  Shape.world_update_op_shape_params_sphere.Location = Canonicalize(World, Editor->SelectionRegion.Min + (GetDim(World, Editor->SelectionRegion)/2.f));
                 } break;
 
                 case ShapeType_Rect:

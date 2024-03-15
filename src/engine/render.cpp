@@ -1245,7 +1245,7 @@ DrawWorld(engine_resources *Engine, v2i ApplicationResolution)
 }
 
 link_internal void
-DrawEditorPreview(engine_resources *Engine)
+DrawEditorPreview(engine_resources *Engine, shader *Shader)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -1264,16 +1264,31 @@ DrawEditorPreview(engine_resources *Engine)
           Basis = GetRenderP(Engine, Editor->SelectionRegion.Min);
         } break;
 
+        case WorldEdit_BrushType_Shape:
+        {
+          Chunk = &Editor->Shape.Preview.Chunk;
+          switch (Editor->Shape.Settings.Shape.Type)
+          {
+            case ShapeType_None: {} break;
+
+            case ShapeType_Rect:
+            {
+              Basis = GetRenderP(Engine, Editor->SelectionRegion.Min);
+            } break;
+
+            case ShapeType_Sphere:
+            {
+              world_update_op_shape_params_sphere *Sphere = &Editor->Shape.Settings.Shape.Sphere;
+              cp Location = Canonicalize(World, Editor->SelectionRegion.Min + (GetDim(World, Editor->SelectionRegion)/2.f) - V3(Sphere->Radius));
+              Basis = GetRenderP(Engine, Location);
+            } break;
+          }
+        } break;
+
         case WorldEdit_BrushType_Layered:
         {
           Chunk = &Editor->LayeredBrushEditor.Preview.Chunk;
           Basis = GetRenderP(Engine, Editor->SelectionRegion.Min);
-        } break;
-
-        case WorldEdit_BrushType_Shape:
-        {
-          Chunk = &Editor->LayeredBrushEditor.Preview.Chunk;
-          Basis = GetRenderP(Engine, Editor->SelectionRegion.Min); // TODO(Jesse): ?
         } break;
 
         default: {} break;
@@ -1286,7 +1301,7 @@ DrawEditorPreview(engine_resources *Engine)
   if (Chunk)
   {
     SyncGpuBuffersImmediate(Engine, &Chunk->Meshes);
-    DrawLod(Engine, &Graphics->gBuffer->gBufferShader, &Chunk->Meshes, 0.f, Basis);
+    DrawLod(Engine, Shader, &Chunk->Meshes, 0.f, Basis);
   }
 }
 
@@ -1306,13 +1321,14 @@ DrawStuffToGBufferTextures(engine_resources *Engine, v2i ApplicationResolution)
 
   DrawWorld(Engine, ApplicationResolution);
 
-  DrawEditorPreview(Engine);
+  shader *Shader = &Graphics->gBuffer->gBufferShader;
+  DrawEditorPreview(Engine, Shader);
 
   { // NOTE(Jesse): Don't draw the grid on entities; it looks fucky if they're rotated.
-    BindUniform(&Graphics->gBuffer->gBufferShader, "DrawMajorGrid", False);
-    BindUniform(&Graphics->gBuffer->gBufferShader, "DrawMinorGrid", False);
+    BindUniform(Shader, "DrawMajorGrid", False);
+    BindUniform(Shader, "DrawMinorGrid", False);
     r32 dt = Plat->dt;
-    DrawEntities(&Graphics->gBuffer->gBufferShader, EntityTable, &GpuMap->Buffer, 0, Graphics, World, dt);
+    DrawEntities(Shader, EntityTable, &GpuMap->Buffer, 0, Graphics, World, dt);
   }
 
   TeardownGBufferShader(Graphics);
@@ -1344,6 +1360,8 @@ DrawWorldAndEntitiesToShadowMap(v2i ShadowMapResolution, engine_resources *Engin
   GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]);
 
   GL.Disable(GL_CULL_FACE);
+
+  DrawEditorPreview(Engine, &SG->DepthShader);
 
   DrawEntities( &SG->DepthShader, EntityTable, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, Graphics, World, Plat->dt);
 
