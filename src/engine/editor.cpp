@@ -1181,6 +1181,7 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestC
         case ShapeType_Sphere:
         {
           Shape.world_update_op_shape_params_sphere = Settings->Shape.Sphere;
+          Shape.world_update_op_shape_params_sphere.Location.Offset = (GetSelectionDim(World, Editor)/2.f);
         } break;
 
         case ShapeType_Rect:
