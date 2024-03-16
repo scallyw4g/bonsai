@@ -1231,25 +1231,42 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestC
 
 }
 
+link_internal v3i
+GetSmallestMinOffset(layered_brush_editor *LayeredBrush, v3i *LargestLayerDim)
+{
+  v3i SmallestMinOffset = V3i(s32_MAX);
+
+  brush_layer *Layers =  LayeredBrush->Layers;
+  RangeIterator(LayerIndex, LayeredBrush->LayerCount)
+  {
+    brush_layer *Layer = Layers + LayerIndex;
+
+    if (LargestLayerDim) { v3i LayerDim = GetLayerDim(Layer); *LargestLayerDim = Max(LayerDim, *LargestLayerDim); }
+    SmallestMinOffset = Min(Layer->Settings.Offset.Min, SmallestMinOffset);
+  }
+
+  return SmallestMinOffset;
+}
+
 link_internal void
 BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSettingsWindow)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  layered_brush_editor *LayeredBrushEditor = &Editor->LayeredBrushEditor;
-  brush_layer          *Layers             =  LayeredBrushEditor->Layers;
+  layered_brush_editor *LayeredBrush = &Editor->LayeredBrushEditor;
+  brush_layer          *Layers             =  LayeredBrush->Layers;
 
   {
     local_persist window_layout PreviewWindow = WindowLayout("Preview", WindowLayoutFlag_Align_Bottom);
     PushWindowStart(Ui, &PreviewWindow);
-      RenderAndInteractWithThumbnailTexture(Ui, &PreviewWindow, "noise preview interaction", &LayeredBrushEditor->Preview.Thumbnail);
+      RenderAndInteractWithThumbnailTexture(Ui, &PreviewWindow, "noise preview interaction", &LayeredBrush->Preview.Thumbnail);
     PushWindowEnd(Ui, &PreviewWindow);
   }
 
 
   b32 AnyBrushSettingsUpdated = False;
   {
-    RangeIterator(LayerIndex, LayeredBrushEditor->LayerCount)
+    RangeIterator(LayerIndex, LayeredBrush->LayerCount)
     {
       brush_layer *Layer = Layers + LayerIndex;
       AnyBrushSettingsUpdated |= CheckForChangesAndUpdate_ThenRenderToPreviewTexture(Engine, Layer);
@@ -1263,7 +1280,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
     if (Button(Ui, CSz("Export"), UiId(BrushSettingsWindow, "brush export", 0u)))
     {
       u8_cursor_block_array OutputStream = {};
-      Serialize(&OutputStream, LayeredBrushEditor);
+      Serialize(&OutputStream, LayeredBrush);
       native_file F = OpenFile("brushes/temp.brush", FilePermission_Write);
         if (WriteToFile(&F, &OutputStream) == False) { SoftError("Could not export brush."); }
       CloseFile(&F);
@@ -1288,12 +1305,12 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
     else
     {
       PushNewRow(Ui);
-      DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrushEditor->LayerCount, CSz("Layer Count"), &DefaultUiRenderParams_Generic);
+      DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->LayerCount, CSz("Layer Count"), &DefaultUiRenderParams_Generic);
       PushNewRow(Ui);
       PushNewRow(Ui);
 
       PushTableStart(Ui);
-      RangeIterator(LayerIndex, LayeredBrushEditor->LayerCount)
+      RangeIterator(LayerIndex, LayeredBrush->LayerCount)
       {
         brush_layer *Layer = Layers + LayerIndex;
 
@@ -1306,7 +1323,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
       PushTableEnd(Ui);
 
       {
-        world_chunk *Root_LayeredBrushPreview = &LayeredBrushEditor->Preview.Chunk;
+        world_chunk *Root_LayeredBrushPreview = &LayeredBrush->Preview.Chunk;
         //
         // TODO(Jesse)(async, speed): It would be kinda nice if this ran async..
         if (AnyBrushSettingsUpdated)
@@ -1318,16 +1335,8 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
           // computation is simpler than if we used the selection box directly
           // .. I claim ..
           v3i LargestLayerDim = GetSelectionDim(World, Editor);
-          v3i SmallestMinOffset = V3i(s32_MAX);
-          RangeIterator(LayerIndex, LayeredBrushEditor->LayerCount)
-          {
-            brush_layer *Layer = Layers + LayerIndex;
+          v3i SmallestMinOffset = GetSmallestMinOffset(LayeredBrush, &LargestLayerDim);
 
-            v3i LayerDim = GetLayerDim(Layer);
-            LargestLayerDim = Max(LayerDim, LargestLayerDim);
-
-            SmallestMinOffset = Min(Layer->Settings.Offset.Min, SmallestMinOffset);
-          }
 
 
           // Clear the voxels if the size didn't change, otherwise realloc
@@ -1342,7 +1351,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
             AllocateWorldChunk(Root_LayeredBrushPreview, {}, LargestLayerDim, Editor->Memory);
           }
 
-          RangeIterator(LayerIndex, LayeredBrushEditor->LayerCount)
+          RangeIterator(LayerIndex, LayeredBrush->LayerCount)
           {
             brush_layer *Layer = Layers + LayerIndex;
             ApplyBrushLayer(Engine, Layer, Root_LayeredBrushPreview, SmallestMinOffset);
@@ -1353,7 +1362,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         }
 
         SyncGpuBuffersImmediate(Engine, &Root_LayeredBrushPreview->Meshes);
-        RenderToTexture(Engine, &LayeredBrushEditor->Preview.Thumbnail, &Root_LayeredBrushPreview->Meshes, Root_LayeredBrushPreview->Dim/-2.f);
+        RenderToTexture(Engine, &LayeredBrush->Preview.Thumbnail, &Root_LayeredBrushPreview->Meshes, Root_LayeredBrushPreview->Dim/-2.f);
       }
     }
     PushWindowEnd(Ui, BrushSettingsWindow);

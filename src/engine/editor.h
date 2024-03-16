@@ -939,3 +939,6 @@ GetHotVoxelForFlood(engine_resources *Engine, world_edit_mode WorldEditMode, wor
 
 link_internal void
 ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestChunk, v3i SmallestMinOffset);
+
+link_internal v3i
+GetSmallestMinOffset(layered_brush_editor *LayeredBrush, v3i *LargestLayerDim = 0);
