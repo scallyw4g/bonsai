@@ -1240,7 +1240,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
   brush_layer          *Layers             =  LayeredBrushEditor->Layers;
 
   {
-    local_persist window_layout PreviewWindow = WindowLayout("Preview", WindowLayoutFlag_Align_Right);
+    local_persist window_layout PreviewWindow = WindowLayout("Preview", WindowLayoutFlag_Align_Bottom);
     PushWindowStart(Ui, &PreviewWindow);
       RenderAndInteractWithThumbnailTexture(Ui, &PreviewWindow, "noise preview interaction", &LayeredBrushEditor->Preview.Thumbnail);
     PushWindowEnd(Ui, &PreviewWindow);

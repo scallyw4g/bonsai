@@ -343,13 +343,14 @@ ClearFramebuffers(graphics *Graphics, render_entity_to_texture_group *RTTGroup)
 {
   TIMED_FUNCTION();
 
+  GL.ClearColor(Graphics->SkyColor.r, Graphics->SkyColor.g, Graphics->SkyColor.b, 1.f);
+  GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->gBuffer->FBO.ID);
+  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
   SetDefaultFramebufferClearColors();
 
   /* GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID); */
   /* GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
-
-  GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->gBuffer->FBO.ID);
-  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName);
   GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
