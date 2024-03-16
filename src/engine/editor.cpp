@@ -1194,6 +1194,9 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestC
         case ShapeType_Rect:
         {
           Shape.world_update_op_shape_params_rect = Settings->Shape.Rect;
+
+          Shape.world_update_op_shape_params_rect.Region.Min -= V3(SmallestMinOffset);
+          Shape.world_update_op_shape_params_rect.Region.Max -= V3(SmallestMinOffset);
         } break;
       }
 
