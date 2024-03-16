@@ -1289,8 +1289,17 @@ DrawEditorPreview(engine_resources *Engine, shader *Shader)
 
         case WorldEdit_BrushType_Layered:
         {
-          Chunk = &Editor->LayeredBrushEditor.Preview.Chunk;
-          Basis = GetRenderP(Engine, Editor->SelectionRegion.Min);
+          layered_brush_editor *LayeredBrushEditor = &Editor->LayeredBrushEditor;
+          brush_layer          *Layers             =  LayeredBrushEditor->Layers;
+          v3i SmallestMinOffset = V3i(s32_MAX);
+          RangeIterator(LayerIndex, LayeredBrushEditor->LayerCount)
+          {
+            brush_layer *Layer = Layers + LayerIndex;
+            SmallestMinOffset = Min(Layer->Settings.Offset.Min, SmallestMinOffset);
+          }
+
+          Chunk = &LayeredBrushEditor->Preview.Chunk;
+          Basis = V3(SmallestMinOffset) + GetRenderP(Engine, Editor->SelectionRegion.Min);
         } break;
 
         default: {} break;
