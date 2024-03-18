@@ -572,6 +572,7 @@ enum world_edit_mode
   WorldEdit_Mode_Attach,
   WorldEdit_Mode_Remove,
   WorldEdit_Mode_Paint,
+  WorldEdit_Mode_Disabled, // Useful for turning the layer off
 };
 
 // TODO(Jesse): Rename to reflect that it's the iteration pattern ..?
@@ -811,7 +812,32 @@ poof(do_editor_ui_for_radio_enum(brush_layer_type))
 #include <generated/do_editor_ui_for_radio_enum_brush_layer_type.h>
 
 // TODO(Jesse): Rename to `brush` ..?
-struct brush_settings
+struct brush_settings poof(@version(1))
+{
+  brush_layer_type Type;
+
+  noise_layer Noise;
+  shape_layer Shape;
+
+  //
+  // Common across brush types
+  //
+  world_edit_mode          Mode;
+  world_edit_mode_modifier Modifier;
+  s32 Iterations = 1; // NOTE(Jesse): How many times to do the filter.
+
+  // NOTE(Jesse): This is the relative offset from the base selection.
+  // Used to inflate or contract the area affected by the brush.
+  rect3i Offset;
+
+  v3i NoiseBasisOffset;
+
+  u16 Color = 1; // Default to white
+};
+poof(are_equal(brush_settings))
+#include <generated/are_equal_brush_settings.h>
+
+struct brush_settings_0
 {
   brush_layer_type Type;
 
@@ -831,8 +857,23 @@ struct brush_settings
 
   u16 Color = 1; // Default to white
 };
-poof(are_equal(brush_settings))
-#include <generated/are_equal_brush_settings.h>
+
+poof(
+  func default_marshal(struct_t) @code_fragment
+  {
+    struct_t.map(member)
+    {
+      Live->member.name = Stored->member.name;
+    }
+  }
+)
+
+link_internal void
+Marshal(brush_settings_0 *Stored, brush_settings *Live)
+{
+  poof(default_marshal(brush_settings_0))
+#include <generated/default_marshal_brush_settings_0.h>
+}
 
 // TODO(Jesse): Rename to `brush` ..?
 struct brush_layer
@@ -942,3 +983,5 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestC
 
 link_internal v3i
 GetSmallestMinOffset(layered_brush_editor *LayeredBrush, v3i *LargestLayerDim = 0);
+
+

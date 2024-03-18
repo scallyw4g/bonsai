@@ -113,6 +113,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
       
       DoEditorUi(Ui,
         Window,
+&Element->NoiseBasisOffset,
+        CSz("NoiseBasisOffset"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
 &Element->Color,
         CSz("Color"),
         Params

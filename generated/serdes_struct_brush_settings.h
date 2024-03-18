@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:500:0
+// src/engine/serdes.cpp:502:0
 
 link_internal bonsai_type_info
 TypeInfo(brush_settings *Ignored)
@@ -6,7 +6,7 @@ TypeInfo(brush_settings *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("brush_settings");
-  Result.Version = 0 ;
+  Result.Version =1 ;
 
   /* type.map(member) */
   /* { */
@@ -29,7 +29,10 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings *BaseElement, umm Count =
 
   b32 Result = True;
 
-  
+  Upsert(TypeInfo(BaseElement), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
+  u64 VersionNumber =1;
+  Serialize(Bytes, &VersionNumber);
+
 
   RangeIterator_t(umm, ElementIndex, Count)
   {
@@ -73,6 +76,12 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings *BaseElement, umm Count =
 
 
 
+    Result &= Serialize(Bytes, &Element->NoiseBasisOffset);
+
+
+
+
+
     Result &= Serialize(Bytes, &Element->Color);
 
     
@@ -90,6 +99,28 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_arena *Memory);
 
 
+link_internal b32
+DeserializeVersioned(u8_cursor *Bytes, brush_settings *Element, bonsai_type_info *TypeInfo, memory_arena *Memory)
+{
+  Assert(TypeInfo->Version <=1);
+
+  b32 Result = True;
+
+  if (TypeInfo->Version == 0)
+  {
+    brush_settings_0 T0 = {};
+    Result &= Deserialize(Bytes, &T0, Memory);
+    Marshal(&T0, Element);
+  }
+
+
+  if (TypeInfo->Version ==1)
+  {
+    Result &= DeserializeCurrentVersion(Bytes, Element, Memory);
+  }
+
+  return Result;
+}
 
 
 link_internal b32
@@ -145,6 +176,14 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_aren
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->NoiseBasisOffset, Memory);
+
+
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Color, Memory);
 
   
@@ -161,7 +200,22 @@ Deserialize(u8_cursor *Bytes, brush_settings *Element, memory_arena *Memory, umm
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+    maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("brush_settings"));
+
+    if (MaybeSerializedType.Tag)
+    {
+      u64 OldIgnoredVersionNumber;
+      if (MaybeSerializedType.Value.Version > 0)
+      {
+        Deserialize(Bytes, &OldIgnoredVersionNumber, Memory);
+      }
+      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &MaybeSerializedType.Value, Memory);
+    }
+    else
+    {
+      bonsai_type_info T0TypeInfo = {};
+      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &T0TypeInfo, Memory);
+    }
 
   }
 

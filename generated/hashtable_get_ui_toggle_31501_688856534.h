@@ -7,20 +7,23 @@ GetById( ui_toggle_hashtable *Table, ui_id Id )
 
   maybe_ui_toggle Result = {};
 
-  auto *Bucket = GetHashBucket(umm(Hash(&Id)), Table);
-  while (Bucket)
+  if (Table->Size)
   {
-    auto E = &Bucket->Element;
+    auto *Bucket = GetHashBucket(umm(Hash(&Id)), Table);
+    while (Bucket)
+    {
+      auto E = &Bucket->Element;
 
-    if (AreEqual(E->Id, Id))
-    {
-      Result.Tag = Maybe_Yes;
-      Result.Value = *E;
-      break;
-    }
-    else
-    {
-      Bucket = Bucket->Next;
+      if (AreEqual(E->Id, Id))
+      {
+        Result.Tag = Maybe_Yes;
+        Result.Value = *E;
+        break;
+      }
+      else
+      {
+        Bucket = Bucket->Next;
+      }
     }
   }
 

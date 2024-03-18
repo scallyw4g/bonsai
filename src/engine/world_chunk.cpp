@@ -4214,6 +4214,7 @@ WorldEdit_shape_rect_Surface(apply_world_edit_params *Params, voxel *NewVoxelVal
 
   switch (Mode)
   {
+    case WorldEdit_Mode_Disabled: {} break;
     case WorldEdit_Mode_Paint:
     {
       poof(rectalinear_iteration_pattern({
@@ -4264,6 +4265,7 @@ WorldEdit_shape_rect_Flood( apply_world_edit_params *Params, thread_local_state 
 
   switch (Mode)
   {
+    case WorldEdit_Mode_Disabled: {} break;
     case WorldEdit_Mode_Attach:
     case WorldEdit_Mode_Remove:
     {
@@ -4300,6 +4302,7 @@ WorldEdit_shape_rect_Default(apply_world_edit_params *Params, voxel *NewVoxelVal
   UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
   switch (Mode)
   {
+    case WorldEdit_Mode_Disabled: {} break;
     case WorldEdit_Mode_Attach:
     case WorldEdit_Mode_Remove:
     {
@@ -4337,6 +4340,7 @@ WorldEdit_shape_chunk_data_Surface(apply_world_edit_params *Params, v3 SimOrigin
 
   switch (Mode)
   {
+    case WorldEdit_Mode_Disabled: {} break;
     case WorldEdit_Mode_Paint:
     {
       poof(rectalinear_iteration_pattern({
@@ -4397,6 +4401,7 @@ WorldEdit_shape_chunk_data_Flood( apply_world_edit_params *Params,
   s32 TotalVoxels = Volume(UpdateDim);
   switch (Mode)
   {
+    case WorldEdit_Mode_Disabled: {} break;
     case WorldEdit_Mode_Attach:
     {
       poof(flood_fill_iteration_pattern(
@@ -4449,6 +4454,7 @@ WorldEdit_shape_chunk_data_Default(apply_world_edit_params *Params, v3 SimOrigin
 
   switch (Mode)
   {
+    case WorldEdit_Mode_Disabled: {} break;
     case WorldEdit_Mode_Attach:
     {
       poof(rectalinear_iteration_pattern({
@@ -4532,6 +4538,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 
       switch(Mode)
       {
+    case WorldEdit_Mode_Disabled: {} break;
         case WorldEdit_Mode_Remove:
         {
           switch(Modifier)

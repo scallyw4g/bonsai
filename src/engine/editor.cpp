@@ -816,6 +816,7 @@ GetHotVoxelForEditMode(engine_resources *Engine, world_edit_mode WorldEditMode)
 
   switch (WorldEditMode)
   {
+    case WorldEdit_Mode_Disabled: {} break;
     case WorldEdit_Mode_Attach:
     {
       Pos = PickedVoxel_LastEmpty;
@@ -842,6 +843,7 @@ GetHotVoxelForFlood(engine_resources *Engine, world_edit_mode WorldEditMode, wor
   {
     switch (WorldEditMode)
     {
+      case WorldEdit_Mode_Disabled: {} break;
       case WorldEdit_Mode_Attach:
       {
         Pos = PickedVoxel_FirstFilled;
@@ -1188,7 +1190,7 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestC
         case ShapeType_Sphere:
         {
           Shape.world_update_op_shape_params_sphere = Settings->Shape.Sphere;
-          Shape.world_update_op_shape_params_sphere.Location.Offset = (GetSelectionDim(World, Editor)/2.f);
+          Shape.world_update_op_shape_params_sphere.Location.Offset = (GetSelectionDim(World, Editor)/2.f) - V3(SmallestMinOffset);
         } break;
 
         case ShapeType_Rect:
@@ -1698,7 +1700,7 @@ DoWorldEditor(engine_resources *Engine)
   {
     switch (Editor->Params.Mode)
     {
-
+      case WorldEdit_Mode_Disabled: {} break;
       case WorldEdit_Mode_Paint:
       case WorldEdit_Mode_Attach:
       case WorldEdit_Mode_Remove:
