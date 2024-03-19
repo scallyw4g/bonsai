@@ -1283,12 +1283,13 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
     if (Button(Ui, CSz("Export"), UiId(BrushSettingsWindow, "brush export", 0u)))
     {
-      u8_cursor_block_array OutputStream = {};
+      u8_cursor_block_array OutputStream = BeginSerialization();
       Serialize(&OutputStream, LayeredBrush);
-      native_file F = OpenFile("brushes/temp.brush", FilePermission_Write);
-        if (WriteToFile(&F, &OutputStream) == False) { SoftError("Could not export brush."); }
-      CloseFile(&F);
-      VaporizeArena(OutputStream.Memory);
+      const char *FilenameZ = "brushes/temp.brush";
+      if (FinalizeSerialization(&OutputStream, FilenameZ) == False)
+      {
+        SoftError("Unable to serialize brush (%S).", CS(FilenameZ));
+      }
     }
 
     ui_id ImportToggleId = UiId(BrushSettingsWindow, "brush import", 0u);
@@ -1301,25 +1302,16 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
       if (ClickedFileNode.Tag)
       {
-#if 0
-        Global_SerializeTypeTableArena = AllocateArena();
-        Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(64, Global_SerializeTypeTableArena);
-
+        memory_arena *Tran = GetTranArena();
+        cs Filename = Concat(ClickedFileNode.Value.Dir, CSz("/"), ClickedFileNode.Value.Name, Tran);
+        u8_cursor Bytes = BeginDeserialization(Filename, Tran);
+        if (Deserialize(&Bytes, &Editor->LayeredBrushEditor, 0) == False) // NOTE(Jesse): Passing 0 for the memory is fine here because these brushes have no pointers.  In the future this may change, and we'll crash here.
         {
-          brush_settings_0 *Dummy = 0;
-          auto TI = TypeInfo(Dummy);
-          /* TI.Version = 1; */
-          Insert(TI, &Global_SerializeTypeTable, Global_SerializeTypeTableArena);
+          SoftError("Unable to deserialize brush (%S).", Filename);
         }
-#endif
+        FinalizeDeserialization(&Bytes);
 
-        u8_stream Bytes = U8_StreamFromFile(Concat( ClickedFileNode.Value.Dir, CSz("/"), ClickedFileNode.Value.Name, GetTranArena()), GetTranArena());
-        Deserialize(&Bytes, &Editor->LayeredBrushEditor, 0); // NOTE(Jesse): Passing 0 for the memory is fine here because these brushes have no pointers.  In the future this may change, and we'll crash here.
         SetToggleButton(Ui, ImportToggleId, False);
-
-#if 0
-        VaporizeArena(Global_SerializeTypeTableArena);
-#endif
       }
     }
     else

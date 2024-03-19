@@ -1,3 +1,5 @@
+// TODO(Jesse): Should we have some sort of more systemic 'serialization_context' .. or something ..?
+
 link_internal u8_cursor_block_array
 BeginSerialization()
 {
