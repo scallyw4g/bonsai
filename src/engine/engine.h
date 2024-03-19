@@ -2,6 +2,7 @@
 
 #include <engine/bonsai_type_info.h>
 #include <engine/serdes.h>
+#include <engine/serialize.h>
 
 #include <engine/api.h>
 #include <engine/thread.h>

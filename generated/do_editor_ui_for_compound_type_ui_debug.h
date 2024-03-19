@@ -1,85 +1,121 @@
-// src/engine/editor.cpp:418:0
+// src/engine/editor.cpp:391:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   if (Element)
   {
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle ui_debug", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to
+    // support not drawing the toggl-y thing if we just want to dump the members.
+    b32 DrawChildren = True;
+    b32 DidToggle = False;
+    if (Name)
     {
-      PushNewRow(Ui);
-
-      PushTableStart(Ui);
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-      DoEditorUi(Ui, Window, &Element->OutlineUiValues, CSz("b8 OutlineUiValues"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->OutlineUiButtons, CSz("b8 OutlineUiButtons"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->OutlineUiTables, CSz("b8 OutlineUiTables"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->OutlineUiTableColumns, CSz("b8 OutlineUiTableColumns"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->DebugBreakOnElementClick, CSz("b8 DebugBreakOnElementClick"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->DebugBreakUiCommand, CSz("b8 DebugBreakUiCommand"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-      PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
-      PushTableEnd(Ui);
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle ui_debug", Element), &DefaultUiRenderParams_Generic))
+      {
+        DidToggle = True;
+        PushNewRow(Ui);
+      }
+      else
+      {
+        DrawChildren = False;
+      }
     }
 
-    PushNewRow(Ui);
+    if (DrawChildren)
+    {
+      PushTableStart(Ui);
+      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+      DoEditorUi(Ui,
+        Window,
+&Element->OutlineUiValues,
+        CSz("OutlineUiValues"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->OutlineUiButtons,
+        CSz("OutlineUiButtons"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->OutlineUiTables,
+        CSz("OutlineUiTables"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->OutlineUiTableColumns,
+        CSz("OutlineUiTableColumns"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->DebugBreakOnElementClick,
+        CSz("DebugBreakOnElementClick"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->DebugBreakUiCommand,
+        CSz("DebugBreakUiCommand"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
+      PushTableEnd(Ui);
+    }
+    else
+    {
+      PushNewRow(Ui);
+    }
+
   }
   else
   {
-    PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, Name, Params);
+    PushColumn(Ui, CSz("(null)"), Params);
     PushNewRow(Ui);
   }
 

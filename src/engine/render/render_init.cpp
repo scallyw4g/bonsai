@@ -238,7 +238,7 @@ MakeLightingShader( memory_arena *GraphicsMemory,
 
   AssertNoGlErrors;
 
-#if 1
+#if 0
   if (Lights)
   {
     *Current = GetUniform(GraphicsMemory, &Shader, Lights->Lights, "Lights");
@@ -563,6 +563,7 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
   Ensure( CheckAndClearFramebuffer() );
 }
 
+#if 0
 link_internal void
 InitBloomRenderGroup(bloom_render_group *Group, m4 *ViewProjection, memory_arena *Memory)
 {
@@ -575,6 +576,7 @@ InitBloomRenderGroup(bloom_render_group *Group, m4 *ViewProjection, memory_arena
   *Current = GetUniform(Memory, &Group->Shader, ViewProjection, "ViewProjection");
   Current = &(*Current)->Next;
 }
+#endif
 
 link_internal graphics *
 GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
@@ -691,8 +693,9 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
                          &Result->Settings.BravoilMyersOIT,
                          &Result->Settings.BravoilMcGuireOIT,
 
-
-                         &SG->MVP, &Lighting->Lights, Result->Camera,
+                         &SG->MVP,
+                         &Lighting->Lights,
+                         Result->Camera,
                          &Result->Settings.Lighting.SunP,
                          &Result->Settings.Lighting.CurrentSunColor,
 

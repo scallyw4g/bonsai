@@ -1,138 +1,220 @@
-// src/engine/editor.cpp:197:0
+// src/engine/editor.cpp:167:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
-  if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
-  cs ElementName = ToString(*Element);
-  if (ToggleButton(Ui, ElementName, ElementName, UiId(Window, "enum value.type value.name", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+  cs ElementName = ToStringPrefixless(*Element);
+  ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
+  if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
   {
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("EntityBehaviorFlags_None"), UiId(Window, "enum EntityBehaviorFlags_None", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("None"), UiId(Window, "enum EntityBehaviorFlags_None", Element), Params))
     {
-      if ((*Element & EntityBehaviorFlags_None) == EntityBehaviorFlags_None)
+      if (EntityBehaviorFlags_None == entity_behavior_flags(0))
       {
-        *Element = entity_behavior_flags(*Element&~EntityBehaviorFlags_None);
+        *Element = entity_behavior_flags(0);
       }
       else
       {
-        *Element = entity_behavior_flags(*Element|EntityBehaviorFlags_None);
+        if ((*Element & EntityBehaviorFlags_None) == EntityBehaviorFlags_None)
+        {
+          *Element = entity_behavior_flags(*Element&~EntityBehaviorFlags_None);
+        }
+        else
+        {
+          *Element = entity_behavior_flags(*Element|EntityBehaviorFlags_None);
+        }
       }
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("EntityBehaviorFlags_Gravity"), UiId(Window, "enum EntityBehaviorFlags_Gravity", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Gravity"), UiId(Window, "enum EntityBehaviorFlags_Gravity", Element), Params))
     {
-      if ((*Element & EntityBehaviorFlags_Gravity) == EntityBehaviorFlags_Gravity)
+      if (EntityBehaviorFlags_Gravity == entity_behavior_flags(0))
       {
-        *Element = entity_behavior_flags(*Element&~EntityBehaviorFlags_Gravity);
+        *Element = entity_behavior_flags(0);
       }
       else
       {
-        *Element = entity_behavior_flags(*Element|EntityBehaviorFlags_Gravity);
+        if ((*Element & EntityBehaviorFlags_Gravity) == EntityBehaviorFlags_Gravity)
+        {
+          *Element = entity_behavior_flags(*Element&~EntityBehaviorFlags_Gravity);
+        }
+        else
+        {
+          *Element = entity_behavior_flags(*Element|EntityBehaviorFlags_Gravity);
+        }
       }
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("EntityBehaviorFlags_WorldCollision"), UiId(Window, "enum EntityBehaviorFlags_WorldCollision", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("WorldCollision"), UiId(Window, "enum EntityBehaviorFlags_WorldCollision", Element), Params))
     {
-      if ((*Element & EntityBehaviorFlags_WorldCollision) == EntityBehaviorFlags_WorldCollision)
+      if (EntityBehaviorFlags_WorldCollision == entity_behavior_flags(0))
       {
-        *Element = entity_behavior_flags(*Element&~EntityBehaviorFlags_WorldCollision);
+        *Element = entity_behavior_flags(0);
       }
       else
       {
-        *Element = entity_behavior_flags(*Element|EntityBehaviorFlags_WorldCollision);
+        if ((*Element & EntityBehaviorFlags_WorldCollision) == EntityBehaviorFlags_WorldCollision)
+        {
+          *Element = entity_behavior_flags(*Element&~EntityBehaviorFlags_WorldCollision);
+        }
+        else
+        {
+          *Element = entity_behavior_flags(*Element|EntityBehaviorFlags_WorldCollision);
+        }
       }
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("EntityBehaviorFlags_EntityCollision"), UiId(Window, "enum EntityBehaviorFlags_EntityCollision", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("EntityCollision"), UiId(Window, "enum EntityBehaviorFlags_EntityCollision", Element), Params))
     {
-      if ((*Element & EntityBehaviorFlags_EntityCollision) == EntityBehaviorFlags_EntityCollision)
+      if (EntityBehaviorFlags_EntityCollision == entity_behavior_flags(0))
       {
-        *Element = entity_behavior_flags(*Element&~EntityBehaviorFlags_EntityCollision);
+        *Element = entity_behavior_flags(0);
       }
       else
       {
-        *Element = entity_behavior_flags(*Element|EntityBehaviorFlags_EntityCollision);
+        if ((*Element & EntityBehaviorFlags_EntityCollision) == EntityBehaviorFlags_EntityCollision)
+        {
+          *Element = entity_behavior_flags(*Element&~EntityBehaviorFlags_EntityCollision);
+        }
+        else
+        {
+          *Element = entity_behavior_flags(*Element|EntityBehaviorFlags_EntityCollision);
+        }
       }
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("EntityBehaviorFlags_UnspawnOnParticleSystemTerminate"), UiId(Window, "enum EntityBehaviorFlags_UnspawnOnParticleSystemTerminate", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("UnspawnOnParticleSystemTerminate"), UiId(Window, "enum EntityBehaviorFlags_UnspawnOnParticleSystemTerminate", Element), Params))
     {
-      if ((*Element & EntityBehaviorFlags_UnspawnOnParticleSystemTerminate) == EntityBehaviorFlags_UnspawnOnParticleSystemTerminate)
+      if (EntityBehaviorFlags_UnspawnOnParticleSystemTerminate == entity_behavior_flags(0))
       {
-        *Element = entity_behavior_flags(*Element&~EntityBehaviorFlags_UnspawnOnParticleSystemTerminate);
+        *Element = entity_behavior_flags(0);
       }
       else
       {
-        *Element = entity_behavior_flags(*Element|EntityBehaviorFlags_UnspawnOnParticleSystemTerminate);
+        if ((*Element & EntityBehaviorFlags_UnspawnOnParticleSystemTerminate) == EntityBehaviorFlags_UnspawnOnParticleSystemTerminate)
+        {
+          *Element = entity_behavior_flags(*Element&~EntityBehaviorFlags_UnspawnOnParticleSystemTerminate);
+        }
+        else
+        {
+          *Element = entity_behavior_flags(*Element|EntityBehaviorFlags_UnspawnOnParticleSystemTerminate);
+        }
       }
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("EntityBehaviorFlags_FitCollisionVolumeToModel"), UiId(Window, "enum EntityBehaviorFlags_FitCollisionVolumeToModel", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("FitCollisionVolumeToModel"), UiId(Window, "enum EntityBehaviorFlags_FitCollisionVolumeToModel", Element), Params))
     {
-      if ((*Element & EntityBehaviorFlags_FitCollisionVolumeToModel) == EntityBehaviorFlags_FitCollisionVolumeToModel)
+      if (EntityBehaviorFlags_FitCollisionVolumeToModel == entity_behavior_flags(0))
       {
-        *Element = entity_behavior_flags(*Element&~EntityBehaviorFlags_FitCollisionVolumeToModel);
+        *Element = entity_behavior_flags(0);
       }
       else
       {
-        *Element = entity_behavior_flags(*Element|EntityBehaviorFlags_FitCollisionVolumeToModel);
+        if ((*Element & EntityBehaviorFlags_FitCollisionVolumeToModel) == EntityBehaviorFlags_FitCollisionVolumeToModel)
+        {
+          *Element = entity_behavior_flags(*Element&~EntityBehaviorFlags_FitCollisionVolumeToModel);
+        }
+        else
+        {
+          *Element = entity_behavior_flags(*Element|EntityBehaviorFlags_FitCollisionVolumeToModel);
+        }
       }
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("EntityBehaviorFlags_DefatulCameraGhostBehavior"), UiId(Window, "enum EntityBehaviorFlags_DefatulCameraGhostBehavior", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("DefatulCameraGhostBehavior"), UiId(Window, "enum EntityBehaviorFlags_DefatulCameraGhostBehavior", Element), Params))
     {
-      if ((*Element & EntityBehaviorFlags_DefatulCameraGhostBehavior) == EntityBehaviorFlags_DefatulCameraGhostBehavior)
+      if (EntityBehaviorFlags_DefatulCameraGhostBehavior == entity_behavior_flags(0))
       {
-        *Element = entity_behavior_flags(*Element&~EntityBehaviorFlags_DefatulCameraGhostBehavior);
+        *Element = entity_behavior_flags(0);
       }
       else
       {
-        *Element = entity_behavior_flags(*Element|EntityBehaviorFlags_DefatulCameraGhostBehavior);
+        if ((*Element & EntityBehaviorFlags_DefatulCameraGhostBehavior) == EntityBehaviorFlags_DefatulCameraGhostBehavior)
+        {
+          *Element = entity_behavior_flags(*Element&~EntityBehaviorFlags_DefatulCameraGhostBehavior);
+        }
+        else
+        {
+          *Element = entity_behavior_flags(*Element|EntityBehaviorFlags_DefatulCameraGhostBehavior);
+        }
       }
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("EntityBehaviorFlags_WorldCenter"), UiId(Window, "enum EntityBehaviorFlags_WorldCenter", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("WorldCenter"), UiId(Window, "enum EntityBehaviorFlags_WorldCenter", Element), Params))
     {
-      if ((*Element & EntityBehaviorFlags_WorldCenter) == EntityBehaviorFlags_WorldCenter)
+      if (EntityBehaviorFlags_WorldCenter == entity_behavior_flags(0))
       {
-        *Element = entity_behavior_flags(*Element&~EntityBehaviorFlags_WorldCenter);
+        *Element = entity_behavior_flags(0);
       }
       else
       {
-        *Element = entity_behavior_flags(*Element|EntityBehaviorFlags_WorldCenter);
+        if ((*Element & EntityBehaviorFlags_WorldCenter) == EntityBehaviorFlags_WorldCenter)
+        {
+          *Element = entity_behavior_flags(*Element&~EntityBehaviorFlags_WorldCenter);
+        }
+        else
+        {
+          *Element = entity_behavior_flags(*Element|EntityBehaviorFlags_WorldCenter);
+        }
       }
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("EntityBehaviorFlags_Default"), UiId(Window, "enum EntityBehaviorFlags_Default", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Default"), UiId(Window, "enum EntityBehaviorFlags_Default", Element), Params))
     {
-      if ((*Element & EntityBehaviorFlags_Default) == EntityBehaviorFlags_Default)
+      if (EntityBehaviorFlags_Default == entity_behavior_flags(0))
       {
-        *Element = entity_behavior_flags(*Element&~EntityBehaviorFlags_Default);
+        *Element = entity_behavior_flags(0);
       }
       else
       {
-        *Element = entity_behavior_flags(*Element|EntityBehaviorFlags_Default);
+        if ((*Element & EntityBehaviorFlags_Default) == EntityBehaviorFlags_Default)
+        {
+          *Element = entity_behavior_flags(*Element&~EntityBehaviorFlags_Default);
+        }
+        else
+        {
+          *Element = entity_behavior_flags(*Element|EntityBehaviorFlags_Default);
+        }
       }
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
   }

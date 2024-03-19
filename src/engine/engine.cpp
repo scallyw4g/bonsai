@@ -25,7 +25,8 @@
 #include <engine/settings.cpp>
 #include <engine/resources.cpp>
 
-#include <engine/serdes.cpp>
+#include <engine/serdes.cpp>    // NOTE(Jesse): generated code for ser/des
+#include <engine/serialize.cpp> // NOTE(Jesse): Functions acting as basis for ser/des
 #include <engine/editor.cpp>
 #include <engine/debug_visualize.cpp>
 #include <engine/debug.cpp>

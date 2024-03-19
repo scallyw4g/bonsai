@@ -26,7 +26,7 @@ TestChunkCopy(memory_arena *Memory)
     // @set_chunk_queued_hack
     SetFlag(DestChunk, Chunk_Queued);
 
-    InitializeChunkWithNoise( Noise_Flat, &MainThread, DestChunk, DestChunkDim, 0, 0, 0, 0, MeshBit_Lod0, ChunkInitFlag_Noop, 0);
+    InitializeChunkWithNoise( Terrain_Flat, &MainThread, DestChunk, DestChunkDim, 0, {}, 0, 0, GRASS_GREEN, MeshBit_Lod0, ChunkInitFlag_Noop, 0);
 
     for ( int z = 0; z < DestChunkDim.z; ++ z)
     {
@@ -61,7 +61,7 @@ TestChunkCopy(memory_arena *Memory)
     // @set_chunk_queued_hack
     SetFlag(SyntheticChunk, Chunk_Queued);
 
-    InitializeChunkWithNoise( Noise_Flat, &MainThread, SyntheticChunk, SyntheticChunk->Dim, 0, 0, 0, 0, MeshBit_Lod0, ChunkInitFlag_Noop, 0);
+    InitializeChunkWithNoise( Terrain_Flat, &MainThread, SyntheticChunk, SyntheticChunk->Dim, {}, {}, {}, {}, GRASS_GREEN, MeshBit_Lod0, ChunkInitFlag_Noop, {});
     CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, DestChunkDim, Voxel_Position(1));
     SetFlag(DestChunk, Chunk_VoxelsInitialized);
     SetFlag(SyntheticChunk, Chunk_VoxelsInitialized);

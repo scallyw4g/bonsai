@@ -1,4 +1,4 @@
-// src/engine/editor.h:516:0
+// src/engine/editor.h:540:0
 
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_mode Selection)
@@ -17,7 +17,7 @@ GetRadioEnum(ui_toggle_button_group *RadioGroup, world_edit_mode *Result)
   {
     Assert(CountBitsSet_Kernighan(RadioGroup->ToggleBits) == 1);
     // NOTE(Jesse): This is better; it asserts that we've actually got a bitfield
-    Assert(((RadioGroup->ToggleBits == WorldEditMode_Select||RadioGroup->ToggleBits == WorldEditMode_FillSelection||RadioGroup->ToggleBits == WorldEditMode_PaintSelection||RadioGroup->ToggleBits == WorldEditMode_DeleteSelection||RadioGroup->ToggleBits == WorldEditMode_Eyedropper||RadioGroup->ToggleBits == WorldEditMode_AddSingle||RadioGroup->ToggleBits == WorldEditMode_RemoveSingle||RadioGroup->ToggleBits == WorldEditMode_PaintSingle||RadioGroup->ToggleBits == WorldEditMode_AssetBrush||RadioGroup->ToggleBits == WorldEditMode_EntityBrush||RadioGroup->ToggleBits == WorldEditMode_BlitEntity||RadioGroup->ToggleBits == WorldEditMode_NoiseBrush||RadioGroup->ToggleBits == WorldEditMode_RecomputeStandingSpots)));
+    Assert(((RadioGroup->ToggleBits == WorldEditMode_Paint||RadioGroup->ToggleBits == WorldEditMode_Attach||RadioGroup->ToggleBits == WorldEditMode_Remove)));
     /* Assert((((enum_t.map(value).sep(|) {value.name})) & RadioGroup->ToggleBits) != 0); */
   }
 
@@ -46,19 +46,9 @@ RadioButtonGroup_world_edit_mode(renderer_2d *Ui, window_layout *Window, const c
 {
   cs ButtonNames[] =
   {
-    CSz("Select"),
-    CSz("FillSelection"),
-    CSz("PaintSelection"),
-    CSz("DeleteSelection"),
-    CSz("Eyedropper"),
-    CSz("AddSingle"),
-    CSz("RemoveSingle"),
-    CSz("PaintSingle"),
-    CSz("AssetBrush"),
-    CSz("EntityBrush"),
-    CSz("BlitEntity"),
-    CSz("NoiseBrush"),
-    CSz("RecomputeStandingSpots"),
+    CSz("Paint"),
+    CSz("Attach"),
+    CSz("Remove"),
   };
 
   u32 ButtonCount = ArrayCount(ButtonNames);

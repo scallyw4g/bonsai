@@ -236,6 +236,9 @@ struct rect3cp
   cp Max;
 };
 
+poof(are_equal(rect3cp))
+#include <generated/are_equal_rect3cp.h>
+
 link_internal rect3cp
 Rect3CP(rect3i *Rect)
 {

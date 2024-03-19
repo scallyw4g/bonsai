@@ -11,7 +11,9 @@ struct game_lights
 
   r32 IndexToUV;
 
-  s32 Count; // Must be signed because of the shader
+  // Must be signed because of the shader
+  //
+  s32 Count; poof(@no_ui) // Don't display this in the UI; it's wrong.  The lights get reset before the UI draws.
   light *Lights;
 };
 

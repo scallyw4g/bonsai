@@ -19,7 +19,7 @@ struct mesh_freelist
   volatile free_list_thing *FirstFreeMesh;
 };
 
-#define TIERED_MESH_FREELIST_MAX_ELEMENTS (64)
+#define TIERED_MESH_FREELIST_MAX_ELEMENTS (128)
 #define WORLD_CHUNK_MESH_MIN_SIZE         (2048)
 #define ELEMENTS_PER_TEMP_MESH    (WORLD_CHUNK_MESH_MIN_SIZE*TIERED_MESH_FREELIST_MAX_ELEMENTS)
 
@@ -67,6 +67,15 @@ MarkBufferForGrowth(untextured_3d_geometry_buffer *Dest, umm Grow)
   ToMark->BufferNeedsToGrow += Grow;
 }
 
+link_internal b32
+BufferIsMarkedForGrowth(untextured_3d_geometry_buffer *Dest)
+{
+  auto ToMark = Dest;
+  if (Dest->Parent) ToMark = Dest->Parent;
+  b32 Result = (ToMark->BufferNeedsToGrow > 0);
+  return Result;
+}
+
 #if 0
 inline void
 BufferVertsDirect(
@@ -109,8 +118,9 @@ BufferFaceData(
   }
   else
   {
+    // NOTE(Jesse): Supress spamming errors to the console after the first one.
+    if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", 6, Dest->At, Dest->End -1); }
     MarkBufferForGrowth(Dest, 6);
-    SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", 6, Dest->At, Dest->End -1);
   }
 }
 
@@ -133,8 +143,9 @@ BufferVertsDirect(
   }
   else
   {
+    // NOTE(Jesse): Supress spamming errors to the console after the first one.
+    if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End -1); }
     MarkBufferForGrowth(Dest, NumVerts);
-    SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End -1);
   }
 }
 
@@ -287,11 +298,13 @@ BufferVertsChecked(
   }
   else
   {
+    // NOTE(Jesse): Supress spamming errors to the console after the first one.
+    if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1); }
     MarkBufferForGrowth(Dest, NumVerts);
-    SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1);
   }
 }
 
+#if 1
 inline void
 BufferVertsDirect(
     untextured_3d_geometry_buffer *Dest,
@@ -315,10 +328,11 @@ BufferVertsDirect(
   }
   else
   {
+    if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1); }
     MarkBufferForGrowth(Dest, NumVerts);
-    Error("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1);
   }
 }
+#endif
 
 inline void
 BufferVertsCounted(
@@ -376,14 +390,14 @@ BufferVertsChecked(
   }
   else
   {
+    if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1); }
     MarkBufferForGrowth(Dest, Src->At);
-    SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1);
   }
 }
 
 inline void
 BufferVertsChecked(
-    untextured_3d_geometry_buffer *Target,
+    untextured_3d_geometry_buffer *Dest,
     u32 NumVerts,
     v3 *Positions, v3 *Normals, vertex_material *Mats,
     v3 Offset = V3(0),
@@ -392,14 +406,14 @@ BufferVertsChecked(
 {
   TIMED_FUNCTION();
 
-  if (BufferHasRoomFor(Target, NumVerts))
+  if (BufferHasRoomFor(Dest, NumVerts))
   {
-    BufferVertsDirect( Target, NumVerts, Positions, Normals, Mats, Offset, Scale);
+    BufferVertsDirect( Dest, NumVerts, Positions, Normals, Mats, Offset, Scale);
   }
   else
   {
-    MarkBufferForGrowth(Target, NumVerts);
-    SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Target->At, Target->End-1);
+    if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1); }
+    MarkBufferForGrowth(Dest, NumVerts);
   }
 
   return;

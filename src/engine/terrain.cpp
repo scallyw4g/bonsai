@@ -610,25 +610,20 @@ ComputeNormalsForChunkFromNoiseValues( r32 ChunkWorldZ, r32 *NoiseValues, v3i No
 
 
 link_internal u32
-HoodooTerrain( perlin_noise *Noise,
-               world_chunk *Chunk,
-               chunk_dimension Dim,
-               chunk_dimension SrcToDest,
-               u16 ColorIndex,
-               s32 Frequency,
-               s32 Amplitude,
-               s64 zMin,
-               chunk_dimension WorldChunkDim,
-               void *BaseNoise )
+HoodooTerrain( world_chunk *Chunk,
+                       v3i  NoiseBasis,
+                      void *NoiseParams,
+                      void *UserData )
 {
   TIMED_FUNCTION();
+  UNPACK_NOISE_PARAMS(NoiseParams);
 
   u32 ChunkSum = 0;
 
   s32 MinZ = Chunk->WorldP.z*WorldChunkDim.z;
   s32 MaxZ = MinZ+WorldChunkDim.z ;
 
-  octave_buffer *OctaveBuf = (octave_buffer*)BaseNoise;
+  octave_buffer *OctaveBuf = (octave_buffer*)UserData;
   u32 OctaveCount = OctaveBuf->Count;
 
   for ( s32 z = 0; z < Dim.z; ++ z)
@@ -793,26 +788,19 @@ HoodooTerrain( perlin_noise *Noise,
 }
 
 link_internal u32
-TerracedTerrain( perlin_noise *Noise,
-                 world_chunk *Chunk,
-                 v3i Dim,
-                 v3i SrcToDest,
-                 u16 ColorIndex,
-
-                 s32 IgnoredFrequency,
-                 s32 IgnoredAmplitude,
-
-                 s64 zMin,
-                 v3i WorldChunkDim,
-                 void *OctavesIn )
+TerracedTerrain( world_chunk *Chunk,
+                         v3i  NoiseBasis,
+                        void *NoiseParams,
+                        void *UserData )
 {
   TIMED_FUNCTION();
+  UNPACK_NOISE_PARAMS(NoiseParams);
   u32 ChunkSum = 0;
 
   s32 MinZ = Chunk->WorldP.z*WorldChunkDim.z;
   s32 MaxZ = MinZ+WorldChunkDim.z ;
 
-  octave_buffer *OctaveBuf = (octave_buffer*)OctavesIn;
+  octave_buffer *OctaveBuf = (octave_buffer*)UserData;
   u32 OctaveCount = OctaveBuf->Count;
 
   for ( s32 z = 0; z < Dim.z; ++ z)
@@ -1054,26 +1042,20 @@ TerracedTerrain( perlin_noise *Noise,
 }
 
 link_internal u32
-GrassyTerracedTerrain2( perlin_noise *Noise,
-                       world_chunk *Chunk,
-                       v3i Dim,
-                       v3i SrcToDest,
-                       u16 ColorIndex,
-
-                       s32 IgnoredFrequency,
-                       s32 IgnoredAmplitude,
-
-                       s64 zMin,
-                       v3i WorldChunkDim,
-                       void *OctavesIn )
+GrassyTerracedTerrain2( world_chunk *Chunk,
+                                v3i  NoiseBasis,
+                               void *NoiseParams,
+                               void *UserData )
 {
   TIMED_FUNCTION();
+  UNPACK_NOISE_PARAMS(NoiseParams);
+
   u32 ChunkSum = 0;
 
   s32 MinZ = Chunk->WorldP.z*WorldChunkDim.z;
   s32 MaxZ = MinZ+WorldChunkDim.z ;
 
-  octave_buffer *OctaveBuf = (octave_buffer*)OctavesIn;
+  octave_buffer *OctaveBuf = (octave_buffer*)UserData;
   u32 OctaveCount = OctaveBuf->Count;
 
 
@@ -1230,26 +1212,19 @@ GrassyTerracedTerrain2( perlin_noise *Noise,
 }
 
 link_internal u32
-GrassyTerracedTerrain3( perlin_noise *Noise,
-                       world_chunk *Chunk,
-                       v3i Dim,
-                       v3i SrcToDest,
-                       u16 ColorIndex,
-
-                       s32 IgnoredFrequency,
-                       s32 IgnoredAmplitude,
-
-                       s64 zMin,
-                       v3i WorldChunkDim,
-                       void *OctavesIn )
+GrassyTerracedTerrain3( world_chunk *Chunk,
+                                v3i  NoiseBasis,
+                               void *NoiseParams,
+                               void *UserData )
 {
   TIMED_FUNCTION();
+  UNPACK_NOISE_PARAMS(NoiseParams);
   u32 ChunkSum = 0;
 
   s32 MinZ = Chunk->WorldP.z*WorldChunkDim.z;
   s32 MaxZ = MinZ+WorldChunkDim.z ;
 
-  octave_buffer *OctaveBuf = (octave_buffer*)OctavesIn;
+  octave_buffer *OctaveBuf = (octave_buffer*)UserData;
   u32 OctaveCount = OctaveBuf->Count;
 
 
@@ -1442,9 +1417,9 @@ MakeCliffs(world_chunk *Chunk, s32 VoxIndex, s32 WorldX, s32 WorldY, s32 WorldZ,
 
       v3 CellMultiplier = (1.f/CellSize);
       v3 WorldP = V3(WorldX+Index, WorldY, WorldZ);
-      r32 RockMaskChance = CliffBlend*6.f; // Higher = less rocks
+      /* r32 RockMaskChance = CliffBlend*6.f; // Higher = less rocks */
+      r32 RockMaskChance = 0.f;
       r32 Voronoi = VoronoiNoise3D(WorldP * CellMultiplier, Squareness, RockMaskChance);
-
       NoiseValue[Index] += CliffBlend*Voronoi*10.f;
 
       r32 DarkStoneThresh = 0.08f;  // Increasing this increases the amount of darkness
@@ -1528,7 +1503,8 @@ MakeCliffs_8x(world_chunk *Chunk, s32 NormalsIndex, s32 WorldX, s32 WorldY, s32 
 
       v3 CellMultiplier = (1.f/CellSize);
       v3 WorldP = V3(WorldX+Index, WorldY, WorldZ);
-      r32 RockMaskChance = CliffBlend*6.f; // Higher = less rocks
+      /* r32 RockMaskChance = CliffBlend*6.f; // Higher = less rocks */
+      r32 RockMaskChance = 0.f;
       r32 Voronoi = VoronoiNoise3D(WorldP * CellMultiplier, Squareness, RockMaskChance);
 
       NoiseValue[Index] += CliffBlend*Voronoi*10.f;
@@ -1571,26 +1547,20 @@ MakeCliffs_8x(world_chunk *Chunk, s32 NormalsIndex, s32 WorldX, s32 WorldY, s32 
 }
 
 link_internal u32
-GrassyTerracedTerrain4( perlin_noise *Noise,
-                        world_chunk *Chunk,
-                        v3i _Dim,
-                        v3i SrcToDest,
-                        u16 ColorIndex,
-
-                        s32 IgnoredFrequency,
-                        s32 IgnoredAmplitude,
-
-                        s64 zMin,
-                        v3i WorldChunkDim,
-                        void *OctavesIn )
+GrassyTerracedTerrain4( world_chunk *Chunk,
+                                v3i  NoiseBasis,
+                               void *NoiseParams,
+                               void *UserData )
 {
   TIMED_FUNCTION();
   /* HISTOGRAM_FUNCTION(); */
+  UNPACK_NOISE_PARAMS(NoiseParams);
   u32 ChunkSum = 0;
 
+  auto _Dim = Dim;
   Assert(_Dim == Chunk->Dim);
 
-  octave_buffer *OctaveBuf = (octave_buffer*)OctavesIn;
+  octave_buffer *OctaveBuf = (octave_buffer*)UserData;
   u32 OctaveCount = OctaveBuf->Count;
 
   f32 MaxNoiseValue = 0.f;
@@ -1916,26 +1886,20 @@ GrassyTerracedTerrain4( perlin_noise *Noise,
 }
 
 link_internal u32
-GrassyTerracedTerrain( perlin_noise *Noise,
-                       world_chunk *Chunk,
-                       v3i Dim,
-                       v3i SrcToDest,
-                       u16 ColorIndex,
-
-                       s32 IgnoredFrequency,
-                       s32 IgnoredAmplitude,
-
-                       s64 zMin,
-                       v3i WorldChunkDim,
-                       void *OctavesIn )
+GrassyTerracedTerrain( world_chunk *Chunk,
+                               v3i  NoiseBasis,
+                              void *NoiseParams,
+                              void *UserData )
 {
   TIMED_FUNCTION();
+  UNPACK_NOISE_PARAMS(NoiseParams);
+
   u32 ChunkSum = 0;
 
   s32 MinZ = Chunk->WorldP.z*WorldChunkDim.z;
   s32 MaxZ = MinZ+WorldChunkDim.z ;
 
-  octave_buffer *OctaveBuf = (octave_buffer*)OctavesIn;
+  octave_buffer *OctaveBuf = (octave_buffer*)UserData;
   u32 OctaveCount = OctaveBuf->Count;
 
   for ( s32 z = 0; z < Dim.z; ++ z)
@@ -2093,26 +2057,19 @@ GrassyTerracedTerrain( perlin_noise *Noise,
 }
 
 link_internal u32
-GrassyLargeTerracedTerrain( perlin_noise *Noise,
-                            world_chunk *Chunk,
-                            v3i Dim,
-                            v3i SrcToDest,
-                            u16 ColorIndex,
-
-                            s32 IgnoredFrequency,
-                            s32 IgnoredAmplitude,
-
-                            s64 zMin,
-                            v3i WorldChunkDim,
-                            void *OctavesIn )
+GrassyLargeTerracedTerrain( world_chunk *Chunk,
+                                v3i  NoiseBasis,
+                               void *NoiseParams,
+                               void *UserData )
 {
   TIMED_FUNCTION();
+  UNPACK_NOISE_PARAMS(NoiseParams);
   u32 ChunkSum = 0;
 
   s32 MinZ = Chunk->WorldP.z*WorldChunkDim.z;
   s32 MaxZ = MinZ+WorldChunkDim.z ;
 
-  octave_buffer *OctaveBuf = (octave_buffer*)OctavesIn;
+  octave_buffer *OctaveBuf = (octave_buffer*)UserData;
   u32 OctaveCount = OctaveBuf->Count;
 
   for ( s32 z = 0; z < Dim.z; ++ z)
@@ -2259,21 +2216,14 @@ GrassyLargeTerracedTerrain( perlin_noise *Noise,
 }
 
 link_internal u32
-SinCosTerrain( perlin_noise *Noise,
-               world_chunk *Chunk,
-               v3i Dim,
-               v3i SrcToDest,
-               u16 ColorIndex,
-
-               s32 Frequency,
-               s32 Amplitude,
-
-               s64 zMin,
-               v3i WorldChunkDim,
-               void *OctavesIn )
+Terrain_SinCos( world_chunk *Chunk,
+                v3i NoiseBasisOffset,
+                void *NoiseParams,
+                void *UserData )
 {
   TIMED_FUNCTION();
-  Assert(OctavesIn == 0);
+
+  UNPACK_NOISE_PARAMS(NoiseParams);
 
   r32 *NoiseValues = Allocate(r32, GetTranArena(), Volume(Dim));
   v3  *Normals     = Allocate( v3, GetTranArena(), Volume(Dim));
@@ -2294,7 +2244,7 @@ SinCosTerrain( perlin_noise *Noise,
       {
         s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x);
         s32 VoxIndex = GetIndex(V3i(x,y,z), Dim);
-        r32 NoiseValue = ((Sin(r32(WorldX)/r32(Frequency))+1.f)/2.f) + ((Cos(r32(WorldY)/r32(Frequency))+1.f)/4.f);
+        r32 NoiseValue = ((Sin(r32(WorldX)/Period.x)+1.f)/2.f) + ((Cos(r32(WorldY)/Period.y)+1.f)/4.f);
 
         /* NoiseValue = MapNoiseValueToFinal(NoiseValue); */
         NoiseValue *= Amplitude;
@@ -2340,26 +2290,71 @@ SinCosTerrain( perlin_noise *Noise,
 }
 
 link_internal u32
-VoronoiTerrain( perlin_noise *Noise,
-                world_chunk *Chunk,
-                v3i Dim,
-                v3i SrcToDest,
-                u16 ColorIndex,
-
-                s32 Frequency,
-                s32 Amplitude,
- 
-                s64 zMin,
-                v3i WorldChunkDim,
-                void *OctavesIn )
+Terrain_Voronoi3D( world_chunk *Chunk,
+                           v3i  NoiseBasis,
+                          void *NoiseParams,
+                          void *UserData )
 {
   TIMED_FUNCTION();
-  Assert(OctavesIn == 0);
+
+  UNPACK_NOISE_PARAMS(NoiseParams);
+
+  u32 ChunkSum = 0;
+
+  s32 MinZ = Chunk->WorldP.z*WorldChunkDim.z;
+  s32 MaxZ = MinZ+WorldChunkDim.z;
+
+  voronoi_noise_params *VoronoiParams = Cast(voronoi_noise_params*, UserData);
+
+  r32 Squareness = VoronoiParams ? VoronoiParams->Squareness : 0.f;
+  r32 MaskChance = VoronoiParams ? VoronoiParams->MaskChance : 0.f;
+
+  for ( s32 z = 0; z < Dim.z; ++ z)
+  {
+    s64 WorldZ = z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z);
+    for ( s32 y = 0; y < Dim.y; ++ y)
+    {
+      s64 WorldY = y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y);
+      for ( s32 x = 0; x < Dim.x; ++ x)
+      {
+        /* s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x); */
+        s32 VoxIndex = GetIndex(V3i(x,y,z), Dim);
+        Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
+
+        r32 NoiseValue = VoronoiNoise3D((V3(x,y,z) + NoiseBasis) / Period, Squareness, MaskChance);
+        NoiseValue = Clamp01(NoiseValue);
+        NoiseValue *= Amplitude;
+
+        b32 IsFilled = r32(NoiseValue) > r32(zMin) ;
+
+        SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
+        Chunk->Voxels[VoxIndex].Color = ColorIndex*u8(IsFilled);
+        ChunkSum += IsFilled;
+      }
+    }
+  }
+  return ChunkSum;
+}
+
+link_internal u32
+Terrain_Voronoi2D( world_chunk *Chunk,
+                           v3i  NoiseBasis,
+                          void *NoiseParams,
+                          void *UserData )
+{
+  TIMED_FUNCTION();
+
+  UNPACK_NOISE_PARAMS(NoiseParams);
 
   u32 ChunkSum = 0;
 
   s32 MinZ = Chunk->WorldP.z*WorldChunkDim.z;
   s32 MaxZ = MinZ+WorldChunkDim.z ;
+
+  voronoi_noise_params *VoronoiParams = Cast(voronoi_noise_params*, UserData);
+
+  r32 Squareness = VoronoiParams ? VoronoiParams->Squareness : 0.f;
+  r32 MaskChance = VoronoiParams ? VoronoiParams->MaskChance : 0.f;
 
   for ( s32 z = 0; z < Dim.z; ++ z)
   {
@@ -2374,7 +2369,8 @@ VoronoiTerrain( perlin_noise *Noise,
         s32 VoxIndex = GetIndex(V3i(x,y,z), Dim);
         Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
 
-        r32 NoiseValue = VoronoiNoise3D(V3(s32(WorldX), s32(WorldY), s32(WorldZ)) * 0.01f);
+        r32 NoiseValue = VoronoiNoise3D(V3(f32(WorldX), f32(WorldY), f32(WorldZ)) / Period, Squareness, MaskChance);
+        /* r32 NoiseValue =  VoronoiNoise3D(V3(s32(WorldX), s32(WorldY), s32(WorldZ)) * 0.04f) * 25.f; */
         NoiseValue = Clamp01(NoiseValue);
         /* NoiseValue = MapNoiseValueToFinal(NoiseValue); */ // Crazyballs
         NoiseValue *= Amplitude;
@@ -2382,7 +2378,7 @@ VoronoiTerrain( perlin_noise *Noise,
         b32 IsFilled = r32(NoiseValue) > r32(WorldZSubZMin) ;
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
-        Chunk->Voxels[VoxIndex].Color = GRASS_GREEN*u8(IsFilled);
+        Chunk->Voxels[VoxIndex].Color = ColorIndex*u8(IsFilled);
         ChunkSum += IsFilled;
       }
     }

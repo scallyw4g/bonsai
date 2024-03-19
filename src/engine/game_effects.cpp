@@ -276,12 +276,11 @@ DoDig( engine_resources *Resources, canonical_position PickCP, f32 Radius, f32 D
   v3 MinP = SimSpaceMinCenterP - V3(Radius, Radius, Depth);
   v3 MaxP = SimSpaceMinCenterP + V3(Radius, Radius, Depth);
 
-  world_update_op_shape Shape = {
+  world_edit_shape Shape = {
     .Type = type_world_update_op_shape_params_rect,
-    .world_update_op_shape_params_rect.P0 = MinP,
-    .world_update_op_shape_params_rect.P1 = MaxP,
+    .world_update_op_shape_params_rect.Region = RectMinMax(MinP,MaxP),
   };
-  QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Subtractive, &Shape, ICE_BLUE, Resources->WorldUpdateMemory);
+  QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Remove, WorldEdit_Modifier_Default, &Shape, ICE_BLUE, Resources->WorldUpdateMemory);
 }
 
 link_internal void
@@ -292,28 +291,27 @@ DoIceBlock( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
   v3 MinP = SimSpaceMinCenterP - V3(Radius, Radius, 0.f);
   v3 MaxP = SimSpaceMinCenterP + V3(Radius, Radius, 3.f*Radius);
 
-  world_update_op_shape Shape = {
+  world_edit_shape Shape = {
     .Type = type_world_update_op_shape_params_rect,
-    .world_update_op_shape_params_rect.P0 = MinP,
-    .world_update_op_shape_params_rect.P1 = MaxP,
+    .world_update_op_shape_params_rect.Region = RectMinMax(MinP,MaxP),
   };
-  QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Additive, &Shape, ICE_BLUE, Resources->WorldUpdateMemory);
+  QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Attach, WorldEdit_Modifier_Default, &Shape, ICE_BLUE, Resources->WorldUpdateMemory);
 }
 
 link_internal void
-DoSplotion( engine_resources *Resources, canonical_position PickCP, f32 Radius, random_series *Entropy, memory_arena *TempMemory)
+DoSplotion( engine_resources *Resources, cp PickCP, f32 Radius, random_series *Entropy, memory_arena *TempMemory)
 {
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  world_update_op_shape Shape = {
+  world_edit_shape Shape = {
     .Type = type_world_update_op_shape_params_sphere,
     .world_update_op_shape_params_sphere.Radius = Radius,
     .world_update_op_shape_params_sphere.Location = PickCP,
   };
-  QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Subtractive, WorldUpdateOperationModeModifier_Flood, &Shape, DARK_GREY, Resources->WorldUpdateMemory);
-  /* QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Subtractive, WorldUpdateOperationModeModifier_None, &Shape, DARK_GREY, Resources->WorldUpdateMemory); */
-  /* QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Additive, WorldUpdateOperationModeModifier_None, &Shape, DARK_GREY, Resources->WorldUpdateMemory); */
-  /* QueueWorldUpdateForRegion(Resources, WorldUpdateOperationMode_Additive, WorldUpdateOperationModeModifier_Flood, &Shape, DARK_GREY, Resources->WorldUpdateMemory); */
+  QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Remove, WorldEdit_Modifier_Flood, &Shape, DARK_GREY, Resources->WorldUpdateMemory);
+  /* QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Remove, WorldUpdateModeModifier_None, &Shape, DARK_GREY, Resources->WorldUpdateMemory); */
+  /* QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Attach, WorldUpdateModeModifier_None, &Shape, DARK_GREY, Resources->WorldUpdateMemory); */
+  /* QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Attach, WorldUpdatenModeModifier_Flood, &Shape, DARK_GREY, Resources->WorldUpdateMemory); */
 
   v3 SplosionSimP = GetSimSpaceP(World, PickCP);
 

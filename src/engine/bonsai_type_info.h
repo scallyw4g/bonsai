@@ -46,9 +46,3 @@ poof(maybe(bonsai_type_info))
 poof(hashtable_get(bonsai_type_info, {cs}, {Name}))
 #include <generated/hashtable_get_bonsai_type_info_902_689333910.h>
 
-global_variable bonsai_type_info_hashtable
-Global_SerializeTypeTable;
-
-global_variable memory_arena*
-Global_SerializeTypeTableArena;
-

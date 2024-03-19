@@ -1,80 +1,101 @@
-// src/engine/editor.cpp:280:0
+// src/engine/editor.cpp:247:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   if (Element)
   {
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle lod_element_buffer", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to
+    // support not drawing the toggl-y thing if we just want to dump the members.
+    b32 DrawChildren = True;
+    b32 DidToggle = False;
+    if (Name)
     {
-      PushNewRow(Ui);
-
-      PushTableStart(Ui);
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-      DoEditorUi(Ui, Window, &Element->MeshMask, CSz("u32 MeshMask"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      if (ToggleButton(Ui, CSz("v gpu_element_buffer_handles GpuBufferHandles[MeshIndex_Count]"), CSz("> gpu_element_buffer_handles GpuBufferHandles[MeshIndex_Count]"), UiId(Window, "toggle lod_element_buffer gpu_element_buffer_handles GpuBufferHandles", Element->GpuBufferHandles), EDITOR_UI_FUNCTION_INSTANCE_NAMES ))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle lod_element_buffer", Element), &DefaultUiRenderParams_Generic))
       {
-        PushForceUpdateBasis(Ui, V2(20.f, 0.f));
+        DidToggle = True;
         PushNewRow(Ui);
-        RangeIterator(ArrayIndex, MeshIndex_Count)
-        {
-          DoEditorUi(Ui, Window, Element->GpuBufferHandles+ArrayIndex, FSz("gpu_element_buffer_handles GpuBufferHandles[%d]", ArrayIndex), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-          
-        }
-        PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
       }
-      PushNewRow(Ui);
-
-
-
-      
-      if (ToggleButton(Ui, CSz("v geo_u3d_ptr E[MeshIndex_Count]"), CSz("> geo_u3d_ptr E[MeshIndex_Count]"), UiId(Window, "toggle lod_element_buffer geo_u3d_ptr E", Element->E), EDITOR_UI_FUNCTION_INSTANCE_NAMES ))
+      else
       {
-        PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-        PushNewRow(Ui);
-        RangeIterator(ArrayIndex, MeshIndex_Count)
-        {
-          DoEditorUi(Ui, Window, Element->E+ArrayIndex, FSz("geo_u3d_ptr E[%d]", ArrayIndex), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-          
-        }
-        PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+        DrawChildren = False;
       }
-      PushNewRow(Ui);
-
-
-
-      
-      if (ToggleButton(Ui, CSz("v bonsai_futex Locks[MeshIndex_Count]"), CSz("> bonsai_futex Locks[MeshIndex_Count]"), UiId(Window, "toggle lod_element_buffer bonsai_futex Locks", Element->Locks), EDITOR_UI_FUNCTION_INSTANCE_NAMES ))
-      {
-        PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-        PushNewRow(Ui);
-        RangeIterator(ArrayIndex, MeshIndex_Count)
-        {
-          DoEditorUi(Ui, Window, Element->Locks+ArrayIndex, FSz("bonsai_futex Locks[%d]", ArrayIndex), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-          
-        }
-        PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
-      }
-      PushNewRow(Ui);
-      PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
-      PushTableEnd(Ui);
     }
 
-    PushNewRow(Ui);
+    if (DrawChildren)
+    {
+      PushTableStart(Ui);
+      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+      DoEditorUi(Ui,
+        Window,
+&Element->MeshMask,
+        CSz("MeshMask"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      if (ToggleButton(Ui, CSz("v GpuBufferHandles[MeshIndex_Count]"), CSz("> GpuBufferHandles[MeshIndex_Count]"), UiId(Window, "toggle lod_element_buffer gpu_element_buffer_handles GpuBufferHandles", Element->GpuBufferHandles), Params ))
+      {
+        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+        PushNewRow(Ui);
+        RangeIterator(ArrayIndex, MeshIndex_Count)
+        {
+          DoEditorUi(Ui, Window, Element->GpuBufferHandles+ArrayIndex, FSz("GpuBufferHandles[%d]", ArrayIndex), Params);
+          
+        }
+        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+      }
+      PushNewRow(Ui);
+
+
+
+      
+      if (ToggleButton(Ui, CSz("v E[MeshIndex_Count]"), CSz("> E[MeshIndex_Count]"), UiId(Window, "toggle lod_element_buffer geo_u3d_ptr E", Element->E), Params ))
+      {
+        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+        PushNewRow(Ui);
+        RangeIterator(ArrayIndex, MeshIndex_Count)
+        {
+          DoEditorUi(Ui, Window, Element->E+ArrayIndex, FSz("E[%d]", ArrayIndex), Params);
+          
+        }
+        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+      }
+      PushNewRow(Ui);
+
+
+
+      
+      if (ToggleButton(Ui, CSz("v Locks[MeshIndex_Count]"), CSz("> Locks[MeshIndex_Count]"), UiId(Window, "toggle lod_element_buffer bonsai_futex Locks", Element->Locks), Params ))
+      {
+        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+        PushNewRow(Ui);
+        RangeIterator(ArrayIndex, MeshIndex_Count)
+        {
+          DoEditorUi(Ui, Window, Element->Locks+ArrayIndex, FSz("Locks[%d]", ArrayIndex), Params);
+          
+        }
+        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+      }
+      PushNewRow(Ui);
+      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
+      PushTableEnd(Ui);
+    }
+    else
+    {
+      PushNewRow(Ui);
+    }
+
   }
   else
   {
-    PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, Name, Params);
+    PushColumn(Ui, CSz("(null)"), Params);
     PushNewRow(Ui);
   }
 

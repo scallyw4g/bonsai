@@ -1,223 +1,339 @@
-// src/engine/editor.cpp:442:0
+// src/engine/editor.cpp:415:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   if (Element)
   {
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle engine_resources", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to
+    // support not drawing the toggl-y thing if we just want to dump the members.
+    b32 DrawChildren = True;
+    b32 DidToggle = False;
+    if (Name)
     {
-      PushNewRow(Ui);
-
-      PushTableStart(Ui);
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-      DoEditorUi(Ui, Window, &Element->Settings, CSz("engine_settings Settings"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->Stdlib, CSz("bonsai_stdlib Stdlib"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->Ui, CSz("renderer_2d Ui"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->GameApi, CSz("application_api GameApi"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->Hotkeys, CSz("hotkeys Hotkeys"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->MaybeMouseRay, CSz("maybe_ray MaybeMouseRay"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, Element->World, CSz("world World"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-      
-      DoEditorUi(Ui, Window, Element->GameState, CSz("game_state GameState"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-      
-      DoEditorUi(Ui, Window, Element->Graphics, CSz("graphics Graphics"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->RequestedGameLibReloadNode, CSz("file_traversal_node RequestedGameLibReloadNode"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->RequestedGameLibReloadBehavior, CSz("game_lib_reload_behavior RequestedGameLibReloadBehavior"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->Heap, CSz("heap_allocator Heap"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, Element->GameMemory, CSz("memory_arena GameMemory"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-      
-      DoEditorUi(Ui, Window, Element->WorldUpdateMemory, CSz("memory_arena WorldUpdateMemory"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-      
-      DoEditorUi(Ui, Window, Element->EntityTable, CSz("entity EntityTable"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->AssetSystem, CSz("asset_system AssetSystem"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->FrameIndex, CSz("u32 FrameIndex"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->MeshFreelist, CSz("tiered_mesh_freelist MeshFreelist"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, Element->DebugState, CSz("debug_state DebugState"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->EngineDebug, CSz("engine_debug EngineDebug"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->Editor, CSz("level_editor Editor"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->MousedOverVoxel, CSz("maybe_picked_voxel MousedOverVoxel"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->ClosestStandingSpotToCursor, CSz("maybe_standing_spot ClosestStandingSpotToCursor"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->HoverEntity, CSz("maybe_entity_ptr HoverEntity"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->RTTGroup, CSz("render_entity_to_texture_group RTTGroup"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
-      PushTableEnd(Ui);
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle engine_resources", Element), &DefaultUiRenderParams_Generic))
+      {
+        DidToggle = True;
+        PushNewRow(Ui);
+      }
+      else
+      {
+        DrawChildren = False;
+      }
     }
 
-    PushNewRow(Ui);
+    if (DrawChildren)
+    {
+      PushTableStart(Ui);
+      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+      DoEditorUi(Ui,
+        Window,
+&Element->Settings,
+        CSz("Settings"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Stdlib,
+        CSz("Stdlib"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Ui,
+        CSz("Ui"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->GameApi,
+        CSz("GameApi"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Hotkeys,
+        CSz("Hotkeys"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->MaybeMouseRay,
+        CSz("MaybeMouseRay"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        Element->World,
+        CSz("World"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        Element->GameState,
+        CSz("GameState"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        Element->Graphics,
+        CSz("Graphics"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->RequestedGameLibReloadNode,
+        CSz("RequestedGameLibReloadNode"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->RequestedGameLibReloadBehavior,
+        CSz("RequestedGameLibReloadBehavior"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Heap,
+        CSz("Heap"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        Element->GameMemory,
+        CSz("GameMemory"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        Element->WorldUpdateMemory,
+        CSz("WorldUpdateMemory"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        Element->EntityTable,
+        CSz("EntityTable"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->AssetSystem,
+        CSz("AssetSystem"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->FrameIndex,
+        CSz("FrameIndex"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->MeshFreelist,
+        CSz("MeshFreelist"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        Element->DebugState,
+        CSz("DebugState"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->EngineDebug,
+        CSz("EngineDebug"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Editor,
+        CSz("Editor"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->MousedOverVoxel,
+        CSz("MousedOverVoxel"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->ClosestStandingSpotToCursor,
+        CSz("ClosestStandingSpotToCursor"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->HoverEntity,
+        CSz("HoverEntity"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->RTTGroup,
+        CSz("RTTGroup"),
+        Params
+        );
+      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
+      PushTableEnd(Ui);
+    }
+    else
+    {
+      PushNewRow(Ui);
+    }
+
   }
   else
   {
-    PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, Name, Params);
+    PushColumn(Ui, CSz("(null)"), Params);
     PushNewRow(Ui);
   }
 

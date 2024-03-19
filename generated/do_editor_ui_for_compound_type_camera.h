@@ -1,171 +1,239 @@
-// src/engine/editor.cpp:350:0
+// src/engine/editor.cpp:307:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   if (Element)
   {
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle camera", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to
+    // support not drawing the toggl-y thing if we just want to dump the members.
+    b32 DrawChildren = True;
+    b32 DidToggle = False;
+    if (Name)
     {
-      PushNewRow(Ui);
-
-      PushTableStart(Ui);
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-      DoEditorUi(Ui, Window, &Element->Frust, CSz("frustum Frust"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->CurrentP, CSz("cp CurrentP"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->RenderSpacePosition, CSz("v3 RenderSpacePosition"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->Pitch, CSz("r32 Pitch"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->Roll, CSz("r32 Roll"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->Yaw, CSz("r32 Yaw"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->DistanceFromTarget, CSz("r32 DistanceFromTarget"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->TargetPitch, CSz("r32 TargetPitch"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->TargetRoll, CSz("r32 TargetRoll"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->TargetYaw, CSz("r32 TargetYaw"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->TargetDistanceFromTarget, CSz("r32 TargetDistanceFromTarget"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->Blend, CSz("r32 Blend"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->Front, CSz("v3 Front"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->Right, CSz("v3 Right"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->Up, CSz("v3 Up"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->GhostId, CSz("entity_id GhostId"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
-      PushTableEnd(Ui);
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle camera", Element), &DefaultUiRenderParams_Generic))
+      {
+        DidToggle = True;
+        PushNewRow(Ui);
+      }
+      else
+      {
+        DrawChildren = False;
+      }
     }
 
-    PushNewRow(Ui);
+    if (DrawChildren)
+    {
+      PushTableStart(Ui);
+      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+      DoEditorUi(Ui,
+        Window,
+&Element->Frust,
+        CSz("Frust"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->CurrentP,
+        CSz("CurrentP"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->RenderSpacePosition,
+        CSz("RenderSpacePosition"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Pitch,
+        CSz("Pitch"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->Roll,
+        CSz("Roll"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->Yaw,
+        CSz("Yaw"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->DistanceFromTarget,
+        CSz("DistanceFromTarget"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->TargetPitch,
+        CSz("TargetPitch"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->TargetRoll,
+        CSz("TargetRoll"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->TargetYaw,
+        CSz("TargetYaw"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->TargetDistanceFromTarget,
+        CSz("TargetDistanceFromTarget"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->Blend,
+        CSz("Blend"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->Front,
+        CSz("Front"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Right,
+        CSz("Right"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Up,
+        CSz("Up"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->GhostId,
+        CSz("GhostId"),
+        Params
+        );
+      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
+      PushTableEnd(Ui);
+    }
+    else
+    {
+      PushNewRow(Ui);
+    }
+
   }
   else
   {
-    PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, Name, Params);
+    PushColumn(Ui, CSz("(null)"), Params);
     PushNewRow(Ui);
   }
 

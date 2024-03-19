@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:257:0
+// src/engine/serdes.cpp:260:0
 
 link_internal bonsai_type_info
 TypeInfo(particle_system *Ignored)
@@ -355,7 +355,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
   RangeIterator(ElementIndex, 6)
   {
-    Result &= Deserialize(Bytes, &Element->Colors[ElementIndex]);
+    Result &= Deserialize(Bytes, &Element->Colors[ElementIndex], Memory);
   }
 
 

@@ -1,4 +1,41 @@
-// src/engine/editor.cpp:190:0
+// src/engine/editor.cpp:160:0
+
+link_internal counted_string
+ToStringPrefixless(engine_debug_view_mode Type)
+{
+  counted_string Result = {};
+  switch (Type)
+  {
+    case EngineDebugViewMode_Level: { Result = CSz("Level"); } break;
+    case EngineDebugViewMode_WorldEdit: { Result = CSz("WorldEdit"); } break;
+    case EngineDebugViewMode_Entities: { Result = CSz("Entities"); } break;
+    case EngineDebugViewMode_Assets: { Result = CSz("Assets"); } break;
+    case EngineDebugViewMode_WorldChunks: { Result = CSz("WorldChunks"); } break;
+    case EngineDebugViewMode_Textures: { Result = CSz("Textures"); } break;
+    case EngineDebugViewMode_RenderSettings: { Result = CSz("RenderSettings"); } break;
+    case EngineDebugViewMode_EngineDebug: { Result = CSz("EngineDebug"); } break;
+
+    // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
+    // but the metaprogram might have to be a bit fancier..
+    default:
+    {
+      u32 CurrentFlags = u32(Type);
+
+      u32 FirstValue = UnsetLeastSignificantSetBit(&CurrentFlags);
+      Result = ToStringPrefixless(engine_debug_view_mode(FirstValue));
+
+      while (CurrentFlags)
+      {
+        u32 Value = UnsetLeastSignificantSetBit(&CurrentFlags);
+        cs Next = ToStringPrefixless(engine_debug_view_mode(Value));
+        Result = FSz("%S | %S", Result, Next);
+      }
+    } break;
+
+  }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  return Result;
+}
 
 link_internal counted_string
 ToString(engine_debug_view_mode Type)
@@ -15,8 +52,25 @@ ToString(engine_debug_view_mode Type)
     case EngineDebugViewMode_RenderSettings: { Result = CSz("EngineDebugViewMode_RenderSettings"); } break;
     case EngineDebugViewMode_EngineDebug: { Result = CSz("EngineDebugViewMode_EngineDebug"); } break;
 
-    
+    // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
+    // but the metaprogram might have to be a bit fancier..
+    default:
+    {
+      u32 CurrentFlags = u32(Type);
+
+      u32 FirstValue = UnsetLeastSignificantSetBit(&CurrentFlags);
+      Result = ToString(engine_debug_view_mode(FirstValue));
+
+      while (CurrentFlags)
+      {
+        u32 Value = UnsetLeastSignificantSetBit(&CurrentFlags);
+        cs Next = ToString(engine_debug_view_mode(Value));
+        Result = FSz("%S | %S", Result, Next);
+      }
+    } break;
+
   }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
   return Result;
 }
 

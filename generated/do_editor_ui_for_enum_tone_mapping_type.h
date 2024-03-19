@@ -1,54 +1,67 @@
-// src/engine/editor.cpp:200:0
+// src/engine/editor.cpp:170:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, tone_mapping_type *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, tone_mapping_type *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
-  if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
-  cs ElementName = ToString(*Element);
-  if (ToggleButton(Ui, ElementName, ElementName, UiId(Window, "enum value.type value.name", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+  cs ElementName = ToStringPrefixless(*Element);
+  ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
+  if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
   {
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("ToneMappingType_None"), UiId(Window, "enum ToneMappingType_None", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("None"), UiId(Window, "enum ToneMappingType_None", Element), Params))
     {
       *Element = ToneMappingType_None;
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("ToneMappingType_Reinhard"), UiId(Window, "enum ToneMappingType_Reinhard", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Reinhard"), UiId(Window, "enum ToneMappingType_Reinhard", Element), Params))
     {
       *Element = ToneMappingType_Reinhard;
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("ToneMappingType_Exposure"), UiId(Window, "enum ToneMappingType_Exposure", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Exposure"), UiId(Window, "enum ToneMappingType_Exposure", Element), Params))
     {
       *Element = ToneMappingType_Exposure;
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("ToneMappingType_AGX"), UiId(Window, "enum ToneMappingType_AGX", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("AGX"), UiId(Window, "enum ToneMappingType_AGX", Element), Params))
     {
       *Element = ToneMappingType_AGX;
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("ToneMappingType_AGX_Sepia"), UiId(Window, "enum ToneMappingType_AGX_Sepia", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Sepia"), UiId(Window, "enum ToneMappingType_AGX_Sepia", Element), Params))
     {
       *Element = ToneMappingType_AGX_Sepia;
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("ToneMappingType_AGX_Punchy"), UiId(Window, "enum ToneMappingType_AGX_Punchy", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Punchy"), UiId(Window, "enum ToneMappingType_AGX_Punchy", Element), Params))
     {
       *Element = ToneMappingType_AGX_Punchy;
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
   }

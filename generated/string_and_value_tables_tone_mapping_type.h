@@ -1,4 +1,23 @@
-// src/engine/editor.cpp:187:0
+// src/engine/editor.cpp:157:0
+
+link_internal counted_string
+ToStringPrefixless(tone_mapping_type Type)
+{
+  counted_string Result = {};
+  switch (Type)
+  {
+    case ToneMappingType_None: { Result = CSz("None"); } break;
+    case ToneMappingType_Reinhard: { Result = CSz("Reinhard"); } break;
+    case ToneMappingType_Exposure: { Result = CSz("Exposure"); } break;
+    case ToneMappingType_AGX: { Result = CSz("AGX"); } break;
+    case ToneMappingType_AGX_Sepia: { Result = CSz("Sepia"); } break;
+    case ToneMappingType_AGX_Punchy: { Result = CSz("Punchy"); } break;
+
+    
+  }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  return Result;
+}
 
 link_internal counted_string
 ToString(tone_mapping_type Type)
@@ -15,6 +34,7 @@ ToString(tone_mapping_type Type)
 
     
   }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
   return Result;
 }
 

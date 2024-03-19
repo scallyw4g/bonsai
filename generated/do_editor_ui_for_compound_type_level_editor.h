@@ -1,136 +1,283 @@
-// src/engine/editor.cpp:427:0
+// src/engine/editor.cpp:400:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   if (Element)
   {
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle level_editor", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to
+    // support not drawing the toggl-y thing if we just want to dump the members.
+    b32 DrawChildren = True;
+    b32 DidToggle = False;
+    if (Name)
     {
-      PushNewRow(Ui);
-
-      PushTableStart(Ui);
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-      DoEditorUi(Ui, Window, Element->Memory, CSz("memory_arena Memory"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->NoiseSelection, CSz("noise_selector NoiseSelection"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->NoisePreviewThumbnail, CSz("asset_thumbnail NoisePreviewThumbnail"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->EngineDebugViewModeToggleBits, CSz("u64 EngineDebugViewModeToggleBits"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->SelectedColorIndex, CSz("u16 SelectedColorIndex"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->HoverColorIndex, CSz("u16 HoverColorIndex"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->SelectionClicks, CSz("u32 SelectionClicks"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->SelectionBase, CSz("cp SelectionBase"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->SelectionRegion, CSz("rect3cp SelectionRegion"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->CopyRegion, CSz("rect3cp CopyRegion"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->Selection, CSz("selection_modification_state Selection"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->Entity, CSz("selection_modification_state Entity"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui, Window, &Element->AssetThumbnails, CSz("asset_thumbnail_block_array AssetThumbnails"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
-      PushTableEnd(Ui);
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle level_editor", Element), &DefaultUiRenderParams_Generic))
+      {
+        DidToggle = True;
+        PushNewRow(Ui);
+      }
+      else
+      {
+        DrawChildren = False;
+      }
     }
 
-    PushNewRow(Ui);
+    if (DrawChildren)
+    {
+      PushTableStart(Ui);
+      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+      DoEditorUi(Ui,
+        Window,
+        Element->Memory,
+        CSz("Memory"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Tool,
+        CSz("Tool"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Params,
+        CSz("Params"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->BrushType,
+        CSz("BrushType"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->PreviousTool,
+        CSz("PreviousTool"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Noise,
+        CSz("Noise"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Shape,
+        CSz("Shape"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->LayeredBrushEditor,
+        CSz("LayeredBrushEditor"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->EngineDebugViewModeToggleBits,
+        CSz("EngineDebugViewModeToggleBits"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->SelectedColorIndex,
+        CSz("SelectedColorIndex"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->HoverColorIndex,
+        CSz("HoverColorIndex"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        Cast(b8*,&Element->SelectionChanged),
+        CSz("SelectionChanged"),
+        &DefaultUiRenderParams_Checkbox
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->SelectionClicks,
+        CSz("SelectionClicks"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->SelectionBase,
+        CSz("SelectionBase"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->SelectionRegion,
+        CSz("SelectionRegion"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->PrevSelectionRegion,
+        CSz("PrevSelectionRegion"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->CopyRegion,
+        CSz("CopyRegion"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Selection,
+        CSz("Selection"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Entity,
+        CSz("Entity"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->AssetThumbnails,
+        CSz("AssetThumbnails"),
+        Params
+        );
+      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
+      PushTableEnd(Ui);
+    }
+    else
+    {
+      PushNewRow(Ui);
+    }
+
   }
   else
   {
-    PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, Name, Params);
+    PushColumn(Ui, CSz("(null)"), Params);
     PushNewRow(Ui);
   }
 

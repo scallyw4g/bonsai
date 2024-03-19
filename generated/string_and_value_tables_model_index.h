@@ -1,6 +1,58 @@
 // src/engine/model.h:55:0
 
 link_internal counted_string
+ToStringPrefixless(model_index Type)
+{
+  counted_string Result = {};
+  switch (Type)
+  {
+    case ModelIndex_None: { Result = CSz("None"); } break;
+    case ModelIndex_Enemy_Skeleton_Axe: { Result = CSz("Axe"); } break;
+    case ModelIndex_Enemy_Skeleton_Sword: { Result = CSz("Sword"); } break;
+    case ModelIndex_Enemy_Skeleton_Lasher: { Result = CSz("Lasher"); } break;
+    case ModelIndex_Enemy_Skeleton_Archer: { Result = CSz("Archer"); } break;
+    case ModelIndex_Enemy_Skeleton_Spear: { Result = CSz("Spear"); } break;
+    case ModelIndex_Enemy_Skeleton_AxeArmor: { Result = CSz("AxeArmor"); } break;
+    case ModelIndex_Enemy_Skeleton_Hounds: { Result = CSz("Hounds"); } break;
+    case ModelIndex_Enemy_Skeleton_Horserider: { Result = CSz("Horserider"); } break;
+    case ModelIndex_Enemy_Skeleton_Horsebanner: { Result = CSz("Horsebanner"); } break;
+    case ModelIndex_Enemy_Skeleton_Shaman: { Result = CSz("Shaman"); } break;
+    case ModelIndex_Enemy_Skeleton_Champion: { Result = CSz("Champion"); } break;
+    case ModelIndex_Enemy_Skeleton_ChampionChampion: { Result = CSz("ChampionChampion"); } break;
+    case ModelIndex_Enemy_Skeleton_Concubiner: { Result = CSz("Concubiner"); } break;
+    case ModelIndex_Enemy_Skeleton_King: { Result = CSz("King"); } break;
+    case ModelIndex_Player_jp: { Result = CSz("jp"); } break;
+    case ModelIndex_Player_bow: { Result = CSz("bow"); } break;
+    case ModelIndex_Player_cat: { Result = CSz("cat"); } break;
+    case ModelIndex_Player_fox: { Result = CSz("fox"); } break;
+    case ModelIndex_Player_gumi: { Result = CSz("gumi"); } break;
+    case ModelIndex_Player_knight: { Result = CSz("knight"); } break;
+    case ModelIndex_Player_man: { Result = CSz("man"); } break;
+    case ModelIndex_Player_mom: { Result = CSz("mom"); } break;
+    case ModelIndex_Player_old: { Result = CSz("old"); } break;
+    case ModelIndex_Player_poem: { Result = CSz("poem"); } break;
+    case ModelIndex_Player_rain: { Result = CSz("rain"); } break;
+    case ModelIndex_Player_sasami: { Result = CSz("sasami"); } break;
+    case ModelIndex_Player_sol: { Result = CSz("sol"); } break;
+    case ModelIndex_Player_sword: { Result = CSz("sword"); } break;
+    case ModelIndex_Player_tale: { Result = CSz("tale"); } break;
+    case ModelIndex_Player_tama: { Result = CSz("tama"); } break;
+    case ModelIndex_Player_tsurugi: { Result = CSz("tsurugi"); } break;
+    case ModelIndex_Loot: { Result = CSz("Loot"); } break;
+    case ModelIndex_Projectile: { Result = CSz("Projectile"); } break;
+    case ModelIndex_Proton: { Result = CSz("Proton"); } break;
+    case ModelIndex_Bitty0: { Result = CSz("Bitty0"); } break;
+    case ModelIndex_Bitty1: { Result = CSz("Bitty1"); } break;
+    case ModelIndex_Level: { Result = CSz("Level"); } break;
+    case ModelIndex_Count: { Result = CSz("Count"); } break;
+
+    
+  }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  return Result;
+}
+
+link_internal counted_string
 ToString(model_index Type)
 {
   counted_string Result = {};
@@ -48,6 +100,7 @@ ToString(model_index Type)
 
     
   }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
   return Result;
 }
 
