@@ -2291,9 +2291,9 @@ Terrain_SinCos( world_chunk *Chunk,
 
 link_internal u32
 Terrain_Voronoi3D( world_chunk *Chunk,
-                          v3i  NoiseBasis,
-                         void *NoiseParams,
-                         void *UserData )
+                           v3i  NoiseBasis,
+                          void *NoiseParams,
+                          void *UserData )
 {
   TIMED_FUNCTION();
 
