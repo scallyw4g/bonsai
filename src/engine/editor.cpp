@@ -997,46 +997,44 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
       case BrushLayerType_Noise:
       {
         noise_layer *Noise = &Settings->Noise;
+        chunk_init_callback NoiseFunc = {};
+
+        generic_noise_params NoiseParams = {};
+        void *UserData = {};
         switch (Noise->Type)
         {
           case NoiseType_Perlin:
           {
-            Chunk->Flags = Chunk_Queued;
-            InitializeChunkWithNoise( Terrain_Perlin3D,
-                                      GetThreadLocalState(ThreadLocal_ThreadIndex),
-                                      Chunk,
-                                      Chunk->Dim,
-                                      {},
-                                      Noise->Perlin.Period,
-                                      s32(Noise->Perlin.Amplitude),
-                                      s32(Noise->Perlin.Threshold),
-                                      Settings->Color,
-                                      MeshBit_None,
-                                      ChunkInitFlag_Noop,
-                                      0,
-                                      True,
-                                      V3i(GetAbsoluteP(Editor->SelectionRegion.Min, GetWorldChunkDim())) );
+            NoiseFunc              = Terrain_Perlin3D;
+            NoiseParams.Threshold = Noise->Perlin.Threshold;
+            NoiseParams.Period    = Noise->Perlin.Period;
+            NoiseParams.Amplitude = Noise->Perlin.Amplitude;
+            NoiseParams.Color     = Settings->Color;
           } break;
 
           case NoiseType_Voronoi:
           {
-            Chunk->Flags = Chunk_Queued;
-            InitializeChunkWithNoise( Terrain_Voronoi3D,
-                                      GetThreadLocalState(ThreadLocal_ThreadIndex),
-                                      Chunk,
-                                      Chunk->Dim,
-                                      {},
-                                      Noise->Voronoi.Period,
-                                      s32(Noise->Voronoi.Amplitude),
-                                      s32(Noise->Voronoi.Threshold),
-                                      Settings->Color,
-                                      MeshBit_None,
-                                      ChunkInitFlag_Noop,
-                                      Cast(void*, &Noise->Voronoi),
-                                      True,
-                                      V3i(GetAbsoluteP(Editor->SelectionRegion.Min, GetWorldChunkDim())) );
+            NoiseFunc              = Terrain_Voronoi3D;
+            NoiseParams.Threshold = Noise->Voronoi.Threshold;
+            NoiseParams.Period    = Noise->Voronoi.Period;
+            NoiseParams.Amplitude = Noise->Voronoi.Amplitude;
+            NoiseParams.Color     = Settings->Color;
+            UserData = Cast(void*, &Noise->Voronoi);
           } break;
         }
+
+        Assert(NoiseFunc);
+
+        Chunk->Flags = Chunk_Queued;
+
+        InitializeChunkWithNoise( NoiseFunc,
+                                  GetThreadLocalState(ThreadLocal_ThreadIndex),
+                                  Chunk,
+                                  Cast(void*, &NoiseParams),
+                                  ChunkInitFlag_Noop,
+                                  UserData,
+                                  True,
+                                  Settings->NoiseBasisOffset + V3i(GetAbsoluteP(Editor->SelectionRegion.Min, GetWorldChunkDim())));
       } break;
     }
 
@@ -1143,7 +1141,8 @@ DoSettingsForBrush(engine_resources *Engine, brush_layer *Layer, window_layout *
     DoEditorUi(Ui, Window, &Settings->Iterations, CSz("Iterations"));
     PushNewRow(Ui); // Primitives require a new row.. I forget why, but there's a good reason.
   }
-  DoEditorUi(Ui, Window, &Settings->Offset,     CSz("Dilation"));
+  DoEditorUi(Ui, Window, &Settings->Offset,           CSz("Dilation"));
+  DoEditorUi(Ui, Window, &Settings->NoiseBasisOffset, CSz("Basis"), &DefaultUiRenderParams_Generic);
 
   // NOTE(Jesse): These are only stricly necessary if Modifier is Flood or Surface .. do we care?
   /* Settings->Offset.Min = Min(V3i(-Settings->Iterations), Settings->Offset.Min); */
@@ -1302,9 +1301,25 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
       if (ClickedFileNode.Tag)
       {
+#if 0
+        Global_SerializeTypeTableArena = AllocateArena();
+        Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(64, Global_SerializeTypeTableArena);
+
+        {
+          brush_settings_0 *Dummy = 0;
+          auto TI = TypeInfo(Dummy);
+          /* TI.Version = 1; */
+          Insert(TI, &Global_SerializeTypeTable, Global_SerializeTypeTableArena);
+        }
+#endif
+
         u8_stream Bytes = U8_StreamFromFile(Concat( ClickedFileNode.Value.Dir, CSz("/"), ClickedFileNode.Value.Name, GetTranArena()), GetTranArena());
         Deserialize(&Bytes, &Editor->LayeredBrushEditor, 0); // NOTE(Jesse): Passing 0 for the memory is fine here because these brushes have no pointers.  In the future this may change, and we'll crash here.
         SetToggleButton(Ui, ImportToggleId, False);
+
+#if 0
+        VaporizeArena(Global_SerializeTypeTableArena);
+#endif
       }
     }
     else

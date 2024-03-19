@@ -12,8 +12,7 @@ DoLevelWindow(engine_resources *Engine)
   PushTableStart(Ui);
     if (Button(Ui, CSz("Export Level"), UiId(&Window, "export_level_button", 0ull)))
     {
-      Global_SerializeTypeTableArena = AllocateArena();
-      Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(64, Global_SerializeTypeTableArena);
+      u8_cursor_block_array OutputStream = BeginSerialization();
 
       u32 ChunkCount = 0;
       RangeIterator(HashIndex, s32(World->HashSize))
@@ -23,16 +22,6 @@ DoLevelWindow(engine_resources *Engine)
           ++ChunkCount;
         }
       }
-
-      /* native_file LevelFile = OpenFile("../bonsai_levels/test.level", "w+b"); */
-
-      u8_cursor_block_array OutputStream = {};
-      {
-        OutputStream.BlockSize = Megabytes(32);
-        u8_cursor First = U8Cursor(OutputStream.BlockSize, Global_SerializeTypeTableArena);
-        Ensure( Push(&OutputStream, &First) );
-      }
-
 
       level_header Header = {};
       Header.ChunkCount = ChunkCount;
@@ -54,7 +43,6 @@ DoLevelWindow(engine_resources *Engine)
 
 
       Serialize(&OutputStream, &Header);
-      /* WriteToFile(&LevelFile, (u8*)&Header, sizeof(level_header)); */
 
       u64 Delimeter = LEVEL_FILE_DEBUG_OBJECT_DELIM;
       RangeIterator(HashIndex, s32(World->HashSize))
@@ -78,31 +66,12 @@ DoLevelWindow(engine_resources *Engine)
 
       v3_cursor *Palette = GetColorPalette();
       Serialize(&OutputStream, Palette);
-      /* Serialize(&LevelFile, Palette); */
 
-
-      u8_cursor_block_array TypeBufferOutputStream = {};
+      const char *Filename = "../bonsai_levels/test.level";
+      if (FinalizeSerialization(&OutputStream, Filename) == False)
       {
-        TypeBufferOutputStream.BlockSize = Megabytes(32);
-
-        u8_cursor First = U8Cursor(TypeBufferOutputStream.BlockSize, Global_SerializeTypeTableArena);
-        Ensure( Push(&TypeBufferOutputStream, &First) );
-
-        bonsai_type_info_buffer TypeBuffer = ToBuffer(&Global_SerializeTypeTable, Global_SerializeTypeTableArena);
-        Serialize(&TypeBufferOutputStream, &TypeBuffer);
+        SoftError("Could not serialize (%s).", Filename);
       }
-
-
-      native_file LevelFile = OpenFile("../bonsai_levels/test.level", FilePermission_Write);
-        u64 FileFormatVersion = LEVEL_FILE_FORMAT_VERSION_NUMBER;
-        WriteToFile(&LevelFile, FileFormatVersion);
-        WriteToFile(&LevelFile, &TypeBufferOutputStream);
-        WriteToFile(&LevelFile, &OutputStream);
-      CloseFile(&LevelFile);
-
-      Global_SerializeTypeTable = {};
-      VaporizeArena(Global_SerializeTypeTableArena);
-      Global_SerializeTypeTableArena = 0;
     }
   PushTableEnd(Ui);
   PushNewRow(Ui);
