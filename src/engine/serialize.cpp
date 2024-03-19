@@ -46,3 +46,74 @@ FinalizeSerialization(u8_cursor_block_array *Blocks, const char *Filename)
 
   return Result;
 }
+
+
+
+
+
+link_internal u8_stream
+BeginDeserialization(cs Filename, memory_arena *TempMemory)
+{
+  u8_stream LevelBytes = U8_StreamFromFile(Filename, TempMemory);
+  if (LevelBytes.Start)
+  {
+    u64 LevelHeaderVersion = {};
+    Deserialize(&LevelBytes, &LevelHeaderVersion, 0);
+
+    Global_SerializeTypeTableArena = AllocateArena();
+    switch(LevelHeaderVersion)
+    {
+      // TODO(Jesse): Audit .level savefiles and remove this.. it's hella legacy
+      case 0:
+      {
+        Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(64, Global_SerializeTypeTableArena);
+
+        {
+          entity *Dummy = 0;
+          auto TI = TypeInfo(Dummy);
+          TI.Version = 1;
+          Insert(TI, &Global_SerializeTypeTable, Global_SerializeTypeTableArena);
+        }
+
+        {
+          camera *Dummy = 0;
+          auto TI = TypeInfo(Dummy);
+          TI.Version = 0;
+          Insert(TI, &Global_SerializeTypeTable, Global_SerializeTypeTableArena);
+        }
+
+        {
+          level_header *Dummy = 0;
+          auto TI = TypeInfo(Dummy);
+          TI.Version = 0;
+          Insert(TI, &Global_SerializeTypeTable, Global_SerializeTypeTableArena);
+        }
+      } break;
+
+      case 1:
+      {
+        bonsai_type_info_buffer TypeInfoBuffer = {};
+        Deserialize(&LevelBytes, &TypeInfoBuffer, Global_SerializeTypeTableArena);
+        Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(NextPowerOfTwo(TypeInfoBuffer.Count), Global_SerializeTypeTableArena);
+
+        IterateOver(&TypeInfoBuffer, TypeInfo, TypeInfoIndex)
+        {
+          Insert(*TypeInfo, &Global_SerializeTypeTable, Global_SerializeTypeTableArena);
+        }
+      } break;
+
+      default: { SoftError("Could not load level file claiming version (%lu), bailing.", LevelHeaderVersion); }
+    }
+  }
+  return LevelBytes;
+}
+
+link_internal void
+FinalizeDeserialization(u8_stream *Bytes)
+{
+  *Bytes = {};
+
+  Global_SerializeTypeTable = {};
+  VaporizeArena(Global_SerializeTypeTableArena);
+  Global_SerializeTypeTableArena = 0;
+}

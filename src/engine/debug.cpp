@@ -85,76 +85,26 @@ DoLevelWindow(engine_resources *Engine)
   if (ClickedNode.Tag)
   {
     cs Filename = Concat(ClickedNode.Value.Dir, CSz("/"), ClickedNode.Value.Name, GetTranArena());
-    u8_stream LevelBytes = U8_StreamFromFile(Filename, Thread->PermMemory);
 
-    b32 Error = False;
+    u8_cursor LevelBytes = BeginDeserialization(Filename, GetTranArena());
     if (LevelBytes.Start)
     {
-      u64 LevelHeaderVersion = {};
-      Deserialize(&LevelBytes, &LevelHeaderVersion, 0);
-
-      Global_SerializeTypeTableArena = AllocateArena();
-      switch(LevelHeaderVersion)
-      {
-        case 0:
-        {
-          Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(64, Global_SerializeTypeTableArena);
-
-          {
-            entity *Dummy = 0;
-            auto TI = TypeInfo(Dummy);
-            TI.Version = 1;
-            Insert(TI, &Global_SerializeTypeTable, Global_SerializeTypeTableArena);
-          }
-
-          {
-            camera *Dummy = 0;
-            auto TI = TypeInfo(Dummy);
-            TI.Version = 0;
-            Insert(TI, &Global_SerializeTypeTable, Global_SerializeTypeTableArena);
-          }
-
-          {
-            level_header *Dummy = 0;
-            auto TI = TypeInfo(Dummy);
-            TI.Version = 0;
-            Insert(TI, &Global_SerializeTypeTable, Global_SerializeTypeTableArena);
-          }
-        } break;
-
-        case 1:
-        {
-          bonsai_type_info_buffer TypeInfoBuffer = {};
-          Deserialize(&LevelBytes, &TypeInfoBuffer, Thread->TempMemory);
-          Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(NextPowerOfTwo(TypeInfoBuffer.Count), Global_SerializeTypeTableArena);
-
-          IterateOver(&TypeInfoBuffer, TypeInfo, TypeInfoIndex)
-          {
-            Insert(*TypeInfo, &Global_SerializeTypeTable, Global_SerializeTypeTableArena);
-          }
-        } break;
-
-        default: { Error=True; SoftError("Could not load level file claiming version (%lu), bailing.", LevelHeaderVersion); }
-      }
-
       level_header LevelHeader = {};
-      Deserialize(&LevelBytes, &LevelHeader, Thread->PermMemory);
 
 
+      if (Deserialize(&LevelBytes, &LevelHeader, Thread->PermMemory))
       {
-        engine_settings *EngineSettings = &GetEngineResources()->Settings;
-        LevelHeader.RenderSettings.ApplicationResolution  = V2(GetApplicationResolution(EngineSettings));
-        LevelHeader.RenderSettings.ShadowMapResolution    = V2(GetShadowMapResolution(EngineSettings));
-        LevelHeader.RenderSettings.LuminanceMapResolution = V2(GetLuminanceMapResolution(EngineSettings));
+        {
+          engine_settings *EngineSettings = &GetEngineResources()->Settings;
+          LevelHeader.RenderSettings.ApplicationResolution  = V2(GetApplicationResolution(EngineSettings));
+          LevelHeader.RenderSettings.ShadowMapResolution    = V2(GetShadowMapResolution(EngineSettings));
+          LevelHeader.RenderSettings.LuminanceMapResolution = V2(GetLuminanceMapResolution(EngineSettings));
 
-        LevelHeader.RenderSettings.iApplicationResolution  = GetApplicationResolution(EngineSettings);
-        LevelHeader.RenderSettings.iShadowMapResolution    = GetShadowMapResolution(EngineSettings);
-        LevelHeader.RenderSettings.iLuminanceMapResolution = GetLuminanceMapResolution(EngineSettings);
-      }
+          LevelHeader.RenderSettings.iApplicationResolution  = GetApplicationResolution(EngineSettings);
+          LevelHeader.RenderSettings.iShadowMapResolution    = GetShadowMapResolution(EngineSettings);
+          LevelHeader.RenderSettings.iLuminanceMapResolution = GetLuminanceMapResolution(EngineSettings);
+        }
 
-
-      if (Error == False)
-      {
         SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
 
         SoftResetEngine(Engine);
@@ -205,6 +155,7 @@ DoLevelWindow(engine_resources *Engine)
 
 #if 1
 
+        b32 Error = False;
         u32 EntityCount = LevelHeader.EntityCount;
         RangeIterator_t(u32, EntityIndex, EntityCount)
         {
@@ -233,11 +184,8 @@ DoLevelWindow(engine_resources *Engine)
 
         UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
       }
-
-      Global_SerializeTypeTable = {};
-      VaporizeArena(Global_SerializeTypeTableArena);
-      Global_SerializeTypeTableArena = 0;
     }
+    FinalizeDeserialization(&LevelBytes);
 
   }
   PushWindowEnd(Ui, &Window);

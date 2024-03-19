@@ -7,23 +7,20 @@ GetByName( bonsai_type_info_hashtable *Table, cs Name )
 
   maybe_bonsai_type_info Result = {};
 
-  if (Table->Size)
+  auto *Bucket = GetHashBucket(umm(Hash(&Name)), Table);
+  while (Bucket)
   {
-    auto *Bucket = GetHashBucket(umm(Hash(&Name)), Table);
-    while (Bucket)
-    {
-      auto E = &Bucket->Element;
+    auto E = &Bucket->Element;
 
-      if (AreEqual(E->Name, Name))
-      {
-        Result.Tag = Maybe_Yes;
-        Result.Value = *E;
-        break;
-      }
-      else
-      {
-        Bucket = Bucket->Next;
-      }
+    if (AreEqual(E->Name, Name))
+    {
+      Result.Tag = Maybe_Yes;
+      Result.Value = *E;
+      break;
+    }
+    else
+    {
+      Bucket = Bucket->Next;
     }
   }
 
