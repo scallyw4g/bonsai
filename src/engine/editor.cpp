@@ -1189,7 +1189,7 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestC
         case ShapeType_Sphere:
         {
           Shape.world_update_op_shape_params_sphere = Settings->Shape.Sphere;
-          Shape.world_update_op_shape_params_sphere.Location.Offset = (GetSelectionDim(World, Editor)/2.f) - V3(SmallestMinOffset);
+          Shape.world_update_op_shape_params_sphere.Location.Offset = ((DestChunk->Dim/2.f) - V3(SmallestMinOffset));
         } break;
 
         case ShapeType_Rect:
@@ -1362,6 +1362,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
             // @editor_chunk_memory_question
             AllocateWorldChunk(Root_LayeredBrushPreview, {}, LargestLayerDim, Editor->Memory);
           }
+
 
           RangeIterator(LayerIndex, LayeredBrush->LayerCount)
           {
