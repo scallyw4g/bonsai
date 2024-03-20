@@ -61,6 +61,37 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
         CSz("Preview"),
         Params
         );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->SeedBrushWithSelection,
+        CSz("SeedBrushWithSelection"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->ApplyBrushOnClick,
+        CSz("ApplyBrushOnClick"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

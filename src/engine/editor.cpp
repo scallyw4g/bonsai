@@ -1261,24 +1261,6 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
   brush_layer          *Layers             =  LayeredBrush->Layers;
 
   {
-    local_persist window_layout PreviewWindow = WindowLayout("Preview", WindowLayoutFlag_Align_Bottom);
-    PushWindowStart(Ui, &PreviewWindow);
-      RenderAndInteractWithThumbnailTexture(Ui, &PreviewWindow, "noise preview interaction", &LayeredBrush->Preview.Thumbnail);
-    PushWindowEnd(Ui, &PreviewWindow);
-  }
-
-
-  b32 AnyBrushSettingsUpdated = False;
-  {
-    RangeIterator(LayerIndex, LayeredBrush->LayerCount)
-    {
-      brush_layer *Layer = Layers + LayerIndex;
-      AnyBrushSettingsUpdated |= CheckForChangesAndUpdate_ThenRenderToPreviewTexture(Engine, Layer);
-    }
-  }
-
-
-  {
     PushWindowStart(Ui, BrushSettingsWindow);
 
     if (Button(Ui, CSz("Export"), UiId(BrushSettingsWindow, "brush export", 0u)))
@@ -1314,13 +1296,47 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         SetToggleButton(Ui, ImportToggleId, False);
       }
     }
-    else
-    {
-      PushNewRow(Ui);
-      DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->LayerCount, CSz("Layer Count"), &DefaultUiRenderParams_Generic);
-      PushNewRow(Ui);
-      PushNewRow(Ui);
 
+    PushNewRow(Ui);
+    PushNewRow(Ui);
+
+      PushColumn(Ui, CSz("BrushName"));
+      PushColumn(Ui, CSz("TODO"));
+    PushNewRow(Ui);
+
+    DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->LayerCount, CSz("Layer Count"), &DefaultUiRenderParams_Generic);
+    PushNewRow(Ui);
+    PushNewRow(Ui);
+
+    DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->SeedBrushWithSelection, CSz("SeedBrushWithSelection"), &DefaultUiRenderParams_Generic);
+    PushNewRow(Ui);
+
+    DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->ApplyBrushOnClick,      CSz("ApplyBrushOnClick"),      &DefaultUiRenderParams_Generic);
+    PushNewRow(Ui);
+
+
+    PushWindowEnd(Ui, BrushSettingsWindow);
+  }
+
+  {
+  }
+
+
+  b32 AnyBrushSettingsUpdated = False;
+  {
+    RangeIterator(LayerIndex, LayeredBrush->LayerCount)
+    {
+      brush_layer *Layer = Layers + LayerIndex;
+      AnyBrushSettingsUpdated |= CheckForChangesAndUpdate_ThenRenderToPreviewTexture(Engine, Layer);
+    }
+  }
+
+
+  {
+    local_persist window_layout LayersWindow = WindowLayout("Layers", WindowLayoutFlag_Align_Right);
+    PushWindowStart(Ui, &LayersWindow);
+
+    {
       PushTableStart(Ui);
       RangeIterator(LayerIndex, LayeredBrush->LayerCount)
       {
@@ -1378,7 +1394,8 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         RenderToTexture(Engine, &LayeredBrush->Preview.Thumbnail, &Root_LayeredBrushPreview->Meshes, Root_LayeredBrushPreview->Dim/-2.f);
       }
     }
-    PushWindowEnd(Ui, BrushSettingsWindow);
+
+    PushWindowEnd(Ui, &LayersWindow);
   }
 }
 
@@ -1387,7 +1404,7 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, w
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  local_persist window_layout Window = WindowLayout("Brush Settings", WindowLayoutFlag_Align_Right);
+  local_persist window_layout Window = WindowLayout("Brush Settings", WindowLayoutFlag_Align_Bottom);
   switch (WorldEditTool)
   {
     case  WorldEdit_Tool_Disabled:

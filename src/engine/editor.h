@@ -893,6 +893,9 @@ struct layered_brush_editor
   brush_layer Layers[MAX_BRUSH_LAYERS];
 
   chunk_thumbnail Preview; poof(@no_serialize)
+
+  b8 SeedBrushWithSelection;
+  b8 ApplyBrushOnClick;
 };
 
 
