@@ -54,6 +54,17 @@ Serialize(u8_cursor_block_array *Bytes, layered_brush_editor *BaseElement, umm C
 
     Result &= Serialize(Bytes, &Element->ApplyBrushOnClick);
 
+
+
+
+
+    Result &= Serialize(Bytes, (u32*)&Element->Mode);
+
+
+
+
+    Result &= Serialize(Bytes, (u32*)&Element->Modifier);
+
     
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -103,6 +114,17 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layered_brush_editor *Element, memor
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ApplyBrushOnClick, Memory);
+
+
+
+
+
+  Element->Mode = Cast(world_edit_mode, Read_u32(Bytes));
+
+
+
+
+  Element->Modifier = Cast(world_edit_mode_modifier, Read_u32(Bytes));
 
   
 

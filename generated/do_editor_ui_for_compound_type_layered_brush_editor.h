@@ -92,6 +92,25 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
 
 
       PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->Mode,
+        CSz("Mode"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Modifier,
+        CSz("Modifier"),
+        Params
+        );
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

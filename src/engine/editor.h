@@ -896,6 +896,10 @@ struct layered_brush_editor
 
   b8 SeedBrushWithSelection;
   b8 ApplyBrushOnClick;
+
+
+  world_edit_mode Mode;
+  world_edit_mode_modifier Modifier;
 };
 
 

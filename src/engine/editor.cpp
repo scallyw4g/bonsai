@@ -1252,6 +1252,8 @@ GetSmallestMinOffset(layered_brush_editor *LayeredBrush, v3i *LargestLayerDim)
   return SmallestMinOffset;
 }
 
+
+
 link_internal void
 BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSettingsWindow)
 {
@@ -1300,20 +1302,29 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
     PushNewRow(Ui);
     PushNewRow(Ui);
 
-      PushColumn(Ui, CSz("BrushName"));
-      PushColumn(Ui, CSz("TODO"));
-    PushNewRow(Ui);
+    {
+      PushColumn(Ui, CSz("BrushName")); PushColumn(Ui, CSz("TODO"));
+      PushNewRow(Ui);
 
-    DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->LayerCount, CSz("Layer Count"), &DefaultUiRenderParams_Generic);
-    PushNewRow(Ui);
-    PushNewRow(Ui);
+      DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->LayerCount, CSz("Layer Count"), &DefaultUiRenderParams_Generic);
+      PushNewRow(Ui);
+      PushNewRow(Ui);
+    }
 
-    DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->SeedBrushWithSelection, CSz("SeedBrushWithSelection"), &DefaultUiRenderParams_Generic);
-    PushNewRow(Ui);
+    {
+      DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->SeedBrushWithSelection, CSz("SeedBrushWithSelection"), &DefaultUiRenderParams_Generic);
+      PushNewRow(Ui);
 
-    DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->ApplyBrushOnClick,      CSz("ApplyBrushOnClick"),      &DefaultUiRenderParams_Generic);
-    PushNewRow(Ui);
+      DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->ApplyBrushOnClick,      CSz("ApplyBrushOnClick"),      &DefaultUiRenderParams_Generic);
+      PushNewRow(Ui);
+      PushNewRow(Ui);
+    }
 
+    {
+      DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->Mode,     CSz("Mode"),     &DefaultUiRenderParams_Generic);
+      DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->Modifier, CSz("Modifier"), &DefaultUiRenderParams_Generic);
+      PushNewRow(Ui);
+    }
 
     PushWindowEnd(Ui, BrushSettingsWindow);
   }
@@ -1379,6 +1390,12 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
             AllocateWorldChunk(Root_LayeredBrushPreview, {}, LargestLayerDim, Editor->Memory);
           }
 
+          if (LayeredBrush->SeedBrushWithSelection)
+          {
+            world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, Editor->CopyRegion, Engine->WorldUpdateMemory);
+            world_chunk Seed = GatherVoxelsOverlappingArea(Engine, Editor->SelectionRegion, GetTranArena());
+            CopyChunkOffset(&Seed, Seed.Dim, Root_LayeredBrushPreview, Root_LayeredBrushPreview->Dim, -1*SmallestMinOffset);
+          }
 
           RangeIterator(LayerIndex, LayeredBrush->LayerCount)
           {
