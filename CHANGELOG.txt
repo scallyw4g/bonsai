@@ -3,7 +3,8 @@
 - @Shawnecy Chased down a divide by zero in the lighting shader
 
 - Added Layered brushes
-	This is a pretty large feature that's not super well documented.
+	This is a pretty large feature that's not super well documented.  Stay tuned
+	for tutorials on YouTube.
 
 * 1.4.3
 
