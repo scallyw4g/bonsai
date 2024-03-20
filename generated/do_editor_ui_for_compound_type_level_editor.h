@@ -52,8 +52,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       
       DoEditorUi(Ui,
         Window,
-&Element->Params,
-        CSz("Params"),
+&Element->BrushType,
+        CSz("BrushType"),
         Params
         );
 
@@ -64,8 +64,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       
       DoEditorUi(Ui,
         Window,
-&Element->BrushType,
-        CSz("BrushType"),
+&Element->Params,
+        CSz("Params"),
         Params
         );
 

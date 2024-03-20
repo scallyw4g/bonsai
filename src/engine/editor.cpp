@@ -1265,17 +1265,6 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
   {
     PushWindowStart(Ui, BrushSettingsWindow);
 
-    if (Button(Ui, CSz("Export"), UiId(BrushSettingsWindow, "brush export", 0u)))
-    {
-      u8_cursor_block_array OutputStream = BeginSerialization();
-      Serialize(&OutputStream, LayeredBrush);
-      const char *FilenameZ = "brushes/temp.brush";
-      if (FinalizeSerialization(&OutputStream, FilenameZ) == False)
-      {
-        SoftError("Unable to serialize brush (%S).", CS(FilenameZ));
-      }
-    }
-
     ui_id ImportToggleId = UiId(BrushSettingsWindow, "brush import", 0u);
     if (ToggleButton(Ui, CSz("Import"), CSz("Import"), ImportToggleId))
     {
@@ -1298,34 +1287,46 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         SetToggleButton(Ui, ImportToggleId, False);
       }
     }
-
-    PushNewRow(Ui);
-    PushNewRow(Ui);
-
+    else
     {
-      PushColumn(Ui, CSz("BrushName")); PushColumn(Ui, CSz("TODO"));
+      if (Button(Ui, CSz("Export"), UiId(BrushSettingsWindow, "brush export", 0u)))
+      {
+        u8_cursor_block_array OutputStream = BeginSerialization();
+        Serialize(&OutputStream, LayeredBrush);
+        const char *FilenameZ = "brushes/temp.brush";
+        if (FinalizeSerialization(&OutputStream, FilenameZ) == False)
+        {
+          SoftError("Unable to serialize brush (%S).", CS(FilenameZ));
+        }
+      }
+
+      PushNewRow(Ui);
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->LayerCount, CSz("Layer Count"), &DefaultUiRenderParams_Generic);
-      PushNewRow(Ui);
-      PushNewRow(Ui);
+      {
+        PushColumn(Ui, CSz("BrushName")); PushColumn(Ui, CSz("TODO"));
+        PushNewRow(Ui);
+
+        DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->LayerCount, CSz("Layer Count"), &DefaultUiRenderParams_Generic);
+        PushNewRow(Ui);
+        PushNewRow(Ui);
+      }
+
+      {
+        DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->SeedBrushWithSelection, CSz("SeedBrushWithSelection"), &DefaultUiRenderParams_Generic);
+        PushNewRow(Ui);
+
+        DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->ApplyBrushOnClick,      CSz("ApplyBrushOnClick"),      &DefaultUiRenderParams_Generic);
+        PushNewRow(Ui);
+        PushNewRow(Ui);
+      }
+
+      {
+        DoEditorUi(Ui, BrushSettingsWindow, &Editor->Params.Mode,     CSz("Mode"),     &DefaultUiRenderParams_Generic);
+        DoEditorUi(Ui, BrushSettingsWindow, &Editor->Params.Modifier, CSz("Modifier"), &DefaultUiRenderParams_Generic);
+        PushNewRow(Ui);
+      }
     }
-
-    {
-      DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->SeedBrushWithSelection, CSz("SeedBrushWithSelection"), &DefaultUiRenderParams_Generic);
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->ApplyBrushOnClick,      CSz("ApplyBrushOnClick"),      &DefaultUiRenderParams_Generic);
-      PushNewRow(Ui);
-      PushNewRow(Ui);
-    }
-
-    {
-      DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->Mode,     CSz("Mode"),     &DefaultUiRenderParams_Generic);
-      DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->Modifier, CSz("Modifier"), &DefaultUiRenderParams_Generic);
-      PushNewRow(Ui);
-    }
-
     PushWindowEnd(Ui, BrushSettingsWindow);
   }
 
@@ -1439,8 +1440,16 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, w
         case WorldEdit_BrushType_Disabled:  {} break;
         case WorldEdit_BrushType_Selection: {} break;
         case WorldEdit_BrushType_Single:    {} break;
-        case WorldEdit_BrushType_Asset:     {} break;
         case WorldEdit_BrushType_Entity:    {} break;
+
+        case WorldEdit_BrushType_Asset:
+        {
+          PushWindowStart(Ui, &Window);
+            DoEditorUi(Ui, &Window, &Editor->Params.Mode,     CSz("Mode"),     &DefaultUiRenderParams_Generic);
+            DoEditorUi(Ui, &Window, &Editor->Params.Modifier, CSz("Modifier"), &DefaultUiRenderParams_Generic);
+          PushWindowEnd(Ui, &Window);
+        } break;
+
 
         case WorldEdit_BrushType_Noise:
         {
@@ -1639,19 +1648,19 @@ DoWorldEditor(engine_resources *Engine)
         CurrentRef = WorldEditBrushTypeButtonGroup.UiRef;
       }
 
-      if (Editor->Tool == WorldEdit_Tool_Brush)
-      {
-        Params.RelativePosition.Position   = Position_RightOf;
-        Params.RelativePosition.RelativeTo = CurrentRef;
-        WorldEditModeButtonGroup = DoEditorUi(Ui, &Window, &Editor->Params.Mode, CSz("Mode"), &Params, ToggleButtonGroupFlags_DrawVertical);
-        CurrentRef = WorldEditModeButtonGroup.UiRef;
-      }
+      /* if (Editor->Tool == WorldEdit_Tool_Brush) */
+      /* { */
+      /*   Params.RelativePosition.Position   = Position_RightOf; */
+      /*   Params.RelativePosition.RelativeTo = CurrentRef; */
+      /*   WorldEditModeButtonGroup = DoEditorUi(Ui, &Window, &Editor->Params.Mode, CSz("Mode"), &Params, ToggleButtonGroupFlags_DrawVertical); */
+      /*   CurrentRef = WorldEditModeButtonGroup.UiRef; */
+      /* } */
 
-      if (Editor->Tool == WorldEdit_Tool_Brush)
-      {
-        Params = DefaultUiRenderParams_Generic;
-        WorldEditModifierButtonGroup = DoEditorUi(Ui, &Window, &Editor->Params.Modifier, CSz(""), &Params, ToggleButtonGroupFlags_DrawVertical);
-      }
+      /* if (Editor->Tool == WorldEdit_Tool_Brush) */
+      /* { */
+      /*   Params = DefaultUiRenderParams_Generic; */
+      /*   WorldEditModifierButtonGroup = DoEditorUi(Ui, &Window, &Editor->Params.Modifier, CSz(""), &Params, ToggleButtonGroupFlags_DrawVertical); */
+      /* } */
 
     PushTableEnd(Ui);
 
@@ -1738,17 +1747,17 @@ DoWorldEditor(engine_resources *Engine)
     }
   }
 
-  if (WorldEditModeButtonGroup.AnyElementClicked)
-  {
-    switch (Editor->Params.Mode)
-    {
-      case WorldEdit_Mode_Disabled: {} break;
-      case WorldEdit_Mode_Paint:
-      case WorldEdit_Mode_Attach:
-      case WorldEdit_Mode_Remove:
-      { } break;
-    }
-  }
+  /* if (WorldEditModeButtonGroup.AnyElementClicked) */
+  /* { */
+  /*   switch (Editor->Params.Mode) */
+  /*   { */
+  /*     case WorldEdit_Mode_Disabled: {} break; */
+  /*     case WorldEdit_Mode_Paint: */
+  /*     case WorldEdit_Mode_Attach: */
+  /*     case WorldEdit_Mode_Remove: */
+  /*     { } break; */
+  /*   } */
+  /* } */
 
 
   DoBrushSettingsWindow(Engine, Editor->Tool, Editor->BrushType);
