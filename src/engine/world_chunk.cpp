@@ -4105,11 +4105,19 @@ poof(
   {
     DimIterator(x, y, z, UpdateDim)
     {
+      b32 OverwriteVoxel = False;
+
       v3i SimRelVoxP = V3i(x,y,z);
       v3i SimVoxP = SimRelVoxP + SimSpaceUpdateBounds.Min;
       voxel *V = CopiedChunk->Voxels + GetIndex(SimRelVoxP, UpdateDim);
 
       UserCode
+
+      if ( ((OverwriteVoxel == True)  && (Invert == False)) ||
+           ((OverwriteVoxel == False) && (Invert == True))  )
+      {
+        *V = *NewVoxelValue;
+      }
     }
 
   }
@@ -4188,6 +4196,7 @@ struct apply_world_edit_params
   rect3i SSRect;
   rect3i SimSpaceUpdateBounds;
   world_chunk *CopiedChunk;
+  b32 Invert;
 };
 
 #define UNPACK_APPLY_WORLD_EDIT_PARAMS(P)                \
@@ -4195,7 +4204,9 @@ struct apply_world_edit_params
   rect3i SSRect = P->SSRect;                             \
   rect3i SimSpaceUpdateBounds = P->SimSpaceUpdateBounds; \
   world_chunk *CopiedChunk = P->CopiedChunk;             \
-  v3i UpdateDim = GetDim(SimSpaceUpdateBounds)
+  v3i UpdateDim = GetDim(SimSpaceUpdateBounds); \
+  b32 Invert = P->Invert
+
 
 
 
@@ -4459,8 +4470,8 @@ WorldEdit_shape_chunk_data_Default(apply_world_edit_params *Params, v3 SimOrigin
     {
       poof(rectalinear_iteration_pattern({
         v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
-        voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
-        if (AssetV && (AssetV->Flags&Voxel_Filled)) { *V = *AssetV; }
+        voxel *NewVoxelValue = TryGetVoxel(Data, OriginToCurrentVoxP);
+        if (NewVoxelValue && (NewVoxelValue->Flags&Voxel_Filled)) { *V = *NewVoxelValue; }
       }))
 #include <generated/rectalinear_iteration_pattern_122717011.h>
     } break;
@@ -4469,8 +4480,8 @@ WorldEdit_shape_chunk_data_Default(apply_world_edit_params *Params, v3 SimOrigin
     {
       poof(rectalinear_iteration_pattern({
         v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
-        voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
-        if (AssetV && (AssetV->Flags&Voxel_Filled)) { V->Flags = Voxel_Empty; }
+        voxel *NewVoxelValue = TryGetVoxel(Data, OriginToCurrentVoxP);
+        if (NewVoxelValue && (NewVoxelValue->Flags&Voxel_Filled)) { V->Flags = Voxel_Empty; }
       }))
 #include <generated/rectalinear_iteration_pattern_428632106.h>
     } break;
@@ -4479,8 +4490,8 @@ WorldEdit_shape_chunk_data_Default(apply_world_edit_params *Params, v3 SimOrigin
     {
       poof(rectalinear_iteration_pattern({
         v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
-        voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
-        if (AssetV && (AssetV->Flags&Voxel_Filled)) { V->Color = AssetV->Color; }
+        voxel *NewVoxelValue = TryGetVoxel(Data, OriginToCurrentVoxP);
+        if (NewVoxelValue && (NewVoxelValue->Flags&Voxel_Filled)) { V->Color = NewVoxelValue->Color; }
       }))
 #include <generated/rectalinear_iteration_pattern_583358156.h>
     } break;
@@ -4495,7 +4506,7 @@ WorldEdit_shape_chunk_data_Default(apply_world_edit_params *Params, v3 SimOrigin
 
 
 link_internal void
-ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_region *Job, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk)
+ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_region *Job, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, b32 Invert = False)
 {
   world *World = GetWorld();
 
@@ -4512,13 +4523,14 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
   u16 NewColor                = Job->ColorIndex;
   u8  NewTransparency         = Job->Transparency;
 
-  voxel NewVoxelValue = {};
+  voxel _NewVoxelValue = {};
+  voxel *NewVoxelValue = &_NewVoxelValue;
   if (Mode == WorldEdit_Mode_Attach || Mode == WorldEdit_Mode_Paint)
   {
 #if VOXEL_DEBUG_COLOR
-    NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor, {}, {}};
+    _NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor, {}, {}};
 #else
-    NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor};
+    _NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor};
 #endif
   }
 
@@ -4594,7 +4606,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
             v3i CenterToVoxP = SimVoxP - EditCenterP;
             if (LengthSq(CenterToVoxP) < RadiusSquared)
             {
-              *V = NewVoxelValue;
+              OverwriteVoxel = True;
             }
           }))
 #include <generated/rectalinear_iteration_pattern_199114513.h>
@@ -4637,22 +4649,22 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
       rect3i SSRect = {V3i(Rect->Region.Min), V3i(Rect->Region.Max)};
       v3i EditCenterP = V3i(Floor(Rect->Region.Min+(GetDim(SSRect)/2.f)));
 
-      apply_world_edit_params Params = {Mode, SSRect, SimSpaceUpdateBounds, CopiedChunk};
+      apply_world_edit_params Params = {Mode, SSRect, SimSpaceUpdateBounds, CopiedChunk, Invert};
       switch (Modifier)
       {
         case WorldEdit_Modifier_Surface:
         {
-          WorldEdit_shape_rect_Surface(&Params, &NewVoxelValue);
+          WorldEdit_shape_rect_Surface(&Params, NewVoxelValue);
         } break;
 
         case WorldEdit_Modifier_Flood:
         {
-          WorldEdit_shape_rect_Flood(&Params, Thread, FloodOrigin, &NewVoxelValue);
+          WorldEdit_shape_rect_Flood(&Params, Thread, FloodOrigin, NewVoxelValue);
         } break;
 
         case WorldEdit_Modifier_Default:
         {
-          WorldEdit_shape_rect_Default(&Params, &NewVoxelValue);
+          WorldEdit_shape_rect_Default(&Params, NewVoxelValue);
         } break;
       }
     } break;
@@ -4688,7 +4700,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
         rect3i SSRect = RectMinDim(V3i(SimOrigin), Data->Dim);
         v3i EditCenterP = V3i(SimOrigin) + V3i(Data->Dim/2.f);
 
-        apply_world_edit_params Params = {Mode, SSRect, SimSpaceUpdateBounds, CopiedChunk};
+        apply_world_edit_params Params = {Mode, SSRect, SimSpaceUpdateBounds, CopiedChunk, Invert};
         switch (Modifier)
         {
           case WorldEdit_Modifier_Surface:
@@ -4711,6 +4723,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
       } break;
     }
   }
+
 }
 
 link_internal void

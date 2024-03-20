@@ -871,7 +871,7 @@ GetShapeDim(shape_layer *Layer)
     case ShapeType_None: { } break;
     case ShapeType_Sphere:
     {
-      // TODO(Jesse): This might need a +1 .. or even +2 and an offset somewhere else.. ?
+      // NOTE(Jesse): This can't have a +1 because that dialates it outside the selection region.
       Result = V3i(Layer->Sphere.Radius*2.f);
     } break;
 
@@ -1141,8 +1141,12 @@ DoSettingsForBrush(engine_resources *Engine, brush_layer *Layer, window_layout *
     DoEditorUi(Ui, Window, &Settings->Iterations, CSz("Iterations"));
     PushNewRow(Ui); // Primitives require a new row.. I forget why, but there's a good reason.
   }
+
   DoEditorUi(Ui, Window, &Settings->Offset,           CSz("Dilation"));
   DoEditorUi(Ui, Window, &Settings->NoiseBasisOffset, CSz("Basis"), &DefaultUiRenderParams_Generic);
+
+  DoEditorUi(Ui, Window, &Settings->Invert,           CSz("Invert"), &DefaultUiRenderParams_Generic);
+  PushNewRow(Ui);
 
   // NOTE(Jesse): These are only stricly necessary if Modifier is Flood or Surface .. do we care?
   /* Settings->Offset.Min = Min(V3i(-Settings->Iterations), Settings->Offset.Min); */
@@ -1229,7 +1233,7 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestC
   RangeIterator(IterIndex, Iterations)
   {
     work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, ColorIndex, {}, {}, {}, 0);
-    ApplyUpdateToRegion(GetThreadLocalState(ThreadLocal_ThreadIndex), &Job, UpdateBounds, DestChunk);
+    ApplyUpdateToRegion(GetThreadLocalState(ThreadLocal_ThreadIndex), &Job, UpdateBounds, DestChunk, Layer->Settings.Invert);
     DestChunk->FilledCount = MarkBoundaryVoxels_MakeExteriorFaces( DestChunk->Voxels, DestChunk->Dim, {{}}, DestChunk->Dim );
   }
 
