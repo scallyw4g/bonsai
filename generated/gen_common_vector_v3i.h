@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/vector.h:740:0
+// external/bonsai_stdlib/src/vector.h:746:0
 
 inline s32
 LengthSq( v3i Vec )

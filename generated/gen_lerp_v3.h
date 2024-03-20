@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/vector.h:720:0
+// external/bonsai_stdlib/src/vector.h:726:0
 
 inline v3
 Lerp(r32 t, v3 P1, v3 P2)

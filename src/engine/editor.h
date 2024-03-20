@@ -895,7 +895,7 @@ struct layered_brush_editor
   chunk_thumbnail Preview; poof(@no_serialize)
 
   b8 SeedBrushWithSelection;          poof(@no_serialize)
-  b8 ApplyBrushOnClick;               poof(@no_serialize)
+  /* b8 ApplyBrushOnClick;               poof(@no_serialize) */
 
   /* world_edit_mode Mode;               poof(@no_serialize) */
   /* world_edit_mode_modifier Modifier;  poof(@no_serialize) */
@@ -907,10 +907,13 @@ struct level_editor
   memory_arena *Memory;
 
   world_edit_tool       Tool;
+  world_edit_tool       PreviousTool; // So we can 'pop' back to the last tool on select/eyedropper
+
   world_edit_brush_type BrushType;
   world_edit_params     Params;
 
-  world_edit_tool       PreviousTool; // So we can 'pop' back to the last tool on select/eyedropper
+  b8 SelectionFollowsCursor;
+
 
 
   // TODO(Jesse): Think of a better naming scheme for these..

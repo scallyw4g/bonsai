@@ -1316,9 +1316,9 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->SeedBrushWithSelection, CSz("SeedBrushWithSelection"), &DefaultUiRenderParams_Generic);
         PushNewRow(Ui);
 
-        DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->ApplyBrushOnClick,      CSz("ApplyBrushOnClick"),      &DefaultUiRenderParams_Generic);
-        PushNewRow(Ui);
-        PushNewRow(Ui);
+        /* DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->ApplyBrushOnClick,      CSz("ApplyBrushOnClick"),      &DefaultUiRenderParams_Generic); */
+        /* PushNewRow(Ui); */
+        /* PushNewRow(Ui); */
       }
 
       {
@@ -1506,71 +1506,96 @@ EditWorldSelection(engine_resources *Engine, rect3 *SelectionAABB)
       Thickness = 0.20f;
     }
 
-    {
+    /* { */
       v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
       v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
       *SelectionAABB = AABBMinMax(SelectionMinP, SelectionMaxP);
-    }
+    /* } */
 
-    // TODO(Jesse): Use pre-computed ray
-    maybe_ray MaybeRay = ComputeRayFromCursor(Engine, &gBuffer->ViewProjection, Camera, World->ChunkDim);
-    if (MaybeRay.Tag == Maybe_Yes)
+    if (Editor->SelectionFollowsCursor)
     {
-      ray Ray = MaybeRay.Ray;
+      v3 SelectionRad = (SelectionMaxP - SelectionMinP)/2.f;
 
-      /* Ray.Origin = GetSimSpaceP(World, Canonical_Position(World->ChunkDim, Ray.Origin, {})); */
-      AABBTest = Intersect(SelectionAABB, &Ray);
-
-      face_index Face = AABBTest.Face;
-      /* PushColumn(Ui, CS(Face)); */
-      /* PushNewRow(Ui); */
-
-      if (Face)
+      if (Engine->MousedOverVoxel.Tag)
       {
-        /* r32 InsetWidth = 0.25f; */
-        r32 InsetWidth  = 0.f;
-        u8  HiColor     = GREEN;
-        r32 HiThickness = Thickness*1.2f;
+        cp MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
 
-        HighlightFace(Engine, Face, *SelectionAABB, InsetWidth, HiColor, HiThickness);
+        Editor->SelectionRegion.Min = MouseP - SelectionRad;
+        Editor->SelectionRegion.Max = MouseP + SelectionRad;
+        Canonicalize(World, &Editor->SelectionRegion.Min);
+        Canonicalize(World, &Editor->SelectionRegion.Max);
 
-        if ( Input->LMB.Clicked && (Input->Ctrl.Pressed || Input->Shift.Pressed) )
-        {
-          v3 PlaneBaseP = Ray.Origin + (AABBTest.t*Ray.Dir);
-          Editor->Selection.ClickedFace = Face;
-          Editor->Selection.ClickedP[0] = PlaneBaseP;
-        }
+        Truncate(&Editor->SelectionRegion.Min.Offset);
+        Truncate(&Editor->SelectionRegion.Max.Offset);
+
+         SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
+         SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
+        *SelectionAABB = AABBMinMax(SelectionMinP, SelectionMaxP);
       }
 
-      if (Editor->Selection.ClickedFace)
+    }
+
+    {
+      // TODO(Jesse): Use pre-computed ray
+      maybe_ray MaybeRay = ComputeRayFromCursor(Engine, &gBuffer->ViewProjection, Camera, World->ChunkDim);
+      if (MaybeRay.Tag == Maybe_Yes)
       {
-        world_edit_selection_mode SelectionMode = {};
-        if (Input->Shift.Pressed && Input->Ctrl.Pressed)
-        {
-          SelectionMode = SelectionMode_TranslateLinear;
-        }
-        else if (Input->Shift.Pressed)
-        {
-          SelectionMode = SelectionMode_Resize;
-        }
-        else if (Input->Ctrl.Pressed)
-        {
-          SelectionMode =  SelectionMode_TranslatePlanar;
-        }
+        ray Ray = MaybeRay.Ray;
 
-        /* if (SelectionMode) { Ui->RequestedForceCapture = True; } */
+        /* Ray.Origin = GetSimSpaceP(World, Canonical_Position(World->ChunkDim, Ray.Origin, {})); */
+        AABBTest = Intersect(SelectionAABB, &Ray);
 
-        rect3i ModifiedSelection = DoSelectonModification(Engine, &Ray, SelectionMode, &Editor->Selection, *SelectionAABB);
+        face_index Face = AABBTest.Face;
+        /* PushColumn(Ui, CS(Face)); */
+        /* PushNewRow(Ui); */
 
-        if (!Input->LMB.Pressed)
+        if (Face)
         {
-          // If we actually changed the selection region
-          rect3cp ProposedSelection = SimSpaceToCanonical(World, &ModifiedSelection);
-          /* if (!AreEqual(Editor->SelectionRegion, ProposedSelection)) */
+          /* r32 InsetWidth = 0.25f; */
+          r32 InsetWidth  = 0.f;
+          u8  HiColor     = GREEN;
+          r32 HiThickness = Thickness*1.2f;
+
+          HighlightFace(Engine, Face, *SelectionAABB, InsetWidth, HiColor, HiThickness);
+
+          if ( Input->LMB.Clicked && (Input->Ctrl.Pressed || Input->Shift.Pressed) )
           {
-            // Make ModifiedSelection permanent
-            Editor->SelectionRegion = ProposedSelection;
-            Editor->Selection.ClickedFace = FaceIndex_None;
+            v3 PlaneBaseP = Ray.Origin + (AABBTest.t*Ray.Dir);
+            Editor->Selection.ClickedFace = Face;
+            Editor->Selection.ClickedP[0] = PlaneBaseP;
+          }
+        }
+
+        if (Editor->Selection.ClickedFace)
+        {
+          world_edit_selection_mode SelectionMode = {};
+          if (Input->Shift.Pressed && Input->Ctrl.Pressed)
+          {
+            SelectionMode = SelectionMode_TranslateLinear;
+          }
+          else if (Input->Shift.Pressed)
+          {
+            SelectionMode = SelectionMode_Resize;
+          }
+          else if (Input->Ctrl.Pressed)
+          {
+            SelectionMode =  SelectionMode_TranslatePlanar;
+          }
+
+          /* if (SelectionMode) { Ui->RequestedForceCapture = True; } */
+
+          rect3i ModifiedSelection = DoSelectonModification(Engine, &Ray, SelectionMode, &Editor->Selection, *SelectionAABB);
+
+          if (!Input->LMB.Pressed)
+          {
+            // If we actually changed the selection region
+            rect3cp ProposedSelection = SimSpaceToCanonical(World, &ModifiedSelection);
+            /* if (!AreEqual(Editor->SelectionRegion, ProposedSelection)) */
+            {
+              // Make ModifiedSelection permanent
+              Editor->SelectionRegion = ProposedSelection;
+              Editor->Selection.ClickedFace = FaceIndex_None;
+            }
           }
         }
       }
@@ -1646,6 +1671,14 @@ DoWorldEditor(engine_resources *Engine)
         Params.RelativePosition.RelativeTo = CurrentRef;
         WorldEditBrushTypeButtonGroup = DoEditorUi(Ui, &Window, &Editor->BrushType, CSz("Brush Type"), &Params, ToggleButtonGroupFlags_DrawVertical);
         CurrentRef = WorldEditBrushTypeButtonGroup.UiRef;
+      }
+
+      if (Editor->Tool == WorldEdit_Tool_Select)
+      {
+        PushTableStart(Ui, Position_RightOf, CurrentRef);
+          DoEditorUi(Ui, &Window, &Editor->SelectionFollowsCursor, CSz("SelectionFollowsCursor"), &Params);
+        PushTableEnd(Ui);
+        PushNewRow(Ui);
       }
 
       /* if (Editor->Tool == WorldEdit_Tool_Brush) */
@@ -1746,19 +1779,6 @@ DoWorldEditor(engine_resources *Engine)
       } break;
     }
   }
-
-  /* if (WorldEditModeButtonGroup.AnyElementClicked) */
-  /* { */
-  /*   switch (Editor->Params.Mode) */
-  /*   { */
-  /*     case WorldEdit_Mode_Disabled: {} break; */
-  /*     case WorldEdit_Mode_Paint: */
-  /*     case WorldEdit_Mode_Attach: */
-  /*     case WorldEdit_Mode_Remove: */
-  /*     { } break; */
-  /*   } */
-  /* } */
-
 
   DoBrushSettingsWindow(Engine, Editor->Tool, Editor->BrushType);
 
@@ -1896,12 +1916,12 @@ DoWorldEditor(engine_resources *Engine)
                 case WorldEdit_BrushType_Layered:
                 {
                   Chunk = &Editor->LayeredBrushEditor.Preview.Chunk;
-
                   RangeIterator(LayerIndex, Editor->LayeredBrushEditor.LayerCount)
                   {
                     brush_layer *Layer = Editor->LayeredBrushEditor.Layers + LayerIndex;
                     Offset = Min(Layer->Settings.Offset.Min, Offset);
                   }
+
                 } break;
 
                 case WorldEdit_BrushType_Noise:

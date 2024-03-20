@@ -52,6 +52,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       
       DoEditorUi(Ui,
         Window,
+&Element->PreviousTool,
+        CSz("PreviousTool"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
 &Element->BrushType,
         CSz("BrushType"),
         Params
@@ -76,8 +88,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       
       DoEditorUi(Ui,
         Window,
-&Element->PreviousTool,
-        CSz("PreviousTool"),
+&Element->SelectionFollowsCursor,
+        CSz("SelectionFollowsCursor"),
         Params
         );
 
@@ -85,7 +97,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 
-      
+      PushNewRow(Ui);
+
       DoEditorUi(Ui,
         Window,
 &Element->Noise,
