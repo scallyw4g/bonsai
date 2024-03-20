@@ -1,12 +1,12 @@
-// src/engine/world_chunk.cpp:4260:0
+// src/engine/world_chunk.cpp:4293:0
 
 DimIterator(x, y, z, UpdateDim)
 {
   b32 OverwriteVoxel = False;
 
-  v3i SimRelVoxP = V3i(x,y,z);
-  v3i SimVoxP = SimRelVoxP + SimSpaceUpdateBounds.Min;
-  voxel *V = CopiedChunk->Voxels + GetIndex(SimRelVoxP, UpdateDim);
+  v3i VoxP = V3i(x,y,z);
+  v3i SimVoxP = VoxP + SimSpaceUpdateBounds.Min;
+  voxel *V = CopiedChunk->Voxels + GetIndex(VoxP, UpdateDim);
 
   
         if ( (V->Flags&VoxelFaceMask) && Contains(SSRect, SimVoxP))

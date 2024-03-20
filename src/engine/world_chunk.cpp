@@ -4107,9 +4107,9 @@ poof(
     {
       b32 OverwriteVoxel = False;
 
-      v3i SimRelVoxP = V3i(x,y,z);
-      v3i SimVoxP = SimRelVoxP + SimSpaceUpdateBounds.Min;
-      voxel *V = CopiedChunk->Voxels + GetIndex(SimRelVoxP, UpdateDim);
+      v3i VoxP = V3i(x,y,z);
+      v3i SimVoxP = VoxP + SimSpaceUpdateBounds.Min;
+      voxel *V = CopiedChunk->Voxels + GetIndex(VoxP, UpdateDim);
 
       UserCode
 
@@ -4126,29 +4126,29 @@ poof(
 // TODO(Jesse): Make this not a macro.
 #define poof_check_for_unfilled_border()                              \
   {                                                                    \
-    if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(1,0,0)))  \
+    if (voxel *Vn = TryGetVoxel(CopiedChunk, VoxP + V3(1,0,0)))  \
     {                                                                  \
       if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }      \
     }                                                                  \
-    if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(-1,0,0))) \
-    {                                                                  \
-      if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }      \
-    }                                                                  \
-                                                                       \
-    if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,1,0)))  \
-    {                                                                  \
-      if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }      \
-    }                                                                  \
-    if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,-1,0))) \
+    if (voxel *Vn = TryGetVoxel(CopiedChunk, VoxP + V3(-1,0,0))) \
     {                                                                  \
       if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }      \
     }                                                                  \
                                                                        \
-    if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,0,1)))  \
+    if (voxel *Vn = TryGetVoxel(CopiedChunk, VoxP + V3(0,1,0)))  \
     {                                                                  \
       if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }      \
     }                                                                  \
-    if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,0,-1))) \
+    if (voxel *Vn = TryGetVoxel(CopiedChunk, VoxP + V3(0,-1,0))) \
+    {                                                                  \
+      if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }      \
+    }                                                                  \
+                                                                       \
+    if (voxel *Vn = TryGetVoxel(CopiedChunk, VoxP + V3(0,0,1)))  \
+    {                                                                  \
+      if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }      \
+    }                                                                  \
+    if (voxel *Vn = TryGetVoxel(CopiedChunk, VoxP + V3(0,0,-1))) \
     {                                                                  \
       if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }      \
     }                                                                  \
@@ -4158,29 +4158,29 @@ poof(
 poof(
   func poof_check_for_unfilled_border(ignored)
   {
-    if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(1,0,0)))
+    if (voxel *Vn = TryGetVoxel(CopiedChunk, VoxP + V3(1,0,0)))
     {
       if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
     }
-    if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(-1,0,0)))
-    {
-      if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
-    }
-
-    if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,1,0)))
-    {
-      if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
-    }
-    if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,-1,0)))
+    if (voxel *Vn = TryGetVoxel(CopiedChunk, VoxP + V3(-1,0,0)))
     {
       if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
     }
 
-    if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,0,1)))
+    if (voxel *Vn = TryGetVoxel(CopiedChunk, VoxP + V3(0,1,0)))
     {
       if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
     }
-    if (voxel *Vn = TryGetVoxel(CopiedChunk, SimRelVoxP + V3(0,0,-1)))
+    if (voxel *Vn = TryGetVoxel(CopiedChunk, VoxP + V3(0,-1,0)))
+    {
+      if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
+    }
+
+    if (voxel *Vn = TryGetVoxel(CopiedChunk, VoxP + V3(0,0,1)))
+    {
+      if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
+    }
+    if (voxel *Vn = TryGetVoxel(CopiedChunk, VoxP + V3(0,0,-1)))
     {
       if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }
     }
@@ -4210,6 +4210,39 @@ struct apply_world_edit_params
 
 
 
+
+
+//
+//
+// shape_sphere
+//
+//
+
+
+link_internal void
+WorldEdit_shape_sphere_Surface(apply_world_edit_params *Params, voxel *NewVoxelValue)
+{
+  UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
+
+}
+
+link_internal void
+WorldEdit_shape_sphere_Flood( apply_world_edit_params *Params, thread_local_state *Thread, v3i FloodOrigin, voxel *NewVoxelValue)
+{
+  UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
+}
+
+link_internal void
+WorldEdit_shape_sphere_Default(apply_world_edit_params *Params, voxel *NewVoxelValue, r32 RadiusSquared, v3i EditCenterP)
+{
+  UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
+
+  poof(rectalinear_iteration_pattern({
+    v3i CenterToVoxP = SimVoxP - EditCenterP;
+    if (LengthSq(CenterToVoxP) < RadiusSquared) { *V = {}; }
+  }))
+#include <generated/rectalinear_iteration_pattern_812652930.h>
+}
 
 
 //
@@ -4534,7 +4567,6 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 #endif
   }
 
-
   switch (Shape.Type)
   {
     InvalidCase(type_world_update_op_shape_params_count);
@@ -4544,24 +4576,22 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
     {
       world_update_op_shape_params_sphere *Sphere = SafeCast(world_update_op_shape_params_sphere, &Shape);
 
-      canonical_position P = Sphere->Location;
-      v3i EditCenterP = V3i(Floor(GetSimSpaceP(World, P)));
+      v3i EditCenterP = V3i(Floor(GetSimSpaceP(World, Sphere->Location)));
       r32 RadiusSquared = Square(Sphere->Radius);
 
+      rect3i SSRect = RectCenterRad(EditCenterP, V3i(Sphere->Radius));
+      apply_world_edit_params Params = {Mode, SSRect, SimSpaceUpdateBounds, CopiedChunk, Invert};
       switch(Mode)
       {
-    case WorldEdit_Mode_Disabled: {} break;
+        case WorldEdit_Mode_Disabled: {} break;
+
         case WorldEdit_Mode_Remove:
         {
           switch(Modifier)
           {
             case WorldEdit_Modifier_Default:
             {
-              poof(rectalinear_iteration_pattern({
-                v3i CenterToVoxP = SimVoxP - EditCenterP;
-                if (LengthSq(CenterToVoxP) < RadiusSquared) { *V = {}; }
-              }))
-#include <generated/rectalinear_iteration_pattern_812652930.h>
+              WorldEdit_shape_sphere_Default(&Params, NewVoxelValue, RadiusSquared, EditCenterP);
             } break;
 
             case WorldEdit_Modifier_Surface:
