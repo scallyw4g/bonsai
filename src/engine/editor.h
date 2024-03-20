@@ -812,7 +812,34 @@ poof(do_editor_ui_for_radio_enum(brush_layer_type))
 #include <generated/do_editor_ui_for_radio_enum_brush_layer_type.h>
 
 // TODO(Jesse): Rename to `brush` ..?
-struct brush_settings poof(@version(1))
+struct brush_settings poof(@version(2))
+{
+  brush_layer_type Type;
+
+  noise_layer Noise;
+  shape_layer Shape;
+
+  //
+  // Common across brush types
+  //
+  world_edit_mode          Mode;
+  world_edit_mode_modifier Modifier;
+  s32 Iterations = 1; // NOTE(Jesse): How many times to do the filter.
+
+  // NOTE(Jesse): This is the relative offset from the base selection.
+  // Used to inflate or contract the area affected by the brush.
+  rect3i Offset;
+
+  v3i NoiseBasisOffset;
+
+  u16 Color = 1; // Default to white
+  b8 Invert;
+};
+poof(are_equal(brush_settings))
+#include <generated/are_equal_brush_settings.h>
+
+
+struct brush_settings_1
 {
   brush_layer_type Type;
 
@@ -834,8 +861,6 @@ struct brush_settings poof(@version(1))
 
   u16 Color = 1; // Default to white
 };
-poof(are_equal(brush_settings))
-#include <generated/are_equal_brush_settings.h>
 
 struct brush_settings_0
 {
@@ -869,6 +894,13 @@ poof(
 )
 
 link_internal void
+Marshal(brush_settings_1 *Stored, brush_settings *Live)
+{
+  poof(default_marshal(brush_settings_1))
+#include <generated/default_marshal_brush_settings_1.h>
+}
+
+link_internal void
 Marshal(brush_settings_0 *Stored, brush_settings *Live)
 {
   poof(default_marshal(brush_settings_0))
@@ -886,7 +918,7 @@ struct brush_layer
 
 
 // TODO(Jesse): Make this dynamic .. probably ..
-#define MAX_BRUSH_LAYERS 8
+#define MAX_BRUSH_LAYERS 16
 struct layered_brush_editor
 {
   s32 LayerCount = 1;
@@ -894,7 +926,7 @@ struct layered_brush_editor
 
   chunk_thumbnail Preview; poof(@no_serialize)
 
-  b8 SeedBrushWithSelection;          poof(@no_serialize)
+  /* b8 SeedBrushWithSelection;          poof(@no_serialize) */
   /* b8 ApplyBrushOnClick;               poof(@no_serialize) */
 
   /* world_edit_mode Mode;               poof(@no_serialize) */

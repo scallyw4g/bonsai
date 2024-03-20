@@ -135,6 +135,19 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
       PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->Invert,
+        CSz("Invert"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

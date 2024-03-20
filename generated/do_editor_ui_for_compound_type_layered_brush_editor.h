@@ -39,11 +39,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
 
       PushNewRow(Ui);
 
-      if (ToggleButton(Ui, CSz("v Layers[8]"), CSz("> Layers[8]"), UiId(Window, "toggle layered_brush_editor brush_layer Layers", Element->Layers), Params ))
+      if (ToggleButton(Ui, CSz("v Layers[16]"), CSz("> Layers[16]"), UiId(Window, "toggle layered_brush_editor brush_layer Layers", Element->Layers), Params ))
       {
         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
-        RangeIterator(ArrayIndex, 8)
+        RangeIterator(ArrayIndex, 16)
         {
           DoEditorUi(Ui, Window, Element->Layers+ArrayIndex, FSz("Layers[%d]", ArrayIndex), Params);
           
@@ -61,24 +61,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
         CSz("Preview"),
         Params
         );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->SeedBrushWithSelection,
-        CSz("SeedBrushWithSelection"),
-        Params
-        );
-
-
-
-
-
-      PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

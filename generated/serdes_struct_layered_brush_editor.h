@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:506:0
+// src/engine/serdes.cpp:508:0
 
 link_internal bonsai_type_info
 TypeInfo(layered_brush_editor *Ignored)
@@ -40,7 +40,7 @@ Serialize(u8_cursor_block_array *Bytes, layered_brush_editor *BaseElement, umm C
 
 
 
-    Result &= Serialize(Bytes, Element->Layers, 8);
+    Result &= Serialize(Bytes, Element->Layers, 16);
 
 
 
@@ -77,7 +77,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layered_brush_editor *Element, memor
 
 
 
-  RangeIterator(ElementIndex, 8)
+  RangeIterator(ElementIndex, 16)
   {
     Result &= Deserialize(Bytes, &Element->Layers[ElementIndex], Memory);
   }

@@ -1313,8 +1313,8 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
       }
 
       {
-        DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->SeedBrushWithSelection, CSz("SeedBrushWithSelection"), &DefaultUiRenderParams_Generic);
-        PushNewRow(Ui);
+        /* DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->SeedBrushWithSelection, CSz("SeedBrushWithSelection"), &DefaultUiRenderParams_Generic); */
+        /* PushNewRow(Ui); */
 
         /* DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->ApplyBrushOnClick,      CSz("ApplyBrushOnClick"),      &DefaultUiRenderParams_Generic); */
         /* PushNewRow(Ui); */
@@ -1391,12 +1391,12 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
             AllocateWorldChunk(Root_LayeredBrushPreview, {}, LargestLayerDim, Editor->Memory);
           }
 
-          if (LayeredBrush->SeedBrushWithSelection)
-          {
-            world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, Editor->CopyRegion, Engine->WorldUpdateMemory);
-            world_chunk Seed = GatherVoxelsOverlappingArea(Engine, Editor->SelectionRegion, GetTranArena());
-            CopyChunkOffset(&Seed, Seed.Dim, Root_LayeredBrushPreview, Root_LayeredBrushPreview->Dim, -1*SmallestMinOffset);
-          }
+          /* if (LayeredBrush->SeedBrushWithSelection) */
+          /* { */
+          /*   world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, Editor->CopyRegion, Engine->WorldUpdateMemory); */
+          /*   world_chunk Seed = GatherVoxelsOverlappingArea(Engine, Editor->SelectionRegion, GetTranArena()); */
+          /*   CopyChunkOffset(&Seed, Seed.Dim, Root_LayeredBrushPreview, Root_LayeredBrushPreview->Dim, -1*SmallestMinOffset); */
+          /* } */
 
           RangeIterator(LayerIndex, LayeredBrush->LayerCount)
           {
