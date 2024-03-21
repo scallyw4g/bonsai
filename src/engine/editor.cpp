@@ -1364,18 +1364,86 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
     PushWindowStart(Ui, &LayersWindow);
 
     {
-      PushTableStart(Ui);
-      RangeIterator(LayerIndex, LayeredBrush->LayerCount)
-      {
-        brush_layer *Layer = Layers + LayerIndex;
 
-        if (ToggleButton(Ui, FSz("v Layer %d", LayerIndex), FSz("> Layer %d", LayerIndex), UiId(BrushSettingsWindow, "brush_layer toggle interaction", Layer)))
+      {
+        b32 ReorderUp         = False;
+        b32 ReorderDown       = False;
+        b32 Duplicate         = False;
+        s32 EditLayerIndex = 0;
+        PushTableStart(Ui);
+        RangeIterator(LayerIndex, LayeredBrush->LayerCount)
         {
-          DoSettingsForBrush(Engine, Layer, BrushSettingsWindow);
+          brush_layer *Layer = Layers + LayerIndex;
+
+          if (ToggleButton(Ui, FSz("v Layer %d", LayerIndex), FSz("> Layer %d", LayerIndex), UiId(BrushSettingsWindow, "brush_layer toggle interaction", Layer)))
+          {
+            if (Button(Ui, CSz("^"), UiId(BrushSettingsWindow, "layer_reorder_up", Layer)))
+            {
+              Info("up");
+              ReorderUp = True;
+              EditLayerIndex = LayerIndex;
+            }
+
+            if (Button(Ui, CSz("v"), UiId(BrushSettingsWindow, "layer_reorder_down", Layer)))
+            {
+              Info("down");
+              ReorderDown = True;
+              EditLayerIndex = LayerIndex;
+            }
+
+            if (Button(Ui, CSz("Dup"), UiId(BrushSettingsWindow, "layer_duplicate", Layer)))
+            {
+              Info("dup");
+              Duplicate = True;
+              EditLayerIndex = LayerIndex;
+            }
+
+
+            DoSettingsForBrush(Engine, Layer, BrushSettingsWindow);
+          }
+          PushNewRow(Ui);
         }
-        PushNewRow(Ui);
+        PushTableEnd(Ui);
+
+        if (ReorderUp)
+        {
+          if (EditLayerIndex > 0)
+          {
+            brush_layer *Layer = Layers + EditLayerIndex;
+            brush_layer Tmp = Layers[EditLayerIndex-1];
+            Layers[EditLayerIndex-1].Settings = Layer->Settings;
+            Layer->Settings = Tmp.Settings;
+          }
+        }
+
+        if (ReorderDown)
+        {
+          if (LayeredBrush->LayerCount)
+          {
+            if (EditLayerIndex < LayeredBrush->LayerCount-1)
+            {
+              brush_layer *Layer = Layers + EditLayerIndex;
+              brush_layer Tmp = Layers[EditLayerIndex+1];
+              Layers[EditLayerIndex+1].Settings = Layer->Settings;
+              Layer->Settings = Tmp.Settings;
+            }
+          }
+        }
+
+        if (Duplicate)
+        {
+          if (LayeredBrush->LayerCount < MAX_BRUSH_LAYERS)
+          {
+            LayeredBrush->LayerCount += 1;
+
+            // Shuffle layers forward.  This conveniently duplicates the EditLayerIndex
+            RangeIteratorReverseRange(LayerIndex, MAX_BRUSH_LAYERS, EditLayerIndex+1)
+            {
+              Layers[LayerIndex].Settings = Layers[LayerIndex-1].Settings;
+            }
+          }
+        }
       }
-      PushTableEnd(Ui);
 
       {
         world_chunk *Root_LayeredBrushPreview = &LayeredBrush->Preview.Chunk;
@@ -1424,7 +1492,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         }
 
         SyncGpuBuffersImmediate(Engine, &Root_LayeredBrushPreview->Meshes);
-        RenderToTexture(Engine, &LayeredBrush->Preview.Thumbnail, &Root_LayeredBrushPreview->Meshes, Root_LayeredBrushPreview->Dim/-2.f);
+        /* RenderToTexture(Engine, &LayeredBrush->Preview.Thumbnail, &Root_LayeredBrushPreview->Meshes, Root_LayeredBrushPreview->Dim/-2.f); */
       }
     }
 
