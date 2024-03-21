@@ -4674,7 +4674,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
       world_update_op_shape_params_rect *Rect = SafeCast(world_update_op_shape_params_rect, &Shape);
 
       // NOTE(Jesse): Outside world should have min/max'd these already
-      Assert(Rect->Region.Min < Rect->Region.Max);
+      Assert(Rect->Region.Min <= Rect->Region.Max);
 
       // NOTE(Jesse): These are specifically meant to truncate, not floor
       rect3i SSRect = {V3i(Rect->Region.Min), V3i(Rect->Region.Max)};

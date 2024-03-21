@@ -32,8 +32,11 @@ poof(
       Deserialize(u8_cursor *Bytes, (type.name) *Element, memory_arena *Ignored = 0, umm Count = 1)
       {
         Assert(Count > 0);
-        *Element = *Cast((type.name)*, Bytes->At);
-        Bytes->At += sizeof((type.name)) * Count;
+
+        umm ByteCount = sizeof((type.name)) * Count;
+        CopyMemory( Cast(u8*, Bytes->At), Cast(u8*, Element), ByteCount);
+        Bytes->At += ByteCount;
+
         Assert(Bytes->At <= Bytes->End);
         return True;
       }
@@ -42,6 +45,8 @@ poof(
     }
   }
 )
+
+
 
 
 //
@@ -256,15 +261,17 @@ poof(
               {
                 member.is_array?
                 {
-                  member.has_tag(array_length)?
                   {
-                    // TODO(Jesse): Should this really be a safe cast?
-                    umm Count = umm(Element->member.tag_value(array_length));
+                    member.has_tag(array_length)?
+                    {
+                      // TODO(Jesse): Should this really be a safe cast?
+                      umm Count = umm(Element->member.tag_value(array_length));
+                    }
+                    {
+                      umm Count = member.array;
+                    }
+                    Result &= Deserialize(Bytes, Element->(member.name), Memory, Count);
                   }
-                  {
-                    umm Count = member.array;
-                  }
-                  Result &= Deserialize(Bytes, Element->(member.name), Memory, Count);
                 }
                 {
                   // NOTE(Jesse): Unfortunately we can't check for primitives because

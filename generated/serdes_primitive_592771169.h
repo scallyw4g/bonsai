@@ -1,4 +1,4 @@
-// src/engine/serdes.h:436:0
+// src/engine/serdes.h:443:0
 
 link_internal b32
 Serialize(u8_cursor_block_array *Bytes, u8 *Element, umm Count = 1)
@@ -12,8 +12,11 @@ link_internal b32
 Deserialize(u8_cursor *Bytes, u8 *Element, memory_arena *Ignored = 0, umm Count = 1)
 {
   Assert(Count > 0);
-  *Element = *Cast(u8*, Bytes->At);
-  Bytes->At += sizeof(u8) * Count;
+
+  umm ByteCount = sizeof(u8) * Count;
+  CopyMemory( Cast(u8*, Bytes->At), Cast(u8*, Element), ByteCount);
+  Bytes->At += ByteCount;
+
   Assert(Bytes->At <= Bytes->End);
   return True;
 }
@@ -31,8 +34,11 @@ link_internal b32
 Deserialize(u8_cursor *Bytes, s8 *Element, memory_arena *Ignored = 0, umm Count = 1)
 {
   Assert(Count > 0);
-  *Element = *Cast(s8*, Bytes->At);
-  Bytes->At += sizeof(s8) * Count;
+
+  umm ByteCount = sizeof(s8) * Count;
+  CopyMemory( Cast(u8*, Bytes->At), Cast(u8*, Element), ByteCount);
+  Bytes->At += ByteCount;
+
   Assert(Bytes->At <= Bytes->End);
   return True;
 }
@@ -50,8 +56,11 @@ link_internal b32
 Deserialize(u8_cursor *Bytes, u16 *Element, memory_arena *Ignored = 0, umm Count = 1)
 {
   Assert(Count > 0);
-  *Element = *Cast(u16*, Bytes->At);
-  Bytes->At += sizeof(u16) * Count;
+
+  umm ByteCount = sizeof(u16) * Count;
+  CopyMemory( Cast(u8*, Bytes->At), Cast(u8*, Element), ByteCount);
+  Bytes->At += ByteCount;
+
   Assert(Bytes->At <= Bytes->End);
   return True;
 }
@@ -69,8 +78,11 @@ link_internal b32
 Deserialize(u8_cursor *Bytes, s16 *Element, memory_arena *Ignored = 0, umm Count = 1)
 {
   Assert(Count > 0);
-  *Element = *Cast(s16*, Bytes->At);
-  Bytes->At += sizeof(s16) * Count;
+
+  umm ByteCount = sizeof(s16) * Count;
+  CopyMemory( Cast(u8*, Bytes->At), Cast(u8*, Element), ByteCount);
+  Bytes->At += ByteCount;
+
   Assert(Bytes->At <= Bytes->End);
   return True;
 }
@@ -88,8 +100,11 @@ link_internal b32
 Deserialize(u8_cursor *Bytes, u32 *Element, memory_arena *Ignored = 0, umm Count = 1)
 {
   Assert(Count > 0);
-  *Element = *Cast(u32*, Bytes->At);
-  Bytes->At += sizeof(u32) * Count;
+
+  umm ByteCount = sizeof(u32) * Count;
+  CopyMemory( Cast(u8*, Bytes->At), Cast(u8*, Element), ByteCount);
+  Bytes->At += ByteCount;
+
   Assert(Bytes->At <= Bytes->End);
   return True;
 }
@@ -107,8 +122,11 @@ link_internal b32
 Deserialize(u8_cursor *Bytes, s32 *Element, memory_arena *Ignored = 0, umm Count = 1)
 {
   Assert(Count > 0);
-  *Element = *Cast(s32*, Bytes->At);
-  Bytes->At += sizeof(s32) * Count;
+
+  umm ByteCount = sizeof(s32) * Count;
+  CopyMemory( Cast(u8*, Bytes->At), Cast(u8*, Element), ByteCount);
+  Bytes->At += ByteCount;
+
   Assert(Bytes->At <= Bytes->End);
   return True;
 }
@@ -126,8 +144,11 @@ link_internal b32
 Deserialize(u8_cursor *Bytes, u64 *Element, memory_arena *Ignored = 0, umm Count = 1)
 {
   Assert(Count > 0);
-  *Element = *Cast(u64*, Bytes->At);
-  Bytes->At += sizeof(u64) * Count;
+
+  umm ByteCount = sizeof(u64) * Count;
+  CopyMemory( Cast(u8*, Bytes->At), Cast(u8*, Element), ByteCount);
+  Bytes->At += ByteCount;
+
   Assert(Bytes->At <= Bytes->End);
   return True;
 }
@@ -145,8 +166,11 @@ link_internal b32
 Deserialize(u8_cursor *Bytes, s64 *Element, memory_arena *Ignored = 0, umm Count = 1)
 {
   Assert(Count > 0);
-  *Element = *Cast(s64*, Bytes->At);
-  Bytes->At += sizeof(s64) * Count;
+
+  umm ByteCount = sizeof(s64) * Count;
+  CopyMemory( Cast(u8*, Bytes->At), Cast(u8*, Element), ByteCount);
+  Bytes->At += ByteCount;
+
   Assert(Bytes->At <= Bytes->End);
   return True;
 }
@@ -164,8 +188,11 @@ link_internal b32
 Deserialize(u8_cursor *Bytes, b8 *Element, memory_arena *Ignored = 0, umm Count = 1)
 {
   Assert(Count > 0);
-  *Element = *Cast(b8*, Bytes->At);
-  Bytes->At += sizeof(b8) * Count;
+
+  umm ByteCount = sizeof(b8) * Count;
+  CopyMemory( Cast(u8*, Bytes->At), Cast(u8*, Element), ByteCount);
+  Bytes->At += ByteCount;
+
   Assert(Bytes->At <= Bytes->End);
   return True;
 }
@@ -183,8 +210,11 @@ link_internal b32
 Deserialize(u8_cursor *Bytes, r32 *Element, memory_arena *Ignored = 0, umm Count = 1)
 {
   Assert(Count > 0);
-  *Element = *Cast(r32*, Bytes->At);
-  Bytes->At += sizeof(r32) * Count;
+
+  umm ByteCount = sizeof(r32) * Count;
+  CopyMemory( Cast(u8*, Bytes->At), Cast(u8*, Element), ByteCount);
+  Bytes->At += ByteCount;
+
   Assert(Bytes->At <= Bytes->End);
   return True;
 }
@@ -202,8 +232,11 @@ link_internal b32
 Deserialize(u8_cursor *Bytes, r64 *Element, memory_arena *Ignored = 0, umm Count = 1)
 {
   Assert(Count > 0);
-  *Element = *Cast(r64*, Bytes->At);
-  Bytes->At += sizeof(r64) * Count;
+
+  umm ByteCount = sizeof(r64) * Count;
+  CopyMemory( Cast(u8*, Bytes->At), Cast(u8*, Element), ByteCount);
+  Bytes->At += ByteCount;
+
   Assert(Bytes->At <= Bytes->End);
   return True;
 }

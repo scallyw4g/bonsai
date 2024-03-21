@@ -828,6 +828,8 @@ struct brush_settings poof(@version(2))
 
   // NOTE(Jesse): This is the relative offset from the base selection.
   // Used to inflate or contract the area affected by the brush.
+  //
+  // TODO(Jesse): Rename to dilation
   rect3i Offset;
 
   v3i NoiseBasisOffset;
@@ -888,7 +890,16 @@ poof(
   {
     struct_t.map(member)
     {
-      Live->member.name = Stored->member.name;
+      member.is_array?
+      {
+        RangeIterator(Index, member.array)
+        {
+          Live->member.name[Index] = Stored->member.name[Index];
+        }
+      }
+      {
+        Live->member.name = Stored->member.name;
+      }
     }
   }
 )
@@ -907,7 +918,7 @@ Marshal(brush_settings_0 *Stored, brush_settings *Live)
 #include <generated/default_marshal_brush_settings_0.h>
 }
 
-// TODO(Jesse): Rename to `brush` ..?
+
 struct brush_layer
 {
   brush_settings Settings;
@@ -917,21 +928,44 @@ struct brush_layer
 };
 
 
+
+#define NameBuf_Len (256)
 // TODO(Jesse): Make this dynamic .. probably ..
 #define MAX_BRUSH_LAYERS 16
-struct layered_brush_editor
+struct layered_brush_editor poof(@version(1))
+{
+  char NameBuf[NameBuf_Len]; // TODO(Jesse): make a static_string
+
+  s32 LayerCount = 1;
+  brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
+
+  b8 SeedBrushWithSelection;
+
+  chunk_thumbnail Preview; poof(@no_serialize)
+};
+
+struct layered_brush_editor_0
 {
   s32 LayerCount = 1;
   brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
 
   chunk_thumbnail Preview; poof(@no_serialize)
-
   b8 SeedBrushWithSelection; poof(@no_serialize)
-  /* b8 ApplyBrushOnClick;   poof(@no_serialize) */
-
-  /* world_edit_mode Mode;               poof(@no_serialize) */
-  /* world_edit_mode_modifier Modifier;  poof(@no_serialize) */
 };
+
+link_internal void
+Marshal(layered_brush_editor_0 *Stored, layered_brush_editor *Live)
+{
+  poof(default_marshal(layered_brush_editor_0))
+#include <generated/default_marshal_layered_brush_editor_0.h>
+}
+
+
+
+
+
+
+
 
 
 struct level_editor

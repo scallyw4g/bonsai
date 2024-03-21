@@ -1267,8 +1267,29 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
   layered_brush_editor *LayeredBrush = &Editor->LayeredBrushEditor;
   brush_layer          *Layers             =  LayeredBrush->Layers;
 
+
   {
     PushWindowStart(Ui, BrushSettingsWindow);
+
+    if (LayeredBrush->NameBuf[0])
+    {
+      if (Button(Ui, CSz("Save"), UiId(BrushSettingsWindow, "brush save", 0u)))
+      {
+        u8_cursor_block_array OutputStream = BeginSerialization();
+        Serialize(&OutputStream, LayeredBrush);
+        cs OutpathZ = Concat(CSz("brushes/"), CS(LayeredBrush->NameBuf), GetTranArena(), 1);
+        if (FinalizeSerialization(&OutputStream, OutpathZ.Start) == False)
+        {
+          SoftError("Unable to serialize brush (%s).", LayeredBrush->NameBuf);
+        }
+      }
+
+      if (Button(Ui, CSz("Version"), UiId(BrushSettingsWindow, "brush version", 0u)))
+      {
+        Info("Version");
+      }
+    }
+
 
     ui_id ImportToggleId = UiId(BrushSettingsWindow, "brush import", 0u);
     if (ToggleButton(Ui, CSz("Import"), CSz("Import"), ImportToggleId))
@@ -1280,33 +1301,36 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
       if (ClickedFileNode.Tag)
       {
+        ZeroMemory(LayeredBrush->NameBuf, NameBuf_Len);
+
         memory_arena *Tran = GetTranArena();
         cs Filename = Concat(ClickedFileNode.Value.Dir, CSz("/"), ClickedFileNode.Value.Name, Tran);
         u8_cursor Bytes = BeginDeserialization(Filename, Tran);
-        if (Deserialize(&Bytes, &Editor->LayeredBrushEditor, 0) == False) // NOTE(Jesse): Passing 0 for the memory is fine here because these brushes have no pointers.  In the future this may change, and we'll crash here.
+        if (Deserialize(&Bytes, &Editor->LayeredBrushEditor, Tran) == False)
         {
-          SoftError("Unable to deserialize brush (%S).", Filename);
+          SoftError("While deserializing brush (%S).", Filename);
         }
         FinalizeDeserialization(&Bytes);
+
+
+        if (Editor->LayeredBrushEditor.NameBuf[0] == 0)
+        {
+          cs BrushNameBuf = CS(LayeredBrush->NameBuf, NameBuf_Len);
+          CopyString(&ClickedFileNode.Value.Name, &BrushNameBuf);
+        }
 
         SetToggleButton(Ui, ImportToggleId, False);
       }
     }
     else
     {
-      if (Button(Ui, CSz("Export"), UiId(BrushSettingsWindow, "brush export", 0u)))
-      {
-        u8_cursor_block_array OutputStream = BeginSerialization();
-        Serialize(&OutputStream, LayeredBrush);
-        const char *FilenameZ = "brushes/temp.brush";
-        if (FinalizeSerialization(&OutputStream, FilenameZ) == False)
-        {
-          SoftError("Unable to serialize brush (%S).", CS(FilenameZ));
-        }
-      }
 
       if (Button(Ui, CSz("New"), UiId(BrushSettingsWindow, "brush new", 0u)))
       {
+        cs Src = CSz("_untitled.brush");
+        cs BrushNameBuf = CS(LayeredBrush->NameBuf, NameBuf_Len);
+        CopyString(&Src, &BrushNameBuf);
+
         LayeredBrush->LayerCount = 1;
         RangeIterator(LayerIndex, MAX_BRUSH_LAYERS)
         {
@@ -1315,31 +1339,34 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         }
       }
 
-      PushNewRow(Ui);
-      PushNewRow(Ui);
-
+      if (LayeredBrush->NameBuf[0])
       {
-        PushColumn(Ui, CSz("BrushName")); PushColumn(Ui, CSz("TODO"));
+        PushNewRow(Ui);
         PushNewRow(Ui);
 
-        DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->LayerCount, CSz("Layer Count"), &DefaultUiRenderParams_Generic);
-        PushNewRow(Ui);
-        PushNewRow(Ui);
-      }
+        {
+          PushColumn(Ui, CSz("BrushName")); PushColumn(Ui, CS(LayeredBrush->NameBuf));
+          PushNewRow(Ui);
 
-      {
-        DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->SeedBrushWithSelection, CSz("SeedBrushWithSelection"), &DefaultUiRenderParams_Generic);
-        PushNewRow(Ui);
+          DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->LayerCount, CSz("Layer Count"), &DefaultUiRenderParams_Generic);
+          PushNewRow(Ui);
+          PushNewRow(Ui);
+        }
 
-        /* DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->ApplyBrushOnClick,      CSz("ApplyBrushOnClick"),      &DefaultUiRenderParams_Generic); */
-        /* PushNewRow(Ui); */
-        /* PushNewRow(Ui); */
-      }
+        {
+          DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->SeedBrushWithSelection, CSz("SeedBrushWithSelection"), &DefaultUiRenderParams_Generic);
+          PushNewRow(Ui);
 
-      {
-        DoEditorUi(Ui, BrushSettingsWindow, &Editor->Params.Mode,     CSz("Mode"),     &DefaultUiRenderParams_Generic);
-        DoEditorUi(Ui, BrushSettingsWindow, &Editor->Params.Modifier, CSz("Modifier"), &DefaultUiRenderParams_Generic);
-        PushNewRow(Ui);
+          /* DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->ApplyBrushOnClick,      CSz("ApplyBrushOnClick"),      &DefaultUiRenderParams_Generic); */
+          /* PushNewRow(Ui); */
+          /* PushNewRow(Ui); */
+        }
+
+        {
+          DoEditorUi(Ui, BrushSettingsWindow, &Editor->Params.Mode,     CSz("Mode"),     &DefaultUiRenderParams_Generic);
+          DoEditorUi(Ui, BrushSettingsWindow, &Editor->Params.Modifier, CSz("Modifier"), &DefaultUiRenderParams_Generic);
+          PushNewRow(Ui);
+        }
       }
     }
     PushWindowEnd(Ui, BrushSettingsWindow);

@@ -26,6 +26,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+      if (ToggleButton(Ui, CSz("v NameBuf[(256)]"), CSz("> NameBuf[(256)]"), UiId(Window, "toggle layered_brush_editor char  NameBuf", Element->NameBuf), Params ))
+      {
+        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+        PushNewRow(Ui);
+        RangeIterator(ArrayIndex, (256))
+        {
+          DoEditorUi(Ui, Window, Element->NameBuf+ArrayIndex, FSz("NameBuf[%d]", ArrayIndex), Params);
+ PushNewRow(Ui); 
+        }
+        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+      }
+      PushNewRow(Ui);
+
+
+
+      PushNewRow(Ui);
+
       DoEditorUi(Ui,
         Window,
 &Element->LayerCount,
@@ -57,18 +74,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
       
       DoEditorUi(Ui,
         Window,
-&Element->Preview,
-        CSz("Preview"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
 &Element->SeedBrushWithSelection,
         CSz("SeedBrushWithSelection"),
         Params
@@ -79,6 +84,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
 
 
       PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->Preview,
+        CSz("Preview"),
+        Params
+        );
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

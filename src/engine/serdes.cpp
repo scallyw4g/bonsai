@@ -497,13 +497,18 @@ poof(serdes_struct(world_update_op_shape_params_sphere))
 #include <generated/serdes_struct_world_update_op_shape_params_sphere.h>
 poof(serdes_struct(shape_layer))
 #include <generated/serdes_struct_shape_layer.h>
+
 poof(serdes_struct(brush_settings_0))
 #include <generated/serdes_struct_brush_settings_0.h>
 poof(serdes_struct(brush_settings_1))
 #include <generated/serdes_struct_brush_settings_1.h>
 poof(serdes_struct(brush_settings))
 #include <generated/serdes_struct_brush_settings.h>
+
 poof(serdes_struct(brush_layer))
 #include <generated/serdes_struct_brush_layer.h>
+
+poof(serdes_struct(layered_brush_editor_0))
+#include <generated/serdes_struct_layered_brush_editor_0.h>
 poof(serdes_struct(layered_brush_editor))
 #include <generated/serdes_struct_layered_brush_editor.h>

@@ -353,9 +353,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
 
 
-  umm Count = 6;
+  {
+    umm Count = 6;
 
-  Result &= Deserialize(Bytes, Element->Colors, Memory, Count);
+    Result &= Deserialize(Bytes, Element->Colors, Memory, Count);
+  }
 
 
 

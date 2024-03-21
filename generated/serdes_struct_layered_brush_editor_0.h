@@ -1,11 +1,11 @@
-// src/engine/serdes.cpp:508:0
+// src/engine/serdes.cpp:511:0
 
 link_internal bonsai_type_info
-TypeInfo(brush_layer *Ignored)
+TypeInfo(layered_brush_editor_0 *Ignored)
 {
   bonsai_type_info Result = {};
 
-  Result.Name = CSz("brush_layer");
+  Result.Name = CSz("layered_brush_editor_0");
   Result.Version = 0 ;
 
   /* type.map(member) */
@@ -20,7 +20,7 @@ TypeInfo(brush_layer *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, brush_layer *BaseElement, umm Count = 1)
+Serialize(u8_cursor_block_array *Bytes, layered_brush_editor_0 *BaseElement, umm Count = 1)
 {
   Assert(Count > 0);
 
@@ -33,8 +33,14 @@ Serialize(u8_cursor_block_array *Bytes, brush_layer *BaseElement, umm Count = 1)
 
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    brush_layer *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Settings);
+    layered_brush_editor_0 *Element = BaseElement + ElementIndex;
+    Result &= Serialize(Bytes, &Element->LayerCount);
+
+
+
+
+
+    Result &= Serialize(Bytes, Element->Layers, 16);
 
 
 
@@ -51,21 +57,32 @@ Serialize(u8_cursor_block_array *Bytes, brush_layer *BaseElement, umm Count = 1)
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, brush_layer *Element, memory_arena *Memory, umm Count = 1);
+Deserialize(u8_cursor *Bytes, layered_brush_editor_0 *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, brush_layer *Element, memory_arena *Memory);
+DeserializeCurrentVersion(u8_cursor *Bytes, layered_brush_editor_0 *Element, memory_arena *Memory);
 
 
 
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, brush_layer *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, layered_brush_editor_0 *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Settings, Memory);
+  Result &= Deserialize(Bytes, &Element->LayerCount, Memory);
+
+
+
+
+
+  {
+    // TODO(Jesse): Should this really be a safe cast?
+    umm Count = umm(Element->LayerCount);
+
+    Result &= Deserialize(Bytes, Element->Layers, Memory, Count);
+  }
 
 
 
@@ -80,7 +97,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_layer *Element, memory_arena *
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, brush_layer *Element, memory_arena *Memory, umm Count)
+Deserialize(u8_cursor *Bytes, layered_brush_editor_0 *Element, memory_arena *Memory, umm Count)
 {
   Assert(Count > 0);
 
