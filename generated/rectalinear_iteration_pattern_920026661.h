@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4598:0
+// src/engine/world_chunk.cpp:4284:0
 
 DimIterator(x, y, z, UpdateDim)
 {
@@ -11,12 +11,9 @@ DimIterator(x, y, z, UpdateDim)
   if (Contains(SSRect, SimVoxP))
   {
     
-        v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
-        voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
-        voxel *NewVoxelValue = &InvertV;
-        if (AssetV && (AssetV->Flags&Voxel_Filled))
+        v3i CenterToVoxP = SimVoxP - EditCenterP;
+        if (LengthSq(CenterToVoxP) < RadiusSquared && (V->Flags&VoxelFaceMask))
         {
-          NewVoxelValue  = AssetV;
           OverwriteVoxel = True;
         }
       

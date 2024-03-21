@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4400:0
+// src/engine/world_chunk.cpp:4489:0
 
 DimIterator(x, y, z, UpdateDim)
 {
@@ -8,27 +8,42 @@ DimIterator(x, y, z, UpdateDim)
   v3i SimVoxP = VoxP + SimSpaceUpdateBounds.Min;
   voxel *V = CopiedChunk->Voxels + GetIndex(VoxP, UpdateDim);
 
-  
+  if (Contains(SSRect, SimVoxP))
+  {
+    
 
         v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
         voxel *NewVoxelValue = TryGetVoxel(Data, OriginToCurrentVoxP);
 
-        if ((V->Flags&Voxel_Filled)==False && Contains(SSRect, SimVoxP))
+        if ((V->Flags&Voxel_Filled)==False)
         {
           b32 IsUnfilledBorder = False;
           poof_check_for_unfilled_border()
           if (IsUnfilledBorder)
           {
-            *V = *NewVoxelValue;
-            V->Flags = voxel_flag(V->Flags&~VoxelFaceMask); // Knock out face flags so the algorithm doesn't "self-apply"
+            OverwriteVoxel = True;
           }
         }
       
 
-  if ( ((OverwriteVoxel == True)  && (Invert == False)) ||
-    ((OverwriteVoxel == False) && (Invert == True))  )
-  {
-    *V = *NewVoxelValue;
+    if ( ((OverwriteVoxel == True ) && (Invert == False)) ||
+      ((OverwriteVoxel == False) && (Invert == True ))  )
+    {
+      if (Mode == WorldEdit_Mode_Paint)
+      {
+        V->Color = NewVoxelValue->Color;
+      }
+      else
+      {
+        if (Mode == WorldEdit_Mode_Remove) { *V = {}; }
+        else { *V = *NewVoxelValue; }
+      }
+
+      // Knock out face flags so the 'surface' algorithm doesn't "self-apply"
+      // We recompute these, so it's fine there.  It's slower on non-surface
+      // paths, but .. when that's the bottleneck, we've won.
+      V->Flags = voxel_flag(V->Flags&~VoxelFaceMask);
+    }
   }
 }
 

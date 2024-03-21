@@ -561,8 +561,8 @@ enum world_edit_brush_type
   WorldEdit_BrushType_Single,
   WorldEdit_BrushType_Asset,
   WorldEdit_BrushType_Entity,
-  WorldEdit_BrushType_Shape,
-  WorldEdit_BrushType_Noise,
+  /* WorldEdit_BrushType_Shape, */
+  /* WorldEdit_BrushType_Noise, */
   WorldEdit_BrushType_Layered,
 };
 

@@ -1,4 +1,6 @@
-// src/engine/world_chunk.cpp:4330:0
+// src/engine/world_chunk.cpp:4423:0
+
+random_series ColorEntropy = {4654376543246};
 
 voxel *V = {};
 // TODO(Jesse): Do we want to try and keep the amount of temp memory to a minimum here?
@@ -11,6 +13,8 @@ voxel_stack_element_cursor Stack = VoxelStackElementCursor(umm(TotalVoxels*6), T
 Push(&Stack, VoxelStackElement(FloodOrigin, VoxelRuleDir_Count));
 while (AtElements(&Stack))
 {
+  b32 OverwriteVoxel = False;
+
   voxel_stack_element Element = Pop(&Stack);
   v3i SimVoxP = Element.VoxSimP + AllDirections[Element.Dir];
   v3i RelVoxP = SimVoxP - SimSpaceUpdateBounds.Min;
@@ -22,7 +26,7 @@ while (AtElements(&Stack))
 
     v3i CenterToVoxP = SimVoxP - FloodOrigin;
 
-     if (Contains(SSRect, SimVoxP) && ((V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Attach)))) 
+     if ( (V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Attach)) ) 
     {
       if ( (V->Flags & Voxel_MarkBit) == 0)
       {
@@ -36,11 +40,27 @@ while (AtElements(&Stack))
     }
 
     
-          if (Contains(SSRect, SimVoxP) && Mode == WorldEdit_Mode_Attach && (V->Flags&Voxel_Filled) ) { }
-          else { V->Color = NewVoxelValue->Color; }
+          if (Mode == WorldEdit_Mode_Attach && (V->Flags&Voxel_Filled) ) { }
+          else
+          {
+            OverwriteVoxel = True;
+          }
         
 
     V->Flags |= Voxel_MarkBit;
+
+    if ( ((OverwriteVoxel == True)  && (Invert == False)) ||
+      ((OverwriteVoxel == False) && (Invert == True))  )
+    {
+      if (Mode == WorldEdit_Mode_Paint)
+      {
+        V->Color = NewVoxelValue->Color;
+      }
+      else
+      {
+        *V = *NewVoxelValue;
+      }
+    }
   }
 }
 

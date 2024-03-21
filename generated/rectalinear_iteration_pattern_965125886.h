@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4264:0
+// src/engine/world_chunk.cpp:4362:0
 
 DimIterator(x, y, z, UpdateDim)
 {
@@ -11,14 +11,21 @@ DimIterator(x, y, z, UpdateDim)
   
         if ( (V->Flags&VoxelFaceMask) && Contains(SSRect, SimVoxP))
         {
-          V->Color = NewVoxelValue->Color;
+          OverwriteVoxel = True;
         }
       
 
   if ( ((OverwriteVoxel == True)  && (Invert == False)) ||
     ((OverwriteVoxel == False) && (Invert == True))  )
   {
-    *V = *NewVoxelValue;
+    if (Mode == WorldEdit_Mode_Paint)
+    {
+      V->Color = NewVoxelValue->Color;
+    }
+    else
+    {
+      *V = *NewVoxelValue;
+    }
   }
 }
 

@@ -958,8 +958,6 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
     AllocateWorldChunk(Chunk, {}, RequiredLayerDim, Editor->Memory);
   }
 
-
-
   if (UpdateVoxels)
   {
     Info("Detected changes to settings, updating voxels.");
@@ -1304,6 +1302,16 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         }
       }
 
+      if (Button(Ui, CSz("New"), UiId(BrushSettingsWindow, "brush new", 0u)))
+      {
+        LayeredBrush->LayerCount = 1;
+        RangeIterator(LayerIndex, LayeredBrush->LayerCount)
+        {
+          brush_layer *Layer = Layers + LayerIndex;
+          Layer->Settings = {};
+        }
+      }
+
       PushNewRow(Ui);
       PushNewRow(Ui);
 
@@ -1455,6 +1463,7 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, w
         } break;
 
 
+#if 0
         case WorldEdit_BrushType_Noise:
         {
           CheckForChangesAndUpdate_ThenRenderToPreviewTexture(Engine, &Editor->Noise);
@@ -1470,6 +1479,7 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, w
             DoSettingsForBrush(Engine, &Editor->Shape, &Window);
           PushWindowEnd(Ui, &Window);
         } break;
+#endif
 
         case WorldEdit_BrushType_Layered:
         {
@@ -1901,9 +1911,9 @@ DoWorldEditor(engine_resources *Engine)
             }
           } break;
 
-          case WorldEdit_BrushType_Shape:
+          /* case WorldEdit_BrushType_Shape: */
+          /* case WorldEdit_BrushType_Noise: */
           case WorldEdit_BrushType_Layered:
-          case WorldEdit_BrushType_Noise:
           {
             if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
             {
@@ -1928,6 +1938,7 @@ DoWorldEditor(engine_resources *Engine)
 
                 } break;
 
+#if 0
                 case WorldEdit_BrushType_Noise:
                 {
                   Chunk = &Editor->Noise.Preview.Chunk;
@@ -1953,7 +1964,9 @@ DoWorldEditor(engine_resources *Engine)
                     } break;
                   }
                 } break;
+#endif
               }
+
 
               chunk_data D = {Chunk->Flags, Chunk->Dim, Chunk->Voxels, Chunk->VoxelLighting};
               world_update_op_shape_params_chunk_data ChunkDataShape = { D, V3(Offset) + GetSimSpaceP(World, Editor->SelectionRegion.Min) };
