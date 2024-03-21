@@ -922,12 +922,12 @@ struct brush_layer
 struct layered_brush_editor
 {
   s32 LayerCount = 1;
-  brush_layer Layers[MAX_BRUSH_LAYERS];
+  brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
 
   chunk_thumbnail Preview; poof(@no_serialize)
 
-  /* b8 SeedBrushWithSelection;          poof(@no_serialize) */
-  /* b8 ApplyBrushOnClick;               poof(@no_serialize) */
+  b8 SeedBrushWithSelection; poof(@no_serialize)
+  /* b8 ApplyBrushOnClick;   poof(@no_serialize) */
 
   /* world_edit_mode Mode;               poof(@no_serialize) */
   /* world_edit_mode_modifier Modifier;  poof(@no_serialize) */

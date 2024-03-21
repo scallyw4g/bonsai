@@ -5,7 +5,7 @@
 #if LEVEL_FILE_DEBUG_MODE
 
 #define MAYBE_WRITE_DEBUG_OBJECT_DELIM() { u64 Tag = LEVEL_FILE_DEBUG_OBJECT_DELIM; Ensure( Serialize(Bytes, &Tag) ); }
-#define MAYBE_READ_DEBUG_OBJECT_DELIM() { u64 Tag = Read_u64(Bytes); if ( Tag != LEVEL_FILE_DEBUG_OBJECT_DELIM ) { Result = False; Error("Reading Object Delim Failed in file (" __FILE__ ":" STRINGIZE(__LINE__) ")"); } }
+#define MAYBE_READ_DEBUG_OBJECT_DELIM() { u64 Tag = Read_u64(Bytes); if ( Tag != LEVEL_FILE_DEBUG_OBJECT_DELIM ) { Result = False; SoftError("Reading Object Delim Failed in file (" __FILE__ ":" STRINGIZE(__LINE__) ")"); } }
 #else
 #define MAYBE_WRITE_DEBUG_OBJECT_DELIM(...)
 #define MAYBE_READ_DEBUG_OBJECT_DELIM(...)
@@ -256,10 +256,15 @@ poof(
               {
                 member.is_array?
                 {
-                  RangeIterator(ElementIndex, member.array)
+                  member.has_tag(array_length)?
                   {
-                    Result &= Deserialize(Bytes, &Element->(member.name)[ElementIndex], Memory);
+                    // TODO(Jesse): Should this really be a safe cast?
+                    umm Count = umm(Element->member.tag_value(array_length));
                   }
+                  {
+                    umm Count = member.array;
+                  }
+                  Result &= Deserialize(Bytes, Element->(member.name), Memory, Count);
                 }
                 {
                   // NOTE(Jesse): Unfortunately we can't check for primitives because

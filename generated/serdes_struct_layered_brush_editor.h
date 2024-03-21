@@ -77,10 +77,10 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layered_brush_editor *Element, memor
 
 
 
-  RangeIterator(ElementIndex, 16)
-  {
-    Result &= Deserialize(Bytes, &Element->Layers[ElementIndex], Memory);
-  }
+  // TODO(Jesse): Should this really be a safe cast?
+  umm Count = umm(Element->LayerCount);
+
+  Result &= Deserialize(Bytes, Element->Layers, Memory, Count);
 
 
 

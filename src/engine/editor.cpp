@@ -1003,7 +1003,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
         {
           case NoiseType_Perlin:
           {
-            NoiseFunc              = Terrain_Perlin3D;
+            NoiseFunc             = Terrain_Perlin3D;
             NoiseParams.Threshold = Noise->Perlin.Threshold;
             NoiseParams.Period    = Noise->Perlin.Period;
             NoiseParams.Amplitude = Noise->Perlin.Amplitude;
@@ -1012,7 +1012,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
 
           case NoiseType_Voronoi:
           {
-            NoiseFunc              = Terrain_Voronoi3D;
+            NoiseFunc             = Terrain_Voronoi3D;
             NoiseParams.Threshold = Noise->Voronoi.Threshold;
             NoiseParams.Period    = Noise->Voronoi.Period;
             NoiseParams.Amplitude = Noise->Voronoi.Amplitude;
@@ -1113,8 +1113,11 @@ DoSettingsForBrush(engine_resources *Engine, brush_layer *Layer, window_layout *
   UNPACK_ENGINE_RESOURCES(Engine);
 
   brush_settings *Settings = &Layer->Settings;
-  DoEditorUi(Ui, Window, &Settings->Type, {}, &DefaultUiRenderParams_Generic);
+
   OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+
+  PushNewRow(Ui);
+  DoEditorUi(Ui, Window, &Settings->Type, CSz("Type"), &DefaultUiRenderParams_Generic);
 
 
   switch (Layer->Settings.Type)
@@ -1305,7 +1308,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
       if (Button(Ui, CSz("New"), UiId(BrushSettingsWindow, "brush new", 0u)))
       {
         LayeredBrush->LayerCount = 1;
-        RangeIterator(LayerIndex, LayeredBrush->LayerCount)
+        RangeIterator(LayerIndex, MAX_BRUSH_LAYERS)
         {
           brush_layer *Layer = Layers + LayerIndex;
           Layer->Settings = {};
@@ -1325,8 +1328,8 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
       }
 
       {
-        /* DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->SeedBrushWithSelection, CSz("SeedBrushWithSelection"), &DefaultUiRenderParams_Generic); */
-        /* PushNewRow(Ui); */
+        DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->SeedBrushWithSelection, CSz("SeedBrushWithSelection"), &DefaultUiRenderParams_Generic);
+        PushNewRow(Ui);
 
         /* DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->ApplyBrushOnClick,      CSz("ApplyBrushOnClick"),      &DefaultUiRenderParams_Generic); */
         /* PushNewRow(Ui); */
@@ -1403,12 +1406,12 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
             AllocateWorldChunk(Root_LayeredBrushPreview, {}, LargestLayerDim, Editor->Memory);
           }
 
-          /* if (LayeredBrush->SeedBrushWithSelection) */
-          /* { */
-          /*   world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, Editor->CopyRegion, Engine->WorldUpdateMemory); */
-          /*   world_chunk Seed = GatherVoxelsOverlappingArea(Engine, Editor->SelectionRegion, GetTranArena()); */
-          /*   CopyChunkOffset(&Seed, Seed.Dim, Root_LayeredBrushPreview, Root_LayeredBrushPreview->Dim, -1*SmallestMinOffset); */
-          /* } */
+          if (LayeredBrush->SeedBrushWithSelection)
+          {
+            world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, Editor->CopyRegion, Engine->WorldUpdateMemory);
+            world_chunk Seed = GatherVoxelsOverlappingArea(Engine, Editor->SelectionRegion, GetTranArena());
+            CopyChunkOffset(&Seed, Seed.Dim, Root_LayeredBrushPreview, Root_LayeredBrushPreview->Dim, -1*SmallestMinOffset);
+          }
 
           RangeIterator(LayerIndex, LayeredBrush->LayerCount)
           {
