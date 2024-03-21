@@ -940,6 +940,7 @@ struct layered_brush_editor poof(@version(1))
   brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
 
   b8 SeedBrushWithSelection;
+  b8 BrushFollowsCursor;
 
   chunk_thumbnail Preview; poof(@no_serialize)
 };

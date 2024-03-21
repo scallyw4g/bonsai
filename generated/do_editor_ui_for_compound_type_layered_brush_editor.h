@@ -87,6 +87,19 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
 
       DoEditorUi(Ui,
         Window,
+&Element->BrushFollowsCursor,
+        CSz("BrushFollowsCursor"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
 &Element->Preview,
         CSz("Preview"),
         Params

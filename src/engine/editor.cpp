@@ -1354,19 +1354,20 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         }
 
         {
-          DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->SeedBrushWithSelection, CSz("SeedBrushWithSelection"), &DefaultUiRenderParams_Generic);
-          PushNewRow(Ui);
-
-          /* DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->ApplyBrushOnClick,      CSz("ApplyBrushOnClick"),      &DefaultUiRenderParams_Generic); */
-          /* PushNewRow(Ui); */
-          /* PushNewRow(Ui); */
-        }
-
-        {
           DoEditorUi(Ui, BrushSettingsWindow, &Editor->Params.Mode,     CSz("Mode"),     &DefaultUiRenderParams_Generic);
           DoEditorUi(Ui, BrushSettingsWindow, &Editor->Params.Modifier, CSz("Modifier"), &DefaultUiRenderParams_Generic);
           PushNewRow(Ui);
         }
+
+        {
+          DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->SeedBrushWithSelection, CSz("SeedBrushWithSelection"), &DefaultUiRenderParams_Generic);
+          PushNewRow(Ui);
+
+          DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->BrushFollowsCursor,      CSz("BrushFollowsCursor"),      &DefaultUiRenderParams_Generic);
+          PushNewRow(Ui);
+          PushNewRow(Ui);
+        }
+
       }
     }
     PushWindowEnd(Ui, BrushSettingsWindow);
@@ -1589,6 +1590,21 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, w
   }
 }
 
+link_internal b32
+CurrentToolIs(level_editor *Editor, world_edit_tool Tool, world_edit_brush_type BrushType)
+{
+  b32 Result = False;
+  if (Editor->Tool == Tool)
+  {
+    Result = True;
+    if (Editor->Tool == WorldEdit_Tool_Brush)
+    {
+      Result = (Editor->BrushType == BrushType);
+    }
+  }
+  return Result;
+}
+
 link_internal aabb_intersect_result
 EditWorldSelection(engine_resources *Engine, rect3 *SelectionAABB)
 {
@@ -1624,27 +1640,30 @@ EditWorldSelection(engine_resources *Engine, rect3 *SelectionAABB)
       *SelectionAABB = AABBMinMax(SelectionMinP, SelectionMaxP);
     /* } */
 
-    if (Editor->SelectionFollowsCursor)
+    if (CurrentToolIs(Editor, WorldEdit_Tool_Brush, WorldEdit_BrushType_Layered))
     {
-      v3 SelectionRad = (SelectionMaxP - SelectionMinP)/2.f;
-
-      if (Engine->MousedOverVoxel.Tag)
+      layered_brush_editor *Brush = &Editor->LayeredBrushEditor;
+      if (Brush->BrushFollowsCursor)
       {
-        cp MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
+        v3 SelectionRad = (SelectionMaxP - SelectionMinP)/2.f;
 
-        Editor->SelectionRegion.Min = MouseP - SelectionRad;
-        Editor->SelectionRegion.Max = MouseP + SelectionRad;
-        Canonicalize(World, &Editor->SelectionRegion.Min);
-        Canonicalize(World, &Editor->SelectionRegion.Max);
+        if (Engine->MousedOverVoxel.Tag)
+        {
+          cp MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
 
-        Truncate(&Editor->SelectionRegion.Min.Offset);
-        Truncate(&Editor->SelectionRegion.Max.Offset);
+          Editor->SelectionRegion.Min = MouseP - SelectionRad;
+          Editor->SelectionRegion.Max = MouseP + SelectionRad;
+          Canonicalize(World, &Editor->SelectionRegion.Min);
+          Canonicalize(World, &Editor->SelectionRegion.Max);
 
-         SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
-         SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
-        *SelectionAABB = AABBMinMax(SelectionMinP, SelectionMaxP);
+          Truncate(&Editor->SelectionRegion.Min.Offset);
+          Truncate(&Editor->SelectionRegion.Max.Offset);
+
+           SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
+           SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
+          *SelectionAABB = AABBMinMax(SelectionMinP, SelectionMaxP);
+        }
       }
-
     }
 
     {
@@ -1785,13 +1804,13 @@ DoWorldEditor(engine_resources *Engine)
         CurrentRef = WorldEditBrushTypeButtonGroup.UiRef;
       }
 
-      if (Editor->Tool == WorldEdit_Tool_Select)
-      {
-        PushTableStart(Ui, Position_RightOf, CurrentRef);
-          DoEditorUi(Ui, &Window, &Editor->SelectionFollowsCursor, CSz("SelectionFollowsCursor"), &Params);
-        PushTableEnd(Ui);
-        PushNewRow(Ui);
-      }
+      /* if (Editor->Tool == WorldEdit_Tool_Select) */
+      /* { */
+      /*   PushTableStart(Ui, Position_RightOf, CurrentRef); */
+      /*     DoEditorUi(Ui, &Window, &Editor->SelectionFollowsCursor, CSz("SelectionFollowsCursor"), &Params); */
+      /*   PushTableEnd(Ui); */
+      /*   PushNewRow(Ui); */
+      /* } */
 
       /* if (Editor->Tool == WorldEdit_Tool_Brush) */
       /* { */

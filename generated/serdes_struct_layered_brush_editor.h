@@ -61,6 +61,12 @@ Serialize(u8_cursor_block_array *Bytes, layered_brush_editor *BaseElement, umm C
 
 
 
+    Result &= Serialize(Bytes, &Element->BrushFollowsCursor);
+
+
+
+
+
 
 
     
@@ -138,6 +144,14 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layered_brush_editor *Element, memor
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->SeedBrushWithSelection, Memory);
+
+
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->BrushFollowsCursor, Memory);
 
 
 
