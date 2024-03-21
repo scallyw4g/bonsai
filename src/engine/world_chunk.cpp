@@ -4471,19 +4471,6 @@ WorldEdit_shape_chunk_data_Surface(apply_world_edit_params *Params, v3 SimOrigin
   {
     case WorldEdit_Mode_Disabled: {} break;
 
-    case WorldEdit_Mode_Paint:
-    {
-      poof(rectalinear_iteration_pattern({
-        v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
-        voxel *NewVoxelValue = TryGetVoxel(Data, OriginToCurrentVoxP);
-        if (NewVoxelValue && (NewVoxelValue->Flags&Voxel_Filled))
-        {
-          OverwriteVoxel = True;
-        }
-      }))
-#include <generated/rectalinear_iteration_pattern_583358156.h>
-    } break;
-
     case WorldEdit_Mode_Attach:
     {
       poof(rectalinear_iteration_pattern({
@@ -4504,6 +4491,7 @@ WorldEdit_shape_chunk_data_Surface(apply_world_edit_params *Params, v3 SimOrigin
 #include <generated/rectalinear_iteration_pattern_631222419.h>
     } break;
 
+    case WorldEdit_Mode_Paint:
     case WorldEdit_Mode_Remove:
     {
       poof(rectalinear_iteration_pattern({
@@ -4657,8 +4645,8 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 
       v3i EditCenterP = V3i(Floor(GetSimSpaceP(World, Sphere->Location)));
       r32 RadiusSquared = Square(Sphere->Radius);
-
-      rect3i SSRect = RectCenterRad(EditCenterP, V3i(Sphere->Radius));
+      rect3i SSRect = SimSpaceUpdateBounds;
+      /* rect3i SSRect = RectCenterRad(EditCenterP, V3i(Sphere->Radius)); */
       apply_world_edit_params Params = {Mode, SSRect, SimSpaceUpdateBounds, CopiedChunk, Invert, NewColor, NewTransparency};
 
       switch(Modifier)
