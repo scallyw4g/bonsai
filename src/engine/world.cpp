@@ -38,7 +38,8 @@ GatherChunksOverlappingArea(world *World, rect3cp Region, memory_arena *Memory)
   auto MinP = Region.Min;
   auto MaxP = Region.Max;
 
-  world_position Delta = MaxP.WorldP - MinP.WorldP + 1;
+  Assert(MaxP.WorldP >= MinP.WorldP);
+  v3i Delta = MaxP.WorldP - MinP.WorldP + 1;
   u32 TotalChunkCount = Abs(Volume(Delta));
 
   world_chunk_ptr_buffer Result = {};

@@ -101,30 +101,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
       DoEditorUi(Ui,
         Window,
-&Element->Noise,
-        CSz("Noise"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->Shape,
-        CSz("Shape"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
 &Element->LayeredBrushEditor,
         CSz("LayeredBrushEditor"),
         Params

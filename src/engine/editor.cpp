@@ -54,8 +54,8 @@ InitEditor(level_editor *Editor)
 
   Editor->AssetThumbnails.Memory = Editor->Memory;
 
-  Editor->Shape.Settings.Type = BrushLayerType_Shape;
-  Editor->Noise.Settings.Type = BrushLayerType_Noise;
+  /* Editor->Shape.Settings.Type = BrushLayerType_Shape; */
+  /* Editor->Noise.Settings.Type = BrushLayerType_Noise; */
 
   return Result;
 }
@@ -66,15 +66,15 @@ HardResetEditor(level_editor *Editor)
   // TODO(Jesse)(leak): Delete textures allocated to visualize layered noise brushes?
   // @hard_reset_texture_memory
 
-  if (Editor->Shape.Preview.Thumbnail.Texture.ID)
-  {
-    DeleteTexture(&Editor->Shape.Preview.Thumbnail.Texture);
-  }
+  /* if (Editor->Shape.Preview.Thumbnail.Texture.ID) */
+  /* { */
+  /*   DeleteTexture(&Editor->Shape.Preview.Thumbnail.Texture); */
+  /* } */
 
-  if (Editor->Noise.Preview.Thumbnail.Texture.ID)
-  {
-    DeleteTexture(&Editor->Noise.Preview.Thumbnail.Texture);
-  }
+  /* if (Editor->Noise.Preview.Thumbnail.Texture.ID) */
+  /* { */
+  /*   DeleteTexture(&Editor->Noise.Preview.Thumbnail.Texture); */
+  /* } */
 
   IterateOver(&Editor->AssetThumbnails, Thumb, Index)
   {
@@ -1312,12 +1312,8 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         }
         FinalizeDeserialization(&Bytes);
 
-
-        if (Editor->LayeredBrushEditor.NameBuf[0] == 0)
-        {
-          cs BrushNameBuf = CS(LayeredBrush->NameBuf, NameBuf_Len);
-          CopyString(&ClickedFileNode.Value.Name, &BrushNameBuf);
-        }
+        cs BrushNameBuf = CS(LayeredBrush->NameBuf, NameBuf_Len);
+        CopyString(&ClickedFileNode.Value.Name, &BrushNameBuf);
 
         SetToggleButton(Ui, ImportToggleId, False);
       }
@@ -1327,6 +1323,8 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
       if (Button(Ui, CSz("New"), UiId(BrushSettingsWindow, "brush new", 0u)))
       {
+        ZeroMemory(LayeredBrush->NameBuf, NameBuf_Len);
+
         cs Src = CSz("_untitled.brush");
         cs BrushNameBuf = CS(LayeredBrush->NameBuf, NameBuf_Len);
         CopyString(&Src, &BrushNameBuf);
@@ -1504,9 +1502,12 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
           if (LayeredBrush->SeedBrushWithSelection)
           {
-            world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, Editor->CopyRegion, Engine->WorldUpdateMemory);
-            world_chunk Seed = GatherVoxelsOverlappingArea(Engine, Editor->SelectionRegion, GetTranArena());
-            CopyChunkOffset(&Seed, Seed.Dim, Root_LayeredBrushPreview, Root_LayeredBrushPreview->Dim, -1*SmallestMinOffset);
+            if (SelectionComplete(Editor->SelectionClicks))
+            {
+              world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, Editor->CopyRegion, Engine->WorldUpdateMemory);
+              world_chunk Seed = GatherVoxelsOverlappingArea(Engine, Editor->SelectionRegion, GetTranArena());
+              CopyChunkOffset(&Seed, Seed.Dim, Root_LayeredBrushPreview, Root_LayeredBrushPreview->Dim, -1*SmallestMinOffset);
+            }
           }
 
           RangeIterator(LayerIndex, LayeredBrush->LayerCount)
@@ -2093,7 +2094,7 @@ DoWorldEditor(engine_resources *Engine)
                 type_world_update_op_shape_params_chunk_data,
                 .world_update_op_shape_params_chunk_data = ChunkDataShape,
               };
-              QueueWorldUpdateForRegion(Engine, Editor->Params.Mode, Editor->Params.Modifier, &Shape, Editor->Noise.Settings.Color, Engine->WorldUpdateMemory);
+              QueueWorldUpdateForRegion(Engine, Editor->Params.Mode, Editor->Params.Modifier, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory);
             }
           } break;
 

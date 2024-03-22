@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:513:0
+// src/engine/serdes.cpp:515:0
 
 link_internal bonsai_type_info
 TypeInfo(layered_brush_editor *Ignored)
@@ -6,7 +6,7 @@ TypeInfo(layered_brush_editor *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("layered_brush_editor");
-  Result.Version =1 ;
+  Result.Version =2 ;
 
   /* type.map(member) */
   /* { */
@@ -30,19 +30,13 @@ Serialize(u8_cursor_block_array *Bytes, layered_brush_editor *BaseElement, umm C
   b32 Result = True;
 
   Upsert(TypeInfo(BaseElement), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
-  u64 VersionNumber =1;
+  u64 VersionNumber =2;
   Serialize(Bytes, &VersionNumber);
 
 
   RangeIterator_t(umm, ElementIndex, Count)
   {
     layered_brush_editor *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, Element->NameBuf, (256));
-
-
-
-
-
     Result &= Serialize(Bytes, &Element->LayerCount);
 
 
@@ -87,7 +81,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layered_brush_editor *Element, memor
 link_internal b32
 DeserializeVersioned(u8_cursor *Bytes, layered_brush_editor *Element, bonsai_type_info *TypeInfo, memory_arena *Memory)
 {
-  Assert(TypeInfo->Version <=1);
+  Assert(TypeInfo->Version <=2);
 
   b32 Result = True;
 
@@ -97,9 +91,15 @@ DeserializeVersioned(u8_cursor *Bytes, layered_brush_editor *Element, bonsai_typ
     Result &= Deserialize(Bytes, &T0, Memory);
     Marshal(&T0, Element);
   }
+  if (TypeInfo->Version == 1)
+  {
+    layered_brush_editor_1 T1 = {};
+    Result &= Deserialize(Bytes, &T1, Memory);
+    Marshal(&T1, Element);
+  }
 
 
-  if (TypeInfo->Version ==1)
+  if (TypeInfo->Version ==2)
   {
     Result &= DeserializeCurrentVersion(Bytes, Element, Memory);
   }
@@ -112,16 +112,6 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, layered_brush_editor *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  {
-    umm Count = (256);
-
-    Result &= Deserialize(Bytes, Element->NameBuf, Memory, Count);
-  }
-
-
-
-
-
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->LayerCount, Memory);

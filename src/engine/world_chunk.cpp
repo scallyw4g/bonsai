@@ -2977,7 +2977,14 @@ ComputeStandingSpots( v3i SrcChunkDim,
           v3i DestSpot = TileOffset-SrcChunkOffset-SrcChunkToDestChunk;
           if (IsValidForDestChunk(DestSpot, DestChunkDim))
           {
-            Push(DestSpot, DestStandingSpots);
+            if (Remaining(DestStandingSpots))
+            {
+              Push(DestSpot, DestStandingSpots);
+            }
+            else
+            {
+              Warn("Standing spot buffer full, dropping standing spot.");
+            }
 
             /* if (DebugMesh) { DrawStandingSpot(DebugMesh, V3(DestSpot), V3(TileDim)); } */
           }
@@ -4897,7 +4904,9 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           Assert(UpdateMinP <= SimSpaceVoxPExact);
           u32 Index = MapIntoQueryBox(SimSpaceVoxPExact, UpdateMinP, UpdateDim);
           Assert(s32(Index) < TotalVoxels);
-          Assert(CopiedChunk.Voxels[Index] != Global_UnsetVoxel);
+          Assert(CopiedChunk.Voxels[Index].Flags        != Global_UnsetVoxel.Flags);
+          Assert(CopiedChunk.Voxels[Index].Transparency != Global_UnsetVoxel.Transparency);
+          Assert(CopiedChunk.Voxels[Index].Color        != Global_UnsetVoxel.Color);
 
           Assert( (V->Flags & Voxel_MarkBit) == 0);
           StartedFilled += (V->Flags&Voxel_Filled);

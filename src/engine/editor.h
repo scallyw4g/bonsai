@@ -932,9 +932,24 @@ struct brush_layer
 #define NameBuf_Len (256)
 // TODO(Jesse): Make this dynamic .. probably ..
 #define MAX_BRUSH_LAYERS 16
-struct layered_brush_editor poof(@version(1))
+struct layered_brush_editor poof(@version(2))
 {
-  char NameBuf[NameBuf_Len]; // TODO(Jesse): make a static_string
+  // NOTE(Jesse): This is so we can just copy the name of the brush in here and
+  // not fuck around with allocating a single string when we load these in.
+  char NameBuf[NameBuf_Len]; poof(@no_serialize @ui_text_box)
+
+  s32 LayerCount = 1;
+  brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
+
+  b8 SeedBrushWithSelection;
+  b8 BrushFollowsCursor;
+
+  chunk_thumbnail Preview; poof(@no_serialize)
+};
+
+struct layered_brush_editor_1
+{
+  char NameBuf[NameBuf_Len];
 
   s32 LayerCount = 1;
   brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
@@ -953,6 +968,13 @@ struct layered_brush_editor_0
   chunk_thumbnail Preview; poof(@no_serialize)
   b8 SeedBrushWithSelection; poof(@no_serialize)
 };
+
+link_internal void
+Marshal(layered_brush_editor_1 *Stored, layered_brush_editor *Live)
+{
+  poof(default_marshal(layered_brush_editor_1))
+#include <generated/default_marshal_layered_brush_editor_1.h>
+}
 
 link_internal void
 Marshal(layered_brush_editor_0 *Stored, layered_brush_editor *Live)
@@ -981,17 +1003,9 @@ struct level_editor
 
   b8 SelectionFollowsCursor;
 
-
-
-  // TODO(Jesse): Think of a better naming scheme for these..
-  // NOTE(Jesse): Brushes
-  // {
-       // TODO(Jesse): Consolodate?  Maybe not so the settings persist, but maybe..
-       brush_layer Noise;
-       brush_layer Shape;
-
-       layered_brush_editor LayeredBrushEditor;
-  // }
+  /* brush_layer Noise; */
+  /* brush_layer Shape; */
+  layered_brush_editor LayeredBrushEditor;
 
   u64 EngineDebugViewModeToggleBits;
 
