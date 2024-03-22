@@ -1408,6 +1408,9 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
           PushNewRow(Ui);
 
           DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->LayerCount, CSz("Layer Count"), &DefaultUiRenderParams_Generic);
+          // Clamp LayerCount to (1,MAX_BRUSH_LAYERS) once it's set
+          LayeredBrush->LayerCount = Max(LayeredBrush->LayerCount, 1);
+          LayeredBrush->LayerCount = Min(LayeredBrush->LayerCount, MAX_BRUSH_LAYERS);
           PushNewRow(Ui);
           PushNewRow(Ui);
         }
@@ -1456,6 +1459,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         b32 ReorderUp         = False;
         b32 ReorderDown       = False;
         b32 Duplicate         = False;
+        b32 Delete            = False;
         s32 EditLayerIndex = 0;
         PushTableStart(Ui);
         RangeIterator(LayerIndex, LayeredBrush->LayerCount)
@@ -1464,26 +1468,30 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
           if (ToggleButton(Ui, FSz("v Layer %d", LayerIndex), FSz("> Layer %d", LayerIndex), UiId(BrushSettingsWindow, "brush_layer toggle interaction", Layer)))
           {
-            if (Button(Ui, CSz("^"), UiId(BrushSettingsWindow, "layer_reorder_up", Layer)))
+            if (Button(Ui, CSz("Up"), UiId(BrushSettingsWindow, "layer_reorder_up", Layer)))
             {
-              Info("up");
               ReorderUp = True;
               EditLayerIndex = LayerIndex;
             }
 
-            if (Button(Ui, CSz("v"), UiId(BrushSettingsWindow, "layer_reorder_down", Layer)))
+            if (Button(Ui, CSz("Down"), UiId(BrushSettingsWindow, "layer_reorder_down", Layer)))
             {
-              Info("down");
               ReorderDown = True;
               EditLayerIndex = LayerIndex;
             }
 
             if (Button(Ui, CSz("Dup"), UiId(BrushSettingsWindow, "layer_duplicate", Layer)))
             {
-              Info("dup");
               Duplicate = True;
               EditLayerIndex = LayerIndex;
             }
+
+            if (Button(Ui, CSz("Del"), UiId(BrushSettingsWindow, "layer_delete", Layer)))
+            {
+              Delete = True;
+              EditLayerIndex = LayerIndex;
+            }
+
 
 
             DoSettingsForBrush(Engine, Layer, BrushSettingsWindow);
@@ -1528,6 +1536,20 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
             {
               Layers[LayerIndex].Settings = Layers[LayerIndex-1].Settings;
             }
+          }
+        }
+
+        if (Delete)
+        {
+          if (LayeredBrush->LayerCount < MAX_BRUSH_LAYERS)
+          {
+            // Shuffle layers backwards, overwriting EditLayerIndex
+            RangeIteratorRange(LayerIndex, MAX_BRUSH_LAYERS, EditLayerIndex+1)
+            {
+              Layers[LayerIndex-1].Settings = Layers[LayerIndex].Settings;
+            }
+
+            LayeredBrush->LayerCount -= 1;
           }
         }
       }
