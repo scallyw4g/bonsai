@@ -1095,8 +1095,10 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           v2 SpriteSize = V2(96);
 
           PushButtonStart(Ui, ButtonId);
-            PushTexturedQuadColumn(Ui, &Resources->Ui.SpriteTextureArray,                                              0, SpriteSize, zDepth_TitleBar, BackgroundTint, QuadRenderParam_NoAdvance);
-            PushTexturedQuadColumn(Ui, &Resources->Ui.SpriteTextureArray, Global_SpriteIndexFromActionIndex[ActionIndex], SpriteSize,     zDepth_Text,           Tint);
+            PushTexturedQuad(Ui, &Resources->Ui.SpriteTextureArray,                                              0, SpriteSize, zDepth_TitleBar, BackgroundTint, QuadRenderParam_NoAdvance);
+            PushTexturedQuad(Ui, &Resources->Ui.SpriteTextureArray, Global_SpriteIndexFromActionIndex[ActionIndex], SpriteSize, zDepth_Text,               Tint, QuadRenderParam_Default);
+            /* PushTexturedQuadColumn(Ui, &Resources->Ui.SpriteTextureArray,                                              0, SpriteSize, zDepth_TitleBar, BackgroundTint, QuadRenderParam_NoAdvance); */
+            /* PushTexturedQuadColumn(Ui, &Resources->Ui.SpriteTextureArray, Global_SpriteIndexFromActionIndex[ActionIndex], SpriteSize,     zDepth_Text,           Tint); */
           PushButtonEnd(Ui);
 
           PushForceAdvance(Ui, V2(16, 0));
