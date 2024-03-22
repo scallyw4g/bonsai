@@ -1,4 +1,4 @@
-// src/engine/editor.h:987:0
+// src/engine/editor.h:988:0
 
 Live->LayerCount = Stored->LayerCount;
 

@@ -40,6 +40,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
+&Element->White,
+        CSz("White"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
 &Element->Perlin,
         CSz("Perlin"),
         Params

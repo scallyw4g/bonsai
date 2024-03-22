@@ -510,6 +510,7 @@ enum ui_noise_type
 {
   NoiseType_Perlin,
   NoiseType_Voronoi,
+  NoiseType_White,
 };
 
 poof(string_and_value_tables(ui_noise_type))
@@ -620,6 +621,11 @@ struct generic_noise_params
   v3i SrcToDest  = {-1*Global_ChunkApronMinDim}; \
   u16 ColorIndex = Cast(generic_noise_params*, (P))->Color
 
+
+struct white_noise_params
+{
+  r32 Threshold = 0.5f;
+};
 
 struct perlin_noise_params
 {
@@ -791,13 +797,32 @@ struct shape_layer
 
 // NOTE(Jesse): This is intentionally not a d_union such that you can flip
 // between different noise selections and your parameters stay intact.
-struct noise_layer
+struct noise_layer poof(@version(1))
 {
   ui_noise_type Type;
 
+  white_noise_params   White;
   perlin_noise_params  Perlin;
   voronoi_noise_params Voronoi;
 };
+
+struct noise_layer_0
+{
+  ui_noise_type Type;
+
+  white_noise_params   White;
+  perlin_noise_params  Perlin;
+  voronoi_noise_params Voronoi;
+};
+
+
+link_internal void
+Marshal(noise_layer_0 *Stored, noise_layer *Live)
+{
+  poof(default_marshal(noise_layer_0))
+#include <generated/default_marshal_noise_layer_0.h>
+}
+
 
 
 
@@ -884,30 +909,6 @@ struct brush_settings_0
 
   u16 Color = 1; // Default to white
 };
-
-poof(
-  func default_marshal(struct_t) @code_fragment
-  {
-    struct_t.map(member)
-    {
-      member.has_tag(no_serialize)?
-      {
-      }
-      {
-        member.is_array?
-        {
-          RangeIterator(Index, member.array)
-          {
-            Live->member.name[Index] = Stored->member.name[Index];
-          }
-        }
-        {
-          Live->member.name = Stored->member.name;
-        }
-      }
-    }
-  }
-)
 
 link_internal void
 Marshal(brush_settings_1 *Stored, brush_settings *Live)

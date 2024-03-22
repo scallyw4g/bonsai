@@ -766,6 +766,59 @@ Terrain_Perlin3D( world_chunk *Chunk,
   return Result;
 }
 
+link_internal u32
+Terrain_WhiteNoise( world_chunk *Chunk,
+                            v3i  NoiseBasis,
+                           void *NoiseParams,
+                           void *UserData )
+{
+  TIMED_FUNCTION();
+
+  UNPACK_NOISE_PARAMS(NoiseParams);
+
+  u32 Result = 0;
+
+  Assert(Chunk);
+
+  for ( s32 z = 0; z < Dim.z; ++ z)
+  {
+    for ( s32 y = 0; y < Dim.y; ++ y)
+    {
+      for ( s32 x = 0; x < Dim.x; ++ x)
+      {
+        s32 i = GetIndex(Voxel_Position(x,y,z), Dim);
+        Chunk->Voxels[i].Flags = Voxel_Empty;
+
+        Assert( NotSet(&Chunk->Voxels[i], Voxel_Filled) );
+
+        v3 NoiseInput = MapWorldPositionToNoiseInputValue(V3(NoiseBasis), V3(x,y,z), Period);
+        random_series Entropy = RandomSeriesFromV3(NoiseInput);
+
+        r32 NoiseValue = RandomUnilateral(&Entropy);
+
+        s32 NoiseChoice = NoiseValue*Amplitude > Thresh;
+        Assert(NoiseChoice == 0 || NoiseChoice == 1);
+
+        SetFlag(&Chunk->Voxels[i], (voxel_flag)(NoiseChoice * Voxel_Filled));
+
+        if (NoiseChoice)
+        {
+          Chunk->Voxels[i].Color = Color;
+          Assert( IsSet(&Chunk->Voxels[i], Voxel_Filled) );
+          ++Result;
+        }
+        else
+        {
+          Assert( NotSet(&Chunk->Voxels[i], Voxel_Filled) );
+        }
+
+      }
+    }
+  }
+
+  return Result;
+}
+
 typedef u32 (*chunk_init_callback)( world_chunk *Chunk,
                                             v3i  NoiseBasis,
                                            void *NoiseParams,

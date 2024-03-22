@@ -1,11 +1,11 @@
-// src/engine/serdes.cpp:500:0
+// src/engine/serdes.cpp:494:0
 
 link_internal bonsai_type_info
-TypeInfo(world_update_op_shape_params_sphere *Ignored)
+TypeInfo(noise_layer_0 *Ignored)
 {
   bonsai_type_info Result = {};
 
-  Result.Name = CSz("world_update_op_shape_params_sphere");
+  Result.Name = CSz("noise_layer_0");
   Result.Version = 0 ;
 
   /* type.map(member) */
@@ -20,7 +20,7 @@ TypeInfo(world_update_op_shape_params_sphere *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_sphere *BaseElement, umm Count = 1)
+Serialize(u8_cursor_block_array *Bytes, noise_layer_0 *BaseElement, umm Count = 1)
 {
   Assert(Count > 0);
 
@@ -33,14 +33,25 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_sphere *Bas
 
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    world_update_op_shape_params_sphere *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Location);
+    noise_layer_0 *Element = BaseElement + ElementIndex;
+    Result &= Serialize(Bytes, (u32*)&Element->Type);
+
+
+
+
+    Result &= Serialize(Bytes, &Element->White);
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Radius);
+    Result &= Serialize(Bytes, &Element->Perlin);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->Voronoi);
 
     
 
@@ -51,29 +62,42 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_sphere *Bas
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, world_update_op_shape_params_sphere *Element, memory_arena *Memory, umm Count = 1);
+Deserialize(u8_cursor *Bytes, noise_layer_0 *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_sphere *Element, memory_arena *Memory);
+DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer_0 *Element, memory_arena *Memory);
 
 
 
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_sphere *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer_0 *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Location, Memory);
-
+  Element->Type = Cast(ui_noise_type, Read_u32(Bytes));
 
 
 
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Radius, Memory);
+  Result &= Deserialize(Bytes, &Element->White, Memory);
+
+
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->Perlin, Memory);
+
+
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->Voronoi, Memory);
 
   
 
@@ -82,7 +106,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_sphere 
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, world_update_op_shape_params_sphere *Element, memory_arena *Memory, umm Count)
+Deserialize(u8_cursor *Bytes, noise_layer_0 *Element, memory_arena *Memory, umm Count)
 {
   Assert(Count > 0);
 

@@ -1,11 +1,11 @@
-// src/engine/serdes.cpp:498:0
+// src/engine/serdes.cpp:486:0
 
 link_internal bonsai_type_info
-TypeInfo(world_update_op_shape_params_rect *Ignored)
+TypeInfo(white_noise_params *Ignored)
 {
   bonsai_type_info Result = {};
 
-  Result.Name = CSz("world_update_op_shape_params_rect");
+  Result.Name = CSz("white_noise_params");
   Result.Version = 0 ;
 
   /* type.map(member) */
@@ -20,7 +20,7 @@ TypeInfo(world_update_op_shape_params_rect *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_rect *BaseElement, umm Count = 1)
+Serialize(u8_cursor_block_array *Bytes, white_noise_params *BaseElement, umm Count = 1)
 {
   Assert(Count > 0);
 
@@ -33,8 +33,8 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_rect *BaseE
 
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    world_update_op_shape_params_rect *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Region);
+    white_noise_params *Element = BaseElement + ElementIndex;
+    Result &= Serialize(Bytes, &Element->Threshold);
 
     
 
@@ -45,21 +45,21 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_rect *BaseE
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, world_update_op_shape_params_rect *Element, memory_arena *Memory, umm Count = 1);
+Deserialize(u8_cursor *Bytes, white_noise_params *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_rect *Element, memory_arena *Memory);
+DeserializeCurrentVersion(u8_cursor *Bytes, white_noise_params *Element, memory_arena *Memory);
 
 
 
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_rect *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, white_noise_params *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Region, Memory);
+  Result &= Deserialize(Bytes, &Element->Threshold, Memory);
 
   
 
@@ -68,7 +68,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_rect *E
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, world_update_op_shape_params_rect *Element, memory_arena *Memory, umm Count)
+Deserialize(u8_cursor *Bytes, white_noise_params *Element, memory_arena *Memory, umm Count)
 {
   Assert(Count > 0);
 

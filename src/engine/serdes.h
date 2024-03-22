@@ -11,6 +11,31 @@
 #define MAYBE_READ_DEBUG_OBJECT_DELIM(...)
 #endif
 
+poof(
+  func default_marshal(struct_t) @code_fragment
+  {
+    struct_t.map(member)
+    {
+      member.has_tag(no_serialize)?
+      {
+      }
+      {
+        member.is_array?
+        {
+          RangeIterator(Index, member.array)
+          {
+            Live->member.name[Index] = Stored->member.name[Index];
+          }
+        }
+        {
+          Live->member.name = Stored->member.name;
+        }
+      }
+    }
+  }
+)
+
+
 //
 // Primitives
 //

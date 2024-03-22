@@ -1,4 +1,4 @@
-// src/engine/editor.h:515:0
+// src/engine/editor.h:516:0
 
 link_internal counted_string
 ToStringPrefixless(ui_noise_type Type)
@@ -8,6 +8,7 @@ ToStringPrefixless(ui_noise_type Type)
   {
     case NoiseType_Perlin: { Result = CSz("Perlin"); } break;
     case NoiseType_Voronoi: { Result = CSz("Voronoi"); } break;
+    case NoiseType_White: { Result = CSz("White"); } break;
 
     
   }
@@ -23,6 +24,7 @@ ToString(ui_noise_type Type)
   {
     case NoiseType_Perlin: { Result = CSz("NoiseType_Perlin"); } break;
     case NoiseType_Voronoi: { Result = CSz("NoiseType_Voronoi"); } break;
+    case NoiseType_White: { Result = CSz("NoiseType_White"); } break;
 
     
   }
@@ -37,6 +39,7 @@ UiNoiseType(counted_string S)
 
   if (StringsMatch(S, CSz("NoiseType_Perlin"))) { return NoiseType_Perlin; }
   if (StringsMatch(S, CSz("NoiseType_Voronoi"))) { return NoiseType_Voronoi; }
+  if (StringsMatch(S, CSz("NoiseType_White"))) { return NoiseType_White; }
 
   return Result;
 }

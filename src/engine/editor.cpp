@@ -999,15 +999,24 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
 
         generic_noise_params NoiseParams = {};
         void *UserData = {};
+
+        NoiseParams.Color     = Settings->Color;
         switch (Noise->Type)
         {
+          case NoiseType_White:
+          {
+            NoiseFunc             = Terrain_WhiteNoise;
+            NoiseParams.Threshold = Noise->Perlin.Threshold;
+            NoiseParams.Period    = Noise->Perlin.Period;
+            NoiseParams.Amplitude = Noise->Perlin.Amplitude;
+          } break;
+
           case NoiseType_Perlin:
           {
             NoiseFunc             = Terrain_Perlin3D;
             NoiseParams.Threshold = Noise->Perlin.Threshold;
             NoiseParams.Period    = Noise->Perlin.Period;
             NoiseParams.Amplitude = Noise->Perlin.Amplitude;
-            NoiseParams.Color     = Settings->Color;
           } break;
 
           case NoiseType_Voronoi:
@@ -1016,7 +1025,6 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
             NoiseParams.Threshold = Noise->Voronoi.Threshold;
             NoiseParams.Period    = Noise->Voronoi.Period;
             NoiseParams.Amplitude = Noise->Voronoi.Amplitude;
-            NoiseParams.Color     = Settings->Color;
             UserData = Cast(void*, &Noise->Voronoi);
           } break;
         }
@@ -1085,16 +1093,19 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
       PushTableStart(Ui); // TODO(Jesse): Necessary?
         switch (Layer->Type)
         {
+          case NoiseType_White:
+          {
+            DoEditorUi(Ui, Window, &Layer->White, CSz("Settings"));
+          } break;
+
           case NoiseType_Perlin:
           {
-            perlin_noise_params *Perlin = &Layer->Perlin;
-            DoEditorUi(Ui, Window, Perlin, CSz("Settings"));
+            DoEditorUi(Ui, Window, &Layer->Perlin, CSz("Settings"));
           } break;
 
           case NoiseType_Voronoi:
           {
-            voronoi_noise_params *Voronoi = &Layer->Voronoi;
-            DoEditorUi(Ui, Window, Voronoi, CSz("Settings"));
+            DoEditorUi(Ui, Window, &Layer->Voronoi, CSz("Settings"));
           } break;
         }
       PushTableEnd(Ui);
