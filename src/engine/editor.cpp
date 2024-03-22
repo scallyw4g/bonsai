@@ -1313,7 +1313,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
     PushWindowStart(Ui, BrushSettingsWindow);
     memory_arena *Tran = GetTranArena();
 
-    /* if (LayeredBrush->NameBuf[0]) */
+    if (LayeredBrush->LayerCount)
     {
       if (Button(Ui, CSz("Save"), UiId(BrushSettingsWindow, "brush save", 0u)))
       {
@@ -1362,9 +1362,6 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
       if (ClickedFileNode.Tag)
       {
-        ZeroMemory(LayeredBrush->NameBuf, NameBuf_Len);
-        CopyString(&ClickedFileNode.Value.Name, &BrushNameBuf);
-
         cs Filename = Concat(ClickedFileNode.Value.Dir, CSz("/"), ClickedFileNode.Value.Name, Tran);
         u8_cursor Bytes = BeginDeserialization(Filename, Tran);
         if (Deserialize(&Bytes, &Editor->LayeredBrushEditor, Tran) == False)
@@ -1372,6 +1369,11 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
           SoftError("While deserializing brush (%S).", Filename);
         }
         FinalizeDeserialization(&Bytes);
+
+        // NOTE(Jesse): This has to happen after deserialization cause some
+        // brushes got saved out with a name, which gets read back in..
+        ZeroMemory(LayeredBrush->NameBuf, NameBuf_Len);
+        CopyString(&ClickedFileNode.Value.Name, &BrushNameBuf);
 
 
         SetToggleButton(Ui, ImportToggleId, False);
@@ -1395,7 +1397,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         }
       }
 
-      /* if (LayeredBrush->NameBuf[0]) */
+      if (LayeredBrush->LayerCount)
       {
         PushNewRow(Ui);
         PushNewRow(Ui);

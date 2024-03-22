@@ -890,15 +890,20 @@ poof(
   {
     struct_t.map(member)
     {
-      member.is_array?
+      member.has_tag(no_serialize)?
       {
-        RangeIterator(Index, member.array)
-        {
-          Live->member.name[Index] = Stored->member.name[Index];
-        }
       }
       {
-        Live->member.name = Stored->member.name;
+        member.is_array?
+        {
+          RangeIterator(Index, member.array)
+          {
+            Live->member.name[Index] = Stored->member.name[Index];
+          }
+        }
+        {
+          Live->member.name = Stored->member.name;
+        }
       }
     }
   }
@@ -938,7 +943,7 @@ struct layered_brush_editor poof(@version(2))
   // not fuck around with allocating a single string when we load these in.
   char NameBuf[NameBuf_Len+1]; poof(@no_serialize @ui_text_box)
 
-  s32 LayerCount = 1;
+  s32 LayerCount;
   brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
 
   b8 SeedBrushWithSelection;
