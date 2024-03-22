@@ -1375,7 +1375,6 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         ZeroMemory(LayeredBrush->NameBuf, NameBuf_Len);
         CopyString(&ClickedFileNode.Value.Name, &BrushNameBuf);
 
-
         SetToggleButton(Ui, ImportToggleId, False);
       }
     }

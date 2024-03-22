@@ -157,7 +157,17 @@ poof(
                 {
                   member.is_array?
                   {
-                    Result &= Serialize(Bytes, Element->(member.name), member.array);
+                    {
+                      member.has_tag(array_length)?
+                      {
+                        // TODO(Jesse): Should this really be a safe cast?
+                        umm ThisCount = umm(Element->member.tag_value(array_length));
+                      }
+                      {
+                        umm ThisCount = member.array;
+                      }
+                      Result &= Serialize(Bytes, Element->(member.name), ThisCount);
+                    }
                   }
                   {
                     Result &= Serialize(Bytes, &Element->(member.name));

@@ -159,7 +159,11 @@ Serialize(u8_cursor_block_array *Bytes, particle_system *BaseElement, umm Count 
 
 
 
-    Result &= Serialize(Bytes, Element->Colors, 6);
+    {
+      umm ThisCount = 6;
+
+      Result &= Serialize(Bytes, Element->Colors, ThisCount);
+    }
 
 
 

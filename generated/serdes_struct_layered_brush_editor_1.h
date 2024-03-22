@@ -34,7 +34,11 @@ Serialize(u8_cursor_block_array *Bytes, layered_brush_editor_1 *BaseElement, umm
   RangeIterator_t(umm, ElementIndex, Count)
   {
     layered_brush_editor_1 *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, Element->NameBuf, (256));
+    {
+      umm ThisCount = (256);
+
+      Result &= Serialize(Bytes, Element->NameBuf, ThisCount);
+    }
 
 
 
@@ -46,7 +50,12 @@ Serialize(u8_cursor_block_array *Bytes, layered_brush_editor_1 *BaseElement, umm
 
 
 
-    Result &= Serialize(Bytes, Element->Layers, 16);
+    {
+      // TODO(Jesse): Should this really be a safe cast?
+      umm ThisCount = umm(Element->LayerCount);
+
+      Result &= Serialize(Bytes, Element->Layers, ThisCount);
+    }
 
 
 

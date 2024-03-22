@@ -43,7 +43,12 @@ Serialize(u8_cursor_block_array *Bytes, layered_brush_editor *BaseElement, umm C
 
 
 
-    Result &= Serialize(Bytes, Element->Layers, 16);
+    {
+      // TODO(Jesse): Should this really be a safe cast?
+      umm ThisCount = umm(Element->LayerCount);
+
+      Result &= Serialize(Bytes, Element->Layers, ThisCount);
+    }
 
 
 
