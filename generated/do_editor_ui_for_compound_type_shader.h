@@ -9,7 +9,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
     // support not drawing the toggl-y thing if we just want to dump the members.
     b32 DrawChildren = True;
     b32 DidToggle = False;
-    if (Name)
+    if (Name.Count)
     {
       if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle shader", Element), &DefaultUiRenderParams_Generic))
       {

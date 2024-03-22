@@ -25,6 +25,13 @@ U64Buffer( umm ElementCount, memory_arena* Memory)
 }
 
 link_inline umm
+LastIndex(u64_buffer *Buf)
+{
+  umm Result = Buf->Count > 0? Buf->Count-1 : 0;
+  return Result;
+}
+
+link_inline umm
 ZerothIndex(u64_buffer *Buf)
 {
   umm Result = 0;

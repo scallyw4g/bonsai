@@ -1258,6 +1258,45 @@ GetSmallestMinOffset(layered_brush_editor *LayeredBrush, v3i *LargestLayerDim)
 }
 
 
+link_internal cs
+GetFilenameForBrush(cs Name, s32 Version = 0)
+{
+  cs Result;
+
+  if (EndsWith(Name, CSz(".brush"))) { Name.Count -= 6; }
+
+  if (Version)
+  {
+    Result = FCS(CSz("brushes/%S.%d.brush\0"), Name, Version);
+  }
+  else
+  {
+    Result = FCS(CSz("brushes/%S.brush\0"), Name);
+  }
+
+  return Result;
+}
+
+link_internal void
+SaveBrush(layered_brush_editor *LayeredBrush, const char *FilenameZ)
+{
+  u8_cursor_block_array OutputStream = BeginSerialization();
+  Serialize(&OutputStream, LayeredBrush);
+
+  if (FinalizeSerialization(&OutputStream, FilenameZ) == False)
+  {
+    SoftError("Unable to serialize brush (%s) to file (%s).", LayeredBrush->NameBuf, FilenameZ);
+  }
+  else
+  {
+    ZeroMemory(LayeredBrush->NameBuf, NameBuf_Len);
+    cs BrushNameBuf = CS(LayeredBrush->NameBuf, NameBuf_Len);
+
+    cs BrushBasename = Basename(CS(FilenameZ));
+    CopyString(&BrushBasename, &BrushNameBuf);
+  }
+}
+
 
 link_internal void
 BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSettingsWindow)
@@ -1267,27 +1306,48 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
   layered_brush_editor *LayeredBrush = &Editor->LayeredBrushEditor;
   brush_layer          *Layers             =  LayeredBrush->Layers;
 
+  cs BrushNameBuf = CS(LayeredBrush->NameBuf, NameBuf_Len);
 
 
   {
     PushWindowStart(Ui, BrushSettingsWindow);
+    memory_arena *Tran = GetTranArena();
 
     /* if (LayeredBrush->NameBuf[0]) */
     {
       if (Button(Ui, CSz("Save"), UiId(BrushSettingsWindow, "brush save", 0u)))
       {
-        u8_cursor_block_array OutputStream = BeginSerialization();
-        Serialize(&OutputStream, LayeredBrush);
-        cs OutpathZ = Concat(CSz("brushes/"), CS(LayeredBrush->NameBuf), GetTranArena(), 1);
-        if (FinalizeSerialization(&OutputStream, OutpathZ.Start) == False)
-        {
-          SoftError("Unable to serialize brush (%s).", LayeredBrush->NameBuf);
-        }
+        cs BrushFilepath = GetFilenameForBrush(CS(LayeredBrush->NameBuf));
+        SaveBrush(LayeredBrush, BrushFilepath.Start);
       }
 
-      if (Button(Ui, CSz("Version"), UiId(BrushSettingsWindow, "brush version", 0u)))
+      if (Button(Ui, CSz("Duplicate"), UiId(BrushSettingsWindow, "brush dup", 0u)))
       {
-        Info("Version");
+        cs_buffer Pieces = Split( CS(LayeredBrush->NameBuf), '.', Tran);
+
+        if (Pieces.Count > 2)
+        {
+          cs BrushNameString = Pieces.Start[0];
+          cs VersionString   = Pieces.Start[Pieces.Count-2];
+
+          s32 VersionNumber;
+          if ( ParseInteger(VersionString, &VersionNumber) )
+          {
+            cs BrushFilepath = GetFilenameForBrush(BrushNameString, VersionNumber);
+            while (FileExists(BrushFilepath.Start))
+            {
+              ++VersionNumber;
+              BrushFilepath = GetFilenameForBrush(BrushNameString, VersionNumber);
+            }
+
+            SaveBrush(LayeredBrush, BrushFilepath.Start);
+          }
+        }
+        else
+        {
+          cs BrushFilepath = GetFilenameForBrush(CS(LayeredBrush->NameBuf), 1);
+          SaveBrush(LayeredBrush, BrushFilepath.Start);
+        }
       }
     }
 
@@ -1303,10 +1363,8 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
       if (ClickedFileNode.Tag)
       {
         ZeroMemory(LayeredBrush->NameBuf, NameBuf_Len);
-        cs BrushNameBuf = CS(LayeredBrush->NameBuf, NameBuf_Len);
         CopyString(&ClickedFileNode.Value.Name, &BrushNameBuf);
 
-        memory_arena *Tran = GetTranArena();
         cs Filename = Concat(ClickedFileNode.Value.Dir, CSz("/"), ClickedFileNode.Value.Name, Tran);
         u8_cursor Bytes = BeginDeserialization(Filename, Tran);
         if (Deserialize(&Bytes, &Editor->LayeredBrushEditor, Tran) == False)
@@ -1327,7 +1385,6 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         ZeroMemory(LayeredBrush->NameBuf, NameBuf_Len);
 
         cs Src = CSz("_untitled.brush");
-        cs BrushNameBuf = CS(LayeredBrush->NameBuf, NameBuf_Len);
         CopyString(&Src, &BrushNameBuf);
 
         LayeredBrush->LayerCount = 1;

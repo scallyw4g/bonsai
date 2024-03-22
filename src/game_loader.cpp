@@ -366,7 +366,7 @@ main( s32 ArgCount, const char ** Args )
     // NOTE(Jesse): We can't hold strings from PlatformTraverseDirectoryTreeUnordered
     // across frame boundaries because transient memory gets cleared, so this
     // has to happen before the end of the frame.
-    if ( EngineResources->RequestedGameLibReloadNode.Name )
+    if ( EngineResources->RequestedGameLibReloadNode.Name.Count )
     {
       LastGameLibTime = 0;
       // TODO(Jesse)(leak): We probably don't want to just leak these strings..

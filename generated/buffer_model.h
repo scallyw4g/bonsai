@@ -25,6 +25,13 @@ ModelBuffer( u64 ElementCount, memory_arena* Memory)
 }
 
 link_inline u64
+LastIndex(model_buffer *Buf)
+{
+  u64 Result = Buf->Count > 0? Buf->Count-1 : 0;
+  return Result;
+}
+
+link_inline u64
 ZerothIndex(model_buffer *Buf)
 {
   u64 Result = 0;

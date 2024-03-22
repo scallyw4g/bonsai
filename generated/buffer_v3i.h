@@ -25,6 +25,13 @@ V3iBuffer( umm ElementCount, memory_arena* Memory)
 }
 
 link_inline umm
+LastIndex(v3i_buffer *Buf)
+{
+  umm Result = Buf->Count > 0? Buf->Count-1 : 0;
+  return Result;
+}
+
+link_inline umm
 ZerothIndex(v3i_buffer *Buf)
 {
   umm Result = 0;

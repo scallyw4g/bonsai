@@ -88,7 +88,7 @@ poof(
         type.member(0, (E) 
         {
           /* PushTableStart(Ui); */
-            if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
+            if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
 
             if (Value)
             {
@@ -120,7 +120,7 @@ poof(
       {
         Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
-        if (Name) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
+        if (Name.Count) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
 
         if (Value)
         {
@@ -162,7 +162,7 @@ poof(
         // support not drawing the toggl-y thing if we just want to dump the members.
         b32 DrawChildren = True;
         b32 DidToggle = False;
-        if (Name)
+        if (Name.Count)
         {
           if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle type.name", Element), &DefaultUiRenderParams_Generic))
           {
@@ -258,7 +258,7 @@ poof(
     link_internal void
     DoEditorUi(renderer_2d *Ui, window_layout *Window, enum_t.name *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
     {
-      if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
+      if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
       cs ElementName = ToStringPrefixless(*Element);
       ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
@@ -267,7 +267,7 @@ poof(
         PushNewRow(Ui);
         enum_t.map(value)
         {
-          if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+          if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
           if (Button(Ui, CSz("value.name.strip_all_prefix"), UiId(Window, "enum value.name", Element), Params))
           {
             enum_t.has_tag(bitfield)?
@@ -363,7 +363,7 @@ DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min
 {
   u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Generic);
     PushTableStart(Ui);
-      if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
+      if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
 
       auto Range = Max-Min;
       r32 PercFilled = ((*Value)-Min)/Range;
@@ -398,7 +398,7 @@ DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
-  if (Name) { PushColumn(Ui, Name, &DefaultUiRenderParams_Blank); }
+  if (Name.Count) { PushColumn(Ui, Name, &DefaultUiRenderParams_Blank); }
 
   u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
@@ -459,7 +459,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, cs *Value, cs Name, EDITOR_UI
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, void *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Column)
 {
-  if (Name) { PushColumn(Ui, CS(Name), Params); }
+  if (Name.Count) { PushColumn(Ui, CS(Name), Params); }
   Value ?
     PushColumn(Ui, FSz("0x%x",umm(Value)), &DefaultUiRenderParams_Column) :
     PushColumn(Ui, CSz("(null)"), &DefaultUiRenderParams_Column);
@@ -936,7 +936,7 @@ struct layered_brush_editor poof(@version(2))
 {
   // NOTE(Jesse): This is so we can just copy the name of the brush in here and
   // not fuck around with allocating a single string when we load these in.
-  char NameBuf[NameBuf_Len]; poof(@no_serialize @ui_text_box)
+  char NameBuf[NameBuf_Len+1]; poof(@no_serialize @ui_text_box)
 
   s32 LayerCount = 1;
   brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
