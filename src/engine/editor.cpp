@@ -1268,10 +1268,11 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
   brush_layer          *Layers             =  LayeredBrush->Layers;
 
 
+
   {
     PushWindowStart(Ui, BrushSettingsWindow);
 
-    if (LayeredBrush->NameBuf[0])
+    /* if (LayeredBrush->NameBuf[0]) */
     {
       if (Button(Ui, CSz("Save"), UiId(BrushSettingsWindow, "brush save", 0u)))
       {
@@ -1302,6 +1303,8 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
       if (ClickedFileNode.Tag)
       {
         ZeroMemory(LayeredBrush->NameBuf, NameBuf_Len);
+        cs BrushNameBuf = CS(LayeredBrush->NameBuf, NameBuf_Len);
+        CopyString(&ClickedFileNode.Value.Name, &BrushNameBuf);
 
         memory_arena *Tran = GetTranArena();
         cs Filename = Concat(ClickedFileNode.Value.Dir, CSz("/"), ClickedFileNode.Value.Name, Tran);
@@ -1312,8 +1315,6 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         }
         FinalizeDeserialization(&Bytes);
 
-        cs BrushNameBuf = CS(LayeredBrush->NameBuf, NameBuf_Len);
-        CopyString(&ClickedFileNode.Value.Name, &BrushNameBuf);
 
         SetToggleButton(Ui, ImportToggleId, False);
       }
@@ -1337,13 +1338,15 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         }
       }
 
-      if (LayeredBrush->NameBuf[0])
+      /* if (LayeredBrush->NameBuf[0]) */
       {
         PushNewRow(Ui);
         PushNewRow(Ui);
 
         {
-          PushColumn(Ui, CSz("BrushName")); PushColumn(Ui, CS(LayeredBrush->NameBuf));
+          ui_id TextBoxId = UiId(BrushSettingsWindow, "name_buf_textbox", LayeredBrush->NameBuf);
+          cs NameBuf = CS(LayeredBrush->NameBuf);
+          TextBox(Ui, CSz("BrushName"), NameBuf, NameBuf_Len, TextBoxId);
           PushNewRow(Ui);
 
           DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->LayerCount, CSz("Layer Count"), &DefaultUiRenderParams_Generic);

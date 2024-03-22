@@ -202,6 +202,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
       DoEditorUi(Ui,
         Window,
+&Element->TextEdit,
+        CSz("TextEdit"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
 &Element->Geo,
         CSz("Geo"),
         Params
