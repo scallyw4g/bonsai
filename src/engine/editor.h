@@ -377,7 +377,7 @@ DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min
 
         v2 Offset = V2(Width/2.f-TextDim.x/2.f, 0.f);
 
-        Text(Ui, ValueText, &DefaultStyle, TextRenderParam_NoAdvanceLayout, Offset);
+        Text(Ui, ValueText, &DefaultStyle, UiElementLayoutFlag_NoAdvance, Offset);
       }
 
       interactable_handle BargraphButton = PushButtonStart(Ui, UiId(Window, "debug_slider", Value));
@@ -429,7 +429,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, ui_render
     {
       if (*Value)
       {
-        PushUntexturedQuad(Ui, V2(2.f, 2.f), V2(Params->Style->Font.Size.y)-4.f, zDepth_Border, &Global_DefaultCheckboxForeground, DefaultCheckboxPadding, QuadRenderParam_NoAdvance );
+        PushUntexturedQuad(Ui, V2(2.f, 2.f), V2(Params->Style->Font.Size.y)-4.f, zDepth_Border, &Global_DefaultCheckboxForeground, DefaultCheckboxPadding, UiElementLayoutFlag_NoAdvance );
       }
     }
     else
@@ -437,7 +437,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, ui_render
       PushColumn(Ui, CSz("(null)"), Params);
     }
 
-    PushUntexturedQuad(Ui, {}, V2(Params->Style->Font.Size.y), zDepth_Text, &Global_DefaultCheckboxBackground, DefaultCheckboxPadding, QuadRenderParam_Default );
+    PushUntexturedQuad(Ui, {}, V2(Params->Style->Font.Size.y), zDepth_Text, &Global_DefaultCheckboxBackground, DefaultCheckboxPadding, UiElementLayoutFlag_Default );
 
 
 
