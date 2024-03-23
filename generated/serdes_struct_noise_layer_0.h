@@ -39,12 +39,6 @@ Serialize(u8_cursor_block_array *Bytes, noise_layer_0 *BaseElement, umm Count = 
 
 
 
-    Result &= Serialize(Bytes, &Element->White);
-
-
-
-
-
     Result &= Serialize(Bytes, &Element->Perlin);
 
 
@@ -75,14 +69,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer_0 *Element, memory_arena
 {
   b32 Result = True;
   Element->Type = Cast(ui_noise_type, Read_u32(Bytes));
-
-
-
-
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->White, Memory);
-
 
 
 

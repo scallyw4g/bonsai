@@ -815,7 +815,6 @@ struct noise_layer_0
 {
   ui_noise_type Type;
 
-  white_noise_params   White;
   perlin_noise_params  Perlin;
   voronoi_noise_params Voronoi;
 };

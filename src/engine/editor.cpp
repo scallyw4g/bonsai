@@ -1426,6 +1426,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         if (Deserialize(&Bytes, &Editor->LayeredBrushEditor, Tran) == False)
         {
           SoftError("While deserializing brush (%S).", Filename);
+          Editor->LayeredBrushEditor = {};
         }
         FinalizeDeserialization(&Bytes);
 
