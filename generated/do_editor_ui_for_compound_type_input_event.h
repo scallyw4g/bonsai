@@ -1,7 +1,7 @@
-// src/engine/editor.cpp:212:0
+// src/engine/editor.cpp:149:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   if (Element)
   {
@@ -11,7 +11,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle particle", Element), &DefaultUiRenderParams_Generic))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle input_event", Element), &DefaultUiRenderParams_Generic))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -28,33 +28,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->Velocity,
-        CSz("Velocity"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->Offset,
-        CSz("Offset"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->Color,
-        CSz("Color"),
-        Params
+        Cast(b8*,&Element->Clicked),
+        CSz("Clicked"),
+        &DefaultUiRenderParams_Checkbox
         );
 
 
@@ -65,22 +41,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
 
       DoEditorUi(Ui,
         Window,
-&Element->IsLight,
-        CSz("IsLight"),
-        Params
-        );
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-&Element->RemainingLifespan,
-        CSz("RemainingLifespan"),
-        Params
+        Cast(b8*,&Element->Pressed),
+        CSz("Pressed"),
+        &DefaultUiRenderParams_Checkbox
         );
 
 

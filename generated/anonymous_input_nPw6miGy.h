@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/platform/win32/win32_platform.cpp:437:0
+// external/bonsai_stdlib/src/platform/win32/win32_platform.cpp:439:0
 
 BindKeydownToInput(VK_RETURN, Enter);
 
@@ -9,8 +9,6 @@ BindKeydownToInput(VK_MENU, Alt);
 BindKeydownToInput(VK_CONTROL, Ctrl);
 
 BindKeydownToInput(VK_SHIFT, Shift);
-
-BindKeydownToInput(VK_SPACE, Space);
 
 BindKeydownToInput(VK_BACK, Backspace);
 
@@ -45,6 +43,8 @@ BindKeydownToInput(VK_OEM_PERIOD, Dot);
 BindKeydownToInput(VK_OEM_MINUS, Minus);
 
 BindKeydownToInput(VK_OEM_2, FSlash);
+
+BindKeydownToInput(VK_SPACE, Space);
 
 BindKeydownToInput(0x30, N0);
 

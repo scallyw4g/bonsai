@@ -1,7 +1,7 @@
-// src/engine/editor.cpp:212:0
+// src/engine/editor.cpp:158:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   if (Element)
   {
@@ -11,7 +11,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle particle", Element), &DefaultUiRenderParams_Generic))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle bonsai_stdlib", Element), &DefaultUiRenderParams_Generic))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -28,8 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->Velocity,
-        CSz("Velocity"),
+&Element->Os,
+        CSz("Os"),
         Params
         );
 
@@ -40,8 +40,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
       
       DoEditorUi(Ui,
         Window,
-&Element->Offset,
-        CSz("Offset"),
+&Element->Plat,
+        CSz("Plat"),
         Params
         );
 
@@ -52,8 +52,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
       
       DoEditorUi(Ui,
         Window,
-&Element->Color,
-        CSz("Color"),
+        Element->ThreadStates,
+        CSz("ThreadStates"),
         Params
         );
 
@@ -61,12 +61,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
 
 
 
-      PushNewRow(Ui);
-
+      
       DoEditorUi(Ui,
         Window,
-&Element->IsLight,
-        CSz("IsLight"),
+&Element->AllTextures,
+        CSz("AllTextures"),
         Params
         );
 
@@ -74,20 +73,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
 
 
 
-      PushNewRow(Ui);
-
+      
       DoEditorUi(Ui,
         Window,
-&Element->RemainingLifespan,
-        CSz("RemainingLifespan"),
+&Element->DebugSystem,
+        CSz("DebugSystem"),
         Params
         );
-
-
-
-
-
-      PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

@@ -15,9 +15,6 @@ Input->Ctrl.Clicked = False;
 Input->Shift.Clicked = False;
 
 
-Input->Space.Clicked = False;
-
-
 Input->Backspace.Clicked = False;
 
 
@@ -67,6 +64,9 @@ Input->Minus.Clicked = False;
 
 
 Input->FSlash.Clicked = False;
+
+
+Input->Space.Clicked = False;
 
 
 Input->Underscore.Clicked = False;

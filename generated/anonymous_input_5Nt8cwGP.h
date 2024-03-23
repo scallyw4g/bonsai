@@ -10,8 +10,6 @@ BindKeyupToInput(VK_CONTROL, Ctrl);
 
 BindKeyupToInput(VK_SHIFT, Shift);
 
-BindKeyupToInput(VK_SPACE, Space);
-
 BindKeyupToInput(VK_BACK, Backspace);
 
 BindKeyupToInput(VK_DELETE, Delete);
@@ -45,6 +43,8 @@ BindKeyupToInput(VK_OEM_PERIOD, Dot);
 BindKeyupToInput(VK_OEM_MINUS, Minus);
 
 BindKeyupToInput(VK_OEM_2, FSlash);
+
+BindKeyupToInput(VK_SPACE, Space);
 
 BindKeyupToInput(0x30, N0);
 

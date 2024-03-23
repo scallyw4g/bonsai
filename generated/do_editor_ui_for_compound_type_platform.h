@@ -1,7 +1,7 @@
-// src/engine/editor.cpp:326:0
+// src/engine/editor.cpp:155:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   if (Element)
   {
@@ -11,7 +11,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle camera", Element), &DefaultUiRenderParams_Generic))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle platform", Element), &DefaultUiRenderParams_Generic))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -28,8 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->Frust,
-        CSz("Frust"),
+&Element->LowPriority,
+        CSz("LowPriority"),
         Params
         );
 
@@ -40,8 +40,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
       
       DoEditorUi(Ui,
         Window,
-&Element->CurrentP,
-        CSz("CurrentP"),
+&Element->HighPriority,
+        CSz("HighPriority"),
         Params
         );
 
@@ -52,8 +52,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
       
       DoEditorUi(Ui,
         Window,
-&Element->RenderSpacePosition,
-        CSz("RenderSpacePosition"),
+&Element->HighPriorityWorkerCount,
+        CSz("HighPriorityWorkerCount"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->HighPriorityModeFutex,
+        CSz("HighPriorityModeFutex"),
         Params
         );
 
@@ -64,125 +77,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
       
       DoEditorUi(Ui,
         Window,
-&Element->Pitch,
-        CSz("Pitch"),
-        Params
-        );
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-&Element->Roll,
-        CSz("Roll"),
-        Params
-        );
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-&Element->Yaw,
-        CSz("Yaw"),
-        Params
-        );
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-&Element->DistanceFromTarget,
-        CSz("DistanceFromTarget"),
-        Params
-        );
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-&Element->TargetPitch,
-        CSz("TargetPitch"),
-        Params
-        );
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-&Element->TargetRoll,
-        CSz("TargetRoll"),
-        Params
-        );
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-&Element->TargetYaw,
-        CSz("TargetYaw"),
-        Params
-        );
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-&Element->TargetDistanceFromTarget,
-        CSz("TargetDistanceFromTarget"),
-        Params
-        );
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-&Element->Blend,
-        CSz("Blend"),
-        Params
-        );
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-&Element->Front,
-        CSz("Front"),
+&Element->WorkerThreadsSuspendFutex,
+        CSz("WorkerThreadsSuspendFutex"),
         Params
         );
 
@@ -193,8 +89,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
       
       DoEditorUi(Ui,
         Window,
-&Element->Right,
-        CSz("Right"),
+&Element->WorkerThreadsExitFutex,
+        CSz("WorkerThreadsExitFutex"),
         Params
         );
 
@@ -205,8 +101,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
       
       DoEditorUi(Ui,
         Window,
-&Element->Up,
-        CSz("Up"),
+        Element->Threads,
+        CSz("Threads"),
         Params
         );
 
@@ -217,8 +113,94 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
       
       DoEditorUi(Ui,
         Window,
-&Element->GhostId,
-        CSz("GhostId"),
+&Element->MouseP,
+        CSz("MouseP"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->MouseDP,
+        CSz("MouseDP"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        Element->Memory,
+        CSz("Memory"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->GameTime,
+        CSz("GameTime"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->dt,
+        CSz("dt"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->ScreenDim,
+        CSz("ScreenDim"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Input,
+        CSz("Input"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        Element->ServerState,
+        CSz("ServerState"),
         Params
         );
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
